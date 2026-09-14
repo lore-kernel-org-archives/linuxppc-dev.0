@@ -1,78 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-27222-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27223-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E6C8C88E75
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2026 14:23:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0375C88E78
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2026 14:59:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hk6pP34qsz2yd7;
-	Tue, 15 Sep 2026 00:23:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789395837;
-	cv=pass; b=cj8bZ0v+/I5tWuRa/8WjzUbCfbqufYiQ4wNBSo01woMGWMnay7Pr3MatSbeyJnEbiVR7KIC6tGSXaxxLD5nDIBNzI9kTAgQ9jOPVtMmfjIJXA4w1X1jSKZyyGiY4hrreKOeaK31sShRYIgnRbL4M26NYvM/S7l65uwAr4v54Azfc293Nm7GoK8MgTlMWBJSWPSJ9fXkR+6rqLZchI4IQjFwtjEsZX0nTaFuPYIX0RUNFhzjlrQvfNc2UuPFqjOrlCFtPP6nWVHqU5cnE4t/+fArbXIr82XEYEhzl5yIu8olQ5yLgF9bnmszXdq/puasLCuZoX1zy6j/dWDliswXVWg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789395837; c=relaxed/relaxed;
-	bh=AxY9y3EQEIjKYAmPGHB2pQQqgQdeImm4yoZg62jB/x4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=fGsIEabz6BEqCG8KupptuFACUtfmJ1PpVB6vRMOIlQ6QNWckgjqo9+m0I7ijYtg4XXyJvEhkT1Mu9Cdl88BbAl2+oEneNkrgqoT3377z+Gcypmw1ZTBHORmvjTjIuZw1jpkABYvr0mGporz6VJSDASVFvpORmLRan5GTj+CO4sb0rA9Xd1zsdbeqVnsRkoBYCMjiWMsB7ets66ZhzG68LPHlyw9KpwNq8Uakb5u4rLgd6hJZluytUDu9BmBWymduPOe11sTFmOFgF3WNa5R2fZjNqbY4k6915PwEu2M/o0A7S1o0U3AJ29CO3NNuIdKrMTGD9Roh7Yzwri5GRYQToA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=G+bau7qm; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::3; helo=du2pr03cu002.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hk7bT5dVPz2y7Y;
+	Tue, 15 Sep 2026 00:59:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789397973;
+	cv=none; b=eVHzAqCe5G7toQu+858GOuLZjaqgObIblT03LaY9SmMia1oY0APhDwPL6eiuGeLlsgedkdvKqSIjFcZT2bDeuqmFBWWoNDX70XFKMkousTtGladdDPL6gI2zaM/xUKSCNIykAcTuZOqJI4jMcXPM9gShJ8vcKRL6TOsTKPou4REnqwzHlx3pXfC4hu1ztqbne4MzfGXE7zAq6XzjGQWwopKpKxotMl0L5RxfDxV92i2fGxFQN/6UAv256Vgc/bhxlZ4PBtkhoX8gJJ5aYPgAD+Vch0EngdN7wJkgtbLRqv6ifOxO9ICYjz9djTFmli31j5jku+sYNP0qWHpyID6PIg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1789397973; c=relaxed/relaxed;
+	bh=pZW21joDRBUaKxwzUQh3KFT5Y8Es/1y/2DJwB/njVeQ=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=Ty+tF6gBSLL4FwGwH8m2mh0rYCwh34PoAx2PZRs8bWmm0DGRV1c4UHaFdHfvEuK48imG/Fv3OlDImKQTBbALE5oCMmfI7cJSuxdlIr/RR65PJL/yKudcrxjVzufzRHM6Ljl5TS2vsPHXvTSr22jOjiScU63rLG69+RcUWqJq1ktN6Pu7f0T4ZBxwpQNTEQHpUNEC12rMaZQQDr8nUTAYFOxfUbbwOK8UeR0hgfYaU7wih7VfsTx9PsXzmA6AeNC2vDLvQKqMg0gz1frtBE0s1IfOWL68qOlYny0MTWTgVQlVM5Lh6Ndp+jnzzw7uhFE7TvEoTAN116Jw29Gr63k5Pg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HnW+2Aaz; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=G+bau7qm;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HnW+2Aaz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c200::3; helo=du2pr03cu002.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hk6pN2VtQz2xCC
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 00:23:55 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=OywDmd9uij8nh43ls8GfvXltaBj7Fgw/ym4c6jyqFNwkW42sYOinajPf/5ogSYcYE94b3daxK+99J1ivwCWB/9rD3xAK/CXBEwhsMFixv3ZmSc/TEA8mGcwJjF+w8RZsgetogDgQhhvl6gvu3ch+U2+L4dwUS8zPsJ6N32uLdH8SHf/ogAee+pUhTsrVHUfev9B6VUbMfU2ennjQbwSkRU4Iuh5rYVlNGxrOokJgU1NWNpUEm2v+7RkskaXwlQhPasWoN9Br9B2+4s2VSeVzJ+NaDBii1giAV358UrxhdBwt1ZQysk80NweJbq7XjaRnjn7/OAy4ThM+tdKr9zpslQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=AxY9y3EQEIjKYAmPGHB2pQQqgQdeImm4yoZg62jB/x4=;
- b=nPd4JXUd0ZsHqDAgtDapMM375NKDcJXQHWqTvvNbfuJ/5kBdk2yacUeX5m3J3nHwZ1K6Xlb7XqMVU1EPD75XcbbJUkSXweJp5nz4mZzugZyALq0gaNXDntM6MiyP+pmjpUdYBx/ws4P8VJ0t66+gmuojdduPmrTpDNjMmZ/IjlHZukHO8H+AAZfTlTAVtN/Ax5DQwmqkbKRyyZo2MF2QF83de3aKR6jpkkuKcLaAINS+OTIlUc0wY0r5RQ78sNXph8uuxvdPW6N6IbJXVXUTaeMcIusRHDbc8JUzVLhfXyUrB+NBbAA4q+j52+vowLAwkpoWCViHHqmAXZmHzeERdA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=AxY9y3EQEIjKYAmPGHB2pQQqgQdeImm4yoZg62jB/x4=;
- b=G+bau7qm90qwrqsKcojDVet4x9Te93qrPnJDyUizHwRo5BpcdEFm6W/To5U/gHK+gB9BDzfiXgKaUPo6pEHAm6a+M2j4MJ53yG3ZRW+yqWRRXdkbzlc9Gz6LRcft3nqqZ/yXRgarPcokeSZdRSCj0mjG2elKdjzF8ZX2TNXI+0GzuqOPrbvx2S2j6AymIzjNny4ixyJvtjLQHze3stMdNsdfWcoGBAw7L9SKmBlSpTTusw0pSG6GeRI0i00bRdJ6rVdjFKgyJ+fwoyjdgcAwzO3id7c02hQSsTYKYdY6HOen6tirFPAIOl6ENOIIgLTT+F0q1m/kJpitMNcODz/HiA==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
- by AM9PR04MB8540.eurprd04.prod.outlook.com (2603:10a6:20b:437::15) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.406.12; Mon, 14 Sep
- 2026 14:23:32 +0000
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c%7]) with mapi id 15.21.0406.007; Mon, 14 Sep 2026
- 14:23:32 +0000
-Date: Mon, 14 Sep 2026 09:23:22 -0500
-From: Frank Li <Frank.li@oss.nxp.com>
-To: Rosen Penev <rosenp@gmail.com>
-Cc: dmaengine@vger.kernel.org, Vinod Koul <vkoul@kernel.org>,
-	Frank Li <Frank.Li@kernel.org>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	open list <linux-kernel@vger.kernel.org>,
-	"open list:FREESCALE SOC DRIVERS" <linuxppc-dev@lists.ozlabs.org>,
-	"moderated list:FREESCALE SOC DRIVERS" <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCHv2] dmaengine: bestcomm: make gen_bd init helpers static
-Message-ID: <aqgDWhGqkYki03F2@SMW015318>
-References: <20260913194804.39939-1-rosenp@gmail.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260913194804.39939-1-rosenp@gmail.com>
-X-ClientProxiedBy: PH8PR05CA0024.namprd05.prod.outlook.com
- (2603:10b6:510:2cc::12) To GV2PR04MB11799.eurprd04.prod.outlook.com
- (2603:10a6:150:2cf::9)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hk7bS3rKGz2xSV
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 00:59:32 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id C172660252;
+	Mon, 14 Sep 2026 14:59:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 06AFC1F000FF;
+	Mon, 14 Sep 2026 14:59:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789397968;
+	bh=pZW21joDRBUaKxwzUQh3KFT5Y8Es/1y/2DJwB/njVeQ=;
+	h=From:Subject:Date:To:Cc;
+	b=HnW+2AazavyexVIo74Bg73UujoM3Z012DSayATOnNZjl3MfSJ9xBJTZPAKFmN3VMc
+	 th+xjTSVfkLbR67we5Uq6HLQ+xbzrQTuTNvW9vch0D5psiEOKLV4/GOvkp5NRH8/yV
+	 EEJvpi5ikwPDh6/KO06ZApgPjfDMDJmR8V86Y5C2DTCSLtZQiWt7CVOfK425a7xmGT
+	 0ci+yJUOLZm6UcvOrHB1KP1uQzos+nofIZogXA3/FIwFgWJ3bE14JuJSuMOyoFwg9T
+	 KvihyX7WrmnibVw2JjFcYJxMDk3El2hL8Vu1n/hEnnLut51kaxSRQrKXFS4Y0eV8M1
+	 SGBaiAfHmO3Cw==
+From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Subject: [PATCH v2 00/40] mm: make VMA flag semantics explicit, eliminate
+ VM_SPECIAL
+Date: Mon, 14 Sep 2026 15:57:20 +0100
+Message-Id: <20260914-b4-mmap-prepare-vma-flag-sanify-v2-0-7d9781ed5361@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,146 +61,321 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|AM9PR04MB8540:EE_
-X-MS-Office365-Filtering-Correlation-Id: 207d4fdd-aace-4b6d-620c-08df126bc126
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|23010399003|1800799024|366016|19092799006|6133799003|18002099003|22082099003|11063799006|10067099003|56012099006;
-X-Microsoft-Antispam-Message-Info:
-	AG/wtdGvgB8tfGQgXkmwcgyegXQkdaiavFSBT5gHVWSvBXZTb6dZbFg+5lAcVa0Oe3LgOtdIYo5P55rDSX8aNf7f0XYViZC+olEHKTcz0LbuGFw9ofW7a26YwSvImKsYxwRIujEKFZHh2y/qUDxW94Woq87na8clhH+yCXiZ6iCnPu7iBpnqAuQmwJjeOA/MDsSTNyAT8xDKwS6xvQ7s4sCZdOLR7Wj8veI40OR2tWJ38SrhfFXZ0Rjy6437fdJUSatzomA0vWxbcUaa+DYZgBYNCqM4ny9ZdLl8gH2rvC+NVMyIRFdPioBI+sGn+fcvI40AfMhSsfS2pXmFUJGDu5hcT/CbH8QJkG9fsEei8UQX5HyvRpspN5DZDBWfB9PwDt+ufEBh46TZB0dXgnXS1hirHUJB7JNsX0WjL1Md5THtv71wpnlfVCMSqAeNaj563YpcUZUweu2Ba8zwsQzs2rHVvDuetyyouDQ9UwQX773FYqI1WpdaCy4fXD+cH8ybgyGKRh0TIHomsmdHmRSRm+tvWjf3z5AkU2Nh0vpkAASTgQ8TuzBssUsJVcOLGx5fnbE6aApU+/wzKpJvWZO2ZUsh5hfgX3XESKkQHp4U0Q53eB8K0CW+JW9ew3YpKDL4BLJxfWhQDHTGDGnERHpBKoqlalH2DoYl8yskz4iuGpw=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(23010399003)(1800799024)(366016)(19092799006)(6133799003)(18002099003)(22082099003)(11063799006)(10067099003)(56012099006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?dJY9r7zUDs5pl3zyrG1Bwcg27eGp69wTgUw9fhxhpnAH5As9pRjkjfYtyhi7?=
- =?us-ascii?Q?PZjbWw5uZSSInMgrmdfZGhz5K12iwL4kP9cK3+1aNPCrC4vDDWdqY0XmlLGJ?=
- =?us-ascii?Q?CVxOA5iWrhPwhMWaDdsnZFB2/Lh/pt0j5o2+4ai3gEtd2DDnSeS3JrOgwjyp?=
- =?us-ascii?Q?kOOqqCOJ+xM6i2yOvl5GYvo2fKoWHg83WGxMQv+TKjpmCxEJqxxSxL5ag/OD?=
- =?us-ascii?Q?6MsfDPGoxco5HVw3C/bIW2/p4jza0g9lXUATnjfHul6BxCRd+tbzMqwdvm0F?=
- =?us-ascii?Q?465b3S+/rwg6t5CWxjaXXqD9LRaXkEDS3x/bFiVXS3y8hIt6TAJGh1hwAGf1?=
- =?us-ascii?Q?IMUU6pbpV85w+gw6ELsuKkStvqy+t2/uDfPVsLy63+V2VcrdaWa/3ZozExy0?=
- =?us-ascii?Q?qva33q4+l/XGIoyA1OlMUBBhsJtAj8JIkzSsKrtn4Xhl5nkVKYveDGL1uBM3?=
- =?us-ascii?Q?F0RY3BONNHRHg9ouYxmHoJPNAJjt66UWIiAwZp3oQelI9e26Zq+Y/9ytwHL8?=
- =?us-ascii?Q?6pYI8HEO+KkyShA+hS53Os4LwVev6p6qFWN6bxKlI+5GMuIYz3ln3xhR0YUj?=
- =?us-ascii?Q?88QSGpNN3pD0/joU/fMwItBJWJDbtS05dKzvsLiykTka3ooaj5E0W5PiL4da?=
- =?us-ascii?Q?Zgol9QCH6LyjB+v2tBaOQOuOyqCJ+5DX5OdXHtHuwOulXYjQNM6DL2Jpi3H3?=
- =?us-ascii?Q?fvnslciXy9Ez2Wjw4wY/xBwbdl07YIJRHyubZjg7oJ7aLT92Ly7cfuwHykft?=
- =?us-ascii?Q?aVh6N+QdOFOsb9PUwvDqkuRQwVewV/Mu7PSAF6ItgqN8XRThlisy6Um/QPiR?=
- =?us-ascii?Q?pleTmj92VxYecCcXF0T1tKLlI562s4CPd4ZSlqbhlEGBSV6g3rqiVit0PH9y?=
- =?us-ascii?Q?zY1UKLo/hgpbJ3Y7E2nTGPK/jvDNSobctRSF/2c7LE2qEu9x72MBevfqOO83?=
- =?us-ascii?Q?AZg9+xIZzBt4kapKN0c4b2hJnn4UeXQjanukDxeYmZum+DZJBr6D4xvFIZDS?=
- =?us-ascii?Q?4H7kSjmL7SO+a7h2/TjwM/KSoaRYUxs5SHvFTS2Ys1aIzxNHm5LkI8m6VVUH?=
- =?us-ascii?Q?ZuwPsEhjj5vsKV7gbnPRCLZcx/cMHuB/OZf0Qe/JgeJcfEzuZIA0dh47zome?=
- =?us-ascii?Q?9rTAOBjZLqWom3aotCX0qfBbJVzPT/civps4BJc7uJMLGgq/6wOuNhHsAPlE?=
- =?us-ascii?Q?BWqBM3QlzRf2bayq+hfUupYijk1eVO+tkhlxem1S8a/2ZT0ScXRWd80lAoPT?=
- =?us-ascii?Q?a7JDhhAeLKx9IC/qxrgFfUx/wvc7auW5GUX/QmFklvlgpu6frh/ZHeZPa9ut?=
- =?us-ascii?Q?gqNYtPA/7b3dK1fvHqmvI5yHpLu3wsPA0A7YWE4EwJx1q/6v6lqF9TywSUd2?=
- =?us-ascii?Q?Q1P4Uh+Fld/9IWMtJEYEgnZTWw8sF7vgd1lTJnPZCnJoFpPqs0Ujr/Kn9jOZ?=
- =?us-ascii?Q?dXtYCQBH7ydiQM3jQhU8bd+Z6q7egOf7MAWotQNEN2f5NHvEO0WIUlACE+vk?=
- =?us-ascii?Q?FG9BtO5XTXU3VrB5MXOd9qQwiC4fP9f0fiLHiaAZ4L7+dhgppvUDdI4hD0DI?=
- =?us-ascii?Q?eFBwOe8wdjD+PQFSQETNVRkD+1u3pxDWCrf7IXV+f0SuXMQG2WVQGzgpoV02?=
- =?us-ascii?Q?fl/4lJTxnSPK/Ik1BExm4e7TvV7GvCPsy1f1kjfyblAbONYKcP4LBjoMFUgx?=
- =?us-ascii?Q?yHXUQabtvrqUdF51zzvxhb1wSskJY3f9k3Fqfo+4jqWb5Ds0ZZvcf5WOgFK5?=
- =?us-ascii?Q?KzhHzctYoDEeaXU/8MYe1u0LL54wCNF7iV1iD6AUAvkY0ukLWOBl?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 207d4fdd-aace-4b6d-620c-08df126bc126
-X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Sep 2026 14:23:32.4663
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: hOg9A71/jX/NUKRP+iPbj2s6l7Zcai2i3gWeCuNR1soaLJ9tb+mPs8BUg/gbuonPHwf8vqfmxstH1uP7zFo6W8I1U56jcrbvWYP46Tj6aog2mK30PcZE7wkv56WRs55c
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR04MB8540
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/4WOTQ6CMBBGr0K6dkw7ARVX3sOwGMoUqlBIi42Ec
+ Hf5OYDLl7x875tFYG85iHsyC8/RBtu7FfCUCN2QqxlstbJAiRd5RQVlCl1HAwyeB/IMsSMwLdU
+ QyFkzASopU8wqkxGJdWX1jP3uhWdxcPiUL9bjNrsZjQ1j76f9QlSbd9RyeftbiwokVKSNyrVmx
+ PLxZu+4Pfe+FsWyLD+cr45z4QAAAA==
+X-Change-ID: 20260721-b4-mmap-prepare-vma-flag-sanify-2100425df5aa
+To: Andrew Morton <akpm@linux-foundation.org>, 
+ "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, 
+ Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, 
+ David Hildenbrand <david@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, 
+ Jonathan Corbet <corbet@lwn.net>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, 
+ Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, 
+ Paul Moore <paul@paul-moore.com>, 
+ Stephen Smalley <stephen.smalley.work@gmail.com>, 
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
+ Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
+ Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, 
+ Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, 
+ Baolin Wang <baolin.wang@linux.alibaba.com>, 
+ Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, 
+ Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, 
+ Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, 
+ Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, 
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
+ "Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, 
+ Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, 
+ Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, 
+ Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, 
+ Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>, 
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, 
+ x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, 
+ Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
+ Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, 
+ Juri Lelli <juri.lelli@redhat.com>, 
+ Vincent Guittot <vincent.guittot@linaro.org>, 
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+ David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, 
+ "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, 
+ Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, 
+ Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, 
+ "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, 
+ Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, 
+ Catalin Marinas <catalin.marinas@arm.com>, 
+ Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, 
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
+ Albert Ou <aou@eecs.berkeley.edu>, 
+ Christian Borntraeger <borntraeger@linux.ibm.com>, 
+ Janosch Frank <frankja@linux.ibm.com>, 
+ Claudio Imbrenda <imbrenda@linux.ibm.com>, 
+ Alexander Gordeev <agordeev@linux.ibm.com>, 
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>, 
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+ "David S. Miller" <davem@davemloft.net>, 
+ Andreas Larsson <andreas@gaisler.com>, 
+ Alexander Viro <viro@zeniv.linux.org.uk>, 
+ Christian Brauner <brauner@kernel.org>, 
+ Matthew Brost <matthew.brost@intel.com>, 
+ Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, 
+ Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, 
+ Ying Huang <ying.huang@linux.alibaba.com>, 
+ Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, 
+ Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, 
+ Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, 
+ Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, 
+ Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, 
+ Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, 
+ Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>, 
+ Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>, 
+ Xu Xin <xu.xin@linux.dev>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, 
+ linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, 
+ linux-rdma@vger.kernel.org, selinux@vger.kernel.org, 
+ linux-sound@vger.kernel.org, bpf@vger.kernel.org, 
+ linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+ dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, 
+ linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, 
+ linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
+ kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, 
+ fuse-devel@lists.linux.dev, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, 
+ Takashi Iwai <tiwai@suse.de>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=10931; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=/iHtXWh2MpE1FcqpEZH17raLB5B9Z+qJUnN+hdbqOgg=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJWcK86yWWxTubsZhvd2UHr5/qWHZmV5jPttUBLdqzon
+ oVnMxae6yhlYRDjYpAVU2R5/kV8f5BI2LzOC/5uMHNYmUCGMHBxCsBEWNgYGR7uS1Wx895+UU0z
+ RnrFixMlzk93rt9zb7OVCveTfKGpd/kYGV6+S34fsYVN1nDZmqvtnt46LZzOacqfl/rWFWm8P+5
+ 6khEA
+X-Developer-Key: i=ljs@kernel.org; a=openpgp;
+ fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 
-On Sun, Sep 13, 2026 at 12:48:04PM -0700, Rosen Penev wrote:
-> bcom_gen_bd_rx_init() and bcom_gen_bd_tx_init() are only called from
-> the PSC wrapper functions in gen_bd.c, so make them static, drop
-> their now-unneeded exports, and remove the corresponding header
-> declarations.
->
-> These had use before commit 7d3ee229ea51
-> ("powerpc: Drop MPC5200 LocalPlus bus FIFO driver")
->
-> Assisted-by: LLM
-> Signed-off-by: Rosen Penev <rosenp@gmail.com>
-> ---
+The VM_SPECIAL / VMA_SPECIAL_FLAGS mask conflates several unrelated
+properties:
 
-Reviewed-by: Frank Li <Frank.Li@nxp.com>
+* Is this kernel-owned, whether MMIO, kernel-allocated pages, or ordinary
+  pages a driver maps itself?
+* Can it be expanded or merged?
+* Is this a 'weird' case like mlock where migration might race and we
+  'have' to set invalid flags to notify?
+* Is it another 'weird' case where we just want to stop GUP from touching
+  it?
 
->  v2: mention driver removal that made them unused.
->  drivers/dma/bestcomm/gen_bd.c       | 6 ++----
->  include/linux/fsl/bestcomm/gen_bd.h | 8 --------
->  2 files changed, 2 insertions(+), 12 deletions(-)
->
-> diff --git a/drivers/dma/bestcomm/gen_bd.c b/drivers/dma/bestcomm/gen_bd.c
-> index 61b5746e1a97..b5093f7445cb 100644
-> --- a/drivers/dma/bestcomm/gen_bd.c
-> +++ b/drivers/dma/bestcomm/gen_bd.c
-> @@ -81,7 +81,7 @@ struct bcom_gen_bd_priv {
->  /* Task support code                                                        */
->  /* ======================================================================== */
->
-> -struct bcom_task *
-> +static struct bcom_task *
->  bcom_gen_bd_rx_init(int queue_len, phys_addr_t fifo,
->  			int initiator, int ipr, int maxbufsize)
->  {
-> @@ -108,7 +108,6 @@ bcom_gen_bd_rx_init(int queue_len, phys_addr_t fifo,
->
->  	return tsk;
->  }
-> -EXPORT_SYMBOL_GPL(bcom_gen_bd_rx_init);
->
->  int
->  bcom_gen_bd_rx_reset(struct bcom_task *tsk)
-> @@ -166,7 +165,7 @@ bcom_gen_bd_rx_release(struct bcom_task *tsk)
->  EXPORT_SYMBOL_GPL(bcom_gen_bd_rx_release);
->
->
-> -extern struct bcom_task *
-> +static struct bcom_task *
->  bcom_gen_bd_tx_init(int queue_len, phys_addr_t fifo,
->  			int initiator, int ipr)
->  {
-> @@ -192,7 +191,6 @@ bcom_gen_bd_tx_init(int queue_len, phys_addr_t fifo,
->
->  	return tsk;
->  }
-> -EXPORT_SYMBOL_GPL(bcom_gen_bd_tx_init);
->
->  int
->  bcom_gen_bd_tx_reset(struct bcom_task *tsk)
-> diff --git a/include/linux/fsl/bestcomm/gen_bd.h b/include/linux/fsl/bestcomm/gen_bd.h
-> index aeb312a1cd00..7253d308d77a 100644
-> --- a/include/linux/fsl/bestcomm/gen_bd.h
-> +++ b/include/linux/fsl/bestcomm/gen_bd.h
-> @@ -16,10 +16,6 @@ struct bcom_gen_bd {
->  };
->
->
-> -extern struct bcom_task *
-> -bcom_gen_bd_rx_init(int queue_len, phys_addr_t fifo,
-> -			int initiator, int ipr, int maxbufsize);
-> -
->  extern int
->  bcom_gen_bd_rx_reset(struct bcom_task *tsk);
->
-> @@ -27,10 +23,6 @@ extern void
->  bcom_gen_bd_rx_release(struct bcom_task *tsk);
->
->
-> -extern struct bcom_task *
-> -bcom_gen_bd_tx_init(int queue_len, phys_addr_t fifo,
-> -			int initiator, int ipr);
-> -
->  extern int
->  bcom_gen_bd_tx_reset(struct bcom_task *tsk);
->
-> --
-> 2.55.0
->
+Driver writers have often been confused about this, and who can blame them?
+
+It also interacts badly with the eternal edgecase known as hugetlb - which
+sets VMA_DONTEXPAND_BIT but doesn't also want to be treated like a
+'special' flag.
+
+Another issue is that we cannot make sensible assumptions about flag
+use. It's not possible to assume VMA_IO_BIT means iommu because drivers
+abuse it and mlock abuses it.
+
+Special is also an overloaded term in mm. VDSO and VVAR mappings are also
+called 'special' but they're special in a... special way.
+
+Sometimes things are called special that are a subset of
+VMA_SPECIAL_FLAGS (VMA_PFNMAP_BIT and VMA_MIXEDMAP_BIT for instance when it
+comes to zapping or vm_normal_folio()).
+
+There's a specific kind of special for THP too, which considers
+PFN map, mixed map 'special' but DAX not.
+
+It's all rather a mess.
+
+This series brings some order to things by both limiting what drivers can
+do with VMA flags and switching to using predicates that describe
+behaviour, not arbitrary flags.
+
+It establishes the invariant that only kernel-owned mappings may set
+VMA_IO_BIT or clear VMA_MAYWRITE_BIT in an mmap hook, enforcing this by
+validating VMA state after every mmap and mmap_prepare hook.
+
+It updates usbmon and sg to mmap_prepare in order to do so, adding a new
+mmap action for mapping discontiguous kernel pages, and has hfi1 and the
+ALSA PCM status page map their pages eagerly instead.
+
+It also establishes the invariant that VMA_MIXEDMAP_BIT be set when mapping
+kernel memory, something that is usually the case but happens not to be for
+some users - specifically defio, cmt_speech, uprobes and the bpf arena, all
+of which are updated to do the right thing.
+
+It replaces VM_SPECIAL and arbitrary flag tests with predicates that say
+what is actually being tested:
+
+   vma_is_kernel_owned()   Does a driver or kernel code manage a VMA's
+                           life cycle?
+
+  vma_is_fixed_mapping()   Is the VMA not permitted to be expanded or
+                           merged?
+
+     vma_is_persistent()   Do bytes written to the VMA stay written, and
+                           bytes read stay the same unless userland changes
+                           them?
+
+         vma_can_merge()   Can the VMA be merged with a compatible
+                           neighbour?
+
+           vma_can_gup()   Can GUP obtain pages from the VMA, i.e. is it
+                           neither a PFN map nor memory-mapped I/O?
+
+Remaining raw VMA_IO_BIT, VMA_PFNMAP_BIT and VMA_MIXEDMAP_BIT tests
+scattered across mm are also converted to predicates where it makes sense
+to do so.
+
+And also the opportunity is taken to eliminate THP's vma_is_special_huge()
+which was an existing source of confusion.
+
+Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+---
+v2:
+* Rebased on mm-unstable.
+* Introduced new patch to fix various mmap_prepare and file interactions
+  that weren't quite right as per Sashiko. None impact anything upstream
+  yet so it doesn't need to be a fix.
+* Restore vma->vm_start if an mmap hook has moved it before tearing the
+  VMA down, so we unmap the range we established rather than the one the
+  hook invented, as per Sashiko.
+* Reject a discontiguous kernel page batch of zero pages rather than
+  looping forever, and bound batches by the pages remaining in the VMA,
+  as per Sashiko.
+* Add the missing map_kernel_discontig member to the userland VMA tests'
+  copy of struct mmap_action as per Sashiko.
+* Set VM_DONTEXPAND on hfi1's RCV_HDRQ, RCV_EGRBUF and RTAIL mappings, as
+  dma_mmap_coherent() doesn't on the IOMMU-DMA path, as per Sashiko.
+* Recompute vma->vm_page_prot in snd_pcm_mmap_status() after clearing
+  VM_WRITE, as vm_insert_page() uses it immediately rather than at fault
+  time, as per Sashiko.
+* munlock_vma_folio() now tests VMA_LOCKED_MASK so an unmap racing the
+  mlock walk still munlocks folios the walk has already counted, as per
+  Sashiko.
+
+v1:
+https://lore.kernel.org/r/20260908-b4-mmap-prepare-vma-flag-sanify-v1-0-dacf19cce22b@kernel.org
+
+---
+Lorenzo Stoakes (ARM) (40):
+      mm/vma: fix mmap_prepare file handling, remove file_doesnt_need_get
+      mm/vma: predicate setting mmap_prepare VMA fields on new vma alloc
+      mm/vma: introduce and use vma_[flags_]can_merge()
+      mm: consistently validate VMA state after mmap[_prepare] hooks
+      mm/vma: ensure mmap_prepare doesn't set actions on a mergeable vma
+      mm: make map_kernel_pages_[prepare,complete] internal and unexported
+      mm/vma: tidy up map kernel pages enum values
+      mm: add mmap action for discontiguous kernel page mapping
+      docs: filesystems: update mmap_prepare docs for discontig kernel pgs
+      drivers/usb/mon: update to use mmap_prepare + map kernel pages
+      infiniband: update hfi1 to use remap_vmalloc_range()
+      selinux: reject writable opens of policy file, drop mmap shared/write check
+      ALSA: pcm: use vm_insert_page() to map PCM status page
+      bpf: arena: mark arena_map_mmap() mappings VM_MIXEDMAP
+      mm/vma: add vma[_flags]_is_kernel_owned() predicates
+      mm/vma: only allow mmap to clear VMA_MAYWRITE_BIT if kernel-owned
+      mm/vma: add and use vma_[flags]_is_fixed_mapping
+      scsi: sg: convert mmap hook to mmap_prepare and rework
+      fbdev: defio: assert FBINFO_VIRTFB, drop VM_IO, add VM_MIXEDMAP
+      HSI: cmt_speech: convert mmap hook to mmap_prepare, refactor
+      mm/gup: error out early on !VMA_MAYREAD_BIT VMAs
+      uprobes: remove VM_IO, set VM_MIXEDMAP for mapped kernel pages
+      mm/mlock: clear VMA_LOCKED_MASK over mmap callback
+      mm/mlock: eliminate weird VMA_IO_BIT abuse and simplify
+      mm/vma: enforce that only kernel-owned mappings may set VMA_IO_BIT
+      mm: remove VMA_IO_BIT check in vma[_flags]_is_kernel_owned()
+      mm: remove hugetlb_inline.h
+      mm: rename is_vm_hugetlb_page() to vma_is_hugetlb()
+      mm: drop some redundant checks around hugetlb VMAs
+      mm/madvise: update is_valid_guard_vma() to use vma_can_merge()
+      mm/vma: introduce vma[_flags]_is_persistent()
+      mm/uffd: use predicates for userfaultfd checks
+      mm/madvise: use predicates for madvise(..., MADV_DOFORK)
+      mm: eliminate VMA_SPECIAL_FLAGS usage when hugetlb explicitly tested
+      mm: eliminate VMA_SPECIAL_FLAGS check in lru_gen_look_around()
+      mm: avoid use of VMA_SPECIAL_FLAGS in migrate_vma_setup()
+      mm: eliminate VM_SPECIAL, VMA_SPECIAL_FLAGS
+      fuse: dax: do not set VM_MIXEDMAP
+      mm/huge_memory: remove vma_is_special_huge()
+      mm/vma: introduce and use vma[_flags]_can_gup()
+
+ Documentation/filesystems/mmap_prepare.rst |  81 +++++++++
+ arch/arm64/kvm/mmu.c                       |   4 +-
+ arch/powerpc/mm/book3s64/radix_tlb.c       |   6 +-
+ arch/powerpc/mm/nohash/e500_hugetlbpage.c  |   2 +-
+ arch/powerpc/mm/nohash/tlb.c               |   2 +-
+ arch/riscv/kvm/mmu.c                       |   2 +-
+ arch/riscv/mm/tlbflush.c                   |   2 +-
+ arch/s390/mm/gmap_helpers.c                |   6 +-
+ arch/sparc/mm/init_64.c                    |   2 +-
+ arch/x86/kernel/uprobes.c                  |   2 +-
+ drivers/gpu/drm/drm_gpusvm.c               |   5 +-
+ drivers/hsi/clients/cmt_speech.c           |  33 +---
+ drivers/infiniband/hw/hfi1/file_ops.c      |  83 +++------
+ drivers/scsi/sg.c                          | 115 ++++++-------
+ drivers/usb/mon/mon_bin.c                  |  82 +++++----
+ drivers/video/fbdev/core/fb_defio.c        |   6 +-
+ drivers/video/fbdev/ssd1307fb.c            |   2 +
+ fs/coredump.c                              |   6 +-
+ fs/fuse/dax.c                              |   2 +-
+ fs/hugetlbfs/inode.c                       |   2 +-
+ fs/proc/task_mmu.c                         |   8 +-
+ include/asm-generic/tlb.h                  |   4 +-
+ include/linux/hugetlb.h                    |   5 +-
+ include/linux/hugetlb_inline.h             |  28 ---
+ include/linux/mm.h                         | 266 +++++++++++++++++++++++++++--
+ include/linux/mm_types.h                   |  50 +++++-
+ include/linux/pagemap.h                    |   1 -
+ include/linux/rmap.h                       |   2 +-
+ include/linux/userfaultfd_k.h              |   1 -
+ kernel/bpf/arena.c                         |   3 +-
+ kernel/events/core.c                       |   2 +-
+ kernel/events/uprobes.c                    |   4 +-
+ kernel/sched/fair.c                        |   3 +-
+ mm/folio.c                                 |   2 +-
+ mm/gup.c                                   |  15 +-
+ mm/hmm.c                                   |   3 +-
+ mm/huge_memory.c                           |  31 ++--
+ mm/hugetlb.c                               |  14 +-
+ mm/internal.h                              |  79 +++++----
+ mm/ksm.c                                   |   4 +-
+ mm/madvise.c                               |  28 +--
+ mm/memory.c                                | 142 ++++++++++++---
+ mm/mempolicy.c                             |   5 +-
+ mm/migrate_device.c                        |  12 +-
+ mm/mlock.c                                 |  51 +++---
+ mm/mmap.c                                  |   2 +-
+ mm/mmu_gather.c                            |   2 +-
+ mm/mprotect.c                              |   5 +-
+ mm/mremap.c                                |  11 +-
+ mm/page_vma_mapped.c                       |   4 +-
+ mm/pagewalk.c                              |   2 +-
+ mm/rmap.c                                  |   4 +-
+ mm/swapfile.c                              |   2 +-
+ mm/userfaultfd.c                           |  45 +++--
+ mm/util.c                                  |  29 +++-
+ mm/vma.c                                   | 254 +++++++++++++++++++--------
+ mm/vma.h                                   |  30 +++-
+ mm/vma_internal.h                          |   1 -
+ mm/vmscan.c                                |   9 +-
+ security/selinux/selinuxfs.c               |  11 +-
+ sound/core/pcm_native.c                    |  38 ++---
+ tools/testing/vma/include/dup.h            |  66 +++++--
+ tools/testing/vma/include/stubs.h          |   2 +-
+ tools/testing/vma/tests/merge.c            |  10 +-
+ 64 files changed, 1153 insertions(+), 582 deletions(-)
+---
+base-commit: 6b41451631cabf9ea3b384c2a099088e1598f963
+change-id: 20260721-b4-mmap-prepare-vma-flag-sanify-2100425df5aa
+
+Best regards,
+-- 
+Lorenzo Stoakes (ARM) <ljs@kernel.org>
+
 
