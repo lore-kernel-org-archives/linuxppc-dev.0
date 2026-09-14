@@ -1,73 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-27219-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27220-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B13B9C88E50
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2026 13:20:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C2C5CC88E72
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2026 14:14:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hk5P42t1Kz2yjw;
-	Mon, 14 Sep 2026 23:20:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789392024;
-	cv=none; b=Pfm2wRYau/EGfEZHfD1fkueQXopHw2yimjnX96hD9aoGmYAwRBjlsrlhYyo2YOnsm0zvVOnBEWcKk9XIvqGy4hUqM8QfKWh4NXnZ/xzzJC37mXLcTBIJ+QHaSHer7x4P5jTZg9QzmCKpej0ABaB2HS6kDcPSBaAZoEC2lMS2quBlHU7UQ4WYyrCwkmvYCBP1P33YYasbLV2kHHgpp/X016k+ye6ph4rmwE8Xcg68so3u6FoAvj0XRK7DgxgpXUDhJ/Lzh34zin8+OG7F1JSWZffpwfJhxYyTEM8mSRZ1CPe8wMBVRDLuulKakovpQUQVixE15neBoKOg6Hz2OSfqzw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hk6by1Bvbz2yd7;
+	Tue, 15 Sep 2026 00:14:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:39::11"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789395294;
+	cv=none; b=T6IN55LcbTp+yhHiUEZ2eNneKOEVeRE46FpYgqVJvV/w3dGqHZbOa9NpZxJO5dWew3CaORshPNUMrlsIYcOSAytejyI2fzBLBl8z3CgHwzbPJhwdv8QtZ1D8I30pncOw8i1kQ51YOvKRFRIBu1AeQViO26aqimYb/q5QTzxC6vUxj6aOJV8Zw+YlJd42Z80dSAgYRGX6MIQxNqa3Kb2xqdC++8XMJUPplbEe5FwOozAUNrqOSx5kadjnFLFbE3BuEX8E6RYlXaLzILcqj2fcVpTNP9MNBw7NR2XU8fBRs3S2I2sY2C5RpWZy4eNEUS5Y0ker1zT+vh5sx2G6t93j/Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789392024; c=relaxed/relaxed;
-	bh=FAExpTSQeOnURSVfE6PgdU+Z8ZSz89ZKBxqhzpBwsCE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=BorMcs5/9WtnprqkE6FX2GlkDXDR2DuK3Qve++gS0F0jWptgRQASYCR/tAa+xLhk8x5e/9wQ9fqDUSRmM9h12BnI0ZqF6xHrIqnE666R8QXRnEslAoP73wenaclnUeeHGe0Zcd+BndXIZmp213LWElSA72EOABlw7C/s3MhL9SK67xZzjgY0+AjSAVE08umE3ja7n4a1lMPmWL63Zozmx84vsheVX6tZwRP5LqGHXTUstrPIzzGA7DV6ezoHWAU2YrRv96YZR6YAMeMYwdK5+iNhu805ndVd1M1WabVremz7ByiwDUOJjTXXi14tmaqKQqve+nT0U/dMeMOT4SpXww==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ib5ybx5X; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1789395294; c=relaxed/relaxed;
+	bh=iowTzUN7eF2XmcFkQ3hjfDXclmIIX6foUfmhSB0uTUM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=RwgmRlsPeXqCjgd/wd3QBQ3cZ3pzetZA6naPDUxvgdXbd7h/TZK0cyEl5upGSA6i7Hggf8J2S3h/L2MI0nZld4cvh2XpRYrvAtshJUAFxKWjaNddNMNXS9SzII7wvrIVkbPEmrktc2hxix/hQJX4dzYQ1jqBwfQalP8QRCcYVHYXgox2E/VW/St8ZoE7gCGtIY0S9UvKwtsdlKJH//gxwZ+elzxRvYiAcR+LrzTZxm1vPk37rYhOnL35Cw4xA3gk979vCN6mTxuau1WjIabysBap6EgiXayFGA799OJR7TxPVepA91V18cA7VUmS5MYzRROkFUgwfp6QdrDJ73R8NQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=QLYY+r4a; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::11; helo=mail-pj2-x11.google.com; envelope-from=lgs201920130244@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ib5ybx5X;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=QLYY+r4a;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:39::11; helo=mail-pj2-x11.google.com; envelope-from=lgs201920130244@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj2-x11.google.com (mail-pj2-x11.google.com [IPv6:2607:f8b0:4864:39::11])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hk5P33Q38z2xSV
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2026 23:20:22 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68ED26nW223780;
-	Mon, 14 Sep 2026 13:20:04 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=FAExpT
-	SQeOnURSVfE6PgdU+Z8ZSz89ZKBxqhzpBwsCE=; b=ib5ybx5XPAf2cQqgEzmSWU
-	mfBl5OKt1oxppkAX6WQdPx42qFtCOIccSArLWetJq1aNjhaZTCae9WcqK2OJp0ED
-	c64hGBkDXt5qdSWbRyeLPXTOAgfbzgiPmat11PY78YDWcqTJo7KOBT2uKrCitJcF
-	q/bekem+G6QyvN40bgcS/DqMoSzSfJnh5qWacSt9dOOPtmPIcE7NJ5a3qbozAJZl
-	6EApZzQdZVvf2tXO9FiUMBq++J1bfq3El7NSrvLXevMZw4uNbMV+5o0mnG2vLVDp
-	l9/0kZmoXW01kT4LGZrH24mnnSW3263QwryVztT6UjJdAZ/vd5WCcAlknVNSrt5w
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gmxdq1kd9-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 14 Sep 2026 13:20:04 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68ED54P62386846;
-	Mon, 14 Sep 2026 13:20:03 GMT
-Received: from smtprelay04.dal12v.mail.ibm.com ([172.16.1.6])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gnk9j61mr-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 14 Sep 2026 13:20:03 +0000 (GMT)
-Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
-	by smtprelay04.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68EDK25b28574344
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 14 Sep 2026 13:20:02 GMT
-Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4691F58063;
-	Mon, 14 Sep 2026 13:20:02 +0000 (GMT)
-Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5C22D5805A;
-	Mon, 14 Sep 2026 13:19:56 +0000 (GMT)
-Received: from [9.67.124.200] (unknown [9.67.124.200])
-	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 14 Sep 2026 13:19:56 +0000 (GMT)
-Message-ID: <ba038abe-8278-49b0-beb7-2a0251e858eb@linux.ibm.com>
-Date: Mon, 14 Sep 2026 18:49:54 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hk6bw2y1Yz2y7Y
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 00:14:50 +1000 (AEST)
+Received: by mail-pj2-x11.google.com with SMTP id 98e67ed59e1d1-396ccd66bb4so1753408a91.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2026 07:14:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789395287; x=1790000087; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=iowTzUN7eF2XmcFkQ3hjfDXclmIIX6foUfmhSB0uTUM=;
+        b=QLYY+r4ay6gdixmCxrxCVy+TKFUd/gu68EjkhdZZB9tCS7GogQv3gv20UxXkfyGy1W
+         QnyCfhTWUrZGKtcnJLh4i4XCSkbXG+zB2nHPMIiyHxLLNcqkPSkEmcLsYTC6zxk5c3GW
+         wgHLCxalpYRdETo4djbeLpVBqUpAiPz/t+1Zi7Ke9s2GbU1Wkv24skqh/xUwYsH/OX5h
+         T5cS04HGqrHRR2jaDPUmQbsZPAebExv7k/jUL83xMnunU3ToeW1ayPfsAkmvOSgtlJE/
+         5kgVEZKRGUI9HYT7gFnpXRqnWssQosIFrJyqwvsELW4+x1ptCEPWmt0NbmIKMnA2NpWo
+         8RgA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1789395287; x=1790000087;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=iowTzUN7eF2XmcFkQ3hjfDXclmIIX6foUfmhSB0uTUM=;
+        b=pzO8ch+b2Ljm9Weua8BNfvzXGPDxYGKn/gucGB4Vq4fUFg69EcGznKPdtrWhBh+bfX
+         Z63u2fng4WSqWuPqkvJHB78j7ZwJz6rBVLd4cZo2dYJ9hcsCUIb5rkcEhtv7lT1KJSiM
+         JPxgbQ1Ju3HLG4gusJB4wByAVVOvmaLiwUHYGhgEAnyFsoAe1Rpwd4l+XkI0rHf5VEt8
+         xbBz8SXtonVi4c4LMI6e7w0LXgeNaEuj/TkSiYiYGIqxf0xYXBN0tn6bkBxXQZooQmK+
+         tu5VN51Ix+KEHoFMhfzyuBEbt2k1hcjylAA45jlGUrWyhw+CLlY9p54FWUOGSblEknSo
+         xyTQ==
+X-Forwarded-Encrypted: i=1; AKwUvBzXSC7UqC+W11ZDgDqvivteW3/Gy0JNG21s2x0R/qSUzDUHhhFgQ1gNwa19XE5ODsIQt0ZUohTBmwVwawM=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++kQVi9V8f8wspFI+K+sle78Zt0o5e7LqbHKg6BJhbO5r7OlYp6g
+	bm7CAQrtObQpaEbpG+nOgMQz5vp9i02vbmc8+VlDuZWn49n/SzHdSYj5
+X-Gm-Gg: AYBFou03GKRLPXYcM9b51Dc6+VTxIC70g7RqSz6vqzPjy/LzeuElKeJgnJ/3SExbQpp
+	om+vySwmZT1PwXbaF4ONnFR2E7vvNbSJ7wagYySfLSN1FK3UTLllku/yyiDDobYaopmCGG/Svq7
+	9tunnjJQbFPFUJne8OpfeDL3d9qZTgiJsLo1Kf4a7oTeuhELO8w5GJsbTOY2YB7k/HOhlglophx
+	WyRV5HZeuEMoHimUlbDgYs4xrxOyuOnh54zNbmiDauMF9P3tWLX9A2uCEv5srzLUx967Zjdu5AB
+	PI/mfrEwHrPKpm21//jUzBsTivpG2P5A4dEzasMCyuI80aWbJvHxnvApiRSu81tNtPsvjv73EVi
+	XWrW0E9Oa/sfqxw6jHVZjEZ9P/JQHAm4D8oRuNh40O0RfAFOIbXyWQMxyfXcg4G7VMlPqPfE8z2
+	WRJGdx9iQg0sosAm40qt+taVlRk2x3qrx5nrvjLwsHgyaBR6s6XtgDXw==
+X-Received: by 2002:a17:90b:2809:b0:39d:f2b0:5afd with SMTP id 98e67ed59e1d1-39df2b05b4emr3473390a91.2.1789395287409;
+        Mon, 14 Sep 2026 07:14:47 -0700 (PDT)
+Received: from lgs.. ([2001:250:5800:1002::de93])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cc4c6549ec0sm5166288a12.15.2026.09.14.07.14.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 14 Sep 2026 07:14:46 -0700 (PDT)
+From: Guangshuo Li <lgs201920130244@gmail.com>
+To: Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Guangshuo Li <lgs201920130244@gmail.com>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Frederic Weisbecker <frederic@kernel.org>,
+	Kees Cook <kees@kernel.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@ozlabs.org>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Cc: stable@vger.kernel.org
+Subject: [PATCH] macintosh: rack-meter: fix i2s device node reference leak
+Date: Mon, 14 Sep 2026 22:14:36 +0800
+Message-ID: <20260914141436.1745138-1-lgs201920130244@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,124 +97,44 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] crypto: powerpc/vmx - clean up includes, metadata, and
- p8_init()
-To: Thorsten Blum <blum@kernel.org>,
-        =?UTF-8?Q?Breno_Leit=C3=A3o?=
- <leitao@debian.org>,
-        Nayna Jain <nayna@linux.ibm.com>,
-        Paulo Flabiano Smorigo <pfsmorigo@gmail.com>,
-        Herbert Xu <herbert@gondor.apana.org.au>,
-        "David S. Miller" <davem@davemloft.net>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org
-References: <20260914081500.65737-2-blum@kernel.org>
-Content-Language: en-US
-From: Srish Srinivasan <ssrish@linux.ibm.com>
-In-Reply-To: <20260914081500.65737-2-blum@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE0MDE4NiBTYWx0ZWRfXzqLdAcXZbk5w
- bqDPyBJhUeGG0Fvm6cCZCVO1LAAajMu86rnFC7/yUQ7PuX5GOkzvNA2bGQI+qp2i4nPLlPAGe1s
- bkGTKk//sfgTqeabhSbBxmPxrwv1nsZoJfKzoReD30VgTp3W5pfseIGOeXW7j4Ykldet46YE5BX
- G6Kx260mDKYldKqeWqhzc7Fe74MfrZe18EoSg/GOWoSfnTQnu5XTYburefJVJ1snD44Mw2iOIbP
- 1tIXNzUiuOXWq1+ohdxnb8yKYUjsxvd06nQ7WFUloFMO9uYHYqNjSWxC+O8mwYHfvzOi7RfPG2c
- Ie5K9CL4BS73SdYdGfGg+6yligpDPyeFaXP/5y3ihApC0jPuBw6mDN5ALwsBdTBdOwqu3y2hPVl
- XMF/EcnlU+Aj7Unq8W7ImT2R30y0jN7Bzh9v3hc9DBSVUgjFy1f1y8w4T4h8OELvh35q8k2SvqX
- szo4qPIJt4iSvKJxtQw==
-X-Proofpoint-GUID: iDL1_mx-bwn_G7WfWm5EaZr9wvkI4rjm
-X-Authority-Analysis: v=2.4 cv=DobDa2/+ c=1 sm=1 tr=0 ts=6aa7f484 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=dDLX0a77UB6nXHVu2IYA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: v7f9fFXDbhU1-pvt1ABFUhTVqABWpZt6
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE0MDE4NiBTYWx0ZWRfXwwTnRCTi6+iM
- 54M3goLSh1DR5Iyj0NG6+8EqqQ4DQQ7WS7A0RhpFtLaqWazNKOpVyh5+7selU37FosuwAUDKsTi
- Yvj4vSwnqwBU7K7E1UqEUdpWrGESUeA=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-14_03,2026-09-14_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 malwarescore=0 priorityscore=1501 suspectscore=0 impostorscore=0
- spamscore=0 clxscore=1011 adultscore=0 bulkscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609140186
+Content-Transfer-Encoding: 8bit
 
+rackmeter_probe() obtains a reference to the i2s-a child node while
+iterating over the device tree children. Since the loop exits with
+break when the matching node is found, the reference to i2s remains
+held by the caller.
 
-On 9/14/26 1:45 PM, Thorsten Blum wrote:
-> In p8_init(), remove the goto statement and return ret directly.
->
-> Remove any redundant includes, add a missing space in MODULE_AUTHOR(),
-> and join the MODULE_DESCRIPTION() strings for better grepability.
->
-> Also remove MODULE_VERSION(). It has never been updated and the kernel
-> release better reflects the module version.
->
-> Signed-off-by: Thorsten Blum <blum@kernel.org>
+The probe error paths correctly release both i2s and np, but the
+successful probe path only releases np. This leaks the i2s device node
+reference each time the driver is successfully bound.
 
+The i2s node is only needed during probe, including by
+rackmeter_setup_i2s(), and is not used after initialization has
+completed. Drop its reference before returning successfully from
+probe.
 
+This issue was found by manual code inspection.
 
-Tested-by: Srish Srinivasan <ssrish@linux.ibm.com>
+Fixes: 3e00a5aec3d6 ("[POWERPC] Xserve cpu-meter driver")
+Cc: stable@vger.kernel.org
+Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
+---
+ drivers/macintosh/rack-meter.c | 1 +
+ 1 file changed, 1 insertion(+)
 
+diff --git a/drivers/macintosh/rack-meter.c b/drivers/macintosh/rack-meter.c
+index 26cb93191ede..c1c6d97d5013 100644
+--- a/drivers/macintosh/rack-meter.c
++++ b/drivers/macintosh/rack-meter.c
+@@ -496,6 +496,7 @@ static int rackmeter_probe(struct macio_dev* mdev,
+ 		goto bail_stop_dma;
+ 	}
+ 	of_node_put(np);
++	of_node_put(i2s);
+ 	return 0;
+ 
+  bail_stop_dma:
+-- 
+2.43.0
 
-> ---
->   arch/powerpc/crypto/vmx.c | 14 +++-----------
->   1 file changed, 3 insertions(+), 11 deletions(-)
->
-> diff --git a/arch/powerpc/crypto/vmx.c b/arch/powerpc/crypto/vmx.c
-> index 08da5311dfdf..8abc4db8ee4e 100644
-> --- a/arch/powerpc/crypto/vmx.c
-> +++ b/arch/powerpc/crypto/vmx.c
-> @@ -8,12 +8,7 @@
->    */
->   
->   #include <linux/module.h>
-> -#include <linux/moduleparam.h>
-> -#include <linux/types.h>
-> -#include <linux/err.h>
->   #include <linux/cpufeature.h>
-> -#include <linux/crypto.h>
-> -#include <asm/cputable.h>
->   #include <crypto/internal/skcipher.h>
->   
->   #include "aesp8-ppc.h"
-> @@ -24,7 +19,7 @@ static int __init p8_init(void)
->   
->   	ret = crypto_register_skcipher(&p8_aes_cbc_alg);
->   	if (ret)
-> -		goto err;
-> +		return ret;
->   
->   	ret = crypto_register_skcipher(&p8_aes_ctr_alg);
->   	if (ret)
-> @@ -40,7 +35,6 @@ static int __init p8_init(void)
->   	crypto_unregister_skcipher(&p8_aes_ctr_alg);
->   err_unregister_aes_cbc:
->   	crypto_unregister_skcipher(&p8_aes_cbc_alg);
-> -err:
->   	return ret;
->   }
->   
-> @@ -54,8 +48,6 @@ static void __exit p8_exit(void)
->   module_cpu_feature_match(PPC_MODULE_FEATURE_VEC_CRYPTO, p8_init);
->   module_exit(p8_exit);
->   
-> -MODULE_AUTHOR("Marcelo Cerri<mhcerri@br.ibm.com>");
-> -MODULE_DESCRIPTION("IBM VMX cryptographic acceleration instructions "
-> -		   "support on Power 8");
-> +MODULE_AUTHOR("Marcelo Cerri <mhcerri@br.ibm.com>");
-> +MODULE_DESCRIPTION("IBM VMX cryptographic acceleration instructions support on Power 8");
->   MODULE_LICENSE("GPL");
-> -MODULE_VERSION("1.0.0");
->
 
