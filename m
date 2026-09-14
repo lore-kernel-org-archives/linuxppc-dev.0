@@ -1,82 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-27209-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27210-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE1EBC88E64
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2026 07:22:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3D28C88E64
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2026 07:48:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hjxRB5mwCz3048;
-	Mon, 14 Sep 2026 17:21:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789370502;
-	cv=none; b=D5+wJZhPUvd60nrUTI19xU6wOe9ipZavbAbcnmiBKSqCOG8OwrFyG9lK/UG2CIq6YtQ7f9uQvMvXOMVGPOy2pAqlQOuu8t1Z+Inw6NGZvIId+Z/sXGnxSz+q9dWNveH8iGjO5PmGaURTz3AJ0uIcgenhYlkJoAynITKKMwHRd14Ei8qC47iAdHaJPJY3KckAGB0LcHZNyB7bPtK1ORy2A8oarGxn9X0rwGBF4RU71BYgMQzr5WA+p7QZ23cv5m1bM/4Cj6vYCphz6IOcM4kuJQzhxuAIa6d9YNyWY6OdTnwRx+bDfFYrLC48K6BDshUfgNynLsnAp1NNcPwdCH+GHQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hjy221jVmz2y7p;
+	Mon, 14 Sep 2026 17:48:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789372106;
+	cv=none; b=duFhDoaWItwU19h+mHr7Nd76FJDKhK8ngrni1lRObCYF/DZaZSL6mfaqFGlC4DdGznx/doHkJKsFd+cwEBzDcoPrVBVNCb+fzqTaCJBNJYlArUlwLTXPol4GbPl77UjL7ZtNjmj7yDW4MuNWZ4IjH0etnwjlaxLVUF7kksG5RuEILSTOS1WpWczV+ks8oz2h69865f6ieefqhLY1zBG/a1lA7WS1S/59wRE43iVaILmnIvRS/HGhvuZoBMDal4FTYSTcP54AAWvX/eVmHgZI8ai/nycsns6u3NG2dHKL0aA3mHqb9tUbkEO7v4Xt2TP27t+PdRBlfFDAhHiiH27Z8Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789370502; c=relaxed/relaxed;
-	bh=aSrUavtWrPoutvo8Widw7jUErDEtIcp0dpPIVdX3eXk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=F6IluURIidzOZQex2XQt2H5XoAkXVETzhAJEwYSNN+msIHpX0GrKWTAI9gze86+i6DfbpAGc8/XIrhTRR6Am8qV1Mwh1lsM+IWtS+ix+GXKKYKMYzpW4+YDhqkxnVEzPGrH+RkZM4NBbzD6IJLILGyD40slaIMWBF39egRobis6SDjM2eG70we1oOe35KQkvyvccQ2m5iYpWfcPy66Wn0kwURmoLNW2CF6tC2iVZDbcZ9KOhf8MRnA8h/dYg9Jy6pmQDMYtlUy6eb9RU2M6rx2P5NvDOcSrP6HV4Sw4FAaYSUXniT3sixMuKMxYbkQ5r6t2Q7i0/y48I1ewjp5B0jA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=riad50NH; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1789372106; c=relaxed/relaxed;
+	bh=/n4jJya1prgN2dgSLwbe0z8ok1AwZZQSKHus8wzgars=;
+	h=MIME-Version:Content-Type:Subject:From:To:Cc:In-Reply-To:
+	 References:Date:Message-Id; b=X264+4FNL/erP//C8SgvBERiMF0tqdZ2eTIjM1KMuLBQRYxdIzwtwp/9K7lrsFAt/QZiI6Wap+E67W5DTW+871nW1MBJaEviqtEAdwnSdoyRvmu2RcLIjnZ5XVBImHQfY2O7Cm0UI+1jmx+VP334SPP63LFO1EN/00tcqU8ZgQ/AQTGRpphPe4C/IUdvy3jLpXMx5CeBd65pCmk8JA0U9nPYNOgbWRvD6uj90W3wVYZDHiFyR6LgciWNykYRBJCxOE26OgGra+SqkhsIykwE7P4h4ECn3eUaFXg/vuxgGLWZ7Z/HeKYklUjzLf5v7FHZrWdGXxcVOmQUwWIZdfms8g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oWbdszQA; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=riad50NH;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oWbdszQA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hjxR96y6cz2yr0
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2026 17:21:41 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68E61ZIX1243011;
-	Mon, 14 Sep 2026 07:21:27 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=aSrUav
-	tWrPoutvo8Widw7jUErDEtIcp0dpPIVdX3eXk=; b=riad50NHXo6+I+VazMTrSK
-	pw/Z9BjSWPsadrfwhS1VoyRDt3nFmRUXFq0cYwGfp8h9g5dSJIk84U3w8lAAzEeb
-	1hTdsyqZcOiv+c6fmm9muizFByLPlPeaBmrzffN1FHv+5gjN3cv6qxYCVr0NPbmI
-	gJyBx6MTAbX0LITFQ9/N8tbs4dw7HXkaEZB+IJFMJ0tebzILZbKnnZmJtikWbTms
-	tZYVG3Cs72wjSJz7aS3JZNF1uX18/bYYANBF25CbTnnUtTVEiwwX64sKwBEzLgJx
-	IW3s9KRqYHz+HYxS7vuEZHfQXU+9eRxJHz7ROeJQ2kQThj4OX5fAda6nRysed55g
-	==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gmxcuqkab-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 14 Sep 2026 07:21:26 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68E5o4VJ1775096;
-	Mon, 14 Sep 2026 07:21:26 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gnhevvp6c-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 14 Sep 2026 07:21:26 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68E7LONR52298030
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 14 Sep 2026 07:21:24 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 02E5320043;
-	Mon, 14 Sep 2026 07:21:24 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8051C2004B;
-	Mon, 14 Sep 2026 07:21:20 +0000 (GMT)
-Received: from Linuxdev.ibmuc.com (unknown [9.43.93.83])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 14 Sep 2026 07:21:20 +0000 (GMT)
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-To: mpe@ellerman.id.au, longlong yan <yanlonglong@kylinos.cn>
-Cc: npiggin@gmail.com, chleroy@kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-kselftest@vger.kernel.org, shuah@kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] selftests/powerpc: use MAP_FAILED instead of (void *)-1 in tm-signal-context-force-tm
-Date: Mon, 14 Sep 2026 12:51:18 +0530
-Message-ID: <178919368041.441103.208453892352199243.b4-ty@linux.ibm.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260722023428.932-1-yanlonglong@kylinos.cn>
-References: <20260722023428.932-1-yanlonglong@kylinos.cn>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hjy2108J1z2y7Y
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2026 17:48:24 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 2A469601F6;
+	Mon, 14 Sep 2026 07:48:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 06EAE1F00893;
+	Mon, 14 Sep 2026 07:48:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789372101;
+	bh=/n4jJya1prgN2dgSLwbe0z8ok1AwZZQSKHus8wzgars=;
+	h=Subject:From:To:Cc:In-Reply-To:References:Date;
+	b=oWbdszQAd9TfvfSdxVo0ei1jr7TWFdO8PW6YUfAIgVPGAcAdqW0Cin0CapR33m0Ik
+	 5ljlDtHfpvuV5Hirmw3LPZRghnK+ogBXDQ3l9/ZKG9HC153vQigjP0zE5BAfBBymWo
+	 fOxTfBWesTiO4i2LmC11BYWyV/ODpDdx/BjuvfVT3h1Dj8PAxlbdUpiAlWIk6hpWfB
+	 5NJbIPIExI1MB0Qlh2ITMEzokDQkftL8snyoTso0fTcKwkUydwAmddsoV6UH7HDgaH
+	 HySIopvR/79X02ohoxbp2OleIUnnEqc9+VgzavjQzxdEgJSN1qG5NhqNqKI9vD/msx
+	 e8m+2Quks4mJg==
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,48 +58,207 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE0MDA5OCBTYWx0ZWRfX2YKcleLpq/6b
- EYBj2joxXjDI3dPvzTrjakaAEZeLzPC7s9zauSPkN3qhTwcBobuJjwv8AxR/XFThvtf/V89khRn
- sqY60/pv5nKG4t0b/4XGUIuCyPQdHKE=
-X-Proofpoint-ORIG-GUID: krgBYSi_lFhbe7FdT2mAxXhvJFkqvcb2
-X-Proofpoint-GUID: St9xalCv9EvyCscc7RDcekdq2WZGIA3j
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE0MDA5OCBTYWx0ZWRfX/7p7cbieHdBj
- ucC0sRuIqMHgoI1Abr/qxl6MKEAT5ws9Bcm3g/9lFUSAtPW3jPJ0XjrZp8gnSRjBge1b1IMHndi
- QumEombF6cEv9Fm2TMQ8NsDUHT7+K1/tepw3tVxm1xQGIMXEGn69U7kMrkWPTqxHjJxAzcSSHub
- LLe2Jl/icfkpl8YWaLekyCpk+SlpW2HC4O1nQ/R1RgG2BDHRQBk57lD6FqSbQnvZ7Irgv/1Hnie
- ZX/R1LEKMXXejOBiZcA+5rxjgxGYkfuFz6Xkiv9ebxyjHCSmnSOn++45ykeLE5YAzgVjyMhmrlm
- Khp0NuYGwsodL1aQVgwkcQ316T9BuYL/y5e4BwfOVVO67hm2LBhpKDrnGdDs6hXP+hHq+M3PtnO
- fapCAaOY5o4S9FvvwXrdYHqdCVGgmrUCGKI8io6NPi6fi4TcjayejcKY38d9z2hWAom767R200x
- zUMjGhqsAnSO8MllALw==
-X-Authority-Analysis: v=2.4 cv=F+7C5ahN c=1 sm=1 tr=0 ts=6aa7a077 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
- a=jyw6kHy9CTd0Shu9bYAA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-14_02,2026-09-13_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 suspectscore=0 phishscore=0 clxscore=1015 malwarescore=0
- lowpriorityscore=0 bulkscore=0 spamscore=0 impostorscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609140098
+Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH v3 01/11] mm/sparse-vmemmap: introduce
+ CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION
+From: Mike Rapoport <rppt@kernel.org>
+To: Muchun Song <songmuchun@bytedance.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, 
+ David Hildenbrand <david@kernel.org>, Oscar Salvador <osalvador@suse.de>, 
+ Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Jonathan Corbet <corbet@lwn.net>, 
+ linux-mm@kvack.org, linux-kernel@vger.kernel.org, 
+ linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org, 
+ Muchun Song <muchun.song@linux.dev>, Lorenzo Stoakes <ljs@kernel.org>, 
+ Mike Rapoport <rppt@kernel.org>, Qi Zheng <qi.zheng@linux.dev>, 
+ Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, 
+ Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <20260911050228.58884-2-songmuchun@bytedance.com>
+References: <20260911050228.58884-1-songmuchun@bytedance.com>
+ <20260911050228.58884-2-songmuchun@bytedance.com>
+Date: Mon, 14 Sep 2026 10:48:14 +0300
+Message-Id: <178937209455.4188640.17761540933640972197.b4-review@b4>
+X-Mailer: b4 0.17-dev
 
-On Wed, 22 Jul 2026 10:34:28 +0800, longlong yan wrote:
-> mmap() is documented to return MAP_FAILED on error, but
-> tm-signal-context-force-tm.c compares the return value against
-> (void *)-1. Replace these with the standard MAP_FAILED macro for
-> better readability and type safety.
+Hi,
+
+> The section-based vmemmap optimization infrastructure is still guarded by
+> CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP, but it also can be used by device
+> DAX. Introduce CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION as a common config
+
+CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION is a bit mouthful :)
+
+I think that dropping _SPARSEMEM won't hurt readability.
+
+> for the shared infrastructure.
 > 
+> Select the new option from HUGETLB_PAGE_OPTIMIZE_VMEMMAP and from
+> DEV_DAX when the architecture opts in to DAX vmemmap optimization, and
+> use it to guard the generic sparse-vmemmap state and helpers.
 > 
+> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+> Acked-by: Qi Zheng <qi.zheng@linux.dev>
+>
+> diff --git a/arch/x86/entry/vdso/vdso32/fake_32bit_build.h b/arch/x86/entry/vdso/vdso32/fake_32bit_build.h
+> index bc3e549795c3f..5f8424eade2bd 100644
+> --- a/arch/x86/entry/vdso/vdso32/fake_32bit_build.h
+> +++ b/arch/x86/entry/vdso/vdso32/fake_32bit_build.h
+> @@ -11,7 +11,7 @@
+>  #undef CONFIG_PGTABLE_LEVELS
+>  #undef CONFIG_ILLEGAL_POINTER_VALUE
+>  #undef CONFIG_SPARSEMEM_VMEMMAP
+> -#undef CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP
+> +#undef CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION
+>  #undef CONFIG_NR_CPUS
+>  #undef CONFIG_PARAVIRT_XXL
+>  
+> diff --git a/drivers/dax/Kconfig b/drivers/dax/Kconfig
+> index 602f9a0839a91..6250954b0fa7a 100644
+> --- a/drivers/dax/Kconfig
+> +++ b/drivers/dax/Kconfig
+> @@ -8,6 +8,8 @@ if DAX
+>  config DEV_DAX
+>  	tristate "Device DAX: direct access mapping device"
+>  	depends on TRANSPARENT_HUGEPAGE
+> +	depends on ZONE_DEVICE
+> +	select SPARSEMEM_VMEMMAP_OPTIMIZATION if ARCH_WANT_OPTIMIZE_DAX_VMEMMAP
+>  	help
+>  	  Support raw access to differentiated (persistence, bandwidth,
+>  	  latency...) memory via an mmap(2) capable character
+> diff --git a/fs/Kconfig b/fs/Kconfig
+> index d1c210c6508f0..9b32ce79cc805 100644
+> --- a/fs/Kconfig
+> +++ b/fs/Kconfig
+> @@ -278,6 +278,7 @@ config HUGETLB_PAGE_OPTIMIZE_VMEMMAP
+>  	def_bool HUGETLB_PAGE
+>  	depends on ARCH_WANT_OPTIMIZE_HUGETLB_VMEMMAP
+>  	depends on SPARSEMEM_VMEMMAP
+> +	select SPARSEMEM_VMEMMAP_OPTIMIZATION
+>  
+>  config HUGETLB_PMD_PAGE_TABLE_SHARING
+>  	def_bool HUGETLB_PAGE
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index c49ef99b4413b..a2ebe87e76546 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -5175,6 +5175,9 @@ static inline bool __vmemmap_can_optimize(struct vmem_altmap *altmap,
+>  	unsigned long nr_pages;
+>  	unsigned long nr_vmemmap_pages;
+>  
+> +	if (!IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION))
+> +		return false;
+> +
+>  	if (!pgmap || !is_power_of_2(sizeof(struct page)))
+>  		return false;
+>  
+> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+> index acd94cecc0d39..97511f651ebc0 100644
+> --- a/include/linux/mmzone.h
+> +++ b/include/linux/mmzone.h
+> @@ -102,9 +102,9 @@
+>   *
+>   * HVO which is only active if the size of struct page is a power of 2.
+>   */
+> -#define MAX_FOLIO_VMEMMAP_ALIGN \
+> -	(IS_ENABLED(CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP) && \
+> -	 is_power_of_2(sizeof(struct page)) ? \
+> +#define MAX_FOLIO_VMEMMAP_ALIGN					\
+> +	(IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION) &&	\
+> +	 is_power_of_2(sizeof(struct page)) ?			\
+>  	 MAX_FOLIO_NR_PAGES * sizeof(struct page) : 0)
+>  
+>  /* The number of retained vmemmap pages with HVO enabled. */
+> @@ -116,7 +116,8 @@
+>  #define __VMEMMAP_OPTIMIZATION_NR_ORDERS	\
+>  	(MAX_FOLIO_ORDER - VMEMMAP_OPTIMIZATION_MIN_ORDER + 1)
+>  #define VMEMMAP_OPTIMIZATION_NR_ORDERS		\
+> -	(__VMEMMAP_OPTIMIZATION_NR_ORDERS > 0 ? __VMEMMAP_OPTIMIZATION_NR_ORDERS : 0)
+> +	((__VMEMMAP_OPTIMIZATION_NR_ORDERS > 0 &&	\
+> +	  IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION)) ? __VMEMMAP_OPTIMIZATION_NR_ORDERS : 0)
+>  
+>  enum migratetype {
+>  	MIGRATE_UNMOVABLE,
+> @@ -1155,7 +1156,7 @@ struct zone {
+>  	/* Zone statistics */
+>  	atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS];
+>  	atomic_long_t		vm_numa_event[NR_VM_NUMA_EVENT_ITEMS];
+> -#ifdef CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP
+> +#ifdef CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION
+>  	struct page *vmemmap_tails[VMEMMAP_OPTIMIZATION_NR_ORDERS];
+>  #endif
+>  } ____cacheline_internodealigned_in_smp;
+> @@ -2019,7 +2020,7 @@ struct mem_section {
+>  	unsigned long section_mem_map;
+>  
+>  	struct mem_section_usage *usage;
+> -#ifdef CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP
+> +#ifdef CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION
+>  	/*
+>  	 * Normally, sections hold regular (order-0) pages. However, for
+>  	 * sections with HVO enabled, this tracks the compound page order
+> diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
+> index 86dd0470da117..462e89e055485 100644
+> --- a/include/linux/page-flags.h
+> +++ b/include/linux/page-flags.h
+> @@ -208,14 +208,13 @@ enum pageflags {
+>  static __always_inline bool compound_info_has_mask(void)
+>  {
+>  	/*
+> -	 * Limit mask usage to HugeTLB vmemmap optimization (HVO) where it
+> -	 * makes a difference.
+> +	 * Limit mask usage to HVO where it makes a difference.
+>  	 *
+>  	 * The approach with mask would work in the wider set of conditions,
+>  	 * but it requires validating that struct pages are naturally aligned
+>  	 * for all orders up to the MAX_FOLIO_ORDER, which can be tricky.
+>  	 */
+> -	if (!IS_ENABLED(CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP))
+> +	if (!IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION))
+>  		return false;
+>  
+>  	return is_power_of_2(sizeof(struct page));
+> diff --git a/mm/Kconfig b/mm/Kconfig
+> index bc7befafb47b5..c180d40cd6712 100644
+> --- a/mm/Kconfig
+> +++ b/mm/Kconfig
+> @@ -461,6 +461,10 @@ config SPARSEMEM_VMEMMAP
+>  	  pfn_to_page and page_to_pfn operations.  This is the most
+>  	  efficient option when sufficient kernel resources are available.
+>  
+> +config SPARSEMEM_VMEMMAP_OPTIMIZATION
+> +	bool
+> +	depends on SPARSEMEM_VMEMMAP
+> +
+>  #
+>  # Select this config option from the architecture Kconfig, if it is preferred
+>  # to enable the feature of HugeTLB/dev_dax vmemmap optimization.
+> diff --git a/mm/sparse.h b/mm/sparse.h
+> index d3a71ef4fad0f..3151d4db75753 100644
+> --- a/mm/sparse.h
+> +++ b/mm/sparse.h
+> @@ -10,7 +10,7 @@
+>  
+>  #include <linux/mmzone.h>
+>  
+> -#ifdef CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP
+> +#ifdef CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION
+>  static inline unsigned int section_compound_order(const struct mem_section *section)
+>  {
+>  	return section->compound_page_order;
+> @@ -75,7 +75,7 @@ static inline bool vmemmap_optimizable_pfn(unsigned long pfn)
+>  
+>  static inline bool vmemmap_optimizable_order(unsigned int order)
+>  {
+> -	if (!IS_ENABLED(CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP))
+> +	if (!IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION))
+>  		return false;
+>  
+>  	if (!is_power_of_2(sizeof(struct page)))
 
-Applied to powerpc/fixes.
+Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 
-[1/1] selftests/powerpc: use MAP_FAILED instead of (void *)-1 in tm-signal-context-force-tm
-      https://git.kernel.org/powerpc/c/bf1d8287816194457c1a936056ad2d1e1e478944
+-- 
+Sincerely yours,
+Mike.
 
-cheers
 
