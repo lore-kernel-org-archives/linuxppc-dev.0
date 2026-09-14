@@ -1,110 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-27218-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27219-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 540B9C88E64
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2026 10:58:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B13B9C88E50
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2026 13:20:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hk2FZ2GcPz2yjw;
-	Mon, 14 Sep 2026 20:58:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789383522;
-	cv=none; b=FRZkatKctGSERTbJwxTK/YqzjEdA27tTmjFWg4fXoGizTj++/k/aTTXm4ZPM6wa3rW3HJhXUyQIMu32tHNjDQUYsVXTt2KafS23WpGj6A7PvrtE5SyMM/K0jsOGrPD+uKdg0ZKyb5XNoQ8w5xjvtiXOrMJU3miXZO0ZcZnB/ZeA28nT7tMh7KLtLY5PSlqaYcZh6YjMnISU0baV9X7O9MG48keWkimA7AIEnxwhSWh2sx9hj/vsH2pUC/Re4Y4OqEvrDdF8WblVRVmPbROeqxMuNaB/EJd/7ayuKF7zkqPHSTaSU/3XWooMHmhArcimfYXnYLTf2A9GANGNr+lIYCw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hk5P42t1Kz2yjw;
+	Mon, 14 Sep 2026 23:20:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789392024;
+	cv=none; b=Pfm2wRYau/EGfEZHfD1fkueQXopHw2yimjnX96hD9aoGmYAwRBjlsrlhYyo2YOnsm0zvVOnBEWcKk9XIvqGy4hUqM8QfKWh4NXnZ/xzzJC37mXLcTBIJ+QHaSHer7x4P5jTZg9QzmCKpej0ABaB2HS6kDcPSBaAZoEC2lMS2quBlHU7UQ4WYyrCwkmvYCBP1P33YYasbLV2kHHgpp/X016k+ye6ph4rmwE8Xcg68so3u6FoAvj0XRK7DgxgpXUDhJ/Lzh34zin8+OG7F1JSWZffpwfJhxYyTEM8mSRZ1CPe8wMBVRDLuulKakovpQUQVixE15neBoKOg6Hz2OSfqzw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789383522; c=relaxed/relaxed;
-	bh=+nE3UQjTdih4qBRdU4Jt0Vi/lTboRPWOL+q3kD4S5KA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Kam9acsFt9xC5Ahx8etLfWlygq4qr2+JeVEANJIrB9Hm6KFMmDvyRc7Q4dhQMExPMoCQRjPgvUoWqqCPoFnY+QLwhGS42duuKoeR+IciehlqA0APhyrZXNE/pHcpKZfbnUNKatzz9g6r5wl9axBJ8A3H3PvW6fgFVtWV9W2KDz3WOsXu/8eg9dZZ7DVzl/4yaYMD/0or2PvP4GINFEajX3j0BsarmRSIUpklX1vHM/h5Kpigco2ae2LLOxhxYK075dEUylKbOFVG01qvXcV0ggqk+Feryo+dmU1Gd7SwaAcjsieWA2VqWoQfd4MW4vU+kM2G3AxK7li3SPFiN97h7w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=ygWKacFp; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=rQ/lNG7n; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=PicNJzO9; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=HeQxAp4K; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1789392024; c=relaxed/relaxed;
+	bh=FAExpTSQeOnURSVfE6PgdU+Z8ZSz89ZKBxqhzpBwsCE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=BorMcs5/9WtnprqkE6FX2GlkDXDR2DuK3Qve++gS0F0jWptgRQASYCR/tAa+xLhk8x5e/9wQ9fqDUSRmM9h12BnI0ZqF6xHrIqnE666R8QXRnEslAoP73wenaclnUeeHGe0Zcd+BndXIZmp213LWElSA72EOABlw7C/s3MhL9SK67xZzjgY0+AjSAVE08umE3ja7n4a1lMPmWL63Zozmx84vsheVX6tZwRP5LqGHXTUstrPIzzGA7DV6ezoHWAU2YrRv96YZR6YAMeMYwdK5+iNhu805ndVd1M1WabVremz7ByiwDUOJjTXXi14tmaqKQqve+nT0U/dMeMOT4SpXww==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ib5ybx5X; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=ygWKacFp;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=rQ/lNG7n;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=PicNJzO9;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=HeQxAp4K;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ib5ybx5X;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hk2FX4d7gz2xft
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2026 20:58:40 +1000 (AEST)
-Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 968B121BBF;
-	Mon, 14 Sep 2026 10:58:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1789383512; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=+nE3UQjTdih4qBRdU4Jt0Vi/lTboRPWOL+q3kD4S5KA=;
-	b=ygWKacFpcY+o2V5zlMKMjeCbDARj8vbHB8txwzoYUvk91w/8dfzcXcQkS04uhAOVb2qUFi
-	2wAZhtH8io3DCpdv+kj1cFkNJAn8PJizIU9+3ob5WW0Xl0KoAF9WNaWSdcrZHAU1BGk8nx
-	R84ZYx5OlCFAkDIZ3gJqrEuLHVO/JwY=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1789383512;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=+nE3UQjTdih4qBRdU4Jt0Vi/lTboRPWOL+q3kD4S5KA=;
-	b=rQ/lNG7nd/Jp1R0IdinHqBpHyE6BdnX92ckDVHTNP8BfPc7bNe2/qNS1IVrGvdaLTisZ+p
-	1wMJRqzahk9EiBAw==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=PicNJzO9;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=HeQxAp4K
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1789383508; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=+nE3UQjTdih4qBRdU4Jt0Vi/lTboRPWOL+q3kD4S5KA=;
-	b=PicNJzO9kvwysr5r9Fb4Ce7OWu3G9/cDYh4BtzH87gDUjcn3M/K/KvD0ddrNnGPgqK6yrz
-	xxy+draQxHOXuxZD//oxgt+w7ncmOXiqBcoLp7+S0Kiw+FjudJ8xXX10neB8xAM+7UEs5O
-	ArAfzqHH4ZyMLpf/aQJQTbBKAA/YIFs=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1789383508;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=+nE3UQjTdih4qBRdU4Jt0Vi/lTboRPWOL+q3kD4S5KA=;
-	b=HeQxAp4KUS9MZIP583kkP10Z8ovyFTytJfItol8cQkjoIGvjrixOL3Hs4iCNqGyOqsWfdQ
-	VQ/WUzxpFH0gg6Cw==
-Date: Mon, 14 Sep 2026 12:58:27 +0200
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Michael Ellerman <mpe@ellerman.id.au>, harshpb@linux.ibm.com,
-	Gautam Menghani <gautam@linux.ibm.com>, amachhiw@linux.ibm.com,
-	Christian Zigotzky <chzigotzky@xenosoft.de>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	"kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	"R.T.Dickinson" <rtd2@xtra.co.nz>, hypexed@yahoo.com.au,
-	mad skateman <madskateman@gmail.com>,
-	Christian Zigotzky <info@xenosoft.de>, nnmlinux@linux.ibm.com,
-	Samir M <samir@linux.ibm.com>,
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: Re: [Linux PPC] Disable PREEMPT
-Message-ID: <aqfTU79SlNB3ykDi@kunlun.suse.cz>
-References: <9a58d944-405c-4519-852e-8fa04c22c2db@linux.ibm.com>
- <aplZNFMJUkfs-BFs@kunlun.suse.cz>
- <5ed38c3e-4aaa-4a91-9eda-e31d09b44abc@linux.ibm.com>
- <app0zGv9bvtL4nHm@kunlun.suse.cz>
- <4eef1f0b-0c02-4377-b950-43c3b120865a@linux.ibm.com>
- <aqJxcWC1dWKITCav@kunlun.suse.cz>
- <393117bc-094e-4c47-b061-f255f5bff937@linux.ibm.com>
- <aqKUhHb9UTfVq4As@kunlun.suse.cz>
- <aqKfsVArHHaIK6M9@kunlun.suse.cz>
- <baeb1ae4-7c0f-4e4e-8fc5-09367cb7c4e9@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hk5P33Q38z2xSV
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2026 23:20:22 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68ED26nW223780;
+	Mon, 14 Sep 2026 13:20:04 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=FAExpT
+	SQeOnURSVfE6PgdU+Z8ZSz89ZKBxqhzpBwsCE=; b=ib5ybx5XPAf2cQqgEzmSWU
+	mfBl5OKt1oxppkAX6WQdPx42qFtCOIccSArLWetJq1aNjhaZTCae9WcqK2OJp0ED
+	c64hGBkDXt5qdSWbRyeLPXTOAgfbzgiPmat11PY78YDWcqTJo7KOBT2uKrCitJcF
+	q/bekem+G6QyvN40bgcS/DqMoSzSfJnh5qWacSt9dOOPtmPIcE7NJ5a3qbozAJZl
+	6EApZzQdZVvf2tXO9FiUMBq++J1bfq3El7NSrvLXevMZw4uNbMV+5o0mnG2vLVDp
+	l9/0kZmoXW01kT4LGZrH24mnnSW3263QwryVztT6UjJdAZ/vd5WCcAlknVNSrt5w
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gmxdq1kd9-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Mon, 14 Sep 2026 13:20:04 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68ED54P62386846;
+	Mon, 14 Sep 2026 13:20:03 GMT
+Received: from smtprelay04.dal12v.mail.ibm.com ([172.16.1.6])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gnk9j61mr-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 14 Sep 2026 13:20:03 +0000 (GMT)
+Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
+	by smtprelay04.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68EDK25b28574344
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 14 Sep 2026 13:20:02 GMT
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4691F58063;
+	Mon, 14 Sep 2026 13:20:02 +0000 (GMT)
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5C22D5805A;
+	Mon, 14 Sep 2026 13:19:56 +0000 (GMT)
+Received: from [9.67.124.200] (unknown [9.67.124.200])
+	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 14 Sep 2026 13:19:56 +0000 (GMT)
+Message-ID: <ba038abe-8278-49b0-beb7-2a0251e858eb@linux.ibm.com>
+Date: Mon, 14 Sep 2026 18:49:54 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -118,165 +81,124 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <baeb1ae4-7c0f-4e4e-8fc5-09367cb7c4e9@linux.ibm.com>
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Action: add header
-X-Rspamd-Queue-Id: 968B121BBF
-X-Spamd-Result: default: False [12.69 / 50.00];
-	SPAM_FLAG(5.00)[];
-	NEURAL_SPAM_LONG(3.50)[1.000];
-	BAYES_HAM(-3.00)[100.00%];
-	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
-	RDNS_NONE(2.00)[];
-	ONCE_RECEIVED(1.20)[];
-	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
-	R_MIXED_CHARSET(0.63)[subject];
-	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.13)[-0.642];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	RCPT_COUNT_TWELVE(0.00)[18];
-	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	TO_DN_EQ_ADDR_SOME(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[xtra.co.nz,yahoo.com.au,gmail.com];
-	TO_DN_SOME(0.00)[];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b306:2000::2:from];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_COUNT_ZERO(0.00)[0];
-	DKIM_TRACE(0.00)[suse.de:+];
-	MISSING_XM_UA(0.00)[];
-	FREEMAIL_CC(0.00)[kernel.org,ellerman.id.au,linux.ibm.com,xenosoft.de,lists.ozlabs.org,vger.kernel.org,infradead.org,xtra.co.nz,yahoo.com.au,gmail.com];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim]
-X-Spamd-Bar: ++++++++++++
-X-Spam: Yes
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] crypto: powerpc/vmx - clean up includes, metadata, and
+ p8_init()
+To: Thorsten Blum <blum@kernel.org>,
+        =?UTF-8?Q?Breno_Leit=C3=A3o?=
+ <leitao@debian.org>,
+        Nayna Jain <nayna@linux.ibm.com>,
+        Paulo Flabiano Smorigo <pfsmorigo@gmail.com>,
+        Herbert Xu <herbert@gondor.apana.org.au>,
+        "David S. Miller" <davem@davemloft.net>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Shrikanth Hegde <sshegde@linux.ibm.com>
+Cc: linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
+References: <20260914081500.65737-2-blum@kernel.org>
+Content-Language: en-US
+From: Srish Srinivasan <ssrish@linux.ibm.com>
+In-Reply-To: <20260914081500.65737-2-blum@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE0MDE4NiBTYWx0ZWRfXzqLdAcXZbk5w
+ bqDPyBJhUeGG0Fvm6cCZCVO1LAAajMu86rnFC7/yUQ7PuX5GOkzvNA2bGQI+qp2i4nPLlPAGe1s
+ bkGTKk//sfgTqeabhSbBxmPxrwv1nsZoJfKzoReD30VgTp3W5pfseIGOeXW7j4Ykldet46YE5BX
+ G6Kx260mDKYldKqeWqhzc7Fe74MfrZe18EoSg/GOWoSfnTQnu5XTYburefJVJ1snD44Mw2iOIbP
+ 1tIXNzUiuOXWq1+ohdxnb8yKYUjsxvd06nQ7WFUloFMO9uYHYqNjSWxC+O8mwYHfvzOi7RfPG2c
+ Ie5K9CL4BS73SdYdGfGg+6yligpDPyeFaXP/5y3ihApC0jPuBw6mDN5ALwsBdTBdOwqu3y2hPVl
+ XMF/EcnlU+Aj7Unq8W7ImT2R30y0jN7Bzh9v3hc9DBSVUgjFy1f1y8w4T4h8OELvh35q8k2SvqX
+ szo4qPIJt4iSvKJxtQw==
+X-Proofpoint-GUID: iDL1_mx-bwn_G7WfWm5EaZr9wvkI4rjm
+X-Authority-Analysis: v=2.4 cv=DobDa2/+ c=1 sm=1 tr=0 ts=6aa7f484 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=dDLX0a77UB6nXHVu2IYA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: v7f9fFXDbhU1-pvt1ABFUhTVqABWpZt6
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE0MDE4NiBTYWx0ZWRfXwwTnRCTi6+iM
+ 54M3goLSh1DR5Iyj0NG6+8EqqQ4DQQ7WS7A0RhpFtLaqWazNKOpVyh5+7selU37FosuwAUDKsTi
+ Yvj4vSwnqwBU7K7E1UqEUdpWrGESUeA=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-14_03,2026-09-14_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 malwarescore=0 priorityscore=1501 suspectscore=0 impostorscore=0
+ spamscore=0 clxscore=1011 adultscore=0 bulkscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609140186
 
-On Fri, Sep 11, 2026 at 10:39:10PM +0530, Shrikanth Hegde wrote:
-> Hi Michal,
-> 
-> On 9/10/26 5:46 PM, Michal Suchánek wrote:
-> > On Thu, Sep 10, 2026 at 01:29:08PM +0200, Michal Suchánek wrote:
-> > > On Thu, Sep 10, 2026 at 04:11:20PM +0530, Shrikanth Hegde wrote:
-> > > > 
-> > > > 
-> > > > On 9/10/26 2:29 PM, Michal Suchánek wrote:
-> > > > > On Fri, Sep 04, 2026 at 02:34:21PM +0530, Shrikanth Hegde wrote:
-> > > > > > 
-> > > > > > 
-> > > > > > On 9/4/26 1:05 PM, Michal Suchánek wrote:
-> > > > > > > On Thu, Sep 03, 2026 at 10:52:59PM +0530, Shrikanth Hegde wrote:
-> > > > > > > > 
-> > > > > > > > > > If possible run against current upstream and share the results.
-> > > > > > > > > 
-> > > > > > > > > https://github.com/openSUSE/kernel-source/blob/6824496d1801f73def615dca8794202eeb7b0d86/config/ppc64le/default
-> > > > > > > > > 
-> > > > > > > > > [  472.091531][ T6181] Kernel panic - not syncing: stack-protector: Kernel stack is corrupted in: kvmhv_run_single_vcpu+0x19d4/0x1b50 [kvm_hv]
-> > > > > > > > > [  472.091598][ T6181] CPU: 29 UID: 107 PID: 6181 Comm: CPU 112/KVM Not tainted 7.2.2-5.g6824496-default #1 PREEMPT(full) openSUSE Tumbleweed (unreleased)  61871a5f06863b4006f5ef27cd9f18e8a7a2edad
-> > > > > > > > > [  472.091612][ T6181] Hardware name: IBM,9824-42A Power11 (architected) 0x820200 0xf000007 of:IBM,FW1110.20 (OB1110_130) hv:phyp pSeries
-> > > > > > > > > [  472.091624][ T6181] Call Trace:
-> > > > > > > > > [  472.091630][ T6181] [c00000000fdfb680] [c00000000134ce90] dump_stack_lvl+0x84/0xc0 (unreliable)
-> > > > > > > > > [  472.091653][ T6181] [c00000000fdfb6b0] [c00000000022e7c8] vpanic+0x324/0x5e4
-> > > > > > > > > [  472.091666][ T6181] [c00000000fdfb760] [c00000000022eac4] do_panic_on_target_cpu+0x0/0x2c
-> > > > > > > > > [  472.091677][ T6181] [c00000000fdfb780] [c0000000013c1ff8] __stack_chk_fail+0x48/0x60
-> > > > > > > > > [  472.091689][ T6181] [c00000000fdfb7f0] [c00800001aae219c] kvmhv_run_single_vcpu+0x19d4/0x1b50 [kvm_hv]
-> > > > > > > > > [  472.091712][ T6181] [c00000000fdfb940] [c00800001aae24b4] kvmppc_vcpu_run_hv+0x19c/0x12f0 [kvm_hv]
-> > > > > > > > > [  472.091732][ T6181] [c00000000fdfba10] [c00800001aeeed18] kvmppc_vcpu_run+0x30/0x48 [kvm]
-> > > > > > > > > [  472.091779][ T6181] [c00000000fdfba30] [c00800001aee9ef4] kvm_arch_vcpu_ioctl_run+0x35c/0x4a0 [kvm]
-> > > > > > > > > [  472.091813][ T6181] [c00000000fdfbac0] [c00800001aedaac4] kvm_vcpu_ioctl+0x1ac/0xad8 [kvm]
-> > > > > > > > > [  472.091844][ T6181] [c00000000fdfbca0] [c0000000007f1244] sys_ioctl+0x374/0x1060
-> > > > > > > > > [  472.091857][ T6181] [c00000000fdfbdb0] [c00000000002f7f8] system_call_exception+0x188/0x430
-> > > > > > > > > [  472.091871][ T6181] [c00000000fdfbe50] [c00000000000cfdc] system_call_vectored_common+0x15c/0x2ec
-> > > > > > > > > [  472.091886][ T6181] ---- interrupt: 3000 at 0x7fffb5565fac
-> > > > > > > > > [  472.091896][ T6181] NIP:  00007fffb5565fac LR: 00007fffb5565fac CTR: 0000000000000000
-> > > > > > > > > [  472.091904][ T6181] REGS: c00000000fdfbe80 TRAP: 3000   Not tainted  (7.2.2-5.g6824496-default)
-> > > > > > > > > [  472.091911][ T6181] MSR:  800000000280f033 <SF,VEC,VSX,EE,PR,FP,ME,IR,DR,RI,LE>  CR: 42044402  XER: 00000000
-> > > > > > > > > [  472.091938][ T6181] IRQMASK: 0
-> > > > > > > > > [  472.091938][ T6181] GPR00: 0000000000000036 00007fbfa77ed7a0 00007fffb5677100 00000000000000fa
-> > > > > > > > > [  472.091938][ T6181] GPR04: 000000002000ae80 0000000000000000 0000000000000000 0000000000000000
-> > > > > > > > > [  472.091938][ T6181] GPR08: 00000000000000fa 0000000000000000 0000000000000000 0000000000000000
-> > > > > > > > > [  472.091938][ T6181] GPR12: 0000000000000000 00007fbfa77f5ec0 000000014676f000 00007fbfa77ee7c0
-> > > > > > > > > [  472.091938][ T6181] GPR16: 000000014674e8d0 00007fbfa77eeec0 00007fbfa77eeec0 fffffffffffffff7
-> > > > > > > > > [  472.091938][ T6181] GPR20: 00007fffb71210d0 0000000000000001 00007fbfa77eeec0 0000000000000000
-> > > > > > > > > [  472.091938][ T6181] GPR24: 00007fbfa77ed8e8 0000000105971428 000000002000ae80 0000000105f77a70
-> > > > > > > > > [  472.091938][ T6181] GPR28: 0000000000000000 0000000000000000 000000002000ae80 000000014674f000
-> > > > > > > > > [  472.092020][ T6181] NIP [00007fffb5565fac] 0x7fffb5565fac
-> > > > > > > > > [  472.092027][ T6181] LR [00007fffb5565fac] 0x7fffb5565fac
-> > > > > > > > > [  472.092033][ T6181] ---- interrupt: 3000
-> > > > > > > > > [  472.098256][ T6181] pstore: backend (nvram) writing error (-1)
-> > > > > > > > > 
-> > > > > > > > > This is the host, cannot run the kernel as guest because it fails to boot most
-> > > > > > > > > of the time inside KVM.
-> > > > > > > > > 
-> > > > > > > > > > 
-> > > > > > > > > > > Nonethless, there are quite a few platforms. Originally no preemption
-> > > > > > > > > > > was the only option, and that's the reason why many people run that.
-> > > > > > > > > > > It's the conservative, known working option. And that's the reason a lot
-> > > > > > > > > > > of platfrom code does not get tested with more aggressive preemtion
-> > > > > > > > > > > models, and never gets fixed to work with them.
-> > > > > > > > > > > 
-> > > > > > > > > > 
-> > > > > > > > > > Full preemption has been there for many years!.
-> > > > > > > > > 
-> > > > > > > > > Possible for years, forced only recently.
-> > > > > > > > > 
-> > > > > > > > > > Lazy is not that aggressive compared to that.
-> > > > > > > > > > 
-> > > > > > > > > > > Simply disabling the no preemtion option does not make the platform code
-> > > > > > > > > > > ready.
-> > > > > > > > > > > 
-> > > > > > > > > > 
-> > > > > > > > > > Let's understand your crash case. Let's see where it is going wrong. I am suspecting
-> > > > > > > > > > it is some wrong usage of preemption api rather than arch can't support preemption.
-> > > > > > > > > 
-> > > > > > > > > Very likely some wrong use of the preemption API by the arch code, or no
-> > > > > > > > > use where it should have been used. It did not matter so long as people
-> > > > > > > > > could run their no preempt configs and ignore the problem.
-> > > > > > > > > 
-> > > > > > > > > Thanks
-> > > > > > > > 
-> > > > > > > > 
-> > > > > > > > Friendly LLM analysis says preemption is enabled too early and before
-> > > > > > > > completing kvmppc_handle_exit_hv() / kvmppc_handle_nested_exit()
-> > > > > > > > 
-> > > > > > > > Below is ONLY a speculation and completely UNTESTED.
-> > > > > > > > Maybe worth a try.
-> > > > > > > 
-> > > > > > > The patch is munged by the e-mail client, and it causes immediate
-> > > > > > > voluntary preemprion in rcu critical section and hard lockup on starting
-> > > > > > > a KVM VM.
-> > > > > > > 
-> > > > > > > Also it would be sort of bad news if it worked because that would be
-> > > > > > > specific to book3s KVM HV and would not help with the KVM HV from the
-> > > > > > > original report which likely is not book3s, nor with KVM PR.
-> > > > > > > 
-> > > > > > 
-> > > > > > Thanks for trying. We will try a local repro and look into it why stack is
-> > > > > > getting corrupted.
-> > > > > 
-> 
-> As we discussed offlist, samir helped to run a similar test on his machine, and he didn't
-> run into issue so far. we will try more.
-> 
-> I am just wondering what different in your case?
-> By any chance we are running into below one? Can you check your gcc version?
-> 
-> https://lore.kernel.org/all/CAABZP2z=xu+07-y5fqFLidZz1VpSgrSwXa1mFHPb=b3Ezr3OtA@mail.gmail.com/
-> 
-> Maybe CONFIG_DEBUG_PREEMPT worth a try to if it shows up anything.
 
-Does not change anything, the kernel crashes all the same.
+On 9/14/26 1:45 PM, Thorsten Blum wrote:
+> In p8_init(), remove the goto statement and return ret directly.
+>
+> Remove any redundant includes, add a missing space in MODULE_AUTHOR(),
+> and join the MODULE_DESCRIPTION() strings for better grepability.
+>
+> Also remove MODULE_VERSION(). It has never been updated and the kernel
+> release better reflects the module version.
+>
+> Signed-off-by: Thorsten Blum <blum@kernel.org>
 
-Nonetheless, I noticed that a tool that does some BPF tracing is
-running, and without it the problem is not reproducible.
 
-Thanks
 
-Michal
+Tested-by: Srish Srinivasan <ssrish@linux.ibm.com>
+
+
+> ---
+>   arch/powerpc/crypto/vmx.c | 14 +++-----------
+>   1 file changed, 3 insertions(+), 11 deletions(-)
+>
+> diff --git a/arch/powerpc/crypto/vmx.c b/arch/powerpc/crypto/vmx.c
+> index 08da5311dfdf..8abc4db8ee4e 100644
+> --- a/arch/powerpc/crypto/vmx.c
+> +++ b/arch/powerpc/crypto/vmx.c
+> @@ -8,12 +8,7 @@
+>    */
+>   
+>   #include <linux/module.h>
+> -#include <linux/moduleparam.h>
+> -#include <linux/types.h>
+> -#include <linux/err.h>
+>   #include <linux/cpufeature.h>
+> -#include <linux/crypto.h>
+> -#include <asm/cputable.h>
+>   #include <crypto/internal/skcipher.h>
+>   
+>   #include "aesp8-ppc.h"
+> @@ -24,7 +19,7 @@ static int __init p8_init(void)
+>   
+>   	ret = crypto_register_skcipher(&p8_aes_cbc_alg);
+>   	if (ret)
+> -		goto err;
+> +		return ret;
+>   
+>   	ret = crypto_register_skcipher(&p8_aes_ctr_alg);
+>   	if (ret)
+> @@ -40,7 +35,6 @@ static int __init p8_init(void)
+>   	crypto_unregister_skcipher(&p8_aes_ctr_alg);
+>   err_unregister_aes_cbc:
+>   	crypto_unregister_skcipher(&p8_aes_cbc_alg);
+> -err:
+>   	return ret;
+>   }
+>   
+> @@ -54,8 +48,6 @@ static void __exit p8_exit(void)
+>   module_cpu_feature_match(PPC_MODULE_FEATURE_VEC_CRYPTO, p8_init);
+>   module_exit(p8_exit);
+>   
+> -MODULE_AUTHOR("Marcelo Cerri<mhcerri@br.ibm.com>");
+> -MODULE_DESCRIPTION("IBM VMX cryptographic acceleration instructions "
+> -		   "support on Power 8");
+> +MODULE_AUTHOR("Marcelo Cerri <mhcerri@br.ibm.com>");
+> +MODULE_DESCRIPTION("IBM VMX cryptographic acceleration instructions support on Power 8");
+>   MODULE_LICENSE("GPL");
+> -MODULE_VERSION("1.0.0");
+>
 
