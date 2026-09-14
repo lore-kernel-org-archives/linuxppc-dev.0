@@ -1,49 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-27214-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27215-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0212DC88E50
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2026 07:52:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21012C88E50
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2026 08:15:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hjy6g3vKvz2yjw;
-	Mon, 14 Sep 2026 17:52:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::df"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789372347;
-	cv=none; b=BgDclcXKpRNsQ8zpjXfIXJSeIP0I3XjgjxK5sgZ1P+7jVBZMOXsr+YXTr81PsrLhoro71CRPFSAb5Wxjbivhqf63lw3wmkbduKifexdeCCdl6vKSZPrfQHC2NPsHObr8Ik8UkKFXJy6+snCR9sLYjjSnhoGIs91wRud7QYR5ZBy7lwZdteVud505K1/tIR1Ih4EqPJIV2K17zLn4PenmUEV7XHZX05AaUK8lTEWWBJR3Npa5lm+dD3SfB51KLKRyCtXaV6+EyMR8CFVBh/4J3GDGSrwOzIPLq4xaF047Y2Qip5+y7wdkg0TaaXHh9j9JDHyjbP8aHNtAHyYhdQLwfQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hjycv2D66z2yFK;
+	Mon, 14 Sep 2026 18:15:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789373711;
+	cv=none; b=CBFpM0qhMYjbvOQqNMllpa1EPj5qWAjYGTODtZAlaGbUy3khUfmTgRIfUb45p6DqzbVcCcNyJPtYyWCvb9ZroMv/rFT8KMc8vF69vRsZaUobKhSvSro3PjcuhgsrE14hSG3DqhEU7OqFnvmLHL3Al8ArBjavHD2HOasrN3yPKC0QkAwPKZvoARPLX209sZbZQeeNCu+ui8QwMyBCdVXFDyMyC4p0UGF1s6C5vA/0EPOa7972oQvCQ+87bN7lO3dJNnFu0WavaIMONStn2mFTAFTejMvOG3jaAMkBnpHsjX0+y51ViAnQjd4q1Tlso/J4Nl/vyOoouPg4NqA1xEZ9Ow==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789372347; c=relaxed/relaxed;
-	bh=KZA90kbLQ1wUmr27u9GbyrLVr6ugUDDJBQ4ttjd6f5Q=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=ckgZp4HI7XfNwHHeLgjKDDvx3PrUpRHU06NdGAqq3819lfKvnZbQKpPoP0EgstlDi5IEJzSWWVIUUSrJ58GxWlctH0zvF42WmGEih9bEfvm6K+B1JguJqK7rmcw8ygAXhHz1te/2CL2jg8Sc8l/eNeTRYVDu/YQ3JY/x1OVGpjSbTcuTpU6VqhWFMlJUMZu62+jD5ClXiDMOzrVxpLDUjp6tcklwrObbTfwraHJ56HdYSiwcD1rhrOpUIj45P8og7V+ANyaybeTGem6ZuIwruzyuE2kdo2IYklBMxahC6I8rZCTVzAZNLpsk0bawyADR14iUTo0T//5QcFrebFoJAA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=BwcSvFdE; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::df; helo=mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1789373711; c=relaxed/relaxed;
+	bh=hhy3y+RdyOlzV0mNEG3QJcfAPDjRe336pjQbMT65wf0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=mJyL3K1yS1YRRj60iB4rDXjfUsuJd5gLyIC9G2ftvxnWhvC2cvfv+Wq/HV7zkiWiD+t1IeiRyZfGqj9Hu9RGcQ7DhlTFq7M5xO3UBOnYOt00qw89zK2GZTVT5QFLcIXjGPyvCcwxCLM4SPEKbuy7oxxLnEgySGzk80eAGDjNumUKx4EfxBBzWjMqAamX/FgrseZq8yctxYHOo04EViyDpsTxRlUT2qYmsWU4h28dTHU4jvXPpkkdKsmQA96qBbsn5IyI/RoDFaRhy0/aYMf8PFa0C3WLh0m9RUQJGXfU9rHMvwCtTpgiQXQQ0Ju43HiWjppgcKh8JlPaf8w3K4JrNQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XziPNHhQ; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=blum@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=BwcSvFdE;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XziPNHhQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::df; helo=mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta0.migadu.com (out-223.mta0.migadu.com [IPv6:2001:41d0:1004:224b::df])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=blum@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hjy6b74zJz2yFK
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2026 17:52:21 +1000 (AEST)
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=nXlIXZyzZAmUaaXn6/AG1Qoa90qlZRNpDV2IZ5Xt6I8=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1789372317; v=1; x=1789977117;
- b=BwcSvFdElIUHCrFEATDcx/wtsn0aU0ZDfA152keO1eLQwSqs7cgfZjS6XOj/O2ewQoTZk+NR
- vu0Rr6gGGPGWkmw1sN4Cz1OpiABBGEKw4wxU4B61n5wXki9xHdFycd2PvCiIAM/OllaDj3VeFwh
- tI56Kt+FFaGgM9I1Cu4XAT8Y=
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by mta10.migadu.com with ESMTPS id 7f6bbc8e5bf97846;
-	Mon, 14 Sep 2026 07:51:57 +0000
-X-Mizu-Trace-ID: 7f6bbc8e5bf97846
-X-Migadu-Flow: FLOW_OUT
-Content-Type: text/plain;
-	charset=us-ascii
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hjyct3k8Kz2y7p
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2026 18:15:10 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id E1F6240B6B;
+	Mon, 14 Sep 2026 08:15:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 68FAD1F000FF;
+	Mon, 14 Sep 2026 08:15:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789373707;
+	bh=hhy3y+RdyOlzV0mNEG3QJcfAPDjRe336pjQbMT65wf0=;
+	h=From:To:Cc:Subject:Date;
+	b=XziPNHhQKEQxv51Elz22SfWhe9WD4fWAT223dHBDdHZ30Lfc+0j753gFCA6dAtMs6
+	 Ujuqcju29M+JIIQiMo8rY1UP883hT7Ngf4FlzxWu5pBAjSArydGIvJgDAUJpjl7BZf
+	 8p43+jf50J1H5o1xOa2NMen0p8XH8j3jbVt2vRM3kYNtjjM32f58MN3ORTugLIX+5X
+	 /1X7u/tk/9TG7v1b1g2XWAfaOZ6WihE6apRdmvHRqTPuulZ1kb9+xjtNQ+j341lhR6
+	 Iy/FTWJ84WRxgDCy0zG4KfrYDL7ThNfnAVyhOeTn0lyZYx4tHf71xvVLHlrD8uNR6c
+	 fQ0j0DnsSQ4Qw==
+From: Thorsten Blum <blum@kernel.org>
+To: =?UTF-8?q?Breno=20Leit=C3=A3o?= <leitao@debian.org>,
+	Nayna Jain <nayna@linux.ibm.com>,
+	Paulo Flabiano Smorigo <pfsmorigo@gmail.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	"David S. Miller" <davem@davemloft.net>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>
+Cc: Thorsten Blum <blum@kernel.org>,
+	linux-crypto@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] crypto: powerpc/vmx - clean up includes, metadata, and p8_init()
+Date: Mon, 14 Sep 2026 10:15:01 +0200
+Message-ID: <20260914081500.65737-2-blum@kernel.org>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,242 +75,67 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.700.51.1.1\))
-Subject: Re: [PATCH v3 01/11] mm/sparse-vmemmap: introduce
- CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION
-From: Muchun Song <muchun.song@linux.dev>
-In-Reply-To: <178937209455.4188640.17761540933640972197.b4-review@b4>
-Date: Mon, 14 Sep 2026 15:51:40 +0800
-Cc: Muchun Song <songmuchun@bytedance.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>,
- Oscar Salvador <osalvador@suse.de>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Jonathan Corbet <corbet@lwn.net>,
- linux-mm@kvack.org,
- linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
- linux-doc@vger.kernel.org,
- Lorenzo Stoakes <ljs@kernel.org>,
- Qi Zheng <qi.zheng@linux.dev>,
- Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <chleroy@kernel.org>,
- Randy Dunlap <rdunlap@infradead.org>
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <42F502DE-9DEE-447B-9323-0CBB2300FAFE@linux.dev>
-References: <20260911050228.58884-1-songmuchun@bytedance.com>
- <20260911050228.58884-2-songmuchun@bytedance.com>
- <178937209455.4188640.17761540933640972197.b4-review@b4>
-To: Mike Rapoport <rppt@kernel.org>
-X-Mailer: Apple Mail (2.3864.700.51.1.1)
+MIME-Version: 1.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1872; i=blum@kernel.org; h=from:subject; bh=q/3kCHUCRPlYa+KGkiI9OcT5TV4ELNVW3HhU2DS+tYg=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFnL17J8mXfzzAO+uCyZXW90+li2FW7ad5xzae5dtR0hb ptOOIkt6yhlYRDjYpAVU2R5MOvHDN/SmspNJhE7YeawMoEMYeDiFICJnL7J8D+4iP+G9wXmtJUd X6ZLztN1fTDtYYfPMb20YzLX5oX5aDkw/DP46fpr+Yv/bxuyTyqwq5kHzWhZeyb3bePc7uehd+0 SVjIBAA==
+X-Developer-Key: i=blum@kernel.org; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
+Content-Transfer-Encoding: 8bit
 
+In p8_init(), remove the goto statement and return ret directly.
 
+Remove any redundant includes, add a missing space in MODULE_AUTHOR(),
+and join the MODULE_DESCRIPTION() strings for better grepability.
 
-> On Sep 14, 2026, at 15:48, Mike Rapoport <rppt@kernel.org> wrote:
->=20
-> Hi,
+Also remove MODULE_VERSION(). It has never been updated and the kernel
+release better reflects the module version.
 
-Hi,
+Signed-off-by: Thorsten Blum <blum@kernel.org>
+---
+ arch/powerpc/crypto/vmx.c | 14 +++-----------
+ 1 file changed, 3 insertions(+), 11 deletions(-)
 
->=20
->> The section-based vmemmap optimization infrastructure is still =
-guarded by
->> CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP, but it also can be used by =
-device
->> DAX. Introduce CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION as a common =
-config
->=20
-> CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION is a bit mouthful :)
->=20
-> I think that dropping _SPARSEMEM won't hurt readability.
-
-Yes, I'll simplify it in v4.
-
->=20
->> for the shared infrastructure.
->>=20
->> Select the new option from HUGETLB_PAGE_OPTIMIZE_VMEMMAP and from
->> DEV_DAX when the architecture opts in to DAX vmemmap optimization, =
-and
->> use it to guard the generic sparse-vmemmap state and helpers.
->>=20
->> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
->> Acked-by: Qi Zheng <qi.zheng@linux.dev>
->>=20
->> diff --git a/arch/x86/entry/vdso/vdso32/fake_32bit_build.h =
-b/arch/x86/entry/vdso/vdso32/fake_32bit_build.h
->> index bc3e549795c3f..5f8424eade2bd 100644
->> --- a/arch/x86/entry/vdso/vdso32/fake_32bit_build.h
->> +++ b/arch/x86/entry/vdso/vdso32/fake_32bit_build.h
->> @@ -11,7 +11,7 @@
->> #undef CONFIG_PGTABLE_LEVELS
->> #undef CONFIG_ILLEGAL_POINTER_VALUE
->> #undef CONFIG_SPARSEMEM_VMEMMAP
->> -#undef CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP
->> +#undef CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION
->> #undef CONFIG_NR_CPUS
->> #undef CONFIG_PARAVIRT_XXL
->>=20
->> diff --git a/drivers/dax/Kconfig b/drivers/dax/Kconfig
->> index 602f9a0839a91..6250954b0fa7a 100644
->> --- a/drivers/dax/Kconfig
->> +++ b/drivers/dax/Kconfig
->> @@ -8,6 +8,8 @@ if DAX
->> config DEV_DAX
->> tristate "Device DAX: direct access mapping device"
->> depends on TRANSPARENT_HUGEPAGE
->> + depends on ZONE_DEVICE
->> + select SPARSEMEM_VMEMMAP_OPTIMIZATION if =
-ARCH_WANT_OPTIMIZE_DAX_VMEMMAP
->> help
->>  Support raw access to differentiated (persistence, bandwidth,
->>  latency...) memory via an mmap(2) capable character
->> diff --git a/fs/Kconfig b/fs/Kconfig
->> index d1c210c6508f0..9b32ce79cc805 100644
->> --- a/fs/Kconfig
->> +++ b/fs/Kconfig
->> @@ -278,6 +278,7 @@ config HUGETLB_PAGE_OPTIMIZE_VMEMMAP
->> def_bool HUGETLB_PAGE
->> depends on ARCH_WANT_OPTIMIZE_HUGETLB_VMEMMAP
->> depends on SPARSEMEM_VMEMMAP
->> + select SPARSEMEM_VMEMMAP_OPTIMIZATION
->>=20
->> config HUGETLB_PMD_PAGE_TABLE_SHARING
->> def_bool HUGETLB_PAGE
->> diff --git a/include/linux/mm.h b/include/linux/mm.h
->> index c49ef99b4413b..a2ebe87e76546 100644
->> --- a/include/linux/mm.h
->> +++ b/include/linux/mm.h
->> @@ -5175,6 +5175,9 @@ static inline bool =
-__vmemmap_can_optimize(struct vmem_altmap *altmap,
->> unsigned long nr_pages;
->> unsigned long nr_vmemmap_pages;
->>=20
->> + if (!IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION))
->> + return false;
->> +
->> if (!pgmap || !is_power_of_2(sizeof(struct page)))
->> return false;
->>=20
->> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
->> index acd94cecc0d39..97511f651ebc0 100644
->> --- a/include/linux/mmzone.h
->> +++ b/include/linux/mmzone.h
->> @@ -102,9 +102,9 @@
->>  *
->>  * HVO which is only active if the size of struct page is a power of =
-2.
->>  */
->> -#define MAX_FOLIO_VMEMMAP_ALIGN \
->> - (IS_ENABLED(CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP) && \
->> - is_power_of_2(sizeof(struct page)) ? \
->> +#define MAX_FOLIO_VMEMMAP_ALIGN \
->> + (IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION) && \
->> + is_power_of_2(sizeof(struct page)) ? \
->> MAX_FOLIO_NR_PAGES * sizeof(struct page) : 0)
->>=20
->> /* The number of retained vmemmap pages with HVO enabled. */
->> @@ -116,7 +116,8 @@
->> #define __VMEMMAP_OPTIMIZATION_NR_ORDERS \
->> (MAX_FOLIO_ORDER - VMEMMAP_OPTIMIZATION_MIN_ORDER + 1)
->> #define VMEMMAP_OPTIMIZATION_NR_ORDERS \
->> - (__VMEMMAP_OPTIMIZATION_NR_ORDERS > 0 ? =
-__VMEMMAP_OPTIMIZATION_NR_ORDERS : 0)
->> + ((__VMEMMAP_OPTIMIZATION_NR_ORDERS > 0 && \
->> +  IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION)) ? =
-__VMEMMAP_OPTIMIZATION_NR_ORDERS : 0)
->>=20
->> enum migratetype {
->> MIGRATE_UNMOVABLE,
->> @@ -1155,7 +1156,7 @@ struct zone {
->> /* Zone statistics */
->> atomic_long_t vm_stat[NR_VM_ZONE_STAT_ITEMS];
->> atomic_long_t vm_numa_event[NR_VM_NUMA_EVENT_ITEMS];
->> -#ifdef CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP
->> +#ifdef CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION
->> struct page *vmemmap_tails[VMEMMAP_OPTIMIZATION_NR_ORDERS];
->> #endif
->> } ____cacheline_internodealigned_in_smp;
->> @@ -2019,7 +2020,7 @@ struct mem_section {
->> unsigned long section_mem_map;
->>=20
->> struct mem_section_usage *usage;
->> -#ifdef CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP
->> +#ifdef CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION
->> /*
->> * Normally, sections hold regular (order-0) pages. However, for
->> * sections with HVO enabled, this tracks the compound page order
->> diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
->> index 86dd0470da117..462e89e055485 100644
->> --- a/include/linux/page-flags.h
->> +++ b/include/linux/page-flags.h
->> @@ -208,14 +208,13 @@ enum pageflags {
->> static __always_inline bool compound_info_has_mask(void)
->> {
->> /*
->> - * Limit mask usage to HugeTLB vmemmap optimization (HVO) where it
->> - * makes a difference.
->> + * Limit mask usage to HVO where it makes a difference.
->> *
->> * The approach with mask would work in the wider set of conditions,
->> * but it requires validating that struct pages are naturally aligned
->> * for all orders up to the MAX_FOLIO_ORDER, which can be tricky.
->> */
->> - if (!IS_ENABLED(CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP))
->> + if (!IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION))
->> return false;
->>=20
->> return is_power_of_2(sizeof(struct page));
->> diff --git a/mm/Kconfig b/mm/Kconfig
->> index bc7befafb47b5..c180d40cd6712 100644
->> --- a/mm/Kconfig
->> +++ b/mm/Kconfig
->> @@ -461,6 +461,10 @@ config SPARSEMEM_VMEMMAP
->>  pfn_to_page and page_to_pfn operations.  This is the most
->>  efficient option when sufficient kernel resources are available.
->>=20
->> +config SPARSEMEM_VMEMMAP_OPTIMIZATION
->> + bool
->> + depends on SPARSEMEM_VMEMMAP
->> +
->> #
->> # Select this config option from the architecture Kconfig, if it is =
-preferred
->> # to enable the feature of HugeTLB/dev_dax vmemmap optimization.
->> diff --git a/mm/sparse.h b/mm/sparse.h
->> index d3a71ef4fad0f..3151d4db75753 100644
->> --- a/mm/sparse.h
->> +++ b/mm/sparse.h
->> @@ -10,7 +10,7 @@
->>=20
->> #include <linux/mmzone.h>
->>=20
->> -#ifdef CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP
->> +#ifdef CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION
->> static inline unsigned int section_compound_order(const struct =
-mem_section *section)
->> {
->> return section->compound_page_order;
->> @@ -75,7 +75,7 @@ static inline bool vmemmap_optimizable_pfn(unsigned =
-long pfn)
->>=20
->> static inline bool vmemmap_optimizable_order(unsigned int order)
->> {
->> - if (!IS_ENABLED(CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP))
->> + if (!IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION))
->> return false;
->>=20
->> if (!is_power_of_2(sizeof(struct page)))
->=20
-> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-
-Thank you Mike.
-
->=20
-> --=20
-> Sincerely yours,
-> Mike.
->=20
-
+diff --git a/arch/powerpc/crypto/vmx.c b/arch/powerpc/crypto/vmx.c
+index 08da5311dfdf..8abc4db8ee4e 100644
+--- a/arch/powerpc/crypto/vmx.c
++++ b/arch/powerpc/crypto/vmx.c
+@@ -8,12 +8,7 @@
+  */
+ 
+ #include <linux/module.h>
+-#include <linux/moduleparam.h>
+-#include <linux/types.h>
+-#include <linux/err.h>
+ #include <linux/cpufeature.h>
+-#include <linux/crypto.h>
+-#include <asm/cputable.h>
+ #include <crypto/internal/skcipher.h>
+ 
+ #include "aesp8-ppc.h"
+@@ -24,7 +19,7 @@ static int __init p8_init(void)
+ 
+ 	ret = crypto_register_skcipher(&p8_aes_cbc_alg);
+ 	if (ret)
+-		goto err;
++		return ret;
+ 
+ 	ret = crypto_register_skcipher(&p8_aes_ctr_alg);
+ 	if (ret)
+@@ -40,7 +35,6 @@ static int __init p8_init(void)
+ 	crypto_unregister_skcipher(&p8_aes_ctr_alg);
+ err_unregister_aes_cbc:
+ 	crypto_unregister_skcipher(&p8_aes_cbc_alg);
+-err:
+ 	return ret;
+ }
+ 
+@@ -54,8 +48,6 @@ static void __exit p8_exit(void)
+ module_cpu_feature_match(PPC_MODULE_FEATURE_VEC_CRYPTO, p8_init);
+ module_exit(p8_exit);
+ 
+-MODULE_AUTHOR("Marcelo Cerri<mhcerri@br.ibm.com>");
+-MODULE_DESCRIPTION("IBM VMX cryptographic acceleration instructions "
+-		   "support on Power 8");
++MODULE_AUTHOR("Marcelo Cerri <mhcerri@br.ibm.com>");
++MODULE_DESCRIPTION("IBM VMX cryptographic acceleration instructions support on Power 8");
+ MODULE_LICENSE("GPL");
+-MODULE_VERSION("1.0.0");
 
