@@ -1,82 +1,65 @@
-Return-Path: <linuxppc-dev+bounces-27444-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27445-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED958C88E77
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 19:09:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5847CC88E77
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 19:35:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hks5N20v8z2yDD;
-	Wed, 16 Sep 2026 05:09:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:34::10"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789499368;
-	cv=none; b=JlPdHse3jeR1cvH/zliYcDefkS0frl4dCU6bNit+LdYU0YRqHNVaaXp44LQMwoTHwZYz7MbR81cSwBGVydZk8hDGLbObA/FsLkPsmWHYRTCHeb+Gx5WR9atFLXP79POCC4FgEtLrLkyqhI/OJpdeV7VI31LVEIGZU3tg2kCWI4s/X5KRJV968F/yffVhvj1fmGNB4vY7BcMqNDQeXN08aklOuCPMJ4y8HJadaLycy1oLBzvJcv7/N18U4izIeMsUVOFJ9Imca+4chE99xKQeBMDvbQwmNOpG3LoTXPdUEWjsx3X7uGU9atEQ+61tSGPND6eSTV6OFg0+EqW5M1Uqgg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hksg64ZmMz2yDD;
+	Wed, 16 Sep 2026 05:35:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c01:e000:3a1::42"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789500914;
+	cv=none; b=hDMQJ5QSPhhm78P+QnfwRTBA0o7UT+B0DA0R9oixAOpUMz/lN52b6ajL3MwY54CO/3fTj/oHu1y4waP74z67RQ5b1r77km27tsLI6DmR3xs0minvwmpVsmnXEx2G5oSxpyU3QiK8/uKfadSNMf87rAlq9SxyiJlNaGVQAm0E0H2zcFNrcWYB59qDhtBmLyBKd10xNaA68C6jWwWDvemkSiCVSLP0Jv0WMlxM3ieuCZiSkwMt+vR74Fqj47ZLDa1rG2RFiHXHwh9hCdKBUfUUzae5Phqfkq9kzFo9HZnzQdoFTlP6u7gJxvEgrXeaJyE3m/kFZw45hXSXILkewrLXPA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789499368; c=relaxed/relaxed;
-	bh=XFFk9jJtDswBQpA8QWIooO6lLG4HdlvPT/LqykRjG+U=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=XrjTNYHRJZbjFxmPvLVV7R2TVKFyfUlXd37DY0x4cMnH3JPBlk/Rl+l5n5y6Ys1PLNNltgX/xElCJdlYIzJFPZXYq11qAvaus3jSyGEooFPoZ6LOsnaARn8FGiK6B9qmapQev7iXG3M/nHhecLMuwM9zpH5EIFYRsX2CullbKNSgLKRSDpw30K+7LcyDZR651/uumGrLA89O86nKZXuEnzD+jT/QhUC2YnoqFanCGMfbwMT4E18LZ1mqub2aneWaUzwjcm1V5u80CFpCxWsFwulH4AJKumdE3Tqq7k+fkhYWVrrp40AWOqYnb4KorMzEmfBpY+DSP+d7ZWd1ER3a8w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=bTUxZYcz; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:34::10; helo=mail-ej2-x10.google.com; envelope-from=torvalds@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1789500914; c=relaxed/relaxed;
+	bh=CCS4ywA5oohfMKVA8PHgc+vaVYFqVV6V3sd1dJYizNk=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=NUDZ2KzChUmiuZeq316ywgVTMIghOR1JhEnjl7y9ZSP6rYL0md4fcCKcvtAHW+/2W0066RohGfN1OzSo2523e9np6AuR8INQFnLhqLdm0ERKhaKUw1OI3JfDBavUJ08Lt57J6szcRmtMfddlsS/YBQxcCLT+PotNEfBbJ6IA8RH7pux1aDj78uhDoaPCtgvpH8Wjtmaf6OHYa3Q3NdVSeusjutiZdKLbkz1CmhQDVlZhYvMhlgpc2twhMQOztRIf4b6XW4PqKdeHfxu2aahCAdVeBo2GliAiRqySLz5FCv9HZbn9OcOj5VHAtriiLmrubgqwhZjI0OSrqWRUqvrqTQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lwn.net; dkim=pass (2048-bit key; unprotected) header.d=lwn.net header.i=@lwn.net header.a=rsa-sha256 header.s=20201203 header.b=NokrHQA/; dkim-atps=neutral; spf=pass (client-ip=2600:3c01:e000:3a1::42; helo=ms.lwn.net; envelope-from=corbet@lwn.net; receiver=lists.ozlabs.org) smtp.mailfrom=lwn.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lwn.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=bTUxZYcz;
+	dkim=pass (2048-bit key; unprotected) header.d=lwn.net header.i=@lwn.net header.a=rsa-sha256 header.s=20201203 header.b=NokrHQA/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:34::10; helo=mail-ej2-x10.google.com; envelope-from=torvalds@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from mail-ej2-x10.google.com (mail-ej2-x10.google.com [IPv6:2a00:1450:4864:34::10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lwn.net (client-ip=2600:3c01:e000:3a1::42; helo=ms.lwn.net; envelope-from=corbet@lwn.net; receiver=lists.ozlabs.org)
+X-Greylist: delayed 497 seconds by postgrey-1.37 at boromir; Wed, 16 Sep 2026 05:35:12 AEST
+Received: from ms.lwn.net (ms.lwn.net [IPv6:2600:3c01:e000:3a1::42])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hks5L2WZxz2y8m
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 05:09:25 +1000 (AEST)
-Received: by mail-ej2-x10.google.com with SMTP id a640c23a62f3a-c254fa663bfso33749666b.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 12:09:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linux-foundation.org; s=google; t=1789499357; x=1790104157; darn=lists.ozlabs.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=XFFk9jJtDswBQpA8QWIooO6lLG4HdlvPT/LqykRjG+U=;
-        b=bTUxZYczIM5tJCwamL0BWFbsbgx9bVjO+geR5SxxlC0h7F06Ir3Ka5KD1zQncmu4h+
-         8ZKD6JVkal8s5sLkpeX04QWlqhxtg/rHOSjojVeYwKEelvtMFD7DYDXfXfZddc2qdJBV
-         qundUEPD8VjWCPsWhpaOlb/AYFbJ3xqzXLx1U=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789499357; x=1790104157;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=XFFk9jJtDswBQpA8QWIooO6lLG4HdlvPT/LqykRjG+U=;
-        b=Oy9SJ24Fyj0sE1d3K0taVG9XbbSncUn3OK9Bwh5Fynv7DDtjTYSdcNpyVS8EVK0Tpg
-         q5kRTG9Z2UA62toA6xKrRaY4L79893X0K9egBnhhgCXkeStyVSkmJTC2X8Pmm0/Psbyt
-         j2xDEG5pmsVSLv0HYnqs0uQMjCp/P+s+3eIdx9Jf+vtxRHpSKdSFEl7cA+updRg/onpP
-         Vjia6Ch3AHI6rveelHLVIBmIQkGS5lZJlUPidhFO0k1j/1PUIHWwKf2L54Yu9b1fxiiM
-         kJmBEmbR5aL8JgJoZ/ejxyFxlhky3zWNjQyAATabDT9F/WxwuBQYZNwpsW5BOQ+HvtNy
-         7n3g==
-X-Forwarded-Encrypted: i=1; AKwUvBzT5r61cKe2VB7xAqret6J0GceN1zZaDHRhGVN3PQYDuYeBtUzKhbqxZYDt4SeowbKJSdZdpqFCSZfNUmE=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++kDmtpmRBmOnWKWHTLetHkRWf+47FgRjnt1NgfcpzJ7c04HF6xn
-	uT/j/NU1l4DfRwgAhX0Rg/msvsIJJyscoj5yi6QOHPkyOdiPGioDDkievUBeAX/29CUJ+dPqZYR
-	zEV1U5Ik=
-X-Gm-Gg: AYBFou2onsuRfTWVJiW0vz0IVNLvkqSberY5krZVQ3cW4N8b8nNwv+uHlx+GXd05gdI
-	CGC24ZgyZKJ4gca4YCwpMa43RSm5pfAmaZwWDS4+nNMpA7TGj73+ktkzRPDYj0Vs7v3U8hGUrSj
-	VljQPHjp9Mdv7B6OqUdfP4SdOIpg8QZMlsjW5cVlIyx2TPvfzcWEtNsgUwwhZ2YmsmUbrIljO7V
-	dfbmuJ5/I3474i3/SOeLzAnQxYf85P9asmleDEFkThTdvrZhNcZbJL4Le6Z8Uf3lpLxCXDgQew/
-	cBgIGbc1Od0LGPjM+x5Xc79iRNurtC75Cl/ql6iUl2WBR9lI6ztp60a6WkIaVgu/f5mBToJ3MjD
-	Rq+xSn/v7DbOKckWRoCyvpB8VJNe02tkU4aXnsuoKjdp3e51ecTbhRbyy8C+dXzT5fftCH6B1sz
-	MlTh58oFU5/tHflF2eRQ+jnqDbTBxnZDaCofTinntSrM6HTmCOaHyjThU9d2szv2utAjhsk7YO6
-	JjBTaLW1FXNx0rRN0YsjEAufnDlvNXuZAmS6i7enZGJQZT9PA==
-X-Received: by 2002:a17:907:d2a:b0:c25:2e93:289e with SMTP id a640c23a62f3a-c29b86f0787mr1071907566b.16.1789499356953;
-        Tue, 15 Sep 2026 12:09:16 -0700 (PDT)
-Received: from mail-ej2-f12.google.com (mail-ej2-f12.google.com. [74.125.228.140])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c29de5f478dsm15595766b.46.2026.09.15.12.09.15
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 15 Sep 2026 12:09:16 -0700 (PDT)
-Received: by mail-ej2-f12.google.com with SMTP id a640c23a62f3a-c254fa663c1so28573666b.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 12:09:15 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBxrQrY8AybuedoK+bvT3iKdyMmHFNPzG7KcZZJf+8eNQEQawo5It5Bt1CZewtVDS+po4VkM8zj55j3FLBI=@lists.ozlabs.org
-X-Received: by 2002:a17:906:7309:b0:c25:47a4:fedc with SMTP id
- a640c23a62f3a-c29b839a057mr1176039766b.2.1789499355710; Tue, 15 Sep 2026
- 12:09:15 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hksg40mcTz2y2f
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 05:35:12 +1000 (AEST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 ms.lwn.net E51BA408B4
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lwn.net; s=20201203;
+	t=1789500410; bh=CCS4ywA5oohfMKVA8PHgc+vaVYFqVV6V3sd1dJYizNk=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=NokrHQA/Xh8zx1qPWbPypi/rKm1WeIVf/pEq5ouX8LoFDBvN8jlacYY2bQPJYIFXs
+	 827Z+Mlsa7lbO8V5Q3jQV3eYFqxwHk+2scTgWQO1qToft8XrEG5CEnNmRs54O7MOYT
+	 l8bQSDjV1gNRrUWGFhto/kiOYyTXDvdeC/tvHGxnYHjywqgaxQ9srdV05rfxI26nKM
+	 gjpRwugC7vxMZMmkz7Yn17kqOTl1VVBXf5huoz+VZMctHJqxOUHBr1WD4O6vrzrnbO
+	 6PxO4Je8+7eRGHLdlNynbqax6tbXv3dpW8v4TrKwGu76C2uSL2KvUQGuXYrcm6cWr6
+	 GbKS5EEs0ZqHQ==
+Received: from localhost (unknown [IPv6:2601:280:4600:814::1fe])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by ms.lwn.net (Postfix) with ESMTPSA id E51BA408B4;
+	Tue, 15 Sep 2026 19:26:49 +0000 (UTC)
+From: Jonathan Corbet <corbet@lwn.net>
+To: Karl Mehltretter <kmehltretter@gmail.com>, Madhavan Srinivasan
+ <maddy@linux.ibm.com>
+Cc: Karl Mehltretter <kmehltretter@gmail.com>, Haren Myneni
+ <haren@us.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org, Shuah Khan
+ <skhan@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>, Ritesh
+ Harjani <ritesh.list@gmail.com>
+Subject: Re: [PATCH v2] docs: powerpc: vas-api: Fix the structure name and
+ the ioctl number in the example
+In-Reply-To: <20260907004925.10948-1-kmehltretter@gmail.com>
+References: <20260907004925.10948-1-kmehltretter@gmail.com>
+Date: Tue, 15 Sep 2026 13:26:48 -0600
+Message-ID: <87cxue8gef.fsf@trenco.lwn.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,64 +73,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260915-work-fd-reserve-unify-folded-v1-0-4d5217d6b246@kernel.org>
- <CAG48ez1RsdT=O=-0city3vjgWhDvY424KtTmrCJntWy5ds3HBQ@mail.gmail.com>
-In-Reply-To: <CAG48ez1RsdT=O=-0city3vjgWhDvY424KtTmrCJntWy5ds3HBQ@mail.gmail.com>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 15 Sep 2026 12:08:57 -0700
-X-Gmail-Original-Message-ID: <CAHk-=wi3Kkqgfg6zUTHpQoZNL2VOB4vYqpi6RX0WNO++29UtyQ@mail.gmail.com>
-X-Gm-Features: AcwNN1VCm0LMG7z3Jned014oJh6WBcf4uOx0OBk98_hrtHKbrhcQiMMJ_A-fmB0
-Message-ID: <CAHk-=wi3Kkqgfg6zUTHpQoZNL2VOB4vYqpi6RX0WNO++29UtyQ@mail.gmail.com>
-Subject: Re: [PATCH RFC POC 00/50] file: handle files on syscall exit
-To: Jann Horn <jannh@google.com>
-Cc: Christian Brauner <brauner@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>, 
-	Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linux-fsdevel@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org, 
-	Oleg Nesterov <oleg@redhat.com>, linux-alpha@vger.kernel.org, 
-	linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
-	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
-	linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org, 
-	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, 
-	linux-um@lists.infradead.org, Jens Axboe <axboe@kernel.dk>, io-uring@vger.kernel.org, 
-	netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-gpio@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, bpf@vger.kernel.org, 
-	David Airlie <airlied@redhat.com>, virtualization@lists.linux.dev, kvm@vger.kernel.org, 
-	kexec@lists.infradead.org, linux-hyperv@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 
-On Tue, 15 Sept 2026 at 10:52, Jann Horn <jannh@google.com> wrote:
+Karl Mehltretter <kmehltretter@gmail.com> writes:
+
+> struct vas_setup_attr does not exist; the name is struct
+> vas_tx_win_open_attr. The example also defines VAS_TX_WIN_OPEN with the
+> request number 1, while arch/powerpc/include/uapi/asm/vas-api.h has used
+> 0x20 since the ioctl was added.
 >
-> Is this mainly about stuff like "we installed a file descriptor and
-> then the following put_user() failed"? Because if so, I think a nicer
-> fix would be to have a policy of "if userspace provides unwritable
-> memory to a syscall, just keep going and pretend the access worked",
-> and maybe have a sysctl that kills the process when this happens to
-> emphasize that userspace should not be doing this.
+> Use struct vas_tx_win_open_attr and 0x20.
+>
+> Fixes: c12e38b1d52e ("Documentation/powerpc: VAS API")
+> Suggested-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+> Assisted-by: LLM
+> Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
+> ---
+> v2: also fix the ioctl request number in the example (Ritesh)
+> v1: https://lore.kernel.org/r/20260905104313.43620-1-kmehltretter@gmail.com/
+>
+>  Documentation/arch/powerpc/vas-api.rst | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/Documentation/arch/powerpc/vas-api.rst b/Documentation/arch/powerpc/vas-api.rst
+> index 1d0d055356e3..f74ea9fbc8a0 100644
+> --- a/Documentation/arch/powerpc/vas-api.rst
+> +++ b/Documentation/arch/powerpc/vas-api.rst
+> @@ -136,7 +136,7 @@ a connection with NX co-processor engine:
+>  	follows::
+>  
+>  		#define VAS_MAGIC 'v'
+> -		#define VAS_TX_WIN_OPEN _IOW(VAS_MAGIC, 1,
+> +		#define VAS_TX_WIN_OPEN _IOW(VAS_MAGIC, 0x20,
+>  						struct vas_tx_win_open_attr)
+>  
+>  		struct vas_tx_win_open_attr attr;
+> @@ -265,7 +265,7 @@ Simple example
+>  		{
+>  			int rc, fd;
+>  			void *addr;
+> -			struct vas_setup_attr txattr;
+> +			struct vas_tx_win_open_attr txattr;
+>  
 
-We've done that before, where we just ignore put_user() errors and the
-user gets whatever the user gets.
+Applied, thanks.
 
-It is maybe not optimal, but it's fine. You can find quite a lot of
-unchecked put_user() calls with a pattern like
-
-        git grep '^[[:space:]]*put_user(.*);'
-
-and some of them are in core code - see the two in kernel/fork.c, for example.
-
-One of them says "if userspace has not set up a proper pointer then
-tough luck". The other one doesn't even bother with a comment.
-
-The scheduler has two cases too, although one of them is admittedly
-for another error case.
-
-So yes, saying "if you pass bogus arguments, you get what you get" is
-a valid model. It's perhaps not the *preferred* model, but it's not
-wrong.
-
-It *would* be wrong to take code that already has error handling and
-remove the error handling, though.
-
-                  Linus
+jon
 
