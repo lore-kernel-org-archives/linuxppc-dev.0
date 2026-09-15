@@ -1,111 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-27298-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27299-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84D09C88E73
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 08:23:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5ADE6C88E73
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 08:38:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hkZmV6Tw4z2y2B;
-	Tue, 15 Sep 2026 18:23:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1:d65d:64ff:fe57:4e05"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789460634;
-	cv=none; b=C5rvVve6r4nU1sZYjirk4OJP3Z1qF0Q9/GLlvV3WLM7G2X7OGDodvk5Pz+uxF6ajI72LvyCQdsuEhSUNjKI1m78iJlNve4sV+2Z7sFknAmd38uyU82dsgs2QHCnasqa8NwuDpnCWLuOKotrk4nOUovAUyt/0S1JWRsicp+QqrgPVCn5S54F1lOCJ3HhkipsRbHJe0mo1BhU9jiy7let5DbwBtTRy4m5C+JjmYDDnh8bPRVVIk8YpgyYSJECyiLupHCRTFJetv501V3vj0iRi8kL5CfBA5tb8vofDtKTTx9KLlZ4XyBpB3TyHBpwPh9gM5+ZYg0Ih4Y4Wb7DbEEMwBQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hkb5m5sL3z2y2B;
+	Tue, 15 Sep 2026 18:38:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789461532;
+	cv=none; b=iFGMTM0AcBCKZhvToso5gMFEEKV1ZuWQQEQKanOEmdwd82U1CnIS6ysvoqrgXBWsJVTn2Z0grEkm4C+m2USG5Uo39loeHTdVyDI7ZmJdDbyCgpptgdumVcLPFFIso3xquAZ3YnLRU0QgRLBJV6ZIJ8wDgeoe03rneSDLOFk7+MgWABB2PFHpYhgDI2z+kwTs9Bv+99Vn4RveRvaaoZx0uN8g1ygae5IcxQJmXPa4h3qiEhrBpvWReDRfAGgsoTMfHUAcuYUEnpDg4LEfAYhPBysioFm3TTaQQ5dKCAm7pLzY/yJ4fY0cJwMm77O0ELPw9AiAoTSSrsBh1M95dPBSsg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789460634; c=relaxed/relaxed;
-	bh=GLQ264WxN6wDQzABD1f2vOcHnnY8r7L3wdbiMWb63xA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=aurdqEvJ9oy8rMjmGR1nQZ5VOt1r6kx4beeVVpcUhpJcWKleU6ONgatV8SsiqKYK93k2+Gb7fHaciU3Gm5PkgzowY16v8D4WK9SBUiBneAW7p0o0gYVYydrr02XFxN6oILG0FN2gxqdLK6wK+8zoHdApY3lXyd382sZlRz5tlU2JF2zfbsMYg4gKScatMzNQoF6ECIPo387AakU+ncIbHyOyiyRyIRq5rWm0btKgWFjpoFewufCipe7uZqaIAG29xecpDzgA3O22hDrMub0nOoGCA/k9mz72J/G4uRFMWr/iaGb3b1yqBiN/sKocdTLc6gaj1aGh5A7l5xcXmF+n3A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=ipzJcm8I; dkim-atps=neutral; spf=pass (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+	t=1789461532; c=relaxed/relaxed;
+	bh=k3FH4x5L80jGTzVXyd1FgcnuV1kZzhrBCb0yGo4D9cc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=NWlXZZmk/a/LzWRG+W63q3KyoOCz3m6c6Qq2Kxq6Zc+Ccjf4J3oj55MZ/MrJMbwq5Uu8Vx5UqfS5Vqn1C6YA3UCwNyi1f7rvMGqFrL5ZamaJC7lA2G0utZ8qO6Z0qVVq8B4XVt7Bh2LAqaltNMjObqx3nSLEeRsGQad0kLmEhkShqEz4bJbsllzek567ZH9C6A80oriwyeWns+Rnh1p0lUXOSqAKMcvEIk+t1RXfJiP03udlNPjKD4m6n+azHevNZRHa/rd7MJ2I6yiW0rv2/D2GGdSpSdfo28IUiO7Vrd6vD3H4O+GMsF7HMcEcnIMcfDIQFXGnf+q1ACblQeY8pg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ipEX5J/u; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=ipzJcm8I;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ipEX5J/u;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkZmJ40R8z2xlZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 18:23:43 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=GLQ264WxN6wDQzABD1f2vOcHnnY8r7L3wdbiMWb63xA=; b=ipzJcm8I1ST/GUt421dYmJnfyI
-	vMJ7fwLPm50oqJU0jqpXgWe24q407KlTdH7SXHQr7TDXrJ0cM1tEYBnW9xuMF681fSZbRWEhC0xLD
-	6pneXq40+9I4oviAF01pBkAh9+iexFHZvr8Q0AJ9eQUZ1IpxpzGhf4HDVrlwFQYzTx+rlpPRZqXIS
-	bi5aWaDAYx9YdPtSyaz9+cEy9G45/haDccskEkn/nT4u1JIUGIvbu/z3wOp8oYMS5UFYrgQZ3LkKc
-	D4oDDw5Avnj0AUqbEB+wgK/erFclXrfrCAUd2232oXhxiftApCzjDlcWbdLgQanaRy0SwbWde3WVp
-	73UWs78A==;
-Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
-	by desiato.infradead.org with esmtpsa (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1x6ORT-00000006QWj-1Tpq;
-	Tue, 15 Sep 2026 08:23:05 +0000
-Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-	id F1FDF3012C6; Tue, 15 Sep 2026 10:23:00 +0200 (CEST)
-Date: Tue, 15 Sep 2026 10:23:00 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Yury Norov <ynorov@nvidia.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	"Jason A. Donenfeld" <Jason@zx2c4.com>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	Matthew Wilcox <willy@infradead.org>,
-	Ingo Molnar <mingo@redhat.com>, Will Deacon <will@kernel.org>,
-	Boqun Feng <boqun@kernel.org>, Waiman Long <longman@redhat.com>,
-	Dennis Zhou <dennis@kernel.org>, Tejun Heo <tj@kernel.org>,
-	Christoph Lameter <cl@gentwo.org>,
-	"Paul E. McKenney" <paulmck@kernel.org>,
-	Frederic Weisbecker <frederic@kernel.org>,
-	Neeraj Upadhyay <neeraj.upadhyay@kernel.org>,
-	Joel Fernandes <joelagnelf@nvidia.com>,
-	Josh Triplett <josh@joshtriplett.org>,
-	Uladzislau Rezki <urezki@gmail.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	Lai Jiangshan <jiangshanlai@gmail.com>,
-	Zqiang <qiang.zhang@linux.dev>,
-	Onur =?iso-8859-1?Q?=D6zkan?= <work@onurozkan.dev>,
-	Kees Cook <kees@kernel.org>,
-	Joel Granados <joel.granados@kernel.org>,
-	Anna-Maria Behnsen <anna-maria@linutronix.de>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Juri Lelli <juri.lelli@redhat.com>,
-	Vincent Guittot <vincent.guittot@linaro.org>,
-	Dietmar Eggemann <dietmar.eggemann@arm.com>,
-	Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>,
-	Valentin Schneider <vschneid@redhat.com>,
-	K Prateek Nayak <kprateek.nayak@amd.com>,
-	Mike Rapoport <rppt@kernel.org>,
-	"Liam R. Howlett" <liam@infradead.org>,
-	Lorenzo Stoakes <ljs@kernel.org>,
-	Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>,
-	Pedro Falcato <pfalcato@suse.de>,
-	"Michael S. Tsirkin" <mst@redhat.com>,
-	Jason Wang <jasowangio@gmail.com>,
-	Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
-	Eugenio =?iso-8859-1?Q?P=E9rez?= <eperezma@redhat.com>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	Clark Williams <clrkwllms@kernel.org>,
-	Nathan Chancellor <nathan@kernel.org>,
-	Nick Desaulniers <ndesaulniers@google.com>,
-	Bill Wendling <morbo@google.com>,
-	Justin Stitt <justinstitt@google.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	wireguard@lists.zx2c4.com, netdev@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
-	rcu@vger.kernel.org, virtualization@lists.linux.dev,
-	linux-rt-devel@lists.linux.dev, llvm@lists.linux.dev,
-	Yury Norov <yury.norov@gmail.com>
-Subject: Re: [PATCH 01/17] locking/mutex: assert static storage for
- DEFINE_MUTEX()
-Message-ID: <20260915082300.GV4121339@noisy.programming.kicks-ass.net>
-References: <20260915030336.1192299-1-ynorov@nvidia.com>
- <20260915030336.1192299-2-ynorov@nvidia.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkb5l4Cb4z2xlZ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 18:38:50 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68F71SYm150551;
+	Tue, 15 Sep 2026 08:38:36 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=k3FH4x
+	5L80jGTzVXyd1FgcnuV1kZzhrBCb0yGo4D9cc=; b=ipEX5J/ugvexfodCIvoUbm
+	IRSxsEOyc04z5U5T9epHAnVnptHmf5S5gLqHb2heAYKh0AUyJEV8DKCLZVt6DCI1
+	dIZUS7+2bh5wXsTFMfGpeTt5X7cLf9YtXkYH06TLO/XUjYzHZjPsSweMdte+m9JA
+	UgSG3T9FXECuzDu7uaPgO6RnQE4nxLgdrbJq59fWOG0kUthilXgPmi0Gs/ZI/TJS
+	GNufu21fxC+IL9ehtxWv99biuNPeUk9jUEvgzpW0nq+5SB4xmV+ZAtwU4fTOpRfx
+	RKUCPWi20HatHvKjz3eR+VU/97lvP8chCgwo2v7xIxq2dVmvI3fP0NzWW9JABpvw
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gmxf4x3uc-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Tue, 15 Sep 2026 08:38:35 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68F6ZI6B3613555;
+	Tue, 15 Sep 2026 08:38:34 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gpywerjvs-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 15 Sep 2026 08:38:34 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68F8cVhw41222544
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 15 Sep 2026 08:38:31 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 136492004B;
+	Tue, 15 Sep 2026 08:38:31 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4578A20040;
+	Tue, 15 Sep 2026 08:38:29 +0000 (GMT)
+Received: from [9.123.2.177] (unknown [9.123.2.177])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 15 Sep 2026 08:38:29 +0000 (GMT)
+Message-ID: <647f3494-1e79-43ea-a8ed-157b3f0e6c54@linux.ibm.com>
+Date: Tue, 15 Sep 2026 14:08:28 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -119,73 +81,109 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260915030336.1192299-2-ynorov@nvidia.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] KVM: PPC: Book3S HV: Avoid triggering an extra interrupt
+ for a vCPU
+To: Gautam Menghani <gautam@linux.ibm.com>, maddy@linux.ibm.com,
+        npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org,
+        tpearson@raptorengineering.com
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, stable@vger.kernel.org
+References: <20260915060146.33410-1-gautam@linux.ibm.com>
+Content-Language: en-US
+From: Narayana Murty N <nnmlinux@linux.ibm.com>
+In-Reply-To: <20260915060146.33410-1-gautam@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: WBWQJk8CS2rSJ-gzFi8ni3i-Z7ly88h2
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE1MDEyMiBTYWx0ZWRfX+e06gwGvGJ43
+ o5vMknaE4HWsvQ4+Dkdc6cCZ8qDrltltDnAeAhUFugJi1CQNpF+acI6xqKMXQeZtFWdVnjjrJQx
+ 37cg0wN8bP5x54atR9GxV7JwZ6t2c6g=
+X-Authority-Analysis: v=2.4 cv=cvgOAF4i c=1 sm=1 tr=0 ts=6aa9040c cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
+ a=yKAn6K1XAAAA:8 a=_AprYWD3AAAA:8 a=VnNF1IyMAAAA:8 a=C-dYcwNCrXqwm9yQvhYA:9
+ a=QEXdDO2ut3YA:10 a=6M1ixcW_PCWoKiWyFx5v:22 a=fKH2wJO7VO9AkD4yHysb:22
+X-Proofpoint-ORIG-GUID: Kady2yuf0ChdC2klB7QZEB5XWAWuVf-r
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE1MDEyMiBTYWx0ZWRfX0AvzrU1jlVxj
+ vLPICeDcq1FCC6OdIyT4skJOrGWoT6patSLqr5YYZFjr5ACAnX1fdKzRrJPTL+TCk/GS9oGyaNi
+ bOvQIOVGSXx/XxSv+MJWqxEcvgvaPRZuK951EzEakhxA3InbVBVNEb6QDj179F1ZZrQ+INUzW15
+ 1OR3TY+CFL8alyV86bITAup+9odiN4d0DwxpFmXECWEmnLSV8X6XHxICCHRBQ8YmF1o+up4I1K+
+ FVMrwLUAj7Dlek4O97bxB6Hsz7Hdy9KGOatmfcLx0+8ucqHELQHwNariGZLYhWq+7XIeo30zx5b
+ DB8hpWnK3Hq0eSu9Ro4S+gJBQJs+wnIObeuCLxG8xGZfFUcXVqd5SFhTgN9mBoJK1eTi1M6fvpn
+ a5pm1tL7YrE52bPcXmte6Cs3Hdn3wn+76PmaphsZPEM4sg7MmarFktXzW9s+x2xZFX2whb3JHuS
+ 58pVoGWKNCwAm3brXwA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-15_02,2026-09-14_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 lowpriorityscore=0 clxscore=1011 priorityscore=1501
+ suspectscore=0 bulkscore=0 impostorscore=0 phishscore=0 spamscore=0
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
+ definitions=main-2609150122
 
-On Mon, Sep 14, 2026 at 11:03:19PM -0400, Yury Norov wrote:
-> DEFINE_MUTEX() uses a static lock initializer whose lockdep class key
-> requires a persistent object address. Reject automatic local declarations
-> with ASSERT_STATIC_STORAGE(), in both the regular and PREEMPT_RT variants.
-> Align the VMA and memblock tools stubs with the kernel declaration.
+Hi Gautam,
+
+On 15/09/26 11:31 AM, Gautam Menghani wrote:
+> A huge number of spurious interrupts can be seen immediately after a KVM
+> on PowerNV guest boots up in XIVE mode.
 > 
-> The two automatic mutexes in the WireGuard allowedips selftests already
-> call mutex_init(). Replace their redundant static initializers with plain
-> struct mutex declarations.
+> $ cat /proc/interrupts  | grep SPU
+> SPU:     223705     192439     273526     147623   Spurious interrupts
 > 
-> Assisted-by: OpenAI Codex
-> Signed-off-by: Yury Norov <ynorov@nvidia.com>
+> This bug was introduced by commit ecd10702baae5 ("KVM: PPC: Book3S HV:
+> Handle pending exceptions on guest entry with MSR_EE"). The root cause
+> is that when there is an interrupt pending for a vCPU
+> (xive_interrupt_pending() returns true) and MSR_EE is disabled for the
+> vCPU, LPCR_MER ends up getting set for the VCPU. When the vCPU starts
+> running, the XIVE hardware presents the pending interrupt to the vCPU
+> (since the KVM guest has native XIVE support) and then a second spurious
+> interrupt gets presented to the vCPU due to the LPCR_MER bit being set.
+I agree that we should avoid setting LPCR_MER when the pending interrupt 
+will already be delivered natively by XIVE on PowerNV.
+> 
+> Fix this behaviour by not queuing up any extra interrupts with LPCR_MER
+> if there is an interrupt already pending in the case of KVM on PowerNV.
+> This reduces the number of spurious interrupts drastically.
+> 
+> Fixes: ecd10702baae5 ("KVM: PPC: Book3S HV: Handle pending exceptions on guest entry with MSR_EE")
+> Cc: stable@vger.kernel.org #6.8+
+> Reported-by: Timothy Pearson <tpearson@raptorengineering.com>
+> Closes: https://lore.kernel.org/linuxppc-dev/582904882.11159.1786719390349.JavaMail.zimbra@raptorengineeringinc.com
+> Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
 > ---
->  drivers/net/wireguard/selftest/allowedips.c | 4 ++--
->  include/linux/mutex.h                       | 7 +++++--
->  tools/testing/memblock/linux/mutex.h        | 8 ++++++--
->  tools/testing/vma/include/dup.h             | 5 ++++-
->  4 files changed, 17 insertions(+), 7 deletions(-)
+>   arch/powerpc/kvm/book3s_hv.c | 5 ++---
+>   1 file changed, 2 insertions(+), 3 deletions(-)
 > 
-> diff --git a/drivers/net/wireguard/selftest/allowedips.c b/drivers/net/wireguard/selftest/allowedips.c
-> index 3e857e6fb627..ecb2908228e7 100644
-> --- a/drivers/net/wireguard/selftest/allowedips.c
-> +++ b/drivers/net/wireguard/selftest/allowedips.c
-> @@ -257,7 +257,7 @@ static __init bool randomized_test(void)
->  	u8 ip[16], mutate_mask[16], mutated[16];
->  	struct wg_peer **peers, *peer;
->  	struct horrible_allowedips h;
-> -	DEFINE_MUTEX(mutex);
-> +	struct mutex mutex;
->  	struct allowedips t;
->  	bool ret = false;
->  
-> @@ -499,7 +499,7 @@ bool __init wg_allowedips_selftest(void)
->  	struct allowedips_node *iter_node;
->  	bool success = false;
->  	struct allowedips t;
-> -	DEFINE_MUTEX(mutex);
-> +	struct mutex mutex;
->  	struct in6_addr ip;
->  	size_t i = 0, count = 0;
->  	__be64 part;
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 7667563fb9ff..fda3767ebc9e 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -4937,9 +4937,8 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
+>   
+>   	if (!nested) {
+>   		kvmppc_core_prepare_to_enter(vcpu);
+The current code handles two different indications of an external interrupt:
+> -		if (test_bit(BOOK3S_IRQPRIO_EXTERNAL,
+> -			     &vcpu->arch.pending_exceptions) ||
+> -		    xive_interrupt_pending(vcpu)) {
+> +		if (!xive_interrupt_pending(vcpu) && test_bit(BOOK3S_IRQPRIO_EXTERNAL,
+> +							      &vcpu->arch.pending_exceptions)) {
+>   			/*
+>   			 * For nested HV, don't synthesize but always pass MER,
+>   			 * the L0 will be able to optimise that more
+This means xive_interrupt_pending() now gates the entire block, 
+including the BOOK3S_IRQPRIO_EXTERNAL handling, rather than only 
+avoiding the LPCR_MER which causes the duplicate interrupt.
 
-This should probably be a separate patch.
+Also, the changelog describes the issue as specific to KVM on PowerNV, 
+while this condition also affects the pSeries/nested handling in the 
+same block.
 
-> diff --git a/include/linux/mutex.h b/include/linux/mutex.h
-> index 734048c02f4f..2f2d95f3097c 100644
-> --- a/include/linux/mutex.h
-> +++ b/include/linux/mutex.h
-> @@ -11,6 +11,7 @@
->  #ifndef __LINUX_MUTEX_H
->  #define __LINUX_MUTEX_H
->  
-> +#include <linux/compiler.h>
->  #include <asm/current.h>
->  #include <linux/list.h>
->  #include <linux/spinlock_types.h>
-> @@ -84,7 +85,8 @@ do {									\
->  		__DEP_MAP_MUTEX_INITIALIZER(lockname) }
->  
->  #define DEFINE_MUTEX(mutexname) \
-> -	struct mutex mutexname = __MUTEX_INITIALIZER(mutexname)
-> +	struct mutex mutexname = __MUTEX_INITIALIZER(mutexname);	\
-> +	ASSERT_STATIC_STORAGE(mutexname)
-
-My tree no has ASSERT_STATIC_STORAGE. Please repost when that lands?
+Thanks,
+Narayana Murty N
 
