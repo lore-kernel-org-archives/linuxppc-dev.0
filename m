@@ -1,53 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-27366-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27367-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4ED09C982C5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 11:37:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16293C982C3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 11:37:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hkg2x0FFtz3bfF;
-	Tue, 15 Sep 2026 21:36:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789472200;
-	cv=none; b=LmAFQ8LqS1WlRf+NgMh44zz4kgPQ1/XubhBJ+1BsAQ7TS49D1laVGkBXLBZZd5fFt5/6nCdGlEU/XsXX2v6KHrrUEtyhLk6Toi1J58NJxZ8TA6XM0i7v4Gd87o6yVoGl712RIThbJJUpQlT9yd1HI5SqUdTgc6pmdZ9K5Sdy8ZOhDa5jfHfV9SkrUqfnYo+dtiNOJ702qmO5JwKZap+SyVsdN4FeRvoD5VYPKrUCVezCiAynjftH4Sl6gHKvH0RKJsp7Qcb0yKVC2m/ODQ+9VwmvWLGGZqz26rEUZ2wKNJOLqmwHwn4qVTum6rvh4IT4r2XLw1YyGNEBf9uYbfRDrg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hkg342n4sz3bgh;
+	Tue, 15 Sep 2026 21:36:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789472208;
+	cv=none; b=CJNada+xysynXkvoN5wE23IGLCDXPCutil5vqnUhjfvoHGO1fCfpa0BQcoFiim+2s89sHeDJunjtS002zPw7SN9arzZ/eW/4r8qmfW4nmuLS7tDPJFh9reYxboNdPWhOWwcXchBI87LcrZNK0ZhnBYTaOkx11v8h2jxkVaEMO3NnGdH7zNqeqJgoamvNMPObZx3ozSfX2/swYBCxvE5xsNa3vQhItPASPPETpCa9BsIwXPi3kcV73Tt8FrlT0Odx2rx96Z9ovQpNzDRRmwODNN46TQmloAB1CL8f9vw6rWHq8AEWTVQr+WRtlAhy2icNfiMopMeRPYBj28mtfzU5Tg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789472200; c=relaxed/relaxed;
-	bh=dR2AT7slAh5QiQGKBciNLhR24TAk5bJ3ys4Ah5Rt7mE=;
+	t=1789472208; c=relaxed/relaxed;
+	bh=Ja/detmDRdqJionOE2YxTutvZMYrfmHVqKWhc7op5z8=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=JjxVtfuHdkfrbvSH+FyBfhFFjt17dnz7N3gVzJW7tmVO82lrcuxXz2kdMr+sCG57FV9y3R/sYll77Znwzbyd68TXlDB1EDatcmeIkirswOXphsY4kVukj70wjABizE0c8+Kep2ssSDwh3QUqRZaVkdekYIeXiddZLY+41Z8efLEpTYy/Smrq1amZoLjhE6qXGAo75S7kXOTkjfV+YDcUO0GmBVPF8pQMuVAA45nF7+ZKcOweiwJK9uwUBKi0xtP29mj0o6KSNdhuZyDO/lcnLKCsidPA6Lp9bUkQieg9I76tP+NpzygjaTM9MbqPZhMtK3QyMsEzwZzv+qCWNp87dA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=keM2MELZ; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=SSt0F48mch6VVfzuwbgWAKBI+LCgOjRjcfHPUoCoS6UznHOGdVIRWu391blaqV0bxhyeSKqWyBO4P/ElE2qeZDb6hjonPwyiElyQxqMGRyjE973D9Rac0cbhUntDiTbedsvPTpJ5h9k6aFdmBCJ5+MWoM21tPIatgp13CEHhp+Yw1/m3OfXTpNQPz0RvuHdeB5m4WFa49kVrBeWGkhgrdWCbW7MpDasfp3qPjKGiZKnABTB4mecY5GDqDTNI/zGZTSfnrXDzaWwCMMIzeMs9agilXkP04kCHXEfcxPnWYxXsMXmFa77wqIXFA0KpEDM8dcIoeU2L/h1aiizRKr+K5g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k0B0nnun; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=keM2MELZ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k0B0nnun;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkg2w10TSz3bf8
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 21:36:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkg334RtPz3bfV
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 21:36:47 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 459BC602D0;
+	by sea.source.kernel.org (Postfix) with ESMTP id 1BA5A41927;
+	Tue, 15 Sep 2026 11:36:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8CA9E1F0089A;
 	Tue, 15 Sep 2026 11:36:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 948881F00893;
-	Tue, 15 Sep 2026 11:36:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789472198;
-	bh=dR2AT7slAh5QiQGKBciNLhR24TAk5bJ3ys4Ah5Rt7mE=;
+	s=k20260515; t=1789472206;
+	bh=Ja/detmDRdqJionOE2YxTutvZMYrfmHVqKWhc7op5z8=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=keM2MELZ8tMeEj63s6rILS1a6ikUND0cm/hSBjQN5i9zsMHRwumL2LpgndOJca1Aa
-	 97kIpfNmItf2JE76ybod5HhCCbaR3uSYEM810jrmgilIii5FRWRh1O86tNdM0FYWJl
-	 38f1UHzSPEd+hj/T0Nlt8QEoyRs4wb5r4JVdV9i/rSIOmEYhsfaqAD31KqLx/f0h3O
-	 ACHfbLbzGXb+++iV7WaxfM+tTIGP+WsUWGxYSjDxuYEbOqm0MVVuZjc4buiK4jUw7O
-	 C9LHTBiZSEultvzvuQBhaDEJQMVPhyftCJPppnofTMl7IPUPEYHfgCv4gmlMrEOmjT
-	 oPjncB8aAwY0Q==
+	b=k0B0nnunmsO4k0FOMQGSFMJINyyKujE8uhdGQkypzo+/7wAuYosHeieRrqGX896SE
+	 jv0+jbulb9ltALO0OmQ+EsdlJ6gIA3nXbRVbRqClon2eDQSEkEs0SGUl1pccz2t0gn
+	 Ex/7MGoP0rovVhh+JefOEeLJ+Zg+ArPzBOp7WhZLTZcsHHkAtRMmn/t7nzcxeX6A71
+	 wPF3zcOYfiVH5XAccqGogPi1JWYEwXqpaR4pa24KyQ3/325SMh3HSC93eSuO+sogfB
+	 azvVwpsOVoq7c+CuSQTvf0zUpuwC034v8JGqti42vDt/NRF7mUFTkRmt14V+qwNO3P
+	 E+iZSoWuXbX/A==
 From: Christian Brauner <brauner@kernel.org>
-Date: Tue, 15 Sep 2026 13:31:27 +0200
-Subject: [PATCH RFC POC 41/50] KVM: guest_memfd: stop putting the
- descriptor back on failure
+Date: Tue, 15 Sep 2026 13:31:28 +0200
+Subject: [PATCH RFC POC 42/50] drm: stop unwinding descriptors by hand
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +62,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260915-work-fd-reserve-unify-folded-v1-41-4d5217d6b246@kernel.org>
+Message-Id: <20260915-work-fd-reserve-unify-folded-v1-42-4d5217d6b246@kernel.org>
 References: <20260915-work-fd-reserve-unify-folded-v1-0-4d5217d6b246@kernel.org>
 In-Reply-To: <20260915-work-fd-reserve-unify-folded-v1-0-4d5217d6b246@kernel.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
@@ -86,12 +85,12 @@ Cc: Alexander Viro <viro@zeniv.linux.org.uk>, Jann Horn <jannh@google.com>,
  kexec@lists.infradead.org, linux-hyperv@vger.kernel.org, 
  "Christian Brauner (Amutable)" <brauner@kernel.org>
 X-Mailer: b4 0.17-dev-db0b7
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1418; i=brauner@kernel.org;
- h=from:subject:message-id; bh=KLCbLLJNzFhK9KnJoDv8kDUlKXi4pqPjbkN6aCwr8bo=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWSt1Kk/tfzHImu/Gp6ZRSssN5fyinw4ruUhZCIkyWFT3
- bH7k9a5jlIWBjEuBlkxRRaHdpNwueU8FZuNMjVg5rAygQxh4OIUgIm8sWZk6GKcxbHPfdfrbYrn
- f0Zr1u290KLF8etT65HPSeyxa5JK9zH8jwg7xHPKv6v/9/8HHp3fHOUXznI3MuD7/nrNS8a/OUU
- arAA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=5076; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=KjXekIWfPavjYonIGQ+ziJSd2VL98XtdFHe2kliVlr0=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWSt1KnXXtVVltWkLiD/9M6kwpRagVX3n83QkfpTd8T79
+ sbDSqcedJSyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAEzkpAYjw8uMrzI/Gn0vNR6b
+ r3KTrUSUt6VhVQNj8CEPxi8OCwpPBTAy7OGWebTYilF9c4qm0KsLrb/vrOaMmT1nzfvnFkpaHbe
+ TeQE=
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 
@@ -99,57 +98,178 @@ Rely on the fd exit path machinery.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- virt/kvm/guest_memfd.c | 20 ++++++++------------
- 1 file changed, 8 insertions(+), 12 deletions(-)
+ drivers/gpu/drm/drm_lease.c   | 20 +++++++++-----------
+ drivers/gpu/drm/drm_prime.c   | 13 +++++--------
+ drivers/gpu/drm/drm_syncobj.c | 44 +++++++++++++------------------------------
+ 3 files changed, 27 insertions(+), 50 deletions(-)
 
-diff --git a/virt/kvm/guest_memfd.c b/virt/kvm/guest_memfd.c
-index 625e62e1a031..e0d1cb869342 100644
---- a/virt/kvm/guest_memfd.c
-+++ b/virt/kvm/guest_memfd.c
-@@ -526,17 +526,16 @@ static int __kvm_gmem_create(struct kvm *kvm, loff_t size, u64 flags)
- 	struct gmem_file *f;
- 	struct inode *inode;
- 	struct file *file;
--	int fd, err;
+diff --git a/drivers/gpu/drm/drm_lease.c b/drivers/gpu/drm/drm_lease.c
+index 5d2cf724cbd7..b95747cf79a7 100644
+--- a/drivers/gpu/drm/drm_lease.c
++++ b/drivers/gpu/drm/drm_lease.c
+@@ -484,7 +484,7 @@ int drm_mode_create_lease_ioctl(struct drm_device *dev,
+ 	struct file *lessee_file = NULL;
+ 	struct file *lessor_file = lessor_priv->filp;
+ 	struct drm_file *lessee_priv;
+-	int fd = -1;
 +	const struct fd_slot *fd;
-+	int err;
+ 	uint32_t *object_ids;
  
--	fd = get_unused_fd_flags(0);
+ 	/* Can't lease without MODESET */
+@@ -529,10 +529,10 @@ int drm_mode_create_lease_ioctl(struct drm_device *dev,
+ 	}
+ 
+ 	/* Allocate a file descriptor for the lease */
+-	fd = get_unused_fd_flags(cl->flags & (O_CLOEXEC | O_NONBLOCK));
+-	if (fd < 0) {
++	fd = fd_prepare(cl->flags & (O_CLOEXEC | O_NONBLOCK));
++	if (IS_ERR(fd)) {
+ 		idr_destroy(&leases);
+-		ret = fd;
++		ret = PTR_ERR(fd);
+ 		goto out_lessor;
+ 	}
+ 
+@@ -543,7 +543,7 @@ int drm_mode_create_lease_ioctl(struct drm_device *dev,
+ 	if (IS_ERR(lessee)) {
+ 		ret = PTR_ERR(lessee);
+ 		idr_destroy(&leases);
+-		goto out_leases;
++		goto out_lessor;
+ 	}
+ 
+ 	/* Clone the lessor file to create a new file for us */
+@@ -562,12 +562,13 @@ int drm_mode_create_lease_ioctl(struct drm_device *dev,
+ 	lessee_priv->authenticated = 1;
+ 
+ 	/* Pass fd back to userspace */
+-	drm_dbg_lease(dev, "Returning fd %d id %d\n", fd, lessee->lessee_id);
+-	cl->fd = fd;
++	drm_dbg_lease(dev, "Returning fd %d id %d\n", fd_prepare_fd(fd),
++		      lessee->lessee_id);
++	cl->fd = fd_prepare_fd(fd);
+ 	cl->lessee_id = lessee->lessee_id;
+ 
+ 	/* Hook up the fd */
+-	fd_install(fd, lessee_file);
++	fd_stage(fd, lessee_file);
+ 
+ 	drm_master_put(&lessor);
+ 	drm_dbg_lease(dev, "drm_mode_create_lease_ioctl succeeded\n");
+@@ -576,9 +577,6 @@ int drm_mode_create_lease_ioctl(struct drm_device *dev,
+ out_lessee:
+ 	drm_master_put(&lessee);
+ 
+-out_leases:
+-	put_unused_fd(fd);
+-
+ out_lessor:
+ 	drm_master_put(&lessor);
+ 	drm_dbg_lease(dev, "drm_mode_create_lease_ioctl failed: %d\n", ret);
+diff --git a/drivers/gpu/drm/drm_prime.c b/drivers/gpu/drm/drm_prime.c
+index 9b44c78cd77f..e33d84ac7256 100644
+--- a/drivers/gpu/drm/drm_prime.c
++++ b/drivers/gpu/drm/drm_prime.c
+@@ -513,19 +513,16 @@ int drm_gem_prime_handle_to_fd(struct drm_device *dev,
+ 			       int *prime_fd)
+ {
+ 	struct dma_buf *dmabuf;
+-	int fd = get_unused_fd_flags(flags);
++	const struct fd_slot *fd = fd_prepare(flags);
+ 
 -	if (fd < 0)
 -		return fd;
-+	fd = fd_prepare(0);
 +	if (IS_ERR(fd))
 +		return PTR_ERR(fd);
  
- 	f = kzalloc_obj(*f);
--	if (!f) {
--		err = -ENOMEM;
--		goto err_fd;
+ 	dmabuf = drm_gem_prime_handle_to_dmabuf(dev, file_priv, handle, flags);
+-	if (IS_ERR(dmabuf)) {
+-		put_unused_fd(fd);
++	if (IS_ERR(dmabuf))
+ 		return PTR_ERR(dmabuf);
 -	}
-+	if (!f)
-+		return -ENOMEM;
  
- 	/* __fput() will take care of fops_put(). */
- 	if (!fops_get(&kvm_gmem_fops)) {
-@@ -575,8 +574,7 @@ static int __kvm_gmem_create(struct kvm *kvm, loff_t size, u64 flags)
- 	xa_init(&f->bindings);
- 	list_add(&f->entry, &GMEM_I(inode)->gmem_file_list);
- 
--	fd_install(fd, file);
--	return fd;
-+	return fd_stage(fd, file);
- 
- err_inode:
- 	iput(inode);
-@@ -584,8 +582,6 @@ static int __kvm_gmem_create(struct kvm *kvm, loff_t size, u64 flags)
- 	fops_put(&kvm_gmem_fops);
- err_gmem:
- 	kfree(f);
--err_fd:
--	put_unused_fd(fd);
- 	return err;
+-	fd_install(fd, dmabuf->file);
+-	*prime_fd = fd;
++	*prime_fd = fd_stage(fd, dmabuf->file);
+ 	return 0;
  }
+ EXPORT_SYMBOL(drm_gem_prime_handle_to_fd);
+diff --git a/drivers/gpu/drm/drm_syncobj.c b/drivers/gpu/drm/drm_syncobj.c
+index 2fa170a29a62..621858b6ac43 100644
+--- a/drivers/gpu/drm/drm_syncobj.c
++++ b/drivers/gpu/drm/drm_syncobj.c
+@@ -663,25 +663,14 @@ static const struct file_operations drm_syncobj_file_fops = {
+  */
+ int drm_syncobj_get_fd(struct drm_syncobj *syncobj, int *p_fd)
+ {
+-	struct file *file;
+-	int fd;
+-
+-	fd = get_unused_fd_flags(O_CLOEXEC);
+-	if (fd < 0)
+-		return fd;
+-
+-	file = anon_inode_getfile("syncobj_file",
+-				  &drm_syncobj_file_fops,
+-				  syncobj, 0);
+-	if (IS_ERR(file)) {
+-		put_unused_fd(fd);
+-		return PTR_ERR(file);
+-	}
++	FD_PREPARE(fdf, O_CLOEXEC,
++		   anon_inode_getfile("syncobj_file", &drm_syncobj_file_fops,
++				      syncobj, 0));
++	if (IS_ERR(fdf))
++		return PTR_ERR(fdf);
  
+ 	drm_syncobj_get(syncobj);
+-	fd_install(fd, file);
+-
+-	*p_fd = fd;
++	*p_fd = fd_prepare_fd(fdf);
+ 	return 0;
+ }
+ EXPORT_SYMBOL(drm_syncobj_get_fd);
+@@ -762,31 +751,24 @@ static int drm_syncobj_export_sync_file(struct drm_file *file_private,
+ 	int ret;
+ 	struct dma_fence *fence;
+ 	struct sync_file *sync_file;
+-	int fd = get_unused_fd_flags(O_CLOEXEC);
++	const struct fd_slot *fd = fd_prepare(O_CLOEXEC);
+ 
+-	if (fd < 0)
+-		return fd;
++	if (IS_ERR(fd))
++		return PTR_ERR(fd);
+ 
+ 	ret = drm_syncobj_find_fence(file_private, handle, point, 0, &fence);
+ 	if (ret)
+-		goto err_put_fd;
++		return ret;
+ 
+ 	sync_file = sync_file_create(fence);
+ 
+ 	dma_fence_put(fence);
+ 
+-	if (!sync_file) {
+-		ret = -EINVAL;
+-		goto err_put_fd;
+-	}
+-
+-	fd_install(fd, sync_file->file);
++	if (!sync_file)
++		return -EINVAL;
+ 
+-	*p_fd = fd;
++	*p_fd = fd_stage(fd, sync_file->file);
+ 	return 0;
+-err_put_fd:
+-	put_unused_fd(fd);
+-	return ret;
+ }
+ /**
+  * drm_syncobj_open - initializes syncobj file-private structures at devnode open time
 
 -- 
 2.53.0
