@@ -1,83 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-27317-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27318-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12092C88E75
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 10:34:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43AA1C88E53
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 10:42:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hkdgb3nN7z2y8m;
-	Tue, 15 Sep 2026 20:34:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::535"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789447995;
-	cv=none; b=KgZCphBVkMtBWCKr4szUvzMT1t4hA8EiwaJm2zp6+K3CsD1i922hI1GricX2rSPrQwj5eQGm5yibznUTLgBd15sBYWAnuw9gK0oPBRMjyq6HREHEfloygOGSq1XnLOBPgP6nJYz4m0UEnblb5Mc5kEEKm2Rydb7MYjHBc5i2p7Iido0XErFk6e96H17M8gR642LCBQDD+Ww9JCt4rZeS61B56WamT+jIX/bD/lcj5x5xgN3JDb7EY0EICmuCF9j0tJzXjmAzQuWY1q9QTzdgJ6R8+B1if6D25N2SXsRHVPdORT08WJT8uiw0y89JnLgxG26z1WOiVvd9e6c0pAWWlg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hkdr26WSQz2y8m;
+	Tue, 15 Sep 2026 20:42:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789468930;
+	cv=none; b=c39fRPYIGfA0UpT7UUjxt6TODxe5Qk3o2ep7ktE8XxYzR4jMs1wH52VqWas2blvTdg3L9OQo1lui0/jkjKx1GxKpQll26t5eL8J3SnHpckt4zBpkFX/+bZ2o2zygSI+hnh+1p02lJLaKJKK9SgpvK2CfSKjzeVXW6sMuJO+/TCr7XSzEZiwVZTuFYw/SOD75oBYeJrCrhcA/4zOeMwYSc/4cG8P3RhdT6VrOJy+YrAyf+7Rm+GYDkDPfd2g0O8V2gAODEb4MKveHPcti7gi2MyLCcwbyjUvuzBjoSq0gOknom4As0dILcmgI+I9nU+K2tsZhja+Vp3dLmCHZl870JQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789447995; c=relaxed/relaxed;
-	bh=ru4Ea1MD4/XyVDmXcP+1ObXpaU2Tn0Ejgynjuli47y4=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=YLjdb7rD7Yno1G03D5hrfDWPHdz6qcJiZ9pJu3QlPD/osX/oHw/jTLmYd0dVe3N0SLF3o/zEtSLHtV2Kx56mJunvpgblMJL8s0oO3fDDkE9yabjiFAnLBsnXrIGueu1VmZv6fPYOlPZof97/iqM/EcAkki7aytte+41mHO+A+IUA45MWdG5544PRC9VQcYUh0M7spKuRHLR90NNet0G2gcZpt12hkS1v7b5gMlyL2dSs90oGfVcYKn5qP+2pQKcd4BAhW3xZN/CFID/TjX8pKRxvO1vYFCfQ0wmlCCBpKabZ+PCf1dMWyRdnUPHCuAJgRSbD1rwiFnZO7oih575M8g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=bKR4atzw; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::535; helo=mail-pg1-x535.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1789468930; c=relaxed/relaxed;
+	bh=hQizjq4Fv6xotoUqHmRQLNrfXJfgBpEXbkCd1IuA4Bk=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:content-type; b=GaQxUceL2VVtwjxcrbgo75Iug6Qdtm/7D7Ol4q4Az5gjiyjsICVulPY+UM+OQNrZgceID/iriivlIpmAcvVu67Xwckta+eUrGK6TaVIsBBtzAPl3wPqXa5aqzvVk00c3Kk4WrQs9WlNVU0zDE21LHub02ne/duAMeMFlKAfzpokDVa/k9DC94PWq51VCKfAZPm2gPKYZTSoCQCRKb+AkxSqZvIHl+NV0ErSolATNEKpFhEP+F7+MwN/XOD5bimdIGbmSK3QzYLt+QgqHq+Mh44L+W8ufK7U8PibsNf47x/pnX8pu/mD5znhqv4+AvfvLoMdf+vw2NmNkqE5UP6PSfA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Kf88flo5; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Kf88flo5; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pabeni@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=bKR4atzw;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Kf88flo5;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Kf88flo5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::535; helo=mail-pg1-x535.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x535.google.com (mail-pg1-x535.google.com [IPv6:2607:f8b0:4864:20::535])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pabeni@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkV5P1PWxz2y7p
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 14:53:11 +1000 (AEST)
-Received: by mail-pg1-x535.google.com with SMTP id 41be03b00d2f7-cc4aa18f9afso2869976a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2026 21:53:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789447988; x=1790052788; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=ru4Ea1MD4/XyVDmXcP+1ObXpaU2Tn0Ejgynjuli47y4=;
-        b=bKR4atzwC0JW3v13knqa2E5gTfQ7ICHYjV+vMAszzlq/G7oLPywwV9QAeMvLzhQuQ6
-         Q47+7pr3d+xfyyvZ+yBLcP6/j7nuAw6td9C89VWLyFSZYET3VXaIlkW/80XtEBqcgZ6n
-         9ctFJtzfYxNvUXgsfj4q74HHcpDD71MGU8ud8Nz7eBWDgxfZPoDMdYpUbQBN6nE2cs4h
-         owUSfH1aMm7DDiQvOwH0G98ecaZMvNnjTm3ocSb0cv3waPOvHn5SB7lxcPPI8tkpEnIp
-         tAJfOYKwdFQCgWiFP/R2SaXEKtn0yUlonTXphtm94A7o9IkdTsWj/Hi6eGPPqXFN1SL/
-         EZfQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789447988; x=1790052788;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=ru4Ea1MD4/XyVDmXcP+1ObXpaU2Tn0Ejgynjuli47y4=;
-        b=BpnmLXmSKsTtN2xgZdC1JUhlDrEBqJ4GIH/pT6UPEoll4KjXsnswJsrpZA4LYG82C+
-         3xw+KxfU+ttOlm1XdB9U2GgdIBer3sTbO05LwShZWMWddFiWV0BsP1dCX9mbTFgm6lWu
-         LGl9KklSqL+4gll0bGreiRy79pOnGy1BF2N/fA2srmbkZg9CrxxLhfS0yCvSdpU2WNh9
-         ECd+uv/N8kXDFSv2/MKaZblkMnpuCxVK8fkqdzyckJiROWmDB5Zfkqmt9VMXsEt4VGnU
-         xF9MZnmGC5qNcGW5Zd0HJGvMiDL0FHFFMzMvteq/I7l82A6VphqUKVk9xVGXxNO+XMBY
-         kpoQ==
-X-Forwarded-Encrypted: i=1; AKwUvBxct55kTmPyOw2DSpuxaYyuRzgzNsq/3wZbsskg0ynZK/v4VOldnDVSSWLiu8nFVZpYkZMXx5honIdx2gE=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++mgBraLTSdRmBGyl+0zXQoqeR2FPru+ZIjx55yPkTzIQ9QSFZN2
-	C0ldTQlrmrLqV9x44u0BanlJQ26O2pFE+wol7ItkReBtYaeqUUyh0dgY
-X-Gm-Gg: AYBFou2OUTco50kN91ZiACte4cJ+CKOkIugJeftUlPzb1eNGc454CBqN88o95gtXZsv
-	53l/kW+4kD2pcOSY/eE7s7FvIyjgE9F9tE5uwaNpPoMuO/1/8mQ5UOguHWvJG9nPDD0GhIiu/6Z
-	qed2B32OJaGWVwPvw/hamJ1z6DBQ9YzYwxLcFcRZs8oqdRDG1PcrLsqcmrttyCUMcTtMYDbCt09
-	Oy33lOIZr3Ri1r1/ZcDsOIO364inGQk8oQDrW9lzlU8KT/tGOp7cAg4FSyF7N2LbjoZ2JjvU3hU
-	+rORkY2o6tzFodbc3yhGQccd2DggHDENXf9ix9vVRhjQxhpJuJjdoWiBBV1xFW1GluSBW0wKyI9
-	FDdH6oFUt8VjnZ/0BLYy8LHP9i43rG0Wa70/pPuD6QofRO5A+tZIITEmKWnHAE7sxvLa3iU7sYS
-	B5ayI+2JCeNnbO2YsRgkDZgGwjzuSFPg3WKpsHeVwjTqecFg5vJtZ0M1L3zMp/U0wedqYsuXEva
-	3xhRwk44j44Tld/N5rJF+9f/Zg5Ir6VERO3MZ3cOS5aF7SmtynXsH8=
-X-Received: by 2002:a05:6a20:c88b:b0:3d1:c0e2:936b with SMTP id adf61e73a8af0-3db404269e1mr14358079637.7.1789447987855;
-        Mon, 14 Sep 2026 21:53:07 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-33beb8b2872sm849937eec.15.2026.09.14.21.53.03
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 14 Sep 2026 21:53:06 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Chris Chiu <chris.chiu@canonical.com>, maddy@linux.ibm.com, shuah@kernel.org
-Cc: sshegde@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org, Chris Chiu <chris.chiu@canonical.com>
-Subject: Re: [PATCH] selftests/powerpc: Fix exec_prot test failure on Hash MMU
-In-Reply-To: <20260909050919.3344699-1-chris.chiu@canonical.com>
-Date: Tue, 15 Sep 2026 10:07:13 +0530
-Message-ID: <wlsnyvt2.ritesh.list@gmail.com>
-References: <20260909050919.3344699-1-chris.chiu@canonical.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkdr13d77z2xnp
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 20:42:06 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1789468923;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=hQizjq4Fv6xotoUqHmRQLNrfXJfgBpEXbkCd1IuA4Bk=;
+	b=Kf88flo5m0fWfDBM2PVAJSEcpqSMA4uMJCvmkltPeUjTZr+ZlyvssZhkuwDok6o8ltl1Yb
+	eeuNEBXogRcmSwwclQ5/nQIHp6AOxV6NYwjvq1e4Aog6SVN0tB06h1lc2EolOB5o7m6GOz
+	mV4pfgMbuNdkrMG4Yta8yNr7tqREKJ4=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1789468923;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=hQizjq4Fv6xotoUqHmRQLNrfXJfgBpEXbkCd1IuA4Bk=;
+	b=Kf88flo5m0fWfDBM2PVAJSEcpqSMA4uMJCvmkltPeUjTZr+ZlyvssZhkuwDok6o8ltl1Yb
+	eeuNEBXogRcmSwwclQ5/nQIHp6AOxV6NYwjvq1e4Aog6SVN0tB06h1lc2EolOB5o7m6GOz
+	mV4pfgMbuNdkrMG4Yta8yNr7tqREKJ4=
+Received: from mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-447-qM3KhJf6MTulpLWTFi-Gsw-1; Tue,
+ 15 Sep 2026 06:41:59 -0400
+X-MC-Unique: qM3KhJf6MTulpLWTFi-Gsw-1
+X-Mimecast-MFC-AGG-ID: qM3KhJf6MTulpLWTFi-Gsw_1789468917
+Received: from mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.111])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id A62D5192DD6E;
+	Tue, 15 Sep 2026 10:41:56 +0000 (UTC)
+Received: from gerbillo.redhat.com (unknown [10.44.48.83])
+	by mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id E61BA1800446;
+	Tue, 15 Sep 2026 10:41:50 +0000 (UTC)
+From: Paolo Abeni <pabeni@redhat.com>
+To: mhun512@gmail.com
+Cc: qiang.zhao@nxp.com,
+	khc@pm.waw.pl,
+	andrew+netdev@lunn.ch,
+	davem@davemloft.net,
+	edumazet@google.com,
+	kuba@kernel.org,
+	pabeni@redhat.com,
+	horms@kernel.org,
+	adiupina@astralinux.ru,
+	chleroy@kernel.org,
+	ae878000@gmail.com,
+	netdev@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: Re: [PATCH net v3 3/4] net: wan: hdlc: close active devices before protocol detach
+Date: Tue, 15 Sep 2026 12:41:44 +0200
+Message-ID: <20260915104144.122643-1-pabeni@redhat.com>
+In-Reply-To: <f5f0519e82a7b8bbf314dc137470f7cf931e320b.1788128904.git.mhun512@gmail.com>
+References: <f5f0519e82a7b8bbf314dc137470f7cf931e320b.1788128904.git.mhun512@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,148 +100,149 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.111
+X-Mimecast-MFC-PROC-ID: UwjuybQppkSuHIG_S4V0wJIKVmKKqLL9S94dV-gllmU_1789468917
+X-Mimecast-Originator: redhat.com
+Content-Transfer-Encoding: 8bit
+content-type: text/plain; charset="US-ASCII"; x-default=true
 
-Chris Chiu <chris.chiu@canonical.com> writes:
+This is an AI-generated review of your patch. The human sending this
+email has considered the AI review valid, or at least plausible.
+Full review at: https://netdev-ai.bots.linux.dev/sashiko/
+---
+net: wan: hdlc: close active devices before protocol detach
 
-> Hash MMU maps execute-only pages as readable at the PTE level, so reading
-> from a PROT_EXEC-only mapping does not fault there. The exec_prot test
-> currently treats that as a failure, while the rest of the permission
-> checks are still valid.
->
-> Use the existing using_hash_mmu() helper and skip only the read-on-
-> execute-only subtest on Hash MMU. Keep the rest of the test unchanged so
-> the fix stays local to the unsupported execute-only-read expectation.
->
+This adds a dev_close() call to unregister_hdlc_device() so that an up
+HDLC device runs its ndo_stop and protocol close callbacks before
+detach_hdlc_protocol() clears IFF_UP via hdlc_setup_dev(). The
+detach-before-unregister order introduced by ff3516442768 is kept.
 
-Hi Chris,
+Link: https://lore.kernel.org/r/20260806020541.2011936-2-kuba@kernel.org
 
-Thanks for the patch. However the patch is not entirely correct.
-Do you mind me asking - how did you find this problem? Did you run this
-on an actual Power Hardware? Can you share the details of that please?
-
-Also - from your .config can you share the following?
-
-cat .config |grep -iE "_PPC_"
-
-
-So what you described in the commit msg is correct but only when PKEY
-support is disabled with Hash mmu. However when pkey is enabled, and
-when the process does mprotect(PROT_EXEC), kernel assigns a execute only
-pkey for that mapping. With that - we can still get a fault when we try
-to load from that PROT_EXEC mapping and the test should work fine.
-
-So, I think what we need here is:
-
-diff --git a/tools/testing/selftests/powerpc/mm/exec_prot.c b/tools/testing/selftests/powerpc/mm/exec_prot.c
-index db75b2225de1..51ac2f9c14a6 100644
---- a/tools/testing/selftests/powerpc/mm/exec_prot.c
-+++ b/tools/testing/selftests/powerpc/mm/exec_prot.c
-@@ -167,13 +167,17 @@ static int test(void)
-         * Read an instruction word from the address when the page
-         * is execute only. This should generate an access fault.
-         */
--       fault_code = -1;
--       remaining_faults = 1;
--       printf("Testing read on --x, should fault...");
--       FAIL_IF(mprotect(insns, pgsize, PROT_EXEC) != 0);
--       i = *fault_addr;
--       FAIL_IF(remaining_faults != 0 || !is_fault_expected(fault_code));
--       printf("ok!\n");
-+       if (pkeys_supported) {
-+               fault_code = -1;
-+               remaining_faults = 1;
-+               printf("Testing read on --x, should fault...");
-+               FAIL_IF(mprotect(insns, pgsize, PROT_EXEC) != 0);
-+               i = *fault_addr;
-+               FAIL_IF(remaining_faults != 0 || !is_fault_expected(fault_code));
-+               printf("ok!\n");
-+       } else {
-+               printf("Testing read on --x, skipped on Hash MMU without pkeys\n");
-+       }
-
-
-w/o the above diff when PKEYS are disabled on Hash
-(# CONFIG_PPC_MEM_KEYS is not set) we get the following error:
-
-test: exec_prot
-tags: git_version:v7.3-rc3-9-g704340f1cd0d
-[SKIP] Test skipped on line 100
-[FAIL] Test FAILED on line 175
-Testing read on --x, should fault...failure: exec_prot
-
-But with the above diff:
-
-test: exec_prot
-tags: git_version:v7.3-rc3-9-g704340f1cd0d-dirty
-[SKIP] Test skipped on line 100
-Testing read on --x, skipped on Hash MMU without pkeys
-Testing write on --x, should fault...ok!
-Testing exec on ---, should fault...ok!
-Testing exec on r--, should fault...ok!
-Testing exec on -w-, should fault...ok!
-Testing exec on rw-, should fault...ok!
-Testing exec on --x, should succeed...ok!
-Testing exec on r-x, should succeed...ok!
-Testing exec on -wx, should succeed...ok!
-Testing exec on rwx, should succeed...ok!
-success: exec_prot
-
-
-Care to verify this from your end on your hardware and submit a v2 with
-this change?
-
--ritesh
-
-
-> Signed-off-by: Chris Chiu <chris.chiu@canonical.com>
-> ---
->  .../testing/selftests/powerpc/mm/exec_prot.c  | 21 ++++++++++++-------
->  1 file changed, 14 insertions(+), 7 deletions(-)
->
-> diff --git a/tools/testing/selftests/powerpc/mm/exec_prot.c b/tools/testing/selftests/powerpc/mm/exec_prot.c
-> index db75b2225de1..bd44f49d8449 100644
-> --- a/tools/testing/selftests/powerpc/mm/exec_prot.c
-> +++ b/tools/testing/selftests/powerpc/mm/exec_prot.c
-> @@ -108,11 +108,14 @@ static int check_exec_fault(int rights)
->  static int test(void)
+> diff --git a/drivers/net/wan/hdlc.c b/drivers/net/wan/hdlc.c
+> index cbed10b1d862e..a38f90d3006ed 100644
+> --- a/drivers/net/wan/hdlc.c
+> +++ b/drivers/net/wan/hdlc.c
+> @@ -263,6 +263,7 @@ EXPORT_SYMBOL(alloc_hdlcdev);
+>  void unregister_hdlc_device(struct net_device *dev)
 >  {
->  	struct sigaction segv_act, trap_act;
-> +	bool hash_mmu;
->  	int i;
->  
->  	/* Skip the test if the CPU doesn't support Radix */
->  	SKIP_IF(!have_hwcap2(PPC_FEATURE2_ARCH_3_00));
->  
-> +	FAIL_IF(using_hash_mmu(&hash_mmu));
-> +
->  	/* Check if pkeys are supported */
->  	pkeys_supported = pkeys_unsupported() == 0;
->  
-> @@ -167,13 +170,17 @@ static int test(void)
->  	 * Read an instruction word from the address when the page
->  	 * is execute only. This should generate an access fault.
->  	 */
-> -	fault_code = -1;
-> -	remaining_faults = 1;
-> -	printf("Testing read on --x, should fault...");
-> -	FAIL_IF(mprotect(insns, pgsize, PROT_EXEC) != 0);
-> -	i = *fault_addr;
-> -	FAIL_IF(remaining_faults != 0 || !is_fault_expected(fault_code));
-> -	printf("ok!\n");
-> +	if (!hash_mmu) {
-> +		fault_code = -1;
-> +		remaining_faults = 1;
-> +		printf("Testing read on --x, should fault...");
-> +		FAIL_IF(mprotect(insns, pgsize, PROT_EXEC) != 0);
-> +		i = *fault_addr;
-> +		FAIL_IF(remaining_faults != 0 || !is_fault_expected(fault_code));
-> +		printf("ok!\n");
-> +	} else {
-> +		printf("Testing read on --x, skipped on Hash MMU\n");
-> +	}
->  
->  	/*
->  	 * Write an instruction word to the address when the page
-> -- 
-> 2.43.0
+>  	rtnl_lock();
+> +	dev_close(dev);
+
+[Severity: High]
+This isn't a bug introduced by this patch, but the new dev_close() makes
+the remove path call into ixp4xx_hss's ndo_stop, and hss_hdlc_close()
+sleeps inside a spin_lock_irqsave() section:
+
+drivers/net/wan/ixp4xx_hss.c:hss_hdlc_close() {
+	spin_lock_irqsave(&npe_lock, flags);
+	ports_open--;
+	qmgr_disable_irq(port->rxq);
+	netif_stop_queue(dev);
+	napi_disable(&port->napi);
+	...
+	free_irq(...);
+	spin_unlock_irqrestore(&npe_lock, flags);
+}
+
+napi_disable() reaches napi_disable_locked(), which begins with
+might_sleep() and loops on usleep_range(20, 200); free_irq() also calls
+might_sleep() and takes desc->request_mutex.
+
+Can that produce a "sleeping function called from invalid context" splat
+here, and if the scheduler is actually entered, can the CPU leave npe_lock
+held while hss_hdlc_dcd_irq() -> hss_hdlc_set_carrier() spins on the same
+lock?
+
+The same path is already reachable via "ip link set hss0 down", but the
+commit message lists ixp4xx_hss among the audited-safe users:
+
+    Audit all current users: c101, n2, pc300too, pci200syn, wanxl,
+    ixp4xx_hss, fsl_qmc_hdlc and farsync unregister before releasing the
+    resources used by their close callbacks.
+
+Should the audit note this, given the remove path now runs
+hss_hdlc_close() where it previously did not?
+
+>  	detach_hdlc_protocol(dev);
+
+[Severity: High]
+Does dev_close() close the window this relies on for the RX path?
+
+detach_hdlc_protocol() sets hdlc->proto = NULL and kfree()s hdlc->state
+while the netdev is still registered, so hdlc_rcv() can still be reached
+from NET_RX softirq for frames already queued on a per-CPU
+input_pkt_queue:
+
+drivers/net/wan/hdlc.c:hdlc_rcv() {
+	...
+	BUG_ON(!hdlc->proto->netif_rx);
+	return hdlc->proto->netif_rx(skb);
+}
+
+The only barrier that drops backlogged skbs for the device runs later,
+inside unregister_netdevice():
+
+net/core/dev.c:unregister_netdevice_many_notify() {
+	...
+	flush_all_backlogs();
+
+	synchronize_net();
+	...
+}
+
+__dev_close_many() does not touch the RX backlog, so a frame handed to
+netif_rx() before ndo_stop and still sitting in another CPU's queue can
+reach hdlc_rcv() after hdlc->proto became NULL. The
+"if (!(dev->priv_flags & IFF_WAN_HDLC))" test in hdlc_rcv() does not
+filter it out, since hdlc_setup_dev() re-sets priv_flags to
+IFF_WAN_HDLC.
+
+Can that hit the BUG_ON above, or use the freed hdlc->state inside
+fr_rx()/cisco_rx()/ppp_rx() if proto was already read?
+
+[Severity: Medium]
+This is a pre-existing issue and not introduced by this patch, but the
+return value of detach_hdlc_protocol() is dropped while
+unregister_netdevice() runs unconditionally.
+
+detach_hdlc_protocol() returns early when a NETDEV_PRE_TYPE_CHANGE
+notifier refuses the type change, skipping both release points:
+
+drivers/net/wan/hdlc.c:detach_hdlc_protocol() {
+	...
+		if (err) {
+			netdev_err(dev, "Refused to change device type\n");
+			return err;
+		}
+	...
+		module_put(hdlc->proto->module);
+	...
+	kfree(hdlc->state);
+	...
+}
+
+The refusal is reachable: hdlc_raw_eth's raw_eth_ioctl() calls
+ether_setup(), so dev->type becomes ARPHRD_ETHER and a VLAN can be
+stacked on it, after which
+
+net/8021q/vlan.c:vlan_device_event() {
+	case NETDEV_PRE_TYPE_CHANGE:
+		/* Forbid underlaying device to change its type. */
+		if (vlan_uses_dev(dev))
+			return NOTIFY_BAD;
+}
+
+returns NOTIFY_BAD. lapbether_device_event() refuses the same way.
+
+Does this leak the kmalloc'ed hdlc->state and the hdlc_raw_eth module
+reference, given every caller then calls free_netdev() and loses the only
+pointer to that state?
+
+>  	unregister_netdevice(dev);
+>  	rtnl_unlock();
+-- 
+This is an AI-generated review.
+
 
