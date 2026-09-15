@@ -1,83 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-27319-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27320-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F1C8C88E53
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 10:50:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F407FC88E75
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 10:54:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hkf1L52Wcz2y8m;
-	Tue, 15 Sep 2026 20:50:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4860:4864:20::36"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789459460;
-	cv=none; b=lZJpm94xSk2ay7eKDuXpjGbKy6Fowd+aEO8kXXFG3YM6vSz9wG3l7QwzZhDa17HYc4h9e/7DhBlL8HKb35xAQ8pfuJVzNqXHVrqWH9715I4Q1RhfLnDoSTJkvWkfpQcXmyA7x91eH+uOPnvrWsFpGt+4RDsuBuSB42FqbkhUum9/Iz1bJJStcKJ+orVefa3DN/kMAt98sW3N4ZIa5vKt5uv66gkbccJ5t9hpQutzbSwgbIDU5EUA8TvzqF+9Lw9VQg+W5FnxkyWHdNsdUn+Fgf0rGHjYQt6hzYmXpBZvxS2kaosK+5MlLvYo4hvWrntQT+b+UtVDTf793F9OZyCOqg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hkf6m3Zs6z2yFW;
+	Tue, 15 Sep 2026 20:54:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.112
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789469696;
+	cv=none; b=I8j4VuO3AOqn4DSWm4VWJY02i/8PdTTcHu3dWEsOXSbUNrqyBJUgDSabh0mFtBv4p9gpTPjNOL+rb+dp3F1iiGwcFGxsghPxxB+AzS7gTt1HmC/xnbgoDdurq3dgO2+Sloovf+49JOMHqkm60xfHcvanbnkqFeFgOgVJ5ZB41ZQsguGPgg1DtNlHlnDDZulLxe/HOAdbnok7vXbrTiT/kt79AaIVPkAlKQMlH/wsKOkH9ASjPWqb+zJ3MdCIw8Vsrqq7rQG9BTtMJSQu6tqVIcTyRFdSoqDex+HWltkjysYDxf/LoFXO2CGzd5iGg2+T9wwJg0jGqZMA5vh1ZGGjrw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789459460; c=relaxed/relaxed;
-	bh=skIHTRCMg076kDWG2pdx8YKlOQsvXC/Hd109poRNzB4=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=kFCZ6Wzq1EDZjr3pyPS3tcawRDj/mkiMTJY3EDWpr7J+LRf4azL9a0lmAccWCufPe85xUtvdL/JEAIi9EDRDix8n3NhivRFffdt7Ek2c3uCDRMEmQL9kmNNuDi0Ph8NCe/VFtnUcf/aXR0GIuZu1z2j2i/eDeDcqfv9Zhe6yxDzlNoGfxtqcuWbeok3O/1Jz24tWmEbH/1alexh7MqNNzXN96ocVfWGeYkyVVVS6EmUNQ+Efj3qjoJavUqz41x7JBYBJ9S6CHIs2vJktG2AwLo7zYpeV92FQMPsVZDIQCriryBcRVvJ96AZyT3dZ2CkdGhebe9fo0o9EWWM9dTcbug==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=oMOOpdT5; dkim-atps=neutral; spf=pass (client-ip=2001:4860:4864:20::36; helo=mail-oa1-x36.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1789469696; c=relaxed/relaxed;
+	bh=3NcK+2D6AazFJjSTKxR7cSuvqpA99SwORYNVJbXxAeM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=IIDLytJnsYS0LJTIyM+yZXk1xLoxGbGSYNDV6wP0aDBHp8IteJatNnSD/n6ZcXwzWn9h6x7Vz8QMkR2nT45L3ctVo9j5SS5JtBx9SDMKRkIEpIqx0Q4Mlm9PHnIAcek9nGWb95w7HdSlF1JnPoe6aVFpdTT1WmjFbry3+9X1yFbDoIgY4cUPG82yNYF5VkXqBPt/gsK6GC80l6kUcr2KJ8RU/RBKBRwE+FhIHmWZ1nUaPcKN7E6eY/VbQ7RWFp69COwIG47lh40cQPCIvlcsEj3fXIgb9xzyf6tRDf93Kdx/3UgiNaR6Hh7nDrXmTzyY6Tjrf8P0QVq8tFVCQL9AAg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=nyfVW78x; dkim-atps=neutral; spf=pass (client-ip=115.124.30.112; helo=out30-112.freemail.mail.aliyun.com; envelope-from=baolin.wang@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=oMOOpdT5;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=nyfVW78x;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2001:4860:4864:20::36; helo=mail-oa1-x36.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-oa1-x36.google.com (mail-oa1-x36.google.com [IPv6:2001:4860:4864:20::36])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.112; helo=out30-112.freemail.mail.aliyun.com; envelope-from=baolin.wang@linux.alibaba.com; receiver=lists.ozlabs.org)
+Received: from out30-112.freemail.mail.aliyun.com (out30-112.freemail.mail.aliyun.com [115.124.30.112])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkZKv3Gm4z2xSg
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 18:04:18 +1000 (AEST)
-Received: by mail-oa1-x36.google.com with SMTP id 586e51a60fabf-4827cc09eefso974897fac.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 01:04:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789459451; x=1790064251; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=skIHTRCMg076kDWG2pdx8YKlOQsvXC/Hd109poRNzB4=;
-        b=oMOOpdT5yb8pmb0ZebttYj6AePsktIPYQfMECburkjCyDjt0PewRgvtMcidOwCghih
-         6bWxjNjLe94jC0cdRWPJosJIncUL6YN4wtlIdnP1Yw/xOCkAIRctSTSbjMbvH8hh0F9p
-         uxKLmhSOTSLwOJaQ80x/3+dRwdZv2ryl7JpeVCeVVx7KQ7SVO7402o0PKjbRigiYo2El
-         KxnLutgFcfu5ZsNzZyGYKbsOetQfomYA6HaPkPe7zwZzlSg6AMmblU7n5QQ9+DeLrWTL
-         pPx1Qm/eHfqknbWmxfGqpLt0jC8LtUVbps1xiEyvqnYZ41Fky8SILFrnNnseO0uMGUA+
-         l7dQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789459451; x=1790064251;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=skIHTRCMg076kDWG2pdx8YKlOQsvXC/Hd109poRNzB4=;
-        b=eRZPPDHbbTXoP9BToYCldVukd3oE3Cet2noXhV4R6D8fm2IHyLmQMm2GN0OoHwT/49
-         KRg1LPUYyupBzEKMvGCSYE37w0OnKNRxo5DVLpeBdKiWEt9m4+AYDCYdg9bCmO9eZAGt
-         ylpB69dIuZjAA+OfjUYWzWP6wm2nziuMIaQfqgsl0m2MPb063XB2dtglLEdmRK59k7AX
-         3OnnSmf5Yqi8hrHCEPmHjurFxf03sXr9Zblon/aUTcz4dW2CgD8hpC1JIUEFBhdZzlQz
-         5JPo3C05TnC2XTEuNNWIE3kzc/hwHtq64SXgyfLXS0Xo2/+IfqAThJqd8EkqkzIfYuMK
-         bqYA==
-X-Forwarded-Encrypted: i=1; AKwUvBw3geiy9BnAMCPI2RQru4hghhniT6T89+bzX/ye4MOebTbWHzwXeIlc4228Ppx/dOULuFCzgfncJUMOksc=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++naMQKpRKT5TB4KJu6kB+V8zLGkzwMwpyR8u5RJ3yNRUjROZwLJ
-	JDXuQA0C/XuQzcr8tWJXfePml3a5elVyIbkyxg8QGdFEhzPHjHUe7bXC
-X-Gm-Gg: AYBFou0Vtsk8WDmdlOLmymCrnm103a0EnTHvNOUywphm8+n+I4RqMuOzZaB+tenWbjE
-	jWPnILgLcl+iAxE2YqPFuackBEmO2AFp6+zcsNK9xi7Gz4w/FmRfcoNkjlXo5ksrC09JlsuQgyA
-	AtXtNQJi7i8dVamMIhPwUP8MR4bFYZSeKYXUI9TVZtl1aVotx+KM/vq1ZxpeKBx+zayKCLbVkNn
-	b/9USlRVtfGbADMmm03nKus/eJeZHmm1/xIX1PxRNC0a7KDQOwbbZCLarV4bnlcC3iuZHzp8GDe
-	DgPSqPGLoDBHGFF/KiLCP1WMtUipSXxqxotrcDAmmVr69Y0XPg7FmcDN02mgZVwHNDcbLTjElud
-	u42LKIl10mHNjGvl87w/zUA22keXEbHWeIhiH7eIg/G3jM3MtUwde0WzbQaVY3Bv24C6VMChrAR
-	8wdWYFjVYL8nFdXzVaI1nTVnJ0pLOTSLnSxCE9l6UwdsqrB6EGs3ZdnAVAHpfWfsIkWODJwByFQ
-	hJlpA88F05FuNSnmM/SWybJWFOBadFm7qFCN6jXfGa2zF1+F/9be4M=
-X-Received: by 2002:a05:6820:1628:b0:6b8:ef7d:e181 with SMTP id 006d021491bc7-6c544daaf8cmr3999047eaf.54.1789459451326;
-        Tue, 15 Sep 2026 01:04:11 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-14365b97994sm57642954c88.12.2026.09.15.01.04.07
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 15 Sep 2026 01:04:10 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Chris Chiu <chris.chiu@canonical.com>, maddy@linux.ibm.com, shuah@kernel.org
-Cc: sshegde@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org, Chris Chiu <chris.chiu@canonical.com>
-Subject: Re: [PATCH] selftests/powerpc: Fix exec_prot test failure on Hash MMU
-In-Reply-To: <wlsnyvt2.ritesh.list@gmail.com>
-Date: Tue, 15 Sep 2026 13:32:02 +0530
-Message-ID: <v787ymbp.ritesh.list@gmail.com>
-References: <20260909050919.3344699-1-chris.chiu@canonical.com> <wlsnyvt2.ritesh.list@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkf6h5BXmz2y8m
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 20:54:50 +1000 (AEST)
+DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1789469684; h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type;
+	bh=3NcK+2D6AazFJjSTKxR7cSuvqpA99SwORYNVJbXxAeM=;
+	b=nyfVW78xanPnz77BrmiJiLsFyS2iBpuriK3VJWYHU70twcKIYFfzdpPuOehutbCX4AlertjxReS2z4IfNYm6xAFZgwJpRAfVTCpmZw7/3QwQu95WHnHl1iMi8oGQRnXjF5j69ET8qO3CyID5P9almkatSpkVZpl6cpnbocpLVgc=
+X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R221e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam011083073210;MF=baolin.wang@linux.alibaba.com;NM=1;PH=DS;RN=33;SR=0;TI=SMTPD_---0XB1P4.X_1789469678;
+Received: from 30.74.144.126(mailfrom:baolin.wang@linux.alibaba.com fp:SMTPD_---0XB1P4.X_1789469678 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Tue, 15 Sep 2026 18:54:39 +0800
+Message-ID: <ccd08979-d702-4dc7-90cd-f82c08c5182c@linux.alibaba.com>
+Date: Tue, 15 Sep 2026 18:54:37 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,42 +52,48 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v1 2/7] ASoC: sprd: Replace dma_request_slave_channel() by
+ dma_request_chan()
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Frank Li <Frank.Li@nxp.com>, Mark Brown <broonie@kernel.org>,
+ Shengjiu Wang <shengjiu.wang@nxp.com>, bui duc phuc <phucduc.bui@gmail.com>,
+ Tianchu Chen <flynnnchen@tencent.com>, linux-kernel@vger.kernel.org,
+ dmaengine@vger.kernel.org, linux-sound@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-stm32@st-md-mailman.stormreply.com
+Cc: Dave Penkler <dpenkler@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>,
+ Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, Daniel Mack <daniel@zonque.org>,
+ Haojian Zhuang <haojian.zhuang@gmail.com>,
+ Robert Jarzmik <robert.jarzmik@free.fr>, Lars-Peter Clausen
+ <lars@metafoo.de>, Orson Zhai <orsonzhai@gmail.com>,
+ Chunyan Zhang <zhang.lyra@gmail.com>,
+ Olivier Moysan <olivier.moysan@foss.st.com>,
+ Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Alexandre Torgue <alexandre.torgue@foss.st.com>
+References: <20260915100931.3593242-1-andriy.shevchenko@linux.intel.com>
+ <20260915100931.3593242-3-andriy.shevchenko@linux.intel.com>
+From: Baolin Wang <baolin.wang@linux.alibaba.com>
+In-Reply-To: <20260915100931.3593242-3-andriy.shevchenko@linux.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Ritesh Harjani (IBM) <ritesh.list@gmail.com> writes:
 
-> So, I think what we need here is:
->
-> diff --git a/tools/testing/selftests/powerpc/mm/exec_prot.c b/tools/testing/selftests/powerpc/mm/exec_prot.c
-> index db75b2225de1..51ac2f9c14a6 100644
-> --- a/tools/testing/selftests/powerpc/mm/exec_prot.c
-> +++ b/tools/testing/selftests/powerpc/mm/exec_prot.c
-> @@ -167,13 +167,17 @@ static int test(void)
->          * Read an instruction word from the address when the page
->          * is execute only. This should generate an access fault.
->          */
-> -       fault_code = -1;
-> -       remaining_faults = 1;
-> -       printf("Testing read on --x, should fault...");
-> -       FAIL_IF(mprotect(insns, pgsize, PROT_EXEC) != 0);
-> -       i = *fault_addr;
-> -       FAIL_IF(remaining_faults != 0 || !is_fault_expected(fault_code));
-> -       printf("ok!\n");
-> +       if (pkeys_supported) {
-One quick correction - I think this should be
-            if (!hash_mmu || pkeys_supported)
 
-> +               fault_code = -1;
-> +               remaining_faults = 1;
-> +               printf("Testing read on --x, should fault...");
-> +               FAIL_IF(mprotect(insns, pgsize, PROT_EXEC) != 0);
-> +               i = *fault_addr;
-> +               FAIL_IF(remaining_faults != 0 || !is_fault_expected(fault_code));
-> +               printf("ok!\n");
-> +       } else {
-> +               printf("Testing read on --x, skipped on Hash MMU without pkeys\n");
-> +       }
->
->
+On 9/15/26 6:04 PM, Andy Shevchenko wrote:
+> Replace dma_request_slave_channel() by dma_request_chan() as suggested
+> since the former is deprecated.
+> 
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> ---
 
--ritesh
+LGTM. Thanks.
+Reviewed-by: Baolin Wang <baolin.wang@linux.alibaba.com>
 
