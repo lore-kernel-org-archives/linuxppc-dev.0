@@ -1,95 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-27441-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27442-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D1C6C982C1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 17:52:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6DD36C88E75
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 18:12:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hkqND5bRTz2y8F;
-	Wed, 16 Sep 2026 03:52:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:39::10" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789494732;
-	cv=pass; b=LInlTty0ysqZgYkJ9wXXKoe/LoRW+hZ9Zbp4zxG0p+ITBoQtxo06MheKxXT+58zlBPURLgO4SDOaMTiRf4pyLx50O3lgjXZRyOPF9J9FbBBh9nTl6ygekozp/yf1YrtFwNGguHxQv6xBRsMYl5K5CgedlwbOkZ90+UdXzIpc7a/7G6Pg8Wce1mHyu9b41ZCP2pT5pdCwcDTWMA10jonq+WMuN2AhvZI1nGh13fXalUNFXtMaBNqXOKBqb1hWGWyxhp/MFlow+R5v2psJOMh7+awHRaittsynbKTOqxwGg3zVUoexWnl0vkdiklt/f/fIddUWe/+lrfjd7zur8aBn5g==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789494732; c=relaxed/relaxed;
-	bh=+4G5uXJmB7HF3o1L37WqbjganRxVa3Gn0saA7lTxNiM=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=mXjEfIZFuADPtUFRV/Pg8oerdXTpO6W7lj+NADFX/UWp2aHx8gXfaVSuiJOb+DTVahpMUgSU69PnuUI1Q3k/wP9rPz2asI2kCo9WVjiCWTwtDi/OOsSfZUCJ1/KqYnM5iIxPOUci9stPbp8u94Pyiow437qBgB00aFVagzXPeJWfKnFgVzwXzz1Injb7BNqbxx3hB1snAqyGiZGjDzwEbW+n2K+DYlE02Mq4Fr7TsOnMhCyEhe7gJMwvFIM1xkmJHeVyFlMZCTLhJ9Wx+4gb3zQwEluU2YvHPEtVWuqIWLTyJfJhREcbzG3uABCMQTEyowyZFQ0/MX1GEM0xlCgXwg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=sP0e21C+; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::10; helo=mail-pj2-x10.google.com; envelope-from=jannh@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hkqqw3g9Sz2y8F;
+	Wed, 16 Sep 2026 04:12:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:33::10"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789495964;
+	cv=none; b=GWcHaET4ET11zofWcDHDzcK6vdb8QG1U5gfjOaJ5UCkmxprHmqH2uQLU26jXmzfDqbENOsYkNfgmNhBbObpPaZd7A2Aidnlb9pJADu7tgCvVSUoNpSh1/UpGd/7lSyP4CN/uiIN5m6X3Vh4yz19a3I9eNfXP1/diD2uG1Qv3U3Ni+TMpQftSLZRN1U1rBsHRgrDuVUoD2vUO8JCZxWxyj1qGblC5Ea5WbDWiIzFuJ6fLxmCiRzdNmnQvj24NUhA23umCNWd49mC7tR481ZzLSDAEXQXQx4vjpeoPpB6+sTbecmFjsbhI42zkvIsOQo2r5P0Rny6kqPSPHKyAgh87KA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1789495964; c=relaxed/relaxed;
+	bh=6fvPaWKuH74Rj66uteSOuQL+AbF/NoYDvfe8MEEc324=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=TDRF4oQo1cOhU39qnlXCPvcVN5we2pQ3yQDHvwZwTBxIVs45wF2vQHNWyQAIb3Ust4jLF6pdEFjYc9BF/JVM6V0M2Zir10fbGEVABZRZL9LkzfH0AQosnveWXkUeByFEhitp1WrJf4cOvAAdXSxtlvs8wwqHtTYeClSeDCkLDsY0MZ0zI1jA6dQS5hOfhJaE7tU6iCVoAtDiKOzq6cu/O2bGxv7KMOJ0D0UIRMDxf0u40nB3yn5O6IgFueUERIh4LJDXJsHhtE8JYXmUTp3DQVGJ6D6soIPw1II7Sg3pOuKKGop/OHUpxiUVZ9qUqrOGNz+G6Ia9+i3F3IrqE2OysQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=hyzzEpFC; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:33::10; helo=mail-qv2-x10.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=sP0e21C+;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=hyzzEpFC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:39::10; helo=mail-pj2-x10.google.com; envelope-from=jannh@google.com; receiver=lists.ozlabs.org)
-Received: from mail-pj2-x10.google.com (mail-pj2-x10.google.com [IPv6:2607:f8b0:4864:39::10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:33::10; helo=mail-qv2-x10.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-qv2-x10.google.com (mail-qv2-x10.google.com [IPv6:2607:f8b0:4864:33::10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkqNC0bfBz2y2f
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 03:52:10 +1000 (AEST)
-Received: by mail-pj2-x10.google.com with SMTP id d9443c01a7336-2db425c9050so12205ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 10:52:10 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1789494727; cv=none;
-        d=google.com; s=arc-20260327;
-        b=XnC6ZJJ1cGpI+iIs9iSGLITOhDqRudvqCiSTt5fahh539yNL3F2iLAX6ROGxJnSMLB
-         RxqBoRQsA1xV9BtXHyGBcJOR1VAT6qpGVH/c8QYwoM2aFy7oGPEqWph4uo4e6FaaaJvW
-         vheYrucFEv2EBrXEYHzqJQIpzifQmZNidiFiDQo1TPG93SfHXCgdtG6dkmFcq69I1QvH
-         1BdPKDW+FVqUxqqOGnrrwCG6CGyNeXZlJkZGEjXwJEb24vVhhxkNcormcc1q7hy8sPeN
-         hhO37APXXLbQkT9vTJ8es9BK82DatsYUTEqHoJr4cgyOwtx74kSIHzoGvhzTHch6KEy3
-         XLxg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=+4G5uXJmB7HF3o1L37WqbjganRxVa3Gn0saA7lTxNiM=;
-        fh=J+8y+KqIq6iaE5MpGYH2EXIEfqpuVrTO0nC8vOCgVPU=;
-        b=eVtfmlHlo0rZDEZD5g/4uMUulojZjgmize/7xKFOemt2VHSj8RRyJe/bjTVbyoLNnB
-         UclWrWorv6qXO60gPEXVltP/9BuxBX65aBGBOhDexQVvDFa59EWVm7OFpGKfvIMdMtWY
-         +LwBzmmLiyEti859m4WnaL29Dzbuq2r1q1+TltIKunKydZ0VPKvQnWn3ELjvPyOL0WTN
-         NGzLPI55+WiCX55UL2ivs/lw6raQ+xHfhM7uc+uUEWl/1m7jq26iMzTm/lYL5QVuUJM4
-         yQI+Ek5k5IGK15pnXLaWVfWx85DHEQpZc3xsxKi8xoOU08mlWOo2p4MKiXpv01OHsnaj
-         9+jg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkqqt0s8gz2xpv
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 04:12:40 +1000 (AEST)
+Received: by mail-qv2-x10.google.com with SMTP id 6a1803df08f44-90cdfe5a07cso718166d6.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 11:12:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1789494727; x=1790099527; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=+4G5uXJmB7HF3o1L37WqbjganRxVa3Gn0saA7lTxNiM=;
-        b=sP0e21C+kldjSrgAv0LLZD3NtjrG+MfsUBOHUCvurW1epllby0M1bolJ4Q99ZgTT3a
-         92eCMiPV2w02ZwEqNjz5ocGg6hhaw1vAsEnqRNNxhrv1ioYUpxW5wSWNvpanapElBSBO
-         xTFtWCcxR6dP5tjWCroFxC6py2kQD+20VchBu7B9gZBezCT3AasHFLjXKsq3dwJUbKl2
-         iHjVMUILuwaGbfMCbuJxuZSewa9F4oy0UXS+yqRl5eQ/IgDO3GTdVAOleouKuWhfTbY8
-         kRgxnI3nmzPmUIv7YZ6PMHFzn07F7P9Hszb1PwYoJcA+ISG5RBEgdLHhvLlhdJyqRX50
-         mDaw==
+        d=gmail.com; s=20251104; t=1789495958; x=1790100758; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=6fvPaWKuH74Rj66uteSOuQL+AbF/NoYDvfe8MEEc324=;
+        b=hyzzEpFCQ23ywwN+yVMiejw2I8FySjZnhZpdh5LiF9MD8jRSThK0W0apX9o9daSSLo
+         H1RrQk+IWWvCQwMJP38OmLh0plPSjDot1HVFTHycu2kVXn13tEvSWmvvZYhN7tHYegWs
+         g5SEcvIwh4WjtEZhtv7XTpJMy5pF75S0JGIsJdKH/Xdc+rSJpZBGHFJdqXRcipA6suQb
+         cel4o8FtxzQa3pyDAWsx0mtpm29rpZdHNNmc2aRIOYV/zRO1vUY9DiLrldwB9a7wYI2v
+         1S9VZIf67OgVBq4UpEsv91OWiI79E2pAsqlNSfWmM5/p+q8mkzJWsiIFrvSXcvEkQdmG
+         I57Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789494727; x=1790099527;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=+4G5uXJmB7HF3o1L37WqbjganRxVa3Gn0saA7lTxNiM=;
-        b=dljKDQiNt7kceQ2QXXoDE7eny4tlmgEWulimtP6ON+dKWBAWQcpZjKiCeE3bAhoDfH
-         7TrIy21j9RNCS//EYbI5KtV8RMly13k5zY3bv+v8emheB0H1421PdWTC6MkbG2rrnduB
-         RHwnuT/6UxQF/SKc7UFRPQuUWNv5US6QgZP2vJP/NV6CTXFL1O94Bp1Jq0gX1tNkgjHY
-         U8/qwS190joV0fgZXt78orxdWc9xtvjLYi23hTtyO9j8SvzXjaupfsvHUV0bA8canJZg
-         cLnkQRGjyEwgPPKJGqaSs4HeCoDMGCsTf+NwzN4e0di1MwHK3KxbRACRwS50yDxbQMZA
-         upMA==
-X-Forwarded-Encrypted: i=1; AKwUvBwO6l5Yz2NTyUBTxrcfxoD1zUcnzclnDQ8ctX6gbJGLoolNy9LRE//Jc/1fegk4z756uZjXBiP5IhfLP34=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++nRhFnIM6BBc+Fg974U7czjuHgYuXinDi39rkRiOmmInW2JOmIS
-	j6TcrAQNhmfnvGg4yulEhh35eJkE+47HBCkM5lGzLFukwzLJCWcLztx6lezW66uB4r5tOSss4Ya
-	hd19DlVeWEKr7HxqfGwFy9zsQcPgHUeLozycwI3A8
-X-Gm-Gg: AYBFou1M0vuqHvorw2HNm1U5UWt6fXQM6m1je3d49LSZcXT15/vZ9gJCROg/coBOHfl
-	NISSb32/NyFf+x1kW1ltp/1pzguL8cJRBFvYMpzzIDvDhM8E8O/aFe6sFQ31AaOzm4wGCpzcwTK
-	4ooaqe9tlDkZ58XKcASgPy1VnTMbMVqtI6HInnKx+L9hkO7MKnT8LOFhCLG/aGZjcgp+80UvKVA
-	89h1xsbTY4SzLIoZFzVrPflpHgBu7uztIaqadE4HQWo3gf49FLmYk2iJ/CqPvalBRPf6Jpo0UIy
-	rqWc+MpyN4TfGnP7PE+2rFKgAJxke+6qOwwa9poFrmZoFjJrl/gzsg/aWJGDl+tRZp+IGDSQnBW
-	D+qvGoNR2xHHTaDY9KVCql7cieSQOhfWbf3BEA/1W5iA1TaCvTio=
-X-Received: by 2002:a17:902:f612:b0:2dd:5363:31ec with SMTP id
- d9443c01a7336-2dd89c0c38amr177395ad.14.1789494726332; Tue, 15 Sep 2026
- 10:52:06 -0700 (PDT)
+        d=1e100.net; s=20260707; t=1789495958; x=1790100758;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=6fvPaWKuH74Rj66uteSOuQL+AbF/NoYDvfe8MEEc324=;
+        b=qt3UeKUCuQR0hinrJc/OD0iKdo9rC0L8znB8ZLamZ/bDsE65pBWzOu0eesxTfDRvK3
+         xW6UljdonO6aXFpOIuqfqu9kZlcrFkQv40SeaN6eYXKv7pDYMxoN8OHvP7TZsu9mKGMB
+         hZ3+rQEQrpMXV9rOOOJGDfzWuBl1amGRhHHpVEzcDMVCaqpdku+Ij+y+felwWNEQMFwK
+         +1eNDGA7lcTFgzvbdIiaUd4rwler5EDs3Bn/VX768Idh+xbFcQy3dghsVWZT1o6UhX8A
+         aTud+G/ScJJqdzr00TEzY6CFC53FzAwbi9AB4C26DWl/UxL/o40Fxd/u6Z/btUenuWpt
+         vfRQ==
+X-Forwarded-Encrypted: i=1; AKwUvBwmMYUvNfdSb86feEygUFXoIn/D6CNFNoGtbAU8EMvgcbbAXosK2OO8rul55POscv+BreK8zvrDlhhQU9Q=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++mFEg9nvSqGep119fQvEOU5sEwVTeymTXcdjV2SyMZC4D3ymd5x
+	yLbJ+l3oNQwXuv2gVUUgnS3ef6zSsVzlLKLY57uO7PM4lDsrpa3iHVV0
+X-Gm-Gg: AYBFou3lr6atcDzejrZEqjLfFX+2iEWAA3fKvWRLQFhLaY0vdXKmUDUFSLpmphlwnbO
+	G+nz1rxBTma8ARxytOwrUE7Yh8cK5nNLDzxeiUNSnUacj5EGn5wMn0bEn6fQeOqxrvuwJpl6J9z
+	+wOWTpTNomVk7BVassLX5ewBcVpCO4aOX+qGBlnXDtaR8wlWueNjKXUl/KjV86hT6GoHyeXPyrb
+	2P/OK5BQwZRRlFReNwO1iIYzhig5Zs5ZaKwdgYYEbAvhroq/h0ZGSsyAlo9QlzgSil2D421jnH9
+	ULR2yLkBO8GmTcJeL9kB3HFpIlKhg8UvGsyq/evUHJXANbNdoXtvcjIn+S/wdVBIOxWD6zeXSsl
+	L3Z3YTzy1wic5elzR6VuQyeC2h5UUANhFaGQurd8eXR2TAL5erwsjtHGV1ByjzFZZRcp0a5SxbO
+	I6jYtrAMHKKgOxZDVvUtMPUG/2Et03MAwoqx81lrAbEZfxDlhAE6GvSghBwujDl+/rzwpW3oMjV
+	1ckyvi6MQfmjeC+ebpAbXK7iPuKOyGCd3AHzL+YbHGdmryBZUlt78mHJgSHVp2jMqnOKRcLB2+q
+	OuCiPKcM+glgd0mW8wXx1sThrA5385tHxV5DflriML5AwCMh
+X-Received: by 2002:a05:6214:2128:b0:911:2a79:cf11 with SMTP id 6a1803df08f44-9123a526c78mr33549316d6.22.1789495957590;
+        Tue, 15 Sep 2026 11:12:37 -0700 (PDT)
+Received: from ryzen.lan ([2601:644:8000:7a86::e35])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-9123bed6f76sm4250996d6.43.2026.09.15.11.12.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 15 Sep 2026 11:12:37 -0700 (PDT)
+From: Rosen Penev <rosenp@gmail.com>
+To: dmaengine@vger.kernel.org
+Cc: Vinod Koul <vkoul@kernel.org>,
+	Frank Li <Frank.Li@kernel.org>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	linux-kernel@vger.kernel.org (open list),
+	linuxppc-dev@lists.ozlabs.org (open list:FREESCALE SOC DRIVERS),
+	linux-arm-kernel@lists.infradead.org (moderated list:FREESCALE SOC DRIVERS)
+Subject: [PATCH] dmaengine: bestcomm: use platform machinery to get irq
+Date: Tue, 15 Sep 2026 11:12:34 -0700
+Message-ID: <20260915181234.9839-1-rosenp@gmail.com>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,51 +96,177 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260915-work-fd-reserve-unify-folded-v1-0-4d5217d6b246@kernel.org>
-In-Reply-To: <20260915-work-fd-reserve-unify-folded-v1-0-4d5217d6b246@kernel.org>
-From: Jann Horn <jannh@google.com>
-Date: Tue, 15 Sep 2026 19:51:27 +0200
-X-Gm-Features: AcwNN1Vhgv53PI2-XyXtJBbVzCNkGiiWjtvOE2b-8zHim7-UybJ3H2xniPj1VUE
-Message-ID: <CAG48ez1RsdT=O=-0city3vjgWhDvY424KtTmrCJntWy5ds3HBQ@mail.gmail.com>
-Subject: Re: [PATCH RFC POC 00/50] file: handle files on syscall exit
-To: Christian Brauner <brauner@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Alexander Viro <viro@zeniv.linux.org.uk>, 
-	Jan Kara <jack@suse.cz>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, 
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-mm@kvack.org, Oleg Nesterov <oleg@redhat.com>, linux-alpha@vger.kernel.org, 
-	linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
-	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
-	linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org, 
-	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, 
-	linux-um@lists.infradead.org, Jens Axboe <axboe@kernel.dk>, io-uring@vger.kernel.org, 
-	netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-gpio@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, bpf@vger.kernel.org, 
-	David Airlie <airlied@redhat.com>, virtualization@lists.linux.dev, kvm@vger.kernel.org, 
-	kexec@lists.infradead.org, linux-hyperv@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Tue, Sep 15, 2026 at 1:31=E2=80=AFPM Christian Brauner <brauner@kernel.o=
-rg> wrote:
-> TL;DR, this lets arch code handle fd install and cleanup. fd_prepare()
-> allocates a descriptor like get_unused_fd_flags() does and records it in
-> a slot on the task. fd_stage() attaches the file to that slot and
-> returns the number.
+platform_get_irq() avoids having to explicitly map and dispose of an irq
+by having the platform_device machinery take care of it.
 
-I'm not really a fan but I feel like if you want to do this, you
-should be using task_work so you don't have to touch the entry/exit
-paths directly? (And if task_work is too inefficient somehow, you
-could tinker with the task_work implementation.)
+This requires replacing the device_node with a platform_device in the
+bcom_eng struct so that platform_get_irq() can use it.
 
-> When the syscall returns success the exit path installs every staged
-> file. When it returns an error it drops the descriptors and the files.
+Conveniently, this also allows getting rid of of_node_get and
+of_node_put as the platform_device machinery also handles that.
 
-Is this mainly about stuff like "we installed a file descriptor and
-then the following put_user() failed"? Because if so, I think a nicer
-fix would be to have a policy of "if userspace provides unwritable
-memory to a syscall, just keep going and pretend the access worked",
-and maybe have a sysctl that kills the process when this happens to
-emphasize that userspace should not be doing this.
+Adjust the goto labels in bcom_task_alloc to match what is being freed.
+
+Signed-off-by: Rosen Penev <rosenp@gmail.com>
+---
+ drivers/dma/bestcomm/bestcomm.c            | 47 ++++++++--------------
+ include/linux/fsl/bestcomm/bestcomm_priv.h |  2 +-
+ 2 files changed, 18 insertions(+), 31 deletions(-)
+
+diff --git a/drivers/dma/bestcomm/bestcomm.c b/drivers/dma/bestcomm/bestcomm.c
+index 241a91936fe8..1006030ff167 100644
+--- a/drivers/dma/bestcomm/bestcomm.c
++++ b/drivers/dma/bestcomm/bestcomm.c
+@@ -47,6 +47,7 @@ bcom_task_alloc(int bd_count, int bd_size, int priv_size)
+ {
+ 	int i, tasknum = -1;
+ 	struct bcom_task *tsk;
++	int irq;
+ 
+ 	/* Don't try to do anything if bestcomm init failed */
+ 	if (!bcom_eng)
+@@ -67,30 +68,32 @@ bcom_task_alloc(int bd_count, int bd_size, int priv_size)
+ 	if (tasknum < 0)
+ 		return NULL;
+ 
++	irq = platform_get_irq(bcom_eng->pdev, tasknum);
++	if (irq < 0)
++		goto err1;
++
+ 	/* Allocate our structure */
+ 	tsk = kzalloc(sizeof(struct bcom_task) + priv_size, GFP_KERNEL);
+ 	if (!tsk)
+-		goto error;
++		goto err1;
+ 
+ 	tsk->tasknum = tasknum;
+ 	if (priv_size)
+ 		tsk->priv = (void*)tsk + sizeof(struct bcom_task);
+ 
+ 	/* Get IRQ of that task */
+-	tsk->irq = irq_of_parse_and_map(bcom_eng->ofnode, tsk->tasknum);
+-	if (!tsk->irq)
+-		goto error;
++	tsk->irq = irq;
+ 
+ 	/* Init the BDs, if needed */
+ 	if (bd_count) {
+ 		tsk->cookie = kmalloc_array(bd_count, sizeof(void *),
+ 					    GFP_KERNEL);
+ 		if (!tsk->cookie)
+-			goto error;
++			goto err2;
+ 
+ 		tsk->bd = bcom_sram_alloc(bd_count * bd_size, 4, &tsk->bd_pa);
+ 		if (!tsk->bd)
+-			goto error;
++			goto err3;
+ 		memset_io(tsk->bd, 0x00, bd_count * bd_size);
+ 
+ 		tsk->num_bd = bd_count;
+@@ -99,17 +102,12 @@ bcom_task_alloc(int bd_count, int bd_size, int priv_size)
+ 
+ 	return tsk;
+ 
+-error:
+-	if (tsk) {
+-		if (tsk->irq)
+-			irq_dispose_mapping(tsk->irq);
+-		bcom_sram_free(tsk->bd);
+-		kfree(tsk->cookie);
+-		kfree(tsk);
+-	}
+-
++err3:
++	kfree(tsk->cookie);
++err2:
++	kfree(tsk);
++err1:
+ 	bcom_eng->tdt[tasknum].stop = 0;
+-
+ 	return NULL;
+ }
+ EXPORT_SYMBOL_GPL(bcom_task_alloc);
+@@ -125,7 +123,6 @@ bcom_task_free(struct bcom_task *tsk)
+ 	bcom_eng->tdt[tsk->tasknum].stop  = 0;
+ 
+ 	/* Free everything */
+-	irq_dispose_mapping(tsk->irq);
+ 	bcom_sram_free(tsk->bd);
+ 	kfree(tsk->cookie);
+ 	kfree(tsk);
+@@ -377,16 +374,12 @@ static int mpc52xx_bcom_probe(struct platform_device *op)
+ 	if (IS_ERR(regs))
+ 		return PTR_ERR(regs);
+ 
+-	/* Get the bestcomm node */
+-	of_node_get(op->dev.of_node);
+-
+ 	/* Prepare SRAM */
+ 	ofn_sram = of_find_matching_node(NULL, mpc52xx_sram_ids);
+ 	if (!ofn_sram) {
+ 		printk(KERN_ERR DRIVER_NAME ": "
+ 			"No SRAM found in device tree\n");
+-		rv = -ENODEV;
+-		goto error_ofput;
++		return -ENODEV;
+ 	}
+ 	rv = bcom_sram_init(ofn_sram, DRIVER_NAME);
+ 	of_node_put(ofn_sram);
+@@ -394,7 +387,7 @@ static int mpc52xx_bcom_probe(struct platform_device *op)
+ 	if (rv) {
+ 		printk(KERN_ERR DRIVER_NAME ": "
+ 			"Error in SRAM init\n");
+-		goto error_ofput;
++		return rv;
+ 	}
+ 
+ 	/* Get a clean struct */
+@@ -405,8 +398,7 @@ static int mpc52xx_bcom_probe(struct platform_device *op)
+ 	}
+ 
+ 	/* Save the node */
+-	bcom_eng->ofnode = op->dev.of_node;
+-
++	bcom_eng->pdev = op;
+ 	bcom_eng->regs = regs;
+ 	bcom_eng->regs_base = res_bcom->start;
+ 
+@@ -426,8 +418,6 @@ static int mpc52xx_bcom_probe(struct platform_device *op)
+ 	kfree(bcom_eng);
+ 	bcom_eng = NULL;
+ 	bcom_sram_cleanup();
+-error_ofput:
+-	of_node_put(op->dev.of_node);
+ 
+ 	printk(KERN_ERR "DMA: MPC52xx BestComm init failed !\n");
+ 
+@@ -443,9 +433,6 @@ static void mpc52xx_bcom_remove(struct platform_device *op)
+ 	/* Cleanup SRAM */
+ 	bcom_sram_cleanup();
+ 
+-	/* Release the node */
+-	of_node_put(bcom_eng->ofnode);
+-
+ 	/* Release memory */
+ 	kfree(bcom_eng);
+ 	bcom_eng = NULL;
+diff --git a/include/linux/fsl/bestcomm/bestcomm_priv.h b/include/linux/fsl/bestcomm/bestcomm_priv.h
+index 3b52f3ffbdf8..cddde7c74cb5 100644
+--- a/include/linux/fsl/bestcomm/bestcomm_priv.h
++++ b/include/linux/fsl/bestcomm/bestcomm_priv.h
+@@ -66,7 +66,7 @@ struct bcom_tdt {
+  * This holds all info needed globaly to handle the engine
+  */
+ struct bcom_engine {
+-	struct device_node		*ofnode;
++	struct platform_device		*pdev;
+ 	struct mpc52xx_sdma __iomem     *regs;
+ 	phys_addr_t                      regs_base;
+ 
+-- 
+2.55.0
+
 
