@@ -1,53 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-27360-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27361-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD090C88E75
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 11:36:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A6B6C88E7B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 11:36:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hkg210pvWz3bb2;
-	Tue, 15 Sep 2026 21:35:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hkg2867TSz3bZs;
+	Tue, 15 Sep 2026 21:36:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789472153;
-	cv=none; b=Z4d0HM5groGRWbMhDgs0Iki6fkoVoNJvAB2Fn8eBNPSHxgSqqCgqkwc89dVPucvuDTyi9iKbazLijIADalXdScKBLLLr9KLoQg1SMEsDgfoPUE7cq80xenH9gw3Affmi/qHbKjiIo+/bwXdC2B7hLv+Uqxr6AFQJIRhI7ouqdQ6ly5ImPqF4/c4ScWGbp17oCfkw+Unf2kZNZJtIfZLvcdqnS+sr9GMga/zikRl9ZhOlEu6ert462/lSonWfBP/zjWgl7b+aBSvwEpPiz/G17U3YlPe2yVeZbtnofErO5GgaKX303yr6yqV4QQ323/+lajbVpUiTKJ5cz03boRjf0g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789472160;
+	cv=none; b=YQDmaXcuQKBvPeoc/LcSKB0K5esOcutOxjcRDfH4zy/aWi/5R+DaWCqhmRQrlR9Ga94sjgMs1SMCKDGNv9sgqGtsQQ2glvehx0PSAHeNl69SEBKJp8Si61PusaBOzqzN2h+Y5JET1HGPwZAzEm1sBlfoVigogeQkQ0gyLRTdDYNsW8vzOnM2DjjQn7pleyVRJvbugXswKogjJ2kNcrBS0EmKcWbxPT1JiSGd663yx7bQqZCam47moVfn4THa7FrhIIY6Ukv2mVBYERk9rXA20i+A0ZZhd0lzEJ3vqnvjwV6MajFQPMAqaAWGBsrpalsexNLv4zpgltTHfXd2UtVhGA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789472153; c=relaxed/relaxed;
-	bh=RYwvcYgPe7F+yniz25uY8kYzwfi4Dpf3GuV+JDSn+cI=;
+	t=1789472160; c=relaxed/relaxed;
+	bh=b40qx/awPhHY3pAbyOLJ2VCQCA5LCLOxDhc9IZ5eVmE=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=cMLVdqVkw6kJ75HAPqSS4YJar8AkMypCtAvZJ9V17v6R5VmqMl0x1BHtnEbqhqNXfiHxfLtgUGEjjtly4AZSL2DLGD/SyyBaY1zpCqMestNxFlgB8fTTl5B1z+8r46ZJBM+YtWuiCjess+CnKIfaN5HuTCDGPpRCc4gioKfmh7lOO/zX04PMsSLz16i0MH3JayT3vb+a4Vos/EN5rbpfKGncDL5tzGSo9alkMvBElT2zmSBI+O5rETOQrc8nTw4GfFDQmxeYSyaZx+bM7KUclYkQapGSP+Ph0U+Yp2OYbqcG0NDmNJsdJ7CabYTOkQM+b6+rDTzJA3eD2qquvIuL7w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MdYtXPMr; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=JP6OLQF7h5xD8yU7m6MSL8H0te8vBKoOxSU9S22MH7A7cAZ1vMEdom6DBKaBHJCm+syyr1mNA4ZTzBcqziVF5s/HaWWB4zWL74MKYjVFsgOc+2AozsGU1E1JGh9bh/W0Z89HKMnFZSK47ay1yTC1R07RWWewRVnlhEjHWL42Ff4+uUA/zhkeosMO5WG6R14Qf35T7tQA1e6RaUPKa3Cwz9sHd2h7CSzmA6vMmI3V49UNzQT5Sba7+ONmQByY5/V5+N/s8bll8uyaMmtBTSbwvk1xXvUYtPFbaVSbhWMUuD/50PUcVx+c+bY0UhR6NkbzTlfi5YPlEPAbaeCt1hlrVg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DP7k+2oY; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MdYtXPMr;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DP7k+2oY;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkg2021Qgz3bZs
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 21:35:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkg280ZKGz30Pn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 21:36:00 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id C705841253;
+	by sea.source.kernel.org (Postfix) with ESMTP id 95CAD419C6;
+	Tue, 15 Sep 2026 11:35:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2B05B1F000FF;
 	Tue, 15 Sep 2026 11:35:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4FDC21F00898;
-	Tue, 15 Sep 2026 11:35:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789472150;
-	bh=RYwvcYgPe7F+yniz25uY8kYzwfi4Dpf3GuV+JDSn+cI=;
+	s=k20260515; t=1789472158;
+	bh=b40qx/awPhHY3pAbyOLJ2VCQCA5LCLOxDhc9IZ5eVmE=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=MdYtXPMryZ+6SAlSbL19CQpX3Z64/AWWELS/WUVzAp8Xg1GKcwta2ZBYcN6wG36Mt
-	 as5Dtg1uHZx0++57+0zFQf62SXXotYbTuzCZx9KtLUQmxwarrRVEc5GHr8NgTGLTnD
-	 fm7wTaE+frwG78TGBDzq5+X5mT91CNgxDsAlIIvj/82S1VRyMtU0YNLM25MFctgbyo
-	 vTKRbl5GQlZXJ0hhVYRlwEl093ozZ6/IECB99aVD24EC0zmPYaRRHVzNiU6egwU8ae
-	 gX3+hqTSVslPaF8dAefZoz9w+FElBtfBAJO7mXAQPx7QPzbOBB9Xhv3/9TzLihtFHy
-	 3qlJrcB+1giaw==
+	b=DP7k+2oYU08PDg3XHLYvBCrc74ArLylq263ZQfhfXbqRVkmDQErCOMCCjVwzRS3TV
+	 Y8Y1vhMdhR6mX1rzdLqcAsmQNs12N3hdTVztl8RasOi+yrl66kgtJvAm30HiqkZulb
+	 BeZJvaqfhTtzMk7k9vathecezVTk0f7HRyPRJBoxuaSPdxLiJQMLNsbQRaHiPb0ydM
+	 Bs/kN8QurhjzxM80pFu9PHszrjXHegO9Dn6LZ3pRg5VWri7b/KneuctABvHx5t6aU8
+	 tZLPUAdsUnZNPuONncunNV8jM+2yLhEhGWV0UDmSzPkb9+7dEf6jOyeVoYut8bPYY5
+	 6Fs/9ju++IrEA==
 From: Christian Brauner <brauner@kernel.org>
-Date: Tue, 15 Sep 2026 13:31:21 +0200
-Subject: [PATCH RFC POC 35/50] ALSA: compress: install the task descriptors
- when the ioctl returns
+Date: Tue, 15 Sep 2026 13:31:22 +0200
+Subject: [PATCH RFC POC 36/50] nitro_enclaves: install the enclave
+ descriptor when the ioctl returns
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260915-work-fd-reserve-unify-folded-v1-35-4d5217d6b246@kernel.org>
+Message-Id: <20260915-work-fd-reserve-unify-folded-v1-36-4d5217d6b246@kernel.org>
 References: <20260915-work-fd-reserve-unify-folded-v1-0-4d5217d6b246@kernel.org>
 In-Reply-To: <20260915-work-fd-reserve-unify-folded-v1-0-4d5217d6b246@kernel.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
@@ -86,12 +86,12 @@ Cc: Alexander Viro <viro@zeniv.linux.org.uk>, Jann Horn <jannh@google.com>,
  kexec@lists.infradead.org, linux-hyperv@vger.kernel.org, 
  "Christian Brauner (Amutable)" <brauner@kernel.org>
 X-Mailer: b4 0.17-dev-db0b7
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2232; i=brauner@kernel.org;
- h=from:subject:message-id; bh=QV1nvuOZOTXbG885TIwwr0E5buagCxFnNDHDpDWzkd0=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWSt1Kk7NZFnW/2OMo2T/F2ffljdXrzpyBybxa2xOhV3m
- 5euvTinqKOUhUGMi0FWTJHFod0kXG45T8Vmo0wNmDmsTCBDGLg4BWAidmKMDD3u79olF+/8fDpn
- 05GGxJ924Sr7JVZeMFmoxWl14Jl/rCQjQzvbH6/0789fvC17P2P1pnCZsljB76s+Sl9/e0W5ZEW
- eETMA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2840; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=06X+neGC1JeQjfUMZrHZWaV7oELS9OsBJ6UQD7zSi4E=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWSt1Knzubs1YsvpZZZH3i8+78BV7P4vtpYxKWmuZeMPN
+ v7juhcdO0pZGMS4GGTFFFkc2k3C5ZbzVGw2ytSAmcPKBDKEgYtTACYi/YThf2b/jhn+T+e6nmr7
+ eXfahbUvovRN4zg2RHUHPFri9vTunR6G/1ElTBHnt53eUxYocDY8j1mnxvWvpfIKaanlW1376r2
+ dWQE=
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 
@@ -99,62 +99,80 @@ Rely on the fd exit path machinery.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- sound/core/compress_offload.c | 24 +++++++++++-------------
- 1 file changed, 11 insertions(+), 13 deletions(-)
+ drivers/virt/nitro_enclaves/ne_misc_dev.c | 33 ++++++++++++-------------------
+ 1 file changed, 13 insertions(+), 20 deletions(-)
 
-diff --git a/sound/core/compress_offload.c b/sound/core/compress_offload.c
-index 23d62fede06e..94bc226f8db9 100644
---- a/sound/core/compress_offload.c
-+++ b/sound/core/compress_offload.c
-@@ -1065,7 +1065,8 @@ static u64 snd_compr_seqno_next(struct snd_compr_stream *stream)
- static int snd_compr_task_new(struct snd_compr_stream *stream, struct snd_compr_task *utask)
+diff --git a/drivers/virt/nitro_enclaves/ne_misc_dev.c b/drivers/virt/nitro_enclaves/ne_misc_dev.c
+index c91300a73f50..93c3f00f5443 100644
+--- a/drivers/virt/nitro_enclaves/ne_misc_dev.c
++++ b/drivers/virt/nitro_enclaves/ne_misc_dev.c
+@@ -1589,7 +1589,7 @@ static const struct file_operations ne_enclave_fops = {
+ static int ne_create_vm_ioctl(struct ne_pci_dev *ne_pci_dev, u64 __user *slot_uid)
  {
- 	struct snd_compr_task_runtime *task;
--	int retval, fd_i, fd_o;
-+	int retval;
-+	const struct fd_slot *fd_i, *fd_o;
+ 	struct ne_pci_dev_cmd_reply cmd_reply = {};
+-	int enclave_fd = -1;
++	const struct fd_slot *enclave_fd = NULL;
+ 	struct file *enclave_file = NULL;
+ 	unsigned int i = 0;
+ 	struct ne_enclave *ne_enclave = NULL;
+@@ -1647,9 +1647,9 @@ static int ne_create_vm_ioctl(struct ne_pci_dev *ne_pci_dev, u64 __user *slot_ui
+ 		goto free_cpumask;
+ 	}
  
- 	if (stream->runtime->total_tasks >= stream->runtime->fragments)
- 		return -EBUSY;
-@@ -1080,29 +1081,26 @@ static int snd_compr_task_new(struct snd_compr_stream *stream, struct snd_compr_
- 	if (retval < 0)
- 		goto cleanup;
- 	/* similar functionality as in dma_buf_fd(), but ensure that both
--	   file descriptors are allocated before fd_install() */
-+	   file descriptors are reserved before either is staged */
- 	if (!task->input || !task->input->file || !task->output || !task->output->file) {
- 		retval = -EINVAL;
- 		goto free_driver_task;
+-	enclave_fd = get_unused_fd_flags(O_CLOEXEC);
+-	if (enclave_fd < 0) {
+-		rc = enclave_fd;
++	enclave_fd = fd_prepare(O_CLOEXEC);
++	if (IS_ERR(enclave_fd)) {
++		rc = PTR_ERR(enclave_fd);
+ 
+ 		dev_err_ratelimited(ne_misc_dev.this_device,
+ 				    "Error in getting unused fd [rc=%d]\n", rc);
+@@ -1664,7 +1664,7 @@ static int ne_create_vm_ioctl(struct ne_pci_dev *ne_pci_dev, u64 __user *slot_ui
+ 		dev_err_ratelimited(ne_misc_dev.this_device,
+ 				    "Error in anon inode get file [rc=%d]\n", rc);
+ 
+-		goto put_fd;
++		goto free_cpumask;
  	}
--	fd_i = get_unused_fd_flags(O_WRONLY|O_CLOEXEC);
--	if (fd_i < 0) {
--		retval = fd_i;
-+	fd_i = fd_prepare(O_WRONLY|O_CLOEXEC);
-+	if (IS_ERR(fd_i)) {
-+		retval = PTR_ERR(fd_i);
- 		goto free_driver_task;
- 	}
--	fd_o = get_unused_fd_flags(O_RDONLY|O_CLOEXEC);
--	if (fd_o < 0) {
--		retval = fd_o;
--		put_unused_fd(fd_i);
-+	fd_o = fd_prepare(O_RDONLY|O_CLOEXEC);
-+	if (IS_ERR(fd_o)) {
-+		retval = PTR_ERR(fd_o);
- 		goto free_driver_task;
- 	}
- 	/* keep dmabuf reference until freed with task free ioctl */
- 	get_dma_buf(task->input);
- 	get_dma_buf(task->output);
--	fd_install(fd_i, task->input->file);
--	fd_install(fd_o, task->output->file);
--	utask->input_fd = fd_i;
--	utask->output_fd = fd_o;
-+	utask->input_fd = fd_stage(fd_i, task->input->file);
-+	utask->output_fd = fd_stage(fd_o, task->output->file);
- 	list_add_tail(&task->list, &stream->runtime->tasks);
- 	stream->runtime->total_tasks++;
- 	return 0;
+ 
+ 	rc = ne_do_request(pdev, SLOT_ALLOC,
+@@ -1688,27 +1688,20 @@ static int ne_create_vm_ioctl(struct ne_pci_dev *ne_pci_dev, u64 __user *slot_ui
+ 
+ 	list_add(&ne_enclave->enclave_list_entry, &ne_pci_dev->enclaves_list);
+ 
+-	if (copy_to_user(slot_uid, &ne_enclave->slot_uid, sizeof(ne_enclave->slot_uid))) {
+-		/*
+-		 * As we're holding the only reference to 'enclave_file', fput()
+-		 * will call ne_enclave_release() which will do a proper cleanup
+-		 * of all so far allocated resources, leaving only the unused fd
+-		 * for us to free.
+-		 */
+-		fput(enclave_file);
+-		put_unused_fd(enclave_fd);
++	fd_stage(enclave_fd, enclave_file);
+ 
++	/*
++	 * The failed ioctl drops the descriptor and with it the only reference
++	 * to 'enclave_file', so ne_enclave_release() does a proper cleanup of
++	 * all so far allocated resources.
++	 */
++	if (copy_to_user(slot_uid, &ne_enclave->slot_uid, sizeof(ne_enclave->slot_uid)))
+ 		return -EFAULT;
+-	}
+-
+-	fd_install(enclave_fd, enclave_file);
+ 
+-	return enclave_fd;
++	return fd_prepare_fd(enclave_fd);
+ 
+ put_file:
+ 	fput(enclave_file);
+-put_fd:
+-	put_unused_fd(enclave_fd);
+ free_cpumask:
+ 	free_cpumask_var(ne_enclave->vcpu_ids);
+ 	for (i = 0; i < ne_enclave->nr_parent_vm_cores; i++)
 
 -- 
 2.53.0
