@@ -1,45 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-27320-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27321-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F407FC88E75
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 10:54:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6016DC88E53
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 11:03:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hkf6m3Zs6z2yFW;
-	Tue, 15 Sep 2026 20:54:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.112
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789469696;
-	cv=none; b=I8j4VuO3AOqn4DSWm4VWJY02i/8PdTTcHu3dWEsOXSbUNrqyBJUgDSabh0mFtBv4p9gpTPjNOL+rb+dp3F1iiGwcFGxsghPxxB+AzS7gTt1HmC/xnbgoDdurq3dgO2+Sloovf+49JOMHqkm60xfHcvanbnkqFeFgOgVJ5ZB41ZQsguGPgg1DtNlHlnDDZulLxe/HOAdbnok7vXbrTiT/kt79AaIVPkAlKQMlH/wsKOkH9ASjPWqb+zJ3MdCIw8Vsrqq7rQG9BTtMJSQu6tqVIcTyRFdSoqDex+HWltkjysYDxf/LoFXO2CGzd5iGg2+T9wwJg0jGqZMA5vh1ZGGjrw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hkfJs65hlz2xlZ;
+	Tue, 15 Sep 2026 21:03:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::d7"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789461992;
+	cv=none; b=Wxdr8UcqA8HeAvxHT57pVQs72TJmgB12YAAPCAxPZLetMhIk/REcJCToZCmghCnSlaLi54a2bYzO3NiMWb5p88H6SZBTEvhvMeW0j3Mo/olhyQr4PBqvP7ShRQYbbKch8S51tMVv0ZsqMFB18ByPrzZAadgGCdyuS47wX6I/F2Xin5sNZVDN6Sgo989ilCj9PfE4XlEoEKr+hsv3am3+36TmpG9s/32xJZBA5c3b6KuLMCF+dGGgpanmMSfM6Utdz8hCYA8lbor6TVtUaHFVnxVge05RqxSiV4MhiJfuPnTgfEbz+1GiVw4m79PnJM9PQtnM3CRvCl0rbaKb+5Uwow==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789469696; c=relaxed/relaxed;
-	bh=3NcK+2D6AazFJjSTKxR7cSuvqpA99SwORYNVJbXxAeM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=IIDLytJnsYS0LJTIyM+yZXk1xLoxGbGSYNDV6wP0aDBHp8IteJatNnSD/n6ZcXwzWn9h6x7Vz8QMkR2nT45L3ctVo9j5SS5JtBx9SDMKRkIEpIqx0Q4Mlm9PHnIAcek9nGWb95w7HdSlF1JnPoe6aVFpdTT1WmjFbry3+9X1yFbDoIgY4cUPG82yNYF5VkXqBPt/gsK6GC80l6kUcr2KJ8RU/RBKBRwE+FhIHmWZ1nUaPcKN7E6eY/VbQ7RWFp69COwIG47lh40cQPCIvlcsEj3fXIgb9xzyf6tRDf93Kdx/3UgiNaR6Hh7nDrXmTzyY6Tjrf8P0QVq8tFVCQL9AAg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=nyfVW78x; dkim-atps=neutral; spf=pass (client-ip=115.124.30.112; helo=out30-112.freemail.mail.aliyun.com; envelope-from=baolin.wang@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
+	t=1789461992; c=relaxed/relaxed;
+	bh=5bz0t/wzhOnFF7NxvIbxwEy/LZARgXTl37SWJAHJOB8=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=YuooIcmysAvq3+7vEBCByalL0x+6A3e8HUHl1uH+iRwD2HB4SAFaKx7jW4RDV1xsNmQyNypI0F2N4VufKOH57G6qcZrBAJS7xTmO0EkIVTn/1Edqkgz9rIFxlzxvSWkvl9JtUeitso00Y1ITUHCupG9f+cSL6OBiO0FL6Gyim8cWCYV9t2evLVkRFxVCbaYC+6rBgGch3OFVF75C8fKOGSwIDv08xP95cbrzyHSckDwufxL+DCMOyX3D/YHGbVo/VhFgSSpkmif+/jphiqTqFv9Kq1wqZ9ARplaBCQVK+NN+XUfBe65bxtV6RHKO56rH3X/GzM5DBZxOJsJPWnU2qg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=EY7tXAhB; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::d7; helo=mta0.migadu.com; envelope-from=fuad.tabba@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=nyfVW78x;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=EY7tXAhB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.112; helo=out30-112.freemail.mail.aliyun.com; envelope-from=baolin.wang@linux.alibaba.com; receiver=lists.ozlabs.org)
-Received: from out30-112.freemail.mail.aliyun.com (out30-112.freemail.mail.aliyun.com [115.124.30.112])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::d7; helo=mta0.migadu.com; envelope-from=fuad.tabba@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta0.migadu.com (out-215.mta0.migadu.com [IPv6:2001:41d0:1004:224b::d7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkf6h5BXmz2y8m
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 20:54:50 +1000 (AEST)
-DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1789469684; h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type;
-	bh=3NcK+2D6AazFJjSTKxR7cSuvqpA99SwORYNVJbXxAeM=;
-	b=nyfVW78xanPnz77BrmiJiLsFyS2iBpuriK3VJWYHU70twcKIYFfzdpPuOehutbCX4AlertjxReS2z4IfNYm6xAFZgwJpRAfVTCpmZw7/3QwQu95WHnHl1iMi8oGQRnXjF5j69ET8qO3CyID5P9almkatSpkVZpl6cpnbocpLVgc=
-X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R221e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam011083073210;MF=baolin.wang@linux.alibaba.com;NM=1;PH=DS;RN=33;SR=0;TI=SMTPD_---0XB1P4.X_1789469678;
-Received: from 30.74.144.126(mailfrom:baolin.wang@linux.alibaba.com fp:SMTPD_---0XB1P4.X_1789469678 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Tue, 15 Sep 2026 18:54:39 +0800
-Message-ID: <ccd08979-d702-4dc7-90cd-f82c08c5182c@linux.alibaba.com>
-Date: Tue, 15 Sep 2026 18:54:37 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkbGV5JCwz2yFW
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 18:46:26 +1000 (AEST)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=bSEkY03asFd7ncFCJXorUGr/EvrnfLd1LZhh/lJlyYA=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1789461968; v=1; x=1790066768;
+ b=EY7tXAhBQ7xvjTjYOTLTHG3RaK2KdfjAyw4tuWNmUuXPMz77MUl6t3yDetEKRl4fiT5tUcRt
+ s4bwC3PLgf+jJQag7IuXIw1r9LFVShfohah0pFym2PtUzv3LMxUcOfJV0Gik0nu6qj4rEqTKh5m
+ 7OFdj14dL1GGA4rJAOHNxQlw=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id 08fbd8a02e04e0fe;
+	Tue, 15 Sep 2026 08:44:47 +0000
+X-Mizu-Trace-ID: 08fbd8a02e04e0fe
+X-Migadu-Flow: FLOW_OUT
+From: Fuad Tabba <fuad.tabba@linux.dev>
+To: Paolo Bonzini <pbonzini@redhat.com>,
+	Marc Zyngier <maz@kernel.org>,
+	Oliver Upton <oupton@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Sean Christopherson <seanjc@google.com>,
+	Joey Gouly <joey.gouly@arm.com>,
+	Suzuki K Poulose <suzuki.poulose@arm.com>,
+	Zenghui Yu <yuzenghui@huawei.com>,
+	Steffen Eiden <seiden@linux.ibm.com>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Will Deacon <will@kernel.org>,
+	Fuad Tabba <tabba@google.com>,
+	kvm@vger.kernel.org,
+	kvmarm@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-doc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH 2/3] KVM: arm64: Fix references to the non-existent VCPU_RUN ioctl
+Date: Tue, 15 Sep 2026 09:44:40 +0100
+Message-Id: <20260915084441.3846947-3-fuad.tabba@linux.dev>
+X-Mailer: git-send-email 2.39.5
+In-Reply-To: <20260915084441.3846947-1-fuad.tabba@linux.dev>
+References: <20260915084441.3846947-1-fuad.tabba@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,47 +80,44 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 2/7] ASoC: sprd: Replace dma_request_slave_channel() by
- dma_request_chan()
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Frank Li <Frank.Li@nxp.com>, Mark Brown <broonie@kernel.org>,
- Shengjiu Wang <shengjiu.wang@nxp.com>, bui duc phuc <phucduc.bui@gmail.com>,
- Tianchu Chen <flynnnchen@tencent.com>, linux-kernel@vger.kernel.org,
- dmaengine@vger.kernel.org, linux-sound@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-stm32@st-md-mailman.stormreply.com
-Cc: Dave Penkler <dpenkler@gmail.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>,
- Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>, Daniel Mack <daniel@zonque.org>,
- Haojian Zhuang <haojian.zhuang@gmail.com>,
- Robert Jarzmik <robert.jarzmik@free.fr>, Lars-Peter Clausen
- <lars@metafoo.de>, Orson Zhai <orsonzhai@gmail.com>,
- Chunyan Zhang <zhang.lyra@gmail.com>,
- Olivier Moysan <olivier.moysan@foss.st.com>,
- Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>,
- Maxime Coquelin <mcoquelin.stm32@gmail.com>,
- Alexandre Torgue <alexandre.torgue@foss.st.com>
-References: <20260915100931.3593242-1-andriy.shevchenko@linux.intel.com>
- <20260915100931.3593242-3-andriy.shevchenko@linux.intel.com>
-From: Baolin Wang <baolin.wang@linux.alibaba.com>
-In-Reply-To: <20260915100931.3593242-3-andriy.shevchenko@linux.intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
+There is no VCPU_RUN ioctl. The one that enters the guest is KVM_RUN,
+so refer to it by that name.
 
+Signed-off-by: Fuad Tabba <fuad.tabba@linux.dev>
+---
+ Documentation/virt/kvm/arm/pkvm.rst | 2 +-
+ arch/arm64/kvm/arm.c                | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-On 9/15/26 6:04 PM, Andy Shevchenko wrote:
-> Replace dma_request_slave_channel() by dma_request_chan() as suggested
-> since the former is deprecated.
-> 
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> ---
+diff --git a/Documentation/virt/kvm/arm/pkvm.rst b/Documentation/virt/kvm/arm/pkvm.rst
+index 514992a79a833..18d8afe36ebce 100644
+--- a/Documentation/virt/kvm/arm/pkvm.rst
++++ b/Documentation/virt/kvm/arm/pkvm.rst
+@@ -67,7 +67,7 @@ largely due to the lack of MMU notifiers:
+   then it will either return ``-EFAULT`` or forcefully reclaim the
+   memory pages. Reclaimed memory is zeroed by the hypervisor and a
+   subsequent attempt to access it in the pVM will return ``-EFAULT``
+-  from the ``VCPU_RUN`` ioctl().
++  from the ``KVM_RUN`` ioctl().
+ 
+ CPU state isolation
+ -------------------
+diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+index 8b080804bc90b..a18ec13bd6677 100644
+--- a/arch/arm64/kvm/arm.c
++++ b/arch/arm64/kvm/arm.c
+@@ -1263,7 +1263,7 @@ static int noinstr kvm_arm_vcpu_enter_exit(struct kvm_vcpu *vcpu)
+  * kvm_arch_vcpu_ioctl_run - the main VCPU run function to execute guest code
+  * @vcpu:	The VCPU pointer
+  *
+- * This function is called through the VCPU_RUN ioctl called from user space. It
++ * This function is called through the KVM_RUN ioctl called from user space. It
+  * will execute VM code in a loop until the time slice for the process is used
+  * or some emulation is needed from user space in which case the function will
+  * return with return value 0 and with the kvm_run structure filled in with the
+-- 
+2.39.5
 
-LGTM. Thanks.
-Reviewed-by: Baolin Wang <baolin.wang@linux.alibaba.com>
 
