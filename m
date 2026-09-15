@@ -1,97 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-27294-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27295-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34136C88E53
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 06:20:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C8B0C88E53
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 06:59:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hkX284pmlz2yFW;
-	Tue, 15 Sep 2026 16:20:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789453232;
-	cv=none; b=lSk7RVEfl1qC99P4nhfdOHkGYb6xKEgBqDz+WShKQO1mlD8a83GjoyLgHTvQzimDFNZ+hwMsiu0irK8Vf+YzK1nBBAep9P32YWT+8dV8tU4I26j7v8ZF0gtjIiXXaMBzOFeeS9cKSmFUBeIWAbCrzhA5wprwAX9Ur/yw2eo7zWgU6uS2x+9i2Mw+gTNOCDmz+hTnmfEOSnJ3+x5f4FZCBlkmNJQXx8AiQtx+QjhwEkl5Frt2/6VeLCoV3FIvRV2aqxRvlLHlgWdoAa5QTtsIAp+4Jf3nprSGc/wyIBbFvpNUaHVT0SQ8SzTi1nz1smLHanm1yQOycP8EEHq//HrFJw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hkXtj3zmLz2yFW;
+	Tue, 15 Sep 2026 16:59:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789455549;
+	cv=none; b=Ax4BqjnwuN/0oeXHjtKJJ0tMCpia9T+VKnYSde65CC6JeGgfPId0OdhUm9yvwWOff/wOuveuv652SYKBtlaHNlMr8W3X1mxikNSnORzN5rvX8DXvgmo5yeEwhJ1mVuXEKZ2z8ICPE8wnZBjN4SoF+zI6wHEVAZd7gbHsLlxRZL4wVBE2nJsbZVecWyqjHuXv2bEbeWADQ6ZC6pch5CFlQvvEzx4xiOC22Teg8jBoR27tVg7V3ra6ImqBbYN4DT5AsxNpUDn2VViQ39kisBq/jTjZCRxMdOy35M8M470dkjoQ3EiTspPVc7xrdBkmhiOJWsJoEMWNgtdLQqT4p30dLQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789453232; c=relaxed/relaxed;
-	bh=lvj/QENaps3fa980Av3u1jYrzQua2MT1zXpRDbfcu0U=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bS7v900X1S8bbAVBQPVCsxPzFGCIq8ppDAU20oXdWi0ifQttpfiCsXo9tpD0xbuzsAKcA7laKgY7f3Zk2wSDrcmpqIUDxy36OJAAx7jhEoNF/LgD9UksoHsiRUpmf1CrqArDlt/cjr4ihpXFvIFd4OFLpIwHbjPQgyx3G2CpxTHx7wJRnXy4uunAtCyBth8DJ6SteuzT0FXwLceORGvhxF4m0y6Q1jbTs0w7PCg4u+Fnc+lRusWgtQaI/h35prwACAVTM9wUAJ2PDGnMklSk9VKsOs98vgD7Z8+l63LrlCgHcQNki8z5bK5H18+5OQzs/4uARYAIWRg2X1cD/EB/ig==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=DxzdrjR6; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102c; helo=mail-pj1-x102c.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1789455549; c=relaxed/relaxed;
+	bh=xqlFK0yj4P5BCqBGmrtySPTD4NnZjt1wjZ1E89dzkfY=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=E9nk/T/JSO5QwMHjhKSbuyQMYFi4y2U4Kh5zksFJt9+QGZbU68S8PgUh6jvw3mBF84lzIAHnJkvpCrS8SiInEWMbh4ymyfv5VecLs9sUjATJTLAp3wUsoQj66zbKHlvfMjL8trmK4KfLPs5WvGcrAzz0hWPKXn37ldJhAPnlMRtWMdgk79RyU8sqAEXhtaPioVgiipSHGFS1qAnRKflsYvDAyiDGafTMMYJlgd5lpky0RTa3bCNjmgzyZvFnmmeVc2lk7Wb6HPf1s5pI0d9AIsQ4qqzel/0skYRNn4yIAFrBM621+oD69ahaDBErWosB6daH3fve6o2VQ94YJSEBhQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EtufcZ70; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sudhakar@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=DxzdrjR6;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EtufcZ70;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102c; helo=mail-pj1-x102c.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com [IPv6:2607:f8b0:4864:20::102c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sudhakar@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkX274VhZz2y2B
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 16:20:30 +1000 (AEST)
-Received: by mail-pj1-x102c.google.com with SMTP id 98e67ed59e1d1-3856d6fbcb3so4014316a91.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2026 23:20:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789453228; x=1790058028; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=lvj/QENaps3fa980Av3u1jYrzQua2MT1zXpRDbfcu0U=;
-        b=DxzdrjR6gZeeyCoxBw15DRt79YSUedeJj1vfELNwCMo3Re2HjYdayMbsIKv2E92Gri
-         aKzRbSsXhItL+h5mFgDfzgvBAc5IQVIU3NwEJoRu413lxuAbb69Px3WRD51MfVhKLd2U
-         9riYEffxp7F2Hl/Ui6/FgHFJ+MaaA0q63zGRhYAKZz8+DDTGjXkwQKV6UGeEvuJf1xaq
-         70ZDtHKwH6maiJQ7uHoPNdISi+wnHNA9F4QcSx+94G4C+uRy739/91fSkaTvGdpZd2DV
-         ATZOMtgeVHoKDiKBOGjOlzkxdsFeIPEqTXkGoiIGYiLd2aGBFwaNDxpHROwVCBQFN3d0
-         TS4A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789453228; x=1790058028;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=lvj/QENaps3fa980Av3u1jYrzQua2MT1zXpRDbfcu0U=;
-        b=bOds/69qc85eZ0+s4RUZqDDZV8fZqPJN9tNLEUXT/DKGAwrfGSlc+7rAmGn4jcd+qh
-         lRzhr7dxr6CcsE/Wvdy/6sP7apgQffTnkDv9r1tNXTdZCDsKFrs1JSGLK00bNTgPfdXV
-         WUlcszcSkr1pyn0NObsft5vjOTI/31Ml5Zh6B/RZm5I7wkm0yoSxhauo+COwI6fgNN/Y
-         tk2uxIOnBrN/fxCrs0FQq8v3MrgbwvkH8GX/umI6FqrVmYS+KIKhCabf82wM5O5ORwQE
-         P3j/VeV93mCc+OHlf0CgQiAgu53XjWl3lTuSEhKIGRTmQTFO0zreO0DSdeojtAN1u74h
-         fXSA==
-X-Forwarded-Encrypted: i=1; AKwUvBzEd5FvX0b/oQHCGQvJmSVCe+KBaqYBeptUsgDUCzNVMZ6tk2mLQPscPY+2+J2cVrgJ4GEuP9UmGUqGUjU=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++lu3UdXIuPdzLck2I4ExznD7OXQx+/B0b5NWemgf3ki/2Uw00Jz
-	WYCYJsiQaWVJY7f21aVZBRIC6qPxc6whIQqwGsTINweJMnuD6ZhgQzLR
-X-Gm-Gg: AYBFou0FtFsLMizfWnbmkCE6gzDOwU4owylJNVMsRD9/ei99TrfEbxD6FiDPZxv/u7L
-	PheGP90mwq5jCO/VYBOxen5D9kfut7of4cj0+c0Mie/4dKRC4ARcquzG2g4p8vMXD27UlNKqEQP
-	fGzYZdaj3DqjeNFX9aNBkJIKgGlhDCOFDOiajQTdY2mgJ4lVHK/Ehqu4TKE41OhZXQM6yPMbzBG
-	5I4j7M+Xkpkiy4lh0A1F89QYOhS5hKoguDz3qDFwsy/aRcJY8GBA8/J/CTN1LT9v52oTxLhCMuJ
-	DO6nwDxfA8AFGPuqx+nrXQFlS2daTZRoD3uKZS7EuHJDEVI+PH2r9F7dnBOkjhBRtxodd6grr1A
-	/SEcspyr2J36UVVk1TDI9eFMn9LGSIOpswIrE9F1EfUYRrhJhWtfCbjq0D8ihGfpP+ioS5KqOIi
-	SzDhLtp/xSyg2+wuaiHG/OOfO87S9E9bXi4wjATHjKC2WSMFaHYpI+HI+pfCBWXIiQDFg0vYcFN
-	yvpqN0o08qQEnF0KOg7BKgSRmqWi6YSwf0+79N30xc=
-X-Received: by 2002:a17:90b:17d0:b0:39d:c3bb:98e7 with SMTP id 98e67ed59e1d1-39debfa60f6mr11787559a91.6.1789453227707;
-        Mon, 14 Sep 2026 23:20:27 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([129.41.58.4])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39dfdd28acbsm3169047a91.10.2026.09.14.23.20.17
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 14 Sep 2026 23:20:26 -0700 (PDT)
-Date: Tue, 15 Sep 2026 11:50:15 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Gary Guo <gary@garyguo.net>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, ojeda@kernel.org, boqun@kernel.org, bjorn3_gh@protonmail.com, 
-	lossin@kernel.org, a.hindborg@kernel.org, aliceryhl@google.com, tmgross@umich.edu, 
-	dakr@kernel.org, daniel.almeida@collabora.com, tamird@kernel.org, 
-	acourbot@nvidia.com, work@onurozkan.dev, pjw@kernel.org, palmer@dabbelt.com, 
-	aou@eecs.berkeley.edu, alex@ghiti.fr, nathan@kernel.org, ndesaulniers@google.com, 
-	morbo@google.com, justinstitt@google.com, ynorov@nvidia.com, ecourtney@nvidia.com, 
-	joelagnelf@nvidia.com, fujita.tomonori@gmail.com, linkmauve@linkmauve.fr, 
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org, 
-	linux-riscv@lists.infradead.org, llvm@lists.linux.dev, FUJITA Tomonori <tomo@flapping.org>
-Subject: Re: [PATCH v4 1/2] powerpc/bug: Add ARCH_WARN_ASM and refactor
- _EMIT_BUG_ENTRY for Rust support
-Message-ID: <aqji0ILj4gkDnkry@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <20260912065902.24017-1-mkchauras@gmail.com>
- <20260912065902.24017-2-mkchauras@gmail.com>
- <DLDJ7TNEH9MS.2I386V2SZ5QDR@garyguo.net>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkXth2fG4z2y2B
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 16:59:08 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68F31TVd3867980;
+	Tue, 15 Sep 2026 06:58:52 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=xqlFK0
+	yj4P5BCqBGmrtySPTD4NnZjt1wjZ1E89dzkfY=; b=EtufcZ70jx85+h8jFPT9ln
+	lH1CCStHETzeZCUEE2w8Sw/no84RTIbDODOZzanSJGgSoY8f/YX3w665tGe/Dpsi
+	IhJhUWStslNEUC/TxdoTmxSMinjXM/iwrD0Jg5CkvQ9kyEPsZUossi1Rn2Jrdc2u
+	kYimusJbd34qsmKBfn9aViR14zALaP3WrmBGsfV3J9v6Py9ExQS9D35TZYmugE5s
+	9GXR6cCRAtF9Eim3CJevRjScdMmCThKzBAe/awPGD2cDnmp/FzcWjAxHB4pMiprd
+	17y9mZ4GZGF/EfRhKCrU5Fb14lHoD4zSKUdCZNUnhBXsinb0T5XInFumcr7US3CQ
+	==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gmxf4wq1h-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Tue, 15 Sep 2026 06:58:51 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68F6ZHW13523880;
+	Tue, 15 Sep 2026 06:58:51 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gpyxs884h-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 15 Sep 2026 06:58:50 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68F6wko628770658
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 15 Sep 2026 06:58:46 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id BA4CE2004E;
+	Tue, 15 Sep 2026 06:58:46 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6B4502004B;
+	Tue, 15 Sep 2026 06:58:42 +0000 (GMT)
+Received: from smtpclient.apple (unknown [9.39.20.113])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Tue, 15 Sep 2026 06:58:42 +0000 (GMT)
+Content-Type: text/plain;
+	charset=utf-8
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,35 +80,130 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <DLDJ7TNEH9MS.2I386V2SZ5QDR@garyguo.net>
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.700.51.1.1\))
+Subject: Re: [PATCH] crypto: powerpc/vmx - clean up includes, metadata, and
+ p8_init()
+From: Sudhakar Kuppusamy <sudhakar@linux.ibm.com>
+In-Reply-To: <20260914081500.65737-2-blum@kernel.org>
+Date: Tue, 15 Sep 2026 12:28:28 +0530
+Cc: =?utf-8?Q?Breno_Leit=C3=A3o?= <leitao@debian.org>,
+        Nayna Jain <nayna@linux.ibm.com>,
+        Paulo Flabiano Smorigo <pfsmorigo@gmail.com>,
+        Herbert Xu <herbert@gondor.apana.org.au>,
+        "David S. Miller" <davem@davemloft.net>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Shrikanth Hegde <sshegde@linux.ibm.com>, linux-crypto@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <0974915C-5714-43CD-A04C-C4ABB534D7F2@linux.ibm.com>
+References: <20260914081500.65737-2-blum@kernel.org>
+To: Thorsten Blum <blum@kernel.org>
+X-Mailer: Apple Mail (2.3864.700.51.1.1)
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: ltkHWBcQvt7Z-jXyf4QksDgq_e7g8Oe3
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE1MDA5MiBTYWx0ZWRfX69HbRwDVIlM6
+ PM9ur1Xj+RlxfvHL60W49Ixr11J8Zf0Nz5uCWCARTEs3ukwbeBW0ItYatfaZL9oQkz0NuK7jFig
+ fpLjWxZjrscFz6fm7fE7Sb4QCnek1A0=
+X-Authority-Analysis: v=2.4 cv=cvgOAF4i c=1 sm=1 tr=0 ts=6aa8ecac cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=a0PVYM7KTqR9pnvm3HMA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: Iqp_z3-sGWrdUCLWQJ0DLUmAA_Q6Xbc_
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE1MDA5MiBTYWx0ZWRfXy5uRAZuwpDoi
+ NjLyuPQZoRGeWfZnBYsWEEW/gLuo9LJpFikobd3PVtCokKfGArGedZXVpwMUJJc+oe/IP21LbTH
+ +PVYjdi2BJjtXtCkANRhlz7YjaV4RpsXKAqKF1NvqDxDSjTujCH0ui98CpjhIPHUAem/zdIrJi1
+ 1ao+Nn/OBIh216wCR9huhbO3LcLkwAs0ajnK1aQ8pl49BlXuUr5kSRsXojPwSxZVgIQuKP/t2lx
+ jBcabbrZQkk8+4sFYOAlve+1kwVvTmjXHinSdZ59v5/JHOqN2+dNccv0hOP/fpwCNk7e8pWHZq1
+ OzysmrPBO8ZSM9s1TGKcp3clSx9JTRSHLDoaVsK5Hblmf6GOTCdfMN6W90KWaNRc+mQRdwaUSZd
+ Di21ARiZ4OswGpcEGtU0dlAZL0RjGF4lTvfE3NLCLdYr9/FUNb5dy9nSD7mSeDq7DBPOapHIv7D
+ rjdM/zMeAMYAFZEhdaQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-15_01,2026-09-14_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 lowpriorityscore=0 clxscore=1011 priorityscore=1501
+ suspectscore=0 bulkscore=0 impostorscore=0 phishscore=0 spamscore=0
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
+ definitions=main-2609150092
 
-[...]
-> From the current implementation it looks like making "1b" a parameter doesn't
-> really help anything. The fact that it internally rely on `2:` as label is still
-> hardcoded.
-> 
-> I think you should either make the label custom too, so you write
-> 
->     "1:	twi 31, 0, 0\n"	\
->     _EMIT_BUG_ENTRY(2, 1b, file, line, flags) \
->     ".org 2b+" size "\n" \
-> 
-> Or you should just hardcode "2" and "1b" and document them.
-> 
-> This stucks in mid-way and is arguably worse than either option.
-> 
-> Best,
-> Gary
-> 
-Hey Gary,
 
-Yeah makes sense. Lemme refactor this with labels as an argument and
-test it out. Thanks.
 
-Regards,
-Mukesh
-[...]
+> On 14 Sep 2026, at 1:45=E2=80=AFPM, Thorsten Blum <blum@kernel.org> =
+wrote:
+>=20
+> In p8_init(), remove the goto statement and return ret directly.
+>=20
+> Remove any redundant includes, add a missing space in MODULE_AUTHOR(),
+> and join the MODULE_DESCRIPTION() strings for better grepability.
+>=20
+> Also remove MODULE_VERSION(). It has never been updated and the kernel
+> release better reflects the module version.
+>=20
+> Signed-off-by: Thorsten Blum <blum@kernel.org>
+
+
+Reviewed-by: Sudhakar Kuppusamy <sudhakar@linux.ibm.com>
+
+Thanks,
+Sudhakar
+
+> ---
+> arch/powerpc/crypto/vmx.c | 14 +++-----------
+> 1 file changed, 3 insertions(+), 11 deletions(-)
+>=20
+> diff --git a/arch/powerpc/crypto/vmx.c b/arch/powerpc/crypto/vmx.c
+> index 08da5311dfdf..8abc4db8ee4e 100644
+> --- a/arch/powerpc/crypto/vmx.c
+> +++ b/arch/powerpc/crypto/vmx.c
+> @@ -8,12 +8,7 @@
+>  */
+>=20
+> #include <linux/module.h>
+> -#include <linux/moduleparam.h>
+> -#include <linux/types.h>
+> -#include <linux/err.h>
+> #include <linux/cpufeature.h>
+> -#include <linux/crypto.h>
+> -#include <asm/cputable.h>
+> #include <crypto/internal/skcipher.h>
+>=20
+> #include "aesp8-ppc.h"
+> @@ -24,7 +19,7 @@ static int __init p8_init(void)
+>=20
+> ret =3D crypto_register_skcipher(&p8_aes_cbc_alg);
+> if (ret)
+> - goto err;
+> + return ret;
+>=20
+> ret =3D crypto_register_skcipher(&p8_aes_ctr_alg);
+> if (ret)
+> @@ -40,7 +35,6 @@ static int __init p8_init(void)
+> crypto_unregister_skcipher(&p8_aes_ctr_alg);
+> err_unregister_aes_cbc:
+> crypto_unregister_skcipher(&p8_aes_cbc_alg);
+> -err:
+> return ret;
+> }
+>=20
+> @@ -54,8 +48,6 @@ static void __exit p8_exit(void)
+> module_cpu_feature_match(PPC_MODULE_FEATURE_VEC_CRYPTO, p8_init);
+> module_exit(p8_exit);
+>=20
+> -MODULE_AUTHOR("Marcelo Cerri<mhcerri@br.ibm.com>");
+> -MODULE_DESCRIPTION("IBM VMX cryptographic acceleration instructions "
+> -   "support on Power 8");
+> +MODULE_AUTHOR("Marcelo Cerri <mhcerri@br.ibm.com>");
+> +MODULE_DESCRIPTION("IBM VMX cryptographic acceleration instructions =
+support on Power 8");
+> MODULE_LICENSE("GPL");
+> -MODULE_VERSION("1.0.0");
+>=20
+
 
