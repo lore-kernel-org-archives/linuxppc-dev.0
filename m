@@ -1,99 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-27432-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27433-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77695C88E7F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 15:56:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D01FCC982C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 16:02:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hkmpd73XDz2yFW;
-	Wed, 16 Sep 2026 01:56:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789487785;
-	cv=none; b=T2qD2avedwT2kepW/mXuhjaCcjdSFs7uGrbRAd4h9Z3Hw88OgekZwxI/e7A32yh024exKP8iCwoVCsyHDsB2UFvg14u+6BxXYdlXHBFBiYBUi26HyPdd2U4HoAahFJxNkrGG9W5Ft943kSAdGi3zpYz0cbTJscL7PzGpr5yHYMoHMFvNgIoXmbk2bZo1N6+bLYfSkm2Asif5f6eLnHwOrc4ITOnLuB/xiT7CUACFFBW/rUiMNDse84QCy/f6qEYo1QvaYnqXDgQgUuI+8t6SBMMeBRDUa1ZBKlHYXhhrwIg0R5c3P6A2PXDlgXEIObyi2DYRWSqqhdTUKiuIc9gkUA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hkmyB2Phcz2yFW;
+	Wed, 16 Sep 2026 02:02:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:34::10"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789488178;
+	cv=none; b=a2M6PnUoGWCRG7UcmmGt3suqHXn5HhtZBKsDti6vFZBI0NH/0h+FuYMtFcnBPKg+T685zInJjJ1k1SNsJJmPunytSas0jVQYOM1o/VsGMDH+kY/zbmOdjGskS6vu2bT6p3P09rjXbV8vwFTS3nh0CnyoKTqttAowjq6MLn0vwpeEt+WHfwLn9lGrjwitvUyREzSPMg9bXDdAi5Oo19jPZGCDtm1dWm/eHJNjCpcRoOViesm2m3XHyD29lylc5MGv+WTEyShYrG+8W3cgm+7JV1W3NmcDQt8eadxbEEL1NL6CLWre5HgcZYg/BSIqcKZc/MnCGGDM4HposHOBMljgfA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789487785; c=relaxed/relaxed;
-	bh=BxPHWNTD4L6hnARkU6EXSH4kWdMAVfIaMl336Sudec4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Z+zFO83r/9XS3F7zhyDf1bw7dHElldfdDKjdDVOirz+z98dCU3LIWHWdI5DNEIPcDYtzZlj0ITACzK9NFZ2Ug9iZyJScOOJh5geBNerMSKHLfGRwoLYwimaTUDnetpyoObtw7UfBzU63t7Dp5udK8UmkeyK3nLAdiTylJvEtT5GpkwHAjVvzjDetveOvTekL8lzY2n5COKi+ET1lYVDy87skzZ5eIAg8dduFNHL7hc4B1WOTgRxxxqVW8UL494emQJ0yGXe/QAw4qQVkr/xOGNM+D9acJE5RLdGXPC3Ts7D7sfU5gPm5mb2xXrgu44sQ1Yyt15J2htbXHUFXgZzgEA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=E9kjYKDL; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1789488178; c=relaxed/relaxed;
+	bh=cj8iWYGkmy9fr6Sp+MjBMi0cvssqzarl8Tgut8FUMEc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=UrjWxWH8hBaNDFcPTiLkAFPTG4b0Nm2gNaSpD2Xf3/nC/ALQopb0fuFMW7ogQ/0LxmOyWOXWSgt/YQnuig7ucXlU9PvEmSzASB2lv0dHrGcfwpqUf9buzvfNYvJFPs/ErAMnLaqHhclSZYxTkfVnmJD7dBbX3BA9lImGFmEWr9HjgYBO1B2kXdUDQNQ9AmA53fxH8RM6wUVC3PPiIAwFQhmS/SvFjJ8HX6e5zOJXI7nwg9eH8Z20vaApMS3XsoPWR+0IQ+yF7WeyHSsSJ0sXakyZz1rgTImMYgFkvLJvSsl+006i08mRIJLdq2fMKeW+cbWAgOfSnXHK9ykbwhyUGQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=YA+yfRYi; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:34::10; helo=mail-ej2-x10.google.com; envelope-from=torvalds@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=E9kjYKDL;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=YA+yfRYi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:34::10; helo=mail-ej2-x10.google.com; envelope-from=torvalds@linuxfoundation.org; receiver=lists.ozlabs.org)
+Received: from mail-ej2-x10.google.com (mail-ej2-x10.google.com [IPv6:2a00:1450:4864:34::10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkmpc5prwz2y8m
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 01:56:24 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68FFVVU91231597;
-	Tue, 15 Sep 2026 15:55:58 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=BxPHWNTD4L6hnARkU6EXSH4kWdMAVf
-	IaMl336Sudec4=; b=E9kjYKDLqa8Q+ZrT0cPcL1qYV/gnwiw+sxKC49wqewEvhH
-	tIADKnBC+dls2N51zMbDqePuAYDevMoXKHla6vFDD8JoWOv96RL1jj6HJPXY9odG
-	JycOY+BiKY/H7iElmqDltBiOUlasXOq8PQLA0kq5OKgttSeCwFYsATOXT5fmWSNk
-	3UtsJSJYHtaZYUUI1qAAJ4doLYIRSy1Iv6OBvnBRvtKV5q82PaUbMZ3bWUxo8INZ
-	qFbmqcEH6ml3syFE7jWxl8OSJiea34IxLnNV2O+fvzHqipjjTZKYNhQVmslJOv+m
-	unhB2F/cUhFrMg5fRMiEbuwvStjIdz8Kayh7V29g==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gmxcuyn9w-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 15 Sep 2026 15:55:57 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68FFAb9O4140789;
-	Tue, 15 Sep 2026 15:55:57 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gq03bt272-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 15 Sep 2026 15:55:57 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68FFtrIB49742122
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 15 Sep 2026 15:55:53 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 075C420040;
-	Tue, 15 Sep 2026 15:55:53 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8FF5720049;
-	Tue, 15 Sep 2026 15:55:49 +0000 (GMT)
-Received: from fedora (unknown [9.5.7.39])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Tue, 15 Sep 2026 15:55:49 +0000 (GMT)
-Date: Tue, 15 Sep 2026 21:33:35 +0530
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: Fuad Tabba <fuad.tabba@linux.dev>
-Cc: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>,
-        Oliver Upton <oupton@kernel.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Sean Christopherson <seanjc@google.com>,
-        Joey Gouly <joey.gouly@arm.com>,
-        Suzuki K Poulose <suzuki.poulose@arm.com>,
-        Zenghui Yu <yuzenghui@huawei.com>,
-        Steffen Eiden <seiden@linux.ibm.com>,
-        Nicholas Piggin <npiggin@gmail.com>, Will Deacon <will@kernel.org>,
-        Fuad Tabba <tabba@google.com>, kvm@vger.kernel.org,
-        kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-        linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] KVM: PPC: Book3S HV: Fix comment naming a
- non-existent KVM_VCPU_RUN ioctl
-Message-ID: <20260915213132.36dc8e16-c4-amachhiw@linux.ibm.com>
-Mail-Followup-To: Fuad Tabba <fuad.tabba@linux.dev>, 
-	Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Sean Christopherson <seanjc@google.com>, 
-	Joey Gouly <joey.gouly@arm.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, 
-	Zenghui Yu <yuzenghui@huawei.com>, Steffen Eiden <seiden@linux.ibm.com>, 
-	Nicholas Piggin <npiggin@gmail.com>, Will Deacon <will@kernel.org>, Fuad Tabba <tabba@google.com>, 
-	kvm@vger.kernel.org, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
-	linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20260915084441.3846947-1-fuad.tabba@linux.dev>
- <20260915084441.3846947-4-fuad.tabba@linux.dev>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkmy91TWXz2y8m
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 02:02:56 +1000 (AEST)
+Received: by mail-ej2-x10.google.com with SMTP id a640c23a62f3a-c254fa4c24cso537095466b.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 09:02:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linux-foundation.org; s=google; t=1789488173; x=1790092973; darn=lists.ozlabs.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=cj8iWYGkmy9fr6Sp+MjBMi0cvssqzarl8Tgut8FUMEc=;
+        b=YA+yfRYiQSE7vv6qHyqGwoKtg9T0/F5nX9clvfdwrlLy5a5nnctPMQc2bwvjS8Q8a5
+         7VCVjJl69UnYX6iqmTPoTyMtwPp8kac5JwYeVpDf4uvUuzLOlzztwnQTEeTNxirnLwqE
+         XjEMIbKptuNkqq1EzYm+Gg42Gw1FtipJw6xLk=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789488173; x=1790092973;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=cj8iWYGkmy9fr6Sp+MjBMi0cvssqzarl8Tgut8FUMEc=;
+        b=Z5IjWCiZ8djKgae00d8qcz09Ym4c/Yl1ysRC4fobgEO1WBK4yHtg+856abDSpj1l5O
+         7K5I8vNMTuXPYKC5y5UsFvLsozeMG2B3koQ35Juj9XuFmQVsOjZhyOv6TcrEivMv2adq
+         n7MuUm9puQ829iLRh0v7YaPTwVt3e21Uf1ehqiw+jXOAw1//Ugt7oZ5PZe4y6y34K2MR
+         ClrDxFgLCa0VAhW2RZAj0lBEdqr4+8sqctJDeTZPy3QgEO+mS4jFArd4AGr4EaHv4GMJ
+         ZwAboXeFX4UtQHQDKfB21FqqtGuRdFRDjyL79VDHBRgeVYCXPmRP5VpfdlbqQJ4bekhK
+         qp8g==
+X-Forwarded-Encrypted: i=1; AKwUvBxC2LBlIWI9lWg4kNJlGS1KoEffYYYlF6DdJa1nhLsGFBC1DSpmadn307M66mVlVA29uxc8tsgmnwhxSUg=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++mtVC1ojda/BYEpaQJaHL74ZjpGZQ8DyTxlKJpGuWDyte0HlzQs
+	4ULU9EEmhdzccaws1Fw3gn9kclQSqHWC7WPGMVHF9zHav4pzgCW2si4oZLXhqwDQikhNq0vYkVh
+	rfuyUii0=
+X-Gm-Gg: AYBFou34/Ny0Vu46z29ypkntVj13tkIMX3VIJ0P4oAn6696xwUVP7PN++J3nL3uGwcl
+	Rge2lv4pwODpKe6gcDV/1jrsznYokR6E5+wjGfyFUzmH5pWdv5GpOfBUjVSAiw/7/tlCR6bhNzw
+	tAj38iN+5YOXR0wp1Q6ru7NqQLDZjMC7fz4d0ly/r4RoYX534LmWQCjNU4QCXpdZHsSwa5z+REr
+	eIrN33oFIvIyDN3hr9o0dsSprUN7TXQyS1HbtLC7M0ZXQTig94+NT+Wrnimj43LOsqDWDfCKiVD
+	+VqdDgqMs/N6JdUwDD8e1SfmS0gCJiyP+WTKDINTLG/3r5xGv+dB6Etbslkvrk0M3UM6k6REOES
+	/9f1G+smt0/lhxNxhI6akSmD9+Pbz2NDswiJjG6dKX6xUcnWwMueQ/bkhVSH1IYHAH4U7VIxFtO
+	bHqeVwGmsxoEEKABSLAHWFrhhrICHq/oVF+wvHmccYPzwqSdYZJcmv7qs5Ad2eXQ4EUZv3RW6IK
+	50YfKPZJRC6JTV2vcSphLL+QtrWcSECWPVLYmxqW8wFju+hqg==
+X-Received: by 2002:a17:906:7949:b0:c26:19de:9acd with SMTP id a640c23a62f3a-c29b871bc0amr522991266b.37.1789488172712;
+        Tue, 15 Sep 2026 09:02:52 -0700 (PDT)
+Received: from mail-ej2-f12.google.com (mail-ej2-f12.google.com. [74.125.228.140])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c29de453ea0sm761966b.11.2026.09.15.09.02.48
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 15 Sep 2026 09:02:49 -0700 (PDT)
+Received: by mail-ej2-f12.google.com with SMTP id a640c23a62f3a-c293c683202so502087266b.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 09:02:48 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBwAQqnJ2nYjNmNDzOKQzSLk95/b+rbMlmWDfLVDBNCDZ4ynGpSQQ9Ha8d640tLPLGFwJGIHo1Z0xIweMjg=@lists.ozlabs.org
+X-Received: by 2002:a17:907:cd0d:b0:c29:439b:d5c1 with SMTP id
+ a640c23a62f3a-c29b86141b9mr553591866b.16.1789488168046; Tue, 15 Sep 2026
+ 09:02:48 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -107,64 +90,84 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260915084441.3846947-4-fuad.tabba@linux.dev>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE1MDIyNyBTYWx0ZWRfXzIn1dK9Rs4+u
- 1ZEQ/kXTnyAJedfW8z4wkUc+E/d/fluIN3zAK/YxHn7TBgfGnVk8JCl1Vo4xL/psXanz4tD0KHN
- Qk8+rU03trQthHv6QNcjQwVMiXf22AE=
-X-Proofpoint-ORIG-GUID: 91WZ0m3lDBs7CXxyV9apPpYw-pvyJRYH
-X-Proofpoint-GUID: gJPvzoGNYexcjx6bjMrZBuLr-2VMHt02
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE1MDIyNyBTYWx0ZWRfX2lI7grsp7nJ1
- cuAIeOKMuz8GpYcvBYKxSINyr/44QJ0DukUXFCTX9jVSMoNPc8e2hL04yKEFu6QZkdb+59nh0Jd
- ccDYNy+6xXy7HYfPOCdM84EIZwhQZrY9ZZQ02ekC92bGNvoUW2mhzmoGZOjXO5Ei3Hl061hrfbu
- 0NJ9HKjIEBmau5r4ovHptHj2vsuFpFnFVRAWe4fscsP3kI5RMn/X9VVRMv8yEumnqvg2Vf+Qo3z
- wT5KDwRX02eFMCZzPVbh0PJlqdntI1LRqViiypazFF5+zw4LbY+pn0mW8soX6sVr3xuQKrdhn3B
- nDc/Wus556R+i80gYYiOpRWubLPVyZsIAsWVgUpEqnQ7+sXqX4wTIv55rmUsRV8XdEp/1LbjVgH
- wOZVpU/TMkhz0n63NDtHhGFIu1TZDWH1VLvk13Qk7+yktxo9jecZGj/frjCTs4QdRN68mKHxqoU
- UfMVdIj4nAQR3WNm6+w==
-X-Authority-Analysis: v=2.4 cv=F+7C5ahN c=1 sm=1 tr=0 ts=6aa96a8e cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=kj9zAlcOel0A:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8
- a=e7Yo3nX338CflZNYmVUA:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-15_04,2026-09-15_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 suspectscore=0 phishscore=0 clxscore=1011 malwarescore=0
- lowpriorityscore=0 bulkscore=0 spamscore=0 impostorscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609150227
+References: <20260915-work-fd-reserve-unify-folded-v1-0-4d5217d6b246@kernel.org>
+In-Reply-To: <20260915-work-fd-reserve-unify-folded-v1-0-4d5217d6b246@kernel.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 15 Sep 2026 09:02:31 -0700
+X-Gmail-Original-Message-ID: <CAHk-=wjeamU=_RYT9cR3dZJ2N-Teo-N1+aYh7jwhrB=iWXD0cg@mail.gmail.com>
+X-Gm-Features: AcwNN1WK06t9f9BcKFBIanysXcyUXK4eRICuH4x14s60AdlpF6ijCATIYaYAAvQ
+Message-ID: <CAHk-=wjeamU=_RYT9cR3dZJ2N-Teo-N1+aYh7jwhrB=iWXD0cg@mail.gmail.com>
+Subject: Re: [PATCH RFC POC 00/50] file: handle files on syscall exit
+To: Christian Brauner <brauner@kernel.org>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>, Jann Horn <jannh@google.com>, Jan Kara <jack@suse.cz>, 
+	Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linux-fsdevel@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org, 
+	Oleg Nesterov <oleg@redhat.com>, linux-alpha@vger.kernel.org, 
+	linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
+	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
+	linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org, 
+	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, 
+	linux-um@lists.infradead.org, Jens Axboe <axboe@kernel.dk>, io-uring@vger.kernel.org, 
+	netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-gpio@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, bpf@vger.kernel.org, 
+	David Airlie <airlied@redhat.com>, virtualization@lists.linux.dev, kvm@vger.kernel.org, 
+	kexec@lists.infradead.org, linux-hyperv@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On 2026/09/15 09:44 AM, Fuad Tabba wrote:
-> There is no KVM_VCPU_RUN ioctl. The one that enters the guest is
-> KVM_RUN, so refer to it by that name.
-> 
-> Signed-off-by: Fuad Tabba <fuad.tabba@linux.dev>
-> ---
->  arch/powerpc/kvm/book3s_hv.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index dbac3573b2c89..db090f4c5e95b 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -269,7 +269,7 @@ static void kvmppc_fast_vcpu_kick_hv(struct kvm_vcpu *vcpu)
->   * stolen time for a vcore when it is inactive, or for a vcpu
->   * when it is in state RUNNING or NOTREADY.  NOTREADY is a bit of
->   * a misnomer; it means that the vcpu task is not executing in
-> - * the KVM_VCPU_RUN ioctl, i.e. it is in userspace or elsewhere in
-> + * the KVM_RUN ioctl, i.e. it is in userspace or elsewhere in
+On Tue, 15 Sept 2026 at 04:31, Christian Brauner <brauner@kernel.org> wrote:
+>
+> TL;DR, this lets arch code handle fd install and cleanup. fd_prepare()
+> allocates a descriptor like get_unused_fd_flags() does and records it in
+> a slot on the task. fd_stage() attaches the file to that slot and
+> returns the number.
 
-The erroneous name was introduced by commit c7b676709c16 ("KVM: PPC: Book3S HV:
-Fix accounting of stolen time") and has sat untouched since.  KVM_VCPU_RUN was
-never a real ioctl; KVM_RUN is correct.
+Honestly, I am *not* a fan. At all.
 
-Reviewed-by: Amit Machhiwal <amachhiw@linux.ibm.com>
+I think this adds complexity rather than removing it.
 
-Thanks,
-Amit
+The diffstat tells a story:
+
+>  106 files changed, 962 insertions(+), 861 deletions(-)
+
+in how this adds a hundred lines more than it deletes.
+
+But to make things worse, it adds them in bad places: low-level
+architecture assembly code.
+
+Those extra lines are *not* making complicated code simpler. Quite the
+reverse. They are taking fairly straightforward "just deal with errors
+with normal cleanup in the place where it makes sense" and makes the
+*straightforward* case simpler, while making the big picture more
+complicated and subtle, and adding new code to places that are not
+simple and just blindly do somethign that makes no sense in that
+context.
+
+IOW: it's more code, and it's more abstraction, and it DOES NOT HELP.
+
+And yes, most of the well-maintained modern platforms (read: x86 and
+arm64) use the generic infrastructure and they don't show that
+low-level asm effect. So for those cases, it's mainly just  that added
+conceptual complexity and a new odd rule - and makes a *successful*
+system call go through that "extra work" and indirection phase that it
+didn't use to go through.
+
+So it just spreads out the work, and moves it to a less obvious place.
+
+All for the very questionable advantage that you can now randomly add
+a file descriptor without the few lines of fairly straightforward
+rollback.
+
+IOW, I do not see a single real upside to this, and I see immediate
+downsides to it, and a more abstract complicated machinery.
+
+I do *not* see why we woudl want to make this be a "every system call
+exit" kind of thing. If there are places that think it's complicated
+to do, they could have *their* local little stack of fd's pending. Why
+force it onto the low-level system call entry for every system call
+when there are only a small handful of actual real cases (the vfs
+itself, and random ioctl's by odd driver subsystems).
+
+              Linus
 
