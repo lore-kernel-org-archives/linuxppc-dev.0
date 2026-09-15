@@ -1,93 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-27318-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27319-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43AA1C88E53
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 10:42:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F1C8C88E53
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 10:50:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hkdr26WSQz2y8m;
-	Tue, 15 Sep 2026 20:42:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789468930;
-	cv=none; b=c39fRPYIGfA0UpT7UUjxt6TODxe5Qk3o2ep7ktE8XxYzR4jMs1wH52VqWas2blvTdg3L9OQo1lui0/jkjKx1GxKpQll26t5eL8J3SnHpckt4zBpkFX/+bZ2o2zygSI+hnh+1p02lJLaKJKK9SgpvK2CfSKjzeVXW6sMuJO+/TCr7XSzEZiwVZTuFYw/SOD75oBYeJrCrhcA/4zOeMwYSc/4cG8P3RhdT6VrOJy+YrAyf+7Rm+GYDkDPfd2g0O8V2gAODEb4MKveHPcti7gi2MyLCcwbyjUvuzBjoSq0gOknom4As0dILcmgI+I9nU+K2tsZhja+Vp3dLmCHZl870JQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hkf1L52Wcz2y8m;
+	Tue, 15 Sep 2026 20:50:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4860:4864:20::36"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789459460;
+	cv=none; b=lZJpm94xSk2ay7eKDuXpjGbKy6Fowd+aEO8kXXFG3YM6vSz9wG3l7QwzZhDa17HYc4h9e/7DhBlL8HKb35xAQ8pfuJVzNqXHVrqWH9715I4Q1RhfLnDoSTJkvWkfpQcXmyA7x91eH+uOPnvrWsFpGt+4RDsuBuSB42FqbkhUum9/Iz1bJJStcKJ+orVefa3DN/kMAt98sW3N4ZIa5vKt5uv66gkbccJ5t9hpQutzbSwgbIDU5EUA8TvzqF+9Lw9VQg+W5FnxkyWHdNsdUn+Fgf0rGHjYQt6hzYmXpBZvxS2kaosK+5MlLvYo4hvWrntQT+b+UtVDTf793F9OZyCOqg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789468930; c=relaxed/relaxed;
-	bh=hQizjq4Fv6xotoUqHmRQLNrfXJfgBpEXbkCd1IuA4Bk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:content-type; b=GaQxUceL2VVtwjxcrbgo75Iug6Qdtm/7D7Ol4q4Az5gjiyjsICVulPY+UM+OQNrZgceID/iriivlIpmAcvVu67Xwckta+eUrGK6TaVIsBBtzAPl3wPqXa5aqzvVk00c3Kk4WrQs9WlNVU0zDE21LHub02ne/duAMeMFlKAfzpokDVa/k9DC94PWq51VCKfAZPm2gPKYZTSoCQCRKb+AkxSqZvIHl+NV0ErSolATNEKpFhEP+F7+MwN/XOD5bimdIGbmSK3QzYLt+QgqHq+Mh44L+W8ufK7U8PibsNf47x/pnX8pu/mD5znhqv4+AvfvLoMdf+vw2NmNkqE5UP6PSfA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Kf88flo5; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Kf88flo5; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pabeni@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1789459460; c=relaxed/relaxed;
+	bh=skIHTRCMg076kDWG2pdx8YKlOQsvXC/Hd109poRNzB4=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=kFCZ6Wzq1EDZjr3pyPS3tcawRDj/mkiMTJY3EDWpr7J+LRf4azL9a0lmAccWCufPe85xUtvdL/JEAIi9EDRDix8n3NhivRFffdt7Ek2c3uCDRMEmQL9kmNNuDi0Ph8NCe/VFtnUcf/aXR0GIuZu1z2j2i/eDeDcqfv9Zhe6yxDzlNoGfxtqcuWbeok3O/1Jz24tWmEbH/1alexh7MqNNzXN96ocVfWGeYkyVVVS6EmUNQ+Efj3qjoJavUqz41x7JBYBJ9S6CHIs2vJktG2AwLo7zYpeV92FQMPsVZDIQCriryBcRVvJ96AZyT3dZ2CkdGhebe9fo0o9EWWM9dTcbug==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=oMOOpdT5; dkim-atps=neutral; spf=pass (client-ip=2001:4860:4864:20::36; helo=mail-oa1-x36.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Kf88flo5;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Kf88flo5;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=oMOOpdT5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pabeni@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2001:4860:4864:20::36; helo=mail-oa1-x36.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-oa1-x36.google.com (mail-oa1-x36.google.com [IPv6:2001:4860:4864:20::36])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkdr13d77z2xnp
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 20:42:06 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1789468923;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=hQizjq4Fv6xotoUqHmRQLNrfXJfgBpEXbkCd1IuA4Bk=;
-	b=Kf88flo5m0fWfDBM2PVAJSEcpqSMA4uMJCvmkltPeUjTZr+ZlyvssZhkuwDok6o8ltl1Yb
-	eeuNEBXogRcmSwwclQ5/nQIHp6AOxV6NYwjvq1e4Aog6SVN0tB06h1lc2EolOB5o7m6GOz
-	mV4pfgMbuNdkrMG4Yta8yNr7tqREKJ4=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1789468923;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=hQizjq4Fv6xotoUqHmRQLNrfXJfgBpEXbkCd1IuA4Bk=;
-	b=Kf88flo5m0fWfDBM2PVAJSEcpqSMA4uMJCvmkltPeUjTZr+ZlyvssZhkuwDok6o8ltl1Yb
-	eeuNEBXogRcmSwwclQ5/nQIHp6AOxV6NYwjvq1e4Aog6SVN0tB06h1lc2EolOB5o7m6GOz
-	mV4pfgMbuNdkrMG4Yta8yNr7tqREKJ4=
-Received: from mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-447-qM3KhJf6MTulpLWTFi-Gsw-1; Tue,
- 15 Sep 2026 06:41:59 -0400
-X-MC-Unique: qM3KhJf6MTulpLWTFi-Gsw-1
-X-Mimecast-MFC-AGG-ID: qM3KhJf6MTulpLWTFi-Gsw_1789468917
-Received: from mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.111])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id A62D5192DD6E;
-	Tue, 15 Sep 2026 10:41:56 +0000 (UTC)
-Received: from gerbillo.redhat.com (unknown [10.44.48.83])
-	by mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id E61BA1800446;
-	Tue, 15 Sep 2026 10:41:50 +0000 (UTC)
-From: Paolo Abeni <pabeni@redhat.com>
-To: mhun512@gmail.com
-Cc: qiang.zhao@nxp.com,
-	khc@pm.waw.pl,
-	andrew+netdev@lunn.ch,
-	davem@davemloft.net,
-	edumazet@google.com,
-	kuba@kernel.org,
-	pabeni@redhat.com,
-	horms@kernel.org,
-	adiupina@astralinux.ru,
-	chleroy@kernel.org,
-	ae878000@gmail.com,
-	netdev@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: Re: [PATCH net v3 3/4] net: wan: hdlc: close active devices before protocol detach
-Date: Tue, 15 Sep 2026 12:41:44 +0200
-Message-ID: <20260915104144.122643-1-pabeni@redhat.com>
-In-Reply-To: <f5f0519e82a7b8bbf314dc137470f7cf931e320b.1788128904.git.mhun512@gmail.com>
-References: <f5f0519e82a7b8bbf314dc137470f7cf931e320b.1788128904.git.mhun512@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkZKv3Gm4z2xSg
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 18:04:18 +1000 (AEST)
+Received: by mail-oa1-x36.google.com with SMTP id 586e51a60fabf-4827cc09eefso974897fac.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 01:04:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789459451; x=1790064251; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=skIHTRCMg076kDWG2pdx8YKlOQsvXC/Hd109poRNzB4=;
+        b=oMOOpdT5yb8pmb0ZebttYj6AePsktIPYQfMECburkjCyDjt0PewRgvtMcidOwCghih
+         6bWxjNjLe94jC0cdRWPJosJIncUL6YN4wtlIdnP1Yw/xOCkAIRctSTSbjMbvH8hh0F9p
+         uxKLmhSOTSLwOJaQ80x/3+dRwdZv2ryl7JpeVCeVVx7KQ7SVO7402o0PKjbRigiYo2El
+         KxnLutgFcfu5ZsNzZyGYKbsOetQfomYA6HaPkPe7zwZzlSg6AMmblU7n5QQ9+DeLrWTL
+         pPx1Qm/eHfqknbWmxfGqpLt0jC8LtUVbps1xiEyvqnYZ41Fky8SILFrnNnseO0uMGUA+
+         l7dQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789459451; x=1790064251;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=skIHTRCMg076kDWG2pdx8YKlOQsvXC/Hd109poRNzB4=;
+        b=eRZPPDHbbTXoP9BToYCldVukd3oE3Cet2noXhV4R6D8fm2IHyLmQMm2GN0OoHwT/49
+         KRg1LPUYyupBzEKMvGCSYE37w0OnKNRxo5DVLpeBdKiWEt9m4+AYDCYdg9bCmO9eZAGt
+         ylpB69dIuZjAA+OfjUYWzWP6wm2nziuMIaQfqgsl0m2MPb063XB2dtglLEdmRK59k7AX
+         3OnnSmf5Yqi8hrHCEPmHjurFxf03sXr9Zblon/aUTcz4dW2CgD8hpC1JIUEFBhdZzlQz
+         5JPo3C05TnC2XTEuNNWIE3kzc/hwHtq64SXgyfLXS0Xo2/+IfqAThJqd8EkqkzIfYuMK
+         bqYA==
+X-Forwarded-Encrypted: i=1; AKwUvBw3geiy9BnAMCPI2RQru4hghhniT6T89+bzX/ye4MOebTbWHzwXeIlc4228Ppx/dOULuFCzgfncJUMOksc=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++naMQKpRKT5TB4KJu6kB+V8zLGkzwMwpyR8u5RJ3yNRUjROZwLJ
+	JDXuQA0C/XuQzcr8tWJXfePml3a5elVyIbkyxg8QGdFEhzPHjHUe7bXC
+X-Gm-Gg: AYBFou0Vtsk8WDmdlOLmymCrnm103a0EnTHvNOUywphm8+n+I4RqMuOzZaB+tenWbjE
+	jWPnILgLcl+iAxE2YqPFuackBEmO2AFp6+zcsNK9xi7Gz4w/FmRfcoNkjlXo5ksrC09JlsuQgyA
+	AtXtNQJi7i8dVamMIhPwUP8MR4bFYZSeKYXUI9TVZtl1aVotx+KM/vq1ZxpeKBx+zayKCLbVkNn
+	b/9USlRVtfGbADMmm03nKus/eJeZHmm1/xIX1PxRNC0a7KDQOwbbZCLarV4bnlcC3iuZHzp8GDe
+	DgPSqPGLoDBHGFF/KiLCP1WMtUipSXxqxotrcDAmmVr69Y0XPg7FmcDN02mgZVwHNDcbLTjElud
+	u42LKIl10mHNjGvl87w/zUA22keXEbHWeIhiH7eIg/G3jM3MtUwde0WzbQaVY3Bv24C6VMChrAR
+	8wdWYFjVYL8nFdXzVaI1nTVnJ0pLOTSLnSxCE9l6UwdsqrB6EGs3ZdnAVAHpfWfsIkWODJwByFQ
+	hJlpA88F05FuNSnmM/SWybJWFOBadFm7qFCN6jXfGa2zF1+F/9be4M=
+X-Received: by 2002:a05:6820:1628:b0:6b8:ef7d:e181 with SMTP id 006d021491bc7-6c544daaf8cmr3999047eaf.54.1789459451326;
+        Tue, 15 Sep 2026 01:04:11 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-14365b97994sm57642954c88.12.2026.09.15.01.04.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 15 Sep 2026 01:04:10 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Chris Chiu <chris.chiu@canonical.com>, maddy@linux.ibm.com, shuah@kernel.org
+Cc: sshegde@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org, Chris Chiu <chris.chiu@canonical.com>
+Subject: Re: [PATCH] selftests/powerpc: Fix exec_prot test failure on Hash MMU
+In-Reply-To: <wlsnyvt2.ritesh.list@gmail.com>
+Date: Tue, 15 Sep 2026 13:32:02 +0530
+Message-ID: <v787ymbp.ritesh.list@gmail.com>
+References: <20260909050919.3344699-1-chris.chiu@canonical.com> <wlsnyvt2.ritesh.list@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,149 +90,42 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.111
-X-Mimecast-MFC-PROC-ID: UwjuybQppkSuHIG_S4V0wJIKVmKKqLL9S94dV-gllmU_1789468917
-X-Mimecast-Originator: redhat.com
-Content-Transfer-Encoding: 8bit
-content-type: text/plain; charset="US-ASCII"; x-default=true
 
-This is an AI-generated review of your patch. The human sending this
-email has considered the AI review valid, or at least plausible.
-Full review at: https://netdev-ai.bots.linux.dev/sashiko/
----
-net: wan: hdlc: close active devices before protocol detach
+Ritesh Harjani (IBM) <ritesh.list@gmail.com> writes:
 
-This adds a dev_close() call to unregister_hdlc_device() so that an up
-HDLC device runs its ndo_stop and protocol close callbacks before
-detach_hdlc_protocol() clears IFF_UP via hdlc_setup_dev(). The
-detach-before-unregister order introduced by ff3516442768 is kept.
+> So, I think what we need here is:
+>
+> diff --git a/tools/testing/selftests/powerpc/mm/exec_prot.c b/tools/testing/selftests/powerpc/mm/exec_prot.c
+> index db75b2225de1..51ac2f9c14a6 100644
+> --- a/tools/testing/selftests/powerpc/mm/exec_prot.c
+> +++ b/tools/testing/selftests/powerpc/mm/exec_prot.c
+> @@ -167,13 +167,17 @@ static int test(void)
+>          * Read an instruction word from the address when the page
+>          * is execute only. This should generate an access fault.
+>          */
+> -       fault_code = -1;
+> -       remaining_faults = 1;
+> -       printf("Testing read on --x, should fault...");
+> -       FAIL_IF(mprotect(insns, pgsize, PROT_EXEC) != 0);
+> -       i = *fault_addr;
+> -       FAIL_IF(remaining_faults != 0 || !is_fault_expected(fault_code));
+> -       printf("ok!\n");
+> +       if (pkeys_supported) {
+One quick correction - I think this should be
+            if (!hash_mmu || pkeys_supported)
 
-Link: https://lore.kernel.org/r/20260806020541.2011936-2-kuba@kernel.org
+> +               fault_code = -1;
+> +               remaining_faults = 1;
+> +               printf("Testing read on --x, should fault...");
+> +               FAIL_IF(mprotect(insns, pgsize, PROT_EXEC) != 0);
+> +               i = *fault_addr;
+> +               FAIL_IF(remaining_faults != 0 || !is_fault_expected(fault_code));
+> +               printf("ok!\n");
+> +       } else {
+> +               printf("Testing read on --x, skipped on Hash MMU without pkeys\n");
+> +       }
+>
+>
 
-> diff --git a/drivers/net/wan/hdlc.c b/drivers/net/wan/hdlc.c
-> index cbed10b1d862e..a38f90d3006ed 100644
-> --- a/drivers/net/wan/hdlc.c
-> +++ b/drivers/net/wan/hdlc.c
-> @@ -263,6 +263,7 @@ EXPORT_SYMBOL(alloc_hdlcdev);
->  void unregister_hdlc_device(struct net_device *dev)
->  {
->  	rtnl_lock();
-> +	dev_close(dev);
-
-[Severity: High]
-This isn't a bug introduced by this patch, but the new dev_close() makes
-the remove path call into ixp4xx_hss's ndo_stop, and hss_hdlc_close()
-sleeps inside a spin_lock_irqsave() section:
-
-drivers/net/wan/ixp4xx_hss.c:hss_hdlc_close() {
-	spin_lock_irqsave(&npe_lock, flags);
-	ports_open--;
-	qmgr_disable_irq(port->rxq);
-	netif_stop_queue(dev);
-	napi_disable(&port->napi);
-	...
-	free_irq(...);
-	spin_unlock_irqrestore(&npe_lock, flags);
-}
-
-napi_disable() reaches napi_disable_locked(), which begins with
-might_sleep() and loops on usleep_range(20, 200); free_irq() also calls
-might_sleep() and takes desc->request_mutex.
-
-Can that produce a "sleeping function called from invalid context" splat
-here, and if the scheduler is actually entered, can the CPU leave npe_lock
-held while hss_hdlc_dcd_irq() -> hss_hdlc_set_carrier() spins on the same
-lock?
-
-The same path is already reachable via "ip link set hss0 down", but the
-commit message lists ixp4xx_hss among the audited-safe users:
-
-    Audit all current users: c101, n2, pc300too, pci200syn, wanxl,
-    ixp4xx_hss, fsl_qmc_hdlc and farsync unregister before releasing the
-    resources used by their close callbacks.
-
-Should the audit note this, given the remove path now runs
-hss_hdlc_close() where it previously did not?
-
->  	detach_hdlc_protocol(dev);
-
-[Severity: High]
-Does dev_close() close the window this relies on for the RX path?
-
-detach_hdlc_protocol() sets hdlc->proto = NULL and kfree()s hdlc->state
-while the netdev is still registered, so hdlc_rcv() can still be reached
-from NET_RX softirq for frames already queued on a per-CPU
-input_pkt_queue:
-
-drivers/net/wan/hdlc.c:hdlc_rcv() {
-	...
-	BUG_ON(!hdlc->proto->netif_rx);
-	return hdlc->proto->netif_rx(skb);
-}
-
-The only barrier that drops backlogged skbs for the device runs later,
-inside unregister_netdevice():
-
-net/core/dev.c:unregister_netdevice_many_notify() {
-	...
-	flush_all_backlogs();
-
-	synchronize_net();
-	...
-}
-
-__dev_close_many() does not touch the RX backlog, so a frame handed to
-netif_rx() before ndo_stop and still sitting in another CPU's queue can
-reach hdlc_rcv() after hdlc->proto became NULL. The
-"if (!(dev->priv_flags & IFF_WAN_HDLC))" test in hdlc_rcv() does not
-filter it out, since hdlc_setup_dev() re-sets priv_flags to
-IFF_WAN_HDLC.
-
-Can that hit the BUG_ON above, or use the freed hdlc->state inside
-fr_rx()/cisco_rx()/ppp_rx() if proto was already read?
-
-[Severity: Medium]
-This is a pre-existing issue and not introduced by this patch, but the
-return value of detach_hdlc_protocol() is dropped while
-unregister_netdevice() runs unconditionally.
-
-detach_hdlc_protocol() returns early when a NETDEV_PRE_TYPE_CHANGE
-notifier refuses the type change, skipping both release points:
-
-drivers/net/wan/hdlc.c:detach_hdlc_protocol() {
-	...
-		if (err) {
-			netdev_err(dev, "Refused to change device type\n");
-			return err;
-		}
-	...
-		module_put(hdlc->proto->module);
-	...
-	kfree(hdlc->state);
-	...
-}
-
-The refusal is reachable: hdlc_raw_eth's raw_eth_ioctl() calls
-ether_setup(), so dev->type becomes ARPHRD_ETHER and a VLAN can be
-stacked on it, after which
-
-net/8021q/vlan.c:vlan_device_event() {
-	case NETDEV_PRE_TYPE_CHANGE:
-		/* Forbid underlaying device to change its type. */
-		if (vlan_uses_dev(dev))
-			return NOTIFY_BAD;
-}
-
-returns NOTIFY_BAD. lapbether_device_event() refuses the same way.
-
-Does this leak the kmalloc'ed hdlc->state and the hdlc_raw_eth module
-reference, given every caller then calls free_netdev() and loses the only
-pointer to that state?
-
->  	unregister_netdevice(dev);
->  	rtnl_unlock();
--- 
-This is an AI-generated review.
-
+-ritesh
 
