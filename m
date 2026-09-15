@@ -1,60 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-27278-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27279-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F555C88E53
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 03:14:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 490CEC88E77
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 03:14:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hkRvB0fNcz2yFW;
-	Tue, 15 Sep 2026 13:14:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hkRvC37g6z2yqf;
+	Tue, 15 Sep 2026 13:14:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c110::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789442053;
-	cv=pass; b=acLs9lB5qtardpIcKO6HUeWLKGHj/oqTgYV2Wxrw4TzZkVh69nU17Tn8bbo1mUP1eB5LsadtM1QsLrem5SdqzSaGSlR1mE7CO6k2ozVnYbBey0bd2fDk2UxFuv4v3RljFqKcdAnQHdvrjzqUSDzUlDJuw0MQ0z2e9VxKAg0UQ77+GDmnVICBWNqTPfw3msKERB20IRA6FY8UDizy+QmU7r41wivcaAQ1GEksUxlXIY8jxkiHvQLO5W+qFtCV6/QeKCKHpKJO6jL2NtwtIbrtUIOzUEIaG3QZcQmYb9Ze20oFfKkg1a225K7icVO3ogw83/MDkiQfmE24un7x24LO3g==
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789442055;
+	cv=pass; b=GyW1EWiZ2amMqT7SsLlfSuqSuWsL/275k3XvCAdIzKjPOf6+/3pPtS38UkddxGYE/7lYODS2uPARKAo7QmqY52kDy1SjfrCK5joK2e2QDHmV+cN8qaZsFaFoZmKnZ0fIyEuIWvXpeb9BXBlpReWkGJlVhy51eR+A9dCnBkJCZ4Qzs0gil7jRSmeOHFP+7lofLCjiloAjXI4J+GgNkJJAzf/xZi9rGEwb+XbB4SWsq2QTHEDhevMPscNeAiedmCNqZjLupNEE6OGU2BCImGAj1BLVM/PtCOn0UV/S4ENU5OZDGifRJVMIWbA5G19MPUOx3jUAHcUaPicCjUAT/HFAbg==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789442053; c=relaxed/relaxed;
-	bh=dqRyWUarxerox1+/UpOmKP1szaDVGaDMR23jroEMFj8=;
+	t=1789442055; c=relaxed/relaxed;
+	bh=tgJTrkbSXsk/Ysc/nC1MLyJzpZtjgLsqhRT74bOiJJQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Viu+Qg1G+4ND7PCvA2ZUr1vgk04wqpM3EmuK9JDYfB1c3t5nonU+h35tUy1uOBMdq3RaMQPoQu4/KeKKjA6d3OVkmhIlX6tVNF6POuAblzBsVUgjDkc6CmSl5j7jol02c4IEINFxWxfzJ7UTKhQdqHftPHUxnL0bA3MPft1Vi1x0uCyih8qJ507TqNCKihxpyi0LfFjzNJb2rO48DqCz8CEkNV5uGluweyDgF6gjz4hxfJu9Bx5SogfG46on7H25nOposw29U7++PIEGzRz/BHF+tRItRhVbNh3XGXWF+VXRhBbX19PE0gTTJrry4oA4tzrv0HmmSnR9yXnkXOIeuA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=NYjcGaMj; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c110::1; helo=bn1pr04cu002.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+	 Content-Type:MIME-Version; b=V2QsgSOdov+UwwyQ4MCSWLIBPnz9lhZyZqofwPjHObnx0DVa2vaMonBtDjKZA9Mt3Pgs49C6L4G9gbwmOMxjkugIjjLda4ICJxlWlVG5VvBGY4nzcbfJ/zEzdaPHH8eItQly1xTBcfaUCcVgocwtD/X/8pgTKr69KFBBGEpSv2Srczu9ZF6hk2KlWmAxF3mg4O9iw4GdF5BpZv7635iHNaFoNYavT+I1lk2JPQ/We9bv3mgTLQpoMDDu4enfHdTHZ37l+67cQ3aj0PwVejMBqWianbgid9P22qdFAfkyfCjon/nj1SJPjTrRgqjU4vzGK4b/KYDlygIJbHKhMfniOw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=XoAyOmrO; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c110::1; helo=bn1pr04cu002.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=NYjcGaMj;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=XoAyOmrO;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c110::1; helo=bn1pr04cu002.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org)
 Received: from BN1PR04CU002.outbound.protection.outlook.com (mail-eastus2azlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c110::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkRv86HLzz2y7p
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 13:14:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkRvB1sHxz2ygp
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 13:14:14 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=xBqX0MhONTAsWGCZi43m1LDhqSV3TFqEUErruxKKioVOW6/IPiR29/3quIW810J6xsEYyJcknpPE4EbeqQfegPl5l1OwQ58fdP6j1NLOXSndi/Bj7DJxa+CoaDNhW2YqFWGyPmj3vQ9OBqMveTY2dGBumHIgRWokIxKplLT2FC7EPZPdReVDXHo+rK7JesNRlTxepdsTeFYIzkB3HTfLBfu5IMDCu2gjpJrVQzny12YB4rVjGzLeSK44MxDbKrltCaiJd7x6GPfaEpA153D70J9nkkoCok7wtG1Ry/M7gPHl/8w/U1mvQj7zQRYxaiS1qFihxHOO/K2OMY68XYZ3lw==
+ b=jEW3A1+fKhN4tcmqOSfwZ4KzsoCTZYgDifv10deRuQZfkPs0NKiF+Au+OsSDOT4QVsZkMZ9eKu+1vi+hnFHSHqdgqd1H6eAxXcYagu5Yc0F0SInYHmnj1CO1iCuYGuShDHiaNTEZ3AZhyYFu+ORPuYcdlBzXLto+cjHqIdb/HXjxPISC22SBuM2A3IgfO2SDP8kIxn099fCWJajie6lK/VLffEh/gpe1u9NPnf2Zkfly3Uso9R41bXinTdp+YaKjwmClMtkjYx8roTtE94jpeeuaWn+QKUHhtRDkcPyrSnCIJKgAR5/Jju7a/LJMS1a4gpY00aMFQI1wC/V/gsFARw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=dqRyWUarxerox1+/UpOmKP1szaDVGaDMR23jroEMFj8=;
- b=VSBnw5qmfQnTnIHrZFYl5Nbb/n2d/DpMZi+rshg6zy1jSoJnwQpweUzcD14O8oAN1PY3+U4VY+pHiN3RYI7qHKy2/EmxaSn0uRbpipxnRKKbYC0KqLHGOtx9Ay/wpmRxsKfCAdb4SHAwuCH9aem51R9fKuYRGo9wOgy+G99rDVc1/51gfItPRiJUsH02aH1rHloPwvCwJQRuraoPTCiHLGfVbsCTgL90v6dWZv8BmOm+wYEJdBQAcH+lrPrEqc6aI/M59/xF6mTNkp5W/ewKkk4qazkw9usf1HN8mrTa4dokwAFZ0w0MatS0ql40dQXB28qkvfvhcFn9O+YJ1sADTg==
+ bh=tgJTrkbSXsk/Ysc/nC1MLyJzpZtjgLsqhRT74bOiJJQ=;
+ b=Rxa+goYAVRSM7LebLFbRBjJuQsXuX0ynW3BbvCblJYGiwBmyDr59SBIubqXiG4IFSZ1fXjSb1Iqr/217hVpy2cY0w5op3k7iqg8SeBfYjtsRtOSrNX2Adpy7RWfjPgHL04xZ6V8TMIu7SGHdQcyyIpalrAlEwadgpZ0R9Kklv71QkkJoNftyG0uXPDxvqFrgo5JGFwx7Apc8x73GZsQWmhUF3ByGge/8GfUu9b2TWDsayOIAlriZimcg0fl2DPykLoVw1ptFz9RujRw+2dxFjbNdaIqMoZOiUl+gJaG+UO7gj78HF6Cj5ZrdTxK941nqcXpUifDqd9+dwMdZY88ZsQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
  dkim=pass header.d=nvidia.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
  s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=dqRyWUarxerox1+/UpOmKP1szaDVGaDMR23jroEMFj8=;
- b=NYjcGaMj3if2jftwR5RBvlcyeThgu20WdTtiiP+qrc0QnzzrukqD5VELP0yOBOKSnBGuXRCff01nzwV3/ZUW0+oVZG7zk9pQ2eGkbBC+im+B+o2uUwrKTHkPbqHNP8hT7OPMA1PPR+uPvms9ep67AhkStFaKgfoRqRBssaAICD/W7AF/TC6hs8nu7vUshaXvrdU/TogUnuQINKCgIBj06orxrzj3axsNu4rBNO2XkZxZenmlUz0ms4ogDwaiOzN3e8ze0Mou7TAauc35frcwlrSMNunXBJjxfjAoT43LbvRhjvjF6wCJ363Lr1koQic2bFvWmYZJ2YxP59co9TaEIA==
+ bh=tgJTrkbSXsk/Ysc/nC1MLyJzpZtjgLsqhRT74bOiJJQ=;
+ b=XoAyOmrO3mVrQ0rgMNm95Pq/X/dH16s7YxtU2hjaGDwzmgmAMvNQS2eciuv3UYiJMUPwiqGKJxTcldZO7uxlSmpd1DNSIExtyhtrEd02uIbw6uE3PgqI9bviT+z22KLpPrKpXXLHfymOkVTQnV8zOXq+07tJsGGsHknFu0M4UWcHY4JRwRD+/UnCBx3qNwuWEx2nnYfSyt7pxwDiXiQ/nGLbWyO8CaSz8PFgfA0d/wwKyo8CYKigVpYEKgCZKxk4faTThjzWpkpXznfFxQKiXUcCaLxNzy9ParHBmhJQbPzqBAZXscURA+vK2EaXb0JNNuhamBnJanzRhuULQS/bGg==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nvidia.com;
 Received: from LV3PR12MB9356.namprd12.prod.outlook.com (2603:10b6:408:20c::21)
  by SN7PR12MB7834.namprd12.prod.outlook.com (2603:10b6:806:34d::13) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.406.12; Tue, 15 Sep
- 2026 03:13:39 +0000
+ 2026 03:13:48 +0000
 Received: from LV3PR12MB9356.namprd12.prod.outlook.com
  ([fe80::1c36:31b4:c420:6286]) by LV3PR12MB9356.namprd12.prod.outlook.com
  ([fe80::1c36:31b4:c420:6286%5]) with mapi id 15.21.0406.007; Tue, 15 Sep 2026
- 03:13:39 +0000
+ 03:13:48 +0000
 From: Yury Norov <ynorov@nvidia.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Yury Norov <ynorov@nvidia.com>,
@@ -122,16 +122,16 @@ Cc: Yury Norov <ynorov@nvidia.com>,
 	linux-rt-devel@lists.linux.dev,
 	llvm@lists.linux.dev,
 	Yury Norov <yury.norov@gmail.com>
-Subject: [PATCH 06/17] sched: assert static storage for wait queue and completion declarations
-Date: Mon, 14 Sep 2026 23:13:21 -0400
-Message-ID: <20260915031334.1194975-1-ynorov@nvidia.com>
+Subject: [PATCH 08/17] idr: enforce the static-storage contract of DEFINE_IDR()
+Date: Mon, 14 Sep 2026 23:13:23 -0400
+Message-ID: <20260915031334.1194975-3-ynorov@nvidia.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260915030336.1192299-1-ynorov@nvidia.com>
 References: <20260915030336.1192299-1-ynorov@nvidia.com>
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: BN9PR03CA0245.namprd03.prod.outlook.com
- (2603:10b6:408:ff::10) To LV3PR12MB9356.namprd12.prod.outlook.com
+X-ClientProxiedBy: BLAPR03CA0175.namprd03.prod.outlook.com
+ (2603:10b6:208:32f::14) To LV3PR12MB9356.namprd12.prod.outlook.com
  (2603:10b6:408:20c::21)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -148,200 +148,176 @@ Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: LV3PR12MB9356:EE_|SN7PR12MB7834:EE_
-X-MS-Office365-Filtering-Correlation-Id: 6ebf14a0-690a-470b-2fe4-08df12d756d2
+X-MS-Office365-Filtering-Correlation-Id: 3c8f39ad-cdcc-4f11-b510-08df12d75c12
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
 	BCL:0;ARA:13230040|366016|1800799024|23010399003|7416014|376014|10067099003|6133799003|22082099003|18002099003|56012099006|11063799006;
 X-Microsoft-Antispam-Message-Info:
-	ujyqsv8Mqu+RzMSRTubhAvIjC+pSD+Y3sdRtDBO/n39giiuPlJMBXGmZdOEeT0I+leInLRB8J/fTyydAG54ZlO9PQ01owGs2Gt+xn9pI53OHJ1O9VC4BnrcMkQnV70aFYp84qp9gKRdVyIYP4h1bj9yv1iCY5nxvUsFy5e1prdlf00IEuzCTNqm9g5SZlynBM9YZ+9520ElXmjNVMC4KeJsPuxvbboDQ1Z59WPDp/wVStKzudDrXrmz92RrpxrhiBliGkUNnuWxXppHPMucEQdmOkJIA37JhkR9gEtVilGX9kXsCb47X4bneFV4ZVkQkR3QDHXMkeQc6pGNJm4m70VmaWtrQGa1V8qBNrpSMYtvVE4bd9gcgFt4RTiY3FxOT+rZ10l4Vrouo0NOh+mLBSmXN2MIQPhbyAWt4ScrB+V6rzlM8qRvU0UZJKE4Gsoed3bDrJDcuaUBOA6/nls0p+ajLNQMbsP34on3ewS+w93gCYarBNwd4y0p0bLE68RPpRZa4lzgfQ3vX3kgVzNOdmZV7U4wDCIsd0d1+zVDpASGjyWAzVj7TdEP0Lh0NS1j04L1y/pA6IalAB3kH/fMtOo9+01djFPtNp0jF2r+Vq2t9kQiVeKx9BmfBPgZGTmWpxm3OyZdYrgehz+kgCmBrhL3KJwYghxgNOcOB7U2pxTM=
+	7rOpFyrVmvAO8tlkEBOUtjgzSr48cw0TpHiAxq/C8dG8P5VDP4qDAMp/NCWgbX+8SF9dz677r8+M04HeSJFSxn4pKwPF+uVGbhMKvRJU0XqN1UhQpbBkRsuQXiPcxBhfbeY5Q5N5u0pJHuOgW5wXzkugSZRq6rYo4XTc0A4K/qPWn/93Rfx/X7aTX0oJcsoFJqt3GsxY2dQ3ZhqW9IKlm/r6gWjld5EgWkZ83Py/b0LHc3DRjOn7yrC9KC5FMjg/myYmOacon3MoF8X3rw/i/MiqrQf4xvqK29V95uZF+xg2CGeoTJMrRcrRyJhWVfekvRkFOqiB7K3FKNevwIhGlhi/HWEImYJJWhbOtjShlyeP6K8uPgQyGixvSUA7n4Xeq75qciANx4eioSpwbZyuf3yAh1oQN/R6XQ/IQeFoc+witxmz3b5ZdFo56PHwUf9r57HDUQAnAmgHjHdbxucQ4PYAru2s92jvbrAouNeG3g2CDU2dxUEhGCCKBdMi09hUs9uDEEB2tXq2iViPCQLT1gIvQ0C6LE24HkHiStTdg1oQS9Q5XrMXvc2Tok6flzbFRhttY/DjQI0ljMov3DEEJllFmxbWcVWiT8YQpvfXJYG0M5XE9zve7dS3fEDpBoVrbFMzNbMH/t186fEM5Ug4gYj0dxxEImtu5I+9hrbbo+o=
 X-Forefront-Antispam-Report:
 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV3PR12MB9356.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(23010399003)(7416014)(376014)(10067099003)(6133799003)(22082099003)(18002099003)(56012099006)(11063799006);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?GwQ0nzLyGOSpnO4x6m1AwRPoycDPenQAJwOp3HCgmO5Rx4gV4cUTIyLuTjcd?=
- =?us-ascii?Q?e9WR7oDZjUm+rFdlII830gr8AF4UkT0qsgDgLBOfNu14emhfqlxd0GAEwwuT?=
- =?us-ascii?Q?ScDvP+lrwLY4/p+kkGmVlWqV/nzIdBHkR1z6IP5UqF8bIl7GJQQVeHSj/oAS?=
- =?us-ascii?Q?J7I8o0vI+BLZSuu50JuEbD53ThufULWIZOMi1rcQLlfg8BcZJJs7N6+kyQmQ?=
- =?us-ascii?Q?F6uyrxJqA1kW4xDrPIr38rL4cHrtJE7nv46rZuszNdk5bdQL4JFKrO4bx+oD?=
- =?us-ascii?Q?AahxHPpwRvTDb5DSAWBOXIrvZmJwyTx6yv2nm+fyCOJN8kOpRWFoJg0xGWqO?=
- =?us-ascii?Q?Ptvx2NhtfdTbIuRnwNNrzi+BwG3Rv3Lfyy8+e+FDRFgW7jmaNENrR1D6Tt7z?=
- =?us-ascii?Q?Vq0VQ1TbjnN/Jp9jnsHWcZh4j8YYAubQppTfJV9zQKiGbg8/vUoaTqMP68h1?=
- =?us-ascii?Q?LkDnWEqu0vwpb3hH3Dh6NfCR1nVQqW00tkS7aCmHc5Q322SYRoCTtHd0b/nd?=
- =?us-ascii?Q?wunSVLuaycrodKAfirqbdjgYihzUxAtIpPR4kdi+5LCEtI9fUId6iTaYwDS1?=
- =?us-ascii?Q?1wGHm/na81xBfd++O1DCOOGfwjtk6+1cIT11pkYVH/e/q6X8pRran74Mqnr5?=
- =?us-ascii?Q?ZdO0xAv0jU+kxG+cdcqJZE2kwnbcbHKoJx2mheXFKemjfi59Be3CkeySOf5l?=
- =?us-ascii?Q?DS/mir8udq3wnPvC6HS3UoOgnW5U0CIld3wCIng6rMyDdjC81GUqKuFpWPVV?=
- =?us-ascii?Q?gucji7rT7s+1MaxdRVPfPKX2MXeDHABrQ0QrkC64HKlyiLgeF0cbDHUO51Ho?=
- =?us-ascii?Q?l08oQKEUrpzNdZGVR5vaA5G9iziDxRtDYQ6qWpBSVoANR9BPTUr1LGrBq/p3?=
- =?us-ascii?Q?U3Pi+BOiy8OjuYInqvEQuawTjl5dFKEQNeSKNLF/ZNtVoAM7SxKOVjbO0CIo?=
- =?us-ascii?Q?k7y1T2IKO3tAYcedz536hm3j6JdmbQCkn0txfmzhmehYURRuFC71BC4dQrK0?=
- =?us-ascii?Q?bgiO+sQhzoztGVHHSWr8/46zAVf2oxXjPncGGnK/eGCi2TCRMIKYDcRj+8aA?=
- =?us-ascii?Q?8D0xGAGI3NGb/KqNcBlqrE7aQMnt7J31ChB31+stDYacjDGaqVU9UK7PbOp3?=
- =?us-ascii?Q?laniq/gvDP5by/IOG27WvDojkAfJGCKOrkZkJBaevZb3KpZoWYqk8WJvZBRZ?=
- =?us-ascii?Q?WYCCA41A2yTX4IWouzsC8d73PwmyT6VLxNcAEvHtB6/Td6h0PS7xy9idrqs4?=
- =?us-ascii?Q?HpFVrNc/5hSFQuZ7hMCjgYWkv47YmABqg9f42nKuKmSwnSGmnxu3CqiqXgRp?=
- =?us-ascii?Q?FJfYpiwC3wGAEyw9ORk1zyYwTsxQEgiUNPwpt7uww8j5XSBVBTV+stlM/8eK?=
- =?us-ascii?Q?kxQLN1V9F0M/VcxOLr+ZxZbPAolOJ/m8cKN0JRTgbe38UxtlnPl/yd74pOr0?=
- =?us-ascii?Q?LdsmVAEMJsiaQKInhwc0MZuoU3TYzRTAhA04/053GvtsEWmHMd5yxeLZ2y7u?=
- =?us-ascii?Q?HHOz8/K/vXVTugKwbvtXr5IZZjRo9U7css+TL48ZXQM51JWr+9W11t8geOYS?=
- =?us-ascii?Q?hVf6MPEPqFPudEnPO3ZJ2blf8qRS7/ImQ095AbnaiCDC7U4YhuSV2iCNV+0Y?=
- =?us-ascii?Q?B1l3NKRnjFNIhNbSax6EznsrNVpx2PjG/sDm2TI6u0HN4Vs4yEwca6KQtej/?=
- =?us-ascii?Q?VeuZ/FgvO8WIXjbzKuVUmVYWaesHFsf2RL7CuHKj5Bw4q7bOxbjsS3XUDxGt?=
- =?us-ascii?Q?DKj8XDP93w=3D=3D?=
+	=?us-ascii?Q?VGte8XEzn4NOoE150MDHIX052sAUVAyb+riQMS2GFH2T8EFEXlLEAmSpCiE3?=
+ =?us-ascii?Q?6tYBJrF3VQt6VNU1hdq71x4DIHKSnFpiXkM27C/wFywgXiT8cNPvhZGQ2AS8?=
+ =?us-ascii?Q?HzNbSw4sf0idlc2FADXj8yJp4wT0ONisWwJy/XDTyNEJSGZVT4XwSWcM/kjd?=
+ =?us-ascii?Q?PgvEQlmg3dTU1hiuK2T237DHQSrof/ywO+EWg+oxGpbXbcki6OEXFgSg/TRm?=
+ =?us-ascii?Q?vESIn4DN5zNsYTfJ7s+tyI2oTMg88qjAC00MY+KQwA1Prj0Udjm8gB1ydrxl?=
+ =?us-ascii?Q?xBNrAIWngtEOAqxUJKtcmoGy4cHJoUOA/9U8S0SKnrSaLLinDKne5mW9Cdu4?=
+ =?us-ascii?Q?SfFY/iAORvrMOMubZ44mfgM1aCMakl6J83pS/1ZHVE7FSPODMOosNlWWahXj?=
+ =?us-ascii?Q?PSl+TMMETgVzYnxX8Ez4511UXm+TQdLoTcF4yr8Gp90k9+P9XVKC6nocZpxl?=
+ =?us-ascii?Q?kfi4DoTd206fi50Cn7lM8BhEygs6BMdRaXhPgE3QF6L6kKeHN5+RY2w7g/X4?=
+ =?us-ascii?Q?bvyZynlfxPdSnt6oywXCtNrnxdZqk4duuCGKrCHQLNPyjhA9yg5x3xjvC9qn?=
+ =?us-ascii?Q?8BgvYvQ12HFcijTWvdEFjlnAK7ybZS84W0/0RmRtqzxQqPH/dDi+29BV82oI?=
+ =?us-ascii?Q?YMhqiBSZWwPE+eUQ7NscxP1yI3bhmDlzIhRFoTCCARbgUCUdRyIIsMLvVcqJ?=
+ =?us-ascii?Q?uI5dnEyKKhszTWuXvCM7LJqr9L6DK+iKPMVGN/iZbgDS1ofuiAsq7iobCEsn?=
+ =?us-ascii?Q?1jx/JKIyuUWV5vCB+4duUktpeXYTjiLqpYK/iq7Kcq/WpNW+YpOv0Oxfln2X?=
+ =?us-ascii?Q?bkozuomjRaoG6RHfiCyhaLJJIUZrbhiWY6FVttfBRuWa4f0YUuK3XFwdGQM7?=
+ =?us-ascii?Q?1EWDGCWgGHg3+aHyNtZaZMrJkVZZO9YoD09dXxUq7P0Zom2tOc+ICURi6BWg?=
+ =?us-ascii?Q?TQqqYCHzQD3e6sskjD3fPeNh/K430nzbdkEH8H9uGUZUdvHV6Cf5AxNNgFA/?=
+ =?us-ascii?Q?JgLSB1d2ZS5T/BzAmqVmuIAoJUTIJJw0FCYA4CmG1IKejtD6W7DzclD18KEX?=
+ =?us-ascii?Q?HtYUn/9VHwS7MD5rxXcKtSs6qwADZXVdp2RsUkJzuC26oVpHwn9wNGmqR/WG?=
+ =?us-ascii?Q?ySHg8JXcbVCpn4tEb5AKwErec85ETUumE6cqoHkKRq9kG6PYMC7wGcVdWW/H?=
+ =?us-ascii?Q?j4Wda+B8lLydW4VLp2dl/LXmTI13G2kXrENgJZBZC9uWDW3We+4y0AtjHrb2?=
+ =?us-ascii?Q?BseDTfJBOtSvWpFZ2SzikHuTOBUvXqYCytVAGeldKBXK9f171ubBgZ5p4NPJ?=
+ =?us-ascii?Q?LRMOS9/uogT10ADZDIJpcEtCFSjnfI1eliJOwITPnJJ7wb4MOTOO+1JdiKb6?=
+ =?us-ascii?Q?6beNgF+OebF6RNrNQtS865+F5Pdi3WAqD2v48y2zpiNkFWr9eTGb0kiKGxc1?=
+ =?us-ascii?Q?NcWz8onKQxHzJgnL2dyzA34lkMWGBCkHknwFMsN3IHXy6vvK78pUtiHnSxIb?=
+ =?us-ascii?Q?WHsPo3BuN5wGTnjop9G7NJf8OhZ48DaXT5xfRFrODVdsBm2tNjaeQA11Gn7g?=
+ =?us-ascii?Q?uoKXDueE2LsUWJMudqLbZa1yO2D984k6p4UuQeMXO/eDSKNeMNk1EDNNmx6c?=
+ =?us-ascii?Q?yU71Y6HCXx4u+sEw6nwWg7/wBsYM3KpNA/hUW2YllkwKtL7nAy7q0/WXqN9K?=
+ =?us-ascii?Q?UtjiVNM7d8g9Hjq9KmYogxcMvtmLrfkSv/T7SGBl6sY6EL4a+xGrFkOEBMlM?=
+ =?us-ascii?Q?sSRJbeXSZQ=3D=3D?=
 X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6ebf14a0-690a-470b-2fe4-08df12d756d2
+X-MS-Exchange-CrossTenant-Network-Message-Id: 3c8f39ad-cdcc-4f11-b510-08df12d75c12
 X-MS-Exchange-CrossTenant-AuthSource: LV3PR12MB9356.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Sep 2026 03:13:39.5945
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Sep 2026 03:13:48.3868
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: F227rWTftCNds1bLAmXuJ9ypEQHbFJoVXfzgyM1if7ZeV0RA0vWTuPu4huoGwpJJ7VX1izhWmxwACme9kZ54Ig==
+X-MS-Exchange-CrossTenant-UserPrincipalName: qI+SXR0SIYTnNt66L5Sa7slN1ng38WBgzEVPjtjIO8rSNARWToGTuBGNY8RGfeB3zWXW/0jGxfOdoWs8MZODgA==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN7PR12MB7834
 
-The ordinary wait queue and completion declarations statically initialize
-their embedded locks. Automatic objects need runtime initialization so
-lockdep receives persistent class keys.
+DEFINE_IDR() is documented as defining a statically allocated IDR. Enforce
+that contract with ASSERT_STATIC_STORAGE(), matching DEFINE_IDA().
 
-Add ASSERT_STATIC_STORAGE() to DECLARE_WAIT_QUEUE_HEAD(),
-DECLARE_SWAIT_QUEUE_HEAD() and DECLARE_COMPLETION(). Keep the _ONSTACK
-variants usable without CONFIG_LOCKDEP by expanding to the underlying
-initializer instead of an asserted declaration.
+Normal IDR operations use external synchronization and do not acquire the
+embedded XArray lock. This change enforces the declaration API contract;
+it does not fix a lockdep failure in ordinary IDR operations.
 
-Convert the two automatic completions in the AMS PMU driver to
-DECLARE_COMPLETION_ONSTACK().
+Convert the seven automatic IDRs in the userspace tests to plain
+declarations and runtime initialization. Two already use idr_init_base().
+Keep direct IDR_INIT() and IDR_INIT_BASE() initializers unchanged.
 
 Assisted-by: OpenAI Codex
 Signed-off-by: Yury Norov <ynorov@nvidia.com>
 ---
- drivers/macintosh/ams/ams-pmu.c |  4 ++--
- include/linux/completion.h      | 10 +++++++---
- include/linux/swait.h           |  6 ++++--
- include/linux/wait.h            |  7 +++++--
- 4 files changed, 18 insertions(+), 9 deletions(-)
+ include/linux/idr.h                 |  4 +++-
+ tools/testing/radix-tree/idr-test.c | 29 ++++++++++++++++++++---------
+ 2 files changed, 23 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/macintosh/ams/ams-pmu.c b/drivers/macintosh/ams/ams-pmu.c
-index 1c3ce39e9a59..046a7d5dc5b2 100644
---- a/drivers/macintosh/ams/ams-pmu.c
-+++ b/drivers/macintosh/ams/ams-pmu.c
-@@ -48,7 +48,7 @@ static void ams_pmu_req_complete(struct adb_request *req)
- static void ams_pmu_set_register(u8 reg, u8 value)
- {
- 	static struct adb_request req;
--	DECLARE_COMPLETION(req_complete);
-+	DECLARE_COMPLETION_ONSTACK(req_complete);
- 
- 	req.arg = &req_complete;
- 	if (pmu_request(&req, ams_pmu_req_complete, 4, ams_pmu_cmd, 0x00, reg, value))
-@@ -61,7 +61,7 @@ static void ams_pmu_set_register(u8 reg, u8 value)
- static u8 ams_pmu_get_register(u8 reg)
- {
- 	static struct adb_request req;
--	DECLARE_COMPLETION(req_complete);
-+	DECLARE_COMPLETION_ONSTACK(req_complete);
- 
- 	req.arg = &req_complete;
- 	if (pmu_request(&req, ams_pmu_req_complete, 3, ams_pmu_cmd, 0x01, reg))
-diff --git a/include/linux/completion.h b/include/linux/completion.h
-index fb2915676574..b514b5555722 100644
---- a/include/linux/completion.h
-+++ b/include/linux/completion.h
-@@ -9,6 +9,7 @@
-  * See kernel/sched/completion.c for details.
+diff --git a/include/linux/idr.h b/include/linux/idr.h
+index e2a4b6298511..d0393b7fe985 100644
+--- a/include/linux/idr.h
++++ b/include/linux/idr.h
+@@ -55,7 +55,9 @@ struct idr {
+  * An IDR defined using this macro is ready for use with no additional
+  * initialisation required.  It contains no IDs.
   */
- 
-+#include <linux/compiler.h>
- #include <linux/swait.h>
- 
- /*
-@@ -50,7 +51,8 @@ static inline void complete_release(struct completion *x) {}
-  * variables.
-  */
- #define DECLARE_COMPLETION(work) \
--	struct completion work = COMPLETION_INITIALIZER(work)
-+	struct completion work = COMPLETION_INITIALIZER(work);	\
-+	ASSERT_STATIC_STORAGE(work)
- 
- /*
-  * Lockdep needs to run a non-constant initializer for on-stack
-@@ -70,8 +72,10 @@ static inline void complete_release(struct completion *x) {}
- # define DECLARE_COMPLETION_ONSTACK_MAP(work, map) \
- 	struct completion work = COMPLETION_INITIALIZER_ONSTACK_MAP(work, map)
- #else
--# define DECLARE_COMPLETION_ONSTACK(work) DECLARE_COMPLETION(work)
--# define DECLARE_COMPLETION_ONSTACK_MAP(work, map) DECLARE_COMPLETION(work)
-+# define DECLARE_COMPLETION_ONSTACK(work) \
-+	struct completion work = COMPLETION_INITIALIZER(work)
-+# define DECLARE_COMPLETION_ONSTACK_MAP(work, map) \
-+	DECLARE_COMPLETION_ONSTACK(work)
- #endif
- 
- /**
-diff --git a/include/linux/swait.h b/include/linux/swait.h
-index d324419482a0..caa3028d1dd0 100644
---- a/include/linux/swait.h
-+++ b/include/linux/swait.h
-@@ -2,6 +2,7 @@
- #ifndef _LINUX_SWAIT_H
- #define _LINUX_SWAIT_H
- 
-+#include <linux/compiler.h>
- #include <linux/list.h>
- #include <linux/stddef.h>
- #include <linux/spinlock.h>
-@@ -64,7 +65,8 @@ struct swait_queue {
- }
- 
- #define DECLARE_SWAIT_QUEUE_HEAD(name)					\
--	struct swait_queue_head name = __SWAIT_QUEUE_HEAD_INITIALIZER(name)
-+	struct swait_queue_head name = __SWAIT_QUEUE_HEAD_INITIALIZER(name);	\
+-#define DEFINE_IDR(name)	struct idr name = IDR_INIT(name)
++#define DEFINE_IDR(name) \
++	struct idr name = IDR_INIT(name);	\
 +	ASSERT_STATIC_STORAGE(name)
  
- extern void __init_swait_queue_head(struct swait_queue_head *q, const char *name,
- 				    struct lock_class_key *key);
-@@ -82,7 +84,7 @@ extern void __init_swait_queue_head(struct swait_queue_head *q, const char *name
- 	struct swait_queue_head name = __SWAIT_QUEUE_HEAD_INIT_ONSTACK(name)
- #else
- # define DECLARE_SWAIT_QUEUE_HEAD_ONSTACK(name)			\
--	DECLARE_SWAIT_QUEUE_HEAD(name)
-+	struct swait_queue_head name = __SWAIT_QUEUE_HEAD_INITIALIZER(name)
- #endif
- 
  /**
-diff --git a/include/linux/wait.h b/include/linux/wait.h
-index 7e215330199c..5c7d49187396 100644
---- a/include/linux/wait.h
-+++ b/include/linux/wait.h
-@@ -4,6 +4,7 @@
- /*
-  * Linux wait queue related types and methods
-  */
-+#include <linux/compiler.h>
- #include <linux/list.h>
- #include <linux/stddef.h>
- #include <linux/spinlock.h>
-@@ -57,7 +58,8 @@ struct task_struct;
- 	.head		= LIST_HEAD_INIT(name.head) }
+  * idr_get_cursor - Return the current position of the cyclic allocator
+diff --git a/tools/testing/radix-tree/idr-test.c b/tools/testing/radix-tree/idr-test.c
+index 6fcba5b5870b..4668c6a4f6ea 100644
+--- a/tools/testing/radix-tree/idr-test.c
++++ b/tools/testing/radix-tree/idr-test.c
+@@ -33,7 +33,9 @@ void item_idr_remove(struct idr *idr, int id)
+ void idr_alloc_test(void)
+ {
+ 	unsigned long i;
+-	DEFINE_IDR(idr);
++	struct idr idr;
++
++	idr_init(&idr);
  
- #define DECLARE_WAIT_QUEUE_HEAD(name) \
--	struct wait_queue_head name = __WAIT_QUEUE_HEAD_INITIALIZER(name)
-+	struct wait_queue_head name = __WAIT_QUEUE_HEAD_INITIALIZER(name);	\
-+	ASSERT_STATIC_STORAGE(name)
+ 	assert(idr_alloc_cyclic(&idr, DUMMY_PTR, 0, 0x4000, GFP_KERNEL) == 0);
+ 	assert(idr_alloc_cyclic(&idr, DUMMY_PTR, 0x3ffd, 0x4000, GFP_KERNEL) == 0x3ffd);
+@@ -79,7 +81,9 @@ void idr_alloc2_test(void)
  
- extern void __init_waitqueue_head(struct wait_queue_head *wq_head, const char *name, struct lock_class_key *);
+ void idr_replace_test(void)
+ {
+-	DEFINE_IDR(idr);
++	struct idr idr;
++
++	idr_init(&idr);
  
-@@ -74,7 +76,8 @@ extern void __init_waitqueue_head(struct wait_queue_head *wq_head, const char *n
- # define DECLARE_WAIT_QUEUE_HEAD_ONSTACK(name) \
- 	struct wait_queue_head name = __WAIT_QUEUE_HEAD_INIT_ONSTACK(name)
- #else
--# define DECLARE_WAIT_QUEUE_HEAD_ONSTACK(name) DECLARE_WAIT_QUEUE_HEAD(name)
-+# define DECLARE_WAIT_QUEUE_HEAD_ONSTACK(name) \
-+	struct wait_queue_head name = __WAIT_QUEUE_HEAD_INITIALIZER(name)
- #endif
+ 	idr_alloc(&idr, (void *)-1, 10, 11, GFP_KERNEL);
+ 	idr_replace(&idr, &idr, 10);
+@@ -96,7 +100,9 @@ void idr_replace_test(void)
+ void idr_null_test(void)
+ {
+ 	int i;
+-	DEFINE_IDR(idr);
++	struct idr idr;
++
++	idr_init(&idr);
  
- static inline void init_waitqueue_entry(struct wait_queue_entry *wq_entry, struct task_struct *p)
+ 	assert(idr_is_empty(&idr));
+ 
+@@ -150,7 +156,9 @@ void idr_null_test(void)
+ void idr_nowait_test(void)
+ {
+ 	unsigned int i;
+-	DEFINE_IDR(idr);
++	struct idr idr;
++
++	idr_init(&idr);
+ 
+ 	idr_preload(GFP_KERNEL);
+ 
+@@ -169,11 +177,11 @@ void idr_get_next_test(int base)
+ {
+ 	unsigned long i;
+ 	int nextid;
+-	DEFINE_IDR(idr);
+-	idr_init_base(&idr, base);
+-
++	struct idr idr;
+ 	int indices[] = {4, 7, 9, 15, 65, 128, 1000, 99999, 0};
+ 
++	idr_init_base(&idr, base);
++
+ 	for(i = 0; indices[i]; i++) {
+ 		struct item *item = item_create(indices[i], 0);
+ 		assert(idr_alloc(&idr, item, indices[i], indices[i+1],
+@@ -229,7 +237,8 @@ void idr_u32_test1(struct idr *idr, u32 handle)
+ 
+ void idr_u32_test(int base)
+ {
+-	DEFINE_IDR(idr);
++	struct idr idr;
++
+ 	idr_init_base(&idr, base);
+ 	idr_u32_test1(&idr, 10);
+ 	idr_u32_test1(&idr, 0x7fffffff);
+@@ -360,7 +369,9 @@ void idr_find_test(void)
+ void idr_checks(void)
+ {
+ 	unsigned long i;
+-	DEFINE_IDR(idr);
++	struct idr idr;
++
++	idr_init(&idr);
+ 
+ 	for (i = 0; i < 10000; i++) {
+ 		struct item *item = item_create(i, 0);
 -- 
 2.53.0
 
