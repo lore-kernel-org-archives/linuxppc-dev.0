@@ -1,68 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-27296-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27297-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95C79C88E53
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 07:35:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0875C88E53
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 08:02:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hkYhN5WRHz2xSV;
-	Tue, 15 Sep 2026 17:35:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789457716;
-	cv=none; b=Cypr7z5t1mv2je0RxcjfLo1a3B6xFpWyNLvrkZRb9mx+yJuDwSlcGtHr1GkqmXzFBlQMvbc6JXtvyyERoSAGleOWhkAuMCGozDdTIslZgSCx2s2out6PNw9LUVQ3hsUyDeu4EDlifEA5e1mYILQBVD+vo9uiYphcrato46jo6+41Fp0DBZL1+ZElW/dplAWxMM8SuQRX1XL4lBu1+iILDUb8e5r3FKIdBDsYsZo6cCr71A8XcOLJZH2lnjG/Q6zzKqFvtBplGPBAtHISirdGE8OqvkzBsbZyYjNC37KOjgv13dtrRNnENEdrixm9/x9VvI4JC4Qum5+fdb6iD2WDQA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hkZJ24zBDz2y2B;
+	Tue, 15 Sep 2026 18:02:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.217.46
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789459362;
+	cv=none; b=N/00GqRqvFGQr1ipfxXICLZy1PU/PdTCiO+Z/0iBertW2X4VyS/YhtOjw5D88hGoziuCVF6RHhF8rdZLTveUDvSrn5MAYKaMUcvcnb7u7bs+sqXewEsaAKm7GngNxb8a6+0NN4j3Tf5Ll9uqjogWCOcUWqJ/C6ApyoTBpY73z8czQaRIMOw4S7+BL4lol8jEShGtWH1nV9I9wwGYJAeLq5eqHKsI2MsTNECgD/4/LDt+W6jPNcbd7HPr6Ij9N2wZTy0puI8t41oftRcWrFCjYBYfrkkxretndKxNsVNRJimYkEcH7dkBd0Nr0z3g3SVv3Ae8p/DNzVjl8G+2oKuUoA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789457716; c=relaxed/relaxed;
-	bh=OoOIhdldb9147XsxL5YIoKS+t15uwf4VWmVuhwQm7U0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=f3IGf5CI8MKbAFfKzwWXPlPi4UZjaoRanaZ+yxTs/19O52gbW2pKF1xb/BLvmdrZo6Tz7MfRY0w7d4dqn4hXvTwoKAk20LS2xq+q7vkcO9SoeRymty5QD33v89Yh2bSy9Jq2bYJX0OK12rhqERt+jDuiTh4Z5Gjo4mFMnogbIaz+vZ6duI0zLcOscKXouo7nw20ouP9CX2ulagTNZQ+omcu35s0Gsuv7pil8Dzc1MYq9i8w9pvYxP1tfYaN0hgbKyNXWh6h6DuvQKXSB6PHPg54dAe63KPO7RgC8UQujIG/So2lqiGghtm4pwIy5D2EnKexJcCQF2623cLdA+tOYYg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
+	t=1789459362; c=relaxed/relaxed;
+	bh=51S+pj+NMPpYQZLFg4RlFKvBNKhAajYHE1g36uEsn0Y=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=UAN/YXnfkM/f+o9iHsYk1yTfkbjmgEQcAxAGCJ/cH5Oy9A7NYQbkQaq4xG5QmV7PwcXAtieOrqhI9Fn+DGVTOBxSr8IpnSq5cXhkivlpHvxwWzJ6NL8toYLuxVjNgHuUp83oIadpmzV8irz6oEj0RF/6phBTLVFlIK17L9DL3ENgb54riaMoKXvq0QQpRUvpyMIulUaH/WQpsqgBud2vzBuswSSGvNQ/DWPwA94sBiJATJVzBv6trg+n7c1HXkxXD5j4dzj9byN5SoMydojmrmRhrmh/U/IH7IbI2vqr3TK6Q/oiustQXO+HC/rabCfk65F+fGZzCFi4I/VkYeGggQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.217.46; helo=mail-vs1-f46.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.217.46; helo=mail-vs1-f46.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-vs1-f46.google.com (mail-vs1-f46.google.com [209.85.217.46])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkYhL3qhsz2xLf
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 17:35:14 +1000 (AEST)
-Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 03F661FF9D;
-	Tue, 15 Sep 2026 07:35:09 +0000 (UTC)
-Authentication-Results: smtp-out2.suse.de;
-	none
-Date: Tue, 15 Sep 2026 09:35:07 +0200
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Narayana Murty N <nnmlinux@linux.ibm.com>
-Cc: Shrikanth Hegde <sshegde@linux.ibm.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Michael Ellerman <mpe@ellerman.id.au>, harshpb@linux.ibm.com,
-	Gautam Menghani <gautam@linux.ibm.com>, amachhiw@linux.ibm.com,
-	Christian Zigotzky <chzigotzky@xenosoft.de>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	"kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	"R.T.Dickinson" <rtd2@xtra.co.nz>, hypexed@yahoo.com.au,
-	mad skateman <madskateman@gmail.com>,
-	Christian Zigotzky <info@xenosoft.de>,
-	Samir M <samir@linux.ibm.com>,
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: Re: [Linux PPC] Disable PREEMPT
-Message-ID: <aqj1KxZttNgY5ZVR@kunlun.suse.cz>
-References: <5ed38c3e-4aaa-4a91-9eda-e31d09b44abc@linux.ibm.com>
- <app0zGv9bvtL4nHm@kunlun.suse.cz>
- <4eef1f0b-0c02-4377-b950-43c3b120865a@linux.ibm.com>
- <aqJxcWC1dWKITCav@kunlun.suse.cz>
- <393117bc-094e-4c47-b061-f255f5bff937@linux.ibm.com>
- <aqKUhHb9UTfVq4As@kunlun.suse.cz>
- <aqKfsVArHHaIK6M9@kunlun.suse.cz>
- <baeb1ae4-7c0f-4e4e-8fc5-09367cb7c4e9@linux.ibm.com>
- <aqfTU79SlNB3ykDi@kunlun.suse.cz>
- <25cf64ab-2a32-4d4c-a0c7-2e9007c276d4@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkZJ10kY8z2xSg
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 18:02:40 +1000 (AEST)
+Received: by mail-vs1-f46.google.com with SMTP id ada2fe7eead31-782af6c753cso4648190137.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 01:02:40 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789459357; x=1790064157;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=51S+pj+NMPpYQZLFg4RlFKvBNKhAajYHE1g36uEsn0Y=;
+        b=tYllWekEQlaYemjj9RGv4iVbXoguyIJVuz19Of1RBK2Icx2AVfjmVcF3uM+i/lek8a
+         QxnUlRMkr1lgmR/opyzsfFf+rafGRP24JoX4rRaOzo+geZjUf/Zlzau/yoka/BwYBv8x
+         x7Po55JDYSwuxv5dZItKPsDgO3FQFJilhl0VkFRqVJndn7c6/q4fRCrJtPzvtNFCkxqC
+         te7sxEOMbSzCZt8Q8ogjoaB2lm21Xr0qSctSsCh3N+foYhLe+ExaMHdxrA52/i4qXB3a
+         4glrQYMaYjHu3JzyAxFK9OhfzyTBH1RptKKUxq6uNqUcomHLJKPEHzz2MrSci8bLN2Ah
+         d4qQ==
+X-Forwarded-Encrypted: i=1; AKwUvByPz/cPukG7wk5LHwJ1n3jBY2YI0q9yaO0Wvo66EQszcM4gPn30uNDRcUPriCwRZcoUGOUSwK8NFW+7R4A=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++mAzqGihOho1S/9TiZjHkEtTwGgbQp9fv5+OyWq9tjy0XrTVcmb
+	FxyDA4cmfcyNcwOUax8qGNO1R5jaJqCiOLc0Qmub05x6jAK0Ll8u8j9bwd+XdQby
+X-Gm-Gg: AYBFou3sv6vz6HvfjlTq/3U/GqcQklIe/QA6kiDmTBCfqA5p9S/eXiTJlsArirZiF2q
+	Exdj8tZhTqsvdB3iAfyP0R/E29F26Jff8hyMltWl0cy6o1f6p5RBwvCu6gq50VWpRW6s860GwW7
+	iuoqnSbOBykt0xxMtPKNn5UKZ4CFG7hWxaZJROb947Sx8FwAe/m30kbIe83x9EJt3IwhCh8+yIs
+	e4IKPHLQifZUM8UIWPaQQoacEtnDZbb6xme/XGx6XYXbhhz04LIfhkbXCNWFl3igP56j9bnKyXr
+	CWQAvIrTx7151dJj2ejE0x5fhsEcEO00MoHEdU0xNhTIDb9Z42879Gnyst7FOMvNBvaj16FwX/c
+	u6IvoU8qsuIeblXEGsfySCpM7C43AfKGh1oawXkSy5qFHuUHGJlnPoyeEntJsTodPfm58Mq5yO/
+	9OYivyEGB7e9iF0f3JZ9oDoHuujjnbg+UJaPT6CGQcps1sslz6y+cZMwYX9fwcTIjCvFrDRG8wH
+	K+c/uVCr+JgrROCW8GS9XNKe5Zq6XdVB+qRw69BTZWjnZpQKp4=
+X-Received: by 2002:a05:6122:488c:b0:5c8:228:5ea6 with SMTP id 71dfb90a1353d-5c981d5fb29mr7945935e0c.5.1789459357292;
+        Tue, 15 Sep 2026 01:02:37 -0700 (PDT)
+Received: from mail-vk1-f175.google.com (mail-vk1-f175.google.com. [209.85.221.175])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-982b9ed9257sm13393285241.5.2026.09.15.01.02.36
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 15 Sep 2026 01:02:37 -0700 (PDT)
+Received: by mail-vk1-f175.google.com with SMTP id 71dfb90a1353d-5c7c25d9f6fso3984053e0c.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 01:02:36 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBynwo1JBCrnwYwMl+Agcu2UGrQ+DfA9Kk2flF5dBOiHhGCxd038WhCPXCtrgxjZyRiWCcy0Hn+0UkKtwnY=@lists.ozlabs.org
+X-Received: by 2002:a05:6122:1d04:b0:5bf:d3cd:3d64 with SMTP id
+ 71dfb90a1353d-5c98188436dmr7062831e0c.0.1789459356510; Tue, 15 Sep 2026
+ 01:02:36 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,170 +77,38 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <25cf64ab-2a32-4d4c-a0c7-2e9007c276d4@linux.ibm.com>
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Queue-Id: 03F661FF9D
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spamd-Result: default: False [-2.00 / 50.00];
-	REPLY(-4.00)[];
-	RDNS_NONE(2.00)[]
+References: <20260914215900.84712-2-blum@kernel.org>
+In-Reply-To: <20260914215900.84712-2-blum@kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 15 Sep 2026 10:02:24 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdVwiVjs-Dqiwoa_oOerDyz58=P3SJfdyT3PsODFDPU20g@mail.gmail.com>
+X-Gm-Features: AcwNN1VJlmmjReTQUYQHfnyOvudBS9IClSvuXQXbg53716FCHoIlz6aoWDjejv0
+Message-ID: <CAMuHMdVwiVjs-Dqiwoa_oOerDyz58=P3SJfdyT3PsODFDPU20g@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/ps3: Simplify control flow in ps3_{virq,irq_plug}_setup()
+To: Thorsten Blum <blum@kernel.org>
+Cc: Geoff Levand <geoff@infradead.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
+	Shrikanth Hegde <sshegde@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On Tue, Sep 15, 2026 at 11:17:23AM +0530, Narayana Murty N wrote:
-> 
-> 
-> On 14/09/26 4:28 PM, Michal Suchánek wrote:
-> > On Fri, Sep 11, 2026 at 10:39:10PM +0530, Shrikanth Hegde wrote:
-> > > Hi Michal,
-> > > 
-> > > On 9/10/26 5:46 PM, Michal Suchánek wrote:
-> > > > On Thu, Sep 10, 2026 at 01:29:08PM +0200, Michal Suchánek wrote:
-> > > > > On Thu, Sep 10, 2026 at 04:11:20PM +0530, Shrikanth Hegde wrote:
-> > > > > > 
-> > > > > > 
-> > > > > > On 9/10/26 2:29 PM, Michal Suchánek wrote:
-> > > > > > > On Fri, Sep 04, 2026 at 02:34:21PM +0530, Shrikanth Hegde wrote:
-> > > > > > > > 
-> > > > > > > > 
-> > > > > > > > On 9/4/26 1:05 PM, Michal Suchánek wrote:
-> > > > > > > > > On Thu, Sep 03, 2026 at 10:52:59PM +0530, Shrikanth Hegde wrote:
-> > > > > > > > > > 
-> > > > > > > > > > > > If possible run against current upstream and share the results.
-> > > > > > > > > > > 
-> > > > > > > > > > > https://github.com/openSUSE/kernel-source/blob/6824496d1801f73def615dca8794202eeb7b0d86/config/ppc64le/default
-> > > > > > > > > > > 
-> > > > > > > > > > > [  472.091531][ T6181] Kernel panic - not syncing: stack-protector: Kernel stack is corrupted in: kvmhv_run_single_vcpu+0x19d4/0x1b50 [kvm_hv]
-> > > > > > > > > > > [  472.091598][ T6181] CPU: 29 UID: 107 PID: 6181 Comm: CPU 112/KVM Not tainted 7.2.2-5.g6824496-default #1 PREEMPT(full) openSUSE Tumbleweed (unreleased)  61871a5f06863b4006f5ef27cd9f18e8a7a2edad
-> > > > > > > > > > > [  472.091612][ T6181] Hardware name: IBM,9824-42A Power11 (architected) 0x820200 0xf000007 of:IBM,FW1110.20 (OB1110_130) hv:phyp pSeries
-> > > > > > > > > > > [  472.091624][ T6181] Call Trace:
-> > > > > > > > > > > [  472.091630][ T6181] [c00000000fdfb680] [c00000000134ce90] dump_stack_lvl+0x84/0xc0 (unreliable)
-> > > > > > > > > > > [  472.091653][ T6181] [c00000000fdfb6b0] [c00000000022e7c8] vpanic+0x324/0x5e4
-> > > > > > > > > > > [  472.091666][ T6181] [c00000000fdfb760] [c00000000022eac4] do_panic_on_target_cpu+0x0/0x2c
-> > > > > > > > > > > [  472.091677][ T6181] [c00000000fdfb780] [c0000000013c1ff8] __stack_chk_fail+0x48/0x60
-> > > > > > > > > > > [  472.091689][ T6181] [c00000000fdfb7f0] [c00800001aae219c] kvmhv_run_single_vcpu+0x19d4/0x1b50 [kvm_hv]
-> > > > > > > > > > > [  472.091712][ T6181] [c00000000fdfb940] [c00800001aae24b4] kvmppc_vcpu_run_hv+0x19c/0x12f0 [kvm_hv]
-> > > > > > > > > > > [  472.091732][ T6181] [c00000000fdfba10] [c00800001aeeed18] kvmppc_vcpu_run+0x30/0x48 [kvm]
-> > > > > > > > > > > [  472.091779][ T6181] [c00000000fdfba30] [c00800001aee9ef4] kvm_arch_vcpu_ioctl_run+0x35c/0x4a0 [kvm]
-> > > > > > > > > > > [  472.091813][ T6181] [c00000000fdfbac0] [c00800001aedaac4] kvm_vcpu_ioctl+0x1ac/0xad8 [kvm]
-> > > > > > > > > > > [  472.091844][ T6181] [c00000000fdfbca0] [c0000000007f1244] sys_ioctl+0x374/0x1060
-> > > > > > > > > > > [  472.091857][ T6181] [c00000000fdfbdb0] [c00000000002f7f8] system_call_exception+0x188/0x430
-> > > > > > > > > > > [  472.091871][ T6181] [c00000000fdfbe50] [c00000000000cfdc] system_call_vectored_common+0x15c/0x2ec
-> > > > > > > > > > > [  472.091886][ T6181] ---- interrupt: 3000 at 0x7fffb5565fac
-> > > > > > > > > > > [  472.091896][ T6181] NIP:  00007fffb5565fac LR: 00007fffb5565fac CTR: 0000000000000000
-> > > > > > > > > > > [  472.091904][ T6181] REGS: c00000000fdfbe80 TRAP: 3000   Not tainted  (7.2.2-5.g6824496-default)
-> > > > > > > > > > > [  472.091911][ T6181] MSR:  800000000280f033 <SF,VEC,VSX,EE,PR,FP,ME,IR,DR,RI,LE>  CR: 42044402  XER: 00000000
-> > > > > > > > > > > [  472.091938][ T6181] IRQMASK: 0
-> > > > > > > > > > > [  472.091938][ T6181] GPR00: 0000000000000036 00007fbfa77ed7a0 00007fffb5677100 00000000000000fa
-> > > > > > > > > > > [  472.091938][ T6181] GPR04: 000000002000ae80 0000000000000000 0000000000000000 0000000000000000
-> > > > > > > > > > > [  472.091938][ T6181] GPR08: 00000000000000fa 0000000000000000 0000000000000000 0000000000000000
-> > > > > > > > > > > [  472.091938][ T6181] GPR12: 0000000000000000 00007fbfa77f5ec0 000000014676f000 00007fbfa77ee7c0
-> > > > > > > > > > > [  472.091938][ T6181] GPR16: 000000014674e8d0 00007fbfa77eeec0 00007fbfa77eeec0 fffffffffffffff7
-> > > > > > > > > > > [  472.091938][ T6181] GPR20: 00007fffb71210d0 0000000000000001 00007fbfa77eeec0 0000000000000000
-> > > > > > > > > > > [  472.091938][ T6181] GPR24: 00007fbfa77ed8e8 0000000105971428 000000002000ae80 0000000105f77a70
-> > > > > > > > > > > [  472.091938][ T6181] GPR28: 0000000000000000 0000000000000000 000000002000ae80 000000014674f000
-> > > > > > > > > > > [  472.092020][ T6181] NIP [00007fffb5565fac] 0x7fffb5565fac
-> > > > > > > > > > > [  472.092027][ T6181] LR [00007fffb5565fac] 0x7fffb5565fac
-> > > > > > > > > > > [  472.092033][ T6181] ---- interrupt: 3000
-> > > > > > > > > > > [  472.098256][ T6181] pstore: backend (nvram) writing error (-1)
-> > > > > > > > > > > 
-> > > > > > > > > > > This is the host, cannot run the kernel as guest because it fails to boot most
-> > > > > > > > > > > of the time inside KVM.
-> > > > > > > > > > > 
-> > > > > > > > > > > > 
-> > > > > > > > > > > > > Nonethless, there are quite a few platforms. Originally no preemption
-> > > > > > > > > > > > > was the only option, and that's the reason why many people run that.
-> > > > > > > > > > > > > It's the conservative, known working option. And that's the reason a lot
-> > > > > > > > > > > > > of platfrom code does not get tested with more aggressive preemtion
-> > > > > > > > > > > > > models, and never gets fixed to work with them.
-> > > > > > > > > > > > > 
-> > > > > > > > > > > > 
-> > > > > > > > > > > > Full preemption has been there for many years!.
-> > > > > > > > > > > 
-> > > > > > > > > > > Possible for years, forced only recently.
-> > > > > > > > > > > 
-> > > > > > > > > > > > Lazy is not that aggressive compared to that.
-> > > > > > > > > > > > 
-> > > > > > > > > > > > > Simply disabling the no preemtion option does not make the platform code
-> > > > > > > > > > > > > ready.
-> > > > > > > > > > > > > 
-> > > > > > > > > > > > 
-> > > > > > > > > > > > Let's understand your crash case. Let's see where it is going wrong. I am suspecting
-> > > > > > > > > > > > it is some wrong usage of preemption api rather than arch can't support preemption.
-> > > > > > > > > > > 
-> > > > > > > > > > > Very likely some wrong use of the preemption API by the arch code, or no
-> > > > > > > > > > > use where it should have been used. It did not matter so long as people
-> > > > > > > > > > > could run their no preempt configs and ignore the problem.
-> > > > > > > > > > > 
-> > > > > > > > > > > Thanks
-> > > > > > > > > > 
-> > > > > > > > > > 
-> > > > > > > > > > Friendly LLM analysis says preemption is enabled too early and before
-> > > > > > > > > > completing kvmppc_handle_exit_hv() / kvmppc_handle_nested_exit()
-> > > > > > > > > > 
-> > > > > > > > > > Below is ONLY a speculation and completely UNTESTED.
-> > > > > > > > > > Maybe worth a try.
-> > > > > > > > > 
-> > > > > > > > > The patch is munged by the e-mail client, and it causes immediate
-> > > > > > > > > voluntary preemprion in rcu critical section and hard lockup on starting
-> > > > > > > > > a KVM VM.
-> > > > > > > > > 
-> > > > > > > > > Also it would be sort of bad news if it worked because that would be
-> > > > > > > > > specific to book3s KVM HV and would not help with the KVM HV from the
-> > > > > > > > > original report which likely is not book3s, nor with KVM PR.
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > > Thanks for trying. We will try a local repro and look into it why stack is
-> > > > > > > > getting corrupted.
-> > > > > > > 
-> > > 
-> > > As we discussed offlist, samir helped to run a similar test on his machine, and he didn't
-> > > run into issue so far. we will try more.
-> > > 
-> > > I am just wondering what different in your case?
-> > > By any chance we are running into below one? Can you check your gcc version?
-> > > 
-> > > https://lore.kernel.org/all/CAABZP2z=xu+07-y5fqFLidZz1VpSgrSwXa1mFHPb=b3Ezr3OtA@mail.gmail.com/
-> > > 
-> > > Maybe CONFIG_DEBUG_PREEMPT worth a try to if it shows up anything.
-> > 
-> > Does not change anything, the kernel crashes all the same.
-> > 
-> > Nonetheless, I noticed that a tool that does some BPF tracing is
-> > running, and without it the problem is not reproducible.
-> > 
-> > Thanks
-> > 
-> > Michal
-> Thanks Michal for the update.
-> 
-> Interesting finding! Since the crash is only reproducible when the BPF
-> tracing tool is running, could you share the following details?
-> 
-> Which BPF tracing tool are you using (e.g., bpftrace, perf, bcc-based tool,
-> a custom tool)?
+On Mon, 14 Sept 2026 at 23:59, Thorsten Blum <blum@kernel.org> wrote:
+> In ps3_virq_setup() and ps3_irq_plug_setup(), remove the goto statements
+> and handle errors directly.
+>
+> Signed-off-by: Thorsten Blum <blum@kernel.org>
 
-A custom tool, likely a version of this:
-https://build.opensuse.org/package/show/security:sensor/velociraptor
+Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-> What is the specific BPF program or filter being attached —
-> particularly which kernel function(s) or tracepoints it hooks into (e.g., is
-> it attaching a kprobe/uprobe/tracepoint anywhere inside
-> kvmhv_run_single_vcpu or related KVM HV paths)?
-> What is the BPF program type — kprobe, tracepoint, perf_event, fentry/fexit,
-> etc.?
+Gr{oetje,eeting}s,
 
-It would be likely these programs:
-https://github.com/SUSE/linux-security-sensor/tree/sensor-base-0.76.7/vql/linux/bpf
+                        Geert
 
-Thanks
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Michal
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
 
