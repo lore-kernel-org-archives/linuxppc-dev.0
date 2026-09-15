@@ -1,52 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-27354-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27355-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DEF6C88E53
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 11:35:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4FD70C982C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 11:35:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hkg180BjPz3bSF;
-	Tue, 15 Sep 2026 21:35:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789472107;
-	cv=none; b=arhQh9UekARgSvCKT8VMDYAC7j0mUU1Xd+CpHBRcxZntlZcU4bPcOaA6dXHFQzeaPBon3NMrQFyt6WuukWiRAB5XIU1L0ErVvhQ2GDvswEnObQ/0JwXekjGrleP5RmDIpXTW7YRlQpeTiUBXxFbYAJ8nn9e+w8YUDbg6BdD+XIvCTxTVDFiGhhmvWEidftgsSUhoJs19oHNj6gudKhKu0nmyXmKK9R9yCW8YFE6DYkNqkY09VppY/JwQfv72ujLngVSSZ1pAxl8nPfUS7/v5zDOip0lBXIVJJ9DmOZ3Fxs0iwWs+/BFsz4+RqpSeMrTQXIEGeI2GM+OG1B/E1qigrg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hkg1F47l8z3bSy;
+	Tue, 15 Sep 2026 21:35:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789472113;
+	cv=none; b=ITnimke8wyyqCIT2C6il8WubOcaZL9NpkfnZOVo0WkEMEbPN6SLsTFA4ChC9XqSZH/rCqURt3TrmtSjeyJ77UnWKHp4J64qEW1sCAvrSbIjex/KZz9C11p6eXOul/T+kfaBnicAEgvks5uVOvQmNFcLtJsvDV4LCpkziuNvNOfyFbrkS7r4UGqGYiBNZ8wPwSZmLmX7QVhgfeHpjWMki5pepDCcM56J+zB/2dDocgml5nm14R8FLC3MyDIfT9WUCQwm1LdefLmPVdNDQIeF/lhPeVvJRWnXGISurzIUAIVVF5AZUIEAJZ+WbZGlrlP9xLTo8TkK1QuHMxS3B9VJwVA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789472107; c=relaxed/relaxed;
-	bh=+Z7YvZoUhgCp4iTA46gJpRmnztUthrtoZVj66HfgwUY=;
+	t=1789472113; c=relaxed/relaxed;
+	bh=BaiQKOdzM8NM+WnZnsY02ffmMIwkfiUXQItc1CF3f8Q=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Z8VmP2YX40zaly3viG6CT6vMofQbl0u7xuj2L9cQZyY2rzS+Xf1TbilK309E7yNt9nW1JG9c221shrGpGg2FmHd1zkZkwPPAoHlLus2rXd3pr8gacMLvbMshqvTz/TpLTv461RxtbFfBsABqXZGPeDJHP+BKeelmTFQSBw+1qwR6NDYX4r7cRX4X2+ZbBEnZzNTDIXeX95qoM0BMPigHPB3bN+tgpIR0GBNzZI3J7hK27y3rififyu9rUrJWAThGXtNSYLqSbObGIThS+N5hyuA1ss3JxrMTUEzfH0UJMc7P/UscdcHzqqKbxbMG2rUbiaPGR/e+7Fxl82twquDNMw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KA44M0cm; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=n3hOGbKAhTWNlfskI48SnT4b58U6ZkqYXuCqaPOjbxvce7Ge2JRyrBMoH8UWTyMx+oBoDvsGApwQsEm7A4VL9T8eePYAp5f3GG+9Zvc0OprKUecISXsQ60cZVyBpUBg/YsIDdpLrQbWTjYE2i/fmRd+ZU/deok7lvk1U1wIunF4OTK4wVrAngTsf5OqBgtcEasA6gWDAiKg9luvh1xfnzvHndPaqlIkjIh6aifGdqaPlOKLMD5Ol3xJkSbpQymlzsnPRdv1btm6sAOLGAyp76pojan0PKNZyi2bBJRr6smFN3gmufeImRdBNsENl0ggNia9ARs7xQ/989hGJRnr8tg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Dekb8smf; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KA44M0cm;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Dekb8smf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkg170DL4z3048
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 21:35:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkg1D58Czz3048
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 21:35:12 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 59D75415D0;
+	by sea.source.kernel.org (Postfix) with ESMTP id 39B1A429F8;
+	Tue, 15 Sep 2026 11:35:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B11231F00899;
 	Tue, 15 Sep 2026 11:35:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C030B1F00898;
-	Tue, 15 Sep 2026 11:34:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789472103;
-	bh=+Z7YvZoUhgCp4iTA46gJpRmnztUthrtoZVj66HfgwUY=;
+	s=k20260515; t=1789472111;
+	bh=BaiQKOdzM8NM+WnZnsY02ffmMIwkfiUXQItc1CF3f8Q=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=KA44M0cmNF2mMlF/NDPOuyRWz4vVkHxzKiMxMZ4ISNNfo7H9BTar51IZgT37QoJX1
-	 6srepTnNRPf2DDq8k0Xr2lGax/zEGP29xcg5Q8NVjuDbwOO/px017DffFztmjp8Ha+
-	 BN9rxQ+ckzz66olSbf9AzLwaWhDMxhbiTnSee7sd06Ig+WHUQKBNw53tm8cd+iRMgv
-	 H7ptnEs+6ym+zmmY2nGMKn3UT9nTIljKiF99YIGQvS2ezwjHF2FGWp1leEB/9nrbJj
-	 zA9+UppFgEv9UDF+Tete4exU2H8M/NSppcn+lHJLgDsGhlGujiOkLCF8yydq5B/Mxi
-	 RYtXu9Hi+fWsg==
+	b=Dekb8smfKI2n5yGWIpNEMN0jdgTr4spZdVK3MdD/TCKNKco8XRVA1TQl+GxXP21IR
+	 mQ1bfkZDLmhKqxrPetlmFnyIp76FwXgaVFoceDbmku29MuUZSQS/RfIncrnkMTBqkg
+	 IsK8+0mFLEiKooNi0Ql2Y8fw+QKMPZyQpJ0DxXA6DHNh5fdea9CSHRxHeWPOu0c9b3
+	 eXo0ja9rpUrTYduFglwTe8Jute8IZc768Hl3Jb0QwhrUuoIFCwPR0au4hj53ko0ecq
+	 gFl4P7NPfeiu/9IfvP8VqLsljSKHoYKJSA97s2sEcmTCisygMQvKIWdbiZ4j2ejXUG
+	 CzttZl/23iXnQ==
 From: Christian Brauner <brauner@kernel.org>
-Date: Tue, 15 Sep 2026 13:31:15 +0200
-Subject: [PATCH RFC POC 29/50] drm/virtio: install the out-fence descriptor
+Date: Tue, 15 Sep 2026 13:31:16 +0200
+Subject: [PATCH RFC POC 30/50] drm/vmwgfx: install the out-fence descriptor
  when the ioctl returns
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -63,7 +63,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260915-work-fd-reserve-unify-folded-v1-29-4d5217d6b246@kernel.org>
+Message-Id: <20260915-work-fd-reserve-unify-folded-v1-30-4d5217d6b246@kernel.org>
 References: <20260915-work-fd-reserve-unify-folded-v1-0-4d5217d6b246@kernel.org>
 In-Reply-To: <20260915-work-fd-reserve-unify-folded-v1-0-4d5217d6b246@kernel.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
@@ -86,12 +86,12 @@ Cc: Alexander Viro <viro@zeniv.linux.org.uk>, Jann Horn <jannh@google.com>,
  kexec@lists.infradead.org, linux-hyperv@vger.kernel.org, 
  "Christian Brauner (Amutable)" <brauner@kernel.org>
 X-Mailer: b4 0.17-dev-db0b7
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3421; i=brauner@kernel.org;
- h=from:subject:message-id; bh=p0ASybizHVeWg3+K+2/U4eYr0FkEait3G8m6yrPnxug=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWSt1KlTnNOyTUQz0y+rQub5bi2Wdr3pRa+cWq6FHSt8z
- FPyLjOgo5SFQYyLQVZMkcWh3SRcbjlPxWajTA2YOaxMIEMYuDgFYCLPhRgZzpcEpJcv22rRdtX7
- cKbUFkn/pfMZNuqxXquY3F4nrdInx/CH946PZqsxs8HCIweudkmFfO3eM+HpqaU/s9ffmbhJTXk
- XOwA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2552; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=tFtZ4cL0NphK82dRD7+3sjxv1Q+YPE/6KXVfeTbJao0=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWSt1KmT96hOWNmU/qLa/h57o09DBu/EH9cY+lcu13eXn
+ l+3V9iuo5SFQYyLQVZMkcWh3SRcbjlPxWajTA2YOaxMIEMYuDgFYCLKcQz/Mxl6ebeze05NNe4M
+ 0FAtDVBmvSBeuO2BBu/r/juTJPP5GP7wZvx9JTPBIYjfMCaNkc/2ZcaSF9xnJPsurtiQL5V+QZc
+ FAA==
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 
@@ -99,101 +99,79 @@ Rely on the fd exit path machinery.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- drivers/gpu/drm/virtio/virtgpu_submit.c | 32 ++++++++++++--------------------
- 1 file changed, 12 insertions(+), 20 deletions(-)
+ drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c | 29 +++++++++++------------------
+ 1 file changed, 11 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/gpu/drm/virtio/virtgpu_submit.c b/drivers/gpu/drm/virtio/virtgpu_submit.c
-index 32cb1e4aa425..51b224acb72b 100644
---- a/drivers/gpu/drm/virtio/virtgpu_submit.c
-+++ b/drivers/gpu/drm/virtio/virtgpu_submit.c
-@@ -39,7 +39,7 @@ struct virtio_gpu_submit {
- 	struct virtio_gpu_device *vgdev;
- 	struct sync_file *sync_file;
- 	struct drm_file *file;
--	int out_fence_fd;
-+	const struct fd_slot *out_fence_fd;
- 	u64 fence_ctx;
- 	u32 ring_idx;
- 	void *buf;
-@@ -340,14 +340,8 @@ static void virtio_gpu_cleanup_submit(struct virtio_gpu_submit *submit)
- 	if (submit->buflist)
- 		virtio_gpu_array_put_free(submit->buflist);
+diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c b/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
+index a9136a6523cb..9daa74a13485 100644
+--- a/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
++++ b/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
+@@ -4109,15 +4109,17 @@ int vmw_execbuf_process(struct drm_file *file_priv,
+ 	uint32_t handle = 0;
+ 	int ret;
+ 	int32_t out_fence_fd = -1;
++	const struct fd_slot *out_fd = NULL;
+ 	struct sync_file *sync_file = NULL;
+ 	DECLARE_VAL_CONTEXT(val_ctx, sw_context, 1);
  
--	if (submit->out_fence_fd >= 0)
--		put_unused_fd(submit->out_fence_fd);
--
- 	if (submit->out_fence)
- 		dma_fence_put(&submit->out_fence->f);
--
--	if (submit->sync_file)
--		fput(submit->sync_file->file);
- }
- 
- static void virtio_gpu_submit(struct virtio_gpu_submit *submit)
-@@ -363,7 +357,7 @@ static void virtio_gpu_complete_submit(struct virtio_gpu_submit *submit)
- 	submit->buf = NULL;
- 	submit->buflist = NULL;
- 	submit->sync_file = NULL;
--	submit->out_fence_fd = -1;
-+	submit->out_fence_fd = NULL;
- }
- 
- static int virtio_gpu_init_submit(struct virtio_gpu_submit *submit,
-@@ -405,7 +399,7 @@ static int virtio_gpu_init_submit(struct virtio_gpu_submit *submit,
- 	submit->out_fence = out_fence;
- 	submit->fence_ctx = fence_ctx;
- 	submit->ring_idx = ring_idx;
--	submit->out_fence_fd = -1;
-+	submit->out_fence_fd = NULL;
- 	submit->vfpriv = vfpriv;
- 	submit->vgdev = vgdev;
- 	submit->exbuf = exbuf;
-@@ -420,15 +414,15 @@ static int virtio_gpu_init_submit(struct virtio_gpu_submit *submit,
- 		return PTR_ERR(submit->buf);
- 
- 	if (exbuf->flags & VIRTGPU_EXECBUF_FENCE_FD_OUT) {
--		err = get_unused_fd_flags(O_CLOEXEC);
--		if (err < 0)
--			return err;
--
--		submit->out_fence_fd = err;
-+		submit->out_fence_fd = fd_prepare(O_CLOEXEC);
-+		if (IS_ERR(submit->out_fence_fd))
-+			return PTR_ERR(submit->out_fence_fd);
- 
- 		submit->sync_file = sync_file_create(&out_fence->f);
- 		if (!submit->sync_file)
- 			return -ENOMEM;
-+
-+		fd_stage(submit->out_fence_fd, submit->sync_file->file);
+ 	if (flags & DRM_VMW_EXECBUF_FLAG_EXPORT_FENCE_FD) {
+-		out_fence_fd = get_unused_fd_flags(O_CLOEXEC);
+-		if (out_fence_fd < 0) {
++		out_fd = fd_prepare(O_CLOEXEC);
++		if (IS_ERR(out_fd)) {
+ 			VMW_DEBUG_USER("Failed to get a fence fd.\n");
+-			return out_fence_fd;
++			return PTR_ERR(out_fd);
+ 		}
++		out_fence_fd = fd_prepare_fd(out_fd);
  	}
  
- 	return 0;
-@@ -456,12 +450,10 @@ static int virtio_gpu_wait_in_fence(struct virtio_gpu_submit *submit)
+ 	if (throttle_us) {
+@@ -4256,28 +4258,21 @@ int vmw_execbuf_process(struct drm_file *file_priv,
+ 		sync_file = sync_file_create(&fence->base);
+ 		if (!sync_file) {
+ 			VMW_DEBUG_USER("Sync file create failed for fence\n");
+-			put_unused_fd(out_fence_fd);
++			/* The reserved descriptor is released on return. */
+ 			out_fence_fd = -1;
+ 
+ 			(void) vmw_fence_obj_wait(fence, false, false,
+ 						  VMW_FENCE_WAIT_TIMEOUT);
++		} else {
++			/* Link the fence with the FD created earlier */
++			fd_stage(out_fd, sync_file->file);
+ 		}
+ 	}
+ 
++	/* A staged sync file is dropped with the ioctl on error. */
+ 	ret = vmw_execbuf_copy_fence_user(dev_priv, vmw_fpriv(file_priv), ret,
+ 				    user_fence_rep, fence, handle, out_fence_fd);
+ 
+-	if (sync_file) {
+-		if (ret) {
+-			/* usercopy of fence failed, put the file object */
+-			fput(sync_file->file);
+-			put_unused_fd(out_fence_fd);
+-		} else {
+-			/* Link the fence with the FD created earlier */
+-			fd_install(out_fence_fd, sync_file->file);
+-		}
+-	}
+-
+ 	/* Don't unreference when handing fence out */
+ 	if (unlikely(out_fence != NULL)) {
+ 		*out_fence = fence;
+@@ -4323,9 +4318,7 @@ int vmw_execbuf_process(struct drm_file *file_priv,
+ 	if (header)
+ 		vmw_cmdbuf_header_free(header);
+ out_free_fence_fd:
+-	if (out_fence_fd >= 0)
+-		put_unused_fd(out_fence_fd);
+-
++	/* A reserved descriptor is released on return. */
  	return ret;
  }
  
--static void virtio_gpu_install_out_fence_fd(struct virtio_gpu_submit *submit)
-+static void virtio_gpu_report_out_fence_fd(struct virtio_gpu_submit *submit)
- {
--	if (submit->sync_file) {
--		submit->exbuf->fence_fd = submit->out_fence_fd;
--		fd_install(submit->out_fence_fd, submit->sync_file->file);
--	}
-+	if (submit->sync_file)
-+		submit->exbuf->fence_fd = fd_prepare_fd(submit->out_fence_fd);
- }
- 
- static int virtio_gpu_lock_buflist(struct virtio_gpu_submit *submit)
-@@ -534,7 +526,7 @@ int virtio_gpu_execbuffer_ioctl(struct drm_device *dev, void *data,
- 	 * Set up user-out data after submitting the job to optimize
- 	 * the job submission path.
- 	 */
--	virtio_gpu_install_out_fence_fd(&submit);
-+	virtio_gpu_report_out_fence_fd(&submit);
- 	virtio_gpu_process_post_deps(&submit);
- 	virtio_gpu_complete_submit(&submit);
- cleanup:
 
 -- 
 2.53.0
