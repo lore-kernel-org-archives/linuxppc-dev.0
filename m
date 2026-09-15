@@ -1,53 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-27373-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27374-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F167C88E53
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 11:38:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3455AC88E75
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 11:38:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hkg422yf8z2yjN;
-	Tue, 15 Sep 2026 21:37:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hkg493rCJz3bkg;
+	Tue, 15 Sep 2026 21:37:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789472258;
-	cv=none; b=BXGl7cvIPTKNe7jLDwIBk/j9f4XIhb1miEFjnT6uzwItnZhnusRPwPutCPG3CHgn7+3oQX+1egkSjluztZ9E21VtP2w4Pca3vutIoT1Z576cVD/1qYBGBvbpa83XdlTnZ0wE5ukhG57JvAqDypN0qRtfkv53I90m1e4DOzPpbSs8anohjHVovMKwJCvadZWZ38wfYhynPu38NO6bIEXC5rog7KMddJXTYlxtXYzf1cXxatYOEuW21ctd7h5LW8Qa0evjtGBOKCzkEDStC/URs5/V+BXrrSnSXQ4Vv1nzeIzRwjFQ1Wlbxabr7JQTsXhdWxh5ki0PCXoKSPZY3nQ/Sg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789472265;
+	cv=none; b=lFa0jG/Do2vQdfadgDNJsrN7ZfuvgZpW1bUetFbDh+xoQJP3Je/jPNur/pTDfmuD/WEWhBvyFIv67nM/rV6nmD6US6ksC1wQLbn9Xku4qLmFXaprqjoNPGfC5bpMdk18b7U6GJdbDRgDr04wdoMPAoUyjTKWZ69m395/NHVr5/Cq1D8cI+2KAkTf9sy0JNEvVmwe3xs9QizvDrZ0Q0hovC99uMyrhr2U8sPVhHDit5w6SExBKpnCbewxXcMQg2GNJS6k6CaNspjGDsm1cDLyu5c5etfJfg6B1uoLdMsFg4No9RLCt3nTAf0XZTccZnMTH5JMareSIf0lvXxo3tf0XQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789472258; c=relaxed/relaxed;
-	bh=43PF/RCUOZQkJsOOgjTj3NZfqo5RZrpEBnO0+rNiFJE=;
+	t=1789472265; c=relaxed/relaxed;
+	bh=tjgNPx3x7WII2tr/AwvmAnEJWXGOM0OeaxbIcUanKyI=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=n8yxswcqMDGPeUNYGFC6XUkcfbldcrg6EyXKRdk2ZBEEEvfMr7sdv9PBtAB9bapRnzF57fXBpad586dmHfCAxC36p6uR7Da9wMdGETTM7jDuhghVtl+30yMDZ9nV/kMPXp25cM14qmlpTt2kURyAfkRga+DS9hMwo6ecffmM60PO2yysnTfuQ7MI6Pq3091jfSNkVlMrniaB/BURmefx+P8RyXGO8w1D+DYVyX3uGIaJln/sAFOy1wCukNOobOeqWBmdXlreczG9cS7efguo6sM0Rosd+oKzYnzjChLsfR6ZUq6xF3dvbukmT1sXhRnHy34Dfrf6i2NINzlTbuLezg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KqnWgCCB; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=b9Ym2jGjC513xLelUnheJMMeZAKtjcRkgQlBtjlyr5mL0SN+1j9pZ100o7O38nnznI1DvrmAbCQ0u9hd7GuXC4OAwrut/pSn1qRGXtyID1B7SDSLJkIKEsTn9PZnRFQobylrE+LMWoS8m1RmZXGGU/ATTLgpxZTsMgb45BEulaHsrbmyqiPgJ7AbjgyQfPuVga/csTnP8ScHQIMFRIr3v41hCqy0rvz8VFOXMZQEnQPSbNv+f9oG9y3lkmfciUsGHF5YbGEDrpaqCh2Ntjh9k2btihl/hEG/M0mtOjdRk/zKL/asm9NqMIhFGSmybToVUkBr0nS6uz9hv4uAiBZQcg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SMo47o/J; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KqnWgCCB;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SMo47o/J;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkg413Gzvz2yFW
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 21:37:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkg4840GYz3bkd
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 21:37:44 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 8DCDA43410;
+	by sea.source.kernel.org (Postfix) with ESMTP id 860D2413D3;
+	Tue, 15 Sep 2026 11:37:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 00B071F00893;
 	Tue, 15 Sep 2026 11:37:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 022161F000FF;
-	Tue, 15 Sep 2026 11:37:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789472253;
-	bh=43PF/RCUOZQkJsOOgjTj3NZfqo5RZrpEBnO0+rNiFJE=;
+	s=k20260515; t=1789472261;
+	bh=tjgNPx3x7WII2tr/AwvmAnEJWXGOM0OeaxbIcUanKyI=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=KqnWgCCBBHbflkUyPO4GlX+NqrkQFoLbpdeV95+70PxGxWdRlCZK2hEFg7AKpGM8d
-	 P+sDlo6n6p/oD4DHtw5k4ao1CCny987weMHVwVi57TIzGmedW26EG1RySUo7EUC3wL
-	 govHdLEbUVf9mmDt8elYfT7Db4xTVjDVamv4EuP8wsrMfCbgWeOAVYswLv5gav0BOT
-	 MlginGpeWoN48Ny0LTtfFlqXOFFO5u4nlES7nGcrAPFHjrQQttsk0uwSQM7UkTulFT
-	 MHFUk3iByhyEoh4VP3/GmREzjD3XQ75V+DK8eWFkJXVQmcZAGfPHvBT+mosXjqMwpA
-	 YKgxCV7My/uOw==
+	b=SMo47o/JPxKGY6qTNLRWBziEbn+58IX3nPctPMC7Rjv/4Cm+o+BJijIJnYVe8zJNi
+	 wtm2ogfTwLSXwVXiRa8BwU676bAhTFIUDdSLL7QWmD6wZs73V9DyEUOfRDrJ+IY403
+	 kqv0bmOC18w9ruJeugOg/OVAFQjR9gpxqiygmBT/TwoeVymZyVDEbKq6Hd3l29gwkE
+	 6gMLb1D7frbGbL+XuuTzjEeBT25eZX3KvVOEPtQdK5AuDh5R02exf0Wm9bz+fe67Iz
+	 hw49+A+yqFYEMWzyNlTUmA/r+VKXbFFAqeFAkxdiB9zM9A5cJNU9ykZ66qrgX/f5g4
+	 5B2mHT5wBqVHQ==
 From: Christian Brauner <brauner@kernel.org>
-Date: Tue, 15 Sep 2026 13:31:34 +0200
-Subject: [PATCH RFC POC 48/50] misc: fastrpc: install the dma-buf
- descriptor when the ioctl returns
+Date: Tue, 15 Sep 2026 13:31:35 +0200
+Subject: [PATCH RFC POC 49/50] iommufd: stop putting descriptors back on
+ failure
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260915-work-fd-reserve-unify-folded-v1-48-4d5217d6b246@kernel.org>
+Message-Id: <20260915-work-fd-reserve-unify-folded-v1-49-4d5217d6b246@kernel.org>
 References: <20260915-work-fd-reserve-unify-folded-v1-0-4d5217d6b246@kernel.org>
 In-Reply-To: <20260915-work-fd-reserve-unify-folded-v1-0-4d5217d6b246@kernel.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
@@ -86,12 +86,12 @@ Cc: Alexander Viro <viro@zeniv.linux.org.uk>, Jann Horn <jannh@google.com>,
  kexec@lists.infradead.org, linux-hyperv@vger.kernel.org, 
  "Christian Brauner (Amutable)" <brauner@kernel.org>
 X-Mailer: b4 0.17-dev-db0b7
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1831; i=brauner@kernel.org;
- h=from:subject:message-id; bh=cqNOp0aS6I05gELpjlHXd0owI5nLbJqswEU8UWMTx0A=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWSt1KkPYaw+MXnFd73DKesXPFlfMXNFNsPLRZf+RF2XY
- bp6P+0Kb0cpC4MYF4OsmCKLQ7tJuNxynorNRpkaMHNYmUCGMHBxCsBETGQYGSZ8vdT+NFe0bk0l
- +55pTDcfSvjMedPirtK/tvj3rIZKzuUM/8x33i1095DRM+a7Hu9qcGFp07anFQ2bOM4tOR05Zb0
- HOzMA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3656; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=Tx0MTQ1YnVtsCJithyQQ1YlkyHM6SB+QGz8po6KWPTc=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWSt1Kk3WbDjFvN29pT3Xq7896z8vX2FtjvvefB1xQfue
+ XsWsk4o7yhlYRDjYpAVU2RxaDcJl1vOU7HZKFMDZg4rE8gQBi5OAZiI3CuGf/rLHM5NDdh5MSei
+ 56otb6TCFq/HRZ/fcG4J0t5of2Rr5hxGhp4HVV1b2aIEtkx5uGOb3IS1967+fbb6v6rTAdk7ocz
+ G3mwA
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 
@@ -99,58 +99,119 @@ Rely on the fd exit path machinery.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- drivers/misc/fastrpc.c | 19 +++++++------------
- 1 file changed, 7 insertions(+), 12 deletions(-)
+ drivers/iommu/iommufd/eventq.c | 39 +++++++++++++++++----------------------
+ 1 file changed, 17 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/misc/fastrpc.c b/drivers/misc/fastrpc.c
-index 90fd669636ec..24b84019bbd7 100644
---- a/drivers/misc/fastrpc.c
-+++ b/drivers/misc/fastrpc.c
-@@ -7,6 +7,7 @@
- #include <linux/dma-buf.h>
- #include <linux/dma-mapping.h>
- #include <linux/dma-resv.h>
-+#include <linux/file.h>
- #include <linux/idr.h>
- #include <linux/list.h>
- #include <linux/miscdevice.h>
-@@ -1804,6 +1805,7 @@ static int fastrpc_dmabuf_alloc(struct fastrpc_user *fl, char __user *argp)
- 	DEFINE_DMA_BUF_EXPORT_INFO(exp_info);
- 	struct fastrpc_buf *buf = NULL;
- 	int err;
-+	const struct fd_slot *fd;
+diff --git a/drivers/iommu/iommufd/eventq.c b/drivers/iommu/iommufd/eventq.c
+index 747dd5155121..f5fdc6cdf0a1 100644
+--- a/drivers/iommu/iommufd/eventq.c
++++ b/drivers/iommu/iommufd/eventq.c
+@@ -412,9 +412,9 @@ static int iommufd_eventq_fops_release(struct inode *inode, struct file *filep)
+ 		.release = iommufd_eventq_fops_release,                        \
+ 	})
  
- 	if (copy_from_user(&bp, argp, sizeof(bp)))
- 		return -EFAULT;
-@@ -1822,23 +1824,16 @@ static int fastrpc_dmabuf_alloc(struct fastrpc_user *fl, char __user *argp)
- 		return err;
- 	}
+-static int iommufd_eventq_init(struct iommufd_eventq *eventq, char *name,
+-			       struct iommufd_ctx *ictx,
+-			       const struct file_operations *fops)
++static const struct fd_slot *iommufd_eventq_init(struct iommufd_eventq *eventq, char *name,
++				struct iommufd_ctx *ictx,
++				const struct file_operations *fops)
+ {
+ 	struct file *filep;
  
--	bp.fd = dma_buf_fd(buf->dmabuf, O_ACCMODE);
--	if (bp.fd < 0) {
-+	fd = fd_prepare(O_ACCMODE);
-+	if (IS_ERR(fd)) {
- 		dma_buf_put(buf->dmabuf);
- 		return -EINVAL;
- 	}
-+	bp.fd = fd_stage(fd, buf->dmabuf->file);
+@@ -425,14 +425,14 @@ static int iommufd_eventq_init(struct iommufd_eventq *eventq, char *name,
+ 	/* The filep is fput() by the core code during failure */
+ 	filep = anon_inode_getfile(name, fops, eventq, O_RDWR);
+ 	if (IS_ERR(filep))
+-		return PTR_ERR(filep);
++		return ERR_CAST(filep);
  
--	if (copy_to_user(argp, &bp, sizeof(bp))) {
--		/*
--		 * The usercopy failed, but we can't do much about it, as
--		 * dma_buf_fd() already called fd_install() and made the
--		 * file descriptor accessible for the current process. It
--		 * might already be closed and dmabuf no longer valid when
--		 * we reach this point. Therefore "leak" the fd and rely on
--		 * the process exit path to do any required cleanup.
--		 */
-+	/* The staged file is dropped with its descriptor if this faults. */
-+	if (copy_to_user(argp, &bp, sizeof(bp)))
- 		return -EFAULT;
--	}
+ 	eventq->ictx = ictx;
+ 	iommufd_ctx_get(eventq->ictx);
+ 	eventq->filep = filep;
+ 	refcount_inc(&eventq->obj.users);
+ 
+-	return get_unused_fd_flags(O_CLOEXEC);
++	return fd_prepare(O_CLOEXEC);
+ }
+ 
+ static const struct file_operations iommufd_fault_fops =
+@@ -442,7 +442,7 @@ int iommufd_fault_alloc(struct iommufd_ucmd *ucmd)
+ {
+ 	struct iommu_fault_alloc *cmd = ucmd->cmd;
+ 	struct iommufd_fault *fault;
+-	int fdno;
++	const struct fd_slot *fdno;
+ 	int rc;
+ 
+ 	if (cmd->flags)
+@@ -458,22 +458,19 @@ int iommufd_fault_alloc(struct iommufd_ucmd *ucmd)
+ 
+ 	fdno = iommufd_eventq_init(&fault->common, "[iommufd-pgfault]",
+ 				   ucmd->ictx, &iommufd_fault_fops);
+-	if (fdno < 0)
+-		return fdno;
++	if (IS_ERR(fdno))
++		return PTR_ERR(fdno);
+ 
+ 	cmd->out_fault_id = fault->common.obj.id;
+-	cmd->out_fault_fd = fdno;
++	cmd->out_fault_fd = fd_prepare_fd(fdno);
+ 
+ 	rc = iommufd_ucmd_respond(ucmd, sizeof(*cmd));
+ 	if (rc)
+-		goto out_put_fdno;
++		return rc;
+ 
+-	fd_install(fdno, fault->common.filep);
++	fd_stage(fdno, fault->common.filep);
  
  	return 0;
+-out_put_fdno:
+-	put_unused_fd(fdno);
+-	return rc;
  }
+ 
+ int iommufd_fault_iopf_handler(struct iopf_group *group)
+@@ -506,7 +503,7 @@ int iommufd_veventq_alloc(struct iommufd_ucmd *ucmd)
+ 	struct iommu_veventq_alloc *cmd = ucmd->cmd;
+ 	struct iommufd_veventq *veventq;
+ 	struct iommufd_viommu *viommu;
+-	int fdno;
++	const struct fd_slot *fdno;
+ 	int rc;
+ 
+ 	if (cmd->flags || cmd->__reserved ||
+@@ -543,24 +540,22 @@ int iommufd_veventq_alloc(struct iommufd_ucmd *ucmd)
+ 
+ 	fdno = iommufd_eventq_init(&veventq->common, "[iommufd-viommu-event]",
+ 				   ucmd->ictx, &iommufd_veventq_fops);
+-	if (fdno < 0) {
+-		rc = fdno;
++	if (IS_ERR(fdno)) {
++		rc = PTR_ERR(fdno);
+ 		goto out_abort;
+ 	}
+ 
+ 	cmd->out_veventq_id = veventq->common.obj.id;
+-	cmd->out_veventq_fd = fdno;
++	cmd->out_veventq_fd = fd_prepare_fd(fdno);
+ 
+ 	rc = iommufd_ucmd_respond(ucmd, sizeof(*cmd));
+ 	if (rc)
+-		goto out_put_fdno;
++		goto out_abort;
+ 
+ 	iommufd_object_finalize(ucmd->ictx, &veventq->common.obj);
+-	fd_install(fdno, veventq->common.filep);
++	fd_stage(fdno, veventq->common.filep);
+ 	goto out_unlock_veventqs;
+ 
+-out_put_fdno:
+-	put_unused_fd(fdno);
+ out_abort:
+ 	iommufd_object_abort_and_destroy(ucmd->ictx, &veventq->common.obj);
+ out_unlock_veventqs:
 
 -- 
 2.53.0
