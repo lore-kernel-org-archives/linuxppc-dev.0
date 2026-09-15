@@ -1,60 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-27280-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27281-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95087C88E77
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 03:14:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64D20C88E53
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 03:14:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hkRvF1JNHz2ygp;
-	Tue, 15 Sep 2026 13:14:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hkRvH6lg2z30V4;
+	Tue, 15 Sep 2026 13:14:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c110::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789442057;
-	cv=pass; b=oh91NEsXuH822UXobUT+v0B2psCWXTGHRZGjnFdlP9Q9dmowmltQc7VEmz+S2aUMPTQWM5yQkkZx1IaxkwTZBdEdmE5mYE4mtkgjGlvTTUFrZYCbRaLdgU7hFFFjDDvkZuPqqF3MpaZqORiBtxB8x7WrsdMULb5HrlVGrEoxpLB+y1JDVTJNvGqHNIEw4fu+l5cPp2BtvW0D1XG4GpUogcWsx8DCuMOSt2GgSKOMtgEmN2LVDLYNy4vZXDlDIlDNE1hDXCcBw/0cunutlGIrGckjpW9meAQ8VpXF1J+KC/dOmKq4PAayvOlfRD1Kb5AgMtWxLrHmpy4E/SBKOQzTFQ==
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789442059;
+	cv=pass; b=luPLsoj0X5r8hSrQA7Vp3SOer165ytUD/FCXaXXPp0ttrComGhsNTPIOcVoGFOvzYyaCjo68PEG3f1D03aafpptsdl5JVXCA476R4E+cNH2x4ef8h6e79j30M2SBjOvaxdE2bRN1Hv5g0aySITg2PSFGOlKyXfyfFoBd+LBs3ZvxSIUhD4QOM5tO1t0UQIFYS/WzG78YNOMv4grYQdXIUSvuDeqI7xscZLdCRnqxZlJJmKE68Xg8DSOHEj94SEwW1hr0WGF7gVfFYd10YZZ3CA6wFyXeLbVoxwTve1WNrnwpunz5pPOEeqJgu6omf6NVbkVtqBrU2NO1ppahEkknlQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789442057; c=relaxed/relaxed;
-	bh=bL1XeoRsjprSrghUuJnmyCfeiaPCYOiz9KIhr0c/bxY=;
+	t=1789442059; c=relaxed/relaxed;
+	bh=Vk5k7TQ+BPjRKugTefW7dWX7IVzx1ADNBgRuGTw0IN4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=YbhAxdhPC1Exw8JPDnTGQ/dcmygBczlpF/LAFa6BCwENJwXwR8UjGveeYi9HuDIOccFyfj8zVjTllpnlsKlaOqjr/LJQLsEm9MxNuepuNOlNvjADseXRmJZLRlOnKdvfNReGx+/D7oNOzcmOyqL0FHZrt1vLjhjzdO2V/wpK3kD4ee25QSJaJH4Ej0rTPDZq1VrRqWkbVYOK5ICO3qXsCzOWoApWgtap6tGUAs/+FPW5EhltVvU6+3R2M1x31W5tSSBCSbxYkNYT7PCG1yP4btDQ+PixKfb+MhTgGkbL5E53A4TC6VGBWFDorKpYDyuNs6oudPs6mHtwlm8wi0w5Ig==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=paw3fEKC; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c110::1; helo=bn1pr04cu002.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+	 Content-Type:MIME-Version; b=FkxY451j3HN+6IEvxV7SaiJwsvsDbHuOVlNV0Qj+lsBbGtmATVEw1lxE/cPk+bmhA3vS9S87XYnJDwxk0V+n3Qq0GsEF213AUh7mhuIxABiVAHipaMnN1fuwdgkDQPTIZ+bb/ic9zYmJkXDtqvbQkCTJsqFVsfxpkf7rDgvb2RsYIHtsSjYpcUWO29bRRn6Us3Ryd2Km8KSvhzYGUN7adeJpV7bfGQXAIjS9QDqAXwcmMJDepf1Lma1YBOdAxBM6rEXCdJtdoxGtlmUuX4i+/Vww9rBUhmoqYE6zVISb67q/PwmA+5+72SmpGFGj3NqvTNqwJcV8zQ9hqm2CN+1jwQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=aXaKmmSq; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c110::1; helo=bn1pr04cu002.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=paw3fEKC;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=aXaKmmSq;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c110::1; helo=bn1pr04cu002.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org)
 Received: from BN1PR04CU002.outbound.protection.outlook.com (mail-eastus2azlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c110::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkRvC4ZTTz2yr0
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 13:14:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkRvH0kjGz2yr0
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 13:14:18 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=La+aDAkfL0mNVzOdP9PVTB8S63ufYu2mf7b7Kdn33DgsTeb02riYuzYd6PJNNMm/HobE3SMjw3oPUVyLumTh44nbTzc3R1//aOyac+I6B2uphfwtn7qfMZa4pa0nwP9fnXH0AblzzUrXcQAKyMrm0zoE/4iQYlszcDKV8zetncpygy3yQ2NPzami88UfaQsVG9Cim4m+GdLxhrJCRFZVUmF2raaMBV7266whHbQQOloN4qtqVEdDbIkRwOOZBfsKuh8W3JvNdbXqcwbputkxh0X78NGVRNtnVhRMKR4vyo8zmIRPXGCutDM4VpzJ6N8VoB3vmauC5EKGZlXRbZ4gKw==
+ b=cOovFnvWVcxkAxzeiE8oqqjIZKVX3W+u+HWl7Pn7f8dyHZRdLwibRotWaESDK47PiwomOdTlSv8aAHn8vfUPYqVDMX5EiTAYuS/WpXK/TobkzDYyJ/gpyPD5IEig9jkgl+OCNFdJ2cUpWQaRmj0rULZUk53AdS34gs/pKr0yo8v4qu2BN0Xjh26lyt29pBPlqTeGvpy3AsoZkhkhsRbY9PhyxLRSzEsaZ0eNMSH48tEFhKEt2JEJMcd1W63gcIvE+IZsiGxCCS24Oxsbwd/sDTyfnqFpta694aCZqaO7Iwx9eDsV1tEoR/ZND1omhE4GWzOWf+tR+oMpFmQ/+qPgKw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=bL1XeoRsjprSrghUuJnmyCfeiaPCYOiz9KIhr0c/bxY=;
- b=O3/Z5n4R9I1NDdyKWB7/V3ce7VuR+uvl5g68neb8mCeWmDJh2oSZJDEOajorj01uOtcKHMhW6R/YUXHRDG69UnWzLPnBdHGF9SPnE8AFXlCHCfDEHIgIuZ5eyxV/pP5zwq21lZkhzwD3PR9NGZ+WVCcC/Bao/LSFCr7UCgErupWIYYbrz/vtjiPloqxOeCzzwCyuUi/uiH+BXMdRQ76m8li6w/hCSFtD7DhMsO8PKCmkTbsBfQ2g83AenDyXmiz1K+efVyr522DdoJOzyodSa27WPBwTFQyFVkfoHfbUbvti90xjrXc41t0V1GVbeN2W2ypqxQPhmM94uSYDt6EQkQ==
+ bh=Vk5k7TQ+BPjRKugTefW7dWX7IVzx1ADNBgRuGTw0IN4=;
+ b=kuisb1FO+5iSZhEmsAW7eXXPNlB02Gunv383H60pDBI8KKbAhZuQLGUqKCq+8pRSIRwi3rXK3QdcmhV+G7MSkgB6ixFnhmtVjFAva2Rm3b33xRcuTOQ1PmwC+dPvRCxpDwzquX5dKKnjmEZ/+0xwsQptFzNJK/PPTHRZl4F+ZW320TqTvXmzGp9R9uGDqvYnOoGz8tucno2BbqhDwBR3JKNqYa+f31AWLrkMkUFCCf5vVg04p93Aq5wqo8xwe5NyKF0Gd0S2mA7w8niPM2mEbera79BXJtqk4OfKmQY7kOkJ9TxL+0/jSCMpbU71UHUILDI3Y9n0AgIFdr8O/xciPQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
  dkim=pass header.d=nvidia.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
  s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=bL1XeoRsjprSrghUuJnmyCfeiaPCYOiz9KIhr0c/bxY=;
- b=paw3fEKCdhV8dCrmA1q72vY9/6HhSFB0/G1uM4+CsGzvY5zx21F29h4UtOU3OXTVViViVbSlduo56CAuuPS6KBkg/+CwBWSgP8RzftUmEbfZJoOrz1kN5e5p5vn63zmok1aLKNjaCNRHBOVusa9xQNPODLfrZZKB+trHquEjBQNxuFzGxOduqjMhoCRJwHyIHTlZO5+R5kbJ3G4D2XajaJImIwDml5o+GfXJDBgSCWe0x8ThImSI4iByxJaF67pj8BEXxjB1CCYGnQWLLh1/0IoK1XM/KgaLGWCW4VAXYlBNZ/yXuPAB8KWmpJiXsLwqqi1+scbr5df8dyl6pJX7JQ==
+ bh=Vk5k7TQ+BPjRKugTefW7dWX7IVzx1ADNBgRuGTw0IN4=;
+ b=aXaKmmSqL1cZ/12+/AnGPtCu9hVfY2nWSdNJ+5bZs/OECSx4/lh+X6/KZY8oCWJ8a8wZcWP0OT/HbLFo5vpJfS7n494u5HsHZPkVuNBTiYqxXkDWfNa1RjLzZyDAQ4plzRF0MahMKxF7s3hZsCelLGsK9QWxneDrfJ0hs7h+6sIi0eh+8dXmeusjDG/iDbqdLW9EwPOexb2k++ZzjM3EW/eSstsBJbMqvHI2cknH0x/2MGhkCAwr8LI9HVd0eN+ALJ5kPNwfks0y+Eft/GbzGIv37lbPG/vCJOoVlTSRsqd7QGz5Fuxw+pRSJNpU4DI32P1XQ5UiK8Sf6Ny3QBPTHw==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nvidia.com;
 Received: from LV3PR12MB9356.namprd12.prod.outlook.com (2603:10b6:408:20c::21)
  by SN7PR12MB7834.namprd12.prod.outlook.com (2603:10b6:806:34d::13) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.406.12; Tue, 15 Sep
- 2026 03:13:53 +0000
+ 2026 03:13:57 +0000
 Received: from LV3PR12MB9356.namprd12.prod.outlook.com
  ([fe80::1c36:31b4:c420:6286]) by LV3PR12MB9356.namprd12.prod.outlook.com
  ([fe80::1c36:31b4:c420:6286%5]) with mapi id 15.21.0406.007; Tue, 15 Sep 2026
- 03:13:52 +0000
+ 03:13:56 +0000
 From: Yury Norov <ynorov@nvidia.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Yury Norov <ynorov@nvidia.com>,
@@ -122,16 +122,16 @@ Cc: Yury Norov <ynorov@nvidia.com>,
 	linux-rt-devel@lists.linux.dev,
 	llvm@lists.linux.dev,
 	Yury Norov <yury.norov@gmail.com>
-Subject: [PATCH 09/17] radix-tree: require static storage for RADIX_TREE()
-Date: Mon, 14 Sep 2026 23:13:24 -0400
-Message-ID: <20260915031334.1194975-4-ynorov@nvidia.com>
+Subject: [PATCH 10/17] klist: assert static storage for DEFINE_KLIST()
+Date: Mon, 14 Sep 2026 23:13:25 -0400
+Message-ID: <20260915031334.1194975-5-ynorov@nvidia.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260915030336.1192299-1-ynorov@nvidia.com>
 References: <20260915030336.1192299-1-ynorov@nvidia.com>
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: MN2PR16CA0040.namprd16.prod.outlook.com
- (2603:10b6:208:234::9) To LV3PR12MB9356.namprd12.prod.outlook.com
+X-ClientProxiedBy: BN0PR03CA0012.namprd03.prod.outlook.com
+ (2603:10b6:408:e6::17) To LV3PR12MB9356.namprd12.prod.outlook.com
  (2603:10b6:408:20c::21)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -148,279 +148,94 @@ Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: LV3PR12MB9356:EE_|SN7PR12MB7834:EE_
-X-MS-Office365-Filtering-Correlation-Id: de3c6747-7ec1-4239-77ce-08df12d75eb1
+X-MS-Office365-Filtering-Correlation-Id: c0316fd1-1c80-4d41-f50f-08df12d76112
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|23010399003|7416014|376014|10067099003|6133799003|22082099003|18002099003|56012099006|11063799006;
+	BCL:0;ARA:13230040|366016|1800799024|23010399003|7416014|376014|10067099003|22082099003|18002099003|56012099006|11063799006;
 X-Microsoft-Antispam-Message-Info:
-	h2cZQPW30lx121tesGqD2YpKH4muWOYNLF96F6ZnyAS8jOnYo5V1dwcvgWYU1m1O9o13QJRh6EfUJXY+y7htWBkpn174K+cT9o+M5IOH50cD6EgBrng6xwma0u/oAql8uSyvo5PJgQwtQFkZ3rKojhKN5+xC/MXL2lC3ZhWQfI4wEc2OBHn6Owg5AAO3HXuZd7IMF/vv+CFKCtXv9wnB0sKc8wU01O9W3vQCPLMPJ9/LE4oH4kdDnLY8QbajzAKLq21oVvQTTuY0xhtC9xv9EP4nYALaL+psYtnw62o23aUzEpO+kc05jyf9pqcVST+fZ53w3hSO5tR0BIqtGeOXYgn3XU3IA4XfBiu0S+zgdKBgHp99y4MlaZKgEBhQf2H7j5ALjDtS8U1s59oOad90iG3+zW5yxi3rWC1x3SvcsIEnMEwkMIkERRgtwnGkHmeCADevAzJwyIvjM/ByvJTEAJhvhJDWYllCq6H19ASMiGhgQuPtfLdDFr+u9OWbIDgtdsThYlmHAzHr8JcFqngQ+21Trdj6rDjotkgh7AP2wJbkjZj4PUYzmM8c91qpzr1kImNlxH5ZPA2OEpelnRmFjmkcpbPG3xS8znF8Yj2owmMrOW6GeOvSLMKlpJ1ydQWPcspc6GX8WvKm1G4BD3TO270NNvSqHEoGbGe+xeLQyKU=
+	eyrAosqQgzIvIAx002+kKEoK1AesvppnYTuLjt8GWu3kAXfRJbIAYQOVmLUiNd2LbdE2dcJpjXNOTpRBn7P3b9bxTLdDhuPZbs2eauk3gzL2i06ok69gUmnKtfcmdeXISq+fDZNSROENZ931kn7d7eiJc/5BhKwkHXXdJ6xLFDkCrz/n1byhETTiTlBimkjlQwVdTeLUg/AWENSBf61n7Kh9gl1YwNg8gElL9LnPUY6+qCM8ToWBiLS25hiEOBrWs7Itow+E5SbqmPB3/XKBm9uvptCa+fDUTm56m/h93c7kLQw4w97qdVkWmTuLXGIDfEKfXK6pRgw1rQPlooUq6rDhuXD4D2RWWaoWuF4uEx/65cD1iaQk2f21VUaAPs0T95KNW731ePptrk66TonlQ4CADKwdCdObx8eG8xz4id1jLAiaXQgGD3d9AGQ7PVHG9WFh4wbL89CfsR8uIQn3z1HfZKiPSntzThU5cBLGWbrMD4fOQ2PbtyiT5Y9FjDjfNZXryg/tfQfr0e8sMUdZ6CVztoGk3eLLsAwWeCs2qEV5LC2/P/yR+tMYObefnj+e6Q11OTqIXyrDehAVuYFPBw22fF2RJfXH7DOWJ4vDx7qFEYhpAphEjVVOBiwtCkien5PAhOVxU+XBQDpS0Y5H0YeD2024GCs9+G84y/77cQ8=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV3PR12MB9356.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(23010399003)(7416014)(376014)(10067099003)(6133799003)(22082099003)(18002099003)(56012099006)(11063799006);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV3PR12MB9356.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(23010399003)(7416014)(376014)(10067099003)(22082099003)(18002099003)(56012099006)(11063799006);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?uVZoCX1GrOHs1U3JKZ02FlPkbDhNwaeObmm+pfucyyKudaTQhrVyRlbTCYP8?=
- =?us-ascii?Q?AMTrEw/5GijjG0bwbwN/YbqamX9RGI8wC1pV++0e4B0yZBVoiM/4YSGvy8qD?=
- =?us-ascii?Q?VaMrIDaaOcF/Lv9UeaQxVQ+/9Kp292WFg3tFzMG7Bq62a4wyuwMcYF70NSI8?=
- =?us-ascii?Q?q0UCiqaGiyCGe8HruZhRWMJhZyGansdHdiMSdXMx6IeUl+JpHSXC3sjaSpQ/?=
- =?us-ascii?Q?C++U9nY4fgdfoIrpvZt0qG/aTOz8a9s+FHRg3hSHbTc8hg/OnVEHxC/QZRT7?=
- =?us-ascii?Q?8QevgD0T8YUz4AVyzDbBT9I3+TqJDw31jD1WTWQ1G7NTklUxpO8LQIwf0WDm?=
- =?us-ascii?Q?Xkfu5vX0v3jospzJ72Eap33Z3r46qbNs47at2+dP4PxIpq6tkBLxXAKSwtqR?=
- =?us-ascii?Q?PEQTqPv8fx2wpAW2AQSSg7fn4w3ArjJgZs1Exjg9P7y0LJcq4LhlaoMVRnaS?=
- =?us-ascii?Q?+fBGsNC2cZ9p84tq3sCpYPNasHSV9aUPFUZZmxBJnDbN2kmSUI6BP82to0EF?=
- =?us-ascii?Q?INCvi7LZF738QX3DlUiY5Kj3jGO68ROa08YjurgOQY+/4BegQBJk27PcXH04?=
- =?us-ascii?Q?KKjWcOkGvVnIwcsB4i/6lrfJjfUynEDTPgUDu14XeIaPru37SwdH6U4o6cz3?=
- =?us-ascii?Q?j/houeYbj26PW9n272YJ8ChMsIH+jp7kY1j8DEv//sAqgZ85+cQo49PSjRFp?=
- =?us-ascii?Q?0qI0sTtaKeCxDauvSvjdFe5Ksl8OXOvax+ggAHcOA38GD3pANrA+lFkbHj4K?=
- =?us-ascii?Q?Gf+Gc9UGJA7KnxWgC20OJruwI4FdXG52JIOUwQ3/mRLuDzRDpG4Vrn+VRe7B?=
- =?us-ascii?Q?nUX1QcRS6SDBTOD3ThoJugtCWjHyVmFfoBXcTaoU1WpwGReIKPGX++Do+fi3?=
- =?us-ascii?Q?TCBqe6vzVSfBVUpM2owd8qW1z6tVuuYQ50x/ExZwv/dUAW9p2cX+qWxd5e2a?=
- =?us-ascii?Q?1gVYWvEU6KvsuwtYfmgxNGI3wbJzA2XM/ovuEOqWyNmfYnRTrwWkPmmhaE2q?=
- =?us-ascii?Q?6S1Ryta2KNSCkVSijuVn5T4NN/wKCDJc76sqq3YnqpsU4jhTyhjO4vFXzXIZ?=
- =?us-ascii?Q?k5qcwh7WyLWxoYl0iV+ypmfFA5PBOMzGBNTMFP6L5ICsNH5E4YTkM0ODhK6E?=
- =?us-ascii?Q?SBjW1dUgkG+ivc1iAam8S6mHTYe4G7YMPrzG0FXDmJRbORmI8T1+5XYLk8bi?=
- =?us-ascii?Q?qUCxoVbI1rrhLk1rRCdnzQUdsfI18QY/ren9I6qmyunNYYzNyJvmc8emHUjv?=
- =?us-ascii?Q?v6ORP8RkNp3drZDI8NMol7w6sDO6vmYBGXirlxR48+4P5zpkewETPD1T0CWL?=
- =?us-ascii?Q?nyJqsfRIB950t5IZCsaC7EdpbqV2Dw8FZAVkJz3PB5lO+GlQjS5CjBPbrwLn?=
- =?us-ascii?Q?W1KBJ29OKuQ8sUYPoak/p4uRTbgvzRwQzDCwKxCp+myE6dIKAYDRhhYe1XH6?=
- =?us-ascii?Q?ziIJ8T56I8Ue1u7UGenX3GkJ9itnjDTwb6JqNnFwAq9JwY8Jw6wjeEhx/sG4?=
- =?us-ascii?Q?scd0uMUEJygdbTchXCrNq1yQv7sPkS7ZZ59EJfdDx/I2hEOAoiuBH8+xjsUC?=
- =?us-ascii?Q?7hZh973TfB+h4PPqPPS0+cf50pTInkyrfOqb2ae7/8+NJmYaOSFQOUWrwk6/?=
- =?us-ascii?Q?oluYx/9+a/1Trln2snlJtYk8DH3uwgt8Pd61Y487rubG1fX775WW/nUC6xjx?=
- =?us-ascii?Q?oaf4UcsxFtZebmFKXIVLRqQ+EaoBxbwbul4UJyoT8Y+DcqvKw1yLock1kmOV?=
- =?us-ascii?Q?SzTFjirWEA=3D=3D?=
+	=?us-ascii?Q?lYnOa1BUkoDF+fMY5X9B85RymRmIorNlyqg7CJn8mLccC5vL+cQnzr+0t9Vv?=
+ =?us-ascii?Q?qH0qwoem6L6iad2oODF02RsXiLex/9OIK55NAvRjiL6l1rhtCixJc8TkDwWl?=
+ =?us-ascii?Q?VYLhZnNxX8uJ+sBlvU//TiMD2VKx8MSAwsjZ8puVEyijDJORhmKPO5fakHS4?=
+ =?us-ascii?Q?PxokWSBd1kmVLDjsgBfmeVBrYlRt1avUYdAWYJfBeWeQ2sDAGjEZGrmECbox?=
+ =?us-ascii?Q?RlUnb39uzGeBgp7uFToZwOYn/kKZJlfS/bLRdWbzSbRU0Qsohx3FB7pGXKZ8?=
+ =?us-ascii?Q?295t1pwc4+uXDuu22RoGKxsPm04YBslG06+9GMmB5dlcsdsz17SKSRW6HncO?=
+ =?us-ascii?Q?5V5vTEgEoVUEA5RF6xyMUdhDkuhrJ3mTfJBG91cnDXuIuNYvF6wbwJo/525o?=
+ =?us-ascii?Q?7KHGvHAcFKzUrQGHSDMyIWPOY5GGOZbjP8J1tpAGwdkujaEEey7knEewvFcV?=
+ =?us-ascii?Q?Qgq67NQnwB+PLsQA7YWLYKWue4KZK+DEbVRqMUnPjR4Niwz5IDN7zt/dDAjP?=
+ =?us-ascii?Q?Y2QRH1qwlwx0JMAhicLYIs0eKQDz912i0i80JkPcDpxpDnCcC+Osnb95SSPd?=
+ =?us-ascii?Q?txG2ddjXtvJSCRhgTB5Qw6Arv8wZ57mYtFa75INp2AZRHucxazz1savjzp2y?=
+ =?us-ascii?Q?CBjMlHLWVZ5HJVlcjXJkbBYCBqSjr5sdSQiKGjq7N5I7IGWAddjdSTAuKPxr?=
+ =?us-ascii?Q?JDNBK/sf4QJvFTWz/kt5TLEWpz4d1jnNsP2QkBgMSXjsulgrSCNnLPCbLg+K?=
+ =?us-ascii?Q?Npt7Xas/EiqgtdVfF189r+zwRxn2pjtl5FCFurdqQyzxd+AEzM9inaOFJ1L4?=
+ =?us-ascii?Q?gcenPmJkScvEOw91jIC664FHQ3J++6XEGoBOM0+OepmOcOh0l6yuPatvwli8?=
+ =?us-ascii?Q?3Xa3m/WDeakzmI13ojiZUmAztiEb/SDt2qaSck9/fzkLLLMAQuHzc7XnU3aj?=
+ =?us-ascii?Q?CRo8v1GxSAxW7Lk8syBqNJm4KbCcseCXzCWqhRUQWP3SzmIC/u7RGXZ1i1/n?=
+ =?us-ascii?Q?E7so+XMm9cLjzm1czg+Io6u4I6nEcPv3ehiW4rJXla0/50NuuJyxjfYMtlyr?=
+ =?us-ascii?Q?cgnrJzaF9u66tnHkZgqrQWpFAeCizUlHn/W12P/c8k2oJpxYX47WscuWt+fL?=
+ =?us-ascii?Q?vuUMbrqxvHijU7UAcznsMAr7xSEQQK9NuQv9Gv7sRixJqURnOMHOaoKsZoTK?=
+ =?us-ascii?Q?mfh9PsfyZv/sD+EngBjiCePpxk5qm/htKmkYknf0RakiBP7+ZTGrF9s4OlpH?=
+ =?us-ascii?Q?MIYaL2Ydl9tMFoTlWRnkioZzXiWXV9v70FM4rJ1iGbuWHjrQSZBxFpdIWf2R?=
+ =?us-ascii?Q?AdZmVxgbLQvXleNBNUZjrwNyuFbvWVU6nnFw3InHi0DQkVMK6B1PXx4urPDn?=
+ =?us-ascii?Q?uJn7zfBSaMX0Ro1NwsFXLLI/Wpk+s4iKHzLtkDS5lpgkJE/scMcCCKNpUf/9?=
+ =?us-ascii?Q?NL8jxhJq2FJkaxBiiQuTc2EqWC+vqkR00qDD+nXxcMxkgS5JVL/Ag4xaqTqg?=
+ =?us-ascii?Q?NeIOdlE2Pwuer0Bam2LPPxdU2xLxYfzUNP65hCYo2xaC7mZ7EZjWbrzJlcVv?=
+ =?us-ascii?Q?G+f/Bfp1W01SlJys9U66ypsf2U3OBtGub7XQbK23wkqVoeEiChTVk/zrqxWp?=
+ =?us-ascii?Q?mDcOlAngT/WSLLEcHRoWffOS/p/vBa46nKOfHLSWOMy9XJUDwKDdvq4GyegT?=
+ =?us-ascii?Q?9Vi3C76RhGWCf4AT16AxGGDM0UkIoUwtVFU6qhONMCNvec2qfjQkoc4wlupf?=
+ =?us-ascii?Q?VOMScQ3v+Q=3D=3D?=
 X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: de3c6747-7ec1-4239-77ce-08df12d75eb1
+X-MS-Exchange-CrossTenant-Network-Message-Id: c0316fd1-1c80-4d41-f50f-08df12d76112
 X-MS-Exchange-CrossTenant-AuthSource: LV3PR12MB9356.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Sep 2026 03:13:52.7634
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Sep 2026 03:13:56.8504
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: xYVi9AkwSB9ZyMM4wlV9gJmsLPACF0n1XSTRG0Kxd0Pvac2Coh1VLy16ctnTtcPEzLDvIpdDdngF2eZbyWM8Kw==
+X-MS-Exchange-CrossTenant-UserPrincipalName: oNnoc6ULkEGQ5RmcnFTWTkj0Lo3CaL9fvV9SNXH9EUTfZ+JOI0O+yGQyMEkmJVSE/fTk23VfSsWgB0ad15r7VA==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN7PR12MB7834
 
-RADIX_TREE() uses the static XArray initializer. Enforce static storage
-for this declaration wrapper, consistently with DEFINE_XARRAY_FLAGS()
-and DEFINE_IDR(). Leave RADIX_TREE_INIT() unchanged for embedded objects.
+DEFINE_KLIST() statically initializes k_lock, relying on the object
+address as a persistent lockdep class key. An automatic local klist must
+instead use klist_init().
 
-Normal radix-tree operations use external synchronization rather than the
-embedded XArray lock, so this is declaration-contract enforcement rather
-than a fix for a lockdep failure in normal radix-tree operations.
-
-Convert the thirteen automatic roots in the userspace tests and benchmark
-to plain declarations followed by INIT_RADIX_TREE(), preserving their
-allocation flags.
+Add ASSERT_STATIC_STORAGE() to enforce this requirement at compile time.
+Keep KLIST_INIT() available for embedded objects.
 
 Assisted-by: OpenAI Codex
 Signed-off-by: Yury Norov <ynorov@nvidia.com>
 ---
- include/linux/radix-tree.h             |  4 +++-
- tools/testing/radix-tree/benchmark.c   |  4 +++-
- tools/testing/radix-tree/main.c        | 16 +++++++++++----
- tools/testing/radix-tree/regression3.c |  4 +++-
- tools/testing/radix-tree/tag_check.c   | 28 +++++++++++++++++++-------
- 5 files changed, 42 insertions(+), 14 deletions(-)
+ include/linux/klist.h | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/include/linux/radix-tree.h b/include/linux/radix-tree.h
-index 057edc4cbb6e..dc3795f4cb1f 100644
---- a/include/linux/radix-tree.h
-+++ b/include/linux/radix-tree.h
-@@ -8,6 +8,7 @@
- #ifndef _LINUX_RADIX_TREE_H
- #define _LINUX_RADIX_TREE_H
+diff --git a/include/linux/klist.h b/include/linux/klist.h
+index b0f238f20dbb..5848363242b6 100644
+--- a/include/linux/klist.h
++++ b/include/linux/klist.h
+@@ -10,6 +10,7 @@
+ #ifndef _LINUX_KLIST_H
+ #define _LINUX_KLIST_H
  
 +#include <linux/compiler.h>
- #include <linux/bitops.h>
- #include <linux/gfp_types.h>
+ #include <linux/spinlock.h>
+ #include <linux/kref.h>
  #include <linux/list.h>
-@@ -79,7 +80,8 @@ static inline bool radix_tree_is_internal_node(void *ptr)
- #define RADIX_TREE_INIT(name, mask)	XARRAY_INIT(name, mask)
+@@ -29,7 +30,8 @@ struct klist {
+ 	  .put		= _put, }
  
- #define RADIX_TREE(name, mask) \
--	struct radix_tree_root name = RADIX_TREE_INIT(name, mask)
-+	struct radix_tree_root name = RADIX_TREE_INIT(name, mask);	\
-+	ASSERT_STATIC_STORAGE(name)
+ #define DEFINE_KLIST(_name, _get, _put)					\
+-	struct klist _name = KLIST_INIT(_name, _get, _put)
++	struct klist _name = KLIST_INIT(_name, _get, _put);		\
++	ASSERT_STATIC_STORAGE(_name)
  
- #define INIT_RADIX_TREE(root, mask) xa_init_flags(root, mask)
- 
-diff --git a/tools/testing/radix-tree/benchmark.c b/tools/testing/radix-tree/benchmark.c
-index 523c79f22ed3..57ab92e6cd77 100644
---- a/tools/testing/radix-tree/benchmark.c
-+++ b/tools/testing/radix-tree/benchmark.c
-@@ -114,9 +114,11 @@ static void benchmark_delete(struct radix_tree_root *root,
- 
- static void benchmark_size(unsigned long size, unsigned long step)
- {
--	RADIX_TREE(tree, GFP_KERNEL);
-+	struct radix_tree_root tree;
- 	long long normal, tagged;
- 
-+	INIT_RADIX_TREE(&tree, GFP_KERNEL);
-+
- 	benchmark_insert(&tree, size, step);
- 	benchmark_tagging(&tree, size, step);
- 
-diff --git a/tools/testing/radix-tree/main.c b/tools/testing/radix-tree/main.c
-index f2cbc8e5b97c..6f0f8eaa044d 100644
---- a/tools/testing/radix-tree/main.c
-+++ b/tools/testing/radix-tree/main.c
-@@ -15,7 +15,9 @@
- void __gang_check(unsigned long middle, long down, long up, int chunk, int hop)
- {
- 	long idx;
--	RADIX_TREE(tree, GFP_KERNEL);
-+	struct radix_tree_root tree;
-+
-+	INIT_RADIX_TREE(&tree, GFP_KERNEL);
- 
- 	middle = 1 << 30;
- 
-@@ -78,7 +80,9 @@ void big_gang_check(bool long_run)
- 
- void add_and_check(void)
- {
--	RADIX_TREE(tree, GFP_KERNEL);
-+	struct radix_tree_root tree;
-+
-+	INIT_RADIX_TREE(&tree, GFP_KERNEL);
- 
- 	item_insert(&tree, 44);
- 	item_check_present(&tree, 44);
-@@ -89,7 +93,9 @@ void add_and_check(void)
- void dynamic_height_check(void)
- {
- 	int i;
--	RADIX_TREE(tree, GFP_KERNEL);
-+	struct radix_tree_root tree;
-+
-+	INIT_RADIX_TREE(&tree, GFP_KERNEL);
- 	tree_verify_min_height(&tree, 0);
- 
- 	item_insert(&tree, 42);
-@@ -155,11 +161,13 @@ void check_copied_tags(struct radix_tree_root *tree, unsigned long start, unsign
- 
- void copy_tag_check(void)
- {
--	RADIX_TREE(tree, GFP_KERNEL);
-+	struct radix_tree_root tree;
- 	unsigned long idx[ITEMS];
- 	unsigned long start, end, count = 0, tagged, cur, tmp;
- 	int i;
- 
-+	INIT_RADIX_TREE(&tree, GFP_KERNEL);
-+
- //	printf("generating radix tree indices...\n");
- 	start = rand();
- 	end = rand();
-diff --git a/tools/testing/radix-tree/regression3.c b/tools/testing/radix-tree/regression3.c
-index 9f9a3b280f56..dc235bff0063 100644
---- a/tools/testing/radix-tree/regression3.c
-+++ b/tools/testing/radix-tree/regression3.c
-@@ -28,13 +28,15 @@
- 
- void regression3_test(void)
- {
--	RADIX_TREE(root, GFP_KERNEL);
-+	struct radix_tree_root root;
- 	void *ptr0 = (void *)4ul;
- 	void *ptr = (void *)8ul;
- 	struct radix_tree_iter iter;
- 	void **slot;
- 	bool first;
- 
-+	INIT_RADIX_TREE(&root, GFP_KERNEL);
-+
- 	printv(1, "running regression test 3 (should take milliseconds)\n");
- 
- 	radix_tree_insert(&root, 0, ptr0);
-diff --git a/tools/testing/radix-tree/tag_check.c b/tools/testing/radix-tree/tag_check.c
-index f898957b1a19..51c0f0d6152c 100644
---- a/tools/testing/radix-tree/tag_check.c
-+++ b/tools/testing/radix-tree/tag_check.c
-@@ -42,7 +42,9 @@ __simple_checks(struct radix_tree_root *tree, unsigned long index, int tag)
- void simple_checks(void)
- {
- 	unsigned long index;
--	RADIX_TREE(tree, GFP_KERNEL);
-+	struct radix_tree_root tree;
-+
-+	INIT_RADIX_TREE(&tree, GFP_KERNEL);
- 
- 	for (index = 0; index < 10000; index++) {
- 		__simple_checks(&tree, index, 0);
-@@ -61,7 +63,9 @@ void simple_checks(void)
-  */
- static void extend_checks(void)
- {
--	RADIX_TREE(tree, GFP_KERNEL);
-+	struct radix_tree_root tree;
-+
-+	INIT_RADIX_TREE(&tree, GFP_KERNEL);
- 
- 	item_insert(&tree, 43);
- 	assert(item_tag_get(&tree, 43, 0) == 0);
-@@ -90,7 +94,9 @@ static void contract_checks(void)
- {
- 	struct item *item;
- 	int tmp;
--	RADIX_TREE(tree, GFP_KERNEL);
-+	struct radix_tree_root tree;
-+
-+	INIT_RADIX_TREE(&tree, GFP_KERNEL);
- 
- 	tmp = 1<<RADIX_TREE_MAP_SHIFT;
- 	item_insert(&tree, tmp);
-@@ -271,9 +277,11 @@ static void do_thrash(struct radix_tree_root *tree, char *thrash_state, int tag)
- 
- static void thrash_tags(void)
- {
--	RADIX_TREE(tree, GFP_KERNEL);
-+	struct radix_tree_root tree;
- 	char *thrash_state;
- 
-+	INIT_RADIX_TREE(&tree, GFP_KERNEL);
-+
- 	thrash_state = malloc(THRASH_SIZE);
- 	memset(thrash_state, 0, THRASH_SIZE);
- 
-@@ -286,7 +294,9 @@ static void thrash_tags(void)
- 
- static void leak_check(void)
- {
--	RADIX_TREE(tree, GFP_KERNEL);
-+	struct radix_tree_root tree;
-+
-+	INIT_RADIX_TREE(&tree, GFP_KERNEL);
- 
- 	item_insert(&tree, 1000000);
- 	item_delete(&tree, 1000000);
-@@ -295,7 +305,9 @@ static void leak_check(void)
- 
- static void __leak_check(void)
- {
--	RADIX_TREE(tree, GFP_KERNEL);
-+	struct radix_tree_root tree;
-+
-+	INIT_RADIX_TREE(&tree, GFP_KERNEL);
- 
- 	printv(2, "%d: nr_allocated=%d\n", __LINE__, nr_allocated);
- 	item_insert(&tree, 1000000);
-@@ -309,10 +321,12 @@ static void __leak_check(void)
- static void single_check(void)
- {
- 	struct item *items[BATCH];
--	RADIX_TREE(tree, GFP_KERNEL);
-+	struct radix_tree_root tree;
- 	int ret;
- 	unsigned long first = 0;
- 
-+	INIT_RADIX_TREE(&tree, GFP_KERNEL);
-+
- 	item_insert(&tree, 0);
- 	item_tag_set(&tree, 0, 0);
- 	ret = radix_tree_gang_lookup_tag(&tree, (void **)items, 0, BATCH, 0);
+ extern void klist_init(struct klist *k, void (*get)(struct klist_node *),
+ 		       void (*put)(struct klist_node *));
 -- 
 2.53.0
 
