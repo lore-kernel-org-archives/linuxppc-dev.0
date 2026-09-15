@@ -1,52 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-27370-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27371-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4AFDFC88E7B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 11:37:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD4F0C88E7F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 11:37:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hkg3X4Xfwz3bQl;
-	Tue, 15 Sep 2026 21:37:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789472232;
-	cv=none; b=FPBxAZIOGv02qbjsfVew/hJ73Xme1NRpW8z6IFwlls39oKDAh1Y/D88tWvF2y99s5nNSmvhEf7fnVzR1farp1ufb/ToQR+ZPLPGevuT0mnS2sB2qE19AxHDKW4GOnqRU0sRJJjEbI6tSA8RTKx4olEiyDdVVBKFX2ka1VrMcqELmvLKoVtHdYRNOpGA+z4afMMY0Ap0N3Fn8lzDDVt5seR4u3UHvSIUh3y3MWX6u0/w80mHG3EN2VRxZ3sOR+FquR1jY9175F+E5fq4uyZ/GjrScZJDxuQWhd9b59Lrt30luczbX8bUfiampGFpE3yHxr4oGsm9/cmGBpz6oV4ZKeg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hkg3g70Ptz3bjN;
+	Tue, 15 Sep 2026 21:37:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789472239;
+	cv=none; b=BsGH7q87c7hW5YcPTej66k2y3Ch5Kx5JZfT7g30CA55zk0+lMTfaiSd9hnMfcOk6gKeaWn8N34lrxuUaeeG4LPKjnZu4PrQJeGF4oH6elaTHB7FEBe6LamMLSbayHwL2zH+UpdujdPhsUYZJyuoYfCDuiyQw/Er8UNipdfeoxX9Iie+FPK2jPw7VwAmI6PcK3pIogElxlVuQ1av4fS/NIstPNKOIMv18Z/Mf5Kfx2aXJR2VtTD9pcXeUA8iKqlFfea3iIjFkHFq4oH6ShNJEGZvPMv+Po5ghKALihtONhrvZoNFoEZodM8JBSS/iyRWkSjx4evarMANz7qJKe+BgeQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789472232; c=relaxed/relaxed;
-	bh=xKFkiCa0hlTe3sMnpSzoSnXToiZbVbh61g+KJO9ieuc=;
+	t=1789472239; c=relaxed/relaxed;
+	bh=BqXm1gwNkPuV8t/s5aBHvxXoZQi1gmoyMrWOmcTh+e0=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ooZv2A4EsvGHuNg2uz5BC4NjXUz3w9VRx+DU/JdDpBFH/OFjxe+SJPRaqevpBGaWFGeZewcDcHk7PUDe/qgO23y2onnl48zf4NJ7xTb1lmtF9EFaglyy/vDXb395pEjKH2DlccBGInUtNhirH51FHEeFS4DU8Kka33ipa94kPGq8oESf+4B9hbHe1og9PHviJpazVrq4AdwoG5Nr9p3iLfVeKwaxunBzSZvzhurv1oGDM1qB3urIfE8yhs5/w4gZuC19AcSmar/9hcwwnTmtYUzSLvlRAzusJjU5ZVXgI6Kt9Wr2kTWcmxw7ooWi53JEFc40soWtQHM/Qy5qa8qRBA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oOCbPxoT; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=PO38IdJaI7m0JW5RavXYOpVArTb0qXXGg9IWvVYlfS6W2SPkqoAoVlqOmGfP2oRD+um2BCSm6RfKqzCP+QaxpLdMlZxlY3iUt8GCOBWqR3ioARonisFzSGyfULjwbqNRmsTzVcycX5zTOqUqRnIojUcByDcODMhff2PW6xflG3bSck7zWC/1xX2DbPe7ZxwbbeKu/gOYYBYkzae+4sCobe0ZUTjc0h6tsIV25NUs0ZVNzgo7cywfTtLrjQUg+AwIMNBLxgNDHuKqPd+z5vB4afVvn/klEbehSxFwiw5873u3ztns0D1aep28yH23Ga/35N+vrasO3aqpa5RA64CzHg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=a6dDn4u7; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oOCbPxoT;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=a6dDn4u7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkg3W5B0Kz2yFW
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 21:37:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkg3g1DWnz2yFW
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 21:37:19 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id CD294602C4;
+	by sea.source.kernel.org (Postfix) with ESMTP id ABFD44184D;
+	Tue, 15 Sep 2026 11:37:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0A48B1F0089B;
 	Tue, 15 Sep 2026 11:37:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3D6561F000FF;
-	Tue, 15 Sep 2026 11:37:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789472229;
-	bh=xKFkiCa0hlTe3sMnpSzoSnXToiZbVbh61g+KJO9ieuc=;
+	s=k20260515; t=1789472237;
+	bh=BqXm1gwNkPuV8t/s5aBHvxXoZQi1gmoyMrWOmcTh+e0=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=oOCbPxoTA5tRVDE1SDW2p9tC0NlFv3Be5GpoNWhYmURnweQxEsEdX5T61GQni5xDr
-	 dB8oKq6yW0o0+gkex/ln8ORrTi4m/ksGAeRyzNp36yZlNMlPyIA0cXetpfDQyX5Jlw
-	 kUeKik4FTXQWhScuFLMluxrSG6c9A9ZCbrTYp9zYSiEAOHtRRYECmeCyootOfrgsFF
-	 4aVzqXKYOQKlcIlDUd5HFPC99RpSLMKbQX+NeTk8Ib6ernTnIZhKKs5s66GAw9HT8a
-	 aS1v8S5YrjxrTs7D5UvVddV+Ou7n/rKAkdnUoUpvZBcB6uDYitfeHcIW+Z9u4N80Fg
-	 U5N4JdROMjYmQ==
+	b=a6dDn4u7UHWeS4oTPwJxZY/4MEQxfhe+w1dKAeLobwNA3kw8GA3R9jRM2UR2mitay
+	 53rP31LX9IqiX4KyqJPeG5/A7Wk+vS/URJ+UIVi9s1V2CPS0HR+hZ4KD6LOwLi84oS
+	 QHwPtObpcQ5V14Eq0QEfaz7SuQthG9rIDnYNoZNXfjPTl3loRHMdpOz24R20W3G90W
+	 UlZUihfBsJUGHcwdaoYH/9Wk5PPbgvkC3G4N/+PjxTb+vMzH1dM6mnf2s5E522jH4C
+	 ipwBTphCPJfK0gAPAR1mBJJ0lQjIBDvfQG7LHcMtNeNhxBkuWpXGTndvfVHeezP+yl
+	 SKtsU9/kk2SGQ==
 From: Christian Brauner <brauner@kernel.org>
-Date: Tue, 15 Sep 2026 13:31:31 +0200
-Subject: [PATCH RFC POC 45/50] accel/habanalabs: stop putting the dma-buf
+Date: Tue, 15 Sep 2026 13:31:32 +0200
+Subject: [PATCH RFC POC 46/50] xen/gntdev-dmabuf: stop putting the
  descriptor back on failure
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -63,7 +63,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260915-work-fd-reserve-unify-folded-v1-45-4d5217d6b246@kernel.org>
+Message-Id: <20260915-work-fd-reserve-unify-folded-v1-46-4d5217d6b246@kernel.org>
 References: <20260915-work-fd-reserve-unify-folded-v1-0-4d5217d6b246@kernel.org>
 In-Reply-To: <20260915-work-fd-reserve-unify-folded-v1-0-4d5217d6b246@kernel.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
@@ -86,12 +86,12 @@ Cc: Alexander Viro <viro@zeniv.linux.org.uk>, Jann Horn <jannh@google.com>,
  kexec@lists.infradead.org, linux-hyperv@vger.kernel.org, 
  "Christian Brauner (Amutable)" <brauner@kernel.org>
 X-Mailer: b4 0.17-dev-db0b7
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1297; i=brauner@kernel.org;
- h=from:subject:message-id; bh=ydrjF0IvCagPMk+8W3Lo5F+Om/GvHyzFN7KTNwOeZ+c=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWSt1Kn/suYdZ5X5676SLT84zbaJW7EmM036Hiq6ZOOqB
- ZPZLiWKdJSyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAExEfjfD/8KDx3tMQu5s8Nvq
- pTQrXEN8zcGDu7l3Sq29EHzMOo0/S5yR4VJD+//LnadWytZe1frxs+H8kb1LmHzvH1hrULDM+7H
- 3NRYA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1632; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=njDuxDGw0hmgU8wKPypyXyk5GfJpiYpSpC9eP8wkYpU=;
+ b=kA0DAAoWkcYbwGV43KIByyZiAGqpLH/I6D6Uv1WDf9ilssavQSoU/hfbYczV5DbAAkrVEcQbC
+ Yh1BAAWCgAdFiEEQIc0Vx6nDHizMmkokcYbwGV43KIFAmqpLH8ACgkQkcYbwGV43KLDpAD/YSHF
+ Q2prY93oobCwIjSF/SfO7Zal68tdHzxKNHmWJJEA/R/JD6+ZeSXqBuxwWtOWojlugYUiab/9tAe
+ INmLXFesK
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 
@@ -99,41 +99,49 @@ Rely on the fd exit path machinery.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- drivers/accel/habanalabs/common/memory.c | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ drivers/xen/gntdev-dmabuf.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/accel/habanalabs/common/memory.c b/drivers/accel/habanalabs/common/memory.c
-index 361cff577381..1559442cd56f 100644
---- a/drivers/accel/habanalabs/common/memory.c
-+++ b/drivers/accel/habanalabs/common/memory.c
-@@ -1861,11 +1861,13 @@ static int export_dmabuf(struct hl_ctx *ctx,
+diff --git a/drivers/xen/gntdev-dmabuf.c b/drivers/xen/gntdev-dmabuf.c
+index 83b0df460894..a3ecc7c83974 100644
+--- a/drivers/xen/gntdev-dmabuf.c
++++ b/drivers/xen/gntdev-dmabuf.c
+@@ -357,10 +357,10 @@ static int dmabuf_exp_from_pages(struct gntdev_dmabuf_export_args *args)
  {
  	DEFINE_DMA_BUF_EXPORT_INFO(exp_info);
- 	struct hl_device *hdev = ctx->hdev;
--	CLASS(get_unused_fd, fd)(flags);
-+	const struct fd_slot *fd = fd_prepare(flags);
+ 	struct gntdev_dmabuf *gntdev_dmabuf __free(kfree) = NULL;
+-	CLASS(get_unused_fd, ret)(O_CLOEXEC);
++	const struct fd_slot *fd = fd_prepare(O_CLOEXEC);
  
--	if (fd < 0) {
--		dev_err(hdev->dev, "failed to get a file descriptor for a dma-buf, %d\n", fd);
--		return fd;
-+	if (IS_ERR(fd)) {
-+		int rc = PTR_ERR(fd);
-+
-+		dev_err(hdev->dev, "failed to get a file descriptor for a dma-buf, %d\n", rc);
-+		return rc;
- 	}
+-	if (ret < 0)
+-		return ret;
++	if (IS_ERR(fd))
++		return PTR_ERR(fd);
  
- 	exp_info.ops = &habanalabs_dmabuf_ops;
-@@ -1889,8 +1891,7 @@ static int export_dmabuf(struct hl_ctx *ctx,
- 	 */
- 	get_file(ctx->hpriv->file_priv->filp);
+ 	gntdev_dmabuf = kzalloc_obj(*gntdev_dmabuf);
+ 	if (!gntdev_dmabuf)
+@@ -388,17 +388,17 @@ static int dmabuf_exp_from_pages(struct gntdev_dmabuf_export_args *args)
+ 	if (IS_ERR(gntdev_dmabuf->dmabuf))
+ 		return PTR_ERR(gntdev_dmabuf->dmabuf);
  
--	*dmabuf_fd = fd;
--	fd_install(take_fd(fd), hl_dmabuf->dmabuf->file);
-+	*dmabuf_fd = fd_stage(fd, hl_dmabuf->dmabuf->file);
+-	gntdev_dmabuf->fd = ret;
+-	args->fd = ret;
++	gntdev_dmabuf->fd = fd_prepare_fd(fd);
++	args->fd = fd_prepare_fd(fd);
  
+-	pr_debug("Exporting DMA buffer with fd %d\n", ret);
++	pr_debug("Exporting DMA buffer with fd %d\n", fd_prepare_fd(fd));
+ 
+ 	get_file(gntdev_dmabuf->priv->filp);
+ 	mutex_lock(&args->dmabuf_priv->lock);
+ 	list_add(&gntdev_dmabuf->next, &args->dmabuf_priv->exp_list);
+ 	mutex_unlock(&args->dmabuf_priv->lock);
+ 
+-	fd_install(take_fd(ret), no_free_ptr(gntdev_dmabuf)->dmabuf->file);
++	fd_stage(fd, no_free_ptr(gntdev_dmabuf)->dmabuf->file);
  	return 0;
  }
+ 
 
 -- 
 2.53.0
