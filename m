@@ -1,73 +1,117 @@
-Return-Path: <linuxppc-dev+bounces-27299-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27300-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5ADE6C88E73
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 08:38:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64654C88E73
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 09:05:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hkb5m5sL3z2y2B;
-	Tue, 15 Sep 2026 18:38:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789461532;
-	cv=none; b=iFGMTM0AcBCKZhvToso5gMFEEKV1ZuWQQEQKanOEmdwd82U1CnIS6ysvoqrgXBWsJVTn2Z0grEkm4C+m2USG5Uo39loeHTdVyDI7ZmJdDbyCgpptgdumVcLPFFIso3xquAZ3YnLRU0QgRLBJV6ZIJ8wDgeoe03rneSDLOFk7+MgWABB2PFHpYhgDI2z+kwTs9Bv+99Vn4RveRvaaoZx0uN8g1ygae5IcxQJmXPa4h3qiEhrBpvWReDRfAGgsoTMfHUAcuYUEnpDg4LEfAYhPBysioFm3TTaQQ5dKCAm7pLzY/yJ4fY0cJwMm77O0ELPw9AiAoTSSrsBh1M95dPBSsg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hkbhG4mLjz2yFW;
+	Tue, 15 Sep 2026 19:05:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:3b::10"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789463118;
+	cv=none; b=K4RbHBgylKc8Nt149i871Nrc+ZjXeJYWc9wiuMr8EHHjbFD41YJnV5qIBAWpM3E23KmJ2vgRXKNBCHeXywtBzT1FR3uvCklpXPWTwQ03CW9Pr6CdpLiXmI7VNQ7MuZ7T9zBzJ2Q2FzLDXgyI7P32i+xWpiP9yoiCPSfOMI8sc59HZbuSs/iuYLpGBVRfoKh3HTWuKYibDlrbdV9hyqjJqbWI2xXVYHWRyHJWWOBLeh9h4ko6GJJjLcro3TxtcAJZhSAy2L++KFk7w8vwffVDC0BKSgOKT4qrdmD0HNa7vBW7+sqTiXD7uVArO2e6DZgnLweXq7KQYvY87FETc0nqBQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789461532; c=relaxed/relaxed;
-	bh=k3FH4x5L80jGTzVXyd1FgcnuV1kZzhrBCb0yGo4D9cc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=NWlXZZmk/a/LzWRG+W63q3KyoOCz3m6c6Qq2Kxq6Zc+Ccjf4J3oj55MZ/MrJMbwq5Uu8Vx5UqfS5Vqn1C6YA3UCwNyi1f7rvMGqFrL5ZamaJC7lA2G0utZ8qO6Z0qVVq8B4XVt7Bh2LAqaltNMjObqx3nSLEeRsGQad0kLmEhkShqEz4bJbsllzek567ZH9C6A80oriwyeWns+Rnh1p0lUXOSqAKMcvEIk+t1RXfJiP03udlNPjKD4m6n+azHevNZRHa/rd7MJ2I6yiW0rv2/D2GGdSpSdfo28IUiO7Vrd6vD3H4O+GMsF7HMcEcnIMcfDIQFXGnf+q1ACblQeY8pg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ipEX5J/u; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1789463118; c=relaxed/relaxed;
+	bh=5OftSuNw6O3AgitXo4CDVX+TOcz6GDkEK6rb5ipL/z0=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Of0tKvcEp0yOSQIe6F/+TRPdrGdd3K4qy8nRSvIE7YePqet8qmGdvVS3p/8DCGMnXleCHIipVgyVX/GgXkImPSkcF7IsvXuYQ6Pp9s0e9OV0h0mTEr/MmyVnwZducoQpNrS97aOY2ehFknOydcmd4b1Njt++MWpb26h8p4vTJEk4v9pcPZqtIg2i2VFwGcV+e5hAzj1WbHPyhY6VDxaVPmARblKdhgCkmzj1pZ5Y+/tjM+Hb98bv//ZVZkiVHgWM9OGG9epTTmC5s+RuEdSqIgvfFIvKKbxU4Hd+LiAp0GXtmYBtwyV4zKEwvT69JiOylh5Uanw7pVpHFJhzC6/UEw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=I/oTrmZr; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:3b::10; helo=mail-pz2-x10.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ipEX5J/u;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=I/oTrmZr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:3b::10; helo=mail-pz2-x10.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pz2-x10.google.com (mail-pz2-x10.google.com [IPv6:2607:f8b0:4864:3b::10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkb5l4Cb4z2xlZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 18:38:50 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68F71SYm150551;
-	Tue, 15 Sep 2026 08:38:36 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=k3FH4x
-	5L80jGTzVXyd1FgcnuV1kZzhrBCb0yGo4D9cc=; b=ipEX5J/ugvexfodCIvoUbm
-	IRSxsEOyc04z5U5T9epHAnVnptHmf5S5gLqHb2heAYKh0AUyJEV8DKCLZVt6DCI1
-	dIZUS7+2bh5wXsTFMfGpeTt5X7cLf9YtXkYH06TLO/XUjYzHZjPsSweMdte+m9JA
-	UgSG3T9FXECuzDu7uaPgO6RnQE4nxLgdrbJq59fWOG0kUthilXgPmi0Gs/ZI/TJS
-	GNufu21fxC+IL9ehtxWv99biuNPeUk9jUEvgzpW0nq+5SB4xmV+ZAtwU4fTOpRfx
-	RKUCPWi20HatHvKjz3eR+VU/97lvP8chCgwo2v7xIxq2dVmvI3fP0NzWW9JABpvw
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gmxf4x3uc-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 15 Sep 2026 08:38:35 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68F6ZI6B3613555;
-	Tue, 15 Sep 2026 08:38:34 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gpywerjvs-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 15 Sep 2026 08:38:34 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68F8cVhw41222544
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 15 Sep 2026 08:38:31 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 136492004B;
-	Tue, 15 Sep 2026 08:38:31 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4578A20040;
-	Tue, 15 Sep 2026 08:38:29 +0000 (GMT)
-Received: from [9.123.2.177] (unknown [9.123.2.177])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 15 Sep 2026 08:38:29 +0000 (GMT)
-Message-ID: <647f3494-1e79-43ea-a8ed-157b3f0e6c54@linux.ibm.com>
-Date: Tue, 15 Sep 2026 14:08:28 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkbhD0cP8z2y2B
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 19:05:14 +1000 (AEST)
+Received: by mail-pz2-x10.google.com with SMTP id 41be03b00d2f7-cc4cacd3409so29163a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 02:05:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789463111; x=1790067911; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:mime-version:message-id:date
+         :subject:to:from:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=5OftSuNw6O3AgitXo4CDVX+TOcz6GDkEK6rb5ipL/z0=;
+        b=I/oTrmZrwOXNIZ1EAfZPVZrskyUgJADiGxVi1hWxkxsrfZkjxaa+4Td7kGgP2BdssH
+         cpfE+0UQ9Xq2PydtwscMIqxFXy/ahb2lsQOVyk4VwmYRhXwAZlClOxokJxd4M06Rmkba
+         iHXdrfBzduupGoG7EQ4P8p1J7FBIS0dSnHpk8EWUaR3rrY0sZiEpvsL4Jm3OVZye9Zlw
+         bDpmYd+GKJiy/8+bDRz4wIbSCD3J4JSX0GVUrMoM3i0FCbgyPQoyl/amFDMazSZmCu5G
+         S9CABPJIqLtNQD4YX5pAb9tEXsad0VTKjW+/ZvDBaaQFF/EPid7EPVPQuVw+uJd8LinN
+         NZIw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789463111; x=1790067911;
+        h=content-transfer-encoding:content-type:mime-version:message-id:date
+         :subject:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=5OftSuNw6O3AgitXo4CDVX+TOcz6GDkEK6rb5ipL/z0=;
+        b=VwMWQPg9y8pPaBNZYMv2MMglqOc0tssM+oLAufWYE8wWmjA9Oejwdx5eMlVbjI5WS5
+         C7fqfXeM91DJ4oNqctRA6d+HddhVOEMC4Yvi2RdNVsgs8TjyobYRWNZGoceGCjAxGyyt
+         McLGOxSH1hqBqbHHWToqVyPUcAzODE0Umn8V5aQP5eQxSiiZ8E8Kk0dIXqRgQPTGJRu4
+         QR1HO6t36l++55a2X9FJf6buch+p7w0AyDdKX09Qxt6Y92gI0MyjJvJFekO7ZTVKKVjt
+         4RzPmf0H6WI6T5IoY6L7vbjWb09kK+oeYSf6GJtZKF8gIhVXemnw3OMmit5SXAbS5tyG
+         QVvA==
+X-Forwarded-Encrypted: i=1; AKwUvBw/+tbcm/lfrA/KgLOeWFA4/Ye5GvBEDZrNrqYLCQg5B4+LRX1SgQ0H9BivZQn0fqXTqHiAyfYMP1O/o+Y=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++lkqtjqRtlGTBKaIHdnL4Ediy8RAzd0Ay0l7h8GHmzVKksmKfGw
+	8+4KwD1yEtOQSKMY6HDuV9xbuB+phErAfyfB4Y9KvjKq5BywH9V3nj92
+X-Gm-Gg: AYBFou2AYSfR0lB5oJ+OdjUt8Zd1oWewlO1MFYv/e1OjMMevrlOtPGHgJspTBmzTCfw
+	JSgHd2yLW+WTpetOnrv1x03TVlbh34kM21/FrnGBZ+IeobTS0B15XFrjB+KIWH54h4cR426+n1i
+	Rq572hfqsS4On6V/zk7ntQSSja4EB2EcYFUyCIEHj0vM20UEFzzBa2z/OoHqNVphCOMkgTzhsAA
+	A30fHgqvZnDDg66r0WZXJk2zwszhATPWsk5DZRxksqj+lh6xQCBHSQ84Lc9Gj+pdCdqxt96XFL8
+	OmjR15Ilpa5LAjlsLgcM1CnFOfg91+ei2983+AQlknTW77IqkYAXg+2tpz7YV8ohIS2rQdN30WD
+	MSnzD5nXxZArZJ79D+6aEr9DnLnGzpxPHmAhvh0CP7ugxXs2o9cyeSwqtA+LTTlmq8dI4Io3TbW
+	lLqIpw6YpjPDltkn9+DSVnEqKH4JLkhqVvVwW0ku9kJRiHNCaeXcD+HkexCSWcsOXtrTgXoDGLl
+	XTBWTMPjpmZZ29GRcyZ3YSN426KZb0or5JEfOhLqZv0eX7+QmMd
+X-Received: by 2002:a05:6a21:920e:b0:3da:f21a:23ca with SMTP id adf61e73a8af0-3dd52a2a52bmr559662637.22.1789463111413;
+        Tue, 15 Sep 2026 02:05:11 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.bl1-in.ibm.com ([129.41.58.4])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cc4c65a8120sm6495512a12.30.2026.09.15.02.05.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 15 Sep 2026 02:05:10 -0700 (PDT)
+From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+To: maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	chleroy@kernel.org,
+	ojeda@kernel.org,
+	boqun@kernel.org,
+	gary@garyguo.net,
+	bjorn3_gh@protonmail.com,
+	lossin@kernel.org,
+	a.hindborg@kernel.org,
+	aliceryhl@google.com,
+	tmgross@umich.edu,
+	dakr@kernel.org,
+	daniel.almeida@collabora.com,
+	tamird@kernel.org,
+	acourbot@nvidia.com,
+	work@onurozkan.dev,
+	pjw@kernel.org,
+	palmer@dabbelt.com,
+	aou@eecs.berkeley.edu,
+	alex@ghiti.fr,
+	nathan@kernel.org,
+	ndesaulniers@google.com,
+	morbo@google.com,
+	justinstitt@google.com,
+	mkchauras@gmail.com,
+	ynorov@nvidia.com,
+	david@davidgow.net,
+	joelagnelf@nvidia.com,
+	fujita.tomonori@gmail.com,
+	linkmauve@linkmauve.fr,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	rust-for-linux@vger.kernel.org,
+	linux-riscv@lists.infradead.org,
+	llvm@lists.linux.dev
+Subject: [PATCH v5 0/2] powerpc: Add ARCH_WARN_ASM and KUnit tests for Rust WARN() support
+Date: Tue, 15 Sep 2026 14:34:51 +0530
+Message-ID: <20260915090453.1227034-1-mkchauras@gmail.com>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,109 +125,84 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Avoid triggering an extra interrupt
- for a vCPU
-To: Gautam Menghani <gautam@linux.ibm.com>, maddy@linux.ibm.com,
-        npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org,
-        tpearson@raptorengineering.com
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, stable@vger.kernel.org
-References: <20260915060146.33410-1-gautam@linux.ibm.com>
-Content-Language: en-US
-From: Narayana Murty N <nnmlinux@linux.ibm.com>
-In-Reply-To: <20260915060146.33410-1-gautam@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: WBWQJk8CS2rSJ-gzFi8ni3i-Z7ly88h2
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE1MDEyMiBTYWx0ZWRfX+e06gwGvGJ43
- o5vMknaE4HWsvQ4+Dkdc6cCZ8qDrltltDnAeAhUFugJi1CQNpF+acI6xqKMXQeZtFWdVnjjrJQx
- 37cg0wN8bP5x54atR9GxV7JwZ6t2c6g=
-X-Authority-Analysis: v=2.4 cv=cvgOAF4i c=1 sm=1 tr=0 ts=6aa9040c cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
- a=yKAn6K1XAAAA:8 a=_AprYWD3AAAA:8 a=VnNF1IyMAAAA:8 a=C-dYcwNCrXqwm9yQvhYA:9
- a=QEXdDO2ut3YA:10 a=6M1ixcW_PCWoKiWyFx5v:22 a=fKH2wJO7VO9AkD4yHysb:22
-X-Proofpoint-ORIG-GUID: Kady2yuf0ChdC2klB7QZEB5XWAWuVf-r
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE1MDEyMiBTYWx0ZWRfX0AvzrU1jlVxj
- vLPICeDcq1FCC6OdIyT4skJOrGWoT6patSLqr5YYZFjr5ACAnX1fdKzRrJPTL+TCk/GS9oGyaNi
- bOvQIOVGSXx/XxSv+MJWqxEcvgvaPRZuK951EzEakhxA3InbVBVNEb6QDj179F1ZZrQ+INUzW15
- 1OR3TY+CFL8alyV86bITAup+9odiN4d0DwxpFmXECWEmnLSV8X6XHxICCHRBQ8YmF1o+up4I1K+
- FVMrwLUAj7Dlek4O97bxB6Hsz7Hdy9KGOatmfcLx0+8ucqHELQHwNariGZLYhWq+7XIeo30zx5b
- DB8hpWnK3Hq0eSu9Ro4S+gJBQJs+wnIObeuCLxG8xGZfFUcXVqd5SFhTgN9mBoJK1eTi1M6fvpn
- a5pm1tL7YrE52bPcXmte6Cs3Hdn3wn+76PmaphsZPEM4sg7MmarFktXzW9s+x2xZFX2whb3JHuS
- 58pVoGWKNCwAm3brXwA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-15_02,2026-09-14_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 lowpriorityscore=0 clxscore=1011 priorityscore=1501
- suspectscore=0 bulkscore=0 impostorscore=0 phishscore=0 spamscore=0
- adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
- definitions=main-2609150122
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-Hi Gautam,
+powerpc currently has no ARCH_WARN_ASM or ARCH_WARN_REACHABLE definitions,
+which causes Rust kernel builds on powerpc to fail with a macro expansion
+error when the generic Rust WARN() infrastructure tries to call
+ARCH_WARN_ASM() through generated_arch_warn_asm.rs.S. Every other
+architecture that supports Rust (x86, arm64, s390, riscv) already provides
+these definitions. This series brings powerpc into line.
 
-On 15/09/26 11:31 AM, Gautam Menghani wrote:
-> A huge number of spurious interrupts can be seen immediately after a KVM
-> on PowerNV guest boots up in XIVE mode.
-> 
-> $ cat /proc/interrupts  | grep SPU
-> SPU:     223705     192439     273526     147623   Spurious interrupts
-> 
-> This bug was introduced by commit ecd10702baae5 ("KVM: PPC: Book3S HV:
-> Handle pending exceptions on guest entry with MSR_EE"). The root cause
-> is that when there is an interrupt pending for a vCPU
-> (xive_interrupt_pending() returns true) and MSR_EE is disabled for the
-> vCPU, LPCR_MER ends up getting set for the VCPU. When the vCPU starts
-> running, the XIVE hardware presents the pending interrupt to the vCPU
-> (since the KVM guest has native XIVE support) and then a second spurious
-> interrupt gets presented to the vCPU due to the LPCR_MER bit being set.
-I agree that we should avoid setting LPCR_MER when the pending interrupt 
-will already be delivered natively by XIVE on PowerNV.
-> 
-> Fix this behaviour by not queuing up any extra interrupts with LPCR_MER
-> if there is an interrupt already pending in the case of KVM on PowerNV.
-> This reduces the number of spurious interrupts drastically.
-> 
-> Fixes: ecd10702baae5 ("KVM: PPC: Book3S HV: Handle pending exceptions on guest entry with MSR_EE")
-> Cc: stable@vger.kernel.org #6.8+
-> Reported-by: Timothy Pearson <tpearson@raptorengineering.com>
-> Closes: https://lore.kernel.org/linuxppc-dev/582904882.11159.1786719390349.JavaMail.zimbra@raptorengineeringinc.com
-> Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
-> ---
->   arch/powerpc/kvm/book3s_hv.c | 5 ++---
->   1 file changed, 2 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 7667563fb9ff..fda3767ebc9e 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -4937,9 +4937,8 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
->   
->   	if (!nested) {
->   		kvmppc_core_prepare_to_enter(vcpu);
-The current code handles two different indications of an external interrupt:
-> -		if (test_bit(BOOK3S_IRQPRIO_EXTERNAL,
-> -			     &vcpu->arch.pending_exceptions) ||
-> -		    xive_interrupt_pending(vcpu)) {
-> +		if (!xive_interrupt_pending(vcpu) && test_bit(BOOK3S_IRQPRIO_EXTERNAL,
-> +							      &vcpu->arch.pending_exceptions)) {
->   			/*
->   			 * For nested HV, don't synthesize but always pass MER,
->   			 * the L0 will be able to optimise that more
-This means xive_interrupt_pending() now gates the entire block, 
-including the BOOK3S_IRQPRIO_EXTERNAL handling, rather than only 
-avoiding the LPCR_MER which causes the duplicate interrupt.
+Patch 1 refactors _EMIT_BUG_ENTRY in arch/powerpc/include/asm/bug.h.
+The old macro was a positional-operand template that hardcoded the 1b
+label reference and embedded .org/.previous directives, making it
+impossible to compose as a free string outside an asm operand context.
+The refactored version takes explicit (label, file, line, flags) arguments
+via string concatenation; .org/.previous are moved to each call site so
+BUG_ENTRY() can continue to pass sizeof(struct bug_entry) as an asm
+operand while ARCH_WARN_ASM supplies its own size string. With
+_EMIT_BUG_ENTRY composable as a plain string, adding ARCH_WARN_ASM and
+ARCH_WARN_REACHABLE is then straightforward.
 
-Also, the changelog describes the issue as specific to KVM on PowerNV, 
-while this condition also affects the pSeries/nested handling in the 
-same block.
+Patch 2 adds five KUnit tests under CONFIG_RUST_BUG_POWERPC_KUNIT_TEST
+(depends on PPC && GENERIC_BUG, covering both ppc32 and ppc64) that
+verify the __bug_table entry emitted by ARCH_WARN_ASM is correctly
+formed. find_bug() is called with the exact virtual address of the twi
+instruction, captured at link time via a .dc.a relocation in a
+global_asm! block. .dc.a emits a pointer-width word (4 bytes on ppc32,
+8 bytes on ppc64); BUG_KUNIT_TRAP_ADDR is declared as usize on the Rust
+side so the same test code is correct on both. The five tests check that
+the entry is found, carries BUGFLAG_WARNING, records the right source
+file and a non-zero line number, and that the trap address lies in
+kernel text.
 
-Thanks,
-Narayana Murty N
+The global_asm! block is split into four cfg-gated variants covering all
+combinations of CONFIG_PPC64 x CONFIG_DEBUG_BUGVERBOSE. The split on
+CONFIG_DEBUG_BUGVERBOSE is necessary because when it is disabled,
+_EMIT_BUG_ENTRY drops the file and line fields from the bug table entry,
+leaving the {file} and {line} global_asm! operands unused — which is a
+hard compile error in Rust. The split on CONFIG_PPC64 is necessary
+because concat!() only accepts literals (not expressions), so .balign
+4 vs .balign 8 must be selected statically.
+
+Changelog:
+V4 -> V5:
+ - Fixed a build error with DEBUG_BUGVERBOSE=n
+ - Added a label for bug entry
+V4: https://lore.kernel.org/all/20260912065902.24017-1-mkchauras@gmail.com/
+
+V3 -> V4:
+ - Fix Label with appending b at end 
+ - Add KUnit test patch.
+ - Tested on ppc64le pseries:
+   pass:5 fail:0 skip:0.
+ - Tested on ppc32 QEMU mac99 G4:
+   pass:5 fail:0 skip:0.
+ - Tested on ppc64le QEMU pseries:
+   pass:5 fail:0 skip:0.
+V3: https://lore.kernel.org/all/20260910100801.2159785-2-mkchauras@gmail.com
+
+V2 -> V3:
+ - Add label argument in _EMIT_BUG_ENTRY
+V2: https://lore.kernel.org/all/20260910071252.1950488-2-mkchauras@gmail.com
+
+V1 -> V2:
+- commit message now has error, fixes tag and closes tag
+V1: https://lore.kernel.org/all/20260819084825.969116-1-mkchauras@gmail.com
+
+Mukesh Kumar Chaurasiya (IBM) (2):
+  powerpc/bug: Add ARCH_WARN_ASM and refactor _EMIT_BUG_ENTRY for Rust
+    support
+  rust: kernel: Add KUnit tests for powerpc ARCH_WARN_ASM bug table
+    emission
+
+ arch/powerpc/include/asm/bug.h |  36 ++++---
+ rust/kernel/Kconfig.test       |  13 +++
+ rust/kernel/bug.rs             | 222 +++++++++++++++++++++++++++++++++
+ 3 files changed, 251 insertions(+), 16 deletions(-)
+
+-- 
+2.55.0
 
