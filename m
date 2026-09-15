@@ -1,52 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-27367-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27368-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16293C982C3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 11:37:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21D8CC982C5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 11:37:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hkg342n4sz3bgh;
-	Tue, 15 Sep 2026 21:36:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789472208;
-	cv=none; b=CJNada+xysynXkvoN5wE23IGLCDXPCutil5vqnUhjfvoHGO1fCfpa0BQcoFiim+2s89sHeDJunjtS002zPw7SN9arzZ/eW/4r8qmfW4nmuLS7tDPJFh9reYxboNdPWhOWwcXchBI87LcrZNK0ZhnBYTaOkx11v8h2jxkVaEMO3NnGdH7zNqeqJgoamvNMPObZx3ozSfX2/swYBCxvE5xsNa3vQhItPASPPETpCa9BsIwXPi3kcV73Tt8FrlT0Odx2rx96Z9ovQpNzDRRmwODNN46TQmloAB1CL8f9vw6rWHq8AEWTVQr+WRtlAhy2icNfiMopMeRPYBj28mtfzU5Tg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hkg3D6j5zz3bhG;
+	Tue, 15 Sep 2026 21:36:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789472216;
+	cv=none; b=OTfogceYGcJsvRYh4/euRWjA9DPJehw5FhiS7PhPgsMpT0fBWhLgIJFWjM4WeqAS+LnmrGdRAx3PgRs0T051OH4+Zv/TaqH7IUY2eGQILNR21mlABu5QYvfGWYGq7XXtbYczNlno+qeU3auhFj+Ayhe011zQ9ewTfIQHPM6B1gJ8uas/u5ICv+tEQurYpn2ro0vQcShXVUXFrqqzEsQCB3L7PjRYHHF7IfTtm8d6SQmTDT5bNX+9b1GCfpx6f4BrOy1ivhkbq/6SxxsJteCj5/MR0i3GepjO6bQiOUUqzwHhSBw3/GJllNb+ZhSvTxh5nFCEYy+Kq/ih64mPj4Bk4Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789472208; c=relaxed/relaxed;
-	bh=Ja/detmDRdqJionOE2YxTutvZMYrfmHVqKWhc7op5z8=;
+	t=1789472216; c=relaxed/relaxed;
+	bh=6e1PB4CQNzedeHCycAL44Td/hQEl2CX/iFm1Iur71xE=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=SSt0F48mch6VVfzuwbgWAKBI+LCgOjRjcfHPUoCoS6UznHOGdVIRWu391blaqV0bxhyeSKqWyBO4P/ElE2qeZDb6hjonPwyiElyQxqMGRyjE973D9Rac0cbhUntDiTbedsvPTpJ5h9k6aFdmBCJ5+MWoM21tPIatgp13CEHhp+Yw1/m3OfXTpNQPz0RvuHdeB5m4WFa49kVrBeWGkhgrdWCbW7MpDasfp3qPjKGiZKnABTB4mecY5GDqDTNI/zGZTSfnrXDzaWwCMMIzeMs9agilXkP04kCHXEfcxPnWYxXsMXmFa77wqIXFA0KpEDM8dcIoeU2L/h1aiizRKr+K5g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k0B0nnun; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=aPwURG5lu9jOwlRSNB1W+hTDvqL8s0jNF0mgqjHPm+KIUZNoWtnu3yeMAmsYvq5JXF+HaU16K1GiBqi7PSiT/H8oAo81IfM0evX7nHGtEeXjBI/Fdg1I5yy3ugwQOvRHuKbx/PgwXNw95ZE3gxfILocJxQLEBfvudzSene3a+xBn45MLFkXPmyNihEhi+E9Y6+bL0Cacf3l0XED8E5ek3elYe7jdTOmxzqfsp70yX4Twi9sjNrTaoRuFDtIG/9Tv+WGHhnKyqeHQMXrkR79YVSpWJjZdLIkKgTePiFQiOeUahLxpm88aKdrBP/8UTDLI6gFPBgFRlYzwlGxxvcYizA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EXI8vF2M; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k0B0nnun;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EXI8vF2M;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkg334RtPz3bfV
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 21:36:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkg3D006cz3bh6
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 21:36:55 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 1BA5A41927;
+	by tor.source.kernel.org (Postfix) with ESMTP id F3098602C4;
+	Tue, 15 Sep 2026 11:36:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 730581F000FF;
 	Tue, 15 Sep 2026 11:36:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8CA9E1F0089A;
-	Tue, 15 Sep 2026 11:36:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789472206;
-	bh=Ja/detmDRdqJionOE2YxTutvZMYrfmHVqKWhc7op5z8=;
+	s=k20260515; t=1789472213;
+	bh=6e1PB4CQNzedeHCycAL44Td/hQEl2CX/iFm1Iur71xE=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=k0B0nnunmsO4k0FOMQGSFMJINyyKujE8uhdGQkypzo+/7wAuYosHeieRrqGX896SE
-	 jv0+jbulb9ltALO0OmQ+EsdlJ6gIA3nXbRVbRqClon2eDQSEkEs0SGUl1pccz2t0gn
-	 Ex/7MGoP0rovVhh+JefOEeLJ+Zg+ArPzBOp7WhZLTZcsHHkAtRMmn/t7nzcxeX6A71
-	 wPF3zcOYfiVH5XAccqGogPi1JWYEwXqpaR4pa24KyQ3/325SMh3HSC93eSuO+sogfB
-	 azvVwpsOVoq7c+CuSQTvf0zUpuwC034v8JGqti42vDt/NRF7mUFTkRmt14V+qwNO3P
-	 E+iZSoWuXbX/A==
+	b=EXI8vF2Mi2qQql8uoPNVMR9Vjgp88ee0ybxkHsj+i1EcfZwKRf7jQAqrx5XocwZ5u
+	 bXuB/2sL89kC6PNZZE/dhnoh6Kr65fNehf5/WE+WzUeV5/pclzQoq/bonRzBcg9E7+
+	 NfoFoguGthxJQGC332DYQsb5ljWYLD+kEUw/Pee+5M/7Dg2ZiE3sQd1cKKv890ucDD
+	 /r0vRvig6oqwgwA6dJ/z5P48MPdRVZFrQKEwVGkp3Sgwz1v5wVDwGFDqx3GUFssAgt
+	 DN89k/PZlDz7rh5/WFfNs5IypEAhalKV3Vwaa2jbU2stx2+1M+fSysP8b+juFLIlZq
+	 jL2puXhM2BB9Q==
 From: Christian Brauner <brauner@kernel.org>
-Date: Tue, 15 Sep 2026 13:31:28 +0200
-Subject: [PATCH RFC POC 42/50] drm: stop unwinding descriptors by hand
+Date: Tue, 15 Sep 2026 13:31:29 +0200
+Subject: [PATCH RFC POC 43/50] drm/amdgpu: stop unwinding the fence
+ descriptor by hand
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,7 +63,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260915-work-fd-reserve-unify-folded-v1-42-4d5217d6b246@kernel.org>
+Message-Id: <20260915-work-fd-reserve-unify-folded-v1-43-4d5217d6b246@kernel.org>
 References: <20260915-work-fd-reserve-unify-folded-v1-0-4d5217d6b246@kernel.org>
 In-Reply-To: <20260915-work-fd-reserve-unify-folded-v1-0-4d5217d6b246@kernel.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
@@ -85,12 +86,12 @@ Cc: Alexander Viro <viro@zeniv.linux.org.uk>, Jann Horn <jannh@google.com>,
  kexec@lists.infradead.org, linux-hyperv@vger.kernel.org, 
  "Christian Brauner (Amutable)" <brauner@kernel.org>
 X-Mailer: b4 0.17-dev-db0b7
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5076; i=brauner@kernel.org;
- h=from:subject:message-id; bh=KjXekIWfPavjYonIGQ+ziJSd2VL98XtdFHe2kliVlr0=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWSt1KnXXtVVltWkLiD/9M6kwpRagVX3n83QkfpTd8T79
- sbDSqcedJSyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAEzkpAYjw8uMrzI/Gn0vNR6b
- r3KTrUSUt6VhVQNj8CEPxi8OCwpPBTAy7OGWebTYilF9c4qm0KsLrb/vrOaMmT1nzfvnFkpaHbe
- TeQE=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1456; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=ufNESbgGG96SdhrvZQNvdMYhyiyG0BhLW+Tl/xqdcT0=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWSt1Kk/up3zrbpgwjWhoti6iGnTuBPttKJTrrTH/TR99
+ na/1fRNHaUsDGJcDLJiiiwO7Sbhcst5KjYbZWrAzGFlAhnCwMUpABMRM2D4n28sFLhN/8+GKPvC
+ voCqx/oLuw/JH2VIEPq49KPjCV75pwz/41f1ZW/e/L95zZs5+aVvD0z0YZjxyGRy0d0flus809L
+ W8wMA
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 
@@ -98,178 +99,50 @@ Rely on the fd exit path machinery.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- drivers/gpu/drm/drm_lease.c   | 20 +++++++++-----------
- drivers/gpu/drm/drm_prime.c   | 13 +++++--------
- drivers/gpu/drm/drm_syncobj.c | 44 +++++++++++++------------------------------
- 3 files changed, 27 insertions(+), 50 deletions(-)
+ drivers/gpu/drm/amd/amdgpu/amdgpu_cs.c | 16 +++++++---------
+ 1 file changed, 7 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_lease.c b/drivers/gpu/drm/drm_lease.c
-index 5d2cf724cbd7..b95747cf79a7 100644
---- a/drivers/gpu/drm/drm_lease.c
-+++ b/drivers/gpu/drm/drm_lease.c
-@@ -484,7 +484,7 @@ int drm_mode_create_lease_ioctl(struct drm_device *dev,
- 	struct file *lessee_file = NULL;
- 	struct file *lessor_file = lessor_priv->filp;
- 	struct drm_file *lessee_priv;
--	int fd = -1;
-+	const struct fd_slot *fd;
- 	uint32_t *object_ids;
- 
- 	/* Can't lease without MODESET */
-@@ -529,10 +529,10 @@ int drm_mode_create_lease_ioctl(struct drm_device *dev,
- 	}
- 
- 	/* Allocate a file descriptor for the lease */
--	fd = get_unused_fd_flags(cl->flags & (O_CLOEXEC | O_NONBLOCK));
--	if (fd < 0) {
-+	fd = fd_prepare(cl->flags & (O_CLOEXEC | O_NONBLOCK));
-+	if (IS_ERR(fd)) {
- 		idr_destroy(&leases);
--		ret = fd;
-+		ret = PTR_ERR(fd);
- 		goto out_lessor;
- 	}
- 
-@@ -543,7 +543,7 @@ int drm_mode_create_lease_ioctl(struct drm_device *dev,
- 	if (IS_ERR(lessee)) {
- 		ret = PTR_ERR(lessee);
- 		idr_destroy(&leases);
--		goto out_leases;
-+		goto out_lessor;
- 	}
- 
- 	/* Clone the lessor file to create a new file for us */
-@@ -562,12 +562,13 @@ int drm_mode_create_lease_ioctl(struct drm_device *dev,
- 	lessee_priv->authenticated = 1;
- 
- 	/* Pass fd back to userspace */
--	drm_dbg_lease(dev, "Returning fd %d id %d\n", fd, lessee->lessee_id);
--	cl->fd = fd;
-+	drm_dbg_lease(dev, "Returning fd %d id %d\n", fd_prepare_fd(fd),
-+		      lessee->lessee_id);
-+	cl->fd = fd_prepare_fd(fd);
- 	cl->lessee_id = lessee->lessee_id;
- 
- 	/* Hook up the fd */
--	fd_install(fd, lessee_file);
-+	fd_stage(fd, lessee_file);
- 
- 	drm_master_put(&lessor);
- 	drm_dbg_lease(dev, "drm_mode_create_lease_ioctl succeeded\n");
-@@ -576,9 +577,6 @@ int drm_mode_create_lease_ioctl(struct drm_device *dev,
- out_lessee:
- 	drm_master_put(&lessee);
- 
--out_leases:
--	put_unused_fd(fd);
--
- out_lessor:
- 	drm_master_put(&lessor);
- 	drm_dbg_lease(dev, "drm_mode_create_lease_ioctl failed: %d\n", ret);
-diff --git a/drivers/gpu/drm/drm_prime.c b/drivers/gpu/drm/drm_prime.c
-index 9b44c78cd77f..e33d84ac7256 100644
---- a/drivers/gpu/drm/drm_prime.c
-+++ b/drivers/gpu/drm/drm_prime.c
-@@ -513,19 +513,16 @@ int drm_gem_prime_handle_to_fd(struct drm_device *dev,
- 			       int *prime_fd)
- {
- 	struct dma_buf *dmabuf;
--	int fd = get_unused_fd_flags(flags);
-+	const struct fd_slot *fd = fd_prepare(flags);
- 
--	if (fd < 0)
--		return fd;
-+	if (IS_ERR(fd))
-+		return PTR_ERR(fd);
- 
- 	dmabuf = drm_gem_prime_handle_to_dmabuf(dev, file_priv, handle, flags);
--	if (IS_ERR(dmabuf)) {
--		put_unused_fd(fd);
-+	if (IS_ERR(dmabuf))
- 		return PTR_ERR(dmabuf);
--	}
- 
--	fd_install(fd, dmabuf->file);
--	*prime_fd = fd;
-+	*prime_fd = fd_stage(fd, dmabuf->file);
- 	return 0;
- }
- EXPORT_SYMBOL(drm_gem_prime_handle_to_fd);
-diff --git a/drivers/gpu/drm/drm_syncobj.c b/drivers/gpu/drm/drm_syncobj.c
-index 2fa170a29a62..621858b6ac43 100644
---- a/drivers/gpu/drm/drm_syncobj.c
-+++ b/drivers/gpu/drm/drm_syncobj.c
-@@ -663,25 +663,14 @@ static const struct file_operations drm_syncobj_file_fops = {
-  */
- int drm_syncobj_get_fd(struct drm_syncobj *syncobj, int *p_fd)
- {
--	struct file *file;
--	int fd;
--
--	fd = get_unused_fd_flags(O_CLOEXEC);
--	if (fd < 0)
--		return fd;
--
--	file = anon_inode_getfile("syncobj_file",
--				  &drm_syncobj_file_fops,
--				  syncobj, 0);
--	if (IS_ERR(file)) {
--		put_unused_fd(fd);
--		return PTR_ERR(file);
--	}
-+	FD_PREPARE(fdf, O_CLOEXEC,
-+		   anon_inode_getfile("syncobj_file", &drm_syncobj_file_fops,
-+				      syncobj, 0));
-+	if (IS_ERR(fdf))
-+		return PTR_ERR(fdf);
- 
- 	drm_syncobj_get(syncobj);
--	fd_install(fd, file);
--
--	*p_fd = fd;
-+	*p_fd = fd_prepare_fd(fdf);
- 	return 0;
- }
- EXPORT_SYMBOL(drm_syncobj_get_fd);
-@@ -762,31 +751,24 @@ static int drm_syncobj_export_sync_file(struct drm_file *file_private,
- 	int ret;
+diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_cs.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_cs.c
+index 03b41f803520..e5c0f7201cea 100644
+--- a/drivers/gpu/drm/amd/amdgpu/amdgpu_cs.c
++++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_cs.c
+@@ -1581,7 +1581,8 @@ int amdgpu_cs_fence_to_handle_ioctl(struct drm_device *dev, void *data,
  	struct dma_fence *fence;
+ 	struct drm_syncobj *syncobj;
  	struct sync_file *sync_file;
--	int fd = get_unused_fd_flags(O_CLOEXEC);
-+	const struct fd_slot *fd = fd_prepare(O_CLOEXEC);
+-	int fd, r;
++	const struct fd_slot *fd;
++	int r;
  
--	if (fd < 0)
--		return fd;
-+	if (IS_ERR(fd))
-+		return PTR_ERR(fd);
+ 	fence = amdgpu_cs_get_fence(adev, filp, &info->in.fence);
+ 	if (IS_ERR(fence))
+@@ -1610,21 +1611,18 @@ int amdgpu_cs_fence_to_handle_ioctl(struct drm_device *dev, void *data,
+ 		return r;
  
- 	ret = drm_syncobj_find_fence(file_private, handle, point, 0, &fence);
- 	if (ret)
--		goto err_put_fd;
-+		return ret;
+ 	case AMDGPU_FENCE_TO_HANDLE_GET_SYNC_FILE_FD:
+-		fd = get_unused_fd_flags(O_CLOEXEC);
+-		if (fd < 0) {
++		fd = fd_prepare(O_CLOEXEC);
++		if (IS_ERR(fd)) {
+ 			dma_fence_put(fence);
+-			return fd;
++			return PTR_ERR(fd);
+ 		}
  
- 	sync_file = sync_file_create(fence);
+ 		sync_file = sync_file_create(fence);
+ 		dma_fence_put(fence);
+-		if (!sync_file) {
+-			put_unused_fd(fd);
++		if (!sync_file)
+ 			return -ENOMEM;
+-		}
  
- 	dma_fence_put(fence);
+-		fd_install(fd, sync_file->file);
+-		info->out.handle = fd;
++		info->out.handle = fd_stage(fd, sync_file->file);
+ 		return 0;
  
--	if (!sync_file) {
--		ret = -EINVAL;
--		goto err_put_fd;
--	}
--
--	fd_install(fd, sync_file->file);
-+	if (!sync_file)
-+		return -EINVAL;
- 
--	*p_fd = fd;
-+	*p_fd = fd_stage(fd, sync_file->file);
- 	return 0;
--err_put_fd:
--	put_unused_fd(fd);
--	return ret;
- }
- /**
-  * drm_syncobj_open - initializes syncobj file-private structures at devnode open time
+ 	default:
 
 -- 
 2.53.0
