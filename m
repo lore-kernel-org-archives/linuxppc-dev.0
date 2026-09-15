@@ -1,106 +1,125 @@
-Return-Path: <linuxppc-dev+bounces-27268-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27269-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 234CAC88E75
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 00:02:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A61FAC88E75
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 01:08:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hkMdW2mZ2z2yDm;
-	Tue, 15 Sep 2026 10:02:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=185.125.188.122 arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789430527;
-	cv=pass; b=oOkp4av+KjaPeliJi59Afqpl9Pi3GtW7/S7K4UDMsGbHIG3hoE8srGmlGHUpjmeFn4Xn6MnyJXI26ilTpIEvS3BzwzZf8GsZ43LkmC5j3FPXZdakj8V8BmbY4Fs9XsTN0hp/2JfGnwQd5XrGyERI+KUPdtlOECXjWHXAJ9FBSBYIeg6RWh5f28R+nQfkmRVJRi6o+v+D/3KFb+122Z7ShSItsuGA1IXaM5357RYGxU6Od47uF2FsJKNAj6JtHDyDspYfi0QuAFyzSOjPcR6yHmCzM1McPkffH1vqV3j1rnaehN8tyyU2DtfpTzde6lf1J0xqFCtCP0SwK1pS9tZtMA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789430527; c=relaxed/relaxed;
-	bh=r0hasLCz57GpF7SAqU2aNVEVHGPKn0sNjTbrv00rd/c=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=L6fdZezcG8/5xT4ULYfXp2+A5h53NVBjrmyKvlzs0TZ33omVK2BI2zufG1cUna0v/StuBNoQbzoNCPHmzp03DuBFCu6oZhNjAB3ZPKF5kGU8peROwarDeKmkbGvNgjTGnDJOCQNYGwZ4KVqRYgWNX6ZmUlhxd58B2au9ly8RdTO+5wjkmfEX2XUDB8WFWlGBMqEhidvqta2/SZMPbDf5MyAgwEZNyp9aMMSK4TV7jDxufcFCfwXAMIMSJLhWvgc2HdfY0g/wsU5y/hzpM6sEodrK6pRgZm2gn1k/lMkcpXEguQh7lldo4CNRUNXRCCBtbobPjAvOpm+JmEWy3cPvSA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=canonical.com; dkim=pass (4096-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20251003 header.b=NHezCk6V; dkim-atps=neutral; spf=pass (client-ip=185.125.188.122; helo=smtp-relay-internal-0.canonical.com; envelope-from=chris.chiu@canonical.com; receiver=lists.ozlabs.org) smtp.mailfrom=canonical.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=canonical.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hkP5y5stqz2y8G;
+	Tue, 15 Sep 2026 11:08:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789434502;
+	cv=none; b=mnlCZj2BhpLxY5n1qvLuzbxPQ+j/z9eQA2Ke5TsrAfmJRVpfAPrYZSr2GR+CTLswdebAq02in9GMCCAMjPvri7tChEdhHtnMxqK/TCnhzEuWtsDsGRtlXw/FB9Gqb9dS2zo2TN135Z167UummzKVULAnrK9+MLoOXh2VS2nyG2SoApY0ZCD0zHtSqd2ZRmjy3QIjRSYKdAI8CHVSxUF27+PP9lVB+/22IvaUaF4MJ8iH9nDEspEBjqNnCqdBwxIJmP5q2J7942XWoS4jeLjJFy9QEaWhoNsnvz/3IgPsV8aBWKM+N46LKtCgTibzQfaxesuWP8KidvzyK3teuoJZMg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1789434502; c=relaxed/relaxed;
+	bh=1++7fS8iWKOMzhlKxfG6KZTpRByEnFekp/pb13YE7fg=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=TiCaqa5wtej33NOEM45nGLH1OT9q5i4darDr4dReJz8Cu/T9tp4VwVr9fM5LAfVP7Y0petTGvr6XZAd6AP7QjlqU0PfvTrHRngmT0y+XeaSAK0qHR0e/NaJCKN+L7ru+2ifd0OM+TwG4+sfmKpOiI0DWx2+yIbHbV12AGspILY5/RH488P0u543AmwB8De2YTZAJyC8zV4taGQfhh6M2U2kvq6DB4gJnPBMLUrMHZG1dcVKhFJ0eR+BYb1M29HUf2inxgfpW85/9MUcpXFCzaI9Fx8/Sgjl9eTRZzDHOUnTy3zOzUDZd9S+I2ppE3k4JQVtombdYOxQWdlDtrnwFog==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=JlZVB02S; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (4096-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20251003 header.b=NHezCk6V;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=JlZVB02S;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=canonical.com (client-ip=185.125.188.122; helo=smtp-relay-internal-0.canonical.com; envelope-from=chris.chiu@canonical.com; receiver=lists.ozlabs.org)
-Received: from smtp-relay-internal-0.canonical.com (smtp-relay-internal-0.canonical.com [185.125.188.122])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkMdS0KMdz2y8c
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 10:02:02 +1000 (AEST)
-Received: from mail-yx1-f71.google.com (mail-yx1-f71.google.com [74.125.224.71])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-relay-internal-0.canonical.com (Postfix) with ESMTPS id A97DF3F1E4
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 00:01:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
-	s=20251003; t=1789430518;
-	bh=r0hasLCz57GpF7SAqU2aNVEVHGPKn0sNjTbrv00rd/c=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type;
-	b=NHezCk6Vot4mOEr0muRzuwZ3RESXVja7HmFQJDjKq58ulO5ypCFrJEFkoWpHYNe6M
-	 O4IJ3BEw1zJ5LY0qatQ1rw7pwz/8xqhAkeA1oXkis9HI3HrfY2SDJk3meVC0jKwoxD
-	 vicl5xtIh/mfKFKi04JDyva+kEPd5Wvcyt9iCAuT3/Rc5nB3WSeWK613nobzx+9xDm
-	 e0brVb/14AYq8afSEqqOPcgtLMNvKILI0nVCE+uV6ofoCFbQj2wEJmXn8PrpeIC56N
-	 kpEM/0mf20B/2gtnSRIh4yJmULAchlMGgzOSxCz7ETGSZ7LdfwriPQrHGsI63lJfNH
-	 /BQynQEI0qUJdeeDvSAPywdalNciJr4m6c1qOU3zow0wiE3DnNpFXYLR8R/sX6dXIl
-	 gxSA7Lc3Tw/TYGjHyEeXzbtT2GsPLsukuhfIj3pyq9ezWeibEr13EH1Q6Sgg88kdVV
-	 DEloh8bd0SeeLAyk4l7kREWji75yOZwU3gGAzUnY3clFSnPlTIRPfUR4m+AZ8WTUwI
-	 sXhgN+uGjt0lZ4Xa3fj2IKOFRPfdWbYnndsOu6sWqDQePsmTXdOiJ2nsumaJJOcAtZ
-	 xbxBPLesvKf4I0dyoJIBm588+bbxMdb8P8HYb71tJgylISkBn17kS8F4powsBWEO/u
-	 ohrtGN9xAVqxhIUS7TqST+rc=
-Received: by mail-yx1-f71.google.com with SMTP id 956f58d0204a3-671519f7e7cso972768d50.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2026 17:01:58 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1789430517; cv=none;
-        d=google.com; s=arc-20260327;
-        b=R8bP+N7RmtX5Rj/EKm1dyyGByQGh50mzlXPRTpxfRLXKZsbg9y2U4HrIYqPPAIirS+
-         37bbOZWCmru2sMsYbvXAdXqrvIzFuE9uoPAf4CtYpZnHXY9Les/KPJKeObxy5NAfPTR6
-         2QXTudCbaIT17eeuHUjqmveYPT8Ds8PpbJjhjl2qB3JMrC+EFKUj484m/q0yYbtADaAl
-         +j3o7t+J56JJAkxgzLGhKpN1Ik3IJLbg/waWxTTqvUEliuzeE5erctNYYZA5EIFvjfHY
-         PfMNfZ6SY5+QAH3MEQ7m7WTmOBgyzLHeeXZYzc46EP7OjSKiBc36H7tKnWB3ANtrTKsr
-         IuBA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version;
-        bh=r0hasLCz57GpF7SAqU2aNVEVHGPKn0sNjTbrv00rd/c=;
-        fh=OfjdsSDmN1RGtwSq5GmVy+Vv0095qDsNWOVAhXw0PU8=;
-        b=mlQg5/RRA6TSLH+enFHGEAQZb6eNiRe/AvIOc8qCn0dEaJxO/sz20rSbEK31xs1mzP
-         H0kXHxlzhylyzHksKxxOcgxWcE4N/Y5OkzQN/vH+baY17xjjfcFXKgekuLl16LGxJwlP
-         SU43cPJValLCBLQ4h/4ClYTVbt7p7pwEcQ/HCsqECF6gHts0jaRKZVZgVh9UuDEC8GIz
-         fFbV7jcziKP6WBZlz77XSKiayPDfKslC5lPeA4fOcmpAcw8RmOo695CDUHDRnUhJe4IK
-         J0r1qtLTX6iXjzdpnoWXO3UXwhsm5mJ4FR863L3HB6Og4K/MIptOMcKA/O1EZi/zbkP9
-         XqDg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789430517; x=1790035317;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=r0hasLCz57GpF7SAqU2aNVEVHGPKn0sNjTbrv00rd/c=;
-        b=jrw2HllJUdnCzXB0Eryo6TVs0fv5iuqzuPJmR6onPMY9AZ2xSxxDOVW/80D9KdAnp0
-         pTqDxyaWcu9o0qj9wfDHgGQAMfBih2beaUUbudRcHMpFkf6JdJlhKH27qWdJK1ndsK9r
-         gyqEh/roU5Q1sw/M5lHFDEoMHRg5g2e7EQXKU0EO9m9H9GNO2iDKkAWdSvGzLPMWifUe
-         WEFmMj578Ruokal1vvESvLyUSVIKl1e6ybpua6CVQf7ciTS0xjtJwjnKjiYYMDSlmrf3
-         PiMDYxKnNECAL7HW43Sr6xzFC1AJ556+Dds+2IsLIoPEANh49xQUOyMyn/s695q+Cu2S
-         hQRA==
-X-Forwarded-Encrypted: i=1; AKwUvBwWi8D29LvhlsR41zarsI10JPAEl4G9hW2M8Ft9zD0hLbfHjU7Khzvvo8MG5/U1Z5itYjLuxs+Z0hayspU=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++knGbIrMnZStOsepG+NOLDnGtEnDt/5Dx7P63aRSCGEnMpTauJO
-	vhGhaOne0pzKvAawD9tZewdhcrJxWsJ6AegJuy4cDjZELga+QGTUgqwdvtrAt6Z0pk9Ju+kFOrt
-	nZEm4jOOFYmf1NiHy1nmZxvUwn7WYjz4O2/PkUBFUIGiEN1r3TXtPpmayP86swlY3ZfvXsdAeoC
-	hoOugc3dBuWQqKjnMalXj2fPQJBI+zmslkAoQ3IzjUtlD5NPnkJYtnNGPeYg==
-X-Gm-Gg: AYBFou0alo9xtDg5x2v3AO3NPEjwQUxjF5nJIytY9RQ+S9GDGgXIRd04KGSEaeeJxvg
-	jQMCVCkdG8eJ5uBOy5gHg5ec1a8pF0qc3BwHZ/SXeBWxGiQcwG8AK7vWdx7QgPH4x2zDAZvPsup
-	PsySMLtia/BCbuMkF+q2i8c0L7lh49I18BnCNFHpIDSzgUGpPssLqh4RWg11OIZoSYmUlpYmv8u
-	wzm
-X-Received: by 2002:a05:690e:108a:10b0:671:548e:f17a with SMTP id 956f58d0204a3-671548f09fbmr575140d50.6.1789430517560;
-        Mon, 14 Sep 2026 17:01:57 -0700 (PDT)
-X-Received: by 2002:a05:690e:108a:10b0:671:548e:f17a with SMTP id
- 956f58d0204a3-671548f09fbmr575131d50.6.1789430517076; Mon, 14 Sep 2026
- 17:01:57 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkP5x3SlPz2y7p
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 11:08:20 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 58995434C3;
+	Tue, 15 Sep 2026 01:08:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 648761F000FF;
+	Tue, 15 Sep 2026 01:08:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux-foundation.org; s=korg; t=1789434496;
+	bh=1++7fS8iWKOMzhlKxfG6KZTpRByEnFekp/pb13YE7fg=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=JlZVB02SRB8SlrjnhgKRH7erLp6/lF0bjE2LaEmvv4g/ygzNEN9Df4GzyzKOq1GRm
+	 MXZBeGQXDG+eEGW474o2elhJDXFweuH5LsbgShtKZ8tWHgw7BwYQ9PSDiWCSrWxS8a
+	 XDSL8c0/AB3jDnSpmNCqPc3psNggeGWzB7Ii5XXU=
+Date: Mon, 14 Sep 2026 18:08:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Cc: "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka
+ <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato
+ <pfalcato@suse.de>, David Hildenbrand <david@kernel.org>, Mike Rapoport
+ <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko
+ <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Dennis Dalessandro
+ <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>,
+ Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>,
+ Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela
+ <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov
+ <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko
+ <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya
+ Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, Baolin Wang
+ <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, Ryan
+ Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song
+ <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif
+ <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert
+ <dgilbert@interlog.com>, "James E.J. Bottomley"
+ <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen"
+ <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, Simona Vetter
+ <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel
+ <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu
+ <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov
+ <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner
+ <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov
+ <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim
+ <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rik van Riel
+ <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli
+ <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard
+ <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie
+ <airlied@gmail.com>, Will Deacon <will@kernel.org>, "Aneesh Kumar K.V"
+ <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann
+ <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador
+ <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan
+ Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, Oliver Upton
+ <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Madhavan
+ Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul
+ Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou
+ <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda
+ <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>,
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens
+ <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller"
+ <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Alexander
+ Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>,
+ Matthew Brost <matthew.brost@intel.com>, Joshua Hahn
+ <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park
+ <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang
+ <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, Chris
+ Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi
+ <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He
+ <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, Johannes
+ Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt
+ <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>,
+ Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Chengming
+ Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, Miklos
+ Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-usb@vger.kernel.org, linux-rdma@vger.kernel.org,
+ selinux@vger.kernel.org, linux-sound@vger.kernel.org, bpf@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org,
+ linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+ fuse-devel@lists.linux.dev, Takashi Iwai <tiwai@suse.de>
+Subject: Re: [PATCH v2 00/40] mm: make VMA flag semantics explicit,
+ eliminate VM_SPECIAL
+Message-Id: <20260914180811.057cba8fcc48d6e0b53a2683@linux-foundation.org>
+In-Reply-To: <20260914-b4-mmap-prepare-vma-flag-sanify-v2-0-7d9781ed5361@kernel.org>
+References: <20260914-b4-mmap-prepare-vma-flag-sanify-v2-0-7d9781ed5361@kernel.org>
+X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -113,87 +132,34 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-References: <20260909050919.3344699-1-chris.chiu@canonical.com>
-In-Reply-To: <20260909050919.3344699-1-chris.chiu@canonical.com>
-From: Chris Chiu <chris.chiu@canonical.com>
-Date: Tue, 15 Sep 2026 08:00:00 +0800
-X-Gm-Features: AcwNN1XVh1ezSC4ybotZKbIiPQmqAdnlb_DFgEiPNeX7teBjdDq_YCIHyZaRa4Q
-Message-ID: <CABTNMG0+rpiqAckYqizUQHU_9rfdt21drC8Y5t1SmOonwYGSBQ@mail.gmail.com>
-Subject: Re: [PATCH] selftests/powerpc: Fix exec_prot test failure on Hash MMU
-To: maddy@linux.ibm.com, shuah@kernel.org
-Cc: sshegde@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, 
-	linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 9, 2026 at 1:09=E2=80=AFPM Chris Chiu <chris.chiu@canonical.com=
-> wrote:
->
-> Hash MMU maps execute-only pages as readable at the PTE level, so reading
-> from a PROT_EXEC-only mapping does not fault there. The exec_prot test
-> currently treats that as a failure, while the rest of the permission
-> checks are still valid.
->
-> Use the existing using_hash_mmu() helper and skip only the read-on-
-> execute-only subtest on Hash MMU. Keep the rest of the test unchanged so
-> the fix stays local to the unsupported execute-only-read expectation.
->
-> Signed-off-by: Chris Chiu <chris.chiu@canonical.com>
-> ---
->  .../testing/selftests/powerpc/mm/exec_prot.c  | 21 ++++++++++++-------
->  1 file changed, 14 insertions(+), 7 deletions(-)
->
-> diff --git a/tools/testing/selftests/powerpc/mm/exec_prot.c b/tools/testi=
-ng/selftests/powerpc/mm/exec_prot.c
-> index db75b2225de1..bd44f49d8449 100644
-> --- a/tools/testing/selftests/powerpc/mm/exec_prot.c
-> +++ b/tools/testing/selftests/powerpc/mm/exec_prot.c
-> @@ -108,11 +108,14 @@ static int check_exec_fault(int rights)
->  static int test(void)
->  {
->         struct sigaction segv_act, trap_act;
-> +       bool hash_mmu;
->         int i;
->
->         /* Skip the test if the CPU doesn't support Radix */
->         SKIP_IF(!have_hwcap2(PPC_FEATURE2_ARCH_3_00));
->
-> +       FAIL_IF(using_hash_mmu(&hash_mmu));
-> +
->         /* Check if pkeys are supported */
->         pkeys_supported =3D pkeys_unsupported() =3D=3D 0;
->
-> @@ -167,13 +170,17 @@ static int test(void)
->          * Read an instruction word from the address when the page
->          * is execute only. This should generate an access fault.
->          */
-> -       fault_code =3D -1;
-> -       remaining_faults =3D 1;
-> -       printf("Testing read on --x, should fault...");
-> -       FAIL_IF(mprotect(insns, pgsize, PROT_EXEC) !=3D 0);
-> -       i =3D *fault_addr;
-> -       FAIL_IF(remaining_faults !=3D 0 || !is_fault_expected(fault_code)=
-);
-> -       printf("ok!\n");
-> +       if (!hash_mmu) {
-> +               fault_code =3D -1;
-> +               remaining_faults =3D 1;
-> +               printf("Testing read on --x, should fault...");
-> +               FAIL_IF(mprotect(insns, pgsize, PROT_EXEC) !=3D 0);
-> +               i =3D *fault_addr;
-> +               FAIL_IF(remaining_faults !=3D 0 || !is_fault_expected(fau=
-lt_code));
-> +               printf("ok!\n");
-> +       } else {
-> +               printf("Testing read on --x, skipped on Hash MMU\n");
-> +       }
->
->         /*
->          * Write an instruction word to the address when the page
-> --
-> 2.43.0
->
+On Mon, 14 Sep 2026 15:57:20 +0100 "Lorenzo Stoakes (ARM)" <ljs@kernel.org> wrote:
 
-Gentle ping.
+> The VM_SPECIAL / VMA_SPECIAL_FLAGS mask conflates several unrelated
+> properties:
+> 
+> ...
+> 
+> It's all rather a mess.
+> 
+> This series brings some order to things by both limiting what drivers can
+> do with VMA flags and switching to using predicates that describe
+> behaviour, not arbitrary flags.
+
+That's a lot of patches.
+
+Review is thin and I expect this won't improve a lot.  Lots of "no
+functional changes" changes.
+
+Perhaps it would be helpful if you were to identify those patches which
+you'd like to see reviewers focus on?
+
+>  1153 insertions(+), 582 deletions(-)
+
+It's funny how often cleanup patches do this.
+
+All queued up, thanks.
 
