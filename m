@@ -1,68 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-27391-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27392-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 039F7C88E53
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 12:44:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57460C88E75
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 12:44:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hkhYH4xggz30VF;
-	Tue, 15 Sep 2026 22:44:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789473597;
-	cv=none; b=BrsMKVCOIl16ugqrbbdoyow7klv7tWjkx6C6l4eDHCtflfOS2si95ZCZ6MWiCyIW0VuiEmZ5jwNNHqp1f+6qzqvbXsgRT6XahxCgRHkqpAlcGuZ4kHI/k/Kuyo2nADYHB+728X+pdE3RnAxMuNY2KVzFvV43vzGl0jC7MSZgozra2LKmmlIgsYwSnJr/TEExW/gNIvdFFOORbh1gC6bEWBSfsnCkBKoab5+smE0tKdvTV6J0OpUznIyfM9Io0w6cxoplm2GgP1vbq9oGT5kgkB7DHkF7/Adsw8q67MbCK2Qyh/3K3JpvX1Nnar69NvD0hwVB1R/Chbg2DMjhZEar5w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hkhYP5cPpz30VT;
+	Tue, 15 Sep 2026 22:44:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789473599;
+	cv=none; b=clrafoVnAsdWU2hdEAl6g/5TyJRqJ7Q0KzjcB8bWYokwZ3bDuNP8Wb9gSR5aJBuS/ovDn/4UOGHx7UbACsejCW6nM7rSDyc5JaZ/KzrBhM+oU77TUrh6jMpb/Xjq8zuT7iT5uaKpdidL3sPparyZp0zpBWDjh1vkBnF6BTuDnqUDpMeS8dJJgEkazKRMGAn/AYhru+/wqZZRdAkDRB3tykI13FT9Tz2UiW8RqX+hW6s7Rs0YCkY6gejChS9UJKV8lMYvwxDelxm3irvJI1N7GDaeGNjTEZMbw5/5P2BxbwoaBzGMhslGeTrX9moor93KgeZSryd5CNL0NAhtSulQtQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789473597; c=relaxed/relaxed;
-	bh=DQgIYhua5CTViS1X9ZXXGfaSPT/5dqgeOOlUNrKnxWw=;
+	t=1789473599; c=relaxed/relaxed;
+	bh=XROzleDAWNHKip4xHBVteIb0cCuN7FAQoMQU9zewp/g=;
 	h=From:Subject:To:Cc:In-Reply-To:References:Content-Type:Date:
-	 Message-Id; b=J4oHBGeQEarJnHhZdRC3yv+ClF+ZU6YC1Bk8UOxsjm3/lQ7+Qp5X3rtKwtldA0RAyVIIXZwh8ZACMrYySMSTX5prCEb00YWxPwK/uiq4Am68DBdvpzmY4xjxoUbVEjW0QsrcoVekkockefTJMYt9oZveIpbcaqa4FU5GGk8S5KmXsri1zitagIhGZ/2tlfLCiIUeGCoLMRKSStLtAfhtiftcdF9ha1gQ4NCBXFAo8t/Kd2Xmji555FZ+2MgC44b5GYQDkVpHcqK5Uf5FO7nDTFlK4huvgKCKqPXbte8UfneTWWIzFFFpKXthw1zesUh4VReIbhZNM5ERrchUruejEw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PNkc1SOO; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=sashiko-bot@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Message-Id; b=SAM5Klwp8OdBB2TQJVUMm30te1i7uovqkKOKdMDjCBl30T2PPPauAlNiK6qAaKoc5/62F6gbXbnULqv8sBkyTXH+Qk3maXrMA3CpxiDf08IT3Gu91CmfAbKjrwQrWnrZ/viAw60XTv403x9gqosqwHBHfOZrZ0QKXuAC7WdfWs2AQGmGd8ezA7cq1nuasFcEHXkmqjLtOaOjrfT6GBieAkCU3wm1w0cWqEtWWERhjVRAyglOy8BmkIvvBVFh1pYwlAEcZcnJIhRXh2kjzWOACGWP/xJKwprvfbLaaPEah//wszPgJYHPZx2z7+yvBlTsZyGY8Ohphhqnwr8fvpF17Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LuDfDBIp; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashiko-bot@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PNkc1SOO;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LuDfDBIp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=sashiko-bot@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashiko-bot@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkgYm3bCjz2y8F
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 21:59:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkgYp3xNkz2y8F
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 21:59:58 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 30ED7600D1;
+	by tor.source.kernel.org (Postfix) with ESMTP id 9A98B602BE;
+	Tue, 15 Sep 2026 11:59:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7B93C1F00893;
 	Tue, 15 Sep 2026 11:59:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1604F1F000FF;
-	Tue, 15 Sep 2026 11:59:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789473593;
-	bh=DQgIYhua5CTViS1X9ZXXGfaSPT/5dqgeOOlUNrKnxWw=;
+	s=k20260515; t=1789473596;
+	bh=XROzleDAWNHKip4xHBVteIb0cCuN7FAQoMQU9zewp/g=;
 	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
-	b=PNkc1SOOx+a0MtActP/scxfu+EOEc0okpYmMq9u2IvQ6wdxXtOCmaRwTaDfxAYQfu
-	 KNpmxdQzkwQyaCWqsjPY6fMZbe5ub33vKaPoYJ07B7Q1LWFwdlgiCUvB0QQ8c2qsi1
-	 FMsSTqEgiIP1sEOamGDSgZSCZ6TfAMEjISixK2R8eaJA2XnzylLgQ4fdlCaNZFxShP
-	 J8hVTu3MQPl0lwmGSaxF9w8s3KltrNP5jpWzkNN2BlxuRXTG4UWjQZqj2E6RzHxSaN
-	 2Rs03FwwuFJXXN68mTYzdZ8pV7LyInc7Ptt8ORor8BsaOlsL4d3xo27nPcBZv3oI95
-	 0hW/vFstsi8gw==
+	b=LuDfDBIpgc+rUudqugD7YWLMIYTyPSh1djqeFTSZvIqwl+MCFr2F9Jod5sQ3BdeBH
+	 Fs4P2kaC4Rq/e2WctPCUaANEEugIP/+ZEAefkQjg3r930Bx3+wPmgnd43osNu5U8C9
+	 EyuNiUbu78gNfTdrTeVFFD2nhC1r5SHLm94AIfGff4/9p19OhtUCSOkAUYL8ijEd9H
+	 l9DN/Fa9wQdaggqiklG21wysLrbu7J9tNRHYcAgnuhIFYUQdGWbvPhv23a8BBnteix
+	 dj3Dz8036WkGhtwkv8ziLkCVxCa1RZBk5Y1nQhcVea1ZYeF0cF/u11/S008mj3HeiR
+	 /EId/I6+w1CIA==
 From: sashiko-bot@kernel.org
-Subject: Re: [PATCH RFC POC 14/50] parisc: commit fds on syscall exit
+Subject: Re: [PATCH RFC POC 05/50] ARM: commit fds on syscall exit
 Reply-To: sashiko-reviews@lists.linux.dev
-To: "Linus Torvalds" <torvalds@linux-foundation.org>, "Christian Brauner" <brauner@kernel.org>
-Cc: "Peter Zijlstra" <peterz@infradead.org>, linux-sh@vger.kernel.org, virtualization@lists.linux.dev, "Eugenio
- Perez" <eperezma@redhat.com>, "Alexander Viro" <viro@zeniv.linux.org.uk>, "Oleg
- Nesterov" <oleg@redhat.com>, linux-csky@vger.kernel.org, linux-m68k@lists.linux-m68k.org, dri-devel@lists.freedesktop.org, io-uring@vger.kernel.org, kexec@lists.infradead.org, "David
- Airlie" <airlied@redhat.com>, linux-um@lists.infradead.org,
- =?utf-8?b?Q2hyaXN0aWFuIEJyYXVuZXIgKEFtdXRhYmxlKQ==?= <brauner@kernel.org>, linux-fsdevel@vger.kernel.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-hyperv@vger.kernel.org, linux-alpha@vger.kernel.org, "Michael
- S. Tsirkin" <mst@redhat.com>, "Jan Kara" <jack@suse.cz>, "Jens Axboe" <axboe@kernel.dk>, linux-arm-msm@vger.kernel.org, linux-parisc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, bpf@vger.kernel.org, "Ingo
- Molnar" <mingo@redhat.com>, linux-gpio@vger.kernel.org, linux-mips@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-snps-arc@lists.infradead.org, linux-openrisc@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, "Jann
- Horn" <jannh@google.com>
-In-Reply-To: <20260915-work-fd-reserve-unify-folded-v1-14-4d5217d6b246@kernel.org>
+To: "Christian Brauner" <brauner@kernel.org>, "Linus Torvalds" <torvalds@linux-foundation.org>
+Cc: linux-um@lists.infradead.org, linux-openrisc@vger.kernel.org, "Michael
+ S. Tsirkin" <mst@redhat.com>, "Peter Zijlstra" <peterz@infradead.org>, bpf@vger.kernel.org, linux-csky@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-gpio@vger.kernel.org, "Eugenio
+ Perez" <eperezma@redhat.com>, virtualization@lists.linux.dev, "Jan Kara" <jack@suse.cz>, "Oleg
+ Nesterov" <oleg@redhat.com>, linux-hyperv@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-alpha@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-snps-arc@lists.infradead.org, linux-parisc@vger.kernel.org, io-uring@vger.kernel.org, "Ingo
+ Molnar" <mingo@redhat.com>, kvm@vger.kernel.org, "Jens Axboe" <axboe@kernel.dk>, "David
+ Airlie" <airlied@redhat.com>, linuxppc-dev@lists.ozlabs.org, "Alexander
+ Viro" <viro@zeniv.linux.org.uk>, "Jann Horn" <jannh@google.com>, linux-sh@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sparclinux@vger.kernel.org, linux-mips@vger.kernel.org,
+ =?utf-8?b?Q2hyaXN0aWFuIEJyYXVuZXIgKEFtdXRhYmxlKQ==?= <brauner@kernel.org>, kexec@lists.infradead.org
+In-Reply-To: <20260915-work-fd-reserve-unify-folded-v1-5-4d5217d6b246@kernel.org>
 References: <20260915-work-fd-reserve-unify-folded-v1-0-4d5217d6b246@kernel.org>
- <20260915-work-fd-reserve-unify-folded-v1-14-4d5217d6b246@kernel.org>
+ <20260915-work-fd-reserve-unify-folded-v1-5-4d5217d6b246@kernel.org>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-Date: Tue, 15 Sep 2026 11:59:51 +0000
-Message-Id: <20260915115952.1604F1F000FF@smtp.kernel.org>
+Date: Tue, 15 Sep 2026 11:59:54 +0000
+Message-Id: <20260915115954.7B93C1F00893@smtp.kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,95 +78,51 @@ Precedence: list
 
 Thank you for your contribution! Sashiko AI review found 1 potential issue(=
 s) to consider:
-- [High] parisc: syscall fast path exposes uninitialized pt_regs to ptrace
+- [Low] arm: redundant TIF_FD_SLOTS check due to bit-shift overlap
 --
 
-commit 38a139df8c7c61e11fc9314b5f43e371c71a8356
+commit bdf52635177f575c1b58cdb7e902386551a36647
 Author: Christian Brauner <brauner@kernel.org>
 
-parisc: commit fds on syscall exit
+ARM: commit fds on syscall exit
 
-This commit adds TIF_FD_SLOTS and tests it in syscall_exit once the return
-value has been saved. A task that reserved descriptors calls
-do_syscall_trace_exit() to commit descriptors and then continues with the
-usual checks.
+Add TIF_FD_SLOTS and test it where the syscall return path decides
+between the syscall work and the plain work pending slow path. A task
+that reserved descriptors goes through __sys_trace_return_nosave
+where syscall_trace_exit() commits them before audit and the ptrace
+exit stop.
 
-> diff --git a/arch/parisc/kernel/entry.S b/arch/parisc/kernel/entry.S
-> index e04c5d806c105..c5807cf6fbd8d 100644
-> --- a/arch/parisc/kernel/entry.S
-> +++ b/arch/parisc/kernel/entry.S
-
-[ ... ]
-
-> @@ -1765,6 +1767,16 @@ syscall_do_signal:
-> =20
->  	b,n     syscall_check_sig
-> =20
-> +syscall_do_fd_slots:
-> +	mfctl	%cr30,%r1
-> +#ifdef CONFIG_64BIT
-> +	ldo	-16(%r30),%r29			/* Reference param save area */
-> +#endif
-> +	ldo	TASK_REGS(%r1),%r26		/* struct pt_regs *regs */
-> +	BL	do_syscall_trace_exit,%r2
-
-[Severity: High]
-Does this expose uninitialized kernel stack memory to a tracer?
-
-When a process executes a system call that reserves a file descriptor slot,
-it enters via the fast path which only saves a minimal set of registers to
-TASK_REGS. If TIF_FD_SLOTS is set, the fast path directly invokes
-do_syscall_trace_exit() here before all registers (like %r3-%r18) are saved.
-
-> +	nop
-> +	b,n	syscall_check_resched
-> +
->  syscall_restore:
->  	mfctl	%cr30,%r1
-> =20
+> diff --git a/arch/arm/kernel/entry-common.S b/arch/arm/kernel/entry-commo=
+n.S
+> index 88336a1292bb7..59a70d90b0b61 100644
+> --- a/arch/arm/kernel/entry-common.S
+> +++ b/arch/arm/kernel/entry-common.S
 
 [ ... ]
 
-> diff --git a/arch/parisc/kernel/ptrace.c b/arch/parisc/kernel/ptrace.c
-> index 1d9e210702e1f..f142766792afa 100644
-> --- a/arch/parisc/kernel/ptrace.c
-> +++ b/arch/parisc/kernel/ptrace.c
-
-[ ... ]
-
-> @@ -381,6 +382,9 @@ void do_syscall_trace_exit(struct pt_regs *regs)
->  	int stepping =3D test_thread_flag(TIF_SINGLESTEP) ||
->  		test_thread_flag(TIF_BLOCKSTEP);
+> @@ -83,6 +83,8 @@ ENDPROC(ret_fast_syscall)
 > =20
-> +	if (test_thread_flag(TIF_FD_SLOTS))
-> +		fd_slots_commit(regs);
-> +
->  	audit_syscall_exit(regs);
-> =20
->  #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
+>  	tst	r1, #_TIF_SYSCALL_WORK
+>  	bne	__sys_trace_return_nosave
+> +	tst	r1, #(_TIF_FD_SLOTS << 16)	@ r1 holds TI_FLAGS << 16
+> +	bne	__sys_trace_return_nosave
 
-[ ... ]
+[Severity: Low]
+Is this newly added check reachable?
 
->  	if (stepping || test_thread_flag(TIF_SYSCALL_TRACE))
->  		ptrace_report_syscall_exit(regs, stepping);
->  }
+The preceding tst r1, #_TIF_SYSCALL_WORK instruction appears to intercept
+the branch because it inadvertently catches this condition.
 
-[Severity: High]
-If a tracer attaches concurrently while the process is blocked in a file
-descriptor allocation syscall, setting TIF_SYSCALL_TRACE, won't this call p=
-ass
-the incompletely initialized pt_regs from the fast path to the tracing
-subsystem?
+In ret_fast_syscall, r1 is loaded with TI_FLAGS << 16. TIF_FD_SLOTS is
+bit 5, so shifting it by 16 places it at bit 21 in r1.
 
-This could allow an unprivileged user attaching a tracer to their own proce=
-ss
-to read uninitialized kernel memory via PTRACE_GETREGS. Also, tracer
-modifications via PTRACE_SETREGS to these uninitialized registers would be
-ignored because the fast path does not properly restore them before returni=
-ng
-to userspace.
+_TIF_SYSCALL_WORK naturally includes bit 21 (_TIF_SYSCALL_AUDIT). Because of
+this bit-shift overlap, the first test against _TIF_SYSCALL_WORK will
+evaluate to non-zero whenever TIF_FD_SLOTS is set. This means the branch to
+__sys_trace_return_nosave is taken early, making the new tst instruction
+unreachable dead code.
 
 --=20
 Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20260915-work-fd-re=
-serve-unify-folded-v1-0-4d5217d6b246@kernel.org?part=3D14
+serve-unify-folded-v1-0-4d5217d6b246@kernel.org?part=3D5
 
