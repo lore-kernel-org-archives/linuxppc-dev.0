@@ -1,105 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-27451-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27452-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA959C982C4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 02:01:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34E9EC88E75
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 03:14:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hl2F01CgLz2xkr;
-	Wed, 16 Sep 2026 12:01:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789524100;
-	cv=none; b=nqEuBYSI9Dtekjic9ubttfVKqtq3uN95Qm5YGryXMofDJSf4OdkSfZlXG/m3bQuWD/01K8wIzznIECO6eQ950snynknYWZRWDxd3k1V4bD4jARI0gBP3AjH8KnB3K51zK1jO2lQP0Llri2ar3slZe+BdCS8q0DGOBgbgzCpT3ZV0BdXDLIWndK4q2d/+YKV+plqgB2f8LAA1jJNcF8eqIE8a6yyDmoMvFVcr8I16lIDbVWWhCuttKygSsC6mugUimguT/miB/qshwgPOKPx76zj30AIjLsinQ1WclFzdXVTIZmA/PxZl4IRSL+1Eow1qYukzlZselOSw9V6bfmRmSg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hl3s10Mccz2y2B;
+	Wed, 16 Sep 2026 13:14:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:39::11"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789528468;
+	cv=none; b=D/F/fCGIOYxDoo+v81zxMhN7SIM9iQzlA/Zetz7zsp1NCRWyfP0HDNGQCmvc2IhHqA7TRUQ70MiP9MwRv4qIQL1ykYglgkWXwr/N5Xtm3ve2skJLteZQCnQWvavHqPjm3c8BfAmmXmJgYS+eXmU6wpp5fWmb1vpfGXWfrFnGZZpUgqg1iGS/IRp2QMb7zwMZtjMtK3FpAr/l8HGoPuvulQa76EZv6eW3hvT9GuzLeZvQV/aor9Smg7dfeXcxlSsmvc2usB30qorpfaFivDxvr3cB70e5gTsCETIQ5oYZJcC7J0z8457aWDHVIoRJPAoxmFh34GmUOpjoj/lgryBuLw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789524100; c=relaxed/relaxed;
-	bh=Kq4nX0CZWZvbBl1ewxdrR8njTtxJd2HKKhLZ4yZoin4=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=d9EDGqMIifmlAW3CtzPF2gJD1oSC1HOyd169kZu9kKnw7CymmMkTDwuFcLYnpAYuQeMYgnjgWHgzh/kYJusEyPV1aleXI5kr5V0Rw9kR/b4NP3hrXO4BCbRifVpCiv+Uwzpkr3t1UPnMZI7MLy0U5fiVncdWzisVSwluR7umXTEygWJ2EtT6N/b06DxuOyfnm3UolQFICwO8HiWeC30bdWPxSGMGHtEIhgYobRa++QJJD10I5qZbCv937InucmL3u3hrN9rZPJta01V5uv7jOPcN8FPN+yjDLKoH/glhxMdMj2gLQsGQDbdB/iRJb2lIFgkXFYVNcMljYqJHPCFyYg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=HA4IrxR+; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1789528468; c=relaxed/relaxed;
+	bh=3x+NS1tTRcfYVoPTJUjaHanPBgcWXbJYc21sQ0pJf9U=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=npAA9VpqSxY1EzxhxKMrXzyLKhFzxmdDlGEDGnfC1uImEPB94hTTNmQa5LEbcqb1x0o869cI1t8pSZWaFv6ZFBDzu2wotwsD93evP1Bxs5ZxxQFB56SBMLI4jpLZOs8sO7L7SbcU2wV/0yJF7Wz5vCkwUX1Z4v3ZgTsgoMMJB9uqmLieJFVMyn9yLmE3PNy3cv6maBDQlnDJMC7DiGbWJzdKNbWEKUFAH4wfks744IZR2ilADwVzHdhgRLmSWFl3E9iTl2WhRDUQ+slK7sItnIB6UexLtW2ETbdUtXqaXqbzXR4+d/9XDttNflfEatra/Q5ymLHJnU/wQLTCK6R63w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Q+4yQi1B; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::11; helo=mail-pj2-x11.google.com; envelope-from=lgs201920130244@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=HA4IrxR+;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Q+4yQi1B;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:39::11; helo=mail-pj2-x11.google.com; envelope-from=lgs201920130244@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj2-x11.google.com (mail-pj2-x11.google.com [IPv6:2607:f8b0:4864:39::11])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hl2Dy6nCCz2xWV
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 12:01:38 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id CDE3560214;
-	Wed, 16 Sep 2026 02:01:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E999D1F00893;
-	Wed, 16 Sep 2026 02:01:31 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hl3s00FHNz2xns
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 13:14:26 +1000 (AEST)
+Received: by mail-pj2-x11.google.com with SMTP id d9443c01a7336-2d747ee1f38so4387855ad.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 20:14:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux-foundation.org; s=korg; t=1789524094;
-	bh=Kq4nX0CZWZvbBl1ewxdrR8njTtxJd2HKKhLZ4yZoin4=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=HA4IrxR+bH6KFYi5TWsVFFRj5NN/KsmXWn+L2rcKXslNm+h4O1+C0Mz1TX/mnbSd5
-	 wNlo1vs7L/RwOu/p4JC+a32HO1/edlho+RmyG7M/c8w2xQw4dUW63KjVSNntMUP6xo
-	 zHIhd6HWzSLYzzfxhv0JalmDYIqgVcBuZA1Pa2/U=
-Date: Tue, 15 Sep 2026 19:01:31 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Cc: David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>, Baolin
- Wang <baolin.wang@linux.alibaba.com>, "Liam R. Howlett"
- <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts
- <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song
- <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif
- <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Guo Ren
- <guoren@kernel.org>, Brian Cain <bcain@kernel.org>, Geert Uytterhoeven
- <geert@linux-m68k.org>, Dinh Nguyen <dinguyen@kernel.org>, Simon Schuster
- <schuster.simon@siemens-energy.com>, Jonas Bonn <jonas@southpole.se>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, Stafford Horne
- <shorne@gmail.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, Rich
- Felker <dalias@libc.org>, John Paul Adrian Glaubitz
- <glaubitz@physik.fu-berlin.de>, Paul Walmsley <pjw@kernel.org>, Palmer
- Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Alexandre
- Ghiti <alex@ghiti.fr>, Russell King <linux@armlinux.org.uk>, Vineet Gupta
- <vgupta@kernel.org>, Michal Simek <monstr@monstr.eu>, Chris Zankel
- <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>, Will Deacon
- <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick
- Piggin <npiggin@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
- "David S. Miller" <davem@davemloft.net>, Andreas Larsson
- <andreas@gaisler.com>, Richard Henderson <richard.henderson@linaro.org>,
- Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland
- <mark.rutland@arm.com>, Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui
- <kernel@xen0n.name>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, Helge
- Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael
- Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)"
- <chleroy@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik
- <gor@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Christian
- Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle
- <svens@linux.ibm.com>, Richard Weinberger <richard@nod.at>, Anton Ivanov
- <anton.ivanov@cambridgegreys.com>, Johannes Berg
- <johannes@sipsolutions.net>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar
- <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
- <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin"
- <hpa@zytor.com>, Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka
- <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan
- <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jason Gunthorpe
- <jgg@ziepe.ca>, John Hubbard <jhubbard@nvidia.com>, Peter Xu
- <peterx@redhat.com>, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-riscv@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linux-snps-arc@lists.infradead.org,
- linux-arch@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-alpha@vger.kernel.org, loongarch@lists.linux.dev,
- linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-um@lists.infradead.org, Hugh Dickins <hughd@google.com>, Qi Zheng
- <qi.zheng@linux.dev>
-Subject: Re: [PATCH v3 00/12] mm: make userland page table freeing RCU-safe
-Message-Id: <20260915190131.adee185f2ce04a8ec821489c@linux-foundation.org>
-In-Reply-To: <20260911-rcu-pagetable-freeing-v3-0-7b8c86103821@kernel.org>
-References: <20260911-rcu-pagetable-freeing-v3-0-7b8c86103821@kernel.org>
-X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+        d=gmail.com; s=20251104; t=1789528465; x=1790133265; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=3x+NS1tTRcfYVoPTJUjaHanPBgcWXbJYc21sQ0pJf9U=;
+        b=Q+4yQi1BWAQA0lHC2ukDwj/imXE7pTdPL5/O4uH6y8CGnbQVW/juWdL+9OW84PTs4i
+         3PJXQjQSoN7hAXNYZn0o3A9YE0iCFk/eAUxrIp7D+kAZmypuFi74IWNkBRll7lF5GFn6
+         9nkxFPPO7CE+2CmU2KJ/MTm4wUC8sHFAMEA11e0CFs78mHzltBeJ50ci00wpZlT/R16d
+         25ygmmeFOVy1o2REoJ1ZCQK2hON1y8CtLzROsLpTlKBZDjLQy858IYdOX7lyPOFcV75/
+         RhNv+ytyLKGjhx2yeJ2DqXabgj13wzmok667xJhmmfKn3d8MR3sZjaW7NeqSA5cj1FxS
+         84IQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789528465; x=1790133265;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=3x+NS1tTRcfYVoPTJUjaHanPBgcWXbJYc21sQ0pJf9U=;
+        b=Nw2byFXw1pMq2woDjyXxfpKBazp6Emu7IYjPsnHINm2UnVg1JCW+vLXF2uXL7It3HO
+         Q+bSEoy+YZ/DhUsvHkjiNbC5pdsAo0xRl/13GGFiuCIZ6pymfSRAnb4ZTEHKU5R8Qqbe
+         MzlDg5Wwjq7+Whe/02Jw0/xWhwqjOqIifbgcTH/8/qm7bBjpCX9RPoX3rl6mAfi214ZO
+         YsLBmzOmuxDktOthQ0UAJnTy/ScqbnyZVx8HcCRy2su3m9tgYtgeJqNW/hYfTXcb1D7/
+         NGa8r3y2HhVWFTr82FfGTuo6U6zkvIniwe/ijpsYRqcuaPpeGlvLi2VWrAZtJ0rSlYDx
+         2b5w==
+X-Forwarded-Encrypted: i=1; AKwUvBxPSaUzUhY9nROVwC+msoo3AMIiuLMhtuG/qtGqDr9XbrPiPJlrUJEf0MPSgKdcxvdd8tdzM3sWd6iIpF4=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++m5HEBpnSfJhWEj1FYJIAarUXY34x06ni50iH4WzJl/8yXuEgjN
+	vywHNXQk+GWmcVtnaeMPw9SDSAk55F98UxFveuUNM/LQe+UhBoKwifdp
+X-Gm-Gg: AYBFou0mEgpcRnxSIvfu1Z6uToUZW7jvbCKzU1Z46zbdWc45VsHOrHtek7I23ffbiKW
+	nNHBTSNrTVL4uUZuBf5GR4OUqcFRQ0gKC0S0gPx6DFvcI/GY5AWJTkPiFUeZIhRiJdSSb1Njy+Y
+	j5PwVPE7oFRFPCZRP7vEBBBjU1updI5tGFdLe9dlU6LpOmdIJVvU8pWOgK2IW8b2Ipl3DzoSI2O
+	E4qzCI7lFj/TO5b0I4NwkEa13UphrIEKuF05LTp+BAYzazswXHT9oX/gENDslH8tyJ7nxec08MG
+	20gOFwpcTm3ge/PSbNsSf49nbkLmZLby5Z8kOtBMH5/R83vFfYQs2eXVse6gQl7murZRsWCOtSV
+	HYR8QLvLT8Nd4P2YdOzQPDnAZvzRpltobS2i64ya8lETSVzTCcnB3thpKIspRnhNzOc1XbgjCBf
+	Duo0p7R9wzOfHDJmBuPK7RUZMj9V9NgGBgpLJnX4td2J0G79xserXDhA==
+X-Received: by 2002:a17:90b:3bc8:b0:398:dcfe:968e with SMTP id 98e67ed59e1d1-39e1e504f3fmr2661898a91.20.1789528464931;
+        Tue, 15 Sep 2026 20:14:24 -0700 (PDT)
+Received: from lgs.. ([2001:250:5800:1002::de93])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39e1ae99ca6sm1886986a91.0.2026.09.15.20.14.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 15 Sep 2026 20:14:24 -0700 (PDT)
+From: Guangshuo Li <lgs201920130244@gmail.com>
+To: Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Russell King <linux@armlinux.org.uk>,
+	Jeff Garzik <jeff@garzik.org>,
+	Scott Wood <scottwood@freescale.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Cc: Guangshuo Li <lgs201920130244@gmail.com>,
+	stable@vger.kernel.org
+Subject: [PATCH] net: fs_enet: fix platform info memory leak on remove
+Date: Wed, 16 Sep 2026 11:14:14 +0800
+Message-ID: <20260916031414.2875022-1-lgs201920130244@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -112,57 +100,41 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-On Fri, 11 Sep 2026 20:36:47 +0100 "Lorenzo Stoakes (ARM)" <ljs@kernel.org> wrote:
+fs_enet_probe() allocates the platform information structure with
+kzalloc_obj() and stores it in fep->fpi.
 
-> The majority of architectures in the kernel defer page table freeing until
-> an RCU grace period has elapsed, this series converts all remaining
-> architectures to do so too and eliminates CONFIG_MMU_GATHER_RCU_TABLE_FREE
-> altogether.
+The probe failure paths release this allocation with kfree(). However,
+after a successful probe, fs_enet_remove() tears down the network
+device without freeing fep->fpi, leaving the platform information
+structure allocated after driver removal.
 
-Thanks, I've updated mm.git's mm-unstable branch to this version.
+Free fep->fpi before releasing the network device.
 
-> v3:
-> * Added Kiryl's tag to series (thanks! :)
-> * Corrected commit message, comment indentation in 11/12 as per Kiryl.
-> * Corrected 12/12 documentation as per Kiryl.
+This issue was found by manual code inspection.
 
-Here's how v3 altered mm.git:
+Fixes: 976de6a8c304 ("fs_enet: Be an of_platform device when CONFIG_PPC_CPM_NEW_BINDING is set.")
+Cc: stable@vger.kernel.org
+Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
+---
+ drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-
- Documentation/mm/process_addrs.rst |    4 ++--
- include/asm-generic/tlb.h          |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
---- a/Documentation/mm/process_addrs.rst~b
-+++ a/Documentation/mm/process_addrs.rst
-@@ -541,8 +541,8 @@ We establish basic locking rules when in
-   after an RCU grace period has elapsed. However, any entry found must be
-   revalidated after the page table lock is taken (such as the
-   :c:func:`!pmd_same` recheck performed by :c:func:`!pte_offset_map_lock`)
--  before it is acted upon. Changing an entry always requires the page table
--  lock.
-+  before it is acted upon. Changing an entry requires the page table
-+  lock and one of the locks that excludes teardown (mmap or VMA lock).
- * Reads from and writes to page table entries must be *appropriately*
-   atomic. See the section on atomicity below for details.
- * Populating previously empty entries requires that the mmap or VMA locks are
---- a/include/asm-generic/tlb.h~b
-+++ a/include/asm-generic/tlb.h
-@@ -151,8 +151,8 @@
-  *  Page directories (__p*_free_tlb()) are always freed via tlb_remove_table(),
-  *  after an RCU grace period (see mm/mmu_gather.c).
-  *
-- * This serialises against software page-table walkers, including architectures
-- * which do not use IPIs for remote TLB invalidates.
-+ *  This serialises against software page-table walkers, including architectures
-+ *  which do not use IPIs for remote TLB invalidates.
-  *
-  *  An architecture is expected to provide __tlb_remove_table() (see
-  *  HAVE_ARCH_TLB_REMOVE_TABLE) or use the generic __tlb_remove_table(), which
-_
+diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+index d3c772ed5fc9..071e3f3de78c 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
++++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+@@ -1007,6 +1007,7 @@ static void fs_enet_remove(struct platform_device *ofdev)
+ 	fep->ops->cleanup_data(ndev);
+ 	dev_set_drvdata(fep->dev, NULL);
+ 	phylink_destroy(fep->phylink);
++	kfree(fep->fpi);
+ 	free_netdev(ndev);
+ }
+ 
+-- 
+2.43.0
 
 
