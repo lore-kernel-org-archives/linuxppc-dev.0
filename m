@@ -1,82 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-27449-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27450-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1469C88E77
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2026 22:55:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92A68C88E77
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 00:06:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hky621t5nz2xk7;
-	Wed, 16 Sep 2026 08:55:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:33::1e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789512922;
-	cv=none; b=N2IDpptVgiAlwo57VDh8vnBVmm3qsMHSw8Gn8fwHIe1jJkOWsfjAJYuYk1NROOQprfDLbciSTWD6GvKIdzyD8JpwqZrdwAwTnd31tucAvOwLoAhdPB/stdOsXrp7EEEZikYpzQw+qLJvSx4GRhbu64gkGV5uiZn3X+chbKp/USiZGosNm8PEdwVSkki1MZ+96wpWWI/fiICDeE3rU2RrFvZQ3PE3ft4usWNQIAAlV7d0odAeussvNBiUexjNPoIIjtnKP4eXi//2TQrGd11fhXKK9mEjr5Jd3CnrFvs5soZKNZ+KHhTxlfXYNaQ7+gg9/nLpjF55qYjMj3ysnrRjZQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hkzhC4dtSz2y2R;
+	Wed, 16 Sep 2026 10:06:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789517195;
+	cv=none; b=Jo7QczX35SWYUnC2So19jJZ3z5rNuduEqvD7DJ8yLdYCFpY50p4t9mQhtNsmQDtc7xJfofdvctBG6OTbN1zcRYxUNQYQb5tyGuQakDZ6S1lxuqkg9EnVcVuuDZv+klf1pfI7WhhwupGcBiaPDK29BwYpaqErtP4fUQmbRipC0WfQIkCp0kfdhRQ5JJZaDNJ0sfCvg0jF6fce08jKk6diqsY5o/EF6YwSi/sL4/UPQwwBTfw+9xnRoiCWaGEkAW+6IPXilxITY3OyHOqdor3GZEf+ticV8AH0QiYxC/y7NwfdxJMtZYbvGNmsk+2l2woS/XaKYEGCk52t0XPNyYcQbA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789512922; c=relaxed/relaxed;
-	bh=7NEEN5klK6sYQ7k8fj+V0z2WeSFVNwjy5fJJIdfiMPQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=X4nVfbZ6/nnlf4jfrOodeD4qJ28cZ4vl30YeRol2dia9LCHcpnMJFsvCWpPr0bA/QLKNJ/mY3/ZoVsPgmM6DVANV5x9dzz4x1Rc+fZEcDNmCauQiOzrZnslPUP9uOTl2vspHd5xyTgb5/MUgLWm3kbknoBiMYcjfDjjrYTarcfUDpXTpp9VR7CvVDSOCBnig0MLeCImPsNN4NRm7SgRYhV3WQhYkxB2/hkXEFrBFMv86rkcRPHwjdeMbvpcI+ilboh6lVA4VLy6Rhu1g/huGbPR8mHjKubFhaywL4aTE7Z4pUzG33L62+13xjP00ORjHgmMHcSrHaxxocS0kcld9GA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=FupZlj3v; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:33::1e; helo=mail-ed2-x1e.google.com; envelope-from=torvalds@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1789517195; c=relaxed/relaxed;
+	bh=V5WpnStf+Rd0lBqWuatYSSuftAAMzABqYOVOc7JFFic=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=TW6RG6tub9s1Xk58X+R2rzfiSKib63gqGZWTe2pBfrs48MR99/VSzbBxrkWoLqRLuR7qRBF27TqgXZmvFyxTuwN2kaWlYKo0biyf5L61PWjDJldZkPPpSW3TyGXLS0kpphn0EpESrJ+IObgNK3VeXIOLF4XwnMEckyIn30lUS0tar/3wK6zuu/66WGGX+6wdKx3UqVuvSAho2HtAxUhHOOhbp3rHWVlA8FcHrT21vFa5OqcjQ30TQVfutMZu3X23k3BXVi/3MgDx2DtBokA+OMgxCvR7vuTXzdV+/0lyiMrE/F+BFBDrE/P3CZuRCwykVevVC4OXXONVqfrOgaiHuw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WOq7evNK; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=FupZlj3v;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WOq7evNK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:33::1e; helo=mail-ed2-x1e.google.com; envelope-from=torvalds@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from mail-ed2-x1e.google.com (mail-ed2-x1e.google.com [IPv6:2a00:1450:4864:33::1e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hky6069Snz2xft
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 08:55:19 +1000 (AEST)
-Received: by mail-ed2-x1e.google.com with SMTP id 4fb4d7f45d1cf-6a9adea43b6so509056a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 15:55:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linux-foundation.org; s=google; t=1789512915; x=1790117715; darn=lists.ozlabs.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=7NEEN5klK6sYQ7k8fj+V0z2WeSFVNwjy5fJJIdfiMPQ=;
-        b=FupZlj3vhtzxGk+GG3QQKEC3EDZqa1ukqnQlXcS/NJ/fT92ztxEpDhVHg3s4uBhlHu
-         6nb/TrYbjQjE/pTZ8MnCinylQ4efrW5lQnT4lFAJ0EZLo9GCEoyuCSsxetk/Bzgtc8/e
-         1bG5ODMjybGfUg+/TyVTWXpNDMKUbGdLv2CzQ=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789512915; x=1790117715;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=7NEEN5klK6sYQ7k8fj+V0z2WeSFVNwjy5fJJIdfiMPQ=;
-        b=mmuN1gsByCpIubLFXUZl/3YciaoAVWe/o4NiTQnSpnpPTljUvBRXu1UYygV9wl8FpT
-         U4yxA23wRmxKqfp05IKCMfEfPqdJ8wEzolG7rMs6qnvstRPggQoM/6ZyJkyqktFqjvHe
-         DbBFHe+2Kl1vdnjxNo2KDs0iDNHxMcbPfjjpIsTfxGiSEmDV6TmBAt+qfYNE58T/5YGn
-         V1/qb6uHSBu8HqnkxyvOCuaLJHW7mCAWzKV5BbnL/RvEEl81lD/jyKTjnMFJWM7XXCfM
-         TWV3h9cQzkl2TYgyrkkqbd9mXg5ImbwTTMNvrgotHKO/vwpLcHboIQH4PzavsBRlNLzN
-         qYuQ==
-X-Forwarded-Encrypted: i=1; AKwUvBykB4Yj9HgvqSAmzjfl/re+L55QNKKLaNT6L8Vs/eNGUB4qXeM0bOLKIvhcc4qU7/3TakfKyTJDDyhUZ3U=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++lB2dh5F064PeYLb8lVe8TWhDESdqrn32HJUlq0bD1kotBmaM1O
-	ytWKawOSHRaogGcBzbBENoBLOTNajTi7OceBaLSVrl4OPIF5iIYpfksRgKEul5GKn4lAqbOug49
-	05x2XAQaJQg==
-X-Gm-Gg: AYBFou2LQuYFgrtqAmAUsTaOw40NKHbqoEuDvMQham9LQ6tDfU9Ec3L8ba5hStE/vWe
-	61p40rHqLMKp7nCDo245d3kzdISWb4+V+5Hflb4WynPWuYFUBg6Y1s72gjq/4ncpS1pcU+4T58U
-	9/sbEvclB3QFNo0YVxqSftoKdLgutPRZHtcQ3HpReycdvMFvOfN2ir+2+E81A45Dwe479Hb/8Vz
-	EEEHlmsXl1rvsqw/z8ygqRKOXV12Ot+A6s+gGCHP9iQ3/dlP29qaYfQypcUWV6TKidCD5CaxhYL
-	zQgkhnd9l5GTwI/fgifcWekPK/HKDTBhTXGRZfBtubSbrVjspjYS2DJHLsqZk+E6pbL4EjUc6u7
-	5N3SFKqFT67rJNABmlGOOglbH9JAeAw4NYAviDrCIKTdVU+fhui7NP2lsFwDXbTzV2FfDz+QbB8
-	3H2MWo0zCjw5omzeOn9vjpG9kFN6Kde0+FMokCGEzAx/meHJOhVFt4LJpU+enB21a69AWYdSeYA
-	ZdENicC8vBZVbpUcVeuAPqd1BrXDYwddbd4Br+baz7J0OF02Q==
-X-Received: by 2002:a05:6402:274b:b0:6a7:ea54:389 with SMTP id 4fb4d7f45d1cf-6aa224005d8mr225469a12.26.1789512915270;
-        Tue, 15 Sep 2026 15:55:15 -0700 (PDT)
-Received: from mail-ed2-f18.google.com (mail-ed2-f18.google.com. [74.125.228.82])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6aa1d240669sm342029a12.13.2026.09.15.15.55.14
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 15 Sep 2026 15:55:14 -0700 (PDT)
-Received: by mail-ed2-f18.google.com with SMTP id 4fb4d7f45d1cf-6a9adea43b6so509033a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 15:55:14 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBw1xWnlDLAfmGw1Tx2/MetfPUiJWV0BjipaM4F/Aqj2DglhT9pHfUGSUc46YpkH19hD/qaMhf2ASjsRt8A=@lists.ozlabs.org
-X-Received: by 2002:a05:6402:5d1:b0:6a9:a6c0:e5ef with SMTP id
- 4fb4d7f45d1cf-6aa2244ef06mr218172a12.37.1789512913950; Tue, 15 Sep 2026
- 15:55:13 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hkzhB6M29z2xkr
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 10:06:34 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68FLVilX1963947;
+	Wed, 16 Sep 2026 00:06:31 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=V5WpnStf+Rd0lBqWuatYSSuftAAMzABqYOVOc7JFF
+	ic=; b=WOq7evNKWEU9/SejKo6XWTqVyr1I9bPEy2VnDpZXvZpi93z7VYhqLBei6
+	3t7cgK4HndF798m9AxYCbKCPOieXhoOD/MAPs2Y90lDoVEzhbvEG5sc3lvBzl0fH
+	g98gwSXz8PKjKhw5Fy8NhIwA+HoDj0E1oXZHyfn3nbAaWGoWytio0Yu1eRnb/1mD
+	4PbLPBOH3JLBYqJbTFnTC7vTQem4jo+zM/ZyuNXEFBwUSzVU/9he4sE9+RLDsYtH
+	JqwQxRUO85PbL04A4kl2ohx0IKZgpYaZYBKn2OICnmIxhIJrYYSg14Z5bKj1vVEk
+	PzpJMsBg7l2Mw3QRQEHAWVAG4lczQ==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gmxf51y8g-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Wed, 16 Sep 2026 00:06:31 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68FLa2MY464062;
+	Wed, 16 Sep 2026 00:06:30 GMT
+Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gq03vbweu-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 16 Sep 2026 00:06:30 +0000 (GMT)
+Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
+	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68G06Ta739846254
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 16 Sep 2026 00:06:29 GMT
+Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1B07D58054;
+	Wed, 16 Sep 2026 00:06:29 +0000 (GMT)
+Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1EBA95804E;
+	Wed, 16 Sep 2026 00:06:28 +0000 (GMT)
+Received: from li-4c4c4544-0054-3910-8039-c3c04f423534.ibm.com.com (unknown [9.61.83.139])
+	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 16 Sep 2026 00:06:27 +0000 (GMT)
+From: Tyrel Datwyler <tyreld@linux.ibm.com>
+To: james.bottomley@hansenpartnership.com, martin.petersen@oracle.com
+Cc: linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org, brking@linux.ibm.com,
+        davemarq@linux.ibm.com, Tyrel Datwyler <tyreld@linux.ibm.com>
+Subject: [PATCH] ibmvscsi: implement vio driver shutdown call back to quiesce ibmvscsi
+Date: Tue, 15 Sep 2026 17:06:26 -0700
+Message-ID: <20260916000626.1981569-1-tyreld@linux.ibm.com>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,45 +86,117 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260915-work-fd-reserve-unify-folded-v1-0-4d5217d6b246@kernel.org>
- <CAHk-=wjeamU=_RYT9cR3dZJ2N-Teo-N1+aYh7jwhrB=iWXD0cg@mail.gmail.com> <CACSVV028AdnTYa6OKDeoJYCau58uTkKMgEdqTn7crNSV8QZxOA@mail.gmail.com>
-In-Reply-To: <CACSVV028AdnTYa6OKDeoJYCau58uTkKMgEdqTn7crNSV8QZxOA@mail.gmail.com>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 15 Sep 2026 15:54:57 -0700
-X-Gmail-Original-Message-ID: <CAHk-=wjhJF91TCO0Zqeuf+caG2tQZ4AzbLr2qFmRmnMM4dbh4g@mail.gmail.com>
-X-Gm-Features: AcwNN1Wx2MaYDtFtmeOlL6MnzYY7doY_FEPpziKatTBWbLOeKsjmritQ5JuAL3M
-Message-ID: <CAHk-=wjhJF91TCO0Zqeuf+caG2tQZ4AzbLr2qFmRmnMM4dbh4g@mail.gmail.com>
-Subject: Re: [PATCH RFC POC 00/50] file: handle files on syscall exit
-To: rob.clark@oss.qualcomm.com
-Cc: Christian Brauner <brauner@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>, 
-	Jann Horn <jannh@google.com>, Jan Kara <jack@suse.cz>, Ingo Molnar <mingo@redhat.com>, 
-	Peter Zijlstra <peterz@infradead.org>, linux-fsdevel@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org, 
-	Oleg Nesterov <oleg@redhat.com>, linux-alpha@vger.kernel.org, 
-	linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
-	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
-	linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org, 
-	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, 
-	linux-um@lists.infradead.org, Jens Axboe <axboe@kernel.dk>, io-uring@vger.kernel.org, 
-	netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-gpio@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, bpf@vger.kernel.org, 
-	David Airlie <airlied@redhat.com>, virtualization@lists.linux.dev, kvm@vger.kernel.org, 
-	kexec@lists.infradead.org, linux-hyperv@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: gtdjm5p1bXhy66eL3-7cQlO0vVQFUJgM
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE1MDM1MiBTYWx0ZWRfX2sE1h8+o9prQ
+ uy3mXomsh9BuggUUciUJ+h8hciBW9PmuJH7B2qBL3d6cSMT/kwNEHgt1dB1pzHeAY1IThPqOXka
+ JR5Fo5jxJAA9bpxoViokonxzP5lNk6Y=
+X-Authority-Analysis: v=2.4 cv=cvgOAF4i c=1 sm=1 tr=0 ts=6aa9dd87 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8 a=_VdnjSN4jw3ftuXtCEsA:9
+ a=0bXxn9q0MV6snEgNplNhOjQmxlI=:19
+X-Proofpoint-ORIG-GUID: gtdjm5p1bXhy66eL3-7cQlO0vVQFUJgM
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE1MDM1MiBTYWx0ZWRfXyrCy0gjYeJCw
+ g2XyFnk7p/gD6eNgK6trAMSnxkKLxey9XQHEtd143t9Ljscm1Ltbv0pWKqXBt/lj+FOnOBGIuVO
+ Ixy3sjITphrTijDwKVOP3i5r3TVun7uqK59PV78TpYRvYd9Cmthk+xArZ5RYex+VaFytbDf2gJR
+ aGOFZByZ7kSn5yPHGy+8/f6oyzZNNW/Sx2djbV77RkQIfm5ykU1hwxDAJ7BMTtYuSHoVXOyOrAM
+ FXg3GC5UdwpNvT1FkIeB/rLKyREKQIIKMUD/i02oog6GMNSuDNQbKwexhjqeU29PFL3PLGjmAU+
+ 1AgWyqbTlDsrI2+S3CWcAL/6zz7fwdIqEtazqopisf9Z3naMoR1NnP8Fg2/rY5214K6et/KMn1A
+ m6ldxETQa5G86BsDqjdZ4h3IWe6VNAlLDIXxbEFmuQ8GJlcyp8GInWlsRynd6NQv3Xxcjb43HB2
+ D88eeCKTNSOyoibm2KQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-15_05,2026-09-15_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 lowpriorityscore=0 clxscore=1015 priorityscore=1501
+ suspectscore=0 bulkscore=0 impostorscore=0 phishscore=0 spamscore=0
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
+ definitions=main-2609150352
 
-On Tue, 15 Sept 2026 at 15:21, Rob Clark <rob.clark@oss.qualcomm.com> wrote:
->
-> With fd's it is more than just about error rollback.. exposing an fd
-> to userspace mid-way thru an ioctl is an easy security bug to write..
+Currently during kexec the vio driver implementation calls a drivers
+remove function as a big hammer when shutdown isn't implemented. This
+results in filesystem errors in the log as a result of the block device
+being removed while the filesystem is still mounted. Rectify this noise
+by quiescing the ibmvscsi driver and stopping short of tearing down the
+full host.
 
-That isn't very common code. It's something that is done by a few
-strange cases, and yes, those cases should just do it right.
+Move quiesce calls to their own helper function. Add a driver shutdown
+call back and implement with call to ibmvscsi_quiesce such that any
+outstanding commands are purged and failed back to the midlayer with
+DID_REQUEUE. Update ibmvscsi_remove to also use the new ibmvscsi_quiesce
+and failback outstanding commands with DID_ERROR prior to full transport
+teardown.
 
-But "those few cases should do it right" does not mean "make a whole
-new subsystem for this thing that makes a simple "open" actually be
-slower and stranger".
+Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
+---
+ drivers/scsi/ibmvscsi/ibmvscsi.c | 32 +++++++++++++++++++++++---------
+ 1 file changed, 23 insertions(+), 9 deletions(-)
 
-             Linus
+diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
+index 4ecd3db08875..bc8da31fdfbd 100644
+--- a/drivers/scsi/ibmvscsi/ibmvscsi.c
++++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
+@@ -2341,26 +2341,39 @@ static int ibmvscsi_probe(struct vio_dev *vdev, const struct vio_device_id *id)
+ 	return -1;
+ }
+ 
+-static void ibmvscsi_remove(struct vio_dev *vdev)
++static void ibmvscsi_quiesce(struct ibmvscsi_host_data *hostdata, int scsi_error_code)
+ {
+-	struct ibmvscsi_host_data *hostdata = dev_get_drvdata(&vdev->dev);
+-
+-	srp_remove_host(hostdata->host);
+-	scsi_remove_host(hostdata->host);
+-
+-	purge_requests(hostdata, DID_ERROR);
+-	release_event_pool(&hostdata->pool, hostdata);
++	scsi_block_requests(hostdata->host);
++	kthread_stop(hostdata->work_thread);
+ 
+ 	ibmvscsi_release_crq_queue(&hostdata->queue, hostdata,
+ 					max_events);
+ 
+-	kthread_stop(hostdata->work_thread);
++	purge_requests(hostdata, scsi_error_code);
++
++	release_event_pool(&hostdata->pool, hostdata);
+ 	unmap_persist_bufs(hostdata);
++}
++
++static void ibmvscsi_shutdown(struct vio_dev *vdev)
++{
++	struct ibmvscsi_host_data *hostdata = dev_get_drvdata(&vdev->dev);
++
++	ibmvscsi_quiesce(hostdata, DID_REQUEUE);
++}
++
++static void ibmvscsi_remove(struct vio_dev *vdev)
++{
++	struct ibmvscsi_host_data *hostdata = dev_get_drvdata(&vdev->dev);
++
++	ibmvscsi_quiesce(hostdata, DID_ERROR);
+ 
+ 	spin_lock(&ibmvscsi_driver_lock);
+ 	list_del(&hostdata->host_list);
+ 	spin_unlock(&ibmvscsi_driver_lock);
+ 
++	srp_remove_host(hostdata->host);
++	scsi_remove_host(hostdata->host);
+ 	scsi_host_put(hostdata->host);
+ }
+ 
+@@ -2398,6 +2411,7 @@ static struct vio_driver ibmvscsi_driver = {
+ 	.id_table = ibmvscsi_device_table,
+ 	.probe = ibmvscsi_probe,
+ 	.remove = ibmvscsi_remove,
++	.shutdown = ibmvscsi_shutdown,
+ 	.get_desired_dma = ibmvscsi_get_desired_dma,
+ 	.name = "ibmvscsi",
+ 	.pm = &ibmvscsi_pm_ops,
+-- 
+2.55.0
+
 
