@@ -1,99 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-27506-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27507-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3D5AC982CF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 17:00:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA61BC982C9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 18:12:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hlQ9w1Mrwz2yGT;
-	Thu, 17 Sep 2026 03:00:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789578020;
-	cv=none; b=EgH/MidrKTixjc7Uow7XFqLhTtOz27AHxemcsjpyHqY2W0O6oV5pFQ+xwf1RiC3w7mlX0v8ixZbYZvau9znl7i0qIB+BnHhD8A1rQrKq2ZaMv+5CH7lahfBgCIjchy1fzskoDg6DIA4qaXguitlpwtTkf+yawSuH367aoquuvHI9JXBFC4IYqyhiH5kWrOeQ/SyhvnLRRsd9UrD69Jb9Iz78jp5QOCBmpawud63B+vd9xDLCHSsyd6wOkEQSFSBSvjtPCW/YZCHtCwwBv7ChxK9jkfB0S9K/qnlRl9bF0Vxap9kp3kuv6WuMc4BuB6wYVK+HbnM1nNh7W+jngebU5Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hlRmk5MByz2y71;
+	Thu, 17 Sep 2026 04:12:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789582326;
+	cv=none; b=S5Ihh36WNclJgSNjd9crvEMsiAvf+mljO7umNRVa6RFPGBOQXUWAmUX6SuSY6IUA5tlICFyIDfhPi6VWDfl/JhkH3bVTo2coUN5kK5HfcoaL9eCnN/+qUFIBuEn5NeIHqKiSkDCC5SnoQK+Q/x1aJdHaJ8Hqqu7nDMQ6j4mfSyHMMFipM+NaXlq/FWaDSxfOZTeTtvTQc6hl8m9pRoaI3LVFDZYMnYdcR3yxfEp89RJwCB81rpxzb0s3S6QT4oYEpoNbFbbIiZG0NoX56uKGdN2w6IE3n4GMm9y8zpOGkUasmHKyj4L2Yx+Eo67aTP9ndRFBzGSjBqXJ49A/LgH7Dw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789578020; c=relaxed/relaxed;
-	bh=JNZtWdKCogaGrWtyvhM6z027Qg7RFwkG7Shw9zuVQhE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=m0+zYpGOivE/NwW87rl96o+XjmgbI4kXz0Dpy75j0tFoeaQTBxGWa9hdS6nFFTyPzzQV98+vCQplZ5wQuDVmhr+cqkUaGG+t+MFeaKtJqFdtuwcE97L1Bikol5/dRJP3iO27fqXFIj894E2eeGvSE2VLNp6YVo0NE60OK+aYgGX4EPxewp5EL2yNNFxhC+zC99LMJ63nEmI4TWL11CUoQC5DxpsRW2La7b2iwv/AXibSC5aB66fD0RdwQ71qjMyGJ6zjvqXpqXFzpEFyLGUGEG/zQFtpNBWBoMhI3kcgYkbUFjH3VPzL1bidMrSXH4LlR7A1+of1qBN2vciyLLs6hA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PmVw4wXS; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1789582326; c=relaxed/relaxed;
+	bh=9bfsouon0yWRpaf+eMX81jGyrvm2CXZlCIOmzpWS2p0=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=dAD7rjymBMMb53oaEhbazqji1pz0M1i0xru893iMdhVtjUJCWF5/TRD9x4qqydH63wtabR6BE5RzQoSyYhyKiWpLfCVcwiW+FZrKTVkGY/yVWhvmXj0aomEbidX8YI3/uWRhEVtDFibJYynCl0gLFAs69CiaSCICCAeqSmYPgId1UYHcdEcpIxuzf2oeQ12l6hUEgvvNhCawlrN6WUK0NRoThyEeJM3qPjlKBmRTQYm5z+fOnmS7U5ohOV14JtAtuukRACxIkrZPCbjZvoCv8UT8g/Kta54Ija93puTN4+bDqjocxbbB5FTHr/s8quk878q8pvdeULXcsCfzV4yupA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nHO8cH9d; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PmVw4wXS;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nHO8cH9d;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlQ9v1v4Hz2xSV
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 03:00:19 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 46BE4600CB;
-	Wed, 16 Sep 2026 17:00:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4114D1F000FF;
-	Wed, 16 Sep 2026 16:59:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789578016;
-	bh=JNZtWdKCogaGrWtyvhM6z027Qg7RFwkG7Shw9zuVQhE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=PmVw4wXS/r9CpHfAOn2amzHMwnGPXSnlrGas83Xpi7dsydIKsArkblukiVIHwBAY6
-	 ubpGfFGa7kqrykL1Pa6q3MkO4GKMCQQXpCmITVG/PeoahA3HJxtDyVnKBlsOT5y6Mm
-	 wozpolIxCIhxuWjx0aQRah90ZewUiZ9k5Elj1dLiF8CCivxp3p7w6OaDY/5H9Oq45S
-	 O6mv0zYlNEHZcdRLCgzvK/ZrOJVz1jz48dKYZvJ7Oi+o5KCdWId8DKOgPiN8pVOlBz
-	 jm/9rlekEwQE9XCQ+GkKAffM26w81NuZfKTTB+nUUF3sGMC9I2pcmKHTHWSj4DPFxw
-	 A9hfwpouwGpWQ==
-Date: Wed, 16 Sep 2026 17:59:52 +0100
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: "David Hildenbrand (Arm)" <david@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Zi Yan <ziy@nvidia.com>, 
-	Baolin Wang <baolin.wang@linux.alibaba.com>, "Liam R. Howlett" <liam@infradead.org>, 
-	Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
-	Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
-	Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Guo Ren <guoren@kernel.org>, 
-	Brian Cain <bcain@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, 
-	Dinh Nguyen <dinguyen@kernel.org>, Simon Schuster <schuster.simon@siemens-energy.com>, 
-	Jonas Bonn <jonas@southpole.se>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, 
-	Stafford Horne <shorne@gmail.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, 
-	Rich Felker <dalias@libc.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
-	Russell King <linux@armlinux.org.uk>, Vineet Gupta <vgupta@kernel.org>, 
-	Michal Simek <monstr@monstr.eu>, Chris Zankel <chris@zankel.net>, 
-	Max Filippov <jcmvbkbc@gmail.com>, Will Deacon <will@kernel.org>, 
-	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, 
-	Peter Zijlstra <peterz@infradead.org>, "David S. Miller" <davem@davemloft.net>, 
-	Andreas Larsson <andreas@gaisler.com>, Richard Henderson <richard.henderson@linaro.org>, 
-	Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>, 
-	Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, 
-	Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
-	Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
-	Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
-	Sven Schnelle <svens@linux.ibm.com>, Richard Weinberger <richard@nod.at>, 
-	Anton Ivanov <anton.ivanov@cambridgegreys.com>, Johannes Berg <johannes@sipsolutions.net>, 
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
-	Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka <vbabka@kernel.org>, 
-	Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
-	Michal Hocko <mhocko@suse.com>, Jason Gunthorpe <jgg@ziepe.ca>, 
-	John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, linux-mm@kvack.org, 
-	linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
-	linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org, linux-sh@vger.kernel.org, 
-	linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-snps-arc@lists.infradead.org, linux-arch@vger.kernel.org, sparclinux@vger.kernel.org, 
-	linux-alpha@vger.kernel.org, loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
-	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
-	linux-um@lists.infradead.org, Hugh Dickins <hughd@google.com>, Qi Zheng <qi.zheng@linux.dev>
-Subject: Re: [PATCH v3 01/12] mm/huge_memory: zap deposited page tables after
- an RCU grace period
-Message-ID: <aqrAflIQbwcNKlQL@gremlin>
-References: <20260911-rcu-pagetable-freeing-v3-0-7b8c86103821@kernel.org>
- <20260911-rcu-pagetable-freeing-v3-1-7b8c86103821@kernel.org>
- <467b6599-b73a-4f58-a29a-b6c6d1ffc3a5@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlRmj4TPRz2xqp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 04:12:05 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68GG1eZY2330067;
+	Wed, 16 Sep 2026 18:11:49 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=9bfsou
+	on0yWRpaf+eMX81jGyrvm2CXZlCIOmzpWS2p0=; b=nHO8cH9ds1ImvuHWTsYPuO
+	G7IRIVEHNuIZIoAP71POUGGtVyF+/EzLL7jXMDvY+Pxkhrgn3HxUmhsbd+qhaOIO
+	zCVbzWn21OaKwr/cp40DzFVB9oRiUIOFSa6e8jP3mpjhYzTAwzW50FKTu9QUKugD
+	9Wvr5FoivoZhpnqMeciQE553Ds5Cnop3VEgs0obiTYR8zhOa2BDxmikYCIvoaE3Y
+	p/RQ7G3q3rYgnKYUMCzwnhAMuwqLIgtwt46zRWDM6tftcxiEWpCA5x5E4aHYW8Xa
+	PmytqMX6XywIcnMiRqrscXcgj6CyCEP+zFr9ypn8rsKCARdHWDSrhphjMKg+I+Ww
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gmxdqe63n-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Wed, 16 Sep 2026 18:11:48 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68GFe4Yj1713037;
+	Wed, 16 Sep 2026 18:11:47 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gpyweyqsr-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 16 Sep 2026 18:11:47 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68GIBhNM25952752
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 16 Sep 2026 18:11:43 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6600020043;
+	Wed, 16 Sep 2026 18:11:43 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 345F520040;
+	Wed, 16 Sep 2026 18:11:39 +0000 (GMT)
+Received: from [9.39.21.238] (unknown [9.39.21.238])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 16 Sep 2026 18:11:38 +0000 (GMT)
+Message-ID: <9b58bd58-d0e4-463e-bff9-e33b153b2987@linux.ibm.com>
+Date: Wed, 16 Sep 2026 23:41:38 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -107,163 +81,116 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <467b6599-b73a-4f58-a29a-b6c6d1ffc3a5@kernel.org>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [Linux PPC] Disable PREEMPT
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+To: =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>
+Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Michael Ellerman <mpe@ellerman.id.au>, harshpb@linux.ibm.com,
+        Gautam Menghani <gautam@linux.ibm.com>, amachhiw@linux.ibm.com,
+        Christian Zigotzky <chzigotzky@xenosoft.de>,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+        "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        "R.T.Dickinson" <rtd2@xtra.co.nz>, hypexed@yahoo.com.au,
+        mad skateman <madskateman@gmail.com>,
+        Christian Zigotzky <info@xenosoft.de>, Samir M <samir@linux.ibm.com>,
+        Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+        Narayana Murty N <nnmlinux@linux.ibm.com>
+References: <5ed38c3e-4aaa-4a91-9eda-e31d09b44abc@linux.ibm.com>
+ <app0zGv9bvtL4nHm@kunlun.suse.cz>
+ <4eef1f0b-0c02-4377-b950-43c3b120865a@linux.ibm.com>
+ <aqJxcWC1dWKITCav@kunlun.suse.cz>
+ <393117bc-094e-4c47-b061-f255f5bff937@linux.ibm.com>
+ <aqKUhHb9UTfVq4As@kunlun.suse.cz> <aqKfsVArHHaIK6M9@kunlun.suse.cz>
+ <baeb1ae4-7c0f-4e4e-8fc5-09367cb7c4e9@linux.ibm.com>
+ <aqfTU79SlNB3ykDi@kunlun.suse.cz>
+ <25cf64ab-2a32-4d4c-a0c7-2e9007c276d4@linux.ibm.com>
+ <aqj1KxZttNgY5ZVR@kunlun.suse.cz>
+ <ba9759d0-b1f2-4b33-aff5-769cf89bd584@linux.ibm.com>
+Content-Language: en-US
+In-Reply-To: <ba9759d0-b1f2-4b33-aff5-769cf89bd584@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE2MDI0OCBTYWx0ZWRfX+0UAaLokyp6R
+ dEf3WjFrlV1HEPWVo+0mvBXjrwuItUl7R/oCDWUK65+ZcO+UkpANUjBPIIAmhghr3GmsXz1Dqbn
+ tolyjGoGnNwAsraNThqzK0RF/+ImfANZHEBUPV8KKGorVBdkK78E7+ybctEelcBe5PM8BSFzhYP
+ xl/MylpO7yLYEfke6iT7fe4qbxbtNFD9ZjaRq8uA30F3oVekrMLhy6r7shVj3nUFa97YebJs3FB
+ j9gA7cPrElcY7ijSkuqGCvBbvAUbmL1XUg12Et7bcSokCtGCyrYHgBg9YUdeQDsU/Jq8A4SRs+E
+ YZpM78AOTT41PPZNgd0co1tRm/42Fm38CwR/Vsv24Lg2Aoayfj5XZqyuByzvwQGAOqrW5nhQgBy
+ XF9h6yi7hu5+0peV3i895GHR3nlJb/GPd9BiTF7RVqg+bJkaYXH68UILgLDors2CYJvfNdhv6ag
+ 2q9q/I6AuPC4L275T/Q==
+X-Proofpoint-GUID: cbuSvpAasOnQbLmrPo0J5F9gsvoqm4j9
+X-Authority-Analysis: v=2.4 cv=DobDa2/+ c=1 sm=1 tr=0 ts=6aaadbe4 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=t9zRotgyz75Mt5sWWRYA:9
+ a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: Yrq15UHCBxwAmXM_4CePaMou8iJnIeMb
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE2MDI0OCBTYWx0ZWRfXyM9WgoRpCRGI
+ VHbrwx6DgNub5tmAcYo1SlgQPWxTEARTQ1ll1KxQAAGTfSn64b7s+adbgD4mieEyiE21J1JoZ+7
+ zb6KukvQWJU4WFXuO0Fju6lPDs4xZxU=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-16_03,2026-09-16_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 malwarescore=0 priorityscore=1501 suspectscore=0 impostorscore=0
+ spamscore=0 clxscore=1015 adultscore=0 bulkscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609160248
 
-On Wed, Sep 16, 2026 at 04:42:04PM +0200, David Hildenbrand (Arm) wrote:
-> On 9/11/26 21:36, Lorenzo Stoakes (ARM) wrote:
-> > When an anonymous mapping is collapsed for THP, a PTE page table is
-> > 'deposited' with the installed PMD entry.
->
-> Right. Or when we allocate an anon THP.
+Hi Michal,
 
-That case doesn't interact with page walking though, as they're
-just-allocated right?
+> 
+> It seems easy to re-create.
+> The key is running bcc/bpf program in parallel to kernel build.
+> 
+> For example, these two in parallal, leads to stack corruption panic.
+> Stacktrace does differ sometimes.
+> 
+> ./funccount  rcu* -d 100
+> make -j 32
+> 
+> Boom. Will try to debug this further.
 
-Am focusing on collapse case for that reason rather than listing all
-possible places deposit can happen.
+A bit more debugging.
 
->
-> >
-> > This is done in order that a split can be performed without needing to
-> > allocate additional memory.
-> >
-> > The freeing occurs in zap_deposited_table() and is done directly without
-> > any delay via pte_free().
-> >
-> > This is currently not a problem as existing page table walks are protected
-> > by the mmap or anon rmap lock.
->
-> Or VMA lock?
+1. A few functions seems to crash, specially ones that call schedule.
+    So picked schedule itself for tracing
+2. Used plain ftrace. No crash.
+3. Used kprobes. Boom. Crash appears. But this helped to avoid BPF JIT, or BCC part of it.
+4. Did some preempt count validation with annotations. Seems to be holding fine.
+5. Since unlock can call schedule while tracing schedule, there is possible looping.
+    Need to see further why it happens to be crashing there. Maybe regs or paca
+    handling needs a closer look.
 
-Yup indeed, can update on respin/ask Andrew to add VMA lock here.
+For now, below patch helps to keep the system stable under kprobes, bcc tools.
+I will look further into see why exactly it is crashing and below one is going to
+be the proper fix or not.
 
->
-> >
-> > However this becomes problematic in a future where RCU-only page table
-> > walkers exist, as there is nothing to prevent a page table walker that
-> > started the walk prior to collapse having its PTE table freed underneath
-> > it.
->
->
-> Wait, but wouldn't it be really problematic to punch a page table that is still
+Feel free to give it a try.
 
-Punch? You mean deposit?
+---
+  arch/powerpc/kernel/kprobes-ftrace.c | 2 ++
+  1 file changed, 2 insertions(+)
 
-> being walked into the deposited list where it can just be allocated from another
-> PMD->PTE split?
-
-In general, RCU-only page table walkers are _only_ guaranteed that the page
-tables are not freed from underneath them, as per the cover letter:
-
-	"As a result, page table walks can now be performed safely under RCU without
-	 any risk of page tables being freed underneath a walker.
-
-	However, this is the only guarantee that this work provides - page table
-	walkers must still ensure that page table entries are as expected
-	throughout."
-
-So this series doesn't actually have to answer that :)
-
-But a PTE PTL -> pmd_same() check will flag anything like that,
-a.k.a. pte_offset_map_lock().
-
-The RCU lock replaces stablisation on stuff other than VMA/mmap or rmap
-lock.
-
-If the walker needs to be sure the PTE is actually valid and belongs to the
-expected walk then further is required.
-
-Alternatively (like GUP-fast) if you wanted to avoid locking at all, IRQs
-off would be required paired with the tlb_remove_table_sync_one() in
-collapse_huge_page().
-
-Another strategy could be used I guess with looped checks but it gets a bit
-sketchy with timing etc.
-
-But actually maybe we can avoid all that...
-
->
-> Note that pgtable_trans_huge_withdraw() just dequeues *some* PTE page table in
-> the list attached to the PMD table.
->
-> Something is odd here.
-
-...Since this code path already allocates (the huge folio), so allocation
-here isn't an issue (as long as done outside of lcosk), why not have it
-also allocate a new PTE to deposit and RCU-free the existing PTE instead?
-
-That eliminates the one place in the kernel (afaik) where a
-page-table-walker-visible table can just get yoinked over somewhere else.
-
-Then a lockless PMD check works.
-
-E.g. something like the below?
-
-diff --git a/mm/khugepaged.c b/mm/khugepaged.c
-index f49a6710933b..d9cb6b406ebb 100644
---- a/mm/khugepaged.c
-+++ b/mm/khugepaged.c
-@@ -1293,7 +1293,7 @@ static enum scan_result collapse_huge_page(struct mm_struct *mm, unsigned long s
- 	LIST_HEAD(compound_pagelist);
- 	pmd_t *pmd, _pmd;
- 	pte_t *pte = NULL;
--	pgtable_t pgtable;
-+	pgtable_t pgtable = NULL;
- 	struct folio *folio;
- 	spinlock_t *pmd_ptl, *pte_ptl;
- 	enum scan_result result = SCAN_FAIL;
-@@ -1310,6 +1310,12 @@ static enum scan_result collapse_huge_page(struct mm_struct *mm, unsigned long s
- 		goto out_nolock;
- 	}
-
-+	if (is_pmd_order(order)) {
-+		pgtable = pte_alloc_one(mm);
-+		if (!pgtable)
-+			goto out_nolock;
-+	}
-+
- 	mmap_read_lock(mm);
- 	result = hugepage_vma_revalidate(mm, pmd_addr, /*expect_anon=*/ true,
- 					 &vma, cc, order);
-@@ -1433,8 +1439,8 @@ static enum scan_result collapse_huge_page(struct mm_struct *mm, unsigned long s
- 	spin_lock(pmd_ptl);
- 	VM_WARN_ON_ONCE(!pmd_none(*pmd));
- 	if (is_pmd_order(order)) {
--		pgtable = pmd_pgtable(_pmd);
- 		pgtable_trans_huge_deposit(mm, pmd, pgtable);
-+		pgtable = NULL;
- 		map_anon_folio_pmd_nopf(folio, pmd, vma, pmd_addr);
- 	} else {
- 		/*
-@@ -1453,6 +1459,9 @@ static enum scan_result collapse_huge_page(struct mm_struct *mm, unsigned long s
- 	}
- 	spin_unlock(pmd_ptl);
-
-+	if (is_pmd_order(order))
-+		pte_free_defer(mm, pmd_pgtable(_pmd));
-+
- 	folio = NULL;
-
- 	result = SCAN_SUCCEED;
-@@ -1463,6 +1472,8 @@ static enum scan_result collapse_huge_page(struct mm_struct *mm, unsigned long s
- 		anon_vma_unlock_write(vma->anon_vma);
- 	mmap_write_unlock(mm);
- out_nolock:
-+	if (pgtable)
-+		pte_free(mm, pgtable);
- 	if (folio)
- 		folio_put(folio);
- 	trace_mm_collapse_huge_page(mm, result == SCAN_SUCCEED, result, order);
-
-
->
-> --
-> Cheers,
->
-> David
-
---
-Cheers, Lorenzo
+diff --git a/arch/powerpc/kernel/kprobes-ftrace.c b/arch/powerpc/kernel/kprobes-ftrace.c
+index f8208c027148..bcb1e8a8995d 100644
+--- a/arch/powerpc/kernel/kprobes-ftrace.c
++++ b/arch/powerpc/kernel/kprobes-ftrace.c
+@@ -63,7 +63,9 @@ void kprobe_ftrace_handler(unsigned long nip, unsigned long parent_nip,
+  		__this_cpu_write(current_kprobe, NULL);
+  	}
+  out:
++	preempt_disable_notrace();
+  	ftrace_test_recursion_unlock(bit);
++	preempt_enable_no_resched_notrace();
+  }
+  NOKPROBE_SYMBOL(kprobe_ftrace_handler);
+  
+-- 
+2.52.0
 
