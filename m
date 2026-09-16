@@ -1,58 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-27502-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27503-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A39AAC982C9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 16:54:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C03B8C982C1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 16:55:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hlQ2q19qQz2yGT;
-	Thu, 17 Sep 2026 02:54:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hlQ4X38pmz2yGT;
+	Thu, 17 Sep 2026 02:55:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789577651;
-	cv=none; b=DhZHvj50YoKXHxIpZl2ShtO2NdfeA7A6uRzpAxPTSUpw01H0wxmDATNfqUMcM5XQ0PprF5OoHIu2DR/9JqQAQNgloY9k8LAJ9COrZ62rZ6NRYyjJZbhwKX6+0NJYkqGYBC1Ual9vfmZ0Hxd465g6oDiqdKiBCBuJKOQip1E3OmbX/5XaWAHZTr+geaP8bbow+VmLClh4fquSFZeJJE1rJ6/raA35aZqYGKPqZ2Yf3QP+Vy6acH7ex79JCuz6hG0TGjyjGho1C9ibl6GdaLDNDQ2qOqTnbEE6zgyJBC8sTATxx/op8dxtXdK294uefNNB4gR9Y+VLYZYrC78nuQl4Bg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789577740;
+	cv=none; b=biItmgPMLwEtomTP+WDhxvLoFZjEwY8xxVC+qfrT/XCdM+bYmH9m//BoP7YKr62TO0RzV2aAZzpjwcsWtC+91BpuxvQbAH/S6NJvoBvSy8UQ226bnoPHULXxh7OFOAzbjS5Nq6Q+P1pmpQKFGWC4ZFu0u8FDIQiSgC/WTh8LlH5WBYna7OxUvxfWeo0e9ZHhxPWTs/MbKpo0CR/bNMFLdLtK2YqSW4b7iwdKUMOCTue0QyFagmaYgskf2OG8cN1sgcPBuCxFxsT/vOmxaGpx8wjVWWmNz8BAccs98h0xjuJq5ADyUbzNqF/+ppREh35QCebLpFpqhKwZeKzaBKr/Tw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789577651; c=relaxed/relaxed;
-	bh=+Cs3VDVugIjX3MNVr9btCbWNjreSEbxnWC6UpAzcikY=;
+	t=1789577740; c=relaxed/relaxed;
+	bh=3Rl9kH69FoIDw7gGLNXjdv5fuBqhGXd9XmucXEFUoPA=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=PKPTZHPwqWSDiTXy1m4lr+sNxAQwTaPlQ7A+8rbg6+pFFiNUuUzpWO24x8Uq4/oaFwxPahYw4pCarr0VFvzquVK88WojXrj8H4DT7Q1XkfNo7ocZ9CNYhj6gHmiAvFsJHVhEKpjEsDWWyd5twfO2Q4jm/+8zevDNql5tmVeswdMmsp8XA/D4wVG9buwQlP/FfpghOrPDboHbK8VW8+rtPibgquB6G0v9iwFUqAQAtCN7HWfAIYlhouRDDrwxwwFZCBdnEj9w3NTi8dMZpbr1c27q6u4uXouKfEbLyhCDY/6qf8R8gUDHikiFDC0LlvnyFzb2lxPZ9655jQyH5fdjTg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GjbO+wUK; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 To:Cc:Content-Type; b=Rf+zn7LMbtvSvEaUsnAEKvYNhDWuT7fceTJ4AmnzzS9h5fA/pm1iOHFNIVDDa8v2TW9zvh1ct9SKwmGWUWs5LJlYIZXN64zQJLI9dkFiBn4M74ZEYYE7oEzXDNJf3wzcyeZr8hrP4ANlcD8/Q3co+QH8sO65I2C8XOpo+aCcW/gAVFf/FdxKUPze/6pFfQDZ+u0bAY772B2X81kqPJE4/cG6eqTI6MHyGUyxIxkmvS+dSMZ7GOm5BM0vEONj4wv38aJN9qlOOQ2gGethHV9pOZ6zskMBORocgDWRNqQQkUk/hP4u1xSkh0QhSu5YzyXrQFwtxjd7Y02FBUGZtGDKzg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hQNgOhDe; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GjbO+wUK;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hQNgOhDe;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlQ2p0zr1z2xqp
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 02:54:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlQ4W4X9kz2xqp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 02:55:39 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 8823943C93
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 16:54:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2B4461F00903
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 16:54:08 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 20BC243D3B
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 16:55:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E75041F00904
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 16:55:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789577648;
-	bh=+Cs3VDVugIjX3MNVr9btCbWNjreSEbxnWC6UpAzcikY=;
+	s=k20260515; t=1789577737;
+	bh=3Rl9kH69FoIDw7gGLNXjdv5fuBqhGXd9XmucXEFUoPA=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=GjbO+wUK8PFGJDHTykoLXmuHDqj5Q7HLnMpLEGqYG36NblxMPUNwQLqNuP7FzEtT4
-	 JtNiFzZ/1GJdhAx3cf2d/F6lgfSLCGCB6qOb6ixqEY8owR8DlGvYXsSTeAdY2dHNf4
-	 um0RvShJEozxLwpw/Um8fJ9MSJePrMWS+n9P+W2MJEQKKTtNV/ybCuERrp5NU/6B95
-	 lZj0/o+SBlzX8Ebb7rn+q5ig4whFnumLJBwY77N7myjOW9XvPxgXpgFzYNCbq1Hw4n
-	 xV3s0FQA2HKc/MFPuqF6apfb/pYnlhD4tXsFKK4J8z0/eokzzdgWXGC3jEzMW515N9
-	 BQQxBTOl+bhjQ==
-Received: by mail-lf2-f12.google.com with SMTP id 2adb3069b0e04-5b5e4f1744fso1788744e87.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 09:54:08 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBx847mNUFbUjV4S4TNsuFqqCNWsqSV1FHxS1ul8xcGbCXXTeYLVYgmycADULlKKZzoQ5foVRwYv2R9cSNQ=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++lqn1MiSrNBYvYGq25jRZbEEnJorfRxy9T6hjWCM2KFmqv8SH5I
-	dWC2RVhSiIF338McmzD5DxiF0YXfSCGJIhvhB2F05jhnj0hATWF2iZiYU+xozXLMt+mkVhp6zno
-	pYAjK7QFEOgTzLJ57HmjKRePpN8CAcC0=
-X-Received: by 2002:a05:6512:b83:b0:5b6:183c:5ca3 with SMTP id
- 2adb3069b0e04-5b8b665fbb5mr1072085e87.65.1789577646856; Wed, 16 Sep 2026
- 09:54:06 -0700 (PDT)
+	b=hQNgOhDeYs1NQ6GmUOz0PqknKmSSCRJExdQxK4eKhpTd9nP0IM2kBWXiZm9kvDRXb
+	 L/PYUsw6xxXwJ/qtkIykRBvErbfoAaTV1M/hxXLwv6rGmZM2GOuJg3nP60oKYk97+t
+	 nRxefwpX+SzqwBwPGwjyGeKqcS4GtwuPbWuZjOtSlJvkzqAHsLEWEY9jtXDMpeD5SN
+	 dZAoCXjRfbm48EIjLx9ETaeW5yuQu7biEtc5L+mJHKcsK2CF+Uupjw0ziAMCYqLqJT
+	 ao2FuIIsC5N9PHOj97lpgYY5jXsaur/bcHh6vrTMt6tqdA/rRkyYW2XSendQYz4o2j
+	 p22s8iOsMw+Ug==
+Received: by mail-lr2-f12.google.com with SMTP id 38308e7fff4ca-3a2ff176d5eso11612721fa.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 09:55:37 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvByfLYUziP0BA21aGeRlgPIyBukXHOdTfuN1RLKqUAbzyryzsANE0Alp+xeXmETpLWl5HhCu1ZnropiNLY0=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++nxwO2QP9bXcZEhiSEbF/9fshgLAmlwoySy6f+tTikJHvlgMoJW
+	ytcJ1+l0fkcb7M5HXnJbXobpq50QOB7KjhJkB7HOALTJ+hasbeDuqvE8u65Rg8s7V82rqzIFsYo
+	pOWG1pXcy/bvPdwb2/RH0AYCb3isPHEk=
+X-Received: by 2002:a05:6512:2c97:b0:5b4:ac27:6bb0 with SMTP id
+ 2adb3069b0e04-5b8b666abe2mr2187526e87.25.1789577736627; Wed, 16 Sep 2026
+ 09:55:36 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,14 +66,14 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260909132153.1596191-1-arnd@kernel.org> <20260909132153.1596191-5-arnd@kernel.org>
-In-Reply-To: <20260909132153.1596191-5-arnd@kernel.org>
+References: <20260909132153.1596191-1-arnd@kernel.org> <20260909132153.1596191-7-arnd@kernel.org>
+In-Reply-To: <20260909132153.1596191-7-arnd@kernel.org>
 From: Linus Walleij <linusw@kernel.org>
-Date: Wed, 16 Sep 2026 18:53:54 +0200
-X-Gmail-Original-Message-ID: <CAD++jLk6wQ=GOzRODdd+D2GQg1=GoP5UN7ZJpPPBQJxZcMQy+w@mail.gmail.com>
-X-Gm-Features: AcwNN1VTSOwI-aMkaQ5X6FNcYlrB3vHQ8mD-kiafJFD8muXAXYKzzuAMRSbPmhw
-Message-ID: <CAD++jLk6wQ=GOzRODdd+D2GQg1=GoP5UN7ZJpPPBQJxZcMQy+w@mail.gmail.com>
-Subject: Re: [PATCH 04/14] mfd: remove unused wm8400 driver
+Date: Wed, 16 Sep 2026 18:55:24 +0200
+X-Gmail-Original-Message-ID: <CAD++jL=7tuZWkXqn0gj14JDbsxkT=cU_1aFOXMRc=PmE-3X-eg@mail.gmail.com>
+X-Gm-Features: AcwNN1XvcQ2YIjfo5CFBtXX11PIudi6lRGCv7LMnZ1tHaTMlEuKLFH_DVwfW2u8
+Message-ID: <CAD++jL=7tuZWkXqn0gj14JDbsxkT=cU_1aFOXMRc=PmE-3X-eg@mail.gmail.com>
+Subject: Re: [PATCH 06/14] mfd: remove unused da903x driver
 To: Arnd Bergmann <arnd@kernel.org>
 Cc: Lee Jones <lee@kernel.org>, mfd@lists.linux.dev, linux-kernel@vger.kernel.org, 
 	linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, 
@@ -98,18 +98,14 @@ Cc: Lee Jones <lee@kernel.org>, mfd@lists.linux.dev, linux-kernel@vger.kernel.or
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Sep 9, 2026 at 3:22=E2=80=AFPM Arnd Bergmann <arnd@kernel.org> wrot=
+On Wed, Sep 9, 2026 at 3:23=E2=80=AFPM Arnd Bergmann <arnd@kernel.org> wrot=
 e:
 
 > From: Arnd Bergmann <arnd@arndb.de>
 >
-> This driver requires a platform_data definition, which does not exist
-> in the kernel.
->
-> According to Mark Brown, the hardware supported by this driver was never
-> shipped in production.
->
-> Since this is clearly unused, remove it.
+> This driver was used on a handful of ARM/PXA boards until those
+> got removed a few years ago. Without devicetree support, there is
+> no way to use them upstream.
 >
 > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
