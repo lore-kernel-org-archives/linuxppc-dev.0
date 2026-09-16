@@ -1,77 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-27459-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27460-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4838C88E5C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 06:44:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00FE3C88E5C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 06:44:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hl8Vq0z3hz30RT;
-	Wed, 16 Sep 2026 16:44:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:39::10"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789541043;
-	cv=none; b=FkV2Mj7z0vheGoPru425oDLiSEWawwQGmFDMKM7WNUXTYBTpF8O6sMP/KimluPtLRDTIgAh9hTt9tByX5k4oQy1YGlSgCBUww8/uv3iLS4FaczG/ma90cqLB9xi/qgX4WwQeZyctDMJM0jKzxk7p+6xuMPKCllQ743IOfUZQi+1wwVLB4FXHUFY7dhsT71PJQmmvjqpqJgEmra2nDQoMuneE2x0HgTDLNfvTDawITMtRfk7aLEexAmL/zSbDNZPGaoNraO1cF+oYFAaIlFZXTecPp690ww2Z/dgj9DcdtMeA77l+6VrmTLCkDA4cBjWmxsUycTQM4pVciL+IEnit0A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hl8Vw1rD6z30V6;
+	Wed, 16 Sep 2026 16:44:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:39::1c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789541048;
+	cv=none; b=FZa4+mXRC2JS9x80QnJnp8nZ8SYAhwO/EYvzLB1rRhYhbpOpVZ7ayRYqDfEh0aM5BpkXY3ZP9WClWLir171v4gntcDApE2QV6Y1l2kUQrdNJdVlPisihCL/baD9MVoEXOxX8VfWCBthjpWq7jg/2HlubRw2YrcLg5YWS5IGEgNbvaOyRTpRXNGIuUrfJClej8u5f5oUtlqm27K8y+XcL9v6etQG5ZIal2HzrupCuW9BEOBvslgHLBdX8gFFerhYNuptS08UoSc0DiAj48K4vznltt5RwoZIAnBzIdRZnAJ4c3G+E9kM5yrIlCMMHwbfPLwqVRESrZts2x9W9KSVOSA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789541043; c=relaxed/relaxed;
-	bh=uBBuOi4IklhpEQjilPGFjs1/1RKNgj5LsNpTgitcyy0=;
+	t=1789541048; c=relaxed/relaxed;
+	bh=PDFzpc+a9bATnmd50P4M+vPlS8YdthhE8ho3W/sX1lQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=c5N4nPbqA1OSzbtBfzqjUaISAShYw1YOR8bTz7szvsLVvIrY8/JgTB5WNVPefdfkNMOtRMfEfbMedZopD8b2n45MYkxzCQSyT5g21ut/imwuqYhsZCyVdDsH9QvoFBE52ho3IbN7G9LaLeIw7LjlXv2EKwc+mVMtQA2Hnw2jejMovE/ito+/Fws6fUQ+WDIN8waL5pQ5IYNehG0YrMn/fPo/Ty9dmUmX1OUwC4EMoKAvZcAjdv4y8bxPs1tX8eEVZetk9NV3ht1T3ICGU0dGs7GpbkgCPICYXzpty4hP20KNAWQ2ytDYlwjsZniYkVjJis3wR392WquUnq5TmFQOgA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=HuLDP+0K; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::10; helo=mail-pj2-x10.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+	 MIME-Version; b=N2G6FkGybKSRo3n9bEZp7xzt/k1BmxcHx65fFaulnVihfIsmctvJw/JHxzw8TtCYd1p1/hKLRF5WrLv77clbHYB8j3yFEWF6WVceqWsyO8jfHQX6RNfuVGJp5MpqjPnbCyUTTyqXOXH0j+GxfreaoCQf7nYCDWVjakd4ShGyH21AAigQv2kO6CZh7NtUAmjXyi2eH+pG8oTEZAy/VqRBcWU+itWHMddC89URDwxGfdwltWlV6K9h0VJjb74la5z8xsyMhawtThc+WkrETKrEEYpZyGGy56KPacgv+6uATEh5U8KkY/fqY0ZdtIFrHmaJ05Wkaj0K5QBkTmsnlTiVDQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=j5WvjEvQ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::1c; helo=mail-pj2-x1c.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=HuLDP+0K;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=j5WvjEvQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:39::10; helo=mail-pj2-x10.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pj2-x10.google.com (mail-pj2-x10.google.com [IPv6:2607:f8b0:4864:39::10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:39::1c; helo=mail-pj2-x1c.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pj2-x1c.google.com (mail-pj2-x1c.google.com [IPv6:2607:f8b0:4864:39::1c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hl8Vp2FFCz2y2Q
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 16:44:02 +1000 (AEST)
-Received: by mail-pj2-x10.google.com with SMTP id d9443c01a7336-2d747ec6188so4080145ad.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 23:44:02 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hl8Vv3JSBz2y2Q
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 16:44:07 +1000 (AEST)
+Received: by mail-pj2-x1c.google.com with SMTP id d9443c01a7336-2dd77300816so1465735ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 23:44:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1789541040; x=1790145840; darn=lists.ozlabs.org;
+        d=bytedance.com; s=google; t=1789541045; x=1790145845; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=uBBuOi4IklhpEQjilPGFjs1/1RKNgj5LsNpTgitcyy0=;
-        b=HuLDP+0KCZ/FThVLU1TZ2h1ClxK316ReO9Q4zuzmDpEOfldfp6Z5LX9sVx3wOJdO/U
-         2R+0X0TzMEBwjFcVxy/krObe6pg2lNJdIEsGdoilcg0cDWgiqT6MqxaEA+pXraterCFG
-         pjohc3JIpm16BeZjELHu14MGq6kCH1W14RzbzYB+BsRxBKNXVzGZD7g+pmbHyq6RSoT1
-         8a8kmMm8jBf8Qkqu/Re1hEjPHbTfjkFKtYkWJhi8zq286HqPjNMSx7mB6q4Q/PnDZem3
-         cFbt2J6l4FsKrY2OMUXqNtbU46edfRpo4g3Yy+0TyByf/jLRX5whJNwA7y//VTX4vur7
-         dO1A==
+        bh=PDFzpc+a9bATnmd50P4M+vPlS8YdthhE8ho3W/sX1lQ=;
+        b=j5WvjEvQXiA6z9RvU9GLl4uHo2j+I7QEF+Hsukb2RoZD1YkanDhrvJjRC1kuAO2yfF
+         zSIWDw3kSfAu8oqBF92+D6SADWa4YARe6GV6891k6AKQrecZttJGor3XktFBUs9w/14C
+         yl6z8VhibRlK90Sqv61eftcGfVmrKRQsxw+PVtQtgmK9vW1HBjERgglPNyN3H+WkakUY
+         uinPZzUxUeAm8FbFsmoac9XcuaqQODJhXUVjm0XbmHhuW1srmLiGvmtUFoYO1WvZBUSj
+         iJqzaXcV8nNtKF41UzoNh0p9yVi4OqVIQ4zrjdkkgFbOMeG9kon6OV4FN/Gr6oCtg1M7
+         MQbg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789541040; x=1790145840;
+        d=1e100.net; s=20260707; t=1789541045; x=1790145845;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=uBBuOi4IklhpEQjilPGFjs1/1RKNgj5LsNpTgitcyy0=;
-        b=Y8M+lLoCEeScZNQSXFKn8RI5v1kVzlRgGr48VhcAPzrJf8Kq6wOyZ2OwT0vUdYciTD
-         f+x9EV+HHz7GWkYTl3uyOaIwr1H4rMV0aVrvCKeGumRSkkCVjxg9PLO9ghvq4WchytHx
-         JvlmrnqZZa7UCXjO9cihjzyhyn6r7IUDlTJnd2TOx9+36ymfSthQ1KmHqYGiYDDucIL9
-         IbUnLNoxWLRlB+HXDugV/JJJ7rG4z993C83AAT2fk7Hp/oWcMbsax8z3RVQYFSyX8O6P
-         A6/s3hvnv5WfBtiWzdwaog5beipSkXAkRxpM0ZE4PnOhbc4SLmc7DIE9qaI0p35N91wg
-         9OIg==
-X-Forwarded-Encrypted: i=1; AKwUvBzWGsweT7CbtPPnkGdy1MSztGnIOqrISDxwt0YzzlwSWAnD4RKBhUUwR+/cXn/JZH998ukQgA7byKiJvMg=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++kisCz9JgyNqGT9fuFMTIsjJ6VdzpUg45l6RvXf/w22fKrCLTBf
-	Uh6JKmZcVnAyY9ftz/ms41/C2HWClKA1fWq6IRxZmTCsmUKoticrECG/oRwK95WvRdw=
-X-Gm-Gg: AYBFou0DJmypIhHy5PolcEutGuge070BQi0dTk/mP8CXndYqjbUFOqWbD0gK5iJC9Xa
-	L0pua6FOAIYAoH3D4zEySxRcQnkHHc6+nQFFpqeneleZwqPGM0LbAqUwdWPre2VhOnIsxZ87bF3
-	hk+BZ1dZP5U2e0q9wQJF2SsNRJ/tR79r3Boria+GBFlV/PNav3NCcHq1cNDnwgJ8BW2IaaJqKVX
-	5rOf/glFfV21GqgkHoX3yeRJ1llOKek5xRjjhW5tpVeLBsJfQJTcmOJDJrKd0d30Wq0ba/2eknt
-	GFK8T8lLCS3NRJ3jXj8XLSMu3VYNYWnOogW4EK3A1c33Mls062v1I45BY5tIZfnS20F4QVTT8mO
-	vQEkX9/DnDnJqBPR0e4/Sbk2dCGZWr/rTxsXwARx2KM89FtDmutvcJpopjniye8qn8fSPRMsBOI
-	v/RlYtX3kkmaqUN5gzm2PWU0bps3areU1xQhy1jDxtgrgEhqq6wcpiub0Oe5XRKSVr/eqBuEcPE
-	n32Zt47wa0ILgUuNzJg
-X-Received: by 2002:a17:902:ffcb:b0:2bf:27b2:4b80 with SMTP id d9443c01a7336-2dd8e40607cmr31031175ad.14.1789541040200;
-        Tue, 15 Sep 2026 23:44:00 -0700 (PDT)
+        bh=PDFzpc+a9bATnmd50P4M+vPlS8YdthhE8ho3W/sX1lQ=;
+        b=mYvoeNZiwn2s/zxd7W94c95Z73oKis7w5Xg9G9CVavtjwWUPXunTZ2zrWov9hpLk8v
+         9scj46f1eAJpW46Wn0stsKUD548XYkG8EB7i+Tmn29sXuLApeGmcYjCZLm0n4+Rdb3Jb
+         F9P4ulzmULJcaITJk2tGskT8jbbMIXti2kXq2tnliHWJ2kfQNch8/hcvhYn+2Ras+ief
+         dsSS2THSX0D0oGx/qKiDD+dMdM5Ql8phtwTXfZ0pTAKr2phXYTj2Nl2Bgn0dx6O3u57m
+         WOTZVRxm3K2tPWefZ4z0RXlSlBL86weqRA89QzCrub1mg57hTuPRx/ShYsCk4aSQ+9iW
+         LPxg==
+X-Forwarded-Encrypted: i=1; AKwUvByqu1oxinSe1ucaI1/7nCvCNgsoKvzcUSKOHj5t/pc10AojMzRKl/Y4LCeHZgXrh4/A0pJUCWyDAxWHiH4=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++kux5gphoMo7Hji9PPVAVjrBg4QB4aKeUoxWrGUyjXX5KpgJhBC
+	EzgUXX5IRRtK3qAUY0OKMY1M8YkVD7LdkDSdAnTRlH5lltU11E3kWRchRDBUfvmjYHY=
+X-Gm-Gg: AYBFou2de4r1o74mHOmFmrSlsIL7h/qsdCYKxbe+70UblCQ8HQRQtlEMcDC5p43AUo3
+	iTfiHlYYWcWbsIkRBBD4fU7jI9RaOZmAQ1SOdlkEm0Ews3tYGtzIv5PeAwm4XdShWH0x0CkNB00
+	qKttfDBBOg+gNh2ygU41eZphdqL2i0+dYilxWAUTztGnAfV29SwJuOn1sBHh8YJ2OfoMXl0lXiq
+	Ef+44osT6Kqsp2RSn8ZYJPHzu5+3HMyLysQ7fQMkRM2Vz6HtHpmRwm2LTMxeaPRNTHzFGC+B/Z6
+	4xGyaAGO40H/6Pn9pxPV648fmXSx2A591zAa66cxRg0l9toC/sb1ngzatxBySsvgQAoNLKYN765
+	QWbi/mgzyPleaaUEkEuWHC1p17D43ffhnvCYVB4qM4Hrl62/zVvtmyMv4Or1y7yI14tWhKFPyGy
+	6HhwSxiChGXtVKoD3nHIuaL0mLsFpfDCmiOgTw0jWNXENToYplx1JgeWGn998jqofeKCm/KRLvm
+	q9cfVwht2+3HEiziV8=
+X-Received: by 2002:a17:903:3b8f:b0:2d7:4bc8:41a4 with SMTP id d9443c01a7336-2dd8ea1cd1dmr17328145ad.10.1789541045356;
+        Tue, 15 Sep 2026 23:44:05 -0700 (PDT)
 Received: from n232-176-004.byted.org ([36.110.163.98])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2dd89f0592asm6074755ad.62.2026.09.15.23.43.54
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2dd89f0592asm6074755ad.62.2026.09.15.23.44.00
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 15 Sep 2026 23:43:59 -0700 (PDT)
+        Tue, 15 Sep 2026 23:44:05 -0700 (PDT)
 From: Muchun Song <songmuchun@bytedance.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	David Hildenbrand <david@kernel.org>,
@@ -91,9 +91,9 @@ Cc: linux-mm@kvack.org,
 	Christophe Leroy <chleroy@kernel.org>,
 	Randy Dunlap <rdunlap@infradead.org>,
 	Muchun Song <songmuchun@bytedance.com>
-Subject: [PATCH v4 02/11] mm/sparse-vmemmap: factor out shared vmemmap tail page allocation
-Date: Wed, 16 Sep 2026 14:43:32 +0800
-Message-ID: <20260916064341.1825793-3-songmuchun@bytedance.com>
+Subject: [PATCH v4 03/11] mm/sparse-vmemmap: open-code init_compound_tail()
+Date: Wed, 16 Sep 2026 14:43:33 +0800
+Message-ID: <20260916064341.1825793-4-songmuchun@bytedance.com>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <20260916064341.1825793-1-songmuchun@bytedance.com>
 References: <20260916064341.1825793-1-songmuchun@bytedance.com>
@@ -112,229 +112,70 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-HugeTLB and sparse-vmemmap each have their own helper to allocate the
-shared vmemmap tail page used by vmemmap optimization.
+init_compound_tail() is only used by vmemmap_shared_tail_page(), where
+the shared tail page setup intentionally passes NULL as the compound head.
 
-Factor that logic into a common vmemmap_shared_tail_page() helper. It
-allocates the page through vmemmap_alloc_block(), and uses cmpxchg()
-to install the per-zone shared page.
+Keeping this helper in mm/internal.h exposes that special case to the rest
+of the MM code and can make the NULL head argument look generally valid.
+Open-code the initialization at the only call site so the special-case use
+stays local to sparse vmemmap optimization.
 
-Expose zone->vmemmap_tails under CONFIG_SPARSEMEM_VMEMMAP to match the
-shared helper's build condition. This avoids a
-!CONFIG_VMEMMAP_OPTIMIZATION stub; when optimization is disabled, the
-array has no entries and the compiler folds away the unused paths, so no
-storage or runtime overhead is added.
-
-This removes duplicate allocation logic while still handling both the
-early boot and runtime paths through the same helper.
+No functional change intended.
 
 Signed-off-by: Muchun Song <songmuchun@bytedance.com>
 Acked-by: Qi Zheng <qi.zheng@linux.dev>
+Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 ---
 v4:
-- Update the commit message for the renamed VMEMMAP_OPTIMIZATION config
 - Collect Acked-by from Mike Rapoport
+
+v3:
+- Collect Acked-by from David Hildenbrand
 
 v2:
 - Collect Acked-by from Qi Zheng
 ---
- include/linux/mmzone.h |  2 +-
- mm/hugetlb_vmemmap.c   | 28 +---------------
- mm/sparse-vmemmap.c    | 74 +++++++++++++++++-------------------------
- mm/sparse.h            |  1 +
- 4 files changed, 33 insertions(+), 72 deletions(-)
+ mm/internal.h       | 9 ---------
+ mm/sparse-vmemmap.c | 5 ++++-
+ 2 files changed, 4 insertions(+), 10 deletions(-)
 
-diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index 56403841e887..97147c764658 100644
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -1156,7 +1156,7 @@ struct zone {
- 	/* Zone statistics */
- 	atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS];
- 	atomic_long_t		vm_numa_event[NR_VM_NUMA_EVENT_ITEMS];
--#ifdef CONFIG_VMEMMAP_OPTIMIZATION
-+#ifdef CONFIG_SPARSEMEM_VMEMMAP
- 	struct page *vmemmap_tails[VMEMMAP_OPTIMIZATION_NR_ORDERS];
- #endif
- } ____cacheline_internodealigned_in_smp;
-diff --git a/mm/hugetlb_vmemmap.c b/mm/hugetlb_vmemmap.c
-index f977d0a7e002..5ddf06b83c96 100644
---- a/mm/hugetlb_vmemmap.c
-+++ b/mm/hugetlb_vmemmap.c
-@@ -493,32 +493,6 @@ static bool vmemmap_should_optimize_folio(const struct hstate *h, struct folio *
- 	return true;
+diff --git a/mm/internal.h b/mm/internal.h
+index da14c56fb24e..0dca33db068f 100644
+--- a/mm/internal.h
++++ b/mm/internal.h
+@@ -786,15 +786,6 @@ static inline void prep_compound_tail(struct page *tail,
+ 	VM_WARN_ON_ONCE(tail->private);
  }
  
--static struct page *vmemmap_get_tail(unsigned int order, struct zone *zone)
+-static inline void init_compound_tail(struct page *tail,
+-		const struct page *head, unsigned int order, struct zone *zone)
 -{
--	const unsigned int idx = order - VMEMMAP_OPTIMIZATION_MIN_ORDER;
--	struct page *tail, *p;
--	int node = zone_to_nid(zone);
--
--	tail = READ_ONCE(zone->vmemmap_tails[idx]);
--	if (likely(tail))
--		return tail;
--
--	tail = alloc_pages_node(node, GFP_KERNEL | __GFP_ZERO, 0);
--	if (!tail)
--		return NULL;
--
--	p = page_to_virt(tail);
--	for (int i = 0; i < PAGE_SIZE / sizeof(struct page); i++)
--		init_compound_tail(p + i, NULL, order, zone);
--
--	if (cmpxchg(&zone->vmemmap_tails[idx], NULL, tail)) {
--		__free_page(tail);
--		tail = READ_ONCE(zone->vmemmap_tails[idx]);
--	}
--
--	return tail;
+-	atomic_set(&tail->_mapcount, -1);
+-	set_page_node(tail, zone_to_nid(zone));
+-	set_page_zone(tail, zone_idx(zone));
+-	prep_compound_tail(tail, head, order);
 -}
 -
- static int __hugetlb_vmemmap_optimize_folio(const struct hstate *h,
- 					    struct folio *folio,
- 					    struct list_head *vmemmap_pages,
-@@ -535,7 +509,7 @@ static int __hugetlb_vmemmap_optimize_folio(const struct hstate *h,
- 		return ret;
+ #if defined CONFIG_COMPACTION || defined CONFIG_CMA
  
- 	nid = folio_nid(folio);
--	vmemmap_tail = vmemmap_get_tail(h->order, folio_zone(folio));
-+	vmemmap_tail = vmemmap_shared_tail_page(h->order, folio_zone(folio));
- 	if (!vmemmap_tail)
- 		return -ENOMEM;
- 
+ /*
 diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
-index f22d815d7af0..7388a5b5cce3 100644
+index 7388a5b5cce3..861e09b2b096 100644
 --- a/mm/sparse-vmemmap.c
 +++ b/mm/sparse-vmemmap.c
-@@ -42,27 +42,13 @@
- #include "mm_init.h"
- #include "sparse.h"
+@@ -189,7 +189,10 @@ struct page __ref *vmemmap_shared_tail_page(unsigned int order, struct zone *zon
+ 	for (int i = 0; i < PAGE_SIZE / sizeof(struct page); i++) {
+ 		page = (struct page *)addr + i;
+ 		mm_zero_struct_page(page);
+-		init_compound_tail(page, NULL, order, zone);
++		atomic_set(&page->_mapcount, -1);
++		set_page_node(page, zone_to_nid(zone));
++		set_page_zone(page, zone_idx(zone));
++		prep_compound_tail(page, NULL, order);
+ 	}
  
--/*
-- * Allocate a block of memory to be used to back the virtual memory map
-- * or to back the page tables that are used to create the mapping.
-- * Uses the main allocators if they are available, else bootmem.
-- */
--
--static void * __ref __earlyonly_bootmem_alloc(int node,
--				unsigned long size,
--				unsigned long align,
--				unsigned long goal)
--{
--	return memmap_alloc(size, align, goal, node, false);
--}
--
--void * __meminit vmemmap_alloc_block(unsigned long size, int node)
-+void __ref *vmemmap_alloc_block(unsigned long size, int node)
- {
- 	/* If the main allocator is up use that, fallback to bootmem. */
- 	if (slab_is_available()) {
- 		gfp_t gfp_mask = GFP_KERNEL|__GFP_RETRY_MAYFAIL|__GFP_NOWARN;
- 		int order = get_order(size);
--		static bool warned __meminitdata;
-+		static bool warned;
- 		struct page *page;
- 
- 		page = alloc_pages_node(node, gfp_mask, order);
-@@ -76,8 +62,7 @@ void * __meminit vmemmap_alloc_block(unsigned long size, int node)
- 		}
- 		return NULL;
- 	} else
--		return __earlyonly_bootmem_alloc(node, size, size,
--				__pa(MAX_DMA_ADDRESS));
-+		return memmap_alloc(size, size, __pa(MAX_DMA_ADDRESS), node, false);
- }
- 
- static void * __meminit altmap_alloc_block_buf(unsigned long size,
-@@ -184,39 +169,40 @@ static void * __meminit vmemmap_alloc_block_zero(unsigned long size, int node)
- 	return p;
- }
- 
--#ifdef CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP
--static __meminit struct page *vmemmap_get_tail(unsigned int order, struct zone *zone)
-+struct page __ref *vmemmap_shared_tail_page(unsigned int order, struct zone *zone)
- {
--	struct page *p, *tail;
--	unsigned int idx;
--	int node = zone_to_nid(zone);
-+	void *addr;
-+	struct page *page;
-+	const unsigned int idx = order - VMEMMAP_OPTIMIZATION_MIN_ORDER;
- 
--	if (WARN_ON_ONCE(order < VMEMMAP_OPTIMIZATION_MIN_ORDER))
--		return NULL;
--	if (WARN_ON_ONCE(order > MAX_FOLIO_ORDER))
-+	if (WARN_ON_ONCE(idx >= ARRAY_SIZE(zone->vmemmap_tails)))
- 		return NULL;
- 
--	idx = order - VMEMMAP_OPTIMIZATION_MIN_ORDER;
--	tail = zone->vmemmap_tails[idx];
--	if (tail)
--		return tail;
--	p = vmemmap_alloc_block_zero(PAGE_SIZE, node);
--	if (!p)
-+	page = READ_ONCE(zone->vmemmap_tails[idx]);
-+	if (likely(page))
-+		return page;
-+
-+	addr = vmemmap_alloc_block(PAGE_SIZE, zone_to_nid(zone));
-+	if (!addr)
- 		return NULL;
--	for (int i = 0; i < PAGE_SIZE / sizeof(struct page); i++)
--		init_compound_tail(p + i, NULL, order, zone);
- 
--	tail = virt_to_page(p);
--	zone->vmemmap_tails[idx] = tail;
-+	for (int i = 0; i < PAGE_SIZE / sizeof(struct page); i++) {
-+		page = (struct page *)addr + i;
-+		mm_zero_struct_page(page);
-+		init_compound_tail(page, NULL, order, zone);
-+	}
- 
--	return tail;
--}
--#else
--static inline struct page *vmemmap_get_tail(unsigned int order, struct zone *zone)
--{
--	return NULL;
-+	page = virt_to_page(addr);
-+	if (cmpxchg(&zone->vmemmap_tails[idx], NULL, page) != NULL) {
-+		if (slab_is_available())
-+			__free_page(page);
-+		else
-+			memblock_free(addr, PAGE_SIZE);
-+		page = READ_ONCE(zone->vmemmap_tails[idx]);
-+	}
-+
-+	return page;
- }
--#endif
- 
- static __meminit void *vmemmap_alloc_pte(unsigned long pfn, int node,
- 					 struct vmem_altmap *altmap)
-@@ -229,7 +215,7 @@ static __meminit void *vmemmap_alloc_pte(unsigned long pfn, int node,
- 		return vmemmap_alloc_block_buf(PAGE_SIZE, node, altmap);
- 
- 	zone = pfn_to_zone(pfn, node);
--	page = vmemmap_get_tail(order, zone);
-+	page = vmemmap_shared_tail_page(order, zone);
- 	if (!page)
- 		return NULL;
- 
-diff --git a/mm/sparse.h b/mm/sparse.h
-index d8c08a388e4e..8f6ef0b50b4f 100644
---- a/mm/sparse.h
-+++ b/mm/sparse.h
-@@ -142,6 +142,7 @@ static inline void sparse_sections_init(void) {}
-  * mm/sparse-vmemmap.c
-  */
- #ifdef CONFIG_SPARSEMEM_VMEMMAP
-+struct page *vmemmap_shared_tail_page(unsigned int order, struct zone *zone);
- void sparse_init_subsection_map(void);
- int section_nr_vmemmap_pages(unsigned long pfn, unsigned long nr_pages,
- 		struct vmem_altmap *altmap, struct dev_pagemap *pgmap);
+ 	page = virt_to_page(addr);
 -- 
 2.54.0
 
