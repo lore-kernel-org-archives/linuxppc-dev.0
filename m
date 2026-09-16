@@ -1,89 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-27491-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27492-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F36AC982C4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 15:24:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A671C982C4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 15:32:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hlN3n3qZtz2yGT;
-	Thu, 17 Sep 2026 01:24:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789572293;
-	cv=none; b=i5ZsM1BF/L72M/GIgnS9ICujjRor3GzIN9+DvpwElB8qklNmg5bC1igXpJuC+fUEx3LYXW8BJSIiAlIyzt+jw0LsUguB5K75Arcbl40rqbX3Ue5cCGGfrgVhndHGeVhlsx3ZBLe2jfDv8161JCEMecP09+0jCy0qlfdppjAVyOfcs84ZjGwjPirAfavGt285KDgzYb9VDzin03b7jQcvfU9vSVbpsQp98BopoFZuNXB/HdxlMNSXXN5xbLUMvCjjMDNsnZuwFLNPpzq0IyGUfEFQW+fE9PMvvQtk81rYzwvmHBuYGr9Q3M8Ev3rH5jZrHLiVrJ4Clx5o0wQ4plsXrg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hlND865WGz2yfD;
+	Thu, 17 Sep 2026 01:32:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789572728;
+	cv=none; b=V/AI07ECI3vJTmpwPja/rCARsPkSEsGxXuzcLgonEES6TyaiZ5vCfyYRn6G4U8rMkjzaoKzVzolJpZuECfP1qkJyTTonPSP/oE/YvUEIGRPD5U1OiJHwHr6aAB9MOQ36ZZlZjweHkhRQcXTx8oHJ32lIAtpbapc3rEsc1c7TnMd3YMCPoAURyiG7+OKZH86/DWyydA1/s8qikH991wSDU96Avyy5bQFPqg8l0uIlEWQykY6HrQ/fA27pLsqKqcbvdF50pL4TRsmv7w+AriN8D5HHPn8don5BPebAPQ/kHy4esf9qsUtFU3u6uDqY+uiFSvybZlT/pgu3buQGmJa8bw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789572293; c=relaxed/relaxed;
-	bh=bmSKfJ+DuEp78ohwrZ9bi3DjkEQISwc3a58ABb7nYFg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ngGfq3LN7Dnzt9niPT6b4Og7ZS8BO4DZev/VE8WUZ83HdRwEAKHKBAac1bMZGtyYngqqySdc02pcYmHIQSNcWIWpyBcoPyck96YIo8GU9NZNsvCdcP1rIYTgNVtJO6WPH6ZzRmGiaoLvboOvzeKPqh+VvEY0GDKTJIpDrjX1pBc1cWLGzXnuMBBtWRInagxHc+AEa8a5f19bIAav8xcGFKWjVPcNeBLffr8VCyZfiMzJ6FFOVtAen3KD5kf4GZHZSmFI1P5fDUmaiDY4sPsDTBEhLbAgkXELMToVNIjefJBV3LqYL6Fdp67nfJasjTS+p9Pw0wqD9KMb7ZRmu1KgTg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pWVqs8mm; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1789572728; c=relaxed/relaxed;
+	bh=r+L+gdmlejhQNmtecvJQTWNGDQdwYrl4NsxaG1tw1go=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=aTy2rK/OrppClj1TwkkORC+0tdFJ8WHaf3TVFZ3XX9R999ZxMsU6ZMehil1YZY14XTQRwtcPWQ1SsroZivdAQdyLTcyPoKC9HLmTKQlDi+UNcm8PkZOyrjXVpcSdlog8iSuZvJlM3V1rIQpyw3nAwc14sC5dVy3j05u/QY8djVWI8/mQ0mTzKRAbehM8O6MFVfVM5WiZBqZe5I3fjaa9vufoCA1Hpt6TU6Utxp4w7uhLbIMe/LhvDbSgvyFDKA2sYXsnmGJd72Z1N6sloPJOtS+EYqOW4KgltF4o0j3u+W8WWhXOg0udiglyF/eAdVUbU/TDQBma1qgrGghoAde2Nw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hzhTXwDa; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=blum@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pWVqs8mm;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hzhTXwDa;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=blum@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlN3m28vkz2xqp
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 01:24:51 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68GEW0jK4047273;
-	Wed, 16 Sep 2026 15:24:34 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=bmSKfJ
-	+DuEp78ohwrZ9bi3DjkEQISwc3a58ABb7nYFg=; b=pWVqs8mm1KLVHeVpN+DVF+
-	D+4VpOYnaa7x6Ulv/NLU+GcY89Z36FvacSjdpOizWvz5x8KQbAR3TzBN34jILMvB
-	eKSvAGJTGENtghBND1S0vzI/8oIzfsQUj8sIO/AnK3hQbf3FRdk6adNs1XVpQh94
-	thDD9kqo1UhhUGB9ilAkdNuyiPTM7GMNx938ekwvZxgBoLs+Up5yXPhYCtfDtv+F
-	HJ+E3YX4pVQvtTmSn7T9iUqL9qIhEen6KpjT2g5ifVA3cAINAz/gzxK5CmR3Lc2O
-	EWCp2ojeSUHVHeTs5V4dXnY5AZTmxthay8CNTuLxTUe/zJQEf34qeNBJjxc4iRuA
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gmxcv4yb4-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Wed, 16 Sep 2026 15:24:34 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68GFKEnC1601859;
-	Wed, 16 Sep 2026 15:24:33 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gpyxsf0m0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 16 Sep 2026 15:24:33 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68GFOTsN52494718
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 16 Sep 2026 15:24:29 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 78E4A20043;
-	Wed, 16 Sep 2026 15:24:29 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9EBDF20040;
-	Wed, 16 Sep 2026 15:24:27 +0000 (GMT)
-Received: from fedora (unknown [9.5.7.39])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Wed, 16 Sep 2026 15:24:27 +0000 (GMT)
-Date: Wed, 16 Sep 2026 21:02:13 +0530
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: Thorsten Blum <blum@kernel.org>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/sysfs: Remove redundant wait time clamps
-Message-ID: <20260916205928.ed6f9a7e-66-amachhiw@linux.ibm.com>
-Mail-Followup-To: Thorsten Blum <blum@kernel.org>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20260916151254.120629-2-blum@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlND75ZKxz2yGT
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 01:32:07 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 6B535602CB;
+	Wed, 16 Sep 2026 15:32:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2864E1F00893;
+	Wed, 16 Sep 2026 15:32:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789572725;
+	bh=r+L+gdmlejhQNmtecvJQTWNGDQdwYrl4NsxaG1tw1go=;
+	h=From:To:Cc:Subject:Date;
+	b=hzhTXwDa2Qo+pmZ4YoZsP+RopMjaOH8/EFzDBkw4eb1XHwdMhB39araxeWwgADPOq
+	 pYnfRc9aTr+p+ELU3hp8lvVV3Qf5GnwWsEY0+Py7rbPdrm52t2D83Qy3MwvbSvemgK
+	 9NX0R3PvbM1aO6Qx6Db1XkwNRDELcXHR8WTw6Hr/EGJQAQTblRbXuHDLjNVgYmF27E
+	 sjRDoqy/UBenFAbuKFw3z9obu79qycztHMaAeUW0kk6+Sce2I5z4YViwmmKFQzZJ/Z
+	 F9MEqsFGzyFJx4xNzSO9ltdlMTmC+OBwLlP2V5SbhCs8MGZOPo0Eeu+XiHCNJC/5f7
+	 J6eKaT8Fwwt3Q==
+From: Thorsten Blum <blum@kernel.org>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Sourabh Jain <sourabhjain@linux.ibm.com>,
+	Thorsten Blum <blum@kernel.org>,
+	Aditya Gupta <adityag@linux.ibm.com>,
+	Hari Bathini <hbathini@linux.ibm.com>,
+	Jinjie Ruan <ruanjinjie@huawei.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/kexec_file: Simplify add_usable_mem()
+Date: Wed, 16 Sep 2026 17:31:49 +0200
+Message-ID: <20260916153149.127278-3-blum@kernel.org>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,85 +74,69 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1962; i=blum@kernel.org; h=from:subject; bh=6cJZ3vF0dSDjjEMMG9H2JHANKMhOY+wqpAkHW2i9jYQ=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFmrtqW6LnzKtdX5g/DrurMLlHqd1aT1H8UVRCp4J0TM+ f6theFARykLgxgXg6yYIsuDWT9m+JbWVG4yidgJM4eVCWQIAxenAEzkbSojw623mb/NhZbminyI 2f1yddMLg/fBsx6FhZmmnCqO2sO25B3D/1CBvUZrLVZu7J0dkhrQz1FrN/HcEx2FlTzH8zasYG0 15wAA
+X-Developer-Key: i=blum@kernel.org; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260916151254.120629-2-blum@kernel.org>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE2MDIwNCBTYWx0ZWRfX1MKeEM5oGno+
- TD/yKnMp+E9lWMFOuVrOppA4MS4jKaGUM5Q+qTyICZrt/9QaUon7fuzNZP0+IdXD1QhtOMeFlxH
- 0rru5dfRTkU+rGlMAgF7cdNjd7YvEZM=
-X-Proofpoint-ORIG-GUID: h_8GQgs1B2ldWI7eBrB5MBw1c6gErRxb
-X-Proofpoint-GUID: iP8mRjI1rMc7DlK3nD45BzSs0JD4b3kR
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE2MDIwNCBTYWx0ZWRfXxw4IM6GsMJOM
- LqbLtNdR6IERi5mWtXssBuFWpt6iTLMLQvfCbthVTsI3UqdPHoNY+y51FFA4Zc8JliOxAVRuFZA
- SaqQmv9CM8lT0ufqj3PyVA9qcpAKWNAlxVNH9YhXCpkGPzTrUGWaFDPN8zH9247B9lhBi5BcMZB
- xG7aandOjo93i3nUsio5zUCDgoP3rk8zISZ1sD21BaZZ5J47EepUzgMCWzsuRy0khEYmPgXa0kY
- 1TcyUOR7fVyQmzOwwjqra77Bf4WIgj/McB0XmGkeBjfd4V8aYXaGmV7irM02wT7bYxaAQ8EBpvl
- VCGHwc5SkVTDMEHXcPDhiq82CiEV6Rj9f05M/isazaE/+Y25iQZY6kwUTpn7RtSKrOyapMSSAtD
- PUUqfd8LfXtCuoDCdQ95KzQq1NeDJT+YzYdsuEaBb5q2mn3uI+1g45euSZTtA0QjjiwE1uFNvoM
- 020YeEtBzeKxlesOEVA==
-X-Authority-Analysis: v=2.4 cv=F+7C5ahN c=1 sm=1 tr=0 ts=6aaab4b2 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=rBgiJsE2jx_ROkl76MsA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-16_02,2026-09-16_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 suspectscore=0 phishscore=0 clxscore=1015 malwarescore=0
- lowpriorityscore=0 bulkscore=0 spamscore=0 impostorscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609160204
 
-On 2026/09/16 05:12 PM, Thorsten Blum wrote:
-> The wait times are u64 and cannot be negative. Remove the redundant
-> clamps.
-> 
-> Signed-off-by: Thorsten Blum <blum@kernel.org>
-> ---
->  arch/powerpc/kernel/sysfs.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-> index 329c1690b5ed..2100c5e2c821 100644
-> --- a/arch/powerpc/kernel/sysfs.c
-> +++ b/arch/powerpc/kernel/sysfs.c
-> @@ -338,7 +338,7 @@ static ssize_t show_pw20_wait_time(struct device *dev,
->  		time = pw20_wt;
->  	}
->  
-> -	return sysfs_emit(buf, "%llu\n", time > 0 ? time : 0);
+Use max() and min() to calculate loc_base and loc_end, respectively.
+Skip to the next range if loc_base > loc_end and drop the now-obsolete
+boolean add variable.
 
-The time variables in both show_pw20_wait_time() and show_altivec_idle_wait_time()
-are u64, so the expression time > 0 ? time : 0 is indeed a no-op for all
-possible values — when time == 0 the ternary also yields 0, and negative values
-are impossible by type.  The simplification is correct and removes a subtly
-misleading pattern that implies a signed type.
+Signed-off-by: Thorsten Blum <blum@kernel.org>
+---
+ arch/powerpc/kexec/file_load_64.c | 29 +++++++++--------------------
+ 1 file changed, 9 insertions(+), 20 deletions(-)
 
-Nit: the commit message could also mention that when time == 0, the ternary
-still yields 0, making the conditional identity-preserving for all possible
-inputs — not just the non-negative ones.  Strengthens the rationale a little,
-but not a blocker.
-
-Reviewed-by: Amit Machhiwal <amachhiw@linux.ibm.com>
-
-Thanks,
-Amit
-
-> +	return sysfs_emit(buf, "%llu\n", time);
->  }
->  
->  static void set_pw20_wait_entry_bit(void *val)
-> @@ -460,7 +460,7 @@ static ssize_t show_altivec_idle_wait_time(struct device *dev,
->  		time = altivec_idle_wt;
->  	}
->  
-> -	return sysfs_emit(buf, "%llu\n", time > 0 ? time : 0);
-> +	return sysfs_emit(buf, "%llu\n", time);
->  }
->  
->  static void set_altivec_idle_wait_entry_bit(void *val)
+diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
+index bd80c5fb1b1f..6162afbe919a 100644
+--- a/arch/powerpc/kexec/file_load_64.c
++++ b/arch/powerpc/kexec/file_load_64.c
+@@ -20,6 +20,7 @@
+ #include <linux/of.h>
+ #include <linux/of_address.h>
+ #include <linux/memblock.h>
++#include <linux/minmax.h>
+ #include <linux/slab.h>
+ #include <linux/vmalloc.h>
+ #include <asm/setup.h>
+@@ -104,31 +105,19 @@ static __be64 *check_realloc_usable_mem(struct umem_info *um_info, int cnt)
+ static int add_usable_mem(struct umem_info *um_info, u64 base, u64 end)
+ {
+ 	u64 loc_base, loc_end;
+-	bool add;
+ 	int i;
+ 
+ 	for (i = 0; i < um_info->nr_ranges; i++) {
+-		add = false;
+-		loc_base = um_info->ranges[i].start;
+-		loc_end = um_info->ranges[i].end;
+-		if (loc_base >= base && loc_end <= end)
+-			add = true;
+-		else if (base <= loc_end && end >= loc_base) {
+-			if (loc_base < base)
+-				loc_base = base;
+-			if (loc_end > end)
+-				loc_end = end;
+-			add = true;
+-		}
++		loc_base = max(base, um_info->ranges[i].start);
++		loc_end = min(end, um_info->ranges[i].end);
++		if (loc_base > loc_end)
++			continue;
+ 
+-		if (add) {
+-			if (!check_realloc_usable_mem(um_info, 2))
+-				return -ENOMEM;
++		if (!check_realloc_usable_mem(um_info, 2))
++			return -ENOMEM;
+ 
+-			um_info->buf[um_info->idx++] = cpu_to_be64(loc_base);
+-			um_info->buf[um_info->idx++] =
+-					cpu_to_be64(loc_end - loc_base + 1);
+-		}
++		um_info->buf[um_info->idx++] = cpu_to_be64(loc_base);
++		um_info->buf[um_info->idx++] = cpu_to_be64(loc_end - loc_base + 1);
+ 	}
+ 
+ 	return 0;
 
