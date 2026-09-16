@@ -1,93 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-27452-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27453-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34E9EC88E75
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 03:14:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A48CDC88E77
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 03:30:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hl3s10Mccz2y2B;
-	Wed, 16 Sep 2026 13:14:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:39::11"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789528468;
-	cv=none; b=D/F/fCGIOYxDoo+v81zxMhN7SIM9iQzlA/Zetz7zsp1NCRWyfP0HDNGQCmvc2IhHqA7TRUQ70MiP9MwRv4qIQL1ykYglgkWXwr/N5Xtm3ve2skJLteZQCnQWvavHqPjm3c8BfAmmXmJgYS+eXmU6wpp5fWmb1vpfGXWfrFnGZZpUgqg1iGS/IRp2QMb7zwMZtjMtK3FpAr/l8HGoPuvulQa76EZv6eW3hvT9GuzLeZvQV/aor9Smg7dfeXcxlSsmvc2usB30qorpfaFivDxvr3cB70e5gTsCETIQ5oYZJcC7J0z8457aWDHVIoRJPAoxmFh34GmUOpjoj/lgryBuLw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789528468; c=relaxed/relaxed;
-	bh=3x+NS1tTRcfYVoPTJUjaHanPBgcWXbJYc21sQ0pJf9U=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=npAA9VpqSxY1EzxhxKMrXzyLKhFzxmdDlGEDGnfC1uImEPB94hTTNmQa5LEbcqb1x0o869cI1t8pSZWaFv6ZFBDzu2wotwsD93evP1Bxs5ZxxQFB56SBMLI4jpLZOs8sO7L7SbcU2wV/0yJF7Wz5vCkwUX1Z4v3ZgTsgoMMJB9uqmLieJFVMyn9yLmE3PNy3cv6maBDQlnDJMC7DiGbWJzdKNbWEKUFAH4wfks744IZR2ilADwVzHdhgRLmSWFl3E9iTl2WhRDUQ+slK7sItnIB6UexLtW2ETbdUtXqaXqbzXR4+d/9XDttNflfEatra/Q5ymLHJnU/wQLTCK6R63w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Q+4yQi1B; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::11; helo=mail-pj2-x11.google.com; envelope-from=lgs201920130244@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hl4Cr0qVZz2y2B;
+	Wed, 16 Sep 2026 13:30:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:39::11" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789529448;
+	cv=pass; b=gKrmJ8lgM6n6bER7z4gqJjnCeTI8iRelnHdGQfapj4MIuIroVqbWf/X/fiJ3tIakcZcfLOY+9aXfMZVxd9VneKpgBIVCSe3OI/JmxWXw59oTwmLw5J6/5A6WE+VMdp3+te4g0hPEfoJIsgs+94HiQZ8xLvV3IukodrWtm06U76CQB+DxtHn2ZYy5Osdjw8IH6hLixP3c05AlESrZKrPLJC1FuxI16jxvAJwZcM1tcgPyIgFFI0N35upctfnWYdqB7LR8NfMKlR/nJKx1UIABxbJhmkvLBUiRxpS8EO/PtUGEf6Hig6NHzcfkzaVeek587bbhizE4VOrmaaU/dQg0ew==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1789529448; c=relaxed/relaxed;
+	bh=oQBcZLRQSJNhtU+t6MQeVLZ2u/wOeujIUGm2gsEJiuY=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=UDkYERVi4h4iYTI+u6r+LLR7MJ+n8uMl9rd89rC8paB89C3dFLY47ysZqizLhG4Ch3bBZmap/RV/VpoUu9ZN9XgtW4siiYBSYte7QrfnneSDukmpnA3PYSki0ZHJH2LzNR3TGjo+TAXpsW6LjsT7YGvV7rsI0aEJsgVGU3+hnlQ/RKGQevzXnJpR+6obS9+sON2K3GVlKLaihN7r7c9AWTkM1cOvugw/EKLq0mtuMhTUpWQVdOg5mPDk7v6BAj3lD4O0kU9dxJ5yIQuX+9PRRvZNQf47kxybzL5ZMwAAPorOUmD7wcSxOIxK5oNMQ+YvNSq83FwC+aIZuLpRDL0hvQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=OiK5qtYX; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::11; helo=mail-pj2-x11.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Q+4yQi1B;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=OiK5qtYX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:39::11; helo=mail-pj2-x11.google.com; envelope-from=lgs201920130244@gmail.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:39::11; helo=mail-pj2-x11.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
 Received: from mail-pj2-x11.google.com (mail-pj2-x11.google.com [IPv6:2607:f8b0:4864:39::11])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hl3s00FHNz2xns
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 13:14:26 +1000 (AEST)
-Received: by mail-pj2-x11.google.com with SMTP id d9443c01a7336-2d747ee1f38so4387855ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 20:14:26 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hl4Cp6cPcz2xns
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 13:30:45 +1000 (AEST)
+Received: by mail-pj2-x11.google.com with SMTP id d9443c01a7336-2dd88a115c1so4900405ad.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 20:30:45 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1789529443; cv=none;
+        d=google.com; s=arc-20260327;
+        b=drnXQnYYxDxaFh//OKv4fnq5ma9LNdArmS7Gvz+4C+uGFiu8jQ7xfAP1NrgfGXIQLZ
+         iLY49YjpEVCCQlXhATGMTuO87qjGv8g3WhNTfqLjcp/TK4hLzRkx6agrGjxMClguY2u6
+         SG1vu3UuubTb1oWW7jU2onjeCxqYczZuZClVdJ1Mg/wuDQQGW4U9mskcnx/2UoaNUGxC
+         YjdKiAseG2Qoy+tTm9wKupfT6N6J52kS4QI4yCB+GZEtzB7Gf2hxn2pnD9GgYrVBRAg3
+         2EQam53f9/ElZhSXggIXiV+BmdK3izd2lVcxocpHVjdohpWGw+ad4Ce+3t8hGr2oeyt3
+         ljxQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=oQBcZLRQSJNhtU+t6MQeVLZ2u/wOeujIUGm2gsEJiuY=;
+        fh=nJEO9V14uaplCLVnxBi6jFrRgeBtBMptah60Q7yJJlE=;
+        b=g6wes5zGFRLyQ4Ea4/uShOuc0hwNPeNt1XzvuYK0yH4aNAcc0HFWRvGjZvQHne2anE
+         +eFbXeNjWqdLKM4F00bjw+45qIprTqPEgqbz85K2Cw4Koh4BG7VuPM0FQQI6cpbI65Eq
+         UYAL4vpN3j7b75ReyRjAY0fh8B6aliVzQQa75TJXWdSNv+IiUxaPA86A/0o2jHR1FVka
+         EHU1vPk+n588h/ddiNcHRLdSRGHnUMiK7pb4fYPqjLkLCj/dAY2Xow8vFu34KWwmum7u
+         /YFHH9DcJn0TQ/Giqtz/evFDhJ0pQnj00Kdzk7Z+F2I8pWIDiOWCK9buPedFHXgfb/Xo
+         v8zw==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789528465; x=1790133265; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=3x+NS1tTRcfYVoPTJUjaHanPBgcWXbJYc21sQ0pJf9U=;
-        b=Q+4yQi1BWAQA0lHC2ukDwj/imXE7pTdPL5/O4uH6y8CGnbQVW/juWdL+9OW84PTs4i
-         3PJXQjQSoN7hAXNYZn0o3A9YE0iCFk/eAUxrIp7D+kAZmypuFi74IWNkBRll7lF5GFn6
-         9nkxFPPO7CE+2CmU2KJ/MTm4wUC8sHFAMEA11e0CFs78mHzltBeJ50ci00wpZlT/R16d
-         25ygmmeFOVy1o2REoJ1ZCQK2hON1y8CtLzROsLpTlKBZDjLQy858IYdOX7lyPOFcV75/
-         RhNv+ytyLKGjhx2yeJ2DqXabgj13wzmok667xJhmmfKn3d8MR3sZjaW7NeqSA5cj1FxS
-         84IQ==
+        d=gmail.com; s=20251104; t=1789529443; x=1790134243; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=oQBcZLRQSJNhtU+t6MQeVLZ2u/wOeujIUGm2gsEJiuY=;
+        b=OiK5qtYXLeEqN909aNKu+On/HudBxBkUfRZMRTktiN/08FhMlzIjQXF03+kyBkKA+0
+         s+9ox7EDU5u6o7SHre6ht3mNWXr48xk+SZX/Yw8hVA2UBNWwj+yBynC8JE7CYQqVJb/v
+         7QxCIP1UoOFe/b46r1bW9GX1QKGzc6YmMYYpbnbZc2vCGV644kzbYmyFBoOgJky092TV
+         whrNX1qSi9oLBk/SI2Wz+lj+dAksjLxVlVfOK4OBDusUsaaFN3LunYPZXyTiHQ0XnHF1
+         9j9QHN8BmduCAvsDjWDFQn1iOcTOYjbhzIKTNibkdNkMdUGrowLaEOmkBgMf8KMWQDzf
+         +kCg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789528465; x=1790133265;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=3x+NS1tTRcfYVoPTJUjaHanPBgcWXbJYc21sQ0pJf9U=;
-        b=Nw2byFXw1pMq2woDjyXxfpKBazp6Emu7IYjPsnHINm2UnVg1JCW+vLXF2uXL7It3HO
-         Q+bSEoy+YZ/DhUsvHkjiNbC5pdsAo0xRl/13GGFiuCIZ6pymfSRAnb4ZTEHKU5R8Qqbe
-         MzlDg5Wwjq7+Whe/02Jw0/xWhwqjOqIifbgcTH/8/qm7bBjpCX9RPoX3rl6mAfi214ZO
-         YsLBmzOmuxDktOthQ0UAJnTy/ScqbnyZVx8HcCRy2su3m9tgYtgeJqNW/hYfTXcb1D7/
-         NGa8r3y2HhVWFTr82FfGTuo6U6zkvIniwe/ijpsYRqcuaPpeGlvLi2VWrAZtJ0rSlYDx
-         2b5w==
-X-Forwarded-Encrypted: i=1; AKwUvBxPSaUzUhY9nROVwC+msoo3AMIiuLMhtuG/qtGqDr9XbrPiPJlrUJEf0MPSgKdcxvdd8tdzM3sWd6iIpF4=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++m5HEBpnSfJhWEj1FYJIAarUXY34x06ni50iH4WzJl/8yXuEgjN
-	vywHNXQk+GWmcVtnaeMPw9SDSAk55F98UxFveuUNM/LQe+UhBoKwifdp
-X-Gm-Gg: AYBFou0mEgpcRnxSIvfu1Z6uToUZW7jvbCKzU1Z46zbdWc45VsHOrHtek7I23ffbiKW
-	nNHBTSNrTVL4uUZuBf5GR4OUqcFRQ0gKC0S0gPx6DFvcI/GY5AWJTkPiFUeZIhRiJdSSb1Njy+Y
-	j5PwVPE7oFRFPCZRP7vEBBBjU1updI5tGFdLe9dlU6LpOmdIJVvU8pWOgK2IW8b2Ipl3DzoSI2O
-	E4qzCI7lFj/TO5b0I4NwkEa13UphrIEKuF05LTp+BAYzazswXHT9oX/gENDslH8tyJ7nxec08MG
-	20gOFwpcTm3ge/PSbNsSf49nbkLmZLby5Z8kOtBMH5/R83vFfYQs2eXVse6gQl7murZRsWCOtSV
-	HYR8QLvLT8Nd4P2YdOzQPDnAZvzRpltobS2i64ya8lETSVzTCcnB3thpKIspRnhNzOc1XbgjCBf
-	Duo0p7R9wzOfHDJmBuPK7RUZMj9V9NgGBgpLJnX4td2J0G79xserXDhA==
-X-Received: by 2002:a17:90b:3bc8:b0:398:dcfe:968e with SMTP id 98e67ed59e1d1-39e1e504f3fmr2661898a91.20.1789528464931;
-        Tue, 15 Sep 2026 20:14:24 -0700 (PDT)
-Received: from lgs.. ([2001:250:5800:1002::de93])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39e1ae99ca6sm1886986a91.0.2026.09.15.20.14.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 15 Sep 2026 20:14:24 -0700 (PDT)
-From: Guangshuo Li <lgs201920130244@gmail.com>
-To: Pantelis Antoniou <pantelis.antoniou@gmail.com>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Russell King <linux@armlinux.org.uk>,
-	Jeff Garzik <jeff@garzik.org>,
-	Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Guangshuo Li <lgs201920130244@gmail.com>,
-	stable@vger.kernel.org
-Subject: [PATCH] net: fs_enet: fix platform info memory leak on remove
-Date: Wed, 16 Sep 2026 11:14:14 +0800
-Message-ID: <20260916031414.2875022-1-lgs201920130244@gmail.com>
-X-Mailer: git-send-email 2.43.0
+        d=1e100.net; s=20260707; t=1789529443; x=1790134243;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=oQBcZLRQSJNhtU+t6MQeVLZ2u/wOeujIUGm2gsEJiuY=;
+        b=drhTfaj4z19eBH+TKbjpZb/6Lv3lHCuXdFVuo2B2n0UvUz5w7M0FoGa36LpVWUU/hs
+         yKJoeFzHzakO2zbIVJpe0UAcevgsV9AvM+iaanFM1zIvoQ4DyQcRobwXkUDNeCngbc1a
+         VFiZgBh521ctS61qbvoi+ohgvjsSKRcMfJuSDLhPkXv8okvjCuRGcbqAvFzL8xohYfHn
+         S/oQw/lARgpJk+sUwvxXHl3AAKZsf2xaMdmxWIHlqw60s3NjHFFdRf4drdcc1ujCEKrr
+         mVGEWe1GR3nuACDk3OaTFdrd/p+/eZTjkKv4/PVl3/wdZKdKDLAZAVOMvu/4goxS6hPn
+         mQCQ==
+X-Forwarded-Encrypted: i=1; AKwUvBwMiKXHEtwvV8PT3FxnU9fN7BuMB0uGjZFlizyTZ7Rw2Cw/iIzP0nu/wQ1aTlkyA5uDQM1Q38CwGBUPAMw=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++nK34DfolxMM/nyifg3TC3j9wiPj1Wj6v7JSC94ooVqRRxVUraZ
+	ctYCt06rUB7S7ILRqsElJZ2tI20cH5H30xwwTJdcm7xZykA4qKadONgbWXfihe+m9SEieOGg5RK
+	64iZbbl/jyt3v/+E90y8sWSmLgHVUhZ8=
+X-Gm-Gg: AYBFou30qNfQm/uS7oNCtfxDlKhUWGMihlZVkiGMxJy5etx8yOyYOrEagRynWrjAgmR
+	h0DQaZhMc7fGapy/MTu8E/FRFq9stxV15J3Asar37IEI4e6/L7pQRHCs23Fl26TffWH3RTMWr4b
+	Kctau/T3YrumGnMN3/H6tc4crulAonoAGJnrXo487FC88pPkUy/v7XBVuY23M07Ng1r4iozwGjd
+	UNoS67nILtsZ2fx57qUoUSquBcrA7UYQHCowVfVqRetfXa+WLArv8a3pBeO91E2sKb+JELOSzJl
+	P9sXDJn8DRNk81gV2tkYPFirvudu6MIxS4ib1dyDHMQ121x9BOUqboqtKR0719zwkKg=
+X-Received: by 2002:a17:903:1ac5:b0:2cc:864b:539 with SMTP id
+ d9443c01a7336-2dd8e003302mr22506815ad.6.1789529443281; Tue, 15 Sep 2026
+ 20:30:43 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,40 +102,156 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260915100931.3593242-1-andriy.shevchenko@linux.intel.com> <20260915100931.3593242-6-andriy.shevchenko@linux.intel.com>
+In-Reply-To: <20260915100931.3593242-6-andriy.shevchenko@linux.intel.com>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Wed, 16 Sep 2026 11:30:15 +0800
+X-Gm-Features: AcwNN1XutB8iZg2AF0p02q4kvkV9mnifXUYQQ4fzj9LiCitjAIk_rhIx4BZpDsc
+Message-ID: <CAA+D8APje43K1vNagzzH4yX=q1fx0Ntwa28fuFfyhYt5MRCkbg@mail.gmail.com>
+Subject: Re: [PATCH v1 5/7] ASoC: fsl_asrc: Replace dma_request_slave_channel()
+ by dma_request_chan()
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Frank Li <Frank.Li@nxp.com>, Mark Brown <broonie@kernel.org>, 
+	Shengjiu Wang <shengjiu.wang@nxp.com>, bui duc phuc <phucduc.bui@gmail.com>, 
+	Tianchu Chen <flynnnchen@tencent.com>, linux-kernel@vger.kernel.org, 
+	dmaengine@vger.kernel.org, linux-sound@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
+	linux-stm32@st-md-mailman.stormreply.com, Dave Penkler <dpenkler@gmail.com>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vkoul@kernel.org>, 
+	Frank Li <Frank.Li@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>, 
+	Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
+	Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, 
+	Robert Jarzmik <robert.jarzmik@free.fr>, Lars-Peter Clausen <lars@metafoo.de>, 
+	Orson Zhai <orsonzhai@gmail.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, 
+	Chunyan Zhang <zhang.lyra@gmail.com>, Olivier Moysan <olivier.moysan@foss.st.com>, 
+	Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
+	Alexandre Torgue <alexandre.torgue@foss.st.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-fs_enet_probe() allocates the platform information structure with
-kzalloc_obj() and stores it in fep->fpi.
+On Tue, Sep 15, 2026 at 6:09=E2=80=AFPM Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> wrote:
+>
+> Replace dma_request_slave_channel() by dma_request_chan() as suggested
+> since the former is deprecated.
+>
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-The probe failure paths release this allocation with kfree(). However,
-after a successful probe, fs_enet_remove() tears down the network
-device without freeing fep->fpi, leaving the platform information
-structure allocated after driver removal.
+Reviewed-by: Shengjiu Wang <shengjiu.wang@gmail.com>
 
-Free fep->fpi before releasing the network device.
-
-This issue was found by manual code inspection.
-
-Fixes: 976de6a8c304 ("fs_enet: Be an of_platform device when CONFIG_PPC_CPM_NEW_BINDING is set.")
-Cc: stable@vger.kernel.org
-Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
----
- drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-index d3c772ed5fc9..071e3f3de78c 100644
---- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-@@ -1007,6 +1007,7 @@ static void fs_enet_remove(struct platform_device *ofdev)
- 	fep->ops->cleanup_data(ndev);
- 	dev_set_drvdata(fep->dev, NULL);
- 	phylink_destroy(fep->phylink);
-+	kfree(fep->fpi);
- 	free_netdev(ndev);
- }
- 
--- 
-2.43.0
-
+Best regards
+Shengjiu Wang
+> ---
+>  sound/soc/fsl/fsl_asrc.c     |  2 +-
+>  sound/soc/fsl/fsl_asrc_dma.c | 13 +++++++------
+>  sound/soc/fsl/fsl_asrc_m2m.c |  8 ++++----
+>  sound/soc/fsl/fsl_easrc.c    |  2 +-
+>  4 files changed, 13 insertions(+), 12 deletions(-)
+>
+> diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
+> index b24737add001..ae682bf450f6 100644
+> --- a/sound/soc/fsl/fsl_asrc.c
+> +++ b/sound/soc/fsl/fsl_asrc.c
+> @@ -638,7 +638,7 @@ static struct dma_chan *fsl_asrc_get_dma_channel(stru=
+ct fsl_asrc_pair *pair,
+>
+>         sprintf(name, "%cx%c", dir =3D=3D IN ? 'r' : 't', index + 'a');
+>
+> -       return dma_request_slave_channel(&asrc->pdev->dev, name);
+> +       return dma_request_chan(&asrc->pdev->dev, name);
+>  }
+>
+>  static int fsl_asrc_dai_startup(struct snd_pcm_substream *substream,
+> diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
+> index 2f662bdf14d0..5cd12781c604 100644
+> --- a/sound/soc/fsl/fsl_asrc_dma.c
+> +++ b/sound/soc/fsl/fsl_asrc_dma.c
+> @@ -191,9 +191,10 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_com=
+ponent *component,
+>         dma_params_fe->maxburst =3D dma_params_be->maxburst;
+>
+>         pair->dma_chan[!dir] =3D asrc->get_dma_channel(pair, !dir);
+> -       if (!pair->dma_chan[!dir]) {
+> +       ret =3D PTR_ERR_OR_ZERO(pair->dma_chan[!dir]);
+> +       if (ret) {
+>                 dev_err(dev, "failed to request DMA channel\n");
+> -               return -EINVAL;
+> +               return ret;
+>         }
+>
+>         ret =3D snd_dmaengine_pcm_prepare_slave_config(substream, params,=
+ &config_fe);
+> @@ -404,9 +405,9 @@ static int fsl_asrc_dma_startup(struct snd_soc_compon=
+ent *component,
+>
+>         /* Request a dummy dma channel, which will be released later. */
+>         tmp_chan =3D asrc->get_dma_channel(pair, dir);
+> -       if (!tmp_chan) {
+> +       ret =3D PTR_ERR_OR_ZERO(tmp_chan);
+> +       if (ret) {
+>                 dev_err(dev, "failed to get dma channel\n");
+> -               ret =3D -EINVAL;
+>                 goto dma_chan_err;
+>         }
+>
+> @@ -497,9 +498,9 @@ static int fsl_asrc_dma_pcm_new(struct snd_soc_compon=
+ent *component,
+>
+>         /* Request a dma channel, which will be released later. */
+>         chan =3D asrc->get_dma_channel(pair, IN);
+> -       if (!chan) {
+> +       ret =3D PTR_ERR_OR_ZERO(chan);
+> +       if (ret) {
+>                 dev_err(dev, "failed to get dma channel\n");
+> -               ret =3D -EINVAL;
+>                 goto dma_chan_err;
+>         }
+>
+> diff --git a/sound/soc/fsl/fsl_asrc_m2m.c b/sound/soc/fsl/fsl_asrc_m2m.c
+> index 4bc40f328f58..e440cc083ebb 100644
+> --- a/sound/soc/fsl/fsl_asrc_m2m.c
+> +++ b/sound/soc/fsl/fsl_asrc_m2m.c
+> @@ -503,16 +503,16 @@ static int fsl_asrc_m2m_comp_task_create(struct snd=
+_compr_stream *stream,
+>
+>         /* Request dma channels */
+>         pair->dma_chan[IN] =3D asrc->get_dma_channel(pair, IN);
+> -       if (!pair->dma_chan[IN]) {
+> +       ret =3D PTR_ERR_OR_ZERO(pair->dma_chan[IN]);
+> +       if (ret) {
+>                 dev_err(dev, "[ctx%d] failed to get input DMA channel\n",=
+ pair->index);
+> -               ret =3D -EBUSY;
+>                 goto err_dma_channel_in;
+>         }
+>
+>         pair->dma_chan[OUT] =3D asrc->get_dma_channel(pair, OUT);
+> -       if (!pair->dma_chan[OUT]) {
+> +       ret =3D PTR_ERR_OR_ZERO(pair->dma_chan[OUT]);
+> +       if (ret) {
+>                 dev_err(dev, "[ctx%d] failed to get output DMA channel\n"=
+, pair->index);
+> -               ret =3D -EBUSY;
+>                 goto err_dma_channel_out;
+>         }
+>
+> diff --git a/sound/soc/fsl/fsl_easrc.c b/sound/soc/fsl/fsl_easrc.c
+> index aced16d1228a..d30cc3e90215 100644
+> --- a/sound/soc/fsl/fsl_easrc.c
+> +++ b/sound/soc/fsl/fsl_easrc.c
+> @@ -1433,7 +1433,7 @@ static struct dma_chan *fsl_easrc_get_dma_channel(s=
+truct fsl_asrc_pair *ctx,
+>         /* Example of dma name: ctx0_rx */
+>         sprintf(name, "ctx%c_%cx", index + '0', dir =3D=3D IN ? 'r' : 't'=
+);
+>
+> -       return dma_request_slave_channel(&easrc->pdev->dev, name);
+> +       return dma_request_chan(&easrc->pdev->dev, name);
+>  };
+>
+>  static const unsigned int easrc_rates[] =3D {
+> --
+> 2.50.1
+>
 
