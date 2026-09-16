@@ -1,80 +1,105 @@
-Return-Path: <linuxppc-dev+bounces-27476-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27477-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6812AC88E5C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 09:36:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 373AFC982C1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 09:50:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hlDKc5107z2y2W;
-	Wed, 16 Sep 2026 19:36:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789551380;
-	cv=pass; b=CTw2WksrhFU9UuBE859WEMa3ZeFNSnSx6GqjEGouG2ibvUZeOtgisWvna34lf7txo/l94QrMn0rBTjcIBCfNgza1TA3L2IXrW43J41OBzjHOKf3uTkHHj6k0bjsFTmyUhOE+OVIKJnR1DbFjCGm0w9zIlZ3CUzahEl0shb+DxiL41+Ozx1Fo4Rd/0k1IJuK45pzFH2ZLHLP6VawOQm91aEoOh38Dqn0oHyqG8bDP2rPeXo8xiGp1spWKj4zjYgGv+vBoU891W6cDFjWzxMih5rWjFyzHEPCtt9CmufDglWqHBtvXGkgO0uER1srD8tbYv1YKz4ECI0VuF2RTAL5E9w==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789551380; c=relaxed/relaxed;
-	bh=2ZbhSdV2coza4ZHHXz+8OoRw3lY4SIx+4jsm6wz2iXQ=;
-	h=From:To:Subject:Date:Message-Id:Content-Type:MIME-Version; b=V5coLd3OwhpYun4uZjqmtzJYMu7FhtFKL904r9mIPQWEjhrNNX+HH/goWxRacJ/HyLD3C71TvE/lr2D6JBTf6fEndBLe0G9lC+oC7B+Le61XmorW4nqlB1DjOa0oFN6sP3GC+Yp3W8bdZeU3bcwM5zz4SoPWfGdUB45gVfuD5Wzon7DiRwoTuuwL5qh3TrXyRm2CHl+AresCVzsyKfHhyx7XCBjGOgntOLwK/AZVd53FIuSwYZgYleKeWVIc8KU7rFypZOuV88MUK/RgYWYfzH2+gIXGepOUPOPSsb3AiTslTvVFKoQvL7GUv0ZHWcIvQVdLAMsgFSGy7bMZjORrHw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=a2kten3W; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=shengjiu.wang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hlDdq51lzz2y2W;
+	Wed, 16 Sep 2026 19:50:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:31::11"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789552223;
+	cv=none; b=NBy3aHQA1FJlpR6f3fZARmr8/E7M9itBGe26CjWex9cQrrwcPia0Ohxp+NHlZCoT70fnI3ynrb87nxqNBgAgpAA+qfdJArS7jOeWVeSWcarFUfb5HFX1ypP5HBhlFSq5w93utTQhELw1+Kp9BB4vJ8FsiVrctEifgODGGGz+1oiSs34+l6AuEK0+65iGzOcuz1iB4YAViD1DKHfz8nl7LYqphz6vqQVvVYrPJ2+SrHalmRg89uIb5wjGq7PUJCrzf9EZ0//nLbEvHyZIpmji6nqYg+5t1t5z+WQvIdI3iGqEF44l/eUPVVwM69N2JFrPQMdZpS1hbYZo/w+hd880ow==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1789552223; c=relaxed/relaxed;
+	bh=79YAdtaHEv3S3nDvYc6X9C5ar06F3FncZEtUncQdJQ4=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=O+CetksI+wMFTSkNjhwvtdkagiTAm9Ga/uXpGd0VJC8pEdGU3YALa2l5r0clOitE0jXiUtZnNDOFdVtYTDHIACYZRuj2OC0ycRzNNM4Ccaff6+0F4imoUohGtpNVNac7twE4qNnd194se58Ksqf6SLwv+rdHks04vaU0joi8wcMwbZLy9u7DhGdF5CFLnvzH1zLsdTF8+4UcK0ACJkMYeUk3dMOhuJYYeCaPZHWBLAeUeBnTybfVi30P1trjK/XGzcNnXBUvgLdWrRG7b7SfptkDGfLdoYaTw44xB7fs019chd1YkRpK7AUlW3sAvmwNV2/YDcfEu3xc+KRi0qehrA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=E+N0pK/K; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:31::11; helo=mail-wm2-x11.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=a2kten3W;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=E+N0pK/K;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=shengjiu.wang@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:31::11; helo=mail-wm2-x11.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm2-x11.google.com (mail-wm2-x11.google.com [IPv6:2a00:1450:4864:31::11])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlDKb3Y8Mz2xYh
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 19:36:18 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=jlDUR0uhn7HOEaDsVzpCVFvXD5Hki2OwCaBrNcG/qyQInlX1kM3kJzAXg9CHWMnWeoiYwckDulWg80c+pbe2aLeubWxX0Yk7ow7GxPsZSJl1nk12E9lirRKfm/5LqmnPafiRiEvxve1s0Qk4EM3MYK1G7nq/tACF/dlkxfpmA7odXKRjqo9NOW0zczNLVdcJQ58qLzy/hKfB2T6dK3NvRj7zD5U/7q4ASdmQ/yV8FWJZvjgMSt2N01yXmg7v9k/YhpqXRi2NGrCcJ2FSlN10GYJrg3YpAgclrPpxBY9y8bMPInAljth5jz91pIN8Rg6UF8WPVW7BJCNaeDceofFsRg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=2ZbhSdV2coza4ZHHXz+8OoRw3lY4SIx+4jsm6wz2iXQ=;
- b=MW182WiPFAIND7Qo1NLqHwaV7aqyZ//dcNOWD92sjYVlqbgAV0Lb9UGQ5I/yf1HIkHdVOGTmUCLbOJRKR8OB8rSfMyxtI/tGl77S0dzP79pEhpuHZUrciDrQ2/4Ge27P2QjcPzzkD6Ktvlq2n8oDvUOh4YaqkiM38hSdMv0WTDnXSLyC+ZmCsAh2FwbaYBJRnApJ6ZVl9ATk+DMJQWyUuZJC/5kXCUvNJ12ShO5n0oflGlp3mwY0weWps9S4rothN+gYi2Yu5zh/oVrsnmltqTpYtHV6Sga+xJDE/DAdWgRb/RU9nTYiaMlKLbHKXJ0Zfe+tXKt3PmEn8cfFOocgkw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=2ZbhSdV2coza4ZHHXz+8OoRw3lY4SIx+4jsm6wz2iXQ=;
- b=a2kten3WM1w5MLTGWipbyWycnkFLmHV3JW1YljPjRKtpZCZ+it3AWFhUMYsB0WAn6fm7OfX8jhTV7fqjX/2ep2BE/gQg9cNBg3cUGcSIpQLb2BDunu4WUIZ7r7N0HxIIqazuIIQK5Gu25P4qkSpCgEAZjBb+Vmvh8RkcetpbsfP2XuUwflsciK6dEyEsKZ1PJ0iJH1R7s/IQA0ZKLOdQ/Q1WOPOCCDMrMpdm09H7+dJ2PeBhHkDLs+cyo3fVC39IIoklvS8C55tfJYT7QeDHFGe3ennH2OPMQS3BzP1Rdsaw7wu6n+Sz8Vyb9wtIcyN5K5oZlHc9iQ6pOX9XKxg97w==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from PAXPR04MB9351.eurprd04.prod.outlook.com (2603:10a6:102:2b6::17)
- by AMCPR04MB12646.eurprd04.prod.outlook.com (2603:10a6:20b:770::21) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.428.9; Wed, 16 Sep
- 2026 09:35:53 +0000
-Received: from PAXPR04MB9351.eurprd04.prod.outlook.com
- ([fe80::1058:a430:52c1:5aa]) by PAXPR04MB9351.eurprd04.prod.outlook.com
- ([fe80::1058:a430:52c1:5aa%6]) with mapi id 15.21.0406.007; Wed, 16 Sep 2026
- 09:35:53 +0000
-From: shengjiu.wang@oss.nxp.com
-To: shengjiu.wang@gmail.com,
-	Xiubo.Lee@gmail.com,
-	festevam@gmail.com,
-	nicoleotsuka@gmail.com,
-	lgirdwood@gmail.com,
-	broonie@kernel.org,
-	perex@perex.cz,
-	tiwai@suse.com,
-	linux-sound@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] ASoC: fsl_asrc: use regmap_write_bits to update clock source registers
-Date: Wed, 16 Sep 2026 17:40:42 +0800
-Message-Id: <20260916094043.1496709-1-shengjiu.wang@oss.nxp.com>
-X-Mailer: git-send-email 2.34.1
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: MA5PR01CA0242.INDPRD01.PROD.OUTLOOK.COM
- (2603:1096:a01:223::9) To PAXPR04MB9351.eurprd04.prod.outlook.com
- (2603:10a6:102:2b6::17)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlDdp3Nhxz2xYh
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 19:50:22 +1000 (AEST)
+Received: by mail-wm2-x11.google.com with SMTP id 5b1f17b1804b1-49e620fa473so4413275e9.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 02:50:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789552219; x=1790157019; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=79YAdtaHEv3S3nDvYc6X9C5ar06F3FncZEtUncQdJQ4=;
+        b=E+N0pK/KShxQe5cYwIEp6bsAeda6kxlQnwQ6RsZp3RBoHBathhtPPdFcIDo1xL3ZtY
+         vKdN58Cf1sdWfF1ySqG85VnLR2cBh7NPdfaOTUmBppM2006VZcTXGokksXPdk8yj9Gg2
+         CNycGBCpi/oq4LbILcIBZGALX/FEPLzKNPjWnIfwVwP66nN3139jw455xSgSTYL1kR03
+         5e3QJLj44R2tPdRYc/mNI+PP7lNpsz3HyWSe0rsXIkR7GrQneYFZ6vzL7nsL2BS+EbVS
+         fkSGUdxGepPvtrM3nEyujYrMAYeuORs7j2rggSnfM1FhXwYFZKTGSqiLFSEMQZGYGNqh
+         3ecQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789552219; x=1790157019;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=79YAdtaHEv3S3nDvYc6X9C5ar06F3FncZEtUncQdJQ4=;
+        b=QshXZcJWJm7QsGNeV9Edgj90XGxGtkOrhMg0neE2LXIcruyex/kOWO2SHw46G+TWmR
+         kw66+w6X16wHiENLeUr9I1LHlhHetPFvVvhLRL+b00Ca6WgThLmHQWpPHGe7mo0Tg2xN
+         iouB3xFBNFOsF/I5dj0FcYq1PplrqI1k7VPXiprhbVuWqV46fH1zm0Ilp/nfI4qX5Yvy
+         9yDV9G4fU7pRyodGPTqPiP7btPBJFfhiwkPZn5WWHIuhjnELviAlUlzEAbgOBh0rg1bh
+         1rIql0xkoi62kMKNpdF7Wjbd1Rz5M799M8UETdbXNGT491QiCoNkJze6H4mHNFtANj1o
+         1soA==
+X-Forwarded-Encrypted: i=1; AKwUvBzg5Gu2sDekeaNQ3KBINriLEOxOOkkLYdifdzUDTkH54KWQEMDXqSQl7yE4GN/o9IkmRA4kl0qlQMfngmk=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++lnmwI6QILjsiX60UR/ss2YmJBFy0DlhQmeFZzz8fxpNc1h5jXQ
+	pxuoSc0+S5Gz2+JhQvWaoJ2AAfbtmkwsBdT37nfjMhRDGK95rBl1iFGS
+X-Gm-Gg: AYBFou2+yasPQfbxkMdXSehtFEb2cW1NLLedBLxQLDehRjQYC6mQ+Hz0LWZVSDFlM01
+	vfq0UAg59WMIaocNVjILyY5IwurMs46baN15U6vtPIzSCysDqKPhLW18q7VE/SrPtfn9x0tJZYL
+	UIOXxojMQJxrGwHJTTba272O2T8ScOir1NPbvPnb2jcvAkFaBLZoXub6+f7wkS2b1cQPaVfJBiR
+	bB/XYEtRvvLM50mQgQhRw2Bmvx+IJF/K+kWuKcrnLxWTlBNdlg9XMXXa6mddx9Dq03Hw5X0W+ZH
+	mkC7OIE3hSJBgXgcz9OfpDweg3rPSv2lko/cV643Y0wJHZziY5EO5KYbAe0Obi1riNaKYu4iWKg
+	GRlPGjLBX2RNIxwYFc/AyvIX82f1puCOefsXRJWxrPLCQGynH7gKAOha3zbivX8GKewJkCSk8E2
+	MnZTI6CMVVDrht/fKLEQl9xS9/1fB6azC7D6stzX1kfURQMkyQv34a2PIfkqlO3QakOI6W5RDFi
+	DObbWTWai/T9UQ82kyOmr/vy/elGewsSL1nA7MV+w8ps8Y=
+X-Received: by 2002:a05:600c:4ec6:b0:49c:fea3:8633 with SMTP id 5b1f17b1804b1-49eb732aec0mr19444455e9.24.1789552219000;
+        Wed, 16 Sep 2026 02:50:19 -0700 (PDT)
+Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49e83b02245sm84055225e9.10.2026.09.16.02.50.18
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 16 Sep 2026 02:50:18 -0700 (PDT)
+Date: Wed, 16 Sep 2026 10:50:17 +0100
+From: David Laight <david.laight.linux@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jann Horn <jannh@google.com>, Christian Brauner <brauner@kernel.org>,
+ Alexander Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>, Ingo
+ Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+ linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, Oleg Nesterov <oleg@redhat.com>,
+ linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ linux-mips@vger.kernel.org, linux-openrisc@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-um@lists.infradead.org, Jens Axboe
+ <axboe@kernel.dk>, io-uring@vger.kernel.org, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-gpio@vger.kernel.org,
+ linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ bpf@vger.kernel.org, David Airlie <airlied@redhat.com>,
+ virtualization@lists.linux.dev, kvm@vger.kernel.org,
+ kexec@lists.infradead.org, linux-hyperv@vger.kernel.org
+Subject: Re: [PATCH RFC POC 00/50] file: handle files on syscall exit
+Message-ID: <20260916105017.13ea5e36@pumpkin>
+In-Reply-To: <CAHk-=wi3Kkqgfg6zUTHpQoZNL2VOB4vYqpi6RX0WNO++29UtyQ@mail.gmail.com>
+References: <20260915-work-fd-reserve-unify-folded-v1-0-4d5217d6b246@kernel.org>
+	<CAG48ez1RsdT=O=-0city3vjgWhDvY424KtTmrCJntWy5ds3HBQ@mail.gmail.com>
+	<CAHk-=wi3Kkqgfg6zUTHpQoZNL2VOB4vYqpi6RX0WNO++29UtyQ@mail.gmail.com>
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,98 +113,64 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PAXPR04MB9351:EE_|AMCPR04MB12646:EE_
-X-MS-Office365-Filtering-Correlation-Id: bc083fb2-d2f4-49c2-d145-08df13d5e671
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|376014|1800799024|7416014|366016|19092799006|10067099003|3023799007|18002099003|11063799006|56012099006|921020;
-X-Microsoft-Antispam-Message-Info:
-	eXG4TKkVBYoozCS77uWQSJlgEH+PYDZcx0xLo1Ll4zZzHIW58W8tVXt+QdhWOV591e7YKcoCjTYd5xfpayVAvae17i5ANW4oMFmTVKH8Rx6DvXoYr7hQqHc8jm0lMWumnCFr3X2Iqnl2f4NISpMNf8qYPHnDDugJjRmXk8mMBwXOnVWWVdiM90HRIO57V9tohwAEhSlFQFcFBBa75hCqsk+f6xNwT085Xtdf5ot7QZtY69WNtQTtxGMy5Y/5W0PGsSKItMqC4DOVGhofD4qUL3L7mm+KybweIou3BTUPx3Yoev4xpJzo3KsjNyYMXg/KprF29PAPTRuLLXA8AMVB+wC0n0GZP4DTfDtNom4cGJQjIMHcXzD1DkwHSCtHG2AJnXYkOBiZdnlmI8OO0rZiXeNnmYqBWsP+mghAyLDUP3mOoWIZ7fV7MZWbtwmhg/bxBunkC5O8wEn9NUQXo5S+ymr+44zNGcam91CFl1seVMFe/3aVyS8G7vNRMYHaG6Q1b707gRi0CyD8lAX6kKXMq7C7Ar19yZcDdhlqQ68p/ncr9axfZyik2TLonXi2gXQZYN9prm6c7BnPcl/8k96asZmr36jWQlZyC6wMr+TXgDEEqOHU4NsHvAhbNK3LlIIoaq2JmZxEvq7ENQj79m79LdQ9yapN15o60t15FtORpKvt//9nlwltzekE9jeHvEEgfxaQQBdbbVinWeKxihyOOQ==
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB9351.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(376014)(1800799024)(7416014)(366016)(19092799006)(10067099003)(3023799007)(18002099003)(11063799006)(56012099006)(921020);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?+FjL6t8QsHk4YyVAIvO1leyuZOQYugVVzNs1J9nwusJs3Xl6js6bMU9itfv0?=
- =?us-ascii?Q?0GZdbEkxacbia14iFOgZHug4UiklpImqFkzllSNehGpVSlGXYgTK88WrOoDx?=
- =?us-ascii?Q?h0u4nq8B7jDVVzu5nLg+s6oCaiRMyqu6nVO45FIPUe/COJjqeye9yMtI4X7B?=
- =?us-ascii?Q?zK0PUCjxYr4zjYAZiKpxMGSmdr+5YqHLubBuz0VA9Jb0ccVjOjiO783Ef7oZ?=
- =?us-ascii?Q?AwP4BzR87Pw1umpD5aY64EX1LojKAIxYBjceoXEVOMFdEHSL7RNhatNa/Xcu?=
- =?us-ascii?Q?V+/toUX2oujPtJbj/3mH/UqGaWSzqbSN4QKWjZRfOjgS51JRkE96rY7tgTI/?=
- =?us-ascii?Q?H3y2p/Hi51IJEqxWysHGUNQdVjp1JA+kCLPTTdpg3Mdkn3Qa+2q1x1qkRq10?=
- =?us-ascii?Q?Sunr9OUDjuRDgjJ/qce5SWNNwiT1trE2rO1axj0vtB47Ec1DmJYKCY+P1NQb?=
- =?us-ascii?Q?qz50UCM44sj+WzXInak/67hjHZTC3g+4eVN8IePzkwciuM1JeSqU3epqgr8p?=
- =?us-ascii?Q?V7cwB7jhZCNZdy22sEK8zTvt+QJa4q5fxIu2GF0ouu4rspNmYE+hfR3z1Ac/?=
- =?us-ascii?Q?OVucs6bX+aq3oUxnxq38luKA7sK2EDhklWpBqTUzts5WmQMVycQh29DGsnbm?=
- =?us-ascii?Q?EkSAUYSCDRBND6Gm3zYiqHbGkJRrAyMkhldZKI595Izq6eMMmhyyl4GrIsWM?=
- =?us-ascii?Q?3Mh4YxTMG70ePPqu+uw7VYXUfmJ57SYG0vN/prmFzuosFjDy9Ltb+IkgZq7/?=
- =?us-ascii?Q?hM2Rh0acru+ULCj6m+jkgTXrGfmIztPx7/6c5uUsDLdcE/Gx3goxLQ96vvZv?=
- =?us-ascii?Q?bCi5b5R8j4ct8snbC0Et7RkkjPORzvJCyJZ6u8fY2t1w2gv8H9S7sySGiT/c?=
- =?us-ascii?Q?lliKdK7u64zkhSb2SEcTxhBxb56gn0c75I5x2uVlu8pzqXoyK1IRdb9+Ggd9?=
- =?us-ascii?Q?nF5y5I7rRNNT8lpnUd+emiNw+k8SvIDHWjASNgYvpc5jy/zf3RavAePwE2y7?=
- =?us-ascii?Q?RLU8GgnYiHM5hb/v+YjIPDHLQ8hbqdbwy2mbKRJPGZxuEzFTfAjancFGpQwK?=
- =?us-ascii?Q?Y2mdJ9M80sJhIGRv6sF4l6WRDT8DJoodQs7RtxwJRSIO8VZKGYjU14KmBX4k?=
- =?us-ascii?Q?T+gggh9Er5ySW0O27gi8yQbVUYTg/KxLbIfqPm9npLwDJqLLzDFroyOTt9D5?=
- =?us-ascii?Q?ZQetMz18FEXd2qpxeN9Akrxj41wK9GB4g+pL0jorPUh5hliAmY/2Oa67JJh4?=
- =?us-ascii?Q?Q4w3x5U4uHJV86x2RADZFFKrz3e/2KHBvztVtTArU0I8cIPmn3nLW63Yu9aP?=
- =?us-ascii?Q?0eiCtA3z58Bmj0BLQ1JDtkh89Dn+ZQ0/WSyRcypPK9wveP8XirE8haV267Q1?=
- =?us-ascii?Q?VXRLxDEzCXqUaOnp5Vkw0PWa1yI9fSrqWpVqtBl6bQRrzVRIphnP/EwsYr/j?=
- =?us-ascii?Q?r4jZJVaPRdiJtQfvl2SSH/09ZlJE2J+27z8tITXLkL+hKilaAOoTRyRi6hFh?=
- =?us-ascii?Q?Ya8+resOmKCttCYG+2Uh3IB+iwFBWlrLw6tWprGqb528WzWlKDdKjF2xV4fY?=
- =?us-ascii?Q?yejlaJ8eBQqs2QtaBF5ANEWOjnT/eQiOzwyDDmcw+W5WuZgGw1JmKyjJZpAE?=
- =?us-ascii?Q?/WVhmiUQG+4I4l5pMvIRA91ajiBqgix8Hqrd1hBLfKIknuczlZMhXLaJWraZ?=
- =?us-ascii?Q?BFO9Fr8JnfdqiEXvrA2pYj0UZPPizjNf/C0M2GuESIYi58DYqqIQsPs+66b8?=
- =?us-ascii?Q?l6l/oxebSHfBI6SMh7hrylpSiZZDz8eJs6u6Wcnk122tpQ1h7TgY?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: bc083fb2-d2f4-49c2-d145-08df13d5e671
-X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB9351.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Sep 2026 09:35:53.4666
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: oA4TlLPmUTdZ/DS1+99e7t7IIPaCOu1N07jZowXH4crpzJgyH8oawT2EsPUvBkymG9ULqhhBmXJ9wu/QH3D6r36ZB7pEzVOM1L5qbrPSP/23zZNvGQJHZS5Zq7U29Txc
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AMCPR04MB12646
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
+On Tue, 15 Sep 2026 12:08:57 -0700
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-After a warm reboot the REG_ASRCSR register may not be in its hardware
-reset state. regmap caches the register value as 0 (the assumed default),
-so when the desired clock source index is also 0, regmap_update_bits()
-skips the actual hardware write because it believes the register already
-holds the correct value. This leaves a stale clock source in the hardware.
+> On Tue, 15 Sept 2026 at 10:52, Jann Horn <jannh@google.com> wrote:
+> >
+> > Is this mainly about stuff like "we installed a file descriptor and
+> > then the following put_user() failed"? Because if so, I think a nicer
+> > fix would be to have a policy of "if userspace provides unwritable
+> > memory to a syscall, just keep going and pretend the access worked",
+> > and maybe have a sysctl that kills the process when this happens to
+> > emphasize that userspace should not be doing this.  
+> 
+> We've done that before, where we just ignore put_user() errors and the
+> user gets whatever the user gets.
+> 
+> It is maybe not optimal, but it's fine. You can find quite a lot of
+> unchecked put_user() calls with a pattern like
+> 
+>         git grep '^[[:space:]]*put_user(.*);'
+> 
+> and some of them are in core code - see the two in kernel/fork.c, for example.
+> 
+> One of them says "if userspace has not set up a proper pointer then
+> tough luck". The other one doesn't even bother with a comment.
 
-Replace regmap_update_bits() with regmap_write_bits() so that the masked
-fields are always written to hardware regardless of the cached value.
+I think the code should try to return EFAULT (IIRC that is too hard
+in one of the exec cases).
+Otherwise very unexpected things might happen if the memory is just
+readonly.
+If you ignore the error and the pointer is invalid the application will
+get a SIGSEGV and (usually) die.
+But winding back kernel data because a user copy failed is likely to
+be problematic/difficult and at best have error path code that isn't
+really tested.
 
-Fixes: 3117bb3109dc ("ASoC: fsl_asrc: Add ASRC ASoC CPU DAI and platform drivers")
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
----
- sound/soc/fsl/fsl_asrc.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+As well as writing fd numbers to userspace, some sockopt code tries to
+wind back if the write to optlen fails (which has been read earlier).
 
-diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
-index 1c611ca89dea..56604fa1613a 100644
---- a/sound/soc/fsl/fsl_asrc.c
-+++ b/sound/soc/fsl/fsl_asrc.c
-@@ -521,10 +521,10 @@ static int fsl_asrc_config_pair(struct fsl_asrc_pair *pair, bool use_ideal_rate)
- 			   ASRCTR_USR(index));
- 
- 	/* Set the input and output clock sources */
--	regmap_update_bits(asrc->regmap, REG_ASRCSR,
--			   ASRCSR_AICSi_MASK(index) | ASRCSR_AOCSi_MASK(index),
--			   ASRCSR_AICS(index, clk_index[IN]) |
--			   ASRCSR_AOCS(index, clk_index[OUT]));
-+	regmap_write_bits(asrc->regmap, REG_ASRCSR,
-+			  ASRCSR_AICSi_MASK(index) | ASRCSR_AOCSi_MASK(index),
-+			  ASRCSR_AICS(index, clk_index[IN]) |
-+			  ASRCSR_AOCS(index, clk_index[OUT]));
- 
- 	/* Calculate the input clock divisors */
- 	indiv = fsl_asrc_cal_asrck_divisor(pair, div[IN]);
--- 
-2.34.1
+I've forgotten which Unix converted EFAULT to SIGSEGV in the system
+call exit code - I'm sure one of the ones I've used did.
+
+David
+
+> 
+> The scheduler has two cases too, although one of them is admittedly
+> for another error case.
+> 
+> So yes, saying "if you pass bogus arguments, you get what you get" is
+> a valid model. It's perhaps not the *preferred* model, but it's not
+> wrong.
+> 
+> It *would* be wrong to take code that already has error handling and
+> remove the error handling, though.
+> 
+>                   Linus
+> 
 
 
