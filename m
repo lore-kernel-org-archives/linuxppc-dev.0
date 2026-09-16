@@ -1,81 +1,98 @@
-Return-Path: <linuxppc-dev+bounces-27456-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27457-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ADCF3C88E5C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 04:33:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D561C982C1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 06:44:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hl5bt4PNlz2yjw;
-	Wed, 16 Sep 2026 14:33:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789533194;
-	cv=none; b=ecNG0egOsljanjSg6CVNGZea5Nb+N64rxUCKgBXTDvWGcTArh28r4Kvq9NNu30S8jYlyIltij/3Z57kxcchMiV34eKGU+Tvm8fQdDJmbRN9fbdQ4nQ3UJN+vqYkdSco4T9ZAkhvQHavzGgutt9p/8ivV51I1JT6trhjtb3PgGB1dEeV4+k6kQTa5Ap1Ve5JhYG1916NN7WBp5R/NUzEajPneApNnCQPMKpUy+MWWWSRtvGylPiFUo2JvNHR5Nps0WZlAbCpn+8njKPnhHJkc0CFHoHxgb25po9mGhYUWtRJoc/ZI7YUvKH5tS+NxsiB954Dcoa+hORP7NIrl0nA2/A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hl8Vm0C67z2yGT;
+	Wed, 16 Sep 2026 16:44:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:39::10"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789541039;
+	cv=none; b=D9yy88Ot2Xo28SuvKIq8ndnGU8LiKOWCrLYfBXQNiCycTg/Ws/u1Q+cM/39/Epox5ttCA12LgbZtl2UE1NqKdVgaLlN57hVMVsiys6MZztQhR7JWENvAN9evPi4bCw5z+VZOZs6xLcLb/VwysEs6hfkewj1G7C2PQJJwPaplHCCihZWLv8SBm9p1JaJuZBT/DfLtg8Wz/fB2XJLFshvtuO46e7nuNrcj0ZePwu6n2DNQxvB+ex2NIozUQ/P6dcPuK5732EZJ69Wp0u6Bn1yIxWn2rZ7RPp9abFyBv59lrNrVOvX2CpnduozPvCtz/wLih++sRZ9AhTpeFg+2GlkOKA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789533194; c=relaxed/relaxed;
-	bh=hwz6yDsWTgFce4bay+J32yMuQFuQAsZQpaCv38dIDFI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=XByNDjvHGQnAoauiC86EwsrRaQaNTKgdxlyOj7RJr7xVVxPBA4v+6TNJKYAJYljEGJrjsvj2E9SxbhIP26kFyZJ1R0tQITDkgbzK6+ytZ2byIBitwLw/j6qqN0jU3DSf629F7qIHKSn+M7QV1uhqP8pENlX0Abq/wJzWzW/oszc3pSwaNsNQUfmNL+RcPCZojMDK8iI0Ardkia5rg9JAa8N3k5IdC8VAS9pgf+FZ0/14LxFSTNr08AUtsJcjJ1x/UAskCvUzamVrRh/+9NUAbZDKbgF66WUU/94+XhDG49TbWWFqx5FTZfo4kZ88akHqZsAWxdDyW6S9HMTZtfMRYQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GDFVnLZY; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1789541039; c=relaxed/relaxed;
+	bh=0LtIEs9A+1i71VGLOsFyci15iFpT6FPKjskDwO0GIQg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=V0AqG89oEGeYNb3xUP1+pKcc5Lw+1/0q06EbkN3B+HgJO74TrigeMb3BDIrKdag/ScGkqDCC8Id4Nc2O5P4FOW380isak3KcwclEQd9hyQ+BfIQjwiwZivtLWffjSruFKHlvNG1FFLIjJrkcpZOfCUzgQeTMnreZH4uteyl+V5QW9wDD+q2Ptm/Ftesk6VSM4GCtpm+HH6tWtKfDeNeTGvx4r60jPILIo25Hlv/G7rrRmv8YKhDSF4OKiabpZhMYv5mU+tKh5W916QI+qPBUgmgGO/eXcdoIEW7WI7VpYLm19MXucmg/47EDQQKs+v1pHAiauMqLfQxgzk7UI3zovg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=TLDanzHC; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::10; helo=mail-pj2-x10.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GDFVnLZY;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=TLDanzHC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:39::10; helo=mail-pj2-x10.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pj2-x10.google.com (mail-pj2-x10.google.com [IPv6:2607:f8b0:4864:39::10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hl5bs4ckSz2y2B
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 14:33:13 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68FLW3kl1806347;
-	Wed, 16 Sep 2026 04:32:57 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=hwz6yDsWTgFce4bay
-	+J32yMuQFuQAsZQpaCv38dIDFI=; b=GDFVnLZYlXgbAFgtqF2hubYIX/PU30ATn
-	K2mU+HySxeEp90woQjpczZP7vHddNH+I1QKH0Atxk0ibdhbH0VJVCD+ZmmFEjfd+
-	srqU1EOMb8T45DTU1iP8l0H9HhZGb/rriorrDY4/b/GMqPrS2UMjzf15i1plUQJM
-	pDyFdD6A9ZlgNoLj5YBbWdT9le3H5pS4/g5PAR6e4Gy4MlOiSfZiyaHlb1rLPSG8
-	6+rIWge+aSe8AbCYZ+5pDWZ9veCydfl8KjegI8II0/Z94JeJRZgNMLJ64YcLGb1w
-	R0B4DWgF+iPnskzUhKmYfHgKhi3/2lqT7RnBpK8hAyH95FQ7rK5VQ==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gmv5htnms-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Wed, 16 Sep 2026 04:32:57 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68G2mla6389172;
-	Wed, 16 Sep 2026 04:32:56 GMT
-Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gpyxscq0t-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 16 Sep 2026 04:32:56 +0000 (GMT)
-Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
-	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68G4Wtl366781538
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 16 Sep 2026 04:32:55 GMT
-Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 676BD58065;
-	Wed, 16 Sep 2026 04:32:55 +0000 (GMT)
-Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A971658056;
-	Wed, 16 Sep 2026 04:32:54 +0000 (GMT)
-Received: from li-4c4c4544-0038-3410-8038-c4c04f423534.ibm.com (unknown [9.61.186.148])
-	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 16 Sep 2026 04:32:54 +0000 (GMT)
-From: Haren Myneni <haren@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: devicetree@vger.kernel.org, maddy@linux.ibm.com, robh@kernel.org,
-        mpe@ellerman.id.au, npiggin@gmail.com, saravanak@kernel.org,
-        ritesh.list@gmail.com, hbabu@us.ibm.com, haren@linux.ibm.com
-Subject: [PATCH 2/2] powerpc/pseries/dlpar: Remove DT entries if failure from CPU ADD notifier
-Date: Tue, 15 Sep 2026 21:32:49 -0700
-Message-ID: <20260916043249.2062676-2-haren@linux.ibm.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260916043249.2062676-1-haren@linux.ibm.com>
-References: <20260916043249.2062676-1-haren@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hl8Vj682Zz2xlY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 16:43:56 +1000 (AEST)
+Received: by mail-pj2-x10.google.com with SMTP id d9443c01a7336-2dd88a115c1so6141655ad.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2026 23:43:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bytedance.com; s=google; t=1789541030; x=1790145830; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=0LtIEs9A+1i71VGLOsFyci15iFpT6FPKjskDwO0GIQg=;
+        b=TLDanzHC8pZOA044P6aL5znKKpDWebsP/kGqINwXRrgnPoEOkR4uqH0Um0yvNCvhk1
+         CxYIprUjtWzbo4BgnWH1qBdp1oXLpZ8zVloCXW8B/14lBbShCvJ15PCi49JKWHsCxhs3
+         n1Plmzom6RHgWDi+2xypeKxzYRCWRoK0YAHzAnJtc5gc5H9Pt8SxziH9HyoHyPFz2M/h
+         D5RWoTMD6ZRaYRvsrjO6vPKRMRImHFvAVIRLODG15g3m8ihiFrhe8RI6ayNp7zSIuCCI
+         8YKvw8HlbI9NHUrfb5O5QenGUY8w2vKwI2ZkpECa0c2fdD/UPgw+bOVqE1Xv38UJVub2
+         8fPg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789541030; x=1790145830;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=0LtIEs9A+1i71VGLOsFyci15iFpT6FPKjskDwO0GIQg=;
+        b=BKoKIdtSL5L/RMyz/8YBlCfcO6rouRD2/75KsMOK6nAPWGmpwe44BY9QgK5cY416Vn
+         hzrAxQyFcmQO/IEEOjqenefcFD3gDm1lbGA+cORY0aZuKyB09sEfNT6aoq0OgK9wZF2j
+         +srBAO5BGcMg5RimcehPZjalu4jBUP5ph9MQupKjJm1ZRqhuop42Glldgbc9hf30THSF
+         FRMs2HMgroHLVAYWS3fFbxFlCJvoxUXCpEhr6iszU1+/x+Tueb5ICqNHX2ALe7xGxMyy
+         BveYOcSDRT31ywPy5gSoNh4UiFfy5O2pQcmnj9dbowfRZC7RAVlSNQMGuSWIyA6MEfd7
+         AyHQ==
+X-Forwarded-Encrypted: i=1; AKwUvBxv3HULIZjRTK4/64GNtHHqB3cWf8ofF8ize5OZ6+3CAFcV61S+4kQlEZFL+7t81VpTexoYaeWSI1j0u9c=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++lS+jR4A+nE4dHWSEkj3LvCmutUCXTqSsewjjsEsbA5C8NRT7ym
+	DWHL5XuazmzIgkxVnp4VNjqD+28qU2MZE8N3U+9JGBk7gEml1VCuczg7tnJYQyWXnZ8=
+X-Gm-Gg: AYBFou35DITlM6d+F+rTYSmLVAmXYr/fGNsiWjgxv5jOVjVWE5u9qj5iukQVd1DCJgH
+	6PVmJb3fatMasfRXElSkc2sohmVbBrVhqPsmzdhnX/M4jUmTswklVUaUUAjBKv5m2aJZSHPtyGk
+	wpIa99OhK/BxpDIDwIgioyKwCZGkfWrLJ/iW2b++pXVysgAlEqwU86PYEqwcC+hKq6Db4C/xY5S
+	p9hdZkaaw8s2KzmSt8LWopU7fgARvJhnWghx9463kUfH27AoZygh748ndYwUZfijejepX96tc6U
+	IzhxoO+allXmk1PnJpMhjvPWMTh/6XyRbfLhb6fMsqOxO8AO5z2HSAkRyl4D1qbKogmSCIDTbDC
+	pr/rRz8bRtDPj9256DpY85smLQrzMBQa62Yngw1ldQFAppFDQKr+hWj6KSWB5n13mutY0fiCFiO
+	L5tTnIr43uhlPXry+ca7pOW3PVGyX1PUa8keDbvoGG7dLmkirLxBUCt1lftjgqg+EL8kvLsp5bs
+	68xR8FbprcdmjB+ZT4=
+X-Received: by 2002:a17:903:22c2:b0:2d9:3083:a3ac with SMTP id d9443c01a7336-2dd8e52c3aamr26882255ad.15.1789541029585;
+        Tue, 15 Sep 2026 23:43:49 -0700 (PDT)
+Received: from n232-176-004.byted.org ([36.110.163.98])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2dd89f0592asm6074755ad.62.2026.09.15.23.43.44
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 15 Sep 2026 23:43:48 -0700 (PDT)
+From: Muchun Song <songmuchun@bytedance.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+	David Hildenbrand <david@kernel.org>,
+	Oscar Salvador <osalvador@suse.de>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Jonathan Corbet <corbet@lwn.net>
+Cc: linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-doc@vger.kernel.org,
+	Muchun Song <muchun.song@linux.dev>,
+	Lorenzo Stoakes <ljs@kernel.org>,
+	Mike Rapoport <rppt@kernel.org>,
+	Qi Zheng <qi.zheng@linux.dev>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Randy Dunlap <rdunlap@infradead.org>,
+	Muchun Song <songmuchun@bytedance.com>
+Subject: [PATCH v4 00/11] mm: Switch device DAX to section-based vmemmap optimization
+Date: Wed, 16 Sep 2026 14:43:30 +0800
+Message-ID: <20260916064341.1825793-1-songmuchun@bytedance.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,151 +107,116 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE2MDA1NiBTYWx0ZWRfX4JNaN4L9Yp/Y
- fU6PiVYAzyfHelcNHoQqW2EZcG01a53K1swt5NF2rfi+gEVS1Pl0fyK4WT0Pim8WsJRpCsyV64z
- wPEJlwfJJSkI8w1Y2Xu/bTmE7NONDVe7l1TpRiYhoaao7C4buDQe/KutVuT/tB8d3e2XvEG/tyQ
- EU44EXR6rSaIM1VR4q519O7T00weS1h7aXCqLzmjrLREpQvgykupnV3aTRlT1hVZ1Hvb14QcGDN
- MKiB6PEYsCDZ4o5lhe0i4YspIPufFqPLAwY7euwHJjo7gMn99JxZ3ZLvMroNnk5U+lKfOaj9h0q
- 5K9wLdWJm9dr8hKnUqyXJvxUEnFvvRYXH2KosaXMehmbs6HQK/c/kDVsF5lTbcEeLMHEbAy1I29
- Z149ylys93cT+d636JoUJsQzdsxb68RsFL4CLwABikXjzup4UPlRVLckJeAAAvSbpmbVctLJ2wW
- 4NUsr4Ec1Pfw5hhEJ8Q==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE2MDA1NiBTYWx0ZWRfX8nwWGsVZUIXd
- 199BlQjMAI3A1Ue0vFvpdAa9MeoKxr29G333IXMaGbrIfgtBF7VuqvAXIhWGD5SB96iMUwuXBh7
- EyWJiQgRPiI5zQHup8/OPNeNxCAkLwA=
-X-Authority-Analysis: v=2.4 cv=Zsx4uN7G c=1 sm=1 tr=0 ts=6aaa1bf9 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8 a=r6zhGCe8PwBrag2BmykA:9
-X-Proofpoint-ORIG-GUID: oV9GNXtIIByENbbWxW18qtlP5xFyawAF
-X-Proofpoint-GUID: HSkaQri1igMEX5-CxglcngEuPGoKiC0Z
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-15_05,2026-09-15_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 impostorscore=0 clxscore=1011 priorityscore=1501
- lowpriorityscore=0 bulkscore=0 adultscore=0 phishscore=0 spamscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
- definitions=main-2609160056
 
-For CPU ADD, the device tree entries are retrieved with
-configure-connector RTAS call and attached to the device tree.
-Then the CPU is added as part of DT node notification. If the CPU
-ADD notifier returns failure, the corresponding CPU node entries
-should be deleted from the device-tree. See pseries_add_processor()
-for the possible failure cases.
+This series is split out from the earlier, larger series "mm: Generalize
+HVO for HugeTLB and device DAX" [1]. While the parent series generalizes
+vmemmap optimization across HugeTLB and device DAX, this subset addresses
+a single, self-contained step: switching device DAX to the section-based
+sparse-vmemmap optimization infrastructure introduced for HugeTLB.
 
-The current code does not remove CPU node entries during CPU ADD
-notifier failure and causing the following issues:
-- Can not add this CPU later since already present in the
-  device-tree.
-- Trying to free memory allocated to CPU node without detaching
-  the node and it causes freeing its sibling node (existing CPU
-  nodes).
+After the HugeTLB conversion, optimized vmemmap state is described by
+the memory section and the sparse-vmemmap population path can allocate or
+reuse shared tail vmemmap pages based on that metadata. Device DAX still
+uses the older DAX-specific population model, including a separate tail
+vmemmap page reservation and architecture-specific logic to locate or
+populate reusable tail pages.
 
-This patch fixes this issue by calling of_detach_node_no_notify()
-for the failure from CPU ADD notifier which removes CPU node
-entries without calling CPU REMOVE notifier.
+This series makes device DAX use the same section-based model. Device DAX
+records the compound page order from pgmap->vmemmap_shift in section
+metadata before vmemmap population, uses the common per-zone shared tail
+vmemmap page, and drops the extra reserved tail page. The powerpc radix
+path is updated to use the same shared tail-page helper, so the generic
+and powerpc DAX paths follow the same reservation model.
 
-Signed-off-by: Haren Myneni <haren@linux.ibm.com>
----
- arch/powerpc/platforms/pseries/dlpar.c       | 9 ++++++---
- arch/powerpc/platforms/pseries/hotplug-cpu.c | 4 ++--
- arch/powerpc/platforms/pseries/mobility.c    | 2 +-
- arch/powerpc/platforms/pseries/pmem.c        | 2 +-
- arch/powerpc/platforms/pseries/pseries.h     | 2 +-
- 5 files changed, 11 insertions(+), 8 deletions(-)
+The first patches prepare the shared infrastructure by introducing a
+generic CONFIG_VMEMMAP_OPTIMIZATION symbol, factoring out shared tail-page
+allocation, and keeping the special shared-tail struct page initialization
+local to sparse-vmemmap.
 
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index f4d33b8dffd8..01a9849773cd 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -247,15 +247,18 @@ int dlpar_attach_node(struct device_node *dn, struct device_node *parent)
- 	return 0;
- }
- 
--int dlpar_detach_node(struct device_node *dn)
-+int dlpar_detach_node(struct device_node *dn, bool notify)
- {
- 	struct device_node *child;
- 	int rc;
- 
- 	for_each_child_of_node(dn, child)
--		dlpar_detach_node(child);
-+		dlpar_detach_node(child, notify);
- 
--	rc = of_detach_node(dn);
-+	if (notify)
-+		rc = of_detach_node(dn);
-+	else
-+		rc = of_detach_node_no_notify(dn);
- 	if (rc)
- 		return rc;
- 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index bc6926dbf148..db359fa3f922 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -603,7 +603,7 @@ static ssize_t dlpar_cpu_add(u32 drc_index)
- 
- 		rc = dlpar_release_drc(drc_index);
- 		if (!rc)
--			dlpar_free_cc_nodes(dn);
-+			dlpar_detach_node(dn, false);
- 
- 		return saved_rc;
- 	}
-@@ -616,7 +616,7 @@ static ssize_t dlpar_cpu_add(u32 drc_index)
- 		pr_warn("Failed to online cpu %pOFn, rc: %d, drc index: %x\n",
- 			dn, rc, drc_index);
- 
--		rc = dlpar_detach_node(dn);
-+		rc = dlpar_detach_node(dn, true);
- 		if (!rc)
- 			dlpar_release_drc(drc_index);
- 
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index b5c2abd12432..e0e4ef04c679 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -112,7 +112,7 @@ static int delete_dt_node(struct device_node *dn)
- 	}
- 
- 	pr_debug("removing node %pOFfp\n", dn);
--	dlpar_detach_node(dn);
-+	dlpar_detach_node(dn, true);
- 	return 0;
- }
- 
-diff --git a/arch/powerpc/platforms/pseries/pmem.c b/arch/powerpc/platforms/pseries/pmem.c
-index 0f1d45f32e4a..b60a01745137 100644
---- a/arch/powerpc/platforms/pseries/pmem.c
-+++ b/arch/powerpc/platforms/pseries/pmem.c
-@@ -85,7 +85,7 @@ static ssize_t pmem_drc_remove_node(u32 drc_index)
- 	pr_debug("Attempting to remove %pOF, drc index: %x\n", dn, drc_index);
- 
- 	/* * NB: tears down the ibm,pmemory device as a side-effect */
--	rc = dlpar_detach_node(dn);
-+	rc = dlpar_detach_node(dn, true);
- 	if (rc)
- 		return rc;
- 
-diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-index 3968a6970fa8..6f80e58e6186 100644
---- a/arch/powerpc/platforms/pseries/pseries.h
-+++ b/arch/powerpc/platforms/pseries/pseries.h
-@@ -50,7 +50,7 @@ extern void dlpar_free_cc_property(struct property *);
- extern struct device_node *dlpar_configure_connector(__be32,
- 						struct device_node *);
- extern int dlpar_attach_node(struct device_node *, struct device_node *);
--extern int dlpar_detach_node(struct device_node *);
-+extern int dlpar_detach_node(struct device_node *, bool);
- extern int dlpar_acquire_drc(u32 drc_index);
- extern int dlpar_release_drc(u32 drc_index);
- extern int dlpar_unisolate_drc(u32 drc_index);
+The middle patches move device DAX onto that infrastructure by recording
+the device DAX compound page order in memory-section metadata, using that
+metadata to back generic device DAX mappings with the common per-zone
+shared tail page, exposing the shared helpers so the powerpc radix path
+can use the same model, and dropping the extra DAX-only tail page
+reservation and the now-unused section accounting arguments.
+
+The final patch updates the documentation for the new DAX layout.
+
+This is intended to be the third smaller step toward the broader HVO
+generalization. The wider HVO consolidation between HugeTLB and device
+DAX is left for follow-up series.
+
+[1] https://lore.kernel.org/all/20260513130542.35604-1-songmuchun@bytedance.com/
+
+v4:
+- Rename CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION to
+  CONFIG_VMEMMAP_OPTIMIZATION (suggested by Mike Rapoport)
+- Collect Acked-by tags from Mike Rapoport
+
+v3: https://lore.kernel.org/all/20260911050228.58884-1-songmuchun@bytedance.com/
+- Use EOPNOTSUPP for partial additions to sections that already use
+  optimized vmemmap mappings
+- Move device_zone() after NODE_DATA() to fix non-NUMA builds
+- Collect Acked-by tags from David Hildenbrand and Qi Zheng
+- Rebase onto mm/mm-new
+
+v2: https://lore.kernel.org/all/20260908030335.96549-1-songmuchun@bytedance.com/
+- Add a missing SPARSEMEM_VMEMMAP dependency (suggested by Qi Zheng,
+  reported by Sashiko)
+- Add an explicit ZONE_DEVICE dependency for DEV_DAX
+- Add missing dependencies to the new public header
+- Explain why optimized and ordinary layouts cannot share a section
+  (suggested by Qi Zheng)
+- Explain why sharing tail vmemmap pages is safe for DEV-DAX (suggested
+  by Qi Zheng)
+- Clarify the removal of duplicated 4K PUD calculations from the docs
+  (reported by Sashiko)
+- Collect Acked-by tags from Qi Zheng
+
+v1: https://lore.kernel.org/all/20260831075342.57563-1-songmuchun@bytedance.com/
+
+Muchun Song (11):
+  mm/sparse-vmemmap: introduce CONFIG_VMEMMAP_OPTIMIZATION
+  mm/sparse-vmemmap: factor out shared vmemmap tail page allocation
+  mm/sparse-vmemmap: open-code init_compound_tail()
+  mm/sparse-vmemmap: prepare DAX vmemmap population for compound page
+    orders
+  mm/sparse-vmemmap: set compound page order for device DAX
+  mm/sparse-vmemmap: switch device DAX to shared tail vmemmap pages
+  mm/sparse-vmemmap: move vmemmap optimization helpers to a public
+    header
+  powerpc/mm: switch device DAX to shared tail vmemmap pages
+  mm/sparse-vmemmap: drop the extra tail page from device DAX
+    reservation
+  mm/sparse-vmemmap: drop unused section_nr_vmemmap_pages() arguments
+  Documentation/mm: update DAX vmemmap deduplication docs
+
+ Documentation/arch/powerpc/vmemmap_dedup.rst  |  90 ++-------
+ Documentation/mm/vmemmap_dedup.rst            |  32 +--
+ MAINTAINERS                                   |   1 +
+ arch/powerpc/mm/book3s64/radix_pgtable.c      | 124 +-----------
+ arch/x86/entry/vdso/vdso32/fake_32bit_build.h |   2 +-
+ drivers/dax/Kconfig                           |   2 +
+ fs/Kconfig                                    |   1 +
+ include/linux/mm.h                            |   6 +-
+ include/linux/mmzone.h                        |  23 ++-
+ include/linux/page-flags.h                    |   5 +-
+ include/linux/vmemmap-optimization.h          |  94 +++++++++
+ mm/Kconfig                                    |   4 +
+ mm/hugetlb.c                                  |   2 +-
+ mm/hugetlb_vmemmap.c                          |  30 +--
+ mm/internal.h                                 |   9 -
+ mm/memory_hotplug.c                           |   6 +-
+ mm/mm_init.c                                  |  17 +-
+ mm/sparse-vmemmap.c                           | 184 ++++++++----------
+ mm/sparse.c                                   |   3 +-
+ mm/sparse.h                                   |  81 +-------
+ 20 files changed, 253 insertions(+), 463 deletions(-)
+ create mode 100644 include/linux/vmemmap-optimization.h
+
+
+base-commit: 48cd55c7cb7b6a674cb94c2d65864088877f9279
 -- 
-2.55.0
+2.54.0
 
 
