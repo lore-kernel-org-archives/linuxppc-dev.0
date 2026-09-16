@@ -1,100 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-27493-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27494-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13E66C982C1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 16:17:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57B50C982C1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 16:37:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hlPDm0PVDz2yGT;
-	Thu, 17 Sep 2026 02:17:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:41::10" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789575463;
-	cv=pass; b=M/WhBAXMRMXMRLV4zP65eIAzVMa1X7luY0F5hDvPyOtZ1RXgWxvNk12wjebI4jjhPLJjDOna053fSveiujHQyIRn0fkN93wIAsWZY/P+Nbgolz0aVqnINzhhNmrhSAGc3bJZhdaHrKNj5SrABnxGCVU6QT6j38yg5Ng282/JHSy+7oV165fVTqqeTCZTaZs1cJ6FYxf++T4JlkFZBwMlIwkNr2d2+lK3meJDdpGvPc59akW9P24oNCnFejWI6r4guUJMkWzlgVmgQBHfMy/cus29gLwLUyrNJLJrUet/zF0Mco0rAP15I2N1VnT4wrSBbbwFTyevLy9xiKZRsbLaew==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789575463; c=relaxed/relaxed;
-	bh=6Zu+rp2wCwzsomTmeAznU3Xcy8b37OGWL83J8MuNrIk=;
-	h=From:In-Reply-To:References:MIME-Version:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Oa67c+gBGKoasNsXQveJgff00BNHPTuHnXIjt7Ue+EMtXRDgQbT9HD2K5MZYfshuISq4UBH4R/48No1ItNWYQKTzCgdnnNvP3WVIrZKa4Iq7bcknfWBHGZANUCta1FrEfDBbMYVWxHLLNJdtLZ6YBFbVnZm+I5qyXXgCnJkcAOM+wNSlcmJpCAP0j4dGt9v6TSa4l89y8m7ybVqUzFaOZGrBddUgVTUREpbbryVilgn1Zl8koYkd3dX0cYVsRCBfD+kgtAg4C4NlnMu05nndK+jlRAuZfJUixH4VpIAyf5TXgu6EdTafTOOVQ3I7ShfEFxBi9uJzn+1wG2mOM3wMkw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=lEjUjBjo; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:41::10; helo=mail-yx2-x10.google.com; envelope-from=ryabinin.a.a@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hlPgB0Twpz2yGT;
+	Thu, 17 Sep 2026 02:37:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789576630;
+	cv=none; b=bpcf2xJGBkF6NK1bEA6NFvRLD5WrmN/GOMZKSR5xYAvW+pOOi5CDl36Et0k8SR3wnKwAJrqxsGaYrMS+2OQ3oJubMJJBZY3bESmppzt5iGrNheD30lgvP5bHULLrwsmXMCM/U0mNjszyH60vEDKjeQoC/snqh12BbmSTPCz3Epgz11CgQPI8jzk8ho/1bsv0lYA+QnNHt5dKOIoJ1/FdUdR3fieAQ+xBhz5B4+2VhJDpfDPl0mj3FhgcZGzwik4YkXCU2sOLJHSGYgtkwHlMEDeXj0n67bB7xzAtoc990OakTv9V/NN9CTPo8JHEVGMPul4IsWGxYcEqqWz9rsNKNw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1789576630; c=relaxed/relaxed;
+	bh=BNkbs2qytjyos+7V4dOIKR0RNsDNsj1EDx92GHAcS/k=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=hRWz/qw3KVZp5giF86geljD8Ij1kidHjPpy8Jr+AoCFt7G/cW51gNs5Y6Li9JwgaVK3QUQwvSlPQN6/E7+YJMPiU8qXdqPotJW59QUsmel2QrPshZbavecyUGJRzcUbf2fXgvz5LR8sAC8Xu+P2bIi4H1y3Zxb78R4ea9DDQo+P8YePbo5WyoN5Q/sImwzo10p1BQv3Nm8ff8DNP1Mehgh9/WxLCxe1pczI8q1YZvzLuWqjOAXYnNkgOumo2KUushnZKc/3XrTwqNwp/e5vOWvsYz+kdngy1pK03sU9T38iSEQE5zT8YlsAMa2671w/mPqSg2Va0l/At/5eEkl2QAg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IwP6T6gP; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=lEjUjBjo;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IwP6T6gP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:41::10; helo=mail-yx2-x10.google.com; envelope-from=ryabinin.a.a@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yx2-x10.google.com (mail-yx2-x10.google.com [IPv6:2607:f8b0:4864:41::10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlPDj709yz2xqp
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 02:17:40 +1000 (AEST)
-Received: by mail-yx2-x10.google.com with SMTP id 956f58d0204a3-66fb6b22cf3so200219d50.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 09:17:40 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1789575457; cv=none;
-        d=google.com; s=arc-20260327;
-        b=KszTY8dn+LPG2m93q8rr5uhYSWIZTx+OwYn9GhTWz2gsEFCD2WglrcXPOGKCTg7kiD
-         2bEIdyKWo7J6Akxd9tPEMpgCCeKEZ3SMl8Y148FIfeAsQbY803griFgb7/efQAisZDW2
-         ZDrbXwn0Zye6KhIwpGBlldTRNIiDP24H3eXoaFsCcuaEJxCfSsupaAzIk8Zusbahq3vD
-         N2961DjZJAHNnfAEWSnnHWIBTbYDLYqiY5TRjJDCEcGGWpIcSBXjEhowtVO0cog4xs+T
-         cAhcvJBcG+W8Y8Rz2Jb1S+qFEyAzIPulDLCSx51toUx1aaiaQLdsEuj8OCguTXwpFDd7
-         8VzQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:mime-version:references:in-reply-to
-         :from:dkim-signature;
-        bh=6Zu+rp2wCwzsomTmeAznU3Xcy8b37OGWL83J8MuNrIk=;
-        fh=td2rLt14dWCh8XhPxt0ffhVRn5QLKRH+gqHrIXJEkEw=;
-        b=nKCHesOdUi96dwRXqELyoh88QNP7Msp0aHG++UGd65W9JHrKbVTlWFbkZ2fM2ipyUx
-         0QXqE2ThkQ1vFzm/haTrlaRhdqN/XPowJABzu7Bp2nrbuS/WS1U1avHbi9UpoJD3Weoe
-         eeUoYgjCX9cGC6DQCnOJ5vapeRv/v3bJfHwGKQSOpYSI01sYyl5q/09khZl8XDdAq3yy
-         5B6eH3vbnjk5E+CmklTvtK/strFk+IBHOCaTwuP4jvadQXbAPU4mdz+X0/a5QwwDIZ6a
-         AqA79HH0jKm8Hxnwe1KPpyJbQdwe9wclsQCtmjmveR3kSwiWHjKO6jzpx6tsHp34Gqw4
-         rD4w==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789575457; x=1790180257; darn=lists.ozlabs.org;
-        h=content-type:cc:to:subject:message-id:date:mime-version:references
-         :in-reply-to:from:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=6Zu+rp2wCwzsomTmeAznU3Xcy8b37OGWL83J8MuNrIk=;
-        b=lEjUjBjoYR7S19j66cM6vKX5wLn10J/SVD2U8+KPbALi0+ozQStvIw8L6S1qBJ5aG1
-         gwz29W6/LNDNoWNLUpi8UGa0GmQpktTaiYqAkFWXCfJFn+nuhLtEcuNpyR5C9NY7U0H+
-         o8cWS30csDIRJ7IAkYGALvYyAZOD1Vu1Yv92owEfgF032hZZ++9gcQo14ofhNOWanOuY
-         MvMCIhNsRYT6qIz+rA35RljYk7VaDcuMT5saOd8IO/buzu4entZukGciH7/vNvkrWlcs
-         4XTjBA1h87AQyDGAY8c9XszADSS+2zJC1JTrgEa7Vi17PfiwIIBH01A6ECI/3FYmmhkC
-         xtug==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789575457; x=1790180257;
-        h=content-type:cc:to:subject:message-id:date:mime-version:references
-         :in-reply-to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=6Zu+rp2wCwzsomTmeAznU3Xcy8b37OGWL83J8MuNrIk=;
-        b=Ig9Fp+xnpDd1ogf95pLj/DA4hlmGobSoTXHh4XuRroUUAcfNiKZeDlPQNHSu+cZIk7
-         whhVZJUk6cHIzgBD/I1M2jinzz86z5v6sso8mnh8DUMlteJEBH+gBXt896ufiQTQy0MF
-         2wqf0cdPtoS+UFl5k40gycInnPOJX34a38qfYPEThcCm/Lyw67OYpslCoFw2cOKmPyVj
-         k5UexjbCDlOyQqc5aJovva2r2V6iqfCkZYuzESL8Qv9fQPx5J/I1INjHmsmKYEUMLNVm
-         CW2+THB/k6hQtmD1oXW6ufEXVbG9JeIwha29znKLDIA4gvFP0G83DgQKvrPDeGcGOs+o
-         uWVg==
-X-Forwarded-Encrypted: i=1; AKwUvBwax0nGGy/e4AKhu/SLQF3DXEEhBFuJ3hGrYZ20MnfcRnPWkk1MNufTS8eNXmtoLgNvnbNtPaLugrDHR3Y=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++mVRbNB7GWd+FhmmsoE6Le2lS8RwzGhld0+BILL9YphjTi/AX9/
-	idW3kUaR3XTz20XvNaK2N08D2CyOm6D6Q0zGgMCdbJyqa+LwIbIG+4x4NAxFR76vJ5mAhdIU8AL
-	4LmPyyZ4I1Ptgvyy29It+Lysyp8pG/jo=
-X-Gm-Gg: AYBFou1GR3jz29elXJXQnXMWZu3jHNUg7Ny5aRjDVo1Yjy2KbfMKtqNn6BMFbdl2RCC
-	kx5DCHa5H3LYGn5RFvo0LR5dOFFb6dpXww9r5/e6rQiSHLoty/xm+zgNgBC8LCuLtu/YACucOyk
-	EbBF/UCzcYq7oMnT86IwgRevsVFxQdl+gxm4n0/6QJKwGHj+IzXVgbLtiBhhLSv44VpQtqbSRAQ
-	N/Gj9k9onIQDbopnjpm9jmKnqwS8FAKOHMznfxveGAlkqxMtUNHExt08531RBSXgjgY4xcSSOtW
-	0ldtzu2n+krQn2iFKun00pxro5j4HFHzfsvivnuqxASfLSDMubqMUQtZ9qYOhf6G
-X-Received: by 2002:a05:690e:4248:b0:668:3d3e:17ce with SMTP id
- 956f58d0204a3-6716330d09cmr1083975d50.4.1789575457085; Wed, 16 Sep 2026
- 09:17:37 -0700 (PDT)
-Received: from 95991385052 named unknown by gmailapi.google.com with HTTPREST;
- Wed, 16 Sep 2026 11:17:36 -0500
-Received: from 95991385052 named unknown by gmailapi.google.com with HTTPREST;
- Wed, 16 Sep 2026 11:17:36 -0500
-From: Andrey Ryabinin <ryabinin.a.a@gmail.com>
-In-Reply-To: <20260915100938.1337401-1-mkchauras@gmail.com>
-References: <20260915100938.1337401-1-mkchauras@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlPg84dv0z2xqp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 02:37:08 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68GG1j252330393;
+	Wed, 16 Sep 2026 16:36:59 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=BNkbs2qytjyos+7V4dOIKR0RNsDNsj
+	1EDx92GHAcS/k=; b=IwP6T6gPU47hFt4aMJana2voTkuh19VKxzGiR3jSQgL3eR
+	z1d6YplV9XBj3komtV1onf8KIDHfhwhTU8SbBWdXnSD2y3pNveds177LXR+qw1UO
+	Rh0MeX5sx0Qi96zbeaf2Gff/nuny1TC83YvfSl2no9WSEls7RZkyHDMHXyugkkYl
+	V0l0GhZT4MgC6y14hsnASHOlxETAPLZKJ8hz8DjXy0xpAKmJ8Exhp7hcNg7ptHhJ
+	/J9jCR1SoVSwbFAm2Dge9Lxx3Q+Mib7Sun2JbWiGdaDkrAU7KzZ2gNet8ZWV3E8c
+	lkv6k/u0PeBqL3wHBQX3LqW/EgA343Z552rVZw7Q==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gmxdqdqfx-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Wed, 16 Sep 2026 16:36:58 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68GFe4631625398;
+	Wed, 16 Sep 2026 16:36:57 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gpyxsfavb-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 16 Sep 2026 16:36:57 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68GGatqr56164692
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 16 Sep 2026 16:36:55 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A72C520043;
+	Wed, 16 Sep 2026 16:36:55 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F0EAA20040;
+	Wed, 16 Sep 2026 16:36:53 +0000 (GMT)
+Received: from fedora (unknown [9.5.7.39])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Wed, 16 Sep 2026 16:36:53 +0000 (GMT)
+Date: Wed, 16 Sep 2026 22:14:39 +0530
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: Bui Nguyen Nhu Quynh <kaylovefoss@gmail.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Christophe Leroy <chleroy@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+        kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] KVM: PPC: Fix callback check in
+ kvmppc_gsm_refresh_info
+Message-ID: <20260916220833.d3e69a6c-3b-amachhiw@linux.ibm.com>
+Mail-Followup-To: Bui Nguyen Nhu Quynh <kaylovefoss@gmail.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <chleroy@kernel.org>, 
+	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260907145626.7675e892-56-amachhiw@linux.ibm.com>
+ <20260916140742.636708-1-kaylovefoss@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -108,422 +95,102 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Date: Wed, 16 Sep 2026 11:17:36 -0500
-X-Gm-Features: AcwNN1Vix9N3Wt5oSO53Rrr7xZRS3mS3LSXn__U97oCPVBZRtBhbEn6_Ltb1Tek
-Message-ID: <CAPAsAGwUnRncpGr47Pq2y7+7AOiGUu4d1FQNnXow4b78kYGMHg@mail.gmail.com>
-Subject: Re: [PATCH V3] powerpc/kasan: require memintrinsic prefix support for KASAN
-To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>, maddy@linux.ibm.com, mpe@ellerman.id.au, 
-	npiggin@gmail.com, chleroy@kernel.org, glider@google.com, 
-	andreyknvl@gmail.com, dvyukov@google.com, vincenzo.frascino@arm.com, 
-	pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr, 
-	kees@kernel.org, amachhiw@linux.ibm.com, ritesh.list@gmail.com, 
-	nikhilks@linux.ibm.com, mahesh@linux.ibm.com, robh@kernel.org, 
-	sayalip@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com, 
-	linux-riscv@lists.infradead.org, linux-hardening@vger.kernel.org
-Cc: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260916140742.636708-1-kaylovefoss@gmail.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE2MDIyNiBTYWx0ZWRfX52PsC0mYQ6mV
+ dEkY3Un9c8T62GB3TS6FGESNC+oRudPoRqdZ8tC22pgYi815MA5m84EehKQDctTTun1RMwDHSxS
+ O7gi6UkTDZnquTp3PIBGuUql8o4vJqt7eWyK2CM3jfUELRVOSNnp5QJZIA1Uj/8uvveJiFqv2Tz
+ Ob+LeDYTDBm0DlI7JcMpT3XKBFPQK4JtF2JIgGkrO30H0wq5Y95nHknU3yV9p5nVmylu3BTNVAN
+ Dp/UKwyY2RGwIRD2nJFsEk2p8VXEOiLOm33ll0N9Rjv7qa6uraEBAUCg66vsLHsVtVQ9tSYK6jb
+ 8gKxBJ8n5G+n6FUuIZaqul34EkFoeZkekb1QnZ84NCqNAMAw5miuPQ06Al++XvHuRL7q39fP9ac
+ 8hWsgCgMHQOgI8CscQkN/jiCNhC7tB6/jRNxZD+62cQukNpkmwK+pVGhx0+AuWOOWnylL8qWtR9
+ bCo3dAL05r5O/QPLEJw==
+X-Proofpoint-GUID: 9Bm1xF8AwJmxPHLh09qWGITziDfQ2SgZ
+X-Authority-Analysis: v=2.4 cv=DobDa2/+ c=1 sm=1 tr=0 ts=6aaac5ab cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=kj9zAlcOel0A:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=pGLkceISAAAA:8
+ a=GZGXQFM_8ITjCaSgkesA:9 a=CjuIK1q_8ugA:10
+X-Proofpoint-ORIG-GUID: bwqC2wG4ZO6EPzLW9N5SJBmsOmiKHtL5
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE2MDIyNiBTYWx0ZWRfX/si6wCktr6Ke
+ cihE7l2KCfFFCsdVka61Su8s1zS9brTAlKwjFmjpobfXXxyKgDKRLnsx5bdjtWPoHRKRG0qOv7D
+ uc71H2zT6DW+oJjZCa5rQLGJMUkx7fE=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-16_03,2026-09-16_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 malwarescore=0 priorityscore=1501 suspectscore=0 impostorscore=0
+ spamscore=0 clxscore=1015 adultscore=0 bulkscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609160226
 
-"Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com> writes:
+On 2026/09/16 09:07 PM, Bui Nguyen Nhu Quynh wrote:
+> The kvmppc_gsm_refresh_info() function incorrectly checks for the
+> presence of the fill_info callback instead of refresh_info.
+> 
+> This can lead to:
+> - NULL pointer dereference if refresh_info is NULL but fill_info is present
+> - EINVAL return if refresh_info is present but fill_info is NULL
+> 
+> Fix this by checking the correct callback.
+> 
+> Fixes: 6ccbbc33f06ad ("KVM: PPC: Add helper library for Guest State Buffers")
+> Signed-off-by: Bui Nguyen Nhu Quynh <kaylovefoss@gmail.com>
+> ---
+> v2:
+> - Resend; v1 was mangled by the mail client.  No code changes.
+> 
+>  arch/powerpc/kvm/guest-state-buffer.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kvm/guest-state-buffer.c b/arch/powerpc/kvm/guest-state-buffer.c
+> index 42843eca6727..aeb586ba4523 100644
+> --- a/arch/powerpc/kvm/guest-state-buffer.c
+> +++ b/arch/powerpc/kvm/guest-state-buffer.c
+> @@ -598,7 +598,7 @@ EXPORT_SYMBOL_GPL(kvmppc_gsm_fill_info);
+>  int kvmppc_gsm_refresh_info(struct kvmppc_gs_msg *gsm,
+>  	struct kvmppc_gs_buff *gsb)
 
-Hi,
-I fed this patch to an AI for review, and the review results are included below.
-Please take a look. From my side, I agree with all of the points
-raised by AI in the
-review, and I think they all need to be addressed. There is also a diff with
-the suggested changes at the very end of this mail.
+The fix is correct.
 
+However, the patch still does not apply cleanly:
 
-> powerpc unconditionally selects GENERIC_ENTRY. The GENERIC_ENTRY
-> infrastructure relies on the compiler emitting __asan_mem*() calls at
-> instrumented mem*() sites rather than plain memset/memcpy/memmove, so
-> that entry/exit paths calling those functions are not instrumented.
->
-> [ ... ]
->
-> When GENERIC_ENTRY is set, both guards suppress the C wrappers for
-> memset/memcpy/memmove and the __underlying_mem*() redirections. This
-> is only safe when the compiler supports the prefixed __asan_mem*()
-> intrinsics. On older toolchains (e.g. GCC 9) that lack this support,
-> plain mem*() calls from instrumented code fall through to the raw
-> assembly implementations in mem_64.S / copy_32.S, completely bypassing
-> the KASAN shadow check.
->
-> Other arches with GENERIC_ENTRY (x86, s390, loongarch, riscv) do not
-> hit this because their CI toolchains are always new enough to support
-> the prefix flag.
->
-> [ ... ]
->
-> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-> Closes: https://lore.kernel.org/all/96dae110-f79b-4e54-8a9b-514369019b5d@linux.ibm.com
-> Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-> Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+  $ git apply ./v2_...mbx --check --verbose
+  error: patch failed: arch/powerpc/kvm/guest-state-buffer.c:598
+  error: arch/powerpc/kvm/guest-state-buffer.c: patch does not apply
 
-The thread in the Closes: link is about an early boot hang, but the
-commit message only describes mem*() calls bypassing the shadow check.
-Bypassed checks would lose coverage, not hang the machine.  Is the
-mechanism of the hang understood?
+The index line in the diff (42843eca6727) is a valid blob in the tree, so the
+patch base is correct.  The problem is that the context lines in the diff do not
+match that blob.  Concretely, the blob at 42843eca6727 has:
 
-Looking at the state before this commit, the !CC_HAS_KASAN_MEMINTRINSIC_PREFIX
-macros that bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature") added to
-asm/kasan.h emit two ELFv2 global entry points back to back:
+  line 599:  \t\t\t    struct kvmppc_gs_buff *gsb)   (3 tabs + 4 spaces)
+  line 601:  \t\treturn -EINVAL;                     (2 tabs)
 
-  #define _GLOBAL_TOC_KASAN(fn)
-          _GLOBAL_TOC(fn);
-          _GLOBAL_TOC(__##fn)
+But the patch context has:
 
-With the _GLOBAL_TOC() definition from asm/ppc_asm.h that expands, for
-memcpy_64.S, to:
+  line 599:  \t    struct kvmppc_gs_buff *gsb)        (1 tab + 4 spaces)
+  line 601:  \treturn -EINVAL;                        (1 tab)
 
-  memcpy:
-  0:      addis r2,r12,(.TOC.-0b)@ha
-          addi  r2,r2,(.TOC.-0b)@l
-          .localentry memcpy,.-memcpy       <- local entry is memcpy+8
-  __memcpy:
-  0:      addis r2,r12,(.TOC.-0b)@ha        <- this is memcpy+8
-          addi  r2,r2,(.TOC.-0b)@l
-          .localentry __memcpy,.-__memcpy
+The indentation on those context lines is being collapsed during patch
+generation.  This points to a whitespace handling issue in your git
+configuration.
 
-Assembling exactly that for powerpc64le gives memcpy st_other 0x60
-(local entry offset 8), and memcpy+8 is the __memcpy TOC prologue.
+Please review it and then regenerate with git format-patch and verify by
+applying the generated patch file onto mainline.  It'll also be a good idea to
+rebase your patch on top of mainline before sending v3.
 
-Every same-TOC caller of memcpy() or memmove() is resolved by the
-linker to the local entry, so it lands on that second prologue with r12
-holding whatever the caller left there, and returns with r2 pointing
-at garbage.  Same-TOC callers do not reload r2 after the call.  With
-GENERIC_ENTRY, mm/kasan/shadow.c no longer provides memcpy(), so on a
-toolchain without the prefix parameter every instrumented file calls
-the memcpy symbol directly and hits this.  That matches an early hang
-that only shows up with GCC 9.
+Thanks,
+Amit
 
-This commit makes the hang go away because the dual-entry macro is
-deleted, but the commit message attributes the fix to something else.
-Could the message describe the r2 corruption, and since this repairs a
-regression from the GENERIC_ENTRY conversion, should it carry:
-
-  Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
-
-On the claim that other GENERIC_ENTRY architectures "do not hit this
-because their CI toolchains are always new enough": x86, s390, riscv
-and loongarch with GCC 8 to 12 build exactly the same configuration,
-CONFIG_KASAN=y without CONFIG_CC_HAS_KASAN_MEMINTRINSIC_PREFIX, and
-run with mem*() unchecked.  scripts/Makefile.kasan documents that as
-the intended behaviour:
-
-  # Instrument memcpy/memset/memmove calls by using instrumented __asan_mem*()
-  # instead. With compilers that don't support this option, compiler-inserted
-  # memintrinsics won't be checked by KASAN on GENERIC_ENTRY architectures.
-
-and mm/kasan/kasan_test_c.c skips the affected tests with "Test
-requires checked mem*()".  So the situation the message describes is
-the accepted upstream state for old toolchains, not something specific
-to powerpc.
-
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 2580e27e4328..b27ed9739eea 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -7,6 +7,10 @@ config CC_HAS_ELFV2
->  config CC_HAS_PREFIXED
->  	def_bool PPC64 && $(cc-option, -mcpu=power10 -mprefixed)
->
-> +config PPC_CC_HAS_KASAN_MEMINTRINSIC_PREFIX
-> +	def_bool (CC_IS_CLANG && $(cc-option,-fsanitize=kernel-address -mllvm -asan-kernel-mem-intrinsic-prefix=1)) || \
-> +		 (CC_IS_GCC && $(cc-option,-fsanitize=kernel-address --param asan-kernel-mem-intrinsic-prefix=1))
-> +
->  config CC_HAS_PCREL
->  	# Clang has a bug (https://github.com/llvm/llvm-project/issues/62372)
->  	# where pcrel code is not generated if -msoft-float, -mno-altivec, or
-
-[ ... ]
-
-> @@ -220,9 +224,9 @@ config PPC
->  	select HAVE_ARCH_HUGE_VMAP		if PPC_RADIX_MMU || PPC_8xx
->  	select HAVE_ARCH_JUMP_LABEL
->  	select HAVE_ARCH_JUMP_LABEL_RELATIVE
-> -	select HAVE_ARCH_KASAN			if PPC32 && PAGE_SHIFT <= 14
-> -	select HAVE_ARCH_KASAN			if PPC_RADIX_MMU
-> -	select HAVE_ARCH_KASAN			if PPC_BOOK3E_64
-> +	select HAVE_ARCH_KASAN			if PPC32 && PAGE_SHIFT <= 14 && PPC_CC_HAS_KASAN_MEMINTRINSIC_PREFIX
-> +	select HAVE_ARCH_KASAN			if PPC_RADIX_MMU && PPC_CC_HAS_KASAN_MEMINTRINSIC_PREFIX
-> +	select HAVE_ARCH_KASAN			if PPC_BOOK3E_64 && PPC_CC_HAS_KASAN_MEMINTRINSIC_PREFIX
->  	select HAVE_ARCH_KASAN_VMALLOC		if HAVE_ARCH_KASAN
->  	select HAVE_ARCH_KCSAN
->  	select HAVE_ARCH_KFENCE			if ARCH_SUPPORTS_DEBUG_PAGEALLOC
-
-This drops KASAN from powerpc entirely for GCC 8 through 12, which are
-inside the supported range in Documentation/process/changes.rst (GNU C
-8.1 minimum).  An existing .config with CONFIG_KASAN=y silently loses
-it on olddefconfig once HAVE_ARCH_KASAN is no longer selected.
-
-Given that the actual breakage is the broken memcpy/memmove entry
-points, is it necessary to go this far?  Keeping one _GLOBAL_TOC()
-prologue for __memcpy and making memcpy a plain alias of it (a second
-label plus a matching .localentry, or a global entry that branches to
-__memcpy) would restore the pre-GENERIC_ENTRY behaviour, with mem*()
-unchecked on old compilers exactly like the other GENERIC_ENTRY
-architectures.  That also keeps a Fixes-tagged backport candidate from
-removing a feature on stable kernels.
-
-
-> diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
-> index a690e7da53c2..d62756b87ba4 100644
-> --- a/arch/powerpc/include/asm/kasan.h
-> +++ b/arch/powerpc/include/asm/kasan.h
-> @@ -2,20 +2,9 @@
->  #ifndef __ASM_KASAN_H
->  #define __ASM_KASAN_H
->
-> -#if defined(CONFIG_KASAN) && !defined(CONFIG_CC_HAS_KASAN_MEMINTRINSIC_PREFIX)
-> -#define _GLOBAL_KASAN(fn)			\
-> -	_GLOBAL(fn);				\
-> -	_GLOBAL(__##fn)
-> -#define _GLOBAL_TOC_KASAN(fn)			\
-> -	_GLOBAL_TOC(fn);			\
-> -	_GLOBAL_TOC(__##fn)
-> -#define EXPORT_SYMBOL_KASAN(fn)			\
-> -	EXPORT_SYMBOL(__##fn)
-> -#else /* CONFIG_KASAN && !CONFIG_CC_HAS_KASAN_MEMINTRINSIC_PREFIX */
->  #define _GLOBAL_KASAN(fn)	_GLOBAL(fn)
->  #define _GLOBAL_TOC_KASAN(fn)	_GLOBAL_TOC(fn)
->  #define EXPORT_SYMBOL_KASAN(fn)
-> -#endif /* CONFIG_KASAN && !CONFIG_CC_HAS_KASAN_MEMINTRINSIC_PREFIX */
->
->  #ifndef __ASSEMBLER__
->
-
-this isn't a bug, but after this change _GLOBAL_KASAN(), _GLOBAL_TOC_KASAN()
-and EXPORT_SYMBOL_KASAN() are unconditional identity macros with a single
-empty one.  Should the five users in mem_64.S, memcpy_64.S and copy_32.S
-switch to _GLOBAL()/_GLOBAL_TOC() and the macros go away?
-
-Related leftover: arch/powerpc/kernel/prom_init_check.sh still has
-
-  has_renamed_memintrinsics()
-  {
-          grep -q "^CONFIG_KASAN=y$" "${KCONFIG_CONFIG}" && \
-                  ! grep -q
-"^CONFIG_CC_HAS_KASAN_MEMINTRINSIC_PREFIX=y" "${KCONFIG_CONFIG}"
-  }
-
-  if has_renamed_memintrinsics
-  then
-          MEM_FUNCS="__memcpy __memset"
-
-which can no longer be true on powerpc after this commit.  Should that
-branch be removed in the same cleanup?
-
-> diff --git a/arch/powerpc/include/asm/string.h b/arch/powerpc/include/asm/string.h
-> index 1981bd4036b5..72b5c93a2b84 100644
-> --- a/arch/powerpc/include/asm/string.h
-> +++ b/arch/powerpc/include/asm/string.h
-> @@ -29,29 +29,10 @@ extern void * memchr(const void *,int,__kernel_size_t);
->  void memcpy_flushcache(void *dest, const void *src, size_t size);
->
->  #ifdef CONFIG_KASAN
-> -/* __mem variants are used by KASAN to implement instrumented meminstrinsics. */
-> -#ifdef CONFIG_CC_HAS_KASAN_MEMINTRINSIC_PREFIX
-> +/* Used by mm/kasan/shadow.c as raw backends to bypass KASAN checking. */
->  #define __memset memset
-
-this isn't a bug, but the new comment names only mm/kasan/shadow.c.
-The same __memset()/__memcpy() names are used by mm/kasan/generic.c as
-well (DEFINE_ASAN_SET_SHADOW() and release_alloc_meta()), so would
-"used by mm/kasan as raw backends" be more accurate?
-
-
----
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index b27ed9739eea..2580e27e4328 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -7,10 +7,6 @@ config CC_HAS_ELFV2
- config CC_HAS_PREFIXED
- 	def_bool PPC64 && $(cc-option, -mcpu=power10 -mprefixed)
-
--config PPC_CC_HAS_KASAN_MEMINTRINSIC_PREFIX
--	def_bool (CC_IS_CLANG && $(cc-option,-fsanitize=kernel-address
--mllvm -asan-kernel-mem-intrinsic-prefix=1)) || \
--		 (CC_IS_GCC && $(cc-option,-fsanitize=kernel-address --param
-asan-kernel-mem-intrinsic-prefix=1))
--
- config CC_HAS_PCREL
- 	# Clang has a bug (https://github.com/llvm/llvm-project/issues/62372)
- 	# where pcrel code is not generated if -msoft-float, -mno-altivec, or
-@@ -224,9 +220,9 @@ config PPC
- 	select HAVE_ARCH_HUGE_VMAP		if PPC_RADIX_MMU || PPC_8xx
- 	select HAVE_ARCH_JUMP_LABEL
- 	select HAVE_ARCH_JUMP_LABEL_RELATIVE
--	select HAVE_ARCH_KASAN			if PPC32 && PAGE_SHIFT <= 14 &&
-PPC_CC_HAS_KASAN_MEMINTRINSIC_PREFIX
--	select HAVE_ARCH_KASAN			if PPC_RADIX_MMU &&
-PPC_CC_HAS_KASAN_MEMINTRINSIC_PREFIX
--	select HAVE_ARCH_KASAN			if PPC_BOOK3E_64 &&
-PPC_CC_HAS_KASAN_MEMINTRINSIC_PREFIX
-+	select HAVE_ARCH_KASAN			if PPC32 && PAGE_SHIFT <= 14
-+	select HAVE_ARCH_KASAN			if PPC_RADIX_MMU
-+	select HAVE_ARCH_KASAN			if PPC_BOOK3E_64
- 	select HAVE_ARCH_KASAN_VMALLOC		if HAVE_ARCH_KASAN
- 	select HAVE_ARCH_KCSAN
- 	select HAVE_ARCH_KFENCE			if ARCH_SUPPORTS_DEBUG_PAGEALLOC
-diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
-index d62756b87ba4..599a9e02af02 100644
---- a/arch/powerpc/include/asm/kasan.h
-+++ b/arch/powerpc/include/asm/kasan.h
-@@ -2,10 +2,6 @@
- #ifndef __ASM_KASAN_H
- #define __ASM_KASAN_H
-
--#define _GLOBAL_KASAN(fn)	_GLOBAL(fn)
--#define _GLOBAL_TOC_KASAN(fn)	_GLOBAL_TOC(fn)
--#define EXPORT_SYMBOL_KASAN(fn)
--
- #ifndef __ASSEMBLER__
-
- #include <asm/page.h>
-diff --git a/arch/powerpc/kernel/prom_init_check.sh
-b/arch/powerpc/kernel/prom_init_check.sh
-index 3090b97258ae..3155cc722e48 100644
---- a/arch/powerpc/kernel/prom_init_check.sh
-+++ b/arch/powerpc/kernel/prom_init_check.sh
-@@ -13,21 +13,8 @@
- # If you really need to reference something from prom_init.o add
- # it to the list below:
-
--has_renamed_memintrinsics()
--{
--	grep -q "^CONFIG_KASAN=y$" "${KCONFIG_CONFIG}" && \
--		! grep -q "^CONFIG_CC_HAS_KASAN_MEMINTRINSIC_PREFIX=y" "${KCONFIG_CONFIG}"
--}
--
--if has_renamed_memintrinsics
--then
--	MEM_FUNCS="__memcpy __memset"
--else
--	MEM_FUNCS="memcpy memset"
--fi
--
- WHITELIST="add_reloc_offset __bss_start __bss_stop copy_and_flush
--_end enter_prom $MEM_FUNCS reloc_offset __secondary_hold
-+_end enter_prom memcpy memset reloc_offset __secondary_hold
- __secondary_hold_acknowledge __secondary_hold_spinloop __start
- logo_linux_clut224 btext_prepare_BAT
- reloc_got2 kernstart_addr memstart_addr linux_banner _stext
-diff --git a/arch/powerpc/lib/copy_32.S b/arch/powerpc/lib/copy_32.S
-index 933b685e7ab6..97eb9ca0cc23 100644
---- a/arch/powerpc/lib/copy_32.S
-+++ b/arch/powerpc/lib/copy_32.S
-@@ -10,7 +10,6 @@
- #include <asm/errno.h>
- #include <asm/ppc_asm.h>
- #include <asm/code-patching-asm.h>
--#include <asm/kasan.h>
-
- #define COPY_16_BYTES		\
- 	lwz	r7,4(r4);	\
-@@ -87,7 +86,7 @@ EXPORT_SYMBOL(memset16)
-  * We therefore skip the optimised bloc that uses dcbz. This jump is
-  * replaced by a nop once cache is active. This is done in machine_init()
-  */
--_GLOBAL_KASAN(memset)
-+_GLOBAL(memset)
- 	cmplwi	0,r5,4
- 	blt	7f
-
-@@ -147,7 +146,6 @@ _GLOBAL_KASAN(memset)
- 	bdnz	9b
- 	blr
- EXPORT_SYMBOL(memset)
--EXPORT_SYMBOL_KASAN(memset)
-
- /*
-  * This version uses dcbz on the complete cache lines in the
-@@ -160,12 +158,12 @@ EXPORT_SYMBOL_KASAN(memset)
-  * We therefore jump to generic_memcpy which doesn't use dcbz. This jump is
-  * replaced by a nop once cache is active. This is done in machine_init()
-  */
--_GLOBAL_KASAN(memmove)
-+_GLOBAL(memmove)
- 	cmplw	0,r3,r4
- 	bgt	backwards_memcpy
- 	/* fall through */
-
--_GLOBAL_KASAN(memcpy)
-+_GLOBAL(memcpy)
- 1:	b	generic_memcpy
- 	patch_site	1b, patch__memcpy_nocache
-
-@@ -241,8 +239,6 @@ _GLOBAL_KASAN(memcpy)
- 65:	blr
- EXPORT_SYMBOL(memcpy)
- EXPORT_SYMBOL(memmove)
--EXPORT_SYMBOL_KASAN(memcpy)
--EXPORT_SYMBOL_KASAN(memmove)
-
- generic_memcpy:
- 	srwi.	r7,r5,3
-diff --git a/arch/powerpc/lib/mem_64.S b/arch/powerpc/lib/mem_64.S
-index 6fd06cd20faa..40eaedd31486 100644
---- a/arch/powerpc/lib/mem_64.S
-+++ b/arch/powerpc/lib/mem_64.S
-@@ -8,7 +8,6 @@
- #include <asm/processor.h>
- #include <asm/errno.h>
- #include <asm/ppc_asm.h>
--#include <asm/kasan.h>
-
- #ifndef CONFIG_KASAN
- _GLOBAL(__memset16)
-@@ -29,7 +28,7 @@ EXPORT_SYMBOL(__memset32)
- EXPORT_SYMBOL(__memset64)
- #endif
-
--_GLOBAL_KASAN(memset)
-+_GLOBAL(memset)
- 	neg	r0,r3
- 	rlwimi	r4,r4,8,16,23
- 	andi.	r0,r0,7			/* # bytes to be 8-byte aligned */
-@@ -95,9 +94,8 @@ _GLOBAL_KASAN(memset)
- 	stb	r4,0(r6)
- 	blr
- EXPORT_SYMBOL(memset)
--EXPORT_SYMBOL_KASAN(memset)
-
--_GLOBAL_TOC_KASAN(memmove)
-+_GLOBAL_TOC(memmove)
- 	cmplw	0,r3,r4
- 	bgt	backwards_memcpy
- 	b	memcpy
-@@ -139,4 +137,3 @@ _GLOBAL(backwards_memcpy)
- 	mtctr	r7
- 	b	1b
- EXPORT_SYMBOL(memmove)
--EXPORT_SYMBOL_KASAN(memmove)
-diff --git a/arch/powerpc/lib/memcpy_64.S b/arch/powerpc/lib/memcpy_64.S
-index b5a67e20143f..0cedd455231a 100644
---- a/arch/powerpc/lib/memcpy_64.S
-+++ b/arch/powerpc/lib/memcpy_64.S
-@@ -7,7 +7,6 @@
- #include <asm/ppc_asm.h>
- #include <asm/asm-compat.h>
- #include <asm/feature-fixups.h>
--#include <asm/kasan.h>
-
- #ifndef SELFTEST_CASE
- /* For big-endian, 0 == most CPUs, 1 == POWER6, 2 == Cell */
-@@ -15,7 +14,7 @@
- #endif
-
- 	.align	7
--_GLOBAL_TOC_KASAN(memcpy)
-+_GLOBAL_TOC(memcpy)
- BEGIN_FTR_SECTION
- #ifdef __LITTLE_ENDIAN__
- 	cmpdi	cr7,r5,0
-@@ -227,4 +226,3 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_LD_STD)
- 	blr
- #endif
- EXPORT_SYMBOL(memcpy)
--EXPORT_SYMBOL_KASAN(memcpy)
+>  {
+> -	if (!gsm->ops->fill_info)
+> +	if (!gsm->ops->refresh_info)
+>  	return -EINVAL;
+>  
+>  	return gsm->ops->refresh_info(gsm, gsb);
+> -- 
+> 2.54.0
 
