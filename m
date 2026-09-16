@@ -1,73 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-27475-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27476-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9BB3FC88E5C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 08:52:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6812AC88E5C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 09:36:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hlCMM08kbz2yGT;
-	Wed, 16 Sep 2026 18:52:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789548766;
-	cv=none; b=o048DCNlJ9frkj/IH/cvUs1lx8BQ3WkBuxsO+jIba08ban1youHNJBW7DrcanDTObFEtFyf7M+pigyoqNbVCJLg6ankZtt2Rq8zsEr93oBtjGU4ndxBjT7ef+TC4PSkkeUCTRu6dZNYe45CO94PzdA6J5ivRp1kLGTj8IKxLqEyZU571WK3VN1U7QmAHRXHp0uUMT4JhHsjFqFOXZBeu6zAB//Uu/NpVdFm7vZypTEOXVn8Ow+2q1AtHW9RhDkVFo0DvLCTZb+g+ijp5ZAgX9yZWPv3bQwvHuYbKkdrVWciNVjYkcfsmtlqcHW2LhiLb0reFrsluA/AUNiQpHhykAg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789548766; c=relaxed/relaxed;
-	bh=ccl6AblDRT7F5uiHrNKEDS27CmbJ4zJOrBrcGlJisuA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ZTliZ59kbRDbnFsZu1MvSeyAJvVw8pTshb7eqRo6Tb1ju/gvrT8FyoE8iDg3LPswfhIJvJle+BWzZrmyRyttjDVrWeNd+ajGEW5q3iRHrwNSsZWo1Q2sZjJRXQC8wFnOeO+JI44+ZaPNszl1gXoAzVxKABUiBeqQtQvyDzXfnG4A2J9bKCtgdnBuSRkiUSrkVb6DuJjlgspg4dHOYUzozntat2dRf0eqPV2ZQ7j6cpK2/xKJIeuYMF4QrNSIdQ57n8khxk1v6vyl/5qW0PwXAg7VSi1frzynJxmNv2n/juBhMrBR0lIgS1w+7Cgu7lZ4RGaKLlnqqbw3Od14QbwiHw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hrtDGEL6; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hlDKc5107z2y2W;
+	Wed, 16 Sep 2026 19:36:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::1" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789551380;
+	cv=pass; b=CTw2WksrhFU9UuBE859WEMa3ZeFNSnSx6GqjEGouG2ibvUZeOtgisWvna34lf7txo/l94QrMn0rBTjcIBCfNgza1TA3L2IXrW43J41OBzjHOKf3uTkHHj6k0bjsFTmyUhOE+OVIKJnR1DbFjCGm0w9zIlZ3CUzahEl0shb+DxiL41+Ozx1Fo4Rd/0k1IJuK45pzFH2ZLHLP6VawOQm91aEoOh38Dqn0oHyqG8bDP2rPeXo8xiGp1spWKj4zjYgGv+vBoU891W6cDFjWzxMih5rWjFyzHEPCtt9CmufDglWqHBtvXGkgO0uER1srD8tbYv1YKz4ECI0VuF2RTAL5E9w==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1789551380; c=relaxed/relaxed;
+	bh=2ZbhSdV2coza4ZHHXz+8OoRw3lY4SIx+4jsm6wz2iXQ=;
+	h=From:To:Subject:Date:Message-Id:Content-Type:MIME-Version; b=V5coLd3OwhpYun4uZjqmtzJYMu7FhtFKL904r9mIPQWEjhrNNX+HH/goWxRacJ/HyLD3C71TvE/lr2D6JBTf6fEndBLe0G9lC+oC7B+Le61XmorW4nqlB1DjOa0oFN6sP3GC+Yp3W8bdZeU3bcwM5zz4SoPWfGdUB45gVfuD5Wzon7DiRwoTuuwL5qh3TrXyRm2CHl+AresCVzsyKfHhyx7XCBjGOgntOLwK/AZVd53FIuSwYZgYleKeWVIc8KU7rFypZOuV88MUK/RgYWYfzH2+gIXGepOUPOPSsb3AiTslTvVFKoQvL7GUv0ZHWcIvQVdLAMsgFSGy7bMZjORrHw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=a2kten3W; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=shengjiu.wang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hrtDGEL6;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=a2kten3W;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=shengjiu.wang@oss.nxp.com; receiver=lists.ozlabs.org)
+Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlCMK6dglz2y2W
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 18:52:45 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68FLVecc1951631;
-	Wed, 16 Sep 2026 08:52:26 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=ccl6Ab
-	lDRT7F5uiHrNKEDS27CmbJ4zJOrBrcGlJisuA=; b=hrtDGEL6o+VR+XRfhhHqYX
-	gYVJTc3CqnwXqmh6NJ8+K3a4YBekGId0bEbW2N1FyP9e0yxFR7yzSHQPqxSHM0IR
-	mOdWcMsg9HlfWV+/nkVEcGn3fDMDK5vhdas294u2ufBdji4vcTx4Sb8EZzBDM3Xz
-	CAKgIqfgh9ttGrrtgP6AtDMsFxlZXLdpS75pp0Nmayz4TS9mXWEE03idzo6kb9WD
-	W/1AOZYXVwWYkpmFP+2eTHzlTq+XB4TJFPQYcQ2Cjbfylp3zej8lWUANV0JvU2CE
-	G7mpEh3ZsHXCFyeQCVP8Ruq3wV/5f8oxkGDFzUEvp5t8AFKxk8aFoNTi0x979Y7g
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gmx83um9w-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Wed, 16 Sep 2026 08:52:25 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68G7e46M389300;
-	Wed, 16 Sep 2026 08:52:24 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gpyxsdhbx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 16 Sep 2026 08:52:23 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68G8qKS549742272
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 16 Sep 2026 08:52:20 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1503520043;
-	Wed, 16 Sep 2026 08:52:20 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E51512004F;
-	Wed, 16 Sep 2026 08:52:16 +0000 (GMT)
-Received: from [9.124.211.8] (unknown [9.124.211.8])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 16 Sep 2026 08:52:16 +0000 (GMT)
-Message-ID: <46508541-55ab-4340-8871-924514ee8d5b@linux.ibm.com>
-Date: Wed, 16 Sep 2026 14:22:15 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlDKb3Y8Mz2xYh
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 19:36:18 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=jlDUR0uhn7HOEaDsVzpCVFvXD5Hki2OwCaBrNcG/qyQInlX1kM3kJzAXg9CHWMnWeoiYwckDulWg80c+pbe2aLeubWxX0Yk7ow7GxPsZSJl1nk12E9lirRKfm/5LqmnPafiRiEvxve1s0Qk4EM3MYK1G7nq/tACF/dlkxfpmA7odXKRjqo9NOW0zczNLVdcJQ58qLzy/hKfB2T6dK3NvRj7zD5U/7q4ASdmQ/yV8FWJZvjgMSt2N01yXmg7v9k/YhpqXRi2NGrCcJ2FSlN10GYJrg3YpAgclrPpxBY9y8bMPInAljth5jz91pIN8Rg6UF8WPVW7BJCNaeDceofFsRg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=2ZbhSdV2coza4ZHHXz+8OoRw3lY4SIx+4jsm6wz2iXQ=;
+ b=MW182WiPFAIND7Qo1NLqHwaV7aqyZ//dcNOWD92sjYVlqbgAV0Lb9UGQ5I/yf1HIkHdVOGTmUCLbOJRKR8OB8rSfMyxtI/tGl77S0dzP79pEhpuHZUrciDrQ2/4Ge27P2QjcPzzkD6Ktvlq2n8oDvUOh4YaqkiM38hSdMv0WTDnXSLyC+ZmCsAh2FwbaYBJRnApJ6ZVl9ATk+DMJQWyUuZJC/5kXCUvNJ12ShO5n0oflGlp3mwY0weWps9S4rothN+gYi2Yu5zh/oVrsnmltqTpYtHV6Sga+xJDE/DAdWgRb/RU9nTYiaMlKLbHKXJ0Zfe+tXKt3PmEn8cfFOocgkw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=2ZbhSdV2coza4ZHHXz+8OoRw3lY4SIx+4jsm6wz2iXQ=;
+ b=a2kten3WM1w5MLTGWipbyWycnkFLmHV3JW1YljPjRKtpZCZ+it3AWFhUMYsB0WAn6fm7OfX8jhTV7fqjX/2ep2BE/gQg9cNBg3cUGcSIpQLb2BDunu4WUIZ7r7N0HxIIqazuIIQK5Gu25P4qkSpCgEAZjBb+Vmvh8RkcetpbsfP2XuUwflsciK6dEyEsKZ1PJ0iJH1R7s/IQA0ZKLOdQ/Q1WOPOCCDMrMpdm09H7+dJ2PeBhHkDLs+cyo3fVC39IIoklvS8C55tfJYT7QeDHFGe3ennH2OPMQS3BzP1Rdsaw7wu6n+Sz8Vyb9wtIcyN5K5oZlHc9iQ6pOX9XKxg97w==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from PAXPR04MB9351.eurprd04.prod.outlook.com (2603:10a6:102:2b6::17)
+ by AMCPR04MB12646.eurprd04.prod.outlook.com (2603:10a6:20b:770::21) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.428.9; Wed, 16 Sep
+ 2026 09:35:53 +0000
+Received: from PAXPR04MB9351.eurprd04.prod.outlook.com
+ ([fe80::1058:a430:52c1:5aa]) by PAXPR04MB9351.eurprd04.prod.outlook.com
+ ([fe80::1058:a430:52c1:5aa%6]) with mapi id 15.21.0406.007; Wed, 16 Sep 2026
+ 09:35:53 +0000
+From: shengjiu.wang@oss.nxp.com
+To: shengjiu.wang@gmail.com,
+	Xiubo.Lee@gmail.com,
+	festevam@gmail.com,
+	nicoleotsuka@gmail.com,
+	lgirdwood@gmail.com,
+	broonie@kernel.org,
+	perex@perex.cz,
+	tiwai@suse.com,
+	linux-sound@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] ASoC: fsl_asrc: use regmap_write_bits to update clock source registers
+Date: Wed, 16 Sep 2026 17:40:42 +0800
+Message-Id: <20260916094043.1496709-1-shengjiu.wang@oss.nxp.com>
+X-Mailer: git-send-email 2.34.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: MA5PR01CA0242.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:a01:223::9) To PAXPR04MB9351.eurprd04.prod.outlook.com
+ (2603:10a6:102:2b6::17)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,107 +88,98 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [BUG] powerpc/bpf: Kernel stack corruption in avc_has_perm()
- during BPF kselftests (test_progs)
-To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-        Hari Bathini <hbathini@linux.ibm.com>,
-        Saket Kumar Bhaskar <skb99@linux.ibm.com>, bpf <bpf@vger.kernel.org>,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        Kumar Kartikeya Dwivedi <memxor@gmail.com>,
-        Daniel Borkmann <daniel@iogearbox.net>,
-        Eduard Zingerman
- <eddyz87@gmail.com>, yonghong.song@linux.dev,
-        Alexei Starovoitov <ast@kernel.org>, andrii@kernel.org,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Ritesh Harjani <riteshh@linux.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-References: <56d51dc6-f597-4cfa-b61c-b6b95d61ab86@linux.ibm.com>
-Content-Language: en-US
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-In-Reply-To: <56d51dc6-f597-4cfa-b61c-b6b95d61ab86@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE2MDExMCBTYWx0ZWRfX85SvrvPSfOMd
- +01q75rsafsdLmXw9Cuv5vcS5oUeflNU37aA2PsJ6iKPDeuHyVWE2+W9aY8M2TUP1N16K/SM23F
- hPi4xWMDaeYXbLgI58AFJoKFQGVUyc7kDKflTKcjZTGdXk1c+JcmeWWUuLMPTRhd499LdjOwMdg
- m1zQwFrqE+c7OG/k/QlzdVSRcO5L15JTmoBr28RzfRZ1DKDxDGNd33Sk16nHB59qpMXPXD1l+hj
- xdnM0tKxzynbU6pN5uZoX7pYLec62PoCbPVuvMPMRHGI47BnJns/fhVWaaEDTukzwA2JdP+aqqy
- TputCIxDFXeswtnmQ5pAK+M1GyFu7VnQqZAeow3gc+DreQrcfXgMuQM3LoZChK2BnkF8A1AQf9O
- XAtB0DZXXybV5pwVDUSlkzgbyz96gw0MuaeEFwR7jPUPolUP/bdzbARLdgCUXZAzyhEcii40yFs
- CE36Z5E1WS6S/cdwQ5w==
-X-Proofpoint-ORIG-GUID: aHG0o8l-4_Y4D9r7LWH8I8O8n9cPJ_vt
-X-Proofpoint-GUID: fyzoQu-Kdur9Wn_W0C6nqJrwiazL0iUC
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE2MDExMCBTYWx0ZWRfXwr8pipsY7Kvj
- WN72Hr5zgO7JiFb1TvGJYSdG/MyIpDDtqeb37/KJsI2n6mQ7R2oXEVmfEfsz3Pr+LgPBPz90cBo
- Me1rf6sdVYq+qA9mxlyoaIYx8URQ1Wg=
-X-Authority-Analysis: v=2.4 cv=cY9HPXDM c=1 sm=1 tr=0 ts=6aaa58c9 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=Oc1KoJq9fdCeQZ6uml4A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-15_05,2026-09-15_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 spamscore=0 bulkscore=0 clxscore=1011 suspectscore=0
- impostorscore=0 malwarescore=0 phishscore=0 adultscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609160110
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PAXPR04MB9351:EE_|AMCPR04MB12646:EE_
+X-MS-Office365-Filtering-Correlation-Id: bc083fb2-d2f4-49c2-d145-08df13d5e671
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|376014|1800799024|7416014|366016|19092799006|10067099003|3023799007|18002099003|11063799006|56012099006|921020;
+X-Microsoft-Antispam-Message-Info:
+	eXG4TKkVBYoozCS77uWQSJlgEH+PYDZcx0xLo1Ll4zZzHIW58W8tVXt+QdhWOV591e7YKcoCjTYd5xfpayVAvae17i5ANW4oMFmTVKH8Rx6DvXoYr7hQqHc8jm0lMWumnCFr3X2Iqnl2f4NISpMNf8qYPHnDDugJjRmXk8mMBwXOnVWWVdiM90HRIO57V9tohwAEhSlFQFcFBBa75hCqsk+f6xNwT085Xtdf5ot7QZtY69WNtQTtxGMy5Y/5W0PGsSKItMqC4DOVGhofD4qUL3L7mm+KybweIou3BTUPx3Yoev4xpJzo3KsjNyYMXg/KprF29PAPTRuLLXA8AMVB+wC0n0GZP4DTfDtNom4cGJQjIMHcXzD1DkwHSCtHG2AJnXYkOBiZdnlmI8OO0rZiXeNnmYqBWsP+mghAyLDUP3mOoWIZ7fV7MZWbtwmhg/bxBunkC5O8wEn9NUQXo5S+ymr+44zNGcam91CFl1seVMFe/3aVyS8G7vNRMYHaG6Q1b707gRi0CyD8lAX6kKXMq7C7Ar19yZcDdhlqQ68p/ncr9axfZyik2TLonXi2gXQZYN9prm6c7BnPcl/8k96asZmr36jWQlZyC6wMr+TXgDEEqOHU4NsHvAhbNK3LlIIoaq2JmZxEvq7ENQj79m79LdQ9yapN15o60t15FtORpKvt//9nlwltzekE9jeHvEEgfxaQQBdbbVinWeKxihyOOQ==
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB9351.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(376014)(1800799024)(7416014)(366016)(19092799006)(10067099003)(3023799007)(18002099003)(11063799006)(56012099006)(921020);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?+FjL6t8QsHk4YyVAIvO1leyuZOQYugVVzNs1J9nwusJs3Xl6js6bMU9itfv0?=
+ =?us-ascii?Q?0GZdbEkxacbia14iFOgZHug4UiklpImqFkzllSNehGpVSlGXYgTK88WrOoDx?=
+ =?us-ascii?Q?h0u4nq8B7jDVVzu5nLg+s6oCaiRMyqu6nVO45FIPUe/COJjqeye9yMtI4X7B?=
+ =?us-ascii?Q?zK0PUCjxYr4zjYAZiKpxMGSmdr+5YqHLubBuz0VA9Jb0ccVjOjiO783Ef7oZ?=
+ =?us-ascii?Q?AwP4BzR87Pw1umpD5aY64EX1LojKAIxYBjceoXEVOMFdEHSL7RNhatNa/Xcu?=
+ =?us-ascii?Q?V+/toUX2oujPtJbj/3mH/UqGaWSzqbSN4QKWjZRfOjgS51JRkE96rY7tgTI/?=
+ =?us-ascii?Q?H3y2p/Hi51IJEqxWysHGUNQdVjp1JA+kCLPTTdpg3Mdkn3Qa+2q1x1qkRq10?=
+ =?us-ascii?Q?Sunr9OUDjuRDgjJ/qce5SWNNwiT1trE2rO1axj0vtB47Ec1DmJYKCY+P1NQb?=
+ =?us-ascii?Q?qz50UCM44sj+WzXInak/67hjHZTC3g+4eVN8IePzkwciuM1JeSqU3epqgr8p?=
+ =?us-ascii?Q?V7cwB7jhZCNZdy22sEK8zTvt+QJa4q5fxIu2GF0ouu4rspNmYE+hfR3z1Ac/?=
+ =?us-ascii?Q?OVucs6bX+aq3oUxnxq38luKA7sK2EDhklWpBqTUzts5WmQMVycQh29DGsnbm?=
+ =?us-ascii?Q?EkSAUYSCDRBND6Gm3zYiqHbGkJRrAyMkhldZKI595Izq6eMMmhyyl4GrIsWM?=
+ =?us-ascii?Q?3Mh4YxTMG70ePPqu+uw7VYXUfmJ57SYG0vN/prmFzuosFjDy9Ltb+IkgZq7/?=
+ =?us-ascii?Q?hM2Rh0acru+ULCj6m+jkgTXrGfmIztPx7/6c5uUsDLdcE/Gx3goxLQ96vvZv?=
+ =?us-ascii?Q?bCi5b5R8j4ct8snbC0Et7RkkjPORzvJCyJZ6u8fY2t1w2gv8H9S7sySGiT/c?=
+ =?us-ascii?Q?lliKdK7u64zkhSb2SEcTxhBxb56gn0c75I5x2uVlu8pzqXoyK1IRdb9+Ggd9?=
+ =?us-ascii?Q?nF5y5I7rRNNT8lpnUd+emiNw+k8SvIDHWjASNgYvpc5jy/zf3RavAePwE2y7?=
+ =?us-ascii?Q?RLU8GgnYiHM5hb/v+YjIPDHLQ8hbqdbwy2mbKRJPGZxuEzFTfAjancFGpQwK?=
+ =?us-ascii?Q?Y2mdJ9M80sJhIGRv6sF4l6WRDT8DJoodQs7RtxwJRSIO8VZKGYjU14KmBX4k?=
+ =?us-ascii?Q?T+gggh9Er5ySW0O27gi8yQbVUYTg/KxLbIfqPm9npLwDJqLLzDFroyOTt9D5?=
+ =?us-ascii?Q?ZQetMz18FEXd2qpxeN9Akrxj41wK9GB4g+pL0jorPUh5hliAmY/2Oa67JJh4?=
+ =?us-ascii?Q?Q4w3x5U4uHJV86x2RADZFFKrz3e/2KHBvztVtTArU0I8cIPmn3nLW63Yu9aP?=
+ =?us-ascii?Q?0eiCtA3z58Bmj0BLQ1JDtkh89Dn+ZQ0/WSyRcypPK9wveP8XirE8haV267Q1?=
+ =?us-ascii?Q?VXRLxDEzCXqUaOnp5Vkw0PWa1yI9fSrqWpVqtBl6bQRrzVRIphnP/EwsYr/j?=
+ =?us-ascii?Q?r4jZJVaPRdiJtQfvl2SSH/09ZlJE2J+27z8tITXLkL+hKilaAOoTRyRi6hFh?=
+ =?us-ascii?Q?Ya8+resOmKCttCYG+2Uh3IB+iwFBWlrLw6tWprGqb528WzWlKDdKjF2xV4fY?=
+ =?us-ascii?Q?yejlaJ8eBQqs2QtaBF5ANEWOjnT/eQiOzwyDDmcw+W5WuZgGw1JmKyjJZpAE?=
+ =?us-ascii?Q?/WVhmiUQG+4I4l5pMvIRA91ajiBqgix8Hqrd1hBLfKIknuczlZMhXLaJWraZ?=
+ =?us-ascii?Q?BFO9Fr8JnfdqiEXvrA2pYj0UZPPizjNf/C0M2GuESIYi58DYqqIQsPs+66b8?=
+ =?us-ascii?Q?l6l/oxebSHfBI6SMh7hrylpSiZZDz8eJs6u6Wcnk122tpQ1h7TgY?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: bc083fb2-d2f4-49c2-d145-08df13d5e671
+X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB9351.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Sep 2026 09:35:53.4666
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: oA4TlLPmUTdZ/DS1+99e7t7IIPaCOu1N07jZowXH4crpzJgyH8oawT2EsPUvBkymG9ULqhhBmXJ9wu/QH3D6r36ZB7pEzVOM1L5qbrPSP/23zZNvGQJHZS5Zq7U29Txc
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AMCPR04MB12646
 
-Hi Venkat.
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
 
-Thanks for reporting.
+After a warm reboot the REG_ASRCSR register may not be in its hardware
+reset state. regmap caches the register value as 0 (the assumed default),
+so when the desired clock source index is also 0, regmap_update_bits()
+skips the actual hardware write because it believes the register already
+holds the correct value. This leaves a stale clock source in the hardware.
 
-On 9/16/26 2:11 PM, Venkat Rao Bagalkote wrote:
-> Hello All!!!
-> 
-> 
-> IBM CI has reported a kernel panic on PowerPC (ppc64le, POWER9 pSeries guest) while running BPF kselftests (test_progs).
->
+Replace regmap_update_bits() with regmap_write_bits() so that the masked
+fields are always written to hardware regardless of the cached value.
 
-What has changed in CI that it is hitting now?
-  
-> Environment:
-> 
+Fixes: 3117bb3109dc ("ASoC: fsl_asrc: Add ASRC ASoC CPU DAI and platform drivers")
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+---
+ sound/soc/fsl/fsl_asrc.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-It is very likely same as
-https://lore.kernel.org/all/ba9759d0-b1f2-4b33-aff5-769cf89bd584@linux.ibm.com/
-
-> 
-> Kernel version: 7.3.0-rc3-gf6e7b42bf05b (PREEMPT)
-> Architecture: ppc64le (POWER9 - IBM,8375-42A pSeries / phyp)
-> Test Suite: Avocado FVT / kselftests (tools/testing/selftests/bpf/test_progs)
-> 
-> 
-> Traces:
-> 
-> [ 1359.516833] Kernel panic - not syncing: stack-protector: Kernel stack is corrupted in: avc_has_perm+0x23c/0x240
-> [ 1359.516856] CPU: 0 UID: 0 PID: 49806 Comm: test_progs Tainted: G      OE K     7.3.0-rc3-gf6e7b42bf05b #1 PREEMPT
-> [ 1359.516866] Tainted: [O]=OOT_MODULE, [E]=UNSIGNED_MODULE, [K]=LIVEPATCH
-> [ 1359.516870] Hardware name: IBM,8375-42A POWER9 (architected) 0x4e0202 0xf000005 of:IBM,FW950.80 (VL950_131) hv:phyp pSeries
-> [ 1359.516876] Call Trace:
-> [ 1359.516880] [c00000011bc67b10] [c0000000014627c0] dump_stack_lvl+0x84/0xc0 (unreliable)
-> [ 1359.516890] [c00000011bc67b40] [c000000000234840] vpanic+0x1b4/0x47c
-> [ 1359.516897] [c00000011bc67be0] [c000000000234b44] do_panic_on_target_cpu+0x0/0x2c
-> [ 1359.516906] [c00000011bc67c00] [c0000000014f8ce8] __stack_chk_fail+0x48/0x60
-> [ 1359.516913] [c00000011bc67c70] [c00000000092f0bc] avc_has_perm+0x23c/0x240
-> [ 1359.516920] [c00000011bc67d40] [c000000000936fc0] selinux_task_getpgid+0x80/0xa0
-> [ 1359.516927] [c00000011bc67d80] [c000000000920190] security_task_getpgid+0x70/0x1c0
-> [ 1359.516934] [c00000011bc67db0] [c000000000259488] do_getpgid+0xa8/0xf0
-> [ 1359.516941] [c00000011bc67de0] [c0000000002594f0] sys_getpgid+0x20/0x30
-> [ 1359.516948] [c00000011bc67e00] [c000000000034670] system_call_exception+0x160/0x480
-> [ 1359.516957] [c00000011bc67e50] [c00000000000d05c] system_call_vectored_common+0x15c/0x2ec
-> 
-> 
-> Please let us know if any further debugging or testing with specific BPF JIT options is needed.
-> 
-> 
-> Regards,
-> 
-> Venkat.
-> 
+diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
+index 1c611ca89dea..56604fa1613a 100644
+--- a/sound/soc/fsl/fsl_asrc.c
++++ b/sound/soc/fsl/fsl_asrc.c
+@@ -521,10 +521,10 @@ static int fsl_asrc_config_pair(struct fsl_asrc_pair *pair, bool use_ideal_rate)
+ 			   ASRCTR_USR(index));
+ 
+ 	/* Set the input and output clock sources */
+-	regmap_update_bits(asrc->regmap, REG_ASRCSR,
+-			   ASRCSR_AICSi_MASK(index) | ASRCSR_AOCSi_MASK(index),
+-			   ASRCSR_AICS(index, clk_index[IN]) |
+-			   ASRCSR_AOCS(index, clk_index[OUT]));
++	regmap_write_bits(asrc->regmap, REG_ASRCSR,
++			  ASRCSR_AICSi_MASK(index) | ASRCSR_AOCSi_MASK(index),
++			  ASRCSR_AICS(index, clk_index[IN]) |
++			  ASRCSR_AOCS(index, clk_index[OUT]));
+ 
+ 	/* Calculate the input clock divisors */
+ 	indiv = fsl_asrc_cal_asrck_divisor(pair, div[IN]);
+-- 
+2.34.1
 
 
