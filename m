@@ -1,58 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-27496-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27497-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B56CFC982D0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 16:50:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DC05C982C1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 16:50:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hlPyD1R9Bz2yGT;
-	Thu, 17 Sep 2026 02:50:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789577412;
-	cv=none; b=HuzTo4mffvEZYLhk84IeRHuPQWpfy+w3VajVxbNXspDShJiJCslEpNB2z2ZAItfs2qUVXFjE+0wg/8ErL6nSm0yNCM4x0a7u0NBsJgop377YSB4kGfMdDKhhxxhsFmJluH3PbKry7DeE3zS4VUzFt1UPf2sDMjJpCtewY33VpjeejqXzCxSUFroLALslRar67tChuxkaTLLFkp6J61j7ScRxVtpH/AyM7DK/tmkWMUT4ZvLv0gpdryAwrtLGAtU5px5Bnw7Kl6n0FQ9ynSlCzuEBRtDTXXN2WdMqc0uSBmXME8wFMdvNYQv91JySCt7altUA48Pmiy70kszTdwHgEw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hlPyl1L3Dz2yGT;
+	Thu, 17 Sep 2026 02:50:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789577439;
+	cv=none; b=Cz7NINhlDo/w1eIHpH6coDPq6UsLuAZYV98U7plyAKH20TGhzjnH0YCLnZ36vTc1NU6lJJ+uMmVjBiPDw4MVckR1Ds6WhTCfahLXMT7xh40SpN5//pUIDabY1iGCKs6JOSZAE21Sou9JHL6RkKMAisoYGLa4B3uPRrWXiQK2ETi4AI5cRQLipUPOd+XRtcEUaZiKXbsxkekRIrExy5/W1ORqHVKgKFd/D4KwEh//x+o7Qw2XUfFt2WX8Ar6UIy3pian+l2R7GP1sTQ0us6Q7YviBWTD0RUWJaRypcMphiz69mYIUzVGLhLTBb0wCDdwrz50SOgoahnRrIgsL0Zv7XQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789577412; c=relaxed/relaxed;
-	bh=L7Nv3D+LAVl5eGsM7/8TZo2OXjqL6TT+3lXEOOWeVno=;
+	t=1789577439; c=relaxed/relaxed;
+	bh=YbF9Hq6ip8NH9UOOHu4vU+eokzBGAvhZ+dvcT2bOj6k=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=BAVhNHfkTObZX7YKP/OhiQfKcXOw8Kf5MCoqHkgIf0RpF0YnuihrgXIWlJJ27LC3eExFu30/6bGBf5W47Gsd9ptIL1l0JRi3PdFdkoIn4+p2DBKyM/W8fYRJAKKHpE1ZVOWAN1ZsGOP9MGmtXL1k1Ok8ODO+m0CXbSgPtg64ZcrLuy0xZsid4iURQ7hu+efsi3jqo3BJ02B7RqKzY53j7v0jui24eIaeWOEW7j8g2/aVBh7uD9aFzXFEv7U+u8vTFJ5kMY1qbKb/+5Iba1jpA+DnMbJEvItASLmpnITETU9hdtSJe+W1SwAYY+7aLip8lhbn8Um74lozO9DAE4oG0Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JRfWJMYb; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 To:Cc:Content-Type; b=nAmcfYK+QejMEhwR8PA3UDHOJ1ljyX6/VfHckIKdRi4tagwuAUHgJHJmfVpSSIYu7KVMV1+ZwRzX1LDzS8b7yZae5aw9TR3N7Nz/EtVRsAsQGthy14uluzIYz25aIKBzqfPSkHhbgC7+dYePm74H2XZDwWKLIA9rhqRdUfKK4EcXlE6nVjz1c88H4SYfBB3M+nR9dQiBJ3RLSbqDPZcC+hvZsn+mCQV4uEDM945BdaeSaTSIxKoGPb+/lVwQDt7AKCM2FtX6rh+eY8jG32JNkOqafIvUSthUCoQxA/BbcLo6nzmxjqYchggyz4EgNl1JEil0uCatqLDkhPnLpCXonA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HzyqTTzd; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JRfWJMYb;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HzyqTTzd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlPyC1r2Bz2xqp
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 02:50:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlPyk2GGJz2xqp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 02:50:38 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 6CD0E43D5C
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 16:50:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 527F31F0089B
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 16:50:09 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id C4A9460A55
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 16:50:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 71DE41F00A03
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 16:50:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789577409;
-	bh=L7Nv3D+LAVl5eGsM7/8TZo2OXjqL6TT+3lXEOOWeVno=;
+	s=k20260515; t=1789577435;
+	bh=YbF9Hq6ip8NH9UOOHu4vU+eokzBGAvhZ+dvcT2bOj6k=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=JRfWJMYb32Rm+IxTGvWpJpVsMLrjJ68BqhbJ1lGRrYsTjhE1OZfZj1qbzkB0veld6
-	 aydd8hcy346Zxb6783g1qefug17abCGHwEEP5EzN/vTF6tUlqT5ZPT9NonaNcBN6Mm
-	 iFHRI8HRf+oFvcyk19LmsMR/ieQvjycJb8CfLWsfTiXI1BT7/RcsPiDeyUeP4sl6Te
-	 lG7eTE1DFCyEJnR2F3YWWd+EREGj4zAlFNo6xxzQLZbMu98CG5M/4U6F5hTA659o1r
-	 atcvb2ngG2XHrNfqUI5igAlUejpBaeyRareRjXW7WalzRDlX5tkNV+y19q3/HKoiYf
-	 MIIkl+PwLwMGg==
-Received: by mail-lf2-f13.google.com with SMTP id 2adb3069b0e04-5b5e4f13d7aso1616657e87.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 09:50:09 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBwjq8DzdFWNKn6y58BayGOX0Hkfm15sc+hPhlJeTMYPOz/83fSVRG4erAYMTyYP4CmkoxfLGmpBFPt1NDg=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++lDJoGicP8WzIURUingH/USo4WiCYPGdBbHhcDSHlXfNrorgOeU
-	OP/9xyue8XkGaJ32d6dY9iYRCdtB4AKlIveWWq38G6QznJoAhgcYqlLiMcrmvaPVQ+qd4WJPKvn
-	aINtivurw24Kz2qVJKuPJRLnukVowwNY=
-X-Received: by 2002:a05:6512:a91:b0:5b5:edd1:471f with SMTP id
- 2adb3069b0e04-5b8b660ce5dmr1007964e87.11.1789577407936; Wed, 16 Sep 2026
- 09:50:07 -0700 (PDT)
+	b=HzyqTTzdTWLsGmoCJP7+EXA26N7h4dqjzbXM5JPEPRmAvBShC5ylp3QJV/IjFmw2j
+	 mjYxuiIBuHovU5P+xcx8DR4hs3yIUF84rFvt80tKQbbcmWfaC3EJjON9izC9FxzvdM
+	 oFVfWzvRvSrFfZUjJLWso1ndlCj0t1vaf66uaca+2kSipx62tXWjn+XumW5OQJgL4j
+	 T4S5S1y7EEAGt7l3v09zRQP7DTAhU8QxP8B2Vg2Tp9QhJZlqEaP1j07YpuHi9gJLJK
+	 RTsbMzdFpidBi3Q6p012fOaANPqli9LviU2nv30Gm+quxkMLGJbSfeU5/2BANPeULK
+	 z/AWiwO1xhFsg==
+Received: by mail-lf2-f12.google.com with SMTP id 2adb3069b0e04-5b5e4f16c81so1167806e87.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 09:50:35 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvByjysQEnyK0bN7btSoN6bW+gLC0hUiFVC5DkH5KtmS0eJzvWuEBbMpRb2aBrrfZa0gUMnKQ9eyz79PgRuM=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++kwN4MwVwTQzg+E0bAGGN7fyWcnuXMFC/yYZ8uV16R5JVcxRmet
+	xFBKlegD88b/V4kVnmz+RJmQGFQdVuNfxGAFbReq490u33SzsFn2OW4LJFcLJQU9GHqQyaoB+vD
+	uCpDEJO3SNNes4jzXMrzhSPZyOjQlM4E=
+X-Received: by 2002:a05:6512:12cb:b0:5b5:e263:dcc7 with SMTP id
+ 2adb3069b0e04-5b8b660c1ebmr1008093e87.5.1789577434048; Wed, 16 Sep 2026
+ 09:50:34 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,14 +66,14 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260909132153.1596191-1-arnd@kernel.org> <20260909132153.1596191-4-arnd@kernel.org>
-In-Reply-To: <20260909132153.1596191-4-arnd@kernel.org>
+References: <20260909132153.1596191-1-arnd@kernel.org> <20260909132153.1596191-6-arnd@kernel.org>
+In-Reply-To: <20260909132153.1596191-6-arnd@kernel.org>
 From: Linus Walleij <linusw@kernel.org>
-Date: Wed, 16 Sep 2026 18:49:55 +0200
-X-Gmail-Original-Message-ID: <CAD++jLm-AwYYyJ9s2MTa7r_raesRar36Hugyf1R1Ny0zCqL5_A@mail.gmail.com>
-X-Gm-Features: AcwNN1UmqUhvwRMmw62XliPfw_HgO3-Fmrm9oMts4wPzbRxPuRqcz84S4okTZmg
-Message-ID: <CAD++jLm-AwYYyJ9s2MTa7r_raesRar36Hugyf1R1Ny0zCqL5_A@mail.gmail.com>
-Subject: Re: [PATCH 03/14] mfd: remove unused si476x driver
+Date: Wed, 16 Sep 2026 18:50:21 +0200
+X-Gmail-Original-Message-ID: <CAD++jL=8g4U-BkKH2zVuxQD1BqHNP-EseUsKzTJNpJFaR+Q6AQ@mail.gmail.com>
+X-Gm-Features: AcwNN1W58wTtgVz2clQ_wz9Mlu89xpFs3b5LWAbQ7ez6ueMaGMU5iIjS17A22CM
+Message-ID: <CAD++jL=8g4U-BkKH2zVuxQD1BqHNP-EseUsKzTJNpJFaR+Q6AQ@mail.gmail.com>
+Subject: Re: [PATCH 05/14] mfd: remove unused adp5520 driver
 To: Arnd Bergmann <arnd@kernel.org>
 Cc: Lee Jones <lee@kernel.org>, mfd@lists.linux.dev, linux-kernel@vger.kernel.org, 
 	linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, 
@@ -98,14 +98,14 @@ Cc: Lee Jones <lee@kernel.org>, mfd@lists.linux.dev, linux-kernel@vger.kernel.or
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Sep 9, 2026 at 3:22=E2=80=AFPM Arnd Bergmann <arnd@kernel.org> wrot=
+On Wed, Sep 9, 2026 at 3:23=E2=80=AFPM Arnd Bergmann <arnd@kernel.org> wrot=
 e:
 
 > From: Arnd Bergmann <arnd@arndb.de>
 >
-> The si476x driver was added in linux-3.9 without devicetree
-> support, and has always failed the probe function in the
-> absence of a si476x_platform_data definition.
+> This driver requires the use of platform_data definitions rather than
+> devicetree, but that was last used on the blackfin architecture in
+> 2018 and nothing could have used it upstream since.
 >
 > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
