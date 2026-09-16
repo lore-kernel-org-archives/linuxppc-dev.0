@@ -1,105 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-27477-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27478-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 373AFC982C1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 09:50:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88CADC88E7F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2026 10:33:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hlDdq51lzz2y2W;
-	Wed, 16 Sep 2026 19:50:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:31::11"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789552223;
-	cv=none; b=NBy3aHQA1FJlpR6f3fZARmr8/E7M9itBGe26CjWex9cQrrwcPia0Ohxp+NHlZCoT70fnI3ynrb87nxqNBgAgpAA+qfdJArS7jOeWVeSWcarFUfb5HFX1ypP5HBhlFSq5w93utTQhELw1+Kp9BB4vJ8FsiVrctEifgODGGGz+1oiSs34+l6AuEK0+65iGzOcuz1iB4YAViD1DKHfz8nl7LYqphz6vqQVvVYrPJ2+SrHalmRg89uIb5wjGq7PUJCrzf9EZ0//nLbEvHyZIpmji6nqYg+5t1t5z+WQvIdI3iGqEF44l/eUPVVwM69N2JFrPQMdZpS1hbYZo/w+hd880ow==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hlFbh1F1Zz2xqp;
+	Wed, 16 Sep 2026 20:33:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789554816;
+	cv=none; b=aciz8FIF7eUD6ryrLcjrSp4pszUErtT0+UUFLiZBPOsN3/0+rJAp8kxXc1MyIO2V72qTVyD34RbkqmtGL81wOoyKiUWWp7QMFZOue/nCClcEflddjKeZldc7B3I2XShWn53EZnOac1QqERDAxE3D8K43qgK1WwEnA/80GcuABLfUviJCgZ+QgPQN5s6HPvbPSowNj3RuUK3DFuBsFmYXZBEWKbh6xq4gh0wi8IFW0viQWDsTwT88mLbVabLScPMDCW01osMNgJM4Y9N5Dbz7eY//09AAoP1cXpU3b4uNFslZghUBJCS8WHKYOxXUADWVmcbEs357VgU0ys0cXOT2mQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789552223; c=relaxed/relaxed;
-	bh=79YAdtaHEv3S3nDvYc6X9C5ar06F3FncZEtUncQdJQ4=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=O+CetksI+wMFTSkNjhwvtdkagiTAm9Ga/uXpGd0VJC8pEdGU3YALa2l5r0clOitE0jXiUtZnNDOFdVtYTDHIACYZRuj2OC0ycRzNNM4Ccaff6+0F4imoUohGtpNVNac7twE4qNnd194se58Ksqf6SLwv+rdHks04vaU0joi8wcMwbZLy9u7DhGdF5CFLnvzH1zLsdTF8+4UcK0ACJkMYeUk3dMOhuJYYeCaPZHWBLAeUeBnTybfVi30P1trjK/XGzcNnXBUvgLdWrRG7b7SfptkDGfLdoYaTw44xB7fs019chd1YkRpK7AUlW3sAvmwNV2/YDcfEu3xc+KRi0qehrA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=E+N0pK/K; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:31::11; helo=mail-wm2-x11.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1789554816; c=relaxed/relaxed;
+	bh=mTjoG3WVrM/I9AJe8x8ELwtCSLklrMet0zke+dNepGc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ZQmUYmaVfCSq8qlL1fZRoFxA3t9gxX/SL0ReHjoAwduG/zVRasUaaFzNWJ+xFPHz0Czp2jLNLGc8zc+hBPuqGegYppvYGcwSFncZhWi8GMZq2RhCWccmKmbOIemiJsl+pgjNROp+MoyFq4xP3jUspy0vrDxnPWkRWdAbPv5EdSfUQ7AjD4/RsA4uJoCnwf9XI65Aj1ppXBZxQAjHS4u8Rc02xfrCbtmKktrhM/+E1CqSXREgyxNpQW1lSsR1CtFlbJiHMyl4QjZoiO2G8z4FHp0Suuk95TH6dZRbigKSG1jMTdRa8Yovynb4oubU37aQO+eS/QtQ3M8wjOlsC8ZyPA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FV25dpsP; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=E+N0pK/K;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FV25dpsP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:31::11; helo=mail-wm2-x11.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm2-x11.google.com (mail-wm2-x11.google.com [IPv6:2a00:1450:4864:31::11])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlDdp3Nhxz2xYh
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 19:50:22 +1000 (AEST)
-Received: by mail-wm2-x11.google.com with SMTP id 5b1f17b1804b1-49e620fa473so4413275e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 02:50:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789552219; x=1790157019; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=79YAdtaHEv3S3nDvYc6X9C5ar06F3FncZEtUncQdJQ4=;
-        b=E+N0pK/KShxQe5cYwIEp6bsAeda6kxlQnwQ6RsZp3RBoHBathhtPPdFcIDo1xL3ZtY
-         vKdN58Cf1sdWfF1ySqG85VnLR2cBh7NPdfaOTUmBppM2006VZcTXGokksXPdk8yj9Gg2
-         CNycGBCpi/oq4LbILcIBZGALX/FEPLzKNPjWnIfwVwP66nN3139jw455xSgSTYL1kR03
-         5e3QJLj44R2tPdRYc/mNI+PP7lNpsz3HyWSe0rsXIkR7GrQneYFZ6vzL7nsL2BS+EbVS
-         fkSGUdxGepPvtrM3nEyujYrMAYeuORs7j2rggSnfM1FhXwYFZKTGSqiLFSEMQZGYGNqh
-         3ecQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789552219; x=1790157019;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=79YAdtaHEv3S3nDvYc6X9C5ar06F3FncZEtUncQdJQ4=;
-        b=QshXZcJWJm7QsGNeV9Edgj90XGxGtkOrhMg0neE2LXIcruyex/kOWO2SHw46G+TWmR
-         kw66+w6X16wHiENLeUr9I1LHlhHetPFvVvhLRL+b00Ca6WgThLmHQWpPHGe7mo0Tg2xN
-         iouB3xFBNFOsF/I5dj0FcYq1PplrqI1k7VPXiprhbVuWqV46fH1zm0Ilp/nfI4qX5Yvy
-         9yDV9G4fU7pRyodGPTqPiP7btPBJFfhiwkPZn5WWHIuhjnELviAlUlzEAbgOBh0rg1bh
-         1rIql0xkoi62kMKNpdF7Wjbd1Rz5M799M8UETdbXNGT491QiCoNkJze6H4mHNFtANj1o
-         1soA==
-X-Forwarded-Encrypted: i=1; AKwUvBzg5Gu2sDekeaNQ3KBINriLEOxOOkkLYdifdzUDTkH54KWQEMDXqSQl7yE4GN/o9IkmRA4kl0qlQMfngmk=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++lnmwI6QILjsiX60UR/ss2YmJBFy0DlhQmeFZzz8fxpNc1h5jXQ
-	pxuoSc0+S5Gz2+JhQvWaoJ2AAfbtmkwsBdT37nfjMhRDGK95rBl1iFGS
-X-Gm-Gg: AYBFou2+yasPQfbxkMdXSehtFEb2cW1NLLedBLxQLDehRjQYC6mQ+Hz0LWZVSDFlM01
-	vfq0UAg59WMIaocNVjILyY5IwurMs46baN15U6vtPIzSCysDqKPhLW18q7VE/SrPtfn9x0tJZYL
-	UIOXxojMQJxrGwHJTTba272O2T8ScOir1NPbvPnb2jcvAkFaBLZoXub6+f7wkS2b1cQPaVfJBiR
-	bB/XYEtRvvLM50mQgQhRw2Bmvx+IJF/K+kWuKcrnLxWTlBNdlg9XMXXa6mddx9Dq03Hw5X0W+ZH
-	mkC7OIE3hSJBgXgcz9OfpDweg3rPSv2lko/cV643Y0wJHZziY5EO5KYbAe0Obi1riNaKYu4iWKg
-	GRlPGjLBX2RNIxwYFc/AyvIX82f1puCOefsXRJWxrPLCQGynH7gKAOha3zbivX8GKewJkCSk8E2
-	MnZTI6CMVVDrht/fKLEQl9xS9/1fB6azC7D6stzX1kfURQMkyQv34a2PIfkqlO3QakOI6W5RDFi
-	DObbWTWai/T9UQ82kyOmr/vy/elGewsSL1nA7MV+w8ps8Y=
-X-Received: by 2002:a05:600c:4ec6:b0:49c:fea3:8633 with SMTP id 5b1f17b1804b1-49eb732aec0mr19444455e9.24.1789552219000;
-        Wed, 16 Sep 2026 02:50:19 -0700 (PDT)
-Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49e83b02245sm84055225e9.10.2026.09.16.02.50.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 16 Sep 2026 02:50:18 -0700 (PDT)
-Date: Wed, 16 Sep 2026 10:50:17 +0100
-From: David Laight <david.laight.linux@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jann Horn <jannh@google.com>, Christian Brauner <brauner@kernel.org>,
- Alexander Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>, Ingo
- Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
- linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Oleg Nesterov <oleg@redhat.com>,
- linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
- linux-hexagon@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- linux-mips@vger.kernel.org, linux-openrisc@vger.kernel.org,
- linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-um@lists.infradead.org, Jens Axboe
- <axboe@kernel.dk>, io-uring@vger.kernel.org, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-gpio@vger.kernel.org,
- linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org,
- bpf@vger.kernel.org, David Airlie <airlied@redhat.com>,
- virtualization@lists.linux.dev, kvm@vger.kernel.org,
- kexec@lists.infradead.org, linux-hyperv@vger.kernel.org
-Subject: Re: [PATCH RFC POC 00/50] file: handle files on syscall exit
-Message-ID: <20260916105017.13ea5e36@pumpkin>
-In-Reply-To: <CAHk-=wi3Kkqgfg6zUTHpQoZNL2VOB4vYqpi6RX0WNO++29UtyQ@mail.gmail.com>
-References: <20260915-work-fd-reserve-unify-folded-v1-0-4d5217d6b246@kernel.org>
-	<CAG48ez1RsdT=O=-0city3vjgWhDvY424KtTmrCJntWy5ds3HBQ@mail.gmail.com>
-	<CAHk-=wi3Kkqgfg6zUTHpQoZNL2VOB4vYqpi6RX0WNO++29UtyQ@mail.gmail.com>
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlFbf6FDWz2xYh
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 20:33:34 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68FLVspj791787;
+	Wed, 16 Sep 2026 10:33:13 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=mTjoG3
+	WVrM/I9AJe8x8ELwtCSLklrMet0zke+dNepGc=; b=FV25dpsPqWsf6GDBfYiI19
+	3/mcmkETQHxXZ0IF0xVZY7W0CZXshCL84wvlaCD4OuDJUD05XNPG6wbwUYUsXz/g
+	j+yWm6uSj0TQOMZ2UD8pHEaYTa6e53S49QTdIyDGG7At/acgmWf9knaozKMY5OfQ
+	AOCS8tGpB+wNKc4o/sjuj63182UhcBKBnwLBwysqahrGTVKMBbISDTK6FQsJbCcm
+	awCB1NUA7ylnslZyJMrYRpTRMt2bOGEiFf2WJJ7SNo1n7VPbO/LEPFHD0LtEUJ/8
+	6fbS6kceRTLPjETS4TZuxNa9O2jPubg9jlYk5e4BVta9F2tu4Ya50U2j6hZ+XtOA
+	==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gmw5e3s80-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Wed, 16 Sep 2026 10:33:12 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68G7ZGhT464083;
+	Wed, 16 Sep 2026 10:33:11 GMT
+Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gq03vdtnb-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 16 Sep 2026 10:33:11 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
+	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68GAXAqV33751758
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 16 Sep 2026 10:33:10 GMT
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4024D58055;
+	Wed, 16 Sep 2026 10:33:10 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id BC8F158063;
+	Wed, 16 Sep 2026 10:33:05 +0000 (GMT)
+Received: from [9.61.253.212] (unknown [9.61.253.212])
+	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 16 Sep 2026 10:33:05 +0000 (GMT)
+Message-ID: <fac3bade-3152-490b-b557-22d6abe56b50@linux.ibm.com>
+Date: Wed, 16 Sep 2026 16:03:04 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -113,64 +81,135 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [BUG] powerpc/bpf: Kernel stack corruption in avc_has_perm()
+ during BPF kselftests (test_progs)
+To: Shrikanth Hegde <sshegde@linux.ibm.com>,
+        Hari Bathini <hbathini@linux.ibm.com>,
+        Saket Kumar Bhaskar <skb99@linux.ibm.com>, bpf <bpf@vger.kernel.org>,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+        Kumar Kartikeya Dwivedi <memxor@gmail.com>,
+        Daniel Borkmann <daniel@iogearbox.net>,
+        Eduard Zingerman
+ <eddyz87@gmail.com>, yonghong.song@linux.dev,
+        Alexei Starovoitov <ast@kernel.org>, andrii@kernel.org,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Ritesh Harjani <riteshh@linux.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <56d51dc6-f597-4cfa-b61c-b6b95d61ab86@linux.ibm.com>
+ <46508541-55ab-4340-8871-924514ee8d5b@linux.ibm.com>
+Content-Language: en-GB
+From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+In-Reply-To: <46508541-55ab-4340-8871-924514ee8d5b@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE2MDEzOCBTYWx0ZWRfX/tfu/7f6+CUZ
+ SqZ8XiLBqWI7Lus+jh8nmfUke0YdIFNRZIpUrGJXbgsR3/E+1PBjAWQrx05T+CuE6PwJan/E2V7
+ KkRdIygF49aGHljqwttC4HpVcqHvit0Axmm70+aV8xUqmwlzEYSjDd+JCjKoVBJTo4r4Rv7x45t
+ Pv95CikB2BmHL9ZieU3ehQu7g69Ros4FqIZCcOG5m3RY8jiiuUcMZJfa2ds/g27r0w2zfdUOsOP
+ 899Q+oHtb8WW6rHujUYPmu0hyLXqh6rQXZbPDKdCO58LETbpG6Vk8nFcEiUSMg/+AurzqzuMRw+
+ +mqrWUQoos3kA5Acqe/YvK/HslUg+EY9POMTZoX24fafk7hbf15T5eHyTOhzStpWyaknelEYK15
+ ikULV0LV6vuS/JgVHJ6iStXt0NS0hVrx4jRxnuJLVr3+WMIzCxoJ+Xv3zO1uKbTlCnow2yq4mBa
+ pUjh0gYT5P90ymtHN0A==
+X-Authority-Analysis: v=2.4 cv=E/NYNqdl c=1 sm=1 tr=0 ts=6aaa7068 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=6zCX1olo2Mcs3fojgbkA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: GhwMK2bzqtSiB7ygT_iyaZZdvnTwOMjY
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE2MDEzOCBTYWx0ZWRfX59mRAOtMlHEf
+ pV7rl2RAyTf0M4JTV5wbRgJb/6Ti+vZLy91pioiBOCKHltPxO3H6sDDMFP8KStiQ3gS/pV++LLr
+ V37VImKE00AQxC+JSsOb/4rNY9JEkNY=
+X-Proofpoint-GUID: Gkg2wqQ5PA4Wu5DZ_cJO1oyLFUWSd1H_
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-15_05,2026-09-15_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 lowpriorityscore=0 priorityscore=1501 spamscore=0
+ adultscore=0 clxscore=1015 bulkscore=0 malwarescore=0 suspectscore=0
+ phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
+ definitions=main-2609160138
 
-On Tue, 15 Sep 2026 12:08:57 -0700
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> On Tue, 15 Sept 2026 at 10:52, Jann Horn <jannh@google.com> wrote:
-> >
-> > Is this mainly about stuff like "we installed a file descriptor and
-> > then the following put_user() failed"? Because if so, I think a nicer
-> > fix would be to have a policy of "if userspace provides unwritable
-> > memory to a syscall, just keep going and pretend the access worked",
-> > and maybe have a sysctl that kills the process when this happens to
-> > emphasize that userspace should not be doing this.  
-> 
-> We've done that before, where we just ignore put_user() errors and the
-> user gets whatever the user gets.
-> 
-> It is maybe not optimal, but it's fine. You can find quite a lot of
-> unchecked put_user() calls with a pattern like
-> 
->         git grep '^[[:space:]]*put_user(.*);'
-> 
-> and some of them are in core code - see the two in kernel/fork.c, for example.
-> 
-> One of them says "if userspace has not set up a proper pointer then
-> tough luck". The other one doesn't even bother with a comment.
+On 16/09/26 2:22 pm, Shrikanth Hegde wrote:
+> Hi Venkat.
+>
+> Thanks for reporting.
+>
+> On 9/16/26 2:11 PM, Venkat Rao Bagalkote wrote:
+>> Hello All!!!
+>>
+>>
+>> IBM CI has reported a kernel panic on PowerPC (ppc64le, POWER9 
+>> pSeries guest) while running BPF kselftests (test_progs).
+>>
+>
+> What has changed in CI that it is hitting now?
 
-I think the code should try to return EFAULT (IIRC that is too hard
-in one of the exec cases).
-Otherwise very unexpected things might happen if the memory is just
-readonly.
-If you ignore the error and the pointer is invalid the application will
-get a SIGSEGV and (usually) die.
-But winding back kernel data because a user copy failed is likely to
-be problematic/difficult and at best have error path code that isn't
-really tested.
 
-As well as writing fd numbers to userspace, some sockopt code tries to
-wind back if the write to optlen fails (which has been read earlier).
+Nothings in specific. Its just that, some of the tests were not run for 
+some time, due to build and other issues.
 
-I've forgotten which Unix converted EFAULT to SIGSEGV in the system
-call exit code - I'm sure one of the ones I've used did.
-
-David
-
-> 
-> The scheduler has two cases too, although one of them is admittedly
-> for another error case.
-> 
-> So yes, saying "if you pass bogus arguments, you get what you get" is
-> a valid model. It's perhaps not the *preferred* model, but it's not
-> wrong.
-> 
-> It *would* be wrong to take code that already has error handling and
-> remove the error handling, though.
-> 
->                   Linus
-> 
-
+>
+>> Environment:
+>>
+>
+> It is very likely same as
+> https://lore.kernel.org/all/ba9759d0-b1f2-4b33-aff5-769cf89bd584@linux.ibm.com/ 
+>
+>
+>>
+>> Kernel version: 7.3.0-rc3-gf6e7b42bf05b (PREEMPT)
+>> Architecture: ppc64le (POWER9 - IBM,8375-42A pSeries / phyp)
+>> Test Suite: Avocado FVT / kselftests 
+>> (tools/testing/selftests/bpf/test_progs)
+>>
+>>
+>> Traces:
+>>
+>> [ 1359.516833] Kernel panic - not syncing: stack-protector: Kernel 
+>> stack is corrupted in: avc_has_perm+0x23c/0x240
+>> [ 1359.516856] CPU: 0 UID: 0 PID: 49806 Comm: test_progs Tainted: G   
+>>    OE K     7.3.0-rc3-gf6e7b42bf05b #1 PREEMPT
+>> [ 1359.516866] Tainted: [O]=OOT_MODULE, [E]=UNSIGNED_MODULE, 
+>> [K]=LIVEPATCH
+>> [ 1359.516870] Hardware name: IBM,8375-42A POWER9 (architected) 
+>> 0x4e0202 0xf000005 of:IBM,FW950.80 (VL950_131) hv:phyp pSeries
+>> [ 1359.516876] Call Trace:
+>> [ 1359.516880] [c00000011bc67b10] [c0000000014627c0] 
+>> dump_stack_lvl+0x84/0xc0 (unreliable)
+>> [ 1359.516890] [c00000011bc67b40] [c000000000234840] vpanic+0x1b4/0x47c
+>> [ 1359.516897] [c00000011bc67be0] [c000000000234b44] 
+>> do_panic_on_target_cpu+0x0/0x2c
+>> [ 1359.516906] [c00000011bc67c00] [c0000000014f8ce8] 
+>> __stack_chk_fail+0x48/0x60
+>> [ 1359.516913] [c00000011bc67c70] [c00000000092f0bc] 
+>> avc_has_perm+0x23c/0x240
+>> [ 1359.516920] [c00000011bc67d40] [c000000000936fc0] 
+>> selinux_task_getpgid+0x80/0xa0
+>> [ 1359.516927] [c00000011bc67d80] [c000000000920190] 
+>> security_task_getpgid+0x70/0x1c0
+>> [ 1359.516934] [c00000011bc67db0] [c000000000259488] 
+>> do_getpgid+0xa8/0xf0
+>> [ 1359.516941] [c00000011bc67de0] [c0000000002594f0] 
+>> sys_getpgid+0x20/0x30
+>> [ 1359.516948] [c00000011bc67e00] [c000000000034670] 
+>> system_call_exception+0x160/0x480
+>> [ 1359.516957] [c00000011bc67e50] [c00000000000d05c] 
+>> system_call_vectored_common+0x15c/0x2ec
+>>
+>>
+>> Please let us know if any further debugging or testing with specific 
+>> BPF JIT options is needed.
+>>
+>>
+>> Regards,
+>>
+>> Venkat.
+>>
+>
+>
 
