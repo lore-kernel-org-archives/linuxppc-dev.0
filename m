@@ -1,53 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-27601-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27602-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 201CDC982D9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2026 16:30:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49F22C982D7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2026 16:30:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hm1Sg4xkCz2yFj;
-	Fri, 18 Sep 2026 02:30:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789662611;
-	cv=none; b=Up6DImLqZNXiR4/yxny2DI/rAVt9QXrYiObmmZ5Ge0GNrEC5K55wvIth8YhGW8LLxfELgM8XAQDC1vuRM5O9nc8HXAbxjdRd5T21xQxrvoKAGmwA47+qZ8Nz85dkn5IdfgIyZLVVmndWD7bkJ0ZLy/yXw1Fyp+BIGM2dp6QDY6r1LeCEftZ4B1eJeTsG+vTcq62tN3e6wl4oR+lJj/J9q0j6v0sYp7m6o8zbIWCy/KL1pfCOYoHLjw4xFbs08/6d+Db5izVpNc4VofLs41risBWK5nRmiLZJ/V4ZdN0oHaCkIgAzqYdjJM4JEnTF4mh4UsVuTHlxJm0FPvEBrP9+/w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hm1TF4kzYz2ySf;
+	Fri, 18 Sep 2026 02:30:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789662641;
+	cv=none; b=EKVCvRrV8KXg54ZTOGoG2RO6rJ/Ppt9KPKfz8OMhdEs47puVKCvFV2lNfyoxYCqUrvxR5umQWf7WdAK/IPfos3nJBv+vCXXystopS6L4de/v9HH3Olh1aerg2hXP42PONt72pp9VbbF0NZvnw9SzopQHRIY6HL/ZZqxbHhHeNgPIMzbtahnp2/kdvvqRNpve7iTzz+pghKadTk8hQ7JYlNN652pO5fsWiTV9uK3YyErGGVSolY9zxZ2hAJcy1uTiuvl3E5fmdaoa4bWFD23aZ4F6cyG/WSvXeo8SXqu3wS2JNXXfOrt6fEfbEo1n9XOiSiSm3i8qA/xTXU8dZb3C/w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789662611; c=relaxed/relaxed;
-	bh=qgN2FFKKPpmp05DaHJUklpQtNOudy/Yy1fqR/MizKYA=;
+	t=1789662641; c=relaxed/relaxed;
+	bh=ImRrf8Uis4VeyDKpz9HIiHrVsyekRqVAuTCVKg6Blzg=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=hfjgwCLJIfY8YThNvIeAb8vAwyWLT0HEISvBEJKHXh/PCEIZERDCG7igq8zW6qiIspqLYjwcupgAmwDfhbS1igp0ovcHd4fSsNNdffBRvPtPL1MUnUG55rOayuAZOAric6fIMQh6qf0nqMANH35PFrdKBuNm9PvfhrWAsB/fMVTzXyJ3MdUGTdqtEvFQkXCuynNw5hhC/X3uhoTa9k/DkbTxtbtAS1uUz7t0X+QzHO7itaFxnHvjobBX+Iz+OpnTHrh0Q2lD0UF/fczB9cd2sJgz6Kj9rbQZHe93MqTuXs/fsYfnvbUPqL1xWucrQwK2SlcBpqQ4nGE1lyaWkZ9EvQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HFj1ZcuE; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=etNEEmU2jDUP/DiDz0cDYGjBOPqlUOG5KPZNRjO4AZ3eFpEKWyDsXTx7eVxwGTNG9h1qitIyxFWD8UDozWd9jzNFkJCy+TAvjdBHtqnyk3TvVIwwmL+J4o9iH9ZSB/j3uWhkj08MCoJn8sviTe2oDRK1k2UsSmQh8x+KUCWj3Ilms/Vowoa9m8j1dDC0cMThG2BCNxmmj0ozudyk0inghcykz+dXez+1jXleO7pH7kRLvhq6xaictSGa4/TSpVmh2PqzotESSv3fJNhtnr7Rx0ZdZKNIw0L1y3QRZZz8Il56wMxAK0gMyW5zcER7kO9ciIA3GiVswy24C7eIN3kcrQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CgeGrjeB; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HFj1ZcuE;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CgeGrjeB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hm1Sf60Fhz2yD3
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 02:30:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hm1TD5nnHz2yFj
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 02:30:40 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id AE23F600D4;
+	by sea.source.kernel.org (Postfix) with ESMTP id D88084389C;
+	Thu, 17 Sep 2026 16:30:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EAF1D1F00893;
 	Thu, 17 Sep 2026 16:30:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9CB891F000FF;
-	Thu, 17 Sep 2026 16:29:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789662608;
-	bh=qgN2FFKKPpmp05DaHJUklpQtNOudy/Yy1fqR/MizKYA=;
+	s=k20260515; t=1789662638;
+	bh=ImRrf8Uis4VeyDKpz9HIiHrVsyekRqVAuTCVKg6Blzg=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=HFj1ZcuEDNTMnh2Nqg6+fJfV02zj4ziSKQ6RRu3yQsj5p9v46CsiyUooZCzc+YKP8
-	 34+cHO9Ai3c1E0itgx/XfzOSuRfYmy8HAt254s7g3BLKzyjpUAnQOVrO0QhDVNgiq3
-	 flPs+hy1XGA0Y7fr1T5cxhyfnmG67B5FQqIFoWXsIONz3QdBqErmu8iV1XFY4RLphO
-	 IFPC2LNRFjPKPOaYpFPD72y8tC/6OnYCr6cG2Sad5uOHcVDlZ4CJ7psZsf+Fnn5m50
-	 NrSpWB5QWg5LSJldkts2rYONeMhUptkU9gWhvtFpmXXEctHjrUlI2vfeMdLEBsJtm/
-	 Oqt+2k9sPTlrw==
+	b=CgeGrjeBYmhKGotgIUun9axeK/dNVfBXSzmtlshBYV+wBy3A1YCYGxLNnaJ6AR/aH
+	 zrsKDDlxEJCZprBbBAU7t6ymn5Mpi4VqWku8K/u0pLpLVD1BmNhwPtet7NcBHg6JOm
+	 2kHufx0ZreU0q2o4SI4S0LfhAK3pRQr4HdFdNpKPLpACNA8NW0QmJhPaKRQ+9tZqNd
+	 ysF6WgzqVf7aK5iwfSDYpEgj8ymuJHJjiJVthF93k427hNRKrXka1T2gcB6alnCkW/
+	 0SW6GYu8RDgilJA8AN+MUvnaUNLilJB0GS6DHv4SowpmKmlxb+LPmPJLfkmCTp8r7g
+	 7HPDZ7Utyv3Yw==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Thu, 17 Sep 2026 17:22:23 +0100
-Subject: [PATCH v3 14/40] bpf: arena: mark arena_map_mmap() mappings
- VM_MIXEDMAP
+Date: Thu, 17 Sep 2026 17:22:24 +0100
+Subject: [PATCH v3 15/40] mm/vma: add vma[_flags]_is_kernel_owned()
+ predicates
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-14-4583d8a23bca@kernel.org>
+Message-Id: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-15-4583d8a23bca@kernel.org>
 References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
 In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -145,66 +145,161 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
  kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, 
- fuse-devel@lists.linux.dev, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, 
- Emil Tsalapatis <emil@etsalapatis.com>
+ fuse-devel@lists.linux.dev, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2130; i=ljs@kernel.org;
- h=from:subject:message-id; bh=R3tb6SjOVu7d1sP7Jc7DgfQesg/5MmuNI7Jhk6g3s7I=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLWCB9I54nnNvtaIzQtQLirIc/9iwfHss/3oxY92Nyjp
- NYufetcRykLgxgXg6yYIsvzL+L7g0TC5nVe8HeDmcPKBDKEgYtTACby8iIjw4Z/yqcuR2/Xfn+H
- S/lV3fFHj2t+hpZ0/BU4/O3EpbNTVAwZGa7W9Yjb2IRpLFvWrbWlSPbedPOzxjoW/zcszF4buGz
- NIRYA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=5409; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=nMd3B7YARPUXIbfbJDzc6m3UAcco9vqw6A7IL7GS27c=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLWCB9QONtu/kXVi7PDt/2g89NrD4OPLJ+YlpqWUxs19
+ 1LSPcvnHaUsDGJcDLJiiizPv4jvDxIJm9d5wd8NZg4rE8gQBi5OAZhI2gpGhi0HtkmeOZzPYbe0
+ oCPyny7fLT+bjdf3fRW8zSnebmM7w5Thf5DoBNGchodfxH3WXZn14qnkejXRrQX+akVf3jzst1d
+ ZywoA
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 
-The bpf_map->ops->map_mmap callback invoked by bpf_map_mmap() can be set to
-one of ringbuf_map_mmap_kern(), ringbuf_map_mmap_user(), array_map_mmap()
-or arena_map_mmap().
+Rather than referring to VMA flags with uncertain meaning, add a new
+predicate that explicitly describes what possession of the VMA_PFNMAP_BIT
+or VMA_MIXEDMAP_BIT flags mean, and then refer to that function for
+determining VMA mergeability.
 
-It is convention in mm to mark mappings whose pages the kernel manages
-itself with VM_MIXEDMAP, so the core mm knows not to treat them as ordinary
-page cache or anonymous memory.
+Either flag means the contents of the mapping are owned by the kernel,
+usually a driver, rather than by the core mm: the memory may be MMIO,
+kernel-allocated pages or even ordinary pages the driver maps itself, but
+the core must not populate, reclaim, migrate, copy-on-write or merge the
+range on its own initiative.
 
-The map_mmap callbacks ringbuf_map_mmap_kern() and ringbuf_map_mmap_user()
-use remap_vmalloc_range(), which ultimately invokes vm_insert_page() and so
-marks the ranges VM_MIXEDMAP, and array_map_mmap() sets VM_MIXEDMAP
-explicitly.
+We initially also include VMA_IO_BIT here, as by implication, these must be
+kernel-owned. (mlock() also sets VMA_IO_BIT transiently on ordinary VMAs
+while locking them, which is addressed later in this series.)
 
-However, the exception to this is arena_map_mmap(), which doesn't set the
-flag.
+However the intent is to in future remove this, as no mapping should be
+marked as an I/O mapping without also being marked with VMA_PFNMAP_BIT.
 
-This patch corrects this and updates the comment to reflect it.
+This forms the basis of further work intended to improve how we express VMA
+properties such as this.
 
-The pages are refcounted and vm_normal_page() finds them regardless of the
-flag, and VM_DONTEXPAND remains set (marking the memory as VM_SPECIAL and
-thus unmergeable). The one effect is that NUMA balancing now skips these
-VMAs, as it already does for the other bpf map mappings, which is the
-reason array_map_mmap() gives for setting the flag.
+Also update the VMA userland tests to reflect the change.
 
-The intent of this patch is to be able to establish the invariant that only
-PFN-mapped or mixed map ranges may clear the VM_MAYWRITE flag, as is done
-in bpf_map_mmap().
+No functional change intended.
 
-Reviewed-by: Emil Tsalapatis <emil@etsalapatis.com>
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- kernel/bpf/arena.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ include/linux/mm.h              | 56 ++++++++++++++++++++++++++++++++++++++++-
+ tools/testing/vma/include/dup.h | 29 ++++++++++++++++++++-
+ 2 files changed, 83 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/bpf/arena.c b/kernel/bpf/arena.c
-index 7b6847200b43..b69fe5e34339 100644
---- a/kernel/bpf/arena.c
-+++ b/kernel/bpf/arena.c
-@@ -620,8 +620,9 @@ static int arena_map_mmap(struct bpf_map *map, struct vm_area_struct *vma)
- 	 * clears VM_MAYEXEC. Set VM_DONTEXPAND to avoid potential change
- 	 * of user_vm_start. Set VM_DONTCOPY to prevent arena VMA from
- 	 * being copied into the child process on fork.
-+	 * This is a kernel page so set VM_MIXEDMAP.
- 	 */
--	vm_flags_set(vma, VM_DONTEXPAND | VM_DONTCOPY);
-+	vm_flags_set(vma, VM_MIXEDMAP | VM_DONTEXPAND | VM_DONTCOPY);
- 	vma->vm_ops = &arena_vm_ops;
- 	return 0;
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 2a92193ac6a5..cab29d6e15c1 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1612,6 +1612,44 @@ static inline bool vma_is_shared_maywrite(const struct vm_area_struct *vma)
+ 	return is_shared_maywrite(&vma->flags);
+ }
+ 
++/**
++ * vma_flags_is_kernel_owned() - Do the specified VMA flags indicate that the
++ * contents of the VMA are owned by the kernel rather than the core mm?
++ * @flags: The VMA flags to test.
++ *
++ * A kernel-owned mapping is one whose contents are established and controlled
++ * by the kernel, typically a driver, rather than by the core mm's fault and
++ * rmap machinery.
++ *
++ * The mapping may be memory-mapped I/O, kernel-allocated pages or ordinary
++ * pages the owner has chosen to map itself (shmem via a PFN map, for instance).
++ *
++ * In all cases the core mm must not populate, reclaim, migrate, copy-on-write
++ * or merge it of its own accord.
++ *
++ * Pages mapped this way are not necessarily reference counted or map counted.
++ *
++ * Returns: true if the flags indicate a kernel-owned mapping.
++ */
++static inline bool vma_flags_is_kernel_owned(const vma_flags_t *flags)
++{
++	return vma_flags_test_any(flags, VMA_PFNMAP_BIT, VMA_MIXEDMAP_BIT,
++				  VMA_IO_BIT);
++}
++
++/**
++ * vma_is_kernel_owned() - Are the contents of @vma owned by the kernel?
++ * @vma: The VMA to test.
++ *
++ * See vma_flags_is_kernel_owned() for a description of this property.
++ *
++ * Returns: true if the VMA is kernel-owned.
++ */
++static inline bool vma_is_kernel_owned(const struct vm_area_struct *vma)
++{
++	return vma_flags_is_kernel_owned(&vma->flags);
++}
++
+ /**
+  * vma_flags_can_merge() - Do the specified VMA flags permit the VMA to be
+  * merged with another?
+@@ -1620,7 +1658,23 @@ static inline bool vma_is_shared_maywrite(const struct vm_area_struct *vma)
+  */
+ static inline bool vma_flags_can_merge(const vma_flags_t *flags)
+ {
+-	return !vma_flags_test_any_mask(flags, VMA_SPECIAL_FLAGS);
++	/*
++	 * VMA merging assumes that a VMA's flags and fields completely describe
++	 * its state.
++	 *
++	 * However, kernel-owned mappings may have established state upon mapping
++	 * not embodied in any attribute of the VMA.
++	 *
++	 * Additionally, private (CoW) PFN maps encode the source PFN of the
++	 * range in vma->vm_pgoff, which may otherwise cause spurious merges.
++	 */
++	if (vma_flags_is_kernel_owned(flags))
++		return false;
++	/* VMA explicitly marked as being unmergeable. */
++	if (vma_flags_test(flags, VMA_DONTEXPAND_BIT))
++		return false;
++
++	return true;
+ }
+ 
+ /**
+diff --git a/tools/testing/vma/include/dup.h b/tools/testing/vma/include/dup.h
+index 1d5f6b3cbd21..d09148ce2305 100644
+--- a/tools/testing/vma/include/dup.h
++++ b/tools/testing/vma/include/dup.h
+@@ -1665,7 +1665,34 @@ static inline bool file_is_dev_zero(const struct file *file)
+ 	return file && file->f_op == &zero_fops;
+ }
+ 
++static inline bool vma_flags_is_kernel_owned(const vma_flags_t *flags)
++{
++	return vma_flags_test_any(flags, VMA_PFNMAP_BIT, VMA_MIXEDMAP_BIT,
++				  VMA_IO_BIT);
++}
++
++static inline bool vma_is_kernel_owned(const struct vm_area_struct *vma)
++{
++	return vma_flags_is_kernel_owned(&vma->flags);
++}
++
+ static inline bool vma_flags_can_merge(const vma_flags_t *flags)
+ {
+-	return !vma_flags_test_any_mask(flags, VMA_SPECIAL_FLAGS);
++	/*
++	 * VMA merging assumes that a VMA's flags and fields completely describe
++	 * its state.
++	 *
++	 * However, kernel-owned mappings may have established state upon mapping
++	 * not embodied in any attribute of the VMA.
++	 *
++	 * Additionally, private (CoW) PFN maps encode the source PFN of the
++	 * range in vma->vm_pgoff, which may otherwise cause spurious merges.
++	 */
++	if (vma_flags_is_kernel_owned(flags))
++		return false;
++	/* VMA explicitly marked as being unmergeable. */
++	if (vma_flags_test(flags, VMA_DONTEXPAND_BIT))
++		return false;
++
++	return true;
  }
 
 -- 
