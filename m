@@ -1,64 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-27630-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27631-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC893C88E72
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2026 17:50:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82618C88E72
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2026 20:01:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hm3Dw5FMXz2y8G;
-	Fri, 18 Sep 2026 03:50:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.246.85.4
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789667408;
-	cv=none; b=Tj0UXYesnW4ZUiDj0+BvCnrGJ0xf5o/nXeNx7icL/lly3Hs8/ifYAvII/AdjGCAlqo5aH88KCtjXAqCAZhSRZVsfsw15pa0nPM5vmKunXxRzOOq56BqFJzzYRqu/FI/ymlgHE2Wds06qfx9x5WRfnvzGv3rNVR+vgqZLl3GjcnKlXrkHLI16Tpl8M86TguXV2Fkb+L6DM4vOGV342kcWQKNCmsUA15H8NU/n30E2M/WHE5OWlhdAeD73Z8phKtpGQHH+HZmUJamgVImUVTwovBcH7QHFlaZEYzSTB7+/kec4yLqz+XunYDAZjEilEgtX8bgW+gVsUoi/zeXu64doWw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hm68m4Rkbz2y2W;
+	Fri, 18 Sep 2026 06:01:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:39::e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789675304;
+	cv=none; b=kRuFaoxDFrpVThqzcB9jUnG/LWR781AcI9dJsdvoScipPIN4GRKqaWbwJ0y6AcElKEMKhV2RmQksJq8rUOl2M/mxj3A8ByQGWwKyOUif6fCtv5iga9x6Rk1AT2tbOLh9Zr308Y6XoosQPtKzxqzbmE+zCyAMhxYw+eHO9pDKSQB3a1M2O/dICvBQWDHV1UpZzk/nhObmYoqUfBhoqcvavjhYS+H5Lrv8Qd96j8ej88h/iPNxOTZ7QzU2yANve/orUIxi50SdhfiAvP+lM6D/7OAwzBe8rvq2NBe0sQRo+twZ1ow1sCxUL96qHCQC8wXh4ZfglItKNgcvsnRg3TWlVQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789667408; c=relaxed/relaxed;
-	bh=koYHEmHF992hOO59AVBGv9/ygNafcPNBRRwBEev9dCQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=AXWiHrFmL4iPcxWLS0styJzb6LSONa9sSSRPQ7ReV3bIBWyEC7hjEbJsAqmazyGJiIAwb8Q+yhAiCYVJKZIBCkbeC3aDT5nbG0OUNLDm3monQVf5XKy6ISLq8x6b+5UTskEMh161RmAxj5yun/TcEGdLI56xpSbz8GR+M9hubUXcNJanHwUs7Zawch2mj0f0ly4dVE4r46NzS2ViZ48eLPEz4HH6ZPi2uDLs9sEqBl+AceqJ6ivmFvQMWWaHygYlx16IbM8EDVgp9z+ijziVLQsfY2Y5MsU2+ypITpiLhD1W5/758fRmp1TyQe3eKR9Hy1T9hQq3vFTfB/Q9pB2Uzw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=G4/CgNPz; dkim-atps=neutral; spf=pass (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+	t=1789675304; c=relaxed/relaxed;
+	bh=mhGEf8mpyg4UxEKpmS5TYtXOZtm+XpKxy7o28279ww0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=GMP8iiHm8O/kmqGJlH1EoyPryqbJCmKdZaS1X8eqzXDXc0YmNfXUF/Bs8QVgvq4sPlYX0WTmQ97t9Bpy9Vty27cYWmMNVbod2nbuJRTJrz/VWNuR5M3NSAMT5Evk2voevLMwV7WR9Ht2tTZ2F4UpkWTCiTV9zYfP1+axe9sOehIy+GMGTMVIbK36H3Na+ofeY0HQkez7F8U3afZowUXgC9yOwgzJ3y5u268kNu4T49fRE6LYpTF9Qpx+895bYeUZnP0zn0o3bFelhm1G/BKZpTnh4gJdVpxmzJlryvVZwWU+B+LosVW+DLDyR1m+Eoc0w3LUGuKtQjYBApE4i4JVUQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=co02uZ7e; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:39::e; helo=mail-ua2-x0e.google.com; envelope-from=mhun512@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=G4/CgNPz;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=co02uZ7e;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
-Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:39::e; helo=mail-ua2-x0e.google.com; envelope-from=mhun512@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ua2-x0e.google.com (mail-ua2-x0e.google.com [IPv6:2a00:1450:4864:39::e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hm3Dv2SYVz2y2W
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 03:50:05 +1000 (AEST)
-Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-03.galae.net (Postfix) with ESMTPS id AB9E34E407BD;
-	Thu, 17 Sep 2026 17:50:00 +0000 (UTC)
-Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id 69E0F60580;
-	Thu, 17 Sep 2026 17:50:00 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 43EE011C787D7;
-	Thu, 17 Sep 2026 19:49:54 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1789667399; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 content-transfer-encoding:in-reply-to:references;
-	bh=koYHEmHF992hOO59AVBGv9/ygNafcPNBRRwBEev9dCQ=;
-	b=G4/CgNPzK5E12/9/EmIjENcc7TwannYkXgttdS+iILgEN7rNK/7/lxeRP4Rs239QsVgmen
-	Rp3kNHvYHrs3mGRmJrvApN9xaKwcGKQuTpPWV6yz2JLBGdat02GKuHEFpEGQrQ747dGkU+
-	MrXIpL/cxj/qtmOthtuu5m8HTGt7YKHhmsyZXx3xMQh/Z+CDaceLZMKhx9wW6l55R7Ma1m
-	9QBma3nANPpD6Zct7/pj8wZZXCkxDgSTTzq2drihxjgANR+lqsFWiErbW2qWKmiX5ShCFX
-	J1M84qWKPQFODr/Hpe24iPlkSckPc6Tzx+smdmz9A8gYEIG7KlS1SsWJnRGs5g==
-Date: Thu, 17 Sep 2026 19:49:53 +0200
-From: Herve Codina <herve.codina@bootlin.com>
-To: Wentao Liang <vulab@iscas.ac.cn>
-Cc: broonie@kernel.org, chleroy@kernel.org, leoyang.li@nxp.com,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, qiang.zhao@nxp.com, stable@vger.kernel.org
-Subject: Re: [PATCH] soc: fsl: cpm1: tsa: Fix clock leak in
- tsa_of_parse_tdms()
-Message-ID: <20260917194953.69dfd873@bootlin.com>
-In-Reply-To: <20260917152719.2160395-1-vulab@iscas.ac.cn>
-References: <20260917152719.2160395-1-vulab@iscas.ac.cn>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-redhat-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hm68l20Twz2xbQ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 06:01:42 +1000 (AEST)
+Received: by mail-ua2-x0e.google.com with SMTP id a1e0cc1a2514c-980b6159d30so332616241.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 13:01:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789675299; x=1790280099; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=mhGEf8mpyg4UxEKpmS5TYtXOZtm+XpKxy7o28279ww0=;
+        b=co02uZ7eqn/FZwx7RLHnLYGnSOLP/9sqFPeWy0NaVbFF53b0GjngMRYqL3LyS7FWfI
+         5FjdXpSmt4pmSP/Z93FGn9qMdGuyzfYXYzLzpdfn3CGb+6z4gYoqsCDxnenKjPB8VJG/
+         vaggeM8AVubuteuOneHbs/fmjQbx8C5+Cmf8KPhB/WYWSX8TRFVldp6IQyctFe2uB+jK
+         GTPepWikXgawURzsJ9p+TUi24PVLqkn9jLTkc1dgRRrlg+NQUwhQftu1A3wjpekGYn4D
+         vPdq+NUgePpZxYjz3rQLHTIw9dJUA12wazqYyYFYrkdOn5Sd2WkS17hjLAciOiuc8Y6l
+         hy5Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789675299; x=1790280099;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=mhGEf8mpyg4UxEKpmS5TYtXOZtm+XpKxy7o28279ww0=;
+        b=vxpjeMWIqYKW8GeTw9umxYbRkZAKbcAhf7LF9b6AcG4+zTpgs6bABPIzXfuz+4v0+0
+         ABYeL90RuKYJIb1icTZgJg8o1cceVRRlLQ5AWsKeLQlkhW/1Aw0zBgGmagKe4PsnX0LM
+         6iWwz/Ns8jl8LT2JES41RX2eB4dHr2MSAccg2FvAqsqlaBbQh8jGdMFP7k+l+EUKUjYE
+         ewRwtx8EaEclY0SmxleolUtAVDTsjGhs2S5LcXl0ER1ehEA1pFymCRPJHxM/fq1A8h45
+         c+jclfS+0hzmq5xJMWOX0u6a/HLsupVybSP+wdPcWv0VSbvbVBmQppLjwAybHIJho2a6
+         NhKQ==
+X-Forwarded-Encrypted: i=1; AKwUvBwUJ7Fygyel0nEklu3pnhctv57FXSmQmExElu41pp2gFvUR7jhQY9aXVxSU+0xuqkx5SD6B55pmZB2wSWY=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++nOofBGYbyEbo8EuSHOECMMHvKbzKeZpqTN5ObZ1WdDTOKS7Mqg
+	04ziF3qoPa5YQH8H6slRg/yt+yQoVQv1hX5BX9QpvoElaIxo7Jzl1+Y=
+X-Gm-Gg: AYBFou3QSueiynYg7fbKV2QhNuF5TjvLJ8RxYAoRhtAJ22Ly10r94wJY17fLb6odgS3
+	g1rORbR2mRNpm5gZoqdexiv25l4k5St5ivpLoqT4Pbqac33DxUeww0pjyrXCdeljdgQ+BBxM0vp
+	iNK5W4WMoOeazmuxxR3JlV70lmRRTzte5IiLinzjcreXzO6oH7vfhE7aVWRmkFTpCLUOj7ixfZ6
+	GpLMDDRbpfKbMdDYeFA07YWt9hc2Qo98lWvV20P6QUag/rh5MMMfWr2bl1sW2wYZIxoDl42AufK
+	cRSsdx69/U7kG/GCN4IpB2/xiywqwqkIw73EnMW0Q/AjqZQls/TC9mgNsxSf3zLETlG4RZjOG5o
+	c3zteebzyFKu9cIWL10517JYy0uT2weKr8GFJkFi5/lkdqyeLf832i+VV/xArRmxB/MvmfmPOMe
+	dZBO9sN6PNW51M6q/2x2eisAQxZtyBcZEJNkpml1bOhIrAHm/fiIuLP6PEWCRRhYysz/D4M+2HF
+	JP0bc0o1Rq/4iOffGlScbfZORKGS55SFP2goyegRbvHvSV7oVRyrjwNJ0ogPKugKzao5lqttALJ
+	jOhv2btGPQsEP66GS6iHK9+dRqrcz2AlEiij
+X-Received: by 2002:a05:6102:e0e:b0:79f:eeb7:d630 with SMTP id ada2fe7eead31-7a55a226309mr83581137.6.1789675298545;
+        Thu, 17 Sep 2026 13:01:38 -0700 (PDT)
+Received: from localhost.localdomain ([104.39.169.225])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-91252c7cb8bsm5425606d6.20.2026.09.17.13.01.37
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Thu, 17 Sep 2026 13:01:37 -0700 (PDT)
+From: Myeonghun Pak <mhun512@gmail.com>
+To: Ioana Ciornei <ioana.ciornei@nxp.com>,
+	Christophe Leroy <chleroy@kernel.org>
+Cc: linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	Ijae Kim <ae878000@gmail.com>,
+	Myeonghun Pak <mhun512@gmail.com>
+Subject: [PATCH] soc: fsl: dpio: Free the IRQ before releasing the I/O object
+Date: Thu, 17 Sep 2026 16:01:36 -0400
+Message-ID: <20260917200136.75721-1-mhun512@gmail.com>
+X-Mailer: git-send-email 2.47.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,55 +96,57 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Last-TLS-Session-Version: TLSv1.3
 
-Hi Wentao,
+The DPIO interrupt handler accesses priv->io, but dpaa2_dpio_remove()
+releases that object before tearing down the interrupts. The IRQ was
+requested with devm_request_irq(), and unregister_dpio_irq_handlers()
+only clears its affinity hint. fsl_mc_free_irqs() returns IRQ resources
+to the MC resource pool without freeing the handler. An interrupt can
+therefore access the freed I/O object before devres releases the IRQ.
 
-On Thu, 17 Sep 2026 15:27:19 +0000
-Wentao Liang <vulab@iscas.ac.cn> wrote:
+Explicitly free the managed IRQ before returning its resource to the
+pool, and perform IRQ teardown before releasing the I/O object. This
+also waits for an in-flight handler while the object is still valid.
 
-> The error cleanup loop puts l1rsync_clk and l1rclk_clk a second time
-> and never puts l1tsync_clk or l1tclk_clk, because the branches that
-> guard the transmit clocks use the receive clock field names.
-> 
-> Use the matching field in each branch so every clock acquired by
-> tsa_of_parse_tdms() is released exactly once.
-> 
-> Fixes: 1d4ba0b81c1c ("soc: fsl: cpm1: Add support for TSA")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Wentao Liang <vulab@iscas.ac.cn>
-> ---
->  drivers/soc/fsl/qe/tsa.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/soc/fsl/qe/tsa.c b/drivers/soc/fsl/qe/tsa.c
-> index 4a88e54d25b9..94691369353e 100644
-> --- a/drivers/soc/fsl/qe/tsa.c
-> +++ b/drivers/soc/fsl/qe/tsa.c
-> @@ -865,12 +865,12 @@ static int tsa_of_parse_tdms(struct tsa *tsa, struct device_node *np)
->  			clk_put(tsa->tdm[i].l1rclk_clk);
->  		}
->  		if (tsa->tdm[i].l1tsync_clk) {
-> -			clk_disable_unprepare(tsa->tdm[i].l1rsync_clk);
-> -			clk_put(tsa->tdm[i].l1rsync_clk);
-> +			clk_disable_unprepare(tsa->tdm[i].l1tsync_clk);
-> +			clk_put(tsa->tdm[i].l1tsync_clk);
->  		}
->  		if (tsa->tdm[i].l1tclk_clk) {
-> -			clk_disable_unprepare(tsa->tdm[i].l1rclk_clk);
-> -			clk_put(tsa->tdm[i].l1rclk_clk);
-> +			clk_disable_unprepare(tsa->tdm[i].l1tclk_clk);
-> +			clk_put(tsa->tdm[i].l1tclk_clk);
->  		}
->  	}
->  	return ret;
+This issue was identified during our ongoing static-analysis research
+while reviewing kernel code.
 
-Indeed, good catch!
+Fixes: 993fec7e11ca ("bus: fsl-mc: dpio: add the DPAA2 DPIO object driver")
+Assisted-by: LLM
+Co-developed-by: Ijae Kim <ae878000@gmail.com>
+Signed-off-by: Ijae Kim <ae878000@gmail.com>
+Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
+---
+ drivers/soc/fsl/dpio/dpio-driver.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-Reviewed-by: Herve Codina <herve.codina@bootlin.com>
-
-Best regards,
-Hervé
+diff --git a/drivers/soc/fsl/dpio/dpio-driver.c b/drivers/soc/fsl/dpio/dpio-driver.c
+index d5198ffc4455..fa82cdcc4922 100644
+--- a/drivers/soc/fsl/dpio/dpio-driver.c
++++ b/drivers/soc/fsl/dpio/dpio-driver.c
+@@ -263,6 +263,8 @@ static int dpaa2_dpio_probe(struct fsl_mc_device *dpio_dev)
+ static void dpio_teardown_irqs(struct fsl_mc_device *dpio_dev)
+ {
+ 	unregister_dpio_irq_handlers(dpio_dev);
++	devm_free_irq(&dpio_dev->dev, dpio_dev->irqs[0]->virq,
++		      &dpio_dev->dev);
+ 	fsl_mc_free_irqs(dpio_dev);
+ }
+ 
+@@ -276,10 +278,10 @@ static void dpaa2_dpio_remove(struct fsl_mc_device *dpio_dev)
+ 	priv = dev_get_drvdata(dev);
+ 	cpu = dpaa2_io_get_cpu(priv->io);
+ 
+-	dpaa2_io_down(priv->io);
+-
+ 	dpio_teardown_irqs(dpio_dev);
+ 
++	dpaa2_io_down(priv->io);
++
+ 	cpumask_set_cpu(cpu, cpus_unused_mask);
+ 
+ 	err = dpio_open(dpio_dev->mc_io, 0, dpio_dev->obj_desc.id,
+-- 
+2.47.1
 
