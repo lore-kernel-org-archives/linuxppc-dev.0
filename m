@@ -1,79 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-27567-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27568-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30A38C982CF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2026 12:22:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43CD1C982CF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2026 12:29:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hlvz74kd8z2y7Y;
-	Thu, 17 Sep 2026 22:22:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hlw7D5m4cz2y7Y;
+	Thu, 17 Sep 2026 22:29:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:31::10"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789647763;
-	cv=none; b=Re9pnKjdic/D1lSnWzkNBaj6yW5NZOq2mQJ9biEOwob3fNS5bnlC8vxIZOMBUyBP3V5MHAz7PL3P9zNUIIC8GylqFVkdqpxYAWA1lF7N4JzLLtnwYLkpL/BzUNv4sPqbBAM7qTrJNBhUNkDLNAcNKsf0Z7lzkaVLVyn1GzL/vMpycU/VDzzH8OVzMkvr5L6Ssu4dyo48O9ifuFNCUOFQHWKlMZXOxF2vpT2keg4ao6QBpJfudBFx+9mj7YeVaI49fuCrI7uPHsplGAxtTKQjkh3cdB08BMg+JxMATE7Z9qkTXAYpolVQ6z97lqgm6Bh1uCzv3tfjYgDSz9o/OjKA5w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789648184;
+	cv=none; b=Dr46YNSZBi91BzOk2KRK3Fzkzm2x+qoj2ZS5y/MwlFtTRry/xdeVhCZPqUHMeLwF+mGHU75jQYRKHUmtmp+OHfZFEjU+oYfQc5VV51o2FZ2dDI2BuRl2v+aTkdB7hALJ5bgTAm7g2OvtbLLifbvMkv/WcsTUF3sV4jg+iZG3fCTXGTgkx04Ugn5uGIr/qRIn0vQO/6LaVJWiK/2fmwBykAw/9Sxujzgmc3D1eyMGRr5of99t2e3Bkz4JGNb71Or3kQNcuTPnc6KjpZ5pavT0u+sIiuUnWl3S6tpWZHrDmIVItQ/FkT6+LE7T+JZ6HYmd9WIVD2SVNgiRYCUV89NPUw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789647763; c=relaxed/relaxed;
-	bh=p0zmU2W+3BnffNO8O4v0JPRgPOvlhktXL05mpLnU1xo=;
+	t=1789648184; c=relaxed/relaxed;
+	bh=Dtz+Uqi8FvhezfQGwgUreP+CufNocr9p+NqbDN0Xcok=;
 	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=XO62v3antKqr1EkbFuvg6Zmc4ZMK98m8/1/n5IVBjHUTyFNTisjSOwZtOqcjKOCl5oGCJFOcya9GN+YcYxhjp8wjVQl4LFCROpyYQXsZLwKsSRyucDcCi68frQABAQ75I6sC6yut8J4txMmQmKmH8VDRgWa1lyeFQq74Tk0bVBVuwrK6lfFhjJaJ217pRyK6fOn2d2n9da3DJRehCVAGQNCYs7OeGNxF10OYMZkCsYCXbAGMbuRIOmE/DcqVns9PT171UPfrFw1s3qt/7h8Dwco4BjFS0QF1etw6ljUSM3+WB6NGpvy/p+ohtdyHqPBp2eG3nuxu+vMfCBIQy/godw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=jF08J+rJ; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:31::10; helo=mail-wm2-x10.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version:Content-Type; b=AFLvb9dc3/zwBXPRYuX6Gu+/usjyNXbFkKV4NPwSxoZjurtNLw0TPC/Kz8nmsBMIKpWnlQta9h6jr/tMSgiJMg0VfVVOPbPPGOljK7kapbDYYDXJroAFxDz6G+gy1oQw75ERNyA0ZK663GXywcW+tG5e7FlKdZg/GlZ2XPFsu7O/2QC2KUdOvGeFEw5kziZAm6E+mxXfHOp0cNnSw7SVVVlhlHhNY5p7KATBCbCtmdHOvinO2CJOIHe17sdJNsp+ZTwudgfWvFAyxtc4H+hysf3AJJg6jDqPkQVXXz8RRkBio0+e0i3WsLpjnTR2du1HCCSVe9WCXTUDf1JQ4iDv0g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=aOBmcDXf; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:31::10; helo=mail-wm2-x10.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=jF08J+rJ;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=aOBmcDXf;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:31::10; helo=mail-wm2-x10.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org)
 Received: from mail-wm2-x10.google.com (mail-wm2-x10.google.com [IPv6:2a00:1450:4864:31::10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlvz62mlNz2y2Q
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 22:22:42 +1000 (AEST)
-Received: by mail-wm2-x10.google.com with SMTP id 5b1f17b1804b1-49ccfd61ecaso7274955e9.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 05:22:41 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlw7C5gPxz2y2Q
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 22:29:42 +1000 (AEST)
+Received: by mail-wm2-x10.google.com with SMTP id 5b1f17b1804b1-49cd5462b69so4683605e9.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 05:29:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789647757; x=1790252557; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1789648180; x=1790252980; darn=lists.ozlabs.org;
         h=content-transfer-encoding:content-type:mime-version:references
          :in-reply-to:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=p0zmU2W+3BnffNO8O4v0JPRgPOvlhktXL05mpLnU1xo=;
-        b=jF08J+rJsvRgnmeVQAxggKPHjvmBYb04GIjlGbZ7ULDOc72TLdzT2ElVrGzuWn5jK1
-         k/5yjxVtLGS1K1FnEbLPVazOZ8xJOMJ2XzXnWccFb3p+8P9KHsOqCFZ5xQWTXyxB0MMk
-         kUCwOrLYBKuHk7RTJrXzjsjjsXrCQRSOlNA1G6g5eRmn2NBsBreWlATHTengsyn3EWJQ
-         O1d5LvyNLEPgVPLusQg9K/dhFrNEQ1rqzIjtJR7XvNH2FFtN0VkOpNm5jOmmylSstOAX
-         DGRXl3yh+azwo0m+YG1LvvgS9jV0Ru7dsD71m3mW0PjvkgZ/RepprLlwbEmAqubmo3h1
-         1jxw==
+        bh=Dtz+Uqi8FvhezfQGwgUreP+CufNocr9p+NqbDN0Xcok=;
+        b=aOBmcDXfqe/i4RthwwvjfMiExqrcVeeblI9BRivXMeBujXf728BBuGlZPWS5E7bddz
+         KnjOTzjrVii5QlrEcwje3u05kQ9eA51j2yMWDKURxUH/d1hb5hWtrJY1g3F8e/HnPzMc
+         JS0mhmBtjSdhXq6higExW1YkE2DtExjCtAL55iWNHcHneUuOfgIKwxpwQ2kNxP3VrnAH
+         6yHUHypr0qzR9H/57GDikzE/1gurDrXK9jgr0p4Xu+uRPk8zRUge8CQF+fMbwBZ8cPzK
+         NatQamvS+15OOmFOt7bmn+QRqfEHvQifoC4HUlX3PC3D5hBLefO/LqviWbwFbou2LZsP
+         1O/w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789647757; x=1790252557;
+        d=1e100.net; s=20260707; t=1789648180; x=1790252980;
         h=content-transfer-encoding:content-type:mime-version:references
          :in-reply-to:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=p0zmU2W+3BnffNO8O4v0JPRgPOvlhktXL05mpLnU1xo=;
-        b=nfDhQ7aZLH0CHB7t66aSo2DoE6YhRLYdMVppAsveB9RRXmJ3sJ9/nTfu6EbBu2BJoo
-         VpcMxuJ35ONYnIyo+6E5jvTNVCEPf35usQHGphuztVLWA2ZODVks+yIeOMxEaPSLM4Ld
-         XcxU9vdtOv/8GNDwWCiGo/jVWczpozdncZm8+6xLm1nXBb7zjASRhmpDIpdNHPh0S5WA
-         UGmm14oiS0f0QpnJJSqbg5BEcTpGdKEkpPSwqE8fN7gd1+3yCsoRzrUvBbpvCA0DoSPp
-         qj6BinlSnN3ovuLS9RIDUdVxAXyLfjVzazXSH8PGkiHPiXcscCZ6vfxp+QTA7bLbxkgb
-         HaTQ==
-X-Forwarded-Encrypted: i=1; AKwUvBzebgL2vjS6uNHbJ0aNcFYbQL+LclubKzMY0VW413m5ovVnrWEK7m5B8XbuGYKTvxDjc/cY+/mvTShyttw=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++n0UjkcbyItuc/+BdLLt9zdO8P+MVC/C/2w1TFd9TtTg4i3Gu93
-	6muRl6AaZ9Cnpv1rWeXgvJ6se8x+XljLDXBAmuLIR95ckmziMFvWp4RO
-X-Gm-Gg: AYBFou1NpuGkQTFrmTvW0yaa2MidTSwu7/fqya1sa/TTr2zxndO3qvh3X1bKZPt/JWr
-	Ku8IV7QVBLyC6CocU6CFjQD3mRsIkwZNc8yDWwJOAhK8iZse5oHRKt1j2qnz1NC898+r/aBkuHi
-	ggGa/Yd5xVqt6HbBO6iGDuLU9PvgKTP7zv0HeZpvWfzC+5Cn8jpxAqQRs2wKAf+8ylFwfXUfSmo
-	TH6G2aAh1WK0Bmt0pWobzbddmarEruWpNY7dX1czSzQuomf7230sAFhaLzcgjbfI1shNTKnh5lO
-	KsCEE/ijRB29F1ky/zKuWJCJHNbbRjQc+cshve6PMGB6xkMJxSiYfIwI2I2RngGMIjuNzaVNmea
-	2SZWKUv1Ih/bvN4mqXljRS1g8Mj+FobIsT6zoor8/3ZoXa8aMBtG7uYxPYSl3qnSG1tgIREetWt
-	XVR31BFgChf/G5ozU6DQQZP9h+okDnWa3PrhSxQSHAjJHE6QG5eD4L7Wvh3HmhRvfS9kqu1h2Eu
-	6063IEbMKvPS3u7+iTrxEjZ1HDBIFj/CI36
-X-Received: by 2002:a05:600c:4ed4:b0:49c:de80:b833 with SMTP id 5b1f17b1804b1-49eac462571mr73688225e9.2.1789647756735;
-        Thu, 17 Sep 2026 05:22:36 -0700 (PDT)
+        bh=Dtz+Uqi8FvhezfQGwgUreP+CufNocr9p+NqbDN0Xcok=;
+        b=aQuJbSj7GTQueVrQ04H6UClwIkzdudYN5aSq73iCpJBf5lHy1MlSq52Ye3tMz1urkd
+         81NcySO1OUHpvtfhfJCfCv0Zd6lH38ye1aeM6NgSYAL1yEXF83NhMFBzGQqmkVbVjfG4
+         SMJXrgSxIdLLOIaTBFd/cE2ci2JGFbVQLVyeXTijcUmtTKKN5A2UpehwPbRervm9Um/N
+         XxtiZp8PWAT8wpULJsfKt38XlJWwYTAFIPv88++9IOotGYopoIgVxafPH0DvM/PqgkH+
+         bQC5ILzKBt1BIa6SyCx9Bh33HsUmv5n6ibOyN4lPRBlwrLjna5QtovcSxkxUMNxVdn3j
+         W8Wg==
+X-Forwarded-Encrypted: i=1; AKwUvBwOE9KoCs95FlmXziQLdY8dR3VxxNKxWU/w8Q5sjEJzz9DSncbBI+Fm6QLEfvqQ0SeJvwDbTPJ2SUnH+w8=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++kAUS6WbIhWlZaolQvaKBpUunHA0KbuE7fCO8B510F1k6AIEylm
+	dBzOURawZj4vV340o41X6LTNsOmD3+oLCJI8xAX3nA42BASQCy4wss8+
+X-Gm-Gg: AYBFou1kXz1GDjdkz70vtG5nkU9FOVPUszQbzqZvDYlwxaurJqJymsDyUqrSKyiriO6
+	lamIdyJ5fLJSe2JzSDNiDsZpkuZE8kbXac8/QEfwkSan2BTIaxZbf/UP1jvAWASpTv6Rb8zpGpY
+	egU1Wb44f1MW2/7lic1GV7EC4oAFxn9kJBqFr2G/0frVvA2Is/cY2rrtcR81m2lGiZU+dN9SO50
+	Jsy28XhaR0fcJDGXbojXS2On1V0gf09eG553i1eueo3/oUD1O3y/4FHA6Y0GWJy5BWuBTl6xwOj
+	uC9X++HR88yL1d2E1qClnA9rnJGE/3nFVdiKKmQxeqwg0Rj9ImA8qlDNgVZKf7vqR0PhKCVfHCZ
+	zc73hs7JsZfkn7grf1hwV7O7DKkKHsdOmk2yumaQQcR1gBlkDJySlpTsM+29RWgRHNxaGExvdoB
+	hG7YllSJlLsVRpMdwp65/iQSFZxRRzdl84WKqWUN1rC5W6HrdL+/8qC5cZ21VPo7WRvJoXSZP3d
+	8dWLEyZn55rTtOGUD7nvt+MCkbBrdu5Za7r
+X-Received: by 2002:a7b:c35a:0:b0:49f:bcb7:8e9 with SMTP id 5b1f17b1804b1-49fbcb70a1bmr64001725e9.9.1789648179633;
+        Thu, 17 Sep 2026 05:29:39 -0700 (PDT)
 Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4870bef7678sm15969081f8f.2.2026.09.17.05.22.35
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49fbd1ce79csm82621135e9.0.2026.09.17.05.29.38
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 17 Sep 2026 05:22:36 -0700 (PDT)
-Date: Thu, 17 Sep 2026 13:22:31 +0100
+        Thu, 17 Sep 2026 05:29:39 -0700 (PDT)
+Date: Thu, 17 Sep 2026 13:29:37 +0100
 From: David Laight <david.laight.linux@gmail.com>
 To: Christian Brauner <brauner@kernel.org>
 Cc: linux-fsdevel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>,
@@ -83,12 +83,12 @@ Cc: linux-fsdevel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>,
  linux-media@vger.kernel.org, wine-devel@list.winehq.org,
  linux-xfs@vger.kernel.org, io-uring@vger.kernel.org, bpf@vger.kernel.org,
  linux-mm@kvack.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] file: declare the FD_PREPARE() variable with
- __cleanup() directly
-Message-ID: <20260917132231.26314015@pumpkin>
-In-Reply-To: <20260917-work-file-fd_prepare-v1-2-b87534ca49f3@kernel.org>
+Subject: Re: [PATCH 4/4] file: make struct fd_prepare const and kill its err
+ field
+Message-ID: <20260917132937.5a15904e@pumpkin>
+In-Reply-To: <20260917-work-file-fd_prepare-v1-4-b87534ca49f3@kernel.org>
 References: <20260917-work-file-fd_prepare-v1-0-b87534ca49f3@kernel.org>
-	<20260917-work-file-fd_prepare-v1-2-b87534ca49f3@kernel.org>
+	<20260917-work-file-fd_prepare-v1-4-b87534ca49f3@kernel.org>
 X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -106,60 +106,38 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 
-On Thu, 17 Sep 2026 11:09:43 +0200
+On Thu, 17 Sep 2026 11:09:45 +0200
 Christian Brauner <brauner@kernel.org> wrote:
 
-> The whole CLASS_INIT() detour isn't needed. Use __cleanup() directly and
-> give the destructor a private name.
-
-It also makes the code enormously easier to read.
-
-David
-
+> FD_PREPARE() releases the fd as soon as the file expression fails. The
+> fd either holds the descriptor or the error. The separate field is
+> redundant. Make fd and file plain members and struct fd_prepare simpler.
 > 
-> No functional changes.
+> Callers of FD_PREPARE() get a const pointer to the guard. Simplify all
+> users as they can now easily access the trivial struct.
 > 
-> Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
-> ---
->  include/linux/file.h | 9 +++------
->  1 file changed, 3 insertions(+), 6 deletions(-)
-> 
-> diff --git a/include/linux/file.h b/include/linux/file.h
-> index 2b864f457211..926cc58d0b7f 100644
-> --- a/include/linux/file.h
-> +++ b/include/linux/file.h
-> @@ -146,9 +146,6 @@ struct fd_prepare {
->  	struct file *__file; /* do not access directly */
->  };
->  
-> -/* Typedef for fd_prepare cleanup guards. */
-> -typedef struct fd_prepare class_fd_prepare_t;
-> -
->  /*
->   * Accessors for fd_prepare class members.
->   * _Generic() is used for zero-cost type safety.
-> @@ -160,7 +157,7 @@ typedef struct fd_prepare class_fd_prepare_t;
->  	(_Generic((_fdf), struct fd_prepare: (_fdf).__file))
->  
->  /* Do not use directly. */
-> -static __always_inline void class_fd_prepare_destructor(const struct fd_prepare *fdf)
-> +static __always_inline void __fd_prepare_cleanup(const struct fd_prepare *fdf)
->  {
->  	if (unlikely(fdf->__fd >= 0)) {
->  		put_unused_fd(fdf->__fd);
-> @@ -199,10 +196,10 @@ static __always_inline struct fd_prepare __fd_prepare(int fd, struct file *file)
+...
+> @@ -191,35 +175,39 @@ static __always_inline struct fd_prepare __fd_prepare(int fd, struct file *file)
+>   * was allocated. If fd_publish() was called the fd and file are
+>   * published and cleanup becomes a nop.
+>   *
+> - * @_fdf: name of struct fd_prepare variable to define
+> + * @_fdf: name of the const struct fd_prepare pointer to define
+>   * @_fd_flags: flags for get_unused_fd_flags()
 >   * @_file_owned: struct file to take ownership of (can be expression)
 >   */
->  #define FD_PREPARE(_fdf, _fd_flags, _file_owned)			\
-> -	CLASS_INIT(fd_prepare, _fdf, ({					\
-> +	struct fd_prepare _fdf __cleanup(__fd_prepare_cleanup) = ({	\
+> -#define FD_PREPARE(_fdf, _fd_flags, _file_owned)			\
+> -	struct fd_prepare _fdf __cleanup(__fd_prepare_cleanup) = ({	\
+> +#define __FD_PREPARE(_guard, _fdf, _fd_flags, _file_owned)		\
+> +	struct fd_prepare _guard __cleanup(__fd_prepare_cleanup) = ({	\
 >  		int __fd = get_unused_fd_flags(_fd_flags);		\
 >  		__fd_prepare(__fd, __fd < 0 ? NULL : (_file_owned));	\
-> -	}))
-> +	})
->  
->  /* Do not use directly. */
->  static __always_inline int __fd_publish(struct fd_prepare *fdf)
-> 
+> -	})
+> +	});								\
+> +	const struct fd_prepare *const _fdf = &_guard
 
+Since the struct is only written by its initialiser, can't it just
+be 'const' ?
+
+David
 
