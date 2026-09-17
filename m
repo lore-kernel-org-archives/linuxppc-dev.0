@@ -1,52 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-27618-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27619-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C087DC982D9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2026 16:38:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 274A4C982D9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2026 16:39:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hm1fd3Xggz3048;
-	Fri, 18 Sep 2026 02:38:49 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789663129;
-	cv=none; b=X3EKWqhLD1PTA1i57IvlZXb2d3q0cPOk8qHR6NTj8UyuJHa+nAylJkgY2GivW0UYncon9uoffIHxrVpITvmB6fXLN7QPvUtZR+1GNw2R1WozD6B+te1YBz19CcmoNsWCYC/tKDD69YjuklurZiU5j3UIWwW71VjMIKIb8ojncSdo8wnIwYago5tJVxjbmZtkdsrCp5T/yXKiBoATD7oSUBaPnR64Zab38Xz3nkcjzyjcTDqrtR3d3my5nqVFStLIc2loseB8gJnzXCdS73K3X0ZsgyRUk7NkROKa/FzUtMaa8TJXt7zmc1LhYg0R292MCMUH1w5pVwf9qBUBw292xQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hm1gC68wzz30MY;
+	Fri, 18 Sep 2026 02:39:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789663159;
+	cv=none; b=QMqaTPDO+q+Zx2DuPxIi7tCb/b0jjlUe1Ink2KR3360OF/Mpqk4HKPyNwfOPeGalNVFXxn8heIw7rD9jgD9oLxy7ZtTcuawNJ7aD+mhVeZj0P9ijfxV2pW/Tgj/T6VVFYZohn2a+re5pW+j6qHyCo9e1Hls7KD7o9raRASItfFKXlmmrSBd2R3e55XZ+cPpH3p1XyjWFF9XDPZg3xLlUK73ZSSRbWvCJ3PEqLYHSnN2fOWltzYss8Hn6xbLh/JQHNR/pCyy6aX1UVJaXXami64VlwurWZCTL1YYxVbNaoKoMa1eFzYscLb9+FVt9YkLFdJntWePbPpPutCFQZGqgvQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789663129; c=relaxed/relaxed;
-	bh=lLYk3o3B0/wt5kKG7m+ibDGyo2yi3t47XmKybZiJ1Rs=;
+	t=1789663159; c=relaxed/relaxed;
+	bh=9WoUWUiccCZ5pmncdG/fVn1uDF622HEjGzqeAT5aHc8=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=dy/df2MMsI2n3N6OCTzzoXxCIoFnSK/LGMwkjpp/fQIVyflcrUwp7E31wrtNuosgyVVsha4rUNlUW5aS/ABuWoRdaMCbwzumcJNNRdsfTS6ouOGmVZylh8DTlBV+sXgM9CoiwlM4kq9O6xVlZOjcFvKNDA/UJ/SLpuDbLdmcT1vhy9hdFMX1HNRWFe98uloH4HcKc+xUEoVe1Jdd1BlST262ZneRcSGIFx/WnT9eWNqbJEyF6KijZ/X3ZX1Jk0FkeE2ChfiFGs8yrPVvatwYO67piNS1PKgAsHbgnSmcJApMnW7Z1mbo6Q/rTLVTr940I6JsJ5yIfZmu6k5Zv1gCsA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=byPXcWCB; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=d27VtgrecNAouNUzeyD/bBzFPk2tO2H4o3dDOffuruhfITmlThikTO+O+3UxODxBDCTBnXO323+wW9z3ThJu6xZwVI4n/Z1ZHIzIS+xxa4ok9QASDHKmrwwuaQvCixBQ/dpyibxtkpONccYnk275VoUz8FfuKHmuqRwAjRJeMZqk17OfYv9D6N53BW0HAuChYRct2u/bDhS3cbTSjriU4Rl54pNNh5nL0T322LVEMSaMbWT+9td5uh2V7S5EOFH4vxODgDoRoIDt8mlOtsPRlF0d5lJbI9Vh9W1M6/I2ETxDSrGUVzyzIVS8h9tRoyOoRIyuneGlkfCtgn5eHa7Uwg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JuzlckQR; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=byPXcWCB;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JuzlckQR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hm1fc4Tmjz2yr0
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 02:38:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hm1gC0Gtrz30Lw
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 02:39:19 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id A9E7660216;
+	by tor.source.kernel.org (Postfix) with ESMTP id 1839460230;
+	Thu, 17 Sep 2026 16:39:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E2FFA1F00898;
 	Thu, 17 Sep 2026 16:38:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1D0441F000FF;
-	Thu, 17 Sep 2026 16:38:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789663126;
-	bh=lLYk3o3B0/wt5kKG7m+ibDGyo2yi3t47XmKybZiJ1Rs=;
+	s=k20260515; t=1789663156;
+	bh=9WoUWUiccCZ5pmncdG/fVn1uDF622HEjGzqeAT5aHc8=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=byPXcWCBqQ2k/JxAm0NOmPWYbT6DeEbK75BKRpWKfzp7+QTfB6gD6Jwr5+NtnYFbF
-	 vANP/UXdPyvEOeRBtYogU/57/nulluJHybMAJOC35jvz4xD2wPVFBI91Aw+YsOC+sP
-	 6aNwYISVKfiJjWMFVvcA55zNh95pCsarrRKnXr7KWJWILUFd3HUcYcuPpIxzLPlFhY
-	 ycbrt4mv4ZS4RVqRxw1P4RGv/E/7Aff2Vt9c+5Yo5G9KPZl7lvt2riK4lE3Gcrd8f1
-	 cHDUqHsQw2H28rT4egz7snB+IabetMBAx5sqYD1rZ08IBRgGxzunW/DzNmOVsFjYOB
-	 FaMAt505vgJZA==
+	b=JuzlckQR6v/NzH0mtru1XZ7iqyxCxBjrCwCFsUHW609jPCf8U6sfhyPJkkpToF69f
+	 siJ7N2NXwspDpQ5dJIIyLpRq7MwSgE3R3mqg5OrgAtBYXQZyoeaTTM2m6j28o+aBbX
+	 I7FSiMwxg1YdjTyYq2YbYkTvH901cTdfYaUc365eMr8X4iPtaA7EQGoTbcu8Y7USWP
+	 bzvY4XKh3JpReezKG88DwuCuMK1EFa2lyia7xTBCesd95C4tljlOVn0ygfLWln5b8m
+	 HFBw3K+lt5pgVgVgyTxhxlY5CZ9zPDN2L69fXPf9G/mWuVci/9xx+4Tz25j31d67md
+	 EUctPDbCJlXcw==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Thu, 17 Sep 2026 17:22:40 +0100
-Subject: [PATCH v3 31/40] mm/vma: introduce vma[_flags]_is_persistent()
+Date: Thu, 17 Sep 2026 17:22:41 +0100
+Subject: [PATCH v3 32/40] mm/uffd: use predicates for userfaultfd checks
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,7 +62,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-31-4583d8a23bca@kernel.org>
+Message-Id: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-32-4583d8a23bca@kernel.org>
 References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
 In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -146,119 +146,75 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, 
  fuse-devel@lists.linux.dev, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3843; i=ljs@kernel.org;
- h=from:subject:message-id; bh=g+DP477oZGptEtdcgQ46pNPCZKGp7Qm9RMjCOcTExak=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLWCB8u6fNauyHdvmVJ5W6uovZ+1YSTvTFcx3vNJj9Ue
- 7bq3cw3HaUsDGJcDLJiiizPv4jvDxIJm9d5wd8NZg4rE8gQBi5OAZiIpxAjw8Wj14sVjnlLqEpf
- alzq8/uu46r80HPN9mFnBc0937Q0H2P4H2is/PxS+84+HRY92StXjVg7lJTdbzpWtfbv3MIVqFD
- GBwA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2289; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=RaKyg3GqRiVqHvw/UDaaHvGcpLhQwigi+RNlsL2zffs=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLWCB/OPPvVb8aRBlaPSTM6P2dc4rwuwDBzzqZoPX/27
+ rSo12wRHaUsDGJcDLJiiizPv4jvDxIJm9d5wd8NZg4rE8gQBi5OAZjIn1ZGhu/b9ztfWa90el/9
+ TetPvC5Nrbrrmvhtz33cqXTRuuHAHX9Ghi+axsy3Htr+lVOdM/mU0QoVzTe+TDpKZk8zz6fZScS
+ KswIA
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 
-Introduce vma[_flags]_is_persistent() for the purposes of identifying
-mappings that are persistent in the sense that bytes to the mapping stay
-there, and bytes read from the mapping are the same unless changed by
-actions taken by userland.
+Rather than directly checking VMA flags, use the newly introduced
+vma_is_kernel_owned() and vma_is_persistent() helpers in userfaultfd when
+assessing VMA suitability for userfaultfd and UFFDIO_MOVE.
 
-Kernel-owned mappings do not fall into this category, as their owner may
-change the contents without the user having initiated it, and nor of course
-does memory-mapped I/O.
+Update vma_move_compatible() so it's expressed in terms of VMA
+characteristics rather than arbitrary flags.
 
-We exclude fixed mappings as these are singled out as being unmergeable and
-so cannot be guaranteed to persist user data.
+Additionally, update the use of the deprecated VMA flag API when checking
+VMA_SHADOW_STACK_BIT.
 
-hugetlb mappings are fixed mappings, but their contents are entirely the
-user's, so they are explicitly carved out as persistent, as the MADV_DODUMP
-check already does.
-
-It excludes droppable mappings, which by their nature are ephemeral.
-
-Use this functionality to update the madvise MADV_DODUMP check to test for
-persistence rather than open-coding this.
-
-This replaces the VM_SPECIAL check which means it no longer checks for
-VMA_IO_BIT, however this is safe as we have established the invariant that
-only kernel-owned mappings may set VMA_IO_BIT, so we implicitly include
-these.
-
-No functional change intended.
+A VMA_IO_BIT check is no longer required but that is fine as a hard
+invariant has been established that only kernel-owned mappings may set
+VMA_IO_BIT so the check is now redundant.
 
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- include/linux/mm.h | 44 ++++++++++++++++++++++++++++++++++++++++++++
- mm/madvise.c       |  4 ++--
- 2 files changed, 46 insertions(+), 2 deletions(-)
+ mm/userfaultfd.c | 21 +++++++++++++++------
+ 1 file changed, 15 insertions(+), 6 deletions(-)
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 154fc25c9efa..0579e6afb19f 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1741,6 +1741,50 @@ static inline bool vma_can_merge(const struct vm_area_struct *vma)
- 	return vma_flags_can_merge(&vma->flags);
+diff --git a/mm/userfaultfd.c b/mm/userfaultfd.c
+index 949017e60608..ddf0a4a3d399 100644
+--- a/mm/userfaultfd.c
++++ b/mm/userfaultfd.c
+@@ -1754,10 +1754,18 @@ static inline bool move_splits_huge_pmd(unsigned long dst_addr,
+ }
+ #endif
+ 
+-static inline bool vma_move_compatible(struct vm_area_struct *vma)
++static inline bool vma_move_compatible(const struct vm_area_struct *vma)
+ {
+-	return !(vma->vm_flags & (VM_PFNMAP | VM_IO |  VM_HUGETLB |
+-				  VM_MIXEDMAP | VM_SHADOW_STACK));
++	/* uffd is generally incompatible with kernel-owned mappings. */
++	if (vma_is_kernel_owned(vma))
++		return false;
++	/* The shadow stack should not be written to by userspace. */
++	if (vma_test_single_mask(vma, VMA_SHADOW_STACK))
++		return false;
++	/* hugetlb mappings cannot be safely moved. */
++	if (vma_is_hugetlb(vma))
++		return false;
++	return true;
  }
  
-+/**
-+ * vma_flags_is_persistent() - Do the specified VMA flags imply that the VMA
-+ * contains persistent data?
-+ * @flags: The VMA flags to test.
-+ *
-+ * Persistent in the sense that - if you write bytes to the mapping - do they
-+ * stay written?
-+ *
-+ * If the kernel or a device could write to the memory independently of
-+ * userland, or the kernel could arbitrarily discard it, then it is not
-+ * persistent.
-+ *
-+ * Returns: true if the flags imply this VMA is persistent, otherwise false.
-+ */
-+static inline bool vma_flags_is_persistent(const vma_flags_t *flags)
-+{
-+	/* hugetlb is a fixed mapping, but its contents are the user's own. */
-+	if (vma_flags_is_hugetlb(flags))
-+		return true;
-+	/*
-+	 * MMIO mappings may not store what is written and may be changed by the
-+	 * device. Kernel-owned and fixed mappings may be changed by their owner
-+	 * without the user having initiated it.
-+	 */
-+	if (vma_flags_is_kernel_owned(flags) ||
-+	    vma_flags_is_fixed_mapping(flags))
-+		return false;
-+	/* Droppable memory is discardable by definition. */
-+	return !vma_flags_test_single_mask(flags, VMA_DROPPABLE);
-+}
-+
-+/**
-+ * vma_is_persistent() - Does the VMA contain persistent data?
-+ * @vma: The VMA to test.
-+ *
-+ * See vma_flags_is_persistent() for details.
-+ *
-+ * Returns: true if the VMA is persistent, otherwise false.
-+ */
-+static inline bool vma_is_persistent(const struct vm_area_struct *vma)
-+{
-+	return vma_flags_is_persistent(&vma->flags);
-+}
-+
- /**
-  * vma_kernel_pagesize - Default page size granularity for this VMA.
-  * @vma: The user mapping.
-diff --git a/mm/madvise.c b/mm/madvise.c
-index 0922d5f07a12..e15973292f94 100644
---- a/mm/madvise.c
-+++ b/mm/madvise.c
-@@ -1584,8 +1584,8 @@ static int madvise_vma_behavior(struct madvise_behavior *madv_behavior)
- 		new_flags |= VM_DONTDUMP;
- 		break;
- 	case MADV_DODUMP:
--		if ((!vma_is_hugetlb(vma) && (new_flags & VM_SPECIAL)) ||
--		    (new_flags & VM_DROPPABLE))
-+		/* Non-persistent memory cannot be dumped. */
-+		if (!vma_is_persistent(vma))
- 			return -EINVAL;
- 		new_flags &= ~VM_DONTDUMP;
- 		break;
+ static int validate_move_areas(struct userfaultfd_ctx *ctx,
+@@ -2146,10 +2154,11 @@ static bool vma_can_userfault(struct vm_area_struct *vma, vm_flags_t vm_flags,
+ {
+ 	const struct vm_uffd_ops *ops = vma_uffd_ops(vma);
+ 
+-	if (vma->vm_flags & (VM_DROPPABLE | VM_SHADOW_STACK))
++	/* Non-persistent memory is inherently not controllable by userspace. */
++	if (!vma_is_persistent(vma))
+ 		return false;
+-
+-	if (!vma_is_hugetlb(vma) && (vma->vm_flags & VM_SPECIAL))
++	/* The shadow stack should not be written to by userspace. */
++	if (vma_test_single_mask(vma, VMA_SHADOW_STACK))
+ 		return false;
+ 
+ 	vm_flags &= __VM_UFFD_FLAGS;
 
 -- 
 2.55.0
