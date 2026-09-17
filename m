@@ -1,78 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-27552-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27553-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EDDAFC982CD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2026 07:29:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43D02C982D2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2026 09:09:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hlnSF0K2qz30T2;
-	Thu, 17 Sep 2026 17:29:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789630140;
-	cv=none; b=d8xevn7OF3vU8KrYRbX0mPPYEWXHnnjsUhBLWRxFeHNmz5N1zRTWRkSvjPFsc4rTbBVZZWKnNygMrsxHbbyoi5Jw2jNO4ah/XcL97VCX1iGdBmH/TWXy2Rn1WysfyjfZLw7GrD3KvRCbBLmy3X0o1CMvvT4ELrzslUTf7ce04IOWusHh9dVeZ//NJtotbqZPgfhr6rfFVl6E7gYoxTstHgN/a1Faakp5HoQxb851/i/W/2YMqqtFJzFflEWbqv4/osqZoB9j3+Fxdu843dDXWoL27CLnlkzYAmv+6w9neA3ciPu0LOwmdnZUjNSukI8QE0gzhHtwERX/nAAZSjjKTg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hlqhh3t18z2xns;
+	Thu, 17 Sep 2026 19:09:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789636196;
+	cv=none; b=fftH1UFGP3YIExbzm1Jzg/FONeVz+VMPkMtTdAG5V37i8PfzWRksxr0AAuwtJeBNkgW51MFQbPUikH4+aqjaIi4eTp46q/KQtkZe959bKmgz4lFDBeeHyBKLIjlwFxdhMjIbaWs9fDh79e3ZUnqX4+SNMh2nk0WLfBLor1kra1JB39n2bAi7kx65CpVcWii1RU7vn1z3S9mk6eJjqoBbiy/hdWNWo65eJ/riJQksir5Zd4PNbMir73qsGZBDJIxFaOidLW+GfYIE5oxP7roORhLgdd1cy9+80PB+gKnxlRFhi9HW4WKfbad01mGXbT9dN6YjXNebJ+UejoeESCrFBQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789630140; c=relaxed/relaxed;
-	bh=VdNZZv1a826Zdg6V+tiU51bjXhpyBdIlBXrzq/0AnzI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=nSpDtNcnUZrbJYLYM084jZsEbz+VpNZnVr6xCkhpN3tmwqGceTmxn9go05P5ZYQNkvvFunF2n+ITQ74MxAaJJ0wcij17r4I4VRQFcei+nt4VC3hvAFVvfZDelNxhiJAy6W6oUJbBRf5WQWuvtZ1kDIB0XG6hIaaRFSZ1Z2l8OaegvmNLgBz0uIrV8q3DHR2pvA2Ekgfxw01df+4qO61wPX0vyljWcImx6hZs+YrXAdKlm1yhJPK5VKbpjMTPjVjV8CDEMvACGkdKtEYY0RSaSpSP6cLetjwkZjUs24aC5yLyvZQ0OhyUacRLu4K23n9cazU1E/sZxUJUJHS/bwmojA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UkhNciO+; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1789636196; c=relaxed/relaxed;
+	bh=5vMJLxb2WgC5tIFea55buznoCzbmE9D2zqOOZHr4b34=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=Ksx/Uc7ZVY5Vkfh2ZR99Krl+Ol2ylmIAKZhf9zEXvPzYJUN3FTPbUs5Q9l7XJ+y9DBe85Ps9iUmYBm47QuTM0ShfNZjDC+KpQ7/wI/Fo+/CczzXuKVhf4xlSRIgGLExDH2j3pCI/PsgixYFoHjwYpbgkE4NnOyklMOAilBR0ku4N+kNH+bF6RpO8Q8hoWW3rGrTq1SH9Y/t+Y3aYfi3RsTAAwaQCTOse7jT4Di2yCW4IRvcNQUgTBmWDnnjtrCzva4L6naVk/OQf51nwP8sSsZIzsyJ9GGUZd90fSggetRQxlxnxiAlFaTWP2bBGE15EuY90x29Uq0FkLxPXuo6ZLg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ru9GCvTo; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UkhNciO+;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ru9GCvTo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlnSC419Jz30Sx
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 17:28:58 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68H62Vhn543281;
-	Thu, 17 Sep 2026 07:28:48 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=VdNZZv1a826Zdg6V+tiU51bjXhpyBdIlBXrzq/0An
-	zI=; b=UkhNciO+SQ7+z/ksp+QUUc1mUfgD+jgXjuGYomU+qD9XtvHCyQixNZ+Is
-	k7QeoiXvbq0FcRuolmxkySQbP5lFtqcX7W65AbGekR5tXZbaYQN1jHoVviiK93JP
-	rV4jpAqvLV+pjiO45dXB/2rBetrYQ65+tpNMUOzxclvE/fnDgwUoNClsKpfIzh6z
-	5wIiUNQCZ7fmx6pfNbTUcSsIAE/9L5ts+Vy0YbbCU4nS+3M2oV3viPy1V5Se7fMa
-	9yKdOpNL6NsJl7nUJkDl9v5i3S899YMedgrtc2kB87QKfaYzgqLltrzPPGOnWtfZ
-	3mzVsq+ypWHVEl/la0a+Bw2oClziQ==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gmw5e8mvk-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 17 Sep 2026 07:28:47 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68H652MO2723209;
-	Thu, 17 Sep 2026 07:28:46 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gra3yrccv-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 17 Sep 2026 07:28:46 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68H7ShWr43778482
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 17 Sep 2026 07:28:43 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E988720043;
-	Thu, 17 Sep 2026 07:28:42 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CEE9420040;
-	Thu, 17 Sep 2026 07:28:40 +0000 (GMT)
-Received: from mac.bl1-in.ibm.com (unknown [9.123.14.178])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 17 Sep 2026 07:28:40 +0000 (GMT)
-From: Gautam Menghani <gautam@linux.ibm.com>
-To: maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au,
-        chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Amit Machhiwal <amachhiw@linux.ibm.com>
-Subject: [PATCH v2] KVM: PPC: Book3S HV: Free the queue pages in error path
-Date: Thu, 17 Sep 2026 12:58:38 +0530
-Message-ID: <20260917072839.78857-1-gautam@linux.ibm.com>
-X-Mailer: git-send-email 2.50.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlqhg3Pflz2xfP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 19:09:55 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 5984360204;
+	Thu, 17 Sep 2026 09:09:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 105E01F000FF;
+	Thu, 17 Sep 2026 09:09:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789636192;
+	bh=5vMJLxb2WgC5tIFea55buznoCzbmE9D2zqOOZHr4b34=;
+	h=From:Subject:Date:To:Cc;
+	b=Ru9GCvTohAXBBstl0Oex+tcL4dV1TFEds9pYcha8vwp3uXnuo6Bi4iRCjcMaYUc+X
+	 FRaoT2J2ypp7jwP9fPqAlO/8jTWjT4ksZdMcaLNFBxXAspLv+oGpF0LfPNTAi4FeRt
+	 4Q2/SIm6LLegLzIYwqwWdk/okWRmseIE3TDOfXCE5QKsTkdlIxWMOJJ4MgoXgzagyR
+	 D3G+JLehh1359FDR5O9sk1BkGQKTU/1oPN6qAJf25VfXR3/OX8XHyxlc7t7ueaI1N/
+	 lP61+MRN4zBiGK9O42ALPFdK1N7Cr5jEb6wskgo1qJAnOwL3dMe2iSuNiJ2MtPEWxZ
+	 rwbNFtO1doZmA==
+From: Christian Brauner <brauner@kernel.org>
+Subject: [PATCH 0/4] file: simplify and harden cleanup handling
+Date: Thu, 17 Sep 2026 11:09:41 +0200
+Message-Id: <20260917-work-file-fd_prepare-v1-0-b87534ca49f3@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,68 +60,71 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE3MDA5MyBTYWx0ZWRfXw7hnuAm4E65q
- JSmTvKoOSI8qMOmDs5I4MXgsETUhwXhYNrTLOJSux4CJAItuyxsdDb4IO83Grzf3EYXzvmmmaJ9
- C4ABghCsSC8YgT8JiScvJEbQHXJeIeK9Gu8AT3a2ziHZMSOa+wV6B+wp6cds0XGBFn4tokFMClJ
- oPZM1fd4osCqzkQnHDVXvAaK+uByMmt6kRbmlmQQDUlmm+rePcIpeVzaNMdnVPxy5WJtGPqZ53n
- C8Jx389Lj7KPOlEQ/4kMRihBUchNjL2JltvNMMLCcfVwBwjQQ4fmiXybdsC2uS4uMWVdBe+0SG6
- OArfEGYM3FJXtDyimXTRO/35rU+MvqNBUmTseya4C1ps/VnYi2Ntgbitn8nOkLt/qDehd2bKG6X
- eb7jxtImxEYv4bZC3b6QPyzdEAWf8OmPa6S4BysXdNa2sGtRr4z0vBLH4ba9ZnIEVKLnMe8KHcS
- 45fXnbwnisYcIeHzg/Q==
-X-Authority-Analysis: v=2.4 cv=E/NYNqdl c=1 sm=1 tr=0 ts=6aab96af cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8 a=GyUfv2pc0mdjDTKTsuAA:9
-X-Proofpoint-ORIG-GUID: AL1Y_dS7VFRyjEFhCF7oHHc8uiPmkCst
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE3MDA5MyBTYWx0ZWRfXyRd7tDtax9ow
- 9nGsB3yBWHYlSfdxvHYTDluLjC2aHcRV7lClAAQFPNolwdJsESV8vYhK7nA+3nezCO38udEDRpk
- f6rMAF2RbkAq4j8eB6j/FGIAstgjY68=
-X-Proofpoint-GUID: bCDU_DTWZv1kYWNumuMnMrWK46snfZlx
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-17_01,2026-09-16_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 lowpriorityscore=0 priorityscore=1501 spamscore=0
- adultscore=0 clxscore=1015 bulkscore=0 malwarescore=0 suspectscore=0
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
- definitions=main-2609170093
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/0WMywrCMBBFf6XM2oS20Gj8FRGZJBM7KmmZ+ILSf
+ zfRhctzuPcskEmYMuybBYSenHlKBbpNA37EdCbFoTD0bW9a223Va5KrinwjFcNpFppRSBEO1ph
+ gdmgHKNfiI7+/2cPxx/nhLuTvtVUXDjMpJ5j8WFWt6lrV/6quG1jXDxZPwXekAAAA
+X-Change-ID: 20260917-work-file-fd_prepare-ea5966d68a95
+To: linux-fsdevel@vger.kernel.org
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>, 
+ linuxppc-dev@lists.ozlabs.org, linux-gpio@vger.kernel.org, 
+ linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ freedreno@lists.freedesktop.org, linux-media@vger.kernel.org, 
+ wine-devel@list.winehq.org, linux-xfs@vger.kernel.org, 
+ io-uring@vger.kernel.org, bpf@vger.kernel.org, linux-mm@kvack.org, 
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ "Christian Brauner (Amutable)" <brauner@kernel.org>
+X-Mailer: b4 0.17-dev-db0b7
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2102; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=a/nFbwjEIOju3X1MIW/sqlGlbwK5FvdVNYvXKi7Xlgo=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWStXhfJMm/N0WLv17efbFU+rraYVfylV+3zo4W9JoeUt
+ rC+/ezh0lHKwiDGxSArpsji0G4SLrecp2KzUaYGzBxWJpAhDFycAnCRSYwMi+JkYraZzsnZOaXx
+ 0UUrBavd6ybar69ZsHjTIzYDdp1D3xgZrrx7/l/ZyezGU4H7pU9+Tpr0xWLmd7ErnyWOROy5EXb
+ vHB8A
+X-Developer-Key: i=brauner@kernel.org; a=openpgp;
+ fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 
-If the xive_native_configure_queue() call fails, the qpage allocated is
-not freed, which results in wasted memory. Fix this by freeing the qpage
-in the error path.
+The cleanup guards rely on unnecessary infrastructure and make the code
+more complicated to follow than it needs to be. Clean it up. Also shrink
+the struct a bit and get rid of the unnecessary error variable. We can
+just make this more ergonomic by using fdf->fd directly. Also expose the
+struct itself as const and hide the actual underlying local variable
+behind a UNIQUE_ID() named variable so we avoid risking shadow variables
+and polluting callsites. Code generation wise the outcome is exactly the
+same but simpler.
 
-Fixes: 5af50993850a ("KVM: PPC: Book3S HV: Native usage of the XIVE interrupt controller")
-Reviewed-by: Amit Machhiwal <amachhiw@linux.ibm.com>
-Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
+Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
-v2:
-1. Move call to free_pages() after error message. (Amit)
+Christian Brauner (4):
+      file: simplify FD_PREPARE()
+      file: declare the FD_PREPARE() variable with __cleanup() directly
+      cleanup: remove CLASS_INIT()
+      file: make struct fd_prepare const and kill its err field
 
- arch/powerpc/kvm/book3s_xive.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
-index 89a1b8c21ab4..0f8f851a3f8f 100644
---- a/arch/powerpc/kvm/book3s_xive.c
-+++ b/arch/powerpc/kvm/book3s_xive.c
-@@ -961,9 +961,11 @@ static int xive_provision_queue(struct kvm_vcpu *vcpu, u8 prio)
- 	 */
- 	rc = xive_native_configure_queue(xc->vp_id, q, prio, qpage,
- 					 xive->q_order, true);
--	if (rc)
-+	if (rc) {
- 		pr_err("Failed to configure queue %d for VCPU %d\n",
- 		       prio, xc->server_num);
-+		free_pages((unsigned long)qpage, xive->q_page_order);
-+	}
- 	return rc;
- }
- 
--- 
-2.55.0
+ arch/powerpc/platforms/cell/spufs/inode.c |  12 +--
+ drivers/gpio/gpiolib-cdev.c               |  18 ++---
+ drivers/gpu/drm/msm/msm_perfcntr.c        |   4 +-
+ drivers/media/mc/mc-request.c             |   8 +-
+ drivers/misc/ntsync.c                     |   6 +-
+ fs/eventfd.c                              |   4 +-
+ fs/eventpoll.c                            |   6 +-
+ fs/file.c                                 |   8 +-
+ fs/namespace.c                            |  12 +--
+ fs/nsfs.c                                 |   4 +-
+ fs/xfs/xfs_handle.c                       |   6 +-
+ include/linux/cleanup.h                   |   7 --
+ include/linux/file.h                      | 130 +++++++++++-------------------
+ io_uring/mock_file.c                      |   8 +-
+ kernel/bpf/bpf_iter.c                     |   6 +-
+ kernel/bpf/token.c                        |   6 +-
+ mm/userfaultfd.c                          |   6 +-
+ net/core/scm.c                            |   8 +-
+ net/handshake/netlink.c                   |   8 +-
+ net/kcm/kcmsock.c                         |   6 +-
+ 20 files changed, 117 insertions(+), 156 deletions(-)
+---
+base-commit: cee9395acd8043be0644b25c34bfa86623f2b935
+change-id: 20260917-work-file-fd_prepare-ea5966d68a95
 
 
