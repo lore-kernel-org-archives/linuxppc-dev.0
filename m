@@ -1,77 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-27544-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27545-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0D88C982C1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2026 05:41:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27377C982C1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2026 05:41:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hll3y1QGYz2yCr;
-	Thu, 17 Sep 2026 15:41:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:39::10"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789623007;
-	cv=none; b=T9Diz1x5wfvnKkG/1TBQIoZIRSxira3KmFhP3BMTjH+qitBolziSLVXZDl3Asr0cy4sMy0PaYI0CDbt0vFrLCmV2qNEUQVgErDe17vShjgy0LRWq3opc/it+Tg+H0R9tn4rqZQMRhDTu4We+gw+byQkaNdg8hQ8VYOZZXvQf4mSclSRs18EgvXv/nP1zmEuI6OnTW1oZeAkj+baBfy+p4Yqjo7lozaZHpg1xnm7Zae5uvMPYovBr5olY2di8KaS5gQKgPPXYsuUOsUtodToQvgqZiMxcSllKc9UNStGC94AV0s07r5R3DPMaIN15hLWRIeZ0Sz+AFh8XkTcXe4AXwA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hll434mH0z2yr0;
+	Thu, 17 Sep 2026 15:41:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:39::f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789623014;
+	cv=none; b=ZXU0KedlKSf4bhSyDM73bGbi1ruSgwVrvm88Y8ysJGARlxafhaXcRIyl9lPeQSvz7pQTCB/L7wTBAXYgE1ZfRtmejeL+WbdpIS6fHjAAlQCqbkJng5hVQoEUFTxDwoLSVJOxE+jG9jcC7ttnXRsmqbV60ya+c/PTRXWKQ4V4Z8CqCtY667eYpsr63ZO7oi/dNOrdeHO2UiEn8c5ZMXwH8yQXb474ulZOYc0avwrKihxJx5qdC/RJ6iabNR2MHZbNM5dCnknSsDqqs2/cAgQEUky7ZpIbjZJ8q79ZdUg2oD+dBSAb9NDPQieJe3CMb/Dnuv1YUUODJTF77l8DONH1vQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789623007; c=relaxed/relaxed;
-	bh=/iHoeiOn8M1Js0lz6hY05jc0JjGSYBNXCmk3v6q8ZOE=;
+	t=1789623014; c=relaxed/relaxed;
+	bh=ynKYarepbWl9Bt2lXEeL1/lRyqq80+H1joWy3Adf4T8=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=em7cwAcpIJlU1GyFDt3dWC4idSI4tAIR6Lcw5DZeVUGuKpgrGgvylATDGiYsHS2d+VyQ7lanZCM7/iL/558OcpBHs4m/WbRznBqLZlrJbzXVsocoy1RxqLUObRyosAT5LXro58DuxxQHCCN6ivy2P3hOI1OOdbOjsMBQUhCK7YUGjoPOpH0bDYgXFbyrWuBtkmrf0hpALyA4r6FBZry6LDu3nten0FrqLCJOF8LA5otX6agUKPhzdNWqlUemwzmTRzv+kRBubI7u6ZFo/We1IZDG93d/Y5coovEIbw+5fz/it6dUkeqV32ab9zB26mUuAs6GvoCaGGqJSD8m8D/RMw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=VxAoc9g5; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::10; helo=mail-pj2-x10.google.com; envelope-from=jiangwenxiaomi@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=Y/gaGBTsEPkYJHt5PEFepkc6eTngnQX2rAzxJRefxTt2i+NWMGXiklIV5fXxrbFpWnfifF6rKzW+k2YTke9Fh7RuKZqaD1NvHSyFEFhQCglT01gmOIkXiWKNCA95jXLdnShTTpt8PWMyB+x4Uo5j1n5vr657hCLg4X+s0SZMTmho7a8rfiSc0l6Iaj0maEHQ27bhVy+CSKy01Vz2xWTUr3v2ZVLGLHWS/PrrLIfGjRtod5wMoOylKeMmso5pa4OO4wF5DAdDeyTuxJ4582ZBJ38KPwTOuerNvBq4znf5bz2PDX7XoTKap+3aOi94A3GdUoqlm9dvLD2ygOsB1bBM5A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=VjBh6tPr; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::f; helo=mail-pj2-x0f.google.com; envelope-from=jiangwenxiaomi@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=VxAoc9g5;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=VjBh6tPr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:39::10; helo=mail-pj2-x10.google.com; envelope-from=jiangwenxiaomi@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj2-x10.google.com (mail-pj2-x10.google.com [IPv6:2607:f8b0:4864:39::10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:39::f; helo=mail-pj2-x0f.google.com; envelope-from=jiangwenxiaomi@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj2-x0f.google.com (mail-pj2-x0f.google.com [IPv6:2607:f8b0:4864:39::f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlkq24QgLz2xfP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 15:30:06 +1000 (AEST)
-Received: by mail-pj2-x10.google.com with SMTP id d9443c01a7336-2dd77300816so1079625ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 22:30:06 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlkq92bcgz2xfP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 15:30:13 +1000 (AEST)
+Received: by mail-pj2-x0f.google.com with SMTP id d9443c01a7336-2dd88a115c1so4476485ad.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2026 22:30:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789623004; x=1790227804; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1789623011; x=1790227811; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=/iHoeiOn8M1Js0lz6hY05jc0JjGSYBNXCmk3v6q8ZOE=;
-        b=VxAoc9g5GwsyxGYbIhL8eA66sYCadJ4RQAqAsna3bDWKXLmkZFEwiavVJh0kGjyyNj
-         vz4GrloRsJPXiIZnaOdgF8DjIVOW1dzJtf6Cd10awHEjSeos11YHhAKKtdXSsDGGQsJZ
-         6iVgT3SAncYmRXCodROgxdgWQg6RRDMPo+ezLYSxeqp8y8tu8mFC4/5pz7/EJRqfz7K7
-         Uimky2uc9ZixcTVV2D5+oKubPY8xOd+D/C97gSG25ewSQms4/2jMrDWtrJ5fuVfjr6T/
-         yI4LhOpbDE3dN81jBkVvb+HH9DMex79lm79N6E5p+uVPU5AbYpjIDvlwHGmlSMYDrXQd
-         Q5VQ==
+        bh=ynKYarepbWl9Bt2lXEeL1/lRyqq80+H1joWy3Adf4T8=;
+        b=VjBh6tPrQyCXroru0ZcbL/J81nlnNdblB2ZBmZX6aAWDIXEXc0kguX5ztXfK1KHHDI
+         cWKmaUi1ARtP3CPv/xYcpH4FMI0ep544PfM6P/QyzTX3aHQsPNDCKoHUDjqeQ2Dps+V8
+         IbZSYJW9msbyCgMZPM9+mjcr1SgbsG1HYFKD9+ZaExGwI/ZiAw61rlDEP/MGryda9XtT
+         wnJ6mLvtiX0FuuouJ4bK1/nxP5MhgovLY6LU8mGAYHpuG5IMlum+pGjed/VO2ZiTTEZd
+         IOmckTea9d+d6ZEciHsNsAYu1nqZdozLu0u7UG0NZx8N16KbAoN9prOC2kf5dB2kLV9y
+         AvhA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789623004; x=1790227804;
+        d=1e100.net; s=20260707; t=1789623011; x=1790227811;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=/iHoeiOn8M1Js0lz6hY05jc0JjGSYBNXCmk3v6q8ZOE=;
-        b=BxY8dDCVFbOkfxKzY8mIQxJt8owwRl+w6qWdLY0EnenYOBPwvnsBU/KfXyCIF4hzMp
-         Xs+/g8ZkBRskxeVPGpnrwLCfokQnTAQfZc9dqJPFNF9iSQ0jnHlurQHkILNQKE8GmdQx
-         PPssKuk5FOAMUKDT+RQEd8ZFxfr3POiFK3dyuKn/lbjSHPpPGf0VLJOO5U1d3Dl6dAgS
-         WTqQEo+9TmdPOjnQ3mIxk27cZhKSLOskzy88qIabWcPAVIutXI4XQTSNlCGfetVO2fFB
-         h+Q1IQ4LoyCAtzSIUurKn20fMPXjYgtncNa2RP8YxaQI/6Ny7eMkq0gJLjB9X3zdKNEN
-         FMSg==
-X-Forwarded-Encrypted: i=1; AKwUvBytcljRsjR59iPaMIPPQ9w1ZEbBGZNFQuVwWkDSwoMIdKlbrOawljHiXxJF/aqYcXkLgusFLAcqDuKaKTg=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++k1rkYj8ti58xKvlCtNOQrA8He0rIRFD4LZ0FvrPZP6eH/VmaqT
-	haZSuXen1z3UOfqx8YdxIZInVn77E9ZBBtp8w3BNfqMAxE2wVSQedzRv
-X-Gm-Gg: AYBFou1LkjApTvxRqXps0saW9SvqOhenmUGTQZ37/7CEW7M9BW3UKbahbkEBFMN6TLv
-	7dKnr/cubNJSOqvLCgxIhIcoBKZTmpRZnxHHs2nEIm4skJWeMcu9BLoQTJdxxPh3HGadqsnz4fU
-	L756spZDQAYSPQdiuXqm3Ffm4eYSILs06oMThKQeT5IvX0q/hZEiG6EEaOVELbjbN00AkykxO12
-	BRlE4fHYymhMnhg0qlu6d8R/Fq5DG90bQvse+dRyrnGxOYeUTMl6OIKd/FlY9Lhxt1wDhn4Qyae
-	iIPMulMxHCht8nmYSY2nVKubbfks7+u8fPS7uPufJK8Y5rdtAk2PrOO5qOI8Nke7VaKIEci2aaJ
-	F7D/YieoOktVDzTUQSMexPDxNkIzobTfabwd7Ejh2fM8j53wfgaQ9G8A1XOlXr6sNS4ubdYvdJg
-	J8Lb1vDEvPuzkqrneloaPgezJBvKpexVLFkFHRk1rJrfDZx0z4CyLvDY7gxVPiyVfzvXHWxugGY
-	UqRo7tEbVbi3ecPpYy8CAQ1KfE=
-X-Received: by 2002:a17:90b:5484:b0:39d:b57e:b47d with SMTP id 98e67ed59e1d1-39e35f809c5mr2777472a91.8.1789623004300;
-        Wed, 16 Sep 2026 22:30:04 -0700 (PDT)
+        bh=ynKYarepbWl9Bt2lXEeL1/lRyqq80+H1joWy3Adf4T8=;
+        b=RDE76Rd+6iY/Bjag7L7fq5yWJcAHiDOJSG5zbj6W4BHyREMTMZ3w7milUC/+U3Y6Tn
+         QuS+JLThOOIUySzkW+pAiuX6RI7lJsGHHIpigPC1hBNc6OCb0W0rM16HCNuhapvcApir
+         Gil9lLzpoBXHJz06XiEm7smWZkafsk/Yh9ZZwPxecPsL4gEMDPcICWJ0pBjHs88Y0b9c
+         bcajNDhHz4+KIAz3FQSDu8Ns+K60Gv2LUvtcsKQ612+4roQpHdN36VV13Z7YvrIK9dvf
+         g/JLq/Q8zFQmL3yxRxYE71y43+oB0N5JVS1DbH55Hsb7VPsYmGeQ8LDPpsuG4zNgLfGQ
+         gsvQ==
+X-Forwarded-Encrypted: i=1; AKwUvBzatxFv+5McNwLiuX9rZjyvyMfXoa4zn2pC8/FJcfFmUBNU0jN6837szjEUQ/keE2AoL/UBW4o6OofLbGU=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++lrzkgOkXBqCeCk6QvGB6mjt0S2Vxdypb52w75kTs+WyZQeocID
+	syz0M5Yld37DSTuAFhMYCmRdlE1YjdFz7yFFgGJ6PPDeXTHYlefXIK2H
+X-Gm-Gg: AYBFou1cUQre7BPX+Qf0D9zu4I/NoALj0Na+ERfI+poIaubfWUXfA6O1gUfalVI4zFz
+	I2B+47mcMV4l7aEUi5HpCWVQGeeWLGk292Y/mk9uaDj0Zgmo0elHknmqjlGn6+0PJGzpJBcdKNg
+	NFcSkYbRJ1ctFGsOghka8k8rgcjPMLJQ5ZQihQh/95QBQvlI4OusLbw4ZgPloqSF3NcYTM5ZQ99
+	7PFhIIQyQrj7vR0az4XGgg5FbofCzWWgqApRny7yQyuXPTLDZ0JzhZaIa7gqJXZM2MbDvAqrOTA
+	tA+BCL/+O/e+9s0Ls1xRUMRGyC2LkTzgm+0mExc294lXjFMBMmP9fPwxpxNQvOoNvxXBCXDemov
+	ap2cMVeWiIR6LT6qjXRuzPeHlhUcANXBxJUyNVdi4mfybl6bRls6m6LYmU5tRczdqTkqd3ISnKa
+	G6TbzwT9waF0fi0LAon2n6bLWdFVJaEx4oEnxS2Rne/EXDKNU7qBSmRwKdE4rQ1A0Vm/7uS/hg2
+	gsalob5Sw0QgjNZx+Z9dO+Xy4M=
+X-Received: by 2002:a17:90b:2803:b0:39d:ef3e:9035 with SMTP id 98e67ed59e1d1-39e1e324463mr17718864a91.10.1789623011402;
+        Wed, 16 Sep 2026 22:30:11 -0700 (PDT)
 Received: from mi-OptiPlex-7060.mioffice.cn ([43.224.245.234])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39e3abada87sm1955836a91.14.2026.09.16.22.29.58
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39e3abada87sm1955836a91.14.2026.09.16.22.30.04
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 16 Sep 2026 22:30:03 -0700 (PDT)
+        Wed, 16 Sep 2026 22:30:10 -0700 (PDT)
 From: Wen Jiang <jiangwenxiaomi@gmail.com>
 To: akpm@linux-foundation.org,
 	catalin.marinas@arm.com,
@@ -95,9 +95,9 @@ Cc: Xueyuan.chen21@gmail.com,
 	npiggin@gmail.com,
 	rppt@kernel.org,
 	ryan.roberts@arm.com
-Subject: [PATCH v8 03/10] mm/vmalloc: use pte_set_huge()/pte_clear_huge() for PTE-level block mappings
-Date: Thu, 17 Sep 2026 13:29:26 +0800
-Message-Id: <20260917052933.188679-4-jiangwenxiaomi@gmail.com>
+Subject: [PATCH v8 04/10] arm64/hugetlb: drop the init_mm special case in clear_flush()
+Date: Thu, 17 Sep 2026 13:29:27 +0800
+Message-Id: <20260917052933.188679-5-jiangwenxiaomi@gmail.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260917052933.188679-1-jiangwenxiaomi@gmail.com>
 References: <20260917052933.188679-1-jiangwenxiaomi@gmail.com>
@@ -118,142 +118,38 @@ Content-Transfer-Encoding: 8bit
 
 From: Wen Jiang <jiangwen6@xiaomi.com>
 
-vmap installs PTE-level block mappings by reusing set_huge_pte_at() and
-huge_ptep_get_and_clear() under #ifdef CONFIG_HUGETLB_PAGE. This makes
-the feature silently unavailable on CONFIG_HUGETLB_PAGE=n kernels and
-couples mm/vmalloc.c to HugeTLB internals it does not otherwise need.
+clear_flush() calls flush_tlb_kernel_range() when mm is &init_mm. This
+was added by commit 06fc959fcff7 ("arm64/mm: Support huge pte-mapped
+pages in vmap") because vmap called set_huge_pte_at(&init_mm, ...).
 
-Now that arm64 and powerpc/8xx provide pte_set_huge() and
-pte_clear_huge(), add the generic fallbacks next to the existing
-pmd/pud_set_huge() family and convert vmap_pte_range() and
-vunmap_pte_range() to the new helpers. The CONFIG_HUGETLB_PAGE guards
-around the block-mapping paths are dropped, so PTE-level block mappings
-now also work on CONFIG_HUGETLB_PAGE=n kernels, and mm/vmalloc.c no
-longer includes <linux/hugetlb.h>.
+Now that vmap uses pte_set_huge()/pte_clear_huge(), mm/vmalloc.c is no
+longer a caller of set_huge_pte_at() on arm64. The only remaining
+callers passing &init_mm are in arch/powerpc, which uses its own
+implementation. Remove the dead branch.
 
-The fallbacks exist only to keep the build working on architectures
-without PTE-level block mapping support. They are unreachable there:
-the callers only run when arch_vmap_pte_range_map_size() or
-arch_vmap_pte_range_unmap_size() return a size other than PAGE_SIZE,
-which requires an arch implementation. WARN_ON_ONCE() makes that
-explicit rather than silently doing nothing.
+No functional change.
 
 Signed-off-by: Wen Jiang <jiangwen6@xiaomi.com>
 ---
- include/linux/pgtable.h | 29 +++++++++++++++++++++++++++++
- mm/vmalloc.c            | 19 ++++++-------------
- 2 files changed, 35 insertions(+), 13 deletions(-)
+ arch/arm64/mm/hugetlbpage.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
-index cdd68ed3ae1a9..349ced999f959 100644
---- a/include/linux/pgtable.h
-+++ b/include/linux/pgtable.h
-@@ -2134,6 +2134,35 @@ static inline int pmd_free_pte_page(pmd_t *pmd, unsigned long addr)
+diff --git a/arch/arm64/mm/hugetlbpage.c b/arch/arm64/mm/hugetlbpage.c
+index 8e799c1fe0aa6..ce247b06fe03d 100644
+--- a/arch/arm64/mm/hugetlbpage.c
++++ b/arch/arm64/mm/hugetlbpage.c
+@@ -206,10 +206,7 @@ static void clear_flush(struct mm_struct *mm,
+ 	for (i = 0; i < ncontig; i++, addr += pgsize, ptep++)
+ 		__ptep_get_and_clear_anysz(mm, addr, ptep, pgsize);
+ 
+-	if (mm == &init_mm)
+-		flush_tlb_kernel_range(saddr, addr);
+-	else
+-		__flush_hugetlb_tlb_range(&vma, saddr, addr, pgsize, TLBF_NOWALKCACHE);
++	__flush_hugetlb_tlb_range(&vma, saddr, addr, pgsize, TLBF_NOWALKCACHE);
  }
- #endif	/* CONFIG_HAVE_ARCH_HUGE_VMAP */
  
-+/*
-+ * PTE-level block mappings for vmap.
-+ *
-+ * pte_set_huge() only has to be implemented by architectures whose
-+ * arch_vmap_pte_range_map_size() can return a size other than PAGE_SIZE.
-+ */
-+#ifndef __HAVE_ARCH_PTE_SET_HUGE
-+static inline void pte_set_huge(pte_t *ptep, unsigned long addr,
-+				phys_addr_t phys, pgprot_t prot,
-+				unsigned long size)
-+{
-+	WARN_ON_ONCE(1);
-+}
-+#endif
-+
-+/*
-+ * Likewise, pte_clear_huge() only has to be implemented by architectures
-+ * whose arch_vmap_pte_range_unmap_size() can return a size other than
-+ * PAGE_SIZE.
-+ */
-+#ifndef __HAVE_ARCH_PTE_CLEAR_HUGE
-+static inline pte_t pte_clear_huge(pte_t *ptep, unsigned long addr,
-+				   unsigned long size)
-+{
-+	WARN_ON_ONCE(1);
-+	return __pte(0);
-+}
-+#endif
-+
- #ifndef __HAVE_ARCH_FLUSH_PMD_TLB_RANGE
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
- /*
-diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index bb6ae08d18f58..025b3a848d564 100644
---- a/mm/vmalloc.c
-+++ b/mm/vmalloc.c
-@@ -38,7 +38,6 @@
- #include <linux/rbtree_augmented.h>
- #include <linux/overflow.h>
- #include <linux/pgtable.h>
--#include <linux/hugetlb.h>
- #include <linux/sched/mm.h>
- #include <asm/tlbflush.h>
- #include <asm/shmparam.h>
-@@ -98,7 +97,7 @@ static int vmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
- 	pte_t *pte;
- 	u64 pfn;
- 	struct page *page;
--	unsigned long size = PAGE_SIZE;
-+	unsigned long size;
- 
- 	if (WARN_ON_ONCE(!PAGE_ALIGNED(end - addr)))
- 		return -EINVAL;
-@@ -119,17 +118,12 @@ static int vmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
- 			BUG();
- 		}
- 
--#ifdef CONFIG_HUGETLB_PAGE
- 		size = arch_vmap_pte_range_map_size(addr, end, pfn, max_page_shift);
- 		if (size != PAGE_SIZE) {
--			pte_t entry = pfn_pte(pfn, prot);
--
--			entry = arch_make_huge_pte(entry, ilog2(size), 0);
--			set_huge_pte_at(&init_mm, addr, pte, entry, size);
-+			pte_set_huge(pte, addr, PFN_PHYS(pfn), prot, size);
- 			pfn += PFN_DOWN(size);
- 			continue;
- 		}
--#endif
- 		set_pte_at(&init_mm, addr, pte, pfn_pte(pfn, prot));
- 		pfn++;
- 	} while (pte += PFN_DOWN(size), addr += size, addr != end);
-@@ -368,25 +362,24 @@ static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
- {
- 	pte_t *pte;
- 	pte_t ptent;
--	unsigned long size = PAGE_SIZE;
-+	unsigned long size;
- 
- 	pte = pte_offset_kernel(pmd, addr);
- 	lazy_mmu_mode_enable();
- 
- 	do {
--#ifdef CONFIG_HUGETLB_PAGE
- 		size = arch_vmap_pte_range_unmap_size(addr, pte);
- 		if (size != PAGE_SIZE) {
- 			if (WARN_ON(!IS_ALIGNED(addr, size))) {
- 				addr = ALIGN_DOWN(addr, size);
- 				pte = PTR_ALIGN_DOWN(pte, sizeof(*pte) * (size >> PAGE_SHIFT));
- 			}
--			ptent = huge_ptep_get_and_clear(&init_mm, addr, pte, size);
-+			ptent = pte_clear_huge(pte, addr, size);
- 			if (WARN_ON(end - addr < size))
- 				size = end - addr;
--		} else
--#endif
-+		} else {
- 			ptent = ptep_get_and_clear(&init_mm, addr, pte);
-+		}
- 		WARN_ON(!pte_none(ptent) && !pte_present(ptent));
- 	} while (pte += (size >> PAGE_SHIFT), addr += size, addr != end);
- 
+ void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
 -- 
 2.34.1
 
