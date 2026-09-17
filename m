@@ -1,53 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-27599-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27600-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CED38C88E72
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2026 16:29:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D17BC982D9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2026 16:29:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hm1RT3zhDz2y8G;
-	Fri, 18 Sep 2026 02:29:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789662549;
-	cv=none; b=JE0s8xZHufhN8pVU/5bA7Sg3JTzSPh23+pVI62s3g8QObXOMHykPEaOrd4NaYiTrCZY9VYYu9m9CbQXD6jBcuwTDDkwGgjz5zuDOh+KDUZfNBMcQmqfhwYyR5tZcoSg6zrGQ3Ttg7/Q/cF1z3iUuiOpVn324o8lxhA1uA2Z7vzUgoMok63gCk9wnmfbFN8B+7/20k7JlpRN6MqDuM5cgdggJ23TpvLudaWKd5xcZrDXix6CysrAMJ67214B6H5lhhB61/fYEpckjGuvpJX/qjbSxqXLKxeP4YO3NoyeU96vNxb9clnQ2fkWKltH18rBTUOGMBChDoT8lGOpiNocqOw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hm1S42R4Fz2yD3;
+	Fri, 18 Sep 2026 02:29:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789662580;
+	cv=none; b=CmQr8OV0ZQItIVmT/eilGJnZ7gd5ZiUvkcvSyuBBa6j0Mwp10ZwyNEEkp1J3OJAS7nzWcDl1wOm66GNtsQHrQBeSOjxHm16xpcHxckp92bWO2xcNCUup0ZNo5Vn6S8MaBfeq827rm5Oa567KHPnJxbrluOE9NSbA02iKSmnPkRdxv5/RO99Vj2zKRiQMIqwtK0kpnC4ZgZrVhbp8Kt+3lVIbv3DD96NEjpr+8vuVokRSFgFNz3oKZQZ1FJ9ROB8iBuilCOqbW47ew9QHX7MbfqQId84WifoKOX1WY7+ofEJRcIowGrPxNsrxxctU1h1ltK6dt9r0ilLrv9KZ5hsOxw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789662549; c=relaxed/relaxed;
-	bh=qivR91Lb5/7S8p3yp1PCCxRNqvAnmMyhYSRWXpH7C6E=;
+	t=1789662580; c=relaxed/relaxed;
+	bh=Ht1E3XYrT6zNGxe7BXRz6LPnDrSfYBDlq1F1i7I+270=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ltVRj6fRyyjUfqkSWTT2hWGu809+PskIdQkBPDQ3gCpjt7TJqZUK6xOq9nTe9cymTEvBw0diCxEB0DlUeeR3cmNgzuDzc2uqrQurvD6uHgNNyGZjU0E73GSPRz0/hVR8h9+dgsBNcmxSZUeymbRglAB/t01YpqkYja7rvPlMnoKesmY3+k7/zukoZn+JySPPLC242BqDO42FoknWr/aqlLA+SWhdiGFT58YRevN14geV9Skn6Pp5CnMUPkqkkI3oY579TYb/SfNGn0i99otUsUQit+iK1twj7dVerA7CBABrY47o3jNBNnMRYazNWCxN38CbkbtPyK43+Uu/+8wIeA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HypnJxB5; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=BK3ub9Yc6k8XJFu+OpSaUbgUUIHT4Fez+KhEJy9AgDTysA1maDSGGqyuBPevZN7VV7gchONott1KAM7p7+ai+bw/stIQz+Jl9spjyxRRx+MgB/2Y6d0ARBbtkARFBEDL/VqoMaURi7hoDJ3LYwLRi0HUgD7k1x1PVnV5BlkXm5zpvCHnJtPg9DbOcro9l39eT0gHOh/0tsfPPX3fgcRDMxxyu+hXMTvpmPmGjDvEbjHTGaJE+g3yUFSfMztdIsLAngT2vkgwDWtjlRpoH1N6RlMTNONIchGtv75FoFJZZDbbCWKSts5tZ5jbxqU/hRqQmR77b9CeD03n2/B8eCpzFw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dbRB47of; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HypnJxB5;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dbRB47of;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hm1RS4qxVz2xfB
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 02:29:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hm1S33Mwwz2y8G
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 02:29:39 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id B360241858;
+	by tor.source.kernel.org (Postfix) with ESMTP id 63B42600D4;
+	Thu, 17 Sep 2026 16:29:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 220F71F00893;
 	Thu, 17 Sep 2026 16:29:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9CE821F00898;
-	Thu, 17 Sep 2026 16:28:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789662546;
-	bh=qivR91Lb5/7S8p3yp1PCCxRNqvAnmMyhYSRWXpH7C6E=;
+	s=k20260515; t=1789662577;
+	bh=Ht1E3XYrT6zNGxe7BXRz6LPnDrSfYBDlq1F1i7I+270=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=HypnJxB5nIvhdu/4lyn5V2mzaHKgTstFT3NwAe1e5+ZqghSmo2Hj7mjOK5CoYdPTx
-	 PARyOmBlb+YzHiiTbiLYqT+yzZYIAG1LQnY4c8bg49GVruVJRAH7a6NjefXjko9YKe
-	 9r3cgnvRiFC1xOnahoCdXU8zbumCPYOfyFGs4CNmNaflrU5KmEGeqQTv6WftryliCv
-	 CRL4rfF58Fu402gQsvBPnH8MGc7bjyLyzMq12dc+KlyivUJWTpRdYhUPAbO0MiuYkb
-	 PKD1LFiaRtReUNXpDsNBS9Zzu0GWIjj5xX+3hcbxhXXBLaGJKY68gTeOSmcn1LIJG2
-	 /RIfIU50StAcQ==
+	b=dbRB47ofHZr0h32dLtHj8gOYSjObkQRAfNeh3WPpPefyZxKOj7REK2DmcOKSOXO4f
+	 r9l6XNryKF+hpjo+7ObcmU6U7x0dvAHPHf6EiKNhNWj06W9kIeQAdpcIRhTWo4QMl0
+	 RLrIJyu85upL/D9BkeJtRpjYmwYQ+tu0uLxXZqU3delH3fds8ajC/dRzaFuPXut4QI
+	 XIefC9t+6YJl/LvCrT+V9rJkGbY/z2ONmNS5BphoYawKorecqpAvg6Dk9QmITZDy0M
+	 X8mhMaBvKWEtlGv4TgAQKXieOEDeNXteg9TAK+d+4eMe8FYZ7ggCJ4YCtWPX8ir6Wv
+	 ykGgfMLJZ62sg==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Thu, 17 Sep 2026 17:22:21 +0100
-Subject: [PATCH v3 12/40] selinux: reject writable opens of policy file,
- drop mmap shared/write check
+Date: Thu, 17 Sep 2026 17:22:22 +0100
+Subject: [PATCH v3 13/40] ALSA: pcm: use vm_insert_page() to map PCM status
+ page
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-12-4583d8a23bca@kernel.org>
+Message-Id: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-13-4583d8a23bca@kernel.org>
 References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
 In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -145,67 +145,98 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
  kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, 
- fuse-devel@lists.linux.dev, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+ fuse-devel@lists.linux.dev, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, 
+ Takashi Iwai <tiwai@suse.de>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1924; i=ljs@kernel.org;
- h=from:subject:message-id; bh=X46vXp5xg8nLI6IG+V/Ab12M7pEZi9uJqKdEh54QAaM=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLWCB/4+lNC4kLT9Xfr2cNNWOx/bZBxCA3lc/ddrff0/
- HctqbfsHaUsDGJcDLJiiizPv4jvDxIJm9d5wd8NZg4rE8gQBi5OAZiIwDKGn4wMy14xmso2pPDv
- D3n68b3oKp3jKyvnaKX67T30WCys7jQjw36LHf1Lmqed1JoeuUrratDu63IFu0+J/2G76s1hYfO
- rihkA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2769; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=BufAYcKoxP4rPy82Onp5UAmN13VcupWKa3H7JCJQDTQ=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLWCB8ocPh1OGSVz5SG6f3iG/++71lddiNl9w1Vz6vib
+ vJ97/JCOkpZGMS4GGTFFFmefxHfHyQSNq/zgr8bzBxWJpAhDFycAjCRzR4M/8PXr92WnfMhnff8
+ Ky3lLw5LZ8cV/t7hJLpj/TOrqe6OwZUM/91rC3Tu9qnN7fy2I/G/RaLPxDL7E0EWF1987fxwr/F
+ wJzsA
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 
-The policy file has no write method and is exposed read-only (S_IRUGO in
-selinux_files[]), yet sel_open_policy() performs no open mode check, so a
-CAP_DAC_OVERRIDE caller can open it O_RDWR. Reject FMODE_WRITE at open, as
-kernfs does.
+There's no need to keep a fault handler around for this, instead map on
+mmap.
 
-The file can then never be mapped with FMODE_WRITE, so do_mmap() always
-clears VM_MAYWRITE and VM_SHARED for MAP_SHARED mappings and the VM_SHARED
-check in sel_mmap_policy() cannot be reached. Remove it.
+While we're here, rename area to vma to be consistent.
 
-This also stops sel_mmap_policy() clearing VM_MAYWRITE on a mapping that is
-neither a PFN map nor a mixed map, ahead of the core enforcing that only
-such mappings may do so.
+This correctly makes the mapping a mixed map mapping.
 
-Acked-by: Stephen Smalley <stephen.smalley.work@gmail.com>
-Reviewed-by: Jann Horn <jannh@google.com>
-Acked-by: Paul Moore <paul@paul-moore.com>
+This works towards establishing the invariant that only PFN mapped or mixed
+map mappings may clear the VM_MAYWRITE flag. The status page mapping clears
+VM_MAYWRITE, so it must be kernel-owned; the control page mapping remains
+writable and is left fault-based.
+
+The assumption is made that the struct pcm_mmap_status structure is at most
+a page in size, which is asserted as a build bug.
+
+This is safe to assume, as the size of the structure is 56 bytes at most.
+
+Acked-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- security/selinux/selinuxfs.c | 11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+ sound/core/pcm_native.c | 38 +++++++++++++-------------------------
+ 1 file changed, 13 insertions(+), 25 deletions(-)
 
-diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
-index c7d91476971c..545a6f89f9e7 100644
---- a/security/selinux/selinuxfs.c
-+++ b/security/selinux/selinuxfs.c
-@@ -340,6 +340,9 @@ static int sel_open_policy(struct inode *inode, struct file *filp)
- 	struct policy_load_memory *plm = NULL;
- 	int rc;
- 
-+	if (filp->f_mode & FMODE_WRITE)
-+		return -EACCES;
-+
- 	rc = avc_has_perm(current_sid(), SECINITSID_SECURITY,
- 			  SECCLASS_SECURITY, SECURITY__READ_POLICY, NULL);
- 	if (rc)
-@@ -424,14 +427,6 @@ static const struct vm_operations_struct sel_mmap_policy_ops = {
- 
- static int sel_mmap_policy(struct file *filp, struct vm_area_struct *vma)
+diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
+index 62324282fcae..c98fb3df14f3 100644
+--- a/sound/core/pcm_native.c
++++ b/sound/core/pcm_native.c
+@@ -3760,39 +3760,27 @@ static __poll_t snd_pcm_poll(struct file *file, poll_table *wait)
+ /*
+  * mmap status record
+  */
+-static vm_fault_t snd_pcm_mmap_status_fault(struct vm_fault *vmf)
++static int snd_pcm_mmap_status(struct snd_pcm_substream *substream, struct file *file,
++			       struct vm_area_struct *vma)
  {
--	if (vma->vm_flags & VM_SHARED) {
--		/* do not allow mprotect to make mapping writable */
--		vm_flags_clear(vma, VM_MAYWRITE);
--
--		if (vma->vm_flags & VM_WRITE)
--			return -EACCES;
--	}
--
- 	vm_flags_set(vma, VM_DONTEXPAND | VM_DONTDUMP);
- 	vma->vm_ops = &sel_mmap_policy_ops;
+-	struct snd_pcm_substream *substream = vmf->vma->vm_private_data;
++	const unsigned long size = vma->vm_end - vma->vm_start;
+ 	struct snd_pcm_runtime *runtime;
+-	
+-	if (substream == NULL)
+-		return VM_FAULT_SIGBUS;
+-	runtime = substream->runtime;
+-	vmf->page = virt_to_page(runtime->status);
+-	get_page(vmf->page);
+-	return 0;
+-}
++	struct page *page;
  
+-static const struct vm_operations_struct snd_pcm_vm_ops_status =
+-{
+-	.fault =	snd_pcm_mmap_status_fault,
+-};
++	BUILD_BUG_ON(sizeof(struct snd_pcm_mmap_status) > PAGE_SIZE);
+ 
+-static int snd_pcm_mmap_status(struct snd_pcm_substream *substream, struct file *file,
+-			       struct vm_area_struct *area)
+-{
+-	long size;
+-	if (!(area->vm_flags & VM_READ))
++	if (!(vma->vm_flags & VM_READ))
+ 		return -EINVAL;
+-	size = area->vm_end - area->vm_start;
+-	if (size != PAGE_ALIGN(sizeof(struct snd_pcm_mmap_status)))
++	if (size != PAGE_SIZE)
+ 		return -EINVAL;
+-	area->vm_ops = &snd_pcm_vm_ops_status;
+-	area->vm_private_data = substream;
+-	vm_flags_mod(area, VM_DONTEXPAND | VM_DONTDUMP,
++
++	vm_flags_mod(vma, VM_DONTEXPAND | VM_DONTDUMP,
+ 		     VM_WRITE | VM_MAYWRITE);
++	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
+ 
+-	return 0;
++	runtime = substream->runtime;
++	page = virt_to_page(runtime->status);
++	return vm_insert_page(vma, vma->vm_start, page);
+ }
+ 
+ /*
 
 -- 
 2.55.0
