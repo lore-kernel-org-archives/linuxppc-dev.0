@@ -1,95 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-27568-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27569-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43CD1C982CF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2026 12:29:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4CEFC88E72
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2026 12:50:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hlw7D5m4cz2y7Y;
-	Thu, 17 Sep 2026 22:29:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:31::10"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789648184;
-	cv=none; b=Dr46YNSZBi91BzOk2KRK3Fzkzm2x+qoj2ZS5y/MwlFtTRry/xdeVhCZPqUHMeLwF+mGHU75jQYRKHUmtmp+OHfZFEjU+oYfQc5VV51o2FZ2dDI2BuRl2v+aTkdB7hALJ5bgTAm7g2OvtbLLifbvMkv/WcsTUF3sV4jg+iZG3fCTXGTgkx04Ugn5uGIr/qRIn0vQO/6LaVJWiK/2fmwBykAw/9Sxujzgmc3D1eyMGRr5of99t2e3Bkz4JGNb71Or3kQNcuTPnc6KjpZ5pavT0u+sIiuUnWl3S6tpWZHrDmIVItQ/FkT6+LE7T+JZ6HYmd9WIVD2SVNgiRYCUV89NPUw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hlwbK1jXxz2y7Y;
+	Thu, 17 Sep 2026 22:50:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789649437;
+	cv=none; b=dyBXhYIfQbYzvaL2to416CPyHE5FRK6ZQgkBkVJ3zEAy1DJOghUfmTKOwR/fP911bd6T1//1oy31kiBl1yT8XFSdAZq3gsnJtgeyeH4JmgYXGql09JEDedk0gejOyVhaYaaw4/z0lT0vkq0G7QBdzsrab2/OFiYijz9AoDpZFxyNy/CciOdeVZePw6Pp0DzDVE7YUdK2oq5ZBp2AyVjx3RfpDsPxnlozMRwfawfJuRX1DawR3maW5AdkuC//PFt+CF3Ll3WfPvkhiPnXJJj/CufazHRpzPJOPHCSEGfD71DRC1i1qzf4n6r9rPC7OIjRBUWdlFr4UzG1g7JwWbv5pw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789648184; c=relaxed/relaxed;
-	bh=Dtz+Uqi8FvhezfQGwgUreP+CufNocr9p+NqbDN0Xcok=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=AFLvb9dc3/zwBXPRYuX6Gu+/usjyNXbFkKV4NPwSxoZjurtNLw0TPC/Kz8nmsBMIKpWnlQta9h6jr/tMSgiJMg0VfVVOPbPPGOljK7kapbDYYDXJroAFxDz6G+gy1oQw75ERNyA0ZK663GXywcW+tG5e7FlKdZg/GlZ2XPFsu7O/2QC2KUdOvGeFEw5kziZAm6E+mxXfHOp0cNnSw7SVVVlhlHhNY5p7KATBCbCtmdHOvinO2CJOIHe17sdJNsp+ZTwudgfWvFAyxtc4H+hysf3AJJg6jDqPkQVXXz8RRkBio0+e0i3WsLpjnTR2du1HCCSVe9WCXTUDf1JQ4iDv0g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=aOBmcDXf; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:31::10; helo=mail-wm2-x10.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1789649437; c=relaxed/relaxed;
+	bh=aHTNssIP8WODe0+NiptBTJ7rKksQCSqusDyDP2cCNXM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=MT2raQTZjaGbYcFPYReo2wHjB49nyNwVcayoaLq38QfGlXM2YCi6bgIg5iI9R59Utx1MFM/1Yxz8nq8PBG9pzwNS3h/nE4CDsR/m9IzlrNg3zlfFKXSai//aE3p5CzBWLpl7cuIkwDbKHWsuAhREl/+ZTelNeyLM7Jeo53c0bJ+oQBI2ceVgE0Aj/3YA0jTITVUc3IVTrjBcPZwK5dANZRNd6WlZpagiQWDuCv/gnueETByQjkJ1I3qqDL20pqbfLx31Nt88plhRWjGgkxn8d4ko1CPDh1bJCjl/xOdX0PbctZY3Le7NeYmkgLM8vPEentNY/D1nwqZ1hGJwDyZbFg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=kYgtsls7; dkim-atps=neutral; spf=pass (client-ip=192.198.163.5; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=aOBmcDXf;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=kYgtsls7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:31::10; helo=mail-wm2-x10.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm2-x10.google.com (mail-wm2-x10.google.com [IPv6:2a00:1450:4864:31::10])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.5; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlw7C5gPxz2y2Q
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 22:29:42 +1000 (AEST)
-Received: by mail-wm2-x10.google.com with SMTP id 5b1f17b1804b1-49cd5462b69so4683605e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 05:29:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789648180; x=1790252980; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=Dtz+Uqi8FvhezfQGwgUreP+CufNocr9p+NqbDN0Xcok=;
-        b=aOBmcDXfqe/i4RthwwvjfMiExqrcVeeblI9BRivXMeBujXf728BBuGlZPWS5E7bddz
-         KnjOTzjrVii5QlrEcwje3u05kQ9eA51j2yMWDKURxUH/d1hb5hWtrJY1g3F8e/HnPzMc
-         JS0mhmBtjSdhXq6higExW1YkE2DtExjCtAL55iWNHcHneUuOfgIKwxpwQ2kNxP3VrnAH
-         6yHUHypr0qzR9H/57GDikzE/1gurDrXK9jgr0p4Xu+uRPk8zRUge8CQF+fMbwBZ8cPzK
-         NatQamvS+15OOmFOt7bmn+QRqfEHvQifoC4HUlX3PC3D5hBLefO/LqviWbwFbou2LZsP
-         1O/w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789648180; x=1790252980;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Dtz+Uqi8FvhezfQGwgUreP+CufNocr9p+NqbDN0Xcok=;
-        b=aQuJbSj7GTQueVrQ04H6UClwIkzdudYN5aSq73iCpJBf5lHy1MlSq52Ye3tMz1urkd
-         81NcySO1OUHpvtfhfJCfCv0Zd6lH38ye1aeM6NgSYAL1yEXF83NhMFBzGQqmkVbVjfG4
-         SMJXrgSxIdLLOIaTBFd/cE2ci2JGFbVQLVyeXTijcUmtTKKN5A2UpehwPbRervm9Um/N
-         XxtiZp8PWAT8wpULJsfKt38XlJWwYTAFIPv88++9IOotGYopoIgVxafPH0DvM/PqgkH+
-         bQC5ILzKBt1BIa6SyCx9Bh33HsUmv5n6ibOyN4lPRBlwrLjna5QtovcSxkxUMNxVdn3j
-         W8Wg==
-X-Forwarded-Encrypted: i=1; AKwUvBwOE9KoCs95FlmXziQLdY8dR3VxxNKxWU/w8Q5sjEJzz9DSncbBI+Fm6QLEfvqQ0SeJvwDbTPJ2SUnH+w8=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++kAUS6WbIhWlZaolQvaKBpUunHA0KbuE7fCO8B510F1k6AIEylm
-	dBzOURawZj4vV340o41X6LTNsOmD3+oLCJI8xAX3nA42BASQCy4wss8+
-X-Gm-Gg: AYBFou1kXz1GDjdkz70vtG5nkU9FOVPUszQbzqZvDYlwxaurJqJymsDyUqrSKyiriO6
-	lamIdyJ5fLJSe2JzSDNiDsZpkuZE8kbXac8/QEfwkSan2BTIaxZbf/UP1jvAWASpTv6Rb8zpGpY
-	egU1Wb44f1MW2/7lic1GV7EC4oAFxn9kJBqFr2G/0frVvA2Is/cY2rrtcR81m2lGiZU+dN9SO50
-	Jsy28XhaR0fcJDGXbojXS2On1V0gf09eG553i1eueo3/oUD1O3y/4FHA6Y0GWJy5BWuBTl6xwOj
-	uC9X++HR88yL1d2E1qClnA9rnJGE/3nFVdiKKmQxeqwg0Rj9ImA8qlDNgVZKf7vqR0PhKCVfHCZ
-	zc73hs7JsZfkn7grf1hwV7O7DKkKHsdOmk2yumaQQcR1gBlkDJySlpTsM+29RWgRHNxaGExvdoB
-	hG7YllSJlLsVRpMdwp65/iQSFZxRRzdl84WKqWUN1rC5W6HrdL+/8qC5cZ21VPo7WRvJoXSZP3d
-	8dWLEyZn55rTtOGUD7nvt+MCkbBrdu5Za7r
-X-Received: by 2002:a7b:c35a:0:b0:49f:bcb7:8e9 with SMTP id 5b1f17b1804b1-49fbcb70a1bmr64001725e9.9.1789648179633;
-        Thu, 17 Sep 2026 05:29:39 -0700 (PDT)
-Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49fbd1ce79csm82621135e9.0.2026.09.17.05.29.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 17 Sep 2026 05:29:39 -0700 (PDT)
-Date: Thu, 17 Sep 2026 13:29:37 +0100
-From: David Laight <david.laight.linux@gmail.com>
-To: Christian Brauner <brauner@kernel.org>
-Cc: linux-fsdevel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>,
- Jan Kara <jack@suse.cz>, linuxppc-dev@lists.ozlabs.org,
- linux-gpio@vger.kernel.org, linux-arm-msm@vger.kernel.org,
- dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org,
- linux-media@vger.kernel.org, wine-devel@list.winehq.org,
- linux-xfs@vger.kernel.org, io-uring@vger.kernel.org, bpf@vger.kernel.org,
- linux-mm@kvack.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] file: make struct fd_prepare const and kill its err
- field
-Message-ID: <20260917132937.5a15904e@pumpkin>
-In-Reply-To: <20260917-work-file-fd_prepare-v1-4-b87534ca49f3@kernel.org>
-References: <20260917-work-file-fd_prepare-v1-0-b87534ca49f3@kernel.org>
-	<20260917-work-file-fd_prepare-v1-4-b87534ca49f3@kernel.org>
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlwbF5mYSz2xfB
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 22:50:31 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1789649434; x=1821185434;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=ZzWXhI3KvUI5kNn0oJ2dnLkm0fr70XcUjNU3CpyXKjY=;
+  b=kYgtsls7HcrWLCZuxFW0h64Hx/HlnRdTJDZNajc/OaSaYCbD8ZrClwFW
+   xkB0ni35cZoSIoMT/fydkQpNS3UPqZadtKFOgP8icNLNz76a31XSv0d46
+   SmUhSL3Ccex1BHIawdQM7VOWKCgQ2v3tLtk7XjyExiHuX4+zuMxJjVL9z
+   LQnY9A+FCfn9whga919YED0cNIgSEVf1aUfZLU0eDECkPkajeMqztGw7G
+   cc5MF0U6MRf/EMfKY394UXHwjOYnYZcxSWE3XhM0q5QUTPIxp9PBMG0CA
+   nsmVse/mnS7NZrgl3LIOOOcn6HKC9dki8tLkOpP5xovmvZeiT2VmJtJAG
+   Q==;
+X-CSE-ConnectionGUID: Fbew8fLpQEup40Y/LWt0nw==
+X-CSE-MsgGUID: 8zDkGxb5SwCDjlVF6eYGOA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11905"; a="571547"
+X-IronPort-AV: E=Sophos;i="6.27,103,1787036400"; 
+   d="scan'208";a="571547"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+  by fmvoesa115.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Sep 2026 05:50:29 -0700
+X-CSE-ConnectionGUID: BHUVFHlUS6KIwZ6rSaE9JA==
+X-CSE-MsgGUID: iF++V9+jRoaQSIqQ04iddg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,103,1787036400"; 
+   d="scan'208";a="278986712"
+Received: from abityuts-desk1.ger.corp.intel.com (HELO localhost) ([10.245.245.11])
+  by fmviesa005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Sep 2026 05:50:25 -0700
+Date: Thu, 17 Sep 2026 15:50:23 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Kees Cook <kees@kernel.org>
+Cc: Bill Wendling <morbo@google.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@baylibre.com>,
+	Thorsten Blum <blum@kernel.org>,
+	Shivaprasad G Bhat <sbhat@linux.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org, Steven Rostedt <rostedt@goodmis.org>,
+	linux-hardening@vger.kernel.org
+Subject: Re: [PATCH 6/7] powerpc/papr_scm: Return the string length from the
+ sysfs show functions
+Message-ID: <aqviD9ow5HLGcLTK@ashevche-desk.local>
+References: <20260917002312.i.923-kees@kernel.org>
+ <20260917002333.2306346-6-kees@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,41 +86,37 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260917002333.2306346-6-kees@kernel.org>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Thu, 17 Sep 2026 11:09:45 +0200
-Christian Brauner <brauner@kernel.org> wrote:
+On Wed, Sep 16, 2026 at 05:23:18PM -0700, Kees Cook wrote:
+> perf_stats_show() and flags_show() build their output with a seq_buf
+> and return seq_buf_used(), which may include the trailing NUL byte
+> when the seq_buf has overflowed. Use seq_buf_strlen() instead.
+> 
+> Build tested ARCH=powerpc ppc64_defconfig with GCC powerpc64-linux-gnu
+> 16.1.0:
+> arch/powerpc/platforms/pseries/papr_scm.o
 
-> FD_PREPARE() releases the fd as soon as the file expression fails. The
-> fd either holds the descriptor or the error. The separate field is
-> redundant. Make fd and file plain members and struct fd_prepare simpler.
-> 
-> Callers of FD_PREPARE() get a const pointer to the guard. Simplify all
-> users as they can now easily access the trivial struct.
-> 
 ...
-> @@ -191,35 +175,39 @@ static __always_inline struct fd_prepare __fd_prepare(int fd, struct file *file)
->   * was allocated. If fd_publish() was called the fd and file are
->   * published and cleanup becomes a nop.
->   *
-> - * @_fdf: name of struct fd_prepare variable to define
-> + * @_fdf: name of the const struct fd_prepare pointer to define
->   * @_fd_flags: flags for get_unused_fd_flags()
->   * @_file_owned: struct file to take ownership of (can be expression)
->   */
-> -#define FD_PREPARE(_fdf, _fd_flags, _file_owned)			\
-> -	struct fd_prepare _fdf __cleanup(__fd_prepare_cleanup) = ({	\
-> +#define __FD_PREPARE(_guard, _fdf, _fd_flags, _file_owned)		\
-> +	struct fd_prepare _guard __cleanup(__fd_prepare_cleanup) = ({	\
->  		int __fd = get_unused_fd_flags(_fd_flags);		\
->  		__fd_prepare(__fd, __fd < 0 ? NULL : (_file_owned));	\
-> -	})
-> +	});								\
-> +	const struct fd_prepare *const _fdf = &_guard
 
-Since the struct is only written by its initialiser, can't it just
-be 'const' ?
+>  free_stats:
+>  	kfree(stats);
+> -	return rc ? rc : (ssize_t)seq_buf_used(&s);
+> +	return rc ? rc : (ssize_t)seq_buf_strlen(&s);
+>  }
 
-David
+On a brief look it's a single ternary like this in the file, perhaps while at
+it move to Elvis op?
+
+	return rc ?: (ssize_t)seq_buf_strlen(&s);
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
+
 
