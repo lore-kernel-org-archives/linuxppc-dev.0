@@ -1,54 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-27738-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27739-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B421BC982DA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 13:00:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65640C982D8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 13:21:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hmXlx5KNVz2yHD;
-	Fri, 18 Sep 2026 23:00:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41b8:202:deb::311:108"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789736413;
-	cv=none; b=SoYGr8EobROXnH8YvglF8Wn6MJFgMhE5SlvgSK16nlnqony26T/ae7bCj37R0DkR3MDtucFIyccqsE7TCAG4t05ISIHpYMK4NGOxDhDVmGHOV7C4zOOTi48RCXYTXDIjZR1P4mvmKBUIDkVJzMJAJ5gqdV6YqVfVfCpvJAZCFVeVnDBJNaLI+nH8XiEivesYD1VDIf2eaca9OhMw/NVXjmTkF6f7dGYB547snO4xpF+SQXm8ymiP8tQZATODjg0abzUQRT0u3d93PTHCZh1K+rMh/w7XQNYlibH++aG2e3pie4DNtSY5eoE660cwVpEGKYxuIBuP3GBHe4QgPTw03w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hmYDB3Yl1z2y7r;
+	Fri, 18 Sep 2026 23:21:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789737674;
+	cv=none; b=UAm7dUUxYS9wEMkLxFOuSlYq51hfLMNbTtjstDx0D8Jht9zy5MLfDS+Ts9S6954jpDG3yxJtRn4nUagOX400K4HdiueNUOETXb+eWjLT4kAKQ+5zAkayOIf8pNOZ+VJlMlkaxaO/kRbBL38XqSZxa9Qm9gMC48CxF2pzWjUsO8NVrX2BNHrNQZ45M3GfL4/2rM6zGzz4OUMu+GSIflAHAcGk851N1awgVQ3A2gACFxUadcicy5svAQO0Ei+ruOmjjvwu13lLwFOaABp43bVm42/VC2FIMoEmLahvmJitoEUrkZHfunBczp4nLeUTq+eSEtT0u6aokhic1B+/MaEc7w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789736413; c=relaxed/relaxed;
-	bh=tFEJAKtD9mmde2H4PbcVbjy8oluS9JrKkxB0Up7WPqU=;
+	t=1789737674; c=relaxed/relaxed;
+	bh=0xpULa2wThyMyC/xm34rNy2PVoRdKfkNjg/wDjNfAbA=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=V1/azAuYZobDUXJUkzje3QfF0XIkwHy12Aj6UQWNleaD1KY10xLJhPyQNdzO2+PUXpzhx4QkQKnfg+aqGpSsr4n1Vmh+feno2ylcgN/b6ONcT9jKr3srWGjm4Al9bEgreOmLkSxi3ZuT42f0lqxY+AB9mjBzFZh1fJ3XRMW0EIaf9/s4DMUKyx+eiboTR2rGL0DNYCDOqm4lkYhmJVJbVRW1zSGq8TaVAIORUC5xl3doysvdXymw4WJmXqg5XEQjmQPWV2MxnXkHIHjS05ddWD1zL2IU9/VXq+sPUhQ8uFrytBy2sDs3Ma68yBzDJmBRXVlw6htexCFR6SX/CfhFrg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=debian.org; dkim=pass (2048-bit key; secure) header.d=debian.org header.i=@debian.org header.a=rsa-sha256 header.s=smtpauto.stravinsky header.b=doaKhNAy; dkim-atps=neutral; spf=pass (client-ip=2001:41b8:202:deb::311:108; helo=stravinsky.debian.org; envelope-from=leitao@debian.org; receiver=lists.ozlabs.org) smtp.mailfrom=debian.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=debian.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=XxfkOd758hx67QpgtL305VDQpgyLdr9jN7xMPYr9Kk1f1x8gT6HpZAUn+C5meKML65mT/1RjQ9itryM8WD5qKSScGoj+OeOBqu6mz/Hs84QbXiGucDwEaqqh3kEm6HhmY9SWvU6Ofp65Msy3D77GglhxoeVe5kmKlJCymMeJw2IEsHpIUWxHZHUgUxrf3e3XG4mhnqEvWmXfZuZk9IXWJddgy4nlmnF3Z1gihn0OmCQ9HHKDH96GxWLhQ0wr+p8irNFjEqQtp/zz0KSHkoySLiyQp59s2u2XqhIMV6T4MQkbU1HC9jhqS2Y40NjF0wVOL0qwo2SjZBuZ/uZ859WCSA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TfzaMgjx; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=debian.org header.i=@debian.org header.a=rsa-sha256 header.s=smtpauto.stravinsky header.b=doaKhNAy;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TfzaMgjx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=debian.org (client-ip=2001:41b8:202:deb::311:108; helo=stravinsky.debian.org; envelope-from=leitao@debian.org; receiver=lists.ozlabs.org)
-Received: from stravinsky.debian.org (stravinsky.debian.org [IPv6:2001:41b8:202:deb::311:108])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmXlw5MKTz2y7r
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 23:00:12 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=debian.org;
-	s=smtpauto.stravinsky; h=X-Debian-User:In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=tFEJAKtD9mmde2H4PbcVbjy8oluS9JrKkxB0Up7WPqU=; b=doaKhNAybvn/PmhBX86Gi+7t3T
-	QH5iPoxVyvmEHWG83eTRJM9o4ZunjctnxQa8j36AFkUmkVOgAR7y9lYyUO+8Ew7Y9LDYUjDX1Rse3
-	NACgdCdDzZb/bAGim+VyCazzwjiCtehdfLhm8bSqggh0UROL0tVLejVQjBijz+QaYJl2uetfHRc5g
-	RXK/frKyTYKFcWRh+9vzWcXg+EdL8OovvX1t0ug37AWhIuF8+67JSnP9Mdp17zAIGwNediac6ShCF
-	k2QDzSzmnlid5Z24SbXD5fKP6vGN6tHG99LV+v1Eeb6mJUW+fXAFJKwV34SNAoZUlnqryynx9XyFq
-	4XtIZ3eA==;
-Received: from authenticated-user
-	by stravinsky.debian.org with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
-	(Exim 4.96)
-	(envelope-from <leitao@debian.org>)
-	id 1x7YAO-006k2B-2q;
-	Fri, 18 Sep 2026 12:58:13 +0000
-Date: Fri, 18 Sep 2026 05:57:51 -0700
-From: Breno Leitao <leitao@debian.org>
-To: Mike Rapoport <rppt@kernel.org>
-Cc: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmYD9365Zz2xYg
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 23:21:13 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 8A96D6053C;
+	Fri, 18 Sep 2026 13:21:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 67ECF1F000FF;
+	Fri, 18 Sep 2026 13:20:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789737669;
+	bh=0xpULa2wThyMyC/xm34rNy2PVoRdKfkNjg/wDjNfAbA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=TfzaMgjxtuNYRSbgy2oM9VNvelBoHpssOxVnn3XSg1NBMWU+/jyuXP6IaWZPY1CyA
+	 HdBMtjIknOhPruLGftRV7i8l8p2FKFX9fh6wCnG6H7oIwP4PW1xdz9+MUzns7blyED
+	 /oRJYHsPVqdDxPAyuN2AzxSAiLvBhcP8CKPzAWi22BWwuNke+22ALcPYId6jeNIBML
+	 tQQNk+We4UYkN+CSHkOuucCPZKJx6kWkj+b3NHpOKoKa54bgQVSWJGafkpCLc8uAXu
+	 3AdyFrmOR8pMPgGGIaBQnhqN7aE1U/3MowHa1LPEb32ScKkPhZnAMxVtJ6HiM44AnV
+	 XbSuPP1rSj3rQ==
+Date: Fri, 18 Sep 2026 14:20:34 +0100
+From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+To: Breno Leitao <leitao@debian.org>
+Cc: Mike Rapoport <rppt@kernel.org>, 
 	Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, 
 	Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, 
 	David Hildenbrand <david@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
@@ -107,10 +106,11 @@ Cc: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
 	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev
 Subject: Re: [PATCH v2 01/40] mm/vma: fix mmap_prepare file handling, remove
  file_doesnt_need_get
-Message-ID: <aq01JFp8hRReyY-O@gmail.com>
+Message-ID: <aq06hcheI4OGi_3A@gremlin>
 References: <20260914-b4-mmap-prepare-vma-flag-sanify-v2-0-7d9781ed5361@kernel.org>
  <20260914-b4-mmap-prepare-vma-flag-sanify-v2-1-7d9781ed5361@kernel.org>
  <aquz9Z9JrK_H_E0g@kernel.org>
+ <aq01JFp8hRReyY-O@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -126,98 +126,105 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <aquz9Z9JrK_H_E0g@kernel.org>
-X-Debian-User: leitao
+In-Reply-To: <aq01JFp8hRReyY-O@gmail.com>
 
-On Thu, Sep 17, 2026 at 12:33:41PM +0300, Mike Rapoport wrote:
-> On Mon, Sep 14, 2026 at 03:57:21PM +0100, Lorenzo Stoakes (ARM) wrote:
-> > The map->file_doesnt_need_get flag is confusing and the existing
-> > implementation has holes.
-> > 
-> > Drivers are permitted to change the owning file of a mapping. If they do
-> > so, they are required to take a reference on that file.
-> > 
-> > The mmap() operation which ultimately invokes __mmap_region() is guaranteed
-> > to drop the refcount for the original file the mapping was made under, but
-> > this is not true for the replaced file.
-> > 
-> > This has been addressed so far by tracking map->file_doesnt_need_get, which
-> > is rather poorly named and unfortunately fails to correctly track whether
-> > or not an additional put were needed in a number of cases.
-> > 
-> > Make life easier by removing this flag, and instead drop the reference for
-> > both mmap_prepare and the deprecated mmap callback in a new function
-> > put_map().
-> > 
-> > Track whether this needs to be done by aligning mmap_state with
-> > vm_area_desc and store the original file in the map->file field, keeping
-> > the updated file in map->vm_file.
-> > 
-> > In order to have the same behaviour for both types of hooks, only drop the
-> > reference __mmap_new_file_vma() itself took in its error path, deferring
-> > the replaced file's reference to put_map().
-> > 
-> > To make this work correctly, map->vm_file has to be updated before any
-> > error handling, so update __mmap_new_file_vma() and call_mmap_prepare() to
-> > set this field first.
-> > 
-> > Also when mmap_prepare() changes the file and is then merged, the reference
-> > count also must be decremented, so update the logic to call put_map() in
-> > this case too.
-> > 
-> > Also update __compat_vma_mmap() to manually perform this step for stacked
-> > file systems using the compatibility layer, and update
-> > compat_set_vma_from_desc() to replace vma_set_file() with a correct
-> > refcount/file update.
-> > 
-> > No in-tree driver is impacted by the incorrect implementation of this
-> > currently (no driver that does this is mergeable for one), so this does not
-> > need to be a fix.
-> 
-> But the patch iteslf needs to be fixed :)
-> 
-> It seems to be the change that broke the CI.
-> 
-> The rest is from LLM, take it with a grain of salt :)
-> 
-> mm-ci mm-unstable red build - bisect analysis
-> ==============================================
-> 
-> Bad commit: 2a937a04babf1 "mm/vma: fix mmap_prepare file handling, remove
-> file_doesnt_need_get" - first patch of Lorenzo Stoakes' 40-patch series
-> "mm: make VMA flag semantics explicit, eliminate VM_SPECIAL" (v2).
-> https://lore.kernel.org/all/20260914-b4-mmap-prepare-vma-flag-sanify-v2-0-7d9781ed5361@kernel.org
-> 
-> Symptom: tools/testing/selftests/mm/pfnmap.c triggers
-> "BUG: Bad page map in process pfnmap" during __zap_vma_range()/vm_normal_page(),
-> seen on process exit/munmap. CI's run-mm-selftests.sh greps guest dmesg for
-> BUG|WARNING and fails the job regardless of the test's own exit code.
+On Fri, Sep 18, 2026 at 05:57:51AM -0700, Breno Leitao wrote:
+> On Thu, Sep 17, 2026 at 12:33:41PM +0300, Mike Rapoport wrote:
+> > On Mon, Sep 14, 2026 at 03:57:21PM +0100, Lorenzo Stoakes (ARM) wrote:
+> > > The map->file_doesnt_need_get flag is confusing and the existing
+> > > implementation has holes.
+> > >
+> > > Drivers are permitted to change the owning file of a mapping. If they do
+> > > so, they are required to take a reference on that file.
+> > >
+> > > The mmap() operation which ultimately invokes __mmap_region() is guaranteed
+> > > to drop the refcount for the original file the mapping was made under, but
+> > > this is not true for the replaced file.
+> > >
+> > > This has been addressed so far by tracking map->file_doesnt_need_get, which
+> > > is rather poorly named and unfortunately fails to correctly track whether
+> > > or not an additional put were needed in a number of cases.
+> > >
+> > > Make life easier by removing this flag, and instead drop the reference for
+> > > both mmap_prepare and the deprecated mmap callback in a new function
+> > > put_map().
+> > >
+> > > Track whether this needs to be done by aligning mmap_state with
+> > > vm_area_desc and store the original file in the map->file field, keeping
+> > > the updated file in map->vm_file.
+> > >
+> > > In order to have the same behaviour for both types of hooks, only drop the
+> > > reference __mmap_new_file_vma() itself took in its error path, deferring
+> > > the replaced file's reference to put_map().
+> > >
+> > > To make this work correctly, map->vm_file has to be updated before any
+> > > error handling, so update __mmap_new_file_vma() and call_mmap_prepare() to
+> > > set this field first.
+> > >
+> > > Also when mmap_prepare() changes the file and is then merged, the reference
+> > > count also must be decremented, so update the logic to call put_map() in
+> > > this case too.
+> > >
+> > > Also update __compat_vma_mmap() to manually perform this step for stacked
+> > > file systems using the compatibility layer, and update
+> > > compat_set_vma_from_desc() to replace vma_set_file() with a correct
+> > > refcount/file update.
+> > >
+> > > No in-tree driver is impacted by the incorrect implementation of this
+> > > currently (no driver that does this is mergeable for one), so this does not
+> > > need to be a fix.
+> >
+> > But the patch iteslf needs to be fixed :)
+> >
+> > It seems to be the change that broke the CI.
+> >
+> > The rest is from LLM, take it with a grain of salt :)
+> >
+> > mm-ci mm-unstable red build - bisect analysis
+> > ==============================================
+> >
+> > Bad commit: 2a937a04babf1 "mm/vma: fix mmap_prepare file handling, remove
+> > file_doesnt_need_get" - first patch of Lorenzo Stoakes' 40-patch series
+> > "mm: make VMA flag semantics explicit, eliminate VM_SPECIAL" (v2).
+> > https://lore.kernel.org/all/20260914-b4-mmap-prepare-vma-flag-sanify-v2-0-7d9781ed5361@kernel.org
+> >
+> > Symptom: tools/testing/selftests/mm/pfnmap.c triggers
+> > "BUG: Bad page map in process pfnmap" during __zap_vma_range()/vm_normal_page(),
+> > seen on process exit/munmap. CI's run-mm-selftests.sh greps guest dmesg for
+> > BUG|WARNING and fails the job regardless of the test's own exit code.
+>
+> I am seeing something similar here and stress-ng can reproduce it:
+>
+>       WARNING: mm/memory.c:3225 at do_remap_pfn_range+0x9b4/0x9f0, CPU#25: stress-ng-dev/354858
+>       Call trace:
+>        do_remap_pfn_range+0x9b4/0x9f0 (P)
+>        remap_pfn_range_complete+0xac/0xd0
+>        mmap_action_complete+0xcc/0x3d8
+>        mmap_region+0xb54/0x1978
+>        do_mmap+0x588/0xb18
+>        vm_mmap_pgoff+0x1e4/0x320
+>        ksys_mmap_pgoff+0x2d8/0x510
+>        __arm64_sys_mmap+0x100/0x128
+>
+>       BUG: Bad page map in process stress-ng-dev  pte:0160000000000fcf
+>       addr:0000ffe8d9080000 vm_flags:00000071 anon_vma:0000000000000000 mapping:ffff0000a0c4ea98 index:0 (file) ffe8d9080 (anon)
+>       file:mem fault:0x0 mmap:0x0 mmap_prepare: mmap_mem_prepare read_folio:0x0
+>       Call trace:
+>        print_bad_page_map+0x63c/0x740
+>        vm_normal_page+0x228/0x240
+>        __zap_vma_range+0xbe0/0x34a0
+>        unmap_vmas+0x240/0x318
+>        unmap_region+0x12c/0x238
+>        vms_complete_munmap_vmas+0x318/0x958
+>        do_vmi_align_munmap+0x254/0x2f8
+>        do_vmi_munmap+0xc4/0xf8
+>        __vm_munmap+0x174/0x288
+>        __arm64_sys_munmap+0x70/0x90
 
-I am seeing something similar here and stress-ng can reproduce it:
+Yup I already fixed it and respun the series :)
 
-      WARNING: mm/memory.c:3225 at do_remap_pfn_range+0x9b4/0x9f0, CPU#25: stress-ng-dev/354858
-      Call trace:
-       do_remap_pfn_range+0x9b4/0x9f0 (P)
-       remap_pfn_range_complete+0xac/0xd0
-       mmap_action_complete+0xcc/0x3d8
-       mmap_region+0xb54/0x1978
-       do_mmap+0x588/0xb18
-       vm_mmap_pgoff+0x1e4/0x320
-       ksys_mmap_pgoff+0x2d8/0x510
-       __arm64_sys_mmap+0x100/0x128
+https://lore.kernel.org/all/20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org/
 
-      BUG: Bad page map in process stress-ng-dev  pte:0160000000000fcf
-      addr:0000ffe8d9080000 vm_flags:00000071 anon_vma:0000000000000000 mapping:ffff0000a0c4ea98 index:0 (file) ffe8d9080 (anon)
-      file:mem fault:0x0 mmap:0x0 mmap_prepare: mmap_mem_prepare read_folio:0x0
-      Call trace:
-       print_bad_page_map+0x63c/0x740
-       vm_normal_page+0x228/0x240
-       __zap_vma_range+0xbe0/0x34a0
-       unmap_vmas+0x240/0x318
-       unmap_region+0x12c/0x238
-       vms_complete_munmap_vmas+0x318/0x958
-       do_vmi_align_munmap+0x254/0x2f8
-       do_vmi_munmap+0xc4/0xf8
-       __vm_munmap+0x174/0x288
-       __arm64_sys_munmap+0x70/0x90
+--
+Cheers, Lorenzo
 
