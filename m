@@ -1,62 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-27729-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27730-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39D42C982DC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 11:37:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75A9FC982DA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 11:37:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hmVwn046zz2yhP;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hmVwn4jkHz30Lw;
 	Fri, 18 Sep 2026 21:37:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.18
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789731464;
-	cv=none; b=I5bI1M5/YJMbkV94jFimyW0Y54opfu6yuoi9fNHSedszk3gM0dltMUpQsd4DGnj3gjG60hHOvtp8fJ7HiTS0Bn6WmMYnDB5vt9V7T3yt/D8iLIqeKhrk9qUOYTpdOkVzEoAuR7AFJiQBC0jGYN3x4k1GXBtRx4YTfIpJbsZnBA/w9fmMCijWmJysnGUijRj4DyMnW4SNf3yzc/HxWD3RmWIAStDEjOBiX0Vzc4u7hecfDFGRzlt7GiznNJ4WRgynjHESdU7tysQIeflSPPUx06m8nZfVa/h5pHlaLAvHNRGf6x9EtXpJ7JHf+iLz1J2zphOAtiRUPH42R4f6ABCvHw==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.13
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789731465;
+	cv=none; b=hOcZhEBgJEG1H/gRVCuiNcq+tNOSLhAWB5BvvsMneckUzREApC9Gi6ZhUZjskM09Wvvlq8W5/CXuWjC7F4EErKaO4BlCVmjeOdlF4VnwdlbF7cthJoDTZG4ZypTuO/cSahjOhxb4o6ysAQDHex7Hl8hGMSEw64eFSmCZ8TkM/yHETU2Tm42Ls/PWyiFmr5KTwR/6oXP8C8+hZx+FHmgyvzrjB7z3nxK5FjBmL6H3EWgjvX9Hbhj0x3xCrR0d7IQXUw2bzjnHzAlWLeEZgq+xhkr92CFQqM9FWQ8R3U7JyhUsEqn/EBjFTL0/KwMYZ81wq9ZISDia6G7gvoFY+0pwJg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789731464; c=relaxed/relaxed;
-	bh=q44P+TGcV0oD+z/AvCG4yiydzItwnrsyloeqwtRctNU=;
+	t=1789731465; c=relaxed/relaxed;
+	bh=iCb774S6nPnlt27AN21fS7+AXM8jLF0u2+u/WwMLr+0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=B5/xb1b8WTrj/WGpb45VKt8xXT05F9/XOd8RNLh3c8QenvY669HTTb/7oGA4d4FQ+dfEhZzLWeshT5glloXwckU04lErt0Zup7a3j88TlCOE/0B8XiGX/SVOAkuUKiqP+WPfSTWjZ8/s+ZDvi8a8/XM2Fvhl6JdiRSVaR7ADnMjMiWiohp/o+iIQKOqIm+ujtfe+PY9EbmOfZuyrQEBN35lPsE3al2TPZwS0v88dFrQWgRtPlMy1CED/NWCk0hH6ERmG1Z0t9eZa/AG6KuQzEHfS2p2Rc0JmN2k/3rvj6iqL+SkQIos4IOQYYMAsKXyYdwBZP5d6qBt/YJHXd4F/1A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=LIWHYAec; dkim-atps=neutral; spf=pass (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	 MIME-Version; b=M++xeYkQYijezoZ77sYz/P/k0C69b5/x6TT0rm5S+7nmFg7JI9h55s0PPbvUXVNmsyQwcQEmKg5Muar4RLBgTVNCxwCL8mdpYTFAmrK99nOO/4XWiEb/lOxbNPw9RefNpa/fT3eQIhuGDzwwMGipUg4w5W3pWzMwEzkjCeLK/XwXkKbO0By6wOSfxfFn2h50sNqeFiVHRCrv5fGBCAV2aMFP2/CPudMLeIzuiosiTF1hNaA92y02030CpgZiHdWpYsEIAdm5WQbDoMW0oq4sVxNixcTIPMNF7afxSfiStCpSKL3yqc8uwmoWrUzuR7zt4qDcmp4Tj5WUOxnenbXSTg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=hqhBrqHP; dkim-atps=neutral; spf=pass (client-ip=192.198.163.13; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=LIWHYAec;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=hqhBrqHP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.13; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmVwj2DpZz2xYh
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 21:37:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmVwm004yz2yHD
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 21:37:42 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1789731462; x=1821267462;
+  t=1789731464; x=1821267464;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=3kWwrnL64mx1dLXwcHsMMT0BAa2zKW4PRgmp1oM+8L4=;
-  b=LIWHYAecIywk1+W+9bq2N0nbtKPQyVXiw7EtJN0o0MaRFgIsG3DyxSM5
-   U7MqUXuwIkUvpt85Zp4OS96IxTFNasxgiYUI9W1sOwdRKT0WquXUZANe+
-   9Ck3RqVDjuzXBPVMsSl7MfeI7LrNt2VccIR+DkVYo5uXfa39qUiiJQYHg
-   xHjZRgr5zWBAk3jwUomXrF78CsRt/1VFrJ8332UY7ezCk7AIEzAMTIzbA
-   SGTGGzCrIo7Rb2gEWvaVu/rPsxXzcZa5Uz+G+fvJYyIW1Rzh0Dh3D3Sys
-   pSH4VPry6ICp8ICqvUwLkfIR1EvOjJTU8O1OgvSQv3Xl9fdgQerj6Q70x
-   g==;
-X-CSE-ConnectionGUID: a8peqARRSMyAA1RkyVyn2A==
-X-CSE-MsgGUID: e9VJ+6dzQ1aPsVBuZUjm/Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11908"; a="89367430"
+  bh=HBMn/5uoBJRDMKsyJnTaBaHBHzv4hmzBn/RwfpsTeuY=;
+  b=hqhBrqHPZmeiePde8tDonUts+kc53SvueeQQqjOQgdR7q0eVS4LZo+QI
+   Si2BG9D/95oJ2iVF2+z+YSMS38ECfHlQAot5ZOX2EtOB5RW5KUYfzZYEE
+   WvNETaP58UFwiCxOXf3TNL15V4+Jn2NtsnLqWCdC4OrBhfrn/pq0uhB/C
+   FZKoJjAbnbvKnY8JCXjX0OOmJAId+vr8bJfknCS/t4kLDX3P/+Sqbc0nk
+   H8Tjt13F1NSLDxv7D03NZPt41shYQynROqEbw/ZBhVx1E1aP0oEsoDxLj
+   2b1TrxM4Sq8Rf/04QR8ndRDPLbHwTiPA5npkRgnfwA4kzm91Qs6SzXvIU
+   w==;
+X-CSE-ConnectionGUID: IUIAx5iyQZ+Dnm/PDbo4Lw==
+X-CSE-MsgGUID: FNxFZWaOTBWiPN0W5nWMuA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11908"; a="92739729"
 X-IronPort-AV: E=Sophos;i="6.27,108,1787036400"; 
-   d="scan'208";a="89367430"
-Received: from fmviesa013.fm.intel.com ([10.60.135.153])
-  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Sep 2026 04:37:36 -0700
-X-CSE-ConnectionGUID: 1R6KiivqQbSH2qbKz/O6QA==
-X-CSE-MsgGUID: CLf4k4XbTtOWa//DNCduFA==
+   d="scan'208";a="92739729"
+Received: from fmviesa007.fm.intel.com ([10.60.135.147])
+  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Sep 2026 04:37:40 -0700
+X-CSE-ConnectionGUID: ojMW1seUSfORwlkiKf3M8Q==
+X-CSE-MsgGUID: knn7zAWeRM+3HtKgvEjlkw==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,108,1787036400"; 
-   d="scan'208";a="2783655"
+   d="scan'208";a="271029239"
 Received: from black.igk.intel.com ([10.91.253.5])
-  by fmviesa013.fm.intel.com with ESMTP; 18 Sep 2026 04:37:30 -0700
+  by fmviesa007.fm.intel.com with ESMTP; 18 Sep 2026 04:37:34 -0700
 Received: by black.igk.intel.com (Postfix, from userid 1003)
-	id 6253F9D; Fri, 18 Sep 2026 13:37:29 +0200 (CEST)
+	id 67EEC9E; Fri, 18 Sep 2026 13:37:29 +0200 (CEST)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Frank Li <Frank.Li@nxp.com>,
 	Vinod Koul <vkoul@kernel.org>,
@@ -90,10 +90,11 @@ Cc: Dave Penkler <dpenkler@gmail.com>,
 	Olivier Moysan <olivier.moysan@foss.st.com>,
 	Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>,
 	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-	Alexandre Torgue <alexandre.torgue@foss.st.com>
-Subject: [PATCH v2 2/7] ASoC: sprd: Replace dma_request_slave_channel() by dma_request_chan()
-Date: Fri, 18 Sep 2026 13:34:06 +0200
-Message-ID: <20260918113727.1898998-3-andriy.shevchenko@linux.intel.com>
+	Alexandre Torgue <alexandre.torgue@foss.st.com>,
+	Cezary Rojewski <cezary.rojewski@intel.com>
+Subject: [PATCH v2 3/7] ASoC: soc-generic-dmaengine-pcm: Replace dma_request_slave_channel() by dma_request_chan()
+Date: Fri, 18 Sep 2026 13:34:07 +0200
+Message-ID: <20260918113727.1898998-4-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20260918113727.1898998-1-andriy.shevchenko@linux.intel.com>
 References: <20260918113727.1898998-1-andriy.shevchenko@linux.intel.com>
@@ -113,70 +114,33 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
 Replace dma_request_slave_channel() by dma_request_chan() as suggested
-since the former is deprecated. With this, propagate all possible errors
-to the caller.
+since the former is deprecated.
 
-Reviewed-by: Baolin Wang <baolin.wang@linux.alibaba.com>
+Reviewed-by: Cezary Rojewski <cezary.rojewski@intel.com>
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- sound/soc/sprd/sprd-pcm-compress.c | 9 +++++----
- sound/soc/sprd/sprd-pcm-dma.c      | 9 +++++----
- 2 files changed, 10 insertions(+), 8 deletions(-)
+ sound/soc/soc-generic-dmaengine-pcm.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/sound/soc/sprd/sprd-pcm-compress.c b/sound/soc/sprd/sprd-pcm-compress.c
-index e5249924b54d..f394121d417a 100644
---- a/sound/soc/sprd/sprd-pcm-compress.c
-+++ b/sound/soc/sprd/sprd-pcm-compress.c
-@@ -145,6 +145,7 @@ static int sprd_platform_compr_dma_config(struct snd_soc_component *component,
- 	enum dma_slave_buswidth bus_width;
- 	int period, period_cnt, sg_num = 2;
- 	dma_addr_t src_addr, dst_addr;
-+	struct dma_chan *chan;
- 	unsigned long flags;
- 	int ret, j;
+diff --git a/sound/soc/soc-generic-dmaengine-pcm.c b/sound/soc/soc-generic-dmaengine-pcm.c
+index 65b7ec52a054..6d1dbee8f6c1 100644
+--- a/sound/soc/soc-generic-dmaengine-pcm.c
++++ b/sound/soc/soc-generic-dmaengine-pcm.c
+@@ -242,9 +242,11 @@ static int dmaengine_pcm_new(struct snd_soc_component *component,
+ 		if (!substream)
+ 			continue;
  
-@@ -153,12 +154,12 @@ static int sprd_platform_compr_dma_config(struct snd_soc_component *component,
- 		return -EINVAL;
- 	}
+-		if (!pcm->chan[i] && config->chan_names[i])
+-			pcm->chan[i] = dma_request_slave_channel(dev,
+-				config->chan_names[i]);
++		if (!pcm->chan[i] && config->chan_names[i]) {
++			pcm->chan[i] = dma_request_chan(dev, config->chan_names[i]);
++			if (IS_ERR(pcm->chan[i]))
++				pcm->chan[i] = NULL;
++		}
  
--	dma->chan = dma_request_slave_channel(dev,
--					      dma_params->chan_name[channel]);
--	if (!dma->chan) {
-+	chan = dma_request_chan(dev, dma_params->chan_name[channel]);
-+	if (IS_ERR(chan)) {
- 		dev_err(dev, "failed to request dma channel\n");
--		return -ENODEV;
-+		return PTR_ERR(chan);
- 	}
-+	dma->chan = chan;
- 
- 	sgt = sg = kzalloc_objs(*sg, sg_num);
- 	if (!sg) {
-diff --git a/sound/soc/sprd/sprd-pcm-dma.c b/sound/soc/sprd/sprd-pcm-dma.c
-index 2d5ffbe17e81..2a89dc7616bf 100644
---- a/sound/soc/sprd/sprd-pcm-dma.c
-+++ b/sound/soc/sprd/sprd-pcm-dma.c
-@@ -170,15 +170,16 @@ static int sprd_pcm_request_dma_channel(struct snd_soc_component *component,
- 
- 	for (i = 0; i < channels; i++) {
- 		struct sprd_pcm_dma_data *data = &dma_private->data[i];
-+		struct dma_chan *chan;
- 
--		data->chan = dma_request_slave_channel(dev,
--						       dma_params->chan_name[i]);
--		if (!data->chan) {
-+		chan = dma_request_chan(dev, dma_params->chan_name[i]);
-+		if (IS_ERR(chan)) {
- 			dev_err(dev, "failed to request dma channel:%s\n",
- 				dma_params->chan_name[i]);
- 			sprd_pcm_release_dma_channel(substream);
--			return -ENODEV;
-+			return PTR_ERR(chan);
- 		}
-+		data->chan = chan;
- 	}
- 
- 	return 0;
+ 		if (!pcm->chan[i] && (pcm->flags & SND_DMAENGINE_PCM_FLAG_COMPAT)) {
+ 			pcm->chan[i] = dmaengine_pcm_compat_request_channel(
 -- 
 2.50.1
 
