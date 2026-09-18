@@ -1,51 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-27688-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27689-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC85BC982DA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 09:11:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 893D3C982DA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 09:24:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hmRgl0zl6z2y7r;
-	Fri, 18 Sep 2026 19:11:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hmRyh5pncz2y7r;
+	Fri, 18 Sep 2026 19:24:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789722675;
-	cv=none; b=eeXbLtcVJcwuPcjt7FoAgP9ioDoDL34FqCPbazVy+B+aVG6ebYnqHr5ECl90vyN891EqsKjXaKFyQx740M9h9K101Kr7RsgOm5yjbQML6CUY3Gze2PJNZCyq4DUVX6HsKEXEbo3FkE7W+oh4R/o6WCJHhziwipGlWAfK1avd1BmxG9Y5JCepsYWabEPGcppXwWzJ2Oupu0TVRV+8CV2i1Ah3irq4Ix7y2Ix0g1lKWP84vi5r8EEi6BuxnQ24gcYXwJltsW3ZwWTdz9gcGZe+xYw6dCCTZdibzG1B66Xy0Yd0CZG1xTYjWuWW+jMmAzbpg/wuCeZt/6GPFvmssInlGA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789723452;
+	cv=none; b=JUhIt+Ifs4R0+NeDWkYr5cYnK9ErYLWBu6cmNcWaCtGAR8nRQqZ+OoScO6wchnTM0dJBbkrRDKVHa6n3bfk+pN757i1VYF1tV76ppwly4SO/4Ny17hFEI4LFu7qIFBOYxMdQNYryRvmpQe/LeLXl2Q1VS8ZSL6ELExvhh4sRdr3ml+Y2VQ7UG6+qmxiHHzM2pybkENWeJaqR/Aw6IcPdCa9mJ6WBl7LcF/pI6whaWLshzArfX7r5lxdVCjKOlDDLM2G8Bbx3FV7V7Uiu/IrQnTyHbx91ZlApFW6UsMetE0ywHrjLp7XNYvQdiAw/rqm1nTy/xBP5dotmhoq1ongNRw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789722675; c=relaxed/relaxed;
-	bh=dG/NQKkV41YhIgrIyd1kGa7K3ptoEDA2CGGt3WrAYAE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ZepI2flFugrbHHlOFT+C4oUp4OH3Yl1wfWnwLXSrw1SRY93xaEkdNGFmDeSE65efK9SSOW/egxoJXuu8ylzSNJKge5J1G+9BsciFHokL1jhvakCQ5POnm7/kcfDnHVTqByxfwYjzreoU5tX0Cs9CzSMk+AaVjzhMSa7eNPIvENO+hFS5JMiTh594w7SsDfI3ci165IZ9MMjiTxw72lqu6DbNkeKFx6cvj2UXf7sJ+rQ0D+C4Nc4c5Ra6DyJtFyyGQ1lSG6h9dBGzz3b9gcZ0ty/aJdbbqL5sTAFQkEpNpj51GTEbNsAsj271g4sLSoz7Tf7ypCcuOEAEUYDPRvBPlw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FcgVFMee; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1789723452; c=relaxed/relaxed;
+	bh=3AyPjWu4Gl0yX56nO/NLviif3j02J/T6027fVk46sWE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=mG1RimMVdOQeooOSESsod5oDaT78GSeKPMVl217EdeYNmDGNPfAYGwHDby0fSZYdUXR/Gg8E7orVPbcEU7zz9DOClP6GjnjDWlxUkct0cj2naEsLS7AM8Mt2r/HdapTsptMuttvJJ5LarF5XE56GdbtRI0iN8yLDwQaSmp2GA4Nv10fXvgb1AeRD/6AiMKY3XCI2e+6ouVeYcKmN+FcXiR+EObSsB7mNdnVedcV0KlbAwcHwxKHt6e3qKCTofhxGJtwOzEszwD27E0V0Hq1k9oCglgoEHKF1LiWxbuF7BUJi+/K+BN/dPnTOwpDBtckQa/gt9KNR8lBuTpzEWc/Ssg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Y1fHzUmT; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FcgVFMee;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Y1fHzUmT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmRgk1fvVz2xSV
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 19:11:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmRyg5Vtqz2xSV
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 19:24:11 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id C426E40193;
-	Fri, 18 Sep 2026 09:11:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ECAB21F00893;
-	Fri, 18 Sep 2026 09:11:06 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id ED06743B57;
+	Fri, 18 Sep 2026 09:24:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 128661F000FF;
+	Fri, 18 Sep 2026 09:24:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789722671;
-	bh=dG/NQKkV41YhIgrIyd1kGa7K3ptoEDA2CGGt3WrAYAE=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=FcgVFMee+7sqAMMPEXTmkt4Ce4EqkYw/71EiqfiHMdlyb3ofAgUVEqi1SAGuiQ3IP
-	 Z0xlcRWx8VoB9qokS9t1VxTzx+gFGV7kzSxOxWThG/a+ERFdVpq0rr8yxZHwIn13VO
-	 Bb1ni3BbkCkjdpaUZ9NQhibPREdVJFxI5PdG4QQsfiEdcTiJtgLkIoYXypHnLI+YJu
-	 a0WQ54kX1lr8qictRHrNQUoz5VfQmxDrLrTCuHaabztx3f33sw14YBlKYxpxlu1Leh
-	 tYGkxMvWrqr2maFU8Z9S6g1dGkY0GDCwjiP539adNBTTDrEFmRIaQ3qZ5whpL33YE5
-	 J8D58mL5RX1Dw==
-Message-ID: <930f3db4-9034-4a48-98b2-07a44de3a718@kernel.org>
-Date: Fri, 18 Sep 2026 11:11:04 +0200
+	s=k20260515; t=1789723449;
+	bh=3AyPjWu4Gl0yX56nO/NLviif3j02J/T6027fVk46sWE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=Y1fHzUmTY6xJdh3xAeL1nIj/NFGevYq92scK49asLxP5JPN0jllIKza+b107haWAV
+	 bw27IMYN7F/gnZcZgyp7zn08A0ykr9vXn00E/o8vXJ9EqLsWgkwLliyiudY1sDTVHs
+	 l6rWlvybG1h803Uy1SSV4aND4nudjPaqFC5DO6zeNiLDsIoPPsB37G3Ni6kctBDDS4
+	 QFWJS0DhSzKQ5hzVrKnkSM0PoSiUBr9KtDfqSfj/deBmPubm9WWMpclLYbVBc9LPrh
+	 CYqkbKwSflAHkBhrQFJ4tJ9nbDuWiZgZp3R3H85x7Rqn7wfaGC6PUvo99yYVP0uN9F
+	 gW4i/WcjxlZHg==
+Date: Fri, 18 Sep 2026 10:24:04 +0100
+From: Simon Horman <horms@kernel.org>
+To: Guangshuo Li <lgs201920130244@gmail.com>
+Cc: Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Russell King <linux@armlinux.org.uk>, Jeff Garzik <jeff@garzik.org>,
+	Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: Re: [PATCH] net: fs_enet: fix platform info memory leak on remove
+Message-ID: <20260918092404.GF51261@horms.kernel.org>
+References: <20260916031414.2875022-1-lgs201920130244@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,113 +72,41 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v8 02/10] powerpc/8xx: add pte_set_huge()
-To: Barry Song <baohua@kernel.org>
-Cc: Wen Jiang <jiangwenxiaomi@gmail.com>, akpm@linux-foundation.org,
- catalin.marinas@arm.com, linux-mm@kvack.org, urezki@gmail.com,
- will@kernel.org, Xueyuan.chen21@gmail.com, ajd@linux.ibm.com,
- anshuman.khandual@arm.com, david@kernel.org, dev.jain@arm.com,
- jiangwen6@xiaomi.com, leo.yan@arm.com, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, rppt@kernel.org,
- ryan.roberts@arm.com
-References: <20260917052933.188679-1-jiangwenxiaomi@gmail.com>
- <20260917052933.188679-3-jiangwenxiaomi@gmail.com>
- <58e3b456-7389-4752-8de5-1cc82964c3c7@kernel.org>
- <CAGsJ_4wKG91hd1Y3W4mbdh6B8Kq09JyDjyvXeeCmQj+L6bHm2A@mail.gmail.com>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <CAGsJ_4wKG91hd1Y3W4mbdh6B8Kq09JyDjyvXeeCmQj+L6bHm2A@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260916031414.2875022-1-lgs201920130244@gmail.com>
 
+On Wed, Sep 16, 2026 at 11:14:14AM +0800, Guangshuo Li wrote:
+> fs_enet_probe() allocates the platform information structure with
+> kzalloc_obj() and stores it in fep->fpi.
+> 
+> The probe failure paths release this allocation with kfree(). However,
+> after a successful probe, fs_enet_remove() tears down the network
+> device without freeing fep->fpi, leaving the platform information
+> structure allocated after driver removal.
+> 
+> Free fep->fpi before releasing the network device.
+> 
+> This issue was found by manual code inspection.
+> 
+> Fixes: 976de6a8c304 ("fs_enet: Be an of_platform device when CONFIG_PPC_CPM_NEW_BINDING is set.")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
+> ---
+>  drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+> index d3c772ed5fc9..071e3f3de78c 100644
+> --- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+> +++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+> @@ -1007,6 +1007,7 @@ static void fs_enet_remove(struct platform_device *ofdev)
+>  	fep->ops->cleanup_data(ndev);
+>  	dev_set_drvdata(fep->dev, NULL);
+>  	phylink_destroy(fep->phylink);
+> +	kfree(fep->fpi);
+>  	free_netdev(ndev);
 
-
-Le 18/09/2026 à 10:44, Barry Song a écrit :
-> On Fri, Sep 18, 2026 at 2:14 PM Christophe Leroy (CS GROUP)
-> <chleroy@kernel.org> wrote:
->>
->>
->>
->> Le 17/09/2026 à 07:29, Wen Jiang a écrit :
->>> From: Wen Jiang <jiangwen6@xiaomi.com>
->>>
->>> vmap installs PTE-level block mappings (SZ_16K/SZ_512K on powerpc/8xx)
->>> by reusing set_huge_pte_at(), a HugeTLB helper gated by
->>> CONFIG_HUGETLB_PAGE. This makes the feature silently unavailable on
->>> CONFIG_HUGETLB_PAGE=n kernels and couples mm/vmalloc.c to HugeTLB
->>> internals it does not otherwise need.
->>>
->>> Add pte_set_huge() to powerpc/8xx, next to the existing
->>> pmd_clear_huge()/pud_clear_huge() in mm/nohash/8xx.c. It builds the huge
->>> PTE and writes it into the backing cells directly, without going through
->>> set_huge_pte_at(), so it does not depend on CONFIG_HUGETLB_PAGE.
->>>
->>> No pte_clear_huge() is needed: 8xx does not implement
->>> arch_vmap_pte_range_unmap_size(), so the vmap unmap path never takes the
->>> block-mapping branch.
->>>
->>> In practice PPC_8xx selects HUGETLBFS unconditionally, so
->>> CONFIG_HUGETLB_PAGE=n does not occur there today; this is a decoupling
->>> cleanup rather than a new configuration.
->>
->> 8xx selects CONFIG_HUGETLB_PAGE because it uses set_huge_pte_at() to map
->> kernel text with large pages. That was added by commit 34536d780683
->> ("powerpc/8xx: Add a function to early map kernel via huge pages")
->>
->> But now pte_set_huge() could be used instead in
->> __early_map_kernel_hugepage() and then CONFIG_HUGETLB_PAGE could be removed.
-> 
-> Hi Christophe,
-> 
-> Do you mean the code below? If so, it sounds like a good place to
-> clean this up for powerpc as a separate cleanup patch.
-
-Yes this is what I have in mind allthough I have not studied it in details.
-
-> 
-> diff --git a/arch/powerpc/mm/nohash/8xx.c b/arch/powerpc/mm/nohash/8xx.c
-> index 2518d2a6bdb4..830cdb391161 100644
-> --- a/arch/powerpc/mm/nohash/8xx.c
-> +++ b/arch/powerpc/mm/nohash/8xx.c
-> @@ -87,9 +87,7 @@ static int __ref
-> __early_map_kernel_hugepage(unsigned long va, phys_addr_t pa,
->          if (WARN_ON(!ptep))
->                  return -ENOMEM;
-> 
-> -       set_huge_pte_at(&init_mm, va, ptep,
-> -                       arch_make_huge_pte(pfn_pte(pa >> PAGE_SHIFT,
-> prot), shift, 0),
-> -                       1UL << shift);
-> +       pte_set_huge(ptep, va, pa, prot, 1UL << shift);
-> 
->          return 0;
->   }
-> diff --git a/arch/powerpc/platforms/Kconfig.cputype
-> b/arch/powerpc/platforms/Kconfig.cputype
-> index f0adbf7ecb7f..efba4d960083 100644
-> --- a/arch/powerpc/platforms/Kconfig.cputype
-> +++ b/arch/powerpc/platforms/Kconfig.cputype
-> @@ -41,7 +41,6 @@ config PPC_8xx
->          select FSL_SOC
->          select PPC_KUEP
->          select HAVE_ARCH_VMAP_STACK
-> -       select HUGETLBFS
-> 
->   config 44x
->          bool "AMCC 44x, 46x or 47x"
-> 
->>
->>>
->>> There is no caller yet: mm/vmalloc.c is converted later in this series,
->>> once the generic fallbacks are in place.
->>>
->>> Signed-off-by: Wen Jiang <jiangwen6@xiaomi.com>
->>
->> Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-> 
-> Best Regards
-> Barry
+Reviewed-by: Simon Horman <horms@kernel.org>
 
 
