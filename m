@@ -1,91 +1,116 @@
-Return-Path: <linuxppc-dev+bounces-27737-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27738-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F403CC982DA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 12:54:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B421BC982DA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 13:00:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hmXcl68Nkz2y7r;
-	Fri, 18 Sep 2026 22:53:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789736039;
-	cv=none; b=OTjufTl+khE9ZzS77BnP/QFOd1CDxTy9QJllPHnqh+COoGRg8nwlaM++gECtdQ0dqg8DW7oj2UEvsgA8SXI/uQGkPG8Wm53RPx7QplYYVW7Osqg339jTqRhzD3nEJA4sikVWUstInzjbqjIZC8Gl+UcX6/EEv7IPjEhDphsSc5y8PHUVLNGlrxph9cvKakIhSm5aWJ1JRUM+lzd8/Z3evczI9MXpl8gsAOlGQC5R8g1xkoVo6Gx5izjkEJR6tQtzvv0aJaEhL9V7hxDe+cnpZMdfX41bWKKgK2bY1ciazYPJslYfXDYhA4YV7QbyjVoy+ZZcaue3pI383wwDYMnuIQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hmXlx5KNVz2yHD;
+	Fri, 18 Sep 2026 23:00:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41b8:202:deb::311:108"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789736413;
+	cv=none; b=SoYGr8EobROXnH8YvglF8Wn6MJFgMhE5SlvgSK16nlnqony26T/ae7bCj37R0DkR3MDtucFIyccqsE7TCAG4t05ISIHpYMK4NGOxDhDVmGHOV7C4zOOTi48RCXYTXDIjZR1P4mvmKBUIDkVJzMJAJ5gqdV6YqVfVfCpvJAZCFVeVnDBJNaLI+nH8XiEivesYD1VDIf2eaca9OhMw/NVXjmTkF6f7dGYB547snO4xpF+SQXm8ymiP8tQZATODjg0abzUQRT0u3d93PTHCZh1K+rMh/w7XQNYlibH++aG2e3pie4DNtSY5eoE660cwVpEGKYxuIBuP3GBHe4QgPTw03w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789736039; c=relaxed/relaxed;
-	bh=gUqRO/qJNQsB7yIcuX23hH9gNKvjys5G72B/a/hJXMQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=AVKlYuF8BOQQ5ugSH7PImcluswNIXN11Pm2Os+Q8YiEDzcgqw5ZZ9wogEHO4sLwbw8lXRkMXQOfyCbmNGFjVvq/Jgf2Euqj56Jo7wnUmFlTsCjTJBidCNOzl8QrZdKg4emdhjmCRu21OQFFUsPkG3zzJ0kmFQbq161Nm/ayq0ll6Oc3F0zydi41gMNGPZxB0+D6RoABNZR7OQEQyqYV4VwS/ZjSvK94IzZQmsEde96yb5ad72oH6GxF/0hPGxhOR7zn6Iw9cEFNe6yg04HImZsoaNpAY5MnKpbkfKTA0Yj5ccV0xcvjKLY/c1C6MV2do9HWKlVzBe+uXMsjp2zAq0g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QPwnStxl; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QPwnStxl; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=rrobaina@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1789736413; c=relaxed/relaxed;
+	bh=tFEJAKtD9mmde2H4PbcVbjy8oluS9JrKkxB0Up7WPqU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=V1/azAuYZobDUXJUkzje3QfF0XIkwHy12Aj6UQWNleaD1KY10xLJhPyQNdzO2+PUXpzhx4QkQKnfg+aqGpSsr4n1Vmh+feno2ylcgN/b6ONcT9jKr3srWGjm4Al9bEgreOmLkSxi3ZuT42f0lqxY+AB9mjBzFZh1fJ3XRMW0EIaf9/s4DMUKyx+eiboTR2rGL0DNYCDOqm4lkYhmJVJbVRW1zSGq8TaVAIORUC5xl3doysvdXymw4WJmXqg5XEQjmQPWV2MxnXkHIHjS05ddWD1zL2IU9/VXq+sPUhQ8uFrytBy2sDs3Ma68yBzDJmBRXVlw6htexCFR6SX/CfhFrg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=debian.org; dkim=pass (2048-bit key; secure) header.d=debian.org header.i=@debian.org header.a=rsa-sha256 header.s=smtpauto.stravinsky header.b=doaKhNAy; dkim-atps=neutral; spf=pass (client-ip=2001:41b8:202:deb::311:108; helo=stravinsky.debian.org; envelope-from=leitao@debian.org; receiver=lists.ozlabs.org) smtp.mailfrom=debian.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=debian.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QPwnStxl;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QPwnStxl;
+	dkim=pass (2048-bit key; secure) header.d=debian.org header.i=@debian.org header.a=rsa-sha256 header.s=smtpauto.stravinsky header.b=doaKhNAy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=rrobaina@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=debian.org (client-ip=2001:41b8:202:deb::311:108; helo=stravinsky.debian.org; envelope-from=leitao@debian.org; receiver=lists.ozlabs.org)
+Received: from stravinsky.debian.org (stravinsky.debian.org [IPv6:2001:41b8:202:deb::311:108])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmXck3rFTz2xYg
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 22:53:56 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1789736033;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=gUqRO/qJNQsB7yIcuX23hH9gNKvjys5G72B/a/hJXMQ=;
-	b=QPwnStxl9MGc3H7r4nnRmMQgxDE/CdEZKl7hKHNkAa6OQdmrxt11jpOTvOqHTSXmsfKhzS
-	7D2lAWHVdoXLm72Xjsa2Y/VNmwE2Ym0C0Y3qkwery/q31YxGxE1+r/QNOhEfR0qHGwiy8x
-	FZS2eOcx9PFEhQtFszE5QqbgOgxmbYs=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1789736033;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=gUqRO/qJNQsB7yIcuX23hH9gNKvjys5G72B/a/hJXMQ=;
-	b=QPwnStxl9MGc3H7r4nnRmMQgxDE/CdEZKl7hKHNkAa6OQdmrxt11jpOTvOqHTSXmsfKhzS
-	7D2lAWHVdoXLm72Xjsa2Y/VNmwE2Ym0C0Y3qkwery/q31YxGxE1+r/QNOhEfR0qHGwiy8x
-	FZS2eOcx9PFEhQtFszE5QqbgOgxmbYs=
-Received: from mail-ej1-f72.google.com (mail-ej1-f72.google.com
- [209.85.218.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-562-vpYSPEgtNqqZrRXN5tNHAw-1; Fri, 18 Sep 2026 08:53:41 -0400
-X-MC-Unique: vpYSPEgtNqqZrRXN5tNHAw-1
-X-Mimecast-MFC-AGG-ID: vpYSPEgtNqqZrRXN5tNHAw_1789736020
-Received: by mail-ej1-f72.google.com with SMTP id a640c23a62f3a-c29476212f1so67928666b.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 05:53:41 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789736020; x=1790340820;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=gUqRO/qJNQsB7yIcuX23hH9gNKvjys5G72B/a/hJXMQ=;
-        b=VuxIqaFab9x1su4aLhQvouXAsTKa+r/pyaI07n72LtkOFwaup96zvhZ0A6KlzlLgNv
-         MVBpRC35oDjMF3Y6TOQnBPc2rxOwd3COUcsVjESs+ZO1yRC/7eajI0vG31lW7HCZgbig
-         zD7HeHgLiqN2WWRgAAx4+lsRZNxKRoIHv4nmPd+VHV5eid5CRbWpuKHVTL3oF0ND9G3i
-         9ilrI3U3+rt3jhEr6M2JjbGtRpUma3+woOZMBVO7H4T64Sm+R7iZBVaeAlDux89irUOD
-         60wsCPGge24qFKZCg5H0TE4B6Pf3sfti9YDroSvL0ERVcB4QMuyLmebAeaO0LYh7xiOs
-         vJ6g==
-X-Forwarded-Encrypted: i=1; AKwUvBxLkDSqevg30G1t9dTR0pgSmAP2jSMT2LFoebFULmYq8PqPXudyP9KKcpt5pio0b4VGsgg6gZwoG/sqGm0=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++mfsn/yiGIWGwyblhAig3PPQ2LB1RNpTjzNbf0V40rB0K9dNeCY
-	3tPZE+pcaBbLG7Phe/KcmxALxDnXOmQrkgGLFv5yqYK4iojh11x2xl1IhNEDhcj7DR2s992VtUn
-	TmE++AvDWudJ+7jOROOA2+x5CAYGJyTc4EB6pr9TjIOE3DI4fugdNSWo6DzrIOheNwt4meDast2
-	incM+5Q6OtqaCMMCci6Xr8qCjm3jHAanA4nEh2grkVWQ==
-X-Gm-Gg: AYBFou0eU5ge4P4FXVXg/lgyUSd34TaaI637D8ZtTzIFSMbLwu21kONQuE4sqAABzqq
-	Dbrv5HmTHVs0Phlg4cZG6Qyh6PFW4TKAEGZtntcXfGLnqWIz2n2hyQYgkBEYK4Zvy9t64SCmLtX
-	ePT1aSZEoJo5yNht+BAtuToAhisvQzNngKAyrUkA7YbVrw46kwWvlh9uP0jrm1L4wn0UhqrTUMl
-	gDaTPy3QzFa99rDrGrFbql29i9AwC57epBZSoY3d4gWS2Lbw8JjiHgJ8jWzi+WXZp/B0NLvg9k4
-	s9c=
-X-Received: by 2002:a17:907:72cc:b0:c25:8c74:71e6 with SMTP id a640c23a62f3a-c2a1569a530mr277251266b.10.1789736020314;
-        Fri, 18 Sep 2026 05:53:40 -0700 (PDT)
-X-Received: by 2002:a17:907:72cc:b0:c25:8c74:71e6 with SMTP id
- a640c23a62f3a-c2a1569a530mr277247366b.10.1789736019888; Fri, 18 Sep 2026
- 05:53:39 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmXlw5MKTz2y7r
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 23:00:12 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=debian.org;
+	s=smtpauto.stravinsky; h=X-Debian-User:In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=tFEJAKtD9mmde2H4PbcVbjy8oluS9JrKkxB0Up7WPqU=; b=doaKhNAybvn/PmhBX86Gi+7t3T
+	QH5iPoxVyvmEHWG83eTRJM9o4ZunjctnxQa8j36AFkUmkVOgAR7y9lYyUO+8Ew7Y9LDYUjDX1Rse3
+	NACgdCdDzZb/bAGim+VyCazzwjiCtehdfLhm8bSqggh0UROL0tVLejVQjBijz+QaYJl2uetfHRc5g
+	RXK/frKyTYKFcWRh+9vzWcXg+EdL8OovvX1t0ug37AWhIuF8+67JSnP9Mdp17zAIGwNediac6ShCF
+	k2QDzSzmnlid5Z24SbXD5fKP6vGN6tHG99LV+v1Eeb6mJUW+fXAFJKwV34SNAoZUlnqryynx9XyFq
+	4XtIZ3eA==;
+Received: from authenticated-user
+	by stravinsky.debian.org with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
+	(Exim 4.96)
+	(envelope-from <leitao@debian.org>)
+	id 1x7YAO-006k2B-2q;
+	Fri, 18 Sep 2026 12:58:13 +0000
+Date: Fri, 18 Sep 2026 05:57:51 -0700
+From: Breno Leitao <leitao@debian.org>
+To: Mike Rapoport <rppt@kernel.org>
+Cc: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, 
+	Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, 
+	Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, 
+	David Hildenbrand <david@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
+	Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, 
+	Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, 
+	Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, 
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
+	Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
+	Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, 
+	Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, 
+	Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, 
+	Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, 
+	Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, 
+	Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, 
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, 
+	Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, 
+	Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, 
+	Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
+	Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, 
+	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, 
+	Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
+	Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, 
+	Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+	David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, 
+	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, 
+	Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, 
+	"Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, 
+	Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
+	Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, 
+	Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, 
+	Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, 
+	Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, 
+	Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, 
+	Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, 
+	Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, 
+	Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, 
+	Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, 
+	Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, 
+	Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, 
+	Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, 
+	Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org, 
+	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, 
+	linux-rdma@vger.kernel.org, selinux@vger.kernel.org, linux-sound@vger.kernel.org, 
+	bpf@vger.kernel.org, linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, 
+	linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
+	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
+	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev
+Subject: Re: [PATCH v2 01/40] mm/vma: fix mmap_prepare file handling, remove
+ file_doesnt_need_get
+Message-ID: <aq01JFp8hRReyY-O@gmail.com>
+References: <20260914-b4-mmap-prepare-vma-flag-sanify-v2-0-7d9781ed5361@kernel.org>
+ <20260914-b4-mmap-prepare-vma-flag-sanify-v2-1-7d9781ed5361@kernel.org>
+ <aquz9Z9JrK_H_E0g@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,220 +124,100 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <ff563467-0bab-43ec-a46c-a4167bc12473@linux.ibm.com>
- <73701ffd-213e-4842-8b40-f719c1eeaed4@iogearbox.net> <1a0b01e5cd8.2843.85c95baa4474aabc7814e68940a78392@paul-moore.com>
- <1a0b021e330.2843.85c95baa4474aabc7814e68940a78392@paul-moore.com> <D5655235-89A8-43EF-8DC4-9DCE6FBC387C@linux.ibm.com>
-In-Reply-To: <D5655235-89A8-43EF-8DC4-9DCE6FBC387C@linux.ibm.com>
-From: Ricardo Robaina <rrobaina@redhat.com>
-Date: Fri, 18 Sep 2026 09:53:28 -0300
-X-Gm-Features: AcwNN1WCd2sEcqEKVCjkhdhtXdMEs14eyYo-vHbnVxc45osvsgf1ffcS0sP15O8
-Message-ID: <CAABTaaB4j+Gr2-7vti6unCqKoRfYa9Cs22NH3HpxJo14r5jKcA@mail.gmail.com>
-Subject: Re: [BUG] audit/powerpc: WARNING at kernel/auditsc.c:1995
- (__audit_syscall_entry) during BPF kselftests (test_progs)
-To: Venkat <venkat88@linux.ibm.com>
-Cc: Paul Moore <paul@paul-moore.com>, Daniel Borkmann <daniel@iogearbox.net>, bpf <bpf@vger.kernel.org>, 
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, audit@vger.kernel.org, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
-	Ritesh Harjani <riteshh@linux.ibm.com>, Hari Bathini <hbathini@linux.ibm.com>, 
-	Saket Kumar Bhaskar <skb99@linux.ibm.com>, Alexei Starovoitov <ast@kernel.org>, 
-	Kumar Kartikeya Dwivedi <memxor@gmail.com>, andrii@kernel.org, Eduard Zingerman <eddyz87@gmail.com>, 
-	yonghong.song@linux.dev, tglx@kernel.org
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: iqxCrRgNdM7DxqhElZkcn56W5r2lB01Z6HsuI7ixCL8_1789736020
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <aquz9Z9JrK_H_E0g@kernel.org>
+X-Debian-User: leitao
 
-On Fri, Sep 18, 2026 at 4:42=E2=80=AFAM Venkat <venkat88@linux.ibm.com> wro=
-te:
->
-> Hi Daniel, Paul
->
-> Hope all is well with your family, Paul, please take care.
->
-> > On 17 Sep 2026, at 9:40=E2=80=AFPM, Paul Moore <paul@paul-moore.com> wr=
-ote:
-> >
-> > [NOTE: correcting the audit mailing list address to audit@vger ...]
-> >
-> > On September 17, 2026 12:06:18 PM Paul Moore <paul@paul-moore.com> wrot=
-e:
-> >> On September 17, 2026 10:03:59 AM Daniel Borkmann <daniel@iogearbox.ne=
-t> wrote:
-> >>> Hi Venkat,
-> >>>
-> >>> On 9/17/26 3:01 PM, Venkat Rao Bagalkote wrote:
-> >>>> Hi all,
-> >>>>
-> >>>> IBM CI has reported a kernel warning triggered in __audit_syscall_en=
-try()
-> >>>> on a PowerPC 64 (ppc64le, POWER9 pSeries guest) system while running=
- the
-> >>>> BPF kselftest suite (test_progs).
-> >>>>
-> >>>> Environment:
-> >>>>
-> >>>>
-> >>>> Kernel version: 7.3.0-rc3-g238650ef6c7c (PREEMPT)
-> >>>> Architecture: ppc64le (POWER9 - IBM,8375-42A pSeries / phyp)
-> >>>> Workload: BPF selftests (tools/testing/selftests/bpf/test_progs)
-> >>>>
-> >>>>
-> >>>> Problem Description:
-> >>>>
-> >>>>
-> >>>> During syscall entry processing (system_call_exception ->
-> >>>> syscall_enter_audit -> __audit_syscall_entry), the kernel hit
-> >>>> WARN_ON(context->context !=3D AUDIT_CTX_UNUSED) at kernel/auditsc.c:=
-1995,
-> >>>> indicating that the task's audit context was not reset to AUDIT_CTX_=
-UNUSED
-> >>>> prior to entering the new syscall.
-> >>>
-> >>> Hm, based on the trace feels somewhat unrelated to bpf, but were you =
-able
-> >>> to bisect in
-> >>> case it can be reliably reproduced? Which tree is this, linux-next or
-> >>> bpf/bpf-next?
->
-> This was tested on the mainline Linux tree (Linus' tree, commit 238650ef6=
-c7c).
->
-> Regarding bisection and reproducibility: the warning does not reproduce w=
-hen running individual tests in isolation (e.g. running kfunc_module_order =
-alone is clean). It is only observed intermittently during the full BPF sel=
-ftests suite run (test_progs / test_progs-no_alu32), so I haven't been able=
- to bisect it to a specific commit yet.
->
-> >>
-> >> Thanks for the report Venkat.
-> >>
-> >> Unfortunately due to some unexpected family medical issues I'm not abl=
-e to
-> >> look into this very closely at the moment (triaging mail on my phone),=
- but
-> >> the related audit code has been fairly stable lately so it seems a bit=
- odd.
-> >>
-> >> I do know that Thomas Gleixner (CC'd) did some work recently on the sy=
-scall
-> >> entry code (audit related commit below), perhaps that may be a place t=
-o start?
-> >>
-> >> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/com=
-mit/?id=3D6f25517010ddd3f8080d7e06b9b1cb1b64b73772
-> >>
-> >> FWIW, I haven't seen this in any of my testing on x86 or ARM, have you=
- seen
-> >> this on other arches besides Power? Also, as Daniel already mentioned,=
- more
-> >> information on the tree would be helpful.
->
-> We have only tested and observed this on PowerPC (ppc64le, POWER9 pSeries=
- guest).
->
-> Attached is the .config file.
->
->
-> Regards,
-> Venkat.
-> >>
-> >> While I don't have access to a Power system, I'm CC'ing Ricardo Robain=
-a who
-> >> also works at IBM/RH and has experience with the audit kernel code. If=
- this
-> >> appears to be specific to Power, he might be a good resource to help
-> >> diagnose and develop a patch.
-> >>
-> >>>
-> >>>> Trace:
-> >>>>
-> >>>>
-> >>>> [ 1371.387510] ------------[ cut here ]------------
-> >>>> [ 1371.387528] WARNING: kernel/auditsc.c:1995 at
-> >>>> __audit_syscall_entry+0x50/0x1b0, CPU#17: test_progs/49616
-> >>>> [ 1371.387539] Modules linked in: dm_verity(E) dm_bufio(E) reed_solo=
-mon(E)
-> >>>> livepatch_sample(EK) tun(E) vrf(E) 8021q(E) garp(E) mrp(E) stp(E) ll=
-c(E)
-> >>>> veth(E) bonding(E) tls(E) rfkill(E) nft_fib_inet(E) nft_fib_ipv4(E)
-> >>>> nft_fib_ipv6(E) nft_fib(E) nft_reject_inet(E) nf_reject_ipv4(E)
-> >>>> nf_reject_ipv6(E) nft_reject(E) nft_ct(E) nft_chain_nat(E) hvcs(E)
-> >>>> hvcserver(E) pseries_rng(E) vmx_crypto(E) sg(E) drm(E) fuse(E)
-> >>>> drm_panel_orientation_quirks(E) xfs(E) sr_mod(E) nvme_tcp(E) sd_mod(=
-E)
-> >>>> cdrom(E) nvme_fabrics(E) nvme_core(E) ibmvscsi(E) ibmveth(E)
-> >>>> scsi_transport_srp(E) dm_mirror(E) dm_region_hash(E) dm_log(E) dm_mo=
-d(E)
-> >>>> [last unloaded: bpf_test_modorder_x(OE)]
-> >>>> [ 1371.387607] CPU: 17 UID: 0 PID: 49616 Comm: test_progs Tainted: G
-> >>>> OE K     7.3.0-rc3-g238650ef6c7c #1 PREEMPT
-> >>>> [ 1371.387616] Tainted: [O]=3DOOT_MODULE, [E]=3DUNSIGNED_MODULE, [K]=
-=3DLIVEPATCH
-> >>>> [ 1371.387620] Hardware name: IBM,8375-42A POWER9 (architected) 0x4e=
-0202
-> >>>> 0xf000005 of:IBM,FW950.80 (VL950_131) hv:phyp pSeries
-> >>>> [ 1371.387626] NIP:  c0000000003e70d0 LR: c000000000352080 CTR:
-> >>>> c00000000000cf00
-> >>>> [ 1371.387631] REGS: c00000000beafaa0 TRAP: 0700   Tainted: G      O=
-E K
-> >>>> (7.3.0-rc3-g238650ef6c7c)
-> >>>> [ 1371.387637] MSR:  8000000000029033 <SF,EE,ME,IR,DR,RI,LE>  CR: 48=
-002824
-> >>>> XER: 20040084
-> >>>> [ 1371.387650] CFAR: c00000000035207c IRQMASK: 0
-> >>>>      GPR00: c000000000034958 c00000000beafd40 c0000000020eb200 c0000=
-000345f4800
-> >>>>      GPR04: 00007fffe2a31184 0000000000000081 000000007fffffff 00000=
-00000000000
-> >>>>      GPR08: 0000000000000000 0000000000000001 0000000000000001 00000=
-000000000dd
-> >>>>      GPR12: 0000000000000000 c00000002e99b300 0000000000000000 00000=
-00000000000
-> >>>>      GPR16: 0000000000000000 0000000000000000 0000000000000000 00000=
-00000000000
-> >>>>      GPR20: 0000000000000000 0000000000000000 0000000000000000 00000=
-00000000000
-> >>>>      GPR24: 0000000000000000 0000000000000000 0000000000000000 c0000=
-000345f4800
-> >>>>      GPR28: 0000000000000000 00000000000000dd 00000000000000dd c0000=
-00138e0c000
-> >>>> [ 1371.387710] NIP [c0000000003e70d0] __audit_syscall_entry+0x50/0x1=
-b0
-> >>>> [ 1371.387715] LR [c000000000352080] syscall_enter_audit+0x90/0xd0
-> >>>> [ 1371.387722] Call Trace:
-> >>>> [ 1371.387725] [c00000000beafd40] [c000000000937050]
-> >>>> selinux_task_getpgid+0x80/0xa0 (unreliable)
-> >>>> [ 1371.387735] [c00000000beafda0] [c00000000beafde0] 0xc00000000beaf=
-de0
-> >>>> [ 1371.387741] [c00000000beafe00] [c000000000034958]
-> >>>> system_call_exception+0x448/0x480
-> >>>> [ 1371.387749] [c00000000beafe50] [c00000000000d05c]
-> >>>> system_call_vectored_common+0x15c/0x2ec
-> >>>> [ 1371.387757] ---- interrupt: 3000 at 0x7fffab74cbf0
-> >>>>
-> >>>>
-> >>>> Please let me know if additional logs, config, or repro details are =
-needed.
-> >>>>
-> >>>> Regards,
-> >>>>
-> >>>> Venkat.
-> >
-> > --
-> > paul-moore.com
-> >
-> >
-> >
->
-Hello eveyone!
+On Thu, Sep 17, 2026 at 12:33:41PM +0300, Mike Rapoport wrote:
+> On Mon, Sep 14, 2026 at 03:57:21PM +0100, Lorenzo Stoakes (ARM) wrote:
+> > The map->file_doesnt_need_get flag is confusing and the existing
+> > implementation has holes.
+> > 
+> > Drivers are permitted to change the owning file of a mapping. If they do
+> > so, they are required to take a reference on that file.
+> > 
+> > The mmap() operation which ultimately invokes __mmap_region() is guaranteed
+> > to drop the refcount for the original file the mapping was made under, but
+> > this is not true for the replaced file.
+> > 
+> > This has been addressed so far by tracking map->file_doesnt_need_get, which
+> > is rather poorly named and unfortunately fails to correctly track whether
+> > or not an additional put were needed in a number of cases.
+> > 
+> > Make life easier by removing this flag, and instead drop the reference for
+> > both mmap_prepare and the deprecated mmap callback in a new function
+> > put_map().
+> > 
+> > Track whether this needs to be done by aligning mmap_state with
+> > vm_area_desc and store the original file in the map->file field, keeping
+> > the updated file in map->vm_file.
+> > 
+> > In order to have the same behaviour for both types of hooks, only drop the
+> > reference __mmap_new_file_vma() itself took in its error path, deferring
+> > the replaced file's reference to put_map().
+> > 
+> > To make this work correctly, map->vm_file has to be updated before any
+> > error handling, so update __mmap_new_file_vma() and call_mmap_prepare() to
+> > set this field first.
+> > 
+> > Also when mmap_prepare() changes the file and is then merged, the reference
+> > count also must be decremented, so update the logic to call put_map() in
+> > this case too.
+> > 
+> > Also update __compat_vma_mmap() to manually perform this step for stacked
+> > file systems using the compatibility layer, and update
+> > compat_set_vma_from_desc() to replace vma_set_file() with a correct
+> > refcount/file update.
+> > 
+> > No in-tree driver is impacted by the incorrect implementation of this
+> > currently (no driver that does this is mergeable for one), so this does not
+> > need to be a fix.
+> 
+> But the patch iteslf needs to be fixed :)
+> 
+> It seems to be the change that broke the CI.
+> 
+> The rest is from LLM, take it with a grain of salt :)
+> 
+> mm-ci mm-unstable red build - bisect analysis
+> ==============================================
+> 
+> Bad commit: 2a937a04babf1 "mm/vma: fix mmap_prepare file handling, remove
+> file_doesnt_need_get" - first patch of Lorenzo Stoakes' 40-patch series
+> "mm: make VMA flag semantics explicit, eliminate VM_SPECIAL" (v2).
+> https://lore.kernel.org/all/20260914-b4-mmap-prepare-vma-flag-sanify-v2-0-7d9781ed5361@kernel.org
+> 
+> Symptom: tools/testing/selftests/mm/pfnmap.c triggers
+> "BUG: Bad page map in process pfnmap" during __zap_vma_range()/vm_normal_page(),
+> seen on process exit/munmap. CI's run-mm-selftests.sh greps guest dmesg for
+> BUG|WARNING and fails the job regardless of the test's own exit code.
 
-Thanks for looping me in, Paul and for sharing more details, Venkat.
+I am seeing something similar here and stress-ng can reproduce it:
 
-At first glance it seems that the audit_context, for some reason, has
-not been cleared. I'll reserve a ppc64le machine and look into this
-over the next week.
+      WARNING: mm/memory.c:3225 at do_remap_pfn_range+0x9b4/0x9f0, CPU#25: stress-ng-dev/354858
+      Call trace:
+       do_remap_pfn_range+0x9b4/0x9f0 (P)
+       remap_pfn_range_complete+0xac/0xd0
+       mmap_action_complete+0xcc/0x3d8
+       mmap_region+0xb54/0x1978
+       do_mmap+0x588/0xb18
+       vm_mmap_pgoff+0x1e4/0x320
+       ksys_mmap_pgoff+0x2d8/0x510
+       __arm64_sys_mmap+0x100/0x128
 
--Ricardo
-
+      BUG: Bad page map in process stress-ng-dev  pte:0160000000000fcf
+      addr:0000ffe8d9080000 vm_flags:00000071 anon_vma:0000000000000000 mapping:ffff0000a0c4ea98 index:0 (file) ffe8d9080 (anon)
+      file:mem fault:0x0 mmap:0x0 mmap_prepare: mmap_mem_prepare read_folio:0x0
+      Call trace:
+       print_bad_page_map+0x63c/0x740
+       vm_normal_page+0x228/0x240
+       __zap_vma_range+0xbe0/0x34a0
+       unmap_vmas+0x240/0x318
+       unmap_region+0x12c/0x238
+       vms_complete_munmap_vmas+0x318/0x958
+       do_vmi_align_munmap+0x254/0x2f8
+       do_vmi_munmap+0xc4/0xf8
+       __vm_munmap+0x174/0x288
+       __arm64_sys_munmap+0x70/0x90
 
