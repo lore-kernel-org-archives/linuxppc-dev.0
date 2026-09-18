@@ -1,81 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-27662-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27663-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54B53C88E75
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 06:42:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77185C982D2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 07:04:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hmNMk3Glhz2y2W;
-	Fri, 18 Sep 2026 16:42:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789713730;
-	cv=none; b=F1i2lspP1Nst0OsUVlu/rEIl2JijFEfbQ41kAeb/8cfMRYazAro7K8zmRI4LnqQPCK5t7VInegvwq+8ZndQ3ywforqVDdsgpb20RgFl9lK1wm1tPz5ueNy63gU4HHAV6QcGwlJDF3lPeXYqus2pnHQt9GoJEouETBDmhJ18W+22tWUqhfCYBcPz+2A+2gJQBDYjz28vC7bayyAA9RV3S0032CeDH/OmARFY9Tam+NP1p98L2aWhiJ0YP6If32dDjUxiN5glU43EIlZAU8/z97JDtKRQepQa2L9gs5AT5BoaYuHA8gM7U+FLxtObX/DmkxSjlui5Iz6XR3lRW2VKM4Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hmNs42Yqmz2y2W;
+	Fri, 18 Sep 2026 17:04:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789715048;
+	cv=none; b=TGOEAy65vgeODB0/A9GrvF+4BXrAoXEufKWMg5KKTycwRFe0UGlLVvGOq48359P1Wd00nffGCl1OdKidn0rykNxpFiDlYGAruhMZTzLb9C/B+O1xPsqGKC0BAwrvBsRxxS1Rx9YzrnWKWhrnAAH4DgGIa/sGMGNkvlHSL7bV8f9x0/3o3iLaST5sHLIpZPjCbEBv6O3UTd4dPumTOqLU613DxkVw8KolROOIKvwq+wlais0SHl7Sy8B1JqPJ3HmA/fSHN97Omd5XvolrwzcjweqcGh6dzps6+XbXDmckqo1+gqWMtIpoff6hTXctXrXPu9w4Wl1pUhokU8Mn3g4ttA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789713730; c=relaxed/relaxed;
-	bh=6Ff/k2AQNw9Zhejj8Wnz7dSuHmbKQb6zOecLLIG7u+g=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Eh0ABk4RiSTiuBaiCHEwk9+QjTkfHK4DpdIVbFr6EnGdx/LoKDlRK5rxasOzJEBPZ9bit13Ue8Wr2Yjs+2uQq6Hz+KmE/QDwWQClZLJJycuFjdXU5KJfMKAz+NZXpqiWrK//PZxLH6kVnkZjX4X+vhgsLgvRzYc8Xvq2ur1/kUkJ3/iWK1RyiWI080tUhZg72/eT6XHTUOCb5TdkupDDrtzYE3Xwlx/5A+xf7rICwvBvkNQ7gLI9IONkW+6idFARxLj7KWDV0HFnrydnmF/jb7dKc75B3pJVUySsyaou8LVU4CSyxj0PF6h920e07UEIOQKVk+bdvB9637RWqQyg6Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kMzt8Zn6; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shirisha@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1789715048; c=relaxed/relaxed;
+	bh=C99qchwVmIf8eGzA2KZRAlNCqTMDn2E/1eNOjto5V1g=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=fMDgWUXFow3LQxwfbvtti3nQwZe+DolBxqvtFgQ1xEhTYTaBAlp4348xruaMFGMFSKUbi9GfIlxPvIV+CVIwCi9YjJ4GJmgeIMgzTKnCX9bOENwZxSNpCe/k1gcs/YHX9e1v2naHmjA3V6REoGIvx2aCXE3Nb01fpN6NNdqc34GucM5XTbA+M6PBsCpig+9hYpk4fYGrJU4jMIEwPrrDZslo2hTfePGHBl9uoddPxsmqUwdMFyCTxZqCPsZtWeN1lERudnHIZbvI3ao54k0RcLDnE7IRwPPd9ULJvBNaDctdhdfIbzFNdgiatRdgxVn2Li1vX+lBaqbbSnGdwit02w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jWKDEaWg; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kMzt8Zn6;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jWKDEaWg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shirisha@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmNMj0Mzwz2xYg
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 16:42:08 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68I2VhEm4092216;
-	Fri, 18 Sep 2026 05:23:42 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=6Ff/k2
-	AQNw9Zhejj8Wnz7dSuHmbKQb6zOecLLIG7u+g=; b=kMzt8Zn6x5QPHoR7sxRyrC
-	tPiNwKrEmjDC2pnG0H6caQTY2VuFZIx5z8G7CnYa13QL42Y9lRlv0oBzAnUoh+nH
-	Iady+2rsjZbg9vnKzDQZIhs62UKDGy57YwmiGNYT3eW+GXPU2wu8vBCf1ssomgB0
-	f76+N3Cs0Ai1lMw4Ks1pD6TfccM/tklIRXaddh6IqnPVX2Vwqlhvc8I0sV5fifx3
-	EuSoNXpHzbRFp2CySapToRF0y2j0yFjTKiwQB9Cnfz0fjP65k+Zu0yy0QHgU5D/6
-	TULut12cWFyqPQHQt9WtoJnlRSSbFF1419QyS1jR/Uoti4J84NJ4R+zju3355KvQ
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gmv5j63a4-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 18 Sep 2026 05:23:41 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68I2Z4HU4128766;
-	Fri, 18 Sep 2026 05:23:41 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gra3fcy5b-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 18 Sep 2026 05:23:41 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68I5Nbfj32309794
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 18 Sep 2026 05:23:37 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6BD1020043;
-	Fri, 18 Sep 2026 05:23:37 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B23E920040;
-	Fri, 18 Sep 2026 05:23:33 +0000 (GMT)
-Received: from li-d12addcc-2792-11b2-a85c-bd8df30615ab.ibm.com.com (unknown [9.66.68.7])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 18 Sep 2026 05:23:33 +0000 (GMT)
-From: Shirisha G <shirisha@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kselftest@vger.kernel.org, maddy@linux.ibm.com,
-        venkat88@linux.ibm.com, shirisha@linux.ibm.com
-Subject: [PATCH 2/7] Subject: [PATCH] selftests/powerpc: Add NVRAM access test
-Date: Fri, 18 Sep 2026 10:52:37 +0530
-Message-ID: <20260918052321.932660-2-shirisha@linux.ibm.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260918052321.932660-1-shirisha@linux.ibm.com>
-References: <20260918052321.932660-1-shirisha@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmNs21Z4Wz2xYg
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 17:04:06 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id D0D1941842;
+	Fri, 18 Sep 2026 07:04:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 136851F000FF;
+	Fri, 18 Sep 2026 07:03:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789715043;
+	bh=C99qchwVmIf8eGzA2KZRAlNCqTMDn2E/1eNOjto5V1g=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=jWKDEaWgQ8tOV8amlp5t9MgYwzBijBFVifWz9yuQo8X4L5EFh32Flzu4XXAbDfnGm
+	 UDL93p7kB9G3Rd42nYwUtj6uT0m3roRBv2y8vs/mC/hhbavAalLWNzIamZ9CawgJa5
+	 pHnOvDOLIlc6CP9lOwT216XgLvfodA7hkiX+FB/0Ct+bfDmyj/AqncmimtUagrt8Eb
+	 oF0sbTAHHKTDObi0AO6aHDc2FHQ2Fy45mE5vliTDkO5ZU6YC6Yt14abrG5j+Mj0rNr
+	 Yjv8AMXd9/oiS5ceTffHmQV+p3xP+CkZLZuUIpC2CQ619hXKr9pxjr41fijo1ig8F1
+	 DgCMlNLI1L+8Q==
+Message-ID: <24aedc8c-a5c6-418b-a37e-051f0d6d9fa7@kernel.org>
+Date: Fri, 18 Sep 2026 09:03:55 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,192 +59,131 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v8 03/10] mm/vmalloc: use pte_set_huge()/pte_clear_huge()
+ for PTE-level block mappings
+To: Barry Song <baohua@kernel.org>
+Cc: Wen Jiang <jiangwenxiaomi@gmail.com>, akpm@linux-foundation.org,
+ catalin.marinas@arm.com, linux-mm@kvack.org, urezki@gmail.com,
+ will@kernel.org, Xueyuan.chen21@gmail.com, ajd@linux.ibm.com,
+ anshuman.khandual@arm.com, david@kernel.org, dev.jain@arm.com,
+ jiangwen6@xiaomi.com, leo.yan@arm.com, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, rppt@kernel.org,
+ ryan.roberts@arm.com
+References: <20260917052933.188679-1-jiangwenxiaomi@gmail.com>
+ <20260917052933.188679-4-jiangwenxiaomi@gmail.com>
+ <27072d94-13bf-4bea-948a-d8a67976601e@kernel.org>
+ <CAHKocdE_zyUQT459AiTBDzQHk0jh+VpXuSMDdgHjkg-dAkgBNg@mail.gmail.com>
+ <CAGsJ_4yJ-KCHbJ9S2GKXfO51KB8g-y2Q_MikqE9-6VesR-RC9Q@mail.gmail.com>
+ <2462f67c-f7d3-4eb3-a093-6a338ef49f14@kernel.org>
+ <CAGsJ_4zMG6v-ioi8-NhveqowPVAnsHkFCNy_c7+KHDMRW3JH-Q@mail.gmail.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <CAGsJ_4zMG6v-ioi8-NhveqowPVAnsHkFCNy_c7+KHDMRW3JH-Q@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE4MDA2NCBTYWx0ZWRfX4vbSnxLxCEMZ
- qWjVeL2xM51TyVYU8YQ1qZIW4Knhdvj/w9NEmmBny//AaCdAREBnr4NqwIrxRWYmKSu2mfBxW69
- wEwAK+op1m2AJJZPFAaTvbyGTG5FhIVmUjx1xkW7RNgMaROg2UUeOMLd4Yii54bjEm+myZSTq2M
- 7n+SB8ubkg5MBf0A4IlfPP3Odm29yY0A/3NoX2WoK+pGMm/qGBGdDw53Oxf8OenEB00z7uhGptn
- U4fRXOs8irkfUKAXzb2FJnFR/Iz/j3aJ5xhsCUL3aUNToUlkwF09SmgXx3WXeI8dqdK036714CN
- TR/eYnJ5Tmy0GozmSeeDpWAh8Q3Tz/S0HLTBOxM2DX8EEOJN7x1VJP/Xa3lt8LsgP18nHHax6Lv
- UdkUubyC0iIZIxIUNrqhtGvko2MyvX2bY+iMXgRl7L5PmbW5zzsusFKfkrnTYlOGj7Js4imWXWy
- h+Lig0DFzz4LvUQIT1A==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE4MDA2NCBTYWx0ZWRfXxEaWHmlscVTg
- ZaiumB1GsWsYPWf9LxYTThzLRHOop4p6t0iyNO4tlEvon8+vFknkt4eq8rVZll/leAL9hlOhLNx
- tNmi55O0qnBIasH4XkIKbkbtIPPdZNA=
-X-Authority-Analysis: v=2.4 cv=Zsx4uN7G c=1 sm=1 tr=0 ts=6aaccade cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8
- a=DMQjfiTAl8tXje2OjmwA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: vUCDbKeqlxPu80BcQ9wAOU6YVTvvlEh5
-X-Proofpoint-GUID: vUCDbKeqlxPu80BcQ9wAOU6YVTvvlEh5
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-18_01,2026-09-16_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 impostorscore=0 clxscore=1015 priorityscore=1501
- lowpriorityscore=0 bulkscore=0 adultscore=0 phishscore=0 spamscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
- definitions=main-2609180064
 
-Add kselftest for NVRAM access on pseries/PowerVM systems. This test
-validates basic device operations and partition discovery via pstore,
-which replaces the legacy /proc/ppc64/nvram interface.
 
-The test verifies:
-- Existence and readability of /dev/nvram
-- Discovery of NVRAM partitions from /sys/fs/pstore
-- Correct parsing of partition names and indices
-- Basic read and lseek operations on the device
-- Overflow protection by rejecting reads beyond device size
 
-Signed-off-by: Shirisha G <shirisha@linux.ibm.com>
----
- .../selftests/powerpc/rtas/nvram_test.c       | 131 ++++++++++++++++++
- 1 file changed, 131 insertions(+)
- create mode 100644 tools/testing/selftests/powerpc/rtas/nvram_test.c
+Le 18/09/2026 à 08:14, Barry Song a écrit :
+> On Fri, Sep 18, 2026 at 2:05 PM Christophe Leroy (CS GROUP)
+> <chleroy@kernel.org> wrote:
+>>
+>>
+>>
+>> Le 17/09/2026 à 23:44, Barry Song a écrit :
+>>> On Thu, Sep 17, 2026 at 10:41 PM Wen Jiang <jiangwenxiaomi@gmail.com> wrote:
+> [...]
+> 
+>>>>>>
+>>>>>> diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
+>>>>>> index cdd68ed3ae1a9..349ced999f959 100644
+>>>>>> --- a/include/linux/pgtable.h
+>>>>>> +++ b/include/linux/pgtable.h
+>>>>>> @@ -2134,6 +2134,35 @@ static inline int pmd_free_pte_page(pmd_t *pmd, unsigned long addr)
+>>>>>>     }
+>>>>>>     #endif      /* CONFIG_HAVE_ARCH_HUGE_VMAP */
+>>>>>>
+>>>>>> +/*
+>>>>>> + * PTE-level block mappings for vmap.
+>>>>>> + *
+>>>>>> + * pte_set_huge() only has to be implemented by architectures whose
+>>>>>> + * arch_vmap_pte_range_map_size() can return a size other than PAGE_SIZE.
+>>>>>> + */
+>>>>>> +#ifndef __HAVE_ARCH_PTE_SET_HUGE
+>>>>>> +static inline void pte_set_huge(pte_t *ptep, unsigned long addr,
+>>>>>> +                             phys_addr_t phys, pgprot_t prot,
+>>>>>> +                             unsigned long size)
+>>>>>> +{
+>>>>>> +     WARN_ON_ONCE(1);
+>>>>>
+>>>>> BUILD_BUG_ON() would be better here.
+>>>>>
+>>>>> It should be possible because fallback arch_vmap_pte_range_map_size()
+>>>>> will constant-fold PAGE_SIZE so pte_set_huge() will never be called.
+>>>>>
+>>>>
+>>>> Agreed. These fallbacks exist only to keep the build working on
+>>>> architectures with PTE-level block mappings and should never actually
+>>>> be reached, so BUILD_BUG_ON() is right. I'll make that change in v9.
+>>>>
+>>>
+>>> I am not quite sure. It won't be called at runtime because
+>>> `vmap size`/`unmap size` return `PAGE_SIZE`, so the code won't
+>>> reach this branch. But it will still be built.
+>>
+>> The fallbacks are defined as:
+>>
+>> #ifndef arch_vmap_pte_range_map_size
+>> static inline unsigned long arch_vmap_pte_range_map_size(unsigned long
+>> addr, unsigned long end,
+>>                                                           u64 pfn, unsigned int max_page_shift)
+>> {
+>>          return PAGE_SIZE;
+>> }
+>> #endif
+>>
+>> #ifndef arch_vmap_pte_range_unmap_size
+>> static inline unsigned long arch_vmap_pte_range_unmap_size(unsigned long
+>> addr,
+>>                                                             pte_t *ptep)
+>> {
+>>          return PAGE_SIZE;
+>> }
+>> #endif
+>>
+>> Therefore in:
+>>
+>>                   size = arch_vmap_pte_range_unmap_size(addr, pte);
+>>                   if (size != PAGE_SIZE) {
+>>
+>> GCC knows 'size' is const and its value is PAGE_SIZE, so it won't emit
+>> the branch at all.
+>>
+>> It is call constant folding, some explanation here:
+>> https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fen.wikipedia.org%2Fwiki%2FConstant_folding&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C869dac21f28d45988a3d08df154c225a%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639253088878897551%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=Dvtz1%2FAHvAbVYO%2BRaHTOizcD%2FclJ9FqTcWXKMhIFVyw%3D&reserved=0
+>>
+>>>
+>>> So, would a `BUILD_BUG_ON()` trigger a build failure here?
+>>
+>> It shouldn't, if it does it is a compiled bug or this is because someone
+>> has redefined arch_vmap_pte_range_map_size() and not pte_set_huge()
+>> which we'd better know at build time rather than at runtime.
+> 
+> Thanks, Christophe. I was also thinking about compiler optimization. I
+> was just a bit worried that we're touching the common MM code, which
+> affects almost all architectures, so I'm not quite sure whether this is
+> supported by all GCC versions used by those architectures.
+> 
+> If it is supported by all of them, I agree that `BUILD_BUG_ON()` is a
+> perfect approach.
 
-diff --git a/tools/testing/selftests/powerpc/rtas/nvram_test.c b/tools/testing/selftests/powerpc/rtas/nvram_test.c
-new file mode 100644
-index 000000000000..b0582d17324f
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/rtas/nvram_test.c
-@@ -0,0 +1,131 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * NVRAM Access Test
-+ * Copyright (C) 2026 IBM Corporation
-+ */
-+
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <fcntl.h>
-+#include <unistd.h>
-+#include <sys/types.h>
-+#include <dirent.h>
-+#include <errno.h>
-+#include "utils.h"
-+
-+#define NVRAM_DEV       "/dev/nvram"
-+#define NVRAM_PSTORE    "/sys/fs/pstore"   /* replaces dead /proc/ppc64/nvram */
-+#define NVRAM_SIZE      8192               /* Typical NVRAM size */
-+
-+struct nvram_partition {
-+	char name[64];
-+	unsigned int index;
-+};
-+
-+/*
-+ * Discover NVRAM partitions from /sys/fs/pstore by listing entries whose
-+ * names contain "nvram".  On RTAS/PowerVM systems /proc/ppc64/nvram does
-+ * not exist; pstore is the authoritative in-kernel view of NVRAM regions.
-+ *
-+ * Returns number of partitions found, or -1 if the directory cannot be
-+ * opened (caller should SKIP_IF the result is < 0).
-+ */
-+static int read_nvram_partitions(struct nvram_partition *parts, int max_parts)
-+{
-+	DIR *dir;
-+	struct dirent *ent;
-+	int count = 0;
-+
-+	dir = opendir(NVRAM_PSTORE);
-+	if (!dir)
-+		return -1;
-+
-+	while ((ent = readdir(dir)) != NULL && count < max_parts) {
-+		/* Only interested in entries that contain "nvram" */
-+		if (strstr(ent->d_name, "nvram") == NULL)
-+			continue;
-+
-+		/*
-+		 * pstore filenames follow the pattern  <type>-nvram-<id>
-+		 * e.g. "rtas-nvram-2", "dmesg-nvram-1".
-+		 * Parse the trailing numeric id as the partition index.
-+		 */
-+		strncpy(parts[count].name, ent->d_name,
-+			sizeof(parts[count].name) - 1);
-+		parts[count].name[sizeof(parts[count].name) - 1] = '\0';
-+
-+		/* Extract trailing index after the last '-' */
-+		char *p = strrchr(ent->d_name, '-');
-+		parts[count].index = p ? (unsigned int)atoi(p + 1) : 0;
-+
-+		count++;
-+	}
-+
-+	closedir(dir);
-+	return count;
-+}
-+
-+int main(void)
-+{
-+	int fd, ret;
-+	char buf[256];
-+	struct nvram_partition parts[32];
-+	int part_count;
-+	off_t offset;
-+
-+	test_harness_set_timeout(10);
-+
-+	/* Test 1: Verify /dev/nvram exists — skip gracefully if not */
-+	SKIP_IF(access(NVRAM_DEV, R_OK) != 0);
-+
-+	/* Test 2: Open NVRAM device */
-+	fd = open(NVRAM_DEV, O_RDONLY);
-+	FAIL_IF(fd < 0);
-+
-+	/*
-+	 * Test 3: Read NVRAM partition table from /sys/fs/pstore.
-+	 * Use SKIP_IF when the directory is absent (part_count < 0) so the
-+	 * test does not hard-fail on kernels/configs that lack pstore, while
-+	 * still failing when the directory exists but is empty (part_count==0).
-+	 */
-+	part_count = read_nvram_partitions(parts, 32);
-+	SKIP_IF(part_count < 0);
-+	FAIL_IF_MSG(part_count == 0, "No NVRAM partitions found in " NVRAM_PSTORE);
-+
-+	printf("Found %d NVRAM partition(s) in " NVRAM_PSTORE ":\n", part_count);
-+	for (int i = 0; i < part_count; i++)
-+		printf("  %s (index=%u)\n", parts[i].name, parts[i].index);
-+
-+	/* Test 4: Read from start of device */
-+	ret = read(fd, buf, sizeof(buf));
-+	FAIL_IF_MSG(ret < 0, "Failed to read from " NVRAM_DEV);
-+
-+	/* Test 5: lseek to start */
-+	offset = lseek(fd, 0, SEEK_SET);
-+	FAIL_IF_MSG(offset != 0, "lseek to start failed");
-+
-+	/* Test 6: lseek to arbitrary offset */
-+	offset = lseek(fd, 100, SEEK_SET);
-+	FAIL_IF_MSG(offset != 100, "lseek to offset 100 failed");
-+
-+	/* Test 7: Overflow protection — read past NVRAM_SIZE must not succeed */
-+	/*
-+     	 * Test 7: Overflow protection.
-+     	 * Discover the real device size via SEEK_END; if the driver supports it,
-+     	 * attempt a read past that boundary — it must return 0 or error.
-+     	 * Do not use a hardcoded NVRAM_SIZE: the actual size varies by platform
-+     	 * and the RTAS driver will happily return data if the seek lands within
-+     	 * the real (larger) device.                                  FIX 2
-+     	 */
-+	off_t nvram_size = lseek(fd, 0, SEEK_END);
-+	if (nvram_size > 0) {
-+		offset = lseek(fd, nvram_size + 1000, SEEK_SET);
-+		ret = read(fd, buf, sizeof(buf));
-+		FAIL_IF_MSG(ret > 0, "Read succeeded beyond NVRAM size");
-+	}
-+
-+	close(fd);
-+	printf("NVRAM test passed\n");
-+	return 0;
-+}
--- 
-2.43.5
+AFAIU this is the assumption made by the kernel, see 
+https://docs.kernel.org/process/coding-style.html#conditional-compilation
 
+This is the same compiler, I see no reason why ability to constant-fold 
+would be dependant on architecture.
+
+Christophe
 
