@@ -1,91 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-27742-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27743-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1B4DC982DA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 14:31:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8E00C982DA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 15:08:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hmZnM1WpFz2y7r;
-	Sat, 19 Sep 2026 00:31:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:39::11"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789741895;
-	cv=none; b=Eq2lGHDIn0OqC5bZ+8vhNHbracs/jZrZp5c326T19efbR3ycSl7b+gR191KcYP0yQ8W/CPprcC6L2Ya+nSlPPfjBL3X2+utDxW57oCf1e977Uu7VBCVu7locDR0Fj/oP1aXu1xgABDpbt/DJjIjVra17RTMOXYJ1tn4prowNOQowGBvLI7XpFvtwKIDjiQ6Y5HkAbmPsB+xgjmd4evPIdIm+HqYF+QCX5dJk3lQSL651K+bN2Q1MnXwKVjrC/C6GTL0QEe/I//478/qQgSCQHqWXCxTKxeDlARi7ee7qQxZ5Gh44Dm5Q7Ao8DlpgSnK8id92qjj5NvhEaQqQ4pmQbw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hmbc934bxz2y32;
+	Sat, 19 Sep 2026 01:08:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789744121;
+	cv=none; b=FIjRQBeCuKGX0KUr6+am2gDxmCrQeOG2ocITPLntSqmKyP4DMtO33xu5PgsddKkOl/h0bC6GEjhFGKva42Y216Qa+f8D1zhYZsorIQfIs2u5mFzsDlsIci+MtxPydtKR1y++J3eDjWkD+FvFeoM3GWVyB7AUNvOdwaNEGDRaQGkHa+s5G/J7bk3omCPXSM0NvSXMBNXd58j0FZ9jILPfnv8wAgOabjutPH3OmACdW88b6Zo+wdwY2P5YMksno1efe9TRwqicF6izU/8ZKo20B47v8G/8qmzpqBnJgRDkL9KmQdMDs1ON63MHH32xa0gOSYknTIM1re30SXjBRzn3aA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789741895; c=relaxed/relaxed;
-	bh=+NOxqyYZTlsnROwyuOcMXRdlQNMNgyRf9TUPDZfpO7c=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=WzeYmEXSCFVQGWxIIe7vGrtc4JQgp2Vv0BJvpH3aPW3M5081sG/s69I5gwu2RyhFcSuAGFiiHvs2Zc5rVCHqCBD/rFLLmoyjioLKR9casFR5CjOU9XPOczvrTDEs3d40nH7q5tRcBOhD/gBTvN7FHv5mFOMLteo7anQUkDK1pe4RmFo6ag8wf47sjxpYgPXJ5a/t3E4szjgJNxBkXpNwLO0w05FvhsIzwaaJivAQpWktoomzLonLhr1OZLfjsvoOCPMvOeM4/AvqDzOe5TpsrQRODuJFZMAdmXuDDdJlZQ6tRv83tf329pmFiP7DjL0208lpIBa0CzvuFZZqHadjsA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=kpstScmw; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::11; helo=mail-pj2-x11.google.com; envelope-from=kaylovefoss@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1789744121; c=relaxed/relaxed;
+	bh=9FvzBA6cASGcUK6x1rx4pNH5R7ZAlQZlhI5xim5ujyI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=VdsgNIND8d0jlVP/U+xlN5jqp3qfkpelZXDDEt1kUJdEujNFaSSl4KY/Kl0iHHDUmPDAMWBdR6H4dBZElcusWiA4MZOk9eEtsiV5R5rffDMD97BghBNC1LHQ+GJV3/IYSUWTfABnNFgkG8EbS/yEAge0GvqcgZ6to4GLnkkvW6JsOmTYmPckxAN9jE8CS+ZZilfkBLLXoGb6o5dK1D4GxpZktNRTIGcAR0ZW4dRjYMfnNQSmx3vHsLy6cl3rJbhnh94HE3sa6+mFTCDGZOpS/YWMDZ2040b8FUhz+BE1tgryuWZ0fXkXn94ml4BkoVRgc41QP4mw8TAJroViLAp+Vw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kR8P7ofN; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=kpstScmw;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kR8P7ofN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:39::11; helo=mail-pj2-x11.google.com; envelope-from=kaylovefoss@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj2-x11.google.com (mail-pj2-x11.google.com [IPv6:2607:f8b0:4864:39::11])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmZnK5mBgz2y32
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2026 00:31:33 +1000 (AEST)
-Received: by mail-pj2-x11.google.com with SMTP id d9443c01a7336-2d747f05ffcso6316315ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 07:31:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789741891; x=1790346691; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=+NOxqyYZTlsnROwyuOcMXRdlQNMNgyRf9TUPDZfpO7c=;
-        b=kpstScmw8dUJDeaq510jKbR8Nrkfm96kuiDMUvyX0iEgFgf1jCpiLbEUU+Ns87GEJc
-         7Szeb64nuvapSxJzTI3aYdZRtuaXxUCOBSLMg3Dx0eTx9J9YSUIgUPIeIFLGfakFpGFG
-         OoBnVCaINC/Ky6F7oqDHpoYA5mzNcC50mvOrQSNn3u2030Dx0e4VIw0O25uJcvnTP+Hc
-         Abq24TstCUtXaIliBRaGkyI4Gyp4Q6/P94KmTfOiiTrqwUzGJoCvtqsSIIaBaopS1ePn
-         4rKeISsFf3Qxzwe6Ahf8xCiYDzEk6CtoEBVS9b4FwWqxZm/yGCdJSjXLjA8MaPkPYTvW
-         kiJQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789741891; x=1790346691;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=+NOxqyYZTlsnROwyuOcMXRdlQNMNgyRf9TUPDZfpO7c=;
-        b=kXrTICKfvxUFacxIJyzN3UxXp3gVmiEOba7gSb5PXVQc4kAN8PY2RyLHGtQDMQnzEx
-         xWq9bprPjOjiqkaUP2L0U+k0biUdv1WZvYVI64U0jEN7cBquYvtdjEHL5sl0fYlIaq6Y
-         7OeMy7eWDEqGhC1o9AFz5E9zSA3etsy5BxM1zUklQDhRu040bu2o3BrxnQGlpDgmEFyN
-         6tseACKYbw7bkT9ClvH51ghvc9oPZwOlTkZHbkJGdKdsR07hvamQeuBrv1J8aH6igBIk
-         gQ1F2TB/rGvxUNOoHY6RNTW8UiN2rkjjxu80PEsTzkbWKxeIZUobY2MSR4CIC8/VU9ND
-         oynQ==
-X-Forwarded-Encrypted: i=1; AKwUvBy8wacHZvcb6NtgqEQ36+2JHFAaEjkIlqtGqAfUNk7FiDVwP8t/CmFRkqwDWcKQb0FMWdqEm18oIbZLXNU=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++n4UnVBXie/dgcNxdSczr+IOgatVOBMs4e0mWWT7ZYvi7yEKhmu
-	zQrCVsyC3cGJRFvjCQC39nF3KrDjfhyuCLFDkYLKYztUEonlzycl6Mjr
-X-Gm-Gg: AYBFou3+COtBGzcF5MV4ec0HcWOxUyXMFj4bNIRvSBQEPXokmvJeFM01YCsBB18vcwG
-	ptKuq8XnnRqHsd66iBdWyxso3pgwxL4QpzGhP20yU4Ss2SOklnoZIDzEiLw0uD3m9x41+bq9QbI
-	AixJ3yE3tMn79q6UKTCJmhVFwyQcHQPPD8ODhGtDvMDnWCvkACTUaHxm/hJqm5NgM8zHXapjy8v
-	pgAqjUN1iPMyoKhRFvlyWS3Y912Lt3HuunJ+optCt+mhAFYz1rkiNwhRPqaPhGnQgbQIfW/NraH
-	VOKerojzy/EBPPxq1eMe7P+grQ1mJ1/e7AjV2yUCGZM0tiHAAgRYGpKKhq4ddUTOmj5VpTa9dhL
-	bCtrJ49x0vVzw0pr50ADzLragHV0OS52TAcnwYyNpFRIIYP+GxBplgSV7r709tuR2/6VI67weNv
-	nt5v5CC4cH8s2xlTTVPvP6VKVMTJDVdwRnD+XT/CyWyBeIS6GI7y5WNwzSalR4kzvGbCCHzOcqe
-	xU9Ued4m5t320g=
-X-Received: by 2002:a17:902:cec5:b0:2d8:d4ce:9f32 with SMTP id d9443c01a7336-2ddb1b79d60mr56947675ad.16.1789741890428;
-        Fri, 18 Sep 2026 07:31:30 -0700 (PDT)
-Received: from nixos ([171.239.145.84])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ddb7527947sm9188825ad.21.2026.09.18.07.31.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 18 Sep 2026 07:31:29 -0700 (PDT)
-From: Bui Nguyen Nhu Quynh <kaylovefoss@gmail.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Christophe Leroy <chleroy@kernel.org>,
-	linuxppc-dev@lists.ozlabs.org,
-	kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH v3] KVM: PPC: Fix callback check in kvmppc_gsm_refresh_info
-Date: Fri, 18 Sep 2026 21:31:24 +0700
-Message-ID: <20260918143124.9913-1-kaylovefoss@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmbc83TBdz2xYg
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2026 01:08:39 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68IDVse71394313;
+	Fri, 18 Sep 2026 15:08:22 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=pp1; bh=9FvzBA6cASGcUK6x1rx4pNH5R7ZA
+	lQZlhI5xim5ujyI=; b=kR8P7ofN/YhkWrJHOiWf6q6ZOOp/FV/1dvzRpiPJLk/P
+	FGjNWrJr9vImLao0dNmxWPiJikXOtcZaHUwpvOWnmDRuL0pGPU1dLkbYmyyiCOLp
+	MUnfrE5z6wu4UVKN9vXGD+IFw2ATw836IB6I2HJBMDbgyr//SOwtedWVPbgIhqWL
+	RePKIT6NAyrRsuXuzFl6uUw1qsa/VnZ+RSgDgesI0fGn0pRg0f6XR0n+eMW7cQp+
+	InkdEjOlWmNMAzpUrtau+4iSWhAFUz1lByFcN6LJJcoUXg7Mu4uWkvCBfEpSWWBE
+	dixUUp+r+4CExfx0nQB2uGpttPZrZn9zLrffKsMovw==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gmxf5gtsm-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Fri, 18 Sep 2026 15:08:21 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68IDNttB1684370;
+	Fri, 18 Sep 2026 15:08:21 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gs4tv8prh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 18 Sep 2026 15:08:21 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68IF8Hqo37093778
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 18 Sep 2026 15:08:17 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 537C720043;
+	Fri, 18 Sep 2026 15:08:17 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F0E5920040;
+	Fri, 18 Sep 2026 15:08:14 +0000 (GMT)
+Received: from li-7bb28a4c-2dab-11b2-a85c-887b5c60d769.ibm.com.com (unknown [9.39.18.35])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 18 Sep 2026 15:08:14 +0000 (GMT)
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+To: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: sshegde@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org,
+        msuchanek@suse.de, ritesh.list@gmail.com
+Subject: [PATCH] powerpc/ftrace: Don't restore r13 during ftrace_regs_caller
+Date: Fri, 18 Sep 2026 20:38:10 +0530
+Message-ID: <20260918150811.1743769-1-sshegde@linux.ibm.com>
 X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260907145626.7675e892-56-amachhiw@linux.ibm.com>
-References: <20260907145626.7675e892-56-amachhiw@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,40 +86,121 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: m2gLy_VreWRdMN6iJVAqoHsHylAy2TtJ
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE4MDIxNCBTYWx0ZWRfXxXh6hvW5QiEe
+ qLFfzrAjyhKxcJYPzSqoAcNwMZRoNg51lIiriE7GQHmoMDroUkq4sWhxbG9cBC35/6STshl+3hG
+ WgtNy4qYLRqVYA+Xdk3oIqMfCP4iEpg=
+X-Authority-Analysis: v=2.4 cv=cvgOAF4i c=1 sm=1 tr=0 ts=6aad53e6 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=5793ORmOmheN9jAXARAA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: 9yj6e0EcyvcQnHwSMx9Fp2PkNCEWLEuS
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE4MDIxNCBTYWx0ZWRfX1CLx15bgIrV7
+ sXLoofMWcA5+PWcwo8SZhZ4AyhLnXSGPUivahK+dXS7Z/7Unwoy74NDzeYLk04xYMkzwro1D1u6
+ by93qF0hrWat/FDlyJ0Dd04CesaCKbEyZFuh+I5ncUE4iVZh85kcx62ON1uqx/EkfL86jb1nECV
+ spN9HxMMeDnh5flVvgqwaoASXnE5IjMyavh4LpJixFhDFyQq+k4ML7lSNxZvfSnoHc32JES9UfC
+ //Sa0QYSPHT5SBmgUBxPppRVY3CdnUoq+3c1vCa2KlxotaPwqFbEToEHbAqjm3yye1uNQ2YjDhV
+ ATZQx6icKKfRYqYU9zj0HQVZk1C6hefMUMi0QvaaelatDemKPb9w8wm+3fhUPiEZlC6E567dg9m
+ hy4p92/000zkdPk1f31GLGNuoPFgs8+HsPr6Lpi4lRTpi3cRp5ZMh7kb5GoPLLuYmIB4ovKjKyi
+ d2q38juz1+iGKgTSJBg==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-18_04,2026-09-16_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 lowpriorityscore=0 clxscore=1015 priorityscore=1501
+ suspectscore=0 bulkscore=0 impostorscore=0 phishscore=0 spamscore=0
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
+ definitions=main-2609180214
 
-The kvmppc_gsm_refresh_info() function incorrectly checks for the
-presence of the fill_info callback instead of refresh_info.
+Michal reported a stack-protector failure and subsequent panic when
+running kernel builds. This was observed with full/lazy preemption.
+Initially it was suspected as KVM, but later turned out to be due
+to a bcc tool running in parallel.
 
-This can lead to:
-- NULL pointer dereference if refresh_info is NULL but fill_info is present
-- EINVAL return if refresh_info is present but fill_info is NULL
+Issue was recreated using a bcc tool. 
+For example, running below in parallel leads to crash.
+./funccount sched* -d 100 and make -j 64
 
-Fix this by checking the correct callback.
+The same crash was observed when running kprobe for schedule() function,
+while simpler function tracer for schedule() didn't cause the crash.
+This helped to narrow it down to ftrace backed kprobes area.
 
-Fixes: 6ccbbc33f06ad ("KVM: PPC: Add helper library for Guest State Buffers")
-Signed-off-by: Bui Nguyen Nhu Quynh <kaylovefoss@gmail.com>
+The crash occurs as follows:
+
+ftrace_regs_caller entry on CPU A
+    |
+    +-> save r13 = CPU A PACA into pt_regs
+    |
+    +-> call kprobe_ftrace_handler()
+            |
+            +-> ftrace_test_recursion_unlock()
+                    |
+                    +-> preempt_enable
+                    +-> task can schedule and migrate to CPU B
+                    +-> task resumes with live r13 = CPU B PACA
+    |
+    +-> REST_GPRS(2, 31)
+            |
+            +-> restore saved r13 = CPU A PACA
+    |
+    |-> The task then continues running on CPU B with r13 pointing
+    |   to CPU A's PACA.
+
+The stack-protector canary is accessed through the PACA. After the task
+migrates, CPU A may run a different task and update its PACA with that
+task's canary. Restoring the saved r13 then causes the migrated task's
+saved stack canary to be compared against the canary in CPU A's PACA,
+resulting in a stack-protector failure.
+
+Similarly, current is resolved through the PACA. With a stale r13,
+preempt_count() can access the state of the task referenced by CPU A's
+PACA instead of the task running on CPU B. This results in corrupted
+preempt-count warnings and scheduling-while-atomic failures.
+
+This path for example is called when using kprobes and parallel kernel builds
+can cause preemptions during ftrace_test_recursion_unlock.
+
+Do not restore r13 from the saved register frame. If the task did not
+migrate, the live r13 already has the saved value. If it migrated, the
+live r13 contains the correct PACA pointer for the CPU on which the task
+resumed.
+
+Fixes: 153086644fd1 ("powerpc/ftrace: Add support for -mprofile-kernel ftrace ABI") 
+Reported-by: Michal Suchánek <msuchanek@suse.de>
+Closes: https://lore.kernel.org/all/aqKfsVArHHaIK6M9@kunlun.suse.cz/
+Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
 ---
-v3:
-- Resend to fix whitespace handling issue on v2. No code changes.
+PS:
+Fixes is the initial commit that introduced this restore regs almost
+10 years ago, all commit afterwords are code refactors changing the
+code layout. Also backporting all the way maybe tricky.
+Backport can easily happen till aebd1fb45c622.
 
- arch/powerpc/kvm/guest-state-buffer.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/trace/ftrace_entry.S | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kvm/guest-state-buffer.c b/arch/powerpc/kvm/guest-state-buffer.c
-index 42843eca6727..aeb586ba4523 100644
---- a/arch/powerpc/kvm/guest-state-buffer.c
-+++ b/arch/powerpc/kvm/guest-state-buffer.c
-@@ -598,7 +598,7 @@ EXPORT_SYMBOL_GPL(kvmppc_gsm_fill_info);
- int kvmppc_gsm_refresh_info(struct kvmppc_gs_msg *gsm,
- 			    struct kvmppc_gs_buff *gsb)
- {
--	if (!gsm->ops->fill_info)
-+	if (!gsm->ops->refresh_info)
- 		return -EINVAL;
+diff --git a/arch/powerpc/kernel/trace/ftrace_entry.S b/arch/powerpc/kernel/trace/ftrace_entry.S
+index 6599fe3c6234..54c8727b48cd 100644
+--- a/arch/powerpc/kernel/trace/ftrace_entry.S
++++ b/arch/powerpc/kernel/trace/ftrace_entry.S
+@@ -220,7 +220,9 @@
  
- 	return gsm->ops->refresh_info(gsm, gsb);
+ 	/* Restore gprs */
+ 	.if \allregs == 1
+-	REST_GPRS(2, 31, r1)
++	REST_GPRS(2, 12, r1)
++	/* Do not restore a stale PACA pointer if the task migrated */
++	REST_GPRS(14, 31, r1)
+ 	.else
+ 	REST_GPRS(3, 10, r1)
+ #if defined(CONFIG_LIVEPATCH_64) || defined(CONFIG_PPC_FTRACE_OUT_OF_LINE)
 -- 
-2.54.0
+2.52.0
 
 
