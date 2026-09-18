@@ -1,82 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-27749-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27750-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4C19C982DE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 17:58:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D84CC982D8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 18:16:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hmgMk1Sf3z2y22;
-	Sat, 19 Sep 2026 03:58:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789754290;
-	cv=none; b=KTZqutYOBNkByyc5VAQO3j6bnhN9wjrsHoO9KyKNduEgM4omlHnRsu4xYTlS3i7l0jeSVZr3rsPaQ0lvucTn9ki1GMv0S/xW/328ZeUZA3y1WyCHmVmiv2M2/gDJQaIACoPqfFoky7k6mnOOvqV7IbRLmyHyXm96f9JntVaxJQrpkt15l9cjgU9ZZoszK8s/OYus/4lzPZ9A1mFh9h+27C5GctF5HswSbYpqurRwd/Na2BVMjGRIoLRjwH6+8Z3hhzmYCkAmCgIKYc47zhdqg+mMgVSnXaXzVuQW8O1YA+EUZcj4dy+MUCbdBM8VLCoSJyZ+0ChBLl+KsgPUB5CHkw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hmgmH3nkvz2xft;
+	Sat, 19 Sep 2026 04:15:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::545"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789755359;
+	cv=none; b=BKSWOvTNJwxtUxiw5LgD1NtvwpWnfbWz2ITDUf6eRtP+bKv41ewr8J/uV208H3f4+aiKfXnZVpVNU0QXklthQbgu21+v6qqkdBtTf0LS9NDpBxgdPdTIg0058snpdPedVa3CwzFBkT6kiBeAbD6ZAUKDzAJpeF0XXnmOpHUcsG74eIWJ3+IYmfoLlMb29HTHtrrwKIVEggZ5VrEf0sGb1058tO+1MqvE3NoTaWPZeV4WwTRUlxOeiPZKKNDjLx/TssgvNxOgvSSPS6Dm3jGCYGII3gnhgS+aa8w1yzTuY8NVwkIYKUqRZp6yiHdYEvqui36HQluy7I6GyJD5Y+bh3A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789754290; c=relaxed/relaxed;
-	bh=1l9FecZC20se1cRT+U2yFyGnQU1PHlnfgdsZtd2O88c=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=a5QosaipIv2vQ7ZOiwOQ0eqNT5cl6ogU9Jgk1aDMBhKthOZNT12mGgBf7o0jWDgIT1OCGmK96nu2YPaQiv+0Xd+/4+lO+NVvvrREyRlWTTTN+ffnJmOBH/A5T3MqSCx1zzx4qMWoQaL/ef99Xn1JruafmcmaRRA45BgZKroYv0/XHf9nJLx9onM9NVWqicn7iJRp7RT9CNZMBlKyu3wbxF5mp1vWms9K5TFePavA/EwThjS+W7iJjkZ9cXPr3ChRt5Dq8LJt57Ly/06/sSEAm4T5UOcpgOPRk4+O8joSdwoxeY+yN3ikTrQaU4ySObgbXkqZBXCKNb2N6po+gK2BMg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nFMZj+mJ; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=vkoul@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1789755359; c=relaxed/relaxed;
+	bh=OW/egmM7mt/va5mQ7VY7PztEIbg4lcAaL2bbHrTbTPE=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=iE6/5K8CHsufdW31QK6nenB/4oc4Ke5LFv86zhmEbhNc0d18qrvYQCmiSQX6wASX9z7qlKCi9wCauRFwg0hkjg7ixuCnSidFd1wgoAsRK1pipGvZr2NR3hCcflYW7iRj1XITgkfOKVL7hEjy7BrHHR64hys+PlMqYntyEVf33FNJGOpOGwLWrmKcfZ3+Xa/wOzuQ8Rf/scRweQE4TsicchjxrHDsPdvQo7aV5ORCKFlet4D4E4RHTx4YZuswNBoQgIZGvjBkY4VjJVyGJbx/a5KlwSqLxPeueK+VmggYGJsR//zDLX+At1Ne1sEXqw0jHZMlX5hxGS+U4DxdaiSLqQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=PYboRvbT; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::545; helo=mail-pg1-x545.google.com; envelope-from=323-tag0kdowfohvcrdfwmobyuccuzs.qcazwbilddq-rsjzwghg.cnzopg.cfu@flex--rathodpriyank.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--rathodpriyank.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nFMZj+mJ;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=PYboRvbT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=vkoul@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--rathodpriyank.bounces.google.com (client-ip=2607:f8b0:4864:20::545; helo=mail-pg1-x545.google.com; envelope-from=323-tag0kdowfohvcrdfwmobyuccuzs.qcazwbilddq-rsjzwghg.cnzopg.cfu@flex--rathodpriyank.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x545.google.com (mail-pg1-x545.google.com [IPv6:2607:f8b0:4864:20::545])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmgMj3DQ9z2xSV
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2026 03:58:09 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 8645A6057A;
-	Fri, 18 Sep 2026 17:58:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4C6E61F000FF;
-	Fri, 18 Sep 2026 17:58:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789754286;
-	bh=1l9FecZC20se1cRT+U2yFyGnQU1PHlnfgdsZtd2O88c=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=nFMZj+mJxhvA4HWpVg8jsWxsjw/8Tku/xdTQdIfmCtvNrKQzG71Pq6lO5l7ogAmu3
-	 xSxmkOGz51hepFCStCNGeCu/+Ze5Hd4Fn69/4WxiIoM3QKK7tKKDKmxELKSqW0X9Fp
-	 MSTVj0C6gLx6vnYO7pvWlRDtUefL9itkMCiphZ2iVsKY/0rWOf1+NOr2bwnqdQFuqD
-	 u4KKWJz30R6brUDDVRIhYk63gWXR7L+QGUw8mSwfkwLZv0Zl8ZKiK8/3yrzQjZv775
-	 XHh3z5QI+9nuenRHdEA4MblSnGphwadG3ucTl6ozc2y0hmaoE+g5hdfUnPX3Cuxxd0
-	 awqMuDYbtnpEA==
-Date: Fri, 18 Sep 2026 23:28:02 +0530
-From: Vinod Koul <vkoul@kernel.org>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Frank Li <Frank.Li@nxp.com>, Mark Brown <broonie@kernel.org>,
-	Shengjiu Wang <shengjiu.wang@nxp.com>,
-	bui duc phuc <phucduc.bui@gmail.com>, linux-kernel@vger.kernel.org,
-	dmaengine@vger.kernel.org, linux-sound@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	linux-stm32@st-md-mailman.stormreply.com,
-	Dave Penkler <dpenkler@gmail.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Frank Li <Frank.Li@kernel.org>,
-	Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
-	Daniel Mack <daniel@zonque.org>,
-	Haojian Zhuang <haojian.zhuang@gmail.com>,
-	Robert Jarzmik <robert.jarzmik@free.fr>,
-	Lars-Peter Clausen <lars@metafoo.de>,
-	Orson Zhai <orsonzhai@gmail.com>,
-	Baolin Wang <baolin.wang@linux.alibaba.com>,
-	Chunyan Zhang <zhang.lyra@gmail.com>,
-	Olivier Moysan <olivier.moysan@foss.st.com>,
-	Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>,
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-	Alexandre Torgue <alexandre.torgue@foss.st.com>
-Subject: Re: [PATCH v2 7/7] dmaengine: Remove deprecated
- dma_request_slave_channel()
-Message-ID: <aq17qvmxF6nwclkR@parshuram>
-References: <20260918113727.1898998-1-andriy.shevchenko@linux.intel.com>
- <20260918113727.1898998-8-andriy.shevchenko@linux.intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmgmG2nfHz2xSV
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2026 04:15:57 +1000 (AEST)
+Received: by mail-pg1-x545.google.com with SMTP id 41be03b00d2f7-cc52c1b829fso1283271a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 11:15:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1789755355; x=1790360155; darn=lists.ozlabs.org;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=OW/egmM7mt/va5mQ7VY7PztEIbg4lcAaL2bbHrTbTPE=;
+        b=PYboRvbTTGDXpGis+8GsnHVCO/9YIpvm3lTqiGi7irf2yDLXOMpXCHhUGUa30wWNWp
+         88Nfc1lG312ETD0PCo1HkHhGypJ+kbsGY4SM8e4ErQKBF61+5B2MhQa6LmrnXQaQqEW6
+         bcApR690nWltGKy51cGryRyU8zGciZFcbkqF+6NMhjw+dnp/48PvBHEdwHJMOJEO9T2D
+         RuxXc3rpQe3RrI54X/lg2jUzcR5u47vrLe+549VI0oIIAJIrbwD9nQ0XB5yYsEO5kXUX
+         IRkLTUvzj2AjT/GtxjH67SMU/q878ahxPF9C5wMN9RQ6kAsoeX2PzidVCzCd3MzZndas
+         /IBA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789755355; x=1790360155;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=OW/egmM7mt/va5mQ7VY7PztEIbg4lcAaL2bbHrTbTPE=;
+        b=YGyu/U06Jdh+PLoUHVGVd/M/Eql51bz/PyKlmfo1WTmULJ2GtMS0CAcftbZs9FB6Pl
+         X3uz65w6IWqywVtotOPzrBFchBSNv+F5NFQEa+40i7iz0ZQ1tXVSGxi9QLcLGlFgLJ7n
+         a+FQs59gGl49BuAGryvJqJKudjWmfRqzKOtYSP9iPAFO8+HdCbsDXC8Bz47R98nZrhE1
+         SSiQ7+T0oRZv7w8GpbINF0p1dTQQvlXKetVHh2LwBCIruGU0K62+fSkRWby21XxKbhG8
+         OuwE3E7n5l/gHu0czghgXsSdW5xxUaHCCv8BGv0nobZ/gKh0bfdyZbwC9DM3Vo4MlxMg
+         JPvA==
+X-Forwarded-Encrypted: i=1; AKwUvBxiyZlt39N9m4/fil5v/YkdcRJeRm0ccBFdACK3IEuz/w+p/PDYjvYPiAQVFRXkbHH3/ZFTyekCzUnp8sw=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++lXIL5K5onKU0v8wk+ZCzrSyGxAKnwgh/xc3l/skXMy8Ht09QxA
+	zNkRZIOMt1prNkyM7ZDZ4i6t2TtLx1g3ou1zoDMGBV8na7Ey5XsuQNIMCSgl+UjJmPDjB6LeXXH
+	L1cWmhJSaQBe6WJgO4nZrz9IpU6BubZ4zdA==
+X-Received: from pjbiw4.prod.google.com ([2002:a17:90b:4204:b0:39d:a2e8:6890])
+ (user=rathodpriyank job=prod-delivery.src-stubby-dispatcher) by
+ 2002:a17:90a:d40e:b0:39e:6c6a:656f with SMTP id 98e67ed59e1d1-39e6c6a6787mr605040a91.50.1789755355148;
+ Fri, 18 Sep 2026 11:15:55 -0700 (PDT)
+Date: Fri, 18 Sep 2026 18:15:54 +0000
+In-Reply-To: <20260918-b4-fix-aer-memleaks-v4-0-f0a2c21ed1d1@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,22 +77,52 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260918113727.1898998-8-andriy.shevchenko@linux.intel.com>
+Mime-Version: 1.0
+References: <20260918-b4-fix-aer-memleaks-v4-0-f0a2c21ed1d1@google.com>
+X-Mailer: git-send-email 2.55.0.1082.g2b9226bbc0-goog
+Message-ID: <20260918181554.132414-1-rathodpriyank@google.com>
+Subject: Re: [PATCH v4 0/2] PCI/AER: Fix ghes_estatus_pool memory leaks in
+ error handling
+From: Priyank Rathod <rathodpriyank@google.com>
+To: Mahesh J Salgaonkar <mahesh@linux.ibm.com>, "Oliver O'Halloran" <oohall@gmail.com>, 
+	Bjorn Helgaas <bhelgaas@google.com>
+Cc: Lukas Wunner <lukas@wunner.de>, 
+	Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>, 
+	Jonathan Cameron <jonathan.cameron@oss.qualcomm.com>, 
+	"=?UTF-8?q?Ilpo=20J=C3=A4rvinen?=" <ilpo.jarvinen@linux.intel.com>, Dave Jiang <dave.jiang@intel.com>, 
+	linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Priyank Rathod <rathodpriyank@google.com>
+Content-Type: text/plain; charset="UTF-8"
 
-On 18-09-26, 13:34, Andy Shevchenko wrote:
-> No more users.
-> 
-> Reviewed-by: Frank Li <Frank.Li@nxp.com>
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+[+cc Kuppuswamy, Jonathan, Ilpo, Dave - you have reviewed most of the
+ recent aer.c changes, so adding you here]
 
-I thought I had acked earlier one. Here is it again
+Hi all,
 
+Adding the reviewers who have been active in drivers/pci/pcie/aer.c, as
+this series has not had review feedback since v1 (3 Aug).
 
-Acked-by: Vinod Koul <vkoul@kernel.org>
+Short summary: ghes_handle_aer() hands a ghes_estatus_pool allocation to
+aer_recover_queue(), which returns void, so ownership sits with the AER
+code. Two paths drop it without freeing - kfifo overflow in
+aer_recover_queue(), and a dequeued record with no matching pci_dev in
+aer_recover_work_func(). Under a sustained error storm this drains the
+pool, which then breaks GHES hardware error reporting system-wide.
 
--- 
-~Vinod
+v4 adds the Fixes: e2abc47a5a1a tag and Cc: stable that earlier
+revisions were missing, and is rebased onto v7.3-rc3+ (applies cleanly
+to pci/next as well).
+
+Review feedback very welcome - happy to respin in whatever shape you
+prefer. One open design question I would specifically like an opinion
+on: patch 1 frees the buffer inside aer_recover_queue(), which bakes the
+ghes_estatus_pool ownership assumption into an exported symbol. The
+alternative is to make aer_recover_queue() return int and let
+ghes_handle_aer() free its own allocation. I went with the former
+because aer_recover_work_func() already frees unconditionally to the
+pool, but I am happy to switch if you consider the exported-API
+contract cleaner.
+
+Thanks,
+Priyank
 
