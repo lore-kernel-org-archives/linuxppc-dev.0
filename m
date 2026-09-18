@@ -1,108 +1,91 @@
-Return-Path: <linuxppc-dev+bounces-27736-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27737-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E70AC982DA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 11:52:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F403CC982DA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 12:54:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hmWFm549Lz2y7r;
-	Fri, 18 Sep 2026 21:52:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789732348;
-	cv=none; b=eJ5HXZdwuZshrtB31YbID6K+Mq77RSCbmJTZigAKOvuowRoUO9MlsHaK3zeGMl8lbDy8ynz7HzAf9vWtQiw5VMYYniJnCesp1teAxThPZ4SeFIfrL196j8ttVQN8dVp/Yuxs0HRCZ3oEjzAgFe5gD7Kk1Vsq2o+aLh5A2TcoSADEqPqS1khvpGBL75ZdAtlPhcZBf6/kYKSlVY2RQKflA4ubJCn0xGpN0V3dnI8DnXHcGgPFlYfjaPhCqLD181IzW8yqenk/u4SUz+2qmxA62R56V8R805dKkYcv0ELofyC0ZkHGrfLql3bjP5v4VZlgbB6Y3b1IJQq6XBQg/AOU8g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hmXcl68Nkz2y7r;
+	Fri, 18 Sep 2026 22:53:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789736039;
+	cv=none; b=OTjufTl+khE9ZzS77BnP/QFOd1CDxTy9QJllPHnqh+COoGRg8nwlaM++gECtdQ0dqg8DW7oj2UEvsgA8SXI/uQGkPG8Wm53RPx7QplYYVW7Osqg339jTqRhzD3nEJA4sikVWUstInzjbqjIZC8Gl+UcX6/EEv7IPjEhDphsSc5y8PHUVLNGlrxph9cvKakIhSm5aWJ1JRUM+lzd8/Z3evczI9MXpl8gsAOlGQC5R8g1xkoVo6Gx5izjkEJR6tQtzvv0aJaEhL9V7hxDe+cnpZMdfX41bWKKgK2bY1ciazYPJslYfXDYhA4YV7QbyjVoy+ZZcaue3pI383wwDYMnuIQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789732348; c=relaxed/relaxed;
-	bh=Qt1Qm1bLvFfwd/Vs+YTzayo+9PIjKro/nYVqtJclg+k=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MW33LyCKvvhWYL52hKQVTE/Eur0ViwAiOXB7MVWLcXadLwJolUHOt10cC88lxCCrPxCOiiKFRpMMI3OKUC9Cex1Dl98e85BVg1toAl3OXyVK184qQf8HDuoz7xK5Mnmc84fDJ03TN+xjhfXNCLKEkeXChI59L+kWer1HrBguvmFgvstVj5a1lbyPLoUtboqOzy8gV9ZRrZJLgXDJuV59H5Oa8bJzpI/Q/2ShSiHts1D0P53Q/Y0iDUNB9rx/XkWc3ljiK1g7XFwy7SOpX3qKvndW96vj7KnFCVhgf5qPPe2gcUuN+4QBZRCtuG9CDa+YChBNMJwPPl8iKFs+0t1i3w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=1UAttn3y; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=OMkLHeWh; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=okDYjfrC; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=t+XbRbtC; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1789736039; c=relaxed/relaxed;
+	bh=gUqRO/qJNQsB7yIcuX23hH9gNKvjys5G72B/a/hJXMQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=AVKlYuF8BOQQ5ugSH7PImcluswNIXN11Pm2Os+Q8YiEDzcgqw5ZZ9wogEHO4sLwbw8lXRkMXQOfyCbmNGFjVvq/Jgf2Euqj56Jo7wnUmFlTsCjTJBidCNOzl8QrZdKg4emdhjmCRu21OQFFUsPkG3zzJ0kmFQbq161Nm/ayq0ll6Oc3F0zydi41gMNGPZxB0+D6RoABNZR7OQEQyqYV4VwS/ZjSvK94IzZQmsEde96yb5ad72oH6GxF/0hPGxhOR7zn6Iw9cEFNe6yg04HImZsoaNpAY5MnKpbkfKTA0Yj5ccV0xcvjKLY/c1C6MV2do9HWKlVzBe+uXMsjp2zAq0g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QPwnStxl; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QPwnStxl; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=rrobaina@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=1UAttn3y;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=OMkLHeWh;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=okDYjfrC;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=t+XbRbtC;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QPwnStxl;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QPwnStxl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=rrobaina@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmWFl4C4mz2xYh
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 21:52:27 +1000 (AEST)
-Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 03BCB21B07;
-	Fri, 18 Sep 2026 11:52:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1789732340; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmXck3rFTz2xYg
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 22:53:56 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1789736033;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Qt1Qm1bLvFfwd/Vs+YTzayo+9PIjKro/nYVqtJclg+k=;
-	b=1UAttn3ydqtqKM7UO07UbNsqyTLw7+iLOwPDaG2djH+1jNZ342c5GBmqgB+4FS3zp7IhFa
-	e/+qt3kXbtWgQtF8pFmVztqHb0yHfkeyaodPDEcMimVBIX8GieR7hv12rilXakpEsoQ48j
-	E2Ht3W0EhVjY/IYbwCBeFrrofY/HvLk=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1789732340;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
+	bh=gUqRO/qJNQsB7yIcuX23hH9gNKvjys5G72B/a/hJXMQ=;
+	b=QPwnStxl9MGc3H7r4nnRmMQgxDE/CdEZKl7hKHNkAa6OQdmrxt11jpOTvOqHTSXmsfKhzS
+	7D2lAWHVdoXLm72Xjsa2Y/VNmwE2Ym0C0Y3qkwery/q31YxGxE1+r/QNOhEfR0qHGwiy8x
+	FZS2eOcx9PFEhQtFszE5QqbgOgxmbYs=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1789736033;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Qt1Qm1bLvFfwd/Vs+YTzayo+9PIjKro/nYVqtJclg+k=;
-	b=OMkLHeWhIA6NReRtMoyMxr1AsgdID9NJlzSNYChMAksCISX48Pz8vEgXc0xMjmK+fTaw7x
-	uW01RxZfVM8cBoAA==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=okDYjfrC;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=t+XbRbtC
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1789732336; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Qt1Qm1bLvFfwd/Vs+YTzayo+9PIjKro/nYVqtJclg+k=;
-	b=okDYjfrCzVKLb9rO6WgU/fMp4G+5uINiG8yjHWCkytO7s7ij37v87a2jT4wRt8o1Gy7s7N
-	lcQF5rlYB8qJpw1LgVOFBmG7wSSmjL0fWXKIIoyYktWxzG5rPDjlmAau1uwL+E0gvaG5u4
-	sPaAKGFcww8MiKX9XNhhdjKtPDSOyI4=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1789732336;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Qt1Qm1bLvFfwd/Vs+YTzayo+9PIjKro/nYVqtJclg+k=;
-	b=t+XbRbtCi0IoeLgZS9GdEe+hqp2aTE8k0Do4StD2r+ApnkU237iEnSHCOs6g9+Z/AEimaX
-	GochLxJxj2I2CBCQ==
-Date: Fri, 18 Sep 2026 13:52:14 +0200
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Michael Ellerman <mpe@ellerman.id.au>, harshpb@linux.ibm.com,
-	Gautam Menghani <gautam@linux.ibm.com>, amachhiw@linux.ibm.com,
-	Christian Zigotzky <chzigotzky@xenosoft.de>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	"kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	"R.T.Dickinson" <rtd2@xtra.co.nz>, hypexed@yahoo.com.au,
-	mad skateman <madskateman@gmail.com>,
-	Christian Zigotzky <info@xenosoft.de>,
-	Samir M <samir@linux.ibm.com>,
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-	Narayana Murty N <nnmlinux@linux.ibm.com>,
-	Hari Bathini <hbathini@linux.ibm.com>
-Subject: Re: [Linux PPC] Disable PREEMPT
-Message-ID: <aq0l7k7d-eCJCXQZ@kunlun.suse.cz>
-References: <aqfTU79SlNB3ykDi@kunlun.suse.cz>
- <25cf64ab-2a32-4d4c-a0c7-2e9007c276d4@linux.ibm.com>
- <aqj1KxZttNgY5ZVR@kunlun.suse.cz>
- <ba9759d0-b1f2-4b33-aff5-769cf89bd584@linux.ibm.com>
- <9b58bd58-d0e4-463e-bff9-e33b153b2987@linux.ibm.com>
- <aqu9hA1Bq58GFrVw@kunlun.suse.cz>
- <b2a5d53f-05e8-48ae-adb7-12fc74523b4e@linux.ibm.com>
- <aqvnOg9JfkM2k0TX@kunlun.suse.cz>
- <7ad57b61-4567-42c8-a9f6-faaabe7766a7@linux.ibm.com>
- <ed82620e-ecb1-4b7f-a84b-a0f3a773dd36@linux.ibm.com>
+	bh=gUqRO/qJNQsB7yIcuX23hH9gNKvjys5G72B/a/hJXMQ=;
+	b=QPwnStxl9MGc3H7r4nnRmMQgxDE/CdEZKl7hKHNkAa6OQdmrxt11jpOTvOqHTSXmsfKhzS
+	7D2lAWHVdoXLm72Xjsa2Y/VNmwE2Ym0C0Y3qkwery/q31YxGxE1+r/QNOhEfR0qHGwiy8x
+	FZS2eOcx9PFEhQtFszE5QqbgOgxmbYs=
+Received: from mail-ej1-f72.google.com (mail-ej1-f72.google.com
+ [209.85.218.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-562-vpYSPEgtNqqZrRXN5tNHAw-1; Fri, 18 Sep 2026 08:53:41 -0400
+X-MC-Unique: vpYSPEgtNqqZrRXN5tNHAw-1
+X-Mimecast-MFC-AGG-ID: vpYSPEgtNqqZrRXN5tNHAw_1789736020
+Received: by mail-ej1-f72.google.com with SMTP id a640c23a62f3a-c29476212f1so67928666b.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 05:53:41 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789736020; x=1790340820;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=gUqRO/qJNQsB7yIcuX23hH9gNKvjys5G72B/a/hJXMQ=;
+        b=VuxIqaFab9x1su4aLhQvouXAsTKa+r/pyaI07n72LtkOFwaup96zvhZ0A6KlzlLgNv
+         MVBpRC35oDjMF3Y6TOQnBPc2rxOwd3COUcsVjESs+ZO1yRC/7eajI0vG31lW7HCZgbig
+         zD7HeHgLiqN2WWRgAAx4+lsRZNxKRoIHv4nmPd+VHV5eid5CRbWpuKHVTL3oF0ND9G3i
+         9ilrI3U3+rt3jhEr6M2JjbGtRpUma3+woOZMBVO7H4T64Sm+R7iZBVaeAlDux89irUOD
+         60wsCPGge24qFKZCg5H0TE4B6Pf3sfti9YDroSvL0ERVcB4QMuyLmebAeaO0LYh7xiOs
+         vJ6g==
+X-Forwarded-Encrypted: i=1; AKwUvBxLkDSqevg30G1t9dTR0pgSmAP2jSMT2LFoebFULmYq8PqPXudyP9KKcpt5pio0b4VGsgg6gZwoG/sqGm0=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++mfsn/yiGIWGwyblhAig3PPQ2LB1RNpTjzNbf0V40rB0K9dNeCY
+	3tPZE+pcaBbLG7Phe/KcmxALxDnXOmQrkgGLFv5yqYK4iojh11x2xl1IhNEDhcj7DR2s992VtUn
+	TmE++AvDWudJ+7jOROOA2+x5CAYGJyTc4EB6pr9TjIOE3DI4fugdNSWo6DzrIOheNwt4meDast2
+	incM+5Q6OtqaCMMCci6Xr8qCjm3jHAanA4nEh2grkVWQ==
+X-Gm-Gg: AYBFou0eU5ge4P4FXVXg/lgyUSd34TaaI637D8ZtTzIFSMbLwu21kONQuE4sqAABzqq
+	Dbrv5HmTHVs0Phlg4cZG6Qyh6PFW4TKAEGZtntcXfGLnqWIz2n2hyQYgkBEYK4Zvy9t64SCmLtX
+	ePT1aSZEoJo5yNht+BAtuToAhisvQzNngKAyrUkA7YbVrw46kwWvlh9uP0jrm1L4wn0UhqrTUMl
+	gDaTPy3QzFa99rDrGrFbql29i9AwC57epBZSoY3d4gWS2Lbw8JjiHgJ8jWzi+WXZp/B0NLvg9k4
+	s9c=
+X-Received: by 2002:a17:907:72cc:b0:c25:8c74:71e6 with SMTP id a640c23a62f3a-c2a1569a530mr277251266b.10.1789736020314;
+        Fri, 18 Sep 2026 05:53:40 -0700 (PDT)
+X-Received: by 2002:a17:907:72cc:b0:c25:8c74:71e6 with SMTP id
+ a640c23a62f3a-c2a1569a530mr277247366b.10.1789736019888; Fri, 18 Sep 2026
+ 05:53:39 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -116,86 +99,220 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ed82620e-ecb1-4b7f-a84b-a0f3a773dd36@linux.ibm.com>
-X-Spamd-Bar: ++++++++++++
-X-Rspamd-Queue-Id: 03BCB21B07
-X-Rspamd-Action: add header
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spamd-Result: default: False [12.69 / 50.00];
-	SPAM_FLAG(5.00)[];
-	NEURAL_SPAM_LONG(3.50)[1.000];
-	BAYES_HAM(-3.00)[99.99%];
-	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
-	RDNS_NONE(2.00)[];
-	ONCE_RECEIVED(1.20)[];
-	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
-	R_MIXED_CHARSET(0.63)[subject];
-	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.13)[-0.649];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	ARC_NA(0.00)[];
-	TO_DN_EQ_ADDR_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	RCPT_COUNT_TWELVE(0.00)[19];
-	FREEMAIL_ENVRCPT(0.00)[xtra.co.nz,yahoo.com.au,gmail.com];
-	TO_DN_SOME(0.00)[];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b306:2000::2:from];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_COUNT_ZERO(0.00)[0];
-	DKIM_TRACE(0.00)[suse.de:+];
-	MISSING_XM_UA(0.00)[];
-	FREEMAIL_CC(0.00)[kernel.org,ellerman.id.au,linux.ibm.com,xenosoft.de,lists.ozlabs.org,vger.kernel.org,infradead.org,xtra.co.nz,yahoo.com.au,gmail.com];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim]
-X-Spam: Yes
+References: <ff563467-0bab-43ec-a46c-a4167bc12473@linux.ibm.com>
+ <73701ffd-213e-4842-8b40-f719c1eeaed4@iogearbox.net> <1a0b01e5cd8.2843.85c95baa4474aabc7814e68940a78392@paul-moore.com>
+ <1a0b021e330.2843.85c95baa4474aabc7814e68940a78392@paul-moore.com> <D5655235-89A8-43EF-8DC4-9DCE6FBC387C@linux.ibm.com>
+In-Reply-To: <D5655235-89A8-43EF-8DC4-9DCE6FBC387C@linux.ibm.com>
+From: Ricardo Robaina <rrobaina@redhat.com>
+Date: Fri, 18 Sep 2026 09:53:28 -0300
+X-Gm-Features: AcwNN1WCd2sEcqEKVCjkhdhtXdMEs14eyYo-vHbnVxc45osvsgf1ffcS0sP15O8
+Message-ID: <CAABTaaB4j+Gr2-7vti6unCqKoRfYa9Cs22NH3HpxJo14r5jKcA@mail.gmail.com>
+Subject: Re: [BUG] audit/powerpc: WARNING at kernel/auditsc.c:1995
+ (__audit_syscall_entry) during BPF kselftests (test_progs)
+To: Venkat <venkat88@linux.ibm.com>
+Cc: Paul Moore <paul@paul-moore.com>, Daniel Borkmann <daniel@iogearbox.net>, bpf <bpf@vger.kernel.org>, 
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, audit@vger.kernel.org, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
+	Ritesh Harjani <riteshh@linux.ibm.com>, Hari Bathini <hbathini@linux.ibm.com>, 
+	Saket Kumar Bhaskar <skb99@linux.ibm.com>, Alexei Starovoitov <ast@kernel.org>, 
+	Kumar Kartikeya Dwivedi <memxor@gmail.com>, andrii@kernel.org, Eduard Zingerman <eddyz87@gmail.com>, 
+	yonghong.song@linux.dev, tglx@kernel.org
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: iqxCrRgNdM7DxqhElZkcn56W5r2lB01Z6HsuI7ixCL8_1789736020
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, Sep 18, 2026 at 02:56:40PM +0530, Shrikanth Hegde wrote:
-> Hi Michal.
-> 
-> On 9/17/26 7:45 PM, Shrikanth Hegde wrote:
-> > 
-> > Hi Michal,
-> > 
-> > > > 
-> > > > Give it a try.
-> > > > 
-> > > > I am suspecting both lockup, stack corruptions are secondary symptoms here.
-> > > > While recreate, I have different type of traces.
-> > > 
-> > > Yes, it does work for the crash I see.
-> > 
-> > Thanks. Give me sometime to see further on that. Didn't get any time today.
-> > 
-> This is going to be the fix IMO. It passes all the recreates i have as of now.
-> (Please ignore the whitespace mangling if any)
-> 
-> Let me write changelog and send it across.
-> ---
-> 
-> diff --git a/arch/powerpc/kernel/trace/ftrace_entry.S b/arch/powerpc/kernel/trace/ftrace_entry.S
-> index 6599fe3c6234..54c8727b48cd 100644
-> --- a/arch/powerpc/kernel/trace/ftrace_entry.S
-> +++ b/arch/powerpc/kernel/trace/ftrace_entry.S
-> @@ -220,7 +220,9 @@
->  	/* Restore gprs */
->  	.if \allregs == 1
-> -	REST_GPRS(2, 31, r1)
-> +	REST_GPRS(2, 12, r1)
-> +	/* Do not restore a stale PACA pointer if the task migrated */
-> +	REST_GPRS(14, 31, r1)
->  	.else
->  	REST_GPRS(3, 10, r1)
->  #if defined(CONFIG_LIVEPATCH_64) || defined(CONFIG_PPC_FTRACE_OUT_OF_LINE)
+On Fri, Sep 18, 2026 at 4:42=E2=80=AFAM Venkat <venkat88@linux.ibm.com> wro=
+te:
+>
+> Hi Daniel, Paul
+>
+> Hope all is well with your family, Paul, please take care.
+>
+> > On 17 Sep 2026, at 9:40=E2=80=AFPM, Paul Moore <paul@paul-moore.com> wr=
+ote:
+> >
+> > [NOTE: correcting the audit mailing list address to audit@vger ...]
+> >
+> > On September 17, 2026 12:06:18 PM Paul Moore <paul@paul-moore.com> wrot=
+e:
+> >> On September 17, 2026 10:03:59 AM Daniel Borkmann <daniel@iogearbox.ne=
+t> wrote:
+> >>> Hi Venkat,
+> >>>
+> >>> On 9/17/26 3:01 PM, Venkat Rao Bagalkote wrote:
+> >>>> Hi all,
+> >>>>
+> >>>> IBM CI has reported a kernel warning triggered in __audit_syscall_en=
+try()
+> >>>> on a PowerPC 64 (ppc64le, POWER9 pSeries guest) system while running=
+ the
+> >>>> BPF kselftest suite (test_progs).
+> >>>>
+> >>>> Environment:
+> >>>>
+> >>>>
+> >>>> Kernel version: 7.3.0-rc3-g238650ef6c7c (PREEMPT)
+> >>>> Architecture: ppc64le (POWER9 - IBM,8375-42A pSeries / phyp)
+> >>>> Workload: BPF selftests (tools/testing/selftests/bpf/test_progs)
+> >>>>
+> >>>>
+> >>>> Problem Description:
+> >>>>
+> >>>>
+> >>>> During syscall entry processing (system_call_exception ->
+> >>>> syscall_enter_audit -> __audit_syscall_entry), the kernel hit
+> >>>> WARN_ON(context->context !=3D AUDIT_CTX_UNUSED) at kernel/auditsc.c:=
+1995,
+> >>>> indicating that the task's audit context was not reset to AUDIT_CTX_=
+UNUSED
+> >>>> prior to entering the new syscall.
+> >>>
+> >>> Hm, based on the trace feels somewhat unrelated to bpf, but were you =
+able
+> >>> to bisect in
+> >>> case it can be reliably reproduced? Which tree is this, linux-next or
+> >>> bpf/bpf-next?
+>
+> This was tested on the mainline Linux tree (Linus' tree, commit 238650ef6=
+c7c).
+>
+> Regarding bisection and reproducibility: the warning does not reproduce w=
+hen running individual tests in isolation (e.g. running kfunc_module_order =
+alone is clean). It is only observed intermittently during the full BPF sel=
+ftests suite run (test_progs / test_progs-no_alu32), so I haven't been able=
+ to bisect it to a specific commit yet.
+>
+> >>
+> >> Thanks for the report Venkat.
+> >>
+> >> Unfortunately due to some unexpected family medical issues I'm not abl=
+e to
+> >> look into this very closely at the moment (triaging mail on my phone),=
+ but
+> >> the related audit code has been fairly stable lately so it seems a bit=
+ odd.
+> >>
+> >> I do know that Thomas Gleixner (CC'd) did some work recently on the sy=
+scall
+> >> entry code (audit related commit below), perhaps that may be a place t=
+o start?
+> >>
+> >> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/com=
+mit/?id=3D6f25517010ddd3f8080d7e06b9b1cb1b64b73772
+> >>
+> >> FWIW, I haven't seen this in any of my testing on x86 or ARM, have you=
+ seen
+> >> this on other arches besides Power? Also, as Daniel already mentioned,=
+ more
+> >> information on the tree would be helpful.
+>
+> We have only tested and observed this on PowerPC (ppc64le, POWER9 pSeries=
+ guest).
+>
+> Attached is the .config file.
+>
+>
+> Regards,
+> Venkat.
+> >>
+> >> While I don't have access to a Power system, I'm CC'ing Ricardo Robain=
+a who
+> >> also works at IBM/RH and has experience with the audit kernel code. If=
+ this
+> >> appears to be specific to Power, he might be a good resource to help
+> >> diagnose and develop a patch.
+> >>
+> >>>
+> >>>> Trace:
+> >>>>
+> >>>>
+> >>>> [ 1371.387510] ------------[ cut here ]------------
+> >>>> [ 1371.387528] WARNING: kernel/auditsc.c:1995 at
+> >>>> __audit_syscall_entry+0x50/0x1b0, CPU#17: test_progs/49616
+> >>>> [ 1371.387539] Modules linked in: dm_verity(E) dm_bufio(E) reed_solo=
+mon(E)
+> >>>> livepatch_sample(EK) tun(E) vrf(E) 8021q(E) garp(E) mrp(E) stp(E) ll=
+c(E)
+> >>>> veth(E) bonding(E) tls(E) rfkill(E) nft_fib_inet(E) nft_fib_ipv4(E)
+> >>>> nft_fib_ipv6(E) nft_fib(E) nft_reject_inet(E) nf_reject_ipv4(E)
+> >>>> nf_reject_ipv6(E) nft_reject(E) nft_ct(E) nft_chain_nat(E) hvcs(E)
+> >>>> hvcserver(E) pseries_rng(E) vmx_crypto(E) sg(E) drm(E) fuse(E)
+> >>>> drm_panel_orientation_quirks(E) xfs(E) sr_mod(E) nvme_tcp(E) sd_mod(=
+E)
+> >>>> cdrom(E) nvme_fabrics(E) nvme_core(E) ibmvscsi(E) ibmveth(E)
+> >>>> scsi_transport_srp(E) dm_mirror(E) dm_region_hash(E) dm_log(E) dm_mo=
+d(E)
+> >>>> [last unloaded: bpf_test_modorder_x(OE)]
+> >>>> [ 1371.387607] CPU: 17 UID: 0 PID: 49616 Comm: test_progs Tainted: G
+> >>>> OE K     7.3.0-rc3-g238650ef6c7c #1 PREEMPT
+> >>>> [ 1371.387616] Tainted: [O]=3DOOT_MODULE, [E]=3DUNSIGNED_MODULE, [K]=
+=3DLIVEPATCH
+> >>>> [ 1371.387620] Hardware name: IBM,8375-42A POWER9 (architected) 0x4e=
+0202
+> >>>> 0xf000005 of:IBM,FW950.80 (VL950_131) hv:phyp pSeries
+> >>>> [ 1371.387626] NIP:  c0000000003e70d0 LR: c000000000352080 CTR:
+> >>>> c00000000000cf00
+> >>>> [ 1371.387631] REGS: c00000000beafaa0 TRAP: 0700   Tainted: G      O=
+E K
+> >>>> (7.3.0-rc3-g238650ef6c7c)
+> >>>> [ 1371.387637] MSR:  8000000000029033 <SF,EE,ME,IR,DR,RI,LE>  CR: 48=
+002824
+> >>>> XER: 20040084
+> >>>> [ 1371.387650] CFAR: c00000000035207c IRQMASK: 0
+> >>>>      GPR00: c000000000034958 c00000000beafd40 c0000000020eb200 c0000=
+000345f4800
+> >>>>      GPR04: 00007fffe2a31184 0000000000000081 000000007fffffff 00000=
+00000000000
+> >>>>      GPR08: 0000000000000000 0000000000000001 0000000000000001 00000=
+000000000dd
+> >>>>      GPR12: 0000000000000000 c00000002e99b300 0000000000000000 00000=
+00000000000
+> >>>>      GPR16: 0000000000000000 0000000000000000 0000000000000000 00000=
+00000000000
+> >>>>      GPR20: 0000000000000000 0000000000000000 0000000000000000 00000=
+00000000000
+> >>>>      GPR24: 0000000000000000 0000000000000000 0000000000000000 c0000=
+000345f4800
+> >>>>      GPR28: 0000000000000000 00000000000000dd 00000000000000dd c0000=
+00138e0c000
+> >>>> [ 1371.387710] NIP [c0000000003e70d0] __audit_syscall_entry+0x50/0x1=
+b0
+> >>>> [ 1371.387715] LR [c000000000352080] syscall_enter_audit+0x90/0xd0
+> >>>> [ 1371.387722] Call Trace:
+> >>>> [ 1371.387725] [c00000000beafd40] [c000000000937050]
+> >>>> selinux_task_getpgid+0x80/0xa0 (unreliable)
+> >>>> [ 1371.387735] [c00000000beafda0] [c00000000beafde0] 0xc00000000beaf=
+de0
+> >>>> [ 1371.387741] [c00000000beafe00] [c000000000034958]
+> >>>> system_call_exception+0x448/0x480
+> >>>> [ 1371.387749] [c00000000beafe50] [c00000000000d05c]
+> >>>> system_call_vectored_common+0x15c/0x2ec
+> >>>> [ 1371.387757] ---- interrupt: 3000 at 0x7fffab74cbf0
+> >>>>
+> >>>>
+> >>>> Please let me know if additional logs, config, or repro details are =
+needed.
+> >>>>
+> >>>> Regards,
+> >>>>
+> >>>> Venkat.
+> >
+> > --
+> > paul-moore.com
+> >
+> >
+> >
+>
+Hello eveyone!
 
-This also works
+Thanks for looping me in, Paul and for sharing more details, Venkat.
 
-Thanks
+At first glance it seems that the audit_context, for some reason, has
+not been cleared. I'll reserve a ppc64le machine and look into this
+over the next week.
 
-Michal
+-Ricardo
+
 
