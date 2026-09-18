@@ -1,78 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-27743-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27744-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8E00C982DA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 15:08:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E941C982D8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 17:24:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hmbc934bxz2y32;
-	Sat, 19 Sep 2026 01:08:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789744121;
-	cv=none; b=FIjRQBeCuKGX0KUr6+am2gDxmCrQeOG2ocITPLntSqmKyP4DMtO33xu5PgsddKkOl/h0bC6GEjhFGKva42Y216Qa+f8D1zhYZsorIQfIs2u5mFzsDlsIci+MtxPydtKR1y++J3eDjWkD+FvFeoM3GWVyB7AUNvOdwaNEGDRaQGkHa+s5G/J7bk3omCPXSM0NvSXMBNXd58j0FZ9jILPfnv8wAgOabjutPH3OmACdW88b6Zo+wdwY2P5YMksno1efe9TRwqicF6izU/8ZKo20B47v8G/8qmzpqBnJgRDkL9KmQdMDs1ON63MHH32xa0gOSYknTIM1re30SXjBRzn3aA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hmfdL2PBDz2xft;
+	Sat, 19 Sep 2026 03:24:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::545"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789752294;
+	cv=none; b=cwzOBsnq/8K5WqOKfpogFWnxuU8HdTc65PpozSbAZL/+js6bfEU6oSdvs7QGV96YUftuOWtI5IRgeKtJwLGCyD7LWKlWWt0HtY0aYI2EL9OR9xmjnwLh4FVtHJoCvBuTPtGdOceyjt9FywVHcaIbelQ9jrbJCxDdKC13Rt4UXMNH1HbP78PE5FyR98Iyc3QSVcKJRPtub+3whQ2RnIA5CQg1QuuRqWT63qimUMkXZqnD/flw4L+EG14K2LYr2332Ip5jkn29LpBhdNpOb1vWG+1Asf85hA+FGGQHODd3jgYcSOKAHZYru2LHLigXkljrj/oqxvwciCDjxfHa7OVkOA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789744121; c=relaxed/relaxed;
-	bh=9FvzBA6cASGcUK6x1rx4pNH5R7ZAlQZlhI5xim5ujyI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=VdsgNIND8d0jlVP/U+xlN5jqp3qfkpelZXDDEt1kUJdEujNFaSSl4KY/Kl0iHHDUmPDAMWBdR6H4dBZElcusWiA4MZOk9eEtsiV5R5rffDMD97BghBNC1LHQ+GJV3/IYSUWTfABnNFgkG8EbS/yEAge0GvqcgZ6to4GLnkkvW6JsOmTYmPckxAN9jE8CS+ZZilfkBLLXoGb6o5dK1D4GxpZktNRTIGcAR0ZW4dRjYMfnNQSmx3vHsLy6cl3rJbhnh94HE3sa6+mFTCDGZOpS/YWMDZ2040b8FUhz+BE1tgryuWZ0fXkXn94ml4BkoVRgc41QP4mw8TAJroViLAp+Vw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kR8P7ofN; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1789752294; c=relaxed/relaxed;
+	bh=MK8SQon571KaD8P7buh1T6LtzzA2FoPJEodcHPYT2dM=;
+	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=nJlcRqDgOTeSSf3DxCD6RSDPo3kchQ/1G3XTJxldgtyE+vJSsasz9irDt7Z4R8I6fR0Y0bOba+jvlGUf7JqvH/sfO/x8q1GoS7c3DCC383zf+OfNvsGZFbGGqwzy4ERCvLQDZqSGrUM1XL+aYVg2krM79/wYCNgcrjLXxXJyGWxckunNGULN5VzX4nv7H5ORu9fHFo6XiudW1GGq+kcAmNaa824XBDZ/eo3yPNpH7/ySEK5vqNTf9SddDVXoGzs1PWoAG+/EE7D3sEqb7VVZ0XbGJKtyFYqCfrJMx2zRUdm9xUy609ocyalhTfTZrCPkLgNojQHHt9mTXSb3Ep2gQg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=cUS/qFKj; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::545; helo=mail-pg1-x545.google.com; envelope-from=34hotag0kdnkm5ocj8kmdt5ifbjjbg9.7jhgdipskk7-89qgdnon.jug56n.jmb@flex--rathodpriyank.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--rathodpriyank.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kR8P7ofN;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=cUS/qFKj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--rathodpriyank.bounces.google.com (client-ip=2607:f8b0:4864:20::545; helo=mail-pg1-x545.google.com; envelope-from=34hotag0kdnkm5ocj8kmdt5ifbjjbg9.7jhgdipskk7-89qgdnon.jug56n.jmb@flex--rathodpriyank.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x545.google.com (mail-pg1-x545.google.com [IPv6:2607:f8b0:4864:20::545])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmbc83TBdz2xYg
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2026 01:08:39 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68IDVse71394313;
-	Fri, 18 Sep 2026 15:08:22 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=pp1; bh=9FvzBA6cASGcUK6x1rx4pNH5R7ZA
-	lQZlhI5xim5ujyI=; b=kR8P7ofN/YhkWrJHOiWf6q6ZOOp/FV/1dvzRpiPJLk/P
-	FGjNWrJr9vImLao0dNmxWPiJikXOtcZaHUwpvOWnmDRuL0pGPU1dLkbYmyyiCOLp
-	MUnfrE5z6wu4UVKN9vXGD+IFw2ATw836IB6I2HJBMDbgyr//SOwtedWVPbgIhqWL
-	RePKIT6NAyrRsuXuzFl6uUw1qsa/VnZ+RSgDgesI0fGn0pRg0f6XR0n+eMW7cQp+
-	InkdEjOlWmNMAzpUrtau+4iSWhAFUz1lByFcN6LJJcoUXg7Mu4uWkvCBfEpSWWBE
-	dixUUp+r+4CExfx0nQB2uGpttPZrZn9zLrffKsMovw==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gmxf5gtsm-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 18 Sep 2026 15:08:21 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68IDNttB1684370;
-	Fri, 18 Sep 2026 15:08:21 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gs4tv8prh-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 18 Sep 2026 15:08:21 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68IF8Hqo37093778
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 18 Sep 2026 15:08:17 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 537C720043;
-	Fri, 18 Sep 2026 15:08:17 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F0E5920040;
-	Fri, 18 Sep 2026 15:08:14 +0000 (GMT)
-Received: from li-7bb28a4c-2dab-11b2-a85c-887b5c60d769.ibm.com.com (unknown [9.39.18.35])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 18 Sep 2026 15:08:14 +0000 (GMT)
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-To: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
-Cc: sshegde@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org,
-        msuchanek@suse.de, ritesh.list@gmail.com
-Subject: [PATCH] powerpc/ftrace: Don't restore r13 during ftrace_regs_caller
-Date: Fri, 18 Sep 2026 20:38:10 +0530
-Message-ID: <20260918150811.1743769-1-sshegde@linux.ibm.com>
-X-Mailer: git-send-email 2.54.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmfdJ5SFbz2xSV
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2026 03:24:51 +1000 (AEST)
+Received: by mail-pg1-x545.google.com with SMTP id 41be03b00d2f7-cc1b8088203so917477a12.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 10:24:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1789752289; x=1790357089; darn=lists.ozlabs.org;
+        h=content-type:cc:to:from:subject:message-id:mime-version:date:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=MK8SQon571KaD8P7buh1T6LtzzA2FoPJEodcHPYT2dM=;
+        b=cUS/qFKjkYEHpAEfPfxvLdwm+kpRtZh3QhRQEig82gsog80k21EK1WXOA4M8b4Zd/5
+         amODFI/hX8mJZzjshjlKshT4q0NrTeqqKeUwvKRVy6pAmvTO2YK0cYEAENSU/iCx2PzN
+         PBo22Tbl8vcqDPoy6e86XlK/1kPNxz2S0LFSCLzPTb+ueJjZliwIhwQflwyuHsZEf2m4
+         ZlbhNaYNKDWqf9ggP0UuHco6+waxl4w4VWM22BBjOs66GqubRXDApZAO1nBvcRzgaWMz
+         u0en9oh4Q1CGhbL629eGARoLFhM8J4uj6H93gQNX9ssfkyrXezM3BDz5Oefc3qoWAhR2
+         y24A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789752289; x=1790357089;
+        h=content-type:cc:to:from:subject:message-id:mime-version:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=MK8SQon571KaD8P7buh1T6LtzzA2FoPJEodcHPYT2dM=;
+        b=PvkYwbfFRstMyLqqH8YX/RLBUdyFVe2rFnGddIbAj2wTNhr9EY5Fot5G7FdnjWYQNb
+         Q6o57OfWTMfGyIfjlEoMGymBJBm5m8K0FM+K9g5QvfXjjY7x3MmD6O4mV3YTG/SeHGbt
+         nCVusaUU68WdveZYrFtAgtA3LHtFUQ40J8UaV+UlTHdv74f+Q+/3kOyY1awEIF1wDYGn
+         0B12ne+WE2SnIMY00/jEFv12sI1o+GpcLzqGgtyBtuOKkiCcPsyatFCLPkecTudYmp6k
+         blL3jIBn8d6iSVfxU6dSZRdPVRSJCb5bUzuN0XPBGlh2b7/bZYMiWp9ZO2zf+/B0j2LM
+         1snQ==
+X-Forwarded-Encrypted: i=1; AKwUvBzlY1M0/DhxcMe1vbHemZtBM9sbLtztnuJ0JyYyOng7zAHRBbR7fwZV4SXb5XaKAc1ufwo/GqekH1lxgvQ=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++kUg63OthZ0JXeo12y3XuGD990sjsz/NZAMUKmZLtu3iNRjBSBL
+	dAesbqOls6qkoKOlbRMbfACi1jcFUfSNNvg18wZlmyVoQm/5ttE0vpLGyfL1E09474f9dSweftR
+	1L6dVmdDCH/Gm5+dxWByM2EfExg40QCJ3Pg==
+X-Received: from pjbct5.prod.google.com ([2002:a17:90a:f585:b0:39e:574c:5672])
+ (user=rathodpriyank job=prod-delivery.src-stubby-dispatcher) by
+ 2002:a17:90b:384d:b0:39e:6c6a:4b67 with SMTP id 98e67ed59e1d1-39e6c6a5448mr417570a91.49.1789752288464;
+ Fri, 18 Sep 2026 10:24:48 -0700 (PDT)
+Date: Fri, 18 Sep 2026 17:24:48 +0000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,122 +74,104 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: m2gLy_VreWRdMN6iJVAqoHsHylAy2TtJ
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE4MDIxNCBTYWx0ZWRfXxXh6hvW5QiEe
- qLFfzrAjyhKxcJYPzSqoAcNwMZRoNg51lIiriE7GQHmoMDroUkq4sWhxbG9cBC35/6STshl+3hG
- WgtNy4qYLRqVYA+Xdk3oIqMfCP4iEpg=
-X-Authority-Analysis: v=2.4 cv=cvgOAF4i c=1 sm=1 tr=0 ts=6aad53e6 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=5793ORmOmheN9jAXARAA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: 9yj6e0EcyvcQnHwSMx9Fp2PkNCEWLEuS
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE4MDIxNCBTYWx0ZWRfX1CLx15bgIrV7
- sXLoofMWcA5+PWcwo8SZhZ4AyhLnXSGPUivahK+dXS7Z/7Unwoy74NDzeYLk04xYMkzwro1D1u6
- by93qF0hrWat/FDlyJ0Dd04CesaCKbEyZFuh+I5ncUE4iVZh85kcx62ON1uqx/EkfL86jb1nECV
- spN9HxMMeDnh5flVvgqwaoASXnE5IjMyavh4LpJixFhDFyQq+k4ML7lSNxZvfSnoHc32JES9UfC
- //Sa0QYSPHT5SBmgUBxPppRVY3CdnUoq+3c1vCa2KlxotaPwqFbEToEHbAqjm3yye1uNQ2YjDhV
- ATZQx6icKKfRYqYU9zj0HQVZk1C6hefMUMi0QvaaelatDemKPb9w8wm+3fhUPiEZlC6E567dg9m
- hy4p92/000zkdPk1f31GLGNuoPFgs8+HsPr6Lpi4lRTpi3cRp5ZMh7kb5GoPLLuYmIB4ovKjKyi
- d2q38juz1+iGKgTSJBg==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-18_04,2026-09-16_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 lowpriorityscore=0 clxscore=1015 priorityscore=1501
- suspectscore=0 bulkscore=0 impostorscore=0 phishscore=0 spamscore=0
- adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
- definitions=main-2609180214
+Mime-Version: 1.0
+X-B4-Tracking: v=1; b=H4sIAN9zrWoC/4WNQQ6CMBBFr0Jm7Zi2kEpceQ/DotJpmYiUtEgwp
+ He3cgGX7//893dIFJkSXKsdIq2cOEwF1KmCfjCTJ2RbGJRQWrS1QMcbGooYyfXhPS04knmiri+
+ taxur1cNA2c6l5u3w3rvCA6clxM9xs8pf+s+4SpSoG5JC1sZaqW4+BD/SuQ8v6HLOXxh77/q7A AAA
+X-Change-Id: 20260830-fix-aer-refcount-leak-6378f84d62ba
+X-Mailer: b4 0.14.3
+Message-ID: <20260918-fix-aer-refcount-leak-v2-1-bdd1ff1c35a9@google.com>
+Subject: [PATCH v2] PCI/AER: Fix struct pci_dev reference leak in aer_process_err_devices()
+From: Priyank Rathod <rathodpriyank@google.com>
+To: Mahesh J Salgaonkar <mahesh@linux.ibm.com>, "Oliver O'Halloran" <oohall@gmail.com>, 
+	Bjorn Helgaas <bhelgaas@google.com>, Lukas Wunner <lukas@wunner.de>, 
+	Stefan Roese <stefan.roese@mailbox.org>
+Cc: Keith Busch <kbusch@kernel.org>, Sinan Kaya <okaya@kernel.org>, linuxppc-dev@lists.ozlabs.org, 
+	linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Priyank Rathod <rathodpriyank@google.com>
+Content-Type: text/plain; charset="utf-8"
 
-Michal reported a stack-protector failure and subsequent panic when
-running kernel builds. This was observed with full/lazy preemption.
-Initially it was suspected as KVM, but later turned out to be due
-to a bcc tool running in parallel.
+When an AER error occurs, candidate error-source devices are added to
+e_info->dev[] by add_error_device(), which takes a reference with
+pci_dev_get().
 
-Issue was recreated using a bcc tool. 
-For example, running below in parallel leads to crash.
-./funccount sched* -d 100 and make -j 64
+A device can be recorded without any error status being present: the
+Requester ID fast path in is_error_source(),
 
-The same crash was observed when running kprobe for schedule() function,
-while simpler function tracer for schedule() didn't cause the crash.
-This helped to narrow it down to ftrace backed kprobes area.
+	if (e_info->id == pci_dev_id(dev))
+		return true;
 
-The crash occurs as follows:
+matches purely on the ID reported by the Root Port and returns true
+without reading the device's AER status registers.
 
-ftrace_regs_caller entry on CPU A
-    |
-    +-> save r13 = CPU A PACA into pt_regs
-    |
-    +-> call kprobe_ftrace_handler()
-            |
-            +-> ftrace_test_recursion_unlock()
-                    |
-                    +-> preempt_enable
-                    +-> task can schedule and migrate to CPU B
-                    +-> task resumes with live r13 = CPU B PACA
-    |
-    +-> REST_GPRS(2, 31)
-            |
-            +-> restore saved r13 = CPU A PACA
-    |
-    |-> The task then continues running on CPU B with r13 pointing
-    |   to CPU A's PACA.
+In aer_process_err_devices(), handle_error_source() is called only if
+aer_get_device_error_info() returns non-zero, i.e. only if an unmasked
+error status bit is actually set. It returns 0 if the device has become
+inaccessible (status and mask both read as all ones, so
+status & ~mask == 0) or if no unmasked status bit is set.
 
-The stack-protector canary is accessed through the PACA. After the task
-migrates, CPU A may run a different task and update its PACA with that
-task's canary. Restoring the saved r13 then causes the migrated task's
-saved stack canary to be compared against the canary in CPU A's PACA,
-resulting in a stack-protector failure.
+Because handle_error_source() was responsible for calling pci_dev_put(),
+skipping it permanently leaks the reference taken in add_error_device().
 
-Similarly, current is resolved through the PACA. With a stale r13,
-preempt_count() can access the state of the task referenced by CPU A's
-PACA instead of the task running on CPU B. This results in corrupted
-preempt-count warnings and scheduling-while-atomic failures.
+Decouple reference lifetime from error handling by moving pci_dev_put()
+out of handle_error_source() and into the aer_process_err_devices() loop,
+so every recorded device is put exactly once.
 
-This path for example is called when using kprobes and parallel kernel builds
-can cause preemptions during ftrace_test_recursion_unlock.
+handle_error_source() is static and aer_process_err_devices() is its only
+caller, so no other path is affected.
 
-Do not restore r13 from the saved register frame. If the task did not
-migrate, the live r13 already has the saved value. If it migrated, the
-live r13 contains the correct PACA pointer for the CPU on which the task
-resumed.
-
-Fixes: 153086644fd1 ("powerpc/ftrace: Add support for -mprofile-kernel ftrace ABI") 
-Reported-by: Michal Suchánek <msuchanek@suse.de>
-Closes: https://lore.kernel.org/all/aqKfsVArHHaIK6M9@kunlun.suse.cz/
-Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+Fixes: 60271ab044a5 ("PCI/AER: Take reference on error devices")
+Signed-off-by: Priyank Rathod <rathodpriyank@google.com>
 ---
-PS:
-Fixes is the initial commit that introduced this restore regs almost
-10 years ago, all commit afterwords are code refactors changing the
-code layout. Also backporting all the way maybe tricky.
-Backport can easily happen till aebd1fb45c622.
+Changes in v2:
+- Corrected Fixes tag from 1ab4a3c80508 to 60271ab044a5 ("PCI/AER: Take
+  reference on error devices"), which added both the pci_dev_get() in
+  add_error_device() and the conditionally-reached pci_dev_put() in
+  handle_error_source(). Thanks to Lukas Wunner for catching this.
+- Removed the speculative topology list from the commit message. As Lukas
+  pointed out, error reporting is not enabled on devices without an AER
+  capability (pcie_aer_is_native() bails on !dev->aer_cap), so the
+  dev->aer_cap == 0 reasoning was wrong and is gone.
+- Explained instead why a device with no error status can be present in
+  e_info->dev[]: the Requester ID fast path in is_error_source() matches
+  on e_info->id alone, without reading any AER status register.
+- Added a Fixes tag; the imbalance dates back to v4.20. I have not added
+  Cc: stable, since you indicated the path is an unlikely corner case -
+  happy to add it if you think it is warranted.
+- Cc: Keith Busch and Sinan Kaya, author and reviewer of 60271ab044a5.
+- Rebased onto v7.3-rc3+ (f259f446f519); applies cleanly to pci/next as well.
+- Link to v1: https://lore.kernel.org/r/20260830-fix-aer-refcount-leak-v1-1-64e1013add12@google.com
+---
+ drivers/pci/pcie/aer.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- arch/powerpc/kernel/trace/ftrace_entry.S | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/trace/ftrace_entry.S b/arch/powerpc/kernel/trace/ftrace_entry.S
-index 6599fe3c6234..54c8727b48cd 100644
---- a/arch/powerpc/kernel/trace/ftrace_entry.S
-+++ b/arch/powerpc/kernel/trace/ftrace_entry.S
-@@ -220,7 +220,9 @@
+diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+index d8dcd238fda1..bc761410d56d 100644
+--- a/drivers/pci/pcie/aer.c
++++ b/drivers/pci/pcie/aer.c
+@@ -1340,7 +1340,6 @@ static void handle_error_source(struct pci_dev *dev, struct aer_err_info *info)
+ {
+ 	cxl_rch_handle_error(dev, info);
+ 	pci_aer_handle_error(dev, info);
+-	pci_dev_put(dev);
+ }
  
- 	/* Restore gprs */
- 	.if \allregs == 1
--	REST_GPRS(2, 31, r1)
-+	REST_GPRS(2, 12, r1)
-+	/* Do not restore a stale PACA pointer if the task migrated */
-+	REST_GPRS(14, 31, r1)
- 	.else
- 	REST_GPRS(3, 10, r1)
- #if defined(CONFIG_LIVEPATCH_64) || defined(CONFIG_PPC_FTRACE_OUT_OF_LINE)
+ #ifdef CONFIG_ACPI_APEI_PCIEAER
+@@ -1518,6 +1517,7 @@ static inline void aer_process_err_devices(struct aer_err_info *e_info)
+ 	for (i = 0; i < e_info->error_dev_num && e_info->dev[i]; i++) {
+ 		if (aer_get_device_error_info(e_info, i))
+ 			handle_error_source(e_info->dev[i], e_info);
++		pci_dev_put(e_info->dev[i]);
+ 	}
+ }
+ 
+
+---
+base-commit: a077be4fde21ee6e751fa70eb641ef5d9bf2fc48
+change-id: 20260830-fix-aer-refcount-leak-6378f84d62ba
+
+Best regards,
 -- 
-2.52.0
+Priyank Rathod <rathodpriyank@google.com>
 
 
