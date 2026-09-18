@@ -1,51 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-27682-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27683-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FA1DC88E75
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 08:11:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41BDAC982D7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 08:20:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hmQLf3HsCz2y2W;
-	Fri, 18 Sep 2026 18:11:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789719082;
-	cv=none; b=ewIuWEEZEk7wYWPLAjpqmq2UswpZ7xNGB6OhEvCNNHYDQ6jnQ2Nu76JNY7KsocmoAWR0bGk9cDX7k0gyP2i/fpVF3/3j/tiH5GD2JHh6iFskmPKJSjoBfr6QGn8tbuvnIuUMfmK2DqnxtLMNRjbphlp19WN95fZGTXMmbmZIHgd86drzR/yNodfXynrtPkwxccummrhv8VrlFDK5o1eFyk9NIx+i9KK2529RfIIyg8qw1xRRWZLsnguFBncqU+jMfOe7/59zAD153XQYo/7PvQ8UnOWYYz30njlXg3WbHANMzgGW8VPyklH4UkbAndKXu6n3AvRbJJWD1mQyXPf2IA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789719082; c=relaxed/relaxed;
-	bh=JLpvye1bSam9JLtEW3+oCv4l+5hdlWwyZCmpmcxXOCU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=TCy2fs+XremGuc+mqLh7aFOtpSVx3w/IlerJT0MObNEiOlDrL1Fw8ctI+7q12Ue85o5r0RPg4eEt/aOrzhVeuSB93SZGDPBbr8wHg/zRNHZbsClgcGAupZUkt9gmzCCDk3Q3vjmTxr8sahU8OTtV/DxwRQWdgYCdYJoaKwpqHtSEbgx7E1VGuusqAVf05LFPOUBAaTwszs3o/CTQrXMjy6F+MGCPhOQEhByHAH18oHJXf4WRmU40UkcdToGS8uc9LjzTK6PTFm+8KWnF2oVwDsO18mg5NyKPv/2c8rDIPqOmczuQZb3CHp9smJPazDNEJ84Dg3TkJWxDfl2QKBRbng==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WYDQcaXv; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hmQYS5Q4Gz2y2W;
+	Fri, 18 Sep 2026 18:20:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:31::10" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789719644;
+	cv=pass; b=IEPb9/Lw/LDb+A75FEigKI2xFapylqBboXBbx09vsioyTMGYsyf9KLlFCD4+T6h+V3RCIbINpMNMRsuFEjAfOw3+xn05EEXU9qJURr0GcXJAdclzNFzVbXr9S9xqAsA+RX/i9NJzKmYLiblky+ssmz+VqsefneQPSpRiX9P+0LCY4bGlf+wjsA0SdBRIqSKVyakWbaO5MgFHHx6/Z4iGKCI3Miz+J853urpHRgUkXtnYJQr3u5uctJ1tdd6gnkpJO1OECTEtZeAijtu47zkX0nrpXhGcbm34mVJgXg4Ucbq6zQRV5qfHXmTMzZmcEKh9ZlvIfJtC00ixO5k84egKKQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1789719644; c=relaxed/relaxed;
+	bh=S/0xeeqml62b4hzIs2sGIOyHX0Y352/7mh8gz6dinRs=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=MjP/sYIWgSNz1MD3kKcGDFRUyCWEzr0Sa4afw8v2nR5kOMSTnuiQF2v0jMngqqtqMxuw+5MBpcQeK2pb5PuoK6lotgDYUrzwd4cHSaLhKK++e9Rmkazs7JVI/7p+6XhvzvV73h61wCywf14P6mF2Ara4KTBn53ywmBDXWBj48ZP1xtGEzuv5ToicrWVfwullsshmCPouqp6Gzf+uVhSlMiRAIAdoh1vKH95I9JwqbjeBu6tS+zplnwuPMf4AxQXi1/ljvHYD/TkRIn9baGs9Thvg1tz8hBxwnq7GgN1+s3nxAvG71BTTKUrfHneRGnc3zR8nEEx8EEMMGwrT7m0x2g==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=U3G5ZEsy; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:31::10; helo=mail-wm2-x10.google.com; envelope-from=jiangwenxiaomi@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WYDQcaXv;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=U3G5ZEsy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:31::10; helo=mail-wm2-x10.google.com; envelope-from=jiangwenxiaomi@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm2-x10.google.com (mail-wm2-x10.google.com [IPv6:2a00:1450:4864:31::10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmQLd1Lcvz2xYh
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 18:11:21 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id C863A43463;
-	Fri, 18 Sep 2026 08:11:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B085B1F000FF;
-	Fri, 18 Sep 2026 08:11:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789719078;
-	bh=JLpvye1bSam9JLtEW3+oCv4l+5hdlWwyZCmpmcxXOCU=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=WYDQcaXvcs44SiduderPMgDzr8eQerfvEh2+HzuSb+sKMKGEZBFzNlPb2rUu1M8ph
-	 +fzQKO9fzjJQtSBRi7hiVxMUDxRn8Sya+YACx/sYsV0KYWUFwWQhePDkjxDBCVkAKE
-	 DJU69egLvioSnaZj8dNzllIdwmg5YKsxkJhgIW0CFQHfB7hibCSOwESFdnjMSrFvK/
-	 zg5nHUQ5PFGa3Jl1bKu3X9FYlvyl/56+eViP3H0Ej0T6T+d2tGvrV5Bp6aY7xaEIW/
-	 7eTdD+EfXCKEEfIBJ7tTusvl5lD3z4YciR9iPCG0kTp7J8MXW9poI2snq03Y4RQh9g
-	 v4Y1yodW3umTg==
-Message-ID: <093ca6ba-5585-40ec-9337-8621c6741d33@kernel.org>
-Date: Fri, 18 Sep 2026 10:11:13 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmQYR3pDRz2xYh
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 18:20:42 +1000 (AEST)
+Received: by mail-wm2-x10.google.com with SMTP id 5b1f17b1804b1-49b912e64ccso3729275e9.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 01:20:42 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1789719639; cv=none;
+        d=google.com; s=arc-20260327;
+        b=alTNMCBCbhN7nSog4JgH8yczTJFb4aGzdCzJevAUgCLyRQZgRgoBGzv0wwscIAYwjP
+         G9U1MnbPtwaXdtKTU4hCKuJL0BldMZN0AO7OOK1mjLVZw8eu/5jOthbv5ObW2CTSXCCd
+         CVgSaej2xLRvTlAjAc545cd6B40piqUelN3JqltALy9m3gNOrwRANli/twAbM3rasaAp
+         Umt+J9jL1cJswbrwa+jOV7OIbypM8mBqj2ioFWT6l3Coias7Eq2+VhFjpjcPXU17MEs+
+         pDJy2FV+L80NBSFNU6kNuS+m3XNoVB36BiJSxi/b6iVW3nMKS86yrqsOoZhTDoRRqtki
+         w4Ow==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=S/0xeeqml62b4hzIs2sGIOyHX0Y352/7mh8gz6dinRs=;
+        fh=Wp+IGe9q+xBVN3FMIizbGdUd5iGaWaw9ZMkibs/aTHY=;
+        b=bDRCk8pmfe2+iQkqkmHHTs3MyU3X3OdV4qvT524zV/o2aeBk8b+OJ3nfW+lVxtbWbH
+         WW2sru89XJ3WDOhVFMYDRBcbBsgEqeCMCVMf1p85Zn70GrehN8M/9x6nEjsSFHlp6Q70
+         fBu3nWEIdWFm7RagtFfrMh4TqYBCANqOCT319H6+yBRVWyM3H3CSSzvmlDTZdw0vdD/M
+         lVG8IKZBmIv9sIUxwB7dHRQXTDWADOQvlhuoqV7sYfyxIl3tPStDSpvZ7BHYrmTGm+lD
+         bXD0TpVyNZ+HsPOriV+paKOLLu4D7w4sEIWehWeZ3S0FakMVA//7UETXMY9wDH1i9rca
+         gtlg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789719639; x=1790324439; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=S/0xeeqml62b4hzIs2sGIOyHX0Y352/7mh8gz6dinRs=;
+        b=U3G5ZEsyr5krg2+3S2/fn/nHihSc+HJfloj64M1dx9OWRKNZEapqpiH1r6ERBFw6YP
+         rF4KsYA8UxgspEG6aDxRXsC+Le6EfFI7KDKbNGkf4xkRqNB286yHkanT1r+EBqmtCROY
+         FhRtdFIQDiFaG1ITAnIMCw2rMm8jU1V5bl/GYLFNywaSBD0BCVr+IvYO3esG1AzETTU7
+         Lt4E642fnomWR+xvlPGsuXa2HTqxIxCTZZN6Lm7+jQvyR2ZlaX3FkC0PUqtbegU+hRbv
+         m8L9t9lg4Pa01yknuulnshM/lPoCZsp7M3f4UyN12VfhJ/LkJSDsSEYsKMdnU2QuWfN0
+         paXA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789719639; x=1790324439;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=S/0xeeqml62b4hzIs2sGIOyHX0Y352/7mh8gz6dinRs=;
+        b=nafy/9yB8GSSaKiJOO1v8G5QO80hy8e6v26AWDjO2q7uP9FCUVeH70WpwdlUyUejNm
+         af51ONlGEw8RLit84wd2fMCkpZ86TjsN3Ac2OmZmpu3Zk5mFeFREupdzgCI4pL56mqZ9
+         tNYsdIpHefaOzBVeS1Zwq2E2hSiZYLKqYZoUSf6riGigbFxfomHxcpQ+qdRSkuiOO2HF
+         4ic17yes+KwmlwEdWi2JmDMdGlXEYHXw4NRPjb5On4Ib0WRvNgpX2xCq+2QyD6K2wn/s
+         qrt6MvkeKu8OER8DLzy7jrJmy4Y8l0yW2bB1zv7K6FxUhWlIBY97tLNeXClsEvAqXwqZ
+         ZnzQ==
+X-Forwarded-Encrypted: i=1; AKwUvBxASdKIn9NTuKnITZ78CjA68fnegAnq1AqiBLkZUSUZzGIHRN9b3YC313mFpmalscT/hVY6XNDa5dfpVFY=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++mO5gPWYx4V61yhu9Dk+eCk0OXgdQlNwF4i2rR1r38CqUA6VB4D
+	xJ+etkTn1tsBXwkWXQsZQLCq2cShn0YgJ4XZt9Vfw42FGkEHVTWiCin9yCntr/CssuKRaWk+kRc
+	PlB7/10Y1MZTmJKt3BE5UjcO+yeZCavg=
+X-Gm-Gg: AYBFou25wJE0ZyMi5kCwHUb1o0eMV0ncwcWSAuZeIjCJ8VfZ1wAnER9j9cYmg2vLGVf
+	CxKXpLRaUuuezataQCUqJyiWC3pfTmiSlu3EAfywMzhoDUPeqIrvNfdOQ+w2TTmxpEg98/xYJ7+
+	MHDSXen9wB1Bja+zpROJjsl1oLT9atPfa3IJFbsbnud9Glaq0KXVt6vE6Qcn3woJwb9FWC10bvu
+	KymI/7bvx4P/wd176F7w84Km+7YNTfLgdiee7xh/rlaFty+jD3OuCahm7f4nEJd6tKe4ZHTPAnL
+	/mHQMszdlWziCtNw+rVEG+nQf7CFz77WHG6SlQaqxxWdpxIonNCZvGdg
+X-Received: by 2002:a05:600c:3493:b0:49f:bd3c:bc21 with SMTP id
+ 5b1f17b1804b1-49fc573b55emr19996295e9.28.1789719638568; Fri, 18 Sep 2026
+ 01:20:38 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,98 +102,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc: remove unused audit_32.h header
-To: Shrikanth Hegde <sshegde@linux.ibm.com>,
- Ethan Nelson-Moore <enelsonmoore@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-References: <20260918030810.420490-1-enelsonmoore@gmail.com>
- <1f44b5fa-0238-4412-8742-07f17c06cc04@linux.ibm.com>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <1f44b5fa-0238-4412-8742-07f17c06cc04@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+References: <20260917052933.188679-1-jiangwenxiaomi@gmail.com>
+ <20260917052933.188679-3-jiangwenxiaomi@gmail.com> <CAGsJ_4wDbDLv5mxfNiyraOS6tKCSV+g8xL5+SsRCyqLnN2ON7A@mail.gmail.com>
+In-Reply-To: <CAGsJ_4wDbDLv5mxfNiyraOS6tKCSV+g8xL5+SsRCyqLnN2ON7A@mail.gmail.com>
+From: Wen Jiang <jiangwenxiaomi@gmail.com>
+Date: Fri, 18 Sep 2026 16:20:26 +0800
+X-Gm-Features: AcwNN1UdGEZgXXaGyHc-WLWsn9JkWUJTL9ur_osaBhDBGn4esHyfsGM8b6arOrw
+Message-ID: <CAHKocdFCuFR-gYCrY-c0iRKZ2GRZJCnTJjHGe_TvMoYkjnb7aw@mail.gmail.com>
+Subject: Re: [PATCH v8 02/10] powerpc/8xx: add pte_set_huge()
+To: Barry Song <baohua@kernel.org>
+Cc: akpm@linux-foundation.org, catalin.marinas@arm.com, linux-mm@kvack.org, 
+	urezki@gmail.com, will@kernel.org, Xueyuan.chen21@gmail.com, 
+	ajd@linux.ibm.com, anshuman.khandual@arm.com, chleroy@kernel.org, 
+	david@kernel.org, dev.jain@arm.com, jiangwen6@xiaomi.com, leo.yan@arm.com, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au, 
+	npiggin@gmail.com, rppt@kernel.org, ryan.roberts@arm.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Shrikanth,
+On Fri, 18 Sept 2026 at 07:28, Barry Song <baohua@kernel.org> wrote:
+>
+> On Thu, Sep 17, 2026 at 1:30=E2=80=AFPM Wen Jiang <jiangwenxiaomi@gmail.c=
+om> wrote:
+> >
+> > From: Wen Jiang <jiangwen6@xiaomi.com>
+> >
+> > vmap installs PTE-level block mappings (SZ_16K/SZ_512K on powerpc/8xx)
+> > by reusing set_huge_pte_at(), a HugeTLB helper gated by
+> > CONFIG_HUGETLB_PAGE. This makes the feature silently unavailable on
+> > CONFIG_HUGETLB_PAGE=3Dn kernels and couples mm/vmalloc.c to HugeTLB
+> > internals it does not otherwise need.
+> >
+> > Add pte_set_huge() to powerpc/8xx, next to the existing
+> > pmd_clear_huge()/pud_clear_huge() in mm/nohash/8xx.c. It builds the hug=
+e
+> > PTE and writes it into the backing cells directly, without going throug=
+h
+> > set_huge_pte_at(), so it does not depend on CONFIG_HUGETLB_PAGE.
+> >
+> > No pte_clear_huge() is needed: 8xx does not implement
+> > arch_vmap_pte_range_unmap_size(), so the vmap unmap path never takes th=
+e
+> > block-mapping branch.
+>
+> I assume you mean the block-unmapping (or PTE-clearing) branch.
+> Please make this clear in the changelog.
+>
 
-Le 18/09/2026 à 09:11, Shrikanth Hegde a écrit :
-> 
-> 
-> On 9/18/26 8:38 AM, Ethan Nelson-Moore wrote:
->> The last use of arch/powerpc/kernel/audit_32.h was removed in
->> commit f26ad12356a2 ("powerpc/audit: Convert powerpc to
->> AUDIT_ARCH_COMPAT_GENERIC"), but it was left behind. Remove it.
->>
-> 
-> Does it need fixes tag, So that it can propagate correctly?
+Sure. Will fix it.
 
-My understanding is that this patch is not a real bug fix so it doesn't 
-qualify for -stable trees at the first place. Therefore it shouldn't 
-contain a Fixes: tag.
+Thanks,
+Wen
 
-See https://docs.kernel.org/process/stable-kernel-rules.html :
-
-Rules on what kind of patches are accepted, and which ones are not, into 
-the “-stable” tree:
-
-     It or an equivalent fix must already exist in Linux mainline 
-(upstream).
-
-     It must be obviously correct and tested.
-
-     It cannot be bigger than 100 lines, with context.
-
-     It must follow the Documentation/process/submitting-patches.rst rules.
-
-     It must either fix a real bug that bothers people or just add a 
-device ID. To elaborate on the former:
-
-         It fixes a problem like an oops, a hang, data corruption, a 
-real security issue, a hardware quirk, a build error (but not for things 
-marked CONFIG_BROKEN), or some “oh, that’s not good” issue.
-
-         Serious issues as reported by a user of a distribution kernel 
-may also be considered if they fix a notable performance or 
-interactivity issue. As these fixes are not as obvious and have a higher 
-risk of a subtle regression they should only be submitted by a 
-distribution kernel maintainer and include an addendum linking to a 
-bugzilla entry if it exists and additional information on the 
-user-visible impact.
-
-         No “This could be a problem...” type of things like a 
-“theoretical race condition”, unless an explanation of how the bug can 
-be exploited is also provided.
-
-         No “trivial” fixes without benefit for users (spelling changes, 
-whitespace cleanups, etc).
-
-
-> 
-> Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
-> 
->> Signed-off-by: Ethan Nelson-Moore <enelsonmoore@gmail.com>
->> ---
->>   arch/powerpc/kernel/audit_32.h | 7 -------
->>   1 file changed, 7 deletions(-)
->>   delete mode 100644 arch/powerpc/kernel/audit_32.h
->>
->> diff --git a/arch/powerpc/kernel/audit_32.h b/arch/powerpc/kernel/ 
->> audit_32.h
->> deleted file mode 100644
->> index c6c79c3041ab..000000000000
->> --- a/arch/powerpc/kernel/audit_32.h
->> +++ /dev/null
->> @@ -1,7 +0,0 @@
->> -// SPDX-License-Identifier: GPL-2.0
->> -#ifndef __AUDIT_32_H__
->> -#define __AUDIT_32_H__
->> -
->> -extern int ppc32_classify_syscall(unsigned);
->> -
->> -#endif
-> 
-
+> >
+> > In practice PPC_8xx selects HUGETLBFS unconditionally, so
+> > CONFIG_HUGETLB_PAGE=3Dn does not occur there today; this is a decouplin=
+g
+> > cleanup rather than a new configuration.
+> >
+> > There is no caller yet: mm/vmalloc.c is converted later in this series,
+> > once the generic fallbacks are in place.
+> >
+> > Signed-off-by: Wen Jiang <jiangwen6@xiaomi.com>
+> > ---
+>
+> BTW, this patch applies cleanly to the mm-new branch.
+>
+> Best Regards
+> Barry
 
