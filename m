@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-27706-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27707-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5D74C982DA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 10:06:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0CD2C982DE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 10:06:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hmSsL4gRbz3c8f;
-	Fri, 18 Sep 2026 20:04:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.224
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789725878;
-	cv=none; b=llwCRvmBiFUmDjtW2NM0Zby87K/JaUygvRi9S0dQQPqg7BB43ekF6D4FtFZtOyO/qAWv9oPFis21hJ8OnPgu1DeENlOvjpjmEiAlisAKcM0aBnloxB0pF3jFydQX2lggGmSkfRiX/U08tWi1g4wDqPpMZu1d1I8af5OfLQvMeP5pQlXm+kecd6CLc2Qurk6iGwr+XIKqwdaQmaYCw8kInqgsfSNCwUtsC/9Xgz3Qh7MgkazTNpTyJrb7pIfhfNjoJQOvH6X1MihNkVzrFrg+2qSygW5P5WolUYTMyrUdCeWZV157H8xqf0hCBoBwoU+LCcvEXj0TIfIVIvEdG4YqwQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hmSsM12Lwz3cB5;
+	Fri, 18 Sep 2026 20:04:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789725879;
+	cv=none; b=QAw9sUWToKnAeXo5RyjZdAGJ4JcH+nhP/t8VmhvfcIxT8p7OjtmiLJm+UqVExTCacMw3dQsK6XUyThjJ9l2HI4D66rQxkC3r5AqBpHWirHAWp/HiUVmG9W0a78ucLLl+EtO68mCzUKiFNlXeXFdR7u+G/pOFwPtf/xeBO1iz+7XEi1SgwIDJVRFjD6MUABWDj9oTu093AEZVdzrVjj/xqHVO8NVQiadQK4wr4ERdABa0Do2u67JLLRnoYUdIfUz6kON87gwq9d28YcCurqBzeGwirz3shKirWqNL3Yk/I8hg82ERuAcgFlTWSPMJIz6j1Li56V74vy6CwSo6gXvL2w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789725878; c=relaxed/relaxed;
-	bh=9eBN1xy3LsTspM2cXc9iihQZgxEMtvQyI2J8OiqZLKg=;
+	t=1789725879; c=relaxed/relaxed;
+	bh=PnxxiylnyHipl/A8SV3AAIGnQGPzs5xWXDe5kWQdoK8=;
 	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=H/KmCdr0MeD+jncAi2t7dMVtjx8GdvOm2rWpVpaJyTF6xF8fj49O1ruyMFBm1hvv/B77fvWejxjayaAQS6xLgc04gEjK4H+lHWK7BlqzZbCKkS8UbKSb92F4Yy6jsDsMxpJA4O5JpqbeVbPgRnkJILhKOZ9/LW+uav5Rx/F3vobPRhDnHF7/U8hh8TP7NQv5TAKrRqV0T2bMlbYHw4T8D1mR9HGkQ6S8THjDS+vJR9QzYi9UpcJI8hiPd9dpb1juIp8Lay/SFTCdxDvbUG8TSCfso4gSLwEvZ4Ow/2ai7i6iKcxt7Lu4kqMeubV1Y4TTaviQnrIExtg9gOSNerXAFA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=PHmoGMGZ; dkim-atps=neutral; spf=pass (client-ip=113.46.200.224; helo=canpmsgout09.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	 MIME-Version:Content-Type; b=Wm0aTOK7LizWQXdQvL7kUkZCWERDWjwSFb7oXEmWkfVK/edphd6TzD70OUz8WpiSKgc1ibHbq22FR2mhN7NJND6IV3NNMTP/hknjZxi8nZJLE0uDFuUrvcnAsxNhN5HjhXUrv+oBi2AVicWWTLhmw9tDJHLRAett6y2RpuxwR/kw1eFD/JisP09KlGcCZJlGoeHlLx3SdYWHhWL2oT66s+SozQmn71smV5BMmQ2nXPDFY6ti25Yph5vG7doY7Rs9smLW8KXGWxHRe95Jf8q+6iwvlvK3bMOAYNGP3CP5MJtr8Y16wHmYM7wwtTFWpT3Y6mPMrZ4YwU5DDx/UOSZkbg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=0wcIVz/N; dkim-atps=neutral; spf=pass (client-ip=113.46.200.217; helo=canpmsgout02.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=PHmoGMGZ;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=0wcIVz/N;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.224; helo=canpmsgout09.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout09.his.huawei.com (canpmsgout09.his.huawei.com [113.46.200.224])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.217; helo=canpmsgout02.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout02.his.huawei.com (canpmsgout02.his.huawei.com [113.46.200.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmSsK4HRxz3bSF
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmSsK72yLz3bd0
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 20:04:37 +1000 (AEST)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=9eBN1xy3LsTspM2cXc9iihQZgxEMtvQyI2J8OiqZLKg=;
-	b=PHmoGMGZCpSK83cFfL1l+GZjf/pY9I+6IoZqg3WJ4VLG4xW6NHlRLdZlpXZs7q+S1hU6FgzSG
-	rPNsboboV+FxPnNuPRJvY6Ww7D51z6C62ISbmu/FflpvRh5Xiy1KVbEeTFJW1U4tML5IiSjG8eN
-	PcED3zgeHCZOJt4Rn7qsZuQ=
-Received: from mail.maildlp.com (unknown [172.19.163.163])
-	by canpmsgout09.his.huawei.com (SkyGuard) with ESMTPS id 4hmScY040lz1cynY;
-	Fri, 18 Sep 2026 17:53:33 +0800 (CST)
+	bh=PnxxiylnyHipl/A8SV3AAIGnQGPzs5xWXDe5kWQdoK8=;
+	b=0wcIVz/NKsz3gLpf8y14MTzeo91L7xA17SSIcnva1ijvtAHPfvMAiGbgY84jOLMdOSDODlTqp
+	FE9GxBfXkkJdMRm4pBCXfVlwvRpVN7aHNLNfNcYCiXQH1Z7phnSffRJ7Nq8BfOP/+sVIY+6zxF9
+	0VjE7YG+aZCdI1BcLH46bJU=
+Received: from mail.maildlp.com (unknown [172.19.163.104])
+	by canpmsgout02.his.huawei.com (SkyGuard) with ESMTPS id 4hmScB2P4Pzcb40;
+	Fri, 18 Sep 2026 17:53:14 +0800 (CST)
 Received: from kwepemk200008.china.huawei.com (unknown [7.202.194.74])
-	by mail.maildlp.com (Postfix) with ESMTPS id 3E6074048B;
-	Fri, 18 Sep 2026 18:04:32 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 70DAC4057F;
+	Fri, 18 Sep 2026 18:04:29 +0800 (CST)
 Received: from huawei.com (10.90.53.73) by kwepemk200008.china.huawei.com
  (7.202.194.74) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Fri, 18 Sep
- 2026 18:04:30 +0800
+ 2026 18:04:27 +0800
 From: Jinjie Ruan <ruanjinjie@huawei.com>
 To: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
 	<chenhuacai@kernel.org>, <kernel@xen0n.name>, <maddy@linux.ibm.com>,
@@ -71,9 +71,9 @@ To: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
 	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
 	<driver-core@lists.linux.dev>, <kexec@lists.infradead.org>,
 	<linux-fsdevel@vger.kernel.org>, <linux-mm@kvack.org>
-Subject: [PATCH v5 16/17] arm64: kexec_file: Simplify load_other_segments()
-Date: Fri, 18 Sep 2026 18:04:41 +0800
-Message-ID: <20260918100442.3841135-17-ruanjinjie@huawei.com>
+Subject: [PATCH v5 14/17] elf: Introduce elf64_phdr_size() helper
+Date: Fri, 18 Sep 2026 18:04:39 +0800
+Message-ID: <20260918100442.3841135-15-ruanjinjie@huawei.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260918100442.3841135-1-ruanjinjie@huawei.com>
 References: <20260918100442.3841135-1-ruanjinjie@huawei.com>
@@ -96,73 +96,134 @@ X-Originating-IP: [10.90.53.73]
 X-ClientProxiedBy: kwepems100001.china.huawei.com (7.221.188.238) To
  kwepemk200008.china.huawei.com (7.202.194.74)
 
-Use `kbuf` fields directly in crash_prepare_headers() to eliminate
-the local variables "headers" and "headers_sz"..
+Add a common helper to compute the total size of an ELF64 header
+(Ehdr + program headers) from the number of program headers.
+Replace open-coded calculations in powerpc, x86, vmcore,
+and crash_core.
 
-Advance the assignment to image->elf_headers before
-calling kexec_add_buffer(). If kexec_add_buffer() fails, the explicit
-vfree() in the error path can be removed, as the global infrastructure
-in arch_kimage_file_post_load_cleanup() will handle the cleanup.
+On ppc64, struct elfhdr maps to elf64_hdr, so the powerpc change
+is a pure cleanup.
 
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will@kernel.org>
-Cc: Baoquan He <bhe@redhat.com>
-Cc: Breno Leitao <leitao@debian.org>
+No functional change intended.
+
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Thomas Gleixner <tglx@kernel.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Baoquan He <baoquan.he@linux.dev>
+Cc: Mike Rapoport <rppt@kernel.org>
+Cc: Pasha Tatashin <pasha.tatashin@soleen.com>
+Cc: Pratyush Yadav <pratyush@kernel.org>
+Cc: Dave Young <ruirui.yang@linux.dev>
+Cc: Kees Cook <kees@kernel.org>
+Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
 Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
 ---
- arch/arm64/kernel/machine_kexec_file.c | 24 +++++++++---------------
- 1 file changed, 9 insertions(+), 15 deletions(-)
+ arch/powerpc/kexec/crash.c                 | 2 +-
+ arch/powerpc/platforms/powernv/opal-core.c | 3 +--
+ arch/x86/kernel/crash.c                    | 3 +--
+ fs/proc/vmcore.c                           | 6 ++----
+ include/linux/elf.h                        | 4 ++++
+ kernel/crash_core.c                        | 2 +-
+ 6 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/arch/arm64/kernel/machine_kexec_file.c b/arch/arm64/kernel/machine_kexec_file.c
-index 2f750e5f4fcc..3d907f8ee594 100644
---- a/arch/arm64/kernel/machine_kexec_file.c
-+++ b/arch/arm64/kernel/machine_kexec_file.c
-@@ -89,36 +89,30 @@ int load_other_segments(struct kimage *image,
- 	kbuf.buf_min = kernel_load_addr + kernel_size;
+diff --git a/arch/powerpc/kexec/crash.c b/arch/powerpc/kexec/crash.c
+index 8ede33740fc0..0cdc64da35b8 100644
+--- a/arch/powerpc/kexec/crash.c
++++ b/arch/powerpc/kexec/crash.c
+@@ -478,7 +478,7 @@ unsigned int arch_crash_get_elfcorehdr_size(void)
+ 	if (IS_ENABLED(CONFIG_MEMORY_HOTPLUG))
+ 		phdr_cnt += CONFIG_CRASH_MAX_MEMORY_RANGES;
  
- #ifdef CONFIG_CRASH_DUMP
--	/* load elf core header */
--	void *headers;
--	unsigned long headers_sz;
- 	if (image->type == KEXEC_TYPE_CRASH) {
--		ret = crash_prepare_headers(true, &headers, &headers_sz, NULL);
-+		ret = crash_prepare_headers(true, &kbuf.buffer, &kbuf.bufsz, NULL);
- 		if (ret) {
- 			pr_err("Preparing elf core header failed\n");
- 			goto out_err;
- 		}
+-	return sizeof(struct elfhdr) + (phdr_cnt * sizeof(Elf64_Phdr));
++	return elf64_phdr_size(phdr_cnt);
+ }
  
--		kbuf.buffer = headers;
--		kbuf.bufsz = headers_sz;
-+		if (unlikely(image->elf_headers))
-+			vfree(image->elf_headers);
-+
-+		image->elf_headers = kbuf.buffer;
-+		image->elf_headers_sz = kbuf.bufsz;
-+
- 		kbuf.mem = KEXEC_BUF_MEM_UNKNOWN;
--		kbuf.memsz = headers_sz;
-+		kbuf.memsz = kbuf.bufsz;
- 		kbuf.buf_align = SZ_64K; /* largest supported page size */
- 		kbuf.buf_max = ULONG_MAX;
- 		kbuf.top_down = true;
+ /**
+diff --git a/arch/powerpc/platforms/powernv/opal-core.c b/arch/powerpc/platforms/powernv/opal-core.c
+index 32662d30d70f..fc0aad61504b 100644
+--- a/arch/powerpc/platforms/powernv/opal-core.c
++++ b/arch/powerpc/platforms/powernv/opal-core.c
+@@ -309,8 +309,7 @@ static int __init create_opalcore(void)
+ 	char *bufp;
  
- 		ret = kexec_add_buffer(&kbuf);
--		if (ret) {
--			vfree(headers);
-+		if (ret)
- 			goto out_err;
--		}
--
--		if (unlikely(image->elf_headers))
--			vfree(image->elf_headers);
+ 	/* Get size of header & CPU notes for OPAL core */
+-	hdr_size = (sizeof(Elf64_Ehdr) +
+-		    ((oc_conf->ptload_cnt + 1) * sizeof(Elf64_Phdr)));
++	hdr_size = elf64_phdr_size(oc_conf->ptload_cnt + 1);
+ 	cpu_notes_size = ((oc_conf->num_cpus * (CRASH_CORE_NOTE_HEAD_BYTES +
+ 			  CRASH_CORE_NOTE_NAME_BYTES +
+ 			  CRASH_CORE_NOTE_DESC_BYTES)) +
+diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
+index 7fa139725514..6711f8bf1db3 100644
+--- a/arch/x86/kernel/crash.c
++++ b/arch/x86/kernel/crash.c
+@@ -374,8 +374,7 @@ int crash_load_segments(struct kimage *image)
+ 		pnum += 2 + CONFIG_NR_CPUS_DEFAULT;
  
--		image->elf_headers = headers;
- 		image->elf_load_addr = kbuf.mem;
--		image->elf_headers_sz = headers_sz;
+ 	if (pnum < (unsigned long)PN_XNUM) {
+-		kbuf.memsz = pnum * sizeof(Elf64_Phdr);
+-		kbuf.memsz += sizeof(Elf64_Ehdr);
++		kbuf.memsz = elf64_phdr_size(pnum);
  
- 		kexec_dprintk("Loaded elf core header at 0x%lx bufsz=0x%lx memsz=0x%lx\n",
- 			      image->elf_load_addr, kbuf.bufsz, kbuf.memsz);
+ 		image->elfcorehdr_index = image->nr_segments;
+ 
+diff --git a/fs/proc/vmcore.c b/fs/proc/vmcore.c
+index 44d15436439f..ff324969d798 100644
+--- a/fs/proc/vmcore.c
++++ b/fs/proc/vmcore.c
+@@ -1238,8 +1238,7 @@ static int __init parse_crash_elf64_headers(void)
+ 	}
+ 
+ 	/* Read in all elf headers. */
+-	elfcorebuf_sz_orig = sizeof(Elf64_Ehdr) +
+-				ehdr.e_phnum * sizeof(Elf64_Phdr);
++	elfcorebuf_sz_orig = elf64_phdr_size(ehdr.e_phnum);
+ 	elfcorebuf_sz = elfcorebuf_sz_orig;
+ 	elfcorebuf = (void *)__get_free_pages(GFP_KERNEL | __GFP_ZERO,
+ 					      get_order(elfcorebuf_sz_orig));
+@@ -1605,8 +1604,7 @@ static int vmcore_add_device_ram_elf64(struct list_head *list, size_t count)
+ 	}
+ 
+ 	/* elfcorebuf_sz must always cover full pages. */
+-	new_size = sizeof(Elf64_Ehdr) +
+-		   (ehdr->e_phnum + count) * sizeof(Elf64_Phdr);
++	new_size = elf64_phdr_size(ehdr->e_phnum + count);
+ 	new_size = roundup(new_size, PAGE_SIZE);
+ 
+ 	/*
+diff --git a/include/linux/elf.h b/include/linux/elf.h
+index 5c402788da19..400f58a13d92 100644
+--- a/include/linux/elf.h
++++ b/include/linux/elf.h
+@@ -109,4 +109,8 @@ static inline int arch_elf_adjust_prot(int prot,
+ }
+ #endif
+ 
++static inline unsigned long elf64_phdr_size(unsigned long phdr_cnt)
++{
++	return phdr_cnt * sizeof(Elf64_Phdr) + sizeof(Elf64_Ehdr);
++}
+ #endif /* _LINUX_ELF_H */
+diff --git a/kernel/crash_core.c b/kernel/crash_core.c
+index 852a5f51d472..8e30ae107a7c 100644
+--- a/kernel/crash_core.c
++++ b/kernel/crash_core.c
+@@ -193,7 +193,7 @@ int crash_prepare_elf64_headers(struct crash_mem *mem, int need_kernel_map,
+ 	 */
+ 
+ 	nr_phdr++;
+-	elf_sz = sizeof(Elf64_Ehdr) + nr_phdr * sizeof(Elf64_Phdr);
++	elf_sz = elf64_phdr_size(nr_phdr);
+ 	elf_sz = ALIGN(elf_sz, ELF_CORE_HEADER_ALIGN);
+ 
+ 	buf = vzalloc(elf_sz);
 -- 
 2.34.1
 
