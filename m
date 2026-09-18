@@ -1,58 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-27657-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27658-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62969C982D2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 06:14:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0BE27C982D2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 06:15:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hmMm64ZCfz30M6;
-	Fri, 18 Sep 2026 16:14:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789712086;
-	cv=none; b=ohGp33miy54B3WX0k340OvPiarVOuY+BTzf3Rmy0h+2LUNmebYs2sLdlLu9pNWInY+zNjKw/DvnlJQ1Dq+sV0pq24yov4ZQSwuW4WyWnXCcevGZ69fP0orJOMScFUNifQ+b6RmrjMi30dd/LzMFnE8eWle7aoSkeYXDZwOMgbpwU4CWPxwXwYEsVJDdEAQW1ALpVb68UMVqWE+7xVMlqh3i7l9y0s2ezwxMpmdidP+bj48ivMz8P75ePpBSjUpZFYHOU11f0q2c30eRVyCYy3GpF2ll5bBMmVVSI16Q4giB+9AcFRESN6Fd4BaDbT3Go27KFrZkFeVgbQEiIdo7eJA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hmMnD4Xk1z2xYh;
+	Fri, 18 Sep 2026 16:15:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789712144;
+	cv=none; b=dQ7sk3dX+cMlgppnNfL3F/w7uOxolS+kFO1iuXn1p4oB13rieDYjIAF5n+cG2rSkQ5LVJW/fIiZs845Q6mKTvtOyWbfeBCisiMWqe5sxn9ZdJk5malErk3f2M8AdUTNxvzbiLL3lXwC67s41YN9L9vOiMDALprkdbjpSrUx1U1TBEhaCPSUwuCFjKyFMYstvOn4lgvXQwnSSCdkW24W+u5mrSbp587gGEKXcg7U905WsbvRScd+xZM3I1UaDm1LCLl4nfbu2ufxl1qKRLlVmyU5wB2vavSYflq6J0V/5pCp1+JtDQTsVsfg/nR74nCEo8n+rKPwMykoHpamyUZlsbA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789712086; c=relaxed/relaxed;
-	bh=mSUon0Ye+JTXHkgGPecismrQ6aWB6KUmBQxrnhvgcgA=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=RU7SkpBU8LhsJI6+EHRyTQeYMZu8XOircabLkzsUUkUg3riG/EXnwdtlFm3m/KBxvsx1Btf+hdZHAonzZZSPxEsP8yEvyzUucvj1BLBYLHsrzN3PAMv0qdAsan3AiDXq/3nmSKJyriD4DRLEUXnLmiMf55hUq7dmTv+I3QR5bDgbaJbickE9+Feh1vIZaTGrhNkhwgGN67LUPajB8tS9kA14XOFfiD0oQUqBN7pfLkVl+CV7nlgIrfURs0GqFN/YswcTvZGI+0sLpYAck2bIfNsK1SXdrXROjWdxJ4wD8D5pvOXVZ9sQWCSU+nq9q2Yn/ThOfpvcwxtz9jJprZF9FQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JRu9qUjQ; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1789712144; c=relaxed/relaxed;
+	bh=oGJk4n7WtHcVajpvK6Pm5G9qDj9Mg71rEE8uyPKn1GM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=nZvCs8kNYCvCSU4afKUqEw4zRnn8IzYwn9l9nrhL7+J++gn+rni2uhPypDLjrvUidqE8b9xGonYORRp22hXQl0bXcJ+vDXKs/FDlqLanXneqx8zcXnss0XeaT5UaR8ZRpGO+EFn5VjECXSIOnQdbLRTPYrpq84/NlCLH7W00IukbQS0149oV/I0SoIwlaSr9gALJHH3gPDAGhJI2s8dfLuoX8SU4bj4Hm+LOH/Q0ZAAHhWWBmyNm8IaU5rsGJEO5f1vYDVH1QsM+98xLcoDaWl6z7CAY+UofrPTLYEqy9VExWO0D0hK3f4Apj7mUgPuXUv3s8eEeioMLfPunM7U8Vw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SmNlM4JI; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shirisha@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JRu9qUjQ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SmNlM4JI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shirisha@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmMm52Q48z2y7r
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 16:14:45 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 2D86544782
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 06:14:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 124931F00898
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 06:14:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789712083;
-	bh=mSUon0Ye+JTXHkgGPecismrQ6aWB6KUmBQxrnhvgcgA=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=JRu9qUjQXlRcjBdYLmYId5fUC6gNDmR6uvG9HayWY2hzLkH+HiGKuskUL/ctLgP2U
-	 Ob9+gFsoHQpIkKakYQSc0AbdsDy6276zAapXDiWaE9paVunN0VkmUUpMNDSDscA4Dw
-	 TvkGHI+97S2SioWsf3/Ey/5smgTkPfQZu5lwVDNsJ+wK04tjbiBQI+ETfTKpxJYqhm
-	 sMx5mw0Ln8+FkO+cAoi9V3yM+cMQj4udf54sUfcPw2eDg4/WPE53GkFK1qwojK1mdl
-	 O8XwhWGUjhPRf0KLJ2oE243yp5Fxp0NBITZRZQCQ4NAar+SXKaC++dyEEH2NBA+Z/g
-	 G9Cm/SO1Eid+g==
-Received: by mail-qk2-f12.google.com with SMTP id af79cd13be357-939109f067cso41824585a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2026 23:14:43 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBzb/GZyMncglFiGNbTpJARfDdv20gnNuRnlvBYC/7HoHrg+6UJUC/FgVqssvnRlT8NcSwkizxL3CYQCD4Y=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++knu5whwLpRvIFMM8/ivAUQ4UdJtW1n2+m2x4CDErHKqOQQZpW8
-	EPthd0tGAd3pQA+s9woo62i8cFIKJ3i/shKq2G9RBUv8rqCRgk7VSMlCev6slB9cVZSoQr0emd0
-	0QOomd6cjMwxIMOGFlgrcM5+RyhKBGmI=
-X-Received: by 2002:a05:620a:17a3:b0:939:e735:c50e with SMTP id
- af79cd13be357-93bdc6a6970mr193841685a.13.1789712082223; Thu, 17 Sep 2026
- 23:14:42 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmMnC4PVPz2xQ7
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 16:15:43 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68I2VZ394092001;
+	Fri, 18 Sep 2026 05:24:04 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=oGJk4n7WtHcVajpvK
+	6Pm5G9qDj9Mg71rEE8uyPKn1GM=; b=SmNlM4JIETbV8hn5hXI0yr0wJkXm6ETLf
+	n9uLv5/Pc+KKAmLXqrHl66uDpeOsNOEr6z5Rd9yT5AOwBrYh/YSzVjzFQy7I0aH/
+	/tmEf253cyiXJfzLSWEYaYPsuOlvJSubL0BNAWlS+KMgzVD7sRWWd9OG3BmumDMm
+	dI1TDcEOVRx8D35XGBZhZYd3D6y04BnRlCjch5svfu76rXM0VJyTxp08ITU3s3JA
+	I8dr8fUF2/EFVV0++l2gRQVhBF3ivC0HCVWsHIJg8idfIi/9VvtMiXy8jv922f+b
+	q/oeMlFYD6Du9PyjyLjkw6690vlA6aw+SmvMUp5hWnLXC4c011JdQ==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gmv5j63b0-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Fri, 18 Sep 2026 05:24:04 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68I2Z5C8015610;
+	Fri, 18 Sep 2026 05:24:03 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gra3yvyap-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 18 Sep 2026 05:24:03 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68I5NwkQ11206984
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 18 Sep 2026 05:23:58 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 361AC20043;
+	Fri, 18 Sep 2026 05:23:58 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4E2DF20040;
+	Fri, 18 Sep 2026 05:23:53 +0000 (GMT)
+Received: from li-d12addcc-2792-11b2-a85c-bd8df30615ab.ibm.com.com (unknown [9.66.68.7])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 18 Sep 2026 05:23:52 +0000 (GMT)
+From: Shirisha G <shirisha@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kselftest@vger.kernel.org, maddy@linux.ibm.com,
+        venkat88@linux.ibm.com, shirisha@linux.ibm.com
+Subject: [PATCH 6/7] Subject: [PATCH] selftests/powerpc: Add common test utilities header
+Date: Fri, 18 Sep 2026 10:52:41 +0530
+Message-ID: <20260918052321.932660-6-shirisha@linux.ibm.com>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20260918052321.932660-1-shirisha@linux.ibm.com>
+References: <20260918052321.932660-1-shirisha@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,126 +88,101 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260917052933.188679-1-jiangwenxiaomi@gmail.com>
- <20260917052933.188679-4-jiangwenxiaomi@gmail.com> <27072d94-13bf-4bea-948a-d8a67976601e@kernel.org>
- <CAHKocdE_zyUQT459AiTBDzQHk0jh+VpXuSMDdgHjkg-dAkgBNg@mail.gmail.com>
- <CAGsJ_4yJ-KCHbJ9S2GKXfO51KB8g-y2Q_MikqE9-6VesR-RC9Q@mail.gmail.com> <2462f67c-f7d3-4eb3-a093-6a338ef49f14@kernel.org>
-In-Reply-To: <2462f67c-f7d3-4eb3-a093-6a338ef49f14@kernel.org>
-From: Barry Song <baohua@kernel.org>
-Date: Fri, 18 Sep 2026 14:14:31 +0800
-X-Gmail-Original-Message-ID: <CAGsJ_4zMG6v-ioi8-NhveqowPVAnsHkFCNy_c7+KHDMRW3JH-Q@mail.gmail.com>
-X-Gm-Features: AcwNN1X6q5f1Ex-rUff9-91gcAaVXuwTbEB0wMz6EV5siIJ-q7nSpPx4G64lSm8
-Message-ID: <CAGsJ_4zMG6v-ioi8-NhveqowPVAnsHkFCNy_c7+KHDMRW3JH-Q@mail.gmail.com>
-Subject: Re: [PATCH v8 03/10] mm/vmalloc: use pte_set_huge()/pte_clear_huge()
- for PTE-level block mappings
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: Wen Jiang <jiangwenxiaomi@gmail.com>, akpm@linux-foundation.org, 
-	catalin.marinas@arm.com, linux-mm@kvack.org, urezki@gmail.com, 
-	will@kernel.org, Xueyuan.chen21@gmail.com, ajd@linux.ibm.com, 
-	anshuman.khandual@arm.com, david@kernel.org, dev.jain@arm.com, 
-	jiangwen6@xiaomi.com, leo.yan@arm.com, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, rppt@kernel.org, 
-	ryan.roberts@arm.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE4MDA2NCBTYWx0ZWRfX0H9Wnt0SqZIu
+ BseYmLqvcJEVp/a+HQPaB/uzpIjcVGBDWSddjH8vXlI1SpD/6AmOm32Pi1O8JSwXTWEqmcS391U
+ ZC+q4AUDhOY7nFrNJHmAyU3UbCqMyBAqt3TipbneU9rFKpfsSnUCKJWVhDP7NT4p9sBNNUb3xhX
+ l/cN8M19LCROQqXylgR4OKG4OYrC6JWS6xtDocUQ9E+jEoYn5YT4tXtTQdpXBYl1vQqajKKfKR0
+ Q/CWhvFzsMRVHqSKXTpScgYKSeqLdC+ufoehn0b8AjT2JhlBkXqJBDtW6p8L+oOrzrAt9dINJ0+
+ FZ1KmH7jowj+WB8kMxxfwAsbqASg+bDbV+lmp8XtLCRcRYxf+XTfpwsF4jZng1bv7wsXMF6Ntl8
+ Oj0HU7oJXUkS+NZN1clZL2kjspNFkLC3ncoI6LJD2BT6EBB/7CObTXJ6/d73U4MDhCWgOHdN6Al
+ w8M9kFwtRMTB1toMjuw==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE4MDA2NCBTYWx0ZWRfX2nUnjEiPwjPZ
+ 8+mdk04kDOYp0PK0hQMfoNb1nkPPSWpllKYhyYlVYYoL7GsVpq4le2uF4S4rhnLx9GE9bpJpzEY
+ sRhsoqmL5rVKC38eJcMM1Divuxi8JWs=
+X-Authority-Analysis: v=2.4 cv=Zsx4uN7G c=1 sm=1 tr=0 ts=6aaccaf4 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8 a=gxVX_hiJxzievkXEad0A:9
+X-Proofpoint-ORIG-GUID: WYKlL7kpTH7lVmZbuOurxo_fP5mxqbB_
+X-Proofpoint-GUID: WYKlL7kpTH7lVmZbuOurxo_fP5mxqbB_
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-18_01,2026-09-16_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 impostorscore=0 clxscore=1015 priorityscore=1501
+ lowpriorityscore=0 bulkscore=0 adultscore=0 phishscore=0 spamscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
+ definitions=main-2609180064
 
-On Fri, Sep 18, 2026 at 2:05=E2=80=AFPM Christophe Leroy (CS GROUP)
-<chleroy@kernel.org> wrote:
->
->
->
-> Le 17/09/2026 =C3=A0 23:44, Barry Song a =C3=A9crit :
-> > On Thu, Sep 17, 2026 at 10:41=E2=80=AFPM Wen Jiang <jiangwenxiaomi@gmai=
-l.com> wrote:
-[...]
+Introduce a shared header `utils.h` providing basic test harness
+macros and timeout handling for PowerPC selftests. This consolidates
+common functionality used across RTAS, NVRAM, FADump, and other
+selftests.
 
-> >>>>
-> >>>> diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
-> >>>> index cdd68ed3ae1a9..349ced999f959 100644
-> >>>> --- a/include/linux/pgtable.h
-> >>>> +++ b/include/linux/pgtable.h
-> >>>> @@ -2134,6 +2134,35 @@ static inline int pmd_free_pte_page(pmd_t *pm=
-d, unsigned long addr)
-> >>>>    }
-> >>>>    #endif      /* CONFIG_HAVE_ARCH_HUGE_VMAP */
-> >>>>
-> >>>> +/*
-> >>>> + * PTE-level block mappings for vmap.
-> >>>> + *
-> >>>> + * pte_set_huge() only has to be implemented by architectures whose
-> >>>> + * arch_vmap_pte_range_map_size() can return a size other than PAGE=
-_SIZE.
-> >>>> + */
-> >>>> +#ifndef __HAVE_ARCH_PTE_SET_HUGE
-> >>>> +static inline void pte_set_huge(pte_t *ptep, unsigned long addr,
-> >>>> +                             phys_addr_t phys, pgprot_t prot,
-> >>>> +                             unsigned long size)
-> >>>> +{
-> >>>> +     WARN_ON_ONCE(1);
-> >>>
-> >>> BUILD_BUG_ON() would be better here.
-> >>>
-> >>> It should be possible because fallback arch_vmap_pte_range_map_size()
-> >>> will constant-fold PAGE_SIZE so pte_set_huge() will never be called.
-> >>>
-> >>
-> >> Agreed. These fallbacks exist only to keep the build working on
-> >> architectures with PTE-level block mappings and should never actually
-> >> be reached, so BUILD_BUG_ON() is right. I'll make that change in v9.
-> >>
-> >
-> > I am not quite sure. It won't be called at runtime because
-> > `vmap size`/`unmap size` return `PAGE_SIZE`, so the code won't
-> > reach this branch. But it will still be built.
->
-> The fallbacks are defined as:
->
-> #ifndef arch_vmap_pte_range_map_size
-> static inline unsigned long arch_vmap_pte_range_map_size(unsigned long
-> addr, unsigned long end,
->                                                          u64 pfn, unsigne=
-d int max_page_shift)
-> {
->         return PAGE_SIZE;
-> }
-> #endif
->
-> #ifndef arch_vmap_pte_range_unmap_size
-> static inline unsigned long arch_vmap_pte_range_unmap_size(unsigned long
-> addr,
->                                                            pte_t *ptep)
-> {
->         return PAGE_SIZE;
-> }
-> #endif
->
-> Therefore in:
->
->                  size =3D arch_vmap_pte_range_unmap_size(addr, pte);
->                  if (size !=3D PAGE_SIZE) {
->
-> GCC knows 'size' is const and its value is PAGE_SIZE, so it won't emit
-> the branch at all.
->
-> It is call constant folding, some explanation here:
-> https://en.wikipedia.org/wiki/Constant_folding
->
-> >
-> > So, would a `BUILD_BUG_ON()` trigger a build failure here?
->
-> It shouldn't, if it does it is a compiled bug or this is because someone
-> has redefined arch_vmap_pte_range_map_size() and not pte_set_huge()
-> which we'd better know at build time rather than at runtime.
+The header defines:
+- SKIP_IF() macro for conditional skip
+- FAIL_IF() macro for unconditional failure
+- FAIL_IF_MSG() macro for failure with message
+- test_harness_set_timeout() helper for alarm-based timeouts
 
-Thanks, Christophe. I was also thinking about compiler optimization. I
-was just a bit worried that we're touching the common MM code, which
-affects almost all architectures, so I'm not quite sure whether this is
-supported by all GCC versions used by those architectures.
+This reduces duplication and ensures consistent behavior across
+selftests.
 
-If it is supported by all of them, I agree that `BUILD_BUG_ON()` is a
-perfect approach.
+Signed-off-by: Shirisha G <shirisha@linux.ibm.com>
+---
+ tools/testing/selftests/powerpc/rtas/utils.h | 39 ++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
+ create mode 100644 tools/testing/selftests/powerpc/rtas/utils.h
 
-Best Regards
-Barry
+diff --git a/tools/testing/selftests/powerpc/rtas/utils.h b/tools/testing/selftests/powerpc/rtas/utils.h
+new file mode 100644
+index 000000000000..58eef7642a3f
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/rtas/utils.h
+@@ -0,0 +1,39 @@
++// SPDX-License-Identifier: GPL-2.0-only
++#ifndef _RTAS_TEST_UTILS_H
++#define _RTAS_TEST_UTILS_H
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <unistd.h>
++
++/* Test macros */
++#define SKIP_IF(x) \
++	do { \
++		if (x) { \
++			fprintf(stderr, "SKIP: %s\n", #x); \
++			exit(4); \
++		} \
++	} while (0)
++
++#define FAIL_IF(x) \
++	do { \
++		if (x) { \
++			fprintf(stderr, "FAIL: %s\n", #x); \
++			exit(1); \
++		} \
++	} while (0)
++
++#define FAIL_IF_MSG(x, fmt, ...) \
++	do { \
++		if (x) { \
++			fprintf(stderr, "FAIL: " fmt "\n", ##__VA_ARGS__); \
++			exit(1); \
++		} \
++	} while (0)
++
++static inline void test_harness_set_timeout(int seconds)
++{
++	alarm(seconds);
++}
++
++#endif /* _RTAS_TEST_UTILS_H */
+-- 
+2.43.5
+
 
