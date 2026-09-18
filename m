@@ -1,63 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-27712-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27713-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 364C9C982D9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 10:16:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63E4FC982DC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2026 10:16:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hmT7C5KQkz2ypW;
-	Fri, 18 Sep 2026 20:16:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789726599;
-	cv=none; b=YW6cWn+0k3KeCx4KQuHQ13lAqz6NyhxWf2fKQIv+MAQAaqyXdDVAV6MZy7dF+8EndeV4QcDoDoL/YWKlOMacRywuxGryk9OSWIuae887X6eu/W99BPzetRASJVplMYesinfhDQdNeWPW/QA4DXKEMDvpNvr1CYbdSfB0p5YQB4x9ZKzeoaPNRJmCB/RrsAX6XgSesW9bI4SEXCK3h01m6A75qU/yqdCPSBIXnDK4IZBK/ddyXzbuzjwRkCrxNIgeNJhrNp6QTFhFqZ6zabm7Z7xuJGw4WJJ8fv9S8P+3876XV2O2/6+jE6dBOBLNCLU/bOM68G8Vp0Mc/V90+kVPlA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hmT7N6p7Wz2ypW;
+	Fri, 18 Sep 2026 20:16:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789726608;
+	cv=none; b=Vpt+n5qpE2LpaaPfkx4zanl0lWEicmN6kwIeAmFDeCYh9Vge9/sUQ4QYrED0yNLkD0hoZjb68lT4pingCu/SPkPtHAh7E5zPn3cJaJt0kQQAa3Vngfh4wWqKxQmIjvUYNPMIbxRqA+LehVwI1fkBtUoRYPdBaAIlpob+ybuZc76JyuENSir/bxWiIeO4JF5HbuaN48OcexcRYA7HIuWZXzaTJFWGBiball4dDTe4xv8MO63qTjDEOTWiB9XhTbS/weYsI1p+ZdDi+F/1r74A4e4Kc+5ODNLodiix4MsQnAT7u2TUdHXiqzQIHjj/oNEvbxJgqq0+iwtUpyIj/yA4kA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789726599; c=relaxed/relaxed;
-	bh=IUDFRBGa2RG1qXFNOqbXn+eZ7VMhk9nNvTSQAVzvNNw=;
+	t=1789726608; c=relaxed/relaxed;
+	bh=UDxOdOM4SxQI/SRvITcvClpR4kJ1LyTAVJnnNy5mOjQ=;
 	h=From:Subject:To:Cc:In-Reply-To:References:Content-Type:Date:
-	 Message-Id; b=gj5mWG9/qMIkTysqVF7w+WzK9x1RPtwkbAmACc9UQ1JjrTzfrj9Ocw4jLpL11wjglFHHJk+cGLyWUTl/nh3Zl0+TA+jvON3OnoYhiLn7MkwDms8kPH08/tElWCmZvP3WvdxBRO3TLRmLlVk99+hKYzl1gijlQABIW5k4zSYyBa7+bz1ANsLMbbQHAtYc6MEoG3l9Wmk6ZJbALr5XCC56sYthX71X68ZomZcD8NFYQ1fnjdTl4B4y7xH2qhv9Q0fMjkVj37FrGQxkwMQ6NhroHDhiMlbWONxdDK7INK/SNtkhCPBDBo6oVTY5RoEI9KFDthCaIlEg1zB7WvrPUXe7/A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cPNSou3I; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=sashiko-bot@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Message-Id; b=iI1S93T5PYYAeJXOIu0zZL59K7MIgjIkXs8cefCLRe1GbS4Bd9KMRJOixeN6KefOj1iUFdPAS3rHkWofz8CB6wJIjHboCRctQ5/S3AglNQIGZVvuNQ+6yhhIib3QO5+xJM/xabMoCmOGxhJCbq5vKofm3V59LoAl344mJob2gwaCKo1cJqm2Gdm5hjc1ahoxyFT2lMOqtM369H0CHLHmLWMGMleIpS8e9rDosR9z3UIL95jQ6wcxPX4FV9ykux3W9TZAEOn2FKuaIUp7Tz97/R7PtYFmmfBOlAyTEjYHi1rE/kRL+/jGaV/Ed4ltidl5phREkhrS0nwL9nsxiWGIdA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=fail (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Qh+Pxjuh reason="signature verification failed"; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashiko-bot@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cPNSou3I;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Qh+Pxjuh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=sashiko-bot@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashiko-bot@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmT7B56wZz2yhP
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 20:16:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmT7N0CdXz2yhP
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 20:16:48 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 9722160A5F;
-	Fri, 18 Sep 2026 10:16:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F39531F000FF;
-	Fri, 18 Sep 2026 10:16:33 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 6584A60A5F;
+	Fri, 18 Sep 2026 10:16:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D27101F00898;
+	Fri, 18 Sep 2026 10:16:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789726596;
-	bh=IUDFRBGa2RG1qXFNOqbXn+eZ7VMhk9nNvTSQAVzvNNw=;
+	s=k20260515; t=1789726605;
+	bh=UDxOdOM4SxQI/SRvITcvClpR4kJ1LyTAVJnnNy5mOjQ=;
 	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
-	b=cPNSou3IuShNKs2wqjrBJbH6XQctu6cWqLaMc++I1FCOeysna31efy1k8r1o8USDO
-	 2KqcArHiYXdTZ+TCjG/tGsBMKjgm0re02mhBVnEtqMPm6TY1HXd/oDObyk5RBwAemO
-	 jATEzxTr7dl4SGEuYHCs0/sMh9/aDZWRxCUGgiAaKdBlebXVmL6UJvtC61NzE0id6H
-	 jhaWLG2USeHwgB16NAE4AhrbRZEmLVBnc7w0vh5qLGmVn+sfh2LwhNAQzWtMCKSqyr
-	 Mu6jRStNkeupLKN8zuiSxlhEUKsG9ytbHpOCM4iRwDSrdR9sKb4gq/5t73W9G3xoen
-	 jXkRNjs+uULHQ==
+	b=Qh+PxjuhUYtQuTeeOL6D5uiL1736me4lgCC18Dyr540KpX1gn7g2viekAqDkINVeW
+	 V16ZuYKknpyPGGG3APdOEwuMAA9Mi2X01p1YlM68ibSO/A8gHWKdpYguVle1KPxGUW
+	 SwSHBlhTwmXypnGgRbnUrfbCkHZj8vLURNJsaxUScCCy2zq0L8WhG7YW/LanxlaQ30
+	 Y9ixgrAUskPcxu43UTAsVmm1yKlQoJ86LJsqXWxWO2wBCStypE1LKZLL4qmNA3jhPT
+	 N93ecpuLle22qWqJDfk1PgsNhWBnUkKlE/ktYVKnz6zp5EwRIw2pWOt96ZTKfbwF6+
+	 Dj/abVCxxaFWA==
 From: sashiko-bot@kernel.org
-Subject: Re: [PATCH v5 09/17] x86/crash: Fix massive out-of-bounds write on
- 32-bit Highmem
+Subject: Re: [PATCH v5 02/17] kexec: Record allocated CMA pages to fix
+ release size mismatch
 Reply-To: sashiko-reviews@lists.linux.dev
-To: ruirui.yang@linux.dev, rppt@kernel.org, bp@alien8.de, vishal.l.verma@intel.com, linux-arm-kernel@lists.infradead.org, yeoreum.yun@arm.com, chao.gao@intel.com, kernel@xen0n.name, tglx@kernel.org, takahiro.akashi@linaro.org, ritesh.list@gmail.com, hpa@zytor.com, sshegde@linux.ibm.com, kees@kernel.org, tangyouling@kylinos.cn, will@kernel.org, piliu@redhat.com, me@linux.beauty, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, maqianga@uniontech.com, gregkh@linuxfoundation.org, pasha.tatashin@soleen.com, npiggin@gmail.com, "Jinjie
- Ruan" <ruanjinjie@huawei.com>, thuth@redhat.com, maddy@linux.ibm.com, blum@kernel.org, chenhuacai@kernel.org, mpe@ellerman.id.au, sourabhjain@linux.ibm.com, zhangtianyang@loongson.cn, robh@kernel.org, graf@amazon.com, seanjc@google.com, hbathini@linux.ibm.com, guodongtai@kylinos.cn, rafael@kernel.org, adityag@linux.ibm.com, kas@kernel.org, gshan@redhat.com, coxu@redhat.com, jbouron@amazon.com, liukexin@kylinos.cn, driver-core@lists.linux.dev, mclapinski@google.com, eric.devolder@oracle.com, linuxppc-dev@lists.ozlabs.org, dakr@kernel.org, dave.hansen@linux.intel.com, mingo@redhat.com, ruanjinjie@huawei.com, akpm@linux-foundation.org, ardb@kernel.org, bgwin@google.com, linux-kernel@vger.kernel.org, james.morse@arm.com, lizhengyu3@huawei.com, baoquan.he@linux.dev, loongarch@lists.linux.dev, x86@kernel.org, palmer@rivosinc.com, pratyush@kernel.org, catalin.marinas@arm.com, leitao@debian.org, mark.rutland@arm.com, chleroy@kernel.org
+To: gregkh@linuxfoundation.org, dakr@kernel.org, maddy@linux.ibm.com,
+	mingo@redhat.com, bp@alien8.de, ruanjinjie@huawei.com,
+	ardb@kernel.org, robh@kernel.org, vishal.l.verma@intel.com,
+	me@linux.beauty, kas@kernel.org, bgwin@google.com,
+	linux-kernel@vger.kernel.org, chleroy@kernel.org,
+	baoquan.he@linux.dev, rppt@kernel.org, will@kernel.org,
+	rafael@kernel.org, lizhengyu3@huawei.com, hpa@zytor.com,
+	yeoreum.yun@arm.com, tangyouling@kylinos.cn, graf@amazon.com,
+	eric.devolder@oracle.com, sshegde@linux.ibm.com, kernel@xen0n.name,
+	loongarch@lists.linux.dev, gshan@redhat.com, thuth@redhat.com,
+	linux-mm@kvack.org, sourabhjain@linux.ibm.com,
+	hbathini@linux.ibm.com, ritesh.list@gmail.com, mark.rutland@arm.com,
+	adityag@linux.ibm.com, guodongtai@kylinos.cn,
+	catalin.marinas@arm.com, maqianga@uniontech.com, seanjc@google.com,
+	kees@kernel.org, dave.hansen@linux.intel.com, ruirui.yang@linux.dev,
+	x86@kernel.org, palmer@rivosinc.com, piliu@redhat.com,
+	pratyush@kernel.org, james.morse@arm.com, tglx@kerne,
+	l.org@lists.ozlabs.org, jbouron@amazon.com,
+	zhangtianyang@loongson.cn, driver-core@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, chao.gao@intel.com,
+	"Jinjie  Ruan" <ruanjinjie@huawei.com>, liukexin@kylinos.cn,
+	linux-fsdevel@vger.kernel.org, blum@kernel.org, npiggin@gmail.com,
+	leitao@debian.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+	pasha.tatashin@soleen.com, mclapinski@google.com,
+	chenhuacai@kernel.org, coxu@redhat.com, takahiro.akashi@linaro.org,
+	akpm@linux-foundation.org
 Cc: kexec@lists.infradead.org
-In-Reply-To: <20260918100442.3841135-10-ruanjinjie@huawei.com>
+In-Reply-To: <20260918100442.3841135-3-ruanjinjie@huawei.com>
 References: <20260918100442.3841135-1-ruanjinjie@huawei.com>
- <20260918100442.3841135-10-ruanjinjie@huawei.com>
+ <20260918100442.3841135-3-ruanjinjie@huawei.com>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-Date: Fri, 18 Sep 2026 10:16:33 +0000
-Message-Id: <20260918101633.F39531F000FF@smtp.kernel.org>
+Date: Fri, 18 Sep 2026 10:16:41 +0000
+Message-Id: <20260918101641.D27101F00898@smtp.kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,40 +95,41 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 
-> On 32-bit x86 systems with HIGHMEM, kmap_local_page() only maps a single
-> 4KB page. However, the elfcorehdr segment can span several pages (up to
-> hundreds of kilobytes).
+> The CMA pages allocated for a kexec segment are released using the
+> segment's memsz to calculate the number of pages. However, some
+> architecture loaders modify the segment's memsz after allocation
+> (e.g. arm64 subtracts text_offset), causing the release function to
+> free fewer pages than were originally allocated, leaking the remaining
+> CMA pages.
 >=20
-> The original code blindly copies 'elfsz' bytes at once via
-> memcpy_flushcache(), overwriting adjacent fixmap entries or critical
-> virtual addresses.
+> Add a per-segment `segment_cma_pages` array to store the number of
+> pages actually allocated from CMA. Populate it during
+> kexec_add_buffer() using the aligned memsz, and use it in
+> kimage_free_cma() to accurately release all allocated pages.
 >=20
-> Fix this by copying the new elfcorehdr page by page.
+> This avoids relying on the potentially modified segment->memsz and
+> prevents silent CMA memory leaks.
 >=20
-> Cc: Thomas Gleixner <tglx@kernel.org>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Borislav Petkov <bp@alien8.de>
-> Cc: Dave Hansen <dave.hansen@linux.intel.com>
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> Cc: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-> Cc: Vishal Verma <vishal.l.verma@intel.com>
-> Cc: Baoquan He <baoquan.he@linux.dev>
-> Cc: Chao Gao <chao.gao@intel.com>
-> Cc: Sean Christopherson <seanjc@google.com>
-> Cc: Eric DeVolder <eric.devolder@oracle.com>
-> Cc: Hari Bathini <hbathini@linux.ibm.com>
 > Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Baoquan He <baoquan.he@linux.dev>
+> Cc: Mike Rapoport <rppt@kernel.org>
+> Cc: Pasha Tatashin <pasha.tatashin@soleen.com>
+> Cc: Pratyush Yadav <pratyush@kernel.org>
+> Cc: Brian Mak <makb@juniper.net>
+> Cc: Pingfan Liu <piliu@redhat.com>
 > Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
+> Cc: Justinien Bouron <jbouron@amazon.com>
+> Cc: Li Chen <me@linux.beauty>
 > Cc: stable@vger.kernel.org
-> Fixes: ea53ad9cf73b ("x86/crash: add x86 crash hotplug support")
-> Link: https://sashiko.dev/#/patchset/20260907125404.922123-1-ruanjinjie%4=
-0huawei.com
+> Link: https://sashiko.dev/#/patchset/20260729031235.2840255-1-ruanjinjie%=
+40huawei.com
+> Fixes: 07d24902977e ("kexec: enable CMA based contiguous allocation")
 > Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
 
 Sashiko has reviewed this patch and found no issues. It looks great!
 
 --=20
 Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20260918100442.3841=
-135-1-ruanjinjie@huawei.com?part=3D9
+135-1-ruanjinjie@huawei.com?part=3D2
 
 
