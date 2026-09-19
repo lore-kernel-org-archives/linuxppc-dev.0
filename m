@@ -1,78 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-27764-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27765-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48738C982DE
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2026 01:33:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63221C982D8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2026 01:34:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hmsSz3hC6z3cPf;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hmsSz4R9zz3cPw;
 	Sat, 19 Sep 2026 11:33:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789781603;
-	cv=none; b=cx4BRkcuHVXTz3xnF3WHRD5cvWd2RJJVpp/6amQS2tuJ0fViKW4ZcYqTUtEu1zUH59syFOrP/PQv6iPhgBu1aVnGe8kYTHDn4+ys92HeMaIE600xweZzsAsxBPFAcxdc3jBAWriAL8ekHr5ZdzKs9NyEgKChkJUb1e3QbzhF0grwuQzGHv5xjYYpoksX9x0oql6ob0+HacPXIIc166hlPk/Cu+rOpZisH5ZUlG0iBeOVp6DSByG4fpXOZgDvm1RA2L6V02nh/i1DjLxAJEFSDpYd+NyNCq0w0jYnBRkiK1VDKGQbQ3gyzKefnZ6t5PmpghLhBoo9vTh4dlC0S+LNTQ==
+	cv=none; b=D0khZKKLaezps4oHN7nH3tyvEBu6n+jY/ftfdzA4irWEgtYdX+1uU5FgfStayqvJBLwVJ8xuUFwDmDdxHwR7QajvReBVoENV2RiNQ/TkCdIMPEwEPaCDen+tmrgWO96RdTfJEcQM2SdZmnbZANdNHEvS1AZCLYZ4ZLH9SXtSVNDSbwpLmtkyFjBRmp9alfvVJeDmJX1SepeNgjEhtEZQsc/esBwj5blhtwe6Y/Gp6eziwoc6yaEQ16pYA5YKwRa6Dn0sUcXeWUz4VsL4G9zeilQ0StFdKM1IyFgMMyHrqhaJHDfcz/G38zl+AbTekntcCZJ2smZBbfn+CrBbkG2PUA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1789781603; c=relaxed/relaxed;
-	bh=ebWLUfZn3oR42+/dEwVdHBPGu9D7h5C3rx/Aw/5kEU4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=aiJICSkD2ZCVPrmLfYp+xDAte0fhkJIydo5IZz4musX1A5RYcX7vSR4YALreumCrrjeOAYhS+bKvDHJ7OeOD6Hxw0uBbIsMqbjmgWtRcUuzt/4RRrrSorM/z1FpWadf1ThChGxRSiBthEKCV3otX+qgtEUiSQ0oL3Ll9EGZ8e+FylWMUQHsdl/MhE0sse4A2mK+VdP+g4Rbig64zmDWSnZJi0VoNI2Jy9RQroq6C5ppxCNneLLPMY/Ilyg0vERIZ2ub2IdulnbLebC9K3RQ4UcVE8W92en2wlXGIddyTyrDOoyxyTYoVOq5JJyJC0LAcfVfMr3GskW0bTBKYFnO/ng==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=M4Vs/ej2; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	bh=kBHt8BpvlOCU9iqJHJhW+RlT/TeDRrZPy1ETOcrXw5g=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=FiPechOwQZzW7K87KJcqiJoErLXY1vK/ZOsoi/De+gBuvUDDC1hfd3q8KE0FySKwHc4CbfbjoIquwSpMSqVVGPwBceeug/M5amcdUawt0sS46DdlSPBMouwkzuaMcYQPgPZGh39kTe21dgutKJWeHfztYLoWAUCm2hTC5C41uUxBaa02DXCkFZE13+exPv752n0TcCEjPSfLCoNyR3XN+DrU9BVX44QoZ0cvIbtZLaLqzgJNLOIfOQPGulYnYKXpJYfqSaqSDtfX9EoW/objfmrvrq3xewf6d2KII2E0kN9UsJjmQRunlNskoLYwfvfHEWsYyU1wmble9uGP9Dmbkg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CTlhCqXF; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=M4Vs/ej2;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CTlhCqXF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmsSs5p92z3bnq
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2026 11:33:16 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68J01UIi2662264;
-	Sat, 19 Sep 2026 01:33:13 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmsSw6wLdz3cL8
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2026 11:33:20 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68J1VnPA1676575;
+	Sat, 19 Sep 2026 01:33:18 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=pp1; bh=ebWLUfZn3oR42+/dEwVdHBPGu9D7
-	h5C3rx/Aw/5kEU4=; b=M4Vs/ej2IQQ+XvYE/QPBwZ/UztaKm6y0nf2MnqtFrwpi
-	WiZ7qDpkhvmqs6CcR50pARpTij1KdxuB2QW1e3BtWonTIenp+LSab3eRzPZsdcLc
-	/kFikeGn4GZeh2vrM3K8XZnipPvw8scJpR8c8olPPshavaCRJyZ+h8LJE13nw5B9
-	tTkQ5QmyIXA/I4IlLhsNf1bskO0vqB0Dvr4YNoXvBo8uyt7qgF5TMDSHY9B7CzKS
-	ZEK2hn2vrIkx7tBYAQuPN68+qYWmVTxYVfvbZW6FPavHYf2Y0W2kwIly+RfX7dII
-	umzIsEvrTSQQY5zgqI9KfF9iQA+6+sZAE8pN4ZYSNA==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gmx84b0j6-1
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=kBHt8BpvlOCU9iqJH
+	JhW+RlT/TeDRrZPy1ETOcrXw5g=; b=CTlhCqXFzU0oS6/0bU+NLl8aIm+euZsHU
+	puK3QpMd5JhC9/4+hHsXmexIKooYBIFdO3bYB1PQhoHbFXlA+K5fLbb6XFl4YIXX
+	knKaBCc2FwdSxmqV0EJgT1ZwGDefr/Gh0ytJP55p4k6OCDVSYN9QFfSV3VY/JLZG
+	O2ZYcZG5eVRzR06+6prC2f72GPDvh5rE3azzFrd6C8QvwChhM8mL43Cz9SUGHfV5
+	40WhMAYLavY5HrHqgfamnSV+JmcKH+I10lVBAB2mZ+tG09lSn/VAx6fXMDHAxbF1
+	mxQZ54pXhg/q2VmeYsdOZgCGWKyJnIGHYwwngeuF6bAAXkwDIW7vw==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gsgtd803n-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Sat, 19 Sep 2026 01:33:13 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68J1TJi21629906;
-	Sat, 19 Sep 2026 01:33:12 GMT
-Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gsgsar08b-1
+	Sat, 19 Sep 2026 01:33:17 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68J1RlP91659398;
+	Sat, 19 Sep 2026 01:33:17 GMT
+Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gsgrgg0cq-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 19 Sep 2026 01:33:12 +0000 (GMT)
+	Sat, 19 Sep 2026 01:33:17 +0000 (GMT)
 Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
-	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68J1XB5h31523544
+	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68J1XFF955378402
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 19 Sep 2026 01:33:11 GMT
+	Sat, 19 Sep 2026 01:33:15 GMT
 Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E8B5558051;
-	Sat, 19 Sep 2026 01:33:10 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 64EA058051;
+	Sat, 19 Sep 2026 01:33:15 +0000 (GMT)
 Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 45E045805C;
-	Sat, 19 Sep 2026 01:33:10 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id C46755805A;
+	Sat, 19 Sep 2026 01:33:14 +0000 (GMT)
 Received: from li-4c4c4544-0054-3910-8039-c3c04f423534.ibm.com.com (unknown [9.61.101.145])
 	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Sat, 19 Sep 2026 01:33:10 +0000 (GMT)
+	Sat, 19 Sep 2026 01:33:14 +0000 (GMT)
 From: Tyrel Datwyler <tyreld@linux.ibm.com>
 To: james.bottomley@hansenpartnership.com, martin.petersen@oracle.com
 Cc: linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
         linux-kernel@vger.kernel.org, brking@linux.ibm.com,
         davemarq@linux.ibm.com, Tyrel Datwyler <tyreld@linux.ibm.com>
-Subject: [PATCH v2 00/20] scsi: ibmvfc: Fixes and cleanup for NVMe/FC support
-Date: Fri, 18 Sep 2026 18:32:46 -0700
-Message-ID: <20260919013306.2948028-1-tyreld@linux.ibm.com>
+Subject: [PATCH v2 06/20] scsi: ibmvfc: fix uninitialized shwqs in ibmvfc_purge_requests()
+Date: Fri, 18 Sep 2026 18:32:52 -0700
+Message-ID: <20260919013306.2948028-7-tyreld@linux.ibm.com>
 X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20260919013306.2948028-1-tyreld@linux.ibm.com>
+References: <20260919013306.2948028-1-tyreld@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,134 +89,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE5MDAxOCBTYWx0ZWRfX5QgUgPGtnjgF
- Mu2xAXcI84X2a5jr0RHl3NC9MX8/imCS2oDOvkwdzLhhab48mZCmgO6TPCSGSDZueLlFxWNBWLp
- h7w6bmlG5ZHrmiDS+rlfSp1v4T14O9+vTFKAUQ3RwYnZ/5MP2N1gy/Z4HZrzAIDadrDa7s5P0+v
- C6O2I/t+PVsthOXF/m+oLUSlvyT7mHK94YjbBjh6nHWaGC4Vhdvq7iXJ+aiJpzWsCVa9RmhI5Ig
- QLmVnLyjHVj7VrE97E/eAICDKZH+U3/z+EI+He/mrY1dKWRDrV1iuZtWqBzfW5pUM9ppNMlyDQV
- KS/HIVzdAMz0qpDNf3WvEd8u/fab0QoAUBu8sgUFcbm8nnOihyQFZWFCzXD40YpKydHwb63kQ6I
- yjIuZHInM1JXyv3JMSGEmT+9ImSpyevaoVcCUKCGOhskO+fS0eI5Ojj0hAkmICxkWMH8w6WnS9G
- Y3AUCkEedA2wDu06Ltw==
-X-Proofpoint-ORIG-GUID: 5bL7f3oOgOlCGgdCqTHMEkpc0GUCZ07X
-X-Proofpoint-GUID: 5bL7f3oOgOlCGgdCqTHMEkpc0GUCZ07X
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE5MDAxOCBTYWx0ZWRfX+XaHjyI//f2R
- A2hwkcarwWXjgB3SaSLorAn9r7hUXukTJLTKMccXLo757qjgV/ynLoBd9l9kBvuhnCVDcZsBDzL
- kqr/1eMI6rJZNypHvRJQ7+oHYTcLB+A=
-X-Authority-Analysis: v=2.4 cv=cY9HPXDM c=1 sm=1 tr=0 ts=6aade659 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=O1L0M5XMSBBk1Q02lnEA:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE5MDAxOCBTYWx0ZWRfX8OLIdcJgL3k9
+ QI/hViVuYIxbF0US0PKYrzI5PpQ1nP2lfUVtJlFkIrfDy6wpVoogbslsD3izA7lncu4PgXgAUcH
+ Ig1zdi3w/SaPFCGC+UUeAKgVPWHUy9Ls1yztSRotAbKBBvDUmGOwOtfhPWSO6C6vN/R6JZzWcjr
+ 91hhT5iuOGm83/HBrO1GI3C2r+lMb52p0pWA9JMHQlMiSYdu2ll6JAgaPUylZPLWd+naUcxdR+g
+ QrOhJFbhUCO+fXrSPC+/Z40yZIl8hzSgIiCLbBlLDixVTGMLKkn0qkh2YittVJksNl1hm4hJ2az
+ Alk6Va1YMTKg7xVQmOTBwA+Oj2btAQz7xSTXhvQtkAU/xJdwicmGLTlI1LYM396SqCuvk6BjE0t
+ n9p/beI5cPBURYPgtBXn6pX8ZtV/Sq1xIYS6dY3dqsjnJlGj7cfu3Nvlkurkmxsb0SLyoyWT0WT
+ bdfSD9q4iV1mt/2SjkA==
+X-Proofpoint-GUID: wmjiTiqsqXtEU21zBwXIjXUQYOEtu5ZJ
+X-Proofpoint-ORIG-GUID: wmjiTiqsqXtEU21zBwXIjXUQYOEtu5ZJ
+X-Authority-Analysis: v=2.4 cv=Q49HcI2a c=1 sm=1 tr=0 ts=6aade65d cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8 a=6DixLaR-r_zTwfx8U4UA:9
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE5MDAxOCBTYWx0ZWRfX0sXlOeAckxSd
+ oyEuYgtsWg+uo9HIoOzzt8Y4ha1qiw7sY2tBAcSr4s/3pKhbJBTe3IxtaPm5y0TPbzDCcLE9QJT
+ VyXGeLhC/MaSfXlGEB6xlLSqgtRXGy8=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-09-18_07,2026-09-16_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 spamscore=0 bulkscore=0 clxscore=1015 suspectscore=0
- impostorscore=0 malwarescore=0 phishscore=0 adultscore=0 lowpriorityscore=0
+ priorityscore=1501 bulkscore=0 suspectscore=0 spamscore=0 impostorscore=0
+ phishscore=0 malwarescore=0 clxscore=1015 adultscore=0 lowpriorityscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609190018
 
-This series addresses a collection of bugs and corner cases introduced with
-the recently merged NVMe/FC support for the ibmvfc driver.
+In ibmvfc_purge_requests() the variables shwqs and nhwqs are declared as:
 
-The NVMe/FC code added a parallel target management path, a new set of
-sub-CRQ channels (nvme_scrqs), and integration with the nvme-fc transport
-layer alongside the existing SCSI infrastructure. Several issues crept in
-during that integration: missing initialisation, incorrect locking, blocking
-calls in atomic context, and logic errors in shared code paths that were not
-previously exercised by the SCSI-only driver.
+    int shwqs, nhwqs = 0;
 
-The fixes fall into a few broad categories:
+This initialises only nhwqs to zero; shwqs is left uninitialised. Both
+are assigned inside the 'if (vhost->using_channels)' block, so when
+using_channels is false the block is skipped and shwqs retains its
+garbage stack value. The subsequent loop
 
-  - Correctness in the NVMe FCP/LS I/O path: initialise evt->tgt, fix trace
-    logging reading SCSI IU fields for NVMe events, and ensure H_CLOSED send
-    failures call fcp_req->done() so the transport is not silently stalled.
+    for (i = 0; i < shwqs; i++)
 
-  - Locking and context fixes: defer nvme_fc_register_localport() out of the
-    MAD completion handler (which runs under host_lock with IRQs disabled),
-    and make the FCP and LS abort callbacks fully asynchronous to eliminate
-    blocking wait_for_completion() calls on the same path.
+then iterates an arbitrary number of times over scsi_scrqs.scrqs[], which
+may be NULL on the non-channel path, resulting in out-of-bounds heap
+accesses and a kernel crash during any adapter reset or shutdown that
+occurs before channels are established.
 
-  - Data races and UAF: protect tgt->nvme_remote_port reads and writes with
-    host_lock, fix a use-after-free and stall in the LS abort timeout handler,
-    and handle ibmvfc_send_event() failure in ibmvfc_cancel_all_mq() to
-    prevent a hang and UAF on queued cancel events.
+Fix by initialising shwqs to 0 in the declaration so that both loop
+bounds are zero when using_channels is false and neither sub-queue loop
+executes.
 
-  - Shared-path bugs exposed by NVMe: fix an uninitialised _done dereference
-    for SCSI TMF events on send failure, an uninitialised shwqs stack variable
-    in ibmvfc_purge_requests(), a u16 overflow of max_cmds in
-    ibmvfc_set_login_info() reachable with combined SCSI and NVMe queue
-    counts, and a wrong target action in the implicit logout NULL-evt error
-    path that caused an infinite reset loop.
+Fixes: 4857949b58cd ("ibmvfc: fail nvme-fc fcp-io and ls requests during transport reset")
+Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
+---
+ drivers/scsi/ibmvscsi/ibmvfc-core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-  - Lifecycle and resource management: call ibmvfc_nvme_unregister() on
-    adapter removal and before ibmvfc_release_sub_crqs() to close a TOCTOU
-    race in ibmvfc_nvme_create_queue(), guard against local port leaks on
-    link bounce, and fix NVMe sub-queue registration failure incorrectly
-    disabling SCSI multiqueue.
-
-  - Concurrency in target discovery: serialise the SCSI and NVMe
-    discover-targets MADs so both completions have written their target counts
-    before ibmvfc_alloc_targets() runs.
-
-  - Minor fixes: correct an inverted suppress-ABTS capability check in the
-    NVMe TMF path, fix an uninitialised status variable logged on LS abort
-    send failure, and honour the nr_nvme_hw_queues module parameter when
-    sizing NVMe queues at probe time.
-
-Changes since v1:
-  - Reordered patches: the discover-targets race fix (previously patch 19)
-    is now patch 20, and the nr_nvme_hw_queues fix (previously patch 20) is
-    now patch 19, to better group related fixes.
-  - Reworked the discover-targets fix (patch 20): replaced the pending_disc
-    counter approach with fully serialised discovery — the SCSI MAD is sent
-    first; on completion, if NVMe is active the job_step is chained to a new
-    ibmvfc_discover_nvme_targets() function; the NVMe MAD is only sent after
-    SCSI discovery has finished. This eliminates the counter corruption race
-    on retry and the early ALLOC_TGTS transition race without requiring any
-    shared state. The pending_disc bitfield is removed from ibmvfc_host.
-  - Updated all Fixes: tags to reference the correct upstream commit IDs as
-    merged into linux-next/master.
-  - Addressed all issues raised by Sashiko review.
-
-Tyrel Datwyler (20):
-  scsi: ibmvfc: initialize evt->tgt for NVMe FCP commands
-  scsi: ibmvfc: fix trace logging for NVMe FCP commands
-  scsi: ibmvfc: complete NVMe FCP requests on H_CLOSED send failure
-  scsi: ibmvfc: defer NVMe local port registration out of atomic context
-  scsi: ibmvfc: fix uninitialized _done dereference for TMF events on
-    send failure
-  scsi: ibmvfc: fix uninitialized shwqs in ibmvfc_purge_requests()
-  scsi: ibmvfc: fix uninitialized status logged on LS abort send failure
-  scsi: ibmvfc: fix inverted suppress-ABTS capability check in NVMe TMF
-    path
-  scsi: ibmvfc: fix infinite reset loop on NULL evt in implicit logout
-    path
-  scsi: ibmvfc: fix u16 overflow of max_cmds in ibmvfc_set_login_info()
-  scsi: ibmvfc: fix UAF and hang in ibmvfc_cancel_all_mq() on send
-    failure
-  scsi: ibmvfc: fix data race on tgt->nvme_remote_port
-  scsi: ibmvfc: make NVMe FCP abort callback asynchronous
-  scsi: ibmvfc: fix UAF and stall in NVMe LS abort callback
-  scsi: ibmvfc: unregister NVMe local port on adapter removal
-  scsi: ibmvfc: fix NVMe local port leak on fabric link bounce
-  scsi: ibmvfc: fix TOCTOU race in ibmvfc_nvme_create_queue() on adapter
-    removal
-  scsi: ibmvfc: fix NVMe sub-queue registration failure disabling SCSI
-    multiqueue
-  scsi: ibmvfc: fix nr_nvme_hw_queues module parameter ignored for NVMe
-    queue sizing
-  scsi: ibmvfc: fix concurrent SCSI and NVMe discover-targets race
-    dropping targets
-
- drivers/scsi/ibmvscsi/ibmvfc-core.c | 214 +++++++++++++++++++++-------
- drivers/scsi/ibmvscsi/ibmvfc-nvme.c | 130 +++++++++--------
- drivers/scsi/ibmvscsi/ibmvfc.h      |   1 +
- 3 files changed, 233 insertions(+), 112 deletions(-)
-
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc-core.c b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+index e4a21ca6815d..5ba8058991ef 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc-core.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+@@ -1192,7 +1192,7 @@ static void ibmvfc_purge_requests(struct ibmvfc_host *vhost, int error_code)
+ 	struct ibmvfc_queue *scsi_q = vhost->scsi_scrqs.scrqs;
+ 	struct ibmvfc_queue *nvme_q = vhost->nvme_scrqs.scrqs;
+ 	unsigned long flags;
+-	int shwqs, nhwqs = 0;
++	int shwqs = 0, nhwqs = 0;
+ 	int i;
+ 
+ 	if (vhost->using_channels) {
 -- 
 2.55.0
 
