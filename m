@@ -1,81 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-27779-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27780-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3BACFC982DE
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2026 02:42:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C02E5C982CC
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2026 05:31:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hmv061qg3z3bcj;
-	Sat, 19 Sep 2026 12:41:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789785718;
-	cv=none; b=ZqoC+szPR6cge0wUU1Bu8+JDuVENvS6XbZCrnp5Uv6CC8h5V+6IUPuXAuooo9SjrNGECZE3OQ2TR5OmLU4KKP7127tvMWTcz42ma8GelSf1QeSBNA1sma+lr5Jb/g4X/4S5L493D6ydxISY1nvQ2h2QoE4JHY2BGN1oaMBGgmqLo95xcranDDZk+dCB7u2ucMR8Tyc9cVp5EXSw2nS34IQ6++p7BN8fDSRh6TJJHyjMsb0fxCv7xLYPhhzrxHyfBdXFamBzHVyRLKbixZxliWD+P1hL/nR+oMbedRHtJsuZifBzfZOtk3c+5truvHsnm8xy+LC3l+9oUtJi1ppwM5A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hmylf6NBrz30MZ;
+	Sat, 19 Sep 2026 15:31:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:30::10"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789795886;
+	cv=none; b=UaCrpx/wsR9flKdhA1gCMmRvV16S803d9cqnuFcmqYOdGjhGeOSaPpbBMgqcvRiIy/gkzeasfw2p+Iut2KVEvm+mgxywhYQ659H0TLRRrkeFJKvNYbYCUkJ9R6TmF5htAaDEuMmwhNiXTP8WsfvXGJoAdf1lqGLNYzqEKtG7CCZQls/zMD8mjHqySCQspHwRyqq8OX0/nNI/pW8bfjFe3G5jeTPPFVvI4+BynblotrqaNKRI6pPILHc2HU99wsOKD4bvvPmUsF3dnVlv0F6ifxLLBn4m0xPmLQhMVWN1EcH+g7goL6ososCZaBD+MQw2ZwuVLasMAUU+03i9xlg+JQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789785718; c=relaxed/relaxed;
-	bh=QpaebJl3tZG/L721Scz4SlnmolMwITmlKToP1Y8Cl/g=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=m8m29P5XgYBbYz5ODMjWN3ECzfFo0UXIucXR/EF5Chc2ugWKMZuyGzaAcPNN7atB2RvNkCwtAP4T3c+Dp5H6CLy7rKkdAdSZraLjxLfD5vM3GE+V/B4LFcL3BrFVPakgbiI4g2QEzyT/Uh6OzfGgd0LwlezMNjs175UaGHdk3WCPGqgXztWdCm83htTMnTcJYgBYfkpWcf3DEUKegTW7XbBnaqcVnCuAEc/ewxUjXKRakOJDUKp7JnU/W9+nyOSoXpYK1DW45tsnDQaJWZnQnMVmhqq2ibzY5p6pnNiUZbT31907jUWpSe3XC7TVgJ+PS7dnjTDYc59oyYTK1QRv8g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=knvNFol6; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1789795886; c=relaxed/relaxed;
+	bh=5DogGEaqmhYD22fTJ2ycLzK1jSJrSXPn3ttiHz5f6RU=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=aatvG/I6qiBA3r0hmPQpp8KlInTbpt8uk+tBZUb1xqgTMYXc/vk9RYax5M2oijnWSvylsiJ6ZKbj5udyVqODiQkVZxzc209TGdb/g36Ym8RwIdzfuzo0CuvGaCNmnC4lqnr50iOOtS4QB/JRopgITlV3l5r3BvCMfH20bZxGDxKfPNh/EQuZ6SO6sB1rDSBXFRtSXmfHTpvkwbpVhYz+/5j5uDfk0b5iQWj3jj+egFwPQJ06tZg481/i7Mqm7JrxQ036r2hgAAVBLAPFCshE4UqDC0qfOBUoGXHF9BnxyKK67oFT+2BAwRLHRb0KJk5pLJNYJyFbtOY1RjofrKoQ6Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=L5+kOxay; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:30::10; helo=mail-wr2-x10.google.com; envelope-from=kmehltretter@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=knvNFol6;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=L5+kOxay;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:30::10; helo=mail-wr2-x10.google.com; envelope-from=kmehltretter@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wr2-x10.google.com (mail-wr2-x10.google.com [IPv6:2a00:1450:4864:30::10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmv044Hx3z3bWX
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2026 12:41:55 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68J1VjaC1676537;
-	Sat, 19 Sep 2026 01:33:25 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=QpaebJl3tZG/L721S
-	cz4SlnmolMwITmlKToP1Y8Cl/g=; b=knvNFol6/GaiM3cfax9p/2wRMmk43yPCj
-	m3EKaTDGxkqr4ldcJavikZNp7Egm4k1yvtmuT4t8UkSbPUlt3NM1D2yqQPwrv7rK
-	MElgkU39oU+iZeMgm8bt4dD4/Mg4WTJKDaRNtzmNv7VPvGzB/Lj7dA1QLePMXl1I
-	0Nm/MK1bxV+pAPvyhVe5LRXAobLrTEqNtSoHxc5qssgooy3QANQRIkgLMNYu8n0e
-	MHRIhLrhhtqOUIO+JSUCqx7Pr+n39RcDlQPjTPHTOjGON7Ji7A4OLvZFGTQCtxdk
-	EZLUxvZEKwRBKDvWEDnMkp0rDiIveN/HceejrAdoNk1XAQ7+kl9jA==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gsgtd803u-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Sat, 19 Sep 2026 01:33:25 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68J1TW5E1630405;
-	Sat, 19 Sep 2026 01:33:24 GMT
-Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gsgsar08t-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 19 Sep 2026 01:33:24 +0000 (GMT)
-Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
-	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68J1XNRj23200284
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 19 Sep 2026 01:33:23 GMT
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 10AA058051;
-	Sat, 19 Sep 2026 01:33:23 +0000 (GMT)
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 687D35805A;
-	Sat, 19 Sep 2026 01:33:22 +0000 (GMT)
-Received: from li-4c4c4544-0054-3910-8039-c3c04f423534.ibm.com.com (unknown [9.61.101.145])
-	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Sat, 19 Sep 2026 01:33:22 +0000 (GMT)
-From: Tyrel Datwyler <tyreld@linux.ibm.com>
-To: james.bottomley@hansenpartnership.com, martin.petersen@oracle.com
-Cc: linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org, brking@linux.ibm.com,
-        davemarq@linux.ibm.com, Tyrel Datwyler <tyreld@linux.ibm.com>
-Subject: [PATCH v2 16/20] scsi: ibmvfc: fix NVMe local port leak on fabric link bounce
-Date: Fri, 18 Sep 2026 18:33:02 -0700
-Message-ID: <20260919013306.2948028-17-tyreld@linux.ibm.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260919013306.2948028-1-tyreld@linux.ibm.com>
-References: <20260919013306.2948028-1-tyreld@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmyld0dTtz30M6
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2026 15:31:24 +1000 (AEST)
+Received: by mail-wr2-x10.google.com with SMTP id ffacd0b85a97d-485ac898fa4so1194760f8f.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 22:31:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789795880; x=1790400680; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=5DogGEaqmhYD22fTJ2ycLzK1jSJrSXPn3ttiHz5f6RU=;
+        b=L5+kOxayIWE0AjE8W0mhB/HWZAX4jTyLPNRPhMcY8sxAHPpfoB9bH6uf45PaFa6PYX
+         syfvEpiDJypyC901gF6X4m8bU2KxAqAlpHofN2hL/+LO6PEfF0CN3g7xtWm0D0hsRnxb
+         cmzTDSAl0FLL+H75s5M6CEnSBlnhc+N0knnF0jzQApdC8asEoqykwN/zEbhX7TQOC/4R
+         17Sk6AiRa1++IS7YYtCtNHSysFa/5d94nIkSUU+knmma03pun71SaHeHgEQK48wMJzVI
+         fKleD7vJlsZRWwSeDVTc0eEpUGkPbiqMUklLcuwIbmnRgLCSQfpsMJYCjAlry6FAsSUC
+         wTNw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789795880; x=1790400680;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=5DogGEaqmhYD22fTJ2ycLzK1jSJrSXPn3ttiHz5f6RU=;
+        b=QDavJFKG7T16h5OknMygm7TO7vMzu69JAHGLQ4OObNIcLnr9fpuARdD0HayBUhLTpu
+         cOOP3UOog0Wp19u+ACWHyJ2drM8f59Yxx40aXyTVqd5NHXjmDQk8cgnAwl9zastV5Ihh
+         cUowcAU4SHMyK4Hj14M4Ww2zTd6i4Dx9/tUx34ivMerxGhP0QqKqxdaq2n4JovbVmJ0u
+         5gz/i7b6HcsGJbVXSW3BFGS5ygNH5PN8JZ6ygpBscwN3OQwfXJODR3ClOdMcnsUdaxVu
+         gKZt7hv620W4/w6GpN1WKTd/fA2Ca05bt1F495+7w2u4gi6k4zgTZQi/f5tjQJIQHBNi
+         m6RQ==
+X-Forwarded-Encrypted: i=1; AKwUvBybfsZLF97hWYAXd5SoIdEOREKD7ebcCQfaglB0Ph1cvGWjbg2mdRPRulejHUw/acsX940Zn4tO4rIBV7I=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++nfbk3UoSs4qdlDOrYimR3xaXrDZKxEu75qld7+HpYzcHjMIahd
+	qB5VtvfmlfWepRfkqnSZ9iDqcMM1Na+pskQL4b1I2RZfkowsRz2W7hZt
+X-Gm-Gg: AYBFou3aWEQ3XBA+ZstPv58SZkOtQpRf3WvwKDRotythWAYXBVrqQ+n9dM2W8MBDxeh
+	XrqUXvE8OseNKgOHdVeyaPRPeiSbgAV/Npcz/MHX9LSiyGu2csAosI5TuEFWsNzwWi2ENsKs5og
+	yXbRmcO8uR211a8qQ+DiSQKHKCvo3urVE7M09zNz4T9cTcisc6ORpHrwdTM2v1VWkfPcjWre7NR
+	nN/PVtPuhQfIQLjg0aJm6dHXEw2A+mwzwcFsX4PQbT0LWrEAwfqjwAfsypcKZrc+k0j/D13C/wC
+	4q7oYOC4MwzSKob89P3XYLvGEINWnIjYwiuW8OT295uv5w+EAQU38WjQ2Lvv7hLgFJOCtKsrPO/
+	QCV015jabdRUJCZzvM1yO+fWfrS6+xYJ279EUzFjwSlBE25dq3m05Qu6eVQ/i1bTEFiWe1gZTtB
+	dJ0rzsgqIgh82dyeaSsRMZ1FI0tLiKwYHD4j/0M9/9O/GVQdEzm41gcJutFmfNEYCXLxPag6Quk
+	dorRONCdHspvw4FLP3NKZ0KGZ1vDFrFSOj7HJMh4leJtPL+u5uH6KwepZvL3pE2y9WBW6yk8gqd
+	+LTQp3XWlmmQAbNlJgZ0e90BwWFP7oFVJIy4uXj/OUqO1MlzlVMGKnPG3lyao6iOVVK8SmkvaIH
+	JAw13IgMUAX9dTocLKehRfZ3SCu0=
+X-Received: by 2002:a05:6000:186d:b0:485:c240:20f7 with SMTP id ffacd0b85a97d-4871e379cccmr6707033f8f.53.1789795880116;
+        Fri, 18 Sep 2026 22:31:20 -0700 (PDT)
+Received: from MacBook-Pro-von-Karl.localdomain (dynamic-2a02-3100-a017-2b01-05fe-203b-7cd2-a640.310.pool.telefonica.de. [2a02:3100:a017:2b01:5fe:203b:7cd2:a640])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4872442263fsm4056075f8f.1.2026.09.18.22.31.19
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Fri, 18 Sep 2026 22:31:19 -0700 (PDT)
+From: Karl Mehltretter <kmehltretter@gmail.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Karl Mehltretter <kmehltretter@gmail.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Rashmica Gupta <rashmica.g@gmail.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] docs: ABI: Fix powerpc memtrace Kconfig symbol
+Date: Sat, 19 Sep 2026 07:31:17 +0200
+Message-Id: <20260919053117.26219-1-kmehltretter@gmail.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
+In-Reply-To: <20260822081253.86256-1-kmehltretter@gmail.com>
+References: <20260822081253.86256-1-kmehltretter@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,73 +103,16 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE5MDAxOCBTYWx0ZWRfX2Pp/iwHOqAk3
- AkUcdmDpx/yOblhVjwgCrpkteRWDqTcttPUcGUXv5Rim7F1PebpPb1hBzzXYY0BMULJpjfGfD+m
- FlzKoYCu5bEV9u3rpo/6NT5yWrNenoUrmNWgooYzKcvpItic0VRHrF7OlOc8nOYR5k3YY1wTbPw
- pWmiu877bR+fKqBHPMDes3DRwpIcjNGwaCQA9iDhaYEq3rhYTxSIp7OKLAdlhUQWo/M/peet4SD
- ErOY4q7Acgs+OyRgeYPgT0NjFX5JyJ4XI6tT4kR+MHUSIj3s8r1JyX3e887SQY+dZ50wq3CgcEa
- 9KH5Iem4F6kV3Njmkhx38K6Bnf7PDuuEdT6nO54EGKOPtaRWmXV1SloGvdx+TnXYdRvQWaFZ6zm
- jOcc1FCkeidauP1Ij8w/yuDnHt18d3QEdRWcRwt4hobsNLuFi+8DYwnmGN64b/JJJa8vGxK6+qS
- eaEBMFc5a8NTP71nang==
-X-Proofpoint-GUID: v8hJccpHPGFD9hQsO_34xyYYFIFtcDLz
-X-Proofpoint-ORIG-GUID: v8hJccpHPGFD9hQsO_34xyYYFIFtcDLz
-X-Authority-Analysis: v=2.4 cv=Q49HcI2a c=1 sm=1 tr=0 ts=6aade665 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8 a=uX4RykLYdoWrl-1yWP0A:9
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE5MDAxOCBTYWx0ZWRfXzDapPuHNM4jk
- 4GZULHXmzO+Wep7Ha+9ZZFsqvSSiHPxix+XMTYPxVnsNaUfA6hFgFuDAH+UkXk8YBEaJTrrsUTS
- v/fPEoQjgJbKXbg6HuZKMBi6OEJ7FxE=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-18_07,2026-09-16_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 bulkscore=0 suspectscore=0 spamscore=0 impostorscore=0
- phishscore=0 malwarescore=0 clxscore=1015 adultscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609190018
 
-When the fabric link goes down, ibmvfc_link_down() does not call
-ibmvfc_nvme_unregister(), so vhost->nvme_local_port remains set across
-the link bounce.  When the adapter re-initializes and completes fabric
-login, ibmvfc_nvme_register() is called again unconditionally.
-nvme_fc_register_localport() finds the still-live port in the transport's
-list (FC_OBJSTATE_ONLINE) and returns -EEXIST, writing NULL into
-*portptr.  The original local port is now orphaned in the transport with
-no way to reach it, while vhost->nvme_local_port is NULL, leaving NVMe
-functionality permanently broken for the lifetime of the adapter.
+On Sat, 22 Aug 2026 10:12:53 +0200, I wrote:
+> The memtrace interface is controlled by CONFIG_PPC_MEMTRACE. The
+> documented CONFIG_PPC64_HARDWARE_TRACING symbol does not exist.
 
-Fix by unregistering any existing local port at the top of
-ibmvfc_nvme_register() before attempting to register a new one.
-ibmvfc_nvme_register() is called from ibmvfc_do_work() with host_lock
-dropped, so ibmvfc_nvme_unregister()'s wait_for_completion() is safe
-there.  This makes ibmvfc_nvme_register() idempotent across link bounces
-without requiring changes to the link-down path.
+Friendly ping on this documentation fix. Could you take a look when
+you have a chance?
 
-Fixes: 3831863f9f56 ("scsi: ibmvfc: register local nvme fc port after fabric login")
-Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
----
- drivers/scsi/ibmvscsi/ibmvfc-nvme.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc-nvme.c b/drivers/scsi/ibmvscsi/ibmvfc-nvme.c
-index 475177cda103..89ad7680beb4 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc-nvme.c
-+++ b/drivers/scsi/ibmvscsi/ibmvfc-nvme.c
-@@ -537,6 +537,10 @@ int ibmvfc_nvme_register(struct ibmvfc_host *vhost)
- 	if (!IS_ENABLED(CONFIG_NVME_FC))
- 		return 0;
- 
-+	/* Unregister any stale local port left from a previous link-up */
-+	if (vhost->nvme_local_port)
-+		ibmvfc_nvme_unregister(vhost);
-+
- 	pinfo.node_name = fc_host_node_name(vhost->host);
- 	pinfo.port_name = fc_host_port_name(vhost->host);
- 	pinfo.port_id = fc_host_port_id(vhost->host);
--- 
-2.55.0
-
+Thanks,
+Karl
 
