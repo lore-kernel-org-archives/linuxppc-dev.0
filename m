@@ -1,95 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-27780-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27781-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C02E5C982CC
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2026 05:31:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA271C982D8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2026 06:11:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hmylf6NBrz30MZ;
-	Sat, 19 Sep 2026 15:31:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:30::10"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789795886;
-	cv=none; b=UaCrpx/wsR9flKdhA1gCMmRvV16S803d9cqnuFcmqYOdGjhGeOSaPpbBMgqcvRiIy/gkzeasfw2p+Iut2KVEvm+mgxywhYQ659H0TLRRrkeFJKvNYbYCUkJ9R6TmF5htAaDEuMmwhNiXTP8WsfvXGJoAdf1lqGLNYzqEKtG7CCZQls/zMD8mjHqySCQspHwRyqq8OX0/nNI/pW8bfjFe3G5jeTPPFVvI4+BynblotrqaNKRI6pPILHc2HU99wsOKD4bvvPmUsF3dnVlv0F6ifxLLBn4m0xPmLQhMVWN1EcH+g7goL6ososCZaBD+MQw2ZwuVLasMAUU+03i9xlg+JQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hmzdr68M5z30Nl;
+	Sat, 19 Sep 2026 16:11:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789798288;
+	cv=none; b=cUMYk5ieya4ckdTrEkE9CpMYRXp8TaHf1Ovwy5BPm8lIRTO/Hrrs1ZIHwUobcxNPqMpA4MAx6VX1yzqt5WEIsZCmoVVOXe34rJc9bWptghOXvKpRP4cOFalFdPnHssXroT1W81WCiI4VkdBh98mBkjVuawGE9JbcFRFDBUjkWq4CWS8mrEGQddWy+atumj57ekhYGFszNGq2WY6aee0oRTuANdl7w3gxBT4YT+dfuqU4r7T/qqTa/EuuGbC5V0dZw+vRrQuj4nkipNF54puHMHG0g72FHxf50yWK+mcYC6qngwT7Tifr7rFuTf77et8RcqfqzsNhmGCl7FuoXj0EPQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789795886; c=relaxed/relaxed;
-	bh=5DogGEaqmhYD22fTJ2ycLzK1jSJrSXPn3ttiHz5f6RU=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=aatvG/I6qiBA3r0hmPQpp8KlInTbpt8uk+tBZUb1xqgTMYXc/vk9RYax5M2oijnWSvylsiJ6ZKbj5udyVqODiQkVZxzc209TGdb/g36Ym8RwIdzfuzo0CuvGaCNmnC4lqnr50iOOtS4QB/JRopgITlV3l5r3BvCMfH20bZxGDxKfPNh/EQuZ6SO6sB1rDSBXFRtSXmfHTpvkwbpVhYz+/5j5uDfk0b5iQWj3jj+egFwPQJ06tZg481/i7Mqm7JrxQ036r2hgAAVBLAPFCshE4UqDC0qfOBUoGXHF9BnxyKK67oFT+2BAwRLHRb0KJk5pLJNYJyFbtOY1RjofrKoQ6Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=L5+kOxay; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:30::10; helo=mail-wr2-x10.google.com; envelope-from=kmehltretter@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1789798288; c=relaxed/relaxed;
+	bh=06PjwJFZE3BfGNUfr/Vv4TUh7POhP7Pa28xxRAW4zdY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=aNzOnz7utfSgVJy8aCVLb+ZjKMagPZZTNEjoEwbqHo5l/Q9tItjFNNNgDQ0YzvQ9QKHycO4uRxZKfvlq7YEtmuivy9hXV/hXplssc/IA5wAufr7lLKLILLk2uo7elwldCeJygRmNN4nGq4e4LA/CHUs1Qc3GKBGKVthVggtO0T4ELdDOPXJ8VZTTXSv7Z8bI97fR7tA2zpICzlBJu4DsKEPvahADHR//Y3V50tGUkSr8ab/eqTWry863h6/tv9hPf4U/ppG6OsMWoKxXQgCzEqZjXhgWGwi9FWQ6YjWJBUD6RNgX/bwnG0qpaR5yGdaPH3Fecn/1NcgBgaMWL1Ev0w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BOsSGr6c; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=L5+kOxay;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BOsSGr6c;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:30::10; helo=mail-wr2-x10.google.com; envelope-from=kmehltretter@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wr2-x10.google.com (mail-wr2-x10.google.com [IPv6:2a00:1450:4864:30::10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmyld0dTtz30M6
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2026 15:31:24 +1000 (AEST)
-Received: by mail-wr2-x10.google.com with SMTP id ffacd0b85a97d-485ac898fa4so1194760f8f.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2026 22:31:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789795880; x=1790400680; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=5DogGEaqmhYD22fTJ2ycLzK1jSJrSXPn3ttiHz5f6RU=;
-        b=L5+kOxayIWE0AjE8W0mhB/HWZAX4jTyLPNRPhMcY8sxAHPpfoB9bH6uf45PaFa6PYX
-         syfvEpiDJypyC901gF6X4m8bU2KxAqAlpHofN2hL/+LO6PEfF0CN3g7xtWm0D0hsRnxb
-         cmzTDSAl0FLL+H75s5M6CEnSBlnhc+N0knnF0jzQApdC8asEoqykwN/zEbhX7TQOC/4R
-         17Sk6AiRa1++IS7YYtCtNHSysFa/5d94nIkSUU+knmma03pun71SaHeHgEQK48wMJzVI
-         fKleD7vJlsZRWwSeDVTc0eEpUGkPbiqMUklLcuwIbmnRgLCSQfpsMJYCjAlry6FAsSUC
-         wTNw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789795880; x=1790400680;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=5DogGEaqmhYD22fTJ2ycLzK1jSJrSXPn3ttiHz5f6RU=;
-        b=QDavJFKG7T16h5OknMygm7TO7vMzu69JAHGLQ4OObNIcLnr9fpuARdD0HayBUhLTpu
-         cOOP3UOog0Wp19u+ACWHyJ2drM8f59Yxx40aXyTVqd5NHXjmDQk8cgnAwl9zastV5Ihh
-         cUowcAU4SHMyK4Hj14M4Ww2zTd6i4Dx9/tUx34ivMerxGhP0QqKqxdaq2n4JovbVmJ0u
-         5gz/i7b6HcsGJbVXSW3BFGS5ygNH5PN8JZ6ygpBscwN3OQwfXJODR3ClOdMcnsUdaxVu
-         gKZt7hv620W4/w6GpN1WKTd/fA2Ca05bt1F495+7w2u4gi6k4zgTZQi/f5tjQJIQHBNi
-         m6RQ==
-X-Forwarded-Encrypted: i=1; AKwUvBybfsZLF97hWYAXd5SoIdEOREKD7ebcCQfaglB0Ph1cvGWjbg2mdRPRulejHUw/acsX940Zn4tO4rIBV7I=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++nfbk3UoSs4qdlDOrYimR3xaXrDZKxEu75qld7+HpYzcHjMIahd
-	qB5VtvfmlfWepRfkqnSZ9iDqcMM1Na+pskQL4b1I2RZfkowsRz2W7hZt
-X-Gm-Gg: AYBFou3aWEQ3XBA+ZstPv58SZkOtQpRf3WvwKDRotythWAYXBVrqQ+n9dM2W8MBDxeh
-	XrqUXvE8OseNKgOHdVeyaPRPeiSbgAV/Npcz/MHX9LSiyGu2csAosI5TuEFWsNzwWi2ENsKs5og
-	yXbRmcO8uR211a8qQ+DiSQKHKCvo3urVE7M09zNz4T9cTcisc6ORpHrwdTM2v1VWkfPcjWre7NR
-	nN/PVtPuhQfIQLjg0aJm6dHXEw2A+mwzwcFsX4PQbT0LWrEAwfqjwAfsypcKZrc+k0j/D13C/wC
-	4q7oYOC4MwzSKob89P3XYLvGEINWnIjYwiuW8OT295uv5w+EAQU38WjQ2Lvv7hLgFJOCtKsrPO/
-	QCV015jabdRUJCZzvM1yO+fWfrS6+xYJ279EUzFjwSlBE25dq3m05Qu6eVQ/i1bTEFiWe1gZTtB
-	dJ0rzsgqIgh82dyeaSsRMZ1FI0tLiKwYHD4j/0M9/9O/GVQdEzm41gcJutFmfNEYCXLxPag6Quk
-	dorRONCdHspvw4FLP3NKZ0KGZ1vDFrFSOj7HJMh4leJtPL+u5uH6KwepZvL3pE2y9WBW6yk8gqd
-	+LTQp3XWlmmQAbNlJgZ0e90BwWFP7oFVJIy4uXj/OUqO1MlzlVMGKnPG3lyao6iOVVK8SmkvaIH
-	JAw13IgMUAX9dTocLKehRfZ3SCu0=
-X-Received: by 2002:a05:6000:186d:b0:485:c240:20f7 with SMTP id ffacd0b85a97d-4871e379cccmr6707033f8f.53.1789795880116;
-        Fri, 18 Sep 2026 22:31:20 -0700 (PDT)
-Received: from MacBook-Pro-von-Karl.localdomain (dynamic-2a02-3100-a017-2b01-05fe-203b-7cd2-a640.310.pool.telefonica.de. [2a02:3100:a017:2b01:5fe:203b:7cd2:a640])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4872442263fsm4056075f8f.1.2026.09.18.22.31.19
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Fri, 18 Sep 2026 22:31:19 -0700 (PDT)
-From: Karl Mehltretter <kmehltretter@gmail.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Karl Mehltretter <kmehltretter@gmail.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Rashmica Gupta <rashmica.g@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] docs: ABI: Fix powerpc memtrace Kconfig symbol
-Date: Sat, 19 Sep 2026 07:31:17 +0200
-Message-Id: <20260919053117.26219-1-kmehltretter@gmail.com>
-X-Mailer: git-send-email 2.39.5 (Apple Git-154)
-In-Reply-To: <20260822081253.86256-1-kmehltretter@gmail.com>
-References: <20260822081253.86256-1-kmehltretter@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmzdq4sr3z30Ng
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2026 16:11:27 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 1D8EE43E09;
+	Sat, 19 Sep 2026 06:11:24 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C2D981F000FF;
+	Sat, 19 Sep 2026 06:11:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789798284;
+	bh=06PjwJFZE3BfGNUfr/Vv4TUh7POhP7Pa28xxRAW4zdY=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=BOsSGr6cefyU8A3CtFHg47ZxkeNiIwALqyzGenQgGs0pukynJlr3Y5SOoMqhZ3K4U
+	 /Q9iuR4PkWJtmZiEosyA0vItC+wbMA3HzjS5uY89JM3PoXt5eL81atgd/Au2+Dve6S
+	 ifYVkuUdKzwLH393CoTMnLKRmF2A3vH+EzQ4Ud2XTUA0twmvJQ/299/a+MrWt0aQE8
+	 RAoxG/jutGLbRNdzZtq06Ac0bJehch1djQw2EJbDuISwNj6T6eM05WtJOqDzGvBKZw
+	 KGFCq9DiAuTXfnCctenKw8BB4VnCX5tLEI86q+T9NVvyrICbvCu+Qst8YojRQq6pp+
+	 NatQn8AuAZLSQ==
+Message-ID: <fe7459ab-ddb8-41fa-a770-5bccb504dfe6@kernel.org>
+Date: Sat, 19 Sep 2026 08:11:18 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,16 +59,111 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc/ftrace: Don't restore r13 during
+ ftrace_regs_caller
+To: Shrikanth Hegde <sshegde@linux.ibm.com>, maddy@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, npiggin@gmail.com, linux-kernel@vger.kernel.org,
+ msuchanek@suse.de, ritesh.list@gmail.com
+References: <20260918150811.1743769-1-sshegde@linux.ibm.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20260918150811.1743769-1-sshegde@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-On Sat, 22 Aug 2026 10:12:53 +0200, I wrote:
-> The memtrace interface is controlled by CONFIG_PPC_MEMTRACE. The
-> documented CONFIG_PPC64_HARDWARE_TRACING symbol does not exist.
 
-Friendly ping on this documentation fix. Could you take a look when
-you have a chance?
 
-Thanks,
-Karl
+Le 18/09/2026 à 17:08, Shrikanth Hegde a écrit :
+> Michal reported a stack-protector failure and subsequent panic when
+> running kernel builds. This was observed with full/lazy preemption.
+> Initially it was suspected as KVM, but later turned out to be due
+> to a bcc tool running in parallel.
+> 
+> Issue was recreated using a bcc tool.
+> For example, running below in parallel leads to crash.
+> ./funccount sched* -d 100 and make -j 64
+> 
+> The same crash was observed when running kprobe for schedule() function,
+> while simpler function tracer for schedule() didn't cause the crash.
+> This helped to narrow it down to ftrace backed kprobes area.
+> 
+> The crash occurs as follows:
+> 
+> ftrace_regs_caller entry on CPU A
+>      |
+>      +-> save r13 = CPU A PACA into pt_regs
+>      |
+>      +-> call kprobe_ftrace_handler()
+>              |
+>              +-> ftrace_test_recursion_unlock()
+>                      |
+>                      +-> preempt_enable
+>                      +-> task can schedule and migrate to CPU B
+>                      +-> task resumes with live r13 = CPU B PACA
+>      |
+>      +-> REST_GPRS(2, 31)
+>              |
+>              +-> restore saved r13 = CPU A PACA
+>      |
+>      |-> The task then continues running on CPU B with r13 pointing
+>      |   to CPU A's PACA.
+> 
+> The stack-protector canary is accessed through the PACA. After the task
+> migrates, CPU A may run a different task and update its PACA with that
+> task's canary. Restoring the saved r13 then causes the migrated task's
+> saved stack canary to be compared against the canary in CPU A's PACA,
+> resulting in a stack-protector failure.
+> 
+> Similarly, current is resolved through the PACA. With a stale r13,
+> preempt_count() can access the state of the task referenced by CPU A's
+> PACA instead of the task running on CPU B. This results in corrupted
+> preempt-count warnings and scheduling-while-atomic failures.
+> 
+> This path for example is called when using kprobes and parallel kernel builds
+> can cause preemptions during ftrace_test_recursion_unlock.
+> 
+> Do not restore r13 from the saved register frame. If the task did not
+> migrate, the live r13 already has the saved value. If it migrated, the
+> live r13 contains the correct PACA pointer for the CPU on which the task
+> resumed.
+> 
+> Fixes: 153086644fd1 ("powerpc/ftrace: Add support for -mprofile-kernel ftrace ABI")
+> Reported-by: Michal Suchánek <msuchanek@suse.de>
+> Closes: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Fall%2FaqKfsVArHHaIK6M9%40kunlun.suse.cz%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C47f05d7553a44699e1eb08df1596affe%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639253409091782376%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=yrGFyJtjVk8VFxU5%2BqT4HfxrvTTNPwrQqwn2cLxyT7o%3D&reserved=0
+> Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+
+Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+
+> ---
+> PS:
+> Fixes is the initial commit that introduced this restore regs almost
+> 10 years ago, all commit afterwords are code refactors changing the
+> code layout. Also backporting all the way maybe tricky.
+> Backport can easily happen till aebd1fb45c622.
+
+Probably not a big issue. That commit is in 5.17. Stable branches 5.10 
+and 5.15 will be EOL by Decembre 2026.
+
+> 
+>   arch/powerpc/kernel/trace/ftrace_entry.S | 4 +++-
+>   1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kernel/trace/ftrace_entry.S b/arch/powerpc/kernel/trace/ftrace_entry.S
+> index 6599fe3c6234..54c8727b48cd 100644
+> --- a/arch/powerpc/kernel/trace/ftrace_entry.S
+> +++ b/arch/powerpc/kernel/trace/ftrace_entry.S
+> @@ -220,7 +220,9 @@
+>   
+>   	/* Restore gprs */
+>   	.if \allregs == 1
+> -	REST_GPRS(2, 31, r1)
+> +	REST_GPRS(2, 12, r1)
+> +	/* Do not restore a stale PACA pointer if the task migrated */
+> +	REST_GPRS(14, 31, r1)
+>   	.else
+>   	REST_GPRS(3, 10, r1)
+>   #if defined(CONFIG_LIVEPATCH_64) || defined(CONFIG_PPC_FTRACE_OUT_OF_LINE)
+
 
