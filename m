@@ -1,78 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-27761-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27762-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8270C982DE
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2026 01:33:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6659AC982DE
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2026 01:33:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hmsSw6xNsz3cLH;
-	Sat, 19 Sep 2026 11:33:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789781600;
-	cv=none; b=NKIhZFJ9prRGBwvwK0fC3OuhBm/9g5fOrhJDrQVI+eqrx3BgT5FcGLpLd70sDbA+pyHS3CbKan3FBYPREHSMANhbrQQxd+zt5jJiIh6TF++FtQ9tYwUXP/o0vWoL2YnesIHZTCN1QR2mYriIkWb49rrA1zP9tyhJenutnMVznrkbwzkOgiPiLDRXFlfaw690MyHw9VaovhgHCb69Q+v+BQc/rnkZPJ8DPRz1hP7WA13bJLIKFRAi5L+Vx3sHFZPyofrmDm+mGSGLjgVivLm2WhrJzkh9T4KadpWyVNgItpmwM8dLh7c12t4AimKzoWvAL2l0WugFVAXnuubUne2ztA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hmsSy2VgGz3cNB;
+	Sat, 19 Sep 2026 11:33:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789781602;
+	cv=none; b=IW0f5NXIMAnbyCiwa1J8qW/6aUGWHem1KRSTStEcqEeQ9lUkpbOeCF0Zq3b0rTIwAYdyFPToGibjeI/X41npW2mCYwEE/uY8DC/FlNjl4Tvzw8OY5ye4RTe3yRct/mtIpJCFU+pFfPq+wLLI8r4ycoLtIoBV8yrPrloQiKEFH4Q4zpHgTbIUUvuWH5b/K33GfDp40FCAq2KR/5yOGaM/AWHMxSuietGE4cMBpLcmQ0lso0NLv2UdVDX3rCgetTfG+bWWy2qTjfWkGqQc9GuXTQ6Kf4rNBz+L68evD8r+whBmj92022demu0BXI6Rw8dZNoDPdpYcQ9mpA39DaFnqZA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789781600; c=relaxed/relaxed;
-	bh=8QENcYT+uY2y/J7aduxzfKAjqXBVUFJpBRX5/9wMenY=;
+	t=1789781602; c=relaxed/relaxed;
+	bh=7fTQf6ReF8hydpMgBC35nO4+APuXySgFtlnCWFDzEOY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=S0qkLjnkkVfKYpXsZEyp72c+1d3tm2pXL2x2FfP7Bsj+rZNIbKw93BD4UjFptylNyKNmbHGKuiq0Xy1FXaXY+RHRaeo/HvPj/X5UrquL5A4FyLQyAfcxIMaDt8CL0FBhs3uAVG0skEDDauCOMGuAW5pz668QdWa+u5VOdq0yFsVgLAODJLCVBx2YXu/F+zmYd5Qw+OAgbL4DPUTKchVGSt3BOQCFCAaJkg/3PuAxZJo4+nHQomwouoHRbESlfcR0DBXNTCQM6dTt4+DSJyDpmQ14CHML8qtgXcilV2g1sP5KEBIMbOrC7YzO40tqMn9HST6VNaxxCnXOabNNdim2pQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=n6zzwntB; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version:Content-Type; b=SYKEuokBZ73yxfXC3aUHePDLcR4XwlCz51XInxpQjs5l463WHgvnR5y1oymP+gmh1trudmkHaz6TkNMQEBw3blR14xDtqjTzqUC71pLqn04qdZj06FwnFsBZkWGM2CgYccp7N6nYbJpDJwRfo68XH2p8cPE2VJaEpuDXNk8q6mLBUD6DCEoMLIkUrIC+XyV0erIW8q+BzzDYsGLL4XfI69qefNKp7jFmOqMdj17aq3xCqzQiqYjGw+3POPWxCGXrleCyihxn8/xpahX3S/melZVbsWgbJzpfOH89O6GV96zf5JOOKGR2Ad2vJHozokoDpCXWfcZKIRX78L7r7tsVAQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PCXjwVCT; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=n6zzwntB;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PCXjwVCT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmsSs73FNz3bqx
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2026 11:33:17 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68J01eaj2680782;
-	Sat, 19 Sep 2026 01:33:15 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmsSv06bvz3bt9
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2026 11:33:18 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68J1VoAn1676582;
+	Sat, 19 Sep 2026 01:33:16 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=8QENcYT+uY2y/J7ad
-	uxzfKAjqXBVUFJpBRX5/9wMenY=; b=n6zzwntBiD6pXj6GUU2+VqSEsxJhod2BQ
-	KeiDrNY/L3qN8trwt8TmaQABBK9+8dDXlO0qwmNF21CMReBD1nn9UtVvoTpr20wC
-	La1G8WDT+0iwovNxIXB24By0luRA96Vdm8lGDbW9G5ABdJ/Vjn2oj/JwmQAr9ZHF
-	25HoxLAiqbWRYO8hc41350rTtcSerN57quALNa/RDGPMGwAKCGc+ArJCZmaun1AF
-	5r2vGqYmICBZGxLhXkhGeiBk298634TJn78231vvSnIbH2refjt0JK5G+eeyeQjh
-	XUNsPF2umlVuQ8D/mqRr7TSMoiqXOgePEtssYoiyCf4ZFJsGvCVCg==
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=7fTQf6
+	ReF8hydpMgBC35nO4+APuXySgFtlnCWFDzEOY=; b=PCXjwVCTSd1Mcn6uxfT//H
+	nvizIyt8ecGY2zErOlpyqjDibqBrolggVygz4U6/bIIqbg/6/+jbUy7xE9KQ27mn
+	lNLrp/E84kGIu4sQsu+l76Z+dP+FpfFNrQdesZSifRMUO/4N4oB/exJv5rYEIVrw
+	b5+BukGkY3EzRhK6PZYwnbJ7GaZdCNssgOqran72f+sDsWRqRGcyfPHtwUhAQ1XZ
+	kMAldU6VhEU4/4dqHCzn0nySqBYNNwdfS+boMRZ2F6bGNHYydhX24CtY/5xHG012
+	0i6Po4Pk2ODz0jy/75W39Trtmeh3KFEPFUjMdGpBuCKRH0REnZ8IOSnyw0+59SZg
+	==
 Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gmxf5k1tt-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gsgtd803m-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Sat, 19 Sep 2026 01:33:14 +0000 (GMT)
+	Sat, 19 Sep 2026 01:33:16 +0000 (GMT)
 Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68J1UJoP2574292;
-	Sat, 19 Sep 2026 01:33:14 GMT
-Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gsgssg069-1
+	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68J1UIuX2574042;
+	Sat, 19 Sep 2026 01:33:15 GMT
+Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gsgssg06e-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 19 Sep 2026 01:33:14 +0000 (GMT)
+	Sat, 19 Sep 2026 01:33:15 +0000 (GMT)
 Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
-	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68J1XDc415139554
+	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68J1XEAE24576536
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 19 Sep 2026 01:33:13 GMT
+	Sat, 19 Sep 2026 01:33:14 GMT
 Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2E1FD58051;
-	Sat, 19 Sep 2026 01:33:13 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id A6B7758051;
+	Sat, 19 Sep 2026 01:33:14 +0000 (GMT)
 Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8DB7B5805A;
-	Sat, 19 Sep 2026 01:33:12 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 0B7FD5805C;
+	Sat, 19 Sep 2026 01:33:14 +0000 (GMT)
 Received: from li-4c4c4544-0054-3910-8039-c3c04f423534.ibm.com.com (unknown [9.61.101.145])
 	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Sat, 19 Sep 2026 01:33:12 +0000 (GMT)
+	Sat, 19 Sep 2026 01:33:13 +0000 (GMT)
 From: Tyrel Datwyler <tyreld@linux.ibm.com>
 To: james.bottomley@hansenpartnership.com, martin.petersen@oracle.com
 Cc: linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
         linux-kernel@vger.kernel.org, brking@linux.ibm.com,
         davemarq@linux.ibm.com, Tyrel Datwyler <tyreld@linux.ibm.com>
-Subject: [PATCH v2 03/20] scsi: ibmvfc: complete NVMe FCP requests on H_CLOSED send failure
-Date: Fri, 18 Sep 2026 18:32:49 -0700
-Message-ID: <20260919013306.2948028-4-tyreld@linux.ibm.com>
+Subject: [PATCH v2 05/20] scsi: ibmvfc: fix uninitialized _done dereference for TMF events on send failure
+Date: Fri, 18 Sep 2026 18:32:51 -0700
+Message-ID: <20260919013306.2948028-6-tyreld@linux.ibm.com>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20260919013306.2948028-1-tyreld@linux.ibm.com>
 References: <20260919013306.2948028-1-tyreld@linux.ibm.com>
@@ -89,72 +90,84 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: yprec2gKLBpzQl3BGWbMC07fqHoIGzVF
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE5MDAxOCBTYWx0ZWRfX+Ex4CL9w4Sxn
- 5yeWMRFuaPyA51pFoWmCchGSB2wltWDlmGRz7swg0ikl0DsrEuR8NowSAfkVTFPLsHUCVD72ndX
- /k90Xc9zAvgbR8y4QhwWXMfOdku8xt0=
-X-Authority-Analysis: v=2.4 cv=cvgOAF4i c=1 sm=1 tr=0 ts=6aade65a cx=c_pps
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE5MDAxOCBTYWx0ZWRfX+yMQDyONwiPZ
+ Sm5eopNHZjmWVaB+eJ9v2Zz2J60sTvRHPST+tbgw3xB0KN6HSwUwqDbxnUDQD/dmy98uHg092F6
+ kqOB1udtytYmgAgvxqAxXmRTQd21ynCJSokuvAVaPs7ZtWoylAHbQ9FQtafsRQ92gv1iAWu7SkW
+ knZCngDRrruTG/L1Nc3FkiPrZDcNcBYsK4eQhQ/1MzHyosC/QFGWGnfuukAxX19oejDlDCbMjYl
+ If3V6t9slChoQ8Pfr+T+MKJGrYxPze1oJm1k8gGyGZ5ea7y41tUyN/9LSDHYQyTOe44yds3Sfw2
+ T2X3aNyt7p+o6IVGCwjhzte4PGmoRD5+CI9R8zDbKgGbvpdiz8ZeAF5olSZ2q/6wiL3PRnmvh8R
+ 2ChHfmlCG9VdGZSnSWvU2zl3lIQOI4c0/hTmug+hKBcQxVwDFSUoKtVqOvGZkCNS2Lrc3+lPHFE
+ XmcIMETmOY26RMzBZxQ==
+X-Proofpoint-GUID: W6wdach4gRQIkxsnic1P5aaatOU6KHZ8
+X-Proofpoint-ORIG-GUID: W6wdach4gRQIkxsnic1P5aaatOU6KHZ8
+X-Authority-Analysis: v=2.4 cv=Q49HcI2a c=1 sm=1 tr=0 ts=6aade65c cx=c_pps
  a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8 a=FURy-cA78QglurSbi6AA:9
-X-Proofpoint-ORIG-GUID: yprec2gKLBpzQl3BGWbMC07fqHoIGzVF
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE5MDAxOCBTYWx0ZWRfX69AvVsZNMzxc
- zqIq4wpa8keVzxUjGCMlM39U8Epl4Pgjn4cxHR46LQ7Vrv/MDks31028MgYqlI1HrNcs20m4Sb1
- o0x0qVRH75lyVT4R8Bx2fAVMXeI5OVQ4FiY+oz4zO6eZRs9XW5sqAuOIZGwDEXcmjwbQRj5gl9f
- vibyqmAXxIuoMa14yFewA/cP3/iNYHUSQ1xz/ExWWfOC+YyddMie2stQLqUPE9CQR2LRkajs1d6
- xqkNsmBKQsZ6PhopaJGG7R05335qyFlYu/D31t+ccrFZfP1RaUh60gHR/kdTHsyi7iuEhoQaew2
- 5kmbUgoAt79GsegLLXdHuB4lEW1qihsqpoSwhvbxjIngoOMEQQ5ikuLXz3qI9nio6U1VTfxqtc/
- luQV/Az1WJWylxQS4kINbAX/V6OkfH3ruN2aNFa+a5TwRyWQufCTKqK9CsU2z3bo/DzAvYXnXvC
- yJYFTa6bjb6RgUrfBYw==
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
+ a=qtjYkiDot-WfiDIOCeAA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=O8hF6Hzn-FEA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE5MDAxOCBTYWx0ZWRfX5yue/bK/ZGZX
+ ArNk3bPKGQLBwJ9IcwgpiQzwpseP8nAnSPNteWSrJRfkCkTDndA8CawJYW2HHKNBpMVHerfPMY+
+ 5QR9CJONGCaAC5QzKPryzKXgrAbvTNs=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-09-18_07,2026-09-16_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 lowpriorityscore=0 clxscore=1015 priorityscore=1501
- suspectscore=0 bulkscore=0 impostorscore=0 phishscore=0 spamscore=0
- adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
- definitions=main-2609190018
+ priorityscore=1501 bulkscore=0 suspectscore=0 spamscore=0 impostorscore=0
+ phishscore=0 malwarescore=0 clxscore=1015 adultscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609190018
 
-When ibmvfc_send_event() returns H_CLOSED the event is freed without
-notifying the NVMe-FC transport. The caller ibmvfc_nvme_fcp_io() returns
-SCSI_MLQUEUE_HOST_BUSY back to the transport, which is a SCSI midlayer
-concept the NVMe-FC transport does not interpret. The result is that the
-NVMe-FC transport is left waiting on a request that was silently dropped,
-causing the I/O to hang permanently.
+In ibmvfc_send_event(), the non-H_CLOSED error path uses a bare else
+clause to handle the case where evt->cmnd is NULL, assuming the event
+must be a MAD and reassigning evt->done = evt->_done before calling it.
 
-Fix this by calling fcp_req->done() with a -EBUSY status before freeing
-the event in the H_CLOSED path, consistent with how other FC-NVMe LLDDs
-(e.g. lpfc) signal a retryable transport-level failure to the NVMe-FC
-transport.
+However, SCSI Task Management Function (TMF) events created by
+ibmvfc_init_tmf() are initialised with IBMVFC_CMD_FORMAT, not
+IBMVFC_MAD_FORMAT. ibmvfc_init_event() only populates evt->_done for
+IBMVFC_MAD_FORMAT events; for IBMVFC_CMD_FORMAT events evt->_done is
+never set. Since TMF events also have evt->cmnd == NULL (cleared by
+ibmvfc_init_event()), they fall through to the bare else branch,
+copying the uninitialised evt->_done into evt->done and immediately
+calling it — a wild function-pointer dereference that results in a
+kernel panic during SCSI error recovery under SAN error conditions.
 
-Fixes: 73c13e30c56f ("scsi: ibmvfc: implement nvme-fc IO command submission callback")
+Fix this by replacing the bare else with
+'else if (evt->crq.format == IBMVFC_MAD_FORMAT)', gating the _done
+reassignment strictly on the MAD format where evt->_done is guaranteed
+to be valid. TMF events (IBMVFC_CMD_FORMAT, cmnd==NULL) no longer reach
+this branch; their evt->done (ibmvfc_locked_done wrapping
+ibmvfc_sync_completion) remains correct as initialised, allowing the
+waiting ibmvfc_cancel_all_sq/mq paths to receive the completion
+normally.
+
+Fixes: 848c70852e3f ("ibmvfc: split NVMe support into separate source file and add transport stubs")
 Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
 ---
- drivers/scsi/ibmvscsi/ibmvfc-nvme.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ drivers/scsi/ibmvscsi/ibmvfc-core.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc-nvme.c b/drivers/scsi/ibmvscsi/ibmvfc-nvme.c
-index 9ed6522c2e9e..08dd897b8e64 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc-nvme.c
-+++ b/drivers/scsi/ibmvscsi/ibmvfc-nvme.c
-@@ -367,8 +367,12 @@ static int ibmvfc_nvme_fcp_io(struct nvme_fc_local_port *lport,
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc-core.c b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+index 728529155ded..e4a21ca6815d 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc-core.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+@@ -1859,9 +1859,12 @@ int ibmvfc_send_event(struct ibmvfc_event *evt,
+ 			evt->done = ibmvfc_vfc_eh_done;
+ 		} else if (evt->fcp_req || evt->ls_req) {
+ 			evt->done = ibmvfc_vfc_eh_done;
+-		} else {
++		} else if (evt->crq.format == IBMVFC_MAD_FORMAT) {
+ 			evt->xfer_iu->mad_common.status = cpu_to_be16(IBMVFC_MAD_CRQ_ERROR);
+ 			evt->done = evt->_done;
++		} else {
++			evt->xfer_iu->cmd.status = cpu_to_be16(IBMVFC_VIOS_FAILURE);
++			evt->xfer_iu->cmd.error = cpu_to_be16(IBMVFC_CRQ_FAILURE);
+ 		}
  
- 	vfc_cmd->correlation = cpu_to_be64((u64)evt);
- 
--	if (likely(!(rc = ibmvfc_nvme_map_sg_data(fcp_req, evt, vfc_cmd))))
--		return ibmvfc_send_event(evt, vhost, 0);
-+	if (likely(!(rc = ibmvfc_nvme_map_sg_data(fcp_req, evt, vfc_cmd)))) {
-+		rc = ibmvfc_send_event(evt, vhost, 0);
-+		if (rc)
-+			return -EBUSY;
-+		return 0;
-+	}
- 
- 	ibmvfc_free_event(evt);
- 
+ 		evt->done(evt);
 -- 
 2.55.0
 
