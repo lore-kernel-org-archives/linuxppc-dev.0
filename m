@@ -1,53 +1,114 @@
-Return-Path: <linuxppc-dev+bounces-27793-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27794-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B260C982CC
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Sep 2026 03:53:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51C4CC982DA
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Sep 2026 11:50:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hnXX35vqFz2yK7;
-	Sun, 20 Sep 2026 13:53:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.222
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789876403;
-	cv=none; b=Gin7o+lYBjYz4dKdGv1l5jkvmlADS8ZPQ4FrH82NZT0WN2Hx6otK+3db+Jqwu57h9r6BWbj85RqoihpTKQk91749q5Uyp9U3tha1DgqwE/x0piaICdJNfiJW2F4Gh1h2+5MeulHbeqtM0mGjAPWXx6Jc6XsOJDg2L+to4547JEu8tthWbZSw+T9s0uCdTwLXV9biu5N6dt8mEwaA75Hrhibk0hlkuQbipAit0iKUu9caeeJU/r2J1TaQJI5hYwbbLsic75/FPFGtYHBHLlDR/HCErbdcHL0GG5eMWNpMLogAD4gvhpdrzPukZZxvQyH2HFY9o2aS/LODj4URPUbq9A==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789876403; c=relaxed/relaxed;
-	bh=tlRuK8oy4p5tnkX98fUn+MG7+GepzpfRQqepp1VDdiI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=kZXbQIEdNYBlIvbSfePf7xPA9VdAzqrlMwr3+XbUOgz7SsX6Bs0NMnZ0YZ7BldF7obWRYJqIyqtdc2qJW+L+pmJJpfgmNcPkNsyz+0VaRMoTXhf/DZA7Ki8yn+XvhtRCz7DYYfeBn6a1B2J2Nmm6ffVS3H+2/qbyILvpQEeOy8zCqfP2+5Gj0QOMDJajd7x4bR7Q42dOSRvTFVJUtIerBi7WuEi0RjPJQUowwpELwUj5ZVydvTrpB5IauG4su9/4VzvgUavZDdj9xvT1FVdUllGYX76udCaHLWxIM6p5Eu7u4ZcG8dVPzyQkD5KAlY+KjKZ4ETUH9OuuJmSytS6GMA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=rF0Ks1OV; dkim-atps=neutral; spf=pass (client-ip=113.46.200.222; helo=canpmsgout07.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hnl6s3XG4z2y8c;
+	Sun, 20 Sep 2026 21:50:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=85.215.255.54 arc.chain=strato.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789905045;
+	cv=pass; b=IQnukH+3kiHkiX4an5VTwBEfqttadZrmgRpJuiL+/PlxX05vwW+E5MyTWYJbwA77Ogi91jaPYhcvqPyp3/P4DdIdYnQkUVGbK9iK9RGek+/zwQlJV7oTlD2A0RB0K+Ckt+XTF0jArzbympAW+OkEP9BJq+k0EyIyf7NC0j/ezmakg9mXeWnztEZUA2hwiif78xCx1qE+d3AiAA6Qw2WTZHq8qa1RMfUUhpH7PDDE2PqfiogmNXL5pGmCH2RLEvgrnYrTwYNNEfxPYdhfopbh1E3OYY/1jhR65fwkXRzGTE0ImHHVdzMh1mjiPGNR5Oufu3+fl1utPxLVlaq8MlXifg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1789905045; c=relaxed/relaxed;
+	bh=JKBiCFk4QK7ZfXmeY5KFaZ2nWbOUEQe4lYWt/P4V9lk=;
+	h=Subject:To:Cc:References:From:Message-ID:Date:MIME-Version:
+	 In-Reply-To:Content-Type; b=UotW9uQSYMTW4eTkz4CL+Xr3NiGl6Cj9OqaIWvuCkihOBJ4Anka1lNmciF64sF4CRN76HZrzOMrddeE/dxIBRMWdAXKSDKjXSpHR0QJpTQRwhbnc/7JgmrxHezwoIGsS8DomVLQSBXMTrNy3h73pECoAxbvvHMjHvEAuoCq2Jy8e/Rl2hkMzjDjceaQSMyl6zKV091JZBCOSQOpzwwkfC+iL4eAggXtJMELCiQRosCfCPO3XpZchbt+kRxlMLv6Qms6Q8uI6K0fqHh27fbm1oTTMDzCp0XnKIOa5BsnffVfGixK6tHxuviPPPSgdN/o8M+08Nkp8qkBRyQvvABpvkQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=r9l5RNDe; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=ROKYovHY; dkim-atps=neutral; spf=pass (client-ip=85.215.255.54; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p01-ob.smtp.rzone.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=rF0Ks1OV;
+	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=r9l5RNDe;
+	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=ROKYovHY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.222; helo=canpmsgout07.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout07.his.huawei.com (canpmsgout07.his.huawei.com [113.46.200.222])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=85.215.255.54; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [85.215.255.54])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hnXX23zKrz2y8G
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Sep 2026 13:53:22 +1000 (AEST)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=tlRuK8oy4p5tnkX98fUn+MG7+GepzpfRQqepp1VDdiI=;
-	b=rF0Ks1OVp5HjgPVdwO3vQJK5rTKW6B2t+TaIafWOspsRr/x2OEimEnA3Y1/krDlFP7+YZPvyG
-	wJIUAx17deeeASsWoW/3sf4A4bz6SS6FzoZgdnjTbEsn+xbijr4z/yaIvZIjme1/WUcWKbfgM22
-	Tv7akItYW11zMpSyr8HODo4=
-Received: from mail.maildlp.com (unknown [172.19.162.92])
-	by canpmsgout07.his.huawei.com (SkyGuard) with ESMTPS id 4hnXHF4FgQzLlSh;
-	Sun, 20 Sep 2026 11:42:17 +0800 (CST)
-Received: from kwepemk200008.china.huawei.com (unknown [7.202.194.74])
-	by mail.maildlp.com (Postfix) with ESMTPS id 8B33A40565;
-	Sun, 20 Sep 2026 11:53:18 +0800 (CST)
-Received: from [10.67.109.254] (10.67.109.254) by
- kwepemk200008.china.huawei.com (7.202.194.74) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45; Sun, 20 Sep 2026 11:53:16 +0800
-Message-ID: <a6772b15-0229-40f3-be55-0d9ed229c0a1@huawei.com>
-Date: Sun, 20 Sep 2026 11:53:15 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hnl6l6bq0z2xM9
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Sep 2026 21:50:37 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; t=1789904990; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=KcA1VGLQ7M/V+dfBJogqc1IQJMsq5bHAinBjEKmdBcT7BtRCnWuQ/dfnJrcdWbC9Z+
+    k1fU/Ab/WVc8CWlISm0CZfy9/hdmosaKB3TxOHvQ0HNZsx2wk5DuZc5ke7hc1dpBhJUh
+    bBV/kZh0umR+L9w7DENK/kigEDhmCSMoLBo67G2y371YU2UPjd1H7rJIZAsGFtv9pXHu
+    2EC05J+szTS7zwasWw3yMFYMRCqiLpJ/5PJUzhphdNUU7qpALbH8CZxA4NLKWOgS+JNI
+    9qzlM3o5pdS4o5GgBBP3FJLYsf2wQdho4e/CvflWqaNC0fAxITTlrpcar5fJV+ZGwu4e
+    MKEg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1789904990;
+    s=strato-dkim-0002; d=strato.com;
+    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=JKBiCFk4QK7ZfXmeY5KFaZ2nWbOUEQe4lYWt/P4V9lk=;
+    b=OvfhTi6nbUC6SQ3O2uR9BLXoG+ZNPybJsQe3oqxlkhjyvZY8B0ZbWoVML+ysRrOK6d
+    9SeBugjzMJAfnN1OxGb7iWvWDS2ZJsxlhBVB8m0mGZr/SzLk61mOL+5xNPj0XEdmoRg3
+    GD3pbcDfD7yc4LszhqZ+edS6EuPHYGr250dXHrh0bEmdWkMxK2oqVLE8+VbF9ngSFIWB
+    cU3L8QQGXYJqyNGxdoB6JLagPVZYbr0TbI4gjGnnWB6yQE/148AN5kprKPudexx0Ere0
+    WhNlB4kWMsVW1e+NtxTY/6hIiV8pvkq9xKYhY+B7GFB8g/pOMww/snWW5X0jGU7P2rc5
+    iZ4w==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo01
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1789904990;
+    s=strato-dkim-0002; d=xenosoft.de;
+    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=JKBiCFk4QK7ZfXmeY5KFaZ2nWbOUEQe4lYWt/P4V9lk=;
+    b=r9l5RNDeiNtCHL4ipRyz8Q1RcdERjSXSfyVh9GRaSNsmgIu20M/meBBE6QnUZ9DuWu
+    zvBtY625pjB7baM1HHsGCGfCiSe02Ze+Mv0wyMNDWkrOqz7RP4wWnXPIE3fPSx8+Uzyd
+    bGIyimXk/2YDVeo9Z6HlYiHPQ8Hx3ulg7jgrzprSz4qapl1jR57CaCh1cTgCFKOsXGAe
+    sSatVZ2nMGupdfJfMXVprnv894MycHeQO8KEX+3J++G5cbDibJqSPbBoBl4prOQbSdNg
+    5Altjh0IRqXnQD/cCrCAIxDBieeKWaB1lyujQHGfE0q7R5FWFIHw5kJpmoOXkV1mM1+Q
+    5oDA==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1789904990;
+    s=strato-dkim-0003; d=xenosoft.de;
+    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=JKBiCFk4QK7ZfXmeY5KFaZ2nWbOUEQe4lYWt/P4V9lk=;
+    b=ROKYovHY2EoBW7gQ33/khmP8Emf0WMF2Agnzh5qulyid11YTukSAbCItbTwQ+3UWtL
+    lefb8IG3dV5Uyz16VmAA==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr4thIFiqT9BURIS+l7hng"
+Received: from void-ppc.a-eon.tld
+    by smtp.strato.de (RZmta 55.6.2 DYNA|AUTH)
+    with ESMTPSA id ee2bee28KBnmIsd
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Sun, 20 Sep 2026 13:49:48 +0200 (CEST)
+Subject: Re: [Linux PPC] Disable PREEMPT
+To: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>
+Cc: Shrikanth Hegde <sshegde@linux.ibm.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, harshpb@linux.ibm.com,
+ Gautam Menghani <gautam@linux.ibm.com>, amachhiw@linux.ibm.com,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ hypexed@yahoo.com.au, mad skateman <madskateman@gmail.com>,
+ Christian Zigotzky <info@xenosoft.de>, Samir M <samir@linux.ibm.com>,
+ Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+ Narayana Murty N <nnmlinux@linux.ibm.com>,
+ Hari Bathini <hbathini@linux.ibm.com>
+References: <aqfTU79SlNB3ykDi@kunlun.suse.cz>
+ <25cf64ab-2a32-4d4c-a0c7-2e9007c276d4@linux.ibm.com>
+ <aqj1KxZttNgY5ZVR@kunlun.suse.cz>
+ <ba9759d0-b1f2-4b33-aff5-769cf89bd584@linux.ibm.com>
+ <9b58bd58-d0e4-463e-bff9-e33b153b2987@linux.ibm.com>
+ <aqu9hA1Bq58GFrVw@kunlun.suse.cz>
+ <b2a5d53f-05e8-48ae-adb7-12fc74523b4e@linux.ibm.com>
+ <aqvnOg9JfkM2k0TX@kunlun.suse.cz>
+ <7ad57b61-4567-42c8-a9f6-faaabe7766a7@linux.ibm.com>
+ <7e06fb84-ca2e-dbb4-47bd-e95ee11113c9@xenosoft.de>
+ <aqzj9xsPRsGgCI5M@kunlun.suse.cz>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Organization: A-EON Open Source
+Message-ID: <79f9d4e3-ce55-d238-e4a9-b11e9ce27c5f@xenosoft.de>
+Date: Sun, 20 Sep 2026 13:49:47 +0200
+X-Mailer: BrassMonkey/34.3.2.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,121 +122,49 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 17/17] arm64: crash: Add crash hotplug support
-To: <sashiko-reviews@lists.linux.dev>, <tglx@kernel.org>,
-	<ritesh.list@gmail.com>, <mark.rutland@arm.com>, <chao.gao@intel.com>,
-	<kas@kernel.org>, <linuxppc-dev@lists.ozlabs.org>, <yeoreum.yun@arm.com>,
-	<x86@kernel.org>, <baoquan.he@linux.dev>, <hbathini@linux.ibm.com>,
-	<sourabhjain@linux.ibm.com>, <linux-kernel@vger.kernel.org>,
-	<loongarch@lists.linux.dev>, <jbouron@amazon.com>,
-	<dave.hansen@linux.intel.com>, <rafael@kernel.org>, <coxu@redhat.com>,
-	<akpm@linux-foundation.org>, <gshan@redhat.com>, <vishal.l.verma@intel.com>,
-	<ruirui.yang@linux.dev>, <seanjc@google.com>, <bgwin@google.com>,
-	<chenhuacai@kernel.org>, <pasha.tatashin@soleen.com>, <kees@kernel.org>,
-	<me@linux.beauty>, <npiggin@gmail.com>, <maddy@linux.ibm.com>,
-	<thuth@redhat.com>, <graf@amazon.com>, <palmer@rivosinc.com>,
-	<chleroy@kernel.org>, <guodongtai@kylinos.cn>, <zhangtianyang@loongson.cn>,
-	<eric.devolder@oracle.com>, <catalin.marinas@arm.com>, <leitao@debian.org>,
-	<driver-core@lists.linux.dev>, <piliu@redhat.com>, <kernel@xen0n.name>,
-	<dakr@kernel.org>, <pratyush@kernel.org>, <sshegde@linux.ibm.com>,
-	<tangyouling@kylinos.cn>, <adityag@linux.ibm.com>, <rppt@kernel.org>,
-	<mclapinski@google.com>, <takahiro.akashi@linaro.org>,
-	<linux-arm-kernel@lists.infradead.org>, <will@kernel.org>, <ardb@kernel.org>,
-	<gregkh@linuxfoundation.org>, <lizhengyu3@huawei.com>, <linux-mm@kvack.org>,
-	<james.morse@arm.com>, <linux-fsdevel@vger.kernel.org>, <mpe@ellerman.id.au>,
-	<mingo@redhat.com>, <bp@alien8.de>, <blum@kernel.org>, <robh@kernel.org>,
-	<hpa@zytor.com>, <liukexin@kylinos.cn>, <maqianga@uniontech.com>
-CC: <kexec@lists.infradead.org>
-References: <20260918100442.3841135-1-ruanjinjie@huawei.com>
- <20260918100442.3841135-18-ruanjinjie@huawei.com>
- <20260918103657.0CC341F000FF@smtp.kernel.org>
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-In-Reply-To: <20260918103657.0CC341F000FF@smtp.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <aqzj9xsPRsGgCI5M@kunlun.suse.cz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.67.109.254]
-X-ClientProxiedBy: kwepems200002.china.huawei.com (7.221.188.68) To
- kwepemk200008.china.huawei.com (7.202.194.74)
 
-
-
-在 2026/9/18 18:36, sashiko-bot@kernel.org 写道:
-> Thank you for your contribution! Sashiko AI review found 1 potential issue(s) to consider:
-> - [High] kexec: arch_crash_get_elfcorehdr_size() exports undersized buffer when MEMORY_HOTPLUG is disabled
-> --
-> 
-> commit fd293f9cfd1a12554d9352f4ad58fc9f85721fa3
-> Author: Jinjie Ruan <ruanjinjie@huawei.com>
-> arm64: crash: Add crash hotplug support
-> 
-> This commit introduces kernel mechanisms to update only the elfcorehdr
-> on memory hotplug events for arm64. It adds ARCH_SUPPORTS_CRASH_HOTPLUG 
-> and implements arch-specific functions to handle memory hotplug, avoiding
-> full kdump image reloads from userspace.
-> 
-> Link: https://lore.kernel.org/all/20240529133446.28446-1-Jonathan.Cameron@huawei.com/
-> 
->> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
->> index b5a51b0ef9440..96de2660b1cbb 100644
->> --- a/arch/arm64/Kconfig
->> +++ b/arch/arm64/Kconfig
->> @@ -1720,6 +1720,9 @@ config ARCH_DEFAULT_CRASH_DUMP
->>  config ARCH_HAS_GENERIC_CRASHKERNEL_RESERVATION
->>  	def_bool CRASH_RESERVE
->>  
->> +config ARCH_SUPPORTS_CRASH_HOTPLUG
->> +	def_bool y
->> +
-> 
-> [Severity: High]
-> Does unconditionally enabling ARCH_SUPPORTS_CRASH_HOTPLUG here expose an
-> undersized buffer to userspace when CONFIG_MEMORY_HOTPLUG is disabled?
-> 
-> Since CONFIG_HOTPLUG_CPU natively selects CONFIG_CRASH_HOTPLUG on
-> architectures that support it, having this default to 'y' allows
-> CRASH_HOTPLUG to be active even without MEMORY_HOTPLUG. This leads to the
-> size calculation issue below.
-> 
-> [ ... ]
->> diff --git a/arch/arm64/kernel/crash.c b/arch/arm64/kernel/crash.c
->> new file mode 100644
->> index 0000000000000..08dc9b952498e
->> --- /dev/null
->> +++ b/arch/arm64/kernel/crash.c
-> [ ... ]
->> +unsigned int arch_crash_get_elfcorehdr_size(void)
->> +{
->> +	unsigned long phdr_cnt;
->> +
->> +	/* A program header for possible CPUs, vmcoreinfo and kernel_map */
->> +	phdr_cnt = 2 + num_possible_cpus();
->> +	if (IS_ENABLED(CONFIG_MEMORY_HOTPLUG))
->> +		phdr_cnt += CONFIG_CRASH_MAX_MEMORY_RANGES;
->> +
-> 
-> [Severity: High]
-> Is this calculation missing the static memory ranges when
-> CONFIG_MEMORY_HOTPLUG is disabled?
-> 
-> If compiled with CONFIG_HOTPLUG_CPU=y (which natively selects
-> CONFIG_CRASH_HOTPLUG) and CONFIG_MEMORY_HOTPLUG=n, phdr_cnt is computed as
-> exactly 2 + num_possible_cpus(). This does not account for the mandatory
-> memblock ranges from arch_get_system_nr_ranges(). 
-
-Will fix it in v6.
-
-> 
-> Unlike x86 or powerpc which might survive this due to heavily padded
-> CONFIG_NR_CPUS_DEFAULT values, arm64's precise num_possible_cpus() leaves
-> zero headroom. As a result, the exported maximum elfcorehdr size is strictly
-> smaller than the required size to hold static memory ranges, and any attempt
-> to arm kdump (kexec -p) will fail because kexec-tools cannot load the crash
-> kernel into the undersized segment.
-> 
+On 09/18/2026 09:10 AM, Michal Suchánek wrote:
+> On Fri, Sep 18, 2026 at 04:39:57AM +0200, Christian Zigotzky wrote:
+>> On 17/09/26 16:15, Shrikanth Hegde wrote:
+>>> Hi Michal,
+>>>
+>>>>> Give it a try.
+>>>>>
+>>>>> I am suspecting both lockup, stack corruptions are secondary
+>>>>> symptoms here.
+>>>>> While recreate, I have different type of traces.
+>>>> Yes, it does work for the crash I see.
+>>> Thanks. Give me sometime to see further on that. Didn't get any time
+>>> today.
+>>>
+>>>> However, we hijacked the report
+>>>> of KVM locking up on FSL Cyrus+, and that is likely a different problem
+>>>> still not addressed.
+>>>>
+>>> Ah, that's what you meant. Yes, i still don't know where FSL Cyrus+ is
+>>> stuck.
+>>>
+>>> I would need help from FSL Cyrus+ to get some logs or is there a way we
+>>> can spin of
+>>> a QEMU guest of it? We should have the log to start somewhere.
+>>>
+>>>
+>> It's difficult to get a log because it freezes and can't write any error
+>> messages to the log files. This bug is very old. We had this issue some
+>> years ago but we was able to disable PREEMPT because we don't need it.
+> I would expect serial console and sysrq could give something, depending
+> on how much of the kernel is frozen.
+>
+> Thanks
+>
+> Michal
+Here is a serial log: 
+https://github.com/user-attachments/files/32433586/e5500_preempt_putty.log
 
 -- 
-Best regards,
-Jinjie
+Sent with BrassMonkey 34.3.2.1 (https://github.com/chzigotzky/Web-Browsers-and-Suites-for-Linux-PPC/releases/tag/BrassMonkey_34.3.2.1)
 
 
