@@ -1,73 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-27864-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27865-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60448C982E6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2026 17:21:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B81C3C982E6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2026 17:44:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hpVPT5Py6z2yfH;
-	Tue, 22 Sep 2026 03:21:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790011261;
-	cv=none; b=dJ5IgGvNB4Gc7e9NRUQvkKyAXJNt5Bxo48FhwpSmfmk6rl6Up69ta2Cj7EuelxHPPi5+ToZOw3bqUYFsLuaqrsxYNUi6ZwEYvVy+4RB2zL7Te26TXlwv8mBXCLaLOg/e36u4v+nT6sZpfcIMKOyIcBac9bbheFNrH5/hspHDKXtrr5ykDkhU7S8F3wp+nMimyE2RH+fNFMIRsysQs3yUHXHUM9vCWJOBeVAFhpf9yGUrxRd7kdfj0y0/elsB9u5q/Sof3tSBfkbStntnXoeo0lVIDhs2JgT8ALyhWIYsGhtz7/e2FoYtoKMWp0375mhh5tbyuJeLnRK4g9KXloSdbw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hpVx05wX0z2yhD;
+	Tue, 22 Sep 2026 03:44:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::446"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790012692;
+	cv=none; b=FXy2gIBCr/yOLtW296/iiHyg5bE3CvnHYFIjOtssXSEIrGydZe642e/PiMFJ9F7qfu1Vt7RbEF3UX5KZm7xIuc4yiUwSbxw/Qwhj1dB1OTRJ2JEB5SItLx5JJ6CJ2CEZVp4bPQbvStp+ezvA+crossnPaLIhirH7SDYIWPCSSljLvTZVBR2heTeZ/p5p471aEKtuB5OXBVj7JacynQHwjAA9GtFaUafm+IjU3vyHrpXR1vdbAlztTysPZPy8HgyoQaI9DO+aMvX4pu+QDlc0zbx2uv6/LDduN0OYRUXG24PJiBSWTdCFYiMq+J86SuOkiQku3fNaIZPfhkiBi8cMIQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790011261; c=relaxed/relaxed;
-	bh=t3duhJIDMyv8h9ztqN7LlqhPy7Whv2C5EzxKkEVYA5U=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=acgt7YVdnalOs6Yd49fdZRUCmGgflQcD5vW5tpEgDFT/c+MpUcW8l+bOdZz+p2XWJ+W7Tn7LECFP7M4uVEwXnz53wsFBgL0m2QBxQw2J0y+A3P5AOHIh02Y2VTyZ/R0V1trVF4nBKiU0/LQru4G+TN6qw/oypfaHjWqXmACPgWtv2e/gpb8uNumwDKcVNNQI6BaKJUg3L/bpuSqnCl7pPv7YWG3Zei3066wy8UrAGky7R7JcNjRjbCH1qr9dKEfVXXWmrDu73HsKrtESQ5zRqTT0E2AFJLdLHVMgsbAnJLm0rN5OqlNO74M3iP/R1eGUCRythysDrxT8KnNBok+etA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tdo0cbj5; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1790012692; c=relaxed/relaxed;
+	bh=vpZEGIou0oqWtJedTRzj6hNhUCCuK0pge9AESQcyXk4=;
+	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=oszKJBlUgr0MQhjK2k+Y6ooo3yD/LlXnm6rI1tNgHdsR6FHNt0iClCnZRlJA+mrW9J1kb4WHmcDd9T3lS0A329YRUQaTFDHHckiKJFT/N7yU1Fc6321BaXrC3nU2SfqxinrB9Cic6LVg8UtnUQ26n16QNaeFQywHdZtv+RUi8MhVlZOfxyyseeY96V8OpzkA7QbyIWMCVy8I4lvvFaaWpOQfb0Xa2zVYQ9wnAmGFolEeCE44fp8DwlskFyJHVobuYgGKbWNn+bNMvrn54D4HPVy9b6nczXK2eHTlt40P6u9RcAYNmPGH1ai2zqXOw0mmzp7y4rdvFna6LIJ4ub3emw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=XQ0CH97E; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::446; helo=mail-pf1-x446.google.com; envelope-from=3dm2xagykdas3plyunrzzrwp.nzxwty5800n-op6wt343.zawlm3.z2r@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tdo0cbj5;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=XQ0CH97E;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::446; helo=mail-pf1-x446.google.com; envelope-from=3dm2xagykdas3plyunrzzrwp.nzxwty5800n-op6wt343.zawlm3.z2r@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x446.google.com (mail-pf1-x446.google.com [IPv6:2607:f8b0:4864:20::446])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpVPS6yblz2yVd
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 03:21:00 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68LF8N3t1869624;
-	Mon, 21 Sep 2026 17:20:51 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=t3duhJ
-	IDMyv8h9ztqN7LlqhPy7Whv2C5EzxKkEVYA5U=; b=tdo0cbj5/Y4mUBw6+lAKMY
-	/xvgY8tvRbvu3d3ZXPk/piGbEBkTkzyTvlxmL2M1v/KnsS4eWiSNrJqiMjRe9MXO
-	fu2va0PyFKlg+oFEvPe8JsGz0B9F3Ff81D5+Wnc2cquRJXl7s1ogUet+JlP+Ue7x
-	EA2TSAqmYQw1roVMKnUXV/uTp+9joDXZGhFjL/+AekI7tbaE3izkMO7Lgaz611Am
-	ed2AouQR6IaXMItnzjnbYqSPKAN6JIaddjwhM/NcaWECklihJWBd5AyrX0GICCUa
-	sH1JuXvH8MLx2QQ07lnhMR05fPe6j9HmGDotM00Y6Wf4EQ1p86ii78w+ghzYHm3w
-	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gskgs1uj1-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 21 Sep 2026 17:20:51 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68LFHTVg1489431;
-	Mon, 21 Sep 2026 17:20:50 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gt4qq6f2h-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 21 Sep 2026 17:20:50 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68LHKke251183998
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 21 Sep 2026 17:20:46 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9178920043;
-	Mon, 21 Sep 2026 17:20:46 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id ADF032004B;
-	Mon, 21 Sep 2026 17:20:42 +0000 (GMT)
-Received: from [9.124.208.199] (unknown [9.124.208.199])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 21 Sep 2026 17:20:42 +0000 (GMT)
-Message-ID: <bebaa831-9d56-4276-9422-9c5da8ab220f@linux.ibm.com>
-Date: Mon, 21 Sep 2026 22:50:41 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpVwz01rwz2yVd
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 03:44:49 +1000 (AEST)
+Received: by mail-pf1-x446.google.com with SMTP id d2e1a72fcca58-8538a72b430so3494956b3a.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2026 10:44:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1790012687; x=1790617487; darn=lists.ozlabs.org;
+        h=content-type:cc:to:from:subject:message-id:mime-version:date
+         :reply-to:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=vpZEGIou0oqWtJedTRzj6hNhUCCuK0pge9AESQcyXk4=;
+        b=XQ0CH97EYvSlMU5WmkBJz8SjZOJ14o6JNdZQpFTtP3cZ1iS5dp/f57vNdrboISsLR9
+         LAKM0gndXIQXAnf9SkC08OVwikABQdsQLlvxL9aLzUPZSH1uxMscZ06yjPaW+6XOfchz
+         DSFBtYQQcnrNGZ9EVcA/TSK761G/Xvs2ypU+/mUSBwMnnZ09ymaVf8/6vJx/ZzLMCgDT
+         BHCNFtuYphoAPYpueG+84v2VIj2RkMHkux/uqWwK94anG/k0QVFPsnFqSzsEl1i85836
+         hBfPrXzQidOarFhcwdjaxv+g7W55dYkUCwDuNu8PD0IRjNlJ8unzbobSC+6y8VYAga7f
+         YcBw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790012687; x=1790617487;
+        h=content-type:cc:to:from:subject:message-id:mime-version:date
+         :reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=vpZEGIou0oqWtJedTRzj6hNhUCCuK0pge9AESQcyXk4=;
+        b=dVmmGdGVjOJKpcrd2s7mtEbPW4MpfsiW10NccrTqrE/w65FQKJZdEbL49Toq8IGXjv
+         rVfkI8Ox4Tk8OXHHNEKTOI0qtPITJaTMYpu/BzY4Faz8jAG7m2RQinwXdVyZiQOb+fH0
+         ZDdd67lJRubxbiZQMbQfQ8q/EHzz8trCgLLrNvgkNc96cqFZ0EMErwW9V6L8L9OgbnCy
+         UrnOo+AXJi8LKgC8LlG6O0IZbf4Ie1o+NfnnkdSqSI03Qhan9R7dxX4Gs2VOSTjhGg/u
+         gSBxhq74bGazqtomGrQMod/bsBzgMJAlonGVJ57GCwfk23fi0ij7jREsHTtDqhJLdsFR
+         4Hzw==
+X-Forwarded-Encrypted: i=1; AKwUvByH005L+KsQeCMgL3RCx2XrK78fK1T2SsnaUVnb+2qG0ZGtwKBe1qQYLnW1kmF2WHpoevkjJ5i7v7M/J8s=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++kNtaqf4K5M2y8+B0Lvi0llb6PJcXBrvILIThbj88WFXxRUyfNR
+	mhWoz6Hx2o7X2migK500X1Y32RKFUaHQcK/B2AbOcHIfbzeEeWwYd8J/qO0pNzuo0QSYHpYDieV
+	pvqIQtA==
+X-Received: from pfbgs18.prod.google.com ([2002:a05:6a00:4d92:b0:87a:49f8:6a76])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:9487:b0:878:3507:8d6b
+ with SMTP id d2e1a72fcca58-8783508a7bemr7870003b3a.50.1790012686945; Mon, 21
+ Sep 2026 10:44:46 -0700 (PDT)
+Reply-To: Sean Christopherson <seanjc@google.com>
+Date: Mon, 21 Sep 2026 10:44:38 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,142 +75,75 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [Linux PPC] Disable PREEMPT
-To: =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>
-Cc: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Christian Zigotzky <chzigotzky@xenosoft.de>,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        "R.T.Dickinson" <rtd2@xtra.co.nz>, hypexed@yahoo.com.au,
-        mad skateman <madskateman@gmail.com>,
-        Christian Zigotzky <info@xenosoft.de>,
-        Amit Machhiwal <amachhiw@linux.ibm.com>,
-        Gautam Menghani <gautam@linux.ibm.com>,
-        Harsh Prateek Bora <harshpb@linux.ibm.com>
-References: <aplDm-byYL79laYG@kunlun.suse.cz>
- <9a58d944-405c-4519-852e-8fa04c22c2db@linux.ibm.com>
- <aplZNFMJUkfs-BFs@kunlun.suse.cz>
- <d98e38cb-74d7-48b9-93f3-7c20ff910675@linux.ibm.com>
- <aplclgAsq1d6f5U-@kunlun.suse.cz>
- <1d83264f-8eda-4321-9200-f12897e38cda@linux.ibm.com>
- <aplnPuVk4LWgpu3n@kunlun.suse.cz>
- <e211e1fd-0923-4ab4-9e01-e9151807cf26@linux.ibm.com>
- <apl1-rm_-Hb_ROE4@kunlun.suse.cz> <arDlfmpHrN8sbP02@kunlun.suse.cz>
- <arFfc2apYaBuNvmC@kunlun.suse.cz>
-Content-Language: en-US
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-In-Reply-To: <arFfc2apYaBuNvmC@kunlun.suse.cz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=V/XoQuni c=1 sm=1 tr=0 ts=6ab16773 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VLc2VSdLAAAA:20
- a=73RBZPNzplm5LS8RO98A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=bA3UWDv6hWIuX7UZL3qL:22
-X-Proofpoint-ORIG-GUID: ZgBODIZuHd8O_TMLh6Jy8rJCAVqbiAjb
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTIxMDI1MCBTYWx0ZWRfXz4SuDkv/JfRz
- 23surPU664lGvtJOCbI+mU0OfoYySyMYaTIVSBsq5EL1eLbPm8/bk8dEeysr3Y9DySVQRIy35OO
- pml2TaCZQzRj8tQ3yBefvc8e6f3bD386/73yyRuCrC+VuATgJZa3eXzUTBcVUANzX7MLPSzPkpI
- VRE309+DWurk0WDUn2143GINRga30wcw+3JIKwt2AfKooN0OgRIyt2y8nMLuP1ntZh12cIHr/xI
- jm9a88EIPylpi+OyvZxboeZ2hs4TyN/4ue8MZWhMszIhV+vNorsg3dBmhbLxRkDBcLcXOtorep9
- Xgroht+KiGpraLIUDULKuJEJRJ2KBK+mgYMPD+A4yH0BPC8EzvhDpG94V045Z7jk6GbkfyqTrUx
- zPpMQiKxB9j9xmIOJHQ7DVGRWsraxQ9srOJzL1pQKI3MTmY2vaQoqD+YqZ54gDMFqv42RC48XVK
- IQC6Oj6nvHVEvMwVVuQ==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTIxMDI1MCBTYWx0ZWRfX7loOA+X9OFSE
- HS2D1AiKE6iWzgQCq54u8vWYoFRh2oaknEcf9sjjJitLYZgjaRJG07KveYax0BckYBXhs2IswiI
- nTXrNoXu8rkg7HXf1x0vrDndXUh/sOU=
-X-Proofpoint-GUID: YtHlhqBN6uFeXpP9rTNxZ6uzIscURXFz
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-21_05,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 spamscore=0 malwarescore=0 clxscore=1015 phishscore=0
- bulkscore=0 adultscore=0 lowpriorityscore=0 impostorscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609210250
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.55.0.1082.g2b9226bbc0-goog
+Message-ID: <20260921174445.911676-1-seanjc@google.com>
+Subject: [PATCH v2 0/7] KVM: Serialize vCPU creation and revert vcpu_ids tracking
+From: Sean Christopherson <seanjc@google.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, 
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Sean Christopherson <seanjc@google.com>, Paolo Bonzini <pbonzini@redhat.com>, 
+	Kiryl Shutsemau <kas@kernel.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>, Atish Patra <atish.patra@linux.dev>, 
+	Alexandre Ghiti <alex@ghiti.fr>, Dave Hansen <dave.hansen@linux.intel.com>, 
+	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
+	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
+	x86@kernel.org, linux-coco@lists.linux.dev, linux-kernel@vger.kernel.org, 
+	Jean-Christophe Guillain <jean-christophe@guillain.net>, 
+	"=?UTF-8?q?Pawe=C5=82=20S?=" <spawel523@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 
-Hi Michal,
+Serialize vCPU creation by holding kvm->lock for the entirety of
+kvm_vm_ioctl_create_vcpu(), and then revert the now-redundant tracking adding
+by commit 97d65b544f48 ("KVM: Check for duplicate vcpu_id as early as
+possible").  I botched the math when justifying the vcpu_ids tracking; it's not
+an extra 256 bytes, it's an extra 2048 bytes.  Roughly doubling the size of
+"struct kvm" tripped x86's KVM_SANITY_CHECK_VM_STRUCT_SIZE, and obviously isn't
+something we want to do in general.
 
-On 9/21/26 10:16 PM, Michal Suchánek wrote:
-> On Mon, Sep 21, 2026 at 10:06:22AM +0200, Michal Suchánek wrote:
->> On Thu, Sep 03, 2026 at 03:28:26PM +0200, Michal Suchánek wrote:
->>> On Thu, Sep 03, 2026 at 06:06:16PM +0530, Harsh Prateek Bora wrote:
->>>> + Amit, Gautam - since they recently came across a similar regression which
->>>> is seen with non KVM workload as well.
->>>> + Venkat - for CI improvement suggestion below.
->>>>
->>>> Hi Michal,
->>>>
->>>> On 03/09/26 5:55 pm, Michal Suchánek wrote:
->>>
->>>>>
->>>>> There is another problem that Linux 7.2.2 often locks up on boot inside
->>>>> the guest, and as a result a different kernel is needed in the guest to
->>>>> reproduce the host crash. This is more recent, linux 6.12 does not have
->>>>> this problem. Will try some different kernel combinations to see if I
->>>>> can narrow this down. For this the repro is merely booting the kernel in
->>>>> the VM, it typically fails early before userspace produces any messages.
->>>
->>> This one regressed between 6.19.12
->>> https://github.com/openSUSE/kernel-source/blob/9f6830f/config/ppc64le/default
->>> and 7.0.12
->>> https://github.com/openSUSE/kernel-source/blob/2ebf0bc/config/ppc64le/default
->>
->> Which is when preempt was enabled.
->>
->> Very likely preexisting problem that was exposed by enabling preemption
->> again.
->>
->> @@ -121,9 +122,7 @@ CONFIG_BPF_LSM=y
->>   
->>   CONFIG_PREEMPT_BUILD=y
->>   CONFIG_ARCH_HAS_PREEMPT_LAZY=y
->> -# CONFIG_PREEMPT_NONE is not set
->> -CONFIG_PREEMPT_VOLUNTARY=y
->> -# CONFIG_PREEMPT is not set
->> +CONFIG_PREEMPT=y
->>   # CONFIG_PREEMPT_LAZY is not set
->>   CONFIG_PREEMPT_COUNT=y
->>   CONFIG_PREEMPTION=y
-> 
-> Looking more into this the problem is not reproducible with 6.19 with
-> full preempt, and can be reproduced with 7.0 with full preempt where
-> preemtion is mandatory. It only so happens that 1.19 was last kernel
-> where preemption was not mandatory and where this problem also happened
-> to not manifest with the Tumbleweed config.
-> 
+The TL;DR of why it's a-ok to serialize vCPU creation is that no VMM actually
+does parallel vCPU creation.  As with so many things, KVM's current behavior is
+the result of decades-old cruft, not intentional, deliberate design.
 
-I am bit confused. Is it different problem than the kprobe/bpf issue
-which was observed on host?
+Patches 1-3 are a tangentially related cleanups and bug fixes; I included them
+here because holding kvm->lock for all of vCPU creation allows WARNing if KVM
+attempts to lock all vCPUs if vCPU creation is in-progress (the caller must
+hold kvm->lock).
 
-Is this kvm/guest specific problem you are observing? Is it still seen
-even with that kprobe/bpf fix?
+v2:
+ - Tweak patch 1's changelog to clarify that that only x86's manual checks are
+   dropped. [Sashiko]
+ - Add patches to convert additional arm64 and RISC-V usage to 
+   kvm_is_vcpu_creation_in_progress(). [Sashiko]
+ - Remove acquisition of kvm->lock from s390 and PPC vCPU creation flows.
+   [Christian, Sashiko]
+ - Add Jean-Christophe's Tested-by to the revert.
 
-> It is not deterministic enough to bisect. It's probably some kind of
-> race condition or code generation problem that can surface and go away
-> or become too difficult to reproduce with seemingly unrelated changes.
-> 
+v1: https://lore.kernel.org/all/20260914181223.289061-1-seanjc@google.com
 
-Can you try latest kernel?
+Sean Christopherson (7):
+  KVM: Reject attempts to lock all vCPUs if vCPU creation is in-progress
+  KVM: arm64: vgic: Rely on vCPU creation check in "trylock all vCPUs"
+  KVM: RISC-V: Use kvm_is_vcpu_creation_in_progress() instead of
+    open-coded equivalent
+  KVM: Protect all of kvm_vm_ioctl_create_vcpu() with kvm->lock
+  KVM: Move check for existing vCPU ID to the top of vCPU creation
+  Revert "KVM: Check for duplicate vcpu_id as early as possible"
+  KVM: WARN if vCPU creation is in-progress when locking all vCPUs
 
-There was change recently to move to use
-generic transfer to guest mode work. i.e VIRT_XFER_TO_GUEST_WORK.
+ arch/arm64/kvm/vgic/vgic-init.c | 12 ++++-------
+ arch/powerpc/kvm/book3s_hv.c    |  2 --
+ arch/riscv/kvm/aia_device.c     |  2 +-
+ arch/s390/kvm/s390/s390.c       |  5 +----
+ arch/x86/kvm/svm/sev.c          | 10 ----------
+ arch/x86/kvm/vmx/tdx.c          |  5 -----
+ include/linux/kvm_host.h        |  1 -
+ virt/kvm/kvm_main.c             | 35 +++++++++++----------------------
+ 8 files changed, 17 insertions(+), 55 deletions(-)
 
-> Crash happens very early but it's eemu so the memory can be saved
-> regardelss. The problem is that the crash tool refuses to load the core
-> bacause it detects the core as SMP and vmlinux as non-SMP or the other
-> way around.
-> 
-> Thanks
-> 
-> Michal
->
+
+base-commit: d599822bdb66aeec5ec76297b0fc6efaaeefe07c
+-- 
+2.55.0.1082.g2b9226bbc0-goog
+
 
