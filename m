@@ -1,63 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-27848-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27849-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37A39C982E1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2026 09:19:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F266CC982E1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2026 09:25:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hpHkN58gsz30WS;
-	Mon, 21 Sep 2026 19:19:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789982396;
-	cv=none; b=O4/MjmfQyrdChFqZBn3X9fgRCJtt9iDc1Ots3FiRN0/+ub0PATKnx+BS6Xo7vDSx8rT1G5iVWAfTy8kTdaDrHp8tJVlTY2Qrna4HbMa9sAlhUzpZgT0hj4Nn+ZCNmhUqeRhjphwwcoY4OlMk12BEEJBAUTSz8qla4H8CKwAW0UR4rJEojELrs3iG4Umkjg+K0uhJpX3TYfjN2VfUT2q/n5derGE+R+r3GW2JAnZ1jLqa8LMJKfm1nyqkkgpWRsajF7ML/hx4tAquSAbbhoWoppmd0XxoKOY82/tEEXV/FdoN0GEAWM9/RnfE2tzhlJCnYt5Erc+DVRFVHrei+fogzg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hpHrt4X8Kz2yfs;
+	Mon, 21 Sep 2026 19:25:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789982734;
+	cv=none; b=FknuiUIaL059vwLP+e8K2d9nKUOU+IeQaU7o2bqeC8XkEOgOLVbTLsug2KzxtlpUkRrsYElLwhINOk1fub5x1j5roJM/WCXWAuQWQkRcqZi7xcSLOYXEMZXPsWKo+PGq16HQxV+xuZOI+l5FWNei0inSnk+56oZt8YjEwqs4OHxKbZ42U31eizoKY+ru5LkoRPkXwHAUwrdYtOdjUAHc/ymYq/PminqPSgyIfSJQoPH2jPXx5hFnpqlmnsOMoeNEZNHX+mas5fFy98GEhENwSHw15sN9/YELKDC0HdRY3c+mmnDsMJvR3KaVfVxc5uXff2J8++9QoPk6/3leQz9lGg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789982396; c=relaxed/relaxed;
-	bh=lYPW2EitrWksOeNywbT4ACddfE8LBXRuHuJ++AYnkVg=;
+	t=1789982734; c=relaxed/relaxed;
+	bh=h0lbirbiRFTe0nqD7sNgdCQWa98rjE9GNM+G7wxNPPI=;
 	h=From:Subject:To:Cc:In-Reply-To:References:Content-Type:Date:
-	 Message-Id; b=d2VSD2ddfJ99/eM8Rae8Chh2/EcbZcFgq3Q1+PT9PIhTMiA9GRBcWWYeM2UiDKruvqKh2tQU/7KLcnoCsKeoffronNQB6N6DvfHDQKYuZ0jMFTw7iurD6WOpl8bZqndcVzJ6jylOuPyDxLQDYV3YGUKEaXDc4vvu9SBO8dWYkQ4/+D/+odOHnMfLrN1yjUrfRTsmb1fdtqiOdbWbB6BTARRBLq9jA4u8LUiXMGlArXFE06oarvMCRNO5bb1vsU4GeagBIasuDjV2XwXIRAXx0aHKjsJoqiJcgs0Veo5SHQ61MnvE7rpxhcPKMDRztlhGnn+aKgyWaMJ+t62QdRWRdg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HgcUGeAD; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=sashiko-bot@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Message-Id; b=QVIGJcOpLmu3ZKt+369szMUj8GYe66718LmIjdoeZ6dVqK3yH9ZWD3smQ5nTKfdkT2IcemMmWzF7I3Bhzrc3/hsPqsE4mqXF7Lr7DYzQH5/iPJRdXuSdTWwF4dQkzCsIm4ZKUwGQhjxmTR3HhNwl0DhWt7pFdGGDiPye2weMgzyf2M62xvPa7qALCli5EkCh+kNrVoQtGVI7N1Sxtp3Y/RQfBbZAC952/2Hg+fAxBo5TN0wt4d2TcQDJvjLbOKA/8Bw4QMVeR0IEqwUWNR3eRVUftYwye6jutDlArE+9z1ghkHidBwucVNGpJbIQrekSdt0AS4Q8mdEJSatASHHGaA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=fail (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=G9GTjN96 reason="signature verification failed"; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashiko-bot@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HgcUGeAD;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=G9GTjN96;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=sashiko-bot@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashiko-bot@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpHkN0ZnQz30WQ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2026 19:19:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpHrs556lz2yfH
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2026 19:25:33 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2BCF8600C8;
-	Mon, 21 Sep 2026 09:19:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BDE231F000FF;
-	Mon, 21 Sep 2026 09:19:51 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 1734D4145D;
+	Mon, 21 Sep 2026 09:25:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 17C231F000FF;
+	Mon, 21 Sep 2026 09:25:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789982393;
-	bh=lYPW2EitrWksOeNywbT4ACddfE8LBXRuHuJ++AYnkVg=;
+	s=k20260515; t=1789982731;
+	bh=h0lbirbiRFTe0nqD7sNgdCQWa98rjE9GNM+G7wxNPPI=;
 	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
-	b=HgcUGeADs7/M03n4e2fM1RNJ+WDOaeSKU+QjIz/LtyFBUbeVb4L6/srXNM6s+yLNv
-	 lemuTopLmR2RY1n46up1y6lfw2TMG+aXggHsOLTYpKvTSW+vgKxMx6SkvQeFQps3ws
-	 LZmwqCnE+K8/UsHYTHgJgNTPjKAMTLM+s8evUKg2waXxzx3eq6dsntJvuKU8eTySRy
-	 n36264uQDAJ9ioRxlPfRKtNGms4PwRu3OHjhXWjPEXx3gi/RjiBAl7Ew39lMayDC/6
-	 xPzGfGJQuRTpNBCK4aGXsXkjg0/RZfLekSNvS3HBjltpptS1F1D56r968uAhWjn0Vv
-	 hAK7VnVuwYw0w==
+	b=G9GTjN96ydiq83Dx6AwgaeAwNufeqfgnbprIBt6+exthvcfj6KvKHWSrXRQ1G+fIO
+	 CR0L87npQ6Ea0jPOMswGc8AY9HnXr6SzLE6hm3nroxAsiTUCFONF1AjBiWKiNkLCdo
+	 HfU9pb7exOZunuj/m975SoxT+oZ9pYI08PLbHjYu/fAt6wyUupuuHzXfSz6mCT/nIk
+	 r3IcK0eAwtFOVdNOuyV1xOecJJtozZWu9l2Zr6l995o+kAO6IhF78/0PcvtX2Ru4hP
+	 wNiuRs4Yr9agDz8f6d2dNNu6+5doMmiXjWlo0apEAt26WEd6BL0MZpD5VMrlz6qyli
+	 Z4DPAU2m60XSw==
 From: sashiko-bot@kernel.org
-Subject: Re: [PATCH v6 12/14] crash: Normalize the kexec_load elfcorehdr at
- load time
+Subject: Re: [PATCH v6 14/14] crash: Fix TOCTOU race in crash memory range
+ collection
 Reply-To: sashiko-reviews@lists.linux.dev
-To: zhangtianyang@loongson.cn, chleroy@kernel.org, eric.devolder@oracle.com, linux-kernel@vger.kernel.org, driver-core@lists.linux.dev, dakr@kernel.org, guodongtai@kylinos.cn, hpa@zytor.com, kernel@xen0n.name, chao.gao@intel.com, pasha.tatashin@soleen.com, npiggin@gmail.com, coxu@redhat.com, liukexin@kylinos.cn, seanjc@google.com, bgwin@google.com, rppt@kernel.org, bp@alien8.de, kai.huang@intel.com, sshegde@linux.ibm.com, kees@kernel.org, mpe@ellerman.id.au, tglx@kernel.org, jbouron@amazon.com, yeoreum.yun@arm.com, "Jinjie
- Ruan" <ruanjinjie@huawei.com>, maddy@linux.ibm.com, gregkh@linuxfoundation.org, will@kernel.org, pratyush@kernel.org, akpm@linux-foundation.org, robh@kernel.org, tangyouling@kylinos.cn, piliu@redhat.com, hbathini@linux.ibm.com, mark.rutland@arm.com, chenhuacai@kernel.org, me@linux.beauty, mclapinski@google.com, dave.hansen@linux.intel.com, ritesh.list@gmail.com, x86@kernel.org, linux-arm-kernel@lists.infradead.org, leitao@debian.org, palmer@rivosinc.com, maqianga@uniontech.com, james.morse@arm.com, takahiro.akashi@linaro.org, linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, vishal.l.verma@intel.com, catalin.marinas@arm.com, graf@amazon.com, sourabhjain@linux.ibm.com, mingo@redhat.com, ruirui.yang@linux.dev, rafael@kernel.org, baoquan.he@linux.dev, thuth@redhat.com
+To: kees@kernel.org, piliu@redhat.com, npiggin@gmail.com,
+	mpe@ellerman.id.au, me@linux.beauty, bgwin@google.com,
+	mingo@redhat.com, x86@kernel.org, baoquan.he@linux.dev,
+	guodongtai@kylinos.cn, leitao@debian.org,
+	driver-core@lists.linux.dev, coxu@redhat.com, pratyush@kernel.org,
+	"Jinjie  Ruan" <ruanjinjie@huawei.com>, will@kernel.org,
+	dakr@kernel.org, sourabhjain@linux.ibm.com, maqianga@uniontech.com,
+	gregkh@linuxfoundation.org, sshegde@linux.ibm.com,
+	liukexin@kylinos.cn, kernel@xen0n.name, thuth@redhat.com,
+	hbathini@linux.ibm.com, linux-kernel@vger.kernel.org,
+	mclapinski@google.com, tglx@kernel.org, kai.huang@intel.com,
+	linuxppc-dev@lists.ozlabs.org, robh@kernel.org, seanjc@google.com,
+	james.morse@arm.com, palmer@rivosinc.com, chleroy@kernel.org,
+	yeoreum.yun@arm.com, loongarch@lists.linux.dev, jbouron@amazon.com,
+	catalin.marinas@arm.com, ritesh.list@gmail.com,
+	akpm@linux-foundation.org, rppt@kernel.org, eric.devolder@oracle.com,
+	chenhuacai@kernel.org, vishal.l.verma@intel.com,
+	dave.hansen@linux.intel.com, chao.gao@intel.com,
+	pasha.tatashin@soleen.com, bp@alien8.de, mark.rutland@arm.com,
+	takahiro.akashi@linaro.org, zhangtianyang@loongson.cn,
+	rafael@kernel.org, tangyouling@kylinos.cn, graf@amazon.com,
+	ruirui.yang@linux.dev, hpa@zytor.com, linux-arm-kernel@lists.infra,
+	dead.org@lists.ozlabs.org, maddy@linux.ibm.com
 Cc: kexec@lists.infradead.org, ruanjinjie@huawei.com
-In-Reply-To: <20260921090450.807575-13-ruanjinjie@huawei.com>
+In-Reply-To: <20260921090450.807575-15-ruanjinjie@huawei.com>
 References: <20260921090450.807575-1-ruanjinjie@huawei.com>
- <20260921090450.807575-13-ruanjinjie@huawei.com>
+ <20260921090450.807575-15-ruanjinjie@huawei.com>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-Date: Mon, 21 Sep 2026 09:19:51 +0000
-Message-Id: <20260921091951.BDE231F000FF@smtp.kernel.org>
+Date: Mon, 21 Sep 2026 09:25:27 +0000
+Message-Id: <20260921092528.17C231F000FF@smtp.kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,32 +92,33 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 
-> For kexec_load() the kernel does not build the elfcorehdr, so it is only
-> rewritten by the first crash hotplug event.  CPU hotplug events do not
-> change the elfcorehdr, but they may run without device_hotplug_lock
-> (e.g. CPU offlining during suspend), so they cannot perform that rewrite
-> without racing with memory hotplug.
+> The crash kernel ELF core header construction counts system memory
+> ranges via `arch_get_system_nr_ranges()`, allocates the crash_mem
+> buffer, and then populates it via `arch_crash_populate_cmem()`.
+> This sequence has a time-of-check-to-time-of-use (TOCTOU) race with
+> memory hotplug: a concurrent hotplug event between the count
+> and populate steps can increase the number of ranges beyond the allocated
+> capacity, causing an out-of-bounds write. If the event triggers
+> memblock_double_array(), the memblock array can be freed and reallocated
+> during iteration, leading to a use-after-free.
 >=20
-> Normalize the elfcorehdr once when the crash image is installed via
-> crash_hotplug_prepare_elfcorehdr(), while device_hotplug_lock can still
-> be taken safely, and let the hotplug paths skip CPU events entirely.
-> Architectures that do not need the rewrite  (e.g. powerpc) treat
-> KEXEC_CRASH_HP_NONE as a no-op.
+> Protect the entire range collection with device_hotplug_lock. Since
+> the hotplug notification path already holds that lock, add a lockless
+> helper, crash_get_memory_ranges_nolock(), for use there. The regular
+> crash_get_memory_ranges() acquires the lock and calls the helper.
 >=20
-> The x86 crash hotplug handler now skips CPU hotplug events
-> unconditionally, so nothing reads image->elfcorehdr_updated anymore.
-> Drop the field and the code that maintains it.
 > [ ... ]
-> Cc: Pasha Tatashin <pasha.tatashin@soleen.com>
-> Cc: Pratyush Yadav <pratyush@kernel.org>
-> Cc: Dave Young <ruirui.yang@linux.dev>
-> Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
+> Fixes: 3751e728cef2 ("arm64: kexec_file: add crash dump support")
+> Fixes: 8acea455fafa ("RISC-V: Support for kexec_file on panic")
+> Fixes: 1bcca8620a91 ("LoongArch: Add crash dump support for kexec_file")
+> Link: https://sashiko.dev/#/patchset/20260729031235.2840255-1-ruanjinjie%=
+40huawei.com
 > Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
 
 Sashiko has reviewed this patch and found no issues. It looks great!
 
 --=20
 Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20260921090450.8075=
-75-1-ruanjinjie@huawei.com?part=3D12
+75-1-ruanjinjie@huawei.com?part=3D14
 
 
