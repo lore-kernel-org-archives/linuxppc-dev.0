@@ -1,81 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-27832-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27833-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCCD5C982DE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2026 09:06:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC27AC982E1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2026 09:09:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hpHNr6Nt7z30Nl;
-	Mon, 21 Sep 2026 19:04:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.225
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789981484;
-	cv=none; b=BxheV2BRE4QgWPatzj4eevR9lydc19G6MOGG5OKJgIrbfW+3vPN1WwOw1OfkUfzzYrLEkeGCt1BVmXrm8yUm8HVOPWAseYDcetl7AsyriPThaPyjuiDyMLKddje6RtFut/Zubj68Xsayovw+CrGSpMNnO1I6yMU1B8Vre7HQhmzSamMpAokgQilcwMn0ndg0ScisnJAo9gStEghTDzbd+TBRZEaDC2RfxN+SN3TEYpGfqrlTbdaQKj+o95a4ujVMKNXOV3fMApoZ/Ldy4l7zBYqs9+7cmUf82by5B5Z6eVM5swqM2eeijdsCCUv5p6uAlrEf74LYeD/C0DFfPMvoMQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hpHVp2kv4z2yfH;
+	Mon, 21 Sep 2026 19:09:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789981794;
+	cv=none; b=HVbzsbOVCJ9iz0n21jnjrXgoaJOBdt0WfA4n6qC4izJMDlF3Xtyrks5uBoFDgzEMZRDSm1fWR5KTjwBFwWNpq2Zapqyjv16dBlyF/MEZZNh8b8qNwfwU+s7hUefdmBUagwlNxbbu8u5vdx2IUaq1E13kau+tud30abTZ7UcUIw4dZn3BSMVcKaT5AdNYkgp3hitFDNK8GhAHQrbYIJndXJfPmZnB6cZQ/SPEyRR26b/RjJeclHT1GUkW3t5lXqpCZj2ZBxDEXG9r+VpvGdhvjy8mM/VVWyODdYKhGch+SKxUEoq0FZKHVlZY1V/TJ9+wiaeyd/39Mk9g7YcDpw/Exw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789981484; c=relaxed/relaxed;
-	bh=tZDkeXV6a369nstMRHLxqf/4pglLnuU252K/oM3e//U=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=nZikZp1qc/a05UJikX3MjKCiYrf7PTqCHqXn37GcTXR4XQA/nz6dI/pePR26itXmauSYshCv6LXhQ2G7IOh/Fgk6qTEMv0qhSBuIbTcEi2NA6zM0PU4fvxHLp9g1/T0K1DDd0sms9y16XfBKICN7ekSzySr41nowKGncN1cRK2hhp1Tn9FhrBPeIelGwaock+PMKY4H5GXWWHG+61R41CVkRVnmt5bhANpNuVRUpVILT5VSWR4h1ylUEWSiJDEdkN5HZrhz4m7hT7/CIT2rC6bepQySe4qRi0Hr9ftDM5Z/peH2qyfNGNfmg+P6fcWGS5XrTTv/zDsOReY9KeYK/0g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=FSQCRI07; dkim-atps=neutral; spf=pass (client-ip=113.46.200.225; helo=canpmsgout10.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+	t=1789981794; c=relaxed/relaxed;
+	bh=4ZIsYWUVn7guBQOBOTbKiEq7QO0teNhYsfMnJtt9g80=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=TxSCMjrlXcNkKd9wUEogBR0MHI2Hy7q3QTG8JKpxqjo6debb/BxP+ULMQ80dlw+w6ndwEA9wEpxbYemCLcwvZ99QfxqqG6N+dPG1Jz6RS1u5wRAiLhhGuUnFQJsDIVhftLKi9Vu8ncaIfFyrvO34Fb6yRPyIFQ3H7QQkzGQPhqiV/Avoa21yAOQCGTiYJK1B7UrRMDd0SQKs8HtpOwtjC7hpdcw+xYeAfpu5QhKacI1VTQGk0EQ6DBXEuio6uPFz0avOSqvEpg4VZrLil55LVKrhaFqiGpiwbr4orbRzh79dScA/swmRFLRoCjkdfHFQnLWDYk47fnWciZsWTIw4ZQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lDpJ5m46; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=FSQCRI07;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lDpJ5m46;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.225; helo=canpmsgout10.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout10.his.huawei.com (canpmsgout10.his.huawei.com [113.46.200.225])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpHNq65n1z303F
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2026 19:04:43 +1000 (AEST)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=tZDkeXV6a369nstMRHLxqf/4pglLnuU252K/oM3e//U=;
-	b=FSQCRI07g5QzFIcDMwCwg/ym4bv+MAK0v8zfemlvrSwKiabVebvUXPWom1TVv4gzGf8buXlLy
-	RMYyu38fBRkQyRbfO+5BpR3c6LEShSJE+2OjrybC1bDiGSgDcbIKCxFkfXpl37nLLre31VHPXRY
-	sgFKRo0j3+ZlmM8+lt2rpds=
-Received: from mail.maildlp.com (unknown [172.19.163.15])
-	by canpmsgout10.his.huawei.com (SkyGuard) with ESMTPS id 4hpH7w5X96z1K9Ck;
-	Mon, 21 Sep 2026 16:53:32 +0800 (CST)
-Received: from kwepemk200008.china.huawei.com (unknown [7.202.194.74])
-	by mail.maildlp.com (Postfix) with ESMTPS id A928D40592;
-	Mon, 21 Sep 2026 17:04:34 +0800 (CST)
-Received: from huawei.com (10.90.53.73) by kwepemk200008.china.huawei.com
- (7.202.194.74) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Mon, 21 Sep
- 2026 17:04:20 +0800
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-To: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
-	<chenhuacai@kernel.org>, <kernel@xen0n.name>, <maddy@linux.ibm.com>,
-	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <chleroy@kernel.org>,
-	<ritesh.list@gmail.com>, <sshegde@linux.ibm.com>, <tglx@kernel.org>,
-	<mingo@redhat.com>, <bp@alien8.de>, <dave.hansen@linux.intel.com>,
-	<hpa@zytor.com>, <gregkh@linuxfoundation.org>, <rafael@kernel.org>,
-	<dakr@kernel.org>, <akpm@linux-foundation.org>, <baoquan.he@linux.dev>,
-	<rppt@kernel.org>, <pasha.tatashin@soleen.com>, <pratyush@kernel.org>,
-	<ruirui.yang@linux.dev>, <leitao@debian.org>, <yeoreum.yun@arm.com>,
-	<sourabhjain@linux.ibm.com>, <robh@kernel.org>, <coxu@redhat.com>,
-	<kees@kernel.org>, <tangyouling@kylinos.cn>, <liukexin@kylinos.cn>,
-	<zhangtianyang@loongson.cn>, <guodongtai@kylinos.cn>,
-	<maqianga@uniontech.com>, <chao.gao@intel.com>, <kai.huang@intel.com>,
-	<vishal.l.verma@intel.com>, <seanjc@google.com>, <piliu@redhat.com>,
-	<thuth@redhat.com>, <jbouron@amazon.com>, <me@linux.beauty>,
-	<mclapinski@google.com>, <graf@amazon.com>, <bgwin@google.com>,
-	<hbathini@linux.ibm.com>, <eric.devolder@oracle.com>,
-	<takahiro.akashi@linaro.org>, <james.morse@arm.com>, <palmer@rivosinc.com>,
-	<x86@kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-kernel@vger.kernel.org>, <loongarch@lists.linux.dev>,
-	<linuxppc-dev@lists.ozlabs.org>, <driver-core@lists.linux.dev>,
-	<kexec@lists.infradead.org>
-CC: <ruanjinjie@huawei.com>
-Subject: [PATCH v6 14/14] crash: Fix TOCTOU race in crash memory range collection
-Date: Mon, 21 Sep 2026 17:04:50 +0800
-Message-ID: <20260921090450.807575-15-ruanjinjie@huawei.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260921090450.807575-1-ruanjinjie@huawei.com>
-References: <20260921090450.807575-1-ruanjinjie@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpHVn3jHRz2yK7
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2026 19:09:53 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68L7ZZmB3856783;
+	Mon, 21 Sep 2026 09:09:42 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=4ZIsYW
+	UVn7guBQOBOTbKiEq7QO0teNhYsfMnJtt9g80=; b=lDpJ5m46AV/NUrV8otXfLy
+	IVe0gEViJQF82mSfydssR1fcRXPZTkh0V2d5sqRX4gBqRArkYXDxuQr62Hc9FYp1
+	qa0bGiuIxmHxFaOpl2u1sa5m8vGcCM1QPpx/TsWYxNZz/U/ovsM1uwkRu82XDSRf
+	LqK9kW6SzxXLieTnRhvn1h+iSJdR0BulWIdIAEWef7L+wzadaB6ytts2cFnW6exc
+	c0msvcZmr8UCLLwcQxfLNRgGnJFL9BKqPXIa5ZbyyEhuwC0TEMvH8OpK34uP0FK2
+	cpB/yjlrtYP2xDOz1NqhzfP47Tip4FZHA0J25jAJU3n5vugeLX893alrC7SR2Xfg
+	==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gskgq7fv6-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Mon, 21 Sep 2026 09:09:41 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68L7HUsR924413;
+	Mon, 21 Sep 2026 09:09:40 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gt4qq4r54-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 21 Sep 2026 09:09:40 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68L99c6329426126
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 21 Sep 2026 09:09:38 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8709520040;
+	Mon, 21 Sep 2026 09:09:38 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E07382004B;
+	Mon, 21 Sep 2026 09:09:35 +0000 (GMT)
+Received: from [9.124.208.199] (unknown [9.124.208.199])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 21 Sep 2026 09:09:35 +0000 (GMT)
+Message-ID: <aed4e6a7-1678-4e27-9091-d621d3fe1535@linux.ibm.com>
+Date: Mon, 21 Sep 2026 14:39:34 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,170 +81,85 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.90.53.73]
-X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
- kwepemk200008.china.huawei.com (7.202.194.74)
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] KVM: PPC: use assign_bit() where applicable
+To: "Peng Fan (OSS)" <peng.fan@oss.nxp.com>
+Cc: linux-kernel@vger.kernel.org, Peng Fan <peng.fan@nxp.com>,
+        linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+References: <20260920022618.3145649-1-peng.fan@oss.nxp.com>
+Content-Language: en-US
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+In-Reply-To: <20260920022618.3145649-1-peng.fan@oss.nxp.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=G+OJgNk5 c=1 sm=1 tr=0 ts=6ab0f455 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=8AirrxEcAAAA:8
+ a=VnNF1IyMAAAA:8 a=Nid3tJT5lt5-er1BLS4A:9 a=QEXdDO2ut3YA:10
+ a=ST-jHhOKWsTCqRlWije3:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTIxMDEzMCBTYWx0ZWRfXw9Z+eF+SZmPD
+ +Qoaa60PKvIkNklTODfHdllh5WfKewFYmCLfylfWncUtePFdB8b5akdHv5pu/cE3/K2QipcdMNL
+ C2B9s8FXFlb4T1zFZYXX/zsxUJ91OJFk7CeEOJ1S1kc0uTVJUBrjgw52vLhjTD9AX4kCfBnc1S2
+ 6PO86dtSWTu2IZsrj25XHK43cynoVKt81mbBjlGSzgohCo44bY1mPI9v7dFDRRzHU9lTkLxm2+p
+ Us4NSJyfKodPMJHDe7yXtNZdBeEFWvM9uW14bZh/O1EgTe9csU+dUGwdF2Dhsv+3qXNK/iM/H/P
+ x+vXk12Fnpii0cUwfSqfhOz8y6DLvzzYAJ+4m6NKC/YTw6OCohxi5ftQaQkmpqAsJQQDGhA2Y8R
+ tlbwRgRXhZ9ahAN+bPbJWWvMywAVhjcbkQoJYKM5WNJWtVIIjvzicV+BDBIUSJMkpTu7rdLx2ZT
+ 932rfYPYwLkfDLzb/Tw==
+X-Proofpoint-ORIG-GUID: 26wd-gAuxDGHB4yJx885WrLhHeVZ4hEv
+X-Proofpoint-GUID: vVT54iSS5N2yMyLnpAkFyrMWLjO-j_IU
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTIxMDEzMCBTYWx0ZWRfX0NbGaXikVMbw
+ yfvcadrd2EEx9jtjqCqWhhbKD0FPcPn0T/iAJr16KfRCrwWxZmNj/pWBFlrTg7K8vy6255Idkb3
+ KNkBDKLC85yvaQVePk91/dG30rZIjjI=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-21_03,2026-09-16_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 adultscore=0 phishscore=0 lowpriorityscore=0 impostorscore=0
+ bulkscore=0 priorityscore=1501 clxscore=1011 spamscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609210130
 
-The crash kernel ELF core header construction counts system memory
-ranges via `arch_get_system_nr_ranges()`, allocates the crash_mem
-buffer, and then populates it via `arch_crash_populate_cmem()`.
-This sequence has a time-of-check-to-time-of-use (TOCTOU) race with
-memory hotplug: a concurrent hotplug event between the count
-and populate steps can increase the number of ranges beyond the allocated
-capacity, causing an out-of-bounds write. If the event triggers
-memblock_double_array(), the memblock array can be freed and reallocated
-during iteration, leading to a use-after-free.
+Hi Peng.
 
-Protect the entire range collection with device_hotplug_lock. Since
-the hotplug notification path already holds that lock, add a lockless
-helper, crash_get_memory_ranges_nolock(), for use there. The regular
-crash_get_memory_ranges() acquires the lock and calls the helper.
+On 9/20/26 7:56 AM, Peng Fan (OSS) wrote:
+> From: Peng Fan <peng.fan@nxp.com>
+> 
+> Convert open-coded if/else with set_bit/clear_bit to the assign_bit API.
+> 
 
-Cc: stable@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Baoquan He <baoquan.he@linux.dev>
-Cc: Mike Rapoport <rppt@kernel.org>
-Cc: Pasha Tatashin <pasha.tatashin@soleen.com>
-Cc: Pratyush Yadav <pratyush@kernel.org>
-Cc: Dave Young <ruirui.yang@linux.dev>
-Cc: AKASHI Takahiro <takahiro.akashi@linaro.org>
-Cc: Will Deacon <will@kernel.org>
-Cc: James Morse <james.morse@arm.com>
-Cc: Palmer Dabbelt <palmer@rivosinc.com>
-Cc: Youling Tang <tangyouling@kylinos.cn>
-Cc: Huacai Chen <chenhuacai@kernel.org>
-Cc: Breno Leitao <leitao@debian.org>
-Fixes: 8d5f894a3108 ("x86: kexec_file: lift CRASH_MAX_RANGES limit on crash_mem buffer")
-Fixes: 3751e728cef2 ("arm64: kexec_file: add crash dump support")
-Fixes: 8acea455fafa ("RISC-V: Support for kexec_file on panic")
-Fixes: 1bcca8620a91 ("LoongArch: Add crash dump support for kexec_file")
-Link: https://sashiko.dev/#/patchset/20260729031235.2840255-1-ruanjinjie%40huawei.com
-Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
----
- arch/x86/kernel/crash.c    |  9 ++++++++-
- include/linux/crash_core.h |  2 +-
- kernel/crash_core.c        | 35 ++++++++++++++++++++++++++++++++++-
- 3 files changed, 43 insertions(+), 3 deletions(-)
+Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
 
-diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
-index f34fa8dba028..7fa139725514 100644
---- a/arch/x86/kernel/crash.c
-+++ b/arch/x86/kernel/crash.c
-@@ -447,6 +447,7 @@ unsigned int arch_crash_get_elfcorehdr_size(void)
-  */
- void arch_crash_handle_hotplug_event(struct kimage *image, void *arg)
- {
-+	struct crash_mem *cmem = NULL;
- 	unsigned long mem, memsz;
- 	unsigned long elfsz = 0;
- 	void *elfbuf = NULL;
-@@ -461,11 +462,16 @@ void arch_crash_handle_hotplug_event(struct kimage *image, void *arg)
- 	    image->hp_action == KEXEC_CRASH_HP_REMOVE_CPU)
- 		return;
- 
-+	if (crash_get_memory_ranges_nolock(&cmem)) {
-+		pr_err("Failed to get crash mem range\n");
-+		goto out;
-+	}
-+
- 	/*
- 	 * Create the new elfcorehdr reflecting the changes to CPU and/or
- 	 * memory resources.
- 	 */
--	if (crash_prepare_headers(IS_ENABLED(CONFIG_X86_64), &elfbuf, &elfsz, NULL)) {
-+	if (crash_prepare_elf64_headers(cmem, IS_ENABLED(CONFIG_X86_64), &elfbuf, &elfsz)) {
- 		pr_err("unable to create new elfcorehdr");
- 		goto out;
- 	}
-@@ -501,6 +507,7 @@ void arch_crash_handle_hotplug_event(struct kimage *image, void *arg)
- 	pr_debug("updated elfcorehdr\n");
- 
- out:
-+	kvfree(cmem);
- 	vfree(elfbuf);
- }
- #endif
-diff --git a/include/linux/crash_core.h b/include/linux/crash_core.h
-index a740757dff35..1296a9b29974 100644
---- a/include/linux/crash_core.h
-+++ b/include/linux/crash_core.h
-@@ -63,7 +63,7 @@ extern int crash_prepare_elf64_headers(struct crash_mem *mem, int need_kernel_ma
- extern int crash_prepare_headers(int need_kernel_map, void **addr,
- 				 unsigned long *sz, unsigned long *nr_mem_ranges);
- extern int crash_exclude_core_ranges(struct crash_mem **cmem);
--int crash_get_memory_ranges(struct crash_mem **mem_ranges);
-+int crash_get_memory_ranges_nolock(struct crash_mem **mem_ranges);
- 
- struct kimage;
- struct kexec_segment;
-diff --git a/kernel/crash_core.c b/kernel/crash_core.c
-index b638ad0e5ba2..43b21de1d64a 100644
---- a/kernel/crash_core.c
-+++ b/kernel/crash_core.c
-@@ -7,6 +7,7 @@
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
- #include <linux/buildid.h>
-+#include <linux/device.h>
- #include <linux/init.h>
- #include <linux/utsname.h>
- #include <linux/vmalloc.h>
-@@ -317,12 +318,33 @@ int crash_exclude_core_ranges(struct crash_mem **cmem)
- 	return 0;
- }
- 
--int crash_get_memory_ranges(struct crash_mem **mem_ranges)
-+/**
-+ * crash_get_memory_ranges_nolock - Collect crash kernel memory ranges
-+ * @mem_ranges: Output parameter for the allocated crash_mem structure
-+ *
-+ * Gathers the system memory ranges to be included in the crash kernel's
-+ * ELF core header, excluding the crashkernel reserved region and other
-+ * architecture-specific areas.
-+ *
-+ * Context: Caller must hold device_hotplug_lock.
-+ *
-+ * Return: 0 on success, in which case *@mem_ranges points to a newly
-+ * allocated struct crash_mem that the caller must free with kvfree().
-+ * Returns a negative error code on failure.
-+ */
-+int crash_get_memory_ranges_nolock(struct crash_mem **mem_ranges)
- {
- 	unsigned int max_nr_ranges;
- 	struct crash_mem *cmem;
- 	int ret;
- 
-+	/*
-+	 * Callers must serialize against memory hotplug by holding
-+	 * device_hotplug_lock, otherwise the memblock iteration below can
-+	 * race with memblock_double_array() and read freed memory.
-+	 */
-+	device_hotplug_lock_assert_held();
-+
- 	max_nr_ranges = arch_get_system_nr_ranges();
- 	if (!max_nr_ranges)
- 		return -ENOMEM;
-@@ -351,6 +373,17 @@ int crash_get_memory_ranges(struct crash_mem **mem_ranges)
- 	return ret;
- }
- 
-+static int crash_get_memory_ranges(struct crash_mem **mem_ranges)
-+{
-+	int ret;
-+
-+	lock_device_hotplug();
-+	ret = crash_get_memory_ranges_nolock(mem_ranges);
-+	unlock_device_hotplug();
-+
-+	return ret;
-+}
-+
- int crash_prepare_headers(int need_kernel_map, void **addr, unsigned long *sz,
- 			  unsigned long *nr_mem_ranges)
- {
--- 
-2.34.1
+> Signed-off-by: Peng Fan <peng.fan@nxp.com>
+> ---
+>   arch/powerpc/kvm/powerpc.c | 5 +----
+>   1 file changed, 1 insertion(+), 4 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+> index 9194cf492d1c..a567b63a5f1f 100644
+> --- a/arch/powerpc/kvm/powerpc.c
+> +++ b/arch/powerpc/kvm/powerpc.c
+> @@ -2210,10 +2210,7 @@ int kvm_vm_ioctl_enable_cap(struct kvm *kvm,
+>   			break;
+>   		if (!kvmppc_book3s_hcall_implemented(kvm, hcall))
+>   			break;
+> -		if (cap->args[1])
+> -			set_bit(hcall / 4, kvm->arch.enabled_hcalls);
+> -		else
+> -			clear_bit(hcall / 4, kvm->arch.enabled_hcalls);
+> +		assign_bit(hcall / 4, kvm->arch.enabled_hcalls, cap->args[1]);
+>   		r = 0;
+>   		break;
+>   	}
 
+
+Just ensure you have covered all such possible open coding where applicable
+in arch/powerpc/.
 
