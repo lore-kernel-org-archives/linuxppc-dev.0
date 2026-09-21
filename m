@@ -1,73 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-27833-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27834-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC27AC982E1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2026 09:09:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 717D8C982E1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2026 09:13:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hpHVp2kv4z2yfH;
-	Mon, 21 Sep 2026 19:09:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789981794;
-	cv=none; b=HVbzsbOVCJ9iz0n21jnjrXgoaJOBdt0WfA4n6qC4izJMDlF3Xtyrks5uBoFDgzEMZRDSm1fWR5KTjwBFwWNpq2Zapqyjv16dBlyF/MEZZNh8b8qNwfwU+s7hUefdmBUagwlNxbbu8u5vdx2IUaq1E13kau+tud30abTZ7UcUIw4dZn3BSMVcKaT5AdNYkgp3hitFDNK8GhAHQrbYIJndXJfPmZnB6cZQ/SPEyRR26b/RjJeclHT1GUkW3t5lXqpCZj2ZBxDEXG9r+VpvGdhvjy8mM/VVWyODdYKhGch+SKxUEoq0FZKHVlZY1V/TJ9+wiaeyd/39Mk9g7YcDpw/Exw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hpHZT02VRz2y71;
+	Mon, 21 Sep 2026 19:13:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789981984;
+	cv=none; b=TsXVM3Jf4Rygp/tm1k/RNefJ3ziZW9sGZrjn4WNmMjHt0rWp6vFDPPZrSVjhUKm4rGVloLqn/+RWiaqfWsm8uaeILe2pMgZFUaaV+9knTuBbQHoBGf9pjtgSpu03dEQ4sU52aFcUoo6CR/QszPCjFC0SmmYBUshLhUt8hivg9T8M0EmVSPArnwWRKp2pVUlQD/0znzL2CzrDezrlp8QiK1DQlHPaZ5dACEQjVJ1u96pfuxuoqSBheewgJtJGV4Isg9/Uvs2NihH05Badczg7DKH+719lZE5TSw4GgPVoW/Ks0x3XNB5qhGjEdk34vdeGKfJ1WG1DUI1NZvvPdVCerg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789981794; c=relaxed/relaxed;
-	bh=4ZIsYWUVn7guBQOBOTbKiEq7QO0teNhYsfMnJtt9g80=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=TxSCMjrlXcNkKd9wUEogBR0MHI2Hy7q3QTG8JKpxqjo6debb/BxP+ULMQ80dlw+w6ndwEA9wEpxbYemCLcwvZ99QfxqqG6N+dPG1Jz6RS1u5wRAiLhhGuUnFQJsDIVhftLKi9Vu8ncaIfFyrvO34Fb6yRPyIFQ3H7QQkzGQPhqiV/Avoa21yAOQCGTiYJK1B7UrRMDd0SQKs8HtpOwtjC7hpdcw+xYeAfpu5QhKacI1VTQGk0EQ6DBXEuio6uPFz0avOSqvEpg4VZrLil55LVKrhaFqiGpiwbr4orbRzh79dScA/swmRFLRoCjkdfHFQnLWDYk47fnWciZsWTIw4ZQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lDpJ5m46; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1789981984; c=relaxed/relaxed;
+	bh=/WfwSj0SUsP3uLadBypCB3UfgoCzQVYDLKWPCUa5wNE=;
+	h=From:Subject:To:Cc:In-Reply-To:References:Content-Type:Date:
+	 Message-Id; b=b379W2VvDYyl+y+90HliBZXzKhPeoUwc852Z4mHuUbO+3Og46nKcbW+WpLcdEPGeanMDNlEZ6A9K+KqlN6HjSnRDJdEt66z0ztdehnWHxR66Uti5wTCjwY77jBo9BBVESSyyxt3d0qfa6eXIds14rQ37u9/nvRmJzwafmR1SaWuG+Pr+nSR3yrKMy6cnLuvyqgvRBxxL/J9NEI2kf9Pds5/DTDtC/l2Oksmibh5phqDwaPP2t1WYa48XJ2wHvBRL2XIu4wu0zyoh6SRMIupA/0jAuiXNidWzIi3lf4mfN9Y/6myeg+xKLR9qyEZe8rEGHbRyaPw74naIWu7nSeufkA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=fail (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=B1I5zBeY reason="signature verification failed"; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashiko-bot@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lDpJ5m46;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=B1I5zBeY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashiko-bot@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpHVn3jHRz2yK7
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2026 19:09:53 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68L7ZZmB3856783;
-	Mon, 21 Sep 2026 09:09:42 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=4ZIsYW
-	UVn7guBQOBOTbKiEq7QO0teNhYsfMnJtt9g80=; b=lDpJ5m46AV/NUrV8otXfLy
-	IVe0gEViJQF82mSfydssR1fcRXPZTkh0V2d5sqRX4gBqRArkYXDxuQr62Hc9FYp1
-	qa0bGiuIxmHxFaOpl2u1sa5m8vGcCM1QPpx/TsWYxNZz/U/ovsM1uwkRu82XDSRf
-	LqK9kW6SzxXLieTnRhvn1h+iSJdR0BulWIdIAEWef7L+wzadaB6ytts2cFnW6exc
-	c0msvcZmr8UCLLwcQxfLNRgGnJFL9BKqPXIa5ZbyyEhuwC0TEMvH8OpK34uP0FK2
-	cpB/yjlrtYP2xDOz1NqhzfP47Tip4FZHA0J25jAJU3n5vugeLX893alrC7SR2Xfg
-	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gskgq7fv6-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 21 Sep 2026 09:09:41 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68L7HUsR924413;
-	Mon, 21 Sep 2026 09:09:40 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gt4qq4r54-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 21 Sep 2026 09:09:40 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68L99c6329426126
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 21 Sep 2026 09:09:38 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8709520040;
-	Mon, 21 Sep 2026 09:09:38 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E07382004B;
-	Mon, 21 Sep 2026 09:09:35 +0000 (GMT)
-Received: from [9.124.208.199] (unknown [9.124.208.199])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 21 Sep 2026 09:09:35 +0000 (GMT)
-Message-ID: <aed4e6a7-1678-4e27-9091-d621d3fe1535@linux.ibm.com>
-Date: Mon, 21 Sep 2026 14:39:34 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpHZS0lDwz2xk7
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2026 19:13:04 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 85213600D1;
+	Mon, 21 Sep 2026 09:13:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5FEE01F00893;
+	Mon, 21 Sep 2026 09:12:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789981981;
+	bh=/WfwSj0SUsP3uLadBypCB3UfgoCzQVYDLKWPCUa5wNE=;
+	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
+	b=B1I5zBeYLORpIuyWyUAUWC0Uh4n7bfpfDQAmO+S9O5D57CCdmuhZF6EHDQKvq/cvP
+	 10Ma/TXixn8nltQYxWYicB+x3A+NX/4RaAo1K7Tx0Tjx1iSzhDndqP8qwl+cccnN/m
+	 VUHXD5OXwJQ5Jm0HeG0etX2xLkzEPw0djSKWw++95ZnUnQnTc45gqQe36GKIoTpmuF
+	 v//DReeWe2iedyVaignylzPCkPZ0it/t+3xsjyTinWBvdvSulYQ1WtQtZThfTYfS05
+	 U5nZGjbVM8cX0R7Lh1TWDvzVTZbekKD/d0sm+/dQnWzMHFE+oITkFOBWsGfA/tHjUv
+	 j7eilNaaRHp+Q==
+From: sashiko-bot@kernel.org
+Subject: Re: [PATCH v6 09/14] x86/crash: Fix massive out-of-bounds write on
+ 32-bit Highmem
+Reply-To: sashiko-reviews@lists.linux.dev
+To: kees@kernel.org, rafael@kernel.org, chao.gao@intel.com,
+	pasha.tatashin@soleen.com, mclapinski@google.com, robh@kernel.org,
+	will@kernel.org, bp@alien8.de, piliu@redhat.com,
+	catalin.marinas@arm.com, dave.hansen@linux.intel.com,
+	bgwin@google.com, linux-arm-kernel@lists.infradead.org,
+	rppt@kernel.org, gregkh@linuxfoundation.org, yeoreum.yun@arm.com,
+	hbathini@linux.ibm.com, coxu@redhat.com, chenhuacai@kernel.org,
+	sshegde@linux.ibm.com, tangyouling@kylinos.cn,
+	linuxppc-dev@lists.ozlabs.org, pratyush@kernel.org, graf@amazon.com,
+	mingo@redhat.com, driver-core@lists.linux.dev, thuth@redhat.com,
+	kernel@xen0n.name, vishal.l.verma@intel.com,
+	sourabhjain@linux.ibm.com, kai.huang@intel.com, chleroy@kernel.org,
+	akpm@linux-foundation.org, hpa@zytor.com, guodongtai@kylinos.cn,
+	james.morse@arm.com, eric.devolder@oracle.com, ritesh.list@gmail.com,
+	takahiro.akashi@linaro.org, mark.rutland@arm.com,
+	maddy@linux.ibm.com, mpe@ellerman.id.au, tglx@kernel.org,
+	ruirui.yang@linux.dev, leitao@debian.org, lin@lists.ozlabs.org,
+	ux-kernel@vger.kernel.org, zhangtianyang@loongson.cn,
+	me@linux.beauty, x86@kernel.org, seanjc@google.com,
+	loongarch@lists.linux.dev, baoquan.he@linux.dev, npiggin@gmail.com,
+	palmer@rivosinc.com, "Jinjie  Ruan" <ruanjinjie@huawei.com>,
+	maqianga@uniontech.com, jbouron@amazon.com, liukexin@kylinos.cn,
+	dakr@kernel.org
+Cc: kexec@lists.infradead.org, ruanjinjie@huawei.com
+In-Reply-To: <20260921090450.807575-10-ruanjinjie@huawei.com>
+References: <20260921090450.807575-1-ruanjinjie@huawei.com>
+ <20260921090450.807575-10-ruanjinjie@huawei.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Date: Mon, 21 Sep 2026 09:12:57 +0000
+Message-Id: <20260921091258.5FEE01F00893@smtp.kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,86 +91,41 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] KVM: PPC: use assign_bit() where applicable
-To: "Peng Fan (OSS)" <peng.fan@oss.nxp.com>
-Cc: linux-kernel@vger.kernel.org, Peng Fan <peng.fan@nxp.com>,
-        linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-References: <20260920022618.3145649-1-peng.fan@oss.nxp.com>
-Content-Language: en-US
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-In-Reply-To: <20260920022618.3145649-1-peng.fan@oss.nxp.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=G+OJgNk5 c=1 sm=1 tr=0 ts=6ab0f455 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=8AirrxEcAAAA:8
- a=VnNF1IyMAAAA:8 a=Nid3tJT5lt5-er1BLS4A:9 a=QEXdDO2ut3YA:10
- a=ST-jHhOKWsTCqRlWije3:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTIxMDEzMCBTYWx0ZWRfXw9Z+eF+SZmPD
- +Qoaa60PKvIkNklTODfHdllh5WfKewFYmCLfylfWncUtePFdB8b5akdHv5pu/cE3/K2QipcdMNL
- C2B9s8FXFlb4T1zFZYXX/zsxUJ91OJFk7CeEOJ1S1kc0uTVJUBrjgw52vLhjTD9AX4kCfBnc1S2
- 6PO86dtSWTu2IZsrj25XHK43cynoVKt81mbBjlGSzgohCo44bY1mPI9v7dFDRRzHU9lTkLxm2+p
- Us4NSJyfKodPMJHDe7yXtNZdBeEFWvM9uW14bZh/O1EgTe9csU+dUGwdF2Dhsv+3qXNK/iM/H/P
- x+vXk12Fnpii0cUwfSqfhOz8y6DLvzzYAJ+4m6NKC/YTw6OCohxi5ftQaQkmpqAsJQQDGhA2Y8R
- tlbwRgRXhZ9ahAN+bPbJWWvMywAVhjcbkQoJYKM5WNJWtVIIjvzicV+BDBIUSJMkpTu7rdLx2ZT
- 932rfYPYwLkfDLzb/Tw==
-X-Proofpoint-ORIG-GUID: 26wd-gAuxDGHB4yJx885WrLhHeVZ4hEv
-X-Proofpoint-GUID: vVT54iSS5N2yMyLnpAkFyrMWLjO-j_IU
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTIxMDEzMCBTYWx0ZWRfX0NbGaXikVMbw
- yfvcadrd2EEx9jtjqCqWhhbKD0FPcPn0T/iAJr16KfRCrwWxZmNj/pWBFlrTg7K8vy6255Idkb3
- KNkBDKLC85yvaQVePk91/dG30rZIjjI=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-21_03,2026-09-16_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 adultscore=0 phishscore=0 lowpriorityscore=0 impostorscore=0
- bulkscore=0 priorityscore=1501 clxscore=1011 spamscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609210130
 
-Hi Peng.
+> On 32-bit x86 systems with HIGHMEM, kmap_local_page() only maps a single
+> 4KB page. However, the elfcorehdr segment can span several pages (up to
+> hundreds of kilobytes).
+>=20
+> The original code blindly copies 'elfsz' bytes at once via
+> memcpy_flushcache(), overwriting adjacent fixmap entries or critical
+> virtual addresses.
+>=20
+> Fix this by copying the new elfcorehdr page by page.
+>=20
+> Cc: Thomas Gleixner <tglx@kernel.org>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Borislav Petkov <bp@alien8.de>
+> Cc: Dave Hansen <dave.hansen@linux.intel.com>
+> Cc: "H. Peter Anvin" <hpa@zytor.com>
+> Cc: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
+> Cc: Vishal Verma <vishal.l.verma@intel.com>
+> Cc: Baoquan He <baoquan.he@linux.dev>
+> Cc: Chao Gao <chao.gao@intel.com>
+> Cc: Sean Christopherson <seanjc@google.com>
+> Cc: Eric DeVolder <eric.devolder@oracle.com>
+> Cc: Hari Bathini <hbathini@linux.ibm.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
+> Cc: stable@vger.kernel.org
+> Fixes: ea53ad9cf73b ("x86/crash: add x86 crash hotplug support")
+> Link: https://sashiko.dev/#/patchset/20260907125404.922123-1-ruanjinjie%4=
+0huawei.com
+> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
 
-On 9/20/26 7:56 AM, Peng Fan (OSS) wrote:
-> From: Peng Fan <peng.fan@nxp.com>
-> 
-> Convert open-coded if/else with set_bit/clear_bit to the assign_bit API.
-> 
+Sashiko has reviewed this patch and found no issues. It looks great!
 
-Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+--=20
+Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20260921090450.8075=
+75-1-ruanjinjie@huawei.com?part=3D9
 
-> Signed-off-by: Peng Fan <peng.fan@nxp.com>
-> ---
->   arch/powerpc/kvm/powerpc.c | 5 +----
->   1 file changed, 1 insertion(+), 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> index 9194cf492d1c..a567b63a5f1f 100644
-> --- a/arch/powerpc/kvm/powerpc.c
-> +++ b/arch/powerpc/kvm/powerpc.c
-> @@ -2210,10 +2210,7 @@ int kvm_vm_ioctl_enable_cap(struct kvm *kvm,
->   			break;
->   		if (!kvmppc_book3s_hcall_implemented(kvm, hcall))
->   			break;
-> -		if (cap->args[1])
-> -			set_bit(hcall / 4, kvm->arch.enabled_hcalls);
-> -		else
-> -			clear_bit(hcall / 4, kvm->arch.enabled_hcalls);
-> +		assign_bit(hcall / 4, kvm->arch.enabled_hcalls, cap->args[1]);
->   		r = 0;
->   		break;
->   	}
-
-
-Just ensure you have covered all such possible open coding where applicable
-in arch/powerpc/.
 
