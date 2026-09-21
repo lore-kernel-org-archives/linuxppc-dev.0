@@ -1,45 +1,96 @@
-Return-Path: <linuxppc-dev+bounces-27860-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27861-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E901C982ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2026 15:46:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6006DC982E6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2026 16:25:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hpSJP0Qd2z2yfH;
-	Tue, 22 Sep 2026 01:46:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790005588;
-	cv=none; b=nL0l6AF+w43wwBImW+B+xH9Kpzks8cnuSkPtMUJbmLH+DZPGinYx6nCs1MDMvWfA3rv+e93BSoGIVhgM1pi6hixYNCIWhd3xp8f9pj2FGwlhqbKsH2z1sWxtr261RTL8kI5Pqdk49HvsqhT1z68zaP1kb/cZvESTIiHF8Pj6bYu3iwXhHaJ5IHKVD0z2kjXfRFNff9qFb9jOjzT6E41E5hrdUJFyoeI+9Z0oKJFnGMCWuvkMOlsn22+TSHOfNz1fu8m77G/T7QpVzFqxdK59vBhzWgtpgBZcy0w0BzBEidBDUhK3mzFo4uxjz141shwuySLucbL9XLYqpxC7oPAXbQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790005588; c=relaxed/relaxed;
-	bh=dSPBjOWn5CsFPyDGmxFlZSgrzmDQuJdpSbhAoe0g5MU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=cXEeKP9QzxkgA0YThl4m+M/t/CDeCupPp2XEsL/ldyJgNoKRF7IesD4GbV2zyBjpM7BAjGOCaN34AQ6mYYOVZT7eWnpDjYCtq2SrkuzZr7aOCAKmrDc/UW/QltA947SkWH/T8+ReFWgPwKL/TfB68Md5QsW6orSVuU3kNOyZg3hBeh9bXKwc1M/bAOmwqxVkikfNASQOrw6UWaLEDEKTmu6HIR6iyUbXQZZePhWPDwWUVoAd80VAt89F8Oj+mA3e5nRlKJWm4m9Kn+Pem1uhDJmrzdgfcdWEirZ89KGY2l9a38FfxzBelYK9p3NxQXQ1r5chTh/9Qy0BwB+ORfQkkA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=EoC0cuIQ; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=robin.murphy@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hpT9037kWz2yfH;
+	Tue, 22 Sep 2026 02:25:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:41::10" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790007908;
+	cv=pass; b=HkrFrkUi0NgDP61nI2NBFFl7treL9eoUG+4Y1oaVFcGAz9Lfg/e/lsPGqIhXQisil/Hjt0q4ujKuv1hfZibKYmyoOXsYlFlFRgeg5aaun1ni8knRZw/WvFQoVtCdQRpzJPZpO+xpLkJ4rxozoflsH1BMQzZAFlEZnQHnCfm8ygfZRrni5woP0roQaBVINBLZ5Jm5WlrIIBceoeamIIfDdA2MhZwQub1WiIomdd4erLqJdp1tZxpGob0gMJl21f3+G8VvmrCD/5ucowutsdHM/kUgJMs9bz5tTvHN/WI0oewJSU08puQxU5nPYX/CVDc/vNQV2bKUrxotxYWUdlxIWQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1790007908; c=relaxed/relaxed;
+	bh=FscOTKf6GX9LsYtYTRZ38iEWAQ8+A7NhnQp2GLbb0QM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=UreV+74sBGptj0TcAeRcq+81LBwF+M1nWToZJE0MWZZvf/vNATfCaahatXf9NKcWQYEsiG2UH0bFYT5/ow3Crzp6hlF9Fy4fGaXIZr6vraQmVict5k3FOfa3bnUB2o82rDdelnr3nAGbKm4J5+zPdOn+OxbWSkCopnayWHPbYIKtqcIf2OGARAsWh7WQaOGhHqqx2bZl9ipdMnYKBlpYh55NGWxRGbTq0ReNtqR8vxmxhBWjbqxLeRoU0bJd4y3xbBzTyONncQt15zgvbp//ykpEKj2qYSanj7vCUmfQ/fyJxKrsjAUdjvfvYjt7JshyRZ/eVqD6HohNgn0VkZbxcg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=hNHMtzE8; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:41::10; helo=mail-yx2-x10.google.com; envelope-from=sidchintamaneni@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=EoC0cuIQ;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=hNHMtzE8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=robin.murphy@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hpSJM5Yqrz2xBK
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 01:46:27 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2CE1C176C;
-	Mon, 21 Sep 2026 08:45:52 -0700 (PDT)
-Received: from [10.2.212.23] (e121345-lin.cambridge.arm.com [10.2.212.23])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B5CD83F632;
-	Mon, 21 Sep 2026 08:45:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1790005555; bh=cIKZrmFNDgxQa0qqmau+ZqQxkkl6FQkDRcq1dC9miXU=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=EoC0cuIQz6hLQwqx0QF1eocGbFHcONiXNcdsw4wKNlOhOiOhVhiSZSeViIz1bFPb7
-	 muOHOKkL6n9D40Sc0M8nsRMGJOPM/9pqWCmEHDGay46C0wCozVnJkI6euIIJu4A7eT
-	 wCKvl5TAYjrxpCiY2Dw1a5LcGTlG38H10QNCNR8Y=
-Message-ID: <94630348-d295-4424-9f6c-0dc3b8704077@arm.com>
-Date: Mon, 21 Sep 2026 16:45:36 +0100
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:41::10; helo=mail-yx2-x10.google.com; envelope-from=sidchintamaneni@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yx2-x10.google.com (mail-yx2-x10.google.com [IPv6:2607:f8b0:4864:41::10])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpT8z1FBzz2yPR
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 02:25:05 +1000 (AEST)
+Received: by mail-yx2-x10.google.com with SMTP id 956f58d0204a3-67109935888so3091353d50.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2026 09:25:05 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1790007903; cv=none;
+        d=google.com; s=arc-20260327;
+        b=b3MlaZxG+G9o8AGG9kkqlH9E1EbGNYVA/jJraQl2lM8GZLCldgtZ0/mfZ9ihq3EPJQ
+         3u1hIKf2bpJY22zB7NSnHkidPWUZvsDpQxsognQH5A507djNWku7NfqgZvMKsRwfrVrB
+         UgSw4/gkg9j6uaGQs1u//pJ3faL3RG7g2FTdhpbibOfxHMobW806F/jCXP8fTXg4h1ov
+         EEgD4D+TeaMx9TOF4ZC/hnQ1ZDJT3IgpnRr+eU7BGCWj7XOpb3k31enVGnu5ug0P6bMa
+         jdR7xpE6bhW6+CezqMCFRwR5KEji3Jynqn6nO3pbxXz3CacSK3oslCRFDvzg1C5RQFNm
+         uMkQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=FscOTKf6GX9LsYtYTRZ38iEWAQ8+A7NhnQp2GLbb0QM=;
+        fh=6F5uc0nDfm6BODUHKDVM9lZTMsS/uBgBFogMcR563bk=;
+        b=YMwifH9LskBhVWnd8kAV2V4jZFa/G+I6I3eUo8S9tBZ8q3+2hQ/XUZxo+O/Y85SzSv
+         mfthzkEhW/2Ukgy2X7L2JmFfSfMMIBXQmxhH6cV9kTuQMIDNA6znGtailo0/QZs+Ma35
+         jfixeTqMt1PWbImtRYwh+oqHFt5UdYOgDpZnDySHG9qwMQSScXChCKrBO3DH8GPjwTDs
+         IVGXY94/mccVygc5fVHRfQiZC1RzFW1Y7bS9u4yXD+liKYX7r6u7QEUfvSkS7+ME+kq4
+         k5AjkwEaOU1XS6TLvVIrVTEm9sqTgdjllRvCtX2kdHOrDTzNq4B3+qIVScLlVTSDKtpz
+         kNFg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790007903; x=1790612703; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=FscOTKf6GX9LsYtYTRZ38iEWAQ8+A7NhnQp2GLbb0QM=;
+        b=hNHMtzE8JvhQ7ffDSvYDdx/erWj7XWWV3TJkXLzFN+/3JgPodVrpNPhXXxNrrP1lA8
+         kTjwlc9av5/H8ASJINFoT30zBJ6nFw8FJFPd0kQtzx9c3OH3SKfshQYU4WXncXTQhf5b
+         LRloDRbFf5m7LmsN7eRrYkzGQkk+PsrXcX2QMmpyrUqFCHFgzVZuBNFpSKHYgJJFc8w+
+         i6ycFs4Hx8CWyh22KnTsxXqFzc6cOTtsJZhxqgK5lrw4tylnrXhb4X038GsYHcw+W7Wv
+         ZQOW3//M3w4+uLC5pUb8VEbo9XIA4qpDdC2sz9oH4uEgOMYIlaKr4IAIKSterSKhRoff
+         weyA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790007903; x=1790612703;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=FscOTKf6GX9LsYtYTRZ38iEWAQ8+A7NhnQp2GLbb0QM=;
+        b=Um5/V9VVPNSVMu6wqui7DH1Yx0PYWVr9bGJawF49IHL9UW5tzPMue2WEGtEVm0vKxr
+         qtNw8We0NtO3CjFx+65aJxpOo0HCmBThe6XPfKO/ParVGHqKvjANSOevh9aCg//a67bO
+         R8SP1o8sCL/QXoz3DnLt9VlXLIf8vUnfAFx7ommjA75bG86arkdIhhLNeOJd8WULTur0
+         B3dKymdVwL+8QsvhwHUEymePrCfQjZwHgaPauNZjak3+mjbPaNw8VEYnMKQ9yPpxdC63
+         nVrEovYKMdNmMZ/+QEautCVxrRLPje/qGPa38XXCVBdj9cYNtCVUb9iRjuF7BKgsaHLL
+         /2Vw==
+X-Forwarded-Encrypted: i=1; AKwUvBzqtG8Xt3i40ebV1zW4NKo19Bf21RxhIzy3XBUtjzVcU0MDN9pvPG+BkbKhmPGNgGOsaC3Cc4Oy1/pWTew=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++m1Z48UTg86qR7EQof6GzuPnFlYGp9oHOzrZvXAmbiQ6t0E79dw
+	SnSpwkjnia9J8RBTS23pX2GNZDbkX+xIgv/uNPfWiR4lLwVvRHFi4d6JM9De5NderXOiTREHtUa
+	DuvKnnwy3i73txcPlub/GCq/zZEvHe3U=
+X-Gm-Gg: AYBFou3FcJOyiuQL9mbJciCz0MAcka1Ea0MNITyNl4NqUCUUuLg/XJa7t4PBwlax6H1
+	W6yIdHrWkTel0aqH1CGaaPnBUDAaV/piOlk+3T5GJ5882YA53xO25TVSLLet75Pz29yKSk9DItM
+	sWHd0OUbEsuD4SAp6mnnyaARtplCd27+aNQnI8Q/tymv98jkZrzQGHQ1iUWq/Mbc2BnJJ77i0Ho
+	2RjEIyHIbOoVwKog+/UVgvX4ACFRwMr91iH0eCih4fr3f/Z89wvW+5AM8sHKYfQbcJXknoAEFnk
+	BeLsPIH2MxDKzy1JI5DDbhnonfxilAkgstKyVBs6BTdzqvuk80tsS27qBLQ426YdAUlpgOF3jyp
+	2MWg39etD7O8nfY9M53CQD4dl/E7wFY2opG1DAv9+k5avn2UFtwQcyfrE3OOuBz3DSRzrwmdiu+
+	/59l+rcR9CoKQK+xifgIwPw3A=
+X-Received: by 2002:a05:690e:c4e:b0:672:be40:5eaf with SMTP id
+ 956f58d0204a3-672be40629dmr713487d50.54.1790007902724; Mon, 21 Sep 2026
+ 09:25:02 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,116 +104,98 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 2/6] dma: swiotlb: Track whether the pool size was
- explicitly set
-To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
- iommu@lists.linux.dev, linux-kernel@vger.kernel.org
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Will Deacon
- <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
- Steven Price <steven.price@arm.com>,
- Suzuki K Poulose <Suzuki.Poulose@arm.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Jiri Pirko <jiri@resnulli.us>,
- Jason Gunthorpe <jgg@ziepe.ca>, Mostafa Saleh <smostafa@google.com>,
- Petr Tesarik <ptesarik@suse.com>, Alexey Kardashevskiy <aik@amd.com>,
- Dan Williams <dan.j.williams@intel.com>, Xu Yilun
- <yilun.xu@linux.intel.com>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, Russell King <linux@armlinux.org.uk>,
- Huacai Chen <chenhuacai@kernel.org>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Jiaxun Yang <jiaxun.yang@flygoat.com>, Paul Walmsley <pjw@kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
- linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
- linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, x86@kernel.org
-References: <20260921063628.362078-1-aneesh.kumar@kernel.org>
- <20260921063628.362078-3-aneesh.kumar@kernel.org>
-From: Robin Murphy <robin.murphy@arm.com>
-Content-Language: en-GB
-In-Reply-To: <20260921063628.362078-3-aneesh.kumar@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <20260904195132.141068-1-sidchintamaneni@gmail.com> <DLKORFKGW8D8.XVSVVIH3Q6Q@gmail.com>
+In-Reply-To: <DLKORFKGW8D8.XVSVVIH3Q6Q@gmail.com>
+From: Siddharth Chintamaneni <sidchintamaneni@gmail.com>
+Date: Mon, 21 Sep 2026 09:24:51 -0700
+X-Gm-Features: AcwNN1VSvI94aKmDMDlc9C_7_9UyySkBSsqPddt2OeIwAs5C5fHNExBLC9Hitxg
+Message-ID: <CAE5sdEgLFFcsQ8rpraQ4L-EvppqxUn+=ZdHFgker2Wd--EGL6g@mail.gmail.com>
+Subject: Re: [PATCH bpf-next v1 0/7] Fix timed may_goto with private stacks
+To: Kumar Kartikeya Dwivedi <memxor@gmail.com>
+Cc: bpf@vger.kernel.org, Alexei Starovoitov <ast@kernel.org>, 
+	Daniel Borkmann <daniel@iogearbox.net>, John Fastabend <john.fastabend@gmail.com>, 
+	Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, 
+	Martin KaFai Lau <martin.lau@linux.dev>, Song Liu <song@kernel.org>, 
+	Yonghong Song <yonghong.song@linux.dev>, Jiri Olsa <jolsa@kernel.org>, 
+	Emil Tsalapatis <emil@etsalapatis.com>, Ihor Solodrai <ihor.solodrai@linux.dev>, 
+	Anton Protopopov <a.s.protopopov@gmail.com>, Puranjay Mohan <puranjay@kernel.org>, 
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
+	linux-riscv@lists.infradead.org, rlmenge@gmail.com, 
+	hargar@linux.microsoft.com, apais@microsoft.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 21/09/2026 7:36 am, Aneesh Kumar K.V (Arm) wrote:
-> swiotlb_adjust_size() must not override a pool size supplied through the
-> swiotlb= command-line parameter.
-> 
-> Currently, it determines whether a size was supplied by comparing
-> default_nslabs with IO_TLB_DEFAULT_SIZE. This fails when the user
-> explicitly requests the compiled-in default size, allowing the request
-> to be overwritten by automatic pool sizing.
-> 
-> Record whether swiotlb= supplied a numeric size and add
-> swiotlb_default_size_changed() to query that state.
-> 
-> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
-> ---
->   kernel/dma/swiotlb.c | 9 ++++++++-
->   1 file changed, 8 insertions(+), 1 deletion(-)
-> 
-> diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
-> index aa19e81ae544..8f86deb25be2 100644
-> --- a/kernel/dma/swiotlb.c
-> +++ b/kernel/dma/swiotlb.c
-> @@ -107,6 +107,7 @@ static struct io_tlb_mem io_tlb_default_mem;
->   
->   static unsigned long default_nslabs = IO_TLB_DEFAULT_SIZE >> IO_TLB_SHIFT;
->   static unsigned long default_nareas;
-> +static bool swiotlb_size_set __initdata;
+<SNIP>
 
-Nit: there are various ways and reasons that the size is set in general; 
-could this please be named something clearer, e.g. 
-"swiotlb_cmdline_size_set"?
+> I think we can keep this fix local to x86. Would be less churn in the end=
+.
+>
+> The problem is that x86 switches the BPF frame pointer from RBP to R9 for
+> private stacks, but the trampoline still uses RBP. arm64 and powerpc64 ke=
+ep
+> using X25 and R31 respectively for both stack modes, so their trampolines
+> already use the right frame pointer.
+>
+> Instead of changing the generic fixup, can we resolve the pointer in the =
+x86 JIT
+> when emitting the call to arch_bpf_timed_may_goto()? We already know whet=
+her
+> priv_frame_ptr is set there. R10 contains the offset passed through BPF_R=
+EG_AX,
+> so we can emit:
+>
+> /* Private stack */
+> leaq (%r9, %r10), %r10
+>
+> /* Normal stack */
+> leaq (%rbp, %r10), %r10
+>
+> Then remove the LEA from the x86 trampoline, as patch 2 already does.
+>
 
->   /**
->    * struct io_tlb_area - IO TLB memory area descriptor
-> @@ -269,6 +270,7 @@ setup_io_tlb_npages(char *str)
->   		/* avoid tail segment of size < IO_TLB_SEGSIZE */
->   		default_nslabs =
->   			ALIGN(simple_strtoul(str, &str, 0), IO_TLB_SEGSIZE);
-> +		swiotlb_size_set = true;
->   	}
->   	if (*str == ',')
->   		++str;
-> @@ -304,6 +306,11 @@ unsigned long swiotlb_size_or_default(void)
->   	return default_nslabs << IO_TLB_SHIFT;
->   }
->   
-> +static bool __init swiotlb_default_size_changed(void)
+make sense! I thought that the remaining arch's have a similar private
+stacks approach to x86. I'll give it a try and re-spin the patch.
 
-...and then do we really need a trivial wrapper function with the exact 
-same scope as the variable itself? (Plus the name is similarly confusing 
-as the places this is used are themselves potentially changing the 
-default size, if you consider "default" to mean "not explicitly 
-specified"...)
-
-With the naming improved,
-
-Reviewed-by: Robin Murphy <robin.murphy@arm.com>
-
-> +{
-> +	return swiotlb_size_set;
-> +}
-> +
->   void __init swiotlb_adjust_size(unsigned long size)
->   {
->   	/*
-> @@ -311,7 +318,7 @@ void __init swiotlb_adjust_size(unsigned long size)
->   	 * architectures such as those supporting memory encryption to
->   	 * adjust/expand SWIOTLB size for their use.
->   	 */
-> -	if (default_nslabs != IO_TLB_DEFAULT_SIZE >> IO_TLB_SHIFT)
-> +	if (swiotlb_default_size_changed())
->   		return;
->   
->   	default_nslabs = swiotlb_aligned_nslabs(size);
-
+> This gives bpf_check_timed_may_goto() the same address used by the genera=
+ted
+> loads and stores: the BPF frame pointer plus the counter=E2=80=99s stack =
+offset. For
+> normal stacks, we just move the existing calculation into the JIT. For pr=
+ivate
+> stacks, we use R9 instead of RBP, which fixes the mismatch.
+>
+> The existing save/restore of R9 around the call should stay. We also leav=
+e RBP
+> alone, since it is still needed for the native frame chain and unwinding.
+>
+> I haven=E2=80=99t tested this approach, so it still needs checking with b=
+oth normal and
+> private stacks.
+>
+> pw-bot: cr
+>
+> > Siddharth Chintamaneni (7):
+> >   bpf: Fix timed may_goto stack pointer for private stacks
+> >   bpf, x86: Use resolved pointer for timed may_goto
+> >   bpf, arm64: Use resolved pointer for timed may_goto
+> >   bpf, powerpc64: Use resolved pointer for timed may_goto
+> >   bpf, riscv: Use resolved pointer for timed may_goto
+> >   bpf, s390: Use resolved pointer for timed may_goto
+> >   selftests/bpf: Test timed may_goto with private stacks
+> >
+> >  arch/arm64/net/bpf_timed_may_goto.S           | 12 ++------
+> >  arch/powerpc/net/bpf_timed_may_goto.S         |  8 ++---
+> >  arch/riscv/net/bpf_timed_may_goto.S           | 13 ++++----
+> >  arch/s390/net/bpf_jit_comp.c                  |  6 ++--
+> >  arch/s390/net/bpf_timed_may_goto.S            |  8 ++---
+> >  arch/x86/net/bpf_timed_may_goto.S             |  6 ----
+> >  kernel/bpf/fixups.c                           | 19 ++++++------
+> >  .../bpf/progs/verifier_bpf_fastcall.c         | 30 ++++++++++---------
+> >  .../selftests/bpf/progs/verifier_may_goto_1.c | 17 ++++++-----
+> >  .../bpf/progs/verifier_private_stack.c        | 19 ++++++++++++
+> >  10 files changed, 75 insertions(+), 63 deletions(-)
+> >
+> >
+> > base-commit: d761934c9483ecde93fe99d8705282f716dfee50
+>
 
