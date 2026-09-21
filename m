@@ -1,70 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-27866-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27867-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04BA9C982ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2026 17:44:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B61C3C982FB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2026 17:45:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hpVx05sL1z2ygK;
-	Tue, 22 Sep 2026 03:44:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::448"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790012692;
-	cv=none; b=K1kka65ITyzqIvj57T5O78lLkw2bIXAdmYAfRMxjPTZQQu2VsPT+5CYQ7UZMJuC6LYQWdfEpkTtqbFbUrrW+QCmbQH24n0RMAXV7/HBKufuddWW9YluvPS6uAWG5g590B2IbHX1VN6G3tHTww8/RAzhrSY2AJ7BFxbbX0nQ/ThHM8zu9jXKufqaCgbYcN0Ox1nnZFHsxyfJ0LSrAtvnplUDksw0NbuVclK343enJNekaloBplLURyi2oful0sTpuqwmxIPYBwJCsbDY1u3UTq+EYNN6DOlraueViNHN6CFaGu6H/osu+ZvPt7lPJ+Jir4GA+zvxkC6ArQysV5fqKPw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hpVx131ZLz303F;
+	Tue, 22 Sep 2026 03:44:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::647"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790012693;
+	cv=none; b=ePqFdIhPK7JHS7etvP7rsygBqYWyr5wGOR/ygjNqILPb6miWTqCgyaDFhaxkrGiKEwHvoGS4e6RvITHlliJrwDn7NxmF7xQwX4zQocv7lynCd+eB5bSs5cr2Hufu3u7TeDb7VgZFepr3c3/slD6m56ounyV7lyfAWpD22Zd4+vJ8mlJYs4sT4sjekoG2NH+5fBHn+0XTPSUv1pNtSavOYrX1Y4te+EJr6BF2xtjS+yzp3i5/prpnFQfuMK8cHry0Bmjq5tL/qQYbAX1ROYRU6DTjfpbkskzOREMHUcrfyTKuiWvJ0Xns1FN21Gv/rYGo1EF49fzXyrHjpPGxkA7Vqg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790012692; c=relaxed/relaxed;
-	bh=ZLfRYJewP8aR3Y4V2zbyCdDW63inecBdjfc5u4aaKpU=;
+	t=1790012693; c=relaxed/relaxed;
+	bh=Hyb3zhkpLvcha2XPZl3y4VqrXuYFCx4NQzeWMijbr/g=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=j/ku9BCW/qYH1Ip07aD0dSYJbfVBaxVjX9MppEI6PszEKwpBdoFofR/tbXAm/BFtQ1IvvXYdPOSIDUO3LkfHF5XA5BdNAfW5ibckz1H339uo2Wp3b4MeRWS2rkNMYZHavUbM2rWY+9v7PiSYf6yUhJuo5+1WRU0ocOvX7heBYy5eNW1RRNjiLAAh4uiV8Cv4Ay28+h5MyhNLH18JW0HID5FV5JCWGGTC9cJoPNkjRNrYhlgBNkPZeM5VkhN3/JiY6uUGwp8OUx6OFOjDAyrHz3i/cBd6r3DlpT6tQbfxIJRaby1mIwkciai0HP0TdR8ZcBGdYdUw50rCDoanl5FTlg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=sHQH0gKm; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::448; helo=mail-pf1-x448.google.com; envelope-from=3eg2xagykda05rn0wpt11tyr.p1zyv07a22p-qr8yv565.1cyno5.14t@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+	 To:Cc:Content-Type; b=Nij1kRlVj7YLiqSRRKDE8rgEFVuhzPkvPh0Jt9HXnTplUZH7gRr9aPtiBSDq2uE6+MYDeSF5FBlpC3FcFfTa5fHrzYd1mDb2z+8TVCjGa+O+v+TNF4vMTNskp+q2yhX051FWtzO/FuUSmqTw1qxpN5eUcuMtvQMSqGdU818+IiEhKyXnV88gIYOsnTrQixed1Q1t2u5iW3h1oqd4CagVCbwXpQMrpHzwfZPLKAMVW2DLl5ykyWm4xizwjyeuKSomA3ma1Yo+gEpBsUcmqDhEgAex++gl5RqN0NrlqVrouXtPfAKH/Eaa3j5FO0DnBd1ew8UrvbAdHcY8APBPMW2wFg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=lRYVTgo0; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::647; helo=mail-pl1-x647.google.com; envelope-from=3ew2xagykda46so1xqu22uzs.q20zw18b33q-rs9zw676.2dzop6.25u@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=sHQH0gKm;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=lRYVTgo0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::448; helo=mail-pf1-x448.google.com; envelope-from=3eg2xagykda05rn0wpt11tyr.p1zyv07a22p-qr8yv565.1cyno5.14t@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x448.google.com (mail-pf1-x448.google.com [IPv6:2607:f8b0:4864:20::448])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::647; helo=mail-pl1-x647.google.com; envelope-from=3ew2xagykda46so1xqu22uzs.q20zw18b33q-rs9zw676.2dzop6.25u@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x647.google.com (mail-pl1-x647.google.com [IPv6:2607:f8b0:4864:20::647])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpVwz22xnz2yfH
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 03:44:50 +1000 (AEST)
-Received: by mail-pf1-x448.google.com with SMTP id d2e1a72fcca58-86b4048367cso4305714b3a.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2026 10:44:50 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpVx02LWNz2yft
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 03:44:52 +1000 (AEST)
+Received: by mail-pl1-x647.google.com with SMTP id d9443c01a7336-2db3734d06dso57066725ad.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2026 10:44:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1790012689; x=1790617489; darn=lists.ozlabs.org;
+        d=google.com; s=20251104; t=1790012690; x=1790617490; darn=lists.ozlabs.org;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:reply-to:from:to:cc:subject:date:message-id
          :reply-to:content-type;
-        bh=ZLfRYJewP8aR3Y4V2zbyCdDW63inecBdjfc5u4aaKpU=;
-        b=sHQH0gKmF7/W0opYggOpQxtfVV64QSOqUDFutQ/J5cw1x7OQJx+e+vajPABan/NlWd
-         P9qCDCrQEcymbhtBkyvF/RCI1an5+O1JX1oTrGRJQqWhd+77zLTa+AiUnxyZyHg05soG
-         ETB63q4wydW/KVUY2dRCHNlhPlNzgTUl306NDU2HM6pCcjxxfDY2shfRDeIJlgLnzM89
-         8iPZsXweCqfOKgTiTLGZ5i4BGGG0Vv0TcmkI15visbIXN28y6EDrJyp1vl2nJlInzIY4
-         uqHXnUlKU5dlTKeYUHMbE4asX3c/MpCl3ht4NEqm35YbWsV22rLYZJ1F5R00Ly4UgNOn
-         oenQ==
+        bh=Hyb3zhkpLvcha2XPZl3y4VqrXuYFCx4NQzeWMijbr/g=;
+        b=lRYVTgo0o18xOdWUWTyhS729J9Tx2ZjYRPEO/TkqG+vQINFtLYSafaLjzHneq2U6hs
+         LISa93TFZQsZB3xIEpKBHZ1FE8mvxnSDCW4DLl+mX5m/T1KCQUh97c9emYvHzmHgZaVP
+         ryJa1KwsLvaT1f/pxrzfH4KwpElR3Vu45O2YM4bJfvS2e59+phvuvG0Nc6sRpqB2hlOR
+         FDXmCMrFV6DlV6wgrRz5jssXtpZMEK4AMH7UoZpE/ORJZY+1G0Aqisz3sq5EfHE2VXQ+
+         u6od/lPFItz/l1fkCYnlcnmEGG1SOOgo12Soter1lT9q9LUjhH2zEwXwSpHYqvJQEj8r
+         xm0g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790012689; x=1790617489;
+        d=1e100.net; s=20260707; t=1790012690; x=1790617490;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:reply-to:x-gm-message-state:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=ZLfRYJewP8aR3Y4V2zbyCdDW63inecBdjfc5u4aaKpU=;
-        b=rqE/McskN3tKZXBKf+ytI4NTKUpRIpmWgVlngjNx+1XS/f73fEfq3+ri+G++ij6VmP
-         rM5ky0sK2DURd9G5NzStcCo4v6VPxKst6BM8uR05+pfCi0TJxYZ5/GVBztQjIuHlUM07
-         TBbqx5MUySM8CNw/ihxc73HTEjg1N5QfUVjahhoNgu6UyF/cHPEVB1KkUkwt7ANqciXK
-         Sxi4LX26Q2W8Fbu9+gL93tfXles/OI+c2TIN9sYTEB12/6JaqW9vXJ2WDracNzFQDVXU
-         EhAB8y2GMT3eqt5D9JX7l3W1VPhaoxbeFTHKMie+KmVQmf6iEU+Bpop2CCsTvjddPhR+
-         3lUw==
-X-Forwarded-Encrypted: i=1; AKwUvBw56CEnTOaaQetk/5FjKZsT/7aE2Vl/fAsjL64mo9wyC1x1PB4qgHC6thInNk18PkVXqVd/REvIcComEg0=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++mifA1SuaZNz+/iEocu0eheFkdqQ2BEKlQc8g3C0o2RFthm5o95
-	bzbDcfsk5IBY2ilqz7mL1sbXY4NbHlBK7p4MTfN9ek09wCJ1eYU32oeI6E7e2QphxHrvuu3jV33
-	GIhvsKw==
-X-Received: from pfbgk3.prod.google.com ([2002:a05:6a00:8483:b0:873:d536:aebe])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:12dd:b0:86b:73b4:30fa
- with SMTP id d2e1a72fcca58-874dc0ff42cmr17041050b3a.11.1790012688332; Mon, 21
- Sep 2026 10:44:48 -0700 (PDT)
+        bh=Hyb3zhkpLvcha2XPZl3y4VqrXuYFCx4NQzeWMijbr/g=;
+        b=emjq7fHL/PuKkcaUxnENNVUfK1NZc+BGJ5tN4n3P7FrOywVYcpJQ7eQbcnYJFx4stg
+         rTJbXBFlT2j8W6MbtdunqKoxXQr65InjdXdxMspRcIFuj1j6AgKADvstUUcsfft7wyR8
+         e+sUtQ4LQuE70BGT9Kk4vG4p/MFw0F4RlJEDIe5ocHEqUzu8wSZeD+ExEf/3nn/kfsui
+         jyC2EnERViC+nWH2UUO2NBUmVn+R0zclFArLhygGwvyVrmC4ksEUSjkvt5TOqHyBiRCK
+         Cif45eyQiu3/1IinCA2ePSmcNwA4CFQCTeKAXe6p/L1GLfYbopxG67mWpw6y+aeDJi7R
+         EVAQ==
+X-Forwarded-Encrypted: i=1; AKwUvBwYUOPLEhVpZYZRbNm6M3BDuBVigSN3vPssrGG0naP+KkCBXrLT5CVPkMpjspF79gpX22DzYkDJOvlYHk0=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++kMHunfSGLsJ0SyqOGWiVlcHAFNQFYDTbcNxpniOB8VqH6BoiU5
+	sq17UANPLPn/ZJxOU4ddl7Kv72ze7/RPoIXMhjCWZUfdHscXFfLOPxOV+ne7BVxbcxoVRplsCWf
+	Hy7Ow6A==
+X-Received: from plaq21.prod.google.com ([2002:a17:903:2055:b0:2dd:1daa:a60c])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:902:f54f:b0:2dd:c053:c207
+ with SMTP id d9443c01a7336-2df560d81a4mr14415165ad.35.1790012689572; Mon, 21
+ Sep 2026 10:44:49 -0700 (PDT)
 Reply-To: Sean Christopherson <seanjc@google.com>
-Date: Mon, 21 Sep 2026 10:44:39 -0700
+Date: Mon, 21 Sep 2026 10:44:40 -0700
 In-Reply-To: <20260921174445.911676-1-seanjc@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -81,9 +81,9 @@ Precedence: list
 Mime-Version: 1.0
 References: <20260921174445.911676-1-seanjc@google.com>
 X-Mailer: git-send-email 2.55.0.1082.g2b9226bbc0-goog
-Message-ID: <20260921174445.911676-2-seanjc@google.com>
-Subject: [PATCH v2 1/7] KVM: Reject attempts to lock all vCPUs if vCPU
- creation is in-progress
+Message-ID: <20260921174445.911676-3-seanjc@google.com>
+Subject: [PATCH v2 2/7] KVM: arm64: vgic: Rely on vCPU creation check in
+ "trylock all vCPUs"
 From: Sean Christopherson <seanjc@google.com>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, 
 	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
@@ -98,105 +98,58 @@ Cc: Nicholas Piggin <npiggin@gmail.com>, Atish Patra <atish.patra@linux.dev>,
 	"=?UTF-8?q?Pawe=C5=82=20S?=" <spawel523@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 
-Reject locking of all vCPUs if vCPU creation is in-progress, i.e. if the
-number of "created" vCPUs doesn't match the number of "onlined" vCPUs.
-It's simply not possible to guarantee that KVM has truly locked all vCPUs
-if one or more vCPUs are actively being created.  Holding kvm->lock does
-prevent in-flight vCPUs from being fully onlined, but it's infeasible for
-common KVM to know whether or not that provides sufficient protection.
+Now that KVM's APIs for locking all vCPUs return -EBUSY if vCPU creation is
+in-progress, drop the manual check for the same from vGIC creation, and
+update the comments accordingly.
 
-In practice, this is likely a minor bug fix for the ARM and RISC-V usage of
-kvm_trylock_all_vcpus(), and a glorified nop for everything else.  E.g.
-ARM's kvm_timer_vcpu_init() can race kvm_vm_ioctl_set_counter_offset() with
-respect to observing KVM_ARCH_FLAG_VM_COUNTER_OFFSET.
+Note, while KVM arm64 guards many vGIC operations with its arch-specific
+config_lock, holding kvm->lock is sufficient to guarantee a stable result
+for "is vCPU creation in-progress".  So, no functional change intended.
 
-Opportunistically drop x86's existing manual checks on vCPU creation being
-in-progress as all of x86's checks immediately precede or follow locking of
-all vCPUs.  Leave arm64 and RISC-V alone for the moment, as their checks
-aren't as obviously redundant/equivalent.
+Note #2, the open coded check in vgic_init() is racy when called without
+kvm->lock held, e.g. via vgic_lazy_init().  I.e. that check needs to stay
+open coded to avoid triggering a lockdep assert.  Whether or not the race
+is "fine" is a problem for a different day.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/svm/sev.c | 10 ----------
- arch/x86/kvm/vmx/tdx.c |  5 -----
- virt/kvm/kvm_main.c    |  6 ++++++
- 3 files changed, 6 insertions(+), 15 deletions(-)
+ arch/arm64/kvm/vgic/vgic-init.c | 12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
-index 5705723f1f41..068f8a236a35 100644
---- a/arch/x86/kvm/svm/sev.c
-+++ b/arch/x86/kvm/svm/sev.c
-@@ -1125,9 +1125,6 @@ static int sev_launch_update_vmsa(struct kvm *kvm, struct kvm_sev_cmd *argp)
- 	if (!sev_es_guest(kvm))
- 		return -ENOTTY;
- 
--	if (kvm_is_vcpu_creation_in_progress(kvm))
--		return -EBUSY;
+diff --git a/arch/arm64/kvm/vgic/vgic-init.c b/arch/arm64/kvm/vgic/vgic-init.c
+index 4012df6002ea..a58575df36e9 100644
+--- a/arch/arm64/kvm/vgic/vgic-init.c
++++ b/arch/arm64/kvm/vgic/vgic-init.c
+@@ -97,6 +97,9 @@ int kvm_vgic_create(struct kvm *kvm, u32 type)
+ 	/*
+ 	 *  - Acquiring the vCPU mutex for every *online* vCPU to prevent
+ 	 *    concurrent vCPU ioctls for vCPUs already visible to userspace.
++	 *    This also ensures KVM isn't in the middle of creating a vCPU,
++	 *    i.e. that there are no vCPUs that have been created but aren't
++	 *    yet fully online.
+ 	 */
+ 	ret = -EBUSY;
+ 	if (kvm_trylock_all_vcpus(kvm))
+@@ -105,18 +108,11 @@ int kvm_vgic_create(struct kvm *kvm, u32 type)
+ 	/*
+ 	 *  - Taking the config_lock which protects VGIC data structures such
+ 	 *    as the per-vCPU arrays of private IRQs (SGIs, PPIs).
+-	 */
+-	mutex_lock(&kvm->arch.config_lock);
 -
- 	ret = kvm_lock_all_vcpus(kvm);
- 	if (ret)
- 		return ret;
-@@ -2115,10 +2112,6 @@ static int sev_check_source_vcpus(struct kvm *dst, struct kvm *src)
- 	struct kvm_vcpu *src_vcpu;
- 	unsigned long i;
+-	/*
+-	 * - Bailing on the entire thing if a vCPU is in the middle of creation,
+-	 *   dropped the kvm->lock, but hasn't reached kvm_arch_vcpu_create().
+ 	 *
+ 	 * The whole combination of this guarantees that no vCPU can get into
+ 	 * KVM with a VGIC configuration inconsistent with the VM's VGIC.
+ 	 */
+-	if (kvm->created_vcpus != atomic_read(&kvm->online_vcpus))
+-		goto out_unlock;
++	mutex_lock(&kvm->arch.config_lock);
  
--	if (kvm_is_vcpu_creation_in_progress(src) ||
--	    kvm_is_vcpu_creation_in_progress(dst))
--		return -EBUSY;
--
- 	if (!sev_es_guest(src))
- 		return 0;
- 
-@@ -2510,9 +2503,6 @@ static int snp_launch_update_vmsa(struct kvm *kvm, struct kvm_sev_cmd *argp)
- 	unsigned long i;
- 	int ret;
- 
--	if (kvm_is_vcpu_creation_in_progress(kvm))
--		return -EBUSY;
--
- 	ret = kvm_lock_all_vcpus(kvm);
- 	if (ret)
- 		return ret;
-diff --git a/arch/x86/kvm/vmx/tdx.c b/arch/x86/kvm/vmx/tdx.c
-index b272c20586a7..58c255256e4c 100644
---- a/arch/x86/kvm/vmx/tdx.c
-+++ b/arch/x86/kvm/vmx/tdx.c
-@@ -2728,11 +2728,6 @@ static tdx_vm_state_guard_t tdx_acquire_vm_state_locks(struct kvm *kvm)
- 
- 	mutex_lock(&kvm->lock);
- 
--	if (kvm->created_vcpus != atomic_read(&kvm->online_vcpus)) {
--		r = -EBUSY;
--		goto out_err;
--	}
--
- 	r = kvm_lock_all_vcpus(kvm);
- 	if (r)
- 		goto out_err;
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 65eb26a0520d..78cc090435be 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -1363,6 +1363,9 @@ int kvm_trylock_all_vcpus(struct kvm *kvm)
- 
- 	lockdep_assert_held(&kvm->lock);
- 
-+	if (kvm_is_vcpu_creation_in_progress(kvm))
-+		return -EBUSY;
-+
- 	kvm_for_each_vcpu(i, vcpu, kvm)
- 		if (!mutex_trylock_nest_lock(&vcpu->mutex, &kvm->lock))
- 			goto out_unlock;
-@@ -1386,6 +1389,9 @@ int kvm_lock_all_vcpus(struct kvm *kvm)
- 
- 	lockdep_assert_held(&kvm->lock);
- 
-+	if (kvm_is_vcpu_creation_in_progress(kvm))
-+		return -EBUSY;
-+
- 	kvm_for_each_vcpu(i, vcpu, kvm) {
- 		r = mutex_lock_killable_nest_lock(&vcpu->mutex, &kvm->lock);
- 		if (r)
+ 	if (irqchip_in_kernel(kvm)) {
+ 		ret = -EEXIST;
 -- 
 2.55.0.1082.g2b9226bbc0-goog
 
