@@ -1,83 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-27836-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27837-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6540DC982E1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2026 09:13:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4361EC982DE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2026 09:14:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hpHb26gFKz2yvy;
-	Mon, 21 Sep 2026 19:13:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789982014;
-	cv=none; b=DwVpHJLVb1q9+hP1u8RhvLpJGvF4QMuGWOV0GdT2mC1nuRfEJvLeNlHyQpIt6wpzt5ccjOycIfL7pQMtdGePXJXfk4FulI2qG1tGrfl/crASXvrwlmvbdXDjMT8roD76XF7xlYdmQAjIhdcxWWfY8axq1JzN9q6+H0fB0HgTSTQdogc1H9QO0AGi4ZaCcCh30EMRYLZvZBiV/48sLo1zzWt2WCp4QU+hA3/Ej99JmhEyJBSqvldsqZ5pZeuKWuhKH39h6W04dWtzhR0qm0SnvrQ8TgYr5mPQor0vpeVhZYsUihr4bT3oRkFMzydunKTcy2eIAbKhaJepwnmKQnjBgg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hpHbt6wpHz2yft;
+	Mon, 21 Sep 2026 19:14:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789982058;
+	cv=none; b=hnzor2FZAW6WI1Lq+z9vZV3ZFF9rVecrA3C/70+6GZIWbvNbUi4Pxgx+BuFN+73/3goPF4iRk8TVowfzRSFvztEf9S3R1RsTcjQXcg9FkWBjIEMzYktAIk6QOQ0WwTaSZstvD8ybl83aFE8R0t4+EQZ+XYwRmeznai/kbfDaeHSDWRCVtvsgF7vpHileNtka7EDq4BklMKOHfA9c8NFgc+8DZ0kB7RFuvxG+IYiBFTzXdYfn5QHbM3VqoZn3LRl7AN8Yx5zGRlfwpcpQ5HGkEP99gUrOKWozSFb1ooVCOResy9LFdGZJaIer9dL3dCj1HPbhipcHRa9jzGjlTplMzA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789982014; c=relaxed/relaxed;
-	bh=ci45NQJUg16aZt0y5PeWLAJ6VMj1xm674PK6gI0wb/I=;
+	t=1789982058; c=relaxed/relaxed;
+	bh=Ypk197u83QsJkKLOBorgGsgBYWL8I8pOcxYcooVQIRs=;
 	h=From:Subject:To:Cc:In-Reply-To:References:Content-Type:Date:
-	 Message-Id; b=LwJtbfTQkebS75SQ8wlNM/Q74wMywgRyypjgI7E+bT3Cfb4W/zWNAXDLCsNAZ5G0x71n8bK+dLQdFwPGWDmGXLX0YN2QXzKvCKVP5hbq72ygS5xoaURwOxz5AqpSog7q3FlBqsY0M/8hN/PnC3FjMq+rMGfRRgms9lwy/LPBRZSnXpHfCabjm4zvO9VdcZHLMMWB6FvYJcRqMwLvzmjif+j2zueLy9eJ5FkIkNCIlc5BEMzxjrTdbaNo1oLDz+30Y4/4z8Hurw7yY0TzXpwpM1RN7gN1x/oWcjBdqVNVIp4j/9ET64NtyrvF3nEwjJEn7sNm9Xv7PWF/5gtilGNSBQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=fail (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BQm7ODC9 reason="signature verification failed"; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=sashiko-bot@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Message-Id; b=jPZcBXoNrYJyuJmsDKPKVMlGhX4kfn92DGbhb+DRlXKE1CCdYy8nTrHL4P43WI+6IA72O95C1NqL4I0nBsafI0UoAcPKh4ewhJfvEnVP7XYL8jdtzSgZFFT16qDyKH5lXTGYX1zQnVmjdpkPV2u3qxrcHa4x4Mhpy+caw4+OgnIAn/EsAHBkAf33+XOwsNsnpVftrPV0tnGe17ji2qIRpdLSwGKIc3GYXVSH87WYVLGbPQLrXNq/AhtKpFDDqBtKtc0AFxao3MUG4+SdlBQ5Xv/L/gF8gPVdOzflYN+I4KxNSM5yWX+Vj26ziyELSyhFK106Bx4tguoBQ4rhIO1IOA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BVRV5Ip6; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashiko-bot@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BQm7ODC9;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BVRV5Ip6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=sashiko-bot@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashiko-bot@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpHb21jHMz2yr0
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2026 19:13:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpHbs6zDfz2y71
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2026 19:14:17 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 5D7ED42A4E;
-	Mon, 21 Sep 2026 09:13:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D7991F000FF;
-	Mon, 21 Sep 2026 09:13:30 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id EFE13601FB;
+	Mon, 21 Sep 2026 09:14:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C71221F00893;
+	Mon, 21 Sep 2026 09:14:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789982012;
-	bh=ci45NQJUg16aZt0y5PeWLAJ6VMj1xm674PK6gI0wb/I=;
+	s=k20260515; t=1789982055;
+	bh=Ypk197u83QsJkKLOBorgGsgBYWL8I8pOcxYcooVQIRs=;
 	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
-	b=BQm7ODC9zYGHKV67q4Nfd43WItBUGZ+KMMxaKTqYb5AhTE8ADj41mMaTjg3RxBvWI
-	 glxoDGBTc459VqLuYagv74owIjybea8BCkEyHEdwCmH/VGab6tEu/+hGad9cF4E+ue
-	 xDuvLwRpwfVs5i/zBUDnnOntEVtA5B9SkCoPsl4itcUYjcAYbm9Hf9Rp7M8PO1dSc/
-	 KFDzRwjifRSqZchkKanhAtrLnZM5sa5GozgtkNjqy+1fiUofkSE87lzR6WP99e4rDC
-	 04xzaQbnncwm12YgbDEScupqgAvEzFrU8YDNxRun5O3k9l5kAvSR6W5ZWdMEB6okYN
-	 1cZfCEFxPvvyQ==
+	b=BVRV5Ip6eDfnma/w5Y/czw1VeMX630hiOe8uqSGXqsjooE2XeVRpukgHT2lEjnvWu
+	 6fr7DPRbl1pT/tixy4qKPgbdfhGlYyRG8mVxxP2xFNh0JvBj5PDyfoXXUlBIFmZA4A
+	 wfeqAXn7vlZ95v0+IozU1UxAIzm//WFXxIjRZk5wQ7PUdrDDUM00AjwNoSV4v7h67+
+	 t6gcdL1zYAKxQ8SwXrjgniMvV5ehmJobw1qZvb6XreBmqT5M27b3dOBakHQLtTBGpL
+	 7Qjs+OsKh7E9v3v5BGVIpCQ8aqce4Z1ksYxVuSAybhOUsiABwrrZkUDWyNB0hScgEj
+	 Xg7AZ5lBqmQ9A==
 From: sashiko-bot@kernel.org
-Subject: Re: [PATCH v6 03/14] kexec: Extract kexec_free_segment_cma() from
- kimage_free_cma()
+Subject: Re: [PATCH v6 07/14] LoongArch: kexec_file: Fix elf_headers memory
+ leak in retry loop
 Reply-To: sashiko-reviews@lists.linux.dev
-To: dakr@kernel.org, hbathini@linux.ibm.com, npiggin@gmail.com,
-	maqianga@uniontech.com, vishal.l.verma@intel.com,
-	baoquan.he@linux.dev, piliu@redhat.com, ruirui.yang@linux.dev,
-	linuxppc-dev@lists.ozlabs.org, pratyush@kernel.org,
-	maddy@linux.ibm.com, bgwin@google.com, robh@kernel.org,
-	"Jinjie  Ruan" <ruanjinjie@huawei.com>, mingo@redhat.com,
-	me@linux.beauty, linux-kernel@vger.kernel.org,
-	catalin.marinas@arm.com, takahiro.akashi@linaro.org,
-	james.morse@arm.com, yeoreum.yun@arm.com, mark.rutland@arm.com,
-	eric.devolder@oracle.com, coxu@redhat.com, chao.gao@intel.com,
-	ritesh.list@gmail.com, kees@kernel.org, liukexin@kylinos.cn,
-	leitao@debian.org, sourabhjain@linux.ibm.com, tglx@kernel.org,
-	kernel@xen0n.name, bp@alien8.de, loongarch@lists.linux.dev,
-	rafael@kernel.org, seanjc@google.com, dave.hansen@linux.intel.com,
-	palmer@rivosinc.com, pasha.tatashin@soleen.com, rppt@kernel.org,
-	driver-core@lists.linux.dev, kai.huang@intel.com, graf@amazon.com,
-	jbouron@amazon.com, guodongtai@kylinos.cn, thuth@redhat.com,
-	chenhuacai@kernel.org, linux-arm-kernel@lists.infradead.org,
-	hpa@zytor.com, gregkh@linuxfoundation.org, akpm@linux-foundation.org,
-	sshegde@linux.ibm.com, will@kernel.org, x86@kernel.org,
-	mpe@ellerman.id.au, chleroy@kernel.org, mclapinski@google.com,
-	tangyouling@kylinos.cn, zha@lists.ozlabs.org, ngtianyang@loongson.cn
+To: james.morse@arm.com, thuth@redhat.com, me@linux.beauty, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, vishal.l.verma@intel.com, pasha.tatashin@soleen.com, sourabhjain@linux.ibm.com, baoquan.he@linux.dev, chao.gao@intel.com, akpm@linux-foundation.org, kai.huang@intel.com, mingo@redhat.com, kernel@xen0n.name, seanjc@google.com, piliu@redhat.com, mclapinski@google.com, palmer@rivosinc.com, linuxppc-dev@lists.ozlabs.org, bp@alien8.de, mpe@ellerman.id.au, driver-core@lists.linux.dev, kees@kernel.org, gregkh@linuxfoundation.org, hbathini@linux.ibm.com, chleroy@kernel.org, leitao@debian.org, will@kernel.org, x86@kernel.org, dakr@kernel.org, guodongtai@kylinos.cn, hpa@zytor.com, maddy@linux.ibm.com, takahiro.akashi@linaro.org, catalin.marinas@arm.com, sshegde@linux.ibm.com, loongarch@lists.linux.dev, zhangtianyang@loongson.cn, "Jinjie
+ Ruan" <ruanjinjie@huawei.com>, maqianga@uniontech.com, mark.rutland@arm.com, chenhuacai@kernel.org, tangyouling@kylinos.cn, eric.devolder@oracle.com, tglx@kernel.org, ruirui.yang@linux.dev, graf@amazon.com, bgwin@google.com, npiggin@gmail.com, pratyush@kernel.org, rafael@kernel.org, yeoreum.yun@arm.com, coxu@redhat.com, liukexin@kylinos.cn, dave.hansen@linux.intel.com, ritesh.list@gmail.com, rppt@kernel.org, jbouron@amazon.com, robh@kernel.org
 Cc: kexec@lists.infradead.org, ruanjinjie@huawei.com
-In-Reply-To: <20260921090450.807575-4-ruanjinjie@huawei.com>
+In-Reply-To: <20260921090450.807575-8-ruanjinjie@huawei.com>
 References: <20260921090450.807575-1-ruanjinjie@huawei.com>
- <20260921090450.807575-4-ruanjinjie@huawei.com>
+ <20260921090450.807575-8-ruanjinjie@huawei.com>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-Date: Mon, 21 Sep 2026 09:13:29 +0000
-Message-Id: <20260921091330.2D7991F000FF@smtp.kernel.org>
+Date: Mon, 21 Sep 2026 09:14:12 +0000
+Message-Id: <20260921091412.C71221F00893@smtp.kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,29 +71,34 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 
-> kimage_free_cma() relies on image->nr_segments to iterate over segments.
-> When an architecture loader (e.g., arm64) truncates nr_segments on a
-> mid-way failure, CMA pages allocated beyond the new boundary become
-> unreachable, causing silent memory leaks.
+> If load_other_segments() fails after image->elf_headers is assigned,
+> the memory lifecycle is safely managed by the global kimage object
+> and will be freed in arch_kimage_file_post_load_cleanup().
 >=20
-> Extract the per-segment freeing logic into the exported helper
-> kexec_free_segment_cma(), so that architecture loaders can release
-> individual segments before nr_segments is truncated. Refactor
-> kimage_free_cma() to loop over the new helper, preserving existing
-> behavior.
+> However, during a retry loop in efi_kexec_load(), a subsequent iteration
+> will allocate a new buffer and overwrite image->elf_headers. This
+> permanently leaks the stale memory from the previous iteration before
+> the global cleanup can track it.
 >=20
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Baoquan He <baoquan.he@linux.dev>
-> Cc: Mike Rapoport <rppt@kernel.org>
-> Cc: Pasha Tatashin <pasha.tatashin@soleen.com>
-> Cc: Pratyush Yadav <pratyush@kernel.org>
-> Cc: Breno Leitao <leitao@debian.org>
+> Fix this by explicitly freeing the stale `image->elf_headers` buffer
+> before assigning the newly allocated headers.
+>=20
+> Cc: Huacai Chen <chenhuacai@kernel.org>
+> Cc: WANG Xuerui <kernel@xen0n.name>
+> Cc: Youling Tang <tangyouling@kylinos.cn>
+> Cc: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
+> Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
+> Cc: Kees Cook <kees@kernel.org>
+> Cc: stable@vger.kernel.org
+> Link: https://sashiko.dev/#/patchset/20260729031235.2840255-1-ruanjinjie%=
+40huawei.com
+> Fixes: 55d990f0084c ("LoongArch: Add EFI binary support for kexec_file")
 > Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
 
 Sashiko has reviewed this patch and found no issues. It looks great!
 
 --=20
 Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20260921090450.8075=
-75-1-ruanjinjie@huawei.com?part=3D3
+75-1-ruanjinjie@huawei.com?part=3D7
 
 
