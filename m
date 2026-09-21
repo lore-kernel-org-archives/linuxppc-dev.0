@@ -1,101 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-27810-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27811-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EBC2FC982DE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2026 06:38:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62FFDC982DE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2026 06:53:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hpD7s3RQGz2yPR;
-	Mon, 21 Sep 2026 16:38:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789972697;
-	cv=none; b=PGW55sj4ZJ5Z4b6IODdURvx0w8pC7QCE2a4ZlU4VEbJN/b0Omd4QRvMHqmlsYF7dnbRGoBwqe4SRnGdeRDNggRk5mWbxuhKfj/CGIUvR9wuO3dKeb82mGtieICjDg/76V+2v8d6pmX/Wx1RAdiR+u7IxJhyR7u4Y5EzTo/3B0dFZPg9Nh5rj+pPj5/3x3c4TlirVDZXAubr8zXR4SBmXWfcU4nmo1ZTN+8rhcX0l/yBCfs8mNHRFwxUxQhaS50KnwU0riIM+IXjU4KuCx53QEYQqXjx5JQmwDocJ7YtSLFe0kjWS/MaJUH7z3Uf3sCLYicBEzwTAKAFJCpYSnZdJiA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hpDTb6ZJsz2xk7;
+	Mon, 21 Sep 2026 16:53:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789973619;
+	cv=none; b=Bg+D2C2bOq8p3+qUwNkTYjpEQSBdZra4JVvRdEVS9vxnsd4k5I2DC3BwizdpGa2H8L5PtGvD0+r3fNJVs2i2wUekzJPuIJ7uRR1dCUZKjsMXVkxkj09IdIY1fR0c09noRS6H/7Xe4h42vaxSmN898gM3IATGGpxoS6G3/wtXQ1jffB7mmTtvuyMBj63U+ooMV4W0ONd1tyI+DTpBEvK26UcScHC13XNYWKmZFjle5FPrbwaiKFnI9ojEvkFGyqXM0q/+N4TfDHp+sPP74605J9N56CeQV8N4wxukWb5ElHRzIfZT16DAHj8mXxMEUjefc9kM3L430R8NzqQGVaJY0A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789972697; c=relaxed/relaxed;
-	bh=VoCg32Arx4e7KaF2GJEfcwJzh1ShvNusNafOCb8ICO0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=V0+0/n7tgJzHqrnDmK/dhASsQ6UvXOAVW3xAuavYgAdij+1//DQn4n6v63/6AiJ3/g032egoMQqSFV/GCCQijPtL42mwVLc+1eiDlxR0lj0dh0TyTm0m6m8lagm7eRroXG547R3fyKaJ+E1ecb7t99yFXY3pne3KhDXDeRO8wczAdVBOiQi6v4+N1o1vhWBzc81XbagYcVkSkG8sH6h5zFgIMSy0UQeyaPpYZud3KEswY7ARKFNybiapTVyC/A75h2qabAfIUxESNKaX5jvNUwUnuW/H/TrR/h/iXU+q5eXQ6wDxMSP/JjxIMUcqbranmRJ6v7RmcqUcWq7rwpVYjQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jIq/flJR; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1789973619; c=relaxed/relaxed;
+	bh=VK5a2KS2S+bmw3jNmEBZ0KEWcR1V3rhpzXlXmQG6Y3I=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=fG2DWDK0AFT5bKE99l4VUymxyVT262zpz5q7W9PQh/CS6PNtkZaGIJt4A/Ht3p9zgzM1s9r4tjdaxPI2sjcoI1gB6VZ9TSMGwFMZz4/wjgVugWAALt+d23uFvwCKAKthARPz0rTnhml4RPSBKs/pEurA+U+XyPuz0+kfRRW03Fy4dQE1pXiq4wQkFlmE8QVT6mYeXTtfyJe891a5H/6ZxSgWN2z0PZ/ixt2D4xWYtDQUabETXwHsmJorhCaxex+x7OZO40m7TEuOh0AgKuqFK33TJJmrektQ1SHPcSCj4F0/gxOdTm9bzeWiM5QkMraDs9NnUoCa4WS9NpDsvXoSQQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=I64v42iE; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jIq/flJR;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=I64v42iE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpD7r5Htvz2yVd
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2026 16:38:16 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 3E870405BB;
-	Mon, 21 Sep 2026 06:38:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9341A1F000FF;
-	Mon, 21 Sep 2026 06:38:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789972695;
-	bh=VoCg32Arx4e7KaF2GJEfcwJzh1ShvNusNafOCb8ICO0=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=jIq/flJRY3S5laEIT+Wa5u9H4XzbVTG73lEvv3r80VBqC4d4gx2R4rPz/4iRfl+FS
-	 T6wvnzWrCYCSrJ9jduv4Hi4hvZmj7+Rp8DdiuCZWhpb4wC2QAk14pe8YwzDbTbzob/
-	 5XsqIPaBZBiYB/OBhqr7ZaFUtIxWNm4rA9fuRNv5aT0GRKaM5P3x7AQzIRdvxQVz5i
-	 vhLUG13WQhfQov1qCVQmey56rKz+067+EwWOoaeLlTRKhqQr22C9XSlq+YNCQKkKj8
-	 X3UFdT52k2baLO2qi5Cs3dBJorRVGHCGxy1fyZqxLbV3Hv3Ix9tQo9SAAn0a4ffJCA
-	 WoE8T/WIg/byg==
-From: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
-To: iommu@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
-	Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>,
-	Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>,
-	Jason Gunthorpe <jgg@ziepe.ca>,
-	Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Russell King <linux@armlinux.org.uk>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Jiaxun Yang <jiaxun.yang@flygoat.com>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	linux-arm-kernel@lists.infradead.org,
-	loongarch@lists.linux.dev,
-	linux-mips@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org,
-	linux-s390@vger.kernel.org,
-	x86@kernel.org
-Subject: [PATCH v5 6/6] dma: swiotlb: Remove SWIOTLB_ANY
-Date: Mon, 21 Sep 2026 12:06:28 +0530
-Message-ID: <20260921063628.362078-7-aneesh.kumar@kernel.org>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260921063628.362078-1-aneesh.kumar@kernel.org>
-References: <20260921063628.362078-1-aneesh.kumar@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpDTZ66RGz2xCC
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2026 16:53:37 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68L3aUMc122428;
+	Mon, 21 Sep 2026 06:53:26 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=VK5a2K
+	S2S+bmw3jNmEBZ0KEWcR1V3rhpzXlXmQG6Y3I=; b=I64v42iEa3aAaoivcyjD8d
+	6vLj+Z36bZ9pxzOrUXr7NpMv6w0FS5Hqei0d20zXdPp3aIj9mMflvmxXCwuEltjL
+	F73Mev3pZfMnNd+TjKTYvPz50rJveEZy13SZ2uHwnKiNA0CGAYABrhOPbSwYl6Vw
+	E6Tbr9/MslP6Nuhu768+xPbTMES8o4mPk4hJYuZE4KVBlnIgzRaW5jWzLcHbOZG7
+	okdq0PWvTL2JgiGHtwdZbnDUPXLsmzilCcyULiXpiVZvZuLsBwqnRoZoXDuC9Ucv
+	srARC5gpuYQJ46kLkxPAvy2/8GbWSZVpFSF7ZJ7YJ6oQGHfSrCgZTeMvSuzYO0fw
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gske1719x-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Mon, 21 Sep 2026 06:53:25 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68L3XWnm1596405;
+	Mon, 21 Sep 2026 06:53:24 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gt7dy3wmj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 21 Sep 2026 06:53:24 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68L6rLMT47251800
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 21 Sep 2026 06:53:21 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1EC6420043;
+	Mon, 21 Sep 2026 06:53:21 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 56A1220040;
+	Mon, 21 Sep 2026 06:53:18 +0000 (GMT)
+Received: from [9.124.208.199] (unknown [9.124.208.199])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 21 Sep 2026 06:53:18 +0000 (GMT)
+Message-ID: <8202e4e2-db26-4c9f-88b1-af5f0ffd5421@linux.ibm.com>
+Date: Mon, 21 Sep 2026 12:23:17 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -109,189 +81,152 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc/ftrace: Don't restore r13 during
+ ftrace_regs_caller
+To: Hari Bathini <hbathini@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
+        linux-kernel@vger.kernel.org, msuchanek@suse.de, ritesh.list@gmail.com,
+        maddy@linux.ibm.com
+References: <20260918150811.1743769-1-sshegde@linux.ibm.com>
+ <2a1d71ab-dab1-42c8-8c55-f131a4b6e48b@linux.ibm.com>
+Content-Language: en-US
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+In-Reply-To: <2a1d71ab-dab1-42c8-8c55-f131a4b6e48b@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: 8bj0RpOxCWc4pV9R8ni2UBhnqxXWzraS
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTIxMDA5MyBTYWx0ZWRfXw3IeEKfSVCJj
+ 5d+7rL8olPAPjrXjJrASXbPctu6sA4ewOpc7CcZL2Z7E0LuwC8PcdIJj9UhE4Gj6bhwR7V1jKQz
+ fq4iXKhjwO70lcDz7fch/orE+iQ+Lqgpr3qaWx8Nlm9Ii6Zo/tyC5caRGvOVHEqq1oOZM26J5aE
+ ardWptqHutmsKDLX73LCMM49X3JGasHfyY8uNUuRAjTpFOaXSKgcZcY75epH4S2vkQZlJlRrZeC
+ MRsjRWR9H0rDXbtGOzJ28QM0Kd6NVz73Th+JMkRituXIqbgr4qUCc8xw3oyOyb4hsXLvOXaMU9L
+ BXnx4iWjHBP5ZdEqp7WT9Aox3UUOhff35aOCBgps5NopXz7+J5KIPYz+5N+r+/0NGqp+ziSvHY2
+ sNmi4KKYYthRajI+t1YaAnyagSWWgfhsKxOW1l6MtAvXJPrp0Q1U46IA0+AkNEOmcql9veaMHxS
+ COx7umGONQFmiQBNEJQ==
+X-Authority-Analysis: v=2.4 cv=O/KsLx9W c=1 sm=1 tr=0 ts=6ab0d466 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=JUkP1JpbfgDRSIa_JCsA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTIxMDA5MyBTYWx0ZWRfXzQveNL7b8rT5
+ DmzJZb2dr6RSiFabHrmnFsYPdHDweN/gcXtZcje9kfj2jB3WGdM9mXPU7b++pP7iegsgkSGrf5n
+ DR6jZa8SN/NcbntG1xNzWAWlFsEWRFQ=
+X-Proofpoint-GUID: ITwgG5khZ8iUZKUE4ZgSfASF08WfkleL
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-21_02,2026-09-16_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 malwarescore=0 phishscore=0 impostorscore=0 suspectscore=0
+ bulkscore=0 priorityscore=1501 lowpriorityscore=0 adultscore=0 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609210093
 
-swiotlb pools are currently allocated below the architecture's low
-address limit by default. SWIOTLB_ANY overrides this and permits
-allocation anywhere in directly mapped memory.
+Hi Hari,
 
-SWIOTLB_INIT_ADDRESSING_LIMIT now explicitly identifies callers which
-need a pool that is reachable by devices with limited DMA addressing.
-Use it as the placement constraint and remove SWIOTLB_ANY.
+On 9/21/26 12:07 PM, Hari Bathini wrote:
+> 
+> 
+> On 18/09/26 8:38 pm, Shrikanth Hegde wrote:
+>> Michal reported a stack-protector failure and subsequent panic when
+>> running kernel builds. This was observed with full/lazy preemption.
+>> Initially it was suspected as KVM, but later turned out to be due
+>> to a bcc tool running in parallel.
+>>
+>> Issue was recreated using a bcc tool.
+>> For example, running below in parallel leads to crash.
+>> ./funccount sched* -d 100 and make -j 64
+>>
+>> The same crash was observed when running kprobe for schedule() function,
+>> while simpler function tracer for schedule() didn't cause the crash.
+>> This helped to narrow it down to ftrace backed kprobes area.
+>>
+>> The crash occurs as follows:
+>>
+>> ftrace_regs_caller entry on CPU A
+>>      |
+>>      +-> save r13 = CPU A PACA into pt_regs
+>>      |
+>>      +-> call kprobe_ftrace_handler()
+>>              |
+>>              +-> ftrace_test_recursion_unlock()
+>>                      |
+>>                      +-> preempt_enable
+>>                      +-> task can schedule and migrate to CPU B
+>>                      +-> task resumes with live r13 = CPU B PACA
+>>      |
+>>      +-> REST_GPRS(2, 31)
+>>              |
+>>              +-> restore saved r13 = CPU A PACA
+>>      |
+>>      |-> The task then continues running on CPU B with r13 pointing
+>>      |   to CPU A's PACA.
+>>
+>> The stack-protector canary is accessed through the PACA. After the task
+>> migrates, CPU A may run a different task and update its PACA with that
+>> task's canary. Restoring the saved r13 then causes the migrated task's
+>> saved stack canary to be compared against the canary in CPU A's PACA,
+>> resulting in a stack-protector failure.
+>>
+>> Similarly, current is resolved through the PACA. With a stale r13,
+>> preempt_count() can access the state of the task referenced by CPU A's
+>> PACA instead of the task running on CPU B. This results in corrupted
+>> preempt-count warnings and scheduling-while-atomic failures.
+>>
+>> This path for example is called when using kprobes and parallel kernel builds
+>> can cause preemptions during ftrace_test_recursion_unlock.
+>>
+>> Do not restore r13 from the saved register frame. If the task did not
+>> migrate, the live r13 already has the saved value. If it migrated, the
+>> live r13 contains the correct PACA pointer for the CPU on which the task
+>> resumed.
+>>
+> 
+> Looks good to me except for a minor nit below.
+> 
+> Reviewed-by: Hari Bathini <hbathini@linux.ibm.com>
+> 
+>> Fixes: 153086644fd1 ("powerpc/ftrace: Add support for -mprofile-kernel ftrace ABI")
+>> Reported-by: Michal Suchánek <msuchanek@suse.de>
+>> Closes: https://lore.kernel.org/all/aqKfsVArHHaIK6M9@kunlun.suse.cz/
+>> Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+>> ---
+>> PS:
+>> Fixes is the initial commit that introduced this restore regs almost
+>> 10 years ago, all commit afterwords are code refactors changing the
+>> code layout. Also backporting all the way maybe tricky.
+>> Backport can easily happen till aebd1fb45c622.
+>>
+>>   arch/powerpc/kernel/trace/ftrace_entry.S | 4 +++-
+>>   1 file changed, 3 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/kernel/trace/ftrace_entry.S b/arch/powerpc/kernel/trace/ftrace_entry.S
+>> index 6599fe3c6234..54c8727b48cd 100644
+>> --- a/arch/powerpc/kernel/trace/ftrace_entry.S
+>> +++ b/arch/powerpc/kernel/trace/ftrace_entry.S
+>> @@ -220,7 +220,9 @@
+>>       /* Restore gprs */
+>>       .if \allregs == 1
+> 
+>> -    REST_GPRS(2, 31, r1)
+>> +    REST_GPRS(2, 12, r1)
+>> +    /* Do not restore a stale PACA pointer if the task migrated */
+>> +    REST_GPRS(14, 31, r1)
+> 
+> Given that r13 is not paca on ppc32, shouldn't the above change
+> only apply to PPC64?
 
-This changes the default behavior for callers which do not set either
-flag. Previously, omitting SWIOTLB_ANY placed the default pool below the
-architecture's low address limit and also constrained dynamically
-allocated pools to the same range. After this change, omitting
-SWIOTLB_INIT_ADDRESSING_LIMIT permits both static and dynamic pools to
-use any directly mapped memory.
+Yes. Good catch. Will make the above change only for PPC64.
 
-Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
-Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
----
- Documentation/core-api/swiotlb.rst |  8 ++++----
- arch/powerpc/mm/mem.c              |  6 ++++--
- arch/riscv/mm/init.c               | 16 ----------------
- arch/s390/mm/init.c                |  2 +-
- arch/x86/kernel/pci-dma.c          |  2 +-
- include/linux/swiotlb.h            |  7 +++----
- kernel/dma/swiotlb.c               | 17 ++++++-----------
- 7 files changed, 19 insertions(+), 39 deletions(-)
+Thanks for reviewing.
 
-diff --git a/Documentation/core-api/swiotlb.rst b/Documentation/core-api/swiotlb.rst
-index 71b4e4c27eb5..06d9f88fdf7b 100644
---- a/Documentation/core-api/swiotlb.rst
-+++ b/Documentation/core-api/swiotlb.rst
-@@ -148,10 +148,10 @@ may also be adjusted
- due to other conditions, such as running in a CoCo VM, as described above. If
- CONFIG_SWIOTLB_DYNAMIC is enabled, additional pools may be allocated later in
- the life of the system. Each pool must be a contiguous range of physical
--memory. The default pool is allocated below the 4 GiB physical address line so
--it works for devices that can only address 32-bits of physical memory (unless
--architecture-specific code provides the SWIOTLB_ANY flag). In a CoCo VM, the
--pool memory must be decrypted before swiotlb is used.
-+memory. The default pool is allocated below the architecture's low address
-+limit when it is needed for devices with limited DMA addressing. Otherwise,
-+it may be allocated anywhere in directly mapped memory. In a CoCo VM, the pool
-+memory must be decrypted before swiotlb is used.
- 
- Each pool is divided into "slots" of size IO_TLB_SIZE, which is 2 KiB with
- current definitions. IO_TLB_SEGSIZE contiguous slots (128 slots) constitute
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 006ed41097e9..1bdea6c03848 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -295,9 +295,11 @@ void __init arch_mm_preinit(void)
- 		/*
- 		 * Since the guest memory is inaccessible to the host,
- 		 * devices always need to use the SWIOTLB buffer for DMA
--		 * even if dma_capable() says otherwise.
-+		 * even if dma_capable() says otherwise. The hypervisor has
-+		 * no addressing limitation, so the buffer may be allocated
-+		 * anywhere.
- 		 */
--		ppc_swiotlb_flags |= SWIOTLB_ANY;
-+		ppc_swiotlb_flags &= ~SWIOTLB_INIT_ADDRESSING_LIMIT;
- 	}
- 
- 	/*
-diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
-index 96856114b387..734712230f35 100644
---- a/arch/riscv/mm/init.c
-+++ b/arch/riscv/mm/init.c
-@@ -165,27 +165,11 @@ static void print_vm_layout(void) { }
- 
- void __init arch_mm_preinit(void)
- {
--	bool swiotlb = max_pfn > PFN_DOWN(dma32_phys_limit) &&
--		       memblock_start_of_DRAM() < dma32_phys_limit;
- 	unsigned int swiotlb_flags = SWIOTLB_VERBOSE;
- #ifdef CONFIG_FLATMEM
- 	BUG_ON(!mem_map);
- #endif /* CONFIG_FLATMEM */
- 
--	if (IS_ENABLED(CONFIG_DMA_BOUNCE_UNALIGNED_KMALLOC) && !swiotlb &&
--	    dma_cache_alignment != 1) {
--		/*
--		 * No 32-bit DMA bouncing needed (either all DRAM is within
--		 * the 32-bit limit, or it all starts above it), but
--		 * kmalloc() buffers whose sizes are not cache-line-aligned
--		 * still require bouncing for non-coherent DMA.  Use
--		 * SWIOTLB_ANY so that the buffer can be allocated from high
--		 * memory when DRAM starts above dma32_phys_limit.  Allocate
--		 * ~1 MB per 1 GB of RAM.
--		 */
--		swiotlb_flags |= SWIOTLB_ANY;
--	}
--
- 	if ((max_pfn > PFN_DOWN(dma32_phys_limit)) &&
- 	     (memblock_start_of_DRAM() < dma32_phys_limit))
- 		swiotlb_flags |= SWIOTLB_INIT_ADDRESSING_LIMIT;
-diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
-index 78f507e24ceb..ce10292447f1 100644
---- a/arch/s390/mm/init.c
-+++ b/arch/s390/mm/init.c
-@@ -166,7 +166,7 @@ static void __init pv_init(void)
- 	virtio_set_mem_acc_cb(virtio_require_restricted_mem_acc);
- 
- 	/* make sure bounce buffers are shared */
--	swiotlb_init(SWIOTLB_VERBOSE | SWIOTLB_ANY);
-+	swiotlb_init(SWIOTLB_VERBOSE);
- 	swiotlb_update_mem_attributes();
- }
- 
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index ce257b20ea9c..74e92b457758 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -90,7 +90,7 @@ static void __init pci_xen_swiotlb_init(void)
- 	/* Xen can use a SWIOTLB pool anywhere in directly mapped memory. */
- 	x86_swiotlb_flags &= ~(SWIOTLB_INIT_ADDRESSING_LIMIT |
- 			       SWIOTLB_INIT_DEFAULT_OFF);
--	x86_swiotlb_flags |= SWIOTLB_INIT_REMAP | SWIOTLB_ANY;
-+	x86_swiotlb_flags |= SWIOTLB_INIT_REMAP;
- 	swiotlb_init_remap(x86_swiotlb_flags, xen_swiotlb_fixup);
- 	dma_ops = &xen_swiotlb_dma_ops;
- 	if (IS_ENABLED(CONFIG_PCI))
-diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
-index 466c33795db0..503e1446e0d8 100644
---- a/include/linux/swiotlb.h
-+++ b/include/linux/swiotlb.h
-@@ -15,13 +15,12 @@ struct page;
- struct scatterlist;
- 
- #define SWIOTLB_VERBOSE	(1 << 0) /* verbose initialization */
--#define SWIOTLB_ANY	(1 << 1) /* allow any memory for the buffer */
- /* Initialize a default-sized pool for devices with limited DMA addressing. */
--#define SWIOTLB_INIT_ADDRESSING_LIMIT	(1 << 2)
-+#define SWIOTLB_INIT_ADDRESSING_LIMIT	(1 << 1)
- /* Initialize a default-sized pool that requires architecture remapping. */
--#define SWIOTLB_INIT_REMAP		(1 << 3)
-+#define SWIOTLB_INIT_REMAP		(1 << 2)
- /* Do not initialize a pool unless SWIOTLB is explicitly required. */
--#define SWIOTLB_INIT_DEFAULT_OFF		(1 << 4)
-+#define SWIOTLB_INIT_DEFAULT_OFF	(1 << 3)
- 
- /*
-  * Maximum allowable number of contiguous slabs to map,
-diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
-index 46b789eb0806..77d7c320de28 100644
---- a/kernel/dma/swiotlb.c
-+++ b/kernel/dma/swiotlb.c
-@@ -450,15 +450,10 @@ static void __init *swiotlb_memblock_alloc(unsigned long nslabs,
- 	size_t bytes = PAGE_ALIGN(nslabs << IO_TLB_SHIFT);
- 	void *tlb;
- 
--	/*
--	 * By default allocate the bounce buffer memory from low memory, but
--	 * allow to pick a location everywhere for hypervisors with guest
--	 * memory encryption.
--	 */
--	if (flags & SWIOTLB_ANY)
--		tlb = memblock_alloc(bytes, PAGE_SIZE);
--	else
-+	if (flags & SWIOTLB_INIT_ADDRESSING_LIMIT)
- 		tlb = memblock_alloc_low(bytes, PAGE_SIZE);
-+	else
-+		tlb = memblock_alloc(bytes, PAGE_SIZE);
- 
- 	if (!tlb) {
- 		pr_warn("%s: Failed to allocate %zu bytes tlb structure\n",
-@@ -604,10 +599,10 @@ void __init swiotlb_init_remap(unsigned int flags,
- #ifdef CONFIG_SWIOTLB_DYNAMIC
- 	if (!remap)
- 		io_tlb_default_mem.can_grow = true;
--	if (flags & SWIOTLB_ANY)
--		io_tlb_default_mem.phys_limit = virt_to_phys(high_memory - 1);
--	else
-+	if (flags & SWIOTLB_INIT_ADDRESSING_LIMIT)
- 		io_tlb_default_mem.phys_limit = ARCH_LOW_ADDRESS_LIMIT;
-+	else
-+		io_tlb_default_mem.phys_limit = virt_to_phys(high_memory - 1);
- #endif
- 
- 	/* if we have host or guest memory encryption */
--- 
-2.43.0
+>>       .else
+>>       REST_GPRS(3, 10, r1)
+>>   #if defined(CONFIG_LIVEPATCH_64) || defined(CONFIG_PPC_FTRACE_OUT_OF_LINE)
+> 
+> - Hari
+> 
 
 
