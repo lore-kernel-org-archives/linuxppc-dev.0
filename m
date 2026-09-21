@@ -1,50 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-27818-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27820-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08989C982DE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2026 09:04:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2EF5C982E1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2026 09:04:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hpHNB3qcGz2yVd;
-	Mon, 21 Sep 2026 19:04:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.219
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789981450;
-	cv=none; b=m3Usp4CwyzlB+93iTA2bVUPu/LT/h8m4/IoNAnTWl2y8RcY/YSajtJq+P3GvS9Pejy1K6V44T1/jF89VUOB4HUjuM5uRvuZ6Ik7SQlY090RV5NyUNDG4twFgsTHvw2YBpzexOGF6MAJW/3zRYDSJs2Cr94jz+MrGWPWESJakGMdtucLwS4zxGRTu+0ZvBQTzaEbYCcjRfKo5LNfPIRXdkUOe45A7qQ0yWqX4e3jUs/Hpz1nfgCxA8Q3I+r1PgnkEB8QvDW33/VLAFSN1qs8WyFKQ/2H0pAzZgy8KUYfi4r79xpt8siCfmASOFQxDtSMhg98FFnQSvOFnnTjna3ukKw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hpHND5QTDz2yPR;
+	Mon, 21 Sep 2026 19:04:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789981452;
+	cv=none; b=XYDrIXmT8HIBDDfstsM3UJtJyzgrEj/FN9Fqaox3sn4+5jI8Hs4RZ7TxEke8g15HgILdnSSVgICuAcjGuhjiVmv5qVdVHslJmPxdxRIDfB/Jz5UXevaP+OZ4Jklb3l8c/Shj/p847EeQifTZ55lf6jymI4svOA4m0wfaC6sK4QZdmf5fuve+84z58PhLbE+nYEgKFrFD7cddAfpQkyI36Y9zsFr/s2D1Fg70Zp1nBWu2PUIW3OYcl06nM/AvLZAmjJ4WQhwC2VeM7/pnku+lgyVCDLWNau/EUe6i5/1svK7wgSZMxzoxRNAU10WFKBtTIz7k0wSVaJOc3frh810nLg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789981450; c=relaxed/relaxed;
-	bh=sTno8QnJjZ/NQezWYbQKFncttJxmDy0EzI/+jGwfMVY=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=I0htC0WqrkdwjNacvZ7wnVelHTtROLVE8WFExBB1rTyFGJP6ZVFKpJoMiqEN0TY4oBis6ADGm/rXRKzv0Uw7YA4pE4prnTPl5h9cZ2lmQiyt8MMOdvZhA3I5RLyYm1ZDb1CdVm7YLVIy77StIjDctW07C9RKUxvyG2cNFmQccjwVprcUwHlQOO4jCIEMWIGZjJn2pknLIn5w64lpXwcxpElPOPRLbnQPV9W6EKxlfvjA6ftWf2KrYqVjFr5NDNm3J+8NdT1kqce7iuqP0Dj2mJLl2BuB4+BOP8/eqvi9jCJBf3CFwKOllf4Vo08batirwdgETlsW5uS+0WcmtTxRQg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=RG3+rh09; dkim-atps=neutral; spf=pass (client-ip=113.46.200.219; helo=canpmsgout04.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	t=1789981452; c=relaxed/relaxed;
+	bh=igqtNYMEL8oKIpnu2DrMNvEYzwwJSEovzlP+FnYUOCA=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=n6saM74T9vs9Te4Vx6mbb/eoSF7HGFvNEKWgwjTWJr/ZnDehRsGcWPKn63bL5iDK3kvu1FMvYGEec0KzJRbZSGNw0R1I1w0A5LjmvNe0jVx1Gb6EQ/Ymp3Vvh2jRATCrC/XCfBC959lvzsAHCXu9HGl0V/0d+7Q5gkdeehSk0EJwyx/cj7Nt7wtaJmsCq2iSuKBpoE4gdo2aRO9KU+IQ0z+joslrW2loP16IS8qLik0rNnT8THmQcOZQeopDGrvE1Yo6k0Mb3UtfD0InlJkuPlUqDYkrbh2hFciXA7uTavz3SX0bL2D3xGdNuFr5V8axKpEYkNfy62Wp/mWGGRGY4A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=CtxVcq19; dkim-atps=neutral; spf=pass (client-ip=113.46.200.217; helo=canpmsgout02.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=RG3+rh09;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=CtxVcq19;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.219; helo=canpmsgout04.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout04.his.huawei.com (canpmsgout04.his.huawei.com [113.46.200.219])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.217; helo=canpmsgout02.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout02.his.huawei.com (canpmsgout02.his.huawei.com [113.46.200.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpHN73w2Zz2yK7
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2026 19:04:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpHNB6GVZz2yjw
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2026 19:04:10 +1000 (AEST)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=sTno8QnJjZ/NQezWYbQKFncttJxmDy0EzI/+jGwfMVY=;
-	b=RG3+rh09RlR70S2nXv0n410ZV6z6gI6QSZ0h754wyzJZrJY5a85/5/WZxRMszjBbYOjDUawqp
-	Uwo6gmlt4LyCUwzjnXlm82CY0CiMdWGRqmhAv0bErvQ/oL2hc2YS/J7wRPgJlGgaxmOuYKBHtAY
-	bEALB8nx4uDcbCbpYDe2Rpw=
-Received: from mail.maildlp.com (unknown [172.19.163.104])
-	by canpmsgout04.his.huawei.com (SkyGuard) with ESMTPS id 4hpH7B3PYdz1prN6;
-	Mon, 21 Sep 2026 16:52:54 +0800 (CST)
+	bh=igqtNYMEL8oKIpnu2DrMNvEYzwwJSEovzlP+FnYUOCA=;
+	b=CtxVcq19s4/+nlwp4cUNXfDx1nZiyIWFU4uWCub+//6KtP7pZWS9arcnPlF2LC/ogoKXyeVeP
+	TCuE1W141iovkLTXAPEBXvujBx6CaVYA0od9WENgqjGwUbcGu+QPm1w6sqo05U8KePvOSjI314O
+	40wUQWbWiVj05nmSEjphxXc=
+Received: from mail.maildlp.com (unknown [172.19.162.144])
+	by canpmsgout02.his.huawei.com (SkyGuard) with ESMTPS id 4hpH70064kzcb3H;
+	Mon, 21 Sep 2026 16:52:44 +0800 (CST)
 Received: from kwepemk200008.china.huawei.com (unknown [7.202.194.74])
-	by mail.maildlp.com (Postfix) with ESMTPS id 7CE7A4058E;
-	Mon, 21 Sep 2026 17:03:57 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 8D0254056D;
+	Mon, 21 Sep 2026 17:04:04 +0800 (CST)
 Received: from huawei.com (10.90.53.73) by kwepemk200008.china.huawei.com
  (7.202.194.74) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Mon, 21 Sep
- 2026 17:03:55 +0800
+ 2026 17:04:02 +0800
 From: Jinjie Ruan <ruanjinjie@huawei.com>
 To: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
 	<chenhuacai@kernel.org>, <kernel@xen0n.name>, <maddy@linux.ibm.com>,
@@ -69,10 +70,12 @@ To: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
 	<linuxppc-dev@lists.ozlabs.org>, <driver-core@lists.linux.dev>,
 	<kexec@lists.infradead.org>
 CC: <ruanjinjie@huawei.com>
-Subject: [PATCH v6 00/14] crash: Fix several bugs
-Date: Mon, 21 Sep 2026 17:04:36 +0800
-Message-ID: <20260921090450.807575-1-ruanjinjie@huawei.com>
+Subject: [PATCH v6 04/14] arm64: kexec_file: Fix CMA page leaks in segment placement retry loops
+Date: Mon, 21 Sep 2026 17:04:40 +0800
+Message-ID: <20260921090450.807575-5-ruanjinjie@huawei.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260921090450.807575-1-ruanjinjie@huawei.com>
+References: <20260921090450.807575-1-ruanjinjie@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,117 +95,62 @@ X-Originating-IP: [10.90.53.73]
 X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
  kwepemk200008.china.huawei.com (7.202.194.74)
 
-As Baoquan and Catalin suggested, this patch set fixes
-several pre-existing code issues found by Sashiko AI [1][2][3].
+During kexec image placement retry loops, any midway failure causes
+the loader to truncate `image->nr_segments` back to its initial state
+to purge the failed segments.
 
-The major improvements and fixes included in this series are:
-- Fix several memory leaks for arm64, and similar issues on LoongArch.
-- Fix out-of-bounds write on 32-bit Highmem for x86.
-- Fix TOCTOU race in crash memory range collection.
+However, this truncation introduces a memory leak. The CMA pages
+allocated via kexec_add_buffer() during the failed attempt are tracked
+in the `image->segment_cma` array. Because the subsequent cleanup paths
+only iterate up to the truncated `nr_segments` boundary, these allocated
+CMA pages outside the new boundary are permanently leaked.
 
-This patch set is rebased on v7.3-rc3. Compared to the previous version,
-split out arm64 crash hotplug patches as Breno suggested, which are based
-on these bugfix patches and will be resubmitted after this patch series
-is merged.
+Fix this by explicitly releasing the associated CMA buffers in
+the failure paths before `image->nr_segments` is reduced.
 
-Slightly tested on x86_64 and arm64 qemu with:
-- kexec_load (--kexec-syscall --hotplug)
-- kexec_load (--kexec-file-syscall)
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Cc: Breno Leitao <leitao@debian.org>
+Cc: Pratyush Yadav <pratyush@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Yeoreum Yun <yeoreum.yun@arm.com>
+Cc: Baoquan He <bhe@redhat.com>
+Cc: stable@vger.kernel.org
+Fixes: 07d24902977e4 ("kexec: enable CMA based contiguous allocation")
+Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
+---
+ arch/arm64/kernel/kexec_image.c        | 1 +
+ arch/arm64/kernel/machine_kexec_file.c | 5 ++++-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
 
-All boot successfully into the second kernel.
-
-[1]: https://lore.kernel.org/all/20260601094805.2928614-1-ruanjinjie@huawei.com/
-[2]: https://sashiko.dev/#/patchset/20260729031235.2840255-1-ruanjinjie%40huawei.com
-[3]: https://sashiko.dev/#/patchset/20260907125404.922123-1-ruanjinjie%40huawei.com
-
-Changes in v6:
-- Split out arm64 crash hotplug patches as Breno suggested.
-- Remove unused elfcorehdr_updated [4].
-- Make the patch split more clear.
-- Link to v5: https://lore.kernel.org/all/20260918100442.3841135-1-ruanjinjie@huawei.com/
-
-[4]: https://sashiko.dev/#/patchset/20260907125404.922123-1-ruanjinjie%40huawei.com
-
-Changs in v5:
-- Rebased on v7.3-rc3.
-- Fix several pre-existing code issues reported by Sashiko AI review. [3]
-- Add an extra slot for memory hot-unplug.
-- Add device_hotplug_lock_assert_held() helper.
-- Rework to let the hotplug paths to skip CPU events entirely, which avoid
-  the TOCTOU race of memory hotplug events and internal CPU offline path
-  without holding device_hotplug_lock.
-- Link to v4: https://lore.kernel.org/all/20260907125404.922123-1-ruanjinjie@huawei.com/
-
-Changes in v4:
-- Rebased on v7.3-rc1.
-- Update the kexec_core code as Mike suggested.
-- Update the LoongArch subject as Huacai suggested.
-- Drop crash_dump_dm_crypt patch which will be fixed by Coiby in [4] as
-  Sourabh suggested.
-- Drop x86 related patches because of branch conflict, which will
-  be done later.
-- Drop the incorrect CRASH_MAX_MEMORY_RANGES patch.
-- Handle elfcorehdr_index in arm64 arch code.
-- Link to v3: https://lore.kernel.org/all/20260826092541.3905933-1-ruanjinjie@huawei.com/
-
-[4] https://lore.kernel.org/all/20260828084900.1496839-2-coiby.xu@gmail.com/
-
-Changes in v3:
-- Handle "KEXEC_CRASH_HP_REMOVE_MEMORY" action.
-- Fix several pre-existing code issues reported by Sashiko AI review [3].
-- Introduce crash_extra_elfcorehdr_size() and elf64_phdr_size() helper.
-- Rework related crash and arch code.
-- Add test method.
-- v2: https://lore.kernel.org/all/20260729031235.2840255-1-ruanjinjie@huawei.com/
-
-Changes in v2:
-- Split out Powerpc bugfix patch as Mike suggested.
-- Use phys_to_virt() instead of __va() in update_crash_elfcorehdr().
-- Convert pnum_hdr_sz() to a function.
-- Only assign elfcorehdr_index after kexec_add_buffer succeeds, considering
-  crash_handle_hotplug_event() already performs validity check on
-  elfcorehdr_index:
-  - We can safely remove the check for CPU hotplug
-    in arch_crash_handle_hotplug_event().
-  - The elfcorehdr_index's segment mem will be valid in
-    update_crash_elfcorehdr(), so we can safely remove the NULL check.
-- Simplify the commit message.
-- v1: https://lore.kernel.org/all/20260723131242.1537633-1-ruanjinjie@huawei.com/#t
-
-Jinjie Ruan (14):
-  kexec: Fix CMA segment address translation with non-zero text_offset
-  kexec: Record allocated CMA pages to fix release size mismatch
-  kexec: Extract kexec_free_segment_cma() from kimage_free_cma()
-  arm64: kexec_file: Fix CMA page leaks in segment placement retry loops
-  arm64: kexec_file: Fix elf_headers memory leak in retry loop
-  LoongArch: kexec_file: Fix CMA page leaks in segment placement retry
-    loops
-  LoongArch: kexec_file: Fix elf_headers memory leak in retry loop
-  LoongArch: kexec_file: Fix a modified_cmdline leak
-  x86/crash: Fix massive out-of-bounds write on 32-bit Highmem
-  crash: Extract crash_get_memory_ranges() helper
-  crash: Factor out crash_find_elfcorehdr() helper
-  crash: Normalize the kexec_load elfcorehdr at load time
-  driver core: Add device_hotplug_lock_assert_held() helper
-  crash: Fix TOCTOU race in crash memory range collection
-
- arch/arm64/kernel/kexec_image.c            |   1 +
- arch/arm64/kernel/machine_kexec_file.c     |   9 +-
- arch/loongarch/kernel/kexec_efi.c          |   1 +
- arch/loongarch/kernel/machine_kexec.c      |   2 +
- arch/loongarch/kernel/machine_kexec_file.c |  10 +-
- arch/powerpc/kexec/crash.c                 |   1 +
- arch/x86/kernel/crash.c                    |  40 +++++---
- drivers/base/core.c                        |   5 +
- include/linux/crash_core.h                 |   2 +
- include/linux/device.h                     |   1 +
- include/linux/kexec.h                      |   4 +-
- kernel/crash_core.c                        | 114 +++++++++++++++++----
- kernel/kexec.c                             |   4 +
- kernel/kexec_core.c                        |  43 +++++---
- kernel/kexec_file.c                        |  13 ++-
- 15 files changed, 192 insertions(+), 58 deletions(-)
-
+diff --git a/arch/arm64/kernel/kexec_image.c b/arch/arm64/kernel/kexec_image.c
+index b70f4df15a1a..ffcb7f9075e6 100644
+--- a/arch/arm64/kernel/kexec_image.c
++++ b/arch/arm64/kernel/kexec_image.c
+@@ -107,6 +107,7 @@ static void *image_load(struct kimage *image,
+ 		 * We couldn't find space for the other segments; erase the
+ 		 * kernel segment and try the next available hole.
+ 		 */
++		kexec_free_segment_cma(image, kernel_segment_number);
+ 		image->nr_segments -= 1;
+ 		kbuf.buf_min = kernel_segment->mem + kernel_segment->memsz;
+ 		kbuf.mem = KEXEC_BUF_MEM_UNKNOWN;
+diff --git a/arch/arm64/kernel/machine_kexec_file.c b/arch/arm64/kernel/machine_kexec_file.c
+index 854d872dfd0f..e48f29167b38 100644
+--- a/arch/arm64/kernel/machine_kexec_file.c
++++ b/arch/arm64/kernel/machine_kexec_file.c
+@@ -179,7 +179,10 @@ int load_other_segments(struct kimage *image,
+ 	return 0;
+ 
+ out_err:
+-	image->nr_segments = orig_segments;
++	while (image->nr_segments > orig_segments) {
++		kexec_free_segment_cma(image, image->nr_segments - 1);
++		image->nr_segments--;
++	}
+ 	kvfree(dtb);
+ 	return ret;
+ }
 -- 
 2.34.1
 
