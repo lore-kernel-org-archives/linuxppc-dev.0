@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-27826-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27827-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42C42C982E1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2026 09:05:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8DB09C982DE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2026 09:05:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hpHNP2Sxqz3bZR;
-	Mon, 21 Sep 2026 19:04:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.218
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789981461;
-	cv=none; b=a1hbE8eXZ1jsujoPldodR1uvwWmxOZYv63Y0+adbEIas4kMaXpGpx9Wm64HVpAj9b9BL+E1el7C9adO9SfrAvCMFMV0151gvhPnnBxu5xYlFq8dBCsB8c7MH9uhA4CsuGq1xcx7/Xf2dpGJe4/GnJe1Rz7GPFBqAWNMdj7uk8THAOcjHl1Biv1ldh+Vk+Fkvlw28YGubDsWrvO2NnmdFoLybZHW50BL9aZp+8Q1KTEUB9vhgC/6WIJy5opM7v3BK8iBkrvceKMOfOw+YFwX7bLRuCqn/o0e4wbDIQ3HsZvDDjNnOcfwQYiWzSiwTqNaJggj8035HrdCw1onk5ylVeQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hpHNQ73J7z2yft;
+	Mon, 21 Sep 2026 19:04:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.221
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789981462;
+	cv=none; b=iTpuK2cfaCMjSWc+fNzoS2sBQIDgh7SYuht1eg3fudaxjjN8raJWxJCruIZxt3wuqupZjdT6WkxmhyzZ42KSiaQqw0XhknlNThsL6GzK6kS6PdLYthgP7Vq2ZyOcU/OhqI40zhpL4nJ1WR5DNHqTupnEDMmwGS9YanUO6v/ejF41cxJpF9VzkXSKX+fabtlQL53PIVFjeLiFzjBEieXHUmuq/eMpoI5icwghBoFRDMcSOxMg8kE4lTiJc35KiRKBeGfNvWFZAyhpwXTss3aGHbOAqwe6bZGPdyDrCX6HHD5GgbFmRpWmHukI5kZV1ngXg48y6OqAXnLZxEjvmW3Deg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789981461; c=relaxed/relaxed;
-	bh=20ZJiQbk77XpGyt2zLlFzhTV8L6cgd0AT+Mg72ZNP+o=;
+	t=1789981462; c=relaxed/relaxed;
+	bh=gl9dOVAVG56ScS9MwUOL4momh5UtqrFy6pN1ShFcuZM=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Es/8sndqgyr2JDDMc+mCWUJp77brHscHPvl3I1AY5DgiCopJ+cmF9dyyhhmu8j4QhCzD18Ds6rwM+a6zNoi+LfPB+G89XIVYP0akPdd0TuYFwjlgOGZmUdN+y/Zo6pJSPj6VyYAm48WHnsc93fXFKwjvPlz0j6AuZ23s9BRDvrB9bic4RWAes2V/UfMXzQCyOcOtbjnu8Cw1KnDRLCBtH6Bznk0bnLo+daiceubBg5tkjTZoZnlq0DPu/MKVkI5R8gHJVO48R2f7UBgOKK223u16PMlek+q3u1kMZ71PARmw3sWITm9o+5BbGjVy4YMkOMWS1Jtd/cUHXfLivQ4h+A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=h20MzYgr; dkim-atps=neutral; spf=pass (client-ip=113.46.200.218; helo=canpmsgout03.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	 MIME-Version:Content-Type; b=kZby/CzyDEvbPuY9X2gxs8PlQ4vHgDWwVIj3B/hylT+wSdPhFj9g/VpHbOyoA6FlYmON+xjRVo4z9YRPEUWSdVzSU/+AwMPds0F1/7SdLrCxRMu1svO7NpcNfmaG02c7pIzdY0RvOVdXdiKGfBogxim3C5PnyoP+PibRfDS9G8dsk3ANOjBGvkozQSjsv818BndrGWlcX4ILdJQ+gQZ+J0Fa0LR7AOnEVyHIhEMUTqHqKiqYR+YoVaXrbES1n+WMOB5DqnzgDQb+ZS29YKjy1fCVAuIQbGDG0aBlWpxrX8tKhLn8+3XusEmphryxRzHCrhqkRw0oAtgUBUGZtfaiXQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=wVs/Hs9G; dkim-atps=neutral; spf=pass (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=h20MzYgr;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=wVs/Hs9G;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.218; helo=canpmsgout03.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout03.his.huawei.com (canpmsgout03.his.huawei.com [113.46.200.218])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout06.his.huawei.com (canpmsgout06.his.huawei.com [113.46.200.221])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpHNN22hgz2yft
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2026 19:04:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpHNP6m7wz3bjW
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2026 19:04:21 +1000 (AEST)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=20ZJiQbk77XpGyt2zLlFzhTV8L6cgd0AT+Mg72ZNP+o=;
-	b=h20MzYgrtfLEEV4IsF22m8M0aeU+9fIDiLpJWraCVTgEvlTBvhYu0irkyY7dZ8KlR25j3eFDX
-	uDHiuEi34Vyc2FyCL6c39JSfjX+M3Cz00j/vkUz1PTc66H//7kIYPJQEJrTEE3IZKzXvZCqcFXg
-	laCNtc/NvKopW2lnm4CTtD4=
-Received: from mail.maildlp.com (unknown [172.19.163.104])
-	by canpmsgout03.his.huawei.com (SkyGuard) with ESMTPS id 4hpH6T2gsnzpStW;
-	Mon, 21 Sep 2026 16:52:17 +0800 (CST)
+	bh=gl9dOVAVG56ScS9MwUOL4momh5UtqrFy6pN1ShFcuZM=;
+	b=wVs/Hs9Gq6VG/cWAMpWvzJmy/oIAMsdmFRrHLaMN8dhT/208NNm+Jy57C8JdLMxP37J0PUlpB
+	GvTnqbaNF3Y1buLGfFQc0tAbMgmC9XUKdLppSMLKPgLCRodGAQm9QZNfIEVZADGVfpSUfrMTgAo
+	355Yjh2Bx4bZrE0WgEv0YQ0=
+Received: from mail.maildlp.com (unknown [172.19.162.140])
+	by canpmsgout06.his.huawei.com (SkyGuard) with ESMTPS id 4hpH6N5yyJzRhjW;
+	Mon, 21 Sep 2026 16:52:12 +0800 (CST)
 Received: from kwepemk200008.china.huawei.com (unknown [7.202.194.74])
-	by mail.maildlp.com (Postfix) with ESMTPS id B60454058E;
-	Mon, 21 Sep 2026 17:04:11 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 7F7142011D;
+	Mon, 21 Sep 2026 17:04:13 +0800 (CST)
 Received: from huawei.com (10.90.53.73) by kwepemk200008.china.huawei.com
  (7.202.194.74) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Mon, 21 Sep
- 2026 17:04:09 +0800
+ 2026 17:04:11 +0800
 From: Jinjie Ruan <ruanjinjie@huawei.com>
 To: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
 	<chenhuacai@kernel.org>, <kernel@xen0n.name>, <maddy@linux.ibm.com>,
@@ -70,9 +70,9 @@ To: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
 	<linuxppc-dev@lists.ozlabs.org>, <driver-core@lists.linux.dev>,
 	<kexec@lists.infradead.org>
 CC: <ruanjinjie@huawei.com>
-Subject: [PATCH v6 08/14] LoongArch: kexec_file: Fix a modified_cmdline leak
-Date: Mon, 21 Sep 2026 17:04:44 +0800
-Message-ID: <20260921090450.807575-9-ruanjinjie@huawei.com>
+Subject: [PATCH v6 09/14] x86/crash: Fix massive out-of-bounds write on 32-bit Highmem
+Date: Mon, 21 Sep 2026 17:04:45 +0800
+Message-ID: <20260921090450.807575-10-ruanjinjie@huawei.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260921090450.807575-1-ruanjinjie@huawei.com>
 References: <20260921090450.807575-1-ruanjinjie@huawei.com>
@@ -95,47 +95,87 @@ X-Originating-IP: [10.90.53.73]
 X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
  kwepemk200008.china.huawei.com (7.202.194.74)
 
-load_other_segments() allocates modified_cmdline and stores it in
-image->arch.cmdline_ptr.  machine_kexec_prepare() then copies it to
-KEXEC_CMDLINE_ADDR and overwrites the pointer, so the heap buffer is
-leaked on every successful kexec_file_load().
+On 32-bit x86 systems with HIGHMEM, kmap_local_page() only maps a single
+4KB page. However, the elfcorehdr segment can span several pages (up to
+hundreds of kilobytes).
 
-Free the buffer after the copy.
+The original code blindly copies 'elfsz' bytes at once via
+memcpy_flushcache(), overwriting adjacent fixmap entries or critical
+virtual addresses.
 
-Cc: Huacai Chen <chenhuacai@kernel.org>
-Cc: WANG Xuerui <kernel@xen0n.name>
-Cc: Kexin Liu <liukexin@kylinos.cn>
-Cc: Youling Tang <tangyouling@kylinos.cn>
-Cc: Qiang Ma <maqianga@uniontech.com>
-Cc: Tianyang Zhang <zhangtianyang@loongson.cn>
-Cc: George Guo <guodongtai@kylinos.cn>
+Fix this by copying the new elfcorehdr page by page.
+
+Cc: Thomas Gleixner <tglx@kernel.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
+Cc: Vishal Verma <vishal.l.verma@intel.com>
+Cc: Baoquan He <baoquan.he@linux.dev>
+Cc: Chao Gao <chao.gao@intel.com>
+Cc: Sean Christopherson <seanjc@google.com>
+Cc: Eric DeVolder <eric.devolder@oracle.com>
+Cc: Hari Bathini <hbathini@linux.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
 Cc: stable@vger.kernel.org
-Fixes: d162feec6b6e ("LoongArch: Add preparatory infrastructure for kexec_file")
+Fixes: ea53ad9cf73b ("x86/crash: add x86 crash hotplug support")
+Link: https://sashiko.dev/#/patchset/20260907125404.922123-1-ruanjinjie%40huawei.com
 Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
 ---
- arch/loongarch/kernel/machine_kexec.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/x86/kernel/crash.c | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/arch/loongarch/kernel/machine_kexec.c b/arch/loongarch/kernel/machine_kexec.c
-index 1883cae93bc3..19ccc91b6f2a 100644
---- a/arch/loongarch/kernel/machine_kexec.c
-+++ b/arch/loongarch/kernel/machine_kexec.c
-@@ -14,6 +14,7 @@
- #include <linux/mm.h>
- #include <linux/of_fdt.h>
- #include <linux/reboot.h>
-+#include <linux/slab.h>
- #include <linux/sched.h>
- #include <linux/sched/task_stack.h>
+diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
+index e681ec9cf1dc..3c9f4fbbe7ff 100644
+--- a/arch/x86/kernel/crash.c
++++ b/arch/x86/kernel/crash.c
+@@ -447,9 +447,10 @@ unsigned int arch_crash_get_elfcorehdr_size(void)
+  */
+ void arch_crash_handle_hotplug_event(struct kimage *image, void *arg)
+ {
+-	void *elfbuf = NULL, *old_elfcorehdr;
+ 	unsigned long mem, memsz;
+ 	unsigned long elfsz = 0;
++	void *elfbuf = NULL;
++	unsigned long done;
  
-@@ -56,6 +57,7 @@ int machine_kexec_prepare(struct kimage *kimage)
- 		 */
- 		memcpy((void *)KEXEC_CMDLINE_ADDR, (void *)kimage->arch.cmdline_ptr,
- 					strlen((char *)kimage->arch.cmdline_ptr) + 1);
-+		kfree((void *)kimage->arch.cmdline_ptr);
- 		kimage->arch.cmdline_ptr = (unsigned long)KEXEC_CMDLINE_ADDR;
- 	} else {
- 		/* Find the command line */
+ 	/*
+ 	 * As crash_prepare_elf64_headers() has already described all
+@@ -484,21 +485,20 @@ void arch_crash_handle_hotplug_event(struct kimage *image, void *arg)
+ 
+ 	/*
+ 	 * Copy new elfcorehdr over the old elfcorehdr at destination.
+-	 */
+-	old_elfcorehdr = kmap_local_page(pfn_to_page(mem >> PAGE_SHIFT));
+-	if (!old_elfcorehdr) {
+-		pr_err("mapping elfcorehdr segment failed\n");
+-		goto out;
+-	}
+-
+-	/*
+-	 * Temporarily invalidate the crash image while the
+-	 * elfcorehdr is updated.
++	 * The segment is physically contiguous but can span several pages.
++	 * On 32-bit Highmem architectures, kmap_local_page() maps only a
++	 * single page at a time, so copy page by page.
+ 	 */
+ 	xchg(&kexec_crash_image, NULL);
+-	memcpy_flushcache(old_elfcorehdr, elfbuf, elfsz);
++	for (done = 0; done < elfsz; ) {
++		size_t chunk = min_t(size_t, PAGE_SIZE, elfsz - done);
++		void *dst = kmap_local_page(pfn_to_page((mem + done) >> PAGE_SHIFT));
++
++		memcpy_flushcache(dst, elfbuf + done, chunk);
++		kunmap_local(dst);
++		done += chunk;
++	}
+ 	xchg(&kexec_crash_image, image);
+-	kunmap_local(old_elfcorehdr);
+ 	pr_debug("updated elfcorehdr\n");
+ 
+ out:
 -- 
 2.34.1
 
