@@ -1,134 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-27909-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27910-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ADA98C982F1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2026 09:49:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5AF2C982FA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2026 09:58:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hpwKn4j0qz2yQJ;
-	Tue, 22 Sep 2026 19:49:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790070557;
-	cv=pass; b=ig6A/hjN9EGfx5tr+5P0KJtRnAA6j6l1GCWgM/8gb5q1brFXpXbhgUQl/H/oMUHuMTNxogW7H7FPcTmjsZvvsgOMMhhOhowTMibI64rXXEj0b+yB+vQUhpiVDG+sLSlBpR/Q9rMMC7J4S3sBm+K+mFKtlALDgBDISIjonhZx599AOfIvErQEdTM+BaqNrqAkRR0Pcd6mfOCAxr88gT3rdZenySWCE7+bu0yMiOoI+Ka5mMMC0ZqHpBNOrsHCJ2jPibD9AKa9JHyooOsF9O4ih85msUdWMQqiwHXU6+P11/xLjApyRM8p0LbaGuVHie65YGBa+X/mVo6htrEq7xEGlg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790070557; c=relaxed/relaxed;
-	bh=K0P4oWAXQMf88uI5Q8WmLMtZZD/4YBrWdfLznYrJigE=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=Y3aeeybLQbIOaZvNAeulLEoSZ0ZLUBNqv08YeUTbX+wQF8sFMPKSUqfSq18s7mKt6qR0MbmvzPVRVrSCjorKCxvxinp2I3uTYdFM0YB4MCRNZdCJO5pslFUvXUuymGl7zPyuMjZbrLPKvnebgM7Zd3WoPHZqL1WsQ/aPe6Bg3mwnotHvp/0CB5QuKdf4X2lAHbqynGQHATQsbityDk4+t/B2UxAITykF+Crr47Mcyz9CNxza3uoxlhXMJaXw/gVjVh/F3PKXAWv1sRTcg/xaWCrbHKgPCxT2iw5dOS3msS/rdUJj94eUu3mw6JSlTa/Jl3ojZyGo8Hhuv4SYP3QkmA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=iZS060jM; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hpwXN37kYz2yQJ;
+	Tue, 22 Sep 2026 19:58:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:31::11"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790071108;
+	cv=none; b=k3OG7c9Omo/izwUxZc+QxmLPRmUKhZq1fgPiqr9gx3/BeYF83Mogz+D4Dfw9PQEe6jpo4W3LhWW/CiVygIWHCotGZgUcup3nUJ4VI13px26sB1NzzAANkzhunMt946WdVryggtfvCwOplpHuubdV9o5TdpolM6CloST+Oi4yBRbJA9e/opa6LVNq3lFqGCa/jnapA9PFqpXEGcl/oupf1WhyPe03DqT3aVe28M4zfFyMHNGpbCORIAZYguhqRr8jfMMZbyv+L78i2hYvTfHPOEz7AN+xFqZYOFv+IAf2f4bwMEiJCtDr0pL5P3GpfjDEHXBY7kxRdapHMltXn7hRog==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1790071108; c=relaxed/relaxed;
+	bh=nZUNZdA2VreC5ZuzVVTaU77y9kWQRV4FmcQNBHWyLvk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=TiuPnFBSFJubns87gR5Y7DfEHsdR0U0KL9kzEJBgf5lhMkhlGS/C4zREwwx6PFzlER/DmnuoixwZORI4JgMjK6H05YHOTUSDHnBGGVJ6G6qos0Avt7erHOzW/1eWJ7uJFykjGGoMM5tcXIl+OBK/5E1hUQqMFRoiBbAUY0GzHqazAuE/m+BfDhFEMC3NuepfVtCiJS3DkrOSZfcPNur+HeUIJzGu4ekcPk7B72b/e1rgc7r5oLO6KEHmVWuYIzjIhdvnB/1HoL9IGM/yIFcf3mmIa5UO4zWwdqfHGS6ew23BtqzldVG2r+OWUopJOtCSWKEwo0TsPl/VbpTidAiu/Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=e8CKi3ix; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:31::11; helo=mail-wm2-x11.google.com; envelope-from=petr.pavlu@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=iZS060jM;
+	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=e8CKi3ix;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
-Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:31::11; helo=mail-wm2-x11.google.com; envelope-from=petr.pavlu@suse.com; receiver=lists.ozlabs.org)
+Received: from mail-wm2-x11.google.com (mail-wm2-x11.google.com [IPv6:2a00:1450:4864:31::11])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpwKl283Lz2yFQ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 19:49:14 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Xew6tIi/m/DfIjwZM7ab41pTjBok2Jbb7+od1eZeCbWFgP3jdP+N+3kvTNDQB4h7s5KKksjMCzJNUbASKXfjRED7S0QWJ8nLi47JLmSxWoFBTJ17SKn07yP2b+nFY7I+P5ahnSvkToor9CXNLIF0tth17gK9gxLM0XhMWLrfwbWdu6jkPyJCorgmHpnVM2OvET2eB4TetblSmbkbg/36fGwZEi/++wCKzlkCLBA1+UT2myvwNUr+8YQS0mQrwC5iF92L5pM5cM4ArtOMVJau8LJE4sMoBUlwykGFczn/DnyWDyQc/9B6Km9FPkreseZBsSkkXiUCMZjnbdzc8RjY+g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=K0P4oWAXQMf88uI5Q8WmLMtZZD/4YBrWdfLznYrJigE=;
- b=grmVmNKkuyMVj9J8eymfAePvkYpT24JOIyIkmxvgu02bvg1UjOYjEa/zyuur2yx3r+O/VLUHcBNSnZkfY7qPXhlH8umMb6VJfv0O35HIecKbyrTsugWc7s6WUjfVlIKtxzygO5zFwLuDckaGpjyJEvOA22u8CiSE7R76P4SLIXO4aIt13/NHUXrJdL+rBmMpYzOaeJpjEp6odiybExwjEQ2E3GiI1p99Dt5weXu7gqwtCZastXM4fYKB0s+nRM0e8IhWf46SCZsKpGO+BlkVcxtVNusZN60alt+6KMfOf++31W11/EUdHoEbdsNfy4HEluCACvLQJXWyQcMsR+yYAg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=K0P4oWAXQMf88uI5Q8WmLMtZZD/4YBrWdfLznYrJigE=;
- b=iZS060jMxgqSL9j/5IkocghiC5YOHfnmln6TirNKBtd8U2b9cam2S+dFP3STeNh4qzG2tI8KgYzTdGmYxLlIOnZIVLd9uDiy2b6cT7gQGteZzHa6irlLU4A+ksebIes24htz9ERq8m9xmqE2ocD0zSH9jB0A/U2oN+LKTRcPDZZCmqbGuB1mZ/ay7HABNYBuLIlffeSTb0NZw+qpGPFOIf9lBz6yIG5IvJOWaWK4atosh8OkIBBsXlMWW2bI9v61M12FSJgyNIGmh36GjxG8HZ4+UTvo8RqzSi0+vOyWImd5QzRz+V6NSWVQDy1X7PztmZznwYN7Ad3j4vsFGmST6Q==
-Received: from AS4PR04MB9338.eurprd04.prod.outlook.com (2603:10a6:20b:4e6::17)
- by DBBPR04MB8028.eurprd04.prod.outlook.com (2603:10a6:10:1e0::23) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.428.16; Tue, 22 Sep
- 2026 09:48:46 +0000
-Received: from AS4PR04MB9338.eurprd04.prod.outlook.com
- ([fe80::7c4c:9c56:8552:f680]) by AS4PR04MB9338.eurprd04.prod.outlook.com
- ([fe80::7c4c:9c56:8552:f680%6]) with mapi id 15.21.0428.015; Tue, 22 Sep 2026
- 09:48:46 +0000
-From: Wei Fang <wei.fang@nxp.com>
-To: "netdev-bot+sashiko@kernel.org" <netdev-bot+sashiko@kernel.org>, "Wei Fang
- (OSS)" <wei.fang@oss.nxp.com>
-CC: Clark Wang <xiaoning.wang@nxp.com>, "andrew@lunn.ch" <andrew@lunn.ch>,
-	"olteanv@gmail.com" <olteanv@gmail.com>, "andrew+netdev@lunn.ch"
-	<andrew+netdev@lunn.ch>, "davem@davemloft.net" <davem@davemloft.net>,
-	"edumazet@google.com" <edumazet@google.com>, "kuba@kernel.org"
-	<kuba@kernel.org>, "pabeni@redhat.com" <pabeni@redhat.com>,
-	"horms@kernel.org" <horms@kernel.org>, "richardcochran@gmail.com"
-	<richardcochran@gmail.com>, "linusw@kernel.org" <linusw@kernel.org>,
-	"linux@armlinux.org.uk" <linux@armlinux.org.uk>, "imx@lists.linux.dev"
-	<imx@lists.linux.dev>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Subject: RE: [PATCH v4 net-next 3/8] ptp: netc: export
- netc_timer_get_current_time() for cross-driver use
-Thread-Topic: [PATCH v4 net-next 3/8] ptp: netc: export
- netc_timer_get_current_time() for cross-driver use
-Thread-Index: AQHdRz7S22iPk+jFYkOuk2Znvrfaz7baSXoAgAANDmA=
-Date: Tue, 22 Sep 2026 09:48:46 +0000
-Message-ID:
- <AS4PR04MB93381E4945132FDFFDD7E4E088832@AS4PR04MB9338.eurprd04.prod.outlook.com>
-References: <20260918072852.501420-4-wei.fang@oss.nxp.com>
- <179006555469.2160803.8873313402765313889@kernel.org>
-In-Reply-To: <179006555469.2160803.8873313402765313889@kernel.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-msip_labels:
-authentication-results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: AS4PR04MB9338:EE_|DBBPR04MB8028:EE_
-x-ms-office365-filtering-correlation-id: 7671edf4-42f0-49a1-03b4-08df188eb262
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|19092799006|7416014|376014|1800799024|23010399003|366016|6133799003|22082099003|18002099003|38070700021|56012099006|11063799006|5023799004|4143699003|10067099003|3023799007;
-x-microsoft-antispam-message-info:
- wdpIkaKaVhXuUFiBDNSf4Yn/rNfHMd7B5PKWKSDQl0aQN6ZkyyYsjgc6EmM1km28ewz7+/P+wBXf7BUfe4tovL33ow7l/rWJ21+Bg1zTxZ84Cw4zEkK8ctKahbpr4HqQtsPwznwcGjHhaKHGcsVc7x+eRo0zrgXjHu3i/jE3rHAD2OuiZ24pBnFO62gx4m883Mu9+XTzROemZh6FuJLLswNUZauoY/qj7zvnxYiy2Gg2jA6G7S23upFdQLgsHbZRkbiKovT9ejvgSKNuky3tYF6FlWLWzumEEm7kD2MQtDSbz6qg2VWbUUqFSH1GCdgrRMRStvDh5bH/mSGK7IBTQL3sxJovF+EiRPF4aaV+Q8sFEUUOAML5vRmvl5HPzPY9LR9OAkU5lBczJAaL7lsdBlYy0GXBGKms7xWII77dlbu7JkV/RnQ+JFBsJD3q9DQXiZEqADRdcDf5tTBcKI27X02R+RVXhJ7zeJPd+oCtr94/NCaufCTb6cBUei3FlxdYzviLHErTePj/YONQa2RI7ElTLC1BOMqL79nn0M7/+0+OjtxHfPSmWKDlI0Gceu8s+4TnaIIr4/0BmfenDlvIUUzUiErqcc8kzdJYNDIh4t7ZS8Amc5bWv9xejGqW1ZE0Bgebj8U4Zwp5skqGjOYaY6tFQwunlDjn0xKqcXN+yN3UCRoNXVh6BzNGDsUck6SLQa4Mq8rZhQnM4nniy/xo5sCHRa+x3WreLDHLCMykkYg=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS4PR04MB9338.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(7416014)(376014)(1800799024)(23010399003)(366016)(6133799003)(22082099003)(18002099003)(38070700021)(56012099006)(11063799006)(5023799004)(4143699003)(10067099003)(3023799007);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?YU78MGgmR9C0hVZylAO60FyHfYLN8VyO1kf+fQV6SdkXShIA8Oa3OdBGNHai?=
- =?us-ascii?Q?3Vwq7MgMrS2wuQfPpNI5W9FIXVp095OhO0i3nYzwx4OrxGVr8bovnKk0fFGo?=
- =?us-ascii?Q?3Rb821BBvuItBeG+lis5F5TWTNFceO6q8zlri4nTXL/UuG534Y5RytJHyaIf?=
- =?us-ascii?Q?DcIf+FPYeBH9cIRR6ee2Hn/AZ+7o0qOlX12Q+HhMcyzCdimyTh0hhSGdcpev?=
- =?us-ascii?Q?OFRxs5CisxVdw48Ic+uYqJha94jMcfRCqQrsycc9XxD4XNuFwhwZDNAu8zLw?=
- =?us-ascii?Q?BOeDYHGj/RpWdOssJkdkHePH1bYim93RLzee18pBxGnauGj2mhbLgxJi/uEl?=
- =?us-ascii?Q?MAm/4MCqAYMB11cgR90Ha86AAaBSaZR9mPkbPLs/9clQ5TCNIOr98mdf44pf?=
- =?us-ascii?Q?tfmFqUPlZQBeIGN8ujj+LVORBshdMeOA86P9CcEv73Na2rLpYRDBrS5nKRYh?=
- =?us-ascii?Q?JJVaBQv9MVNHPWzFMfw5r7iYi3rhuHs3BRtg7JqwxM51+5Cp6r5H2IeQVyp+?=
- =?us-ascii?Q?mNIoVHaMJvdJI5UecyClvGKMVfu9UWI1j8LivvXy0MQ+BtjuRiI1Ea4sOFGS?=
- =?us-ascii?Q?MW3gtEQgMMzYwfuKmjth8tTlE17Lc3a3HTmgJRGf2hNoDbJIyjr6px4fCdDC?=
- =?us-ascii?Q?9n2pBXAFAbjE/HNCEu/oVhn0YypU5sMIqf6AMvD6BS2Jg/QF+r010ybSCzkO?=
- =?us-ascii?Q?Ib/FtFBz1rwwj2rpJ0gLd8zKfh3NuLodhswyktuT2hONyIorsLqc/HHhsq1V?=
- =?us-ascii?Q?VXofshDbvV9Yyut2y7oNKWt4Ku9eG1eOkK/dmbRkcFqDEubfuNEcmqLqIyLs?=
- =?us-ascii?Q?F7RKa8CW9xFz8eaJXRtjDKAv8QHx/3TkD0OGgnUj/Yav5d+frujQ+2BdQ4mK?=
- =?us-ascii?Q?qlOnLE/t5rS/w7CdI6DyJo0JSsfLDfyn8wR+ytZ7UF6Y/gx2jEMqsgB7hyfC?=
- =?us-ascii?Q?87/+tnaMxspsNw4zIqxoJUYvdlod1nTEVbHq9U1r986HjH0vzVUSlxMUVbBu?=
- =?us-ascii?Q?EN6jnrBdD3fIn2HHumPN0B3iVqRQUhXNPJ4o/ttGs9KHv17KRpdbUhfxkEKq?=
- =?us-ascii?Q?50ZNFZPsXq1ZT0fGvaNepM8fzJ/igW1Rv++zu6GNRrDs9T5f00lWaWyOC2g0?=
- =?us-ascii?Q?OKbQovqumcHKx3Eu8t3bZNEOMI5rscvOFVJmWkLD6LsAYqBDGNC7UbS2hUk1?=
- =?us-ascii?Q?VC9FIBcpAzUAYZ6HZrmsLXnMuxhZZKluFeX9wI6y85ZwImwGIiUF4CKnbiVD?=
- =?us-ascii?Q?rbP6gL6PPWZr9DRuE72xicpaQmG4p+dtJIDt9YIDpCDXVjREcv/7IEUAXjdy?=
- =?us-ascii?Q?bGfBMLFUGdzcT1u182YsWfU5Gnuply2+Axb+cjThfkFQlW01SFbMZiXNFHg9?=
- =?us-ascii?Q?JgRJicwXMe1oFM2RP2bKmQ0DwsnUELJhytr7gqWubBFEGBedqEbMVX7z0jNY?=
- =?us-ascii?Q?qa16AdtGO+KtpjG3L4HTrK3NRTYEwMJThlsYQLdaEqRZF655mddovhDjVrIl?=
- =?us-ascii?Q?QSNWxewEpTvRRYNPx7KYVaPzV3YcWO3kPXWe9V7vW5rHmBa5wipb2gksdtIC?=
- =?us-ascii?Q?ATdiFewXz0THmToEsj05PgdN0sEAhTITnxfzkdhbp7Aq5K2pcJwkd3g0a03c?=
- =?us-ascii?Q?NfmwX/+Dl/BcpvShsjbH+/dju95sSmN96XC7vQgo5sZXE9xUQ38jXqq/RCyH?=
- =?us-ascii?Q?K0hIG/W6Z+geYZoGqqgfhzO10U/loK/32akUJ9+LLhCUzg2g?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpwXL5dpwz2yFQ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 19:58:25 +1000 (AEST)
+Received: by mail-wm2-x11.google.com with SMTP id 5b1f17b1804b1-49b912e4ad9so22933245e9.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 02:58:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1790071102; x=1790675902; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=nZUNZdA2VreC5ZuzVVTaU77y9kWQRV4FmcQNBHWyLvk=;
+        b=e8CKi3ixWbT2cuvTT06RQeyJx1MsDuItt/NOrjux3NHqprDCaLrNdFx+YK3dQN6Dh/
+         KDQzDBM6qNxveesDO/AGv0ERsgT0bfWxoB0Q8vKZwG60Ht9TEBKQHRQz/YjkDd6o51Mf
+         AFdM9KmBxePjYMiZFDhEDpMVDu9YjVFqSilLq5BAgqau8jGBUZR0N42FPjZQdhRxZG6N
+         ylg91TSEHit6LjVFk3QLmvsohnI//X9FdQ5Z6aG2YogkKap1BjUEKhj1Fuh4qa37Wi+l
+         3OMCABEY2O6rC2ZukNRh4ynttFQHZyuZqZgfptjwFAwRW5ppBTwTU7okWBa8ik/MtoP6
+         3HWA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790071102; x=1790675902;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=nZUNZdA2VreC5ZuzVVTaU77y9kWQRV4FmcQNBHWyLvk=;
+        b=HbnlfkVGv732y+NxXlL2TBuqWFznW50vOm0hIx/ZT73vqFzNyO4hoEplPPOhGoqXrF
+         qliDNA1tMGhbFJxSYBMpqjYUilf5s7OGM7F8BuEMdgP9J5GrWHaPY/9yumXejIuQemNV
+         4nc3onhnj6yfqMJN0gHocRR01IVeRMrXw7WhI0AmV91/eml0DU0wT9AmkgUk+PL1+E/U
+         SDPr7z4ClV2AuRTAPw77nm2LxTqL22K6s2Rw6ELoFFa0XIQZ0Gp2QK2jhug+2ddCm8xz
+         qdk3GEIfgaaDG7Is7/zN+RJHxAyeapbcBkYe3IDwaXkA5s4ATOYRMTxmcfQhpkOAGEE+
+         KrXw==
+X-Forwarded-Encrypted: i=1; AKwUvBzXFGWRVY8QqrAFETPa8XLWyFwoBH/+pHYqmCr9S0jqWcRdCeT0iDHNljWOkXLPBOTCmG3+piHIQxOq1FM=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++n48JXn8cNWnS4qUy/T+JYJXz4kqdiNuOUBCFUfwrzpcjlr19L+
+	3QWFkDO7hkLI/+bJvHez1DBMdrIfMe2X9NSm0zptco9w/zNbW5dQa3pNB2DJe4hQNoQ=
+X-Gm-Gg: AYBFou27BYcvkoaAZMAcFH5bvtHxSuIZC2PtdqYDYGcccYFhQmal0DOMn4gLQUwLnmj
+	qLoL0W6spK5kFStT7OvKq4VdAdgYchUKJx3OmNrX/IIUN4IBT1uMv1fSlWpU+lKU1twYQlbf6Q+
+	u1teWbnsO/iaazoSIrzgY7VGrpedBqPMuoLRDmwB147tb4/+YFvY16RQ4lgvUpG704u5/AmBoLM
+	OJYJ8bMK34yEqjBPNJSc+DUdDGNLfqxm4YZ351U5sVaFKaddEufSvslxNXb+WSTbMWtiwA/SawL
+	jFsKjYP7/XFVBZdgpu5hecRs0hmy12wotQBIcmIs0qpD71FtH06ClAQI0KJyVwg5Umn1bw1UNk5
+	NeQdFaXzx0CnsYJfWFl0maZoEIT//HbOyhl8khxY1jpNcFMzNTYhSYTUC5BrHJCjFTCCBzLeE0+
+	zE238tWhgb1JxqqFDn+9kRkhUfkuXyLhi8E7I4xaMWtXHB4Tq+EvN73m/8yRakti5GSG5YdyoU/
+	dlLKUJZoJPoemjyQJLjyUtSkwGdBDmoAw00jsy/4bkkBtWHAlNdhKtii4eerlIY27iffFx+rJLC
+	VUJFoiRZ/yk88Dymb0JG14T9LiBOeUABwEIkj7x7
+X-Received: by 2002:a05:600c:a0a:b0:49e:84bf:6110 with SMTP id 5b1f17b1804b1-49fc56dbb49mr199597855e9.6.1790071101618;
+        Tue, 22 Sep 2026 02:58:21 -0700 (PDT)
+Received: from ?IPV6:2a00:1028:838d:271e:8e3b:4aff:fe4c:a100? (dynamic-2a00-1028-838d-271e-8e3b-4aff-fe4c-a100.ipv6.o2.cz. [2a00:1028:838d:271e:8e3b:4aff:fe4c:a100])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49fdab0c240sm27108755e9.4.2026.09.22.02.58.19
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 22 Sep 2026 02:58:21 -0700 (PDT)
+Message-ID: <2bf82e0b-a032-4ee7-8d93-c5604222723d@suse.com>
+Date: Tue, 22 Sep 2026 11:58:18 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -142,183 +90,85 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: AS4PR04MB9338.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7671edf4-42f0-49a1-03b4-08df188eb262
-X-MS-Exchange-CrossTenant-originalarrivaltime: 22 Sep 2026 09:48:46.6581
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: wpAHmlwYLDeBBkL/DfYIS86blRqjuXNTKYkt6dDpHTbBDIOncM8ERtZcloHjpfGD0BIBnYCbKfVln+LISxVhaw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DBBPR04MB8028
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 0/3] Bring includes in linux/kmod.h up to date
+To: petr.pavlu@suse.com
+Cc: Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>,
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ Philipp Reisner <philipp.reisner@linbit.com>,
+ Lars Ellenberg <lars.ellenberg@linbit.com>,
+ =?UTF-8?Q?Christoph_B=C3=B6hmwalder?= <christoph.boehmwalder@linbit.com>,
+ Jens Axboe <axboe@kernel.dk>, Johan Hovold <johan@kernel.org>,
+ Alex Elder <elder@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Michal Januszewski <spock@gentoo.org>, Helge Deller <deller@gmx.de>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
+ Trond Myklebust <trondmy@kernel.org>, Anna Schumaker <anna@kernel.org>,
+ Chuck Lever <cel@kernel.org>, Jeff Layton <jlayton@kernel.org>,
+ NeilBrown <neil@brown.name>, Olga Kornievskaia <okorniev@redhat.com>,
+ Dai Ngo <Dai.Ngo@oracle.com>, Tom Talpey <tom@talpey.com>,
+ Mark Fasheh <mark@fasheh.com>, Joel Becker <jlbec@evilplan.org>,
+ Joseph Qi <joseph.qi@linux.alibaba.com>, Tejun Heo <tj@kernel.org>,
+ Johannes Weiner <hannes@cmpxchg.org>, =?UTF-8?Q?Michal_Koutn=C3=BD?=
+ <mkoutny@suse.com>, Luis Chamberlain <mcgrof@kernel.org>,
+ Daniel Gomez <da.gomez@kernel.org>, Sami Tolvanen <samitolvanen@google.com>,
+ Aaron Tomlin <atomlin@atomlin.com>, Pavel Machek <pavel@kernel.org>,
+ Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Danilo Krummrich <dakr@kernel.org>, Nikolay Aleksandrov
+ <razor@blackwall.org>, Ido Schimmel <idosch@nvidia.com>,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Simon Horman <horms@kernel.org>, David Howells <dhowells@redhat.com>,
+ Jarkko Sakkinen <jarkko@kernel.org>, Paul Moore <paul@paul-moore.com>,
+ James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
+ Kentaro Takeda <takedakn@nttdata.co.jp>,
+ Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+ linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org,
+ drbd-dev@lists.linux.dev, linux-block@vger.kernel.org,
+ greybus-dev@lists.linaro.org, linuxppc-dev@lists.ozlabs.org,
+ linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org,
+ linux-nfs@vger.kernel.org, ocfs2-devel@lists.linux.dev,
+ cgroups@vger.kernel.org, linux-modules@vger.kernel.org,
+ linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
+ bridge@lists.linux.dev, netdev@vger.kernel.org, keyrings@vger.kernel.org,
+ linux-security-module@vger.kernel.org
+References: <20260911-module-include-kmod-v3-0-6ebccc3e0731@suse.com>
+Content-Language: en-US
+From: Petr Pavlu <petr.pavlu@suse.com>
+In-Reply-To: <20260911-module-include-kmod-v3-0-6ebccc3e0731@suse.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-> > +int netc_timer_get_current_time(struct pci_dev *pdev, u64 *ns)
-> > +{
-> > +	struct netc_timer *priv =3D NULL;
-> > +	struct netc_timer *tmp;
-> > +	unsigned long flags;
-> > +	int err =3D 0;
-> > +
-> > +	/* Serialize against driver unbind, so holding it here ensures that
-> > +	 * priv remains valid for the entire duration of the register read.
-> > +	 */
-> > +	spin_lock_bh(&netc_timer_list_lock);
->=20
-> [Severity: Medium]
-> Is it necessary to hold the module-global netc_timer_list_lock across the
-> MMIO access, rather than only across the lookup?
->=20
-> priv->lock is taken from hardirq context with a plain spin_lock() in
-> netc_timer_isr(), and that handler can spin in the register drain loop in
-> netc_timer_handle_etts_event():
->=20
-> drivers/ptp/ptp_netc.c:netc_timer_handle_etts_event() {
-> 	while (netc_timer_rd(priv, NETC_TMR_STAT) & TMR_STAT_ETS_VLD(index))
-> 		etts =3D netc_timer_rd64(priv, NETC_TMR_ETTS_L(index));
-> }
->=20
-> So while CPU A sits in netc_timer_get_current_time() waiting on
-> spin_lock_irqsave(&priv->lock) with softirqs disabled and the global list=
- lock
-> held, CPU B can be inside netc_timer_isr() holding priv->lock for a perio=
-d
-> bounded only by hardware. During that window every other Timer's probe(),
-> remove() and every other time query is serialized behind
-> netc_timer_list_lock. The same applies if the target function is unreacha=
-ble
-> and the non-posted read stalls until the PCIe completion timeout.
->=20
-> Would an RCU-protected lookup (with the priv free deferred in remove()), =
-or
-> taking a reference on the Timer, give the same lifetime guarantee without
-> holding a global lock across the register access?
->=20
-> Related to that: the BH-only requirement makes the exported symbol illega=
-l
-> from hardirq or with interrupts disabled, but that constraint appears onl=
-y in
-> the kerneldoc and is not visible at the prototype in
-> include/linux/fsl/netc_global.h, and nothing but an eventual WARN from
-> __local_bh_enable_ip() catches a violation. Is there a reason not to drop=
- the
-> context restriction by using a lookup scheme that does not disable BH?
->=20
+On 9/11/26 4:46 PM, Petr Pavlu wrote:
+> The usermode helper declarations were previously provided by linux/kmod.h
+> but commit c1f3fa2a4fde ("kmod: split off umh headers into its own file")
+> moved them to linux/umh.h in 2017. Add explicit includes of linux/umh.h to
+> files that use usermode helpers and remove linux/kmod.h where it is no
+> longer needed.
+> 
+> Also add a missing include of linux/sysctl.h to kernel/time/jiffies.c.
+> 
+> Finally, clean up linux/kmod.h so that it includes only the headers that it
+> actually requires, importantly removing the compat linux/umh.h include.
+> 
+> This cleanup is motivated by trying to reduce the preprocessed size of
+> linux/module.h, which includes linux/kmod.h. linux/module.h appears in
+> roughly 15k #include directives across the kernel. This makes it a "hot"
+> header, so it should avoid pulling in unnecessary definitions. Note that
+> this series doesn't immediately improve the situation, since most of the
+> files included by linux/kmod.h are, for now, also included by
+> linux/module.h through other paths.
+> 
+> Apologies for the wide distribution. Acked-bys are appreciated.
 
-There is effectively no contention on the global lock. NETC has at most 3 T=
-imer
-instances, and the Switch can only use Timer0. netc_timer_get_current_time(=
-)
-is used solely by the Switch driver - the ENETC driver never calls it. At r=
-untime,
-only the Switch driver ever takes netc_timer_list_lock; the other Timer ins=
-tances
-take it only during their own probe()/remove(). So in practice the lock has=
- no
-competing runtime users. On top of that, the drain loop in
-netc_timer_handle_etts_event() is bounded - the hardware time-stamp FIFO
-holds at most 16 entries, so the ISR holds priv->lock for at most 16 regist=
-er reads,
-not an unbounded time.
+I've queued the series on modules-next for 7.4-rc1.
 
-With no real contender for the lock, switching to RCU would only add comple=
-xity
-without a meaningful gain.
-
-> > +
-> > +	list_for_each_entry(tmp, &netc_timer_list, node) {
-> > +		if (tmp->pdev =3D=3D pdev) {
-> > +			priv =3D tmp;
-> > +			break;
-> > +		}
-> > +	}
->=20
-> [Severity: Low]
-> This isn't a bug, but the lookup is a bare pointer comparison on a
-> caller-supplied struct pci_dev *, so its soundness depends on the caller
-> holding a reference on @pdev. The in-tree consumer does hold one
-> (netc_get_ptp_timer() obtains it with pci_get_domain_bus_and_slot() and
-> drops it with pci_dev_put()), so nothing is broken today.
->=20
-> Could the kerneldoc and the exported prototype state that the caller must
-> hold a reference on @pdev? Without it, a future caller that caches a raw
-> pci_dev pointer has no hint that a freed and recycled pointer could match=
- a
-> different Timer's entry.
-
-The only caller is the NETC switch driver, I do not think we need to update=
-=20
-the kernel-doc.
-
->=20
-> > +
-> > +	if (!priv) {
-> > +		err =3D -ENODEV;
-> > +		goto netc_timer_list_unlock;
-> > +	}
-> > +
-> > +	spin_lock_irqsave(&priv->lock, flags);
-> > +	*ns =3D netc_timer_cur_time_read(priv);
-> > +	spin_unlock_irqrestore(&priv->lock, flags);
->=20
-> [Severity: Medium]
-> Can this return 0 together with a meaningless timestamp when the Timer
-> function is not accessible?
->=20
-> List membership only proves the pci_dev is bound to this driver: the entr=
-y is
-> added at the end of netc_timer_probe() and removed only in
-> netc_timer_remove(). netc_timer_driver registers no PM callbacks, so syst=
-em
-> suspend takes the PCI core default path and the function is disabled and =
-put
-> into D3 while the list entry stays live, and nothing re-programs
-> TMR_CTRL[TE], CK_SEL, TMR_ADD or TMR_CNT on resume. The driver already
-> documents the constraint in netc_timer_init():
->=20
-> drivers/ptp/ptp_netc.c:netc_timer_init() {
-> 	/* Software must enable timer first and the clock selected must be
-> 	 * active, otherwise, the registers which are in the timer clock
-> 	 * domain are not accessible.
-> 	 */
-> }
->=20
-> The same holds for a surprise-removed function or one contained by DPC/AE=
-R,
-> where the read returns all-ones. In those cases the helper still reports
-> success, and the switch side consumes the value verbatim as the one-step =
-Sync
-> originTimestamp in netc_port_onestep_work():
->=20
-> drivers/net/dsa/netc/netc_ptp.c:netc_port_onestep_work() {
-> 	NETC_SKB_CB(skb)->tstamp =3D tstamp;
-> }
->=20
-> Would it make sense to gate the read on pdev->current_state =3D=3D PCI_D0=
- and
-> !pci_channel_offline(pdev), or on TMR_CTRL[TE], and return an error inste=
-ad
-> of a successful-looking value? The missing PM support is not introduced b=
-y
-> this patch, but the new export is what turns an inaccessible-device read =
-into
-> a timestamp handed to another driver.
->=20
-
-NETC is a Root Complex integrated Endpoint (RCiEP). The Switch, ENETC and
-Timer are all on-chip integrated functions with no external PCIe link and n=
-o
-physical connector. So surprise removal and AER/DPC containment simply
-cannot occur here.
-
-Suspend/resume is not supported anywhere in the NETC subsystem - the Switch=
-,
-ENETC and Timer drivers have no PM callbacks. When PM support is added late=
-r,
-it will guarantee that the Timer suspends after the Switch and resumes befo=
-re it,
-so the Timer is always programmed and accessible whenever the Switch may
-query it.=20
-
+-- 
+Thanks,
+Petr
 
