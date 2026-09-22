@@ -1,49 +1,101 @@
-Return-Path: <linuxppc-dev+bounces-27914-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27915-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D250CC982FF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2026 11:34:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA0CBC98306
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2026 12:15:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hpygj6DJtz2yQJ;
-	Tue, 22 Sep 2026 21:34:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::e1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790076897;
-	cv=none; b=AU7FJKZJCkymNBbiSq+hM+FxnZarsx5za5DWoz2eDyFpuW9PulA7Ij+FvMsYvfWlxTJZoFYmGf4MkbIZeJSYmMkpMYHgIl+88fFpM4hVI9mA9ggkAKkxnHP+YwTia5Y7aSr7GdQ1guCLYSgA/sMzTb6zmPmsMoWQ9tMOsUdUTc3Z+OOpPLRL7yt1Wfl3jjHL1Tf7UHO13Vo33Cr5IkIrLK89cJD3rqilGvVIb6OHefaLo67lK84SC+LcTV36gSNaL9ML6mOLRJAIjRN7YCpQcuCNyluQ/370CLzfUmWNXU5k9YcqQdM3i3C7WIyE2yatGwUHniRCUxIy0M92Pmd66Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hpzZJ0mv4z2yQJ;
+	Tue, 22 Sep 2026 22:15:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790079320;
+	cv=none; b=hKfRKIjF1NpL/dWNVjKGHYQ6VPIpFD36CjuU+IJw8yXoNm+h0Pj0yyP4aA0pb49pLldpmGSTvq89YialgCZYcf8M5/Z8xghB2hVErT/y2K87kq4lQNTk4FNtcTSwLm9LrRxiSJ9x4GsnxYjuOCF3oyRnLcDznlcZE2ScX56xzmjFiyoFfREzEfhgVo/rjjpjStE1pag2M+81UpLUBjtUt2UMpClF5x8CsudiGWoQJI1aJyVacT1VkpmSNGXBjAxu7/NrrWAPeGrNn2Id7DfdS4toFUJkyRGenlSlldU2mffLrpt/f2M81OLd2c7ZulDRB76nfXMDuJz+96zJgP0nUA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790076897; c=relaxed/relaxed;
-	bh=m+DYFUAECSNtX1wNQ7IinAiwAu6YjDlxAqYAsmi/u54=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=E9Oe5qTCAenp8n9jrfkjSxYxD8RoHJS36sGcN50QylhMx8ClD89To6mbmN2Bml0ZL1WO68QyC5hmPV6w2OE6qs1rx8wvqkSvKph2feyDz9rHM1QwICoIIkJk62tC8RCP6N5px/8MmQuueGjjo/dPzOlYyd6RIU646hRZKU9/pctaDgQVZCukzsUgYja7euj1bFxvjVHhWt0jwhrplNt+OH5aLUCp+8Q748IJajV9Jdm1TI7y17TxUZCrS5RJY3xarKXuCk3Xm0cgSuWLQ2ePmwqq/X1fC6KBGwnOT1FqDQcCBtlpzVvuJPmuHKFGD7DxTPM6tua+bg1DErhXvttQ7Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=H40PvPZ9; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::e1; helo=mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1790079320; c=relaxed/relaxed;
+	bh=gItcWC83jyqQewAzlLEIrIdpVAhf+FBobtBOU1cWYdE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=UgyyO2tLnBNlqO2myfItG8xYeOLCY7GRErr8ru3CLQoGNCob6oDY3EzNvFHMWzq8BfdctIhyVoUjQmoEMahdM+JHI2ZVskJyV6tSJAFyV17bjMCD3OhEh61wG8jAiztgK5GIqMXSzI2SHdV7HOWGznuqxBFEBSx819oYtDWoSoK/n5pxboAWl62iOFTb2GFJ5vX9hjGiZivwjfudHl/XApm++Nj8yPRiwYkTYYQAkdh18heGddbn2Lja1URu+OS4g3craQAS8uZcTFbZwJemZfU8jhuHv4V+DsRZSyusWgqVkqkXRCaGNNzooaZaUdDlI/lnSc4Qn0U1Vmz8rfrrhQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=h3gqLkdx; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=H40PvPZ9;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=h3gqLkdx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::e1; helo=mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta1.migadu.com (out-225.mta1.migadu.com [IPv6:2001:41d0:203:375::e1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpygc0YMzz2yFQ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 21:34:44 +1000 (AEST)
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=NN747W62S3d/5Yjf441AnlRml7ayVS4UCAQNtupGVWY=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1790076864; v=1; x=1790681664;
- b=H40PvPZ9vNDILj732D/LLsyn1h5lSk+aem0eXEBhzr1C+AFUQ8aGr/e86SvGssxynXBHO0kj
- qpya17yr6q0rt5TdXP0+rB6hZJD/j3w0UWnDFF80K+InYmt1vgOSWyFo5wqETkYv6Iywe972FVc
- 4F7wFoy6jWsZLMxtxNfwSpCQ=
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id 29b45f507b2da17a;
-	Tue, 22 Sep 2026 11:34:24 +0000
-X-Mizu-Trace-ID: 29b45f507b2da17a
-X-Migadu-Flow: FLOW_OUT
-Message-ID: <9ac5cba5-0044-4f57-9ec0-d5631b7b178c@linux.dev>
-Date: Tue, 22 Sep 2026 19:34:18 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpzZH0grVz2yHT
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 22:15:19 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 95A18419CD;
+	Tue, 22 Sep 2026 12:15:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 117D71F000FF;
+	Tue, 22 Sep 2026 12:14:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790079316;
+	bh=gItcWC83jyqQewAzlLEIrIdpVAhf+FBobtBOU1cWYdE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=h3gqLkdxuBoehEGT/VKAAx5lOOZyw0R9ECju20pTUpkGq3CY4/SfkP5Oo8Atj/17P
+	 LheKowjELtZHtWEwX8eBKfgrKHJcRi0+O+d1XJm5SNFJeLnSFaLisjCbEBlxeLxjOn
+	 7b+NpgO+ZPXTsbOJUosoddrg+40PBvbsgsGmbY2VSvCJX0WLnI37yVWEjSxgbtaT89
+	 F/0sTPdrQN1xs1nAXdWed32VZcInT1tJCp8N+5WqvK/lF5EAI6+8MCsas5iRPln/rt
+	 CkKwC8hH7tDlCqpUlqLBsfISPWksuIen1RI49kVL18Y30A/o4HPBKzvey0Im1JOlMy
+	 V88LVj2NYFEMg==
+Date: Tue, 22 Sep 2026 13:14:52 +0100
+From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+To: "David Hildenbrand (Arm)" <david@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Zi Yan <ziy@nvidia.com>, 
+	Baolin Wang <baolin.wang@linux.alibaba.com>, "Liam R. Howlett" <liam@infradead.org>, 
+	Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
+	Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
+	Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Guo Ren <guoren@kernel.org>, 
+	Brian Cain <bcain@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, 
+	Dinh Nguyen <dinguyen@kernel.org>, Simon Schuster <schuster.simon@siemens-energy.com>, 
+	Jonas Bonn <jonas@southpole.se>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, 
+	Stafford Horne <shorne@gmail.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, 
+	Rich Felker <dalias@libc.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
+	Russell King <linux@armlinux.org.uk>, Vineet Gupta <vgupta@kernel.org>, 
+	Michal Simek <monstr@monstr.eu>, Chris Zankel <chris@zankel.net>, 
+	Max Filippov <jcmvbkbc@gmail.com>, Will Deacon <will@kernel.org>, 
+	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, 
+	Peter Zijlstra <peterz@infradead.org>, "David S. Miller" <davem@davemloft.net>, 
+	Andreas Larsson <andreas@gaisler.com>, Richard Henderson <richard.henderson@linaro.org>, 
+	Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>, 
+	Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, 
+	Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
+	Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+	Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
+	Sven Schnelle <svens@linux.ibm.com>, Richard Weinberger <richard@nod.at>, 
+	Anton Ivanov <anton.ivanov@cambridgegreys.com>, Johannes Berg <johannes@sipsolutions.net>, 
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
+	Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka <vbabka@kernel.org>, 
+	Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
+	Michal Hocko <mhocko@suse.com>, Jason Gunthorpe <jgg@ziepe.ca>, 
+	John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, linux-mm@kvack.org, 
+	linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
+	linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org, linux-sh@vger.kernel.org, 
+	linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	linux-snps-arc@lists.infradead.org, linux-arch@vger.kernel.org, sparclinux@vger.kernel.org, 
+	linux-alpha@vger.kernel.org, loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
+	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
+	linux-um@lists.infradead.org, Hugh Dickins <hughd@google.com>, Qi Zheng <qi.zheng@linux.dev>
+Subject: Re: [PATCH v3 01/12] mm/huge_memory: zap deposited page tables after
+ an RCU grace period
+Message-ID: <arJrv6FdUUgAbVp1@gremlin>
+References: <20260911-rcu-pagetable-freeing-v3-0-7b8c86103821@kernel.org>
+ <20260911-rcu-pagetable-freeing-v3-1-7b8c86103821@kernel.org>
+ <467b6599-b73a-4f58-a29a-b6c6d1ffc3a5@kernel.org>
+ <aqrAflIQbwcNKlQL@gremlin>
+ <bc2805a7-361e-4082-bf71-efc125b93c84@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,204 +109,146 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/6] mm/sparse-vmemmap: support device DAX in common
- vmemmap path
-To: Qi Zheng <qi.zheng@linux.dev>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
- <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>,
- Lorenzo Stoakes <ljs@kernel.org>, "Liam R . Howlett" <liam@infradead.org>,
- Vlastimil Babka <vbabka@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
- Michal Hocko <mhocko@suse.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Muchun Song <songmuchun@bytedance.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>, Mike Rapoport <rppt@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>
-References: <20260913083734.86802-1-songmuchun@bytedance.com>
- <20260913083734.86802-3-songmuchun@bytedance.com>
- <dad55fc6-56ff-4375-893b-938404238ca8@linux.dev>
-Content-Language: en-US
-From: Muchun Song <muchun.song@linux.dev>
-In-Reply-To: <dad55fc6-56ff-4375-893b-938404238ca8@linux.dev>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <bc2805a7-361e-4082-bf71-efc125b93c84@kernel.org>
 
-
-
-On 2026/9/22 16:02, Qi Zheng wrote:
+On Mon, Sep 21, 2026 at 07:13:16PM +0200, David Hildenbrand (Arm) wrote:
+> On 9/16/26 18:59, Lorenzo Stoakes (ARM) wrote:
+> > On Wed, Sep 16, 2026 at 04:42:04PM +0200, David Hildenbrand (Arm) wrote:
+> >> On 9/11/26 21:36, Lorenzo Stoakes (ARM) wrote:
+> >>> When an anonymous mapping is collapsed for THP, a PTE page table is
+> >>> 'deposited' with the installed PMD entry.
+> >>
+> >> Right. Or when we allocate an anon THP.
+> >
+> > That case doesn't interact with page walking though, as they're
+> > just-allocated right?
 >
->
-> On 9/13/26 4:37 PM, Muchun Song wrote:
->> The common vmemmap population path cannot yet handle optimized Device 
->> DAX
->> mappings on its own. It uses pfn_to_zone() to find the shared tail page,
->> but Device DAX populates its vmemmap at runtime before the 
->> ZONE_DEVICE span
->> is initialized.
->>
->> Teach the common path to use device_zone() for runtime optimized vmemmap
->> population while retaining pfn_to_zone() for early boot. This allows the
->> same path to support both early boot mappings and Device DAX.
->>
->> The backing PFN supplied by the Device DAX-specific population path 
->> is no
->> longer used, allowing the redundant lookup and population code to be
->> removed later.
->>
->> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
->> ---
->>   mm/sparse-vmemmap.c | 44 +++++++++++++++++++-------------------------
->>   1 file changed, 19 insertions(+), 25 deletions(-)
->>
->> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
->> index 878d29a4e862..e83821768c12 100644
->> --- a/mm/sparse-vmemmap.c
->> +++ b/mm/sparse-vmemmap.c
->> @@ -208,18 +208,27 @@ static __meminit void 
->> *vmemmap_alloc_pte(unsigned long pfn, int node,
->>       struct page *page;
->>       const unsigned int order = pfn_to_section_compound_order(pfn);
->>   -    /*
->> -     * Device DAX still relies on vmemmap_populate_compound_pages() for
->> -     * head/first-tail allocation and tail-page reuse.
->> -     */
->>       if (!vmemmap_optimizable_pfn(pfn))
->>           return vmemmap_alloc_block_buf(PAGE_SIZE, node, altmap);
->>   -    zone = pfn_to_zone(pfn, node);
->> +    /*
->> +     * At runtime (slab available), only ZONE_DEVICE pages trigger 
->> vmemmap
->> +     * optimization, so device_zone() suffices. Note that pfn_to_zone()
->> +     * cannot be used at runtime because the zone span is not set up 
->> now.
->> +     */
->> +    zone = slab_is_available() ? device_zone(node) : 
->> pfn_to_zone(pfn, node);
->>       page = vmemmap_shared_tail_page(order, zone);
->>       if (!page)
->>           return NULL;
->>   +    /*
->> +     * When a PTE entry is freed, a free_pages() call occurs. This 
->> get_page()
->> +     * pairs with put_page_testzero() on the freeing path. This can 
->> only occur
->> +     * when slab is available.
->> +     */
->> +    if (slab_is_available())
->
-> Would it make sense to introduce a helper function that wraps
-> slab_is_available() for better readability? Also, it might be worth
-> adding a comment to the helper function as well.
+> I was surprised to read that page tables deposited during collapse should behave
+> differently than page tables deposited during allocation :)
 
-Thanks for the suggestion. I considered introducing a helper, but the
-two uses of slab_is_available() depend on different properties of the
-same initialization boundary. One determines how the zone is obtained,
-while the other determines whether the shared vmemmap backing page can
-participate in page refcounting. Any helper name would therefore be
-either too generic or specific to only one of these properties.
-
-I would prefer to keep slab_is_available() explicit and expand the
-comments at both call sites. The first comment explains why early
-system RAM can use pfn_to_zone(), whereas ZONE_DEVICE population after
-slab becomes available must use device_zone(). The second explains why
-early shared backing pages, which are allocated from memblock, cannot
-yet be refcounted. Once slab becomes available, shared backing pages
-are allocated from the buddy allocator and can hold one reference for
-each shared PTE mapping.
-
-I will adopt the following revisions. Does this make sense to you?
-
-diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
-index 5e0e30c77431..406d6f7918f7 100644
---- a/mm/sparse-vmemmap.c
-+++ b/mm/sparse-vmemmap.c
-@@ -212,9 +212,13 @@ static __meminit void *vmemmap_alloc_pte(unsigned 
-long pfn, int node,
-                 return vmemmap_alloc_block_buf(PAGE_SIZE, node, altmap);
-
-         /*
--        * At runtime (slab available), only ZONE_DEVICE pages trigger 
-vmemmap
--        * optimization, so device_zone() suffices. Note that pfn_to_zone()
--        * cannot be used at runtime because the zone span is not set up 
-now.
-+        * Before slab is available, vmemmap optimization is used for early
-+        * system RAM, whose zone can be determined from the PFN.
-+        *
-+        * Once slab is available, only ZONE_DEVICE memory reaches this
-+        * optimized population path. Its zone span has not been initialized
-+        * while its vmemmap is being populated, so pfn_to_zone() cannot be
-+        * used. Obtain ZONE_DEVICE directly from the node instead.
-          */
-         zone = slab_is_available() ? device_zone(node) : 
-pfn_to_zone(pfn, node);
-         page = vmemmap_shared_tail_page(order, zone);
-@@ -222,9 +226,17 @@ static __meminit void *vmemmap_alloc_pte(unsigned 
-long pfn, int node,
-                 return NULL;
-
-         /*
--        * When a PTE entry is freed, a free_pages() call occurs. This 
-get_page()
--        * pairs with put_page_testzero() on the freeing path. This can 
-only occur
--        * when slab is available.
-+        * During early vmemmap population, the shared tail vmemmap backing
-+        * page is allocated from memblock before its struct page can safely
-+        * participate in page refcounting. Therefore, no reference can be
-+        * held for each shared PTE mapping, and the mappings must be 
-unshared
-+        * before the vmemmap is depopulated.
-+        *
-+        * Once slab is available, the shared backing page is allocated from
-+        * the buddy allocator and can be refcounted. Hold one reference for
-+        * each shared PTE mapping. The architecture vmemmap teardown drops
-+        * the reference through __free_pages() when removing the mapping,
-+        * preventing the backing page from being freed while it is shared.
-          */
-         if (slab_is_available())
-                 get_page(page);
+You'll be super surprised by how VMAs behave when detached vs. attached then ;)
 
 >
-> At least for me, encountering this always causes a moment of confusion.
+> That's the semantic change you are adding (and that I didn't quite understand
+> from reading your description): a deposited page table could now get reused and
+> modified for another page table due to a PMD split, while there might still be
+> an RCU page table walker walking it. And PMD comparisons (+ proper memory
+> ordering) have to make sure that we didn't just walk  something that doesn't
+> belong to us.
 >
->> +        get_page(page);
->> +
->>       return page_address(page);
->>   }
->>   @@ -231,27 +240,12 @@ static pte_t * __meminit 
->> vmemmap_pte_populate(pmd_t *pmd, unsigned long addr, in
->>         if (pte_none(ptep_get(pte))) {
->>           pte_t entry;
->> +        void *p = vmemmap_alloc_pte(pfn, node, altmap);
->>   -        if (ptpfn == (unsigned long)-1) {
->> -            void *p = vmemmap_alloc_pte(pfn, node, altmap);
->> -
->> -            if (!p)
->> -                return NULL;
->> -            ptpfn = PHYS_PFN(__pa(p));
->> -        } else {
->> -            /*
->> -             * When a PTE/PMD entry is freed from the init_mm
->> -             * there's a free_pages() call to this page allocated
->> -             * above. Thus this get_page() is paired with the
->> -             * put_page_testzero() on the freeing path.
->> -             * This can only called by certain ZONE_DEVICE path,
->> -             * and through vmemmap_populate_compound_pages() when
->> -             * slab is available.
->> -             */
->> -            if (slab_is_available())
->> -                get_page(pfn_to_page(ptpfn));
->> -        }
->> -        entry = pfn_pte(ptpfn, PAGE_KERNEL);
->> +        if (!p)
->> +            return NULL;
->> +
->> +        entry = pfn_pte(PHYS_PFN(__pa(p)), PAGE_KERNEL);
->>           set_pte_at(&init_mm, addr, pte, entry);
->>       } else if (WARN_ON_ONCE(vmemmap_optimizable_pfn(pfn)))
->>           return NULL;
+> [...]
 >
+> >>
+> >> Wait, but wouldn't it be really problematic to punch a page table that is still
+> >
+> > Punch? You mean deposit?
+>
+> Yes!
 
+Ack.
+
+>
+> >
+> >> being walked into the deposited list where it can just be allocated from another
+> >> PMD->PTE split?
+> >
+> > In general, RCU-only page table walkers are _only_ guaranteed that the page
+> > tables are not freed from underneath them, as per the cover letter:
+> >
+> > 	"As a result, page table walks can now be performed safely under RCU without
+> > 	 any risk of page tables being freed underneath a walker.
+> >
+> > 	However, this is the only guarantee that this work provides - page table
+> > 	walkers must still ensure that page table entries are as expected
+> > 	throughout."
+>
+> So far page table walkers never walk deposited page tables. Just like they never
+> walk freed page tables.
+>
+> For *current* lockless page table walkers (IRQs disabled),
+> tlb_remove_table_sync_one() takes care of that. So there is no such thing as
+> "walking a page table that was reused in different context (as a page table) in
+> the meantime".
+
+Yup I know. That describes what happens for RCU page table walkers _after_ the
+changes of course.
+
+>
+> >
+> > So this series doesn't actually have to answer that :)
+> >
+> > But a PTE PTL -> pmd_same() check will flag anything like that,
+> > a.k.a. pte_offset_map_lock().
+> >
+> > The RCU lock replaces stablisation on stuff other than VMA/mmap or rmap
+> > lock.
+> >
+> > If the walker needs to be sure the PTE is actually valid and belongs to the
+> > expected walk then further is required.
+> >
+> > Alternatively (like GUP-fast) if you wanted to avoid locking at all, IRQs
+> > off would be required paired with the tlb_remove_table_sync_one() in
+> > collapse_huge_page().
+>
+> Doing an RCU sync in tlb_remove_table_sync_one() would be the big hammer (I
+> thought that was discussed with Lance recently). There is also this option: just
+> allocate a new page table and deposit it, and free the existing page table
+> through RCU.
+
+Hmm yeah big old lump hammer :) I mean I don't see how that could really
+possibly fly as an option, we have tlb_remove_table_sync_rcu() for
+!CONFIG_PT_RECLAIM arches (i.e. err... the more 'specialist' ones :) but for
+those in actual use that sounds a wee bit nuclear.
+
+>
+> Long story short: allowing empty page tables to be freed by RCU is simple.
+> Allowing empty page tables to be reused while they are still getting walked is
+> obviously more complicated conceptually. Likely it can be made working, but I'd
+> hope that we can keep it simpler.
+
+I'm not sure it can really safely be guaranteed or it'd involve more lock
+dependencies or something horrible anyway.
+
+But... we don't need to care about any of that....
+
+>
+> >
+> > Another strategy could be used I guess with looped checks but it gets a bit
+> > sketchy with timing etc.
+> >
+> > But actually maybe we can avoid all that...
+> >
+> >>
+> >> Note that pgtable_trans_huge_withdraw() just dequeues *some* PTE page table in
+> >> the list attached to the PMD table.
+> >>
+> >> Something is odd here.
+> >
+> > ...Since this code path already allocates (the huge folio), so allocation
+> > here isn't an issue (as long as done outside of lcosk), why not have it
+> > also allocate a new PTE to deposit and RCU-free the existing PTE instead?
+> >
+> > That eliminates the one place in the kernel (afaik) where a
+> > page-table-walker-visible table can just get yoinked over somewhere else.
+> >
+> > Then a lockless PMD check works.
+> >
+> > E.g. something like the below?
+>
+> Hah! Great minds think alike.
+
+...Because great minds indeed <3
+
+Will respin with that then, thanks! :)
+
+>
+> --
+> Cheers,
+>
+> David
+
+--
+Cheers, Lorenzo
 
