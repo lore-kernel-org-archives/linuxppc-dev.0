@@ -1,92 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-27947-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27948-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EAFCEC98302
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2026 21:07:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3941EC98302
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2026 22:35:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqCNk62Z2z2y21;
-	Wed, 23 Sep 2026 07:07:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:33::10"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790111270;
-	cv=none; b=ZDMEVcZMGTB2aCsTpwJxKdFcqlt27uRYBr5x7YB7dgEjV+BVykLcEYGKNDfubNW6psBvDfuh8xPyEh1aaiznMlh+NUDD0Ukx4VhVIWWO+j73veps3KlrHe+vYys836OxUxR5edzb1yEoSNhcqIYU9/2DFa0/99VxlULjpvE/NoMS9evKkPaf8Vyh/wdR2v6Vm3BTxktJjSEsI8p4huEgeYjmCbW9wNSEHonGoi1/p5rvmT+eUDVSzf2IP3i7K2oI5merT8UCTa7IOCyOjKXAOqBfjVIva/1Se1V/Pi4irmtSKXXMbV9MeUwPkpmZCjdh2mJ2g8I7AT0oQft4Oc9F3Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqFLD16sGz2xwd;
+	Wed, 23 Sep 2026 08:35:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::645"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790116548;
+	cv=none; b=b+xz34FeR9Wqdhu170kp1s8lrxyTLKyjlc9YtHOYNjUYJTUv2AYiedRXCFUGp52x21O4kS7L5PS2MdBVuk/XU/4SiFBJqI3LR3xnYJLbaTvNTjqoCXcQwVUgXYBFa+3jNtUj+gs+Fa/IqFbHLGGi1827HlJm7uuo7v/p+fI/TtzdEATVSTdt+UCjms19vmMbMPTmsVm47l+tdP8IaEyJwg3XL6S0bqCba+ATZWvsTKxIFtXw+k+fPMgpt286bk4XX40WT/4YlB6xaDBnuQn0WJGZjY8GCVNJboqRW6j94Hl6HC0RGjPEYwZ1krQUtuzcU0A7PTb7GiACFJctF0MYXA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790111270; c=relaxed/relaxed;
-	bh=EeL85Yka+smpT4FhVZXHXaAJCGYDOpSx8O4lbscuj70=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=lqCU40U3YS3VqHwTlg2R/gzMYyjiNbEBieEOK/MBRn97WCcWYA1le8GL9DgiajELAg9kLhfEp3aH2zmRoNcXhsvSBLLi8qHadfcIGI1nfL3RNkYa5xWsUwv9neVAcP/9nxF1FHFba2/HU7offYySmLkIrCnQ9Vzzk4ErJhWFCUC+2IoLk5BK6fiq5vv272TnOXGkHMuyE4cDB22Bp56xL4Kt0XcRATbZz5K0eaVj7VsI/oj8ffrDL14wE6VsgVSoM24W1yrmxQtAIRTWQbZcMe817mZm6NSptpGmJZoL4ZVwMbcNE8ezUUjveupsfqiPG3P/PlaqQ6+Q6KXUEo08fA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=BmpwDion; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:33::10; helo=mail-ed2-x10.google.com; envelope-from=paweldembicki@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1790116548; c=relaxed/relaxed;
+	bh=8GRxp3EYFeG4RHE5TRXwDLoJws/VabvUKmMB/dI5TDY=;
+	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=GQph62PFr6mJFKFIVHxqSn0N9L/UIXbPes7v4ab0iGo4RgGAsNyvsKQhoXBskYc4LwfWlAIPM7nK/QdKflSQ02iED4x0WfhyeaYPn8/7ZbpsAGFQsfMEawNLA9p+85w/FLgHqTT1Ht0qT3DKEOqlZWOPlsZAabrap4uWuvg5WSF9kF1DhpEs8JQJgx6a1Abrq/tjiepObqm7DRY41PSMW5CYHAef2438+QQ2Vk5GZcojde6uvKKMhu4sTZb+K+ODp80R5a1s+8FdO0vM0RIsNgDlGu//bP/ANZD0ZLVxeKsAN+/4tdshkeqcG5g5Wb/uxqDeg4nI+8oNG/DrnuMVuw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=l4+3hBUH; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::645; helo=mail-pl1-x645.google.com; envelope-from=3vqkzagukdooyadnasaasxq.oayxuzgjbbo-pqhxuefe.alxmne.ads@flex--morbo.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--morbo.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=BmpwDion;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=l4+3hBUH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:33::10; helo=mail-ed2-x10.google.com; envelope-from=paweldembicki@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ed2-x10.google.com (mail-ed2-x10.google.com [IPv6:2a00:1450:4864:33::10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--morbo.bounces.google.com (client-ip=2607:f8b0:4864:20::645; helo=mail-pl1-x645.google.com; envelope-from=3vqkzagukdooyadnasaasxq.oayxuzgjbbo-pqhxuefe.alxmne.ads@flex--morbo.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x645.google.com (mail-pl1-x645.google.com [IPv6:2607:f8b0:4864:20::645])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqCNh4PgJz2xk7
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 07:07:47 +1000 (AEST)
-Received: by mail-ed2-x10.google.com with SMTP id 4fb4d7f45d1cf-6a60591ae54so488458a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 14:07:46 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqFLB1XRbz2xnS
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 08:35:45 +1000 (AEST)
+Received: by mail-pl1-x645.google.com with SMTP id d9443c01a7336-2df5a65671eso3353765ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 15:35:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790111262; x=1790716062; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=EeL85Yka+smpT4FhVZXHXaAJCGYDOpSx8O4lbscuj70=;
-        b=BmpwDionyvZHWYBbaWWS80n1sPYT/fbNywPCfiJ4xRaqBPXlDZ/T2qTk2T1nIIhjhs
-         DaFmvUj1aICiXXwTeUZzA2VwC00+TlavRa9N10ZgaSLo84OWS3imv0BcpBkAKsSpwQNx
-         06/1uK3ZuF8xM2B0eTlG7RAo3JUOxadrUB6hcEIqTfyp+TVC6AZv6lxihPDEHBraop3n
-         ZvXYiOZHDdE/2Sqy5BRXYyd1vwS1OhNHzFIFzOvL9qmHq9px/AURXqO8z/YhzKKSJZaY
-         j5miD1FvkA6992jxwTjSY2R7wXbLUxDIEzUk7NYLfI+UzJC+3DMk2Zbxl/k5txvd0GGD
-         pqUw==
+        d=google.com; s=20251104; t=1790116542; x=1790721342; darn=lists.ozlabs.org;
+        h=content-type:cc:to:from:subject:message-id:mime-version:date:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=8GRxp3EYFeG4RHE5TRXwDLoJws/VabvUKmMB/dI5TDY=;
+        b=l4+3hBUHiyzB3dLtDGv8QqhZSsc47x6K5QXkSeAcZjV7j/l1AsxU5n9jTckcNAlpQT
+         qlcj1vMaoC4pzyP20+MpdNN1Oa9QcO2Q9aYluPyjACiexVPFb3mON8fHoEjDkbgpHr6X
+         cM+wYA9zseVuZfVXwhw2dJ/L+cr4hg2jnU31uoJWEmYN2MCxIPeEyDyeYa7HarmPYvHE
+         1jAW+pgf0WiP18ocKvqjKq5ek2aBQby7dKyh7/hhkz7MujQgR7pAEpf2eIeOP07bV2yG
+         ugLS4RpkrK2W31Rur3FFLtiz+zrnfDLada4xjACtW7UpcNLnYjvBrwf8VzApvgVqt/8q
+         EIQw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790111262; x=1790716062;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=EeL85Yka+smpT4FhVZXHXaAJCGYDOpSx8O4lbscuj70=;
-        b=HT51bPOtTYh7pBQY+m/G11T8tAHxVtJUaqEMCuh2FB/zwSrFA/LeRc/OF4/u9wdF5x
-         lL9g4qqL6lzBNKbB4yarLGo+66Y7if2FaEIdrfDRtnzUxHYhX+ejzDcjPBsYwC5cG6NG
-         37e/MP6fkD6coylCJy7rhYnJISbyG+GVqJFqHZrYc2RB6Q9g71DKcDAyzDNdbZEFjjau
-         aJqE6qtz+DtSg1BV9hGvL1MrB2F4j3eQ1nF1FkSjk4wNs63V7SfC5amHTjvUj92KSnmp
-         Kvrei5Xqjv/2wAcTYOGKhACeqa1CL53ORpmISckzVuVzIp5W3eKxFqpSOlnOUAYZe5/h
-         OGYA==
-X-Gm-Message-State: AFuF++lNd8M7ws/HuCHZpTgmc8cW0CFLf7P5j6pYPpfS/ulJVX6dkjPi
-	rO+CHBsqYXqYASPItkT75rwzoXWku/drLl6hC/xXcvTTviCn3Is8HQNH5o2mxHRb
-X-Gm-Gg: AYBFou3q6aTichfdRfzBznAhkpR/hFzwGXOAnRBi+T3j2dFMALf0dytS+au96U64Fcf
-	E/aoyBiudU2cWgU79ZmblwLWsW62a+h5Z+jJCOdz0XuaFl6uOtoIc6/dLtBl3vv1/jLuoVTxoba
-	5iAa/TQ+6qwWfRaXRKxoehd+h6cN8IA9DkjMchRHRvStL/qQg2I52YNSpr0BYKIOOi7COD3p46j
-	KmZ8JmbzK8d1HzX9T3CfogUteA4DUke+mJ1gneLSJFfRgh67MulihKGwtuMOm25hfCYDA4fbhpD
-	m3RybHvMb72mMhZT2wfr646N5tXOAWhu/C32v74bvGRj33iUN9jDx9TPn4P+xi+ls0xLl9Ezh0s
-	M0Xo/jJ0dhKpJYH5pBoFY7pSxy9DokgK5LOliYxAOSUYzoBF5cydKZ8adeKE7lwj0XKJc9AVxWq
-	csXDsrQwE9HMrHCxF0C5n6oGbY1+Ckwf9u+tPYS7qRXm4J4yFerEh8gXE4Y7KvN+nQMg4SIN9Z0
-	kvn5+auGZcWHcfx47wyrADhPA==
-X-Received: by 2002:a05:6402:21c2:b0:6aa:734a:a08c with SMTP id 4fb4d7f45d1cf-6aab3bb3bb1mr430543a12.35.1790111261500;
-        Tue, 22 Sep 2026 14:07:41 -0700 (PDT)
-Received: from WBEC1813.wbe.local (xt27d7.stansat.pl. [83.243.39.215])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6aab386e596sm316940a12.7.2026.09.22.14.07.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 22 Sep 2026 14:07:41 -0700 (PDT)
-From: Pawel Dembicki <paweldembicki@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: rosenp@gmail.com,
-	Pawel Dembicki <paweldembicki@gmail.com>,
-	Scott Wood <oss@buserror.net>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Frank Li <Frank.Li@nxp.com>,
-	Li Yang <leoyang.li@nxp.com>,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/85xx: Add fsl,ifc to CoreNet device ids
-Date: Tue, 22 Sep 2026 23:05:09 +0200
-Message-ID: <20260922210531.1103068-2-paweldembicki@gmail.com>
-X-Mailer: git-send-email 2.43.0
+        d=1e100.net; s=20260707; t=1790116542; x=1790721342;
+        h=content-type:cc:to:from:subject:message-id:mime-version:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=8GRxp3EYFeG4RHE5TRXwDLoJws/VabvUKmMB/dI5TDY=;
+        b=jtY2QV89Es5ov+4Nhb8D9L0I18DMTYR+edMpgqt8PRpHVc7/ZnYQoSdcjjpFKqRrpT
+         gqQEGusxdwMcSpmm3GBYTsQRZUdo5TV3gm0m2/pmlDZ/9ip5BW8sPWRKQYAFQlNE6RCL
+         miB9oL7j2gDMVC0D7dRdpbmsuicEeR0uboUKi6W8uTO04MYhzJe0aIpm9HXt+/mqvNC6
+         VXUIoRIDk1LESQYmPJyX+TJ3s4mb8+g2mJG8iW7F7jBXa+R5S4TU7VhKNRKWHxIjT6Rc
+         tHzxCjJr54HAsnMexwjSkIIb5E7oCl+E686vqAdsspKzn6tQRjpTob/bT5pzAjbpZHlo
+         xwyQ==
+X-Forwarded-Encrypted: i=1; AKwUvBz9BfSxohchc+cSxss0V0xvDZLTrtOoq0Cp30GNS1omlzJEDfVh3kUgp1UQZbh7SRzEvdmTZvgCM8An9Ew=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++mcnKWKpUC5fhnkqS7DFL6BDzPZkajhqFQ5Y88K+m5+dhplHzLV
+	ohPKYE/jlBsSw4ljeEiznRsQ/RXkmcSmsOUTaEeLMtDnID0T24TtKfe7sUuU2zBJsbawJRCvEIG
+	c
+X-Received: from ploc2.prod.google.com ([2002:a17:902:8482:b0:2dd:53b8:ff02])
+ (user=morbo job=prod-delivery.src-stubby-dispatcher) by 2002:a17:903:2ec3:b0:2df:69d4:86bf
+ with SMTP id d9443c01a7336-2df69d4884cmr5081645ad.11.1790116541866; Tue, 22
+ Sep 2026 15:35:41 -0700 (PDT)
+Date: Tue, 22 Sep 2026 22:35:38 +0000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,43 +74,53 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.55.0.1082.g2b9226bbc0-goog
+Message-ID: <20260922223538.2287676-1-morbo@google.com>
+Subject: [PATCH] bus: fsl-mc: Annotate fsl_mc_io.portal_virt_addr with __counted_by_ptr
+From: Bill Wendling <morbo@google.com>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Kees Cook <kees@kernel.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, 
+	Nathan Chancellor <nathan@kernel.org>, Nick Desaulniers <ndesaulniers@google.com>, 
+	Justin Stitt <justinstitt@google.com>, linuxppc-dev@lists.ozlabs.org, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	linux-hardening@vger.kernel.org, llvm@lists.linux.dev, 
+	Bill Wendling <morbo@google.com>, codemender-patching+linux@google.com
+Content-Type: text/plain; charset="UTF-8"
 
-Commit 0bf51cc9e9e5 ("powerpc: dts: mpc85xx: remove "simple-bus"
-compatible from ifc node") removed the incorrect compatible string from
-IFC nodes. Commit 25957f7c3dac ("powerpc/85xx: Add fsl,ifc to common
-device ids") subsequently added an explicit match to mpc85xx_common_ids,
-allowing of_platform_bus_probe() to create the IFC platform device.
+The GCC and Clang compilers provide the __counted_by_ptr attribute,
+which is used by KASAN and compiler bounds-checking to detect
+out-of-bounds accesses to pointer fields.
 
-CoreNet platforms use a separate of_device_ids table, which still lacks
-the corresponding match. As IFC is a direct child of the root node on
-these platforms, its platform device is not created and the controller
-and its flash children are never probed.
+In "struct fsl_mc_io", the "portal_virt_addr" pointer points to the MC
+command portal virtual address. The size of this allocated portal in
+bytes is tracked by the "portal_size" field within the same structure.
 
-Add the missing match to the CoreNet device table.
+Annotate the "portal_virt_addr" pointer field with
+"__counted_by_ptr(portal_size)" to enable compiler bounds-checking and
+harden against potential out-of-bounds accesses.
 
-Fixes: 0bf51cc9e9e5 ("powerpc: dts: mpc85xx: remove "simple-bus" compatible from ifc node")
-Signed-off-by: Pawel Dembicki <paweldembicki@gmail.com>
+Cc: codemender-patching+linux@google.com
+Assisted-by: LLM
+Signed-off-by: Bill Wendling <morbo@google.com>
 ---
- arch/powerpc/platforms/85xx/corenet_generic.c | 3 +++
- 1 file changed, 3 insertions(+)
+ include/linux/fsl/mc.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index c44400e95f55..fe9e7ba5b77e 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -70,6 +70,9 @@ static const struct of_device_id of_device_ids[] = {
- 	{
- 		.compatible	= "fsl,fpga-qixis"
- 	},
-+	{
-+		.compatible	= "fsl,ifc",
-+	},
- 	{
- 		.compatible	= "fsl,srio",
- 	},
+diff --git a/include/linux/fsl/mc.h b/include/linux/fsl/mc.h
+index c25f0f7e6dd4..0b2c0eb9b605 100644
+--- a/include/linux/fsl/mc.h
++++ b/include/linux/fsl/mc.h
+@@ -336,7 +336,7 @@ struct fsl_mc_io {
+ 	u16 flags;
+ 	u32 portal_size;
+ 	phys_addr_t portal_phys_addr;
+-	void __iomem *portal_virt_addr;
++	void __iomem *portal_virt_addr __counted_by_ptr(portal_size);
+ 	struct fsl_mc_device *dpmcp_dev;
+ 	union {
+ 		/*
 -- 
-2.43.0
+2.55.0.1082.g2b9226bbc0-goog
 
 
