@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-27906-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27907-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 743B3C982F1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2026 08:26:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41314C982FA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2026 08:26:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hptTm1QmQz30Tf;
-	Tue, 22 Sep 2026 18:26:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790065564;
-	cv=none; b=U1J3F3/458UppQQGvFq+eZ67Qgjsd1YKU2oyyVyGICj/ZOaV21BhhH1Va/RlmGK1vdPgRGYtIh6acoi6plV071B2EKJ3AYA4UuIWlPwEr3p4Algia7EIbHCbq5+L9kWyAK6catIBTx0XjrtI1cr0cAKXZqJPJpOsAjLVqUs8q33R44ufU5iIRJWzCBOso4/PzrvsJEWVK/aJ+QOW/Lp/nzfZlG6ggSKR0eZrTUofz3zNcJIlrrTWpLZEyIt4B401c2Wyvs4flwMvaq+uaNQ+hGhz+h/3qtbsLlvVzacfD+L7VrGgcQ8ORXiVKtl2Ut0eCFxotv8MQl3MpeLqgST+MA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hptTp18b9z30Pn;
+	Tue, 22 Sep 2026 18:26:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790065566;
+	cv=none; b=LNt4EF84ggOSUNkk5eQS5lOS9VukH/Yp57p2NTbLShtetNtWK2hUwgSr+sZ648+ein6JOxmS1cnZqEDxco8HtZRjpEX8hk07pvHtB5r+5hRGHpe9vGZAXjlcT8mc2E9ioIqHCkLI7Na41UKxG5pdeMiuqlPzinGm7qUIFldbgO6LJKkF8o7n6C9DcyOwq5lf6VTz7Vs9ISba4OPLe7Gq4sE8mywelVIjUWkq5y79eRDRFF8MHS0RGbL5Tsc/vNIZ8mawyrjwOIkzxAaoAQKq8cSmPK6MqsmccavDfX0Ig3HPlEwTBsGn2m2y+w0lkyDFEchuQ8xkZHOsdGOb31+Sew==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790065564; c=relaxed/relaxed;
-	bh=RbQ9XjhZ2j0CdIcU+vMqsjCdGOBqEhk3IqJOU9DIHV0=;
+	t=1790065566; c=relaxed/relaxed;
+	bh=gHWXc9phQsI3ErJv8I6JHBG46mFzFITgaznMfyDw404=;
 	h=Subject:From:To:Cc:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=MD6BjTbM8PvnSUvhMJF68Zad9HWsi+X7eWjd4SKA38iZtlUoNcHowBk8QXLrronSmMBgtWhDq3tjetWkAD8WvOMKjGplJpPCU8GSK2rjijFxNHRgeHFE4lzJ7COeAVZuAMtfdlODztrZGGp2zG7+/SbOA0ukiefAfCcwZJy5Oy12Vde5hKLarUKpC7LyvUy7AH332cKw+FDSUOOqYTcEJqeMQzOfnVU1eZNm8kPUlcbpoeQXsBSOLgpcF9DJnqjv2NQdcmQ7YDb+P3FdZEwiDGAP3Nha5GZwqtZCQWeze8jwN1NtpPdtshI3Fx1M5ZBaq0kCuZwMvg+jEPu8pl6cWQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=V352S49/; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:MIME-Version; b=nE5AR95/+H9iI1wkLJjWHRssxtXHg7CYPLjTG4a6v3E5tCnNkxjV1ld51pC0YrxqfllGCIL3CTn7mKn1tmle0gw6piyLdkLKwCSIJfclilUJilChbtUjEHzKt95ANnhZ825aGGYnJkl7BuL0ovoobmdt5AB6BTm8V47cXn4LhDGXA45UzqZOzQbjuHGENqyEk7rgsJpIbXg30snQ6ULjKdxEGdaavPjmvoG8XTGTwP5b65pwwbtXFekX2AOrh8sKziaTNAHNo0hPgHJataunTm2vYtZngXRWa62UCY/roVPPG6WvsMVPKEWu03WA0c6GYUFiD4Dhb1p0UnHXnRcFDg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GaqAjyZ2; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=V352S49/;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GaqAjyZ2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hptTj62Dwz30Pn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 18:26:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hptTl6TfVz30TP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 18:26:03 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id C715343B08;
-	Tue, 22 Sep 2026 08:25:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 891EF1F0089D;
-	Tue, 22 Sep 2026 08:25:58 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id B012E60DEB;
+	Tue, 22 Sep 2026 08:26:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 69CB01F000FF;
+	Tue, 22 Sep 2026 08:26:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790065559;
-	bh=RbQ9XjhZ2j0CdIcU+vMqsjCdGOBqEhk3IqJOU9DIHV0=;
+	s=k20260515; t=1790065561;
+	bh=gHWXc9phQsI3ErJv8I6JHBG46mFzFITgaznMfyDw404=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=V352S49/8vBBhnb2gqojB+qiVNvIF+mrER/uzo7g6lpK3PE5zO8VgUd6eYrvT6Qkp
-	 qjyKXVlcNCy9rsYAQGbsZhDnINDMR93aWOLzsYN0CoX4xjNhIJXvoUXVGqNr6ODnVE
-	 VxgRAPuy4iATyOxac1AiYY60muf7Id556JWaPyEmn0kiM/qn5/CzsSYGBoiy4iCb1m
-	 R7JMe0E+URFGxxmNjA0Lnkpe/PZTLfhkkCGeCKB3yhba7KJwLDRQUrMpuWJuzecWxn
-	 M1MxMtnViu4qb/fAR5NzY+9yJlbPcfnQukY8g8wIJlK0LeN+sbLJ6rVRo/ZORfMIsG
-	 1IGSATRZlEuhQ==
-Subject: Re: [PATCH v4 net-next 7/8] net: dsa: netc: add PTP two-step
+	b=GaqAjyZ2ZlV7TmcKVsOlAhh8SE1WlVQayaXr0Rut/3bwxuytWIrnYUSNrDW69Y3Hc
+	 OYayKckisaOT5os1fxL++IdVrCyYlm7hMR1aCKTR2zKgAoImk8cgFqIfKmDsf5YvzC
+	 T/dumvtSuKBW1YkiNqCb7kV9Gnq+nInAzlmOJ8W28hfRJsGHZZayV2oKVv6i9krNkl
+	 LIwLytqfcauefNw7BlGlIc4z5XJOI+uryX0fBTX2VUWBzQsTUiwxxTEjUIgjN8aK0s
+	 LnT9llP8n1Qf4byEl3B2Cat9n0MAV7U1uGbBuwIWllLwPHd2gf5UmeQk/eyLY8FZQ4
+	 pAfsw6NbN/X0g==
+Subject: Re: [PATCH v4 net-next 8/8] net: dsa: netc: add PTP one-step
  timestamping support
 From: netdev-bot+sashiko@kernel.org
 To: wei.fang@oss.nxp.com
@@ -55,11 +55,11 @@ Cc: xiaoning.wang@nxp.com, andrew@lunn.ch, olteanv@gmail.com,
  wei.fang@nxp.com, imx@lists.linux.dev, netdev@vger.kernel.org,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org
-Date: Tue, 22 Sep 2026 08:25:58 +0000
-Message-ID: <179006555805.2160803.10349234944420509540@kernel.org>
-In-Reply-To: <20260918072852.501420-8-wei.fang@oss.nxp.com>
-References: <20260918072852.501420-8-wei.fang@oss.nxp.com>
-X-sashiko-severity: Medium
+Date: Tue, 22 Sep 2026 08:25:59 +0000
+Message-ID: <179006555987.2160803.11394642259806679085@kernel.org>
+In-Reply-To: <20260918072852.501420-9-wei.fang@oss.nxp.com>
+References: <20260918072852.501420-9-wei.fang@oss.nxp.com>
+X-sashiko-severity: High
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -76,10 +76,10 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 
-Thank you for your contribution! Sashiko AI review found 6 potential
+Thank you for your contribution! Sashiko AI review found 8 potential
 issue(s) to consider.
 
-Critical: 0 · High: 0 · Medium: 3 · Low: 3
+Critical: 0 · High: 2 · Medium: 4 · Low: 2
 
 If you believe none of the issues are legitimate, please reply to each
 issue of Medium severity or higher and explain why the AI is wrong.
@@ -87,339 +87,627 @@ If any of them are legitimate and you plan to respin, please let patchwork
 know by including "pw-bot: cr" as a separate line at the end of your reply
 (one such reply per series is enough).
 
-- [Medium] A timed-out timestamp-request ID becomes immediately reusable,
-  so a late hardware response can complete a newer skb with the wrong…
-- [Medium] Partial IPFT deletion or a failed rollback leaves the reported
-  RX timestamp configuration inconsistent with the rules actually…
-- [Medium] The PTP ingress-port-filter entries programmed by
-  netc_port_hwtstamp_set() are never removed when the switch is torn…
-- [Low] Commit message names a callback that does not exist.
-- [Low] netc_get_ts_info() advertises HWTSTAMP_TX_ON and
-  netc_port_hwtstamp_set() accepts it (even together with…
-- [Low] The new TX-timestamp timeout bookkeeping reads the global 64-bit
-  `jiffies_64` variable directly instead of using get_jiffies_64():…
+- [High] Lost-wakeup / incomplete state machine: once
+  netc_port_onestep_work() commits np->onestep_state =…
+- [High] In netc_port_program_onestep()
+  (drivers/net/dsa/netc/netc_ptp.c:99-163), when…
+- [Medium] The one-step Sync path silently discards TX frames on at least
+  seven paths with no tx_dropped/tx_errors accounting and only two…
+- [Medium] In netc_port_onestep_work() the 'no ts_req_id available'
+  branch drops the dequeued frame AND unconditionally re-arms itself…
+- [Medium] ABA race across the split tstamp_lock/onestep_lock:
+  netc_port_txtstamp_handler() unlinks the matching clone under…
+- [Medium] PM_SINGLE_STEP is a single per-port MAC register that the
+  hardware consults at SFD time of the one-step frame (it supplies the…
+- [Low] drivers/net/dsa/netc/Kconfig gains 'depends on PTP_NETC_V4_TIMER
+  || PTP_NETC_V4_TIMER=n' with no mention in the commit message.
+- [Low] netc_port_set_onestep_control() programs PM_SINGLE_STEP through
+  netc_mac_port_wr(), which silently returns without touching hardware…
 
 --
 
-net: dsa: netc: add PTP two-step timestamping support
+net: dsa: netc: add PTP one-step timestamping support
 
-This adds RX timestamping via IPFT rules that trap PTP frames to the CPU
-port, and two-step TX timestamping by cloning the skb, assigning a 4-bit
-per-port request ID and matching the hardware response frame back to the
-queued clone.  It also adds the per-switch netc_tagger_data and grabs the
-PTP timer's pci_dev so get_ts_info() can report the PHC index.
+This adds one-step Sync offload for NETC switch ports and advertises
+HWTSTAMP_TX_ONESTEP_SYNC.  One-step Sync frames are handed from the tagger
+to the switch driver, queued per port and drained one at a time from a work
+item that programs the shared PM_SINGLE_STEP register.  Non one-step Sync
+PTP frames keep using two-step timestamping.
+
+A few questions below about the new one-step path.
+
+> diff --git a/drivers/net/dsa/netc/Kconfig b/drivers/net/dsa/netc/Kconfig
+> index 8770b65d0f62..7c930579f1c9 100644
+> --- a/drivers/net/dsa/netc/Kconfig
+> +++ b/drivers/net/dsa/netc/Kconfig
+> @@ -5,6 +5,7 @@ config NET_DSA_NETC_SWITCH
+>  	depends on NET_DSA && PCI
+>  	depends on NET_VENDOR_FREESCALE
+>  	depends on PTP_1588_CLOCK_OPTIONAL
+> +	depends on PTP_NETC_V4_TIMER || PTP_NETC_V4_TIMER=n
 
 [Severity: Low]
-The changelog says:
+This new tristate dependency isn't mentioned in the changelog, and it does
+change which existing configurations stay valid.
 
-> The tagger dispatches both to the driver through the
-> twostep_tstamp_handler callback in netc_tagger_data, which matches the
-> ID to the queued clone and completes it via skb_complete_tx_timestamp().
+CONFIG_NET_DSA_NETC_SWITCH=y together with CONFIG_PTP_NETC_V4_TIMER=m was a
+legal combination before; with this line make oldconfig silently downgrades
+the switch driver to =m.
 
-Is that the right member name?  The struct added by this patch in
-include/linux/dsa/tag_netc.h is:
+The motivation looks right, since netc_timer_get_current_time() is behind
+IS_REACHABLE(CONFIG_PTP_NETC_V4_TIMER) in include/linux/fsl/netc_global.h
+and otherwise resolves to a -ENODEV stub, which would make netc_get_phc_time()
+fail for every one-step frame.  Could the changelog describe this restriction,
+or could it be split into its own patch?
 
-struct netc_tagger_data {
-	void (*txtstamp_handler)(struct dsa_switch *ds, int port,
-				 u8 ts_req_id, u64 ts);
-};
-
-and net/dsa/tag_netc.c:netc_twostep_tstamp_process() calls
-tagger_data->txtstamp_handler(), so grepping for twostep_tstamp_handler
-finds nothing.
-
-The same paragraph mentions netc_connect()/netc_disconnect() on the tagger
-side, but not the new .connect_tag_protocol op
-netc_connect_tag_protocol(), which is what actually installs the handler.
-Could that be mentioned as well so the dispatch path is followable from
-the changelog?
-
+>  	select NET_DSA_TAG_NETC
+>  	select FSL_ENETC_MDIO
+>  	select NXP_NTMP
 > diff --git a/drivers/net/dsa/netc/netc_main.c b/drivers/net/dsa/netc/netc_main.c
-> index 336f5a4633e9..03200fc63a09 100644
+> index 03200fc63a09..af39a71aece0 100644
 > --- a/drivers/net/dsa/netc/netc_main.c
 > +++ b/drivers/net/dsa/netc/netc_main.c
 
 [ ... ]
 
-> @@ -949,6 +993,21 @@ static void netc_destroy_all_lists(struct netc_switch *priv)
->  	mutex_destroy(&priv->vft_lock);
+> @@ -94,7 +95,7 @@ static void netc_port_rmw(struct netc_port *np, u32 reg,
+>  	netc_port_wr(np, reg, new);
 >  }
 >  
-> +static void netc_free_ports_resources(struct netc_switch *priv)
-> +{
-> +	struct dsa_port *dp;
-> +
-> +	dsa_switch_for_each_available_port(dp, priv->ds) {
-> +		struct netc_port *np = priv->ports[dp->index];
-> +
-> +		if (!dsa_port_is_user(dp))
-> +			continue;
-> +
-> +		disable_delayed_work_sync(&np->tstamp_timeout_work);
-> +		netc_port_purge_tstamp_queue(np);
-> +	}
-> +}
-> +
->  static void netc_teardown(struct dsa_switch *ds)
+> -static void netc_mac_port_wr(struct netc_port *np, u32 reg, u32 val)
+> +void netc_mac_port_wr(struct netc_port *np, u32 reg, u32 val)
 >  {
->  	struct netc_switch *priv = ds->priv;
-> @@ -956,6 +1015,8 @@ static void netc_teardown(struct dsa_switch *ds)
->  	disable_delayed_work_sync(&priv->fdbt_ageing_work);
->  	netc_destroy_all_lists(priv);
->  	netc_free_ntmp_user(priv);
-> +	netc_free_ports_resources(priv);
-> +	pci_dev_put(priv->tmr_dev);
->  }
-
-[Severity: Medium]
-Do the PTP IPFT entries survive teardown here?
-
-netc_free_ports_resources() cancels the timeout work and purges the clone
-queue, but nothing calls netc_port_del_ptp_filter(), which is the only
-release path for np->ptp_ipft_eid[].  It is static in netc_ptp.c and
-reachable only from netc_port_set_ptp_filter(), i.e. only from a user-space
-hwtstamp request.
-
-So after unbind, up to five entries per user port are still live in the
-IPFT with FLTFA=REDIRECT, host reason NETC_HR_PTP_TRAP and IPFT_TIMECAPE,
-while struct netc_port (holding the entry IDs) is devm-freed.
-
-There is also an ordering question: netc_teardown() calls
-netc_free_ntmp_user() before netc_free_ports_resources():
-
-	netc_free_ntmp_user(priv);	/* destroys the command BD rings */
-	netc_free_ports_resources(priv);
-
-Since ntmp_ipft_delete_entry() needs those rings, can the table cleanup be
-added at the natural place with this ordering, or should
-netc_free_ports_resources() move before netc_free_ntmp_user()?
-
-In a multi-switch tree this looks observable without a PCI re-probe:
-unbinding one switch runs dsa_tree_teardown() (hence netc_teardown() for
-the sibling), and re-binding runs netc_setup() again on the surviving priv,
-where netc_port_ptp_init() resets ptp_ipft_eid[] to NTMP_NULL_ENTRY_ID
-while the old entries are still programmed.  Would PTP frames then keep
-being trapped and time-captured with HWTSTAMP_FILTER_NONE, with no way to
-delete the stale entries?  For the single-switch case the pcie_flr() in
-netc_switch_pci_init() at probe seems to hide it.
+>  	if (is_netc_pseudo_port(np))
+>  		return;
 
 [ ... ]
 
 > diff --git a/drivers/net/dsa/netc/netc_ptp.c b/drivers/net/dsa/netc/netc_ptp.c
-> new file mode 100644
-> index 000000000000..2e743443ca03
-> --- /dev/null
+> index 2e743443ca03..1bc0f0956206 100644
+> --- a/drivers/net/dsa/netc/netc_ptp.c
 > +++ b/drivers/net/dsa/netc/netc_ptp.c
-> @@ -0,0 +1,492 @@
-
-[ ... ]
-
-> +static void netc_port_tstamp_timeout_work(struct work_struct *work)
-> +{
-> +	struct netc_port *np = container_of(work, struct netc_port,
-> +					    tstamp_timeout_work.work);
-> +	struct sk_buff_head free_list;
-> +	struct sk_buff *skb, *skb_tmp;
-> +
-> +	__skb_queue_head_init(&free_list);
-> +
-> +	spin_lock_bh(&np->tstamp_lock);
-> +	skb_queue_walk_safe(&np->tstamp_queue, skb, skb_tmp) {
-> +		if (time_before64(jiffies_64, NETC_SKB_CB(skb)->ptp_tx_time +
-> +				  NETC_TSTAMP_TIMEOUT))
-> +			continue;
-
-[Severity: Low]
-Should this use get_jiffies_64() rather than reading jiffies_64 directly?
-The same raw read is used in netc_port_prepare_twostep():
-
-	NETC_SKB_CB(clone)->ptp_tx_time = jiffies_64;
-
-include/linux/jiffies.h says:
-
- * The 64-bit value is not atomic on 32-bit systems - you MUST NOT read it
- * without sampling the sequence number in jiffies_lock.
- * get_jiffies_64() will do this for you as appropriate.
-
-Since this comparison is the only exit criterion for a queued clone, a torn
-read on a 32-bit build could either purge it immediately or never purge it
-(retaining the clone, its socket reference from skb_clone_sk() and its
-ts_req_id).  The Kconfig is "depends on ARM64 || COMPILE_TEST", so only
-32-bit COMPILE_TEST builds compile the racy read today.  ocelot uses plain
-jiffies with time_is_before_jiffies() for the same pattern.
-
-> +
-> +		dev_dbg_ratelimited(np->switch_priv->dev,
-> +				    "Port %d ts_req_id %u which seems lost\n",
-> +				    np->dp->index, NETC_SKB_CB(skb)->ts_req_id);
-> +
-> +		__skb_unlink(skb, &np->tstamp_queue);
-> +		__skb_queue_tail(&free_list, skb);
-> +	}
-
-[ ... ]
-
-> +static int netc_get_ts_req_id(struct netc_port *np)
-> +{
-> +	DECLARE_BITMAP(ts_req_id_bitmap, NETC_NUM_TS_REQ_ID);
-> +	struct sk_buff *skb, *skb_tmp;
-> +	unsigned long ts_req_id;
-> +
-> +	bitmap_zero(ts_req_id_bitmap, NETC_NUM_TS_REQ_ID);
-> +
-> +	skb_queue_walk_safe(&np->tstamp_queue, skb, skb_tmp)
-> +		__set_bit(NETC_SKB_CB(skb)->ts_req_id, ts_req_id_bitmap);
-> +
-> +	ts_req_id = find_first_zero_bit(ts_req_id_bitmap, NETC_NUM_TS_REQ_ID);
+> @@ -11,6 +11,15 @@
+>  
+>  #define NETC_NUM_TS_REQ_ID		16
+>  #define NETC_TSTAMP_TIMEOUT		(5 * HZ)
+> +#define NETC_MAX_STEP_OFFSET		0x1ff
+> +#define NETC_ONESTEP_QTH		512
+> +/* The 30-bit timestamp of the To_Port subtype 3 tag lets the hardware
+> + * account for a single wrap, so the correction field of a one-step Sync
+> + * frame is only correct if it is sent out within 2^30 ns after the
+> + * software timestamp is read. Past this window the frame is beyond
+> + * repair, and PM_SINGLE_STEP becomes safe to reprogram.
+> + */
 
 [Severity: Medium]
-Can a timed-out request ID be handed out again while the hardware response
-for it is still in flight?
+This comment argues that the correction value is beyond repair after 2^30 ns,
+but PM_SINGLE_STEP also carries the correction-field offset and the
+"update UDP checksum" bit, which the hardware still applies at SFD time to
+whatever frame is being transmitted.
 
-Availability here is derived purely from the clones currently queued, and
-netc_port_tstamp_timeout_work() frees an ID by unlinking the clone without
-knowing whether the frame has even been transmitted.  The timeout clock
-starts before the frame reaches the conduit:
+If the previously programmed frame is still sitting in the switch or port
+egress path (egress congestion, flow control, TAS gating), the next
+netc_port_set_onestep_control() call can change offset and CH under it.  For
+an L2 PTP frame the correction offset is around 22, for UDP/IPv6 around 74,
+so the MAC would write 8 bytes of correction data at the wrong position
+inside the pending frame and may recompute its UDP checksum.
 
-netc_port_prepare_twostep()
-	NETC_SKB_CB(clone)->ptp_tx_time = jiffies_64;
-	__skb_queue_tail(&np->tstamp_queue, clone);
+The "no ts_req_id available" branch of netc_port_onestep_work() has the same
+shape: it overwrites np->onestep_state with NETC_ONESTEP_SCHEDULED, which
+erases the record that a frame is in flight at all.
 
-so egress queueing delay (link down/flapping, or sustained PAUSE from the
-link partner) counts against the 5 second budget.  If that delay exceeds
-NETC_TSTAMP_TIMEOUT:
+Would it be safer to only reprogram the register when the new frame's
+offset/CH match the pending one, or to hold off until the pending frame is
+known to be gone?
 
-netc_port_tstamp_timeout_work()	-> drops clone, frees ID
-netc_get_ts_req_id()		-> hands the same ID to a new transmit
-netc_port_txtstamp_handler()	-> late response matches the new clone
-
-and netc_port_txtstamp_handler() matches on nothing but port and the 4-bit
-ID:
-
-	if (NETC_SKB_CB(skb)->ts_req_id != ts_req_id)
-		continue;
-
-	__skb_unlink(skb, &np->tstamp_queue);
-
-Would that report the old frame's transmit time for the new frame, and then
-discard the correct response as lost?  ocelot_port_dequeue_ptp_tx_skb()
-additionally compares the PTP sequenceId before completing a queued clone;
-since the NETC response tag only carries the 4-bit ID, would a generation
-counter or an ID quarantine be needed here?
-
-[ ... ]
-
-> +int netc_get_ts_info(struct dsa_switch *ds, int port,
-> +		     struct kernel_ethtool_ts_info *info)
+> +#define NETC_ONESTEP_VALID_WINDOW	0x40000000 /* ns */
+>  
+>  static void netc_port_tstamp_timeout_work(struct work_struct *work)
+>  {
+> @@ -68,12 +77,276 @@ static int netc_get_ts_req_id(struct netc_port *np)
+>  	return ts_req_id;
+>  }
+>  
+> +static int netc_get_phc_time(struct netc_switch *priv, u64 *ns)
 > +{
-
-[ ... ]
-
-> +	info->tx_types = BIT(HWTSTAMP_TX_OFF) | BIT(HWTSTAMP_TX_ON);
+> +	if (unlikely(!priv->tmr_dev))
+> +		return -ENODEV;
 > +
-
-[ ... ]
-
-> +static int netc_port_del_ptp_filter(struct netc_port *np)
+> +	return netc_timer_get_current_time(priv->tmr_dev, ns);
+> +}
+> +
+> +static void netc_port_set_onestep_control(struct netc_port *np,
+> +					  bool csum_update, int offset)
 > +{
-> +	struct netc_switch *priv = np->switch_priv;
-> +	int ret = 0;
-> +	int err;
+> +	u32 val;
 > +
-> +	for (int i = 0; i < NETC_PTP_MAX; i++) {
-> +		if (np->ptp_ipft_eid[i] == NTMP_NULL_ENTRY_ID)
-> +			continue;
+> +	val = PM_SINGLE_STEP_EN | FIELD_PREP(PM_SINGLE_STEP_OFFSET, offset);
+> +	if (csum_update)
+> +		val |= PM_SINGLE_STEP_CH;
+> +	netc_mac_port_wr(np, NETC_PM_SINGLE_STEP(0), val);
+
+[Severity: Low]
+This isn't a bug on today's hardware, but netc_mac_port_wr() returns without
+touching the register when is_netc_pseudo_port(np) is true, and it reports
+nothing back to the caller.
+
+The one-step machinery is gated only on dsa_port_is_user(), and
+netc_get_ts_info() advertises HWTSTAMP_TX_ONESTEP_SYNC unconditionally, so a
+user port with caps.pseudo_link set would get its originTimestamp rewritten
+and a subtype-3 tag attached while the MAC single-step engine was never
+enabled.
+
+That combination looks impossible right now: imx94_switch_phylink_get_caps()
+only marks port 3 (the CPU port) as internal, and the binding requires
+ethernet-port@3 to carry the ethernet = <&enetc3> phandle.  Would it still be
+worth refusing one-step on pseudo-link ports explicitly so a future platform
+cannot silently drop the register write?
+
+> +}
 > +
-> +		/* No -ETIMEDOUT here: with the command BD ring enabled, the
-> +		 * hardware never times out on a command. Any remaining error
-> +		 * means the entry is still present in the table.
-> +		 */
-> +		err = ntmp_ipft_delete_entry(&priv->ntmp,
-> +					     np->ptp_ipft_eid[i]);
-> +		if (likely(!err)) {
-> +			np->ptp_ipft_eid[i] = NTMP_NULL_ENTRY_ID;
-> +			continue;
+> +static void netc_port_program_onestep(struct netc_port *np,
+> +				      struct sk_buff *skb)
+> +{
+> +	u16 correction_offset = NETC_SKB_CB(skb)->correction_offset;
+> +	u16 tstamp_offset = NETC_SKB_CB(skb)->timestamp_offset;
+> +	u64 tstamp = NETC_SKB_CB(skb)->tstamp;
+> +	u8 *hdr = skb_mac_header(skb);
+
+[ ... ]
+
+> +	if (NETC_SKB_CB(skb)->is_udp) {
+> +		__be32 old_sec_l, old_ns;
+> +		struct udphdr *uh;
+> +		__be16 old_sec_h;
+> +
+> +		if (skb->ip_summed == CHECKSUM_PARTIAL) {
+> +			csum_update = true;
+> +			goto update_timestamp;
 > +		}
 > +
-> +		ret = err;
+> +		if (unlikely(!skb_transport_header_was_set(skb)))
+> +			uh = (struct udphdr *)(hdr + tstamp_offset -
+> +					       sizeof(struct ptp_header) -
+> +					       sizeof(struct udphdr));
+> +		else
+> +			uh = udp_hdr(skb);
 
-[Severity: Medium]
-When one of the up to five deletions fails, the loop continues and the
-last error is returned, so the hardware can end up with a subset of the
-rules still installed.  What does user space then see?
+[Severity: High]
+Can udp_hdr(skb) be trusted here?  netc_port_prepare_onestep_sync() derives
+and bounds-checks the PTP offsets itself:
 
-netc_port_set_ptp_filter()
-	err = netc_port_del_ptp_filter(np);
-	if (err)
-		return err;
+	if (unlikely(tstamp_offset + 10 > skb_headlen(skb) ||
+		     correction_offset > NETC_MAX_STEP_OFFSET))
+		goto set_ptp_flag_drop;
 
-	np->ptp_rx_filter = HWTSTAMP_FILTER_NONE;
+but skb->transport_header is never validated against skb_headlen(), and the
+safe computed expression is only used when the transport header was not set.
+The code then reads uh->check at offset 6 and writes 2 bytes there through
+inet_proto_csum_replace2()/inet_proto_csum_replace4().
 
-On the delete failure path np->ptp_rx_filter keeps the full old value, so
-netc_port_hwtstamp_get() reports a filter that is only partly programmed.
+Two AF_PACKET paths can leave transport_header at or past the tail while the
+frame still parses as a valid PTPv2 Sync over UDP with ip_summed ==
+CHECKSUM_NONE:
 
-On the add path the opposite happens: np->ptp_rx_filter is already
-HWTSTAMP_FILTER_NONE, and both netc_port_add_l4_ptp_filter() and
-netc_port_add_l2_l4_ptp_filter() discard the rollback return value:
+packet_snd()
+  packet_parse_headers()
+    skb_probe_transport_header()
+      __skb_flow_dissect()
+        key_control->thoff = min_t(u16, nhoff, skb ? skb->len : hlen);
 
-del_ptp_filter:
-	netc_port_del_ptp_filter(np);
+The dissector runs with skb->protocol taken from the user-supplied
+sll_protocol and nhoff = 0, so a frame whose declared ethertype disagrees
+with its real headers can walk attacker-chosen IPv6 option hdrlen bytes and
+end with thoff clamped to skb->len, i.e. transport_header == tail.
 
-	return err;
+The other path is PACKET_VNET_HDR:
 
-so a failed rollback can leave live REDIRECT+TIMECAPE entries while
-software reports NONE, and PTP frames from that port keep being trapped to
-the CPU port instead of being forwarded.
+virtio_net_hdr_to_skb()
+  skb_partial_csum_set()   /* csum_start = headlen - 2 accepted */
+...
+skb_checksum_help()        /* flips ip_summed to CHECKSUM_NONE,
+                              transport_header left as-is */
 
-Is the failure reachable?  ntmp_ipft_delete_entry() -> 
-ntmp_delete_entry_by_id() first does:
+With the frame length tuned so tailroom is under 8 bytes, wouldn't the
+uh->check read go past skb_tail_pointer() and the csum-replace write land
+inside struct skb_shared_info (flags/meta_len/nr_frags/tx_flags/gso_size)?
 
-	err = ntmp_alloc_data_mem(user->dev, &swcbd, (void **)&req);
-	if (err)
-		return err;
+Since the validated expression is already computed just above, could it be
+used unconditionally instead of udp_hdr(skb)?  The same udp_hdr() pattern
+exists in drivers/net/ethernet/freescale/enetc/enetc.c, but this path is new
+here.
 
-which is a dma_alloc_coherent(..., GFP_KERNEL) that can return -ENOMEM
-before the command is issued, and netc_xmit_ntmp_cmd() can return -EBUSY,
--EIO or -ETIMEDOUT.
+> +
+> +		/* For IPv4, a UDP checksum of zero on the wire means "no
+> +		 * checksum". For IPv6, its UDP checksum is mandatory and
+> +		 * never zero.
+> +		 */
+> +		if (!uh->check)
+> +			goto update_timestamp;
+> +
+> +		old_sec_h = __get_unaligned_t(__be16, hdr + tstamp_offset);
+> +		old_sec_l = __get_unaligned_t(__be32, hdr + tstamp_offset + 2);
+> +		old_ns = __get_unaligned_t(__be32, hdr + tstamp_offset + 6);
+> +		inet_proto_csum_replace2(&uh->check, skb, old_sec_h,
+> +					 new_sec_h, false);
+> +		inet_proto_csum_replace4(&uh->check, skb, old_sec_l,
+> +					 new_sec_l, false);
+> +		inet_proto_csum_replace4(&uh->check, skb, old_ns,
+> +					 new_ns, false);
+> +		csum_update = true;
+> +	}
+> +
+> +update_timestamp:
 
 [ ... ]
 
-> +void netc_port_txtstamp(struct dsa_switch *ds, int port, struct sk_buff *skb)
+> +static void netc_port_onestep_work(struct work_struct *work)
+> +{
+
+[ ... ]
+
+> +skb_dequeue:
+> +	skb = __skb_dequeue(&np->onestep_queue);
+> +	if (!skb)
+> +		goto set_onestep_state_idle;
+> +
+> +	/* Clone is a ts_req_id token only; its payload is never read, so
+> +	 * sharing the buffer with the mutated original is fine.
+> +	 */
+> +	clone = skb_clone(skb, GFP_ATOMIC);
+> +	if (unlikely(!clone)) {
+> +		kfree_skb(skb);
+> +		goto skb_dequeue;
+> +	}
+> +
+> +	spin_lock_bh(&np->tstamp_lock);
+> +	ts_req_id = netc_get_ts_req_id(np);
+> +	if (unlikely(ts_req_id < 0)) {
+> +		spin_unlock_bh(&np->tstamp_lock);
+> +
+> +		/* Re-queuing the frame and immediately rescheduling the work
+> +		 * would busy-loop on system_percpu_wq and burn CPU until an
+> +		 * ID is freed, so drop this frame and move on to the next one
+> +		 * in the queue instead.
+> +		 */
+> +		np->onestep_state = NETC_ONESTEP_SCHEDULED;
+> +		schedule_work(&np->onestep_work);
+> +
+> +		goto onestep_unlock;
+> +	}
+
+[Severity: Medium]
+The comment says re-queuing plus rescheduling would busy-loop, but the work
+does reschedule itself here unconditionally, and each pass destroys one
+queued one-step Sync frame at onestep_unlock.  With NETC_ONESTEP_QTH at 512,
+can this discard the entire backlog in quick succession?
+
+The 16-entry ts_req_id pool is shared with the two-step path:
+netc_port_prepare_twostep() takes an ID for every PTP frame that is not a
+one-step Sync (Announce, Follow_Up, Delay_Resp still flow in one-step mode),
+and holds it for up to NETC_TSTAMP_TIMEOUT when a response is lost.  So a
+burst of two-step requests can drive this branch.
+
+The only trace is the dev_dbg_ratelimited() inside netc_get_ts_req_id().
+Should ID exhaustion apply backpressure (leave the frame queued and arm a
+delayed retry) rather than dropping frames, and should the changelog mention
+that exhaustion means one-step Sync frames are discarded?
+
+> +
+> +	/* PHC is unavailable, drop the whole queue */
+> +	if (unlikely(netc_get_phc_time(priv, &tstamp))) {
+> +		spin_unlock_bh(&np->tstamp_lock);
+> +		goto set_onestep_state_idle;
+> +	}
+> +
+> +	NETC_SKB_CB(skb)->tstamp = tstamp;
+> +	NETC_SKB_CB(skb)->ts_req_id = ts_req_id;
+> +	NETC_SKB_CB(skb)->ptp_flag = NETC_PTP_FLAG_ONESTEP;
+> +	NETC_SKB_CB(clone)->ts_req_id = ts_req_id;
+> +	NETC_SKB_CB(clone)->ptp_tx_time = jiffies_64;
+> +	NETC_SKB_CB(clone)->ptp_flag = NETC_PTP_FLAG_ONESTEP;
+> +	np->onestep_tx_time = NETC_SKB_CB(clone)->ptp_tx_time;
+> +	np->onestep_ts_req_id = ts_req_id;
+> +
+> +	__skb_queue_tail(&np->tstamp_queue, clone);
+> +	if (!delayed_work_pending(&np->tstamp_timeout_work))
+> +		schedule_delayed_work(&np->tstamp_timeout_work,
+> +				      NETC_TSTAMP_TIMEOUT);
+> +
+> +	spin_unlock_bh(&np->tstamp_lock);
+> +
+> +	np->onestep_state = NETC_ONESTEP_IN_FLIGHT;
+> +	spin_unlock_bh(&np->onestep_lock);
+> +
+> +	netc_port_program_onestep(np, skb);
+> +	tagger_data = priv->ds->tagger_data;
+> +	tagger_data->onestep_sync_xmit(skb, np->dp->user);
+> +
+> +	return;
+> +
+> +set_onestep_state_idle:
+> +	np->onestep_state = NETC_ONESTEP_IDLE;
+> +purge_onestep_queue:
+> +	__skb_queue_purge(&np->onestep_queue);
+> +onestep_unlock:
+> +	spin_unlock_bh(&np->onestep_lock);
+> +	kfree_skb(skb);
+> +	kfree_skb(clone);
+> +}
+> +
+> +static bool netc_onestep_timeout(struct netc_port *np)
+> +{
+> +	u64 expire_time;
+> +
+> +	/* Use monotonic jiffies_64, as the PHC may be stepped backwards.
+> +	 * Add one tick since the ns-to-jiffies conversion rounds down, so
+> +	 * the software window is never shorter than the hardware window.
+> +	 */
+> +	expire_time = np->onestep_tx_time + 1 +
+> +		      nsecs_to_jiffies64(NETC_ONESTEP_VALID_WINDOW);
+> +	if (np->onestep_state == NETC_ONESTEP_IN_FLIGHT &&
+> +	    time_after64(jiffies_64, expire_time))
+> +		return true;
+> +
+> +	return false;
+> +}
+> +
+> +void netc_port_onestep_sync_enqueue(struct dsa_switch *ds, int port,
+> +				    struct sk_buff *skb)
 > +{
 > +	struct netc_port *np = NETC_PORT(ds, port);
-> +	u32 ptp_class;
-> +	int tx_type;
 > +
-> +	NETC_SKB_CB(skb)->ptp_flag = 0;
-> +	ptp_class = ptp_classify_raw(skb);
-> +	if (ptp_class == PTP_CLASS_NONE)
-> +		return;
+> +	spin_lock_bh(&np->onestep_lock);
+> +	if (unlikely(np->onestep_state == NETC_ONESTEP_PORT_INACTIVE)) {
+> +		kfree_skb(skb);
+> +		goto onestep_unlock;
+> +	}
 > +
-> +	/* The rx_filters in netc_get_ts_info() has already declared that
-> +	 * it only supports PTP v2, so TX only supports v2 as well.
+> +	if (unlikely(skb_queue_len(&np->onestep_queue) >= NETC_ONESTEP_QTH)) {
+> +		dev_dbg_ratelimited(np->switch_priv->dev,
+> +				    "The onestep_queue of port %d is full\n",
+> +				    port);
+> +		kfree_skb(skb);
+> +		goto onestep_unlock;
+> +	}
+> +
+> +	__skb_queue_tail(&np->onestep_queue, skb);
+> +	if (likely(np->onestep_state == NETC_ONESTEP_IDLE) ||
+> +	    netc_onestep_timeout(np)) {
+> +		np->onestep_state = NETC_ONESTEP_SCHEDULED;
+> +		schedule_work(&np->onestep_work);
+> +	}
+> +
+> +onestep_unlock:
+> +	spin_unlock_bh(&np->onestep_lock);
+> +}
+
+[Severity: High]
+Can the port get stuck in NETC_ONESTEP_IN_FLIGHT forever?
+
+Once netc_port_onestep_work() sets IN_FLIGHT and hands the frame to
+onestep_sync_xmit(), only three things can resume the drain:
+
+  1. a matching response in netc_port_txtstamp_handler()
+  2. netc_onestep_timeout(), which is evaluated only from
+     netc_port_onestep_sync_enqueue()
+  3. the ts_req_id exhaustion self-reschedule
+
+The changelog says:
+
+    A dropped frame produces no response, so reuse tstamp_timeout_work to
+    reclaim its request ID after 5 seconds
+
+but netc_port_tstamp_timeout_work() only unlinks and frees the timed-out
+clone:
+
+	__skb_unlink(skb, &np->tstamp_queue);
+	__skb_queue_tail(&free_list, skb);
+	...
+	if (!skb_queue_empty(&np->tstamp_queue))
+		schedule_delayed_work(&np->tstamp_timeout_work,
+				      NETC_TSTAMP_TIMEOUT);
+
+It never touches np->onestep_state and never schedules np->onestep_work.
+And once the clone has been reaped, a late response takes the !skb_match
+early return in netc_port_txtstamp_handler(), so it cannot clear IN_FLIGHT
+either.
+
+Concretely: frame A goes IN_FLIGHT with id X, frame B is enqueued inside the
+window and only appended, A is dropped in the switch so no response arrives,
+5 seconds later the timeout work frees A's clone and leaves IN_FLIGHT set.
+If the sender then stops, or falls below one frame per window, doesn't B and
+everything behind it stay queued and unfreed until link-down, port disable
+or a hwtstamp reconfiguration?  These are the original TX skbs and still
+hold skb->sk, so the owning socket stays charged.
+
+The queue-full branch above also returns before the netc_onestep_timeout()
+check, so once 512 frames have accumulated even continued traffic can no
+longer recover the port.
+
+Would it work to reset onestep_state and schedule onestep_work from the
+timeout path, or to arm a delayed work for the validity deadline, so
+recovery does not depend on new traffic arriving?
+
+Separately, the changelog says the work is scheduled "when the PTP time has
+advanced beyond NETC_ONESTEP_VALID_WINDOW", while netc_onestep_timeout()
+compares monotonic jiffies_64 and only at enqueue time.
+
+[ ... ]
+
+> @@ -395,6 +673,66 @@ int netc_port_hwtstamp_get(struct dsa_switch *ds, int port,
+>  	return 0;
+>  }
+>  
+> +static void netc_port_prepare_onestep_sync(struct netc_port *np,
+> +					   struct sk_buff *skb,
+> +					   u32 ptp_class, bool *twostep)
+> +{
+
+[ ... ]
+
+> +	if (unlikely(skb_linearize_cow(skb)))
+> +		goto set_ptp_flag_drop;
+> +
+> +	ptp_hdr = ptp_parse_header(skb, ptp_class);
+> +	if (unlikely(!ptp_hdr))
+> +		goto set_ptp_flag_drop;
+> +
+> +	msg_type = ptp_get_msgtype(ptp_hdr, ptp_class);
+
+[ ... ]
+
+> +set_ptp_flag_drop:
+> +	/* Drop instead of falling back to two-step: if it is a Sync,
+> +	 * one-step offload will not be executed, the timestamp in the
+> +	 * frame is inaccurate, which may affect PTP synchronization.
 > +	 */
-> +	if (unlikely(ptp_class & PTP_CLASS_V1))
+> +	NETC_SKB_CB(skb)->ptp_flag = NETC_PTP_FLAG_DROP;
+> +	dev_dbg_ratelimited(priv->dev,
+> +			    "Port %d: PTP frame dropped in error\n",
+> +			    np->dp->index);
+> +}
+
+[Severity: Medium]
+The skb_linearize_cow() failure is evaluated before the message type is
+known, so a plain ENOMEM destroys any PTP frame on the port, including a
+Delay_Req that this code would otherwise have sent two-step.  Should the
+linearize failure fall back to two-step, or at least be handled after the
+Sync check?
+
+None of the new drop paths are accounted anywhere.  dsa_user_xmit() has
+already counted the frame as transmitted via dev_sw_netstats_tx_add() before
+the tagger frees it, so from userspace the frames just vanish:
+
+  netc_port_prepare_onestep_sync() -> NETC_PTP_FLAG_DROP -> kfree_skb() in
+    netc_xmit()                               (linearize/parse/offset checks)
+  netc_port_onestep_sync_enqueue()            (queue full, port inactive)
+  netc_port_onestep_work()                    (clone failure, no ts_req_id,
+                                               PHC read failure purges all)
+  netc_port_purge_onestep_queue()             (hwtstamp reconfiguration)
+
+netc has no .get_stats64, so dsa_user_get_stats64() falls back to
+dev_get_tstats64(), which folds dev->stats into rtnl_link_stats64 - could
+these paths bump dev->stats.tx_dropped?
+
+The changelog only says "Frames that are not one-step Sync still fall back
+to two-step timestamping", which does not tell a reader that enabling
+one-step turns a degraded timestamp into a frame that is never transmitted.
+
+[ ... ]
+
+> @@ -449,6 +787,21 @@ void netc_port_txtstamp_handler(struct dsa_switch *ds, int port,
+>  		dev_dbg_ratelimited(np->switch_priv->dev,
+>  				    "Port %d ts_req_id %u which seems lost\n",
+>  				    port, ts_req_id);
+> +
 > +		return;
+> +	}
+> +
+> +	if (NETC_SKB_CB(skb_match)->ptp_flag == NETC_PTP_FLAG_ONESTEP) {
+> +		spin_lock_bh(&np->onestep_lock);
+> +		if (likely(np->onestep_state == NETC_ONESTEP_IN_FLIGHT &&
+> +			   np->onestep_ts_req_id == ts_req_id) ||
+> +		    np->onestep_state == NETC_ONESTEP_IDLE) {
+> +			np->onestep_state = NETC_ONESTEP_SCHEDULED;
+> +			schedule_work(&np->onestep_work);
+> +		}
+> +		spin_unlock_bh(&np->onestep_lock);
+> +		consume_skb(skb_match);
+> +
+>  		return;
+>  	}
 
-[Severity: Low]
-This isn't a bug for real PTP stacks, but is the comment's reasoning right?
-The advertised rx_filters describe what the ingress filter can match; the
-uapi definition of the TX mode makes no protocol statement:
+[Severity: Medium]
+Can the ts_req_id comparison here match a different frame?  The clone is
+unlinked from np->tstamp_queue under tstamp_lock earlier in this function,
+which immediately makes the 4-bit id reusable, and onestep_lock is only
+taken afterwards:
 
-include/uapi/linux/net_tstamp.h
-	/*
-	 * Enables hardware time stamping for outgoing packets;
-	 * the sender of the packet decides which are to be
-	 * time stamped ...
-	 */
-	HWTSTAMP_TX_ON,
+CPU0 (work, frame A response overdue past the window)
+  netc_port_onestep_sync_enqueue()
+     netc_onestep_timeout() -> true, schedule_work()
+  netc_port_onestep_work()
+     spin_lock_bh(&np->onestep_lock);
 
-netc_get_ts_info() advertises HWTSTAMP_TX_ON unconditionally and
-netc_port_hwtstamp_set() accepts it even with HWTSTAMP_FILTER_NONE, yet a
-socket asking for SOF_TIMESTAMPING_TX_HARDWARE on a non-PTP or PTPv1 frame
-silently gets no timestamp here.  Could the comment be reworded to state
-the hardware/driver TX restriction directly instead of deriving it from the
-RX filters?
+CPU1 (A's response arrives)
+  netc_port_txtstamp_handler()
+     __skb_unlink(clone_A, &np->tstamp_queue);   /* id X now free */
+     spin_unlock_bh(&np->tstamp_lock);
+     spin_lock_bh(&np->onestep_lock);            /* blocks */
+
+CPU0 continues
+     netc_get_ts_req_id() -> X again for frame B
+     np->onestep_ts_req_id = X;
+     np->onestep_state = NETC_ONESTEP_IN_FLIGHT;
+     spin_unlock_bh(&np->onestep_lock);
+     onestep_sync_xmit(B)
+
+CPU1 then sees IN_FLIGHT with onestep_ts_req_id == X and treats A's
+response as B's completion, sets SCHEDULED and re-arms the work, which can
+transmit frame C and reprogram PM_SINGLE_STEP while B is still pending in
+hardware.  Workqueue non-reentrancy serializes the worker, not frame
+completion.
+
+Would retiring the id and moving the one-step state under a single lock
+order (onestep_lock then tstamp_lock), or matching on a generation counter
+instead of the reusable 4-bit id, close this?
+
+[ ... ]
+
+> diff --git a/drivers/net/dsa/netc/netc_switch_hw.h b/drivers/net/dsa/netc/netc_switch_hw.h
+> index 1404ae41c7bc..37d1dd7ec2c7 100644
+> --- a/drivers/net/dsa/netc/netc_switch_hw.h
+> +++ b/drivers/net/dsa/netc/netc_switch_hw.h
+> @@ -203,6 +203,11 @@ enum netc_stg_stage {
+>  #define   SSP_10M			1
+>  #define   SSP_1G			2
+>  
+> +#define NETC_PM_SINGLE_STEP(a)		(0x10c0 + (a) * 0x400)
+> +#define  PM_SINGLE_STEP_CH		BIT(6)
+> +#define  PM_SINGLE_STEP_OFFSET		GENMASK(15, 7)
+> +#define  PM_SINGLE_STEP_EN		BIT(31)
+> +
+
+[ ... ]
+
+> diff --git a/net/dsa/tag_netc.c b/net/dsa/tag_netc.c
+> index 6b492451d092..c1c0ffee75c1 100644
+> --- a/net/dsa/tag_netc.c
+> +++ b/net/dsa/tag_netc.c
+
+[ ... ]
+
+> @@ -129,17 +139,69 @@ static void netc_fill_tp_tag_subtype2(struct sk_buff *skb,
+>  static struct sk_buff *netc_xmit(struct sk_buff *skb,
+>  				 struct net_device *ndev)
+>  {
+>  	u8 ptp_flag = NETC_SKB_CB(skb)->ptp_flag;
+>  
+>  	/* Fast path: the overwhelming majority of frames are not PTP frames */
+> -	if (likely(!ptp_flag))
+> +	if (likely(!ptp_flag)) {
+>  		netc_fill_tp_tag_subtype0(skb, ndev);
+> -	else
+> -		/* ptp_flag == NETC_PTP_FLAG_TWOSTEP */
+> +	} else if (ptp_flag == NETC_PTP_FLAG_TWOSTEP) {
+>  		netc_fill_tp_tag_subtype2(skb, ndev);
+> +	} else if (ptp_flag == NETC_PTP_FLAG_ONESTEP) {
+> +		/* The switch driver takes ownership of the one-step Sync and
+> +		 * queues it for deferred TX; the deferred work tags it subtype
+> +		 * 3 and transmits it directly to the conduit. Return NULL so
+> +		 * dsa_user_xmit() stops processing this skb.
+> +		 */
+> +		netc_onestep_sync_enqueue(skb, ndev);
+> +		skb = NULL;
+> +	} else {
+> +		/* NETC_PTP_FLAG_DROP */
+> +		kfree_skb(skb);
+> +		skb = NULL;
+> +	}
+>  
+>  	return skb;
+>  }
 
 [ ... ]
 
