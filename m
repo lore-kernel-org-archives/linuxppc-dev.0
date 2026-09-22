@@ -1,100 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-27935-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27936-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE5C7C98308
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2026 17:22:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 586C9C982FA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2026 18:29:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hq6Ny5pp6z2ygK;
-	Wed, 23 Sep 2026 03:22:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790097762;
-	cv=none; b=ktFcuNXw8yrnI3OzNIyuP+hodq+WoUu14msDXUmYPS9txdAphFzMq4/LhIARUAijQrYmk10H03sUax0uaZMoLH2mZxUf1FI+K+9Si4JQQv11AFJizj6JFjE0Lw9D03uJLjAAh28nJlLLUTaGgzxleeWABj/E8MQEO1PCgm0aUGciuXQhb9i94Ndtv5gZZeGjWyYPVtpywnNZ5oiKy2asg/XiZVQV0qhuR4EWpIUlv194y5m4EAxxHWFW1SBGSHJzZx6XvETZ4MM66ahQPAsKJ2a9RQiyhknz7jMN/BTblKTxHl/HaIeUcxfFd+hFz5bVyndM9GApbLoTU52+hXximA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hq7sq0CZBz2yvy;
+	Wed, 23 Sep 2026 04:29:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790101758;
+	cv=none; b=NrPBszuC+RdDWUFXQX5mA0nGz399zreaJZY+dVbLkcv2gSDATsn5J/gPaDWEr62Oxkc9CmfO2Kqh60EswgjKhjo8qAXZInLqXUlTHUEXymxIMF9ja/d4eNA42kGDDTYxyqrvQg29KdCMjVGsOYJyserJOJznfndEybKB3aEOmJTIiF2BDVg7d4C7jugOm+8yk3NGRGZMWgNP+PkoJqeTd3paru4CJhkgwXIvUNisVufJl+oAJo2s+D/xiYc213Rts93uwvM+2SUZC1MrHvo0ZyojsHy2Xy+YaaQO7FLHu4qyuDLEyrKNLK3/WHVLHFxYwJaCW048SPiGGeaDYexyPw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790097762; c=relaxed/relaxed;
-	bh=UNh8IajC2C7W4xAVN/5A4Te3DbNvUnFRUUUmja4mmRU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Lqhjc8qvfThlDrI/Q+8W0YvI6Tu++GuHTYTFOPHmEwlcJlzML1kNCSB+pZHdN9pLtimvvl+jTPGgoE5GCWxfxieitpPl6OUky+kZchcGnadeWoFOpuaQ/VbZHwiznpxsD1fOC3Po2Z31xTnrL31mDlzeSY1leqvGJVo7KdPf7dsj1MV6tYBl+wHnoS+MjD5WNsasEpO2SO4wbv0H9E/fjS3FxB7jz4MQA0gq/CVgg4D5QHQW+KhVNEXsAzzgVBE9XSFNZ9JZa6A5aGnaCGYY11lbgyalFBln6wtWkpIKU9OvUPQBc0WwHfnZwhQvsWOHXMZOnhBsm2v45xnQW62Bpg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F9l/h2sg; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1790101758; c=relaxed/relaxed;
+	bh=boc46Sj1HOU4tKyVBAaYU0tHsUhuDqMurhOITlCOjEQ=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=QeMSu/PGT1jZruUeDlT2lL26NkhUsNtszx+6XD2KKzCSdbvARsYFa2WWQyRPVw30G/SI6AX5e+OYYiORG9+yMMy/LhHA/f+Ni7EcTH1o6kGRKPbACczrO8IWLpnvuCCaTmMVB2pfYdvEUoGP4x/PtWvB+BAnQspHh4MbNtbeA7N6izkWVo9vTc03jILy6IzI9HPCZl/bxsQq+fmyl8AvgN2PBx941fSHvj9h/v2cFBHB4Ehy12EiYjrmq3++HhI+uWv/F2b1vZtSQBmlyKntNi2XVECRsy1f9NJomUz0C6FWzJAyK5+5rv3oWJUwZ7y1L9ZjIoMlETPMD8i7HJ7qPg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=LKmmiUUb; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132b; helo=mail-dy1-x132b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F9l/h2sg;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=LKmmiUUb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132b; helo=mail-dy1-x132b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x132b.google.com (mail-dy1-x132b.google.com [IPv6:2607:f8b0:4864:20::132b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hq6Ny02z2z2ySj
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 03:22:41 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 238A742E98;
-	Tue, 22 Sep 2026 17:22:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 04DCD1F000FF;
-	Tue, 22 Sep 2026 17:22:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790097759;
-	bh=UNh8IajC2C7W4xAVN/5A4Te3DbNvUnFRUUUmja4mmRU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=F9l/h2sgeG6pItIpsl4UOUD5LPuOPYalAOj3lX7iN1SKQRQx/7vSe8Y8wJYuJaFa9
-	 tegjTwQVFA9hXGIt+1oJvFwKspvEmTZEeRl/rL3Z+1/vMB7N90Y9ljH8EiqVFiWGMa
-	 llb7G+u8p4G82Y3NfZpa4T6VyMnit/o1genoOGjAzyku0OZj1fvAIP0nPa5BRjaZ1s
-	 0LsiYA1bWAjQ698sUHV9gBhPhcHOkUs5jCvX2Aqi8QkSHyLlAciZyH7C9FEowKSWF8
-	 GvrRJLzG6nhqL2FhCQxRW0vNDBGCdIskECu8iSBeB5zhpcl0fRPI9Q5+bVasWrDLde
-	 t0gfKdsjFaNOA==
-Date: Tue, 22 Sep 2026 18:22:15 +0100
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: Matthew Wilcox <willy@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, 
-	David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>, 
-	Baolin Wang <baolin.wang@linux.alibaba.com>, "Liam R. Howlett" <liam@infradead.org>, 
-	Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
-	Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
-	Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Guo Ren <guoren@kernel.org>, 
-	Brian Cain <bcain@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, 
-	Dinh Nguyen <dinguyen@kernel.org>, Simon Schuster <schuster.simon@siemens-energy.com>, 
-	Jonas Bonn <jonas@southpole.se>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, 
-	Stafford Horne <shorne@gmail.com>, Rich Felker <dalias@libc.org>, 
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Alexandre Ghiti <alex@ghiti.fr>, Russell King <linux@armlinux.org.uk>, 
-	Vineet Gupta <vgupta@kernel.org>, Michal Simek <monstr@monstr.eu>, Chris Zankel <chris@zankel.net>, 
-	Max Filippov <jcmvbkbc@gmail.com>, Will Deacon <will@kernel.org>, 
-	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, 
-	Peter Zijlstra <peterz@infradead.org>, "David S. Miller" <davem@davemloft.net>, 
-	Andreas Larsson <andreas@gaisler.com>, Richard Henderson <richard.henderson@linaro.org>, 
-	Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>, 
-	Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, 
-	Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
-	Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
-	Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
-	Sven Schnelle <svens@linux.ibm.com>, Richard Weinberger <richard@nod.at>, 
-	Anton Ivanov <anton.ivanov@cambridgegreys.com>, Johannes Berg <johannes@sipsolutions.net>, 
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
-	Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka <vbabka@kernel.org>, 
-	Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
-	Michal Hocko <mhocko@suse.com>, Jason Gunthorpe <jgg@ziepe.ca>, 
-	John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, 
-	Yoshinori Sato <ysato@users.sourceforge.jp>, Shakeel Butt <shakeel.butt@linux.dev>, 
-	Jonathan Corbet <corbet@lwn.net>, Randy Dunlap <rdunlap@infradead.org>, linux-mm@kvack.org, 
-	linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
-	linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org, linux-sh@vger.kernel.org, 
-	linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-snps-arc@lists.infradead.org, linux-arch@vger.kernel.org, sparclinux@vger.kernel.org, 
-	linux-alpha@vger.kernel.org, loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
-	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
-	linux-um@lists.infradead.org, Hugh Dickins <hughd@google.com>, Qi Zheng <qi.zheng@linux.dev>, 
-	linux-doc@vger.kernel.org
-Subject: Re: [PATCH v4 00/12] mm: make userland page table freeing RCU-safe
-Message-ID: <arK4XnDTuFpwPV38@gremlin>
-References: <20260922-rcu-pagetable-freeing-v4-0-fe1ad1f1e303@kernel.org>
- <arKv4qbF04KB2WxQ@casper.infradead.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hq7sn6WKwz2yFQ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 04:29:17 +1000 (AEST)
+Received: by mail-dy1-x132b.google.com with SMTP id 5a478bee46e88-33e456e7869so58345eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 11:29:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790101755; x=1790706555; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=boc46Sj1HOU4tKyVBAaYU0tHsUhuDqMurhOITlCOjEQ=;
+        b=LKmmiUUbAss3STHfaQNVm8++tp4dEZnZgm7pMjIVRmB/ekPhC0GYwVE86TSslm8mx8
+         rivISfKYM/WoFfIOHiMaKlHZtaTmSuCAwf4GPlfWAyIYWQhrOCqSanDdoV0MoW2X89z9
+         4h8DsACoFtk8HcjSM7SCl98N//cmtCQkXn90MAKfBfqx3tlGnPaakau/NzFyADtTu989
+         4KA+YOcLI3cHN/0UWMJZiuIItW3m3DzUbOMJabfpr7gyraY76Qb8UlEqy2Re/w0E4R8r
+         lBNk+WJEK+fi9Rfw2PM/HAdCDXEq68stk8hOZH7HkgxNmWzm+/cXB/arU12KMNv5o80x
+         9kJQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790101755; x=1790706555;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=boc46Sj1HOU4tKyVBAaYU0tHsUhuDqMurhOITlCOjEQ=;
+        b=oyOGfRIpYK1tudSNu9WAcjxsMkLi3FT5RZSWbyG9kjAphXKeX03WqqsFOH+iRuMUWB
+         xrDSG72z+dfvNlwUp+tgi+CPfCLCUqH5Dcwz/+m3jkyKzrwj7DMqBCeCw7G1OPXia8nV
+         UDDwpYT8UvOrV6qFi49/UMtjmK3fTCeEejbPeQdKkyFDWP2w0j2w0IBjC3RUQuJfX4gN
+         RHep1HfiYAEoE+EPZAGGJkjdY4NMZznNKY/tWYzdW1LbGHf41qGu/1w3MuI0a2bfIetF
+         rEyWMFFUcP4MPkIDzT5qTngE4LjuIwq5MB9ePyC8QyMeMurjFtQ/4KiB0cUYcdBgVgIa
+         NyWQ==
+X-Forwarded-Encrypted: i=1; AKwUvBwPFEuBb1/N8JMXY4n8EgDd9h+Wrkifox/+R5ZMOs7W4NT57z/81RYV7FPnC72T/+D4HVopPPgltvs5mRo=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++m4rS4WJ0PqeOLiJJGFOkblYQ6xzLAe93O8ba5dTYAZno2e9HG7
+	u80qNdVD9FH4kEi19bd7FfPLYHlMHVe6+7GPU5QKPwYtqmNNrTmVVs9p
+X-Gm-Gg: AYBFou0J6YCUCJArvb5HD58MGdxaEJqwoV861QDSj57suOMrbku2q3TF2aTce7vbhRX
+	osH6vE7Hjc5Gfsd/54WPnlmURV51mN0UNPEX1/xYRbD1uaMXcMq15V3GI5NNih0m7BEbRchRPkI
+	q1lVsXm5rQAFIhXrxU6aGqYZcfMxCcsnrgKcxxr1HHdO35+NH7ba5ZFoJgx7UQGJ9+6ngjiq1dQ
+	FsC8u/RHaxxuRxu+AJHDlnvK4OAvl7AVdIIDjKkFYmmY/ECWUilZWPiacEJWmGfbxawOCuKgzvh
+	+vu0Xs8RrNVXK2fCwRLbG/SAQ3eP6n3bNldUU5I19gm8gS3FrPvD+UY0l2HxLfGF0LJSKnbId8N
+	wWSq96J1cxApDkyx1tq8hN6fPCO0hc3jHTxyWICy4yHJ3OD49ypWgTgMYmG3Q0GZ/pLpF/DSJhp
+	J3EGANJp038vdZqmXuB2KKMFX1K97XkCYePlrTIu3vzPrOKNppcglsun8PyFHK6uvVOeFrEHWdT
+	69JwE1qMISzvnQRsp8Lgbc766MhhoLu8mBoAHR8qbVOwWwEUGKTa7r7v0m6
+X-Received: by 2002:a05:693c:8201:b0:332:946c:477a with SMTP id 5a478bee46e88-33e5ca9fe0cmr241891eec.16.1790101753804;
+        Tue, 22 Sep 2026 11:29:13 -0700 (PDT)
+Received: from pve-server.rlab ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-33e939fdabcsm154315eec.3.2026.09.22.11.29.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 22 Sep 2026 11:29:12 -0700 (PDT)
+From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+To: kvm@vger.kernel.org
+Cc: Sean Christopherson <seanjc@google.com>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Anushree Mathur <anushree.mathur@linux.ibm.com>,
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+	Harsh Prateek Bora <harshpb@linux.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	linux-kernel@vger.kernel.org,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Subject: [PATCH v5 0/9] KVM: selftests: add powerpc support
+Date: Tue, 22 Sep 2026 23:58:44 +0530
+Message-Id: <cover.1790101179.git.ritesh.list@gmail.com>
+X-Mailer: git-send-email 2.39.5
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -108,34 +101,99 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <arKv4qbF04KB2WxQ@casper.infradead.org>
+Content-Transfer-Encoding: 8bit
 
-On Tue, Sep 22, 2026 at 05:42:10PM +0100, Matthew Wilcox wrote:
-> On Tue, Sep 22, 2026 at 04:35:31PM +0100, Lorenzo Stoakes (ARM) wrote:
-> > m68k-motorola required the biggest change - since RCU page table freeing
-> > uses call_rcu(), this means page table freeing can arise from softirq
-> > context.
-> >
-> > This was fixed with an IRQ-safe spin lock used in both get_pointer_table()
-> > and free_pointer_table().
->
-> You don't need to use an irq-safe spinlock for softirqs.  It does work,
-> but it's overkill since it disables hardirqs.  If you use spin_lock_bh(),
-> only softirqs are prevented from running (and it's safe to call
-> spin_lock_bh() when in softirq context, just like it's safe to call
-> spin_lock_irqsave() in hardirq or softirq context).
+Patch v4 -> v5:
+==============
+- Fixed the issues reported by Anushree while running on kvm on powervm
+  (nested).
+- Fixed memslot_perf_test on powerpc.
 
-Right yup, I know _bh() is fine for softirq, I think this was being overly
-cautious (for sparc32 you do actually need irq saving).
+PATCH v3 -> PATCH v4:
+==================
+- Rebased on top of Sean's new page allocator patch series v2 [1]
+  This allowed to drop and patch-2 since it will now come from Sean's
+  v2.
+- Addressed review comments from Sean - squashed patches 6-10 in patch-1 of
+  this.
+- Dropped patch-5 to print vcpu_id when KVM_CREATE_VCPU ioctl fails.
+- Added additional patch-3 to this series to allow dirty_log_test to run on all
+  big-endian machines.
 
-But this is m68k :) functionally there's really not that much difference, and
-it's over very few instrucitons so the delta here is likely to be functionally
-little to nothing.
+[1]: https://lore.kernel.org/kvm/20260902164123.2546762-1-seanjc@google.com/
+[v3]: https://lore.kernel.org/linuxppc-dev/2d2c46be7f051c7f1c645afaec67f57067d37a81.1781093720.git.ritesh.list@gmail.com/
 
-If I need to respin again I'll fix it up!
+Testing updates:
+================
+I have done some fair amount of testing of the selftests both on real HW and
+using various combinations on qemu (powernv+LE (default), pseries+cap-nested-hv,
+pseries+cap-nested-papr, powernv+BE). There were few powerpc kvm kernel fixes
+which were identified as part of this work. I will send those patches separately
+as those anyway needs to go in separately.
+
+<pasted snippet of cover letter from previous versions>
+=======================================================
+
+Hi All,
+
+This series primarly adds KVM selftests support for powerpc (64-bit, BookS,
+radix MMU).
+
+This patch series is originally Nick's work. I have mainly only rebased it on
+the latest upstream tree. Since the rebase required few changes to all the four
+patches (Patch 1-4), I have dropped the earlier Acked-by from Michael Ellerman.
+
+Since the last series was posted three years ago [1], I am resetting the version
+to RFC. This rebase was done as part of a larger effort to improve the selftests
+infrastructure for Linux on PowerPC tree. Thanks to Harsh and Maddy for their
+help on this.
+
+
+Nicholas Piggin (1):
+  KVM: PPC: selftests: add support for powerpc
+
+Ritesh Harjani (IBM) (8):
+  KVM: selftests: Enable kvm_create_max_vcpus test for powerpc
+  KVM: selftests: Don't limit LE dirty-bitmap bitops to s390x
+  KVM: selftests: Split out a KVM_CREATE_VCPU helper that can fail
+  KVM: selftests: Make kvm_create_max_vcpus tolerate ENOMEM
+  KVM: selftests: Limit the number of VM creates in hardware_disable_test
+  KVM: PPC: selftests: Make nested case on pseries LPARs as resource constrained
+  KVM: PPC: selftests: Skip idle-page check when running nested on pseries LPAR
+  KVM: selftests: Move memslot_perf_test off the 256M ELF load address
+
+ MAINTAINERS                                   |   2 +
+ tools/testing/selftests/kvm/Makefile          |   2 +-
+ tools/testing/selftests/kvm/Makefile.kvm      |  10 +
+ .../selftests/kvm/access_tracking_perf_test.c |  11 +
+ tools/testing/selftests/kvm/dirty_log_test.c  |  12 +-
+ .../selftests/kvm/hardware_disable_test.c     |   7 +-
+ .../testing/selftests/kvm/include/kvm_util.h  |  13 +
+ .../selftests/kvm/include/powerpc/hcall.h     |  17 +
+ .../kvm/include/powerpc/kvm_util_arch.h       |  22 +
+ .../selftests/kvm/include/powerpc/ppc_asm.h   |  32 ++
+ .../selftests/kvm/include/powerpc/processor.h |  46 ++
+ .../selftests/kvm/include/powerpc/ucall.h     |  21 +
+ .../selftests/kvm/kvm_create_max_vcpus.c      |  29 +-
+ tools/testing/selftests/kvm/lib/guest_modes.c |  20 +-
+ tools/testing/selftests/kvm/lib/kvm_util.c    |  39 +-
+ .../selftests/kvm/lib/powerpc/handlers.S      |  93 ++++
+ .../testing/selftests/kvm/lib/powerpc/hcall.c |  45 ++
+ .../selftests/kvm/lib/powerpc/processor.c     | 522 ++++++++++++++++++
+ .../testing/selftests/kvm/lib/powerpc/ucall.c |  22 +
+ .../testing/selftests/kvm/memslot_perf_test.c |   2 +-
+ 20 files changed, 942 insertions(+), 25 deletions(-)
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/hcall.h
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/kvm_util_arch.h
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/ppc_asm.h
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/processor.h
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/ucall.h
+ create mode 100644 tools/testing/selftests/kvm/lib/powerpc/handlers.S
+ create mode 100644 tools/testing/selftests/kvm/lib/powerpc/hcall.c
+ create mode 100644 tools/testing/selftests/kvm/lib/powerpc/processor.c
+ create mode 100644 tools/testing/selftests/kvm/lib/powerpc/ucall.c
 
 --
-Cheers, Lorenzo
+2.39.5
+
 
