@@ -1,67 +1,107 @@
-Return-Path: <linuxppc-dev+bounces-27948-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27949-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3941EC98302
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2026 22:35:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C333C98308
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2026 23:00:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqFLD16sGz2xwd;
-	Wed, 23 Sep 2026 08:35:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::645"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790116548;
-	cv=none; b=b+xz34FeR9Wqdhu170kp1s8lrxyTLKyjlc9YtHOYNjUYJTUv2AYiedRXCFUGp52x21O4kS7L5PS2MdBVuk/XU/4SiFBJqI3LR3xnYJLbaTvNTjqoCXcQwVUgXYBFa+3jNtUj+gs+Fa/IqFbHLGGi1827HlJm7uuo7v/p+fI/TtzdEATVSTdt+UCjms19vmMbMPTmsVm47l+tdP8IaEyJwg3XL6S0bqCba+ATZWvsTKxIFtXw+k+fPMgpt286bk4XX40WT/4YlB6xaDBnuQn0WJGZjY8GCVNJboqRW6j94Hl6HC0RGjPEYwZ1krQUtuzcU0A7PTb7GiACFJctF0MYXA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqFtk0ZdPz2yNH;
+	Wed, 23 Sep 2026 09:00:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790118030;
+	cv=none; b=GsUZ9SmfIwpNbPTH0tYvQqgusfUBpOxpWsiMoEZsJG7Odj5AMgJFu9uvweHhRkd2NwGVIzwj4rlLyYxR8IFRgBWynYZwzOosn0BplVl7FXrL7jNmNV/3qEFFRoRK9L8SxR7sSRI48AyyI5X0lEvbu5E4yRIMq7T3+kT9LJEtosITrll0xtQ8UUBV9su5+WzhysM9uprOn7hXBuPHQEUQDQKXiMkIlaOaeKIq6pYHdu03qFzwSTDs7FQ6ef8qyRroLA47900Fj7/p6Pr48bNES4jFt8ePgb5BvQT2qGyO/TV5klDoX4T4QeGFL9LCqQf9dpaeXpXj9iS8WIFBZ+JFNw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790116548; c=relaxed/relaxed;
-	bh=8GRxp3EYFeG4RHE5TRXwDLoJws/VabvUKmMB/dI5TDY=;
-	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=GQph62PFr6mJFKFIVHxqSn0N9L/UIXbPes7v4ab0iGo4RgGAsNyvsKQhoXBskYc4LwfWlAIPM7nK/QdKflSQ02iED4x0WfhyeaYPn8/7ZbpsAGFQsfMEawNLA9p+85w/FLgHqTT1Ht0qT3DKEOqlZWOPlsZAabrap4uWuvg5WSF9kF1DhpEs8JQJgx6a1Abrq/tjiepObqm7DRY41PSMW5CYHAef2438+QQ2Vk5GZcojde6uvKKMhu4sTZb+K+ODp80R5a1s+8FdO0vM0RIsNgDlGu//bP/ANZD0ZLVxeKsAN+/4tdshkeqcG5g5Wb/uxqDeg4nI+8oNG/DrnuMVuw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=l4+3hBUH; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::645; helo=mail-pl1-x645.google.com; envelope-from=3vqkzagukdooyadnasaasxq.oayxuzgjbbo-pqhxuefe.alxmne.ads@flex--morbo.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--morbo.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1790118030; c=relaxed/relaxed;
+	bh=67Wnb1WqUtfvvqvCH5gthEhN54uXfj3OJmtQ8451vqc=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=DmEj3AGkgOftBgIVMoiEA5xyBPZ3tbsHKCMeOKBcY12iN2McE/C8MPREkRm8eXcl6itMUiajIuY3YUffN8mlO2slLv2SBzEmb4GCUh/7SktPSlZvr5EPxqVPJRgRXZeBtMV4/dhGjKauoeQwIF/yQz6jG28ZwDhk4JnELpwPeXSI5FkFkrLtSGVhzf7lTtxcF7ls+NCX1x0aIecV8NpptnkR/Nc8/GEL6SOuBTCYiLhmp2JAp1ATPGj3mIzysl2id1jkpHZfCp+/0w5nU78XEZtto5xA1E6KFh+MX1FVuJPERtFv4tMjUvTq+Fmf5AgqRf0hVhxyj2Au24PK6XcJ0Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=f4enYMEQ; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=l4+3hBUH;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=f4enYMEQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--morbo.bounces.google.com (client-ip=2607:f8b0:4864:20::645; helo=mail-pl1-x645.google.com; envelope-from=3vqkzagukdooyadnasaasxq.oayxuzgjbbo-pqhxuefe.alxmne.ads@flex--morbo.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x645.google.com (mail-pl1-x645.google.com [IPv6:2607:f8b0:4864:20::645])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqFLB1XRbz2xnS
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 08:35:45 +1000 (AEST)
-Received: by mail-pl1-x645.google.com with SMTP id d9443c01a7336-2df5a65671eso3353765ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 15:35:45 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqFth3sh4z2y2L
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 09:00:27 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 87FC943584;
+	Tue, 22 Sep 2026 23:00:24 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B2DD81F000FF;
+	Tue, 22 Sep 2026 23:00:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1790116542; x=1790721342; darn=lists.ozlabs.org;
-        h=content-type:cc:to:from:subject:message-id:mime-version:date:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=8GRxp3EYFeG4RHE5TRXwDLoJws/VabvUKmMB/dI5TDY=;
-        b=l4+3hBUHiyzB3dLtDGv8QqhZSsc47x6K5QXkSeAcZjV7j/l1AsxU5n9jTckcNAlpQT
-         qlcj1vMaoC4pzyP20+MpdNN1Oa9QcO2Q9aYluPyjACiexVPFb3mON8fHoEjDkbgpHr6X
-         cM+wYA9zseVuZfVXwhw2dJ/L+cr4hg2jnU31uoJWEmYN2MCxIPeEyDyeYa7HarmPYvHE
-         1jAW+pgf0WiP18ocKvqjKq5ek2aBQby7dKyh7/hhkz7MujQgR7pAEpf2eIeOP07bV2yG
-         ugLS4RpkrK2W31Rur3FFLtiz+zrnfDLada4xjACtW7UpcNLnYjvBrwf8VzApvgVqt/8q
-         EIQw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790116542; x=1790721342;
-        h=content-type:cc:to:from:subject:message-id:mime-version:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=8GRxp3EYFeG4RHE5TRXwDLoJws/VabvUKmMB/dI5TDY=;
-        b=jtY2QV89Es5ov+4Nhb8D9L0I18DMTYR+edMpgqt8PRpHVc7/ZnYQoSdcjjpFKqRrpT
-         gqQEGusxdwMcSpmm3GBYTsQRZUdo5TV3gm0m2/pmlDZ/9ip5BW8sPWRKQYAFQlNE6RCL
-         miB9oL7j2gDMVC0D7dRdpbmsuicEeR0uboUKi6W8uTO04MYhzJe0aIpm9HXt+/mqvNC6
-         VXUIoRIDk1LESQYmPJyX+TJ3s4mb8+g2mJG8iW7F7jBXa+R5S4TU7VhKNRKWHxIjT6Rc
-         tHzxCjJr54HAsnMexwjSkIIb5E7oCl+E686vqAdsspKzn6tQRjpTob/bT5pzAjbpZHlo
-         xwyQ==
-X-Forwarded-Encrypted: i=1; AKwUvBz9BfSxohchc+cSxss0V0xvDZLTrtOoq0Cp30GNS1omlzJEDfVh3kUgp1UQZbh7SRzEvdmTZvgCM8An9Ew=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++mcnKWKpUC5fhnkqS7DFL6BDzPZkajhqFQ5Y88K+m5+dhplHzLV
-	ohPKYE/jlBsSw4ljeEiznRsQ/RXkmcSmsOUTaEeLMtDnID0T24TtKfe7sUuU2zBJsbawJRCvEIG
-	c
-X-Received: from ploc2.prod.google.com ([2002:a17:902:8482:b0:2dd:53b8:ff02])
- (user=morbo job=prod-delivery.src-stubby-dispatcher) by 2002:a17:903:2ec3:b0:2df:69d4:86bf
- with SMTP id d9443c01a7336-2df69d4884cmr5081645ad.11.1790116541866; Tue, 22
- Sep 2026 15:35:41 -0700 (PDT)
-Date: Tue, 22 Sep 2026 22:35:38 +0000
+	d=linux-foundation.org; s=korg; t=1790118024;
+	bh=67Wnb1WqUtfvvqvCH5gthEhN54uXfj3OJmtQ8451vqc=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=f4enYMEQW7QizF7EO1g1cQ4u8gA82wou/SQ/2W3Thvjli+h6aobD5ZlJDs/jfh1FV
+	 zSB+Kfk4FuUqyw9bmcvk46t07MCBzK0NBIy1fjrGw3Rhfy7nWNjaUOxIcpoiKWtmMx
+	 CWvPp7SZoe+aH84d+5DNVA8gveOr1sRQo2MPtAwc=
+Date: Tue, 22 Sep 2026 16:00:21 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Cc: David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>, Baolin
+ Wang <baolin.wang@linux.alibaba.com>, "Liam R. Howlett"
+ <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts
+ <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song
+ <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif
+ <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Guo Ren
+ <guoren@kernel.org>, Brian Cain <bcain@kernel.org>, Geert Uytterhoeven
+ <geert@linux-m68k.org>, Dinh Nguyen <dinguyen@kernel.org>, Simon Schuster
+ <schuster.simon@siemens-energy.com>, Jonas Bonn <jonas@southpole.se>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, Stafford Horne
+ <shorne@gmail.com>, Rich Felker <dalias@libc.org>, John Paul Adrian
+ Glaubitz <glaubitz@physik.fu-berlin.de>, Paul Walmsley <pjw@kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Alexandre Ghiti <alex@ghiti.fr>, Russell King <linux@armlinux.org.uk>,
+ Vineet Gupta <vgupta@kernel.org>, Michal Simek <monstr@monstr.eu>, Chris
+ Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>, Will Deacon
+ <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick
+ Piggin <npiggin@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
+ "David S. Miller" <davem@davemloft.net>, Andreas Larsson
+ <andreas@gaisler.com>, Richard Henderson <richard.henderson@linaro.org>,
+ Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland
+ <mark.rutland@arm.com>, Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui
+ <kernel@xen0n.name>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, Helge
+ Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael
+ Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)"
+ <chleroy@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik
+ <gor@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Christian
+ Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle
+ <svens@linux.ibm.com>, Richard Weinberger <richard@nod.at>, Anton Ivanov
+ <anton.ivanov@cambridgegreys.com>, Johannes Berg
+ <johannes@sipsolutions.net>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar
+ <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
+ <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin"
+ <hpa@zytor.com>, Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka
+ <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan
+ <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jason Gunthorpe
+ <jgg@ziepe.ca>, John Hubbard <jhubbard@nvidia.com>, Peter Xu
+ <peterx@redhat.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, Shakeel
+ Butt <shakeel.butt@linux.dev>, Jonathan Corbet <corbet@lwn.net>, Randy
+ Dunlap <rdunlap@infradead.org>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ linux-openrisc@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+ linux-snps-arc@lists.infradead.org, linux-arch@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-alpha@vger.kernel.org,
+ loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-um@lists.infradead.org, Hugh Dickins
+ <hughd@google.com>, Qi Zheng <qi.zheng@linux.dev>,
+ linux-doc@vger.kernel.org
+Subject: Re: [PATCH v4 00/12] mm: make userland page table freeing RCU-safe
+Message-Id: <20260922160021.a2fc65d05d9b867a141e5457@linux-foundation.org>
+In-Reply-To: <20260922-rcu-pagetable-freeing-v4-0-fe1ad1f1e303@kernel.org>
+References: <20260922-rcu-pagetable-freeing-v4-0-fe1ad1f1e303@kernel.org>
+X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,52 +115,25 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 Mime-Version: 1.0
-X-Mailer: git-send-email 2.55.0.1082.g2b9226bbc0-goog
-Message-ID: <20260922223538.2287676-1-morbo@google.com>
-Subject: [PATCH] bus: fsl-mc: Annotate fsl_mc_io.portal_virt_addr with __counted_by_ptr
-From: Bill Wendling <morbo@google.com>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: Kees Cook <kees@kernel.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, 
-	Nathan Chancellor <nathan@kernel.org>, Nick Desaulniers <ndesaulniers@google.com>, 
-	Justin Stitt <justinstitt@google.com>, linuxppc-dev@lists.ozlabs.org, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	linux-hardening@vger.kernel.org, llvm@lists.linux.dev, 
-	Bill Wendling <morbo@google.com>, codemender-patching+linux@google.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-The GCC and Clang compilers provide the __counted_by_ptr attribute,
-which is used by KASAN and compiler bounds-checking to detect
-out-of-bounds accesses to pointer fields.
+On Tue, 22 Sep 2026 16:35:31 +0100 "Lorenzo Stoakes (ARM)" <ljs@kernel.org> wrote:
 
-In "struct fsl_mc_io", the "portal_virt_addr" pointer points to the MC
-command portal virtual address. The size of this allocated portal in
-bytes is tracked by the "portal_size" field within the same structure.
+> The majority of architectures in the kernel defer page table freeing until
+> an RCU grace period has elapsed, this series converts all remaining
+> architectures to do so too and eliminates CONFIG_MMU_GATHER_RCU_TABLE_FREE
+> altogether.
+> 
+> This is important because it enables safe lockless page table walking under
+> RCU alone.
 
-Annotate the "portal_virt_addr" pointer field with
-"__counted_by_ptr(portal_size)" to enable compiler bounds-checking and
-harden against potential out-of-bounds accesses.
+Do we have reason to believe that anyone is seeing any effects from
+their arch's failure to rcu-free the page tables?
 
-Cc: codemender-patching+linux@google.com
-Assisted-by: LLM
-Signed-off-by: Bill Wendling <morbo@google.com>
----
- include/linux/fsl/mc.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+This sounds like a rather long-standing wart, yes?
 
-diff --git a/include/linux/fsl/mc.h b/include/linux/fsl/mc.h
-index c25f0f7e6dd4..0b2c0eb9b605 100644
---- a/include/linux/fsl/mc.h
-+++ b/include/linux/fsl/mc.h
-@@ -336,7 +336,7 @@ struct fsl_mc_io {
- 	u16 flags;
- 	u32 portal_size;
- 	phys_addr_t portal_phys_addr;
--	void __iomem *portal_virt_addr;
-+	void __iomem *portal_virt_addr __counted_by_ptr(portal_size);
- 	struct fsl_mc_device *dpmcp_dev;
- 	union {
- 		/*
--- 
-2.55.0.1082.g2b9226bbc0-goog
-
+The patchset is thinly reviewed and mm.git is bursting at the seams
+again.  I'll play wait-and-see on this series.  Feel free to cluebat me
+if that's a bad call.
 
