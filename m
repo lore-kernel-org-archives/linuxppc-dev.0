@@ -1,81 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-27895-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27896-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3013FC982FA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2026 07:36:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2871CC982F1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2026 07:55:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hpsN74WlXz2yhD;
-	Tue, 22 Sep 2026 17:36:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790056956;
-	cv=none; b=YEjGncrhaOpy6LoJE9wJ3PUOgUvMMofaSbXYZzL5vu09jrSFSsBvo1nt2zPzqRZltphnDr2+ciyKF4EVdCXnnYfpruLtBaAbrmEYU81kFt7N1zm4+eWp+gtOBGVnFCJDfzfeC9CDMbg1JQIQqp0qPbaZvV/kBrFS4bCaDUuqcZ3PSgudrVPI8Y85B6LwAFiR1MHMBvPTeIA50wM1Uvta/DVk3eD9a/q2z+C3h8DwX593KEwa9H138v9kdz2hGBcMT3AKnH5Q5JFmdT3YzpMRJy4mg51PZKPSho9sRtAsjaHNTzszYxLE3zzcYe3uYhpCfMUJR2V8yrEliE7C6xq+SQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hpsny1nSQz2ygK;
+	Tue, 22 Sep 2026 17:55:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::33"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790063702;
+	cv=none; b=LCD5PP0VQcQ8XsAit1Z/ThHZpYFG4So0k77eJJ2y1anVWn39gqJ0Z+BQRbTkapXIFNXcXKguDy+h+Hyzf6HG+MVJlNcfV2WuSANSkv6EJx/96WhXmoCGiDPjxF2NJadVQCjyZQ+I/ZjwUnEHnffta3ML2GvrBiGRuuC7cVtY57pdE9qMpep/zK5y2MtSuOs9/AzGmACkFFZgaZavWtFND8MZ+y1chMLn0meZ2aibGgIi2nKHTQRG5yF1OngimN/3ol9mD3WG1btztYAtKhO+d8b+9b9nL+DR5efjPpNwkQKzmTbIwtlyviMR1soh23/M0KtzkW0+Otu/OChk3JTbLw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790056956; c=relaxed/relaxed;
-	bh=uQ3bgQN5Dp8+Qvmy62hDVi5O4cZCEw7wjVOCUUXKBjk=;
+	t=1790063702; c=relaxed/relaxed;
+	bh=TP8hP/DR2YONPSF2v1CC1+QNgDBOk54Or3SAgzas86o=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=GDNObPHRoOkWzvACwmvtmoZpoBf+SZ2UnpphSXFRD6pGROKLCwVlYHt14X1An6DKgs5GP01vJInfBxzGeACvMbB9X23AX2JJISOaAj+R9pLzGo5nTd/m7UR+GKpVBtaywaFYjQSCi11F6qhcXbD8jL9iB4R+3AvrJfI0VgzxVxBVZwA0HTXTL7CDSTBjsC7HxU69ovyArwTYd8hv5Ima+g1DiOABPhxQu4irKXequf1qnJr5TK5xxAaQXAM9c6i9z6CveFnwXDqIxVUAdES1AdZQpKAH11sPfVADt5Gh51d13alxAg13eIBOtRIKAPRmrm86QWFjtC5PfyBzKNinTg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=NltHKEsa; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=chancel.liu@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 In-Reply-To:Content-Type; b=oJtRX1ANRQaBUHRS89z+xPDagOeFrfIpdWW4lQ0USclVCoiaF2VTYp+eS35EqVvG9K2ftgJ6tjz0ZVKbiA2kl7xA3yrP67WHvamog3oYCy5fe7oCHw3A/VYJXzUOYiHumsd8ZsvbqPdXaNmR+W0M2haDY+hHl8DOYCTberOgo0uv1wuYFssxLhfjluCfzDx2jnFpzAuuiNoRTfBNFIImOZ0m2JFDNGdbSj2T9vEXy0AvegGKxRDWzq+xQequjeWlu1n9Ti+SS3OiXDcRx8U8A6rtDIedYLUtz/j6Ox60Xc1Lu3V/Z5tjWQdQrgsJAfDNHCHn6K4wn9dXdHAVtcFUEA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=tGB5EvHd; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::33; helo=mta1.migadu.com; envelope-from=qi.zheng@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=NltHKEsa;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=tGB5EvHd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=chancel.liu@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::33; helo=mta1.migadu.com; envelope-from=qi.zheng@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta1.migadu.com (out-51.mta1.migadu.com [IPv6:2001:41d0:203:375::33])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpqJC45Pdz2yHT
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 16:02:35 +1000 (AEST)
-Received: by mail-pj1-x102b.google.com with SMTP id 98e67ed59e1d1-39647184c73so526848a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2026 23:02:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790056953; x=1790661753; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=uQ3bgQN5Dp8+Qvmy62hDVi5O4cZCEw7wjVOCUUXKBjk=;
-        b=NltHKEsapAT89rkj66Me07o4mH2rBMzaENmGrQnoXGaFwMgCAs10aNrHxpsk/r1PXK
-         78TvEY2LeiwPju/6/RgcX5DvnbF5bUg7gZAwEHJzgyiCfc5QxbDxRgiQX+lVPMQBSDni
-         yZY9mFP6xeaQ7t4SPnOgl5/bEANvc0fSD0t5zWbOCkHO+6FazuM7b10uQdKGVqbA/Rik
-         1Qw22U6UL7sFrl+PBU1q64cuk3wkE/UFSlxNHY5KWOwY65uu15wginRdy7dtxKxpsWf+
-         zLum11+bRhfvjLZHAfeHuF1gTjsoyU7mjbAUJEhWnSVYRNOnzlwRhuNVFzIu2AHWE0ze
-         wYiw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790056953; x=1790661753;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=uQ3bgQN5Dp8+Qvmy62hDVi5O4cZCEw7wjVOCUUXKBjk=;
-        b=GH3uzzCl7+hJwlCktnRVSYCqFcIk2YjHO06Yu6IpFVOQ93jhCJZxP2Zpsr+WDdPEbb
-         WY5AdKedSipt2yRnx/xO0RreYqwwx/SSP9lvjW8+WDx+WvvEUqINTJh9AQewsICNjR3L
-         gkXmJayoNFDS9P+LumxwkqmYI1jwjXKPGWI4rfzCCatCsypI89Tgtv3hIm65aPZu5901
-         0Nw3IrDSeUda+yXGBcX9hM5HIoJABYuharDps9R2lnD6MUuBwlyXmyNDvSfTRwUoqY/E
-         /0fmgvn4xQEjexzathUyfo8qSajZIfT9A4YUzDF2c5IvmqCTj+vJim2yG5kIshUzvsRa
-         p3Qw==
-X-Forwarded-Encrypted: i=1; AKwUvBzdTmVaZubvnMYlRuDR+O8q8PMNSrsghGUHCAeKVVzXtbcZCZVlO+s7JGqNjMGHWjcJuoyFa285dJf1XL0=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++kXBPYd9zS6ESDT72zNx0I3HZv3kM6rT2hiuZDmOLjoapwev/O6
-	DGLGm5CNFU2ah5pqdIM2EgX2tGrwoMSRUF9kt/EZP1TlpMtigA9IQT3u
-X-Gm-Gg: AYBFou00dZGVCtRQA4tx3n/cMuDmccDNPpnYZ+eD/UuTvB4tWo1+FDP0H//HE1/xmRc
-	F7lMwKuzjA1iQ27GhwTq5LPJ5HR86UlmeIovsUpqToGPAG5YJIVRR2xwl83QuvC9GqJyKmi7Blz
-	kEe/L0efKDLs8BwAvvUAUmEJc/kJ7P8G3H09GdFkKEvHB9F1sl83VwPJi/IsE57vXgi2jIZUr3C
-	cQ4L2LCXVt3xfww1zC5mKptf3q7bqpr01kxCf6fyQtHMMLbNETIVrvgeMwU1IcOUHGXFQJ0Sa9a
-	dLYCJOeu2Bu1jVg4WceWJkdc0GU5RfxvgdghxxvXDcXZ9JvEjQRmq5VCXZUQezs0xpWmTgi83BS
-	ZX8jrSuoZ6UfZSLKATqJrJuBjG8ttARcoo+dlpFnuu50yuTCIpPGNATK/CtDpopurpJFCchdmm5
-	s1Gz4AcmVjLKhWI3K7lJrcZ759emcKl+PJk4JapoIuB+1GV6H08Oll8n5ffakdhYcm7tXRXnlxq
-	4JWnBzhHzH+UD9kKrA=
-X-Received: by 2002:a17:90b:3fcc:b0:39d:e78d:32d2 with SMTP id 98e67ed59e1d1-3a0730cbed4mr111836a91.13.1790056953102;
-        Mon, 21 Sep 2026 23:02:33 -0700 (PDT)
-Received: from [10.25.133.25] ([165.85.205.162])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-33e61340e56sm3366245eec.30.2026.09.21.23.02.26
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 21 Sep 2026 23:02:32 -0700 (PDT)
-Message-ID: <976f828a-bf48-4788-adb1-7204c27dda60@gmail.com>
-Date: Tue, 22 Sep 2026 14:02:24 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpsns5bZ7z2yFQ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 17:54:55 +1000 (AEST)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=0TJo2ZSluV7GOtUR+gK4tKoCDniJGIYoMCtvZ+NvpCE=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1790063672; v=1; x=1790668472;
+ b=tGB5EvHd07V3TRZMw3nlxhs4aBNVlsx9LjWONbG45hiYxCmkXpi1+InKeO+o5RER8f1Q0RNp
+ YIO7kc+oY9gkGrf5WxWAB1KwqWnpMeNUX9h0Y7ftfm9Chl7NGjuKMGxLmLNGKWn8EuT3o/ZXnO4
+ NxjusKf1p68ZfxMuFgFYMbAs=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id 994fcd1d9a4dc67b;
+	Tue, 22 Sep 2026 07:54:32 +0000
+X-Mizu-Trace-ID: 994fcd1d9a4dc67b
+X-Migadu-Flow: FLOW_OUT
+Message-ID: <47038cfd-59a7-4dab-891c-0469cbeb37c8@linux.dev>
+Date: Tue, 22 Sep 2026 15:54:26 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,53 +58,80 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RESEND PATCH v5 5/5] ASoC: fsl_easrc: expose individual DAIs per
- conversion path
-To: shengjiu.wang@oss.nxp.com, lgirdwood@gmail.com, broonie@kernel.org,
- robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, Frank.Li@nxp.com,
- s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com,
- shawnguo@kernel.org, linux-sound@vger.kernel.org,
- devicetree@vger.kernel.org, imx@lists.linux.dev,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, nicoleotsuka@gmail.com,
- perex@perex.cz, tiwai@suse.com, linuxppc-dev@lists.ozlabs.org
-Cc: Shengjiu Wang <shengjiu.wang@nxp.com>
-References: <20260922033428.1690822-1-shengjiu.wang@oss.nxp.com>
- <20260922033428.1690822-6-shengjiu.wang@oss.nxp.com>
-Content-Language: en-US
-From: Chancel Liu <chancel.liu@gmail.com>
-In-Reply-To: <20260922033428.1690822-6-shengjiu.wang@oss.nxp.com>
-Content-Type: text/plain; charset=UTF-8
+Subject: Re: [PATCH 1/6] mm/sparse-vmemmap: drop VMEMMAP_POPULATE_DAX
+To: Muchun Song <muchun.song@linux.dev>
+Cc: Muchun Song <songmuchun@bytedance.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>, Mike Rapoport <rppt@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>,
+ Lorenzo Stoakes <ljs@kernel.org>, "Liam R . Howlett" <liam@infradead.org>,
+ Vlastimil Babka <vbabka@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
+ Michal Hocko <mhocko@suse.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org
+References: <20260913083734.86802-1-songmuchun@bytedance.com>
+ <20260913083734.86802-2-songmuchun@bytedance.com>
+ <186ee2ba-daf3-4120-a3e3-101cac1ff5a1@linux.dev>
+ <4AA6C66B-0FD8-49F3-8447-959A3E438FC2@linux.dev>
+ <95d326cb-ebb4-492c-9062-5d373609e18b@linux.dev>
+ <6479325A-E6FA-45BD-9392-262E71467EDB@linux.dev>
+From: Qi Zheng <qi.zheng@linux.dev>
+In-Reply-To: <6479325A-E6FA-45BD-9392-262E71467EDB@linux.dev>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
-On 9/22/2026 11:34 AM, shengjiu.wang@oss.nxp.com wrote:
-> From: Shengjiu Wang <shengjiu.wang@nxp.com>
-> 
-> The i.MX EASRC hardware supports four independent conversion contexts
-> (A, B, C, D). The driver previously registered a single DAI with generic
-> stream names "ASRC-Playback" and "ASRC-Capture", which prevents
-> multiple independent conversion paths from being used simultaneously.
-> 
-> Replace the single fsl_easrc_dai instance with an array of four DAI
-> drivers to allow up to four independent conversion paths to be active
-> at the same time:
-> 
->   easrc-0 -- ASRC-Playback / ASRC-Capture (backward compatible)
->   easrc-1 -- ASRC1-Playback / ASRC1-Capture
->   easrc-2 -- ASRC2-Playback / ASRC2-Capture
->   easrc-3 -- ASRC3-Playback / ASRC3-Capture
-> 
-> easrc-0 retains the original generic stream names to preserve backward
-> compatibility with existing machine drivers and board configurations.
-> Each DAI retains the same channel, rate and format capabilities as the
-> original, including IEC958 subframe support on the capture side. Update
-> the devm_snd_soc_register_component() call to register all four DAIs.
-> 
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 
-Reviewed-by: Chancel Liu <chancel.liu@gmail.com>
 
-Regards,
-Chancel Liu
+On 9/21/26 11:49 AM, Muchun Song wrote:
+> 
+> 
+>> On Sep 21, 2026, at 11:43, Qi Zheng <qi.zheng@linux.dev> wrote:
+>> On 9/19/26 10:07 PM, Muchun Song wrote:
+>>>> On Sep 19, 2026, at 22:01, Qi Zheng <qi.zheng@linux.dev> wrote:
+>>>> On 9/13/26 4:37 PM, Muchun Song wrote:
+>>>>> VMEMMAP_POPULATE_DAX currently distinguishes DAX vmemmap population in two
+>>>>> places: it keeps allocations on the normal path and takes a reference when
+>>>>> a backing page is supplied for reuse.
+>>>>> After Device DAX switched to the common per-zone shared tail page, both
+>>>>> conditions can be determined locally. DAX supplies ptpfn for every shared
+>>>>> tail mapping and requests an allocation only for compound head mappings,
+>>>>> whose PFNs are not optimizable. Therefore, vmemmap_optimizable_pfn() alone
+>>>>> selects the correct allocation path.
+>>>>> When ptpfn is supplied, the caller is reusing an existing backing page.
+>>>>> Once the slab allocator is available, take a reference for each reused
+>>>>
+>>>> Does the availability of slab mean the buddy allocator is already being
+>>>> used? Could there be a window where the buddy allocator is functional
+>>>> but slab hasn't become available yet?
+>>> Yes, because the slab allocator is based on buddy allocator. But I want to know
+>>> what's your concern here?
+>>
+>> The goal here is to check if the buddy allocator is ready, but the code
+>> actually checks for slab.
+>>
+>> I'm concerned there could be a gap between these two:
+>>
+>> buddy is ready <-- gap --> slab is ready
+> 
+> There is no vmemmap population during the gap. We don't need to concern the gap.
+
+Okay, perhaps we could add more explanation in the commit message.
+
+With this, LGTM, so:
+
+Acked-by: Qi Zheng <qi.zheng@linux.dev>
+
+Thanks,
+Qi
+
+> 
+> Thanks.
+> 
+>>
+>> Thanks,
+>> Qi
+>>
+>>
+> 
 
 
