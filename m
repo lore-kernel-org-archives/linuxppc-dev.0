@@ -1,67 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-27903-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27904-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B14DCC982FA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2026 08:22:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7495EC982F1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2026 08:26:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hptQ510NXz2ygK;
-	Tue, 22 Sep 2026 18:22:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790065373;
-	cv=none; b=gwmWSTo2cTGOEU4Zd43iLmZnGmu4ASFzjLj/cN5FGPQg+tZAueF08E4STk504Jh0l8wEUEB3K1JN+Nf3JELBk0ibcvUg1sVO7LoTAyeFYjaN2oFV7993cTasi7ACWTeQ/a2xLD5+oimSaKUm8nKDWlowxIlG4ADKSFXOhHsxfk3MfsEFfCUNEif5el45Bfr+O2F1bEn1aX/oODsJk8VfuN8NrjzVQ6reatsWDikNuf6rhgjEyy4Cov1kxmHHOfkW2VXZWulyQBXI5kmIz3R8ICK21b+xD01AYeuhcpaHAa6IBqIaoBg07d38PGsUv5uFEwlVq07ORelqamg6wCvxuw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hptTh4ckHz2ygK;
+	Tue, 22 Sep 2026 18:26:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790065560;
+	cv=none; b=MiWE2kyTAtF6X3OUhvpFvljKmDX5e+4n1qs2fxhR5m4ppKQmN7su8XDeSE8/lGZsQ4ozk28Z4WahvyG9AzRRWmr6mR1HoULe817bBrNbqzrjrjgnM+xrhDx2XCetL048WsE5m5EukCahCAqBEkEB3Kx3RbEwA6brSGDZ33rQ0moMlsG6+nqOcmCIX9BBx4d1hvcLWJMdNtssqa5jOOloQxNBfvASP2QFJKgBIPq/Zy7wrXF4PVJCbLSkwe9CHw2Desgo9+8sYXhEejxE1DrYn8CxonA8GfDRpvQ0oaj0caeeXhLuvFAmrEzYBzA1R8KimPz6PjDdj9lhUNCQMBu54g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790065373; c=relaxed/relaxed;
-	bh=iZzt+RDISbYJoNrIFWcnz0zVtBndVvGifxdAcTj/o8k=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Lq8rL8B9tL0G0Vvv4cY4JhX6D7cBPporpwH5gmMIZhI3iV6xyzE0WAZl4i5OTCtUue6kwAU7ivrxk26X8+TzJCf6LZLOKLeKnI8iCkJuHdEdvF4sQJAzyEtaaZRnmwhmYMsG86CI6UxtGm+xiVHU72VFEXfYlx9RjHeftlTbhHuakPaBZWZOsPfdoXO1LttlfapeAQN8cB7z+/g5P1esDfQO+jqYzsYGEqawyKpVJsW/VAxkoHUxR5IHf4O22+qLG74vYYqvGseBwj+H4XoF2YDD9kV6npHDCm95gyu/Nt3Y03QR6yv4TvUUJhLFKjBXtR7oLD4lJXbWK+8UnXvuAw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	t=1790065560; c=relaxed/relaxed;
+	bh=2X1OCcip9WdRidK88ayPzdYka+btvJ/3z+Cw7Fhbf18=;
+	h=Subject:From:To:Cc:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=GAFmbARliyz6hRnKuM6XN25I7+3KC4rkjT7XcbC1nzaJgxrhDkB3dsDp9koZ3WLj7A5WoCTTdZKwc8pT3CufoezYMgZ0RWF3qS1Oz23Bz0Mr4mAq8L2DVNpgahEoD5Ue3D3iMptjVNqH6hFwQa1PuIj1nxv7tdhStCaHICO6CK8aeH36ia0f9w0Cqkv2cRDAJhG+uEJU38oAc5dz18003ZUfILvWa3Lw9/fAropZ2QUC73fP4NXbGDoTVsiHTx6bVrU+e//bVVw3X681IOUxliS6oyefyogztfjMlDJOMz/ZeseR3Kxl0cCFV4H8j+ihqyu5KW+FuI/Jx7WdUietIQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ibi/Fk9W; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ibi/Fk9W;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hptQ42T2Wz2yHT
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 18:22:52 +1000 (AEST)
-Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id A758E1F833;
-	Tue, 22 Sep 2026 08:22:48 +0000 (UTC)
-Authentication-Results: smtp-out2.suse.de;
-	none
-Date: Tue, 22 Sep 2026 10:22:47 +0200
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Christian Zigotzky <chzigotzky@xenosoft.de>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	"kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	"R.T.Dickinson" <rtd2@xtra.co.nz>, hypexed@yahoo.com.au,
-	mad skateman <madskateman@gmail.com>,
-	Christian Zigotzky <info@xenosoft.de>,
-	Amit Machhiwal <amachhiw@linux.ibm.com>,
-	Gautam Menghani <gautam@linux.ibm.com>,
-	Harsh Prateek Bora <harshpb@linux.ibm.com>
-Subject: Re: [Linux PPC] Disable PREEMPT
-Message-ID: <arI61xOWOp3am23q@kunlun.suse.cz>
-References: <aplZNFMJUkfs-BFs@kunlun.suse.cz>
- <d98e38cb-74d7-48b9-93f3-7c20ff910675@linux.ibm.com>
- <aplclgAsq1d6f5U-@kunlun.suse.cz>
- <1d83264f-8eda-4321-9200-f12897e38cda@linux.ibm.com>
- <aplnPuVk4LWgpu3n@kunlun.suse.cz>
- <e211e1fd-0923-4ab4-9e01-e9151807cf26@linux.ibm.com>
- <apl1-rm_-Hb_ROE4@kunlun.suse.cz>
- <arDlfmpHrN8sbP02@kunlun.suse.cz>
- <arFfc2apYaBuNvmC@kunlun.suse.cz>
- <bebaa831-9d56-4276-9422-9c5da8ab220f@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hptTg0rRrz2yHT
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 18:25:58 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 37FEB41526;
+	Tue, 22 Sep 2026 08:25:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 291641F000FF;
+	Tue, 22 Sep 2026 08:25:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790065556;
+	bh=2X1OCcip9WdRidK88ayPzdYka+btvJ/3z+Cw7Fhbf18=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=Ibi/Fk9W0CqbMvTkKEtatnrtBLseWmGefLP53I3Ejo4mg2mGDL0gokqO+sGacaYvB
+	 6aGSVfnVYGxajwp9QIriZ0v04JrczoAaUBU8ry+YlFjyQlIa7mMydU8EeoEGpz0a0X
+	 gKh3PYysPYERP7+wRqeTK4X76nCWuIaNaEfjf2U7Pz+4E+sCZ5YM1V/JFWYlTKehSU
+	 31j9r9OL1qVq2PBMaKcDfADSlBlMpwHZu03k8TnSb1Ahhkgb0nmdbMr0C1v37RUB8e
+	 2evBLmSfWKu85Bvs33SPNXNvWqJKuo+McNvY1D9DxDcqJB3TMb9XLftLZ6Bj3htfMQ
+	 jrIgteyJHt11Q==
+Subject: Re: [PATCH v4 net-next 3/8] ptp: netc: export
+ netc_timer_get_current_time() for cross-driver use
+From: netdev-bot+sashiko@kernel.org
+To: wei.fang@oss.nxp.com
+Cc: xiaoning.wang@nxp.com, andrew@lunn.ch, olteanv@gmail.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, horms@kernel.org,
+ richardcochran@gmail.com, linusw@kernel.org, linux@armlinux.org.uk,
+ wei.fang@nxp.com, imx@lists.linux.dev, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
+Date: Tue, 22 Sep 2026 08:25:54 +0000
+Message-ID: <179006555469.2160803.8873313402765313889@kernel.org>
+In-Reply-To: <20260918072852.501420-4-wei.fang@oss.nxp.com>
+References: <20260918072852.501420-4-wei.fang@oss.nxp.com>
+X-sashiko-severity: Medium
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,115 +75,265 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <bebaa831-9d56-4276-9422-9c5da8ab220f@linux.ibm.com>
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Queue-Id: A758E1F833
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Spamd-Result: default: False [-2.00 / 50.00];
-	REPLY(-4.00)[];
-	RDNS_NONE(2.00)[]
-X-Rspamd-Action: no action
 
-On Mon, Sep 21, 2026 at 10:50:41PM +0530, Shrikanth Hegde wrote:
-> Hi Michal,
-> 
-> On 9/21/26 10:16 PM, Michal Such�nek wrote:
-> > On Mon, Sep 21, 2026 at 10:06:22AM +0200, Michal Such�nek wrote:
-> > > On Thu, Sep 03, 2026 at 03:28:26PM +0200, Michal Such�nek wrote:
-> > > > On Thu, Sep 03, 2026 at 06:06:16PM +0530, Harsh Prateek Bora wrote:
-> > > > > + Amit, Gautam - since they recently came across a similar regression which
-> > > > > is seen with non KVM workload as well.
-> > > > > + Venkat - for CI improvement suggestion below.
-> > > > > 
-> > > > > Hi Michal,
-> > > > > 
-> > > > > On 03/09/26 5:55 pm, Michal Such�nek wrote:
-> > > > 
-> > > > > > 
-> > > > > > There is another problem that Linux 7.2.2 often locks up on boot inside
-> > > > > > the guest, and as a result a different kernel is needed in the guest to
-> > > > > > reproduce the host crash. This is more recent, linux 6.12 does not have
-> > > > > > this problem. Will try some different kernel combinations to see if I
-> > > > > > can narrow this down. For this the repro is merely booting the kernel in
-> > > > > > the VM, it typically fails early before userspace produces any messages.
-> > > > 
-> > > > This one regressed between 6.19.12
-> > > > https://github.com/openSUSE/kernel-source/blob/9f6830f/config/ppc64le/default
-> > > > and 7.0.12
-> > > > https://github.com/openSUSE/kernel-source/blob/2ebf0bc/config/ppc64le/default
-> > > 
-> > > Which is when preempt was enabled.
-> > > 
-> > > Very likely preexisting problem that was exposed by enabling preemption
-> > > again.
-> > > 
-> > > @@ -121,9 +122,7 @@ CONFIG_BPF_LSM=y
-> > >   CONFIG_PREEMPT_BUILD=y
-> > >   CONFIG_ARCH_HAS_PREEMPT_LAZY=y
-> > > -# CONFIG_PREEMPT_NONE is not set
-> > > -CONFIG_PREEMPT_VOLUNTARY=y
-> > > -# CONFIG_PREEMPT is not set
-> > > +CONFIG_PREEMPT=y
-> > >   # CONFIG_PREEMPT_LAZY is not set
-> > >   CONFIG_PREEMPT_COUNT=y
-> > >   CONFIG_PREEMPTION=y
-> > 
-> > Looking more into this the problem is not reproducible with 6.19 with
-> > full preempt, and can be reproduced with 7.0 with full preempt where
-> > preemtion is mandatory. It only so happens that 1.19 was last kernel
-> > where preemption was not mandatory and where this problem also happened
-> > to not manifest with the Tumbleweed config.
-> > 
-> 
-> I am bit confused. Is it different problem than the kprobe/bpf issue
-> which was observed on host?
+Thank you for your contribution! Sashiko AI review found 5 potential
+issue(s) to consider.
 
-Yes, it appears to be different, a crash very early during boot with a
-different stack trace.
+Critical: 0 · High: 0 · Medium: 2 · Low: 3
 
-> 
-> Is this kvm/guest specific problem you are observing? Is it still seen
-> even with that kprobe/bpf fix?
+If you believe none of the issues are legitimate, please reply to each
+issue of Medium severity or higher and explain why the AI is wrong.
+If any of them are legitimate and you plan to respin, please let patchwork
+know by including "pw-bot: cr" as a separate line at the end of your reply
+(one such reply per series is enough).
 
-Yes, even with the fix this can be observed.
+- [Medium] netc_timer_get_current_time()
+  (drivers/ptp/ptp_netc.c:1050-1082) takes the module-global…
+- [Medium] netc_timer_get_current_time() treats membership in
+  netc_timer_list as proof that TMR_CUR_TIME can be read, and returns 0…
+- [Low] Concern that the exported netc_timer_get_current_time() and its
+  list/lock infrastructure have no in-tree consumer.
+- [Low] Concern that netc_timer_get_current_time() keys its lookup on an
+  unreferenced caller-supplied 'struct pci_dev *' (tmp->pdev == pdev at…
+- [Low] include/linux/fsl/netc_global.h — a header that otherwise
+  contains only trivial MMIO accessor inlines…
 
-> 
-> > It is not deterministic enough to bisect. It's probably some kind of
-> > race condition or code generation problem that can surface and go away
-> > or become too difficult to reproduce with seemingly unrelated changes.
-> > 
-> 
-> Can you try latest kernel?
+--
 
-How much latest?
+ptp: netc: export netc_timer_get_current_time() for cross-driver use
 
-I tried with 7.2.6 with the kprobe fix as guest, and some earlier 7.2.x
-as host already, and the problem is reproducible.
+This adds netc_timer_get_current_time() to the NETC Timer driver and exports
+it so the NETC Switch driver, which is a separate PCIe function with its own
+driver, can read TMR_CUR_TIME. Each probed Timer is tracked in a
+module-private list keyed by its pci_dev, and one global spinlock covers both
+the list lookup and the register read so that an unbind cannot free priv
+under an in-flight read.
 
-Thanks
+A few questions about the new helper and the header change below.
 
-Michal
+> diff --git a/drivers/ptp/ptp_netc.c b/drivers/ptp/ptp_netc.c
+> index aa9be8e2a630..1211aa9a37d3 100644
+> --- a/drivers/ptp/ptp_netc.c
+> +++ b/drivers/ptp/ptp_netc.c
 
-> 
-> There was change recently to move to use
-> generic transfer to guest mode work. i.e VIRT_XFER_TO_GUEST_WORK.
+[ ... ]
 
-> 
-> > Crash happens very early but it's eemu so the memory can be saved
-> > regardelss. The problem is that the crash tool refuses to load the core
-> > bacause it detects the core as SMP and vmlinux as non-SMP or the other
-> > way around.
-> > 
-> > Thanks
-> > 
-> > Michal
-> > 
+> @@ -123,8 +123,12 @@ struct netc_timer {
+>  	u8 fs_alarm_num;
+>  	u8 fs_alarm_bitmap;
+>  	struct netc_pp pp[NETC_TMR_FIPER_NUM]; /* periodic pulse */
+> +	struct list_head node;
+>  };
+>  
+> +static LIST_HEAD(netc_timer_list);
+> +static DEFINE_SPINLOCK(netc_timer_list_lock);
+> +
+>  #define netc_timer_rd(p, o)		netc_read((p)->base + (o))
+>  #define netc_timer_wr(p, o, v)		netc_write((p)->base + (o), v)
+>  
+> @@ -985,6 +989,10 @@ static int netc_timer_probe(struct pci_dev *pdev,
+>  
+>  	enable_irq(priv->irq);
+>  
+> +	spin_lock_bh(&netc_timer_list_lock);
+> +	list_add(&priv->node, &netc_timer_list);
+> +	spin_unlock_bh(&netc_timer_list_lock);
+> +
+>  	return 0;
+>  
+>  free_msix_irq:
+> @@ -999,6 +1007,10 @@ static void netc_timer_remove(struct pci_dev *pdev)
+>  {
+>  	struct netc_timer *priv = pci_get_drvdata(pdev);
+>  
+> +	spin_lock_bh(&netc_timer_list_lock);
+> +	list_del(&priv->node);
+> +	spin_unlock_bh(&netc_timer_list_lock);
+> +
+>  	disable_irq(priv->irq);
+>  	ptp_clock_unregister(priv->clock);
+>  	netc_timer_wr(priv, NETC_TMR_TEMASK, 0);
+
+[ ... ]
+
+> @@ -1021,5 +1033,54 @@ static struct pci_driver netc_timer_driver = {
+>  };
+>  module_pci_driver(netc_timer_driver);
+>  
+> +/**
+> + * netc_timer_get_current_time - read the current PTP time from the NETC Timer
+> + * @pdev: PCI device of the NETC Timer
+> + * @ns: Output, the current PTP clock time in nanoseconds
+> + *
+> + * Read TMR_CUR_TIME from the NETC Timer bound to @pdev. The lookup and read
+> + * run under netc_timer_list_lock, so the Timer cannot be unbound and its priv
+> + * freed during the read.
+> + *
+> + * Context: Process or softirq context. Must not be called from hardirq.
+> + *
+> + * Return: 0 on success, -ENODEV if the Timer is not present (not yet probed
+> + *         or already removed).
+> + */
+> +int netc_timer_get_current_time(struct pci_dev *pdev, u64 *ns)
+> +{
+> +	struct netc_timer *priv = NULL;
+> +	struct netc_timer *tmp;
+> +	unsigned long flags;
+> +	int err = 0;
+> +
+> +	/* Serialize against driver unbind, so holding it here ensures that
+> +	 * priv remains valid for the entire duration of the register read.
+> +	 */
+> +	spin_lock_bh(&netc_timer_list_lock);
+
+[Severity: Medium]
+Is it necessary to hold the module-global netc_timer_list_lock across the
+MMIO access, rather than only across the lookup?
+
+priv->lock is taken from hardirq context with a plain spin_lock() in
+netc_timer_isr(), and that handler can spin in the register drain loop in
+netc_timer_handle_etts_event():
+
+drivers/ptp/ptp_netc.c:netc_timer_handle_etts_event() {
+	while (netc_timer_rd(priv, NETC_TMR_STAT) & TMR_STAT_ETS_VLD(index))
+		etts = netc_timer_rd64(priv, NETC_TMR_ETTS_L(index));
+}
+
+So while CPU A sits in netc_timer_get_current_time() waiting on
+spin_lock_irqsave(&priv->lock) with softirqs disabled and the global list lock
+held, CPU B can be inside netc_timer_isr() holding priv->lock for a period
+bounded only by hardware. During that window every other Timer's probe(),
+remove() and every other time query is serialized behind
+netc_timer_list_lock. The same applies if the target function is unreachable
+and the non-posted read stalls until the PCIe completion timeout.
+
+Would an RCU-protected lookup (with the priv free deferred in remove()), or
+taking a reference on the Timer, give the same lifetime guarantee without
+holding a global lock across the register access?
+
+Related to that: the BH-only requirement makes the exported symbol illegal
+from hardirq or with interrupts disabled, but that constraint appears only in
+the kerneldoc and is not visible at the prototype in
+include/linux/fsl/netc_global.h, and nothing but an eventual WARN from
+__local_bh_enable_ip() catches a violation. Is there a reason not to drop the
+context restriction by using a lookup scheme that does not disable BH?
+
+> +
+> +	list_for_each_entry(tmp, &netc_timer_list, node) {
+> +		if (tmp->pdev == pdev) {
+> +			priv = tmp;
+> +			break;
+> +		}
+> +	}
+
+[Severity: Low]
+This isn't a bug, but the lookup is a bare pointer comparison on a
+caller-supplied struct pci_dev *, so its soundness depends on the caller
+holding a reference on @pdev. The in-tree consumer does hold one
+(netc_get_ptp_timer() obtains it with pci_get_domain_bus_and_slot() and
+drops it with pci_dev_put()), so nothing is broken today.
+
+Could the kerneldoc and the exported prototype state that the caller must
+hold a reference on @pdev? Without it, a future caller that caches a raw
+pci_dev pointer has no hint that a freed and recycled pointer could match a
+different Timer's entry.
+
+> +
+> +	if (!priv) {
+> +		err = -ENODEV;
+> +		goto netc_timer_list_unlock;
+> +	}
+> +
+> +	spin_lock_irqsave(&priv->lock, flags);
+> +	*ns = netc_timer_cur_time_read(priv);
+> +	spin_unlock_irqrestore(&priv->lock, flags);
+
+[Severity: Medium]
+Can this return 0 together with a meaningless timestamp when the Timer
+function is not accessible?
+
+List membership only proves the pci_dev is bound to this driver: the entry is
+added at the end of netc_timer_probe() and removed only in
+netc_timer_remove(). netc_timer_driver registers no PM callbacks, so system
+suspend takes the PCI core default path and the function is disabled and put
+into D3 while the list entry stays live, and nothing re-programs
+TMR_CTRL[TE], CK_SEL, TMR_ADD or TMR_CNT on resume. The driver already
+documents the constraint in netc_timer_init():
+
+drivers/ptp/ptp_netc.c:netc_timer_init() {
+	/* Software must enable timer first and the clock selected must be
+	 * active, otherwise, the registers which are in the timer clock
+	 * domain are not accessible.
+	 */
+}
+
+The same holds for a surprise-removed function or one contained by DPC/AER,
+where the read returns all-ones. In those cases the helper still reports
+success, and the switch side consumes the value verbatim as the one-step Sync
+originTimestamp in netc_port_onestep_work():
+
+drivers/net/dsa/netc/netc_ptp.c:netc_port_onestep_work() {
+	NETC_SKB_CB(skb)->tstamp = tstamp;
+}
+
+Would it make sense to gate the read on pdev->current_state == PCI_D0 and
+!pci_channel_offline(pdev), or on TMR_CTRL[TE], and return an error instead
+of a successful-looking value? The missing PM support is not introduced by
+this patch, but the new export is what turns an inaccessible-device read into
+a timestamp handed to another driver.
+
+> +
+> +netc_timer_list_unlock:
+> +	spin_unlock_bh(&netc_timer_list_lock);
+> +
+> +	return err;
+> +}
+> +EXPORT_SYMBOL_GPL(netc_timer_get_current_time);
+> +
+>  MODULE_DESCRIPTION("NXP NETC Timer PTP Driver");
+>  MODULE_LICENSE("Dual BSD/GPL");
+> diff --git a/include/linux/fsl/netc_global.h b/include/linux/fsl/netc_global.h
+> index 5b8ff528d369..d4a26c17f99a 100644
+> --- a/include/linux/fsl/netc_global.h
+> +++ b/include/linux/fsl/netc_global.h
+> @@ -6,6 +6,7 @@
+>  
+>  #include <linux/io.h>
+>  #include <linux/io-64-nonatomic-lo-hi.h>
+> +#include <linux/pci.h>
+
+[Severity: Low]
+This isn't a bug, but is the full <linux/pci.h> needed here? The prototype
+and the stub only name struct pci_dev *, so a forward declaration of
+struct pci_dev plus <linux/errno.h> for -ENODEV would be enough.
+
+netc_global.h otherwise holds only the netc_read()/netc_write()/netc_read64()
+inlines, and it is included by drivers/net/dsa/netc/netc_switch.h,
+drivers/net/ethernet/freescale/enetc/netc_blk_ctrl.c,
+drivers/net/ethernet/freescale/enetc/ntmp.c and drivers/ptp/ptp_netc.c, so
+all four now pull in the PCI API.
+
+Would a separate header such as include/linux/fsl/netc_timer.h be a better
+home for an inter-driver service API than the register accessor header?
+
+>  
+>  static inline u32 netc_read(void __iomem *reg)
+>  {
+> @@ -22,4 +23,13 @@ static inline u64 netc_read64(void __iomem *reg)
+>  	return ioread64(reg);
+>  }
+>  
+> +#if IS_REACHABLE(CONFIG_PTP_NETC_V4_TIMER)
+> +int netc_timer_get_current_time(struct pci_dev *pdev, u64 *ns);
+> +#else
+> +static inline int netc_timer_get_current_time(struct pci_dev *pdev, u64 *ns)
+> +{
+> +	return -ENODEV;
+> +}
+> +#endif
+> +
+>  #endif
+
+-- 
+Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260918072852.501420-1-wei.fang%40oss.nxp.com
 
