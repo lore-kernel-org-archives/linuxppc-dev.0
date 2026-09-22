@@ -1,101 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-27915-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27916-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA0CBC98306
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2026 12:15:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49B3AC982FA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2026 12:26:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hpzZJ0mv4z2yQJ;
-	Tue, 22 Sep 2026 22:15:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790079320;
-	cv=none; b=hKfRKIjF1NpL/dWNVjKGHYQ6VPIpFD36CjuU+IJw8yXoNm+h0Pj0yyP4aA0pb49pLldpmGSTvq89YialgCZYcf8M5/Z8xghB2hVErT/y2K87kq4lQNTk4FNtcTSwLm9LrRxiSJ9x4GsnxYjuOCF3oyRnLcDznlcZE2ScX56xzmjFiyoFfREzEfhgVo/rjjpjStE1pag2M+81UpLUBjtUt2UMpClF5x8CsudiGWoQJI1aJyVacT1VkpmSNGXBjAxu7/NrrWAPeGrNn2Id7DfdS4toFUJkyRGenlSlldU2mffLrpt/f2M81OLd2c7ZulDRB76nfXMDuJz+96zJgP0nUA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hpzqM4cKcz2yQJ;
+	Tue, 22 Sep 2026 22:26:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=51.210.91.56
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790064410;
+	cv=none; b=VkOOeN2DGF47LDv4qYneIDUHDJJuy2vGrg29Jt0XgcktdeujEH30noOn1W2XkULTUXJBrsWbl3216Uv2TCRvA5j3JiQnm/EHxviMPv+gYgqJNBegFX9lSXqohVsh0yZmSw+d6rtpZQFEH/Q3aqO91ci0g0IA3xDWKFv7qjtF6QbTld78lQZ3i/cBsGf17CXtYy4YSxCboufM5h1asFccKnrQsk01TiqfxsHia4K+IrYpVrH1n1J6MkSWlJKDAcxrBj6mE5wdxJOfDFeAV5A/4oSsYai1euj8ao2fVgrRTQ/oS/LJ0DyGkuN2prbBzXZ2nHnrsQRBXtAIKYM44XHr3A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790079320; c=relaxed/relaxed;
-	bh=gItcWC83jyqQewAzlLEIrIdpVAhf+FBobtBOU1cWYdE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=UgyyO2tLnBNlqO2myfItG8xYeOLCY7GRErr8ru3CLQoGNCob6oDY3EzNvFHMWzq8BfdctIhyVoUjQmoEMahdM+JHI2ZVskJyV6tSJAFyV17bjMCD3OhEh61wG8jAiztgK5GIqMXSzI2SHdV7HOWGznuqxBFEBSx819oYtDWoSoK/n5pxboAWl62iOFTb2GFJ5vX9hjGiZivwjfudHl/XApm++Nj8yPRiwYkTYYQAkdh18heGddbn2Lja1URu+OS4g3craQAS8uZcTFbZwJemZfU8jhuHv4V+DsRZSyusWgqVkqkXRCaGNNzooaZaUdDlI/lnSc4Qn0U1Vmz8rfrrhQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=h3gqLkdx; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1790064410; c=relaxed/relaxed;
+	bh=5sO9xaC3qdPyU5zJefRGniTGdXKpOQRu0LktrMQP//k=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=X0pQAeSEdx8y0TGoilzyfmpM1TI59KiZ5q8RW1xqtAkTlvNU9JOIBgIkgXXLtYZA/Hhm8NCEKp9FVpfJKF5E0SjiO5mraFlE/RnhG4oD0wQ4DpTqJo/A4hmHtfGAekeRH3xKcFgCU2hP+N0FElPE6O448O8hkXDzAns4ZS+gPRoZBzNqNbPXV61wGfAmTwBtVeLcCzrqVTY6JdryE26O7Itq+APIz0wqtBbOEkiH4lqC4iQOf6w5036NFtMgBLBOEBT8l08bhyJIZ2hKTjtcgoySkasOXaS1tJElJyX2ugJVasQcXuw17Ap/oVinmI0baxMhKUPkQTtaz8+1lmJq8w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=guillain.net; dkim=pass (2048-bit key; unprotected) header.d=guillain.net header.i=@guillain.net header.a=rsa-sha256 header.s=ovhmo31693-selector1 header.b=QI9ARexo; dkim-atps=neutral; spf=pass (client-ip=51.210.91.56; helo=smtpout7.mo540.mail-out.ovh.net; envelope-from=jean-christophe@guillain.net; receiver=lists.ozlabs.org) smtp.mailfrom=guillain.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=guillain.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=h3gqLkdx;
+	dkim=pass (2048-bit key; unprotected) header.d=guillain.net header.i=@guillain.net header.a=rsa-sha256 header.s=ovhmo31693-selector1 header.b=QI9ARexo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=guillain.net (client-ip=51.210.91.56; helo=smtpout7.mo540.mail-out.ovh.net; envelope-from=jean-christophe@guillain.net; receiver=lists.ozlabs.org)
+Received: from smtpout7.mo540.mail-out.ovh.net (smtpout7.mo540.mail-out.ovh.net [51.210.91.56])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpzZH0grVz2yHT
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 22:15:19 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 95A18419CD;
-	Tue, 22 Sep 2026 12:15:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 117D71F000FF;
-	Tue, 22 Sep 2026 12:14:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790079316;
-	bh=gItcWC83jyqQewAzlLEIrIdpVAhf+FBobtBOU1cWYdE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=h3gqLkdxuBoehEGT/VKAAx5lOOZyw0R9ECju20pTUpkGq3CY4/SfkP5Oo8Atj/17P
-	 LheKowjELtZHtWEwX8eBKfgrKHJcRi0+O+d1XJm5SNFJeLnSFaLisjCbEBlxeLxjOn
-	 7b+NpgO+ZPXTsbOJUosoddrg+40PBvbsgsGmbY2VSvCJX0WLnI37yVWEjSxgbtaT89
-	 F/0sTPdrQN1xs1nAXdWed32VZcInT1tJCp8N+5WqvK/lF5EAI6+8MCsas5iRPln/rt
-	 CkKwC8hH7tDlCqpUlqLBsfISPWksuIen1RI49kVL18Y30A/o4HPBKzvey0Im1JOlMy
-	 V88LVj2NYFEMg==
-Date: Tue, 22 Sep 2026 13:14:52 +0100
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: "David Hildenbrand (Arm)" <david@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Zi Yan <ziy@nvidia.com>, 
-	Baolin Wang <baolin.wang@linux.alibaba.com>, "Liam R. Howlett" <liam@infradead.org>, 
-	Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
-	Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
-	Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Guo Ren <guoren@kernel.org>, 
-	Brian Cain <bcain@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, 
-	Dinh Nguyen <dinguyen@kernel.org>, Simon Schuster <schuster.simon@siemens-energy.com>, 
-	Jonas Bonn <jonas@southpole.se>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, 
-	Stafford Horne <shorne@gmail.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, 
-	Rich Felker <dalias@libc.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
-	Russell King <linux@armlinux.org.uk>, Vineet Gupta <vgupta@kernel.org>, 
-	Michal Simek <monstr@monstr.eu>, Chris Zankel <chris@zankel.net>, 
-	Max Filippov <jcmvbkbc@gmail.com>, Will Deacon <will@kernel.org>, 
-	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, 
-	Peter Zijlstra <peterz@infradead.org>, "David S. Miller" <davem@davemloft.net>, 
-	Andreas Larsson <andreas@gaisler.com>, Richard Henderson <richard.henderson@linaro.org>, 
-	Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>, 
-	Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, 
-	Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
-	Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
-	Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
-	Sven Schnelle <svens@linux.ibm.com>, Richard Weinberger <richard@nod.at>, 
-	Anton Ivanov <anton.ivanov@cambridgegreys.com>, Johannes Berg <johannes@sipsolutions.net>, 
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
-	Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka <vbabka@kernel.org>, 
-	Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
-	Michal Hocko <mhocko@suse.com>, Jason Gunthorpe <jgg@ziepe.ca>, 
-	John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, linux-mm@kvack.org, 
-	linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
-	linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org, linux-sh@vger.kernel.org, 
-	linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-snps-arc@lists.infradead.org, linux-arch@vger.kernel.org, sparclinux@vger.kernel.org, 
-	linux-alpha@vger.kernel.org, loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
-	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
-	linux-um@lists.infradead.org, Hugh Dickins <hughd@google.com>, Qi Zheng <qi.zheng@linux.dev>
-Subject: Re: [PATCH v3 01/12] mm/huge_memory: zap deposited page tables after
- an RCU grace period
-Message-ID: <arJrv6FdUUgAbVp1@gremlin>
-References: <20260911-rcu-pagetable-freeing-v3-0-7b8c86103821@kernel.org>
- <20260911-rcu-pagetable-freeing-v3-1-7b8c86103821@kernel.org>
- <467b6599-b73a-4f58-a29a-b6c6d1ffc3a5@kernel.org>
- <aqrAflIQbwcNKlQL@gremlin>
- <bc2805a7-361e-4082-bf71-efc125b93c84@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpt3S5dNbz2yHT
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 18:06:42 +1000 (AEST)
+Received: from director3.derp.mail-out.ovh.net (director3.derp.mail-out.ovh.net [79.137.60.223])
+	by mo540.mail-out.ovh.net (Postfix) with ESMTPS id 4hpt3B757rz41y9;
+	Tue, 22 Sep 2026 08:06:30 +0000 (UTC)
+Received: from director3.derp.mail-out.ovh.net (director3.derp.mail-out.ovh.net. [127.0.0.1])
+        by director3.derp.mail-out.ovh.net (inspect_sender_mail_agent) with SMTP
+        for <anup@brainfault.org>; Tue, 22 Sep 2026 08:06:30 +0000 (UTC)
+Received: from mta10.priv.ovhmail-u1.ea.mail.ovh.net (unknown [10.110.164.229])
+	by director3.derp.mail-out.ovh.net (Postfix) with ESMTPS id 4hpt3B5XYDz1xrq;
+	Tue, 22 Sep 2026 08:06:30 +0000 (UTC)
+Received: from guillain.net (unknown [10.1.6.5])
+	(Authenticated sender: jean-christophe@guillain.net)
+	by mta10.priv.ovhmail-u1.ea.mail.ovh.net (Postfix) with ESMTPSA id 9DC82781C5E;
+	Tue, 22 Sep 2026 08:06:27 +0000 (UTC)
+Authentication-Results:garm.ovh; auth=pass (GARM-97G002b68a12e8-2984-420b-a186-13f4c06436ba,
+                    1B11FA1B799B51260FD44711AD952BEFB0E4E6B4) smtp.auth=jean-christophe@guillain.net
+X-OVh-ClientIp:78.242.244.78
+Message-ID: <792d9ce32849122eed7ecbed22e494f8b624dbc8.camel@guillain.net>
+Subject: Re: [PATCH v2 0/7] KVM: Serialize vCPU creation and revert vcpu_ids
+ tracking
+From: Jean-Christophe Guillain <jean-christophe@guillain.net>
+To: Sean Christopherson <seanjc@google.com>, Madhavan Srinivasan	
+ <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley	
+ <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou	
+ <aou@eecs.berkeley.edu>, Paolo Bonzini <pbonzini@redhat.com>, Kiryl
+ Shutsemau	 <kas@kernel.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>, Atish Patra
+ <atish.patra@linux.dev>,  Alexandre Ghiti	 <alex@ghiti.fr>, Dave Hansen
+ <dave.hansen@linux.intel.com>, 	linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, 	kvm-riscv@lists.infradead.org,
+ linux-riscv@lists.infradead.org, x86@kernel.org, 
+	linux-coco@lists.linux.dev, linux-kernel@vger.kernel.org, 
+ =?UTF-8?Q?Pawe=C5=82?= S	 <spawel523@gmail.com>
+Date: Tue, 22 Sep 2026 10:06:21 +0200
+In-Reply-To: <20260921174445.911676-1-seanjc@google.com>
+References: <20260921174445.911676-1-seanjc@google.com>
+Autocrypt: addr=jean-christophe@guillain.net; prefer-encrypt=mutual;
+ keydata=mDMEaEmXaBYJKwYBBAHaRw8BAQdA1qyia8WH1pu6T8sC99WNMyKXooD/SVqJXsJOcnIux
+ w20N0plYW4tQ2hyaXN0b3BoZSBHdWlsbGFpbiA8amVhbi1jaHJpc3RvcGhlQGd1aWxsYWluLm5ldD
+ 6IlgQTFgoAPhYhBDk2+TsBtH9ETCTubi9QTbKhgBdPBQJoSZdoAhsBBQkSzAMABQsJCAcCBhUKCQg
+ LAgQWAgMBAh4BAheAAAoJEC9QTbKhgBdPrq0A/icNhFTYLybFWWq1B42UvJLGs18MNRiT5aLdFv3R
+ DfHVAQCvzsLrC/qz4rOyIpDzeb0biOu3fiDTcyvV3kPiu3xTDA==
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2-0+deb13u1 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -109,146 +86,32 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bc2805a7-361e-4082-bf71-efc125b93c84@kernel.org>
+x-ovh-tracer-id: 3964856524915166012
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: dmFkZTFDZ4aTcT5SDXmkd602DiweEYgHF4FHP6+h+Q5uvPOfv2ER677KLq0yDhnl+3VfAbnsOmXLuyCPgoyZr+w9DwEYKfDYBsM1GvNB9gelyvBoQQQ1jqTc2VOlb2ES0FKHAEw7Bf5L3b/fe3mquzvbn08slBRFk1e188EYwypcj9s9rZhNO1DYk1mNyKLKeRt/DoUs/s5cymBh82F89HDmI2s1tiBxl8Wr1ZXwxX2zpzSb0PWcSHMqCBDjPAX0FkgCGCL/d6Yl2HIHdXWeJZ1JhfYF+PvruQ1WnjYiU5EVPYFW5Zo8XyORZee15An39kaGtjsRNOOgUE821tWe0jwxcnL/tjXKv+5/16hfPHifvImMPOzEUyeotu4hT4k3MO1mBzM9bjPK0Ge53kXOvdvN3eWSkOwh8ZUiMnTCGvDRHsRriBTLNCO3iKxDfvbsDWv/YF3wOKcvuOaIbT6SyxgcR6Zc8bxUiTYj0J9TfGRfEygMeq2gXCwxFm4Y+Aziu2j67KCrej/IWQcCkXBxtUr8uMovq8EE3D1B62LwAyCKG6fisWjh7fTwVWm14s1BJb0nAGvHicc5WLjJ2cdeknhIvYm7noYy8dltGhFf1/cPZrsEYR1vNt6277gHUY5GuF77GUlPZsEjHlCZnrs5fQ2/CpblZ92YETQlFNm62zJweHxLHQ
+DKIM-Signature: a=rsa-sha256; bh=5sO9xaC3qdPyU5zJefRGniTGdXKpOQRu0LktrMQP//k=;
+ c=relaxed/relaxed; d=guillain.net; h=From; s=ovhmo31693-selector1;
+ t=1790064393; v=1;
+ b=QI9ARexol+3F2NhB7XnQCuhvcc5KGGRTJIxVXLliegLGRWPuIPgrRFpRgA9uknVR1Sa4SESl
+ T3akrQF/XJwaq5ayxpHCczXK7rf8R+Fd8bNhEQtvvz8sZG2GzLKnoMYc8/tco6QvHsYmJEvMafX
+ TtAMbJ/mY7WfJEV981DGq880kXmXrZ/aOpclwoGPTzFqdFq8PEtlxEF7vC12hkkttTJ4mdNv8j9
+ 1k/pZtD2YR+61OL9hGVtPm8aNlB9Dew1189gXVMM5E9fLxZeFwmZ9tObsD7JYAlWl/ETK3Snl8f
+ bfD4os+o5BNLcSdyv+EzHZiBwWmh286ZdNL1qWQljiwiA==
 
-On Mon, Sep 21, 2026 at 07:13:16PM +0200, David Hildenbrand (Arm) wrote:
-> On 9/16/26 18:59, Lorenzo Stoakes (ARM) wrote:
-> > On Wed, Sep 16, 2026 at 04:42:04PM +0200, David Hildenbrand (Arm) wrote:
-> >> On 9/11/26 21:36, Lorenzo Stoakes (ARM) wrote:
-> >>> When an anonymous mapping is collapsed for THP, a PTE page table is
-> >>> 'deposited' with the installed PMD entry.
-> >>
-> >> Right. Or when we allocate an anon THP.
-> >
-> > That case doesn't interact with page walking though, as they're
-> > just-allocated right?
->
-> I was surprised to read that page tables deposited during collapse should behave
-> differently than page tables deposited during allocation :)
+Hi Sean,
 
-You'll be super surprised by how VMAs behave when detached vs. attached then ;)
+Just like for the first version, I tested the full V2 series with the
+configuration that originally triggered the build failure
+(CONFIG_DEBUG_KERNEL=3Dn, CONFIG_KASAN=3Dn).
 
->
-> That's the semantic change you are adding (and that I didn't quite understand
-> from reading your description): a deposited page table could now get reused and
-> modified for another page table due to a PMD split, while there might still be
-> an RCU page table walker walking it. And PMD comparisons (+ proper memory
-> ordering) have to make sure that we didn't just walk  something that doesn't
-> belong to us.
->
-> [...]
->
-> >>
-> >> Wait, but wouldn't it be really problematic to punch a page table that is still
-> >
-> > Punch? You mean deposit?
->
-> Yes!
+The kernel builds successfully on adm64, and I booted the resulting
+kernel and started two QEMU/KVM VMs without any issues.
 
-Ack.
+Tested-by: Jean-Christophe Guillain <jean-christophe@guillain.net>
 
->
-> >
-> >> being walked into the deposited list where it can just be allocated from another
-> >> PMD->PTE split?
-> >
-> > In general, RCU-only page table walkers are _only_ guaranteed that the page
-> > tables are not freed from underneath them, as per the cover letter:
-> >
-> > 	"As a result, page table walks can now be performed safely under RCU without
-> > 	 any risk of page tables being freed underneath a walker.
-> >
-> > 	However, this is the only guarantee that this work provides - page table
-> > 	walkers must still ensure that page table entries are as expected
-> > 	throughout."
->
-> So far page table walkers never walk deposited page tables. Just like they never
-> walk freed page tables.
->
-> For *current* lockless page table walkers (IRQs disabled),
-> tlb_remove_table_sync_one() takes care of that. So there is no such thing as
-> "walking a page table that was reused in different context (as a page table) in
-> the meantime".
+Thanks again !
 
-Yup I know. That describes what happens for RCU page table walkers _after_ the
-changes of course.
-
->
-> >
-> > So this series doesn't actually have to answer that :)
-> >
-> > But a PTE PTL -> pmd_same() check will flag anything like that,
-> > a.k.a. pte_offset_map_lock().
-> >
-> > The RCU lock replaces stablisation on stuff other than VMA/mmap or rmap
-> > lock.
-> >
-> > If the walker needs to be sure the PTE is actually valid and belongs to the
-> > expected walk then further is required.
-> >
-> > Alternatively (like GUP-fast) if you wanted to avoid locking at all, IRQs
-> > off would be required paired with the tlb_remove_table_sync_one() in
-> > collapse_huge_page().
->
-> Doing an RCU sync in tlb_remove_table_sync_one() would be the big hammer (I
-> thought that was discussed with Lance recently). There is also this option: just
-> allocate a new page table and deposit it, and free the existing page table
-> through RCU.
-
-Hmm yeah big old lump hammer :) I mean I don't see how that could really
-possibly fly as an option, we have tlb_remove_table_sync_rcu() for
-!CONFIG_PT_RECLAIM arches (i.e. err... the more 'specialist' ones :) but for
-those in actual use that sounds a wee bit nuclear.
-
->
-> Long story short: allowing empty page tables to be freed by RCU is simple.
-> Allowing empty page tables to be reused while they are still getting walked is
-> obviously more complicated conceptually. Likely it can be made working, but I'd
-> hope that we can keep it simpler.
-
-I'm not sure it can really safely be guaranteed or it'd involve more lock
-dependencies or something horrible anyway.
-
-But... we don't need to care about any of that....
-
->
-> >
-> > Another strategy could be used I guess with looped checks but it gets a bit
-> > sketchy with timing etc.
-> >
-> > But actually maybe we can avoid all that...
-> >
-> >>
-> >> Note that pgtable_trans_huge_withdraw() just dequeues *some* PTE page table in
-> >> the list attached to the PMD table.
-> >>
-> >> Something is odd here.
-> >
-> > ...Since this code path already allocates (the huge folio), so allocation
-> > here isn't an issue (as long as done outside of lcosk), why not have it
-> > also allocate a new PTE to deposit and RCU-free the existing PTE instead?
-> >
-> > That eliminates the one place in the kernel (afaik) where a
-> > page-table-walker-visible table can just get yoinked over somewhere else.
-> >
-> > Then a lockless PMD check works.
-> >
-> > E.g. something like the below?
->
-> Hah! Great minds think alike.
-
-...Because great minds indeed <3
-
-Will respin with that then, thanks! :)
-
->
-> --
-> Cheers,
->
-> David
-
---
-Cheers, Lorenzo
+Cheers,
+Jean-Christophe Guillain
 
