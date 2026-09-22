@@ -1,81 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-27894-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27895-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CEFBC982F1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2026 07:33:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3013FC982FA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2026 07:36:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hpsJt57C7z2yfy;
-	Tue, 22 Sep 2026 17:33:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:39::11"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790056919;
-	cv=none; b=mp7K2a+UupeUtiWKC75YpLKHx8Cud8axGyqzg9mlj1RI7ILOkV3ljksSaciStEE7jnMpJAB415pocJscy3sZsqOvvPS8aIzk96W0bF7mM9C06xFl5dSDJjAw+eBLcD5ppeA/cKiRhZy4+2Q77xWt7C81VnPjumRXj0suSVDmZCn0q1MsusEEo6THY314Xs947dyeGvruaKclvrmCorPqdqZpY/pRfbdLfIkqvw7U8CFfDfZdVMTTox3QtTzRLjKr2T2XNkYdkcQ4GmL6U+CcrKnNxRz8CB9M87F+eHRtl6wdMolRPti4pN+o0jj+aWTH4uOn0bC5aK/bmde8cgFvEw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hpsN74WlXz2yhD;
+	Tue, 22 Sep 2026 17:36:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790056956;
+	cv=none; b=YEjGncrhaOpy6LoJE9wJ3PUOgUvMMofaSbXYZzL5vu09jrSFSsBvo1nt2zPzqRZltphnDr2+ciyKF4EVdCXnnYfpruLtBaAbrmEYU81kFt7N1zm4+eWp+gtOBGVnFCJDfzfeC9CDMbg1JQIQqp0qPbaZvV/kBrFS4bCaDUuqcZ3PSgudrVPI8Y85B6LwAFiR1MHMBvPTeIA50wM1Uvta/DVk3eD9a/q2z+C3h8DwX593KEwa9H138v9kdz2hGBcMT3AKnH5Q5JFmdT3YzpMRJy4mg51PZKPSho9sRtAsjaHNTzszYxLE3zzcYe3uYhpCfMUJR2V8yrEliE7C6xq+SQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790056919; c=relaxed/relaxed;
-	bh=37Eexq0zFYxGYgBaFUWATikMtDj/TkGR7YrZ6T7c8q8=;
+	t=1790056956; c=relaxed/relaxed;
+	bh=uQ3bgQN5Dp8+Qvmy62hDVi5O4cZCEw7wjVOCUUXKBjk=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=XKRpozf0LjUa2ivgfGxbzwVgY/DA6pCqwWN4ilmjWkMlGoVICd1j2VS379+jcmoFwoI0dfXK188iQzue7qxYW5+78yDsl8TUFH29Wx+7tFEnVEeiJu/D+6P/uXDKkdc6HgQ6YDPnoEZKCXbo7wMkYtAATD5QTKqwL++WdZup3pz81G7nCCM7j7RZWRQCNbw2MZBIJajqqj5PwU33F6HEeVERPBTOMt6Z8f7lglNdSR9cz/UJtUj/Sz6MbItIK9m7zu9QklOqRr8BfEUjI1MLCmBnjRvlyiB+kkoSmut4XoE98yLHuY67KPOUHa48HoZPGV+6pC3/e7m6npZP77bIYg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=UCEg2OL0; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::11; helo=mail-pj2-x11.google.com; envelope-from=chancel.liu@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 In-Reply-To:Content-Type; b=GDNObPHRoOkWzvACwmvtmoZpoBf+SZ2UnpphSXFRD6pGROKLCwVlYHt14X1An6DKgs5GP01vJInfBxzGeACvMbB9X23AX2JJISOaAj+R9pLzGo5nTd/m7UR+GKpVBtaywaFYjQSCi11F6qhcXbD8jL9iB4R+3AvrJfI0VgzxVxBVZwA0HTXTL7CDSTBjsC7HxU69ovyArwTYd8hv5Ima+g1DiOABPhxQu4irKXequf1qnJr5TK5xxAaQXAM9c6i9z6CveFnwXDqIxVUAdES1AdZQpKAH11sPfVADt5Gh51d13alxAg13eIBOtRIKAPRmrm86QWFjtC5PfyBzKNinTg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=NltHKEsa; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=chancel.liu@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=UCEg2OL0;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=NltHKEsa;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:39::11; helo=mail-pj2-x11.google.com; envelope-from=chancel.liu@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj2-x11.google.com (mail-pj2-x11.google.com [IPv6:2607:f8b0:4864:39::11])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=chancel.liu@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpqHV23DRz2yHT
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 16:01:57 +1000 (AEST)
-Received: by mail-pj2-x11.google.com with SMTP id 98e67ed59e1d1-396ccd5cf02so2771848a91.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2026 23:01:57 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hpqJC45Pdz2yHT
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 16:02:35 +1000 (AEST)
+Received: by mail-pj1-x102b.google.com with SMTP id 98e67ed59e1d1-39647184c73so526848a91.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2026 23:02:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790056915; x=1790661715; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1790056953; x=1790661753; darn=lists.ozlabs.org;
         h=content-transfer-encoding:content-type:in-reply-to:from
          :content-language:references:cc:to:subject:user-agent:mime-version
          :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=37Eexq0zFYxGYgBaFUWATikMtDj/TkGR7YrZ6T7c8q8=;
-        b=UCEg2OL0GTSuMcPAurAWckkJBcEQYec7B2Nr3uja3NmVwu40B+uXlmKkFwpC1wvKyC
-         AS/Hs5GiTrBu0DW4L9bZwlaESZTYBhX9Rj3tx0XTbFpDpY+lkn2e+j/f4T3vZ+7Y1lw1
-         cBAEges7o0ynCInJSMsSNXYjnEOOfOf0+agwghZmeEF+BwnOjpWFArJQRwoGt7lL4UZ4
-         xD/YicaA8hHYGTy1mzZ8O/j4Rq6NZZRbhZIQSAp0+59RRsE3BqtogsMX+6PlzZwgw5qZ
-         RIptX9GhJKZ/Xlne9XqJeeQjUTqowcfkGqHmI8mJb/IfHNaHKEE47eHfkIGipZ3jOeDs
-         14aA==
+        bh=uQ3bgQN5Dp8+Qvmy62hDVi5O4cZCEw7wjVOCUUXKBjk=;
+        b=NltHKEsapAT89rkj66Me07o4mH2rBMzaENmGrQnoXGaFwMgCAs10aNrHxpsk/r1PXK
+         78TvEY2LeiwPju/6/RgcX5DvnbF5bUg7gZAwEHJzgyiCfc5QxbDxRgiQX+lVPMQBSDni
+         yZY9mFP6xeaQ7t4SPnOgl5/bEANvc0fSD0t5zWbOCkHO+6FazuM7b10uQdKGVqbA/Rik
+         1Qw22U6UL7sFrl+PBU1q64cuk3wkE/UFSlxNHY5KWOwY65uu15wginRdy7dtxKxpsWf+
+         zLum11+bRhfvjLZHAfeHuF1gTjsoyU7mjbAUJEhWnSVYRNOnzlwRhuNVFzIu2AHWE0ze
+         wYiw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790056915; x=1790661715;
+        d=1e100.net; s=20260707; t=1790056953; x=1790661753;
         h=content-transfer-encoding:content-type:in-reply-to:from
          :content-language:references:cc:to:subject:user-agent:mime-version
          :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=37Eexq0zFYxGYgBaFUWATikMtDj/TkGR7YrZ6T7c8q8=;
-        b=hwuaemfoUhGO7aHdukLuK59XW4vC+oYr4kqeuWdVH6ckoiD2C/LJG2k+xKshV6PJSA
-         o0wJKKB/1dVR8kr39yVivB2AkHlFLqaL3NgTL7ySkhY1TF9PADm6cJmLfuKr+kle8avw
-         kUsymwdcB2aYKhdmii9fPn1huysr2lRBBkKKg5oM6JOJ+n2HzL/O1AoCk360XzoWy0tq
-         g6XtYxJGrZPdyOhHe67oWp7AU99sAGXAg4KjQXaVDdzxjqhyy4vmId2Q627uDo0S0QDV
-         Q++YHXAYTkkdIBg3nznKGeXfWVv35tS4vNLn9EgqOTvj48TIuRaklCctBSxPP+D3KLZl
-         eE1Q==
-X-Forwarded-Encrypted: i=1; AKwUvBxg0F1+opWQ56boEKq8SVyKDGlYAEF+xJC4ouz77tWMhMS95EqXQPDsri9VQavCWRRrIkmH5tDv8+Vvu+Q=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++l1GLXLm88ukRzoaLNYMfgAH4OTKpWga3u6H8Lbf2IJJIfUVxDb
-	65/2zY5QI2hsJkU9WsrTLJ1PsHT72wIQXfeY6XmDi+rKSAu9c12e/kYW
-X-Gm-Gg: AYBFou3A/W4C9phWD75jmDd4QKs7XfzAHZ/lktJN/i1aiAH2r/nuxr1UB9+4j0yH5HD
-	qPnZGpJqCc2TAiFDGu+5S0H3em9wlar0xf7lTMFemhoaHK+a4w2dUhoosut/kEsBLWR5hG+jnrD
-	AC7LdYJGFwfceUoKhO22+8hQGgZmYT4DdpAXd1g/gZ9Nnh2ZqU5mH3XdBQOFEm+y+Reb/7gcowa
-	uPCpG7v/H0xuOjwirQegoo+/TYlrbaW2xCnIiGiE5n4yuB35nOg4Zh9HmwOVVz5HkBLaxYGXYkw
-	qGz+kZ0E0N1gP30bdCeGXqrRyFvaJGP037OSTR+QOUyXAMVsx8v/yq64giOHEFNgZ3IfMgkG5w4
-	15TSNY+I7ZuhDZ7Kh6gYeYJliFfs+KUeBkyT/NxUbPXgDHjUvkcKHBSYhb4rJL1sKQ/v+G62KdG
-	byIzd/9yZAJQTDoCnn5JBMvOMmjmM/NiqXb5RH5GDoX6KBaLUVgbGrytA55hvWRMawHAjlBfuYA
-	6JESwiM0d5/9Gbf5lA=
-X-Received: by 2002:a17:90b:558d:b0:39e:1ec8:ee7b with SMTP id 98e67ed59e1d1-3a07309f897mr123698a91.7.1790056915456;
-        Mon, 21 Sep 2026 23:01:55 -0700 (PDT)
+        bh=uQ3bgQN5Dp8+Qvmy62hDVi5O4cZCEw7wjVOCUUXKBjk=;
+        b=GH3uzzCl7+hJwlCktnRVSYCqFcIk2YjHO06Yu6IpFVOQ93jhCJZxP2Zpsr+WDdPEbb
+         WY5AdKedSipt2yRnx/xO0RreYqwwx/SSP9lvjW8+WDx+WvvEUqINTJh9AQewsICNjR3L
+         gkXmJayoNFDS9P+LumxwkqmYI1jwjXKPGWI4rfzCCatCsypI89Tgtv3hIm65aPZu5901
+         0Nw3IrDSeUda+yXGBcX9hM5HIoJABYuharDps9R2lnD6MUuBwlyXmyNDvSfTRwUoqY/E
+         /0fmgvn4xQEjexzathUyfo8qSajZIfT9A4YUzDF2c5IvmqCTj+vJim2yG5kIshUzvsRa
+         p3Qw==
+X-Forwarded-Encrypted: i=1; AKwUvBzdTmVaZubvnMYlRuDR+O8q8PMNSrsghGUHCAeKVVzXtbcZCZVlO+s7JGqNjMGHWjcJuoyFa285dJf1XL0=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++kXBPYd9zS6ESDT72zNx0I3HZv3kM6rT2hiuZDmOLjoapwev/O6
+	DGLGm5CNFU2ah5pqdIM2EgX2tGrwoMSRUF9kt/EZP1TlpMtigA9IQT3u
+X-Gm-Gg: AYBFou00dZGVCtRQA4tx3n/cMuDmccDNPpnYZ+eD/UuTvB4tWo1+FDP0H//HE1/xmRc
+	F7lMwKuzjA1iQ27GhwTq5LPJ5HR86UlmeIovsUpqToGPAG5YJIVRR2xwl83QuvC9GqJyKmi7Blz
+	kEe/L0efKDLs8BwAvvUAUmEJc/kJ7P8G3H09GdFkKEvHB9F1sl83VwPJi/IsE57vXgi2jIZUr3C
+	cQ4L2LCXVt3xfww1zC5mKptf3q7bqpr01kxCf6fyQtHMMLbNETIVrvgeMwU1IcOUHGXFQJ0Sa9a
+	dLYCJOeu2Bu1jVg4WceWJkdc0GU5RfxvgdghxxvXDcXZ9JvEjQRmq5VCXZUQezs0xpWmTgi83BS
+	ZX8jrSuoZ6UfZSLKATqJrJuBjG8ttARcoo+dlpFnuu50yuTCIpPGNATK/CtDpopurpJFCchdmm5
+	s1Gz4AcmVjLKhWI3K7lJrcZ759emcKl+PJk4JapoIuB+1GV6H08Oll8n5ffakdhYcm7tXRXnlxq
+	4JWnBzhHzH+UD9kKrA=
+X-Received: by 2002:a17:90b:3fcc:b0:39d:e78d:32d2 with SMTP id 98e67ed59e1d1-3a0730cbed4mr111836a91.13.1790056953102;
+        Mon, 21 Sep 2026 23:02:33 -0700 (PDT)
 Received: from [10.25.133.25] ([165.85.205.162])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-33e610e8439sm2788903eec.3.2026.09.21.23.01.48
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-33e61340e56sm3366245eec.30.2026.09.21.23.02.26
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 21 Sep 2026 23:01:54 -0700 (PDT)
-Message-ID: <878dc90c-3a4c-45fb-bfbb-2ba802bfc14c@gmail.com>
-Date: Tue, 22 Sep 2026 14:01:46 +0800
+        Mon, 21 Sep 2026 23:02:32 -0700 (PDT)
+Message-ID: <976f828a-bf48-4788-adb1-7204c27dda60@gmail.com>
+Date: Tue, 22 Sep 2026 14:02:24 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,7 +90,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RESEND PATCH v5 4/5] ASoC: fsl_asrc: expose individual DAIs per
+Subject: Re: [RESEND PATCH v5 5/5] ASoC: fsl_easrc: expose individual DAIs per
  conversion path
 To: shengjiu.wang@oss.nxp.com, lgirdwood@gmail.com, broonie@kernel.org,
  robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, Frank.Li@nxp.com,
@@ -102,34 +102,35 @@ To: shengjiu.wang@oss.nxp.com, lgirdwood@gmail.com, broonie@kernel.org,
  perex@perex.cz, tiwai@suse.com, linuxppc-dev@lists.ozlabs.org
 Cc: Shengjiu Wang <shengjiu.wang@nxp.com>
 References: <20260922033428.1690822-1-shengjiu.wang@oss.nxp.com>
- <20260922033428.1690822-5-shengjiu.wang@oss.nxp.com>
+ <20260922033428.1690822-6-shengjiu.wang@oss.nxp.com>
 Content-Language: en-US
 From: Chancel Liu <chancel.liu@gmail.com>
-In-Reply-To: <20260922033428.1690822-5-shengjiu.wang@oss.nxp.com>
+In-Reply-To: <20260922033428.1690822-6-shengjiu.wang@oss.nxp.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 9/22/2026 11:34 AM, shengjiu.wang@oss.nxp.com wrote:
 > From: Shengjiu Wang <shengjiu.wang@nxp.com>
 > 
-> The i.MX ASRC hardware supports three independent conversion pairs
-> (A, B, C). The driver previously registered a single DAI with generic
+> The i.MX EASRC hardware supports four independent conversion contexts
+> (A, B, C, D). The driver previously registered a single DAI with generic
 > stream names "ASRC-Playback" and "ASRC-Capture", which prevents
 > multiple independent conversion paths from being used simultaneously.
 > 
-> Replace the single fsl_asrc_dai instance with an array of three DAI
-> drivers to allow up to three independent conversion paths to be active
+> Replace the single fsl_easrc_dai instance with an array of four DAI
+> drivers to allow up to four independent conversion paths to be active
 > at the same time:
 > 
->   asrc-0 -- ASRC-Playback / ASRC-Capture (backward compatible)
->   asrc-1 -- ASRC1-Playback / ASRC1-Capture
->   asrc-2 -- ASRC2-Playback / ASRC2-Capture
+>   easrc-0 -- ASRC-Playback / ASRC-Capture (backward compatible)
+>   easrc-1 -- ASRC1-Playback / ASRC1-Capture
+>   easrc-2 -- ASRC2-Playback / ASRC2-Capture
+>   easrc-3 -- ASRC3-Playback / ASRC3-Capture
 > 
-> asrc-0 retains the original generic stream names to preserve backward
+> easrc-0 retains the original generic stream names to preserve backward
 > compatibility with existing machine drivers and board configurations.
 > Each DAI retains the same channel, rate and format capabilities as the
-> original. Update the devm_snd_soc_register_component() call to register
-> all three DAIs.
+> original, including IEC958 subframe support on the capture side. Update
+> the devm_snd_soc_register_component() call to register all four DAIs.
 > 
 > Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 
