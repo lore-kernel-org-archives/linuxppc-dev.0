@@ -1,84 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-28018-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28019-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5ABFEC9830B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 12:50:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14675C982FA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 13:05:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqcJp3XHDz2yqw;
-	Wed, 23 Sep 2026 22:50:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790167850;
-	cv=none; b=GDcNujxtbB2fM1p9WGxqmibQNUNUBt197AkMy7YaILxsNV7sDTAbBx06XzLdD/hJ/WlBjYK+N42Qu2Yxk1uYbqFBYM5sYapc6/19BIQ7H5dkfZMQw3iDG7GWHzRAJDbrAZbE8s5z5+CEYCfvlvhs+2A4m5NfWekUQKJgCzbox3gU+SndhtN7eWOZ/QzX1TPyiTwTzPPc0xOO1UBf6e+ip73l9zqtJUdAcFUAvICdKktYBz1C9m5Gg000b8MPTzDjC1YYdF/aZgb9+Tl2/Qw3lYFz3d8Lc0FLna1MWHfuOVK5EvnLE4/+TAxvuoiblZ+ZI6nFMluIUKloWzpzfoWW0w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqcd71T3dz2yqw;
+	Wed, 23 Sep 2026 23:04:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790168699;
+	cv=none; b=H1ydTlzk7grx5XScSZXEji6tD4zDSzXxK6EGZLrftwNWQwOpnr8CGJhkgsDQoX0XQg/gcxLT05lT67bfE2LcugWm7j8KX/N8TCENIRRY6bT+CKVWVjMkGyozUVetfe+6ahqG+u7ZtQjqF7xlbQ2ziggVDlcc6lr00guGsAXqLTLS723ClMKYG1JwXEEpF/QUnPLWgyz3XnH0tvwTbJL6jNpibzFAJPBH58dbXfr3UMVpXyraveIgCCfaeUL4mH2zDRjamUhGZSDTcHdAbAU32CyIdvVDTIJ1aym43z9QYYM2piZF32eePfq7zMhAwGkxesAnjanEMHYl9pAu1oBJ+g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790167850; c=relaxed/relaxed;
-	bh=sD0MUDyrNbqecS3bMd8lwV/g0Gkcar9iVZtrMhjni1A=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=BRa7Vxa3G16EMLqQAhrbUgS3tI/jTghzSuzf+SArq55VFl9Yt2FT4lDzLHOqnlJqMXitmDz/t0j1ukNEZaXmdvHOf5b391TCHoia+c0WUyTAACl3GQtXvhAFY79wjOx0x3mQmu+at1hr16GKzivZr3dY+Y5P+GfetTgaLK2RITBamHjMKlAwVYYdxqX9vJLaQFusJOkD3JkkAMNU/hmjI1NCGutEkrwjUkFqRDZb0fw4/1uKbNBRVNlGlU9HvLuFBd6717MCP98LS7p6MbkB0uH6wJQQosJ1ZVZDoVG45yVCaBMvA+m7rqK723q4AikM493/q7vsEUv/YmuAi+fO6w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=q/ArLNaK; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1790168699; c=relaxed/relaxed;
+	bh=ogBbb6P7GlWqXIs8xvSnHcODf4KNfQaxAfTAtslALNQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=LN2Auz2edUR7yNRwkv/Pi5ZmVAfztmOFYrbRgY4/Zo7RjHmxIKnhqiur5owc7MdHzFX3Sp4p7+uexQ7+XUwWej8Qqw9luztL3rpRm+hVnRYkZlTayQe4F/9rRqWsfFlLuCm/4/tT+44eci6Eg16astcWTooykX7kbGvwBVrbjzNZxt39ppfTaCKfR9HesMVqLHeTuwDuNeGldHWDhJNDqs6ZecD56aJqVkEX32L2KFEfn9tGNstfBrGktdy3R/1ktAUxEe2O0OmfACifjEcqCa9dmYxRSdGCaZShiYjl3ffadZRNGCW/S0OkXI9ZskquK07y5WLPt0dH1otm5jBxjg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=ZvqzetxD; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=robin.murphy@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=q/ArLNaK;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=ZvqzetxD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqcJn0Rp5z2xs1
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 22:50:48 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68N8ZopM2742362;
-	Wed, 23 Sep 2026 12:50:31 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=sD0MUDyrNbqecS3bMd8lwV/g0Gkcar
-	9iVZtrMhjni1A=; b=q/ArLNaKPF1plLDeqNPN1SFiCKlejR9Aa4ffHsLtKxk7yo
-	+p1YWrWARHF7cF2M6wnJYf0wv95z9op5adeKB57d+9JBZnTtnl5J1kqbgSqQ4HsO
-	qbsWxNuqpQG45qgbtNbrNh49cAwBdVMimnRJpnNuSQMLdasvNa2ZcuqXtjc0/3Gi
-	JvZCcZqAN1ZwzumkFsPoDGxNvC0cXefVLiKv3fSlu0goJQZSfPvRNWHum6pCKuLf
-	PcalwBKGqPARiEYGdq+CEtP8adTVblhR7Bg/YlbHLeUeVIu7ugLVTS496h6HYdZJ
-	OM5pnUdEcf99GvT9jlQIKHiG6OZRwn9iB5hsrieA==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gske1jw51-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Wed, 23 Sep 2026 12:50:31 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68N93E1m007936;
-	Wed, 23 Sep 2026 12:50:30 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gvbt2ruyx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 23 Sep 2026 12:50:30 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68NCoQYd38863156
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 23 Sep 2026 12:50:26 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8448A20043;
-	Wed, 23 Sep 2026 12:50:26 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3C80A20040;
-	Wed, 23 Sep 2026 12:50:23 +0000 (GMT)
-Received: from li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com (unknown [9.39.20.50])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Wed, 23 Sep 2026 12:50:23 +0000 (GMT)
-Date: Wed, 23 Sep 2026 18:20:20 +0530
-From: Gautam Menghani <gautam@linux.ibm.com>
-To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-Cc: maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au,
-        chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com,
-        nnmlinux@linux.ibm.com, amachhiw@linux.ibm.com,
-        linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, stable@vger.kernel.org,
-        Timothy Pearson <tpearson@raptorengineering.com>
-Subject: Re: [PATCH v3] KVM: PPC: Book3S HV: Avoid spurious interrupts caused
- by LPCR_MER bit
-Message-ID: <arPKuqUghZ91RW0B@li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com>
-References: <20260921111043.49825-1-gautam@linux.ibm.com>
- <arN5AY73k0fRh9VQ@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=robin.murphy@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqcd6003Pz2xs1
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 23:04:57 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6A0231570;
+	Wed, 23 Sep 2026 06:04:22 -0700 (PDT)
+Received: from [10.2.212.23] (e121345-lin.cambridge.arm.com [10.2.212.23])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A1A663F86F;
+	Wed, 23 Sep 2026 06:04:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1790168665; bh=V2eG6fezUymbQQ69ZuSww8KCP/5bN/QHpNMXTsYSPOw=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=ZvqzetxDsEV+z9y8tgXSp1WMJmVGbPD4FFevEiSlqja3DG2IGWuF2b73OrQ3DI5PP
+	 ebwj8SPEQZ4BaUOAgvsq/NUWIH7HsMxifQ4aW+kmBXBfzWreFCdx8DwnXmCnT2MCb1
+	 pQF5HqiW/0gA6vvYspF/vjHUh2HXW5nKxCvWawCQ=
+Message-ID: <8c9c04ae-cba7-4096-a7d1-70b90a46c161@arm.com>
+Date: Wed, 23 Sep 2026 14:04:00 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,74 +53,158 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <arN5AY73k0fRh9VQ@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: LhMlBdeaMYchxhb55wNyWpf_iBFgo1yP
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTIzMDA1MCBTYWx0ZWRfX3AVpWMoiRHmz
- 4QvTg2Lma5IDtpDSRoEmCtPTBO7shOS/cyznUwHLg4eslux5WikrQxnWm79QOqhpV7VhimydG0R
- nhggfMweRpoB04bLquN+L6oIUOKitaAQAyCEtXcBZDbuAPNjfWKYFAx2TlaSuTPNweJ92EcVSpJ
- S8/RdKODqiu7Y0cOG2vKwxZvYCVs1ddzVOQOSVLcOcx7EyYOeUZGi5B+jzPhCyFWRL190jo7npa
- wZowy1h+jGRCtDdAR0LSBmEk1PTNYcOanNdFTnozum7h7Z2sRXrBDJXLK/zuQhkJYv4Q/iBEYIt
- O/kiJCcslUKraZqgzf1sPnM3EWdSD4GkNbQ5Ic1FKGydefho0fPeWJIuwHdmlExowcBA9UJyWn/
- yBXBRLz/ZJ4GhHQn8f2S4uahUeTUJWbo1cUvDHmXgeO1XfMTrfrNIXnoM8CcRePRau2YTcJ1j1o
- uKF6xjMTfJ5Q5ban3fA==
-X-Authority-Analysis: v=2.4 cv=O/KsLx9W c=1 sm=1 tr=0 ts=6ab3cb17 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=kj9zAlcOel0A:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=198k1PuwjGhzIpgOSn4A:9
- a=CjuIK1q_8ugA:10
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTIzMDA1MCBTYWx0ZWRfX75VlxbIfQOmv
- 41g0bl041JF2/Z8Hw93Rs950+qometRzCL/R40yILZEkz2wcK/uk5uO2EVHB2Cro1rmoxqkW20u
- HzGv2Hql/gj+qNcCzu1a4E7y5c9FD2E=
-X-Proofpoint-GUID: ElCc1_Sb-Z1OWvJsFysyEsox4F3LOJuk
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-23_04,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 malwarescore=0 phishscore=0 impostorscore=0 suspectscore=0
- bulkscore=0 priorityscore=1501 lowpriorityscore=0 adultscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609230050
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 5/6] dma: swiotlb: Add an overridable architecture pool
+ opt-out
+To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
+ iommu@lists.linux.dev, linux-kernel@vger.kernel.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Will Deacon
+ <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+ Steven Price <steven.price@arm.com>,
+ Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Jiri Pirko <jiri@resnulli.us>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Mostafa Saleh <smostafa@google.com>,
+ Petr Tesarik <ptesarik@suse.com>, Alexey Kardashevskiy <aik@amd.com>,
+ Dan Williams <dan.j.williams@intel.com>, Xu Yilun
+ <yilun.xu@linux.intel.com>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>, Russell King <linux@armlinux.org.uk>,
+ Huacai Chen <chenhuacai@kernel.org>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Jiaxun Yang <jiaxun.yang@flygoat.com>, Paul Walmsley <pjw@kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+ linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
+ linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, x86@kernel.org
+References: <20260921063628.362078-1-aneesh.kumar@kernel.org>
+ <20260921063628.362078-6-aneesh.kumar@kernel.org>
+From: Robin Murphy <robin.murphy@arm.com>
+Content-Language: en-GB
+In-Reply-To: <20260921063628.362078-6-aneesh.kumar@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 23, 2026 at 12:31:05PM +0530, Mukesh Kumar Chaurasiya wrote:
-> On Mon, Sep 21, 2026 at 04:40:42PM +0530, Gautam Menghani wrote:
-> > A huge number of spurious interrupts can be seen immediately after a KVM
-> > on PowerNV guest boots up in XIVE mode.
-> > 
-> > $ cat /proc/interrupts  | grep SPU
-> > SPU:     223705     192439     273526     147623   Spurious interrupts
-> > 
-> > This bug was introduced by commit ecd10702baae5 ("KVM: PPC: Book3S HV:
-> > Handle pending exceptions on guest entry with MSR_EE"). The root cause
-> > is that once LPCR_MER bit is set, it is supposed to be reset by
-> > software. But when a vCPU starts running with LPCR_MER set, the vCPU does
-> > not exit back to the host until the decrementer expires or there is an
-> > hcall, etc. This is because KVM on PowerNV guests have support for
-> > native XIVE, so they are not dependent on host for interrupt emulation.
-> > Due to this behaviour, a huge number of spurious interrupts are seen
-> > since LPCR_MER continues to be set and LPCR_MER cannot be reset until the
-> > vCPU exits to the host.
-> > 
-> > Fix this behaviour by not using the LPCR_MER bit whenever native XIVE is
-> > available (currently in case of KVM on PowerNV only), as the XIVE hardware
-> > can present interrupts to the KVM guest vCPU directly. So the LPCR_MER
-> > functionality is not required. This reduces the number of spurious
-> > interrupts drastically.
-> Hey Gautam,
+On 21/09/2026 7:36 am, Aneesh Kumar K.V (Arm) wrote:
+> On x86, iommu=off historically prevented SWIOTLB initialization by not
+> setting SWIOTLB_INIT_ADDRESSING_LIMIT. This overloads that flag: it
+> controls both whether a pool is selected and where the pool is
+> allocated. If another requirement, swiotlb=force selects a pool
+> independently, omitting SWIOTLB_INIT_ADDRESSING_LIMIT may place it above
+> the addressable range of devices which need bounce buffering.
+
+Well then surely something is wrong with the design? If 
+SWIOTLB_INIT_ADDRESSING_LIMIT is set then SWIOTLB still needs to respect 
+it irrespective of any *additional* reasons for activating (either from 
+arch code or internally). And conversely, if devices have addressing 
+limits but SWIOTLB_INIT_ADDRESSING_LIMIT is *not* set, then the arch 
+code has clearly gone wrong or made a bad assumption, but that doesn't 
+seem like SWIOTLB's problem to worry about.
+
+> Add SWIOTLB_INIT_FORCE_DISABLE to let an architecture opt out of normal
+> pool initialization without discarding the pool placement constraints.
 > 
-> Thanks for this. Can you also share the numbers after the change.
+> Unlike swiotlb_force_disable, which is set by swiotlb=noforce and
+> unconditionally prevents pool initialization, the new flag is an
+> architecture default. Explicit requirements such as memory encryption,
+> architecture remapping, or swiotlb=force take precedence over it.
+
+Logically, that should already be implied by the architecture passing no 
+SWIOTLB_INIT flags.
+
+Thanks,
+Robin.
+
+> iommu=soft retains SWIOTLB_INIT_ADDRESSING_LIMIT because it requests
+> software bounce buffering for devices whose DMA masks cannot address all
+> system memory. Such devices must be able to reach the bounce pool.
 > 
+> Clear both flags for Xen because Xen explicitly requires a remapped
+> SWIOTLB pool and may allocate it anywhere in directly mapped memory.
+> 
+> With no override, iommu=off disables both hardware IOMMU translation and
+> SWIOTLB bouncing. Direct DMA remains available; mappings outside a
+> device's addressable range fail instead of being bounced.
+> 
+> Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
+> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
+> ---
+>   arch/x86/kernel/pci-dma.c | 11 ++++++++---
+>   include/linux/swiotlb.h   |  2 ++
+>   kernel/dma/swiotlb.c      | 10 ++++++++--
+>   3 files changed, 18 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+> index 0cff255827ba..ce257b20ea9c 100644
+> --- a/arch/x86/kernel/pci-dma.c
+> +++ b/arch/x86/kernel/pci-dma.c
+> @@ -44,9 +44,13 @@ static unsigned int x86_swiotlb_flags;
+>   static void __init pci_swiotlb_detect(void)
+>   {
+>   	/* don't initialize swiotlb if iommu=off (no_iommu=1) */
+> -	if (!no_iommu && max_possible_pfn > MAX_DMA32_PFN) {
+> -		x86_swiotlb_enable = true;
+> +	if (no_iommu)
+> +		x86_swiotlb_flags |= SWIOTLB_INIT_DEFAULT_OFF;
+> +
+> +	if (max_possible_pfn > MAX_DMA32_PFN) {
+>   		x86_swiotlb_flags |= SWIOTLB_INIT_ADDRESSING_LIMIT;
+> +		if (!no_iommu)
+> +			x86_swiotlb_enable = true;
+>   	}
+>   
+>   	/*
+> @@ -84,7 +88,8 @@ static void __init pci_xen_swiotlb_init(void)
+>   		return;
+>   	x86_swiotlb_enable = true;
+>   	/* Xen can use a SWIOTLB pool anywhere in directly mapped memory. */
+> -	x86_swiotlb_flags &= ~SWIOTLB_INIT_ADDRESSING_LIMIT;
+> +	x86_swiotlb_flags &= ~(SWIOTLB_INIT_ADDRESSING_LIMIT |
+> +			       SWIOTLB_INIT_DEFAULT_OFF);
+>   	x86_swiotlb_flags |= SWIOTLB_INIT_REMAP | SWIOTLB_ANY;
+>   	swiotlb_init_remap(x86_swiotlb_flags, xen_swiotlb_fixup);
+>   	dma_ops = &xen_swiotlb_dma_ops;
+> diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
+> index be3962a33fc6..466c33795db0 100644
+> --- a/include/linux/swiotlb.h
+> +++ b/include/linux/swiotlb.h
+> @@ -20,6 +20,8 @@ struct scatterlist;
+>   #define SWIOTLB_INIT_ADDRESSING_LIMIT	(1 << 2)
+>   /* Initialize a default-sized pool that requires architecture remapping. */
+>   #define SWIOTLB_INIT_REMAP		(1 << 3)
+> +/* Do not initialize a pool unless SWIOTLB is explicitly required. */
+> +#define SWIOTLB_INIT_DEFAULT_OFF		(1 << 4)
+>   
+>   /*
+>    * Maximum allowable number of contiguous slabs to map,
+> diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
+> index c19675846fc1..46b789eb0806 100644
+> --- a/kernel/dma/swiotlb.c
+> +++ b/kernel/dma/swiotlb.c
+> @@ -563,10 +563,16 @@ swiotlb_select_pool_policy(unsigned int flags)
+>   	if (flags & SWIOTLB_INIT_REMAP)
+>   		return SWIOTLB_POOL_DEFAULT;
+>   
+> -	if (flags & SWIOTLB_INIT_ADDRESSING_LIMIT)
+> +	if (swiotlb_force_bounce)
+>   		return SWIOTLB_POOL_DEFAULT;
+>   
+> -	if (swiotlb_force_bounce)
+> +	/*
+> +	 * Explicit requirements above override an architecture's default opt-out.
+> +	 */
+> +	if (flags & SWIOTLB_INIT_DEFAULT_OFF)
+> +		return SWIOTLB_POOL_NONE;
+> +
+> +	if (flags & SWIOTLB_INIT_ADDRESSING_LIMIT)
+>   		return SWIOTLB_POOL_DEFAULT;
+>   
+>   	if (swiotlb_kmalloc_needs_bounce())
 
-Sure, here are the numbers seen immediately on boot with this patch
-applied:
-
-$ cat /proc/interrupts | grep SPU
-SPU:        123        139         99        144   Spurious interrupts
-
-> Regards,
-> Mukesh
-> [...]
 
