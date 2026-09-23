@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-27990-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27991-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F036C982EA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 08:46:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9BCAC982EA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 08:54:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqVtV13bMz2ySj;
-	Wed, 23 Sep 2026 18:46:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqW4M2L8Hz2ydN;
+	Wed, 23 Sep 2026 18:54:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790153170;
-	cv=none; b=i2lE6VO7FcMR98V/WIZpwRN1+t54moLkAx/dOdfU814DlR+8+JK+5mmFhbJMxMfgjKcC6QjNpaF0X+8RYewhsNLmJSHFAmbUsBjSYeHcgxcZ2VTtn23mCJ2sKl6pvcRdJXvp6CK0LNQiuOH+njmsnrGlMUUtcNSnYRRv2T5o2s2ptMeOgABru3JDmIKZHmNvvxW8KtPb6tvoMWplgHgSDteJNdwJXh4ShzephRmIzWZYXyTcEbyennXvybvKlYF+lryIAmK7kn0CWlUp5wijFUgNhzY/rzOKiQJ5hv9Rqdq08BHiY1rHkKxdM/w4lhfhoCuFmtdixviBLULG1og0LA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790153683;
+	cv=none; b=EwKl7tl4fOB9N9r9Xp4tpwSAODYKwGNe4eOmU1oNQpknk0gtP0jzJLDGyIkKq/z+TNy2PLSwQCiKlBTpNk6jJ+DXVf2teFnxe74C9F6uQpKt8yf+pxpF3OBZcRb2gR5QExk5h6dgrhVtH2vwOali9KqAIhwHOO2YZwKQHgtelPb2FAZTTNE2AjqvALvRCAzz76QQxnZ2q66b07/v4K6MjhTt0ZhQyuYTSc5eCc/kYW9v3IpfK9SF69NQctvL2PO2eD+gGHWisF5sc4SdAl9DKZcaWY9SqX6zaTVG61xK/ZGnKojcFL143rABZwXUhS6GTaQVQRzXc4I+ueGyEejqxA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790153170; c=relaxed/relaxed;
-	bh=PwZF3pqAeMznwbepH5UUc0GjovbxR4bX9vcY1/GYfgw=;
+	t=1790153683; c=relaxed/relaxed;
+	bh=mfm+dgT5lNMdwvcoEsUCo1RatnytaF+7FQ0IE0uMup8=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UP+GlUrSaOgnSerNC7i/SBTaNYqlZa9xlanW5wwA5LKsuK9AH46ey/p0/OmzHhDN/u2JZvXPMzU+BxcrHoS+cwKPy4TELRXfaQmBjkjb3sE7zfltlVhihieDRfEooDLTqGdnVbCVbfIYcbOO2HM9wQpjryKrHXJ6cVoKs2JxsJItZ0zSVdb979vR6mjs9agpfL4KBZSJ0Gcoy5tSK0d+ltnnBIVnwxWzQZljyRjZAxjfmclHqe3jWhSeRONv7GXkCSkKAx6RY96n71fUgZZpdi/UHtzjM+DxBJ0DB8I9gn8yFggvT0ESolTP010tYWE90Zd9KAbken8vxXN3ZlmhQg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iMlX/Y/J; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=gTA/h4lqF2JqYczcYXaq/vpVsXRKyX5Hb5ZJwGlTr9AiH2lhVuTNrTViGoU9ptEHT/lKw6Fp5E3lhG7ve9defTMsdBj7h1ezPZOdqa7Qa2CNoJCI1+DpBI8Fr/Cq0/6JherZpNAB5rkFrvuUCXiI8pQF4q+T16reRyLzmMKkZhV18MKWmahxZ5xSw6/FNdHX7NZeuLEfW3QzkT64mQpHcedtopN2f8Kw4yd1oeL/rW4e0Rr5jHGjlJCIl367SyYd0HdlWNcRQJOY8uKLegcsneywrimr0f219bnnR4GLNoTVAc/COKyPT/17WR0j4So+pcVeNtlsmxwwYN8XbrkhPQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=e6JGCywJ; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iMlX/Y/J;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=e6JGCywJ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqVtT1Wv2z2xs1
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 18:46:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqW4L30JTz2xs1
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 18:54:42 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 4C371600AA;
-	Wed, 23 Sep 2026 08:46:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E68911F00893;
-	Wed, 23 Sep 2026 08:45:37 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 1E23260202;
+	Wed, 23 Sep 2026 08:54:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DE4BE1F000FF;
+	Wed, 23 Sep 2026 08:54:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790153166;
-	bh=PwZF3pqAeMznwbepH5UUc0GjovbxR4bX9vcY1/GYfgw=;
+	s=k20260515; t=1790153679;
+	bh=mfm+dgT5lNMdwvcoEsUCo1RatnytaF+7FQ0IE0uMup8=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=iMlX/Y/JtwSu4cblQ6iLw2qW0e3IKyVInfxKJfA7BRoK/pTyJ4S+EDCwf3WlO2yI6
-	 ZMbKchOUQs6OzPlv6jnOnAFLMx2aX2yyJ4WIdCXkYXviXnt3S8QE2R7tMcyqyjh8rc
-	 D4YgQrB3UhOYtmXzHvKNBpqHyocQXqJnPewl5zg0aGtqvU/ZGIQ9ZTXHbd8dp3LwaO
-	 i/iIM+R+GD+O4G+3sJKba/ZRRZEkamytqnHX7jbxqcAlQeXOwGsRNUVKWYsrpYzEGc
-	 xDRsh1rc5dJlzI+7Op1ib6nlgpPzfyKS4T3MLSAsHl0DQtb7fEC+vWuK50S+36E0Ph
-	 m1Efg+L3WOhow==
-Message-ID: <9dcde7e4-dadb-4644-9dff-7fd8a26e29a6@kernel.org>
-Date: Wed, 23 Sep 2026 10:45:33 +0200
+	b=e6JGCywJTcC9yMcSrzIixlrJgX8t5PhsTA6gwRUYjo2Rg9Npys6OSwJnM5LDnfDEy
+	 u20Tu9Pa0QyHyAfTx2ghB9J6QP6gBr7EWbZSjEiIrJOl2CCCILU7j46EcI407+b3G4
+	 JbplyhQQmC8k8Zcc7ceIRcIj+e47k7MI6571ZOr6OU5vJGqRgnheYl4mX81DH9D74x
+	 K5+g7m/nU0Qqxmm6i11YWDVVuq8qJUznAnAl7zgN5WMG00TrgLu8BDRDA/ps23/+iE
+	 rfbVBTyqQij0mFvDHjN9Z4Vy8VJvV/Rfswxrcl25y5XhPcf3HoVl/l6+cj4FDRLumn
+	 kUpp72cLS9TEg==
+Message-ID: <76b2f611-b74c-4d6d-b166-491e1cfcb9a5@kernel.org>
+Date: Wed, 23 Sep 2026 10:54:07 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,10 +60,11 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 00/12] mm: make userland page table freeing RCU-safe
-To: Andrew Morton <akpm@linux-foundation.org>,
- "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Cc: Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>,
+Subject: Re: [PATCH v4 01/12] mm/khugepaged: deposit a newly allocated page
+ table on collapse
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Zi Yan <ziy@nvidia.com>,
+ Baolin Wang <baolin.wang@linux.alibaba.com>,
  "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>,
  Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>,
  Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>,
@@ -109,20 +110,20 @@ Cc: Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>,
  John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>,
  Yoshinori Sato <ysato@users.sourceforge.jp>,
  Shakeel Butt <shakeel.butt@linux.dev>, Jonathan Corbet <corbet@lwn.net>,
- Randy Dunlap <rdunlap@infradead.org>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org,
- linux-hexagon@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- linux-openrisc@vger.kernel.org, linux-sh@vger.kernel.org,
- linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- linux-snps-arc@lists.infradead.org, linux-arch@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-alpha@vger.kernel.org,
- loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-um@lists.infradead.org,
- Hugh Dickins <hughd@google.com>, Qi Zheng <qi.zheng@linux.dev>,
- linux-doc@vger.kernel.org
+ Randy Dunlap <rdunlap@infradead.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux-riscv@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, linux-snps-arc@lists.infradead.org,
+ linux-arch@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-alpha@vger.kernel.org, loongarch@lists.linux.dev,
+ linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-um@lists.infradead.org, Hugh Dickins <hughd@google.com>,
+ Qi Zheng <qi.zheng@linux.dev>, linux-doc@vger.kernel.org
 References: <20260922-rcu-pagetable-freeing-v4-0-fe1ad1f1e303@kernel.org>
- <20260922160021.a2fc65d05d9b867a141e5457@linux-foundation.org>
+ <20260922-rcu-pagetable-freeing-v4-1-fe1ad1f1e303@kernel.org>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -169,29 +170,108 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260922160021.a2fc65d05d9b867a141e5457@linux-foundation.org>
+In-Reply-To: <20260922-rcu-pagetable-freeing-v4-1-fe1ad1f1e303@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 9/23/26 01:00, Andrew Morton wrote:
-> On Tue, 22 Sep 2026 16:35:31 +0100 "Lorenzo Stoakes (ARM)" <ljs@kernel.org> wrote:
+On 9/22/26 17:35, Lorenzo Stoakes (ARM) wrote:
+> collapse_huge_page() deposits a PTE page table on PMD collapse in order
+> that it can be utilised for subsequent split operations, meaning that those
+> operations do not need to perform an allocation (as they are in a context
+> where it might be unwise).
 > 
->> The majority of architectures in the kernel defer page table freeing until
->> an RCU grace period has elapsed, this series converts all remaining
->> architectures to do so too and eliminates CONFIG_MMU_GATHER_RCU_TABLE_FREE
->> altogether.
->>
->> This is important because it enables safe lockless page table walking under
->> RCU alone.
+> However the PTE page table which is deposited is the one which is currently
+> mapped by the PMD entry that is in the process of being collapsed.
 > 
-> Do we have reason to believe that anyone is seeing any effects from
-> their arch's failure to rcu-free the page tables?
+> Once deposited, the PTE page table may be used in a split of any other
+> unrelated PMD entry.
 > 
-> This sounds like a rather long-standing wart, yes?
+> This is currently not an issue as this operation is performed with VMA/mmap
+> write lock + anon rmap locks held, so ordinary page table walkers will
+> never accidentally end up walking the wrong thing, and GUP-fast is
+> protected by an IPI via tlb_remove_table_sync_one().
 > 
-> The patchset is thinly reviewed and mm.git is bursting at the seams
-> again.  I'll play wait-and-see on this series.
-Do we want to nudge arch maintainers to review?
+> However, the series to which this commit belongs implements RCU-safe page
+> table traversal, at which point this becomes problematic.
+> 
+> This can be resolved by using pte_offset_map_lock() which gates on a PTE
+> PTL and a pmd_same() check, but lockless walks are unsafe as things stand.
+> 
+> Resolve this by simply allocating a new, zeroed, PTE page table to deposit
+> at the point of collapse.
+> 
+> This path is already costly and an allocation has already been performed
+> for the huge folio, so this allocation is statistical noise in terms of
+> performance and memory usage at this point.
+> 
+> With this PTE page table deposited, RCU-free the existing PTE page table
+> so it is safe for page table walkers to traverse within a grace period.
+> 
+> This also brings this deposit case in line with all other page table
+> deposit logic which deposit a fresh page table.
+> 
+> Additionally, this was the only place in the kernel that displaced a page
+> table like this, so eliminating it also helps consistency.
+
+ack
+
+> 
+> An edge case for deposit exists for powerpc and its hash-based MMU - it
+> stores hash slot data in deposited page tables and zeroes them on withdraw,
+> so a zeroed deposited page table works correctly for it.
+
+I think we would have zeroed out all page table entries either way already right
+now before depositing. See clear_ptes() in
+__collapse_huge_page_copy_succeeded(). So this paragraph might just be dropped.
+
+> 
+> Since khugepaged runs as a kernel thread, do a little dance in
+> alloc_deposit_pte() to correctly charge the allocation.
+> 
+> This is already done for the folio allocation via alloc_charge_folio() but
+> no such wrapper exists for a page table allocation.
+> 
+> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> ---
+>  mm/khugepaged.c | 32 ++++++++++++++++++++++++++++++--
+>  1 file changed, 30 insertions(+), 2 deletions(-)
+> 
+> diff --git a/mm/khugepaged.c b/mm/khugepaged.c
+> index f49a6710933b..dab421f8233e 100644
+> --- a/mm/khugepaged.c
+> +++ b/mm/khugepaged.c
+> @@ -1278,6 +1278,23 @@ static enum scan_result alloc_charge_folio(struct folio **foliop, struct mm_stru
+>  	return SCAN_SUCCEED;
+>  }
+>  
+> +static pgtable_t alloc_deposit_pte(struct mm_struct *mm)
+
+alloc_deposit_pte_table or alloc_deposit_pgtable
+
+should be clearer.
+
+> +{
+> +	/*
+> +	 * khugepaged is run from a kernel thread, so need to manually set the
+> +	 * correct memcg so the allocation gets charged correctly.
+> +	 */
+> +	struct mem_cgroup *memcg = get_mem_cgroup_from_mm(mm);
+> +	struct mem_cgroup *old_memcg = set_active_memcg(memcg);
+> +	pgtable_t pgtable;
+> +
+> +	pgtable = pte_alloc_one(mm);
+> +> +	set_active_memcg(old_memcg);
+
+I'm no memcg expert but that looks good to me.
+
+> +	mem_cgroup_put(memcg);
+> +	return pgtable;
+> +}
+> +
+
+With the fixup
+
+Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
 -- 
 Cheers,
