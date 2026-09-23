@@ -1,98 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-28029-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28030-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D951DC98302
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 14:29:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B7D6C98302
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 14:31:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqfVK2q6qz2yqq;
-	Thu, 24 Sep 2026 00:29:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790173753;
-	cv=none; b=Ilnmocrge8Hc8mb9TfburypGXOQHaH2+5Y1JuFwB9qmSIdJawGJlS1qPjHSscaXwWYj1Mb3M6+p3ZVqFsmEMArxmXMeYDZLZSS2NBTa9B+f6RGlTu++jo4mLjHxj2Z75d6Pv/fxlQAtU01e/QCVlC6cQlzPn4KSqiiTUuSsvvnxLHaJtD2U2lAXzW2QZNh1lh6bb3m7vXdMT+WeOIHlVq//u2VtemG2J8or8tRTc+GJxdYRBMrhzYBaBk/4SGThixslIGEoCfSP6m3fEfcYTVgJ3k+70Y/wkToayV304lPnSWcL6a1bwIB0ywtDoTWMOb7z0Cr87yddtxXEcsOZR2g==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790173753; c=relaxed/relaxed;
-	bh=KJ+xcGas6Gs0DUbNkFsLqUYTG/kJ0yvHazAmaBZ9DQc=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=AbPGaLsfzsbmbKkM4sInK/vP1wLzNHh16Vzt6XFhuCHls6rkprhwdPyIO5ZPktTk8EwuduPwRS8Z2XhjljCdm9QEZ78UnQHFAaBKtH+z2Wk582CRcVOfxQ7IGNamd66LCS/nV75EoYVgMrBN8KM7HmHLxYAoJ5NiHf6DELbSOomnPas0cjitr2vRK6Z1kfpw27Co84AjCv8OCMttAAVcmR9aCVtOVCVEnSTHEMhzxzf/mrzJ0BUWycK2u3CEE8zXATzv7alJCVHjqNxSJjrMbn5YRjrdaC38K8xTBetvJqQGQ86v540AQVz3gh5zgR3vEq3Uqg5TSTx51Chiiv4Jcg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gKi1uvT9; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqfXn0lBLz2yqw;
+	Thu, 24 Sep 2026 00:31:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::835" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790173881;
+	cv=pass; b=JSdLSMnxke3o5p1Oqn2IGG3ocyI9Gg3qr8YZBCQrlivYkcqEf6Yf2K0kF0OzFYcsvI1/eFrCMUluiMYgkn/7OOb6JgmMrHfwWB1U1yKTnvFqIXLA1HpCpsLSvku4ZaNLXz4Dp+hT0En9Ta1v/oeJW8BkFnCmooZmxyoQgDeWCxH4k55iHkk2fITVKm0hQ7QLQbP37AccH9tAQfFOpkr/3aSvvw+8yC5bi4n65BcOvbTKZUBSU6F6Ac4mSRoJ2PLV3S08w2EuemggoY+M7CLIlhbXcFD+jYlnwJ3vYrtQs1kFwm+1MT6Zag+cP6kNrl5oS4C7b7QO+lORdFY9Q/xs0w==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1790173881; c=relaxed/relaxed;
+	bh=3IRQTfCkVu29EAhzhIq8HL8xV9bhN+vmwTvfaTzW1hg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=YuF3kGSUZ5khQ1uTe4bqTyOaJIWPkJ7nkU/gk7PpMZifK10NwXs3ooHEv0vkUJCxjwAzsGWaFsSuQFrzN528pp5S4PRfDCPNDNDX4Uub8OPbLJBlJWJ81zAdVT+47L4vgcHiuYdzF9qhQzhnm/8MMl4LTXobCWvaOg4ODUulk/eyncEZr04MWuaTWMYuiloVNePq1sDI+Ydu0F/pBM1MWI+7Qsd7g8ghXKrTz8eeI9kdVjSzaiIfw8JFV117F5eFsdSAO+AnLEJG6BjjM3I2+7E+lonNh5zSU8pEM7odWOKcXEBTu2J5orAyrRxNEDhlCXOeG04csMhxvrYi4jknPg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=ZgiWTznd; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::835; helo=mail-qt1-x835.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gKi1uvT9;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=ZgiWTznd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::835; helo=mail-qt1-x835.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org)
+Received: from mail-qt1-x835.google.com (mail-qt1-x835.google.com [IPv6:2607:f8b0:4864:20::835])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqfVG5Zg6z2xjM
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 00:29:10 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 3046C42E6E;
-	Wed, 23 Sep 2026 14:28:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 671E01F00893;
-	Wed, 23 Sep 2026 14:28:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790173737;
-	bh=KJ+xcGas6Gs0DUbNkFsLqUYTG/kJ0yvHazAmaBZ9DQc=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date;
-	b=gKi1uvT9tdO35/ODP00YcZaB1OEqOdJRXC43vCAtVa6/M+rRGUzFwrcEFzwLOcpM8
-	 rFd8FKNGTwcNeaPZJWHgle4aXrscaEQgzv4xKlpwSHuHfa8mOnUXOSeK49Z1Cyp2jU
-	 UGm/xAuJEzcqCQlbTOQ8w8JSwAyYh5Y3iAm3TlZ8hc3a46rYZqfHKqB/caJeoPyRSS
-	 /zj2aVMtbmuIKRqQ0GaxIrliBpBI6zWSJwyasssqkyicL2r7QVdLv9yWU0w6X9G84P
-	 DbwpUJekxBnSZqWqQEEPtZQ3gmRz621gb2mQKitAsMTjtTiWuylDjnHn8PUQB8+ZGO
-	 YoEgEm2KBqXYg==
-X-Mailer: emacs 31.1 (via feedmail 11-beta-1 I)
-From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
-To: Robin Murphy <robin.murphy@arm.com>, iommu@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>,
-	Jason Gunthorpe <jgg@ziepe.ca>,
-	Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Russell King <linux@armlinux.org.uk>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Jiaxun Yang <jiaxun.yang@flygoat.com>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
-	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	x86@kernel.org
-Subject: Re: [PATCH v5 4/6] dma: swiotlb: Centralize memory-encryption pool
- sizing
-In-Reply-To: <644aa208-55f0-440c-94b9-75e58e588dde@arm.com>
-References: <20260921063628.362078-1-aneesh.kumar@kernel.org>
- <20260921063628.362078-5-aneesh.kumar@kernel.org>
- <644aa208-55f0-440c-94b9-75e58e588dde@arm.com>
-Date: Wed, 23 Sep 2026 19:58:36 +0530
-Message-ID: <yq5awlsc11pn.fsf@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqfXl33swz2xjM
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 00:31:19 +1000 (AEST)
+Received: by mail-qt1-x835.google.com with SMTP id d75a77b69052e-532e9ad9a1eso208411cf.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 07:31:18 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1790173876; cv=none;
+        d=google.com; s=arc-20260327;
+        b=Y+jp9niZiv5OSQu+OlX+JTjD1isgPKpjP+9kKfPWHy356kPCSV2i96fYZDRqFeZKYW
+         VpZQyC9RVKKWVyNB/d1fllTzUvN/52HuGp/fpkaWypjMb5nTyw/Fv777yDC8CA+4xOQq
+         zfOU5tPn5wkR3bLIjWwrdyEA+GMVWhPvFmgdtpGVvO1nypffxjvscFgwmSfMkMEPRFvp
+         08Ry8t2r3MeJyQIXxK6sHV4LmgmSveGNwLR7GxERqPKfKaPv1u6kA/DdIbCH94mlwDyi
+         5abxFZYongbPKPYsn9bnpo396I5hpfQeOtfOPDcWGA7eESKPdavUiipcy9Et7r7WBhrq
+         dRnA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=3IRQTfCkVu29EAhzhIq8HL8xV9bhN+vmwTvfaTzW1hg=;
+        fh=5oxTsT98qCdzTa/eB2WMy7aticDylOl0m7FsIaz/cpc=;
+        b=jBPBGHEUgZhGfkjU9o4VYWS6zi3gtDg9gf7E4KKBgq7voJEstUef6LSBkJrjkd+byt
+         BKlk+U2RoYtm5aiYVMkCZVvMOvogiIEOFa06BB+Pnbqf6IHYHDVJ8fn8edyWofxoLDU6
+         +hG49c90S7YsKgkRYB6JxrhZUS6TWXikhGJ1ixYKeEnFBXi04pHFgwthK9RBkmowVJbE
+         EA5p3PaZM65J86fZ11/r+8vytKx0+CtogvDWBO6eKr/bK2keUB+BtACWJS5MeBCSj4e9
+         cYpSpYmrpWV18Ndj7jmeqmXhvW1Vlk3+qc2ceoRS0Q/kau7137WNI8YucvZLUL0/WjMp
+         Uq9Q==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1790173876; x=1790778676; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=3IRQTfCkVu29EAhzhIq8HL8xV9bhN+vmwTvfaTzW1hg=;
+        b=ZgiWTzndoglj3Y5YARn0tWrVEd8HEUCjQZ+TsTD2DNqf3JM6n0yqnZmGZgL3doRVGK
+         iR9mEE2KWLjsjybFaqHU8yAGPWI6cXPLnbt/H4Lyi0yjM3eM8nBX3y4QFninSEdB3tNa
+         byX2I62ubDHJeTwdOX+Pt5n1rI4ava70WFUSIyuF9B2gI2W2nLNopbnHuj7bprxHDxJt
+         UxrvGgENRbpnXZ/oaNi6Q6J+5pQFlpB8OWDXUG0+kvmM8M/SEuNQFpL3NH2j2dLueIG8
+         gG6tD5Ml+30LuKrnIx3+KHRzUDGcZknADtCboyZ4h0AZD9E27s+p9995YXwTQ3NXZ/XJ
+         zOpw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790173876; x=1790778676;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=3IRQTfCkVu29EAhzhIq8HL8xV9bhN+vmwTvfaTzW1hg=;
+        b=2GannVc0Z1T4VmM5MVfCHaEFrs78ej+QPA82RGo8TAV7l4wk+r8e60UkG8voyUiyRh
+         ye7ObKVMWMpX037KQtT2vIkRbZeCnjDD7tUEZuM4oR0Lma5su6ivEboXMC2OAIPvnGkP
+         JP3Gnx5kBvmsxR+/w2JRH3E6dD37QwowS60FnGOpVlF8bhqBcIjZC9d5IW7/zle12g/C
+         2JD7sLwAdniyUvEl8XIrRhk3Khslyfq/BP0WJ2zg46auLAOVXCvYMZTrjo6rbZ4BMUQQ
+         /9Sq1MGx/4xZ5B8kZcBiF/oYEIzhbzlmfjwCv63LaX776sxT7574DWAwc/pEJ6D1fcpd
+         5+1Q==
+X-Forwarded-Encrypted: i=1; AKwUvBxKMcekA66F1X8hM+a76G/F+wYXZ3cYm9dCYw2f7LtirbAG+Y41EyyqIOOqR2tuUPuGd58/7ANx597oCnY=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++mnHYxE4o7IZ/iyuoVXTYAViidi6ecZQyEVylMhT+9pxL0rqO7H
+	pjxyhQ7iBN0OYzCNULucB/I/CRrOxOcUJPBXYPqvt2Dp9rXZLoajBmypUCc5fFT+w/rquyssc0L
+	f5Y1Ev3bb42l4NWVS9WfyFaZ7HtG4TdWTNuL6Gk5t
+X-Gm-Gg: AYBFou2TlHWSmnYM1TXt8cFOq61IeBf5yxfoPAjgkWlBSDhlXhmjErGjQFzLVdXM3bC
+	h9rEJ98qjOqiPhp/ixhZzOTPb/IKaSOTC8liTIwxl8Jz8EUCUwz9tALQYJ5k8H3+ST+Gi0L7upY
+	WpAbSCDUVL1qhfJZcyZSet64PbDGjMPJoROLq3gWOMJ3U8rC+FTK/Mj1l1BdAcJHDtoqT9M9a41
+	9fHpVbREq9KTOoYflkmMQTv9gWHefqQebPjPve5CFzpdoJUKSspYkyc3k+y9ftTPHYzPc2sWs6y
+	H0YbUPmzvry/DBJAqytXme0b5AsG+Kr/kFxBcDfPTSbcvwQDTzJ3OXuRhBbjgm4M/7wnPYpJsb/
+	LyZW8WR5pEQ==
+X-Received: by 2002:a05:622a:260e:b0:532:9d15:2e5a with SMTP id
+ d75a77b69052e-532ede89b29mr14598791cf.1.1790173874906; Wed, 23 Sep 2026
+ 07:31:14 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,128 +103,114 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
+References: <20260914-b4-mmap-prepare-vma-flag-sanify-v2-0-7d9781ed5361@kernel.org>
+ <20260914180811.057cba8fcc48d6e0b53a2683@linux-foundation.org>
+ <0b064fe6-ddb3-4f26-a1f2-2e9dd88d590f@kernel.org> <CAJuCfpFBichJH4OcmSHTb1rOuQBT6k5pXeua9_KgpWjDBKvsYw@mail.gmail.com>
+ <aq6kzpK7wPl3iFGe@gremlin> <aq6lW9FvL69QeA9H@gremlin> <arOCPN02xB7mykju@gremlin>
+ <b007cd0f-29ef-457a-8e44-63ab26f3bcd0@kernel.org>
+In-Reply-To: <b007cd0f-29ef-457a-8e44-63ab26f3bcd0@kernel.org>
+From: Suren Baghdasaryan <surenb@google.com>
+Date: Wed, 23 Sep 2026 07:31:02 -0700
+X-Gm-Features: AclHuK_ZGTwaB8ygIyiOyIIeQNRzbEtns-G_Cds8CuZ4q61CHw7YMjTifucik0o
+Message-ID: <CAJuCfpHL=dHjT=O4S88ZBvT1DyodAtCL9QTryepzs3EMwoECDQ@mail.gmail.com>
+Subject: Re: [PATCH v2 00/40] mm: make VMA flag semantics explicit, eliminate VM_SPECIAL
+To: "David Hildenbrand (Arm)" <david@kernel.org>
+Cc: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, 
+	"Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, 
+	Pedro Falcato <pfalcato@suse.de>, Mike Rapoport <rppt@kernel.org>, Michal Hocko <mhocko@suse.com>, 
+	Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, 
+	Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, 
+	Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela <perex@perex.cz>, 
+	Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
+	Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, 
+	Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, 
+	Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, 
+	Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, 
+	Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, 
+	Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, 
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
+	"Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>, 
+	Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, 
+	Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
+	Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
+	Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+	Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, 
+	Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, 
+	Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, 
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, 
+	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, 
+	Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, 
+	Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, 
+	Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, 
+	Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
+	Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, 
+	Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, 
+	Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, 
+	Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, 
+	Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, 
+	Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, 
+	Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, 
+	Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, 
+	Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, 
+	Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, 
+	Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, 
+	Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, 
+	Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, 
+	Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, 
+	Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org, 
+	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, 
+	linux-usb@vger.kernel.org, linux-rdma@vger.kernel.org, 
+	selinux@vger.kernel.org, linux-sound@vger.kernel.org, bpf@vger.kernel.org, 
+	linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, 
+	linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, 
+	linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
+	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
+	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, 
+	fuse-devel@lists.linux.dev, Takashi Iwai <tiwai@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Robin Murphy <robin.murphy@arm.com> writes:
-
-> On 21/09/2026 7:36 am, Aneesh Kumar K.V (Arm) wrote:
->> Memory-encrypted guests use shared or unencrypted memory for DMA and may
->> route all DMA through SWIOTLB. The default pool can therefore be too
->> small for I/O-intensive workloads.
->> 
-
- [ ... 133 lines skipped ... ] 
-
->> +/**
->> + * swiotlb_adjusted_size() - get the prospective adjusted SWIOTLB size
->> + *
->> + * Return the size that confidential-computing guest sizing would select for
->> + * the default pool, without changing the configured SWIOTLB size. An
->> + * explicit swiotlb= size is always preserved. An explicit area count is
->> + * included in the size calculation. Automatic area sizing is initialized
->> + * later from the running kernel's possible CPU map and any resulting size
->> + * adjustment is therefore not reflected in the returned size.
->> + */
->> +unsigned long __init swiotlb_adjusted_size(void)
+On Wed, Sep 23, 2026 at 1:40=E2=80=AFAM David Hildenbrand (Arm)
+<david@kernel.org> wrote:
 >
-> This is yet another misleadingly ambiguous name.
+> On 9/23/26 10:13, Lorenzo Stoakes (ARM) wrote:
+> > On Sat, Sep 19, 2026 at 04:09:13PM +0100, Lorenzo Stoakes (ARM) wrote:
+> >> On Sat, Sep 19, 2026 at 04:05:57PM +0100, Lorenzo Stoakes (ARM) wrote:
+> >>>
+> >>> Thanks guys!
+> >>
+> >> Note v3 has been posted to fix a stupid bug in 1/40 + attack some very=
+ trivial
+> >> sashiko stuff
+> >>
+> >> https://lore.kernel.org/linux-mm/20260917-b4-mmap-prepare-vma-flag-san=
+ify-v3-0-4583d8a23bca@kernel.org/
+> >
+> > Just a gentle nudge on this :)
+> >
+> > If you guys or anybody else has some time it'd be appreciated! (obv. th=
+e v3 as
+> > linked above not this v2!)
+> >
+> > I know the series seems intimidating but most of the commits are very s=
+mall and
+> > it's been in -next for a while.
 >
+> Busy with too many other things sorry. Its time will come.
 
-Do you have any suggestions for a better approach? This returns the
-swiotlb size adjusted according to the existing heuristics.
-
->> +{
->> +	unsigned long nslabs, size = swiotlb_size_or_default();
->> +
->> +	if (swiotlb_default_size_changed() ||
->> +	    !cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
->> +		return size;
->
-> And this makes for another needlessly convoluted calling convention.
->
-
-I have updated this to
-
-+static unsigned long __init swiotlb_adjusted_size(void)
-+{
-+	unsigned long nslabs;
-+	u64 size = swiotlb_default_pool_size();
-+
-+	if (!swiotlb_cmdline_size_set &&
-+	    cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT)) {
-+		/*
-+		 * For SEV and TDX and CCA, all DMA has to occur via
-+		 * shared/unencrypted pages. Kernel uses SWIOTLB to make this
-+		 * happen without changing device drivers. However, depending on
-+		 * the workload being run, the default 64MB of SWIOTLB may not be
-+		 * enough and SWIOTLB may run out of buffers for DMA, resulting in
-+		 * I/O errors and/or performance degradation especially with high
-+		 * I/O workloads.
-+		 *
-+		 * Adjust the default size of SWIOTLB using a percentage of guest
-+		 * memory for SWIOTLB buffers.
-+		 *
-+		 * The percentage of guest memory used here for SWIOTLB buffers is
-+		 * more of an approximation of the static adjustment which 64MB for
-+		 * <1G, and ~128M to 256M for 1G-to-4G, i.e., the 6%
-+		 */
-+		size = div_u64((u64)memblock_phys_mem_size() * 6, 100);
-+		size = clamp_val(size, IO_TLB_DEFAULT_SIZE, SZ_1G);
-+	}
-+
-+	nslabs = swiotlb_calc_nslabs(size, default_nareas);
-+
-+	return nslabs << IO_TLB_SHIFT;
-+}
-+
-
-But as shown above, we apply the CoCo sizing heuristic only when no
-explicit swiotlb= size was specified and guest memory encryption is
-enabled.
+Had to take care of the pile of bugs but I'm on it now.
 
 >
->> +	/*
->> +	 * For SEV and TDX and CCA, all DMA has to occur via
->> +	 * shared/unencrypted pages. Kernel uses SWIOTLB to make this
->> +	 * happen without changing device drivers. However, depending on
->> +	 * the workload being run, the default 64MB of SWIOTLB may not be
->> +	 * enough and SWIOTLB may run out of buffers for DMA, resulting in
->> +	 * I/O errors and/or performance degradation especially with high
->> +	 * I/O workloads.
->> +	 *
->> +	 * Adjust the default size of SWIOTLB using a percentage of guest
->> +	 * memory for SWIOTLB buffers.
->> +	 *
->> +	 * The percentage of guest memory used here for SWIOTLB buffers is
->> +	 * more of an approximation of the static adjustment which 64MB for
->> +	 * <1G, and ~128M to 256M for 1G-to-4G, i.e., the 6%
->> +	 */
->> +	size = memblock_phys_mem_size() * 6 / 100;
+> --
+> Cheers,
 >
-> But mostly I fail to see how this makes any sense for the x86 
-> crash_low_size_default() case anyway. This calculation is based on the 
-> *total* system memory, of which 6% is likely comparable to (or perhaps 
-> even more than) the *entire* amount of memory reserved for the crash 
-> kernel itself. What's more, if the low memory and size restrictions are 
-> lifted for regular CoCo SWIOTLB as people want, then it becomes even 
-> more utterly nonsensical to tie crashkernel_low to this.
->
-> Yes, this happens to be the behaviour that falls out of how two 
-> different parts of the existing code interact, but I highly doubt it was 
-> ever intentional, so I'm not convinced that complicating SWIOTLB 
-> interfaces to blindly preserve it is the right thing to do.
->
-
-
-I agree with the concern, but what would be the right solution? When the
-crash kernel boots, it will try to allocate the SWIOTLB pool according
-to this sizing heuristic, and the allocation may fail if insufficient
-memory was reserved.
-
-I have split the x86 crash-kernel changes into a separate patch, which
-we can drop depending on the conclusion here. I must admit that I do not
-understand the crash-kernel memory restrictions and allocation details
-well enough to propose a solution.
-
--aneesh
+> David
 
