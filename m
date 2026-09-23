@@ -1,84 +1,153 @@
-Return-Path: <linuxppc-dev+bounces-27983-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27984-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24816C982EA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 07:29:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B891C982EA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 08:06:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqTB31SBbz2ydN;
-	Wed, 23 Sep 2026 17:29:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790148571;
-	cv=pass; b=a1JOokCiZCet+tFkW1XHGUBTz9OLW8WemSTXogNsBBWx4ZWsJvbbh+kb/kDF+AXLzzIAC/RZkcnVHzF6CgzRNlOa4LNVtFl1DijVvq4V33yN731G4HSdGCOTT5sR0oBsQ+vR9YedYWX/puBjQpmiQtf/2UdhrnIpj0N3lIu1WHN9TMGHH1XxBso7/I5v6qIYpWLo4sNjhXpc3m0GQklFlKKNOd3032QIx9Jz1ZqhuLSwJxLP6wolvldLsZdav1mQC2/0adpQgfp0qNp/8oey3VJQadtnIa5fDulhQnm9hQMvUCxhh+nH5EqBxQDC3h/PPlE+0axmwlrY6tx0l7Q+0g==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790148571; c=relaxed/relaxed;
-	bh=vdbG7NS2UUbrSfU7IzJGME+yOM9w0zAihcXyOin1D3k=;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqV0P5kBMz2ySj;
+	Wed, 23 Sep 2026 18:06:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::84"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790150773;
+	cv=none; b=Phe2EVbHSaPbtRaxKE+g0t480yS2n0PxNT5cKxxkRIhvlH+g8E6RXWPQtA0WxxUzlG/1Oo2vi1/HoZ27nAUcfqtEeJzeNdqNE9bRBmDzfLlZT9a8gFqXgoCzghYEjrAX5XOrTm9g5ZDIQRU417pzlVLJrrxHuJGOvJB8SKLeEfWr0N4VSFiuywnd2QIlihtDrJz4Xh9YDoBBUiySV6STu8vQdaorKVCcqQHNuXp9cJvXaVOG3a+tD3uPx3JIGo+ZtFRTa7BovGw94JbLMd6trahYJaSRE+NWPuCawXz3oiJ26q9cRm1j3IlPmBcB7bpPAtTP0e8VpMcnm+N8Bu/asQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1790150773; c=relaxed/relaxed;
+	bh=8PVPdXmv6NnvLVZVQ7aZbUUffkgQCjLv7KTz76oZcF8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Hw0ApBlTdwVMpxam+WtMaNMFX5q59qYFa5XbOFw+5IvugpK6oLhiZhF9FR7ludh7WVLJhvhIdxNiW1Tur/2ImyDABU8ioyDIC9xCvk0GaQvvfgkhs8zA10WK1RByeQk0oJ9/KwNhvwb31NBDDlGTHIu6cusaSeM/dDmsEdWAaEO8YggHnPi+CmD5kblzWqTKBm3T1EcdzhlNGvTbGrl4BEnfy/poXHigpsZA37EzovL0cajmxRqS83dQSpJJAW45qTmcFMyqm1v4KmVp/H8tkGnhEseY+c8y9y3eB7ZWh2pnUgYRBK8nPTruFlzng4ne+oa2q8Aixl/AYUCA8N77Aw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=Fj2Vidr3; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::3; helo=du2pr03cu002.outbound.protection.outlook.com; envelope-from=chancel.liu@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+	 MIME-Version:Content-Type; b=YAUg4YVP6pdLyNp9Lsq+zHbsun6Y6C/P3XIXdwhEQcMdPm9ACPceq66ykuHs4YJ3i+DgCGVC5g8WgBooGX2HXmtALSMMrZ4LmBUoML1NbjL0B7fELcWWmGLURN3E0mzlJ5t6BBIG8tTIfLrnhB7IOfSi1fE4y63b/tJWxAzGj1Wg6hbMiCTSy7tBi0bW4+9JL95SPW1uRH0IjVvhnFxX5/wbBMpfjIH2a2ipJt0WNVHAtxM0oxj63oXNv7pLr0whGIk0mnSk0tmGXf4mJfO6GmUWt/s1HCpa91Myg8jlSFzTGVseXvneKarooqUj4vGnJPLPKs2uVXi8AUDBh1oYTw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=WWzI1t7T; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::84; helo=mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=Fj2Vidr3;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=WWzI1t7T;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c200::3; helo=du2pr03cu002.outbound.protection.outlook.com; envelope-from=chancel.liu@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::84; helo=mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta0.migadu.com (out-132.mta0.migadu.com [IPv6:2001:41d0:1004:224b::84])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqTB206HMz2xs1
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 17:29:29 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=gwPDEkoDLGq3iAWtMdUQdEZfbAqXIZxyqwCbq7JeMbBau2hoJA+S6nTg4WjiZ+hhCy9WqoDgizjm8t/g/lTTRI5JMRaorEYNPdN+3XYsjZiH0mRgyqGH3FdfIJ42RRSEQVC+kRkM3odNLs5+YvcgRRDXaRPuC9ZyFcg8kKPUZ/tFSPMVvx/+eSq/0C0dTJJltUlqoL8kgIw/0S96CLTovhDKYhu03I3D3jWOzjbLPLxxodNlthrFtHjfMAYanawTV8OZiZO3niRdZY9M/yY4UTPB+WEoNdq+NE4uVqBvDM4Dedod2JJDSW1to0ZP2OV+0lACR7i5Bh+ZHCI08Bu/bw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=vdbG7NS2UUbrSfU7IzJGME+yOM9w0zAihcXyOin1D3k=;
- b=Py/gXELZZPujb8WvyOSojJi/IfEUcIQYK4UDNihNr9uT8WnuBG5wOCjAHmoDIsEdfx6JLShMq8wR98XiIdrR8SJC3XxutEr3FcCmPjbWDD95V0tYvGcxyCo5vjx2wv1TjeHM0upPcKlRBR3fRUIcokPWoY1p3aQh0WE7eq7U6eqN4Qk/JfCReUWULlDRBpezriSnbE+IOT/XHqmqQNhPo8q2oNaFK5r5bEr3dLnsM3iwWu8eECkj6ruS0BheQmOoG01aHJ/bcGFbPY7BW5nU7gQZEtkXK1Yjwi5nCpOVjbSRdJ0Nh9MHeom1jZqt9w1r5m83XtEmBPwwJzLPaMizRw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=vdbG7NS2UUbrSfU7IzJGME+yOM9w0zAihcXyOin1D3k=;
- b=Fj2Vidr3Y74FUDXfvhcERSBJ+q8bf5CeWmeq/4xhK1NsZORa3uWisQkRMDuwz/0AwJ+tepkvZV0MyHtsprFYOepWdhTespgrSQO9nuJfmJF/h+cf4vTXIrjUEf2LbSX+n+wyTFUM6UvTdzpGVxFZDV5pt0Lsr8E6n+pv+4CiHan7+zIL+kYok4cU/53mAyRjB+D3i98/FKVH7BSB3RdjzS71zh+KNITj1cpH0svl2SccnOkTZbdyKv/UIu5HIJqc7SerRZN7nwD7INg3qa/To2y7H3zi0Wg5JrOCowWXoSqS5BoQvcT/h9axjhhii+X9UW6P2CMEQ3LUBh/uxjGqiA==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from GVXPR04MB10021.eurprd04.prod.outlook.com
- (2603:10a6:150:112::20) by AMDPR04MB11297.eurprd04.prod.outlook.com
- (2603:10a6:20b:6cb::19) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.13; Wed, 23 Sep
- 2026 07:29:02 +0000
-Received: from GVXPR04MB10021.eurprd04.prod.outlook.com
- ([fe80::d247:853:3e16:1994]) by GVXPR04MB10021.eurprd04.prod.outlook.com
- ([fe80::d247:853:3e16:1994%5]) with mapi id 15.21.0451.014; Wed, 23 Sep 2026
- 07:29:01 +0000
-From: Chancel Liu <chancel.liu@oss.nxp.com>
-To: shengjiu.wang@oss.nxp.com
-Cc: shengjiu.wang@gmail.com,
-	Xiubo.Lee@gmail.com,
-	festevam@gmail.com,
-	nicoleotsuka@gmail.com,
-	lgirdwood@gmail.com,
-	broonie@kernel.org,
-	perex@perex.cz,
-	tiwai@suse.com,
-	linux-sound@vger.kernel.org,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqV0J5JGvz2xs1
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 18:06:05 +1000 (AEST)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=5BGZTHY8kFe6g0IgkeIcnp2oHzMTIKE0zyxoC0cn6HM=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1790150746; v=1; x=1790755546;
+ b=WWzI1t7TTqFw2wr0jDkPbtN7TwQkuQvfOO3Aoft9mKRYRiQ8BJkP6zHsQzDXqVepu6W5cjvb
+ tfHsZBOIWQv3UyolWYXTaga2Up9GF8hClSUeIYphsrLfUFaHgusY8nU/X1vFS5NizsI0/JMz8p6
+ fN5aMOPIlrRM1utL1VgA1DNQ=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id 0dc515f7c86dd02d;
+	Wed, 23 Sep 2026 08:05:34 +0000
+X-Mizu-Trace-ID: 0dc515f7c86dd02d
+X-Migadu-Flow: FLOW_OUT
+From: Lance Yang <lance.yang@linux.dev>
+To: ljs@kernel.org
+Cc: akpm@linux-foundation.org,
+	david@kernel.org,
+	ziy@nvidia.com,
+	baolin.wang@linux.alibaba.com,
+	liam@infradead.org,
+	nico.pache@linux.dev,
+	ryan.roberts@arm.com,
+	dev.jain@arm.com,
+	baohua@kernel.org,
+	lance.yang@linux.dev,
+	usama.arif@linux.dev,
+	kas@kernel.org,
+	guoren@kernel.org,
+	bcain@kernel.org,
+	geert@linux-m68k.org,
+	dinguyen@kernel.org,
+	schuster.simon@siemens-energy.com,
+	jonas@southpole.se,
+	stefan.kristiansson@saunalahti.fi,
+	shorne@gmail.com,
+	dalias@libc.org,
+	glaubitz@physik.fu-berlin.de,
+	pjw@kernel.org,
+	palmer@dabbelt.com,
+	aou@eecs.berkeley.edu,
+	alex@ghiti.fr,
+	linux@armlinux.org.uk,
+	vgupta@kernel.org,
+	monstr@monstr.eu,
+	chris@zankel.net,
+	jcmvbkbc@gmail.com,
+	will@kernel.org,
+	aneesh.kumar@kernel.org,
+	npiggin@gmail.com,
+	peterz@infradead.org,
+	davem@davemloft.net,
+	andreas@gaisler.com,
+	richard.henderson@linaro.org,
+	mattst88@gmail.com,
+	linmag7@gmail.com,
+	catalin.marinas@arm.com,
+	mark.rutland@arm.com,
+	chenhuacai@kernel.org,
+	kernel@xen0n.name,
+	tsbogend@alpha.franken.de,
+	James.Bottomley@HansenPartnership.com,
+	deller@gmx.de,
+	maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	chleroy@kernel.org,
+	hca@linux.ibm.com,
+	gor@linux.ibm.com,
+	agordeev@linux.ibm.com,
+	borntraeger@linux.ibm.com,
+	svens@linux.ibm.com,
+	richard@nod.at,
+	anton.ivanov@cambridgegreys.com,
+	johannes@sipsolutions.net,
+	tglx@kernel.org,
+	mingo@redhat.com,
+	bp@alien8.de,
+	dave.hansen@linux.intel.com,
+	x86@kernel.org,
+	hpa@zytor.com,
+	arnd@arndb.de,
+	vbabka@kernel.org,
+	rppt@kernel.org,
+	surenb@google.com,
+	mhocko@suse.com,
+	jgg@ziepe.ca,
+	jhubbard@nvidia.com,
+	peterx@redhat.com,
+	ysato@users.sourceforge.jp,
+	shakeel.butt@linux.dev,
+	corbet@lwn.net,
+	rdunlap@infradead.org,
+	linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org,
+	linux-csky@vger.kernel.org,
+	linux-hexagon@vger.kernel.org,
+	linux-m68k@lists.linux-m68k.org,
+	linux-openrisc@vger.kernel.org,
+	linux-sh@vger.kernel.org,
+	linux-riscv@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-snps-arc@lists.infradead.org,
+	linux-arch@vger.kernel.org,
+	sparclinux@vger.kernel.org,
+	linux-alpha@vger.kernel.org,
+	loongarch@lists.linux.dev,
+	linux-mips@vger.kernel.org,
+	linux-parisc@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ASoC: fsl_asrc: use regmap_write_bits to update clock source registers
-Date: Wed, 23 Sep 2026 16:28:54 +0900
-Message-ID: <20260923072854.4096310-1-chancel.liu@oss.nxp.com>
-X-Mailer: git-send-email 2.50.1
-In-Reply-To: <20260916094043.1496709-1-shengjiu.wang@oss.nxp.com>
-References: <20260916094043.1496709-1-shengjiu.wang@oss.nxp.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SL2P216CA0155.KORP216.PROD.OUTLOOK.COM
- (2603:1096:101:35::15) To GVXPR04MB10021.eurprd04.prod.outlook.com
- (2603:10a6:150:112::20)
+	linux-s390@vger.kernel.org,
+	linux-um@lists.infradead.org,
+	hughd@google.com,
+	qi.zheng@linux.dev,
+	linux-doc@vger.kernel.org
+Subject: Re: [PATCH v4 04/12] mm: enable MMU_GATHER_RCU_TABLE_FREE for MMU arm
+Date: Wed, 23 Sep 2026 16:05:23 +0800
+Message-ID: <20260923080523.9480-1-lance.yang@linux.dev>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20260922-rcu-pagetable-freeing-v4-4-fe1ad1f1e303@kernel.org>
+References: <20260922-rcu-pagetable-freeing-v4-4-fe1ad1f1e303@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,77 +161,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GVXPR04MB10021:EE_|AMDPR04MB11297:EE_
-X-MS-Office365-Filtering-Correlation-Id: 86b12cab-9b24-4c69-e7f2-08df1944569e
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|23010399003|19092799006|366016|1800799024|56012099006|11063799006|10067099003|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	I59VNcIYA9Smn/nYo2rx3jEOpxpqrdBXZVWMy8R/rHH3Cfb2/r3DjlVirqkMpmcczXxxAvrfCTzxHxp9l3McklJoiR7yeAx9sCBt2MrWs4kotO60E6syGmP0UjqvqSV8eN0rlyLWZIt7aboA4FWLPsMv1DubNeHNLflYbclo86QCNkZG+i4DWFOGYPHV8CGN6FAiltLOqCXkcSxyffMavI6uDpdLZY9/08Sug3GplEsW1lAJRTk63iQK6pD4kvEX7zovsGylLNJhpe65XsjdzbwRTTVVDTFpl9MjCFW7iuQw+mfNgLBF+7mnzOOXuyBIL1HluLNPo+3IkFx3QDkMaMmju2NDJvP0BiT6wCvtYP7Ixm+MKaWC20azNG2liswCHkBb1EgKOabCzpTAdnxVXDKuOzW3WblCsfQHfB5ySZWzHuW+aB8xYqaXXn/FJQ0diNyq1hXBii02+3zyvDV9NzNg/8Djh4hPxVfi5ZD7Yf5nMfgZUFm2dKZw8HIoWLN5psPaXxwi4iTlHAjmR+1ubl3IDW/HuFijojQ97EPPN4eiE3xSqHmOK+uRThFruwdKfY/lu1LNq4JHQFmGavG1uT9CMpd9SD/BpbpwJcet7Z0yDVfrnOpZKQ22d4pZDrNNJjxy7PeYYEks9OquXP8LPdvqozCUUGnrGM5eRor4sxw=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GVXPR04MB10021.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(23010399003)(19092799006)(366016)(1800799024)(56012099006)(11063799006)(10067099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?OHBn/Y205wKLBHb0pm8v8Ty5vUNesL+drqyrLob63A/SmsVqGJ6UJBNvb27n?=
- =?us-ascii?Q?PyfETArzYBkjMUbCn8Iz1Q7PinYJUIAUpn8msPN0Z2IgdhL2pawVdg8wI/e8?=
- =?us-ascii?Q?stccFjQ11OUdniFfHT9iMe6CcD7GlELrfJ0JEMdWwuFjQuy2WCSBC6bYkcf6?=
- =?us-ascii?Q?km2kkyDRohU7QxuDBir9wgVQ6+lc+BC551kf5hw8dZ28EiTCHjJERhrCN1x3?=
- =?us-ascii?Q?VxN5HPgnZ6LY2SXkqQ/PKf+N9oPCdn+KCEX7uRSDR304dpzpMrUJ8O9euTai?=
- =?us-ascii?Q?1ra1H8YqjiSpaRov/AZkedQ5XhRmFYpwaeWxUuqwIHjVC2GxwDHLo4Pp8J0P?=
- =?us-ascii?Q?JorqIMa4Gyw8atpk9D44YlP+tbanr/nwCGxmTgisfLv0W0F3WJ+irLwFHn6B?=
- =?us-ascii?Q?3z0ZpDwTpen/9L3X6FzySM5voP2RCK0ISAp1st80zJQo5lrWI/J3jXyXocXL?=
- =?us-ascii?Q?rMkYBWG/sBT6LTfKlJFNgrl/TQyolmwZx0LuEB72Ou10neA/7WQEHYB586IF?=
- =?us-ascii?Q?Ok9ayEJlBeQ8J3j/X/U682cZpOF7tpTB46PUXADq1uQiixIQ1sdRNQTVxeB2?=
- =?us-ascii?Q?ZgJkSe7Q+fC+KpMYqgwA3S6/QIMDDIvWnpPANhQ+AQgn2bSdOcnu6DxVUVEQ?=
- =?us-ascii?Q?1HIRr5Vkh2u+LiIQlPYuurLJhV0nCBe+NFto04i3qTIxygMfnoXVWfI7TMSf?=
- =?us-ascii?Q?L1qEDoOC1hRSOlSEISvOQhZd9yU4z/Mi2O5M1twmD66r2+SJHYgcLAITDvZ3?=
- =?us-ascii?Q?CGs8Qo3HsNofh7avhI+ruMQwMLu9JUhFe+FOeNbBzp9T1EkNYCrn8AKcrLvt?=
- =?us-ascii?Q?0MNquty7ie9LE3jOEw61K7yys/ux0GuJau/y7DXiVG2kUwJGUXP6cu722Sqf?=
- =?us-ascii?Q?Fxe8Q/S+mhIJCO52zVFan3IjhyUZXJAPRUB1Gn8iUwSGJKg+SL0nbq6EXaPg?=
- =?us-ascii?Q?R4Dddahu/5Y9y60pawy9rZDvHJSpsOrc3D0fz/XYkkgqYHhbUILFbYD9m5zA?=
- =?us-ascii?Q?C4Gbc62y3T5N/0q2HMGaoO4gBrQ+vx5nUuu7JzY0Ifs8mZlYPqYPweYbNkja?=
- =?us-ascii?Q?T6QCpQKeBviJ3kFfQw8G6Zet6/PGkdpxxY8QXiOMp0cpKeGpB7zcLqLDV45q?=
- =?us-ascii?Q?U9Kch0OW2+yWd6uxwqdH81cMQe3nGWtq4Qp64lyy359I/fSuqwzf6AnpNGx8?=
- =?us-ascii?Q?T6ApNZVFLDysGfI+BkLSOwEkDyZ9byNwKuvNHEnqSmNUU4PfPw07KpFM0NlY?=
- =?us-ascii?Q?/B/0fulCnYJVCh+K3Q1qhW/mcGGH+vjyJ0V2q3tQTNJoCJGSbIYz/2r0dgaf?=
- =?us-ascii?Q?71a8pxPez999+kkhPjHu7hHnD+lSqndQdi0nw5PC8kkNK9Tw0M7lGUiSqH6f?=
- =?us-ascii?Q?Ok9cn31ylGlkfgZS8xlSSGHdyUH5K1daUYXnNrz0htNoBIOXE1J3uHZEZ3t9?=
- =?us-ascii?Q?Zfv5WSINj9+TorpNNL9swiSdFfUATXwQ03fX1tpLMNrftbFXEOuY84qpSYBb?=
- =?us-ascii?Q?709IaB60dhsO+YpoPe3O2BYmwgEp9kNeZUSvUbw2OaHkRdx5oBPYXg8vzamY?=
- =?us-ascii?Q?WhfzZZ3g0WVgokDiaWOV7GLUxQb7rEY/izkI+uHzorLSX/2XWUs0RvKK4Jq1?=
- =?us-ascii?Q?JngWi2HOIREhdhHzeVVN2OL9v+ixtZIADqZVAAOLIv6notoo4qzQvNaWbayW?=
- =?us-ascii?Q?5nYgkVdyac1qgqwDEXJ+Y8YWjllQBoPdxftNAyAjze+NyR8rvzWfKmcjn0M5?=
- =?us-ascii?Q?+ORNNp9T6asrb0RUF3E6wpMY6yc1vtZ7oPFqg5i81y9j+wdBdSiW?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 86b12cab-9b24-4c69-e7f2-08df1944569e
-X-MS-Exchange-CrossTenant-AuthSource: GVXPR04MB10021.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Sep 2026 07:29:01.5467
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: mtefip+5A5O9toE+IUrcFLfiZxB7Du5yRylWgAPPFkxOcJU8uq3lr1nrIN2VfmcFdAcBfFErfDgQQevTzsWnWQqjqcExXX7cETQhd9QcJaVfbOOY/rzZ3nD6AE5SvT9H
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AMDPR04MB11297
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-From: Chancel Liu <chancel.liu@nxp.com>
 
-After a warm reboot the REG_ASRCSR register may not be in its hardware
-reset state. regmap caches the register value as 0 (the assumed default),
-so when the desired clock source index is also 0, regmap_update_bits()
-skips the actual hardware write because it believes the register already
-holds the correct value. This leaves a stale clock source in the hardware.
+On Tue, Sep 22, 2026 at 04:35:35PM +0100, Lorenzo Stoakes (ARM) wrote:
+>Commit a0ad5496b2b3 ("arm: mm: enable HAVE_RCU_TABLE_FREE logic") enabled
+>CONFIG_MMU_GATHER_RCU_TABLE_FREE (then named HAVE_RCU_TABLE_FREE) for SMP
+>arm architectures with LPAE enabled.
+>
+>Regardless of whether CONFIG_ARM_LPAE is enabled or not, the same page
+>table freeing functions __pte_free_tlb() and __pmd_free_tlb() are used.
+>
+>Non-LPAE PMD page tables are folded into the PGD and freed by
+>pgd_free() (PGD freeing is not part of mmu_gather page table freeing in any
+>case), so this is a noop in this case.
+>
+>Since commit 358d1c39c82a ("arm: convert various functions to use ptdescs")
+>both LPAE and non-LPAE PTE page table freeing uses tlb_remove_ptdesc().
+>
+>Thus all page table freeing is performed under RCU with
+>CONFIG_MMU_GATHER_RCU_TABLE_FREE enabled for LPAE and non-LPAE and thus it
+>need not be gated on LPAE.
+>
+>A UP arm system can set CONFIG_PREEMPT_RCU, so a future pure RCU page
+>table walker requires MMU_GATHER_RCU_TABLE_FREE to be enabled on UP as
+>well, even if concurrent GUP fast is not possible there.
+>
+>Therefore, it is both safe and desirable to set
+>CONFIG_MMU_GATHER_RCU_TABLE_FREE for all MMU arm architectures (nommu does
+>not perform mmu_gather operations).
+>
+>This forms part of an overall effort to switch every architecture to this
+>mode.
+>
+>Acked-by: Kiryl Shutsemau (Meta) <kas@kernel.org>
+>Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+>---
 
-Replace regmap_update_bits() with regmap_write_bits() so that the masked
-fields are always written to hardware regardless of the cached value.
+Tested under heavy page-table teardown load on qemu-system-arm,
+with and without ARM_LPAE. No issues seen :D
 
-Fixes: 3117bb3109dc ("ASoC: fsl_asrc: Add ASRC ASoC CPU DAI and platform drivers")
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+Tested-by: Lance Yang <lance.yang@linux.dev>
 
-Reviewed-by: Chancel Liu <chancel.liu@nxp.com>
+Also, feel free to add:
 
-Regards,
-Chancel Liu
+Acked-by: Lance Yang <lance.yang@linux.dev>
+
+
+> arch/arm/Kconfig | 2 +-
+> 1 file changed, 1 insertion(+), 1 deletion(-)
+>
+>diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+>index 408aa58a2a5b..72b9afc6ae10 100644
+>--- a/arch/arm/Kconfig
+>+++ b/arch/arm/Kconfig
+>@@ -134,7 +134,7 @@ config ARM
+> 	select HAVE_PERF_REGS
+> 	select HAVE_PERF_USER_STACK_DUMP
+> 	select HAVE_POSIX_CPU_TIMERS_TASK_WORK
+>-	select MMU_GATHER_RCU_TABLE_FREE if SMP && ARM_LPAE
+>+	select MMU_GATHER_RCU_TABLE_FREE if MMU
+> 	select HAVE_REGS_AND_STACK_ACCESS_API
+> 	select HAVE_RSEQ
+> 	select HAVE_RUST if CPU_LITTLE_ENDIAN && CPU_32v7 && !KASAN
+>
+>-- 
+>2.55.0
+>
+>
 
