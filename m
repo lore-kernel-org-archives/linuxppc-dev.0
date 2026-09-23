@@ -1,153 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-27989-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27990-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2DE3BC982FA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 08:43:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F036C982EA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 08:46:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqVqv3jfRz2ySj;
-	Wed, 23 Sep 2026 18:43:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::d4"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790153035;
-	cv=none; b=SOI+l0R2XDyY+AhRj+WGhewZL+TFXRoPMXgjhpuTE2eaVowT6wd+sqXeFqXMeTqlo/ViM6DBua5I7rlCkOf0mBCaX8PgGxR58oO2RQgjZJKpz4K9gNfe6UdmwU610f/u+Z50kpZjD4tFmbRTZdf9YHcBdH/2MObr4jV4oKTKgeBjobMXW5pJZIucammxeDjGLpMdzile18yoJtp6lyah6+dUoaCxst/QjCGaBHrg6BkRF9JDiFYAmUshrQnBoDabp8sI9Cn3afOfpZKZ4BQvMLYZtLVEoIJoGFwaz4CbKpgrNzZ9P+W8JOarM1Ty4pG2MTO0uoqzOZpo2HHH6DicFw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqVtV13bMz2ySj;
+	Wed, 23 Sep 2026 18:46:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790153170;
+	cv=none; b=i2lE6VO7FcMR98V/WIZpwRN1+t54moLkAx/dOdfU814DlR+8+JK+5mmFhbJMxMfgjKcC6QjNpaF0X+8RYewhsNLmJSHFAmbUsBjSYeHcgxcZ2VTtn23mCJ2sKl6pvcRdJXvp6CK0LNQiuOH+njmsnrGlMUUtcNSnYRRv2T5o2s2ptMeOgABru3JDmIKZHmNvvxW8KtPb6tvoMWplgHgSDteJNdwJXh4ShzephRmIzWZYXyTcEbyennXvybvKlYF+lryIAmK7kn0CWlUp5wijFUgNhzY/rzOKiQJ5hv9Rqdq08BHiY1rHkKxdM/w4lhfhoCuFmtdixviBLULG1og0LA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790153035; c=relaxed/relaxed;
-	bh=99+UKhu23KDHlR6Muc20Ly3uTrswjM+UPnqZD8Rdr68=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Q4zIiGeRIHXO70EUT+8jSHe3xsm4cyBh8+swmbkBp+M0TBBho7lRqpb7DGyHzFDy5H8oPHDnpub7Jy5qftjNeRuD7U8oEvDNvzqwZG+HQjKk4fUh65dAZDc57bgW+hSvJPI3MenzS66rIo1BArGIV/Th3yUBR9dwBmrJ6zSAJn+YWCX/EEt9iDvRZxrtSElzCsG/uaRcqrClnIpcvzVrevrGrSL3XWwc6ZsIKamxdgCafKkzJMXR26vR0RcskT36usOMbTPp1Ul141sOUVcuGmkrte8zD8cJ7clxrdskFKacU/n/F+s3rxD/BBHifqoBSwW/WaSd3gZYAfVPoKQNew==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=MXSkb2Dp; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::d4; helo=mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1790153170; c=relaxed/relaxed;
+	bh=PwZF3pqAeMznwbepH5UUc0GjovbxR4bX9vcY1/GYfgw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=UP+GlUrSaOgnSerNC7i/SBTaNYqlZa9xlanW5wwA5LKsuK9AH46ey/p0/OmzHhDN/u2JZvXPMzU+BxcrHoS+cwKPy4TELRXfaQmBjkjb3sE7zfltlVhihieDRfEooDLTqGdnVbCVbfIYcbOO2HM9wQpjryKrHXJ6cVoKs2JxsJItZ0zSVdb979vR6mjs9agpfL4KBZSJ0Gcoy5tSK0d+ltnnBIVnwxWzQZljyRjZAxjfmclHqe3jWhSeRONv7GXkCSkKAx6RY96n71fUgZZpdi/UHtzjM+DxBJ0DB8I9gn8yFggvT0ESolTP010tYWE90Zd9KAbken8vxXN3ZlmhQg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iMlX/Y/J; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=MXSkb2Dp;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iMlX/Y/J;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::d4; helo=mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta0.migadu.com (out-212.mta0.migadu.com [IPv6:2001:41d0:1004:224b::d4])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqVqn6r6Nz2xs1
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 18:43:47 +1000 (AEST)
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=99+UKhu23KDHlR6Muc20Ly3uTrswjM+UPnqZD8Rdr68=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1790153004; v=1; x=1790757804;
- b=MXSkb2DpclhOBsFPPNOlk7p7Q+fP/OJU25EHZdH6R7uu1CUXGTPOe7gA2aSznMPd5exGUhkg
- DdrO3WZAhRx0tnIfOfHn6zlnAr5LcJOcca74Ol5KsNdsny7aRsBHhg2Jvq/wzzd7baAJ61BnWQ5
- GM2W5Uf1FiRwZd5z2cDu0Qr0=
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id c8a1201785675537;
-	Wed, 23 Sep 2026 08:43:18 +0000
-X-Mizu-Trace-ID: c8a1201785675537
-X-Migadu-Flow: FLOW_OUT
-From: Lance Yang <lance.yang@linux.dev>
-To: ljs@kernel.org
-Cc: akpm@linux-foundation.org,
-	david@kernel.org,
-	ziy@nvidia.com,
-	baolin.wang@linux.alibaba.com,
-	liam@infradead.org,
-	nico.pache@linux.dev,
-	ryan.roberts@arm.com,
-	dev.jain@arm.com,
-	baohua@kernel.org,
-	lance.yang@linux.dev,
-	usama.arif@linux.dev,
-	kas@kernel.org,
-	guoren@kernel.org,
-	bcain@kernel.org,
-	geert@linux-m68k.org,
-	dinguyen@kernel.org,
-	schuster.simon@siemens-energy.com,
-	jonas@southpole.se,
-	stefan.kristiansson@saunalahti.fi,
-	shorne@gmail.com,
-	dalias@libc.org,
-	glaubitz@physik.fu-berlin.de,
-	pjw@kernel.org,
-	palmer@dabbelt.com,
-	aou@eecs.berkeley.edu,
-	alex@ghiti.fr,
-	linux@armlinux.org.uk,
-	vgupta@kernel.org,
-	monstr@monstr.eu,
-	chris@zankel.net,
-	jcmvbkbc@gmail.com,
-	will@kernel.org,
-	aneesh.kumar@kernel.org,
-	npiggin@gmail.com,
-	peterz@infradead.org,
-	davem@davemloft.net,
-	andreas@gaisler.com,
-	richard.henderson@linaro.org,
-	mattst88@gmail.com,
-	linmag7@gmail.com,
-	catalin.marinas@arm.com,
-	mark.rutland@arm.com,
-	chenhuacai@kernel.org,
-	kernel@xen0n.name,
-	tsbogend@alpha.franken.de,
-	James.Bottomley@HansenPartnership.com,
-	deller@gmx.de,
-	maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	chleroy@kernel.org,
-	hca@linux.ibm.com,
-	gor@linux.ibm.com,
-	agordeev@linux.ibm.com,
-	borntraeger@linux.ibm.com,
-	svens@linux.ibm.com,
-	richard@nod.at,
-	anton.ivanov@cambridgegreys.com,
-	johannes@sipsolutions.net,
-	tglx@kernel.org,
-	mingo@redhat.com,
-	bp@alien8.de,
-	dave.hansen@linux.intel.com,
-	x86@kernel.org,
-	hpa@zytor.com,
-	arnd@arndb.de,
-	vbabka@kernel.org,
-	rppt@kernel.org,
-	surenb@google.com,
-	mhocko@suse.com,
-	jgg@ziepe.ca,
-	jhubbard@nvidia.com,
-	peterx@redhat.com,
-	ysato@users.sourceforge.jp,
-	shakeel.butt@linux.dev,
-	corbet@lwn.net,
-	rdunlap@infradead.org,
-	linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org,
-	linux-csky@vger.kernel.org,
-	linux-hexagon@vger.kernel.org,
-	linux-m68k@lists.linux-m68k.org,
-	linux-openrisc@vger.kernel.org,
-	linux-sh@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-snps-arc@lists.infradead.org,
-	linux-arch@vger.kernel.org,
-	sparclinux@vger.kernel.org,
-	linux-alpha@vger.kernel.org,
-	loongarch@lists.linux.dev,
-	linux-mips@vger.kernel.org,
-	linux-parisc@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	linux-um@lists.infradead.org,
-	hughd@google.com,
-	qi.zheng@linux.dev,
-	linux-doc@vger.kernel.org
-Subject: Re: [PATCH v4 05/12] mm: enable MMU_GATHER_RCU_TABLE_FREE for arc, microblaze, xtensa
-Date: Wed, 23 Sep 2026 16:43:11 +0800
-Message-ID: <20260923084311.15570-1-lance.yang@linux.dev>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <20260922-rcu-pagetable-freeing-v4-5-fe1ad1f1e303@kernel.org>
-References: <20260922-rcu-pagetable-freeing-v4-5-fe1ad1f1e303@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqVtT1Wv2z2xs1
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 18:46:09 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 4C371600AA;
+	Wed, 23 Sep 2026 08:46:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E68911F00893;
+	Wed, 23 Sep 2026 08:45:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790153166;
+	bh=PwZF3pqAeMznwbepH5UUc0GjovbxR4bX9vcY1/GYfgw=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=iMlX/Y/JtwSu4cblQ6iLw2qW0e3IKyVInfxKJfA7BRoK/pTyJ4S+EDCwf3WlO2yI6
+	 ZMbKchOUQs6OzPlv6jnOnAFLMx2aX2yyJ4WIdCXkYXviXnt3S8QE2R7tMcyqyjh8rc
+	 D4YgQrB3UhOYtmXzHvKNBpqHyocQXqJnPewl5zg0aGtqvU/ZGIQ9ZTXHbd8dp3LwaO
+	 i/iIM+R+GD+O4G+3sJKba/ZRRZEkamytqnHX7jbxqcAlQeXOwGsRNUVKWYsrpYzEGc
+	 xDRsh1rc5dJlzI+7Op1ib6nlgpPzfyKS4T3MLSAsHl0DQtb7fEC+vWuK50S+36E0Ph
+	 m1Efg+L3WOhow==
+Message-ID: <9dcde7e4-dadb-4644-9dff-7fd8a26e29a6@kernel.org>
+Date: Wed, 23 Sep 2026 10:45:33 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -161,44 +59,142 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 00/12] mm: make userland page table freeing RCU-safe
+To: Andrew Morton <akpm@linux-foundation.org>,
+ "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Cc: Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>,
+ "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>,
+ Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>,
+ Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>,
+ Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>,
+ Guo Ren <guoren@kernel.org>, Brian Cain <bcain@kernel.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Dinh Nguyen
+ <dinguyen@kernel.org>, Simon Schuster <schuster.simon@siemens-energy.com>,
+ Jonas Bonn <jonas@southpole.se>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Stafford Horne <shorne@gmail.com>, Rich Felker <dalias@libc.org>,
+ John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+ Russell King <linux@armlinux.org.uk>, Vineet Gupta <vgupta@kernel.org>,
+ Michal Simek <monstr@monstr.eu>, Chris Zankel <chris@zankel.net>,
+ Max Filippov <jcmvbkbc@gmail.com>, Will Deacon <will@kernel.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin
+ <npiggin@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ Andreas Larsson <andreas@gaisler.com>,
+ Richard Henderson <richard.henderson@linaro.org>,
+ Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Mark Rutland <mark.rutland@arm.com>, Huacai Chen <chenhuacai@kernel.org>,
+ WANG Xuerui <kernel@xen0n.name>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>, Richard Weinberger <richard@nod.at>,
+ Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+ Johannes Berg <johannes@sipsolutions.net>, Thomas Gleixner
+ <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+ x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+ Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka <vbabka@kernel.org>,
+ Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
+ Michal Hocko <mhocko@suse.com>, Jason Gunthorpe <jgg@ziepe.ca>,
+ John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Shakeel Butt <shakeel.butt@linux.dev>, Jonathan Corbet <corbet@lwn.net>,
+ Randy Dunlap <rdunlap@infradead.org>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ linux-openrisc@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+ linux-snps-arc@lists.infradead.org, linux-arch@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-alpha@vger.kernel.org,
+ loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-um@lists.infradead.org,
+ Hugh Dickins <hughd@google.com>, Qi Zheng <qi.zheng@linux.dev>,
+ linux-doc@vger.kernel.org
+References: <20260922-rcu-pagetable-freeing-v4-0-fe1ad1f1e303@kernel.org>
+ <20260922160021.a2fc65d05d9b867a141e5457@linux-foundation.org>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=david@kernel.org; keydata=
+ xsFNBFXLn5EBEAC+zYvAFJxCBY9Tr1xZgcESmxVNI/0ffzE/ZQOiHJl6mGkmA1R7/uUpiCjJ
+ dBrn+lhhOYjjNefFQou6478faXE6o2AhmebqT4KiQoUQFV4R7y1KMEKoSyy8hQaK1umALTdL
+ QZLQMzNE74ap+GDK0wnacPQFpcG1AE9RMq3aeErY5tujekBS32jfC/7AnH7I0v1v1TbbK3Gp
+ XNeiN4QroO+5qaSr0ID2sz5jtBLRb15RMre27E1ImpaIv2Jw8NJgW0k/D1RyKCwaTsgRdwuK
+ Kx/Y91XuSBdz0uOyU/S8kM1+ag0wvsGlpBVxRR/xw/E8M7TEwuCZQArqqTCmkG6HGcXFT0V9
+ PXFNNgV5jXMQRwU0O/ztJIQqsE5LsUomE//bLwzj9IVsaQpKDqW6TAPjcdBDPLHvriq7kGjt
+ WhVhdl0qEYB8lkBEU7V2Yb+SYhmhpDrti9Fq1EsmhiHSkxJcGREoMK/63r9WLZYI3+4W2rAc
+ UucZa4OT27U5ZISjNg3Ev0rxU5UH2/pT4wJCfxwocmqaRr6UYmrtZmND89X0KigoFD/XSeVv
+ jwBRNjPAubK9/k5NoRrYqztM9W6sJqrH8+UWZ1Idd/DdmogJh0gNC0+N42Za9yBRURfIdKSb
+ B3JfpUqcWwE7vUaYrHG1nw54pLUoPG6sAA7Mehl3nd4pZUALHwARAQABzS5EYXZpZCBIaWxk
+ ZW5icmFuZCAoQ3VycmVudCkgPGRhdmlkQGtlcm5lbC5vcmc+wsGQBBMBCAA6AhsDBQkmWAik
+ AgsJBBUKCQgCFgICHgUCF4AWIQQb2cqtc1xMOkYN/MpN3hD3AP+DWgUCaYJt/AIZAQAKCRBN
+ 3hD3AP+DWriiD/9BLGEKG+N8L2AXhikJg6YmXom9ytRwPqDgpHpVg2xdhopoWdMRXjzOrIKD
+ g4LSnFaKneQD0hZhoArEeamG5tyo32xoRsPwkbpIzL0OKSZ8G6mVbFGpjmyDLQCAxteXCLXz
+ ZI0VbsuJKelYnKcXWOIndOrNRvE5eoOfTt2XfBnAapxMYY2IsV+qaUXlO63GgfIOg8RBaj7x
+ 3NxkI3rV0SHhI4GU9K6jCvGghxeS1QX6L/XI9mfAYaIwGy5B68kF26piAVYv/QZDEVIpo3t7
+ /fjSpxKT8plJH6rhhR0epy8dWRHk3qT5tk2P85twasdloWtkMZ7FsCJRKWscm1BLpsDn6EQ4
+ jeMHECiY9kGKKi8dQpv3FRyo2QApZ49NNDbwcR0ZndK0XFo15iH708H5Qja/8TuXCwnPWAcJ
+ DQoNIDFyaxe26Rx3ZwUkRALa3iPcVjE0//TrQ4KnFf+lMBSrS33xDDBfevW9+Dk6IISmDH1R
+ HFq2jpkN+FX/PE8eVhV68B2DsAPZ5rUwyCKUXPTJ/irrCCmAAb5Jpv11S7hUSpqtM/6oVESC
+ 3z/7CzrVtRODzLtNgV4r5EI+wAv/3PgJLlMwgJM90Fb3CB2IgbxhjvmB1WNdvXACVydx55V7
+ LPPKodSTF29rlnQAf9HLgCphuuSrrPn5VQDaYZl4N/7zc2wcWM7BTQRVy5+RARAA59fefSDR
+ 9nMGCb9LbMX+TFAoIQo/wgP5XPyzLYakO+94GrgfZjfhdaxPXMsl2+o8jhp/hlIzG56taNdt
+ VZtPp3ih1AgbR8rHgXw1xwOpuAd5lE1qNd54ndHuADO9a9A0vPimIes78Hi1/yy+ZEEvRkHk
+ /kDa6F3AtTc1m4rbbOk2fiKzzsE9YXweFjQvl9p+AMw6qd/iC4lUk9g0+FQXNdRs+o4o6Qvy
+ iOQJfGQ4UcBuOy1IrkJrd8qq5jet1fcM2j4QvsW8CLDWZS1L7kZ5gT5EycMKxUWb8LuRjxzZ
+ 3QY1aQH2kkzn6acigU3HLtgFyV1gBNV44ehjgvJpRY2cC8VhanTx0dZ9mj1YKIky5N+C0f21
+ zvntBqcxV0+3p8MrxRRcgEtDZNav+xAoT3G0W4SahAaUTWXpsZoOecwtxi74CyneQNPTDjNg
+ azHmvpdBVEfj7k3p4dmJp5i0U66Onmf6mMFpArvBRSMOKU9DlAzMi4IvhiNWjKVaIE2Se9BY
+ FdKVAJaZq85P2y20ZBd08ILnKcj7XKZkLU5FkoA0udEBvQ0f9QLNyyy3DZMCQWcwRuj1m73D
+ sq8DEFBdZ5eEkj1dCyx+t/ga6x2rHyc8Sl86oK1tvAkwBNsfKou3v+jP/l14a7DGBvrmlYjO
+ 59o3t6inu6H7pt7OL6u6BQj7DoMAEQEAAcLBfAQYAQgAJgIbDBYhBBvZyq1zXEw6Rg38yk3e
+ EPcA/4NaBQJonNqrBQkmWAihAAoJEE3eEPcA/4NaKtMQALAJ8PzprBEXbXcEXwDKQu+P/vts
+ IfUb1UNMfMV76BicGa5NCZnJNQASDP/+bFg6O3gx5NbhHHPeaWz/VxlOmYHokHodOvtL0WCC
+ 8A5PEP8tOk6029Z+J+xUcMrJClNVFpzVvOpb1lCbhjwAV465Hy+NUSbbUiRxdzNQtLtgZzOV
+ Zw7jxUCs4UUZLQTCuBpFgb15bBxYZ/BL9MbzxPxvfUQIPbnzQMcqtpUs21CMK2PdfCh5c4gS
+ sDci6D5/ZIBw94UQWmGpM/O1ilGXde2ZzzGYl64glmccD8e87OnEgKnH3FbnJnT4iJchtSvx
+ yJNi1+t0+qDti4m88+/9IuPqCKb6Stl+s2dnLtJNrjXBGJtsQG/sRpqsJz5x1/2nPJSRMsx9
+ 5YfqbdrJSOFXDzZ8/r82HgQEtUvlSXNaXCa95ez0UkOG7+bDm2b3s0XahBQeLVCH0mw3RAQg
+ r7xDAYKIrAwfHHmMTnBQDPJwVqxJjVNr7yBic4yfzVWGCGNE4DnOW0vcIeoyhy9vnIa3w1uZ
+ 3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
+ CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
+ qIws/H2t
+In-Reply-To: <20260922160021.a2fc65d05d9b867a141e5457@linux-foundation.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
+On 9/23/26 01:00, Andrew Morton wrote:
+> On Tue, 22 Sep 2026 16:35:31 +0100 "Lorenzo Stoakes (ARM)" <ljs@kernel.org> wrote:
+> 
+>> The majority of architectures in the kernel defer page table freeing until
+>> an RCU grace period has elapsed, this series converts all remaining
+>> architectures to do so too and eliminates CONFIG_MMU_GATHER_RCU_TABLE_FREE
+>> altogether.
+>>
+>> This is important because it enables safe lockless page table walking under
+>> RCU alone.
+> 
+> Do we have reason to believe that anyone is seeing any effects from
+> their arch's failure to rcu-free the page tables?
+> 
+> This sounds like a rather long-standing wart, yes?
+> 
+> The patchset is thinly reviewed and mm.git is bursting at the seams
+> again.  I'll play wait-and-see on this series.
+Do we want to nudge arch maintainers to review?
 
-On Tue, Sep 22, 2026 at 04:35:36PM +0100, Lorenzo Stoakes (ARM) wrote:
->Each of these architectures directly free page tables without routing these
->changes through tlb_remove_ptdesc().
->
->The use of tlb_remove_ptdesc() is required for
->CONFIG_MMU_GATHER_RCU_TABLE_FREE to correctly free page tables under RCU,
->so simply update these architectures to use these functions.
->
->Since none of the architectures share page tables or do anything unusual,
->nothing complicated is required here.
->
->Therefore this is simply a mechanical change - convert __pud_free_tlb(),
->__pmd_free_tlb() and __pte_free_tlb() to use tlb_remove_ptdesc() as
->required.
->
->At the point this is in place, all mmu_gather page table freeing is
->performed under RCU, and thus MMU_GATHER_RCU_TABLE_FREE is selected for
->each architecture.
->
->Note that CONFIG_MMU_GATHER_RCU_TABLE_FREE is dependent on CONFIG_MMU for
->xtensa to reflect the fact that nommu does not implement page table
->gathering.
->
->This forms part of an overall effort to switch every architecture to this
->mode.
->
->Acked-by: Kiryl Shutsemau (Meta) <kas@kernel.org>
->Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
->---
+-- 
+Cheers,
 
-Right, the old frees already end up in pagetable_dtor_free(). With
-tlb_remove_ptdesc(), the same cleanup happens after an RCU grace period.
-
-Makes sense to me, feel free to add:
-
-Acked-by: Lance Yang <lance.yang@linux.dev>
+David
 
