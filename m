@@ -1,58 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-28068-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28069-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B117EC98304
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 21:23:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF6DEC9830B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 21:30:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqqhS6mvHz2yqw;
-	Thu, 24 Sep 2026 07:23:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790198616;
-	cv=none; b=dxYeSLbXe2PzD1/Qi1nzX0NUegdX7jBwu2tzYvesG4UcRhBOaHzxLJwFbqpC6G/B1SEF+i1FcjEfVk+EyqR882a/AzpVLIe669pQGuGamDxxFV9djFOeCpgsGMpRmoFQyKVMFXGO2d90BJ/XjjX1Yn9Z4RpNxw7QRx3Q7m5WiAYuroje0DqjngwOgaCKxz/QfZ5jc5ifTntQOdsn5oTmatEDY031InEatjZqFy9IAcdbKday7m6ONVcPppm4XpBpMvlxsirz5gIj+Eb0qo9rcQjgrArhiolZJAfRdaX7/1hxxHKBSPOu66TQvxoW91okhdl/k/0Op2Sx9Axs9ubwdg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqqr96Sltz2yqw;
+	Thu, 24 Sep 2026 07:30:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790199017;
+	cv=none; b=aSrb19AottoagsYt49bORRbPWYHlxWah/JSApPnYVJWGFpJ/GDEscL0SEYz5XJaasO4N1tBT1ZXft8EMrfJV9HhixcX5tF2v44h0TZ/hIxjakxnq3nn6gwQFkgpeFn/XzYf5WjwlkYtMCUDNyrDZfc8Szms3u+cXb9px66OJcCro/9NP+Odx/qZpC3Q3cAQvHpKKcvMmeOX3Y6qmJj/FlIbxQJfuCQdww/jY3HwcdSrP4wzZrW1PcyDHIsYcrdZhEuotK6Po9hryYWYlm9w4VTEAhMSOqElQcy6DDk141ln0yq7HB/vTiAVq6kC3B0h0EemtcWI7MFl0D94wEW5Dew==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790198616; c=relaxed/relaxed;
-	bh=pFOUdSvHwil/K0FhFzOket4pw49ZzFhiG+QLBkwjfts=;
+	t=1790199017; c=relaxed/relaxed;
+	bh=d3tq9N0LJ4r7VJ+9wdwqQQlbn4k6qzBMuLB5kE1baa4=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=lfA38w6m1H7/J+YEyZxINZOyiSeKEApyucMMV5K23uQN1eVSzZrRY1GmFQqBdDZQJRkXBuji4xm0GPLXLmRj8WFb0/hrbniRBk6jyFmXq1R/8nqeMqiVsbmQSoWKadZto9t31FJ3bTKr222JZzw0uGW7lJFG4jNa3mD3WYv1WGngHVVLoczhGTZZpAwtmVi8o8+l32FS5pF1LOu5n66aP7EHIaFEd2R5QCUlwJ+35klqeFrMDH34i8mskpZBMxAt1ivGCSo4mGyy6lMqABhpuef8oyqZkZV0Bf91vYOvGe+7+hNZGWgZxyABbUTjGZXidTPCouq2KhZnSZ4ELv9hDQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=l2NXnhWk; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 To:Cc:Content-Type; b=Bv9dIBYTBZkbPhkcZ4AtMwRM4hMHf90dbZtu2Prn5RdsRJ8bQIIH1HHCv7tNYs7cky8qtbM8RNGFYWN6wpIKvrIFUCNLNqe1fI18wWZ2cIiB+DGST9gEB9PWjPf0+unmm3bI2O+6IsxkkOKfj7LgKlMYviyN0x5CksT/xJ5RSOhfEZIUsX8aU2bO4npGLD2nFv3JhK32M0z2SPJdjND4SYKxn9r3yz+mpEE5j82+9whUQqEmTjIjfh7uqi1YaHMCykuFyil3JQnuTIPeMysuBYP2osdsykMTWa/gxweXmEK9rIr98In0xYpUF9Lh9s5QrySUXtAPL6Y0SQ19oPzUMw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JKAxKVtM; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=l2NXnhWk;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JKAxKVtM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqqhR5pPPz2yHT
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 07:23:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqqr85XlZz2yHT
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 07:30:16 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 309C4438B1
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 21:23:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 156071F0089A
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 21:23:33 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 8F88A601FD
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 21:30:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 40D501F0089B
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 21:30:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790198613;
-	bh=pFOUdSvHwil/K0FhFzOket4pw49ZzFhiG+QLBkwjfts=;
+	s=k20260515; t=1790199013;
+	bh=d3tq9N0LJ4r7VJ+9wdwqQQlbn4k6qzBMuLB5kE1baa4=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=l2NXnhWk5v24WehMq4tSpmYi+d5xm5L5yI8aFPMPz4HayjF3RJ4ct2hxFlSr6eGvJ
-	 0Dtw3flW+pOGjBESMhPfV/DI6fLstSCno88OFAUOcih9X39nhGNIm+VpXZpUCynB5X
-	 +D7okYDBr1ytqcLJCoruXi0yL6W3PylDaJ4luGmUZJF5UlIpJep2khrcvpacTDYim7
-	 IT05Utcze2c06jhGz6rpyFOWDLNJd1LCpKETbFh+ZE4BggMJqtOZYAweaXhTF8C/pj
-	 MBU8+1dE75n0Jan3UlAQY4zyyjUWmsOME/jxXvmE57pTuE7aDqGqKM9u4ELTtwB8wP
-	 qgVVtkJxP0phQ==
-Received: by mail-qk2-f41.google.com with SMTP id af79cd13be357-93910ad2273so150804485a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 14:23:33 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBzrHMeklLyQ7fNfyj5dkPIxQZXZOm9INohb06Scbgkc+CzFaJqRSQbTZsy9mcsTRUSDV3T3fesYtBRgFNM=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++m+Lp0rJwcTR3n1qQLzxHEw8e+ZvqiS9xw5eNzRdABYnnFDZqcO
-	kpS5Xfx5TliV4sc6e2Ir2MRrcPq4aJDo/pHyEr3xTRPnBfDJ/Ci7rt2KMzlEwuAsXe++RxWVpqy
-	qoukD9sKm73edRnHf/VEe4li8k4ORIDE=
-X-Received: by 2002:a05:620a:2a04:b0:93b:d7a1:ba0d with SMTP id
- af79cd13be357-93c346ca45amr66989285a.56.1790198612443; Wed, 23 Sep 2026
- 14:23:32 -0700 (PDT)
+	b=JKAxKVtMZbF3TD2Yn2zgDD4fLtybBqJ/igLQzq3NUT4r9bDACuqKvXjvgz60TR+JA
+	 BIFmfFeaS555lQfbIUJsxtX1zQkAUve6IUQqNm7nLfx6uf7seZiMIvm9RK03R3nD3X
+	 yIqwdSH/bmBuXrza+VBpZYbApAWVCksy8bFBjD49DyaS1W6AQq+JhF2QihqME55VXB
+	 IJ8+SeI/dKeiSzaW7jniNvqm6j5i8qbdAiZMMHyUhEOvu3CyESGyLW7HUG4hOhAWJf
+	 +n7NPspRkMseNo+3GfhH9oIjsO6FjECoNDaxM6ZpMUq4024vg6/mylbECDTlTHtIO7
+	 kd3RiEuWZgBSg==
+Received: by mail-qk2-f12.google.com with SMTP id af79cd13be357-93910ad2273so151266085a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 14:30:13 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBxeS+UqNk2RrrgGgAjR2kuuPxFCFnzxBum2s/VYwpVTD525UM6fTZelGatqCh1h3Z+gwVV5Bz/xLLjI1XA=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++mq0chL2anZjzuP4bNRA1oxE1JoDgzLhqyxj7lfoa0apaOerL2b
+	5K/xjKz+FWTiV+CdptnFKWGvVLaiQC/O02cOnqAW+aOffOYn+MhgNegoh4yvCYW585HM/cDbkU/
+	zqHrsqUI06tXPTXpjoHp98MgctPutJnQ=
+X-Received: by 2002:a05:620a:4707:b0:937:50b6:4a5b with SMTP id
+ af79cd13be357-93c345836d2mr78355685a.23.1790199012523; Wed, 23 Sep 2026
+ 14:30:12 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,14 +66,14 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260923062832.479455-1-jiangwen6@xiaomi.com> <20260923062832.479455-5-jiangwen6@xiaomi.com>
-In-Reply-To: <20260923062832.479455-5-jiangwen6@xiaomi.com>
+References: <20260923062832.479455-1-jiangwen6@xiaomi.com> <20260923062832.479455-2-jiangwen6@xiaomi.com>
+In-Reply-To: <20260923062832.479455-2-jiangwen6@xiaomi.com>
 From: Barry Song <baohua@kernel.org>
-Date: Thu, 24 Sep 2026 05:23:20 +0800
-X-Gmail-Original-Message-ID: <CAGsJ_4xiLScr2PrPu7Eem73GvPCtsuYd3J05kW3SC4QSs5Q4aQ@mail.gmail.com>
-X-Gm-Features: AcwNN1U6u4upYBVse70ygcbBam77nB0znlsjMQqKiWEExUFJn-qljmWnP0sSc0Y
-Message-ID: <CAGsJ_4xiLScr2PrPu7Eem73GvPCtsuYd3J05kW3SC4QSs5Q4aQ@mail.gmail.com>
-Subject: Re: [PATCH v9 04/10] arm64/hugetlb: drop the init_mm special case in clear_flush()
+Date: Thu, 24 Sep 2026 05:30:00 +0800
+X-Gmail-Original-Message-ID: <CAGsJ_4xQhmRigaV_2G3pdOgk5mvC6HNzqCyUdRY3RSG8-QNC-Q@mail.gmail.com>
+X-Gm-Features: AcwNN1UaTtV0wPc3IJY9Sx6rnYvw9-CPwWOiah8w0K1fH7hCcF4lT-foCe1dQ8M
+Message-ID: <CAGsJ_4xQhmRigaV_2G3pdOgk5mvC6HNzqCyUdRY3RSG8-QNC-Q@mail.gmail.com>
+Subject: Re: [PATCH v9 01/10] arm64/mm: add pte_set_huge() and pte_clear_huge()
 To: Wen Jiang <jiangwenxiaomi@gmail.com>
 Cc: akpm@linux-foundation.org, catalin.marinas@arm.com, linux-mm@kvack.org, 
 	urezki@gmail.com, will@kernel.org, Xueyuan.chen21@gmail.com, 
@@ -85,53 +85,54 @@ Cc: akpm@linux-foundation.org, catalin.marinas@arm.com, linux-mm@kvack.org,
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Sep 23, 2026 at 2:29=E2=80=AFPM Wen Jiang <jiangwenxiaomi@gmail.com=
+On Wed, Sep 23, 2026 at 2:28=E2=80=AFPM Wen Jiang <jiangwenxiaomi@gmail.com=
 > wrote:
 >
-> clear_flush() calls flush_tlb_kernel_range() when mm is &init_mm. This
-> was added by commit 06fc959fcff7 ("arm64/mm: Support huge pte-mapped
-> pages in vmap") because vmap called set_huge_pte_at(&init_mm, ...).
+> vmap installs PTE-level block mappings (PTE_CONT on arm64) by reusing
+> set_huge_pte_at() and huge_ptep_get_and_clear(), which are HugeTLB
+> helpers gated by CONFIG_HUGETLB_PAGE. This makes the feature silently
+> unavailable on CONFIG_HUGETLB_PAGE=3Dn kernels and couples mm/vmalloc.c t=
+o
+> HugeTLB internals it does not otherwise need.
 >
-> Now that vmap uses pte_set_huge()/pte_clear_huge(), mm/vmalloc.c is no
-> longer a caller of set_huge_pte_at() on arm64. The only remaining
-> callers passing &init_mm are in arch/powerpc, which uses its own
-> implementation. Remove the dead branch.
+> Add pte_set_huge()/pte_clear_huge() to arm64, joining the existing
+> pmd_set_huge()/pud_set_huge() family in mm/mmu.c. They build on
+> __set_ptes() and __get_and_clear_full_ptes() directly, so they do not
+> depend on CONFIG_HUGETLB_PAGE.
 >
-> No functional change.
+> There is no caller yet: mm/vmalloc.c is converted later in this series,
+> once the generic fallbacks are in place.
 >
 > Signed-off-by: Wen Jiang <jiangwen6@xiaomi.com>
 
-LGTM. Please see the comments below.
+LGTM. Please see the comment below.
 
 Reviewed-by: Barry Song <baohua@kernel.org>
 
-> ---
->  arch/arm64/mm/hugetlbpage.c | 5 +----
->  1 file changed, 1 insertion(+), 4 deletions(-)
->
-> diff --git a/arch/arm64/mm/hugetlbpage.c b/arch/arm64/mm/hugetlbpage.c
-> index 8e799c1fe0aa6..ce247b06fe03d 100644
-> --- a/arch/arm64/mm/hugetlbpage.c
-> +++ b/arch/arm64/mm/hugetlbpage.c
-> @@ -206,10 +206,7 @@ static void clear_flush(struct mm_struct *mm,
->         for (i =3D 0; i < ncontig; i++, addr +=3D pgsize, ptep++)
->                 __ptep_get_and_clear_anysz(mm, addr, ptep, pgsize);
->
-> -       if (mm =3D=3D &init_mm)
-> -               flush_tlb_kernel_range(saddr, addr);
-> -       else
-> -               __flush_hugetlb_tlb_range(&vma, saddr, addr, pgsize, TLBF=
-_NOWALKCACHE);
-> +       __flush_hugetlb_tlb_range(&vma, saddr, addr, pgsize, TLBF_NOWALKC=
-ACHE);
+[...]
 
+> +void pte_set_huge(pte_t *ptep, unsigned long addr, phys_addr_t phys,
+> +                 pgprot_t prot, unsigned long size)
+> +{
+> +       unsigned long pfn =3D __phys_to_pfn(phys);
+> +       pte_t pte =3D pte_mkcont(pfn_pte(pfn, prot));
+> +       unsigned int nr =3D size >> PAGE_SHIFT;
+> +
+> +       VM_WARN_ON(!IS_ALIGNED(size, CONT_PTE_SIZE));
+> +       VM_WARN_ON(!IS_ALIGNED(addr, CONT_PTE_SIZE));
+> +       VM_WARN_ON(!IS_ALIGNED(pfn, CONT_PTES));
+> +
+> +       __set_ptes(&init_mm, addr, ptep, pte, nr);
 
-For the vmap case, we are not mapping over a valid mapping, so there is no
-case where `pte_present()` can be true. But I guess we can strengthen the
-check in patch 1 by adding a `VM_WARN_ON()` for `pte_valid()` and some
-comments.
+You have patch 4 to revert the `clear_flush()` modification from
+06fc959fcff ("arm64/mm: Support huge pte-mapped pages in vmap").
 
-/* For vmap, there is no valid -> valid transition */
+I guess you may still need to guard against the case I mentioned in my
+reply to patch 4:
+https://lore.kernel.org/linux-mm/CAGsJ_4xiLScr2PrPu7Eem73GvPCtsuYd3J05kW3SC=
+4QSs5Q4aQ@mail.gmail.com/
+
+Something like this:
 VM_WARN_ON (pte_valid(__ptep_get(ptep)));
 
 Best Regards
