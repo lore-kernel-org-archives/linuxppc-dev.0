@@ -1,90 +1,99 @@
-Return-Path: <linuxppc-dev+bounces-27976-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27977-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F48EC982EA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 07:01:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5449C98308
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 07:04:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqSYW3rlfz2xs1;
-	Wed, 23 Sep 2026 17:01:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:38::10"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790146879;
-	cv=none; b=jDm7+WFbriYaaKoAMPcNfwbc9bpQcFPxWoJGFt6jJkMBDV67nhlVHOaTWCZl4MTc3b+fkmq9BNgAiXKghTQ6v6KKC6RUDbdKiRuDMDz10UPqUVhQfhnhvA2P9r8OLRYNMfAXGX0ittUkVIfMqSEDm/EnMXF3S0+Z1EYVAJBMjap3uIQgYkDwkZZ18hrTZ+3bP0FF5uXpxUnPxGBx4mqQx3taPD2wfFHsXr8/RGgjfRyCRYRetQAnJdHAYAG9JGSmUzRakDzE7HryBPwWrIhABMuFiNFia6Fvy+dhBEDcvgv9OrSWlmHR6JvbcHS72x5zhwclN31VrN0Q+Y8tcz8+WA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqSdd1mZmz2ydN;
+	Wed, 23 Sep 2026 17:04:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790147093;
+	cv=none; b=H6fwVRVA/e9Ocu9z49WcZLcMDOoM54/nPsGB0W3OShNfURWuiz3xOPSTIp/fAEj7DXkQnR0qLcSoZFDaGmFw11NgUiQEXbSn0OQqKcPyQwmeBHxQnelFZApaPZGyuD5WYW78AGAV/qp+UVAa9F0RBXynnLEjF1OeVS35cjm4MODWDfSkpeyxy3jOIgRk4p3BsTcesN7iOH366UCc6pj+RdNm9TbXLX76sfH4lsn3Eiw73BWCsRNxcqCybhB2lrKhIX9fTCpa1P8qZUkFxsljrJhmUj83P2zYP2cYWLTz2/nJbNptePNoz+wXJDqXtIKkjtjtEMqsEwjOe2qJt/s0EQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790146879; c=relaxed/relaxed;
-	bh=I70/VAGdGqE8d4iO1uNSWkA0vYBN0PWe+5KOdFzj+lU=;
+	t=1790147093; c=relaxed/relaxed;
+	bh=oz5tjSOW6xs6i9tD5UOCcck5s2CW+80N4Q8wcMKT5sM=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ec0ZOBVjCT1IINKJKXZ3gTMj7ZSFsyzvmpksqz+3YVkvyTEHfOXbG53/QV/Y0KuacfMBl37y7Ohaf9JG7VNj42Qo1lIsavNq68OzGw1KoLCnVIotWkQbj1633n9Ry/YPFtlfO5tEZSOmtPHq9M25UINp4LTY9AO4gQJ4COm2bbwah88ec8nQ63zufhEcpsOPOsO4evoTNUKm1JJsrEIMvOVbQtWpKE0vA03/M+QKCQC33wKTE1t9mgTx0SlvE2HjyVkGVr4vNCHjsHZK+kSl3oYtr7idRJlEARleE3q/VT9w5Px+Iu8VdmGuzHHTrLzKvirCJNrmyNY1yYPi5v5dFg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=iMBbTZ1Y; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:38::10; helo=mail-dl2-x10.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=PDiQMYtpnrnLAvAJd/w/7HUdYjVw9ALVf8/yKuK8ppOg3hw37OlgLCNYaxixt5/R4E8oGJftkqzODbwXJ7h+9Jg98/eLvcKX+XmGLmDyS/wziYtDRlZsnqydhr7U/N05WF4B590byT8V4Tf5GR/CEboM85odYgc79Bp11jiWR+NBXmtMBUVbHEJIPBZWLawfBEO7fRDgQ38sZZ20A/za0F4F55TWzAhRPeAx8KlG3aR7oVbYJeot2SRRfLn4Lvzzcqwija20cXVQ4DuGGqz7b5t6k2jDIWpo9yxskhWvMWz87PLPC7BM4cpjA22JkBmkbELNxf4dZccK/PknuM6MZA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=H8oyDQGw; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=iMBbTZ1Y;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=H8oyDQGw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:38::10; helo=mail-dl2-x10.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl2-x10.google.com (mail-dl2-x10.google.com [IPv6:2607:f8b0:4864:38::10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqSYT6sNyz2xk7
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 17:01:16 +1000 (AEST)
-Received: by mail-dl2-x10.google.com with SMTP id a92af1059eb24-142dd04be84so651809c88.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 00:01:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790146874; x=1790751674; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=I70/VAGdGqE8d4iO1uNSWkA0vYBN0PWe+5KOdFzj+lU=;
-        b=iMBbTZ1YYkZDsAjCqGL469PLIKEunhsFeDzRrGuRzuA7cbq+/EoiHNUqFqO+34+Q+U
-         danrDajwIDaY6t2hIF0mn0HU0vMtHIpQ6fe0epuNBIUmeZMbrTgErFkS5lfyn51NN/SJ
-         o2dlQnzcFwPNmM7GCs1FspCoxCndLg9fvW7PztnxN9lUnolpb6ceA7YNRuEfAUnU7bSd
-         o85wy6z68XacyXIqkQyenynxVEzBcN8e78CJj8kSHq6mxHeB3c0/qVkztT7ogRayopmo
-         KOS8JRr+38MSTpy0i90qyMru1BAjbph6gr9JdIhmgkvdw8OOhg6pdekYta6fUWLaQt2j
-         vnNg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790146874; x=1790751674;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=I70/VAGdGqE8d4iO1uNSWkA0vYBN0PWe+5KOdFzj+lU=;
-        b=2VElgVEbCaH6r++fc7S+U32uzGQfnuQ530fHqeb1tHgD52OWtIfih49d28Lt162WDv
-         wD7XTjmWiSUMUQo9+pgoODBzJCkHaPOZlbwkgtwb4AlIOTqFqv6QAHS3jhe5ZZ30KB9e
-         q01MUH+AxY0aW3EqFNicLj63/AVRi/+Y8oObUgUjavjREFO1CCgEF93XluwYDPFcw7hU
-         w3HDgA3YRSx3817MM1OUYhD/dJDn0/CEqocx6miUnupuw9MYveenuj+6EJAEaJs4mKiY
-         /FT1ln/5Ac2FQ32GYOOsMHn/C57qEetdU12nWRUclL+5As5IzC5mF1bNPxmpjPEmygIa
-         +BXg==
-X-Forwarded-Encrypted: i=1; AKwUvBw6NeyNQr4Ul0UgPbb2yF8G1bfwGaEMbDea03epIplLHYcaIDdejouKnOtYpvTDMuruD3lWMiorpWriduY=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++lRlMT2qLw2yRo3fR0z/DBfh79qRu2FtAglQytxF5ouKnCxg4a5
-	75ZkhzTx0AVgEYImw/J7358iFB4YrGwX+DT6BFlMe5OvmgguZC8bLZwN
-X-Gm-Gg: AYBFou2TI3gIiNvxhTmMcGiIplcveIPK7SWVuvZeIIjv3ZHzbY9QN2Gk1roxQ93G8kO
-	4jLZpaVeVAftb+3guSqeABOPiDwqQ8dHfnoaqsGvW6D36YxtTkxSn0Du4voHT6H9a+iW9/IyWgt
-	xdJDOI0lZYn4ewRdjDCGuigXU1vFRH3mYIySCdQXxdmCdIqxeoeMMh0SiWcbFAYQOfbLiXL9A4P
-	j4PlWH2vfkHHSfs0mDXZdO41ucesITlWYDbcR666Stt0IjWA8lR0+nu6Y0aj9gkazMTE5aZ5OZl
-	ICvqyKze23t8rkok7qqlFgvp5l/rf06YQ1EOReUBGRS6x+wuSbqeI8EjuyWNvExC7Fvmhz8Ny0Q
-	5uEtTr+JN0UKl14VtdCj5CmFndBa7zXWj8qBuHB5Eojx63x9MJk3G+LQzaSTg+arbj926LJUzDq
-	ssiRdoFmouVHqg/tOv5LNq/7AWvM8JeMbNvITb6aGKYV6XDEK1yKbCg4T9Hc3ApYQm9NB1WFzRO
-	oCYIRHUeSYT/6ebq86+xKGeuMlcZjfFqX6hP9nEXHo=
-X-Received: by 2002:a05:7022:7e81:b0:144:ddf7:256e with SMTP id a92af1059eb24-144f9179543mr2364369c88.29.1790146873779;
-        Wed, 23 Sep 2026 00:01:13 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([129.41.58.4])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-144f98209ffsm3646819c88.4.2026.09.23.00.01.08
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 23 Sep 2026 00:01:13 -0700 (PDT)
-Date: Wed, 23 Sep 2026 12:31:05 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Gautam Menghani <gautam@linux.ibm.com>
-Cc: maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au, 
-	chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com, 
-	nnmlinux@linux.ibm.com, amachhiw@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, 
-	kvm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, 
-	Timothy Pearson <tpearson@raptorengineering.com>
-Subject: Re: [PATCH v3] KVM: PPC: Book3S HV: Avoid spurious interrupts caused
- by LPCR_MER bit
-Message-ID: <arN5AY73k0fRh9VQ@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <20260921111043.49825-1-gautam@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqSdc0h5jz2y2L
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 17:04:51 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id B897342E06;
+	Wed, 23 Sep 2026 07:04:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0130B1F00893;
+	Wed, 23 Sep 2026 07:04:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790147088;
+	bh=oz5tjSOW6xs6i9tD5UOCcck5s2CW+80N4Q8wcMKT5sM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=H8oyDQGwjdSkW3glHIqkT28nkitvMUMujDtTwYtl7NQTMOYKIQgyBXIBx/3pBcxQp
+	 OQx1IfM7QGlBJelJ3xjxNUlH8jpNUFnb0na487Y1eI8TwCVG7O+g9eVm696P4c9Lkn
+	 aCl/OQhO8JIKOOGyXPjrtfuqIh3bXqO1m3IPe7xySJze9zoxTzoj9eqsqbwfNB2PPf
+	 KZLSxApcdSOpZNedomZsma7BVhAHXnP9rgV0Ce68rLQVaFKnh48hNKmYa63LQnOWUm
+	 E0o5KeQEcNqrGDR/FBqK5/X0rFNwJJhXI+RvWEPR42lgPqvGO9/t+gXs/3Tt6R2T/G
+	 9FzYEi/Z4AjuA==
+Date: Wed, 23 Sep 2026 08:04:25 +0100
+From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>, 
+	Baolin Wang <baolin.wang@linux.alibaba.com>, "Liam R. Howlett" <liam@infradead.org>, 
+	Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
+	Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
+	Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Guo Ren <guoren@kernel.org>, 
+	Brian Cain <bcain@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, 
+	Dinh Nguyen <dinguyen@kernel.org>, Simon Schuster <schuster.simon@siemens-energy.com>, 
+	Jonas Bonn <jonas@southpole.se>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, 
+	Stafford Horne <shorne@gmail.com>, Rich Felker <dalias@libc.org>, 
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Alexandre Ghiti <alex@ghiti.fr>, Russell King <linux@armlinux.org.uk>, 
+	Vineet Gupta <vgupta@kernel.org>, Michal Simek <monstr@monstr.eu>, Chris Zankel <chris@zankel.net>, 
+	Max Filippov <jcmvbkbc@gmail.com>, Will Deacon <will@kernel.org>, 
+	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, 
+	Peter Zijlstra <peterz@infradead.org>, "David S. Miller" <davem@davemloft.net>, 
+	Andreas Larsson <andreas@gaisler.com>, Richard Henderson <richard.henderson@linaro.org>, 
+	Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>, 
+	Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, 
+	Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
+	Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+	Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
+	Sven Schnelle <svens@linux.ibm.com>, Richard Weinberger <richard@nod.at>, 
+	Anton Ivanov <anton.ivanov@cambridgegreys.com>, Johannes Berg <johannes@sipsolutions.net>, 
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
+	Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka <vbabka@kernel.org>, 
+	Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
+	Michal Hocko <mhocko@suse.com>, Jason Gunthorpe <jgg@ziepe.ca>, 
+	John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, 
+	Yoshinori Sato <ysato@users.sourceforge.jp>, Shakeel Butt <shakeel.butt@linux.dev>, 
+	Jonathan Corbet <corbet@lwn.net>, Randy Dunlap <rdunlap@infradead.org>, linux-mm@kvack.org, 
+	linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
+	linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org, linux-sh@vger.kernel.org, 
+	linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	linux-snps-arc@lists.infradead.org, linux-arch@vger.kernel.org, sparclinux@vger.kernel.org, 
+	linux-alpha@vger.kernel.org, loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
+	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
+	linux-um@lists.infradead.org, Hugh Dickins <hughd@google.com>, Qi Zheng <qi.zheng@linux.dev>, 
+	linux-doc@vger.kernel.org
+Subject: Re: [PATCH v4 00/12] mm: make userland page table freeing RCU-safe
+Message-ID: <arN3iaw7VDIA-bWf@gremlin>
+References: <20260922-rcu-pagetable-freeing-v4-0-fe1ad1f1e303@kernel.org>
+ <20260922160021.a2fc65d05d9b867a141e5457@linux-foundation.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,36 +109,47 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260921111043.49825-1-gautam@linux.ibm.com>
+In-Reply-To: <20260922160021.a2fc65d05d9b867a141e5457@linux-foundation.org>
 
-On Mon, Sep 21, 2026 at 04:40:42PM +0530, Gautam Menghani wrote:
-> A huge number of spurious interrupts can be seen immediately after a KVM
-> on PowerNV guest boots up in XIVE mode.
-> 
-> $ cat /proc/interrupts  | grep SPU
-> SPU:     223705     192439     273526     147623   Spurious interrupts
-> 
-> This bug was introduced by commit ecd10702baae5 ("KVM: PPC: Book3S HV:
-> Handle pending exceptions on guest entry with MSR_EE"). The root cause
-> is that once LPCR_MER bit is set, it is supposed to be reset by
-> software. But when a vCPU starts running with LPCR_MER set, the vCPU does
-> not exit back to the host until the decrementer expires or there is an
-> hcall, etc. This is because KVM on PowerNV guests have support for
-> native XIVE, so they are not dependent on host for interrupt emulation.
-> Due to this behaviour, a huge number of spurious interrupts are seen
-> since LPCR_MER continues to be set and LPCR_MER cannot be reset until the
-> vCPU exits to the host.
-> 
-> Fix this behaviour by not using the LPCR_MER bit whenever native XIVE is
-> available (currently in case of KVM on PowerNV only), as the XIVE hardware
-> can present interrupts to the KVM guest vCPU directly. So the LPCR_MER
-> functionality is not required. This reduces the number of spurious
-> interrupts drastically.
-Hey Gautam,
+On Tue, Sep 22, 2026 at 04:00:21PM -0700, Andrew Morton wrote:
+> On Tue, 22 Sep 2026 16:35:31 +0100 "Lorenzo Stoakes (ARM)" <ljs@kernel.org> wrote:
+>
+> > The majority of architectures in the kernel defer page table freeing until
+> > an RCU grace period has elapsed, this series converts all remaining
+> > architectures to do so too and eliminates CONFIG_MMU_GATHER_RCU_TABLE_FREE
+> > altogether.
+> >
+> > This is important because it enables safe lockless page table walking under
+> > RCU alone.
+>
+> Do we have reason to believe that anyone is seeing any effects from
+> their arch's failure to rcu-free the page tables?
 
-Thanks for this. Can you also share the numbers after the change.
+We have reason to believe that it completely blocks other work like
+scalable CoW :)
 
-Regards,
-Mukesh
-[...]
+>
+> This sounds like a rather long-standing wart, yes?
+
+Not really, if you read the cover letter you can see the history of people
+working on this, this is the final piece of the puzzle and despite the
+rather muted reception this change is a big deal (TM).
+
+>
+> The patchset is thinly reviewed and mm.git is bursting at the seams
+> again.  I'll play wait-and-see on this series.  Feel free to cluebat me
+> if that's a bad call.
+
+Err, Kiryl reviewed the entire series, I sent it in -rc1 of this cycle, and
+it's been in -next forever?
+
+Lance is reviewing now, presumably maybe David will review based on the
+fact I updated on his feedback to _expand_ some functionality here.
+
+So I'd argue this is contender for one of the top priority series for this
+cycle, actually! [and is CRITICAL for my scalable CoW work, easily the most
+important this cycle]
+
+--
+Cheers, Lorenzo
 
