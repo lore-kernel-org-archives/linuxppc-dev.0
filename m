@@ -1,102 +1,153 @@
-Return-Path: <linuxppc-dev+bounces-28011-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28012-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92B4EC982FA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 11:49:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81A32C98309
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 11:54:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqZxj5kF8z2yqw;
-	Wed, 23 Sep 2026 21:49:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790164153;
-	cv=none; b=XQgH7NWJUTsT/pNo0EUfjLMrg2otab8I1zu0BMsyQ6Tpa8Iq9oDFnQXmOuVTMuYplAPBmMMqhZFxTjQxuDQTpzTkfFaghZiWCd/aKNiw56BaLyYs57Tm5nX931rt4ePPhyExta1XBAazhP+3hRjFqstvHBrc887NmNDPjgb+PuL0lWFTSqDK85cC56BRBz7RlHYU/Ta5uC8+5FzkFdiJPvchtY4obZkXbOOLQeru8aiiKaVDkw8BY375Vg7Ob/lqrfoxhLWsZPqtd+iPeiSPnqAQRgjmnQKxaDfcXci/hl7HfHMTmySFC6zAiuPV7mwNl/fWqhg9X85GPBQCXLY0HQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqb4K6Lwcz2yr0;
+	Wed, 23 Sep 2026 21:54:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.127
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790164497;
+	cv=none; b=mLAo2obLe9oXXU99CnrVXglFl56IjKnhChX7hSwV0IxXQyetM0lrPz71xnyQUwfC2ALssdbmNyggVFGt/3Jl/e4/2ztx04N9YpJkd7Pbf91tkrS0RKBNCo0FK4jiNT8XOc0QoF3jbMy7CKSasbFuW/cxuzTewzje3B/Qc/v8hHNDS8/NDnYUJT7uG8tXHPxGJxXmZnHxHvsy2GS6l5A4b8/HxqDLd2Hl3gcpybyGTpoTsR5EAWGfi60hHWajpXNq8oCxnqH/VlgtAx1rmAfQQCq846bROcXuKBnTCPZy+gi8gftZ/X8E4oQuoVN+7NcD5fHbL3Z2xF4+cN8R4AQfFQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790164153; c=relaxed/relaxed;
-	bh=Z18U4qa6LbbRW6yI1ebVsuAYdmDir8PYv46mTQmvxDM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=D7Pj26uuqthdVIs97iABc6UfLvnHUUTuv1b1MH/IkDSF5Sd8smKkVEK4gVHrRWXoeHYcbEXodm3mOoN3MeCJur7PADm+6asHtxT0NVYil1uUB9ScFFsH9tWHx/xT3yskRsJKh57IBFwhUBBZiz4TkDVpH7JQJA2MOcqOLC7iBcFQckk/xHtCIqRsqZ+ei8Krc18Le/CK+aNWIgns2RHdrL0xdkimzkUe3WN8Nr/93P7/IdyFP1FTH6nh6eQ0PCXrtxxfzWByVlLddPZ1qTWPgqhUarh1SYvL9LEiR6aQ+3wn1DEnjqySdRq1AcpyfIVq2mpxekrKeiGPE9vlF48YCQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=D0HspulT; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1790164497; c=relaxed/relaxed;
+	bh=FyI8OIcx4NePB4wjfBisQg331Da0UMxOk3af3KkO/oU=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=S2Y5xciwHMN+V2rTT7Qvk2MhDkyoYlpjwBfhaUFzt3PHZn/TI7c+fB4F8KL2rI9srvh+yrJQHC7D1Y8NikyRDkTICg4Cyfc3ItE3iqwEJ5es4RfHqMEcfZFppOiaJRW5nMaOXxbvTClfR9YdfWFOKze+byWsFBuXXPboYeBhW0ySt37R7LZ2SMrM4UvH4LMTDKhH/i+M5PGwH1l1q5hGWwCn/TrG8IQpJPB/niseYtt3vw/Sj6QjsTAHBeU/AyXMVpXIpOF+Xneb0XdBFgeEffUs6bxHP/GP0zPFL+iKi9yIlb/C1uwSfYT9YF2Q9LPgJbBcYCfcSV1Nsjf3vAiunw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=U2DboQPN; dkim-atps=neutral; spf=pass (client-ip=95.215.58.127; helo=mta1.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=D0HspulT;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=U2DboQPN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.127; helo=mta1.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta1.migadu.com (out-127.mta1.migadu.com [95.215.58.127])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqZxj08Z9z2yqq
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 21:49:12 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 15F3A40B9C;
-	Wed, 23 Sep 2026 11:49:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 19B941F000FF;
-	Wed, 23 Sep 2026 11:48:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790164151;
-	bh=Z18U4qa6LbbRW6yI1ebVsuAYdmDir8PYv46mTQmvxDM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=D0HspulTyBdCQX+9DDqdK27FApcPCCvh0cfa5A2rbZhHewxbqqnqFfAC7nocs+kP2
-	 0mvVh8QH9qXFX6+3roRxbIQueQ3TPhzi292qpq9D3xRZZ5wrxeyaLz+2QvciRn8RF2
-	 FVQ8S8jycXpuDyJ9rlAicpdmH0A4zO0K41QTIIgv5uUQwQu8Cyh3/fZ149W1dOnWWV
-	 yYYskNeHf77UMMMQLOJF6vyT4QfBuWnpw9G3F145FYd/VJTxiJBTwTSUUZpHmcLZ58
-	 JQgdeq38PegQ/KA2Ovq2zM3pjhtITbOaI5GbiIAo2djGnpsU4gEkvZ674V/u+BfhWb
-	 OSemwb5O1SYug==
-Date: Wed, 23 Sep 2026 12:48:53 +0100
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: "David Hildenbrand (Arm)" <david@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Zi Yan <ziy@nvidia.com>, 
-	Baolin Wang <baolin.wang@linux.alibaba.com>, "Liam R. Howlett" <liam@infradead.org>, 
-	Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
-	Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
-	Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Guo Ren <guoren@kernel.org>, 
-	Brian Cain <bcain@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, 
-	Dinh Nguyen <dinguyen@kernel.org>, Simon Schuster <schuster.simon@siemens-energy.com>, 
-	Jonas Bonn <jonas@southpole.se>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, 
-	Stafford Horne <shorne@gmail.com>, Rich Felker <dalias@libc.org>, 
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Alexandre Ghiti <alex@ghiti.fr>, Russell King <linux@armlinux.org.uk>, 
-	Vineet Gupta <vgupta@kernel.org>, Michal Simek <monstr@monstr.eu>, Chris Zankel <chris@zankel.net>, 
-	Max Filippov <jcmvbkbc@gmail.com>, Will Deacon <will@kernel.org>, 
-	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, 
-	Peter Zijlstra <peterz@infradead.org>, "David S. Miller" <davem@davemloft.net>, 
-	Andreas Larsson <andreas@gaisler.com>, Richard Henderson <richard.henderson@linaro.org>, 
-	Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>, 
-	Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, 
-	Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
-	Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
-	Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
-	Sven Schnelle <svens@linux.ibm.com>, Richard Weinberger <richard@nod.at>, 
-	Anton Ivanov <anton.ivanov@cambridgegreys.com>, Johannes Berg <johannes@sipsolutions.net>, 
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
-	Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka <vbabka@kernel.org>, 
-	Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
-	Michal Hocko <mhocko@suse.com>, Jason Gunthorpe <jgg@ziepe.ca>, 
-	John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, 
-	Yoshinori Sato <ysato@users.sourceforge.jp>, Shakeel Butt <shakeel.butt@linux.dev>, 
-	Jonathan Corbet <corbet@lwn.net>, Randy Dunlap <rdunlap@infradead.org>, linux-mm@kvack.org, 
-	linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
-	linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org, linux-sh@vger.kernel.org, 
-	linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-snps-arc@lists.infradead.org, linux-arch@vger.kernel.org, sparclinux@vger.kernel.org, 
-	linux-alpha@vger.kernel.org, loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
-	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
-	linux-um@lists.infradead.org, Hugh Dickins <hughd@google.com>, Qi Zheng <qi.zheng@linux.dev>, 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqb4F0Fg0z2yqq
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 21:54:51 +1000 (AEST)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=FyI8OIcx4NePB4wjfBisQg331Da0UMxOk3af3KkO/oU=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1790164472; v=1; x=1790769272;
+ b=U2DboQPNIjvb2cOm0nacFt0QBeGe8TjL7XpFPIz+5E2kYswIyReQbL7jqNDNz9DcM3Orz8F+
+ W6fzl8esDkc5aMr66ApbHQXst9JieOWAEQZoJ7sjl6qqH8zP+5H/zTrBXDE+rvjtQQbtgNWt/Sh
+ m91k96WZFVQ4NX60LoJrtSOw=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id b457f4ea14dabe32;
+	Wed, 23 Sep 2026 11:54:26 +0000
+X-Mizu-Trace-ID: b457f4ea14dabe32
+X-Migadu-Flow: FLOW_OUT
+From: Lance Yang <lance.yang@linux.dev>
+To: ljs@kernel.org
+Cc: akpm@linux-foundation.org,
+	david@kernel.org,
+	ziy@nvidia.com,
+	baolin.wang@linux.alibaba.com,
+	liam@infradead.org,
+	nico.pache@linux.dev,
+	ryan.roberts@arm.com,
+	dev.jain@arm.com,
+	baohua@kernel.org,
+	lance.yang@linux.dev,
+	usama.arif@linux.dev,
+	kas@kernel.org,
+	guoren@kernel.org,
+	bcain@kernel.org,
+	geert@linux-m68k.org,
+	dinguyen@kernel.org,
+	schuster.simon@siemens-energy.com,
+	jonas@southpole.se,
+	stefan.kristiansson@saunalahti.fi,
+	shorne@gmail.com,
+	dalias@libc.org,
+	glaubitz@physik.fu-berlin.de,
+	pjw@kernel.org,
+	palmer@dabbelt.com,
+	aou@eecs.berkeley.edu,
+	alex@ghiti.fr,
+	linux@armlinux.org.uk,
+	vgupta@kernel.org,
+	monstr@monstr.eu,
+	chris@zankel.net,
+	jcmvbkbc@gmail.com,
+	will@kernel.org,
+	aneesh.kumar@kernel.org,
+	npiggin@gmail.com,
+	peterz@infradead.org,
+	davem@davemloft.net,
+	andreas@gaisler.com,
+	richard.henderson@linaro.org,
+	mattst88@gmail.com,
+	linmag7@gmail.com,
+	catalin.marinas@arm.com,
+	mark.rutland@arm.com,
+	chenhuacai@kernel.org,
+	kernel@xen0n.name,
+	tsbogend@alpha.franken.de,
+	James.Bottomley@HansenPartnership.com,
+	deller@gmx.de,
+	maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	chleroy@kernel.org,
+	hca@linux.ibm.com,
+	gor@linux.ibm.com,
+	agordeev@linux.ibm.com,
+	borntraeger@linux.ibm.com,
+	svens@linux.ibm.com,
+	richard@nod.at,
+	anton.ivanov@cambridgegreys.com,
+	johannes@sipsolutions.net,
+	tglx@kernel.org,
+	mingo@redhat.com,
+	bp@alien8.de,
+	dave.hansen@linux.intel.com,
+	x86@kernel.org,
+	hpa@zytor.com,
+	arnd@arndb.de,
+	vbabka@kernel.org,
+	rppt@kernel.org,
+	surenb@google.com,
+	mhocko@suse.com,
+	jgg@ziepe.ca,
+	jhubbard@nvidia.com,
+	peterx@redhat.com,
+	ysato@users.sourceforge.jp,
+	shakeel.butt@linux.dev,
+	corbet@lwn.net,
+	rdunlap@infradead.org,
+	linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org,
+	linux-csky@vger.kernel.org,
+	linux-hexagon@vger.kernel.org,
+	linux-m68k@lists.linux-m68k.org,
+	linux-openrisc@vger.kernel.org,
+	linux-sh@vger.kernel.org,
+	linux-riscv@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-snps-arc@lists.infradead.org,
+	linux-arch@vger.kernel.org,
+	sparclinux@vger.kernel.org,
+	linux-alpha@vger.kernel.org,
+	loongarch@lists.linux.dev,
+	linux-mips@vger.kernel.org,
+	linux-parisc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	linux-um@lists.infradead.org,
+	hughd@google.com,
+	qi.zheng@linux.dev,
 	linux-doc@vger.kernel.org
-Subject: Re: [PATCH v4 11/12] mm: make userland page table freeing RCU-safe
-Message-ID: <arO7lSy71meks_sW@gremlin>
-References: <20260922-rcu-pagetable-freeing-v4-0-fe1ad1f1e303@kernel.org>
- <20260922-rcu-pagetable-freeing-v4-11-fe1ad1f1e303@kernel.org>
- <72d1548a-a4ee-4832-b2ab-4bc82f1933f8@kernel.org>
- <arOWZCeV8FrkAvhK@gremlin>
- <802d3999-95fe-4a09-89b4-d01b60f8e963@kernel.org>
+Subject: Re: [PATCH v4 08/12] mm: enable MMU_GATHER_RCU_TABLE_FREE for sh-X2
+Date: Wed, 23 Sep 2026 19:54:17 +0800
+Message-ID: <20260923115417.34112-1-lance.yang@linux.dev>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20260922-rcu-pagetable-freeing-v4-8-fe1ad1f1e303@kernel.org>
+References: <20260922-rcu-pagetable-freeing-v4-8-fe1ad1f1e303@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -110,44 +161,53 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <802d3999-95fe-4a09-89b4-d01b60f8e963@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Wed, Sep 23, 2026 at 11:13:36AM +0200, David Hildenbrand (Arm) wrote:
-> On 9/23/26 11:06, Lorenzo Stoakes (ARM) wrote:
-> > On Wed, Sep 23, 2026 at 11:04:17AM +0200, David Hildenbrand (Arm) wrote:
-> >> On 9/22/26 17:35, Lorenzo Stoakes (ARM) wrote:
-> >>
-> >> The patch subject confused me at first: that's not what the patch is doing, no?
-> >> Previous patches did that, and now you're just removing the leftovers?
-> >>
-> >> Maybe I'm missing something that this patch does along the lines of teaching the
-> >> code to be RCU-safe.
-> >
-> > It is the final piece that makes that the case, so I think it's OK to allow
-> > oneself a nice subject line? No? :)
->
-> Just took me longer to figure out if I am missing something important.
->
-> E.g.,
->
-> 	"mm: remove unused RCU-unsafe user page table freeing"
->
-> would have been clearer to me. Anyhow, just stumbled over it, I don't care too much.
 
-Compromise on:
-
-mm: now userland pgtable freeing is safe, remove unused bits
-
-?
-
+On Tue, Sep 22, 2026 at 04:35:39PM +0100, Lorenzo Stoakes (ARM) wrote:
+>Currently, non-x2 sh specifies CONFIG_MMU_GATHER_RCU_TABLE_FREE allowing
+>RCU page table freeing.
 >
-> --
-> Cheers,
+>sh-X2 is problematic because it utilises slab-allocated PMD page tables,
+>and thus tlb_remove_ptdesc() cannot be used in these cases.
 >
-> David
+>All other sh variants are fine as commit e3ecf7c7d082 ("mm: pgtable:
+>convert some architectures to use tlb_remove_ptdesc()") already converted
+>page table freeing to use tlb_remove_ptdesc(), which does so after an RCU
+>grace period when CONFIG_MMU_GATHER_RCU_TABLE_FREE is specified.
+>
+>Resolve this issue by firstly specifying CONFIG_HAVE_ARCH_TLB_REMOVE_TABLE
+>for sh-X2, so the arch can provide its own __tlb_remove_table()
+>implementation (called after the RCU grace period).
+>
+>Then, convert __pmd_free_tlb() to tag the pointer to the PMD, and have
+>__tlb_remove_table() check this tag to determine whether to free via the
+>slab or to use pagetable_dtor_free().
 
---
-Cheers, Lorenzo
+Makes sense to me, so RCU callback won't mistake a slab PMD for a PTE
+page :)
+
+>This follows the pattern used by sparc64 as implemented in commit
+>4a0100f7546f ("sparc64: use RCU page table freeing").
+>
+>Previously __pmd_free_tlb() freed PMD page tables immediately, before any
+>TLB flush IPI. This seems to be a pre-existing bug, which this change also
+>resolves.
+>
+>CONFIG_HAVE_ARCH_TLB_REMOVE_TABLE is only specified for sh-X2, as setting
+>it disables CONFIG_PT_RECLAIM and causes __tlb_remove_table_one() to call
+>tlb_remove_table_sync_rcu() and synchronize_rcu() in turn, and this is not
+>necessary for other sh variants.
+>
+>This forms part of an overall effort to switch every architecture to this
+>mode.
+>
+>Acked-by: Kiryl Shutsemau (Meta) <kas@kernel.org>
+>Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+>---
+
+LGTM, feel free to add:
+
+Acked-by: Lance Yang <lance.yang@linux.dev>
 
