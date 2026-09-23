@@ -1,73 +1,154 @@
-Return-Path: <linuxppc-dev+bounces-27950-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27951-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE4E6C982FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2026 23:17:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5385FC98302
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 02:31:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqGGK1dlsz2xlw;
-	Wed, 23 Sep 2026 09:17:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790119049;
-	cv=none; b=SbFwI1GbwXyDjlQ7sgxmqXD1MAvOuccG6kC1NN0dSxXHg18ueizHJFyO7KATYGDgZFF2SZsv1hKcKu/9na0QaWdkCVYUDIxsgzVLyKtOHNuYZG+h8DribHpWk5P/Q41BoNWEy4SUtyHz+XFIrwpZ+2PwuxTUCm0M/RviHUANwuQ99SDPZocJ2CRaMD8hSYop1eCjaWRwMElzJGlV4AEYEmvWvbNiyZvDfco3w8ySxegj9SEHeJFLxvXBCEVo7QxEThslnfHSKijkmMZsm4oA8vm1ypYp4Xt3plRb3U+OCkFU2aOUyZcmFa2MXw1jpIdirdJCMIIpyALHUCalPwcCqA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqLZh13pvz2xdb;
+	Wed, 23 Sep 2026 12:31:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::f4"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790130716;
+	cv=none; b=CrvcCzvdXPu5Ot+MAkBIlu/Tl/UKNpDZmxU8iH8FyClcJW5atk/0CvjhPq8bAbZyhMz/nhQkBINQS4n0xLD1XjE8fgj14+xN8mdPOyu7GbM9idjidEbB6xg9wnKLz6YmgmRmYqBAtfH0usPaP4aEp8mlLDzpcVr0FPj46HsGNVdNAQhkXA3Ddc70+3kbaOOlr63Q0J954wAOK1mVOYAdwbCXRyKONJ3gxwhHx4dVnKhRsXZe3rkvrpXxPj6d2ZgbwswPbeep+Hn1Gx/8WkFxFOfVvNJ2ylSOqAgz6aZwKivMDsU5vxlE3JOnQLqJJupIsPnAEsAOWdNVeixIHtLGTg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790119049; c=relaxed/relaxed;
-	bh=W4mOqaTr+peJFTZUrXoQ6lkkEWD+g7T5avZDT3doYhc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ViXfDl/4j9a7kFy8MQakrEEEVEYKyprwxEhkl3lrzx4+ertuo/TNbVlR1YXEba1adOa6b0sBMYJCltKTKqFSElrkyVvrmJdvtL78ZeKFIfGBBLefwCsJXOD7euuvb4CYbdfRt6GApiKYIDs/rqI4f9nAkBQcGYKTUcljXcChGCxoHRINmicASAnqNb9xU2HWzM0rmRb5A1jb5oKF1Ca3STj9mpS/5PSUAOwp+7YjARKftAWFIfmhgSjOnfzFHWs/RO0uvMp3x1oHZtIshCzOiG2S1hOSg4fe4m8kMGMGdyZDSzUddNPnJuiksB9Lroffszv9AaM8uq8657agNBAANw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XvNtXpGF; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1790130716; c=relaxed/relaxed;
+	bh=89+U8KAEwLqIX9mpcp+eoIG3lsJI+yoRSssy/pmscRA=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=FXcSc8CGoBsKguQzv+oacgrcVZ6qU+na3jQ+LUV5z7lPkjQ1jrrqdUuz94HBG7S9YQzGlcHmte2opF/hohsW8wWDdJG22OsPkLgu4x/tgO6KcQ/xYH08295lqFgMtt7bq2h5YoZZyNP0BLBkF0uAuqcdgPeKWIsXWcm1Jilw8RC50Kkm9LQoTEtPg1n8HOFTn3chQrfVOUrUA9aTRWrPavfA8szLyjxKOI/3Mh3p2Miqg49AvlubYzGulQXBhi7EAzWWeM7Xv9JUlcAcGPZhKd7YY9TN5fgz0/zZSAbEv3IfPsLL/mqo/ms04sgu7uohAUBwEEmqJM5eEwnET5MufQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=jTR26CvW; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::f4; helo=mta1.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XvNtXpGF;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=jTR26CvW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::f4; helo=mta1.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
+X-Greylist: delayed 399 seconds by postgrey-1.37 at boromir; Wed, 23 Sep 2026 12:31:52 AEST
+Received: from mta1.migadu.com (out-244.mta1.migadu.com [IPv6:2001:41d0:203:375::f4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqGGH73HVz2xST
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 09:17:27 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68MI76P61129513;
-	Tue, 22 Sep 2026 23:17:23 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=W4mOqa
-	Tr+peJFTZUrXoQ6lkkEWD+g7T5avZDT3doYhc=; b=XvNtXpGFI7M64GmAM0eKOn
-	Ez9YDnSv+8dHfplWXHdbNINKuesoJgcF07cTREqDEUyvTLscPEU4GzT7WG7dRXzV
-	ph+FRYjvCMW38fScAIoExiGbL20KnGMXeGNRy77tzhZlzNmz21B9PCkjzbWNvmny
-	H+oWp5g4Ql1ibDax9SDpmQXGpBS5/uSMmr1lphUt0l+uV/5bDcZhyAmK8jxabLTj
-	8SrVCsc92PwFakbkC/S0n479H3v6PTgGpu+k8yYImpcERn7PbJHuHr29I7iaC6mG
-	54McP5uf5ev+Sj4GnYLRd2LHKBr33fbpbtPV/G1ksugTy3V3P6eM714YF49wQuOw
-	==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gskg2gdd9-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 22 Sep 2026 23:17:23 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68MN4GB43239754;
-	Tue, 22 Sep 2026 23:17:22 GMT
-Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gt67gutg8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 22 Sep 2026 23:17:22 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
-	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68MNHLs831851082
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 22 Sep 2026 23:17:21 GMT
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DFD0558063;
-	Tue, 22 Sep 2026 23:17:20 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 19FFC5804B;
-	Tue, 22 Sep 2026 23:17:20 +0000 (GMT)
-Received: from [9.61.81.35] (unknown [9.61.81.35])
-	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 22 Sep 2026 23:17:19 +0000 (GMT)
-Message-ID: <0c5c6aa9-04d4-41fa-8cb4-f5ac55a8f63a@linux.ibm.com>
-Date: Tue, 22 Sep 2026 16:19:06 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqLZc15CHz2xM9
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 12:31:51 +1000 (AEST)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=d3FVAdMqEDWFoCMHxuxCTxk+fOdRBfvFdCrMB1cIOo0=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1790130693; v=1; x=1790735493;
+ b=jTR26CvWm9i3THVqQVtxlkEfN2W6uyQGYEufg+iJ5G8jJZzOzPXGL9avii4KnxRHGXrbeaon
+ Q8VrtPoQDphID+IKYhR/qz8ZFobb4JL8OyTyZjkj/vUFF0EPgrk7jEtmkekcHJlAASgYSPPBAbe
+ 9RT9RF6ALfN/g1aIoM/mdmcw=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id b86f8e4163d69484;
+	Wed, 23 Sep 2026 02:24:43 +0000
+X-Mizu-Trace-ID: b86f8e4163d69484
+X-Migadu-Flow: FLOW_OUT
+From: Lance Yang <lance.yang@linux.dev>
+To: ljs@kernel.org
+Cc: akpm@linux-foundation.org,
+	david@kernel.org,
+	ziy@nvidia.com,
+	baolin.wang@linux.alibaba.com,
+	liam@infradead.org,
+	nico.pache@linux.dev,
+	ryan.roberts@arm.com,
+	dev.jain@arm.com,
+	baohua@kernel.org,
+	lance.yang@linux.dev,
+	usama.arif@linux.dev,
+	kas@kernel.org,
+	guoren@kernel.org,
+	bcain@kernel.org,
+	geert@linux-m68k.org,
+	dinguyen@kernel.org,
+	schuster.simon@siemens-energy.com,
+	jonas@southpole.se,
+	stefan.kristiansson@saunalahti.fi,
+	shorne@gmail.com,
+	dalias@libc.org,
+	glaubitz@physik.fu-berlin.de,
+	pjw@kernel.org,
+	palmer@dabbelt.com,
+	aou@eecs.berkeley.edu,
+	alex@ghiti.fr,
+	linux@armlinux.org.uk,
+	vgupta@kernel.org,
+	monstr@monstr.eu,
+	chris@zankel.net,
+	jcmvbkbc@gmail.com,
+	will@kernel.org,
+	aneesh.kumar@kernel.org,
+	npiggin@gmail.com,
+	peterz@infradead.org,
+	davem@davemloft.net,
+	andreas@gaisler.com,
+	richard.henderson@linaro.org,
+	mattst88@gmail.com,
+	linmag7@gmail.com,
+	catalin.marinas@arm.com,
+	mark.rutland@arm.com,
+	chenhuacai@kernel.org,
+	kernel@xen0n.name,
+	tsbogend@alpha.franken.de,
+	James.Bottomley@HansenPartnership.com,
+	deller@gmx.de,
+	maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	chleroy@kernel.org,
+	hca@linux.ibm.com,
+	gor@linux.ibm.com,
+	agordeev@linux.ibm.com,
+	borntraeger@linux.ibm.com,
+	svens@linux.ibm.com,
+	richard@nod.at,
+	anton.ivanov@cambridgegreys.com,
+	johannes@sipsolutions.net,
+	tglx@kernel.org,
+	mingo@redhat.com,
+	bp@alien8.de,
+	dave.hansen@linux.intel.com,
+	x86@kernel.org,
+	hpa@zytor.com,
+	arnd@arndb.de,
+	vbabka@kernel.org,
+	rppt@kernel.org,
+	surenb@google.com,
+	mhocko@suse.com,
+	jgg@ziepe.ca,
+	jhubbard@nvidia.com,
+	peterx@redhat.com,
+	ysato@users.sourceforge.jp,
+	shakeel.butt@linux.dev,
+	corbet@lwn.net,
+	rdunlap@infradead.org,
+	linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org,
+	linux-csky@vger.kernel.org,
+	linux-hexagon@vger.kernel.org,
+	linux-m68k@lists.linux-m68k.org,
+	linux-openrisc@vger.kernel.org,
+	linux-sh@vger.kernel.org,
+	linux-riscv@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-snps-arc@lists.infradead.org,
+	linux-arch@vger.kernel.org,
+	sparclinux@vger.kernel.org,
+	linux-alpha@vger.kernel.org,
+	loongarch@lists.linux.dev,
+	linux-mips@vger.kernel.org,
+	linux-parisc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	linux-um@lists.infradead.org,
+	hughd@google.com,
+	qi.zheng@linux.dev,
+	linux-doc@vger.kernel.org
+Subject: Re: [PATCH v4 01/12] mm/khugepaged: deposit a newly allocated page table on collapse
+Date: Wed, 23 Sep 2026 10:24:36 +0800
+Message-ID: <20260923022436.61930-1-lance.yang@linux.dev>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20260922-rcu-pagetable-freeing-v4-1-fe1ad1f1e303@kernel.org>
+References: <20260922-rcu-pagetable-freeing-v4-1-fe1ad1f1e303@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,269 +162,131 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v10 8/9] scsi: ibmvfc: register and use asynchronous sub
- CRQ for events
-To: james.bottomley@hansenpartnership.com, martin.petersen@oracle.com
-Cc: linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org, brking@linux.ibm.com,
-        davemarq@linux.ibm.com
-References: <20260911054832.1311668-1-tyreld@linux.ibm.com>
- <20260911054832.1311668-9-tyreld@linux.ibm.com>
-Content-Language: en-US
-From: Tyrel Datwyler <tyreld@linux.ibm.com>
-In-Reply-To: <20260911054832.1311668-9-tyreld@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: p0jD9hk_-aHqMM7OPqq7qPO1cDHNsAMA
-X-Authority-Analysis: v=2.4 cv=I43w19gg c=1 sm=1 tr=0 ts=6ab30c83 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8
- a=dxymRrk4hePnmNfmlPsA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTIyMDMwNSBTYWx0ZWRfX3E7qb+r7RQ6L
- q3ZCUsY8CRvX5Nunsz1N6aVoJGIqLVlCzcWSZ33QYmo8V30/yGzPZJhuFkkbetDiZHkKhCzJbjV
- x96JShds+DF76h91jp5ZaSJH1bNFRSEldH+2dtEY95SC9gVLQ1e9wlRA8GjlfLblVJP1566IxXL
- XoIAbbaZKmNPWhnOzc9hDQCmDSFunJcONZsT+hkDsIjBPV5j4ODgVqkOVkEhITIekrJ/YzPV0Vr
- 13Vx4Bn2UJ3bEC4NjzoHan/xrQTcnSKJE6OhAwQ9R3aPq9gITip9ZZeqC+mIMSJb+x1TPqT7ENN
- cocjj/duD70PfpxG6AHtmRbOcneS3pQ/kVYgxZ8vSjajbCnRf14+F/KCRXXPTWT3jgyKyjjfQIp
- qP+oRoEZmv4Ovj50rCotunX1J2T0Ek822sIHWnsgYkxR563Ih3tq0KpEF6mZKFZN8iC0y9h+hiW
- xKt95m795J7I62nkJEQ==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTIyMDMwNSBTYWx0ZWRfX0rzbB+lbtywZ
- Q1IGzmOfUpGwN7Ocl5paQ6TowgX+6UcDPjPASZzt40xZcM8bqN82cilBaJMRbcoP1tbLs5Ri/Bd
- fpkM/D/UJG426Bd4lc9s3A0n/v142YQ=
-X-Proofpoint-GUID: p0jD9hk_-aHqMM7OPqq7qPO1cDHNsAMA
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-22_03,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 clxscore=1015 adultscore=0 suspectscore=0 impostorscore=0
- lowpriorityscore=0 bulkscore=0 phishscore=0 priorityscore=1501 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609220305
+Content-Transfer-Encoding: 8bit
 
-On 9/10/26 10:48 PM, Tyrel Datwyler wrote:
-> From: Dave Marquardt <davemarq@linux.ibm.com>
-> 
-> Wire the async sub-CRQ into the sub-CRQ lifecycle so it is allocated,
-> registered, and freed alongside the SCSI channel queues.
-> 
-> In ibmvfc_init_sub_crqs(), allocate the async sub-CRQ queue buffer via
-> ibmvfc_alloc_queue() before allocating the SCSI channels. Register it
-> with the VIOS by calling ibmvfc_register_channel() with index -1 (the
-> negative-index sentinel introduced in the previous commit). Either
-> failure disables multi-queue and aborts init.
-> 
-> In ibmvfc_release_sub_crqs(), ibmvfc_reenable_crq_queue(), and
-> ibmvfc_reset_crq(), deregister and re-register the async sub-CRQ
-> alongside the SCSI channel queues.
-> 
-> In ibmvfc_channel_setup_done(), capture the async sub-CRQ handle
-> returned by the VIOS in the channel setup response and store it in
-> vhost->async_sub_crq.vios_cookie.
-> 
-> In ibmvfc_set_login_info(), advertise IBMVFC_USE_ASYNC_SUBQ,
-> IBMVFC_CAN_HANDLE_FPIN, and IBMVFC_YES_SCSI capabilities whenever
-> multi-queue channels are enabled. IBMVFC_YES_SCSI was previously only
-> set for NVMe-enabled configurations; move it to the common multi-queue
-> path so it is always advertised when channels are in use.
-> 
-> Fix a variable-shadowing bug in ibmvfc_register_channel() where the
-> irq_failed cleanup loop reused rc for the H_FREE_SUB_CRQ hcall result,
-> clobbering the error code returned to the caller. Introduce hcall_rc
-> for the cleanup loop instead.
 
-I think this should be its own patch.
-
+On Tue, Sep 22, 2026 at 04:35:32PM +0100, Lorenzo Stoakes (ARM) wrote:
+>collapse_huge_page() deposits a PTE page table on PMD collapse in order
+>that it can be utilised for subsequent split operations, meaning that those
+>operations do not need to perform an allocation (as they are in a context
+>where it might be unwise).
+>
+>However the PTE page table which is deposited is the one which is currently
+>mapped by the PMD entry that is in the process of being collapsed.
+>
+>Once deposited, the PTE page table may be used in a split of any other
+>unrelated PMD entry.
+>
+>This is currently not an issue as this operation is performed with VMA/mmap
+>write lock + anon rmap locks held, so ordinary page table walkers will
+>never accidentally end up walking the wrong thing, and GUP-fast is
+>protected by an IPI via tlb_remove_table_sync_one().
+>
+>However, the series to which this commit belongs implements RCU-safe page
+>table traversal, at which point this becomes problematic.
+>
+>This can be resolved by using pte_offset_map_lock() which gates on a PTE
+>PTL and a pmd_same() check, but lockless walks are unsafe as things stand.
+>
+>Resolve this by simply allocating a new, zeroed, PTE page table to deposit
+>at the point of collapse.
+>
+>This path is already costly and an allocation has already been performed
+>for the huge folio, so this allocation is statistical noise in terms of
+>performance and memory usage at this point.
+>
+>With this PTE page table deposited, RCU-free the existing PTE page table
+>so it is safe for page table walkers to traverse within a grace period.
+>
+>This also brings this deposit case in line with all other page table
+>deposit logic which deposit a fresh page table.
+>
+>Additionally, this was the only place in the kernel that displaced a page
+>table like this, so eliminating it also helps consistency.
+>
+>An edge case for deposit exists for powerpc and its hash-based MMU - it
+>stores hash slot data in deposited page tables and zeroes them on withdraw,
+>so a zeroed deposited page table works correctly for it.
+>
+>Since khugepaged runs as a kernel thread, do a little dance in
+>alloc_deposit_pte() to correctly charge the allocation.
+>
+>This is already done for the folio allocation via alloc_charge_folio() but
+>no such wrapper exists for a page table allocation.
+>
+>Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+>---
+> mm/khugepaged.c | 32 ++++++++++++++++++++++++++++++--
+> 1 file changed, 30 insertions(+), 2 deletions(-)
+>
+>diff --git a/mm/khugepaged.c b/mm/khugepaged.c
+>index f49a6710933b..dab421f8233e 100644
+>--- a/mm/khugepaged.c
+>+++ b/mm/khugepaged.c
+>@@ -1278,6 +1278,23 @@ static enum scan_result alloc_charge_folio(struct folio **foliop, struct mm_stru
+> 	return SCAN_SUCCEED;
+> }
 > 
-> Guard the memset() in ibmvfc_deregister_channel() behind a check of
-> scrq->msgs.handle to prevent a NULL dereference when the function is
-> called on a queue that was never allocated, such as async_sub_crq when
-> multi-queue is disabled or initialization failed before
-> ibmvfc_alloc_queue() was reached.
-
-Same with this chunk.
-
--Tyrel
-
+>+static pgtable_t alloc_deposit_pte(struct mm_struct *mm)
+>+{
+>+	/*
+>+	 * khugepaged is run from a kernel thread, so need to manually set the
+>+	 * correct memcg so the allocation gets charged correctly.
+>+	 */
+>+	struct mem_cgroup *memcg = get_mem_cgroup_from_mm(mm);
+>+	struct mem_cgroup *old_memcg = set_active_memcg(memcg);
+>+	pgtable_t pgtable;
+>+
+>+	pgtable = pte_alloc_one(mm);
+>+
+>+	set_active_memcg(old_memcg);
+>+	mem_cgroup_put(memcg);
+>+	return pgtable;
+>+}
+>+
+> /*
+>  * collapse_huge_page() expects the mmap_lock to be unlocked before entering and
+>  * will always return with the lock unlocked, to avoid holding the mmap_lock
+>@@ -1293,7 +1310,7 @@ static enum scan_result collapse_huge_page(struct mm_struct *mm, unsigned long s
+> 	LIST_HEAD(compound_pagelist);
+> 	pmd_t *pmd, _pmd;
+> 	pte_t *pte = NULL;
+>-	pgtable_t pgtable;
+>+	pgtable_t pgtable = NULL;
+> 	struct folio *folio;
+> 	spinlock_t *pmd_ptl, *pte_ptl;
+> 	enum scan_result result = SCAN_FAIL;
+>@@ -1310,6 +1327,12 @@ static enum scan_result collapse_huge_page(struct mm_struct *mm, unsigned long s
+> 		goto out_nolock;
+> 	}
 > 
-> Signed-off-by: Dave Marquardt <davemarq@linux.ibm.com>
-> Acked-by: Tyrel Datwyler <tyreld@linux.ibm.com>
-> ---
->  drivers/scsi/ibmvscsi/ibmvfc-core.c | 51 +++++++++++++++++++++++++----
->  1 file changed, 44 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/scsi/ibmvscsi/ibmvfc-core.c b/drivers/scsi/ibmvscsi/ibmvfc-core.c
-> index c78e221f182a..70a3046135c7 100644
-> --- a/drivers/scsi/ibmvscsi/ibmvfc-core.c
-> +++ b/drivers/scsi/ibmvscsi/ibmvfc-core.c
-> @@ -192,6 +192,8 @@ static void ibmvfc_tgt_move_login(struct ibmvfc_target *);
->  
->  static void ibmvfc_dereg_sub_crqs(struct ibmvfc_host *, struct ibmvfc_channels *);
->  static void ibmvfc_reg_sub_crqs(struct ibmvfc_host *, struct ibmvfc_channels *);
-> +static void ibmvfc_deregister_channel(struct ibmvfc_host *, struct ibmvfc_channels *, int);
-> +static int ibmvfc_register_channel(struct ibmvfc_host *, struct ibmvfc_channels *, int);
->  
->  static const char *unknown_error = "unknown error";
->  
-> @@ -964,6 +966,7 @@ static int ibmvfc_reenable_crq_queue(struct ibmvfc_host *vhost)
->  	struct vio_dev *vdev = to_vio_dev(vhost->dev);
->  	unsigned long flags;
->  
-> +	ibmvfc_deregister_channel(vhost, &vhost->scsi_scrqs, -1);
->  	ibmvfc_dereg_sub_crqs(vhost, &vhost->scsi_scrqs);
->  	ibmvfc_dereg_sub_crqs(vhost, &vhost->nvme_scrqs);
->  
-> @@ -986,6 +989,7 @@ static int ibmvfc_reenable_crq_queue(struct ibmvfc_host *vhost)
->  	spin_unlock(vhost->crq.q_lock);
->  	spin_unlock_irqrestore(&vhost->host->host_lock, flags);
->  
-> +	ibmvfc_register_channel(vhost, &vhost->scsi_scrqs, -1);
->  	ibmvfc_reg_sub_crqs(vhost, &vhost->scsi_scrqs);
->  	ibmvfc_reg_sub_crqs(vhost, &vhost->nvme_scrqs);
->  
-> @@ -1006,6 +1010,7 @@ static int ibmvfc_reset_crq(struct ibmvfc_host *vhost)
->  	struct vio_dev *vdev = to_vio_dev(vhost->dev);
->  	struct ibmvfc_queue *crq = &vhost->crq;
->  
-> +	ibmvfc_deregister_channel(vhost, &vhost->scsi_scrqs, -1);
->  	ibmvfc_dereg_sub_crqs(vhost, &vhost->scsi_scrqs);
->  	ibmvfc_dereg_sub_crqs(vhost, &vhost->nvme_scrqs);
->  
-> @@ -1042,6 +1047,7 @@ static int ibmvfc_reset_crq(struct ibmvfc_host *vhost)
->  	spin_unlock(vhost->crq.q_lock);
->  	spin_unlock_irqrestore(&vhost->host->host_lock, flags);
->  
-> +	ibmvfc_register_channel(vhost, &vhost->scsi_scrqs, -1);
->  	ibmvfc_reg_sub_crqs(vhost, &vhost->scsi_scrqs);
->  	ibmvfc_reg_sub_crqs(vhost, &vhost->nvme_scrqs);
->  
-> @@ -1584,9 +1590,11 @@ static void ibmvfc_set_login_info(struct ibmvfc_host *vhost)
->  
->  	if (vhost->mq_enabled || vhost->using_channels) {
->  		login_info->capabilities |= cpu_to_be64(IBMVFC_CAN_USE_CHANNELS);
-> +		login_info->capabilities |= cpu_to_be64(IBMVFC_USE_ASYNC_SUBQ);
-> +		login_info->capabilities |= cpu_to_be64(IBMVFC_CAN_HANDLE_FPIN);
-> +		login_info->capabilities |= cpu_to_be64(IBMVFC_YES_SCSI);
->  		if (vhost->nvme_enabled) {
->  			login_info->capabilities |= cpu_to_be64(IBMVFC_YES_NVMEOF);
-> -			login_info->capabilities |= cpu_to_be64(IBMVFC_YES_SCSI);
->  			login_info->capabilities |= cpu_to_be64(IBMVFC_CAN_USE_WWPN_ALL);
->  		}
->  	}
-> @@ -5811,6 +5819,7 @@ static void ibmvfc_channel_setup_done(struct ibmvfc_event *evt)
->  		for (i = 0; i < nvme->active_queues; i++)
->  			nvme->scrqs[i].vios_cookie =
->  				be64_to_cpu(setup->channel_handles[scsi->active_queues + i]);
-> +		vhost->async_sub_crq.vios_cookie = be64_to_cpu(setup->async_sub_crq_handle);
->  
->  		ibmvfc_dbg(vhost, "Using %u SCSI channels\n",
->  			   scsi->active_queues);
-> @@ -5870,6 +5879,7 @@ static void ibmvfc_channel_setup(struct ibmvfc_host *vhost)
->  		for (i = 0; i < nvme_channels; i++)
->  			setup_buf->channel_handles[scsi_channels + i] =
->  				cpu_to_be64(nvme->scrqs[i].cookie);
-> +		setup_buf->async_sub_crq_handle = cpu_to_be64(vhost->async_sub_crq.cookie);
->  	}
->  
->  	ibmvfc_init_event(evt, ibmvfc_channel_setup_done, IBMVFC_MAD_FORMAT);
-> @@ -6834,6 +6844,7 @@ static int ibmvfc_register_channel(struct ibmvfc_host *vhost,
->  	bool is_async = index < 0;
->  	struct ibmvfc_queue *scrq = !is_async ? &channels->scrqs[index] : &vhost->async_sub_crq;
->  	int rc = -ENOMEM;
-> +	int hcall_rc;
->  
->  	ENTER;
->  
-> @@ -6902,8 +6913,8 @@ static int ibmvfc_register_channel(struct ibmvfc_host *vhost,
->  
->  irq_failed:
->  	do {
-> -		rc = plpar_hcall_norets(H_FREE_SUB_CRQ, vdev->unit_address, scrq->cookie);
-> -	} while (rc == H_BUSY || H_IS_LONG_BUSY(rc));
-> +		hcall_rc = plpar_hcall_norets(H_FREE_SUB_CRQ, vdev->unit_address, scrq->cookie);
-> +	} while (hcall_rc == H_BUSY || H_IS_LONG_BUSY(hcall_rc));
->  reg_failed:
->  	LEAVE;
->  	return rc;
-> @@ -6953,8 +6964,10 @@ static void ibmvfc_deregister_channel(struct ibmvfc_host *vhost,
->  	}
->  
->  	/* Clean out the queue */
-> -	memset(scrq->msgs.crq, 0, PAGE_SIZE);
-> -	scrq->cur = 0;
-> +	if (scrq->msgs.handle) {
-> +		memset(scrq->msgs.crq, 0, PAGE_SIZE);
-> +		scrq->cur = 0;
-> +	}
->  
->  	LEAVE;
->  }
-> @@ -6971,7 +6984,9 @@ static void ibmvfc_reg_sub_crqs(struct ibmvfc_host *vhost,
->  	for (i = 0; i < channels->max_queues; i++) {
->  		if (ibmvfc_register_channel(vhost, channels, i)) {
->  			for (j = i; j > 0; j--)
-> -				ibmvfc_deregister_channel(vhost, channels, j - 1);
-> +				ibmvfc_deregister_channel(
-> +					vhost, channels, j - 1);
-> +
->  			vhost->do_enquiry = 0;
->  			return;
->  		}
-> @@ -7026,16 +7041,26 @@ static int ibmvfc_alloc_channels(struct ibmvfc_host *vhost,
->  
->  static void ibmvfc_init_sub_crqs(struct ibmvfc_host *vhost)
->  {
-> +	int rc = 0;
-> +
->  	ENTER;
->  	if (!vhost->mq_enabled)
->  		return;
->  
-> -	if (ibmvfc_alloc_channels(vhost, &vhost->scsi_scrqs)) {
-> +	rc = ibmvfc_alloc_queue(vhost, &vhost->async_sub_crq, IBMVFC_SUB_CRQ_FMT);
-> +	if (rc) {
->  		vhost->do_enquiry = 0;
->  		vhost->mq_enabled = 0;
->  		return;
->  	}
->  
-> +	/* register async_sub_crq channel */
-> +	if (ibmvfc_register_channel(vhost, &vhost->scsi_scrqs, -1))
-> +		goto free_async_sub_crq;
-> +
-> +	if (ibmvfc_alloc_channels(vhost, &vhost->scsi_scrqs))
-> +		goto deregister_async_sub_crq;
-> +
->  	ibmvfc_reg_sub_crqs(vhost, &vhost->scsi_scrqs);
->  
->  	if (vhost->nvme_enabled) {
-> @@ -7046,6 +7071,15 @@ static void ibmvfc_init_sub_crqs(struct ibmvfc_host *vhost)
->  	}
->  
->  	LEAVE;
-> +	return;
-> +
-> + deregister_async_sub_crq:
-> +	ibmvfc_deregister_channel(vhost, &vhost->scsi_scrqs, -1);
-> +free_async_sub_crq:
-> +	ibmvfc_free_queue(vhost, &vhost->async_sub_crq);
-> +	vhost->do_enquiry = 0;
-> +	vhost->mq_enabled = 0;
-> +	return;
->  }
->  
->  static void ibmvfc_release_channels(struct ibmvfc_host *vhost,
-> @@ -7069,6 +7103,9 @@ static void ibmvfc_release_channels(struct ibmvfc_host *vhost,
->  static void ibmvfc_release_sub_crqs(struct ibmvfc_host *vhost)
->  {
->  	ENTER;
-> +	ibmvfc_deregister_channel(vhost, &vhost->scsi_scrqs, -1);
-> +	ibmvfc_free_queue(vhost, &vhost->async_sub_crq);
-> +
->  	if (!vhost->scsi_scrqs.scrqs)
->  		return;
->  
+>+	if (is_pmd_order(order)) {
+>+		pgtable = alloc_deposit_pte(mm);
+>+		if (!pgtable)
+>+			goto out_nolock;
 
+One small thing: result is still SCAN_SUCCEED after alloc_charge_folio(),
+
+	result = alloc_charge_folio(&folio, mm, cc, order);
+	if (result != SCAN_SUCCEED)
+		goto out_nolock;
+
+	if (folio_memcg_alloc_deferred(folio)) {
+		result = SCAN_ALLOC_HUGE_PAGE_FAIL;
+		goto out_nolock;
+	}
+
+	if (is_pmd_order(order)) {
+		pgtable = alloc_deposit_pte(mm);
+		if (!pgtable)
+			goto out_nolock;
+	}
+
+so if alloc_deposit_pte() fails, collapse_huge_page() returns success
+without installing a PMD.
+
+I see sashiko pointed that out too :)
+
+Cheers, Lance
 
