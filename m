@@ -1,83 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-28061-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28062-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 844D1C9830B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 18:30:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6DC59C98304
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 18:40:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqlrs2WQNz30RN;
-	Thu, 24 Sep 2026 04:30:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790188237;
-	cv=none; b=H26a0Geb+qG4PvJd4g7eMk1I1RwYv0QUhMzBj/g9HY0aIO/rF2v65C1WpI1rAGtDDVBohHfhL2cfhklo2AfYfhArJ5xcXVG/Oy9nJn94AAcUmMvZwcIws8toX+V9YXd/em72Irsz8xHL+/LHUPaQh89lcRjuGxzbO1Re6bbUeg0q2zJsYvToPx/hLqo+bMFKIJGAnGqb/MnAeyIx6lMnlywZ3u5UGDjZkE0n6abwvZBR4qDYtzfS4ed4lzRUh3BehP5rarPVEgUxbqgL2N8r5Zgt2LobW1ZJZYXB6YRxrgS2NOlQ/w/LcTOdjuArBVkRaBTcDx+TY9ra0Viojy9wWA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqm4M4Nllz30M6;
+	Thu, 24 Sep 2026 04:40:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:3b::10"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790188835;
+	cv=none; b=im3zR03Jn0YEweWn1O7iIDqpRnn5Hxpl43b0TZvMereizAN3pAJt4E1Wec8HY6HuLQWG20L5ZvRyGEEYT05tjD3P8VHobEOcjiCw0XTLjDm9Yx+EKfNxPCxKAWHY1HtIijhwKw3Ng3EP9iJ7Dnlhpm2XRqcL9dCQ4TTr73oC4v7wUvb4O29StkOlrnMTB9IqiltRitMa5V7dgWeeguViFTR4pYWx04ibaFub1VDPj2+jwBam1B3/sRQoIQONAAKZC/Rg1F595dw1AI1Jm0xjkLJ/rCZ9U+S2RpzRetY5ojl4LQOQeOINvr6tTpmjD8w2EUeYeuUVTd6yBAL1Q4yw4A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790188237; c=relaxed/relaxed;
-	bh=w1J1z+N+G321cxNkEZ3g3FhEOqDogrxBFm/mVGaYJgk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=d9NfOl5jvWhwAYxF/xxrClSEX3XoxqBrZyg9wd2e9qZmqVuMaFViaFo5uu/G9oaYxC0D4gl3J+5BRrPrIDWziotnVxRdzAGvbUuY5W+ZTbqrsn8TmVzXvrM9jZVrd1loHFfFb8cXgrrA1GJ/OL9qqSupHzmwQvOE3t6BVFQJ8DlRGxCRBUoHgGFiW3jkcTVD+HHbB+1Sngw0MRHFhdCkFO8bVZvsvC+Qrw2gdyCAvLoQjshwN7XMFtajh1xnA4n410xKB53r1xK2ZZ7Cg2ba0rQUB73dP153cDCQcfgork7QmDudys8jApbJ7pq/zQCsWtydh5eIwRrs38ZTdX7InQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bjRaQ6tE; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1790188835; c=relaxed/relaxed;
+	bh=3gc3lVJFpeHvTVPTQlhw9bRs3DHSZ5NaiLqgYc9qgEg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=feVyhxL0sCWh2RrCQ+HcdH1Z2K4EQOm01LgJrm3n9U7uy67Q30myxDn9+pdFeRAMHWDzhxW3/FrJ5NoZ/RbzQRZtsFu+8SCTUk13bwUcgZeq9Ila4vHQrnVWgiY8oM088PDsivfT2+fXHdpLyWWSJFQvNUrHW8ZUFodY3BPPcgKDRkO50jMPDyOwVT34y9/4oHvE3vv+KRuC6QnQV4OrI+t8B0/A66eVEO23m+zBu9k5HB0oe2XEq4QpJAu4tPrcuvSx/5FaNWUeM7nnH9sB8dnh9/euiMhRwyMEYJbCIAsZCZnjJpp7bW8P6w3Y4KrgS9/4uGU6KQtvVxfYN+d3PA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=JxxqphU3; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:3b::10; helo=mail-pz2-x10.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bjRaQ6tE;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=JxxqphU3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:3b::10; helo=mail-pz2-x10.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pz2-x10.google.com (mail-pz2-x10.google.com [IPv6:2607:f8b0:4864:3b::10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqlrr3jkBz30M6
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 04:30:36 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68NGZnsi3765043;
-	Wed, 23 Sep 2026 18:30:26 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=w1J1z+N+G321cxNkE
-	Z3g3FhEOqDogrxBFm/mVGaYJgk=; b=bjRaQ6tEgjoIhKQq5nolG/L6IFVJrNfUx
-	LYvkP+ZBhHJeID30XIDSMDD5XsuvVe0BTN6Hy1kyv9avp2mNHq/y631YQg00zl8f
-	30J1PMdRlRJPN3Fu+N6z/WCrqFNbowkwqOS45E/pt1BZ8vAaqZyTpDxgvQp1lT0h
-	FZxSQvCrpsrBcdFQYdSmUo+g5aZZnWyG9CrJHWim7tD5Z+fb0I1ItvVLd7WXl1Lp
-	JzuUwVCAZPPTMFt73Fyit7NzafNvFOjmX5qzkwAruZ6gGE90xoMmiAQm0PtBfuhX
-	gHydFe5TyEseDiW5f/yiKGHw59xLfhsdl8CKfp0umB1N5ydI9ej7w==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gske1mgs4-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Wed, 23 Sep 2026 18:30:25 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68NGWlHf627135;
-	Wed, 23 Sep 2026 18:30:25 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gvbt2t5fx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 23 Sep 2026 18:30:25 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68NIULD111862522
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 23 Sep 2026 18:30:21 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5F3B82004F;
-	Wed, 23 Sep 2026 18:30:21 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0A91B2004E;
-	Wed, 23 Sep 2026 18:30:16 +0000 (GMT)
-Received: from li-fc74f8cc-3279-11b2-a85c-ef5828687581.ibm.com (unknown [9.67.83.254])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 23 Sep 2026 18:30:15 +0000 (GMT)
-From: Srish Srinivasan <ssrish@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqm4L0gkRz2yDm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 04:40:32 +1000 (AEST)
+Received: by mail-pz2-x10.google.com with SMTP id 41be03b00d2f7-cc1cea4ae2cso842858a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 11:40:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790188830; x=1790793630; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=3gc3lVJFpeHvTVPTQlhw9bRs3DHSZ5NaiLqgYc9qgEg=;
+        b=JxxqphU376jctSQTW3MISsqhlX9OpRYQGxf4nCbG7hNHS/gRgVW2ITpIeXOyuv7UCz
+         uWmGQ6BhyR94QvS2HHnCcffgNEKZBPaMD2LFOFUsgaIn+aNc3jdIVks3S6F6Ee5lwXmV
+         t0Q7JC3NPkvqv4z0DDzchXeeIMHTJtK5CImiS6S1vQ6VepS5B073uf8yFQrQqE5j/uWN
+         905WPZgUspUlnHi1R9cahIuS6YC4itJFdkkr192zf+8YaCjMPlBSd5/O+3SpOj4pqnXe
+         HaS5IkpryxLRe3UuVBzNPN4vGyCu+ADNe9bQJz39ofgCcA3qh373Vj25jy6QQ9SvfDrT
+         fdAw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790188830; x=1790793630;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=3gc3lVJFpeHvTVPTQlhw9bRs3DHSZ5NaiLqgYc9qgEg=;
+        b=cF1SgkASxR+ak6f5HGtQ0vv0u5YfP/vOGttUw+ZlzvsvZlnAzFVU79Wv940R5Sv7zx
+         vlUBNdkl3M4cvF+p/qDBhx4VNx+ei2XHBj+iq4J5x/f65Cs5RVVBmPhctDkOUqPRU8gM
+         wrCKywm3rhDm4zCkXxLMn5xDymFJVPBAATq93FrjPiiBp9PxgLqnqREz31qxJMfkH+LN
+         0WJtVo0GtSxBJHflw8m8tb7DuqXlK+Q4zr/DSesw4JqSJbTHosUNmLp8KPCCTM8Ebl1j
+         an+iPk/NCiGLCN2l5mvYrrvZksfxRcJwJnCpL+CDx3mZMzy0lq1W3XdmYmKDVXybI4Cy
+         GLpg==
+X-Gm-Message-State: AFuF++m03HzHaPxVvRs8QmQxKNE5H8yNiQwcOOanWb4gLUdHOivC0MVt
+	PAVaVLtfpjvVAa7Jcih0oPzlE+WXfZkMpq988tCJ6SxUvV2X2V3xTTnhCgkUgA==
+X-Gm-Gg: AYBFou3hQmPCua7uYZUFOIhSgG5QoR3VIbPvUQ0fN/RuWZkMM5RSBVhNvbYvRNksAE5
+	IuDTGYN+COzL7krRu4bf/j0dxyfeHi4gdvUol746ZNBkkwrgIGQeBVDtOXyVJdtfjf8M6iqiif7
+	2JmD8eTjHdRS8Bel5zseIMTZzs58nU4vydDV0I7VPXqCHPdX3fv1exZQM50ECyZwxEFCMn9WO43
+	CxTqK2T66Chtvjem9t0EhOUlUzpuo7fBh3s4xMMt3WOFNaumxVEkjOhsQCwNWm+ISUQfoeMgUUE
+	7ZOrBda19IKQXmcbjHo4gyfC3fG3ZXPdVr3VQExiqFoXNYdQ+nLAX0iMf06t9dC4pI7kIag/y2y
+	Vm94R3+iWfUfAXzEsEdTwT1ECGPGjDs5/lPtJ5WdwQ1F5hQLkVuU+Xa4LP+dlW50pZngEknzaB+
+	N7Zej0kfcyu8Kpn+Rd6wt4sXNi3b2QUVbhxM8uV+d2tzR0A+KBTeiughNhG2YzMwdbW6Dbpe/5P
+	ig4awZNf3h1MQxGlZDrJlUu7D/ZKZOnwNO0YSQzFtGmzTwc9JROUTanVkiOPgtJsgkZ3SpLV14D
+	Ii9epy+fDuOeH4/F8SKqows/s3mc6TJrwN6vHEnOq8Iictt9
+X-Received: by 2002:a05:6a20:6f07:b0:3cc:8f53:26c0 with SMTP id adf61e73a8af0-3de0e73d922mr85921637.17.1790188830372;
+        Wed, 23 Sep 2026 11:40:30 -0700 (PDT)
+Received: from ryzen.lan ([2601:644:8000:7a86::e34])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cc75f3b82aasm1644341a12.9.2026.09.23.11.40.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 23 Sep 2026 11:40:29 -0700 (PDT)
+From: Rosen Penev <rosenp@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu, nayna@linux.ibm.com, gjoyce@linux.ibm.com,
-        ritesh.list@gmail.com, sshegde@linux.ibm.com,
-        linux-kernel@vger.kernel.org, rnsastry@linux.ibm.com,
-        ssrish@linux.ibm.com
-Subject: [PATCH 12/12] pseries/plpks: update PKS documentation and MAINTAINERS entry
-Date: Wed, 23 Sep 2026 23:58:16 +0530
-Message-ID: <20260923182816.151451-13-ssrish@linux.ibm.com>
+Cc: Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	devicetree@vger.kernel.org (open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS),
+	linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH] powerpc: dts: turris1x: use qca8337 internal PHYs
+Date: Wed, 23 Sep 2026 11:40:28 -0700
+Message-ID: <20260923184028.13830-1-rosenp@gmail.com>
 X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260923182816.151451-1-ssrish@linux.ibm.com>
-References: <20260923182816.151451-1-ssrish@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,109 +101,93 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: vG6r3mDQVpY-Bhhy7IrFQv6ZMeMORD8q
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTIzMDA3MiBTYWx0ZWRfX7gqcY44SItNH
- MDTt8QohiQ2W/844g/AGgXryK9ub2jbV01BcIuFTB5nP7Nc0gSsulf4LrVGR8pT7a0IGuKJyXTp
- 4KApv/Kq4OeWWOG0L2XtPH0TUlRd7hRLINSmm6VXQUE0SM5zRPxLeEvQ+ZGE6rwG3ZxGVv2FLOS
- ObPcDDkyieGP7nd2Oc+hES+4Ts45Nu/PR8WeINWC0KSvYXl/71a1PRHcC49dlwOzTeL+u4I8aaX
- M423NXBB2DfEm6BYTEP9f0uuSvq0s9b79mocPbS62aApyTYBRZ7t1HMOqxaPhAlY0ZS9Abgr1I0
- vvZ+1KsAz7w4mFNGQsfUXHife7xi6lVfr46c/6TYjBHihUwkRoQUuCly9/9M6t6vJdA+WhA4RTY
- NskpWAN4GXu/e2nXgR0iovKvYoJEb/UZ5XUrzbG+XP3KdCegVdIFJz8eSXgeTYipRoRScYFGdYh
- 4lBZc0hrSEYDf+H3J/g==
-X-Authority-Analysis: v=2.4 cv=O/KsLx9W c=1 sm=1 tr=0 ts=6ab41ac2 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8 a=VwQbUJbxAAAA:8
- a=2YPxekF_mspUCEnIjzkA:9
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTIzMDA3MiBTYWx0ZWRfX0BM+pQO7V3Ka
- WFrIU061/xte2YBs+/12Vd4AUAEUMWXIn9oqXyD9rFBpyS3tcXdQ32+WyS5QuFQ8aklb2HsV8E3
- lyqvWF46WCMFNcIoOCyIw0a0sM1axbE=
-X-Proofpoint-GUID: Ox6s56VtInLl4zrN01vsQYbAmN9UIv84
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-23_06,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 malwarescore=0 phishscore=0 impostorscore=0 suspectscore=0
- bulkscore=0 priorityscore=1501 lowpriorityscore=0 adultscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609230072
 
-Wrap long PKS hcall return-value lines consistently and fix a typo in the
-H_PKS_UNWRAP_OBJECT description.
+The QCA8337 switch has a managed internal MDIO bus for its built-in
+PHYs.  Declare the five PHYs in an mdio subnode of the switch and
+link the LAN ports to them with phy-mode = "internal" and
+phy-handle, so each switch port is connected to the correct internal
+PHY instead of relying on the implicit legacy port-to-PHY mapping.
 
-Also update the MAINTAINERS entry from KEYS-TRUSTED-PLPKS to
-KEYS-TRUSTED-PKWM to reflect the PowerVM Key Wrapping Module naming.
-
-Signed-off-by: Srish Srinivasan <ssrish@linux.ibm.com>
-Tested-by: R Nageswara Sastry <rnsastry@linux.ibm.com>
+Assisted-by: LLM
+Signed-off-by: Rosen Penev <rosenp@gmail.com>
 ---
- Documentation/arch/powerpc/papr_hcalls.rst | 16 ++++++++--------
- MAINTAINERS                                |  2 +-
- 2 files changed, 9 insertions(+), 9 deletions(-)
+ arch/powerpc/boot/dts/turris1x.dts | 35 ++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
 
-diff --git a/Documentation/arch/powerpc/papr_hcalls.rst b/Documentation/arch/powerpc/papr_hcalls.rst
-index 14e39f095a1c..44c9c8b32ae3 100644
---- a/Documentation/arch/powerpc/papr_hcalls.rst
-+++ b/Documentation/arch/powerpc/papr_hcalls.rst
-@@ -305,8 +305,8 @@ like core instruction, core LLAT and nest.
- | Input: authorization, objectlabel, objectlabellen, policy, out, outlen
- | Out: *Hypervisor Generated Key, or None when the wrapping key policy is set*
- | Return Value: *H_SUCCESS, H_Function, H_State, H_R_State, H_Parameter, H_P2,
--                H_P3, H_P4, H_P5, H_P6, H_Authority, H_Nomem, H_Busy, H_Resource,
--                H_Aborted*
-+                H_P3, H_P4, H_P5, H_P6, H_Authority, H_Nomem, H_Busy,
-+                H_Resource, H_Aborted*
+diff --git a/arch/powerpc/boot/dts/turris1x.dts b/arch/powerpc/boot/dts/turris1x.dts
+index d0b7c62b8c6e..58c9e7b34e50 100644
+--- a/arch/powerpc/boot/dts/turris1x.dts
++++ b/arch/powerpc/boot/dts/turris1x.dts
+@@ -174,26 +174,36 @@ fixed-link {
+ 					port@1 {
+ 						reg = <1>;
+ 						label = "lan5";
++						phy-mode = "internal";
++						phy-handle = <&phy_port1>;
+ 					};
  
- H_PKS_GEN_KEY is used to have the hypervisor generate a new random key.
- This key is stored as an object in the Power LPAR Platform KeyStore with
-@@ -321,8 +321,8 @@ the user. Generation of wrapping keys is supported only for a key size of
- |        inlen, out, outlen, continue-token
- | Out: *continue-token, byte size of wrapped object, wrapped object*
- | Return Value: *H_SUCCESS, H_Function, H_State, H_R_State, H_Parameter, H_P2,
--                H_P3, H_P4, H_P5, H_P6, H_P7, H_P8, H_P9, H_Authority, H_Invalid_Key,
--                H_NOT_FOUND, H_Busy, H_LongBusy, H_Aborted*
-+                H_P3, H_P4, H_P5, H_P6, H_P7, H_P8, H_P9, H_Authority,
-+                H_Invalid_Key, H_NOT_FOUND, H_Busy, H_LongBusy, H_Aborted*
+ 					port@2 {
+ 						reg = <2>;
+ 						label = "lan4";
++						phy-mode = "internal";
++						phy-handle = <&phy_port2>;
+ 					};
  
- H_PKS_WRAP_OBJECT is used to wrap an object using a wrapping key stored in the
- Power LPAR Platform KeyStore and return the wrapped object to the caller. The
-@@ -331,16 +331,16 @@ which must have been previously created with H_PKS_GEN_KEY. The provided object
- is then encrypted with the wrapping key and additional metadata and the result
- is returned to the caller.
+ 					port@3 {
+ 						reg = <3>;
+ 						label = "lan3";
++						phy-mode = "internal";
++						phy-handle = <&phy_port3>;
+ 					};
  
--
- **H_PKS_UNWRAP_OBJECT**
+ 					port@4 {
+ 						reg = <4>;
+ 						label = "lan2";
++						phy-mode = "internal";
++						phy-handle = <&phy_port4>;
+ 					};
  
- | Input: authorization, objectwrapflags, in, inlen, out, outlen, continue-token
- | Out: *continue-token, byte size of unwrapped object, unwrapped object*
- | Return Value: *H_SUCCESS, H_Function, H_State, H_R_State, H_Parameter, H_P2,
--                H_P3, H_P4, H_P5, H_P6, H_P7, H_Authority, H_Unsupported, H_Bad_Data,
--                H_NOT_FOUND, H_Invalid_Key, H_Busy, H_LongBusy, H_Aborted*
-+                H_P3, H_P4, H_P5, H_P6, H_P7, H_Authority, H_Unsupported,
-+                H_Bad_Data, H_NOT_FOUND, H_Invalid_Key, H_Busy, H_LongBusy,
-+                H_Aborted*
+ 					port@5 {
+ 						reg = <5>;
+ 						label = "lan1";
++						phy-mode = "internal";
++						phy-handle = <&phy_port5>;
+ 					};
  
--H_PKS_UNWRAP_OBJECT is used to unwrap an object that was previously warapped with
-+H_PKS_UNWRAP_OBJECT is used to unwrap an object that was previously wrapped with
- H_PKS_WRAP_OBJECT.
+ 					port@6 {
+@@ -208,6 +218,31 @@ fixed-link {
+ 						};
+ 					};
+ 				};
++
++				mdio {
++					#address-cells = <1>;
++					#size-cells = <0>;
++
++					phy_port1: ethernet-phy@0 {
++						reg = <0>;
++					};
++
++					phy_port2: ethernet-phy@1 {
++						reg = <1>;
++					};
++
++					phy_port3: ethernet-phy@2 {
++						reg = <2>;
++					};
++
++					phy_port4: ethernet-phy@3 {
++						reg = <3>;
++					};
++
++					phy_port5: ethernet-phy@4 {
++						reg = <4>;
++					};
++				};
+ 			};
+ 		};
  
- References
-diff --git a/MAINTAINERS b/MAINTAINERS
-index cc3cae2e378b..932eb463428c 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -14485,7 +14485,7 @@ S:	Supported
- F:	include/keys/trusted_dcp.h
- F:	security/keys/trusted-keys/trusted_dcp.c
- 
--KEYS-TRUSTED-PLPKS
-+KEYS-TRUSTED-PKWM
- M:	Srish Srinivasan <ssrish@linux.ibm.com>
- M:	Nayna Jain <nayna@linux.ibm.com>
- L:	linux-integrity@vger.kernel.org
 -- 
-2.52.0
+2.55.0
 
 
