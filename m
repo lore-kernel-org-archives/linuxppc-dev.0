@@ -1,64 +1,118 @@
-Return-Path: <linuxppc-dev+bounces-27985-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27986-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42AAAC982EA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 08:12:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0BD86C982FA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 08:14:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqV7Q4BPMz2ydN;
-	Wed, 23 Sep 2026 18:12:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790151138;
-	cv=none; b=CzggIYLQp0eI7+2JsAi7/+WY1jb4E/iRw8UObhLRKNLaBAKxqpMPJxX1yOH+O+KqQfF1Ebqo5NMGJ9Ux/ZfqgyjUKmNIykJRm4AGsOyIlQgEF7hivNhIVo8N8tTwlPxnvKgHD3P8LqKwtGLTTxetik4aqj3Am+DOkNYQzKQiluTwVHjV9BBnGoXo8wGOLmq/+QYuI8vknLudaz0WMMiMNzpnxAFfgOfAxez7BGKpuUUBhw6hBLQ7hpIAmJ1DQUQbeZe9IaJPf0/NPajSaU3PIaLKEPyUTnEP9V5/SXmrFOBTKZkexThghaC+wjyakr5J6lpyyLlVudqfdzWD6NkrPg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqV9h460qz2yqL;
+	Wed, 23 Sep 2026 18:14:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790151256;
+	cv=none; b=gU/gs+aeEXOF7+fup/9zJ8WqTWDGD1hhtbbQmTqO1shxUWpXTzxk8yLw6McGJ/Rb4kn1UVSvBFm8SPTgSRnr5WXD2j1Wg2KtZeLWx8Ed6UDyR0d75mgNsBrZYtRpXAZGwbk5sbmSy4jQH835BgkJ838VC1T5ixchNzATdZ2tbVRUE1wenQnNyW19F3IUKWwJdMol050BKEvW3so+2OIZK2M5dxNWAbQ0zaxAdJI8P5VAKEi7HFthsnXTmhc2ufD4KoWKk4i5O+KCU9FDoLh6VOiJY/k9NbR0j+5ITlfNShzDx4IraCueRjTt+biIbkiKW1STF6j/6vWWkaDW3lUyVQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790151138; c=relaxed/relaxed;
-	bh=4RfQtrFJ309a+fLrqfO5VDKsk1rCknVTQEk2e9GBuqM=;
+	t=1790151256; c=relaxed/relaxed;
+	bh=4asDkf1r4nhSOrT7R8hAyZcEQKKYrXhZ/zPFbXlZHas=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ckq8mIWk0EY+LXEN4xQDT9OGl0JGYxgRYzKIrzQyJSO+kXCnsuvuVn6Q+yBkLK8xTd/eVRohwWyWRO+UNYRjHjbkRNmIHpu0btP6VwaL+4LEc0FRYzwYwop9GX74SjYeZOQG/E8gKY6hIf1fLdPScLJeW9AuJLENwu77AvTZqnCE6bCetI2TFpwh+k/QImwYOX05TK8COND1UA3SABNolk+NWNp9aFiRxrIpGaLE+0KdR8BxkPlVkQTSl4TGLzRb5ExGcVaFRqabUEFN/qNotXRTKWZKMoXDyltedgpzVWDRHd0tvTTp9KtRkM8HKz3OLHqqn+7j1aEtAoPO1wnRvQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=V12ssdVB; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=gTr4DCYhdFB3m8x3pho2tw542NoBKDfg8uXsajmFRLKG3g6KdlbLPCX1ke0juEfpoIHMf41h6uja3JtygwRysCDdxMeNb98dgL3NEGTc5ogeq5K7Ce9ofYzdqfOc1X81bJObGa1JLSe+PhYFD1yk7JEEyxB/sNeqPTg80xWNIUCYRARMdYCv5djit8P1spggdqK52QaNLjjKf9tDWiHBpf8+3QKlQLgzWdKzLC42MSpTgKqL69hUoUUp4RnzzDEmWvucCWPPERANTDesjy/NnQ5lk1kmqBFSGmYzzeOQ03BGxMMGbHntkz/+Mp3Ypo7uCTp2i6OogZp2LZMqpgKLtw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mCJlfOwt; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=V12ssdVB;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mCJlfOwt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqV7P3trPz2xs1
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 18:12:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqV9g528Zz2ydN
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 18:14:15 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id A093E40C37;
-	Wed, 23 Sep 2026 08:12:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 81B6A1F000FF;
-	Wed, 23 Sep 2026 08:12:14 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id F2520600AA;
+	Wed, 23 Sep 2026 08:14:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 376301F000FF;
+	Wed, 23 Sep 2026 08:13:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790151134;
-	bh=4RfQtrFJ309a+fLrqfO5VDKsk1rCknVTQEk2e9GBuqM=;
+	s=k20260515; t=1790151252;
+	bh=4asDkf1r4nhSOrT7R8hAyZcEQKKYrXhZ/zPFbXlZHas=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=V12ssdVBZdEg1YgzOEHBZ1L0Xf4ZbdwzSmtDM5u5ui74Ilhs7xqj9/dmT8mCt1Fov
-	 33Gx7Wqkss8Vl/Zo5PMtWEcd5qK01uB16Hou0XgjVLfpwdFONElOxBW3P0vxQLHEqU
-	 us3w4q85mbYaZkM1BZmDbLwNvBK/9Dnx7FSuu2oAZuNo3BgKfxIG/mQTC2VcWxrVI7
-	 6KLxmACk1DP13sFF3MWN6bY1wtoEgg/Fj+hwOqc9xsBzUNywG3pS4LEVtoXLKLSKuC
-	 suEE/hK/yuepyHS7V/YiFgUkrKEtE1lYUm+KWA/OxK8K2paI6mDe2oQykyeuLJ5m8G
-	 x9tDwla2KMpWQ==
-Date: Wed, 23 Sep 2026 01:12:14 -0700
-From: Kees Cook <kees@kernel.org>
-To: Bill Wendling <morbo@google.com>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Gustavo A. R. Silva" <gustavoars@kernel.org>,
-	Nathan Chancellor <nathan@kernel.org>,
-	Nick Desaulniers <ndesaulniers@google.com>,
-	Justin Stitt <justinstitt@google.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org,
-	llvm@lists.linux.dev, codemender-patching+linux@google.com
-Subject: Re: [PATCH] bus: fsl-mc: Annotate fsl_mc_io.portal_virt_addr with
- __counted_by_ptr
-Message-ID: <202609230106.7960C12@keescook>
-References: <20260922223538.2287676-1-morbo@google.com>
+	b=mCJlfOwtX67y203buKELQIT2TJkfDrkJVRWjviTUThii3FIl01hNmt/2/N5niDJsO
+	 pMfVhn9hKYcyv1hPNTj3q8nO0Pds6VFO+rGQe1AtibuYmlGhfEvG5fzsVNd5VZj00d
+	 fkgcgDIaUfRNs16fD4U8B+bk8I0EVqFfud76K+T15hPjY5Wnzx7h17G1IEpBvKdbdT
+	 fwOMBpLGIgd0Nxsna3HHhcpWKXrmzcnrf1IYhuJaw4NDIion+IMG6MmbJbYDpOjNxG
+	 ds54K/vBGhy978o0s9QlAtQmkuOq1eOy+SdadnN3yilV4MeGzEJApyN21XCzbDlSMz
+	 y5uiJtnDQNScw==
+Date: Wed, 23 Sep 2026 09:13:40 +0100
+From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+To: Suren Baghdasaryan <surenb@google.com>
+Cc: "David Hildenbrand (Arm)" <david@kernel.org>, 
+	Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, 
+	Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, 
+	Mike Rapoport <rppt@kernel.org>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, 
+	Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, 
+	Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, 
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
+	Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
+	Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, 
+	Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, 
+	Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, 
+	Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, 
+	Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, 
+	Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, 
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, 
+	Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, 
+	Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, 
+	Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
+	Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, 
+	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, 
+	Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
+	Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, 
+	Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+	David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, 
+	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, 
+	Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, 
+	"Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, 
+	Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
+	Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, 
+	Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, 
+	Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, 
+	Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, 
+	Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, 
+	Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, 
+	Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, 
+	Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, 
+	Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, 
+	Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, 
+	Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, 
+	Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, 
+	Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org, 
+	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, 
+	linux-rdma@vger.kernel.org, selinux@vger.kernel.org, linux-sound@vger.kernel.org, 
+	bpf@vger.kernel.org, linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, 
+	linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
+	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
+	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev, 
+	Takashi Iwai <tiwai@suse.de>
+Subject: Re: [PATCH v2 00/40] mm: make VMA flag semantics explicit, eliminate
+ VM_SPECIAL
+Message-ID: <arOCPN02xB7mykju@gremlin>
+References: <20260914-b4-mmap-prepare-vma-flag-sanify-v2-0-7d9781ed5361@kernel.org>
+ <20260914180811.057cba8fcc48d6e0b53a2683@linux-foundation.org>
+ <0b064fe6-ddb3-4f26-a1f2-2e9dd88d590f@kernel.org>
+ <CAJuCfpFBichJH4OcmSHTb1rOuQBT6k5pXeua9_KgpWjDBKvsYw@mail.gmail.com>
+ <aq6kzpK7wPl3iFGe@gremlin>
+ <aq6lW9FvL69QeA9H@gremlin>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,73 +126,70 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260922223538.2287676-1-morbo@google.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <aq6lW9FvL69QeA9H@gremlin>
 
-On Tue, Sep 22, 2026 at 10:35:38PM +0000, Bill Wendling wrote:
-> The GCC and Clang compilers provide the __counted_by_ptr attribute,
-> which is used by KASAN and compiler bounds-checking to detect
-> out-of-bounds accesses to pointer fields.
-> 
-> In "struct fsl_mc_io", the "portal_virt_addr" pointer points to the MC
-> command portal virtual address. The size of this allocated portal in
-> bytes is tracked by the "portal_size" field within the same structure.
-> 
-> Annotate the "portal_virt_addr" pointer field with
-> "__counted_by_ptr(portal_size)" to enable compiler bounds-checking and
-> harden against potential out-of-bounds accesses.
+On Sat, Sep 19, 2026 at 04:09:13PM +0100, Lorenzo Stoakes (ARM) wrote:
+> On Sat, Sep 19, 2026 at 04:05:57PM +0100, Lorenzo Stoakes (ARM) wrote:
+> > On Fri, Sep 18, 2026 at 01:31:24PM -0700, Suren Baghdasaryan wrote:
+> > > On Fri, Sep 18, 2026 at 1:21 PM David Hildenbrand (Arm)
+> > > <david@kernel.org> wrote:
+> > > >
+> > > > On 9/15/26 03:08, Andrew Morton wrote:
+> > > > > On Mon, 14 Sep 2026 15:57:20 +0100 "Lorenzo Stoakes (ARM)" <ljs@kernel.org> wrote:
+> > > > >
+> > > > >> The VM_SPECIAL / VMA_SPECIAL_FLAGS mask conflates several unrelated
+> > > > >> properties:
+> > > > >>
+> > > > >> ...
+> > > > >>
+> > > > >> It's all rather a mess.
+> > > > >>
+> > > > >> This series brings some order to things by both limiting what drivers can
+> > > > >> do with VMA flags and switching to using predicates that describe
+> > > > >> behaviour, not arbitrary flags.
+> > > > >
+> > > > > That's a lot of patches.
+> > > > >
+> > > > > Review is thin and I expect this won't improve a lot.  Lots of "no
+> > > > > functional changes" changes.
+> > > >
+> > > > I'll expect to go through all of them. Might just take a bit ;)
+> > >
+> > > ditto
+> >
+> > Thanks guys!
+>
+> Note v3 has been posted to fix a stupid bug in 1/40 + attack some very trivial
+> sashiko stuff
+>
+> https://lore.kernel.org/linux-mm/20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org/
 
-Another one where I hope things agree. :)
+Just a gentle nudge on this :)
 
-        mc_portal_size = resource_size(dpmcp_dev->regions);
+If you guys or anybody else has some time it'd be appreciated! (obv. the v3 as
+linked above not this v2!)
 
-        error = fsl_create_mc_io(&mc_bus_dev->dev,
-                                 mc_portal_phys_addr,
-                                 mc_portal_size, dpmcp_dev,
-                                 mc_io_flags, &mc_io);
-...
+I know the series seems intimidating but most of the commits are very small and
+it's been in -next for a while.
 
-        mc_io->portal_size = mc_portal_size;
-	...
-        mc_portal_virt_addr = devm_ioremap(dev,
-                                                   mc_portal_phys_addr,
-                                                   mc_portal_size);
-	...
-        mc_io->portal_virt_addr = mc_portal_virt_addr;
+>
+> >
+> > >
+> > > >
+> > > > --
+> > > > Cheers,
+> > > >
+> > > > David
+> >
+> > --
+> > Cheers, Lorenzo
+>
+> --
+> Cheers, Lorenzo
 
-But it actually reminds me that I still want a warning for having
-compile-time warning about pointers being stripped from their counter:
-
-                status = mc_read_response(mc_io->portal_virt_addr, cmd);
-...
-static inline enum mc_cmd_status mc_read_response(struct fsl_mc_command __iomem
-                                                  *portal,
-                                                  struct fsl_mc_command *resp)
-{
-        int i;
-        enum mc_cmd_status status;
-
-        /* Copy command response header from MC portal: */
-        resp->header = cpu_to_le64(readq_relaxed(&portal->header));
-
-Not only is mc_io->portal_virt_addr separated from mc_io->portal_size
-via getting passed to mc_read_response(), but it then immediately gets
-cast to struct fsl_mc_command.
-
-We should get the __singleton attribute so we can mark function arg
-pointers as "not an array", and then these kinds of casts could generate
-a run-time check at function call time to check
-sizeof(struct fsl_mc_command) against mc_io->portal_size when
-__singleton was there, or kick up a warning that the counter got
-stripped.
-
-Because as-is, this patch is a no-op: nothing dereferences
-mc_io->portal_virt_addr with the counter in context.
-
-
--Kees
-
--- 
-Kees Cook
+--
+Cheers, Lorenzo
 
