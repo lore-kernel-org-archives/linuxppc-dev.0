@@ -1,58 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-28069-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28070-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF6DEC9830B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 21:30:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A569C9830D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 21:38:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqqr96Sltz2yqw;
-	Thu, 24 Sep 2026 07:30:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790199017;
-	cv=none; b=aSrb19AottoagsYt49bORRbPWYHlxWah/JSApPnYVJWGFpJ/GDEscL0SEYz5XJaasO4N1tBT1ZXft8EMrfJV9HhixcX5tF2v44h0TZ/hIxjakxnq3nn6gwQFkgpeFn/XzYf5WjwlkYtMCUDNyrDZfc8Szms3u+cXb9px66OJcCro/9NP+Odx/qZpC3Q3cAQvHpKKcvMmeOX3Y6qmJj/FlIbxQJfuCQdww/jY3HwcdSrP4wzZrW1PcyDHIsYcrdZhEuotK6Po9hryYWYlm9w4VTEAhMSOqElQcy6DDk141ln0yq7HB/vTiAVq6kC3B0h0EemtcWI7MFl0D94wEW5Dew==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqr145KkVz2yqw;
+	Thu, 24 Sep 2026 07:38:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790199480;
+	cv=none; b=aU1Mb3tJdauxw58n74TPV7i/TTvfP99qKFOZmJhK0pq1AkiP6e3bKGJFMpPDG9zPwRozZNYPGyUP3frHz7MnZ8hXMHXMWD6CcIe5wD7L6QrctDZ12l5H5K7KLSCPOM3n5jAbjQDwzWSAgOvToz0mKSYAhZDBrWqmHrwuOWpl4yRx2twXvjtBlKIcQHV8Jh7b90HH+FOGzkrsCDmTMKR0z6EuUSseczuvZGrlGQiQktIlUQezn8Qe2UBXjNG6iJAurQ+5o9pCLluKzbMpxkBa+dORQUutmmutldX8dPgooxeuUJQ/QcEWICI3MtlsVLfZkVw1zWtYI0OgdfUvOfxp/w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790199017; c=relaxed/relaxed;
-	bh=d3tq9N0LJ4r7VJ+9wdwqQQlbn4k6qzBMuLB5kE1baa4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Bv9dIBYTBZkbPhkcZ4AtMwRM4hMHf90dbZtu2Prn5RdsRJ8bQIIH1HHCv7tNYs7cky8qtbM8RNGFYWN6wpIKvrIFUCNLNqe1fI18wWZ2cIiB+DGST9gEB9PWjPf0+unmm3bI2O+6IsxkkOKfj7LgKlMYviyN0x5CksT/xJ5RSOhfEZIUsX8aU2bO4npGLD2nFv3JhK32M0z2SPJdjND4SYKxn9r3yz+mpEE5j82+9whUQqEmTjIjfh7uqi1YaHMCykuFyil3JQnuTIPeMysuBYP2osdsykMTWa/gxweXmEK9rIr98In0xYpUF9Lh9s5QrySUXtAPL6Y0SQ19oPzUMw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JKAxKVtM; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1790199480; c=relaxed/relaxed;
+	bh=uyAu47zUkyhI8o35FJeqCaCcq+21VWJUWLgzrg/IF7Q=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=A87TIKtIzxMPGbjlb7W5oDFV47y3NtNti5w4N/+pVERaDFSdI5gzJsv8DShX2sfj9jq0b4j74HSUecbz70isBNyZUBbGoLSLAXwnXYGphTuBebo88OjlHid9oSfJm3F6oANKA73jteFNRLwc2KhEjfp5pLn6LF+Jf6s7vBRmcITNlmWMXJZIJZ26EL3+NlfgF7d+CNrWs76AzoRFYNeTyEwg6nU0QUzF0VWTwVF78soThAHj3m5Kq9JLPXXQM+Q8aLqZXpCsiB5t9oN9HaKph/4G6UC0GR9474loeuJf5pdhcG5ONrgDehWCGd3+yo1HbSUPXCMbB/0Z8HcwEfO5qg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=S1kGOVmJ; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JKAxKVtM;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=S1kGOVmJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqqr85XlZz2yHT
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 07:30:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqr1375nDz2yHT
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 07:37:59 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 8F88A601FD
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 21:30:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 40D501F0089B
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 21:30:13 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 9870B413E8;
+	Wed, 23 Sep 2026 21:37:57 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 18DD61F000FF;
+	Wed, 23 Sep 2026 21:37:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790199013;
-	bh=d3tq9N0LJ4r7VJ+9wdwqQQlbn4k6qzBMuLB5kE1baa4=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=JKAxKVtMZbF3TD2Yn2zgDD4fLtybBqJ/igLQzq3NUT4r9bDACuqKvXjvgz60TR+JA
-	 BIFmfFeaS555lQfbIUJsxtX1zQkAUve6IUQqNm7nLfx6uf7seZiMIvm9RK03R3nD3X
-	 yIqwdSH/bmBuXrza+VBpZYbApAWVCksy8bFBjD49DyaS1W6AQq+JhF2QihqME55VXB
-	 IJ8+SeI/dKeiSzaW7jniNvqm6j5i8qbdAiZMMHyUhEOvu3CyESGyLW7HUG4hOhAWJf
-	 +n7NPspRkMseNo+3GfhH9oIjsO6FjECoNDaxM6ZpMUq4024vg6/mylbECDTlTHtIO7
-	 kd3RiEuWZgBSg==
-Received: by mail-qk2-f12.google.com with SMTP id af79cd13be357-93910ad2273so151266085a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 14:30:13 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBxeS+UqNk2RrrgGgAjR2kuuPxFCFnzxBum2s/VYwpVTD525UM6fTZelGatqCh1h3Z+gwVV5Bz/xLLjI1XA=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++mq0chL2anZjzuP4bNRA1oxE1JoDgzLhqyxj7lfoa0apaOerL2b
-	5K/xjKz+FWTiV+CdptnFKWGvVLaiQC/O02cOnqAW+aOffOYn+MhgNegoh4yvCYW585HM/cDbkU/
-	zqHrsqUI06tXPTXpjoHp98MgctPutJnQ=
-X-Received: by 2002:a05:620a:4707:b0:937:50b6:4a5b with SMTP id
- af79cd13be357-93c345836d2mr78355685a.23.1790199012523; Wed, 23 Sep 2026
- 14:30:12 -0700 (PDT)
+	s=k20260515; t=1790199477;
+	bh=uyAu47zUkyhI8o35FJeqCaCcq+21VWJUWLgzrg/IF7Q=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=S1kGOVmJNNgPizjRJLM3mmEWJYg8KdivmYTSCPIBkts7DxIUr+Bq/hTw9V8xdE808
+	 Myk/SHw2DR7mcg6YkLD/br1rnRuQbfoGS/t3UdcZZsu82oD1CcvDDiaKc3SEcWsogm
+	 EqydJ7JmTSVD9jcTK26iHxhLvCybTpT0eLoKCjxRyLdJM6vKCymajc0+xqim/wpqhf
+	 lx7WG5D4f+RP46LtUzjUFCqbOvfAtFrlft0Pk+D3CRH8xlg/uKcldGhVw8H6HNG8oZ
+	 etDadVI5pffGUrdyakJPGbZYAYheQopwKXIfKyyYIAemOPmrYmM/Xm9+qZgJxp7UcP
+	 XoNHqy6OmQ/lg==
+From: Mark Brown <broonie@kernel.org>
+To: Shengjiu Wang <shengjiu.wang@gmail.com>, 
+ Shengjiu Wang <shengjiu.wang@nxp.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
+ Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, 
+ Takashi Iwai <tiwai@suse.com>, Myeonghun Pak <mhun512@gmail.com>
+Cc: Fabio Estevam <festevam@gmail.com>, 
+ Nicolin Chen <nicoleotsuka@gmail.com>, linux-sound@vger.kernel.org, 
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ stable@vger.kernel.org, Ijae Kim <ae878000@gmail.com>
+In-Reply-To: <20260923054017.93553-1-mhun512@gmail.com>
+References: <20260923054017.93553-1-mhun512@gmail.com>
+Subject: Re: [PATCH] ASoC: fsl_xcvr: free IRQ before canceling reset work
+Message-Id: <179016750164.322763.13341325503493899165.b4-ty@b4>
+Date: Wed, 23 Sep 2026 14:45:01 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,75 +71,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260923062832.479455-1-jiangwen6@xiaomi.com> <20260923062832.479455-2-jiangwen6@xiaomi.com>
-In-Reply-To: <20260923062832.479455-2-jiangwen6@xiaomi.com>
-From: Barry Song <baohua@kernel.org>
-Date: Thu, 24 Sep 2026 05:30:00 +0800
-X-Gmail-Original-Message-ID: <CAGsJ_4xQhmRigaV_2G3pdOgk5mvC6HNzqCyUdRY3RSG8-QNC-Q@mail.gmail.com>
-X-Gm-Features: AcwNN1UaTtV0wPc3IJY9Sx6rnYvw9-CPwWOiah8w0K1fH7hCcF4lT-foCe1dQ8M
-Message-ID: <CAGsJ_4xQhmRigaV_2G3pdOgk5mvC6HNzqCyUdRY3RSG8-QNC-Q@mail.gmail.com>
-Subject: Re: [PATCH v9 01/10] arm64/mm: add pte_set_huge() and pte_clear_huge()
-To: Wen Jiang <jiangwenxiaomi@gmail.com>
-Cc: akpm@linux-foundation.org, catalin.marinas@arm.com, linux-mm@kvack.org, 
-	urezki@gmail.com, will@kernel.org, Xueyuan.chen21@gmail.com, 
-	ajd@linux.ibm.com, anshuman.khandual@arm.com, chleroy@kernel.org, 
-	david@kernel.org, dev.jain@arm.com, jiangwen6@xiaomi.com, leo.yan@arm.com, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au, 
-	npiggin@gmail.com, rppt@kernel.org, ryan.roberts@arm.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.17-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1123; i=broonie@kernel.org;
+ h=from:subject:message-id; bh=uWseL9MtokTbmidoCbOrLXBq7nOll6YvZXZUrPR09Q4=;
+ b=owEBbQGS/pANAwAKASTWi3JdVIfQAcsmYgBqtEauhW23oxSzoxIL+Irgp0A2CD8P0X6VM18j5
+ XBhD/rhiciJATMEAAEKAB0WIQSt5miqZ1cYtZ/in+ok1otyXVSH0AUCarRGrgAKCRAk1otyXVSH
+ 0N9BB/0YtHLEHoIMhJt84cgR3UffJD8L6WYiGnhahHrfFIPZxb/ENeT8SV4UFo3xyQTt/p0fRed
+ 9LjybeVUl+UTGIcGLOpFCyKGdyKTNW6OVcAwjWJfESNx75A2E/69+j9oHCUQsUboHgH3mnbN949
+ zePy80PJtmqr2BWDa9D/1BxUVKHTsVLRJiJ5chf7I4Q9Totcb0YL+BoPqEwc1qN5TiTUF76NNu6
+ cnsXhyLtwiqKbkpdGvSJm0OefU/hXndQzgt5aMcwdYhC4X97jfFsmtYffLe/fPyu3OT/vpU4ImR
+ c6d2fHwgAO2SrhkMmVbbLV4MqmkH/06AwAmRXxIGPsp3Oyxt
+X-Developer-Key: i=broonie@kernel.org; a=openpgp;
+ fpr=3F2568AAC26998F9E813A1C5C3F436CA30F5D8EB
 
-On Wed, Sep 23, 2026 at 2:28=E2=80=AFPM Wen Jiang <jiangwenxiaomi@gmail.com=
-> wrote:
->
-> vmap installs PTE-level block mappings (PTE_CONT on arm64) by reusing
-> set_huge_pte_at() and huge_ptep_get_and_clear(), which are HugeTLB
-> helpers gated by CONFIG_HUGETLB_PAGE. This makes the feature silently
-> unavailable on CONFIG_HUGETLB_PAGE=3Dn kernels and couples mm/vmalloc.c t=
-o
-> HugeTLB internals it does not otherwise need.
->
-> Add pte_set_huge()/pte_clear_huge() to arm64, joining the existing
-> pmd_set_huge()/pud_set_huge() family in mm/mmu.c. They build on
-> __set_ptes() and __get_and_clear_full_ptes() directly, so they do not
-> depend on CONFIG_HUGETLB_PAGE.
->
-> There is no caller yet: mm/vmalloc.c is converted later in this series,
-> once the generic fallbacks are in place.
->
-> Signed-off-by: Wen Jiang <jiangwen6@xiaomi.com>
+On Wed, 23 Sep 2026 01:40:17 -0400, Myeonghun Pak wrote:
+> ASoC: fsl_xcvr: free IRQ before canceling reset work
 
-LGTM. Please see the comment below.
+Applied to
 
-Reviewed-by: Barry Song <baohua@kernel.org>
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-7.4
 
-[...]
+Thanks!
 
-> +void pte_set_huge(pte_t *ptep, unsigned long addr, phys_addr_t phys,
-> +                 pgprot_t prot, unsigned long size)
-> +{
-> +       unsigned long pfn =3D __phys_to_pfn(phys);
-> +       pte_t pte =3D pte_mkcont(pfn_pte(pfn, prot));
-> +       unsigned int nr =3D size >> PAGE_SHIFT;
-> +
-> +       VM_WARN_ON(!IS_ALIGNED(size, CONT_PTE_SIZE));
-> +       VM_WARN_ON(!IS_ALIGNED(addr, CONT_PTE_SIZE));
-> +       VM_WARN_ON(!IS_ALIGNED(pfn, CONT_PTES));
-> +
-> +       __set_ptes(&init_mm, addr, ptep, pte, nr);
+[1/1] ASoC: fsl_xcvr: free IRQ before canceling reset work
+      https://git.kernel.org/broonie/sound/c/83701fdb2d8d
 
-You have patch 4 to revert the `clear_flush()` modification from
-06fc959fcff ("arm64/mm: Support huge pte-mapped pages in vmap").
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
 
-I guess you may still need to guard against the case I mentioned in my
-reply to patch 4:
-https://lore.kernel.org/linux-mm/CAGsJ_4xiLScr2PrPu7Eem73GvPCtsuYd3J05kW3SC=
-4QSs5Q4aQ@mail.gmail.com/
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
 
-Something like this:
-VM_WARN_ON (pte_valid(__ptep_get(ptep)));
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
 
-Best Regards
-Barry
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
+
 
