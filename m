@@ -1,73 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-28016-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28017-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B20CCC9830B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 12:28:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C51D4C982FA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 12:48:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqbpk1Tp2z2yqw;
-	Wed, 23 Sep 2026 22:28:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790166494;
-	cv=none; b=Itm2iXQ8yc5wIsowIKxwPTstjp330ondxI5d1fkR/YOt37WGBm6UX540yIUe25jNnzVm5RUFfQ4oGZcIUs4PZ7Gz8K7THvTAy9nleJlxc80VmSaTh2G0nTTrhPkkXLzDDNZIpKog8wXkPMviqzsK05XYwdpcMALvztIi+fo/YwF07Ad546FRSmRMDRScqOhdpqnsUaGRQygQE5vju8HFCUdu3NNzz+LXRUvx+llMPYv2U2sFcjUIKdndwkLgFqjiVOqIUIz0msy4rFUibzWiXyD5BvAu01y29qS8ePJVEfCSVLrfd45TF94t3mgz1ndjVMmNo7kYwnqmeHJGE5z3YA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqcGL0N7Nz2yqw;
+	Wed, 23 Sep 2026 22:48:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790167721;
+	cv=none; b=meoJS+zELDXqbkxWUcK6tRjM1/SgyBzVPpdTb/DPmXshggEEIguxPL+Zl1+moVx22pHH3yeuysaK5tuoqVbeE5kKZHlhPTZZs/nAPkC10eT9nimR/KHmO89ybmbfNMVcy4cc8TFukPrcy2LXoW26lZkFPHmJx120qYMv6joh4ynPFTQ4c2LTAeML/Z1k98YNcc7zRB8ISSCFNItX/qBTmjStVgJE4cFioX6Ip0A9i1ctm9n/ef/5dYIX3H7x6Ex3bJubIL/1qSN16hFCpHaG2y1V5XkArm9wddYuABXMqQaTF774GO1EQ12ROWPkEwmwjE0UAx/YY+u7L1hoWl1TUw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790166494; c=relaxed/relaxed;
-	bh=UG+Y4g7sdwAOTITrAgQCTPwCr+uZFBBVJNZl/D9wfWE=;
+	t=1790167721; c=relaxed/relaxed;
+	bh=Oin27mEyCq0BUMcs7KbeOSyNDlusM82kVA+c1BUbUQc=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=XmwQT5ezk926/Ra15VB/OIZgs3nwJWEjUTu1U9Hpjf834DhlHvf9IC/tf6AGnu9gZw/ifNT8SUe3XtLx9dDOnOL2jqccTAHbOutaR8a0IMPryLMYzCxYzlhSD607aHP0k0d63CcNkyRju6HH+dQnwfizDGbtH6ttJSLe7BcfmocTNyKpOz57G+O9uZNiYpfMeII5Z5RJcHNyDWhMVg1TSMnPT0UsTitD6H82aSo4x6pz+rEhxoMV5dP0J/69E8bs5Ukg+1ziAlkjypCrrizPXPztPzEMZt2aIhd49YJi0KqE1H6jn0BpBc27gwpv/j8syhbwJiW6eT1sKMXdEerHrQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qOkDHFzo; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=samir@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 In-Reply-To:Content-Type; b=e5uQ1P3gF4TyKyP5AQMUBxZCRq10ev+YZsqbcHqIljhCp7+lXuS/SOqkt8SpJbtR2WdJzWLV3i7O7QtrkpwJeAbi2cLpH1Htl9H9sWNuRqTFvoFhUnDhur17PHzduWNkVoqUypCdeZy5jntkNMQQ6ib4rrrAnKaIi8EAvr0BbGYDKbSk/B0dhhyNzDsXUiNzICdGg1TugUSZRZQc580z61GenhBMKCIbV2XgVWpJZM03tdozDKhDXtR9POFdwYb6py3efyFk2cHDQRdUeQgyL7SW6G67cZkBmI7mOnFGlCrSpHi7+QeGy1pOFAoawSOXJ4vqU5Q4TY8wZKw65+jNdQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=db+pBdYh; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=robin.murphy@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qOkDHFzo;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=db+pBdYh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=samir@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqbpj0FK0z2yqq
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 22:28:12 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68N8ZVV41030621;
-	Wed, 23 Sep 2026 12:27:57 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=UG+Y4g
-	7sdwAOTITrAgQCTPwCr+uZFBBVJNZl/D9wfWE=; b=qOkDHFzoU97f0bbK1Wzwhq
-	Way7QSiYpDLvEvFU/7JWM6YxwCySq89BPu3hlSAe+2ekbBPw1AUkUDKrO+CLKEKr
-	7asxPczHvLI4zNENHLDkPL+G3tDNwz7fsQ1mrLm4c6tqfPhwR4bx07fp3oN/Nock
-	faRwJtf5WEfdtP3Ijqa/AsCigArrOTBIbLw2XfkU2V7w505Am21ZNKgLSFMJiQ2a
-	FRzEoCewwaaPxm/DpGtIQmDz7c02Kc3pm/eEZ+F3xIrf8wPeMm0woAzTOafpsvUL
-	HUeASZpYvfY9LyUBNVF6ho89og0RlrvpeTMU0B5hTh9iEb6TqVsNRPdmFL6K7c5A
-	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gske1u5tk-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Wed, 23 Sep 2026 12:27:56 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68NCPkkC008513;
-	Wed, 23 Sep 2026 12:27:55 GMT
-Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gvb8jrvrv-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 23 Sep 2026 12:27:55 +0000 (GMT)
-Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
-	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68NCRsiv33292824
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 23 Sep 2026 12:27:55 GMT
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E571258052;
-	Wed, 23 Sep 2026 12:27:54 +0000 (GMT)
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 664A758062;
-	Wed, 23 Sep 2026 12:27:51 +0000 (GMT)
-Received: from [9.43.102.198] (unknown [9.43.102.198])
-	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 23 Sep 2026 12:27:51 +0000 (GMT)
-Message-ID: <e53992b4-eb54-40c8-9421-2aa2e73e92fe@linux.ibm.com>
-Date: Wed, 23 Sep 2026 17:57:49 +0530
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=robin.murphy@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqcGH08D4z2xs1
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 22:48:37 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id ACA861570;
+	Wed, 23 Sep 2026 05:47:56 -0700 (PDT)
+Received: from [10.2.212.23] (e121345-lin.cambridge.arm.com [10.2.212.23])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 86ECA3F86C;
+	Wed, 23 Sep 2026 05:47:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1790167680; bh=RIhC3hUarxRrR/f5mRDyLyshn3OVC6xd4Pet+9BmBkI=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=db+pBdYhJE2fGHV6VKDio2pztmLqY1Eh+yFiBoVVLDJx2jEVzxpsuPFnx+/nlttpc
+	 Cf7Ot496F1Lyd/LCV9ab67bSymlJjM1X4hMWqAB3TKvs0DOlRrG+fpxyRQ9Bkqz49+
+	 7jFl+bqKwsuz59JreWAqLWWa4hJJWVTOV1uNJGBk=
+Message-ID: <644aa208-55f0-440c-94b9-75e58e588dde@arm.com>
+Date: Wed, 23 Sep 2026 13:47:43 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,162 +54,273 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] powerpc/ftrace: Don't restore r13 during
- ftrace_regs_caller
-To: Shrikanth Hegde <sshegde@linux.ibm.com>, maddy@linux.ibm.com,
-        linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
-        linux-kernel@vger.kernel.org, msuchanek@suse.de, ritesh.list@gmail.com,
-        hbathini@linux.ibm.com,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-References: <20260921072151.35531-1-sshegde@linux.ibm.com>
-Content-Language: en-US
-From: samir <samir@linux.ibm.com>
-In-Reply-To: <20260921072151.35531-1-sshegde@linux.ibm.com>
+Subject: Re: [PATCH v5 4/6] dma: swiotlb: Centralize memory-encryption pool
+ sizing
+To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
+ iommu@lists.linux.dev, linux-kernel@vger.kernel.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Will Deacon
+ <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+ Steven Price <steven.price@arm.com>,
+ Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Jiri Pirko <jiri@resnulli.us>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Mostafa Saleh <smostafa@google.com>,
+ Petr Tesarik <ptesarik@suse.com>, Alexey Kardashevskiy <aik@amd.com>,
+ Dan Williams <dan.j.williams@intel.com>, Xu Yilun
+ <yilun.xu@linux.intel.com>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>, Russell King <linux@armlinux.org.uk>,
+ Huacai Chen <chenhuacai@kernel.org>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Jiaxun Yang <jiaxun.yang@flygoat.com>, Paul Walmsley <pjw@kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+ linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
+ linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, x86@kernel.org
+References: <20260921063628.362078-1-aneesh.kumar@kernel.org>
+ <20260921063628.362078-5-aneesh.kumar@kernel.org>
+From: Robin Murphy <robin.murphy@arm.com>
+Content-Language: en-GB
+In-Reply-To: <20260921063628.362078-5-aneesh.kumar@kernel.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: xYsFoFEK7W2CF8F_A6AS7Tjqfma8goSL
-X-Authority-Analysis: v=2.4 cv=EOCTQFZC c=1 sm=1 tr=0 ts=6ab3c5cd cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=yl0TpzIXH62GmPm5xBAA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTIzMDA0OCBTYWx0ZWRfXwHslOvIlp4sw
- eHQYf+8Zcqp1pswyGTgtUaVkim1RVyWrlMW4BcH0Y1zJl4dmg7+XYG1uet42sRn1+nTjmyEa84E
- qafRxaHcQBO1R+h1PCqWNFtEZjgdlJQ=
-X-Proofpoint-GUID: roOzAe6v0RSA0IeziWJYwR0JAgDQPUYx
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTIzMDA0OCBTYWx0ZWRfX0U1//YlyT3GA
- EMbvkA4n7lQ/ScW6LloM7ABq1MC8ScNx5glQogTP93J3lGFSpQKVUGLFj4F70iiu7qvAFg8pcav
- FZRAkw8REghc7lA2DqXm4F+TXcyvv2JiGf9e7hfyC7o/nzKVJ4k5U9EyKeqqvOTtHL2reR+Jt8S
- 3Ef5B5l1vXXxhNlfbKuNOdO25YV8Y36E6LRzAe+RWH7DtRHKA6bwXwdn1RiSvl6OHdMq+34G32h
- FKnWf2lFXSWApUVd0cqYQUfUBzF4S+GVw65ZDk6SxKcQZb7d9REDPA/zpY3ynXqfODzI7h/F9v8
- /DsgYEvTNsTCW/i7bp+5XgTDK7nHzE1paM8Hpup0W9j81fC/0ZCvaM6Miii8tviwVZHCgpdErY2
- U/t3wGkeMX2DVyWQ3rKgQ05C0aOJ/vRu0TdFY2r0jnzdquM6K8tqRTuANwe2iTv3qhz1qB07xho
- jQF1yLCKsDuXcYKaQ7g==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-23_04,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 phishscore=0 priorityscore=1501 clxscore=1011 spamscore=0
- adultscore=0 impostorscore=0 lowpriorityscore=0 suspectscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609230048
+Content-Transfer-Encoding: 7bit
 
-Hi Shrikanth,
-
-On 21/09/26 12:51 pm, Shrikanth Hegde wrote:
-> Michal reported a stack-protector failure and subsequent panic when
-> running kernel builds. This was observed with full/lazy preemption.
-> Initially it was suspected as KVM, but later turned out to be due
-> to a bcc tool running in parallel.
->
-> Issue was recreated using a bcc tool.
-> For example, running below in parallel leads to crash.
-> ./funccount sched* -d 100 and make -j 64
->
-> The same crash was observed when running kprobe for schedule() function,
-> while simpler function tracer for schedule() didn't cause the crash.
-> This helped to narrow it down to ftrace backed kprobes area.
->
-> The crash occurs as follows:
->
-> ftrace_regs_caller entry on CPU A
->      |
->      +-> save r13 = CPU A PACA into pt_regs
->      |
->      +-> call kprobe_ftrace_handler()
->              |
->              +-> ftrace_test_recursion_unlock()
->                      |
->                      +-> preempt_enable
->                      +-> task can schedule and migrate to CPU B
->                      +-> task resumes with live r13 = CPU B PACA
->      |
->      +-> REST_GPRS(2, 31)
->              |
->              +-> restore saved r13 = CPU A PACA
->      |
->      |-> The task then continues running on CPU B with r13 pointing
->      |   to CPU A's PACA.
->
-> The stack-protector canary is accessed through the PACA. After the task
-> migrates, CPU A may run a different task and update its PACA with that
-> task's canary. Restoring the saved r13 then causes the migrated task's
-> saved stack canary to be compared against the canary in CPU A's PACA,
-> resulting in a stack-protector failure.
->
-> Similarly, current is resolved through the PACA. With a stale r13,
-> preempt_count() can access the state of the task referenced by CPU A's
-> PACA instead of the task running on CPU B. This results in corrupted
-> preempt-count warnings and scheduling-while-atomic failures.
->
-> This path for example is called when using kprobes and parallel kernel
-> builds can cause preemptions during ftrace_test_recursion_unlock.
->
-> Do not restore r13 from the saved register frame. If the task did not
-> migrate, the live r13 already has the saved value. If it migrated, the
-> live r13 contains the correct PACA pointer for the CPU on which the task
-> resumed.
->
-> On PPC32, r13 is regular register. So do this fix only for PPC64
->
-> Fixes: 153086644fd1 ("powerpc/ftrace: Add support for -mprofile-kernel ftrace ABI")
-> Reported-by: Michal Suchánek <msuchanek@suse.de>
-> Closes: https://lore.kernel.org/all/aqKfsVArHHaIK6M9@kunlun.suse.cz/
-> Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-> Reviewed-by: Hari Bathini <hbathini@linux.ibm.com>
-> Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+On 21/09/2026 7:36 am, Aneesh Kumar K.V (Arm) wrote:
+> Memory-encrypted guests use shared or unencrypted memory for DMA and may
+> route all DMA through SWIOTLB. The default pool can therefore be too
+> small for I/O-intensive workloads.
+> 
+> Move the existing x86 guest-sizing policy into the SWIOTLB core. For
+> SWIOTLB_POOL_CC_GUEST, size the pool to 6% of guest memory, clamped
+> between the normal default and 1 GiB. Preserve an explicit swiotlb=
+> size.
+> 
+> Provide swiotlb_adjusted_size() so early users, including the x86 crash
+> kernel reservation, can account for the prospective guest pool size
+> before SWIOTLB initialization. Use the same area-aware alignment for
+> both the prospective and allocated sizes.
+> 
+> Host memory encryption still selects a normal-sized shared pool and
+> does not use the guest-sizing policy.
+> 
+> A restricted DMA pool already provides shared bounce buffers for its
+> devices. Record its presence during reserved-memory initialization and
+> do not select the confidential-guest default-pool policy solely because
+> guest memory encryption is active.
+> 
+> Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
+> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
 > ---
-> v1->v2:
-> - On PPC32 r13 is regular register. So continue to restore it.
-> - Picked up the tags.
-> v1: https://lore.kernel.org/all/20260918150811.1743769-1-sshegde@linux.ibm.com/
->
->   arch/powerpc/kernel/trace/ftrace_entry.S | 6 ++++++
->   1 file changed, 6 insertions(+)
->
-> diff --git a/arch/powerpc/kernel/trace/ftrace_entry.S b/arch/powerpc/kernel/trace/ftrace_entry.S
-> index 6599fe3c6234..5eb8eee32549 100644
-> --- a/arch/powerpc/kernel/trace/ftrace_entry.S
-> +++ b/arch/powerpc/kernel/trace/ftrace_entry.S
-> @@ -220,7 +220,13 @@
->   
->   	/* Restore gprs */
->   	.if \allregs == 1
-> +#ifdef CONFIG_PPC64
-> +	REST_GPRS(2, 12, r1)
-> +	/* Do not restore a stale PACA pointer if the task migrated */
-> +	REST_GPRS(14, 31, r1)
-> +#else
->   	REST_GPRS(2, 31, r1)
+>   arch/x86/include/asm/crash_reserve.h |  6 ++--
+>   arch/x86/mm/mem_encrypt.c            | 24 --------------
+>   include/linux/swiotlb.h              |  6 ++++
+>   kernel/dma/swiotlb.c                 | 47 +++++++++++++++++++++++++++-
+>   4 files changed, 56 insertions(+), 27 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/crash_reserve.h b/arch/x86/include/asm/crash_reserve.h
+> index 7835b2cdff04..c1f5bf5d4182 100644
+> --- a/arch/x86/include/asm/crash_reserve.h
+> +++ b/arch/x86/include/asm/crash_reserve.h
+> @@ -18,7 +18,9 @@
+>    * no good way to detect the paging mode of the target kernel which will be
+>    * loaded for dumping.
+>    */
+> -extern unsigned long swiotlb_size_or_default(void);
+> +#ifdef CONFIG_X86_64
+> +unsigned long __init swiotlb_adjusted_size(void);
 > +#endif
->   	.else
->   	REST_GPRS(3, 10, r1)
->   #if defined(CONFIG_LIVEPATCH_64) || defined(CONFIG_PPC_FTRACE_OUT_OF_LINE)
+>   
+>   #ifdef CONFIG_X86_32
+>   # define CRASH_ADDR_LOW_MAX     SZ_512M
+> @@ -33,7 +35,7 @@ extern unsigned long swiotlb_size_or_default(void);
+>   static inline unsigned long crash_low_size_default(void)
+>   {
+>   #ifdef CONFIG_X86_64
+> -	return max(swiotlb_size_or_default() + (8UL << 20), 256UL << 20);
+> +	return max(swiotlb_adjusted_size() + (8UL << 20), 256UL << 20);
+>   #else
+>   	return 0;
+>   #endif
+> diff --git a/arch/x86/mm/mem_encrypt.c b/arch/x86/mm/mem_encrypt.c
+> index 95bae74fdab2..912f22ca838f 100644
+> --- a/arch/x86/mm/mem_encrypt.c
+> +++ b/arch/x86/mm/mem_encrypt.c
+> @@ -101,9 +101,6 @@ void __init mem_encrypt_init(void)
+>   
+>   void __init mem_encrypt_setup_arch(void)
+>   {
+> -	phys_addr_t total_mem = memblock_phys_mem_size();
+> -	unsigned long size;
+> -
+>   	/*
+>   	 * Do RMP table fixups after the e820 tables have been setup by
+>   	 * e820__memory_setup().
+> @@ -114,27 +111,6 @@ void __init mem_encrypt_setup_arch(void)
+>   	if (!cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
+>   		return;
+>   
+> -	/*
+> -	 * For SEV and TDX, all DMA has to occur via shared/unencrypted pages.
+> -	 * Kernel uses SWIOTLB to make this happen without changing device
+> -	 * drivers. However, depending on the workload being run, the
+> -	 * default 64MB of SWIOTLB may not be enough and SWIOTLB may
+> -	 * run out of buffers for DMA, resulting in I/O errors and/or
+> -	 * performance degradation especially with high I/O workloads.
+> -	 *
+> -	 * Adjust the default size of SWIOTLB using a percentage of guest
+> -	 * memory for SWIOTLB buffers. Also, as the SWIOTLB bounce buffer
+> -	 * memory is allocated from low memory, ensure that the adjusted size
+> -	 * is within the limits of low available memory.
+> -	 *
+> -	 * The percentage of guest memory used here for SWIOTLB buffers
+> -	 * is more of an approximation of the static adjustment which
+> -	 * 64MB for <1G, and ~128M to 256M for 1G-to-4G, i.e., the 6%
+> -	 */
+> -	size = total_mem * 6 / 100;
+> -	size = clamp_val(size, IO_TLB_DEFAULT_SIZE, SZ_1G);
+> -	swiotlb_adjust_size(size);
+> -
+>   	/* Set restricted memory access for virtio. */
+>   	virtio_set_mem_acc_cb(virtio_require_restricted_mem_acc);
+>   }
+> diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
+> index d69370c08094..be3962a33fc6 100644
+> --- a/include/linux/swiotlb.h
+> +++ b/include/linux/swiotlb.h
+> @@ -193,6 +193,7 @@ void swiotlb_dev_init(struct device *dev);
+>   size_t swiotlb_max_mapping_size(struct device *dev);
+>   bool is_swiotlb_allocated(void);
+>   bool is_swiotlb_active(struct device *dev);
+> +unsigned long __init swiotlb_adjusted_size(void);
+>   void __init swiotlb_adjust_size(unsigned long size);
+>   phys_addr_t default_swiotlb_base(void);
+>   phys_addr_t default_swiotlb_limit(void);
+> @@ -232,6 +233,11 @@ static inline bool is_swiotlb_active(struct device *dev)
+>   	return false;
+>   }
+>   
+> +static inline unsigned long __init swiotlb_adjusted_size(void)
+> +{
+> +	return 0;
+> +}
+> +
+>   static inline void swiotlb_adjust_size(unsigned long size)
+>   {
+>   }
+> diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
+> index f368a73f4ed0..c19675846fc1 100644
+> --- a/kernel/dma/swiotlb.c
+> +++ b/kernel/dma/swiotlb.c
+> @@ -80,6 +80,7 @@ struct io_tlb_slot {
+>   
+>   static bool swiotlb_force_bounce;
+>   static bool swiotlb_force_disable;
+> +static bool restricted_dma_pool_present __initdata;
+>   
+>   enum swiotlb_pool_policy {
+>   	SWIOTLB_POOL_NONE,
+> @@ -480,6 +481,46 @@ static bool __init swiotlb_kmalloc_needs_bounce(void)
+>   	       (dma_get_cache_alignment() > 1);
+>   }
+>   
+> +/**
+> + * swiotlb_adjusted_size() - get the prospective adjusted SWIOTLB size
+> + *
+> + * Return the size that confidential-computing guest sizing would select for
+> + * the default pool, without changing the configured SWIOTLB size. An
+> + * explicit swiotlb= size is always preserved. An explicit area count is
+> + * included in the size calculation. Automatic area sizing is initialized
+> + * later from the running kernel's possible CPU map and any resulting size
+> + * adjustment is therefore not reflected in the returned size.
+> + */
+> +unsigned long __init swiotlb_adjusted_size(void)
 
-I have verified the above patch on a PowerPC system and did not observe 
-any issues.
+This is yet another misleadingly ambiguous name.
 
-System configuration:
+> +{
+> +	unsigned long nslabs, size = swiotlb_size_or_default();
+> +
+> +	if (swiotlb_default_size_changed() ||
+> +	    !cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
+> +		return size;
 
-  * Architecture: ppc64le
-  * Dedicated system with 10 CPU cores and 150 GB memory
+And this makes for another needlessly convoluted calling convention.
 
-Test conducted:
+> +	/*
+> +	 * For SEV and TDX and CCA, all DMA has to occur via
+> +	 * shared/unencrypted pages. Kernel uses SWIOTLB to make this
+> +	 * happen without changing device drivers. However, depending on
+> +	 * the workload being run, the default 64MB of SWIOTLB may not be
+> +	 * enough and SWIOTLB may run out of buffers for DMA, resulting in
+> +	 * I/O errors and/or performance degradation especially with high
+> +	 * I/O workloads.
+> +	 *
+> +	 * Adjust the default size of SWIOTLB using a percentage of guest
+> +	 * memory for SWIOTLB buffers.
+> +	 *
+> +	 * The percentage of guest memory used here for SWIOTLB buffers is
+> +	 * more of an approximation of the static adjustment which 64MB for
+> +	 * <1G, and ~128M to 256M for 1G-to-4G, i.e., the 6%
+> +	 */
+> +	size = memblock_phys_mem_size() * 6 / 100;
 
-  * Enabled a kprobe on |schedule()|using the kernel tracing interface.
-  * Applied a PID filter to the kprobe event.
-  * Ran the tracing workload in the background while simultaneously
-    building the upstream Linux kernel using:
-    make -j100
+But mostly I fail to see how this makes any sense for the x86 
+crash_low_size_default() case anyway. This calculation is based on the 
+*total* system memory, of which 6% is likely comparable to (or perhaps 
+even more than) the *entire* amount of memory reserved for the crash 
+kernel itself. What's more, if the low memory and size restrictions are 
+lifted for regular CoCo SWIOTLB as people want, then it becomes even 
+more utterly nonsensical to tie crashkernel_low to this.
 
-The system remained stable during the test, and no issues were observed 
-with the patch.
+Yes, this happens to be the behaviour that falls out of how two 
+different parts of the existing code interact, but I highly doubt it was 
+ever intentional, so I'm not convinced that complicating SWIOTLB 
+interfaces to blindly preserve it is the right thing to do.
 
-Tested-by: Samir Mulani <samir@linux.ibm.com>
+Thanks,
+Robin.
 
-Regards,
-Samir
+> +	size = clamp_val(size, IO_TLB_DEFAULT_SIZE, SZ_1G);
+> +	nslabs = swiotlb_aligned_nslabs(size);
+> +
+> +	return nslabs << IO_TLB_SHIFT;
+> +}
+> +
+>   static void __init
+>   swiotlb_adjust_pool_size(enum swiotlb_pool_policy policy)
+>   {
+> @@ -496,6 +537,7 @@ swiotlb_adjust_pool_size(enum swiotlb_pool_policy policy)
+>   		break;
+>   	}
+>   	case SWIOTLB_POOL_CC_GUEST:
+> +		swiotlb_adjust_size(swiotlb_adjusted_size());
+>   		break;
+>   	case SWIOTLB_POOL_NONE:
+>   		WARN(true, "Cannot adjust SWIOTLB size without a pool\n");
+> @@ -511,7 +553,8 @@ swiotlb_select_pool_policy(unsigned int flags)
+>   	if (swiotlb_force_disable)
+>   		return SWIOTLB_POOL_NONE;
+>   
+> -	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
+> +	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT) &&
+> +	    !restricted_dma_pool_present)
+>   		return SWIOTLB_POOL_CC_GUEST;
+>   
+>   	if (cc_platform_has(CC_ATTR_HOST_MEM_ENCRYPT))
+> @@ -2157,6 +2200,8 @@ static int __init rmem_swiotlb_setup(unsigned long node,
+>   	    of_get_flat_dt_prop(node, "no-map", NULL))
+>   		return -EINVAL;
+>   
+> +	restricted_dma_pool_present = true;
+> +
+>   	pr_info("Reserved memory: created restricted DMA pool at %pa, size %ld MiB\n",
+>   		&rmem->base, (unsigned long)rmem->size / SZ_1M);
+>   	return 0;
+
 
