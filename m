@@ -1,45 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-28019-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28020-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14675C982FA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 13:05:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88807C982FA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 13:13:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqcd71T3dz2yqw;
-	Wed, 23 Sep 2026 23:04:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqcpR02Slz2yqw;
+	Wed, 23 Sep 2026 23:13:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790168699;
-	cv=none; b=H1ydTlzk7grx5XScSZXEji6tD4zDSzXxK6EGZLrftwNWQwOpnr8CGJhkgsDQoX0XQg/gcxLT05lT67bfE2LcugWm7j8KX/N8TCENIRRY6bT+CKVWVjMkGyozUVetfe+6ahqG+u7ZtQjqF7xlbQ2ziggVDlcc6lr00guGsAXqLTLS723ClMKYG1JwXEEpF/QUnPLWgyz3XnH0tvwTbJL6jNpibzFAJPBH58dbXfr3UMVpXyraveIgCCfaeUL4mH2zDRjamUhGZSDTcHdAbAU32CyIdvVDTIJ1aym43z9QYYM2piZF32eePfq7zMhAwGkxesAnjanEMHYl9pAu1oBJ+g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790169182;
+	cv=none; b=gOWD8KHIdv2GCv22Vv6zSdMDHUAVOcvyIjjhSDy4yoLl6vAmu4/91qNnYboIg+YLn/NrVVhVKaEdkDgDa2sBQ246XhWX097l5QrkXQ/xs4oMjmqRWEz7O+NHX0KRs8mrSkJ69LRO/VZdh0pi3N40wf5CWgFYO9JrL/n7f3zFCiPdkpSBudH79jeSGkrpuAeB9ghrqq2OGPe8EFSJBTga8F5x88aOTc1vdC/DSpvxGAEDOBlyz+o77/MqEwJORSW5f96rMo+1CFkVulD6uV8LGYGWFMHl2J1ZH7g33R653l68sOdqF/eWwL1MpxpP+0/8oO/H5U9qEBju96bkD9D6WQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790168699; c=relaxed/relaxed;
-	bh=ogBbb6P7GlWqXIs8xvSnHcODf4KNfQaxAfTAtslALNQ=;
+	t=1790169182; c=relaxed/relaxed;
+	bh=RTn4OGwOGPRfi2cEJEfeMukuMx7i2BfSJzbwvifkfgM=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=LN2Auz2edUR7yNRwkv/Pi5ZmVAfztmOFYrbRgY4/Zo7RjHmxIKnhqiur5owc7MdHzFX3Sp4p7+uexQ7+XUwWej8Qqw9luztL3rpRm+hVnRYkZlTayQe4F/9rRqWsfFlLuCm/4/tT+44eci6Eg16astcWTooykX7kbGvwBVrbjzNZxt39ppfTaCKfR9HesMVqLHeTuwDuNeGldHWDhJNDqs6ZecD56aJqVkEX32L2KFEfn9tGNstfBrGktdy3R/1ktAUxEe2O0OmfACifjEcqCa9dmYxRSdGCaZShiYjl3ffadZRNGCW/S0OkXI9ZskquK07y5WLPt0dH1otm5jBxjg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=ZvqzetxD; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=robin.murphy@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+	 In-Reply-To:Content-Type; b=l8TT9v8Bz1tJew1JjrzRxjVH9cGWzITXs0aRiFMJExuXBH/6bYVPUohmnkaK8MC439cEjqGLmBdZBe3nH3OQaWAbBeIIMduYtBkPzcBjMHL2hoHWaAfA2NivYNZmiSGLLKf8pXlBjBY16c3qq5Rz6p5RjhDVY9YUd2mS7/xM9S2OAIlox/JHyMqvPt5BSU8aaZn4StXjMygDl3dZVpk4AXCugkWGzbL9LHaueWAam0VuvxBcM0Pxgm0UyTrZf4NinN8Uds7Kwo685nUhh1xpBEPId58K91di0FV0Q5t07R9QFvVANPWufeNSGslbN+K7CcQLoh/W2fYrvA5CZZVRNQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=aYmen1TR; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=robin.murphy@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=ZvqzetxD;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=aYmen1TR;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=robin.murphy@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqcd6003Pz2xs1
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 23:04:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqcpP6F45z2xs1
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 23:13:01 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6A0231570;
-	Wed, 23 Sep 2026 06:04:22 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id AA44F1570;
+	Wed, 23 Sep 2026 06:12:26 -0700 (PDT)
 Received: from [10.2.212.23] (e121345-lin.cambridge.arm.com [10.2.212.23])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A1A663F86F;
-	Wed, 23 Sep 2026 06:04:03 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id DECAE3F86F;
+	Wed, 23 Sep 2026 06:12:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1790168665; bh=V2eG6fezUymbQQ69ZuSww8KCP/5bN/QHpNMXTsYSPOw=;
+	t=1790169150; bh=SmFHo2nDPpKUONOshPa8YT9u4NS/UwmA8+HdpmeKeFY=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=ZvqzetxDsEV+z9y8tgXSp1WMJmVGbPD4FFevEiSlqja3DG2IGWuF2b73OrQ3DI5PP
-	 ebwj8SPEQZ4BaUOAgvsq/NUWIH7HsMxifQ4aW+kmBXBfzWreFCdx8DwnXmCnT2MCb1
-	 pQF5HqiW/0gA6vvYspF/vjHUh2HXW5nKxCvWawCQ=
-Message-ID: <8c9c04ae-cba7-4096-a7d1-70b90a46c161@arm.com>
-Date: Wed, 23 Sep 2026 14:04:00 +0100
+	b=aYmen1TRM7QwJGqc4OFo5787lJ46tKHEUhwYkPXWOHO78pDyWHT/ftcomcAC4QiiM
+	 uwuv2AuQKHBDvvrSfp103KDdhV9+AKBs552MKlmOb12iwVrK22hWi7KXM5UOO/7Th9
+	 hwFueBx+pgNbLEPuAMRwfKDJM8gVQxNzs1TUlr4A=
+Message-ID: <26dd45d3-067a-4999-9cf6-8a0633a594f8@arm.com>
+Date: Wed, 23 Sep 2026 14:12:21 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -54,8 +54,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 5/6] dma: swiotlb: Add an overridable architecture pool
- opt-out
+Subject: Re: [PATCH v5 6/6] dma: swiotlb: Remove SWIOTLB_ANY
 To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
  iommu@lists.linux.dev, linux-kernel@vger.kernel.org
 Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Will Deacon
@@ -84,127 +83,198 @@ Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Will Deacon
  linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, x86@kernel.org
 References: <20260921063628.362078-1-aneesh.kumar@kernel.org>
- <20260921063628.362078-6-aneesh.kumar@kernel.org>
+ <20260921063628.362078-7-aneesh.kumar@kernel.org>
 From: Robin Murphy <robin.murphy@arm.com>
 Content-Language: en-GB
-In-Reply-To: <20260921063628.362078-6-aneesh.kumar@kernel.org>
+In-Reply-To: <20260921063628.362078-7-aneesh.kumar@kernel.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
 On 21/09/2026 7:36 am, Aneesh Kumar K.V (Arm) wrote:
-> On x86, iommu=off historically prevented SWIOTLB initialization by not
-> setting SWIOTLB_INIT_ADDRESSING_LIMIT. This overloads that flag: it
-> controls both whether a pool is selected and where the pool is
-> allocated. If another requirement, swiotlb=force selects a pool
-> independently, omitting SWIOTLB_INIT_ADDRESSING_LIMIT may place it above
-> the addressable range of devices which need bounce buffering.
-
-Well then surely something is wrong with the design? If 
-SWIOTLB_INIT_ADDRESSING_LIMIT is set then SWIOTLB still needs to respect 
-it irrespective of any *additional* reasons for activating (either from 
-arch code or internally). And conversely, if devices have addressing 
-limits but SWIOTLB_INIT_ADDRESSING_LIMIT is *not* set, then the arch 
-code has clearly gone wrong or made a bad assumption, but that doesn't 
-seem like SWIOTLB's problem to worry about.
-
-> Add SWIOTLB_INIT_FORCE_DISABLE to let an architecture opt out of normal
-> pool initialization without discarding the pool placement constraints.
+> swiotlb pools are currently allocated below the architecture's low
+> address limit by default. SWIOTLB_ANY overrides this and permits
+> allocation anywhere in directly mapped memory.
 > 
-> Unlike swiotlb_force_disable, which is set by swiotlb=noforce and
-> unconditionally prevents pool initialization, the new flag is an
-> architecture default. Explicit requirements such as memory encryption,
-> architecture remapping, or swiotlb=force take precedence over it.
-
-Logically, that should already be implied by the architecture passing no 
-SWIOTLB_INIT flags.
-
-Thanks,
-Robin.
-
-> iommu=soft retains SWIOTLB_INIT_ADDRESSING_LIMIT because it requests
-> software bounce buffering for devices whose DMA masks cannot address all
-> system memory. Such devices must be able to reach the bounce pool.
+> SWIOTLB_INIT_ADDRESSING_LIMIT now explicitly identifies callers which
+> need a pool that is reachable by devices with limited DMA addressing.
+> Use it as the placement constraint and remove SWIOTLB_ANY.
 > 
-> Clear both flags for Xen because Xen explicitly requires a remapped
-> SWIOTLB pool and may allocate it anywhere in directly mapped memory.
-> 
-> With no override, iommu=off disables both hardware IOMMU translation and
-> SWIOTLB bouncing. Direct DMA remains available; mappings outside a
-> device's addressable range fail instead of being bounced.
-> 
+> This changes the default behavior for callers which do not set either
+> flag. Previously, omitting SWIOTLB_ANY placed the default pool below the
+> architecture's low address limit and also constrained dynamically
+> allocated pools to the same range. After this change, omitting
+> SWIOTLB_INIT_ADDRESSING_LIMIT permits both static and dynamic pools to
+> use any directly mapped memory.
+
+While it's rather dependent on some of the other aspects wanting a bit 
+more work still, this part I do entirely agree with :)
+
+Reviewed-by: Robin Murphy <robin.murphy@arm.com>
+
 > Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
 > Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
 > ---
->   arch/x86/kernel/pci-dma.c | 11 ++++++++---
->   include/linux/swiotlb.h   |  2 ++
->   kernel/dma/swiotlb.c      | 10 ++++++++--
->   3 files changed, 18 insertions(+), 5 deletions(-)
+>   Documentation/core-api/swiotlb.rst |  8 ++++----
+>   arch/powerpc/mm/mem.c              |  6 ++++--
+>   arch/riscv/mm/init.c               | 16 ----------------
+>   arch/s390/mm/init.c                |  2 +-
+>   arch/x86/kernel/pci-dma.c          |  2 +-
+>   include/linux/swiotlb.h            |  7 +++----
+>   kernel/dma/swiotlb.c               | 17 ++++++-----------
+>   7 files changed, 19 insertions(+), 39 deletions(-)
 > 
-> diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-> index 0cff255827ba..ce257b20ea9c 100644
-> --- a/arch/x86/kernel/pci-dma.c
-> +++ b/arch/x86/kernel/pci-dma.c
-> @@ -44,9 +44,13 @@ static unsigned int x86_swiotlb_flags;
->   static void __init pci_swiotlb_detect(void)
->   {
->   	/* don't initialize swiotlb if iommu=off (no_iommu=1) */
-> -	if (!no_iommu && max_possible_pfn > MAX_DMA32_PFN) {
-> -		x86_swiotlb_enable = true;
-> +	if (no_iommu)
-> +		x86_swiotlb_flags |= SWIOTLB_INIT_DEFAULT_OFF;
-> +
-> +	if (max_possible_pfn > MAX_DMA32_PFN) {
->   		x86_swiotlb_flags |= SWIOTLB_INIT_ADDRESSING_LIMIT;
-> +		if (!no_iommu)
-> +			x86_swiotlb_enable = true;
+> diff --git a/Documentation/core-api/swiotlb.rst b/Documentation/core-api/swiotlb.rst
+> index 71b4e4c27eb5..06d9f88fdf7b 100644
+> --- a/Documentation/core-api/swiotlb.rst
+> +++ b/Documentation/core-api/swiotlb.rst
+> @@ -148,10 +148,10 @@ may also be adjusted
+>   due to other conditions, such as running in a CoCo VM, as described above. If
+>   CONFIG_SWIOTLB_DYNAMIC is enabled, additional pools may be allocated later in
+>   the life of the system. Each pool must be a contiguous range of physical
+> -memory. The default pool is allocated below the 4 GiB physical address line so
+> -it works for devices that can only address 32-bits of physical memory (unless
+> -architecture-specific code provides the SWIOTLB_ANY flag). In a CoCo VM, the
+> -pool memory must be decrypted before swiotlb is used.
+> +memory. The default pool is allocated below the architecture's low address
+> +limit when it is needed for devices with limited DMA addressing. Otherwise,
+> +it may be allocated anywhere in directly mapped memory. In a CoCo VM, the pool
+> +memory must be decrypted before swiotlb is used.
+>   
+>   Each pool is divided into "slots" of size IO_TLB_SIZE, which is 2 KiB with
+>   current definitions. IO_TLB_SEGSIZE contiguous slots (128 slots) constitute
+> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> index 006ed41097e9..1bdea6c03848 100644
+> --- a/arch/powerpc/mm/mem.c
+> +++ b/arch/powerpc/mm/mem.c
+> @@ -295,9 +295,11 @@ void __init arch_mm_preinit(void)
+>   		/*
+>   		 * Since the guest memory is inaccessible to the host,
+>   		 * devices always need to use the SWIOTLB buffer for DMA
+> -		 * even if dma_capable() says otherwise.
+> +		 * even if dma_capable() says otherwise. The hypervisor has
+> +		 * no addressing limitation, so the buffer may be allocated
+> +		 * anywhere.
+>   		 */
+> -		ppc_swiotlb_flags |= SWIOTLB_ANY;
+> +		ppc_swiotlb_flags &= ~SWIOTLB_INIT_ADDRESSING_LIMIT;
 >   	}
 >   
 >   	/*
-> @@ -84,7 +88,8 @@ static void __init pci_xen_swiotlb_init(void)
->   		return;
->   	x86_swiotlb_enable = true;
+> diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
+> index 96856114b387..734712230f35 100644
+> --- a/arch/riscv/mm/init.c
+> +++ b/arch/riscv/mm/init.c
+> @@ -165,27 +165,11 @@ static void print_vm_layout(void) { }
+>   
+>   void __init arch_mm_preinit(void)
+>   {
+> -	bool swiotlb = max_pfn > PFN_DOWN(dma32_phys_limit) &&
+> -		       memblock_start_of_DRAM() < dma32_phys_limit;
+>   	unsigned int swiotlb_flags = SWIOTLB_VERBOSE;
+>   #ifdef CONFIG_FLATMEM
+>   	BUG_ON(!mem_map);
+>   #endif /* CONFIG_FLATMEM */
+>   
+> -	if (IS_ENABLED(CONFIG_DMA_BOUNCE_UNALIGNED_KMALLOC) && !swiotlb &&
+> -	    dma_cache_alignment != 1) {
+> -		/*
+> -		 * No 32-bit DMA bouncing needed (either all DRAM is within
+> -		 * the 32-bit limit, or it all starts above it), but
+> -		 * kmalloc() buffers whose sizes are not cache-line-aligned
+> -		 * still require bouncing for non-coherent DMA.  Use
+> -		 * SWIOTLB_ANY so that the buffer can be allocated from high
+> -		 * memory when DRAM starts above dma32_phys_limit.  Allocate
+> -		 * ~1 MB per 1 GB of RAM.
+> -		 */
+> -		swiotlb_flags |= SWIOTLB_ANY;
+> -	}
+> -
+>   	if ((max_pfn > PFN_DOWN(dma32_phys_limit)) &&
+>   	     (memblock_start_of_DRAM() < dma32_phys_limit))
+>   		swiotlb_flags |= SWIOTLB_INIT_ADDRESSING_LIMIT;
+> diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
+> index 78f507e24ceb..ce10292447f1 100644
+> --- a/arch/s390/mm/init.c
+> +++ b/arch/s390/mm/init.c
+> @@ -166,7 +166,7 @@ static void __init pv_init(void)
+>   	virtio_set_mem_acc_cb(virtio_require_restricted_mem_acc);
+>   
+>   	/* make sure bounce buffers are shared */
+> -	swiotlb_init(SWIOTLB_VERBOSE | SWIOTLB_ANY);
+> +	swiotlb_init(SWIOTLB_VERBOSE);
+>   	swiotlb_update_mem_attributes();
+>   }
+>   
+> diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+> index ce257b20ea9c..74e92b457758 100644
+> --- a/arch/x86/kernel/pci-dma.c
+> +++ b/arch/x86/kernel/pci-dma.c
+> @@ -90,7 +90,7 @@ static void __init pci_xen_swiotlb_init(void)
 >   	/* Xen can use a SWIOTLB pool anywhere in directly mapped memory. */
-> -	x86_swiotlb_flags &= ~SWIOTLB_INIT_ADDRESSING_LIMIT;
-> +	x86_swiotlb_flags &= ~(SWIOTLB_INIT_ADDRESSING_LIMIT |
-> +			       SWIOTLB_INIT_DEFAULT_OFF);
->   	x86_swiotlb_flags |= SWIOTLB_INIT_REMAP | SWIOTLB_ANY;
+>   	x86_swiotlb_flags &= ~(SWIOTLB_INIT_ADDRESSING_LIMIT |
+>   			       SWIOTLB_INIT_DEFAULT_OFF);
+> -	x86_swiotlb_flags |= SWIOTLB_INIT_REMAP | SWIOTLB_ANY;
+> +	x86_swiotlb_flags |= SWIOTLB_INIT_REMAP;
 >   	swiotlb_init_remap(x86_swiotlb_flags, xen_swiotlb_fixup);
 >   	dma_ops = &xen_swiotlb_dma_ops;
+>   	if (IS_ENABLED(CONFIG_PCI))
 > diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
-> index be3962a33fc6..466c33795db0 100644
+> index 466c33795db0..503e1446e0d8 100644
 > --- a/include/linux/swiotlb.h
 > +++ b/include/linux/swiotlb.h
-> @@ -20,6 +20,8 @@ struct scatterlist;
->   #define SWIOTLB_INIT_ADDRESSING_LIMIT	(1 << 2)
+> @@ -15,13 +15,12 @@ struct page;
+>   struct scatterlist;
+>   
+>   #define SWIOTLB_VERBOSE	(1 << 0) /* verbose initialization */
+> -#define SWIOTLB_ANY	(1 << 1) /* allow any memory for the buffer */
+>   /* Initialize a default-sized pool for devices with limited DMA addressing. */
+> -#define SWIOTLB_INIT_ADDRESSING_LIMIT	(1 << 2)
+> +#define SWIOTLB_INIT_ADDRESSING_LIMIT	(1 << 1)
 >   /* Initialize a default-sized pool that requires architecture remapping. */
->   #define SWIOTLB_INIT_REMAP		(1 << 3)
-> +/* Do not initialize a pool unless SWIOTLB is explicitly required. */
-> +#define SWIOTLB_INIT_DEFAULT_OFF		(1 << 4)
+> -#define SWIOTLB_INIT_REMAP		(1 << 3)
+> +#define SWIOTLB_INIT_REMAP		(1 << 2)
+>   /* Do not initialize a pool unless SWIOTLB is explicitly required. */
+> -#define SWIOTLB_INIT_DEFAULT_OFF		(1 << 4)
+> +#define SWIOTLB_INIT_DEFAULT_OFF	(1 << 3)
 >   
 >   /*
 >    * Maximum allowable number of contiguous slabs to map,
 > diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
-> index c19675846fc1..46b789eb0806 100644
+> index 46b789eb0806..77d7c320de28 100644
 > --- a/kernel/dma/swiotlb.c
 > +++ b/kernel/dma/swiotlb.c
-> @@ -563,10 +563,16 @@ swiotlb_select_pool_policy(unsigned int flags)
->   	if (flags & SWIOTLB_INIT_REMAP)
->   		return SWIOTLB_POOL_DEFAULT;
+> @@ -450,15 +450,10 @@ static void __init *swiotlb_memblock_alloc(unsigned long nslabs,
+>   	size_t bytes = PAGE_ALIGN(nslabs << IO_TLB_SHIFT);
+>   	void *tlb;
 >   
-> -	if (flags & SWIOTLB_INIT_ADDRESSING_LIMIT)
-> +	if (swiotlb_force_bounce)
->   		return SWIOTLB_POOL_DEFAULT;
->   
-> -	if (swiotlb_force_bounce)
-> +	/*
-> +	 * Explicit requirements above override an architecture's default opt-out.
-> +	 */
-> +	if (flags & SWIOTLB_INIT_DEFAULT_OFF)
-> +		return SWIOTLB_POOL_NONE;
-> +
+> -	/*
+> -	 * By default allocate the bounce buffer memory from low memory, but
+> -	 * allow to pick a location everywhere for hypervisors with guest
+> -	 * memory encryption.
+> -	 */
+> -	if (flags & SWIOTLB_ANY)
+> -		tlb = memblock_alloc(bytes, PAGE_SIZE);
+> -	else
 > +	if (flags & SWIOTLB_INIT_ADDRESSING_LIMIT)
->   		return SWIOTLB_POOL_DEFAULT;
+>   		tlb = memblock_alloc_low(bytes, PAGE_SIZE);
+> +	else
+> +		tlb = memblock_alloc(bytes, PAGE_SIZE);
 >   
->   	if (swiotlb_kmalloc_needs_bounce())
+>   	if (!tlb) {
+>   		pr_warn("%s: Failed to allocate %zu bytes tlb structure\n",
+> @@ -604,10 +599,10 @@ void __init swiotlb_init_remap(unsigned int flags,
+>   #ifdef CONFIG_SWIOTLB_DYNAMIC
+>   	if (!remap)
+>   		io_tlb_default_mem.can_grow = true;
+> -	if (flags & SWIOTLB_ANY)
+> -		io_tlb_default_mem.phys_limit = virt_to_phys(high_memory - 1);
+> -	else
+> +	if (flags & SWIOTLB_INIT_ADDRESSING_LIMIT)
+>   		io_tlb_default_mem.phys_limit = ARCH_LOW_ADDRESS_LIMIT;
+> +	else
+> +		io_tlb_default_mem.phys_limit = virt_to_phys(high_memory - 1);
+>   #endif
+>   
+>   	/* if we have host or guest memory encryption */
 
 
