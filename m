@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-28001-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28002-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82C3BC9830B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 09:14:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2FACC982EA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 09:15:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqWVj0JKYz2xmh;
-	Wed, 23 Sep 2026 19:14:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790154845;
-	cv=none; b=QQVnJ8/5rcSdYCTEipNM7kSHSVPAoOaCm14sK0lV2GDxeT3W4es2BhBvQQ6yTPx0jBx06nUQ9Y/GcKRQI2yJtC8BNtW+u7+F4CXzpLwHYyMaIzbn/M65JosvPxsLo+XO1d9lJhCHCfhhIKmOH5UEj+V44XmkDwjQjJPDvJYHlH677lS+OM5F7abYL0mjtSrRxvAillf3g8mOsM3ouufYIfY0/Y2gaY5tZsLysXeoeu566qO1MtE7RCdLueWJ8oMvx+1SG9wFC+pMX9k6ayFW2UntFo1a4m7GdehI70Uf+LkwA4bhZnoLrXabskr5Bdynp8EG/Qi0+orugEQBE5mh3A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqWXq4vqGz2xmh;
+	Wed, 23 Sep 2026 19:15:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790154955;
+	cv=none; b=KNHyCubH6oy/XJIhrmtTVze7wS6IWP96du04aV6J6L0L7Pi59RAUFNhaWmwvQ7MYSHfk9FyNRtneP66Pm7QJLWjuA8LKmffeI12c7C0u9XdEav1tN6HAM/uVfO8oQDzuiRHCuxkqol5TgZa/4sP+Ai+xz+25H6DGeBfOacBZLWL2XSeK9elpxXovf2MtMPU6CLBjXm/u7mBccMChPeWwUpe2Ag+ZVnsblrpe6Da2PcB4tuAWlnL8IXlPERjav0GCA6uIGXU8ly+d6GpPKwYh2m3i9Q4gsiprf5c1RdqvW91qahvAT/jAkC+hDbzMfr3t033Oh77LOdp307TMMPW1+g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790154845; c=relaxed/relaxed;
-	bh=Z+j1lHJE5F3iMb8nSY99OQtjlVOCv/aNXLt1f/fnIwI=;
+	t=1790154955; c=relaxed/relaxed;
+	bh=O74zCChabJPGX/5FXG7XmXwrySBRD///uZE1gOiATno=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=hr5ANDLd0EtXVBRDw9PlRCDV4MJ2Nkog1r6xVCfNGMXR/OyyKLOWHlAnEPOVxsuG4xK/YUUh9cilEmI+3egv+N66jsoaj5yQ63bsUVWJJDMW7D8oVEsB88btRTRJGxInDSvJxc0XgedmJN7H7V4Kd7G2U581zFfeDANDOf7f5+0ykpo/J4P1SMoQe/StDkXypsJ55qQ/vqW8KXDe30U/VEcA18WEBi3gSToi5hMhSZwx58owrNN0Lb9YO7+DKOcfWjcLMYBCreuq9QGF358CoAtRxD3jNJQNJNHakJS1OBQpuEo+rF+nTAbUTUswPfNSMYta6goQ03bDTOv+gK7xtg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kWMCgiXL; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=SeVkJYt8Os/mbLEKRTE97Q67Un0IEAENiYcht1IMbcKLSuRKpwMmlODXfwWWf8RH9PekdETul4PwObKhJJb9VTv/MUJKkIglhnoVWMimQqrBtu5wS9eYhWE20eAt/zRd6fmgIQ1WkYR2QgYd6axQ82HyvTl0qfOgeX41fNSnr8H6kXNOqjv5bk/bKso1BfCjyWNok9gkSqy1Sh5IFz9nmI36zRiA4bfdNibUWBtHDx3GK4SUNLy9iB6qD0qpBur38CaTTnA1vh5SurmEW0xPtIXBsaA7bof0rNZJihCkSWBJLcsxrdZL5hDz0dXQYLF5KugwOnBLU/qnokdJKJd5kg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SMhlc0Vg; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kWMCgiXL;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SMhlc0Vg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqWVh22Qqz2xLq
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 19:14:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqWXp5XhPz2xLq
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 19:15:54 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 23F35401AB;
-	Wed, 23 Sep 2026 09:14:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 72DD41F000FF;
-	Wed, 23 Sep 2026 09:13:40 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 239DC60202;
+	Wed, 23 Sep 2026 09:15:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CC3B61F00899;
+	Wed, 23 Sep 2026 09:15:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790154842;
-	bh=Z+j1lHJE5F3iMb8nSY99OQtjlVOCv/aNXLt1f/fnIwI=;
+	s=k20260515; t=1790154951;
+	bh=O74zCChabJPGX/5FXG7XmXwrySBRD///uZE1gOiATno=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=kWMCgiXLIQ6wuVlwnnRx3lJKHDLxKLCH12IowjOX7efeQzZGOJawCaHUfqRK5YQRX
-	 eyw5xVCFRsKuaXNkT2f1HZDd8aaiBjUul7jvkwjO6j1afG61xfht5mCCPSKKp4Dhe9
-	 rzhiHvxgoP5JCx5uMMA6TbPPpBXNI0TvsBqy8ptvMlhuhl3LjdN19l8FOcusuHqGd6
-	 W/Lu00eio/hX6O8BOK5kdqlsJZJnYqJ8DQtyzzxsImYdJDJx13pZ4NSi9WHt1anikw
-	 dlxfFEX5t8FcpmSHMomNE+o4ZWePsDJ5WRA6GO3q2+DvMeaV13VT0Jhtfi25HVJqjf
-	 K7utRZ1UWwiog==
-Message-ID: <802d3999-95fe-4a09-89b4-d01b60f8e963@kernel.org>
-Date: Wed, 23 Sep 2026 11:13:36 +0200
+	b=SMhlc0VgRdQKdx0qwl14ANA68wVrXDsrycIDNbwUOrPzQGed7psejweuHvn9y0Upj
+	 oK9pF6NnduwDsnqfpjtJ/98OkmFP3+3GiOq1Gh9n/PtyI2qphy+ikJaaV9pWvwu/jb
+	 lgkfeUAJH/6wrnbIuYjLND8YDK30CL0Xmk3ZEGU/0LCGarFAZx7fHYPYSxTuBD/9Po
+	 M10D3egALYwoCwT9UTdFNWLlH9Bts/yO0DSd9ByK7feU9BZexVgvkgnX3iMjolsZ4N
+	 yD6SaWbdPJpvZOUAW1bcswar5pOH0YXD/VsfYA6P7+enqEtASX+lnYGFo0DZ63X3o1
+	 OTxrzvc6LwB5g==
+Message-ID: <77db2f8f-dfc2-49c6-82f6-8e6c4f7c1fd0@kernel.org>
+Date: Wed, 23 Sep 2026 11:15:26 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,7 +60,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 11/12] mm: make userland page table freeing RCU-safe
+Subject: Re: [PATCH v4 00/12] mm: make userland page table freeing RCU-safe
 To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Zi Yan <ziy@nvidia.com>,
  Baolin Wang <baolin.wang@linux.alibaba.com>,
@@ -122,8 +122,8 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Zi Yan <ziy@nvidia.com>,
  Hugh Dickins <hughd@google.com>, Qi Zheng <qi.zheng@linux.dev>,
  linux-doc@vger.kernel.org
 References: <20260922-rcu-pagetable-freeing-v4-0-fe1ad1f1e303@kernel.org>
- <20260922-rcu-pagetable-freeing-v4-11-fe1ad1f1e303@kernel.org>
- <72d1548a-a4ee-4832-b2ab-4bc82f1933f8@kernel.org> <arOWZCeV8FrkAvhK@gremlin>
+ <20260922160021.a2fc65d05d9b867a141e5457@linux-foundation.org>
+ <9dcde7e4-dadb-4644-9dff-7fd8a26e29a6@kernel.org> <arOVbT5B1FOMe1wb@gremlin>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -170,30 +170,43 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <arOWZCeV8FrkAvhK@gremlin>
+In-Reply-To: <arOVbT5B1FOMe1wb@gremlin>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 9/23/26 11:06, Lorenzo Stoakes (ARM) wrote:
-> On Wed, Sep 23, 2026 at 11:04:17AM +0200, David Hildenbrand (Arm) wrote:
->> On 9/22/26 17:35, Lorenzo Stoakes (ARM) wrote:
->>
->> The patch subject confused me at first: that's not what the patch is doing, no?
->> Previous patches did that, and now you're just removing the leftovers?
->>
->> Maybe I'm missing something that this patch does along the lines of teaching the
->> code to be RCU-safe.
+On 9/23/26 11:04, Lorenzo Stoakes (ARM) wrote:
+> On Wed, Sep 23, 2026 at 10:45:33AM +0200, David Hildenbrand (Arm) wrote:
+>> On 9/23/26 01:00, Andrew Morton wrote:
+>>>
+>>>
+>>> Do we have reason to believe that anyone is seeing any effects from
+>>> their arch's failure to rcu-free the page tables?
+>>>
+>>> This sounds like a rather long-standing wart, yes?
+>>>
+>>> The patchset is thinly reviewed and mm.git is bursting at the seams
+>>> again.  I'll play wait-and-see on this series.
+>> Do we want to nudge arch maintainers to review?
 > 
-> It is the final piece that makes that the case, so I think it's OK to allow
-> oneself a nice subject line? No? :)
+> (Just to note that I replied separately, 'thinly reviewed' is incorrect, it's
+> been in -next for weeks and the whole thing was reviewed by Kiryl.)
 
-Just took me longer to figure out if I am missing something important.
+Ack.
 
-E.g.,
+> 
+> The only places where that would be useful is m68k motorola, sparc32.
+> 
+> But in any case it has been heavily tested including on every single arch
+> listed with stress testing performed (I think I cover that in the cover
+> letter).
+> 
+> The changes are not controversial so I don't think that's a blocker, but
+> it'd be nice?
 
-	"mm: remove unused RCU-unsafe user page table freeing"
+I doubt we'll ever get sparc32 reviews :)
 
-would have been clearer to me. Anyhow, just stumbled over it, I don't care too much.
+I'd definitely appreciate some review on the arch bits from arch maintainers,
+but if they don't reply within the next weeks I wouldn't wait on that.
 
 -- 
 Cheers,
