@@ -1,73 +1,97 @@
-Return-Path: <linuxppc-dev+bounces-27956-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27957-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77201C98302
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 05:14:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2789C982EA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 05:40:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqQBQ4Cklz2xs1;
-	Wed, 23 Sep 2026 15:14:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790140478;
-	cv=none; b=lGnsurla5k1IBDFGs3u3xd8SFpwSKC3Y2vN0ash04EVzS85/H6Lio5LUxLzcrDbadiEB+IFDYCpvrAj7GsRyE3zQNGxFPPRvEAbH4rhv/rQn8QeFihLFjhl33FrmLyyQzP9YRU+OVBcMNcg2rjbTEiZEZr075szv3Jyz5siT8W759Q5EJzQ1i3kl+MHOMwDJquzpryqymSaE1aco9QumyICPfsNjzrUt8sfSIeJc2Gyh5v6Y1cBt+nD0cC0b0/5CM7SF5St4lSgcOQSS9v98Kl6POt8Q3F9diY/pbWfE1vvqsQUicZBHwRMb6v4jGFfEU7cLGok024v8g6kML9N0qw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqQmL1BNyz2xs1;
+	Wed, 23 Sep 2026 15:40:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:34::f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790142034;
+	cv=none; b=GUoEv+t8xzqPtoU7ZR1olCcQmPqUklOJs8vTHdRNko7YT9XUdRAh/5sRDEC512jC+C6dOL17h/TdyQll5qvXQCeyKAfG1NXJYAcxiw5SPfbQ0Qt9hUoda8kljtm9PB1Duh0qFb3IfMPS1M2hP2X4bTECK0GgdhXyA+hpSfPPUfDTbEVYrJ4DT24+4WCH3SG22rjhwhyB5zd8EbNs52PR44NxwJ7J7tQ0IlK2/zsw/4XmNc8TQ7vsmlfbmlACAr6JGynfnbMt1SoKQD36SRHtBTcnm8SIUcHX29yWzJHJN17+RZXPdjT7SlbZ60nze0giwlbpTyfb0lWfntaHbGwT3A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790140478; c=relaxed/relaxed;
-	bh=441XGplko3eHphwZZt4cF0SHZAIYjrcYFtmeJFhZI5o=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=VoTNErlzM8RNz94/K3CgDpDxdCpu5bGLU5TqxSpjPydAM6p7ytWDkoJoQHyKhVP2tH+fZLWA3/P3ZP2TYpbajAqCjbE9G8rpGZRN3gyEW9qqpgmbtzAvUJlT53poA+bhxrX9Pc6d9EA0bdlmf8ImYV6nGzbWfWRMkNaJpl2Xc7B5TZHWpPFbJ1y6llUM5YUjVjV1zkYxHiIEfFOdkSh9wBShHig+ELacmkIpKCBPDZbehIqA4L2kLupy6aOudZ9DKAmzdgM3Q3bXE5IbTmD+uYoiY1QygSFrrImCIRSstHIUDY3HtKb2470YBi+iOJNycrMC0h0m8gsQZ7t9md2hDw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KPmuIRet; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1790142034; c=relaxed/relaxed;
+	bh=4t2QKwvgTvrUqgLrxmE0i6NBCj41D7R9VJyZdg6puRQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=bSA7sgrEs1a0DdaLI82Ti0Rm87dLaYmDd5MZbc4JjrKaL2YHOGqRpIUXSd3+9Yqr+2VHc/dfUYKAC/Hl5DA6fLjynfYhh/ael70q+MXHdieswWm8+SKGt32Ibb81F2GIk4q/39rYB2TqH36w75kOTxjHkGSstq84+ulkgkyilott0zBgAKLuuVKaEY/j9MdHj0bOoiFheCp/rmpzr/b+ZYVrlPzzgBR/egZTyJFYcesG5aJSo7rFnAQlNkxqIAxMBl/q4jZ0T7GgOnVI6fh1N8h7wmck7u32qfsuxfsTlG0hc0DyoC2N50EwJjJoOzBgw+xYDIM1g0BIGrBsJK3Y9Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=j/xB8xxd; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:34::f; helo=mail-qk2-x0f.google.com; envelope-from=mhun512@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KPmuIRet;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=j/xB8xxd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:34::f; helo=mail-qk2-x0f.google.com; envelope-from=mhun512@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-qk2-x0f.google.com (mail-qk2-x0f.google.com [IPv6:2607:f8b0:4864:34::f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqQBP43Wrz2xk7
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 15:14:37 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68N45RpQ477960;
-	Wed, 23 Sep 2026 05:14:11 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=441XGp
-	lko3eHphwZZt4cF0SHZAIYjrcYFtmeJFhZI5o=; b=KPmuIRetzb2AoelYHruzMl
-	WTTOMToQIyeToWYO5LOfXJfetztJl9EDgaKM8gdyB8O3n12MHpJ9GZq8njlB/JT8
-	cFHb9/kATDhn41DEDbqVzDfNUrHiXrqiwfOUorVFFJcHvL2BqrW6BOLNNqLcqkTR
-	XFhXL/I6+bj6Y0stmaQJ0T4wn8u9e927+ytmz8KiwBYifbZ/Tq6CpJIjKyPs11pb
-	whitGxv9YTc/p4iPhMubJ47uIsNqWCd9QTHhz56aozmhVlRXlT1z5cFLp6oNT05h
-	xY5e/EIYjxG8L90QRSsnDB4fCN1O/kIi8Atdc5FASJ5bxMYojqHFgQUOEI16SCGQ
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gske1sb24-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Wed, 23 Sep 2026 05:14:10 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68N3lXP42594539;
-	Wed, 23 Sep 2026 05:14:10 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gu5bkfcka-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 23 Sep 2026 05:14:10 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68N5E6FC25428626
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 23 Sep 2026 05:14:06 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0AC7620043;
-	Wed, 23 Sep 2026 05:14:06 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5698F20040;
-	Wed, 23 Sep 2026 05:14:00 +0000 (GMT)
-Received: from [9.124.209.29] (unknown [9.124.209.29])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 23 Sep 2026 05:14:00 +0000 (GMT)
-Message-ID: <9c1d7cf0-40f5-4a93-81ee-f5a4c5adcb9d@linux.ibm.com>
-Date: Wed, 23 Sep 2026 10:43:59 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqQmJ2Bstz2xlw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 15:40:31 +1000 (AEST)
+Received: by mail-qk2-x0f.google.com with SMTP id af79cd13be357-93910a0cb7cso50314685a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 22:40:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790142023; x=1790746823; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=4t2QKwvgTvrUqgLrxmE0i6NBCj41D7R9VJyZdg6puRQ=;
+        b=j/xB8xxdOqU+WjJgW44qzS8LjJFlSYGPmG5Jzn43F3tLHHfB0q/2JGKpyTiuevC3cq
+         lv3rIUuV35UJSIJqSq4xXgogERlTB5eJpgcMWw3LPdk8slD0LlaZEIe/ICP/LisJLKli
+         ZddpRAAyu+kY1/t7SdUj2wHbIX2zkKt8z3xaf3Bjtdlp/tjNq96a33slpWMTYi/v8CQk
+         w2XfLW/eLGE6bTY0V+By1hF1LOoCvbHX2reziZxfjOFUCwMZpJywqXghjDPoLGnyjac3
+         GAqAZSVN6ZzRI5gZ3vFoK3yKVc1XRrvhs7aDQCNxCOwTAZ2t5OGLXUnE7UDfy04zFid0
+         Aymw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790142023; x=1790746823;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=4t2QKwvgTvrUqgLrxmE0i6NBCj41D7R9VJyZdg6puRQ=;
+        b=wiIyqdbbsIYH375cPZK/nWVRNjV6Y+7rkJBT0pXBVybQ4HsfaWdX8AZ5gc76ZDSpgJ
+         QVZhfieyrk74LeMhDUW8ucEy6AzWgjIuAeP0EfVcMmnHlMP3UsqUxg3VTf8ewKS8xyp4
+         xPtjsHILRypyp+tLmjEHBlYhmtKLbYWca5fGceo25npAyZ2wkXKluLQ0hYgll5WhSRmb
+         NNp7MjP4Fe0Qxkm0z8toTunwdb08RtTMQHOYsdgmw57LqQhBhQp18MvUY7zo/tiEIniI
+         ErGTd71dVkT/bRakQbQy8OgCXgcDPLW8BXaD4QkEd7M4hPzmiOpyDgKrja584OaIrq6z
+         7aEA==
+X-Forwarded-Encrypted: i=1; AKwUvBw3IRHt/TS+my5YNiUJUplCEHOQBDaa1h1UVEE6OaqpknK1IfGaEi45sHXnJghazNui7/hiflqH+7Euato=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++ms1lkAZe6TtT3lWvefJvyrrLhi+Mjwi1s9JCI1lD6aofC20rfT
+	pb1F+C1rl51EypZXZESF4bjUT+TYpeLgQxGu1c1q8UnHjV84yQNQBDk=
+X-Gm-Gg: AYBFou3Hr7v5IYC4Rsudns8i0S6n4VLj5I+OyJnOXBFXO6LZnUxw+lqm9EazJC+TSlG
+	F+ZWRBMZ4zisQkBYvXCEu8LSMCzeuWN4KCz3m8mnC1+kDc1jbAtSCa/36M13lejp4BBDQGN1rrP
+	XayVA8ivqg2TVRDkn9SqsDRf9OvIDtm3SjrsI6q5ZG/4KXq0psI47+dlJMsrS/mzFBxaXwZupBC
+	7mi3ZiBue/JM4DsiBhDVk9c4dbhlccUo0Kaj/sQNxRNSl4zhKxYp9V9MToRSmWxMGL52ofuWeuC
+	rcP/Tz13fIUJqy8jA7K/hyZ/SpxeIrisvhwRBPElOmB04WfXUg8x+T54GW+I19ZdzhuSp64yCY5
+	SOzMBJAwA5B/knJvStiBB7q7EXuEDvYtzL2vXgrTudbor6PsSQyElxtaQ92ixtxNbxZbmQlu8hL
+	BHQPb8hVqAVg+KIF3jBCm91nZfaotdr2NKd8F0nZWJQtB6CY0hBDHLWHnADA80r/MN37i99x87Q
+	HvBGP3ZLOLye3fMsz1+GVckTXh0hBiQZS3PmG3hwkGY/FVPHpWF+n4lgCitSaN+7c4aWNBkFXAM
+	OhZOOMaK8mwTrnDWWt9gOmaNHj8nnmyDkCHlpo99txibGoCd5aXB+FNkaGr1LTZCpESKrCZXP9r
+	nzw==
+X-Received: by 2002:a05:620a:6409:b0:939:1483:55c with SMTP id af79cd13be357-93c25118d3fmr276086185a.19.1790142023287;
+        Tue, 22 Sep 2026 22:40:23 -0700 (PDT)
+Received: from localhost.localdomain (h16.44.55.139.dynamic.ip.windstream.net. [139.55.44.16])
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-93c277636e4sm88496685a.41.2026.09.22.22.40.18
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Tue, 22 Sep 2026 22:40:20 -0700 (PDT)
+From: Myeonghun Pak <mhun512@gmail.com>
+To: Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Shengjiu Wang <shengjiu.wang@nxp.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>
+Cc: Myeonghun Pak <mhun512@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	linux-sound@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org,
+	Ijae Kim <ae878000@gmail.com>
+Subject: [PATCH] ASoC: fsl_xcvr: free IRQ before canceling reset work
+Date: Wed, 23 Sep 2026 01:40:17 -0400
+Message-ID: <20260923054017.93553-1-mhun512@gmail.com>
+X-Mailer: git-send-email 2.47.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,184 +105,101 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [Linux PPC] Disable PREEMPT
-To: Christian Zigotzky <chzigotzky@xenosoft.de>,
-        =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Michael Ellerman <mpe@ellerman.id.au>, harshpb@linux.ibm.com,
-        Gautam Menghani <gautam@linux.ibm.com>, amachhiw@linux.ibm.com,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        "R.T.Dickinson" <rtd2@xtra.co.nz>, hypexed@yahoo.com.au,
-        mad skateman <madskateman@gmail.com>,
-        Christian Zigotzky <info@xenosoft.de>, Samir M <samir@linux.ibm.com>,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-        Narayana Murty N <nnmlinux@linux.ibm.com>,
-        Hari Bathini <hbathini@linux.ibm.com>
-References: <aqfTU79SlNB3ykDi@kunlun.suse.cz>
- <25cf64ab-2a32-4d4c-a0c7-2e9007c276d4@linux.ibm.com>
- <aqj1KxZttNgY5ZVR@kunlun.suse.cz>
- <ba9759d0-b1f2-4b33-aff5-769cf89bd584@linux.ibm.com>
- <9b58bd58-d0e4-463e-bff9-e33b153b2987@linux.ibm.com>
- <aqu9hA1Bq58GFrVw@kunlun.suse.cz>
- <b2a5d53f-05e8-48ae-adb7-12fc74523b4e@linux.ibm.com>
- <aqvnOg9JfkM2k0TX@kunlun.suse.cz>
- <7ad57b61-4567-42c8-a9f6-faaabe7766a7@linux.ibm.com>
- <7e06fb84-ca2e-dbb4-47bd-e95ee11113c9@xenosoft.de>
- <aqzj9xsPRsGgCI5M@kunlun.suse.cz>
- <79f9d4e3-ce55-d238-e4a9-b11e9ce27c5f@xenosoft.de>
- <33342fbf-eb7b-bde6-2c8c-254fe8bfb993@xenosoft.de>
- <b887c351-f7da-4e24-8cee-30a5a2dbfadb@linux.ibm.com>
- <7fb5baa6-9d06-2c61-2b43-6835e8fb0d1a@xenosoft.de>
-Content-Language: en-US
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-In-Reply-To: <7fb5baa6-9d06-2c61-2b43-6835e8fb0d1a@xenosoft.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: JCSBF24Yn6g5t4Dqmp2iVTDyyAVAtH3I
-X-Authority-Analysis: v=2.4 cv=EOCTQFZC c=1 sm=1 tr=0 ts=6ab36023 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=NEAV23lmAAAA:8
- a=oxC9TbpiAAAA:20 a=TyhM5VrcfDcAQIkWa9IA:9 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10 a=bA3UWDv6hWIuX7UZL3qL:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTIzMDAyMCBTYWx0ZWRfX5cWjgvWu8hKX
- nnYaKVZ40kkKw3wJS9m8kKTZSLKHqMZtn7Lfxuw6NAhlI9LRHXgLSKbCfp4+TELg+p7UsunGz9f
- ECbImzimkjtIUGfYcHn8hVnwvd3phxY=
-X-Proofpoint-GUID: A4doiWS49zoeNluiBCfPV4hccmLA9dLx
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTIzMDAyMCBTYWx0ZWRfX8pEnAifyIA0b
- WPumZpdDoVxwTDQihilDpYBkmFI6f4VD9Twj9DyRlU0QV9H6+M9yBdjGVbmrUTMNbZURUuoGxTB
- WNaK7tD6wz4a2AL115vU4WKAdbb9QJSu8DssyIPUJe7LQ7PcRJAUnytBJR8nS8G+opFLnQjlHyI
- HBybdyd+P5tlc1fkGhAF0PWc0liGbdSaBwDfbwWhvEW39muASeASamtlhJ9kQkXW5yx7/+4EAx1
- ZCLiCywhIpOGLEHaGCVlWRHMGsMUmEq0uThDY8czOhOkVNFSPeBsXmM4GIFNTkqiY4+p2TzzdE3
- r4vOD3gtbDAY8PLEyZpg+WzpoHJDo6UfWdZsZlhjNLtycYPDMdbSCkfcF+CqqlVCNH8uiWfbfxt
- H9hfsuqjNo6LcfYkcdNdYlKpbWyDELLHFozA48xeKrk2Xe0q1NFoFfA57Ehsv7uNt1jIItal0aC
- b5Mzzlt+uXv5fRdaKXQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-23_02,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 phishscore=0 priorityscore=1501 clxscore=1015 spamscore=0
- adultscore=0 impostorscore=0 lowpriorityscore=0 suspectscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609230020
 
+irq0_isr() schedules work_rst on a preamble error, and reset_rx_work()
+touches regmap.  remove() cancels that work while the IRQ is still
+registered, so the handler can queue it again during teardown.  The IRQ
+is also requested before INIT_WORK() and spin_lock_init().  Probe
+failure does not call remove(), so freeing the IRQ leaves queued work
+running, and an earlier interrupt schedules uninitialized work.
 
+Initialize the lock and devm_work_autocancel() before the IRQ.  Failed
+probe then frees the IRQ and cancels the work.  Unbind frees the IRQ
+before cancel_work_sync() and pm_runtime_disable().
 
-On 9/23/26 10:39 AM, Christian Zigotzky wrote:
-> On 21/09/26 07:12, Shrikanth Hegde wrote:
->> Hi Christian.
->>
->> On 9/20/26 6:34 PM, Christian Zigotzky wrote:
->>> On 09/20/2026 01:49 PM, Christian Zigotzky wrote:
->>>> On 09/18/2026 09:10 AM, Michal Suchánek wrote:
->>>>> On Fri, Sep 18, 2026 at 04:39:57AM +0200, Christian Zigotzky wrote:
->>>>>> On 17/09/26 16:15, Shrikanth Hegde wrote:
->>>>>>> Hi Michal,
->>>>>>>
->>>>>>>>> Give it a try.
->>>>>>>>>
->>>>>>>>> I am suspecting both lockup, stack corruptions are secondary
->>>>>>>>> symptoms here.
->>>>>>>>> While recreate, I have different type of traces.
->>>>>>>> Yes, it does work for the crash I see.
->>>>>>> Thanks. Give me sometime to see further on that. Didn't get any time
->>>>>>> today.
->>>>>>>
->>>>>>>> However, we hijacked the report
->>>>>>>> of KVM locking up on FSL Cyrus+, and that is likely a different problem
->>>>>>>> still not addressed.
->>>>>>>>
->>>>>>> Ah, that's what you meant. Yes, i still don't know where FSL Cyrus+ is
->>>>>>> stuck.
->>>>>>>
->>>>>>> I would need help from FSL Cyrus+ to get some logs or is there a way we
->>>>>>> can spin of
->>>>>>> a QEMU guest of it? We should have the log to start somewhere.
->>>>>>>
->>>>>>>
->>>>>> It's difficult to get a log because it freezes and can't write any error
->>>>>> messages to the log files. This bug is very old. We had this issue some
->>>>>> years ago but we was able to disable PREEMPT because we don't need it.
->>>>> I would expect serial console and sysrq could give something, depending
->>>>> on how much of the kernel is frozen.
->>>>>
->>>>> Thanks
->>>>>
->>>>> Michal
->>>> Here is a serial log: https://github.com/user-attachments/files/32433586/e5500_preempt_putty.log
->>>>
->>
->> Thanks Michal for helping to get the traces.
->>
->>> Another serial log with pcie_ports=compat: https://github.com/user-attachments/files/32434487/e5500_preempt_pcie_ports_compat_putty.log
->>>
->>
->> I see it is mostly busy with printing
->> WARNING: at .enable_kernel_fp+0x30/0x78, CPU#3: qemu-system-ppc/4884
->>
->> The path seems to be same also.
->>
->> [c000000085ca7700] [c00000000005de84] .kvmppc_load_guest_fp+0x30/0x80
->> [c000000085ca7780] [c00000000005f2a0] .kvmppc_handle_exit+0x5bc/0x5cc
->> [c000000085ca7830] [c00000000006204c] .kvmppc_resume_host+0xb8/0x10c
->>
->>
->> Does below help to boot or make it stable?
->> ---
->>  arch/powerpc/kvm/booke.c | 9 ++++++++-
->>  1 file changed, 8 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
->> index 13ad4cf5fa71..d4be7a306bfc 100644
->> --- a/arch/powerpc/kvm/booke.c
->> +++ b/arch/powerpc/kvm/booke.c
->> @@ -1404,10 +1404,17 @@ int kvmppc_handle_exit(struct kvm_vcpu *vcpu, unsigned int exit_nr)
->>          if (s <= 0)
->>              r = (s << 2) | RESUME_HOST | (r & RESUME_FLAG_NV);
->>          else {
->> -            /* interrupts now hard-disabled */
->> +            /*
->> +             * interrupts now hard-disabled. i.e EE=0
->> +             * But irqs_disabled relies on PACA entries
->> +             * and fixup below enables it.
->> +             * So irqs_disabled == false
->> +             */
->>              kvmppc_fix_ee_before_entry();
->> +            preempt_disable();
->>              kvmppc_load_guest_fp(vcpu);
->>              kvmppc_load_guest_altivec(vcpu);
->> +            preempt_enable_no_resched();
->>          }
->>      }
->>
->>
-> Hi,
-> 
-> Thanks a lot for your patch!
-> 
-> I patched the 7.3-rc4 kernel sources with your new patch and compiled the kernel again yesterday. [1]
-> 
+Fixes: 1e5d0f106164 ("ASoC: fsl_xcvr: reset RX dpath after wrong preamble")
+Cc: stable@vger.kernel.org # 6.13+
+Assisted-by: LLM
+Co-developed-by: Ijae Kim <ae878000@gmail.com>
+Signed-off-by: Ijae Kim <ae878000@gmail.com>
+Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
+---
+ sound/soc/fsl/fsl_xcvr.c | 26 +++++++++++++++++++-------
+ 1 file changed, 19 insertions(+), 7 deletions(-)
 
-Thanks for trying.
-
-> Unfortunately, the issue still exists.
-> 
-
-Can you share the console log of the kernel with the patch applied?
-We need to see where it is stuck now. Has it made forward progress?
-
-> I tested it with a guest kernel with and without preempt support.
-> 
-> Cheers,
-> Christian
-> 
-> [1] https://github.com/chzigotzky/kernels/releases/tag/v7.3.0-rc4-2-preempt
-> 
-
+diff --git a/sound/soc/fsl/fsl_xcvr.c b/sound/soc/fsl/fsl_xcvr.c
+index 9828272..29929df 100644
+--- a/sound/soc/fsl/fsl_xcvr.c
++++ b/sound/soc/fsl/fsl_xcvr.c
+@@ -3,6 +3,7 @@
+ 
+ #include <linux/bitrev.h>
+ #include <linux/clk.h>
++#include <linux/devm-helpers.h>
+ #include <linux/firmware.h>
+ #include <linux/interrupt.h>
+ #include <linux/module.h>
+@@ -57,6 +58,7 @@ struct fsl_xcvr {
+ 	struct snd_aes_iec958 tx_iec958;
+ 	u8 cap_ds[FSL_XCVR_CAPDS_SIZE];
+ 	struct work_struct work_rst;
++	int irq;
+ 	spinlock_t lock; /* Protect hw_reset and trigger */
+ 	struct snd_pcm_hw_constraint_list spdif_constr_rates;
+ 	u32 spdif_constr_rates_list[SPDIF_NUM_RATES];
+@@ -1617,7 +1619,7 @@ static int fsl_xcvr_probe(struct platform_device *pdev)
+ 	struct fsl_xcvr *xcvr;
+ 	struct resource *rx_res, *tx_res;
+ 	void __iomem *regs;
+-	int ret, irq;
++	int ret;
+ 
+ 	xcvr = devm_kzalloc(dev, sizeof(*xcvr), GFP_KERNEL);
+ 	if (!xcvr)
+@@ -1705,12 +1707,22 @@ static int fsl_xcvr_probe(struct platform_device *pdev)
+ 		return dev_err_probe(dev, PTR_ERR(xcvr->reset),
+ 				     "failed to get XCVR reset control\n");
+ 
++	/*
++	 * irq0_isr() schedules work_rst. Prepare the work and its lock
++	 * before the IRQ, and register the cancel action first so a failed
++	 * probe frees the IRQ and then cancels any queued work.
++	 */
++	spin_lock_init(&xcvr->lock);
++	ret = devm_work_autocancel(dev, &xcvr->work_rst, reset_rx_work);
++	if (ret)
++		return ret;
++
+ 	/* get IRQs */
+-	irq = platform_get_irq(pdev, 0);
+-	if (irq < 0)
+-		return irq;
++	xcvr->irq = platform_get_irq(pdev, 0);
++	if (xcvr->irq < 0)
++		return xcvr->irq;
+ 
+-	ret = devm_request_irq(dev, irq, irq0_isr, 0, pdev->name, xcvr);
++	ret = devm_request_irq(dev, xcvr->irq, irq0_isr, 0, pdev->name, xcvr);
+ 	if (ret)
+ 		return dev_err_probe(dev, ret, "failed to claim IRQ0\n");
+ 
+@@ -1751,8 +1763,6 @@ static int fsl_xcvr_probe(struct platform_device *pdev)
+ 			fsl_xcvr_comp.name);
+ 	}
+ 
+-	INIT_WORK(&xcvr->work_rst, reset_rx_work);
+-	spin_lock_init(&xcvr->lock);
+ 	return ret;
+ }
+ 
+@@ -1760,6 +1770,8 @@ static void fsl_xcvr_remove(struct platform_device *pdev)
+ {
+ 	struct fsl_xcvr *xcvr = dev_get_drvdata(&pdev->dev);
+ 
++	/* Free the IRQ first so irq0_isr() cannot requeue work_rst. */
++	devm_free_irq(&pdev->dev, xcvr->irq, xcvr);
+ 	cancel_work_sync(&xcvr->work_rst);
+ 	pm_runtime_disable(&pdev->dev);
+ }
 
