@@ -1,73 +1,110 @@
-Return-Path: <linuxppc-dev+bounces-28063-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28064-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 369ABC98304
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 18:42:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06CD2C9830B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 19:53:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqm6n2ffbz3048;
-	Thu, 24 Sep 2026 04:42:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790188961;
-	cv=none; b=mbsvY1w/MIvJFq1QP/hBBcNeIf9rOCymZ2msyGh5+1K7Cs2uNMvVl6cjsBSeLDSWp2tcZqBNqCB5O0DLZhmtu9Rm8n3WScBSm/4vHrZm66aU8JdrNKeHkxq7gRm3JvN71vljWMCKGrivvWjcZqC7BXColbfOgYjGJsgdew/beG4PWgRzTnyguYQfIfxkPutrEB2pZv2qUj1+2Z+lVc43rY+0pRvtv5ByKqirR4LAvGhqWzZ92UErpuyvvaLTo9Cs0S/fJiGTMbcjU8WXP6yZB9ysRZdjhtaGPJ0GbyTbGct4fUKHXuJWyW5QeXCp2XSde1iiok/MyQO+WeeOTmroEg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqnhk08z7z2yqw;
+	Thu, 24 Sep 2026 05:53:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790193221;
+	cv=none; b=kCtPpD/7yvHe5wLwAy/XGqxGzmrdQeKEpuUtHl5HA9NAH+u7y/NBJqJwVQdjLQ+xWTMmqknpEf/R+9lyikqcv47pTAw+sSSxi5KK9nwPk4865UZOZ5n/+o6BDg2s4EVq2Ax9CcNiB4iTX4OBZO9I3mA11SRTq5g7HeuiG6PgWmSP14783yQeDlCIi//582v6kjA3WftYT24WEwHPveZjRTKXIdRqqPYyJOXYpJZZZToruy5KyTDCUJXpcx85HM4m2d6fEgYbEybiVo+3UafdHMBMUF+jA2sLX11L03DD+MwQEOlpHP4oKxRQkKs9vv6xd2DSprDx1+V+doz+P3HHww==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790188961; c=relaxed/relaxed;
-	bh=CUYITwKQ+z+1OAH+g8CWgxbCNFHSvBZjQhuLJ/kZcmc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=nXaRq+xoJ/qLJVXyjUyOWN6kbJXDWl0POpVCdUsrANpWTNZtT8m9itbVH8b9RqtwXp/lWCh2Wx8DmcVAVJzEd2BxqbFq9d1nvDwvCZ4C9Pl/IbCqxfiWE3fOep+xT8Iuc6uvVBgHNjBHpuL+RpLCCJghnO4G5P/DYxpiAGDVr/1ctU/3VttZkZs5dOfeI4sPXc/8kLp1KT40m33hoQTMK1QwhmuWlHuqBLT649bvhZ8xkIFaRAXEnoAgzVlf7girVGuHgMr8Gb5Z98A0sC9riLuLewgGQmgh41rizAYxAIA3KeBK5Vae45v6ZDseMWfX/hhY6hkVE4C+ixLsFmAW6Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MphYg5RR; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1790193221; c=relaxed/relaxed;
+	bh=p4edf0YYCmWA79RL5zC8Xmz8p09vaatBemczrDrD/n0=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=Une/7Cr/AX1ujCEWWftE8dco68f0Hto6++o6Iou23kdaFUQftwjSmGbzZT39qVT7UIqUoJdQ2Td982vY5nkevONqoU/TIcCXy6gt19fRHhPQUSJ/0guQjMbt3yReXXOvf89T6HlZEar8eK3tWkSIhcdHDU4o8de5hV1f0P2weeQvspgEBRheWsJ2SnCU294KFSd2k9//Vt4MF21ISMiChmE/lPKNgLeR+FHFU1o5DFBYJmoRb+O/3eIhGWpeSc9jOt4QqEHRkmLEARaPTyTUd/ErFJIbs4vB4WGFUt91ZJ2wfzNcZQHK0SJgH+es+dyIZrslwddQWTSqUNottuYGcQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=eE9WCS2o; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MphYg5RR;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=eE9WCS2o;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqm6m3tyjz2yDm
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 04:42:40 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68NGZgWa3926118;
-	Wed, 23 Sep 2026 18:42:26 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=CUYITw
-	KQ+z+1OAH+g8CWgxbCNFHSvBZjQhuLJ/kZcmc=; b=MphYg5RR4+XjqpOwgPc504
-	Tysar5Yjf/fhG2q6P7K8DwYaoP8Yoi/XVRWJuiMSlwKFwBloeiaVJMCE9S/yESbc
-	lbvfqI+eQekMdOJqo/qH2FFVCFvq35CM/rlfP+WxqOudwcSHLouPlVx8/scpsfoi
-	fGdPwVRexZLGrEXfFbL372QC+X/VxGTDZQWiuJ5ZBB6n/dnjlqnX3LvivuB3oesF
-	OCJ1HvYTEz3cwX1p87RPnljjb4kYXgpqvq1WhboA47WOjKtsIJw+OFl5aHsGK/3P
-	3SRMWyyLTctM66FTPWYK1pusFsfckoX27ajwjvgT+GWKffqGI6xoaIe3ixF/29Sg
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gskg2n2vd-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Wed, 23 Sep 2026 18:42:25 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68NGWmDh627143;
-	Wed, 23 Sep 2026 18:42:24 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gvbt2t73f-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 23 Sep 2026 18:42:24 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68NIgKsd45482342
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 23 Sep 2026 18:42:20 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 90CAB2004B;
-	Wed, 23 Sep 2026 18:42:20 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 11E0C20043;
-	Wed, 23 Sep 2026 18:42:16 +0000 (GMT)
-Received: from [9.124.209.29] (unknown [9.124.209.29])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 23 Sep 2026 18:42:15 +0000 (GMT)
-Message-ID: <0fbc2522-791a-482b-a756-f3e6e61d2e29@linux.ibm.com>
-Date: Thu, 24 Sep 2026 00:12:15 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqnhg4fV6z2xlw
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 05:53:38 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id A726741A56;
+	Wed, 23 Sep 2026 19:53:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AF0D01F000FF;
+	Wed, 23 Sep 2026 19:53:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux-foundation.org; s=korg; t=1790193214;
+	bh=p4edf0YYCmWA79RL5zC8Xmz8p09vaatBemczrDrD/n0=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=eE9WCS2ousaSTQemTQ4AA1ZkY9n6f+r4xISLZALK3AMHEPFEmixpwYev88YxZLXeN
+	 CHmB0H3Bw3SM8Ql9Z+14bUyIFrP0hgQ5aVwbxlPcF2pYaWAyJOWebDVlGCFrkFZrGM
+	 ck3P7oheu0DSTRvd14VSbm/sP0AV2Mko/VrdoIFk=
+Date: Wed, 23 Sep 2026 12:53:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Cc: David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>, Baolin
+ Wang <baolin.wang@linux.alibaba.com>, "Liam R. Howlett"
+ <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts
+ <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song
+ <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif
+ <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Guo Ren
+ <guoren@kernel.org>, Brian Cain <bcain@kernel.org>, Geert Uytterhoeven
+ <geert@linux-m68k.org>, Dinh Nguyen <dinguyen@kernel.org>, Simon Schuster
+ <schuster.simon@siemens-energy.com>, Jonas Bonn <jonas@southpole.se>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, Stafford Horne
+ <shorne@gmail.com>, Rich Felker <dalias@libc.org>, John Paul Adrian
+ Glaubitz <glaubitz@physik.fu-berlin.de>, Paul Walmsley <pjw@kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Alexandre Ghiti <alex@ghiti.fr>, Russell King <linux@armlinux.org.uk>,
+ Vineet Gupta <vgupta@kernel.org>, Michal Simek <monstr@monstr.eu>, Chris
+ Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>, Will Deacon
+ <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick
+ Piggin <npiggin@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
+ "David S. Miller" <davem@davemloft.net>, Andreas Larsson
+ <andreas@gaisler.com>, Richard Henderson <richard.henderson@linaro.org>,
+ Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland
+ <mark.rutland@arm.com>, Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui
+ <kernel@xen0n.name>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, Helge
+ Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael
+ Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)"
+ <chleroy@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik
+ <gor@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Christian
+ Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle
+ <svens@linux.ibm.com>, Richard Weinberger <richard@nod.at>, Anton Ivanov
+ <anton.ivanov@cambridgegreys.com>, Johannes Berg
+ <johannes@sipsolutions.net>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar
+ <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
+ <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin"
+ <hpa@zytor.com>, Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka
+ <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan
+ <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jason Gunthorpe
+ <jgg@ziepe.ca>, John Hubbard <jhubbard@nvidia.com>, Peter Xu
+ <peterx@redhat.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, Shakeel
+ Butt <shakeel.butt@linux.dev>, Jonathan Corbet <corbet@lwn.net>, Randy
+ Dunlap <rdunlap@infradead.org>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ linux-openrisc@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+ linux-snps-arc@lists.infradead.org, linux-arch@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-alpha@vger.kernel.org,
+ loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-um@lists.infradead.org, Hugh Dickins
+ <hughd@google.com>, Qi Zheng <qi.zheng@linux.dev>,
+ linux-doc@vger.kernel.org
+Subject: Re: [PATCH v4 01/12] mm/khugepaged: deposit a newly allocated page
+ table on collapse
+Message-Id: <20260923125331.882dfeb1f43d284b146a4633@linux-foundation.org>
+In-Reply-To: <arN7q5nHz7iebA_e@gremlin>
+References: <20260922-rcu-pagetable-freeing-v4-0-fe1ad1f1e303@kernel.org>
+	<20260922-rcu-pagetable-freeing-v4-1-fe1ad1f1e303@kernel.org>
+	<arN7q5nHz7iebA_e@gremlin>
+X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,237 +117,37 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [Linux PPC] Disable PREEMPT
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Michael Ellerman <mpe@ellerman.id.au>, harshpb@linux.ibm.com,
-        Gautam Menghani <gautam@linux.ibm.com>, amachhiw@linux.ibm.com,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        "R.T.Dickinson" <rtd2@xtra.co.nz>, hypexed@yahoo.com.au,
-        mad skateman <madskateman@gmail.com>,
-        Christian Zigotzky <info@xenosoft.de>, Samir M <samir@linux.ibm.com>,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-        Narayana Murty N <nnmlinux@linux.ibm.com>,
-        Hari Bathini <hbathini@linux.ibm.com>,
-        =?UTF-8?Q?Michal_Such=C3=A1nek?=
- <msuchanek@suse.de>
-References: <aqfTU79SlNB3ykDi@kunlun.suse.cz>
- <25cf64ab-2a32-4d4c-a0c7-2e9007c276d4@linux.ibm.com>
- <aqj1KxZttNgY5ZVR@kunlun.suse.cz>
- <ba9759d0-b1f2-4b33-aff5-769cf89bd584@linux.ibm.com>
- <9b58bd58-d0e4-463e-bff9-e33b153b2987@linux.ibm.com>
- <aqu9hA1Bq58GFrVw@kunlun.suse.cz>
- <b2a5d53f-05e8-48ae-adb7-12fc74523b4e@linux.ibm.com>
- <aqvnOg9JfkM2k0TX@kunlun.suse.cz>
- <7ad57b61-4567-42c8-a9f6-faaabe7766a7@linux.ibm.com>
- <7e06fb84-ca2e-dbb4-47bd-e95ee11113c9@xenosoft.de>
- <aqzj9xsPRsGgCI5M@kunlun.suse.cz>
- <79f9d4e3-ce55-d238-e4a9-b11e9ce27c5f@xenosoft.de>
- <33342fbf-eb7b-bde6-2c8c-254fe8bfb993@xenosoft.de>
- <b887c351-f7da-4e24-8cee-30a5a2dbfadb@linux.ibm.com>
- <7fb5baa6-9d06-2c61-2b43-6835e8fb0d1a@xenosoft.de>
- <9c1d7cf0-40f5-4a93-81ee-f5a4c5adcb9d@linux.ibm.com>
- <b8f82519-9ae5-c247-e020-e79c627e57df@xenosoft.de>
-Content-Language: en-US
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-In-Reply-To: <b8f82519-9ae5-c247-e020-e79c627e57df@xenosoft.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: 7HiYtBbMyfdbwNsCIvG4D9iZnVNw9xus
-X-Authority-Analysis: v=2.4 cv=I43w19gg c=1 sm=1 tr=0 ts=6ab41d92 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=NEAV23lmAAAA:8
- a=oxC9TbpiAAAA:20 a=aONlWmznN9kDEt85WeAA:9 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10 a=bA3UWDv6hWIuX7UZL3qL:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTIzMDA3NCBTYWx0ZWRfX5/uvzcbLju1H
- V79D+iMBZMqUTB0vN4rGuidaawI6mPomZuwipLjKlpNRfq86RI1QhyDPNfXVQ7N+Ns3l/l9pUCL
- RUJynxkC8UIFpq+EWneVuxyCW+U3UyEesXmNcWCmLHNvDW+8ZCVF7/hrJuOUnhLPahf3UmxG0h+
- gu0HkLTBTSq22DJUdk38ZXfwoJMzS/OyL4K7y5eys3AFNybcnUwmIhNbEacoAC6y+TaBLTqDtSX
- TgWp12wFbp1ZBXKyXGDwAdneXCHAV1KmmwEiZhcYoAH4RivBRybLBh0d1ceMWgHtBKq0/H0JXiS
- RROdtHLdo28io8QAcnN2N/DA7t1FNRWESed9XF1nUqMeJhw+Q1GiogZvqNbRKQ8qxCas2M9yUBI
- KWAQ8oDRDhZ4zwmV+RURArAisWrAsFSHImm1/rKWEC+sQcclogCMK00bg3jvFV7CodO+xjkjxbt
- bbzaFZzysv4XuneI35g==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTIzMDA3NCBTYWx0ZWRfX9AJtoIhefh2e
- +xx3TR55DCO+zNllhsvNrazN63D2uMTS9hK2LUSPbpW9Sovy/BxSC+LXwUW5MCx74XrAxRSjnom
- 9XmESeT0YjR/yLVtux6lPnLFQchHAwg=
-X-Proofpoint-GUID: D1bMIssP0fwaGi38ucfM1SlIZqJyT4cE
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-23_06,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 clxscore=1015 adultscore=0 suspectscore=0 impostorscore=0
- lowpriorityscore=0 bulkscore=0 phishscore=0 priorityscore=1501 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609230074
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Hi
+On Wed, 23 Sep 2026 08:14:01 +0100 "Lorenzo Stoakes (ARM)" <ljs@kernel.org> wrote:
 
-On 9/23/26 9:31 PM, Christian Zigotzky wrote:
-> On 23/09/26 07:13, Shrikanth Hegde wrote:
->>
->>
->> On 9/23/26 10:39 AM, Christian Zigotzky wrote:
->>> On 21/09/26 07:12, Shrikanth Hegde wrote:
->>>> Hi Christian.
->>>>
->>>> On 9/20/26 6:34 PM, Christian Zigotzky wrote:
->>>>> On 09/20/2026 01:49 PM, Christian Zigotzky wrote:
->>>>>> On 09/18/2026 09:10 AM, Michal Suchánek wrote:
->>>>>>> On Fri, Sep 18, 2026 at 04:39:57AM +0200, Christian Zigotzky wrote:
->>>>>>>> On 17/09/26 16:15, Shrikanth Hegde wrote:
->>>>>>>>> Hi Michal,
->>>>>>>>>
->>>>>>>>>>> Give it a try.
->>>>>>>>>>>
->>>>>>>>>>> I am suspecting both lockup, stack corruptions are secondary
->>>>>>>>>>> symptoms here.
->>>>>>>>>>> While recreate, I have different type of traces.
->>>>>>>>>> Yes, it does work for the crash I see.
->>>>>>>>> Thanks. Give me sometime to see further on that. Didn't get any time
->>>>>>>>> today.
->>>>>>>>>
->>>>>>>>>> However, we hijacked the report
->>>>>>>>>> of KVM locking up on FSL Cyrus+, and that is likely a different problem
->>>>>>>>>> still not addressed.
->>>>>>>>>>
->>>>>>>>> Ah, that's what you meant. Yes, i still don't know where FSL Cyrus+ is
->>>>>>>>> stuck.
->>>>>>>>>
->>>>>>>>> I would need help from FSL Cyrus+ to get some logs or is there a way we
->>>>>>>>> can spin of
->>>>>>>>> a QEMU guest of it? We should have the log to start somewhere.
->>>>>>>>>
->>>>>>>>>
->>>>>>>> It's difficult to get a log because it freezes and can't write any error
->>>>>>>> messages to the log files. This bug is very old. We had this issue some
->>>>>>>> years ago but we was able to disable PREEMPT because we don't need it.
->>>>>>> I would expect serial console and sysrq could give something, depending
->>>>>>> on how much of the kernel is frozen.
->>>>>>>
->>>>>>> Thanks
->>>>>>>
->>>>>>> Michal
->>>>>> Here is a serial log: https://github.com/user-attachments/files/32433586/e5500_preempt_putty.log
->>>>>>
->>>>
->>>> Thanks Michal for helping to get the traces.
->>>>
->>>>> Another serial log with pcie_ports=compat: https://github.com/user-attachments/files/32434487/e5500_preempt_pcie_ports_compat_putty.log
->>>>>
->>>>
->>>> I see it is mostly busy with printing
->>>> WARNING: at .enable_kernel_fp+0x30/0x78, CPU#3: qemu-system-ppc/4884
->>>>
->>>> The path seems to be same also.
->>>>
->>>> [c000000085ca7700] [c00000000005de84] .kvmppc_load_guest_fp+0x30/0x80
->>>> [c000000085ca7780] [c00000000005f2a0] .kvmppc_handle_exit+0x5bc/0x5cc
->>>> [c000000085ca7830] [c00000000006204c] .kvmppc_resume_host+0xb8/0x10c
->>>>
->>>>
->>>> Does below help to boot or make it stable?
->>>> ---
->>>>  arch/powerpc/kvm/booke.c | 9 ++++++++-
->>>>  1 file changed, 8 insertions(+), 1 deletion(-)
->>>>
->>>> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
->>>> index 13ad4cf5fa71..d4be7a306bfc 100644
->>>> --- a/arch/powerpc/kvm/booke.c
->>>> +++ b/arch/powerpc/kvm/booke.c
->>>> @@ -1404,10 +1404,17 @@ int kvmppc_handle_exit(struct kvm_vcpu *vcpu, unsigned int exit_nr)
->>>>          if (s <= 0)
->>>>              r = (s << 2) | RESUME_HOST | (r & RESUME_FLAG_NV);
->>>>          else {
->>>> -            /* interrupts now hard-disabled */
->>>> +            /*
->>>> +             * interrupts now hard-disabled. i.e EE=0
->>>> +             * But irqs_disabled relies on PACA entries
->>>> +             * and fixup below enables it.
->>>> +             * So irqs_disabled == false
->>>> +             */
->>>>              kvmppc_fix_ee_before_entry();
->>>> +            preempt_disable();
->>>>              kvmppc_load_guest_fp(vcpu);
->>>>              kvmppc_load_guest_altivec(vcpu);
->>>> +            preempt_enable_no_resched();
->>>>          }
->>>>      }
->>>>
->>>>
->>> Hi,
->>>
->>> Thanks a lot for your patch!
->>>
->>> I patched the 7.3-rc4 kernel sources with your new patch and compiled the kernel again yesterday. [1]
->>>
->>
->> Thanks for trying.
->>
->>> Unfortunately, the issue still exists.
->>>
->>
->> Can you share the console log of the kernel with the patch applied?
->> We need to see where it is stuck now. Has it made forward progress?
->>
->>> I tested it with a guest kernel with and without preempt support.
->>>
->>> Cheers,
->>> Christian
->>>
->>> [1] https://github.com/chzigotzky/kernels/releases/tag/v7.3.0-rc4-2-preempt
->>>
->>
-> Here is a new serial log from the patched kernel: https://github.com/user-attachments/files/32570808/e5500_preempt_pcie_ports_compat_patched_putty.log
+> Andrew - would it be possible to make one quick fix up below?
 > 
-
-That paca mismatch is independent of preemption modes.
-
-It shows a few warnings and even after that a console message has come through.
-Do warning continue forever?
-
-To fix those warnings, can you try this diff on the top of the earlier ones?
-(Igonore whitespace mangling if any, Also patch is UNTESTED. It is more of my
-speculation.).
-
-Sorry, I don't have any way to test it out locally.
-
----
-
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 9194cf492d1c..0a014fa45b20 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -147,6 +147,19 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
-                         continue;
-                 }
-  
-+#ifdef CONFIG_PPC64
-+               if (unlikely(local_paca->irq_happened != PACA_IRQ_HARD_DIS)) {
-+               /*
-+                * An interrupt arrived between the soft and hard
-+                * disable. Replay it and retry guest entry.
-+                */
-+                       local_irq_enable();
-+                       local_irq_disable();
-+                       hard_irq_disable();
-+                       continue;
-+               }
-+#endif
-+
-                 guest_enter_irqoff();
-                 return 1;
-         }
-
-
-> Thanks
+> Fixup is here:
 > 
+> -		if (!pgtable)
+> -			goto out_nolock;
+> +		if (!pgtable) {
+> +			result = SCAN_ALLOC_HUGE_PAGE_FAIL;
+> +			goto out_nolock;
+> +		}
+
+--- a/mm/khugepaged.c~mm-khugepaged-deposit-a-newly-allocated-page-table-on-collapse-fix
++++ a/mm/khugepaged.c
+@@ -1329,8 +1329,10 @@ static enum scan_result collapse_huge_pa
+ 
+ 	if (is_pmd_order(order)) {
+ 		pgtable = alloc_deposit_pte(mm);
+-		if (!pgtable)
++		if (!pgtable) {
++			result = SCAN_ALLOC_HUGE_PAGE_FAIL;
+ 			goto out_nolock;
++		}
+ 	}
+ 
+ 	mmap_read_lock(mm);
+_
 
 
