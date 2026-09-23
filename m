@@ -1,97 +1,65 @@
-Return-Path: <linuxppc-dev+bounces-27957-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27958-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2789C982EA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 05:40:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6DCEC98302
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 05:54:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqQmL1BNyz2xs1;
-	Wed, 23 Sep 2026 15:40:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:34::f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790142034;
-	cv=none; b=GUoEv+t8xzqPtoU7ZR1olCcQmPqUklOJs8vTHdRNko7YT9XUdRAh/5sRDEC512jC+C6dOL17h/TdyQll5qvXQCeyKAfG1NXJYAcxiw5SPfbQ0Qt9hUoda8kljtm9PB1Duh0qFb3IfMPS1M2hP2X4bTECK0GgdhXyA+hpSfPPUfDTbEVYrJ4DT24+4WCH3SG22rjhwhyB5zd8EbNs52PR44NxwJ7J7tQ0IlK2/zsw/4XmNc8TQ7vsmlfbmlACAr6JGynfnbMt1SoKQD36SRHtBTcnm8SIUcHX29yWzJHJN17+RZXPdjT7SlbZ60nze0giwlbpTyfb0lWfntaHbGwT3A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqR3r1Ds0z2xs1;
+	Wed, 23 Sep 2026 15:54:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=35.89.44.33
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790142840;
+	cv=none; b=Lcjswot8IXuIQP8RP3KzNgUJok0G/Dr1awbd1Lcr6G1LEygGvgFpbj+1ZZjQp7ZVt6adIBRHfiTpZve4PBQxkquWd3cyOc19dXoD94fCbb9GEz446rpiHju2QEh1lV/kKbuMCuVKqR7Wnrn6jAtzsvbq6BEhZwvXTXXlscd3l1CAXYgh2BHo1qOT3EayT0n6u2itiZYZiTwBneMsIZ4QXUtC7niVINYUnXBE9rW0u4Sx6vhvr9CefMlZJH5oVD+u3k5/5Ka+BzszEAQEHx56c5qTgxH8ov/5OcJU1fJ+btScRecdtvdkD0vIHi1nbW+5Whjg2N+/qEOJlw/DwUN6Ng==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790142034; c=relaxed/relaxed;
-	bh=4t2QKwvgTvrUqgLrxmE0i6NBCj41D7R9VJyZdg6puRQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=bSA7sgrEs1a0DdaLI82Ti0Rm87dLaYmDd5MZbc4JjrKaL2YHOGqRpIUXSd3+9Yqr+2VHc/dfUYKAC/Hl5DA6fLjynfYhh/ael70q+MXHdieswWm8+SKGt32Ibb81F2GIk4q/39rYB2TqH36w75kOTxjHkGSstq84+ulkgkyilott0zBgAKLuuVKaEY/j9MdHj0bOoiFheCp/rmpzr/b+ZYVrlPzzgBR/egZTyJFYcesG5aJSo7rFnAQlNkxqIAxMBl/q4jZ0T7GgOnVI6fh1N8h7wmck7u32qfsuxfsTlG0hc0DyoC2N50EwJjJoOzBgw+xYDIM1g0BIGrBsJK3Y9Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=j/xB8xxd; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:34::f; helo=mail-qk2-x0f.google.com; envelope-from=mhun512@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1790142840; c=relaxed/relaxed;
+	bh=OTwx4w9402ve7XEVGULW94SFMv5Tl4N0r/phY59l/8k=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=g76KJ41xljIKBBhSLgl20YHQyUsIKV6BUrO2Q+vXcXIgJV66SbiL9eg+TdE2dBWHdNw+kNjwHOALDezHGar0PMnxSOJ+gFNm9TVnInuRJHmuYIb2+afHMWpdWyOJd04PatxYFP6hRx3i8yZggUJ2gDXLzehphUuTCkPTtZ0ugOFaquF4A28hDWhH4PfxZwIwB9g0rJqFmKN65amanw/Ks67bmoCohmlZlY6Nckj1MjKfZOpTNNKxTXfDTg/tGZg8K6w2GCDjedjl8CIGt1U7+BYk6927TCRgDZ/frqPKr7ZeWE7UJwrKSx+6gCFDoYV1Y1TABanUa7W4kTFuT+PWoQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=embeddedor.com; dkim=pass (2048-bit key; unprotected) header.d=embeddedor.com header.i=@embeddedor.com header.a=rsa-sha256 header.s=default header.b=UEfECF5T; dkim-atps=neutral; spf=pass (client-ip=35.89.44.33; helo=omta34.uswest2.a.cloudfilter.net; envelope-from=gustavo@embeddedor.com; receiver=lists.ozlabs.org) smtp.mailfrom=embeddedor.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=embeddedor.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=j/xB8xxd;
+	dkim=pass (2048-bit key; unprotected) header.d=embeddedor.com header.i=@embeddedor.com header.a=rsa-sha256 header.s=default header.b=UEfECF5T;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:34::f; helo=mail-qk2-x0f.google.com; envelope-from=mhun512@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-qk2-x0f.google.com (mail-qk2-x0f.google.com [IPv6:2607:f8b0:4864:34::f])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=embeddedor.com (client-ip=35.89.44.33; helo=omta34.uswest2.a.cloudfilter.net; envelope-from=gustavo@embeddedor.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 339 seconds by postgrey-1.37 at boromir; Wed, 23 Sep 2026 15:53:56 AEST
+Received: from omta34.uswest2.a.cloudfilter.net (omta34.uswest2.a.cloudfilter.net [35.89.44.33])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqQmJ2Bstz2xlw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 15:40:31 +1000 (AEST)
-Received: by mail-qk2-x0f.google.com with SMTP id af79cd13be357-93910a0cb7cso50314685a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2026 22:40:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790142023; x=1790746823; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=4t2QKwvgTvrUqgLrxmE0i6NBCj41D7R9VJyZdg6puRQ=;
-        b=j/xB8xxdOqU+WjJgW44qzS8LjJFlSYGPmG5Jzn43F3tLHHfB0q/2JGKpyTiuevC3cq
-         lv3rIUuV35UJSIJqSq4xXgogERlTB5eJpgcMWw3LPdk8slD0LlaZEIe/ICP/LisJLKli
-         ZddpRAAyu+kY1/t7SdUj2wHbIX2zkKt8z3xaf3Bjtdlp/tjNq96a33slpWMTYi/v8CQk
-         w2XfLW/eLGE6bTY0V+By1hF1LOoCvbHX2reziZxfjOFUCwMZpJywqXghjDPoLGnyjac3
-         GAqAZSVN6ZzRI5gZ3vFoK3yKVc1XRrvhs7aDQCNxCOwTAZ2t5OGLXUnE7UDfy04zFid0
-         Aymw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790142023; x=1790746823;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=4t2QKwvgTvrUqgLrxmE0i6NBCj41D7R9VJyZdg6puRQ=;
-        b=wiIyqdbbsIYH375cPZK/nWVRNjV6Y+7rkJBT0pXBVybQ4HsfaWdX8AZ5gc76ZDSpgJ
-         QVZhfieyrk74LeMhDUW8ucEy6AzWgjIuAeP0EfVcMmnHlMP3UsqUxg3VTf8ewKS8xyp4
-         xPtjsHILRypyp+tLmjEHBlYhmtKLbYWca5fGceo25npAyZ2wkXKluLQ0hYgll5WhSRmb
-         NNp7MjP4Fe0Qxkm0z8toTunwdb08RtTMQHOYsdgmw57LqQhBhQp18MvUY7zo/tiEIniI
-         ErGTd71dVkT/bRakQbQy8OgCXgcDPLW8BXaD4QkEd7M4hPzmiOpyDgKrja584OaIrq6z
-         7aEA==
-X-Forwarded-Encrypted: i=1; AKwUvBw3IRHt/TS+my5YNiUJUplCEHOQBDaa1h1UVEE6OaqpknK1IfGaEi45sHXnJghazNui7/hiflqH+7Euato=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++ms1lkAZe6TtT3lWvefJvyrrLhi+Mjwi1s9JCI1lD6aofC20rfT
-	pb1F+C1rl51EypZXZESF4bjUT+TYpeLgQxGu1c1q8UnHjV84yQNQBDk=
-X-Gm-Gg: AYBFou3Hr7v5IYC4Rsudns8i0S6n4VLj5I+OyJnOXBFXO6LZnUxw+lqm9EazJC+TSlG
-	F+ZWRBMZ4zisQkBYvXCEu8LSMCzeuWN4KCz3m8mnC1+kDc1jbAtSCa/36M13lejp4BBDQGN1rrP
-	XayVA8ivqg2TVRDkn9SqsDRf9OvIDtm3SjrsI6q5ZG/4KXq0psI47+dlJMsrS/mzFBxaXwZupBC
-	7mi3ZiBue/JM4DsiBhDVk9c4dbhlccUo0Kaj/sQNxRNSl4zhKxYp9V9MToRSmWxMGL52ofuWeuC
-	rcP/Tz13fIUJqy8jA7K/hyZ/SpxeIrisvhwRBPElOmB04WfXUg8x+T54GW+I19ZdzhuSp64yCY5
-	SOzMBJAwA5B/knJvStiBB7q7EXuEDvYtzL2vXgrTudbor6PsSQyElxtaQ92ixtxNbxZbmQlu8hL
-	BHQPb8hVqAVg+KIF3jBCm91nZfaotdr2NKd8F0nZWJQtB6CY0hBDHLWHnADA80r/MN37i99x87Q
-	HvBGP3ZLOLye3fMsz1+GVckTXh0hBiQZS3PmG3hwkGY/FVPHpWF+n4lgCitSaN+7c4aWNBkFXAM
-	OhZOOMaK8mwTrnDWWt9gOmaNHj8nnmyDkCHlpo99txibGoCd5aXB+FNkaGr1LTZCpESKrCZXP9r
-	nzw==
-X-Received: by 2002:a05:620a:6409:b0:939:1483:55c with SMTP id af79cd13be357-93c25118d3fmr276086185a.19.1790142023287;
-        Tue, 22 Sep 2026 22:40:23 -0700 (PDT)
-Received: from localhost.localdomain (h16.44.55.139.dynamic.ip.windstream.net. [139.55.44.16])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-93c277636e4sm88496685a.41.2026.09.22.22.40.18
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Tue, 22 Sep 2026 22:40:20 -0700 (PDT)
-From: Myeonghun Pak <mhun512@gmail.com>
-To: Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Shengjiu Wang <shengjiu.wang@nxp.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>
-Cc: Myeonghun Pak <mhun512@gmail.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	linux-sound@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org,
-	Ijae Kim <ae878000@gmail.com>
-Subject: [PATCH] ASoC: fsl_xcvr: free IRQ before canceling reset work
-Date: Wed, 23 Sep 2026 01:40:17 -0400
-Message-ID: <20260923054017.93553-1-mhun512@gmail.com>
-X-Mailer: git-send-email 2.47.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqR3m1Vtwz2xlw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 15:53:55 +1000 (AEST)
+Received: from eig-obgw-5003b.ext.cloudfilter.net ([10.0.29.155])
+	by cmsmtp with ESMTPS
+	id 8vQ4xUKWMaC0U9FoXx8mr5; Wed, 23 Sep 2026 05:46:42 +0000
+Received: from gator4166.hostgator.com ([108.167.190.91])
+	by cmsmtp with ESMTPS
+	id 9FoWxGrudkH8b9FoXxuSiU; Wed, 23 Sep 2026 05:46:41 +0000
+X-Authority-Analysis: v=2.4 cv=d6X1yQjE c=1 sm=1 tr=0 ts=6ab367c1
+ a=vY9Mjuda9oMEc2E4Cx1x2A==:117 a=vY9Mjuda9oMEc2E4Cx1x2A==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=7T7KSl7uo7wA:10 a=1XWaLZrsAAAA:8
+ a=VwQbUJbxAAAA:8 a=GayhebFrRX0EwB9RMoAA:9 a=QEXdDO2ut3YA:10
+ a=2aFnImwKRvkU0tJ3nQRT:22
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=embeddedor.com; s=default; h=Content-Transfer-Encoding:Content-Type:
+	In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender
+	:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+	List-Unsubscribe:List-Unsubscribe-Post:List-Subscribe:List-Post:List-Owner:
+	List-Archive; bh=OTwx4w9402ve7XEVGULW94SFMv5Tl4N0r/phY59l/8k=; b=UEfECF5TgEW3
+	KGIj5aT/C29st5hACjcHuxVLxBSR5tOuRMT/rmWCDjiSiI+BzQMiTkM0qDAMxbHWK0jWLqRxQEoAr
+	ro+Og+0qw7/KJY6TDfCr4pB3RfKZ8OPRmY157FqncfrM24JAx8Vq1qu9OrVkMYXgVi9TNeOphlT6a
+	4XmHPaMDFoirjhxsqZ4uTut9sorVP017tpwM+iI1+6BS5oO2mfQIrBgWaYEYcjTbj0xYX4QGH9Zpd
+	5J3/hzOu3YEydLLXFA7/I/gyV41+wvDJxLQiZwGHasg9hWiT3sD7NJRft+6+8i0pYdAUSndXnjvkA
+	87RFK8+svAIE2Wy1cUW05w==;
+Received: from flh4-125-195-69-90.tky.mesh.ad.jp ([125.195.69.90]:43316 helo=[10.203.100.34])
+	by gator4166.hostgator.com with esmtpsa  (TLS1.3) tls TLS_AES_128_GCM_SHA256
+	(Exim 4.100)
+	(envelope-from <gustavo@embeddedor.com>)
+	id 1x9FoW-0000000204S-0DM9;
+	Wed, 23 Sep 2026 00:46:40 -0500
+Message-ID: <3e9d09ef-5766-4f19-aa8c-641e15572950@embeddedor.com>
+Date: Wed, 23 Sep 2026 14:46:35 +0900
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,101 +73,85 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] bus: fsl-mc: Annotate fsl_mc_io.portal_virt_addr with
+ __counted_by_ptr
+To: Bill Wendling <morbo@google.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Kees Cook <kees@kernel.org>, "Gustavo A. R. Silva"
+ <gustavoars@kernel.org>, Nathan Chancellor <nathan@kernel.org>,
+ Nick Desaulniers <ndesaulniers@google.com>,
+ Justin Stitt <justinstitt@google.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-hardening@vger.kernel.org, llvm@lists.linux.dev,
+ codemender-patching+linux@google.com
+References: <20260922223538.2287676-1-morbo@google.com>
+Content-Language: en-US
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+In-Reply-To: <20260922223538.2287676-1-morbo@google.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
+X-AntiAbuse: Original Domain - lists.ozlabs.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - embeddedor.com
+X-BWhitelist: no
+X-Source-IP: 125.195.69.90
+X-Source-L: No
+X-Exim-ID: 1x9FoW-0000000204S-0DM9
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+X-Source-Sender: flh4-125-195-69-90.tky.mesh.ad.jp ([10.203.100.34]) [125.195.69.90]:43316
+X-Source-Auth: gustavo@embeddedor.com
+X-Email-Count: 56
+X-Org: HG=hgshared;ORG=hostgator;
+X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
+X-Local-Domain: yes
+X-CMAE-Envelope: MS4xfFrJG8rUJjEORZN4ZZkzNbEZygQymQBRmP7VzFBfX7PlytdgDf+N1iZ+rYrLNjuRVAs03vClPXWP/E5vp9PN71ve4/0rDJdidXDzrTqvTIMhwhRg+DlR
+ 8OPqL0Kl6+ueNcXfxrglnvKHuZc1AoHcT2yxYpGajZDjqRu+ual06RLSgYdLvPc46BOGimO3FneTk4O/COWu2nlhjUQrC4H3FxHbHmgXGyIpwiw6SAQyKOVq
 
-irq0_isr() schedules work_rst on a preamble error, and reset_rx_work()
-touches regmap.  remove() cancels that work while the IRQ is still
-registered, so the handler can queue it again during teardown.  The IRQ
-is also requested before INIT_WORK() and spin_lock_init().  Probe
-failure does not call remove(), so freeing the IRQ leaves queued work
-running, and an earlier interrupt schedules uninitialized work.
 
-Initialize the lock and devm_work_autocancel() before the IRQ.  Failed
-probe then frees the IRQ and cancels the work.  Unbind frees the IRQ
-before cancel_work_sync() and pm_runtime_disable().
 
-Fixes: 1e5d0f106164 ("ASoC: fsl_xcvr: reset RX dpath after wrong preamble")
-Cc: stable@vger.kernel.org # 6.13+
-Assisted-by: LLM
-Co-developed-by: Ijae Kim <ae878000@gmail.com>
-Signed-off-by: Ijae Kim <ae878000@gmail.com>
-Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
----
- sound/soc/fsl/fsl_xcvr.c | 26 +++++++++++++++++++-------
- 1 file changed, 19 insertions(+), 7 deletions(-)
+On 9/23/26 07:35, Bill Wendling wrote:
+> The GCC and Clang compilers provide the __counted_by_ptr attribute,
+> which is used by KASAN and compiler bounds-checking to detect
+> out-of-bounds accesses to pointer fields.
+> 
+> In "struct fsl_mc_io", the "portal_virt_addr" pointer points to the MC
+> command portal virtual address. The size of this allocated portal in
+> bytes is tracked by the "portal_size" field within the same structure.
+> 
+> Annotate the "portal_virt_addr" pointer field with
+> "__counted_by_ptr(portal_size)" to enable compiler bounds-checking and
+> harden against potential out-of-bounds accesses.
+> 
+> Cc: codemender-patching+linux@google.com
+> Assisted-by: LLM
+> Signed-off-by: Bill Wendling <morbo@google.com>
 
-diff --git a/sound/soc/fsl/fsl_xcvr.c b/sound/soc/fsl/fsl_xcvr.c
-index 9828272..29929df 100644
---- a/sound/soc/fsl/fsl_xcvr.c
-+++ b/sound/soc/fsl/fsl_xcvr.c
-@@ -3,6 +3,7 @@
- 
- #include <linux/bitrev.h>
- #include <linux/clk.h>
-+#include <linux/devm-helpers.h>
- #include <linux/firmware.h>
- #include <linux/interrupt.h>
- #include <linux/module.h>
-@@ -57,6 +58,7 @@ struct fsl_xcvr {
- 	struct snd_aes_iec958 tx_iec958;
- 	u8 cap_ds[FSL_XCVR_CAPDS_SIZE];
- 	struct work_struct work_rst;
-+	int irq;
- 	spinlock_t lock; /* Protect hw_reset and trigger */
- 	struct snd_pcm_hw_constraint_list spdif_constr_rates;
- 	u32 spdif_constr_rates_list[SPDIF_NUM_RATES];
-@@ -1617,7 +1619,7 @@ static int fsl_xcvr_probe(struct platform_device *pdev)
- 	struct fsl_xcvr *xcvr;
- 	struct resource *rx_res, *tx_res;
- 	void __iomem *regs;
--	int ret, irq;
-+	int ret;
- 
- 	xcvr = devm_kzalloc(dev, sizeof(*xcvr), GFP_KERNEL);
- 	if (!xcvr)
-@@ -1705,12 +1707,22 @@ static int fsl_xcvr_probe(struct platform_device *pdev)
- 		return dev_err_probe(dev, PTR_ERR(xcvr->reset),
- 				     "failed to get XCVR reset control\n");
- 
-+	/*
-+	 * irq0_isr() schedules work_rst. Prepare the work and its lock
-+	 * before the IRQ, and register the cancel action first so a failed
-+	 * probe frees the IRQ and then cancels any queued work.
-+	 */
-+	spin_lock_init(&xcvr->lock);
-+	ret = devm_work_autocancel(dev, &xcvr->work_rst, reset_rx_work);
-+	if (ret)
-+		return ret;
-+
- 	/* get IRQs */
--	irq = platform_get_irq(pdev, 0);
--	if (irq < 0)
--		return irq;
-+	xcvr->irq = platform_get_irq(pdev, 0);
-+	if (xcvr->irq < 0)
-+		return xcvr->irq;
- 
--	ret = devm_request_irq(dev, irq, irq0_isr, 0, pdev->name, xcvr);
-+	ret = devm_request_irq(dev, xcvr->irq, irq0_isr, 0, pdev->name, xcvr);
- 	if (ret)
- 		return dev_err_probe(dev, ret, "failed to claim IRQ0\n");
- 
-@@ -1751,8 +1763,6 @@ static int fsl_xcvr_probe(struct platform_device *pdev)
- 			fsl_xcvr_comp.name);
- 	}
- 
--	INIT_WORK(&xcvr->work_rst, reset_rx_work);
--	spin_lock_init(&xcvr->lock);
- 	return ret;
- }
- 
-@@ -1760,6 +1770,8 @@ static void fsl_xcvr_remove(struct platform_device *pdev)
- {
- 	struct fsl_xcvr *xcvr = dev_get_drvdata(&pdev->dev);
- 
-+	/* Free the IRQ first so irq0_isr() cannot requeue work_rst. */
-+	devm_free_irq(&pdev->dev, xcvr->irq, xcvr);
- 	cancel_work_sync(&xcvr->work_rst);
- 	pm_runtime_disable(&pdev->dev);
- }
+Reviewed-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+
+Thanks
+-Gustavo
+
+> ---
+>   include/linux/fsl/mc.h | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/include/linux/fsl/mc.h b/include/linux/fsl/mc.h
+> index c25f0f7e6dd4..0b2c0eb9b605 100644
+> --- a/include/linux/fsl/mc.h
+> +++ b/include/linux/fsl/mc.h
+> @@ -336,7 +336,7 @@ struct fsl_mc_io {
+>   	u16 flags;
+>   	u32 portal_size;
+>   	phys_addr_t portal_phys_addr;
+> -	void __iomem *portal_virt_addr;
+> +	void __iomem *portal_virt_addr __counted_by_ptr(portal_size);
+>   	struct fsl_mc_device *dpmcp_dev;
+>   	union {
+>   		/*
+
 
