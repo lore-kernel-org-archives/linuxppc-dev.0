@@ -1,92 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-28062-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28063-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6DC59C98304
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 18:40:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 369ABC98304
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 18:42:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqm4M4Nllz30M6;
-	Thu, 24 Sep 2026 04:40:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:3b::10"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790188835;
-	cv=none; b=im3zR03Jn0YEweWn1O7iIDqpRnn5Hxpl43b0TZvMereizAN3pAJt4E1Wec8HY6HuLQWG20L5ZvRyGEEYT05tjD3P8VHobEOcjiCw0XTLjDm9Yx+EKfNxPCxKAWHY1HtIijhwKw3Ng3EP9iJ7Dnlhpm2XRqcL9dCQ4TTr73oC4v7wUvb4O29StkOlrnMTB9IqiltRitMa5V7dgWeeguViFTR4pYWx04ibaFub1VDPj2+jwBam1B3/sRQoIQONAAKZC/Rg1F595dw1AI1Jm0xjkLJ/rCZ9U+S2RpzRetY5ojl4LQOQeOINvr6tTpmjD8w2EUeYeuUVTd6yBAL1Q4yw4A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqm6n2ffbz3048;
+	Thu, 24 Sep 2026 04:42:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790188961;
+	cv=none; b=mbsvY1w/MIvJFq1QP/hBBcNeIf9rOCymZ2msyGh5+1K7Cs2uNMvVl6cjsBSeLDSWp2tcZqBNqCB5O0DLZhmtu9Rm8n3WScBSm/4vHrZm66aU8JdrNKeHkxq7gRm3JvN71vljWMCKGrivvWjcZqC7BXColbfOgYjGJsgdew/beG4PWgRzTnyguYQfIfxkPutrEB2pZv2qUj1+2Z+lVc43rY+0pRvtv5ByKqirR4LAvGhqWzZ92UErpuyvvaLTo9Cs0S/fJiGTMbcjU8WXP6yZB9ysRZdjhtaGPJ0GbyTbGct4fUKHXuJWyW5QeXCp2XSde1iiok/MyQO+WeeOTmroEg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790188835; c=relaxed/relaxed;
-	bh=3gc3lVJFpeHvTVPTQlhw9bRs3DHSZ5NaiLqgYc9qgEg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=feVyhxL0sCWh2RrCQ+HcdH1Z2K4EQOm01LgJrm3n9U7uy67Q30myxDn9+pdFeRAMHWDzhxW3/FrJ5NoZ/RbzQRZtsFu+8SCTUk13bwUcgZeq9Ila4vHQrnVWgiY8oM088PDsivfT2+fXHdpLyWWSJFQvNUrHW8ZUFodY3BPPcgKDRkO50jMPDyOwVT34y9/4oHvE3vv+KRuC6QnQV4OrI+t8B0/A66eVEO23m+zBu9k5HB0oe2XEq4QpJAu4tPrcuvSx/5FaNWUeM7nnH9sB8dnh9/euiMhRwyMEYJbCIAsZCZnjJpp7bW8P6w3Y4KrgS9/4uGU6KQtvVxfYN+d3PA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=JxxqphU3; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:3b::10; helo=mail-pz2-x10.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1790188961; c=relaxed/relaxed;
+	bh=CUYITwKQ+z+1OAH+g8CWgxbCNFHSvBZjQhuLJ/kZcmc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=nXaRq+xoJ/qLJVXyjUyOWN6kbJXDWl0POpVCdUsrANpWTNZtT8m9itbVH8b9RqtwXp/lWCh2Wx8DmcVAVJzEd2BxqbFq9d1nvDwvCZ4C9Pl/IbCqxfiWE3fOep+xT8Iuc6uvVBgHNjBHpuL+RpLCCJghnO4G5P/DYxpiAGDVr/1ctU/3VttZkZs5dOfeI4sPXc/8kLp1KT40m33hoQTMK1QwhmuWlHuqBLT649bvhZ8xkIFaRAXEnoAgzVlf7girVGuHgMr8Gb5Z98A0sC9riLuLewgGQmgh41rizAYxAIA3KeBK5Vae45v6ZDseMWfX/hhY6hkVE4C+ixLsFmAW6Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MphYg5RR; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=JxxqphU3;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MphYg5RR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:3b::10; helo=mail-pz2-x10.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pz2-x10.google.com (mail-pz2-x10.google.com [IPv6:2607:f8b0:4864:3b::10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqm4L0gkRz2yDm
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 04:40:32 +1000 (AEST)
-Received: by mail-pz2-x10.google.com with SMTP id 41be03b00d2f7-cc1cea4ae2cso842858a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 11:40:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790188830; x=1790793630; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=3gc3lVJFpeHvTVPTQlhw9bRs3DHSZ5NaiLqgYc9qgEg=;
-        b=JxxqphU376jctSQTW3MISsqhlX9OpRYQGxf4nCbG7hNHS/gRgVW2ITpIeXOyuv7UCz
-         uWmGQ6BhyR94QvS2HHnCcffgNEKZBPaMD2LFOFUsgaIn+aNc3jdIVks3S6F6Ee5lwXmV
-         t0Q7JC3NPkvqv4z0DDzchXeeIMHTJtK5CImiS6S1vQ6VepS5B073uf8yFQrQqE5j/uWN
-         905WPZgUspUlnHi1R9cahIuS6YC4itJFdkkr192zf+8YaCjMPlBSd5/O+3SpOj4pqnXe
-         HaS5IkpryxLRe3UuVBzNPN4vGyCu+ADNe9bQJz39ofgCcA3qh373Vj25jy6QQ9SvfDrT
-         fdAw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790188830; x=1790793630;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=3gc3lVJFpeHvTVPTQlhw9bRs3DHSZ5NaiLqgYc9qgEg=;
-        b=cF1SgkASxR+ak6f5HGtQ0vv0u5YfP/vOGttUw+ZlzvsvZlnAzFVU79Wv940R5Sv7zx
-         vlUBNdkl3M4cvF+p/qDBhx4VNx+ei2XHBj+iq4J5x/f65Cs5RVVBmPhctDkOUqPRU8gM
-         wrCKywm3rhDm4zCkXxLMn5xDymFJVPBAATq93FrjPiiBp9PxgLqnqREz31qxJMfkH+LN
-         0WJtVo0GtSxBJHflw8m8tb7DuqXlK+Q4zr/DSesw4JqSJbTHosUNmLp8KPCCTM8Ebl1j
-         an+iPk/NCiGLCN2l5mvYrrvZksfxRcJwJnCpL+CDx3mZMzy0lq1W3XdmYmKDVXybI4Cy
-         GLpg==
-X-Gm-Message-State: AFuF++m03HzHaPxVvRs8QmQxKNE5H8yNiQwcOOanWb4gLUdHOivC0MVt
-	PAVaVLtfpjvVAa7Jcih0oPzlE+WXfZkMpq988tCJ6SxUvV2X2V3xTTnhCgkUgA==
-X-Gm-Gg: AYBFou3hQmPCua7uYZUFOIhSgG5QoR3VIbPvUQ0fN/RuWZkMM5RSBVhNvbYvRNksAE5
-	IuDTGYN+COzL7krRu4bf/j0dxyfeHi4gdvUol746ZNBkkwrgIGQeBVDtOXyVJdtfjf8M6iqiif7
-	2JmD8eTjHdRS8Bel5zseIMTZzs58nU4vydDV0I7VPXqCHPdX3fv1exZQM50ECyZwxEFCMn9WO43
-	CxTqK2T66Chtvjem9t0EhOUlUzpuo7fBh3s4xMMt3WOFNaumxVEkjOhsQCwNWm+ISUQfoeMgUUE
-	7ZOrBda19IKQXmcbjHo4gyfC3fG3ZXPdVr3VQExiqFoXNYdQ+nLAX0iMf06t9dC4pI7kIag/y2y
-	Vm94R3+iWfUfAXzEsEdTwT1ECGPGjDs5/lPtJ5WdwQ1F5hQLkVuU+Xa4LP+dlW50pZngEknzaB+
-	N7Zej0kfcyu8Kpn+Rd6wt4sXNi3b2QUVbhxM8uV+d2tzR0A+KBTeiughNhG2YzMwdbW6Dbpe/5P
-	ig4awZNf3h1MQxGlZDrJlUu7D/ZKZOnwNO0YSQzFtGmzTwc9JROUTanVkiOPgtJsgkZ3SpLV14D
-	Ii9epy+fDuOeH4/F8SKqows/s3mc6TJrwN6vHEnOq8Iictt9
-X-Received: by 2002:a05:6a20:6f07:b0:3cc:8f53:26c0 with SMTP id adf61e73a8af0-3de0e73d922mr85921637.17.1790188830372;
-        Wed, 23 Sep 2026 11:40:30 -0700 (PDT)
-Received: from ryzen.lan ([2601:644:8000:7a86::e34])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cc75f3b82aasm1644341a12.9.2026.09.23.11.40.29
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 23 Sep 2026 11:40:29 -0700 (PDT)
-From: Rosen Penev <rosenp@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	devicetree@vger.kernel.org (open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS),
-	linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH] powerpc: dts: turris1x: use qca8337 internal PHYs
-Date: Wed, 23 Sep 2026 11:40:28 -0700
-Message-ID: <20260923184028.13830-1-rosenp@gmail.com>
-X-Mailer: git-send-email 2.55.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqm6m3tyjz2yDm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 04:42:40 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68NGZgWa3926118;
+	Wed, 23 Sep 2026 18:42:26 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=CUYITw
+	KQ+z+1OAH+g8CWgxbCNFHSvBZjQhuLJ/kZcmc=; b=MphYg5RR4+XjqpOwgPc504
+	Tysar5Yjf/fhG2q6P7K8DwYaoP8Yoi/XVRWJuiMSlwKFwBloeiaVJMCE9S/yESbc
+	lbvfqI+eQekMdOJqo/qH2FFVCFvq35CM/rlfP+WxqOudwcSHLouPlVx8/scpsfoi
+	fGdPwVRexZLGrEXfFbL372QC+X/VxGTDZQWiuJ5ZBB6n/dnjlqnX3LvivuB3oesF
+	OCJ1HvYTEz3cwX1p87RPnljjb4kYXgpqvq1WhboA47WOjKtsIJw+OFl5aHsGK/3P
+	3SRMWyyLTctM66FTPWYK1pusFsfckoX27ajwjvgT+GWKffqGI6xoaIe3ixF/29Sg
+	==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gskg2n2vd-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Wed, 23 Sep 2026 18:42:25 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68NGWmDh627143;
+	Wed, 23 Sep 2026 18:42:24 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gvbt2t73f-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 23 Sep 2026 18:42:24 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68NIgKsd45482342
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 23 Sep 2026 18:42:20 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 90CAB2004B;
+	Wed, 23 Sep 2026 18:42:20 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 11E0C20043;
+	Wed, 23 Sep 2026 18:42:16 +0000 (GMT)
+Received: from [9.124.209.29] (unknown [9.124.209.29])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 23 Sep 2026 18:42:15 +0000 (GMT)
+Message-ID: <0fbc2522-791a-482b-a756-f3e6e61d2e29@linux.ibm.com>
+Date: Thu, 24 Sep 2026 00:12:15 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,94 +81,236 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [Linux PPC] Disable PREEMPT
+To: Christian Zigotzky <chzigotzky@xenosoft.de>
+Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Michael Ellerman <mpe@ellerman.id.au>, harshpb@linux.ibm.com,
+        Gautam Menghani <gautam@linux.ibm.com>, amachhiw@linux.ibm.com,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+        "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        "R.T.Dickinson" <rtd2@xtra.co.nz>, hypexed@yahoo.com.au,
+        mad skateman <madskateman@gmail.com>,
+        Christian Zigotzky <info@xenosoft.de>, Samir M <samir@linux.ibm.com>,
+        Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+        Narayana Murty N <nnmlinux@linux.ibm.com>,
+        Hari Bathini <hbathini@linux.ibm.com>,
+        =?UTF-8?Q?Michal_Such=C3=A1nek?=
+ <msuchanek@suse.de>
+References: <aqfTU79SlNB3ykDi@kunlun.suse.cz>
+ <25cf64ab-2a32-4d4c-a0c7-2e9007c276d4@linux.ibm.com>
+ <aqj1KxZttNgY5ZVR@kunlun.suse.cz>
+ <ba9759d0-b1f2-4b33-aff5-769cf89bd584@linux.ibm.com>
+ <9b58bd58-d0e4-463e-bff9-e33b153b2987@linux.ibm.com>
+ <aqu9hA1Bq58GFrVw@kunlun.suse.cz>
+ <b2a5d53f-05e8-48ae-adb7-12fc74523b4e@linux.ibm.com>
+ <aqvnOg9JfkM2k0TX@kunlun.suse.cz>
+ <7ad57b61-4567-42c8-a9f6-faaabe7766a7@linux.ibm.com>
+ <7e06fb84-ca2e-dbb4-47bd-e95ee11113c9@xenosoft.de>
+ <aqzj9xsPRsGgCI5M@kunlun.suse.cz>
+ <79f9d4e3-ce55-d238-e4a9-b11e9ce27c5f@xenosoft.de>
+ <33342fbf-eb7b-bde6-2c8c-254fe8bfb993@xenosoft.de>
+ <b887c351-f7da-4e24-8cee-30a5a2dbfadb@linux.ibm.com>
+ <7fb5baa6-9d06-2c61-2b43-6835e8fb0d1a@xenosoft.de>
+ <9c1d7cf0-40f5-4a93-81ee-f5a4c5adcb9d@linux.ibm.com>
+ <b8f82519-9ae5-c247-e020-e79c627e57df@xenosoft.de>
+Content-Language: en-US
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+In-Reply-To: <b8f82519-9ae5-c247-e020-e79c627e57df@xenosoft.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: 7HiYtBbMyfdbwNsCIvG4D9iZnVNw9xus
+X-Authority-Analysis: v=2.4 cv=I43w19gg c=1 sm=1 tr=0 ts=6ab41d92 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=NEAV23lmAAAA:8
+ a=oxC9TbpiAAAA:20 a=aONlWmznN9kDEt85WeAA:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10 a=bA3UWDv6hWIuX7UZL3qL:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTIzMDA3NCBTYWx0ZWRfX5/uvzcbLju1H
+ V79D+iMBZMqUTB0vN4rGuidaawI6mPomZuwipLjKlpNRfq86RI1QhyDPNfXVQ7N+Ns3l/l9pUCL
+ RUJynxkC8UIFpq+EWneVuxyCW+U3UyEesXmNcWCmLHNvDW+8ZCVF7/hrJuOUnhLPahf3UmxG0h+
+ gu0HkLTBTSq22DJUdk38ZXfwoJMzS/OyL4K7y5eys3AFNybcnUwmIhNbEacoAC6y+TaBLTqDtSX
+ TgWp12wFbp1ZBXKyXGDwAdneXCHAV1KmmwEiZhcYoAH4RivBRybLBh0d1ceMWgHtBKq0/H0JXiS
+ RROdtHLdo28io8QAcnN2N/DA7t1FNRWESed9XF1nUqMeJhw+Q1GiogZvqNbRKQ8qxCas2M9yUBI
+ KWAQ8oDRDhZ4zwmV+RURArAisWrAsFSHImm1/rKWEC+sQcclogCMK00bg3jvFV7CodO+xjkjxbt
+ bbzaFZzysv4XuneI35g==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTIzMDA3NCBTYWx0ZWRfX9AJtoIhefh2e
+ +xx3TR55DCO+zNllhsvNrazN63D2uMTS9hK2LUSPbpW9Sovy/BxSC+LXwUW5MCx74XrAxRSjnom
+ 9XmESeT0YjR/yLVtux6lPnLFQchHAwg=
+X-Proofpoint-GUID: D1bMIssP0fwaGi38ucfM1SlIZqJyT4cE
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-23_06,2026-09-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 clxscore=1015 adultscore=0 suspectscore=0 impostorscore=0
+ lowpriorityscore=0 bulkscore=0 phishscore=0 priorityscore=1501 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609230074
 
-The QCA8337 switch has a managed internal MDIO bus for its built-in
-PHYs.  Declare the five PHYs in an mdio subnode of the switch and
-link the LAN ports to them with phy-mode = "internal" and
-phy-handle, so each switch port is connected to the correct internal
-PHY instead of relying on the implicit legacy port-to-PHY mapping.
+Hi
 
-Assisted-by: LLM
-Signed-off-by: Rosen Penev <rosenp@gmail.com>
+On 9/23/26 9:31 PM, Christian Zigotzky wrote:
+> On 23/09/26 07:13, Shrikanth Hegde wrote:
+>>
+>>
+>> On 9/23/26 10:39 AM, Christian Zigotzky wrote:
+>>> On 21/09/26 07:12, Shrikanth Hegde wrote:
+>>>> Hi Christian.
+>>>>
+>>>> On 9/20/26 6:34 PM, Christian Zigotzky wrote:
+>>>>> On 09/20/2026 01:49 PM, Christian Zigotzky wrote:
+>>>>>> On 09/18/2026 09:10 AM, Michal Suchánek wrote:
+>>>>>>> On Fri, Sep 18, 2026 at 04:39:57AM +0200, Christian Zigotzky wrote:
+>>>>>>>> On 17/09/26 16:15, Shrikanth Hegde wrote:
+>>>>>>>>> Hi Michal,
+>>>>>>>>>
+>>>>>>>>>>> Give it a try.
+>>>>>>>>>>>
+>>>>>>>>>>> I am suspecting both lockup, stack corruptions are secondary
+>>>>>>>>>>> symptoms here.
+>>>>>>>>>>> While recreate, I have different type of traces.
+>>>>>>>>>> Yes, it does work for the crash I see.
+>>>>>>>>> Thanks. Give me sometime to see further on that. Didn't get any time
+>>>>>>>>> today.
+>>>>>>>>>
+>>>>>>>>>> However, we hijacked the report
+>>>>>>>>>> of KVM locking up on FSL Cyrus+, and that is likely a different problem
+>>>>>>>>>> still not addressed.
+>>>>>>>>>>
+>>>>>>>>> Ah, that's what you meant. Yes, i still don't know where FSL Cyrus+ is
+>>>>>>>>> stuck.
+>>>>>>>>>
+>>>>>>>>> I would need help from FSL Cyrus+ to get some logs or is there a way we
+>>>>>>>>> can spin of
+>>>>>>>>> a QEMU guest of it? We should have the log to start somewhere.
+>>>>>>>>>
+>>>>>>>>>
+>>>>>>>> It's difficult to get a log because it freezes and can't write any error
+>>>>>>>> messages to the log files. This bug is very old. We had this issue some
+>>>>>>>> years ago but we was able to disable PREEMPT because we don't need it.
+>>>>>>> I would expect serial console and sysrq could give something, depending
+>>>>>>> on how much of the kernel is frozen.
+>>>>>>>
+>>>>>>> Thanks
+>>>>>>>
+>>>>>>> Michal
+>>>>>> Here is a serial log: https://github.com/user-attachments/files/32433586/e5500_preempt_putty.log
+>>>>>>
+>>>>
+>>>> Thanks Michal for helping to get the traces.
+>>>>
+>>>>> Another serial log with pcie_ports=compat: https://github.com/user-attachments/files/32434487/e5500_preempt_pcie_ports_compat_putty.log
+>>>>>
+>>>>
+>>>> I see it is mostly busy with printing
+>>>> WARNING: at .enable_kernel_fp+0x30/0x78, CPU#3: qemu-system-ppc/4884
+>>>>
+>>>> The path seems to be same also.
+>>>>
+>>>> [c000000085ca7700] [c00000000005de84] .kvmppc_load_guest_fp+0x30/0x80
+>>>> [c000000085ca7780] [c00000000005f2a0] .kvmppc_handle_exit+0x5bc/0x5cc
+>>>> [c000000085ca7830] [c00000000006204c] .kvmppc_resume_host+0xb8/0x10c
+>>>>
+>>>>
+>>>> Does below help to boot or make it stable?
+>>>> ---
+>>>>  arch/powerpc/kvm/booke.c | 9 ++++++++-
+>>>>  1 file changed, 8 insertions(+), 1 deletion(-)
+>>>>
+>>>> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+>>>> index 13ad4cf5fa71..d4be7a306bfc 100644
+>>>> --- a/arch/powerpc/kvm/booke.c
+>>>> +++ b/arch/powerpc/kvm/booke.c
+>>>> @@ -1404,10 +1404,17 @@ int kvmppc_handle_exit(struct kvm_vcpu *vcpu, unsigned int exit_nr)
+>>>>          if (s <= 0)
+>>>>              r = (s << 2) | RESUME_HOST | (r & RESUME_FLAG_NV);
+>>>>          else {
+>>>> -            /* interrupts now hard-disabled */
+>>>> +            /*
+>>>> +             * interrupts now hard-disabled. i.e EE=0
+>>>> +             * But irqs_disabled relies on PACA entries
+>>>> +             * and fixup below enables it.
+>>>> +             * So irqs_disabled == false
+>>>> +             */
+>>>>              kvmppc_fix_ee_before_entry();
+>>>> +            preempt_disable();
+>>>>              kvmppc_load_guest_fp(vcpu);
+>>>>              kvmppc_load_guest_altivec(vcpu);
+>>>> +            preempt_enable_no_resched();
+>>>>          }
+>>>>      }
+>>>>
+>>>>
+>>> Hi,
+>>>
+>>> Thanks a lot for your patch!
+>>>
+>>> I patched the 7.3-rc4 kernel sources with your new patch and compiled the kernel again yesterday. [1]
+>>>
+>>
+>> Thanks for trying.
+>>
+>>> Unfortunately, the issue still exists.
+>>>
+>>
+>> Can you share the console log of the kernel with the patch applied?
+>> We need to see where it is stuck now. Has it made forward progress?
+>>
+>>> I tested it with a guest kernel with and without preempt support.
+>>>
+>>> Cheers,
+>>> Christian
+>>>
+>>> [1] https://github.com/chzigotzky/kernels/releases/tag/v7.3.0-rc4-2-preempt
+>>>
+>>
+> Here is a new serial log from the patched kernel: https://github.com/user-attachments/files/32570808/e5500_preempt_pcie_ports_compat_patched_putty.log
+> 
+
+That paca mismatch is independent of preemption modes.
+
+It shows a few warnings and even after that a console message has come through.
+Do warning continue forever?
+
+To fix those warnings, can you try this diff on the top of the earlier ones?
+(Igonore whitespace mangling if any, Also patch is UNTESTED. It is more of my
+speculation.).
+
+Sorry, I don't have any way to test it out locally.
+
 ---
- arch/powerpc/boot/dts/turris1x.dts | 35 ++++++++++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
 
-diff --git a/arch/powerpc/boot/dts/turris1x.dts b/arch/powerpc/boot/dts/turris1x.dts
-index d0b7c62b8c6e..58c9e7b34e50 100644
---- a/arch/powerpc/boot/dts/turris1x.dts
-+++ b/arch/powerpc/boot/dts/turris1x.dts
-@@ -174,26 +174,36 @@ fixed-link {
- 					port@1 {
- 						reg = <1>;
- 						label = "lan5";
-+						phy-mode = "internal";
-+						phy-handle = <&phy_port1>;
- 					};
- 
- 					port@2 {
- 						reg = <2>;
- 						label = "lan4";
-+						phy-mode = "internal";
-+						phy-handle = <&phy_port2>;
- 					};
- 
- 					port@3 {
- 						reg = <3>;
- 						label = "lan3";
-+						phy-mode = "internal";
-+						phy-handle = <&phy_port3>;
- 					};
- 
- 					port@4 {
- 						reg = <4>;
- 						label = "lan2";
-+						phy-mode = "internal";
-+						phy-handle = <&phy_port4>;
- 					};
- 
- 					port@5 {
- 						reg = <5>;
- 						label = "lan1";
-+						phy-mode = "internal";
-+						phy-handle = <&phy_port5>;
- 					};
- 
- 					port@6 {
-@@ -208,6 +218,31 @@ fixed-link {
- 						};
- 					};
- 				};
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 9194cf492d1c..0a014fa45b20 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -147,6 +147,19 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
+                         continue;
+                 }
+  
++#ifdef CONFIG_PPC64
++               if (unlikely(local_paca->irq_happened != PACA_IRQ_HARD_DIS)) {
++               /*
++                * An interrupt arrived between the soft and hard
++                * disable. Replay it and retry guest entry.
++                */
++                       local_irq_enable();
++                       local_irq_disable();
++                       hard_irq_disable();
++                       continue;
++               }
++#endif
 +
-+				mdio {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+
-+					phy_port1: ethernet-phy@0 {
-+						reg = <0>;
-+					};
-+
-+					phy_port2: ethernet-phy@1 {
-+						reg = <1>;
-+					};
-+
-+					phy_port3: ethernet-phy@2 {
-+						reg = <2>;
-+					};
-+
-+					phy_port4: ethernet-phy@3 {
-+						reg = <3>;
-+					};
-+
-+					phy_port5: ethernet-phy@4 {
-+						reg = <4>;
-+					};
-+				};
- 			};
- 		};
- 
--- 
-2.55.0
+                 guest_enter_irqoff();
+                 return 1;
+         }
+
+
+> Thanks
+> 
 
 
