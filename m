@@ -1,51 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-28004-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28006-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 167B2C9830C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 09:39:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9454C982EA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2026 10:13:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hqX4T4BVfz2yqw;
-	Wed, 23 Sep 2026 19:39:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790156393;
-	cv=none; b=SaUfr8ySy2pjYlaEnyvND4AwW/hMN0ICFEnWlexEu4qG4upNxTXkf31pw4aUGG1ScKDTMCPqARinJktYNRy3N2uOna91Rle1ORP73FukSwRhhRxQnhc6HMU4DSE7xp1t8i6B6boWX9hhhoqfhqbCnvX84MzB+hcPAgXnEkKcACEXxDLDRQuh/M+zWrFtHGe3xn6W+c1Ha0H/pxDnFKs8FrcfDfrtSJT5nBJCeeKM1AAGSMrwanUZ95+mbZevY66jGovogHv00KHOBCeF9Eyzu6Y++OJhJ79+KDgkXaWPOH6KUK+kkQJPlhrbDasrz7qIKksE97LcEZpcAgq8PL3tkQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790156393; c=relaxed/relaxed;
-	bh=Ky9c7fQZ/1RFu7l1ztUmuvVnX2EIpcy6aLCf8pDHQ2o=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=OhAwf13l3+bsz1WhEeOBEXcoHI14rWTBt/hHP8z/bBaovljzojjLpQPqChOogeBHlwgKE/T5pIBlGR3oHj4UjlJn1pWEKfvlulw24r3SOgSuQFScjDSsD9UOG1El0MzYzJdYcGpqbCVKtxiicf3QBhd2ZsJ5DZ1M+/s5itpqgw9/na9HdHCPCcSJh/yGhkOMSxjhb2xjd5xMDN+X/0Pnfs3QwEyxallmY7ZbARqw4vLHjhE1NWICvXpYhRH/vpTUKCcV5sNSpK5FFEs10EN31C4jPxKv1v/zibb24o/w09NN258KTD8S1YmGY1Ep3gY3jgLqEgepyLufcHiDrrO0rw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KYr7TIgW; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hqXqP5Nm9z2yqq;
+	Wed, 23 Sep 2026 20:13:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:3b::f" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790158417;
+	cv=pass; b=PfIICBjBJoE1RX453mULhcOrhcGfbzboQonp6AoTdPpLELSXFhx5ZgqtZrKqumxgjSkoxeJ4uBVRDcK5xViJI5bTLSeHTrIcB5/eh6Q6nayDxafzVpSM4w52lu2udAwRwWxnMueaHinKmtojRtWz7h6P6VQBIzOEPIdVyupEfHvUUlEmxruznrQ6bh+u21xAT0iyBMRx6sbhdx7ckYhB20KufBa9VRGNe6jgZvYI3TRuSJk8yHbOTHZ+J5wpDPTjoVzQHsDwRgfKXUVhSzVnEClMnScL9h/vbfzvGvouZ9ZYQ+HUqdSXVqpu076q6Z59xzvepsHzXDk6o9EcDyW4Sg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1790158417; c=relaxed/relaxed;
+	bh=T8UPdY8cxlA6aoPjewzNTQu1SQVA5gFWIlU2oGV5oPs=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=oSsPpcAP3EraZraobz4+YxnJc10ecfpTisPXm8FjbgeJcNeWPxCB8F7ICHMR5PRYUkKUErbXk6Hfgr95TRMThe8BXF+ROKYcUIYb6TUEJPpfB+WC40UbfAwGubL3g2iQUq8xoxa4D5dcOICIX9CURESUvLkEkpGZDbfNrf93mMY2kXbz6/e5WDROeQfsCi7+5u8+lQrOdUXK9PDScx0mB3v7I5JvzP1AZ0lwWImyKMP1yx/YIjQPveRZMY1nE6RlixuojPQm6kFv33RYghBNtnMJVqUadFSug+WrdJ7NI+Yjjll5M7ipwmrRD9j5Tiq2J2QAUU6+GA3qX2DEDjSBMw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=s3d3ls8x; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:3b::f; helo=mail-pz2-x0f.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KYr7TIgW;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=s3d3ls8x;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:3b::f; helo=mail-pz2-x0f.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pz2-x0f.google.com (mail-pz2-x0f.google.com [IPv6:2607:f8b0:4864:3b::f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqX4S4TpXz2yqq
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 19:39:52 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id C7167600AA;
-	Wed, 23 Sep 2026 09:39:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AC0771F000FF;
-	Wed, 23 Sep 2026 09:39:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790156389;
-	bh=Ky9c7fQZ/1RFu7l1ztUmuvVnX2EIpcy6aLCf8pDHQ2o=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=KYr7TIgWfrXtSFuYVtPX6VTaibKpRDQE0xLEscffhdhRMZQB3sVyojKDpb3pvYX9a
-	 qfvIpI/SixGIFQ7jPSlfRpTXqHoSQw3e5NGtYoZ0sYH3oJ+xqsBI0jpKsys1S/JnYy
-	 IvQ5WEYwt2sHjNSrspaH0UnfT4l3XktBqmTgdQkVCWl9XgouOK5HxvYe5u055yDxRe
-	 RgCQcXcWZ6Lv0CUhhbVrDCdmnM1DAd3Ix6pJv/92RXmA/nzdCeEya6awHMsihGp3fa
-	 8OzKYVp4CPN2ar8c2+eqMrSU+ghKOu7oofCmSqVM5mgyS2NoW6ndtBPvRSr07sUjNj
-	 CvviJRLhMRoaQ==
-Message-ID: <300f92ef-1526-44d9-a01f-e9b8f3fc0cd1@kernel.org>
-Date: Wed, 23 Sep 2026 11:39:27 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hqXqM4xwXz2xs1
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 20:13:34 +1000 (AEST)
+Received: by mail-pz2-x0f.google.com with SMTP id d2e1a72fcca58-85f0fc1fd8eso384271b3a.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2026 03:13:34 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1790158411; cv=none;
+        d=google.com; s=arc-20260327;
+        b=aIxXWyJluEQlFB/wYJ7fLDmVQmW7Mmzr+iecAOx9gyK+j6Ksfu6zesiDcqJ923GYHJ
+         4M3JNSYAKJWLeJpQBeOxRaWY4/OSQ1vhDSzlJicjci936EfmpKCWuaGHIt6WWuWBKu3N
+         2NnqZcF5I5LC0WjmdP7UJv6H+3vx2Gu3t07XpEcuwWEUtfFktmKjKMNl8ia4qREXFhax
+         fCF4ZggSh/GHfPextvblwL3OOLljF6/iud3pM98RvqRVEf7uLExFb/0wpxnikwDCy26K
+         DlO3Cf7B1u6/FgLY+B6UAWK8BqzIs3F+1hBpepFmSsToC9GTeXDVCRevvvLG8wsKh/JY
+         R/NA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=T8UPdY8cxlA6aoPjewzNTQu1SQVA5gFWIlU2oGV5oPs=;
+        fh=btPhuXnEQTl+YMB2Q+ZCzCj9UiKqT6TYfNeo2CRl4EU=;
+        b=c7ubphjIsxOnEFMnUV+3LA5dAReA8/sAU/obB//7ZFPJddvYcxqtuRibMYZiyRhiw1
+         2EgrXYzHYJK/4/B+6RrX4GGaShYrxR2oAHO+w/aK0ciaJJFm5ii/hRjNtPfdw1BB4tSL
+         usqPC6Rm6oPZC3rkf3UWYdXlBXE/bnMScmYq9LzS/dgvtgpazJyMBhViATKvt5pXYRX/
+         K7S8k1WDgg4MdmwUlggR3LTgfmBVYQ31XF255Eve98SZqsuqAUJc99vDiEAU4GJOQDcx
+         DME7JNlwav4vuVZE+R0A56HPjUQ6cIQCB9yEpgO/OGRrYvOd3NJNR6bbrzwqBxfqYLL3
+         akMQ==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790158411; x=1790763211; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=T8UPdY8cxlA6aoPjewzNTQu1SQVA5gFWIlU2oGV5oPs=;
+        b=s3d3ls8x7fJf/0TEXF9i4/zNjcINsZIi7GdKeCAU22z1ZLg5QwMI54VWbZOHYcG8aq
+         Z2h92SkHWg9V/wLXEa3zIiIaSIXA+7u3G5L6hYT9D7lJ4lkCrggUuFnuQYLQkFXNopKH
+         YRBcDxagtKrGpjwGu6AjROXTn7tjpEiHSr0xWeMbT5IWsuveQBryHNSha1+OLN39c3my
+         M2WagkZImjl/GSYnIwZivqGghgZ1vI5Qd3fXki7syh3lzwSx8WYo2r3HHfmw0YlvIonl
+         EsipaRZdjgtvT9XPKjQP4aa+mWsSJdC7lRi00opl2y88ltK2XUEaPshlK7EaQ9WGVua4
+         g4qA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790158411; x=1790763211;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=T8UPdY8cxlA6aoPjewzNTQu1SQVA5gFWIlU2oGV5oPs=;
+        b=L0CahWiSJvrIp82/yf3gSvTj6reWGDDRQqZau22mfW3DJcTQ6v8sltv2/tjsfQJdwK
+         E2116Rdive1cL8fCd4r+mmcx1u9wYJvxbCxAi+b7cD1SDkAsKHkItRQRxAVWOJX6MQIg
+         2tAI1L3csVrC5fhsIolTmey26OSDYPbjTd/E1utynqbrTdsS4KbRINTahDdbbjuEauf9
+         uroitSsOh5ZScjD0S2hxw50Te2zkcTUymAKN8eAIBnUIDxsofULP4+UC4tOTtE4kirUU
+         rYUeGEovwzUzk/1lsnQThZV5Wv90Py1Kh7P2gbUi0A6Zt6Urh8CDIFngc4vzdqWmipxc
+         dHrQ==
+X-Forwarded-Encrypted: i=1; AKwUvBzWj67/eYEBjt78ldxf7NwL5T2STYC9RpZE4zXcz+tkBspfvROJc76jhkOoBr4Qzl4hQameXc2PqHaLKRc=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++msFLU9UtTc0RZHR6f1Upb6blxH3RuoHe+U9w8PLh7KLrnKbJS3
+	1qIcPLYPWRMIAxpvF1OApC6bVGUS9ExKxJ2w91baDjiEYTCXOnl6O7yb9DpdZA74KIk9Z36gTTY
+	SK/M1HvkcIgdJF+SFzMyWfXmQx4I13UM=
+X-Gm-Gg: AYBFou11ASw34BOqSsnpB47ELWzdbtqhmuFcKEpxgP1ngp+WEvZ2vB/VnTYLNyf/t0U
+	8zI8lGTlC3ZmrLOdb7jpkfj/pAw3x89Gzi0R7rYXrVRRXYb1JoJJLSP+qR0/j14sYzdy0udm2Ou
+	Dwawo47lCOCXZRClabpM4SRW9IBSsu7g5JmPdjt0Tdkbeae8g9Ayif/qJ/sbFF7N1nvbVkfWn+p
+	Nn6TDaEnvODoVujprfocq8aPBwRLYzVVV7YleaTpflCTBB5zVlyr7ScV/ZJJfdeoRsqBGo/myNN
+	XrAVg3kpO9UzOx7wEeewszXZv99APrqz5WQ0uHA+4P9vRQfpTWxWZDjeP03DkvA2Kw==
+X-Received: by 2002:a05:6a00:1489:b0:845:ba94:a56 with SMTP id
+ d2e1a72fcca58-87d1a7ade4amr1946462b3a.5.1790158411345; Wed, 23 Sep 2026
+ 03:13:31 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,152 +102,134 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 00/12] mm: make userland page table freeing RCU-safe
-Content-Language: en-US
-To: "David Hildenbrand (Arm)" <david@kernel.org>,
- "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Zi Yan <ziy@nvidia.com>,
- Baolin Wang <baolin.wang@linux.alibaba.com>,
- "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>,
- Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>,
- Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>,
- Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>,
- Guo Ren <guoren@kernel.org>, Brian Cain <bcain@kernel.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Dinh Nguyen
- <dinguyen@kernel.org>, Simon Schuster <schuster.simon@siemens-energy.com>,
- Jonas Bonn <jonas@southpole.se>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Stafford Horne <shorne@gmail.com>, Rich Felker <dalias@libc.org>,
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
- Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
- Russell King <linux@armlinux.org.uk>, Vineet Gupta <vgupta@kernel.org>,
- Michal Simek <monstr@monstr.eu>, Chris Zankel <chris@zankel.net>,
- Max Filippov <jcmvbkbc@gmail.com>, Will Deacon <will@kernel.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin
- <npiggin@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
- "David S. Miller" <davem@davemloft.net>,
- Andreas Larsson <andreas@gaisler.com>,
- Richard Henderson <richard.henderson@linaro.org>,
- Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Mark Rutland <mark.rutland@arm.com>, Huacai Chen <chenhuacai@kernel.org>,
- WANG Xuerui <kernel@xen0n.name>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, Richard Weinberger <richard@nod.at>,
- Anton Ivanov <anton.ivanov@cambridgegreys.com>,
- Johannes Berg <johannes@sipsolutions.net>, Thomas Gleixner
- <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
- x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
- Arnd Bergmann <arnd@arndb.de>, Mike Rapoport <rppt@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
- Jason Gunthorpe <jgg@ziepe.ca>, John Hubbard <jhubbard@nvidia.com>,
- Peter Xu <peterx@redhat.com>, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Shakeel Butt <shakeel.butt@linux.dev>, Jonathan Corbet <corbet@lwn.net>,
- Randy Dunlap <rdunlap@infradead.org>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org,
- linux-hexagon@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- linux-openrisc@vger.kernel.org, linux-sh@vger.kernel.org,
- linux-riscv@lists.infradead.org, linux-snps-arc@lists.infradead.org,
- linux-arch@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-alpha@vger.kernel.org, loongarch@lists.linux.dev,
- linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-um@lists.infradead.org, Hugh Dickins <hughd@google.com>,
- Qi Zheng <qi.zheng@linux.dev>, linux-doc@vger.kernel.org
-References: <20260922-rcu-pagetable-freeing-v4-0-fe1ad1f1e303@kernel.org>
- <20260922160021.a2fc65d05d9b867a141e5457@linux-foundation.org>
- <9dcde7e4-dadb-4644-9dff-7fd8a26e29a6@kernel.org> <arOVbT5B1FOMe1wb@gremlin>
- <77db2f8f-dfc2-49c6-82f6-8e6c4f7c1fd0@kernel.org>
-From: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>
-Autocrypt: addr=vbabka@kernel.org; keydata=
- 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
-In-Reply-To: <77db2f8f-dfc2-49c6-82f6-8e6c4f7c1fd0@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20260923054017.93553-1-mhun512@gmail.com>
+In-Reply-To: <20260923054017.93553-1-mhun512@gmail.com>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Wed, 23 Sep 2026 18:13:18 +0800
+X-Gm-Features: AcwNN1XtFHREsFLdPRUiEqLGtk9NvYoAB2IZLiGY3P6QqpB_FT8nAPCPpRvlyaw
+Message-ID: <CAA+D8AMQLkprPdOrT=oYR0dMmy0TqDdy1rZ3nXP6nPoigdsBuQ@mail.gmail.com>
+Subject: Re: [PATCH] ASoC: fsl_xcvr: free IRQ before canceling reset work
+To: Myeonghun Pak <mhun512@gmail.com>
+Cc: Shengjiu Wang <shengjiu.wang@nxp.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Fabio Estevam <festevam@gmail.com>, 
+	Nicolin Chen <nicoleotsuka@gmail.com>, linux-sound@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	stable@vger.kernel.org, Ijae Kim <ae878000@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 9/23/26 11:15, David Hildenbrand (Arm) wrote:
-> On 9/23/26 11:04, Lorenzo Stoakes (ARM) wrote:
->> On Wed, Sep 23, 2026 at 10:45:33AM +0200, David Hildenbrand (Arm) wrote:
->>> On 9/23/26 01:00, Andrew Morton wrote:
->>>>
->>>>
->>>> Do we have reason to believe that anyone is seeing any effects from
->>>> their arch's failure to rcu-free the page tables?
->>>>
->>>> This sounds like a rather long-standing wart, yes?
->>>>
->>>> The patchset is thinly reviewed and mm.git is bursting at the seams
->>>> again.  I'll play wait-and-see on this series.
->>> Do we want to nudge arch maintainers to review?
->> 
->> (Just to note that I replied separately, 'thinly reviewed' is incorrect, it's
->> been in -next for weeks and the whole thing was reviewed by Kiryl.)
-> 
-> Ack.
-> 
->> 
->> The only places where that would be useful is m68k motorola, sparc32.
->> 
->> But in any case it has been heavily tested including on every single arch
->> listed with stress testing performed (I think I cover that in the cover
->> letter).
->> 
->> The changes are not controversial so I don't think that's a blocker, but
->> it'd be nice?
-> 
-> I doubt we'll ever get sparc32 reviews :)
-> 
-> I'd definitely appreciate some review on the arch bits from arch maintainers,
-> but if they don't reply within the next weeks I wouldn't wait on that.
+On Wed, Sep 23, 2026 at 1:40=E2=80=AFPM Myeonghun Pak <mhun512@gmail.com> w=
+rote:
+>
+> irq0_isr() schedules work_rst on a preamble error, and reset_rx_work()
+> touches regmap.  remove() cancels that work while the IRQ is still
+> registered, so the handler can queue it again during teardown.  The IRQ
+> is also requested before INIT_WORK() and spin_lock_init().  Probe
+> failure does not call remove(), so freeing the IRQ leaves queued work
+> running, and an earlier interrupt schedules uninitialized work.
+>
+> Initialize the lock and devm_work_autocancel() before the IRQ.  Failed
+> probe then frees the IRQ and cancels the work.  Unbind frees the IRQ
+> before cancel_work_sync() and pm_runtime_disable().
+>
+> Fixes: 1e5d0f106164 ("ASoC: fsl_xcvr: reset RX dpath after wrong preamble=
+")
+> Cc: stable@vger.kernel.org # 6.13+
+> Assisted-by: LLM
+> Co-developed-by: Ijae Kim <ae878000@gmail.com>
+> Signed-off-by: Ijae Kim <ae878000@gmail.com>
+> Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
 
-Indeed, for minor arches like this the lack of review (it would be a whole
-cycle by the merge window) shouldn't be a blocker for important tree-wide
-progress.
+Reviewed-by: Shengjiu Wang <shengjiu.wang@gmail.com>
+
+Best regards
+Shengjiu Wang
+> ---
+>  sound/soc/fsl/fsl_xcvr.c | 26 +++++++++++++++++++-------
+>  1 file changed, 19 insertions(+), 7 deletions(-)
+>
+> diff --git a/sound/soc/fsl/fsl_xcvr.c b/sound/soc/fsl/fsl_xcvr.c
+> index 9828272..29929df 100644
+> --- a/sound/soc/fsl/fsl_xcvr.c
+> +++ b/sound/soc/fsl/fsl_xcvr.c
+> @@ -3,6 +3,7 @@
+>
+>  #include <linux/bitrev.h>
+>  #include <linux/clk.h>
+> +#include <linux/devm-helpers.h>
+>  #include <linux/firmware.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/module.h>
+> @@ -57,6 +58,7 @@ struct fsl_xcvr {
+>         struct snd_aes_iec958 tx_iec958;
+>         u8 cap_ds[FSL_XCVR_CAPDS_SIZE];
+>         struct work_struct work_rst;
+> +       int irq;
+>         spinlock_t lock; /* Protect hw_reset and trigger */
+>         struct snd_pcm_hw_constraint_list spdif_constr_rates;
+>         u32 spdif_constr_rates_list[SPDIF_NUM_RATES];
+> @@ -1617,7 +1619,7 @@ static int fsl_xcvr_probe(struct platform_device *p=
+dev)
+>         struct fsl_xcvr *xcvr;
+>         struct resource *rx_res, *tx_res;
+>         void __iomem *regs;
+> -       int ret, irq;
+> +       int ret;
+>
+>         xcvr =3D devm_kzalloc(dev, sizeof(*xcvr), GFP_KERNEL);
+>         if (!xcvr)
+> @@ -1705,12 +1707,22 @@ static int fsl_xcvr_probe(struct platform_device =
+*pdev)
+>                 return dev_err_probe(dev, PTR_ERR(xcvr->reset),
+>                                      "failed to get XCVR reset control\n"=
+);
+>
+> +       /*
+> +        * irq0_isr() schedules work_rst. Prepare the work and its lock
+> +        * before the IRQ, and register the cancel action first so a fail=
+ed
+> +        * probe frees the IRQ and then cancels any queued work.
+> +        */
+> +       spin_lock_init(&xcvr->lock);
+> +       ret =3D devm_work_autocancel(dev, &xcvr->work_rst, reset_rx_work)=
+;
+> +       if (ret)
+> +               return ret;
+> +
+>         /* get IRQs */
+> -       irq =3D platform_get_irq(pdev, 0);
+> -       if (irq < 0)
+> -               return irq;
+> +       xcvr->irq =3D platform_get_irq(pdev, 0);
+> +       if (xcvr->irq < 0)
+> +               return xcvr->irq;
+>
+> -       ret =3D devm_request_irq(dev, irq, irq0_isr, 0, pdev->name, xcvr)=
+;
+> +       ret =3D devm_request_irq(dev, xcvr->irq, irq0_isr, 0, pdev->name,=
+ xcvr);
+>         if (ret)
+>                 return dev_err_probe(dev, ret, "failed to claim IRQ0\n");
+>
+> @@ -1751,8 +1763,6 @@ static int fsl_xcvr_probe(struct platform_device *p=
+dev)
+>                         fsl_xcvr_comp.name);
+>         }
+>
+> -       INIT_WORK(&xcvr->work_rst, reset_rx_work);
+> -       spin_lock_init(&xcvr->lock);
+>         return ret;
+>  }
+>
+> @@ -1760,6 +1770,8 @@ static void fsl_xcvr_remove(struct platform_device =
+*pdev)
+>  {
+>         struct fsl_xcvr *xcvr =3D dev_get_drvdata(&pdev->dev);
+>
+> +       /* Free the IRQ first so irq0_isr() cannot requeue work_rst. */
+> +       devm_free_irq(&pdev->dev, xcvr->irq, xcvr);
+>         cancel_work_sync(&xcvr->work_rst);
+>         pm_runtime_disable(&pdev->dev);
+>  }
 
