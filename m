@@ -1,103 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-28103-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28104-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6281FC98314
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 07:58:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCA9CC9830E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 09:28:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hr5n81Sq6z30V1;
-	Thu, 24 Sep 2026 17:58:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:39::10"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790236716;
-	cv=none; b=XlQrhoxuBf2+6k1jr1RqgQZ5Y8/ktaxwxf6I9w3/tQ/Yq7oJdfVdt33sLmNrFubZKMlhUe6CVEQRIOw2zT+NEUyMXwqD8nr3yhZspupvDKOQWZBfExvQu1bxGoT6FxbT+oBWAP+FogF4SpLToyLT4mxYAOAx8wHxBuwjfNdfBSu1G7w8btZpnN6ak62K7fVFdze7DcSw+GMi8y/NfShhEHEtjUhROgswKaDVxfX7I5R1eUJff5RLDGnCwv9Nxjr+UrLdEPy2FMtf2Faep9AZMxewZ3Ht4EZe+IFzfcgUVw6JyOc0bYAYb5eAJPA3KC055EVO9FeBGYKMGqxOF3Mriw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hr7mM5Ly2z2yD3;
+	Thu, 24 Sep 2026 19:28:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790242083;
+	cv=none; b=LIgzXIewP5l015yBcsaRJ6QosihzK0epZQ9uUeTtrihgqA6jVJve8B1Ofnv23j49vxDkH3NyZqJXlLiXEgbmSpxaff4L4U/0pmy9xhONCvpkD+3UQ5KtPCoj6i8YSSiOVXro0/Yq0JD3IyDsNwWnoVEbwGJu67EqG1XV40/fOb4BUM49QqvsqKMW7hxxFwC2wekAlmAliO1rDbTIExnDeyovFxPVsrNDKHW9DvadpURojcjf2tIoOLODBqsA0wAiREpFiuRF/FZYIFI/go8AmxIPJQeFgdaqGeUpGPgOsHOsxsknlf2+Z/c/4b7l3Lbsojz+7USV0JpmShHz3FZQwA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790236716; c=relaxed/relaxed;
-	bh=8r910VhEWgy1eIdXLPcYAHanh/sXYvzfGYAge0OSfUc=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=IKAYsms6WksbszMKN8vUna3hMHhZFQf4FYrIIUQzrpYS+ZznVXjWc+dQd+keGS07ZS41OeVEnSND7bP5ONKRQI7AkvT4hw+qegUjXS786TvQae3TYE/KGwuRmJIc6mbEKDkBx4CNVz+queEBzTyx0juRqnhDex/unahMG3imThngqqDFRgZ0j9/51BUDUMriB1D48iSbs2ojoBGUAhCuPjjLExxJZNjvwq5HPQRE5JzeN/4o48kcRGdwHkwTDjgVLYulYzpvRcCwtbN5nRkv5vgcAQzotroRHVM8BR9Sha5wPS85Fm+FQUoFnbcxX7vJOcteR3LcCLBh9fjDvmskAg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=dupU4XS4; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::10; helo=mail-pj2-x10.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
+	t=1790242083; c=relaxed/relaxed;
+	bh=8EIliPWS3vQNKUWI5NYc16lj8iiQWxkDmdxvx+OHURQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Oi3Q2/WB2DlGYFyp+WAb75V7R4i+5VyqOWbgCe6LurShHdtqdSHLqWpBGL3g6+2lIycyG5iyFDLt2Gluqs0J6QqOcHPSU4pJFsq2RhTrqll3BDdVfXUtz4itGbz7YMthNGhmeP9Uj/XZYtNfM2HnTJux0ylVQCIEQktgyokqN6vgWk7MiSkOtTzY7zMBdsyoKradbQnK3ojQrhhoq6Mu5hED7AdwBXJrJX9Rkp/ZM3PBeWsHL0S3T86Z2zWluqF47yDFP7J5s0iZVB5BFb3Z8YIAQZZonUuCoVltaafhBTd3NK87HuUuJ9jQ9MoiHDnpXUlhCApyu3nteR7JUZv1YQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NoWkz9sk; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=dupU4XS4;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NoWkz9sk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:39::10; helo=mail-pj2-x10.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pj2-x10.google.com (mail-pj2-x10.google.com [IPv6:2607:f8b0:4864:39::10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hr5n73Tmqz30Tf
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 17:58:35 +1000 (AEST)
-Received: by mail-pj2-x10.google.com with SMTP id 98e67ed59e1d1-398a147688bso1292054a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 00:58:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1790236714; x=1790841514; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=8r910VhEWgy1eIdXLPcYAHanh/sXYvzfGYAge0OSfUc=;
-        b=dupU4XS45/tUf05Ia6uTymMkSTC17LVevYYHBCx/yMuLnZDfUmKjMnHRS4hIUMv/Pf
-         dZhaQ/ZS9s9r9VjqxdfszkF76S7BQbSdzJkFYTUfSNmMZecwXb2bBnauJZH8t4zcSYK9
-         fxjFnqeqNxfW8rBtTPScUgZ/dionolxQqYP1SNLJHMkoqqgY6KOM/QSILd6u+kNoAyR/
-         mY09SKCkff/Jipayt4XjSj8BzLvhzU/55gmHrc4iy0/1En7BD9Vd+BI6ivAVAzGMzB00
-         7exCK76J503qf+a8YLD/bppoZvfsxMAcT5ki5jRloI1+8eVZ/ZQS0HavQWOG2euLyGqT
-         bCTQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790236714; x=1790841514;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=8r910VhEWgy1eIdXLPcYAHanh/sXYvzfGYAge0OSfUc=;
-        b=t/+rfCS0ERZnilVzN2361rB67ZXnXa/JquQ25uDKNP4/92FDVecXA1m61zuf/uC2an
-         WMQoFyam4d51PsSFEPqvN/UWVsLXb9jg2EBNZdtgHfK9C6k2sjMRYkqPWLQDV8Vwqo9N
-         RV/XLvPNg9PmKPR3UOBBVXesvXa9cDi/GCW5ixhxdDovvScUwUqX2N6DAgseRnIYG5YJ
-         oe4H/zLeTbes4CRb8XHBfpneFck4GCE3LiIBYCMOZ5IpWCupdbGfoR3MRbexPMFvQGfI
-         2bGHpRgIMa+QulHmQwIsCWMfc2LPW8z26bIzb864SQ+IrQpbIR7tWgXnUyjlJWuVx8kO
-         hg5A==
-X-Forwarded-Encrypted: i=1; AKwUvBy7UY2HNgTpSKBd/lA6PGdQd8YQJ0ir739oVnpsc6Zj1aWxALoELygCIRORcVIu3d6Yaovd+CjpbFnUsJg=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++mU2D6GBv+gHVdeIwKoacfc1BFmj2igx67C3bqLc+kcs1VDZiOY
-	eN7qVohDwN/nVyYVSt2AW+7EcBXSNJ1/bLhx2pfAAVEPjauJ2Tb360U7ZEPnjx3iRkDIILmsZfL
-	N7SkXuOU=
-X-Gm-Gg: AYBFou0VThIDo9xh2paSaVIhvxotBTRYbinRb/RHAu2iZ1Fj0o6seJDCOfrIKMLb3dJ
-	qrFeS9RpHO7xAbFqeGtI60naWy10zz/qmQNMse6g7vFriEcsZq1fkzEyDC26QLy6B2abPc+BFwH
-	wrb1v2+8WdFoB2MBChRSQdysYDMI71Nrqkdb1eP6diuuhhwzJGDxtzwMivrjlGV29momH9twvXm
-	oCclkfvt3Rq5mI1i/DwUT3Gkx6XMd4Mk6JlZ9lRpySoGhBHNwR+qgPCq5elrkYKyw04qKzPPm3P
-	yIcECLcWz0ChWylNHsHSjuqEg16p4SdqSDq/kWCMF5op3VT8diJLtVbGSjyXHslFEG6jL3W3BnP
-	ygk6tn8KBjbUi/dz/rzoFsOLEe/98n5zmSEuODlnlYnCDeep0ZawsMDhkf0juqruDMA2S03IwY4
-	zdfrg6JSUxOTFKZQkngL8DYJvXzhsyTRTiJTa8WsUCGr6hFLLHcigcaTfroGrpK6w93TcLHxM/b
-	/02l9WCjaJzkOXLR7Y=
-X-Received: by 2002:a17:90b:4fca:b0:3a0:910e:84aa with SMTP id 98e67ed59e1d1-3a098d45437mr1424739a91.12.1790236713758;
-        Thu, 24 Sep 2026 00:58:33 -0700 (PDT)
-Received: from n232-176-004.byted.org ([36.110.163.97])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a0972eec92sm3575622a91.7.2026.09.24.00.58.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 24 Sep 2026 00:58:33 -0700 (PDT)
-From: Muchun Song <songmuchun@bytedance.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Mike Rapoport <rppt@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Hildenbrand <david@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Lorenzo Stoakes <ljs@kernel.org>,
-	"Liam R . Howlett" <liam@infradead.org>,
-	Vlastimil Babka <vbabka@kernel.org>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Michal Hocko <mhocko@suse.com>,
-	Qi Zheng <qi.zheng@linux.dev>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org,
-	Muchun Song <songmuchun@bytedance.com>,
-	muchun.song@linux.dev
-Subject: [PATCH v2 6/6] mm/mm_init: add zone mismatch warning during page init
-Date: Thu, 24 Sep 2026 15:52:59 +0800
-Message-ID: <20260924075259.2013039-7-songmuchun@bytedance.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260924075259.2013039-1-songmuchun@bytedance.com>
-References: <20260924075259.2013039-1-songmuchun@bytedance.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hr7mM0Fvqz2y24
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 19:28:02 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68O5bPHC1333890;
+	Thu, 24 Sep 2026 09:27:46 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=8EIliP
+	WS3vQNKUWI5NYc16lj8iiQWxkDmdxvx+OHURQ=; b=NoWkz9sk9MvFGQ9vSLsHEz
+	sr7VBx++JzyirHuOdCb5738Aw7a4SGGJDg062LNnhv5Bnh043hxQB4lz1eR6pbIm
+	i+zl3nDrU+JPE0k/JMHcFwi7m5eXLNdSpz9luY0okmBeXQQaMHE5CBuyOKA5bYya
+	+wmENq6HCMXxh/hsXaEIN+5GY4z0jfVhtr051LO8A3YEW/JIIlIQF6EqqKUWPtIS
+	LeS9G60BulQ//B69VHIo9Wj7ATYOyePqo1KA7fzuKv+aRBzdgasp04MHFyXFz/Pr
+	xkTliQ7Xz0lwwJadwZrTp3AnnEZJ375PK1cE32B/9rT9LawuucCUurzgaI0KJlTw
+	==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gskgsg2vy-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Thu, 24 Sep 2026 09:27:45 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68O5llnw1497500;
+	Thu, 24 Sep 2026 09:27:44 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gvbu8vvu4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 24 Sep 2026 09:27:44 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68O9Rerg49283582
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 24 Sep 2026 09:27:40 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 79FF920043;
+	Thu, 24 Sep 2026 09:27:40 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id AE99D20040;
+	Thu, 24 Sep 2026 09:27:38 +0000 (GMT)
+Received: from fedora (unknown [9.5.7.39])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Thu, 24 Sep 2026 09:27:38 +0000 (GMT)
+Date: Thu, 24 Sep 2026 15:05:39 +0530
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: Jyoti Gupta <jyoti@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
+        npiggin@gmail.com, chleroy@kernel.org, ritesh.list@gmail.com,
+        sshegde@linux.ibm.com, sourabhjain@linux.ibm.com
+Subject: Re: [PATCH] powerpc/mpic: Fix memory leak of mpic on error paths
+Message-ID: <20260924145126.cf1c0ae1-37-amachhiw@linux.ibm.com>
+Mail-Followup-To: Jyoti Gupta <jyoti@linux.ibm.com>, 
+	linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com, 
+	sourabhjain@linux.ibm.com
+References: <20260924063010.188642-1-jyoti@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -111,38 +92,141 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260924063010.188642-1-jyoti@linux.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=V/XoQuni c=1 sm=1 tr=0 ts=6ab4ed12 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8
+ a=t5kBZIPNrCX0i9atMZYA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: CYWfs2TQ_bkK6aRbuwngX2EMlKDe7bm4
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI0MDAzOCBTYWx0ZWRfX/pO93khs/A77
+ 11t6TRw2FV07TbFYmGGzZEuO4Aagb5dCQuAOv8oStX0yV/U5D82E+Off5jWHf/DZI8uol4hw7/3
+ q3BQ78sIbh9qXDQzSI83ZW/QJITLDP4zdqcUrhsiLVuVylxZIWm4YeKpJ/v2JvXoh+3A8qZNdCa
+ vZBUCSocR3S8jzPBVOTs5tpEmtWC4MI74gyaDkPj2DK/j5Yr/MZu/6F/pVcH8jXCq9yTs2D/UsL
+ oZYWviDyDGS5cW1MdsyMDIQmAB1skQYMOOgLySE/SyuuBdsrJjKlZLSQzK4Ry7tMi7VZilovNuU
+ BWYpXvtk70Cqn90a3NzQMHVISOAE+qn77HWBIocys1EdQOxkHcAfkzI3pVXkQPBMLN0eOhm5wMA
+ jM5rf5/67++OgIDLIh+kwvpGq1vKjcX1Z29vIIdzMpPoRaJly9D2Fr0Ho0d+Fv5iXOMro91E9O2
+ g2k0Yhn5ZElz3a1TAyg==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI0MDAzOCBTYWx0ZWRfX6ZsfKc7oK+MX
+ bY2t7lSXvwORJNqzEfgUZwp6dBejrG/sUXKlb6DJjZFk3ultUNW6Ydgn+HDckvnlR4TivLGQ3+N
+ f9Sj8AuDpYZIF+m6pEz1c4X5QEnACPM=
+X-Proofpoint-GUID: skpA3d26DByPMjxKXBb7rs2ik8ItQnzn
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-24_02,2026-09-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 spamscore=0 malwarescore=0 clxscore=1015 phishscore=0
+ bulkscore=0 adultscore=0 lowpriorityscore=0 impostorscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609240038
 
-For vmemmap-optimized sections, tail struct pages may be backed by
-shared vmemmap pages. Those shared pages must carry the same page zone
-ID as the struct pages initialized for the section.
+On 2026/09/24 12:00 PM, Jyoti Gupta wrote:
+> mpic_alloc() allocates struct mpic (and optionally the protected
+> sources bitmap) but does not free them when mpic_setup_error_int() or
+> irq_domain_create_linear() fails, leaking the memory.
+> 
+> Initialise mpic to NULL and free the bitmap and the mpic in the common
+> error path before dropping the device node reference. The register
+> mappings are not released here.
+> 
+> Signed-off-by: Jyoti Gupta <jyoti@linux.ibm.com>
 
-Warn in __init_single_page() if the shared tail page has a different
-page_zone_id(), which would indicate inconsistent initialization.
+I see a couple of problems with this patch:
 
-Signed-off-by: Muchun Song <songmuchun@bytedance.com>
----
-v2:
-- New patch.
----
- mm/mm_init.c | 3 +++
- 1 file changed, 3 insertions(+)
+1. The patch does not apply.  Both "git apply" and "git am" fail on this patch.
+   I think the context lines around the irq_domain_create_linear() call have
+   tabs converted to spaces, which causes the context match to fail.
 
-diff --git a/mm/mm_init.c b/mm/mm_init.c
-index 1650d6bc1211..bd02e8d06965 100644
---- a/mm/mm_init.c
-+++ b/mm/mm_init.c
-@@ -609,6 +609,9 @@ void __meminit __init_single_page(struct page *page, unsigned long pfn,
- 	if (!is_highmem_idx(zone))
- 		set_page_address(page, __va(pfn << PAGE_SHIFT));
- #endif
-+	VM_WARN_ON_ONCE(vmemmap_optimizable_order(pfn_to_section_compound_order(pfn)) &&
-+			page_zone_id(page + VMEMMAP_OPTIMIZATION_NR_STRUCT_PAGES) !=
-+			page_zone_id(page));
- }
- 
- #ifdef CONFIG_NUMA
--- 
-2.54.0
+      ❯ git apply ./20260924_jyoti_powerpc_mpic_fix_memory_leak_of_mpic_on_error_paths.mbx --check --verbose
+      Checking patch arch/powerpc/sysdev/mpic.c...
+      error: while searching for:
+      						 intvec_top,
+      						 &mpic_host_ops, mpic);
 
+      	/*
+      	 * FIXME: The code leaks the MPIC object and mappings here; this
+      	 * is very unlikely to fail but it ought to be fixed anyways.
+      	 */
+      	if (mpic->irqhost == NULL)
+      		goto err_of_node_put;
+
+
+      error: patch failed: arch/powerpc/sysdev/mpic.c:1488
+      error: arch/powerpc/sysdev/mpic.c: patch does not apply
+
+   Please regenerate with:
+
+     git format-patch -1
+
+   and verify with:
+
+     git apply --check <patch>
+
+   before resending.
+
+2. The mpic_setup_error_int() leak is not actually fixed.  The commit message
+   says both mpic_setup_error_int() and irq_domain_create_linear() failure paths
+   are fixed, but the former still does a bare return NULL:
+
+     if (fsl_version >= 0x401) {
+         ret = mpic_setup_error_int(mpic, intvec_top - 13);
+         if (ret)
+             return NULL;   /* <-- still leaks mpic and mpic->protected */
+     }
+
+   This needs to become:
+
+         if (ret)
+             goto err_of_node_put;
+
+Thanks,
+Amit
+
+> ---
+>  arch/powerpc/sysdev/mpic.c | 9 ++++-----
+>  1 file changed, 4 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> index 6e8fa94985f3..e777b33f170d 100644
+> --- a/arch/powerpc/sysdev/mpic.c
+> +++ b/arch/powerpc/sysdev/mpic.c
+> @@ -1221,7 +1221,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+>  				const char *name)
+>  {
+>  	int i, psize, intvec_top;
+> -	struct mpic *mpic;
+> +	struct mpic *mpic = NULL;
+>  	u32 greg_feature;
+>  	const char *vers;
+>  	const u32 *psrc;
+> @@ -1488,10 +1488,6 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+>  						 intvec_top,
+>  						 &mpic_host_ops, mpic);
+>  
+> -	/*
+> -	 * FIXME: The code leaks the MPIC object and mappings here; this
+> -	 * is very unlikely to fail but it ought to be fixed anyways.
+> -	 */
+>  	if (mpic->irqhost == NULL)
+>  		goto err_of_node_put;
+>  
+> @@ -1527,6 +1523,9 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+>  	return mpic;
+>  
+>  err_of_node_put:
+> +	if (mpic)
+> +		bitmap_free(mpic->protected);
+> +	kfree(mpic);
+>  	of_node_put(node);
+>  	return NULL;
+>  }
+> -- 
+> 2.55.0
+> 
+> 
 
