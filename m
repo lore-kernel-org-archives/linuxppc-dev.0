@@ -1,121 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-28143-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28144-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6CD63C9830E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 17:48:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0BA29C98318
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 18:00:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hrLsF6zHRz30T9;
-	Fri, 25 Sep 2026 03:48:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=85.215.255.51 arc.chain=strato.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790272081;
-	cv=pass; b=c6MkPkF/EutsjrFdCGvZNKDtp0190oPEPr+5+6JAIwApIeRPLw2Hb6mxkVppGSpq8cH4VYVCsJW6a+tyD44h82C80v1Fh6BUKh8kq5WHGfBqwzQNzXS7kXRPo3RfeQLAnItuyYX+7d+hUNg+XZe9PHKg2Gj0Ozeu+gtEF4nZQm7CYRcCZ1NXz/xjIhhJUNLv1KHQce8nXd8/nlWww+us4+OnMbec2cn9vowvQ0mPc4Lngef+WoRxhucLCYAujNdTOQ+VwHP33CssiomWMvqyKfpysZyFUEDAKiC5OkjuRixMnG5aMjLXGjtW+wufblWiKpK7KcWPChAvL0X6H37gCw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790272081; c=relaxed/relaxed;
-	bh=k09pSqkcBcXfPeKupiDHj7zwfc4tUihP1PYAmgGdSIY=;
-	h=Subject:To:Cc:References:From:Message-ID:Date:MIME-Version:
-	 In-Reply-To:Content-Type; b=LAfII/nqfXkLFgRfHq434KMtnPJQN+XOpZuppf0dqxkRli8lBDu+37haVc87M3i7BtFMSVQ+Yacm22bB22aVHsw0aIj4GTNxxObFBglilvu0nXBPi89wGS4QS5dHS6U2vKaf2TNYwKYYIxfZ9m6tZztI6cVQYbBDoDYUKebBoPk13B6rQ0wE/k66YJrGtm2j3wVLnZXJu6J+d/cxNOW+qPi9NitLGtLxcw1mfy88G+s2DT2oZw+i0m76D4pi8P+7mNRmcYvh+gVDwHMXpQlNxRw6ZH/HTe9PQCeDUjVRXda274udTton6W9r6dskHfLmaiaFE8CD91yb3nb28OBdjA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=stiLf87S; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=zdCLeaPJ; dkim-atps=neutral; spf=pass (client-ip=85.215.255.51; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p01-ob.smtp.rzone.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hrM7c0N5Jz30TL;
+	Fri, 25 Sep 2026 04:00:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::830"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790272827;
+	cv=none; b=ofJYnLwngfPtJk99y3cAP8guoolDpSjLi+vGh1HP2quRknF1y77tLpaNF3RO86EnopmOluvKG230l2ZN8N3666UkEv4e4lgqOttd4H7TZY6sHMuUSqzT7dp5APwYa9GjLlR9gKcZrFHN/rKizFpCLEo33Xb8AF4L8zlBuvrmBKheupV6kcVdZBuOWMUdKRWpUfOqsFLZ3rbJcb5pOjog3uVz52cgjxpl0X3fgSSTpgWd34yY4qDGFt/i4M93vDerskiNjARlOK4iH5DECExEzlX9yWDC8r6oZD9awYPnWWU/uZp55ecypZpzhaK0xbEgSoE+UgJq9ZrGu6JErRWbCA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1790272827; c=relaxed/relaxed;
+	bh=yIrEACM/1hk8RvSSdnwytl7iIy1+VcppA4PP9Tt2BDk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=arKJSj0sEOCJBjHHMYuPczel9yxXfWteC+oCe1e+JYJmnLP1JGMfJdT2jGLC3dZPBp4jD/YG7Hr4KdpPNlJqfuAYExcrBHD6iDfM4Mjt4+6Gnp4uAt9Ovl8NoCa34r3GqPdBr/a5SMeLqV1+VxHUoiV/6WtcFw5+2H5qI9bAu/NvqtJ6356KCDX/MFlTHaVHT0WBjp9BAUYWsZvQQMtNnNT6SE9/RDFXSs5ulen2Qk9CjTZM0MOjCvrBjUHEqFZuqACeHpnAkxa4HRRWtr07uRuTChzO9qf9CC48EX7TZ27hQXnMp80n8RiARc7QVq0t1oTSY/azo1aKmcnlHlXYlg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gourry.net; dkim=pass (2048-bit key; unprotected) header.d=gourry.net header.i=@gourry.net header.a=rsa-sha256 header.s=google header.b=MyY+foDe; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::830; helo=mail-qt1-x830.google.com; envelope-from=gourry@gourry.net; receiver=lists.ozlabs.org) smtp.mailfrom=gourry.net
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gourry.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=stiLf87S;
-	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=zdCLeaPJ;
+	dkim=pass (2048-bit key; unprotected) header.d=gourry.net header.i=@gourry.net header.a=rsa-sha256 header.s=google header.b=MyY+foDe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=85.215.255.51; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
-Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [85.215.255.51])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gourry.net (client-ip=2607:f8b0:4864:20::830; helo=mail-qt1-x830.google.com; envelope-from=gourry@gourry.net; receiver=lists.ozlabs.org)
+Received: from mail-qt1-x830.google.com (mail-qt1-x830.google.com [IPv6:2607:f8b0:4864:20::830])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrLs92qlfz2y7Y
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2026 03:47:54 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; t=1790272035; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=Yq9Edzd7sqLCyxkFx3JjGbqdRTDW5D71FIEzy/IqwGYdb2GWckguiH6p5ZdXsDpl37
-    qb/Q+3tHhaX44MmLErVrQW2CQHY4piBQ3pr9gP3MFXnMPKuKt6T89lM9/JVJXN1rCGOo
-    XIZkG5cp2AQfx1QJ47LuWjZbg69+pU6ru2ipcQvl5/nUgVqhWnM0pQ8ycwywjQO6csl7
-    MyMEDbJ3ZQvTYJgTq20rJCv0qdS8bu2kvl6sZyzZuCSh4hlXjd/w4+Z9MXZZeVp9Jrxy
-    OSx7ixWNriFpkhaHwl6XhpOJ5zUgfkH2M4RpBOYBgY/SxR9aYF5gwXhah58t79XVHEyX
-    /qvg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1790272035;
-    s=strato-dkim-0002; d=strato.com;
-    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=k09pSqkcBcXfPeKupiDHj7zwfc4tUihP1PYAmgGdSIY=;
-    b=LQEFiRnceWm6pBhsJASETKmFFSs50BRSOeSJ/xGTiSU4mCelg7Om8jN8nG7Q4NOE8I
-    yXmkejSDR0wN7+LaUUqi7pRq49jzu7x62xDUzDzzkRNvhpdAKa7ns9cSpAtbeo0dH+R9
-    RSuhJv1sTo5g4dGfTHQ37HHCEgld0oHL4t+2pACnhMb16LeK/9iZB9caZKYpDwf+s5Mv
-    enwpHM1srbEJneiyxq8Z4UWlVFrY9mHCmrBprciRcIJPHk+hytfrJsoiktxw74V192rm
-    4ACitbHMof8/7CrBsyJO12DH1RHubiew+PJjQeGfBfDeIbCjyf2XGvccWwSRrIL404Gz
-    4DlQ==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo01
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1790272035;
-    s=strato-dkim-0002; d=xenosoft.de;
-    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=k09pSqkcBcXfPeKupiDHj7zwfc4tUihP1PYAmgGdSIY=;
-    b=stiLf87SGLsTuCMN48YlyKFAhh42FxQOM7+f9UUeJXFGgTAzEOkiCtiM9jRXTZv9Po
-    6Jsi6bQzGZNY+WSm3gZNZemMnL1eiTlroA38Lb/sRsD6ORMtGWIdJ+95kRW5jMTYgqkl
-    NGR7Thy3vc6d2E9ZLentmbcckXl2sDtSBjo4SFD9lrU2K5RIGgt+Nz7k5eKTBILsTmUC
-    TOw+3rWHQLbAYPxQ6K/iEGdwEGhXz3wSg3X9r66wF4RwJKZiYGGLDI9wwJY1ms8sNwAK
-    sNNqUYnJpGF/tr3Im/D4eRov5JWD+LY1lQOeBqmSMgaAHNgv8xCaDRaGHm7LBEhM3jAh
-    eyuQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1790272035;
-    s=strato-dkim-0003; d=xenosoft.de;
-    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=k09pSqkcBcXfPeKupiDHj7zwfc4tUihP1PYAmgGdSIY=;
-    b=zdCLeaPJVWqSHt6Mv67yUOovsqxFgYVaBDFM+vPNc2gYNqyjDWLuumesDtXMfuqj/i
-    S2msW7/il4FfK8qEP8Ag==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr4thIFiqT9BURIC+m7h/g"
-Received: from void-ppc.a-eon.tld
-    by smtp.strato.de (RZmta 55.6.2 DYNA|AUTH)
-    with ESMTPSA id ee2bee28OHlDZsJ
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-	(Client did not present a certificate);
-    Thu, 24 Sep 2026 19:47:13 +0200 (CEST)
-Subject: Re: [Linux PPC] Disable PREEMPT
-To: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, harshpb@linux.ibm.com,
- Gautam Menghani <gautam@linux.ibm.com>, amachhiw@linux.ibm.com,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
- hypexed@yahoo.com.au, mad skateman <madskateman@gmail.com>,
- Christian Zigotzky <info@xenosoft.de>, Samir M <samir@linux.ibm.com>,
- Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
- Narayana Murty N <nnmlinux@linux.ibm.com>,
- Hari Bathini <hbathini@linux.ibm.com>, =?UTF-8?Q?Michal_Such=c3=a1nek?=
- <msuchanek@suse.de>
-References: <aqfTU79SlNB3ykDi@kunlun.suse.cz>
- <25cf64ab-2a32-4d4c-a0c7-2e9007c276d4@linux.ibm.com>
- <aqj1KxZttNgY5ZVR@kunlun.suse.cz>
- <ba9759d0-b1f2-4b33-aff5-769cf89bd584@linux.ibm.com>
- <9b58bd58-d0e4-463e-bff9-e33b153b2987@linux.ibm.com>
- <aqu9hA1Bq58GFrVw@kunlun.suse.cz>
- <b2a5d53f-05e8-48ae-adb7-12fc74523b4e@linux.ibm.com>
- <aqvnOg9JfkM2k0TX@kunlun.suse.cz>
- <7ad57b61-4567-42c8-a9f6-faaabe7766a7@linux.ibm.com>
- <7e06fb84-ca2e-dbb4-47bd-e95ee11113c9@xenosoft.de>
- <aqzj9xsPRsGgCI5M@kunlun.suse.cz>
- <79f9d4e3-ce55-d238-e4a9-b11e9ce27c5f@xenosoft.de>
- <33342fbf-eb7b-bde6-2c8c-254fe8bfb993@xenosoft.de>
- <b887c351-f7da-4e24-8cee-30a5a2dbfadb@linux.ibm.com>
- <7fb5baa6-9d06-2c61-2b43-6835e8fb0d1a@xenosoft.de>
- <9c1d7cf0-40f5-4a93-81ee-f5a4c5adcb9d@linux.ibm.com>
- <b8f82519-9ae5-c247-e020-e79c627e57df@xenosoft.de>
- <0fbc2522-791a-482b-a756-f3e6e61d2e29@linux.ibm.com>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Organization: A-EON Open Source
-Message-ID: <a9fd6f5f-cdfa-a010-05b9-507689026fe4@xenosoft.de>
-Date: Thu, 24 Sep 2026 19:47:12 +0200
-X-Mailer: BrassMonkey/34.3.2.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrM7Y6N5lz2y7Y
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2026 04:00:25 +1000 (AEST)
+Received: by mail-qt1-x830.google.com with SMTP id d75a77b69052e-52f9fc510e1so8275641cf.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 11:00:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gourry.net; s=google; t=1790272822; x=1790877622; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=yIrEACM/1hk8RvSSdnwytl7iIy1+VcppA4PP9Tt2BDk=;
+        b=MyY+foDekiJ6hLXWe02/4UQ9qg69oQKxy0jf2dT1n4SFuINQS5/FBDXoSgUovcI2KZ
+         T0gON0YDMHF7amudxzXumK6MEw8SmL1is67THdZZT/nikV2kHgyxdDkkW9vbFAqQ4lqV
+         lS6XhAzfbMxw2nyt1DNOdq8Xz09YxFnTGOHovNocxbi7YuS4IObe1iI38XfX9l3Mpy82
+         EKseM4y57pc2T21hOy/7L+QuA7Owdit+Mtu3LDmMxwEP9SgmY4Hn0CQRndSEQwI/5Seh
+         lcQlD6zUq0aSnv/5n3fC6DrT4JiSxm0Cwzw4JVQU5GPF59fO+zeLBas0YsrvCCHYiHt5
+         YJ4Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790272822; x=1790877622;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=yIrEACM/1hk8RvSSdnwytl7iIy1+VcppA4PP9Tt2BDk=;
+        b=L8UsMlpo6j/1CoLKhGxy4ylH8Wlsihx3mSdQcquvPzTvnYBnIZPzh4hJfvdO+ou+LC
+         9gH32duW2qBewVNuwhPDJOg3vM8IHxwfrUddTAikXbNb3KfI167YutI3wnBtNRMQ2H9y
+         gStkan+zcCIl9KwBvvrsr8XeVH6/4cVHSbhgMMOQSPAUgUPn+pjoKDHfbwoG0g45p0kG
+         4eCfaTCUk1tOUyzYVoyRJhk25TEsUwCnBfgjobFaHBP/z6ImEsFYD2jqxxArlkslhrLl
+         Mx9kk1VfdEMUjs31oPwskxUMf+LnQ9G4CjiqqEuqHM8CQ6b79/f+5y2GJMBUGqQYvvtH
+         BX1g==
+X-Forwarded-Encrypted: i=1; AKwUvBwxaHVvWXa/WO9blbYbjorqFxgo7LdncLhUARFwirhpoJUV/SlIa9eJdmJEoLKGhO10RUS0+HtySSvMyao=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++mnzAR4WwkBLvgMa2T0hXeblqrA+3X/pG8DNj6YfLk1uEoJOGR4
+	dVykfBH/fGW0sqgm3jwAZrT2CSeKusBnB9cg+VPbxxToqotWuGfIPyapb8xCY8cgLmU=
+X-Gm-Gg: AYBFou0wJ6N9TX5ePuLPUFaOlxMdu/HHhwvK9mPaiWNjQ1CBoFhNLscYsNtJZ0n1XAg
+	x5wPuSyorc/Bitu05jkBd4GKz0jR3vOI2rvLRhfaVqC36lJ50JPqokGBTqhAf8ozuEPvXtBaVwJ
+	dW8Tifc0q/4YVlf3VeXnVGYsO8KUbZf7P2jfsl0Ckif/PB08LTvbjjwAO2gnW+9cMjIv3LMMJG1
+	42mDoCEoKUon/dzSOWTItqWT33LhIaoqbEZErmUQ+FCJN8vWR3Ur3X7UUR6iPUGHcG5TJ6XXP8R
+	pnSyWycNP3ezViIcOZ15899jCPPbKyqUf8c9hs0U9Fknfu7DW3Ce1FRiT0EQ6RMK34gvHEj7EDM
+	P95gTTPzwyN+9TUiLMriQMnz6ikAzEgVxaTEVbhm2izwH1GVNB4pMc626WBKX8z2jwbfv6z080+
+	gkYtx9XJBKGHrjeWMv6rdq5XEHYjKQooLac9W0Ne+hahie+tg6ZQeFA4J8r/vaukY5O6/LMuR6i
+	BNmfgrAheH/3ILmVezSHUR1TybKUjKm124RCO0B4N9bgSsQMrueGzE=
+X-Received: by 2002:ac8:5a46:0:b0:530:e682:87c with SMTP id d75a77b69052e-5330b6df434mr78501cf.33.1790272821894;
+        Thu, 24 Sep 2026 11:00:21 -0700 (PDT)
+Received: from gourry-fedora-PF4VCD3F (pool-173-79-60-52.washdc.fios.verizon.net. [173.79.60.52])
+        by smtp.gmail.com with ESMTPSA id d75a77b69052e-532eb38d347sm47450101cf.25.2026.09.24.11.00.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 24 Sep 2026 11:00:21 -0700 (PDT)
+Date: Thu, 24 Sep 2026 14:00:18 -0400
+From: Gregory Price <gourry@gourry.net>
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, 
+	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, 
+	linux-rdma@vger.kernel.org, selinux@vger.kernel.org, linux-sound@vger.kernel.org, 
+	bpf@vger.kernel.org, linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, 
+	linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
+	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
+	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev
+Subject: Re: [PATCH v3 05/40] mm/vma: ensure mmap_prepare doesn't set actions
+ on a mergeable vma
+Message-ID: <arVkwC_wNoTLjRYf@gourry-fedora-PF4VCD3F>
+References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
+ <20260917-b4-mmap-prepare-vma-flag-sanify-v3-5-4583d8a23bca@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -129,155 +103,63 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-In-Reply-To: <0fbc2522-791a-482b-a756-f3e6e61d2e29@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-5-4583d8a23bca@kernel.org>
 
-On 09/23/2026 08:42 PM, Shrikanth Hegde wrote:
-> Hi
->
-> On 9/23/26 9:31 PM, Christian Zigotzky wrote:
->> On 23/09/26 07:13, Shrikanth Hegde wrote:
->>>
->>>
->>> On 9/23/26 10:39 AM, Christian Zigotzky wrote:
->>>> On 21/09/26 07:12, Shrikanth Hegde wrote:
->>>>> Hi Christian.
->>>>>
->>>>> I see it is mostly busy with printing
->>>>> WARNING: at .enable_kernel_fp+0x30/0x78, CPU#3: qemu-system-ppc/4884
->>>>>
->>>>> The path seems to be same also.
->>>>>
->>>>> [c000000085ca7700] [c00000000005de84] .kvmppc_load_guest_fp+0x30/0x80
->>>>> [c000000085ca7780] [c00000000005f2a0] .kvmppc_handle_exit+0x5bc/0x5cc
->>>>> [c000000085ca7830] [c00000000006204c] .kvmppc_resume_host+0xb8/0x10c
->>>>>
->>>>>
->>>>> Does below help to boot or make it stable?
->>>>> ---
->>>>>  arch/powerpc/kvm/booke.c | 9 ++++++++-
->>>>>  1 file changed, 8 insertions(+), 1 deletion(-)
->>>>>
->>>>> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
->>>>> index 13ad4cf5fa71..d4be7a306bfc 100644
->>>>> --- a/arch/powerpc/kvm/booke.c
->>>>> +++ b/arch/powerpc/kvm/booke.c
->>>>> @@ -1404,10 +1404,17 @@ int kvmppc_handle_exit(struct kvm_vcpu 
->>>>> *vcpu, unsigned int exit_nr)
->>>>>          if (s <= 0)
->>>>>              r = (s << 2) | RESUME_HOST | (r & RESUME_FLAG_NV);
->>>>>          else {
->>>>> -            /* interrupts now hard-disabled */
->>>>> +            /*
->>>>> +             * interrupts now hard-disabled. i.e EE=0
->>>>> +             * But irqs_disabled relies on PACA entries
->>>>> +             * and fixup below enables it.
->>>>> +             * So irqs_disabled == false
->>>>> +             */
->>>>>              kvmppc_fix_ee_before_entry();
->>>>> +            preempt_disable();
->>>>>              kvmppc_load_guest_fp(vcpu);
->>>>>              kvmppc_load_guest_altivec(vcpu);
->>>>> +            preempt_enable_no_resched();
->>>>>          }
->>>>>      }
->>>>>
->>>>>
->>>> Hi,
->>>>
->>>> Thanks a lot for your patch!
->>>>
->>>> I patched the 7.3-rc4 kernel sources with your new patch and 
->>>> compiled the kernel again yesterday. [1]
->>>>
->>>
->>> Thanks for trying.
->>>
->>>> Unfortunately, the issue still exists.
->>>>
->>>
->>> Can you share the console log of the kernel with the patch applied?
->>> We need to see where it is stuck now. Has it made forward progress?
->>>
->>>> I tested it with a guest kernel with and without preempt support.
->>>>
->>>> Cheers,
->>>> Christian
->>>>
->>>> [1] 
->>>> https://github.com/chzigotzky/kernels/releases/tag/v7.3.0-rc4-2-preempt 
->>>>
->>>>
->>>
->> Here is a new serial log from the patched kernel: 
->> https://github.com/user-attachments/files/32570808/e5500_preempt_pcie_ports_compat_patched_putty.log
->>
->
-> That paca mismatch is independent of preemption modes.
->
-> It shows a few warnings and even after that a console message has come 
-> through.
-> Do warning continue forever?
->
-> To fix those warnings, can you try this diff on the top of the earlier 
-> ones?
-> (Igonore whitespace mangling if any, Also patch is UNTESTED. It is 
-> more of my
-> speculation.).
->
-> Sorry, I don't have any way to test it out locally.
->
+On Thu, Sep 17, 2026 at 05:22:14PM +0100, Lorenzo Stoakes (ARM) wrote:
+> When a user requests an mmap_action be performed in mmap_prepare, this
+> involves populating the VMA range with data.
+> 
+> However, if the VMA is mergeable, it might then mistakenly be merged with
+> another VMA without having populated the range.
+> 
+> Every mmap action currently available sets VMA flags such that the VMA
+> cannot be merged.
+> 
+> However, to ensure that no future mmap action falls foul of this, assert
+> that this is the case upon mmap_prepare validation.
+> 
+> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 > ---
->
-> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> index 9194cf492d1c..0a014fa45b20 100644
-> --- a/arch/powerpc/kvm/powerpc.c
-> +++ b/arch/powerpc/kvm/powerpc.c
-> @@ -147,6 +147,19 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
->                         continue;
->                 }
->
-> +#ifdef CONFIG_PPC64
-> +               if (unlikely(local_paca->irq_happened != 
-> PACA_IRQ_HARD_DIS)) {
-> +               /*
-> +                * An interrupt arrived between the soft and hard
-> +                * disable. Replay it and retry guest entry.
-> +                */
-> +                       local_irq_enable();
-> +                       local_irq_disable();
-> +                       hard_irq_disable();
-> +                       continue;
-> +               }
-> +#endif
+>  mm/vma.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
+> 
+> diff --git a/mm/vma.c b/mm/vma.c
+> index d6ed10cefc8f..62f2ce1ad5a1 100644
+> --- a/mm/vma.c
+> +++ b/mm/vma.c
+> @@ -2809,6 +2809,15 @@ static int mmap_validate(unsigned long prev_start, unsigned long prev_end,
+>  int mmap_prepare_validate(const struct vm_area_desc *prev_desc,
+>  			  const struct vm_area_desc *desc)
+>  {
+> +	/*
+> +	 * It is not valid to execute mmap actions for VMAs which can be merged,
+> +	 * as any such merge would leave portions of the mapping incorrectly
+> +	 * unmapped.
+> +	 */
+> +	if (vma_flags_can_merge(&desc->vma_flags) &&
+> +	    WARN_ON_ONCE(desc->action.type != MMAP_NOTHING))
+> +		return -EINVAL;
 > +
->                 guest_enter_irqoff();
->                 return 1;
->         }
->
 
-Hi,
+If you wanted to make this unit-testable, you could pull it out into a
+separate function:
 
-I patched the RC4 of kernel 7.3 with the two patches and compiled it 
-again today.
+static bool mmap_action_is_valid(const struct vm_area_desc *desc)
+{
+	return desc->action.type == MMAP_NOTHING ||
+		!vma_flags_can_merge(&desc->vma_flags);
+}
 
-I'm happy to report that the patched PREEMPT kernel with KVM HV works on 
-the X5000/40. (e5500)
+then write:
 
-Serial log: 
-https://github.com/user-attachments/files/32619259/e5500_preempt_pcie_ports_compat_patched-2_putty.log
+if (WARN_ON_ONCE(!mmap_action_is_valid(desc)))
+	return -EINVAL;
 
-I also successfully tested it with KVM PR on the X1000 today. (PA6T)
+And you can write a unit test directly against mmap_action_is_valid
 
-Further information: 
-https://github.com/chzigotzky/kernels/issues/19#issuecomment-5818925408
+otherwise
 
-Many thanks for your help,
-
-Christian
-
--- 
-Sent with BrassMonkey 34.3.2.1 (https://github.com/chzigotzky/Web-Browsers-and-Suites-for-Linux-PPC/releases/tag/BrassMonkey_34.3.2.1)
-
+Reviewed-by: Gregory Price (Meta) <gourry@gourry.net>
 
