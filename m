@@ -1,101 +1,157 @@
-Return-Path: <linuxppc-dev+bounces-28121-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28122-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68ED4C98321
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 15:14:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0ADC2C9830E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 15:51:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hrHS25WzNz2yD3;
-	Fri, 25 Sep 2026 01:14:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790262866;
-	cv=none; b=g2yYgGZp2bmkrakya1dmroTbE+a0oTJbT/fyKz3vOqbBhDdACNonYTf0TXMBqacQJUim3q6P+iyYUw/lMj07Wq6+Apthhg2FIjv+b42QLAPNzLdh+DataNxjg98UaDWkSDqBGGYVi8hwEZQ6ckp4DKK83r+2oRYWkS/NvJrzBUiPLLvwNYxO3Laqoi8mmLtpAMnaAmu4/pAi769XcsrA6SrG5usg5hxlivMAPp+mWShcGEHMgkWMrE9uBsYxAOjx+Bd95uauS6D3tuLQ0x3Omc2Fk/okuWr1e+eoFZ3XZdOflhziqRtFmA4qdALSACM4Whh4YsTcGi5D9JzDa9SzeA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790262866; c=relaxed/relaxed;
-	bh=P+WVwqguNxyl2SKeCdntkuzuS0lMDGXmeyD47aHlfJ0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=VAM8e/FG5uyIqvia6iG0Y4N6iAEyEyQsLhH38nEI73HXZnY6IWzBbHV2wm259rX2IKGHzoiYifBxPHMBST/gD0Q9wA08KlzWGBfpPukjPRyMvOBbeSHTAO677B35c9an8lfcPyeVsXm9UsNUiRN7c1OF5wyLB8H9LbMJO5k5N0TQnRP5US4P2DYD4yeeCu2bIW/Qg5PD8b4fdV0GZclORQlujq7wwAePLYaH/oBZfvrmZdrNr7ANV1Af7dacZPg9QKnGgwbI/hRPx8/F8rEkwtFyGCbwSTi3D4OCusSvjmyIo0dEnX8xqEEYsHSpkbSgNJ7s90Z1cbEOnT3G6DE23Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FOBsQHFm; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hca@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hrJGL5scBz2yD3;
+	Fri, 25 Sep 2026 01:51:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c110::3" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790265066;
+	cv=pass; b=JI5mNyndU73o95WLP0yQGnNB1BN28WPjP2dPF8GoBHLX9jdLmMWK3VpeO1PBt3FmlKJaauuBt7TmOegxhmlO6/hiy46JUYfo9UxM3LqjgvjwArxD3POKaD+0bHsHmCFmdltgIaMmZ12jfo3InNlQ1vdp8tvCNWliC1R4pnEvoD/ldP7WPDmBIEHLyvzBVeh9cPGzzXKB7WB1ZTVN9sjliRaFBfQFm3/6zXLBEyoO2YlcHmAUW4Ulzm5B2+YmWITEBXNkS2/Jk7jXXFRHn2H4V4URTMDyWeEjNPFkkA6EtGQc3NrhRK1wd/cYrR500RVQcylABTqsf2PqXKHwqDWpcQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1790265066; c=relaxed/relaxed;
+	bh=xiYwQEGkKM+tsHhc5VwTwt7K0S2UtKAK9YfSG0KXgVg=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=eir+e6weM7VgaEkUhwPTxCWp2p6fg8Oxa57NTg9/qY9UidExKrE61umwVglGz0ozrJhEngWpphTFFi4246D627sKzOKDlTCVU36svvqjtyk2ytlf2kLL9mU82t3ToqpTw/B+MCgsOIzFFI6/m8BG3RwNJJrb+Y2FnkCoXRWb1yFSULoZyn+mjZQRn0XxHajH+ymGzUKbJI7iiXwOgmSSSmzZ1xa1yoHHnQS3EW9YqMRjeJ4dzJHa4dPwjm2Z+isLFtG/4FUPa8rKy5q4FWCXphv99PebcFoTimqXdCwiuPqpfECpABMSX8huUQ+lV6EVnaZgn+2MuuiGde5bur5QKg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=IF6Z6NTA; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c110::3; helo=bn8pr05cu002.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FOBsQHFm;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=IF6Z6NTA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hca@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c110::3; helo=bn8pr05cu002.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org)
+Received: from BN8PR05CU002.outbound.protection.outlook.com (mail-eastus2azlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c110::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrHS10SJBz2y24
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2026 01:14:23 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68OC68BD2221127;
-	Thu, 24 Sep 2026 15:13:44 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=P+WVwqguNxyl2SKeCdntkuzuS0lMDG
-	XmeyD47aHlfJ0=; b=FOBsQHFmSKCEhKWRCk7KdKSv4aK0bSQSFx4PNGcAekB5Fk
-	JGp1OUdiVsm2kwx7pLN7bPFcusZHU7ufjljrHKJTOTxtzQpA4miRFacY4KMLVNUO
-	Hka1wVfcIh1IYBobpeNzxdwKaXAs/+wkLTfnsMZU/AoBI6+KXn/OAkgyo+JK5zE0
-	9WZ5LZ9dplfAgTYr2+VPDArbpiDk1vpznGYNlq40s+Ofe47qYuzsUTktz0oIIpeq
-	rWr55Os9nkjgJwqmZAXMNL9t7VNlzUTTibxjL1b+54Zd8GHZ3gbYlKrDXSfOg6aS
-	m26ITitkdoVPRTzoOBBthMjwLnokH2OxNCEvnO5Q==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gskdvh5q1-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 24 Sep 2026 15:13:43 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68OEOtEU2194626;
-	Thu, 24 Sep 2026 15:13:42 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gvbt2x9qv-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 24 Sep 2026 15:13:42 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68OFDcBG47776180
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 24 Sep 2026 15:13:38 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 65B7A20040;
-	Thu, 24 Sep 2026 15:13:38 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A43D820043;
-	Thu, 24 Sep 2026 15:13:36 +0000 (GMT)
-Received: from osiris (unknown [9.111.55.6])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Thu, 24 Sep 2026 15:13:36 +0000 (GMT)
-Date: Thu, 24 Sep 2026 17:13:35 +0200
-From: Heiko Carstens <hca@linux.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>, catalin.marinas@arm.com,
-        will@kernel.org, mark.rutland@arm.com, maddy@linux.ibm.com,
-        mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
-        ritesh.list@gmail.com, sshegde@linux.ibm.com, pjw@kernel.org,
-        palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr,
-        gor@linux.ibm.com, agordeev@linux.ibm.com, borntraeger@linux.ibm.com,
-        svens@linux.ibm.com, tglx@kernel.org, mingo@redhat.com, bp@alien8.de,
-        dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com,
-        ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net,
-        bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org,
-        aliceryhl@google.com, tmgross@umich.edu, dakr@kernel.org,
-        daniel.almeida@collabora.com, tamird@kernel.org, acourbot@nvidia.com,
-        work@onurozkan.dev, nathan@kernel.org, ndesaulniers@google.com,
-        morbo@google.com, justinstitt@google.com, jszhang@kernel.org,
-        japo@linux.ibm.com, jpoimboe@kernel.org, seanjc@google.com,
-        pmladek@suse.com, thuth@redhat.com, ynorov@nvidia.com,
-        joelagnelf@nvidia.com, david@davidgow.net, fujita.tomonori@gmail.com,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
-        linux-s390@vger.kernel.org, rust-for-linux@vger.kernel.org,
-        llvm@lists.linux.dev
-Subject: Re: [RFC] rust: kernel: Add KUnit tests for ARCH_WARN_ASM bug table
- emission
-Message-ID: <20260924151335.18402A8b-hca@linux.ibm.com>
-References: <20260922054959.955093-2-mkchauras@gmail.com>
- <20260922064735.GS4121339@noisy.programming.kicks-ass.net>
- <arNxAn7I7NCVWmD1@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
- <20260924111557.GP1837346@noisy.programming.kicks-ass.net>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrJGG52Zjz2y7Y
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2026 01:51:01 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=V0m6eg89kopQFl3u4IGUBlxCnRazbDM7W04AjUEYr82pv8x3G4EpPCeTJFTnq9Z3QRmF5PXWl55elFHrnYrWUn4x5FE12iIiO6F9A11TvvNhobLjyHxWiEU8biVfMLJHjaUZfYMiPQG9Tjbu3uZGBc/a1ulAl7XApQL/xa77nCyvqRRPPrCSxI27K8aewe8Q06odz3SUDH4abSX3Uv9yIJ2GcjQiQvjWGNT9gOuoa9rYWRzqHKthceT7n+BjEvtY0s+MlDIQulvEGA4DWoKN6n2l2paRfjj9tf1Hams1uPpHxnc1a4GsvHQNkMF3OK6h58qYgat5rnU5xII5t6dUYw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=xiYwQEGkKM+tsHhc5VwTwt7K0S2UtKAK9YfSG0KXgVg=;
+ b=Gf3FvOtghUQBfr7F4QG4XyIMI6foJRQhNGdy256hkHEMKvApKl/Of58X25Zuuuzy3BEVB2afSZGGqyJqyr1C/R2ODJioj14x1TKCZ5Qb6o0sD40/IppygmWTsZt89iHlxYLmMoFxiZz66TNpkEJPZara/pzNkKCbXhofbpNOxybxN7+EHTKRSupSl9SE5TsvNrVMH4CdZ2H+NEor58jKQo+fTWTMQfUnb0ZZxMqRAgRmAVcn5GNG8yOpEQHS9DA0gordDSezG/XdQTJB2OxIdp/FAvbD3YwsetFAhId3D11+o+2yVzckZMpgi0gI0ZckCxVxultg+HkeNXlzgeCRow==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=xiYwQEGkKM+tsHhc5VwTwt7K0S2UtKAK9YfSG0KXgVg=;
+ b=IF6Z6NTAI6zMdc80b8hHyu7XZ5ItC6YPpawMOAVwcEXXe/HtfKdW/gsVcwLD+HrX36GiVCpcWjLZi/UStlcuKnjO0ZGkxW9pqUjtKCYYykoW0RRZg8+DnC9YkFnYrMSy5sCZiq7DBPrQPnl8EofbQbCdDniNBexe5pkQUwe6nsLpvFCPRHs+u4GHzd36hLuuGS2IGhtOi5ilhY4PerGPsLd8mMnp/gdjmjKCO/IE+eMh5dQbSfJypmCakvvDzVi4IO6nerwHidZSF1SABPm0pOtAApXStVwUTsOSzqdGm5SvNctqL0x556wcEN/PDxWUMOjN/iwxYkT8tZxciJlx0Q==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from IA0PR12MB8374.namprd12.prod.outlook.com (2603:10b6:208:40e::7)
+ by MW6PR12MB8916.namprd12.prod.outlook.com (2603:10b6:303:24b::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.18; Thu, 24 Sep
+ 2026 15:50:20 +0000
+Received: from IA0PR12MB8374.namprd12.prod.outlook.com
+ ([fe80::d85f:4c87:ae84:3f16]) by IA0PR12MB8374.namprd12.prod.outlook.com
+ ([fe80::d85f:4c87:ae84:3f16%6]) with mapi id 15.21.0451.014; Thu, 24 Sep 2026
+ 15:50:20 +0000
+From: Zi Yan <ziy@nvidia.com>
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>,
+ Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>,
+ David Hildenbrand <david@kernel.org>, Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+ Jonathan Corbet <corbet@lwn.net>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>,
+ Paul Moore <paul@paul-moore.com>,
+ Stephen Smalley <stephen.smalley.work@gmail.com>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>,
+ Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>,
+ Kumar Kartikeya Dwivedi <memxor@gmail.com>,
+ Baolin Wang <baolin.wang@linux.alibaba.com>,
+ Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>,
+ Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>,
+ Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>,
+ Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ "Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>,
+ Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>,
+ Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>,
+ Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>,
+ Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+ x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>,
+ Juri Lelli <juri.lelli@redhat.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
+ Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
+ Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>,
+ "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>,
+ Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>,
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ Albert Ou <aou@eecs.berkeley.edu>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Janosch Frank <frankja@linux.ibm.com>,
+ Claudio Imbrenda <imbrenda@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Andreas Larsson <andreas@gaisler.com>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Christian Brauner <brauner@kernel.org>,
+ Matthew Brost <matthew.brost@intel.com>,
+ Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>,
+ Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>,
+ Ying Huang <ying.huang@linux.alibaba.com>,
+ Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>,
+ Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>,
+ Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>,
+ Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>,
+ Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>,
+ Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>,
+ Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>,
+ Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
+ Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-rdma@vger.kernel.org, selinux@vger.kernel.org,
+ linux-sound@vger.kernel.org, bpf@vger.kernel.org, linux-scsi@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
+ linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+ fuse-devel@lists.linux.dev
+Subject: Re: [PATCH v3 24/40] mm/mlock: eliminate weird VMA_IO_BIT abuse and
+ simplify
+Date: Thu, 24 Sep 2026 11:50:14 -0400
+X-Mailer: MailMate (3.0r7032)
+Message-ID: <CBD619D6-8717-4C81-B5EA-D1D0771BDA3A@nvidia.com>
+In-Reply-To: <arT3K71l86fUVldk@gremlin>
+References:
+ <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
+ <20260917-b4-mmap-prepare-vma-flag-sanify-v3-24-4583d8a23bca@kernel.org>
+ <93672B94-BB0C-4713-8F8A-3619D81DB7BB@nvidia.com> <arT3K71l86fUVldk@gremlin>
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+X-MS-Reactions: disallow
+X-ClientProxiedBy: BN9PR03CA0293.namprd03.prod.outlook.com
+ (2603:10b6:408:f5::28) To IA0PR12MB8374.namprd12.prod.outlook.com
+ (2603:10b6:208:40e::7)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -109,72 +165,234 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260924111557.GP1837346@noisy.programming.kicks-ass.net>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: AAkhnY0CHKXR5mUM658Up_ucxYfN9Yfy
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI0MDA2MiBTYWx0ZWRfX9JoxBpeNt8bn
- qVK0WkoAiRGO1SWWPxY3fQHtwY5RpPzkJK9UnGFrZ5YXlxk8TTgZRHgsjOwdWzcrohSy56+Cu6Y
- No0RDM8UgCwZJ/ckFoZliTl2HgNZgXo=
-X-Authority-Analysis: v=2.4 cv=FLiOVOos c=1 sm=1 tr=0 ts=6ab53e28 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=kj9zAlcOel0A:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=p4h_SoxtTXpsry2m2-cA:9
- a=CjuIK1q_8ugA:10
-X-Proofpoint-GUID: gBUee2v9XE6ZUqdqRkJ7ALC9Gi6OUhGK
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI0MDA2MiBTYWx0ZWRfXy9jUDeCxsOh0
- Z5+1EiBTRH8DJh5vDCZ91uSrkJRy2u78zry9/MuhFURKvpWRuSfs4/dAnaBZjB5/0qn6A2vpnnE
- Hszov1Ze/lid5v9YfE1Mb61kTthY015SmgGc1o2UXpecDRg+97UWiVCGEfd8ntYqwLkefK7DwRe
- LZltlDuk24nz/YIWfnr9ricCrnss4YFxlE8iTCHU2dAuK9PXG+Ms2Lp0xU/1BtfX5l5MhxlTLq0
- SJL5ESoGzMWuPX5iR2gz8K1je+3v1vpEErHJO3oc8h7QgNlChgRJhA639iY1TllY8mqtpuDoDz5
- FhmuGZRv04+aOVbDOdzd3d7sqUFeCZPK0du4U+c5veOFCcteBY79zyRJfQUIpGqp7LsT5M5B04F
- djPNlo+TyjuwGhL5JtpnJZOzTE2fSmdFZPk8oMGLdX1YO1sEU/Yt3TyEkMQjCJlQvwVUWHk3rCs
- b3g6s+FYFJtc3aRDRpA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-24_03,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 impostorscore=0 phishscore=0 spamscore=0 clxscore=1011
- suspectscore=0 bulkscore=0 lowpriorityscore=0 priorityscore=1501
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
- definitions=main-2609240062
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: IA0PR12MB8374:EE_|MW6PR12MB8916:EE_
+X-MS-Office365-Filtering-Correlation-Id: 3951ee8a-f586-4cea-8c7e-08df1a538978
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|7416014|376014|23010399003|366016|1800799024|4143699003|11063799006|56012099006|10067099003|18002099003|22082099003|3023799007;
+X-Microsoft-Antispam-Message-Info:
+	/DYJt0aMJ6rftIKDZrc71LKGQ4W8+lcZLcsIYkbZGdwY2zccTnAXJPeDfYA+Nziv5GZkLnvQvTmx1APX7yJ3Z0fM+V/7rX4pRa1ELWppgvJS/vG9tUooAjm7RWGR7HIdd0fcLYEG+/l3W162rN6m82GQSKUzJJe0duMhzZpruk33ZhmtId0c59DpSkdTmwVwC7/EWHgvCrExEXpc1Wp0I9Yn/uWNm7PUK+B2F7BKf6VjN1ye91ceps1/+oKvvFFzACjuuiRwo/gatru1OqVKDO3Kw8dQlO/I5gV1eOxQRErokp0seL+Cr2Xu/yNCTbSDW3xrNqUzxXfA9QtQheVpGMMcdElcfVoYBNVYyWrdLEPIq2FySzJ8Lt98mN4Zl7/CuafIDohKB+7KDJuqFf4h2bI/92aGToe+hrIIbvaXOtTcqWziVak3sSDBxhLv+eTzciaUZCg0Fdqs5PCgy+8107nhabOQpkmMYDtABZhWaTFtsTvILoUSJfnOL0Pgol1NQrb3cSe5L3Nokxc7mf6OhuEi8lLzCUzOF2g6a6iWcbNIfeAtS42t/GmePumu8JZUjyDTvdhBrF8zUIrYov9hPRmGQnPFRWxf2BIHY48qxD0KAo0giYL6nCSgM5SUFXYSb8SQqPqIwTUM9jAX+BuUHU/esSPwNYZhC91uhPadmSI=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:IA0PR12MB8374.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(23010399003)(366016)(1800799024)(4143699003)(11063799006)(56012099006)(10067099003)(18002099003)(22082099003)(3023799007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?JeJopQ5lfzE2bWSt/Rmd4DJiBX+xQ19R2cjS+3FNRB+VOfKsUyKVeiFNfFto?=
+ =?us-ascii?Q?T1itSYQafYF82gHn8U/jUnW67ukMkUbFi8Vu9CYzq1vn+3bWo4drKKtbALjw?=
+ =?us-ascii?Q?KhfgmQ6QO49d4xP6qbULxYFHNd3rJfmlsPDTynTfcj3eYuHBpbNZ/FHpvuuW?=
+ =?us-ascii?Q?jx8R/J8gwSksEqNxwNHHWqCRJaSqzpQUvQD1uYeRxCuMVwhnaGTmmmhXaJ8B?=
+ =?us-ascii?Q?GpnPmHPbShhZt0cD5onLQVoSD2RQxTcZ1wtiUfDNMoZkjWs9HeIHSCdM8LnT?=
+ =?us-ascii?Q?bWk9ZSa8RsOPzvBbh6t++9lCMFGWE+lxd7KOgmnhH+Z/e2pyIGslV/2XCH3p?=
+ =?us-ascii?Q?10qTuQyYf46q1PWd+O+DpXx/OiPIRgz8QgCI3xAU2KoZuG7E4sFdIdAuU/YK?=
+ =?us-ascii?Q?of8TmfHniOwk4udbD+3+WEpEZ1jAgLASY3Mn2rq+ax5W2mti4qKiv76ax1Bi?=
+ =?us-ascii?Q?9xh15nVXYneJTZbzYrXbmQyLdMe11FsPqUrdO/WrifsHtJjJzU1wKLK6Qu+Q?=
+ =?us-ascii?Q?mCbA9fO5wRlkM0KBUwsrjpfAQOy3JmuuXU+wlQ+YGtVN7DzGQHfEohi19cpz?=
+ =?us-ascii?Q?zwCeZvmO3V2UlMi5Jz0Kou33OUISZfBL5F7BWfZnl0b0K4/9KKFF2TQOiXv9?=
+ =?us-ascii?Q?+QnbqDy+2Tr2KB8Ecsi5gbY3Kf8g2fyyN7Q7w99XI8HcacYOsvIwckOjl/IJ?=
+ =?us-ascii?Q?os5jKc40ERkR5sbb3+ESbwM0hYcqv5xoqEZfQrGWfsW3ohtHKPgjXK7KIR/Y?=
+ =?us-ascii?Q?RZL1hmRqnyloks/PznSICTu+x1FzulX1U/OrjHJyVHTUVRzb+dmI8vhrZq+/?=
+ =?us-ascii?Q?iRX9w0H6ioRV//gYIFyrlLEu8TnyFPGUJzFyq7dU72ahIq9qwYCOyfbbXXH4?=
+ =?us-ascii?Q?WnzHlO2Yut+2wTg1HvNOFxR56rQzcUVaMUov+qmIs8g5RD6E4JduQR2l/MHP?=
+ =?us-ascii?Q?rtQCOcvitugM8YnO2pvWw+csx8n6oAWxf9rShnPLlbtiy6nzSeKh1JJnUVEX?=
+ =?us-ascii?Q?BKu/1bACk6Pv2yK1ULFYmtgqUn4blD14c6U/LyvB90zdqt+2OO4K0xUO7plR?=
+ =?us-ascii?Q?Y+AANLdWHtQcQWlsnzy8uZP3hAfZAbukv/aeu8Vd9pjWHQp4Q4/uGoL1MO3B?=
+ =?us-ascii?Q?J3AvVrB0dcjCT1Oq/Y7YjXUFsfneZZLLzzjqZCXFv1GlspsxXGS9JT8PfVam?=
+ =?us-ascii?Q?X50c5hH2anHbHVX65jlJqPa4y8jQbciLyrW5LjjfTVo8jTBUXqd0B4nRNySH?=
+ =?us-ascii?Q?H5W37HtIv9R9zRrkAy3Y2WlUgHG/Ar0b76YR/gKmiPEBSoTYakyg8J8W1IyU?=
+ =?us-ascii?Q?lDrhzr0q5X4PqS6vEhYdqHU85i+knwTMxAko+Py+Yvjt+ZBmipxC3Tytglqa?=
+ =?us-ascii?Q?RcdCNcGHT55EDiB6IUqUL5/j/Xt80zy+FaNXnuuojKXc6xQjwhynj9qHW68z?=
+ =?us-ascii?Q?+wQ2KlVlj8zp+J7MEpam2sp4fniY1miJYDZnd80O5AJO0Zo1a4P+YCCZg9uq?=
+ =?us-ascii?Q?iNW5w23JZ7nokJfdxTTPHyo1W6+E2TYT3XtDWlY0JD0IUxmjduxz3jS9y4oX?=
+ =?us-ascii?Q?blHc8YtDIVKjGyNgi7wOCpytbjdw2TN3Du5S93jmTOTFHq8xmrbOPTcnrcOc?=
+ =?us-ascii?Q?aKBYmVL0VeNadD7HwwdJJMzUEHIrCihidb0S2x3tUv/NsceCCg5RfuIeFfd0?=
+ =?us-ascii?Q?7Vy3JTwd09vU9/v86yNsbGr1jdC72MzbQfSI1ldMp2FAgNAFWSfgJddGaviK?=
+ =?us-ascii?Q?PZRpuHwfVA=3D=3D?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 3951ee8a-f586-4cea-8c7e-08df1a538978
+X-MS-Exchange-CrossTenant-AuthSource: IA0PR12MB8374.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Sep 2026 15:50:20.2851
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: zN/2ejWQwO24ocq4CdeF4UkGV6z628t5mCXiPUme/B7EMRlZTdImbbwwAf3STLlS
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW6PR12MB8916
 
-On Thu, Sep 24, 2026 at 01:15:57PM +0200, Peter Zijlstra wrote:
-> Untested thingies for arm64 and s390x.
-...
-> diff --git a/arch/s390/kernel/traps.c b/arch/s390/kernel/traps.c
-> index b6ba4465f59d..8bbb082fd5e3 100644
-> --- a/arch/s390/kernel/traps.c
-> +++ b/arch/s390/kernel/traps.c
-> @@ -26,6 +26,7 @@
->  #include <linux/entry-common.h>
->  #include <linux/kmsan.h>
->  #include <linux/bug.h>
-> +#include <linux/uaccess.h>
->  #include <asm/entry-percpu.h>
->  #include <asm/asm-extable.h>
->  #include <asm/irqflags.h>
-> @@ -55,7 +56,12 @@ static inline void __user *get_trap_ip(struct pt_regs *regs)
->  #ifdef CONFIG_GENERIC_BUG
->  int is_valid_bugaddr(unsigned long addr)
->  {
-> -	return 1;
-> +	u16 insn;
-> +
-> +	if (get_kernel_nofault(insn, (u16 *)addr))
-> +		return 0;
-> +
-> +	return insn == 0x0001 || insn == 0x000e;
+On 24 Sep 2026, at 6:21, Lorenzo Stoakes (ARM) wrote:
 
-I have no idea why anybody wants to do this, but it looks like I'm not
-alone :) In any case: the check is wrong.
-s390 uses only the monitor call instruction and this should be
+> On Wed, Sep 23, 2026 at 04:06:14PM -0400, Zi Yan wrote:
+>> On 17 Sep 2026, at 12:22, Lorenzo Stoakes (ARM) wrote:
+>>
+>>> When performing mlock() or munlock() otherwise normal VMAs have VMA_I=
+O_BIT
+>>> solely to fix a race with migration which might otherwise double-coun=
+t
+>>> mlock VMAs.
+>>>
+>>> This is unnecessary - at the point of applying folio mlock state, whe=
+ther
+>>> setting or clearing PG_mlocked, we know whether or not we are locking=
+=2E
+>>>
+>>> Solve this in two ways - thread a boolean through the page table walk=
 
-	return insn == 0xaf00;
+>>> indicating whether a lock or unlock is being performed, and run a loc=
+king
+>>> walk with VMA_LOCKONFAULT_BIT set and VMA_LOCKED_BIT cleared.
+>>>
+>>> This state never occurs otherwise, as VMA_LOCKONFAULT_BIT always impl=
+ies
+>>> VMA_LOCKED_BIT. These are also always cleared together.
+>>>
+>>> Then, update folio_add_lru_vma() and mlock_folio() to check only for
+>>> VMA_LOCKED_BIT, and update try_to_unmap_one() to check for VMA_LOCKED=
+_MASK
+>>> instead.
+>>>
+>>> Also remove the useless invocation of allow_mlock_munlock() which sim=
+ply
+>>> returns true if unlocking and instead rename it to allow_mlock() and =
+only
+>>> call it when locking.
+>>>
+>>> Finally, with the other mlock abuse of VMA_IO_BIT addressed, update
+>>> mlock_vma_folio() and folio_add_lru_vma() to simply test for
+>>> VMA_LOCKED_BIT. munlock_vma_folio() tests VMA_LOCKED_MASK instead, as=
+ an
+>>> unmap racing with the locking walk must still munlock folios the walk=
+ has
+>>> already counted.
+>>>
+>>> While here, also replace some deprecated VMA flag predicates.
+>>>
+>>> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+>>> ---
+>>>  mm/folio.c    |  2 +-
+>>>  mm/internal.h | 10 +++++++---
+>>>  mm/mlock.c    | 51 +++++++++++++++++++------------------------------=
+--
+>>>  mm/rmap.c     |  4 +++-
+>>>  4 files changed, 30 insertions(+), 37 deletions(-)
+>>>
+>>> diff --git a/mm/folio.c b/mm/folio.c
+>>> index 47a437e0f7fd..35e242b48870 100644
+>>> --- a/mm/folio.c
+>>> +++ b/mm/folio.c
+>>> @@ -505,7 +505,7 @@ void folio_add_lru_vma(struct folio *folio, struc=
+t vm_area_struct *vma)
+>>>  {
+>>>  	VM_BUG_ON_FOLIO(folio_test_lru(folio), folio);
+>>>
+>>> -	if (unlikely((vma->vm_flags & (VM_LOCKED | VM_SPECIAL)) =3D=3D VM_L=
+OCKED))
+>>> +	if (vma_test(vma, VMA_LOCKED_BIT))
+>>
+>> I think it is worth documenting VMA_LOCKONFAULT_BIT alone means mlock =
+in
+>> progress, like you did in munlock_vma_folio(). Just to keep the protoc=
+ol
+>> explicit for all the readers.
+>
+> Well I'm not sure it's necessary here honestly, because this never chec=
+ked
+> VMA_LOCKED_MASK anyway, and VMA_LOCKONFAULT_BIT never made a difference=
+=2E
+>
+> So the meaning of VMA_LOCKED_BIT here is strictly 'is it locked' and it=
+'s
+> correctly handled.
+>
+> And I fear that it becomes whack-a-mole - the neat thing about this cha=
+nge is
+> that you no longer have to special case the stupid VM_SPECIAL thing, an=
+d can in
+> fact do the 'normal' thing of _just checking_ VMA_LOCKED_BIT :)
+>
+> So I think it's better not to.
 
-At least it is not possible to set a kprobe on bug instructions, which
-would make this "interesting".
+Your reasoning makes sense to me.
+
+>
+>>
+>>>  		mlock_new_folio(folio);
+>>>  	else
+>>>  		folio_add_lru(folio);
+>>> diff --git a/mm/internal.h b/mm/internal.h
+>>> index b2c6c9435021..84aa3e6c8bac 100644
+>>> --- a/mm/internal.h
+>>> +++ b/mm/internal.h
+>>> @@ -971,8 +971,7 @@ void mlock_folio(struct folio *folio);
+>>>  static inline void mlock_vma_folio(struct folio *folio,
+>>>  				struct vm_area_struct *vma)
+>>>  {
+>>> -	/* The VM_IO check prevents migration from double-counting during m=
+lock. */
+>>> -	if (unlikely((vma->vm_flags & (VM_LOCKED|VM_SPECIAL)) =3D=3D VM_LOC=
+KED))
+>>> +	if (vma_test(vma, VMA_LOCKED_BIT))
+>>
+>> Ditto.
+>
+> Similar reasoning to above.
+>
+>>
+>>>  		mlock_folio(folio);
+>>>  }
+>>>
+>>> @@ -989,7 +988,12 @@ static inline void munlock_vma_folio(struct foli=
+o *folio,
+>>>  	 * always munlock the folio and page reclaim will correct it
+>>>  	 * if it's wrong.
+>>>  	 */
+>>> -	if (unlikely(vma->vm_flags & VM_LOCKED))
+>>> +	/*
+>>> +	 * VMA_LOCKONFAULT_BIT alone marks an mlock walk in progress, see
+>>> +	 * mlock_vma_pages_range(). An unmap racing with the walk must stil=
+l
+>>> +	 * munlock folios the walk has already counted.
+>>> +	 */
+>
+> Here it's worth mentioning, as it's specifically relying on the new
+> behaviour. Although it's neatly using the VMA_LOCKED_MASK to handle bot=
+h the
+> locked case and the 'being locked' case :)
+>
+>>> +	if (unlikely(vma_test_any_mask(vma, VMA_LOCKED_MASK)))
+>>>  		munlock_folio(folio);
+>>>  }
+>>>
+>>
+>> Why I am commenting in the middle of the series? Because I am taking
+>> a quiz given by LLM based on this series to get myself enough backgrou=
+nd
+>> knowledge to review this series. This mlock part came up at part E
+>> and I only have part F left before I can do the full review. :)
+>
+> Thanks! :) I really appreciate you taking the time to look at this! Sor=
+ry it's
+> so large.
+
+Sure. It is great learning material for me. Thank you for the patches.
+
+>
+> I held this series back from last cycle to help with review load, then =
+spent
+> some time fixing various AI-discovered things, and all the patches are =
+necessary
+> (well for the most part) to get where the series needs to go.
+>
+> I think the change is worth it though!
+
+Of course, great to see hacky code being removed by this series.
+
+For this patch, feel free to add
+
+Reviewed-by: Zi Yan <ziy@nvidia.com>
+
+
+
+Best Regards,
+Yan, Zi
 
