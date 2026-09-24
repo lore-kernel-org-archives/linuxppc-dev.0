@@ -1,73 +1,110 @@
-Return-Path: <linuxppc-dev+bounces-28082-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28083-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D9C7C982FD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 04:36:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2944AC98312
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 06:08:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hr1Hk5jkSz30RN;
-	Thu, 24 Sep 2026 14:36:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790224578;
-	cv=none; b=fbVuPJNBi2RydLowH/K+HKnoK5MGEcM9sUa0VlecH6gPXAlgzznf41slxg1LbVYzNONcUHRct8tgpZD3HxCqKLS7QboSJu0H1ipvGN5DjXjuVCCFghVoqbXcj5v+EVY8cxgMbkrR1R8f6mGNbxZ7kV9b7m4kqykHZxH9Kd3lnTIIOyfwa7zObIi4m3qH8h3UTVPgv8GydIDkAuakQh6WPPCMaSaTUf0J3wAnU5NhuYYHY8fRAhdv04zdX5+lVHoCocaP3Ij9t+t38ELaoVqOi/8FcOR/wiuci3zNa6VY0u33w4tYAdlINnAZUBufZpKvdNh1tW+03kBJcTEaLcB8Ng==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hr3Ky2nw3z30RN;
+	Thu, 24 Sep 2026 16:08:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790230102;
+	cv=none; b=HRF9b9evxufNt4hvLYPYzXoXVRrS06TQ2/QZBd2krvaUjMpUh37hQsBeA+gqTeaEoR8nPzWd6qe7iMZ6H9rqFyDB40aBEEcYJcMfvFOVYwD5l7oSzNPmNoo535kusx+XXO172vQV853ZN0PxZujeeYDxJZUjHy/LPxBY5aDeX82FGnpOHdftdol1gIhhOuhhLDDD1ldtNqpxt8jB9d9PyAceY1WmUvtDsVlHRlvIUXM0DEFC/ymZ817Krgv4cfdstpoHLazHCHdMxHk77BJVKX11ewKx/0nzwnZebsw5oWeachIrJbWxGuGEgpVyYhnYR764+dJFNZ0Lp7FhdTRhjg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790224578; c=relaxed/relaxed;
-	bh=Wkx09ArgQbBrGDdby2EpT8h4/sVyyelgvk2OmocbWU0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=kh3UGdee3eBLJWfu3wxJ81qCJoV8wzZjtBxLz6EK2uyWBsMZYgEg2Oq5WXLzG0nY7GqTna6dEOMWi67hOzaijqMfDz1VnzPqNABMJLbyA8t+yCndy1lyoMpejaOiL1mAjf1/L+LfXANIFBeHehGlDVVHKKwuxUQmH/W2haKuvnRdNt7rjzUqxBnqw2eKSQlXuc3Mo2CfqtaJXr/DT96R0LMFvYMub1xMwMgd94+3KwffWHxm2trUqBWEJgdtyaLDBEbfdDCJ9nRg1EzlySFVWXqOe/h6wyv9TeB6K2IOS/j2ePAHipiKHxMX9TsDFnfMmp6hpQjDmmw/NZsR1HcEHg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AyFjk+fo; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1790230102; c=relaxed/relaxed;
+	bh=A+b0QfMrBYdMcYFCICVqdR0OXDOa6w9OD48EIiSzDyI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=bQrjuPP6fx87T5WpDWxg9BB4xpcEUAazKfz5pn+R2lG7OvO5m6BIghZOHrmI45DyiauqQkXfXaPic3wyFHBnahjd1vvTTXY1EfAqO/BjX5auUeTwvRAcwaABKyMuJs4nvj6PrOm8MkFIU5XNbk3EfRlw+YTQgMj3izMBTls44047OiY+EEsJVAP/niD6R62vkzxioY0M3LmwyciHAtGfquplyqloGM8EXSq9cSx3SdwnV1C6wBT0bJnAC8j/fS/emdjI868KFqIOeWlsDUMLmI1V5xYKw5OVNd4RDcm7jg0r2y5QzqUlwR/SZ84wK1huy0FANCmQpkhMg1bzfvBpow==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dCLAyysY; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AyFjk+fo;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dCLAyysY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hr1Hj4MLPz2y1W
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 14:36:16 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68O2Zs023958520;
-	Thu, 24 Sep 2026 04:35:57 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=Wkx09A
-	rgQbBrGDdby2EpT8h4/sVyyelgvk2OmocbWU0=; b=AyFjk+fo9kGjCabQqtg+mq
-	ZNEuB0W++JmMEyXsORIyA2FWma61DOwr759b0Xnx3sca8Ihy/+4/RPQ59nlWF+hu
-	GLxTjdpZC2Y9GUjod6G4Xunc6qeNtgYOqMn4Xp8kew4BE2LDJqpDejLRbtoaTm+m
-	nGRWX6kTDDSVZcAvyG6o+XyVkO4y+tBV0I2ll+0ef8njhEYxoRRPJB+2RDQ1g74I
-	IgY7h0W9zGgJzCktzH8z+JMRrUVUn19whcuUaLdbX3spQNsOzYkmKfhx9SnAjLgE
-	CUs0uXR/Kye8Gr9V6BDpO8IDh5pHdVFVHTYgNBRzdp/S3JgyMB3btoBQknqHJShg
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gskgqpagh-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 24 Sep 2026 04:35:56 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68O2ItGL1279566;
-	Thu, 24 Sep 2026 04:35:56 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gvbt2v01n-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 24 Sep 2026 04:35:56 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68O4ZqhF29557120
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 24 Sep 2026 04:35:52 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 596372004B;
-	Thu, 24 Sep 2026 04:35:52 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4601D20043;
-	Thu, 24 Sep 2026 04:35:49 +0000 (GMT)
-Received: from [9.43.57.223] (unknown [9.43.57.223])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 24 Sep 2026 04:35:49 +0000 (GMT)
-Message-ID: <280fcec1-4d39-4389-9094-74ca9e89a113@linux.ibm.com>
-Date: Thu, 24 Sep 2026 10:05:48 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hr3Kx3f1yz30Pn
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 16:08:21 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 5F42240DCB;
+	Thu, 24 Sep 2026 06:08:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id ABCE41F000FF;
+	Thu, 24 Sep 2026 06:08:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790230098;
+	bh=A+b0QfMrBYdMcYFCICVqdR0OXDOa6w9OD48EIiSzDyI=;
+	h=From:To:Cc:Subject:Date;
+	b=dCLAyysYJq3tw3Zd89/8HfyIdVUUN6YTWImQbQtYWgNgSoX+q7H8933X4zO5vsix/
+	 cWAmzjdMnk+PSNjJeT226kssBmm8ufXA7enM27yO7uWkccRxhHNQnYvO++Zr45t6eP
+	 OeALh5UHn/vSCK0Rh4RSy3KJUeVFnG5TsvTPhd9ST8OCQK505QKdc6V0IFjBVNhBMy
+	 xNiX0aNyHwI9CKrv7R9GSYhWwqqiaaErgu4K++3z+05rY+zy3QOaz8I96TAPuEeUjI
+	 0Th7aF8pwVdxGD0s8uvsSbzv4vyoM16Mk5PfUSMlOWPka5qZHjNKC5wurOCZj94FfQ
+	 SY60QB0CQgMvw==
+From: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
+To: iommu@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
+	Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	Randy Dunlap <rdunlap@infradead.org>,
+	Will Deacon <will@kernel.org>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Stefano Stabellini <sstabellini@kernel.org>,
+	Russell King <linux@armlinux.org.uk>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	WANG Xuerui <kernel@xen0n.name>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Jiaxun Yang <jiaxun.yang@flygoat.com>,
+	Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Alexandre Ghiti <alex@ghiti.fr>,
+	Andy Lutomirski <luto@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	linux-arm-kernel@lists.infradead.org,
+	loongarch@lists.linux.dev,
+	linux-mips@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org,
+	x86@kernel.org
+Subject: [PATCH v6 0/8] dma: swiotlb: Centralize default pool policy and sizing
+Date: Thu, 24 Sep 2026 11:37:48 +0530
+Message-ID: <20260924060756.1325156-1-aneesh.kumar@kernel.org>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,126 +118,156 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 5/5] powerpc/powernv/eeh: Map VFIO EEH error injection
- to OPAL
-To: Narayana Murty N <nnmlinux@linux.ibm.com>, mahesh@linux.ibm.com,
-        maddy@linux.ibm.com, mpe@ellerman.id.au, christophe.leroy@csgroup.eu,
-        oohall@gmail.com, npiggin@gmail.com, tpearson@raptorengineering.com,
-        alex@shazbot.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        sbhat@linux.ibm.com, harshpb@linux.ibm.com
-References: <20260831065441.48654-1-nnmlinux@linux.ibm.com>
- <20260831065441.48654-6-nnmlinux@linux.ibm.com>
-Content-Language: en-US
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <20260831065441.48654-6-nnmlinux@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=G+OJgNk5 c=1 sm=1 tr=0 ts=6ab4a8ad cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
- a=_oOO3TeDWnI9k3ZhZWQA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI0MDAyMCBTYWx0ZWRfX1lgRZ7GW4nML
- qXRKO6AAdPoJW7HPDMAYCUKgDii4lVzpKltVejRYXr9lki/Kr5kg7h2pYnYkwUaMTuYH6mcrTgq
- GdI63G5EMoMGRwLDd+eObdKcNwE+JJ+hYZKfRL2YbkQelViZMklhZaf7XM0XhN0V6rvrQQrGNJa
- qJ70vzBOrZXNxlb+q9xjG1ncwdkq1JUsfozQOuInfocVKaxsGJ1cDUv9m4RY//CR9kjGBHzI62I
- p0S4LT/3ogg9+h5AV6bcShaYZWOMR4+UY+S0iY7+3ruceHFQlbOhV4BX49hjXFLAXF3+vAYustk
- vHwPFKwueS+Ab8jneyu2XvrZKRNSfU6A2Jjmok92YgztQ0m//QUhch1HJYxCSpPsxklvqNp3U6H
- KiDwtK/5QGlUA8NHaOGmLxPbvyGZVHmAF/3v5soFFnMmt7HIyWDJCJdZHCNhSVRkSlAH2on4Q1M
- 6m487XItAxBA9FAhpbg==
-X-Proofpoint-ORIG-GUID: KKSKXQlrZ9hLoEj-CW11UcPgpE8ceegS
-X-Proofpoint-GUID: 6FQ-V5M2yOxCwgvFYQHBbImce_ba7ami
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI0MDAyMCBTYWx0ZWRfX/YiIlPNZS+Tu
- bslAgvkpBEX2LPS01akRgXSmmUy884LcW4PU27tEjAEP6fskOoQ3mBKV4MajXrL3bA+ecnMlj1h
- Op5L0rJLojs7BWor54K0RpWqXOok7aw=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-24_01,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 adultscore=0 phishscore=0 lowpriorityscore=0 impostorscore=0
- bulkscore=0 priorityscore=1501 clxscore=1015 spamscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609240020
+Content-Transfer-Encoding: 8bit
 
-Can you update the commit message to explain why and how this
-change is needed?
+Hi,
+
+This series centralizes swiotlb default-pool selection and sizing, and
+simplifies the initialization flags used to describe pool placement.
+
+The first patch replaces the addressing-limit argument with initialization
+flags and introduces explicit policies for the different reasons a default
+pool may be needed. Architectures now report DMA addressing constraints with
+SWIOTLB_INIT_ADDRESSING_LIMIT, while the core selects the corresponding pool
+policy.
+
+The second patch moves the reduced sizing used when the pool is needed only
+for unaligned kmalloc bouncing from arm64 and RISC-V into the swiotlb core.
+
+The third patch centralizes swiotlb sizing for memory-encrypted systems. It
+moves the existing x86 guest-sizing policy into the core. Host memory
+encryption retains the normal pool size, and a shared default pool is not
+selected solely for guest memory encryption when a restricted DMA pool is
+present.
+
+The fourth patch removes SWIOTLB_ANY. Pool placement is derived directly from
+SWIOTLB_INIT_ADDRESSING_LIMIT: pools required for limited DMA addressing are
+allocated below the architecture's low address limit, while other pools may
+be allocated anywhere in directly mapped memory. Xen continues to request a
+pool explicitly with SWIOTLB_INIT_REMAP without imposing a low-address
+constraint.
+
+Changes from v5:
+https://lore.kernel.org/all/20260921063628.362078-1-aneesh.kumar@kernel.org
+* Collect Reviewed-by tags.
+* Drop the x86 crash changes
+* Add two new patches:
+  "dma: swiotlb: Consolidate slab rounding"
+  "dma: swiotlb: Rename swiotlb_size_or_default()"
+* Drop the swiotlb_default_size_changed() helper.
+* Simplify swiotlb_adjust_pool_size().
+
+Changes from v4:
+https://lore.kernel.org/all/20260914070135.313337-1-aneesh.kumar@kernel.org
+* Collect Reviewed-by tags.
+* Add a new patch, "dma: swiotlb: Track whether the pool size was explicitly set".
+* Retain SWIOTLB_ANY usage for RISC-V until patch 6.
+* Rename SWIOTLB_INIT_FORCE_DISABLE to SWIOTLB_INIT_DEFAULT_OFF.
+
+Changes from v3:
+https://lore.kernel.org/all/20260904101810.1193505-1-aneesh.kumar@kernel.org
+* Add a new patch, "dma: swiotlb: Add an overridable architecture pool opt-out".
+* Clarify the change in default behavior with the removal of SWIOTLB_ANY.
+
+Changes from v2:
+https://lore.kernel.org/all/20260813102521.1367737-1-aneesh.kumar@kernel.org
+* Rebase to latest tree.
+* Drop SWIOTLB_ANY and derive that based on SWIOTLB_INIT_ADDRESSING_LIMIT
+* Add SWIOTLB_INIT_REMAP.
+
+v1:
+https://lore.kernel.org/all/20260811134056.756015-1-aneesh.kumar@kernel.org
+
+Cc: Robin Murphy <robin.murphy@arm.com>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Shuah Khan <skhan@linuxfoundation.org>
+Cc: Randy Dunlap <rdunlap@infradead.org>
+Cc: Will Deacon <will@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Marc Zyngier <maz@kernel.org>
+Cc: Steven Price <steven.price@arm.com>
+Cc: Suzuki K Poulose <Suzuki.Poulose@arm.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Jiri Pirko <jiri@resnulli.us>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: Mostafa Saleh <smostafa@google.com>
+Cc: Petr Tesarik <ptesarik@suse.com>
+Cc: Alexey Kardashevskiy <aik@amd.com>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Xu Yilun <yilun.xu@linux.intel.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Cc: Shrikanth Hegde <sshegde@linux.ibm.com>
+Cc: Alexander Gordeev <agordeev@linux.ibm.com>
+Cc: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
+Cc: Heiko Carstens <hca@linux.ibm.com>
+Cc: Vasily Gorbik <gor@linux.ibm.com>
+Cc: Christian Borntraeger <borntraeger@linux.ibm.com>
+Cc: Sven Schnelle <svens@linux.ibm.com>
+Cc: Stefano Stabellini <sstabellini@kernel.org>
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: Huacai Chen <chenhuacai@kernel.org>
+Cc: WANG Xuerui <kernel@xen0n.name>
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: Jiaxun Yang <jiaxun.yang@flygoat.com>
+Cc: Paul Walmsley <pjw@kernel.org>
+Cc: Palmer Dabbelt <palmer@dabbelt.com>
+Cc: Albert Ou <aou@eecs.berkeley.edu>
+Cc: Alexandre Ghiti <alex@ghiti.fr>
+Cc: Andy Lutomirski <luto@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Thomas Gleixner <tglx@kernel.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: loongarch@lists.linux.dev
+Cc: linux-mips@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-riscv@lists.infradead.org
+Cc: linux-s390@vger.kernel.org
+Cc: x86@kernel.org
+
+Aneesh Kumar K.V (Arm) (8):
+  dma: swiotlb: Rename swiotlb_size_or_default()
+  dma: swiotlb: Consolidate slab rounding
+  dma: swiotlb: Track whether the pool size was explicitly set
+  dma: swiotlb: Centralize default pool policy selection
+  dma: swiotlb: Centralize minimal pool sizing
+  dma: swiotlb: Centralize memory-encryption pool sizing
+  dma: swiotlb: Add an overridable architecture pool opt-out
+  dma: swiotlb: Remove SWIOTLB_ANY
+
+ Documentation/core-api/swiotlb.rst   |   8 +-
+ arch/arm/mm/init.c                   |   6 +-
+ arch/arm/xen/mm.c                    |   2 +-
+ arch/arm64/mm/init.c                 |  14 +-
+ arch/loongarch/kernel/setup.c        |   2 +-
+ arch/mips/cavium-octeon/dma-octeon.c |   2 +-
+ arch/mips/loongson64/dma.c           |   2 +-
+ arch/mips/sibyte/common/dma.c        |   2 +-
+ arch/powerpc/kernel/dma-swiotlb.c    |   4 +-
+ arch/powerpc/mm/mem.c                |  17 ++-
+ arch/powerpc/platforms/pseries/svm.c |  10 --
+ arch/powerpc/sysdev/fsl_pci.c        |   1 +
+ arch/riscv/mm/init.c                 |  24 +---
+ arch/s390/mm/init.c                  |   2 +-
+ arch/x86/include/asm/crash_reserve.h |   4 +-
+ arch/x86/kernel/pci-dma.c            |  23 +++-
+ arch/x86/mm/mem_encrypt.c            |  24 ----
+ include/linux/swiotlb.h              |  17 ++-
+ kernel/dma/swiotlb.c                 | 193 +++++++++++++++++++--------
+ 19 files changed, 210 insertions(+), 147 deletions(-)
 
 
-On 31/08/26 12:24, Narayana Murty N wrote:
-> VFIO EEH error injection exposes a generic userspace ABI.  pSeries maps
-> the generic EEH error types to RTAS ibm,errinjct encodings, while
-> PowerNV maps the same generic ABI values to OPAL-specific encodings.
->
-> Keep EEH_ERR_TYPE_32 and EEH_ERR_TYPE_64 unchanged.  The mapping is
-> internal to the platform backend.
->
-> Add a switch in pnv_eeh_err_inject() that translates:
->    EEH_ERR_TYPE_32 -> OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR
->    EEH_ERR_TYPE_64 -> OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64
->
-> Return -EINVAL for unsupported error types rather than comparing
-> directly against OPAL constants.  This decouples the VFIO/EEH
-> interface from OPAL implementation details, paralleling the approach
-> used on the pSeries RTAS path.
->
-> Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
-> ---
->   arch/powerpc/platforms/powernv/eeh-powernv.c | 27 +++++++++++++++-----
->   1 file changed, 21 insertions(+), 6 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> index db3370d1673c..53c4c05aaef2 100644
-> --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-> +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> @@ -1167,13 +1167,28 @@ static int pnv_eeh_err_inject(struct eeh_pe *pe, int type, int func,
->   {
->   	struct pci_controller *hose = pe->phb;
->   	struct pnv_phb *phb = hose->private_data;
-> +	int opal_type;
-
-opal_type is confusing... How about opal_err_type or just err_type?
-
->   	s64 rc;
->   
-> -	if (type != OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR &&
-> -	    type != OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64) {
-> -		pr_warn("%s: Invalid error type %d\n",
-> -			__func__, type);
-> -		return -ERANGE;
-> +	/*
-> +	 * VFIO EEH error injection exposes a generic userspace ABI.
-> +	 * pSeries maps the generic EEH error types to RTAS ibm,errinjct
-> +	 * encodings, while PowerNV maps the same generic ABI values to
-> +	 * OPAL-specific encodings.
-> +	 *
-> +	 * Keep EEH_ERR_TYPE_32 and EEH_ERR_TYPE_64 unchanged.  The
-> +	 * mapping is internal to the platform backend.
-> +	 */
-> +	switch (type) {
-> +	case EEH_ERR_TYPE_32:
-> +		opal_type = OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR;
-> +		break;
-> +	case EEH_ERR_TYPE_64:
-> +		opal_type = OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64;
-> +		break;
-> +	default:
-> +		pr_warn("%s: Invalid error type %d\n", __func__, type);
-> +		return -EINVAL;
->   	}
->   
->   	if (func < OPAL_ERR_INJECT_FUNC_IOA_LD_MEM_ADDR ||
-> @@ -1192,7 +1207,7 @@ static int pnv_eeh_err_inject(struct eeh_pe *pe, int type, int func,
->   
->   	/* Do error injection */
->   	rc = opal_pci_err_inject(phb->opal_id, pe->addr,
-> -				 type, func, addr, mask);
-> +				 opal_type, func, addr, mask);
->   	if (rc != OPAL_SUCCESS) {
->   		pr_warn("%s: Failure %lld injecting error "
->   			"%d-%d to PHB#%x-PE#%x\n",
+base-commit: 704340f1cd0dcef829eb62f5b48ae95a2ce17bdf
+-- 
+2.43.0
 
 
