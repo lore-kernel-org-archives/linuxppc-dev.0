@@ -1,113 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-28091-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28092-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 731E9C98310
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 06:10:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7EC99C98310
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 06:31:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hr3Nc00LZz30V4;
-	Thu, 24 Sep 2026 16:10:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790230239;
-	cv=none; b=ioOIVmNx/K6gmeDr8ol1Is49/hVko+ZFPsf/vg2uoPA88sAE/Btxraf0FWlmCOjSmnAryTgY4wcK2282ZiSL2uYHaZTID8zhI5qMH/QjJJeGmLUhv21z8mu7FGYdjlaN5tRcwN5r7oM+zYMdxKGfMDrz+6Q1d8N7PZju0T0sFxtJMHU4DL9Ao5LsQmkgoCguo17g8qdXlKLx9lGeWSry58zFcVAyJ73pJfeFQF1uSrdNJ4TLVly+cZjyzVfIEpJZn511e7pP/VYfIFthcFZh77zyDT/vgJsWCST1XIawyckr4oGUjP9IIatP/8zpYJrA07Vzk6L8WvutVw1mVHHfsg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hr3r80Rdxz30RN;
+	Thu, 24 Sep 2026 16:31:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790231463;
+	cv=none; b=PthtS3xlqxGTmzABvGjdJ7v5MbTQYQ+FF4LjTzrl9fPLbAiIcgmD6uQedlEI/4SGHev7rseKdTrQlPMQOTOAonwWeq93An+cjhSVE7Nef86/rh1epESSDcmVo+lZDRyJykrDdXpFtzCYjG0gXbe8Hp2C97U/P2pGMF+wQLfQah1xfGuaQBJMcAEEBlo9xKWe5ODuh432fYOfR3rNhMf2LdTwjTaqRHOFpD/OD+uKaMZvJd5vnRdE7Yi63Sk4X6cce6DT6pkI6YhQWqMNpBsvRUDaJdToCc29xpEtWeHzmUDE3Fk1zmhrbUAfaToK2V5h4FwKvu3zxfvPhNFm5xaMbw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790230239; c=relaxed/relaxed;
-	bh=jX6aIZrBXbttG8mDoIDDZezQu+BWHDQT5zvSSYON3kI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=BYpM18/c0vXTrTv2Y18s7II2JOH+zccWEFFK+WOeULn5bp0nOYSLx2mYnMO7YI9dz6GaXzSNtHWPGmJuHdtWOGvendsLvtUqjMpyLSwJkgBokgrrt+VSGMEYwy3yKJxouB4dzliwujT6NfxHwarfhwGxqFl9dq9crzzbAP+1FPzHNmNiu4yuDRx48joNbFOEiOoO7ru02Ge4b/8UuPkqipQ/n6De05pZBJaPrAKl99h1PaiqG43GPGI+bF4aNv8ADImIWDS6piu9IrNmQKaU4k56gtDTLmSQwa/w4m8gJbDfhBfdxjirCEmsnDlQBGs9HxStGZjE6vyMH4qLjMaKUg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mv7QZcUK; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1790231463; c=relaxed/relaxed;
+	bh=NmsiSWkwnbaD+OPz+kMmMspiHeTRhDK1KZ52ww62gIs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NmaioLq60SJZVg6A4DiMf2jeReHTJmZg9MO8jz7MirTHCS1JEbH2ByIcxp3GKFeU7De3JQd51KPmN0MqFZjoWCcZi44nZZ/tur9i2DPWe04V+qLDRCZsoW3ZpKJ1FtvSawiGPuisUq9zYUt+HZBTG8qVTBAbKOo0FK2qLjtrTyxax4aLBJYYf4hEM9B9a2rFCkXbfRNTWBe1m5Ln8BuuhQK0ROdn0mwpLWYfElA5dqSkG3HuhxhkAUShrX31BZn3F5XYPcD1av2HyleAr4GjYsu5qvsKVev9QVXm0kD1IFXPc5DaKCFO4cYou2OMI0muYnAv7ZIMQI8DCOrMsFtynQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dq1gAjKg; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=jyoti@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mv7QZcUK;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dq1gAjKg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=jyoti@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hr3NZ1vBnz30TL
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 16:10:38 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 30EFE40211;
-	Thu, 24 Sep 2026 06:10:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 857421F00899;
-	Thu, 24 Sep 2026 06:10:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790230236;
-	bh=jX6aIZrBXbttG8mDoIDDZezQu+BWHDQT5zvSSYON3kI=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=mv7QZcUKekVi8xEIBYldkeMJ63fZXB3dnKscuE25jnwxzYrV7YpOlQV/JJ7nfqg3x
-	 SfDLbl+mDW1GI/N7TXv5KGeZNR8MKIL21WpefTE9MXcFmkl7CaqykwTkTliHDnqqvk
-	 4Ym75PMMk7c3iX1NgY2p6jy3VU+TVpCMyMg1HNZpwafhoMM5GRvepJ1E6t1Wn57j6r
-	 mMLod8Y2tm4uoakNX4QCVAPga4nscd5K68nbDB46LddC7N68bEyQWZtWIn7HmZ8RE9
-	 Iw+XQ3et9bhPrJLeaeGRWXA0GWgj6znxqt3YA7o5wCWlj+y1mYkFRwWC7aLuqtrqtN
-	 cXVDy/0hxqblA==
-From: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
-To: iommu@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
-	Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	Will Deacon <will@kernel.org>,
-	Mark Rutland <mark.rutland@arm.com>,
-	Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>,
-	Jason Gunthorpe <jgg@ziepe.ca>,
-	Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Stefano Stabellini <sstabellini@kernel.org>,
-	Russell King <linux@armlinux.org.uk>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Jiaxun Yang <jiaxun.yang@flygoat.com>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Andy Lutomirski <luto@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	linux-arm-kernel@lists.infradead.org,
-	loongarch@lists.linux.dev,
-	linux-mips@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org,
-	linux-s390@vger.kernel.org,
-	x86@kernel.org
-Subject: [PATCH v6 8/8] dma: swiotlb: Remove SWIOTLB_ANY
-Date: Thu, 24 Sep 2026 11:37:56 +0530
-Message-ID: <20260924060756.1325156-9-aneesh.kumar@kernel.org>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260924060756.1325156-1-aneesh.kumar@kernel.org>
-References: <20260924060756.1325156-1-aneesh.kumar@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hr3r65vqTz30Pn
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 16:31:02 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68O5bRU73657693;
+	Thu, 24 Sep 2026 06:30:53 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=NmsiSWkwnbaD+OPz+kMmMspiHeTRhDK1KZ52ww62g
+	Is=; b=dq1gAjKgA+mwOKPdtlYWhYktUQONVvlWAYGUsv8VcCJtH9is3SG7//P3J
+	V4OyqFT1uPqoOmX6lHmE78NcKJwHXSEWzrvCyP1PF/Wnk80svlBzBEmIaOAdJ4pq
+	3F4nZMGBMrgvJJAcugyHOaXPT9UWOnYZoI7Qzxz3n3HS2KNzRmp044anqE6zc0EN
+	hhTt0gPD1/+LIw3a9hnx3TXRTTppefVAWMGYpoR0DvxJeGJZDgqx55HK2k7Td3Xi
+	h23oDDKPt/8u10xkCoNqdZoLiN9RwB2IP1Tt9ROJo6n7iwI6VEAdqDRHTILGmK6G
+	4cUDxe2g7kZD2lGiyjez2dfrGxtyA==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gske1ydba-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Thu, 24 Sep 2026 06:30:52 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68O5lVXu212315;
+	Thu, 24 Sep 2026 06:30:51 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gvu7e8n4g-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 24 Sep 2026 06:30:51 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68O6Um1M36045240
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 24 Sep 2026 06:30:48 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 11B9D20043;
+	Thu, 24 Sep 2026 06:30:48 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C689920040;
+	Thu, 24 Sep 2026 06:30:45 +0000 (GMT)
+Received: from li-4c4c4544-0042-3610-8056-b8c04f473234.bl1-in.ibm.com (unknown [9.123.3.44])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 24 Sep 2026 06:30:45 +0000 (GMT)
+From: Jyoti Gupta <jyoti@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com,
+        sourabhjain@linux.ibm.com
+Subject: [PATCH] powerpc/mpic: Fix memory leak of mpic on error paths
+Date: Thu, 24 Sep 2026 12:00:10 +0530
+Message-ID: <20260924063010.188642-1-jyoti@linux.ibm.com>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -122,216 +87,82 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: keLXHVt--QJVkXwIml3a8EQjLHY1n-hp
+X-Authority-Analysis: v=2.4 cv=EOCTQFZC c=1 sm=1 tr=0 ts=6ab4c39d cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8 a=VyWIBLCL5DJSJingBiIA:9
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI0MDAyNiBTYWx0ZWRfX0wzMJmfz0UBj
+ VisDwuxb1QfMVC2J/V8z6Sv7vFxguecgvppdL0nLfgtNnzzVfFlBqEPaAlZA9FN6kQ2bQvgUGaa
+ iH8MvYYQO/EfiHaHD3903bYlouAtt0c=
+X-Proofpoint-GUID: fS8pDrQD__2__750kqTv2N_rTjs3xP8w
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI0MDAyNiBTYWx0ZWRfX0Ue0kXWmYmaR
+ v1juuvjVY5a/Ef6joIulsI6VuwX1+KYZv/jnJeNhKoJdz8Xw5kx6z15r4Y5lzwR1uEzl63TKEn/
+ aOp2McIooSsHN9uXgkjTL8eyY8zDsCqOas9EURHyt822NIyJ9o0dBGOxwTyCNZ0LzvLOzqflEDa
+ zhg2lMVHZ3UFKXQQKDtm9Qv2wqXp7q1CdgAPdGA1KT6XICnx3KX5UOn7SlmSRX0LJ8fRZfUHv/Y
+ Q/bDSAwt16+hVk3VWoMapaIH93Ibyu4OvtnsZ0Uf9UY1YR1oDa09Agv6QwU5NSEfJbNM7t/mRTG
+ alxqJOZo+wcvhRpXyuHaZibCdnNJb2KPBbIll8FM1sFwcsJyx5QhW5juriL+Ll2jVYPYflGrkQp
+ VN5P2dXiFGpnYJsnv4Kv9sj9ORfuqQJtFxzGcp3nkBNHR1XJlxoumz1Nowm+Oa7QtItTYCdlpiP
+ mgbD4morcJW3+CLIxEA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-24_02,2026-09-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 phishscore=0 priorityscore=1501 clxscore=1015 spamscore=0
+ adultscore=0 impostorscore=0 lowpriorityscore=0 suspectscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609240026
 
-swiotlb pools are currently allocated below the architecture's low
-address limit by default. SWIOTLB_ANY overrides this and permits
-allocation anywhere in directly mapped memory.
+mpic_alloc() allocates struct mpic (and optionally the protected
+sources bitmap) but does not free them when mpic_setup_error_int() or
+irq_domain_create_linear() fails, leaking the memory.
 
-SWIOTLB_INIT_ADDRESSING_LIMIT now explicitly identifies callers which
-need a pool that is reachable by devices with limited DMA addressing.
-Use it as the placement constraint and remove SWIOTLB_ANY.
+Initialise mpic to NULL and free the bitmap and the mpic in the common
+error path before dropping the device node reference. The register
+mappings are not released here.
 
-This changes the default behavior for callers which do not set either
-flag. Previously, omitting SWIOTLB_ANY placed the default pool below the
-architecture's low address limit and also constrained dynamically
-allocated pools to the same range. After this change, omitting
-SWIOTLB_INIT_ADDRESSING_LIMIT permits both static and dynamic pools to
-use any directly mapped memory.
-
-Reviewed-by: Robin Murphy <robin.murphy@arm.com>
-Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Shuah Khan <skhan@linuxfoundation.org>
-Cc: Randy Dunlap <rdunlap@infradead.org>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Cc: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: Paul Walmsley <pjw@kernel.org>
-Cc: Palmer Dabbelt <palmer@dabbelt.com>
-Cc: Albert Ou <aou@eecs.berkeley.edu>
-Cc: Alexandre Ghiti <alex@ghiti.fr>
-Cc: Alexander Gordeev <agordeev@linux.ibm.com>
-Cc: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
-Cc: Heiko Carstens <hca@linux.ibm.com>
-Cc: Vasily Gorbik <gor@linux.ibm.com>
-Cc: Christian Borntraeger <borntraeger@linux.ibm.com>
-Cc: Sven Schnelle <svens@linux.ibm.com>
-Cc: Thomas Gleixner <tglx@kernel.org>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: x86@kernel.org
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Robin Murphy <robin.murphy@arm.com>
-Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
+Signed-off-by: Jyoti Gupta <jyoti@linux.ibm.com>
 ---
- Documentation/core-api/swiotlb.rst |  8 ++++----
- arch/powerpc/mm/mem.c              |  6 ++++--
- arch/riscv/mm/init.c               | 16 ----------------
- arch/s390/mm/init.c                |  2 +-
- arch/x86/kernel/pci-dma.c          |  2 +-
- include/linux/swiotlb.h            |  7 +++----
- kernel/dma/swiotlb.c               | 17 ++++++-----------
- 7 files changed, 19 insertions(+), 39 deletions(-)
+ arch/powerpc/sysdev/mpic.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/Documentation/core-api/swiotlb.rst b/Documentation/core-api/swiotlb.rst
-index 71b4e4c27eb5..06d9f88fdf7b 100644
---- a/Documentation/core-api/swiotlb.rst
-+++ b/Documentation/core-api/swiotlb.rst
-@@ -148,10 +148,10 @@ may also be adjusted
- due to other conditions, such as running in a CoCo VM, as described above. If
- CONFIG_SWIOTLB_DYNAMIC is enabled, additional pools may be allocated later in
- the life of the system. Each pool must be a contiguous range of physical
--memory. The default pool is allocated below the 4 GiB physical address line so
--it works for devices that can only address 32-bits of physical memory (unless
--architecture-specific code provides the SWIOTLB_ANY flag). In a CoCo VM, the
--pool memory must be decrypted before swiotlb is used.
-+memory. The default pool is allocated below the architecture's low address
-+limit when it is needed for devices with limited DMA addressing. Otherwise,
-+it may be allocated anywhere in directly mapped memory. In a CoCo VM, the pool
-+memory must be decrypted before swiotlb is used.
- 
- Each pool is divided into "slots" of size IO_TLB_SIZE, which is 2 KiB with
- current definitions. IO_TLB_SEGSIZE contiguous slots (128 slots) constitute
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 006ed41097e9..1bdea6c03848 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -295,9 +295,11 @@ void __init arch_mm_preinit(void)
- 		/*
- 		 * Since the guest memory is inaccessible to the host,
- 		 * devices always need to use the SWIOTLB buffer for DMA
--		 * even if dma_capable() says otherwise.
-+		 * even if dma_capable() says otherwise. The hypervisor has
-+		 * no addressing limitation, so the buffer may be allocated
-+		 * anywhere.
- 		 */
--		ppc_swiotlb_flags |= SWIOTLB_ANY;
-+		ppc_swiotlb_flags &= ~SWIOTLB_INIT_ADDRESSING_LIMIT;
- 	}
- 
- 	/*
-diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
-index 96856114b387..734712230f35 100644
---- a/arch/riscv/mm/init.c
-+++ b/arch/riscv/mm/init.c
-@@ -165,27 +165,11 @@ static void print_vm_layout(void) { }
- 
- void __init arch_mm_preinit(void)
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 6e8fa94985f3..e777b33f170d 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -1221,7 +1221,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 				const char *name)
  {
--	bool swiotlb = max_pfn > PFN_DOWN(dma32_phys_limit) &&
--		       memblock_start_of_DRAM() < dma32_phys_limit;
- 	unsigned int swiotlb_flags = SWIOTLB_VERBOSE;
- #ifdef CONFIG_FLATMEM
- 	BUG_ON(!mem_map);
- #endif /* CONFIG_FLATMEM */
- 
--	if (IS_ENABLED(CONFIG_DMA_BOUNCE_UNALIGNED_KMALLOC) && !swiotlb &&
--	    dma_cache_alignment != 1) {
--		/*
--		 * No 32-bit DMA bouncing needed (either all DRAM is within
--		 * the 32-bit limit, or it all starts above it), but
--		 * kmalloc() buffers whose sizes are not cache-line-aligned
--		 * still require bouncing for non-coherent DMA.  Use
--		 * SWIOTLB_ANY so that the buffer can be allocated from high
--		 * memory when DRAM starts above dma32_phys_limit.  Allocate
--		 * ~1 MB per 1 GB of RAM.
--		 */
--		swiotlb_flags |= SWIOTLB_ANY;
--	}
--
- 	if ((max_pfn > PFN_DOWN(dma32_phys_limit)) &&
- 	     (memblock_start_of_DRAM() < dma32_phys_limit))
- 		swiotlb_flags |= SWIOTLB_INIT_ADDRESSING_LIMIT;
-diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
-index 78f507e24ceb..ce10292447f1 100644
---- a/arch/s390/mm/init.c
-+++ b/arch/s390/mm/init.c
-@@ -166,7 +166,7 @@ static void __init pv_init(void)
- 	virtio_set_mem_acc_cb(virtio_require_restricted_mem_acc);
- 
- 	/* make sure bounce buffers are shared */
--	swiotlb_init(SWIOTLB_VERBOSE | SWIOTLB_ANY);
-+	swiotlb_init(SWIOTLB_VERBOSE);
- 	swiotlb_update_mem_attributes();
- }
- 
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index ce257b20ea9c..74e92b457758 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -90,7 +90,7 @@ static void __init pci_xen_swiotlb_init(void)
- 	/* Xen can use a SWIOTLB pool anywhere in directly mapped memory. */
- 	x86_swiotlb_flags &= ~(SWIOTLB_INIT_ADDRESSING_LIMIT |
- 			       SWIOTLB_INIT_DEFAULT_OFF);
--	x86_swiotlb_flags |= SWIOTLB_INIT_REMAP | SWIOTLB_ANY;
-+	x86_swiotlb_flags |= SWIOTLB_INIT_REMAP;
- 	swiotlb_init_remap(x86_swiotlb_flags, xen_swiotlb_fixup);
- 	dma_ops = &xen_swiotlb_dma_ops;
- 	if (IS_ENABLED(CONFIG_PCI))
-diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
-index f5ce45f2994b..3c3f9d93d400 100644
---- a/include/linux/swiotlb.h
-+++ b/include/linux/swiotlb.h
-@@ -15,13 +15,12 @@ struct page;
- struct scatterlist;
- 
- #define SWIOTLB_VERBOSE	(1 << 0) /* verbose initialization */
--#define SWIOTLB_ANY	(1 << 1) /* allow any memory for the buffer */
- /* Initialize a default-sized pool for devices with limited DMA addressing. */
--#define SWIOTLB_INIT_ADDRESSING_LIMIT	(1 << 2)
-+#define SWIOTLB_INIT_ADDRESSING_LIMIT	(1 << 1)
- /* Initialize a default-sized pool that requires architecture remapping. */
--#define SWIOTLB_INIT_REMAP		(1 << 3)
-+#define SWIOTLB_INIT_REMAP		(1 << 2)
- /* Do not initialize a pool unless SWIOTLB is explicitly required. */
--#define SWIOTLB_INIT_DEFAULT_OFF		(1 << 4)
-+#define SWIOTLB_INIT_DEFAULT_OFF	(1 << 3)
- 
- /*
-  * Maximum allowable number of contiguous slabs to map,
-diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
-index 130a13eb85b0..4d13421c3901 100644
---- a/kernel/dma/swiotlb.c
-+++ b/kernel/dma/swiotlb.c
-@@ -437,15 +437,10 @@ static void __init *swiotlb_memblock_alloc(unsigned long nslabs,
- 	size_t bytes = PAGE_ALIGN(nslabs << IO_TLB_SHIFT);
- 	void *tlb;
+ 	int i, psize, intvec_top;
+-	struct mpic *mpic;
++	struct mpic *mpic = NULL;
+ 	u32 greg_feature;
+ 	const char *vers;
+ 	const u32 *psrc;
+@@ -1488,10 +1488,6 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 						 intvec_top,
+ 						 &mpic_host_ops, mpic);
  
 -	/*
--	 * By default allocate the bounce buffer memory from low memory, but
--	 * allow to pick a location everywhere for hypervisors with guest
--	 * memory encryption.
+-	 * FIXME: The code leaks the MPIC object and mappings here; this
+-	 * is very unlikely to fail but it ought to be fixed anyways.
 -	 */
--	if (flags & SWIOTLB_ANY)
--		tlb = memblock_alloc(bytes, PAGE_SIZE);
--	else
-+	if (flags & SWIOTLB_INIT_ADDRESSING_LIMIT)
- 		tlb = memblock_alloc_low(bytes, PAGE_SIZE);
-+	else
-+		tlb = memblock_alloc(bytes, PAGE_SIZE);
+ 	if (mpic->irqhost == NULL)
+ 		goto err_of_node_put;
  
- 	if (!tlb) {
- 		pr_warn("%s: Failed to allocate %zu bytes tlb structure\n",
-@@ -567,10 +562,10 @@ void __init swiotlb_init_remap(unsigned int flags,
- #ifdef CONFIG_SWIOTLB_DYNAMIC
- 	if (!remap)
- 		io_tlb_default_mem.can_grow = true;
--	if (flags & SWIOTLB_ANY)
--		io_tlb_default_mem.phys_limit = virt_to_phys(high_memory - 1);
--	else
-+	if (flags & SWIOTLB_INIT_ADDRESSING_LIMIT)
- 		io_tlb_default_mem.phys_limit = ARCH_LOW_ADDRESS_LIMIT;
-+	else
-+		io_tlb_default_mem.phys_limit = virt_to_phys(high_memory - 1);
- #endif
+@@ -1527,6 +1523,9 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 	return mpic;
  
- 	/* if we have host or guest memory encryption */
+ err_of_node_put:
++	if (mpic)
++		bitmap_free(mpic->protected);
++	kfree(mpic);
+ 	of_node_put(node);
+ 	return NULL;
+ }
 -- 
-2.43.0
+2.55.0
 
 
