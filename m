@@ -1,69 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-28132-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28133-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D72B1C98321
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 17:35:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1310DC98318
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 17:35:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hrLZg1SvPz3bcr;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hrLZg6MxZz3bf4;
 	Fri, 25 Sep 2026 03:35:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::548"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790271322;
-	cv=none; b=oUUy5a/OLXpSq/SoCJLrPIU0LZvdIndyhD8y/W7ON3pxaT1NYs6iwrH0rXvM8M8hxrLFtqOOObbuaQ1tbjb5oRSiOsX4HtHJ2fmCuuXPsQokd1y7yVb0YM1krS695rnTPYvpZPfXI+4buitUw9aR3BSXfhIFf/cbhR3ORD3Fp5kfg3+xug/5czm+oqS4+pf6whYVTbD9odfcM8p2Kn4WisciRzJvdVZUmVfy4cJdd1zG3hQh6xqtkE2GTyYpTGJlDIlYhOHy7gdcd6WZcpPoDHblrITbE2yBGqJ7SblFpg/oxqf0kmdYUK6Pt6w0GQBNcXmOHU19ntx4Ae+WyRWPTw==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::546"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790271323;
+	cv=none; b=DdTfkjLlti5tLK8n76ONJ5khWPmC4wRRbm/pLhmhxcIk7L6WlwPS5MBZjbnY28p7z0c80aA/YRIHwzKvxeEP0Yuu9ZJSnCccHFdPNfP+9Gt3H3xPZRNJ8FgHIpTASnQ3k7JvbsgEzZAvrexOEP8yENc1WgCYCKjet+mhRoSD/zYJxHMi2xmFiq5ETye0Day6UvoCC4OcEWCEjpozW/WHy5TeZtK5uSwpXFGagM69EnqWpbMjGWu8GCafgT2O6cA41QSj6vi202OKEmfvDTjofQWdcZhqcflE5yfTdteYoaJ+a/cOREwjs15ZFzJj7Z+TpOMjrRG9QOjZmad44J3TAg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790271322; c=relaxed/relaxed;
-	bh=9KIWUowhWgqgcS9B9uJaCFyMmng9ri0RWLxjQM7dDfo=;
+	t=1790271323; c=relaxed/relaxed;
+	bh=44zkx5wXiPoFVTiEc5KY1Ag9ipCGGabDIfpXco19T3Q=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=VpwlCAh8CswCGjSi+eTsMO1mRI66FDpRwwK5mJjIi9xj2ws7wxPkBqP7V+5oco2aB0ad2bb2XUeBwJ7d5R9s3ltsb7mz+whWoH+XeArxDlXIXpwbO8nIQZJlDf9pgt4Tc0E3Z+4+ZvRWVk95UGaIW+JZR1mctyTvkX5PoSOZeKvyKFa2N6XsmD6GwloCdyqAklADMoeluYsLYpCWmSutCqJTvtOUfmCjnlBRnS82CT2s1gr/29DITRTp1FM88qlakOwF5O5zvP18GadzW/lD8Pm86FgUC1WCYMcOq/XQc8zPGz4umzNEkGMsg3tubi5z5q/WEbqTBYSIHSev8CSzxg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=msoofylT; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::548; helo=mail-pg1-x548.google.com; envelope-from=3u1-1aggkdeqjsgzrgiqmuumrk.iusrot03vvi-jk1royzy.u5rghy.uxm@flex--dmatlack.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--dmatlack.bounces.google.com
+	 To:Cc:Content-Type; b=RXW+GYAGt2M1S+IU4WULWqSaaX0kdkVl7JEQP6oEa5kwCLqf36FxBYwQYa1MR4zfc4TXbBDQKj2AdhXHJr98tg+YJWBkAR6B1hsfa/uxGpMP0vxQa0rg25Gt5sFspPFledRiSLDvthk2S66IO22sAxIZSxz/Yp/d4A6yS0jXXpiesdgciSVj6sJI+hHX0HZl7dn9WtTuFKM/AyQTRY3My8+xhTmUH5L0msmCUVGNvTmHPz6+76+BFt7ON7EZaJV3vOfrdRYSKN2Knnna8FJMMbTtcxEL7jFRSU+kmbPU0EUxH5ym0buLx8E2JGq6easrrpMfJwMs8V9/H3iSjZONVw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=cDxrdhNB; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::546; helo=mail-pg1-x546.google.com; envelope-from=3uf-1aggkdeegpdwodfnjrrjoh.frpolqx0ssf-ghyolvwv.r2odev.ruj@flex--dmatlack.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--dmatlack.bounces.google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=msoofylT;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=cDxrdhNB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--dmatlack.bounces.google.com (client-ip=2607:f8b0:4864:20::548; helo=mail-pg1-x548.google.com; envelope-from=3u1-1aggkdeqjsgzrgiqmuumrk.iusrot03vvi-jk1royzy.u5rghy.uxm@flex--dmatlack.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x548.google.com (mail-pg1-x548.google.com [IPv6:2607:f8b0:4864:20::548])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--dmatlack.bounces.google.com (client-ip=2607:f8b0:4864:20::546; helo=mail-pg1-x546.google.com; envelope-from=3uf-1aggkdeegpdwodfnjrrjoh.frpolqx0ssf-ghyolvwv.r2odev.ruj@flex--dmatlack.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x546.google.com (mail-pg1-x546.google.com [IPv6:2607:f8b0:4864:20::546])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrLZZ0llvz30dj
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2026 03:35:17 +1000 (AEST)
-Received: by mail-pg1-x548.google.com with SMTP id 41be03b00d2f7-cc4216aee8fso20484a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 10:35:17 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrLZW4VlTz30W5
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2026 03:35:15 +1000 (AEST)
+Received: by mail-pg1-x546.google.com with SMTP id 41be03b00d2f7-cc7361c62b9so7687a12.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 10:35:15 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1790271315; x=1790876115; darn=lists.ozlabs.org;
+        d=google.com; s=20251104; t=1790271313; x=1790876113; darn=lists.ozlabs.org;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=9KIWUowhWgqgcS9B9uJaCFyMmng9ri0RWLxjQM7dDfo=;
-        b=msoofylTe92kMzFFjbY+5Q1njMmliDo1KFDzf4jmxmCy6RuWCzN7xEp29hUA5apyO8
-         NicaNJoyZz1EGPx1/7rF4LIkLA+v2vX2eQG0FAGj3NTkDra26WpzaTg4kBtCgfBJZb0x
-         1s7ZC48AfBUgrcOtpghQfGBlyLav2R+X6zOsGAH5z2sOs4sbD8R4Yub0ZyPiYOAlpysi
-         ReoQ0V563aSIw5X6XOrpisWSZD3hvSfwzMd9dr9jaDD/QkDshIL7iHzrwW24kYOZnkRZ
-         wU/wBf7ncVdA0h70WO6npHH4THQe+q0QTSl62wHVGCLfdZTZKv5Ic3DEvjfdIPQ49vE6
-         7tzQ==
+        bh=44zkx5wXiPoFVTiEc5KY1Ag9ipCGGabDIfpXco19T3Q=;
+        b=cDxrdhNBH5bLqk4de7M3C7woa5sKh6f8hDbs4Rt9uINO2780h2A9y55J5r+uCCd2uX
+         VfN3vHOLj6kEeUeL8ptzmnDNEkAP8ALgCLN71qP4AX333BZeBN4q1uU852iJNKGSfcBu
+         fCBjcKvPCOs7Hdb1pf/zPoQZf+e178gJfyRpmxu6T55JrBwniqo7VkHjb5lIhnmBlepX
+         LT+7A7z7CT1pB1FOmyPf2wkFj3V76ewLxbDCwNv6X9OhVSsmaRU+x8rcOLBP7BmuZaad
+         ZQ3V0+eMFNsEgnCYl+2wMmjhs8OPIQgLal46AU+wXxNjjMSU4L/RCqL3v3L8Y6LbsIPc
+         DGOw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790271315; x=1790876115;
+        d=1e100.net; s=20260707; t=1790271313; x=1790876113;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=9KIWUowhWgqgcS9B9uJaCFyMmng9ri0RWLxjQM7dDfo=;
-        b=FuaWxzSLNhHAJ+ZKufiF48K6jwt//P6YXg4bTrDDJ9044iH314wxiHGZLzTDc+EDhA
-         UW8seIEAYnIiENWX1keywSMZLAY7csjnLGQgg48DS9s9PNnfuFUrvn2U+Eh102Xqeda9
-         6C/tfnC4yYX2EP48vXD2frXo8Xn56TAFXvNDi34A3J9B6bDfQFf8Fh1nLbBPrPPLDznW
-         AaiMp/3iOSrWH0bR58PWqK/9v2AIiC29ZC//8V1MHGw2eEqwYo3YPYTH+/7j91l1+4Wi
-         InuWepXIXLtxxpRJjpULbFDV8UIccJmhwpg04vHsaTX/H6yiK1Dn+vAt0B9zngENZFNd
-         D6UQ==
-X-Forwarded-Encrypted: i=1; AKwUvBxLadSgW78+sMFprhfzPPRUsgyv2NtUNdD+LDwvGYqgwJTKkrJz8vdHcXpwxnSEQMNX5m3hrH53vaVtU4Q=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++mf2B/UZjA8diIV4zwzlXAivLxCz3/Et0r90Vz0Z4UZDmdtdQTE
-	hfXpG+NDSlnNti7mej4ZXVJhxh/K/pHCCVfKGQUjnWTVRs4CS2/1iBqATBHmzejGDMKxG76tYpm
-	qQx483l/ryrh62Q==
-X-Received: from pfbmt15.prod.google.com ([2002:a05:6a00:6e6f:b0:87f:a748:7030])
+        bh=44zkx5wXiPoFVTiEc5KY1Ag9ipCGGabDIfpXco19T3Q=;
+        b=jCzk9hTbee0XNR63+11ejFjl4fKqlhgUpFIB+49LEQdLQOndENOkjl1QeeT9kwQBk8
+         g4FoK8+9sp/3yOFIae8QdpONad5msEuIieoA5q2uXwOoZFBGGwm7T21cuB34iu6RHsZS
+         ttC7ZrNin2Pb9ccRS8pv8jcemwVyI+kqfaOaSJ7OAgFXEoXEwVFfqdiJGjZwM9mumFmP
+         I0AS2hXQgw1gn5cYyCG+WoJ5YW/e5JrIWTV6w09swMv0S5w3JRvldCwh3aa6UwA2Vxcs
+         5RHTaCqxUQiBY3IsjBKuEChFJnB/fUX9nU9RPfOBBlPU4fLLH26gayLD5TI1//IUHVcY
+         zkSw==
+X-Forwarded-Encrypted: i=1; AKwUvBxE/HKC/nE8MfZ5VzbzcZDhH7xH1sKtraie5hA4sMhK4++hLOOiW9PpuLEJzfO4qyTZbIaT7S4lf0X7bvE=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++lAIT8EtHC3aiI0P88MHi0zUsn0ZKiPBUdFzaUioRWD4GEXmlbe
+	nqcaeptXvvegXlP06UEDcPwIW/mFs8zzcfL0s5Cv3KiLxPlXNSNhtaYRky4XY0rmsZ4E3hgpvP/
+	LzOp1IUDlgo81Yw==
+X-Received: from pgbfq21.prod.google.com ([2002:a05:6a02:2995:b0:c88:e5cb:265])
  (user=dmatlack job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:6a20:b7a6:b0:3dd:651e:b71d with SMTP id adf61e73a8af0-3de0e7445c3mr3228498637.24.1790271315360;
- Thu, 24 Sep 2026 10:35:15 -0700 (PDT)
-Date: Thu, 24 Sep 2026 17:34:55 +0000
+ 2002:a05:6a20:3d09:b0:3dd:a196:906f with SMTP id adf61e73a8af0-3de0e942ae3mr2935846637.57.1790271312798;
+ Thu, 24 Sep 2026 10:35:12 -0700 (PDT)
+Date: Thu, 24 Sep 2026 17:34:52 +0000
 In-Reply-To: <20260924173501.856380-1-dmatlack@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -80,8 +80,8 @@ Precedence: list
 Mime-Version: 1.0
 References: <20260924173501.856380-1-dmatlack@google.com>
 X-Mailer: git-send-email 2.56.0.rc1.315.gc6ed9934b7-goog
-Message-ID: <20260924173501.856380-10-dmatlack@google.com>
-Subject: [PATCH 09/15] PCI/PTM: Save PTM state in the saved capability store
+Message-ID: <20260924173501.856380-7-dmatlack@google.com>
+Subject: [PATCH 06/15] PCI/ASPM: Save LTR state in the saved capability store
 From: David Matlack <dmatlack@google.com>
 To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, 
 	linuxppc-dev@lists.ozlabs.org
@@ -93,76 +93,93 @@ Cc: Alex Williamson <alex@shazbot.org>, Bjorn Helgaas <bhelgaas@google.com>,
 	David Matlack <dmatlack@google.com>
 Content-Type: text/plain; charset="UTF-8"
 
-Save and restore the PTM Control register through the per-device saved
-capability store instead of a private pci_cap_saved_state buffer.
+Save and restore the LTR maximum latency registers through the per-device
+saved capability store instead of a private pci_cap_saved_state buffer.
 
-Report a reservation failure. pci_ptm_init() ignored the return value of
-pci_add_ext_cap_save_buffer() entirely, so a failed allocation was only
-noticed later as silently missing PTM state.
+Reserve the DWORD by its configuration space offset during device setup,
+and keep accessing the registers a DWORD at a time because some devices
+only support DWORD access to them.
 
 No functional change intended.
 
 Assisted-by: LLM
 Signed-off-by: David Matlack <dmatlack@google.com>
 ---
- drivers/pci/pcie/ptm.c | 29 ++++++-----------------------
- 1 file changed, 6 insertions(+), 23 deletions(-)
+ drivers/pci/pci.c       | 12 ++++++++----
+ drivers/pci/pcie/aspm.c | 19 +++----------------
+ 2 files changed, 11 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/pci/pcie/ptm.c b/drivers/pci/pcie/ptm.c
-index bd3bd39f6372..a9e29e19b0f9 100644
---- a/drivers/pci/pcie/ptm.c
-+++ b/drivers/pci/pcie/ptm.c
-@@ -53,7 +53,8 @@ void pci_ptm_init(struct pci_dev *dev)
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 9e49806c6891..e53bca1cb50f 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -3580,10 +3580,14 @@ void pci_allocate_cap_save_buffers(struct pci_dev *dev)
+ 			pci_err(dev, "unable to reserve PCI-X save state\n");
+ 	}
  
- 	dev->ptm_cap = ptm;
- 	atomic_set(&dev->ptm_enable_cnt, 0);
--	pci_add_ext_cap_save_buffer(dev, PCI_EXT_CAP_ID_PTM, sizeof(u32));
-+	if (pci_reserve_saved_cap(dev, ptm + PCI_PTM_CTRL, sizeof(u32)))
-+		pci_err(dev, "unable to reserve PTM save state\n");
+-	error = pci_add_ext_cap_save_buffer(dev, PCI_EXT_CAP_ID_LTR,
+-					    2 * sizeof(u16));
+-	if (error)
+-		pci_err(dev, "unable to allocate suspend buffer for LTR\n");
++	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_LTR);
++	if (pos) {
++		unsigned int off = pos + PCI_LTR_MAX_SNOOP_LAT;
++
++		error = pci_reserve_saved_cap(dev, off, sizeof(u32));
++		if (error)
++			pci_err(dev, "unable to reserve LTR save state\n");
++	}
  
- 	pci_read_config_dword(dev, ptm + PCI_PTM_CAP, &cap);
- 	dev->ptm_granularity = FIELD_GET(PCI_PTM_GRANULARITY_MASK, cap);
-@@ -90,36 +91,18 @@ void pci_ptm_init(struct pci_dev *dev)
- 
- void pci_save_ptm_state(struct pci_dev *dev)
+ 	pci_allocate_vc_save_buffers(dev);
+ }
+diff --git a/drivers/pci/pcie/aspm.c b/drivers/pci/pcie/aspm.c
+index 02922b887ec6..16f22af98686 100644
+--- a/drivers/pci/pcie/aspm.c
++++ b/drivers/pci/pcie/aspm.c
+@@ -30,8 +30,6 @@
+ void pci_save_ltr_state(struct pci_dev *dev)
  {
--	u16 ptm = dev->ptm_cap;
+ 	int ltr;
 -	struct pci_cap_saved_state *save_state;
 -	u32 *cap;
--
--	if (!ptm)
--		return;
--
--	save_state = pci_find_saved_ext_cap(dev, PCI_EXT_CAP_ID_PTM);
--	if (!save_state)
-+	if (!dev->ptm_cap)
+ 
+ 	if (!pci_is_pcie(dev))
+ 		return;
+@@ -40,31 +38,20 @@ void pci_save_ltr_state(struct pci_dev *dev)
+ 	if (!ltr)
  		return;
  
--	cap = (u32 *)&save_state->cap.data[0];
--	pci_read_config_dword(dev, ptm + PCI_PTM_CTRL, cap);
-+	pci_save_cap_dword(dev, dev->ptm_cap + PCI_PTM_CTRL);
+-	save_state = pci_find_saved_ext_cap(dev, PCI_EXT_CAP_ID_LTR);
+-	if (!save_state) {
+-		pci_err(dev, "no suspend buffer for LTR; ASPM issues possible after resume\n");
+-		return;
+-	}
+-
+ 	/* Some broken devices only support dword access to LTR */
+-	cap = &save_state->cap.data[0];
+-	pci_read_config_dword(dev, ltr + PCI_LTR_MAX_SNOOP_LAT, cap);
++	pci_save_cap_dword(dev, ltr + PCI_LTR_MAX_SNOOP_LAT);
  }
  
- void pci_restore_ptm_state(struct pci_dev *dev)
+ void pci_restore_ltr_state(struct pci_dev *dev)
  {
--	u16 ptm = dev->ptm_cap;
 -	struct pci_cap_saved_state *save_state;
+ 	int ltr;
 -	u32 *cap;
--
--	if (!ptm)
--		return;
--
--	save_state = pci_find_saved_ext_cap(dev, PCI_EXT_CAP_ID_PTM);
--	if (!save_state)
-+	if (!dev->ptm_cap)
+ 
+-	save_state = pci_find_saved_ext_cap(dev, PCI_EXT_CAP_ID_LTR);
+ 	ltr = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_LTR);
+-	if (!save_state || !ltr)
++	if (!ltr)
  		return;
  
--	cap = (u32 *)&save_state->cap.data[0];
--	pci_write_config_dword(dev, ptm + PCI_PTM_CTRL, *cap);
-+	pci_restore_cap_dword(dev, dev->ptm_cap + PCI_PTM_CTRL);
+ 	/* Some broken devices only support dword access to LTR */
+-	cap = &save_state->cap.data[0];
+-	pci_write_config_dword(dev, ltr + PCI_LTR_MAX_SNOOP_LAT, *cap);
++	pci_restore_cap_dword(dev, ltr + PCI_LTR_MAX_SNOOP_LAT);
  }
  
- /* Enable PTM in the Control register if possible */
+ void pci_configure_aspm_l1ss(struct pci_dev *pdev)
 -- 
 2.56.0.rc1.315.gc6ed9934b7-goog
 
