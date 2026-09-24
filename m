@@ -1,75 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-28097-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28098-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7C7DC98315
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 07:58:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B565FC98314
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 07:58:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hr5md02Xbz2y7Y;
-	Thu, 24 Sep 2026 17:58:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:39::10"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790236688;
-	cv=none; b=l+xxyelPMzzlBe0K352Rh8Fbjv0mvj+nI943cZwMFSZR9uKiPCVJwfr9YtfVos63qkb1r9FBEdVKArGYzSaZ+HMM9nCi/AdBBHr+siyNOPvJUD5wVLv5FZcsWDfD63v2FIO8B3Skg0a/qZjEhv07PEl51iXld5cRDECtEmqceRuKd+jMfAlJJ6/oWEYUs8S7NVg/R57OBOAokJq9gRClwuNK8UNBPmpQGGRlxBT6O0YmEy3te8ZchAuVFngvEXarqOgBSTAK2CugZnUNCFnJuqkhci72E1l4ZP0nryq4tT6BCF+VUU2zrUGEQ1wL9sGCQ2qEsfqk/aIqA0r1oBDCvA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hr5mf6dxlz2y24;
+	Thu, 24 Sep 2026 17:58:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:3b::2b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790236690;
+	cv=none; b=hzgARe6D1tBxSppWeLhGVUF8UVpypF6kFATYsOjd7dpZBFEO/ePbhYcCnTfgPZvEhiZ8EAaXfSVbF9N5TR3rp6JMhcwciTO6JBh8oTJj4k1V5tV9Hl9Ezbp5XBTsh1zuIvotPo9lhb8LJWBqhFElcy0EQAmmj2TDo0aTWGAb8M1GXuVqTEHzsWTTrWHklO1QgOHqUEc/cNZLAvtc1+06p4ieOSj8WtfpuV4gaE7E0Namd7S+Mw+J5nELuPsyJTkLBdqI2I1bJBapCqx0Df8j+L6c8cR3YiNgQGFH+YbIsQcmZyezkntiZMBQu1wwPDqeImHAm0IdErVxCEgdSshNDA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790236688; c=relaxed/relaxed;
-	bh=cH8utLFYEujpE6X6Qzd7ExQckIBLy/Lta27TjnKc3ts=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=GS2Qsmv9dfje1vESotOAPmZLxeaprCTZOlTDHeLJZ3mGLVfPebRg68fmNkCX3Gy9vFyMNXTlyknUS3kRe6fvQL2CvZ84SZl/CaqmtMBKs5hCTICOdfMn/WcJ49fBerCHNONTSk15rCPhta0hckuSK/iG4z6LyIhF9NVsWJDQRiOMTz8Ud8Fl1SQb4+3L0tPlhfQwtXIJqSejiyC+s9IVY5qwDkKCxUYLEHeQ5UDtiHBNl+njvQ9P8tmHwRWctXbQp5c2I10c5gsbf5DlHC2GdUC8brfL2cVEbtP473c/0BBtCBwQo7bghLpOs1J/ekHaSguhtSW5zlTPiwvm9n4u8Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=AbthnPFD; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::10; helo=mail-pj2-x10.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+	t=1790236690; c=relaxed/relaxed;
+	bh=VgA5dgb5izhCu2j+FaX7Ht7UUGMfz5OynkoaMbINRFs=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=H3B2xa0muON6NSOOv6GX0TOlpAgbypFi9D0NLBhbVJpp9/zWT+AxUeTcEnRn5016Jk6NEvN/qPsCXacTntLcAGdL7HalT2ezn2T169luJ0/BRsg00rpibWprQ9lV8SfhcNTfeCl2W2MsOcoFLhouc29nYZrv2F/H2NlFFXXmJHNvB72xQu0u2fT3P5scGrEY0v4+wR6k8NWHWP59NOifUgs2OzFz71AgxIDE1FsYHkNVa4TfGWrTbHVWfLX8KzGELQyWBGZPDND0/wVAaK61weOzn4NWO/OUdTV/kfsshoL7bOxKrbxGFKBzIRU4W6tDTd7xO+9OwdNiFoxMFOWKQQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=Djpt21dx; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:3b::2b; helo=mail-pz2-x2b.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=AbthnPFD;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=Djpt21dx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:39::10; helo=mail-pj2-x10.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pj2-x10.google.com (mail-pj2-x10.google.com [IPv6:2607:f8b0:4864:39::10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:3b::2b; helo=mail-pz2-x2b.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pz2-x2b.google.com (mail-pz2-x2b.google.com [IPv6:2607:f8b0:4864:3b::2b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hr5mY4BcYz2y24
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 17:58:03 +1000 (AEST)
-Received: by mail-pj2-x10.google.com with SMTP id 98e67ed59e1d1-39b9184fa80so1237861a91.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 00:58:03 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hr5md2rmhz30TL
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 17:58:08 +1000 (AEST)
+Received: by mail-pz2-x2b.google.com with SMTP id 41be03b00d2f7-cc515bef69dso854803a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 00:58:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1790236682; x=1790841482; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=cH8utLFYEujpE6X6Qzd7ExQckIBLy/Lta27TjnKc3ts=;
-        b=AbthnPFDHO6id2A85Q9OQH+LhEtnOyKK3z4PHGknGE8rmZfXCoaApc/1di8UxZbRb4
-         49Lz730nCQSei5jOKhWXmNkK91Evr0nggwgQdSmYy+aVZ2gAmukpOR8/7ndzf6w8kGIK
-         x+4CbxXShxndunPsiomOPkVR9aF5C48npXlAUvqiRyxSPQnPIhJquL+YLHja12ijurdX
-         9ItE6dwmmRahlY5VzUjjODjXUmleeUtn7krHzq6giaussCR2adYxjyAQjGQCB04v4ZD3
-         iibDD5b+82u3zJ6eAfOI3O+7TTSN1IW6zBtgmobItYlawPdUYfRdwcIRxK70RJD33Uir
-         vI3w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790236682; x=1790841482;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=bytedance.com; s=google; t=1790236687; x=1790841487; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=cH8utLFYEujpE6X6Qzd7ExQckIBLy/Lta27TjnKc3ts=;
-        b=1lLZMv5BWJ0Tokj/EI0qCtIDKobfzwHbgjnU/kGBiFeRcCQ4NI/JbEnK3GFvZgKgas
-         nQ6buppnlVnET7bxSJQKrNCuahh/861X7nlakLJEMVwaKu7BU32vDrwyjKSwn5d3mlST
-         zygtqeg1SAfG4qLPGBXuROhnNeEGUD1K+7c2+/M0ZlLDY12wdIpNeeO3Y/+N5JxGNRDq
-         gp/gXwiYUKEmwwJK4erxmPJt8raPQkAFFvGVzqrWnFV07aDD3t1SGUSST8XztHoYxfVA
-         0uI31jne8Y6s74aK8pUGjaJ+q2MuhChEiSP+xPr2pUeuRGnMNh1DccerO37qrbl9gOxU
-         qQsw==
-X-Forwarded-Encrypted: i=1; AKwUvBwqK/y7iLrPNZESz/vOw4HNb3rj3qPG9zokf5bu79Yv58+BY+tn/KaodyD8j8dU9KkkSjxfHY5yvVwjzCQ=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++m4bT9NWiRhMRWNhBtb6/AYQFJ2D/gBVvB8euKkegfFqaQNbbVN
-	SDwL9bJM7RpewYIcDtJo7HrnWEd8gxfpwwcCpiRWEzoVRRbpl8P2nOcYx4KKfofJFeU=
-X-Gm-Gg: AYBFou2suMeHSMoS79ImS81HC4FWmFtaNTnP/2MX0yPN8QM9Qw7RR5bCZB0u0yLUi09
-	RGjVPVdzRJuHQG7GPuNd9e6+fxC4WGyYqAv/maFhI3+GJ9yAuMDyaF/KUl2rHJoxyJz2WZl6nWW
-	ue9IGtkJaOuYJEXUH+kskWH3xtgXWE/1/ODTV0QRjDPumdOy5Puezt1leZnBOI0NrBsM2wYI8pl
-	0O2+ZkeCb+HOsKpLx0tpvZsqq8ZByDnZ/pdBJcyq9ld/JpeDkHss9GnnqtDTkacpdX+qNEp+Yly
-	AsVavW/0cxIWeB1lTKkAZaLEZafrY65/ungpwMwa0/8dAdXelst0hwULkc3AJ/Ep9Bzw96ftz2n
-	1CxSK1IfPat2nmvKClVo7tJTnwud5BSenJcfVwOGOoPQ2UPyT8/IIG4suIu/x1RA19sV0Pbn13a
-	0Pr4byK69JxuiQOj7Us+sjb5Ca9uIkNk4rKJL5doQi/J1Gz37ThNIgIhpIy7Uh4Z4wC04ShHY/X
-	5590UJ6BMux8HYUnXY=
-X-Received: by 2002:a17:90b:390b:b0:39d:f66e:1720 with SMTP id 98e67ed59e1d1-3a09860771cmr1679255a91.13.1790236681626;
-        Thu, 24 Sep 2026 00:58:01 -0700 (PDT)
+        bh=VgA5dgb5izhCu2j+FaX7Ht7UUGMfz5OynkoaMbINRFs=;
+        b=Djpt21dxDNcWTLfqLCqwFFsddsMPSAMDwbl/0R1SVeJKx3LNQci8rIKWFPQEN49Ea8
+         dB7xDOAj6vY50ovqhob79tB6CpTOXa0I3H3Yf3eSlWTs4T9GUfhiMyV73cmrIf7jLfcB
+         kpDap2r59tYEAzcloqGZkx66TWJhmS2bqGjXTWUrEIuW6BPvd3vdK7uQKWHn3p8CTErH
+         yi3VWOjIw0gPP3PoJBNBSS2vhy/rXT73MuzCJlW05BvFc5J6JL3OEM7zN4iOpVEiS2xy
+         6QRpTe9a+AK72FPvdSXiHkzbwrA2xgma/PnZYOrKLSz2IcCJ9VIGt+mytQ4Wa9rdaJxu
+         2LqQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790236687; x=1790841487;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=VgA5dgb5izhCu2j+FaX7Ht7UUGMfz5OynkoaMbINRFs=;
+        b=YM8N5huAMAY6f9YmSda30OBh+9vPpUqznEfbxIAB370ErPo3DR+a5KDFxFCTZgU4qL
+         x8UZpJmDF06P3Sa83lF0iAIvq+J5Zn4uMz+NG0sd4cIbryphsXAgGArB9Q5qN57Wfekt
+         y9wCsz7Q2dth04eefy/8E4d/cn1+1SV3dwwpVxoLP8sg0p6XoVdnnS+ld+XsKhIv/KRA
+         24eSwNb3sBo7s/7u+g8jZALvmuBbj0pkWMg+pVnBNyN50tMxVmh3n5tos65vdYVEQW4+
+         OPcs2mCZ8RxuSqe8X1BUoxpglYANMAMyZVHg3+oS6xOOUIBdQZOVC4G+1Qun4K8bBQti
+         6mfA==
+X-Forwarded-Encrypted: i=1; AKwUvBwrwHLNoKyNgzvKbbV5iqvFAKKT1eNI2wQch8gGmnkJT6yvMXkWuGVGVQb3nd1YT7C7iq6oZlmCJJhqVk8=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++nWJdZ3uVN3Uu4EidRyp8fI7xyzfxi8MVJFav4J+pHsIoeIe3lu
+	ImSOjRmmPZJwy4sWnhol9fpH3NbKIcfkP4Hrj+PqmFnGmdm6mWSbBe+mfY6FMw58rBE=
+X-Gm-Gg: AYBFou0LOQyqGJ8nEmDvNsnUkpPcsYrRaCCa6t2UscnZaflojtRdCwBSVBWGNNYEK7j
+	1jO/oMwrLhlx9em2W1DI+Xn4OnM8SHbNM8hK396VIBr9nz+1SrpMjxXE3S18fSisWYI1ndqPBzL
+	AkY44YBrr5Ixim8wzBRklfNBDu4PFeGRuoReX7deCyzDZTacNDIkKSaRlhvmDGhA//547wTfWro
+	72xGBmxb1INEuGMt0JNaAxfShr17CgQyrWTSUIHBQz25IXHDaDvU0hpkJCxC71uF7duo5jO4UdS
+	Q/AMZtN99fwdEWvJ/k487+Js37B5KPuOpauC3+7DoROt5aEvR4/PexHpV71F49t50icbstz+/JR
+	SPPIBxvO7fxvDbLdoEvrTEGdS8E0kJVTYdoIrUCqLGSBLZTEQZ9fjkve3PG0lSlHM+ZGh0K8wal
+	rlgIVgYWUYvd7PniAgCjfFJDpA5J6/ju7Vy6OlPL30OIwty+Rx1DGZS1I9hScmn/oCHJwxHcoZV
+	QjP3zIgk3b0JXM5SkmKfgQqyd567w==
+X-Received: by 2002:a17:90b:4d07:b0:39d:fcbe:fdcf with SMTP id 98e67ed59e1d1-3a0985700c8mr1539659a91.1.1790236686989;
+        Thu, 24 Sep 2026 00:58:06 -0700 (PDT)
 Received: from n232-176-004.byted.org ([36.110.163.97])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a0972eec92sm3575622a91.7.2026.09.24.00.57.56
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a0972eec92sm3575622a91.7.2026.09.24.00.58.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 24 Sep 2026 00:58:01 -0700 (PDT)
+        Thu, 24 Sep 2026 00:58:06 -0700 (PDT)
 From: Muchun Song <songmuchun@bytedance.com>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Mike Rapoport <rppt@kernel.org>,
@@ -89,10 +91,12 @@ Cc: Michael Ellerman <mpe@ellerman.id.au>,
 	linux-mm@kvack.org,
 	Muchun Song <songmuchun@bytedance.com>,
 	muchun.song@linux.dev
-Subject: [PATCH v2 0/6] mm: Unify device DAX and HugeTLB vmemmap population paths
-Date: Thu, 24 Sep 2026 15:52:53 +0800
-Message-ID: <20260924075259.2013039-1-songmuchun@bytedance.com>
+Subject: [PATCH v2 1/6] mm/sparse-vmemmap: drop VMEMMAP_POPULATE_DAX
+Date: Thu, 24 Sep 2026 15:52:54 +0800
+Message-ID: <20260924075259.2013039-2-songmuchun@bytedance.com>
 X-Mailer: git-send-email 2.54.0
+In-Reply-To: <20260924075259.2013039-1-songmuchun@bytedance.com>
+References: <20260924075259.2013039-1-songmuchun@bytedance.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -108,63 +112,180 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This series is split out from the earlier, larger series "mm: Generalize
-HVO for HugeTLB and device DAX" [1]. While the parent series generalizes
-vmemmap optimization across HugeTLB and device DAX, this subset addresses
-a single, self-contained step: unifying their vmemmap population paths.
+VMEMMAP_POPULATE_DAX currently distinguishes DAX vmemmap population in
+two places: it keeps allocations on the normal path and takes a reference
+when a backing page is supplied for reuse.
 
-After the preceding Device DAX conversion, both HugeTLB and Device DAX
-describe optimized vmemmap mappings through memory-section metadata and
-use per-zone shared tail vmemmap pages. The generic code, however, still
-carries a Device DAX-specific population flag and compound-page population
-path, along with arguments and helpers needed only by that path.
+After Device DAX switched to the common per-zone shared tail page, both
+conditions can be determined locally. DAX supplies ptpfn for every shared
+tail mapping and requests an allocation only for compound head mappings,
+whose PFNs are not optimizable. Therefore, vmemmap_optimizable_pfn() alone
+selects the correct allocation path.
 
-This series first removes VMEMMAP_POPULATE_DAX and moves selection and
-reference handling for the shared tail page into the common vmemmap
-population path. It then removes the generic Device DAX-specific
-compound-page population path and routes section vmemmap population
-through vmemmap_populate(). The powerpc radix path continues to use its
-architecture-specific compound-page population implementation for
-optimizable sections.
+When ptpfn is supplied, the caller is reusing an existing backing page.
+Once the slab allocator is available, take a reference for each reused
+mapping to balance the release performed by vmemmap_free(). Although the
+buddy allocator is available before slab, no vmemmap population occurs in
+that interval. Earlier mappings are backed by memblock/reserved memory and
+do not need page reference accounting.
 
-The remaining patches remove the unused ptpfn argument, open-code
-vmemmap_populate_address() now that no caller needs its returned PTE, and
-add a warning for inconsistent zone initialization of shared tail vmemmap
-pages.
+Remove VMEMMAP_POPULATE_DAX and the flags argument from the vmemmap
+population helpers.
 
-This is the fourth smaller step toward the broader HVO generalization.
-After this series, HugeTLB and Device DAX use the same population model
-instead of parallel generic paths, while powerpc keeps its
-architecture-specific implementation.
-
-[1] https://lore.kernel.org/all/20260513130542.35604-1-songmuchun@bytedance.com/
-
+Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+Acked-by: Qi Zheng <qi.zheng@linux.dev>
+---
 v2:
-- Expand the comments around the slab initialization boundary as suggested
-  by Qi Zheng.
-- Collect Acked-by tags from Qi Zheng.
-- Defer the patch making vmemmap_populate_compound_pages() static to a
-  follow-up series that cleans up the powerpc vmemmap population code.
-- Add a new patch to warn about mismatched zone IDs between a page and its
-  shared tail vmemmap page.
+- Explain why the buddy-to-slab initialization gap is safe (suggested by
+  Qi Zheng)
+- Collect Acked-by from Qi Zheng
+---
+ mm/sparse-vmemmap.c | 36 +++++++++++++-----------------------
+ 1 file changed, 13 insertions(+), 23 deletions(-)
 
-v1: https://lore.kernel.org/all/20260913083734.86802-1-songmuchun@bytedance.com/
-
-Muchun Song (6):
-  mm/sparse-vmemmap: drop VMEMMAP_POPULATE_DAX
-  mm/sparse-vmemmap: support device DAX in common vmemmap path
-  mm/sparse-vmemmap: drop Device DAX-specific population path
-  mm/sparse-vmemmap: remove the unused ptpfn argument
-  mm/sparse-vmemmap: open-code vmemmap_populate_address()
-  mm/mm_init: add zone mismatch warning during page init
-
- arch/powerpc/mm/book3s64/radix_pgtable.c |   3 +
- mm/mm_init.c                             |   5 +-
- mm/sparse-vmemmap.c                      | 200 ++++++-----------------
- 3 files changed, 59 insertions(+), 149 deletions(-)
-
-
-base-commit: f19407ca08644f728cfe9762bf1d1f6985826c47
+diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
+index 3267f9362c68..919c94a36346 100644
+--- a/mm/sparse-vmemmap.c
++++ b/mm/sparse-vmemmap.c
+@@ -32,12 +32,6 @@
+ #include <asm/dma.h>
+ #include <asm/tlbflush.h>
+ 
+-/*
+- * Flags for vmemmap_populate_range and friends.
+- */
+-/* Vmemmap population for ZONE_DEVICE compound pages */
+-#define VMEMMAP_POPULATE_DAX		0x0001
+-
+ #include "internal.h"
+ #include "mm_init.h"
+ #include "sparse.h"
+@@ -208,7 +202,7 @@ struct page __ref *vmemmap_shared_tail_page(unsigned int order, struct zone *zon
+ }
+ 
+ static __meminit void *vmemmap_alloc_pte(unsigned long pfn, int node,
+-		struct vmem_altmap *altmap, unsigned long flags)
++		struct vmem_altmap *altmap)
+ {
+ 	struct zone *zone;
+ 	struct page *page;
+@@ -218,7 +212,7 @@ static __meminit void *vmemmap_alloc_pte(unsigned long pfn, int node,
+ 	 * Device DAX still relies on vmemmap_populate_compound_pages() for
+ 	 * head/first-tail allocation and tail-page reuse.
+ 	 */
+-	if (!vmemmap_optimizable_pfn(pfn) || flags & VMEMMAP_POPULATE_DAX)
++	if (!vmemmap_optimizable_pfn(pfn))
+ 		return vmemmap_alloc_block_buf(PAGE_SIZE, node, altmap);
+ 
+ 	zone = pfn_to_zone(pfn, node);
+@@ -230,8 +224,7 @@ static __meminit void *vmemmap_alloc_pte(unsigned long pfn, int node,
+ }
+ 
+ static pte_t * __meminit vmemmap_pte_populate(pmd_t *pmd, unsigned long addr, int node,
+-				       struct vmem_altmap *altmap,
+-				       unsigned long ptpfn, unsigned long flags)
++		struct vmem_altmap *altmap, unsigned long ptpfn)
+ {
+ 	pte_t *pte = pte_offset_kernel(pmd, addr);
+ 	unsigned long pfn = page_to_pfn((struct page *)addr);
+@@ -240,7 +233,7 @@ static pte_t * __meminit vmemmap_pte_populate(pmd_t *pmd, unsigned long addr, in
+ 		pte_t entry;
+ 
+ 		if (ptpfn == (unsigned long)-1) {
+-			void *p = vmemmap_alloc_pte(pfn, node, altmap, flags);
++			void *p = vmemmap_alloc_pte(pfn, node, altmap);
+ 
+ 			if (!p)
+ 				return NULL;
+@@ -255,7 +248,7 @@ static pte_t * __meminit vmemmap_pte_populate(pmd_t *pmd, unsigned long addr, in
+ 			 * and through vmemmap_populate_compound_pages() when
+ 			 * slab is available.
+ 			 */
+-			if (flags & VMEMMAP_POPULATE_DAX)
++			if (slab_is_available())
+ 				get_page(pfn_to_page(ptpfn));
+ 		}
+ 		entry = pfn_pte(ptpfn, PAGE_KERNEL);
+@@ -318,8 +311,7 @@ static pgd_t * __meminit vmemmap_pgd_populate(unsigned long addr, int node)
+ 
+ static pte_t * __meminit vmemmap_populate_address(unsigned long addr, int node,
+ 					      struct vmem_altmap *altmap,
+-					      unsigned long ptpfn,
+-					      unsigned long flags)
++					      unsigned long ptpfn)
+ {
+ 	pgd_t *pgd;
+ 	p4d_t *p4d;
+@@ -339,7 +331,7 @@ static pte_t * __meminit vmemmap_populate_address(unsigned long addr, int node,
+ 	pmd = vmemmap_pmd_populate(pud, addr, node);
+ 	if (!pmd)
+ 		return NULL;
+-	pte = vmemmap_pte_populate(pmd, addr, node, altmap, ptpfn, flags);
++	pte = vmemmap_pte_populate(pmd, addr, node, altmap, ptpfn);
+ 	if (!pte)
+ 		return NULL;
+ 	vmemmap_verify(pte, node, addr, addr + PAGE_SIZE);
+@@ -350,15 +342,14 @@ static pte_t * __meminit vmemmap_populate_address(unsigned long addr, int node,
+ static int __meminit vmemmap_populate_range(unsigned long start,
+ 					    unsigned long end, int node,
+ 					    struct vmem_altmap *altmap,
+-					    unsigned long ptpfn,
+-					    unsigned long flags)
++					    unsigned long ptpfn)
+ {
+ 	unsigned long addr = start;
+ 	pte_t *pte;
+ 
+ 	for (; addr < end; addr += PAGE_SIZE) {
+ 		pte = vmemmap_populate_address(addr, node, altmap,
+-					       ptpfn, flags);
++					       ptpfn);
+ 		if (!pte)
+ 			return -ENOMEM;
+ 	}
+@@ -369,7 +360,7 @@ static int __meminit vmemmap_populate_range(unsigned long start,
+ int __meminit vmemmap_populate_basepages(unsigned long start, unsigned long end,
+ 					 int node, struct vmem_altmap *altmap)
+ {
+-	return vmemmap_populate_range(start, end, node, altmap, -1, 0);
++	return vmemmap_populate_range(start, end, node, altmap, -1);
+ }
+ 
+ /*
+@@ -498,7 +489,6 @@ static int __meminit vmemmap_populate_compound_pages(unsigned long start_pfn,
+ 	unsigned long size, addr;
+ 	pte_t *pte;
+ 	int rc;
+-	unsigned long flags = VMEMMAP_POPULATE_DAX;
+ 	struct page *page;
+ 	unsigned int order = pfn_to_section_compound_order(start_pfn);
+ 
+@@ -508,14 +498,14 @@ static int __meminit vmemmap_populate_compound_pages(unsigned long start_pfn,
+ 
+ 	if (reuse_compound_section(start_pfn, pgmap))
+ 		return vmemmap_populate_range(start, end, node, NULL,
+-					      page_to_pfn(page), flags);
++					      page_to_pfn(page));
+ 
+ 	size = min(end - start, (1UL << order) * sizeof(struct page));
+ 	for (addr = start; addr < end; addr += size) {
+ 		unsigned long next, last = addr + size;
+ 
+ 		/* Populate the head page vmemmap page */
+-		pte = vmemmap_populate_address(addr, node, NULL, -1, flags);
++		pte = vmemmap_populate_address(addr, node, NULL, -1);
+ 		if (!pte)
+ 			return -ENOMEM;
+ 
+@@ -525,7 +515,7 @@ static int __meminit vmemmap_populate_compound_pages(unsigned long start_pfn,
+ 		 */
+ 		next = addr + PAGE_SIZE;
+ 		rc = vmemmap_populate_range(next, last, node, NULL,
+-					    page_to_pfn(page), flags);
++					    page_to_pfn(page));
+ 		if (rc)
+ 			return -ENOMEM;
+ 	}
 -- 
 2.54.0
 
