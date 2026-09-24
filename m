@@ -1,85 +1,98 @@
-Return-Path: <linuxppc-dev+bounces-28096-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28097-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A48F7C98310
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 07:55:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7C7DC98315
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 07:58:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hr5jK4071z2y7Y;
-	Thu, 24 Sep 2026 17:55:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790236517;
-	cv=none; b=Gm4BrlTVs2flA7U9Xab44uP8TceZaWeMV7sJQK7B7gV7R3zhVky/74pqlknVXkDvIYywavHdEGNe+kpjp7W44p3rvYFoh0NIB1VQTIPZ8pnjwqTSzpwjmIaSNEMbP3sVPfK4uwk6a6gdObkGQn3Ha0dZB5w/8///x5CO8EQQmgrtmta1NptUPa3qekKmEhShUvh8QbQdWcZp+D+GfVP/3nY0Y6YmP8urn43iZ/rV0QILdbnSaRTAmsEHvceJm7TVKY+k1mD5zNxbkI4x3RePM/yV0OUicbgDQZDzgDcfIYpaz1E1VR59w7J8sGX7XGgIUAuBe0Qz8fO6yDWl88N7KA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hr5md02Xbz2y7Y;
+	Thu, 24 Sep 2026 17:58:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:39::10"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790236688;
+	cv=none; b=l+xxyelPMzzlBe0K352Rh8Fbjv0mvj+nI943cZwMFSZR9uKiPCVJwfr9YtfVos63qkb1r9FBEdVKArGYzSaZ+HMM9nCi/AdBBHr+siyNOPvJUD5wVLv5FZcsWDfD63v2FIO8B3Skg0a/qZjEhv07PEl51iXld5cRDECtEmqceRuKd+jMfAlJJ6/oWEYUs8S7NVg/R57OBOAokJq9gRClwuNK8UNBPmpQGGRlxBT6O0YmEy3te8ZchAuVFngvEXarqOgBSTAK2CugZnUNCFnJuqkhci72E1l4ZP0nryq4tT6BCF+VUU2zrUGEQ1wL9sGCQ2qEsfqk/aIqA0r1oBDCvA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790236517; c=relaxed/relaxed;
-	bh=8XF4GERg8wBeW3ubUb+zC5tRVKKAYGhsksCUCrCMyIE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=fL/zS0Y6iSqK0nk9IgsZVSE/8qfXhvXmteFMreDpHxyEsx6rHtPB6rPaC4g/CQE56fItwFr8EstFjEO++Ky/ofxjegYyYE7Q+XsYPkKqQYtn4twf0iZMVNEhttMVFU+mIOKJkQ+SicSYUMNj7mtSPAMqgdC9rN9uRQeWWs00/Nsnxxkjc1UhxxN6Stmoblfj54/YaRsPZIRb3SgV/5K7HtIFoX3vea3U1/6TBu5GIaFZex9bzcZpzWa5+e/KNKMDGcRF27tmbvW7pzQvJingU8tGWmdpIIAbOgQHCyhaCzPwxPYGIGHAlabHcEDP/NHk45LrhL9vrKEakbsFgiHr3Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lvFYpHpV; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1790236688; c=relaxed/relaxed;
+	bh=cH8utLFYEujpE6X6Qzd7ExQckIBLy/Lta27TjnKc3ts=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=GS2Qsmv9dfje1vESotOAPmZLxeaprCTZOlTDHeLJZ3mGLVfPebRg68fmNkCX3Gy9vFyMNXTlyknUS3kRe6fvQL2CvZ84SZl/CaqmtMBKs5hCTICOdfMn/WcJ49fBerCHNONTSk15rCPhta0hckuSK/iG4z6LyIhF9NVsWJDQRiOMTz8Ud8Fl1SQb4+3L0tPlhfQwtXIJqSejiyC+s9IVY5qwDkKCxUYLEHeQ5UDtiHBNl+njvQ9P8tmHwRWctXbQp5c2I10c5gsbf5DlHC2GdUC8brfL2cVEbtP473c/0BBtCBwQo7bghLpOs1J/ekHaSguhtSW5zlTPiwvm9n4u8Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=AbthnPFD; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::10; helo=mail-pj2-x10.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lvFYpHpV;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=AbthnPFD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:39::10; helo=mail-pj2-x10.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pj2-x10.google.com (mail-pj2-x10.google.com [IPv6:2607:f8b0:4864:39::10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hr5jJ2MTMz2y24
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 17:55:16 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 9B8AA42B38;
-	Thu, 24 Sep 2026 07:55:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0E7BC1F000FF;
-	Thu, 24 Sep 2026 07:54:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790236512;
-	bh=8XF4GERg8wBeW3ubUb+zC5tRVKKAYGhsksCUCrCMyIE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=lvFYpHpVMwPBfEiIuvmYeJUUzULg6cdEWSx4iWYVWk727A5rZV5bpt/5Sjkl2pSTJ
-	 +koGcSegVzDsG20kO8t41OXmh6KWyi8RNfZl2ErJwNIuTh23tjzoeT8Dv37tsGeg79
-	 61gp8tpMx2xIK3zP8kYJIEm2UGPz0MsuiqmNKxY9v5C+ubE70585sEQgHP0rrKt73G
-	 695MVjPFlFxGNvVaOlYp2A83auWFA74egHtR5nruPWwDU0nzqWrYwTTl+K4hgYPEPV
-	 DQ3pwEy3zgSLOIKKJ8W+2SiDFy6P5qvxi1PY+qb9cXOQdaC3iHQ+VtthIr/FlkyQ/I
-	 POZQV/h73LJFA==
-Date: Thu, 24 Sep 2026 08:54:49 +0100
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: Lance Yang <lance.yang@linux.dev>
-Cc: akpm@linux-foundation.org, david@kernel.org, ziy@nvidia.com, 
-	baolin.wang@linux.alibaba.com, liam@infradead.org, nico.pache@linux.dev, ryan.roberts@arm.com, 
-	dev.jain@arm.com, baohua@kernel.org, usama.arif@linux.dev, kas@kernel.org, 
-	guoren@kernel.org, bcain@kernel.org, geert@linux-m68k.org, dinguyen@kernel.org, 
-	schuster.simon@siemens-energy.com, jonas@southpole.se, stefan.kristiansson@saunalahti.fi, 
-	shorne@gmail.com, dalias@libc.org, glaubitz@physik.fu-berlin.de, pjw@kernel.org, 
-	palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr, linux@armlinux.org.uk, 
-	vgupta@kernel.org, monstr@monstr.eu, chris@zankel.net, jcmvbkbc@gmail.com, 
-	will@kernel.org, aneesh.kumar@kernel.org, npiggin@gmail.com, peterz@infradead.org, 
-	davem@davemloft.net, andreas@gaisler.com, richard.henderson@linaro.org, 
-	mattst88@gmail.com, linmag7@gmail.com, catalin.marinas@arm.com, mark.rutland@arm.com, 
-	chenhuacai@kernel.org, kernel@xen0n.name, tsbogend@alpha.franken.de, 
-	James.Bottomley@hansenpartnership.com, deller@gmx.de, maddy@linux.ibm.com, mpe@ellerman.id.au, 
-	chleroy@kernel.org, hca@linux.ibm.com, gor@linux.ibm.com, agordeev@linux.ibm.com, 
-	borntraeger@linux.ibm.com, svens@linux.ibm.com, richard@nod.at, 
-	anton.ivanov@cambridgegreys.com, johannes@sipsolutions.net, tglx@kernel.org, mingo@redhat.com, 
-	bp@alien8.de, dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com, 
-	arnd@arndb.de, vbabka@kernel.org, rppt@kernel.org, surenb@google.com, 
-	mhocko@suse.com, jgg@ziepe.ca, jhubbard@nvidia.com, peterx@redhat.com, 
-	ysato@users.sourceforge.jp, shakeel.butt@linux.dev, corbet@lwn.net, rdunlap@infradead.org, 
-	linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, 
-	linux-hexagon@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org, 
-	linux-sh@vger.kernel.org, linux-riscv@lists.infradead.org, 
-	linux-arm-kernel@lists.infradead.org, linux-snps-arc@lists.infradead.org, linux-arch@vger.kernel.org, 
-	sparclinux@vger.kernel.org, linux-alpha@vger.kernel.org, loongarch@lists.linux.dev, 
-	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-s390@vger.kernel.org, linux-um@lists.infradead.org, hughd@google.com, 
-	qi.zheng@linux.dev, linux-doc@vger.kernel.org
-Subject: Re: [PATCH v4 12/12] mm: change the contract for free_pgtables(),
- update docs
-Message-ID: <arTXJXUhjNTWz9Ga@gremlin>
-References: <20260922-rcu-pagetable-freeing-v4-12-fe1ad1f1e303@kernel.org>
- <20260924032625.28555-1-lance.yang@linux.dev>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hr5mY4BcYz2y24
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 17:58:03 +1000 (AEST)
+Received: by mail-pj2-x10.google.com with SMTP id 98e67ed59e1d1-39b9184fa80so1237861a91.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 00:58:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bytedance.com; s=google; t=1790236682; x=1790841482; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=cH8utLFYEujpE6X6Qzd7ExQckIBLy/Lta27TjnKc3ts=;
+        b=AbthnPFDHO6id2A85Q9OQH+LhEtnOyKK3z4PHGknGE8rmZfXCoaApc/1di8UxZbRb4
+         49Lz730nCQSei5jOKhWXmNkK91Evr0nggwgQdSmYy+aVZ2gAmukpOR8/7ndzf6w8kGIK
+         x+4CbxXShxndunPsiomOPkVR9aF5C48npXlAUvqiRyxSPQnPIhJquL+YLHja12ijurdX
+         9ItE6dwmmRahlY5VzUjjODjXUmleeUtn7krHzq6giaussCR2adYxjyAQjGQCB04v4ZD3
+         iibDD5b+82u3zJ6eAfOI3O+7TTSN1IW6zBtgmobItYlawPdUYfRdwcIRxK70RJD33Uir
+         vI3w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790236682; x=1790841482;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=cH8utLFYEujpE6X6Qzd7ExQckIBLy/Lta27TjnKc3ts=;
+        b=1lLZMv5BWJ0Tokj/EI0qCtIDKobfzwHbgjnU/kGBiFeRcCQ4NI/JbEnK3GFvZgKgas
+         nQ6buppnlVnET7bxSJQKrNCuahh/861X7nlakLJEMVwaKu7BU32vDrwyjKSwn5d3mlST
+         zygtqeg1SAfG4qLPGBXuROhnNeEGUD1K+7c2+/M0ZlLDY12wdIpNeeO3Y/+N5JxGNRDq
+         gp/gXwiYUKEmwwJK4erxmPJt8raPQkAFFvGVzqrWnFV07aDD3t1SGUSST8XztHoYxfVA
+         0uI31jne8Y6s74aK8pUGjaJ+q2MuhChEiSP+xPr2pUeuRGnMNh1DccerO37qrbl9gOxU
+         qQsw==
+X-Forwarded-Encrypted: i=1; AKwUvBwqK/y7iLrPNZESz/vOw4HNb3rj3qPG9zokf5bu79Yv58+BY+tn/KaodyD8j8dU9KkkSjxfHY5yvVwjzCQ=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++m4bT9NWiRhMRWNhBtb6/AYQFJ2D/gBVvB8euKkegfFqaQNbbVN
+	SDwL9bJM7RpewYIcDtJo7HrnWEd8gxfpwwcCpiRWEzoVRRbpl8P2nOcYx4KKfofJFeU=
+X-Gm-Gg: AYBFou2suMeHSMoS79ImS81HC4FWmFtaNTnP/2MX0yPN8QM9Qw7RR5bCZB0u0yLUi09
+	RGjVPVdzRJuHQG7GPuNd9e6+fxC4WGyYqAv/maFhI3+GJ9yAuMDyaF/KUl2rHJoxyJz2WZl6nWW
+	ue9IGtkJaOuYJEXUH+kskWH3xtgXWE/1/ODTV0QRjDPumdOy5Puezt1leZnBOI0NrBsM2wYI8pl
+	0O2+ZkeCb+HOsKpLx0tpvZsqq8ZByDnZ/pdBJcyq9ld/JpeDkHss9GnnqtDTkacpdX+qNEp+Yly
+	AsVavW/0cxIWeB1lTKkAZaLEZafrY65/ungpwMwa0/8dAdXelst0hwULkc3AJ/Ep9Bzw96ftz2n
+	1CxSK1IfPat2nmvKClVo7tJTnwud5BSenJcfVwOGOoPQ2UPyT8/IIG4suIu/x1RA19sV0Pbn13a
+	0Pr4byK69JxuiQOj7Us+sjb5Ca9uIkNk4rKJL5doQi/J1Gz37ThNIgIhpIy7Uh4Z4wC04ShHY/X
+	5590UJ6BMux8HYUnXY=
+X-Received: by 2002:a17:90b:390b:b0:39d:f66e:1720 with SMTP id 98e67ed59e1d1-3a09860771cmr1679255a91.13.1790236681626;
+        Thu, 24 Sep 2026 00:58:01 -0700 (PDT)
+Received: from n232-176-004.byted.org ([36.110.163.97])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a0972eec92sm3575622a91.7.2026.09.24.00.57.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 24 Sep 2026 00:58:01 -0700 (PDT)
+From: Muchun Song <songmuchun@bytedance.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Mike Rapoport <rppt@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Hildenbrand <david@kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Lorenzo Stoakes <ljs@kernel.org>,
+	"Liam R . Howlett" <liam@infradead.org>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>,
+	Qi Zheng <qi.zheng@linux.dev>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org,
+	Muchun Song <songmuchun@bytedance.com>,
+	muchun.song@linux.dev
+Subject: [PATCH v2 0/6] mm: Unify device DAX and HugeTLB vmemmap population paths
+Date: Thu, 24 Sep 2026 15:52:53 +0800
+Message-ID: <20260924075259.2013039-1-songmuchun@bytedance.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,89 +106,66 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260924032625.28555-1-lance.yang@linux.dev>
+Content-Transfer-Encoding: 8bit
 
-On Thu, Sep 24, 2026 at 11:26:25AM +0800, Lance Yang wrote:
->
-> On Tue, Sep 22, 2026 at 04:35:43PM +0100, Lorenzo Stoakes (ARM) wrote:
-> >Now that page tables are freed after an RCU grace period, it is safe for
-> >read-only page table walkers to walk page table ranges that are being
-> >concurrently torn down, provided the mm is kept alive via mmgrab().
-> >
-> >It is however unsafe for writers to do so, as they must obtain an
-> >appropriate lock to do so safely.
-> >
-> >Update the pte_offset_map_lock()'s comment block to reflect this.
-> >
-> >Similarly update the process addresses documentation.
-> >
-> >Acked-by: Kiryl Shutsemau (Meta) <kas@kernel.org>
-> >Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
-> >---
-> > Documentation/mm/process_addrs.rst |  6 ++++++
-> > mm/pgtable-generic.c               | 15 +++++++++++----
-> > 2 files changed, 17 insertions(+), 4 deletions(-)
-> >
-> >diff --git a/Documentation/mm/process_addrs.rst b/Documentation/mm/process_addrs.rst
-> >index a7296f251799..b1f4f44d75eb 100644
-> >--- a/Documentation/mm/process_addrs.rst
-> >+++ b/Documentation/mm/process_addrs.rst
-> >@@ -537,6 +537,12 @@ We establish basic locking rules when interacting with page tables:
-> > * When changing a page table entry the page table lock for that page table
-> >   **must** be held, except if you can safely assume nobody can access the page
-> >   tables concurrently (such as on invocation of :c:func:`!free_pgtables`).
-> >+* Page tables may be *walked* under RCU alone, as page tables are freed only
-> >+  after an RCU grace period has elapsed. However, any entry found must be
-> >+  revalidated after the page table lock is taken (such as the
-> >+  :c:func:`!pmd_same` recheck performed by :c:func:`!pte_offset_map_lock`)
-> >+  before it is acted upon. Changing an entry requires the page table
-> >+  lock and one of the locks that excludes teardown (mmap or VMA lock).
->
-> What about rmap walkers? try_to_unmap() clears PTEs under the rmap lock
-> and PTL, without an mmap or VMA lock.
+This series is split out from the earlier, larger series "mm: Generalize
+HVO for HugeTLB and device DAX" [1]. While the parent series generalizes
+vmemmap optimization across HugeTLB and device DAX, this subset addresses
+a single, self-contained step: unifying their vmemmap population paths.
 
-That's an abomination but yep will update.
+After the preceding Device DAX conversion, both HugeTLB and Device DAX
+describe optimized vmemmap mappings through memory-section metadata and
+use per-zone shared tail vmemmap pages. The generic code, however, still
+carries a Device DAX-specific population flag and compound-page population
+path, along with arguments and helpers needed only by that path.
 
->
-> Cheers, Lance
->
-> > * Reads from and writes to page table entries must be *appropriately*
-> >   atomic. See the section on atomicity below for details.
-> > * Populating previously empty entries requires that the mmap or VMA locks are
-> >diff --git a/mm/pgtable-generic.c b/mm/pgtable-generic.c
-> >index b91b1a98029c..a127e3e8f9b9 100644
-> >--- a/mm/pgtable-generic.c
-> >+++ b/mm/pgtable-generic.c
-> >@@ -385,10 +385,17 @@ pte_t *pte_offset_map_rw_nolock(struct mm_struct *mm, pmd_t *pmd,
-> >  * Note: "RO" / "RW" expresses the intended semantics, not that the *kmap* will
-> >  * be read-only/read-write protected.
-> >  *
-> >- * Note that free_pgtables(), used after unmapping detached vmas, or when
-> >- * exiting the whole mm, does not take page table lock before freeing a page
-> >- * table, and may not use RCU at all: "outsiders" like khugepaged should avoid
-> >- * pte_offset_map() and co once the vma is detached from mm or mm_users is zero.
-> >+ * Note that free_pgtables(), used after unmapping detached vmas or when exiting
-> >+ * the whole mm, does not take a page table lock before freeing a page table.
-> >+ *
-> >+ * As page table freeing itself is RCU-safe, page table readers can safely run
-> >+ * concurrently with page table teardown.
-> >+ *
-> >+ * However, writers CANNOT as, without a lock being held, nothing prevents
-> >+ * concurrent teardown.
-> >+ *
-> >+ * Also note that the PGD itself is freed at mmdrop() time, not under RCU - so
-> >+ * the walker must keep the mm alive either by pinning the mm or the VMA.
-> >  */
-> > pte_t *pte_offset_map_lock(struct mm_struct *mm, pmd_t *pmd,
-> > 			   unsigned long addr, spinlock_t **ptlp)
-> >
-> >--
-> >2.55.0
-> >
-> >
+This series first removes VMEMMAP_POPULATE_DAX and moves selection and
+reference handling for the shared tail page into the common vmemmap
+population path. It then removes the generic Device DAX-specific
+compound-page population path and routes section vmemmap population
+through vmemmap_populate(). The powerpc radix path continues to use its
+architecture-specific compound-page population implementation for
+optimizable sections.
 
---
-Cheers, Lorenzo
+The remaining patches remove the unused ptpfn argument, open-code
+vmemmap_populate_address() now that no caller needs its returned PTE, and
+add a warning for inconsistent zone initialization of shared tail vmemmap
+pages.
+
+This is the fourth smaller step toward the broader HVO generalization.
+After this series, HugeTLB and Device DAX use the same population model
+instead of parallel generic paths, while powerpc keeps its
+architecture-specific implementation.
+
+[1] https://lore.kernel.org/all/20260513130542.35604-1-songmuchun@bytedance.com/
+
+v2:
+- Expand the comments around the slab initialization boundary as suggested
+  by Qi Zheng.
+- Collect Acked-by tags from Qi Zheng.
+- Defer the patch making vmemmap_populate_compound_pages() static to a
+  follow-up series that cleans up the powerpc vmemmap population code.
+- Add a new patch to warn about mismatched zone IDs between a page and its
+  shared tail vmemmap page.
+
+v1: https://lore.kernel.org/all/20260913083734.86802-1-songmuchun@bytedance.com/
+
+Muchun Song (6):
+  mm/sparse-vmemmap: drop VMEMMAP_POPULATE_DAX
+  mm/sparse-vmemmap: support device DAX in common vmemmap path
+  mm/sparse-vmemmap: drop Device DAX-specific population path
+  mm/sparse-vmemmap: remove the unused ptpfn argument
+  mm/sparse-vmemmap: open-code vmemmap_populate_address()
+  mm/mm_init: add zone mismatch warning during page init
+
+ arch/powerpc/mm/book3s64/radix_pgtable.c |   3 +
+ mm/mm_init.c                             |   5 +-
+ mm/sparse-vmemmap.c                      | 200 ++++++-----------------
+ 3 files changed, 59 insertions(+), 149 deletions(-)
+
+
+base-commit: f19407ca08644f728cfe9762bf1d1f6985826c47
+-- 
+2.54.0
+
 
