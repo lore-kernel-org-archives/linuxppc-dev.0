@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-28108-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28109-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1A9CC98314
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 10:06:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC4C8C98314
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 10:22:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hr8dD6crnz2yD3;
-	Thu, 24 Sep 2026 20:06:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hr8z42Jn0z2yD3;
+	Thu, 24 Sep 2026 20:22:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790244416;
-	cv=none; b=IINiPRuD0K5Xn7BkmDBRF7B3E0Y1Cur+h5Fb/hQdLo2PIcBpctXlzsSBXWhlnSO6SfEKSpFT/5sIRr2w7r5RjuJAqDpNreMfe7bUwYGOGj0NipV4poMyj8g/YA8BOJNfls8L2q2sxJ2BAX3vXuIMr+astnOeoxImrbYWPc/H2jjNQiFSHEEvosB5FbOZddnKN6/45pBSzdG3pOjRPW789Z++MR3ZumKw5mTPmTvdfkNdLT3VmjBxmUl98NrYWlT4QY/JJIW1onBTGtdwZBjcEGIhf8B+kEBNVLskw80LqIETOCLUjN6yqpgePLVnKXDP7znfSAE05cSrZ4Ybhto4ZQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790245344;
+	cv=none; b=ROHcydjej8XIS4ZfuRQb6p4e7pF0XdjKA9H41ZQnuzTUHuY+THe6gnbvFass1eqOkXKDM2+Lui4g8pDDiaXejq2681elRITS4cux/tbxBiHx6iyXGRNYSR5DHpg83igDudO2qMwCr6OHIKEUBosgNz3fiak7SS0g2dbf9oOWnAeuWPMF1xPWAe2678257Sd73VC4+stCmmDgVt8FqnzsJLqaXZTAnZvMTG9bMhwxbVr0MMLYt1plnH7BlfTk5eo48YQ9hqXF0GtsikloKSX+gyBHL9YmL0nF6yt2hetQ3P1OtRFadwOtzK9uPjAYrF/PW8VrJsCXNAV5KpNCcPyOLg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790244416; c=relaxed/relaxed;
-	bh=Tmln/mtpzj8HRD3oGhB2G+T5+fAuKHxHe9EIDa4XupE=;
+	t=1790245344; c=relaxed/relaxed;
+	bh=/kufuYs8c40R6+aOEF8XLRCigB/kXlHZjyeo0hfMBwU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=OLy+jq83/TAS10JIM8MVhdsNC6sNEyYPnwEdDVJwlLOS3Lib+GG/rVp6jb82rq2cmabZymEIu95TJIQXa5iuK/dwmuKAAfx62fJgISajCgqJZpHWlv6VIPp0KmPNHUvyOXwCgAglAShnPhdrUkice9w//Fq2QedLeJ+n+DzSrSqKeDLgSI18tLWA/qK8Y2Y2BqASemVIM+8pM187zHxCYZOzJGixHz8Nmp4CrdqZKhkP86EokI1ynr7uav23Dyi6wUXobh0BxEF2Zje2WQCHec0oYE8Ck67KUff3oIZO42EhWr+Te9/OPVDiLhbVevuTpkMrlTNeM/wEBeGPJkDZag==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PLQwBAOG; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=MX9n92Hyh+QkxfN7fNZw5BQf3rJM+AdKFeWjs33+usV8ZyW2Ryzu6Ikqi/odgNHqOOI66bnasHDzIlyoI25/DzcIuUq9U45xWCNRuQvVb/YdCDrGVYmNuu97NaTP5i2fnLNI2QvpxUdIcyLkyWmZLCOtf8ZEILWQ6tUrFGNtf+jqYEYMdn0amkwc+WXaf9+5Iy3LAusQSgsh0cYYUoedUFP9Az815zbNo/ah56pawutBF2NRjLwiv6vpsx9gj2Vu5HyHWr+rZDGkAbsNIssvtmkUCmBeCswXceIwhuo5/wSQwssGLJm5Q5FgddkUFPxi8EURCjnA1ZC/VqHFLtuV6Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bK5oWCb3; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PLQwBAOG;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bK5oWCb3;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hr8dD08t5z2y24
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 20:06:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hr8z328DKz2y7Y
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 20:22:23 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id E9433602C3;
-	Thu, 24 Sep 2026 10:06:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C2C321F00893;
-	Thu, 24 Sep 2026 10:06:23 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id ACE6560200;
+	Thu, 24 Sep 2026 10:22:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 75DC61F000FF;
+	Thu, 24 Sep 2026 10:21:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790244413;
-	bh=Tmln/mtpzj8HRD3oGhB2G+T5+fAuKHxHe9EIDa4XupE=;
+	s=k20260515; t=1790245340;
+	bh=/kufuYs8c40R6+aOEF8XLRCigB/kXlHZjyeo0hfMBwU=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=PLQwBAOGo9zDSHvR7HKzryQ/BMyFMtzGN+nCViQmJtAxtR/cVtie3h8+uTfYAAuqI
-	 031IL8YiCRbRgN3Lu0GdOWHF3up1c5eAkeUhEPdxuJ9q/SthtjUJM4e5DTQk3971Cv
-	 +R/NIvQEe5TAium5bmdEyB/qSUVvrKQ3N2k6WtmzwCU8Hw7KqZ3HuHqonUNceqtFUI
-	 gkBAcKeGMzG5vw33mskB8GCIprFrs11XV7eTU1DX4P4aEFuLfxG1bzkZcra4RB+dUr
-	 UBz/croW/YGWjUjo9iUnRJL3m1e4m9BS//Qzg5nKK/0JyOftW1GHHLTSp3iQSWnW2G
-	 YCgs9xZC0a5iw==
-Date: Thu, 24 Sep 2026 11:06:21 +0100
+	b=bK5oWCb3icJZsdzewTtJXUj2g8+OdPY584wvobmFjH9caA6XHPZPOxLC+ENgAYis7
+	 FMWfW3kg0b1pKU0W7dpIcpkH9wgepYgd+Vs0xeodvPvhS2Z2eCR6zzIfxbc+F4vYn1
+	 crr7Q7r6oewUJpom74jt6mX2gF6IAipPmH/f96jRZvGrtuVNztKClju5BP2uHo6kW6
+	 734wktJAnH1jO9c7SkfE4BGx5XUqUo3nH1YffnP3W3u3mHAJ7/dU+/pRlEDaapTJOL
+	 hEriCB9vp3MVrONwH7vOYcoqLNO15CHvH8FuBJLz8aDKeueJxc7YfwK4KfyNmRNl7E
+	 8UCm0PUzGxdsg==
+Date: Thu, 24 Sep 2026 11:21:49 +0100
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 To: Zi Yan <ziy@nvidia.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>, 
@@ -104,12 +104,12 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
 	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
 	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
 	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev
-Subject: Re: [PATCH v3 04/40] mm: consistently validate VMA state after
- mmap[_prepare] hooks
-Message-ID: <arT1xJpWlFlRHUFY@gremlin>
+Subject: Re: [PATCH v3 24/40] mm/mlock: eliminate weird VMA_IO_BIT abuse and
+ simplify
+Message-ID: <arT3K71l86fUVldk@gremlin>
 References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
- <20260917-b4-mmap-prepare-vma-flag-sanify-v3-4-4583d8a23bca@kernel.org>
- <DLN7FLRJGS5Y.1T8T274W2NS6L@nvidia.com>
+ <20260917-b4-mmap-prepare-vma-flag-sanify-v3-24-4583d8a23bca@kernel.org>
+ <93672B94-BB0C-4713-8F8A-3619D81DB7BB@nvidia.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -125,112 +125,137 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <DLN7FLRJGS5Y.1T8T274W2NS6L@nvidia.com>
+In-Reply-To: <93672B94-BB0C-4713-8F8A-3619D81DB7BB@nvidia.com>
 
-On Wed, Sep 23, 2026 at 10:52:06PM -0400, Zi Yan wrote:
-> On Thu Sep 17, 2026 at 12:22 PM EDT, Lorenzo Stoakes (ARM) wrote:
-> > When the f_op->mmap_prepare or deprecated f_op->mmap hooks are invoked, the
-> > driver might have done something crazy that is not permitted by the kernel.
+On Wed, Sep 23, 2026 at 04:06:14PM -0400, Zi Yan wrote:
+> On 17 Sep 2026, at 12:22, Lorenzo Stoakes (ARM) wrote:
+>
+> > When performing mlock() or munlock() otherwise normal VMAs have VMA_IO_BIT
+> > solely to fix a race with migration which might otherwise double-count
+> > mlock VMAs.
 > >
-> > Currently we check for three such cases in __mmap_new_file_vma(), but only
-> > if the legacy f_op->mmap hook is used:
+> > This is unnecessary - at the point of applying folio mlock state, whether
+> > setting or clearing PG_mlocked, we know whether or not we are locking.
 > >
-> > * Did sparc ADI result in invalid flags?
+> > Solve this in two ways - thread a boolean through the page table walk
+> > indicating whether a lock or unlock is being performed, and run a locking
+> > walk with VMA_LOCKONFAULT_BIT set and VMA_LOCKED_BIT cleared.
 > >
-> > * Did the driver alter vma->vm_start?
+> > This state never occurs otherwise, as VMA_LOCKONFAULT_BIT always implies
+> > VMA_LOCKED_BIT. These are also always cleared together.
 > >
-> > * Did the driver make a file-backed mapping on a read-only file writable?
+> > Then, update folio_add_lru_vma() and mlock_folio() to check only for
+> > VMA_LOCKED_BIT, and update try_to_unmap_one() to check for VMA_LOCKED_MASK
+> > instead.
 > >
-> > Generalise these checks for both mmap_prepare and mmap and apply to all
-> > invocations of mmap_file(), the f_op->mmap and f_op->mmap_prepare handling
-> > in the core VMA code and the mmap_prepare compatibility layer.
+> > Also remove the useless invocation of allow_mlock_munlock() which simply
+> > returns true if unlocking and instead rename it to allow_mlock() and only
+> > call it when locking.
 > >
-> > Also extend the vm_start check to vm_end also - drivers must not change the
-> > VMA range at all.
+> > Finally, with the other mlock abuse of VMA_IO_BIT addressed, update
+> > mlock_vma_folio() and folio_add_lru_vma() to simply test for
+> > VMA_LOCKED_BIT. munlock_vma_folio() tests VMA_LOCKED_MASK instead, as an
+> > unmap racing with the locking walk must still munlock folios the walk has
+> > already counted.
 > >
-> > We also WARN_ON_ONCE() on these conditions as they are things that should
-> > simply not occur in the kernel and it's important to call it out when it
-> > does.
-> >
-> > We invoke mmap_prepare_validate() after mmap_action_prepare(), as mmap
-> > actions often manipulate state in the descriptor thus providing the final
-> > state the VMA will be derived from.
-> >
-> > Also call mmap_validate_vma_flags() in insert_vm_struct() to ensure that
-> > special regions which are inserted (such as a VDSO or VVAR) also satisfy
-> > the sanity checks.
-> >
-> > This way every VMA established through an mmap hook, whether via mmap() or
-> > the compatibility layer, or inserted via insert_vm_struct(), has been
-> > validated. brk() VMAs never pass through a driver hook and so need no such
-> > check.
-> >
-> > While we're here, also fixup a couple disjoint blocks of #ifdef CONFIG_MMU.
-> >
-> > Finally, update the VMA userland tests to reflect the change.
+> > While here, also replace some deprecated VMA flag predicates.
 > >
 > > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 > > ---
-> >  mm/internal.h                   |  51 ++++++++++++--------
-> >  mm/util.c                       |  19 ++++++--
-> >  mm/vma.c                        | 100 ++++++++++++++++++++++++++++++++++------
-> >  mm/vma.h                        |  25 ++++++++--
-> >  tools/testing/vma/include/dup.h |  10 ++++
-> >  5 files changed, 163 insertions(+), 42 deletions(-)
+> >  mm/folio.c    |  2 +-
+> >  mm/internal.h | 10 +++++++---
+> >  mm/mlock.c    | 51 +++++++++++++++++++--------------------------------
+> >  mm/rmap.c     |  4 +++-
+> >  4 files changed, 30 insertions(+), 37 deletions(-)
 > >
-> <snip>
-> > +
-> > +/* Check to ensure a driver hasn't done something crazy. */
-> > +static int mmap_validate(unsigned long prev_start, unsigned long prev_end,
-> > +			 unsigned long curr_start, unsigned long curr_end,
-> > +			 const vma_flags_t *prev_flags,
-> > +			 const vma_flags_t *curr_flags)
-> > +{
-> > +	bool was_maywrite, is_maywrite;
-> > +
-> > +	/* Drivers cannot alter the range of the VMA. */
-> > +	if (WARN_ON_ONCE(prev_start != curr_start || prev_end != curr_end))
-> > +		return -EINVAL;
-> > +
-> > +	was_maywrite = vma_flags_test(prev_flags, VMA_MAYWRITE_BIT);
-> > +	is_maywrite = vma_flags_test(curr_flags, VMA_MAYWRITE_BIT);
-> > +
-> > +	/* A driver may not make a previously unwritable mapping writable. */
-> > +	if (WARN_ON_ONCE(!was_maywrite && is_maywrite))
+> > diff --git a/mm/folio.c b/mm/folio.c
+> > index 47a437e0f7fd..35e242b48870 100644
+> > --- a/mm/folio.c
+> > +++ b/mm/folio.c
+> > @@ -505,7 +505,7 @@ void folio_add_lru_vma(struct folio *folio, struct vm_area_struct *vma)
+> >  {
+> >  	VM_BUG_ON_FOLIO(folio_test_lru(folio), folio);
+> >
+> > -	if (unlikely((vma->vm_flags & (VM_LOCKED | VM_SPECIAL)) == VM_LOCKED))
+> > +	if (vma_test(vma, VMA_LOCKED_BIT))
 >
-> Is it driver specific or generally applicable to all mmap(_preppare)
-> operations? Is the comment too specific?
->
-> During my LLM quiz, making memfd write seals writable via a
-> hypothetically wrong shmem_mmap_prepare() implementation is an example
-> for this WARN_ON_ONCE. It is not driver related. Let me know if I get it
-> wrong.
+> I think it is worth documenting VMA_LOCKONFAULT_BIT alone means mlock in
+> progress, like you did in munlock_vma_folio(). Just to keep the protocol
+> explicit for all the readers.
 
-Driver is taken to mean anything with an mmap or mmap_prepare hook, like a
-general term for that.
+Well I'm not sure it's necessary here honestly, because this never checked
+VMA_LOCKED_MASK anyway, and VMA_LOCKONFAULT_BIT never made a difference.
 
-If we start getting into calling it different if it's a file system or memfd or
-something then it becomes quite hard to talk about it.
+So the meaning of VMA_LOCKED_BIT here is strictly 'is it locked' and it's
+correctly handled.
 
-And yeah I hate that it's not a good name because driver makes you think
-something in drivers/* or an OOT one or something but the kernel makes it vague
-:)
+And I fear that it becomes whack-a-mole - the neat thing about this change is
+that you no longer have to special case the stupid VM_SPECIAL thing, and can in
+fact do the 'normal' thing of _just checking_ VMA_LOCKED_BIT :)
 
-Naming is hard...
+So I think it's better not to.
 
 >
-> Otherwise, LGTM.
+> >  		mlock_new_folio(folio);
+> >  	else
+> >  		folio_add_lru(folio);
+> > diff --git a/mm/internal.h b/mm/internal.h
+> > index b2c6c9435021..84aa3e6c8bac 100644
+> > --- a/mm/internal.h
+> > +++ b/mm/internal.h
+> > @@ -971,8 +971,7 @@ void mlock_folio(struct folio *folio);
+> >  static inline void mlock_vma_folio(struct folio *folio,
+> >  				struct vm_area_struct *vma)
+> >  {
+> > -	/* The VM_IO check prevents migration from double-counting during mlock. */
+> > -	if (unlikely((vma->vm_flags & (VM_LOCKED|VM_SPECIAL)) == VM_LOCKED))
+> > +	if (vma_test(vma, VMA_LOCKED_BIT))
 >
-> Reviewed-by: Zi Yan <ziy@nvidia.com>
+> Ditto.
 
-Thanks!
+Similar reasoning to above.
 
 >
+> >  		mlock_folio(folio);
+> >  }
+> >
+> > @@ -989,7 +988,12 @@ static inline void munlock_vma_folio(struct folio *folio,
+> >  	 * always munlock the folio and page reclaim will correct it
+> >  	 * if it's wrong.
+> >  	 */
+> > -	if (unlikely(vma->vm_flags & VM_LOCKED))
+> > +	/*
+> > +	 * VMA_LOCKONFAULT_BIT alone marks an mlock walk in progress, see
+> > +	 * mlock_vma_pages_range(). An unmap racing with the walk must still
+> > +	 * munlock folios the walk has already counted.
+> > +	 */
+
+Here it's worth mentioning, as it's specifically relying on the new
+behaviour. Although it's neatly using the VMA_LOCKED_MASK to handle both the
+locked case and the 'being locked' case :)
+
+> > +	if (unlikely(vma_test_any_mask(vma, VMA_LOCKED_MASK)))
+> >  		munlock_folio(folio);
+> >  }
+> >
 >
-> --
+> Why I am commenting in the middle of the series? Because I am taking
+> a quiz given by LLM based on this series to get myself enough background
+> knowledge to review this series. This mlock part came up at part E
+> and I only have part F left before I can do the full review. :)
+
+Thanks! :) I really appreciate you taking the time to look at this! Sorry it's
+so large.
+
+I held this series back from last cycle to help with review load, then spent
+some time fixing various AI-discovered things, and all the patches are necessary
+(well for the most part) to get where the series needs to go.
+
+I think the change is worth it though!
+
+>
 > Best Regards,
 > Yan, Zi
->
 
 --
 Cheers, Lorenzo
