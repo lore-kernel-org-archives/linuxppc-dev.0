@@ -1,80 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-28110-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28111-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51E17C9830E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 11:16:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 124E4C98317
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 12:32:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hrB9p3L80z2yD3;
-	Thu, 24 Sep 2026 21:16:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1:d65d:64ff:fe57:4e05"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790248606;
-	cv=none; b=JTUpb21qEAHd1PfLbC+ViDuzPDkS2TiAjPEg3s9wCRXCFr241C1iwUrDpkos6DhlAS3LXcRYvrDY1k/feKXMG8ley/y94pDVO0Uyt8qKsSrn9SkmAgT09dZECyzTlHY6ihaFGNYR8H11avdsVx8x6m9q4mpuDI6G4O1jl7VvSkDyoTrLSpH06CnPrxQE+ORBBeDjqbfsNlYel1RpsSTxqTrAiqvKc09zFsbzh0woE9RDTFDnj6gh4dihNTEvoq+VTWPakwdO2a8DeYlFjQ7mbeQyNLfobcM9a7gXSRQ9/D8lLvWDLNDRUgCJHpdGK6qj9HLxqE59MKbpPEMGfPqjpA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hrCsC6zNFz2yD3;
+	Thu, 24 Sep 2026 22:32:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790253151;
+	cv=none; b=D4fmfkQoCYQ+dyRPPcV/crAhCPnOcIpwD6/ikv0dzKy/v6C8pjvqHjcivmc94l4/QSuTBUxWQo0hlBUQcxRQbLY9+g817qnsbAOyTdQNHhvdo4d522QGXvxZPr2Sm6ae1udazRBVpdBKYl3y7rxM3BeNQZ7v3x4LsWtjBfcYNPye5akyU3mj3OVhLCtnzhqroOg2AhvNMtWw72m1RnN7kNIkXj+kav4Q+paqAqHSFkqx3Wm9OMdJwma6t78okKjcqo8fkSPUl7toEDUkxYZSUe8cao1Pd7pTN+xNB+xRrVS+cQL0h1P2FfN/QWE61AjVvoCF1I08w6ijvwHRYC4Vdg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790248606; c=relaxed/relaxed;
-	bh=gHiDQ7HWXcZShppku6mAcXzNHEI2Xpwr5xmcNWbMy1M=;
+	t=1790253151; c=relaxed/relaxed;
+	bh=DxfLt02tiYB/R06QhwaMsYXhy8uIIvTYHfePzbadpUk=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=CWPU89Sar9nm/hEd/1oma0jypANfvWpHebNsbM9ZIEShnZWPJpvLo1gwUX8RM2rPf+d2KBJFNYNYgrtQ01jVMTxo4cv5allkgeDcKrERtckC2Uwtf6ON8o6k0F+jAJPoP2EZ0k4cfdDxLoLwWQ7WybEYt14m5GspBe/qRfGEzozz2qBQ/dd5jOlsQJXuhJ8Q2H1xAqDompxn/oqTgf8HcuyKFA0emkHr6Un9gi9WPBvy/2hvsZvH3bOlKyIL62DRToSqK0uqbM4AlCg/AuCFr6hh6ccpTqzYjFOdCbNtwwRLpH9E0aYMG5otUwUGJgAnXRsS+UfGx1bTgQsoyhXgtA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=TiyK92WB; dkim-atps=neutral; spf=pass (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=Xin4i6UFiMqSmEtOL5/Nko0C8ItBzHqt6EzA50XyWrxUtMhqcjuhHlB9RQMcvO31n2QPV+TVp1hMjjFJzHyt5LYF/mZwnFkpLpgcv87BwHdwxSWI/UqKJ7LWbJSx44UVIsyEQOHfiOMB6DPVmeCtxarxYqmDSWxKQjXPf+ETzVC4v6Jg6b0amKUenWqyZ6NEQqQiJhI9/PNRu03fRqBUVuNNITKzW88JfF4qL8knFQ2Y66cJbxmVY/RFFaQ4WPTauTSGtoh3SYKzmEYfPv/UzyKhQdR3PFsvDOPGF8SDXcR3OfhVrqCMB+/wHEI7tuYFBcWahG1VC0YGW3k/OhB7yw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=lz309Dy3; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=TiyK92WB;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=lz309Dy3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrB9g2LwMz2y7Y
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 21:16:33 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Transfer-Encoding:
-	Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
-	Sender:Reply-To:Content-ID:Content-Description;
-	bh=gHiDQ7HWXcZShppku6mAcXzNHEI2Xpwr5xmcNWbMy1M=; b=TiyK92WBOnCu1fWO0Z4cSNHVSd
-	Mj8PXqr4/HhutFB2ojMrKICILUnBnS4eqhR0AMmOxXGmjL4S91AliFtOmH9Eer5YntsyAB/x4AKze
-	fjT7npvpCLhoKOtTRRGEFqlv/VLi37lyt5oAaJKmfc6RforL6bCcKz1OK121z4RkpdlZBm6gvCrtF
-	1lB1nmH9hGCAcDm6f6x5INXv/tuJtYFmT/ZvCVh6C8e0JhN+Zyey3XlE+f3D3oLXxOEPOZToiUXDi
-	KJ2TkcrnEgtVqHSSODBhH8NPCRreQWhadpv53WL0YAzTlI0/Iatayi0tl9oOR4O5GphjKwUAad29M
-	izhpZmgQ==;
-Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
-	by desiato.infradead.org with esmtpsa (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1x9hQm-0000000FtJV-1tlA;
-	Thu, 24 Sep 2026 11:16:00 +0000
-Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-	id F3EDA300756; Thu, 24 Sep 2026 13:15:57 +0200 (CEST)
-Date: Thu, 24 Sep 2026 13:15:57 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-Cc: catalin.marinas@arm.com, will@kernel.org, mark.rutland@arm.com,
-	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-	chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com,
-	pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu,
-	alex@ghiti.fr, hca@linux.ibm.com, gor@linux.ibm.com,
-	agordeev@linux.ibm.com, borntraeger@linux.ibm.com,
-	svens@linux.ibm.com, tglx@kernel.org, mingo@redhat.com,
-	bp@alien8.de, dave.hansen@linux.intel.com, x86@kernel.org,
-	hpa@zytor.com, ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net,
-	bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org,
-	aliceryhl@google.com, tmgross@umich.edu, dakr@kernel.org,
-	daniel.almeida@collabora.com, tamird@kernel.org,
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hrCs960Ttz2y24
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 22:32:28 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9A49A152B;
+	Thu, 24 Sep 2026 05:31:51 -0700 (PDT)
+Received: from J2N7QTR9R3 (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 2777F3F86C;
+	Thu, 24 Sep 2026 05:31:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1790253115; bh=tyroa8lBoOqLwHpTeRHuGpjV833qc9sQbRMa/D+dsoA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=lz309Dy3TlEu+7y1tHZCYfrdPqaWCgtZMoXnPf8tuQOM4LMWKCZ6sgCmYSkYsjvcs
+	 tO7bMRWvAOIpOXYh7A+nfbCx25N76QAhUGvlajWZ3EFwvUyLVK0EAGgwuHLQJWAXUT
+	 QV+kIw/8QJ9o4Wbe1n28zhddNcWmz6QOOLHombIo=
+Date: Thu, 24 Sep 2026 13:31:42 +0100
+From: Mark Rutland <mark.rutland@arm.com>
+To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+Cc: catalin.marinas@arm.com, will@kernel.org, maddy@linux.ibm.com,
+	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
+	ritesh.list@gmail.com, sshegde@linux.ibm.com, pjw@kernel.org,
+	palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr,
+	hca@linux.ibm.com, gor@linux.ibm.com, agordeev@linux.ibm.com,
+	borntraeger@linux.ibm.com, svens@linux.ibm.com, tglx@kernel.org,
+	mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com,
+	x86@kernel.org, hpa@zytor.com, ojeda@kernel.org, boqun@kernel.org,
+	gary@garyguo.net, bjorn3_gh@protonmail.com, lossin@kernel.org,
+	a.hindborg@kernel.org, aliceryhl@google.com, tmgross@umich.edu,
+	dakr@kernel.org, daniel.almeida@collabora.com, tamird@kernel.org,
 	acourbot@nvidia.com, work@onurozkan.dev, nathan@kernel.org,
 	ndesaulniers@google.com, morbo@google.com, justinstitt@google.com,
-	jszhang@kernel.org, japo@linux.ibm.com, jpoimboe@kernel.org,
-	seanjc@google.com, pmladek@suse.com, thuth@redhat.com,
-	ynorov@nvidia.com, joelagnelf@nvidia.com, david@davidgow.net,
-	fujita.tomonori@gmail.com, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	rust-for-linux@vger.kernel.org, llvm@lists.linux.dev
+	jszhang@kernel.org, japo@linux.ibm.com, peterz@infradead.org,
+	jpoimboe@kernel.org, seanjc@google.com, pmladek@suse.com,
+	thuth@redhat.com, ynorov@nvidia.com, joelagnelf@nvidia.com,
+	david@davidgow.net, fujita.tomonori@gmail.com,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org, rust-for-linux@vger.kernel.org,
+	llvm@lists.linux.dev
 Subject: Re: [RFC] rust: kernel: Add KUnit tests for ARCH_WARN_ASM bug table
  emission
-Message-ID: <20260924111557.GP1837346@noisy.programming.kicks-ass.net>
+Message-ID: <arUYLsJJewE--wqo@J2N7QTR9R3>
 References: <20260922054959.955093-2-mkchauras@gmail.com>
- <20260922064735.GS4121339@noisy.programming.kicks-ass.net>
- <arNxAn7I7NCVWmD1@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,120 +82,29 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <arNxAn7I7NCVWmD1@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+In-Reply-To: <20260922054959.955093-2-mkchauras@gmail.com>
 
-On Wed, Sep 23, 2026 at 11:58:13AM +0530, Mukesh Kumar Chaurasiya wrote:
-> On Tue, Sep 22, 2026 at 08:47:35AM +0200, Peter Zijlstra wrote:
-> > On Tue, Sep 22, 2026 at 11:20:00AM +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
-> > > Verify that the __bug_table entry emitted by ARCH_WARN_ASM has a correct
-> > > bug_addr displacement — i.e. the arch's trap label reference resolves to
-> > > the trap instruction — by calling find_bug() with the exact virtual address
-> > > of the trap, mirroring what the real trap handler does.
-> > > 
-> > > To support all architectures, each arch that implements ARCH_WARN_ASM now
-> > > defines ARCH_WARN_ASM_TRAP_LABEL, a string constant naming the local label
-> > > at which the trap instruction is placed:
-> > > 
-> > >   x86       "1"     (ud2 at label 1:)
-> > >   powerpc   "1"     (twi at label 1:)
-> > >   riscv     "1"     (ebreak at label 1:)
-> > >   arm64     "14471" (brk placed at 14471: by __BUG_ENTRY_END)
-> > >   s390      "0"     (mc at label 0:)
-> > > 
-> > > The label is used consistently: in ARCH_WARN_ASM itself, in the
-> > > bug_addr back-reference inside __BUG_ENTRY / _EMIT_BUG_ENTRY, 
-> > 
-> > 
-> > > diff --git a/arch/x86/include/asm/bug.h b/arch/x86/include/asm/bug.h
-> > > index 23ab05438269..6cca8880660e 100644
-> > > --- a/arch/x86/include/asm/bug.h
-> > > +++ b/arch/x86/include/asm/bug.h
-> > > @@ -62,8 +62,9 @@ extern void __WARN_trap(struct bug_entry *bug, ...);
-> > >  #define HAVE_ARCH_BUG_FORMAT_ARGS
-> > >  #endif
-> > >  
-> > > +#define ARCH_WARN_ASM_TRAP_LABEL "1"
-> > >  #define __BUG_ENTRY(format, file, line, flags)				\
-> > > -	"\t.long 1b - ."	"\t# bug_entry::bug_addr\n"		\
-> > > +	"\t.long " ARCH_WARN_ASM_TRAP_LABEL "b - ." "\t# bug_entry::bug_addr\n" \
-> > >  	__BUG_ENTRY_FORMAT(format)					\
-> > >  	__BUG_ENTRY_VERBOSE(file, line)					\
-> > >  	"\t.word " flags	"\t# bug_entry::flags\n"
-> > > @@ -101,7 +102,7 @@ do {									\
-> > >  	"99:\n"								\
-> > >  	"\t.string \"\"\n"						\
-> > >  	".popsection\n"							\
-> > > -	"1:\t " ASM_UD2 "\n"						\
-> > > +	ARCH_WARN_ASM_TRAP_LABEL ":\t " ASM_UD2 "\n"			\
-> > >  	_BUG_FLAGS_ASM("99b", file, line, flags, size, "")
-> > >  
-> > >  #else
-> > 
-> > Not really a fan of that. And I can't really tell what you're doing with
-> > it either. The kunit is in Rust and thus unreadable :-(
-> > 
-> > I would rather you fix up is_valid_bugaddr(), some architectures seem to
-> > have an always true stub because of the callchains always being from the
-> > break instruction.
+On Tue, Sep 22, 2026 at 11:20:00AM +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
+> Verify that the __bug_table entry emitted by ARCH_WARN_ASM has a correct
+> bug_addr displacement — i.e. the arch's trap label reference resolves to
+> the trap instruction — by calling find_bug() with the exact virtual address
+> of the trap, mirroring what the real trap handler does.
 > 
-> Hey Peter,
+> To support all architectures, each arch that implements ARCH_WARN_ASM now
+> defines ARCH_WARN_ASM_TRAP_LABEL, a string constant naming the local label
+> at which the trap instruction is placed:
 > 
-> thanks for the suggestion. I will fix up the is_valid_bugaddr for
-> powerpc. I am not very good with other archs asm but i can do it for
-> ppc32 and ppc64.
+>   x86       "1"     (ud2 at label 1:)
+>   powerpc   "1"     (twi at label 1:)
+>   riscv     "1"     (ebreak at label 1:)
+>   arm64     "14471" (brk placed at 14471: by __BUG_ENTRY_END)
+>   s390      "0"     (mc at label 0:)
 
-Untested thingies for arm64 and s390x.
+I'm not a fan of exposing such a low-level implementation detail out of
+the architecture code, and I don't think we should expose this.
 
-diff --git a/arch/arm64/kernel/traps.c b/arch/arm64/kernel/traps.c
-index 914282016069..3d8a969eab5f 100644
---- a/arch/arm64/kernel/traps.c
-+++ b/arch/arm64/kernel/traps.c
-@@ -987,14 +987,13 @@ void do_serror(struct pt_regs *regs, unsigned long esr)
- #ifdef CONFIG_GENERIC_BUG
- int is_valid_bugaddr(unsigned long addr)
- {
--	/*
--	 * bug_brk_handler() only called for BRK #BUG_BRK_IMM.
--	 * So the answer is trivial -- any spurious instances with no
--	 * bug table entry will be rejected by report_bug() and passed
--	 * back to the debug-monitors code and handled as a fatal
--	 * unexpected debug exception.
--	 */
--	return 1;
-+	u32 insn;
-+
-+	if (aarch64_insn_read((u32 *)addr, &insn))
-+		return 0;
-+
-+	/* Match ASM_BUG_FLAGS() / BUG() instructions. */
-+	return insn == (0xd4200000 | (BUG_BRK_IMM << 5));
- }
- #endif
- 
-diff --git a/arch/s390/kernel/traps.c b/arch/s390/kernel/traps.c
-index b6ba4465f59d..8bbb082fd5e3 100644
---- a/arch/s390/kernel/traps.c
-+++ b/arch/s390/kernel/traps.c
-@@ -26,6 +26,7 @@
- #include <linux/entry-common.h>
- #include <linux/kmsan.h>
- #include <linux/bug.h>
-+#include <linux/uaccess.h>
- #include <asm/entry-percpu.h>
- #include <asm/asm-extable.h>
- #include <asm/irqflags.h>
-@@ -55,7 +56,12 @@ static inline void __user *get_trap_ip(struct pt_regs *regs)
- #ifdef CONFIG_GENERIC_BUG
- int is_valid_bugaddr(unsigned long addr)
- {
--	return 1;
-+	u16 insn;
-+
-+	if (get_kernel_nofault(insn, (u16 *)addr))
-+		return 0;
-+
-+	return insn == 0x0001 || insn == 0x000e;
- }
- #endif
- 
+What exactly are you trying to verify here, and why? Has there been
+some _specific_ issue on powerpc that caused you to look at this?
+
+Mark.
 
