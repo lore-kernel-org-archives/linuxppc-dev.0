@@ -1,82 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-28113-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28114-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6A31C98314
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 12:53:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CB4DC9831D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 12:53:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hrDKV0N6xz2y24;
-	Thu, 24 Sep 2026 22:53:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790254413;
-	cv=none; b=oO21hiS0FVeEsb7xbCl0Zm8fIaTrW6NHidZV1naXAzDdh9D2K5Zz/SJS5C2xtxsLAlly/AyxiB8CVj9a+NjKsFKjHxZcxKq+ie4yIMMiKZulRAAExWsDFwKpbonwAfl+cLOdHBMSAWQXP99d//oIEmY7S3rMHIQs7JWheHWh3iBvgM5qYfyBQr/NGVMBJ/UJ/OjxQyZ5dy8kO0OWz2mIeRkRUiu/RUP1Rn5dUN2VKROpUQRBDvM5Qw0yHFqXCtwroptXfDEsHm8PdMJWR7UcFpokqhqmDsRTVwI/3XyLDKSwwcP6M8X1Q0UIEsgb5kU2/nBvRVPyDi5LOLskDMGk2g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hrDKf6Jj0z2yD3;
+	Thu, 24 Sep 2026 22:53:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790230667;
+	cv=none; b=fmqdu6U8dO1juqn17/tHpwjP5D4Lb+LCBhOzbYPgN6XiMtfqIEeu3ij1InvSpvMXhBBOW52IfZWnWpSO5FXGiADCIW8L1SMfBUkpihnz58XvH5nSNLoXCb0dZ3S3MGgvam4AtBVVBJZzaQKeHkmwS5XD8JPBBKKu5CbKeRG37Xv7RU9p4BsMk/gfJ5pUz18wXF29Pu/CikXrXj+spr0TlCw5folXJPnmI//e/TD2jYCxQf7xZC6YdSfeN6tpSzNF+6QfGiuBG3MVcqRdiHov+RBH/RErPKkPqlHMhk+bb0Bsw3n7ZyoDzh0rQ7u+yK2/y4l7m2tfjvXaRNOsjJEosw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790254413; c=relaxed/relaxed;
-	bh=zhS6wEtyL82mK4tYraCNhULjxYZl5Eh2+XSrwYDuWw8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=PhMXopRUQMC34Dz/1qfWYjyvw1CTqHQMcP9nfFMjFfrEIcfW3oxBzGZoW/nDHjWeNQQaixdIn+htPdMRTiFasbRxICj7sTxSVTJqDeyh32ohSAE73tNN3kuLX/CJNgeka/gYd34GZgI+Gv+pZQmbv2OSZokJ1hjvT2Li+f65RBPtdwsM8gY6kywYj30l5siG2G18lBjEMvWN8yiMFM7r9XWRqWKS9pgSEBc4sq6mfH7Tjqvkwyi5aa056jryztS/8/extJdRwM66r2mIv54DMJ0YeWD7nMclY/SK/ce00JjTTyZLlUKITPNtBG+wCIG6+qucDQA20bV1fugfED+YgQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=gh/zR8hE; dkim-atps=neutral; spf=pass (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+	t=1790230667; c=relaxed/relaxed;
+	bh=6c3fNl6wYoqHgVUfRJCa5O7Gu1Skwm4zRTVcLTAxX7I=;
+	h=MIME-Version:Date:From:To:Cc:Subject:In-Reply-To:References:
+	 Message-ID:Content-Type; b=nQif2WfHn8jAgjxKRnOjHJ7rWc5I7PA+VDuOUTQxeeG3jjSLDyp8OmC2xKqd3NNoYp+Dp2MxJ5AYrMvCbYoFQFR0PN58JV0hNPRuZ5sg+X2HfdVBrIGjDqd8ZJ3+QndWX5Yj76s2wNpLnM3S+KNqWdlC8F8B5o1W6HoyRJoKmeWW58JqComaZQ7y3+nk8DkNh5km2Jfffidp/TIhWiRiBXsNt1UxYyCikSkWW3ZKFsXCTSUuXWRBR4d4NU7fLxkYIFrLSHMqP8Rjr3j2cIXNwku5qAiML9AHBTex2RX6As0QH5wz6/rM94DkNj818EDBZRoQzdVDHZr/PSnZ9fLbHQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YCbAgOeR; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=jyoti@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=gh/zR8hE;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YCbAgOeR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=jyoti@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrDKN4TVCz2xs1
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 22:53:27 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=zhS6wEtyL82mK4tYraCNhULjxYZl5Eh2+XSrwYDuWw8=; b=gh/zR8hEeHERmWebDM2eGK3v8V
-	l6VuEW2V/VbaaCh9DBzZHUlGeOUdU8p+P5KlCIxsU6HK2VQP3wP/i5AlOY32OtbpMG+fsDmyZglp5
-	4tWNefIBiA58Si/yWufw8NfwSgZfpcuJJElo7VUSj0qIYaNYgrBrxoY+DWK6SmYTP4e2UbWCfftvG
-	HLqdQ/+/bxuoJtznuLGzDzISFma5jh+bkNG9oTUdJ+s9zyLEy3sSjKToiNQOCvm3zWww4ps200Cqo
-	Q0kcGJ49Opb5z4P231+oQOkqHrcZP1Oy/ftXVnPiKW+Fv8xL1BI6MNrJ0xwMqZ2pw6fW+THOi+dO4
-	jby4f3hQ==;
-Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
-	by casper.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x9iwY-0000000Graq-2VlH;
-	Thu, 24 Sep 2026 12:52:54 +0000
-Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-	id 7EFB13002D9; Thu, 24 Sep 2026 14:52:53 +0200 (CEST)
-Date: Thu, 24 Sep 2026 14:52:53 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>, catalin.marinas@arm.com,
-	will@kernel.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
-	npiggin@gmail.com, chleroy@kernel.org, ritesh.list@gmail.com,
-	sshegde@linux.ibm.com, pjw@kernel.org, palmer@dabbelt.com,
-	aou@eecs.berkeley.edu, alex@ghiti.fr, hca@linux.ibm.com,
-	gor@linux.ibm.com, agordeev@linux.ibm.com,
-	borntraeger@linux.ibm.com, svens@linux.ibm.com, tglx@kernel.org,
-	mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com,
-	x86@kernel.org, hpa@zytor.com, ojeda@kernel.org, boqun@kernel.org,
-	gary@garyguo.net, bjorn3_gh@protonmail.com, lossin@kernel.org,
-	a.hindborg@kernel.org, aliceryhl@google.com, tmgross@umich.edu,
-	dakr@kernel.org, daniel.almeida@collabora.com, tamird@kernel.org,
-	acourbot@nvidia.com, work@onurozkan.dev, nathan@kernel.org,
-	ndesaulniers@google.com, morbo@google.com, justinstitt@google.com,
-	jszhang@kernel.org, japo@linux.ibm.com, jpoimboe@kernel.org,
-	seanjc@google.com, pmladek@suse.com, thuth@redhat.com,
-	ynorov@nvidia.com, joelagnelf@nvidia.com, david@davidgow.net,
-	fujita.tomonori@gmail.com, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	rust-for-linux@vger.kernel.org, llvm@lists.linux.dev
-Subject: Re: [RFC] rust: kernel: Add KUnit tests for ARCH_WARN_ASM bug table
- emission
-Message-ID: <20260924125253.GY776954@noisy.programming.kicks-ass.net>
-References: <20260922054959.955093-2-mkchauras@gmail.com>
- <20260922064735.GS4121339@noisy.programming.kicks-ass.net>
- <arNxAn7I7NCVWmD1@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
- <20260924111557.GP1837346@noisy.programming.kicks-ass.net>
- <arUbw_TIA0Uj7oXT@J2N7QTR9R3>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hr3Xm0ZXTz30Pn
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 16:17:43 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68O5bRtp1372031;
+	Thu, 24 Sep 2026 06:17:22 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=6c3fNl
+	6wYoqHgVUfRJCa5O7Gu1Skwm4zRTVcLTAxX7I=; b=YCbAgOeRZa5zO8MmHR4d/f
+	WRrDzmcR1ilgzxzDbscaCQE2G9Q0uwoisQQ2ar3HR/d/E8lh5/4tpgvXD9ea9hsz
+	GdxdFgr/OGQPUrfVURkx7RWKbh9KtUhhiUn3+Q9yATHsGFS2K0tmFZGQk9lWJKrr
+	sPs0yZpebYk16FhTuj5IsTRZS9yRToXbdPCNPkfFEMwzJVamQTMkJdfyDWe9qtXp
+	X03S/HpmMJGAhNgxdfTLQXyaKt/OMu1Ed9s7vziJ7Xtmls7k0NWOuMqScle8WKZX
+	x3M0Bc5OrLGLJYBuvo+BOiOJadTijFILld2tQF0RlzG9sqYajpfzns3FZaKpMluA
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gskdveq23-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Thu, 24 Sep 2026 06:17:22 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68O5lYTN1554285;
+	Thu, 24 Sep 2026 06:17:21 GMT
+Received: from smtprelay06.wdc07v.mail.ibm.com ([172.16.1.73])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gvb6qmdf6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 24 Sep 2026 06:17:21 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
+	by smtprelay06.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68O6HJAK29098710
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 24 Sep 2026 06:17:19 GMT
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C95965805A;
+	Thu, 24 Sep 2026 06:17:19 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1DF1058054;
+	Thu, 24 Sep 2026 06:17:19 +0000 (GMT)
+Received: from ltc.linux.ibm.com (unknown [9.5.196.140])
+	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 24 Sep 2026 06:17:19 +0000 (GMT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,69 +79,235 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <arUbw_TIA0Uj7oXT@J2N7QTR9R3>
+Date: Thu, 24 Sep 2026 11:47:18 +0530
+From: jyoti <jyoti@linux.ibm.com>
+To: maddy@linux.ibm.com
+Cc: mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
+        ritesh.list@gmail.com, sshegde@linux.ibm.com,
+        sourabhjain@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: Fix missing of_node_put() calls
+In-Reply-To: <20260924061132.178744-1-jyoti@linux.ibm.com>
+References: <20260924061132.178744-1-jyoti@linux.ibm.com>
+Message-ID: <5cef10ab1610113fe162cec1dffd97f3@linux.ibm.com>
+X-Sender: jyoti@linux.ibm.com
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: AUAeOOyOcIWhtjDTb4CPAnq8BtHcnHsH
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI0MDAyNiBTYWx0ZWRfXzqApml3K5ivd
+ NXojZlewn/zknhWQHac554D3yJRXiXyuDaEf+xvh7HWS+Rvg4fE93c5lsVUkGS8z3QsX3Wez3kf
+ DeKbkxOqt3yOCgVL7v3o/46OMePx1wI=
+X-Authority-Analysis: v=2.4 cv=FLiOVOos c=1 sm=1 tr=0 ts=6ab4c072 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=kj9zAlcOel0A:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8
+ a=ENoAIOW7Q9U8ZCHd3F0A:9 a=CjuIK1q_8ugA:10
+X-Proofpoint-GUID: iIagjr1qgKHDxksdBxsDZrFvd4XQj2bK
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI0MDAyNiBTYWx0ZWRfX/BR6uAGUXV3w
+ CO0FlDBTwzg7AcCppnfLC88kSLa0D9PsUQq+WOnBV31JbZVtoBL8ZqnxeZon4craz/lR4nx/dsx
+ UKWr4PvXMVI9ek33A6C1fh29fJSkBeqIaEzO+6BXE72cL+3y153yK/rBahgZecLzr4CDpf5ZKGA
+ PFQS75lMsb/X+PVauf/8Jm5zEmz7zHMi7hMGlQHmBtSMmzQ3HEXeAB8VwpRT/EseT90zoykgORo
+ epcKfOgnMI/ALUrX5nx6Z2o1O23LOKRFDobrjkS8e+QBT7VmWIcsB3enxo6/YiPatw+j+3LPLum
+ H3g7S2g3fKAvwHrsVBDEF9yKLHMWzij7y4LVXGbn7KBEGXx09PzJ75ogvMp0YBJb1P888EZFgyV
+ 84EhYfmBVwQa9IR5MZtwzHOoYt9USriX+kCptRA7OapP8biFVdW81xm7WSeg2q5zSaFAK9gzUig
+ ucBbzdLCXxbPc8XambQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-24_02,2026-09-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 impostorscore=0 phishscore=0 spamscore=0 clxscore=1011
+ suspectscore=0 bulkscore=0 lowpriorityscore=0 priorityscore=1501
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
+ definitions=main-2609240026
 
-On Thu, Sep 24, 2026 at 01:46:59PM +0100, Mark Rutland wrote:
-
-> > diff --git a/arch/arm64/kernel/traps.c b/arch/arm64/kernel/traps.c
-> > index 914282016069..3d8a969eab5f 100644
-> > --- a/arch/arm64/kernel/traps.c
-> > +++ b/arch/arm64/kernel/traps.c
-> > @@ -987,14 +987,13 @@ void do_serror(struct pt_regs *regs, unsigned long esr)
-> >  #ifdef CONFIG_GENERIC_BUG
-> >  int is_valid_bugaddr(unsigned long addr)
-> >  {
-> > -	/*
-> > -	 * bug_brk_handler() only called for BRK #BUG_BRK_IMM.
-> > -	 * So the answer is trivial -- any spurious instances with no
-> > -	 * bug table entry will be rejected by report_bug() and passed
-> > -	 * back to the debug-monitors code and handled as a fatal
-> > -	 * unexpected debug exception.
-> > -	 */
-> > -	return 1;
-> > +	u32 insn;
-> > +
-> > +	if (aarch64_insn_read((u32 *)addr, &insn))
-> > +		return 0;
-> > +
-> > +	/* Match ASM_BUG_FLAGS() / BUG() instructions. */
-> > +	return insn == (0xd4200000 | (BUG_BRK_IMM << 5));
-> >  }
-> >  #endif
+On 2026-09-24 11:41, Jyoti Gupta wrote:
+> Several PowerPC code paths acquire device tree node references but fail
+> to drop them on error paths, early exits.
 > 
-> What problem is this trying to solve?
+> Add the missing of_node_put() calls across PowerPC platform to ensure
+> proper device node reference counting.
 > 
-> Mukesh's original patch seems to be trying to check whether we compiled
-> things correctly (such that the bug_table entry points at the expected
-> insturction), and I don't think that warrants a runtime check, but (as
-> per my reply to him) I don't understand why that's a thing to check in
-> the first place.
+> These changes prevent device node reference leaks and improve overall
+> resource management in PowerPC code.
 > 
-> On arm64 we only call is_valid_bugaddr() under do_el1_brk64() ->
-> call_el1_break_hook() -> bug_brk_handler(). We only call
-> bug_brk_handler() when HW has taken a BRK exception with the BUG_BRK_IMM
-> immediate, and that can only be triggered by executing the right
-> instruction (BRK #BUG_BRK_IMM), which we ONLY use for BUG(). and WARN().
+> Signed-off-by: Jyoti Gupta <jyoti@linux.ibm.com>
+> ---
+>  arch/powerpc/kexec/file_load_64.c            | 1 +
+>  arch/powerpc/platforms/44x/iss4xx.c          | 2 ++
+>  arch/powerpc/platforms/44x/warp.c            | 1 +
+>  arch/powerpc/platforms/85xx/mpc85xx_8259.c   | 1 +
+>  arch/powerpc/platforms/86xx/pic.c            | 1 +
+>  arch/powerpc/platforms/pasemi/setup.c        | 1 +
+>  arch/powerpc/platforms/powermac/pci.c        | 1 +
+>  arch/powerpc/platforms/powermac/smp.c        | 2 ++
+>  arch/powerpc/platforms/pseries/hotplug-cpu.c | 4 ++--
+>  arch/powerpc/sysdev/mpic.c                   | 4 ++--
+>  10 files changed, 14 insertions(+), 4 deletions(-)
 > 
-> So I don't see why any change is necessary here.
+> diff --git a/arch/powerpc/kexec/file_load_64.c
+> b/arch/powerpc/kexec/file_load_64.c
+> index bd80c5fb1b1f..8d4d6a51c046 100644
+> --- a/arch/powerpc/kexec/file_load_64.c
+> +++ b/arch/powerpc/kexec/file_load_64.c
+> @@ -204,6 +204,7 @@ static int add_usable_mem_property(void *fdt,
+> struct device_node *dn,
+>  	if (snprintf(path, NODE_PATH_LEN, "%pOF", dn) > (NODE_PATH_LEN - 1)) 
+> {
+>  		pr_err("Buffer (%d) too small for memory node: %pOF\n",
+>  		       NODE_PATH_LEN, dn);
+> +		of_node_put(dn);
+>  		return -EOVERFLOW;
+>  	}
+>  	kexec_dprintk("Memory node path: %s\n", path);
+> diff --git a/arch/powerpc/platforms/44x/iss4xx.c
+> b/arch/powerpc/platforms/44x/iss4xx.c
+> index ef883d97fe15..ef92b4656d17 100644
+> --- a/arch/powerpc/platforms/44x/iss4xx.c
+> +++ b/arch/powerpc/platforms/44x/iss4xx.c
+> @@ -74,6 +74,8 @@ static void __init iss4xx_init_irq(void)
+>  #endif
+>  	} else
+>  		panic("Unrecognized top level interrupt controller");
+> +
+> +	of_node_put(np);
+>  }
 > 
-> If the HW has somehow taken a BRK exception from any other instruction
-> (which would presumably be a HW bug), there won't be a bug_table entry,
-> and so __report_bug() will fail to find an entry, and will return
-> BUG_TRAP_TYPE_NONE, same as for the !is_valid_bugaddr() case.
-
-Right, so I wasn't at all sure what he was doing, Rust is still mostly
-unreadable garbage to me.
-
-But I figured I'd much rather see him use is_valid_bugaddr() to do
-runtime checks than whatever dodgy games he was playing with that label.
-
-So *if* doing runtime checks is what is wanted, then is_valid_bugaddr()
-needs to actually work, because then it grows a user outside of the BRK
-handler.
-
-Lots of IFs etc, but since I am having a head-ache and am mostly
-useless, I figured I'd distract myself doing whatever :-)
+>  #ifdef CONFIG_SMP
+> diff --git a/arch/powerpc/platforms/44x/warp.c
+> b/arch/powerpc/platforms/44x/warp.c
+> index 6f674f86dc85..49afd60b1c30 100644
+> --- a/arch/powerpc/platforms/44x/warp.c
+> +++ b/arch/powerpc/platforms/44x/warp.c
+> @@ -183,6 +183,7 @@ static int pika_setup_leds(void)
+>  				printk(KERN_ERR __FILE__ ": Failed to get %s led gpio: %d\n",
+>  				       led->name, error);
+>  				of_node_put(child);
+> +				of_node_put(np);
+>  				goto err_cleanup_pins;
+>  			}
+> 
+> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_8259.c
+> b/arch/powerpc/platforms/85xx/mpc85xx_8259.c
+> index cb00d596ad80..9b7283038892 100644
+> --- a/arch/powerpc/platforms/85xx/mpc85xx_8259.c
+> +++ b/arch/powerpc/platforms/85xx/mpc85xx_8259.c
+> @@ -52,6 +52,7 @@ void __init mpc85xx_8259_init(void)
+>  	cascade_irq = irq_of_parse_and_map(cascade_node, 0);
+>  	if (!cascade_irq) {
+>  		pr_err("i8259: Failed to map cascade interrupt\n");
+> +		of_node_put(cascade_node);
+>  		return;
+>  	}
+> 
+> diff --git a/arch/powerpc/platforms/86xx/pic.c
+> b/arch/powerpc/platforms/86xx/pic.c
+> index 9ca36de23532..4cbcc16b1009 100644
+> --- a/arch/powerpc/platforms/86xx/pic.c
+> +++ b/arch/powerpc/platforms/86xx/pic.c
+> @@ -58,6 +58,7 @@ void __init mpc86xx_init_irq(void)
+>  	cascade_irq = irq_of_parse_and_map(cascade_node, 0);
+>  	if (!cascade_irq) {
+>  		printk(KERN_ERR "Failed to map cascade interrupt\n");
+> +		of_node_put(cascade_node);
+>  		return;
+>  	}
+> 
+> diff --git a/arch/powerpc/platforms/pasemi/setup.c
+> b/arch/powerpc/platforms/pasemi/setup.c
+> index 45792ecd5dfd..b016e27b20ee 100644
+> --- a/arch/powerpc/platforms/pasemi/setup.c
+> +++ b/arch/powerpc/platforms/pasemi/setup.c
+> @@ -274,6 +274,7 @@ static __init void pas_init_IRQ(void)
+>  	opprop = of_get_property(root, "platform-open-pic", &opplen);
+>  	if (!opprop) {
+>  		pr_err("No platform-open-pic property.\n");
+> +		of_node_put(mpic_node);
+>  		of_node_put(root);
+>  		return;
+>  	}
+> diff --git a/arch/powerpc/platforms/powermac/pci.c
+> b/arch/powerpc/platforms/powermac/pci.c
+> index d71359b5331c..8bc56a70b4c8 100644
+> --- a/arch/powerpc/platforms/powermac/pci.c
+> +++ b/arch/powerpc/platforms/powermac/pci.c
+> @@ -938,6 +938,7 @@ void __init pmac_pci_init(void)
+>  	/* pmac_check_ht_link(); */
+> 
+>  #else /* CONFIG_PPC64 */
+> +	of_node_put(ht);
+>  	init_p2pbridge();
+>  	init_second_ohare();
+>  	fixup_nec_usb2();
+> diff --git a/arch/powerpc/platforms/powermac/smp.c
+> b/arch/powerpc/platforms/powermac/smp.c
+> index 88e92af8acf9..82c5f49576c5 100644
+> --- a/arch/powerpc/platforms/powermac/smp.c
+> +++ b/arch/powerpc/platforms/powermac/smp.c
+> @@ -591,11 +591,13 @@ static void __init 
+> smp_core99_setup_i2c_hwsync(int ncpus)
+>  				pmac_tb_freeze = smp_core99_cypress_tb_freeze;
+>  				name = "Cypress";
+>  			}
+> +			of_node_put(cc);
+>  			break;
+>  		case 0xd4:
+>  			pmac_tb_freeze = smp_core99_pulsar_tb_freeze;
+>  			pmac_tb_pulsar_addr = 0xd4;
+>  			name = "Pulsar";
+> +			of_node_put(cc);
+>  			break;
+>  		}
+>  		if (pmac_tb_freeze != NULL) {
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> index bc6926dbf148..c4f7348aa035 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> @@ -637,16 +637,16 @@ static unsigned int
+> pseries_cpuhp_cache_use_count(const struct device_node *cach
+> 
+>  	for_each_of_cpu_node(dn) {
+>  		tn = of_find_next_cache_node(dn);
+> -		of_node_put(tn);
+>  		if (tn == cachedn)
+>  			use_count++;
+> +		of_node_put(tn);
+>  	}
+> 
+>  	for_each_node_by_type(dn, "cache") {
+>  		tn = of_find_next_cache_node(dn);
+> -		of_node_put(tn);
+>  		if (tn == cachedn)
+>  			use_count++;
+> +		of_node_put(tn);
+>  	}
+> 
+>  	return use_count;
+> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> index 257886ec3f70..6e8fa94985f3 100644
+> --- a/arch/powerpc/sysdev/mpic.c
+> +++ b/arch/powerpc/sysdev/mpic.c
+> @@ -1389,7 +1389,7 @@ struct mpic * __init mpic_alloc(struct 
+> device_node *node,
+>  		if (fsl_version >= 0x401) {
+>  			ret = mpic_setup_error_int(mpic, intvec_top - 13);
+>  			if (ret)
+> -				return NULL;
+> +				goto err_of_node_put;
+>  		}
+> 
+>  	}
+> @@ -1493,7 +1493,7 @@ struct mpic * __init mpic_alloc(struct 
+> device_node *node,
+>  	 * is very unlikely to fail but it ought to be fixed anyways.
+>  	 */
+>  	if (mpic->irqhost == NULL)
+> -		return NULL;
+> +		goto err_of_node_put;
+> 
+>  	/* Display version */
+>  	switch (greg_feature & MPIC_GREG_FEATURE_VERSION_MASK) {
 
