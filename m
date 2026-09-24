@@ -1,148 +1,96 @@
-Return-Path: <linuxppc-dev+bounces-28148-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28149-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3794C98321
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 19:31:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7DC4C9830E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 21:45:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hrP8q13Bgz30T9;
-	Fri, 25 Sep 2026 05:31:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c000::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790278299;
-	cv=pass; b=akl720CRjV47suiKg0is57fs9xcfMOvLwD2ATDZJsHQ9hR0QTksvWsC5rM4LLzQ0LTzsgQIfgwzAVOmlmEjUuBouv3uTbdT6NyeqI7+V+4kKamo/PVNSvKTeq7zTXH8royEsg2zpTK50rjmz6ifMfLssTd3yIvjVX+1XT+jTto6g/7OdRa/fkOjSIF/jki+/jE9kdO5re+aLu2osIVMCiafmCw5ggJ4zDt59epci0lXJAJJ/jmm6YuxwPdpx0GkucLHUwSPgA1VmmSEkuvjz1MUqX2S4ofNhdRLLI561r4T6xAwrdHVM3oAlFQAYAmTg3TQ8FI2EclaU+X/OuH9JXg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790278299; c=relaxed/relaxed;
-	bh=xa8gAjKn5oVW/QByPYuTXdPL9stOtn0VXXgIIOvgqjg=;
-	h=Content-Type:Date:Message-Id:Cc:To:From:Subject:References:
-	 In-Reply-To:MIME-Version; b=m7KkyWAvRsAEX0cjuGk4G2/4SamJ7kA6ivnAZkfPsLt1T5qLbt4sZHiP5q1TgLxOsI/druYa8B8qvTwUr5Jx/iOSr6C0Tb/6J1YKmDC/NdV4W7UdEMLrQAszpsBElUC64ojzEkqQOzgjq712lbW4+WcSr/Vw2uVFEsvBulpilZWWVQdbAR4rx67uJ3oS/Uu/ebDgVi/NxqioL+kKgSbZCpN2yJW10oADSqVBk3V17ydAsK6w4DKqvuwgMfZTReUe+uSD6D+fJSnXETp8eIzIgXusU22bH+oyPvVCOrR7S7rjcqNdtqwQSqE+hDEB8I8L8l6FjABzkHZ5zaY0HdNpGg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=mfLhqy8Z; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c000::1; helo=byapr05cu005.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hrS6g6Bqlz2yr0;
+	Fri, 25 Sep 2026 07:44:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:3b::10"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790271071;
+	cv=none; b=gHBKLOG08y0oCCvdgAm2SPcj5n++k2FRwXGfVtMYPfRAxRYtMVht3Jqa+hBXHevq+bjDXOaw0Y7hSmcLLJzBlqOOmu8Ia0xO6nenjghi56xMN5B/l7CVjUvkLd8Gt+C9eVHpe3cper4V8boTg597tcvXEDnLzGR8TQmD/fwxOvwpBIkhYIOyDJRBhk8UaFr00Z17KvhPFWIpAwR9urQUQJjqvC7TqGGu5rlHnYOAxmK7pitmQnDKCgmPcwbRm48tvpxxrDpvlCzCn815ndiqRBVo9zz91pU1W1EmpybHukMht3T7bAA9dRc54NjhVcjGfIFOQkDS5qjrRP3hKXZG9A==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1790271071; c=relaxed/relaxed;
+	bh=ap6pakDUJlnHSF/aqYwnk2uDwDP9NpWN5G+PbeaxTVk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=U5m9m/qmcKLXQovjBxsg8HSy/COEvopXKAeqZXlcTLwmzZWsL2B3XKS/1aLlkNVIwX2+/Bv4qj4jP5u2jnmUkQfJHfE7NSSg+ZEpS9ErJpviFMzSkojMlgmpdT+LYinwXKDU2ujR55xsT5b40UHSlktuCUfD18MKRTTS2B5wf4PtJwWvDfjNICGTf7slxYqOMJHXQV0R85H2YuCFuwcjizYMcy3cQkN28hAeHot3otuDe2Uq2859vz5iRd05pGjAp9AYTiK7DBzLMrOriXCdxg4Vpr78fnpTsS4t6PkDpkOM3GkwG18EmMcvKIuuV+TMgzOFQ6sTEnlywf6q7G7+qA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=trailofbits.com; dkim=pass (2048-bit key; unprotected) header.d=trailofbits.com header.i=@trailofbits.com header.a=rsa-sha256 header.s=google header.b=VHuMbvBt; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:3b::10; helo=mail-pz2-x10.google.com; envelope-from=artem@trailofbits.com; receiver=lists.ozlabs.org) smtp.mailfrom=trailofbits.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=trailofbits.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=mfLhqy8Z;
+	dkim=pass (2048-bit key; unprotected) header.d=trailofbits.com header.i=@trailofbits.com header.a=rsa-sha256 header.s=google header.b=VHuMbvBt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c000::1; helo=byapr05cu005.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org)
-Received: from BYAPR05CU005.outbound.protection.outlook.com (mail-westusazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c000::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=trailofbits.com (client-ip=2607:f8b0:4864:3b::10; helo=mail-pz2-x10.google.com; envelope-from=artem@trailofbits.com; receiver=lists.ozlabs.org)
+Received: from mail-pz2-x10.google.com (mail-pz2-x10.google.com [IPv6:2607:f8b0:4864:3b::10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrP8n73tkz2y7Y
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2026 05:31:37 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Fg1LPy8n+6/EliKS09YGqkeWJ7f5YiMLp6PtTuq3Qzkok2YoGmCLR0anC+aShfnMwoQUpne/4kjRNX8aVthAU0T9/sQuN3fZaWUgM6xoKSTvwmtEpmNcNsdBna4sSh/MR+UYoNyK8ykd50A5h4X8nIybN5cLXnSUir6U5RROwz40U3Ll9axkKE3LzeLBFegbTlGiPm9dW2m0NwmkM1L9Ht734PFtNV6AnX0mJzPmn3yuyDp32+9nZ/2oqLwkeGdl8ddgVAAG0qMUho5bUIzYwt3KHKDa5dU4HQIlttNIxqD7GLaT9KGQWT3oTpgivx1tlGvKW0TK76JjdLTsIz6ScQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=xa8gAjKn5oVW/QByPYuTXdPL9stOtn0VXXgIIOvgqjg=;
- b=YVCc5XCvKNwKllKo9cbAmGkTzUp1vbomqQhUVbD63zoNZ6QjjbS3Tb6Qg6qhNASbvIlTeFmdmKMfF2RZvf747w2FF6GuUEucW8kbsbYyq6pUX0id7pIwWebLJRqhiHR+83osV++fbVLaJMBNPnKSCf6nfCtlaxUANL9pnTBqwEauxpQ87MwMWdHrXRq8wLTP2V3kuE8TdPgM2AvFKv6QW7mDKQukhZ/WPTgjwfOTr/h7ITyorJd1Y+MoJplpOHittgNLUKISUApR6bD6wCVWhZWZe4sbcDf4cknB3XJPjdutF1fnihNcMDwlh1VKLE04PhG5h/YHl33cqfngSOD4/w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=xa8gAjKn5oVW/QByPYuTXdPL9stOtn0VXXgIIOvgqjg=;
- b=mfLhqy8Z8QqtD9aqIvoUYNMx+cmWyNxg4QWp2h/RWXR+RxlztonQdnBVIW2DTJRFlez34GmlKlMuxNravWiXgSA3QD/0UFODWgUenUCnLU0ttpOe3Vw48rz4uidRt/QdjQ/4T0WxrCXACi4p8RVjQZP1zMy5/06BPB/VmKBbppeeomIKPrTkG2lMFQGipaWhgHfPMAmVYM425kwCRdIuRKNOUYzewFfOVL1unh1LFIRHfpVApGVgm3pL6FJ7Sgm8TrVDP1XhZ65a6vZ52iG6l710CVFifbwTT5j1gFiN0A1WJ1qrbRRurnuxcADKfNCS5NpjRROOtZLZG5vYVkesoA==
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from IA0PR12MB8374.namprd12.prod.outlook.com (2603:10b6:208:40e::7)
- by IA0PR12MB7554.namprd12.prod.outlook.com (2603:10b6:208:43e::19) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.18; Thu, 24 Sep
- 2026 19:31:04 +0000
-Received: from IA0PR12MB8374.namprd12.prod.outlook.com
- ([fe80::d85f:4c87:ae84:3f16]) by IA0PR12MB8374.namprd12.prod.outlook.com
- ([fe80::d85f:4c87:ae84:3f16%6]) with mapi id 15.21.0451.014; Thu, 24 Sep 2026
- 19:31:00 +0000
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 24 Sep 2026 15:30:53 -0400
-Message-Id: <DLNSOBMBHIVC.22QI9YBL1U72E@nvidia.com>
-Cc: <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
- <linux-doc@vger.kernel.org>, <linux-usb@vger.kernel.org>,
- <linux-rdma@vger.kernel.org>, <selinux@vger.kernel.org>,
- <linux-sound@vger.kernel.org>, <bpf@vger.kernel.org>,
- <linux-scsi@vger.kernel.org>, <linux-fbdev@vger.kernel.org>,
- <dri-devel@lists.freedesktop.org>, <linux-trace-kernel@vger.kernel.org>,
- <linux-perf-users@vger.kernel.org>, <linux-arch@vger.kernel.org>,
- <linux-fsdevel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
- <kvmarm@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
- <kvm@vger.kernel.org>, <kvm-riscv@lists.infradead.org>,
- <linux-riscv@lists.infradead.org>, <linux-s390@vger.kernel.org>,
- <sparclinux@vger.kernel.org>, <fuse-devel@lists.linux.dev>
-To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, "Andrew Morton"
- <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>,
- "Vlastimil Babka" <vbabka@kernel.org>, "Jann Horn" <jannh@google.com>,
- "Pedro Falcato" <pfalcato@suse.de>, "David Hildenbrand" <david@kernel.org>,
- "Mike Rapoport" <rppt@kernel.org>, "Suren Baghdasaryan"
- <surenb@google.com>, "Michal Hocko" <mhocko@suse.com>, "Jonathan Corbet"
- <corbet@lwn.net>, "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
- "Dennis Dalessandro" <dennis.dalessandro@cornelisnetworks.com>, "Jason
- Gunthorpe" <jgg@ziepe.ca>, "Leon Romanovsky" <leon@kernel.org>, "Paul
- Moore" <paul@paul-moore.com>, "Stephen Smalley"
- <stephen.smalley.work@gmail.com>, "Jaroslav Kysela" <perex@perex.cz>,
- "Takashi Iwai" <tiwai@suse.com>, "Alexei Starovoitov" <ast@kernel.org>,
- "Daniel Borkmann" <daniel@iogearbox.net>, "Andrii Nakryiko"
- <andrii@kernel.org>, "Eduard Zingerman" <eddyz87@gmail.com>, "Kumar
- Kartikeya Dwivedi" <memxor@gmail.com>, "Baolin Wang"
- <baolin.wang@linux.alibaba.com>, "Nico Pache" <nico.pache@linux.dev>, "Ryan
- Roberts" <ryan.roberts@arm.com>, "Dev Jain" <dev.jain@arm.com>, "Barry
- Song" <baohua@kernel.org>, "Lance Yang" <lance.yang@linux.dev>, "Usama
- Arif" <usama.arif@linux.dev>, "Kiryl Shutsemau" <kas@kernel.org>, "Doug
- Gilbert" <dgilbert@interlog.com>, "James E.J. Bottomley"
- <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen"
- <mkp@kernel.org>, "Jaya Kumar" <jayalk@intworks.biz>, "Simona Vetter"
- <simona@ffwll.ch>, "Helge Deller" <deller@gmx.de>, "Sebastian Reichel"
- <sre@kernel.org>, "John Hubbard" <jhubbard@nvidia.com>, "Peter Xu"
- <peterx@redhat.com>, "Masami Hiramatsu" <mhiramat@kernel.org>, "Oleg
- Nesterov" <oleg@redhat.com>, "Peter Zijlstra" <peterz@infradead.org>,
- "Thomas Gleixner" <tglx@kernel.org>, "Ingo Molnar" <mingo@redhat.com>,
- "Borislav Petkov" <bp@alien8.de>, "Dave Hansen"
- <dave.hansen@linux.intel.com>, <x86@kernel.org>, "Arnaldo Carvalho de Melo"
- <acme@kernel.org>, "Namhyung Kim" <namhyung@kernel.org>, "Mark Rutland"
- <mark.rutland@arm.com>, "Rik van Riel" <riel@surriel.com>, "Harry Yoo"
- <harry@kernel.org>, "Juri Lelli" <juri.lelli@redhat.com>, "Vincent Guittot"
- <vincent.guittot@linaro.org>, "Maarten Lankhorst"
- <maarten.lankhorst@linux.intel.com>, "Maxime Ripard" <mripard@kernel.org>,
- "Thomas Zimmermann" <tzimmermann@suse.de>, "David Airlie"
- <airlied@gmail.com>, "Will Deacon" <will@kernel.org>, "Aneesh Kumar K.V"
- <aneesh.kumar@kernel.org>, "Nick Piggin" <npiggin@gmail.com>, "Arnd
- Bergmann" <arnd@arndb.de>, "Muchun Song" <muchun.song@linux.dev>, "Oscar
- Salvador" <osalvador@suse.de>, "Matthew Wilcox (Oracle)"
- <willy@infradead.org>, "Jan Kara" <jack@suse.cz>, "Marc Zyngier"
- <maz@kernel.org>, "Oliver Upton" <oupton@kernel.org>, "Catalin Marinas"
- <catalin.marinas@arm.com>, "Madhavan Srinivasan" <maddy@linux.ibm.com>,
- "Anup Patel" <anup@brainfault.org>, "Paul Walmsley" <pjw@kernel.org>,
- "Palmer Dabbelt" <palmer@dabbelt.com>, "Albert Ou" <aou@eecs.berkeley.edu>,
- "Christian Borntraeger" <borntraeger@linux.ibm.com>, "Janosch Frank"
- <frankja@linux.ibm.com>, "Claudio Imbrenda" <imbrenda@linux.ibm.com>,
- "Alexander Gordeev" <agordeev@linux.ibm.com>, "Gerald Schaefer"
- <gerald.schaefer@linux.ibm.com>, "Heiko Carstens" <hca@linux.ibm.com>,
- "Vasily Gorbik" <gor@linux.ibm.com>, "David S. Miller"
- <davem@davemloft.net>, "Andreas Larsson" <andreas@gaisler.com>, "Alexander
- Viro" <viro@zeniv.linux.org.uk>, "Christian Brauner" <brauner@kernel.org>,
- "Matthew Brost" <matthew.brost@intel.com>, "Joshua Hahn"
- <joshua.hahnjy@gmail.com>, "Rakie Kim" <rakie.kim@sk.com>, "Byungchul Park"
- <byungchul@sk.com>, "Gregory Price" <gourry@gourry.net>, "Ying Huang"
- <ying.huang@linux.alibaba.com>, "Alistair Popple" <apopple@nvidia.com>,
- "Chris Li" <chrisl@kernel.org>, "Kairui Song" <kasong@tencent.com>, "Kemeng
- Shi" <shikemeng@huaweicloud.com>, "Nhat Pham" <nphamcs@gmail.com>, "Baoquan
- He" <baoquan.he@linux.dev>, "Youngjun Park" <youngjun.park@lge.com>,
- "Johannes Weiner" <hannes@cmpxchg.org>, "Qi Zheng" <qi.zheng@linux.dev>,
- "Shakeel Butt" <shakeel.butt@linux.dev>, "Axel Rasmussen"
- <axelrasmussen@google.com>, "Yuanchu Xie" <yuanchu@google.com>, "Wei Xu"
- <weixugc@google.com>, "Chengming Zhou" <chengming.zhou@linux.dev>, "Michal
- Hocko" <mhocko@kernel.org>, "Miklos Szeredi" <miklos@szeredi.hu>, "Xu Xin"
- <xu.xin@linux.dev>
-From: "Zi Yan" <ziy@nvidia.com>
-Subject: Re: [PATCH v3 07/40] mm/vma: tidy up map kernel pages enum values
-X-Mailer: aerc 0.22.0
-References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org> <20260917-b4-mmap-prepare-vma-flag-sanify-v3-7-4583d8a23bca@kernel.org>
-In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-7-4583d8a23bca@kernel.org>
-X-ClientProxiedBy: YQBPR0101CA0214.CANPRD01.PROD.OUTLOOK.COM
- (2603:10b6:c01:67::20) To IA0PR12MB8374.namprd12.prod.outlook.com
- (2603:10b6:208:40e::7)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrLTn6l6fz2y7Y
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2026 03:31:08 +1000 (AEST)
+Received: by mail-pz2-x10.google.com with SMTP id 41be03b00d2f7-cc1cea4c7a0so9083a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 10:31:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=trailofbits.com; s=google; t=1790271066; x=1790875866; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=ap6pakDUJlnHSF/aqYwnk2uDwDP9NpWN5G+PbeaxTVk=;
+        b=VHuMbvBtLbtC3ChrzV8Z7c/B7pD21HbitPyZW7GUwJjhhOULMurGdsBsx3uugpXBrO
+         rgxC1SdvksZnbp/7xEEUKlUxTf74wsoQrf+5QIccxPkMsEcxpzS+p5RRCbx6PowzwnSS
+         ciRs9C40r5tDNj9Jr6QhpN06TagDdV24njjxhvyr+AdNU8Yipdxa99WLaKxiDOlFdy+E
+         t8DO2S6pz48cy6BnuJDlzCQ7aNyyWA2Sx/iAikxM76heQUuNBRZ+v18/2+QJH1YadSRY
+         8IzTT2XF0jruBWaKSGr27v38HssM9cdjt+V+zTQdILY/jhh48oca3lpmSHmdBe7A4ZF/
+         SL8w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790271066; x=1790875866;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=ap6pakDUJlnHSF/aqYwnk2uDwDP9NpWN5G+PbeaxTVk=;
+        b=pLw9aq/fjbqJxPnLFSys283B1fRpNCeD26uM/Vuwzc0lOsqnBsomiaz/V272Spo0di
+         TelOj7YwC43RUXFs2QcdYJMCT0/pogFrOoa5hYmvYUqrpW1SvH6dOfPDRQKHdJl6aZbK
+         JC9bWGBDWRVryQjThB1gw+1VGmoN6y7SNk8sSiDOT1aurQwPZYkEH34sley27QTBYsOn
+         L1XvuDiZILvcyrFvTUH5Brh9MGDIH2XonqpCYBNNR1jrPsWGtw63SIdF94mKxUoMPTux
+         0JIbnEF0sl0C5hfyrLs+as2BsFJd3HYdqsb6e6zwQCAFozFs3CTExBQEDgvZs5fYv0uK
+         LEoQ==
+X-Forwarded-Encrypted: i=1; AKwUvBwtXtt3VLUlIvg8srki/909sUUB+6Zrf6MmOv6bt7QSmZmAxikbzx/6hA2qyKgOoek8xd5alIc5FDPsumk=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++lwZeywXrmhLFF4ZR3CFuxsAl8juyAeLabmj2YRZuFD/1mFu2LV
+	L3oWk39D1irPfUOufFzWz404Ctc7i7KaitLvoVxAyWLF2x63zedLJNs5keKgXTtU3VI=
+X-Gm-Gg: AYBFou363XqIcGkIFUJkFpIVoXVV3Ze8jBOv2vG/0kPqSV9saewOIv8LmsQec/ekWPs
+	x4GZJfYbZzxmE6afTvBDH5n++ODJCAe44IQXfucFDXk1pw8tJScuMAlq3U1uxPqVkD6Zx2Y8Fyy
+	AQaPtgujzNMQGJHoLBoKagDcvH43cfplslcqVfB8OW+xR41+V2CTN7u+No73dVTFlkVNSnVFO1w
+	TIQ8NaIipcVIw4n/hxlBYsG1b96j7Lu65u2I7P691pLeUhbOELcanQnb+fBHS4YoyAIY63uBDYb
+	ckKh3a+RL7gqgmsnVbCXq0wFcGj7t7W937ezLohOxBGPdt+u3DX+GIAJ83KwL/1cA6T29uZWU0V
+	TkcfhTwzBnigg2/qDUcB/NNhmsLa+EFw1vhrCh1yQfQVAMIIsKh7UASgkv0Q1JcU/yHNOx0WJeA
+	2uNd9GobikWRCPttlvi6n3zhY4mTtJRljZ3+XBi0D4lGl02xVqNNFmMGzotwO/R0NOOiImpRA6M
+	ZbfAJ6AS9weKEtWBi0LyufZo9nZfc0ZscrIvHtOP3odsDRgWkR3IB8spss5kHbN+G3DfkU=
+X-Received: by 2002:a17:90b:2e4e:b0:3a0:a515:c450 with SMTP id 98e67ed59e1d1-3a0a515c806mr1763774a91.27.1790271065988;
+        Thu, 24 Sep 2026 10:31:05 -0700 (PDT)
+Received: from localhost.localdomain ([2603:8001:5f01:8bab:f875:3165:4649:e818])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a09733f48fsm6082456a91.11.2026.09.24.10.31.04
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Thu, 24 Sep 2026 10:31:05 -0700 (PDT)
+From: Artem Dinaburg <artem@trailofbits.com>
+To: stable@vger.kernel.org
+Cc: Artem Dinaburg <artem@trailofbits.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Sasha Levin <sashal@kernel.org>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Miguel Ojeda <ojeda@kernel.org>,
+	Nick Desaulniers <ndesaulniers@google.com>,
+	Nathan Chancellor <nathan@kernel.org>,
+	Tom Rix <trix@redhat.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	llvm@lists.linux.dev,
+	"Peter Zijlstra (Intel)" <peterz@infradead.org>,
+	Josh Poimboeuf <jpoimboe@kernel.org>
+Subject: [PATCH 6.1.y] start_kernel: Add __no_stack_protector function attribute
+Date: Thu, 24 Sep 2026 13:30:59 -0400
+Message-ID: <20260924173100.87358-1-artem@trailofbits.com>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -156,97 +104,119 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: IA0PR12MB8374:EE_|IA0PR12MB7554:EE_
-X-MS-Office365-Filtering-Correlation-Id: dd4e73e5-3efe-40f6-982b-08df1a725cfc
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|7416014|1800799024|376014|366016|10067099003|56012099006|6133799003|18002099003|22082099003|4143699003|11063799006|921020;
-X-Microsoft-Antispam-Message-Info:
-	H75VnqSXCI6nshucZgXvPJeyYbIoBOjqHqxzLHmSgIi7hs+ccC9NuVDzdp0Ddm6tlOP2M+PEYqy5H0R7zLQYMUMdZ3uCLRzpce6MEprOTYKRLWxfOhLANDHBwrn48h69oqBXQFawOHrZi3FowkD6hdGWsmDa+j8FNJQ28EieNcEXOo+gosUYIqXaVBJWlXRxRY4lPN5IfBbahMsjuSFWZaIaVQ8T1IISzoy1ZL8LdE8G1M7vHDaMFUw3Y18//aH7A6u+/nwZ0y5zXQEyDTmbglgQF259yBLKMfg0oyJv3LRCd+1zATgfV2BkmHgK2bIoArhaVORWFH7gMdA+3cAc6jDffi6OFySF4AffiYVBYLNQwH1KTRYhEJjXQF+UbEXyvlGHxplKwmKo7SxjrdJpxb5TTpbTes184jNIvFqnvfvXdTE8022R63l199yNNHJGU8+ABDugfnLTS8aldCj9CR4Q880ZFNK6i+bEzZf+Fq3odht33SFRkH4B9bw5BTDymC39L9Rn2uPNVLbPUwLnFrecDyzLutzPornaHFQyqCc+MQrh/iFw9yK/Sla8+M3scHnffzHUH54OUF/5Zq1JMXoykTWldYuOAmQ/jYRCdGu0iI1zGN3C/DG+eV6gQBt87sYPIomO5UC4EZbnjz062HohT0SXOcqMEr+1uCglfcHiimU5c+lb9nqEigIa9L7eKFMR/y8IEnqN0w5WbgUUNg==
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:IA0PR12MB8374.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(7416014)(1800799024)(376014)(366016)(10067099003)(56012099006)(6133799003)(18002099003)(22082099003)(4143699003)(11063799006)(921020);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?Z2VPUVNVUCs3YlBIU1JzeThTY25LN3hBMkdOdkY0S014RTZLUWhiVnQ3aHVP?=
- =?utf-8?B?K2RkQjlKS0wwVHZGWTBQcVJ1b0U4bnZHamprWWt3U040NG1GenVweW45S3Y4?=
- =?utf-8?B?TWZTVGkwWk9ZNlVSUCtoYkw2M1V1b3dneVBMakpGanlRc0UwczlQb2ViaWxF?=
- =?utf-8?B?V25pd25zdnJsU3hlSGxFNXM0TlR6U3NxWlpGbGU1T3Z6Mk9RZ0R3R2VrZXJo?=
- =?utf-8?B?Yi9kV3EreEhKNWlDdUNnUmZKRFIxY29WZ3VxYVZKcTFFd0FaKy9NRVI1VGRS?=
- =?utf-8?B?YXJjZG03L3pLU3N0QWJTZng2cVZZV1dCQVNDZ1VkUCtndk1ZZUlXSUVBbGlt?=
- =?utf-8?B?YWpPQjlyeGFWQ01mNncrbGtHUVh2TzlKazhUL01UKzNUZDJaaHA4Uys3Rjdq?=
- =?utf-8?B?czhOOUFEenBHVlZXcVRiaUJlWnRjb0JDYnp5Q0lBUGxoaTBvL1o3dFpnSks3?=
- =?utf-8?B?Zm5DM1U1SnBudVJSa2JhZ2Z4QXFZbmxwbGl4am9CNmFEaGpYWWRBSnhpbkZu?=
- =?utf-8?B?REJBaHFvZHdsYjZyYW9WTVh3dHExSWY4bjNGTWF5b0NmcTlFZVpxSDFtZUV2?=
- =?utf-8?B?OXVkemEzSXE5R1hJNnB4elhEQk5UQkR1NHNUT0hlclRBNjBKenZzYkw5bTRi?=
- =?utf-8?B?OEpzb2hRbkUrOWRObjVhcjBjVlNGL2pVSjNQTDEvMVVqeElYelphQ2pzb0My?=
- =?utf-8?B?Y3NxUGl1RmpTRHNobmxjaFJWYTJhaFRZbnJPU3p3bTdPWGJ5RTcwcVJpb2ZK?=
- =?utf-8?B?QWpqZmQvM2pmbEE2Nmx0U0xiWUV1UnVURjFIelpQWGpkUzlQbkFOTmdsM09E?=
- =?utf-8?B?MVdpenRMaFpnK2NJanBlbE9WRVhrOWo3WTNwbUlEU2lJcTRPTTJFVVBSY3Bo?=
- =?utf-8?B?dFFIaVlGNFU2ckViZzI3OHY0ZnY0RlBQWjlzaFBVd1pIb042ZzFoWDcwS2dl?=
- =?utf-8?B?RGtQelk2YzRTQ0t5em14dzkzbmlBTGRYYndTNmVMYysvc0d5VEhRVmVibGdC?=
- =?utf-8?B?OUlmNXk1RE50dEZpQjI5WkRGSjUxY1U2SlJpUjBGc01SWFZmWTNaZlJKcDlE?=
- =?utf-8?B?UlFod3J6WUZVZ3NVNUVGTjRFTlVzM1B6VjRoM1laY1I0M3AxdXBTbHVidUdG?=
- =?utf-8?B?VDlkaGkyTWhURnNRb3ZxRkZLSStxUHpjOFpvb2RuT2Z0S2JueW0rUFA4NGpu?=
- =?utf-8?B?VUswR3BCaWpUczN2dEJJRUlib29DT29KMEZWQjUyNlVwRUFQRmhjcXpoSmdv?=
- =?utf-8?B?OWQraU5mQVFNS3VBTFU5bXREZlE2K05HM0puZVVnY2tyY1dYUVl2Y3k1YUp6?=
- =?utf-8?B?MVd0NStGamxMWGtrK0JtVkQwcXV6WjBLNjVyeDZqdzFnaVJNSHNPaHg0c2NY?=
- =?utf-8?B?ZjBYbXNFekFYTlc5STlhN0RtU1dSakdWOGpWZWw2SXFJMnF4SFVOWTdnNmdy?=
- =?utf-8?B?UDRLTWkwRHFnWGNVWXAvMnJKSnBCbHB4anU3R1pYd3Y0NHduKytZcTFkUlJN?=
- =?utf-8?B?NEtjYlppdXNsakJxZ3RWR2l4aXJsRWh5SjYrdElPUFE4NE5yTXI4Z3V1RVY1?=
- =?utf-8?B?VktjSmhTcmNpc2JkaDJwRllKRlFBVEdIclZmb0Uxa3UydGxobTd6b2JnYlkw?=
- =?utf-8?B?TWZkckxyQlgybG1uYk9EQm9vVW5SMnh4R3BVZ3BEWS9HbVBiOHlla3ZMM2Ix?=
- =?utf-8?B?eFlZVG9QWnZBdjB6OWJUOVZiQW9PY3ZYWm5kYWFTMTJuTHNBNGNTSkVrNkg1?=
- =?utf-8?B?VzArSlY5ZXFKdFdQWG1COCtaRDA2WG1MblZPUldWTWpxUWRhUC9qN1AvMCth?=
- =?utf-8?B?dW9ZYTdhK3lmZlFzNVVMSC9ncllFSUUrWU9uQktwMVU0enlJRTNRYlBOVnNw?=
- =?utf-8?B?ZmFEbEJPNWZscFVqYVd6VG9lcHdlbGJBT0ZMV2hPVFZvdU5Ic05NdWJ4eFhC?=
- =?utf-8?B?a2swQnlybjJ4WlJxODNXNkcya3RwdnNDMVM3RzlVR2xlTld2THMxNlFNM2lr?=
- =?utf-8?B?VW05WnNkeEVMWFE0RDRZS2lhU3UrNXRwa08yVFViOWxZelpGYUF1VjI5ZTJ4?=
- =?utf-8?B?SlJjaTE1RG8xRGsyVjJlejBYeHBOY0JHUmtHNkFMM0RUSWNzTURtT0ZNTm1Q?=
- =?utf-8?B?YldZYXJIT2VTOGxzSzJnRlRzZmVPRnJ2RkZ0QXdVWnR5aTlOVkZlNXlWbkJL?=
- =?utf-8?B?RTgyck8zUW05WVVjRGdjRU5QdmtoQ2FybmVNZDd5cHRNc0svemdwUGc2OWxF?=
- =?utf-8?B?Z211eVhIczB6NUxLckx6d3BRdU9tR3BFT0xxWVZ1ZjJ1WFdHSk82Qm4zd1dz?=
- =?utf-8?Q?SGwa4Xr7Tby48wmA+m?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: dd4e73e5-3efe-40f6-982b-08df1a725cfc
-X-MS-Exchange-CrossTenant-AuthSource: IA0PR12MB8374.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Sep 2026 19:30:59.9704
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: zMmG82cICUQhHSQf1Y20zN/xZl+8uxsADN0PWTOSgERaQzs1sKW52PzuP8qTMUcP
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR12MB7554
+Content-Transfer-Encoding: 8bit
 
-On Thu Sep 17, 2026 at 12:22 PM EDT, Lorenzo Stoakes (ARM) wrote:
-> MMAP_MAP_KERNEL_PAGES is a mouthful, discard the MAP_ as that's implied b=
-y
-> MMAP.
->
-> Also while we're here delete useless comments for mmap actions whose name=
-s
-> clearly indicate what they are for.
->
-> Also update the userland VMA tests to reflect this change.
->
-> No functional change intended.
->
-> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
-> ---
->  include/linux/mm.h              | 2 +-
->  include/linux/mm_types.h        | 8 ++++----
->  mm/util.c                       | 8 ++++----
->  tools/testing/vma/include/dup.h | 8 ++++----
->  4 files changed, 13 insertions(+), 13 deletions(-)
->
-LGTM.
+From: "ndesaulniers@google.com" <ndesaulniers@google.com>
 
-Reviewed-by: Zi Yan <ziy@nvidia.com>
+[ Upstream commit 514ca14ed5444b911de59ed3381dfd195d99fe4b ]
 
---=20
-Best Regards,
-Yan, Zi
+Back during the discussion of
+commit a9a3ed1eff36 ("x86: Fix early boot crash on gcc-10, third try")
+we discussed the need for a function attribute to control the omission
+of stack protectors on a per-function basis; at the time Clang had
+support for no_stack_protector but GCC did not. This was fixed in
+gcc-11. Now that the function attribute is available, let's start using
+it.
 
+Callers of boot_init_stack_canary need to use this function attribute
+unless they're compiled with -fno-stack-protector, otherwise the canary
+stored in the stack slot of the caller will differ upon the call to
+boot_init_stack_canary. This will lead to a call to __stack_chk_fail()
+then panic.
+
+Link: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=94722
+Link: https://lore.kernel.org/all/20200316130414.GC12561@hirez.programming.kicks-ass.net/
+Tested-by: Nathan Chancellor <nathan@kernel.org>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+Acked-by: Miguel Ojeda <ojeda@kernel.org>
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Signed-off-by: Nick Desaulniers <ndesaulniers@google.com>
+Link: https://lore.kernel.org/r/20230412-no_stackp-v2-1-116f9fe4bbe7@google.com
+Signed-off-by: Josh Poimboeuf <jpoimboe@kernel.org>
+
+Signed-off-by: ndesaulniers@google.com <ndesaulniers@google.com>
+
+[ Backport to 6.1.y: retain this tree's start_kernel() signature, which
+  predates its upstream __noreturn annotation, and add
+  __no_stack_protector. ]
+Assisted-by: LLM
+Signed-off-by: Artem Dinaburg <artem@trailofbits.com>
+---
+Hi Greg, Sasha, and kernel and powerpc maintainers,
+
+I am continuing CVE backports still missing from 6.1.y.
+This fix is inherited by v6.6 and every later mainline release, but 6.1.y
+still has the affected code. The target-specific adjustment is described
+in the bracketed note above.
+
+Could you please queue it for 6.1.y?
+
+Thanks,
+Artem Dinaburg
+
+CVE: CVE-2023-53491
+
+Build validation: The touched powerpc allmodconfig objects built
+with CONFIG_WERROR=y, and the patched functions had no stack_chk_fail
+reference.
+
+AI assistance: An LLM helped find, adapt, and validate this
+backport; I reviewed the patch and test output.
+
+ arch/powerpc/kernel/smp.c           |  1 +
+ include/linux/compiler_attributes.h | 12 ++++++++++++
+ init/main.c                         |  3 ++-
+ 3 files changed, 15 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 980f2bc832d98d..fa17fdcc55a3de 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -1608,6 +1608,7 @@ static void add_cpu_to_masks(int cpu)
+ }
+ 
+ /* Activate a secondary processor. */
++__no_stack_protector
+ void start_secondary(void *unused)
+ {
+ 	unsigned int cpu = raw_smp_processor_id();
+diff --git a/include/linux/compiler_attributes.h b/include/linux/compiler_attributes.h
+index ab1fe28162b5e8..b9778e13b0a085 100644
+--- a/include/linux/compiler_attributes.h
++++ b/include/linux/compiler_attributes.h
+@@ -277,6 +277,18 @@
+  */
+ #define __noreturn                      __attribute__((__noreturn__))
+ 
++/*
++ * Optional: only supported since GCC >= 11.1, clang >= 7.0.
++ *
++ *   gcc: https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-no_005fstack_005fprotector-function-attribute
++ *   clang: https://clang.llvm.org/docs/AttributeReference.html#no-stack-protector-safebuffers
++ */
++#if __has_attribute(__no_stack_protector__)
++# define __no_stack_protector		__attribute__((__no_stack_protector__))
++#else
++# define __no_stack_protector
++#endif
++
+ /*
+  * Optional: not supported by gcc.
+  * Optional: not supported by icc.
+diff --git a/init/main.c b/init/main.c
+index 50b84f1f9ff38a..6acfd5a78bd7a5 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -908,7 +908,8 @@ static void __init print_unknown_bootoptions(void)
+ 	memblock_free(unknown_options, len);
+ }
+ 
+-asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
++asmlinkage __visible __init __no_sanitize_address __no_stack_protector
++void start_kernel(void)
+ {
+ 	char *command_line;
+ 	char *after_dashes;
+-- 
+2.39.5
 
