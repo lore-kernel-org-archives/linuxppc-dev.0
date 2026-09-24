@@ -1,87 +1,54 @@
-Return-Path: <linuxppc-dev+bounces-28119-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28120-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCA64C98317
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 13:28:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE726C98315
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 14:16:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hrF5G1zkMz2y24;
-	Thu, 24 Sep 2026 23:28:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790256482;
-	cv=none; b=aEs8GZeaw7vWLyUI6wzvYCoxDfXsHg9Id1hJ0CBbXuvP/TlFWMP12M0Ex1LabzjTCdJGxV+q+TKqR+Mi9MltKwwMmAKsV86kdokBtdpzOZIuTdLONNsvoTis7auMwD7eFZy231B6fLVCwN17T4FXczkntJfzLpTPrpm5S86I6R0MEGFdHGSKF4kgznenvrR7aEs9dl0/Cxig1QAEwotGbrzwc2Y7DmZNsk+cmWaBHeVmxBH7A2RLKE+7NijVfAGvlQcMRUlSHlFHXddKvrz4K216C1vb4WzrOJdWPqqmQ9ref5iSFTLcJqOC80EO6ZMXemIhabUPj6ZtgkTQrh9QPg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hrG8x5jRGz2yD3;
+	Fri, 25 Sep 2026 00:16:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=85.214.250.239
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790259377;
+	cv=none; b=aMGu6ImSmkdmI6jygM2os5O7yi4G2BfUrN9udyyXzL2AC+yY0oLZ1IB1pcoxE977MhfTmsQET3LP2IuxDEVssWLNZml/0GtCO/MAvcYVIpt5E4K5Fd9/dg5L2AaPo/88PyfBQysNPk3fBcT3A6Ydrj2J6kVswWn/Rg6HVtB8n3x/sIFbWKn3NntuWSn8W3P2oemyZ8eFMZoCd3KYTbONDkG1cavvFWOM6b4eCYc/GrAQxjkwWZBLGGJVSozjpo0HtA5hdUbQRUMix5KBUUM0zN4fWvfvw6bAdrjZ8PgU1OAvjb9FEH4Q+k9LGoExgbQj7KLDjMV1XvTC2iTeUxKJjQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790256482; c=relaxed/relaxed;
-	bh=BfnfwvTZSN2vMKmxqDVgfqXHHNIIo/HpKAiQSBe05nA=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Ke2w2h4Rgwzu4GAFMK/InuDWTYzSUeJbnGNF00PKE69Z5k/XWOb+Kqgni7eXgpJV6Js/lQKwQaFiPnSj4bxOYTob7bXFtJUUSqHbeEf6BXO0TXbnD11v6B/i8pL6JjmADpBogbNlvG5UJ7xc0eQ7mo/CAIRZYtbEbGT20Hp7SfiDddKzVuAUnalwIbw1SJ+CohtzORG167MA9ls0hpXXnhgK/B1U1mw+xm6DTWnWU/NT35CxoEI29A0sru2ohW84IT+IQ8NG5kuW7PGRjQcmi0O2rH/F4MoQSHFnFaCO4BBGxCsJjzKKuq7eLCGAZv+Q8qzFK0S33aWm6BQB54vAGA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MtycB3ur; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MtycB3ur;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	t=1790259377; c=relaxed/relaxed;
+	bh=5rF3AXle7l/wTov33qYGcm1tTdOVgNdGQDHfvZv+T3s=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=FWGNjJeH8BLIqZ8Gnm9XJn5DPXEQxCQ3Hmj0qRJbu9Ao662TsC8DdZEydg7rkKL3QrxwcGTwVUdHA9kjQXhUzzFUaRgMhlccUmhoQkTyagzhxNhRm34YxlqOqTl/JhjxYhd1gZsJDUfD5xh8Sr2ujrm0wJBwPLbJE6ln7MT5r0QF4x0Ee5Lt7j7iF3qVzakPAZOWyBqdYTKuGme/QWBHO5lgz0PnvUOcRpysuZ8T68DnA7jnjS2FIMTy2hLw+QIQn/MzpxksK6aluT9kkjHB4CZGMXzjwDRxa3zkGlmbWJxvgicrFEhhhqjKtV/H59wedLXd22qjwSl516pcJRz7wA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
+X-Greylist: delayed 323 seconds by postgrey-1.37 at boromir; Fri, 25 Sep 2026 00:16:15 AEST
+Received: from mail.8bytes.org (mail.8bytes.org [85.214.250.239])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hrG8v6n0pz2y7Y
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2026 00:16:14 +1000 (AEST)
+Received: from 8bytes.org (p200300f6af404a00e4ccc4fdbbd66590.dip0.t-ipconnect.de [IPv6:2003:f6:af40:4a00:e4cc:c4fd:bbd6:6590])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrF5F1H2Wz2y21
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 23:28:00 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68OC66xe1009280;
-	Thu, 24 Sep 2026 13:27:49 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=Bfnfwv
-	TZSN2vMKmxqDVgfqXHHNIIo/HpKAiQSBe05nA=; b=MtycB3ur6Bw8QP5j3zn7h/
-	sh6H/HpGoRJFDckQ5zUAUUeHlKOgko41DKcyqKRSR+28rqwkb6SUkOJtGk1rDQ+4
-	AKqEiJIpP9IIonKruatbeVmd9lRdca1J0g3PgU3T5L6m0MQvMo2IIXAQ59T5NhGO
-	uRgS3ZVhf6mGKBJN5EHubZEd0zknRVjuZrIlQKfQyDYfbiF2oK/cXz0Ggs5AMhFr
-	afwFIYVKJ++hSRMBTesBOG/KIqcYKJurz8RHxezTrkw3Aq7vL/Vnd5PZJxYugRxq
-	4s2S+/uhyzerGlGY6MejfpfsWoqojRotaF+VhchTPwIQp54L7Jc7sNClvpSSLakw
-	==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gskgqrjca-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 24 Sep 2026 13:27:48 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68OCHghB2046999;
-	Thu, 24 Sep 2026 13:27:48 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gvbe1x11w-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 24 Sep 2026 13:27:48 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68ODRipD43712898
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 24 Sep 2026 13:27:44 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 40E0A20043;
-	Thu, 24 Sep 2026 13:27:44 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F1B0B20040;
-	Thu, 24 Sep 2026 13:27:40 +0000 (GMT)
-Received: from shivang.upadyay (unknown [9.39.19.125])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 24 Sep 2026 13:27:40 +0000 (GMT)
-Message-ID: <8188cc84965a78e29192c0300c082948aee113c4.camel@linux.ibm.com>
-Subject: Re: [PATCH v4] ppc/fadump: collect dump when CPU_STATE_DATA is less
- than reserved
-From: Shivang Upadhyay <shivangu@linux.ibm.com>
-To: Anushree Mathur <anushree.mathur2@ibm.com>, linux-kernel@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org
-Cc: sourabhjain@linux.ibm.com, adityag@linux.ibm.com, adri.vero.dev@gmail.com,
-        anushree.mathur@linux.vnet.ibm.com, chleroy@kernel.org,
-        maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com
-Date: Thu, 24 Sep 2026 18:57:39 +0530
-In-Reply-To: <bc0b1c90-aad9-4696-ac85-0bb4e44cc7ba@ibm.com>
-References: <20260828094942.2439404-1-shivangu@linux.ibm.com>
-	 <bc0b1c90-aad9-4696-ac85-0bb4e44cc7ba@ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.58.3 (3.58.3-1.fc43) 
+	by mail.8bytes.org (Postfix) with ESMTPSA id 561341C7465;
+	Thu, 24 Sep 2026 16:10:47 +0200 (CEST)
+Date: Thu, 24 Sep 2026 16:10:46 +0200
+From: =?utf-8?B?SsO2cmcgUsO2ZGVs?= <joro@8bytes.org>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Cc: Paolo Bonzini <pbonzini@redhat.com>, 
+	Sean Christopherson <seanjc@google.com>, Tom Lendacky <thomas.lendacky@amd.com>, ashish.kalra@amd.com, 
+	michael.roth@amd.com, nsaenz@amazon.com, anelkz@amazon.de, 
+	Melody Wang <huibo.wang@amd.com>, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	kvmarm@lists.linux.dev, loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org, x86@kernel.org, 
+	coconut-svsm@lists.linux.dev, joerg.roedel@amd.com
+Subject: Re: [PATCH 35/60] kvm: Add VCPU plane-scheduling state and helpers
+Message-ID: <arUtYyK25eKQYY7j@8bytes.org>
+References: <20260608144252.351443-1-joro@8bytes.org>
+ <20260608144252.351443-36-joro@8bytes.org>
+ <e7eb0dba-790a-4644-9895-5c9a7420d7fe@redhat.com>
+ <aib8n5lO6HKbLC4Y@8bytes.org>
+ <CABgObfbUsDeStnZF-7oyR-W-Bvd4qTMoeUwGizgn10UTdKtZ2A@mail.gmail.com>
+ <aigE2EvJyZlYDz0V@8bytes.org>
+ <570f82e8b8bc968a31a4ba859145f6c324e41247.camel@HansenPartnership.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,44 +62,52 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=G+OJgNk5 c=1 sm=1 tr=0 ts=6ab52555 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
- a=35fBO9U-A5zGmmBXFhMA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI0MDA1NCBTYWx0ZWRfX9/+5fTEjH6Qp
- qfYIkleWg90lOjVM8tlZzlepj7MFFt2LitYQM9Cge9sAeytzW/2uU5hFxqcqRWc8R9ZLGXi9QwX
- YvoIaTurzeRfhY+AXIiz1USz35VLnfWYNJ3RU4jJGJLf/5Ki4iqgCMbUlVFU+xWcgQkQt5ZbDiW
- bIoihphS2gDbvYdZ6Hkuga0uSkIBP7+JSzqU3NkzEBiTGQcQRM/xh6sviWeM8a8TtNYCquKRbNK
- lMuSx/+4ZHGyEfNdYd3kw3v31uhPLDZT2jTwCNSR8BfVPn9+57Zwi0QYfb8o4NghgGC1zV8Qabi
- MB5q1r+PXPJXzl4qzZ6A3n7ktxtV3m8kW+4tyeqUmEbeQeVZ5FSKuBRLXnSOnjHyvy66XoBRfIk
- ztD3gCDiMABVByx2K8xIuQLqwEgd57BWhGc++bfR2NHIbYdbC7yoDHNKhvbRJL3NUyfCilLQ9Hg
- AGi6hvT39wGH6dJsKLg==
-X-Proofpoint-ORIG-GUID: a6Bq218bhdWklooa02sfs9HuE_2XBIHt
-X-Proofpoint-GUID: LFRTfjH8QwP-div_KvdFyNRmaZoq3rL4
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI0MDA1NCBTYWx0ZWRfX0pf+TpN+H4R3
- FiIydTQq/iL9sWTdUo+8JXVGSTYV7ly70Uq0vez0TQaJ3QR38AorG5O6u9h39+zW7VS9+sdA09e
- hHO96kn4xad2lc996C+YGgozLur58Rw=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-24_03,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 adultscore=0 phishscore=0 lowpriorityscore=0 impostorscore=0
- bulkscore=0 priorityscore=1501 clxscore=1015 spamscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609240054
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <570f82e8b8bc968a31a4ba859145f6c324e41247.camel@HansenPartnership.com>
 
-On Wed, 2026-09-23 at 21:51 +0530, Anushree Mathur wrote:
-> Please feel free to add:
->=20
-> Tested-by: Anushree Mathur<anushree.mathur@linux.ibm.com>
-> Thank you,
-> Anushree Mathur
+Hi James,
 
-Thanks. As I need to send another version with minor changes, I'll keep
-this tag.
+On Fri, Jul 17, 2026 at 10:35:10AM -0400, James Bottomley wrote:
+> So this all depends how the planes are started.  If you're starting
+> them from an IGVM file that loads the most privileged code and then
+> runs the guest in a different plane, absolutely, it can work as you
+> describe.  However, the common use case for serviceable security
+> enclaves is you start the kernel first (necessarily in plane 0) and
+> then bring up the enclaves later which means the planes > 0 are
+> technically higher privilege since they're running hidden security
+> code.  HOWEVER, there's no reason at all to trust a security enclave
+> that's doing something like guarding private keys to be able to poke
+> anywhere it wants in the guest ... that's a security breach waiting to
+> happen, so it would really be better if the model were not
+> hierarchical, but more akin to the ability to seal planes off from each
+> other, so the kernel can start the enclave, which would then set itself
+> and the communication area up, but then the plane 0 kernel would remove
+> access to most memory from the enclave.
+> 
+> In this sealing model, there's no absolute privilege levels; each plane
+> would decide what the other planes can see of its memory space and, on
+> security grounds, we'd likely configure the enclaves to have the least
+> possible privilege.
+> 
+> Now, Windows applications expect VSM to be strictly hierarchical in
+> terms of privilege, but if we create a sealing primitive as described
+> above, we can get it to build the strict VSM privilege hierarchy in the
+> hyper-v driver.
 
-~Shivang.
+I mostly agree with this and have to say that my statement in the cover letter
+about plane hierarchies was a bit broad.
+
+The main assumption this patch-set makes about plane 0 is that it is the plane
+which does the IRQ scheduling. Say a VM has Plane 0,1, and 2. A VCPU runs plane
+2 and KVM wants to inject an IRQ into plane 1 of that VCPU. Now KVM needs the
+VCPU to decide whether it wants to run plane 1 to handle the IRQ or continue
+with plane 2 because it currently has higher-priority work to do.
+
+This decision is made on plane 0 in this patch-set, which it needs to be for
+VMPLs. Does VSM have a similar concept for IRQ scheduling between VTLs or will
+the hypervisor take care to run a VTL when it has IRQs?
+
+
+-Joerg
 
