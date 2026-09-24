@@ -1,96 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-28125-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28126-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F683C98318
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 17:17:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9992EC9830E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 17:35:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hrLB85KkJz2yPG;
-	Fri, 25 Sep 2026 03:17:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:34::11"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790270256;
-	cv=none; b=WNIod6EwBMzuJsHUTFw+c4rYs5qF5LY8YGo0LYijpa4aIJ0AzToo3OJ8Cl0sA3e8gyJmAVpuuq8Z4GljrMQgmlPzjh+Vv9MxIdo8Cd1SH461Vg9eS5S6JACwAPZvj7sAnHqASMxxCPvAeWTjGuidtvt4xQlqRIOUnmU9hHgJTX3e5YD8ge4uBow4rsTOqOlQuOEs/s24pRgzPC/S6sejI2kvys6EvdUKyZ8Sx5FaSwAnZ0v26FnuIYttmR+lRaH5nsGjSVJlcrixd4+6vdILVxeSUZW61GkKATtAHS8bsrrspU20HNknNJtcsqpzobwUQ0m8uvINQIb0LgOZBznWhQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hrLZS4C4Fz30TP;
+	Fri, 25 Sep 2026 03:35:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1047"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790271312;
+	cv=none; b=OCXUYMg+j4fdyTOqoJGQ4Y8BthCuXz4LrggKqGNxoTi7Wj3FoRB8UAnxIJB/Wf8066ztu7Ngn4mb8Vvf4dASMaLdnoh3MAfgSL2zy3QZEDyEI+lwLpDXPnfoEPjAfXh8k7knH1tqZ6x+KYVXanyTlZJssL7fodjVN7IfOn24Ee/UaMSb/L94e75LvpkfD5Bj7DKjXhP5QNejg4duXhgHGj5pQG3VJ1BJicbNDtwGEZ5PiqcSeYSv1dZnYUdri9pz3KJmCGFfcnOCkQCo917OaLNsx/X3iyChwAYMqVjxVb5GX7pxvFi/rSbSXRdi4mhY0Y2vhjOjl20Tbk5Hizo7xw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790270256; c=relaxed/relaxed;
-	bh=feTLx7y3sxZ57LB+c+M8YbdddVhljMzyHzPRAu6TpA4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=YhZ1qo7Rt4gRchJk914QltjeTNg0u+P0VnvmN3+qdGtEnMBYrt2Xl1v75Npy4sxK7u1NlWZb3xKRqKwsP/a/5IM+2xlKNLMBAnwKOVj9JL7xo5u18aKlXEW2tv1E/hbccUyBGDoWK9n/2a2CjABiLwHlnpwXq4+DjWHA02K1DWu8dLhnKNqFYz5yYg2Lo/uPfEZ7UcZbzCGK1EOf3XFNUCcIvBCZeKt+wcs1Ay7L5/bAEoiw+JrOLB1RQTeVSv2zGCVfr8FgfGX7FTAYrb4CWSNPKFl4+TAAfNESzyqsT1vTGqv3BgpaxCX2ZW3/yXNrRt6Gbhnx4SyuYn/Qfu6gYA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gourry.net; dkim=pass (2048-bit key; unprotected) header.d=gourry.net header.i=@gourry.net header.a=rsa-sha256 header.s=google header.b=DCNd+p3D; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:34::11; helo=mail-qk2-x11.google.com; envelope-from=gourry@gourry.net; receiver=lists.ozlabs.org) smtp.mailfrom=gourry.net
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gourry.net
+	t=1790271312; c=relaxed/relaxed;
+	bh=N0rfVeKGfaHWBFQak5OwGNeTtzDcqQjSrfmq86KyFwA=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=L5zXZzgy7g1RH6JY6id0WuWs+BkChKZ0dWQvBKPRJj3eZOXGL5zXgrRtDRE5WguGr0Fd86lC0PvNDQ3O7IjtYm25q9h+6vdrx06X26WLig/qVeHLalMThaDGcQlD/Q0Wf0NGC+5vRjl2n8OYc4M6R8GQI1CUlSr9g/Fba4zJeb8czjyiAknCM9rTsljWUHWImBxmD4hBXwVnHyHCyHeCJ9DuDX6N+V6v3mWdVid9zDSw5YtkNUscJz0XrmSoS/UpS5lfSwKfUKvjhzwlNItfNwi5GFCOqGuyecl4nI9mDnklT3UkbV1cBaJUKATr87EwE37fPf4oRy+NnFZt2HydXw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=ZiIPHnIe; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1047; helo=mail-pj1-x1047.google.com; envelope-from=3tf-1aggkdd0clzskzbjfnnfkd.bnlkhmtwoob-cdukhrsr.nykzar.nqf@flex--dmatlack.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--dmatlack.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gourry.net header.i=@gourry.net header.a=rsa-sha256 header.s=google header.b=DCNd+p3D;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=ZiIPHnIe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gourry.net (client-ip=2607:f8b0:4864:34::11; helo=mail-qk2-x11.google.com; envelope-from=gourry@gourry.net; receiver=lists.ozlabs.org)
-Received: from mail-qk2-x11.google.com (mail-qk2-x11.google.com [IPv6:2607:f8b0:4864:34::11])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--dmatlack.bounces.google.com (client-ip=2607:f8b0:4864:20::1047; helo=mail-pj1-x1047.google.com; envelope-from=3tf-1aggkdd0clzskzbjfnnfkd.bnlkhmtwoob-cdukhrsr.nykzar.nqf@flex--dmatlack.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1047.google.com (mail-pj1-x1047.google.com [IPv6:2607:f8b0:4864:20::1047])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrLB70GKBz2y21
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2026 03:17:34 +1000 (AEST)
-Received: by mail-qk2-x11.google.com with SMTP id d75a77b69052e-52fb76bcb1fso765461cf.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 10:17:34 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrLZR0RKXz2y7Y
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2026 03:35:10 +1000 (AEST)
+Received: by mail-pj1-x1047.google.com with SMTP id 98e67ed59e1d1-39512608fb1so183692a91.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 10:35:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gourry.net; s=google; t=1790270251; x=1790875051; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=feTLx7y3sxZ57LB+c+M8YbdddVhljMzyHzPRAu6TpA4=;
-        b=DCNd+p3D85W8YrH06bs9XvsWzBkmcfPkrelIM8y/pu/Ino8b9Lc2B1DfLRzq0AYiPU
-         rSDlIhYJIdnjtKH/IqBsfxDot0Zg5VRZFkXk+rP/DilELmlzVwvkWRMfXKBFaExmao4C
-         18nVWDn9qvSLydtS08U9hD5oKKJAgohdpo1wrlniFW26UsclebS96T7vAVVLGrF1LlCT
-         38nNlCBTxRX6chuLfJKYtyFHcbezxjHa91GuueXMPXVEOgcEeGjwoSRZ4jkvuSwQPKhK
-         lNC4FNdDZM0Fwi2ZVPS56+WiLkk6R2VsXJIy7QKF1EbwXUtJQBwhrU9milRQoSQ5f1MY
-         0VSA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790270251; x=1790875051;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=google.com; s=20251104; t=1790271309; x=1790876109; darn=lists.ozlabs.org;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=feTLx7y3sxZ57LB+c+M8YbdddVhljMzyHzPRAu6TpA4=;
-        b=TBYKniB5tlUJN7MK65pny0kOQXpiknxzwBsnC3mv64GlGLJWNADlE4RIqJ7f5pk4kc
-         uaWfyKPixpObpgONy+MA8JTxfjt1chC9Wm7/8PjsJo/PgyiMNkigr/nV+Ao7HJuJxZmB
-         4w/abzUwXaV0KRnRIxXy4cRupYheoCgILMrjSVaSvj0PPD4kn82U5IIi/OaFH9jS8Z4K
-         J1qFgFFgkIuqlaB3GWMI4pAozMj+0vycHRnfjkKIku4snwuzKwYw6K8ydlMdVnly4FU7
-         jvG0iWKWJu6Kbt4k4c7AcG9iIHdX4H/rK8L5az0D/iE2KOqEa1FG5qDh5EHXg7vb+lZH
-         NenA==
-X-Forwarded-Encrypted: i=1; AKwUvBxtklOGVl2iYKZsT1fZbzhYbNg6fLl5KLGrMWKCPaYNgRr9BzZzh+Hhh5NyUFcNciVj+RtgPh2rxG7GWgI=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++myFpJZamDcHR8K8SkV+UUZR1Rrrde0J6IE/UlkvX2D8vTOlEC4
-	Md6AQe0UdwEXlVgyLKKbFFDXrjCpmDWHTFVEi66lpQ/Lj3Y3VOMLHSEWumSS7tv9wi4toCvVme6
-	zi20JdlM=
-X-Gm-Gg: AYBFou29PvI84jknodjKg14FZ4Ck0jfFQm+N1RSvgdCxrI0mTnigXPgBjtKQ5zd300t
-	ALHEoA/QoYwodC1XKVQ9ckJj4HImukoV7jcCqOk9htERuWIZvCYA+fhpPJWD/gYKciwYcd3zw+d
-	5IoDpeq1xy3TABo+AmTBUpoKYuiheZPtbIWwCSk8GTMgGHDDb+TOBBu5fgHoIpbKyYJDKS/fCrV
-	SW8ClJu+U4ODsu9bVgIfd3Y2lTS0NZoASoQVaDR0Imqf2W5BSkpXzdXLNRPK9JMcNPvZt9ya+BB
-	G6wyH1cQsCWPNj3Dz32xE/0bUu51YAQvHDcs/UAytmwa2ub2eU2bw3xPPGIuH0iiPrvZzVsa+w9
-	TOiX2UDukssUH7AD7OkBBsnibsNpHzqZ2j9zoNBjTVmDHlky3IeI86ytId2smeMM8cwrV8xT3Ok
-	bwbcqwersSM1vjtYJJekZTLkCA3dv4615xKG+yHduMWzSSIW0PBCa6QNMmlICW+qamxidS1WuJt
-	9upe55pdiLsWl2PQnlr0zg+88qurjJ1Q7+6QoEngIGKyeo303i+JyQ=
-X-Received: by 2002:a05:622a:2b05:b0:530:42e4:f001 with SMTP id d75a77b69052e-532feb3025amr31555731cf.46.1790270250746;
-        Thu, 24 Sep 2026 10:17:30 -0700 (PDT)
-Received: from gourry-fedora-PF4VCD3F (pool-173-79-60-52.washdc.fios.verizon.net. [173.79.60.52])
-        by smtp.gmail.com with ESMTPSA id d75a77b69052e-532f8b7174asm25743881cf.14.2026.09.24.10.17.29
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 24 Sep 2026 10:17:30 -0700 (PDT)
-Date: Thu, 24 Sep 2026 13:17:28 -0400
-From: Gregory Price <gourry@gourry.net>
-To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, 
-	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, 
-	linux-rdma@vger.kernel.org, selinux@vger.kernel.org, linux-sound@vger.kernel.org, 
-	bpf@vger.kernel.org, linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, 
-	linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
-	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
-	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev
-Subject: Re: [PATCH v3 04/40] mm: consistently validate VMA state after
- mmap[_prepare] hooks
-Message-ID: <arVW5i8pvySq6Co2@gourry-fedora-PF4VCD3F>
-References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
- <20260917-b4-mmap-prepare-vma-flag-sanify-v3-4-4583d8a23bca@kernel.org>
+        bh=N0rfVeKGfaHWBFQak5OwGNeTtzDcqQjSrfmq86KyFwA=;
+        b=ZiIPHnIed9gHmtOUp/PyGCZ7vL/72oTDtcq7NfUxPQynsDSsqzxmFQrMXl7THnXhx5
+         dusO29AE9oy569yFAzN0l8+h7PYc7IhqWwRGS3pCg5yp1oI6mArAhp8IYYymc1Qb9RWU
+         00oA8E3MonUijGmyQFazopbM11sF0y2BA39ZeamHhw8o3V+Cj944stkGsTWcMZB6TPdp
+         U3LPl3t6BxRFO943nZKmK8pIlcdOVTud1QPeLiH6UY4JdSTcx1HQcWDC26LWNC85vwB5
+         k/afPwc2lBooaZDoDZYAK/EsfEQ/V+xYRgHwqtDwdXthmBUxytgVHvYAQKYG6139sg0O
+         HILQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790271309; x=1790876109;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=N0rfVeKGfaHWBFQak5OwGNeTtzDcqQjSrfmq86KyFwA=;
+        b=BssaU/S6UhSdQQ/FqeM0VLzEdvg9YnTuNMEHKHwHSHzYRJw9rjqMJdH72Rb6xQBYxh
+         Q2g2OXsWy/vdM2qrUWWE9hhyQmU2Bx+ey/3CEIruWtalZEDiLDV1bNlNqoU8tTu2XdFG
+         TN7tpRQ8XQyOg6XYjBOz8w4StD4thaX+4nnFgr2LlfQX0Oqo11YnYbEBiWWRwqJr2mF+
+         z9EAuAMw87tj98t5dic7Qe/pVppvWKyeIoej1btB4jKTPoSqdq4aP0Xovqsx4DCXpx7G
+         Kqhdf0GqlUYNZiEkiuKpIC0zKAbY09Y6V4hFCDzkNpjdwHLmjAIFuzWD6EKGPK+cg3g2
+         jtzQ==
+X-Forwarded-Encrypted: i=1; AKwUvByGMyZKh8vc52e12H5iu4zIsWsWC5gXSN3YVYR+ZSKMNm9u04pnJryfcMSgijOX0VrX/3clWi/qPo82SEU=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++m2L72OtReo1lVhqaWDKlFvQKmZ+bkjwfMrE8GCL4BiDUes4782
+	FGT3Oux3Kr0mGmqG5KBuhq55EPjEmRffvDlEvvheFtDLnaYlgbRUChbN4Gnta8iyQDen91is0OB
+	g1gW5AQbLTA8UiQ==
+X-Received: from pgdu27.prod.google.com ([2002:a05:6a02:2f5b:b0:cc7:54bc:3f81])
+ (user=dmatlack job=prod-delivery.src-stubby-dispatcher) by
+ 2002:a17:90b:2541:b0:39e:6c69:9b9e with SMTP id 98e67ed59e1d1-3a0992905acmr2586055a91.67.1790271308552;
+ Thu, 24 Sep 2026 10:35:08 -0700 (PDT)
+Date: Thu, 24 Sep 2026 17:34:47 +0000
+In-Reply-To: <20260924173501.856380-1-dmatlack@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,67 +77,67 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-4-4583d8a23bca@kernel.org>
+Mime-Version: 1.0
+References: <20260924173501.856380-1-dmatlack@google.com>
+X-Mailer: git-send-email 2.56.0.rc1.315.gc6ed9934b7-goog
+Message-ID: <20260924173501.856380-2-dmatlack@google.com>
+Subject: [PATCH 01/15] PCI/DPC: Allocate the DPC save buffer during device setup
+From: David Matlack <dmatlack@google.com>
+To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org
+Cc: Alex Williamson <alex@shazbot.org>, Bjorn Helgaas <bhelgaas@google.com>, 
+	Jason Gunthorpe <jgg@nvidia.com>, Josh Hilke <jrhilke@google.com>, Lukas Wunner <lukas@wunner.de>, 
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>, "Oliver O'Halloran" <oohall@gmail.com>, 
+	Pasha Tatashin <pasha.tatashin@soleen.com>, Pratyush Yadav <pratyush@kernel.org>, 
+	Samiullah Khawaja <skhawaja@google.com>, Vipin Sharma <vipinsh@google.com>, 
+	David Matlack <dmatlack@google.com>
+Content-Type: text/plain; charset="UTF-8"
 
-On Thu, Sep 17, 2026 at 05:22:13PM +0100, Lorenzo Stoakes (ARM) wrote:
->  static inline int mmap_file(struct file *file, struct vm_area_struct *vma)
->  {
-...
-> +	err = mmap_hook_validate(prev_start, prev_end, &prev_flags, vma);
-> +	if (unlikely(err)) {
-> +		vma->vm_start = prev_start;
-> +		vma->vm_end = prev_end;
-> +		vma_close(vma);
->  	}
-> +
-> +	return err;
->  }
->  
+Allocate the DPC capability's save buffer in pci_dpc_init() rather than
+in dpc_probe().
 
-I indepdeantly validated the sashiko report on this chunk.  Seems like
-close() should be deferred until after __map_new_file_vma() calls
-unmap_region().
+dpc_probe() runs when the portdrv DPC service binds to a port, which is
+long after the device has been added, and does not happen at all if the
+service is not enabled. Until then pci_save_dpc_state() silently saves
+nothing, so a reset in that window loses the DPC Control register.
 
-suggested fix is to drop vma_close() from mmap_file()  and update the
-cleanup in __mmap_new_file_vma() 
+Allocating during device setup makes buffer existence depend only on the
+capability being present, which is what the save and restore paths
+already assume. It also puts every capability save buffer in one phase
+of a device's life, which a later patch relies on.
 
-if (error) {
-	UNMAP_STATE(unmap, vmi, vma, vma->vm_start, vma->vm_end,
-		    map->prev, map->next);
-	vma_iter_set(vmi, vma->vm_end);
-	unmap_region(&unmap);
+The size is a compile-time constant, so nothing about the allocation
+itself has to move with it.
 
-	/* Release driver state only after its mappings are gone. */
-	vma_close(vma);
+Assisted-by: LLM
+Signed-off-by: David Matlack <dmatlack@google.com>
+---
+ drivers/pci/pcie/dpc.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-	if (map_same_file(map))
-		fput(map->vm_file);
-	vma->vm_file = NULL;
-
-	return error;
-}
-
-Example race:
-
-  Thread A                              Thread B
-
-  mmap(MAP_FIXED, address A)
-    driver remap_pfn_range(A, page P)
-                                         load/store at known address A
-                                         hardware finds the new present PTE
-    validation fails
-    ->close() frees page P
-                                         UAF
-    unmap_region()
-    TLB shootdown
-
-With that fix
-
-Reviewed-by: Gregory Price (Meta) <gourry@gourry.net>
-
-~Gregory
+diff --git a/drivers/pci/pcie/dpc.c b/drivers/pci/pcie/dpc.c
+index 2b779bd1d861..b7f79266f66d 100644
+--- a/drivers/pci/pcie/dpc.c
++++ b/drivers/pci/pcie/dpc.c
+@@ -408,6 +408,9 @@ void pci_dpc_init(struct pci_dev *pdev)
+ 	if (!pdev->dpc_cap)
+ 		return;
+ 
++	if (pci_add_ext_cap_save_buffer(pdev, PCI_EXT_CAP_ID_DPC, sizeof(u16)))
++		pci_err(pdev, "unable to allocate suspend buffer for DPC\n");
++
+ 	pci_read_config_word(pdev, pdev->dpc_cap + PCI_EXP_DPC_CAP, &cap);
+ 	if (!(cap & PCI_EXP_DPC_CAP_RP_EXT))
+ 		return;
+@@ -499,7 +502,6 @@ static int dpc_probe(struct pcie_device *dev)
+ 		 FLAG(cap, PCI_EXP_DPC_CAP_SW_TRIGGER), pdev->dpc_rp_log_size,
+ 		 FLAG(cap, PCI_EXP_DPC_CAP_DL_ACTIVE));
+ 
+-	pci_add_ext_cap_save_buffer(pdev, PCI_EXT_CAP_ID_DPC, sizeof(u16));
+ 	return status;
+ }
+ 
+-- 
+2.56.0.rc1.315.gc6ed9934b7-goog
 
 
