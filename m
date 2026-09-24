@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-28088-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28089-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09C0DC98310
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 06:09:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 202C7C98314
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 06:10:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hr3Mb3rLRz30Tf;
-	Thu, 24 Sep 2026 16:09:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790230187;
-	cv=none; b=bn3rifWFR85kPS5KuB2YuFCkJex9gRyMp6m/3NtDoPbAfB2vCQAE3m/aF+ETJgLXU+NBxDHO9YoifCpMF2gmOdbGC5puEdekU8vlSNCtVYP3u10vDiaaDVRzwJ+Q5O/k3UbPjCFi3dbpyWY+G+kt9E5M6CQy4qc48+9u8OUUAAwNZbGYDK80OSR8VuPxSp4Rs1C9Os8MsSbu9zrqXsdZJ1aBqWFtFCI5NvhwQ0bAbhXJ2wiBWaDSZWHyN81uOjgeilmczdrBAJOjvHLU+fbqgcGCP+Pdavppc5H5pRYjq4RTTVqq1swbBa6nB/OtkwOgdwW9PdKoPyl5blplXpzgTA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hr3Mw4jZ5z30T9;
+	Thu, 24 Sep 2026 16:10:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790230204;
+	cv=none; b=eSu75LljcdGWaEO06J8m9XlMvSe8mAl7I3YFMPHyCbmtkYkHBoy6i0YMAGZFcwRa3SSi5gJ8iGSi+vb7Uc+UeMJHVOcJ6rpIPm741+o4nwqhf6vzEAUr4vcAo3mQGLv5Ar1BkT6uPy2tf1+ZXG9jKMHH9W6odYc/ciqceeI1V1wbAi2H/fFKe7P8ePbs04/g3+PY+b+qN6p+2jmCe7ig9AVjq8ChQeAGgNPMsZrfqwQkiiArlfqx9kT4sdzPd9KxEOhFep6a7DI9lso+etvhJGep2P9UgMpofYr54rDXkIqdxNRfT+AYkgMX4LZ4UTc+Gr6kyJBaQqkbV53b70E13w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790230187; c=relaxed/relaxed;
-	bh=tusr1yJ0MgOFWnYBFAQROVz75fdWB9waVMwRJ7a9kV0=;
+	t=1790230204; c=relaxed/relaxed;
+	bh=Fa0KQ3fgRkDVGiDssz/j9qXG8YHMD9kKAj2GPSYE3Uo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=MjpS2N7fRHJUVvK/veiKbohDJ4fpPoeUuLvME21kBVmgHPGl5mpUr+wefVtX5gURUPnOn+R6Oug3SFV785T3uBVJ9buVkkVo4na1GMfoGgWIHKdJLwwCcJRmflZaxADKlPCbgIebBuXpu/hBjGfYO03mBarstnV4IWBgbfOcKw7jesZgSV9BktOcvLyEtFc6aA9fnX2ggaKN5aWmxKPTRinE1X8BGV8SxuA3Xux1dQ2U8/np6DN0SkanjZ6JLFf4+v4b4yJPKxLci8VwnZ6+obR2mm1KNVNBsicgL2fLwZyGbVDPKj1gEiwvShzLkiSb4cuyet9Zu6sgKW49zkM1yQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DCNOixZ1; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=dlOzaUyaFiw6LYIIeaz2j8kn6rCeY4dz2qvPqttCwqhNccztBdW5TyJTU+7EcxNTSNGVoRl3SdfTV+L+4od1ZngdEWSI4NGWJUNYZKQLEUZg0V60NHnIzd71i65CuaFoCR0RgbuW2zLmSNtMOumt8OjpgswwwZDMQdcQHk2lCxw6ggus/34E5Id5v5WUqhDWpGtPymlGpv/jpEaPpQeiAoncD/AQQfzYADsGyqGS6QSqK586dLAaFQuH3+bU5CgazNDi6c9QfLoKJcHb6nt0bOkp8vV3J/dXHmPhYt3TZc6UZiqNs8DII9L0xRK4zVZjfXLFcilqhlGpsYJMOBHydw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JH592GnK; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DCNOixZ1;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JH592GnK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hr3MZ4m4Hz30TQ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 16:09:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hr3Mv4qs0z30T6
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 16:10:03 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id B050B60209;
+	by sea.source.kernel.org (Postfix) with ESMTP id BA85640211;
+	Thu, 24 Sep 2026 06:10:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1C1171F00893;
 	Thu, 24 Sep 2026 06:09:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E16F91F000FF;
-	Thu, 24 Sep 2026 06:09:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790230184;
-	bh=tusr1yJ0MgOFWnYBFAQROVz75fdWB9waVMwRJ7a9kV0=;
+	s=k20260515; t=1790230201;
+	bh=Fa0KQ3fgRkDVGiDssz/j9qXG8YHMD9kKAj2GPSYE3Uo=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=DCNOixZ1Uff5UkaFVScwFmBw6mXUZbMx0tgzEzPPRjLmGZVot10iFQ0ssXfLbeo52
-	 z7fTCAC0mZk2tXAEkEnMTDNkATIn8sbA9AO8GsxYR4xGD7P90W2FNMjkQysI1pf47w
-	 LbD9PgYtrDtUxxVLrfl77xSmS8nUjRfRqlYI/5y+hUIgeSzBpFR3i8x1opZKu45s35
-	 ezO3ufVmH5GDESRxdwtIbqlfidV30AS+NYPv2zC/MUFlnZR/aDK0wCzTU1HjyYV/Xe
-	 9a8MCBjC42Bry8aSYtbpOkz3ae1A4V7BdqAyJoaZmvcPMeQ6W9CBkSe5SFYb4bt3g2
-	 ho4cz+DiCI9Kw==
+	b=JH592GnKcE2iGAD07ASXMeBURt6QXUxEDyZ1fIFQ0oGthXjgqzKxtqRghMZfV1SDX
+	 KjJCxF8wcsi0g3KU9Ll7drA0AED0KkzETF78nCFEaWQ7DCGbNiDY9pAKt3CISBLgxN
+	 ByVHf4gXBDkom9D/wNER72wL+d5o/rzfaA8lNRA6OZohytw6ckxnTgM58h5UUmx0oI
+	 QZxwJQoZCfqoiQUriDiBnPqaMeSVQgkY4vpC+PYkcwBmnmgSD/0GybQM/AP391pGdc
+	 dpQTnoZxeQ5tW8Wygzal5/6KEoXFAcjH/muCPqK8a6yKzU5SdpruNHq7BWA6AsmqPm
+	 rBHuXRBApBJFQ==
 From: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
 To: iommu@lists.linux.dev,
 	linux-kernel@vger.kernel.org
@@ -102,9 +102,9 @@ Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
 	linux-riscv@lists.infradead.org,
 	linux-s390@vger.kernel.org,
 	x86@kernel.org
-Subject: [PATCH v6 5/8] dma: swiotlb: Centralize minimal pool sizing
-Date: Thu, 24 Sep 2026 11:37:53 +0530
-Message-ID: <20260924060756.1325156-6-aneesh.kumar@kernel.org>
+Subject: [PATCH v6 6/8] dma: swiotlb: Centralize memory-encryption pool sizing
+Date: Thu, 24 Sep 2026 11:37:54 +0530
+Message-ID: <20260924060756.1325156-7-aneesh.kumar@kernel.org>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260924060756.1325156-1-aneesh.kumar@kernel.org>
 References: <20260924060756.1325156-1-aneesh.kumar@kernel.org>
@@ -123,101 +123,148 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-A default SWIOTLB pool used only for unaligned kmalloc bouncing can be
-smaller than one required for limited DMA addressing. Arm64 and RISC-V
-currently implement this sizing independently, using 1 MiB of SWIOTLB
-space per GiB of RAM.
+Memory-encrypted guests use shared or unencrypted memory for DMA and may
+route all DMA through SWIOTLB. The default pool can therefore be too
+small for I/O-intensive workloads.
 
-The SWIOTLB core now identifies this case with SWIOTLB_POOL_MINIMAL.
-Size that policy in swiotlb_adjust_pool_size() and remove the
-architecture-specific adjustments.
+Move the existing x86 guest-sizing policy into the SWIOTLB core. For
+SWIOTLB_POOL_CC_GUEST, size the pool to 6% of guest memory, clamped
+between the normal default and 1 GiB. Preserve an explicit swiotlb=
+size.
 
-Explicit swiotlb= sizing remains unchanged because swiotlb_adjust_size()
-preserves a user-configured size.
+Host memory encryption still selects a normal-sized shared pool and
+does not use the guest-sizing policy.
+
+A restricted DMA pool already provides shared bounce buffers for its
+devices. Record its presence during reserved-memory initialization and
+do not select the confidential-guest default-pool policy solely because
+guest memory encryption is active.
 
 Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Paul Walmsley <pjw@kernel.org>
-Cc: Palmer Dabbelt <palmer@dabbelt.com>
-Cc: Albert Ou <aou@eecs.berkeley.edu>
-Cc: Alexandre Ghiti <alex@ghiti.fr>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: Andy Lutomirski <luto@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Thomas Gleixner <tglx@kernel.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: x86@kernel.org
+Cc: "H. Peter Anvin" <hpa@zytor.com>
 Cc: Marek Szyprowski <m.szyprowski@samsung.com>
 Cc: Robin Murphy <robin.murphy@arm.com>
 Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
 ---
- arch/arm64/mm/init.c | 11 -----------
- arch/riscv/mm/init.c |  4 ----
- kernel/dma/swiotlb.c |  9 ++++++++-
- 3 files changed, 8 insertions(+), 16 deletions(-)
+ arch/x86/mm/mem_encrypt.c | 24 ------------------------
+ kernel/dma/swiotlb.c      | 27 +++++++++++++++++++++++++--
+ 2 files changed, 25 insertions(+), 26 deletions(-)
 
-diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
-index f55ebe57b8e1..95075b5c8207 100644
---- a/arch/arm64/mm/init.c
-+++ b/arch/arm64/mm/init.c
-@@ -340,17 +340,6 @@ void __init arch_mm_preinit(void)
+diff --git a/arch/x86/mm/mem_encrypt.c b/arch/x86/mm/mem_encrypt.c
+index 95bae74fdab2..912f22ca838f 100644
+--- a/arch/x86/mm/mem_encrypt.c
++++ b/arch/x86/mm/mem_encrypt.c
+@@ -101,9 +101,6 @@ void __init mem_encrypt_init(void)
+ 
+ void __init mem_encrypt_setup_arch(void)
  {
- 	unsigned int flags = SWIOTLB_VERBOSE;
- 
--	if (max_pfn <= PFN_DOWN(arm64_dma_phys_limit)) {
--		/*
--		 * If no bouncing needed for ZONE_DMA, reduce the swiotlb
--		 * buffer for kmalloc() bouncing to 1MB per 1GB of RAM.
--		 */
--		unsigned long size =
--			DIV_ROUND_UP(memblock_phys_mem_size(), 1024);
+-	phys_addr_t total_mem = memblock_phys_mem_size();
+-	unsigned long size;
 -
--		swiotlb_adjust_size(min(swiotlb_default_pool_size(), size));
--	}
+ 	/*
+ 	 * Do RMP table fixups after the e820 tables have been setup by
+ 	 * e820__memory_setup().
+@@ -114,27 +111,6 @@ void __init mem_encrypt_setup_arch(void)
+ 	if (!cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
+ 		return;
+ 
+-	/*
+-	 * For SEV and TDX, all DMA has to occur via shared/unencrypted pages.
+-	 * Kernel uses SWIOTLB to make this happen without changing device
+-	 * drivers. However, depending on the workload being run, the
+-	 * default 64MB of SWIOTLB may not be enough and SWIOTLB may
+-	 * run out of buffers for DMA, resulting in I/O errors and/or
+-	 * performance degradation especially with high I/O workloads.
+-	 *
+-	 * Adjust the default size of SWIOTLB using a percentage of guest
+-	 * memory for SWIOTLB buffers. Also, as the SWIOTLB bounce buffer
+-	 * memory is allocated from low memory, ensure that the adjusted size
+-	 * is within the limits of low available memory.
+-	 *
+-	 * The percentage of guest memory used here for SWIOTLB buffers
+-	 * is more of an approximation of the static adjustment which
+-	 * 64MB for <1G, and ~128M to 256M for 1G-to-4G, i.e., the 6%
+-	 */
+-	size = total_mem * 6 / 100;
+-	size = clamp_val(size, IO_TLB_DEFAULT_SIZE, SZ_1G);
+-	swiotlb_adjust_size(size);
 -
- 	if (max_pfn > PFN_DOWN(arm64_dma_phys_limit))
- 		flags |= SWIOTLB_INIT_ADDRESSING_LIMIT;
- 
-diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
-index 2562cf45a8f2..96856114b387 100644
---- a/arch/riscv/mm/init.c
-+++ b/arch/riscv/mm/init.c
-@@ -183,10 +183,6 @@ void __init arch_mm_preinit(void)
- 		 * memory when DRAM starts above dma32_phys_limit.  Allocate
- 		 * ~1 MB per 1 GB of RAM.
- 		 */
--		unsigned long size =
--			DIV_ROUND_UP(memblock_phys_mem_size(), 1024);
--		swiotlb_adjust_size(min(swiotlb_default_pool_size(), size));
--		swiotlb = true;
- 		swiotlb_flags |= SWIOTLB_ANY;
- 	}
- 
+ 	/* Set restricted memory access for virtio. */
+ 	virtio_set_mem_acc_cb(virtio_require_restricted_mem_acc);
+ }
 diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
-index 8ae315b2d0e7..75ee63cd354e 100644
+index 75ee63cd354e..e626cca63ad1 100644
 --- a/kernel/dma/swiotlb.c
 +++ b/kernel/dma/swiotlb.c
-@@ -469,9 +469,14 @@ static bool __init swiotlb_kmalloc_needs_bounce(void)
- static void __init
- swiotlb_adjust_pool_size(enum swiotlb_pool_policy policy)
- {
-+	unsigned long size;
-+
- 	switch (policy) {
- 	case SWIOTLB_POOL_MINIMAL:
--		return;
-+		/* Use 1MB per 1GB of RAM for kmalloc() bouncing. */
-+		size = DIV_ROUND_UP(memblock_phys_mem_size(), 1024);
-+		size = min(swiotlb_default_pool_size(), size);
-+		break;
- 	case SWIOTLB_POOL_CC_GUEST:
- 		return;
- 	case SWIOTLB_POOL_NONE:
-@@ -481,6 +486,8 @@ swiotlb_adjust_pool_size(enum swiotlb_pool_policy policy)
- 	default:
- 		return;
- 	}
-+
-+	swiotlb_adjust_size(size);
- }
+@@ -33,6 +33,7 @@
+ #include <linux/kmsan-checks.h>
+ #include <linux/iommu-helper.h>
+ #include <linux/init.h>
++#include <linux/math64.h>
+ #include <linux/memblock.h>
+ #include <linux/mm.h>
+ #include <linux/pfn.h>
+@@ -80,6 +81,7 @@ struct io_tlb_slot {
  
- static enum swiotlb_pool_policy __init
+ static bool swiotlb_force_bounce;
+ static bool swiotlb_force_disable;
++static bool restricted_dma_pool_present __initdata;
+ 
+ enum swiotlb_pool_policy {
+ 	SWIOTLB_POOL_NONE,
+@@ -478,7 +480,25 @@ swiotlb_adjust_pool_size(enum swiotlb_pool_policy policy)
+ 		size = min(swiotlb_default_pool_size(), size);
+ 		break;
+ 	case SWIOTLB_POOL_CC_GUEST:
+-		return;
++		/*
++		 * For SEV and TDX and CCA, all DMA has to occur via
++		 * shared/unencrypted pages. Kernel uses SWIOTLB to make this
++		 * happen without changing device drivers. However, depending on
++		 * the workload being run, the default 64MB of SWIOTLB may not be
++		 * enough and SWIOTLB may run out of buffers for DMA, resulting in
++		 * I/O errors and/or performance degradation especially with high
++		 * I/O workloads.
++		 *
++		 * Adjust the default size of SWIOTLB using a percentage of guest
++		 * memory for SWIOTLB buffers.
++		 *
++		 * The percentage of guest memory used here for SWIOTLB buffers is
++		 * more of an approximation of the static adjustment which 64MB for
++		 * <1G, and ~128M to 256M for 1G-to-4G, i.e., the 6%
++		 */
++		size = div_u64((u64)memblock_phys_mem_size() * 6, 100);
++		size = clamp_val(size, IO_TLB_DEFAULT_SIZE, SZ_1G);
++		break;
+ 	case SWIOTLB_POOL_NONE:
+ 		WARN(true, "Cannot adjust SWIOTLB size without a pool\n");
+ 		return;
+@@ -496,7 +516,8 @@ swiotlb_select_pool_policy(unsigned int flags)
+ 	if (swiotlb_force_disable)
+ 		return SWIOTLB_POOL_NONE;
+ 
+-	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
++	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT) &&
++	    !restricted_dma_pool_present)
+ 		return SWIOTLB_POOL_CC_GUEST;
+ 
+ 	if (cc_platform_has(CC_ATTR_HOST_MEM_ENCRYPT))
+@@ -2142,6 +2163,8 @@ static int __init rmem_swiotlb_setup(unsigned long node,
+ 	    of_get_flat_dt_prop(node, "no-map", NULL))
+ 		return -EINVAL;
+ 
++	restricted_dma_pool_present = true;
++
+ 	pr_info("Reserved memory: created restricted DMA pool at %pa, size %ld MiB\n",
+ 		&rmem->base, (unsigned long)rmem->size / SZ_1M);
+ 	return 0;
 -- 
 2.43.0
 
