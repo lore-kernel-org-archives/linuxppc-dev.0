@@ -1,76 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-28117-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28118-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D38A3C98314
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 13:06:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30486C98317
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2026 13:26:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hrDcf5r8cz2y24;
-	Thu, 24 Sep 2026 23:06:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790255202;
-	cv=none; b=SoVSG+YjZcBtG78dbiq5R+UVYIo7TY2HP5DXZDi0R4FmkobRk2G9zDL4aCqYvADWLxcbqOjZO4mCgsgE1r5snkWONYL44qnjg7qdeK/O6uk4PXosRapcLj/IO2PvEwiPZ0dHnnwKXVf8z5a0CXo0zHk+BP6sLIZJMmZW0rXorGF0g/u23ED8EF8dJ6Bxv27vMbTXPCdVg79IsttCibc3oIWRKCgUSv7OZ5r93hNPob6mEimu1gCtlLqNQfcIWNqHugAfArCXQ1fHWk5kLNgGM8l1P0xg5ZKWNgQ2WSCtWr+Cb1S7VCB2ySNBCjxGlqPgVOYJFSA/nocFC6RfynbQtw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hrF3P3Xdzz2y24;
+	Thu, 24 Sep 2026 23:26:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790256385;
+	cv=none; b=dMuHUvtDXbjORLa3m/vMrjmRiV0r+S0OLKjOMungeXaXEvF2OvQ7QSlrTtiR5nsuGYHK/APIjgvC/X5AWm5yqy0sGcB9yonzWkVF0Ltj8hsT7YFHLmNJyy4cbTPPwcWil/AU+9dYASEO963MS3y4ApJAJC1anPR4ewlvuLv969XGXwCqSRNIOU6OJZkfj6Uf7sk0WMpf+EG7vmwjUXIx4+fhPfT7VbpYJio3lIBE405Xt0UB2UAi9pV1IS7Bk9yomg/PvSnVyQtXY9aAEthxzpn32YRq6VABnykqMIIcj8W+uSEiJjxwjLKd59iW0KO+JDxCELYSq+lBmQfOGZ/bvg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790255202; c=relaxed/relaxed;
-	bh=BL/NfyqxMyKYscXUUwTNSk0XfX3XG2LiigJ5+oNzdhE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=aZE8LEcvNwa3/TrKKiuaQjNxaVM0RgQcYWREmfmSj4gXV+QFHwdTqRQA4orUqfcSqj6ZF5B5vfPOU1bJ+vMKsQ0jJmBOEG+SFdUiZ+eIPrMhdg8dCeBRc+UIUZockWv7k10mTjAkzblWro/P3TSlGWVqt3c9qOY3N0/h69xUCMN2k5IjthyUBJ/4eRfgC3aq6HHM8+u15KPYFpwuPQ+Kei9yx5cplNTK4AsmqeBZvdoNLdFPEH24coTIDR4CVPtGl6CYQnBGlBt3VkQ+MvTIe2fu4MX5XWAr2h2VMGkSFA00O9rlE7PS50v5hOfbxSBRS+GKjbHT8jf8yHK7AUqkcw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=L5T5MVGA; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+	t=1790256385; c=relaxed/relaxed;
+	bh=gwpARKiQNnpgf81tDX2md7RZxQA/xVzy0a5NV+C+Fz8=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=V+ZUYVCiGpXNUmNlSGLscVQoDd5RqvjgwlYPe+7L88S4XKvvoRvLNM9Tw8pxEM023JhiRJUap+ZGc4zJ3ZDJj1F+EckDyxcVPQhnOaxxqE+9z8fEaeugKUjxp+C9EDsv/i8fxticam8Bsem7Pr7fxEFSig1iF6ynoswFohwe8GLupWfZGvgjjdUIoDK2z2xUimVc4Xb7uux4i39u8wVy0S5YGTJcw/HTK2bERz5A8uAoqeVSSbA+JeCrR6tJZCDh0KuWzp7RMsBNq3Xh6xZH0ukpz2Bt828CiLRat8h/AhuyYxy/626beep8gEdhoNWyLeDJTicEvc3oud1XuTo1EA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mye103in; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=L5T5MVGA;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mye103in;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hrDcd6XJjz2xs1
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 23:06:41 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 72CC61756;
-	Thu, 24 Sep 2026 06:06:06 -0700 (PDT)
-Received: from J2N7QTR9R3 (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 540843F86F;
-	Thu, 24 Sep 2026 06:06:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1790255169; bh=EGw34BO6GoODDHqtAWjnN4dQ0qfGJO7mhTtfUZBl07g=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=L5T5MVGA1XE7fvh0OgeMuV6WxEvg/uuyaiKVs7/Rb0XZiQu6QLiQiyVzic9dwbkKj
-	 AsHQO82O3eGMXwH0QQs/G8Eagu43wXo1aY65K+KpEyokxL7WJ+W4gxNEeTmwo5/88x
-	 2Z1VqPAa89aa8XVYSCxLOJX2ek0aIfWGYkdJLQV0=
-Date: Thu, 24 Sep 2026 14:05:57 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>, catalin.marinas@arm.com,
-	will@kernel.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
-	npiggin@gmail.com, chleroy@kernel.org, ritesh.list@gmail.com,
-	sshegde@linux.ibm.com, pjw@kernel.org, palmer@dabbelt.com,
-	aou@eecs.berkeley.edu, alex@ghiti.fr, hca@linux.ibm.com,
-	gor@linux.ibm.com, agordeev@linux.ibm.com,
-	borntraeger@linux.ibm.com, svens@linux.ibm.com, tglx@kernel.org,
-	mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com,
-	x86@kernel.org, hpa@zytor.com, ojeda@kernel.org, boqun@kernel.org,
-	gary@garyguo.net, bjorn3_gh@protonmail.com, lossin@kernel.org,
-	a.hindborg@kernel.org, aliceryhl@google.com, tmgross@umich.edu,
-	dakr@kernel.org, daniel.almeida@collabora.com, tamird@kernel.org,
-	acourbot@nvidia.com, work@onurozkan.dev, nathan@kernel.org,
-	ndesaulniers@google.com, morbo@google.com, justinstitt@google.com,
-	jszhang@kernel.org, japo@linux.ibm.com, jpoimboe@kernel.org,
-	seanjc@google.com, pmladek@suse.com, thuth@redhat.com,
-	ynorov@nvidia.com, joelagnelf@nvidia.com, david@davidgow.net,
-	fujita.tomonori@gmail.com, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	rust-for-linux@vger.kernel.org, llvm@lists.linux.dev
-Subject: Re: [RFC] rust: kernel: Add KUnit tests for ARCH_WARN_ASM bug table
- emission
-Message-ID: <arUgNdqpA5U8EjjP@J2N7QTR9R3>
-References: <20260922054959.955093-2-mkchauras@gmail.com>
- <20260922064735.GS4121339@noisy.programming.kicks-ass.net>
- <arNxAn7I7NCVWmD1@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
- <20260924111557.GP1837346@noisy.programming.kicks-ass.net>
- <arUbw_TIA0Uj7oXT@J2N7QTR9R3>
- <20260924125253.GY776954@noisy.programming.kicks-ass.net>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrF3N4KHVz2y21
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 23:26:24 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68OC6Lnr2028082;
+	Thu, 24 Sep 2026 13:26:11 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=gwpARK
+	iQNnpgf81tDX2md7RZxQA/xVzy0a5NV+C+Fz8=; b=mye103inZqYrHyL69VTQBA
+	aEk0iyS5LCx1miSbeJt/enSakQWqMQVOWTePpCun46rfhJod1AVQUqyfnYlyqMvQ
+	D1KJxUBVybo9j57sUIp6hJABBtHFnNxk7h2+iJcu1WmcezwY2Y6EfVWcQHMAbLMP
+	uFrOGU/UHeG0FmSGNGsDWhtDUhWhnbk/XojNQLWZvIBOM7uaL09sg5XeFX5pZmFE
+	DLAR3keX8fTQVfuX9mpEw79jD+CB1MaVN4oiMvOOpwhtIT+MCrS4bnxpUUlWHNuc
+	SD5C8XheXgM1BsQs+CnragHAinEMdF6+zsY7bZBUFjtjSJLRqEeCmvaqG5WZv2gw
+	==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gske1rpym-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Thu, 24 Sep 2026 13:26:10 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68OCHYD72061443;
+	Thu, 24 Sep 2026 13:26:10 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gvb8jx1ms-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 24 Sep 2026 13:26:09 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68ODQ63q43581846
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 24 Sep 2026 13:26:06 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 293732004F;
+	Thu, 24 Sep 2026 13:26:06 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8D3DF20040;
+	Thu, 24 Sep 2026 13:26:02 +0000 (GMT)
+Received: from shivang.upadyay (unknown [9.39.19.125])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 24 Sep 2026 13:26:02 +0000 (GMT)
+Message-ID: <a18fbf8f3923f14215006a23a5a94dae63ab3ae9.camel@linux.ibm.com>
+Subject: Re: [PATCH v4] ppc/fadump: collect dump when CPU_STATE_DATA is less
+ than reserved
+From: Shivang Upadhyay <shivangu@linux.ibm.com>
+To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        sourabhjain@linux.ibm.com, adityag@linux.ibm.com,
+        adri.vero.dev@gmail.com, anushree.mathur@linux.vnet.ibm.com,
+        chleroy@kernel.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
+        npiggin@gmail.com
+Date: Thu, 24 Sep 2026 18:56:01 +0530
+In-Reply-To: <arTuiz2iOQkPdHwT@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <20260828094942.2439404-1-shivangu@linux.ibm.com>
+	 <arTuiz2iOQkPdHwT@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.58.3 (3.58.3-1.fc43) 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,47 +96,63 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260924125253.GY776954@noisy.programming.kicks-ass.net>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: wVOix475_KU8V2_XIJ4UU-t0I4Z6HeUh
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI0MDA1NCBTYWx0ZWRfX3Pz844GeKK41
+ ixIiaRSEbQ2XAp3dy62052i/DQ49tc7nF0Gzyb7gnU0SFIYoeFFy9UB9cmiVKvM91FG0kWO1NWN
+ 7KtG95s0WslX+bYii4t8nf+lPYCmLMdyHlbXLzOD9cWG/TKa+zwtRiokhThQrzkao18O5z+KPGe
+ ITuBxjVVW07ajerHuZ+ry16mrjU+ekQ3U5rVf88jnGNZNwOv5jhhvQ7mckAZfK31UDz0Ub8ON1J
+ r2RQ2DA+p6XQLdJiU5NfI3EiYU6O4xBKj1XVR/CMRNSOpEEndtatLTNe/BQruZZEle+ozvcJcDz
+ ofN55prhBdShzM3hTdI8NIXQBsJYhZ1uf18eIDgzGehTdonxhoQSe1yoy1CnICoktRm4wgCO/ld
+ 5LSENzjyFTFFmlDHeORtibO+/b+wM1EM6hZ5NmHoZqPc907Z7Bu5RKXfuEVRDThiu1btlcPZnz6
+ Yp1A0YdfyeQW3JvejKw==
+X-Authority-Analysis: v=2.4 cv=O/KsLx9W c=1 sm=1 tr=0 ts=6ab524f3 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=5BmOn03dfxg9LWZ0LBYA:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI0MDA1NCBTYWx0ZWRfXzb3MKBOFYzyr
+ mx1kDb11idXRVZLENdAOL36ANhA7Xy3JZIkfmWgWptHtL7HA9AlRS1o45XEgGdMqFtn0e2V/8Ev
+ rGijqIWb7bAQYh/+N1dUthn9oIiuqwI=
+X-Proofpoint-GUID: mNk1XpUK_s02Vdcn8pomy1Q2iB-qdEqD
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-24_03,2026-09-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 malwarescore=0 phishscore=0 impostorscore=0 suspectscore=0
+ bulkscore=0 priorityscore=1501 lowpriorityscore=0 adultscore=0 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609240054
 
-On Thu, Sep 24, 2026 at 02:52:53PM +0200, Peter Zijlstra wrote:
-> On Thu, Sep 24, 2026 at 01:46:59PM +0100, Mark Rutland wrote:
-> > What problem is this trying to solve?
-> > 
-> > Mukesh's original patch seems to be trying to check whether we compiled
-> > things correctly (such that the bug_table entry points at the expected
-> > insturction), and I don't think that warrants a runtime check, but (as
-> > per my reply to him) I don't understand why that's a thing to check in
-> > the first place.
-> > 
-> > On arm64 we only call is_valid_bugaddr() under do_el1_brk64() ->
-> > call_el1_break_hook() -> bug_brk_handler(). We only call
-> > bug_brk_handler() when HW has taken a BRK exception with the BUG_BRK_IMM
-> > immediate, and that can only be triggered by executing the right
-> > instruction (BRK #BUG_BRK_IMM), which we ONLY use for BUG(). and WARN().
-> > 
-> > So I don't see why any change is necessary here.
-> > 
-> > If the HW has somehow taken a BRK exception from any other instruction
-> > (which would presumably be a HW bug), there won't be a bug_table entry,
-> > and so __report_bug() will fail to find an entry, and will return
-> > BUG_TRAP_TYPE_NONE, same as for the !is_valid_bugaddr() case.
-> 
-> Right, so I wasn't at all sure what he was doing, Rust is still mostly
-> unreadable garbage to me.
-> 
-> But I figured I'd much rather see him use is_valid_bugaddr() to do
-> runtime checks than whatever dodgy games he was playing with that label.
-> 
-> So *if* doing runtime checks is what is wanted, then is_valid_bugaddr()
-> needs to actually work, because then it grows a user outside of the BRK
-> handler.
+On Thu, 2026-09-24 at 15:06 +0530, Mukesh Kumar Chaurasiya wrote:
+> > +			 */
+> > +			if (!(bytes_dumped =3D=3D source_len ||
+> > +			(type =3D=3D RTAS_FADUMP_CPU_STATE_DATA &&
+> > bytes_dumped <=3D source_len))) {
+> > +
+> Extra line here.
+I'll fix this in next revision.
 
-Thanks; I think we're aligned. :)
+> > =C2=A0=C2=A0				pr_err("Dump taken by platform is
+> > incomplete (%d)\n", i);
+> > +				pr_debug("type -> %d, bytes_dumped
+> > -> %llx, source_len -> %llx\n",
+> > +					 type, bytes_dumped,
+> > source_len);
+> > =C2=A0=C2=A0				rc =3D -EINVAL;
+> > =C2=A0=C2=A0			}
+> Can bytes_dumped be greater than source_len?=20
+> If yes then the error is misinformed that it's incomplete instead
+> it's corrupted.
+> If No then shouldn't the internal check bytes_dumped <=3D source_len
+> should handle it?
+>=20
+Yes, It can be more. The wording on error here can be better. I should
+change that in next revision.
 
-Before we delve into implementation details, I'd like to understand the
-problem Mukesh is trying to solve.
+Thanks for your review.
 
-Mark.
+~Shivang.
+>=20
 
