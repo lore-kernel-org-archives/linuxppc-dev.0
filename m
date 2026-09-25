@@ -1,70 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-28219-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28221-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87EB5C98321
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2026 18:40:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF5E9C98328
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2026 18:40:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hrzyR0DxBz30WS;
-	Sat, 26 Sep 2026 04:39:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790361582;
-	cv=none; b=Cjg9PHSTbCKxfabVQsWxS6Vp5yfV03Uf5vdoXs229LzxAajZyQQbwzBB6uVf4LCTtrgVc69eae2Cj4CZgD3/3DkGRNnf/trnno1iUzdBAXXfZvvOUWBStrZJPDs5HbnvogQ9R0XnTwqaOSDOhaSNEdc4vJ77wTVK195akgebmxVZ1KYFlAH5k+6BD62DBUq8UuSlv9D8xa7jNgQHjXVj9eC/GYg2K1JgkToQOT/5rNouikfmn8ojf1GDej771btKxfN9zXrUm9Ug1hQjDUYXPRzEkGAQHpxEJt62Kqe4toTmz0Oh9bePIz0LOH4xRZo6D66wO6TqA8NXa83QcVICSg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hrzyb5ysJz3blT;
+	Sat, 26 Sep 2026 04:39:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790361591;
+	cv=none; b=nwhetSt40jiRUsospM4y6y26MztDHH0HfoywFCRlNOgTouYG3oZ926cZRXMLJw1iaRq19MfeB49dJtQOLddyV1ygJqI0Y5WVosNxMZvR9U3P5RFFUSu1QA6gdT87M7ueNU0CfFn8oJ/5UIDZveA54G95Cvv5Kc++HnLaKOAFdNZ4kAS5llKW5Z+1QUS1hSUpDnH/0raxWz4i8fsKxO3jQAem8f4tgKKs9e9G99CybymUKXalcwizIqgahNTRfpvfXnexdTp2w9CTic8AC4rF4ub3dWujVRFEYTEYhUGZTTrvzy18s4FpvIb+zKJWMleZ+8dpJeS5kNpH1NMBPJDdkg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790361582; c=relaxed/relaxed;
-	bh=r7d6ElRTcp/WT3mC1KebQp8ucZjF8lYP9VrF/XBZ5nc=;
+	t=1790361591; c=relaxed/relaxed;
+	bh=yd3bG5sGqhB6u5oC5MJGdO7pd0cBjWw0rOk0lImiedI=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=n309l5GD6uWU2AUmWKemDCDWtclJgh3iIgfXB4k5NMtJWZMG2fTngPwG+l5qUqjI7JXnbgIi9ilsXVGSLVQ2APZdiHEf1Y8PdtP8lNYvTiH06gQDmB8YOjql4iOjzYTmKuG+9ilu1t+I3sSdasdrvFsmKffND9R/EP/Hj1FHIqnQXpF+jmzjes8bXe8DQUXS5wxgMw3QjA5ktHFnftMqFVeJZ/f0Y3pRFb0wt71s/j8R0Cbl73BmSVPECpl/rqcWYRghVDrC0koAifjuFOi9DOIQvgMfeZY6hwPysyBWezgHt9pAdd3GzdFjElGvnRJWfdOcy9n2kyWZjZ846Mw5tg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ajpDxyJp; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=f+pCQ9ykmPSQcsvFst6qm0OeFUizXbTFj/PXwnhKBYIcJunD8pjdHTuRQBwQMHwQ75FE1xLo55xkedUYyDdDmE2+vnXWdTtE8GzsBdms/GSQeSddHeZQ1b2/OMkP2U5HXO3c0L4o4nSEVjTdVAZyR4spVU0YYm1D+xsT6xVcpR0XiIvQG7wHsDTtu38z4umWqOZ7ss0Wrgm8zMA9CihZFMg1EODYAcboJNdKw5hH6kEuhGA4NWbrDdKNwPsA0WNYhPbUobMeDka5pKHuBqmnfwE+b1s+R0QeyMuLuvdsrbwVcDQ1Q9IXDAOwEU4SxBDWSeed5lOZna4BdDAm2o+4Xg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qqa/nFSg; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ajpDxyJp;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qqa/nFSg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrzyQ0YRHz30WJ
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 04:39:41 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68PG5Q5U1529499;
-	Fri, 25 Sep 2026 18:39:34 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrzyY6rtgz30WX
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 04:39:49 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68PG5TEi342819;
+	Fri, 25 Sep 2026 18:39:39 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=r7d6ElRTcp/WT3mC1
-	KebQp8ucZjF8lYP9VrF/XBZ5nc=; b=ajpDxyJpg5+usgkN4MkZdQc5YGHe5lstC
-	gH40Z5zNNSuwmAR87Qwp42pF65N057rlJCdytRNfzIob+jWYshYOLX9N72mBeaun
-	l+qLALuiiwbLBkaeqE19mWbZNQmSeKVrruWc8EGZs2WeXNwUDFXTjecnkwHO2DdA
-	STaB+sCU/2iSUqd13Imr0/GE4At59jQvXhq5RHG3NZsRJgPqgiFq3uM7uim/BYbb
-	g5U9wTOwl9xuBicLENkKMoPAbjzvCtx1V1WVEi6y5J5fvhRwY+UrJLIaq18Mi1xN
-	i1j2/IqlQm03uSj4vVJXgwMlHb+YyeZ9/t7YGMCOHIEBAhlQ+doEw==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gskg30rvw-1
+	:mime-version:references:subject:to; s=pp1; bh=yd3bG5sGqhB6u5oC5
+	MJGdO7pd0cBjWw0rOk0lImiedI=; b=qqa/nFSg8aWQPHZgaagJeTbjqJs4UqhcR
+	BWlm1Wc5ejZtoyDmAcN4kgt/e1+p8Sp883V2+sTpj38MKEZaDKRGwO9imW8vlfkA
+	hnMRQjFFOX4QYpbq82LNBRiWgWNJ7+wN0oTjaqHNfLcYvCQO9X5ALHIEANpUqxcJ
+	ybxXqi2BgBDRMt7FXqtbiJ1S1t2R92A8CMYGRqwJVx8DbO4u1lxjnUts4+PPOxQU
+	xhT8dXFq9gF5y7z4Dx7t9I9LMt02Zl9eoEVjkNRoZRocqedafifuKTuU2fn4Q7DG
+	Ney5q0FreD7AIe0xOjZS87XeGWNdrd81OfEPHtBeKr37sKmAs93Pg==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gskgqyjdb-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 25 Sep 2026 18:39:33 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68PG3BmE2859686;
-	Fri, 25 Sep 2026 18:39:32 GMT
-Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gvu7efsut-1
+	Fri, 25 Sep 2026 18:39:39 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68PG37pm4192010;
+	Fri, 25 Sep 2026 18:39:38 GMT
+Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gvb8k3kr6-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 25 Sep 2026 18:39:32 +0000 (GMT)
+	Fri, 25 Sep 2026 18:39:38 +0000 (GMT)
 Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
-	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68PIdSbP30016234
+	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68PIdaCT17105462
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 25 Sep 2026 18:39:28 GMT
+	Fri, 25 Sep 2026 18:39:36 GMT
 Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7862358059;
-	Fri, 25 Sep 2026 18:39:28 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 187AF58059;
+	Fri, 25 Sep 2026 18:39:36 +0000 (GMT)
 Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CFA635804B;
-	Fri, 25 Sep 2026 18:39:25 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 5DE6858055;
+	Fri, 25 Sep 2026 18:39:33 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.67.6.174])
 	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 25 Sep 2026 18:39:25 +0000 (GMT)
+	Fri, 25 Sep 2026 18:39:33 +0000 (GMT)
 From: Mingming Cao <mmc@linux.ibm.com>
 To: netdev@vger.kernel.org
 Cc: davem@davemloft.net, kuba@kernel.org, horms@kernel.org,
@@ -73,9 +73,9 @@ Cc: davem@davemloft.net, kuba@kernel.org, horms@kernel.org,
         linuxppc-dev@lists.ozlabs.org, haren@linux.ibm.com,
         ricklind@linux.ibm.com, davemarq@linux.ibm.com, bjking1@linux.ibm.com,
         shaik.abdulla1@ibm.com, Mingming Cao <mmc@linux.ibm.com>
-Subject: [PATCH net-next v7 07/15] ibmveth: Add RX queue register helpers for MQ
-Date: Fri, 25 Sep 2026 11:38:42 -0700
-Message-Id: <74066cd9e0028c3fe3e193ce676e7131a3003088.1790319558.git.mmc@linux.ibm.com>
+Subject: [PATCH net-next v7 09/15] ibmveth: Harden RX poll path with helpers
+Date: Fri, 25 Sep 2026 11:38:44 -0700
+Message-Id: <8a7621e33cc595cff0e1712c1415051d8c5679d2.1790319558.git.mmc@linux.ibm.com>
 X-Mailer: git-send-email 2.39.3 (Apple Git-146)
 In-Reply-To: <cover.1790319558.git.mmc@linux.ibm.com>
 References: <cover.1790319558.git.mmc@linux.ibm.com>
@@ -95,74 +95,76 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: Dpccin3dV9Qbjj9D282sOMsBPX7nSa1l
-X-Authority-Analysis: v=2.4 cv=I43w19gg c=1 sm=1 tr=0 ts=6ab6bfe5 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+X-Authority-Analysis: v=2.4 cv=G+OJgNk5 c=1 sm=1 tr=0 ts=6ab6bfeb cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
  a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=qhGsbuW5snZ5JCOQXLEA:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI1MDA3NCBTYWx0ZWRfXxxh+dBPIsSW1
- 12FD+n/HJzY4/QeWTyrfKhWYQvtT2OALcR5fQ4Vtt9V17eHGZHEDwmGec9dDupLOBodzEW6RkWa
- rEoOtk6kX02Q/wXIn1Gj5wSwV3DnzdcLJioKGUZum+XZR3zrOz/N6So9caGxdW2qFT3kol12snd
- v8clDd5OEJivJzSbDiuf7PcaY+OLPnEmK0Gbsx6be88HBvpW8dDUCgnIbnlDl0sHI7hXCR5aanw
- Sk24OLWKHlOulb5+4JyLC/kAtMjmlKa1B+rMVnrT7kI+UhEfuHYtGfaZa6eAL2XsV8dF8qQYHKt
- +yRsejN6141N8UVv5FBMmh85/Exb5YLfTTZa2mQxtSgxJ5DpIm3VmLlh7tItm4VodjErCZbCn7/
- jPoriwI48DAR2nXSXUr9T+/J5KS0+1aJrUs2f3FYVnppgi3NQ4qxMvB76E5Ik+q82NtB7/yMw+q
- fSTh25yyRC0QNowSdVA==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI1MDA3NCBTYWx0ZWRfX+OKNX3ROrm/9
- YQHUv9WLd2+664Jv1XfO1nUKLLwWt9T5zpjdT1XsP8jL6/MvtDRQG3ANTkILg3kc7/+OAWKSviB
- 4MJKxUTKJ/FpYyZrzmNALYyNtnvnXc4=
-X-Proofpoint-GUID: MY-OMfh5TYdeLy53Sux7quJsdMgbWNNU
+ a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8 a=ZnO335mD0f2ZzhB7t6kA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI1MDA3NCBTYWx0ZWRfX0scuzPDNvtHN
+ hEiPgCwNcdNN71UFAn3H9h/BoRMhfoi0b7fPQXG94w7CimkF4zDt7KxiBjA3sFoCgEaubRAJaW4
+ 8coG9zbUTlqn8UeHn9I1HmycDTE3WqzPnDdjUFSK4Qmv/9TrS2Kt69n8MW6ayKU8gsShtrHyJ5T
+ c3PP2miGLTjB7EVQEkMKybhSNi+doKIwWYwLldxLJ8QNoarC+je5iPKPMVj6pyOG79cHt+mvOVi
+ Xped1BqwqkPXTl4j2jWiVaWQyaFvtPzL7fZei/0fbFFzrCB/w9Tdto+cH5iQQh3ZUa1FCkwrJn/
+ oEahf3kiqwSbVnpd9Xf0/UsHryx75yZU1mlzQRR1VgOMoiUtAV/CsNUgFkjIgjVSQ2qhpleChLc
+ u5sfX/Yrg8l0RGnjGvF1jLNIyPfcbzpQbJXO4+n2p7kD0a2cjT0HstO1KcEug65M/8MfVIE2ygP
+ T6pS/HR4eHLrfo2cOwA==
+X-Proofpoint-ORIG-GUID: tQqzRKtqjlBgqsFD10ekRMM4uF8UgKji
+X-Proofpoint-GUID: H6vsExsWplLfzT_WZvhTAjCHVz7fKr6Z
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI1MDA3NCBTYWx0ZWRfX3D8Uv8UinUa0
+ dxER4p62vlvV45Djx7IaeTKEZZgiXG/UhqsqcZRGw9mp/BZzk48Tok4/1sVTk9XZkd9IMpEl8PM
+ kFPbe8rh6J6S0iIMqaQWviN/UOg5vyw=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-09-25_03,2026-09-21_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 clxscore=1015 adultscore=0 suspectscore=0 impostorscore=0
- lowpriorityscore=0 bulkscore=0 phishscore=0 priorityscore=1501 malwarescore=0
+ suspectscore=0 adultscore=0 phishscore=0 lowpriorityscore=0 impostorscore=0
+ bulkscore=0 priorityscore=1501 clxscore=1015 spamscore=0 malwarescore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609250074
 
-MQ RX changes the RX queue lifecycle from one adapter-level
-register/free pair into a mixed model: queue 0 is registered through
-h_register_logical_lan*(), queues 1..N through
-H_REG_LOGICAL_LAN_QUEUE. The queue-0 control plane that open() and
-close() use today has to come out into helpers first, so the
-subordinate paths have somewhere to attach when MQ RX is enabled.
+ibmveth_poll() must handle several distinct skip/fail outcomes on each
+RX slot, not only the happy path:
 
-Extract logical LAN registration and queue teardown into dedicated
-helpers:
+  - interface close / napi_disable must not re-arm PHYP delivery
+  - bad correlators and harvest errors must not look like successful GRO
+  - oversize or wrap-around offset+length must not skb_put() past the
+    buffer
+  - an out-of-range queue index must napi_complete_done rather than
+    fall through and keep polling
 
-  ibmveth_register_logical_lan()
-  ibmveth_register_rx_queues()
-  ibmveth_free_all_queues()
+Doing all of that inline turns the NAPI callback into a deeply nested
+switchyard. Split each outcome into a small helper so ibmveth_poll()
+stays a thin budget loop:
 
-Runtime stays single-queue here. adapter->multi_queue is still false
-until MQ RX is enabled, so queue 0 keeps the legacy
-h_register_logical_lan() flow, the with_handle arm is not yet
-reachable, and no subordinate queue is registered.
+  ibmveth_poll_stopping()
+  ibmveth_poll_harvest_slot() / recycle_invalid / skip_bad_correlator
+  ibmveth_poll_drop_oversize()
+  ibmveth_poll_deliver_frame()
+  ibmveth_poll_bump_invalid()
 
-ibmveth_register_logical_lan() registers queue 0 with PHYP. When
-multi-queue mode is active it uses h_register_logical_lan_with_handle()
-and stores the handle only on H_SUCCESS, so a failed attempt leaves no
-stale handle behind.
-ibmveth_register_rx_queues() is the open()-side entry point: it builds
-queue 0's buffer descriptor, records queue 0's virq in queue_irq[0],
-masks that IRQ before registration, and calls
-ibmveth_register_logical_lan(). It registers queue 0 only.
-ibmveth_free_all_queues() issues one H_FREE_LOGICAL_LAN and clears all
-queue handles. One hypercall is enough because H_FREE_LOGICAL_LAN is a
-full teardown: per PAPR/PHYP it drops the primary LAN and any
-subordinate queues registered under it. Close and the open-fail unwind
-both rely on that. Incremental scale-down cannot, and issues
-H_FREE_LOGICAL_LAN_QUEUE per queue instead; that path arrives with
-resize.
+Not pure motion: ibmveth_poll_bump_invalid() also counts oversize
+frames and skipped slots (intentional). skip_bad_correlator escalates
+a valid correlator with a NULL skb (-EFAULT) to reset, not only an
+out-of-range correlator. Deliver also rejects a PHYP offset+length
+beyond min(skb_tailroom, pool->buff_size);
+skb_tailroom is the skb_put bound, the DMA
+map is pool->buff_size. Skipped and dropped slots do not
+count against the NAPI budget; only a delivered frame does.
 
-open() allocates buffer pools before PHYP registration so a pool-fail
-path never has a live LAN. Post-register errors still unwind through
-ibmveth_free_all_queues().
+Two further behaviour changes come with the split. On the rx_copybreak
+path a harvest failure, after the frame has already been copied into
+new_skb, used to break out of the loop and leak that skb;
+deliver_frame() kfree_skb()s it before returning an error. And mss
+becomes a local of deliver_frame() rather than living across
+ibmveth_poll()'s whole budget loop; it was never read stale, because
+ibmveth_rx_mss_helper() only uses it under lrg_pkt, so that part is
+scoping hygiene and not a fix.
 
-open() also calls netif_set_real_num_rx_queues() with num_rx_queues
-after registration (one queue until multi-queue is enabled); a failure
-there unwinds the same way.
+Drop schedule_work from rxq_get_buffer() (skip_bad_correlator owns
+reset escalation). ibmveth_poll_stopping() ensures close/napi_disable
+does not re-arm PHYP. Runtime is still single-queue: helpers are defined
+and called from the existing SQ poll path in this same patch (first
+use). The next patch turns on MQ and reuses this loop; subordinate
+register helpers stay there.
 
 Signed-off-by: Mingming Cao <mmc@linux.ibm.com>
 Reviewed-by: Dave Marquardt <davemarq@linux.ibm.com>
@@ -170,295 +172,382 @@ Tested-by: Shaik Abdulla <shaik.abdulla1@ibm.com>
 ---
 
 Changes in v7:
-- no P07 code change
-- commit message: name netif_set_real_num_rx_queues()
-  in open()
+- bound oversize against min(skb_tailroom, pool->buff_size);
+  name that bound in the commit message
+- noted: poll_stopping stays mask-first; skip vs budget stays;
+  cancel_work stays in P10
 
 Changes in v6:
-- drop the eight hypercall counters, struct ibmveth_hcall_stats, and
-  the adapter field. Only reg_lan and free_lan had writers here;
-  none of the eight had a reader. The ethtool -S keys v5 added in
-  patch 11 are gone with them. This patch no longer touches ibmveth.h
-- trace LAN registration and the free retry with netdev_dbg() (open/
-  close/resize, not per packet). Teardown already uses netdev_err()
-- document free_all_queues() log-and-continue in its kdoc, including
-  that queue_handle[] is cleared whatever the hypercall returned
-- noted: queue 0 handle is stored only on H_SUCCESS
-- noted: body drops the out_unregister_queues walk and the
-  unconditional PHYP-vs-pools guarantee
+- read the IPv4 header check through skb->data, as mainline does.
+  v5 used ip_hdr(), which reads the network header offset that
+  eth_type_trans() does not set on this path
+- do not complete NAPI or consume budget when budget is 0. That is
+  the netpoll case, where v5 completed and returned budget - 1,
+  underflowing to -1
+- noted: the split is not pure motion; the body lists what changed
 
 Changes in v5:
-- Document H_FREE_LOGICAL_LAN full-teardown contract in kdoc/changelog:
-  one free_lan drops primary + any subordinate queues
-  (H_FREE_LOGICAL_LAN_QUEUE is for incremental scale-down only) - v4
-  helper text did not spell the subordinate semantics
-- Call out close() update_rx_no_buffer() before free_lan as intentional
-  last-glimpse accounting while the LAN is still registered (order
-  already in v4; v4 step list omitted it); NULL-safe per-queue form
-  lands with MQ enablement
-- opened / rx_irq_setup idempotent close is owned by the IRQ-helper
-  patch (same failed-reopen / second napi_disable hang raised here)
-- Poll re-arm during teardown not claimed here (same race as IRQ patch;
-  lands with poll harden)
+- Wrap poll_stopping return after complete so it stays under 80 cols
+- On poll_stopping after the budget loop: return < budget after
+  napi_complete_done (was frames_processed-1 even when under budget)
+- New in v5: peel SQ poll harden + helpers before MQ enable so tip P10
+  stays bring-up focused (mailed v4 09/14 MQ enable -> tip P10; also
+  14->15). Kitchen-sink / enable-path poll fixes land here on the live
+  single-queue path first.
+- After napi_complete_done, check poll_stopping again before enable_irq
+  (avoid re-arm while resize/close waits on napi_disable)
 
-Changes in v4:
-- Introduce register/free helpers in the same patch that wires their
-  first open/close callers; keep subordinate-only helpers deferred
-  until MQ enablement.
-- Introduce adapter->hcall_stats here (first use); not in patch 2.
-- Correct open/close unwind so free_all_queues() precedes
-  free_buffer_pools().
-- Drop the orphaned big-bang "open/close pipeline" patch from v3; that
-  wiring is incremental across helper patches 3-7 instead.
-
- drivers/net/ethernet/ibm/ibmveth.c | 174 +++++++++++++++++++++--------
- 1 file changed, 128 insertions(+), 46 deletions(-)
+ drivers/net/ethernet/ibm/ibmveth.c | 297 ++++++++++++++++++++---------
+ 1 file changed, 202 insertions(+), 95 deletions(-)
 
 diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-index 011082db1e08..cc01b03d0e4b 100644
+index ed75dea90a95..7b6c0283e5c3 100644
 --- a/drivers/net/ethernet/ibm/ibmveth.c
 +++ b/drivers/net/ethernet/ibm/ibmveth.c
-@@ -1294,9 +1294,14 @@ static void ibmveth_free_tx_resources(struct ibmveth_adapter *adapter)
+@@ -1380,10 +1380,8 @@ ibmveth_rxq_get_buffer(struct ibmveth_adapter *adapter,
+ 	unsigned int pool = correlator >> 32;
+ 	unsigned int index = correlator & 0xffffffffUL;
+ 
+-	if (!ibmveth_rxq_correlator_valid(adapter, queue_index, correlator)) {
+-		schedule_work(&adapter->work);
++	if (!ibmveth_rxq_correlator_valid(adapter, queue_index, correlator))
+ 		return NULL;
+-	}
+ 
+ 	return adapter->rx_buff_pool[queue_index][pool].skbuff[index];
+ }
+@@ -2390,130 +2388,239 @@ static void ibmveth_rx_csum_helper(struct sk_buff *skb,
+ 	}
  }
  
- static int ibmveth_register_logical_lan(struct ibmveth_adapter *adapter,
--        union ibmveth_buf_desc rxq_desc, u64 mac_address)
-+					union ibmveth_buf_desc rxq_desc,
-+					u64 mac_address)
- {
- 	int rc, try_again = 1;
-+	unsigned long ua = adapter->vdev->unit_address;
-+	unsigned long buf_dma = adapter->buffer_list_dma[0];
-+	unsigned long filter_dma = adapter->filter_list_dma;
-+	unsigned long qh0;
- 
- 	/*
- 	 * After a kexec the adapter will still be open, so our attempt to
-@@ -1304,14 +1309,29 @@ static int ibmveth_register_logical_lan(struct ibmveth_adapter *adapter,
- 	 * try again, but only once.
- 	 */
- retry:
--	rc = h_register_logical_lan(adapter->vdev->unit_address,
--				    adapter->buffer_list_dma[0], rxq_desc.desc,
--				    adapter->filter_list_dma, mac_address);
-+	/* In multi-queue mode, obtain a queue handle for queue 0 so all RX
-+	 * queues can use the same per-queue buffer hypercalls.
-+	 */
-+	if (adapter->multi_queue) {
-+		rc = h_register_logical_lan_with_handle(ua, buf_dma,
-+							rxq_desc.desc,
-+							filter_dma,
-+							mac_address,
-+							&qh0);
-+		if (rc == H_SUCCESS)
-+			adapter->queue_handle[0] = qh0;
-+	} else {
-+		rc = h_register_logical_lan(ua, buf_dma, rxq_desc.desc,
-+					    filter_dma, mac_address);
-+	}
-+	netdev_dbg(adapter->netdev, "h_register_logical_lan%s rc=%d\n",
-+		   adapter->multi_queue ? "_with_handle" : "", rc);
- 
- 	if (rc != H_SUCCESS && try_again) {
- 		do {
- 			rc = h_free_logical_lan(adapter->vdev->unit_address);
- 		} while (H_IS_LONG_BUSY(rc) || (rc == H_BUSY));
-+		netdev_dbg(adapter->netdev, "h_free_logical_lan rc=%d\n", rc);
- 
- 		try_again = 0;
- 		goto retry;
-@@ -1320,14 +1340,97 @@ static int ibmveth_register_logical_lan(struct ibmveth_adapter *adapter,
- 	return rc;
- }
- 
-+/**
-+ * ibmveth_free_all_queues - Free all RX queues at once
-+ * @adapter: ibmveth adapter structure
-+ *
-+ * Issues one H_FREE_LOGICAL_LAN for full adapter teardown. Per PAPR/PHYP,
-+ * that drops the primary LAN and any subordinate queues registered under
-+ * it. Incremental scale-down uses H_FREE_LOGICAL_LAN_QUEUE per queue
-+ * instead; do not use this helper for partial live-set shrink.
-+ *
-+ * Used during interface close and registration error cleanup.
-+ *
-+ * Retries only H_BUSY and H_IS_LONG_BUSY. On other failures, logs and
-+ * returns; callers cannot observe hypercall status. queue_handle[] is
-+ * cleared regardless. Callers still run RX pool and DMA teardown
-+ * afterward (same as pre-helper close()).
-+ *
-+ * Clears queue handles only; queue_irq[] is released by
-+ * ibmveth_cleanup_rx_interrupts().
-+ */
-+static void ibmveth_free_all_queues(struct ibmveth_adapter *adapter)
++static void ibmveth_poll_bump_invalid(struct ibmveth_adapter *adapter,
++				      int queue_index)
 +{
-+	unsigned long lpar_rc;
-+	int i;
++	adapter->rx_invalid_buffer++;
++}
 +
-+	netdev_dbg(adapter->netdev, "freeing all RX queues at once\n");
++static bool ibmveth_poll_stopping(struct net_device *netdev,
++				  struct napi_struct *napi)
++{
++	return !netif_running(netdev) || napi_disable_pending(napi);
++}
 +
-+	do {
-+		lpar_rc = h_free_logical_lan(adapter->vdev->unit_address);
-+	} while (H_IS_LONG_BUSY(lpar_rc) || (lpar_rc == H_BUSY));
++static bool ibmveth_poll_harvest_slot(struct ibmveth_adapter *adapter,
++				      int queue_index, bool reuse)
++{
++	int rc = ibmveth_rxq_harvest_buffer(adapter, queue_index, reuse);
 +
-+	if (lpar_rc != H_SUCCESS) {
-+		netdev_err(adapter->netdev,
-+			   "h_free_logical_lan failed: %ld\n", lpar_rc);
-+	}
++	return !rc || rc == -EINVAL || rc == -EFAULT;
++}
 +
-+	for (i = 0; i < adapter->num_rx_queues; i++)
-+		adapter->queue_handle[i] = 0;
++static bool ibmveth_poll_recycle_invalid(struct net_device *netdev,
++					 struct ibmveth_adapter *adapter,
++					 int queue_index)
++{
++	netdev_dbg(netdev, "recycling invalid buffer\n");
++	ibmveth_poll_bump_invalid(adapter, queue_index);
++	return ibmveth_poll_harvest_slot(adapter, queue_index, true);
++}
++
++static bool ibmveth_poll_skip_bad_correlator(struct net_device *netdev,
++					     struct ibmveth_adapter *adapter,
++					     int queue_index)
++{
++	if (net_ratelimit())
++		netdev_err(netdev,
++			   "bad correlator on queue %d, skipping slot\n",
++			   queue_index);
++	/* Residual stale slot after resize: recover via reset rather
++	 * than spinning forever. Always escalate; only the log is
++	 * rate-limited.
++	 */
++	schedule_work(&adapter->work);
++	ibmveth_poll_bump_invalid(adapter, queue_index);
++	return ibmveth_poll_harvest_slot(adapter, queue_index, true);
++}
++
++static bool ibmveth_poll_drop_oversize(struct net_device *netdev,
++				       struct ibmveth_adapter *adapter,
++				     int queue_index, unsigned int off,
++				     unsigned int len, unsigned int room)
++{
++	if (net_ratelimit())
++		netdev_err(netdev,
++			   "RX frame %u+%u exceeds buffer %u on queue %d, dropping\n",
++			   off, len, room, queue_index);
++	ibmveth_poll_bump_invalid(adapter, queue_index);
++	return ibmveth_poll_harvest_slot(adapter, queue_index, true);
 +}
 +
 +/**
-+ * ibmveth_register_rx_queues - Register RX queues with hypervisor
-+ * @adapter: ibmveth adapter structure
-+ * @mac_address: MAC address for device registration
++ * ibmveth_poll_deliver_frame - Build SKB from one valid RX slot and GRO it
++ * @napi: NAPI context for this RX queue
++ * @adapter: ibmveth adapter
++ * @netdev: net_device for @adapter
++ * @queue_index: RX queue index
 + *
-+ * Registers queue 0 via ibmveth_register_logical_lan(). Subordinate queue
-+ * registration is added when multi-queue RX is enabled.
-+ *
-+ * Return: 0 on success, -ENONET if queue 0 registration fails
++ * Return: 1 frame delivered, 0 if the slot was skipped cleanly, -1 on error.
 + */
-+static int
-+ibmveth_register_rx_queues(struct ibmveth_adapter *adapter, u64 mac_address)
++static int ibmveth_poll_deliver_frame(struct napi_struct *napi,
++				      struct ibmveth_adapter *adapter,
++				      struct net_device *netdev,
++				      int queue_index)
 +{
-+	struct net_device *netdev = adapter->netdev;
-+	union ibmveth_buf_desc rxq_desc;
-+	unsigned long lpar_rc;
++	struct sk_buff *skb, *new_skb;
++	struct ibmveth_rx_q *rxq = &adapter->rx_queue[queue_index];
++	unsigned int room, off, len, pool;
++	int length, offset, csum_good, lrg_pkt;
++	__sum16 iph_check = 0;
++	u16 mss = 0;
 +	int rc;
 +
-+	rxq_desc.fields.flags_len = IBMVETH_BUF_VALID |
-+				    adapter->rx_queue[0].queue_len;
-+	rxq_desc.fields.address = adapter->rx_queue[0].queue_dma;
-+	adapter->queue_irq[0] = netdev->irq;
++	length = ibmveth_rxq_frame_length(adapter, queue_index);
++	offset = ibmveth_rxq_frame_offset(adapter, queue_index);
++	csum_good = ibmveth_rxq_csum_good(adapter, queue_index);
++	lrg_pkt = ibmveth_rxq_large_packet(adapter, queue_index);
 +
-+	rc = ibmveth_disable_irq(adapter, 0);
-+	if (rc)
-+		netdev_dbg(netdev,
-+			   "Failed to disable IRQ for queue 0 before registration, rc=%d\n",
-+			   rc);
-+
-+	lpar_rc = ibmveth_register_logical_lan(adapter, rxq_desc, mac_address);
-+	if (lpar_rc != H_SUCCESS) {
-+		netdev_err(netdev,
-+			   "h_register_logical_lan failed: %ld\n", lpar_rc);
-+		netdev_err(netdev,
-+			   "buffer TCE:0x%llx filter TCE:0x%llx rxq desc:0x%llx MAC:0x%llx\n",
-+			   adapter->buffer_list_dma[0],
-+			   adapter->filter_list_dma,
-+			   rxq_desc.desc, mac_address);
-+		return -ENONET;
++	skb = ibmveth_rxq_get_buffer(adapter, queue_index);
++	if (unlikely(!skb)) {
++		if (!ibmveth_poll_skip_bad_correlator(netdev, adapter,
++						      queue_index))
++			return -1;
++		return 0;
 +	}
 +
-+	netdev_dbg(netdev,
-+		   "registered 1 RX queue with hypervisor (single-queue mode)\n");
-+	return 0;
++	pool = rxq->queue_addr[rxq->index].correlator >> 32;
++	room = min_t(unsigned int, skb_tailroom(skb),
++		     adapter->rx_buff_pool[queue_index][pool].buff_size);
++	off = offset;
++	len = length;
++	if (unlikely(off >= room || len > room - off)) {
++		if (!ibmveth_poll_drop_oversize(netdev, adapter, queue_index,
++						off, len, room))
++			return -1;
++		return 0;
++	}
++
++	if (lrg_pkt) {
++		__be64 *rxmss = (__be64 *)(skb->data + 8);
++
++		mss = (u16)be64_to_cpu(*rxmss);
++	}
++
++	new_skb = NULL;
++	if (length < rx_copybreak)
++		new_skb = netdev_alloc_skb(netdev, length);
++
++	if (new_skb) {
++		skb_copy_to_linear_data(new_skb, skb->data + offset, length);
++		if (rx_flush)
++			ibmveth_flush_buffer(skb->data, length + offset);
++		rc = ibmveth_rxq_harvest_buffer(adapter, queue_index, true);
++		if (unlikely(rc)) {
++			kfree_skb(new_skb);
++			return -1;
++		}
++		skb = new_skb;
++	} else {
++		rc = ibmveth_rxq_harvest_buffer(adapter, queue_index, false);
++		if (unlikely(rc))
++			return -1;
++		skb_reserve(skb, offset);
++	}
++
++	skb_put(skb, length);
++	skb->protocol = eth_type_trans(skb, netdev);
++
++	if (skb->protocol == cpu_to_be16(ETH_P_IP))
++		iph_check = ((struct iphdr *)skb->data)->check;
++
++	if ((length > netdev->mtu + ETH_HLEN) || lrg_pkt ||
++	    iph_check == 0xffff) {
++		ibmveth_rx_mss_helper(skb, mss, lrg_pkt);
++		adapter->rx_large_packets++;
++	}
++
++	if (csum_good) {
++		skb->ip_summed = CHECKSUM_UNNECESSARY;
++		ibmveth_rx_csum_helper(skb, adapter);
++	}
++
++	napi_gro_receive(napi, skb);
++
++	netdev->stats.rx_packets++;
++	netdev->stats.rx_bytes += length;
++
++	return 1;
 +}
 +
- static int ibmveth_open(struct net_device *netdev)
+ static int ibmveth_poll(struct napi_struct *napi, int budget)
  {
+ 	struct net_device *netdev = napi->dev;
  	struct ibmveth_adapter *adapter = netdev_priv(netdev);
--	u64 mac_address;
-+	u64 mac_address = ether_addr_to_u64(netdev->dev_addr);
- 	int rxq_entries = 1;
--	unsigned long lpar_rc;
- 	int rc;
--	union ibmveth_buf_desc rxq_desc;
- 	int i;
+ 	int frames_processed = 0;
+ 	int queue_index, rc;
+-	u16 mss = 0;
  
- 	netdev_dbg(netdev, "open starting\n");
-@@ -1343,37 +1446,23 @@ static int ibmveth_open(struct net_device *netdev)
- 	if (rc)
- 		goto out_free_filter_list;
+ 	queue_index = napi - adapter->napi;
  
--	mac_address = ether_addr_to_u64(netdev->dev_addr);
--
--	rxq_desc.fields.flags_len = IBMVETH_BUF_VALID |
--					adapter->rx_queue[0].queue_len;
--	rxq_desc.fields.address = adapter->rx_queue[0].queue_dma;
--
--	adapter->queue_irq[0] = netdev->irq;
--	ibmveth_disable_irq(adapter, 0);
--
--	lpar_rc = ibmveth_register_logical_lan(adapter, rxq_desc, mac_address);
--
--	if (lpar_rc != H_SUCCESS) {
--		netdev_err(netdev, "h_register_logical_lan failed with %ld\n",
--			   lpar_rc);
--		netdev_err(netdev, "buffer TCE:0x%llx filter TCE:0x%llx rxq "
--			   "desc:0x%llx MAC:0x%llx\n",
--				     adapter->buffer_list_dma[0],
--				     adapter->filter_list_dma,
--				     rxq_desc.desc,
--				     mac_address);
--		rc = -ENONET;
-+	rc = ibmveth_alloc_buffer_pools(adapter);
-+	if (rc)
- 		goto out_free_queue_mem;
--	}
- 
--	rc = ibmveth_alloc_buffer_pools(adapter);
-+	rc = ibmveth_register_rx_queues(adapter, mac_address);
- 	if (rc)
--		goto out_unregister_lan;
-+		goto out_free_buffer_pools;
-+
-+	rc = netif_set_real_num_rx_queues(netdev, adapter->num_rx_queues);
-+	if (rc) {
-+		netdev_err(netdev, "failed to set number of rx queues\n");
-+		goto out_unregister_queues;
++	if (WARN_ON(queue_index < 0 ||
++		    queue_index >= adapter->num_rx_queues)) {
++		if (budget)
++			napi_complete_done(napi, 0);
++		return 0;
 +	}
++
++	if (ibmveth_poll_stopping(netdev, napi)) {
++		if (budget)
++			napi_complete_done(napi, 0);
++		return 0;
++	}
++
+ restart_poll:
+ 	while (frames_processed < budget) {
++		if (ibmveth_poll_stopping(netdev, napi))
++			break;
++
+ 		if (!ibmveth_rxq_pending_buffer(adapter, queue_index))
+ 			break;
  
- 	rc = ibmveth_setup_rx_interrupts(adapter);
- 	if (rc)
--		goto out_unregister_lan;
-+		goto out_free_all_queues; /* setup already disposed IRQs */
+ 		smp_rmb();
+ 		if (!ibmveth_rxq_buffer_valid(adapter, queue_index)) {
+ 			wmb(); /* suggested by larson1 */
+-			adapter->rx_invalid_buffer++;
+-			netdev_dbg(netdev, "recycling invalid buffer\n");
+-			rc = ibmveth_rxq_harvest_buffer(adapter,
+-							queue_index, true);
+-			if (unlikely(rc))
++			if (!ibmveth_poll_recycle_invalid(netdev, adapter,
++							  queue_index))
+ 				break;
+ 		} else {
+-			struct sk_buff *skb, *new_skb;
+-			int length = ibmveth_rxq_frame_length(adapter,
+-							      queue_index);
+-			int offset = ibmveth_rxq_frame_offset(adapter,
+-							      queue_index);
+-			int csum_good = ibmveth_rxq_csum_good(adapter,
+-							      queue_index);
+-			int lrg_pkt = ibmveth_rxq_large_packet(adapter,
+-							       queue_index);
+-			__sum16 iph_check = 0;
+-
+-			skb = ibmveth_rxq_get_buffer(adapter, queue_index);
+-			if (unlikely(!skb)) {
+-				struct ibmveth_rx_q *rxq =
+-					&adapter->rx_queue[queue_index];
+-
+-				ibmveth_rxq_advance(rxq);
++			rc = ibmveth_poll_deliver_frame(napi, adapter, netdev,
++							queue_index);
++			if (rc < 0)
+ 				break;
+-			}
+-
+-			/* if the large packet bit is set in the rx queue
+-			 * descriptor, the mss will be written by PHYP eight
+-			 * bytes from the start of the rx buffer, which is
+-			 * skb->data at this stage
+-			 */
+-			if (lrg_pkt) {
+-				__be64 *rxmss = (__be64 *)(skb->data + 8);
+-
+-				mss = (u16)be64_to_cpu(*rxmss);
+-			}
+-
+-			new_skb = NULL;
+-			if (length < rx_copybreak)
+-				new_skb = netdev_alloc_skb(netdev, length);
+-
+-			if (new_skb) {
+-				skb_copy_to_linear_data(new_skb,
+-							skb->data + offset,
+-							length);
+-				if (rx_flush)
+-					ibmveth_flush_buffer(skb->data,
+-							     length + offset);
+-				rc = ibmveth_rxq_harvest_buffer(adapter,
+-								queue_index,
+-								true);
+-				if (unlikely(rc))
+-					break;
+-				skb = new_skb;
+-			} else {
+-				rc = ibmveth_rxq_harvest_buffer(adapter,
+-								queue_index,
+-								false);
+-				if (unlikely(rc))
+-					break;
+-				skb_reserve(skb, offset);
+-			}
+-
+-			skb_put(skb, length);
+-			skb->protocol = eth_type_trans(skb, netdev);
+-
+-			/* PHYP without PLSO support places a -1 in the ip
+-			 * checksum for large send frames.
+-			 */
+-			if (skb->protocol == cpu_to_be16(ETH_P_IP)) {
+-				struct iphdr *iph = (struct iphdr *)skb->data;
+-
+-				iph_check = iph->check;
+-			}
+-
+-			if ((length > netdev->mtu + ETH_HLEN) ||
+-			    lrg_pkt || iph_check == 0xffff) {
+-				ibmveth_rx_mss_helper(skb, mss, lrg_pkt);
+-				adapter->rx_large_packets++;
+-			}
+-
+-			if (csum_good) {
+-				skb->ip_summed = CHECKSUM_UNNECESSARY;
+-				ibmveth_rx_csum_helper(skb, adapter);
+-			}
+-
+-			napi_gro_receive(napi, skb);	/* send it up */
+-
+-			netdev->stats.rx_packets++;
+-			netdev->stats.rx_bytes += length;
+-			frames_processed++;
++			if (rc > 0)
++				frames_processed++;
+ 		}
+ 	}
  
- 	netdev_dbg(netdev, "initial replenish cycle\n");
- 	ibmveth_schedule_rx_queue(adapter, 0);
-@@ -1393,10 +1482,12 @@ static int ibmveth_open(struct net_device *netdev)
- 	ibmveth_cleanup_rx_interrupts(adapter);
- 	/* As in close(): a poll past napi_complete_done() may still run. */
- 	synchronize_net();
--out_unregister_lan:
--	do {
--		lpar_rc = h_free_logical_lan(adapter->vdev->unit_address);
--	} while (H_IS_LONG_BUSY(lpar_rc) || (lpar_rc == H_BUSY));
-+	goto out_free_all_queues; /* cleanup already disposed IRQs */
-+out_unregister_queues:
-+	ibmveth_dispose_subordinate_irq_mappings(adapter);
-+out_free_all_queues:
-+	ibmveth_free_all_queues(adapter);
-+out_free_buffer_pools:
- 	ibmveth_free_buffer_pools(adapter);
- out_free_queue_mem:
- 	ibmveth_cleanup_rx_resources(adapter);
-@@ -1409,7 +1500,6 @@ static int ibmveth_open(struct net_device *netdev)
- static int ibmveth_close(struct net_device *netdev)
- {
- 	struct ibmveth_adapter *adapter = netdev_priv(netdev);
--	long lpar_rc;
+ 	ibmveth_replenish_task(adapter, queue_index);
  
- 	/* Gate on opened, not IFF_UP: pool_store/change_mtu close+open can
- 	 * leave IFF_UP set after a failed reopen.
-@@ -1431,15 +1521,7 @@ static int ibmveth_close(struct net_device *netdev)
- 	synchronize_net();
++	if (ibmveth_poll_stopping(netdev, napi)) {
++		/* budget 0 is netpoll, which must not complete NAPI.
++		 * Otherwise returning budget after completing would ask
++		 * NAPI to reschedule, so cap the return at budget - 1.
++		 */
++		if (budget) {
++			napi_complete_done(napi, frames_processed);
++			return min(frames_processed, budget - 1);
++		}
++		return 0;
++	}
++
+ 	if (frames_processed == budget)
+ 		goto out;
  
- 	ibmveth_update_rx_no_buffer(adapter);
--	/* Full LAN teardown (subordinates arrive with register helpers). */
--	do {
--		lpar_rc = h_free_logical_lan(adapter->vdev->unit_address);
--	} while (H_IS_LONG_BUSY(lpar_rc) || (lpar_rc == H_BUSY));
--	if (lpar_rc != H_SUCCESS) {
--		netdev_err(adapter->netdev,
--			   "h_free_logical_lan failed with %lx, continuing\n",
--			   lpar_rc);
--	}
-+	ibmveth_free_all_queues(adapter);
- 	/* Free TX LTBs after quiesce and after H_FREE_LOGICAL_LAN so xmit
- 	 * cannot touch unmapped bounce buffers while the LAN is live.
+ 	if (!napi_complete_done(napi, frames_processed))
+ 		goto out;
+ 
+-	/* We think we are done - reenable interrupts,
+-	 * then check once more to make sure we are done.
++	/*
++	 * napi_disable() sets DISABLE then waits for this poll. Without a
++	 * second stopping check here, enable_irq() can re-arm PHYP after
++	 * resize already masked the queue; late IRQs then hit the handler
++	 * after num_rx_queues was published lower (lab WARN at interrupt).
  	 */
++	if (ibmveth_poll_stopping(netdev, napi))
++		goto out;
++
+ 	rc = ibmveth_enable_irq(adapter, queue_index);
+ 	if (rc) {
+ 		netdev_err(netdev,
 -- 
 2.50.1 (Apple Git-155)
 
