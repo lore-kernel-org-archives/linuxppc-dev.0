@@ -1,73 +1,108 @@
-Return-Path: <linuxppc-dev+bounces-28170-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28171-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ADB1BC9830D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2026 06:32:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F63CC98306
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2026 06:32:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hrgqX1jnvz2y21;
-	Fri, 25 Sep 2026 16:32:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790317960;
-	cv=none; b=QsP1A82WTDlFgEA0F6m9PiVqjuYLz1uVZkfTNX1Mgvz1OGB/IYxFH8d1On0XY9vFjxhmGzTJhwullgR2lnfCpZ18YfJzjGODobc+WlgSAWAgBjKJXl+X2kA1SN7ESVZJpKFTNdLJsFtPitvVTgIdpVT0Jm68iGo1nebAp05DYO8WelJ0S+NsNuxsbFtfCNl9W95jg/tzvra5dsQ/cYUMN78jUavH+0BAOQOYKIqS/GVFhKIXH2ZI5MDEQERzhcifCLNSuyLreCCPt0BEmo+3KBCH3Hl/4AYQ06nTSc+o315fJqiQN6B9myrFc1PfWit2Kpkl6/oGFzkhKB+OPngFuQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hrgqk63b1z2yqq;
+	Fri, 25 Sep 2026 16:32:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:36::e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790317970;
+	cv=none; b=hrL5FsF9KvehPx0QWMBg5/l/gvv8afonLnMIas3nMW4haIoXM1QZU7l23TQcvWlfI0dI/A/C1nTRSucIXimueead96W8RKNqJna4oL26wxVtD4X5FZQxMQ/bjeZsZJS/e62j2I35Zp/YSs6eFspIku2ZIcLWX9t4oioEswQBD89nyO9KIBVgA2eclbwdGvMndesdeu3vS0M6c17ZaagCPTLRw0v42tQTUYPp+idlN0O1KkO2xMNElD93ldtbT2q7RzhOXuztoTvk52/ISFZ+Ol9TqdLzFptpCX+fVDxJai03EFWOn36dFlRy6NcWanRE8J2wcquFkHLD3DJP9Habbg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790317960; c=relaxed/relaxed;
-	bh=m/ANMEYPgG385PQSInkNPJDmbPIupCxAlee0x0YGUyo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bJaspUZcitdbObW55ScVnCLLuVLUC5mrBLn7WxvjdGyPZmH/k2aCIC5RYDr8JPiBQ7wbPAlRL1CPPIN/6VlKJOcWs0VCyCylfYOH43rFaytU6ehRCUS3/x1hcrAXoU2dLHOB1jU0YD9ma8X52Bi4T6uMMLPGI9gJZfBPRF8Trh1Qlxeg+GBLvpb028LGweWENF6ZHGDQT6/F5vf9FdG/MJlb6k91L35dq9qd3PHNo35HJpdN6CV6xpRcYnP/KGmpWXdgarQMNKIS9Vg71COOlX6uQC4t+E341EUBI4F/oXr7IcF+lxhlzw1sTy9PAcNV82otJB7Jx81W4z6xMEQqLA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kVm9/7jA; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1790317970; c=relaxed/relaxed;
+	bh=ff013h9UPO5JfvQ6KOoQNBZOiCtGEKIOGbWYKhP5c+0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=KXg9Qi2DVRynQMFrwtEIYH32rYwJOVUp1ObNzGhKqdP9KMswY+eWI3SaYncH+VF1CMwMsavmU8JeChNaPvLARl/sPnXEP6oy92mqZvxj5Wzf3Gqz+wrk15G0+rqN0P+QvnNKQXpb5eFCMEhBmaEzb9kWZ3LkeMroXt5oL05ePSxBSxBmzMvQg5ExXE6MgMKyAsfIB8FzKTQJHbQV5JMNm23nYLcGz5uzG0cP9vnfUvT2y/GtvnpMPOW7cZCkZUVWqYLOriou0gtkHEHpM21Ts6gl1kZMsNBHKbau5tbjQjXs1FUlEW1Vqwg9Ktwkor6CPF3aj6tMXBrtOW6t1L+dgw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=SZvSQ7Re; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:36::e; helo=mail-dy2-x0e.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kVm9/7jA;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=SZvSQ7Re;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:36::e; helo=mail-dy2-x0e.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy2-x0e.google.com (mail-dy2-x0e.google.com [IPv6:2607:f8b0:4864:36::e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrgqV6Tmcz2xM9
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2026 16:32:38 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68P4a27q102333;
-	Fri, 25 Sep 2026 06:32:26 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=m/ANME
-	YPgG385PQSInkNPJDmbPIupCxAlee0x0YGUyo=; b=kVm9/7jA17F7MCQmkGTJ3u
-	G5FkvOYvuOwVoJiq42AlRURaD/sehrbNTkzSUmvuRQJyEKkwciW9iHFpF0dVjzUL
-	1Jh37NF2vBBlFI4cpesgdSZsoCLVb7GiYx1XiM0x4kvnDPwBzYtbhEivYVgbGlSG
-	xYmp7HlQcWfy5r5T90p7I+YPV0EA9kzzAMjylvlfLHjFwogMfZtd2pmjk8AV3CB5
-	5COCNQbxjnUqdlq3BSI7Np98Li+HEmlmsQP4BtQ2pU6tEHhx6MSynPSONwi+PTsz
-	EhsZ7FFtGw9PjsC4si0/M37Yimo7AUS/WNu3Hupeb+x+nSxWa/Fqpm2/seQAhUVA
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gskdvmns9-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 25 Sep 2026 06:32:25 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68P4lYUd1959522;
-	Fri, 25 Sep 2026 06:32:24 GMT
-Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gvu7edjmd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 25 Sep 2026 06:32:24 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
-	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68P6WM6062652672
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 25 Sep 2026 06:32:22 GMT
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 825D058065;
-	Fri, 25 Sep 2026 06:32:22 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C882158066;
-	Fri, 25 Sep 2026 06:32:19 +0000 (GMT)
-Received: from [9.67.88.81] (unknown [9.67.88.81])
-	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 25 Sep 2026 06:32:19 +0000 (GMT)
-Message-ID: <e8d863f8-fd53-4533-9313-ca062bb741f2@linux.ibm.com>
-Date: Thu, 24 Sep 2026 23:32:19 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrgqj66w6z2xM9
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2026 16:32:49 +1000 (AEST)
+Received: by mail-dy2-x0e.google.com with SMTP id 5a478bee46e88-34213ed0b18so27068eec.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2026 23:32:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790317966; x=1790922766; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=ff013h9UPO5JfvQ6KOoQNBZOiCtGEKIOGbWYKhP5c+0=;
+        b=SZvSQ7RelOzTCyRnMRxPIOjH9HlI4TL2cEAan1Tt9l0kL7X2SLikDi36jfkIOiAdCi
+         1Xmqo4YK6c9inIxBF386ojAqzQVzuYdERq2zf267O1FxKaf2xqDJFaROoESa/Mfs3weS
+         zwkIYVEYzFHfsW46pg9DamUFbXYRXrN4wiHKAq2hGZ5dIL8jkSz0XQ3KZZTYKziygMXl
+         bWZfyqWTnPs+v8V4AzuP+WCG/08ihxvfwa1zXjUhwA5EMAFkAwvLxJZHExxIxqikL7W/
+         PvCcmOvOK6hV7v73p97HNR0ZG8nu4nT9jPTG9+sRMWxf2XWzW+6vnMBrIl+gbg8VIJj9
+         4Qkw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790317966; x=1790922766;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=ff013h9UPO5JfvQ6KOoQNBZOiCtGEKIOGbWYKhP5c+0=;
+        b=RK7YPWGcwdaaS86ynKszB22imFXcKYSHf8cxL2o3ZTDf8VidiQyfH3zSEOWj9jjKY3
+         dFovg+k6U12pEacwqTr7D8bxk7I/jn9XtgiySRP2oOl3e7ANhoMGdYb57i8TBcnMcq92
+         e41AoQOcgCrtK8JVfF6DKVPV5moUKITkS8D+6XG0pkvs4/bRZZ16YHEs5gknJ/Sc0muD
+         4tfapVvLmMtRYkm08mI5027OfCllpsOfa1zriENF4xOkatfL0H31K4eqJo9qEwk0/Q1C
+         5Pf00CaLnd+GT0c0mDozPbd1X/A/3Dsye2FLKLeVGL1du6e+GM5ptFMerdTI5Q2R+2H+
+         g3Hg==
+X-Forwarded-Encrypted: i=1; AKwUvBzyvSY0fPNaF3HIf9fvdcU+XhBzypu1HvZOQHR5iKeBYd9LFgX3sx1AmSN0epQYr1ZkFIMTQUPai4+Qqno=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++k9Utehy3DFB9tu+2+w/LKgggcOhoF/oapVcLh5LUs+9goFk7t3
+	HF37i8IT5lkISeV42mxQcbymUcTkBqHYZjoqkS4ZEez33H66h0WchfIw
+X-Gm-Gg: AYBFou0mYMhRcqX5xNUizTyLxVxAw5u8LmLsOj9LeAXuZuMdrqvTUMvfbs/YQkP3hmw
+	B/BYdWhjDcr1ZPWGVBp3SMOp498axSv55USrDWyz8wX61e9SVGvOyQCG0/SOsREmdH7/hs6DVwc
+	OTqvDeKKQ6Wekh66SzVhkrSc12i4gVVGEO+crwMCA3bpyS4BxWONMXnXJunnZ4sz6zBuMNOkNWV
+	mpVOSGp9GQ60lJYxcMrhe/UbkW19SjKjtLUpyd6yEpDg9LbX4Q6C8vHxCImEyRdNP5GZfoG73QF
+	EfehoPUVd0NfUe+qXOFCeyJ3t7FflKrTAt+SSP16Sc8LNcUnXS3iymg17/fbb0ETndbbvP7X95/
+	Z41nu3Oe/kpRi36zDtXaMUjGNdgoXpCvn2nPUcEjO8sMlZ4L+hVdpw0qBU1ppOBeAi5fz1ZTOJY
+	rrN3ND1b15Qh8d2M0qnpkpyuekiZjRIku3e46E2kiStl3gNy51Lcn7q74qYIc8pF/tm0ETcHQfU
+	wUnkxvY3JvTvl1u2hWuAYCuPfDCMbsxSRmf/5eFvhte
+X-Received: by 2002:a05:693c:87c3:10b0:33b:c478:a545 with SMTP id 5a478bee46e88-34002be4604mr3482720eec.8.1790317965974;
+        Thu, 24 Sep 2026 23:32:45 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.165.23])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-34144172de6sm5786357eec.9.2026.09.24.23.32.27
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 24 Sep 2026 23:32:45 -0700 (PDT)
+Date: Fri, 25 Sep 2026 12:02:24 +0530
+From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, catalin.marinas@arm.com, 
+	will@kernel.org, maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com, pjw@kernel.org, 
+	palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr, hca@linux.ibm.com, 
+	gor@linux.ibm.com, agordeev@linux.ibm.com, borntraeger@linux.ibm.com, 
+	svens@linux.ibm.com, tglx@kernel.org, mingo@redhat.com, bp@alien8.de, 
+	dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com, ojeda@kernel.org, 
+	boqun@kernel.org, gary@garyguo.net, bjorn3_gh@protonmail.com, lossin@kernel.org, 
+	a.hindborg@kernel.org, aliceryhl@google.com, tmgross@umich.edu, dakr@kernel.org, 
+	daniel.almeida@collabora.com, tamird@kernel.org, acourbot@nvidia.com, work@onurozkan.dev, 
+	nathan@kernel.org, ndesaulniers@google.com, morbo@google.com, 
+	justinstitt@google.com, jszhang@kernel.org, japo@linux.ibm.com, jpoimboe@kernel.org, 
+	seanjc@google.com, pmladek@suse.com, thuth@redhat.com, ynorov@nvidia.com, 
+	joelagnelf@nvidia.com, david@davidgow.net, fujita.tomonori@gmail.com, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, rust-for-linux@vger.kernel.org, 
+	llvm@lists.linux.dev
+Subject: Re: [RFC] rust: kernel: Add KUnit tests for ARCH_WARN_ASM bug table
+ emission
+Message-ID: <arYUiddxIDeLYj8v@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <20260922054959.955093-2-mkchauras@gmail.com>
+ <20260922064735.GS4121339@noisy.programming.kicks-ass.net>
+ <arNxAn7I7NCVWmD1@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+ <20260924111557.GP1837346@noisy.programming.kicks-ass.net>
+ <arUbw_TIA0Uj7oXT@J2N7QTR9R3>
+ <20260924125253.GY776954@noisy.programming.kicks-ass.net>
+ <arUgNdqpA5U8EjjP@J2N7QTR9R3>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,594 +116,65 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [net-next,v6,08/15] ibmveth: Add queue-aware RX buffer submit
- helper for MQ
-To: netdev-bot+sashiko@kernel.org
-Cc: netdev@vger.kernel.org, davem@davemloft.net, kuba@kernel.org,
-        horms@kernel.org, edumazet@google.com, pabeni@redhat.com,
-        andrew+netdev@lunn.ch, nnac123@linux.ibm.com, maddy@linux.ibm.com,
-        mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, haren@linux.ibm.com,
-        ricklind@linux.ibm.com, davemarq@linux.ibm.com, bjking1@linux.ibm.com,
-        shaik.abdulla1@ibm.com
-References: <67e54ccb114103077cff17be317440d3a869045d.1788102125.git.mmc@linux.ibm.com>
- <178845903725.3394541.11473132587510780583@kernel.org>
-Content-Language: en-US
-From: mingming cao <mmc@linux.ibm.com>
-In-Reply-To: <178845903725.3394541.11473132587510780583@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: lmfHARuI9gIXQNs-j6wByafjmwMQXXR5
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI1MDAyNCBTYWx0ZWRfXwJxo7O1ScbPC
- fOB1N5vfRc/uOb4VpzAHWTvk6rkmu3cY8LOBtADWupeGDPuPWoKNVqJ+R/snRlwt8fCcpv02u+l
- WNhkRtUe8AeDXC+mtsxb48s/kAN8uAU=
-X-Authority-Analysis: v=2.4 cv=FLiOVOos c=1 sm=1 tr=0 ts=6ab6157a cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
- a=Gz3F54sD2VatwCWgPb0A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: AbDF4q0w7INAEQCSBGNcPO4owNQb8I0q
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI1MDAyNCBTYWx0ZWRfX/Lr8hfkGmpBg
- BYxItGGNY54KWcbm2njEYWiNiN5ObKGWi/7CrdKfhtwcEGPIZmhkAH2tgCnqXhxI1745IFCy5/v
- VIfCgYvHVswhAHfgkMeHLszdNiPL1ZDlvjMBaBqehEhRg/8IbJ/SqhPpzpKWY4uoQ3TKFrbqO6+
- bk9z351VP4stysf/9XbLlr8cd/k+GvW5eTFnBpYTedopucsKXd+U00P4vRHyaUypd8eRiH1sDku
- 4jLPd4LKea4O0voIfI/7kG9htPCB6+KVDcT69XNa8tazTcHfOSokmpaNPqcdts47p9Zc1vg/ykB
- 5eXTF9gKUC8U9sIAm/466PBATv7I70m+4tcFcm16XkLUMccozlAi5zqJNblfK/DfQpDZZbNT4HZ
- 8xX+SeRoxRqUKFarV1ROyG6UrkepDNpGfMvW8xvKn92KfPcPbWXS5vDp5DPY6VppY8iDpZz7Rb7
- BcjpUUQ0L8+rwLsHmFQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-25_02,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 impostorscore=0 phishscore=0 spamscore=0 clxscore=1015
- suspectscore=0 bulkscore=0 lowpriorityscore=0 priorityscore=1501
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
- definitions=main-2609250024
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <arUgNdqpA5U8EjjP@J2N7QTR9R3>
 
+On Thu, Sep 24, 2026 at 02:05:57PM +0100, Mark Rutland wrote:
+> On Thu, Sep 24, 2026 at 02:52:53PM +0200, Peter Zijlstra wrote:
+> > On Thu, Sep 24, 2026 at 01:46:59PM +0100, Mark Rutland wrote:
+> > > What problem is this trying to solve?
+> > > 
+> > > Mukesh's original patch seems to be trying to check whether we compiled
+> > > things correctly (such that the bug_table entry points at the expected
+> > > insturction), and I don't think that warrants a runtime check, but (as
+> > > per my reply to him) I don't understand why that's a thing to check in
+> > > the first place.
+> > > 
+> > > On arm64 we only call is_valid_bugaddr() under do_el1_brk64() ->
+> > > call_el1_break_hook() -> bug_brk_handler(). We only call
+> > > bug_brk_handler() when HW has taken a BRK exception with the BUG_BRK_IMM
+> > > immediate, and that can only be triggered by executing the right
+> > > instruction (BRK #BUG_BRK_IMM), which we ONLY use for BUG(). and WARN().
+> > > 
+> > > So I don't see why any change is necessary here.
+> > > 
+> > > If the HW has somehow taken a BRK exception from any other instruction
+> > > (which would presumably be a HW bug), there won't be a bug_table entry,
+> > > and so __report_bug() will fail to find an entry, and will return
+> > > BUG_TRAP_TYPE_NONE, same as for the !is_valid_bugaddr() case.
+> > 
+> > Right, so I wasn't at all sure what he was doing, Rust is still mostly
+> > unreadable garbage to me.
+> > 
+> > But I figured I'd much rather see him use is_valid_bugaddr() to do
+> > runtime checks than whatever dodgy games he was playing with that label.
+> > 
+> > So *if* doing runtime checks is what is wanted, then is_valid_bugaddr()
+> > needs to actually work, because then it grows a user outside of the BRK
+> > handler.
+> 
+> Thanks; I think we're aligned. :)
+> 
+> Before we delve into implementation details, I'd like to understand the
+> problem Mukesh is trying to solve.
+> 
+> Mark.
 
-On 9/3/26 11:10 AM, netdev-bot+sashiko@kernel.org wrote:
-> Thank you for your contribution! Sashiko AI review found 6 potential
-> issue(s) to consider:
->
-> Critical: 0 · High: 1 · Medium: 2 (1) · Low: 3
->
-> - [High] (Discarded — resolved later in this series.) In ibmveth_poll()
->    at this commit, when ibmveth_rxq_get_buffer() rejects a correlator it…
-> - [Medium] Removing the WARN_ON()+schedule_work() recovery from
->    ibmveth_remove_buffer_from_pool() leaves one live RX path with no…
-> - [Medium] ibmveth_replenish_task() wraps the entire multi-pool replenish
->    loop in spin_lock_irqsave(&rxq->replenish_lock, flags), so up to…
-> - [Low] The patch contains a user-visible robustness fix (replacing the
->    correlator WARN_ON()s that could take the partition down under…
-> - [Low] The hcall-failure log in ibmveth_replenish_task() reconstructs
->    the wrapper name from fail.batch (`fail.batch == 1 ?
-> - [Low] The kernel-doc Return block of ibmveth_remove_buffer_from_pool()
->    still documents only '-EINVAL - correlator maps to pool or index out…
->
-> Pre-existing issues:
-> - [Medium] (Discarded — reachability closed later in this series.) The
->    new per-queue replenish_lock is taken by the replenish producer and by…
->
-> --
->
-> ibmveth: Add queue-aware RX buffer submit helper for MQ
->
-> This adds ibmveth_add_logical_lan_buffers() so RX pool replenishment can
-> go through H_ADD_LOGICAL_LAN_BUFFERS_QUEUE in multi-queue mode, and
-> parameterises the RX accessors, harvest and replenish paths by queue
-> index. It also adds a per-queue replenish_lock, converts
-> ibmveth_replenish_buffer_pool() to return an outcome that is logged after
-> the unlock, and replaces the correlator WARN_ON()s with
-> ibmveth_rxq_correlator_valid().
->
-> A few questions on the correlator error handling, the replenish critical
-> section and the failure log below.
->
->> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
->> index 465330464f916..46f68f5b52e70 100644
->> --- a/drivers/net/ethernet/ibm/ibmveth.c
->> +++ b/drivers/net/ethernet/ibm/ibmveth.c
-> [ ... ]
->
->> @@ -712,11 +722,100 @@ static inline void ibmveth_flush_buffer(void *addr, unsigned long length)
-> [ ... ]
->
->> +	} else if (filled == 1) {
->> +		rc = h_add_logical_lan_buffer(vdev->unit_address,
->> +					      descs[0].desc);
->> +	} else {
->> +		/* Legacy 8-desc hcall; probe/mq_fallback keep batch <=
->> +		 * IBMVETH_MAX_RX_REGULAR.
->> +		 */
->> +		rc = h_add_logical_lan_buffers(vdev->unit_address,
->> +					       descs[0].desc, descs[1].desc,
->> +					       descs[2].desc, descs[3].desc,
->> +					       descs[4].desc, descs[5].desc,
->> +					       descs[6].desc, descs[7].desc);
->> +	}
-> [ ... ]
->
->> @@ -899,21 +1000,85 @@ static void ibmveth_update_rx_no_buffer(struct ibmveth_adapter *adapter)
->>   }
->>   
->>   /* replenish routine */
->> -static void ibmveth_replenish_task(struct ibmveth_adapter *adapter)
->> +static void ibmveth_replenish_task(struct ibmveth_adapter *adapter,
->> +				   int queue_index)
->>   {
->> -	int i;
->> +	struct ibmveth_rx_q *rxq = &adapter->rx_queue[queue_index];
->> +	struct ibmveth_replenish_fail fail = {};
->> +	unsigned long flags;
->> +	int i, rc;
->> +	int need_reset = 0;
->> +	int batch_fallback = 0;
->> +	int hcall_fail = 0;
->> +
->> +	if (queue_index >= adapter->num_rx_queues) {
->> +		netdev_dbg(adapter->netdev,
->> +			   "Skipping replenish for freed queue %d (num_queues=%u)\n",
->> +			   queue_index, adapter->num_rx_queues);
->> +		return;
->> +	}
->>   
->>   	adapter->replenish_task_cycles++;
->>   
->> -	for (i = (IBMVETH_NUM_BUFF_POOLS - 1); i >= 0; i--) {
->> -		struct ibmveth_buff_pool *pool = &adapter->rx_buff_pool[0][i];
->> +	spin_lock_irqsave(&rxq->replenish_lock, flags);
-> [Severity: Medium]
-> Is it intended that the whole multi-pool replenish loop now runs with
-> hardware interrupts disabled?
->
-> The lock is taken here and released only after all five pools have been
-> walked, and ibmveth_replenish_buffer_pool() allocates and maps every
-> buffer inside that region:
->
-> 	skb = netdev_alloc_skb(adapter->netdev, pool->buff_size);
-> 	...
-> 	dma_addr = dma_map_single_attrs(dev, skb->data, pool->buff_size,
-> 					DMA_FROM_DEVICE, DMA_ATTR_NO_WARN);
->
-> With pool_count[] = { 256, 512, 256, 256, 256 } that is up to roughly
-> 1536 allocations plus iommu mappings with interrupts masked on a cold
-> refill, for example ibmveth_open() -> ibmveth_restart_rx_queue() ->
-> ibmveth_replenish_task() where available is 0 for every pool. Before this
-> patch replenish ran from NAPI with interrupts enabled.
->
-> There is also a second-order concern about the netconsole rationale in
-> the commit message. ibmveth_poll_controller() calls
-> ibmveth_replenish_task(adapter, 0), and netpoll_send_skb() has already
-> done local_irq_save() by then, so this CPU can enter the region from
-> netpoll. DMA_ATTR_NO_WARN and moving the logging out of the lock cover
-> the iommu and the driver printks, but netdev_alloc_skb() for the large
-> pools takes the __alloc_skb()/slab path, which is not blanket
-> __GFP_NOWARN. If that allocator warning is emitted while netconsole is
-> bound to this device, can it re-enter ndo_poll_controller ->
-> ibmveth_replenish_task() -> spin_lock_irqsave() on the lock this CPU
-> already holds?
-Yes, it can: the whole fill still runs under
-irqsave. v6 already moved
-the driver logs out of the lock and passed
-DMA_ATTR_NO_WARN so the iommu path cannot printk
-under it. netdev_alloc_skb() can still warn, and that
-can re-enter.
+Hey Peter and Mark,
 
-Shortening irqsave here is the same leftover as
-locking free_buffer_pool() and calling
-netpoll_poll_disable() on close. That is a
-lock-protocol rewrite, not two conditions.
-poll_controller already runs with IRQs off, so
-this is not a drop-in lock_bh. Doing one of
-those alone just moves the race, so I am
-taking them together after this series.
->>   
->> -		if (pool->active &&
->> -		    (atomic_read(&pool->available) < pool->threshold))
->> -			ibmveth_replenish_buffer_pool(adapter, pool);
->> +	for (i = (IBMVETH_NUM_BUFF_POOLS - 1); i >= 0; i--) {
->> +		struct ibmveth_buff_pool *pool =
->> +			&adapter->rx_buff_pool[queue_index][i];
->> +
->> +		if (pool->active && pool->free_map &&
->> +		    (atomic_read(&pool->available) < pool->threshold)) {
->> +			rc = ibmveth_replenish_buffer_pool(adapter, pool,
->> +							   queue_index, &fail);
->> +			switch (rc) {
->> +			case IBMVETH_REPLENISH_RESET_MAP:
->> +			case IBMVETH_REPLENISH_RESET_MQ:
->> +				need_reset = rc;
->> +				goto out_unlock;
->> +			case IBMVETH_REPLENISH_BATCH_FALLBACK:
->> +				batch_fallback = 1;
->> +				break;
->> +			case IBMVETH_REPLENISH_HCALL_FAIL:
->> +				hcall_fail = 1;
->> +				break;
->> +			default:
->> +				break;
->> +			}
->> +		}
->>   	}
->>   
->> +out_unlock:
->>   	ibmveth_update_rx_no_buffer(adapter);
->> +
->> +	spin_unlock_irqrestore(&rxq->replenish_lock, flags);
-> [ ... ]
->
->> +	if (hcall_fail)
->> +		dev_warn_ratelimited(&adapter->netdev->dev,
->> +				     "RX %s failed: filled=%u, rc=%lu, batch=%u\n",
->> +				     adapter->multi_queue ?
->> +				     "h_add_logical_lan_buffers_queue" :
->> +				     (fail.batch == 1 ?
->> +				      "h_add_logical_lan_buffer" :
->> +				      "h_add_logical_lan_buffers"),
->> +				     fail.filled, fail.lpar_rc, fail.batch);
-> [Severity: Low]
-> Should the wrapper name here be selected from fail.filled rather than
-> fail.batch?
->
-> ibmveth_add_logical_lan_buffers() dispatches on filled:
->
-> 	} else if (filled == 1) {
-> 		rc = h_add_logical_lan_buffer(vdev->unit_address,
-> 					      descs[0].desc);
->
-> So when adapter->rx_buffers_per_hcall is 8 (firmware with
-> IBMVETH_ILLAN_RX_MULTI_BUFF_SUPPORT) and the fill loop stops at
-> filled == 1 because remaining was 1, netdev_alloc_skb() failed or
-> dma_mapping_error() hit after the first descriptor, the call that failed
-> is h_add_logical_lan_buffer() but the log prints
-> h_add_logical_lan_buffers. fail.filled already records the right
-> discriminator.
->
-> Related: fail is a single struct reused across the pool loop while
-> batch_fallback and hcall_fail are sticky flags, so if two pools fail in
-> one invocation, do the printed filled/rc/batch values only describe the
-> last failure?
-v7 names the wrapper from filled, so a
-last-buffer single add prints the single
-hcall. One fail struct is still shared, so
-two pool failures leave only the last
-filled/rc/batch. That struct stays as it
-is in this patch.
-> This is still the case at the end of the series.
->
->>   }
->>   
->>   /* empty and free ana buffer pool - also used to do cleanup in error paths */
->> @@ -948,6 +1113,12 @@ static void ibmveth_free_buffer_pool(struct ibmveth_adapter *adapter,
->>   		kfree(pool->skbuff);
->>   		pool->skbuff = NULL;
->>   	}
->> +
->> +	/*
->> +	 * Keep probe/sysfs geometry (active, size, buff_size, threshold).
->> +	 * Only tear down runtime allocations; open reuses active pools.
->> +	 */
->> +	atomic_set(&pool->available, 0);
->>   }
-> [Severity: Medium]
-> This is a pre-existing pattern and not introduced by this patch, but with
-> the new replenish_lock it is worth a note.
->
-> ibmveth_free_buffer_pool() kfree()s free_map, skbuff and dma_addr and
-> does atomic_set(&pool->available, 0) without taking
-> rxq->replenish_lock, while the new tests in ibmveth_replenish_task()
-> and ibmveth_rxq_correlator_valid():
->
-> 	if (pool->active && pool->free_map &&
-> 	...
-> 	if (!bpool->active || !bpool->skbuff || !bpool->free_map)
->
-> are check-then-use against that teardown.
->
-> Tracing it through, the window looks closed at the end of the series:
-> ibmveth_poll_controller() returns early on !adapter->opened,
-> ibmveth_close() clears opened first, then calls
-> ibmveth_cleanup_rx_interrupts() and synchronize_net() before
-> ibmveth_free_buffer_pools(), and netpoll runs ndo_poll_controller with
-> hard interrupts disabled, so a netpoll section that observed
-> opened == true is waited out by that synchronize_net(). Would it be worth
-> documenting that free_buffer_pool() relies on the opened flag plus
-> synchronize_net() rather than on replenish_lock, since it writes state
-> the lock otherwise protects?
-I am leaving that undocumented for now.
-free_buffer_pool() still does not take
-replenish_lock, so a comment that says it
-relies on opened plus synchronize_net() would
-overclaim. close() does clear opened and wait before
-it frees the pools, but that is not the same as
-holding the lock. Taking the lock in free belongs
-with shortening irqsave, not a kdoc line here.
+It's not as a problem, it's something i faced while implementing the
+ARCH_WARN_ASM, the generated assembly was not correct so i wrote a test
+for it, I sent it out along with the same patch[1] but then the
+discussion led to it being for all archs so I sent it out as an RFC to
+know others opinion.
 
->>   
->>   /**
->> @@ -1088,35 +1259,74 @@ ibmveth_free_buffer_pools(struct ibmveth_adapter *adapter)
->>   		   adapter->num_rx_queues);
->>   }
->>   
->> +static bool ibmveth_rxq_correlator_valid(struct ibmveth_adapter *adapter,
->> +					 int queue_index, u64 correlator)
->> +{
->> +	unsigned int pool = correlator >> 32;
->> +	unsigned int index = correlator & 0xffffffffUL;
->> +	struct ibmveth_buff_pool *bpool;
->> +
->> +	if (pool >= IBMVETH_NUM_BUFF_POOLS)
->> +		return false;
->> +
->> +	bpool = &adapter->rx_buff_pool[queue_index][pool];
->> +
->> +	/* Require a live pool with allocated arrays before indexing.
->> +	 * Inactive pools still have size from init; free clears skbuff.
->> +	 */
->> +	if (!bpool->active || !bpool->skbuff || !bpool->free_map)
->> +		return false;
->> +
->> +	return index < bpool->size;
->> +}
-> [Severity: Low]
-> This isn't a bug, but this helper is a standalone robustness fix bundled
-> into an MQ feature patch. The commit message says a malformed correlator
-> with panic_on_warn set "would take the partition down", which is a
-> user-visible fix that stable trees would want, and the WARN_ON()s being
-> replaced here and in ibmveth_rxq_get_buffer() came from commit
-> 2c91e2319ed9 ("net: ibmveth: Reset the adapter when unexpected states are
-> detected").
->
-> Could the correlator validation be split into its own patch with a
-> Fixes: 2c91e2319ed9 tag, so it can be identified independently of the
-> queue plumbing?
-I am keeping the helper here. It is wired into
-the queue-indexed harvest, remove, and get_buffer
-paths, so a Fixes: peel would not be a clean
-cherry-pick of just the WARN_ON() change. There is
-no Fixes: tag. The commit message already says
-WARN_ON() was the wrong tool.
->> +
->> +static void ibmveth_rxq_advance(struct ibmveth_rx_q *rxq)
->> +{
->> +	if (++rxq->index == rxq->num_slots) {
->> +		rxq->index = 0;
->> +		rxq->toggle = !rxq->toggle;
->> +	}
->> +}
->> +
->>   /**
->>    * ibmveth_remove_buffer_from_pool - remove a buffer from a pool
->>    * @adapter: adapter instance
->>    * @correlator: identifies pool and index
->> + * @queue_index: RX queue index (0..num_rx_queues-1)
->>    * @reuse: whether to reuse buffer
->>    *
->> + * Context: may run concurrently with netpoll replenish_task on the same
->> + * queue; takes per-queue replenish_lock to serialize free_map /
->> + * producer_index / available against the producer.
->> + *
->>    * Return:
->>    * * %0       - success
->>    * * %-EINVAL - correlator maps to pool or index out of range
->>    * * %-EFAULT - pool and index map to null skb
-> [Severity: Low]
-> Does this Return block still describe all the -EINVAL cases?
->
-> ibmveth_rxq_correlator_valid() also returns false, mapped to -EINVAL
-> here, when bpool->active is 0 or when bpool->skbuff or bpool->free_map
-> are NULL. That is a deactivated or torn-down pool, not a correlator
-> "out of range", and callers react to -EINVAL by advancing the ring as
-> if the slot were corrupt, so the distinction is visible in behaviour.
->
-> The two updated tests, ibmveth_remove_buffer_from_pool_test() and
-> ibmveth_rxq_get_buffer_test(), also exercise none of the three new
-> predicates: they allocate free_map and rely on the pool being active, so
-> they pass identically with or without the new checks. Would it be worth
-> adding cases for active == 0 and for skbuff/free_map being NULL?
->
-> The doc block is unchanged at the end of the series.
-Yes — -EINVAL is also an inactive or not-live pool,
-not only "out of range." v7 names that on the
-Return line. Callers already skip both the same
-way. I am not adding extra KUnit cases for
-active==0 / NULL-array; v6 already gives the
-fixtures a dummy free_map so the range and
--EFAULT paths are live again.
+After Peter's last comment i found is_valid_bugaddr can use a bit more
+work(atleast on ppc) so i think i am going to drop this and go ahead
+with improving is_valid_bugaddr.
 
->>    */
->>   static int ibmveth_remove_buffer_from_pool(struct ibmveth_adapter *adapter,
->> -					   u64 correlator, bool reuse)
->> +					   u64 correlator, int queue_index,
->> +					   bool reuse)
->>   {
->> +	struct ibmveth_rx_q *rxq = &adapter->rx_queue[queue_index];
->>   	unsigned int pool  = correlator >> 32;
->>   	unsigned int index = correlator & 0xffffffffUL;
->>   	unsigned int free_index;
->>   	struct sk_buff *skb;
->> +	unsigned long flags;
->> +	int rc = 0;
->>   
->> -	if (WARN_ON(pool >= IBMVETH_NUM_BUFF_POOLS) ||
->> -	    WARN_ON(index >= adapter->rx_buff_pool[0][pool].size)) {
->> -		schedule_work(&adapter->work);
->> -		return -EINVAL;
->> +	spin_lock_irqsave(&rxq->replenish_lock, flags);
->> +
->> +	if (!ibmveth_rxq_correlator_valid(adapter, queue_index, correlator)) {
->> +		rc = -EINVAL;
->> +		goto out_unlock;
->>   	}
->>   
->> -	skb = adapter->rx_buff_pool[0][pool].skbuff[index];
->> -	if (WARN_ON(!skb)) {
->> -		schedule_work(&adapter->work);
->> -		return -EFAULT;
->> +	skb = adapter->rx_buff_pool[queue_index][pool].skbuff[index];
->> +	if (!skb) {
->> +		rc = -EFAULT;
->> +		goto out_unlock;
->>   	}
-> [Severity: Medium]
-> Can this leak RX pool capacity permanently on a bad correlator?
->
-> The goto out_unlock skips both the free_map push and the
-> atomic_dec(&pool->available) that the success path performs, and the
-> schedule_work(&adapter->work) that used to accompany the WARN_ON()s is
-> gone from this function.
->
-> The callers treat -EINVAL/-EFAULT as "slot skipped, keep going".
-> ibmveth_rxq_harvest_buffer() advances the ring anyway:
->
-> 	if (unlikely(rc)) {
-> 		/* Skip a corrupt slot without claiming pool ownership. */
-> 		if (rc == -EINVAL || rc == -EFAULT)
-> 			ibmveth_rxq_advance(rxq);
-> 		return rc;
-> 	}
->
-> and ibmveth_drain_rx_queue() counts it as drained:
->
-> 		/* -EINVAL/-EFAULT already advanced past the slot. */
-> 		if (rc == -EINVAL || rc == -EFAULT) {
-> 			drained++;
-> 			continue;
-> 		}
->
-> The invalid-buffer recycle branch of ibmveth_poll() is the concrete live
-> path, since it never calls ibmveth_rxq_get_buffer() and so nothing
-> schedules a reset there.
->
-> Given that ibmveth_replenish_buffer_pool() computes
->
-> 	u32 remaining = pool->size - atomic_read(&pool->available);
->
-> and ibmveth_replenish_task() only refills while available < threshold,
-> does each occurrence permanently shrink the usable ring, until replenish
-> stops firing for that pool altogether? For the -EINVAL case the
-> DMA-mapped skb also stays in pool->skbuff[] with its free_map entry left
-> at IBM_VETH_INVALID_MAP until teardown.
->
-> The pre-patch code performed a close/open reset here, which reconciled
-> the driver bookkeeping with PHYP. Should these paths still request a
-> reset, or correct available, when the correlator is rejected?
-On -EINVAL/-EFAULT the helper does not push free_map
-or drop available. Harvest still advances the ring.
-I am not putting schedule_work() back in
-remove_buffer_from_pool: drain runs from close and
-resize, and a reset from there is wrong. Patch 9
-skip_bad already resets when get_buffer() returns
-NULL. Recycle and drain stay advance-only.
-> At the end of the series this is unchanged in effect:
-> ibmveth_poll_harvest_slot() returns true for -EINVAL/-EFAULT and
-> ibmveth_poll_recycle_invalid() schedules nothing, while only
-> ibmveth_poll_skip_bad_correlator() schedules the reset.
->
->>   
->>   	/* if we are going to reuse the buffer then keep the pointers around
->> @@ -1127,75 +1337,88 @@ static int ibmveth_remove_buffer_from_pool(struct ibmveth_adapter *adapter,
-> [ ... ]
->
->> -	free_index = adapter->rx_buff_pool[0][pool].producer_index;
->> -	adapter->rx_buff_pool[0][pool].producer_index++;
->> -	if (adapter->rx_buff_pool[0][pool].producer_index >=
->> -	    adapter->rx_buff_pool[0][pool].size)
->> -		adapter->rx_buff_pool[0][pool].producer_index = 0;
->> -	adapter->rx_buff_pool[0][pool].free_map[free_index] = index;
->> +	free_index = adapter->rx_buff_pool[queue_index][pool].producer_index;
->> +	adapter->rx_buff_pool[queue_index][pool].producer_index++;
->> +	if (adapter->rx_buff_pool[queue_index][pool].producer_index >=
->> +	    adapter->rx_buff_pool[queue_index][pool].size)
->> +		adapter->rx_buff_pool[queue_index][pool].producer_index = 0;
->> +	adapter->rx_buff_pool[queue_index][pool].free_map[free_index] = index;
->>   
->>   	mb();
->>   
->> -	atomic_dec(&adapter->rx_buff_pool[0][pool].available);
->> +	atomic_dec(&adapter->rx_buff_pool[queue_index][pool].available);
->>   
->> -	return 0;
->> +out_unlock:
->> +	spin_unlock_irqrestore(&rxq->replenish_lock, flags);
->> +	return rc;
->>   }
->>   
->>   /* get the current buffer on the rx queue */
->> -static inline struct sk_buff *ibmveth_rxq_get_buffer(struct ibmveth_adapter *adapter)
->> +static struct sk_buff *
->> +ibmveth_rxq_get_buffer(struct ibmveth_adapter *adapter,
->> +		       int queue_index)
->>   {
->> -	struct ibmveth_rx_q *rxq = &adapter->rx_queue[0];
->> +	struct ibmveth_rx_q *rxq = &adapter->rx_queue[queue_index];
->>   	u64 correlator = rxq->queue_addr[rxq->index].correlator;
->>   	unsigned int pool = correlator >> 32;
->>   	unsigned int index = correlator & 0xffffffffUL;
->>   
->> -	if (WARN_ON(pool >= IBMVETH_NUM_BUFF_POOLS) ||
->> -	    WARN_ON(index >= adapter->rx_buff_pool[0][pool].size)) {
->> +	if (!ibmveth_rxq_correlator_valid(adapter, queue_index, correlator)) {
->>   		schedule_work(&adapter->work);
->>   		return NULL;
->>   	}
-> [ ... ]
->
->> @@ -2161,34 +2384,41 @@ static void ibmveth_rx_csum_helper(struct sk_buff *skb,
-> [ ... ]
->
->> -			skb = ibmveth_rxq_get_buffer(adapter);
->> +			skb = ibmveth_rxq_get_buffer(adapter, queue_index);
->>   			if (unlikely(!skb))
->>   				break;
-> [ ... ]
->
->> @@ -2265,14 +2501,18 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
-> [ ... ]
->
->> -	if (ibmveth_rxq_pending_buffer(adapter) && napi_schedule(napi)) {
->> -		ibmveth_disable_irq(adapter, 0);
->> +	if (ibmveth_rxq_pending_buffer(adapter, queue_index) &&
->> +	    napi_schedule(napi)) {
->> +		ibmveth_disable_irq(adapter, queue_index);
->>   		goto restart_poll;
->>   	}
-> [Severity: High]
-> At this commit, can ibmveth_poll() spin here forever after
-> ibmveth_rxq_get_buffer() rejects a correlator?
->
-> Unlike ibmveth_rxq_harvest_buffer(), ibmveth_rxq_get_buffer() returns
-> NULL without advancing the ring, and the caller just breaks:
->
-> 			skb = ibmveth_rxq_get_buffer(adapter, queue_index);
-> 			if (unlikely(!skb))
-> 				break;
->
-> rxq->index and rxq->toggle are untouched, so
-> ibmveth_rxq_pending_buffer() is still true, napi_schedule() succeeds and
-> poll jumps back to restart_poll on the same slot. The reset queued by
-> ibmveth_rxq_get_buffer() cannot break the cycle either, because
-> ibmveth_reset() -> dev_close() -> napi_disable() waits for this poll to
-> finish.
->
-> The following patch in the series, "ibmveth: Harden RX poll path with
-> helpers", replaces this bare break with
-> ibmveth_poll_skip_bad_correlator(), which schedules the reset and calls
-> ibmveth_poll_harvest_slot() so the slot is advanced, so the loop is gone
-> by the end of the series. Would it be better to fold that handling into
-> this patch, so the intermediate commit is not bisectable into a softirq
-> loop?
->
-> [ ... ]
-Folded into this patch: when get_buffer() returns
-NULL, ibmveth_rxq_advance() advances past the slot
-before breaking, so poll makes progress and does not
-spin at this commit. Patch 9 then refactors that path
-into the dedicated skip_bad_correlator helper.
+Regards,
+Mukesh
 
-Thanks,
-Mingming
+[1]https://lore.kernel.org/all/20260915090453.1227034-1-mkchauras@gmail.com/
 
