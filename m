@@ -1,53 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-28245-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28246-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9CFC6C98321
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2026 20:14:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD13DC98321
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2026 20:36:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hs23d1HhHz30dj;
-	Sat, 26 Sep 2026 06:14:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790367261;
-	cv=none; b=i2x1VRPc9Jg/gjuvzMDjtQitNxSjAx5wblmzr9V9cYCaETOxF/Krm6mP2WVmrbVx8UWFJepd3ua1UNw+Qq4Vmh//TD/QC443PvYNyjRy3tra/53ZFPOwjHiGIcwWzphSWYRI9xsc/Zwc1scQyd4GUVRTCrU8b7PrU80D76vTFxIWlc6BU6b8yCAO94hd09Qg9t/WLDU2bnRABKwDgeOauiGTgPwdOmwJHohdK0Nxw5aLFPoLUYGcCV2FSCBSVWIkJnJOrUUa61FA6rHK0fCtwTBWz52F48nmjoJItXWJ0YgXynZQ6pq3Q6KPFYznWWboB4/xCPFVW2WeOtycy2ywIQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hs2Y60N5jz2yMm;
+	Sat, 26 Sep 2026 06:36:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790368585;
+	cv=none; b=PF8oaLBkSpEOPQJYJpBlQRGfUE6vvHdjdsMbYyDncyRQ4mD0437bVGqBS4iCjVMQJQAbTO7pXiO+DjiYrAJUh2z9H5jcEElxwqVs4JRpfrkRrGeTLLbXkDY/Yvl3jQ7BQXnaGFFYfwwX6vzYs5zhWY/Hdkd5XM4kZp7MX0+CHxmo9uxeLjtL7h6C+tup0XbiPxiZU7ZJ7gpz8axhY5zIQFppH0B4c7CXZ7GLWb9c54FGypKaAI732XwPlAAVS7tEfs1dsQBeZuDbmSb9YZwyYTBj4FQ/s1S6yp3pXP7+AONHcZwqjlb4icN3TyTkIRwdUSoieFQ3VW4qIO/IOSDBcA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790367261; c=relaxed/relaxed;
-	bh=EF8OyDut2rayuYx4pymsb162cHu8KROP/4zU982aGoA=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=K9tCC54EIvssf/faC8HvNrAfX68QMh/wC6B+avZx8qi2dfL9IHPidVqV0NTgylzmnhC9cx2x1DdIE0+w8Ny+zPRAUc/dFCu3vemiOv/kUr4gNW1gtUq1x+h/aZe3RP114ENLF5UEv9KXlPICjQQ8GehiJxTBFwOJX2/D5UN048WxSqpq/6E9Wyq/jG4xopVg1xSNyGvsHML3Pte0Brae2BqCg4mvxqW7JlAgpn3+NPDDOPIsxFia+Zw7uvjGbBbalayLm4IxPSKW/W6teWSCJqpRgy7yqKh0mpvr5PaxyXTYuvHblvZiFpyX4FI2OOrta5C1YdJ+ENl/JGmOoHMddQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Tu8dpede; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1790368585; c=relaxed/relaxed;
+	bh=JPbDZVkHkHveuVIklk/lqenZFJcP6dLwpKqAT/JIlqc=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=FKpAyUTki/b9DpKmHLCFQxD+nnLA+hnSoTf+k7OJ2R/xaHU/JPDzJpZQMSr4lXCTz02YteXX4T8+XMRisBoL4mMbn4/to/VzqEH6NyjUWy/Nhbr+M8RAI3JJniGTwFl1B1GrP6rs8r+XW39ULU6ss9ZhI3eUEjS9MRmLasHFVOTrpHm1TAeZnMMEcZksBg8DrMxqqCIBL0hImn8JrnT48j5cXS+X9hrKeCYTvYJpZ9h2T2TTpmhNlwQidsnDNoVrnNwPwmvfs9fXY023ypPwZDrojMWxacyq4VRR8l3Hhm00isILFHhq3VZiFXAFfn2Bd5p2fWtOGJBZGMXliIy7uQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BQ2mTr7x; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=davemarq@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Tu8dpede;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BQ2mTr7x;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=davemarq@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hs23c2PRFz30gC
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 06:14:20 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id CB7D6429E3;
-	Fri, 25 Sep 2026 20:14:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2B7DC1F000FF;
-	Fri, 25 Sep 2026 20:13:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790367258;
-	bh=EF8OyDut2rayuYx4pymsb162cHu8KROP/4zU982aGoA=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=Tu8dpedeUynCnlq7Wxf4f9JCPrda0/Y0Tmaz1KTS9GhPwPBdedBTQWw3UhI8XcXMN
-	 qrjOjBi+3lRlLTda3X+1K4Kudkf8/gcJhM/wzaAhMXThsSmK+fW9duXf2WLFxNYtWb
-	 89EFQ+Pb3CZgoB8haOE2CvuTiR0Fx3WHrIzKr1daiy+pKbIyD9KemfkSgwf+ftcchJ
-	 1ZDRuI+H747LYk47f0YOz+UoLOH+bqQ55biVx1Y75rv6aIuCzcus4e6lAz/qjtmRor
-	 x0R3nx7I6Xd2o0CoRbj1AuDam9d9DcnDUvzaGWQfs+CUpemegdemifjfX7ZQcmzWhq
-	 APU1v55lYeH5A==
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Fri, 25 Sep 2026 21:09:47 +0100
-Subject: [PATCH v5 12/12] mm: change the contract for free_pgtables(),
- update docs
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hs2Y52f8lz2yFQ
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 06:36:24 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68PJ5N1i031036;
+	Fri, 25 Sep 2026 20:36:16 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=JPbDZV
+	kHkHveuVIklk/lqenZFJcP6dLwpKqAT/JIlqc=; b=BQ2mTr7xALEUua0Mhudyjx
+	uPnMu1NKiz76BrUpZffOZpXL1uPSC3RkOQsxzYrrwYb9R8oRhWdDKT5n8BQt97r0
+	RaUibVb4pbUhDgbgJzsy8DScz/j2NEHieQCy4pmtz2j3fd8RsaFla+pw3QazuuA/
+	OqvlZU66P9f3cMTkWOVNZDLIybiz1VMFg1OibAqn+ixCnkqyYSEoVoTGaHghfP99
+	6QVa10AiJ0kehfYdNg54Nueg1yyOxn6u6WF4jnyhHvMVPIsmaP/+lUWzxGUDcMpM
+	5jQA08Kbmw7zS5clLtvkGcuwc0n0MeKJtLrmTMk1+C5V147vcXHttH4WA4VRYRrA
+	==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gske294yp-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Fri, 25 Sep 2026 20:36:15 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68PImAvm130353;
+	Fri, 25 Sep 2026 20:36:14 GMT
+Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gvbu93v5f-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 25 Sep 2026 20:36:14 +0000 (GMT)
+Received: from smtpav04.wdc07v.mail.ibm.com (smtpav04.wdc07v.mail.ibm.com [10.39.53.231])
+	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68PKa4KY27460330
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 25 Sep 2026 20:36:04 GMT
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id ED4425805E;
+	Fri, 25 Sep 2026 20:36:03 +0000 (GMT)
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2C6E358054;
+	Fri, 25 Sep 2026 20:36:03 +0000 (GMT)
+Received: from d (unknown [9.61.165.251])
+	by smtpav04.wdc07v.mail.ibm.com (Postfix) with ESMTPS;
+	Fri, 25 Sep 2026 20:36:03 +0000 (GMT)
+From: Dave Marquardt <davemarq@linux.ibm.com>
+To: mingming cao <mmc@linux.ibm.com>
+Cc: netdev@vger.kernel.org, davem@davemloft.net, kuba@kernel.org,
+        horms@kernel.org, edumazet@google.com, pabeni@redhat.com,
+        andrew+netdev@lunn.ch, nnac123@linux.ibm.com, maddy@linux.ibm.com,
+        mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+        bjking1@linux.ibm.com, shaik.abdulla1@ibm.com, stable@vger.kernel.org
+Subject: Re: [PATCH net 1/2] ibmveth: h_free logical LAN on open-fail after
+ register
+In-Reply-To: <b2116532-c9d2-46d9-85e1-28d829e1b1f2@linux.ibm.com> (mingming
+	cao's message of "Fri, 25 Sep 2026 12:48:54 -0700")
+References: <cover.1790357373.git.mmc@linux.ibm.com>
+	<7a56fbfb9e0674f011f4e310fbd7dfd8e67c30aa.1790357373.git.mmc@linux.ibm.com>
+	<87jyo917gv.fsf@linux.ibm.com>
+	<b2116532-c9d2-46d9-85e1-28d829e1b1f2@linux.ibm.com>
+Date: Fri, 25 Sep 2026 15:36:02 -0500
+Message-ID: <87bj9l132l.fsf@linux.ibm.com>
+User-Agent: Gnus/5.13 (Gnus v5.13)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,151 +97,59 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260925-rcu-pagetable-freeing-v5-12-31e91065fea4@kernel.org>
-References: <20260925-rcu-pagetable-freeing-v5-0-31e91065fea4@kernel.org>
-In-Reply-To: <20260925-rcu-pagetable-freeing-v5-0-31e91065fea4@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>, 
- David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>, 
- Baolin Wang <baolin.wang@linux.alibaba.com>, 
- "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>, 
- Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
- Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
- Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, 
- Guo Ren <guoren@kernel.org>, Brian Cain <bcain@kernel.org>, 
- Geert Uytterhoeven <geert@linux-m68k.org>, 
- Dinh Nguyen <dinguyen@kernel.org>, 
- Simon Schuster <schuster.simon@siemens-energy.com>, 
- Jonas Bonn <jonas@southpole.se>, 
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, 
- Stafford Horne <shorne@gmail.com>, Rich Felker <dalias@libc.org>, 
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
- Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
- Russell King <linux@armlinux.org.uk>, Vineet Gupta <vgupta@kernel.org>, 
- Michal Simek <monstr@monstr.eu>, Chris Zankel <chris@zankel.net>, 
- Max Filippov <jcmvbkbc@gmail.com>, Will Deacon <will@kernel.org>, 
- "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, 
- Nick Piggin <npiggin@gmail.com>, Peter Zijlstra <peterz@infradead.org>, 
- "David S. Miller" <davem@davemloft.net>, 
- Andreas Larsson <andreas@gaisler.com>, 
- Richard Henderson <richard.henderson@linaro.org>, 
- Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>, 
- Catalin Marinas <catalin.marinas@arm.com>, 
- Mark Rutland <mark.rutland@arm.com>, Huacai Chen <chenhuacai@kernel.org>, 
- WANG Xuerui <kernel@xen0n.name>, 
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
- Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
- Alexander Gordeev <agordeev@linux.ibm.com>, 
- Christian Borntraeger <borntraeger@linux.ibm.com>, 
- Sven Schnelle <svens@linux.ibm.com>, Richard Weinberger <richard@nod.at>, 
- Anton Ivanov <anton.ivanov@cambridgegreys.com>, 
- Johannes Berg <johannes@sipsolutions.net>, 
- Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
- Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, 
- x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
- Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka <vbabka@kernel.org>, 
- Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
- Michal Hocko <mhocko@suse.com>, Jason Gunthorpe <jgg@ziepe.ca>, 
- John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, 
- Yoshinori Sato <ysato@users.sourceforge.jp>, 
- Shakeel Butt <shakeel.butt@linux.dev>, Jonathan Corbet <corbet@lwn.net>, 
- Randy Dunlap <rdunlap@infradead.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, 
- linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
- linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org, 
- linux-sh@vger.kernel.org, linux-riscv@lists.infradead.org, 
- linux-arm-kernel@lists.infradead.org, linux-snps-arc@lists.infradead.org, 
- linux-arch@vger.kernel.org, sparclinux@vger.kernel.org, 
- linux-alpha@vger.kernel.org, loongarch@lists.linux.dev, 
- linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
- linux-um@lists.infradead.org, Hugh Dickins <hughd@google.com>, 
- Qi Zheng <qi.zheng@linux.dev>, linux-doc@vger.kernel.org, 
- "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3600; i=ljs@kernel.org;
- h=from:subject:message-id; bh=PnRbJJLEs7BWuuMfKr3yc/Hi0NQ6wkh885+GUnZfEK0=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLK2XeWINjBRU37zm32Wbs8P7izmFYt4L0/ebb5Vs/hB2
- tO/W64wdZSyMIhxMciKKbI8/yK+P0gkbF7nBX83mDmsTCBDGLg4BWAifF6MDJePGHHv6hU8Ze44
- 1fzZijY7DVWGH3IB127aH/2f7sG2wYThN6uth35MleD6POFM1mvnpzi7vDeUYklY/u9rioI45/d
- 9/AA=
-X-Developer-Key: i=ljs@kernel.org; a=openpgp;
- fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: fzPdm23rj8wL-WaU15_8er85TtjkUSGS
+X-Authority-Analysis: v=2.4 cv=EOCTQFZC c=1 sm=1 tr=0 ts=6ab6db40 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8
+ a=nKwSdBsyh74nXFs96kUA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI1MDA4MiBTYWx0ZWRfX8i3lrld8EEeX
+ CZWUXR1WHPIwudfQuAX7zHzeKxM3uAcCL8PJt80SLJUUkB92ED3kwOJaSa1pV2945DA6bBKrkRG
+ +Q3DTw0n4Zb7UhiTHQC3nM94B2Tv45k=
+X-Proofpoint-GUID: hec-NSCBgVNHqD0Ku_6ASDvZ5kwwIdqU
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI1MDA4MiBTYWx0ZWRfXyTCHVYtT5CWT
+ b3w+wam0H4HcR4odwdRLkrKioav0zaXhIunq0RfXt8o9UeTqCiWD3p6kV9H+Vs0ousYPU8hphiV
+ nGbMEMMzCBDH+UHFinqjwfNhlLEI4qRAJHDnbQk+K+jqbp3gRcJZq/8M+hzKc04pXPcXMXVFn9R
+ 92BFlCIDkaXwpVRP+xugixW9GsllZIXaqDP0LkR6ax6bLUoh20TjsMhDxC8LmxvrRvvZ5rdeoE4
+ Q+b6CIEZXNJRLwgUZS27bEY+kzXlkYvCr/4Zbq9sL8j7rPR6ChAtWXnAIYS5vD0Pffjrkvl5Bz6
+ p24xjKCHFAribWeI/LGkUbzH6Xv2tvMAUfvmULWuO7DY2/VFj9+rhXu6gXlGIn+ryYfr0Ux5WVz
+ BUZ2pjVoKawqT2BK5axXT7KFEUCIpehSRmfoWMGsQJFW5u7a9JV+cCn/PUmwAN3XtnrbJ+c+9fp
+ zolIkSSXflrsAiXrW7w==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-25_04,2026-09-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 phishscore=0 priorityscore=1501 clxscore=1015 spamscore=0
+ adultscore=0 impostorscore=0 lowpriorityscore=0 suspectscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609250082
 
-Now that page tables are freed after an RCU grace period, it is safe for
-read-only page table walkers to walk page table ranges that are being
-concurrently torn down, provided the mm is kept alive via mmgrab().
+mingming cao <mmc@linux.ibm.com> writes:
 
-It is however unsafe for writers to do so, as they must obtain an
-appropriate lock to do so safely.
+> On 9/25/26 12:01 PM, Dave Marquardt wrote:
+>> This code change is good. But I noticed another thing that's a pretty
+>> minor bug of useless code just after this:
+>>
+>> 	rc =3D -ENOMEM;
+>>
+>> rc isn't used in that code path after it is set. Is there some reason I
+>> do not understand to have this here?
+>
+> Yeah, that |rc =3D -ENOMEM| at line 728 is dead =E2=80=94 set right before
+> |return 0| and never read again. Pre-existing junk. |d43732| set it
+> for the bounce alloc that used to run next. |d6832| moved the TX LTB
+> earlier and dropped the bounce, but left the line. After |request_irq|
+> succeeds we replenish, start TX, and return 0.
+>
+> It's harmless (not user-visible) =E2=80=94 I prefer leaving it out of this
+> Fixes and letting the MQ series clean it up naturally when it rewrites
+> that whole open() path. But fine to respin a new version if desired.
 
-Update the pte_offset_map_lock()'s comment block to reflect this.
+Agreed.
 
-Similarly update the process addresses documentation.
-
-Acked-by: Kiryl Shutsemau (Meta) <kas@kernel.org>
-Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
----
- Documentation/mm/process_addrs.rst | 11 +++++++++++
- mm/pgtable-generic.c               | 15 +++++++++++----
- 2 files changed, 22 insertions(+), 4 deletions(-)
-
-diff --git a/Documentation/mm/process_addrs.rst b/Documentation/mm/process_addrs.rst
-index a7296f251799..78231995e490 100644
---- a/Documentation/mm/process_addrs.rst
-+++ b/Documentation/mm/process_addrs.rst
-@@ -537,6 +537,17 @@ We establish basic locking rules when interacting with page tables:
- * When changing a page table entry the page table lock for that page table
-   **must** be held, except if you can safely assume nobody can access the page
-   tables concurrently (such as on invocation of :c:func:`!free_pgtables`).
-+* Page tables may be *walked* under RCU alone, as page tables are freed only
-+  after an RCU grace period has elapsed. However, any entry found must be
-+  revalidated after the page table lock is taken (such as the
-+  :c:func:`!pmd_same` recheck performed by :c:func:`!pte_offset_map_lock`)
-+  before it is acted upon. Changing an entry requires the page table lock
-+  and one of the locks that excludes teardown (any one of the mmap, VMA or
-+  rmap locks).
-+* When traversing page tables under RCU alone it is important to take care
-+  when operating upon leaf entries - if the value is operated upon (for
-+  instance getting the folio associated with a PTE) an appropriate lock must
-+  be taken to prevent concurrent modification.
- * Reads from and writes to page table entries must be *appropriately*
-   atomic. See the section on atomicity below for details.
- * Populating previously empty entries requires that the mmap or VMA locks are
-diff --git a/mm/pgtable-generic.c b/mm/pgtable-generic.c
-index b91b1a98029c..a127e3e8f9b9 100644
---- a/mm/pgtable-generic.c
-+++ b/mm/pgtable-generic.c
-@@ -385,10 +385,17 @@ pte_t *pte_offset_map_rw_nolock(struct mm_struct *mm, pmd_t *pmd,
-  * Note: "RO" / "RW" expresses the intended semantics, not that the *kmap* will
-  * be read-only/read-write protected.
-  *
-- * Note that free_pgtables(), used after unmapping detached vmas, or when
-- * exiting the whole mm, does not take page table lock before freeing a page
-- * table, and may not use RCU at all: "outsiders" like khugepaged should avoid
-- * pte_offset_map() and co once the vma is detached from mm or mm_users is zero.
-+ * Note that free_pgtables(), used after unmapping detached vmas or when exiting
-+ * the whole mm, does not take a page table lock before freeing a page table.
-+ *
-+ * As page table freeing itself is RCU-safe, page table readers can safely run
-+ * concurrently with page table teardown.
-+ *
-+ * However, writers CANNOT as, without a lock being held, nothing prevents
-+ * concurrent teardown.
-+ *
-+ * Also note that the PGD itself is freed at mmdrop() time, not under RCU - so
-+ * the walker must keep the mm alive either by pinning the mm or the VMA.
-  */
- pte_t *pte_offset_map_lock(struct mm_struct *mm, pmd_t *pmd,
- 			   unsigned long addr, spinlock_t **ptlp)
-
--- 
-2.55.0
-
+-Dave
 
