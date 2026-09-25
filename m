@@ -1,89 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-28179-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28180-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3EAA8C9830D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2026 06:57:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 060C3C9830D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2026 07:07:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hrhMd6T8lz2y2J;
-	Fri, 25 Sep 2026 16:57:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790319421;
-	cv=none; b=IGCvWyfNGZ2DTLxtQDj9JELXX1DE4mnf8i1cMxOuIKpmVi6NA/Lut2YiSK4ExCyH8m0fca1AZlYSFHMm6HrjYWGBGY8l2QMugkw0t6tGO94djJyCWN4GMHvUy/H0eSpdtlDC3qBhXAkdwV1uz4nEJU73LVx8P2CXn7cB4QrIuxPMR5h8VlCHye6Acg1yfRqwx2OAm3nHFpIJ8XlXlMT3nABPuYTKu/xmSLTtcg6wNAEp3jPBlFhFPxed3dpHMivFjSt5rbbvewpHk9RxWroBQ3mKbpmQtCigwtMWWtv/DnMqCmr7rmZW9GuimKStcxGTpzNqZzqLWXCeQHrE60C3Jw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hrhbS23LZz2y2M;
+	Fri, 25 Sep 2026 17:07:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:36::e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790320036;
+	cv=none; b=fl5oOZ22hi6v+Pn9Sp9VTBhHXOHqTOjkxvOKRIb5QWjY5w9Kt0isEhaXhcMRV/1+217ZJzeQQePnqgw/U8h3So28RASk7aRJKroB/IOqwaWkG9PVcGHM8OCcxN/o5sEs/qadrZzzNQK2PvDz1pg2Dr/daPdXoW49j9ZkWs/ZZ+qLMPC5R8NuZznPz03ApA7/C0uk29PfSdCLK2EsZZdSZfVK9VInI5PaBzdZh6k6XiLgs0H4ag8cunW6PFJFMgD8zWKfmYBM9zRzkn93l7d5Ny6L5ZY1UtWJDKFUVXmJc1p7rvv3CEij71p0KtV07mSruw991IQ2v81qxRdJvyt7tg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790319421; c=relaxed/relaxed;
-	bh=gg3zGTD2Nn4teC3ohC9gQ//QfX/4YNW3sAHzpThlsd4=;
+	t=1790320036; c=relaxed/relaxed;
+	bh=JaEAeO+KpKKY3qs5B15P5jzMNjkhf9IQUFD5AfYaJCM=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LSpjF3ilIJ1/ATW8PNqUns12fXyNynSh/Ou7f2xRaPTE8O5V7AXdoTcUl+qcHSsz4fcD9skjBsMZ+psRsoUPEvLRuYATuwIs8CqjaTFPDwYz4qAIWBEYXs/mmzkKCkkxF3NqDee/E/w4tEdI1k7hwSflfRq7N4/5dmL9YjlfV7lx4oBnLTpcoa04rzR2x6u1MdhQ99BrWNqfsbJCLKEcRQOjTLVgSajRts0iXfbxJY1UiAgM8XQPaTi7tu19NdNOxNVDbh1G+ZSCxfGVJUVbL+UR1XlNqsQp5v2VLlz+Sq3dLC9jvTku3i+CfVU+xE/aQR34Y4HVL7IKaaSSJpJk+g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SDihzcyf; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=Rzqf6bSIJlXFXcLgq0cus8rpuXYtCtNBh/SJNc6vC33hv7MF6gtGRiEFWFx6cQ8sf9FG5+HJwVs5LPWcWCSfhpNsceZevZloA8Urz7o2cFdGz95VgC2x9MG94SQJwsbT54uLOfwk+764gAsmBNE0l9qwxe81h759KH7zSe7BGO9UAlHkeNMBme+TC+Nn5Clt8bx919bmlR8KZTzdt8pTk09PgLD/FS1DskyyN3rL37h4S3ervY6a0jzAyXCj44T1s/sjwI+GJ7bOq1UEUAY6dBW4z6k32X+Nkiwy/3YrlLtbp1SyVWx+reDxbwyRObfzg07D0+FV38PA8tS7jZEVDQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=RFD6hs2T; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:36::e; helo=mail-dy2-x0e.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SDihzcyf;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=RFD6hs2T;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:36::e; helo=mail-dy2-x0e.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy2-x0e.google.com (mail-dy2-x0e.google.com [IPv6:2607:f8b0:4864:36::e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrhMd11Mqz2xyj;
-	Fri, 25 Sep 2026 16:57:00 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68P4aKnJ061566;
-	Fri, 25 Sep 2026 06:56:49 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:to; s=pp1; bh=gg3zGTD2Nn4teC3ohC9gQ
-	//QfX/4YNW3sAHzpThlsd4=; b=SDihzcyfbDEAETLARV0CuV4KpmuMl/f+45Uwg
-	ce5rJsDEYG6HmL6tS2xAsSsElgxuLyfDdkRWjUoJZwwobUf7HkxuBlI6dDS+EYcm
-	Mzivk96Mx97aq7QOawAieYYdHMu7bUWDcmRNmSnN60frQ7oTPCoBKZ944JQRv5bS
-	+9zG5OTEseaVgh2GdFywaHL5g/46uQe9QV9ZKipvI6VwZaPzCjzROSEsFZ9CRm70
-	RXRRdWbDaudIqpBIQbwRMeB/dMaOOmM7VslDDwjH3Dptz3QZTXzCH1yDeBnpEhJ5
-	A3TDQ18uVr8ZuMUyD5P/B6e9epudbE8rxvdn8Y5f07nSZASPQ==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gskgsnk9n-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 25 Sep 2026 06:56:49 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68P4lWMX3248857;
-	Fri, 25 Sep 2026 06:56:48 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gvbt31asd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 25 Sep 2026 06:56:48 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68P6uile46661892
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 25 Sep 2026 06:56:44 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5D66220043;
-	Fri, 25 Sep 2026 06:56:44 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B983B20040;
-	Fri, 25 Sep 2026 06:56:41 +0000 (GMT)
-Received: from linux.ibm.com (unknown [9.126.150.29])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with SMTP;
-	Fri, 25 Sep 2026 06:56:41 +0000 (GMT)
-Date: Fri, 25 Sep 2026 12:26:40 +0530
-From: Srikar Dronamraju <srikar@linux.ibm.com>
-To: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        skiboot@lists.ozlabs.org, arbab@linux.ibm.com, mahesh@linux.ibm.com,
-        Ritesh Harjani <ritesh.list@gmail.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        "Mike Rapoport (Microsoft)" <rppt@kernel.org>,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 3/3] powerpc/numa: Support coregroup on PowerNV
-Message-ID: <arYbKIJPnGQoyKES@linux.ibm.com>
-Reply-To: Srikar Dronamraju <srikar@linux.ibm.com>
-References: <20260902123458.340456-5-srikar@linux.ibm.com>
- <20260902123458.340456-8-srikar@linux.ibm.com>
- <c11197ac-ce7b-4fba-8ea5-4f38be9f7106@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrhbR0rC9z2y2J
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2026 17:07:13 +1000 (AEST)
+Received: by mail-dy2-x0e.google.com with SMTP id 5a478bee46e88-3413069aa25so299897eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2026 00:07:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790320030; x=1790924830; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=JaEAeO+KpKKY3qs5B15P5jzMNjkhf9IQUFD5AfYaJCM=;
+        b=RFD6hs2TMKA4UHDdLt7J0lH4odctXS1/7GxeRgs/xRIiSIajXJhJ/R2zr3UuIJzFA7
+         sR+gxt2uakFul85YqDoYxN1YW4wdylwN5Y3Xpswa3v8eBrqU2qXilr9kZSgyaOqpG6ir
+         ceBBJ/T/rv3uU6DYsfkcd55HMAUdZh32utDaNBy4wO0bxLwiA5jJeSau7EkroD2LLEXW
+         SwZB+mQ1Pjuf10YU1tHPj6rO3UbRh+YaS7W0rP0ikoBGYZLEX3+Y11IfBG9TLciYgYmx
+         mMgPa/1CXNySeswh/8fwKFSwp/yi68T/QnXIIaW8RL8MwXQjVrsQ3+zpFXq2b4EOOvqn
+         ndPg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790320030; x=1790924830;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=JaEAeO+KpKKY3qs5B15P5jzMNjkhf9IQUFD5AfYaJCM=;
+        b=MzSgxIp878Uz1dwGjsVTVHOIG1T7GB8Qr/G6V1kUQxZYeZOfCsBDhnngFIPpEhXtj8
+         jAtFw4Qgz4KUCU098wqjuZ7ZN7+Nxr2bX8XDRysYsB91xRr6VGTcGpBhDmg/1ClCTp4h
+         G16Q1j09Z8RelQ1tkJrlRjUxEnHBia/TEQqZdLXqjWrSt2Ps14AnIfC1XVdXzQkHKwCa
+         Qv+/3qZ/xiU7n1RWtHOo+LCsrMS9sqk4IcJJ/QBeQDQgcALUDQ2V0VkTxax6OQ1gbQS5
+         K8zKLlmCfIChjktVNlun2g+tKENj3G7irUTDqUIPkUJPBKYoeDjsiSv5Bj1r9+rhe7NX
+         pVcA==
+X-Forwarded-Encrypted: i=1; AKwUvBzxOr4/tMhZFGeQ6ZD5iPQbyVBtS4zcsfAIWMAkKPyivj7p179iEbKvrBBqFK7nd5L0SkoDL2pBGmv/bUQ=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++k2l/oloFgxHoO8eqRLM/KMpVbR88mYbMZRE9UY4Fk3WNH5ge+f
+	inxxV/8deyXrk3FaF6fpVvn8xAfeUfvu4goUJzlmjGuU7KSATN1Ft1BP
+X-Gm-Gg: AYBFou26DALfxfLKUNndjy823XuoHLdOzu1TOCJqFPm8sjvxKJSIvPNYP8du1UQ0hA6
+	TJA/AK5HnSrGFN11+6yGeex4GjOMkP+9xvgekOARewfzAstClslkYPnHJMwEKpLCIen/lhyUjol
+	u7yNjfS6Nw2IwXG5lgMfozlA1fjWqho3wMHni30zFbinAxTDPAba2ifr5yznDq0qFnMyL9aC8bD
+	yyx1VMTVuJ5vhkUsYfIoADIADYvZyA/7q0cFqtiTDBA2iEBi+FawzBYqXHyqXYWgrugn3XCckXM
+	yfjTFJ+SpDWGyFYvwwhygo+0KLqOwebhsldRCtfNAbmkc2xMY6iKss2tspCVhvH4UTMSabEczGF
+	VqzRgxqmLG7TDKjA9v12RpsCTXpETm45lRyp8/IBqBvt4iiXCRFT7N+dqvrmZ1KAOU/Et+En+zu
+	GKpCJFYy7k9WRmzdgabQn0JXViESy0w+dASaqnZk+Uhv7BlNt8x1tnTgTFND+dscXkLVi4PkJ1Y
+	fg0QUNTk5yi1MHdLj5wi218fwQSmjgbXq7CItov0+Dg
+X-Received: by 2002:a05:693c:42d4:b0:33b:e47c:f384 with SMTP id 5a478bee46e88-34004f81e77mr3753409eec.18.1790320029935;
+        Fri, 25 Sep 2026 00:07:09 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.165.23])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3414407c548sm4116769eec.8.2026.09.25.00.07.01
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 25 Sep 2026 00:07:09 -0700 (PDT)
+Date: Fri, 25 Sep 2026 12:36:59 +0530
+From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	ritesh.list@gmail.com, sshegde@linux.ibm.com, ojeda@kernel.org, boqun@kernel.org, 
+	gary@garyguo.net, bjorn3_gh@protonmail.com, lossin@kernel.org, 
+	a.hindborg@kernel.org, aliceryhl@google.com, tmgross@umich.edu, dakr@kernel.org, 
+	daniel.almeida@collabora.com, tamird@kernel.org, acourbot@nvidia.com, work@onurozkan.dev, 
+	linkmauve@linkmauve.fr, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	rust-for-linux@vger.kernel.org, FUJITA Tomonori <tomo@flapping.org>
+Subject: Re: [PATCH V6] powerpc/bug: Add ARCH_WARN_ASM and refactor
+ _EMIT_BUG_ENTRY for Rust support
+Message-ID: <arYcMdA3Zn10Xbr1@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <20260922054311.906816-1-mkchauras@gmail.com>
+ <c91d9441-27ce-4fdd-b3c7-10b972f867af@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,138 +101,193 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <c11197ac-ce7b-4fba-8ea5-4f38be9f7106@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=V/XoQuni c=1 sm=1 tr=0 ts=6ab61b31 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=8nJEP1OIZ-IA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=xvsa6UuGsR3Vo65tH-wA:9 a=wPNLvfGTeEIA:10
-X-Proofpoint-ORIG-GUID: ytdS7RR2m4FRQMKEA5kr_CDi9uDgQ6Hn
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI1MDAyNiBTYWx0ZWRfX1dyQy+7cZjUx
- QgdFevMPGhhpBGzN/debrfNC9ANxHttngRU4O0q/twQZ9fnaAMKbr8W9VY656OqDfTuDlU4+/p7
- YQatc7mNjyZyfL1dxrOjxiLSbXyT71jgX3Sxsp/Z75kA+wIfSghxvTjAcSrYur5OEeEW1CYxrYc
- 8hidKlQUfKsyDIOwdXe1jqUrY4cfxUsFGvCeK+tL4h6j28iZw1eYh0r1nYjdLuobnMhEqZi0sSu
- PJCbi3hHSsL8hdPnkhp9y3gnN64Bp+xDMYUbqdd9Q36m5RCRi9aPNBqKXfLC+rwwWp6HrJUPPfc
- 998sPy7BbTb/rLUhMiENJqCISEdO5/lJxNCnpuRK9fkA09Bcv1yTCIHFxInveGrou8EYtnBrXyc
- ANPdA31fHd/zkk5JwFPDrc7NhViNeYT+M9Xjf6A8KeNJHLIR4OHZgBfFIndsmj6WuCgVdTz3j5U
- w+FA+3FS7lPNXQjEV7Q==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI1MDAyNiBTYWx0ZWRfX3of7sbNrSOuc
- 2yMn1kTIZ4juxEoGi1sBZDzGvbqSJGDEbuz+5Ntfj9tDqPjzvSLF5e6pIbkr0/8CCpPFe4FfJmc
- AiOqqhWaZOZxDW+2+Sad0t9DAMVSCOk=
-X-Proofpoint-GUID: T0iavXmKeUakmDjWdT5w0XnGRXSG3LM3
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-25_02,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 spamscore=0 malwarescore=0 clxscore=1015 phishscore=0
- bulkscore=0 adultscore=0 lowpriorityscore=0 impostorscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609250026
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c91d9441-27ce-4fdd-b3c7-10b972f867af@kernel.org>
 
-* Shrikanth Hegde <sshegde@linux.ibm.com> [2026-09-04 15:34:50]:
+On Thu, Sep 24, 2026 at 02:55:55PM +0200, Christophe Leroy (CS GROUP) wrote:
+> 
+> 
+> Le 22/09/2026 à 07:43, Mukesh Kumar Chaurasiya (IBM) a écrit :
+> > The Rust kernel infrastructure generates inline asm for WARN() via
+> > ARCH_WARN_ASM(file, line, flags, size), expanding it through a C
+> > preprocessor pass (generated_arch_warn_asm.rs.S) to produce an
+> > arch-specific asm template string for use in Rust's core::arch macros.
+> > 
+> > powerpc currently lacks ARCH_WARN_ASM and ARCH_WARN_REACHABLE, causing
+> > Rust builds to fail on powerpc with
+> 
+> I'm a bit puzzled by the macro name. The name ARCH_WARN_ASM suggests that it
+> is used for warnings like WARN() and/or WARN_ON(). Which means it should
+> include flags BUGFLAG_WARNING and BUGFLAG_TAINT(TAINT_WARN).
+> 
+ARCH_WARN_ASM is a raw asm template used by the Rust warn infrastructure
+(rust/kernel/bug.rs). It does not bake in BUGFLAG_WARNING or
+BUGFLAG_TAINT(TAINT_WARN) — the caller (warn_flags! macro) is responsible
+for ORing those into 'flags' before expanding this macro. This matches
+the x86 convention where _BUG_FLAGS_ASM is also flags-agnostic.
 
-> On 9/2/26 6:05 PM, Srikar Dronamraju wrote:
-> > Coregroup support on powerpc has so far been limited to PowerVM LPARs.
-> > However, PowerNV can also support coregroups when firmware exposes the
-> > required coregroup information through the associativity hierarchy.
+> Also I have the feeling that it only handles WARN().
+> WARN_ON() seems to have been forgotten.
+> 
+I might be wrong here but WARN_ON uses an unconditional trap and
+requires a register operand in C side. I am not sure if rust can do
+that.
+> Christophe
+> 
+
+Regards,
+Mukesh
+
+
+> > ```
+> > error: no rules expected `ARCH_WARN_ASM`
+> >     --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_warn_asm.rs:1:28
+> >      |
+> >    1 | ::kernel::concat_literals!(ARCH_WARN_ASM("{file}", "{line}", "{flags}", "{size}"))
+> >      |                            ^^^^^^^^^^^^^ no rules expected this token in macro call
+> >      |
+> >     ::: ../rust/kernel/lib.rs:279:1
+> >      |
+> > 279 | macro_rules! concat_literals {
+> >      | ---------------------------- when calling this macro
+> >      |
+> >      = note: while trying to match sequence start
 > > 
-> 
-> Existing firmware does expose this info already?
-> 
-> > Detect coregroup support by checking whether primary_domain_index is the
-> > penultimate domain in the CPU node's ibm,associativity property. On
-> > PowerNV, a non-penultimate primary_domain_index indicates that firmware
-> > provides an additional level for coregroup information.
+> > error: no rules expected `ARCH_WARN_REACHABLE`
+> >     --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_reachable_asm.rs:1:28
+> >      |
+> >    1 | ::kernel::concat_literals!(ARCH_WARN_REACHABLE)
+> >      |                            ^^^^^^^^^^^^^^^^^^^ no rules expected this token in macro call
+> >      |
+> >     ::: ../rust/kernel/lib.rs:279:1
+> >      |
+> > 279 | macro_rules! concat_literals {
+> >      | ---------------------------- when calling this macro
+> >      |
+> >      = note: while trying to match sequence start
 > > 
-> > This keeps the logic compatible with PowerVM systems, where
-> > primary_domain_index is likewise not the penultimate associativity
-> > domain.
+> > error: aborting due to 2 previous errors
+> > ```
 > > 
-> 
-> Could you please put the ibm,associativity on this powernv? as well
-> PowerVM's so that one understands it better?
-> 
-> > Signed-off-by: Srikar Dronamraju <srikar@linux.ibm.com>
+> > To add ARCH_WARN_ASM, _EMIT_BUG_ENTRY first needs to be refactored.
+> > The old definition was a bare macro with no parameters, relying on
+> > positional asm operand references (%0-%3), hardcoding the backward
+> > reference to local label 1b, and including .org/.previous directives
+> > inline. That made it impossible to compose as a plain string outside of
+> > an asm operand context, and left an invisible contract that callers must
+> > always emit their trap at label 1:.
+> > 
+> > Refactor _EMIT_BUG_ENTRY to take explicit (bug_entry, trap, file, line, flags)
+> > string arguments via string concatenation. This removes the dependency
+> > on asm operand numbering and makes the labels an explicit argument,
+> > so the caller's intent is visible at the call site and a future caller
+> > using a different label cannot silently produce a wrong bug table entry.
+> > 
+> > Move the .org and .previous directives out of _EMIT_BUG_ENTRY and into
+> > each call site, so BUG_ENTRY() can still pass sizeof(struct bug_entry)
+> > as an asm operand while ARCH_WARN_ASM can supply its own size string
+> > independently.
+> > 
+> > Add ARCH_WARN_REACHABLE as an empty define, matching the arm64
+> > convention, indicating that no additional reachability annotation is
+> > needed after a WARN on powerpc.
+> > 
+> > Reported-by: FUJITA Tomonori <tomo@flapping.org>
+> > Closes: https://lore.kernel.org/all/anG67Q6Y59kDqh-c@desktop
+> > Fixes: 73b741adb264 ("rust: Add PowerPC support")
+> > Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
 > > ---
-> > Changelog from v2:
-> > - Handle comments from Ritesh (one hunk needed to be moved from patch 2 to
-> >    patch 3 to build correctly)
+> > Changelog:
+> > V5 -> V6:
+> >   - Dropped KUit tests from this series. It will be sent separately.
+> > V5: https://lore.kernel.org/all/20260915090453.1227034-1-mkchauras@gmail.com/
 > > 
-> > Changelog from v1: https://lkml.kernel.org/r/20260524010017.140408-1-srikar@linux.ibm.com
-> > - Handle comments from Christophe Leroy; make code more flat
+> > V4 -> V5:
+> >   - Fixed a build error with DEBUG_BUGVERBOSE=n
+> >   - Added a label for bug entry
+> > V4: https://lore.kernel.org/all/20260912065902.24017-1-mkchauras@gmail.com/
 > > 
-> >   arch/powerpc/mm/numa.c | 58 ++++++++++++++++++++++++++++++++++--------
-> >   1 file changed, 48 insertions(+), 10 deletions(-)
+> > V3 -> V4:
+> >   - Fix Label with appending b at end
+> >   - Add KUnit test patch
+> >   - Tested on ppc64le pseries: pass:5 fail:0 skip:0
+> >   - Tested on ppc32 QEMU mac99 G4: pass:5 fail:0 skip:0
+> >   - Tested on ppc64le QEMU pseries: pass:5 fail:0 skip:0
+> > V3: https://lore.kernel.org/all/20260910100801.2159785-2-mkchauras@gmail.com
 > > 
-> > diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> > index 5f326b005a2a..e97b624203ea 100644
-> > --- a/arch/powerpc/mm/numa.c
-> > +++ b/arch/powerpc/mm/numa.c
-> > @@ -889,12 +889,32 @@ static int __init numa_setup_drmem_lmb(struct drmem_lmb *lmb,
-> >   	return 0;
-> >   }
-> > +/*
-> > + * If hierarchy extends beyond primary_domain_index + 1, then next
-> > + * level corresponds to coregroup.
-> > + */
-> > +static int detect_and_enable_coregroup(const __be32 *associativity, int index)
-> > +{
-> > +	if (!associativity || index == -1)
-> > +		goto out;
+> > V2 -> V3:
+> >   - Add label argument in _EMIT_BUG_ENTRY
+> > V2: https://lore.kernel.org/all/20260910071252.1950488-2-mkchauras@gmail.com
+> > 
+> > V1 -> V2:
+> >   - commit message now has error, fixes tag and closes tag
+> > V1: https://lore.kernel.org/all/20260819084825.969116-1-mkchauras@gmail.com
+> > 
+> >   arch/powerpc/include/asm/bug.h | 46 ++++++++++++++++++----------------
+> >   1 file changed, 25 insertions(+), 21 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
+> > index 0db48977c70c..bf31ee1e902a 100644
+> > --- a/arch/powerpc/include/asm/bug.h
+> > +++ b/arch/powerpc/include/asm/bug.h
+> > @@ -32,34 +32,38 @@
+> >   #endif /* verbose */
+> >   #else /* !__ASSEMBLER__ */
+> > -/* _EMIT_BUG_ENTRY expects args %0,%1,%2,%3 to be FILE, LINE, flags and
+> > -   sizeof(struct bug_entry), respectively */
+> >   #ifdef CONFIG_DEBUG_BUGVERBOSE
+> > -#define _EMIT_BUG_ENTRY				\
+> > -	".section __bug_table,\"aw\"\n"		\
+> > -	"2:	.4byte 1b - .\n"		\
+> > -	"	.4byte %0 - .\n"		\
+> > -	"	.short %1, %2\n"		\
+> > -	".org 2b+%3\n"				\
+> > -	".previous\n"
+> > +#define _EMIT_BUG_ENTRY(bug_entry, trap, file, line, flags)	\
+> > +	".section __bug_table,\"aw\"\n"				\
+> > +	#bug_entry ":	.4byte " #trap " - .\n"			\
+> > +	"		.4byte " file " - .\n"			\
+> > +	"		.short " line ", " flags "\n"
+> >   #else
+> > -#define _EMIT_BUG_ENTRY				\
+> > -	".section __bug_table,\"aw\"\n"		\
+> > -	"2:	.4byte 1b - .\n"		\
+> > -	"	.short %2\n"			\
+> > -	".org 2b+%3\n"				\
+> > -	".previous\n"
+> > +#define _EMIT_BUG_ENTRY(bug_entry, trap, file, line, flags)	\
+> > +	".section __bug_table,\"aw\"\n"				\
+> > +	#bug_entry ":	.4byte " #trap " - .\n"			\
+> > +	"		.short " flags "\n"
+> >   #endif
+> > -#define BUG_ENTRY(cond_str, insn, flags, ...)		\
+> > -	__asm__ __volatile__(				\
+> > -		"1:	" insn "\n"			\
+> > -		_EMIT_BUG_ENTRY				\
+> > +#define BUG_ENTRY(cond_str, insn, flags, ...)			\
+> > +	__asm__ __volatile__(					\
+> > +		"1:	" insn "\n"				\
+> > +		_EMIT_BUG_ENTRY(2, 1b, "%0", "%1", "%2")	\
+> > +		".org 2b+%3\n"					\
+> > +		".previous\n"					\
+> >   		: : "i" (WARN_CONDITION_STR(cond_str) __FILE__), "i" (__LINE__),	\
+> > -		  "i" (flags),				\
+> > -		  "i" (sizeof(struct bug_entry)),	\
+> > +		  "i" (flags),					\
+> > +		  "i" (sizeof(struct bug_entry)),		\
+> >   		  ##__VA_ARGS__)
+> > +#define ARCH_WARN_ASM(file, line, flags, size)			\
+> > +		"1:	twi 31, 0, 0\n"				\
+> > +		_EMIT_BUG_ENTRY(2, 1b, file, line, flags)	\
+> > +		".org 2b+" size "\n"				\
+> > +		".previous\n"
 > > +
-> > +	index = of_read_number(associativity, 1);
+> > +#define ARCH_WARN_REACHABLE
 > > +
-> > +	if (index > primary_domain_index + 1) {
-> > +		coregroup_enabled = 1;
-> > +		return index;
-> > +	}
-> > +out:
-> > +	coregroup_enabled = 0;
-> > +	return -1;
-> > +}
-> > +
-> >   static int __init parse_numa_properties(void)
-> >   {
-> >   	struct device_node *memory, *pci;
-> > -	int default_nid = 0;
-> > -	unsigned long i;
-> > +	int default_nid = 0, index = 0;
-> >   	const __be32 *associativity;
-> > +	unsigned long i;
-> >   	if (numa_enabled == 0) {
-> >   		pr_warn("disabled by user\n");
-> > @@ -927,7 +947,6 @@ static int __init parse_numa_properties(void)
-> >   	 */
-> >   	for_each_present_cpu(i) {
-> >   		__be32 vphn_assoc[VPHN_ASSOC_BUFSIZE];
-> > -		struct device_node *cpu;
-> >   		int nid = NUMA_NO_NODE;
-> >   		memset(vphn_assoc, 0, VPHN_ASSOC_BUFSIZE * sizeof(__be32));
-> > @@ -935,7 +954,9 @@ static int __init parse_numa_properties(void)
-> >   		if (__vphn_get_associativity(i, vphn_assoc) == 0) {
-> >   			nid = associativity_to_nid(vphn_assoc);
-> >   			initialize_form1_numa_distance(vphn_assoc);
-> > +			index = detect_and_enable_coregroup(vphn_assoc, index);
+> >   /*
+> >    * BUG_ON() and WARN_ON() do their best to cooperate with compile-time
+> >    * optimisations. However depending on the complexity of the condition
 > 
-> nit: I don't see return value being used.
-
-index is getting used within the loop. Do note, we are passing index as a
-parameter to detect_and_enable_coregroup().
-For example, index is set to -1, in the first iteration, then
-in the next iterations,  detect_and_enable_coregroup will not retry.
-So the return value gets used.
-
-> 
-> Other than that, rest looks good to me.
-> Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
-> 
-> >   		} else {
-
--- 
-Thanks and Regards
-Srikar Dronamraju
 
