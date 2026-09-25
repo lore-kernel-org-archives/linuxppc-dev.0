@@ -1,53 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-28235-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28236-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4552C98328
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2026 20:10:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A2B8C9832C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2026 20:11:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hs1zc11X4z2yNH;
-	Sat, 26 Sep 2026 06:10:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790367052;
-	cv=none; b=UrQQrB/74fmoMGVHWyIkGzzJQ99WLYrUoZN1pZIRjwVEcN5GLgDsOa2fzNWpLR4AmTsYwqHLryLY251Yb9aktAIIx4OEw4/8vcmPp6VpxhQnW0FdWymy5gVgbAlw5p/Y3Jqxs7DhzDoa8J24kcDF0eih99/AOCE7vOSwj1xdSf//Nq83Wz4dZ/C14/Ag5JJnUpUCdfWhWR9ezYA64quCoycXG90YsgEFZZIb73Wi8tApwcdrqJYpGQklvvJpSERzwNnLv9TfbVLke+nfaZf/Uu9eS+vn4I+o8oT/GJmWkua9pehwXiEc0hD2nOAz5nHxQXpygofpqDDcIG9qMBQrOg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hs2000HRzz2yNH;
+	Sat, 26 Sep 2026 06:11:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790367072;
+	cv=none; b=la56UbpK+2wdbfji8QGZjDArGvfs9GEhX7zeLviUcjnO8wT2GTQxb7TdhY1iDSIGVh//3AaCjvWCk1dtvWWpkn9N1Hij5ht7nY10suLBikek9fPbK7xEaPdiCZfAsIgU+gOJepHs6DFiLecNNs0sjiG0vRd/iUdeQrm0ae9PAiEZ9q58vDkVgGr/S57sNS/N07rP7hRDs1XmdckNwEEnjsYTl932luvCd6OSlWark5lNr4CbzCJdmYjeBX2hEry+V0QZKoD5jv1XWWbg+hXWw1siWOJe0IpLn/ak454eCGthcBNnkXaRoP6CcN+NdhX48wViXDs1G+1NEVWrNj4ZFA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790367052; c=relaxed/relaxed;
-	bh=VNDoSlNHzmr2TcajqqRMg1JSSBHZiW10Z/420v+HtkY=;
+	t=1790367072; c=relaxed/relaxed;
+	bh=Lsrlmf7v5nCsCp9lrKYfF9bdcfcXWf42nvaUj+XcLIg=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Eghhk+XuHyfgEmKMESneVZrlOBODxiX9zI+02TFliVSBCezRr+wRzNoHEkq2LvSWd5UO9xPg5HxVac6TOuf9aKom5WmuwgRigaCYT28+Tux23SwauA+8xYseHJJcHoyJbMW9Irmv/q4A30DelTUjkggSvVRkrfGwb8kGtQzaBxnyNxKLymrhyARou2CC/HbCd1xtoQH9uLNGQ62NAOMif+XOW8WAtOvmbvAsXwUMIwTiOu00Kw5Cc5hDKyrcHi3Kx9Ow3ihZXGYXxz2ri+rMhSvadEDHwJj06XMl4p1MnPKAoe5mA4Vgo8Dz127soBQPTah3fWahJY/kgLruZm6y9w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eRWuOpzM; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=BK9x3fMojw8+VigYzFowt91l9yBwi/3cOt1S41J0mYHzqpOvnFUGtkPlg0SQ18hLvuY++y7Tlgxi/MmBj7dstwq2Utmh2ZZ94OHhVdWL7EBrO5IhxbHb57sx4r+rbHBJOJJAV49MWMQv7JA9n+9JH4mTIdrVrerUq7cygPQfx0JioEWUvvOWTFwVnX7MUwL+IgB5DqrNjHbbUNqjgUXhn6b62GWUjfnIERV0Zure6CpeNIbX7QjdTkPqp48wQ0sg+1KYkFKFWrbtXpz8Gw7NY5OCeIcu849u/ooDbwk2nOErksU2EWbDYSfiNG8Cxs5TvLgfS6BfXRev75EjE85vrA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=U8UJmm7p; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eRWuOpzM;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=U8UJmm7p;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hs1zb1tl8z2yFQ
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 06:10:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hs1zz1R42z2yFQ
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 06:11:11 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 420EE60235;
+	by sea.source.kernel.org (Postfix) with ESMTP id 31C4B40D70;
+	Fri, 25 Sep 2026 20:11:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 70C481F0089A;
 	Fri, 25 Sep 2026 20:10:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5E9701F00898;
-	Fri, 25 Sep 2026 20:10:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790367048;
-	bh=VNDoSlNHzmr2TcajqqRMg1JSSBHZiW10Z/420v+HtkY=;
+	s=k20260515; t=1790367069;
+	bh=Lsrlmf7v5nCsCp9lrKYfF9bdcfcXWf42nvaUj+XcLIg=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=eRWuOpzMfrsAwJkjQJrXE2PR8EaQ7vuZpM3gPXtLJG/rsLYdB6W5v8O2y873kD1RA
-	 0dcxN9M23DXC2JBiB1EQ2vnuZFiksaaoiuVqE9I1fLk0lqqo4F7uGetAxqdprWuO8Q
-	 /yE+KFZ2W7ywydjYVlN2l7JDtwqt60DgYuMuBo5+AR+8TTxE74Fj2C+sBslk9sfjm4
-	 vT6CFNhM7OQ5iwATrjTl7Hu0qr94RhzZ3XUENMoIfrg3RH2t/44CZT7HqGdFBoE/Ux
-	 oCYlxmueoLG4zu+nkmcsa5LabyYHx+hTL+Y3rBIT8+5ei87HCEF3Q+viHffmEsMGsS
-	 wZIPCXy5iS+Iw==
+	b=U8UJmm7pglQHzK2m7NYuzhD9H/YfDWIyUj0xlbhGFARAo8MWtDA0R1dpdXhIu+3Ig
+	 xCJ7gJK/lZHNIvkG2zOwewDunu3otxOat+vkn9BPCyDViD/xlr5Qr4kWFj1vNEaNhL
+	 /vXJle7OPMfWncLa286ZIkiR9bO/gH6J9YrPNkdLRA0WyNetz8tRM9CAjhp6ZqKBKj
+	 /GONQcGMV6S6ol2Yct9gBPebiGkMz4y6Gu/XV7WLhq3lslZZ8IGEkmTqh21DfuH4PK
+	 hTD7Yar0NxieT7fqrqh4nULWIUIYJOGQJ5d2VCdzVAeAJJxtpWEknK/STlBLjkJ62/
+	 7f/pNVN72jzMw==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Fri, 25 Sep 2026 21:09:37 +0100
-Subject: [PATCH v5 02/12] mm: enable MMU_GATHER_RCU_TABLE_FREE for most
- 2-level architectures
+Date: Fri, 25 Sep 2026 21:09:38 +0100
+Subject: [PATCH v5 03/12] mm: enable MMU_GATHER_RCU_TABLE_FREE for MMU
+ riscv
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260925-rcu-pagetable-freeing-v5-2-31e91065fea4@kernel.org>
+Message-Id: <20260925-rcu-pagetable-freeing-v5-3-31e91065fea4@kernel.org>
 References: <20260925-rcu-pagetable-freeing-v5-0-31e91065fea4@kernel.org>
 In-Reply-To: <20260925-rcu-pagetable-freeing-v5-0-31e91065fea4@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -129,118 +129,60 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  Qi Zheng <qi.zheng@linux.dev>, linux-doc@vger.kernel.org, 
  "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3661; i=ljs@kernel.org;
- h=from:subject:message-id; bh=cFPK9Qp3GkYDJY1+z/OkYpoXzS5f6cyg/j7ISm4Bfmw=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLK2XWWbz37XeqtiitCpJtGCFfYP8+/XT9n2f6fqnV0Gf
- dVpWznqOkpZGMS4GGTFFFmefxHfHyQSNq/zgr8bzBxWJpAhDFycAjCRcD5GhpdHvvHtyuaOfXb9
- koA45yq226uMS/cwL6utsnApv1j+8gsjw6bzjUwXcs5mTJi1n7l0x5/Zydejp/3mOhj/rcl+He/
- 7Y5wA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1692; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=p4MqFQ1gZwbbEnClOrxinYCiAn7T0hfTpb79XEVMHgU=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLK2XWXTtM9RPrNVMeHyl7KoBJszDRrnnb+dUe6ZfvTkx
+ gKH4IUiHaUsDGJcDLJiiizPv4jvDxIJm9d5wd8NZg4rE8gQBi5OAZiIawQjQ2/TpbeT7K+If9hb
+ vSet9HBiU98CbiXG+Q9PVlkJ/D5+P4Lhr+jdwJ5Pzv8OXWb9e0JX8UzLD+fU0o3ef55decOtf8X
+ wOy8A
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 
-Commit e3ecf7c7d082 ("mm: pgtable: convert some architectures to use
-tlb_remove_ptdesc()") updated a number of architectures from using
-pagetable_dtor() + tlb_remove_page_ptdesc() to using tlb_remove_ptdesc() in
-__pte_free_tlb().
+Currently riscv gates MMU_GATHER_RCU_TABLE_FREE on CONFIG_SMP and
+CONFIG_MMU.
 
-This is meaningful as tlb_remove_ptdesc() allows for RCU page table
-freeing if CONFIG_MMU_GATHER_RCU_TABLE_FREE is specified.
+Commit 69be3fb111e7 ("riscv: enable MMU_GATHER_RCU_TABLE_FREE for SMP &&
+MMU") enabled CONFIG_MMU_GATHER_RCU_TABLE_FREE for CONFIG_SMP, CONFIG_MMU
+riscv builds.
 
-The csky, hexagon, nios2, openrisc, sh (except X2) and m68k-sun3
-architectures all have 2 levels of page tables, so the only page tables
-ever freed by mmu_gather are PTEs, so this update suffices to ensure that
-every page table freed by the mmu_gather mechanism is freed under RCU.
+This is expressly for the safety of GUP-fast walkers (CONFIG_HAVE_GUP_FAST
+is enabled if CONFIG_MMU is enabled).
 
-Therefore, update all of these architectures to select
-CONFIG_MMU_GATHER_RCU_TABLE_FREE.
+Naturally a single core system does not encounter issues with software page
+table walkers being correctly synchronised across cores, as there is only a
+single core.
+
+However, CONFIG_PREEMPT_RCU is still available on a riscv UP system, so for
+a future RCU-only page table walker, this guarantee is required to prevent
+concurrent page table teardown.
+
+All page table freeing is already done via tlb_remove_ptdesc() so the
+conditions of CONFIG_MMU_GATHER_RCU_TABLE_FREE are already met.
 
 This forms part of an overall effort to switch every architecture to this
 mode.
 
 Acked-by: Kiryl Shutsemau (Meta) <kas@kernel.org>
-Reviewed-by: Lance Yang <lance.yang@linux.dev>
+Acked-by: Lance Yang <lance.yang@linux.dev>
+Tested-by: Lance Yang <lance.yang@linux.dev>
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- arch/csky/Kconfig     | 1 +
- arch/hexagon/Kconfig  | 1 +
- arch/m68k/Kconfig     | 1 +
- arch/nios2/Kconfig    | 1 +
- arch/openrisc/Kconfig | 1 +
- arch/sh/Kconfig       | 1 +
- 6 files changed, 6 insertions(+)
+ arch/riscv/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/csky/Kconfig b/arch/csky/Kconfig
-index 4331313a42ff..80f89ef1d962 100644
---- a/arch/csky/Kconfig
-+++ b/arch/csky/Kconfig
-@@ -96,6 +96,7 @@ config CSKY
- 	select HAVE_SYSCALL_TRACEPOINTS
- 	select HOTPLUG_CORE_SYNC_DEAD if HOTPLUG_CPU
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index 505eed4af932..3529ed1861ce 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -208,7 +208,7 @@ config RISCV
+ 	select IRQ_FORCED_THREADING
+ 	select KASAN_VMALLOC if KASAN
  	select LOCK_MM_AND_FIND_VMA
-+	select MMU_GATHER_RCU_TABLE_FREE
- 	select MAY_HAVE_SPARSE_IRQ
+-	select MMU_GATHER_RCU_TABLE_FREE if SMP && MMU
++	select MMU_GATHER_RCU_TABLE_FREE if MMU
  	select MODULES_USE_ELF_RELA if MODULES
  	select OF
-diff --git a/arch/hexagon/Kconfig b/arch/hexagon/Kconfig
-index b48491140013..d9b3fb86556b 100644
---- a/arch/hexagon/Kconfig
-+++ b/arch/hexagon/Kconfig
-@@ -23,6 +23,7 @@ config HEXAGON
- 	# select HAVE_CLK
- 	select GENERIC_ATOMIC64
- 	select HAVE_PERF_EVENTS
-+	select MMU_GATHER_RCU_TABLE_FREE
- 	# GENERIC_ALLOCATOR is used by dma_alloc_coherent()
- 	select GENERIC_ALLOCATOR
- 	select GENERIC_IRQ_PROBE
-diff --git a/arch/m68k/Kconfig b/arch/m68k/Kconfig
-index 11835eb59d94..e29610fd1240 100644
---- a/arch/m68k/Kconfig
-+++ b/arch/m68k/Kconfig
-@@ -36,6 +36,7 @@ config M68K
- 	select HAVE_MOD_ARCH_SPECIFIC
- 	select HAVE_UID16
- 	select MMU_GATHER_NO_RANGE if MMU
-+	select MMU_GATHER_RCU_TABLE_FREE if MMU && SUN3
- 	select MODULES_USE_ELF_REL
- 	select MODULES_USE_ELF_RELA
- 	select NO_DMA if !MMU && !COLDFIRE
-diff --git a/arch/nios2/Kconfig b/arch/nios2/Kconfig
-index 9c0e6eaeb005..b0ccfc3b7a7e 100644
---- a/arch/nios2/Kconfig
-+++ b/arch/nios2/Kconfig
-@@ -19,6 +19,7 @@ config NIOS2
- 	select HAVE_PAGE_SIZE_4KB
- 	select IRQ_DOMAIN
- 	select LOCK_MM_AND_FIND_VMA
-+	select MMU_GATHER_RCU_TABLE_FREE
- 	select MODULES_USE_ELF_RELA
- 	select OF
  	select OF_EARLY_FLATTREE
-diff --git a/arch/openrisc/Kconfig b/arch/openrisc/Kconfig
-index 5eb995c13074..d90b24dd3bce 100644
---- a/arch/openrisc/Kconfig
-+++ b/arch/openrisc/Kconfig
-@@ -35,6 +35,7 @@ config OPENRISC
- 	select GENERIC_ATOMIC64
- 	select GENERIC_CLOCKEVENTS_BROADCAST
- 	select GENERIC_SMP_IDLE_THREAD
-+	select MMU_GATHER_RCU_TABLE_FREE
- 	select MODULES_USE_ELF_RELA
- 	select HAVE_DEBUG_STACKOVERFLOW
- 	select OR1K_PIC
-diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-index d60f1d5a94c0..204f64912f0e 100644
---- a/arch/sh/Kconfig
-+++ b/arch/sh/Kconfig
-@@ -61,6 +61,7 @@ config SUPERH
- 	select HAVE_SYSCALL_TRACEPOINTS
- 	select IRQ_FORCED_THREADING
- 	select LOCK_MM_AND_FIND_VMA
-+	select MMU_GATHER_RCU_TABLE_FREE if MMU && !X2TLB
- 	select MODULES_USE_ELF_RELA
- 	select NEED_SG_DMA_LENGTH
- 	select NO_DMA if !MMU && !DMA_COHERENT
 
 -- 
 2.55.0
