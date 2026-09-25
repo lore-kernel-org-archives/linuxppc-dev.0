@@ -1,69 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-28213-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28214-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39CD9C9830E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2026 18:39:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7075FC98321
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2026 18:39:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hrzy32v4vz30YZ;
-	Sat, 26 Sep 2026 04:39:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hrzy81hPWz3bQm;
+	Sat, 26 Sep 2026 04:39:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790361563;
-	cv=none; b=EXS+Sbx7IfC2Cwa8WPQDPlkHXw9F1e6vzlo/NwBzRJNDpyRwFTCJ/K2DroOGJMX1pygRE7ouUGonnXkNw3zJmMRoewkhn2soBUxKMdmr/3wBdsPSE1psWaf79hoTlaOYjJSroeVLVx55bdlLh2w3wM/GIxbAtNp0jb0r+mEFGbE4PN5nk7nfyuh84MySFg1O5KRdJs74L1X3s6x2pb5HrMGit3HX+AzkNUNllLs2MrVQpX+j9GSl0nr25pFkXenG6wvE2oPTsnaIRUQPC/ANg9ISQDrZzgSPbJV0BDwon136tKBKUUODK+unRMYDnjOmHH+tjQB1ezCDpDdwMbahJQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790361568;
+	cv=none; b=YGyfCAWy8uqmgD/9wTjkUKmMloUiWbmDj4gTEN+fb5qMUZmGDeCmcSVftZcApka8q+En0Ky7+NoVMyKr55LNqWBHVtDQrqqBNQTo1n8533ODeR5vNsj+3PR+eYW+sfV1FclvfSvYrGZUlBXeP7qyiCdqBMCzXxJLNAc/nwpB/9wptxRBXjq4wr9rhom9RhKYrZc1uZ+LX+Fo9s9WZLaB+iPbZg/wJSXNfl5g++YpA0+tKtk1+vBKcXETEhC1XpZlJKvSJZDB8Q2a/4EVLwsVYqRuB2FmSNu6qNrZgadF49NkFZyO9+GRn2kP65n0WTSe36/oZBOqJcH4ENj6vkGtNw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790361563; c=relaxed/relaxed;
-	bh=1czMwG/uhMP0vsL0VxASfFfZkR5PjDpkIyHUPT3Hzuw=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=iT/qn6BJprK8FzDWT3xTLuimOAkwDg9+h79HdIUyvNhRcQ/veK32NHmtUGjc7F+JSgvsFprSzSeWta5EDKQ+JRsKF5oRDChe2+XWcXckbAhkFP0TgsoQWxWi/i0uJG0RNyKbNfhlElZ0drluHbla66l2GTyAPiPiahtBjsxsl9KuTb6TgQpaEPp/jGd0v5pZ7zTnSfpY9rjr8mSElaUhIItnIS5cjXglP7S3XpdTRs1qWjGq/O4ZpBpZ+zdw6FUzjOtBeFj88/PakFjv1QwcZGe62RGLXbdg0yVP052wGFsjfoWoieXUOcG66l6wcSbzI3e9Dmpu6T7tSK0Aks5EUw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rq/mIYLt; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1790361568; c=relaxed/relaxed;
+	bh=FWADggWkuHs4yf58gZhVkotif0ojoJu6Q5SjqRay2iE=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=jMGQGqvPVeq2TR0cKArfx3aov4ZzkQ1Z7mMFIavrdhm9yTS5vwz4E+JiZ5vZdiLKc1EGgY788MaLqlFygN87o/WlTdyhJzm2ojOumyonR8edcXvHdDRSNvekmivVN2jEjQvSslciprNnWOl9whWIun1xEnOCr4MWly3UGL7u3ewwXQHS2NhIIrhNlmLI5WJOqLR8DATDSFih7954CtOPxhhsI5hgM5C8fxmkTQoRFxwcaIvwC5VhUuy2mIg699jn1NeWzBDU4vZhVmizEYi9hUUndI4YmvYr9oTDNkGY8EsZLzuMBCq4rCPBVVEWVp1EAMl7bxLb2YHsrKPQ8rPVCg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pbSdBqpv; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rq/mIYLt;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pbSdBqpv;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrzy20jJGz2yMm
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 04:39:21 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68PG5riP1371805;
-	Fri, 25 Sep 2026 18:39:09 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrzy65cttz2yMm
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 04:39:26 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68PG5aVS342934;
+	Fri, 25 Sep 2026 18:39:14 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=pp1; bh=1czMwG/uhMP0vsL0VxASfFfZkR5P
-	jDpkIyHUPT3Hzuw=; b=rq/mIYLtJaG0fj3xHtC2JAlAPqAtjeOF+++dXfFvjOey
-	alH6mBR5gCIqN+bw84ZVZs4gdIQgfO6Xteta8Rtm8wMbHRDrnw3QgJGHHnQQAfWv
-	4u+fs8DhTCDIXlbtUpEfXRU5SstcDiGnxFH1AUwQDU5vBmPfugLUW9d/qAksxIu8
-	8CrVZIQsYL7PWW+95QQtvtZMTC33JiIQ8ETlHEjcdbUW78T50wqhVbutSrZUUiiN
-	hItNT/6sxP9uX7p5lEJzUCacEgzoA+nrs9n6qBJZWt8U8Gs9/TF18wMWzSOjd/XE
-	sOZTIql7EF2LidcIKP9GJhZaRJgFbqcFPPoU6e45mQ==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gske1yqkd-1
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=FWADggWkuHs4yf58g
+	ZhVkotif0ojoJu6Q5SjqRay2iE=; b=pbSdBqpvynSAWyejnuaswdbNxsaWKh+6o
+	n0CuQOgVmdYFcrE3PjNsuyT4zEzGrivffYu/4TD1soOcYKQtzNNyRVb9kzW29TyG
+	WISmFEJyDu7STvCaKUP2STf5oX4qWb5vY9Q8M8Npe1wypKmAgPcmQd6UvVMVUEa9
+	IztywELyw6p8aOkQAg/Y/0X/H+K2i/jaM5vvaa42dRZ7gpFdJgEDbmu88YDYwbts
+	wXLthM0TjnkfnQHqJH3ZXxvGRPXZ+qK/VHQRPn9Rs3Hx7vJEpS5w0NN7jm+2tiSs
+	34lCFR+mmDDDtwpiMh3HuD4FKv/b1RjREWuRGt2iFZOuMITzl7RmQ==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gskgqyjb6-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 25 Sep 2026 18:39:08 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68PG36jN2859319;
-	Fri, 25 Sep 2026 18:39:07 GMT
-Received: from smtprelay02.wdc07v.mail.ibm.com ([172.16.1.69])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gvu7efst1-1
+	Fri, 25 Sep 2026 18:39:13 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68PG38BV4184808;
+	Fri, 25 Sep 2026 18:39:13 GMT
+Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gvb6quk94-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 25 Sep 2026 18:39:07 +0000 (GMT)
+	Fri, 25 Sep 2026 18:39:13 +0000 (GMT)
 Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
-	by smtprelay02.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68PIcx0W32310012
+	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68PId8eP10289862
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 25 Sep 2026 18:38:59 GMT
+	Fri, 25 Sep 2026 18:39:09 GMT
 Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F142258055;
-	Fri, 25 Sep 2026 18:38:58 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 9B7C058063;
+	Fri, 25 Sep 2026 18:39:08 +0000 (GMT)
 Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4905A58063;
-	Fri, 25 Sep 2026 18:38:56 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 0064D5804B;
+	Fri, 25 Sep 2026 18:39:06 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.67.6.174])
 	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 25 Sep 2026 18:38:56 +0000 (GMT)
+	Fri, 25 Sep 2026 18:39:05 +0000 (GMT)
 From: Mingming Cao <mmc@linux.ibm.com>
 To: netdev@vger.kernel.org
 Cc: davem@davemloft.net, kuba@kernel.org, horms@kernel.org,
@@ -72,10 +73,12 @@ Cc: davem@davemloft.net, kuba@kernel.org, horms@kernel.org,
         linuxppc-dev@lists.ozlabs.org, haren@linux.ibm.com,
         ricklind@linux.ibm.com, davemarq@linux.ibm.com, bjking1@linux.ibm.com,
         shaik.abdulla1@ibm.com, Mingming Cao <mmc@linux.ibm.com>
-Subject: [PATCH net-next v7 00/15] ibmveth: Add multi-queue RX support
-Date: Fri, 25 Sep 2026 11:38:35 -0700
-Message-Id: <cover.1790319558.git.mmc@linux.ibm.com>
+Subject: [PATCH net-next v7 02/15] ibmveth: Prepare MQ RX adapter data structures
+Date: Fri, 25 Sep 2026 11:38:37 -0700
+Message-Id: <bd722e396f3eb1008fe19fc86dd9bf6171ffe928.1790319558.git.mmc@linux.ibm.com>
 X-Mailer: git-send-email 2.39.3 (Apple Git-146)
+In-Reply-To: <cover.1790319558.git.mmc@linux.ibm.com>
+References: <cover.1790319558.git.mmc@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,288 +92,667 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: J9JWmAtjxIaPMOhrWIJI8YWBfPHcB330
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI1MDA3NCBTYWx0ZWRfXymDbusSTnP93
- GmEWEJifYClKiIBQ8iWKeai8vSix4JbmuRPfFeDgb0p6uSOJqbt8vcKjj3XMMUW4zd/PROsSmsX
- 0QsHtWrTN8oaox7ZlRE5lwnVyWU4V9qy1N6lhyuXKQ8ZNVd8TreTVJfyl8skKEIwATTblbuhn63
- HCiAvBrr6HT9fpvAOh9OrKvOe6Cp1X6DW6cZ0V9U6yR/vyC0Djci3X/s8dyuGaqJ3WjiP/ZNyr0
- AUkrgEKwgQHlINfH48aYtNTr/1lCUleRwPgSkJJHskXHxAZDFzko+d5CeSNKmcm53zzpyR7NmXJ
- auHmyd4NRGQFs+R08TjvC6RouN5oCABab4ITkLrMXW/XQu3trPgJg7mC3haUczU+uO3LJ9BIRen
- if0oTE/J6JGQm12mb25FEBNM7/a1KrlcwEFjsaj8hz3eEzs/XnTFEGuOA/yY3cuIUxcODj+UYti
- 4ulg2QrGISetOAwYcmA==
-X-Authority-Analysis: v=2.4 cv=O/KsLx9W c=1 sm=1 tr=0 ts=6ab6bfcc cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=9R54UkLUAAAA:8 a=c92rfblmAAAA:8 a=u-kuS8aJhmmeio9VChwA:9
- a=QEXdDO2ut3YA:10 a=YTcpBFlVQWkNscrzJ_Dz:22 a=GvGzcOZaWPEFPQC_NcjD:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI1MDA3NCBTYWx0ZWRfX8MY5epCUzzGn
- Wv9SRHTdCRvl5lMweB72f7eUtchbjZAwIp8kctmkt6kcCnsrZJAoWW6Bx/AO4izlokhwQiOIasP
- PEz4ruKJiBlPWjmPmXRaw1Ok9BBa7Z0=
-X-Proofpoint-GUID: zKCh-J0KKf-f9fPygtyUDLfX43ahVjJn
+X-Authority-Analysis: v=2.4 cv=G+OJgNk5 c=1 sm=1 tr=0 ts=6ab6bfd2 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8 a=f7--bhDSelbfdnkOmXoA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI1MDA3NCBTYWx0ZWRfXy3lGToSInHWX
+ wtFDGAQmDIhCB4gnwbxc6QycZ/vQOhdHS1E2NPuoyOgny1h750jXj34ab590Yfy/sIOPgACnO9r
+ vfbJ4eZlcLcxejB/gMOOgVlETXpu3iXM2Nv7DxTTJ8jL9k8w/bakZaOc3OOjt6lzoSLlmdIDY1Y
+ uvw/ZelajwfEKBuEmxM/kkiFOZ9hxjtX70d0Tj/BY/IcUWXnqJtbD00ViRjdPTWu06tEmWHfUCh
+ RiUA11AbLVzZmlIHuqe08dhhCJ7WjQPniMHYvdZWeJRZeWPKFL8DHm2+m8oSD0AG3yrRpHVb/mg
+ z4HikHKg8QH+Hjp26AMrCPkrGSXHvh+d2/Gl2ud0XXZh7wT9LwqHs1BSZn/j4FrLOpiqwdSuhLR
+ MFSfgWIPJQQEPm3OXkxdAIl1At6PRLWV/6Bmw4tHN9Kwe4fwgEldEsEF9j3A6XbUiqv2JVi6mpY
+ ZGq9oOKyEJqhNtEhrTA==
+X-Proofpoint-ORIG-GUID: FZzw5zjTAcbum9cV7JegxMzy2Q3HCzgB
+X-Proofpoint-GUID: 1gX9TkFIathTVrWk6nxNhs0phNds0rdB
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI1MDA3NCBTYWx0ZWRfXy5oXrsRQPMNl
+ rpNMF26yPQBRhNXAnuJif59W1r3EaXCVH/4n1LqYWhWvjUiUCdxjln+lX40I40Fnam69qky4Awq
+ mnxWWd0GRgiQLADXOTPTUlw8WeYE2hw=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-09-25_03,2026-09-21_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 malwarescore=0 phishscore=0 impostorscore=0 suspectscore=0
- bulkscore=0 priorityscore=1501 lowpriorityscore=0 adultscore=0 spamscore=0
+ suspectscore=0 adultscore=0 phishscore=0 lowpriorityscore=0 impostorscore=0
+ bulkscore=0 priorityscore=1501 clxscore=1015 spamscore=0 malwarescore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609250074
 
-Hi,
+MQ RX needs per-queue state for NAPI, queue handles/IRQs, RX rings,
+buffer-list DMA mappings, and buffer pools. The current driver stores
+most of this as single instances tied to queue 0.
 
-Power11 PHYP adds Virtual Ethernet multi-queue (MQ) RX: multiple
-logical-LAN RX queues, per-queue buffer posting, and completion
-delivery. Guest Linux did not use that; ibmveth still registered one
-RX queue even when PHYP was MQ-capable.
+Convert those fields to queue-indexed layouts sized by
+IBMVETH_MAX_RX_QUEUES:
 
-This series adds the ibmveth MQ client for net-next. When PHYP
-advertises IBMVETH_ILLAN_RX_MULTI_QUEUE_SUPPORT via H_ILLAN_ATTRIBUTES,
-probe enables MQ with a default RX count of min(num_online_cpus(), 8)
-(same cap as TX today); ethtool -L can raise RX up to 16. Packets are
-received on per-queue NAPI. Older firmware without the bit is unchanged.
-Queue selection remains firmware-defined (PHYP hash). Ethtool RSS hash
-get/set for that algorithm is deferred to a follow-up series so this
-one stays MQ datapath only.
+  rx_queue[]
+  napi[]
+  queue_handle[] / queue_irq[]
+  buffer_list_addr[] / buffer_list_dma[]
+  rx_buff_pool[queue][pool]
 
-User-visible bits: ethtool -l/-L (channels); standard per-queue
-packets/bytes/drops via netdev_stat_ops (ethtool -S keeps only
-driver-specific counters; ndo_get_stats64 is the aggregate, including
-retired-queue history); and a read-only debugfs buffer_pools dump
-(v3's multi-line sysfs dump moved to debugfs; the historical queue-0
-poolN/ sysfs ABI is unchanged).
+and add multi_queue / num_rx_queues to track MQ capability and how
+many RX queues are active. Keep IBMVETH_MAX_RX_QUEUES at 1 for now so
+this remains a structural preparation patch; later enablement raises
+the limit when multi-queue RX is actually turned on.
 
-Background:
+This patch keeps behavior unchanged by mechanically switching existing
+references to index 0 (for example rx_queue -> rx_queue[0],
+rx_buff_pool[pool] -> rx_buff_pool[0][pool], napi -> napi[0]).
+open/poll/close still drive a single RX queue only.
 
-ibmveth today uses one logical LAN, one set of buffer pools, and one
-NAPI context. PHYP MQ mode gives each RX queue its own handle (post via
-H_ADD_LOGICAL_LAN_BUFFERS_QUEUE, subordinate register via
-H_REG_LOGICAL_LAN_QUEUE); traffic can land on any active queue. The
-driver needs per-queue pools, IRQs, and NAPI to match. Legacy firmware
-keeps the original hcall path.
+First use of the new fields: queue_irq[] and multi_queue in the IRQ
+control patch; queue_handle[] in the register-helpers patch, which
+captures queue 0's handle from H_REGISTER_LOGICAL_LAN; num_rx_queues
+in the RX resource-allocation patch. multi_queue only begins
+selecting between code paths once enablement raises
+IBMVETH_MAX_RX_QUEUES above 1.
 
-Series layout (15 patches):
+Probe kobject / drvdata cleanup on register failure is pre-existing.
+Inline kobject_put lands in the MQ enablement patch;
+ibmveth_probe_cleanup() in the statistics patch.
 
-  1-2   Hypercall wrappers; MQ adapter layout (MAX_RX_QUEUES stays 1)
-  3-9   Queue-aware helpers (still SQ runtime): RX, per-queue pools,
-        IRQ, TX, PHYP, buffer submit (open/close 3-8); poll harden (9)
-  10    Enable MQ datapath at probe/open (subordinate register helpers
-        land here with first use)
-  11-13 Per-queue RX/TX stats; get_channels MQ counts; debugfs buffer_pools
-  14    Incremental RX resize; live ethtool -L rx
-  15    Down-path rollback and mq_fallback max_rx cap
+Queue-0 pool sysfs (poolN/) remains the shared geometry template for
+all RX queues: later patches clone that metadata per queue. Per-queue
+runtime visibility is added via debugfs later, not per-queue sysfs.
 
-- Helper patches (3-8) reshape ibmveth_open()/close() into
-  queue-aware helpers. Patch 9 hardens the SQ poll path with the same
-  queue-index helpers; it does not change open/close. MQ stays off
-  through 3-9: num_rx_queues stays 1 and multi_queue is false until
-  patch 10. The live single-queue path still changes where the review
-  required it (open/close unwind, IRQ remask, replenish lock, poll
-  harden).
-- Patch 10 is the switch: probe sets multi_queue from firmware, raises
-  num_rx_queues, registers subordinates, and replenishes every active
-  queue.
-- Patch 11 moves counters per-queue and exports packets/bytes/drops
-  through netdev_stat_ops. The thirteen existing -S keys stay; no
-  hcall_* or pool%d_ keys.
+Per-queue statistics structs are introduced later with their first use
+(statistics collection); the replenish_* counters stay adapter-wide
+plain u64 here and move into them at that point.
 
-Testing:
-
-ppc64le PowerVM LPAR, MQ-capable firmware:
-* ethtool -L cycling (16/1/8/11/1/3/16/8/1) with ping - no hangs
-* ethtool -L under iperf3; link down/up during traffic
-* ifdown/ifup under iperf3 RX+TX (MQ and ethtool -L rx 1)
-* Legacy firmware (no MQ bit): open/close/stress on helper path
-* Bisect-safe build and boot at every commit; W=1 clean at tip
+Signed-off-by: Mingming Cao <mmc@linux.ibm.com>
+Reviewed-by: Dave Marquardt <davemarq@linux.ibm.com>
+Tested-by: Shaik Abdulla <shaik.abdulla1@ibm.com>
+---
 
 Changes in v7:
-
-Same 15 patches as v6. We followed up the v6 netdev-bot review
-with replies; this v7 is the series after that, plus a few items
-from our own re-review.
-
-* Patch 3: update_rx_no_buffer() returns if buffer_list_addr[0] is
-  NULL (the per-queue form stays in patch 10).
-* Patch 6: synchronize_net() on the late TX-alloc unwind before RX is
-  freed.
-* Patch 8: replenish failure log names the wrapper from the filled
-  count; advance ring on NULL buffer so poll does not spin.
-* Patch 9: oversize bound is min(skb_tailroom, pool->buff_size).
-* Patch 10: unregister_netdev before cancel_work_sync and gate reset
-  on NETREG_REGISTERED (moved from patch 11); wait for pool kobject
-  release before free_netdev(). Drop the probe CMO refresh and the two
-  CMO follow-ups: CMO (Power9 and earlier) and MQ firmware (Power11+)
-  do not coexist.
-* Patch 11: replenish_lock on the close harvest (remove-path
-  unregister/cancel reorder moved to patch 10 with the reset producer).
-* Patch 12: set_channels() returns -EOPNOTSUPP on rx_count changes until
-  patch 14 implements live resize.
-* Patch 14: key buffer-list unmap on allocation presence because
-  DMA address zero is valid; reject an RX count change while down
-  with -EOPNOTSUPP. Failed H_FREE skips unmap and restores the
-  surviving count; widen real_num before scale-up unmask. Scale-up
-  register -EOPNOTSUPP latches mq_fallback. The scale-up /
-  scale-down helper split is code motion only.
-* Patch 15: publish the down-path RX count, which lifts patch 14's
-  temporary rejection. get_channels max_tx is at least the live
-  tx_count, and set_channels uses the same ceiling, so CPU offline
-  cannot block an RX-only ethtool -L.
-* Commit message / kdoc / comment / debug-log updates on 1, 3, 4, 5,
-  7, 8, 9, 10, 11, 12, 14 and 15 (patch 1 also names the new hcalls in the perf
-  powerpc-hcalls script and documents H_BUSY on the register-queue
-  wrapper; patch 10 prints the register-queue failure with %ld).
-* Kept: enable_irq on schedule_prep failure; mask PHYP before
-  napi_disable; get_channels reports the live rx_count (no clamp).
-* Reopen unwind in patches 3 and 6 is pre-existing. No Fixes: tag
-  here. The SQ open-fail path is already on the list as
-  [PATCH net 0/2] (Message-ID:
-  <cover.1790357373.git.mmc@linux.ibm.com>). This series does
-  not depend on it. If both land, keep the helper versions in
-  patches 3/4/6; the net pair is the current single-queue path
-  only.
-
-Known leftovers (not this series):
-
-* Single-queue: replenish vs free_buffer_pool is not serialized,
-  irqsave still covers the whole fill, and close skips
-  netpoll_poll_disable. That is a lock-protocol rewrite, not this
-  series.
-* RX IRQ teardown: teardown masks PHYP, disables NAPI, then masks
-  again, but a poll tail that already passed the shutdown checks can
-  still re-enable PHYP after that second mask and after free_irq, and
-  a mask hcall that failed is never acknowledged. Closing this needs a
-  poll/teardown handshake rather than another remask, so the ordering
-  is unchanged here.
-
-Changes in v6:
-
-Same 15 patches as v5. Jakub v5 review folded in; per-patch detail is
-below --- on each commit.
-
-* Both new registration wrappers use plpar_hcall(), not plpar_hcall9().
-* Poll: IPv4 check through skb->data; budget 0 does not complete NAPI.
-* Scale-down: publish the surviving count, then synchronize_net(),
-  then destroy. num_rx_queues uses smp_store_release / smp_load_acquire.
-* packets/bytes/drops through netdev_stat_ops, not private -S strings.
-  Thirteen existing -S keys kept. No hcall_* or pool%d_ keys.
-  replenish_* are per-queue u64; no atomics. get_base_stats() is the
-  retired-queue remainder.
-* Reset worker gated on NETREG_REGISTERED (cannot reopen after
-  unregister).
-* get_channels() keeps the live rx_count; mq_fallback caps max_rx so
-  a TX-only ethtool -L is not a silent RX shrink.
+- no P02 code change
 
 Changes in v5:
-
-* Restack mailed v4 (14 patches) to v5 (15):
-
-    v4 1-8  helpers                -> v5 1-8
-    (new)   SQ poll harden         -> v5 9   (before MQ enable)
-    v4 9    MQ enable              -> v5 10
-    v4 10   stats                  -> v5 11
-    (new)   get_channels           -> v5 12  (peeled from stats)
-    v4 11   debugfs                -> v5 13
-    v4 12   resize                 -> v5 14
-    v4 13   set_channels           -> v5 15
-    v4 14   trailing poll/shutdown -> folded into v5 5/9/10/14
-            (mailed "P14" was that trailer, not v5 14)
-* Teardown-first resize after aggressive ethtool -L; thin defensive
-  poll skip remains; no correlator generation field this series
-* opened / rx_irq_setup; set_channels keys on opened (not IFF_UP)
-* filter_list_dma=0 on map error; restore default-active 64 KiB pool;
-  unwind pools by allocation presence; probe_cleanup clears vio
-  drvdata; remove: unregister then cancel_work
-* TX quiesce before freeing bounce buffers; guard start_xmit if LTB gone
-* MQ H_FUNCTION recovery (reset + SQ fallback); no printk under
-  replenish_lock; lock harvest with replenish; resume kicks all queues
-* Per-queue update_rx_no_buffer; publish-before-free on resize;
-  CMO refresh; IRQ helpers return errno
-* Harvest abort (no fake GRO / UAF); poll refuses PHYP re-arm on close;
-  wrap-safe skb_put; atomic set_channels; monotonic stats across shrink
-* Keep mask -> sync -> napi_disable on teardown; open stays
-  request_irq -> napi_enable while PHYP masked; scale-up/recovery keep
-  napi_enable before enable_irq
-* Pool geometry kept on free; restart_rx_queue after open/scale-down;
-  remask after napi_disable; schedule_rx_queue masks only when
-  napi_schedule_prep succeeds (STOP + poll no-rearm for storms)
+- Drop unrelated style nits that v4 mixed into the index-0 conversion
+  (ibmveth_rxq_get_buffer() prototype reflow, get_desired_dma
+  "Return:" kdoc, blank line after rx_large_packets)
+- Document queue-0 poolN/ sysfs as the shared geometry/template for all
+  RX queues (buff_size/size/active); queues 1..N get no separate pool
+  sysfs in this series
+- Decision: keep full ibmveth_buff_pool per queue for this series
+  (unused embedded kobjects on rows 1..N); a config-vs-runtime layout
+  split is out of scope here
 
 Changes in v4:
+- Keep IBMVETH_MAX_RX_QUEUES at 1 until MQ enablement (same idea as v3,
+  but v3 also planted unused stats types here).
+- Layout-only: queue-indexed adapter fields only. Do not introduce
+  the rx/tx qstats here (first-use); they land with the per-queue
+  statistics patch.
+- Subject: "Prepare MQ RX adapter data structures" (was "...and
+  statistics structures" in earlier drafts).
 
-Addresses Simon's v3 review and related fixes:
-* First-use helpers/includes (irqdomain.h with first dispose); no
-  unused statics; dropped orphan open/close pipeline patch
-* Open/close unwind (free LAN before RX pools); no double TX teardown
-* MQ open: replenish all queues before PHYP unmask; H_FUNCTION on
-  subordinate register is a hard open failure
-* Resize/set_channels hardenings; stats probe-lifetime + sum-on-read;
-  buffer_pools diagnostic on debugfs
-* Patch 9: put already-created pool kobjects on probe failure paths
-* Patch 14: correlator skip, skb tailroom check, napi_complete_done
-  shutdown return < budget
-* Bisect-friendly restack (helpers with first use)
+ drivers/net/ethernet/ibm/ibmveth.c | 206 ++++++++++++++++-------------
+ drivers/net/ethernet/ibm/ibmveth.h |  17 ++-
+ 2 files changed, 124 insertions(+), 99 deletions(-)
 
-Changes in v3:
-
-* Dropped RFC; addressed style / DMA feedback from earlier revisions
-* Early MQ enablement iterations (see lore links below)
-
-Comments welcome.
-
----
-v6 lore:
-  https://lore.kernel.org/r/cover.1788102125.git.mmc@linux.ibm.com
-Sashiko NIPA (v6):
-  https://netdev-ai.bots.linux.dev/sashiko/#/patchset/cover.1788102125.git.mmc@linux.ibm.com
-v5 lore:
-  https://lore.kernel.org/r/20260814073642.24630-1-mmc@linux.ibm.com
-v5 review (Jakub Kicinski):
-  https://lore.kernel.org/r/20260818014710.3853684-1-kuba@kernel.org
-Sashiko Gemini (sashiko.dev):
-  https://sashiko.dev/#/patchset/20260814073642.24630-1-mmc@linux.ibm.com
-Sashiko NIPA (v5):
-  https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260814073642.24630-1-mmc@linux.ibm.com
-
-Previous versions
-v6: https://lore.kernel.org/r/cover.1788102125.git.mmc@linux.ibm.com
-v5: https://lore.kernel.org/r/20260814073642.24630-1-mmc@linux.ibm.com
-v4: https://lore.kernel.org/r/cover.1785457143.git.mmc@linux.ibm.com
-v3: https://lore.kernel.org/r/20260706193603.8039-1-mmc@linux.ibm.com
-v2: https://lore.kernel.org/r/20260701222327.61325-1-mmc@linux.ibm.com
-v1: https://lore.kernel.org/r/cover.1782758799.git.mmc@linux.ibm.com
-v4 review (Jakub Kicinski):
-  https://lore.kernel.org/r/20260806183614.3171785-1-kuba@kernel.org
-v3 review (Simon Horman):
-  https://lore.kernel.org/r/20260714124327.GJ1364329@horms.kernel.org
-
-Mingming Cao (15):
-  ibmveth: Add MQ RX hypercall wrappers and call definitions
-  ibmveth: Prepare MQ RX adapter data structures
-  ibmveth: Refactor RX resource allocation for MQ RX bring-up
-  ibmveth: Refactor buffer pool management for per-queue MQ RX
-  ibmveth: Refactor RX interrupt control for MQ RX queues
-  ibmveth: Refactor TX resource allocation in open/close paths
-  ibmveth: Add RX queue register helpers for MQ
-  ibmveth: Add queue-aware RX buffer submit helper for MQ
-  ibmveth: Harden RX poll path with helpers
-  ibmveth: Enable multi-queue RX receive path
-  ibmveth: Add per-queue RX and TX statistics collection
-  ibmveth: Report MQ-aware RX counts in ethtool get_channels
-  ibmveth: Expose per-queue buffer pool details via debugfs
-  ibmveth: Implement incremental MQ RX queue resize
-  ibmveth: Complete set_channels down-path and mq_fallback max_rx cap
-
- arch/powerpc/include/asm/hvcall.h           |    6 +-
- drivers/net/ethernet/ibm/ibmveth.c          | 4441 +++++++++++++++----
- drivers/net/ethernet/ibm/ibmveth.h          |  232 +-
- tools/perf/scripts/python/powerpc-hcalls.py |    4 +
- 4 files changed, 3921 insertions(+), 762 deletions(-)
-
-
-base-commit: 161ea2d4f2a7e784f14b5b0548fcef3e05fc34f8
+diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+index 73e051d26b9d..7cb828b476c1 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.c
++++ b/drivers/net/ethernet/ibm/ibmveth.c
+@@ -101,7 +101,9 @@ static struct ibmveth_stat ibmveth_stats[] = {
+ /* simple methods of getting data from the current rxq entry */
+ static inline u32 ibmveth_rxq_flags(struct ibmveth_adapter *adapter)
+ {
+-	return be32_to_cpu(adapter->rx_queue.queue_addr[adapter->rx_queue.index].flags_off);
++	struct ibmveth_rx_q *rxq = &adapter->rx_queue[0];
++
++	return be32_to_cpu(rxq->queue_addr[rxq->index].flags_off);
+ }
+ 
+ static inline int ibmveth_rxq_toggle(struct ibmveth_adapter *adapter)
+@@ -112,7 +114,7 @@ static inline int ibmveth_rxq_toggle(struct ibmveth_adapter *adapter)
+ 
+ static inline int ibmveth_rxq_pending_buffer(struct ibmveth_adapter *adapter)
+ {
+-	return ibmveth_rxq_toggle(adapter) == adapter->rx_queue.toggle;
++	return ibmveth_rxq_toggle(adapter) == adapter->rx_queue[0].toggle;
+ }
+ 
+ static inline int ibmveth_rxq_buffer_valid(struct ibmveth_adapter *adapter)
+@@ -132,7 +134,9 @@ static inline int ibmveth_rxq_large_packet(struct ibmveth_adapter *adapter)
+ 
+ static inline int ibmveth_rxq_frame_length(struct ibmveth_adapter *adapter)
+ {
+-	return be32_to_cpu(adapter->rx_queue.queue_addr[adapter->rx_queue.index].length);
++	struct ibmveth_rx_q *rxq = &adapter->rx_queue[0];
++
++	return be32_to_cpu(rxq->queue_addr[rxq->index].length);
+ }
+ 
+ static inline int ibmveth_rxq_csum_good(struct ibmveth_adapter *adapter)
+@@ -386,7 +390,7 @@ static void ibmveth_replenish_buffer_pool(struct ibmveth_adapter *adapter,
+  */
+ static void ibmveth_update_rx_no_buffer(struct ibmveth_adapter *adapter)
+ {
+-	__be64 *p = adapter->buffer_list_addr + 4096 - 8;
++	__be64 *p = adapter->buffer_list_addr[0] + 4096 - 8;
+ 
+ 	adapter->rx_no_buffer = be64_to_cpup(p);
+ }
+@@ -399,7 +403,7 @@ static void ibmveth_replenish_task(struct ibmveth_adapter *adapter)
+ 	adapter->replenish_task_cycles++;
+ 
+ 	for (i = (IBMVETH_NUM_BUFF_POOLS - 1); i >= 0; i--) {
+-		struct ibmveth_buff_pool *pool = &adapter->rx_buff_pool[i];
++		struct ibmveth_buff_pool *pool = &adapter->rx_buff_pool[0][i];
+ 
+ 		if (pool->active &&
+ 		    (atomic_read(&pool->available) < pool->threshold))
+@@ -463,12 +467,12 @@ static int ibmveth_remove_buffer_from_pool(struct ibmveth_adapter *adapter,
+ 	struct sk_buff *skb;
+ 
+ 	if (WARN_ON(pool >= IBMVETH_NUM_BUFF_POOLS) ||
+-	    WARN_ON(index >= adapter->rx_buff_pool[pool].size)) {
++	    WARN_ON(index >= adapter->rx_buff_pool[0][pool].size)) {
+ 		schedule_work(&adapter->work);
+ 		return -EINVAL;
+ 	}
+ 
+-	skb = adapter->rx_buff_pool[pool].skbuff[index];
++	skb = adapter->rx_buff_pool[0][pool].skbuff[index];
+ 	if (WARN_ON(!skb)) {
+ 		schedule_work(&adapter->work);
+ 		return -EFAULT;
+@@ -482,24 +486,24 @@ static int ibmveth_remove_buffer_from_pool(struct ibmveth_adapter *adapter,
+ 		/* remove the skb pointer to mark free. actual freeing is done
+ 		 * by upper level networking after gro_receive
+ 		 */
+-		adapter->rx_buff_pool[pool].skbuff[index] = NULL;
++		adapter->rx_buff_pool[0][pool].skbuff[index] = NULL;
+ 
+ 		dma_unmap_single(&adapter->vdev->dev,
+-				 adapter->rx_buff_pool[pool].dma_addr[index],
+-				 adapter->rx_buff_pool[pool].buff_size,
++				 adapter->rx_buff_pool[0][pool].dma_addr[index],
++				 adapter->rx_buff_pool[0][pool].buff_size,
+ 				 DMA_FROM_DEVICE);
+ 	}
+ 
+-	free_index = adapter->rx_buff_pool[pool].producer_index;
+-	adapter->rx_buff_pool[pool].producer_index++;
+-	if (adapter->rx_buff_pool[pool].producer_index >=
+-	    adapter->rx_buff_pool[pool].size)
+-		adapter->rx_buff_pool[pool].producer_index = 0;
+-	adapter->rx_buff_pool[pool].free_map[free_index] = index;
++	free_index = adapter->rx_buff_pool[0][pool].producer_index;
++	adapter->rx_buff_pool[0][pool].producer_index++;
++	if (adapter->rx_buff_pool[0][pool].producer_index >=
++	    adapter->rx_buff_pool[0][pool].size)
++		adapter->rx_buff_pool[0][pool].producer_index = 0;
++	adapter->rx_buff_pool[0][pool].free_map[free_index] = index;
+ 
+ 	mb();
+ 
+-	atomic_dec(&(adapter->rx_buff_pool[pool].available));
++	atomic_dec(&adapter->rx_buff_pool[0][pool].available);
+ 
+ 	return 0;
+ }
+@@ -507,17 +511,18 @@ static int ibmveth_remove_buffer_from_pool(struct ibmveth_adapter *adapter,
+ /* get the current buffer on the rx queue */
+ static inline struct sk_buff *ibmveth_rxq_get_buffer(struct ibmveth_adapter *adapter)
+ {
+-	u64 correlator = adapter->rx_queue.queue_addr[adapter->rx_queue.index].correlator;
++	struct ibmveth_rx_q *rxq = &adapter->rx_queue[0];
++	u64 correlator = rxq->queue_addr[rxq->index].correlator;
+ 	unsigned int pool = correlator >> 32;
+ 	unsigned int index = correlator & 0xffffffffUL;
+ 
+ 	if (WARN_ON(pool >= IBMVETH_NUM_BUFF_POOLS) ||
+-	    WARN_ON(index >= adapter->rx_buff_pool[pool].size)) {
++	    WARN_ON(index >= adapter->rx_buff_pool[0][pool].size)) {
+ 		schedule_work(&adapter->work);
+ 		return NULL;
+ 	}
+ 
+-	return adapter->rx_buff_pool[pool].skbuff[index];
++	return adapter->rx_buff_pool[0][pool].skbuff[index];
+ }
+ 
+ /**
+@@ -538,14 +543,16 @@ static int ibmveth_rxq_harvest_buffer(struct ibmveth_adapter *adapter,
+ 	u64 cor;
+ 	int rc;
+ 
+-	cor = adapter->rx_queue.queue_addr[adapter->rx_queue.index].correlator;
++	struct ibmveth_rx_q *rxq = &adapter->rx_queue[0];
++
++	cor = rxq->queue_addr[rxq->index].correlator;
+ 	rc = ibmveth_remove_buffer_from_pool(adapter, cor, reuse);
+ 	if (unlikely(rc))
+ 		return rc;
+ 
+-	if (++adapter->rx_queue.index == adapter->rx_queue.num_slots) {
+-		adapter->rx_queue.index = 0;
+-		adapter->rx_queue.toggle = !adapter->rx_queue.toggle;
++	if (++adapter->rx_queue[0].index == adapter->rx_queue[0].num_slots) {
++		adapter->rx_queue[0].index = 0;
++		adapter->rx_queue[0].toggle = !adapter->rx_queue[0].toggle;
+ 	}
+ 
+ 	return 0;
+@@ -595,7 +602,7 @@ static int ibmveth_register_logical_lan(struct ibmveth_adapter *adapter,
+ 	 */
+ retry:
+ 	rc = h_register_logical_lan(adapter->vdev->unit_address,
+-				    adapter->buffer_list_dma, rxq_desc.desc,
++				    adapter->buffer_list_dma[0], rxq_desc.desc,
+ 				    adapter->filter_list_dma, mac_address);
+ 
+ 	if (rc != H_SUCCESS && try_again) {
+@@ -623,14 +630,14 @@ static int ibmveth_open(struct net_device *netdev)
+ 
+ 	netdev_dbg(netdev, "open starting\n");
+ 
+-	napi_enable(&adapter->napi);
++	napi_enable(&adapter->napi[0]);
+ 
+ 	for(i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++)
+-		rxq_entries += adapter->rx_buff_pool[i].size;
++		rxq_entries += adapter->rx_buff_pool[0][i].size;
+ 
+ 	rc = -ENOMEM;
+-	adapter->buffer_list_addr = (void*) get_zeroed_page(GFP_KERNEL);
+-	if (!adapter->buffer_list_addr) {
++	adapter->buffer_list_addr[0] = (void *)get_zeroed_page(GFP_KERNEL);
++	if (!adapter->buffer_list_addr[0]) {
+ 		netdev_err(netdev, "unable to allocate list pages\n");
+ 		goto out;
+ 	}
+@@ -643,17 +650,18 @@ static int ibmveth_open(struct net_device *netdev)
+ 
+ 	dev = &adapter->vdev->dev;
+ 
+-	adapter->rx_queue.queue_len = sizeof(struct ibmveth_rx_q_entry) *
++	adapter->rx_queue[0].queue_len = sizeof(struct ibmveth_rx_q_entry) *
+ 						rxq_entries;
+-	adapter->rx_queue.queue_addr =
+-		dma_alloc_coherent(dev, adapter->rx_queue.queue_len,
+-				   &adapter->rx_queue.queue_dma, GFP_KERNEL);
+-	if (!adapter->rx_queue.queue_addr)
++	adapter->rx_queue[0].queue_addr =
++		dma_alloc_coherent(dev, adapter->rx_queue[0].queue_len,
++				   &adapter->rx_queue[0].queue_dma, GFP_KERNEL);
++	if (!adapter->rx_queue[0].queue_addr)
+ 		goto out_free_filter_list;
+ 
+-	adapter->buffer_list_dma = dma_map_single(dev,
+-			adapter->buffer_list_addr, 4096, DMA_BIDIRECTIONAL);
+-	if (dma_mapping_error(dev, adapter->buffer_list_dma)) {
++	adapter->buffer_list_dma[0] =
++		dma_map_single(dev, adapter->buffer_list_addr[0],
++			       4096, DMA_BIDIRECTIONAL);
++	if (dma_mapping_error(dev, adapter->buffer_list_dma[0])) {
+ 		netdev_err(netdev, "unable to map buffer list pages\n");
+ 		goto out_free_queue_mem;
+ 	}
+@@ -670,19 +678,21 @@ static int ibmveth_open(struct net_device *netdev)
+ 			goto out_free_tx_ltb;
+ 	}
+ 
+-	adapter->rx_queue.index = 0;
+-	adapter->rx_queue.num_slots = rxq_entries;
+-	adapter->rx_queue.toggle = 1;
++	adapter->rx_queue[0].index = 0;
++	adapter->rx_queue[0].num_slots = rxq_entries;
++	adapter->rx_queue[0].toggle = 1;
+ 
+ 	mac_address = ether_addr_to_u64(netdev->dev_addr);
+ 
+ 	rxq_desc.fields.flags_len = IBMVETH_BUF_VALID |
+-					adapter->rx_queue.queue_len;
+-	rxq_desc.fields.address = adapter->rx_queue.queue_dma;
++					adapter->rx_queue[0].queue_len;
++	rxq_desc.fields.address = adapter->rx_queue[0].queue_dma;
+ 
+-	netdev_dbg(netdev, "buffer list @ 0x%p\n", adapter->buffer_list_addr);
++	netdev_dbg(netdev, "buffer list @ 0x%p\n",
++		   adapter->buffer_list_addr[0]);
+ 	netdev_dbg(netdev, "filter list @ 0x%p\n", adapter->filter_list_addr);
+-	netdev_dbg(netdev, "receive q   @ 0x%p\n", adapter->rx_queue.queue_addr);
++	netdev_dbg(netdev, "receive q   @ 0x%p\n",
++		   adapter->rx_queue[0].queue_addr);
+ 
+ 	h_vio_signal(adapter->vdev->unit_address, VIO_IRQ_DISABLE);
+ 
+@@ -693,7 +703,7 @@ static int ibmveth_open(struct net_device *netdev)
+ 			   lpar_rc);
+ 		netdev_err(netdev, "buffer TCE:0x%llx filter TCE:0x%llx rxq "
+ 			   "desc:0x%llx MAC:0x%llx\n",
+-				     adapter->buffer_list_dma,
++				     adapter->buffer_list_dma[0],
+ 				     adapter->filter_list_dma,
+ 				     rxq_desc.desc,
+ 				     mac_address);
+@@ -702,11 +712,11 @@ static int ibmveth_open(struct net_device *netdev)
+ 	}
+ 
+ 	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
+-		if (!adapter->rx_buff_pool[i].active)
++		if (!adapter->rx_buff_pool[0][i].active)
+ 			continue;
+-		if (ibmveth_alloc_buffer_pool(&adapter->rx_buff_pool[i])) {
++		if (ibmveth_alloc_buffer_pool(&adapter->rx_buff_pool[0][i])) {
+ 			netdev_err(netdev, "unable to alloc pool\n");
+-			adapter->rx_buff_pool[i].active = 0;
++			adapter->rx_buff_pool[0][i].active = 0;
+ 			rc = -ENOMEM;
+ 			goto out_free_buffer_pools;
+ 		}
+@@ -738,9 +748,9 @@ static int ibmveth_open(struct net_device *netdev)
+ 
+ out_free_buffer_pools:
+ 	while (--i >= 0) {
+-		if (adapter->rx_buff_pool[i].active)
++		if (adapter->rx_buff_pool[0][i].active)
+ 			ibmveth_free_buffer_pool(adapter,
+-						 &adapter->rx_buff_pool[i]);
++						 &adapter->rx_buff_pool[0][i]);
+ 	}
+ out_unmap_filter_list:
+ 	dma_unmap_single(dev, adapter->filter_list_dma, 4096,
+@@ -752,18 +762,18 @@ static int ibmveth_open(struct net_device *netdev)
+ 	}
+ 
+ out_unmap_buffer_list:
+-	dma_unmap_single(dev, adapter->buffer_list_dma, 4096,
++	dma_unmap_single(dev, adapter->buffer_list_dma[0], 4096,
+ 			 DMA_BIDIRECTIONAL);
+ out_free_queue_mem:
+-	dma_free_coherent(dev, adapter->rx_queue.queue_len,
+-			  adapter->rx_queue.queue_addr,
+-			  adapter->rx_queue.queue_dma);
++	dma_free_coherent(dev, adapter->rx_queue[0].queue_len,
++			  adapter->rx_queue[0].queue_addr,
++			  adapter->rx_queue[0].queue_dma);
+ out_free_filter_list:
+ 	free_page((unsigned long)adapter->filter_list_addr);
+ out_free_buffer_list:
+-	free_page((unsigned long)adapter->buffer_list_addr);
++	free_page((unsigned long)adapter->buffer_list_addr[0]);
+ out:
+-	napi_disable(&adapter->napi);
++	napi_disable(&adapter->napi[0]);
+ 	return rc;
+ }
+ 
+@@ -776,7 +786,7 @@ static int ibmveth_close(struct net_device *netdev)
+ 
+ 	netdev_dbg(netdev, "close starting\n");
+ 
+-	napi_disable(&adapter->napi);
++	napi_disable(&adapter->napi[0]);
+ 
+ 	netif_tx_stop_all_queues(netdev);
+ 
+@@ -795,22 +805,22 @@ static int ibmveth_close(struct net_device *netdev)
+ 
+ 	ibmveth_update_rx_no_buffer(adapter);
+ 
+-	dma_unmap_single(dev, adapter->buffer_list_dma, 4096,
++	dma_unmap_single(dev, adapter->buffer_list_dma[0], 4096,
+ 			 DMA_BIDIRECTIONAL);
+-	free_page((unsigned long)adapter->buffer_list_addr);
++	free_page((unsigned long)adapter->buffer_list_addr[0]);
+ 
+ 	dma_unmap_single(dev, adapter->filter_list_dma, 4096,
+ 			 DMA_BIDIRECTIONAL);
+ 	free_page((unsigned long)adapter->filter_list_addr);
+ 
+-	dma_free_coherent(dev, adapter->rx_queue.queue_len,
+-			  adapter->rx_queue.queue_addr,
+-			  adapter->rx_queue.queue_dma);
++	dma_free_coherent(dev, adapter->rx_queue[0].queue_len,
++			  adapter->rx_queue[0].queue_addr,
++			  adapter->rx_queue[0].queue_dma);
+ 
+ 	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++)
+-		if (adapter->rx_buff_pool[i].active)
++		if (adapter->rx_buff_pool[0][i].active)
+ 			ibmveth_free_buffer_pool(adapter,
+-						 &adapter->rx_buff_pool[i]);
++						 &adapter->rx_buff_pool[0][i]);
+ 
+ 	for (i = 0; i < netdev->real_num_tx_queues; i++)
+ 		ibmveth_free_tx_ltb(adapter, i);
+@@ -1448,7 +1458,7 @@ static void ibmveth_rx_csum_helper(struct sk_buff *skb,
+ static int ibmveth_poll(struct napi_struct *napi, int budget)
+ {
+ 	struct ibmveth_adapter *adapter =
+-			container_of(napi, struct ibmveth_adapter, napi);
++			container_of(napi, struct ibmveth_adapter, napi[0]);
+ 	struct net_device *netdev = adapter->netdev;
+ 	int frames_processed = 0;
+ 	unsigned long lpar_rc;
+@@ -1573,11 +1583,11 @@ static irqreturn_t ibmveth_interrupt(int irq, void *dev_instance)
+ 	struct ibmveth_adapter *adapter = netdev_priv(netdev);
+ 	unsigned long lpar_rc;
+ 
+-	if (napi_schedule_prep(&adapter->napi)) {
++	if (napi_schedule_prep(&adapter->napi[0])) {
+ 		lpar_rc = h_vio_signal(adapter->vdev->unit_address,
+ 				       VIO_IRQ_DISABLE);
+ 		WARN_ON(lpar_rc != H_SUCCESS);
+-		__napi_schedule(&adapter->napi);
++		__napi_schedule(&adapter->napi[0]);
+ 	}
+ 	return IRQ_HANDLED;
+ }
+@@ -1645,7 +1655,7 @@ static int ibmveth_change_mtu(struct net_device *dev, int new_mtu)
+ 	int need_restart = 0;
+ 
+ 	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++)
+-		if (new_mtu_oh <= adapter->rx_buff_pool[i].buff_size)
++		if (new_mtu_oh <= adapter->rx_buff_pool[0][i].buff_size)
+ 			break;
+ 
+ 	if (i == IBMVETH_NUM_BUFF_POOLS)
+@@ -1660,9 +1670,9 @@ static int ibmveth_change_mtu(struct net_device *dev, int new_mtu)
+ 
+ 	/* Look for an active buffer pool that can hold the new MTU */
+ 	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
+-		adapter->rx_buff_pool[i].active = 1;
++		adapter->rx_buff_pool[0][i].active = 1;
+ 
+-		if (new_mtu_oh <= adapter->rx_buff_pool[i].buff_size) {
++		if (new_mtu_oh <= adapter->rx_buff_pool[0][i].buff_size) {
+ 			WRITE_ONCE(dev->mtu, new_mtu);
+ 			vio_cmo_set_dev_desired(viodev,
+ 						ibmveth_get_desired_dma
+@@ -1720,12 +1730,12 @@ static unsigned long ibmveth_get_desired_dma(struct vio_dev *vdev)
+ 
+ 	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
+ 		/* add the size of the active receive buffers */
+-		if (adapter->rx_buff_pool[i].active)
++		if (adapter->rx_buff_pool[0][i].active)
+ 			ret +=
+-			    adapter->rx_buff_pool[i].size *
+-			    IOMMU_PAGE_ALIGN(adapter->rx_buff_pool[i].
++			    adapter->rx_buff_pool[0][i].size *
++			    IOMMU_PAGE_ALIGN(adapter->rx_buff_pool[0][i].
+ 					     buff_size, tbl);
+-		rxqentries += adapter->rx_buff_pool[i].size;
++		rxqentries += adapter->rx_buff_pool[0][i].size;
+ 	}
+ 	/* add the size of the receive queue entries */
+ 	ret += IOMMU_PAGE_ALIGN(
+@@ -1844,7 +1854,7 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
+ 	adapter->mcastFilterSize = be32_to_cpu(*mcastFilterSize_p);
+ 	ibmveth_init_link_settings(netdev);
+ 
+-	netif_napi_add_weight(netdev, &adapter->napi, ibmveth_poll, 16);
++	netif_napi_add_weight(netdev, &adapter->napi[0], ibmveth_poll, 16);
+ 
+ 	netdev->irq = dev->irq;
+ 	netdev->netdev_ops = &ibmveth_netdev_ops;
+@@ -1876,6 +1886,10 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
+ 		netdev->features |= NETIF_F_FRAGLIST;
+ 	}
+ 
++	/* Initialize queue count - always 1 for now */
++	adapter->multi_queue = 0;
++	adapter->num_rx_queues = IBMVETH_DEFAULT_RX_QUEUES;
++
+ 	if (ret == H_SUCCESS &&
+ 	    (ret_attr & IBMVETH_ILLAN_RX_MULTI_BUFF_SUPPORT)) {
+ 		adapter->rx_buffers_per_hcall = IBMVETH_MAX_RX_PER_HCALL;
+@@ -1898,10 +1912,10 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
+ 		memcpy(pool_count, pool_count_cmo, sizeof(pool_count));
+ 
+ 	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
+-		struct kobject *kobj = &adapter->rx_buff_pool[i].kobj;
++		struct kobject *kobj = &adapter->rx_buff_pool[0][i].kobj;
+ 		int error;
+ 
+-		ibmveth_init_buffer_pool(&adapter->rx_buff_pool[i], i,
++		ibmveth_init_buffer_pool(&adapter->rx_buff_pool[0][i], i,
+ 					 pool_count[i], pool_size[i],
+ 					 pool_active[i]);
+ 		error = kobject_init_and_add(kobj, &ktype_veth_pool,
+@@ -1949,7 +1963,7 @@ static void ibmveth_remove(struct vio_dev *dev)
+ 	cancel_work_sync(&adapter->work);
+ 
+ 	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++)
+-		kobject_put(&adapter->rx_buff_pool[i].kobj);
++		kobject_put(&adapter->rx_buff_pool[0][i].kobj);
+ 
+ 	unregister_netdev(netdev);
+ 
+@@ -2035,11 +2049,12 @@ static ssize_t veth_pool_store(struct kobject *kobj, struct attribute *attr,
+ 			/* Make sure there is a buffer pool with buffers that
+ 			   can hold a packet of the size of the MTU */
+ 			for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
+-				if (pool == &adapter->rx_buff_pool[i])
++				if (pool == &adapter->rx_buff_pool[0][i])
+ 					continue;
+-				if (!adapter->rx_buff_pool[i].active)
++				if (!adapter->rx_buff_pool[0][i].active)
+ 					continue;
+-				if (mtu <= adapter->rx_buff_pool[i].buff_size)
++				if (mtu <=
++				    adapter->rx_buff_pool[0][i].buff_size)
+ 					break;
+ 			}
+ 
+@@ -2213,11 +2228,11 @@ static void ibmveth_remove_buffer_from_pool_test(struct kunit *test)
+ 
+ 	/* Set sane values for buffer pools */
+ 	for (int i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++)
+-		ibmveth_init_buffer_pool(&adapter->rx_buff_pool[i], i,
++		ibmveth_init_buffer_pool(&adapter->rx_buff_pool[0][i], i,
+ 					 pool_count[i], pool_size[i],
+ 					 pool_active[i]);
+ 
+-	pool = &adapter->rx_buff_pool[0];
++	pool = &adapter->rx_buff_pool[0][0];
+ 	pool->skbuff = kunit_kcalloc(test, pool->size, sizeof(void *), GFP_KERNEL);
+ 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, pool->skbuff);
+ 
+@@ -2225,7 +2240,7 @@ static void ibmveth_remove_buffer_from_pool_test(struct kunit *test)
+ 	KUNIT_EXPECT_EQ(test, -EINVAL, ibmveth_remove_buffer_from_pool(adapter, correlator, false));
+ 	KUNIT_EXPECT_EQ(test, -EINVAL, ibmveth_remove_buffer_from_pool(adapter, correlator, true));
+ 
+-	correlator = ((u64)0 << 32) | adapter->rx_buff_pool[0].size;
++	correlator = ((u64)0 << 32) | adapter->rx_buff_pool[0][0].size;
+ 	KUNIT_EXPECT_EQ(test, -EINVAL, ibmveth_remove_buffer_from_pool(adapter, correlator, false));
+ 	KUNIT_EXPECT_EQ(test, -EINVAL, ibmveth_remove_buffer_from_pool(adapter, correlator, true));
+ 
+@@ -2258,30 +2273,33 @@ static void ibmveth_rxq_get_buffer_test(struct kunit *test)
+ 
+ 	INIT_WORK(&adapter->work, ibmveth_reset_kunit);
+ 
+-	adapter->rx_queue.queue_len = 1;
+-	adapter->rx_queue.index = 0;
+-	adapter->rx_queue.queue_addr = kunit_kzalloc(test, sizeof(struct ibmveth_rx_q_entry),
+-						     GFP_KERNEL);
+-	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, adapter->rx_queue.queue_addr);
++	adapter->rx_queue[0].queue_len = 1;
++	adapter->rx_queue[0].index = 0;
++	adapter->rx_queue[0].queue_addr =
++		kunit_kzalloc(test, sizeof(struct ibmveth_rx_q_entry),
++			      GFP_KERNEL);
++	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, adapter->rx_queue[0].queue_addr);
+ 
+ 	/* Set sane values for buffer pools */
+ 	for (int i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++)
+-		ibmveth_init_buffer_pool(&adapter->rx_buff_pool[i], i,
++		ibmveth_init_buffer_pool(&adapter->rx_buff_pool[0][i], i,
+ 					 pool_count[i], pool_size[i],
+ 					 pool_active[i]);
+ 
+-	pool = &adapter->rx_buff_pool[0];
++	pool = &adapter->rx_buff_pool[0][0];
+ 	pool->skbuff = kunit_kcalloc(test, pool->size, sizeof(void *), GFP_KERNEL);
+ 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, pool->skbuff);
+ 
+-	adapter->rx_queue.queue_addr[0].correlator = (u64)IBMVETH_NUM_BUFF_POOLS << 32 | 0;
++	adapter->rx_queue[0].queue_addr[0].correlator =
++		(u64)IBMVETH_NUM_BUFF_POOLS << 32 | 0;
+ 	KUNIT_EXPECT_PTR_EQ(test, NULL, ibmveth_rxq_get_buffer(adapter));
+ 
+-	adapter->rx_queue.queue_addr[0].correlator = (u64)0 << 32 | adapter->rx_buff_pool[0].size;
++	adapter->rx_queue[0].queue_addr[0].correlator =
++		(u64)0 << 32 | adapter->rx_buff_pool[0][0].size;
+ 	KUNIT_EXPECT_PTR_EQ(test, NULL, ibmveth_rxq_get_buffer(adapter));
+ 
+ 	pool->skbuff[0] = skb;
+-	adapter->rx_queue.queue_addr[0].correlator = (u64)0 << 32 | 0;
++	adapter->rx_queue[0].queue_addr[0].correlator = (u64)0 << 32 | 0;
+ 	KUNIT_EXPECT_PTR_EQ(test, skb, ibmveth_rxq_get_buffer(adapter));
+ 
+ 	flush_work(&adapter->work);
+diff --git a/drivers/net/ethernet/ibm/ibmveth.h b/drivers/net/ethernet/ibm/ibmveth.h
+index 5c0b9f61eec9..7e956278e005 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.h
++++ b/drivers/net/ethernet/ibm/ibmveth.h
+@@ -263,6 +263,8 @@ static inline long h_illan_attributes(unsigned long unit_address,
+ #define IBMVETH_MAX_TX_BUF_SIZE (1024 * 64)
+ #define IBMVETH_MAX_QUEUES 16U
+ #define IBMVETH_DEFAULT_QUEUES 8U
++#define IBMVETH_MAX_RX_QUEUES 1U
++#define IBMVETH_DEFAULT_RX_QUEUES 1U
+ #define IBMVETH_MAX_RX_PER_HCALL 8U
+ 
+ static int pool_size[] = { 512, 1024 * 2, 1024 * 16, 1024 * 32, 1024 * 64 };
+@@ -299,18 +301,23 @@ struct ibmveth_rx_q {
+ struct ibmveth_adapter {
+ 	struct vio_dev *vdev;
+ 	struct net_device *netdev;
+-	struct napi_struct napi;
++	struct napi_struct napi[IBMVETH_MAX_RX_QUEUES];
+ 	struct work_struct work;
+ 	unsigned int mcastFilterSize;
+-	void *buffer_list_addr;
++	void *buffer_list_addr[IBMVETH_MAX_RX_QUEUES];
+ 	void *filter_list_addr;
+ 	void *tx_ltb_ptr[IBMVETH_MAX_QUEUES];
+ 	unsigned int tx_ltb_size;
+ 	dma_addr_t tx_ltb_dma[IBMVETH_MAX_QUEUES];
+-	dma_addr_t buffer_list_dma;
++	dma_addr_t buffer_list_dma[IBMVETH_MAX_RX_QUEUES];
+ 	dma_addr_t filter_list_dma;
+-	struct ibmveth_buff_pool rx_buff_pool[IBMVETH_NUM_BUFF_POOLS];
+-	struct ibmveth_rx_q rx_queue;
++	struct ibmveth_buff_pool
++		rx_buff_pool[IBMVETH_MAX_RX_QUEUES][IBMVETH_NUM_BUFF_POOLS];
++	struct ibmveth_rx_q rx_queue[IBMVETH_MAX_RX_QUEUES];
++	u64 queue_handle[IBMVETH_MAX_RX_QUEUES];
++	unsigned int queue_irq[IBMVETH_MAX_RX_QUEUES];
++	int multi_queue;
++	unsigned int num_rx_queues;
+ 	int rx_csum;
+ 	int large_send;
+ 	bool is_active_trunk;
 -- 
 2.50.1 (Apple Git-155)
 
