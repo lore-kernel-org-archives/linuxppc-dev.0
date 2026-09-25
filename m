@@ -1,54 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-28193-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28194-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28A2AC9830D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2026 09:13:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF648C98324
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2026 09:35:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hrlP41p90z2yDD;
-	Fri, 25 Sep 2026 19:13:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790327608;
-	cv=none; b=ieCqfAOogLUMowMUCLS85eFTdTjd+x40RBx1Awe4gCAGYSY5O13A3MTna5waPi9jGV+OC9amxL4H5gV/Wan17Lmq/oFykLDdUhd4cOcS+qHc1lvLK2oV60JO6t06B+yrlpoCRG+r3DbYbeJXLtwQRo8tWZPPC+pBbAnSxprCKXMRmILnNF2l61/NFzlTWA9eytFA63BZh6kSwCU11BTx63901n2u1drUC9tm+tIJAXcwu7HigaUuGTZIJLnlL2E2RE4v1y0iLZq2YwnAH81keiLATzbAVbnWa6K+0j3GVHDOHyW3WI4iDuf/g+mVJ+ZHlKznqIgP1Nz37jY0mcYvig==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hrltd2fVFz2ygX;
+	Fri, 25 Sep 2026 19:35:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790328937;
+	cv=none; b=ZKTUo1aoAb+fvxYhPTRHMe2QGEr6qXLLySXMxlStBCYQPngKBA2CO2BJ56rXJvvky6GpFakQPDTcKMo0J9piHEUxa915iI8VZRi15GyM1dCCWbAayw2KNbVAFZaAHfrXa90r6/LgowsrbA16kUrXus3XYAHTOBkBnzcE9bCH/OxrbtJvder31rWORpfApPkq9lxW6O65PuPWlSoPA1Gxda97F7ZOacBioqb30IHHEK/Yv8GoX6ru8V9atpHIaXdeWXmBzPWglkrLZXT771mvT/UqaUCuoRapYxWBbymavtvvGVlzRMEKXSca3YLecW8ax3XnOnHQJ/MgEIjqHuKlCQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790327608; c=relaxed/relaxed;
-	bh=yfSL2ku4OKsR1ZwNLU9aq+Cv4BSlDAV3gm6yCuANvXg=;
+	t=1790328937; c=relaxed/relaxed;
+	bh=uLG5lXHaGba/dPImy7unpJ5IThclo3TEAxLWPTrsKfU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=opH7jmHbWIxmhpkAtlXoz5YnvrdXyenwTKamwsiqZ2tZo9DthrET3XwCne0etfy2fXm/Qh0v2tATJ8MDuU2iLuN5YauZ4v+geON+Ov/mCBDBxbZ/5YcbDNImR3GYIz82DDuN5+LiJZA0CwPYt2+qW8WBljH7RlPsrRj0gXkNchEuPstRLrd4o34qVi4pK//PD2ZSq/rRk+I2+e7zLrDwas4fvd45OAnfyY6qq2D5aj1jhhraRj9YVDc+G3ZR/114RwNiW0+HVPy4vH3DXqjKzxb3F7ZR+4IQ5yKZhs5661JTkO23Wl/iU3wP83K7BGnLVJGf8z857hqpPKBK20AGBw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=K2qi0Whp; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=SApIADs4De8GRbCJD4QB6kOkztRw7DeMwziJjrl5z7CSSsYQ9Q2out/Osh9NFM2GsE/Lf3FOQtkTBRZ5pntbsNGx3G7xUa4HFhHkob8PvCLnm1nYvLe4sgDIFW2bDCGo23MbCd/SqqkgNJaMuOBt6A6G3EtJjNf7SO2jQxdlFTPowIVBOlv+vEMcJavSGrh0NkFBveQNupQ4K07R6pNOjI5F6LqT4jaQPY2ATwc6zDJ5rT2fdemGHDqO8L4CNnbCF8jHhdXTk05hewxyfH1bYrZPwo1jJh04gpRFmq7xzbfA9xz38BjwZZol9Ak8lNhBWRW3v8V0b/KHbhgCdU3ViQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bzZxhyhs; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=K2qi0Whp;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bzZxhyhs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrlP313VYz2y21
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2026 19:13:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrltc2zHQz2xCC
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2026 19:35:36 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id D72236022E;
-	Fri, 25 Sep 2026 09:13:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 00A0E1F000FF;
-	Fri, 25 Sep 2026 09:12:52 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id F1788417CA;
+	Fri, 25 Sep 2026 09:35:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9DC6D1F000FF;
+	Fri, 25 Sep 2026 09:35:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790327601;
-	bh=yfSL2ku4OKsR1ZwNLU9aq+Cv4BSlDAV3gm6yCuANvXg=;
+	s=k20260515; t=1790328932;
+	bh=uLG5lXHaGba/dPImy7unpJ5IThclo3TEAxLWPTrsKfU=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=K2qi0Whp5/6TRdhA6MhlGYRilQhTQ8jPlG08QvTUUmQwkWOHWgmSx5AdhFTFi0qw/
-	 r4+3OumzOouGc7txXhbbk80xasHy05dho7/yw8n5cfGkWIhweFLORuSQD6wUTgF3bF
-	 dlK10/x8cBD+DlIEYdpY/JpYJifQA5N4twHg7jDXzl6B1XyEXIXzNDQx16+MJsnNtN
-	 sTXe6Jh9EmnWLdP4R1YQtEnnOP8lnDSORnscuubhZoG/xGcNI3ROCCX9s0YjPIJIxI
-	 MdK5fq25MLwiukRwd6j6BdAO4Z4mjaXg/lCXJQXPIaGguKLjAmtHiggDOa9mUzFR4Z
-	 ur0MJU3/gDHOA==
-Date: Fri, 25 Sep 2026 10:12:50 +0100
+	b=bzZxhyhsPfPrL97TbhC325gHjRpuHNOnRAtDnIf7+He5gMfkm4PSOaeLWWHbi8c+l
+	 6gLN53Uwdjt1XIK0OfcSHtcQmumMJlRTA69LriLBQLJ0wlctJVs9Bq/WbFIYgezX2S
+	 o7HKidp4dQ3owP9NtNKbVP6jhZCshUTUiQ66DK4nhMPv/dIHOX+rBfreTpiYW/Trbr
+	 lwzJ176A2TJiIAwDANzHglZssZ2IwPz45AtPMn/Payp0HQBUyL8MtoMoRwY1oA7vIH
+	 So1mhkj16h3+GX9qr62k4qaQbTa37MdNPZHhAdlXJfG4rCoV0gvFtIiYsigAgrqycF
+	 Yh3V65CGNEVUA==
+Date: Fri, 25 Sep 2026 10:35:02 +0100
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: "Liam R. Howlett" <liam@infradead.org>
+To: Zi Yan <ziy@nvidia.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>, 
-	Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, 
+	"Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, 
+	Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, 
 	David Hildenbrand <david@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
 	Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, 
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, 
@@ -57,14 +58,14 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
 	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
 	Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
 	Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, 
-	Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, 
-	Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, 
-	Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, 
-	Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, 
-	Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, 
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, 
-	Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, 
-	Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, 
+	Kumar Kartikeya Dwivedi <memxor@gmail.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, 
+	Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
+	Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
+	Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, 
+	Doug Gilbert <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
+	"Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, 
+	Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, 
+	John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, 
 	Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
 	Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, 
 	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
@@ -103,12 +104,14 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
 	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
 	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
 	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev
-Subject: Re: [PATCH v3 01/40] mm/vma: fix mmap_prepare file handling, remove
- file_doesnt_need_get
-Message-ID: <arY3xqkPCgZj3IVD@gremlin>
+Subject: Re: [PATCH v3 24/40] mm/mlock: eliminate weird VMA_IO_BIT abuse and
+ simplify
+Message-ID: <arZAC3fyGMDnxiFX@gremlin>
 References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
- <20260917-b4-mmap-prepare-vma-flag-sanify-v3-1-4583d8a23bca@kernel.org>
- <qpkcjtl5jbip46zxcpyogsk4phmhetfvrvgftxhsxlbxjhucnn@h3a64dfoxcmj>
+ <20260917-b4-mmap-prepare-vma-flag-sanify-v3-24-4583d8a23bca@kernel.org>
+ <93672B94-BB0C-4713-8F8A-3619D81DB7BB@nvidia.com>
+ <arT3K71l86fUVldk@gremlin>
+ <CBD619D6-8717-4C81-B5EA-D1D0771BDA3A@nvidia.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -124,173 +127,75 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <qpkcjtl5jbip46zxcpyogsk4phmhetfvrvgftxhsxlbxjhucnn@h3a64dfoxcmj>
+In-Reply-To: <CBD619D6-8717-4C81-B5EA-D1D0771BDA3A@nvidia.com>
 
-(forgive my possibly semi-broken efforts to trim the mail)
+On Thu, Sep 24, 2026 at 11:50:14AM -0400, Zi Yan wrote:
+> On 24 Sep 2026, at 6:21, Lorenzo Stoakes (ARM) wrote:
 
-On Thu, Sep 24, 2026 at 03:00:44PM -0400, Liam R. Howlett wrote:
-> On 26/09/17 05:22PM, Lorenzo Stoakes (ARM) wrote:
-
-> > diff --git a/mm/internal.h b/mm/internal.h
-> > index 0dca33db068f..fe576d468af4 100644
-> > --- a/mm/internal.h
-> > +++ b/mm/internal.h
-> > @@ -7,6 +7,7 @@
-> >  #ifndef __MM_INTERNAL_H
-> >  #define __MM_INTERNAL_H
+> >>> diff --git a/mm/folio.c b/mm/folio.c
+> >>> index 47a437e0f7fd..35e242b48870 100644
+> >>> --- a/mm/folio.c
+> >>> +++ b/mm/folio.c
+> >>> @@ -505,7 +505,7 @@ void folio_add_lru_vma(struct folio *folio, struct vm_area_struct *vma)
+> >>>  {
+> >>>  	VM_BUG_ON_FOLIO(folio_test_lru(folio), folio);
+> >>>
+> >>> -	if (unlikely((vma->vm_flags & (VM_LOCKED | VM_SPECIAL)) == VM_LOCKED))
+> >>> +	if (vma_test(vma, VMA_LOCKED_BIT))
+> >>
+> >> I think it is worth documenting VMA_LOCKONFAULT_BIT alone means mlock in
+> >> progress, like you did in munlock_vma_folio(). Just to keep the protocol
+> >> explicit for all the readers.
 > >
-> > +#include <linux/file.h>
-> >  #include <linux/fs.h>
-> >  #include <linux/khugepaged.h>
-> >  #include <linux/mm.h>
-> > diff --git a/mm/util.c b/mm/util.c
-> > index bf0513d1d3d0..016932780925 100644
-> > --- a/mm/util.c
-> > +++ b/mm/util.c
-> > @@ -1228,8 +1228,11 @@ int __compat_vma_mmap(struct vm_area_desc *desc,
+> > Well I'm not sure it's necessary here honestly, because this never checked
+> > VMA_LOCKED_MASK anyway, and VMA_LOCKONFAULT_BIT never made a difference.
 > >
-> >  	/* Perform any preparatory tasks for mmap action. */
-> >  	err = mmap_action_prepare(desc);
-> > -	if (err)
-> > +	if (err) {
-> > +		if (desc->vm_file != vma->vm_file)
-> > +			fput(desc->vm_file);
-> >  		return err;
-> > +	}
-> >  	/* Update the VMA from the descriptor. */
-> >  	compat_set_vma_from_desc(vma, desc);
-> >  	/* Complete any specified mmap actions. */
-> > diff --git a/mm/vma.c b/mm/vma.c
-> > index 55917d097933..fa784f069da4 100644
-> > --- a/mm/vma.c
-> > +++ b/mm/vma.c
-> > @@ -24,7 +24,8 @@ struct mmap_state {
-> >  		vm_flags_t vm_flags;
-> >  		vma_flags_t vma_flags;
-> >  	};
-> > -	struct file *file;
-> > +	struct file *file;	/* mmap()-specified file. */
+> > So the meaning of VMA_LOCKED_BIT here is strictly 'is it locked' and it's
+> > correctly handled.
+> >
+> > And I fear that it becomes whack-a-mole - the neat thing about this change is
+> > that you no longer have to special case the stupid VM_SPECIAL thing, and can in
+> > fact do the 'normal' thing of _just checking_ VMA_LOCKED_BIT :)
+> >
+> > So I think it's better not to.
 >
-> I guess renaming file to mmaped_file would be a lot more changes.
+> Your reasoning makes sense to me.
 
-Yeah :) and want to keep things sync'd with vm_area_desc.
+Thanks :)
 
-Can always obviously follow up later with renames sync'd across both.
-
-<snip>
-
-> >  static int __mmap_new_file_vma(struct mmap_state *map,
-> >  			       struct vm_area_struct *vma)
-> > @@ -2593,20 +2597,23 @@ static int __mmap_new_file_vma(struct mmap_state *map,
-> >  	struct vma_iterator *vmi = map->vmi;
-> >  	int error;
+> >> Why I am commenting in the middle of the series? Because I am taking
+> >> a quiz given by LLM based on this series to get myself enough background
+> >> knowledge to review this series. This mlock part came up at part E
+> >> and I only have part F left before I can do the full review. :)
 > >
-> > -	vma->vm_file = map->file;
-> > -	if (!map->file_doesnt_need_get)
-> > -		get_file(map->file);
-> > +	vma->vm_file = map->vm_file;
-> > +	if (map_same_file(map))
-> > +		get_file(map->vm_file);
-> >
-> > -	if (!map->file->f_op->mmap)
-> > +	if (!map->vm_file->f_op->mmap)
-> >  		return 0;
-> >
-> >  	error = mmap_file(vma->vm_file, vma);
-> > +	map->vm_file = vma->vm_file;
-> > +
+> > Thanks! :) I really appreciate you taking the time to look at this! Sorry it's
+> > so large.
 >
-> You set vma->vm_file to map->vm_file unconditionally above, is this
-> necessary?
+> Sure. It is great learning material for me. Thank you for the patches.
 
-Yeah, because the mmap hook can change vma->vm_file, and this is necessary
-for the correct file refcount accounting.
-
-The accounting is actually very tricky, because the file that was passed
-via mmap() is fput() after the operation is done but if its swapped then
-you have to make sure everything works out correctly on both error and
-success paths.
-
-Which this patch does (with a lot of AI review checking to make sure it's
-not broken! FWIW)
-
-<snip>
-
-> > @@ -2688,7 +2694,7 @@ static int __mmap_new_vma(struct mmap_state *map, struct vm_area_struct **vmap,
-> >  	}
-> >
-> >  	/* Invoke callbacks. */
-> > -	if (map->file)
-> > +	if (map->vm_file)
-> >  		error = __mmap_new_file_vma(map, vma);
-> >  	else if (!is_anon)
-> >  		error = shmem_zero_setup(vma);
-> > @@ -2797,11 +2803,15 @@ static int call_mmap_prepare(struct mmap_state *map,
-> >  	int err;
-> >
-> >  	/* Invoke the hook. */
-> > -	err = vfs_mmap_prepare(map->file, desc);
-> > +	err = vfs_mmap_prepare(map->vm_file, desc);
-> >  	if (err)
-> >  		return err;
-> >
-> > -	/* It's invalid for mmap_preprare hooks to clear vm_ops. */
-> > +	/* Update first so file refcount tracked correctly. */
-> > +	if (desc->vm_file != map->vm_file)
-> > +		map->vm_file = desc->vm_file;
-> > +
-> > +	/* It's invalid for mmap_prepare hooks to clear vm_ops. */
->
-> The less rare of prepare ;)
-
-Haha 'It's a rare prepare that would dare' is what I'd LIKE to put here as a
-comment but probably can't :P
-
-<snip>
-
-> > +static void put_map(struct mmap_state *map)
->
->
-> I like the put_map_file() instead, like Suren suggested.. but maybe
-> put_map_vm_file(), especially since it could be read as put to the file
-> pointer instead of vm_file.
-
-Ack, and of course to bikeshed it a bit :P maybe map_put_vm_file() so the
-'put vm_file' bit is clearer?
-
-<snip>
-
-> > diff --git a/mm/vma.h b/mm/vma.h
-> > index e97bd2dfa786..f15faa83f3d6 100644
-> > --- a/mm/vma.h
-> > +++ b/mm/vma.h
-> > @@ -394,8 +394,10 @@ static inline void compat_set_vma_from_desc(struct vm_area_struct *vma,
-> >
-> >  	/* Mutable fields. Populated with initial state. */
-> >  	vma_set_pgoff(vma, desc->pgoff);
-> > -	if (desc->vm_file != vma->vm_file)
-> > -		vma_set_file(vma, desc->vm_file);
-> > +	if (desc->vm_file != vma->vm_file) {
-> > +		fput(vma->vm_file);
-> > +		vma->vm_file = desc->vm_file;
->
-> This isn't going to be racy somehow, right?
-
-No, at this point the VMA write lock is held and everything should be
-pinned correctly.
-
-The vma_set_file() dance was the problematic bit here as it didn't
-handle the file refcount properly.
+No worries, and sorry for the size of this change...! :)
 
 >
-> > +	}
-> >  	vma->flags = desc->vma_flags;
-> >  	vma->vm_page_prot = desc->page_prot;
 > >
+> > I held this series back from last cycle to help with review load, then spent
+> > some time fixing various AI-discovered things, and all the patches are necessary
+> > (well for the most part) to get where the series needs to go.
 > >
-> > --
-> > 2.55.0
-> >
+> > I think the change is worth it though!
+>
+> Of course, great to see hacky code being removed by this series.
+>
+> For this patch, feel free to add
+>
+> Reviewed-by: Zi Yan <ziy@nvidia.com>
+
+Thanks :)
+
+>
+>
+>
+> Best Regards,
+> Yan, Zi
 
 --
 Cheers, Lorenzo
