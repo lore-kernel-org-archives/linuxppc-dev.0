@@ -1,103 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-28191-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28192-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF54BC9830E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2026 08:45:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63CBFC9830E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2026 09:06:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hrkmV1P3jz2yDD;
-	Fri, 25 Sep 2026 18:45:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790325914;
-	cv=none; b=Tad3EePP+SARP+0EUtOoAEzaOPuxgqI/jWCQ9x/gqWjDOdxkcXxMAe5zTVJwuSGNOSssedr6b79bgbYmlX4I7bYjedumof4gwt7xMqZYqfGBJpvbEo9uFqIziLQYONEh8NccDVSLCEe3PR0/dpf8liMP19tO32GKeajUZST+B7AUwFwki5Z9F8bXi1Ryjm4MH2IkxGh47RYcuRBTp7+m0BdlbpgbN14UFbHn5aGN5jUI0KY5DWIwXcQiXCddr0ZUlmGp1DK3LMm+APjJcMl32bHxwqjHxv7MEiyu7hYrtnsGPSeCW/JlE8LQ3O156tJNv7bAxxLeg6nzgUNs3ikqhw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hrlF34fbfz2yDD;
+	Fri, 25 Sep 2026 19:06:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=210.118.77.12
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790327191;
+	cv=none; b=aGW9un+FcMFzqOl4Qt1dA8pzIHFYzg/uc4azosFdNsXNVVp8kIiHfB+pq+GIHemD9NjzwHkqfbdJ2NPOxfJ4jQinf2Q7H/k2cbbmaMmV+KyyqpK7Irp18k0uhM5BtimTRYm6yOdz1hFpHh3e4uz/jEdy3H6uguHcmbA7FgQzWAMHEhr6UgLbnIbk0w5U12l7cp6R7DAGqBwdXbrUdQ9Dn3OUbriF7HNoMPKuuE6xUUUGFGoKmDZCIaLfKVOf6pQyNKW+o9MfnsTnIOscp2GzMcfduivOOnhtBA6/bIDbmhmfpEO7VtXAry1aLm0J370wxg0gnXoLYyarfomp8Isepw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790325914; c=relaxed/relaxed;
-	bh=2de9xHNjmPAOVaG2ifsPQ33bU5QHctL9cV7tymsHQY0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ffxwYrmDpKSopwWZeNyi32o0I90hX3glFqQLrfjm7BC18PEpBshb2//wuRhi4l3VDDeiTtPehCWNsse3JzePlZ8CzTELQp6VlwUExAM+rxk4CX/YZNO8LFTqsNtUK4x2XEPdeEyF/jSQnJ8Ud2u0Bo4vCizKQVJeZh/WEKHIh3xhpbmqYRiqZ7ONqfCEZ2HpOUvROtrmnvgGNwDE+8EsAg/lZBrX0jLq/KUx5yjFNzZlfw5PITasmpFPwRgB/rdgmNUFOec0QFaczn126BUX2Fj06Kp0Shf/m2lan7Qe9Ef5bagI1bZOTauUmZ0ZIGFi2JluQhsxjZFA6Vdaj695Gw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=p3huYxFH; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hca@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1790327191; c=relaxed/relaxed;
+	bh=fRkS/AwRvXfqS9hACKPrCrxlhkEVLAdRbTDbRYWa8VU=;
+	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:In-Reply-To:
+	 Content-Type:References; b=iOg7iyuyMxf97zccJQqGCrGaxl6SDNWu0eiqL55kCRKZjaMwTRB6NtP9uX0Fb1fduw5uZIQp5MuEn3NloabtLetM67HFSokdI1oQ4JnOBKqSa1177AMM3TPXYklxe2VMB23nOFN+x5fGoAQ5e7aLt3CE0eYruKJaJF0tuBIA+dzBIUK8hBVW9AIrwFgQ62T/80BnHoVrJn6W4leXgh2dpWJd95LgbbqS2Jj+K4KUd4O/8WmCOY6vDjZ8q2U8WNhwX2qgzfLErQpeIGjQR4IcB1nrlNKsqQVpPSN9vTTzE36NdlQM+g2qHjtilmhnZoDTn5fZg50OSCA49kuh92COdg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=samsung.com; dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=vanVKrSk; dkim-atps=neutral; spf=pass (client-ip=210.118.77.12; helo=mailout2.w1.samsung.com; envelope-from=m.szyprowski@samsung.com; receiver=lists.ozlabs.org) smtp.mailfrom=samsung.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=samsung.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=p3huYxFH;
+	dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=vanVKrSk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hca@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=samsung.com (client-ip=210.118.77.12; helo=mailout2.w1.samsung.com; envelope-from=m.szyprowski@samsung.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 544 seconds by postgrey-1.37 at boromir; Fri, 25 Sep 2026 19:06:29 AEST
+Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com [210.118.77.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrkmT1f2wz2xGr
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2026 18:45:13 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68P4ZuCw4104239;
-	Fri, 25 Sep 2026 08:44:31 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=2de9xHNjmPAOVaG2ifsPQ33bU5QHct
-	L9cV7tymsHQY0=; b=p3huYxFHoSEQncV4QHHXzz9lN66r41EH9qE+HH2FTWFAo5
-	h/zba0v1i+C0lHm8p2oh9LrPWVV3JhMXJRxLFZdaiKbbx78fnhoRNxy3VsNT261u
-	bOl1eIgrFHbcrLXw+wr961mlSwl/0x47DzjqFGscKv1Z2XQo5YHvdhbHwvJ/B67N
-	RoylsQAfclr6bKM/i7XgIxeHGJuwlQzJkx7+sn+KWg+ZW8EfSpKI3oV0+kp8R6Ef
-	M+UIn9ZkBXlwgq5Ra5CRDPgCDKq4OfWB+dP1dpoNuFNSn2sM8P0NVMsKNkfB4/GG
-	o5fFDUTtUg7Pcb+/6QZNnYiMoUzfXOw8A4Zzf+1w==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gske1w7vm-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 25 Sep 2026 08:44:29 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68P4lYGl1959512;
-	Fri, 25 Sep 2026 08:44:28 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gvu7edxau-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 25 Sep 2026 08:44:28 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68P8iPQw28836176
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 25 Sep 2026 08:44:25 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id EF1762004B;
-	Fri, 25 Sep 2026 08:44:24 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 39CD820043;
-	Fri, 25 Sep 2026 08:44:23 +0000 (GMT)
-Received: from osiris (unknown [9.111.31.68])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Fri, 25 Sep 2026 08:44:23 +0000 (GMT)
-Date: Fri, 25 Sep 2026 10:44:21 +0200
-From: Heiko Carstens <hca@linux.ibm.com>
-To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, catalin.marinas@arm.com,
-        will@kernel.org, mark.rutland@arm.com, maddy@linux.ibm.com,
-        mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
-        ritesh.list@gmail.com, sshegde@linux.ibm.com, pjw@kernel.org,
-        palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr,
-        gor@linux.ibm.com, agordeev@linux.ibm.com, borntraeger@linux.ibm.com,
-        svens@linux.ibm.com, tglx@kernel.org, mingo@redhat.com, bp@alien8.de,
-        dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com,
-        ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net,
-        bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org,
-        aliceryhl@google.com, tmgross@umich.edu, dakr@kernel.org,
-        daniel.almeida@collabora.com, tamird@kernel.org, acourbot@nvidia.com,
-        work@onurozkan.dev, nathan@kernel.org, ndesaulniers@google.com,
-        morbo@google.com, justinstitt@google.com, jszhang@kernel.org,
-        japo@linux.ibm.com, jpoimboe@kernel.org, seanjc@google.com,
-        pmladek@suse.com, thuth@redhat.com, ynorov@nvidia.com,
-        joelagnelf@nvidia.com, david@davidgow.net, fujita.tomonori@gmail.com,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
-        linux-s390@vger.kernel.org, rust-for-linux@vger.kernel.org,
-        llvm@lists.linux.dev
-Subject: Re: [RFC] rust: kernel: Add KUnit tests for ARCH_WARN_ASM bug table
- emission
-Message-ID: <20260925084421.23528Afe-hca@linux.ibm.com>
-References: <20260922054959.955093-2-mkchauras@gmail.com>
- <20260922064735.GS4121339@noisy.programming.kicks-ass.net>
- <arNxAn7I7NCVWmD1@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
- <20260924111557.GP1837346@noisy.programming.kicks-ass.net>
- <20260924151335.18402A8b-hca@linux.ibm.com>
- <arYWDWmMJgIAt1_W@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrlF136zMz2y21
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2026 19:06:27 +1000 (AEST)
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+	by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20260925085711euoutp023034b78e8628550a3ae5d7840b37570c~YhJYCLvL92670226702euoutp022;
+	Fri, 25 Sep 2026 08:57:11 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20260925085711euoutp023034b78e8628550a3ae5d7840b37570c~YhJYCLvL92670226702euoutp022
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+	s=mail20170921; t=1790326631;
+	bh=fRkS/AwRvXfqS9hACKPrCrxlhkEVLAdRbTDbRYWa8VU=;
+	h=Date:From:Subject:To:Cc:In-Reply-To:References:From;
+	b=vanVKrSk5T6FjDTn74/1SUO/LMXVqJxekusjmh+babZgiVJMQp94HjScOSgxnGlOR
+	 5d4koPLRi1e6pSrU0IEHhOTj75hlbtCMapcYoGSA9uiDQv+BCXn4dZic+bQLLvKziH
+	 LU69fdmLb9XCyuTFLtUEuYD6O202XJ3H6/pu8JBg=
+Received: from eusmtip2.samsung.com (unknown [203.254.199.222]) by
+	eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+	20260925085711eucas1p1485ce5a6153e8db654ed3cd6ed2fb70c~YhJX0T9dK1519715197eucas1p1s;
+	Fri, 25 Sep 2026 08:57:11 +0000 (GMT)
+Received: from [106.210.134.192] (unknown [106.210.134.192]) by
+	eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
+	20260925085707eusmtip2203bb57f8f737ff31c8cf3ba1f2b8a50~YhJULSaYY1254612546eusmtip2q;
+	Fri, 25 Sep 2026 08:57:07 +0000 (GMT)
+Message-ID: <40d8c179-f240-486d-b446-c76549d72772@samsung.com>
+Date: Fri, 25 Sep 2026 10:57:07 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -111,63 +63,100 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <arYWDWmMJgIAt1_W@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: 87lA0aCgX2z2D3O1YImj8y7jkpHmz4CB
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI1MDAzNCBTYWx0ZWRfXyKhVgC1T7hXc
- V/4zpWORmrgXaPIYCPqnXQh+/XRSwR1UXNgV2YvLqkokz4XTbTo2lSCIo2oGyHP5I/BQxBbtksw
- OLPZx6zdmUHojKQonoku7cjqsdZoePEMaX0dEzbcuBAjpuNDcXWXe3/vUlCZJCpBd1Ovtom/noX
- MmniggVMhfgZ4L07KrgtwHhet7Eir9r3Xd+hvhCrbn95SRLiCdjhLNRQOT1IocKdr6r3LvwTadO
- y4CSA8jcRzWbkgfE23lR/ONSq0zsrCi65ubnC6woMeUNsQI0j9K2e5fXc2TQHy5gh1QKHLNc17Y
- OAKjpKoYQ7Qn9zZ/n69xqyFwRfiWN33KM1gJzZ/57d5EDtrsVvAoPaozHfnjajPwokHT1TRbBU9
- QhA36CoSDk/x1vOSIIwGzAn4zrb42OphDQSjxR+zQe/DJOGEddcYVSIoiECr93Fdhd/S9YsZJa3
- kKlU0vrfYgVZwYwHzZg==
-X-Authority-Analysis: v=2.4 cv=O/KsLx9W c=1 sm=1 tr=0 ts=6ab6346e cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=kj9zAlcOel0A:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=kNr3sdrnxbR47e0HQjsA:9
- a=CjuIK1q_8ugA:10
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI1MDAzNCBTYWx0ZWRfXy9BY6yI3+QWb
- ojtvWdD5I9GgEO2EI/5q1+KsJFtrN8hUGDyFDrjjLiBS4udvzPoklpbszwigPS0vRy/fC9pj/Ag
- cPRsb7OwEtSlA8sDaU+DGjpOMGVPE3o=
-X-Proofpoint-GUID: rzTFMSH6Roqit0uEX2DfQ6jw3cCbmDAk
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-25_02,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 malwarescore=0 phishscore=0 impostorscore=0 suspectscore=0
- bulkscore=0 priorityscore=1501 lowpriorityscore=0 adultscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609250034
+User-Agent: Betterbird (Windows)
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH v6 0/8] dma: swiotlb: Centralize default pool policy and
+ sizing
+To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
+	iommu@lists.linux.dev, linux-kernel@vger.kernel.org
+Cc: Robin Murphy <robin.murphy@arm.com>, Will Deacon <will@kernel.org>, Mark
+	Rutland <mark.rutland@arm.com>, Marc Zyngier <maz@kernel.org>, Steven Price
+	<steven.price@arm.com>, Suzuki K Poulose <Suzuki.Poulose@arm.com>, Catalin
+	Marinas <catalin.marinas@arm.com>, Jiri Pirko <jiri@resnulli.us>, Jason
+	Gunthorpe <jgg@ziepe.ca>, Mostafa Saleh <smostafa@google.com>, Petr Tesarik
+	<ptesarik@suse.com>, Alexey Kardashevskiy <aik@amd.com>, Dan Williams
+	<dan.j.williams@intel.com>, Xu Yilun <yilun.xu@linux.intel.com>, Madhavan
+	Srinivasan <maddy@linux.ibm.com>, WANG Xuerui <kernel@xen0n.name>, Albert Ou
+	<aou@eecs.berkeley.edu>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra
+	<peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar
+	<mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
+	<dave.hansen@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
+	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
+	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, x86@kernel.org
+Content-Language: en-US
+In-Reply-To: <20260924060756.1325156-1-aneesh.kumar@kernel.org>
+Content-Transfer-Encoding: 8bit
+X-CMS-MailID: 20260925085711eucas1p1485ce5a6153e8db654ed3cd6ed2fb70c
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20260924060823eucas1p1d27fbf57221c9b4c0e9831a9b0cdd7d3
+X-EPHeader: CA
+X-CMS-RootMailID: 20260924060823eucas1p1d27fbf57221c9b4c0e9831a9b0cdd7d3
+References: <CGME20260924060823eucas1p1d27fbf57221c9b4c0e9831a9b0cdd7d3@eucas1p1.samsung.com>
+	<20260924060756.1325156-1-aneesh.kumar@kernel.org>
 
-On Fri, Sep 25, 2026 at 12:06:28PM +0530, Mukesh Kumar Chaurasiya wrote:
-> On Thu, Sep 24, 2026 at 05:13:35PM +0200, Heiko Carstens wrote:
-> > On Thu, Sep 24, 2026 at 01:15:57PM +0200, Peter Zijlstra wrote:
-> > > Untested thingies for arm64 and s390x.
-> > >  int is_valid_bugaddr(unsigned long addr)
-> > >  {
-> > > -	return 1;
-> > > +	u16 insn;
-> > > +
-> > > +	if (get_kernel_nofault(insn, (u16 *)addr))
-> > > +		return 0;
-> > > +
-> > > +	return insn == 0x0001 || insn == 0x000e;
-> > 
-> > I have no idea why anybody wants to do this, but it looks like I'm not
-> > alone :) In any case: the check is wrong.
-> > s390 uses only the monitor call instruction and this should be
-> > 
-> > 	return insn == 0xaf00;
-> 
-> should i send this out along with ppc. I am not paricularly very good
-> with s390's assembly, but if this looks correct to you, i can send it
-> out.
+On 24.09.2026 08:07, Aneesh Kumar K.V (Arm) wrote:
+> This series centralizes swiotlb default-pool selection and sizing, and
+> simplifies the initialization flags used to describe pool placement.
+>
+> The first patch replaces the addressing-limit argument with initialization
+> flags and introduces explicit policies for the different reasons a default
+> pool may be needed. Architectures now report DMA addressing constraints with
+> SWIOTLB_INIT_ADDRESSING_LIMIT, while the core selects the corresponding pool
+> policy.
+>
+> The second patch moves the reduced sizing used when the pool is needed only
+> for unaligned kmalloc bouncing from arm64 and RISC-V into the swiotlb core.
+>
+> The third patch centralizes swiotlb sizing for memory-encrypted systems. It
+> moves the existing x86 guest-sizing policy into the core. Host memory
+> encryption retains the normal pool size, and a shared default pool is not
+> selected solely for guest memory encryption when a restricted DMA pool is
+> present.
+>
+> The fourth patch removes SWIOTLB_ANY. Pool placement is derived directly from
+> SWIOTLB_INIT_ADDRESSING_LIMIT: pools required for limited DMA addressing are
+> allocated below the architecture's low address limit, while other pools may
+> be allocated anywhere in directly mapped memory. Xen continues to request a
+> pool explicitly with SWIOTLB_INIT_REMAP without imposing a low-address
+> constraint.
 
-No, I still don't get what this fixes, or what the improvement would be
-(also not after reading you reply to Mark). The current code is fine for
-s390. Unless there is a pressing need I'd like to keep it as it is.
+
+I would like to give this patchset some tests in linux-next and merge this to
+v7.4-rc1, as this is important continuation of the code already merged to v7.3.
+
+
+Any chance to get some more acks from arch maintainers (especially x86)?
+Unfortunately I had to reduce the CC list due to my smtp limits...
+
+> ...
+>
+>  Documentation/core-api/swiotlb.rst   |   8 +-
+>  arch/arm/mm/init.c                   |   6 +-
+>  arch/arm/xen/mm.c                    |   2 +-
+>  arch/arm64/mm/init.c                 |  14 +-
+>  arch/loongarch/kernel/setup.c        |   2 +-
+>  arch/mips/cavium-octeon/dma-octeon.c |   2 +-
+>  arch/mips/loongson64/dma.c           |   2 +-
+>  arch/mips/sibyte/common/dma.c        |   2 +-
+>  arch/powerpc/kernel/dma-swiotlb.c    |   4 +-
+>  arch/powerpc/mm/mem.c                |  17 ++-
+>  arch/powerpc/platforms/pseries/svm.c |  10 --
+>  arch/powerpc/sysdev/fsl_pci.c        |   1 +
+>  arch/riscv/mm/init.c                 |  24 +---
+>  arch/s390/mm/init.c                  |   2 +-
+>  arch/x86/include/asm/crash_reserve.h |   4 +-
+>  arch/x86/kernel/pci-dma.c            |  23 +++-
+>  arch/x86/mm/mem_encrypt.c            |  24 ----
+>  include/linux/swiotlb.h              |  17 ++-
+>  kernel/dma/swiotlb.c                 | 193 +++++++++++++++++++--------
+>  19 files changed, 210 insertions(+), 147 deletions(-)
+
+Best regards
+
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
+
 
