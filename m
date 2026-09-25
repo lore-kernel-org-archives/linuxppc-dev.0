@@ -1,104 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-28204-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28205-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 019FAC9830D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2026 13:43:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99CFDC98321
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2026 14:35:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hrsNR1v71z30TY;
-	Fri, 25 Sep 2026 23:43:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hrtY7596wz2yQl;
+	Sat, 26 Sep 2026 00:35:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790343799;
-	cv=none; b=AmuUtoXxCJdGyuHGjEQKO623OrcpKLALWMRikkNVqo+bKGxzKlLusNoOfHqbrUtnINP8DcaDHoDYg3mWQFY1Phx5YrHNkwpVU9UEbukQgiAifYtWrWEfjAFIrAmg9r2syyQ0ylqC8kCLzQ8CrpjpTvjwulcLI82LhUZS6daRWD7XLABtS3JPsmkJvny/eYwaIj5nQi8W0cj2gmac/gzOTxFe79es1URb7uGgmdZzEFs5efWTI8802F2ZR6MU/Go/+h4mlG/EIbXRdmEhL2P3xVEbc207iUBdqrfsEJDN2ybNBKtgBSxuTpWjL5j54upmhto7r4WT6s9xOF2shEk+WQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790346955;
+	cv=none; b=eIl2DF7L1QTH5WE0RdwiiV4InI8XBgmXZqb2QUQ9n5Wix7l3P5pwM5z0lVH/FcrGK2341P843DOfePrhefS9hh/ApgfOe1xxOPfMUDZKBUDKnuT9o3/BQfVy+MksfWoO44FBUUqXdeBZT0r9b119c4/uj0PRHQUURqtUVE2RgpaFYGuvYPAGEWBrVhgB+Jn07QSNOJFhKYnX1aCFdeqjULSZ2brxDxzM3qFI86QihIYiKnaEph5Xn4phjkJirFRlq1d/p74Q7gOkS6ZfSrWteQoLzUanBu4WHssdWcyc9m5RUVY7VmvLF+WE6YI4CNMnY7S4qXId8UOzKAWwMaxisw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790343799; c=relaxed/relaxed;
-	bh=pGmUzdss5rEW+R1oGfgJFhDqCoXEACtVuCJeVlCowUQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MIJwKpFx2bkvvUXb3HKFcMTvs79eYpSaobCfvkZzaxgjfd5jM05zR1SFx0ooUBGuqPG3zJ3KFR8pRdVw5WimctOLQE1itp0uxknP1kjINL2OpHpgDJAm+Pk2rYB4POOMiVyouxzIIG+/liDU50EVoCrsWEWEQOsTYMtp8ylqEdUC+Uz+YUDH8zEXvUJf+c5+B/iLO4FnajZBiUst2LKsaTt0LWUQH2TMfAVwLJJ1stJTj4yzEBRSSbnY3ArFvOnNTIXVmyNFP1cedHEL+r9chy/tednleXMWuNHPnhX62RtN6W8JeR8CsC6+FsKurfsct/DQRvD1x545b8gBgZt1Mg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EEplY4dX; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hca@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1790346955; c=relaxed/relaxed;
+	bh=wacdGz1FFx765iaQBSdnRp5+uhnOeXue3p/ONbwCEaY=;
+	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=CcbPbsJj2IDW4sV7ao8YrzDB8IZG3SszHt6K1d27mclbR/b7Cmhv1OCvJs+WDTz4AyYpPZyiaTZmXgOYSd2PV+H8uuMENxiTaf3gvu5MWsZ7R8aS2coE1WRY7s1HVsG93b8ssGjWp5njf7qPyn0D5ICEejVUPV4VmQgzp404avJDWuuDkv8EyIkM2ZU16YBUDX/X0JtMzFRlXifWPGUI9RuDhCnp7pZKyiKOaYDMxytECdlk77U7+BGPSOfiXU/oBHvtjLUQ25rmF+6Ce+LtUXZwNcLC8eeIuQ5KEcPV4lm+Aim4hRxMUkEtWMyd3tuLfIF9THL7AjonAB+E2lY2Sw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=imdsvGZv; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EEplY4dX;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=imdsvGZv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hca@linux.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrsNQ03Khz2yb9
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2026 23:43:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrtY61cfJz2yDD
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 00:35:53 +1000 (AEST)
 Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68P4aW25102815;
-	Fri, 25 Sep 2026 13:42:31 GMT
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68P4aXv2102845;
+	Fri, 25 Sep 2026 14:35:50 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=pGmUzdss5rEW+R1oGfgJFhDqCoXEAC
-	tVuCJeVlCowUQ=; b=EEplY4dXyT5TnlQDtoDm7+L5X9sOTEzNipvqTUu8s1LEuS
-	eE94bO88HaakzMucn+OCPYiFQp6Wnqb9URcR3KvpjdPsC+6pUd9lyOG7lG3cS6fd
-	JLSaHkUVH7mNl9f5pM8QTuajQ8YZT7bF6NxXRt3FYfLZULvx9FFZIH6vrSWo8iW1
-	30otN1vJD/yoIQYiuCgGAWomjRNOHFIDgczLSgBkxfcWeUT38vh7+jU54ORlkPiI
-	ZlaggeNnjPsy6+Prosf7S200q/znrivWcxMVpp1KI4aX6n/HjoZAFyx+sTDP01Lt
-	kFJLVqwmsAvJxQImOPyA1WXN5RTuARVhiG+CEb0Q==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gskdvpb5t-1
+	:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=pp1; bh=wacdGz1FFx765iaQBSdnRp5+uhnO
+	eXue3p/ONbwCEaY=; b=imdsvGZvlt1jxejEvPQQ+ufykRlcPWqIDgTgWXhcufEv
+	m341Cf7s78erGqN8YFeoRVcO2aYkVlKL6y+MStSy5UnfGCaD9QeH5uUPRUCzKL7R
+	S3IaQP0N9/l0bh3m9H4UAbVODG4/J3fBU5T5Gzthp6UCl+SkpwUVwtQYz3Tswf9Y
+	ACJw16XKQtqqzKWnsbWy2po2Dv5JgN1miRN3TA7h6oycfMfqc2pGXWdrAQIs5rgw
+	Ip7+Ydym6j1gU91clysfF3lstnsCFaHJEd2jn5z0l9kCCTpxDkrm6//TpV2PB68I
+	hGkVP2KG2la6ab8Kxf77OOzQl/30fzgR/PBzd1MKmg==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gskdvpjhq-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 25 Sep 2026 13:42:30 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68P9k7il3288275;
-	Fri, 25 Sep 2026 13:42:30 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gvbe22mcy-1
+	Fri, 25 Sep 2026 14:35:49 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68PA1cq93298414;
+	Fri, 25 Sep 2026 14:35:49 GMT
+Received: from smtprelay06.wdc07v.mail.ibm.com ([172.16.1.73])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gvb8k2se0-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 25 Sep 2026 13:42:30 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68PDgQOw13107688
+	Fri, 25 Sep 2026 14:35:49 +0000 (GMT)
+Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
+	by smtprelay06.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68PEZkOb60031348
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 25 Sep 2026 13:42:26 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1237520043;
-	Fri, 25 Sep 2026 13:42:26 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DC7AE20040;
-	Fri, 25 Sep 2026 13:42:24 +0000 (GMT)
-Received: from osiris (unknown [9.111.31.68])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Fri, 25 Sep 2026 13:42:24 +0000 (GMT)
-Date: Fri, 25 Sep 2026 15:42:23 +0200
-From: Heiko Carstens <hca@linux.ibm.com>
-To: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-        Albert Ou <aou@eecs.berkeley.edu>,
-        Alexander Gordeev <agordeev@linux.ibm.com>,
-        Alexandre Ghiti <alex@ghiti.fr>, Borislav Petkov <bp@alien8.de>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        David Hildenbrand <david@kernel.org>,
-        Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-        Ingo Molnar <mingo@redhat.com>, "Liam R. Howlett" <liam@infradead.org>,
-        Lorenzo Stoakes <ljs@kernel.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <pjw@kernel.org>,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        Ritesh Harjani <ritesh.list@gmail.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>,
-        Suren Baghdasaryan <surenb@google.com>,
-        Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@kernel.org>,
-        Vasily Gorbik <gor@linux.ibm.com>, Vlastimil Babka <vbabka@kernel.org>,
-        Will Deacon <will@kernel.org>, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-        linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
-        linux-s390@vger.kernel.org
-Subject: Re: [PATCH] arch, mm: promote DEBUG_WX to CHECK_WX
-Message-ID: <20260925134223.23528E0e-hca@linux.ibm.com>
-References: <20260925-direct-map-verify-wx-v1-1-7fd2f7d6d23b@kernel.org>
+	Fri, 25 Sep 2026 14:35:47 GMT
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id ACBB65805A;
+	Fri, 25 Sep 2026 14:35:46 +0000 (GMT)
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8CA5258056;
+	Fri, 25 Sep 2026 14:35:44 +0000 (GMT)
+Received: from [9.61.242.145] (unknown [9.61.242.145])
+	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 25 Sep 2026 14:35:44 +0000 (GMT)
+Message-ID: <d4cccba9-ce5c-424b-864c-2248fb0d99e6@linux.ibm.com>
+Date: Fri, 25 Sep 2026 20:05:43 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -112,29 +79,40 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260925-direct-map-verify-wx-v1-1-7fd2f7d6d23b@kernel.org>
+User-Agent: Mozilla Thunderbird
+Content-Language: en-GB
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Shrikanth Hegde <sshegde@linux.ibm.com>,
+        Ritesh Harjani <riteshh@linux.ibm.com>,
+        "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
+        nandinih@linux.ibm.com
+Cc: LKML <linux-kernel@vger.kernel.org>,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Subject: [BUG] powerpc: unrecoverable exception due to
+ arch_local_irq_restore() called in NMI context on Power11
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: az6V2wRZNTPsfcgPJvRvBbZTbbclocGz
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI1MDA1NCBTYWx0ZWRfX8eL1fhw8Wcuz
- gwW3tmVcEwpUDvML7GILF9tAuDr0VlXZUr5Wt11Sb6FgeUgSArMjIqmr7nGQy57VhoNxjcdb1nB
- xgUIIMHQV/ped6lC1/jiVHQShjl212s=
-X-Authority-Analysis: v=2.4 cv=FLiOVOos c=1 sm=1 tr=0 ts=6ab67a47 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=kj9zAlcOel0A:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=QyXUC8HyAAAA:8
- a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=AFSQz8Mf0LVJe8Ay4m4A:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-GUID: 0vhv4zhVL0x6H6vYd9vrkIP5KCg73iuL
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI1MDA1NCBTYWx0ZWRfXzgmDIjyBU9XH
- AZygS5+FQqXvvslTnG00liNVJBCMapoyGbK83aD/2abGIeLAKYFSQ+7bK6Q9bFom2evAfxDBE9T
- GZArUR5CDRcYvKoLKJulQESBL84U7K6X+/9MkHAWIhl3JByi7BSRQBQoXzCf336JUrpREKgaIPL
- TfdL9OOeOBob+ckLDr79fGOo6b+bCdZoo0z+sZ2qJUMXXT5yANcfQjcS04U02Ha1zOwDt9O3wCE
- 4QilhmxAIrZKRzqLdgDG858DA/wV+CDDlXaGCdtKe9LCeuQFrfIZdyAHwbC7cQGjJqnHWaU+Th3
- RwDS9SMwEBch3wrMER1CIygLEMvYbf23X0BPjzvJkIZIv5xU4a/z3fpCB7p45+V/64blb8yDwTk
- nQUAAlCd16ruDY4xCr9wFhHy/g2X/4msugQqmL0LTkJdjwIz0I7AuYeStPUMi1mSxjMScYQUOtz
- jwmTnG3Z501Gy7oE9DQ==
+X-Proofpoint-ORIG-GUID: di60XduoevU9mIEv7nilN36jqMGmllww
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI1MDA1OCBTYWx0ZWRfXzcP/x3M5v3IP
+ uzpuTIRBHU3Abbsil8tYh4el26SvsxETLgfhMguJuRtSn2CVrAYwokTCOEACGCs36AdGf83jGqU
+ hmYOqaoXP1eL1f1AMpV8Ij4C+CMrsRw=
+X-Authority-Analysis: v=2.4 cv=FLiOVOos c=1 sm=1 tr=0 ts=6ab686c6 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8
+ a=S-y81fhqRhZvH5zLhZwA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: JpKBIopxW_M7YMfijINCTLsNgotVPFzW
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI1MDA1OCBTYWx0ZWRfXyyQs8MbWpIeV
+ ikHJNCHdsVHWz67Ba5P14DP4r5F85D0SffNp+8rdbeZm0j9GtvR0pGSiL3N31ZkiwNx7xRzn8UU
+ kjMcsHmBARwbT7L/51bhZzzzoyyyK+fpadYa2DPJLyfKNm65skK6B5UlokBP+HshLdUGklIoxH+
+ G7U4cOhRU2XMCJ6DZscXI+HIIS88cT+ZvM9JpGPLMziF2LtzWeA2LIvNDzcKZFaIolsJQJGDG8o
+ DNWtTx4QLRzOs1qfjHGaMRBNFfCfoFaHFOKoyOwAwg658O3i+nL11ne7K45dExnd+uF7WC+eHJX
+ 5otfRZNXg+VWHEFplzmTq9P7OxMLSzxvN1pW5qM1FArZuPJt7JlbI7cAzgiiko8voClJ1/yrtTY
+ fctAbYVWD7J3bMJtgB5iFnKLQ1g5jq3CR3hFrzEmo2o0sRKP+2fd0qKmILPr14WlXCKcIyxhwqH
+ yii4eUF3JcTbU348Wtg==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-09-25_02,2026-09-21_02,2025-10-01_01
@@ -143,54 +121,130 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  suspectscore=0 bulkscore=0 lowpriorityscore=0 priorityscore=1501
  malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
  route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
- definitions=main-2609250054
+ definitions=main-2609250058
 
-On Fri, Sep 25, 2026 at 12:53:46PM +0300, Mike Rapoport (Microsoft) wrote:
-> Verification that the kernel does not have writable + executable
-> mappings is about detecting security risks rather than a pure debug
-> feature.
-> 
-> Major distribution configurations enable it in their kernels as well as
-> defconfigs of most architectures that have ARCH_HAS_DEBUG_WX.
-> 
-> Rename relevant generic configuration options to use CHECK_WX and move
-> their definitions from mm/Kconfig.debug to mm/Kconfig.
-> 
-> For arm that does not widely enable it, only rename its variants of the
-> config options.
-> 
-> Enabling CHECK_WX adds a few kilobytes to the kernel binary and while
-> the added size can be slightly reduced with churny updates of
-> architecture implementations of ptdump, the core functionality takes
-> most of the added size. It cannot be moved to .init.text because the
-> verification has to happen after init sections are freed.
-> 
-> With this, make generic CHECK_WX default to STRICT_KERNEL_RWX while
-> still leaving users targeting small kernels the possibility to opt-out.
-> 
-> Suggested-by: Dave Hansen <dave.hansen@linux.intel.com>
-> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> ---
-...
->  arch/s390/Kconfig                    |  2 +-
->  arch/s390/configs/debug_defconfig    |  2 +-
->  arch/s390/configs/defconfig          |  2 +-
->  arch/s390/mm/dump_pagetables.c       |  2 +-
+Hello,
 
-Acked-by: Heiko Carstens <hca@linux.ibm.com> # s390
+IBM CI has reported has reported an unrecoverable kernel exception on 
+Power11 pSeries
+systems triggered reliably by running a parallel kernel build.
 
-> diff --git a/arch/s390/mm/dump_pagetables.c b/arch/s390/mm/dump_pagetables.c
-> index 89badbe72ae7..a23a0bd4d8a8 100644
-> --- a/arch/s390/mm/dump_pagetables.c
-> +++ b/arch/s390/mm/dump_pagetables.c
-> @@ -86,7 +86,7 @@ static void note_prot_wx(struct pg_state *st, unsigned long addr)
->  	 */
->  	if (addr == PAGE_SIZE && (nospec_uses_trampoline() || !cpu_has_bear()))
->  		return;
-> -	WARN_ONCE(IS_ENABLED(CONFIG_DEBUG_WX),
-> +	WARN_ONCE(IS_ENABLED(CONFIG_CHECK_WX),
 
-Hm... looks like there is bug with relocated lowcore handling in the if
-condition above the WARN_ONCE(). I'm going to address that, but that
-has nothing to do with your patch.
+Hardware
+--------
+IBM,9080-HEX Power11 (architected) 0x820200
+hv:phyp pSeries, FW1110.01 (NH1110_069)
+32 CPUs, 60GB RAM
+
+Kernel
+------
+powerpc/linux.git merge branch
+commit b0956825c (2026-09-21 "Automatic merge of 'fixes' into merge")
+
+Config
+------
+CONFIG_PPC_IRQ_SOFT_MASK_DEBUG=y
+CONFIG_PROVE_LOCKING=y
+CONFIG_LOCKDEP=y
+CONFIG_PPC_WATCHDOG=y
+PREEMPT_DYNAMIC (lazy mode)
+
+Reproducer
+----------
+   make clean && make -j$(nproc)
+
+Triggers within ~120 seconds on a 32-CPU Power11 system.
+
+
+Symptoms
+--------
+First, two WARNINGs fire at irq_64.c:217/218:
+
+   [121.124041] WARNING: arch/powerpc/kernel/irq_64.c:217 at
+                arch_local_irq_restore+0x290/0x328, CPU#1: make/6861
+   [121.124113] LR [c0000000005036d8] trace_hardirqs_on_prepare+0x98/0x150
+   [121.124117] Call Trace:
+   [121.124120]  trace_hardirqs_on_prepare+0x98/0x150
+   [121.124123]  irqentry_nmi_exit+0x12c/0x168
+   [121.124128]  soft_nmi_interrupt+0x468/0x6c4
+   [121.124131]  soft_nmi_common+0x1b0/0x28c
+   [121.124134]  ---- interrupt: 900 at end_real_trampolines+0x0/0x1000
+
+   [121.124184] WARNING: arch/powerpc/kernel/irq_64.c:218 at
+                arch_local_irq_restore+0x2a0/0x328, CPU#1: make/6861
+
+Followed by an unrecoverable exception:
+
+[  202.258332] Oops: Exception in kernel mode, sig: 4 [#1]
+[  202.258527] LE PAGE_SIZE=4K MMU=Radix  SMP NR_CPUS=8192 NUMA pSeries
+[  202.258531] Modules linked in: nft_fib_inet nft_fib_ipv4 nft_fib_ipv6 
+nft_fib nft_reject_inet nf_reject_ipv4 nf_reject_ipv6 nft_reject nft_ct 
+nft_chain_nat nf_nat nf_conntrack nf_defrag_ipv6 nf_defrag_ipv4 bonding 
+tls ip_set nf_tables rfkill fsdev_dax kmem device_dax pseries_rng 
+vmx_crypto dax_pmem fuse ext4 crc16 mbcache jbd2 sd_mod nd_pmem papr_scm 
+sg libnvdimm ibmvscsi ibmveth scsi_transport_srp pseries_wdt
+[  202.258570] CPU: 2 UID: 0 PID: 1598 Comm: git-remote-http Kdump: 
+loaded Tainted: G        W           7.3.0-rc4+ #2 PREEMPT(lazy)
+[  202.258576] Tainted: [W]=WARN
+[  202.258578] Hardware name: IBM,9080-HEX Power11 (architected) 
+0x820200 0xf000007 of:IBM,FW1110.01 (NH1110_069) hv:phyp pSeries
+[  202.258582] NIP:  000000000003e178 LR: c00000000003e174 CTR: 
+0000000000000000
+[  202.258586] REGS: c000000effc17d60 TRAP: 0700   Tainted: G   W        
+     (7.3.0-rc4+)
+[  202.258590] MSR:  0000000000081000 <ME>  CR: 00000000 XER: e0017930
+[  202.258596] CFAR: c00000000000d158 IRQMASK: 0
+GPR00: c000000effc17930 0000000000000000 c000000002252580 c000000002252600
+GPR04: c000000effc179a0 c000000effc17a08 c000000effc179e0 0000000000000000
+GPR08: c00000000002c254 0000000000000000 0000000000000000 0000000000000000
+GPR12: 0000000000000000 c000000effffdf00 0000000000000000 0000000000000000
+GPR16: 0000000000000000 0000000000000000 0000000000000000 c000000002267878
+GPR20: c000000effc179e0 0000000000000000 0000000000000000 0000000000000001
+GPR24: 0000000000000800 0000000000000003 0000000000000000 c000000002259970
+GPR28: c000000effc17ba0 0000000000000009 c00000000003dc60 c000000002267878
+[  202.258637] NIP [000000000003e178] 0x3e178
+[  202.258642] LR [c00000000003e174] arch_local_irq_restore+0x2a4/0x328
+[  202.258649] Call Trace:
+[  202.258651] [c000000effc17b80] [c000000000023afc] 
+show_regs+0x5c/0x1d4 (unreliable)
+[  202.258658] [c000000effc17c30] [c00000000002d05c] __die+0x114/0x17c
+[  202.258663] [c000000effc17cc0] [c00000000002dd44] die+0x74/0xe4
+[  202.258669] [c000000effc17d00] [c000000000031dd0] 
+program_check_exception+0x3c/0xf0
+[  202.258675] [c000000effc17d30] [c000000000009b2c] 
+program_check_common_virt+0x3bc/0x3c0
+[  202.258680] ---- interrupt: 700 at 0x3e178
+[  202.258683] NIP:  000000000003e178 LR: c00000000003e174 CTR: 
+0000000000000000
+[  202.258687] REGS: c000000effc17d60 TRAP: 0700   Tainted: G   W        
+     (7.3.0-rc4+)
+[  202.258690] MSR:  0000000000081000 <ME>  CR: 00000000 XER: e0017930
+[  202.258695] CFAR: c00000000000d158 IRQMASK: 0
+GPR00: c000000effc17930 0000000000000000 c000000002252580 c000000002252600
+GPR04: c000000effc179a0 c000000effc17a08 c000000effc179e0 0000000000000000
+GPR08: c00000000002c254 0000000000000000 0000000000000000 0000000000000000
+GPR12: 0000000000000000 c000000effffdf00 0000000000000000 0000000000000000
+GPR16: 0000000000000000 0000000000000000 0000000000000000 c000000002267878
+GPR20: c000000effc179e0 0000000000000000 0000000000000000 0000000000000001
+GPR24: 0000000000000800 0000000000000003 0000000000000000 c000000002259970
+GPR28: c000000effc17ba0 0000000000000009 c00000000003dc60 c000000002267878
+[  202.258735] NIP [000000000003e178] 0x3e178
+[  202.258738] LR [c00000000003e174] arch_local_irq_restore+0x2a4/0x328
+[  202.258743] ---- interrupt: 700
+[  202.258745] Code: 892d0153 2c090000 4082fe30 992d0152 4bfffde0 
+60000000 0fe00000 4bfffda0 60000000 60000000 0fe00000 4bfffda0 
+<60000000> 60000000 0fe00000 4bfffd9c
+[  202.258760] ---[ end trace 0000000000000000 ]---
+
+
+If you happen to fix this, please add below tag.
+
+Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+
+
+Regards,
+
+Venkat.
+
+
 
