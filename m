@@ -1,63 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-28211-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28212-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 962A2C98328
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2026 18:26:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8BCA9C9830E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2026 18:39:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hrzfh5gXPz2yNH;
-	Sat, 26 Sep 2026 04:26:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.16
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790360764;
-	cv=none; b=iS8xI68XjJGO2pRQpgesYlspkCLBocP7fX+TxNzcffyD9uE1RkFHtozUVdqSPi1IA7ipEPJRqXkdeWOkXSwsMcFmhU/EcQvzEiQg6UbhIe7djYo0R0RL1Dve/t+Oq0rknIovBf8Jh8X+x0I0YnYcLHUrxqSIhV8c1zj+pXWHZ2sy17SWsWIrjkGPP9CyowS+Kum5cfUkPKmDZhKLnn1vIHCKV/NZTeOOthXXJVEMU318lHhAVfkCjo8uIgx2mGHu050+beATyEurgVq3jolhIoPvmY0ylWJBbff4nvBM1T4ZzQTL8qGyBjcvKQwAdJQUkLuUiOJbaUAbnQ9z6M22cw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hrzxz0Ss7z2yNH;
+	Sat, 26 Sep 2026 04:39:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790361559;
+	cv=none; b=INYE+7X9DeobE6amFaxvK61xaCDoiIwe0ns0vKtXVEZiwUx1eKZ/HhC7AlrmumHdxM3l+jbAi563P6EQ2e+rqBs/Wj0I4WmTHzKhB7W3fa7nxrATND+DCh5uGPUHMUiRsBPx2ARWcj8wOTTAf0ZRyP3bryTratUcZYC1JwVcvkx8AB13B5P6DsdDsrTpu1+BBRW15U4qo++pgT03O89gTY/syyIzjw5djfEnOsLmteUTk4G1PFUTTmfSoXZqKUw1UjxBRQCyaD5DxBRgfc2JK1VLVfiqtTI5yzeiJAMsBaSb0j8AQAzmVLNrPK571CyYvJGEAtMx/vZOkLhcKGDDSQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790360764; c=relaxed/relaxed;
-	bh=P/nOfrXY7ig6ifFinS5KxkTiEptLwWs4qGfCLMELEQc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=LINNRZL7hnktmq8x8SlGwT3DU346ThLwdg1z6QN5cfCMbcAmSi8eETaOLuJ519FAU2M7WulXZ+DMAA9wk9O7WP1mp9y0h5cct9E2qV3V4wJvKv8PhryTMZ1vHBZ2v7xYNx2rdWCMhSWorTF0bew994LuZWNgnARuZhWTH4QwPf3MJssIO4lI4/eaoZRnTWEpc/pGe4LvqFvLb7EapL9AIbWjU7M8+Fq7dZ03/49xU2qIyLfN2O2J02OlcPTI+kV9UjGx/CExFEnYCULeDNXk1KGVIpVNZGkpcPEL9a9UXoYkO3t900xgPMcUFBvOBTLlXP/LWrOF3r6hXPoyMTCQ7g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jD9ax1Ie; dkim-atps=neutral; spf=pass (client-ip=198.175.65.16; helo=mgamail.intel.com; envelope-from=sathyanarayanan.kuppuswamy@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1790361559; c=relaxed/relaxed;
+	bh=hqMC9MOiHO36wjAR48JonUH9Hk/AZEBGAN/NjtYi4W0=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=M6cacNMEaCxiivwk0ICTjH30j59cYgXxEl9ywL+KUl0Y2VZWluxiR6bqj4ZKYspFTI1RXbRY7BhEC+I055okBm7wo57s18HbN1Sm+UXkyCizZ0rnyoL4mFrNbeTJyy+7Qh3tFodelxqrD6SYapfKCekf5ttePab3Dc3G/2btA4pNvonEmUFZNKPbOcnM1ww3XJjiYaN5RkD7xJXXYUgoLyU1LiI/25Z6fR97GqGov+dN/KKlV8ASnbJTYCOjS54ox9aFmxxtp/MEftfq21lmMuaWyrH+7iErFJ55gB/GbsZkI1IuLTAtw3OBx23r1kHaCot+lJnwS2wdYYCao7R8pQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=paVFWXzf; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jD9ax1Ie;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=paVFWXzf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.16; helo=mgamail.intel.com; envelope-from=sathyanarayanan.kuppuswamy@linux.intel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 63 seconds by postgrey-1.37 at boromir; Sat, 26 Sep 2026 04:26:01 AEST
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrzfd6F4dz2yMm
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 04:26:01 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1790360763; x=1821896763;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=QkfjOc0sQlINp0dlL4tsqbRzARDUfMnXVuM6+kbNa+M=;
-  b=jD9ax1IeB/NYKvx4jxDcTNZBlp5sFNAJP6+AIXfmqx1rVwsVOh/Feg9G
-   gXhVY/MpaHdBvx6gjKIKHFFrldUGN4QF70CZF41vjToR+LJlC1TnEHCo2
-   Ey8gW5LA3+MLSzwjj0tfn6LzcHJA/u3PKbYxHv0W2PeYWvEHic1QsQ8t8
-   PgBuPfkWjH04dCAxesXGP9InoXEo/m2Ty83M5SQ99BkdZaVD5W96dA6Ij
-   S/tT+27klyKdOt7g+ZR5VNe5Gc0GVHERFgIiZkNpf9a2rqZ55eUXc3ATt
-   IvHy8j1Mg+U/l1J4pcFbr+ZoRf940uAL4Hoj1wkIh5dNW2i7DRG5hBgl5
-   Q==;
-X-CSE-ConnectionGUID: Ubi72zAwSCWYIizdfb1g3Q==
-X-CSE-MsgGUID: rkyiV/FoRj+1oapRoFGjXg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11916"; a="90370722"
-X-IronPort-AV: E=Sophos;i="6.27,122,1787036400"; 
-   d="scan'208";a="90370722"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Sep 2026 11:24:54 -0700
-X-CSE-ConnectionGUID: CbPUjuojTVKmcaWccXdU9w==
-X-CSE-MsgGUID: MHDen00fS6+3za6IRsAvZA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,122,1787036400"; 
-   d="scan'208";a="272205388"
-Received: from soc-pf446t5c.clients.intel.com (HELO [10.24.80.90]) ([10.24.80.90])
-  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Sep 2026 11:24:54 -0700
-Message-ID: <4513e7d4-4e2f-42d8-8f0c-2f0e03815dee@linux.intel.com>
-Date: Fri, 25 Sep 2026 11:24:53 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hrzxy08jNz2yMm
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 04:39:17 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68PG5OjC1529488;
+	Fri, 25 Sep 2026 18:39:08 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=hqMC9M
+	OiHO36wjAR48JonUH9Hk/AZEBGAN/NjtYi4W0=; b=paVFWXzfRJL9+Hrec/VRtW
+	5Q2h1O0KgUBxG6hqLZs/6G0E6LWhO3aNuA82aVSoYy4V9xH+DIJS2SKV8wdYFLAF
+	4ApMKGmE6AOyYciLzcCME/nP/auk9LKKywpfToFsdMERByeRCXZJtF2cn5W01te6
+	6vbzazwMaYQplIQSkyzZDcaSUQalMaPkuwff2YPC1Ec7PPzB5d+N3pV4+7bxmfE0
+	/y2PxlmkpFcsIL4tgMxDuFQkS5wWlb607vO+aQ6dxsFUyfiRPCb3oyx2z5vGZrc/
+	wac8IND0pNwNmY0u1LyKRRm9zr5AazUJMwG/k5DXlz8unoPWVKfyQBpA6W+ke1rA
+	==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gskg30rtu-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Fri, 25 Sep 2026 18:39:08 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68PG34jM4191783;
+	Fri, 25 Sep 2026 18:39:07 GMT
+Received: from smtprelay06.wdc07v.mail.ibm.com ([172.16.1.73])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gvb8k3kp4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 25 Sep 2026 18:39:07 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
+	by smtprelay06.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68PId3tp12321410
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 25 Sep 2026 18:39:03 GMT
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F332D58063;
+	Fri, 25 Sep 2026 18:39:02 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 566615804B;
+	Fri, 25 Sep 2026 18:39:00 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.67.6.174])
+	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 25 Sep 2026 18:39:00 +0000 (GMT)
+From: Mingming Cao <mmc@linux.ibm.com>
+To: netdev@vger.kernel.org
+Cc: davem@davemloft.net, kuba@kernel.org, horms@kernel.org,
+        edumazet@google.com, pabeni@redhat.com, andrew+netdev@lunn.ch,
+        nnac123@linux.ibm.com, maddy@linux.ibm.com, mpe@ellerman.id.au,
+        linuxppc-dev@lists.ozlabs.org, haren@linux.ibm.com,
+        ricklind@linux.ibm.com, davemarq@linux.ibm.com, bjking1@linux.ibm.com,
+        shaik.abdulla1@ibm.com, Mingming Cao <mmc@linux.ibm.com>
+Subject: [PATCH net-next v7 01/15] ibmveth: Add MQ RX hypercall wrappers and call definitions
+Date: Fri, 25 Sep 2026 11:38:36 -0700
+Message-Id: <0dc92cdb439b680ad3c1f77d38ad6255859866be.1790319558.git.mmc@linux.ibm.com>
+X-Mailer: git-send-email 2.39.3 (Apple Git-146)
+In-Reply-To: <cover.1790319558.git.mmc@linux.ibm.com>
+References: <cover.1790319558.git.mmc@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,108 +93,315 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 0/2] PCI/AER: Fix ghes_estatus_pool memory leaks in
- error handling
-To: Priyank Rathod <rathodpriyank@google.com>,
- Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
- Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>
-Cc: Lukas Wunner <lukas@wunner.de>, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org
-References: <20260918-b4-fix-aer-memleaks-v4-0-f0a2c21ed1d1@google.com>
-Content-Language: en-US
-From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-In-Reply-To: <20260918-b4-fix-aer-memleaks-v4-0-f0a2c21ed1d1@google.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=true
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: xXlXvegPTmWNAl3fRXvVbxLGNqU_kHsR
+X-Authority-Analysis: v=2.4 cv=I43w19gg c=1 sm=1 tr=0 ts=6ab6bfcc cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=9GrW9DZCARAA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8
+ a=VcrCuZX2KMs9Y6AvvMMA:9 a=3ZKOabzyN94A:10 a=47kamO7So9gA:10
+ a=O8hF6Hzn-FEA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI1MDA3NCBTYWx0ZWRfX3VSl8h/kPUzi
+ R02P/p5OZQCJKH0WtFmzzMCxmZmgFC+M1CQyiDjmIoGjJZGgvL/UWtAld3+SFK4vM5WWjMUkdvr
+ LkaHjBFF2RjlU57rcYWRPhyBeoS8wXfWQAHmRPtYzEj2998Ietr5LkK/OgeqFW57x+jStP6Y/jF
+ H/deMH00uou+o3qkgzmL/W5/Wi+fgcIed3xMIMjgDzjz11LFJt+RVxAG0ZZ7lHH3RT5Cwo7lT0W
+ xG1kFq4tOo2OZb06KfIe1Nl4WjtsiEDB0vItR/blBjUgM8VQbFOpobSS0ruCeJ03ekE4VcjJgAJ
+ 2a+zg4boz/WXyDMaQ2KBZXT7w8YLtWVVW/sLurcUq8FmqBqPoMNkdwo4+P1K37Z8M8iQQcLHWXC
+ YcCtI9Bg9LQJdqVTJO7W2BYELw/BysoK8/z0mdQHiL/7uHWfoo6AghBTkZjX0CmrUY4vDNtN29w
+ U30HKJFmMhtUh/sfatg==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI1MDA3NCBTYWx0ZWRfX1RlyxSmG/35v
+ Bfb2/MBSpzvHoNhrfPOohny+qGKlLTixMSj1lthtaZ0UIKlUCj8RxSlood7DCyOnQEHbj5HPxhY
+ QcewNRd55PAGiK/OivD6Tca1rbJvOdE=
+X-Proofpoint-GUID: 39h5ZqlLsbMoo2w92h6ZjVvjc3Y0mE8j
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-25_03,2026-09-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 clxscore=1015 adultscore=0 suspectscore=0 impostorscore=0
+ lowpriorityscore=0 bulkscore=0 phishscore=0 priorityscore=1501 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609250074
 
-Hi,
+Single-queue ibmveth only needs h_register_logical_lan() plus legacy
+buffer add/free calls. MQ RX uses per-queue handles, so the driver must
+also be able to register/deregister subordinate queues and post
+buffers against a specific queue handle.
 
-On 9/18/2026 10:24 AM, Priyank Rathod wrote:
-> When firmware reports PCIe Advanced Error Reporting (AER) events via ACPI
-> APEI GHES (ghes_handle_aer()), it allocates a snapshot buffer from
-> ghes_estatus_pool to store the aer_capability_regs registers before
-> enqueuing the error record into aer_recover_ring.
-> 
-> aer_recover_queue() returns void, so ghes_handle_aer() cannot release that
-> buffer itself; ownership is handed to the AER code, which until now freed
-> it only on the fully successful path. If the record cannot be enqueued, or
-> if a dequeued record cannot be mapped to a pci_dev, the allocation is
-> silently leaked. Under a sustained error storm this exhausts
-> ghes_estatus_pool, which then breaks GHES hardware error reporting
-> system-wide.
-> 
-> This series fixes both leak paths:
-> 
-> Patch 1: aer_recover_queue() when kfifo_in_spinlocked() fails because
->          aer_recover_ring (capacity 16) is full. The rejected entry is
->          freed immediately via ghes_estatus_pool_region_free().
-> 
-> Patch 2: aer_recover_work_func() when a dequeued entry cannot be mapped to
->          an active PCI device (pdev is NULL). The loop is restructured so
->          ghes_estatus_pool_region_free() runs unconditionally for every
->          dequeued item.
-> 
-> Signed-off-by: Priyank Rathod <rathodpriyank@google.com>
-> ---
+Add the PHYP call IDs for:
 
-I'm fine with the current approach. aer_recover_work_func() already
-owns and frees the buffer, so freeing it on the enqueue failure path
-keeps the ownership in one place, and it keeps the stable backport
-minimal. It might be worth adding a kernel-doc comment on
-aer_recover_queue() stating that it takes ownership of @aer_regs,
-which must be allocated from ghes_estatus_pool, so future callers
-don't trip over it.
+  H_REG_LOGICAL_LAN_QUEUE (0x49C)
+  H_ADD_LOGICAL_LAN_BUFFERS_QUEUE (0x4A0)
+  H_FREE_LOGICAL_LAN_QUEUE (0x4A8)
 
-For the series:
+as defined in PAPR 11.20.00. The gaps at 0x498 (reserved) and 0x4A4
+(reserved for H_FREE_LOGICAL_LAN_BUFFER_QUEUE) are intentional; this
+series tears queues down with H_FREE_LOGICAL_LAN_QUEUE and does not add
+the buffer-queue free hcall.
 
-Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+Raising MAX_HCALL_OPCODE for these IDs also widens KVM's
+kvm_arch.enabled_hcalls bitmap and the range KVM_CAP_PPC_ENABLE_HCALL
+accepts. Neither is user-visible: KVM implements none of the three, so
+the ioctl still rejects them, and the bitmap rounds to the same five
+unsigned longs, so struct kvm_arch does not change size.
 
-> Changes in v4:
-> - Rebased onto v7.3-rc3+ (f259f446f519); applies cleanly to pci/next as
->   well. No conflicts with the Advisory Non-Fatal Error support that landed
->   in the meantime.
-> - Added missing Fixes: e2abc47a5a1a ("ACPI: APEI: Fix AER info corruption
->   when error status data has multiple sections") and Cc: stable to both
->   patches; that commit (v6.7-rc1) introduced the ghes_estatus_pool
->   allocation whose ownership these paths drop.
-> - Patch 1: use braces on both arms of the if/else and fix the continuation
->   alignment (checkpatch --strict).
-> - Both patches now build warning-free with W=1 and CONFIG_ACPI_APEI_PCIEAER=y
->   (earlier revisions were only build-tested with APEI disabled, which
->   compiles neither of the modified functions).
-> - Explained in both commit messages why the caller cannot free the buffer,
->   and when the missing-pci_dev path is reachable.
-> - Cc: Lukas Wunner, who has been active in this code.
-> - Link to v3: https://lore.kernel.org/r/20260803-b4-fix-aer-memleaks-v3-1-e87159611933@google.com
-> 
-> Changes in v3:
-> - Resent to fix threading of the series.
-> - Link to v2: https://lore.kernel.org/r/20260803-b4-fix-aer-memleaks-v2-1-fd199b0171fd@google.com
-> 
-> Changes in v2:
-> - Refactored aer_recover_work_func() to ensure ghes_estatus_pool_region_free()
->   is called unconditionally for every dequeued record.
-> - Added Patch 1 to fix related memory leak in aer_recover_queue() on kfifo
->   buffer overflow.
-> - Link to v1: https://lore.kernel.org/r/20260803183853.432459-2-rathodpriyank@google.com
-> 
-> ---
-> Priyank Rathod (2):
->       PCI/AER: Fix memory leak in aer_recover_queue() on kfifo buffer overflow
->       PCI/AER: Fix memory leak in aer_recover_work_func() when pci_dev is missing
-> 
->  drivers/pci/pcie/aer.c | 30 +++++++++++++++++-------------
->  1 file changed, 17 insertions(+), 13 deletions(-)
-> ---
-> base-commit: f259f446f5198d98e13756d2cd531812a0ad3064
-> change-id: 20260803-b4-fix-aer-memleaks-524a1bd5e888
-> 
-> Best regards,
+Add ibmveth.h wrapper helpers (h_register_logical_lan_queue(),
+h_add_logical_lan_buffers_queue(), h_free_logical_lan_queue()) with
+argument ordering and return semantics matching the existing ibmveth
+hcall wrappers. h_free_logical_lan_queue() uses plpar_hcall_norets()
+like h_free_logical_lan(). Also add h_register_logical_lan_with_handle()
+so queue 0 can capture the PHYP queue handle in MQ mode. Both new
+registration wrappers use plpar_hcall() rather than plpar_hcall9(), so
+they do not read unwritten stack slots.
 
+This patch is intentionally plumbing only: no runtime behavior change
+yet. Legacy firmware keeps H_REGISTER_LOGICAL_LAN and the existing
+buffer hcalls. The new wrappers are used only when a later commit sets
+multi_queue from H_ILLAN_ATTRIBUTES.
+
+Signed-off-by: Mingming Cao <mmc@linux.ibm.com>
+Reviewed-by: Dave Marquardt <davemarq@linux.ibm.com>
+Tested-by: Shaik Abdulla <shaik.abdulla1@ibm.com>
+---
+
+Changes in v7:
+- Drop the duplicated "Both new registration wrappers use
+  plpar_hcall()…" sentence
+- Register and free-queue Return: also H_FUNCTION. Add-buffers
+  already had it in v6; all three PAPR 11.20.00 opcodes return that
+  status on older firmware
+- h_register_logical_lan_queue Return: also
+  H_BUSY / H_LONG_BUSY_*; the caller retries those,
+  and free-queue already documented them
+- tools/perf powerpc-hcalls.py: name 0x49C / 0x4A0 / 0x4A8.
+  0x498 and 0x4A4 stay unnamed (reserved holes)
+
+Changes in v6:
+- both new registration wrappers use plpar_hcall() instead of
+  plpar_hcall9(). They do not need nine args, and plpar_hcall9() was
+  reading three unwritten stack slots
+- Widen add-buffers-queue and free-queue @queue_handle kdoc: handle may
+  come from h_register_logical_lan_queue() or
+  h_register_logical_lan_with_handle() (queue 0)
+- add-buffers-queue Return: also H_FUNCTION (MQ firmware missing that
+  hcall)
+
+Changes in v5:
+- Cite PAPR 11.20.00 for MQ hcall IDs 0x49C / 0x4A0 / 0x4A8 (v4 named
+  the opcodes only)
+- Call out reserved gaps at 0x498 and 0x4A4 (0x4A4 =
+  H_FREE_LOGICAL_LAN_BUFFER_QUEUE); decision: do not add that hcall -
+  queue teardown uses H_FREE_LOGICAL_LAN_QUEUE
+- Note MAX_HCALL_OPCODE raise also widens KVM enabled_hcalls /
+  KVM_CAP_PPC_ENABLE_HCALL accepted range (cross-subsystem)
+- Rename h_reg_logical_lan_queue() -> h_register_logical_lan_queue() to
+  match h_register_logical_lan() / h_free_logical_lan()
+- Unify queue_handle out-params as unsigned long * on both
+  h_register_logical_lan_queue() and h_register_logical_lan_with_handle()
+  (v4 used u64 * on with_handle)
+- h_free_logical_lan_queue() uses plpar_hcall_norets() like
+  h_free_logical_lan() (v4 used plpar_hcall9 with unused retbuf)
+
+Changes in v4:
+- Document @queue_handle and @irq in h_reg_logical_lan_queue() kdoc.
+- Wrap h_register_logical_lan_with_handle() prototype for readability /
+  checkpatch.
+- Drop unused H_FREE_LOGICAL_LAN_BUFFER_QUEUE wrapper/opcode (no caller;
+  buffer return is local harvest + queue free).
+
+ arch/powerpc/include/asm/hvcall.h           |   6 +-
+ drivers/net/ethernet/ibm/ibmveth.h          | 142 ++++++++++++++++++++
+ tools/perf/scripts/python/powerpc-hcalls.py |   4 +
+ 3 files changed, 151 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index dff90a7d7f70..cb0ea53491e6 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -362,7 +362,11 @@
+ #define H_GUEST_DELETE		0x488
+ #define H_PKS_WRAP_OBJECT	0x490
+ #define H_PKS_UNWRAP_OBJECT	0x494
+-#define MAX_HCALL_OPCODE	H_PKS_UNWRAP_OBJECT
++/* 0x498 reserved; 0x4A4 = H_FREE_LOGICAL_LAN_BUFFER_QUEUE (unused here) */
++#define H_REG_LOGICAL_LAN_QUEUE 0x49C
++#define H_ADD_LOGICAL_LAN_BUFFERS_QUEUE 0x4A0
++#define H_FREE_LOGICAL_LAN_QUEUE 0x4A8
++#define MAX_HCALL_OPCODE	H_FREE_LOGICAL_LAN_QUEUE
+ 
+ /* Scope args for H_SCM_UNBIND_ALL */
+ #define H_UNBIND_SCOPE_ALL (0x1)
+diff --git a/drivers/net/ethernet/ibm/ibmveth.h b/drivers/net/ethernet/ibm/ibmveth.h
+index d87713668ed3..5c0b9f61eec9 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.h
++++ b/drivers/net/ethernet/ibm/ibmveth.h
+@@ -66,6 +66,148 @@ static inline long h_add_logical_lan_buffers(unsigned long unit_address,
+ 			    desc5, desc6, desc7, desc8);
+ }
+ 
++/**
++ * h_register_logical_lan_queue - Register a subordinate receive queue
++ * @unit_address: Device unit address
++ * @buffer_list: DMA address of 4KB page for tracking registered buffers
++ * @rec_queue: Buffer descriptor of receive queue
++ * @queue_handle: Output queue handle on success (may be NULL)
++ * @irq: Output hypervisor IRQ number on success (may be NULL)
++ *
++ * Registers a subordinate receive queue with the hypervisor.
++ *
++ * Return:
++ *   H_SUCCESS (0) on success
++ *   H_PARAMETER if parameters are invalid
++ *   H_BUSY / H_LONG_BUSY_* if the resource is busy; retry
++ *   H_FUNCTION if firmware does not support this hcall
++ *
++ * On success, hypervisor returns:
++ *   R3: H_SUCCESS
++ *   R4: Queue handle
++ *   R5: IRQ number for this queue
++ */
++static inline long
++h_register_logical_lan_queue(unsigned long unit_address,
++			     unsigned long buffer_list,
++			     unsigned long rec_queue,
++			     unsigned long *queue_handle,
++			     unsigned long *irq)
++{
++	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
++	long rc;
++
++	rc = plpar_hcall(H_REG_LOGICAL_LAN_QUEUE,
++			 retbuf, unit_address,
++			 buffer_list, rec_queue);
++
++	if (rc == H_SUCCESS) {
++		if (queue_handle)
++			*queue_handle = retbuf[0];
++		if (irq)
++			*irq = retbuf[1];
++	}
++
++	return rc;
++}
++
++/**
++ * h_add_logical_lan_buffers_queue - Add buffers to subordinate queue
++ * @unit_address: Device unit address
++ * @queue_handle: Queue handle from h_register_logical_lan_queue() or
++ *		  h_register_logical_lan_with_handle() (queue 0)
++ * @buffersznum: Buffer size (upper 32 bits) | count (lower 32 bits)
++ * @ioba12: Buffer addresses 1 and 2 packed ((addr1 << 32) | addr2)
++ * @ioba34: Buffer addresses 3 and 4 packed
++ * @ioba56: Buffer addresses 5 and 6 packed
++ * @ioba78: Buffer addresses 7 and 8 packed
++ * @ioba910: Buffer addresses 9 and 10 packed
++ * @ioba1112: Buffer addresses 11 and 12 packed
++ *
++ * Return:
++ *   H_SUCCESS - All buffers added successfully
++ *   H_PARAMETER - Invalid parameters
++ *   H_HARDWARE - Hardware error
++ *   H_FUNCTION - Firmware does not support this hcall
++ */
++static inline long h_add_logical_lan_buffers_queue(unsigned long unit_address,
++						   unsigned long queue_handle,
++						   unsigned long buffersznum,
++						   unsigned long ioba12,
++						   unsigned long ioba34,
++						   unsigned long ioba56,
++						   unsigned long ioba78,
++						   unsigned long ioba910,
++						   unsigned long ioba1112)
++{
++	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
++
++	return plpar_hcall9(H_ADD_LOGICAL_LAN_BUFFERS_QUEUE,
++			    retbuf, unit_address,
++			    queue_handle, buffersznum,
++			    ioba12, ioba34, ioba56,
++			    ioba78, ioba910, ioba1112);
++}
++
++/**
++ * h_free_logical_lan_queue - Deregister subordinate receive queue
++ * @unit_address: Device unit address
++ * @queue_handle: Queue handle from h_register_logical_lan_queue() or
++ *		  h_register_logical_lan_with_handle() (queue 0)
++ *
++ * Deregisters and frees all structures associated with the subordinate queue.
++ *
++ * Return:
++ *   H_SUCCESS - Queue freed successfully
++ *   H_PARAMETER - Invalid parameters
++ *   H_HARDWARE - Hardware error
++ *   H_STATE - VIOA not in valid state
++ *   H_BUSY / H_LONG_BUSY_* - Resource busy, retry
++ *   H_FUNCTION - Firmware does not support this hcall
++ */
++static inline long h_free_logical_lan_queue(unsigned long unit_address,
++					    unsigned long queue_handle)
++{
++	return plpar_hcall_norets(H_FREE_LOGICAL_LAN_QUEUE,
++				  unit_address, queue_handle);
++}
++
++/**
++ * h_register_logical_lan_with_handle - Register primary queue and get handle
++ * @unit_address: Device unit address
++ * @buffer_list: DMA address of buffer list
++ * @rec_queue: Buffer descriptor of receive queue
++ * @filter_list: DMA address of filter list
++ * @mac_address: MAC address
++ * @queue_handle: Output parameter for queue handle (may be NULL)
++ *
++ * Registers the primary receive queue (queue 0) with the hypervisor and
++ * returns the queue handle. This is needed in multi-queue mode to use
++ * h_add_logical_lan_buffers_queue() for all queues including queue 0.
++ *
++ * Return: H_SUCCESS (0) on success, error code otherwise
++ */
++static inline long
++h_register_logical_lan_with_handle(unsigned long unit_address,
++				   unsigned long buffer_list,
++				   unsigned long rec_queue,
++				   unsigned long filter_list,
++				   unsigned long mac_address,
++				   unsigned long *queue_handle)
++{
++	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
++	long rc;
++
++	rc = plpar_hcall(H_REGISTER_LOGICAL_LAN, retbuf,
++			 unit_address, buffer_list, rec_queue,
++			 filter_list, mac_address);
++
++	if (rc == H_SUCCESS && queue_handle)
++		*queue_handle = retbuf[0];
++
++	return rc;
++}
++
+ /* FW allows us to send 6 descriptors but we only use one so mark
+  * the other 5 as unused (0)
+  */
+diff --git a/tools/perf/scripts/python/powerpc-hcalls.py b/tools/perf/scripts/python/powerpc-hcalls.py
+index fedce1b68cad..afc354583b7b 100644
+--- a/tools/perf/scripts/python/powerpc-hcalls.py
++++ b/tools/perf/scripts/python/powerpc-hcalls.py
+@@ -217,6 +217,10 @@ hcall_table = {
+ 	# Key wrapping hcalls
+ 	1168: 'H_PKS_WRAP_OBJECT',
+ 	1172: 'H_PKS_UNWRAP_OBJECT',
++	# Logical LAN multi-queue RX (PAPR 11.20.00)
++	1180: 'H_REG_LOGICAL_LAN_QUEUE',
++	1184: 'H_ADD_LOGICAL_LAN_BUFFERS_QUEUE',
++	1192: 'H_FREE_LOGICAL_LAN_QUEUE',
+ 	# Platform-specific hcalls used by the Ultravisor
+ 	61184: 'H_SVM_PAGE_IN',
+ 	61188: 'H_SVM_PAGE_OUT',
 -- 
-Sathyanarayanan Kuppuswamy
-Linux Kernel Developer
+2.50.1 (Apple Git-155)
 
 
