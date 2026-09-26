@@ -1,86 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-28279-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28280-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3EE47C98332
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Sep 2026 13:07:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C993EC98332
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Sep 2026 13:19:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hsSXf34krz2y7p;
-	Sat, 26 Sep 2026 23:07:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.141
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790428050;
-	cv=none; b=cjYH2Hb/mUUPq7zlh4We2w9vdisgajh1TRRQ+rFCSiMIhyWInuqfZGxulWK3SH+PUjJiHnvytYLQuzvRTwv/7y5tNfv7m7ZId1Q0QA1RVeJA3OMbz0ZFmOOyzlUvVgk/NLqh340xiRfdx1T/doPx4ud/msCycJlx0sFaMhWOhU+BWOfvYmgs4c+zhwUnVYlYH3kTdEEVhncx6JBsYSDspRq4mbzT3r302IPCjRDdftQmDqUw3R2EgblyAXqMrHWHRc4UxyVBf1k/xmgjunCPBdZzpAAv9aQk5vQ1yh+SNxXpfNMbjViKsK+NnPHC1DcTh3vO75sn5vwtOcPliBvW6A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hsSpy1HXFz2y7p;
+	Sat, 26 Sep 2026 23:19:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:31::11"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790428794;
+	cv=none; b=Nc96p0bBW+c6QMoRhFO+AwjZNnJENZsrmReYva8YVNZ8fdt+8gyP8uGOLnYNfkXzqQxUwwK1clIa9Uy86uMmI0Od3hLZZkikxfxfwFp/Btd6zwYIzhztTY1iCrGq4o+dfD+RDgGkA/33P+gGufSD7T/qcQqh5Kcl+QFr+unQdeun+CLhk2zDdeaiqw7kMlMfcr+0dHwgZUcDOjLj+MaWLSrUUmDeyTrkHBDNLuLNsV7gvPEwC6a/45yj5Jh8ybwoLIYUxnQU+IryFNW24e04BdOzSr9ati68Gx/8uj+N+2ZniJjznC8w51ax8198EklG5xEyF2Mt4HwyOVYkMMqAHg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790428050; c=relaxed/relaxed;
-	bh=E/0Aixz4MoGQbluxHxh98fr8xrgoH3pVa08CacPtFqs=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=Y07Q2MYMpfqIzJJqQqJ0pemaStpIABrnt8+8IIb+O8nkyMUcI/kel5NFr/I2xy2o3uwhKFB/48mcNhBTLhMNIY/NFipVqbVgPVJmuFAB1XIJ4GdktaNsjm7HoOWrN8hJwaYtXSFbK+9vAJ5ftwK80bprvGcc2Ufd8C/1S0ixXxhHam5+jRDYHWhE3ec/d/6dwihGkSgS1k/Ydcb7EHgX7/LcZeqs7ayVESpYRF0Ost0DkqziVy18pyz05EjGkkMyXKdYyjErnWvpmuMUNUJ+D5QRB5FWRJiIP3Rs8eqZ7HF4NgXjqnBUa4RCYTZonxJfgoEP/vsqtcpYXoyocM/6Eg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=JY6ej2Ga; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=w0Cytzi8; dkim-atps=neutral; spf=pass (client-ip=103.168.172.141; helo=flow-a6-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+	t=1790428794; c=relaxed/relaxed;
+	bh=KxBdd5YtiikdA2EB3RaEsDlyXLxZtzJpIW7hxYmjpy0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=dpzXn5nV+RBhlL6w9gEIGNvA1eC06PC2pWpQw1BXiG0hHidooj/Ve58hEcLUfOj5ikm2aMnEKL6rd0hrzr7sY4onNKK2zyUWWFaRoK3fCMEaFIbwQ6+eoCYqHZAXCcMhS1lAJjEDFOhaWwTcYPx2Oxqn6oQkJBw2+72r+c6lNJuY08saKJIHjhF+Va7ZgYEri7AfI58AHEHvuexo49OsUeqMaZldQZWwqeoUwYomZ8yqLkvCCKvXXUKjw6ktRo6QKkKcByvy4QUHNnc3CrbCJQvg/4BoX3pUOrdOoXCni94sRku0Nd19waPMyXqN13FVE1dFGgfGEuYFogFqxl3/AA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=OpPofei9; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:31::11; helo=mail-wm2-x11.google.com; envelope-from=error27@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=JY6ej2Ga;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=w0Cytzi8;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=OpPofei9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=103.168.172.141; helo=flow-a6-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
-Received: from flow-a6-smtp.messagingengine.com (flow-a6-smtp.messagingengine.com [103.168.172.141])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:31::11; helo=mail-wm2-x11.google.com; envelope-from=error27@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm2-x11.google.com (mail-wm2-x11.google.com [IPv6:2a00:1450:4864:31::11])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hsSXZ3C8fz2y2K
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 23:07:24 +1000 (AEST)
-Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
-	by mailflow.phl.internal (Postfix) with ESMTP id C06B913804B0;
-	Sat, 26 Sep 2026 09:07:16 -0400 (EDT)
-Received: from ams-imap-03 ([10.64.2.23])
-  by ams-compute-02.internal (MEProxy); Sat, 26 Sep 2026 09:07:20 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm1; t=1790428036;
-	 x=1790435236; bh=E/0Aixz4MoGQbluxHxh98fr8xrgoH3pVa08CacPtFqs=; b=
-	JY6ej2GaMU5tFQx4P4L7xpK0hMl18csetiXOfr6O0dqdVPmShWq0JPpifDXCAXS1
-	WAsyKi8pjs7t6RWq759bpX8FHUqqgB3ix677GOzcftzN7F9N8PLmthIECeaNfa/A
-	P+2uJuuFBTTgZAQ7EbICe01O/JdcPwKinMgJvLho7IluNFj8RTtGxVmNjqIKiYpj
-	UR3vOmenvvoHhh4I2ZiYEvackkexMn3lXYx3KuwIgkOFVskKsEp+lc6xtXygxdEK
-	AjntRnwlwzXroiH47DzyeX4QFd/GKDl/9E642yS7DF2Kw0s0p/0L0Ubu+WuXNN9t
-	Dwqap0O2x84uyGP2aDdDPA==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1790428036; x=
-	1790435236; bh=E/0Aixz4MoGQbluxHxh98fr8xrgoH3pVa08CacPtFqs=; b=w
-	0Cytzi8wSmj+mFhvAnjabMb+QZf7M3dVCKLEj9/Dbx70AK0JLhjm4IvD59f8aPoW
-	M3lSl46dKAne7di/wMTJ76iJeR/YN2CWmJ273SA+/BycJRtz2TadIIcXjRQRA6Fw
-	d1PjbiAXLrHehMn9sWL+H1plV3O0I6zA4hqQ8L1CMVdgSuWipTkep6zve4YfEqP0
-	Zs6j6tUUMO1riGOt8v1vffbaH/NF18IOy7CG4zw9bmOLTzHJKqkXp4V6OtaaRa5H
-	2eR47nryPx9zkA9F1ahtgW9c9sl4Pip3yYqEADEeqnrzG3MzERSbC2635R8ZhKrg
-	pwU3ej5l8FK+5aoJABjXA==
-X-ME-Sender: <xms:d8O3ag1HENOK2aqX5Hwlw6Q8RFPRNjCrvC5EQg62Q5MwZ2X8bbKZZw>
-    <xme:d8O3al7CTh-qdNdQdYHKlYAc2HK5Pct0chw4_Wh6lTausRDuhvnXgNqkprm7sdGdM
-    5U4_BMYkuFoj-4mearySbRTQ_cmndooZhYXir5Lfas9_vbxa-3XFA>
-X-ME-Proxy-Cause: dmFkZTGluhR8DaufX6B/O8p7kobwL+s/+e2WxIV1ftwgdk4MOyOBMt7LN1vTfG/eVZk0Du
-    poDENDPAZWU/+DFm2TqDnNDFfgVA6hHaGe30H4n6HeZKXNfngYWBIprCqpApIrE+Fbsucg
-    3T43On08Mo6RNjVXL9te8gsrxz2WjOyw/W95nmJYPc0JMOu2PQIIsRRzHlvn+vNrT8LUbX
-    mmoYyzTpLxtlzDHIP0u3kK4ktm0M9xoXlmDPLfcWfL49p+EPf/LNIMvJJMcvl0MfSqseyk
-    Rsr0fjsMhmDFEIX9RQVpOsEW/sifidIp5PFecnwP38g63Y0mVjJCAlVER9svaUec6rZbmC
-    qbtQKRzPvL8vBpUlrACJ+50qfVABYjsNU7+coMpX7EK9rz3tWqDsshpIrekmR1EYoFIwzi
-    MFzRtA6nyv0gSEWy8V3Jxg6yoM9xEoGlhkpmswvoPC+1yCzJfj9aqpNmAvG77toghXLpW3
-    oSZGIcXZugioQhzHy9zw5o5cRzaVDoEyD+WlhlAIT7/5QdIXyAicupFVuieBjIjNc7MSLE
-    ZTeTptEMpLzGLB31HwOxannZP+AQz43E3ZUxZlcqdrZ09Q6mzAI3aJNRZ88M2AiEhJSkoF
-    SRPUmVb1bqKMeD4YM6wIkw8UjM82p5rtkv7hDfqSo1lynYzWf8HPL9EYqClQ
-X-ME-Proxy: <xmx:fcO3asP_JZb7_pe9MebtKK8m1oQZ2mFysi4LzvtqxqjkK-xmQJG7oA>
-    <xmx:fcO3ahdCUIGe_-N0_11cq50k2hB7qoMtAn8OQ0p4v_cKD3b-BZ1GSQ>
-    <xmx:fcO3auH0MA2jXNBVepFNbfn0NcMhLJ0i9yrj76_mSiuk373fUnS0zA>
-    <xmx:fcO3aq71vFxuFeuj5WpfAshyYTTqDxV9SfXlvv_NrYetkbnGCsY2Uw>
-    <xmx:hMO3aqB8ADUszpbuD6K9q4F8d_--PVT7Q9k3xSG4B02mLBEY0FvpthMT>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.ams.internal (Postfix, from userid 501)
-	id 577F132A0087; Sat, 26 Sep 2026 09:07:03 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hsSpw2YbDz2y2K
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 23:19:51 +1000 (AEST)
+Received: by mail-wm2-x11.google.com with SMTP id 5b1f17b1804b1-49e79a408deso9998285e9.2
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 06:19:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790428783; x=1791033583; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=KxBdd5YtiikdA2EB3RaEsDlyXLxZtzJpIW7hxYmjpy0=;
+        b=OpPofei99eQlnB/37Wa7WX8ns6nCuah51RZs0PP4hXUvgk/4E7vMQIlgz6JTv8WgDc
+         JyVdPHbiJXDVvSE/i+DsvnoltmM4UeJfmT6PVSleM8pBy/1IDZoiE8pXtlk7cGxC1OmG
+         SbZfq5qT5fo8v7j5QtpGaoMKasP+2yTGfhSUA5TNUKx+Rwx79toS6szlfkBVKv8t4cRH
+         WCHoedeE5EiWdgahNpP9oO59tR9+Nq86FWG+DTm4LX/LZz+3lPgwLksKWmsgtTvTHh0T
+         +t/7T9vyLuvF9K8yofOWP3cA5Jc0a5HEi896zPb3onzY4gdYXMkmsRMQt1XbssD2ACI7
+         RIlw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790428783; x=1791033583;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=KxBdd5YtiikdA2EB3RaEsDlyXLxZtzJpIW7hxYmjpy0=;
+        b=YxbqYm42sMdj81T4RqLgVb3EPGAblhIkcY/mySv6TbAAj00fz2VLi5Pw9Tcje2ucAn
+         p4eXRlNFTW2fGD3XsRFud9HKOTInzbV2YM3AptmQBxdOZD4jPVvsQ8CMimw43uTFMSfG
+         EniP1NzMwj5GoiTyEitafvYngF5CPHUdsdQSxMjAYUNinGqkb77rK9r9jhcHZT4B+nOy
+         D6upAL+eKinf6dkyI+PkFqBRqEA5zkVXYjlo67gK5RJD8VI7uG/pVH/ulVjxrRlw46u2
+         JO4vUM0dpCfUa7OLTC7/LYYuRHKe9liFckJ7balZOxWkBCGbOIAE632g2HpMGYjLfaCC
+         xf6A==
+X-Forwarded-Encrypted: i=1; AKwUvBy4dIUaSqv18GqUHjMkToLMI34XHUYQSgVZ1lvoBY7dT8MBhCB6y+ArJ6PIYrVB8g4HAhrzLdYnr64yepY=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++m+uYpqLb4yCZHp15By38kMk9oNzxoiqFHq0emd4kCAvXTHG+Me
+	MKCkjmjZDWV5mTyJ+UZlgXYQ286NdbZnCeVS+OWiIo/h7KZzOMop9uaz
+X-Gm-Gg: AYBFou2fYzgYJhZdK/auwCjQ9jj49rCjzOtNq61q38OWoSaV5ussL92ovp3Ud9Q1e0h
+	0TizFvXJG9tiBuo6aTfWbr9A3K7Y92qyNPupfi8VU3Lf2CUSQzRk7gw3QGMVvloKjRBmuPca/5m
+	ejzMhHaFGtUNWWnwaI6c6k05wHB0d0kRM0ruq2zjjjw2CsmL7pdjmpBVu89kbD1F25EOFyWB1yu
+	tL8BvFALDYnoXunMfyDUx/2BOQujWGbhnoe+uLhI5MH8+ixfV8D+i4QRW6LbqXtwgY5w590jE9M
+	s7XoxLT6mvSepChWAKepbDaYX47DHUXGdQWiWku25jqCpWeiHYWyrtUEcE8S/OXkw6jt1bzdFUM
+	h004ViHdiDLKP3uoDZHvpMiPpsqEWvbo3FbXM8b/LkChXFBENutjrctCB8BSoWzbw4dwFBffms8
+	PEiFmMBBQSbJJboGmVhupJOu/Vo/r0+ft4+MW78dyhCtz/2r14BFbv0urSR3Baar+oUsc=
+X-Received: by 2002:a05:600c:1391:b0:49f:ce73:5e96 with SMTP id 5b1f17b1804b1-49fe670af91mr159689215e9.34.1790428782920;
+        Sat, 26 Sep 2026 06:19:42 -0700 (PDT)
+Received: from localhost ([2c0f:3d00:6be:8900:ce5e:9212:ea4b:f30])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4887a84205esm13861406f8f.37.2026.09.26.06.19.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 26 Sep 2026 06:19:42 -0700 (PDT)
+Date: Sat, 26 Sep 2026 16:19:38 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: Slavin Liu <bolin.liu@seu.edu.cn>
+Cc: shengjiu.wang@gmail.com, xiubo.lee@gmail.com, lgirdwood@gmail.com,
+	broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
+	festevam@gmail.com, nicoleotsuka@gmail.com,
+	linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ASoC: fsl_asrc: check the second front-end DMA channel
+Message-ID: <arfGajXmMUeew0fr@stanley.mountain>
+References: <20260913125147.109920-1-bolin.liu@seu.edu.cn>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,256 +96,57 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-ThreadId: AJwEWD5WPnhk
-Date: Sat, 26 Sep 2026 15:06:33 +0200
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Lorenzo Stoakes" <ljs@kernel.org>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
- "Liam R. Howlett" <liam@infradead.org>,
- "Vlastimil Babka (SUSE)" <vbabka@kernel.org>,
- "Jann Horn" <jannh@google.com>, "Pedro Falcato" <pfalcato@suse.de>,
- "David Hildenbrand (Red Hat)" <david@kernel.org>,
- "Mike Rapoport" <rppt@kernel.org>,
- "Suren Baghdasaryan" <surenb@google.com>,
- "Michal Hocko" <mhocko@suse.com>, "Jonathan Corbet" <corbet@lwn.net>,
- "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
- "Dennis Dalessandro" <dennis.dalessandro@cornelisnetworks.com>,
- "Jason Gunthorpe" <jgg@ziepe.ca>, "Leon Romanovsky" <leon@kernel.org>,
- "Paul Moore" <paul@paul-moore.com>,
- "Stephen Smalley" <stephen.smalley.work@gmail.com>,
- "Jaroslav Kysela" <perex@perex.cz>, "Takashi Iwai" <tiwai@suse.com>,
- "Alexei Starovoitov" <ast@kernel.org>,
- "Daniel Borkmann" <daniel@iogearbox.net>,
- "Andrii Nakryiko" <andrii@kernel.org>,
- "Eduard Zingerman" <eddyz87@gmail.com>,
- "Kumar Kartikeya Dwivedi" <memxor@gmail.com>, "Zi Yan" <ziy@nvidia.com>,
- "Baolin Wang" <baolin.wang@linux.alibaba.com>,
- "Nico Pache" <nico.pache@linux.dev>,
- "Ryan Roberts" <ryan.roberts@arm.com>, "Dev Jain" <dev.jain@arm.com>,
- "Barry Song" <baohua@kernel.org>, "Lance Yang" <lance.yang@linux.dev>,
- "Usama Arif" <usama.arif@linux.dev>,
- "Kirill A. Shutemov" <kas@kernel.org>,
- "Doug Gilbert" <dgilbert@interlog.com>,
- "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>,
- "Martin K. Petersen" <mkp@kernel.org>,
- "Jaya Kumar" <jayalk@intworks.biz>, "Simona Vetter" <simona@ffwll.ch>,
- "Helge Deller" <deller@gmx.de>, "Sebastian Reichel" <sre@kernel.org>,
- "John Hubbard" <jhubbard@nvidia.com>, peterx <peterx@redhat.com>,
- "Masami Hiramatsu" <mhiramat@kernel.org>,
- "Oleg Nesterov" <oleg@redhat.com>,
- "Peter Zijlstra" <peterz@infradead.org>,
- "Thomas Gleixner" <tglx@kernel.org>, "Ingo Molnar" <mingo@redhat.com>,
- "Borislav Petkov" <bp@alien8.de>,
- "Dave Hansen" <dave.hansen@linux.intel.com>, x86@kernel.org,
- "Arnaldo Carvalho de Melo" <acme@kernel.org>,
- "Namhyung Kim" <namhyung@kernel.org>,
- "Mark Rutland" <mark.rutland@arm.com>, "Rik van Riel" <riel@surriel.com>,
- "Harry Yoo" <harry@kernel.org>, "Juri Lelli" <juri.lelli@redhat.com>,
- "Vincent Guittot" <vincent.guittot@linaro.org>,
- "Maarten Lankhorst" <maarten.lankhorst@linux.intel.com>,
- "Maxime Ripard" <mripard@kernel.org>,
- "Thomas Zimmermann" <tzimmermann@suse.de>,
- "Dave Airlie" <airlied@gmail.com>, "Will Deacon" <will@kernel.org>,
- "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
- "Nicholas Piggin" <npiggin@gmail.com>,
- "Muchun Song" <muchun.song@linux.dev>,
- "Oscar Salvador" <osalvador@suse.de>,
- "Matthew Wilcox" <willy@infradead.org>, "Jan Kara" <jack@suse.cz>,
- "Marc Zyngier" <maz@kernel.org>, "Oliver Upton" <oupton@kernel.org>,
- "Catalin Marinas" <catalin.marinas@arm.com>,
- "Madhavan Srinivasan" <maddy@linux.ibm.com>,
- "Anup Patel" <anup@brainfault.org>, "Paul Walmsley" <pjw@kernel.org>,
- "Palmer Dabbelt" <palmer@dabbelt.com>,
- "Albert Ou" <aou@eecs.berkeley.edu>,
- "Christian Borntraeger" <borntraeger@linux.ibm.com>,
- "Janosch Frank" <frankja@linux.ibm.com>,
- "Claudio Imbrenda" <imbrenda@linux.ibm.com>,
- "Alexander Gordeev" <agordeev@linux.ibm.com>,
- "Gerald Schaefer" <gerald.schaefer@linux.ibm.com>,
- "Heiko Carstens" <hca@linux.ibm.com>,
- "Vasily Gorbik" <gor@linux.ibm.com>,
- "David S . Miller" <davem@davemloft.net>,
- "Andreas Larsson" <andreas@gaisler.com>,
- "Alexander Viro" <viro@zeniv.linux.org.uk>,
- "Christian Brauner" <brauner@kernel.org>,
- "Matthew Brost" <matthew.brost@intel.com>,
- "Joshua Hahn" <joshua.hahnjy@gmail.com>, "Rakie Kim" <rakie.kim@sk.com>,
- "Byungchul Park" <byungchul@sk.com>, "Gregory Price" <gourry@gourry.net>,
- "Ying Huang" <ying.huang@linux.alibaba.com>,
- "Alistair Popple" <apopple@nvidia.com>, "Chris Li" <chrisl@kernel.org>,
- "Kairui Song" <kasong@tencent.com>,
- "Kemeng Shi" <shikemeng@huaweicloud.com>,
- "Nhat Pham" <nphamcs@gmail.com>, "Baoquan He" <baoquan.he@linux.dev>,
- "Youngjun Park" <youngjun.park@lge.com>,
- "Johannes Weiner" <hannes@cmpxchg.org>, "Qi Zheng" <qi.zheng@linux.dev>,
- "Shakeel Butt" <shakeel.butt@linux.dev>,
- "Axel Rasmussen" <axelrasmussen@google.com>,
- "Yuanchu Xie" <yuanchu@google.com>, "Wei Xu" <weixugc@google.com>,
- "Chengming Zhou" <chengming.zhou@linux.dev>,
- "Michal Hocko" <mhocko@kernel.org>, "Miklos Szeredi" <miklos@szeredi.hu>,
- "Xu Xin" <xu.xin@linux.dev>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-usb@vger.kernel.org, linux-rdma@vger.kernel.org,
- selinux@vger.kernel.org, linux-sound@vger.kernel.org,
- bpf@vger.kernel.org, linux-scsi@vger.kernel.org,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
- Linux-Arch <linux-arch@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
- fuse-devel@lists.linux.dev, "Takashi Iwai" <tiwai@suse.de>,
- "Emil Tsalapatis" <emil@etsalapatis.com>
-Message-Id: <408aef6e-5b0a-482f-8ba8-f8c20ee870e5@app.fastmail.com>
-In-Reply-To: <areSEI5pWBadkqIe@gremlin>
-References: 
- <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
- <d4d7d4c2-a1d5-41d0-b1c8-8ea0cc5a0397@app.fastmail.com>
- <areSEI5pWBadkqIe@gremlin>
-Subject: Re: [PATCH v3 00/40] mm: make VMA flag semantics explicit, eliminate
- VM_SPECIAL
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260913125147.109920-1-bolin.liu@seu.edu.cn>
 
-On Sat, Sep 26, 2026, at 11:40, Lorenzo Stoakes (ARM) wrote:
-> On Sat, Sep 26, 2026 at 12:06:22AM +0200, Arnd Bergmann wrote:
->>
->> mm/vma.c: In function '__mmap_region':
->> mm/vma.c:3083:1: error: the frame size of 1552 bytes is larger than 1536 bytes [-Werror=frame-larger-than=]
->>
->> I don't immediately see anything that you did that would have introduced
->> something bad that wasn't already there, so it's likely just gone from
->> just below the limit I was using for my testing to just above. The 1536
->> byte limit is what I use on 64-bit builds with KASAN and otherwise
->> still has a clean build (with a small number of local fixup patches).
->
-> Hmm are you specifying this limit manually somehow?
+On Sun, Sep 13, 2026 at 08:51:47PM +0800, Slavin Liu wrote:
+> The temporary Front-End DMA request can fail independently of the
+> persistent channel acquired earlier in fsl_asrc_dma_hw_params(). The
+> returned NULL pointer is immediately used to read its private data.
+> 
+> Check the temporary channel and release the previously acquired
+> persistent Front-End channel on failure. Clear its slot so a later
+> hw_free cannot release it twice. ASoC marks a component's hw_params
+> only after success and skips unmarked components during rollback, so
+> returning an error alone would leak the earlier channel.
+> 
+> Detected by static analysis and reviewed with AI-assisted source auditing.
+> 
+> Fixes: 3117bb3109dc ("ASoC: fsl_asrc: Add ASRC ASoC CPU DAI and platform drivers")
+> Assisted-by: LLM
+> Signed-off-by: Slavin Liu <bolin.liu@seu.edu.cn>
+> ---
+>  sound/soc/fsl/fsl_asrc_dma.c | 5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
+> index 2f662bdf14d0..64f2b0612274 100644
+> --- a/sound/soc/fsl/fsl_asrc_dma.c
+> +++ b/sound/soc/fsl/fsl_asrc_dma.c
+> @@ -248,6 +248,11 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
+>  
+>  		/* Get DMA request of Front-End */
+>  		tmp_chan = asrc->get_dma_channel(pair, dir);
 
-It's a Kconfig setting upstream, but the way I'm doing it is to have
-patch that calculates a sensible default based on other options that
-is a little smaller than the default (currently 2048 bytes) on x86-64
-to catch more cases where something sticks out.
+The ->get_dma_channel() function pointer returns error pointers not
+NULL.
 
->> If I sprinkle some 'noinline_for_stack' annotations on functions
->> called by __mmap_region(), I can get the size down to 1144 in this
->> config, but that doesn't sound like a great workaround.
->>
->> The large stack usage is potentially harmful if this ends up
->> in call chains that have additional large stack usage (e.g.
->> kmalloc() leading to reclaim). Any ideas for how to reduce it here?
->
-> That can never happen :) this call chain is _only_ for an mmap() call.
+    sound/soc/fsl/fsl_asrc_dma.c:254 fsl_asrc_dma_hw_params()
+    warn: 'tmp_chan' is an error pointer or valid
 
-I mean more functions called /from/ here, something like
+sound/soc/fsl/fsl_easrc.c | (struct fsl_asrc)->get_dma_channel | fsl_easrc_get_dma_channel | 1
+sound/soc/fsl/fsl_asrc.c | (struct fsl_asrc)->get_dma_channel | fsl_asrc_get_dma_channel | 1
 
-  __mmap_region()
-  __mmap_new_vma()
-  vm_area_alloc()
-  kmem_cache_alloc(..., GFP_KERNEL)
-  slab_alloc_node()
-  allocate_slab()
-  alloc_slab_page()
-  __alloc_pages_slowpath()
-  __alloc_pages_direct_reclaim()
-  __perform_reclaim()
-  try_to_free_pages()
-  shrink_zones()
-  shrink_node()
-  lru_gen_shrink_node()
-  shrink_many()
-  shrink_one()
-  try_to_shrink_lruvec()
-  evict_folios()
-  shrink_folio_list()
-  pageout()
-  shmem_writeout()
-  swap_writeout()
-  swap_add_folio()
-  swap_write_submit()
-  nfs_swap_submit_write()
-  nfs_file_direct_write()
-  nfs_direct_extract_pages()
-  nfs_do_recoalesce()
-  __nfs_pageio_add_request()
-  nfs_pageio_doio()
-  pnfs_generic_pg_writepages()
-  pnfs_do_write()
-  pnfs_try_to_write_data()
-  filelayout_write_pagelist()
-  nfs_initiate_pgio()
-  nfs_local_doio()
-  nfs_local_do_write()
-  nfs_local_call_write()
-  ->write_iter()
-  generic_file_write_iter()
-  generic_write_sync()
-  vfs_fsync_range()
-  ->fsync()
-  xfs_file_fsync()
-  file_write_and_wait_range()
-  filemap_fdatawrite_range()
-  filemap_writeback()
-  do_writepages()
-  ->writepages()
-  xfs_vm_writepages()
-  iomap_writepages()
-  iomap_writeback_folio()
-  iomap_writeback_range()
-  ->writeback_range()
-  xfs_zoned_writeback_range()
-  iomap_add_to_ioend()
-  ->writeback_submit()
-  xfs_zoned_writeback_submit()
-  xfs_zone_alloc_and_submit()
-  xfs_submit_zoned_bio()
-  submit_bio()
-  submit_bio_noacct()
-  submit_bio_noacct_nocheck()
-  __submit_bio_noacct()
-  __submit_bio()
-  blk_mq_submit_bio()
-  blk_mq_run_dispatch_ops()
-  blk_mq_try_issue_directly()
-  blk_mq_run_hw_queue()
-  blk_mq_sched_dispatch_requests()
-  blk_mq_do_dispatch_sched()
-  __blk_mq_do_dispatch_sched()
-  blk_mq_dispatch_rq_list()
-  ->queue_rq()
-  scsi_queue_rq()
-  scsi_dispatch_cmd()
-  ->queuecommand()
-  ata_scsi_queuecmd()
-  __ata_scsi_queuecmd()
-  ata_scsi_translate()
-  ata_scsi_qc_issue()
-  ata_qc_issue()
-  qc_issue()
-  ata_sff_qc_issue()
-  ata_sff_queue_pio_task()
+regards,
+dan carpenter
 
-There are many ways the call chain can go of course, but the actual
-stack overflows do tend to follow this pattern where you are at a
-function with high stack usage and call kmalloc() during low memory
-condition and that ends up waiting for a block I/O down the line.
-(you normally don't go through swap and nfs, I was just looking
-for the worst case I could easily see in the code)
-
-> In general I am absolutely taking this seriously and will find a way to
-> reduce this, but my only question is whether this is actually something
-> that needs to be done in this series?
->
-> Because it's already huge and I would rather avoid adding yet another patch
-> to it if possible.
->
-> If I can do it as a follow-up that'd be ideal!
-
-What I was hoping for is that as you are already deep into the
-exact code that caused the warning and you can already see something
-in there that may help.
-
-I don't think it's urgent, I just don't want it to be forgotten.
-
-     Arnd
+> +		if (!tmp_chan) {
+> +			dma_release_channel(pair->dma_chan[!dir]);
+> +			pair->dma_chan[!dir] = NULL;
+> +			return -EINVAL;
+> +		}
+>  		tmp_data = tmp_chan->private;
+>  		pair->dma_data.dma_request2 = tmp_data->dma_request;
+>  		pair->dma_data.peripheral_type = tmp_data->peripheral_type;
 
