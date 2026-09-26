@@ -1,109 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-28273-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28274-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0286CC98318
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Sep 2026 12:04:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 185D0C98332
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Sep 2026 12:19:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hsR7q15tQz30Nl;
-	Sat, 26 Sep 2026 22:04:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790399926;
-	cv=none; b=DVJdB30dJQuQ05Mv4AN84lhHHisCU65KVAtkTXuoUNLQtHyceh2lMmxgYpnvvXbU3BL+g1vyduj+5ErF68dcXWEvn2RPDIOa0woSc9zBMZta24rMZXgUFfAW8N+DmkVwkuuCqWDfh2Bv9ZPYS0BBIhYqNKypE6I3taJ+xs430Rf1HeCId/2aWn5TS+FyDsxRlGj7/eag/wgkxgZfCWY9t0o/gZTmQZSwuCa9691LWkPMs7NO+zHhCdP28bmMMe7hjtDRI55mKYEACkAAM6ZO68puyH5gzg6VG7ocaMITXP0KOwflmsFzNtWogtb/LbI2tP4Fxnh7HTTk7h3hr4tjtw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hsRTT2Z1Mz2y7p;
+	Sat, 26 Sep 2026 22:19:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790425181;
+	cv=none; b=kNkdrNaXGU7CbQddgrtTv0QRGkZzkkufyulPelMAQaJgqWJFHkqTjSuBMiYGi0yZzWCuUHwLrGAwikptDJqAA5GfjV3w2z+nMf6GARdBnNvLZL44M8zkO42mnWfhbCEmMH02uTJC1KEVATdZYcZgzAUye2YjFehO2pb3PQWsEi4jzRKa0IS81bDrKONeRYkOapuwxhFfHCgteeVTeNK0yXL3oKTK0UZtOy1LN7MzF70yHH0mETRwCpn6ImHU1koOysFv3pDIYDw8asoBb6tU1jBiOUfqiEhpHzJid8BrGrmeBsZPKs4R12f7lq4KIdK+uADSsf5zwouIrGoTY5U1wA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790399926; c=relaxed/relaxed;
-	bh=cyh9GNwkSeiWX8VVWJet6cmrStrv1Y1BhHYKMAKCy08=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:content-type; b=A1JSq1ocB8SLzkBlhsE+4+obRqscWH8W7VGLNMhSYRNGJzAykOtfYhlV+TxjcsleQnh3B7dI4iwS61Sd9aVq4sEWfinuWWUtYuh8k8DwViqFTgTRkcvHzmN1E+su97qjvrRipoXcfVnCgPmoOym0pGolh+PhSq6QvE6iqeVx7BLSXeiJx6U89mt3z2H0NC2OS7ysQye0DYl9WrL0a6hsv0+A0hQqBnBFxOU9wLGQwmOFWH9Rf7nQBe9LtMZyiSowEHiTvLanCkhibnjwo88QrecTsZi3f7/eH7a6MxP7b1ZnHVL0t9OSL1QNNuQK9gSerfo12JHJOxqk7sVGLkEFjQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=c+6Jei1j; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=c+6Jei1j; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=c+6Jei1j; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pbonzini@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1790425181; c=relaxed/relaxed;
+	bh=fX1UOorzk2WNkUzS8vq28akGhPcRScYxSKIHc7khZsE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jL8XzKOatq9bOcLiB2DH3yYYs/YvUh7trHDLJJLSGYqoJKlgWRegXJVH76164iM5vUXzQjP6y0BA3WggHOjJOhLGGU3dP6A57uzvnYt5W855d7mqZnJ2V14U24q23iPPo8//cKJg6XXvzxNB8boEsK0Qxi2lDNPtiEME9rw/J4+NvKFzmVesLe4j0hvelYZSE+eoj9MHoLZQUvhigF7TMV6ZY0L4AKvecfDCYmSLJPKi5DquinWOu3OjpuAFerYmp5mjq5cijQR2o/gQBnr4OqcESN2SKw8K1f/nyBaRvGsqvzxg9B8sTzRDOteWDkGWccn0n11xJlzETOybzjqNMQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fUXIg6Sj; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=c+6Jei1j;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=c+6Jei1j;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=c+6Jei1j;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fUXIg6Sj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pbonzini@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hsG7n4CK1z2xwd
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 15:18:42 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1790399918;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=cyh9GNwkSeiWX8VVWJet6cmrStrv1Y1BhHYKMAKCy08=;
-	b=c+6Jei1jUpv7lv+G/3h2yLMmi/x/hyXyMi0WzKaRdqJgIPgou7+xQ5Qkgnb53PEPCdN/m5
-	8bmHls+dYlHuDCKT8HA9UDCrnELQAqOUTBh6vucija6fN/4Uf5YtQJKC8tcUtRsmpBLoeQ
-	AsqhR8jc0OgmsCOOUpDFqQb5Wzv0SOw=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1790399918;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=cyh9GNwkSeiWX8VVWJet6cmrStrv1Y1BhHYKMAKCy08=;
-	b=c+6Jei1jUpv7lv+G/3h2yLMmi/x/hyXyMi0WzKaRdqJgIPgou7+xQ5Qkgnb53PEPCdN/m5
-	8bmHls+dYlHuDCKT8HA9UDCrnELQAqOUTBh6vucija6fN/4Uf5YtQJKC8tcUtRsmpBLoeQ
-	AsqhR8jc0OgmsCOOUpDFqQb5Wzv0SOw=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1790399918;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=cyh9GNwkSeiWX8VVWJet6cmrStrv1Y1BhHYKMAKCy08=;
-	b=c+6Jei1jUpv7lv+G/3h2yLMmi/x/hyXyMi0WzKaRdqJgIPgou7+xQ5Qkgnb53PEPCdN/m5
-	8bmHls+dYlHuDCKT8HA9UDCrnELQAqOUTBh6vucija6fN/4Uf5YtQJKC8tcUtRsmpBLoeQ
-	AsqhR8jc0OgmsCOOUpDFqQb5Wzv0SOw=
-Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-43-j_rOfgzlNsqWzvsOBAFx3Q-1; Sat,
- 26 Sep 2026 01:18:30 -0400
-X-MC-Unique: j_rOfgzlNsqWzvsOBAFx3Q-1
-X-Mimecast-MFC-AGG-ID: j_rOfgzlNsqWzvsOBAFx3Q_1790399908
-Received: from mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.93])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 271711955F29;
-	Sat, 26 Sep 2026 05:18:27 +0000 (UTC)
-Received: from virtlab1023.virt.eng.rdu2.dc.redhat.com (virtlab1023.virt.eng.rdu2.dc.redhat.com [10.18.48.26])
-	by mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id A9392180036E;
-	Sat, 26 Sep 2026 05:18:22 +0000 (UTC)
-From: Paolo Bonzini <pbonzini@redhat.com>
-To: Sean Christopherson <seanjc@google.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Anup Patel <anup@brainfault.org>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Kiryl Shutsemau <kas@kernel.org>,
-	Rick Edgecombe <rick.p.edgecombe@intel.com>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hsRTS3mZyz2xwM
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 22:19:40 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 22F39434A1;
+	Sat, 26 Sep 2026 12:19:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 20C6B1F000FF;
+	Sat, 26 Sep 2026 12:19:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790425176;
+	bh=fX1UOorzk2WNkUzS8vq28akGhPcRScYxSKIHc7khZsE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=fUXIg6SjJk+Qr1M0g3x4kQiPdWY0pMcyzGHOa/cNhZMob/KEO2PpiVHQtdd6QWG3x
+	 dZ1y+306fsaJBZodcxplS8L82NhW9YwwaaW61njzxIIsMh2aygiTjvDyx579LwgTlk
+	 TiNEAn/LIYOFBCadmux7/TrQTROL8C9DBsngCTXN5FvYS+wlAGeerAjS/qGI8F8zSt
+	 zNqskNZyO093mE4xSamxYt4pPd91MQE+lyJXBwlx8zyyl/XlWLoHwQD1qUMS1tbOL6
+	 bgAKynwX99Ez+3lc/SWDJSSB8c5kqNCTcs0gDxMX99zbcw5tfAFyKVemNQNOkTs/aX
+	 D6EfHEKDJYwZw==
+Date: Sat, 26 Sep 2026 13:19:27 +0100
+From: Nathan Chancellor <nathan@kernel.org>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Cc: Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+	Theodore Ts'o <tytso@mit.edu>,
+	"Jason A. Donenfeld" <Jason@zx2c4.com>,
+	Vincenzo Frascino <vincenzo.frascino@arm.com>,
+	Nick Desaulniers <ndesaulniers@google.com>,
+	Bill Wendling <morbo@google.com>,
+	Justin Stitt <justinstitt@google.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	WANG Xuerui <kernel@xen0n.name>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
-	Atish Patra <atish.patra@linux.dev>,
-	Alexandre Ghiti <alex@ghiti.fr>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
 	Dave Hansen <dave.hansen@linux.intel.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	x86@kernel.org,
-	linux-coco@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Jean-Christophe Guillain <jean-christophe@guillain.net>,
-	=?UTF-8?q?Pawe=C5=82=20S?= <spawel523@gmail.com>
-Subject: Re: [PATCH v2 0/7] KVM: Serialize vCPU creation and revert vcpu_ids tracking
-Date: Sat, 26 Sep 2026 01:18:20 -0400
-Message-ID: <20260926051820.192707-1-pbonzini@redhat.com>
-In-Reply-To: <20260921174445.911676-1-seanjc@google.com>
-References: 
+	"H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+	llvm@lists.linux.dev
+Subject: Re: [PATCH v2] random: vDSO: Avoid call to memset() when zeroing
+ reserved in __cvdso_getrandom_data()
+Message-ID: <20260926121927.GA1486962@ax162>
+References: <20260925-vdso-getrandom-avoid-memset-llvm-24-v2-1-ce640f872393@kernel.org>
+ <87zex4ic68.fsf@linux-m68k.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -117,15 +94,39 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.93
-X-Mimecast-MFC-PROC-ID: MOaMezuvyKnSZ3g61m6nZVSqlTO5uM3Vrgqv5NKWvvQ_1790399908
-X-Mimecast-Originator: redhat.com
-Content-Transfer-Encoding: 8bit
-content-type: text/plain; charset="US-ASCII"; x-default=true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87zex4ic68.fsf@linux-m68k.org>
 
-Queued, thanks.
+On Sat, Sep 26, 2026 at 11:39:43AM +0200, Andreas Schwab wrote:
+> On Sep 25 2026, Nathan Chancellor wrote:
+> 
+> > +#if __has_builtin(__builtin_memset_inline)
+> > +#define memset_inline(dst, value, size) __builtin_memset_inline(dst, value, size)
+> > +#elif IS_ENABLED(CONFIG_CC_HAS_OPT_INLINE_MEMSET)
+> > +#define memset_inline(dst, value, size) __builtin_memset(dst, value, size)
+> > +#else
+> > +static inline void *memset_inline(void *dst, int value, size_t size)
+> > +{
+> > +	char *d = dst;
+> > +
+> > +	while (size--)
+> > +		*d++ = value;
+> > +
+> > +	return d;
+> > +}
+> > +#endif
+> > +
+> 
+> memset actually returns the original pointer, not the incremented one.
+> Nothing uses the return value of memset_inline here, but it is
+> confusing.
 
-Paolo
+Whoops, good catch, I guess my fingers gave up on those last two
+characters :) I will fix this for v3 once there has been some time for
+further review.
 
-
+-- 
+Cheers,
+Nathan
 
