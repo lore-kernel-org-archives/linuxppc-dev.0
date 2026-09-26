@@ -1,88 +1,118 @@
-Return-Path: <linuxppc-dev+bounces-28280-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28281-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C993EC98332
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Sep 2026 13:19:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC44DC9833D
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Sep 2026 13:22:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hsSpy1HXFz2y7p;
-	Sat, 26 Sep 2026 23:19:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:31::11"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790428794;
-	cv=none; b=Nc96p0bBW+c6QMoRhFO+AwjZNnJENZsrmReYva8YVNZ8fdt+8gyP8uGOLnYNfkXzqQxUwwK1clIa9Uy86uMmI0Od3hLZZkikxfxfwFp/Btd6zwYIzhztTY1iCrGq4o+dfD+RDgGkA/33P+gGufSD7T/qcQqh5Kcl+QFr+unQdeun+CLhk2zDdeaiqw7kMlMfcr+0dHwgZUcDOjLj+MaWLSrUUmDeyTrkHBDNLuLNsV7gvPEwC6a/45yj5Jh8ybwoLIYUxnQU+IryFNW24e04BdOzSr9ati68Gx/8uj+N+2ZniJjznC8w51ax8198EklG5xEyF2Mt4HwyOVYkMMqAHg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hsSt96g9jz2y7p;
+	Sat, 26 Sep 2026 23:22:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790428961;
+	cv=none; b=CFNB4o6+gDImcE/UgKpaBdpRoAVus+DZdSXm7x3H3rmmYnX6OmZ7FfRX4o1jxew7OY11Kmo0QEi8YkgaH8mffD/Naq90yeUiRkohLiyA1JTmR9yBFog5FwUGoYGyAFNzg/mYB5j7ZyA/eSXsCkxjw29ANmkRPSeEv3U8R9nHr8oUjbEpA3syu45NqKm75pGBB6P99DeoU3l0Um5KHcOghfLuhPZB2DAV0mYfugltrget8XCNucPncA+73IoaCWCsPdvaxbrZNvZQTVA5Xih9Yd71r9Bwp1rPWbk8/7mqwNQKRML0mlx6t2KWAVtsWh3fMSc+CXJ1BprwDztn+4uBGw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790428794; c=relaxed/relaxed;
-	bh=KxBdd5YtiikdA2EB3RaEsDlyXLxZtzJpIW7hxYmjpy0=;
+	t=1790428961; c=relaxed/relaxed;
+	bh=Ho6ODA6dlgcOvdPnhowd9GgmBiom3Zlo2XTvzY/VTW0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dpzXn5nV+RBhlL6w9gEIGNvA1eC06PC2pWpQw1BXiG0hHidooj/Ve58hEcLUfOj5ikm2aMnEKL6rd0hrzr7sY4onNKK2zyUWWFaRoK3fCMEaFIbwQ6+eoCYqHZAXCcMhS1lAJjEDFOhaWwTcYPx2Oxqn6oQkJBw2+72r+c6lNJuY08saKJIHjhF+Va7ZgYEri7AfI58AHEHvuexo49OsUeqMaZldQZWwqeoUwYomZ8yqLkvCCKvXXUKjw6ktRo6QKkKcByvy4QUHNnc3CrbCJQvg/4BoX3pUOrdOoXCni94sRku0Nd19waPMyXqN13FVE1dFGgfGEuYFogFqxl3/AA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=OpPofei9; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:31::11; helo=mail-wm2-x11.google.com; envelope-from=error27@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=JcVIVQrKQSU/5EIPktz1iEgn/TLsw+apcVYLlpMRUB4if1xSZ7vg4hzICw67N1Uioh4bIzz9gaVweEstCRG/OGUPyUQB4d9btanM5rglUFuQ6F9UvSKY+cYazlLNnZSgqyfeTwO2mTDHFlbHWYBJKDWNM7UZecVuqPQ13tkG/738YWFEaZX/ICFKpEQL4KN+WnpXc6McTB/2R9eMpcPBmUyhW1YtMAylTx1Wevjr9KyO3gd7v0LD/OvI4yRaOBdUctiaN/HRZTb5i3mJkXoBtGEOBn2gIeolS6yFRrM232S1pKY8aBieGhQR8ENiKAobGmwzGuIFO/ys4toKU/1koA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gn1PEczg; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=OpPofei9;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gn1PEczg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:31::11; helo=mail-wm2-x11.google.com; envelope-from=error27@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm2-x11.google.com (mail-wm2-x11.google.com [IPv6:2a00:1450:4864:31::11])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hsSpw2YbDz2y2K
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 23:19:51 +1000 (AEST)
-Received: by mail-wm2-x11.google.com with SMTP id 5b1f17b1804b1-49e79a408deso9998285e9.2
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 06:19:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790428783; x=1791033583; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=KxBdd5YtiikdA2EB3RaEsDlyXLxZtzJpIW7hxYmjpy0=;
-        b=OpPofei99eQlnB/37Wa7WX8ns6nCuah51RZs0PP4hXUvgk/4E7vMQIlgz6JTv8WgDc
-         JyVdPHbiJXDVvSE/i+DsvnoltmM4UeJfmT6PVSleM8pBy/1IDZoiE8pXtlk7cGxC1OmG
-         SbZfq5qT5fo8v7j5QtpGaoMKasP+2yTGfhSUA5TNUKx+Rwx79toS6szlfkBVKv8t4cRH
-         WCHoedeE5EiWdgahNpP9oO59tR9+Nq86FWG+DTm4LX/LZz+3lPgwLksKWmsgtTvTHh0T
-         +t/7T9vyLuvF9K8yofOWP3cA5Jc0a5HEi896zPb3onzY4gdYXMkmsRMQt1XbssD2ACI7
-         RIlw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790428783; x=1791033583;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=KxBdd5YtiikdA2EB3RaEsDlyXLxZtzJpIW7hxYmjpy0=;
-        b=YxbqYm42sMdj81T4RqLgVb3EPGAblhIkcY/mySv6TbAAj00fz2VLi5Pw9Tcje2ucAn
-         p4eXRlNFTW2fGD3XsRFud9HKOTInzbV2YM3AptmQBxdOZD4jPVvsQ8CMimw43uTFMSfG
-         EniP1NzMwj5GoiTyEitafvYngF5CPHUdsdQSxMjAYUNinGqkb77rK9r9jhcHZT4B+nOy
-         D6upAL+eKinf6dkyI+PkFqBRqEA5zkVXYjlo67gK5RJD8VI7uG/pVH/ulVjxrRlw46u2
-         JO4vUM0dpCfUa7OLTC7/LYYuRHKe9liFckJ7balZOxWkBCGbOIAE632g2HpMGYjLfaCC
-         xf6A==
-X-Forwarded-Encrypted: i=1; AKwUvBy4dIUaSqv18GqUHjMkToLMI34XHUYQSgVZ1lvoBY7dT8MBhCB6y+ArJ6PIYrVB8g4HAhrzLdYnr64yepY=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++m+uYpqLb4yCZHp15By38kMk9oNzxoiqFHq0emd4kCAvXTHG+Me
-	MKCkjmjZDWV5mTyJ+UZlgXYQ286NdbZnCeVS+OWiIo/h7KZzOMop9uaz
-X-Gm-Gg: AYBFou2fYzgYJhZdK/auwCjQ9jj49rCjzOtNq61q38OWoSaV5ussL92ovp3Ud9Q1e0h
-	0TizFvXJG9tiBuo6aTfWbr9A3K7Y92qyNPupfi8VU3Lf2CUSQzRk7gw3QGMVvloKjRBmuPca/5m
-	ejzMhHaFGtUNWWnwaI6c6k05wHB0d0kRM0ruq2zjjjw2CsmL7pdjmpBVu89kbD1F25EOFyWB1yu
-	tL8BvFALDYnoXunMfyDUx/2BOQujWGbhnoe+uLhI5MH8+ixfV8D+i4QRW6LbqXtwgY5w590jE9M
-	s7XoxLT6mvSepChWAKepbDaYX47DHUXGdQWiWku25jqCpWeiHYWyrtUEcE8S/OXkw6jt1bzdFUM
-	h004ViHdiDLKP3uoDZHvpMiPpsqEWvbo3FbXM8b/LkChXFBENutjrctCB8BSoWzbw4dwFBffms8
-	PEiFmMBBQSbJJboGmVhupJOu/Vo/r0+ft4+MW78dyhCtz/2r14BFbv0urSR3Baar+oUsc=
-X-Received: by 2002:a05:600c:1391:b0:49f:ce73:5e96 with SMTP id 5b1f17b1804b1-49fe670af91mr159689215e9.34.1790428782920;
-        Sat, 26 Sep 2026 06:19:42 -0700 (PDT)
-Received: from localhost ([2c0f:3d00:6be:8900:ce5e:9212:ea4b:f30])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4887a84205esm13861406f8f.37.2026.09.26.06.19.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 26 Sep 2026 06:19:42 -0700 (PDT)
-Date: Sat, 26 Sep 2026 16:19:38 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: Slavin Liu <bolin.liu@seu.edu.cn>
-Cc: shengjiu.wang@gmail.com, xiubo.lee@gmail.com, lgirdwood@gmail.com,
-	broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
-	festevam@gmail.com, nicoleotsuka@gmail.com,
-	linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ASoC: fsl_asrc: check the second front-end DMA channel
-Message-ID: <arfGajXmMUeew0fr@stanley.mountain>
-References: <20260913125147.109920-1-bolin.liu@seu.edu.cn>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hsSt90GCHz2y2K
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 23:22:40 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id DAC1D60514;
+	Sat, 26 Sep 2026 13:22:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B984F1F000FF;
+	Sat, 26 Sep 2026 13:22:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790428957;
+	bh=Ho6ODA6dlgcOvdPnhowd9GgmBiom3Zlo2XTvzY/VTW0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=gn1PEczgsD5J29kex3G7noDS0spUTsU0srsr+zO1nZZFuyKKVJFH88OWSVdctFAta
+	 v7+cMia70kZ1YiuCIVpgK+S7YUkcgPcfUscXxMIVNy2T0tNen4vpOI9UIX+1BDQbbc
+	 ePRW1SWCr2qEbUMLcslI3kLtHSdkz6HzShrhvUDCAIXM9cTBfN59vnzkvSpAY5sH1A
+	 HiO3kEDoHq52UM6A/hwkWmFG1rbuJuaaijRW4+S7BnYNa61yNGGxIUvVs8xVjcKOaU
+	 2ZsrOuBc7LttfpdBhGRS97sgpAQW2anj2l9mfgb3mnYHtFFH+/VpzMj5GLRW0f0MCb
+	 rDkMkQL9UaUiA==
+Date: Sat, 26 Sep 2026 14:22:06 +0100
+From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, 
+	"Liam R. Howlett" <liam@infradead.org>, "Vlastimil Babka (SUSE)" <vbabka@kernel.org>, 
+	Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, 
+	"David Hildenbrand (Red Hat)" <david@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
+	Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, 
+	Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, 
+	Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, 
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
+	Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
+	Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, 
+	Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, 
+	Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, 
+	Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, 
+	Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, 
+	"Kirill A. Shutemov" <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, 
+	"James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, 
+	Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, 
+	Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, peterx <peterx@redhat.com>, 
+	Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
+	Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, 
+	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, 
+	Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
+	Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, 
+	Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+	Dave Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, 
+	"Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, 
+	Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, 
+	Matthew Wilcox <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, 
+	Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
+	Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, 
+	Vasily Gorbik <gor@linux.ibm.com>, "David S . Miller" <davem@davemloft.net>, 
+	Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, 
+	Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, 
+	Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, 
+	Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, 
+	Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, 
+	Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, 
+	Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, 
+	Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, 
+	Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, 
+	Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, 
+	Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org, 
+	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, 
+	linux-rdma@vger.kernel.org, selinux@vger.kernel.org, linux-sound@vger.kernel.org, 
+	bpf@vger.kernel.org, linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, 
+	linux-perf-users@vger.kernel.org, Linux-Arch <linux-arch@vger.kernel.org>, 
+	linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, 
+	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, 
+	fuse-devel@lists.linux.dev, Takashi Iwai <tiwai@suse.de>, 
+	Emil Tsalapatis <emil@etsalapatis.com>
+Subject: Re: [PATCH v3 00/40] mm: make VMA flag semantics explicit, eliminate
+ VM_SPECIAL
+Message-ID: <arfGmNiEngnO3JKm@gremlin>
+References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
+ <d4d7d4c2-a1d5-41d0-b1c8-8ea0cc5a0397@app.fastmail.com>
+ <areSEI5pWBadkqIe@gremlin>
+ <408aef6e-5b0a-482f-8ba8-f8c20ee870e5@app.fastmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,55 +128,169 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260913125147.109920-1-bolin.liu@seu.edu.cn>
+In-Reply-To: <408aef6e-5b0a-482f-8ba8-f8c20ee870e5@app.fastmail.com>
 
-On Sun, Sep 13, 2026 at 08:51:47PM +0800, Slavin Liu wrote:
-> The temporary Front-End DMA request can fail independently of the
-> persistent channel acquired earlier in fsl_asrc_dma_hw_params(). The
-> returned NULL pointer is immediately used to read its private data.
-> 
-> Check the temporary channel and release the previously acquired
-> persistent Front-End channel on failure. Clear its slot so a later
-> hw_free cannot release it twice. ASoC marks a component's hw_params
-> only after success and skips unmarked components during rollback, so
-> returning an error alone would leak the earlier channel.
-> 
-> Detected by static analysis and reviewed with AI-assisted source auditing.
-> 
-> Fixes: 3117bb3109dc ("ASoC: fsl_asrc: Add ASRC ASoC CPU DAI and platform drivers")
-> Assisted-by: LLM
-> Signed-off-by: Slavin Liu <bolin.liu@seu.edu.cn>
-> ---
->  sound/soc/fsl/fsl_asrc_dma.c | 5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
-> index 2f662bdf14d0..64f2b0612274 100644
-> --- a/sound/soc/fsl/fsl_asrc_dma.c
-> +++ b/sound/soc/fsl/fsl_asrc_dma.c
-> @@ -248,6 +248,11 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
->  
->  		/* Get DMA request of Front-End */
->  		tmp_chan = asrc->get_dma_channel(pair, dir);
+On Sat, Sep 26, 2026 at 03:06:33PM +0200, Arnd Bergmann wrote:
+> On Sat, Sep 26, 2026, at 11:40, Lorenzo Stoakes (ARM) wrote:
+> > On Sat, Sep 26, 2026 at 12:06:22AM +0200, Arnd Bergmann wrote:
+> >>
+> >> mm/vma.c: In function '__mmap_region':
+> >> mm/vma.c:3083:1: error: the frame size of 1552 bytes is larger than 1536 bytes [-Werror=frame-larger-than=]
+> >>
+> >> I don't immediately see anything that you did that would have introduced
+> >> something bad that wasn't already there, so it's likely just gone from
+> >> just below the limit I was using for my testing to just above. The 1536
+> >> byte limit is what I use on 64-bit builds with KASAN and otherwise
+> >> still has a clean build (with a small number of local fixup patches).
+> >
+> > Hmm are you specifying this limit manually somehow?
+>
+> It's a Kconfig setting upstream, but the way I'm doing it is to have
+> patch that calculates a sensible default based on other options that
+> is a little smaller than the default (currently 2048 bytes) on x86-64
+> to catch more cases where something sticks out.
 
-The ->get_dma_channel() function pointer returns error pointers not
-NULL.
+I see.
 
-    sound/soc/fsl/fsl_asrc_dma.c:254 fsl_asrc_dma_hw_params()
-    warn: 'tmp_chan' is an error pointer or valid
+So this is an early warning more or less :)
 
-sound/soc/fsl/fsl_easrc.c | (struct fsl_asrc)->get_dma_channel | fsl_easrc_get_dma_channel | 1
-sound/soc/fsl/fsl_asrc.c | (struct fsl_asrc)->get_dma_channel | fsl_asrc_get_dma_channel | 1
+>
+> >> If I sprinkle some 'noinline_for_stack' annotations on functions
+> >> called by __mmap_region(), I can get the size down to 1144 in this
+> >> config, but that doesn't sound like a great workaround.
+> >>
+> >> The large stack usage is potentially harmful if this ends up
+> >> in call chains that have additional large stack usage (e.g.
+> >> kmalloc() leading to reclaim). Any ideas for how to reduce it here?
+> >
+> > That can never happen :) this call chain is _only_ for an mmap() call.
+>
+> I mean more functions called /from/ here, something like
+>
+>   __mmap_region()
+>   __mmap_new_vma()
+>   vm_area_alloc()
+>   kmem_cache_alloc(..., GFP_KERNEL)
+>   slab_alloc_node()
+>   allocate_slab()
+>   alloc_slab_page()
+>   __alloc_pages_slowpath()
+>   __alloc_pages_direct_reclaim()
+>   __perform_reclaim()
+>   try_to_free_pages()
+>   shrink_zones()
+>   shrink_node()
+>   lru_gen_shrink_node()
+>   shrink_many()
+>   shrink_one()
+>   try_to_shrink_lruvec()
+>   evict_folios()
+>   shrink_folio_list()
+>   pageout()
+>   shmem_writeout()
+>   swap_writeout()
+>   swap_add_folio()
+>   swap_write_submit()
+>   nfs_swap_submit_write()
+>   nfs_file_direct_write()
+>   nfs_direct_extract_pages()
+>   nfs_do_recoalesce()
+>   __nfs_pageio_add_request()
+>   nfs_pageio_doio()
+>   pnfs_generic_pg_writepages()
+>   pnfs_do_write()
+>   pnfs_try_to_write_data()
+>   filelayout_write_pagelist()
+>   nfs_initiate_pgio()
+>   nfs_local_doio()
+>   nfs_local_do_write()
+>   nfs_local_call_write()
+>   ->write_iter()
+>   generic_file_write_iter()
+>   generic_write_sync()
+>   vfs_fsync_range()
+>   ->fsync()
+>   xfs_file_fsync()
+>   file_write_and_wait_range()
+>   filemap_fdatawrite_range()
+>   filemap_writeback()
+>   do_writepages()
+>   ->writepages()
+>   xfs_vm_writepages()
+>   iomap_writepages()
+>   iomap_writeback_folio()
+>   iomap_writeback_range()
+>   ->writeback_range()
+>   xfs_zoned_writeback_range()
+>   iomap_add_to_ioend()
+>   ->writeback_submit()
+>   xfs_zoned_writeback_submit()
+>   xfs_zone_alloc_and_submit()
+>   xfs_submit_zoned_bio()
+>   submit_bio()
+>   submit_bio_noacct()
+>   submit_bio_noacct_nocheck()
+>   __submit_bio_noacct()
+>   __submit_bio()
+>   blk_mq_submit_bio()
+>   blk_mq_run_dispatch_ops()
+>   blk_mq_try_issue_directly()
+>   blk_mq_run_hw_queue()
+>   blk_mq_sched_dispatch_requests()
+>   blk_mq_do_dispatch_sched()
+>   __blk_mq_do_dispatch_sched()
+>   blk_mq_dispatch_rq_list()
+>   ->queue_rq()
+>   scsi_queue_rq()
+>   scsi_dispatch_cmd()
+>   ->queuecommand()
+>   ata_scsi_queuecmd()
+>   __ata_scsi_queuecmd()
+>   ata_scsi_translate()
+>   ata_scsi_qc_issue()
+>   ata_qc_issue()
+>   qc_issue()
+>   ata_sff_qc_issue()
+>   ata_sff_queue_pio_task()
 
-regards,
-dan carpenter
+Ugh delightful :)
 
-> +		if (!tmp_chan) {
-> +			dma_release_channel(pair->dma_chan[!dir]);
-> +			pair->dma_chan[!dir] = NULL;
-> +			return -EINVAL;
-> +		}
->  		tmp_data = tmp_chan->private;
->  		pair->dma_data.dma_request2 = tmp_data->dma_request;
->  		pair->dma_data.peripheral_type = tmp_data->peripheral_type;
+>
+> There are many ways the call chain can go of course, but the actual
+> stack overflows do tend to follow this pattern where you are at a
+> function with high stack usage and call kmalloc() during low memory
+> condition and that ends up waiting for a block I/O down the line.
+> (you normally don't go through swap and nfs, I was just looking
+> for the worst case I could easily see in the code)
+
+You certainly found quite the example haha.
+
+>
+> > In general I am absolutely taking this seriously and will find a way to
+> > reduce this, but my only question is whether this is actually something
+> > that needs to be done in this series?
+> >
+> > Because it's already huge and I would rather avoid adding yet another patch
+> > to it if possible.
+> >
+> > If I can do it as a follow-up that'd be ideal!
+>
+> What I was hoping for is that as you are already deep into the
+> exact code that caused the warning and you can already see something
+> in there that may help.
+>
+> I don't think it's urgent, I just don't want it to be forgotten.
+
+It won't be, it's now on my TODO and I see it as a relatively high priority
+thing to follow up with.
+
+Will likely send a patch for it next cycle (this is about the worst cycle I've
+seen workload-size for mm so I don't really want to send anything more this time
+around).
+
+>
+>      Arnd
+
+--
+Cheers, Lorenzo
 
