@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-28270-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28271-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45D7CC98332
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Sep 2026 10:03:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93186C98338
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Sep 2026 10:07:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hsNSV4k09z2yd7;
-	Sat, 26 Sep 2026 20:03:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hsNXZ75H3z2y24;
+	Sat, 26 Sep 2026 20:07:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790417018;
-	cv=none; b=C8nZhismvbkkAVaxtxDbfBDBl8taprlcoG+S4M8gd2NNFecR/aBSj8Xbjs55jVO0/p02241+WQl1Sx9f6/CM3ir6RZvFeYIw8I9zOBTL7ls+1G0s/qm5T5DnGKL4/luhpaGtF+Da1N50ZWCltywTTA+ayz9WHHwD8q5bRUSYo1CebRbEP0J4T05jlyCgYkbJCm/TRpnbVaqnPyxrm81CQ90AscmlRfaSz1bSQX1hi/DgFIDorublUO3TRROJSfbug4KC7XLW2X0ew51TronWcnfndMEp8lCS9QDd2AJ/lDEbrfXnWcR3LIFO+kNoF429CsVdMoB5q+EZAZijm5tq2Q==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790417230;
+	cv=none; b=eUg+yK/e0eSypFWmG/rb3XW58YWavNlQPSRAFflh+jxYkU3IIwHDdpXlBy6l1603OhMVImj2XuQXbWjMFdUCuTTjYnYia0qWXY9uugObK0BGrjwdukMw7CX+cHKjSVA+iwfELBIoaeAlK3Ed77mk+PZeuN7tiA9nYq3lzoBANXzVISt26kcvzdQX1vh3WEJZGE0YGFESNtr243TN7d3iuihhYg6OW6UEInRaCOGuOkH4qSmW4KFcfpNSjKLoFqJTbUeTV7pVhLWoTQDj86hxAyi9Xf4IHpCwjS1PRhHA/bi1xRNgfuLkpI+TVzaNMsGER8leJYfL8xGITaZ2ShNhaA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790417018; c=relaxed/relaxed;
-	bh=Ti2172MLMPIXoYLD6wBNBUuG1vVW74lvR3yPAsyJ4Mw=;
+	t=1790417230; c=relaxed/relaxed;
+	bh=cx2CIfJJRJI8nlg/LkJLWm6mTZk+oyqA+tLDKMt8K64=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=BseCIGcYQn1/CMJ7AHw930QcjNMen2S0OhOkUjA+uhBULQ/d16F26pb8a2GQIN+NDD0QNHOSCiiMIFfIrbLbdhLh74fqJ9LKaq8BIoTv0sub1bOeQHOAHCfv3PXV9Wn6Av0RazQnmLgtIfhrQ72/2EmFN1OOj1CLTyHqzDs6DB9tlzhmSPRMzVPKJZvQ8RQpxoPPcQsuCMaH452MxLAK91PdVIdK0PVvRBduLtult51ne2GLURGMDn9b+/qwn5LsnszxdO2bkMeWS+b3MiYxdxLx80rdA/uJtnO8YcFXqnC2FhlLANqoOwnrpNRT+pr5PFGgArMYgHY85j1rNPHCPA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PotPzrZ5; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=loVgmiGbE0eaksgM2VYYr2nyXkMO7YLwH60vCHBtgjZf8WqcKo4CW2jzNVR/QkQjYWGEm1oip9TtvN7LBjiehW4E66BVnF6sw2GS8TRXOZmNfKVvVe4Au54sxAtw61DnNex07WK/NgzHV+7IXwIsAa48YkTHw5GU87b8HXztNPh0Y9QcC5jknQOfUWH1l2UgNffk6KKXyj6CIijNhSBoNTypo4COn1/hCqdBFga/D9cZk+84NlTbkkTv3fsAmf5rIorex79qQk6ZzWwZJ6tobCsM7jDZujzgf+OvfYSYbsMjHG36p7oUymnIaUCa7YRqSGwcsXSXxDh9vYZNJCOBAg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PP6PZ9bM; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PotPzrZ5;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PP6PZ9bM;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hsNST4fqkz2y7p
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 20:03:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hsNXZ0nyFz2xwd
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 20:07:09 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id E112243EF7;
-	Sat, 26 Sep 2026 10:03:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 76F031F000FF;
-	Sat, 26 Sep 2026 10:03:05 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id BC0FD429E4;
+	Sat, 26 Sep 2026 10:07:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6F8511F000FF;
+	Sat, 26 Sep 2026 10:06:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790417014;
-	bh=Ti2172MLMPIXoYLD6wBNBUuG1vVW74lvR3yPAsyJ4Mw=;
+	s=k20260515; t=1790417227;
+	bh=cx2CIfJJRJI8nlg/LkJLWm6mTZk+oyqA+tLDKMt8K64=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=PotPzrZ5JhDcKjnjPPw4xklb2BV2GvKf2hehW5Y+mTu9Ze/h0GvM2oipY5M9D+/cd
-	 NRSteOJJVQwOgJ/Vk7qXpUvq2TlOQEyc8ylr6ggIIRLBObKxZ+LGlahTeOSiW1DP9A
-	 NCr80n3Ix3unBLfTdBkNTu/U313Twxe7BdIULH0hZv4+HKf9SLfgwohoZjpf9YbuDb
-	 pM/4foaBcqD6tdDoCnbsIxQUPKUzkTKJ14OcpqpL1z9ouoHn3tA5tZPlu8aWNsTXWH
-	 kG0V3eJydf9/vQZMEDvq3aPanED3H3sJB4bqO1nejPbFwjDnaIc7Dx5neGDSzNUBqo
-	 N5OxElMlwQ0bg==
-Date: Sat, 26 Sep 2026 11:03:02 +0100
+	b=PP6PZ9bMZs7e/duxeo/+vo5CsbMP1Rz2+y31gRT9a+0I5x57hx+X0qV3VH6ZT4U4G
+	 yJbOFXBGKOb0K1/wzI/4ZVK66vC39At0uE2uwbtQ83oA2SlyEAWclRJagc3OIbbqHm
+	 aGWgANkkLmApMwDJ2U+Pphh/en/LxpO06qIoOaCTuD43Ohhox87eyXx7fdho5yNs5A
+	 YUbNxgBjyK8Pa4hT+QXLxoaUyk9M5Ul4my8apPo6NoSv0IFMgCIjYXvQDeUqZfUlWm
+	 gpsK8pBYkPTzDaunC56zp3EElzUI0dA/SJCNUEjE1vnEPzCd1n7uEW6cQm5qDqJMYE
+	 NMKaLYXBxLBUQ==
+Date: Sat, 26 Sep 2026 11:06:35 +0100
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 To: Zi Yan <ziy@nvidia.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>, 
@@ -104,11 +104,13 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
 	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
 	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
 	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev
-Subject: Re: [PATCH v3 17/40] mm/vma: add and use vma_[flags]_is_fixed_mapping
-Message-ID: <areX8JFWf2gJLVcf@gremlin>
+Subject: Re: [PATCH v3 16/40] mm/vma: only allow mmap to clear
+ VMA_MAYWRITE_BIT if kernel-owned
+Message-ID: <areYqRfd7mss9KQG@gremlin>
 References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
- <20260917-b4-mmap-prepare-vma-flag-sanify-v3-17-4583d8a23bca@kernel.org>
- <DLOW5O2LS4KC.7BAL5Q24VJL@nvidia.com>
+ <20260917-b4-mmap-prepare-vma-flag-sanify-v3-16-4583d8a23bca@kernel.org>
+ <DLOVQMACWLZ5.1WFOTGRG8ZG92@nvidia.com>
+ <DLOVXY4VFCXE.1RI7ZSD30VHH5@nvidia.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -124,86 +126,86 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <DLOW5O2LS4KC.7BAL5Q24VJL@nvidia.com>
+In-Reply-To: <DLOVXY4VFCXE.1RI7ZSD30VHH5@nvidia.com>
 
-On Fri, Sep 25, 2026 at 10:27:15PM -0400, Zi Yan wrote:
-> On Thu Sep 17, 2026 at 12:22 PM EDT, Lorenzo Stoakes (ARM) wrote:
-> > This determines whether a VMA cannot be expanded or merged because what
-> > they mapped was determined to be a set size at mmap time.
-> >
-> > This typically refers to kernel-owned mappings, however VMA_DONTEXPAND_BIT
-> > is not reliably set alongside VMA_PFNMAP_BIT or VMA_MIXEDMAP_BIT, so we
-> > must explicitly test for this for now.
-> >
-> > We also explicitly test for VMA_PFNMAP_BIT as VMA_DONTEXPAND_BIT may not be
-> > set for VMA_PFNMAP_BIT's despite the one implying the other.
-> >
-> > Use this predicate in vma_flags_can_merge() and in check_prep_vma() in the
-> > mremap logic testing to see if mremap() can expand the VMA. The criteria
-> > for khugepaged and MADV_COLLAPSE eligibility in
-> > __thp_vma_allowable_orders() are precisely those for mergeability, so use
-> > vma_can_merge() there (with an expanded comment).
-> >
-> > This obviates the need for the VM_NO_KHUGEPAGED mask, so remove it.
-> >
-> > Hugetlb VMAs remain excluded from khugepaged as hugetlbfs always sets
-> > VMA_DONTEXPAND_BIT.
-> >
-> > Also update the userland VMA tests to reflect the change.
-> >
-> > No functional change intended.
-> >
-> > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
-> > ---
-> >  include/linux/mm.h              | 39 +++++++++++++++++++++++++++++++++++----
-> >  mm/huge_memory.c                | 11 +++++++----
-> >  mm/mremap.c                     |  5 ++---
-> >  tools/testing/vma/include/dup.h | 16 +++++++++++++++-
-> >  4 files changed, 59 insertions(+), 12 deletions(-)
-> >
-> <snip>
-> > diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-> > index 4cd917f77f3f..4d0acd9a1099 100644
-> > --- a/mm/huge_memory.c
-> > +++ b/mm/huge_memory.c
-> > @@ -212,11 +212,14 @@ unsigned long __thp_vma_allowable_orders(struct vm_area_struct *vma,
-> >  		return in_pf ? orders : 0;
-> >
-> >  	/*
-> > -	 * khugepaged special VMA and hugetlb VMA.
-> > -	 * Must be checked after dax since some dax mappings may have
-> > -	 * VM_MIXEDMAP set.
-> > +	 * khugepaged moves data from VMAs once collapsed, after they have been
-> > +	 * faulted in, relying on refaulting for file-backed memory.
-> > +	 *
-> > +	 * Kernel-owned mappings cannot be reliably reconstructed from page
-> > +	 * faults, and fixed mappings (including hugetlb) may not be marked as
-> > +	 * kernel-owned - precisely the mappings which cannot be merged.
-> >  	 */
-> > -	if (!in_pf && !smaps && (vm_flags & VM_NO_KHUGEPAGED))
-> > +	if (!in_pf && !smaps && !vma_can_merge(vma))
+On Fri, Sep 25, 2026 at 10:17:10PM -0400, Zi Yan wrote:
+> On Fri Sep 25, 2026 at 10:07 PM EDT, Zi Yan wrote:
+> > On Thu Sep 17, 2026 at 12:22 PM EDT, Lorenzo Stoakes (ARM) wrote:
+> >> For ordinary files the only way the VMA_MAYWRITE_BIT flag is cleared is if
+> >> the underlying file is itself read-only.
+> >>
+> >> This means that mprotect() cannot mark a shared mapping of a read-only file
+> >> as read/write, as doing so would violate the read only attribute, and
+> >> permit writes.
+> >>
+> >> In general, we do not want file systems to be able to do this for
+> >> read/write files.
+> >>
+> >> Doing so would violate fundamental user expectation of file attributes and
+> >> likely break userspace.
+> >>
+> >> However, drivers pose a tricky problem here - the /dev/xxx file may be
+> >> read/write but provide access to a resource which is fundamentally
+> >> read-only.
+> >>
+> >> Therefore we must allow drivers to be able to clear VMA_MAYWRITE_BIT.
 >
-> I wonder if a function alias would improve the code readability.
-> Basically,
->
-> #define vma_no_khugepaged vma_can_merge
->
-> or just make vma_no_khugepaged static inline. And move the comment to
-> the function.
+> IIUC, a file's FMODE_* bear both fd and mmap permissions, e.g.,
+> FMODE_WRITE means fd is writable and mmap is writable. At least for
+> normal files. But a driver fd might not fit the same pattern. Would a
+> new FMODE_MAP_READ and a new FMODE_MAP_WRITE help? Not trying to propose
+> anything, but just thinking out load.
 
-Hmm yeah, I'm not sure, I think given it's here and commented it's OK and
-avoids having to have a special snowflake entry for khugepaged, so unless
-it were referenced again elsewhere it's ok like this?
+Hmm I don't think that's necessarily at the right level of abstraction
+though, and these drivers need to do the same thing even if the file is R/W
+regardless.
 
-If it gets used elsewhere in the THP code it could be relocated then maybe?
+So I'm not so sure that's the right path.
+
+Then again, if the driver could somehow specify these modes at inode
+creation or some means of doing that it could help avoid the driver ever
+doing this, I'd really prefer us to disallow such changes in the hook in
+general.
+
+But I think definitely one for a follow up :)
 
 >
-> Regardless, this patch makes sense to me.
+> >>
+> >> To achieve both of these things, restrict this ability to kernel-owned
+> >> mappings as identified by vma_flags_is_kernel_owned().
+> >>
+> >> This constrains this ability to drivers which own the mapping's contents,
+> >> whether memory-mapped I/O, kernel-allocated pages, or ordinary pages they
+> >> map themselves, and so define its semantics.
+> >>
+> >> Every in-tree mmap hook which clears VMA_MAYWRITE_BIT, some twenty sites
+> >> across drivers, filesystems and bpf, establishes a kernel-owned mapping,
+> >> with usbmon and the ALSA PCM status page converted earlier in this series
+> >> to do so.
+> >>
+> >> Note that drivers may, if they do not gate on VMA_SHARED_BIT, be able to
+> >> disable MAP_PRIVATE-file-backed mapping CoW semantics.
+> >>
+> >> This is perhaps not always intended, but we retain this capacity to
+> >> maintain existing behaviour.
+> >>
+> >> As all drivers which clear VMA_MAYWRITE_BIT establish kernel-owned
+> >> mappings, no functional change is intended.
+> >>
+> >> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> >> ---
+> >>  mm/vma.c | 5 +++++
+> >>  1 file changed, 5 insertions(+)
+> >>
+> >
+> > Makes sense.
+> >
+> > Acked-by: Zi Yan <ziy@nvidia.com>
+
+Thanks!
+
 >
-> Reviewed-by: Zi Yan <ziy@nvidia.com>
-
-Thanks! :)
-
+>
 >
 >
 > --
