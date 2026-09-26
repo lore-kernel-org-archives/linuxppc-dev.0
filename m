@@ -1,46 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-28286-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28287-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB598C9832A
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Sep 2026 18:34:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 201ACC9832F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Sep 2026 18:35:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hsbpL66tSz2y7p;
-	Sun, 27 Sep 2026 04:34:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790431086;
-	cv=none; b=Tk8zQOuG+lI8foa9YDXnJBquexR0oyjxRzaQMLbc1JKK6KNWb3QNhg5O9dOuZb4P8xHjvfdpV4KNADzoNSku27rBhU4E0F2aQMRXuyqE+KAE0LRov8H7wQrKuMmd9isXFnCIW4+EwNdHT/ow1cbyxpkUCDBy/3Iz5fRiQyi/lzXNc8Emx6J1+nAGF25GQLAOkli/tMvnol1DmaLYHgZySDq+z30V7UGGS/PcMTGpsr+3zq5YrlpNsFsXa9mrl9pEzIUJjcFAcD4DklgGW0n9b2w6hNqC/2eavn118J7Z5HHROLBLpDH9JJF5suRAVuvNQFUeSdhhc9eCSSxPT/YArQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hsbps5Zjnz2y7p;
+	Sun, 27 Sep 2026 04:35:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::11"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790431089;
+	cv=none; b=bPdp+NNH3psSXSg4+2rwmL7FtnTpVGlIOixd6M8D9FQN9VxpnOVF+A/Qg0sKuH5EJhBlRz5K71HwsLFZ9Z5u/m9v7BA7zX96Nmz404Iu5mZ7nH2d+yyZkTZgjVd9I52GFk/B/Hky7c8A6+UjsYI3YEAt5GR2lWfrbuE9hVyE/gvXi/yAWelrSjlxStPtu5pzCTVfB7lsDW/LR+OZtu8eakxSsq7lFvbTYnBj+MSpjS3kXx00aCfguTDcGO9N+RlUHoO92mxaV6yql0de6ZzqXwYKeHfK9qQPdzgMUOYfMgFWISgNSvorNRv32nE/6Bgwiw8xuhiE+rN9tjMEXn3ngg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790431086; c=relaxed/relaxed;
-	bh=+JwgIFtn4diwYgWAf+VTtA0Nq44s8qFP4h0bHwbfmiM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Yw8+y1qKbuhVziGG3kxZwzoPcw5zha1lJ3zb9LAiYCfduQMH9TqfS2smLb/q6iktlXv37m+wtdJDmkdNcohEUIOvUNcZe4aSozAhSWClvX6YjLL9OgX4D9twjYY/zjEt2jZeoKZWYEbxN/qZqgy/02Aln+7gPjendSZBeKucPyuQaa55GK87ewkO2aXQ/EeDXUlSEhirhLkfbghSEKiC+T30rsxgZr54rbTnmHrCg83NsG4hS5JIy9DtrADfF9LZsVwmzU1pWC2wDWAFQqcRsaTxGAUZk0KT9x3qjnIWMbgWaKzx8lao61AV9lDafcvICUui7bstEOrY1+73MZQfJQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Jkp6MLUG; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::e; helo=mta0.migadu.com; envelope-from=florent.revest@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+	t=1790431089; c=relaxed/relaxed;
+	bh=ZptZmikrQeT7FB0gcF9FE7G1BzRoclA0PLqqDrlJLuM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=PeTnvlJNKAhBV1JfG74IUPHM4h62xiyENuFdkWTJMfG0WX8MyL9H280/9cL00GEXLfOaZkpuhRCDckAUQeg8HsOyZ/G1EmuE6awOpKz9lFH4eMp5bx1MnrkExZ83YChRjoErsXXCjcVIJv7Q5LCD1gNyFQuq3eDxMEA9oVmQnORNpyFuRJomUmLKhka3P7pOMvKvEbxgtFJjJrQ0jgavWY46qG3o95xooesf9bQbqJdvgzRdwIUkcBkEdZQNyESEdTq5hULrywBgKGNxOSGu0S6yYKLb8sZlvcjd2KMxm+FO+b33lwQp9x/0G2QUkCbzW2cqgTtho916Q5njMkYAKg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=XvCAoKTX; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::11; helo=mta0.migadu.com; envelope-from=florent.revest@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Jkp6MLUG;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=XvCAoKTX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::e; helo=mta0.migadu.com; envelope-from=florent.revest@linux.dev; receiver=lists.ozlabs.org)
-X-Greylist: delayed 79 seconds by postgrey-1.37 at boromir; Sat, 26 Sep 2026 23:58:02 AEST
-Received: from mta0.migadu.com (out-14.mta0.migadu.com [IPv6:2001:41d0:1004:224b::e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::11; helo=mta0.migadu.com; envelope-from=florent.revest@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta0.migadu.com (out-17.mta0.migadu.com [IPv6:2001:41d0:1004:224b::11])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hsTfy4TYQz2yd7
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 23:58:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hsTg443hqz2yd7
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 23:58:08 +1000 (AEST)
 X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=Jk1pfOxu5P7hTWP0WaNJ55pPrxw8o/7nlJ9L9NFZsYY=;
+DKIM-Signature: a=rsa-sha256; bh=wt+Sf4/K44D18qxUhVMcBpJ43zRH/d2pWQpmucexby4=;
  c=simple/simple; d=linux.dev;
  h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1790431064; v=1; x=1791035864;
- b=Jkp6MLUGcG3AfLoOh8CMmCIaqSxm1iajGOoKQu4owDIY3woqnVzWQmCClnHPvg3GnyVnxR57
- KxOYAnXVuiKvTlk4PwAxusVxkmMymBHG8ikHkNsoEqJsdpuQmnEL7yLHy9emf24QIrOFn9xiQox
- ++reSgWRms5MA31t7a5kItIQ=
+ t=1790431069; v=1; x=1791035869;
+ b=XvCAoKTXcHp9IMMPU6mtRB7pvhLJJhQQKMqar/no8S5ASs0U/OuL869CGQjQcZnKQa+/FhVY
+ Yj2RMP7K864lJI/ArJGeWAG8F6VVdtvgovoboN/nGF79MJIe3rp+ZrU6vLf5TXsllG5DfFjlr5z
+ 6sxz8UYkHlJ7qx5gkXxZJvIU=
 X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id e6577e4ede2e14f5;
-	Sat, 26 Sep 2026 13:56:21 +0000
-X-Mizu-Trace-ID: e6577e4ede2e14f5
+Received: by smtp.migadu.com with ESMTPS id 173538b95d96974b;
+	Sat, 26 Sep 2026 13:56:28 +0000
+X-Mizu-Trace-ID: 173538b95d96974b
 X-Migadu-Flow: FLOW_OUT
 From: "Florent Revest (Anthropic)" <florent.revest@linux.dev>
 To: bpf@vger.kernel.org,
@@ -105,10 +105,12 @@ Cc: "Florent Revest (Anthropic)" <florent.revest@linux.dev>,
 	WANG Xuerui <kernel@xen0n.name>,
 	Will Deacon <will@kernel.org>,
 	x86@kernel.org
-Subject: [PATCH bpf v5 0/3] bpf: Fix use-after-free of progs detached from busy trampolines
-Date: Sat, 26 Sep 2026 13:55:57 +0000
-Message-ID: <20260926135605.1217928-1-florent.revest@linux.dev>
+Subject: [PATCH bpf v5 1/3] bpf: Wait for an RCU tasks grace period before freeing trampoline progs
+Date: Sat, 26 Sep 2026 13:55:58 +0000
+Message-ID: <20260926135605.1217928-2-florent.revest@linux.dev>
 X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20260926135605.1217928-1-florent.revest@linux.dev>
+References: <20260926135605.1217928-1-florent.revest@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -124,110 +126,108 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-A task running in a trampoline image can call a prog that was detached
-and freed in the meantime, when it slept in a sleepable prog before
-reaching the detached one or was preempted right before calling it.
-Patch 1 handles the preempted case with an RCU tasks grace period,
-patch 2 handles the sleeping case by patching detached progs out of the
-images that still call them and patch 3 adds a selftest for the sleeping
-case.
+When a prog is detached from a trampoline, it is freed after an RCU
+grace period, or an RCU tasks trace one if it is sleepable. This covers
+the tasks that are running the prog, since the prog's enter helper takes
+the matching read lock before the prog is called. On a preemptible
+kernel, it doesn't cover a task that was preempted in the trampoline
+just before the enter helper. That task holds no lock yet, and it calls
+the prog after it was freed:
 
-Since v3, only the nop of the prog that is detached is patched, in every
-image that isn't freed yet, like v2 did. Progs that stay attached keep
-running for the tasks that are in old images, ip_after_call is gone and
-the call to the original function is never skipped.
+  BUG: KASAN: vmalloc-out-of-bounds in __bpf_prog_enter_recur+0x3a5/0x3f0
+  Read of size 8 at addr ffffc90000055040 by task candidate/110
+  CPU: 1 UID: 0 PID: 110 Comm: candidate Not tainted 7.3.0-rc2-00014-g15071f2a1263-dirty #2 PREEMPT(full)
+  Call Trace:
+   <TASK>
+   __bpf_prog_enter_recur+0x3a5/0x3f0
+   bpf_trampoline_6442509193+0x37/0xf1
+   __x64_sys_futex+0x9/0x410
+   do_syscall_64+0xb0/0x530
+   ...
 
-On riscv and loongarch a jump of any range takes several instructions,
-and as bpf-ci and Alexei pointed out, a task preempted in the middle of
-such a patch site could resume into half of the new sequence. v5 makes
-the skip sites a single instruction there, patched to a jal / b through
-a new arch_bpf_trampoline_skip() hook, like their jump labels. I could
-only test these two under qemu.
+Wait for an RCU tasks grace period before the existing one when freeing
+a prog that was linked to a trampoline. An RCU tasks grace period only
+ends once the tasks that were preempted have run again, and
+bpf_tramp_image_put() already relies on it to free the image. It doesn't
+wait for tasks that sleep in the trampoline, the next commit takes care
+of those.
 
-Tested on x86_64 under KVM and on arm64, s390x, powerpc64le, riscv64
-and loongarch64 under qemu TCG, all with KASAN: the new selftest crashes
-the unpatched kernel and passes with the series on every one of them,
-along with trampoline_count, fentry/fexit, fentry_fexit, modify_return
-and lsm_cgroup (and the full test_progs on x86_64). On x86_64, 18
-fsession progs with cookies on an 11 argument function still fit in the
-image. Same on bpf-next, where patch 2 has trivial context conflicts in
-the x86 and arm64 JITs.
+Only progs that were linked to a trampoline can be called this way, so
+bpf_trampoline_add_prog() marks them and other progs are still freed as
+before.
 
-Changes since v4
-(https://lore.kernel.org/bpf/20260925100342.481242-1-florent.revest@linux.dev/):
-- riscv, loongarch: single instruction skip sites, patched through
-  arch_bpf_trampoline_skip(), loongarch keeps its limit of 38 (bpf-ci,
-  Alexei)
-- arm64: say in bpf_arch_text_poke() why patching out a detached prog
-  needs no synchronization (bpf-ci)
-- Comment fixes (bpf-ci)
-- Cc the arch maintainers and lists
+Fixes: e21aa341785c ("bpf: Fix fexit trampoline.")
+Reported-by: Junseo Lim <zirajs7@gmail.com>
+Closes: https://lore.kernel.org/bpf/aqdrwVpanH3WGurX@omen-arch/
+Assisted-by: Claude:unspecified
+Signed-off-by: Florent Revest (Anthropic) <florent.revest@linux.dev>
+---
+ include/linux/bpf.h     |  1 +
+ kernel/bpf/syscall.c    | 19 ++++++++++++++++++-
+ kernel/bpf/trampoline.c |  1 +
+ 3 files changed, 20 insertions(+), 1 deletion(-)
 
-Changes since v3
-(https://lore.kernel.org/bpf/20260924170543.1017048-1-florent.revest@linux.dev/):
-- Only patch the nop of the prog that is detached, in all the images
-  that aren't freed yet, like v2 did, and explain why a list of images
-  is needed (Alexei, bpf-ci)
-- Lower BPF_MAX_TRAMP_LINKS to 36 on x86, the worst case no longer fit
-  in a page with the nops (bpf-ci, Alexei)
-- selftest: wait for the detached progs to really be freed before
-  releasing the task, the grace period of patch 1 made the previous wait
-  too short (bpf-ci). Detach two progs one after the other, so that the
-  second detach has to reach an image that isn't the current one anymore
-- Keep a single comment block in bpf_tramp_image_put() (bpf-ci)
-
-Changes since v2
-(https://lore.kernel.org/bpf/20260912095924.866254-1-florent.revest@linux.dev/):
-- Patch all the nops in bpf_tramp_image_put() instead of the detached
-  prog's nop at detach time, drop the image list, the trampoline
-  backpointer and ip_after_call (Alexei)
-- Wait for an RCU tasks grace period before freeing progs that were
-  linked to a trampoline, for tasks preempted right before the enter
-  helper (Junseo, sashiko)
-- Initialize the jit ctx in loongarch's arch_bpf_trampoline_size() and
-  the dummy image in every arch_bpf_trampoline_size() (bpf-ci)
-- selftest: move the userfaultfd helper to testing_helpers.c and share
-  it with bpf_mod_race, comment fixes (bpf-ci), add a subtest where the
-  original function runs between the sleeping prog and the detached one
-
-Changes since v1
-(https://lore.kernel.org/bpf/20260819122252.1782790-1-florent.revest@linux.dev/):
-- Patch nops in front of detached progs instead of taking prog
-  references from the image (Alexei)
-- Lower BPF_MAX_TRAMP_LINKS on arm64, loongarch and powerpc so the
-  image still fits in a page
-- Explain that the sleepable case doesn't depend on CONFIG_PREEMPTION
-  (Kumar, Alexei)
-- Add a selftest (Jiri, Alexei)
-- Add Sechang's Reported-by (Junseo, Kumar)
-- Drop Leon's and Kumar's acks since the code changed entirely
-
-Florent Revest (Anthropic) (3):
-  bpf: Wait for an RCU tasks grace period before freeing trampoline
-    progs
-  bpf: Skip detached progs in trampoline images that are still in use
-  selftests/bpf: Detach a trampoline prog while a task sleeps before it
-
- arch/arm64/net/bpf_jit_comp.c                 |  37 ++--
- arch/loongarch/net/bpf_jit.c                  |  60 ++++--
- arch/powerpc/net/bpf_jit_comp.c               |  45 +++--
- arch/riscv/net/bpf_jit_comp64.c               |  56 ++++--
- arch/s390/net/bpf_jit_comp.c                  |  46 +++--
- arch/x86/net/bpf_jit_comp.c                   |  26 ++-
- include/linux/bpf.h                           |  45 ++++-
- kernel/bpf/syscall.c                          |  19 +-
- kernel/bpf/trampoline.c                       |  85 ++++++--
- .../selftests/bpf/prog_tests/bpf_mod_race.c   |  34 +---
- .../bpf/prog_tests/tramp_prog_detach.c        | 188 ++++++++++++++++++
- .../selftests/bpf/progs/tramp_prog_detach.c   |  56 ++++++
- tools/testing/selftests/bpf/testing_helpers.c |  28 +++
- tools/testing/selftests/bpf/testing_helpers.h |   2 +
- 14 files changed, 572 insertions(+), 155 deletions(-)
- create mode 100644 tools/testing/selftests/bpf/prog_tests/tramp_prog_detach.c
- create mode 100644 tools/testing/selftests/bpf/progs/tramp_prog_detach.c
-
-
-base-commit: ab39974240a0cff765f3bb9cce81d8001ffdb144
+diff --git a/include/linux/bpf.h b/include/linux/bpf.h
+index 1d2676782d70..a8ec85127571 100644
+--- a/include/linux/bpf.h
++++ b/include/linux/bpf.h
+@@ -1770,6 +1770,7 @@ struct bpf_prog_aux {
+ 	bool offload_requested; /* Program is bound and offloaded to the netdev. */
+ 	bool attach_btf_trace; /* true if attaching to BTF-enabled raw tp */
+ 	bool attach_tracing_prog; /* true if tracing another tracing program */
++	bool tramp_linked; /* true if it was ever linked to a trampoline */
+ 	bool func_proto_unreliable;
+ 	bool tail_call_reachable;
+ 	bool xdp_has_frags;
+diff --git a/kernel/bpf/syscall.c b/kernel/bpf/syscall.c
+index 244a939b9d2d..96217b99399d 100644
+--- a/kernel/bpf/syscall.c
++++ b/kernel/bpf/syscall.c
+@@ -2448,6 +2448,21 @@ static void __bpf_prog_put_rcu(struct rcu_head *rcu)
+ 	bpf_prog_free(aux->prog);
+ }
+ 
++/*
++ * Progs called from a trampoline can also be reached by a task that was
++ * preempted in the trampoline before the prog's enter helper took its RCU
++ * read lock, wait for those first.
++ */
++static void __bpf_prog_put_rcu_tasks(struct rcu_head *rcu)
++{
++	struct bpf_prog *prog = container_of(rcu, struct bpf_prog_aux, rcu)->prog;
++
++	if (prog->sleepable)
++		call_rcu_tasks_trace(rcu, __bpf_prog_put_rcu);
++	else
++		call_rcu(rcu, __bpf_prog_put_rcu);
++}
++
+ static void __bpf_prog_put_noref(struct bpf_prog *prog, bool deferred)
+ {
+ 	bpf_prog_kallsyms_del_all(prog);
+@@ -2461,7 +2476,9 @@ static void __bpf_prog_put_noref(struct bpf_prog *prog, bool deferred)
+ 		btf_put(prog->aux->attach_btf);
+ 
+ 	if (deferred) {
+-		if (prog->sleepable)
++		if (IS_ENABLED(CONFIG_TASKS_RCU) && prog->aux->tramp_linked)
++			call_rcu_tasks(&prog->aux->rcu, __bpf_prog_put_rcu_tasks);
++		else if (prog->sleepable)
+ 			call_rcu_tasks_trace(&prog->aux->rcu, __bpf_prog_put_rcu);
+ 		else
+ 			call_rcu(&prog->aux->rcu, __bpf_prog_put_rcu);
+diff --git a/kernel/bpf/trampoline.c b/kernel/bpf/trampoline.c
+index 90b70ea0d370..9d69c066a817 100644
+--- a/kernel/bpf/trampoline.c
++++ b/kernel/bpf/trampoline.c
+@@ -907,6 +907,7 @@ static int bpf_trampoline_add_prog(struct bpf_trampoline *tr,
+ 	}
+ 
+ 	hlist_add_head(&node->tramp_hlist, prog_list);
++	node->link->prog->aux->tramp_linked = true;
+ 	if (kind == BPF_TRAMP_FSESSION) {
+ 		tr->progs_cnt[BPF_TRAMP_FENTRY]++;
+ 		fexit = fsession_exit(node);
 -- 
 2.55.0
 
