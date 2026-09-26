@@ -1,88 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-28278-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28279-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE5F0C98328
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Sep 2026 12:49:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3EE47C98332
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Sep 2026 13:07:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hsS8G6fq9z2y7p;
-	Sat, 26 Sep 2026 22:49:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790426990;
-	cv=none; b=c1WfXMaiq5xeGqPAzxVQQhBwHotEdyURaWvqSsPp/SDLcR+AzlJDwrhiCxb3RMTvAUH+EpEGJzldJZuI2d9wv5YLS+EvmSDJlqNt63Pup/Qw5zO8rQZDnxZcc2jwQa19HJmAIs5HkJtX74w2IF/Rzhaz4pPFld049C/PJEJ1MoPn+4+Oyn++yq1EpVMurESSYHVtuS36u/14Vkl1FL1CxdoI02F8UFfQG45X5NE+qIBGRq1sC7jHaeXujunZ9vLjMzXl8pR1M9raAWmzvwXRgA688zQq9Z4yxKDm7zM/rfxEfPomRLenwiZ3EVlgE4u1AKacgf9j49DbUKokamvo2A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hsSXf34krz2y7p;
+	Sat, 26 Sep 2026 23:07:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.141
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790428050;
+	cv=none; b=cjYH2Hb/mUUPq7zlh4We2w9vdisgajh1TRRQ+rFCSiMIhyWInuqfZGxulWK3SH+PUjJiHnvytYLQuzvRTwv/7y5tNfv7m7ZId1Q0QA1RVeJA3OMbz0ZFmOOyzlUvVgk/NLqh340xiRfdx1T/doPx4ud/msCycJlx0sFaMhWOhU+BWOfvYmgs4c+zhwUnVYlYH3kTdEEVhncx6JBsYSDspRq4mbzT3r302IPCjRDdftQmDqUw3R2EgblyAXqMrHWHRc4UxyVBf1k/xmgjunCPBdZzpAAv9aQk5vQ1yh+SNxXpfNMbjViKsK+NnPHC1DcTh3vO75sn5vwtOcPliBvW6A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790426990; c=relaxed/relaxed;
-	bh=VcwH+9dD3jn1cikX304Fn2/psmP9ex3vbb4X9xZ4y0w=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=UCbEC5EgnAefRzpkFvgK7T6eH2JuhYUUKzirDtcK6O1egKnSOgMyNSZwpj5azX4tE9t9z74T9F4XGRtdZQ+BNajNWlbK4vnfaqbZy2xis/AmWCLQiCMmFUTAfd/v08+wUf9wkguTuOHREAGC74gile1qTtiK0UTQNFJEwoRmNIWnVGfI2V5xcPl0lZZM75eHbXE0hfcufbies27GKVjO3Gzyu5eDBK0AXVv9RFRII6/JYudWGZklIBNLr6dMviWPupJRmBQO3LcInzoZltFOl4VLBtFNFJfl6TWEmoyYTcf4pamRlZYiTGSdfJ9isy+PLdoqrABPIY9YQEPZuY7qgQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fd5egb/9; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1790428050; c=relaxed/relaxed;
+	bh=E/0Aixz4MoGQbluxHxh98fr8xrgoH3pVa08CacPtFqs=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=Y07Q2MYMpfqIzJJqQqJ0pemaStpIABrnt8+8IIb+O8nkyMUcI/kel5NFr/I2xy2o3uwhKFB/48mcNhBTLhMNIY/NFipVqbVgPVJmuFAB1XIJ4GdktaNsjm7HoOWrN8hJwaYtXSFbK+9vAJ5ftwK80bprvGcc2Ufd8C/1S0ixXxhHam5+jRDYHWhE3ec/d/6dwihGkSgS1k/Ydcb7EHgX7/LcZeqs7ayVESpYRF0Ost0DkqziVy18pyz05EjGkkMyXKdYyjErnWvpmuMUNUJ+D5QRB5FWRJiIP3Rs8eqZ7HF4NgXjqnBUa4RCYTZonxJfgoEP/vsqtcpYXoyocM/6Eg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=JY6ej2Ga; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=w0Cytzi8; dkim-atps=neutral; spf=pass (client-ip=103.168.172.141; helo=flow-a6-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fd5egb/9;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=JY6ej2Ga;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=w0Cytzi8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=103.168.172.141; helo=flow-a6-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
+Received: from flow-a6-smtp.messagingengine.com (flow-a6-smtp.messagingengine.com [103.168.172.141])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hsS8G0Bcbz2y2K
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 22:49:50 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id AC4E943D49;
-	Sat, 26 Sep 2026 12:49:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B6DC21F000FF;
-	Sat, 26 Sep 2026 12:49:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790426987;
-	bh=VcwH+9dD3jn1cikX304Fn2/psmP9ex3vbb4X9xZ4y0w=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=fd5egb/9VQIjjOqS4QVt0JCgY3CjQEWPCjDbq1JPvTO/u/NWzV+lbMU2GnucpD8Cg
-	 fQBncBItUBiNpft5Xle3TNZkvASdQXwYT782WczpRC4jNHKnURx/VR4lMI4JBZAg4b
-	 za0ej8mPU5YqIeMJVF26LmaALHmhJznID0Q97bqr7HNfNTSy14hNnajBL2yZtPoDr6
-	 ZPeKxz/NhMbw/6kJedmpg94MnX+XYJsijQGDTgqkeXja/IGUPPqM+mRcQX86S0NU8a
-	 AaymHjbxISsM0nBUg8bnqDkatbTzLbXwZiMwQwM34QeqRDonyX/y1rrUsoEZSMn7fp
-	 RycokNiL9jKuw==
-Date: Sat, 26 Sep 2026 13:49:38 +0100
-From: Nathan Chancellor <nathan@kernel.org>
-To: "Jason A. Donenfeld" <Jason@zx2c4.com>
-Cc: Andreas Schwab <schwab@linux-m68k.org>,
-	Andy Lutomirski <luto@kernel.org>,
-	Thomas Gleixner <tglx@kernel.org>, Theodore Ts'o <tytso@mit.edu>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	Nick Desaulniers <ndesaulniers@google.com>,
-	Bill Wendling <morbo@google.com>,
-	Justin Stitt <justinstitt@google.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	"H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	llvm@lists.linux.dev
-Subject: Re: [PATCH v2] random: vDSO: Avoid call to memset() when zeroing
- reserved in __cvdso_getrandom_data()
-Message-ID: <20260926124938.GC1486962@ax162>
-References: <20260925-vdso-getrandom-avoid-memset-llvm-24-v2-1-ce640f872393@kernel.org>
- <87zex4ic68.fsf@linux-m68k.org>
- <20260926121927.GA1486962@ax162>
- <are7cfMIHZZn6jLz@zx2c4.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hsSXZ3C8fz2y2K
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2026 23:07:24 +1000 (AEST)
+Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
+	by mailflow.phl.internal (Postfix) with ESMTP id C06B913804B0;
+	Sat, 26 Sep 2026 09:07:16 -0400 (EDT)
+Received: from ams-imap-03 ([10.64.2.23])
+  by ams-compute-02.internal (MEProxy); Sat, 26 Sep 2026 09:07:20 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm1; t=1790428036;
+	 x=1790435236; bh=E/0Aixz4MoGQbluxHxh98fr8xrgoH3pVa08CacPtFqs=; b=
+	JY6ej2GaMU5tFQx4P4L7xpK0hMl18csetiXOfr6O0dqdVPmShWq0JPpifDXCAXS1
+	WAsyKi8pjs7t6RWq759bpX8FHUqqgB3ix677GOzcftzN7F9N8PLmthIECeaNfa/A
+	P+2uJuuFBTTgZAQ7EbICe01O/JdcPwKinMgJvLho7IluNFj8RTtGxVmNjqIKiYpj
+	UR3vOmenvvoHhh4I2ZiYEvackkexMn3lXYx3KuwIgkOFVskKsEp+lc6xtXygxdEK
+	AjntRnwlwzXroiH47DzyeX4QFd/GKDl/9E642yS7DF2Kw0s0p/0L0Ubu+WuXNN9t
+	Dwqap0O2x84uyGP2aDdDPA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1790428036; x=
+	1790435236; bh=E/0Aixz4MoGQbluxHxh98fr8xrgoH3pVa08CacPtFqs=; b=w
+	0Cytzi8wSmj+mFhvAnjabMb+QZf7M3dVCKLEj9/Dbx70AK0JLhjm4IvD59f8aPoW
+	M3lSl46dKAne7di/wMTJ76iJeR/YN2CWmJ273SA+/BycJRtz2TadIIcXjRQRA6Fw
+	d1PjbiAXLrHehMn9sWL+H1plV3O0I6zA4hqQ8L1CMVdgSuWipTkep6zve4YfEqP0
+	Zs6j6tUUMO1riGOt8v1vffbaH/NF18IOy7CG4zw9bmOLTzHJKqkXp4V6OtaaRa5H
+	2eR47nryPx9zkA9F1ahtgW9c9sl4Pip3yYqEADEeqnrzG3MzERSbC2635R8ZhKrg
+	pwU3ej5l8FK+5aoJABjXA==
+X-ME-Sender: <xms:d8O3ag1HENOK2aqX5Hwlw6Q8RFPRNjCrvC5EQg62Q5MwZ2X8bbKZZw>
+    <xme:d8O3al7CTh-qdNdQdYHKlYAc2HK5Pct0chw4_Wh6lTausRDuhvnXgNqkprm7sdGdM
+    5U4_BMYkuFoj-4mearySbRTQ_cmndooZhYXir5Lfas9_vbxa-3XFA>
+X-ME-Proxy-Cause: dmFkZTGluhR8DaufX6B/O8p7kobwL+s/+e2WxIV1ftwgdk4MOyOBMt7LN1vTfG/eVZk0Du
+    poDENDPAZWU/+DFm2TqDnNDFfgVA6hHaGe30H4n6HeZKXNfngYWBIprCqpApIrE+Fbsucg
+    3T43On08Mo6RNjVXL9te8gsrxz2WjOyw/W95nmJYPc0JMOu2PQIIsRRzHlvn+vNrT8LUbX
+    mmoYyzTpLxtlzDHIP0u3kK4ktm0M9xoXlmDPLfcWfL49p+EPf/LNIMvJJMcvl0MfSqseyk
+    Rsr0fjsMhmDFEIX9RQVpOsEW/sifidIp5PFecnwP38g63Y0mVjJCAlVER9svaUec6rZbmC
+    qbtQKRzPvL8vBpUlrACJ+50qfVABYjsNU7+coMpX7EK9rz3tWqDsshpIrekmR1EYoFIwzi
+    MFzRtA6nyv0gSEWy8V3Jxg6yoM9xEoGlhkpmswvoPC+1yCzJfj9aqpNmAvG77toghXLpW3
+    oSZGIcXZugioQhzHy9zw5o5cRzaVDoEyD+WlhlAIT7/5QdIXyAicupFVuieBjIjNc7MSLE
+    ZTeTptEMpLzGLB31HwOxannZP+AQz43E3ZUxZlcqdrZ09Q6mzAI3aJNRZ88M2AiEhJSkoF
+    SRPUmVb1bqKMeD4YM6wIkw8UjM82p5rtkv7hDfqSo1lynYzWf8HPL9EYqClQ
+X-ME-Proxy: <xmx:fcO3asP_JZb7_pe9MebtKK8m1oQZ2mFysi4LzvtqxqjkK-xmQJG7oA>
+    <xmx:fcO3ahdCUIGe_-N0_11cq50k2hB7qoMtAn8OQ0p4v_cKD3b-BZ1GSQ>
+    <xmx:fcO3auH0MA2jXNBVepFNbfn0NcMhLJ0i9yrj76_mSiuk373fUnS0zA>
+    <xmx:fcO3aq71vFxuFeuj5WpfAshyYTTqDxV9SfXlvv_NrYetkbnGCsY2Uw>
+    <xmx:hMO3aqB8ADUszpbuD6K9q4F8d_--PVT7Q9k3xSG4B02mLBEY0FvpthMT>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.ams.internal (Postfix, from userid 501)
+	id 577F132A0087; Sat, 26 Sep 2026 09:07:03 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,56 +94,256 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <are7cfMIHZZn6jLz@zx2c4.com>
+X-ThreadId: AJwEWD5WPnhk
+Date: Sat, 26 Sep 2026 15:06:33 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Lorenzo Stoakes" <ljs@kernel.org>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+ "Liam R. Howlett" <liam@infradead.org>,
+ "Vlastimil Babka (SUSE)" <vbabka@kernel.org>,
+ "Jann Horn" <jannh@google.com>, "Pedro Falcato" <pfalcato@suse.de>,
+ "David Hildenbrand (Red Hat)" <david@kernel.org>,
+ "Mike Rapoport" <rppt@kernel.org>,
+ "Suren Baghdasaryan" <surenb@google.com>,
+ "Michal Hocko" <mhocko@suse.com>, "Jonathan Corbet" <corbet@lwn.net>,
+ "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
+ "Dennis Dalessandro" <dennis.dalessandro@cornelisnetworks.com>,
+ "Jason Gunthorpe" <jgg@ziepe.ca>, "Leon Romanovsky" <leon@kernel.org>,
+ "Paul Moore" <paul@paul-moore.com>,
+ "Stephen Smalley" <stephen.smalley.work@gmail.com>,
+ "Jaroslav Kysela" <perex@perex.cz>, "Takashi Iwai" <tiwai@suse.com>,
+ "Alexei Starovoitov" <ast@kernel.org>,
+ "Daniel Borkmann" <daniel@iogearbox.net>,
+ "Andrii Nakryiko" <andrii@kernel.org>,
+ "Eduard Zingerman" <eddyz87@gmail.com>,
+ "Kumar Kartikeya Dwivedi" <memxor@gmail.com>, "Zi Yan" <ziy@nvidia.com>,
+ "Baolin Wang" <baolin.wang@linux.alibaba.com>,
+ "Nico Pache" <nico.pache@linux.dev>,
+ "Ryan Roberts" <ryan.roberts@arm.com>, "Dev Jain" <dev.jain@arm.com>,
+ "Barry Song" <baohua@kernel.org>, "Lance Yang" <lance.yang@linux.dev>,
+ "Usama Arif" <usama.arif@linux.dev>,
+ "Kirill A. Shutemov" <kas@kernel.org>,
+ "Doug Gilbert" <dgilbert@interlog.com>,
+ "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>,
+ "Martin K. Petersen" <mkp@kernel.org>,
+ "Jaya Kumar" <jayalk@intworks.biz>, "Simona Vetter" <simona@ffwll.ch>,
+ "Helge Deller" <deller@gmx.de>, "Sebastian Reichel" <sre@kernel.org>,
+ "John Hubbard" <jhubbard@nvidia.com>, peterx <peterx@redhat.com>,
+ "Masami Hiramatsu" <mhiramat@kernel.org>,
+ "Oleg Nesterov" <oleg@redhat.com>,
+ "Peter Zijlstra" <peterz@infradead.org>,
+ "Thomas Gleixner" <tglx@kernel.org>, "Ingo Molnar" <mingo@redhat.com>,
+ "Borislav Petkov" <bp@alien8.de>,
+ "Dave Hansen" <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "Arnaldo Carvalho de Melo" <acme@kernel.org>,
+ "Namhyung Kim" <namhyung@kernel.org>,
+ "Mark Rutland" <mark.rutland@arm.com>, "Rik van Riel" <riel@surriel.com>,
+ "Harry Yoo" <harry@kernel.org>, "Juri Lelli" <juri.lelli@redhat.com>,
+ "Vincent Guittot" <vincent.guittot@linaro.org>,
+ "Maarten Lankhorst" <maarten.lankhorst@linux.intel.com>,
+ "Maxime Ripard" <mripard@kernel.org>,
+ "Thomas Zimmermann" <tzimmermann@suse.de>,
+ "Dave Airlie" <airlied@gmail.com>, "Will Deacon" <will@kernel.org>,
+ "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
+ "Nicholas Piggin" <npiggin@gmail.com>,
+ "Muchun Song" <muchun.song@linux.dev>,
+ "Oscar Salvador" <osalvador@suse.de>,
+ "Matthew Wilcox" <willy@infradead.org>, "Jan Kara" <jack@suse.cz>,
+ "Marc Zyngier" <maz@kernel.org>, "Oliver Upton" <oupton@kernel.org>,
+ "Catalin Marinas" <catalin.marinas@arm.com>,
+ "Madhavan Srinivasan" <maddy@linux.ibm.com>,
+ "Anup Patel" <anup@brainfault.org>, "Paul Walmsley" <pjw@kernel.org>,
+ "Palmer Dabbelt" <palmer@dabbelt.com>,
+ "Albert Ou" <aou@eecs.berkeley.edu>,
+ "Christian Borntraeger" <borntraeger@linux.ibm.com>,
+ "Janosch Frank" <frankja@linux.ibm.com>,
+ "Claudio Imbrenda" <imbrenda@linux.ibm.com>,
+ "Alexander Gordeev" <agordeev@linux.ibm.com>,
+ "Gerald Schaefer" <gerald.schaefer@linux.ibm.com>,
+ "Heiko Carstens" <hca@linux.ibm.com>,
+ "Vasily Gorbik" <gor@linux.ibm.com>,
+ "David S . Miller" <davem@davemloft.net>,
+ "Andreas Larsson" <andreas@gaisler.com>,
+ "Alexander Viro" <viro@zeniv.linux.org.uk>,
+ "Christian Brauner" <brauner@kernel.org>,
+ "Matthew Brost" <matthew.brost@intel.com>,
+ "Joshua Hahn" <joshua.hahnjy@gmail.com>, "Rakie Kim" <rakie.kim@sk.com>,
+ "Byungchul Park" <byungchul@sk.com>, "Gregory Price" <gourry@gourry.net>,
+ "Ying Huang" <ying.huang@linux.alibaba.com>,
+ "Alistair Popple" <apopple@nvidia.com>, "Chris Li" <chrisl@kernel.org>,
+ "Kairui Song" <kasong@tencent.com>,
+ "Kemeng Shi" <shikemeng@huaweicloud.com>,
+ "Nhat Pham" <nphamcs@gmail.com>, "Baoquan He" <baoquan.he@linux.dev>,
+ "Youngjun Park" <youngjun.park@lge.com>,
+ "Johannes Weiner" <hannes@cmpxchg.org>, "Qi Zheng" <qi.zheng@linux.dev>,
+ "Shakeel Butt" <shakeel.butt@linux.dev>,
+ "Axel Rasmussen" <axelrasmussen@google.com>,
+ "Yuanchu Xie" <yuanchu@google.com>, "Wei Xu" <weixugc@google.com>,
+ "Chengming Zhou" <chengming.zhou@linux.dev>,
+ "Michal Hocko" <mhocko@kernel.org>, "Miklos Szeredi" <miklos@szeredi.hu>,
+ "Xu Xin" <xu.xin@linux.dev>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-usb@vger.kernel.org, linux-rdma@vger.kernel.org,
+ selinux@vger.kernel.org, linux-sound@vger.kernel.org,
+ bpf@vger.kernel.org, linux-scsi@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
+ Linux-Arch <linux-arch@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
+ linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+ fuse-devel@lists.linux.dev, "Takashi Iwai" <tiwai@suse.de>,
+ "Emil Tsalapatis" <emil@etsalapatis.com>
+Message-Id: <408aef6e-5b0a-482f-8ba8-f8c20ee870e5@app.fastmail.com>
+In-Reply-To: <areSEI5pWBadkqIe@gremlin>
+References: 
+ <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
+ <d4d7d4c2-a1d5-41d0-b1c8-8ea0cc5a0397@app.fastmail.com>
+ <areSEI5pWBadkqIe@gremlin>
+Subject: Re: [PATCH v3 00/40] mm: make VMA flag semantics explicit, eliminate
+ VM_SPECIAL
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-On Sat, Sep 26, 2026 at 02:32:49PM +0200, Jason A. Donenfeld wrote:
-> On Sat, Sep 26, 2026 at 01:19:27PM +0100, Nathan Chancellor wrote:
-> > On Sat, Sep 26, 2026 at 11:39:43AM +0200, Andreas Schwab wrote:
-> > > On Sep 25 2026, Nathan Chancellor wrote:
-> > > 
-> > > > +#if __has_builtin(__builtin_memset_inline)
-> > > > +#define memset_inline(dst, value, size) __builtin_memset_inline(dst, value, size)
-> > > > +#elif IS_ENABLED(CONFIG_CC_HAS_OPT_INLINE_MEMSET)
-> > > > +#define memset_inline(dst, value, size) __builtin_memset(dst, value, size)
-> > > > +#else
-> > > > +static inline void *memset_inline(void *dst, int value, size_t size)
-> > > > +{
-> > > > +	char *d = dst;
-> > > > +
-> > > > +	while (size--)
-> > > > +		*d++ = value;
-> > > > +
-> > > > +	return d;
-> > > > +}
-> > > > +#endif
-> > > > +
-> > > 
-> > > memset actually returns the original pointer, not the incremented one.
-> > > Nothing uses the return value of memset_inline here, but it is
-> > > confusing.
-> > 
-> > Whoops, good catch, I guess my fingers gave up on those last two
-> > characters :) I will fix this for v3 once there has been some time for
-> > further review.
-> 
-> Do we even need to return a value at all? Might as well just make the
-> function two lines:
-> 
-> +       for (char *d = dst; size--;)
-> +               *d++ = value;
+On Sat, Sep 26, 2026, at 11:40, Lorenzo Stoakes (ARM) wrote:
+> On Sat, Sep 26, 2026 at 12:06:22AM +0200, Arnd Bergmann wrote:
+>>
+>> mm/vma.c: In function '__mmap_region':
+>> mm/vma.c:3083:1: error: the frame size of 1552 bytes is larger than 1536 bytes [-Werror=frame-larger-than=]
+>>
+>> I don't immediately see anything that you did that would have introduced
+>> something bad that wasn't already there, so it's likely just gone from
+>> just below the limit I was using for my testing to just above. The 1536
+>> byte limit is what I use on 64-bit builds with KASAN and otherwise
+>> still has a clean build (with a small number of local fixup patches).
+>
+> Hmm are you specifying this limit manually somehow?
 
-Yeah, good point, no point in returning something that we don't need
-plus this is basically what we had before, just with a different pointer
-type. Thanks for the suggestion.
+It's a Kconfig setting upstream, but the way I'm doing it is to have
+patch that calculates a sensible default based on other options that
+is a little smaller than the default (currently 2048 bytes) on x86-64
+to catch more cases where something sticks out.
 
-> (Technically that could even be one, but maybe that sort of golf loses
-> clarity. Your choice.)
+>> If I sprinkle some 'noinline_for_stack' annotations on functions
+>> called by __mmap_region(), I can get the size down to 1144 in this
+>> config, but that doesn't sound like a great workaround.
+>>
+>> The large stack usage is potentially harmful if this ends up
+>> in call chains that have additional large stack usage (e.g.
+>> kmalloc() leading to reclaim). Any ideas for how to reduce it here?
+>
+> That can never happen :) this call chain is _only_ for an mmap() call.
 
-I'll keep it two lines just for the sake of clarity.
+I mean more functions called /from/ here, something like
 
--- 
-Cheers,
-Nathan
+  __mmap_region()
+  __mmap_new_vma()
+  vm_area_alloc()
+  kmem_cache_alloc(..., GFP_KERNEL)
+  slab_alloc_node()
+  allocate_slab()
+  alloc_slab_page()
+  __alloc_pages_slowpath()
+  __alloc_pages_direct_reclaim()
+  __perform_reclaim()
+  try_to_free_pages()
+  shrink_zones()
+  shrink_node()
+  lru_gen_shrink_node()
+  shrink_many()
+  shrink_one()
+  try_to_shrink_lruvec()
+  evict_folios()
+  shrink_folio_list()
+  pageout()
+  shmem_writeout()
+  swap_writeout()
+  swap_add_folio()
+  swap_write_submit()
+  nfs_swap_submit_write()
+  nfs_file_direct_write()
+  nfs_direct_extract_pages()
+  nfs_do_recoalesce()
+  __nfs_pageio_add_request()
+  nfs_pageio_doio()
+  pnfs_generic_pg_writepages()
+  pnfs_do_write()
+  pnfs_try_to_write_data()
+  filelayout_write_pagelist()
+  nfs_initiate_pgio()
+  nfs_local_doio()
+  nfs_local_do_write()
+  nfs_local_call_write()
+  ->write_iter()
+  generic_file_write_iter()
+  generic_write_sync()
+  vfs_fsync_range()
+  ->fsync()
+  xfs_file_fsync()
+  file_write_and_wait_range()
+  filemap_fdatawrite_range()
+  filemap_writeback()
+  do_writepages()
+  ->writepages()
+  xfs_vm_writepages()
+  iomap_writepages()
+  iomap_writeback_folio()
+  iomap_writeback_range()
+  ->writeback_range()
+  xfs_zoned_writeback_range()
+  iomap_add_to_ioend()
+  ->writeback_submit()
+  xfs_zoned_writeback_submit()
+  xfs_zone_alloc_and_submit()
+  xfs_submit_zoned_bio()
+  submit_bio()
+  submit_bio_noacct()
+  submit_bio_noacct_nocheck()
+  __submit_bio_noacct()
+  __submit_bio()
+  blk_mq_submit_bio()
+  blk_mq_run_dispatch_ops()
+  blk_mq_try_issue_directly()
+  blk_mq_run_hw_queue()
+  blk_mq_sched_dispatch_requests()
+  blk_mq_do_dispatch_sched()
+  __blk_mq_do_dispatch_sched()
+  blk_mq_dispatch_rq_list()
+  ->queue_rq()
+  scsi_queue_rq()
+  scsi_dispatch_cmd()
+  ->queuecommand()
+  ata_scsi_queuecmd()
+  __ata_scsi_queuecmd()
+  ata_scsi_translate()
+  ata_scsi_qc_issue()
+  ata_qc_issue()
+  qc_issue()
+  ata_sff_qc_issue()
+  ata_sff_queue_pio_task()
+
+There are many ways the call chain can go of course, but the actual
+stack overflows do tend to follow this pattern where you are at a
+function with high stack usage and call kmalloc() during low memory
+condition and that ends up waiting for a block I/O down the line.
+(you normally don't go through swap and nfs, I was just looking
+for the worst case I could easily see in the code)
+
+> In general I am absolutely taking this seriously and will find a way to
+> reduce this, but my only question is whether this is actually something
+> that needs to be done in this series?
+>
+> Because it's already huge and I would rather avoid adding yet another patch
+> to it if possible.
+>
+> If I can do it as a follow-up that'd be ideal!
+
+What I was hoping for is that as you are already deep into the
+exact code that caused the warning and you can already see something
+in there that may help.
+
+I don't think it's urgent, I just don't want it to be forgotten.
+
+     Arnd
 
