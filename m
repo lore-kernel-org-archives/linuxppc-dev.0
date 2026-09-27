@@ -1,98 +1,48 @@
-Return-Path: <linuxppc-dev+bounces-28333-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28334-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C838C9832F
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2026 17:54:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED227C98338
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2026 18:05:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4htBsH0qfQz30Vy;
-	Mon, 28 Sep 2026 03:54:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:31::10"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790531539;
-	cv=none; b=KPGOd0wWNSbDY13M2v9jrq5rwnvyj9W2a6IXk5EIf3+q/ZAewpyUr2GwRq98tw8uZmwcvKJHf2OaRGTpWMCnq7Zk6YNRBrCJVrw1vEW/07Y+0y5ToS3l3N5bdLw1UrHKcscnJJsnG0KiwxIDNAxRYkAgLqdXDdNg/ZZIdzDuy9AxvweulZNI54ZAbbOsyx0BR/DBRI/Op7WIzA8j2io6zugFBZ0s2TEDa/Rp0l0ncDajmCTqrTmykDf3egZXf0mMOGQRq7+9SfM+fLGbqwnYApKMeW0AkTXtQrCAprHBDeimQ2AnZUZz9H7r80tSBvjyEG+Ba3caqZQvIdnuejlM4g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4htC6V4cfdz2yMn;
+	Mon, 28 Sep 2026 04:05:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:fff3:b8::104"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790532354;
+	cv=none; b=DzAc+7+dWkOjPvEpUnwLvQKqV94lvTIEIkS1WOAERMz5vRiB1R+Rv1ZmhN9wdhronp/Sm8x3qb9M/2OP4no4an4ctpwYuYBwXKLh1925G1PghjXr+sHYg1LanBo1Sj/4j1vvVXaM4e2LLJnjkv4vdkp4xB5RT1Og/xINNC9wWyTmQ9LDQeaj1kLrh3QxnArwUa3/uzhnLWA+LRhAyMq0eI9nXsqIkAAn2owH6zj7XauiahkVFhmafonEX3j6I0AjBnncujAYxkFceZ9pGiA1/OtbhA9VyIaxpSwHCNHGdistlSUN/QGrRMphCMmxlbv6SMa9V119Lqoi3B13xS0OVA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790531539; c=relaxed/relaxed;
-	bh=9XImCPy7QHPoN4quLQ1lus3OWNtmBZ9BuTXdaG3JBgc=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Cj1/PfeJCJ7bYufK1lW3bnNy48ta7nm9GBNxm3+/qAd7N8ObhD/dtVbMgCS01P/ZRlnmnq1JoUmWO9NyyHMTS1C5nkQ70cmBXZ8XmOsyKNDLkVayzMu6qCOD7ekISar5hJtYQBWpwINsPHi01Ae/IeJEN0F2xcHxQ+uqT5K0cpyf5IWBc9/BDAGyNzLiZZMgtb0Xw6Xm+IcO7JDMT21MqNYtYqfaYd2thz2Gz6u5gR8Uq89xuPBZUK8DMsEU2tEqkI2gZQkDRrobFXuPeXW8K8PEfO3kX0LQEGy91bfvdIcznnoXwpGVaZ7iKOA0d4C3c+dU0OxIeu270ID8bcyG+A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Ohw1yHae; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:31::10; helo=mail-wm2-x10.google.com; envelope-from=abhinjoses@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Ohw1yHae;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:31::10; helo=mail-wm2-x10.google.com; envelope-from=abhinjoses@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm2-x10.google.com (mail-wm2-x10.google.com [IPv6:2a00:1450:4864:31::10])
+	t=1790532354; c=relaxed/relaxed;
+	bh=KCcEhqXeUVxSlC9Hujql3hvKNzICczjMuXtM8vnDkwI=;
+	h=Message-ID:In-Reply-To:References:From:Date:Subject:To:Cc; b=VfAo9OwwDwxOGUVmQmZjer+P51bvYXaw55Ea7P6NmmeDcps0ci8WldDezdbmMHJG2eUsiGvMWKlseXVA+2Fz2PdEIw/4ygewtgPpgLUERDbGEcoGQEGTjbjenkIXbfjoBGzrQhsmWK5xhPQRlVetPsMSQKsrnNO6/V1AXE2RwQHVztn2gYT7UV5mGLJZSmKS7Y2kLiFyLzhq3egmMboKmFHAOaYtUrrTrQUhP91NRYgczBfEJb/rnfzaO7jORkgmT23p5KUyuPPTaB/ds4RqyHvWCwc+4h8qZuE8UBxhMVhI58PJc6ydjJEAOLtRrAQrVobqtmZ+bGVY9kZrt6jrrA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=2a01:4f8:fff3:b8::104; helo=mailout3.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org) smtp.mailfrom=wunner.de
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wunner.de (client-ip=2a01:4f8:fff3:b8::104; helo=mailout3.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 217 seconds by postgrey-1.37 at boromir; Mon, 28 Sep 2026 04:05:52 AEST
+Received: from mailout3.hostsharing.net (mailout3.hostsharing.net [IPv6:2a01:4f8:fff3:b8::104])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4htBpp0Sxdz3bbx
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 03:52:18 +1000 (AEST)
-Received: by mail-wm2-x10.google.com with SMTP id 5b1f17b1804b1-49e6598dd44so13766945e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2026 10:52:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790531535; x=1791136335; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=9XImCPy7QHPoN4quLQ1lus3OWNtmBZ9BuTXdaG3JBgc=;
-        b=Ohw1yHaejxb06f6WT3MdWD5rVHdyNE8Ga6DsdATaqfEDJSjWctZLQ6JXklWLkqValq
-         dLYIZxJe7evbhLdiAa++VZZ8yBYXrnjlZPlmFGdwFEtJJBGd1TBJPVJ2QBbLuxC0+ux+
-         jIBqawsnn6K9f7RYUa1fw/i5ZD8JsgnTIwVnDNQr21gsuFo/HNFN0d3GRF7w1rIg2FV8
-         PSrRp2wpT8qf5FLSmBN9ENRpbDI1X+uMYVuMGOhnriNRwoSDQnKlA8JAyT1NOLRdZS2c
-         sGfmNJyd48nR3FhWq847Ex8S/6KXI6QvHhwU2qdkmg/AEyo5LN2TKY0uCSH8eBnp/u3q
-         dAWg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790531535; x=1791136335;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=9XImCPy7QHPoN4quLQ1lus3OWNtmBZ9BuTXdaG3JBgc=;
-        b=0N6SkUOQxIHDxjeHpC/8JvO6qtGhnLEM0PqRjb59AnIXPIBKfkpBqh0qAhvS98QcS2
-         f7xBzw/ZSlf8LMbAmI0meOw4jvG7KJ/rFWO307aun0pEpItADfeAHifE4Wy8PuGFjnel
-         we2FHngx7lkpk58im32Civqs8MLirjrzQUc0VhFYF7oiAmR8cY1w9/a6EQBxtQHgYtRL
-         jtw3HMn6pjhdnfS2Vx3k9Bk/PuXShZ1mhsmX1jWkj5G9D+h7PVvOBiyrPgbGVc6yWn4/
-         i6qBchpzlBWXSTbFoEAw/f3ThoK6UQGgrwwQiN8s7DQQjp/hdUVr3bjYeZEEhh0mJST8
-         52Cw==
-X-Forwarded-Encrypted: i=1; AKwUvByN99nXIFZbfe3TPc69M0jzmMZp9vEWPAKu4ztHN0IkMP7Susprk7OE06pJVCIgUZE81OoCBfvhyuz1I20=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++lOHJehkTxTZzCt/1hS/+ewmH4XPqjMZeErwuwdDIi/Zm0EhW9y
-	fblORDcjST9tKIY1FfQFYj05LPULuBoXTslcujhK1NnO54u5xnKnNWXi
-X-Gm-Gg: AYBFou1skwWltqegCAXhfsTVGPY/N78vOUvQoxVT3wwqTcyqvMSJRbX713Ly+54dy0F
-	E5gW56B1Lfcz5IEQYM7i5V5NjHxykIWmKJX3sTBi0weAgfhdYHCsbWSxShV1bDN6Pc/5N5xXdFW
-	yMbDjhEfCSs7LrWOTXnqp5Izy5DYzxhErH7SOI3ynMivkqsDmGAsAK2E9IPrPIUZj6nBVA99igZ
-	7RWlOW/DI9XOBggHkwCjK1bT4CxsPhehgHSpQEh1FRIOiOjiB7NUgTz307vp9teOTaK/uIs1ufO
-	Oatwj42hVDz8AzODNCEaKHxwIdmEsEvo/BICzCnSKmnrJ67GG/rWudp/dLX3bbGl8EsnjR5BPVC
-	L5pxYyoUw3DLh3rJZ5IUjwzRPiffVqpBNSqMwOZZM/Gw7dyRg8rkqAIbuVWgrcATSBbJm4HgWP8
-	2H1+bW1ixj6MRZXhleexg+TyS9SRncocRO4dPoWQxNfvr00JwAKVB7aD1vmbXerXqGNxR9e0CLo
-	g7X3vncUHn63vT+t49W9EinU/iF2vAQ67Q5oNYSg6tTeH2uHZTS9NQWBe16p4d4lEHwV3vWV4gr
-	Mg==
-X-Received: by 2002:a05:600c:620b:b0:49e:6683:d23c with SMTP id 5b1f17b1804b1-49fe667f0bfmr195079235e9.0.1790531534961;
-        Sun, 27 Sep 2026 10:52:14 -0700 (PDT)
-Received: from f3a6eae2255e.fritz.box (dynamic-002-214-014-217.2.214.pool.telefonica.de. [2.214.14.217])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4887a30bcc4sm22563923f8f.1.2026.09.27.10.52.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 27 Sep 2026 10:52:14 -0700 (PDT)
-From: Abhin Parekadan Jose <abhinjoses@gmail.com>
-To: Bjorn Helgaas <bhelgaas@google.com>,
-	Lukas Wunner <lukas@wunner.de>,
-	"Michael S. Tsirkin" <mst@redhat.com>
-Cc: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Shuai Xue <xueshuai@linux.alibaba.com>,
-	Kees Cook <kees@kernel.org>,
-	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver O'Halloran <oohall@gmail.com>,
-	linux-pci@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Abhin Parekadan Jose <abhinjoses@gmail.com>
-Subject: [PATCH RFC v3 5/5] misc: Add edu_srpoc surprise removal POC driver
-Date: Sun, 27 Sep 2026 17:52:02 +0000
-Message-ID: <20260927175203.928270-6-abhinjoses@gmail.com>
-X-Mailer: git-send-email 2.51.1
-In-Reply-To: <20260927175203.928270-1-abhinjoses@gmail.com>
-References: <20260927175203.928270-1-abhinjoses@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4htC6S5Lmfz2yLY
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 04:05:52 +1000 (AEST)
+Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature ECDSA (secp384r1) server-digest SHA384
+	 client-signature ECDSA (secp384r1) client-digest SHA384)
+	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
+	by mailout3.hostsharing.net (Postfix) with ESMTPS id 3417D1D05;
+	Sun, 27 Sep 2026 20:05:49 +0200 (CEST)
+Received: by h08.hostsharing.net (Postfix, from userid 100393)
+	id DD4DA6078B58; Sun, 27 Sep 2026 20:05:48 +0200 (CEST)
+Message-ID: <ae05fe2df3a3182594c4a9638daba1c72cf40358.1790531238.git.lukas@wunner.de>
+In-Reply-To: <cover.1790531238.git.lukas@wunner.de>
+References: <cover.1790531238.git.lukas@wunner.de>
+From: Lukas Wunner <lukas@wunner.de>
+Date: Sun, 27 Sep 2026 20:02:01 +0200
+Subject: [PATCH 1/7] PCI/DPC: Avoid access to non-existent AER capability
+To: Bjorn Helgaas <helgaas@kernel.org>, Raag Jadav <raag.jadav@intel.com>, Riana Tauro <riana.tauro@intel.com>, Yury Murashka <yurypm@arista.com>, "Matthew W Carlis" <mattc@purestorage.com>, linux-pci@vger.kernel.org
+Cc: "Mahesh J Salgaonkar" <mahesh@linux.ibm.com>, Oliver OHalloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org, Aravind Iddamsetty <aravind.iddamsetty@intel.com>, Srinivasa Adatrao <srinivasa.adatrao@intel.com>, Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>, Terry Bowman <terry.bowman@amd.com>, Keith Busch <kbusch@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,258 +55,104 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
 
-A test driver for the QEMU edu device that reproduces the surprise
-removal hang described in MST's RFC v5 thread.
+Downstream Port Containment does not mandate presence of an Advanced Error
+Reporting capability, so a Downstream Port may support DPC, but not AER
+(PCIe r7.1 sec 6.2.11.2).
 
-- hacked in a reg to the edu device on qemu to raise a delayed irq
-- This driver writes to that reg in remove and waits for the irq to be
-  handled. This simulates del_gendisk() blocked in
-  blk_mq_freeze_queue_wait()
+In February 2019, commit 9f08a5d896ce ("PCI/DPC: Fix print AER status in
+DPC event handling") amended the DPC driver to access the AER capability
+without checking for its presence.
 
-remove() blocks until the delayed interrupt arrives, 600 seconds after
-it is requested, or until the device is surprise removed and its
-disconnect work runs.  That is the purpose of the driver, so a normal
-unbind takes 600 seconds, and on a QEMU without the delayed interrupt
-register it never returns.  It is only built with CONFIG_EDU_SRPOC.
+In May 2020, commit 708b20003624 ("PCI/AER: Remove HEST/FIRMWARE_FIRST
+parsing for AER ownership") fixed it by inserting a call to
+pcie_aer_is_native() in dpc_probe(), which implicitly checks for presence
+of an AER capability.
 
-Assisted-by: LLM
-Signed-off-by: Abhin Parekadan Jose <abhinjoses@gmail.com>
+However already in October 2019, commit 35a0b2378c19 ("PCI/DPC: Add
+"pcie_ports=dpc-native" to allow DPC without AER control") made it
+possible to override the check:  The DPC driver may access a non-existent
+AER capability if "pcie_ports=dpc-native" is passed on the command line.
 
+Fix it by making the DPC driver cope with AER-unsupporting Downstream
+Ports.
+
+There are two places where the AER capability is accessed:
+
+- dpc_get_aer_uncorrect_severity() uses it to discern whether a Fatal or
+  Non-Fatal Error triggered DPC.  Access the Device Status Register
+  instead, in accordance with PCIe r7.1 sec 6.2.5.
+
+- dpc_is_surprise_removal() uses it to detect whether a Surprise Down
+  Error triggered DPC.  Return false on AER-unsupporting devices.  The
+  function works around an AMD-specific quirk and it seems reasonable to
+  assume that all affected products are AER-supporting.  In any case the
+  detection is not possible without AER capability.
+
+Insert a temporary check for an AER capability after the call to
+aer_get_device_error_info() because the function currently returns false
+for AER-unsupporting devices.  The check will become obsolete and will be
+removed with the imminent baseline capability error reporting.
+
+Fixes: 35a0b2378c19 ("PCI/DPC: Add "pcie_ports=dpc-native" to allow DPC without AER control")
+Signed-off-by: Lukas Wunner <lukas@wunner.de>
+Cc: stable@vger.kernel.org # v5.5+
 ---
-Changes since RFC v1:
-- Build only with CONFIG_EDU_SRPOC, which depends on PCI, instead of
-  unconditionally. (Sashiko)
-- Don't claim the interrupt if the status register reads all ones,
-  i.e. the device is gone. (Sashiko)
-- Clear bus mastering in the probe error path and in remove(). (Sashiko)
-- Document that remove() blocks by design. (Sashiko)
-- Fixed a checkpatch warning about braced if() blocks.
+ drivers/pci/pcie/dpc.c | 23 ++++++++++-------------
+ 1 file changed, 10 insertions(+), 13 deletions(-)
 
-RFC v1: https://lore.kernel.org/all/20260905183905.997833-4-abhinjoses@gmail.com/
-Sashiko review: https://lore.kernel.org/all/20260905185027.291191F00A3A@smtp.kernel.org/
----
- drivers/misc/Kconfig     |  11 +++
- drivers/misc/Makefile    |   1 +
- drivers/misc/edu_srpoc.c | 171 +++++++++++++++++++++++++++++++++++++++
- 3 files changed, 183 insertions(+)
- create mode 100644 drivers/misc/edu_srpoc.c
-
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index 7364931dad3a1..99457e53d21cf 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -57,6 +57,17 @@ config DUMMY_IRQ
- 	  The sole purpose of this module is to help with debugging of systems on
- 	  which spurious IRQs would happen on disabled IRQ vector.
+diff --git a/drivers/pci/pcie/dpc.c b/drivers/pci/pcie/dpc.c
+index 2b779bd1d861..793a799053f1 100644
+--- a/drivers/pci/pcie/dpc.c
++++ b/drivers/pci/pcie/dpc.c
+@@ -236,21 +236,15 @@ static void dpc_process_rp_pio_error(struct pci_dev *pdev)
+ static int dpc_get_aer_uncorrect_severity(struct pci_dev *dev,
+ 					  struct aer_err_info *info)
+ {
+-	int pos = dev->aer_cap;
+-	u32 status, mask, sev;
++	u16 devsta;
  
-+config EDU_SRPOC
-+	tristate "QEMU edu surprise removal POC driver"
-+	depends on PCI
-+	help
-+	  Test driver for the QEMU edu device.  Its remove() callback blocks
-+	  until the device raises a delayed interrupt or is surprise removed,
-+	  to reproduce a hang in remove() during surprise removal.  Needs an
-+	  edu device with the delayed interrupt register at BAR0 0x30.
+-	pci_read_config_dword(dev, pos + PCI_ERR_UNCOR_STATUS, &status);
+-	pci_read_config_dword(dev, pos + PCI_ERR_UNCOR_MASK, &mask);
+-	status &= ~mask;
+-	if (!status)
+-		return 0;
+-
+-	pci_read_config_dword(dev, pos + PCI_ERR_UNCOR_SEVER, &sev);
+-	status &= sev;
+-	if (status)
++	pcie_capability_read_word(dev, PCI_EXP_DEVSTA, &devsta);
++	if (devsta & PCI_EXP_DEVSTA_FED)
+ 		info->severity = AER_FATAL;
+-	else
++	else if (devsta & PCI_EXP_DEVSTA_NFED)
+ 		info->severity = AER_NONFATAL;
++	else
++		return 0;
+ 
+ 	info->level = KERN_ERR;
+ 
+@@ -275,7 +269,7 @@ void dpc_process_error(struct pci_dev *pdev)
+ 		pci_warn(pdev, "containment event, status:%#06x: unmasked uncorrectable error detected\n",
+ 			 status);
+ 		if (dpc_get_aer_uncorrect_severity(pdev, &info) &&
+-		    aer_get_device_error_info(&info, 0)) {
++		    (aer_get_device_error_info(&info, 0) || !pdev->aer_cap)) {
+ 			aer_print_error(&info, 0);
+ 			pci_aer_clear_nonfatal_status(pdev);
+ 			pci_aer_clear_fatal_status(pdev);
+@@ -353,6 +347,9 @@ static bool dpc_is_surprise_removal(struct pci_dev *pdev)
+ 	if (!pdev->is_hotplug_bridge)
+ 		return false;
+ 
++	if (!pdev->aer_cap)
++		return false;
 +
-+	  If unsure, say N.
-+
- config IBMVMC
- 	tristate "IBM Virtual Management Channel support"
- 	depends on PPC_PSERIES
-diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-index e8d8d5d88c0df..9ebcc6ce60f34 100644
---- a/drivers/misc/Makefile
-+++ b/drivers/misc/Makefile
-@@ -9,6 +9,7 @@ obj-$(CONFIG_AD525X_DPOT_I2C)	+= ad525x_dpot-i2c.o
- obj-$(CONFIG_AD525X_DPOT_SPI)	+= ad525x_dpot-spi.o
- obj-$(CONFIG_ATMEL_SSC)		+= atmel-ssc.o
- obj-$(CONFIG_DUMMY_IRQ)		+= dummy-irq.o
-+obj-$(CONFIG_EDU_SRPOC)		+= edu_srpoc.o
- obj-$(CONFIG_ICS932S401)	+= ics932s401.o
- obj-$(CONFIG_LKDTM)		+= lkdtm/
- obj-$(CONFIG_TI_FPC202)		+= ti_fpc202.o
-diff --git a/drivers/misc/edu_srpoc.c b/drivers/misc/edu_srpoc.c
-new file mode 100644
-index 0000000000000..b74a95109dba9
---- /dev/null
-+++ b/drivers/misc/edu_srpoc.c
-@@ -0,0 +1,171 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * edu_srpoc.c Surprise Removal POC driver for the QEMU edu device
-+ *
-+ * In remove(), schedules a delayed interrupt on the edu device and
-+ * blocks waiting for it to complete. This simulates del_gendisk()
-+ * blocked in blk_mq_freeze_queue_wait() on slow in-flight I/O.
-+ *
-+ * Surprise-remove the device during this window to reproduce the hang.
-+ *
-+ * edu BAR 0 registers used:
-+ *   0x08  Factorial: write N to compute N! asynchronously
-+ *   0x20  Status: write EDU_STATUS_IRQFACT to enable IRQ on completion
-+ *   0x24  IRQ status: bit 0 = FACT_IRQ, bit 9 = DELAY_IRQ
-+ *   0x30  Delayed IRQ: write N (ms). Hacked in this functionality(not upstream).
-+ *   0x64  IRQ lower: write bitmask to ack
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/pci.h>
-+#include <linux/interrupt.h>
-+#include <linux/completion.h>
-+#include <linux/delay.h>
-+
-+#define PCI_VENDOR_ID_EDU	0x1234
-+#define PCI_DEVICE_ID_EDU	0x11e8
-+
-+#define EDU_REG_FACT		0x08
-+#define EDU_REG_STATUS		0x20
-+#define EDU_REG_DELAYED_IRQ	0x30
-+#define EDU_REG_IRQ_STATUS	0x24
-+#define EDU_REG_IRQ_LOWER	0x64
-+
-+#define EDU_STATUS_IRQFACT	0x80
-+#define EDU_FACT_IRQ		BIT(0)
-+#define EDU_DELAY_IRQ		BIT(9)
-+
-+struct edu_dev {
-+	struct pci_dev		*pdev;
-+	void __iomem		*regs;
-+	struct completion	irq_done;
-+};
-+
-+static irqreturn_t edu_irq_handler(int irq, void *data)
-+{
-+	struct edu_dev *edu = data;
-+	u32 status;
-+
-+	status = ioread32(edu->regs + EDU_REG_IRQ_STATUS);
-+	/* All ones means the device is gone; the interrupt is not ours */
-+	if (!status || PCI_POSSIBLE_ERROR(status))
-+		return IRQ_NONE;
-+
-+	iowrite32(status, edu->regs + EDU_REG_IRQ_LOWER);
-+
-+	if (status & (EDU_FACT_IRQ | EDU_DELAY_IRQ))
-+		complete(&edu->irq_done);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static void edu_disconnect(struct work_struct *work)
-+{
-+	struct pci_dev *pdev = container_of(work, struct pci_dev,
-+					    disconnect_work);
-+	struct edu_dev *edu = pci_get_drvdata(pdev);
-+
-+	if (!pci_test_and_clear_disconnect_enable(pdev))
-+		return;
-+
-+	if (!edu)
-+		return;
-+
-+	dev_info(&pdev->dev, "disconnect_work fired — unblocking remove()\n");
-+	complete(&edu->irq_done);
-+}
-+
-+static int edu_probe(struct pci_dev *pdev, const struct pci_device_id *id)
-+{
-+	struct edu_dev *edu;
-+	int err;
-+
-+	edu = devm_kzalloc(&pdev->dev, sizeof(*edu), GFP_KERNEL);
-+	if (!edu)
-+		return -ENOMEM;
-+
-+	edu->pdev = pdev;
-+	init_completion(&edu->irq_done);
-+
-+	err = pci_enable_device(pdev);
-+	if (err)
-+		return err;
-+
-+	err = pci_request_regions(pdev, "edu_srpoc");
-+	if (err)
-+		goto err_disable;
-+
-+	edu->regs = pci_iomap(pdev, 0, 0);
-+	if (!edu->regs) {
-+		err = -ENOMEM;
-+		goto err_release;
-+	}
-+
-+	pci_set_master(pdev);
-+
-+	err = pci_alloc_irq_vectors(pdev, 1, 1, PCI_IRQ_MSI | PCI_IRQ_INTX);
-+	if (err < 0)
-+		goto err_iounmap;
-+
-+	err = request_irq(pci_irq_vector(pdev, 0), edu_irq_handler,
-+			  IRQF_SHARED, "edu_srpoc", edu);
-+	if (err)
-+		goto err_free_vectors;
-+
-+	pci_set_drvdata(pdev, edu);
-+
-+	INIT_WORK(&pdev->disconnect_work, edu_disconnect);
-+	pci_set_disconnect_work(pdev);
-+
-+	dev_info(&pdev->dev, "edu_srpoc probed\n");
-+	return 0;
-+
-+err_free_vectors:
-+	pci_free_irq_vectors(pdev);
-+err_iounmap:
-+	pci_clear_master(pdev);
-+	pci_iounmap(pdev, edu->regs);
-+err_release:
-+	pci_release_regions(pdev);
-+err_disable:
-+	pci_disable_device(pdev);
-+	return err;
-+}
-+
-+static void edu_remove(struct pci_dev *pdev)
-+{
-+	struct edu_dev *edu = pci_get_drvdata(pdev);
-+
-+	iowrite32(EDU_STATUS_IRQFACT, edu->regs + EDU_REG_STATUS);
-+	iowrite32(600000, edu->regs + EDU_REG_DELAYED_IRQ);
-+
-+	dev_info(&pdev->dev, "Waiting for IRQ in remove()\n");
-+	wait_for_completion(&edu->irq_done);
-+	dev_info(&pdev->dev, "Unblocked, cleaning up\n");
-+
-+	pci_clear_disconnect_work(pdev);
-+	free_irq(pci_irq_vector(pdev, 0), edu);
-+	pci_free_irq_vectors(pdev);
-+	pci_clear_master(pdev);
-+	pci_iounmap(pdev, edu->regs);
-+	pci_release_regions(pdev);
-+	pci_disable_device(pdev);
-+}
-+
-+static const struct pci_device_id edu_ids[] = {
-+	{ PCI_DEVICE(PCI_VENDOR_ID_EDU, PCI_DEVICE_ID_EDU) },
-+	{ 0 }
-+};
-+MODULE_DEVICE_TABLE(pci, edu_ids);
-+
-+static struct pci_driver edu_driver = {
-+	.name		= "edu_srpoc",
-+	.id_table	= edu_ids,
-+	.probe		= edu_probe,
-+	.remove		= edu_remove,
-+};
-+
-+module_pci_driver(edu_driver);
-+MODULE_AUTHOR("Abhin Parekadan Jose");
-+MODULE_DESCRIPTION("edu surprise removal POC driver");
-+MODULE_LICENSE("GPL");
+ 	if (pci_read_config_word(pdev, pdev->aer_cap + PCI_ERR_UNCOR_STATUS,
+ 				 &status))
+ 		return false;
 -- 
-2.51.1
+2.53.0
 
 
