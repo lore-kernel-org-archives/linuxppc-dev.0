@@ -1,76 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-28317-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28318-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55B88C9832F
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2026 14:35:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26D1FC9832F
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2026 14:35:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ht6RN0pMkz3bkq;
-	Mon, 28 Sep 2026 00:35:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:36::10"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790519712;
-	cv=none; b=PtYvVhqo5oXfRFRZClCk7PD6JvoWmaKXR/db3FNgoYGgzDs6ddl1fSZHjpT4yolS9+jG2ARCuGpDeAw3XYZh2mEvHM/vDSzlnGc8kgDK6PxXuFpuqc68wSeWOANzInEGV4oMvyZK8nZnMEyWWGdkGFhOOzL5+95sLySn0X/5e5Kg+IHM8ivhQX72jM16wSpWts+eK7+jQ8oe0/Lb2YPk0ESIxDhvx+eYQgCtWBPBAvWE5UxHajH/NdHinTcBP39VyndAMUQdPlahBKhuAjmyrtlbsehuAdvDQ+6lDgJWW2/WQmOLPy3DFT9x8vlnEDHkUbxK2iPGe7G+vLwjVbjhlA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ht6RS4SGVz30WT;
+	Mon, 28 Sep 2026 00:35:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:36::d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790519716;
+	cv=none; b=oHqBJo4AaFFL5AZWAG2NVI2EqMtISQCmzmgU8knKwsFpRevTFmMqnScvOwMAEQ9pJawVpC6O4RlwJJjn3nFJRM7PMyb2x9MNgG+4mnQl4jc5f5qLX+khLTfC45UHGtDvo/6K+8oHXYjhEKQSLXxvyjyU3a/CjTFq9kdsZt6nZOqfduQY9z8gWVU/B2eCbdMjWAvoH2UGaQhD692MDRkIyocIaPJZHLjyWuz5IXfngvAugftyJmrO3cnumbUwzL+TbzgQ26lkAXBG0z1BQv9L+r2/OR6XaFMzQTyYqzDloDgjDKYb5zgQVVXFYy6edN0v0LADRpXBp4TzeFOpvGJAjw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790519712; c=relaxed/relaxed;
-	bh=n6KJjgfT31XNsrUw/0UhpUQhpjYfsgcxEL3F9C4HugU=;
+	t=1790519716; c=relaxed/relaxed;
+	bh=OEeeKd8/7R6Ji2+yPy0bODVrPI/c25RCAh5o8xRTnOk=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=d/LE/JmbRP4gyQBzajDQG822EOH0np316MNgp8OheGCO0tMX3HGv6FuI7vdb9UATFG+maKNSwou7erUVfDmBUy0/xJyu25nkMzAvjiykjEOVm3Q52LLKp5OUVkXfa9X0qyyUpXCpDFUHHw44Npwc3azYnv0M3b7ZPslRtV9LVa3wjplKzZibh/maYDhyvzvpPNUoe6Ocwan8aKBdvW8jB3DnmgeFZmb4YF9CRuuPd+V6+6R9XSL6vWtGER4yf1Zuh1Cx7aaRS1eestTVDLlzwI8iqkkI2vvtoNQO11uaHHGOe0aCkCg6DsWmnEoacLZsyUw3c1zWLHaHGukNlONgUw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Dj7eD+rv; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:36::10; helo=mail-dy2-x10.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=LcoQidRWfGIFWb1XN9JL9aTSv7LmIyH2UXUfLesXU4y+r3W6hSh4Og38pQ2VjTwdDqA819tyjRRcLhu/Zien47ImcJDhoAt5I0I4hdgw+HtDQnYDzpwV3P9ftNBmt5hi9MoTxoecx9uh90RMSveEuO/T3Sk31zbQ9Qmhlb1qudnHdqL+ArnVnzKipuAo0Ts35hhziEYmEk7pj/45k++AlJNcaT5vd/fRdurjQbQJAsa0yi0BgJpe20KdoH1Tv/eqK0DZjLVO+q+Z3g9d5Hx9qhmuZPiAbTYhnplxNb13BVwwK5vmP9nzTYa3n6mO8bQorWmeqd9biLGbUQ07B1rfAg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=T1DYPsKf; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:36::d; helo=mail-dy2-x0d.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Dj7eD+rv;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=T1DYPsKf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:36::10; helo=mail-dy2-x10.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy2-x10.google.com (mail-dy2-x10.google.com [IPv6:2607:f8b0:4864:36::10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:36::d; helo=mail-dy2-x0d.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy2-x0d.google.com (mail-dy2-x0d.google.com [IPv6:2607:f8b0:4864:36::d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ht6RM1rR8z2yr0
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 00:35:11 +1000 (AEST)
-Received: by mail-dy2-x10.google.com with SMTP id 5a478bee46e88-3396cec93b6so2773205eec.3
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2026 07:35:11 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ht6RR5X20z2yfS
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 00:35:15 +1000 (AEST)
+Received: by mail-dy2-x0d.google.com with SMTP id 5a478bee46e88-34346932d93so720852eec.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2026 07:35:15 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790519709; x=1791124509; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1790519713; x=1791124513; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=n6KJjgfT31XNsrUw/0UhpUQhpjYfsgcxEL3F9C4HugU=;
-        b=Dj7eD+rvgL72w1MODZSzRAqQZ+PDe4dxPv7Zt4LDGaL03hKl58kBpM2RS5F6nfTnZw
-         3GsmnuhvMhOSgg+GkXInOgUN1MlTFsD+Zj9gO7CWbETBIR+EURxwBxLcnOGXR0016T0N
-         t3KNX1j0VjTPsljDDI2CD6zNh/mG7FuwydTSHVGIVU4HOXSq9vrkIWEt+C7aTC9DBo1/
-         a442gtXcvPgN+3rabDe+Vk8hawHs6PBKuao0ognpfS/hx5s2OGXcODDSMVLpviCuUnUL
-         5zg5LPYWu8hTLNGmynMjcOrlqsvwBazR5vJN4d3UrfbOF/4OmwVH4SU7SO0fY3+WgtJv
-         v2Gg==
+        bh=OEeeKd8/7R6Ji2+yPy0bODVrPI/c25RCAh5o8xRTnOk=;
+        b=T1DYPsKfrnPDg1d9V7XYgsy3PjLO6Kzf8LL7ja0Fh7ScVv0g3o+qFc788SyrOMkHFo
+         c831w5fabDhAmK4eiYENI4BSC7locb5Hs9gBhgaL9rzrzGcX930QUOVeD2SncNHj2IuN
+         FJ5+frJvY1IiATFCtJaiI6H1LlUCeHPXFWSXgdi8H96uN63E+qIcxif3LG8jqGuoRP9/
+         GKAxo/M+ZHaHlk9wyb+i+cZ07BgdvmgSevA8L8qhpn/r8tHXfkupCI50M3hDxeNy+0fV
+         CEODPrYycn6YRImYYw1IlMVPL1ZuYSoKej1ONS7I4E54RvBhxtve3ny5XVtoLdTlG9/y
+         UDxA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790519709; x=1791124509;
+        d=1e100.net; s=20260707; t=1790519713; x=1791124513;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=n6KJjgfT31XNsrUw/0UhpUQhpjYfsgcxEL3F9C4HugU=;
-        b=ZnldgAuPFVXb2haG6AI5/auVOgM/S1Yje5pilVWbe/8nMZYXKL3TI5EcbC7wrWT/6s
-         4RLKECabgItMp1IgOB8oc8NPkqOAtqdbjCKPv+84H/oOwg6w5E5lcGw7eVEqBp3rBtpM
-         Ba0vJ/JbZLh1rkYYcc6x/lvJk64r3G6uCUqtLnkUK0k1r00iKbvs0t0LjItwADqoYipa
-         DUAaW2IKkpMmudW6mD3oCsVxXrNJNssujPaNoLDDrw00Y7+sThPR1HfXwZ+etrKcGSdH
-         L/lepMJk4Gw40UhZghR9UGO5oarAJY6fYPfnL7Knp3bK8PBOziTikOCM6Ah7G0LY5eXw
-         INGw==
-X-Gm-Message-State: AFq9FYISdS9zUyhsQGS7X1K6krzlOUbOxiMP+G6AhWge61kT2lTdMBKS
-	aDm7oDqjzpNubRRrkPt7OI2PAJL6GCVkUVBtX+ftYMVzxLB8KbbXREgiAqunUQ==
-X-Gm-Gg: AYBFou0bjwvPdXjuTMLuARM7drvgOJuKdEaVjOx5BZtjdEe3+ZOeShJrb0HFkYRt8dP
-	9i2sHS1dU/YXdh4RQwhxXMM7F/yuA87edBfJjbCocAafnZAxfS9ka/aelaQ099/Brq23F7OVWgN
-	niUsBHdIon+s9e6CHclfDNFnvdyvNFCwCSSnsmlVIbtYhyxrSiqpf54sNcIIIxLIrIXNnrZmMGL
-	yBY+S8CtdJsVpmlqsMjVopziXMrEVxxpsDwD6InmoeKMhVoMJxWxOTMkLn65VSrGN8nJn5w6p/7
-	yf/vU30dI1267vBjVKsglvsFcYYaw+wPS/MsPoX+cO+ssom/+R4OwXuq9IIOCxknyZwYwsx4xPx
-	SStiJlkK9BF7mxRxdR7PdZhl56F6+0czc/OqRilnouk+cFH/I8Z29Rurr1LAwA96gn+lJHogCyF
-	pRN0Cwo6M0sIevdFLAxPjd4yBrfjaBcOVFdWp/yEpDKsAnicbLsEGEWd81gA8KnotOTKPSWHc1L
-	t159k8xPHZuerfgPyvDchXaqMZZJh2aY97JXkdO08lBL2/Vqkc10GPLYCpG
-X-Received: by 2002:a05:7301:29b0:b0:343:9eb1:9940 with SMTP id 5a478bee46e88-3439eb1a517mr4241834eec.26.1790519708699;
-        Sun, 27 Sep 2026 07:35:08 -0700 (PDT)
+        bh=OEeeKd8/7R6Ji2+yPy0bODVrPI/c25RCAh5o8xRTnOk=;
+        b=L+8RrX6rca9d62+F9aAqLrlEbkRdzitbvz3rkOOnvhXzG5J0aEVRhCaMaCf3R4pKqB
+         T3CCqM3KYpT8sRK59wPlC+mCEsvXlVJ+LHHNJUrvhYBfqtaigB8K870PXU6f8BI6gUm7
+         OrlrrFB1G0zllJcQLzP/Sc7Xr87fHTp0tRMicXduckfMHIgppMCQIqn6nSOWKVdzRmCY
+         +/qjSba16mEvNkmzTVXIAIw6713/4M8BntdfmzhXGLVJjZ/rhNjrRnMhMZIsjHRQDSt/
+         qvj/Z7nMsF4oy1WFHEkGqeOh6RwTyJlZECqHnG240JhyQpG2dZh/FFJGD1FHZSmMHHUN
+         ZtNg==
+X-Gm-Message-State: AFq9FYLqbXblzfxiKhV0/ppdNsnfRWVFpnywTu+TrnNLD6jdbgKYkGYh
+	WnmZQ3yhEEF41EC2e2CcHhZcqqUmNlBsx0zRca+DU5jSJG9X2dY3UCOKM6Sk9Q==
+X-Gm-Gg: AYBFou1vDd2whwxXLBUuleSwNRZR6+JhyUq7zUW19woD/mPyIp8ttxjQHFnQ6SGExhT
+	286f08S7+cVZptkFdpNLizDcbaDjINkly3F+lnlq3vZzN3Ry0dUDImM6M0Vm/qpIDnNm+v0TwBj
+	MysFKzkGjaPe0XjRcuRs5gGpnU3fWItm5pO2MU/4y66Mszp/8Pke13T/GqS45G9Q9zZFkjqZnm3
+	uuqtA/+j1OZCLP62PV8PCIW2ZQX2kBPhqDX+SdAwA7FQ1JNiCnZBLETgv0BKiy1Re1l7JjWbbln
+	4NIujRcNccklqiIOJ86ri6xCntyIVUSDLeb0prtUJx2SSCV0rCTnnGAheF6V6M6mp6o9C7HEVH7
+	xV7q8silSx671w4EXaT4CHIuCy+T0Yo0YKkRZPrXm16FVYQxc5Ko/+dp8JnfZDuBjhsOyyRaxXW
+	Xz0GNLq5LcLQ7t3PaxJY8pJoWwxGlr14Mvwn7aJp2to91hdstNzUm7cMV0IFEyUV6j4CobSbMWP
+	XGMLjR+fc2M+zHDus44kxT41+I2aAKflOlRQh8RrgwvXYVZmv67L9UnluuA
+X-Received: by 2002:a05:7300:d10a:b0:33b:f062:a674 with SMTP id 5a478bee46e88-34271d8d329mr6641182eec.21.1790519713269;
+        Sun, 27 Sep 2026 07:35:13 -0700 (PDT)
 Received: from pve-server.rlab ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-34144b4ae50sm21869436eec.17.2026.09.27.07.35.04
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-34144b4ae50sm21869436eec.17.2026.09.27.07.35.09
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 27 Sep 2026 07:35:08 -0700 (PDT)
+        Sun, 27 Sep 2026 07:35:12 -0700 (PDT)
 From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -81,9 +81,9 @@ Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Marco Elver <elver@google.com>,
 	linux-kernel@vger.kernel.org,
 	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [RFC 08/12] powerpc/pseries: Annotate the DTL debugfs read lock context
-Date: Sun, 27 Sep 2026 20:03:49 +0530
-Message-Id: <590f421ed3946c7908783d10de39a9127c4cebb8.1790517984.git.ritesh.list@gmail.com>
+Subject: [RFC 09/12] powerpc/pseries: Disable context analysis for the CMM hotplug notifier
+Date: Sun, 27 Sep 2026 20:03:50 +0530
+Message-Id: <39297f9916c1eb80f4835ac33c7200fd7b5ddaa2.1790517984.git.ritesh.list@gmail.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <cover.1790517984.git.ritesh.list@gmail.com>
 References: <cover.1790517984.git.ritesh.list@gmail.com>
@@ -103,58 +103,32 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
 Clang's context analysis reports:
-  dtl.c: error: rw_semaphore 'dtl_access_lock' is still held at the end of function [-Werror,-Wthread-safety-analysis]
-  dtl.c: error: releasing rw_semaphore 'dtl_access_lock' that was not held [-Werror,-Wthread-safety-analysis]
+  cmm.c: error: mutex 'hotplug_mutex' is still held at the end of function [-Werror,-Wthread-safety-analysis]
+  cmm.c: error: releasing mutex 'hotplug_mutex' that was not held [-Werror,-Wthread-safety-analysis]
 
-Add the necessary annotations to phy_attest_sequence_{begin|end}(),
-to fix these errors for enabling Clang context analysis.
+cmm_memory_cb() takes hotplug_mutex on MEM_GOING_OFFLINE and drops it
+on a later MEM_OFFLINE or MEM_CANCEL_OFFLINE call.
+
+Add __context_unsafe() annotation for cmm_memory_cb() callback to avoid
+the reported build error in order to enable Clang context analysis.
 
 Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 ---
- arch/powerpc/platforms/pseries/dtl.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/powerpc/platforms/pseries/cmm.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/platforms/pseries/dtl.c b/arch/powerpc/platforms/pseries/dtl.c
-index f293588b8c7b..18c597210103 100644
---- a/arch/powerpc/platforms/pseries/dtl.c
-+++ b/arch/powerpc/platforms/pseries/dtl.c
-@@ -177,7 +177,12 @@ static u64 dtl_current_index(struct dtl *dtl)
- }
- #endif /* CONFIG_VIRT_CPU_ACCOUNTING_NATIVE */
- 
-+/*
-+ * On success the read lock stays held until dtl_disable(). That covers
-+ * the whole time the debugfs file is open.
-+ */
- static int dtl_enable(struct dtl *dtl)
-+		__cond_acquires_shared(0, &dtl_access_lock)
+diff --git a/arch/powerpc/platforms/pseries/cmm.c b/arch/powerpc/platforms/pseries/cmm.c
+index 38e22125b96f..159efe734785 100644
+--- a/arch/powerpc/platforms/pseries/cmm.c
++++ b/arch/powerpc/platforms/pseries/cmm.c
+@@ -470,6 +470,7 @@ static struct notifier_block cmm_reboot_nb = {
+  **/
+ static int cmm_memory_cb(struct notifier_block *self,
+ 			unsigned long action, void *arg)
++		__context_unsafe(/* Conditional locking */)
  {
- 	long int n_entries;
- 	long int rc;
-@@ -225,6 +230,7 @@ static int dtl_enable(struct dtl *dtl)
- }
- 
- static void dtl_disable(struct dtl *dtl)
-+		__releases_shared(&dtl_access_lock)
- {
- 	spin_lock(&dtl->lock);
- 	dtl_stop(dtl);
-@@ -238,6 +244,7 @@ static void dtl_disable(struct dtl *dtl)
- /* file interface */
- 
- static int dtl_file_open(struct inode *inode, struct file *filp)
-+		__cond_acquires_shared(0, &dtl_access_lock)
- {
- 	struct dtl *dtl = inode->i_private;
- 	int rc;
-@@ -251,6 +258,7 @@ static int dtl_file_open(struct inode *inode, struct file *filp)
- }
- 
- static int dtl_file_release(struct inode *inode, struct file *filp)
-+		__releases_shared(&dtl_access_lock)
- {
- 	struct dtl *dtl = inode->i_private;
- 	dtl_disable(dtl);
+ 	switch (action) {
+ 	case MEM_GOING_OFFLINE:
 -- 
 2.39.5
 
