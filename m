@@ -1,68 +1,91 @@
-Return-Path: <linuxppc-dev+bounces-28369-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28370-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4A03C9833E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2026 05:55:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1ACFC98328
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2026 06:07:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4htVs62G3Nz30Vd;
-	Mon, 28 Sep 2026 15:55:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790574922;
-	cv=none; b=PhD1+5dTFxFKszA1vEPaQEYAMMhZ8m8xWvk/l4CYysRy1K/st3iQLDbrxtXyfVnd0PZKnNB9eAcTDhOJCL2/LLYRMMacAzqc2tyIm4FbFCm9nRnnFyDap7zdG6jv+ph94/GctHnvgEblvHJYEoZROEzncwu5H62VW6QaWMjM89NNgGTO/SIogRQ9/WJI2iKqMk9yabrRAmgaWF0jKJ9RmcPt4FdjzVk2lXuvroNfHiVoteC9SlLXL5H6E24iHgw9tcZXHfG9K2QYwUKa8tC5SDoDs5eOWU6L5MiuWwIE+LoC0PHQGLij14nSgVeLAdkpPDAnLqnQ7j+5L5kwhtuA+g==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790574922; c=relaxed/relaxed;
-	bh=OCvxHBTDLqI5wmNaDdPXrWBAT/0936rjdzS8d3PDIjs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=leD+MKeaVHPOhJ9xQL6TuoujEWVRyASNxrVDvaUUmYTq+nLLAJWBllzH6X8ZdEjuUiBbkzOHzJcGWIRfM2v9nuq8fNn8uXUhPO0H36YpANEvrnJMzRKDAwNTU9yaHYMqXopsD+RpRHSCCfJ4lPGmGXT/2oIauzRLDxzIud5EG3TfmMfLDkaxMTzDE+hAXaj5tfJL43d6AXl5xJUkW/+OwKL5Dac9JoJPAyKJg6Np/8iHGw6l2On8eD+MnXwertR0Wyk3ZWOtrd4bXQUyyS3YmOg43yznNxYmxpOwelHcqqnXrhSyIUvdpb08EUno8ufcRvmuQbTNEn9op7BASfSvnA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=rQHR4X3a; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4htW7L3DX2z30Vj;
+	Mon, 28 Sep 2026 16:07:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::1" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790575662;
+	cv=pass; b=efwLZbDD7uU/7iOG2bitZx6qJDrO1Gn6Yh3GCHJHfcVbkwSelJ/7PCxv9QVzErHMqZZSO0i27BE0PL+7q8tbTAvahz7h8lmLCwIgblmHJYZpqbk/HlA/64SSfwuN4YSDhtslBcpCTEYG4JAQ4O7m2uZqQSATJc/MIvSQFMWSwc0ge5GJyrevbDZNMUiCP35kwrSjD/OzZQvAdzAisklFuGfUS5X/C/9pGxGg2oTmieL9Wmw4TXP2jIG2JvbpCKYONG/rJlNTpMOQzlLMxE7H0T3q+SWxk2fvOURQz1giXldkLgI8jvERktIAeEcd914T5lkMnnUSCbDY7288QxKPMQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1790575662; c=relaxed/relaxed;
+	bh=wmpvPy/KMVlRk1nudC1UQv3/P20aamKSDoRln8+W8Og=;
+	h=From:To:Cc:Subject:Date:Message-Id:Content-Type:MIME-Version; b=nBkrQDO7KEpOV0ka5Tb9VE0KD+7Jpex394y4titxL7pYEsW5PsheC78xsFByzvj4HXRmsZwIszv6lRkSi1NTvGv178k43NbRCEXgbg+pDwxGJqCryISFMDLU39TEPc7SxqHf0hXUvOphmIqChbpRJVVd5UfDegf6Nr5gIVKqOenGro5epzzoa3deS4rxHcly1UA2UH/v5l0RavrvS8xZsNHZv97zV8E4YzcfzXQrKzuS8+JHKVV1DvLZEdtAGDgEE5K49FCzhooEysLochtBs99H0B+ZGlNNpIqvA0uhhRmUzW7wr2htQ12oJ8RjU47P4vxdBJIbn5mDVvp5r4KOhw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=QCABsyHq; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=shengjiu.wang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=rQHR4X3a;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=QCABsyHq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4htVs32BTmz2y1Y
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 15:55:17 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A56011595;
-	Sun, 27 Sep 2026 22:54:40 -0700 (PDT)
-Received: from localhost (a085714.arm.com [10.164.19.28])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 5A9913F763;
-	Sun, 27 Sep 2026 22:54:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1790574884; bh=0W55OK+vMnKxiAmACk3J5dMerJiqJJqoZi6wcfAQHQw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=rQHR4X3afKAZkaTxXtkVmT64DWmR+NcjF+U9JfnUHqGckTp9752pA02sYmVdP76cb
-	 INj8HpyduV3px+sKOFqFayo7BWPMFwUkXH/Zh5qODO74f6/iDjh8kuCYUz9+8g2mIX
-	 Hxn6bjZ7jWn2EqInx4xKLDhonH0eb+onaIamHd14=
-Date: Mon, 28 Sep 2026 11:24:40 +0530
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-To: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, 
-	Albert Ou <aou@eecs.berkeley.edu>, Alexander Gordeev <agordeev@linux.ibm.com>, 
-	Alexandre Ghiti <alex@ghiti.fr>, Borislav Petkov <bp@alien8.de>, 
-	Catalin Marinas <catalin.marinas@arm.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Christian Borntraeger <borntraeger@linux.ibm.com>, Dave Hansen <dave.hansen@linux.intel.com>, 
-	David Hildenbrand <david@kernel.org>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, 
-	Heiko Carstens <hca@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>, 
-	"Liam R. Howlett" <liam@infradead.org>, Lorenzo Stoakes <ljs@kernel.org>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Mark Rutland <mark.rutland@arm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>, 
-	Nicholas Piggin <npiggin@gmail.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
-	Paul Walmsley <pjw@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, 
-	Ritesh Harjani <ritesh.list@gmail.com>, Russell King <linux@armlinux.org.uk>, 
-	Shrikanth Hegde <sshegde@linux.ibm.com>, Suren Baghdasaryan <surenb@google.com>, 
-	Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@kernel.org>, 
-	Vasily Gorbik <gor@linux.ibm.com>, Vlastimil Babka <vbabka@kernel.org>, 
-	Will Deacon <will@kernel.org>, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org
-Subject: Re: [PATCH v2] arch, mm: promote DEBUG_WX to CHECK_WX
-Message-ID: <54qpyy4jcfdnahdcg42vl54usoco6mdvbblgdrve64dk2ahhas@x3exznk37q3r>
-References: <20260926-direct-map-verify-wx-v2-1-efcd64a6b74a@kernel.org>
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=shengjiu.wang@oss.nxp.com; receiver=lists.ozlabs.org)
+Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4htW7K0dJjz30Vd
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 16:07:39 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=lNm2vTeV5M6mnoMn6oCHuyHGYQtpzFwYZmUMb73i9JGy0l8bjxfdR7Oq6g/QbacnsGZe0Wvpbcf48NdA8uwDwwQUxYtpBdGMpXsLMYKa0fCBw9QwZFoKReV+vmlMRJ83p/hHkErQ0fPT5LJAaw8glAtSLpS7FQxJUU3qIDTJZYd9uaFEAugdq0uSYKx/lTsEEWjmBRuCZzxSlJKHrrK6b1XYn8lsvT49sfmMEE3+2rG9MjEvTCaxzyYHxlyFnKS54TRywlWb7ufWkPoy98uv1wsHJ+BBE9I8QAZZwZpzO0m9vqmJtyFb8MKS+68Juq7+KcPUzbscsrrdGgPLPVMhVA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=wmpvPy/KMVlRk1nudC1UQv3/P20aamKSDoRln8+W8Og=;
+ b=gngYpHQ+9+zGjldQvQ+xw2HH9Jym/nVSKEHokf+0d8h1VpDVFXymfS8KbpVM5PEv/3aooZezpmbOHpyG48ty1LELesjy+WP8jeFAhOvKy6QNPKFXGR1jEjy8Jb9hEa2oMwCIztedy7uZR4iWPcVDDRt5zqkVVfwCSyDql6xsNqbIqyzV237rrkJly+UKLG+hIv7huAkaJRTBorZwAbugaZc83qPX6PBaOzbC2kuCanrEOfB7JcNOaG6AbM6vpM6gPJOdYQGFC/proMDykSS7VONKcfR+7ENp1E40hRe+/D2UswlOa+spo4uPMXVRBzLLMizSpCN4Uexuc3AmturEgg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=wmpvPy/KMVlRk1nudC1UQv3/P20aamKSDoRln8+W8Og=;
+ b=QCABsyHqLmwoUthBwUcYNxpHZs3DldsKwULyOXMiZJZS8FmNfRjNQDc5am1SHFn5Xcr9ldb5n36Te9E9vIayKfaT4vDKf6oA8iJG56w24yUojJSUn5ZKYnJ9JkPiF7Ibbjy6+bP3uzwBnWmAgTa1qqJHGpDhZsWdQ7SRdeoF/0KQMpJdC3hpjFZ0EwHQYUsc7O2xi53npds/wri6EgMgfLaYD424bkO7RIPOEz2CVUd3muwVIj2blY5s8pWwK5zXe8HUN0xVYZ0EtpKXQmS046yK1RCiXYnH2t7dvCtCSbf+sftSyYEA40THnPEfRdHxqa2mpTsh3Gz7wgycoTLJzA==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from PAXPR04MB9351.eurprd04.prod.outlook.com (2603:10a6:102:2b6::17)
+ by PA1PR04MB10721.eurprd04.prod.outlook.com (2603:10a6:102:489::12) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.23; Mon, 28 Sep
+ 2026 06:07:14 +0000
+Received: from PAXPR04MB9351.eurprd04.prod.outlook.com
+ ([fe80::1058:a430:52c1:5aa]) by PAXPR04MB9351.eurprd04.prod.outlook.com
+ ([fe80::1058:a430:52c1:5aa%6]) with mapi id 15.21.0451.022; Mon, 28 Sep 2026
+ 06:07:14 +0000
+From: shengjiu.wang@oss.nxp.com
+To: lgirdwood@gmail.com,
+	broonie@kernel.org,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	Frank.Li@nxp.com,
+	s.hauer@pengutronix.de,
+	kernel@pengutronix.de,
+	festevam@gmail.com,
+	shawnguo@kernel.org,
+	linux-sound@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	shengjiu.wang@gmail.com,
+	Xiubo.Lee@gmail.com,
+	nicoleotsuka@gmail.com,
+	perex@perex.cz,
+	tiwai@suse.com,
+	linuxppc-dev@lists.ozlabs.org
+Cc: Shengjiu Wang <shengjiu.wang@nxp.com>
+Subject: [PATCH v6 0/5] ASoC: fsl_asrc/fsl_easrc: expose per-pair/context DAIs and fix DMA race
+Date: Mon, 28 Sep 2026 14:11:44 +0800
+Message-Id: <20260928061149.1844121-1-shengjiu.wang@oss.nxp.com>
+X-Mailer: git-send-email 2.34.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: MA0PR01CA0061.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:a01:ac::18) To PAXPR04MB9351.eurprd04.prod.outlook.com
+ (2603:10a6:102:2b6::17)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,483 +99,133 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260926-direct-map-verify-wx-v2-1-efcd64a6b74a@kernel.org>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PAXPR04MB9351:EE_|PA1PR04MB10721:EE_
+X-MS-Office365-Filtering-Correlation-Id: 3bab0ec2-47bc-4c37-e52a-08df1d26bdd6
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|7416014|376014|1800799024|19092799006|366016|23010399003|921020|6133799003|10067099003|11063799006|56012099006|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	ULQiTdDN0rE7onJUQVq4l9/NJce9sPjEeHTwWowYxFfCX90gTiU7AhqsW3siFzjbQx8BugeEWnSXcVX17Eb1vdKpkkT8AErGMuvBRWSTy0B1oEo0x6RZgW7b5YzFMXOENaZeNpGqPcOhcb2KF/D6o/Q9cAHG9jJae6Nruk/yrjCJizn26Hw81Xqj2LvlKeFhK78wDY/VgE5AZoUov+Wpt29I5WV+Ld1OpXNH4D5PtVr4Zi/t/15SedIsT8N0NviPGzWo80z6SJpTCv2wqQruP+NUFt7wTSNiGrwj5mdF2fqygml4uFErgGNMqg9dw4gqEmutpH6wjOBEh8s0aNIxzRBBnIv/pfpMgAAfO5EqXBEN59WP5DMSsqTxOPE0vJ6DmnfcP+t9/MH7dcLVEtt4DUfvzcmuB+OMjS0YC9G8t2OCRZO0xXKvXxZMYziml9lITliXWFjp4kIvAataVbpuqHi+zk8Fgu7zj3cWMnQr6HtgjsgCut7gpWOvs1kl3dCttl4xUXrg2F/EyKE1DLbK79F/12jlsIWSzCTNIQa/+Q9/jFiubJcJFqymDwwxtI7V3Nd8bBqkgCEEO3nXUK7ieTQfxoCSVLzDBSg7gs5r8HyUzRCMbawVin2K9eCVR/ciwre1t0C/SNwZWAE1NLDWxmA8EWDpQ930qgkbO/uZFJOcAMPeqYUJUomMD5SYl1Eis5CHjvAAKp9Eq4OmsvRrMg==
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB9351.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(19092799006)(366016)(23010399003)(921020)(6133799003)(10067099003)(11063799006)(56012099006)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?O8TEmCuzhs62Xi9L1WcdHgM8msMHQNwLEtDFdx3SoTpLqqOlepQQEl0FrFX2?=
+ =?us-ascii?Q?HRtLpcNzU4yPwDd82XwVbuaReMniERujtp3LTb9fVvAQg9wHMl38/jHt4U5N?=
+ =?us-ascii?Q?JGu9k9vtXn9SmlJFbsTXujyuKg1xfw6AST+UqC1AT2at0+G9zXwZpf62T4I+?=
+ =?us-ascii?Q?sH68qmAUkeZp7EI5S3EX5fhtrS7hoVgSgS2Pg5KYMzDUQOXyotxADXUEPkew?=
+ =?us-ascii?Q?2nqicOifPUd37hoIBFvz4vaplZgRQ5Cw+NtZ4F5t7HxpsgWweRyU82R3fsbr?=
+ =?us-ascii?Q?gv3OLDNdrYs06BgE+bT6HdIk53JVLxcCpbl71i30EUDdjabX1uq2OZ3tte7f?=
+ =?us-ascii?Q?qjdBhAW9uOdS3LWrRlfmTNk/aYLX1CCFrFs3sH+Dtsm3ef4zqKP3hYR/okHO?=
+ =?us-ascii?Q?vzoNvLTO+x1Me+c18fs8CS9B6HMvC+RKk/T/J5enogB8UuYd6tKEJuA1E/Kg?=
+ =?us-ascii?Q?oILFrZEsSEQetV66gXCCiOwDTus2PeMOUdCeWKpvcTIjVH06RFl9CMHSEiej?=
+ =?us-ascii?Q?I5oTvfE9ya7xUHAoG5H5ta9uvtZ2oN0uSvrTlN48pwexQrmFHzACRiINbAn/?=
+ =?us-ascii?Q?xis3WSjA+2RWjzoQb1JlaNFEIZEiaY7AY35hJ9ztUTHKm5xbaAaqHKlyx70b?=
+ =?us-ascii?Q?2eNpm1YhQ2zNTloXCTQP6cdAVCIkv+ox0qQFZe8vhP6+QBxrrYXArgCAegt9?=
+ =?us-ascii?Q?ZEGkWdWLIu9atco7jhTin0L+/z5IqmX/A7t6ajmy8cjjl1FIvdvqnLLJUsIy?=
+ =?us-ascii?Q?5aL9BKjIJ0onPeqhpn8njJfEvWowMkj5QT3twLpLwvSW6gl96h1pgSR21LDJ?=
+ =?us-ascii?Q?1q6RmHk/sZbz1Q8TqpGRwZToVJjHCc0ayUQFkwsPcjw/tkImYhRj2C67O7Gp?=
+ =?us-ascii?Q?3DQRUu4nFK8IuhScgthjw82MjzFXeH17kPn0Xy/C8p2uZLq1nh6zh4PwC5GX?=
+ =?us-ascii?Q?ClXEouVj2/xX61UA7UAUh3bV/cv4vzUvfQoLZLDwfS3OspUREFqNVt+vpS7w?=
+ =?us-ascii?Q?znDQkgqTS1wmm/jFjm5z15tC8PhiUzzuy7XSwnqNPLSMgdgazaua0XB/j8aR?=
+ =?us-ascii?Q?QAdm28f8X9g93rVr+o90oWd2NhrK/Oh+JhzoTxA8h9B5dIftN1q+Tj4kfc3D?=
+ =?us-ascii?Q?ytolTbrgdAJdIWnbNc8ICa/RIUaNbjr2do8qNRNqv8z+6IiKMPrDKNpospKM?=
+ =?us-ascii?Q?ZIkAHgYCjFaIyUPNKMITPtWA8dQR33lMhrIejMS00oGuA9lxDvK5R1jlEmQj?=
+ =?us-ascii?Q?DOwwRFhApWKJmt3+LfY3AiKrckVIVFjByCCLlImJnUL6PiBXPyfx4CSCLxOc?=
+ =?us-ascii?Q?VOWUr0izNIfbxtfHez1qb3gEokYe9+jWRA61v1H1mHpw6tbxnTJX3RV82vgG?=
+ =?us-ascii?Q?6pxYRLs9k7HpLnevJoEvQLZtPGSqMZeEIm77fULY6Z18BMs2uWfU97+CiFng?=
+ =?us-ascii?Q?WeSsvHyEQSBeMX5fKQSrG0Wp98V8JovUeBAgJJRQpuZ5SSDk6PEh0oX+Bqff?=
+ =?us-ascii?Q?OPFakJvI5jyYri6iC1D8FZ/usNu18jL8ByU4zci/u5zs9tiubAgh32tsCJw8?=
+ =?us-ascii?Q?Bp/rLeYru5/oKbHqVUiyfg/rFJBanMud+Lyxm3smSH0qZzQZpofyua+7ttLf?=
+ =?us-ascii?Q?e6mIm1v+xlRuuFSEs3SX5SdIY/jWgATvi6yuFRIizAMFsFe0Gskq8UWpktFU?=
+ =?us-ascii?Q?td+pzyL+zPAgcH6n80SZD/bDQ8TorFB9wi+kzE2x6bupJdCiXkAYUkK4C2NG?=
+ =?us-ascii?Q?NFaSOi+qpw2R+ADIabVE09mli4L79jbYRbybpNsz41g2iiKaSGTE?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 3bab0ec2-47bc-4c37-e52a-08df1d26bdd6
+X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB9351.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Sep 2026 06:07:14.6290
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 1hdjQ/V68jKCh51P/jOBWrVgX+SmW5vA0FvzF+ruWjKm8wsde9STbpRzfGFYKXuQxhY3LoBRCZzPk6GAXnrVvLDUBwR/5X8qnnaoXmJk6qnimFrjlJZAhqDrytn3ha23
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA1PR04MB10721
 
-On Sat, Sep 26, 2026 at 12:29:29PM +0300, Mike Rapoport (Microsoft) wrote:
-> Verification that the kernel does not have writable + executable
-> mappings is about detecting security risks rather than a pure debug
-> feature.
-> 
-> Major distribution configurations enable it in their kernels as well as
-> defconfigs of most architectures that have ARCH_HAS_DEBUG_WX.
-> 
-> Rename relevant generic configuration options to use CHECK_WX and move
-> their definitions from mm/Kconfig.debug to mm/Kconfig.
-> 
-> Rename *debug_checkwx() funcitons and macros to *pgtable_checkwx().
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
 
-A small nit - pgtable_ckeck_wx() might be better and also consistent with
-renamed config CHECK_WX ?
+This series extends the i.MX ASRC and EASRC drivers to expose one DAI
+per hardware conversion pair/context, allowing multiple independent
+conversion paths to be active simultaneously.
 
-> 
-> For arm that does not widely enable it, only rename its variants of the
-> config options.
-> 
-> Enabling CHECK_WX adds a few kilobytes to the kernel binary and while
-> the added size can be slightly reduced with churny updates of
-> architecture implementations of ptdump, the core functionality takes
-> most of the added size. It cannot be moved to .init.text because the
-> verification has to happen after init sections are freed.
-> 
-> With this, make generic CHECK_WX default to STRICT_KERNEL_RWX while
-> still leaving users targeting small kernels the possibility to opt-out.
+Patches 1-2 update the DT bindings to add a ports container so each
+conversion path can be wired independently in the audio graph.  The old
+single port property is kept but marked deprecated.
 
-Although the commit message clearly spells out "promote" DEBUG_WX but still
-wondering would it be better to split this change into two patches instead.
+Patch 3 moves dma_params into struct fsl_asrc_pair so each pair owns its
+own copy, and registers it with the cpu DAI using per-direction setters in
+fsl_asrc_dma_startup().  This removes the per-DAI probe callbacks from
+fsl_asrc.c and fsl_easrc.c, which are no longer needed.
 
-- Rename DEBUG_WX as CHECK_WX including all depenencies and helpers
-- Change CHECK_WX behaviour like defaulting with STRICT_KERNEL_RWX which
-  was not the case earlier
+Patches 4-5 expose the individual DAIs: fsl_asrc registers three DAIs
+(asrc-0/1/2) and fsl_easrc registers four (easrc-0/1/2/3).  The first
+DAI in each driver retains the original generic stream names for
+backward compatibility with existing machine drivers.
 
-> 
-> Suggested-by: Dave Hansen <dave.hansen@linux.intel.com>
-> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> ---
-> Changes in v2:
-> - add rename of *debug_checkwx() to *pgtable_checkwx()
-> - Link to v1: https://patch.msgid.link/20260925-direct-map-verify-wx-v1-1-7fd2f7d6d23b@kernel.org
-> ---
->  arch/arm/Kconfig.debug               |  2 +-
->  arch/arm/configs/aspeed_g4_defconfig |  2 +-
->  arch/arm/configs/aspeed_g5_defconfig |  2 +-
->  arch/arm/configs/shmobile_defconfig  |  2 +-
->  arch/arm/include/asm/ptdump.h        |  6 +++---
->  arch/arm/mm/init.c                   |  2 +-
->  arch/arm64/Kconfig                   |  2 +-
->  arch/powerpc/Kconfig                 |  2 +-
->  arch/powerpc/configs/ppc64_defconfig |  2 +-
->  arch/powerpc/mm/ptdump/ptdump.c      |  2 +-
->  arch/riscv/Kconfig                   |  2 +-
->  arch/s390/Kconfig                    |  2 +-
->  arch/s390/configs/debug_defconfig    |  2 +-
->  arch/s390/configs/defconfig          |  2 +-
->  arch/s390/mm/dump_pagetables.c       |  2 +-
->  arch/x86/Kconfig                     |  2 +-
->  arch/x86/configs/x86_64_defconfig    |  2 +-
->  arch/x86/include/asm/pgtable.h       |  6 +++---
->  arch/x86/mm/pti.c                    |  2 +-
->  include/linux/ptdump.h               |  4 ++--
->  init/main.c                          |  2 +-
->  kernel/configs/debug.config          |  2 +-
->  mm/Kconfig                           | 41 ++++++++++++++++++++++++++++++++++++
->  mm/Kconfig.debug                     | 39 ----------------------------------
->  24 files changed, 68 insertions(+), 66 deletions(-)
-> 
-> diff --git a/arch/arm/Kconfig.debug b/arch/arm/Kconfig.debug
-> index 366f162e147d..abcf14f10276 100644
-> --- a/arch/arm/Kconfig.debug
-> +++ b/arch/arm/Kconfig.debug
-> @@ -17,7 +17,7 @@ config ARM_PTDUMP_DEBUGFS
->  	  kernel.
->  	  If in doubt, say "N"
->  
-> -config ARM_DEBUG_WX
-> +config ARM_CHECK_WX
->  	bool "Warn on W+X mappings at boot"
->  	depends on MMU
->  	select ARM_PTDUMP_CORE
-> diff --git a/arch/arm/configs/aspeed_g4_defconfig b/arch/arm/configs/aspeed_g4_defconfig
-> index f86dd4ce7d0d..2c9d5a644ae9 100644
-> --- a/arch/arm/configs/aspeed_g4_defconfig
-> +++ b/arch/arm/configs/aspeed_g4_defconfig
-> @@ -249,7 +249,7 @@ CONFIG_DEBUG_INFO_REDUCED=y
->  CONFIG_GDB_SCRIPTS=y
->  CONFIG_STRIP_ASM_SYMS=y
->  CONFIG_DEBUG_FS=y
-> -CONFIG_ARM_DEBUG_WX=y
-> +CONFIG_ARM_CHECK_WX=y
->  CONFIG_SCHED_STACK_END_CHECK=y
->  CONFIG_PANIC_ON_OOPS=y
->  CONFIG_PANIC_TIMEOUT=-1
-> diff --git a/arch/arm/configs/aspeed_g5_defconfig b/arch/arm/configs/aspeed_g5_defconfig
-> index 45b937419dbd..1327a09e163a 100644
-> --- a/arch/arm/configs/aspeed_g5_defconfig
-> +++ b/arch/arm/configs/aspeed_g5_defconfig
-> @@ -300,7 +300,7 @@ CONFIG_DEBUG_INFO_REDUCED=y
->  CONFIG_GDB_SCRIPTS=y
->  CONFIG_STRIP_ASM_SYMS=y
->  CONFIG_DEBUG_FS=y
-> -CONFIG_ARM_DEBUG_WX=y
-> +CONFIG_ARM_CHECK_WX=y
->  CONFIG_SCHED_STACK_END_CHECK=y
->  CONFIG_PANIC_ON_OOPS=y
->  CONFIG_PANIC_TIMEOUT=-1
-> diff --git a/arch/arm/configs/shmobile_defconfig b/arch/arm/configs/shmobile_defconfig
-> index 6f9696e9fe17..cc22e22b989e 100644
-> --- a/arch/arm/configs/shmobile_defconfig
-> +++ b/arch/arm/configs/shmobile_defconfig
-> @@ -225,4 +225,4 @@ CONFIG_CMA_SIZE_MBYTES=64
->  CONFIG_PRINTK_TIME=y
->  CONFIG_DEBUG_KERNEL=y
->  CONFIG_DEBUG_FS=y
-> -CONFIG_ARM_DEBUG_WX=y
-> +CONFIG_ARM_CHECK_WX=y
-> diff --git a/arch/arm/include/asm/ptdump.h b/arch/arm/include/asm/ptdump.h
-> index 46a4575146ee..3c5245220ecf 100644
-> --- a/arch/arm/include/asm/ptdump.h
-> +++ b/arch/arm/include/asm/ptdump.h
-> @@ -32,10 +32,10 @@ void ptdump_check_wx(void);
->  
->  #endif /* CONFIG_ARM_PTDUMP_CORE */
->  
-> -#ifdef CONFIG_ARM_DEBUG_WX
-> -#define arm_debug_checkwx() ptdump_check_wx()
-> +#ifdef CONFIG_ARM_CHECK_WX
-> +#define arm_pgtable_checkwx() ptdump_check_wx()
->  #else
-> -#define arm_debug_checkwx() do { } while (0)
-> +#define arm_pgtable_checkwx() do { } while (0)
->  #endif
->  
->  #endif /* __ASM_PTDUMP_H */
-> diff --git a/arch/arm/mm/init.c b/arch/arm/mm/init.c
-> index 0cc1bf04686d..c515faf22eeb 100644
-> --- a/arch/arm/mm/init.c
-> +++ b/arch/arm/mm/init.c
-> @@ -403,7 +403,7 @@ static int __mark_rodata_ro(void *unused)
->  void mark_rodata_ro(void)
->  {
->  	stop_machine(__mark_rodata_ro, NULL, NULL);
-> -	arm_debug_checkwx();
-> +	arm_pgtable_checkwx();
->  }
->  
->  #else
-> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-> index b5a51b0ef944..7e120fb21c58 100644
-> --- a/arch/arm64/Kconfig
-> +++ b/arch/arm64/Kconfig
-> @@ -11,7 +11,7 @@ config ARM64
->  	select ACPI_MCFG if (ACPI && PCI)
->  	select ACPI_SPCR_TABLE if ACPI
->  	select ACPI_PPTT if ACPI
-> -	select ARCH_HAS_DEBUG_WX
-> +	select ARCH_HAS_CHECK_WX
->  	select ARCH_BINFMT_ELF_EXTRA_PHDRS
->  	select ARCH_BINFMT_ELF_STATE
->  	select ARCH_ENABLE_HUGEPAGE_MIGRATION if HUGETLB_PAGE && MIGRATION
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 2580e27e4328..7c1fe5b4cd41 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -130,7 +130,7 @@ config PPC
->  	select ARCH_HAS_CURRENT_STACK_POINTER
->  	select ARCH_HAS_DEBUG_VIRTUAL
->  	select ARCH_HAS_DEBUG_VM_PGTABLE
-> -	select ARCH_HAS_DEBUG_WX		if STRICT_KERNEL_RWX
-> +	select ARCH_HAS_CHECK_WX		if STRICT_KERNEL_RWX
->  	select ARCH_HAS_DEVMEM_IS_ALLOWED
->  	select ARCH_HAS_DMA_MAP_DIRECT 		if PPC_PSERIES
->  	select ARCH_HAS_DMA_OPS			if PPC64
-> diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-> index 1eb8e3457e8b..5c33f0bba0e3 100644
-> --- a/arch/powerpc/configs/ppc64_defconfig
-> +++ b/arch/powerpc/configs/ppc64_defconfig
-> @@ -393,7 +393,7 @@ CONFIG_MAGIC_SYSRQ=y
->  CONFIG_PAGE_OWNER=y
->  CONFIG_PAGE_POISONING=y
->  CONFIG_DEBUG_RODATA_TEST=y
-> -CONFIG_DEBUG_WX=y
-> +CONFIG_CHECK_WX=y
->  CONFIG_DEBUG_STACK_USAGE=y
->  CONFIG_DEBUG_VM=y
->  # CONFIG_DEBUG_VM_PGTABLE is not set
-> diff --git a/arch/powerpc/mm/ptdump/ptdump.c b/arch/powerpc/mm/ptdump/ptdump.c
-> index 0d499aebee72..3451351b756b 100644
-> --- a/arch/powerpc/mm/ptdump/ptdump.c
-> +++ b/arch/powerpc/mm/ptdump/ptdump.c
-> @@ -191,7 +191,7 @@ static void note_prot_wx(struct pg_state *st, unsigned long addr)
->  	if (!pte_write(pte) || !pte_exec(pte))
->  		return;
->  
-> -	WARN_ONCE(IS_ENABLED(CONFIG_DEBUG_WX),
-> +	WARN_ONCE(IS_ENABLED(CONFIG_CHECK_WX),
->  		  "powerpc/mm: Found insecure W+X mapping at address %p/%pS\n",
->  		  (void *)st->start_address, (void *)st->start_address);
->  
-> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-> index d6c2dbf8455c..05e33d4d5efa 100644
-> --- a/arch/riscv/Kconfig
-> +++ b/arch/riscv/Kconfig
-> @@ -29,7 +29,7 @@ config RISCV
->  	select ARCH_HAS_CURRENT_STACK_POINTER
->  	select ARCH_HAS_DEBUG_VIRTUAL if MMU
->  	select ARCH_HAS_DEBUG_VM_PGTABLE
-> -	select ARCH_HAS_DEBUG_WX
-> +	select ARCH_HAS_CHECK_WX
->  	select ARCH_HAS_DELAY_TIMER
->  	select ARCH_HAS_ELF_CORE_EFLAGS if BINFMT_ELF && ELF_CORE
->  	select ARCH_HAS_FAST_MULTIPLIER
-> diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-> index 4b51bc6e8948..11b76f2b0f80 100644
-> --- a/arch/s390/Kconfig
-> +++ b/arch/s390/Kconfig
-> @@ -92,7 +92,7 @@ config S390
->  	select ARCH_HAS_CURRENT_STACK_POINTER
->  	select ARCH_HAS_DEBUG_VIRTUAL
->  	select ARCH_HAS_DEBUG_VM_PGTABLE
-> -	select ARCH_HAS_DEBUG_WX
-> +	select ARCH_HAS_CHECK_WX
->  	select ARCH_HAS_DEVMEM_IS_ALLOWED
->  	select ARCH_HAS_DMA_OPS if PCI
->  	select ARCH_HAS_ELF_RANDOMIZE
-> diff --git a/arch/s390/configs/debug_defconfig b/arch/s390/configs/debug_defconfig
-> index 3dae71474333..68d53c0bc8db 100644
-> --- a/arch/s390/configs/debug_defconfig
-> +++ b/arch/s390/configs/debug_defconfig
-> @@ -841,7 +841,7 @@ CONFIG_DEBUG_PAGEALLOC=y
->  CONFIG_SLUB_DEBUG_ON=y
->  CONFIG_PAGE_OWNER=y
->  CONFIG_DEBUG_RODATA_TEST=y
-> -CONFIG_DEBUG_WX=y
-> +CONFIG_CHECK_WX=y
->  CONFIG_PTDUMP_DEBUGFS=y
->  CONFIG_DEBUG_OBJECTS=y
->  CONFIG_DEBUG_OBJECTS_SELFTEST=y
-> diff --git a/arch/s390/configs/defconfig b/arch/s390/configs/defconfig
-> index 6f5722634b4d..8e5cfc695121 100644
-> --- a/arch/s390/configs/defconfig
-> +++ b/arch/s390/configs/defconfig
-> @@ -820,7 +820,7 @@ CONFIG_DEBUG_INFO_DWARF4=y
->  CONFIG_GDB_SCRIPTS=y
->  CONFIG_DEBUG_SECTION_MISMATCH=y
->  CONFIG_MAGIC_SYSRQ=y
-> -CONFIG_DEBUG_WX=y
-> +CONFIG_CHECK_WX=y
->  CONFIG_PTDUMP_DEBUGFS=y
->  CONFIG_DEBUG_MEMORY_INIT=y
->  CONFIG_PANIC_ON_OOPS=y
-> diff --git a/arch/s390/mm/dump_pagetables.c b/arch/s390/mm/dump_pagetables.c
-> index 89badbe72ae7..a23a0bd4d8a8 100644
-> --- a/arch/s390/mm/dump_pagetables.c
-> +++ b/arch/s390/mm/dump_pagetables.c
-> @@ -86,7 +86,7 @@ static void note_prot_wx(struct pg_state *st, unsigned long addr)
->  	 */
->  	if (addr == PAGE_SIZE && (nospec_uses_trampoline() || !cpu_has_bear()))
->  		return;
-> -	WARN_ONCE(IS_ENABLED(CONFIG_DEBUG_WX),
-> +	WARN_ONCE(IS_ENABLED(CONFIG_CHECK_WX),
->  		  "s390/mm: Found insecure W+X mapping at address %pS\n",
->  		  (void *)st->start_address);
->  	st->wx_pages += (addr - st->start_address) / PAGE_SIZE;
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index 15fd9ec5ecac..170cfcb06174 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -110,7 +110,7 @@ config X86
->  	select ARCH_HAS_SYNC_CORE_BEFORE_USERMODE
->  	select ARCH_HAS_SYSCALL_WRAPPER
->  	select ARCH_HAS_UBSAN
-> -	select ARCH_HAS_DEBUG_WX
-> +	select ARCH_HAS_CHECK_WX
->  	select ARCH_HAS_ZONE_DMA_SET if EXPERT
->  	select ARCH_HAVE_NMI_SAFE_CMPXCHG
->  	select ARCH_HAVE_EXTRA_ELF_NOTES
-> diff --git a/arch/x86/configs/x86_64_defconfig b/arch/x86/configs/x86_64_defconfig
-> index 269f7d808be4..e6896aeb77d8 100644
-> --- a/arch/x86/configs/x86_64_defconfig
-> +++ b/arch/x86/configs/x86_64_defconfig
-> @@ -263,7 +263,7 @@ CONFIG_SECURITY_SELINUX_BOOTPARAM=y
->  CONFIG_PRINTK_TIME=y
->  CONFIG_DEBUG_KERNEL=y
->  CONFIG_MAGIC_SYSRQ=y
-> -CONFIG_DEBUG_WX=y
-> +CONFIG_CHECK_WX=y
->  CONFIG_DEBUG_STACK_USAGE=y
->  CONFIG_SCHEDSTATS=y
->  CONFIG_BLK_DEV_IO_TRACE=y
-> diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
-> index d551120a7c88..ef0252a09c28 100644
-> --- a/arch/x86/include/asm/pgtable.h
-> +++ b/arch/x86/include/asm/pgtable.h
-> @@ -41,10 +41,10 @@ void ptdump_walk_user_pgd_level_checkwx(void);
->  #define pgprot_encrypted(prot)	__pgprot(cc_mkenc(pgprot_val(prot)))
->  #define pgprot_decrypted(prot)	__pgprot(cc_mkdec(pgprot_val(prot)))
->  
-> -#ifdef CONFIG_DEBUG_WX
-> -#define debug_checkwx_user()	ptdump_walk_user_pgd_level_checkwx()
-> +#ifdef CONFIG_CHECK_WX
-> +#define pgtable_checkwx_user()	ptdump_walk_user_pgd_level_checkwx()
->  #else
-> -#define debug_checkwx_user()	do { } while (0)
-> +#define pgtable_checkwx_user()	do { } while (0)
->  #endif
->  
->  extern spinlock_t pgd_lock;
-> diff --git a/arch/x86/mm/pti.c b/arch/x86/mm/pti.c
-> index 598f553cc871..31055ee6f1de 100644
-> --- a/arch/x86/mm/pti.c
-> +++ b/arch/x86/mm/pti.c
-> @@ -688,5 +688,5 @@ void pti_finalize(void)
->  	pti_clone_entry_text(true);
->  	pti_clone_kernel_text();
->  
-> -	debug_checkwx_user();
-> +	pgtable_checkwx_user();
->  }
-> diff --git a/include/linux/ptdump.h b/include/linux/ptdump.h
-> index 240bd3bff18d..af18d1459b2f 100644
-> --- a/include/linux/ptdump.h
-> +++ b/include/linux/ptdump.h
-> @@ -31,9 +31,9 @@ bool ptdump_walk_pgd_level_core(struct seq_file *m,
->  void ptdump_walk_pgd(struct ptdump_state *st, struct mm_struct *mm, pgd_t *pgd);
->  bool ptdump_check_wx(void);
->  
-> -static inline void debug_checkwx(void)
-> +static inline void pgtable_checkwx(void)
->  {
-> -	if (IS_ENABLED(CONFIG_DEBUG_WX))
-> +	if (IS_ENABLED(CONFIG_CHECK_WX))
->  		ptdump_check_wx();
->  }
->  
-> diff --git a/init/main.c b/init/main.c
-> index 31f2bf54976a..a87a3d52f3e2 100644
-> --- a/init/main.c
-> +++ b/init/main.c
-> @@ -1535,7 +1535,7 @@ static void mark_readonly(void)
->  		flush_module_init_free_work();
->  		jump_label_init_ro();
->  		mark_rodata_ro();
-> -		debug_checkwx();
-> +		pgtable_checkwx();
->  		rodata_test();
->  	} else if (IS_ENABLED(CONFIG_STRICT_KERNEL_RWX)) {
->  		pr_info("Kernel memory protection disabled.\n");
-> diff --git a/kernel/configs/debug.config b/kernel/configs/debug.config
-> index 307c97ac5fa9..ac878669c193 100644
-> --- a/kernel/configs/debug.config
-> +++ b/kernel/configs/debug.config
-> @@ -50,7 +50,7 @@ CONFIG_DEBUG_NET=y
->  # CONFIG_DEBUG_PAGEALLOC is not set
->  # CONFIG_DEBUG_KMEMLEAK_DEFAULT_OFF is not set
->  # CONFIG_DEBUG_RODATA_TEST is not set
-> -# CONFIG_DEBUG_WX is not set
-> +# CONFIG_CHECK_WX is not set
->  # CONFIG_KFENCE is not set
->  # CONFIG_PAGE_POISONING is not set
->  # CONFIG_SLUB_STATS is not set
-> diff --git a/mm/Kconfig b/mm/Kconfig
-> index 604c58199acb..ffbc641cc31f 100644
-> --- a/mm/Kconfig
-> +++ b/mm/Kconfig
-> @@ -1511,6 +1511,47 @@ config LAZY_MMU_MODE_KUNIT_TEST
->  
->  	  If unsure, say N.
->  
-> +config ARCH_HAS_CHECK_WX
-> +	bool
-> +
-> +config CHECK_WX
-> +	bool "Warn on W+X mappings at boot"
-> +	default STRICT_KERNEL_RWX
-> +	depends on ARCH_HAS_CHECK_WX
-> +	depends on ARCH_HAS_PTDUMP
-> +	depends on MMU
-> +	select PTDUMP
-> +	help
-> +	  Generate a warning if any W+X mappings are found at boot.
-> +
-> +	  This is useful for discovering cases where the kernel is leaving W+X
-> +	  mappings after applying NX, as such mappings are a security risk.
-> +
-> +	  Look for a message in dmesg output like this:
-> +
-> +	    <arch>/mm: Checked W+X mappings: passed, no W+X pages found.
-> +
-> +	  or like this, if the check failed:
-> +
-> +	    <arch>/mm: Checked W+X mappings: failed, <N> W+X pages found.
-> +
-> +	  Note that even if the check fails, your kernel is possibly
-> +	  still fine, as W+X mappings are not a security hole in
-> +	  themselves, what they do is that they make the exploitation
-> +	  of other unfixed kernel bugs easier.
-> +
-> +	  There is no runtime or memory usage effect of this option
-> +	  once the kernel has booted up - it's a one time check.
-> +
-> +	  If in doubt, say "Y".
-> +
-> +config ARCH_HAS_PTDUMP
-> +	bool
-> +
-> +config PTDUMP
-> +	bool
-> +
-> +
->  source "mm/damon/Kconfig"
->  
->  endmenu
-> diff --git a/mm/Kconfig.debug b/mm/Kconfig.debug
-> index 15dca19dd07d..75b44e4a6e36 100644
-> --- a/mm/Kconfig.debug
-> +++ b/mm/Kconfig.debug
-> @@ -180,45 +180,6 @@ config DEBUG_RODATA_TEST
->  	help
->  	  This option enables a testcase for the setting rodata read-only.
->  
-> -config ARCH_HAS_DEBUG_WX
-> -	bool
-> -
-> -config DEBUG_WX
-> -	bool "Warn on W+X mappings at boot"
-> -	depends on ARCH_HAS_DEBUG_WX
-> -	depends on ARCH_HAS_PTDUMP
-> -	depends on MMU
-> -	select PTDUMP
-> -	help
-> -	  Generate a warning if any W+X mappings are found at boot.
-> -
-> -	  This is useful for discovering cases where the kernel is leaving W+X
-> -	  mappings after applying NX, as such mappings are a security risk.
-> -
-> -	  Look for a message in dmesg output like this:
-> -
-> -	    <arch>/mm: Checked W+X mappings: passed, no W+X pages found.
-> -
-> -	  or like this, if the check failed:
-> -
-> -	    <arch>/mm: Checked W+X mappings: failed, <N> W+X pages found.
-> -
-> -	  Note that even if the check fails, your kernel is possibly
-> -	  still fine, as W+X mappings are not a security hole in
-> -	  themselves, what they do is that they make the exploitation
-> -	  of other unfixed kernel bugs easier.
-> -
-> -	  There is no runtime or memory usage effect of this option
-> -	  once the kernel has booted up - it's a one time check.
-> -
-> -	  If in doubt, say "Y".
-> -
-> -config ARCH_HAS_PTDUMP
-> -	bool
-> -
-> -config PTDUMP
-> -	bool
-> -
->  config PTDUMP_DEBUGFS
->  	bool "Export kernel pagetable layout to userspace via debugfs"
->  	depends on DEBUG_KERNEL
-> 
-> ---
-> base-commit: 93f51579e7df248780214094418f205253383cc5
-> change-id: 20260925-direct-map-verify-wx-b81bda879781
-> 
-> --
-> Sincerely yours,
-> Mike.
-> 
+Changes since v5:
+- rebase to latest master of linux-next
+- add review tags
+
+Changes since v4:
+- update commit message of Patch 1/5 to add all variants
+- add Frank's review tag in Patch 3/5
+- add Krzysztof's review tag in Patch 2/5
+
+Changes since v3:
+- Update commit message of Patch 1/5 to remove reduntant sentence.
+- add Frank's review tag in Patch 2/5
+
+Changes since v2:
+- add ports example to original example case in yaml file as port is
+  deprecated
+- remove the label in example.
+
+Changes since v1:
+- Patch 3 is new: moves dma_params into struct fsl_asrc_pair (one per pair)
+- Per-direction snd_soc_dai_dma_data_set_playback/capture used instead
+  of snd_soc_dai_init_dma_data to avoid clearing the other direction
+- dma_params_tx/rx removed from struct fsl_asrc; single dma_params per
+  pair suffices because each pair is unidirectional
+- per-DAI probe callbacks removed (startup now sets dma_data)
+- Cover letter and commit messages updated to reflect the above
+- DAI names changed: paira/pairb/pairc -> asrc-0/asrc-1/asrc-2,
+  ctxa/ctxb/ctxc/ctxd -> easrc-0/easrc-1/easrc-2/easrc-3; use index-based
+  naming consistent with port@N in the DT binding
+- Stream names changed: ASRCB/ASRCC/ASRCD -> ASRC1/ASRC2/ASRC3; align with
+  the index-based DAI names above
+- Binding port descriptions updated: pair A/B/C -> conversion path 0/1/2;
+  hardware-agnostic wording to match port@N numbering
+
+Shengjiu Wang (5):
+  ASoC: dt-bindings: fsl,imx-asrc: update port binding to support
+    multiple paths
+  ASoC: dt-bindings: fsl,easrc: add ports binding for multiple
+    conversion paths
+  ASoC: fsl_asrc/fsl_easrc: move DMA params into pair/context struct
+  ASoC: fsl_asrc: expose individual DAIs per conversion path
+  ASoC: fsl_easrc: expose individual DAIs per conversion path
+
+ .../devicetree/bindings/sound/fsl,easrc.yaml  |  45 +++++++
+ .../bindings/sound/fsl,imx-asrc.yaml          |  43 +++++-
+ sound/soc/fsl/fsl_asrc.c                      | 100 +++++++++-----
+ sound/soc/fsl/fsl_asrc_common.h               |   7 +-
+ sound/soc/fsl/fsl_asrc_dma.c                  |  14 ++
+ sound/soc/fsl/fsl_easrc.c                     | 123 +++++++++++++-----
+ 6 files changed, 262 insertions(+), 70 deletions(-)
+
+-- 
+2.34.1
+
 
