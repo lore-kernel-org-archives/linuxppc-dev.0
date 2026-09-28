@@ -1,70 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-28403-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28404-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C3D4C9833F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2026 12:29:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E40D2CA5FA2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2026 12:29:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4htgbY3TFjz3bNw;
-	Mon, 28 Sep 2026 22:29:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790598553;
-	cv=none; b=GR9Xm9xzU+bAlyxOziMc9gPxGTW8SaToUIub3Jx3oVesrQHevA6zrckFY2OEKaqZNsxtX+cpR5rPz5CmPG7IkGxrAnJJzlQCx5y9RgzjstNKn5BjMiUqUJ9ep474bJsuLiLMJryinvkJkOAx435RQOizxUW8yuh1ztWvTOsZoT1lCQWzcx5tkbQ6W+hn34KoIEG1+eyIuUE05FZkTdL099TGQaqpLe6KAYpBBpcDObC5GX3gb/hoeU5MAhH91mt+PWX0t9nDPRtlC1GVR/ry1+Rz1e1CWKfvWws10OL0PgRyN0a9J2p8fXxPqQG0skOBBRcd3kCsWn9gIjtDCfNLww==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4htgbh4m4Dz2yqq;
+	Mon, 28 Sep 2026 22:29:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790598560;
+	cv=none; b=HGVUMgAkvxUeAQcdd3K+FLliO0eHxfDXFwsC349Q5wrIcMNTRCAvcXRcecC0Kyb1PjfUBtAIFMbLe7C9hSnAf/X5NkSw8uq52i0n5ntdsJAZ6nfP6FTkyLgPXT9vnzbCQiigFH5uLblbIoQsLxVtStooTeQCe2G+ckpuBJFybWoLCgkxS6aG0CjVIP/bmhO8M0mzIrrG8khrCiNtrTTv7QB3lNd28NRYzIyHAmzjOyD4TXtqmEaaBEm1AXgK3O2WtP06EZx4fivL0G8/NzI8QP6sMyCu56dKsRA120RMDalO3MKX36mvj5iazQRQZMN77ByiV0FkUL32wzCaY/hBzA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790598553; c=relaxed/relaxed;
-	bh=daJyeZajojOGLh8ilE00SNT0arUWx6DSIzy/uQ+v/6g=;
+	t=1790598560; c=relaxed/relaxed;
+	bh=2Y2UbgdV+77CAyq+MVK/R24FHgPjixP/AxA2RLOoCjo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=cg8jzVRKee9Ih2V6CtIKMhuMuWtyX6IRiSbFNXubuXr1mlvskHkxkaif16gpYAaLrIZ2EHxQ3UW2nMTaPgwgUDR4e/lIvKrqdHlR3Ym1m2UvchVvV8hAvzAdMy7w2mrf3So1efKYA9oPCm85/ls9gYqwkD0SY9RhgsW5w8LtAsSTyKhnbTKOwRgLdL599KMdyKhQ/ZBhzgXgT/EOE9zWxjbhbUOJLgFbdsOBkSVXXizhX3W9OnnSwsaHGFTDQkJhksA2HA7kk88OzVO2datnekmCHZH+K1z0lZicuhADmQiWxNMeqrbgmiAxcNSFBXkEpsF4IQP/Gwtz+VMDXh6Rtg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=StxNDFMR; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version:Content-Type; b=juGLFHK8gM8eF+h4PumSaSteYnAXkKDERrk6dsnichq1tT7vmH8ZYbuxEg6qgw89qVkIEeY+JLi3ybMqmUW5zNuAKvEgvgQEjOaaBKVBBONWj0/7oUZCDb1e3np9kwE8eVCgV3IVqOyJl1MnS//qcuKr00sET8UGWR33fG/O5kOjxIxgjFkAVfMUBAxjS2ht/WoE5y6nwoInwI7vRwAXGMTIepJCTt4V3NY80F5U8XqC8UVcr4ArIoVV6f2Er3SN86gJO4PR9mqKEMpW6TE6KZ80+sPVx09TkSD5sXWODcEN8FM0y5UOxCff36EqsEZ1yFQNA0fbNnZa47c6n4iJ1A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=e7qlTRnS; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=StxNDFMR;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=e7qlTRnS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4htgbX5Nctz2y25
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 22:29:12 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68SBZJ1o1019057;
-	Mon, 28 Sep 2026 12:29:04 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4htgbg5lSPz2y25
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 22:29:19 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68SBZW4K3971195;
+	Mon, 28 Sep 2026 12:29:10 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=daJyeZajojOGLh8il
-	E00SNT0arUWx6DSIzy/uQ+v/6g=; b=StxNDFMRBwv13qgkM88qhuEMWXK17L/AF
-	tOSkslniAeNeXGYiuM7zhrZ5KEy21B/5nr3IIboAg1RY/kR1LJ3n0osiT4AgLVoD
-	2iycbT9PBhg0O7pu4bm4y+lUjvWiLBwrwuuSt56U0DKq133uXuVAi7aCMKtoFBjt
-	SPAK/FBJK/ewATUj4kgxLL1NOJc71jezLlXPeIYTx5lzeJn58IZvd8OXwi5ame5o
-	p13PoXx8iY4yLuKWD+JV3YpWnpiqF4kvmvp+7BJH4VAYA4+kOb8Gib66RcS6w9Lf
-	cGGSEs0pYNi9ck06+JRqRzuXa4koI0GDiYviMqLCyN4HAsIHJC3ww==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gx5s51796-1
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=2Y2Ubg
+	dV+77CAyq+MVK/R24FHgPjixP/AxA2RLOoCjo=; b=e7qlTRnSkaXHbePaVmfJ6e
+	y9UarR2qc3YUr1O1JfHFEf/BLM4k+6vU1SWSYt7ir3+QKfW/JjtnoEnSp4DxIEhy
+	tOiHvYfAPKQh5WIxtmlmUf1K0VY1SDkc2yMEUaNSJm+b9+iw/3hPXDNIkBHFOOa9
+	ZsRwNLwfpfdu5ufMAGJNeZ2AkxmZ+RSQDrBkOnMihV1Wv3zHL0Ri3z92BucuLcaI
+	zTn4RM+qAFOiOEuRk6LTJIPtznj7MNnrshHQ8li5meUUO8i84IxqsSb/6ojD7bZ5
+	4Yinl4TsTwEgeJaef6UkfPM9KNMo2zDFNrEKJBjj/8Z8lt/0NjR3be1Ef5EdlmrQ
+	==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gx4fe0yjb-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 28 Sep 2026 12:29:04 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68SBHZVY027152;
-	Mon, 28 Sep 2026 12:29:03 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gxrrw58a4-1
+	Mon, 28 Sep 2026 12:29:09 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68SBHX9R069407;
+	Mon, 28 Sep 2026 12:29:08 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gxrcpnawc-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 28 Sep 2026 12:29:03 +0000 (GMT)
+	Mon, 28 Sep 2026 12:29:08 +0000 (GMT)
 Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68SCSxMg50725148
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68SCT4eP17236386
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 28 Sep 2026 12:28:59 GMT
+	Mon, 28 Sep 2026 12:29:04 GMT
 Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 097E920049;
-	Mon, 28 Sep 2026 12:28:59 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id BF4A420049;
+	Mon, 28 Sep 2026 12:29:04 +0000 (GMT)
 Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id EDAD120040;
-	Mon, 28 Sep 2026 12:28:54 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 93B0B20040;
+	Mon, 28 Sep 2026 12:29:00 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.124.213.32])
 	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 28 Sep 2026 12:28:54 +0000 (GMT)
+	Mon, 28 Sep 2026 12:29:00 +0000 (GMT)
 From: Amit Machhiwal <amachhiw@linux.ibm.com>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Cc: Amit Machhiwal <amachhiw@linux.ibm.com>,
@@ -79,9 +80,9 @@ Cc: Amit Machhiwal <amachhiw@linux.ibm.com>,
         R Nageswara Sastry <rnsastry@linux.ibm.com>,
         Alexander Graf <agraf@suse.de>, linux-hardening@vger.kernel.org,
         stable@vger.kernel.org, Avi Kivity <avi@redhat.com>
-Subject: [RESEND PATCH 2/3] KVM: PPC: Book3S HV: Add preempt_disable() around virtual-mode HPTE bit-lock users
-Date: Mon, 28 Sep 2026 17:58:36 +0530
-Message-ID: <20260928122837.8782-3-amachhiw@linux.ibm.com>
+Subject: [RESEND PATCH 3/3] KVM: PPC: Fix get_d_signext() 12-bit displacement for paired-single D-form
+Date: Mon, 28 Sep 2026 17:58:37 +0530
+Message-ID: <20260928122837.8782-4-amachhiw@linux.ibm.com>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <20260928122837.8782-1-amachhiw@linux.ibm.com>
 References: <20260928122837.8782-1-amachhiw@linux.ibm.com>
@@ -98,115 +99,83 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI4MDA0OCBTYWx0ZWRfX8orC67y5LIzZ
- MbkLLDkW8iKH61KD84M4h6qjsOx/DJjdHd6cqFyffYViw6+A/y1Oa3V9MTIMZtAGeNcB/CPHu1/
- eJqzvflTGSL9d6b6DhZXlBMNn1UiwzE=
-X-Authority-Analysis: v=2.4 cv=HJ5WhYtv c=1 sm=1 tr=0 ts=6aba5d90 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=u-HXxruZ6MoSruA0XqgA:9
-X-Proofpoint-GUID: ssYpujtXTr3xZVKrx3l4RHk6LBXWie9s
-X-Proofpoint-ORIG-GUID: W23ZGQdjt_C1_vFOMLjSPerJtRideBdi
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI4MDA0OCBTYWx0ZWRfX8vCeEXCAWkQk
- /CB3AUshbHRqmOKK1pv2ohPN47VtqXRpGjejRIy/nlSm2xTLaSSBLB2nYohCfjSgNIo9xuC1N8e
- huqQmkvEhBx4Y5EHlSiKfPnL67bZEcui77ZF4an7QRLI2O7tgQARwEufsS1RdwaALu0QsZbpKmQ
- 4UogiKva+Qv2JAsClFHnGAVHlT9ynl7zgmD30h5A8rcKr9w6hzoz1svaP1MKL4nA1B48cVmouDe
- 1PPrdKcm0X53wCpJTduLYRiZyRvyGDTXCTIXQqjRxKnv/UJmSTUTlpB13FD++LMfStcBl6RaKqy
- PMMm+o5ZRwY/PCsmq7I1zQXennHohdA4uunhnsx3FZ/vuh9EHx/x1+ocev9wnCezNGcHrtiqj0O
- 6RpzpT4jUF398dpgJcQW5gWQfM0ZVOWculo6KFZI5yFfyosXMcN08BxN+Yu4eKYp8XkBCzGDqNC
- ldFfnEvQImVTcJ8CIrQ==
+X-Authority-Analysis: v=2.4 cv=FYWiV5+6 c=1 sm=1 tr=0 ts=6aba5d95 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=WFAfMJoNLMmZCboqhGUA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI4MDA0OCBTYWx0ZWRfX2P2BRo1CjjVg
+ zWyzmgOJwwPMAt/G9F+rhyITKaHfkTjJQFBsxfv6mOcJmn7/As7ygt2sskVmLrLskz9xfjnxWcP
+ LSyTg+UhjNnS/w5a8WsfX89WLJULIa8=
+X-Proofpoint-ORIG-GUID: QeW55F1-NeXaPWm6KxJ_mgznFsazK91V
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI4MDA0OCBTYWx0ZWRfX5mY1ak6FMoL2
+ OrhPNIwFxQg1BRKRzhHkugITgX+11x6f5JwTinqHbKHu/u7LoOXNa3Cpbj/FVROhrwfNQJHRR/D
+ NIctN4d+BT1sdUb6h8CDNJc41r1o6iW0fDxiue4RdfIue23YmZ+KORekZk8dUi1264iGYBlSa4D
+ V3ab2mz3purUBauZpq7MYKTeGFHa5Aip5dI9KJyfCGsOMz/bW1aamN9F7+LtE9idJxDsgc6ec3C
+ l0KRfPH9I3KmBScfed/9Wxc0tZzPjbkbMQ4RLbCwT5UqsoqP4hrNNqs7xjkUBrj1phPpWq53bCd
+ FSvpdEN/JRsRzZ6naB9eb6LJ+z51gvTCpArmgp3zccNZjJyLvcwH1NNf2hl2IZ+kssexMwG/OtN
+ bqPWytrKRdWtA/eXov1ddCk5594QiN/THcFn+7L65KX86aFAKx9S5DwECnEhJp/T+TdqJGa3wVT
+ tDFr0K+RhYWa3awz+8g==
+X-Proofpoint-GUID: wNslpQ4PfKg_tBauqa648K6_t9rDmket
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-09-28_03,2026-09-21_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 suspectscore=0 bulkscore=0 clxscore=1015 lowpriorityscore=0
- spamscore=0 impostorscore=0 phishscore=0 priorityscore=1501 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609280048
+ adultscore=0 clxscore=1015 impostorscore=0 spamscore=0 phishscore=0
+ priorityscore=1501 malwarescore=0 bulkscore=0 lowpriorityscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
+ definitions=main-2609280048
 
-kvmppc_hv_find_lock_hpte() requires virtual-mode callers to run with
-preemption disabled, because it can return with HPTE_V_HVLOCK still held
-until the caller later unlocks the HPTE.  Existing virtual-mode callers
-in book3s_64_mmu_hv.c already follow that rule.
+get_d_signext() has two compounding bugs since its introduction in 2010:
 
-Two virtual-mode call paths do not:
+1. The extraction mask 0x8FF silently drops bits 8-10 of the 12-bit D
+   field (PPC ISA bits 21-23), corrupting any displacement that has any
+   of those bits set.
 
-1. kvmppc_handle_exit_hv() calls kvmppc_hpte_hv_fault() for hash-mode
-   data-side and instruction-side faults after guest exit, with
-   preemption already enabled.  kvmppc_hpte_hv_fault() calls
-   kvmppc_hv_find_lock_hpte() directly.
+2. The sign-magnitude idiom "-(d & 0x7ff)" is wrong for two's-complement:
+   for D=0xFFC (encoding of -4) it returns -252 instead of -4.
 
-2. kvmppc_pseries_do_hcall() executes virtual-mode handlers for HPT
-   hcalls via kvmppc_pseries_do_hpt_hcall() with preemption enabled.
-   The handlers for H_ENTER, H_REMOVE, H_READ, H_CLEAR_MOD, H_CLEAR_REF,
-   H_PROTECT, and H_BULK_REMOVE spin on try_lock_hpte() or lock_rmap(),
-   and H_ENTER also reaches kvmppc_do_h_enter(), which uses
-   arch_spin_lock() on kvm->mmu_lock.  That raw lock choice is
-   intentional because kvmppc_do_h_enter() is also used by real-mode
-   callers, so the correct fix is to establish the proper preemption
-   context at the virtual-mode caller boundary.
+Together these errors produce a wrong effective address for psq_l, psq_lu,
+psq_st, and psq_stu whenever the displacement is negative or is a positive
+value >= 0x100 with bits 8-10 set — essentially any real-world paired-
+single stack-relative access.
 
-If a vCPU thread is preempted while holding HPTE_V_HVLOCK, any other
-thread on the same CPU trying to acquire the same bit-lock can spin
-indefinitely.  The same applies to lock_rmap() users and to the H_ENTER
-path while holding the raw mmu_lock.
+The D field occupies the bottom 12 bits of the instruction word (confirmed
+by the adjacent W and I extractions via inst_get_field(inst,16,16) and
+inst_get_field(inst,17,19)). Replace the open-coded logic with the standard
+sign_extend32(inst & 0xfff, 11), which correctly performs two's-complement
+sign extension from 12 bits to 32 bits.
 
-Fix this by adding preempt_disable()/preempt_enable() pairs around the
-two kvmppc_hpte_hv_fault() call sites in kvmppc_handle_exit_hv(), and
-around the kvmppc_pseries_do_hpt_hcall() invocation in
-kvmppc_pseries_do_hcall().  Targeting only the HPT hcall helper avoids
-wrapping non-HPT hcalls (such as H_RTAS, H_CONFER, H_REGISTER_VPA) that
-perform page faults, blocking memory allocations, or context switches.
-
-Fixes: 6165d5dd99db ("KVM: PPC: Book3S HV: add virtual mode handlers for HPT hcalls and page faults")
-Cc: stable@vger.kernel.org # v5.14+
+Fixes: 831317b605e7 ("KVM: PPC: Implement Paired Single emulation")
+Cc: stable@vger.kernel.org
 Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
 ---
- arch/powerpc/kvm/book3s_hv.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/powerpc/kvm/book3s_paired_singles.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index aa51968e206a..52f72f30baf0 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -1212,9 +1212,11 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
- 	case H_CLEAR_REF:
- 	case H_PROTECT:
- 	case H_BULK_REMOVE:
-+		preempt_disable();
- 		idx = srcu_read_lock(&kvm->srcu);
- 		ret = kvmppc_pseries_do_hpt_hcall(vcpu, req);
- 		srcu_read_unlock(&kvm->srcu, idx);
-+		preempt_enable();
- 		if (ret == H_TOO_HARD)
- 			return RESUME_HOST;
- 		break;
-@@ -1834,8 +1836,10 @@ static int kvmppc_handle_exit_hv(struct kvm_vcpu *vcpu,
- 		else
- 			vsid = vcpu->arch.fault_gpa;
+diff --git a/arch/powerpc/kvm/book3s_paired_singles.c b/arch/powerpc/kvm/book3s_paired_singles.c
+index bc39c76c9d9f..532f96293de0 100644
+--- a/arch/powerpc/kvm/book3s_paired_singles.c
++++ b/arch/powerpc/kvm/book3s_paired_singles.c
+@@ -479,12 +479,7 @@ static bool kvmppc_inst_is_paired_single(struct kvm_vcpu *vcpu, u32 inst)
  
-+		preempt_disable();
- 		err = kvmppc_hpte_hv_fault(vcpu, vcpu->arch.fault_dar,
- 				vsid, vcpu->arch.fault_dsisr, true);
-+		preempt_enable();
- 		if (err == 0) {
- 			r = RESUME_GUEST;
- 		} else if (err == -1 || err == -2) {
-@@ -1881,8 +1885,10 @@ static int kvmppc_handle_exit_hv(struct kvm_vcpu *vcpu,
- 		else
- 			vsid = vcpu->arch.fault_gpa;
+ static int get_d_signext(u32 inst)
+ {
+-	int d = inst & 0x8ff;
+-
+-	if (d & 0x800)
+-		return -(d & 0x7ff);
+-
+-	return (d & 0x7ff);
++	return sign_extend32(inst & 0xfff, 11);
+ }
  
-+		preempt_disable();
- 		err = kvmppc_hpte_hv_fault(vcpu, vcpu->arch.fault_dar,
- 				vsid, vcpu->arch.fault_dsisr, false);
-+		preempt_enable();
- 		if (err == 0) {
- 			r = RESUME_GUEST;
- 		} else if (err == -1) {
+ static int kvmppc_ps_three_in(struct kvm_vcpu *vcpu, bool rc,
 -- 
 2.54.0 (Apple Git-157)
 
