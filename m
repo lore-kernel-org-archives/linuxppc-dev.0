@@ -1,83 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-28394-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28395-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51FA2CA5FA2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2026 11:04:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08C40CA5FA2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2026 11:26:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4htdkB0cmbz3bQm;
-	Mon, 28 Sep 2026 21:04:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790593490;
-	cv=none; b=Z/W/wlI+wX8wx2NDjbjoF8nyrEF+I5xdsyf5UsUhQSz0k1GTS7C1rvwhJaq5N/boQwhZ1gZJD8UCCwkGG20vUNId+Hv/GdUdSzXHpGU7DEiUB4z5qNGWA/7dUwcNeHxA5Pubub1SKYmFd3NdJoDiBSBwl/PsDQJRaTnZ6mO4rrTFNgYJW1AvF/SjkSqANhASSVHy3fbrT07LALYppshbF7w0IZDGoDhaWlaY71MSr0KmPYhj7kNK3o0cM4qdoLHzcoEnqIAThKPMwxwf7SpH2u0zMmMMliiOiWnGHaaPeeBpLLjRgsEPnWxVWMhuB678XaG+Fm6KgIIxQD2iVNANkg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4htfCf3jK4z2yMK;
+	Mon, 28 Sep 2026 21:26:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790594814;
+	cv=none; b=L9zgsKwBDdd9e+gVdZC1MMcwEYL2nd2q9HfwGzBPK6Mc3gwQ+p6tnyYMhXWljcAyuXNxBgKaOFFoE8FUevBqOCGLuRaU9q0bYAOqeUwgOsrAGMW28vCIKFkLXXkAtwkqAJtUaNBr21pRzSz/cEHSwgMUiTVlCld21/mkNpOTNH244D5dJuGpn5n3y9CYCR9WnnsS36xa3Yf8Wq5lu7vmle6d4hzwBwuSP/iR+UONNB6EGSemeZoZyE8IjKkQHQKEEr5f0AWBF4oFwi4NbtWcRFjH1AeEKryQ08A7YadX14YmX+9bcwAFS+pXIhLQNd0d609j0sTksib7wUBpD3NjYQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790593490; c=relaxed/relaxed;
-	bh=OmZkydlk2uVtd5GZNwB6fqSnI/9ta3sytitbD/RbAXo=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=TVolcykVLqATSmwGmpbOtlKPW2J/NKPTXcPuh4r1FcfbGzagR2eEuLQ127brAYylSS3EieY09GDrLJ9GkFdlS5pmhGVK/5xjWYxduDAKOfAKeEeXTu3Qm0pVkeud6suIBCARdKYYR4uY7eUkmp88ZTPnXlYZjDlyUsBZwlhq8Ki3PKN3kNvhCpvyMeEjz/HWDstCz8KCQ+aLOq2dfH1B3XfRpRvtCvhrZSvXShEF6V80+RbUB/2ykNlF0slaIyqM2Um2SEoNMOwnntO1waA9zNMwGRyqBzyD++BcxdjEWfSCuAJttM1+wEBk2hxcrpXnXVEvB6t4ZIENcPjo/X5NJA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mCxBwxwN; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1790594814; c=relaxed/relaxed;
+	bh=MIgiakxNIvlbIOvXbpa9aAXTvVdIjMv2YRdjshxXmZo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=bUiE/R6QIBaep6wWMW1kQ+XosvwCENn6o4EfwcrJYySpcDHbOECzxlQHlRYkPYSXMQnXvFgkkxrJ4rmG95pSs/Rs6G3REONCQ6kVBjZ+hzV2r+OrfBB6I1RT/FMlneZfueCl8kQhRCHAqPWwy/OYoVgJeUCB4YkD97vAz9wB/9HDmlc9HdNLJiIkJdpWTStgDxpXninQJnCLpnx7kmu5kD1zYh2rlr0bUgMgi4BU2IxDUrBrVox0Tj7J/Ftg9ZJnu5fhwGRLb76Q0BCUhkMXTqJZjREt2qE/x0B/ibpwW4YjF/gfojC8f823R5liFNh2zUVGjsk5WEtbz83arQz2rQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ahxNhXzB; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mCxBwxwN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ahxNhXzB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4htdk91cZhz2xwP
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 21:04:48 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68S9Zx8M3726528;
-	Mon, 28 Sep 2026 11:04:37 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=OmZkydlk2uVtd5GZN
-	wB6fqSnI/9ta3sytitbD/RbAXo=; b=mCxBwxwNPnpLBSVlk01dENj6ZUm29igUo
-	2LTWCkacXF4W5F1MJ8Kl8r25MKwJgk8D/EU0465EESrXKdq29hX+QzwkWdSA6fJt
-	eIeJzWFH9on09ms0qwL+fG0+dHFfDs/eKpi6POF1Y0ti7KoYbd6tX+lCGE6RRnEY
-	b70LI6QDi2LldWIxdPecnGJF8vXKaXmp1tB9XvSeO5sRQWpLSUzOQvIBXsO9G+3P
-	Wcyz3/NGSZOEFrCCHV66rRGOO5Whm2d6ENn41U/+8h5ZnYpj9PT+yick9OSTpSu8
-	pvsCLGsBrL60sJiLqTQO42mLxMR85+oXCPaCk9Ft1m98iieR2VXUA==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gx4fe0mbq-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 28 Sep 2026 11:04:36 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68S9HU6p4117429;
-	Mon, 28 Sep 2026 11:04:36 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gxu2y4nqt-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 28 Sep 2026 11:04:36 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68SB4We643843880
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 28 Sep 2026 11:04:32 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8409420043;
-	Mon, 28 Sep 2026 11:04:32 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E8F6D20040;
-	Mon, 28 Sep 2026 11:04:28 +0000 (GMT)
-Received: from li-7bb28a4c-2dab-11b2-a85c-887b5c60d769.ibm.com.com (unknown [9.124.213.68])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 28 Sep 2026 11:04:28 +0000 (GMT)
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-To: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, chzigotzky@xenosoft.de
-Cc: sshegde@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org,
-        msuchanek@suse.de, ritesh.list@gmail.com, harshpb@linux.ibm.com,
-        gautam@linux.ibm.com, amachhiw@linux.ibm.com, venkat88@linux.ibm.com,
-        nnmlinux@linux.ibm.com
-Subject: [PATCH 2/2] KVM: PPC: Replay pending interrupts before entering the guest
-Date: Mon, 28 Sep 2026 16:34:11 +0530
-Message-ID: <20260928110411.844582-3-sshegde@linux.ibm.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260928110411.844582-1-sshegde@linux.ibm.com>
-References: <20260928110411.844582-1-sshegde@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4htfCc61Myz2yCL
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 21:26:52 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 6540840C59;
+	Mon, 28 Sep 2026 11:26:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 248561F00898;
+	Mon, 28 Sep 2026 11:26:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790594808;
+	bh=MIgiakxNIvlbIOvXbpa9aAXTvVdIjMv2YRdjshxXmZo=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=ahxNhXzBmiYTokoVc3H9EOIJnhTiIRXS8yTi4jkl4NBTZ/Nv4WBvbWNNickZgLD1z
+	 tNTkt7Rpv9XxkYAOXiaXinGpn1TVGBrrbxanqOu9maY5zQYsCbj2Kl2WxEpMoLo6lA
+	 HyRfdH+ObdVSBA7w4w9JV+SDdnt9JSpXYy2YAyZS9KKWJSWRd9riZxE6F0W6HOVL9X
+	 2iAWSuoOVWLw3Ct8h8c7Sh+0rVPFOiRRWCfOZjZSIp8/fNo5+a2/vmeOP2Yj4rEmOJ
+	 tDEEBitSlXsbvXPDtbXy8t1DqLoOL26HqgSKvoMF/Kp/L8ROFcPMKaTrW/S34orq3w
+	 f7DQ71vdlasSw==
+Date: Mon, 28 Sep 2026 12:26:41 +0100
+From: Mark Brown <broonie@kernel.org>
+To: shengjiu.wang@oss.nxp.com
+Cc: lgirdwood@gmail.com, robh@kernel.org, krzk+dt@kernel.org,
+	conor+dt@kernel.org, Frank.Li@nxp.com, s.hauer@pengutronix.de,
+	kernel@pengutronix.de, festevam@gmail.com, shawnguo@kernel.org,
+	linux-sound@vger.kernel.org, devicetree@vger.kernel.org,
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, shengjiu.wang@gmail.com,
+	Xiubo.Lee@gmail.com, nicoleotsuka@gmail.com, perex@perex.cz,
+	tiwai@suse.com, linuxppc-dev@lists.ozlabs.org,
+	Shengjiu Wang <shengjiu.wang@nxp.com>,
+	Chancel Liu <chancel.liu@gmail.com>
+Subject: Re: [PATCH v6 4/5] ASoC: fsl_asrc: expose individual DAIs per
+ conversion path
+Message-ID: <7be95093-1e29-45a7-9860-5605763baaf2@sirena.org.uk>
+References: <20260928061727.1844167-1-shengjiu.wang@oss.nxp.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,100 +74,44 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=FYWiV5+6 c=1 sm=1 tr=0 ts=6aba49c5 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=j_Z4ZgiU5xnDcWkxdewA:9
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI4MDA0MiBTYWx0ZWRfXxBmq/wGMBqch
- y3KVGbHhIpZ7EjSO4NDCZy43gfm/NuA1USKZcBp9yt+mOw0xndOK3su7MZikZ2XRYq/sve1bVkN
- wt0Tic4ILbHsUqCFNF68I694eDoVmVo=
-X-Proofpoint-ORIG-GUID: ydNCXtBfZL86Wr8r1PqOtlvBFyu7KEAl
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI4MDA0MiBTYWx0ZWRfX7cqjpIKOZ2Pf
- 6RtzM5X7L9wODi4k1BNp8aZrBVkLY3oqaoA2QAiWIKwD3jr+6fTM6Oe/BaEvSYtBpxV31LWvGgo
- 7K3fv0CsftJSa4FjUQyRx4vxnLKPhQdNC4PjcZENk6gkTCp1nLyCa9kX+e361218xQ8OLPASX4m
- QUsAt2jOL49Yz0v2yH9ixsLTk+GeiUfSmxl9lDqFOgA2wDP1V2bYFMNERxh75MGezEMv6/N1LJf
- 9jigI/TyLlX0Kai6fIIxRNCCHN0jMA6MEVfI4dK3Z5s5iO7WKI3QZZ4+w6FOjhfZcwKHFNAGfqp
- JosWgBGYQ7Ta0bdmT4G8qctgXGHnvygOUfgi1ryMHrfaEzfs7Ig2qQ0HgK9ffpVIjgEyzHP1Ag4
- bJ/7rWT4uvol/KgGOwoZexwPGiI07RELgqfbG5INj5bGff1xJqs+b63DOJITXv8/XS8m7uRTgAp
- FZ0hJZ0YrmkMBhvu7jg==
-X-Proofpoint-GUID: M2HdvUP8cMJ2QYlC_JztXMpa7DVqP79E
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-28_02,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 clxscore=1015 impostorscore=0 spamscore=0 phishscore=0
- priorityscore=1501 malwarescore=0 bulkscore=0 lowpriorityscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
- definitions=main-2609280042
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="agS6p3a5qSig1fa6"
+Content-Disposition: inline
+In-Reply-To: <20260928061727.1844167-1-shengjiu.wang@oss.nxp.com>
+X-Cookie: All is fear in love and war.
 
-After applying preempt disable patch, i.e PATCH 1/2, Christian reported
-a subsequent warning stopping his board to boot properly.
 
-WARNING: at .kvmppc_fix_ee_before_entry+0x10/0x28, CPU#0: qemu-system-ppc/4667
-CPU: 0 UID: 1000 PID: 4667 Comm: qemu-system-ppc Tainted: G        W           7.3.0-rc4-2-powerpc64-smp #1 PREEMPT
-Tainted: [W]=WARN
-Hardware name: varisys,CYRUS5040 e5500 0x80240012 CoreNet Generic
-NIP [c00000000005dc3c] .kvmppc_fix_ee_before_entry+0x10/0x28
-LR [c00000000005f298] .kvmppc_handle_exit+0x5b4/0x5e8
-Call Trace:
-[c000000086587780] [c00000000005ee10] .kvmppc_handle_exit+0x12c/0x5e8 (unreliable)
-[c000000086587830] [c000000000062068] .kvmppc_resume_host+0xb8/0x10c
+--agS6p3a5qSig1fa6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It triggers below warning...
+On Mon, Sep 28, 2026 at 02:17:27PM +0800, shengjiu.wang@oss.nxp.com wrote:
+> From: Shengjiu Wang <shengjiu.wang@nxp.com>
+>=20
+> The i.MX ASRC hardware supports three independent conversion pairs
+> (A, B, C). The driver previously registered a single DAI with generic
+> stream names "ASRC-Playback" and "ASRC-Capture", which prevents
+> multiple independent conversion paths from being used simultaneously.
 
-static inline void kvmppc_fix_ee_before_entry(void)
-{
-        trace_hardirqs_on();
+This and patch 5 are not threaded with the rest of the series which
+really upsets b4 :( .  I'll fix it up but please look into your tooling
+here.
 
-        /*
-         * To avoid races, the caller must have gone directly from having
-         * interrupts fully-enabled to hard-disabled.
-         */
-        WARN_ON(local_paca->irq_happened != PACA_IRQ_HARD_DIS);
+--agS6p3a5qSig1fa6
+Content-Type: application/pgp-signature; name="signature.asc"
 
-This happens since kvmppc_prepare_to_enter does first local_irq_disable
-followed by hard_irq_disable. This leaves a small window where interrupt
-may occur and it could set the irq pending bit in PACA. When that
-happens replay that interrupt before entering the guest.
+-----BEGIN PGP SIGNATURE-----
 
-Fixes: 12013e3d4695 ("KVM: powerpc: Use generic xfer to guest work function")
-Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
-Closes: https://lore.kernel.org/all/b8f82519-9ae5-c247-e020-e79c627e57df@xenosoft.de/
-Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
----
- arch/powerpc/kvm/powerpc.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmq6TvAACgkQJNaLcl1U
+h9AZrgf/VFOKxMUjK6hmwAHkqM+y0Ua45JlbNuxKyoHHyV84DmfhdqY51ofpXfuQ
+6N+x6DTT+UZJkw8xrPqdRMRhps2mxGnkl0FdOiqAe1dR/VuGMOAck7lF80PMIOxD
+CUljelqNF6bYnmr8MQ5qPzYIUn7VEcvZiirLFwT5OHfi5/x37fQUAFJ1YJFgq8MX
+fuuBv1DOxVGdXUD5MsFdkcMfd9617FupVjCOhrZFQpTzj1yEvuAnmnTCs02wF/3S
+QjBDyIaaTRdUFDag3qQ/tMKwfIJjvLDrHsp2iXwoQUdoL+Ga6f9W+QJUrBcoiu+B
+TkSZSFWED6F7dnYsXunQoC0iWlZFGg==
+=A3IY
+-----END PGP SIGNATURE-----
 
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 9194cf492d1c..847ff07c364b 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -147,6 +147,19 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
- 			continue;
- 		}
- 
-+#ifdef CONFIG_PPC64
-+		/*
-+		 * Interrupt arrived between the soft and hard
-+		 * disable. Replay it and retry guest entry.
-+		 */
-+		if (unlikely(local_paca->irq_happened != PACA_IRQ_HARD_DIS)) {
-+			local_irq_enable();
-+			local_irq_disable();
-+			hard_irq_disable();
-+			continue;
-+		}
-+#endif
-+
- 		guest_enter_irqoff();
- 		return 1;
- 	}
--- 
-2.52.0
-
+--agS6p3a5qSig1fa6--
 
