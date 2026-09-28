@@ -1,74 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-28385-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28386-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F0CFCA5FA5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2026 10:44:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 768FAC9833F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2026 10:45:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4htdHF2MdMz2yMK;
-	Mon, 28 Sep 2026 20:44:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:3b::2b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790592297;
-	cv=none; b=YDg6fwgQQzHk1qNyCqPR78OibysIA7qOBrFphGZkRqimYIp9q4gK1WwN5b5SLqmYpBF3Xwz+biPUdprDuEPR09Lp/J7K0ogiliLobdkuMnXb/Caaqs0rTnhYsdOFu0qLbGZ2uW+vxwK24aUj8JI/NPw3GlQgXEVsgs+DFPR4OXZmvNg8Ef4Q81kPeVUcmNoqEZMZ39LL7bwVY/SLvX8RK0c8/lT0z3V6gG/5an/RhgmowxGqOUHdCSgEXmsct4cxppWt244jikuZKJnjlLs5/8qljgUzWl+XeZ7mbP4cK5tnfcImy1cxCn/TAKLTnSCeo9ZbH7hdXSTVdLewfvSKNw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4htdHG6m3Zz2xmh;
+	Mon, 28 Sep 2026 20:44:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:39::2b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790592298;
+	cv=none; b=L2DZt+/U4bHYniKCu2rXhmG4gJS6kniQwau4ekWyMatp3gBiqSL/TeO0TelB8TcaGSeGzIouIHQ93UjqSXpl6exS4SGTDc9WAvtKq5E6T/XtaVsdKE4Qz8e/Rukju8e+2PhfnjbKhj1KzinhYZ6KrWJpvd+8mw2u1IgO5r3G6drqZHzecNONV3lrQRvaIHKkt4GJ4HCI0XxliJ2P4fXtL/xWn2WFCZ96D2h2vUIesUvS9nB0VeHuB4sTLeAb6U3OBTf5aipcNiu5SuEVkaC+/eu1vpFzprTahNCFb+X3QCj81T65DgoHE8oEsaKJDTODzyO/ZRxxrkqeNbRwB174UA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790592297; c=relaxed/relaxed;
-	bh=w3u++Y/y+jB+aifVfMts5mY66Lv7aHX/LkoLWAAVmgQ=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=lS4nbj9A3vWmjDZBq7Ey0Wt0s84Rp8zaqIPgLJPh5rsb6PZWmNCIo6xfAzd3d1yNJtmq8uXR9eX4DHLHNXrP/lOjDav/7vMAHpGEw7i6c5/q5B2RmzauzVhXjpBxfAat+glfoVtdVSCvA/OLSJEZEIXwu2VW5Omb5xE9H6Vrw9/MY6a9cDvJ5Pd8xfyzn+i3x6i9KgcpoRXT7Id/bDB48j/hb/DuELO7HO4Q0Wb+UuWBwNL2rhTLxDR2lxx6M08syNWocAl5AY8aH7IQdwY2DGgzC6xNFb+X2TrcQPDXYB26r+wSLmXIl77bHBidXVimd0v4yk998L0NheZrET0jwQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=l6AN+P88; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:3b::2b; helo=mail-pz2-x2b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1790592298; c=relaxed/relaxed;
+	bh=VXrsxqEkO2pMgqNAsSSYfKdxs+2sCp96RSLMIL+tOrE=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=fcLoXvpbwa36fJltF8JIHnb64iYCwHgKIXuuSTz23Mlu752YemS9VZ9UPtaarKxRo1r6pLsWkgQaHAhGrn+noU6Qw8xAXG5nueB7bKX69tstzMDVDV+dPgWOkDGZx2Mrzv8BSuDw8JyVCwYYN/R9YKkaAGzwzKYB3Kl8Q05klbruHx/GOXunrUTzFcU/cdR1NGxXCvXVF9Quiv2PbDfv5Q7hD/ee+sZqImO4xGtn/NmqcmxVp6hziJ5dKTrKPkWH2klxz1EP2OTHvvqaqTilFZygIwnfcVAsYvTUiyQAq91D+1IBtqg34zDigqdc5unN+jj+7JO4+eFq6geCy9nKQw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=oXyTCyYH; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::2b; helo=mail-pj2-x2b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=l6AN+P88;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=oXyTCyYH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:3b::2b; helo=mail-pz2-x2b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pz2-x2b.google.com (mail-pz2-x2b.google.com [IPv6:2607:f8b0:4864:3b::2b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:39::2b; helo=mail-pj2-x2b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj2-x2b.google.com (mail-pj2-x2b.google.com [IPv6:2607:f8b0:4864:39::2b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4htdHC3ky6z2xmh
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 20:44:54 +1000 (AEST)
-Received: by mail-pz2-x2b.google.com with SMTP id 41be03b00d2f7-cc7979d1dedso704321a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 03:44:53 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4htdHF6kC7z30W5
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 20:44:57 +1000 (AEST)
+Received: by mail-pj2-x2b.google.com with SMTP id 98e67ed59e1d1-3a47d5764feso230676a91.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 03:44:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790592291; x=1791197091; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=w3u++Y/y+jB+aifVfMts5mY66Lv7aHX/LkoLWAAVmgQ=;
-        b=l6AN+P883+VxNSaFHPJ7UQHY0Ia7SMz8bbWWilT9/wLqBKadlzTc2LvYkG58RuYg9v
-         msOX6Wu51bIbDZgqvgK91onVhAGMpVJziBRquP5ihI96dVNIaJbTtkSDZ7ct19qUidDh
-         ofCB9u/hgZ31VMIdix3ps/EkDOqymbb6RknKipaRV7qCk6KD4VfP+8omZ7Szeitiw277
-         7+NHZxvH+BseCIxSUaMggr8hqbsFIaa7+Fphw101cFuuv1zljrM5QumIMi/FkAEnkWNb
-         90686DsptIXIoUfILjfn9UtJ4AJGpmzyrXMJ59L6qf5NnFiSI4ix9t6QC1qC/eNUlpZk
-         5nuA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790592291; x=1791197091;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1790592295; x=1791197095; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=w3u++Y/y+jB+aifVfMts5mY66Lv7aHX/LkoLWAAVmgQ=;
-        b=cbh7HjnI/t0nEgcOoT/RMAs7AiaXxrKUKot1UN4MCwzojqfMlTs3ntaszexw/siyZB
-         TkKwk5xxLDBtWBPc27VUbQt12qRdGBrQMRYoDQyE3PgbW2mg44wWpNT50wQvjSTRStSZ
-         JUEUwhx/CnGGXRqKEUASCP0scUkVdf24hOlFUEFda7QzaUwtN8UFOxWAH5MyVKAmsTbc
-         yaAiRQ+OvkPOgrEuVkFB/GwnaJW1s5ocD5Nr5njj4kwLLKPalqLUa+UdKooEYnKpG/Of
-         mbBQ/FJn0pipppdzSmA3jq2abxyMakLR2bD/f94LkEvTj59hgc6nlkKCDTD0L+G6Asma
-         Q1HA==
-X-Gm-Message-State: AFq9FYL0rjiJtNFxXw/6b0jNnWDGpDggmmwRjZ3BluHehPFOv/LJtsc6
-	VO3VOhGrzhu7/I8JB+GTgMd3XZ3L14Q6dIGqsoYzuxC+NkCxZfWQXj0pagoG1w==
-X-Gm-Gg: AYBFou3JkBfW1uLBJErKSZ8bsgWg5AbluyEYtXIZoeJwYX2fnjwIMIBS6VgP1Tj+n9E
-	eMd/mGe/4iJuJvDNXu6kN364YAsWcVBcfS/OpoGVeJiyGVlYJ0ZVOu0gYiIpo+uqZxf2rvwsSUI
-	bulB4yT0cNrxAi16/Eiurvxt69wyEbG9l82emtO34QoE4IIeOzZYSg9WJKd6WIx9930KzL7qpJs
-	0Y4cpBoFbpkJl7ZYI/8mXSebXfLj+/B3fBm7m8k+QbQpNQ1Ejp+oTVR1w1YQrPRl2WPcTyuiB4Q
-	lCqKyIx/HeBY3Ac0fBFP8JaGQ1e4WOZD9pv2nEpZPG7t6ks3g9U+h5AnL6U/MBpexzepYaqGndS
-	4zwmTOfbh9vN8W0UyjVoCtC5szEfP/bh/k0B9BcwUjy3rXpfUsjMgjDKQffp0kQZXHnJNUrpDi7
-	gwibvIFtch5lyn14bx+9LevSanSGliMIBrARnYV0JMr4TCZv3Hije4C9bBorgb9XtGUfD9HYyD5
-	P+2sA5d2sDbdv5tk6WIcDSVX6sHnymBzPqez/0V8Tv/NnSlgD7/H7LvQUDcUusfmkglldI=
-X-Received: by 2002:a17:90b:224e:b0:3a0:cbe2:9e0c with SMTP id 98e67ed59e1d1-3a0cbe2a16cmr6640422a91.63.1790592291593;
-        Mon, 28 Sep 2026 03:44:51 -0700 (PDT)
+        bh=VXrsxqEkO2pMgqNAsSSYfKdxs+2sCp96RSLMIL+tOrE=;
+        b=oXyTCyYHjrBAHtvczIba163csEjqnTitde9KZ/yzfytKXC6LIRhVoktMmK45uWL9vM
+         CQ1Dil2y2uBBXeA1Yn6NupfrAkC/4Uuz/MN0H9lnGAfeGKmENxj9xDeIhvZgTxAuFxdS
+         THjQ+5l0lw+agxdnvhJeH89laSd60GOBTRmIRB6RIwSdAnQtmmdTTO7C/0s2uwfhSrzo
+         yuWxjonewjthcgRide9SxNK1UOXrBetS8IwoJaFVsr99A5lq0i1holrsJLkE85z8GG+b
+         RjDwzE0r/GWAuP/537STsXuI6l8DKEJLaKBQTnD9MsM1uQktp0vyjlJW5/o/qFqEpmuy
+         ZFnw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790592295; x=1791197095;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=VXrsxqEkO2pMgqNAsSSYfKdxs+2sCp96RSLMIL+tOrE=;
+        b=HI487dYTejqdgleylbpnrBaW8qSm5k4PUsTkmD+wGoGaJWb389BTQ6e+vpUVsKK5Gf
+         LJbEAzug5Vu6oDCYeDktnm1euuAIE9i/vpdIVhV9KsgbhAbEYItXumPp0LYYyJqw63AC
+         j8IgBndAcRJU59yOaDj3SckxVxi+sxLwzuscKHR5a2zsQupSpUk6ccY2dvoCF6kgDmAI
+         VMpitOczZCjvRa8nPm+P4fF8R7b1v7yw1iRfIW1AaV6e6GKLu3tJa70Odyq3IYqjJMi+
+         G8y0scdLBlVq1pSVQIVp/XNCxU5zHfQh8tIrmfNZZpmdD9BQFXbXsr3mNmCJJgadZIdl
+         CgVw==
+X-Gm-Message-State: AFq9FYIk9lfJHSvzvlYS2CvzQ5ZD576B6lhP0PpvhoWIWOkBtpjvbZ5K
+	Ys9IvT0OOwnAj4n7mtsL3m09e2Ubo0g+4/q9MOAMviM8HRpx6+v4RpNGylrkYw9G
+X-Gm-Gg: AYBFou1hTLBEErc1whwgBmfXPUv7nceMW3WtzHIQLQASIoAa3VzlYSsj3Z5HG/FShpE
+	yGh+aEuEjdAPTuT9i15K2XcfjBv/VqcFXPDuNbyKj1zeA5aMhrgTStUMP3U0SPANG2iYXsR030x
+	+WcC/s1Un5eZd8IBbmFzOlqhvEFWBnzM9BGEUKXzkWoYvur9ZXXJFTtDgX3e3xGKNc2/mnOBGOR
+	naiYSRhbC14sO/xmlAorcGqH89k4vvQadTpUP8FOF5thm0SyQ9wmBM5CgrLkgdUeAjN3iCZ/kCd
+	Exx5blfUf2++tMYNWDLFKbX6WXtfrosXBA0V4tWSaM9lyDTyyiKtKSF8gV7E5JkTj4oVJZeO5C5
+	4uNKiAZGuiV4NGqVThgoujyvFtCm6e5Pch98h1VC87rIuhSJxrgsVtEztaMfQfKmQjAIUYXh9Sv
+	pHgXuu8kaIBMPUJoEBqdXUWizZdGPk0MvcDUQtosigE5OAg2QGURN57ezoOgVoWAwLumxzm/m+H
+	7AlI2nDw4fcf7F4ayMNlrFNHxAH0QRKSeXaH2u0NmbzqaD54PnMa4qY9aGr
+X-Received: by 2002:a17:90b:1845:b0:3a0:e8ac:9f7e with SMTP id 98e67ed59e1d1-3a0e8aca8d7mr4580986a91.35.1790592295405;
+        Mon, 28 Sep 2026 03:44:55 -0700 (PDT)
 Received: from pve-server.rlab ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a0976c8f8dsm27071975a91.12.2026.09.28.03.44.47
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a0976c8f8dsm27071975a91.12.2026.09.28.03.44.51
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 28 Sep 2026 03:44:50 -0700 (PDT)
+        Mon, 28 Sep 2026 03:44:54 -0700 (PDT)
 From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -79,10 +81,12 @@ Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Marco Elver <elver@google.com>,
 	linux-kernel@vger.kernel.org,
 	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [RFC 0/6] powerpc/mm: Enable clang context analysis
-Date: Mon, 28 Sep 2026 16:14:30 +0530
-Message-Id: <cover.1790590014.git.ritesh.list@gmail.com>
+Subject: [RFC 1/6] powerpc/mm/book3s64: unlock RCU before returning from mm_iommu_is_devmem()
+Date: Mon, 28 Sep 2026 16:14:31 +0530
+Message-Id: <04e4dafde56fe4b055fbd763dc0e119862073c6d.1790590014.git.ritesh.list@gmail.com>
 X-Mailer: git-send-email 2.39.5
+In-Reply-To: <cover.1790590014.git.ritesh.list@gmail.com>
+References: <cover.1790590014.git.ritesh.list@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,42 +102,48 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Lock acquire and release checking used to be done with Sparse. That support was
-removed [1] and replaced with Clang context analysis [2].
+Clang's context analysis reports:
+  iommu_api.c:380:1: error: __ctx_lock_RCU 'RCU' is not held on every path through here [-Werror,-Wthread-safety-analysis]
 
-Note that enabling this caught a real locking rcu bug in arch/powerpc/mm
-(Patch-1). Note, more invasive checkers to check what each lock protects
-is deferred for later enablement.
+mm_iommu_is_devmem() takes the RCU read lock to walk the preregistered
+device-memory list. On a match it returned true from inside the loop and
+skipped rcu_read_unlock(). Hence fix it.
 
-This is based on top of previous powerpc/powernv,pseries Clang context analysis
-enablement series [3].
+Fixes: b5952f8125ae ("powerpc/mm/book3s64/iommu: fix some RCU-list locks")
+Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+---
+ arch/powerpc/mm/book3s64/iommu_api.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-The series was build tested with LLVM/Clang 23.x
-
-[1] 5b63d0ae94cc ("compiler-context-analysis: Remove Sparse support")
-[2] 3269701cb256 ("compiler-context-analysis: Add infrastructure for Context Analysis with Clang")
-[3]: https://lore.kernel.org/linuxppc-dev/cover.1790517984.git.ritesh.list@gmail.com/
-
-Ritesh Harjani (IBM) (6):
-  powerpc/mm/book3s64: unlock RCU before returning from mm_iommu_is_devmem()
-  powerpc/mm/book3s64: Rework tlbie() to remove conditional locking
-  powerpc/mm/book3s64: Rework native_flush_hash_range() to remove conditional locking
-  powerpc/mm/book3s64: Annotate the subpage-protection PTE lock
-  powerpc/mm: Rework nohash TLB broadcast locking
-  powerpc/mm: Enable context analysis
-
- arch/powerpc/mm/Makefile                |   2 +
- arch/powerpc/mm/book3s32/Makefile       |   2 +
- arch/powerpc/mm/book3s64/Makefile       |   2 +
- arch/powerpc/mm/book3s64/hash_native.c  | 122 +++++++++++++++---------
- arch/powerpc/mm/book3s64/iommu_api.c    |   6 +-
- arch/powerpc/mm/book3s64/subpage_prot.c |   2 +
- arch/powerpc/mm/nohash/Makefile         |   2 +
- arch/powerpc/mm/nohash/mmu_context.c    |   1 +
- arch/powerpc/mm/nohash/tlb.c            |   8 +-
- 9 files changed, 98 insertions(+), 49 deletions(-)
-
---
+diff --git a/arch/powerpc/mm/book3s64/iommu_api.c b/arch/powerpc/mm/book3s64/iommu_api.c
+index 60d00c9e7f19..56d9aa6cc8e2 100644
+--- a/arch/powerpc/mm/book3s64/iommu_api.c
++++ b/arch/powerpc/mm/book3s64/iommu_api.c
+@@ -356,6 +356,7 @@ bool mm_iommu_is_devmem(struct mm_struct *mm, unsigned long hpa,
+ {
+ 	struct mm_iommu_table_group_mem_t *mem;
+ 	unsigned long end;
++	bool ret = false;
+ 
+ 	rcu_read_lock();
+ 	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list, next) {
+@@ -371,12 +372,13 @@ bool mm_iommu_is_devmem(struct mm_struct *mm, unsigned long hpa,
+ 			 * and the caller needs to distinguish this situation.
+ 			 */
+ 			*size = min(1UL << pageshift, end - hpa);
+-			return true;
++			ret = true;
++			break;
+ 		}
+ 	}
+ 	rcu_read_unlock();
+ 
+-	return false;
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(mm_iommu_is_devmem);
+ 
+-- 
 2.39.5
 
 
