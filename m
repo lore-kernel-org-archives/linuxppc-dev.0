@@ -1,74 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-28354-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28355-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2006EC98338
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2026 22:55:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50803C9830E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2026 01:50:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4htKXq27B5z2y2M;
-	Mon, 28 Sep 2026 08:55:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790549739;
-	cv=none; b=hV3hyxjy8ketbSLMLdKxOp5dtTVkvoXZcXtYQgqrS5I0Suc6cGuDkksnSFLQyQ7K1mNkO0krGH05+Q5pJQ6yKnyvpDh/H0DyxVkxKr3g3EPr57UyrrGOV0sDJfZFjWw+NhdZBG3m4xp4+PQIlnFQUyGgElcavWhT+L2utzKiJ0wZZypgFfwKRSWSH7AQQtwC85r02BrU0Kz8UuLF19HMEHZHimBs5OeqqLe5ETMVRK9PxYoGvJc/+AUBb1XJ3g2a03vvINWMbWV7kyayha+wdtQFBsRGoF4xdHuduiT6Mr8hNCrFRs6Z7pqeG2Nys6McmXGCjnGIl8MsE9u2ZgIDJw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4htPQf3LKdz2y2f;
+	Mon, 28 Sep 2026 11:50:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::12"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790560234;
+	cv=none; b=eClkRw/H8NdLA/TMXfijd5wjRRY3kGVyiS23e+tv85XvR9yY7KKIDThxEDLCkOIfVnOb2kifinccLsrE4ML3Hq9EXrjGmfjB0GPpHqnwJo5cFZII8PQ9gScwKcrEMCJPZvG6b1R2s5cMIiBhwX3FDyZ8AT5I3QojtdTGuVlQ67/d7gQ22YKXIBGL7qRdmKLBEQ3c2utl+z/zetXCn9ywlmjE3Ji3xSwzUEhSb5eKB4cXSgFGmSJYvJlhvbI05tAdzXIntbhiY1WiQW/2J9Ot+q5HJlnBTFnUYDg9ou1llSOzbs3GgqCB4qwvk9EIbT/scovzZ+HnsnG6sGrvb34sRQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790549739; c=relaxed/relaxed;
-	bh=fonZKBEVnLUi3nmIxkkXaoCZILdYms0d8ZYuqeeaJBg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=YcFKnyzEHEL+SPn10a7f5fmwFKZCyp11zdJ7V4MOgzwGbjFxTqQXBPGpggOF6DTRCuLvDAqrG0wwXCL2S+GquLsNrPrhbXHm80xJoQ9HO+xJSjO4KvG7MIHnwyYy0BgAJ5Zo11r0uSJMJUP711C9oLzCARf5C5g43aTWMEkUBMORAFzHoOgLj5+EXOU0Rdmgyj2pZ82D/oUuocosj4dlHxVdkmUqTO1u1yeRNFd4qr9AC3TdAdxh9yYj5w4xW5W3i9Lews7cTrmjv+CwlRWoF9wnWhfCAjKGhiRjcisf7uJgZVU+R7o/028FqiEWcey2P3HZW27Wp+P5s1BjY4WArA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=eIGI0kb8; dkim-atps=neutral; spf=pass (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+	t=1790560234; c=relaxed/relaxed;
+	bh=h3nRgSDQzHRceNINJ0CmgoIAJgoR/3hhS49F+G/qdCE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=fNNrg1FQcruK5bOlSdpSwKn86IHHHwsbUtbBj2WG6Mw0yJlL0ZK7+YSlU2L/K+ZESqQhYdEzzBEBFWueaIBXcK8GLEfQyqfx1yXv6ESNtJuW7WUGAAw0HSF7CgX8w1cWsc8gdW8nZoj52ieOsjLFqbQ7KC9mkpRUpHhqsaGv1qCKfECLZkekmXMvqfzUQ3d3ikeo78Eh8SZJKmdFza3KUbFNOYnrCSGci6RtzQGBCkGDJU0Cdo5ACn1m+DrP1zev/VYauEOKw6iqcTo7+s2sjx1FFDooflUWnpIqxUBBgTtTbjTmD/16lO54BXI3wf9FQDr7bMySALrNZY8ARQbjOQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=i642vPZ6; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::12; helo=mta0.migadu.com; envelope-from=qi.zheng@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=eIGI0kb8;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=i642vPZ6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org)
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::12; helo=mta0.migadu.com; envelope-from=qi.zheng@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta0.migadu.com (out-18.mta0.migadu.com [IPv6:2001:41d0:1004:224b::12])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4htKXj72tbz2y24
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 08:55:30 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=fonZKBEVnLUi3nmIxkkXaoCZILdYms0d8ZYuqeeaJBg=; b=eIGI0kb8JoQ6f59QATnKY4VWTy
-	KlWA18PX6hX10BKhOmxNq0tGi3u1aRfvl4+RCRxnypG+Q3zub+tAGfPLahvJ7UxrqebG6Hw87AV+5
-	pjJ5wII77N8SG6ISTZur4tDlzHyQJG/AruwRnBvYUL5h5vM1R4LIVih5MQuljHXPOD6svEMX0vt5w
-	fN1uh3q8xkndWOy2mJeEInuuRC2htXs6SWKt9eP27BmPHjB6Elzy1vZxpqCT0Gl7etIkQcBpxUbK4
-	n8v611VA11zwhLqKPmNANUdBBOafXd7NBkYlngO75KzUN/H3oVubmt74amemlxLWMaFpHJpsXr2/5
-	Lk6vs5tg==;
-Received: from willy by casper.infradead.org with local (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xAxlt-000000025TY-0cPK;
-	Sun, 27 Sep 2026 22:55:01 +0000
-Date: Sun, 27 Sep 2026 23:55:01 +0100
-From: Matthew Wilcox <willy@infradead.org>
-To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Cc: Hongru Zhang <zhanghongru06@gmail.com>, akpm@linux-foundation.org,
-	linux-mm@kvack.org, linux-kernel@vger.kernel.org, baohua@kernel.org,
-	surenb@google.com, david@kernel.org, liam@infradead.org,
-	mhocko@suse.com, rppt@kernel.org, shakeel.butt@linux.dev,
-	vbabka@kernel.org, zhaonanzhe@xiaomi.com, linux@armlinux.org.uk,
-	catalin.marinas@arm.com, will@kernel.org, mark.rutland@arm.com,
-	linux-arm-kernel@lists.infradead.org, chenhuacai@kernel.org,
-	kernel@xen0n.name, loongarch@lists.linux.dev, maddy@linux.ibm.com,
-	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
-	linuxppc-dev@lists.ozlabs.org, pjw@kernel.org, palmer@dabbelt.com,
-	aou@eecs.berkeley.edu, alex@ghiti.fr,
-	linux-riscv@lists.infradead.org, agordeev@linux.ibm.com,
-	gerald.schaefer@linux.ibm.com, hca@linux.ibm.com, gor@linux.ibm.com,
-	borntraeger@linux.ibm.com, svens@linux.ibm.com,
-	linux-s390@vger.kernel.org, dave.hansen@linux.intel.com,
-	luto@kernel.org, peterz@infradead.org, tglx@kernel.org,
-	mingo@redhat.com, bp@alien8.de, x86@kernel.org, hpa@zytor.com,
-	Hongru Zhang <zhanghongru@xiaomi.com>
-Subject: Re: [PATCH v6] mm: retry page faults once under the per-VMA lock
-Message-ID: <armexcXDiG8ryZd6@casper.infradead.org>
-References: <20260911025613.1220845-1-zhanghongru@xiaomi.com>
- <arFYRAa-i7CIwmHL@gremlin>
- <arF-E3Nsw9ZliH0t@casper.infradead.org>
- <arI_w2wTfA00Mgy9@gremlin>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4htPQZ3SnYz2y24
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 11:50:28 +1000 (AEST)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=RAi6LaQaIERnguNa75CIILKwcfJnHB40JrzKtoc+ARQ=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1790560205; v=1; x=1791165005;
+ b=i642vPZ6AAFEMsfq6Yf1PfwOeeahFco14EV8Avqv9HTqhooaA2j0gfOA2QJG2ehTPfshwSez
+ DxNTAJZgTXcZiON6+hVgi9VPWLxcNsjHcCenEcJaFQSe9zmWQ2PzWXhqP/mTJqyDyTfZJmFWO7b
+ /zI8ptKsDVXsSm7as7JtU6EA=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id b6a582d4e49657da;
+	Mon, 28 Sep 2026 01:50:02 +0000
+X-Mizu-Trace-ID: b6a582d4e49657da
+X-Migadu-Flow: FLOW_OUT
+Message-ID: <99cdc0cd-3af1-4d61-af28-47fad8657c62@linux.dev>
+Date: Mon, 28 Sep 2026 09:49:56 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,40 +57,56 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <arI_w2wTfA00Mgy9@gremlin>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 2/6] mm/sparse-vmemmap: support device DAX in common
+ vmemmap path
+To: Muchun Song <songmuchun@bytedance.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>, Mike Rapoport <rppt@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
+ <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>,
+ Lorenzo Stoakes <ljs@kernel.org>, "Liam R . Howlett" <liam@infradead.org>,
+ Vlastimil Babka <vbabka@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
+ Michal Hocko <mhocko@suse.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, muchun.song@linux.dev
+References: <20260924075259.2013039-1-songmuchun@bytedance.com>
+ <20260924075259.2013039-3-songmuchun@bytedance.com>
+From: Qi Zheng <qi.zheng@linux.dev>
+In-Reply-To: <20260924075259.2013039-3-songmuchun@bytedance.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Tue, Sep 22, 2026 at 09:55:23AM +0100, Lorenzo Stoakes (ARM) wrote:
-> On Mon, Sep 21, 2026 at 07:57:23PM +0100, Matthew Wilcox wrote:
-> > more to say on this in two weeks at Plumbers.
+
+
+On 9/24/26 3:52 PM, Muchun Song wrote:
+> The common vmemmap population path cannot yet handle optimized Device DAX
+> mappings on its own. It uses pfn_to_zone() to find the shared tail page,
+> but Device DAX populates its vmemmap at runtime before the ZONE_DEVICE span
+> is initialized.
 > 
-> I look forward to it :)
+> Teach the common path to use device_zone() for runtime optimized vmemmap
+> population while retaining pfn_to_zone() for early boot. This allows the
+> same path to support both early boot mappings and Device DAX.
+> 
+> The backing PFN supplied by the Device DAX-specific population path is no
+> longer used, allowing the redundant lookup and population code to be
+> removed later.
+> 
+> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+> ---
+> v2:
+> - Expand comments around slab initialization to explain zone lookup and
+>    page refcounting (suggested by Qi Zheng)
+> ---
+>   mm/sparse-vmemmap.c | 56 +++++++++++++++++++++++++--------------------
+>   1 file changed, 31 insertions(+), 25 deletions(-)
 
-So while doing my slides, I realised that what we need to avoid doing
-is (a) sleeping while holding the mmap_lock (b) returning RETRY while
-holding the VMA lock
+Acked-by: Qi Zheng <qi.zheng@linux.dev>
 
-And that turns out to be as simple as this patch:
+Thanks,
+Qi
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index dd09c438fa23..94ed2333f8d8 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -723,6 +723,8 @@ enum {
-  */
- static inline bool fault_flag_allow_retry_first(enum fault_flag flags)
- {
-+	if (flags & FAULT_FLAG_VMA_LOCK)
-+		return false;
- 	return (flags & FAULT_FLAG_ALLOW_RETRY) &&
- 	    (!(flags & FAULT_FLAG_TRIED));
- }
 
-OK, this is a hack.  The function is spectacularly badly named, and
-needs to be renamed before a patch can go upstream.  But this should
-fix the contention on mmap_lock.
 
-Could somebody try it?  I've verified it boots and runs some userspace
-fine, but I don't have the workload to test the contention.
 
