@@ -1,76 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-28387-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28388-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C169C9833F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2026 10:45:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65C43C9833F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2026 10:45:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4htdHK4J3hz3bQl;
-	Mon, 28 Sep 2026 20:45:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:3b::2b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790592301;
-	cv=none; b=eR/b4f9ZlMmhflQ/EJ1RgMmWTbQLOmvLAB4L0LIe+RLLzKCD7IKTEZxcS2mhmOXhzXFMFGaKgvnWlyA3hSxnyGsKk+sf5SXWr2n8trDExUCRWkSfz2tBXr8tge8m59S5cMGgdwpTJBQxqo57hzZsMsnvgNCsMF3cUL5mfYj8spc1VAYpI2mkBWdan4GqLtPruve4mWr1r/sJBswaXSz2XGIo1hh6yfNfCBJev5oJpW7mzBhOZSAouIht9VpTSWjNoXJDjj45zBpi3ojdoPcLfZTfYUhDb2MFD3XzBnZW3t9MURDiAfyPNszBs2ynEnIVSkCFjLxDWWuZx+4PiLZnIQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4htdHQ4xTjz2yb9;
+	Mon, 28 Sep 2026 20:45:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:39::f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790592306;
+	cv=none; b=IZ9v4/AO04q64xo3GqyXTMlqo1bMoIZNkDs07/A3AFjm/J9T2tPH1GVEhyizSbMYVTUR21nqU0ciAZeW3KbkEbsQRZ2/KMLb/1KhO0fONc4nRuQjFVr5bXGh2RDVgTVwIj8zE468oZkVeq71gCrs6FpVW4IAcTZ6Q3Bo3v7NFxjqcqX1LJQjEKoxR45Brhqnf17X0x/e7EjGmyUz7Q4Wck+oUyI3+g/85E8tfeYAkx/R5ovHNJjYB8tMe4Fk5SiDEn/lVdBXNpDZ4up0yKgHadRR169uzR4Vio3CkKrXkBkeXvd3wRQY57nAhr0kd2P/aIjjdyF8NX3MM8av959Pzw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790592301; c=relaxed/relaxed;
-	bh=1fHiW/q9wws193uauriObWBGAQjMBTx9YeqyoW+PZx4=;
+	t=1790592306; c=relaxed/relaxed;
+	bh=6nhZd7N235luHnJfPOH6Xak26dN5Lj4klTBss1fGrjg=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=mM66UlqqrUiFQZ8386Oml8r0C/AG6vHDExLcGwSr+tpEA9niwluNcoKOBtP5hKwxKr1Muc7rmMCeWN4AKPVwA4RRf3LxvcOtkbkL459FZvG+z3N2EB9NpiYV2XjJ8RuP2X0QykbAt0yCVyKBsHJEzuB9AaRHU5L5rqS2sTw4w5CtiP3Y+ipJsgIF08EtZUQf9obyXdnrjnLkXxyse4jDfNhJrd7Gz5cd2DDI56cY7tCbrWzsVXNJMXEfSdyBkP7u2aUgWrtXcShUlTm0p8ym8IP0A82xWnHUQDL3VtqbFTGkm1CKf/ROlvAtMHtDjQ3KTkkkyXNfIY0BJFSmQuuBNA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=iIpztl2t; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:3b::2b; helo=mail-pz2-x2b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=XTr3DmwaqdZplz4RRqm26YHYjVTIl7pKl+WuQaokuu6jK1z+UNJ+gIrJeQaOKX1+u7Zif2xc0ge6ITg2bNbx0AZrznxUmXklLM7HS67k2TL/I/s01kOtYb5qYBW7QiqSxk26651BKrY1Jng65Dvac1npjB/ifAkr+bcIh0uZpwMwbK5b1kmML9duBPyYFCuyQKOzdNPicno94eqlfM5AhUG/f3QWdYn56eMD4Dv0M38h35TmZjDwaYQ1uBEqeTXAl/XbdHuhP8SqQxfumf83ngGSuLHmPEKYUhj7NrOewHE+NDovMMjRrdXncGupDeKZQxSOXfKrLY9doV9zZRybOA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=jvoxdO3O; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::f; helo=mail-pj2-x0f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=iIpztl2t;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=jvoxdO3O;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:3b::2b; helo=mail-pz2-x2b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pz2-x2b.google.com (mail-pz2-x2b.google.com [IPv6:2607:f8b0:4864:3b::2b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:39::f; helo=mail-pj2-x0f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj2-x0f.google.com (mail-pj2-x0f.google.com [IPv6:2607:f8b0:4864:39::f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4htdHK0FdYz30W5
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 20:45:01 +1000 (AEST)
-Received: by mail-pz2-x2b.google.com with SMTP id 41be03b00d2f7-cc7979d1dadso1280279a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 03:45:00 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4htdHP6smjz2yMK
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 20:45:05 +1000 (AEST)
+Received: by mail-pj2-x0f.google.com with SMTP id 98e67ed59e1d1-396ccd4f99dso1852649a91.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 03:45:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790592299; x=1791197099; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1790592303; x=1791197103; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=1fHiW/q9wws193uauriObWBGAQjMBTx9YeqyoW+PZx4=;
-        b=iIpztl2tasGnDu+zxBEH/pLJYVPvDhQyjD3k9qbgBziR/xJ92e7GZafY6y6RTkjkC8
-         1qb+yf/apyK4WuCHzaBAZVwGjdzmi1x9Kwbk/4vwQdmEK6EWShXz/J99EiEqhQZsnwGq
-         Tr4v2BcYwUjIBEjQBVqZzNo0Lq9O/k/JFaXgKRxNhhVkzB7bR4dzwDYoekuIvi1QK8hU
-         mSID1ulgaGObV/KM+uEkKY4sivmCd0i/eqTuT4b7XGAdwRPl3pqpsfh3s1qT6163Iqdl
-         WGbodIU7LwIERV2+ltfCgRT7plBVA8nZLKgasoI49l24u/hcyNWqjvvluNZOQoVMZKxr
-         fC1w==
+        bh=6nhZd7N235luHnJfPOH6Xak26dN5Lj4klTBss1fGrjg=;
+        b=jvoxdO3OTfeOjIJD3dWuFtFF4dnzEdhGT9ZEN1KomNmlpL1Kpc3HF3hhW3FZycv8XM
+         BCcmAG+LAva/hMDFWhX3Zz/wLVPRPC0cCdfEze3VL5LCotzd/ecAxBvjgEXAYyEpTNCL
+         9K9czlG8KeHkxieKHxZPNyScibbSesPt7dDpnXsGQupfbAzSdMHIsJH91MsmKGSNxl2H
+         zP9e3ItVxfVuLi/yAh1qIuXUDrzLedWpvYut8oBilMeJv0AdZ81XKab+xD2Y7X+oR7Qx
+         qgYu934r5NOnSrhdxo4qAbn5M5hDqaC73Gu/8cYQCbVVgFjMyVVPU/cReKvuv0LXAPYe
+         EDKA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790592299; x=1791197099;
+        d=1e100.net; s=20260707; t=1790592303; x=1791197103;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=1fHiW/q9wws193uauriObWBGAQjMBTx9YeqyoW+PZx4=;
-        b=bsRK+GAKj6Z9KMxy1Bpb7Z8LsmAUw6JVIR4mt5pyTvc9vuaIVT0CyQ5Hwk1s8spFlM
-         A+eE5iov2NISAOu+G646Yr2Js1L3BEqJeKSvzF+mKOMbX6X7aZ+4nMshSVewMw5EHBq3
-         YYLeY3qcRwAW4afheTJQwbv4uQ7wE+qhqQhg+762TZeMROZ71gHSdLmtA3ctI0Ucs7nR
-         Bhk4N0ILpmEOef7O6ZGMgT9RQRI2Gb1/j0XuhEG6AylfeEJ/3wXhg7qXVySTDH9T6MVS
-         PWfy5gSOh5Q18icsXhbRVZjgV9Oe2l2frzL1C54hkJXfGoIOqxi5CqpyMM+1DVKzMtUB
-         NdvQ==
-X-Gm-Message-State: AFq9FYL07TAaaRz68h9TWu6yZrWbY5FRDYKrEQuzCJMNpe0mjaiI62oz
-	VoPyx/36eVfOwxDnVUnkDphdzFuPdbRhJGf8r9Nn2uCq6LwJaavVtMKPkea2WYoC
-X-Gm-Gg: AYBFou14ryBbzSFVTFauo/ZsfW3YpO35fyPkXWurMe5nC+v8pmhrWRIhRwFK/Omzgw6
-	K2kcVLBXOjPOYWdgxr5FrFFEzg9FpZIS+9suO4qbTygL+F1UzwB8XEibYRz20sNKjK9m9NlJIQP
-	3pEqXWOJlQLBl96vwcLZIOLgr6qLFkPnFdB9p2o76daV6rlJy9sDTDljEgzz1zwxKfD0dZUwnvJ
-	xpzVsaxwyI1Uu+8ygANPsK2rFCifm0DLDLx2qJlRPKIq2oMaXk2bjwhmPiIxADJw07CzSBmdks0
-	7ZHR3lttt7NIyZ7e636+E3LqivYvLeRI0DnWY6UrfpdwKyaiLKQKyOCB5UJpk9nklGI9R8TTQW9
-	hvY8T3s0Ug/LcDn+n7UpcU4TK50pRcnt7EvhQ/WWG4hMNgPyGrwdKmwTPEfBcWF+pw3FPtQfAB5
-	Zwj/HEBMnbTRtf6kA3+yRAb8yyjpaRbzTMIGyCJnCHI/Ki42UshAT46/VJabIPd/y5yoav8CzgC
-	f4OxitVHCTMSCUhzmaiSj4q1XUoRJnBTY5L0wk3t87ozpW8u6BsynJAl1Lh
-X-Received: by 2002:a17:90b:17d1:b0:3a2:b4a6:929b with SMTP id 98e67ed59e1d1-3a2b4a694famr2547138a91.17.1790592299289;
-        Mon, 28 Sep 2026 03:44:59 -0700 (PDT)
+        bh=6nhZd7N235luHnJfPOH6Xak26dN5Lj4klTBss1fGrjg=;
+        b=S7JTNsuH1Yted0ILVVZDr8/EcRb5emTwbH5BrWdyV7gARCNRXrX5cu64OGOfUY4dyF
+         Mh+nYUbwysBV7OUq0NHorxRxhg/VIH7V3tGsgdVhVA65PELSktDRnEwLAhj2mIsQ/k1t
+         WWmnYM/W90BJd7S/0zloF1JTzRJSocc13Hm1Werl86uH3lBzgt3n6j3HmGZoYgmL3bbT
+         A23tDDdl/z8Zi+5Zli5tYfeEXUU+D06Ix+6CAzL0AudOFs9Os6TW2UTJpa8+9SBrErau
+         kYgzYY7iNVj4POq/NQhqThLS9Xn6yeVEkeB9AY5rlUn9yXNOHLui6SpxCtdiirpgQgZK
+         4gqw==
+X-Gm-Message-State: AFq9FYLdRw4kh74x5KbFzit+26IsuhRJiTw72ZMCHXiy3IU4ex1dtBDH
+	N5vy03dIvnUZcI2poAvj3ulSDuGpO/pTdnQVBZG1pvOxrnSPBk14CAePjr73xYeX
+X-Gm-Gg: AYBFou1P/R+vWmXIwAcgWrqkEN99aZF3R7WPnB4peeOsgJR1pIIxmOdnrGtnBVfG5SB
+	GcYIOdiQKvgni5iWXyMwSzDxq7DF4Exi2AkgSYuMXmogQ9WNk8+DTwy+q9rb3Vz/gfSBYBZFc1M
+	o6QPYO6taFQeraWAxJaW1TA3G/PNmI0wQMJz1TPqw0M3dvC3jbNZF/hFJQ+IwGrv6IKUpydL1R9
+	16VzMFPDwWoK0EWgQbRjq6mcn2VejbhHfJCZBuINoKVrHJuS4+a2XuDhZVO+leuHFJFrjoT9vBN
+	hN7qkaO6FmLsuhvzatrGwpYBc6wYrF20x69SfJRvUXmtBp0AqBYnLgJgLP1KR9PwimTZBWuPe35
+	/nZACBiY7LED12OFbPuqm14v+g84b6wWNTQJpRsNm6xglj9Ms2T9PX5NvvyjLOcUy5dOELbZ8gQ
+	IB3NpVIlp+NarnHTx7B3p6EqTpwurkrY9NFLdLQ2u+VwvF0KVNCYH054Pzrskkam2CDeMgEpRfQ
+	p/bJFwCPFFF0h90MdwbwWQdPL3nv+68p9UlEZX1WtnlLYPaXi7bDUrdcI8J
+X-Received: by 2002:a17:90a:e7c6:b0:39e:2f57:67c7 with SMTP id 98e67ed59e1d1-3a098d45c0dmr11577243a91.3.1790592303327;
+        Mon, 28 Sep 2026 03:45:03 -0700 (PDT)
 Received: from pve-server.rlab ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a0976c8f8dsm27071975a91.12.2026.09.28.03.44.55
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a0976c8f8dsm27071975a91.12.2026.09.28.03.44.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 28 Sep 2026 03:44:58 -0700 (PDT)
+        Mon, 28 Sep 2026 03:45:02 -0700 (PDT)
 From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -81,9 +81,9 @@ Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Marco Elver <elver@google.com>,
 	linux-kernel@vger.kernel.org,
 	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [RFC 2/6] powerpc/mm/book3s64: Rework tlbie() to remove conditional locking
-Date: Mon, 28 Sep 2026 16:14:32 +0530
-Message-Id: <382c79e2386e6a26044d813eea9c47df000d65cf.1790590014.git.ritesh.list@gmail.com>
+Subject: [RFC 3/6] powerpc/mm/book3s64: Rework native_flush_hash_range() to remove conditional locking
+Date: Mon, 28 Sep 2026 16:14:33 +0530
+Message-Id: <6e1255f9927b2714a5f18c15971a70791b26b068.1790590014.git.ritesh.list@gmail.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <cover.1790590014.git.ritesh.list@gmail.com>
 References: <cover.1790590014.git.ritesh.list@gmail.com>
@@ -103,75 +103,128 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
 Clang's context analysis reports:
- hash_native.c:235:2: error: raw_spinlock 'native_tlbie_lock' is not held on every path through here [-Werror,-Wthread-safety-analysis]
- hash_native.c:245:3: error: releasing raw_spinlock 'native_tlbie_lock' that was not held [-Werror,-Wthread-safety-analysis]
+ hash_native.c:851:2: error: raw_spinlock 'native_tlbie_lock' is not held on every path through here [-Werror,-Wthread-safety-analysis]
+ hash_native.c:868:3: error: releasing raw_spinlock 'native_tlbie_lock' that was not held [-Werror,-Wthread-safety-analysis]
 
-This patch reworks the tlbie() function to remove the conditional
-locking. It fixes the clang context analysis reported errors. However,
-this also simplifies the code around tlbie[l] - which is also a win.
+This patch reworks the native_flush_hash_range() function to remove the
+conditional locking. It fixes the clang context analysis reported
+errors. However, this also simplifies the code in native_flush_hash_range()
+due to various if conditions.
 
 No functional change intended.
 
 Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 ---
- arch/powerpc/mm/book3s64/hash_native.c | 34 ++++++++++++++++++--------
- 1 file changed, 24 insertions(+), 10 deletions(-)
+ arch/powerpc/mm/book3s64/hash_native.c | 88 ++++++++++++++++----------
+ 1 file changed, 54 insertions(+), 34 deletions(-)
 
 diff --git a/arch/powerpc/mm/book3s64/hash_native.c b/arch/powerpc/mm/book3s64/hash_native.c
-index ab2a80e59011..6bad0545b57a 100644
+index 6bad0545b57a..9b4eea35b540 100644
 --- a/arch/powerpc/mm/book3s64/hash_native.c
 +++ b/arch/powerpc/mm/book3s64/hash_native.c
-@@ -222,6 +222,23 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
- 
+@@ -792,6 +792,54 @@ static notrace void native_hpte_clear(void)
+ 	asm volatile("eieio; tlbsync; ptesync":::"memory");
  }
  
-+static inline void __tlbie_sequence(unsigned long vpn, int psize, int apsize,
-+				    int ssize)
++static void native_flush_hash_range_tlbiel(struct ppc64_tlb_batch *batch,
++					   unsigned long number)
 +{
-+	asm volatile("ptesync": : :"memory");
-+	__tlbie(vpn, psize, apsize, ssize);
-+	fixup_tlbie_vpn(vpn, psize, apsize, ssize);
-+	asm volatile("eieio; tlbsync; ptesync": : :"memory");
-+}
++	unsigned long vpn = 0, index, shift;
++	real_pte_t pte;
++	unsigned long psize = batch->psize;
++	int ssize = batch->ssize;
++	unsigned long i;
 +
-+static inline void __tlbiel_sequence(unsigned long vpn, int psize, int apsize,
-+				     int ssize)
-+{
-+	asm volatile("ptesync": : :"memory");
-+	__tlbiel(vpn, psize, apsize, ssize);
++	asm volatile("ptesync":::"memory");
++	for (i = 0; i < number; i++) {
++		vpn = batch->vpn[i];
++		pte = batch->pte[i];
++
++		pte_iterate_hashed_subpages(pte, psize,
++					    vpn, index, shift) {
++			__tlbiel(vpn, psize, psize, ssize);
++		} pte_iterate_hashed_end();
++	}
 +	ppc_after_tlbiel_barrier();
 +}
 +
- static inline void tlbie(unsigned long vpn, int psize, int apsize,
- 			 int ssize, int local)
- {
-@@ -230,19 +247,16 @@ static inline void tlbie(unsigned long vpn, int psize, int apsize,
- 
- 	if (use_local)
- 		use_local = mmu_psize_defs[psize].tlbiel;
--	if (lock_tlbie && !use_local)
--		raw_spin_lock(&native_tlbie_lock);
--	asm volatile("ptesync": : :"memory");
++static void native_flush_hash_range_tlbie(struct ppc64_tlb_batch *batch,
++					  unsigned long number)
++{
++	unsigned long vpn = 0, index, shift;
++	real_pte_t pte;
++	unsigned long psize = batch->psize;
++	int ssize = batch->ssize;
++	unsigned long i;
 +
- 	if (use_local) {
--		__tlbiel(vpn, psize, apsize, ssize);
++	asm volatile("ptesync":::"memory");
++	for (i = 0; i < number; i++) {
++		vpn = batch->vpn[i];
++		pte = batch->pte[i];
++
++		pte_iterate_hashed_subpages(pte, psize,
++					    vpn, index, shift) {
++			__tlbie(vpn, psize, psize, ssize);
++		} pte_iterate_hashed_end();
++	}
++	/*
++	 * Just do one more with the last used values.
++	 */
++	fixup_tlbie_vpn(vpn, psize, psize, ssize);
++	asm volatile("eieio; tlbsync; ptesync":::"memory");
++}
++
+ /*
+  * Batched hash table flush, we batch the tlbie's to avoid taking/releasing
+  * the lock all the time
+@@ -845,41 +893,13 @@ static void native_flush_hash_range(unsigned long number, int local)
+ 
+ 	if (mmu_has_feature(MMU_FTR_TLBIEL) &&
+ 	    mmu_psize_defs[psize].tlbiel && local) {
+-		asm volatile("ptesync":::"memory");
+-		for (i = 0; i < number; i++) {
+-			vpn = batch->vpn[i];
+-			pte = batch->pte[i];
+-
+-			pte_iterate_hashed_subpages(pte, psize,
+-						    vpn, index, shift) {
+-				__tlbiel(vpn, psize, psize, ssize);
+-			} pte_iterate_hashed_end();
+-		}
 -		ppc_after_tlbiel_barrier();
-+		__tlbiel_sequence(vpn, psize, apsize, ssize);
-+	} else if (lock_tlbie) {
++		native_flush_hash_range_tlbiel(batch, number);
++	} else if (!mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE)) {
 +		raw_spin_lock(&native_tlbie_lock);
-+		__tlbie_sequence(vpn, psize, apsize, ssize);
++		native_flush_hash_range_tlbie(batch, number);
 +		raw_spin_unlock(&native_tlbie_lock);
  	} else {
--		__tlbie(vpn, psize, apsize, ssize);
--		fixup_tlbie_vpn(vpn, psize, apsize, ssize);
--		asm volatile("eieio; tlbsync; ptesync": : :"memory");
-+		__tlbie_sequence(vpn, psize, apsize, ssize);
+-		int lock_tlbie = !mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE);
+-
+-		if (lock_tlbie)
+-			raw_spin_lock(&native_tlbie_lock);
+-
+-		asm volatile("ptesync":::"memory");
+-		for (i = 0; i < number; i++) {
+-			vpn = batch->vpn[i];
+-			pte = batch->pte[i];
+-
+-			pte_iterate_hashed_subpages(pte, psize,
+-						    vpn, index, shift) {
+-				__tlbie(vpn, psize, psize, ssize);
+-			} pte_iterate_hashed_end();
+-		}
+-		/*
+-		 * Just do one more with the last used values.
+-		 */
+-		fixup_tlbie_vpn(vpn, psize, psize, ssize);
+-		asm volatile("eieio; tlbsync; ptesync":::"memory");
+-
+-		if (lock_tlbie)
+-			raw_spin_unlock(&native_tlbie_lock);
++		native_flush_hash_range_tlbie(batch, number);
  	}
--	if (lock_tlbie && !use_local)
--		raw_spin_unlock(&native_tlbie_lock);
- }
  
- static inline void native_lock_hpte(struct hash_pte *hptep)
+ 	local_irq_restore(flags);
 -- 
 2.39.5
 
