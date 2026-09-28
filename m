@@ -1,54 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-28412-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28413-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35F74C9833F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2026 13:52:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FC7ECA5FA2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2026 14:04:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4htjRN47dzz2ySj;
-	Mon, 28 Sep 2026 23:52:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790603536;
-	cv=none; b=gHW2DjOFIjbaA/eqXPHEvzZI7PdPbV6Oaxo2WAy62P/ZbBHVask3v0J760sWDow2sSrm+mmKo7vKXnzJDNBqXVQqlYipzaf6vDvOaU0LiTRCfjTazDnvtgmNHp6OrTY73jICl0qj0xe23mes+Ul/Afw96/R5w3fb+m4eT09HmHIkFqAVGyL5GYCyizTKzsZJ2NyL5E9XmZ6cqEUcXZoskv0vSapn8eqBohy6L4cVb3oKOr5irD6f117R+Lg0dApgDLNqMuGygErlYzWdGGUfIluni5PRHMCvW2Ra38haGkoleo0ggyBiKyCcnWVmCjJviyodBPqseZx8U29oZaXcEQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4htjjb2CYSz2yCL;
+	Tue, 29 Sep 2026 00:04:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.11
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790604275;
+	cv=none; b=QMU57kMLl8Z0cmEsihZrig6u/mMs/oJAKg+xmo5T35pRKytjIWwhtz6hQ7qefm4E/iGaineqSiBBC7q76ALDH1YWWwVJNdZS/iit5+pfsr+zmmaW7JFVTSOBzN+p4+YwzX2rtxHeTZPXRfC/TAIyxW/0rngRvpG3YgSnbOu8NbVx4rBs+97BYBGvYcJUS5jU3YvCQnasvuhkMizuLzIdJGRlqNWKhrG1danJBxYMvWBSErSSaX8/GeZRjcU4I4zhwndS0tf46QmpkGg/cRjbUkdWk/juIKRsZBfCoirW1r03MBk7p9N2dxd000UiEJO/OdoftIUEHdphJCkk6rm1Bw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790603536; c=relaxed/relaxed;
-	bh=Z52OkaRAg07yjBmXAQobS8oBtxHY+dwSeYbzec7iQEk=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=iot0oUR9L990ERwke7UTsfM5rt4txv8OTGHHl/ZTJjeOXygPbbdvuzlSSgShIRqRlJDzwvSuhO3XNN3WJvVH3fnyvj/xIR0AiJWYrZrIst9LEtl6sOBg7HcVFS+2Ot5ONgcRu/odtDXNduTWijAikRycczxK3k0bAs7YgtJKDzgHXGf7Og9/OuyMZXCiInZyLVODPsrBiiePxBJtXkBYfhjDR22pmZ1UNdhsx7y7jaByxKwonrsVIyE3OWiEQY5S722u7t6sngmmKQwbl93q6Wl70qoBzouKkDi/FPCob8zdekF5kTAoDDGzHa1LkHKdZQ7nk7+wPvB5MJ+hwOJE9g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iqR41t8X; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+vjardin.free.fr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1790604275; c=relaxed/relaxed;
+	bh=yMPWpUD7arT25XYnDYE+j4USf6ZnBjfA/ulK+5UimqA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=bw7YLayotbr4oYCDcD2RTzwxkZrwMduEiV9k52thlnQUPrDxn6cQj5QwIRzi4hIR3xDvA7ES4rhVXdOJIJMWbXUCyKiLGKeuaOhjAUF3MV4j0hY4ylqnY4pWo1SNudZgQIPvPXzjt6OTOt42INGIc73a8a0Byil7/dR0YlODZ7HEw9i4aaF8Srl4idi9Wm4oRqIjVjwIy0o94KAaJpkjOSCASzK+YrCIM2nNyEK62B+sxSLzjcGXqmyDZFm4ubJW6ZkAf9tVZmEoGiYUy52XUiId/I9OrrhWmJy7FNHJayipbh3LV1GylkdHk6vzuptSctoVyRdent6hJT4KFlj8hw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=DH+5aCbj; dkim-atps=neutral; spf=pass (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=dave.hansen@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iqR41t8X;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=DH+5aCbj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+vjardin.free.fr@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=dave.hansen@intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 64 seconds by postgrey-1.37 at boromir; Tue, 29 Sep 2026 00:04:32 AEST
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4htjRM546Mz2y2B
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 23:52:15 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id AE19F600CB;
-	Mon, 28 Sep 2026 13:52:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 58003C4AF0B;
-	Mon, 28 Sep 2026 13:52:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1790603533;
-	bh=nsztS+SgTPSoQ/D1lsoAMNzlVg+6MEAWElX7J48YQgQ=;
-	h=From:Date:Subject:To:Cc:Reply-To:From;
-	b=iqR41t8X+UZJqymu3xI5mosI0EMV6OSpwz0emDBUfnGt6+FStmMAjSTd2JVWm6IkB
-	 wYniSMWRRno+rNYRNyLgA10rOI3qZg5xm0/NBGURM7G8tGbO8s8sTW7Kj6l+giGybY
-	 l4fCt4gLoqhoR26PCKK8oZljmIwmzRGwMI1XVZWs/6S7dfMkinDQ/EBg8n9riEJkHs
-	 Uu2bKMVGGjHIcc8WhRqpKatXBGO6uk/eKuJZM8sy/zhaAeb7lklypDgj4ZlypDAni2
-	 aX3frHq47AmWf6p6yQ71SQAHeoNmCbESKpg4nVkGeYSG7kmRAm1m/mtzz3PeBkbbf8
-	 wErVA4o3EV0xQ==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34F64CA5FA5;
-	Mon, 28 Sep 2026 13:52:13 +0000 (UTC)
-From: Vincent Jardin via B4 Relay <devnull+vjardin.free.fr@kernel.org>
-Date: Mon, 28 Sep 2026 15:52:07 +0200
-Subject: [PATCH] bus: fsl-mc: drop the fwnode links of the dpmacs nodes
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4htjjX1K4cz2y2B
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2026 00:04:31 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1790604273; x=1822140273;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=yMPWpUD7arT25XYnDYE+j4USf6ZnBjfA/ulK+5UimqA=;
+  b=DH+5aCbjkIftTTkkhThQ2KnL4luD6h72daWLDCmqmj5Sb7E/zHu5E2Wl
+   HADZQvL06hgbav+V1NmkfQRILusRM0GT7WUNBzgREeHAi/DfsbM8Gsxa2
+   Bb9HHg+Hf/IW1lIqxpPgW9us1QRfb4+nXeeH3iqZqNH4yKV4uXlld1RHK
+   nzs0LLKpGS+KKF3HUieIyyMQFS6cco5tCG2jD7e759VVbSnARMBRhoq+U
+   Wdn8xIKlpGCtyVYH39a33zOzg+4Ov+0aso4OEdKYVSaqgMvpQmsYVJnAk
+   Qxz6vvKMjXSafPdQbkessEiVrPe/7icJtx1kHQ+lHenVmHsCNGu0mSico
+   Q==;
+X-CSE-ConnectionGUID: C8YBOJCfR0KN/lqS6Cs3ug==
+X-CSE-MsgGUID: +A3NVbfyTKe37yv3/CgmTw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11919"; a="100636302"
+X-IronPort-AV: E=Sophos;i="6.27,128,1787036400"; 
+   d="scan'208";a="100636302"
+Received: from orviesa004.jf.intel.com ([10.64.159.144])
+  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Sep 2026 07:03:18 -0700
+X-CSE-ConnectionGUID: eVBrKQ8UQpqijyDkI/GEnQ==
+X-CSE-MsgGUID: gpU7j+n1TIym1oNbgGxShQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,128,1787036400"; 
+   d="scan'208";a="278419916"
+Received: from schen9-mobl4.amr.corp.intel.com (HELO [10.125.111.49]) ([10.125.111.49])
+  by orviesa004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Sep 2026 07:03:17 -0700
+Message-ID: <26827871-65c6-418b-9802-cfd1a5b081ec@intel.com>
+Date: Mon, 28 Sep 2026 07:03:16 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,103 +71,92 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] arch, mm: promote DEBUG_WX to CHECK_WX
+To: "Mike Rapoport (Microsoft)" <rppt@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>
+Cc: Albert Ou <aou@eecs.berkeley.edu>,
+ Alexander Gordeev <agordeev@linux.ibm.com>, Alexandre Ghiti <alex@ghiti.fr>,
+ Borislav Petkov <bp@alien8.de>, Catalin Marinas <catalin.marinas@arm.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ David Hildenbrand <david@kernel.org>,
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ "Liam R. Howlett" <liam@infradead.org>, Lorenzo Stoakes <ljs@kernel.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Mark Rutland <mark.rutland@arm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Michal Hocko <mhocko@suse.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <pjw@kernel.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Ritesh Harjani <ritesh.list@gmail.com>,
+ Russell King <linux@armlinux.org.uk>, Shrikanth Hegde
+ <sshegde@linux.ibm.com>, Suren Baghdasaryan <surenb@google.com>,
+ Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@kernel.org>,
+ Vasily Gorbik <gor@linux.ibm.com>, Vlastimil Babka <vbabka@kernel.org>,
+ Will Deacon <will@kernel.org>, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org
+References: <20260926-direct-map-verify-wx-v2-1-efcd64a6b74a@kernel.org>
+From: Dave Hansen <dave.hansen@intel.com>
+Content-Language: en-US
+Autocrypt: addr=dave.hansen@intel.com; keydata=
+ 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
+In-Reply-To: <20260926-direct-map-verify-wx-v2-1-efcd64a6b74a@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260928-for-upstream-fsl-mc-dpmac-fwnode-links-v1-1-b8976244b38b@free.fr>
-X-B4-Tracking: v=1; b=H4sIAAZxumoC/x3NPQ7CMAxA4atUnrFUPFQpV0EMaeKARfMjmwJS1
- bsTMX7LezsYq7DBZdhB+S0mtXScTwOEhy93RondQCNN40wOU1Xcmr2UfcZkK+aAsWUfMH1KjYy
- rlKfhRLQ49nGZnYcea8pJvv/R9XYcPyxG4uV4AAAA
-To: Ioana Ciornei <ioana.ciornei@nxp.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
- Vincent Jardin <vjardin@free.fr>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1790603532; l=2306;
- i=vjardin@free.fr; s=20260525; h=from:subject:message-id;
- bh=1JT8cCZAXY4kQa0R2Q4UFo1Xst/5Or/QNRjHLJIMOVA=;
- b=6Hz8SIymAGcIVfMH4oZSYHZ103fey0tK7MYzBai9ppIO2uluoOJzO6yewQfRpQBAyxrygqkgz
- TDNOlCcKT5rBaW58LEjaXZdheScWhs3KHGR6mXq1OB7YR9lXMDcdhCt
-X-Developer-Key: i=vjardin@free.fr; a=ed25519;
- pk=hppgLeFpGpKOi7LNwGEZ4jOYofJCoGd4Jf1ltAabiLw=
-X-Endpoint-Received: by B4 Relay for vjardin@free.fr/20260525 with
- auth_id=871
-X-Original-From: Vincent Jardin <vjardin@free.fr>
-Reply-To: vjardin@free.fr
 
-From: Vincent Jardin <vjardin@free.fr>
+On 9/26/26 02:29, Mike Rapoport (Microsoft) wrote:
+...
+> With this, make generic CHECK_WX default to STRICT_KERNEL_RWX while
+> still leaving users targeting small kernels the possibility to opt-out.
 
-A DPMAC node under dpmacs/ is never the fwnode of any device:
-  the fsl-mc bus creates dpmac.N objects without one,
-  then dpaa2-mac finds its node in dpmacs/ at connect time.
+Thanks for doing this, Mike. I do still think this makes a lot of sense
+to have as a default:
 
-fw_devlink therefore attaches the supplier links of those nodes (phys, ...)
-to the nearest ancestor device, the fsl-mc bus, as SYNC_STATE_ONLY proxies.
-
-device_link_add() refuses such a link once the consumer has probed, and
-fw_devlink logs the refusal as an error.
-
-On an LX2160A board with 4x25G DPMACs for which phys = <&serdes_1 N>,
-the Serdes PHY binds after the bus and then at every boot it shows:
-
-  fsl_mc_bus 80c000000.fsl-mc: Failed to create device link (0x180) with supplier 1ea0000.phy for /soc/fsl-mc@80c000000/dpmacs/ethernet@3
-
-once per port!
-
-Signed-off-by: Vincent Jardin <vjardin@free.fr>
----
- drivers/bus/fsl-mc/fsl-mc-bus.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
-
-diff --git a/drivers/bus/fsl-mc/fsl-mc-bus.c b/drivers/bus/fsl-mc/fsl-mc-bus.c
-index 5878eafd8d44..0c37b6780c84 100644
---- a/drivers/bus/fsl-mc/fsl-mc-bus.c
-+++ b/drivers/bus/fsl-mc/fsl-mc-bus.c
-@@ -11,6 +11,7 @@
- #define pr_fmt(fmt) "fsl-mc: " fmt
- 
- #include <linux/module.h>
-+#include <linux/fwnode.h>
- #include <linux/of_device.h>
- #include <linux/of_address.h>
- #include <linux/ioport.h>
-@@ -1033,6 +1034,20 @@ static int fsl_mc_firmware_check(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static void fsl_mc_purge_dpmac_fwnode_links(struct device *dev)
-+{
-+	struct device_node *dpmacs, *child;
-+
-+	dpmacs = of_get_child_by_name(dev->of_node, "dpmacs");
-+	if (!dpmacs)
-+		return;
-+
-+	for_each_child_of_node(dpmacs, child)
-+		fwnode_links_purge(of_fwnode_handle(child));
-+
-+	of_node_put(dpmacs);
-+}
-+
- /*
-  * fsl_mc_bus_probe - callback invoked when the root MC bus is being
-  * added
-@@ -1134,6 +1149,8 @@ static int fsl_mc_bus_probe(struct platform_device *pdev)
- 						&mc->num_translation_ranges);
- 		if (error < 0)
- 			goto error_cleanup_mc_io;
-+
-+		fsl_mc_purge_dpmac_fwnode_links(&pdev->dev);
- 	}
- 
- 	error = dprc_get_container_id(mc_io, 0, &container_id);
-
----
-base-commit: 7b3b0598c00e67f2df85d0b4cd99eaa3be6c9bfd
-change-id: 20260928-for-upstream-fsl-mc-dpmac-fwnode-links-622b8eadb98a
-
-Best regards,
--- 
-Vincent Jardin <vjardin@free.fr>
+Acked-by: Dave Hansen <dave.hansen@linux.intel.com>
 
 
 
