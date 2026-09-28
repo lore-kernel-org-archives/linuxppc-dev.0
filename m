@@ -1,76 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-28386-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28387-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 768FAC9833F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2026 10:45:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C169C9833F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2026 10:45:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4htdHG6m3Zz2xmh;
-	Mon, 28 Sep 2026 20:44:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:39::2b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790592298;
-	cv=none; b=L2DZt+/U4bHYniKCu2rXhmG4gJS6kniQwau4ekWyMatp3gBiqSL/TeO0TelB8TcaGSeGzIouIHQ93UjqSXpl6exS4SGTDc9WAvtKq5E6T/XtaVsdKE4Qz8e/Rukju8e+2PhfnjbKhj1KzinhYZ6KrWJpvd+8mw2u1IgO5r3G6drqZHzecNONV3lrQRvaIHKkt4GJ4HCI0XxliJ2P4fXtL/xWn2WFCZ96D2h2vUIesUvS9nB0VeHuB4sTLeAb6U3OBTf5aipcNiu5SuEVkaC+/eu1vpFzprTahNCFb+X3QCj81T65DgoHE8oEsaKJDTODzyO/ZRxxrkqeNbRwB174UA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4htdHK4J3hz3bQl;
+	Mon, 28 Sep 2026 20:45:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:3b::2b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790592301;
+	cv=none; b=eR/b4f9ZlMmhflQ/EJ1RgMmWTbQLOmvLAB4L0LIe+RLLzKCD7IKTEZxcS2mhmOXhzXFMFGaKgvnWlyA3hSxnyGsKk+sf5SXWr2n8trDExUCRWkSfz2tBXr8tge8m59S5cMGgdwpTJBQxqo57hzZsMsnvgNCsMF3cUL5mfYj8spc1VAYpI2mkBWdan4GqLtPruve4mWr1r/sJBswaXSz2XGIo1hh6yfNfCBJev5oJpW7mzBhOZSAouIht9VpTSWjNoXJDjj45zBpi3ojdoPcLfZTfYUhDb2MFD3XzBnZW3t9MURDiAfyPNszBs2ynEnIVSkCFjLxDWWuZx+4PiLZnIQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790592298; c=relaxed/relaxed;
-	bh=VXrsxqEkO2pMgqNAsSSYfKdxs+2sCp96RSLMIL+tOrE=;
+	t=1790592301; c=relaxed/relaxed;
+	bh=1fHiW/q9wws193uauriObWBGAQjMBTx9YeqyoW+PZx4=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=fcLoXvpbwa36fJltF8JIHnb64iYCwHgKIXuuSTz23Mlu752YemS9VZ9UPtaarKxRo1r6pLsWkgQaHAhGrn+noU6Qw8xAXG5nueB7bKX69tstzMDVDV+dPgWOkDGZx2Mrzv8BSuDw8JyVCwYYN/R9YKkaAGzwzKYB3Kl8Q05klbruHx/GOXunrUTzFcU/cdR1NGxXCvXVF9Quiv2PbDfv5Q7hD/ee+sZqImO4xGtn/NmqcmxVp6hziJ5dKTrKPkWH2klxz1EP2OTHvvqaqTilFZygIwnfcVAsYvTUiyQAq91D+1IBtqg34zDigqdc5unN+jj+7JO4+eFq6geCy9nKQw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=oXyTCyYH; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::2b; helo=mail-pj2-x2b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=mM66UlqqrUiFQZ8386Oml8r0C/AG6vHDExLcGwSr+tpEA9niwluNcoKOBtP5hKwxKr1Muc7rmMCeWN4AKPVwA4RRf3LxvcOtkbkL459FZvG+z3N2EB9NpiYV2XjJ8RuP2X0QykbAt0yCVyKBsHJEzuB9AaRHU5L5rqS2sTw4w5CtiP3Y+ipJsgIF08EtZUQf9obyXdnrjnLkXxyse4jDfNhJrd7Gz5cd2DDI56cY7tCbrWzsVXNJMXEfSdyBkP7u2aUgWrtXcShUlTm0p8ym8IP0A82xWnHUQDL3VtqbFTGkm1CKf/ROlvAtMHtDjQ3KTkkkyXNfIY0BJFSmQuuBNA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=iIpztl2t; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:3b::2b; helo=mail-pz2-x2b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=oXyTCyYH;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=iIpztl2t;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:39::2b; helo=mail-pj2-x2b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj2-x2b.google.com (mail-pj2-x2b.google.com [IPv6:2607:f8b0:4864:39::2b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:3b::2b; helo=mail-pz2-x2b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pz2-x2b.google.com (mail-pz2-x2b.google.com [IPv6:2607:f8b0:4864:3b::2b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4htdHF6kC7z30W5
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 20:44:57 +1000 (AEST)
-Received: by mail-pj2-x2b.google.com with SMTP id 98e67ed59e1d1-3a47d5764feso230676a91.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 03:44:57 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4htdHK0FdYz30W5
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 20:45:01 +1000 (AEST)
+Received: by mail-pz2-x2b.google.com with SMTP id 41be03b00d2f7-cc7979d1dadso1280279a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 03:45:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790592295; x=1791197095; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1790592299; x=1791197099; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=VXrsxqEkO2pMgqNAsSSYfKdxs+2sCp96RSLMIL+tOrE=;
-        b=oXyTCyYHjrBAHtvczIba163csEjqnTitde9KZ/yzfytKXC6LIRhVoktMmK45uWL9vM
-         CQ1Dil2y2uBBXeA1Yn6NupfrAkC/4Uuz/MN0H9lnGAfeGKmENxj9xDeIhvZgTxAuFxdS
-         THjQ+5l0lw+agxdnvhJeH89laSd60GOBTRmIRB6RIwSdAnQtmmdTTO7C/0s2uwfhSrzo
-         yuWxjonewjthcgRide9SxNK1UOXrBetS8IwoJaFVsr99A5lq0i1holrsJLkE85z8GG+b
-         RjDwzE0r/GWAuP/537STsXuI6l8DKEJLaKBQTnD9MsM1uQktp0vyjlJW5/o/qFqEpmuy
-         ZFnw==
+        bh=1fHiW/q9wws193uauriObWBGAQjMBTx9YeqyoW+PZx4=;
+        b=iIpztl2tasGnDu+zxBEH/pLJYVPvDhQyjD3k9qbgBziR/xJ92e7GZafY6y6RTkjkC8
+         1qb+yf/apyK4WuCHzaBAZVwGjdzmi1x9Kwbk/4vwQdmEK6EWShXz/J99EiEqhQZsnwGq
+         Tr4v2BcYwUjIBEjQBVqZzNo0Lq9O/k/JFaXgKRxNhhVkzB7bR4dzwDYoekuIvi1QK8hU
+         mSID1ulgaGObV/KM+uEkKY4sivmCd0i/eqTuT4b7XGAdwRPl3pqpsfh3s1qT6163Iqdl
+         WGbodIU7LwIERV2+ltfCgRT7plBVA8nZLKgasoI49l24u/hcyNWqjvvluNZOQoVMZKxr
+         fC1w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790592295; x=1791197095;
+        d=1e100.net; s=20260707; t=1790592299; x=1791197099;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=VXrsxqEkO2pMgqNAsSSYfKdxs+2sCp96RSLMIL+tOrE=;
-        b=HI487dYTejqdgleylbpnrBaW8qSm5k4PUsTkmD+wGoGaJWb389BTQ6e+vpUVsKK5Gf
-         LJbEAzug5Vu6oDCYeDktnm1euuAIE9i/vpdIVhV9KsgbhAbEYItXumPp0LYYyJqw63AC
-         j8IgBndAcRJU59yOaDj3SckxVxi+sxLwzuscKHR5a2zsQupSpUk6ccY2dvoCF6kgDmAI
-         VMpitOczZCjvRa8nPm+P4fF8R7b1v7yw1iRfIW1AaV6e6GKLu3tJa70Odyq3IYqjJMi+
-         G8y0scdLBlVq1pSVQIVp/XNCxU5zHfQh8tIrmfNZZpmdD9BQFXbXsr3mNmCJJgadZIdl
-         CgVw==
-X-Gm-Message-State: AFq9FYIk9lfJHSvzvlYS2CvzQ5ZD576B6lhP0PpvhoWIWOkBtpjvbZ5K
-	Ys9IvT0OOwnAj4n7mtsL3m09e2Ubo0g+4/q9MOAMviM8HRpx6+v4RpNGylrkYw9G
-X-Gm-Gg: AYBFou1hTLBEErc1whwgBmfXPUv7nceMW3WtzHIQLQASIoAa3VzlYSsj3Z5HG/FShpE
-	yGh+aEuEjdAPTuT9i15K2XcfjBv/VqcFXPDuNbyKj1zeA5aMhrgTStUMP3U0SPANG2iYXsR030x
-	+WcC/s1Un5eZd8IBbmFzOlqhvEFWBnzM9BGEUKXzkWoYvur9ZXXJFTtDgX3e3xGKNc2/mnOBGOR
-	naiYSRhbC14sO/xmlAorcGqH89k4vvQadTpUP8FOF5thm0SyQ9wmBM5CgrLkgdUeAjN3iCZ/kCd
-	Exx5blfUf2++tMYNWDLFKbX6WXtfrosXBA0V4tWSaM9lyDTyyiKtKSF8gV7E5JkTj4oVJZeO5C5
-	4uNKiAZGuiV4NGqVThgoujyvFtCm6e5Pch98h1VC87rIuhSJxrgsVtEztaMfQfKmQjAIUYXh9Sv
-	pHgXuu8kaIBMPUJoEBqdXUWizZdGPk0MvcDUQtosigE5OAg2QGURN57ezoOgVoWAwLumxzm/m+H
-	7AlI2nDw4fcf7F4ayMNlrFNHxAH0QRKSeXaH2u0NmbzqaD54PnMa4qY9aGr
-X-Received: by 2002:a17:90b:1845:b0:3a0:e8ac:9f7e with SMTP id 98e67ed59e1d1-3a0e8aca8d7mr4580986a91.35.1790592295405;
-        Mon, 28 Sep 2026 03:44:55 -0700 (PDT)
+        bh=1fHiW/q9wws193uauriObWBGAQjMBTx9YeqyoW+PZx4=;
+        b=bsRK+GAKj6Z9KMxy1Bpb7Z8LsmAUw6JVIR4mt5pyTvc9vuaIVT0CyQ5Hwk1s8spFlM
+         A+eE5iov2NISAOu+G646Yr2Js1L3BEqJeKSvzF+mKOMbX6X7aZ+4nMshSVewMw5EHBq3
+         YYLeY3qcRwAW4afheTJQwbv4uQ7wE+qhqQhg+762TZeMROZ71gHSdLmtA3ctI0Ucs7nR
+         Bhk4N0ILpmEOef7O6ZGMgT9RQRI2Gb1/j0XuhEG6AylfeEJ/3wXhg7qXVySTDH9T6MVS
+         PWfy5gSOh5Q18icsXhbRVZjgV9Oe2l2frzL1C54hkJXfGoIOqxi5CqpyMM+1DVKzMtUB
+         NdvQ==
+X-Gm-Message-State: AFq9FYL07TAaaRz68h9TWu6yZrWbY5FRDYKrEQuzCJMNpe0mjaiI62oz
+	VoPyx/36eVfOwxDnVUnkDphdzFuPdbRhJGf8r9Nn2uCq6LwJaavVtMKPkea2WYoC
+X-Gm-Gg: AYBFou14ryBbzSFVTFauo/ZsfW3YpO35fyPkXWurMe5nC+v8pmhrWRIhRwFK/Omzgw6
+	K2kcVLBXOjPOYWdgxr5FrFFEzg9FpZIS+9suO4qbTygL+F1UzwB8XEibYRz20sNKjK9m9NlJIQP
+	3pEqXWOJlQLBl96vwcLZIOLgr6qLFkPnFdB9p2o76daV6rlJy9sDTDljEgzz1zwxKfD0dZUwnvJ
+	xpzVsaxwyI1Uu+8ygANPsK2rFCifm0DLDLx2qJlRPKIq2oMaXk2bjwhmPiIxADJw07CzSBmdks0
+	7ZHR3lttt7NIyZ7e636+E3LqivYvLeRI0DnWY6UrfpdwKyaiLKQKyOCB5UJpk9nklGI9R8TTQW9
+	hvY8T3s0Ug/LcDn+n7UpcU4TK50pRcnt7EvhQ/WWG4hMNgPyGrwdKmwTPEfBcWF+pw3FPtQfAB5
+	Zwj/HEBMnbTRtf6kA3+yRAb8yyjpaRbzTMIGyCJnCHI/Ki42UshAT46/VJabIPd/y5yoav8CzgC
+	f4OxitVHCTMSCUhzmaiSj4q1XUoRJnBTY5L0wk3t87ozpW8u6BsynJAl1Lh
+X-Received: by 2002:a17:90b:17d1:b0:3a2:b4a6:929b with SMTP id 98e67ed59e1d1-3a2b4a694famr2547138a91.17.1790592299289;
+        Mon, 28 Sep 2026 03:44:59 -0700 (PDT)
 Received: from pve-server.rlab ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a0976c8f8dsm27071975a91.12.2026.09.28.03.44.51
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a0976c8f8dsm27071975a91.12.2026.09.28.03.44.55
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 28 Sep 2026 03:44:54 -0700 (PDT)
+        Mon, 28 Sep 2026 03:44:58 -0700 (PDT)
 From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -81,9 +81,9 @@ Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Marco Elver <elver@google.com>,
 	linux-kernel@vger.kernel.org,
 	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [RFC 1/6] powerpc/mm/book3s64: unlock RCU before returning from mm_iommu_is_devmem()
-Date: Mon, 28 Sep 2026 16:14:31 +0530
-Message-Id: <04e4dafde56fe4b055fbd763dc0e119862073c6d.1790590014.git.ritesh.list@gmail.com>
+Subject: [RFC 2/6] powerpc/mm/book3s64: Rework tlbie() to remove conditional locking
+Date: Mon, 28 Sep 2026 16:14:32 +0530
+Message-Id: <382c79e2386e6a26044d813eea9c47df000d65cf.1790590014.git.ritesh.list@gmail.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <cover.1790590014.git.ritesh.list@gmail.com>
 References: <cover.1790590014.git.ritesh.list@gmail.com>
@@ -103,46 +103,75 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
 Clang's context analysis reports:
-  iommu_api.c:380:1: error: __ctx_lock_RCU 'RCU' is not held on every path through here [-Werror,-Wthread-safety-analysis]
+ hash_native.c:235:2: error: raw_spinlock 'native_tlbie_lock' is not held on every path through here [-Werror,-Wthread-safety-analysis]
+ hash_native.c:245:3: error: releasing raw_spinlock 'native_tlbie_lock' that was not held [-Werror,-Wthread-safety-analysis]
 
-mm_iommu_is_devmem() takes the RCU read lock to walk the preregistered
-device-memory list. On a match it returned true from inside the loop and
-skipped rcu_read_unlock(). Hence fix it.
+This patch reworks the tlbie() function to remove the conditional
+locking. It fixes the clang context analysis reported errors. However,
+this also simplifies the code around tlbie[l] - which is also a win.
 
-Fixes: b5952f8125ae ("powerpc/mm/book3s64/iommu: fix some RCU-list locks")
+No functional change intended.
+
 Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 ---
- arch/powerpc/mm/book3s64/iommu_api.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ arch/powerpc/mm/book3s64/hash_native.c | 34 ++++++++++++++++++--------
+ 1 file changed, 24 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/mm/book3s64/iommu_api.c b/arch/powerpc/mm/book3s64/iommu_api.c
-index 60d00c9e7f19..56d9aa6cc8e2 100644
---- a/arch/powerpc/mm/book3s64/iommu_api.c
-+++ b/arch/powerpc/mm/book3s64/iommu_api.c
-@@ -356,6 +356,7 @@ bool mm_iommu_is_devmem(struct mm_struct *mm, unsigned long hpa,
- {
- 	struct mm_iommu_table_group_mem_t *mem;
- 	unsigned long end;
-+	bool ret = false;
+diff --git a/arch/powerpc/mm/book3s64/hash_native.c b/arch/powerpc/mm/book3s64/hash_native.c
+index ab2a80e59011..6bad0545b57a 100644
+--- a/arch/powerpc/mm/book3s64/hash_native.c
++++ b/arch/powerpc/mm/book3s64/hash_native.c
+@@ -222,6 +222,23 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
  
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list, next) {
-@@ -371,12 +372,13 @@ bool mm_iommu_is_devmem(struct mm_struct *mm, unsigned long hpa,
- 			 * and the caller needs to distinguish this situation.
- 			 */
- 			*size = min(1UL << pageshift, end - hpa);
--			return true;
-+			ret = true;
-+			break;
- 		}
- 	}
- 	rcu_read_unlock();
- 
--	return false;
-+	return ret;
  }
- EXPORT_SYMBOL_GPL(mm_iommu_is_devmem);
  
++static inline void __tlbie_sequence(unsigned long vpn, int psize, int apsize,
++				    int ssize)
++{
++	asm volatile("ptesync": : :"memory");
++	__tlbie(vpn, psize, apsize, ssize);
++	fixup_tlbie_vpn(vpn, psize, apsize, ssize);
++	asm volatile("eieio; tlbsync; ptesync": : :"memory");
++}
++
++static inline void __tlbiel_sequence(unsigned long vpn, int psize, int apsize,
++				     int ssize)
++{
++	asm volatile("ptesync": : :"memory");
++	__tlbiel(vpn, psize, apsize, ssize);
++	ppc_after_tlbiel_barrier();
++}
++
+ static inline void tlbie(unsigned long vpn, int psize, int apsize,
+ 			 int ssize, int local)
+ {
+@@ -230,19 +247,16 @@ static inline void tlbie(unsigned long vpn, int psize, int apsize,
+ 
+ 	if (use_local)
+ 		use_local = mmu_psize_defs[psize].tlbiel;
+-	if (lock_tlbie && !use_local)
+-		raw_spin_lock(&native_tlbie_lock);
+-	asm volatile("ptesync": : :"memory");
++
+ 	if (use_local) {
+-		__tlbiel(vpn, psize, apsize, ssize);
+-		ppc_after_tlbiel_barrier();
++		__tlbiel_sequence(vpn, psize, apsize, ssize);
++	} else if (lock_tlbie) {
++		raw_spin_lock(&native_tlbie_lock);
++		__tlbie_sequence(vpn, psize, apsize, ssize);
++		raw_spin_unlock(&native_tlbie_lock);
+ 	} else {
+-		__tlbie(vpn, psize, apsize, ssize);
+-		fixup_tlbie_vpn(vpn, psize, apsize, ssize);
+-		asm volatile("eieio; tlbsync; ptesync": : :"memory");
++		__tlbie_sequence(vpn, psize, apsize, ssize);
+ 	}
+-	if (lock_tlbie && !use_local)
+-		raw_spin_unlock(&native_tlbie_lock);
+ }
+ 
+ static inline void native_lock_hpte(struct hash_pte *hptep)
 -- 
 2.39.5
 
