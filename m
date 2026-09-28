@@ -1,95 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-28373-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28374-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0E2AC98328
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2026 06:08:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5EEFC98328
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2026 06:13:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4htW7Q6mdKz30dj;
-	Mon, 28 Sep 2026 16:07:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790575666;
-	cv=pass; b=E2BkxRdysB7Ympysc2W7ahlYoUywzhEiYIQzj6thvA9ygXHz+oZW6bypuZ64AnCfLxCy23SWm9Lt0FzZffMbWupittG67Vh5pmABhvQGrAhRr9TWA8fpw6N2bioUp1O0j5AkfDTqVlzd/JElrOno9n0nENpY3pFqjg7BHfiy2n1LcCG4xXwA3TiV0TruhicY214fUvBrHPJVUovk6moX/Ml6jRThP9YdYZRXUecP49M/4OzhKA7HxEgLz8FMV9ZRrANRFbacUirZrHXPp5WraxReplVut3bD04yGvpHicghiNALLe0hpieNTgFTekMhRq5jYjgC2Bxe81vORNJQT3Q==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790575666; c=relaxed/relaxed;
-	bh=tc2anIJVm1IV5UMGSGsbJ/lb7y6ZRHrakDVR0BsJ4eg=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=QYrpKCFnEygP9CqO16clK9S+17YhfUnquNmcUKicE5jjCmhGH57mtK7ImJ0EaBB6FwapvwnGG9ArAtGyl1NvRt0qPnwVZIei6swVkuUoGjwZ7G3APEcekwsVIb+WJuoMCHt/2pDuawHdo0eJY71pcrqPOKhVZCC6hYN57PTTa0NwJP4ZUqH43YSfWMvyNk1omJp4vRlGzuX2tidfFMEKFD4bGlIszbGzljNRR5kpGVB7qtX/74wPW0qBDEnZ+7JAfv7O0R7/pXiO/YGMr+4XqXHgBgVl7+KJ2SbQf7KN2xmUzLCAH4xeJYqYKLutJ9/+dFyF0ahufQiPvmw1S/oCsQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=YCY7w5dm; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=shengjiu.wang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4htWFb22Ljz30Vj;
+	Mon, 28 Sep 2026 16:13:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790575987;
+	cv=none; b=C/4mn7vnig3655fMQIlMFg/+IqjYzok7YWMXtWgDhOIKlXfBwXd5ChtXPN+vnA24NaW+uLJDB7uJapuqkHZnRolCEgEqeoVc5cuLB1U1h2SZQSvPVIPIlPbbtJEsncv6UmQGcJ6eBw5gOG5ahFcVmZ77GTx6FR+KmPmzFkanPhcpFeKwdMTyp+ZG7+kcGjogxuLtf2Vwu9/Gf5GOvX/T5B0hFqeIjO626xazYRVNR6O0pzNYRpx1fmwA7O9yZwUlzMUpl8SqdmT/fmZCcldppBRNGLbOlYDy26NlMpSpgf/GtFAOUga7QtXmvkKm4p9DU9agMVUNBCsdZ/l1+glk1Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1790575987; c=relaxed/relaxed;
+	bh=Opf9IQ3f3K2i0tq+D1k6onNvQgU/EnLloVK/XP18k9o=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=FZwb1EAeUZEaPUZWySMhdYaN2GKKW1YJEALJyosuYzLLAXVlxSC5jJ9yrSir9+TAg6/W6dMpbi72Y9qXGY71p08MEBFduccXMVBFoR7od62oJpMk3nMJIYRZkj3hFkRCyU4F2zlxRm9S8YpJ9Xw9g7AZgtvnLQPKObCUvZVNN+cIIqBHR1jTHWFRrs64Hbn+bJXMN0Qqdb5kp5iCqlZ8QOHl0R9UBRuk87mu4nPSS3YQOmzFuqtDVlMZgQ59fwO1cqyhpu792GZzGHilNFRcRKpg+eSqTx7HNUctBsg3DmWkKsd0Iu6dVT1jXMUU2MpDyd4GR5drpHqslY7HnkOw6w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DVZ+3+H0; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=YCY7w5dm;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DVZ+3+H0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=shengjiu.wang@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4htW7P66SVz3bSF
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 16:07:45 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=qSX9wwU7RymgADXq8Ef7Lrsp+dvWG0330GX1uMEX9Vnb//fDAUFcwrXBM38oyjyIvPG+tgR+QjRUYL5yPk2QV7HBaTkcWOcTkHKBYPIo3HTwAQqn+hpzdaKOeYPJf+Nl+9hY3H/z6jmaTpHZo9EDRJx3YZjhfXmrAe579a/y67CYF8WrAmghP/SQDkaXd9MNYfLG+Edy8PPEswsF13kMG7bvzW+xjD8stBqrJhbQEwYbFyN6/C9y6EN/+lwV+lzSDnfB9FoJay3FPxz+xq/EN1Dqss36HdOLNQsXJGRYv9IhMVgXDlb7Ep3GLzHZpmzoV11PPCm6qMLQRMSAzMZRLg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=tc2anIJVm1IV5UMGSGsbJ/lb7y6ZRHrakDVR0BsJ4eg=;
- b=EwDqGQkZ/ONCc4Bt5I6n37dFv7WZum3qZQpMGZxLPmtXt/pvD12aFsjCUPoR3OB2wpJraHTrG9hjddJM9dtm/JLGbCVWWRQswTLC9wgNn1c6oIh5MIhwM2Igxi3A6M6GjjJN5hYvKzeHfmksdRwBCrdoiSS7ZWHI51KYj42MIGACvJxp9kzG/9iyEFIZYiwWqqh/Ef2pn7SnWCM0HmHsc9vKTbftMoq5H/q+a0kRLum/y+v5sPoqhS3/wvhAJiKJk5AZb5OzSTlnd5Ty1TO86wJRAsKmuVUpcYLhddO6Bv2o/1UeXx5eKswyGN2gs/TDPmMwYns972bTZ7tQeNw0oA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=tc2anIJVm1IV5UMGSGsbJ/lb7y6ZRHrakDVR0BsJ4eg=;
- b=YCY7w5dmPqm8uOO9/14YyU4Cw7ffi3sexAyJ/kBZ3RDGvPdG23z+CMg7c8BC5LdEuvB5HpIDVH5TWnG64te52rSmcpgC1Im25F4dCFA26EWNzZzgXHifEY9pCjk0EYKnXirFF0f1GHoBYB3DrvxrsV/PXNb8KPBvdVuNrjbAwx0gPgOEZkf7IIdCi9cYokGEotk1BqzZZAuvt5lWFLoPSo+pLt/nYOjSiyRzLD7KJfOi+cXC6LB6auMpx6N/eSC6Qtpyl2VH1xZCKgx5TATRAe5Jw4P/pVSwEz3Y22d7nib8wj9J7grsF56PCDISx+kAhSPqBGmTkdVp7SFDPSOOYA==
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from PAXPR04MB9351.eurprd04.prod.outlook.com (2603:10a6:102:2b6::17)
- by PA1PR04MB10721.eurprd04.prod.outlook.com (2603:10a6:102:489::12) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.23; Mon, 28 Sep
- 2026 06:07:41 +0000
-Received: from PAXPR04MB9351.eurprd04.prod.outlook.com
- ([fe80::1058:a430:52c1:5aa]) by PAXPR04MB9351.eurprd04.prod.outlook.com
- ([fe80::1058:a430:52c1:5aa%6]) with mapi id 15.21.0451.022; Mon, 28 Sep 2026
- 06:07:41 +0000
-From: shengjiu.wang@oss.nxp.com
-To: lgirdwood@gmail.com,
-	broonie@kernel.org,
-	robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	Frank.Li@nxp.com,
-	s.hauer@pengutronix.de,
-	kernel@pengutronix.de,
-	festevam@gmail.com,
-	shawnguo@kernel.org,
-	linux-sound@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	shengjiu.wang@gmail.com,
-	Xiubo.Lee@gmail.com,
-	nicoleotsuka@gmail.com,
-	perex@perex.cz,
-	tiwai@suse.com,
-	linuxppc-dev@lists.ozlabs.org
-Cc: Shengjiu Wang <shengjiu.wang@nxp.com>,
-	Daniel Baluta <daniel.baluta@nxp.com>
-Subject: [PATCH v6 3/5] ASoC: fsl_asrc/fsl_easrc: move DMA params into pair/context struct
-Date: Mon, 28 Sep 2026 14:11:47 +0800
-Message-Id: <20260928061149.1844121-4-shengjiu.wang@oss.nxp.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260928061149.1844121-1-shengjiu.wang@oss.nxp.com>
-References: <20260928061149.1844121-1-shengjiu.wang@oss.nxp.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: MA5PR01CA0119.INDPRD01.PROD.OUTLOOK.COM
- (2603:1096:a01:1a7::7) To PAXPR04MB9351.eurprd04.prod.outlook.com
- (2603:10a6:102:2b6::17)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4htWFY62brz30Vd
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 16:13:05 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68RGM7X5263759;
+	Mon, 28 Sep 2026 06:13:03 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=Opf9IQ
+	3f3K2i0tq+D1k6onNvQgU/EnLloVK/XP18k9o=; b=DVZ+3+H0mCfT1HRr+lKM97
+	73PilpD0GPYOLne6eBrhRhwyFkZtGrLSnk3RFtsit2BNHX+ZNpDNnRIebSTIBg19
+	dVn1KHx5WTdovvGJXA6Q8OSXanh7Oy+BvVz6ckqiJ27SNZsCsxKZ5eqxv/f4gErP
+	rgtc5/4OR120acWKL8yQkr1gDccUC1BIDM8F/o51rr5YPmxMUqARVl2Uq6a1kNEq
+	8RTpM3gen6N7S631BHBybmlF/9kl7c00ia2U9ra5ztgPg1zdpDAzUox9uwX9BSm6
+	Ti+P+Jg4nZsKiCt4i9x1fJZfOy5UX+Y+3usZPMvpbpxhMOsHD+FgBF5uRQfp4+EQ
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gx5j4ypyn-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Mon, 28 Sep 2026 06:13:02 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68S50Dw9879799;
+	Mon, 28 Sep 2026 06:13:02 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gxtkg3se8-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 28 Sep 2026 06:13:02 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68S6D0OE46268794
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 28 Sep 2026 06:13:00 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3EAFB2004B;
+	Mon, 28 Sep 2026 06:13:00 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6204C20043;
+	Mon, 28 Sep 2026 06:12:59 +0000 (GMT)
+Received: from fedora (unknown [9.5.7.39])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Mon, 28 Sep 2026 06:12:59 +0000 (GMT)
+Date: Mon, 28 Sep 2026 11:43:10 +0530
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: Michal =?utf-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, kvm-ppc@vger.kernel.org
+Subject: Re: early boot crash in init_tracer_tracefs
+Message-ID: <20260928111234.faec09f7-8d-amachhiw@linux.ibm.com>
+Mail-Followup-To: Michal =?utf-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>, 
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, kvm-ppc@vger.kernel.org
+References: <arYskzbiaNzBR9MD@kunlun.suse.cz>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,195 +88,212 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PAXPR04MB9351:EE_|PA1PR04MB10721:EE_
-X-MS-Office365-Filtering-Correlation-Id: 62e8604d-584c-4536-5dae-08df1d26ce2f
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|1800799024|19092799006|366016|23010399003|921020|3023799007|6133799003|10067099003|11063799006|56012099006|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	kmtBKQSe5Hiod3tqeU5D/GJA2zoQjQJDa8VOyqJIbC6TU+Tk4jjGKThdA2yOmmVCwBj8Im1s6hpScwO4CilH2CpGHitmeAdlBQ0kOLmqvswIozdqIdYTwuPAcNzIrYGQQ1Dgdv3ipEfvYJHsLuCxKJFIfJREdOWu14OqLeZFJO/D1h9gQndQ4qMpIV9J8uS4PhSRKQ9I4pnXku2gWNYigTJpb5DnLvGC0E7Q7ggeN2hMGh9FNLk8/zkmvNne1rjx3Lun+9D+OKd3cu+ltshjfh12f05eOszryf0B8H67M4x5d2uAKjBSC/Q4D7vmU5FYpI95Hv82GUvKA+JHplSH6p81TkmmXdm4UYWbLcyLv+82P0kwNXIVGWpaAJh+zSbpoNmuFPj2ckG3Q9UAZoBy3MBqComTPuExKrcYyXNcCxadzZ5Z706KZ5YVarspz4sNiQenRMl6SGD4xrMxKBF5DeDwB8x7eysPI3YD11ZNeu63feJR6hnKIT49IZOvDEljunCTbXDQtEXtsQ56EL/YFJlV9QW7wuA1abmccsoWl838i0nUlru9r6/pqSC8Cvs3I4DFYvzGIzfhoWEZDZRgK3H9QXjx/bsRTa1lqc8DxdqJfKBPXvTzLiymYCmhHX8+B39uxjCvA2j427hehUx/RzBjUMd2r1CBNI5WEQNKrBqrYXivObD97/VX5epE60xYJ6q5aFRJzMbSC2nPlXxX2Q==
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB9351.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(19092799006)(366016)(23010399003)(921020)(3023799007)(6133799003)(10067099003)(11063799006)(56012099006)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?vMDT0uwZ2czkLdYmw5cl25vxDhYv63HGXgKQiUHGwPMDn1wjDXUE+vLVrbSF?=
- =?us-ascii?Q?2kYua/VD26Yd6eE6XlmQS+IvzDNn/rZ72UOgAOSV3U5szcRk4NXfJb+Pr0GK?=
- =?us-ascii?Q?Wltpj7MnXdwTCm26ly+7FBoIYthZde5h8R2bR7QGz87Se/3xfYfv3q6cDFjn?=
- =?us-ascii?Q?ogp1F63yYsQoSCfV+Ot3uZRumSGSoNP6ka28/KoTAfa5+ct8aKQV8Ywdf/0E?=
- =?us-ascii?Q?8js/h575Nh64ILQpyqPvssQ9omg6ci6ogBfALe2oL08FzahsQogpur1zrJPq?=
- =?us-ascii?Q?bvV/PGa86rgOZsoL/0AlPRqs5+DhITssosaVFCWc+x1tZjvU0ZMsVc4eCNN3?=
- =?us-ascii?Q?ME+4Q8ug6tLHqyBSvTjPzG/31H6Qh8YuBQv/4SqbADQR6sfNlKMswVPekcq7?=
- =?us-ascii?Q?wx20ARRymHjCcYtLRDYop4yZ3qfG8AbZ2sdkRAYTUhpLuvXbh3amMYe6OeGE?=
- =?us-ascii?Q?965BlQehyPcCFJoiopAkEDNbJD/lhXtJc418m1cKsjFgLwXmKP4vkk+TVc0+?=
- =?us-ascii?Q?rmBQLyXQIuoFdlXpp06Dz/Riy1Amh/pw2jUhaTgXz985G+l/xfQ7Q3t2XpQq?=
- =?us-ascii?Q?JoD7Z5d29gzRXGp1t2XHtiUjvj8fJNfnDLfdl+KDZc+Q8o7Brv9M5a63RRGc?=
- =?us-ascii?Q?ll+qhqfVARWSFf2l9GTgoyWBaDv1ANzQ49zAwJ/x2pSQ7GYp8PApVgD5t2Vt?=
- =?us-ascii?Q?ADyjEX/xGZX6LKWFIvYmlGlq9fItXbYwRZzcu6nMmiMDT7x7VLcPhSiVvJQe?=
- =?us-ascii?Q?SGS7fw2CPqVORiay1QcLd/0PHsmDP+aXjbwHE+fRRQJ7tEjhTm+WEMZih/wN?=
- =?us-ascii?Q?D+oASNJts8FNJY2uYYIASP5W8f4EsELn2wUfF2XEOsUu3Y/KzgUOPK8oWIh/?=
- =?us-ascii?Q?SwNz1mb7FXw38NizPpIQTxMCKmaDaRPwY/PlrDVQflUg/O18YjMN7ZK6uvgZ?=
- =?us-ascii?Q?zt0916sSVWoYVSayU42NehoAIdG6jGMEHfhWxyBw7+S0eQKOfXsoGL6spnw7?=
- =?us-ascii?Q?tn2k7sIwqpnq+Awza+FH67poBV3j0U4LcheHkn8jTSvUevwM9Tfc1RDAkBT6?=
- =?us-ascii?Q?c7jHo5MHqqdwzMwewF1KMDxfLph4Rri8bSEPKSncRFw1diGgS+7+mq/qbnVN?=
- =?us-ascii?Q?hyAEWu3LfPHahPce9je5oKCTlruxSzkh9IY+dWMmUyD18urNakduXinFWgoA?=
- =?us-ascii?Q?p0Gzb+Au4Jcl0DBjQPwUDh2WkvMsRGFm7Nd0VCKXpU4Km8swPPPrvTcTJZ9j?=
- =?us-ascii?Q?hp5HQhWdsM3cutc04pix7F4by05xC04KSgSaEqml9+nJJFE5sxku+tQ5xlPV?=
- =?us-ascii?Q?/J+8b4UZU+W9waaNWlQSy0e/ad99BcxX5vB3iba6A8W064Akw/+lnpmuBLpD?=
- =?us-ascii?Q?NrlD5Fr5E9a31k94Gt+LLGNI3gk4IvxTuHYaPmf6s/MfXjI7i1o2QF0J4gmN?=
- =?us-ascii?Q?2Yzky14tW6jY4pq9pCCcCEktW9eqlrQM8fEybI9Hri21DFqiCxDH6IE+m21N?=
- =?us-ascii?Q?CrYmfKEkSheXwXysJVz3JrKN39SRXNYFG1Ue8ORxlihsGYMU82bic8iIjmB+?=
- =?us-ascii?Q?zX2FODSvXXxdfmyMu1AqxrDnwNv6uHpBD7XwHN8WNkVRBrMQvp2TOAXIjHSl?=
- =?us-ascii?Q?mehZZozcsz0Pzbh413Szbcl2p+QMXCvF8dvXeUWAMe5ymgThpOvYySjuQJwp?=
- =?us-ascii?Q?ccAgYL6IZ7bz6xKqK7UolWT/Ajgq+Ffrk4h4PgMy43ibwu5Ii69NiKhe9NTK?=
- =?us-ascii?Q?B/o0t/hpG1hFP/ZW1m9MjjRz5jnI2ldN+wP6s2PWmNu7SXOZcX1a?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 62e8604d-584c-4536-5dae-08df1d26ce2f
-X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB9351.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Sep 2026 06:07:41.8164
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: TnJ3MYX6hF3N4pD5vG4C1uOsDuosj4wNTZZYUyEHNyhkaM3o/mcNksZZZpJDd6H+kWmxIUOBYnQPMlfmV0TQnKX8TPQ7nZdL2Qpd5rkHzR60g87sKYOoFT5Es2dej2/i
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA1PR04MB10721
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <arYskzbiaNzBR9MD@kunlun.suse.cz>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI4MDAyNCBTYWx0ZWRfXyGGRtujx7SQq
+ 82jnS00PGnOrsDaV3VsfCMopZ78i3GXFEz0wxUJ/ZRqYtvVLmxeENDhyS9rOBLq7JpMYyIOag99
+ 3tnlbbgQEg6KEpZt5L0dW3tTGsF9svY=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI4MDAyNCBTYWx0ZWRfX6wisBiEdzSIt
+ oUsAXJ+hC/hDaq5Pg+a1dTkNe4GBKnnoBgXay4hh4kuvbNiEMnDmTEOJyoTZpzkw46YQLNcE5og
+ PObY0Yvtrg7Mj77FAi6qoQ5GYlmxFn0VGZ4dZCjXqlrBqVL7d4MiOR1sHGuX7ZeTUFaZcTWO1EJ
+ wc5bgjs84w2jJWh4w1rWPRLCehNq3AtUrMlGkDMtayL/GHifbgd4DUoKupsacSSrCocTWIpaay8
+ Cqqw58n7wnnPzkvC9wZTX6uzOENch9rLblFmZCCRxMBN4iPf/c2kiUBajGyezLWISLFTFzg/9Ed
+ PzZBiV02KJhIREqXlKI0UwPzLU9Re25YiNW3FbXU9DLn7xy5pxIoqY+WYxZnRhCOFTHKLvo40eh
+ BuScK1eOF/hqny9DX8k02RypaFfX8o8InCGAGTKn22QJ8GBYQx9JMc4f/Uhykw86++ealETJ1M9
+ XwJvUbHzBUDdRqvQv4w==
+X-Proofpoint-GUID: QqncuQ0xra7N7AxkjkcVqUszrwH3_IkI
+X-Authority-Analysis: v=2.4 cv=RKcmjIi+ c=1 sm=1 tr=0 ts=6aba056e cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=NEAV23lmAAAA:8
+ a=VLc2VSdLAAAA:20 a=YLHbHz9oOkY--1DRpckA:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10 a=bA3UWDv6hWIuX7UZL3qL:22
+X-Proofpoint-ORIG-GUID: QqncuQ0xra7N7AxkjkcVqUszrwH3_IkI
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-26_05,2026-09-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 priorityscore=1501 spamscore=0 bulkscore=0 impostorscore=0
+ adultscore=0 lowpriorityscore=0 suspectscore=0 malwarescore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609280024
 
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
+Hi Michal,
 
-The shared dma_params_tx/rx fields in struct fsl_asrc were a single
-instance written by every concurrent fsl_asrc_dma_hw_params() call.
-With multiple DAIs registered (one per pair/context), parallel stream
-open+hw_params races would corrupt addr and maxburst for all active
-streams.
+Thanks for the report.  We have been looking at the crash and have some findings
+and follow-up questions.
 
-Fix by moving dma_params into struct fsl_asrc_pair so each pair owns
-its own copy. Initialise them in fsl_asrc_dma_startup() where
-the pair is allocated, which makes the per-DAI probe callbacks in
-fsl_asrc.c and fsl_easrc.c redundant; remove those as well.
+On 2026/09/25 10:10 AM, Michal Suchánek wrote:
+> Hello,
+> 
+> There appears to be a regression between
+> 
+> Linux 6.19.12
+> https://github.com/openSUSE/kernel/tree/7a15f44a1b293702f2b6a93f8fe792ab46d2cb3d
+> https://github.com/openSUSE/kernel-source/blob/9f6830f/config/ppc64le/default
+> 
+> 
+> Linux 7.0.12
+> https://github.com/openSUSE/kernel/tree/4c9922875554ec191166ba6c0145f12d8ff9d4fc
+> https://github.com/openSUSE/kernel-source/blob/2ebf0bc/config/ppc64le/default
+> 
+> With 7.0 being the first kernel version that forces preemtion it was
+> suspected that perhaps this is due to preemption but same result with
+> 6.19, same config + PREEMPT=y, and 7.0, same config. That is preemption
+> does not make any difference, the code change between 6.19 and 7.0 does.
+> 
+> The crash happens about 50% of the time when booting the kernel as
+> NestedV2 KVM guest. Bisection did not lead to anything. Changing config
+> such as disabling some code that could not possibly get used (drm,
+> sound, hid) makes the problem unreproducible. As the bisection descends
+> into some fairly old revisions it is possible that due to code changes
+> the problem becomes too difficult to reproduce.
+> 
+> There was recently a fix posted for preemtion in ftrace code but it does
+> not help.
+> 
+> It is possible to save the memory from qemu after the failed boot but
+> crash tool refuses to open it because of SMP mismatch between the dump
+> and vmlinux.
+> 
+> Any idea how to futher diagnose this problem?
+> 
+> Thanks
+> 
+> Michal
+> 
+> Typical boot log when the problem is seen:
+> 
+> SLOF **********************************************************************
+> QEMU Starting
+>  Build Date = Aug 13 2026 14:47:36
+>  FW Version = abuild@OBS release 20230918
+>  Press "s" to enter Open Firmware.
+> 
+> Populating /vdevice methods
+> Populating /vdevice/vty@30000000
+> Populating /vdevice/nvram@71000000
+> Populating /pci@800000020000000
+> Loading Linux 7.0.12-1.g2ebf0bc-default ...
+> Loading initial ramdisk ...                
+> OF stdout device is: /vdevice/vty@30000000
+> Preparing to boot Linux version 7.0.12-1.g2ebf0bc-default (geeko@buildhost) (gcc (SUSE Linux) 15.3.0, GNU ld (GNU Binutils; openSUSE Tumbleweed) 2.45.0.20251103-4) #1 SMP PREEMPT_DYNAMIC Mon Jun 15 08:39:32 UTC 2026 (2ebf0bc)
+> Detected machine type: 0000000000000101
+> command line: BOOT_IMAGE=/boot/vmlinux-7.0.12-1.g2ebf0bc-default root=UUID=304c7f07-efbb-1070-2f27-accd935ec088 rw quiet systemd.show_status=1 security=selinux selinux=1
+> Max number of cores passed to firmware: 8192 (NR_CPUS = 8192)
+> Calling ibm,client-architecture-support... done
+> memory layout at init:
+>   memory_limit : 0000000000000000 (16 MB aligned)
+>   alloc_bottom : 00000000066b0000
+>   alloc_top    : 0000000030000000
+>   alloc_top_hi : 0000003e00000000
+>   rmo_top      : 0000000030000000
+>   ram_top      : 0000003e00000000
+> instantiating rtas at 0x000000002fff0000... done
+> prom_hold_cpus: skipped
+> copying OF device tree...
+> Building dt strings...
+> Building dt structure...
+> Device tree strings 0x00000000066c0000 -> 0x00000000066c0bec
+> Device tree struct  0x00000000066d0000 -> 0x00000000066f0000
+> Quiescing Open Firmware ...
+> Booting Linux via __start() @ 0x0000000000250000 ...
+> [    0.000000][    T0] ERROR: Failed to allocate trace buffer
+> [    0.000000][    T0] ERROR: tracer: failed to allocate ring buffer!
+> Linux ppc64le
+> #1 SMP PREEMPT_D[    0.285758][  T673] BUG: Kernel NULL pointer dereference on read at 0x00000010
+> [    0.285877][  T673] Faulting instruction address: 0xc000000000485bd0
+> [    0.285903][    T1] VFS: Dquot-cache hash table entries: 8192 (order 0, 65536 bytes)
+> [    0.285954][  T673] Oops: Kernel access of bad area, sig: 7 [#1]
+> [    0.286133][  T673] LE PAGE_SIZE=64K MMU=Radix  SMP NR_CPUS=8192 NUMA pSeries
+> [    0.286240][  T673] Modules linked in:
+> [    0.286288][  T673] CPU: 15 UID: 0 PID: 673 Comm: kworker/u531:0 Not tainted 7.0.12-1.g2ebf0bc-default #1 PREEMPT(full) openSUSE Tumbleweed (unreleased)  cf0846124d7853fab338aeae87203b36cac18419
+> [    0.286527][  T673] Hardware name: IBM pSeries (emulated by qemu) Power11 (architected) 0x820200 0xf000007 of:SLOF,HEAD hv:linux,kvm pSeries
+> [    0.286739][  T673] Workqueue: trace_init_wq tracer_init_tracefs_work_func
+> [    0.286818][  T673] NIP:  c000000000485bd0 LR: c000000000448864 CTR: c0000000005a3420
+> [    0.286906][  T673] REGS: c00000000a7a7960 TRAP: 0300   Not tainted  (7.0.12-1.g2ebf0bc-default)
+> [    0.287014][  T673] MSR:  8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 44088404  XER: 00000000
+> [    0.287122][  T673] CFAR: c000000000448860 DAR: 0000000000000010 DSISR: 00080000 IRQMASK: 0 
+> [    0.287122][  T673] GPR00: c000000000448864 c00000000a7a7c00 c000000001f38100 c000000002a5c098 
+> [    0.287122][  T673] GPR04: c0000000017dc5f0 c0000000017dc5e8 000000000000001f 0000000000000064 
+> [    0.287122][  T673] GPR08: c0000000017dc628 00000000000005f0 00000000000005e8 0000000084000404 
+> [    0.287122][  T673] GPR12: c0000000005a3420 c000003dfff43d80 c0000000018e5600 c0000000018e54f0 
+> [    0.287122][  T673] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+> [    0.287122][  T673] GPR20: c0000000013ec418 c0000000013ef6d8 c0000000017dc5a0 c0000000017dc590 
+> [    0.287122][  T673] GPR24: c000000001825330 c0000000017dc628 c000000014b52a05 0000000000000000 
+> [    0.287122][  T673] GPR28: c0000000017dc5e8 0000000000000000 c0000000017dc5f0 c000000002a5e008 
+> [    0.287970][  T673] NIP [c000000000485bd0] __find_event_file+0x70/0x3c0
+> [    0.288046][  T673] LR [c000000000448864] init_tracer_tracefs+0x274/0xc80
+> [    0.288122][  T673] Call Trace:
+> [    0.288167][  T673] [c00000000a7a7c00] [c00000000a7a7c60] 0xc00000000a7a7c60 (unreliable)
+> [    0.288258][  T673] [c00000000a7a7c60] [c000000000448864] init_tracer_tracefs+0x274/0xc80
+> [    0.288348][  T673] [c00000000a7a7dc0] [c00000000203fcf0] tracer_init_tracefs_work_func+0x50/0x320
+> [    0.288452][  T673] [c00000000a7a7e50] [c0000000002620e8] process_one_work+0x1e8/0x5c0
+> [    0.288541][  T673] [c00000000a7a7f10] [c00000000026309c] worker_thread+0x1dc/0x3d0
+> [    0.288630][  T673] [c00000000a7a7f90] [c00000000026fa34] kthread+0x194/0x1b0
+> [    0.288721][  T673] [c00000000a7a7fe0] [c00000000000de58] start_kernel_thread+0x14/0x18
+> [    0.288810][  T673] Code: fb410030 fb810040 fba10048 7cbc2b78 3ba00000 fbc10050 7d194378 7c9e2378 2e2a0fc0 2da90fc0 f8010070 60420000 <e93b0010> 81490058 e8890018 714a0208 
+> [    0.289001][  T673] ---[ end trace 0000000000000000 ]---
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-Reviewed-by: Frank Li <Frank.Li@nxp.com>
-Reviewed-by: Daniel Baluta <daniel.baluta@nxp.com>
----
- sound/soc/fsl/fsl_asrc.c        | 11 -----------
- sound/soc/fsl/fsl_asrc_common.h |  7 +++----
- sound/soc/fsl/fsl_asrc_dma.c    | 14 ++++++++++++++
- sound/soc/fsl/fsl_easrc.c       | 11 -----------
- 4 files changed, 17 insertions(+), 26 deletions(-)
+What we know so far:
 
-diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
-index cc304abbc8bd..9be903dc75e4 100644
---- a/sound/soc/fsl/fsl_asrc.c
-+++ b/sound/soc/fsl/fsl_asrc.c
-@@ -781,18 +781,7 @@ static int fsl_asrc_dai_trigger(struct snd_pcm_substream *substream, int cmd,
- 	return 0;
- }
- 
--static int fsl_asrc_dai_probe(struct snd_soc_dai *dai)
--{
--	struct fsl_asrc *asrc = snd_soc_dai_get_drvdata(dai);
--
--	snd_soc_dai_init_dma_data(dai, &asrc->dma_params_tx,
--				  &asrc->dma_params_rx);
--
--	return 0;
--}
--
- static const struct snd_soc_dai_ops fsl_asrc_dai_ops = {
--	.probe		= fsl_asrc_dai_probe,
- 	.startup	= fsl_asrc_dai_startup,
- 	.hw_params	= fsl_asrc_dai_hw_params,
- 	.hw_free	= fsl_asrc_dai_hw_free,
-diff --git a/sound/soc/fsl/fsl_asrc_common.h b/sound/soc/fsl/fsl_asrc_common.h
-index c8a1a2b5915d..4e6b00cb5d63 100644
---- a/sound/soc/fsl/fsl_asrc_common.h
-+++ b/sound/soc/fsl/fsl_asrc_common.h
-@@ -53,6 +53,7 @@ struct fsl_asrc_m2m_cap {
-  * @dma_data: private dma data
-  * @pos: hardware pointer position
-  * @req_dma_chan: flag to release dev_to_dev chan
-+ * @dma_params: DMA parameters for transmit/receive channel
-  * @private: pair private area
-  * @complete: dma task complete
-  * @sample_format: format of m2m
-@@ -76,6 +77,8 @@ struct fsl_asrc_pair {
- 	unsigned int pos;
- 	bool req_dma_chan;
- 
-+	struct snd_dmaengine_dai_dma_data dma_params;
-+
- 	void *private;
- 
- 	/* used for m2m */
-@@ -92,8 +95,6 @@ struct fsl_asrc_pair {
- /**
-  * fsl_asrc: ASRC common data
-  *
-- * @dma_params_rx: DMA parameters for receive channel
-- * @dma_params_tx: DMA parameters for transmit channel
-  * @pdev: platform device pointer
-  * @regmap: regmap handler
-  * @paddr: physical address to the base address of registers
-@@ -128,8 +129,6 @@ struct fsl_asrc_pair {
-  * @private: private data structure
-  */
- struct fsl_asrc {
--	struct snd_dmaengine_dai_dma_data dma_params_rx;
--	struct snd_dmaengine_dai_dma_data dma_params_tx;
- 	struct platform_device *pdev;
- 	struct regmap *regmap;
- 	unsigned long paddr;
-diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
-index 0aa5db8973d6..b417de6abebe 100644
---- a/sound/soc/fsl/fsl_asrc_dma.c
-+++ b/sound/soc/fsl/fsl_asrc_dma.c
-@@ -400,6 +400,20 @@ static int fsl_asrc_dma_startup(struct snd_soc_component *component,
- 
- 	runtime->private_data = pair;
- 
-+	/*
-+	 * Point the cpu DAI dma_data at the per-pair params so that
-+	 * concurrent hw_params calls on different pairs each write to
-+	 * their own struct and do not race on addr/maxburst.  Use the
-+	 * per-direction setters so that a concurrent open of the other
-+	 * direction on the same DAI does not NULL out its pointer.
-+	 */
-+	if (tx)
-+		snd_soc_dai_dma_data_set_playback(snd_soc_rtd_to_cpu(rtd, 0),
-+						  &pair->dma_params);
-+	else
-+		snd_soc_dai_dma_data_set_capture(snd_soc_rtd_to_cpu(rtd, 0),
-+						 &pair->dma_params);
-+
- 	/* Request a dummy pair, which will be released later.
- 	 * Request pair function needs channel num as input, for this
- 	 * dummy pair, we just request "1" channel temporarily.
-diff --git a/sound/soc/fsl/fsl_easrc.c b/sound/soc/fsl/fsl_easrc.c
-index d30cc3e90215..4401c4e100b3 100644
---- a/sound/soc/fsl/fsl_easrc.c
-+++ b/sound/soc/fsl/fsl_easrc.c
-@@ -1582,18 +1582,7 @@ static int fsl_easrc_hw_free(struct snd_pcm_substream *substream,
- 	return 0;
- }
- 
--static int fsl_easrc_dai_probe(struct snd_soc_dai *cpu_dai)
--{
--	struct fsl_asrc *easrc = dev_get_drvdata(cpu_dai->dev);
--
--	snd_soc_dai_init_dma_data(cpu_dai,
--				  &easrc->dma_params_tx,
--				  &easrc->dma_params_rx);
--	return 0;
--}
--
- static const struct snd_soc_dai_ops fsl_easrc_dai_ops = {
--	.probe		= fsl_easrc_dai_probe,
- 	.startup	= fsl_easrc_startup,
- 	.trigger	= fsl_easrc_trigger,
- 	.hw_params	= fsl_easrc_hw_params,
--- 
-2.34.1
+The immediate crash is a NULL pointer dereference in __find_event_file() called
+from init_tracer_tracefs().  When allocate_trace_buffers() fails at early boot
+(ERROR: tracer: failed to allocate ring buffer!), it returns via the error path
+leaving tracing_disabled = 1 and global_trace.array_buffer.buffer = NULL.
+However tracer_init_tracefs_work_func is queued onto trace_init_wq
+unconditionally with no check for whether the ring buffer allocation succeeded,
+so it runs anyway and crashes dereferencing a NULL pointer at offset 0x10.
 
+The fix for the should be crash is:
+
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index e4a490d3d08c..93845281e906 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -9287,6 +9287,8 @@ static struct notifier_block trace_module_nb = {
+ 
+ static __init void tracer_init_tracefs_work_func(struct work_struct *work)
+ {
++       if (tracing_disabled)
++               return;
+ 
+        event_trace_init();
+
+However that only fixes the symptom.  The underlying question is why
+allocate_trace_buffers() fails at all, and we don't have enough information to
+determine that yet.
+
+While I'm trying to recreate this problem locally, could you please share the
+following information in the meanwhile?
+
+The early kernel boot messages we need to diagnose the allocation failure are
+being swallowed by quiet boot — your log jumps from SLOF straight to the error.
+
+1. Could you boot the crashing guest with "quiet" removed from the kernel
+   command line and share the full boot log when the problem recreates. We
+   specifically need the lines:
+
+	Partition configured for N cpus.
+	rcu: restricting CPUs from NR_CPUS=8192 to nr_cpu_ids=N.
+	percpu: Embedded ...
+	Memory: .../... available
+
+2. How many vCPUs did you assign to the NestedV2 guest?
+
+3. What are the L1 host specs — total CPUs and total RAM on the host machine?
+
+4. How much RAM did you assign to the guest?  I can see ram_top = 0x3e00000000 =
+   248 GB from your log — is that correct?
+
+5. Is the problem reproducible on upstream Linux?  Trying the same guest config
+   with a mainline kernel would help determine whether this is a SUSE-specific
+   patch or config issue, or something present in upstream as well.  If you
+   haven't tried upstream yet, that would be a useful data point.
+
+Thanks
+Amit
 
