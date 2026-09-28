@@ -1,103 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-28360-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28361-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE73AC98328
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2026 04:42:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B88C9C98328
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2026 05:14:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4htTDW4Xsrz2yr0;
-	Mon, 28 Sep 2026 14:42:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:3b::e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790570523;
-	cv=none; b=WxWyHKFkCEodr1/fRBn5brQ6R2kIUybfGxjwkzCS3jTn7bgimwf5Mvl09PVm99IrGtemxHuEpmG252i/eTx3IJFz9qXuGQ2QbHIkxwQKemCaRuhADAGFP8rZ2QRRnSQJA4Q3CfWMkEmdIemhLxYQHF+vSl9b0BQF5e+hQRLxIn5w1DhQMF+L9XQ12Rbiy/x2miVJyD/zQRloDX1HZzbLVl/6YTF42a5VRNYcAA3N7/jSPSVsj+UyoC9Ey3ejh4+OEpo6fERb6eWNSerIv44tAS5MspPuWTThhmJZ/WRb5f8w7xFBBMFKK0h7OuNEd5zcONR9G+HTtMjGLYqB/IsmUQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4htTy06fcQz30VF;
+	Mon, 28 Sep 2026 15:14:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790572472;
+	cv=none; b=cD6QUadgDZaX6eOVgrJi4iF03Ck9ygg43cxggEMp2n92mpzJNJ3ZRN8K/gl8HGUJMyT7O8UA6OIJlCVpzVsBmpucmt6Ux1VCPktpxViy9rCSyhht/jPBdalBkoSMDE2Zvha8YoOUzP77HLbFP3j4SPGhBGsNFN2zMRfJ6y4z8dny8brkKSzOUHL7Zp+pfls72NZd9l/U/KikDmi0Wi7XyXIMZClrJelg6Xufsz2ljuTk1qlZRNlPJrVhYs0btau1r9VyccLW2YeDVZDBbxZSxplJVBFhAK1aKPbreWLgTKTVaQOYUKhogZmFaEqSclwbAf/IXHobq/0nHaFcRt/AMQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790570523; c=relaxed/relaxed;
-	bh=0OVW9hC5UCKC68y9iOXThuN5MokNCxQyIbNLFUKAbKE=;
+	t=1790572472; c=relaxed/relaxed;
+	bh=/sVVazsrJgZvbb2V3wieE7Hf1ogw8nJ5o7Yn+SUUkv4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=aveO6hVQQCb/0fJuQt1VtOIYcO16R/EvjVXL54lBVkcajZDe9sp5cZs1QzRu1cFOZ7BySLPqc/GDxy48oU1ipoFfp0veRpa0GdaZoAVYVZhdBGkPU4jNO3TAxqQxdDa/95h3wLyQM1Xwp8H02VKnTni4xyZbsHQVFhb2u3tIXr1OEqf9BSwx/rZRUQMHQkJBKqBrflWWCxjypZ7nV4mZb+7SeGE0MyPU2oL7GwTZY4luWuHteH6oKvT5mUIjbOay41Zzk7shP/+WwLw1qE0Fcp9qDJYHgojxOkRVBNrZ9q3zzhNQ1+Ja468O8bA7A94VbOEndNq43rPp7q1mVxvWyA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=d3PL/Z8a; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:3b::e; helo=mail-pz2-x0e.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
+	 MIME-Version; b=YJaCyJUoA25omRHagJkuTRT6/v3HC7siIJ+GOkQfcEhVo7fo21hMhxvaU/FABElJno/fxnsQmCJ1tkDoCnfhXguPLYoomIRor4F/TSlvbDDy1v3kkgy4vr7V/ugKicL4K+r8PZSLkz2poh/wa37FhoCjdJnOrIYCkXcjBckey6VVy1je3Sxf7aeYNUfA5iFAKi0E3SAyIUc9VTfU6/qQIKmkWMU4dEodPUMMItFdhgBgGRThgUhzoC2MlLQHGtWEKPcktKUaHfjWoTjaykuzlQANjTL9gRDiNijcH0zHE9ECd1TS9bAsuBMz26ggdzpNtXKnkmLR8N6DxVnA8kQuog==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tuuPnXdj; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=d3PL/Z8a;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tuuPnXdj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:3b::e; helo=mail-pz2-x0e.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pz2-x0e.google.com (mail-pz2-x0e.google.com [IPv6:2607:f8b0:4864:3b::e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4htTDT5C78z2yqx
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 14:42:00 +1000 (AEST)
-Received: by mail-pz2-x0e.google.com with SMTP id d2e1a72fcca58-86dd69a1b15so449571b3a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2026 21:42:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1790570518; x=1791175318; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=0OVW9hC5UCKC68y9iOXThuN5MokNCxQyIbNLFUKAbKE=;
-        b=d3PL/Z8aujb2LXotIwvMklvc+b8pPLM0f0fi/apSUibS/riw1xKeYU1uNeGw2+Tpmd
-         PBmMC5DS/MUROk9hhY7V77IYBNRuoHjQp0lZ3v20vD96ITeFCqqKq44rS1NDVu0v24Uo
-         outYZe4KpJk1+HPb3nbVQfKENUxo58TikVGcDg4Fwf4MzxAyk7+Or55yVq6cY4Ssc6/Q
-         K4HYBVSaOfVqY7eK6KzWtoKbATyuGOlUwX7IZ2eosRA4Mj4kfWSXaTQjrXnEiVW9JanS
-         72fT/HXi9hQM0aRLVbshAPN3oLir8KscUElrqOyMa42yDDpKpgbloTejCLrkzKs+zMjF
-         IFIQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790570518; x=1791175318;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=0OVW9hC5UCKC68y9iOXThuN5MokNCxQyIbNLFUKAbKE=;
-        b=O0Zl6oIX7bnJqaEEJpVh7z/Yfi1BzrSDMMp9ZaoOalo8NggUSWOHJzu24gb+VynGsg
-         Y6CT6CW7wmqYqxQQ+DSwoaPoAOOs7Dez4TLO80lQbjlw0KZEPy8Aezr9peyroV9fihPx
-         ODbkDkhIbL60M4jkdRTFQKNCL1/5YSqr2ggDN1Nc7W64bjRPHxFtsyZWmu5Ryu0CX4Ww
-         +i1DEUlsm9/9DHhZ5JYs918zkNwNCBokxopB2xtVfINCeE+8G2ZVkrqqeZj6qxUcDMhE
-         n4qepuhUdEsbdyQZ+DxjQ2Ayyu8d2Yk78Vhx50Sr+gSGa1WnJ3uRQ6l6vVWbBaOm3dp4
-         livg==
-X-Forwarded-Encrypted: i=1; AKwUvBwnaWwpM2wYDfVoFK/osH2UP6i8FG6c0ZUpYd4HHBYVtASP9e+7n5+PLMkkt/UrTeDQjmVbPPj2i/J0RMQ=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++kYwGTmmct0lfl0AWj7028predwCG/6mfVPDwOfPQs4Jkkmzwct
-	3p21HJRVCg426KQXqwn603tdCUXTiFXF6bQUb/6SzULeMh34CwssW9lbNWiYaA/ox8k=
-X-Gm-Gg: AYBFou3NF7y0qQTOvkZcp0wiR1tz3XAVqAO+ct7JIcCTezvhzmdqAflNboq0gwFhWTH
-	GyH6JTSCbxjiAA9mQ7doU+MyedB2BGTKJGMkFODnMgbLX81XJAwehIxU+EhaTC1ae2mjpTP7aB7
-	dxnvKwwdURVV56xdCZsLR5iO9hCiV2NOLvSt6uCZGO+3Cd07IbIb47fWT+elB97zAUHsU3s7lGz
-	3T8TrF+aUJY27ygKKPCv3KVVMnIjLwNkbTO/9FNRxMliBczvCNZTlhFQe9cZLlW3DXMROJr0V7q
-	m5SZZBRHjBW4K0ANEFFz6B7BTPgvaNOUkd8WN2CAokVuA5TUQJ+DhOrKikjUQprnfm51+tqWB5g
-	ILey/IgJMxQVQ0zuY7Sfy25aQWiwvE0BPq23QU39ttwMN2/k2cmtZMfiZ4gRBaszJSIo8C2ZKdM
-	kCdYAJ0vJLYiHfcNF79HlZqYBCA3Sh1nikmU6sZ3y8SLB1FNZbAOiwZ5MVbL0Z30tfX7cvBu+Oz
-	P03ZMtkki+dNYSOHYfLfuQ/B2iS4w==
-X-Received: by 2002:a05:6a00:3d09:b0:881:236b:748a with SMTP id d2e1a72fcca58-881236b74f5mr3613151b3a.16.1790570518137;
-        Sun, 27 Sep 2026 21:41:58 -0700 (PDT)
-Received: from n232-176-004.byted.org ([36.110.163.96])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-87feae8d827sm3405869b3a.36.2026.09.27.21.41.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 27 Sep 2026 21:41:57 -0700 (PDT)
-From: Muchun Song <songmuchun@bytedance.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Hildenbrand <david@kernel.org>,
-	Oscar Salvador <osalvador@suse.de>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Jonathan Corbet <corbet@lwn.net>,
-	linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-doc@vger.kernel.org,
-	Muchun Song <muchun.song@linux.dev>,
-	Lorenzo Stoakes <ljs@kernel.org>,
-	Mike Rapoport <rppt@kernel.org>,
-	Qi Zheng <qi.zheng@linux.dev>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	Muchun Song <songmuchun@bytedance.com>,
-	Lance Yang <lance.yang@linux.dev>
-Subject: [PATCH] fixup! mm/sparse-vmemmap: switch device DAX to shared tail vmemmap pages
-Date: Mon, 28 Sep 2026 12:41:48 +0800
-Message-ID: <20260928044148.3300333-1-songmuchun@bytedance.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260927025441.741633-8-songmuchun@bytedance.com>
-References: <20260927025441.741633-8-songmuchun@bytedance.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4htTxz6VWZz2ygW
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 15:14:31 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68RHXNgE264923;
+	Mon, 28 Sep 2026 05:14:14 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=/sVVazsrJgZvbb2V3
+	wieE7Hf1ogw8nJ5o7Yn+SUUkv4=; b=tuuPnXdjPwkKqGTqsn2H4bm6ILN4s/SWk
+	SPAdoePev9hXk2JCMGOMNV7W+0F3gPjTER5olsbt4ldlk+st3oH3KpHMXMMoh0Ts
+	VBIdKN3MPX0gJStsaLBXrqcN1nurS1b3F+opw5lgSaAyvi34PU1a0UaaJuvlKVeQ
+	uZK2HeuokLiKsMpqdl3k2eMFZke9sopNNBqY01tOH4HfZ8Dd+kGYPQxqerTTINuK
+	1BPK0XjfD+3S4WX8es1C0bl5cDEbqrTZ8uO6+IVN91MbIHj8JnGdxsp/gHFq4z+Q
+	8I5mDODi4fL5tSRu7AhYwoHmcNcX4lGRfaL9KR0x95hnpYt75o7Eg==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gx5j4yg68-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Mon, 28 Sep 2026 05:14:13 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68S2jCxW2024369;
+	Mon, 28 Sep 2026 05:14:13 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gxrrw3uct-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 28 Sep 2026 05:14:12 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68S5E9xk48431534
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 28 Sep 2026 05:14:09 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F213A20049;
+	Mon, 28 Sep 2026 05:14:08 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EE45B20040;
+	Mon, 28 Sep 2026 05:14:04 +0000 (GMT)
+Received: from li-1cb9f04c-2ae1-11b2-a85c-a8a0a83790a8.ibm.com.com (unknown [9.124.213.52])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 28 Sep 2026 05:14:04 +0000 (GMT)
+From: Saket Kumar Bhaskar <skb99@linux.ibm.com>
+To: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: hbathini@linux.ibm.com, maddy@linux.ibm.com, ast@kernel.org,
+        andrii@kernel.org, daniel@iogearbox.net, shuah@kernel.org,
+        linux-kselftest@vger.kernel.org, stable@vger.kernel.org,
+        venkat88@linux.ibm.com, yeswanth@linux.ibm.com, skb99@linux.ibm.com
+Subject: [PATCH v14 2/5] powerpc64/bpf: fix percpu private stack leak on JIT failure
+Date: Mon, 28 Sep 2026 10:43:51 +0530
+Message-ID: <a827e3ef81cd43f2aee7e9bdfe8683f2c77065da.1789982239.git.skb99@linux.ibm.com>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <cover.1789982239.git.skb99@linux.ibm.com>
+References: <cover.1789982239.git.skb99@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -112,49 +91,80 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI4MDAyMCBTYWx0ZWRfX5gzeXAnOHrNg
+ Vx1t/DMdHd7rpgbhiPkYJFFCauWtuXg4iCp6Xqval2jNVY6t+eynrg7WOF1g5csbfqU4Txc4CJO
+ F65TU7glhN/7IxJj7RyyPY6mWFZrA/Y=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI4MDAyMCBTYWx0ZWRfX+D0lx8H9i0RE
+ E7JqhVje8pJZYF+8NkxPw6yUkp5LQcGCYnoFFhp0YwtuNL7NI/A88r42rdfxSDaYfYtXqv2Zg7r
+ YAefe4DYB0MltfXBZtlW3Qz54CpvyqRy18LapzeZy7yIEUpsAIlmLrF4ZF01u7rMnj8TEmm1psY
+ CgTgELB/i1yhwODlBS9Nay3V6VtZ2v9jrb7wHh0wCEgth7AvJr6iEV2fUfFSjJxACNN0SCgUmdy
+ SL/Zdw4wfEcUpc0PbcVZPf+ZKip3LnE3oXEf0CI6AUOOr8X+ZzSULQydkvZYH7dEGwsrpL/BP/H
+ 3fc21Q9+GSmrx29Dil08rY++Cmrt4DRjGCijiyvAcRrmlP+zzytU7Fu2R4ht7Arm+0c1YZivriS
+ 5hGdzs63k4dD0PhH4YIIPKLVS78xjMCKr5tbWkfZnU5zWwqFFsbwbQApSCFf9q0Q7XoQwUZSKbV
+ eS8Q6elcFKR1g1PioBw==
+X-Proofpoint-GUID: A0fID2WT8BcQoyRaYS33Fp_5Kcabz96X
+X-Authority-Analysis: v=2.4 cv=RKcmjIi+ c=1 sm=1 tr=0 ts=6ab9f7a6 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=SJ-jtujo7bo76xSWeacA:9
+X-Proofpoint-ORIG-GUID: A0fID2WT8BcQoyRaYS33Fp_5Kcabz96X
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-26_05,2026-09-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 priorityscore=1501 spamscore=0 bulkscore=0 impostorscore=0
+ adultscore=0 lowpriorityscore=0 suspectscore=0 malwarescore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609280020
 
-Each PTE mapping the shared device DAX tail page takes a page reference.
-A sufficiently large range could therefore cycle the reference count back
-to zero if population were allowed to continue after it became
-non-positive.
+From: Abhishek Dubey <adubey@linux.ibm.com>
 
-Use try_get_page() so further mappings fail once the reference count is no
-longer positive. The section population error path tears down mappings
-created for the failed section, while the warning makes this currently
-impractical limit visible.
+The existing conditional statement in bpf_int_jit_compile() frees the
+percpu private stack at out_addrs only when the image buffer was never
+allocated.
 
-Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+If bpf_jit_build_body() fails during a code-generation pass, the
+image buffer has already been allocated, so !image is false and the
+percpu stack is not freed.
+
+Because JIT compilation failed, fp->jited remains at 0. The subsequent
+bpf_jit_free() path only frees priv_stack_ptr when fp->jited is set, so
+freeing is skipped here too, leaking the percpu allocation.
+
+Fix implements freeing the private stack whenever fp->jited was not set,
+i.e. compilation did not succeed, instead of keying off !image. !fp->jited
+already covers the !image case, since image is only NULL on early-failure
+paths where fp->jited is likewise 0.
+
+Reported-by: sashiko-bot@kernel.org
+Closes: https://lore.kernel.org/bpf/20260616135426.A06B71F000E9@smtp.kernel.org
+Fixes: 156d985123b6 ("powerpc64/bpf: Implement JIT support for private stack")
+Cc: stable@vger.kernel.org
+Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
+Signed-off-by: Saket Kumar Bhaskar <skb99@linux.ibm.com>
+Tested-by: Yeswanth Krishna Tellakula <yeswanth@linux.ibm.com>
+Tested-by: R Nageswara Sastry <rnsastry@linux.ibm.com>
+Acked-by: Hari Bathini <hbathini@linux.ibm.com>
 ---
- mm/sparse-vmemmap.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ arch/powerpc/net/bpf_jit_comp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
-index b617ff1b985d..66de04f8863b 100644
---- a/mm/sparse-vmemmap.c
-+++ b/mm/sparse-vmemmap.c
-@@ -278,14 +278,18 @@ static pte_t * __meminit vmemmap_pte_populate(pmd_t *pmd, unsigned long addr, in
- 			/*
- 			 * When a PTE/PMD entry is freed from the init_mm
- 			 * there's a free_pages() call to this page allocated
--			 * above. Thus this get_page() is paired with the
-+			 * above. Thus this try_get_page() is paired with the
- 			 * put_page_testzero() on the freeing path.
- 			 * This can only called by certain ZONE_DEVICE path,
- 			 * and through vmemmap_populate_compound_pages() when
- 			 * slab is available.
-+			 *
-+			 * Use try_get_page() to prevent the shared page refcount
-+			 * from overflowing.
- 			 */
--			if (flags & VMEMMAP_POPULATE_DAX)
--				get_page(pfn_to_page(ptpfn));
-+			if ((flags & VMEMMAP_POPULATE_DAX) &&
-+			    !try_get_page(pfn_to_page(ptpfn)))
-+				return NULL;
+diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+index a875521ff904..8f7501954d9f 100644
+--- a/arch/powerpc/net/bpf_jit_comp.c
++++ b/arch/powerpc/net/bpf_jit_comp.c
+@@ -357,7 +357,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_verifier_env *env, struct bpf_pr
+ 				(void *)fimage + FUNCTION_DESCR_SIZE);
+ 
+ out_addrs:
+-		if (!image && priv_stack_ptr) {
++		if (!fp->jited && priv_stack_ptr) {
+ 			fp->aux->priv_stack_ptr = NULL;
+ 			free_percpu(priv_stack_ptr);
  		}
- 		entry = pfn_pte(ptpfn, PAGE_KERNEL);
- 		set_pte_at(&init_mm, addr, pte, entry);
 -- 
-2.54.0
+2.55.0
 
 
