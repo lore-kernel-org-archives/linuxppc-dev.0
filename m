@@ -1,104 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-28445-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28446-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4DB4CA5FA1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 05:34:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ADEACC9832A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 06:20:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hv6L21zs0z30dn;
-	Tue, 29 Sep 2026 15:34:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:39::11"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790660042;
-	cv=none; b=mjV7QZJaqQUET9DkTXqrZviMrJja0g7PBJYXv/L2zo+eKH6j7OapMFbLiVC018MSt4tK6zSOUWu7QGV+BcRxc43OboWacs8SYCIkwAPwvtgEng5uN4BR2HHwLXgsSPYgCwi+gkUgEMHdtH+JIqBjij/KVPhMjQcfFieNx02Kp/NjHqo3B8/x8NlSck65iYDjDnjKb202ChD3ZF7dxjxSNqDlowCrs6lkaV1K9t0biLcBjEIu06oPUmwp1FRpI7Nz1ebin9Auw3Iq+CUtIv2tHi7e1TcO3NZoyJ9r4OHShGoAfPT7iwBPgFVIDHR1Yf2hZTWgvNtvK6+LsiORLOqFLw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hv7Mk13wbz2yDD;
+	Tue, 29 Sep 2026 16:20:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790662834;
+	cv=none; b=GZrdTOqJBu6YnHIDhA6mHngMPZoSQeRBVtRoEuMO5S34CKYYXk550t9z93sLqTbcPLY+6azlxgU9Ea6Dyxk92Dz/U4NHupUIbPy380U9qmZX72lorBKUeVryvpWFRUo7qwfmxW30Am/eHe/lCE1WBXX8z3vvR5a0727ER7VvSkHsqD+Vnpyi24eqmIFaB3lEFkLv8pFeSySV8fPEM/oUEZmaZezvCPzhfqb8I3FLX0PXJUMU4F7uldLEV0zn2yujP2DtrzHUYq2tQkn2/uhc7whJHHajqKvCIUkJEEcCHootp+y4zcWdSDxJ7r5OZqQoutyZPEtE+FB+cPNwBy8UMA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790660042; c=relaxed/relaxed;
-	bh=aIKIMkYuFOTq61i+iCqWLdJrE5c2b5L+SL6VyhrzHK0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=MPyNcFIGz4Fenqi0gyvgg9m+o2RyLPcp9SFIrmXJjj7sdCuz+GWlx+ic7PZj/1mNB+9yuGQLdLXlsBBoEna1TOKjrxvTevlT4Qp7gQNLSTYg0+Q3/iPoUOMGQrfHljqD2D5VNR4376Hcw9aDtMIVMdGqnb+9DQZXklLI6lAl2Pwgi0bo62nG1hZv+EEawSKt74MRLQ6fRZX9YJ4ZXx4ZqjJMz93FNDXiGZyba0J0vhrPVyIMezqqlOUed1/szP5EZGw7qqWuFqWjYqsuqTmyubEyVpfR1dpFn6HvQXXP/6kqCHGAXsrilfWVGHLlYmDINhcp25QLS5ywGpBvXeAviw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=aCrV4Qb9; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::11; helo=mail-pj2-x11.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
+	t=1790662834; c=relaxed/relaxed;
+	bh=lTp0iuvGgJlzLvCthN8H5DikguIjM02dg6D/PwjsUlQ=;
+	h=Content-Type:MIME-Version:Subject:From:Message-Id:Date:References:
+	 In-Reply-To:To:Cc; b=B5EWQ/PX+scmBGTElxxScY64TWuVXtLYAWem2pIrNkb5CGZolMdC8LeakDzMzH3QCqVAZTFtHPcDhX5Jlx7fbBSFkRTxOlLhtTiIBEzcn+9qYfutz0Tjc+egheebbgtJWU8diKazubhKAFLJIB6OtWt8a+h/exhV2P0X8yXqf4CPWzXde4TMQkK1u50Xn/u2wOw4uxBnuukqemGlYELI3GkZG84f465IhOdfVux/SmXBxVsnQfVEIeWDfZuMKw4XlMKfy3ARhwL2MHrdGchQCzDsYunyolCatiPew/1CmmJSFFz3ODfHNFumCZXTHSpAujNRbbDGYTyVc0hRq89DOQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FEu8IKuJ; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=aCrV4Qb9;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FEu8IKuJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:39::11; helo=mail-pj2-x11.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pj2-x11.google.com (mail-pj2-x11.google.com [IPv6:2607:f8b0:4864:39::11])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hv6L1102Gz30dj
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2026 15:34:01 +1000 (AEST)
-Received: by mail-pj2-x11.google.com with SMTP id d9443c01a7336-2d747ec6188so17567355ad.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 22:34:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1790660039; x=1791264839; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=aIKIMkYuFOTq61i+iCqWLdJrE5c2b5L+SL6VyhrzHK0=;
-        b=aCrV4Qb9rTBF87mmkKTe0481JmxGjAV+aMEUTol0KRIYBEu+A8sr+utwhB12vc7nC0
-         F6tOZIiWf9rshBNG76Py4DaicongQy9eITnKxFvb3ySxao4bsjljH0rTzQoBn6U4fXfd
-         MigB6WnbgA4jLpxZ9jQUQoNxUoMFF0nopPn5MmigeCmuo7ye5v0iPhn7FEY9IFiSuOOF
-         jmg5mm6xg/qinuIRoA+6z8Qb7WRPYeCsr+qBAqPFyrHwHOqj90brmkkZuw9+5L0KUTuE
-         vuyQ/sl1124rIdRxd1rgEqw1lmhCDlW8loXkm1bclS3WHCPr+FeAOWMq3glRDODyQQ8k
-         7e0A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790660039; x=1791264839;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=aIKIMkYuFOTq61i+iCqWLdJrE5c2b5L+SL6VyhrzHK0=;
-        b=t7nsGeuS1fkxpldpPmO0autT6s8yDlkudgPab9WiqzZs3ZCNdTZNmJUs12X3IItH8X
-         Z/xuk9iYIXM9lAoyEIsupcb4n0xh6xR4pSg+gVONYL2hjXMRi+yP45bT7726ucgffqYQ
-         hA/9BZhqZq4neIcTs+qVGDcUpieq3VUqZPINy9Hj/btBhhVgzksOXFe/u/SMXs2ZAf6e
-         XXzAAlkw4mXYBQr4iq8HiysXWDN+tTR/O3jyEnJJTYkry14D6EUhizP1HwSferMthza8
-         bp05FFt+fYClxKLy/bmLOa7ye9GEwvVgcYCgygcsZU/01HV2789TazMteC7Wsa8Dmoff
-         BVjg==
-X-Forwarded-Encrypted: i=1; AKwUvBy9FXveyPOBL6jO8phH8bOCPp0iybuyPnor2qO4/4nJi2G23lbfd85IhZ0crkvmH/CNXHF+R8+jLAYeFHQ=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYID05bOmFG63J+1x9ZkY5iGAXcIn6+L7Mp3u7xAwxoMcEUmgWBq
-	ejUVzjHGrZG1SLLbe1o/uloI6TMb3ADTKCQwLKOn6OQra6Pfoagk4iH2PNcfACVf69A=
-X-Gm-Gg: AYBFou0porWT5rkXQlFvAMnFCU9UaQ8J+SPYHGpWgrMtcpQS/F9fIwgNsKoXV8U6TlC
-	7DzC2qqwKY9Javmf5nrJ1D6RB1pXFaYvev/3Hcal9cqE9faADdGUi+ENKYFVrYXYIWbAon47jMv
-	4uaaqQVV28BslNwdNtlJ74oFVINkCti0Unmirz8TPMyWsbD1cUTAfsOpHkVtlff2NzQP1yJ7q9A
-	grBTPwMj5ZIVBz8BKZQxpA/esQNu8G6JhnqIWNflWVRVM+bnNQ/6SiATflCnJRuv+p7cVLtPq9d
-	jTkxBOfPW4zeHJElII6kkgxjnPdZl9/EC1WQ60VrBS2xSMIZniFl6AT/drOWSFcvfb7/9122lRg
-	olO/w8FHnVoVu9EMoEf/DKr+ECq3W0Y4821F4KabIH+c1Rg+jKa58sDcBP9sW/XmgNZ/Cmd/A6I
-	tD6PmMd0kv5PZ+pQWt9APRBCXKzdh2hNBnKVqYKE1S+oCcGWnMyJklAKQ2FzdaBoh8lJpbNM3sF
-	9LCaiOcI9tTa9vDw3kVo7UMfgOMQQ==
-X-Received: by 2002:a17:902:f710:b0:2dd:3ddf:b87a with SMTP id d9443c01a7336-2e2c937e018mr7110035ad.0.1790660039331;
-        Mon, 28 Sep 2026 22:33:59 -0700 (PDT)
-Received: from G6L4RL2QG9 ([139.177.225.254])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2df9142bafesm49251765ad.51.2026.09.28.22.33.51
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Mon, 28 Sep 2026 22:33:58 -0700 (PDT)
-From: Muchun Song <songmuchun@bytedance.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Mike Rapoport <rppt@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Hildenbrand <david@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Ritesh Harjani <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Lorenzo Stoakes <ljs@kernel.org>,
-	"Liam R . Howlett" <liam@infradead.org>,
-	Vlastimil Babka <vbabka@kernel.org>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Michal Hocko <mhocko@suse.com>,
-	Qi Zheng <qi.zheng@linux.dev>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org,
-	Muchun Song <songmuchun@bytedance.com>,
-	muchun.song@linux.dev
-Subject: [PATCH v3 6/6] mm/mm_init: add zone mismatch warning during page init
-Date: Tue, 29 Sep 2026 13:32:31 +0800
-Message-ID: <20260929053231.66085-7-songmuchun@bytedance.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260929053231.66085-1-songmuchun@bytedance.com>
-References: <20260929053231.66085-1-songmuchun@bytedance.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hv7Mh5gQGz2xrL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2026 16:20:32 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 97594602CA;
+	Tue, 29 Sep 2026 06:20:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4DE9C1F00893;
+	Tue, 29 Sep 2026 06:20:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790662829;
+	bh=lTp0iuvGgJlzLvCthN8H5DikguIjM02dg6D/PwjsUlQ=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc;
+	b=FEu8IKuJTM9UMyqWZRahuIUiQ6ZhkU4IDa2UZdQ+AHlfxY177GM88K5j47ZpxQMhi
+	 9FiOENuKjoLTRooDK6SGMn2gMDlmCoehRnP5Cw/6TyFOVTgHclMnxY1UKAjDkiTEI6
+	 K/Sd5XrAq9hpy03DSh95TZmK/hIC7jyt/XZ/GJsm1/KicRH8pbBdQeoXB2Cik/5FrY
+	 LhMT7P074WF9asToy5KM2I1lRfV//rJ6lF3tB8DG7vCsCS3rFqo0lGgSOlqUmWzNHX
+	 s6HPW0a40ZjDMKNQPLiD/ZEq0vCO79vhQpa0nH73XgM4QaTO4I76tb4UQji83RPvZR
+	 pHebvU6K9zPcg==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 3A59239253E9;
+	Tue, 29 Sep 2026 06:20:29 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -113,41 +62,65 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH bpf v5 0/3] bpf: Fix use-after-free of progs detached from
+ busy trampolines
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: 
+ <179066282803.293113.8557815551946775052.git-patchwork-notify@kernel.org>
+Date: Tue, 29 Sep 2026 06:20:28 +0000
+References: <20260926135605.1217928-1-florent.revest@linux.dev>
+In-Reply-To: <20260926135605.1217928-1-florent.revest@linux.dev>
+To: Florent Revest <florent.revest@linux.dev>
+Cc: bpf@vger.kernel.org, ast@kernel.org, daniel@iogearbox.net,
+ andrii@kernel.org, martin.lau@linux.dev, eddyz87@gmail.com, memxor@gmail.com,
+ song@kernel.org, yonghong.song@linux.dev, jolsa@kernel.org,
+ kpsingh@kernel.org, john.fastabend@gmail.com, leon.hwang@linux.dev,
+ zirajs7@gmail.com, rhkrqnwk98@gmail.com, puranjay@kernel.org,
+ xukuohai@huaweicloud.com, iii@linux.ibm.com, hbathini@linux.ibm.com,
+ chleroy@kernel.org, naveen@kernel.org, bjorn@kernel.org, pulehui@huawei.com,
+ yangtiezhu@loongson.cn, hengqi.chen@gmail.com, linux-kernel@vger.kernel.org,
+ aou@eecs.berkeley.edu, agordeev@linux.ibm.com, alex@ghiti.fr, bp@alien8.de,
+ catalin.marinas@arm.com, borntraeger@linux.ibm.com,
+ dave.hansen@linux.intel.com, emil@etsalapatis.com, hca@linux.ibm.com,
+ hpa@zytor.com, chenhuacai@kernel.org, ihor.solodrai@linux.dev,
+ mingo@redhat.com, linux-arm-kernel@lists.infradead.org,
+ linux-kselftest@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ loongarch@lists.linux.dev, maddy@linux.ibm.com, mark.rutland@arm.com,
+ mpe@ellerman.id.au, npiggin@gmail.com, palmer@dabbelt.com,
+ paulmck@kernel.org, pjw@kernel.org, ritesh.list@gmail.com,
+ sshegde@linux.ibm.com, shuah@kernel.org, svens@linux.ibm.com,
+ tglx@kernel.org, gor@linux.ibm.com, kernel@xen0n.name, will@kernel.org,
+ x86@kernel.org
 
-For vmemmap-optimized sections, tail struct pages may be backed by
-shared vmemmap pages. Those shared pages must carry the same page zone
-ID as the struct pages initialized for the section.
+Hello:
 
-Warn in __init_single_page() if the shared tail page has a different
-page_zone_id(), which would indicate inconsistent initialization.
+This series was applied to bpf/bpf.git (master)
+by Alexei Starovoitov <ast@kernel.org>:
 
-Signed-off-by: Muchun Song <songmuchun@bytedance.com>
-Acked-by: Qi Zheng <qi.zheng@linux.dev>
----
-v3:
-- Collect Acked-by from Qi Zheng
+On Sat, 26 Sep 2026 13:55:57 +0000 you wrote:
+> A task running in a trampoline image can call a prog that was detached
+> and freed in the meantime, when it slept in a sleepable prog before
+> reaching the detached one or was preempted right before calling it.
+> Patch 1 handles the preempted case with an RCU tasks grace period,
+> patch 2 handles the sleeping case by patching detached progs out of the
+> images that still call them and patch 3 adds a selftest for the sleeping
+> case.
+> 
+> [...]
 
-v2:
-- New patch.
----
- mm/mm_init.c | 3 +++
- 1 file changed, 3 insertions(+)
+Here is the summary with links:
+  - [bpf,v5,1/3] bpf: Wait for an RCU tasks grace period before freeing trampoline progs
+    https://git.kernel.org/bpf/bpf/c/0fb5751a6e41
+  - [bpf,v5,2/3] bpf: Skip detached progs in trampoline images that are still in use
+    https://git.kernel.org/bpf/bpf/c/17637e1a581a
+  - [bpf,v5,3/3] selftests/bpf: Detach a trampoline prog while a task sleeps before it
+    https://git.kernel.org/bpf/bpf/c/d5288c519bbd
 
-diff --git a/mm/mm_init.c b/mm/mm_init.c
-index 1650d6bc1211..bd02e8d06965 100644
---- a/mm/mm_init.c
-+++ b/mm/mm_init.c
-@@ -609,6 +609,9 @@ void __meminit __init_single_page(struct page *page, unsigned long pfn,
- 	if (!is_highmem_idx(zone))
- 		set_page_address(page, __va(pfn << PAGE_SHIFT));
- #endif
-+	VM_WARN_ON_ONCE(vmemmap_optimizable_order(pfn_to_section_compound_order(pfn)) &&
-+			page_zone_id(page + VMEMMAP_OPTIMIZATION_NR_STRUCT_PAGES) !=
-+			page_zone_id(page));
- }
- 
- #ifdef CONFIG_NUMA
+You are awesome, thank you!
 -- 
-2.54.0
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
 
 
