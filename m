@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-28489-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28490-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA14CCA5FA1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 11:30:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1EC3DCA5FA1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 11:30:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hvGFD4kYmz30PJ;
-	Tue, 29 Sep 2026 21:30:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790681424;
-	cv=none; b=X8684YYdlajz707bwtVKMAgQz4SqnUDdh/qhIzkWaSh52oVRiw/yEK5HlGdj+umEyg/5bEI6zpdEt62u7LKi0Q6fFr/m7rskzdaBussmDVjvICuGm4vyifJlVtDsw3+AWPEWZMI12X6XuDOldGdhhoxLxgnZM4aA39PrDCp0pO9UpHrORvNIlXXjy3rsrUlR/8IyyhEsln1Zx6B2ov0RDA7hme65fqlA0WmwpaUEICbMLrJB0FOVFvLOshQxWYH31aVzmWF9hsmlj3v060RWLrsagWt8g3wv/F3ZNQXrIOIJuUNbsrLY8EgfbLmPHQCZGrcZ8rTWaP0EF6IqvH+c8g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hvGFK0Hmtz30Yb;
+	Tue, 29 Sep 2026 21:30:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790681428;
+	cv=none; b=dgOyEK+JrZ8olxRcNuX4L+0GjnKG2E2HfupvFBPh2nrwLMMB7d90m3csb3Nd+o1pmfh0xakXNL1BA14ILNj4y5L6P5qyjFBxEIJUz7QZJkyi8KND3dxqvH1ePQgoRS1sILu8K1Rwk+/ym6v/ZaRqGQGfFk4EG6vtpg3Bsv+6El9QCa0Wq3FBloFaV0LSVbSiSjSEejuo1jjVYtQ+13Z6JEc7smQtBLnf28EpRz+2u2dkX7iYEwKsy16e1emnTQahe8xdxNtyy+uMgHX1VoMFSe9dLJPQLOuZNTf7k8UN43oE1DgjFQ/tkE45vm/vQwMgzNaw8pElUoIW+6DhNJilDw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790681424; c=relaxed/relaxed;
-	bh=202PceNA4mgm+8gsK0Krd58dlYSUB37NGsnHorEd2N8=;
+	t=1790681428; c=relaxed/relaxed;
+	bh=2COO99V3tWZkY2vKSP/RcAXFdKtCl9Xe902JMrRqT08=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=AP0Y+Z7Vx+FlugeHKgaL6LfuvOdZPZ4Agsy7oiADBHKsbbyYpM6Ngc73ghkUKtPIch90quGIr70nNo7FxjyU8aVylPopQSghQLtWr4LlDdbCA8c5U7qrwE6RD0d02tQ5bqA+VNH4D6VxM4+wxP4xYCj4o69nPZgwdicRPdlqXpfc5wjqluQ1KhkhXNPn92oM5N/tSzmfdvW/WWFNYNZ0T822u0HVCKIAF/lJ7tn+6YtX5pDX/C6TEOFhARgVhwyY4mknItCTisfnbfNKwTOhi5SAx2cuX+qDNyY0xVRdk233nNJTBPHkJDSdUcyjpnGGkLkahKrfP+IdWtLaNRimQg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hItW585s; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=C2+7Edpej38xxd/Y+p52QmaZPnAUhiMs6RFUA8JBeoHC1kXCJgkExSCoxZyBqFYgpZvIVF8IIUbLset9V/QtoHpwke1e+gWQe3R8Tmw9BXGbbALnuqzxzt+ENs96Kdd+KrwTjehB3FWs+ZiIz1e+12Sq8J3iHsw3opkHiZ9Cz4DxepCO/7vk3lUKhf0iGfrJs/NEkUvZ2pvxBUztyvfW4HOE0/J6p/SCQU7RB58yrmRZqVXbjtFd+rRpDlLZoGso0KmNjbX37gz7VM2TSIL/7NBpd1dY0WyBGmvuaEpIjtJgc2YnXgTqRMUE6QFx5iii20GAOkqSZflMiLVKSryKAA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YhIScCCD; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hItW585s;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YhIScCCD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvGFC6DdGz2yvy
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2026 21:30:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvGFJ2mLGz2yvy
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2026 21:30:28 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 650CE60008;
+	by sea.source.kernel.org (Postfix) with ESMTP id 0C86943E9E;
+	Tue, 29 Sep 2026 11:30:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 923971F00893;
 	Tue, 29 Sep 2026 11:30:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0B0741F000FF;
-	Tue, 29 Sep 2026 11:30:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790681421;
-	bh=202PceNA4mgm+8gsK0Krd58dlYSUB37NGsnHorEd2N8=;
+	s=k20260515; t=1790681425;
+	bh=2COO99V3tWZkY2vKSP/RcAXFdKtCl9Xe902JMrRqT08=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=hItW585slob3QBS6P5xzCMG0vw8GN3aNzq2Z9nwKqB70HAFmlvYeJoHa1y7vBgRqo
-	 OLtNP5J/MRh83pTwAtZ4oMw4/zd5Gi03Wq7eiu5vo9GRhmWlLx72irxw5RkiOCoZXp
-	 bo1Td7MUryU94GRk+v2UHvSUJzru2IZafFaepdF/VGpf/tSzhFO5RNJ9IfmlWWVwCo
-	 NR+qLbPqjj1QGzm7uMYFGAbYftl0YakmkfWN0C5Q6t4OQOsUL731uaAmGNkqR6aas0
-	 3ULbHCvTT1gCCNoffSHe6LTG9JPF6iurs4u8yPdb14IgCPA3wSXmGCSQXnIwvSI12H
-	 gEeZJLf4JNVYQ==
+	b=YhIScCCD2hrldStzzqLVcyZE5j66LQO/qOfz4sFArIpQ2PaLnC5+1+qAN7m54zyB/
+	 SG2CxllzCp8opF3hCLOn6KCFj96YcUsRkUlqI4cUSQsfmEzSs4K62HgSck/Eb8HXEW
+	 wM1ucBZoYMRH/fPM0icbvi1Gk6zp6oXT3/gvFG+OKOabKJI8AggI4JrV+yYpqsJzpq
+	 CoC9LA9YZ0TsWHlXpkoaFOgDKUje/X8QcWk+N+cctaO8xPf8vf9g3CflreSPsDzJDa
+	 Eq5Nv71xnMnY2XqkEHwOURk6ysX7vtPuTJrEKfjJYO634tKTV1/EnTQO0skRm0Fdpw
+	 EHGG4uYFM7N0A==
 From: Mark Brown <broonie@kernel.org>
 To: lgirdwood@gmail.com, robh@kernel.org, krzk+dt@kernel.org, 
  conor+dt@kernel.org, Frank.Li@nxp.com, s.hauer@pengutronix.de, 
@@ -54,13 +54,13 @@ To: lgirdwood@gmail.com, robh@kernel.org, krzk+dt@kernel.org,
  nicoleotsuka@gmail.com, perex@perex.cz, tiwai@suse.com, 
  linuxppc-dev@lists.ozlabs.org, shengjiu.wang@oss.nxp.com
 Cc: Shengjiu Wang <shengjiu.wang@nxp.com>, 
- Chancel Liu <chancel.liu@gmail.com>
-In-Reply-To: <20260928061727.1844167-1-shengjiu.wang@oss.nxp.com>
-References: <20260928061727.1844167-1-shengjiu.wang@oss.nxp.com>
-Subject: Re: [PATCH v6 4/5] ASoC: fsl_asrc: expose individual DAIs per
+ Chancel Liu <chancel.liu@gmail.com>, Daniel Baluta <daniel.baluta@nxp.com>
+In-Reply-To: <20260928061756.1844185-1-shengjiu.wang@oss.nxp.com>
+References: <20260928061756.1844185-1-shengjiu.wang@oss.nxp.com>
+Subject: Re: [PATCH v6 5/5] ASoC: fsl_easrc: expose individual DAIs per
  conversion path
-Message-Id: <179068141537.159801.4072628732064323719.b4-ty@b4>
-Date: Tue, 29 Sep 2026 12:30:15 +0100
+Message-Id: <179068142132.159801.7683706041383677671.b4-ty@b4>
+Date: Tue, 29 Sep 2026 12:30:21 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,14 +78,14 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.17-dev
 
-On Mon, 28 Sep 2026 14:17:27 +0800, shengjiu.wang@oss.nxp.com wrote:
-> The i.MX ASRC hardware supports three independent conversion pairs
-> (A, B, C). The driver previously registered a single DAI with generic
+On Mon, 28 Sep 2026 14:17:56 +0800, shengjiu.wang@oss.nxp.com wrote:
+> The i.MX EASRC hardware supports four independent conversion contexts
+> (A, B, C, D). The driver previously registered a single DAI with generic
 > stream names "ASRC-Playback" and "ASRC-Capture", which prevents
 > multiple independent conversion paths from being used simultaneously.
 > 
-> Replace the single fsl_asrc_dai instance with an array of three DAI
-> drivers to allow up to three independent conversion paths to be active
+> Replace the single fsl_easrc_dai instance with an array of four DAI
+> drivers to allow up to four independent conversion paths to be active
 > at the same time:
 > 
 > [...]
@@ -96,8 +96,8 @@ Applied to
 
 Thanks!
 
-[4/5] ASoC: fsl_asrc: expose individual DAIs per conversion path
-      https://git.kernel.org/broonie/sound/c/6aef9cb5c797
+[5/5] ASoC: fsl_easrc: expose individual DAIs per conversion path
+      https://git.kernel.org/broonie/sound/c/788e893edb6a
 
 All being well this means that it will be integrated into the linux-next
 tree (usually sometime in the next 24 hours) and sent to Linus during
