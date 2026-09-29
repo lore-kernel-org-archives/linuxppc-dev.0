@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-28525-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28526-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CAB1FCA5FAD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 19:34:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B228CCA5FA5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 19:34:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hvSyh59yvz3blB;
-	Wed, 30 Sep 2026 05:33:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790710412;
-	cv=none; b=YUA8hwzuZxtiohUlUK9Qs4I1p50VaziiGkpbupZC655GLnwoqDZjuagkNoAB/AatGy3JEaBWry92pa0/o9USBwHFjEStlRZOQU5ksvCWXJ4BnbFn1ONKhsgiale5yyeJvwd0QhdbeJbE4uyW6SrLoFaO84MJIIU5aPzhcKHHM7qPsx94sjmRsIpnjgD3ytynljlUtj9RXt1XHmZQ3nT2ir8LNBZh7PyylZI3G29FAH4QvJ66w5ceVh1XOynaMAkfHLK0T6Ix8UpIlby38/5bgTr64wk+ezZGFm+6XNosNEdkag3j1HNFIREkbjvVhYWSKzvzq0r5V2PmZALqzshANg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hvSyj5rnhz3bmM;
+	Wed, 30 Sep 2026 05:33:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790710413;
+	cv=none; b=W/H3FW6S8K3VuvttyEKGAI1mc7ISeQpL+t6ApdV5F1q+sXAhXbAgD6h1oM9Upc4hnqwmRsYQ3Qx4ayryL2RqB7L8j2kLJJ/At0g38oXNx67gMr3iKgDydWrEE7n4g+HvxVD2nbgB7GcPUSACnpAjKXpFIjXlWnwK5Rgk94NXK0cMSu5EFYHAHvl30HpM8pCVL9k2rUxJx0SWRewIpQyN38jCfIrom8KQ83Fwse8UgWOQ6bsDpmZSLVDRE07ssCES1UzmV3Hl0BNYVBdqLE6297e/V3Ao6PxpJbSgK+V0fBYK6qKBbmNMKi8Ksi+T7dYHHs8c0ay8rYrTjEH8EXvCrg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790710412; c=relaxed/relaxed;
-	bh=JcGP5PqyF3su430kMKIr7qo6gmZhlV7ZBz99vO56IJY=;
+	t=1790710413; c=relaxed/relaxed;
+	bh=7TcF8OYvio2OdQ3BeVyOuaJEH92AlMRSqt3tdA77Hak=;
 	h=Subject:From:To:Cc:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=eZ9TMAKhoxsKeIWTGVYmfeTH9ZKIaph6A0MBtNT4oW1d3EtcHjRLpLsD+dGxS9CDIT4Y+J4Cim6N7E5YyaYHvcqjCOqKrNyUlGXt2hMKgInb/icL4Qr/vA95eM4YYXZePA46DsQOoM1jEDIgdKIS/HSlKvooVrZfvR8rVoplkAvZ6X4/m0QNTTxLxCjbMBCLaNT8g6l+RJFMHCimz7Utes0SeN+AL6SLLKoqsSmJ9vsL6C6ErHv9Ch5iRlDM5ORINS8pWhiucKSsnBM9SPq/GNwjnRyFd+WrpJ/XHnhq1JXHSPyuzGdbgA664IvJ1jORuU8iBn7SP5FYoUmBE5TKWw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CMepHFsG; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:MIME-Version; b=kJf4QHlxy9qixi6hNyC9JGx9JpY8OKcmyG0/+pjr+BdZ31UdXbAmgAr7t/UYHds2eaoeoVKuYbWuRib3rCfmlzPfrFRoe2iWa8jgz0UXQ1gENAnwXCDaXUfr60wWNgz6Kl8EdrPlNwAwsfNLi/PTPO5XiCoWMk4E27b2h5tarMSRXXfSEn6rlYf24P3I7sydWBHQ69dX5b5eutivtGLiaudRyAl1Ir/z69bDPspKsgDRCsgmNmwjMsTG/HIIZZHZdY6KwuE9tsNa4Un3xItCoyyxQBlOeYq5r+XhBg6O8qxrgczFhHXGXUo1/80Jim4p10M5pmyTmZSlqfSV5L0vUw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OOY3UkUp; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CMepHFsG;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OOY3UkUp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvSyd2KY3z3bf3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2026 05:33:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvSyh1L5zz3bbY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2026 05:33:32 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id D11646022B;
-	Tue, 29 Sep 2026 19:33:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A290D1F00893;
-	Tue, 29 Sep 2026 19:33:27 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 3EABF60235;
+	Tue, 29 Sep 2026 19:33:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2294D1F000FF;
+	Tue, 29 Sep 2026 19:33:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790710408;
-	bh=JcGP5PqyF3su430kMKIr7qo6gmZhlV7ZBz99vO56IJY=;
+	s=k20260515; t=1790710410;
+	bh=7TcF8OYvio2OdQ3BeVyOuaJEH92AlMRSqt3tdA77Hak=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=CMepHFsGKP84yI7nZy6HBBh7IYqgzxETmLYADCHeYxVA2J/O2WwBicCqBc4lG+245
-	 OLswZ6CjrPRxDYm9uPUZhoK0SmjoQxrRtxblRbNW3jlBecq8wtK2OuCZCot9yoglmP
-	 OE0DJrOpSo4f937z3a1PHA9F2KUHi/SjH2xBK6FH25zbp3NqAi4NB/5ywrLet5LUJg
-	 06tnbnAJPLR3dFC1zHg8y7lN1h5MhCjXGRhJ22zQb0WBfi22zyiRN3ZKabeaEHyUJR
-	 Jo+ypPmyKsMlj2AgVh8I6ZI44t6bS2EjrA7DFY6hXnXbfLZvUtTXIJDZMPHBEuOf5y
-	 A4NgrmgaDrIvA==
-Subject: Re: [PATCH net-next v7 14/15] ibmveth: Implement incremental MQ RX
- queue resize
+	b=OOY3UkUpM9X6e+268hMjravwL+LlXkZaKxgF10Ef4LTUphuoDKyJUJp4G2sFLcG13
+	 NlH0AodMXLNunfOPZJKldlFjHD7cKd/xW1+vQNnAP0moDb+JoAHCR5UsauUGzT4Bv/
+	 lyGpLkhTk+RqzIuBEYcWr32BC0VHIIBv5y2zPIHW+fmgMSlv4QbcYnZmidOUUdKhXe
+	 8KWT0oKwztHlICLDEDdAvPU/ZkHw9+ykFtsqL0CKANiqhvQL9PAVavh1Xuma0paQ3n
+	 AffBTErPz/T3x2sef58JT0vw6EFSMUDopyshsNvTI9mjJDBhxoF2MdRii6cj01KB8A
+	 UzMlG4SIesj6g==
+Subject: Re: [PATCH net-next v7 15/15] ibmveth: Complete set_channels
+ down-path and mq_fallback max_rx cap
 From: netdev-bot+sashiko@kernel.org
 To: mmc@linux.ibm.com
 Cc: netdev@vger.kernel.org, davem@davemloft.net, kuba@kernel.org,
@@ -54,12 +54,12 @@ Cc: netdev@vger.kernel.org, davem@davemloft.net, kuba@kernel.org,
  mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, haren@linux.ibm.com,
  ricklind@linux.ibm.com, davemarq@linux.ibm.com, bjking1@linux.ibm.com,
  shaik.abdulla1@ibm.com
-Date: Tue, 29 Sep 2026 19:33:27 +0000
-Message-ID: <179071040721.434549.16670777556064239489@kernel.org>
+Date: Tue, 29 Sep 2026 19:33:28 +0000
+Message-ID: <179071040872.434549.12159663294832485086@kernel.org>
 In-Reply-To:
- <cecd8fef057ec0d42eff6fc023c36c0702921b6b.1790319558.git.mmc@linux.ibm.com>
+ <de05d82d2d02c021de1e215656d1302d2cd41c46.1790319558.git.mmc@linux.ibm.com>
 References:
- <cecd8fef057ec0d42eff6fc023c36c0702921b6b.1790319558.git.mmc@linux.ibm.com>
+ <de05d82d2d02c021de1e215656d1302d2cd41c46.1790319558.git.mmc@linux.ibm.com>
 X-sashiko-severity: Medium
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -77,10 +77,10 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 
-Thank you for your contribution! Sashiko AI review found 5 potential
+Thank you for your contribution! Sashiko AI review found 4 potential
 issue(s) to consider.
 
-Critical: 0 · High: 0 · Medium: 3 · Low: 2
+Critical: 0 · High: 0 · Medium: 1 · Low: 3
 
 If you believe none of the issues are legitimate, please reply to each
 issue of Medium severity or higher and explain why the AI is wrong.
@@ -88,313 +88,214 @@ If any of them are legitimate and you plan to respin, please let patchwork
 know by including "pw-bot: cr" as a separate line at the end of your reply
 (one such reply per series is enough).
 
-- [Medium] Resolved later in this series; not a finding at the end of the
-  series.
-- [Medium] Two rollback paths bring queues back into service even when
-  widening real_num_rx_queues back up fails.
-- [Medium] Four new resize paths call ibmveth_enable_irq(adapter, i) to
-  unmask the subordinate queue with H_VIOCTL H_ENABLE_VIO_INTERRUPT,…
-- [Low] Three comments added or edited by this patch do not match the
-  code.
-- [Low] A subordinate RX queue stranded above the live count can leak.
+- [Medium] The new !opened branch of ibmveth_set_channels() raises
+  adapter->num_rx_queues with `ibmveth_publish_num_rx_queues(adapter,…
+- [Low] The commit log refers to other patches by series position: "Patch
+  14 wires live ethtool -L rx" and "replacing patch 14's temporary…
+- [Low] When mq_fallback is set and the live RX count N is greater than
+  1, ibmveth_get_channels() reports max_rx = rx_count = N.
+- [Low] ibmveth_poll_controller() now reads adapter->opened as a plain
+  bool from netpoll context, which runs without RTNL and concurrently…
 
 --
 
-ibmveth: Implement incremental MQ RX queue resize
+ibmveth: Complete set_channels down-path and mq_fallback max_rx cap
 
-This patch adds ibmveth_resize_rx_queues_incremental() and
-ibmveth_resize_rx_channels(), so ethtool -L can change the live RX queue
-count without tearing down the device. Scale-up allocates, registers and
-unmasks the new subordinate queues. Scale-down quiesces, drains and
-deregisters the retiring ones, and both directions roll back on failure.
+This commit allows ethtool -L to change the RX count while the device is
+down. The new count is published without allocating anything, and on the
+live path RX is rolled back if TX fails. It also caps max_rx at the live
+count under mq_fallback, raises the max_tx ceiling to at least the live
+TX count, and guards ibmveth_poll_controller() with adapter->opened.
+
+> Patch 14 wires live ethtool -L rx. This patch completes the down-path
+> publish/rollback and get_channels() once mq_fallback is set, replacing
+> patch 14's temporary -EOPNOTSUPP for an RX count change while down.
+
+[Severity: Low]
+This isn't a bug, but "Patch 14" and "patch 14's temporary -EOPNOTSUPP"
+are series positions. They won't mean anything once this lands in git
+history. Could they refer to the earlier commit by its subject instead?
+
+The subject covers only the down path and the mq_fallback max_rx cap.
+The patch also carries two further independent changes:
+
+> max_tx is at least the live tx_count. After CPU offline,
+
+[ ... ]
+
+> Guard poll_controller() with adapter->opened so netpoll cannot walk
+> unallocated queue state while closed.
+
+After CPU offline, the max_tx change in ibmveth_get_channels() and
+ibmveth_set_channels() lets ethtool -l report a max_tx above the online
+CPU count. The ibmveth_poll_controller() guard is a separate netpoll
+change.
+
+Would splitting these out make bisecting and selective backporting
+easier?
 
 > diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-> index 0ac0359bb71e6..1b1dd89dadf79 100644
+> index 1b1dd89dadf79..da14c69152110 100644
 > --- a/drivers/net/ethernet/ibm/ibmveth.c
 > +++ b/drivers/net/ethernet/ibm/ibmveth.c
-
-[ ... ]
-
-> @@ -785,15 +837,25 @@ ibmveth_cleanup_rx_interrupts(struct ibmveth_adapter *adapter)
-
-[ ... ]
-
->  static bool ibmveth_schedule_rx_queue(struct ibmveth_adapter *adapter,
->  				      int qindex)
+> @@ -3399,15 +3399,32 @@ static void ibmveth_get_channels(struct net_device *netdev,
+>  				 struct ethtool_channels *channels)
 >  {
->  	struct napi_struct *napi = &adapter->napi[qindex];
->  
-> -	if (WARN_ON(qindex < 0 || qindex >= ibmveth_get_num_rx_queues(adapter)))
-> +	if (WARN_ON(qindex < 0))
-> +		return false;
-> +
-> +	/*
-> +	 * A live shrink can publish a lower count while netpoll walks a
-> +	 * snapshot of the old one, so an index past the end is expected
-> +	 * here and must not splat. ibmveth_replenish_task() skips the
-> +	 * same way; callers already treat false as "queue is gone".
-> +	 */
-> +	if (qindex >= ibmveth_get_num_rx_queues(adapter))
->  		return false;
+>  	struct ibmveth_adapter *adapter = netdev_priv(netdev);
+> +	unsigned int rx_count = ibmveth_get_num_rx_queues(adapter);
 
 [ ... ]
 
-> @@ -1261,8 +1323,7 @@ static void ibmveth_replenish_task(struct ibmveth_adapter *adapter,
->   * SQ open leaves PHYP masked until the first poll. If schedule_prep fails,
->   * NAPI never runs and the queue stays masked (TX OK, RX/ARP dead) until
->   * reload. Replenish first so an enable_irq fallback can actually deliver.
-> - * Also used after every open (SQ and MQ) and after scale-down so a
-> - * queue is not left idle+masked.
-> + * Also used after every open (SQ and MQ) and after scale-down rollback.
->   */
->  static void ibmveth_restart_rx_queue(struct ibmveth_adapter *adapter,
->  				     int qindex)
+> +	channels->rx_count = rx_count;
+> +	if (adapter->multi_queue && !adapter->mq_fallback)
+>  		channels->max_rx = IBMVETH_MAX_RX_QUEUES;
+>  	else
+> -		channels->max_rx = 1;
+> -	channels->rx_count = ibmveth_get_num_rx_queues(adapter);
+> +		channels->max_rx = rx_count;
+>  }
 
 [Severity: Low]
+When mq_fallback is set and the live RX count N is above 1, this reports
+max_rx = N. The ethtool core only compares rx_count against max_rx:
 
-This isn't a bug, but three of the new comments don't match the code.
+net/ethtool/channels.c:ethnl_set_channels() {
+    ...
+	if (channels.rx_count > channels.max_rx)
+		err_attr = ETHTOOL_A_CHANNELS_RX_COUNT;
+    ...
+}
 
-The updated ibmveth_restart_rx_queue() comment lists open and scale-down
-rollback as its callers. ibmveth_scale_up_rx_queues() also calls it in
-three places: after each successful queue bring-up, on the keep path after
-a failed destroy, and on the cleanup_new_queues keep path.
+A request for any value in 2..N-1 therefore reaches the driver.
+ibmveth_resize_rx_channels() then rejects it:
 
-The new ibmveth_schedule_rx_queue() comment says callers treat false as
-"queue is gone". ibmveth_restart_rx_queue() does the opposite on false:
+	if (goal_rx > 1 && (!adapter->multi_queue || adapter->mq_fallback)) {
+		...
+		return -EOPNOTSUPP;
+	}
 
-	if (ibmveth_schedule_rx_queue(adapter, qindex))
-		return;
+That leaves 1 and N as the only RX counts set_channels accepts, while
+get_channels advertises 1..N. For example, ethtool -l can show a max of
+8, but ethtool -L dev rx 4 fails with "Operation not supported".
 
-	ibmveth_enable_irq(adapter, qindex);
+This state can be reached after ibmveth_replenish_task() or a scale-up
+register failure sets mq_fallback. It lasts until the next
+ibmveth_open() applies the fallback.
 
-A caller that follows the comment would unmask PHYP on a retired queue.
-
-The ibmveth_cleanup_single_rx_interrupt() kdoc says "Used during
-incremental scale-down". It also runs on the scale-up failure paths via
-ibmveth_destroy_subordinate_rx_queue().
-
-Could these comments be updated?
+The commit message says the cap "blocks growth". Doesn't it also block
+shrinking within the advertised range? Could get_channels and
+set_channels be made to agree on what is settable?
 
 [ ... ]
 
-> +static int
-> +ibmveth_scale_up_rx_queues(struct ibmveth_adapter *adapter, int old_count,
-> +			   int new_count, int rxq_entries)
-> +{
+> @@ -3482,28 +3493,90 @@ static int ibmveth_set_channels(struct net_device *netdev,
 
 [ ... ]
 
-> +	for (i = old_count; i < new_count; i++) {
-> +		if (adapter->queue_handle[i]) {
-> +			/* Left by a failed H_FREE; close frees it. */
-> +			netdev_err(netdev,
-> +				   "RX queue %d still held by PHYP, reset pending\n",
-> +				   i);
-> +			rc = -EBUSY;
-> +			goto cleanup_new_queues;
-> +		}
-> +		rc = ibmveth_alloc_single_rx_queue(adapter, i,
-> +						   rxq_entries);
-> +		if (rc) {
-> +			netdev_err(netdev, "Failed to allocate queue %d: %d\n",
-> +				   i, rc);
-> +			goto cleanup_new_queues;
-> +		}
+> +	if (!adapter->opened) {
+> +		/* Apply TX first so a failure leaves the published RX
+> +		 * count unchanged.
+> +		 */
+> +		rc = netif_set_real_num_tx_queues(netdev, goal_tx);
+> +		if (rc)
+> +			return rc;
 > +
-> +		rc = ibmveth_register_single_rx_queue(adapter, i);
-> +		if (rc) {
-> +			netdev_err(netdev, "Failed to register queue %d: %d\n",
-> +				   i, rc);
-> +			if (rc == -EOPNOTSUPP)
-> +				adapter->mq_fallback = true;
-> +			if (!ibmveth_deregister_single_rx_queue(adapter,
-> +								i))
-> +				ibmveth_free_single_rx_queue(adapter,
-> +							     i);
-> +			else
-> +				schedule_work(&adapter->work);
-> +			goto cleanup_new_queues;
-> +		}
+> +		/* Publish desired RX count for next open() and refresh CMO;
+> +		 * do not allocate while down.
+> +		 */
+> +		if (goal_rx != ibmveth_get_num_rx_queues(adapter)) {
+> +			ibmveth_publish_num_rx_queues(adapter, goal_rx);
+> +			rc = netif_set_real_num_rx_queues(netdev, goal_rx);
 
-[Severity: Low]
+[Severity: Medium]
+Can raising num_rx_queues here leak a stranded subordinate RX queue?
 
-If ibmveth_deregister_single_rx_queue() fails here, queue i keeps its
-buffer list page, the dma_map_single() of that page, the
-dma_alloc_coherent() RX ring and its pool arrays. queue_handle[i] also
-stays set above the live count. The IRQ setup failure branch below does
-the same.
-
-Only ibmveth_free_stranded_rx_queues() frees such a queue, and it runs
-only from ibmveth_close() when H_FREE_LOGICAL_LAN succeeds:
+Stranded queues (queue_handle[i] still set above the live count) are
+reclaimed only in ibmveth_close(), and only if H_FREE_LOGICAL_LAN
+succeeds:
 
 	if (!ibmveth_free_all_queues(adapter))
 		ibmveth_free_stranded_rx_queues(adapter);
 
-If H_FREE_LOGICAL_LAN fails in close, does this leak the stranded queue's
-page, RX ring and DMA mapping? The out_free_all_queues unwind in
-ibmveth_open() and ibmveth_remove() also don't seem to release queues
-above the live count.
+That helper also only scans indices at or above the live count:
 
-After a failed close, queue_handle[i] also stays set. Every later scale-up
-that reaches index i then returns -EBUSY with the "reset pending" message,
-but that path doesn't schedule a reset.
+	for (i = ibmveth_get_num_rx_queues(adapter);
+	     i < IBMVETH_MAX_RX_QUEUES; i++) {
+		if (!adapter->queue_handle[i])
+			continue;
 
-In the same failed-close case, the live queues' memory is freed anyway.
-Keeping only the stranded queue's memory looks inconsistent.
+Consider a live scale-up where H_REG or IRQ setup fails and the
+per-queue H_FREE also fails. If the following close then fails
+H_FREE_LOGICAL_LAN, the strand survives with opened == false. This new
+down path can then lift num_rx_queues above that index, which moves it
+out of the scan range.
 
-[ ... ]
+On the next open, ibmveth_alloc_rx_queues() overwrites the pointers
+without checking them:
 
-> +		ibmveth_publish_num_rx_queues(adapter, i + 1);
-> +		ibmveth_replenish_task(adapter, i);
-> +		napi_enable(&adapter->napi[i]);
-> +
-> +		rc = ibmveth_enable_irq(adapter, i);
-> +		if (rc) {
+	for (i = 0; i < ibmveth_get_num_rx_queues(adapter); i++) {
+		adapter->buffer_list_addr[i] =
+			(void *)get_zeroed_page(GFP_KERNEL);
 
-[ ... ]
+The same applies to rx_queue[i].queue_addr/queue_dma and
+buffer_list_dma[i]. Wouldn't the old page, the coherent RX ring, the DMA
+mappings and the pool buffers for that index be leaked?
 
-> +		if (rc) {
-> +			/* enable_irq errno; keep -EIO. */
-> +			rc = -EIO;
-> +			goto cleanup_new_queues;
-> +		}
-> +		ibmveth_restart_rx_queue(adapter, i);
-> +	}
+The live path guards against this in ibmveth_scale_up_rx_queues():
 
-[Severity: Medium]
+		if (adapter->queue_handle[i]) {
+			/* Left by a failed H_FREE; close frees it. */
+			netdev_err(netdev,
+				   "RX queue %d still held by PHYP, reset pending\n",
+				   i);
+			rc = -EBUSY;
 
-Can this unmask PHYP behind a live poll?
-
-Once ibmveth_enable_irq() unmasks queue i, an interrupt on another CPU can
-run ibmveth_interrupt(), win napi_schedule_prep(), mask PHYP and schedule
-NAPI. ibmveth_restart_rx_queue() then sees its own prep fail and falls
-back to:
-
-	ibmveth_enable_irq(adapter, qindex);
-
-That unmasks PHYP while the poll owns the queue. When the poll completes,
-it calls ibmveth_enable_irq() again on a source that is already enabled.
-ibmveth_toggle_irq() folds H_PARAMETER to success only on disable:
-
-	if (h_rc == H_PARAMETER && !enable) {
-
-So on enable it returns -EIO, and ibmveth_poll() schedules a reset.
-
-The v6 changelog gives this case as the reason the survivor restart loop
-was dropped: "enable_irq() on prep-fail unmasks behind a live poll
-(subordinate H_PARAMETER on enable is -EIO and reset)".
-
-The same enable-then-restart sequence appears in four places:
-
-- here
-- the keep branch after a failed destroy
-- the cleanup_new_queues keep loop
-- both rollback loops in ibmveth_scale_down_rx_queues()
-
-On a busy link, would an ethtool -L that otherwise succeeded end in an
-adapter reset?
+Should the down path apply the same queue_handle[] check before
+publishing a larger count? Before this patch, an RX count change while
+down returned -EOPNOTSUPP, so this path was not reachable.
 
 [ ... ]
 
-> +	/* Drop the live count before freeing the half-added queues. */
-> +	ibmveth_publish_num_rx_queues(adapter, old_count);
-> +	if (netif_set_real_num_rx_queues(netdev, old_count))
-> +		schedule_work(&adapter->work);
-> +	synchronize_net();
-> +
-> +	for (i = failed_queue - 1; i >= old_count; i--) {
-> +		int keep;
-> +
-> +		if (!ibmveth_destroy_subordinate_rx_queue(adapter, i))
-> +			continue;
-> +
-> +		keep = i + 1;
-> +		ibmveth_publish_num_rx_queues(adapter, keep);
-> +		if (netif_set_real_num_rx_queues(netdev, keep))
-> +			schedule_work(&adapter->work);
-> +		for (i = old_count; i < keep; i++) {
-> +			int irq_rc;
-> +
-> +			ibmveth_replenish_task(adapter, i);
-> +			/* START: NAPI before PHYP unmask. */
-> +			napi_enable(&adapter->napi[i]);
-> +			irq_rc = ibmveth_enable_irq(adapter, i);
-
-[Severity: Medium]
-
-At this point real_num_rx_queues has already been lowered to old_count,
-and keep is above old_count. Growing the count goes through
-net_rx_queue_update_kobjects(), which can fail (for example with -ENOMEM).
-netif_set_real_num_rx_queues() then leaves dev->real_num_rx_queues
-unchanged.
-
-If that happens, is it safe to still replenish, napi_enable() and unmask
-queues old_count..keep-1? Packets on those queues would carry
-skb_record_rx_queue() indexes at or above real_num_rx_queues. That hits
-the WARN_ONCE in get_rps_cpu() and the bypass in netif_get_rxqueue(),
-which is what widening real_num up front in this function is meant to
-avoid.
-
-The destroy failure path in ibmveth_scale_down_rx_queues() has the same
-pattern, after real_num has been lowered to new_count:
-
-		if (netif_set_real_num_rx_queues(netdev, keep))
-			schedule_work(&adapter->work);
-		for (i = new_count; i < keep; i++) {
-
-[ ... ]
-
-> @@ -2567,18 +3486,15 @@ static int ibmveth_set_channels(struct net_device *netdev,
->  		     goal = channels->tx_count;
->  	int rc, i;
->  
-> -	/*
-> -	 * RX channel resize is implemented in a later patch; reject any
-> -	 * request that changes rx_count. Read-modify-write TX adjustments
-> -	 * submit the current rx_count and proceed.
-> +	/* Validate RX (and resize when opened) before the down-path
-> +	 * early return so MQ/range errors are reported here. Publishing
-> +	 * the desired RX count and CMO while down is the next patch.
->  	 */
-> -	if (channels->rx_count != ibmveth_get_num_rx_queues(adapter))
-> -		return -EOPNOTSUPP;
-> +	rc = ibmveth_resize_rx_channels(adapter, channels->rx_count);
-> +	if (rc)
-> +		return rc;
-
-[Severity: Medium]
-
-The RX resize is committed here, before any TX work. If a TX LTB
-allocation later fails in ibmveth_set_channels(), the code does:
-
-		goal = old;
-		old = i;
-		break;
-	}
-	rc = netif_set_real_num_tx_queues(netdev, goal);
-
-This overwrites the allocation error with the result of reverting to the
-old TX count, which is normally 0.
-
-For a combined ethtool -L rx N tx M on an opened MQ adapter, would this
-change RX, leave TX unchanged and still report success? Nothing at this
-commit rolls RX back.
-
-The last patch in the series, "ibmveth: Complete set_channels down-path
-and mq_fallback max_rx cap", adds rx_changed tracking, a rollback through
-ibmveth_resize_rx_queues_incremental(adapter, old_rx, ...), and a return
-of rc ? rc : -ENOMEM when real_num_tx_queues doesn't match the request.
-That fixes it by the end of the series, but the behavior above is still
-present at this commit.
-
-> -	/* If ndo_open has not been called yet then don't allocate, just set
-> -	 * desired netdev_queue's and return
-> -	 */
-> -	if (!(netdev->flags & IFF_UP))
+> @@ -4203,9 +4296,14 @@ static int ibmveth_change_mtu(struct net_device *dev, int new_mtu)
+>  static void ibmveth_poll_controller(struct net_device *dev)
+>  {
+>  	struct ibmveth_adapter *adapter = netdev_priv(dev);
+> -	unsigned int num = ibmveth_get_num_rx_queues(adapter);
+> +	unsigned int num;
+>  	int i;
+>
 > +	if (!adapter->opened)
->  		return netif_set_real_num_tx_queues(netdev, goal);
+> +		return;
 
-[ ... ]
+[Severity: Low]
+This reads adapter->opened as a plain bool from netpoll context. That
+context can run concurrently with direct ibmveth_close()/ibmveth_open()
+calls from ibmveth_change_mtu() and veth_pool_store(), which don't call
+netpoll_poll_disable().
+
+The writers are plain stores as well:
+
+ibmveth_open():
+	adapter->opened = true;
+
+ibmveth_close():
+	adapter->opened = false;
+
+Isn't this an unannotated data race that KCSAN would report? Could the
+accesses use READ_ONCE()/WRITE_ONCE(), or smp_store_release() and
+smp_load_acquire()?
+
+The close side looks fine, because opened is cleared before
+synchronize_net() and netpoll runs with IRQs disabled or under RCU-bh.
+
+On the open side, though, nothing explicitly orders the queue, pool and
+NAPI setup before opened = true. Today it relies on the replenish_lock
+unlock in open and on the acquire of num_rx_queues in the reader. Would
+it be worth making that pairing explicit, so that reordering open()
+later can't break the guard?
+
+>  	for (i = 0; i < num; i++)
+>  		ibmveth_replenish_task(adapter, i);
 
 -- 
 Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/cover.1790319558.git.mmc%40linux.ibm.com
