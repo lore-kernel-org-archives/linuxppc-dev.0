@@ -1,65 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-28531-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28532-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCFACCA5FA7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 21:32:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68330CA5FA5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 23:44:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hvWbm6Ssxz2ySj;
-	Wed, 30 Sep 2026 07:32:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790717540;
-	cv=none; b=RKcQ2TuVbzw8BLR1FkrAsWVLTWw6Fq3xDtmyqMjWpa2odybc4qotTAbvY3qFGvzLOT8r4/DZ/Z+z5tCxfX/Ha2XKwHfEZl9AUfkHVLj/TWchmoQJ+lX1UoiB970cJQ6Ps6o/ihNtytMEoX9DhBgMOFu6pE3t1OnlkmaAECdSxPtxi8oGBbQ+ygCv/5loBPZKSpFLXZKkbF+rvqXHKeSdBVYv/8uU3Xo8UyjdMkpjej4oNwiG68PlWOvKuWDk/D6Pu/AYVjtBaiOTBKcKznbkFewBge6xNWVoqk2oNjqUjFgeV87c/yZ/tS+I5GgkH8hTVBH7nAWiZ4G2+GFKJnWLug==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hvZXK2nsGz2ydN;
+	Wed, 30 Sep 2026 09:44:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=13.77.154.182
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790711063;
+	cv=none; b=IKmIhflTtXR3OZ+X3ItrFkGLPTnwzEKsTZS8wDY0XIperWIBXOmyvCWDW5LW6NYAR4QJOWabBcX2HNrPbFDA1aN2Ze4Vtw83C2ns7UTisB2INp28YH/3szCo7Q+9T9xMbmIacrfaXPM9+I2rIKgnltB+Hw4iKlrQxjC3zgslxEMm+aMVrFHf1EhGPjApPmTU4BSCOHM44qgvOUwn2A8mRn2VTVNi7KWncrSbjKEkVC1V/FZt/5kAxXuwZgKWH5FRBkHuhUV30eZZrxpCqvg2UXsjaMQdBIvVF1t4dUDP8batlho8JK9pVTwJaQpBEaK8LDsze7rIv75PqJRWvugiGQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790717540; c=relaxed/relaxed;
-	bh=bV1wlokKdVHLqPHNGwe/7vIopeMXy+gYUFpopQWEIt4=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=K45zh/GKYkleSh1Cb3q636STdDQVB2vN6mrRmDkjtywJBQPHqpIPCvDRhSFB82Fc7a5u4jM4npcC4c24zhF2ONJzZomnUEVwISoh9YgF66F0+j5I2EPqIxxMAvqmQ4+Ey+zoPXe+iNnlgfaUMgqFIK+FgPK3zIoJGiyRReldIu9/8+22xE4LYjW3uJRVNuDCx9qq8VNiGBb+tlP/cJlnMIn8NHKeVT4cmZdFCIw3qpPQszOey93Jy9IuY3Jn2barhiRbOmmUS/IEZz7DA0ioUMgXswXVYdI23nwZBLtJfdNe7uaDUMqISxvEw41zagKAC8V7lk1piz2h968AvTAKLA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=D3vyCbxH; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1790711063; c=relaxed/relaxed;
+	bh=XSr/FpY6Ep2Y64lvgMS/GCnnKAwRUccneELijM9K4dk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=D4GjGQlYw8H8jPLZsG6o35UIEkD3cWOIu96GRVfnqZKLqwjuZEpyKxygiJVVc07W3uNwV74lFJTK16pAbjaOZXVgjiFyvFHuNkWw4lGXbI8KeaTkrfQR3xsJnAZIiOEYGPham1PvuJGsOYhyQmIeZKkOfK0hKctmrnksF7N3/6A6bQrNLeDsSlHmfyHi4Bmraec58QZqsTDvnW4wXOfPcKadjgPdXn2GeayYcW38H5c2pq6l4MPeOS2lN10hfn3ATFc9kXFUIyh0FG0JKejXQeLnI1ieKe1qudUxqAUgZJHn12R6P4wFj7GVI1sdeoI2Y5FG8Vs/TmbKIwiL33j3AA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=X5YInvO1; dkim-atps=neutral; spf=pass (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=jeffbarnes@linux.microsoft.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.microsoft.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=D3vyCbxH;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=X5YInvO1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvWbl4sHpz2xnn
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2026 07:32:18 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id B8DB043D33;
-	Tue, 29 Sep 2026 21:32:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 068751F000FF;
-	Tue, 29 Sep 2026 21:32:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux-foundation.org; s=korg; t=1790717535;
-	bh=bV1wlokKdVHLqPHNGwe/7vIopeMXy+gYUFpopQWEIt4=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=D3vyCbxHxJQ+aX1/mUxGlNGRXygGdhx3UDqmwRpHjeF9SrqNpUku1TQDoU18Eju+A
-	 Uvj+PN6PuV8lgvO1Uo60ys6S+sVxEDTN6T7mEYU3V9canHRrMkOUhO9Qkzk7wqeFeb
-	 v6vUPVcDn5zBCzMO6qK/hPO0ApMIFdNMFlbEMsgk=
-Date: Tue, 29 Sep 2026 14:32:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Muchun Song <songmuchun@bytedance.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, Mike Rapoport
- <rppt@kernel.org>, David Hildenbrand <david@kernel.org>, Michael Ellerman
- <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy
- <chleroy@kernel.org>, Ritesh Harjani <ritesh.list@gmail.com>, Shrikanth
- Hegde <sshegde@linux.ibm.com>, Lorenzo Stoakes <ljs@kernel.org>,
- "Liam R . Howlett" <liam@infradead.org>, Vlastimil Babka
- <vbabka@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko
- <mhocko@suse.com>, Qi Zheng <qi.zheng@linux.dev>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, muchun.song@linux.dev
-Subject: Re: [PATCH v3 0/6] mm: Unify device DAX and HugeTLB vmemmap
- population paths
-Message-Id: <20260929143214.9061bcf284369163192968d1@linux-foundation.org>
-In-Reply-To: <20260929053231.66085-1-songmuchun@bytedance.com>
-References: <20260929053231.66085-1-songmuchun@bytedance.com>
-X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=jeffbarnes@linux.microsoft.com; receiver=lists.ozlabs.org)
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hvTCB1WNTz2yD3
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2026 05:44:22 +1000 (AEST)
+Received: from jeffbarnes-ThinkPad-P14s-Gen-2i.corp.microsoft.com (unknown [52.167.115.14])
+	by linux.microsoft.com (Postfix) with ESMTPSA id 8964020B7166;
+	Tue, 29 Sep 2026 12:42:56 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 8964020B7166
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+	s=default; t=1790710978;
+	bh=XSr/FpY6Ep2Y64lvgMS/GCnnKAwRUccneELijM9K4dk=;
+	h=From:To:Cc:Subject:Date:From;
+	b=X5YInvO10SJeiGSwh9q8U8njS2R52RaMF/ewdT7PfgPwRAcbZVaKZqEI8dRBpt8tk
+	 W0/v6GLlABhxJpjDf4l6fVWcmbSzrRS0w2C77FuwsoR69MFLHiO2PlDheP7jD1Ofny
+	 HPj5fSKCYtfmb4tA+0ZELdpJGtD2jh728EJkdGlc=
+From: jeffbarnes@linux.microsoft.com
+To: linux-pci@vger.kernel.org
+Cc: minghuan.Lian@nxp.com,
+	mingkai.hu@nxp.com,
+	roy.zang@nxp.com,
+	lpieralisi@kernel.org,
+	kwilczynski@kernel.org,
+	mani@kernel.org,
+	robh@kernel.org,
+	bhelgaas@google.com,
+	Zhiqiang.Hou@nxp.com,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	imx@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH] PCI: layerscape: use default error response behavior
+Date: Tue, 29 Sep 2026 15:43:39 -0400
+Message-ID: <20260929194339.233271-1-jeffbarnes@linux.microsoft.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,50 +68,101 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-On Tue, 29 Sep 2026 13:32:25 +0800 Muchun Song <songmuchun@bytedance.com> wrote:
+From: Jeff Barnes <jeffbarnes@linux.microsoft.com>
 
-> This v3 is based on mm-new commit 2ddb90ee544a, which contains v5 of
-> "mm: Switch device DAX to section-based vmemmap optimization" [1].
-> 
-> This series is split out from the earlier, larger series "mm: Generalize
-> HVO for HugeTLB and device DAX" [2]. While the parent series generalizes
-> vmemmap optimization across HugeTLB and device DAX, this subset addresses
-> a single, self-contained step: unifying their vmemmap population paths.
-> 
-> After the preceding Device DAX conversion, both HugeTLB and Device DAX
-> describe optimized vmemmap mappings through memory-section metadata and
-> use per-zone shared tail vmemmap pages. The generic code, however, still
-> carries a Device DAX-specific population flag and compound-page population
-> path, along with arguments and helpers needed only by that path.
-> 
-> This series first removes VMEMMAP_POPULATE_DAX and moves selection and
-> reference handling for the shared tail page into the common vmemmap
-> population path. It then removes the generic Device DAX-specific
-> compound-page population path and routes section vmemmap population
-> through vmemmap_populate(). The powerpc radix path continues to use its
-> architecture-specific compound-page population implementation for
-> optimizable sections.
-> 
-> The remaining patches remove the unused ptpfn argument, open-code
-> vmemmap_populate_address() now that no caller needs its returned PTE, and
-> add a warning for inconsistent zone initialization of shared tail vmemmap
-> pages.
-> 
-> This is the fourth smaller step toward the broader HVO generalization.
-> After this series, HugeTLB and Device DAX use the same population model
-> instead of parallel generic paths, while powerpc keeps its
-> architecture-specific implementation.
+The Layerscape PCIe driver programs PCIE_ABSERR to forward errors from
+outbound non-posted requests to the internal AXI interface.
 
-afaict the whole series is "no functional changes intended".  Apart
-from [6/6]'s new WARN_ON.
+A PCI configuration access can race with the link going down after
+dw_pcie_other_conf_map_bus() checks the link but before the MMIO access
+is performed. When the resulting Completion Timeout is forwarded to
+AXI, it causes an asynchronous SError and kernel panic.
 
-And [3/6] is the one which could cause unintended fuctional changes!
+For example:
 
-Thanks.  I'll queue it.  Reluctantly.  We're up to 688 MM patches this
-cycle and it's time to stop.
+  Kernel panic - not syncing: Asynchronous SError Interrupt
+  ...
+  Call trace:
+   arm64_serror_panic+0x78/0x90
+   do_serror+0x84/0x90
+   el1h_64_error_handler+0x30/0x40
+   el1h_64_error+0x68/0x70
+   pci_generic_config_read+0x64/0xb0
+   dw_pcie_rd_other_conf+0x1c/0x68
+   pci_bus_read_config_word+0x68/0x118
+   pcie_capability_read_word+0xa8/0xd8
+   find_device_iter+0x8c/0x160
+   pci_walk_bus+0x60/0xb8
+   find_source_device+0x78/0xb0
+   aer_isr+0x1dc/0x230
+
+Restore the controller's default error response behavior instead of
+forwarding these errors to AXI.
+
+Reproduce the race by instrumenting dw_pcie_rd_other_conf() to call
+map_bus() while the link is up, then schedule a worker on another CPU
+to set PCI_EXP_LNKCTL_LD. Synchronize the CPUs immediately before the
+Link Disable DBI write, then perform readl() using the address returned
+by map_bus() concurrently with the link transition.
+
+Without this change, the overlapping configuration read results in an
+asynchronous SError and kernel panic. With this change, the same test
+returns 0xffffffff from the configuration read. In this test, AER
+reports a non-fatal Completion Timeout, and no SError or kernel panic
+occurs.
+
+This effectively reverts the error response behavior introduced by
+commit 84d897d69938
+("PCI: layerscape: Change default error response behavior").
+
+Fixes: 84d897d69938 ("PCI: layerscape: Change default error response behavior")
+Cc: stable@vger.kernel.org
+Signed-off-by: Jeff Barnes <jeffbarnes@linux.microsoft.com>
+---
+ drivers/pci/controller/dwc/pci-layerscape.c | 12 ------------
+ 1 file changed, 12 deletions(-)
+
+diff --git a/drivers/pci/controller/dwc/pci-layerscape.c b/drivers/pci/controller/dwc/pci-layerscape.c
+index 14d6ac4fc53f..d333f1ae8a41 100644
+--- a/drivers/pci/controller/dwc/pci-layerscape.c
++++ b/drivers/pci/controller/dwc/pci-layerscape.c
+@@ -28,8 +28,6 @@
+ 
+ /* PEX Internal Configuration Registers */
+ #define PCIE_STRFMR1		0x71c /* Symbol Timer & Filter Mask Register1 */
+-#define PCIE_ABSERR		0x8d0 /* Bridge Slave Error Response Register */
+-#define PCIE_ABSERR_SETTING	0x9401 /* Forward error of non-posted request */
+ 
+ /* PF Message Command Register */
+ #define LS_PCIE_PF_MCR		0x2c
+@@ -103,14 +101,6 @@ static void ls_pcie_drop_msg_tlp(struct ls_pcie *pcie)
+ 	iowrite32(val, pci->dbi_base + PCIE_STRFMR1);
+ }
+ 
+-/* Forward error response of outbound non-posted requests */
+-static void ls_pcie_fix_error_response(struct ls_pcie *pcie)
+-{
+-	struct dw_pcie *pci = pcie->pci;
+-
+-	iowrite32(PCIE_ABSERR_SETTING, pci->dbi_base + PCIE_ABSERR);
+-}
+-
+ static u32 ls_pcie_pf_lut_readl(struct ls_pcie *pcie, u32 off)
+ {
+ 	if (pcie->big_endian)
+@@ -180,8 +170,6 @@ static int ls_pcie_host_init(struct dw_pcie_rp *pp)
+ 	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+ 	struct ls_pcie *pcie = to_ls_pcie(pci);
+ 
+-	ls_pcie_fix_error_response(pcie);
+-
+ 	dw_pcie_dbi_ro_wr_en(pci);
+ 	ls_pcie_clear_multifunction(pcie);
+ 	dw_pcie_dbi_ro_wr_dis(pci);
+-- 
+2.43.0
 
 
