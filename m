@@ -1,83 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-28428-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28429-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8BDFCA5FA1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 01:51:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EBF68CA5FA1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 02:01:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hv1Nr03s8z2yMn;
-	Tue, 29 Sep 2026 11:51:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:36::f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790646667;
-	cv=none; b=e29XRmuVqDkCH4xZVZmXvFXPfXVrMUdq+THoRbJ/s5/70cWtf9uPrwqVaTn795BB58C0zdIG7iJ/1jHKIZMvI7LwzPFYHOtkISMz7yJAzU9wn/l/J9QpfcmApSz8OZfmH86yT7Y3HQe8k9Ym7UIOWfa9i5ayrji8E+KLJz4PfqEv2YTDEX5Ods5UBimowiEQvtGv048IEszkcLLI8Fo2QmiAMTR06JgIuyc4DvrGiNgwrUm1r+dd5E2jl+8hWejngPYlfVC/IAy8CHtoVCe3hY3Wy906EACyRCX74U6yIXRlhONNPBtyA7J2eWEG8XXsbUkAGhQH+59eT9xe4Ymohw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hv1d00W0bz30Vb;
+	Tue, 29 Sep 2026 12:01:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:36::e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790647300;
+	cv=none; b=QshEWOxLlRUGLB/ZqzBCgnqBcVZktCf/w+hm/29CG5eIq6bCp6UYaHepnkVXIdgbdCMpwtxq7zDnfHWuUCThDjecSHV6IgXT7RHGLGUpC6DnE7NRKKG3cYnxIZf+6a24SrGP5RCrG6FxhfqlFspqIbaz55LilePi4M2sYFA1LBsk4J56LBFznucoBXPaqGZCgEE+Qrm2ifUtMo9M7RwhF597+IyZAZBYHUOOSWiwglcjo6ndcpraRXE11jUdSBqohaztWRdpZSIcu4C5OL30aqCj90ephFbnPM3++ZDk56c4TQbUQ225BGzDrYKDDjsXOdzN1Y+57zzHyMyWxqMZUw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790646667; c=relaxed/relaxed;
-	bh=defNTj3mi7sHrxVRjwLhgcyKIEsYh8Z0QM3DyUvlMZY=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=P/xhLb6XLGBDN+wrW9Y3X4M8+GSAeq708Dihx1p1Fwk1IanctdPFPZ4yW8UJdHIBiAEma2DALWHMPr7L1RcM+PR8lRJURsykfk1RnL4KNFphKt3mZQ32GnJ98OqLOCRiDvrMipVOCRteo8HR7vWjX3QgCGIXdBruGtC3RtBw2SK+mC6iSyP5N+6RBqx5vGOCPwN1geRPxTOh8O54LcshJOB/p7ypqNYoUiRnwoLj7Coy3Wa9qcKFcibuPcqBCKEGMhLT/wTlU20woX6dG47O13igYfgGVDTaBNvJ0yqg8ZtxhwMnQN5pVZEu64LEGwJiEwgFldf+lY1rUh9y3Zk2HQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=PETq2V+V; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:36::f; helo=mail-dy2-x0f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1790647300; c=relaxed/relaxed;
+	bh=0g58I4h4nmwVw9ZB8EVoFTUYEfVp+7fY00zUlya+KGY=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=l3Xb6rztjKGtdRFzVRv2mVkasK+KgcGMiG1qh+wDHy7vu/Rugs4cDll6f9s16V4F7+ekF4Xf9mmwRsMOsUW7V14nhNTl6offITG/k6RgmwZPxu/hF3lbN6MNKx5Ems98R1tEUuCWiTd9DvZzYnmvKbSaU3f026o3gxh7e7XQTvO1U4HCppwtYcAl8jTHGTOXjMTuyh/x/a5BdBQ3TBas0jbEhriWljm2xQ5b8xYxu979ajyknkl5QaGu+m9Nl+dL270DomdilkTamWo3BolPRcVShj9NDWQ9JhVDmGbHCvFrnu4PzUs98RXb6Mt4DLryXU0vd3kZUwdnDaiBC2XCpQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=GfeOBuTY; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:36::e; helo=mail-dy2-x0e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=PETq2V+V;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=GfeOBuTY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:36::f; helo=mail-dy2-x0f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy2-x0f.google.com (mail-dy2-x0f.google.com [IPv6:2607:f8b0:4864:36::f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:36::e; helo=mail-dy2-x0e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy2-x0e.google.com (mail-dy2-x0e.google.com [IPv6:2607:f8b0:4864:36::e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hv1Np4j83z2y1Y
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2026 11:51:05 +1000 (AEST)
-Received: by mail-dy2-x0f.google.com with SMTP id 5a478bee46e88-33bfb26865fso3760854eec.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 18:51:05 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hv1cy5Lrhz30PJ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2026 12:01:37 +1000 (AEST)
+Received: by mail-dy2-x0e.google.com with SMTP id 5a478bee46e88-342773d94a7so2208825eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2026 19:01:36 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790646663; x=1791251463; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1790647294; x=1791252094; darn=lists.ozlabs.org;
         h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
          :cc:subject:date:message-id:reply-to:content-type;
-        bh=defNTj3mi7sHrxVRjwLhgcyKIEsYh8Z0QM3DyUvlMZY=;
-        b=PETq2V+VNmi9F53JV9OwBAS4x5iN1EdA31b6VLbXKFkyGCxkPBMSyurIEFIfIgLc7p
-         L3RLWWc0XYiZw2eZh7JJmD7MRtJgLRUWYOXTbV8cgXylX/OkU51jd6/rqZ+XfhKoGyXc
-         usaRKLWjQfBJKguW+yxQVs44+VWt6b5gydCWzwdqfrm57eujRpE6Wu+LNVG525X0Tbik
-         3hEO9agc/2WHqyPcGyWSSBdBEyP4afCXDsdlwilk1/37QULR5hEHx+lPhLdONDAp8noh
-         /AsjJLOEJpDVWUy2RpvCfdyGMp5HzYc+CCCL4u4Re9xO57+BUrGrJyXbrtzXIJiEn9aA
-         h/bg==
+        bh=0g58I4h4nmwVw9ZB8EVoFTUYEfVp+7fY00zUlya+KGY=;
+        b=GfeOBuTYeDw84e3UvpfQTZV2PeRHn4sDZrfMMY+ceghUigPmfUl9tVLKfN9SQ2R2Ol
+         /qku4RkhC3AgenjvdZYfyN4UCRCmv6PuqO/s5YFOA+PxX8nzTkUYZ17uHioHoS+ELSo/
+         SI/CPUf77TTwZNMJBF3cTVPy1VmU6aMSumDNc5ICpUAM5BuHQd/2FFw8Lieniqo/hseh
+         aHn1MkCIlHCek+F/9zKZnFbfiH84UZQid7IULvhAqbimG4EUasMvsfidKs+Mn5QQoMA2
+         jLf/8TycFTekWQeLdMlt+SewwzEATeuzDwT0gWCdDfEAaYps7IJ1PyFF30Y67Kw0XGR4
+         lFdg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790646663; x=1791251463;
+        d=1e100.net; s=20260707; t=1790647294; x=1791252094;
         h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=defNTj3mi7sHrxVRjwLhgcyKIEsYh8Z0QM3DyUvlMZY=;
-        b=h5mniP7haEYKd5aDz2eBaNzraX6uL+RNZ7EU0Wg6tg6Qmi3d+SFI6C93Q//ji1wtPx
-         yH69SfutZhsmfwL74LAkqiTOI29EkzBxI7BUpu4gq4ovQrQD/gMOUWkyxzvnwq3DH5uQ
-         7/XGw4EogfEkjecbupskl/LzKwNsezWSlyZM2Fbf7VrLQ8RKRPyBawELBgSCw/BMqb62
-         6d2/9UiKYOQz+/2OKsvXwNTL56KIhSn1bCSyG7Sxhvz9r+WInM2Zh6Oel/Y8tdexEJ5X
-         MkpD9aqOKIaEiJhEB/wQsbxC3/b7NI0ZmzDl5d8nv9eRZEWIrRGU8TA8ubVt/6tgCvVe
-         GmgA==
-X-Forwarded-Encrypted: i=1; AKwUvBzHttzQ9PYhQhKf5+z5TCVwdOhcDbi9U/ayDl4+Luf9bvcq+V8ZoLOErt5v4ytvKEmxQ//BHsXteqZzQIU=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYKmu3K9LFdJyXTBq1lS3/QmhaXRsLR1TccTJ99KesViXMcUvYuU
-	Tk0LMsbMZ9NU4Mv2c2sGYtHxX8bXn1wmXSWLaPEZ8wwY3F/25XlpUM4s
-X-Gm-Gg: AYBFou2x6AoUhE2nEYYLeg/RphTzmq7JwzIZvKsj0ceKS9JfQGXyocbGqMUF5mRUOWC
-	0rkEgh89y/H5OaTQFQt0kSWD9FsCeklFoEVWeV2D87bjqGMn4tPbum7jdpTW7RhnEOGYf7I+d2K
-	0TuyvMpZiXFXNiR6Hm5XVfPA0XOTjupYu1+VAOK214EixKN5ochDcO4TNbiNgmqZUBYA1wr0NsG
-	nsmN0WACIOooJ7RVyhS8UA1UG/CTnLOvXimD5AspM4agd0SKcDMpjo0BPhhohW0/1qSvHyQH6he
-	3puYlHZ2lvkvlWCHlOtZtIO9JlW26hWmeZ99phHJTlvYZ7IlQgKYTjlljzYvi1jFBiIl53AUjCY
-	+txEcsCdIJWCX0dxFaoaMT41OxGcMLkPRc782wIWJhIq1017ULKgRSxNtX5zzfa/KVByU9abh+k
-	vO/d4v/ckpDIcMzb1we5+ReNglOnWudmh2AtY2ogZxGuHA8dqFJCLriw5Uj90cvLvT0MPAs32DM
-	Tq9sFUR3FKTcGYeny6f/1EwdFNxrNWVx7u2t2WowgpHg7KHY4nPx5odzGyCJJTBEA==
-X-Received: by 2002:a05:7300:ed06:b0:33c:e61:e1e5 with SMTP id 5a478bee46e88-34739c07e6dmr8293196eec.21.1790646662193;
-        Mon, 28 Sep 2026 18:51:02 -0700 (PDT)
+        bh=0g58I4h4nmwVw9ZB8EVoFTUYEfVp+7fY00zUlya+KGY=;
+        b=R2UVd4anDpxIKQ1DKUGbxI7782XoE98050c7DDebo3qaFL8SRpAvTzF7zEvhJQm1RO
+         nCtUQ4hUb6SrgVKXvrM4+RiqyJqJlCFca20rVssoJ8d+KSb4OLFm8cTfMm/d+pZ1P+ah
+         4a15Y/dVu0rdN+6wsTL3MLbWWXr47p1xrn+o8t8WMRjzTrSCW8r9CBvD3nRlK7QdFaEz
+         RZBa7i0CrmLVRT4SBk5HfLtrW54Xl40vYuQ2PYhpFvUI3yELXTYSUHTlnF0+J8Y4Ak4l
+         78iZDW/dr4pz+1JSkz0vHeRPleM1JURNnyKAD26BbsUGcKk1y5lZD1fij422IDhFmzKY
+         fMSw==
+X-Forwarded-Encrypted: i=1; AKwUvBzIpsSc4gwFQMdlXzaQjr53qKOzw+arryBfFr0SAeSLEVQOR/r0FAnURH2/Fs73C3/Pygu4nUzzdSrP4tQ=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYKqwAUroJWe7xap3EGtsXJXZ/P4Kitlsnvlq1tTu8u8aaS8TTRv
+	M3TAyRK25ENa96HU6ZzzknqjbuIV/pekoDZDn03czDtbCeZyndmFWN6R
+X-Gm-Gg: AYBFou0roZmXPbS+sgNzV/zPuGKHV9ugC9Gz2u3mlwfxl1iE/VJiaFiZQhtYA1Zg/xY
+	pKuDaesk2x1dhdwj3uHHqWj6z7n25tQN7SQ4lESYFT6itoB1QS9wrNedCTfuwrFAY+XZUoCgn87
+	bHdpr/EUEyOdVTE0y5tjDjKsw7aBPNoso8CQXL27HYjmws/bJ7PfZ9asGYpxCOYTINstibMIT2y
+	uRAVYVbk8EYByGJiyNNXfc620zBLGBHy1FJugLD/2yeyGfLYyZEaekKm8o9Cf+l/iwkZ9Fryo0r
+	il8NGpBi+qdooUpIdmrbkoF3jdAUaZOZ99H39fXXgLr8L1Z59fztseIrFiXMRBG7FtqOg1202N/
+	OyC13zV+u/o2J0acbIQuZOD8Zx5ZDa8DwgDNRWgkp/ubD4c78FKt2SJEKymy8EP1W/Iw1mkn5oW
+	kuzRq/C0R0pe+HLeTjludjuULsRIEYnpbPQVUf4VK+hL4jlXtJhGHfGqxX6iuly0QfFWNeaqMP2
+	Yl65qMwFMVmD/3jA/rCDj9Pk/jng+TF2nhzX/laubR8ILDrXUQoSwlF3Ev5Kr3H
+X-Received: by 2002:a05:7300:16a8:b0:342:4a2f:49eb with SMTP id 5a478bee46e88-34272b4bc8cmr11854243eec.38.1790647294257;
+        Mon, 28 Sep 2026 19:01:34 -0700 (PDT)
 Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-341f2b18cbfsm29834837eec.30.2026.09.28.18.50.57
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-342c9c245a7sm22818699eec.11.2026.09.28.19.01.26
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 28 Sep 2026 18:51:01 -0700 (PDT)
+        Mon, 28 Sep 2026 19:01:32 -0700 (PDT)
 From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: kvm@vger.kernel.org, Sean Christopherson <seanjc@google.com>
-Cc: Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <chleroy@kernel.org>, Anushree Mathur <anushree.mathur@linux.ibm.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Harsh Prateek Bora <harshpb@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v5 0/9] KVM: selftests: add powerpc support
-In-Reply-To: <cover.1790101179.git.ritesh.list@gmail.com>
-Date: Tue, 29 Sep 2026 07:05:35 +0530
-Message-ID: <pkxwkffc.ritesh.list@gmail.com>
-References: <cover.1790101179.git.ritesh.list@gmail.com>
+To: Muchun Song <muchun.song@linux.dev>
+Cc: "David Hildenbrand (Arm)" <david@kernel.org>, Muchun Song <songmuchun@bytedance.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Mike Rapoport <rppt@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>, "Liam R . Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Qi Zheng <qi.zheng@linux.dev>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH v2 0/6] mm: Unify device DAX and HugeTLB vmemmap population paths
+In-Reply-To: <655A7615-5885-4733-9E4E-3BDA1FE39362@linux.dev>
+Date: Tue, 29 Sep 2026 07:27:09 +0530
+Message-ID: <o6dgkefe.ritesh.list@gmail.com>
+References: <20260924075259.2013039-1-songmuchun@bytedance.com> <607759bf-59f2-4ad6-b95b-e780ed2acba3@kernel.org> <8385F749-0F72-494E-9CA2-2E433A066712@linux.dev> <se2tjmpk.ritesh.list@gmail.com> <655A7615-5885-4733-9E4E-3BDA1FE39362@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,21 +91,46 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 
-"Ritesh Harjani (IBM)" <ritesh.list@gmail.com> writes:
+Muchun Song <muchun.song@linux.dev> writes:
 
-> Hi All,
+>> On Sep 29, 2026, at 01:43, Ritesh Harjani (IBM) <ritesh.list@gmail.com> wrote:
+>> 
+>> Muchun Song <muchun.song@linux.dev> writes:
+>> 
+>>> 
+>>> If you're planning to review this series, I'd suggest waiting for my rebased
+>>> version.
+>>> 
+>> 
+>> Hello Muchun,
 >
-> This series primarly adds KVM selftests support for powerpc (64-bit, BookS,
-> radix MMU).
+> Hi,
+>
+>> 
+>> Thanks for taking care of powerpc side of the changes. Is it possible to
+>> share your git/github tree somewhere? Sorry, but it's hard to follow
+>> which series is based on which and the overall multi-series is based on
+>> which upstream tree. If you could share your updated tree somewhere -
+>> that would make my life simpler.
+>
+> Thanks. For now I'll follow David's suggestion and explicitly note which
+> MM branch each series is based on. That should make things clearer early on.
+>
+> I'll also try to set up a tree later and share it once it's ready. Until
+> then, let me know if a written summary of the branch/dependency order would
+> help.
 >
 
-Hello Sean,
+Written summary should be good too! Earlier I tried applying on few
+trees, but I wasn't able to - hence checked for it. If you can share
+which tree and/or tag/commit-id should I apply and the order of your
+multi-series - that would help.
 
-Just wanted to check what's our plan on this one? Are we planning for
-both PPC pre-enablement series of yours and this one to be taken for
-v7.4 merge? Do you think this can go in too?
+> Thanks for bearing with me while I get that sorted out.
+>
 
-Thanks for your help!
+Thanks a lot!
 
 -ritesh
+
 
