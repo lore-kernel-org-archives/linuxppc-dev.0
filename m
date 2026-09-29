@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-28460-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28461-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B435CA5FA7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 07:41:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C81CC9832A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 07:43:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hv99Z5sZrz2yDD;
-	Tue, 29 Sep 2026 17:41:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790667714;
-	cv=none; b=j3y5bKCY6YCTK0M/pOWUe6Q57GUCoRGTEgPZOWZhYHrvR8Cb328P9eut8xbi+cIa0sPS+qmdRmZK4ilxkfEtiJ8ba4w2XWOleNUQhTn0fryQ172EMiJt6t1j6hE4qIvaAfAT0tvjpRaxNBUt5voJRlfHoyWAdk6i+i8n/NRuYMCGGd4nK/ce0ztvk/nxbLdFJ9AfWtwtoHO4hy8Pze+Up9GerSo2nF4V79krwHr9DwcYkO4DZZ0ahA0/WGyXKDG6u8aa7w9BtAjbyEsXpLrPJkY+lmzgjnG9XvAZn/TGejnoSGK1uWDdZW9PztnFElsN4+NBEvkqANlfTL5u4KNpXQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hv9CC6Q17z30PJ;
+	Tue, 29 Sep 2026 17:43:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790667799;
+	cv=none; b=oj37fZrfa6xhzQrWY7++QlPCm84Ofs+y+qQfyncfyMYIb9bHF2G052abmoqGG/c+Qvjs4X548iUtb/DR0iiSGVfdo34ZwXlk98S56XxZxTJ7H36SBhXZzaQvYDKlXzstiG1+vdd9OOw5DRW5jYDXiNHufenydv0a+Y17RyTFFlwBwOZ0FdbqDSG8LbQNWr5vWTDTzxxsGSTTt7fyqA8ebCcCtP/BK19eUfZHEFypVmRFVDR8XdielGVHmkyB0e2W03D+N4f+PnYcWfg2CrhHPwPVCVWRHprzInB5IS+Qz/FMBwYjx/lmOxiK1wJ83TGpocgycavne5wz3IEH75IpdA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790667714; c=relaxed/relaxed;
-	bh=GSrpAC8UMMB0qYiMQ+1O1rlIqHLeQMas3ZsG4eip2jw=;
+	t=1790667799; c=relaxed/relaxed;
+	bh=l3uGJBgDueAYQpQ6UNN5wXxoFfi297uAcZttSK4/i90=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=d7/xQA/JwhWwCZzoc9xDVzINRJ8Qm/qVu+GuFggbVDn8qVm2yCV6I994k3CLkik49o/EgkbTe8M6OKkOE2GRehz+3b1BmagQEiWATpnQcyZoC4HySfzyxeCrCdEuIGIn2X948gmbPvQYGEOGIgMygWJ+tL4Ogekm2P/M9ZBuEaIWDm63EO7XWc1pMkDPaZLmRmtJ6UYBWafBEdCD2b+bXY2Jst7bjfo2gj1ajhzDZfUFChlmrtujKzJvnSPcCCls9KDlaFkfd5TtvxHgmec7LiJD6m5VQ4d262/GsiHZJ4ryVpN6S7gfU6c3p4JokHQLy3Q6OzZG56NFv1qDsFfUzg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eP7n9A61; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=MR+Xcu0FBm9/jHUScWPCH03FLupPXDTEMQus5z6v8+6wMUH+K7W6TGdLsCh5EvLQM3SIF7oaZZnKcFfpZ9Ohj8CHnXDdeQ0iA6wwL5ah0v8DBrBy3iq+47CnCLOQ7XWaMIABdU65w6Sbfm85mKTIkVV3Fma0bRn7/QUmDDpaWlim0XvXhithkYJ1ACjwTkP2TfOvA+IhST2ZMI5a/pwjg/H8fYCs2JmZqNqamErnRYAx3PBzKkWbJopoX6PNkZN4pQVZzL9gmhHX8gTsd7MhUYZaBJRGK/wD7aNCo2L1iUQVATQTmw+wBjbYDUhwQHIylhqSPFC85DdZqBTkaSV01A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mJschNlB; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eP7n9A61;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mJschNlB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hv99Y4cj9z2xbQ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2026 17:41:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hv9CC04Hkz2yDD
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2026 17:43:18 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id BAFD84048D;
-	Tue, 29 Sep 2026 07:41:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 530681F000FF;
-	Tue, 29 Sep 2026 07:41:48 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id BB8DF60210;
+	Tue, 29 Sep 2026 07:43:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2393E1F000FF;
+	Tue, 29 Sep 2026 07:43:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790667711;
-	bh=GSrpAC8UMMB0qYiMQ+1O1rlIqHLeQMas3ZsG4eip2jw=;
+	s=k20260515; t=1790667796;
+	bh=l3uGJBgDueAYQpQ6UNN5wXxoFfi297uAcZttSK4/i90=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=eP7n9A61yORmIgSnGkP5IduRoT3Pxx/cEH/DRB7RVfEi8dF1bIIY5M4VjQsthEAok
-	 8oHF7RjRB9ZVbIujX9nDZmMaVuumAKVIIvbBKU5S2hrN2cjuxpbmDaK5oaQnUlnxAE
-	 uvZFGbDo2RnyCoXrSKld3VA+q1qHSLOGJ3owCB6I0TMZI/a7IAGmDkyC0kS1M/kOUc
-	 wlqr3pNEykCphZXz9UBWTvMAb1y7RRi6z/tDYn/GrC/iWVJchybK/fMhqOcs0TSN9x
-	 2Ae0wYiBEJ9oHFeVJ/Ci1XcVKGMJ6IQYY8FJ1YZZ8cZ9NgChCMgUMi+Csr8ShsgMMv
-	 tAYqOW9+dNNXw==
-Message-ID: <3ae67ab0-ec42-4594-bebc-3c06d4c53eda@kernel.org>
-Date: Tue, 29 Sep 2026 09:41:45 +0200
+	b=mJschNlBhoq9JKJyXT7dxafC1SkgQ74/itXQ7YwoOf11UukAMavZEzlz8PtWHfAno
+	 SYhiTLj5jpURd1SowXyoIu2+Gwvol8zbHo91ZzqUSOsgnxKYa6ELES9UWm/7/P5tkA
+	 zdDL0MswCGxbxULsDOWRMheevjty+5eUD4shlcnarGIbO+XJpSDYVd4c2TDUdw3vfb
+	 FPX8+F1xS5SUJBU5R4Cg2hiqlUT6ia6fW/NQenc+kUfadGKMWypBlvGiJxGuvDKqsV
+	 4MEB0Z8KPhQkF0PC3/501YPQrx5JRUtNETEuL77Yd7cB/n7vryd4mFKMkofjhhQIfL
+	 OTqFoxUtsHukA==
+Message-ID: <118caa06-71cf-432a-a7d4-d721e86cd905@kernel.org>
+Date: Tue, 29 Sep 2026 09:43:10 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 11/12] mm/sparse-vmemmap: drop unused
- section_nr_vmemmap_pages() arguments
+Subject: Re: [PATCH v5 12/12] Documentation/mm: update DAX vmemmap
+ deduplication docs
 To: Muchun Song <songmuchun@bytedance.com>,
  Andrew Morton <akpm@linux-foundation.org>, Oscar Salvador
  <osalvador@suse.de>, Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -73,7 +73,7 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>,
  Randy Dunlap <rdunlap@infradead.org>, Lance Yang <lance.yang@linux.dev>
 References: <20260927025441.741633-1-songmuchun@bytedance.com>
- <20260927025441.741633-12-songmuchun@bytedance.com>
+ <20260927025441.741633-13-songmuchun@bytedance.com>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -120,19 +120,23 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260927025441.741633-12-songmuchun@bytedance.com>
+In-Reply-To: <20260927025441.741633-13-songmuchun@bytedance.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 9/27/26 04:54, Muchun Song wrote:
-> section_nr_vmemmap_pages() no longer uses the altmap or pgmap
-> arguments, so drop them from the helper and its callers.
+> Device DAX now uses the common per-zone shared tail page for vmemmap
+> deduplication. The old documentation still described a DAX-specific
+> layout with a separately populated tail vmemmap page and half the HugeTLB
+> savings.
+> 
+> Update the generic and powerpc documentation to describe the shared layout.
+> In the powerpc document, keep the radix and 64K-specific details, drop the
+> duplicated 4K PUD arithmetic, and replace the repeated device-dax diagrams
+> with a single parameterized PMD/PUD diagram.
 > 
 > Signed-off-by: Muchun Song <songmuchun@bytedance.com>
 > Acked-by: Qi Zheng <qi.zheng@linux.dev>
-> ---
-> v3:
-> - Collect Acked-by from Qi Zheng
 > ---
 
 Acked-by: David Hildenbrand (Arm) <david@kernel.org>
