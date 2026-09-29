@@ -1,90 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-28453-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28454-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB190CA5FA1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 07:22:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E76CBCA5FA1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 07:24:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hv8lg34Jkz30PJ;
-	Tue, 29 Sep 2026 17:22:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790666575;
-	cv=none; b=AlZ0oAd0DWs0QYbTrtTIt1unlZ+xtBpBxvE9cA5IB2C5tWVU3VJjlYejuo/oW2476dHt1pCEqA0Yzi9NoT+QjzkQkjp2MNb35JlMJU0YO6jQXbHqAiygNpnh4sYc4GmTjmLH3n71k0EuW/9P9bhPRj0nhTvQqn7US6iEIJXtSJF4nmZPTyjPxCqarhV5pMm2jV77aK7Zv2h3BznrOkrojH8rdXzrziMXjkqg17onn5K/piOSFveMIp5wS8sOWTvHAetOkKsX0S4/Pvv0PjoHm700bRRdNFpds8LFgvJ60LRS44H/O3fpzHaZozjtxB+LtSHWXHWDmCPSm8ksB+samw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hv8nD3nQZz30Pp;
+	Tue, 29 Sep 2026 17:24:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790666656;
+	cv=none; b=nk+vvhWZu8/LGDZF/YNACIFklbtUR7EDrVDI2zYiH3bFT/qxQFSYgTRfhuumo3B9bfQqzairCX6RBMLUKyHSWtga5Rr1eQjC8+KqeOu5ugyNVjV+Y4kf8rNw2sBLB7ibgThzZCqr3xvujdcZn4ICTHVMJO5ulDBUDGS1mLIk/6/zt41Ony/H5SXm+tF2w9/5luWfWfR6NLEIYtfiLAXPUfjroeLmkpWUbdl029sQPLUjT08KH44CYMcpGvw9A2tyJEO0ARkWxgXX8s7K6vDVy04SZoH4AdrtOwOq/9Q8Mf33KVwg1jQzfg4PaCUrS2Xbzn/MDiSop7oPpmRrgbRYVg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790666575; c=relaxed/relaxed;
-	bh=g8tTQZ2uKce9fmNdVcB0txupfJQREmbAfU9Mihwgn30=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=X3prdY6FypBjdmJe8k7eyobke5lbku+qZ38tXyGNhJynGchs0yWEat7JzwUcUX1UA0OGxofu3MwY/cszgEFQ3/caTfb83sCzVC/DF+ltnMEZkUrOSspQEV5rOmiIkWbQzLpVXwoonC6xTWwUiJh37MYscse/xOzi+zJwQp8T4BnKnN8B1DEm7ZjIvahqPmEnBZiOdIrmx2WwhYxZrj1/Vnb7RJde/FtfeiAh8k88bhIyiQntiYR4phpFFI3dJ2dGoxo7mqdVzFNnthzLbvSEb2yN7FUSeli5tk+FL+GsWkF+5OLTBxNPAVSasODvz26Wlmi5V2jFQy4RNRGbW7ohFA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MZi6TzjQ; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1790666656; c=relaxed/relaxed;
+	bh=yvxJPj3k2vjV6D8HUDd8QkKGWeBMIhXhJhVwkCPhP3Q=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=GXwgSRG3fKKZgE6TNngdf4tN9s0Ba41ikay/YPv33xYBL0rvbczwzh9Y7joXLQGmPFe1JzHtzYiyZD+hUmm3sr0OsoZqX1HSIMUgb0ZbRfM34/75YjGSADcZdJa4fM6voZyA0va+/8MpHXuQ6/dpIFh/Hwbd0xhFv+NvdW2eqAhNe2zjrqEA2BC8IpIXMlfpJh5R0S6t+vEA2VQdGPsnli4wx4xO9JRZCW7Zzn6T+NJGieAa00SgYSnSF6XR7+xDfM1IgvUa6AlLTSXXF57y4dv+NWWX/++I5Tya4BXX+Bav0HsLjpTX2JO9TqcyfRJ0f9BQt2kkjc0KVmrQkv+XZQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ibkey2yU; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MZi6TzjQ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ibkey2yU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hv8lf3sS6z2yDD
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2026 17:22:54 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68T46EjD1805735;
-	Tue, 29 Sep 2026 05:52:33 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=g8tTQZ2uKce9fmNdV
-	cB0txupfJQREmbAfU9Mihwgn30=; b=MZi6TzjQfZywUQeURPsI5t9GuN8HfkDTk
-	molgkf0Kr9vMjCa4+BvJOUE46O+Lqs7i3I7ZI8UDkCSncQN2TJpBazh7PkswVmE5
-	FwYmyg50lm+vl72sQrSLxLOsKrZEHRhe3wKFgav2dvKrzu8MHwr7DoVURhJ5xMNQ
-	p7Hac4UMn/5v10c+9q57XXQ3uJ8TP8nw7NQZbSyLxhgLJQQSvGhtXPIvNYY7fuxi
-	rRRccat324zRIMHPy7WVnKJblMCaFAhGO+KMeHHWyFM0o4m8EjLHx8vxjRTWvNy/
-	BBihjqDXMCaBUWoaj1Ggmk7QoXSfRqtOBxPvl853Fy+L/whO4hXlQ==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gx4fe4ugx-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 29 Sep 2026 05:52:32 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68T4HoqI1184427;
-	Tue, 29 Sep 2026 05:52:31 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gxrcprk6u-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 29 Sep 2026 05:52:31 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68T5qQP943057496
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 29 Sep 2026 05:52:26 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E68F820043;
-	Tue, 29 Sep 2026 05:52:25 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DF07220040;
-	Tue, 29 Sep 2026 05:52:18 +0000 (GMT)
-Received: from shivang.bl1-in.ibm.com (unknown [9.123.12.247])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 29 Sep 2026 05:52:18 +0000 (GMT)
-From: Shivang Upadhyay <shivangu@linux.ibm.com>
-To: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org
-Cc: sv@linux.ibm.com, alexandre.chartre@oracle.com, alexghiti@rivosinc.com,
-        aliceryhl@google.com, ardb@kernel.org, bp@alien8.de,
-        chleroy@kernel.org, elver@google.com, ihor.solodrai@linux.dev,
-        jpoimboe@kernel.org, kees@kernel.org, legion@kernel.org,
-        lossin@kernel.org, maddy@linux.ibm.com, masahiroy@kernel.org,
-        mpe@ellerman.id.au, nathan@kernel.org, npiggin@gmail.com,
-        nsc@kernel.org, ojeda@kernel.org, peterz@infradead.org,
-        pmladek@suse.com, rostedt@goodmis.org, tamird@kernel.org,
-        thomas.weissschuh@linutronix.de, thuth@redhat.com,
-        yuxuan.zuo@outlook.com, sourabhjain@linux.ibm.com,
-        Shivang Upadhyay <shivangu@linux.ibm.com>
-Subject: [PATCH v2 5/6] kbuild: Add objtool integration for PowerPC feature fixups
-Date: Tue, 29 Sep 2026 11:21:36 +0530
-Message-ID: <20260929055138.43489-6-shivangu@linux.ibm.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260929055138.43489-1-shivangu@linux.ibm.com>
-References: <20260929055138.43489-1-shivangu@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hv8nC4bdzz30PJ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2026 17:24:15 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 57E5A41840;
+	Tue, 29 Sep 2026 07:24:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DE16C1F000FF;
+	Tue, 29 Sep 2026 07:24:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790666652;
+	bh=yvxJPj3k2vjV6D8HUDd8QkKGWeBMIhXhJhVwkCPhP3Q=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=ibkey2yUqqbiVM76d/2jZTGyjIdUdz2aZM6YaiTOTz9joywkD+nsB2wdU5GPHSSHW
+	 Uxe6UNjvfBnxPaLAJiLIH+gsRzsY2K3p6sj1jwCatttOSR5PmQJWeYyMS7R0gTipDx
+	 91toSUwKUs91yGhn4NOpNTCFOAR4QjdipsKpKZKrVdgP4YFHgv2ipVUjpAgmvec1Sg
+	 nwUgjtnXkrBuf1mAFgFG+g0dFlvx/XpzAYRP1+O1d6y22DmRT+IkA3jEDVM8r9eqqu
+	 gWm26joLY6CvegjTpmEF/XdyrAUPtvOP2B8YcOfRZfiDX7H+Xr/UGrRS9OQkV2HyLu
+	 Y9EqZQaCIOopw==
+Message-ID: <deecea10-589f-4e2c-9c17-5e5dd4e81250@kernel.org>
+Date: Tue, 29 Sep 2026 09:24:06 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,106 +59,160 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=FYWiV5+6 c=1 sm=1 tr=0 ts=6abb5221 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8 a=VwQbUJbxAAAA:8
- a=vy1mQZ1WB7j3BMigChgA:9
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI5MDAyMiBTYWx0ZWRfX4M6WmLc9nqDL
- q+pFRg9hbu18AuBYupPKog/X/m3j+Oim3IdXvqhSVplKjM4EwG9ithxs4Q4gFccq/4+P8syR0xD
- 0YYoGLo/dxhDqtAxbdh0m41Rvksm6UU=
-X-Proofpoint-ORIG-GUID: FoKb2uDzsxQpe8xQmcDD__FIgEi17Pk6
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI5MDAyMiBTYWx0ZWRfXx+RMZOo7h6Rl
- S3e5OGndBlXvgkK8euNX59U7uEnmhSvo52LzFTjW6YWxS4DGiijqcKTXrJ+2X24z37da0a9uaNu
- mI8wEkjhZP5HekeLEJxGerTlBhY2ZbOOfDytOFNYU7pFeLFH4Xck3jFat9tXCc73UjP72HpUyyU
- dYgOt8QFuubTlH+nmSq9jL3cSEi4yZSR08LeIx253fyy35ZRk7DXyioswMODfJM5mKmXLy3DDXy
- CeJT8vXV3UVwcFBq7i+TELwUFnhROWXG9s745agjNV+f2v9ogqPRFF1K7PV0IRs4PLVJctts+FY
- 5ST45OWp4VV+3Y80MBj+l8Lwjm90eqJAz521z6wO1PXY3TtSqa2FHjWkXzonOD+i9Ow+axQHvh9
- ntJsvZl6gN9irb3yXTgo2xA0XaMtlbiwPHj1S0s/y/G4grYDLscvevBHgwttAMUnUKdnsZvauae
- 8iFabl5rBaacIDmWC/g==
-X-Proofpoint-GUID: z8unBXdemuN9uGNt4XtpuuICerrEQw7e
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-29_02,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 clxscore=1015 impostorscore=0 spamscore=0 phishscore=0
- priorityscore=1501 malwarescore=0 bulkscore=0 lowpriorityscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
- definitions=main-2609290022
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 05/12] mm/sparse-vmemmap: prepare DAX vmemmap
+ population for compound page orders
+To: Muchun Song <songmuchun@bytedance.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Oscar Salvador
+ <osalvador@suse.de>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Jonathan Corbet <corbet@lwn.net>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
+ Muchun Song <muchun.song@linux.dev>, Lorenzo Stoakes <ljs@kernel.org>,
+ Mike Rapoport <rppt@kernel.org>, Qi Zheng <qi.zheng@linux.dev>,
+ Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>,
+ Randy Dunlap <rdunlap@infradead.org>, Lance Yang <lance.yang@linux.dev>
+References: <20260927025441.741633-1-songmuchun@bytedance.com>
+ <20260927025441.741633-6-songmuchun@bytedance.com>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=david@kernel.org; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <20260927025441.741633-6-songmuchun@bytedance.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-From: Sathvika Vasireddy <sv@linux.ibm.com>
+On 9/27/26 04:54, Muchun Song wrote:
+> Device DAX still uses vmemmap_populate_compound_pages() to populate its
+> compound-page vmemmap mappings. That helper allocates the head and first
+> tail vmemmap pages explicitly, then reuses the first tail page for the
+> remaining tail page mappings.
+> 
+> Device DAX is being moved to the section-based vmemmap optimization
+> infrastructure, but it cannot switch to the generic section-based
+> population path yet. Once a later patch records the DAX compound page
+> order in section metadata, DAX head and first-tail PFNs can look
+> optimizable to the generic helpers as well.
+> 
+> Add a DAX-specific population flag for this transition. It keeps DAX
 
-Add build system support for PowerPC feature fixup processing:
+Well, you're not adding flag, your reusing an existing one and renaming it?
 
-- Add HAVE_OBJTOOL_FTR_FIXUP config option for architectures that
-support
-  build-time feature fixup processing
-- Integrate objtool feature fixup processing into vmlinux build
+And then you're specifying it on more paths.
 
-Suggested-by: Masahiro Yamada <masahiroy@kernel.org>
-Signed-off-by: Sathvika Vasireddy <sv@linux.ibm.com>
-Acked-by: Nicolas Schier <nsc@kernel.org>  # kbuild
-Signed-off-by: Shivang Upadhyay <shivangu@linux.ibm.com>
----
- Makefile                 | 7 +++++++
- scripts/Makefile.lib     | 4 ++--
- scripts/Makefile.vmlinux | 3 ++-
- 3 files changed, 11 insertions(+), 3 deletions(-)
+[...]
 
-diff --git a/Makefile b/Makefile
-index 6b8b812f23b9..363cad32fb26 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1566,6 +1566,13 @@ ifdef CONFIG_OBJTOOL
- prepare: tools/objtool
- endif
- 
-+# CONFIG_OBJTOOL and CONFIG_HAVE_OBJTOOL_FTR_FIXUP are unrelated, separate
-+# options. It was integrated in objtool in order to borrow the elf parser,
-+# but this is different from how the other objtool commands are used.
-+ifdef CONFIG_HAVE_OBJTOOL_FTR_FIXUP
-+prepare: tools/objtool
-+endif
-+
- ifdef CONFIG_BPF
- ifdef CONFIG_DEBUG_INFO_BTF
- prepare: tools/bpf/resolve_btfids
-diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index 0a4fdd8bd975..efcedeb207b7 100644
---- a/scripts/Makefile.lib
-+++ b/scripts/Makefile.lib
-@@ -182,10 +182,10 @@ cpp_flags      = -Wp,-MMD,$(depfile) $(NOSTDINC_FLAGS) $(LINUXINCLUDE)     \
- 
- ld_flags       = $(KBUILD_LDFLAGS) $(ldflags-y) $(LDFLAGS_$(@F))
- 
--ifdef CONFIG_OBJTOOL
--
- objtool := $(objtree)/tools/objtool/objtool
- 
-+ifdef CONFIG_OBJTOOL
-+
- objtool-args-$(CONFIG_HAVE_JUMP_LABEL_HACK)		+= --hacks=jump_label
- objtool-args-$(CONFIG_HAVE_NOINSTR_HACK)		+= --hacks=noinstr
- objtool-args-$(CONFIG_MITIGATION_CALL_DEPTH_TRACKING)	+= --hacks=skylake
-diff --git a/scripts/Makefile.vmlinux b/scripts/Makefile.vmlinux
-index fcae1e432d9a..a1bef0638ecb 100644
---- a/scripts/Makefile.vmlinux
-+++ b/scripts/Makefile.vmlinux
-@@ -65,7 +65,8 @@ ARCH_POSTLINK := $(wildcard $(srctree)/arch/$(SRCARCH)/Makefile.postlink)
- # Final link of vmlinux with optional arch pass after final link
- cmd_link_vmlinux =							\
- 	$< "$(LD)" "$(KBUILD_LDFLAGS)" "$(LDFLAGS_vmlinux)" "$@";	\
--	$(if $(ARCH_POSTLINK), $(MAKE) -f $(ARCH_POSTLINK) $@, true)
-+	$(if $(ARCH_POSTLINK), $(MAKE) -f $(ARCH_POSTLINK) $@, true);	\
-+	$(if $(CONFIG_HAVE_OBJTOOL_FTR_FIXUP), $(objtool) --ftr-fixup --link $@, true)
- 
- targets += vmlinux.unstripped .vmlinux.export.o
- vmlinux.unstripped: scripts/link-vmlinux.sh vmlinux.o .vmlinux.export.o $(KBUILD_LDS) FORCE
+>  mm/sparse-vmemmap.c | 27 +++++++++++++++------------
+>  1 file changed, 15 insertions(+), 12 deletions(-)
+> 
+> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
+> index e4dae98ba7f8..2457ea2c6dca 100644
+> --- a/mm/sparse-vmemmap.c
+> +++ b/mm/sparse-vmemmap.c
+> @@ -35,8 +35,8 @@
+>  /*
+>   * Flags for vmemmap_populate_range and friends.
+>   */
+> -/* Get a ref on the head page struct page, for ZONE_DEVICE compound pages */
+> -#define VMEMMAP_POPULATE_PAGEREF	0x0001
+> +/* Vmemmap population for ZONE_DEVICE compound pages */
+> +#define VMEMMAP_POPULATE_DAX		0x0001
+
+Cleaner.
+
+>  
+>  #include "internal.h"
+>  #include "mm_init.h"
+> @@ -243,13 +243,17 @@ static inline struct page *vmemmap_shared_tail_page(unsigned int order,
+>  #endif
+>  
+>  static __meminit void *vmemmap_alloc_pte(unsigned long pfn, int node,
+> -					 struct vmem_altmap *altmap)
+> +		struct vmem_altmap *altmap, unsigned long flags)
+>  {
+>  	struct zone *zone;
+>  	struct page *page;
+>  	const unsigned int order = pfn_to_section_compound_order(pfn);
+>  
+> -	if (!vmemmap_optimizable_pfn(pfn))
+> +	/*
+> +	 * Device DAX still relies on vmemmap_populate_compound_pages() for
+> +	 * head/first-tail allocation and tail-page reuse.
+> +	 */
+> +	if (!vmemmap_optimizable_pfn(pfn) || flags & VMEMMAP_POPULATE_DAX)
+>  		return vmemmap_alloc_block_buf(PAGE_SIZE, node, altmap);
+>  
+>  	zone = pfn_to_zone(pfn, node);
+> @@ -271,7 +275,7 @@ static pte_t * __meminit vmemmap_pte_populate(pmd_t *pmd, unsigned long addr, in
+>  		pte_t entry;
+>  
+>  		if (ptpfn == (unsigned long)-1) {
+> -			void *p = vmemmap_alloc_pte(pfn, node, altmap);
+> +			void *p = vmemmap_alloc_pte(pfn, node, altmap, flags);
+>  
+>  			if (!p)
+>  				return NULL;
+> @@ -286,7 +290,7 @@ static pte_t * __meminit vmemmap_pte_populate(pmd_t *pmd, unsigned long addr, in
+>  			 * and through vmemmap_populate_compound_pages() when
+>  			 * slab is available.
+>  			 */
+> -			if (flags & VMEMMAP_POPULATE_PAGEREF)
+> +			if (flags & VMEMMAP_POPULATE_DAX)
+>  				get_page(pfn_to_page(ptpfn));
+>  		}
+>  		entry = pfn_pte(ptpfn, PAGE_KERNEL);
+> @@ -546,6 +550,7 @@ static int __meminit vmemmap_populate_compound_pages(unsigned long start_pfn,
+>  	unsigned long size, addr;
+>  	pte_t *pte;
+>  	int rc;
+> +	unsigned long flags = VMEMMAP_POPULATE_DAX;
+
+const and at the top?
+
 -- 
-2.54.0
+Cheers,
 
+David
 
