@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-28520-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28521-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B72D5CA5FA7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 19:33:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED9E8CA5FA7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 19:33:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hvSyY45zJz3bX3;
-	Wed, 30 Sep 2026 05:33:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790710405;
-	cv=none; b=dIWSIJ0NOda1LKW1gJvQayI0f7rfgdwu7WGG10IYg7SNg0YqhiHLFJsJK06tl6tvvdOUdkj0yDrjTvE791kIOWhBxHudCzWGa80OfiVdm35XqDULiDwSLNIhvRl0IRFSN5yNUlY57trTzZrgclIyvtuJJQ6sK8TQOPJ51BRfBPMUfQRISi8whGO5bbkpumRNs/LGVwwWH4hAqvGVE0XzfqtyNa4sxGH2BpH9QXAKVxOx1yvJPkyvEbuFYXFLnyvObOGfAHhQZtHHD3tn8I7SekML8GDihF7LqaxzhBFrI7N+q8F+Tw8FLBdSKC0SK72pSNBhw+lm58Y1sCr7bTHbkg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hvSyc15K8z2yD3;
+	Wed, 30 Sep 2026 05:33:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790710408;
+	cv=none; b=WsP5PCYlLbOXpY/XWYys0FDy2MQ6xe2EIbHuZEZ9jYGkBZDDdy+FCCIQscKc9JAygFx4AFK5/GQX+yxJJuc+metvheJvLTTZwGxHC5+sfNXcIySezJ+++j/MOw63++CmsCbr1PfBFhCmoTTQG0MvOhKBTf0AiOIdpb4z3rvj69NmABx9FNC2y4zUFFq4PxfvE9KkMz/CH4zV38SF0qArRa1DWJmva9khBFU1Wil3ELTIf5Bv4Ol5/P2i1mki0ZpNutegP0h2Hmxt9qs1IkedCpgbOFMsWgK3Z6iN3OEg4SLoUn1I9tJKx8/tsa8rvm+AbuVr3VBOYJgVXjiwb4S7kA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790710405; c=relaxed/relaxed;
-	bh=cfT/gCG9G2j6N3wGn2bGSTPo3Xb0xRkJy6X4Pwwli9w=;
+	t=1790710408; c=relaxed/relaxed;
+	bh=coKf8qCmib2tIUQVnyluuWaFyhx9Kl9U3LVajvpzG4E=;
 	h=Subject:From:To:Cc:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=hMTyUz6FEvsQi6q11XjLRLnYjLTDVAC6ujbEFTFx9rJUYfy70mWXWTvlBDrdcBbWo5AmvcUyfFgwfh115iu8+tvn0XZqAWNuNicYMM6/U7nIF0+QsZjISdZLvA5+WCiy0n+DIQzI/8VEho3F3DEej54wzaxhzihDVFmr5Whih3rOctUWRz2PrnDDDOhkORsM+M3RaMKZEgpzXEZvkNs+HkGCtxQT8pzujRWyiOnu0eBQBxCACIPLh/X1YlBGg3a5t5EG3bDZFeFYYxSt+y+X0gKNVw+u53BsRnad5UdbPNLDw2yIGTUtYTV2QzKVxWSPguPB1LeRuTbIljdZmmGKmA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZjdoJYqd; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:MIME-Version; b=ZjUSR0GoREmkkys2Kc+nVptQfI/Xw5mR7oe5HXMEN9xRSgSeXCn+OI/1ZIqkNGmOMHQr0kaa9uJnBnc93WgACKe6NrJN72G3RqBPnBdiGgMbjAcxEJDT12jaXz1GgESoGKELaqs8Yn/ELSnD4y+q5axZTPW3MAYCokM8BKx5Nn3fQR+1Jk3eoaHG35QHH6T7mSFrHro0Z2D5SBQE6aYs5cSyjsnah3WT8sqmd9Q3Q7LShW/uKvB8Xt82tMfg3kIzYTjpDBMOUmlloLFxGSh3VNaKaTdeajJ39aGqgYoX+AXB711F1VyW12TlDUXHE1qohZvHKMmdqGjrl/oESocd6w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PE1thhTe; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZjdoJYqd;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PE1thhTe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvSyW6YpVz30hq
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2026 05:33:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvSyY0YH4z3bVW
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2026 05:33:25 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 9D85360235;
+	by tor.source.kernel.org (Postfix) with ESMTP id 183926025A;
+	Tue, 29 Sep 2026 19:33:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E1CD51F00893;
 	Tue, 29 Sep 2026 19:33:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 75BB71F00898;
-	Tue, 29 Sep 2026 19:33:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790710401;
-	bh=cfT/gCG9G2j6N3wGn2bGSTPo3Xb0xRkJy6X4Pwwli9w=;
+	s=k20260515; t=1790710402;
+	bh=coKf8qCmib2tIUQVnyluuWaFyhx9Kl9U3LVajvpzG4E=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=ZjdoJYqd75/zjMaGwIGu+lhn7Chm4GbK6BXLJkmf568mC5VIobdMVpDAZVCCsu5tA
-	 CevUBJFWZ9sRjSHK2YNswAbFdyEuEUVi5vG16Kr8INNeqKRZdZCMxvVCRUNtdUGsfd
-	 IRRw21/qJYTc4VNfCuJb9tGN62vGwsDkLrroOeemXY6J+lEEReUiAQXpyt6WJPsBlY
-	 /P49FadCwQyL3fcrj7OAMV/QiFD6wNWs/Hmz+KHykh/IdfqT6bNwMbn3iF6fV6sVfO
-	 3eNdHB3Kp05Co8nRIZ8vBUzky5Z5fsl7i4vg8GU+HVCQ7fDBVdj0f/OxlqanxJFXs5
-	 NgcqV8JFeJI/g==
-Subject: Re: [PATCH net-next v7 08/15] ibmveth: Add queue-aware RX buffer
- submit helper for MQ
+	b=PE1thhTeaiQGhRXcmB/Af7ELSXtIvhPqUd4bAUiWDPenuL5zdehjvUPEx7lJmxBcq
+	 L8ejfzbgBBg6vVgli2ubXBVkwY9mVuSmV2i9mkhqdOcD4dyEXmucAdaEU8kQRlWAGO
+	 C19MfL5fF9sGIcf4e6dmK9MkGkTStD1Rj/FpPESIVtq0dmSdG/Vn2SnWAZbcUSgEtf
+	 dgZ51y7SMRoSSTqvJIdtPl4saGhGcVYam2dtq3F4HMB2xZTAg9NNB8INGLQNrSRGJp
+	 Fgg8sSTQ+nhMy2GlstBLtGvPF148ezLOoEB7DJz9QeW+eyF76mgTZdhnV50mamfMBr
+	 X5q/vu1J+RZRw==
+Subject:
+ Re: [PATCH net-next v7 09/15] ibmveth: Harden RX poll path with helpers
 From: netdev-bot+sashiko@kernel.org
 To: mmc@linux.ibm.com
 Cc: netdev@vger.kernel.org, davem@davemloft.net, kuba@kernel.org,
@@ -54,13 +54,13 @@ Cc: netdev@vger.kernel.org, davem@davemloft.net, kuba@kernel.org,
  mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, haren@linux.ibm.com,
  ricklind@linux.ibm.com, davemarq@linux.ibm.com, bjking1@linux.ibm.com,
  shaik.abdulla1@ibm.com
-Date: Tue, 29 Sep 2026 19:33:20 +0000
-Message-ID: <179071040006.434549.6643409390069247563@kernel.org>
+Date: Tue, 29 Sep 2026 19:33:21 +0000
+Message-ID: <179071040151.434549.8640964325817993389@kernel.org>
 In-Reply-To:
- <3647dfce84454c5e60269549172fd20f504bddad.1790319558.git.mmc@linux.ibm.com>
+ <8a7621e33cc595cff0e1712c1415051d8c5679d2.1790319558.git.mmc@linux.ibm.com>
 References:
- <3647dfce84454c5e60269549172fd20f504bddad.1790319558.git.mmc@linux.ibm.com>
-X-sashiko-severity: Medium
+ <8a7621e33cc595cff0e1712c1415051d8c5679d2.1790319558.git.mmc@linux.ibm.com>
+X-sashiko-severity: High
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -80,7 +80,7 @@ MIME-Version: 1.0
 Thank you for your contribution! Sashiko AI review found 5 potential
 issue(s) to consider.
 
-Critical: 0 · High: 0 · Medium: 3 · Low: 2 (3)
+Critical: 0 · High: 2 (2) · Medium: 1 · Low: 2
 
 If you believe none of the issues are legitimate, please reply to each
 issue of Medium severity or higher and explain why the AI is wrong.
@@ -88,344 +88,676 @@ If any of them are legitimate and you plan to respin, please let patchwork
 know by including "pw-bot: cr" as a separate line at the end of your reply
 (one such reply per series is enough).
 
-- [Medium] This patch fixes three real bugs that already exist in the
-  tree, but it presents itself as a feature ('Add queue-aware RX buffer…
-- [Medium] This patch removes schedule_work(&adapter->work) from the
-  -EINVAL and -EFAULT exits of ibmveth_remove_buffer_from_pool().
-- [Medium] ibmveth_replenish_task() now holds
-  spin_lock_irqsave(&rxq->replenish_lock) across the whole walk of all…
-- [Low] ibmveth_replenish_task() fills a single struct
-  ibmveth_replenish_fail across every pool it walks.
-- [Low] Reported concern: ibmveth_close() frees the buffer pools
-  (free_map, skbuff, dma_addr, available) and the buffer-list pages…
+- [High] The re-arm guard in ibmveth_poll()
+  (drivers/net/ethernet/ibm/ibmveth.c) is a check-then-act race, so it…
+- [High] net: ibmveth: kernel crash via OOB array read due to TOCTOU
+  double fetch
+- [Medium] Reset escalation for bad correlators now covers only one of
+  the three harvest callers in ibmveth_poll().
+- [Low] The new comment above the post-completion ibmveth_poll_stopping()
+  check gives a rationale the code does not support.
+- [Low] When the RX code was moved into ibmveth_poll_deliver_frame(), two
+  comments that document PHYP behaviour were dropped.
 
 Pre-existing issues:
-- [Low] Reported concern: on the rx_copybreak path of ibmveth_poll(),
-  new_skb is leaked when ibmveth_rxq_harvest_buffer() fails after the…
-- [Low] Reported concern: adapter->replenish_task_cycles++ runs before
-  replenish_lock is taken, so concurrent NAPI and netpoll replenish…
-- [Low] Reported concern: the frame offset and length supplied by the
-  hypervisor are not checked against the RX buffer size before…
+- [High] Crafted IPv4 frames with the checksum-offload flag and IHL=0 can
+  crash the receiving partition.
+- [High] The concern: ibmveth_remove() calls
+  cancel_work_sync(&adapter->work) before unregister_netdev().
 
 --
 
-ibmveth: Add queue-aware RX buffer submit helper for MQ
+ibmveth: Harden RX poll path with helpers
 
-This patch adds ibmveth_add_logical_lan_buffers() so RX buffer pool
-replenishment goes through H_ADD_LOGICAL_LAN_BUFFERS_QUEUE in multi-queue
-mode, and gives the RX accessors a queue index. It also adds a per-queue
-replenish_lock, moves replenish logging out of the critical section, and
-replaces the correlator WARN_ON()s with ibmveth_rxq_correlator_valid().
+This splits the per-slot handling in ibmveth_poll() into small helpers
+for invalid slots, bad correlators, oversize frames and frame delivery.
+It adds stopping checks meant to keep close and napi_disable from
+re-arming PHYP. It also bounds the PHYP offset+length against the RX
+buffer, and moves bad-correlator reset escalation out of
+ibmveth_rxq_get_buffer().
 
 > diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-> index cc01b03d0e4b0..ed75dea90a957 100644
+> index ed75dea90a957..7b6c0283e5c32 100644
 > --- a/drivers/net/ethernet/ibm/ibmveth.c
 > +++ b/drivers/net/ethernet/ibm/ibmveth.c
 
 [ ... ]
 
-> @@ -904,21 +1005,85 @@ static void ibmveth_update_rx_no_buffer(struct ibmveth_adapter *adapter)
->  }
->  
->  /* replenish routine */
-> -static void ibmveth_replenish_task(struct ibmveth_adapter *adapter)
-> +static void ibmveth_replenish_task(struct ibmveth_adapter *adapter,
-> +				   int queue_index)
->  {
-
-[ ... ]
-
->  	adapter->replenish_task_cycles++;
-
-[Severity: Low]
-This isn't a bug introduced by this patch, but
-adapter->replenish_task_cycles++ still runs before replenish_lock is
-taken. NAPI and ndo_poll_controller() can both call
-ibmveth_replenish_task() on the same queue. Can increments of this
-counter be lost when they do?
-
-A later patch in the series ("ibmveth: Add per-queue RX and TX statistics
-collection") moves the per-queue replenish_task_cycles increment under
-the queue's replenish_lock. That means only the intermediate commits are
-affected, and only the statistics.
-
->  
-> -	for (i = (IBMVETH_NUM_BUFF_POOLS - 1); i >= 0; i--) {
-> -		struct ibmveth_buff_pool *pool = &adapter->rx_buff_pool[0][i];
-> +	spin_lock_irqsave(&rxq->replenish_lock, flags);
-
-[Severity: Medium]
-This lock is held with hard IRQs off for the whole walk over all
-IBMVETH_NUM_BUFF_POOLS pools. For each pool, ibmveth_replenish_buffer_pool()
-loops on while (remaining > 0) until the full deficit is filled. That
-work includes netdev_alloc_skb(), dma_map_single_attrs(), optional dcbf
-flushes, and one hcall per batch.
-
-On the first replenish after open every pool is empty. With the default
-active pools (256 + 512 + 256 buffers, batch 8) that comes to roughly
-1024 allocations and mappings and about 128 hcalls with IRQs off. Larger
-pools set through sysfs, or the fallback to single-buffer hcalls, make
-this much longer.
-
-ibmveth_remove_buffer_from_pool() takes the same lock with irqsave from
-NAPI, so a concurrent harvest on the same queue would spin with IRQs off
-for that whole time.
-
-Before this patch the same work ran in NAPI softirq with IRQs enabled.
-Is this IRQ-off latency acceptable, or could the lock be dropped between
-batches? The v7 notes list the irqsave section as a leftover, and it
-keeps this shape at the end of the series.
-
->  
-> -		if (pool->active &&
-> -		    (atomic_read(&pool->available) < pool->threshold))
-> -			ibmveth_replenish_buffer_pool(adapter, pool);
-> +	for (i = (IBMVETH_NUM_BUFF_POOLS - 1); i >= 0; i--) {
-> +		struct ibmveth_buff_pool *pool =
-> +			&adapter->rx_buff_pool[queue_index][i];
-> +
-> +		if (pool->active && pool->free_map &&
-> +		    (atomic_read(&pool->available) < pool->threshold)) {
-
-[Severity: Low]
-Can this pool->free_map check race with ibmveth_close()?
-ibmveth_close() calls ibmveth_free_buffer_pools() without taking
-replenish_lock. Meanwhile ibmveth_poll_controller() ->
-ibmveth_replenish_task() can run from netpoll. If that happens,
-free_map, skbuff and dma_addr could be freed right after this check
-passes.
-
-The last patch in the series ("ibmveth: Complete set_channels down-path
-and mq_fallback max_rx cap") closes this window. With it,
-ibmveth_poll_controller() returns early when !adapter->opened, and
-ibmveth_close() clears opened and calls synchronize_net() before freeing
-the pools. Netpoll callers run with IRQs disabled, so that
-synchronize_net() waits for them. That guard does not exist yet at this
-commit.
-
-> +			rc = ibmveth_replenish_buffer_pool(adapter, pool,
-> +							   queue_index, &fail);
-> +			switch (rc) {
-> +			case IBMVETH_REPLENISH_RESET_MAP:
-> +			case IBMVETH_REPLENISH_RESET_MQ:
-> +				need_reset = rc;
-> +				goto out_unlock;
-> +			case IBMVETH_REPLENISH_BATCH_FALLBACK:
-> +				batch_fallback = 1;
-> +				break;
-> +			case IBMVETH_REPLENISH_HCALL_FAIL:
-> +				hcall_fail = 1;
-> +				break;
-> +			default:
-> +				break;
-> +			}
-> +		}
->  	}
-
-[ ... ]
-
-> +	if (batch_fallback)
-> +		dev_warn_ratelimited(&adapter->netdev->dev,
-> +				     "Legacy batch add H_FUNCTION (batch=%u), fallback\n",
-> +				     fail.batch);
-> +
-> +	if (hcall_fail)
-> +		dev_warn_ratelimited(&adapter->netdev->dev,
-> +				     "RX %s failed: filled=%u, rc=%lu, batch=%u\n",
-> +				     adapter->multi_queue ?
-> +				     "h_add_logical_lan_buffers_queue" :
-> +				     (fail.filled == 1 ?
-> +				      "h_add_logical_lan_buffer" :
-> +				      "h_add_logical_lan_buffers"),
-> +				     fail.filled, fail.lpar_rc, fail.batch);
->  }
-
-[Severity: Low]
-Can these two messages print the wrong values? All pools in the loop
-share one fail record. The BATCH_FALLBACK and HCALL_FAIL cases only break
-out of the switch, so later pools still run. Each hcall failure makes
-ibmveth_replenish_buffer_pool() overwrite fail->lpar_rc, fail->filled and
-fail->batch.
-
-Say one pool hits BATCH_FALLBACK with batch=8, which sets
-rx_buffers_per_hcall to 1, and a later pool then has a hcall failure.
-The "Legacy batch add H_FUNCTION (batch=%u), fallback" message would
-print batch=1.
-
-In the reverse order, the "RX %s failed" message would show the rc,
-filled count and wrapper name of the H_FUNCTION fallback, not those of
-the pool that actually failed.
-
-The same structure is still there at the end of the series.
-
-[ ... ]
-
-> @@ -1093,35 +1264,75 @@ ibmveth_free_buffer_pools(struct ibmveth_adapter *adapter)
->  		   adapter->num_rx_queues);
->  }
->  
-> +static bool ibmveth_rxq_correlator_valid(struct ibmveth_adapter *adapter,
-> +					 int queue_index, u64 correlator)
+> +static bool ibmveth_poll_harvest_slot(struct ibmveth_adapter *adapter,
+> +				      int queue_index, bool reuse)
 > +{
-> +	unsigned int pool = correlator >> 32;
-> +	unsigned int index = correlator & 0xffffffffUL;
-> +	struct ibmveth_buff_pool *bpool;
+> +	int rc = ibmveth_rxq_harvest_buffer(adapter, queue_index, reuse);
 > +
-> +	if (pool >= IBMVETH_NUM_BUFF_POOLS)
-> +		return false;
+> +	return !rc || rc == -EINVAL || rc == -EFAULT;
+> +}
 > +
-> +	bpool = &adapter->rx_buff_pool[queue_index][pool];
-> +
-> +	/* Require a live pool with allocated arrays before indexing.
-> +	 * Inactive pools still have size from init; free clears skbuff.
-> +	 */
-> +	if (!bpool->active || !bpool->skbuff || !bpool->free_map)
-> +		return false;
-> +
-> +	return index < bpool->size;
+> +static bool ibmveth_poll_recycle_invalid(struct net_device *netdev,
+> +					 struct ibmveth_adapter *adapter,
+> +					 int queue_index)
+> +{
+> +	netdev_dbg(netdev, "recycling invalid buffer\n");
+> +	ibmveth_poll_bump_invalid(adapter, queue_index);
+> +	return ibmveth_poll_harvest_slot(adapter, queue_index, true);
 > +}
 
 [Severity: Medium]
-This helper, plus the removed WARN_ON()s and the ring advance on a NULL
-buffer in ibmveth_poll(), fixes three bugs that exist in the current
-tree:
+Does the invalid-buffer path lose reset escalation for bad correlators?
 
-- ibmveth_remove_buffer_from_pool() and ibmveth_rxq_get_buffer() call
-  WARN_ON() on a hypervisor-supplied correlator. With panic_on_warn set,
-  that takes the partition down.
+In mainline, ibmveth_remove_buffer_from_pool() called
+schedule_work(&adapter->work) for an out-of-range correlator (-EINVAL)
+or a NULL skb (-EFAULT), for every harvest caller. The previous patch
+("ibmveth: Add queue-aware RX buffer submit helper for MQ") removed
+that call. This patch then removes schedule_work() from
+ibmveth_rxq_get_buffer() too.
 
-- In ibmveth_poll(), a valid correlator whose skbuff[index] is NULL used
-  to break without advancing the ring and without scheduling a reset.
-  The poll tail then calls ibmveth_enable_irq(), sees
-  ibmveth_rxq_pending_buffer() still true, calls napi_schedule() and
-  jumps to restart_poll. It polls the same slot forever in softirq.
+The only schedule_work() left in the poll slot handling is in
+ibmveth_poll_skip_bad_correlator(). That is reached only from the
+valid-slot path in ibmveth_poll_deliver_frame().
 
-- A correlator that names an inactive pool (pool_active[] =
-  {1,1,0,0,1}) passes the old size-only check. skbuff[index] is then
-  read through a NULL skbuff array.
-
-These fixes sit inside a patch titled as a multi-queue feature. Neither
-this patch nor any later one in the series has a Fixes: tag. Could they
-be split out into a separate patch with Fixes: tags, so stable can take
-them without the MQ refactor?
-
-[ ... ]
-
->  static int ibmveth_remove_buffer_from_pool(struct ibmveth_adapter *adapter,
-> -					   u64 correlator, bool reuse)
-> +					   u64 correlator, int queue_index,
-> +					   bool reuse)
->  {
-
-[ ... ]
-
-> -	if (WARN_ON(pool >= IBMVETH_NUM_BUFF_POOLS) ||
-> -	    WARN_ON(index >= adapter->rx_buff_pool[0][pool].size)) {
-> -		schedule_work(&adapter->work);
-> -		return -EINVAL;
-> +	spin_lock_irqsave(&rxq->replenish_lock, flags);
-> +
-> +	if (!ibmveth_rxq_correlator_valid(adapter, queue_index, correlator)) {
-> +		rc = -EINVAL;
-> +		goto out_unlock;
->  	}
->  
-> -	skb = adapter->rx_buff_pool[0][pool].skbuff[index];
-> -	if (WARN_ON(!skb)) {
-> -		schedule_work(&adapter->work);
-> -		return -EFAULT;
-> +	skb = adapter->rx_buff_pool[queue_index][pool].skbuff[index];
-> +	if (!skb) {
-> +		rc = -EFAULT;
-> +		goto out_unlock;
->  	}
-
-[Severity: Medium]
-Is dropping schedule_work() from both error exits intended? The commit
-message says rxq_get_buffer() still schedules the reset. The
-recycle-invalid branch of ibmveth_poll() never calls
-ibmveth_rxq_get_buffer(), though:
+Take a slot with the VALID bit clear and a stale or out-of-range
+correlator. It goes through:
 
 ibmveth_poll()
-  if (!ibmveth_rxq_buffer_valid(adapter, queue_index))
-    ibmveth_rxq_harvest_buffer(adapter, queue_index, true)
-      ibmveth_remove_buffer_from_pool() returns -EINVAL/-EFAULT
-      ibmveth_rxq_advance(rxq)
-    break;
+  ibmveth_poll_recycle_invalid()
+    ibmveth_poll_harvest_slot()   /* -EINVAL/-EFAULT -> true */
 
-So a descriptor without IBMVETH_RXQ_VALID that carries a malformed
-correlator is now skipped and no reset is scheduled.
+The slot is counted, logged only with netdev_dbg(), skipped, and the
+loop continues. No reset is scheduled.
 
-The buffer PHYP actually consumed keeps its skbuff[] entry and its
-IBM_VETH_INVALID_MAP free_map slot, and pool->available still counts it.
-ibmveth_replenish_task() only refills when available < threshold. Can
-repeated events like this leave PHYP short of RX buffers, with nothing
-to resync the pool until an unrelated reset or ifdown/up?
+The buffer PHYP returned is never given back to free_map, and
+pool->available is never decremented for it. That capacity looks lost
+until some unrelated reset.
 
-The problem is still there at the end of the series.
-ibmveth_poll_recycle_invalid() -> ibmveth_poll_harvest_slot() treats
--EINVAL/-EFAULT as handled and does not escalate. Only
-ibmveth_poll_skip_bad_correlator(), on the valid-descriptor path, calls
-schedule_work().
+skip_bad_correlator's own comment says a "residual stale slot after
+resize" should be recovered by reset. Should recycle_invalid escalate
+in the same way?
+
+The commit message says "skip_bad_correlator owns reset escalation" but
+doesn't mention that the invalid-slot path loses it. This is still the
+case at the end of the series.
+
+> +
+> +static bool ibmveth_poll_skip_bad_correlator(struct net_device *netdev,
+> +					     struct ibmveth_adapter *adapter,
+> +					     int queue_index)
+> +{
+> +	if (net_ratelimit())
+> +		netdev_err(netdev,
+> +			   "bad correlator on queue %d, skipping slot\n",
+> +			   queue_index);
+> +	/* Residual stale slot after resize: recover via reset rather
+> +	 * than spinning forever. Always escalate; only the log is
+> +	 * rate-limited.
+> +	 */
+> +	schedule_work(&adapter->work);
+
+[Severity: High]
+This is a pre-existing issue and was not introduced by this patch.
+At this commit, ibmveth_remove() cancels the work before the netdev is
+unregistered:
+
+ibmveth_remove() {
+	...
+	cancel_work_sync(&adapter->work);
+
+	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++)
+		kobject_put(&adapter->rx_buff_pool[0][i].kobj);
+
+	unregister_netdev(netdev);
+
+	free_netdev(netdev);
+	...
+}
+
+Can a NAPI poll queue adapter->work from here in that window? If so,
+ibmveth_reset() would run after free_netdev().
+
+Mainline poll could already call schedule_work() through
+remove_buffer_from_pool() and get_buffer().
+
+This ordering is fixed later in the series by "ibmveth: Enable
+multi-queue RX receive path". There, ibmveth_remove() calls
+unregister_netdev() before cancel_work_sync().
+
+> +	ibmveth_poll_bump_invalid(adapter, queue_index);
+> +	return ibmveth_poll_harvest_slot(adapter, queue_index, true);
+> +}
 
 [ ... ]
 
-> @@ -2168,36 +2392,48 @@ static void ibmveth_rx_csum_helper(struct sk_buff *skb,
+> +	if (lrg_pkt) {
+> +		__be64 *rxmss = (__be64 *)(skb->data + 8);
+> +
+> +		mss = (u16)be64_to_cpu(*rxmss);
+> +	}
 
 [ ... ]
 
+> +	skb_put(skb, length);
+> +	skb->protocol = eth_type_trans(skb, netdev);
+> +
+> +	if (skb->protocol == cpu_to_be16(ETH_P_IP))
+> +		iph_check = ((struct iphdr *)skb->data)->check;
+
+[Severity: Low]
+This isn't a bug, but two comments about PHYP behaviour were dropped
+when this code moved into ibmveth_poll_deliver_frame():
+
+	/* if the large packet bit is set in the rx queue
+	 * descriptor, the mss will be written by PHYP eight
+	 * bytes from the start of the rx buffer, which is
+	 * skb->data at this stage
+	 */
+
+	/* PHYP without PLSO support places a -1 in the ip
+	 * checksum for large send frames.
+	 */
+
+Without them, the skb->data + 8 read and the 0xffff test have no
+explanation. Could the comments be kept?
+
+> +
+> +	if ((length > netdev->mtu + ETH_HLEN) || lrg_pkt ||
+> +	    iph_check == 0xffff) {
+> +		ibmveth_rx_mss_helper(skb, mss, lrg_pkt);
+> +		adapter->rx_large_packets++;
+> +	}
+> +
+> +	if (csum_good) {
+> +		skb->ip_summed = CHECKSUM_UNNECESSARY;
+> +		ibmveth_rx_csum_helper(skb, adapter);
+> +	}
+
+[Severity: High]
+This isn't a bug introduced by this patch, but can a crafted IPv4 frame
+from another partition crash the receiver here? When csum_good is set,
+ibmveth_rx_csum_helper() does:
+
+	if (iph->check == 0xffff) {
+		iph->check = 0;
+		iph->check = ip_fast_csum((unsigned char *)iph,
+					  iph->ihl);
+	}
+
+iph->ihl is not validated first. On powerpc64, ip_fast_csum_nofold()
+has this loop, where ihl is unsigned:
+
+	for (i = 0; i < ihl - 1; i++, ptr++)
+		s += *ptr;
+
+With IHL=0 that is about 4 billion 32-bit reads (about 16 GiB) past the
+skb, in softirq context.
+
+The RX IBMVETH_RXQ_CSUM_GOOD bit (0x01000000) mirrors the sender's TX
+IBMVETH_BUF_CSUM_GOOD bit (0x01000000). So a peer on the same virtual
+LAN controls both csum_good and the IP header.
+
+The new offset+length bound in ibmveth_poll_deliver_frame() doesn't
+cover this. Should iph->ihl be validated before ip_fast_csum() is
+called?
+
+[ ... ]
+
+>  	if (!napi_complete_done(napi, frames_processed))
+>  		goto out;
+>  
+> -	/* We think we are done - reenable interrupts,
+> -	 * then check once more to make sure we are done.
+> +	/*
+> +	 * napi_disable() sets DISABLE then waits for this poll. Without a
+> +	 * second stopping check here, enable_irq() can re-arm PHYP after
+> +	 * resize already masked the queue; late IRQs then hit the handler
+> +	 * after num_rx_queues was published lower (lab WARN at interrupt).
+>  	 */
+
+[Severity: Low]
+Is this comment accurate for this commit? It refers to a resize that
+publishes num_rx_queues lower, and to a "lab WARN at interrupt".
+
+At this commit, num_rx_queues is only assigned in probe. Also,
+ibmveth_interrupt() explicitly avoids a WARN:
+
+	/*
+	 * Quiet on out-of-range: teardown can leave a residual IRQ after the
+	 * live count drops. Do not WARN-storm; return IRQ_NONE until free_irq.
+	 */
+	if (qindex < 0 || qindex >= adapter->num_rx_queues)
+		return IRQ_NONE;
+
+Resize arrives later in the series. However, the WARN-at-interrupt text
+and "napi_disable() sets DISABLE then waits for this poll" are still
+wrong in the final tree (see the next comment).
+
+> +	if (ibmveth_poll_stopping(netdev, napi))
+> +		goto out;
+> +
+>  	rc = ibmveth_enable_irq(adapter, queue_index);
+
+[Severity: High]
+Does this check close the re-arm race the commit message describes? The
+message says:
+
+    ibmveth_poll_stopping() ensures close/napi_disable
+    does not re-arm PHYP.
+
+By this point, napi_complete_done() has already cleared
+NAPI_STATE_SCHED. napi_disable_locked() only waits while SCHED or NPSVC
+is set, and it clears NAPI_STATE_DISABLE again before returning.
+
+So a napi_disable() that starts after napi_complete_done() does not
+wait for this poll, and napi_disable_pending() is only true briefly.
+Documentation/networking/napi.rst also says napi_disable() waits only
+for ownership to be released, not for the poll method to exit.
+
+pool_store and change_mtu call ibmveth_close() directly, so
+netif_running() stays true on those paths. That allows:
+
+CPU0 (ibmveth_poll)
+  napi_complete_done()
+  ibmveth_poll_stopping()   /* false: DISABLE not set yet */
+  <delayed, e.g. vCPU preempted>
+
+CPU1 (ibmveth_close() from pool_store or change_mtu)
+  ibmveth_cleanup_rx_interrupts()
+    ibmveth_disable_irq(); synchronize_irq();
+    napi_disable();          /* SCHED clear, returns at once */
+    ibmveth_disable_irq(); synchronize_irq();
+    free_irq();
+  synchronize_net();
+
+CPU0
+  ibmveth_enable_irq()      /* unmasks PHYP after the last mask */
+
+The later reschedule attempt in the poll fails because the disabled
+NAPI now owns SCHED, so nothing masks the queue again.
+
+ibmveth_close() only calls synchronize_net() after
+ibmveth_cleanup_rx_interrupts() and does not remask:
+
+	ibmveth_cleanup_rx_interrupts(adapter);
+	/* Wait for softirq/poll that already passed shutdown checks. */
+	synchronize_net();
+
+dev_close() callers look safe, because __dev_close_many() clears
+__LINK_STATE_START and synchronizes before ndo_stop.
+
+With the later "ibmveth: Implement incremental MQ RX queue resize"
+patch, the same window seems to let a retiring queue stay unmasked
+until H_FREE_LOGICAL_LAN_QUEUE.
+
+Would this need real synchronization, for example a remask after
+synchronize_net(), rather than another lockless flag test?
+
+[ ... ]
+
+> @@ -2390,130 +2388,239 @@ static void ibmveth_rx_csum_helper(struct sk_buff *skb,
+>  	}
+>  }
+>  
+> +static void ibmveth_poll_bump_invalid(struct ibmveth_adapter *adapter,
+> +				      int queue_index)
+> +{
+> +	adapter->rx_invalid_buffer++;
+> +}
+> +
+> +static bool ibmveth_poll_stopping(struct net_device *netdev,
+> +				  struct napi_struct *napi)
+> +{
+> +	return !netif_running(netdev) || napi_disable_pending(napi);
+> +}
+> +
+> +static bool ibmveth_poll_harvest_slot(struct ibmveth_adapter *adapter,
+> +				      int queue_index, bool reuse)
+> +{
+> +	int rc = ibmveth_rxq_harvest_buffer(adapter, queue_index, reuse);
+> +
+> +	return !rc || rc == -EINVAL || rc == -EFAULT;
+> +}
+> +
+> +static bool ibmveth_poll_recycle_invalid(struct net_device *netdev,
+> +					 struct ibmveth_adapter *adapter,
+> +					 int queue_index)
+> +{
+> +	netdev_dbg(netdev, "recycling invalid buffer\n");
+> +	ibmveth_poll_bump_invalid(adapter, queue_index);
+> +	return ibmveth_poll_harvest_slot(adapter, queue_index, true);
+> +}
+> +
+> +static bool ibmveth_poll_skip_bad_correlator(struct net_device *netdev,
+> +					     struct ibmveth_adapter *adapter,
+> +					     int queue_index)
+> +{
+> +	if (net_ratelimit())
+> +		netdev_err(netdev,
+> +			   "bad correlator on queue %d, skipping slot\n",
+> +			   queue_index);
+> +	/* Residual stale slot after resize: recover via reset rather
+> +	 * than spinning forever. Always escalate; only the log is
+> +	 * rate-limited.
+> +	 */
+> +	schedule_work(&adapter->work);
+> +	ibmveth_poll_bump_invalid(adapter, queue_index);
+> +	return ibmveth_poll_harvest_slot(adapter, queue_index, true);
+> +}
+> +
+> +static bool ibmveth_poll_drop_oversize(struct net_device *netdev,
+> +				       struct ibmveth_adapter *adapter,
+> +				     int queue_index, unsigned int off,
+> +				     unsigned int len, unsigned int room)
+> +{
+> +	if (net_ratelimit())
+> +		netdev_err(netdev,
+> +			   "RX frame %u+%u exceeds buffer %u on queue %d, dropping\n",
+> +			   off, len, room, queue_index);
+> +	ibmveth_poll_bump_invalid(adapter, queue_index);
+> +	return ibmveth_poll_harvest_slot(adapter, queue_index, true);
+> +}
+> +
+> +/**
+> + * ibmveth_poll_deliver_frame - Build SKB from one valid RX slot and GRO it
+> + * @napi: NAPI context for this RX queue
+> + * @adapter: ibmveth adapter
+> + * @netdev: net_device for @adapter
+> + * @queue_index: RX queue index
+> + *
+> + * Return: 1 frame delivered, 0 if the slot was skipped cleanly, -1 on error.
+> + */
+> +static int ibmveth_poll_deliver_frame(struct napi_struct *napi,
+> +				      struct ibmveth_adapter *adapter,
+> +				      struct net_device *netdev,
+> +				      int queue_index)
+> +{
+> +	struct sk_buff *skb, *new_skb;
+> +	struct ibmveth_rx_q *rxq = &adapter->rx_queue[queue_index];
+> +	unsigned int room, off, len, pool;
+> +	int length, offset, csum_good, lrg_pkt;
+> +	__sum16 iph_check = 0;
+> +	u16 mss = 0;
+> +	int rc;
+> +
+> +	length = ibmveth_rxq_frame_length(adapter, queue_index);
+> +	offset = ibmveth_rxq_frame_offset(adapter, queue_index);
+> +	csum_good = ibmveth_rxq_csum_good(adapter, queue_index);
+> +	lrg_pkt = ibmveth_rxq_large_packet(adapter, queue_index);
+> +
+> +	skb = ibmveth_rxq_get_buffer(adapter, queue_index);
+> +	if (unlikely(!skb)) {
+> +		if (!ibmveth_poll_skip_bad_correlator(netdev, adapter,
+> +						      queue_index))
+> +			return -1;
+> +		return 0;
+> +	}
+> +
+> +	pool = rxq->queue_addr[rxq->index].correlator >> 32;
+> +	room = min_t(unsigned int, skb_tailroom(skb),
+> +		     adapter->rx_buff_pool[queue_index][pool].buff_size);
+> +	off = offset;
+> +	len = length;
+> +	if (unlikely(off >= room || len > room - off)) {
+> +		if (!ibmveth_poll_drop_oversize(netdev, adapter, queue_index,
+> +						off, len, room))
+> +			return -1;
+> +		return 0;
+> +	}
+> +
+> +	if (lrg_pkt) {
+> +		__be64 *rxmss = (__be64 *)(skb->data + 8);
+> +
+> +		mss = (u16)be64_to_cpu(*rxmss);
+> +	}
+> +
+> +	new_skb = NULL;
+> +	if (length < rx_copybreak)
+> +		new_skb = netdev_alloc_skb(netdev, length);
+> +
+> +	if (new_skb) {
+> +		skb_copy_to_linear_data(new_skb, skb->data + offset, length);
+> +		if (rx_flush)
+> +			ibmveth_flush_buffer(skb->data, length + offset);
+> +		rc = ibmveth_rxq_harvest_buffer(adapter, queue_index, true);
+> +		if (unlikely(rc)) {
+> +			kfree_skb(new_skb);
+> +			return -1;
+> +		}
+> +		skb = new_skb;
+> +	} else {
+> +		rc = ibmveth_rxq_harvest_buffer(adapter, queue_index, false);
+> +		if (unlikely(rc))
+> +			return -1;
+> +		skb_reserve(skb, offset);
+> +	}
+> +
+> +	skb_put(skb, length);
+> +	skb->protocol = eth_type_trans(skb, netdev);
+> +
+> +	if (skb->protocol == cpu_to_be16(ETH_P_IP))
+> +		iph_check = ((struct iphdr *)skb->data)->check;
+> +
+> +	if ((length > netdev->mtu + ETH_HLEN) || lrg_pkt ||
+> +	    iph_check == 0xffff) {
+> +		ibmveth_rx_mss_helper(skb, mss, lrg_pkt);
+> +		adapter->rx_large_packets++;
+> +	}
+> +
+> +	if (csum_good) {
+> +		skb->ip_summed = CHECKSUM_UNNECESSARY;
+> +		ibmveth_rx_csum_helper(skb, adapter);
+> +	}
+> +
+> +	napi_gro_receive(napi, skb);
+> +
+> +	netdev->stats.rx_packets++;
+> +	netdev->stats.rx_bytes += length;
+> +
+> +	return 1;
+> +}
+> +
+>  static int ibmveth_poll(struct napi_struct *napi, int budget)
+>  {
+>  	struct net_device *netdev = napi->dev;
+>  	struct ibmveth_adapter *adapter = netdev_priv(netdev);
+>  	int frames_processed = 0;
+>  	int queue_index, rc;
+> -	u16 mss = 0;
+>  
+>  	queue_index = napi - adapter->napi;
+>  
+> +	if (WARN_ON(queue_index < 0 ||
+> +		    queue_index >= adapter->num_rx_queues)) {
+> +		if (budget)
+> +			napi_complete_done(napi, 0);
+> +		return 0;
+> +	}
+> +
+> +	if (ibmveth_poll_stopping(netdev, napi)) {
+> +		if (budget)
+> +			napi_complete_done(napi, 0);
+> +		return 0;
+> +	}
+> +
+>  restart_poll:
+>  	while (frames_processed < budget) {
+> +		if (ibmveth_poll_stopping(netdev, napi))
+> +			break;
+> +
+>  		if (!ibmveth_rxq_pending_buffer(adapter, queue_index))
+>  			break;
+>  
+>  		smp_rmb();
+>  		if (!ibmveth_rxq_buffer_valid(adapter, queue_index)) {
+>  			wmb(); /* suggested by larson1 */
+> -			adapter->rx_invalid_buffer++;
+> -			netdev_dbg(netdev, "recycling invalid buffer\n");
+> -			rc = ibmveth_rxq_harvest_buffer(adapter,
+> -							queue_index, true);
+> -			if (unlikely(rc))
+> +			if (!ibmveth_poll_recycle_invalid(netdev, adapter,
+> +							  queue_index))
+>  				break;
 >  		} else {
->  			struct sk_buff *skb, *new_skb;
-> -			int length = ibmveth_rxq_frame_length(adapter);
-> -			int offset = ibmveth_rxq_frame_offset(adapter);
-> -			int csum_good = ibmveth_rxq_csum_good(adapter);
-> -			int lrg_pkt = ibmveth_rxq_large_packet(adapter);
-> +			int length = ibmveth_rxq_frame_length(adapter,
-> +							      queue_index);
-> +			int offset = ibmveth_rxq_frame_offset(adapter,
-> +							      queue_index);
+> -			struct sk_buff *skb, *new_skb;
+> -			int length = ibmveth_rxq_frame_length(adapter,
+> -							      queue_index);
+> -			int offset = ibmveth_rxq_frame_offset(adapter,
+> -							      queue_index);
+> -			int csum_good = ibmveth_rxq_csum_good(adapter,
+> -							      queue_index);
+> -			int lrg_pkt = ibmveth_rxq_large_packet(adapter,
+> -							       queue_index);
+> -			__sum16 iph_check = 0;
+> -
+> -			skb = ibmveth_rxq_get_buffer(adapter, queue_index);
+> -			if (unlikely(!skb)) {
+> -				struct ibmveth_rx_q *rxq =
+> -					&adapter->rx_queue[queue_index];
+> -
+> -				ibmveth_rxq_advance(rxq);
+> +			rc = ibmveth_poll_deliver_frame(napi, adapter, netdev,
+> +							queue_index);
+> +			if (rc < 0)
+>  				break;
+> -			}
+> -
+> -			/* if the large packet bit is set in the rx queue
+> -			 * descriptor, the mss will be written by PHYP eight
+> -			 * bytes from the start of the rx buffer, which is
+> -			 * skb->data at this stage
+> -			 */
+> -			if (lrg_pkt) {
+> -				__be64 *rxmss = (__be64 *)(skb->data + 8);
+> -
+> -				mss = (u16)be64_to_cpu(*rxmss);
+> -			}
+> -
+> -			new_skb = NULL;
+> -			if (length < rx_copybreak)
+> -				new_skb = netdev_alloc_skb(netdev, length);
+> -
+> -			if (new_skb) {
+> -				skb_copy_to_linear_data(new_skb,
+> -							skb->data + offset,
+> -							length);
+> -				if (rx_flush)
+> -					ibmveth_flush_buffer(skb->data,
+> -							     length + offset);
+> -				rc = ibmveth_rxq_harvest_buffer(adapter,
+> -								queue_index,
+> -								true);
+> -				if (unlikely(rc))
+> -					break;
+> -				skb = new_skb;
+> -			} else {
+> -				rc = ibmveth_rxq_harvest_buffer(adapter,
+> -								queue_index,
+> -								false);
+> -				if (unlikely(rc))
+> -					break;
+> -				skb_reserve(skb, offset);
+> -			}
+> -
+> -			skb_put(skb, length);
+> -			skb->protocol = eth_type_trans(skb, netdev);
+> -
+> -			/* PHYP without PLSO support places a -1 in the ip
+> -			 * checksum for large send frames.
+> -			 */
+> -			if (skb->protocol == cpu_to_be16(ETH_P_IP)) {
+> -				struct iphdr *iph = (struct iphdr *)skb->data;
+> -
+> -				iph_check = iph->check;
+> -			}
+> -
+> -			if ((length > netdev->mtu + ETH_HLEN) ||
+> -			    lrg_pkt || iph_check == 0xffff) {
+> -				ibmveth_rx_mss_helper(skb, mss, lrg_pkt);
+> -				adapter->rx_large_packets++;
+> -			}
+> -
+> -			if (csum_good) {
+> -				skb->ip_summed = CHECKSUM_UNNECESSARY;
+> -				ibmveth_rx_csum_helper(skb, adapter);
+> -			}
+> -
+> -			napi_gro_receive(napi, skb);	/* send it up */
+> -
+> -			netdev->stats.rx_packets++;
+> -			netdev->stats.rx_bytes += length;
+> -			frames_processed++;
+> +			if (rc > 0)
+> +				frames_processed++;
+>  		}
+>  	}
+>  
+>  	ibmveth_replenish_task(adapter, queue_index);
+>  
+> +	if (ibmveth_poll_stopping(netdev, napi)) {
+> +		/* budget 0 is netpoll, which must not complete NAPI.
+> +		 * Otherwise returning budget after completing would ask
+> +		 * NAPI to reschedule, so cap the return at budget - 1.
+> +		 */
+> +		if (budget) {
+> +			napi_complete_done(napi, frames_processed);
+> +			return min(frames_processed, budget - 1);
+> +		}
+> +		return 0;
+> +	}
+> +
+>  	if (frames_processed == budget)
+>  		goto out;
+>  
+>  	if (!napi_complete_done(napi, frames_processed))
+>  		goto out;
+>  
+> -	/* We think we are done - reenable interrupts,
+> -	 * then check once more to make sure we are done.
+> +	/*
+> +	 * napi_disable() sets DISABLE then waits for this poll. Without a
+> +	 * second stopping check here, enable_irq() can re-arm PHYP after
+> +	 * resize already masked the queue; late IRQs then hit the handler
+> +	 * after num_rx_queues was published lower (lab WARN at interrupt).
+>  	 */
+> +	if (ibmveth_poll_stopping(netdev, napi))
+> +		goto out;
+> +
+>  	rc = ibmveth_enable_irq(adapter, queue_index);
+>  	if (rc) {
+>  		netdev_err(netdev,
 
-[Severity: Low]
-This isn't a bug introduced by this patch, but length and offset come
-straight from the hypervisor descriptor. Nothing checks them against
-the RX buffer size before skb_copy_to_linear_data(),
-ibmveth_flush_buffer(), skb_reserve() and skb_put() later in
-ibmveth_poll(). Could a bad descriptor cause an out-of-bounds read or
-an skb_over_panic()?
+[Severity: High]
+Can the pool index computed here go out of bounds?
 
-A later patch in the series ("ibmveth: Harden RX poll path with
-helpers") fixes this. It adds a check in ibmveth_poll_deliver_frame()
-against min(skb_tailroom(skb), buff_size) that rejects
-off >= room || len > room - off.
+ibmveth_rxq_get_buffer() loads the correlator from the RX ring once,
+checks it with ibmveth_rxq_correlator_valid() and returns the skb.
+This hunk then recomputes pool from a fresh load of
+rxq->queue_addr[rxq->index].correlator. That field lives in DMA
+memory that PHYP writes. The new value is never checked against
+IBMVETH_NUM_BUFF_POOLS before it indexes
+adapter->rx_buff_pool[queue_index][pool].
 
-[ ... ]
+pool is an unsigned int taken from the top 32 bits. If the ring entry
+no longer matches what get_buffer() validated, the buff_size read can
+land far past the end of struct ibmveth_adapter and fault in NAPI
+softirq context. None of these loads use READ_ONCE(), so the compiler
+is also free to refetch.
 
-> @@ -2220,12 +2456,18 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
->  							length);
->  				if (rx_flush)
->  					ibmveth_flush_buffer(skb->data,
-> -						length + offset);
-> -				if (unlikely(ibmveth_rxq_harvest_buffer(adapter, true)))
-> +							     length + offset);
-> +				rc = ibmveth_rxq_harvest_buffer(adapter,
-> +								queue_index,
-> +								true);
-> +				if (unlikely(rc))
->  					break;
->  				skb = new_skb;
+ibmveth_rxq_harvest_buffer() then reads the correlator a third time
+and hands it to ibmveth_remove_buffer_from_pool(). That read predates
+this patch. If it disagrees with get_buffer(), the driver removes a
+different pool entry from the one whose skb it gives to
+napi_gro_receive(). With reuse false, the delivered skb would stay in
+pool->skbuff[] and stay DMA-mapped. A later recycle or
+ibmveth_free_buffer_pool() could then touch an skb the stack already
+owns.
 
-[Severity: Low]
-This isn't a bug introduced by this patch, but on this rx_copybreak
-path new_skb has already been allocated and filled. If
-ibmveth_rxq_harvest_buffer() fails, the break skips it. Does this leak
-new_skb?
+PHYP is not expected to rewrite a slot it has handed back. But the
+commit message presents the new offset+length bound as hardening
+against PHYP-supplied values, and this adds an unchecked index right
+next to it.
 
-At this commit the harvest can only fail here if pool state changed
-after ibmveth_rxq_get_buffer() succeeded, so the window is small. A
-later patch in the series fixes it by calling kfree_skb(new_skb) on the
-error path in ibmveth_poll_deliver_frame().
-
-[ ... ]
+Would it be better to read the correlator once per slot and pass the
+validated value (or pool and index) through get_buffer, the room
+calculation and the harvest, instead of going back to the ring each
+time?
 
 -- 
 Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/cover.1790319558.git.mmc%40linux.ibm.com
