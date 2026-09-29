@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-28519-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28520-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39D13CA5FA7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 19:33:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B72D5CA5FA7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 19:33:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hvSyX1d3vz3bQm;
-	Wed, 30 Sep 2026 05:33:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790710404;
-	cv=none; b=YVC7rG1VZP49kRFHcj25Y/f5L9+M/MZMVttK8h+9zde+eZdeHiUcFYQZiwfv4CUxPUtRrQMn7Epwyj1KtAgCBMjDA9FblHGPh/9zQ1b2/aAgzKX/7Jpcak0fRPst5FMvbulKPpD3bJhUcF5gPtqH9m19G9U7iYckANgOCbewEOxVU4XUb4YFn7XSqvhNn4cCBVIgCe32UlCoR0KGC1XWbq5Wc2ZC+mKvTmxzmqUOqL7og2KYik91rJOJazNv4Hk0u3UJs1QOW9gX0fSKxR758VqeK/WLYrMlgOKF10iNyO9xoJUYB4rdz97J4SD8cFV0x0zwwJKpsSQ3+1+XVl0SVQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hvSyY45zJz3bX3;
+	Wed, 30 Sep 2026 05:33:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790710405;
+	cv=none; b=dIWSIJ0NOda1LKW1gJvQayI0f7rfgdwu7WGG10IYg7SNg0YqhiHLFJsJK06tl6tvvdOUdkj0yDrjTvE791kIOWhBxHudCzWGa80OfiVdm35XqDULiDwSLNIhvRl0IRFSN5yNUlY57trTzZrgclIyvtuJJQ6sK8TQOPJ51BRfBPMUfQRISi8whGO5bbkpumRNs/LGVwwWH4hAqvGVE0XzfqtyNa4sxGH2BpH9QXAKVxOx1yvJPkyvEbuFYXFLnyvObOGfAHhQZtHHD3tn8I7SekML8GDihF7LqaxzhBFrI7N+q8F+Tw8FLBdSKC0SK72pSNBhw+lm58Y1sCr7bTHbkg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790710404; c=relaxed/relaxed;
-	bh=fKrbhHOEHtQ/A6BxrjMHyjdedmedCoflwL9Y/3vxJQg=;
+	t=1790710405; c=relaxed/relaxed;
+	bh=cfT/gCG9G2j6N3wGn2bGSTPo3Xb0xRkJy6X4Pwwli9w=;
 	h=Subject:From:To:Cc:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=d7X7zQR7qiC/sC93ljVNiB8sDPzGJBQWGp3Gg6h7rz4EJIRJcZd+b+9Nl6YruY5CML1aph2Lz/2ipw/i8iaoGWC2oI7ugViqJBo10Ixy/blivZDg4s364aozGYmuTCkkQ1vTLnvYYW/zIaURZcGlnN+xowjnWzfHVuAorrp/cHXfIx5oblKF/XRTZYTJZ737Erg3zntT8/HQjH0ayk5bMXX7YTei/d1C3JlBw5Z2yj0cI6OxQcuGGqw0WCyrAtOyIGGgEeJoj8OFsF7mAJpmhQeSnjftZJeqhpyHtkDbanghu71tPfoeAcTeaxcsemAOLsnp7TZLIa5cJ4ClireIQg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QV2OsVwM; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:MIME-Version; b=hMTyUz6FEvsQi6q11XjLRLnYjLTDVAC6ujbEFTFx9rJUYfy70mWXWTvlBDrdcBbWo5AmvcUyfFgwfh115iu8+tvn0XZqAWNuNicYMM6/U7nIF0+QsZjISdZLvA5+WCiy0n+DIQzI/8VEho3F3DEej54wzaxhzihDVFmr5Whih3rOctUWRz2PrnDDDOhkORsM+M3RaMKZEgpzXEZvkNs+HkGCtxQT8pzujRWyiOnu0eBQBxCACIPLh/X1YlBGg3a5t5EG3bDZFeFYYxSt+y+X0gKNVw+u53BsRnad5UdbPNLDw2yIGTUtYTV2QzKVxWSPguPB1LeRuTbIljdZmmGKmA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZjdoJYqd; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QV2OsVwM;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZjdoJYqd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvSyV5RCVz30WQ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2026 05:33:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvSyW6YpVz30hq
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2026 05:33:23 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 04F154005B;
+	by tor.source.kernel.org (Postfix) with ESMTP id 9D85360235;
+	Tue, 29 Sep 2026 19:33:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 75BB71F00898;
 	Tue, 29 Sep 2026 19:33:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 121EE1F000FF;
-	Tue, 29 Sep 2026 19:33:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790710399;
-	bh=fKrbhHOEHtQ/A6BxrjMHyjdedmedCoflwL9Y/3vxJQg=;
+	s=k20260515; t=1790710401;
+	bh=cfT/gCG9G2j6N3wGn2bGSTPo3Xb0xRkJy6X4Pwwli9w=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=QV2OsVwMkm+LFN2lyb4H5etNQqunKYxp++zLoco8Yw7mpqf+Qs4YhCUygYTp8K+PS
-	 g0sZWXSknTRzKqf/njWvq8gqyc6OjxA47FjPy5+KLUfxG0Iuo2OW7e+6qXaQI1co4w
-	 XN5/I5XZP7LmkpePRkwHHj6Up9Fc/efa6QtpjtLdZ6WZr0CVwhEuw2VceBnYNt+bUV
-	 W44TdigXrtJdSZIl+FUbv7Ak8JLnJ906y3JnAreVhwDwgGUu+rwh076OfZuN12q0Hm
-	 wBf1VzCCGqURgomigSSe8+ZGaQvpv3YyeeogZw4ZTRa37T3sl2/mzpsEbeG2P9N/9I
-	 KaacBmG0GpYBg==
-Subject: Re: [PATCH net-next v7 06/15] ibmveth: Refactor TX resource
- allocation in open/close paths
+	b=ZjdoJYqd75/zjMaGwIGu+lhn7Chm4GbK6BXLJkmf568mC5VIobdMVpDAZVCCsu5tA
+	 CevUBJFWZ9sRjSHK2YNswAbFdyEuEUVi5vG16Kr8INNeqKRZdZCMxvVCRUNtdUGsfd
+	 IRRw21/qJYTc4VNfCuJb9tGN62vGwsDkLrroOeemXY6J+lEEReUiAQXpyt6WJPsBlY
+	 /P49FadCwQyL3fcrj7OAMV/QiFD6wNWs/Hmz+KHykh/IdfqT6bNwMbn3iF6fV6sVfO
+	 3eNdHB3Kp05Co8nRIZ8vBUzky5Z5fsl7i4vg8GU+HVCQ7fDBVdj0f/OxlqanxJFXs5
+	 NgcqV8JFeJI/g==
+Subject: Re: [PATCH net-next v7 08/15] ibmveth: Add queue-aware RX buffer
+ submit helper for MQ
 From: netdev-bot+sashiko@kernel.org
 To: mmc@linux.ibm.com
 Cc: netdev@vger.kernel.org, davem@davemloft.net, kuba@kernel.org,
@@ -54,13 +54,13 @@ Cc: netdev@vger.kernel.org, davem@davemloft.net, kuba@kernel.org,
  mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, haren@linux.ibm.com,
  ricklind@linux.ibm.com, davemarq@linux.ibm.com, bjking1@linux.ibm.com,
  shaik.abdulla1@ibm.com
-Date: Tue, 29 Sep 2026 19:33:18 +0000
-Message-ID: <179071039865.434549.12128638769769737173@kernel.org>
+Date: Tue, 29 Sep 2026 19:33:20 +0000
+Message-ID: <179071040006.434549.6643409390069247563@kernel.org>
 In-Reply-To:
- <02196cd1ee13b66859544b7ab5fd0bd4d5d61fb9.1790319558.git.mmc@linux.ibm.com>
+ <3647dfce84454c5e60269549172fd20f504bddad.1790319558.git.mmc@linux.ibm.com>
 References:
- <02196cd1ee13b66859544b7ab5fd0bd4d5d61fb9.1790319558.git.mmc@linux.ibm.com>
-X-sashiko-severity: High
+ <3647dfce84454c5e60269549172fd20f504bddad.1790319558.git.mmc@linux.ibm.com>
+X-sashiko-severity: Medium
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -77,10 +77,10 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 
-Thank you for your contribution! Sashiko AI review found 2 potential
+Thank you for your contribution! Sashiko AI review found 5 potential
 issue(s) to consider.
 
-Critical: 0 · High: 1 · Medium: 0 (2) · Low: 1 (1)
+Critical: 0 · High: 0 · Medium: 3 · Low: 2 (3)
 
 If you believe none of the issues are legitimate, please reply to each
 issue of Medium severity or higher and explain why the AI is wrong.
@@ -88,240 +88,342 @@ If any of them are legitimate and you plan to respin, please let patchwork
 know by including "pw-bot: cr" as a separate line at the end of your reply
 (one such reply per series is enough).
 
-- [High] This patch moves ibmveth_alloc_tx_resources() to the end of
-  ibmveth_open(), after h_register_logical_lan,…
-- [Low] The new NULL-LTB guard in ibmveth_start_xmit()
-  (drivers/net/ethernet/ibm/ibmveth.c:1874-1878) fixes a NULL-pointer…
+- [Medium] This patch fixes three real bugs that already exist in the
+  tree, but it presents itself as a feature ('Add queue-aware RX buffer…
+- [Medium] This patch removes schedule_work(&adapter->work) from the
+  -EINVAL and -EFAULT exits of ibmveth_remove_buffer_from_pool().
+- [Medium] ibmveth_replenish_task() now holds
+  spin_lock_irqsave(&rxq->replenish_lock) across the whole walk of all…
+- [Low] ibmveth_replenish_task() fills a single struct
+  ibmveth_replenish_fail across every pool it walks.
+- [Low] Reported concern: ibmveth_close() frees the buffer pools
+  (free_map, skbuff, dma_addr, available) and the buffer-list pages…
 
 Pre-existing issues:
-- [Medium] At this commit, the comment added to ibmveth_allocate_tx_ltb()
-  ('Caller must ensure tx_ltb_ptr[idx] is NULL.
-- [Medium] The retry loop at out_unregister_lan in ibmveth_open() (lines
-  1396-1399) discards the final H_FREE_LOGICAL_LAN result.
-- [Low] The new drop path in ibmveth_start_xmit() does
-  `netdev->stats.tx_dropped++`, a non-atomic read-modify-write on a…
+- [Low] Reported concern: on the rx_copybreak path of ibmveth_poll(),
+  new_skb is leaked when ibmveth_rxq_harvest_buffer() fails after the…
+- [Low] Reported concern: adapter->replenish_task_cycles++ runs before
+  replenish_lock is taken, so concurrent NAPI and netpoll replenish…
+- [Low] Reported concern: the frame offset and length supplied by the
+  hypervisor are not checked against the RX buffer size before…
 
 --
 
-ibmveth: Refactor TX resource allocation in open/close paths
+ibmveth: Add queue-aware RX buffer submit helper for MQ
 
-This patch moves TX long term buffer (LTB) allocation and freeing in
-ibmveth_open() and ibmveth_close() into two new helpers,
-ibmveth_alloc_tx_resources() and ibmveth_free_tx_resources(). TX LTB
-allocation now happens at the end of open(), after LAN registration and RX
-setup, and ibmveth_start_xmit() gains a NULL tx_ltb_ptr[] check. close()
-now uses netif_tx_disable() and frees the TX LTBs after
-h_free_logical_lan().
+This patch adds ibmveth_add_logical_lan_buffers() so RX buffer pool
+replenishment goes through H_ADD_LOGICAL_LAN_BUFFERS_QUEUE in multi-queue
+mode, and gives the RX accessors a queue index. It also adds a per-queue
+replenish_lock, moves replenish logging out of the critical section, and
+replaces the correlator WARN_ON()s with ibmveth_rxq_correlator_valid().
 
 > diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-> index a22a17e05ae1c..011082db1e085 100644
+> index cc01b03d0e4b0..ed75dea90a957 100644
 > --- a/drivers/net/ethernet/ibm/ibmveth.c
 > +++ b/drivers/net/ethernet/ibm/ibmveth.c
-> @@ -1206,12 +1206,27 @@ static int ibmveth_rxq_harvest_buffer(struct ibmveth_adapter *adapter,
 
 [ ... ]
 
-> +/* Caller must ensure tx_ltb_ptr[idx] is NULL. open() runs on
-> + * probe-zeroed slots; set_channels() skips populated indices.
-> + */
->  static int ibmveth_allocate_tx_ltb(struct ibmveth_adapter *adapter, int idx)
+> @@ -904,21 +1005,85 @@ static void ibmveth_update_rx_no_buffer(struct ibmveth_adapter *adapter)
+>  }
+>  
+>  /* replenish routine */
+> -static void ibmveth_replenish_task(struct ibmveth_adapter *adapter)
+> +static void ibmveth_replenish_task(struct ibmveth_adapter *adapter,
+> +				   int queue_index)
 >  {
->  	adapter->tx_ltb_ptr[idx] = kzalloc(adapter->tx_ltb_size,
+
+[ ... ]
+
+>  	adapter->replenish_task_cycles++;
+
+[Severity: Low]
+This isn't a bug introduced by this patch, but
+adapter->replenish_task_cycles++ still runs before replenish_lock is
+taken. NAPI and ndo_poll_controller() can both call
+ibmveth_replenish_task() on the same queue. Can increments of this
+counter be lost when they do?
+
+A later patch in the series ("ibmveth: Add per-queue RX and TX statistics
+collection") moves the per-queue replenish_task_cycles increment under
+the queue's replenish_lock. That means only the intermediate commits are
+affected, and only the statistics.
+
+>  
+> -	for (i = (IBMVETH_NUM_BUFF_POOLS - 1); i >= 0; i--) {
+> -		struct ibmveth_buff_pool *pool = &adapter->rx_buff_pool[0][i];
+> +	spin_lock_irqsave(&rxq->replenish_lock, flags);
 
 [Severity: Medium]
-This is a pre-existing issue and was not introduced by this patch. Does the
-precondition in this comment still hold after a failed direct reopen?
+This lock is held with hard IRQs off for the whole walk over all
+IBMVETH_NUM_BUFF_POOLS pools. For each pool, ibmveth_replenish_buffer_pool()
+loops on while (remaining > 0) until the full deficit is filled. That
+work includes netdev_alloc_skb(), dma_map_single_attrs(), optional dcbf
+flushes, and one hcall per batch.
 
-ibmveth_set_channels() gates on IFF_UP:
+On the first replenish after open every pool is empty. With the default
+active pools (256 + 512 + 256 buffers, batch 8) that comes to roughly
+1024 allocations and mappings and about 128 hcalls with IRQs off. Larger
+pools set through sysfs, or the fallback to single-buffer hcalls, make
+this much longer.
 
-	if (!(netdev->flags & IFF_UP))
-		return netif_set_real_num_tx_queues(netdev, goal);
+ibmveth_remove_buffer_from_pool() takes the same lock with irqsave from
+NAPI, so a concurrent harvest on the same queue would spin with IRQs off
+for that whole time.
 
-ibmveth_close() gates on adapter->opened:
+Before this patch the same work ran in NAPI softirq with IRQs enabled.
+Is this IRQ-off latency acceptable, or could the lock be dropped between
+batches? The v7 notes list the irqsave section as a leftover, and it
+keeps this shape at the end of the series.
 
-	if (!adapter->opened)
-		return 0;
-
-Say a close()+open() cycle fails, for example from ibmveth_change_mtu() or
-pool_store(). IFF_UP stays set and opened is false. If ethtool -L runs
-next, it allocates LTBs for [old, goal) and calls
-netif_tx_wake_all_queues().
-
-A later close() returns early without freeing those LTBs. The next open()
-then calls ibmveth_alloc_tx_resources(), which overwrites the populated
-tx_ltb_ptr[] slots.
-
-Does that leak the kzalloc() buffer and its DMA mapping? While the queues
-are awake, xmit on them also calls h_send_logical_lan() on a LAN that has
-been deregistered.
-
-The commit message defers this ("set_channels() IFF_UP vs opened is later
-(P14/P15)"). The later patch "ibmveth: Complete set_channels down-path and
-mq_fallback max_rx cap" makes ibmveth_set_channels() check
-adapter->opened, which removes the trigger.
-
-[ ... ]
-
-> @@ -1313,24 +1364,24 @@ static int ibmveth_open(struct net_device *netdev)
-
-[ ... ]
-
->  	netdev_dbg(netdev, "initial replenish cycle\n");
->  	ibmveth_schedule_rx_queue(adapter, 0);
 >  
-> +	rc = ibmveth_alloc_tx_resources(adapter);
-> +	if (rc)
-> +		goto out_cleanup_rx_interrupts;
+> -		if (pool->active &&
+> -		    (atomic_read(&pool->available) < pool->threshold))
+> -			ibmveth_replenish_buffer_pool(adapter, pool);
+> +	for (i = (IBMVETH_NUM_BUFF_POOLS - 1); i >= 0; i--) {
+> +		struct ibmveth_buff_pool *pool =
+> +			&adapter->rx_buff_pool[queue_index][i];
 > +
->  	netif_tx_start_all_queues(netdev);
+> +		if (pool->active && pool->free_map &&
+> +		    (atomic_read(&pool->available) < pool->threshold)) {
 
-[Severity: High]
-After this move, RX is live (LAN registered, NAPI enabled, replenish
-kicked) while the TX LTBs are still being allocated. Can
-ibmveth_start_xmit() run at the same time as ibmveth_alloc_tx_resources()?
+[Severity: Low]
+Can this pool->free_map check race with ibmveth_close()?
+ibmveth_close() calls ibmveth_free_buffer_pools() without taking
+replenish_lock. Meanwhile ibmveth_poll_controller() ->
+ibmveth_replenish_task() can run from netpoll. If that happens,
+free_map, skbuff and dma_addr could be freed right after this check
+passes.
 
-On the first open after probe, the TX queues were never marked DRV_XOFF.
-netdev_init_one_queue() leaves the queue state zeroed, and probe does not
-stop the queues. generic_xdp_tx() in net/core/dev.c checks only the queue
-state, not IFF_UP:
+The last patch in the series ("ibmveth: Complete set_channels down-path
+and mq_fallback max_rx cap") closes this window. With it,
+ibmveth_poll_controller() returns early when !adapter->opened, and
+ibmveth_close() clears opened and calls synchronize_net() before freeing
+the pools. Netpoll callers run with IRQs disabled, so that
+synchronize_net() waits for them. That guard does not exist yet at this
+commit.
 
-	HARD_TX_LOCK(dev, txq, cpu);
-	if (!netif_xmit_frozen_or_drv_stopped(txq)) {
-		rc = netdev_start_xmit(skb, dev, txq, 0);
-
-If an inbound frame hits a generic XDP program that returns XDP_TX,
-ibmveth_start_xmit() can run from NAPI on another CPU during this window.
-
-The only guard is the new plain load of tx_ltb_ptr[queue_num] in
-ibmveth_start_xmit(), and the stores on the allocation side are not
-ordered against it.
-
-ibmveth_allocate_tx_ltb() stores the pointer before the DMA address:
-
-	adapter->tx_ltb_ptr[idx] = kzalloc(adapter->tx_ltb_size,
-					   GFP_KERNEL);
-	...
-	adapter->tx_ltb_dma[idx] = dma_map_single(&adapter->vdev->dev,
-
-Could an xmit that passes the NULL check build a descriptor from
-tx_ltb_dma[queue_num] == 0 and pass it to the already registered LAN
-through h_send_logical_lan()?
-
-On a DMA map failure, the same function frees the buffer before clearing
-the slot:
-
-		kfree(adapter->tx_ltb_ptr[idx]);
-		adapter->tx_ltb_ptr[idx] = NULL;
-
-If a later queue fails, the err_free_ltbs unwind in
-ibmveth_alloc_tx_resources() calls ibmveth_free_tx_ltb() on slots that
-are already published, and nothing quiesces TX first. The
-synchronize_net() under out_cleanup_rx_interrupts runs only after that
-unwind.
-
-Could an xmit that is already inside the memcpy() into
-tx_ltb_ptr[queue_num] write packet data into freed memory? If it re-reads
-the slot after the NULL store, could it oops on a NULL pointer instead?
-The commit message itself says NULL-first "is not itself a UAF barrier".
-
-This commit also has a second path in. A reopen fails, then ethtool -L
-wakes the queues, then a direct close() skips netif_tx_disable() because
-opened is false. open() then runs with TX awake under an active qdisc.
-
-The final patch in the series removes that second path. The first-open
-generic XDP path remains at the end of the series, because ibmveth_open()
-still starts RX before ibmveth_alloc_tx_resources() and does not stop TX
-first.
-
-Would allocating the TX LTBs before registering the LAN and enabling RX,
-or stopping TX before RX is enabled, close this window?
-
-> @@ -1338,11 +1389,16 @@ static int ibmveth_open(struct net_device *netdev)
->  
->  	return 0;
->  
-> -out_free_buffer_pools:
-> +out_cleanup_rx_interrupts:
-> +	ibmveth_cleanup_rx_interrupts(adapter);
-> +	/* As in close(): a poll past napi_complete_done() may still run. */
-> +	synchronize_net();
-> +out_unregister_lan:
-> +	do {
-> +		lpar_rc = h_free_logical_lan(adapter->vdev->unit_address);
-> +	} while (H_IS_LONG_BUSY(lpar_rc) || (lpar_rc == H_BUSY));
->  	ibmveth_free_buffer_pools(adapter);
-
-[Severity: Medium]
-This isn't a bug introduced by this patch. The final h_free_logical_lan()
-result is thrown away here. The RX pools, RX queue, buffer list and filter
-list are then unmapped and freed regardless.
-
-ibmveth_close() does the same thing and only logs the failure:
-
-	if (lpar_rc != H_SUCCESS) {
-		netdev_err(adapter->netdev,
-			   "h_free_logical_lan failed with %lx, continuing\n",
-			   lpar_rc);
-	}
-
-If deregistration fails with a non-busy error, could the hypervisor still
-be using those buffers after they are unmapped? The answer depends on PHYP
-behaviour that the driver code alone cannot confirm.
-
-This patch improves the pool-fail case, which previously made no
-deregistration call at all. The later ibmveth_free_all_queues() helper
-also documents that callers continue with RX pool and DMA teardown
-afterward.
+> +			rc = ibmveth_replenish_buffer_pool(adapter, pool,
+> +							   queue_index, &fail);
+> +			switch (rc) {
+> +			case IBMVETH_REPLENISH_RESET_MAP:
+> +			case IBMVETH_REPLENISH_RESET_MQ:
+> +				need_reset = rc;
+> +				goto out_unlock;
+> +			case IBMVETH_REPLENISH_BATCH_FALLBACK:
+> +				batch_fallback = 1;
+> +				break;
+> +			case IBMVETH_REPLENISH_HCALL_FAIL:
+> +				hcall_fail = 1;
+> +				break;
+> +			default:
+> +				break;
+> +			}
+> +		}
+>  	}
 
 [ ... ]
 
-> @@ -1812,6 +1871,12 @@ static netdev_tx_t ibmveth_start_xmit(struct sk_buff *skb,
->  	int i, queue_num = skb_get_queue_mapping(skb);
->  	unsigned long mss = 0;
+> +	if (batch_fallback)
+> +		dev_warn_ratelimited(&adapter->netdev->dev,
+> +				     "Legacy batch add H_FUNCTION (batch=%u), fallback\n",
+> +				     fail.batch);
+> +
+> +	if (hcall_fail)
+> +		dev_warn_ratelimited(&adapter->netdev->dev,
+> +				     "RX %s failed: filled=%u, rc=%lu, batch=%u\n",
+> +				     adapter->multi_queue ?
+> +				     "h_add_logical_lan_buffers_queue" :
+> +				     (fail.filled == 1 ?
+> +				      "h_add_logical_lan_buffer" :
+> +				      "h_add_logical_lan_buffers"),
+> +				     fail.filled, fail.lpar_rc, fail.batch);
+>  }
+
+[Severity: Low]
+Can these two messages print the wrong values? All pools in the loop
+share one fail record. The BATCH_FALLBACK and HCALL_FAIL cases only break
+out of the switch, so later pools still run. Each hcall failure makes
+ibmveth_replenish_buffer_pool() overwrite fail->lpar_rc, fail->filled and
+fail->batch.
+
+Say one pool hits BATCH_FALLBACK with batch=8, which sets
+rx_buffers_per_hcall to 1, and a later pool then has a hcall failure.
+The "Legacy batch add H_FUNCTION (batch=%u), fallback" message would
+print batch=1.
+
+In the reverse order, the "RX %s failed" message would show the rc,
+filled count and wrapper name of the H_FUNCTION fallback, not those of
+the pool that actually failed.
+
+The same structure is still there at the end of the series.
+
+[ ... ]
+
+> @@ -1093,35 +1264,75 @@ ibmveth_free_buffer_pools(struct ibmveth_adapter *adapter)
+>  		   adapter->num_rx_queues);
+>  }
 >  
-> +	/* Close / failed reopen can free LTBs while IFF_UP is still set. */
-> +	if (unlikely(!adapter->tx_ltb_ptr[queue_num])) {
-> +		netdev->stats.tx_dropped++;
+> +static bool ibmveth_rxq_correlator_valid(struct ibmveth_adapter *adapter,
+> +					 int queue_index, u64 correlator)
+> +{
+> +	unsigned int pool = correlator >> 32;
+> +	unsigned int index = correlator & 0xffffffffUL;
+> +	struct ibmveth_buff_pool *bpool;
+> +
+> +	if (pool >= IBMVETH_NUM_BUFF_POOLS)
+> +		return false;
+> +
+> +	bpool = &adapter->rx_buff_pool[queue_index][pool];
+> +
+> +	/* Require a live pool with allocated arrays before indexing.
+> +	 * Inactive pools still have size from init; free clears skbuff.
+> +	 */
+> +	if (!bpool->active || !bpool->skbuff || !bpool->free_map)
+> +		return false;
+> +
+> +	return index < bpool->size;
+> +}
+
+[Severity: Medium]
+This helper, plus the removed WARN_ON()s and the ring advance on a NULL
+buffer in ibmveth_poll(), fixes three bugs that exist in the current
+tree:
+
+- ibmveth_remove_buffer_from_pool() and ibmveth_rxq_get_buffer() call
+  WARN_ON() on a hypervisor-supplied correlator. With panic_on_warn set,
+  that takes the partition down.
+
+- In ibmveth_poll(), a valid correlator whose skbuff[index] is NULL used
+  to break without advancing the ring and without scheduling a reset.
+  The poll tail then calls ibmveth_enable_irq(), sees
+  ibmveth_rxq_pending_buffer() still true, calls napi_schedule() and
+  jumps to restart_poll. It polls the same slot forever in softirq.
+
+- A correlator that names an inactive pool (pool_active[] =
+  {1,1,0,0,1}) passes the old size-only check. skbuff[index] is then
+  read through a NULL skbuff array.
+
+These fixes sit inside a patch titled as a multi-queue feature. Neither
+this patch nor any later one in the series has a Fixes: tag. Could they
+be split out into a separate patch with Fixes: tags, so stable can take
+them without the MQ refactor?
+
+[ ... ]
+
+>  static int ibmveth_remove_buffer_from_pool(struct ibmveth_adapter *adapter,
+> -					   u64 correlator, bool reuse)
+> +					   u64 correlator, int queue_index,
+> +					   bool reuse)
+>  {
+
+[ ... ]
+
+> -	if (WARN_ON(pool >= IBMVETH_NUM_BUFF_POOLS) ||
+> -	    WARN_ON(index >= adapter->rx_buff_pool[0][pool].size)) {
+> -		schedule_work(&adapter->work);
+> -		return -EINVAL;
+> +	spin_lock_irqsave(&rxq->replenish_lock, flags);
+> +
+> +	if (!ibmveth_rxq_correlator_valid(adapter, queue_index, correlator)) {
+> +		rc = -EINVAL;
+> +		goto out_unlock;
+>  	}
+>  
+> -	skb = adapter->rx_buff_pool[0][pool].skbuff[index];
+> -	if (WARN_ON(!skb)) {
+> -		schedule_work(&adapter->work);
+> -		return -EFAULT;
+> +	skb = adapter->rx_buff_pool[queue_index][pool].skbuff[index];
+> +	if (!skb) {
+> +		rc = -EFAULT;
+> +		goto out_unlock;
+>  	}
+
+[Severity: Medium]
+Is dropping schedule_work() from both error exits intended? The commit
+message says rxq_get_buffer() still schedules the reset. The
+recycle-invalid branch of ibmveth_poll() never calls
+ibmveth_rxq_get_buffer(), though:
+
+ibmveth_poll()
+  if (!ibmveth_rxq_buffer_valid(adapter, queue_index))
+    ibmveth_rxq_harvest_buffer(adapter, queue_index, true)
+      ibmveth_remove_buffer_from_pool() returns -EINVAL/-EFAULT
+      ibmveth_rxq_advance(rxq)
+    break;
+
+So a descriptor without IBMVETH_RXQ_VALID that carries a malformed
+correlator is now skipped and no reset is scheduled.
+
+The buffer PHYP actually consumed keeps its skbuff[] entry and its
+IBM_VETH_INVALID_MAP free_map slot, and pool->available still counts it.
+ibmveth_replenish_task() only refills when available < threshold. Can
+repeated events like this leave PHYP short of RX buffers, with nothing
+to resync the pool until an unrelated reset or ifdown/up?
+
+The problem is still there at the end of the series.
+ibmveth_poll_recycle_invalid() -> ibmveth_poll_harvest_slot() treats
+-EINVAL/-EFAULT as handled and does not escalate. Only
+ibmveth_poll_skip_bad_correlator(), on the valid-descriptor path, calls
+schedule_work().
+
+[ ... ]
+
+> @@ -2168,36 +2392,48 @@ static void ibmveth_rx_csum_helper(struct sk_buff *skb,
+
+[ ... ]
+
+>  		} else {
+>  			struct sk_buff *skb, *new_skb;
+> -			int length = ibmveth_rxq_frame_length(adapter);
+> -			int offset = ibmveth_rxq_frame_offset(adapter);
+> -			int csum_good = ibmveth_rxq_csum_good(adapter);
+> -			int lrg_pkt = ibmveth_rxq_large_packet(adapter);
+> +			int length = ibmveth_rxq_frame_length(adapter,
+> +							      queue_index);
+> +			int offset = ibmveth_rxq_frame_offset(adapter,
+> +							      queue_index);
 
 [Severity: Low]
-This is a pre-existing pattern and was not introduced by this patch.
-netdev->stats.tx_dropped++ is a non-atomic update to a counter that all TX
-queues share, and each queue is serialised only by its own txq lock.
+This isn't a bug introduced by this patch, but length and offset come
+straight from the hypervisor descriptor. Nothing checks them against
+the RX buffer size before skb_copy_to_linear_data(),
+ibmveth_flush_buffer(), skb_reserve() and skb_put() later in
+ibmveth_poll(). Could a bad descriptor cause an out-of-bounds read or
+an skb_over_panic()?
 
-Can drops on different queues at the same time lose increments here?
+A later patch in the series ("ibmveth: Harden RX poll path with
+helpers") fixes this. It adds a check in ibmveth_poll_deliver_frame()
+against min(skb_tailroom(skb), buff_size) that rejects
+off >= room || len > room - off.
 
-tx_packets, tx_bytes and tx_dropped already use the same pattern elsewhere
-in ibmveth_start_xmit() and ibmveth_is_packet_unsupported(). The later
-patch "ibmveth: Add per-queue RX and TX statistics collection" moves these
-drops to adapter->tx_qstats[queue_num].dropped_packets.
+[ ... ]
 
-> +		goto out;
-> +	}
+> @@ -2220,12 +2456,18 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+>  							length);
+>  				if (rx_flush)
+>  					ibmveth_flush_buffer(skb->data,
+> -						length + offset);
+> -				if (unlikely(ibmveth_rxq_harvest_buffer(adapter, true)))
+> +							     length + offset);
+> +				rc = ibmveth_rxq_harvest_buffer(adapter,
+> +								queue_index,
+> +								true);
+> +				if (unlikely(rc))
+>  					break;
+>  				skb = new_skb;
 
 [Severity: Low]
-This check appears to fix a NULL pointer dereference that exists before
-this patch. The patch is described as a refactor and carries no Fixes:
-tag.
+This isn't a bug introduced by this patch, but on this rx_copybreak
+path new_skb has already been allocated and filled. If
+ibmveth_rxq_harvest_buffer() fails, the break skips it. Does this leak
+new_skb?
 
-Before this patch, the sequence is:
-
-ibmveth_change_mtu() / pool_store() / set_csum_offload() / set_tso()
-  ibmveth_close()
-  ibmveth_open()
-    fails (TX LTB kzalloc or DMA map, buffer pool alloc, or
-    h_register_logical_lan())
-    out_free_tx_ltb: frees every tx_ltb_ptr[]
-
-IFF_UP stays set. ibmveth_set_channels() checks only IFF_UP. It allocates
-LTBs for [old, goal), or none at all when shrinking, and then calls
-netif_tx_wake_all_queues().
-
-The next ibmveth_start_xmit() on queue 0 then does a memcpy() into the
-NULL tx_ltb_ptr[0].
-
-The v7 changelog points to a separate [PATCH net] series carrying Fixes:
-d43732ce021f for a related open-fail fix. Should this guard be handled
-the same way, so that the crash fix reaches stable trees?
+At this commit the harvest can only fail here if pool state changed
+after ibmveth_rxq_get_buffer() succeeded, so the window is small. A
+later patch in the series fixes it by calling kfree_skb(new_skb) on the
+error path in ibmveth_poll_deliver_frame().
 
 [ ... ]
 
