@@ -1,51 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-28492-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28493-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3278CA5FA5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 12:43:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B6A6CA5FA1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 12:58:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hvHss64Nxz2yvy;
-	Tue, 29 Sep 2026 22:43:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790685825;
-	cv=none; b=F/NzmHnAb3881TA9MX94lwdh95S32dcHDcjrfdB1I6YwkhM8Ap4sMaeEX/+YWo3lDcuOCuYNbcVgK7C5AvOCmlQnyqo1mDHc4EZCk+xRHnZ4SFQ/3w5VS9g6phNZoR2ytaY6o1kEEMtBU/2ZELVagv7FehftjBsTn4hiuSd0EhwejFRflomMTT/tbIXWrqje7ey38fqhCut7Bakhg4KsGub81Qe/6y33JCy1RLirnNOcBbryoamu/NPNjBfsG5S1+JX/wa5xmYuadmIDmuuEG+gJRC3sfZC7exlfoMLm4YVdxS8eK41nHLmbVs+HUp53UUdc28WnBzd7z/X1wYU9NA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hvJBb07SHz30PJ;
+	Tue, 29 Sep 2026 22:58:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790686694;
+	cv=none; b=GcJceQ9CtxsIP7gFkfsZZblXUfO5I41RvshsnccdG/GQwjlQti4gO/bCRwjafafg1ua7PIcgITUhXyRYov6ePujK9xahSeEIVrJYWY1hzAIwCheZq8vxAFzLYB2aRWSBwVh6Dph9oJ+bOFJFN+l5GdyBbljyOMocHm7t3OuyHBoofWSKi/tm7lK7qDe9z4Tr92QhiZjIaqf+H3X1lenVzi8F357wPK0g28+gHJwJMmUivKXSOfDrJ2EuGI7+hP0dYvXRBBtG2kVBtMDUd+5F9H7+D0uzOMLoUT8HD9krdrB/LZNW3GwwO0RXbC8GaLI2GUAGNAQLPcOaO/lfiDsLKQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790685825; c=relaxed/relaxed;
-	bh=N3pQBIPeU4kgfNPc2czVGyN9J1uJXh7phrPpqePrvUU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=lPrisr8JEy6SfzWo7gyV10PN6uGnBrG7ai6X6hvtTuKMRUsJp5UrR3bvVZWLTm/bQJ2Fgpr9dXt0EVqdmJXxJaYXxVPsvesK6EWLo16NdxZp5Yv2VCYhiid8/xhojzI0BGBBQFFXllaJ/daaz/bqsMftFsnzgy64fyalNHxKOdEAGmYcSM7LKUcM/r+Bn+Krm5KV56v3x4dfYFO/9mF/nulT7lCBTfbj12nRTHoZqNNjRgJTTGbGMakA7f76dsxVc4/pnOGApfztzqAoHjcf2OPWeeVybL+aYTR7+h4WJoXxJNHwRt3yn//nNnGJpD5IVwMOD4txGFbSll1XyM6RlQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WcE6zQ2Q; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1790686694; c=relaxed/relaxed;
+	bh=WfMzLb3xmoX/qM5N4JkCxfOBjTh3ejV7Lqwy5CF+kZ8=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=cNScm02et6mfpIrDdm+j165gP5WXxnQMNxz1ziIijAkHtiafe6GmusWU17Oto1BwFnxF2pNit8INfGY7zJcCHF4WUQ3KFP5Fs9BKdfrF2k9/tj0kqs2E67f3AbX60u3OTuNvMTqDIWoI/JhLESeQsltT6L9jNQV0qGcFs8PRbmdtVQHmqkKy3jCSxoSsQKQQeddNrpPuD/YCzb5Ozz///IYkTdFd2zk4Aw3eIHgwXxPHsTiF4fZulf9y4ZtSOtQhGqXSTjnwVydNFsDAPvTnwVgzUIuOw5yDi20WwCpgHbiyirEAHln9SA0KXgxEvJRsK3RrXZY5va1dFLv1DBqA7A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sFCGAeFL; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WcE6zQ2Q;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sFCGAeFL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvHsr44JTz2yft
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2026 22:43:44 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id E8EBC600D1;
-	Tue, 29 Sep 2026 12:43:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AE1041F000FF;
-	Tue, 29 Sep 2026 12:43:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790685820;
-	bh=N3pQBIPeU4kgfNPc2czVGyN9J1uJXh7phrPpqePrvUU=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=WcE6zQ2QvlWMrtJQUUEZxuamgp5A36S7HaP5MZB0g4eZ9uf2ae9YBaoQgyNavhmPr
-	 7InOUoAncTnZO0lY6eJqtBIMTkplBiTSh5ju6aBC09cYVfQgoHdBU26Kq5yu+mdO6I
-	 qQHW6N+635UPz5ZimUFjXpPb6emnvZCDfZR7M5JcA+tmjjGU8iZrOsqWMKUZiNHNPQ
-	 S9quHn0QXa6tns7dhr5KMFIGyQuUeid3XeYJ/aSaFvO4mav/gBJ0pttuDuGsUFk8JD
-	 efMOiYRGZr5e/z0XIs5R2HPCTO8eFY24MNoyi7g3HrvBGlLHvmEdAjkrco2dz3RfuB
-	 fPssynLHZetUw==
-Message-ID: <b5b736c3-badf-4ceb-a4b7-00415bed19fe@kernel.org>
-Date: Tue, 29 Sep 2026 14:43:33 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvJBZ0bBfz2yvy
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2026 22:58:13 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68TB5dil2783702;
+	Tue, 29 Sep 2026 11:31:06 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=WfMzLb
+	3xmoX/qM5N4JkCxfOBjTh3ejV7Lqwy5CF+kZ8=; b=sFCGAeFLRpQEvreI3C5jLB
+	FqrY2ttx8Ry32vFZ1/ZaM8CQLVXJjYWDfr7QDu3dy46t1LR+JIFqw6VGVWn47lXv
+	aa8HqzpKnJx1myDe08IRYPqUOh9NV+ybu9BvN/AUDCp2ffAGsTjrZ+boGz+kbKpT
+	7JPbYwMW6+M1d3QyyFhSoqD/SHyNFOqzgKw6MeGfUkNFdaNwICb8ZdtwkdOKSa3w
+	ivSumKGLJrxC2uzT/qtQ9FNpcem4p4vTm2AF64mAUf5tx5oIBLD8dIYmO6XqwWSa
+	5anTUgXUvKdy3WXip5bZMxyVB+8ByeUjEF3WRNJyaYH612KPMlKw0RMzj2TGo2Nw
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gx4fe63qj-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Tue, 29 Sep 2026 11:31:05 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68TAldvk1667746;
+	Tue, 29 Sep 2026 11:31:05 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gxsvhhe23-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 29 Sep 2026 11:31:05 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68TBV3Iv44564884
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 29 Sep 2026 11:31:03 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E55922004D;
+	Tue, 29 Sep 2026 11:31:02 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1B87220040;
+	Tue, 29 Sep 2026 11:31:00 +0000 (GMT)
+Received: from Linuxdev.ibmuc.com (unknown [9.43.88.139])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 29 Sep 2026 11:30:59 +0000 (GMT)
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+To: Christophe Leroy <chleroy@kernel.org>, Link Mauve <linkmauve@linkmauve.fr>
+Cc: techflashYT <officialTechflashYT@gmail.com>, Ash Logan <ash@heyquark.com>,
+        =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 0/2] powerpc/sstep: Fix compilation on 32-bit PowerPC
+Date: Tue, 29 Sep 2026 17:00:58 +0530
+Message-ID: <179066556646.265207.12358872627744720045.b4-ty@linux.ibm.com>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20260730065007.964703-1-linkmauve@linkmauve.fr>
+References: <20260730065007.964703-1-linkmauve@linkmauve.fr>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,95 +92,54 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/syscall: Avoid atomic test_and_clear_thread_flag
- on fast path
-To: Shrikanth Hegde <sshegde@linux.ibm.com>,
- "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
- ritesh.list@gmail.com, ruanjinjie@huawei.com, tglx@kernel.org,
- mkchauras@linux.ibm.com, ryan.roberts@arm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20260929071744.2965058-1-mkchauras@gmail.com>
- <84ceaa9a-79fb-4585-a571-7701750df5d1@linux.ibm.com>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <84ceaa9a-79fb-4585-a571-7701750df5d1@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=FYWiV5+6 c=1 sm=1 tr=0 ts=6abba179 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
+ a=BrOgvOr2DgzzvcNUf_gA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI5MDA0NCBTYWx0ZWRfX1J/3wy5pqsho
+ oKa33lSa5Ua0c0Idau0qsDeJevlU1Jaj77iXyfshEVtPc73yeAodNk3Zne1d51JOjqLkHRDwqgD
+ X4J3fN/F/SSj3A45zkneJACOejRZ+u8=
+X-Proofpoint-ORIG-GUID: u5rUQlonc9xSVu3Zs2KuLMYp6V1x0TpV
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI5MDA0NCBTYWx0ZWRfX+5VRA2cMJhds
+ v7dZxA+xQ++tusEnCBEpKDGOIkvTxSMug2JXuEmoLKRJ6cLPR6ti40mT9YHPffpiziRB2FcSInr
+ 7JNpCnXpbzmGsWkMeZy5JuJl0E9r/lYRAOE2rHpe5WDr29ks+vTeyAdTne6HRkG5KlW8TitRH7E
+ eLewXszSGCrs1fMTpX1sSr0d6r56JFYg2JZzIZTzLLD35EahkitqmlOWMtRJ/zIlq5ekn32IjuJ
+ nDY7NOVUUlKDrtsc+31ZuCeQdxxacpGB/mueGT7qGV6r5DAJmHpNgCibKcp73+dsu9qAs9k3uFZ
+ ONAF56XDQ7jKQB30DCLetokMhhkZpf30XjVPXfcy2pjZ2DbAxQZPZXL53/e01bXPVfH5OVL4W6v
+ 16C2iqbF1RI297mKucUqWPSqSwtDkUxEt7o1cBMOv8KIAVJREaOJbcoxUN5dIpb1TyNddsVHHWQ
+ VB9lRJQa8Powi3NTkDA==
+X-Proofpoint-GUID: UA37yFkuzZKRx-JPVidfRlPI5fGM9Zux
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-29_04,2026-09-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 clxscore=1011 impostorscore=0 spamscore=0 phishscore=0
+ priorityscore=1501 malwarescore=0 bulkscore=0 lowpriorityscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
+ definitions=main-2609290044
 
-
-
-Le 29/09/2026 à 11:50, Shrikanth Hegde a écrit :
+On Thu, 30 Jul 2026 08:50:04 +0200, Link Mauve wrote:
+> Two local variables were only set but never read on 32-bit PowerPC,
+> which causes an error during compilation with W=1.
 > 
+> This series first makes the 64-bit guards consistent by converting all
+> uses of __powerpc64__ to use CONFIG_PPC64 instead, and then guard the
+> two variables rc and suffix behind CONFIG_PPC64 checks.
 > 
-> On 9/29/26 12:47 PM, Mukesh Kumar Chaurasiya (IBM) wrote:
->> In system_call_exception(), test_and_clear_thread_flag(TIF_SYSCALL_RET)
->> performs an atomic bit test-and-clear operation on every system call 
->> entry.
->> This introduces an unnecessary performance regression on the syscall fast
->> path.
->>
-> 
-> Do you have numbers?
-> 
->> Combine the TIF_SYSCALL_RET check with the unlikely error condition from
->> syscall_enter_from_user_mode_randomize_stack() using non-atomic
->> test_thread_flag(). If the flag is set or entry failed, only then 
->> clear the
->> flag via clear_thread_flag() and return the error value.
->>
-> 
-> It probably needs a fixes tag.
+> [...]
 
-It is not a bug, unless we can figure out a quantified regression.
+Applied to powerpc/next.
 
-> 
->> Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
->> ---
->>   arch/powerpc/kernel/syscall.c | 6 ++----
->>   1 file changed, 2 insertions(+), 4 deletions(-)
->>
->> diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/ 
->> syscall.c
->> index fbefe1927b10..8529827d697f 100644
->> --- a/arch/powerpc/kernel/syscall.c
->> +++ b/arch/powerpc/kernel/syscall.c
->> @@ -18,14 +18,12 @@ notrace long system_call_exception(struct pt_regs 
->> *regs, unsigned long r0)
->>       long ret;
->>       syscall_fn f;
->> -    if (unlikely(!syscall_enter_from_user_mode_randomize_stack(regs, 
->> &r0))) {
->> +    if (unlikely(!syscall_enter_from_user_mode_randomize_stack(regs, 
->> &r0) ||
->> +            test_thread_flag(TIF_SYSCALL_RET))) {
->>           clear_thread_flag(TIF_SYSCALL_RET);
->>           return syscall_get_error(current, regs);
->>       }
->> -    if (unlikely(test_and_clear_thread_flag(TIF_SYSCALL_RET)))
-> 
-> I am bit surprised that test_and_clear_bit does
-> atomic operations even when bit is not set.
+[1/2] powerpc/sstep: Consistently use one define to check arch bit width
+      https://git.kernel.org/powerpc/c/a3b88f816f1b87c6dbcbb858d153adb82fec2e15
+[2/2] powerpc/sstep: Don’t define variables we won’t be using
+      https://git.kernel.org/powerpc/c/16736e0587530a2ad074ef716a6a2f1d45f63827
 
-It does (on ppc64 smp)
-
-	sync
-   1:	ldarx
-	andc
-	stdcx.
-	bne 1b
-	sync
-
-It is optimised to clear a bit that is set. When the bit is already 
-unset you still get the full sequence allthough it does nothing.
-
-> 
->> -        return syscall_get_error(current, regs);
->> -
->>       if (unlikely(r0 >= NR_syscalls)) {
->>           if (unlikely(trap_is_unsupported_scv(regs))) {
->>               /* Unsupported scv vector */
-> 
-
+cheers
 
