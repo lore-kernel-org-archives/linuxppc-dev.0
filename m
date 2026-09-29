@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-28475-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28476-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE0FDCA5FA1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 08:43:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66CCDCA5FA5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 08:43:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hvBXH2fX3z2yvy;
-	Tue, 29 Sep 2026 18:43:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790671391;
-	cv=none; b=JPvkUm4y3Fa6BU/EKna9iMtGfaZC8b8ycPD9VBYxMJfYE+1/4/smFNmQ0OWYyEJmop71f5pO86YZO2IKBBEKJu6FmwVeHhF87d6sYJmSppXn59mLjkrqgc/VZGvkp/7xN9PHu1LTqoUG/0ekr2DCe3dU4/JIEFVitGSxErEmX6qZ7pcCkePs0fl+tF/FU/KhDDaiGIVaaNVRtvbTcTjs0j7iM3ZPFjp1+U07UI6XSWVLaMm+9QG446jQ1NvuuZ4d/gmtb7sBDyUvG4BZID2IV6gpt1/hgAPaIMf+iM2euJD8TqY5tyodXf26lmqJ597VxZYpFlCHEnj4PDYzWFF+hg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hvBXz6slTz2yvy;
+	Tue, 29 Sep 2026 18:43:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790671427;
+	cv=none; b=fsCEpMM83uqdes34p8oW5jemo11J3WjiYXA7wLPEhtYqY7UhNLqFDzwq98QkVeYeSVEdbJgGk4mW6V7i/O1uhmOy18BEL4asMTH/V5HFtKhIoTYTkiNTzo4dRYbAIdqcPDuHPT6hXVdGtdfBtBEJDz9P1yV6YFJPtk7305+RCj2GXUZOwZEoR55yu7rxl+P9bbuSny8pVJPl5ZKKXJucsLRtNJFw5kgPLMqL7Iqd3wjrfcP6/VPM8ixw+T5asc5v0zFPSdz3OJp+gMEKqvrDExijdLa04XtOuN3Pe/6BX0B8D3Gg6X3KPwuIMetNE/l2uCLyKp1mmpDpCX1wROiUbg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790671391; c=relaxed/relaxed;
-	bh=L5o5nxIGaf1ad5zEI4GVn6mSMEnb1Lm3br5oDnecbdc=;
+	t=1790671427; c=relaxed/relaxed;
+	bh=n7ZwDHwCgtTpKzG09AoZx3xocuDeXqkubNatC0w4bQU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=begOPCwW5VzRZI7qj1gESJlbS7928jbRLjyF+ARRvs+Zpwjo1n1aVrDtNZFPffcyUAc/J5THFJsW2/pf2EfGAGAdHyHjRzrfQrMoeTrwc5zHdXNxA3egvs1ZX9/nzMPspwY4kLNvDq5rNJ7R4FRZYtNzCGQp5Lix/qDR1TyFabsJUpCQVwgd+YJualD9/EQ9djbIaoI/TVLr9Zf8jYlKz+UtleigL6TtdJx6sepK6aGLJTjoVp8ACALEgluG4z2P9EjlvN8SgEk169xLJrELWnjl7SBejhwbsGnrXXSScjghLsOlPZxWVFqu6xabEidOocPjuK/NUDzT4hNYRS9aJw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CGwxpnBE; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=X5XObY7XIxUQ6X/C13ZEDEzdZFGsxxNc/Bp4sEmTZ/txhTiGDowfDS5Tllr7XHyOegUg2BGvW0ALfd8TbEwA79wgF7IrSebinNHwKCKabOv6J06+pSnyATq6ZH+JQdexjmuoO4Hwzvnwoc/uLRbLFYEquWjDSR8SOJKX2lc1pFzvB9UqgMz/NHn/wZEIpYRTgHSaRsrnystbktH+P1OXDRJcTWvewWvjDvFqhcXgt8KqCOOZbrm+sgEfdFKW0bEsuZrH9JuJwOuu4141mmGHBiXJpYSxJ8zSMpN5W2/22YZBEPDN5s+B2wmZcURRbssR/QWEQ3R2anVB0sjnfCfdOg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lBDwfrHY; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CGwxpnBE;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lBDwfrHY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvBXG0TPvz2yft
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2026 18:43:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvBXz1NvYz2yft
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2026 18:43:47 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 3BBCB41425;
-	Tue, 29 Sep 2026 08:43:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AEF371F00893;
-	Tue, 29 Sep 2026 08:43:03 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 3A30841425;
+	Tue, 29 Sep 2026 08:43:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C574A1F00898;
+	Tue, 29 Sep 2026 08:43:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790671387;
-	bh=L5o5nxIGaf1ad5zEI4GVn6mSMEnb1Lm3br5oDnecbdc=;
+	s=k20260515; t=1790671425;
+	bh=n7ZwDHwCgtTpKzG09AoZx3xocuDeXqkubNatC0w4bQU=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=CGwxpnBELT2SBdYqTWoImYAwOQE6VH3Z/GK/BjARDqL1OwqOg0mgW0LKYZbEz6KG/
-	 SAEdW0C3XoQlNf/Suzav0R/znaJUw+Zx9A2mbHr2oOXegJenEJuYHoxqO8iDkDY1Z9
-	 1biQcQdcVJCtdUNP3yYInn6yCqUpVeK7z7C2EAovrzfdZBjcL/JFpIALGaFmJaradQ
-	 K2j9jnOfTmkKmmk84SVrHosCBrgboNIbijZzR8QL5Fqh44ddhSMmY5yz0y1urmxGHS
-	 6q7CoSukBqGFsgY4TVNW9UMehwhIHeIFxPbMVn2h2JoaMn82yQAVpHyoBvs8ilNbAC
-	 LQ/yguM0me+uQ==
-Message-ID: <73625017-b944-446b-95b6-6c586c304f35@kernel.org>
-Date: Tue, 29 Sep 2026 10:43:01 +0200
+	b=lBDwfrHY3inuAoEAndHGXnyuoIoECnFC7ApDC5nXOylkuOkgrKDP01M2YdmnXg7N5
+	 OVQw0RPU2+xeG1SBHIkczI/C0AZr5hkyWrVnOhcArSM3wg+KAdakaIIbp7E9Av6qm5
+	 SO2BH0ZA1/M9djZtw+okW/M7pSV5/ROKA8jG1f6DsihZo2bMdDT8eVTAfMrnKyaB9P
+	 Nal/wms3eAZdrT00IRNZZ2v05dscRFGmcSIZVutDeXgalzyia5e+j8d5rb4Q8vZP9y
+	 NWnhHBt9pwDi0reGXW2WIsDjviAiIa7wIRcXC8j/nsq24KZDemVNRxLTH5zQvmhRJD
+	 8ldtZ7nJtx4pQ==
+Message-ID: <bf153c2c-ec21-4919-ae48-7ff97fe6ceb6@kernel.org>
+Date: Tue, 29 Sep 2026 10:43:39 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 03/12] mm/sparse-vmemmap: introduce
- CONFIG_VMEMMAP_OPTIMIZATION
+Subject: Re: [PATCH v5 06/12] mm/sparse-vmemmap: set compound page order for
+ device DAX
 To: Muchun Song <muchun.song@linux.dev>
 Cc: Muchun Song <songmuchun@bytedance.com>,
  Andrew Morton <akpm@linux-foundation.org>, Oscar Salvador
@@ -74,9 +74,9 @@ Cc: Muchun Song <songmuchun@bytedance.com>,
  Christophe Leroy <chleroy@kernel.org>, Randy Dunlap <rdunlap@infradead.org>,
  Lance Yang <lance.yang@linux.dev>
 References: <20260927025441.741633-1-songmuchun@bytedance.com>
- <20260927025441.741633-4-songmuchun@bytedance.com>
- <d7a75c99-3021-495f-ae34-883d047370f3@kernel.org>
- <D0B0A406-100C-437D-8AA8-D276E8DA8278@linux.dev>
+ <20260927025441.741633-7-songmuchun@bytedance.com>
+ <751f6586-625b-4485-9f27-409fdf38bf3e@kernel.org>
+ <A77F22EE-0C10-483E-83D6-CC88D8485E88@linux.dev>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -123,121 +123,83 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <D0B0A406-100C-437D-8AA8-D276E8DA8278@linux.dev>
+In-Reply-To: <A77F22EE-0C10-483E-83D6-CC88D8485E88@linux.dev>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 9/29/26 09:53, Muchun Song wrote:
+On 9/29/26 10:22, Muchun Song wrote:
 > 
 > 
->> On Sep 29, 2026, at 15:11, David Hildenbrand (Arm) <david@kernel.org> wrote:
+>> On Sep 29, 2026, at 15:30, David Hildenbrand (Arm) <david@kernel.org> wrote:
 >>
 >> On 9/27/26 04:54, Muchun Song wrote:
->>> The section-based vmemmap optimization infrastructure is guarded by
->>> CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP, but it can also be used by
->>> ZONE_DEVICE users that set dev_pagemap::vmemmap_shift. Introduce
->>> CONFIG_VMEMMAP_OPTIMIZATION as a common config for the shared
->>> infrastructure.
+>>> Device DAX can use vmemmap optimization only when a full section is
+>>> populated with a compound-page geometry. Record that geometry as the
+>>> compound page order in section metadata before populating the section, so
+>>> later vmemmap accounting and population decisions can use the section state
+>>> directly.
 >>>
->>> Select the new option from HUGETLB_PAGE_OPTIMIZE_VMEMMAP and from
->>> ZONE_DEVICE when the architecture opts in to DAX vmemmap optimization,
->>> and use it to guard the generic sparse-vmemmap state and helpers.
+>>> Clear the compound page order when the section becomes empty again. Also
+>>> reject partial additions to a section that already has optimized vmemmap
+>>> mappings. compound_nr_pages() determines how many struct pages to
+>>> initialize with a section as the smallest granularity. A section therefore
+>>> cannot safely mix optimized and ordinary vmemmap layouts.
+>>>
+>>> Partial additions continue to use ordinary vmemmap population, so they do
+>>> not save vmemmap memory. Such additions are uncommon, and the lost saving
+>>> is negligible.
 >>>
 >>> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
 >>> Acked-by: Qi Zheng <qi.zheng@linux.dev>
->>> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 >>> ---
->>> v5:
->>> - Move this patch after the shared tail-page factoring.
->>> - Select VMEMMAP_OPTIMIZATION from ZONE_DEVICE instead of DEV_DAX,
->>>  covering all users of dev_pagemap::vmemmap_shift, reported by
->>>  Sashiko.
->>>
->>> v4:
->>> - Rename SPARSEMEM_VMEMMAP_OPTIMIZATION to VMEMMAP_OPTIMIZATION
->>>  (suggested by Mike Rapoport)
->>> - Collect Acked-by from Mike Rapoport
+>>> v3:
+>>> - Update the subject and commit message to use compound page order
+>>>  terminology
+>>> - Use EOPNOTSUPP instead of ENOTSUPP
 >>>
 >>> v2:
->>> - Fix SPARSEMEM_VMEMMAP_OPTIMIZATION being selected without SPARSEMEM_VMEMMAP
->>>  reported by Sashiko.
->>> - Add an explicit DEV_DAX dependency on ZONE_DEVICE
+>>> - Explain why optimized and ordinary layouts cannot share a section
+>>>  (suggested by Qi Zheng)
 >>> - Collect Acked-by from Qi Zheng
 >>> ---
->>> arch/x86/entry/vdso/vdso32/fake_32bit_build.h |  2 +-
->>> fs/Kconfig                                    |  1 +
->>> include/linux/mm.h                            |  3 +++
->>> include/linux/mmzone.h                        | 10 +++++-----
->>> include/linux/page-flags.h                    |  5 ++---
->>> mm/Kconfig                                    |  5 +++++
->>> mm/sparse-vmemmap.c                           |  2 +-
->>> mm/sparse.h                                   |  6 +++---
->>> 8 files changed, 21 insertions(+), 13 deletions(-)
->>>
->>> diff --git a/arch/x86/entry/vdso/vdso32/fake_32bit_build.h b/arch/x86/entry/vdso/vdso32/fake_32bit_build.h
->>> index bc3e549795c3..72a92cb9b53d 100644
->>> --- a/arch/x86/entry/vdso/vdso32/fake_32bit_build.h
->>> +++ b/arch/x86/entry/vdso/vdso32/fake_32bit_build.h
->>> @@ -11,7 +11,7 @@
->>> #undef CONFIG_PGTABLE_LEVELS
->>> #undef CONFIG_ILLEGAL_POINTER_VALUE
->>> #undef CONFIG_SPARSEMEM_VMEMMAP
->>> -#undef CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP
->>> +#undef CONFIG_VMEMMAP_OPTIMIZATION
->>> #undef CONFIG_NR_CPUS
->>> #undef CONFIG_PARAVIRT_XXL
->>>
->>> diff --git a/fs/Kconfig b/fs/Kconfig
->>> index d1c210c6508f..1454b7fe9641 100644
->>> --- a/fs/Kconfig
->>> +++ b/fs/Kconfig
->>> @@ -278,6 +278,7 @@ config HUGETLB_PAGE_OPTIMIZE_VMEMMAP
->>> def_bool HUGETLB_PAGE
->>> 	depends on ARCH_WANT_OPTIMIZE_HUGETLB_VMEMMAP
->>> 	depends on SPARSEMEM_VMEMMAP
->>> + 	select VMEMMAP_OPTIMIZATION
 >>
->> Acked-by: David Hildenbrand (Arm) <david@kernel.org>
-> 
-> Thanks.
-> 
+>> [...]>
+>>> static struct page * __meminit section_activate(int nid, unsigned long pfn,
+>>> @@ -838,8 +840,13 @@ static struct page * __meminit section_activate(int nid, unsigned long pfn,
+>>> 	struct mem_section *ms = __pfn_to_section(pfn);
+>>> 	struct mem_section_usage *usage = NULL;
+>>> 	struct page *memmap;
+>>> + 	unsigned int order;
+>>> 	int rc;
+>>>
+>>> + 	order = vmemmap_can_optimize(altmap, pgmap) ? pgmap->vmemmap_shift : 0;
+>>> + 	if (nr_pages < PAGES_PER_SECTION && section_compound_order(ms))
+>>> + 		return ERR_PTR(-EOPNOTSUPP);
 >>
->> Is there a path to remove HUGETLB_PAGE_OPTIMIZE_VMEMMAP, and to merge
->> ARCH_WANT_OPTIMIZE_DAX_VMEMMAP+ARCH_WANT_OPTIMIZE_HUGETLB_VMEMMAP into a
->> ARCH_SUPPORTS_VMEMMAP_OPTIMIZATION?
+>> Hm. Why should we support optimizing the vmemmap in case we fall into the same
+>> memory section as boot memory?
+>>
+>> In that case, there already is a memmap allocated during boot for the entire
+>> section. IOW, we really shouldn't mess with the vmemmap in case we have an early
+>> section.
+>>
+>> But maybe I am missing something and this is already disallowed?
 > 
-> These are actually two completely different capabilities.
+> Yes, this is already handled.
 > 
-> ARCH_WANT_OPTIMIZE_HUGETLB_VMEMMAP requires the architecture
-> to support dynamic updates to vmemmap page tables, meaning a
-> PTE entry can be changed from one valid entry to another
-> valid entry. This does not meet the requirements on arm64,
-> because arm64 requires page table operations to satisfy BBM
-> (there is, of course, a series [1] attempting to do this).
+> For a partial addition to a normal early section, after updating the
+> subsection map we return the existing boot-time memmap here:
 > 
-> However, for ARCH_WANT_OPTIMIZE_DAX_VMEMMAP, the vmemmap page
-> tables do not involve dynamic updates, so the BBM requirement
-> can be satisfied. Therefore, arm64 can enable
-> ARCH_WANT_OPTIMIZE_DAX_VMEMMAP, but cannot enable
-> ARCH_WANT_OPTIMIZE_HUGETLB_VMEMMAP. To make the naming clearer,
-> I have another patch [2] that renames it for greater clarity.
+> 	if (nr_pages < PAGES_PER_SECTION && early_section(ms))
+> 		return pfn_to_page(pfn);
+> 
+> Therefore, neither section_set_compound_order_range() nor
+> populate_section_memmap() is called. The fully populated boot memmap is
+> simply reused, and no vmemmap optimization is attempted.
 
-Ah, perfect. Too many patches floating around :)
+Perfect, thanks
 
-I thought there is a patch set to avoid the BBM requirement on arm64 from James,
-though. So not sure if both things will always stay separate.
-
-> 
-> As for ARCH_WANT_OPTIMIZE_DAX_VMEMMAP, I plan to remove it
-> entirely in the future, because architectures that do not support
-> it can simply choose to disable it, as can be seen in patch [3].
-> 
-> So in my plan, ultimately only one config will remain:
-> ARCH_SUPPORTS_VMEMMAP_REMAP.
-> 
-> I hope this clarifies the plan. Let me know what you think.
-
-Yes, thanks.
+Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
 -- 
 Cheers,
