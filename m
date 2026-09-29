@@ -1,73 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-28481-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28482-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70055CA5FA1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 09:55:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C521CA5FA5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 09:56:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hvD7W54bQz30PJ;
-	Tue, 29 Sep 2026 19:55:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790675719;
-	cv=none; b=G/ezfxWSF5fs8PdYiWUclLtBW/XjYn7vNYms2pOC8iNRcc9j/aVlGwuOVjXrZTCt0oQ7m6lXU/9bo479N2uvmaEL/wiJ+OuCoYNTqtlAjsxIdZgDM3g0cJQxf4E3ginwfFFusLmjPxjS9iHTR7+ATUyzr30CojOFTS37JZHZKysSbd3KtuqKuBVjTHxr79WXtuHUZTI92cihqF50RiosKq9L7ol8IGLi6h7KJSmOwceM5G8QWuf9gSImEOxEkcYc5FMObK5Xl+M6gg9iqsXWptg4DQ5Z+F68EGEdYexl5DzBKe9jM9qMSD/aPCa1wfV7SFEfht3GZp0cproqyoFFcQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hvD8t3Jkmz30PJ;
+	Tue, 29 Sep 2026 19:56:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790675790;
+	cv=none; b=kVDxOiPELSZB2xaAQwCnB+l+IYVZHCTcJr0/xLXUsPLDQCM0QFBBa6G73t+FJxOML6gppE3atj3UrtJ7KcDk9I2iMm5L8FjIlJ61U6QJ6j7yRhSGEBfR85B5CmCQeZbQ9O7h2vl2cw839xB9I8Y0QbJZmfz896BAsRjzUFgnYOQmTwcfP3ghQmTPvX1ohkIrwVSbm/Yk9xX57+Kb4CtwDmbsv5vkWXklxMO43uVa0fuqnFxvMZk7XoZ+WWAGPML//efAtV7FSBOtHfz07AQLJfeuFj5xsggYbYSNVjzZ66GzQnHLLdW/M0tQOc7SK6KAutySHXQ09usL+iXKnx+2BA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790675719; c=relaxed/relaxed;
-	bh=TYKMRuOuRpGldXulawvHLGeCTD/ugQlZlPJM3n2puC4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=LQkz9eUh8O35Z08iMVbrwvQ69jLxrrzbrN5GmxAzLZg/3WjIiqTIYw950zl/nOcUHHAtm7AbcjWP2EqApeUSUGQO7VJFAVzK+WxvLefHWSxzaye+XpDOzaQ5nDhS9FyTBMn2yxeFNPsLG5lZhRfMXZqIhSKT18tvUq5hFOoCTbq1JAn6FEUYfyOe7GrceGeRJ7S1uinDKKSC1rDitMgtMk57WrgZ+uJBAZC+243/+vqD4wjtowzHs/9I/WWqzxMSJAHhXwkKE+XAvYrFQBtJoAJJAZOr5w3tM5Rvt5syDeTEh/XrXo9U63ObV7l6EoA/UG8MCbpXWscVfnRsNTquYw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=H1UbTJFR; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1790675790; c=relaxed/relaxed;
+	bh=4FWPvM8OqTdj+zRb7fwobf1fN91xUUhfgAHWArW4fm0=;
+	h=MIME-Version:Date:From:To:Cc:Subject:In-Reply-To:References:
+	 Message-ID:Content-Type; b=JgA0gTcwb4BTcRLiFtugaxlbl37e6jX14goHHFMXGF0ZK1Av8mQUcFXFLz3N42ycC57RtT5DZSDUBIg4SdTVg0xCm8uQbfwgAYGC0n4Fp4haxkzxgfhKconeZm8uLMyJYL3f9QkFje4jMSeX6ofRZjLoHRUBQfCVvYzaI0q/QfZbUIIXoT8Ro6n2/Es0GbmtQMvsIr3ecORpCmVR/dT8Z5S1zX9ecPgwWuGt4l/kLjcVA+XU6mRqTCw5IF6387GNn7WzqFGuagKwAoVPFGlQHAHn3XYNOFURZGkdL6uUX5vNZGE+X5MbzC8KytE6sTW1A5ifNoG6/HmFvwJuA+BE5g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=D9CWepRq; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=jyoti@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=H1UbTJFR;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=D9CWepRq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=jyoti@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvD7V5x2qz2yft
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2026 19:55:18 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68T7ZUWU2292593;
-	Tue, 29 Sep 2026 08:50:18 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
-	content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=TYKMRu
-	OuRpGldXulawvHLGeCTD/ugQlZlPJM3n2puC4=; b=H1UbTJFRwwPOPQ+EZiJBnB
-	1LePLUvfjIgU0QttNK9HomvpnRIJK97Wz5Fj/jVPS4SZ1AMZIDPWkWspr+n2/olQ
-	kvW6T2FC04KdEtNO+vLQqQ+w1+FTwNM5kQeoTYFDzL/catVwqgu/rx9olhJ/Xo3J
-	BVGp6WghdRluUIXqSQAMQ1b9GwbbCj05ZLCJU2axSOevgvUi10TQgGNim30Zk6CW
-	Pf/JIviIP7N89Z2BqW8vx1eIbdnZ499GAveSvVqeYNbNrl8qZggjhWE/c8gwHePd
-	2udT1Lg75bUEgUhaD4WBdQ+y7fLqZrm5i5tnCeKPmJ7TsRHPTm/pMrlGMrGFsJOQ
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvD8s5XWcz2yft
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2026 19:56:29 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68T46WSa1210059;
+	Tue, 29 Sep 2026 06:45:26 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=4FWPvM
+	8OqTdj+zRb7fwobf1fN91xUUhfgAHWArW4fm0=; b=D9CWepRqAJyohb0ntba2Ww
+	UZkFcZuaIo6lrLGYvNkcubM4QLsnlzMunCs0kLK8SrRUWOT/HroB0MtKfd/dXvCQ
+	vvS5QtOZgqhDyTBmxD7Mo7vfUcMqHiW8ge6gjRQJrz9wesqExEbxw1ArItsisKLV
+	IGlbia7jXH8ZIXze9DlNqDz1lFlHFSn8VbM0azxfkOzy7Tc+Hfh8N8H6QU5oY5VK
+	9a3lcfFGd/wI8YJpxymFBvK5g13y9DHt5N/893yTHuLtTsoo6gmwb0Cz+lM0Q+Ku
+	xJsUidEEOEGLxHe1AQOAj5xbN0V1N4rqGIMCEM9RxmokAAGZLtJ+SV6KqyeSliRg
 	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gx4fe5g5j-1
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gx5qr5jud-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 29 Sep 2026 08:50:17 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68T7WS5p1390136;
-	Tue, 29 Sep 2026 08:50:16 GMT
-Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gxu2y8qwa-1
+	Tue, 29 Sep 2026 06:45:26 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68T4I4AL1188915;
+	Tue, 29 Sep 2026 06:45:25 GMT
+Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gxsvhghdm-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 29 Sep 2026 08:50:16 +0000 (GMT)
-Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
-	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68T8oFlm16581172
+	Tue, 29 Sep 2026 06:45:25 +0000 (GMT)
+Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
+	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68T6jNKn23265656
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 29 Sep 2026 08:50:15 GMT
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3444F5805C;
-	Tue, 29 Sep 2026 08:50:15 +0000 (GMT)
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8F5215805D;
-	Tue, 29 Sep 2026 08:50:11 +0000 (GMT)
-Received: from [9.61.249.121] (unknown [9.61.249.121])
-	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 29 Sep 2026 08:50:11 +0000 (GMT)
-Message-ID: <dee6b8a9-8799-4945-9846-d9b1bfe6ebd6@linux.ibm.com>
-Date: Tue, 29 Sep 2026 14:20:09 +0530
+	Tue, 29 Sep 2026 06:45:24 GMT
+Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D41CA58062;
+	Tue, 29 Sep 2026 06:45:23 +0000 (GMT)
+Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5110258059;
+	Tue, 29 Sep 2026 06:45:23 +0000 (GMT)
+Received: from ltc.linux.ibm.com (unknown [9.5.196.140])
+	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 29 Sep 2026 06:45:23 +0000 (GMT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,164 +79,117 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc: fix NMI exit ordering: restore soft masks after
- irqentry_nmi_exit()
-To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>, maddy@linux.ibm.com,
-        mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
-        ritesh.list@gmail.com, sshegde@linux.ibm.com, mkchauras@linux.ibm.com,
-        ruanjinjie@huawei.com, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org
-References: <20260929071600.2963954-1-mkchauras@gmail.com>
-Content-Language: en-GB
-From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-In-Reply-To: <20260929071600.2963954-1-mkchauras@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Date: Tue, 29 Sep 2026 12:15:23 +0530
+From: jyoti <jyoti@linux.ibm.com>
+To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
+        npiggin@gmail.com, chleroy@kernel.org, ritesh.list@gmail.com,
+        sshegde@linux.ibm.com, sourabhjain@linux.ibm.com
+Subject: Re: [PATCH] powerpc/mpic: Fix memory leak of mpic on error paths
+In-Reply-To: <arTs9bM5sOz0CDch@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <20260924063010.188642-1-jyoti@linux.ibm.com>
+ <arTs9bM5sOz0CDch@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+Message-ID: <8362e541252efe26f71d651585ebeaa0@linux.ibm.com>
+X-Sender: jyoti@linux.ibm.com
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=FYWiV5+6 c=1 sm=1 tr=0 ts=6abb7bc9 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=IGkpBAwnVNaApzdPf5QA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI5MDAzNCBTYWx0ZWRfX9i5jOK7ScgcK
- iOO8PADE5zw1vG++d6TbrDwflEGWR+g1PYcUuF3xgVbUB+aPOaPgWRdJwRZXwCUOKatNeRoij4w
- 8BCt2p5CGRXiqG2NyFeNXYqabxKejQQ=
-X-Proofpoint-ORIG-GUID: 7QK2m4bCfmmzh1pE8hdvpiz-XEgcxjxy
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI5MDAzNCBTYWx0ZWRfX0YkSDxQcQ2Y4
- KxVVrpoiH6EYcVm+6A4MXy3Jrov5EbsXxZBMGeWrt25Gng5bKIRi31Qj0VXyqz9SoaHv5IAvRQ4
- 3lEouuBUB3MHTHPQWcYNTUcpkjV6JAeC7fiKh5OxmbL64S+91xegD/mR0/2C71CYbt0kILkppKh
- 3e57coEnf/KboqTHMYXqDfTv9ASP3YMzltz2fSlXrk0e9xryibnRTyZayZEFe55yidYf38Jd5hV
- OFbdy5FzMyvoRNsMdc9i6qYIz0fb30bEKniNqAPELAS5nkhWGSFUwtkrRUi/PjT0u/Ar+QSocv6
- qc0pE9UxflOGoRPDuDo5xo8ZmVnJ4DB/7DHshAKu5i61FGzMfjopmJi0n735Jpt3mlf3vYKzhuN
- FdnpbBuFmRKQfdKr/vEPDEpxUDMe8U1BCHN2hA5sSSF/aeb0CnQEPAmRfp1zOGo6IepTuOBYWBQ
- XDic6BEM3ZOEwE7eZPA==
-X-Proofpoint-GUID: J7qtAU6BpZmlcLghR1WJdYDgOhbPF8du
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI5MDAyNiBTYWx0ZWRfXxc2ynKGVwenF
+ E32dzuI1D7EVOn1CLdOZZ/dlhZWIZPrbpDJvlV8zOuXPOfvZR2p/WZNWfSmu8nvNvNUfZDUECGh
+ ckDktY6YvbbUUyqfJXVvcTADnpsA0QSXmUbl9aK9+fBreUI7RJidU9a0qBcP4Nuu9m0tf233Vze
+ JJKI3L7E41kt2QdX+v5cXDVUAvvDXR6JS1ZWIWFnHXzGToGKI2J5cGko7q2mfaZdrgbF9N1jkfE
+ qPOxISeQYSZ0c+SPzhNwGQLUoMkStu6MYtUAkcAj7NKBVF6WHsQNlLhmPkuzdtJh+q5XmxV+Zsq
+ 3ZMHTGX45OXdHlQdQMurnPjCDOwvOtS+enzrUBwv0wgYaI9MbYeGPX1gTlvXKt3vmOv+L5vl+Aw
+ IfMHVd8LVaHjUzG326VRQGXa85B2eoyyVfHYNtXjUwww8fakXQjgTiSc/w47LDdCsUJrQuKQ0Mj
+ LjMwoB9ZJpojAhvFE+g==
+X-Authority-Analysis: v=2.4 cv=SPbXx+vH c=1 sm=1 tr=0 ts=6abb5e86 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=kj9zAlcOel0A:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8
+ a=nDypmBHfwMd7Jn3RUKwA:9 a=CjuIK1q_8ugA:10
+X-Proofpoint-ORIG-GUID: Qs8B0oe2fHEomKyyEg_tsVrekhDqj121
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI5MDAyNiBTYWx0ZWRfX0nagKVNwkYGu
+ 8MNAFLKFO8OYG6sHz+tpZJ3gjMmokjyPlq2hrKFxlSx8nyHDEB5/OLRsy93nmSCfAPyB7tL+OB7
+ bgrfDFr39px1/A/gCPEI+oRCoz46iOA=
+X-Proofpoint-GUID: X3eW3sPrn7KaXxjLwNsQyNOheBiFdg-e
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-29_03,2026-09-21_02,2025-10-01_01
+ definitions=2026-09-29_02,2026-09-21_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 clxscore=1015 impostorscore=0 spamscore=0 phishscore=0
- priorityscore=1501 malwarescore=0 bulkscore=0 lowpriorityscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ priorityscore=1501 suspectscore=0 clxscore=1015 spamscore=0
+ lowpriorityscore=0 malwarescore=0 adultscore=0 bulkscore=0 impostorscore=0
+ phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
  route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
- definitions=main-2609290034
+ definitions=main-2609290026
+
+On 2026-09-24 14:58, Mukesh Kumar Chaurasiya wrote:
+> On Thu, Sep 24, 2026 at 12:00:10PM +0530, Jyoti Gupta wrote:
+>> mpic_alloc() allocates struct mpic (and optionally the protected
+>> sources bitmap) but does not free them when mpic_setup_error_int() or
+>> irq_domain_create_linear() fails, leaking the memory.
+>> 
+>> Initialise mpic to NULL and free the bitmap and the mpic in the common
+>> error path before dropping the device node reference. The register
+>> mappings are not released here.
+>> 
+>> Signed-off-by: Jyoti Gupta <jyoti@linux.ibm.com>
+>> ---
+>>  arch/powerpc/sysdev/mpic.c | 9 ++++-----
+>>  1 file changed, 4 insertions(+), 5 deletions(-)
+>> 
+>> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+>> index 6e8fa94985f3..e777b33f170d 100644
+>> --- a/arch/powerpc/sysdev/mpic.c
+>> +++ b/arch/powerpc/sysdev/mpic.c
+>> @@ -1221,7 +1221,7 @@ struct mpic * __init mpic_alloc(struct 
+>> device_node *node,
+>>  				const char *name)
+>>  {
+>>  	int i, psize, intvec_top;
+>> -	struct mpic *mpic;
+>> +	struct mpic *mpic = NULL;
+> We don't need this initialization. We initialize it later again.
+
+Agree
+
+>>  	u32 greg_feature;
+>>  	const char *vers;
+>>  	const u32 *psrc;
+>> @@ -1488,10 +1488,6 @@ struct mpic * __init mpic_alloc(struct 
+>> device_node *node,
+>>  						 intvec_top,
+>>  						 &mpic_host_ops, mpic);
+>> 
+>> -	/*
+>> -	 * FIXME: The code leaks the MPIC object and mappings here; this
+>> -	 * is very unlikely to fail but it ought to be fixed anyways.
+>> -	 */
+>>  	if (mpic->irqhost == NULL)
+>>  		goto err_of_node_put;
+>> 
+>> @@ -1527,6 +1523,9 @@ struct mpic * __init mpic_alloc(struct 
+>> device_node *node,
+>>  	return mpic;
+>> 
+>>  err_of_node_put:
+>> +	if (mpic)
+>> +		bitmap_free(mpic->protected);
+>> +	kfree(mpic);
+>>  	of_node_put(node);
+>>  	return NULL;
+>>  }
+>> --
+>> 2.55.0
+>> 
+>> 
+> Do we need a fixes tag for this?
+> 
+Agree
 
 
-On 29/09/26 12:46 pm, Mukesh Kumar Chaurasiya (IBM) wrote:
-> When running with CONFIG_PPC_IRQ_SOFT_MASK_DEBUG=y and LOCKDEP=y, an
-> Oops is triggered during NMI exit:
->
->    [  202.258332] Oops: Exception in kernel mode, sig: 4 [#1]
->    NIP [000000000003e178] 0x3e178
->    LR  [c00000000003e174] arch_local_irq_restore+0x2a4/0x328
->    TRAP: 0700  MSR: 0000000000081000 <ME>
->
-> The faulting instruction at NIP is a 'trap' (0fe00000) inside the
-> rfi_flush_fallback trampoline at a userspace-looking low address, reached
-> after a bad rfid caused by an incorrect SRR0 value.
->
-> Root cause
-> ----------
-> DEFINE_INTERRUPT_HANDLER_NMI used to call arch_interrupt_nmi_exit_prepare()
-> *before* irqentry_nmi_exit(), giving this sequence:
->
->    arch_interrupt_nmi_enter_prepare()   // saves irq_soft_mask, irq_happened
->    irqentry_nmi_enter()                 // __nmi_enter() -> nmi_count++, in_nmi()=true
->    ____func(regs)                       // NMI handler body
->    arch_interrupt_nmi_exit_prepare()    // RESTORES irq_soft_mask=0 (IRQS_ENABLED)
->                                         // RESTORES irq_happened with pending bits
->    irqentry_nmi_exit()                  // instrumentation block runs here...
->      trace_hardirqs_on_prepare()        //   ...with in_nmi()==true still
->      lockdep_hardirqs_on_prepare()      //   ...and irq_soft_mask already restored to 0
->        -> arch_local_irq_restore(0)     // mask=0 -> enable path entered
->             WARN_ON_ONCE(in_nmi())      // FIRES: __nmi_exit() hasn't run yet
->      __nmi_exit()                       // nmi_count-- (too late)
->
-> arch_interrupt_nmi_exit_prepare() restores irq_soft_mask to whatever
-> the interrupted thread had (IRQS_ENABLED / 0) and restores irq_happened
-> with any pending deferred-interrupt bits that were present when the NMI
-> fired.  This is correct and necessary before rfid back to the interrupted
-> context, but it must not happen until irqentry_nmi_exit() has fully
-> completed.
->
-> With irq_soft_mask=0 and pending bits in irq_happened, the
-> trace_hardirqs_on_prepare() call inside irqentry_nmi_exit()'s
-> instrumentation block reaches lockdep_hardirqs_on_prepare() which
-> calls __trace_hardirqs_on_caller(), which eventually calls
-> arch_local_irq_restore(0) (the IRQS_ENABLED / enable path).
->
-> arch_local_irq_restore() with mask=0 hits the CONFIG_PPC_IRQ_SOFT_MASK_DEBUG
-> guards at irq_64.c:217:
->
->    WARN_ON_ONCE(in_nmi());   // TRUE: __nmi_exit() not yet called
->
-> The WARN_ON_ONCE fires a 'trap' instruction (tw 31,0,0 / 0fe00000) in
-> kernel mode with MSR_PR=0, MSR_IR=0 (real-mode).  The program check
-> handler (TRAP 0700) takes the sig:4 (SIGILL) path via do_program_check()
-> and calls die(), producing the Oops.
->
-> The RESTART_TABLE mechanism in arch_local_irq_restore then causes the
-> bad rfid that lands at the userspace-looking address visible in the NIP.
->
-> The bug is invisible with LOCKDEP=n because trace_hardirqs_on_prepare()
-> is a no-op when CONFIG_TRACE_IRQFLAGS is not set (TRACE_IRQFLAGS is
-> selected by PROVE_LOCKING which selects LOCKDEP).
->
-> Fix
-> ---
-> Move arch_interrupt_nmi_exit_prepare() to after the irqentry_nmi_exit()
-> block, so that:
->
->    irqentry_nmi_exit()                 // __nmi_exit() -> nmi_count--, in_nmi()=false
->    arch_interrupt_nmi_exit_prepare()   // now safe to restore soft mask state
->
-> The instrumentation inside irqentry_nmi_exit() now executes while
-> in_nmi() is still true (nmi_count not yet decremented), but
-> irq_soft_mask is still IRQS_ALL_DISABLED (NMI-entry value), so
-> arch_local_irq_restore() is never called with mask=0 from that path.
-> After __nmi_exit() returns, arch_interrupt_nmi_exit_prepare() restores
-> the pre-NMI soft mask and irq_happened, which is the correct state for
-> the rfid back to the interrupted context.
->
-> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-> Closes: https://lore.kernel.org/all/d4cccba9-ce5c-424b-864c-2248fb0d99e6@linux.ibm.com/
-> Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
-> Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-> ---
+Thanks,
+Jyoti
 
-
-This fixes reported problem.
-
-Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-
-Regards,
-
-Venkat.
-
-
->   arch/powerpc/include/asm/interrupt.h | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
-> index 1b45a49e9bed..56f855c6f07e 100644
-> --- a/arch/powerpc/include/asm/interrupt.h
-> +++ b/arch/powerpc/include/asm/interrupt.h
-> @@ -301,7 +301,6 @@ interrupt_handler long func(struct pt_regs *regs)			\
->   		state = irqentry_nmi_enter(regs);			\
->   	}								\
->   	ret = ____##func (regs);					\
-> -	arch_interrupt_nmi_exit_prepare(regs, &nmi_state);		\
->   	if (mfmsr() & MSR_DR) {						\
->   		/* nmi_exit if relocations are on */			\
->   		irqentry_nmi_exit(regs, state);				\
-> @@ -317,6 +316,7 @@ interrupt_handler long func(struct pt_regs *regs)			\
->   	} else {							\
->   		irqentry_nmi_exit(regs, state);				\
->   	}								\
-> +	arch_interrupt_nmi_exit_prepare(regs, &nmi_state);		\
->   									\
->   	return ret;							\
->   }									\
 
