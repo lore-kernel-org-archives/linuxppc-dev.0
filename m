@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-28523-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28524-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7BD4DCA5FAD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 19:34:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27DD8CA5FA7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 19:34:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hvSyf6TdZz3bgl;
-	Wed, 30 Sep 2026 05:33:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hvSyh3JvGz3bcj;
+	Wed, 30 Sep 2026 05:33:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790710410;
-	cv=none; b=BxVvlCrYM6C+OFX6J3GRyK5oaQnm0srJTNsn2lfJzU1I1vKMyA/rhNVHwbBZQZ3oVhzNxgFQLaPrCpGRg9wkqby7ialI/XnRiYY2+3c89KASgXR2VjmM0zFyl9hvpLI7/kjXURtgXe517drJQkmBrKDbWDr1ZyK5EKjoTEOs/PAUGu9Ic3VRhSNNB7niFxRoDIwLMjHvyZqn6PIGKu09sXLIfB921X0f/oYkziYL/9Td2RCuoNc8YJtV7NXvMph2Tk0kC4xtRwwC659PT4TCVReLh6xUiu7M36s9SerLyt7sZYonuYpvWGmhXjz5zZKlD6M3v5ifx7Sk6m1/7boogw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790710412;
+	cv=none; b=PdZ00SYzvaj7E8OiJHW0DdZoQ5mY09inlQ+AYW/n+5/5QEUHsVnJbRBBO8OodzNeIgWdxbXveR49azAnYfknt3Doi5PwJxavD/vSY85fb8JHHi+VoIDg/GRb55OXSRkEytAiojY2NyP4Ue6dxh4mSgO197eL1athCIrZi/OblhxsVY9RJAB26r8wXRYdndgxS+NwfrSuBk/+Eg3yaoCfD/8oEKD2YUXRZ479I+vWBqAkiaRhbT8nVvfiDwVol41GVin86buCTw4PGmWKZoFWWEqaAc9gwKMUZJcIDXDGBpIxZtOhmAmdNrD6TZlg9rmxkKLy8xsD9f6vS3UHrQ0Keg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790710410; c=relaxed/relaxed;
-	bh=u9z8mTNCN4kE32jHaTJ50+ARXeU9aFNYeT2Nh96nVQs=;
+	t=1790710412; c=relaxed/relaxed;
+	bh=+Wptv1o52idotsZjLG6oFQkbThTFVLdtCXaQ12BffWY=;
 	h=Subject:From:To:Cc:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=m3L3OdDIofLB6jKfgUpj+F3nOfuXz2VP/r2WXuOmAHIyD9CRCP9vAQdn/dW4CNkDwo2PUYFsQ2epI3DQ7LguFFK4P39GYd+CCAILnkPrjkuQLX4Mvb+LpW9qrvTG+BFoAsMayhOvjW7dnaL67xlDOp5GAPHgT8Gtkg7HW4Sz2uFm8eTwhNUqLrFj07M7No5JsmJws1Wp9MqK+FNyif4VoP35syZ+Molx3R2E5idQuPtA/Z23/lgJQPG6JaJvTY8Lwk/k/45c19V2MY7FpRZuj4O9IIr4vT7JfbzM5Qe3mLizIqulw39dn5vKU1bVjmsZxfAJC6TSxIfj5EbDGQSJkA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F2mtvfnb; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:MIME-Version; b=Uj4VHERhTG2oiXH40JKBf1z0jc+UICEVhSZQNp8/031cETWfl/hMY6gml3qbFyhucSsgjN/ig70VoWnBJtF3E0g8GzzIlwwhHnLVG8aa8TM6UChJf8fHMvYU6rXb7iifUXFPx5Ab7i4R9VbEFy2jMMGQ46E4KUzPMPL2RIUotuOIlfod4FWUZfpzKgdJit/XVGraXnsTzSnX0ZlOSFqREgLVyhMz0W/5G1m04axHBOLbKosD7GUU2A5MiLd5h54r2LfAt8IKtawl/oiDW4sheDfgHEk/QbUv3b2JBeQNkbESSdTH8m008rf01TYBFB/Hk3PFfjftRHDrQIS3zN5ETw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UhWX6jC4; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F2mtvfnb;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UhWX6jC4;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvSyb516Dz3bcj
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2026 05:33:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvSyd46RCz3bfF
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2026 05:33:29 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id B96D841833;
-	Tue, 29 Sep 2026 19:33:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB0541F00898;
-	Tue, 29 Sep 2026 19:33:24 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 2798A4043E;
+	Tue, 29 Sep 2026 19:33:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3695D1F000FF;
+	Tue, 29 Sep 2026 19:33:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790710405;
-	bh=u9z8mTNCN4kE32jHaTJ50+ARXeU9aFNYeT2Nh96nVQs=;
+	s=k20260515; t=1790710407;
+	bh=+Wptv1o52idotsZjLG6oFQkbThTFVLdtCXaQ12BffWY=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=F2mtvfnbGWAVIsre/OqBzEc+nU8tA8JOgTe2CMkG/QzpEGjtcmHaaXbUcDHANSL0X
-	 HyCHZ6E6T+kDCX0vccR0sMg7pOtVrMVWIGhRfyGERgGy/jG80yTErpazO13HVyGmwB
-	 DVp1DcXZiIdD0S6Kpg82JeXKqmdtCJUBHPKeLZxZv9wzPWwcWcl7bf77+SXL8fVJg9
-	 NpBsqiUmLZCX/WIr1f1vgglKy4gfZySjy5BYWqeKBkSqUa6qFm74CsViakY/2xs3lf
-	 E4oG4Cp3RC0GVqjGS0YLgq0GTwHp0YVISlwQWpAAN59vv5WcuM0amWIXMGMK8Xiz8X
-	 5abzidWV6WXaQ==
-Subject: Re: [PATCH net-next v7 11/15] ibmveth: Add per-queue RX and TX
- statistics collection
+	b=UhWX6jC4uDKgikStvrRkP+/h68ddkbMpWjqD/Y9FEXpbyx07SZjH9ecT6zITn15a3
+	 V3bxf6irkM26T4/sEgUzzQ3uYKz4Y8/so7CqoEb6dIp0sftf/KFKqGVrd/Vt2F7GXW
+	 cAhvEZ3EC4hhAePXUJEFtv3UzqfIO1CMgIcbwChKg9dmViDuhjRM9bCTui/UIhcDG1
+	 E/mRmZwc/19TYEBybZojYZxYDW8IEtY6RrvxrAIDN7ksboECxwLjb4K4sG9m5wqs5q
+	 fVgusMeFq0Xk9P1zv4xmpmIq4RYOzlMsjuYoCLzB1NSbKqfV2FvEBFlUMzofAcgQSd
+	 EZDJDs7kpAOeQ==
+Subject: Re: [PATCH net-next v7 12/15] ibmveth: Report MQ-aware RX counts in
+ ethtool get_channels
 From: netdev-bot+sashiko@kernel.org
 To: mmc@linux.ibm.com
 Cc: netdev@vger.kernel.org, davem@davemloft.net, kuba@kernel.org,
@@ -54,13 +54,13 @@ Cc: netdev@vger.kernel.org, davem@davemloft.net, kuba@kernel.org,
  mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, haren@linux.ibm.com,
  ricklind@linux.ibm.com, davemarq@linux.ibm.com, bjking1@linux.ibm.com,
  shaik.abdulla1@ibm.com
-Date: Tue, 29 Sep 2026 19:33:24 +0000
-Message-ID: <179071040441.434549.12197532910792934361@kernel.org>
+Date: Tue, 29 Sep 2026 19:33:25 +0000
+Message-ID: <179071040580.434549.9696275612271032055@kernel.org>
 In-Reply-To:
- <b839ded0f86ec9e064261a99135ae1ad8aa4ac58.1790319558.git.mmc@linux.ibm.com>
+ <9560e3e3b0fa2e90312660d6f32dc54d1073f8a5.1790319558.git.mmc@linux.ibm.com>
 References:
- <b839ded0f86ec9e064261a99135ae1ad8aa4ac58.1790319558.git.mmc@linux.ibm.com>
-X-sashiko-severity: Medium
+ <9560e3e3b0fa2e90312660d6f32dc54d1073f8a5.1790319558.git.mmc@linux.ibm.com>
+X-sashiko-severity: Low
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -77,256 +77,185 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 
-Thank you for your contribution! Sashiko AI review found 4 potential
-issue(s) to consider.
+Thank you for your contribution! Sashiko AI review found more severe
+issue(s) in other patches of this series. This mail is only an FYI, in case
+you want to address the nit picks below when you respin.
 
-Critical: 0 · High: 0 · Medium: 4 · Low: 0
+Low priority / nit picks for your consideration:
 
-If you believe none of the issues are legitimate, please reply to each
-issue of Medium severity or higher and explain why the AI is wrong.
-If any of them are legitimate and you plan to respin, please let patchwork
-know by including "pw-bot: cr" as a separate line at the end of your reply
-(one such reply per series is enough).
+- [Low] The commit message says "This patch only reports", and the
+  subject covers only get_channels().
+- [Low] This patch switches ibmveth_get_channels() to report rx_count
+  from adapter->num_rx_queues (line 2558) instead of…
+- [Low] At this commit, ibmveth_get_channels() computes max_rx only from
+  adapter->multi_queue (line 2554-2557) and ignores adapter->mq_fallback.
 
-- [Medium] Three of the new per-queue ethtool -S keys duplicate
-  statistics that already have a standard uAPI, which the networking-…
-- [Medium] The new no_buffer_retired carry in
-  ibmveth_update_rx_no_buffer() only notices a page change when the…
-- [Medium] ibmveth_get_queue_stats_tx() (line 3446) and
-  ibmveth_get_base_stats() (line 3498) report…
-- [Medium] net: stats: Torn reads of related drop counters cause massive
-  spikes
+Pre-existing issues:
+- [Low] In ibmveth_set_channels() at this commit, when
+  ibmveth_allocate_tx_ltb() fails in the grow loop (line 2593), the code…
 
 --
 
-ibmveth: Add per-queue RX and TX statistics collection
+ibmveth: Report MQ-aware RX counts in ethtool get_channels
 
-This patch moves the ibmveth RX and TX counters into per-queue structs
-that are allocated at probe. Packets, bytes and drops are reported
-through netdev_stat_ops and ndo_get_stats64(), and new per-queue
-ethtool -S keys are added. A per-queue no_buffer_retired carry is also
-added so the PHYP no-buffer drop count stays monotonic across reopen and
-queue reuse.
+This commit changes ibmveth_get_channels() to report max_rx as
+IBMVETH_MAX_RX_QUEUES when multi_queue is set (otherwise 1). It also
+reports rx_count from the driver's published num_rx_queues. A check is
+added to ibmveth_set_channels() that rejects any request changing rx_count
+with -EOPNOTSUPP.
 
 > diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-> index 3f31793645a31..2575a7c11afba 100644
+> index 2575a7c11afba..cd2e5e4a81fea 100644
 > --- a/drivers/net/ethernet/ibm/ibmveth.c
 > +++ b/drivers/net/ethernet/ibm/ibmveth.c
-
-[ ... ]
-
-> @@ -75,32 +76,101 @@ module_param(old_large_send, bool, 0444);
-
-[ ... ]
-
-> +/*
-> + * Only counters with no home in the standard interfaces belong here.
-> + * packets, bytes and drops are reported through netdev_stat_ops.
-> + */
-> +static const struct ibmveth_qstat ibmveth_rx_qstat_keys[] = {
-> +	{ "rx%d_interrupts", IBMVETH_RXQ_OFF(interrupts) },
-> +	{ "rx%d_polls", IBMVETH_RXQ_OFF(polls) },
-> +	{ "rx%d_large_packets", IBMVETH_RXQ_OFF(large_packets) },
-> +	{ "rx%d_invalid_buffers", IBMVETH_RXQ_OFF(invalid_buffers) },
-> +	{ "rx%d_no_buffer_drops", IBMVETH_RXQ_OFF(no_buffer_drops) },
->  };
->  
-> +static const struct ibmveth_qstat ibmveth_tx_qstat_keys[] = {
-> +	{ "tx%d_large_packets", IBMVETH_TXQ_OFF(large_packets) },
-> +	{ "tx%d_send_failures", IBMVETH_TXQ_OFF(send_failures) },
-> +	{ "tx%d_checksum_offload", IBMVETH_TXQ_OFF(checksum_offload) },
-> +};
-
-[Severity: Medium]
-Do three of these new per-queue keys duplicate counters that already
-have a standard qstats uAPI?
-
-ibmveth_start_xmit() only bumps tx%d_checksum_offload for
-CHECKSUM_PARTIAL skbs where the device is asked to fill in the checksum
-(IBMVETH_BUF_NO_CSUM | IBMVETH_BUF_CSUM_GOOD). That looks like
-tx-needs-csum (netdev_queue_stats_tx.needs_csum).
-
-tx%d_large_packets counts GSO skbs handed to PHYP for large send. That
-looks like tx-hw-gso-packets (hw_gso_packets).
-
-rx%d_no_buffer_drops counts frames PHYP dropped because no receive
-buffers were posted. That matches rx-hw-drop-overruns ("transient lack
-of resources, such as buffer space").
-
-ibmveth_get_queue_stats_rx(), ibmveth_get_queue_stats_tx() and
-ibmveth_get_base_stats() only fill packets, bytes, hw_drops and
-alloc_fail. So needs_csum, hw_gso_packets and hw_drop_overruns stay
-unset, and the same data goes out as private strings instead.
-
-Could these be reported through netdev_stat_ops instead? The comment
-above ibmveth_stats[] says ethtool -S key names are ABI. This is still
-the case at the end of the series.
-
-The commit message also says:
-
-    ethtool -S keeps only the driver-specific keys
-    that have no standard equivalent: interrupts, polls, large_packets,
-    invalid_buffers and no_buffer_drops per RX queue; large_packets,
-    send_failures and checksum_offload per TX queue.
-
-Is that accurate, given the mappings above?
-
-[ ... ]
-
-> @@ -1028,7 +1155,18 @@ static void ibmveth_update_rx_no_buffer(struct ibmveth_adapter *adapter,
->  	p = adapter->buffer_list_addr[queue_index] + 4096 - 8;
->  	drops = be64_to_cpup(p);
->  
-> -	adapter->rx_no_buffer = drops;
-> +	/*
-> +	 * PHYP's buffer-list page counter is absolute for that page. A new
-> +	 * page (reopen / queue reuse after -L) starts near zero; fold the
-> +	 * previous absolute into this queue's retired carry so sums stay
-> +	 * monotonic. Both fields belong to the queue being updated, so this
-> +	 * stays single-writer under the queue's replenish_lock.
-> +	 */
-> +	qstats = &adapter->rx_qstats[queue_index];
+> @@ -2546,11 +2546,16 @@ static void ibmveth_get_ethtool_stats(struct net_device *dev,
+>  static void ibmveth_get_channels(struct net_device *netdev,
+>  				 struct ethtool_channels *channels)
+>  {
+> +	struct ibmveth_adapter *adapter = netdev_priv(netdev);
 > +
-> +	if (drops < qstats->no_buffer_drops)
-> +		qstats->no_buffer_retired += qstats->no_buffer_drops;
-> +	qstats->no_buffer_drops = drops;
->  }
+>  	channels->max_tx = ibmveth_real_max_tx_queues();
+>  	channels->tx_count = netdev->real_num_tx_queues;
+>  
+> -	channels->max_rx = netdev->real_num_rx_queues;
+> -	channels->rx_count = netdev->real_num_rx_queues;
+> +	if (adapter->multi_queue)
+> +		channels->max_rx = IBMVETH_MAX_RX_QUEUES;
+> +	else
+> +		channels->max_rx = 1;
 
-[Severity: Medium]
-Can a concurrent reader count the same drops twice here?
+[Severity: Low]
+Should max_rx also check adapter->mq_fallback here?
 
-The rx_no_buffer case sums no_buffer_drops over every rx_qstats[] slot
-in one pass. It then sums no_buffer_retired over every slot in a
-second pass. ibmveth_update_rx_no_buffer() does the carry as two
-separate stores: it adds the old absolute X to no_buffer_retired, and
-then overwrites no_buffer_drops with the new, smaller reading.
+Firmware can reject MQ in two places. One is a subordinate queue
+registration in ibmveth_register_all_queues() returning -EOPNOTSUPP. The
+other is ibmveth_replenish_task() seeing H_FUNCTION. In both cases only
+mq_fallback is latched:
 
-Suppose that carry runs for a queue after the first pass has read that
-queue's no_buffer_drops, but before the second pass reads its
-no_buffer_retired. Then X lands in both sums, and rx_no_buffer jumps
-by a whole page's worth of drops. The next ethtool -S read falls back
-by the same amount. A tool computing a drop rate therefore sees a
-burst followed by a negative rate.
+    if (rc == -EOPNOTSUPP)
+        adapter->mq_fallback = true;
 
-Both passes walk all IBMVETH_MAX_RX_QUEUES slots. The window for each
-queue is therefore a full walk of the array, not just two adjacent
-loads.
+multi_queue and num_rx_queues are only updated when the next
+ibmveth_open() calls ibmveth_apply_mq_fallback(). Until then, ethtool -l
+keeps reporting max_rx = IBMVETH_MAX_RX_QUEUES and the pre-fallback
+rx_count.
 
-The reader takes no replenish_lock, and no seqcount pairs the two
-fields. The plain u64 argument in the commit message covers tearing of
-a single field on PPC64. It does not cover consistency between two
-fields that together form one counter.
+The commit message says a later patch in the series caps max_rx once
+mq_fallback latches. The final version of ibmveth_get_channels() does
+check !adapter->mq_fallback, so this is resolved by the end of the series.
 
-ibmveth_get_queue_stats_rx() and ibmveth_get_base_stats() add the same
-pair in one expression. That narrows the window without closing it,
-and depending on load order the error can go either way.
+> +	channels->rx_count = ibmveth_get_num_rx_queues(adapter);
 
-Is the patch relying on rtnl to keep every carry away from these
-readers? If so, could that be stated in the struct
-ibmveth_rx_queue_stats comment? Replenish from ibmveth_poll() runs
-without rtnl. If not, would it be simpler to read the pair together
-under the queue's replenish_lock? Another option is to have the writer
-maintain a single monotonic total that the readers load once.
+[Severity: Low]
+Can this rx_count disagree with netdev->real_num_rx_queues after a failed
+open?
 
-[Severity: Medium]
-Can the old page's drops be lost when the first reading on the new page
-is not smaller than the old final value?
-
-Each open gets a fresh get_zeroed_page() buffer list from
-ibmveth_alloc_rx_queues(), so PHYP's counter in the last 8 bytes of the
-new page starts at zero. On close, the harvest stores the old page's
-final value X in no_buffer_drops but does not move it into
-no_buffer_retired.
-
-On the next open:
+ibmveth_open() applies the fallback before it allocates anything:
 
 ibmveth_open()
-  ibmveth_alloc_rx_queues()        /* new zeroed page */
-  ibmveth_register_rx_queues()     /* PHYP owns it, no buffers posted */
-  ibmveth_replenish_task()
-    ibmveth_update_rx_no_buffer()  /* first read, Y */
+    ibmveth_apply_mq_fallback(adapter);
+        adapter->multi_queue = false;
+        ibmveth_publish_num_rx_queues(adapter, 1);
+        /* real_num_rx_queues is set later in open after resources exist. */
+    ...
+    rc = ibmveth_alloc_filter_list(adapter);
+    if (rc)
+        goto out;
+    ...
+    rc = ibmveth_register_rx_queues(adapter, mac_address);
+    if (rc)
+        goto out_free_buffer_pools;
 
-Frames that arrive between registration and the first replenish count as
-no-buffer drops on the new page. If Y >= X, the decrease test does not
-fire and X is overwritten. rx_no_buffer and rx-hw-drops then report
-R + Y instead of R + X + Y. When X is small, this seems likely on every
-reopen.
+    rc = netif_set_real_num_rx_queues(netdev,
+                      ibmveth_get_num_rx_queues(adapter));
 
-A queue that ethtool -L removes and then adds back hits the same
-problem. ibmveth_scale_down_rx_queues() (from "ibmveth: Implement
-incremental MQ RX queue resize" in this series) harvests the queue the
-same way, and the re-added queue gets a new zeroed page.
+If any allocation or registration step fails, open returns with
+num_rx_queues = 1 and multi_queue = false. real_num_rx_queues keeps its
+earlier MQ value (for example 8 from probe).
 
-There also seems to be a second window. ibmveth_close() harvests before
-the page is released:
+In that state ethtool -l reports rx_count = 1 and max_rx = 1. The sysfs
+rx-* queues and the per-queue qstats iteration still show 8 RX queues.
+This lasts until the next successful open.
 
-	spin_lock_irqsave(&rxq->replenish_lock, flags);
-	ibmveth_update_rx_no_buffer(adapter, i);
-	spin_unlock_irqrestore(&rxq->replenish_lock, flags);
-	}
-	ibmveth_free_all_queues(adapter);
+The comment in ibmveth_probe() says the counts are synced "so down-state
+readers agree with adapter->num_rx_queues / ethtool -l". This path does
+not seem to keep that promise.
 
-Scale-down likewise harvests before h_free_logical_lan_queue(). PHYP
-still owns the page at that point, so any drops it adds after the
-harvest read are never seen.
+The qstats device totals stay exact, because ibmveth_get_base_stats() and
+ibmveth_get_queue_stats_rx() both split on real_num_rx_queues. The root
+cause is the error handling in ibmveth_open() from earlier in the series.
+This patch is what makes the mismatch visible through ethtool -l.
 
-The driver allocates and retires these pages itself. Could the carry be
-applied explicitly at retirement, after deregistration (something like
-retired += drops; drops = 0), instead of being inferred from a decrease?
+>  }
+>  
+>  static int ibmveth_set_channels(struct net_device *netdev,
+> @@ -2561,6 +2566,14 @@ static int ibmveth_set_channels(struct net_device *netdev,
+>  		     goal = channels->tx_count;
+>  	int rc, i;
+>  
+> +	/*
+> +	 * RX channel resize is implemented in a later patch; reject any
+> +	 * request that changes rx_count. Read-modify-write TX adjustments
+> +	 * submit the current rx_count and proceed.
+> +	 */
+> +	if (channels->rx_count != ibmveth_get_num_rx_queues(adapter))
+> +		return -EOPNOTSUPP;
 
-This code is unchanged at the end of the series.
+[Severity: Low]
+The commit message says:
 
-[ ... ]
+    This patch only reports. set_channels() still only adjusts tx_count, so
+    an RX channel request returns -EOPNOTSUPP if rx_count changes, while
+    read-modify-write TX requests pass through with the live rx_count.
 
-> @@ -3145,6 +3387,124 @@ static netdev_features_t ibmveth_features_check(struct sk_buff *skb,
+Is "This patch only reports" accurate? This check is new in this commit.
+Before it, ibmveth_set_channels() did not look at rx_count at all.
 
-[ ... ]
+On MQ firmware the old get_channels() reported max_rx as
+real_num_rx_queues (for example 8). A request like "ethtool -L eth0 rx 4
+tx 4" passed the core range check. The driver ignored rx, applied tx = 4
+and returned 0.
 
-> +static void ibmveth_get_queue_stats_tx(struct net_device *dev, int idx,
-> +				       struct netdev_queue_stats_tx *stats)
-> +{
-> +	struct ibmveth_adapter *adapter = netdev_priv(dev);
+With this patch the whole request fails with -EOPNOTSUPP, so the TX part
+is not applied either.
+
+Only the v7 changelog below the --- line says the check is new, and that
+text is dropped when the patch is applied. A later patch replaces this
+check with ibmveth_resize_rx_channels(). Still, bisect and blame will show
+this commit's message.
+
+Could the subject and body say that this patch also changes how
+ibmveth_set_channels() handles rx_count?
+
 > +
-> +	stats->packets = adapter->tx_qstats[idx].packets;
-> +	stats->bytes = adapter->tx_qstats[idx].bytes;
-> +	stats->hw_drops = adapter->tx_qstats[idx].dropped_packets;
-> +}
+>  	/* If ndo_open has not been called yet then don't allocate, just set
+>  	 * desired netdev_queue's and return
+>  	 */
 
-[Severity: Medium]
-Is dropped_packets the right source for tx-hw-drops?
+[Severity: Low]
+This is a pre-existing issue and was not introduced by this patch. Further
+down in ibmveth_set_channels(), is the error from a failed TX LTB
+allocation lost?
 
-netdev.yaml defines tx-hw-drops as packets that "arrived at the device
-but never left it". Most dropped_packets increments come from host-side
-paths that never reach ibmveth_send():
+    rc = ibmveth_allocate_tx_ltb(adapter, i);
+    if (!rc)
+        continue;
+    ...
+    goal = old;
+    old = i;
+    break;
+}
+rc = netif_set_real_num_tx_queues(netdev, goal);
 
-  - missing TX LTB in ibmveth_start_xmit()
-  - destination MAC equal to dev_addr in ibmveth_is_packet_unsupported()
-  - skb_checksum_help() failure
-  - skb->len > tx_ltb_size
-  - short copy into the LTB
+At that point goal is back to the current count. So
+netif_set_real_num_tx_queues() returns 0 and overwrites rc.
 
-These look like they belong in rtnl tx_dropped, which
-ibmveth_get_stats64() already fills from the same counter.
-ibmveth_get_base_stats() uses the same mapping for retired queues:
+The LTBs allocated so far are freed. ethtool -L tx N then reports success
+even though tx_count did not change.
 
-	tx->hw_drops += adapter->tx_qstats[i].dropped_packets;
-
-Separately, ibmveth_send() treats H_DROPPED as success:
-
-	if (ret != H_SUCCESS && ret != H_DROPPED) {
-		...
-		return 1;
-	}
-
-	return 0;
-
-As a result, ibmveth_start_xmit() adds frames that PHYP reports as
-dropped to packets and bytes. If H_DROPPED means the hypervisor
-discarded the frame, would the new tx-packets and tx-hw-drops pair
-misattribute it?
-
-The H_DROPPED handling is older than this patch. Exporting it through
-these qstat fields is new.
+These lines come from commit 10c2aba89cc053 (2022). Later in this series,
+the final ibmveth_set_channels() returns rc ? rc : -ENOMEM when
+real_num_tx_queues != want_tx, which fixes this.
 
 -- 
 Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/cover.1790319558.git.mmc%40linux.ibm.com
