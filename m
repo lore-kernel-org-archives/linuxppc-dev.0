@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-28501-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28502-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81B13CA5FA5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 14:24:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0E658C9832A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2026 14:26:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hvL6T486bz30Vv;
-	Wed, 30 Sep 2026 00:24:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hvL844FPJz30W9;
+	Wed, 30 Sep 2026 00:26:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790691889;
-	cv=none; b=awg8fzc98O79pm/6UqjFXPuUdYWwgJo7VAejwKSUv7apx8b8kKnCRIPbHxHKRLb5/A9UuMPAjOmXS+csZGZfFyXOpMxOifMSEQV0PA8WRzopSUwV5MIt4E8WaSZZrhbvivqus7W/ATRtlrZE1A3LkRWyieVILi5DVSBi7LjbhiJ3K8oYjnKn9cETeMYOzDZX+K55CFHiLpMgOAdsASmX0SvPGe/R3Rc0X8f/xrNsnn5tDrWYYdAUPi1CKTUxgSNdU0XDWJnCzfasW5W8Y1Fqkk6B2zuv6x4w0y3DiLPBDdi6gOzBtn+IZbpcCegXLipd8eQajgzL+TFoguqdbsowGA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790691972;
+	cv=none; b=A5xMAEjp9+AxpEOvTf5qaMG01udRhA+dmPBzq5SdES4Z9KbaKKsyM9qBR4OdMeP7GS4h5sa/eK8ObKLLJCPUTeIlW1xyaZsf9EZkIDvF77yz2Ndd0OmALJi5rKqmcVYOg+FzaXRv1qc5O+uWPYS/TaQcD7U+6P/si2dIYHoXlndNERqKaLLhFb+eGc0+jLaKyy1EP4SznX/QV2ZOdrjIq7EjfdQ8RLKMkjgePxV0PS1pXQiNgSsbCtbmI26h3TFhSBXE5etZ0Vvabab1INE8Shx8Z9drptVsJgO2UK3kJ7PVlvv8rUdUZCpegGh5g5qmkZXId9YJZg3yMgd1AFkbZA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790691889; c=relaxed/relaxed;
-	bh=S108zhyFgrWupBnxwjXeQHMSDadfxPXX2/f8wZjphW0=;
+	t=1790691972; c=relaxed/relaxed;
+	bh=8DMiTrHEuHAfAfHczM3479xqIi6gNKMUHt0Q9Yhupb0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=fzUgEQuoxgOJtGsER9pqH+sywe7eCcgJXwerD1bV+oqvhjFBzmgzLfubiK/faVrUuJ4piMm8rV5u4H6Cym9bfCoEPaZFprgDRD98kl034KMxdkGr8oDUPsgNG1gSficsYJ/LulkC0B2qq3cGV51XjcIJjTFnyT6QNhuW2140nRuCVIhJetKYGQHVtxPQUXi7I7p0osj9L1RqZlH1REJzNrPyOXk6AN67AChBiek2QpMVAjdkQOTimcrLKWejZdnWHQVZK+pdRbHBHpsjv+pRI3dpVtizIWssyyA2jLE5C1y2qF4c0+FbQB4Sbho3wQI44RS0ZqjyPaIsFZDivCVW4Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=FpGia1pU; dkim-atps=neutral; spf=pass (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=gS+zHw/826gt3zT2nuAhsc4bvb3VPx8BNEatWU2IHoPqIDHKIt8eEeLZvEZPgfK7TmAeohSZqbHrckubFphe67MLpflB0i7HixaYvigw0EBLGw4/ufZ44qZHZtKsiIeaFGm5mLry6OzcklUH1vC0Zu3ictFm+E52loEfUbHRPcZoBPowbfntjjLjQzWokU+kseZoCP9vUwlpHZrcCHI0F6zkQYJ9IhVAgZSPqlNQn0WbdAgPYLf4RwHBJlWOh/wsj9k4YHA1MFk2GFlBKgKjHiFNqZ8YVqWn58HsqLtr4nDU4/2DEb+AYdBf8O508/GIjc6fMrnxOJAB/ujqWul7Uw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=ErCl8NV5; dkim-atps=neutral; spf=pass (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=FpGia1pU;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=ErCl8NV5;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
 Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvL6S5YY2z30Vs
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2026 00:24:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvL835tmSz30Vy
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2026 00:26:11 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
 	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
 	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=S108zhyFgrWupBnxwjXeQHMSDadfxPXX2/f8wZjphW0=; b=FpGia1pUEKUyyLiJ/s77zVQByE
-	R2djtHe+L/OTqu+78ZMdMtGmyIsy+yF9m038TMkyVLXn3JdK6CNZGYTduvreLZfONkv0HVnaiXlYy
-	zphDLBzKbnF5kMyDV+voJnOSa5e0jLcPS8060S+BETsPDBGnBZEUtvEfPyMpxxRVSvcZtwi7uQT41
-	MeSeHUSurfKJHxl5ozVP+e/VKm5F1P05DsEHu3xDrklm7XlUxi9nQLYSIldqG8PbvnRsXoYFsi93f
-	h5+uGYBakygOCU0VOTcvd61E+kAGkuPWpJqwDBLmjY8mR294N7SuUq6CnqcirZ+pVcRo5vK5BRrF/
-	rP36JT0A==;
+	bh=8DMiTrHEuHAfAfHczM3479xqIi6gNKMUHt0Q9Yhupb0=; b=ErCl8NV51ZUSe5AJcfBmq4kN8P
+	2TLVoAo84HDsopf6r7NEQlOe3C7Ftiy7oukl5U6W+9fgjL5LUeJHnCopcsfjOkQjv/jDlVCv/glIf
+	zzwEMZsQV+VhHepotwgXSgbQmidrYM8GJVI6NcTln5piQvcQB87+OFq8Kve0FvVHAp61r4RGLqyiS
+	NrHJS9JuMKRMVwiHaSJ0rgKKVkmp05nkJ6E30/FzcBdxkybvkpPlgh4bLNChB0Bo4b05rSMhBb9nH
+	PTjWHeBqf4Ed0IsZeNByfu/OkyrsspUCx93ZO5w3XL4pWaTC9LyhBdNR5c6+nDd5hplWza8tCb8F9
+	HTPRZVbQ==;
 Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
 	by casper.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xBYl4-0000000E75a-3YGc;
-	Tue, 29 Sep 2026 14:24:38 +0000
+	id 1xBYmN-0000000E8Bs-340X;
+	Tue, 29 Sep 2026 14:25:59 +0000
 Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-	id B830C3006DD; Tue, 29 Sep 2026 16:24:36 +0200 (CEST)
-Date: Tue, 29 Sep 2026 16:24:36 +0200
+	id 48ABF3006DD; Tue, 29 Sep 2026 16:25:59 +0200 (CEST)
+Date: Tue, 29 Sep 2026 16:25:59 +0200
 From: Peter Zijlstra <peterz@infradead.org>
 To: Shivang Upadhyay <shivangu@linux.ibm.com>
 Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
@@ -60,11 +60,11 @@ Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
 	rostedt@goodmis.org, tamird@kernel.org,
 	thomas.weissschuh@linutronix.de, thuth@redhat.com,
 	yuxuan.zuo@outlook.com, sourabhjain@linux.ibm.com
-Subject: Re: [PATCH v2 3/6] objtool: Fix "can't find starting instruction"
- warnings on vmlinux
-Message-ID: <20260929142436.GB88198@noisy.programming.kicks-ass.net>
+Subject: Re: [PATCH v2 4/6] objtool/powerpc: Skip jump destination analysis
+ and unnanotated intra-function call warnings for --ftr-fixup
+Message-ID: <20260929142559.GC88198@noisy.programming.kicks-ass.net>
 References: <20260929055138.43489-1-shivangu@linux.ibm.com>
- <20260929055138.43489-4-shivangu@linux.ibm.com>
+ <20260929055138.43489-5-shivangu@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,40 +80,34 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260929055138.43489-4-shivangu@linux.ibm.com>
+In-Reply-To: <20260929055138.43489-5-shivangu@linux.ibm.com>
 
-On Tue, Sep 29, 2026 at 11:21:34AM +0530, Shivang Upadhyay wrote:
+On Tue, Sep 29, 2026 at 11:21:35AM +0530, Shivang Upadhyay wrote:
 > From: Sathvika Vasireddy <sv@linux.ibm.com>
 > 
-> Objtool throws a lot of can't find starting instruction warnings
+> Objtool is throwing unannotated intra-function call warnings
 > when run on vmlinux with --ftr-fixup option.
 > 
-> These warnings are seen because find_insn() function looks for
-> instructions at offsets that are relative to the start of the section.
-> In case of individual object files (.o), there are no can't find
-> starting instruction warnings seen because the actual offset
-> associated with an instruction is itself a relative offset since the
-> sections start at offset 0x0.
+> One such example:
 > 
-> However, in case of vmlinux, find_insn() function fails to find
-> instructions at the actual offset associated with an instruction
-> since the sections in vmlinux do not start at offset 0x0. Due to
-> this, find_insn() will look for absolute offset and not the relative
-> offset. This is resulting in a lot of can't find starting instruction
-> warnings when objtool is run on vmlinux.
+> vmlinux: warning: objtool: .text+0x3d94:
+>                         unannotated intra-function call
+> 
+> .text + 0x3d94 = c000000000008000 + 3d94 = c0000000000081d4
+> 
+> c0000000000081d4: 45 24 02 48  bl c00000000002a618
+> <system_reset_exception+0x8>
+> 
+> c00000000002a610 <system_reset_exception>:
+> c00000000002a610:       0e 01 4c 3c     addis   r2,r12,270
+>                         c00000000002a610: R_PPC64_REL16_HA    .TOC.
+> c00000000002a614:       f0 6c 42 38     addi    r2,r2,27888
+>                         c00000000002a614: R_PPC64_REL16_LO    .TOC.+0x4
+> c00000000002a618:       a6 02 08 7c     mflr    r0
+> 
+> This is happening because we should be looking for destination
+> symbols that are at absolute offsets instead of relative offsets.
 
-I'm confused; decode_instructions() iterates the section and inserts the
-instructions at the exact offset it finds them at. Therefore it should
-be able to find them again at that same offset, irrespective of the
-actual start, no?
-
-> +			if (func->len == 0 && is_notype_sym(func))
-> +				continue;
-> +
-> +			func_off = opts.ftr_fixup ?
-> +				func->offset - sec->sh.sh_addr : func->offset;
-
-function offset really should not depend on opts. It should work
-irrespective of any option, no?
-
+Again, confused. We run objtool on objects, this is pre-linking, there
+are no absolute offsets.
 
