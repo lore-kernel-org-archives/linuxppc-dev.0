@@ -1,77 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-28544-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28545-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4B83CA5FB1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 07:23:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54BD2CA5FC1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 08:54:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hvmkP0CTPz2yqT;
-	Wed, 30 Sep 2026 17:23:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790753036;
-	cv=none; b=oF6nw8iTFbrR0g3oKxVE/+0AlMrjJdgj8/Oa8YFii0pibQpTiIId/vuGOrxxD2vwAZOz1t1LZYnmVdUc79snruj37jhshFSMh8MTa5aqRsZPCFwQJeMURc28KWNowTRXgEk8lwJiJTWsUepErA9yjDHQ3eYNtjU6ECvFNGDHYVlqvE6lwu8kDwdU2P6Lo/mrmtdhBuvSJ6sFNB96OD1ZyubhXnn96M5U2XTAM5NOHtPz19k8eomTS+uARSSkk0VopaBjFCR3yho2m+hM4UUKmSXYE3p68T+6gpLLloiBApeR7/ohrlYyL3+fI5fC3bkqbAjRbrLO/P2qEkDJzfAvLQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hvpkV48zxz2yqT;
+	Wed, 30 Sep 2026 18:54:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.64
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790758450;
+	cv=none; b=fnJrKAWUclM5IfOtYHKPx3QUfQASuWsL2LXdhOqRihG9cA1uyWJ2qxxICV+6kSB8/PZpLyrPthPSn6kLQUB7Mx+3ooOiMthonytwdLFpKegbtpuCXrxqZ5OBuQO4EYTQC4DPnpt53/pGndV5vWG6ICT4pZ39FHSWycCnANqfDxarGuJV/VRMwalZ8UwzJvcbV+C0D+bW7q6Upoj+8vliTfKYsvg62xfeeDinKiobxrWvn5NUWvcmrCQ8hPMSnOia65vMMw8ykjlbruzEPBI8bsFAg/57IwV1Eyj2QSHfeL3pVFPJ8yaHrdHwfL3S+dE8qTxZ/Pnp27GjnkpbWJRm8Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790753036; c=relaxed/relaxed;
-	bh=Rgh/P9E68TQUVhTU5t6bXWPMihAslaaT359SYCVc+w4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=BZzZJI8PNE83kUmv1dZhOBLmY1A+MzdQSFQx0+0/Smv94ZP4TrajfFCkUBv5cGXgrpBFKeUZG8mSQd/SwFhFkSIS28XjJ3Xnz/pwgWTzNmycKo06zfBJ7ZW8YSE/Zblw5qSbZBaZjkySSKLAmnj4ffnU38jIUmd0e3cWdvFOox03p2jgyk1l3bJZT5dvfhOsyPIfNgs+l1MaaKwsjaLxSPKytZniUKxyiMJNKhOcOClSTbqicpId2xLf2r88zQK143/l4LQuUUF0T3bs+47gYmvcjLWF3JiU5RkMBrCvo/eQcvziUAx/e0acw5yKNYH2OQC9r+KRy74aeAjSzML42A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VdldZWzL; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1790758450; c=relaxed/relaxed;
+	bh=ASh1LR56EfBikA9krZgbBpC09kFpBHQaRZVce4w2D60=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=F2PTQOJQVZrRw3rsm5RNrzzTXMwRL9cNHVDv843ULC4gG9HVl2LS8E5mMXUU9PZGVhNM52RbuYd/2h00WQ9xWNVnlNeXmpy7iQdBvHdDa3L16TQr9KIuY+1ZyaGleZGNM5bOCfUUSQMW+wqWX4zLgUATmA8GPBRiF8okRDizj7FA17BtzzlgtS+JPd8IlHA9AILdqTA017cEz6ZjTij19aFFscE2XMSNrBkZ+aW1n+KzzOHB+sEtMNU2dxDniBKxU85GUiO5jhDDor7yQwJj9q119PCumVVA1p5wV5Ow3rmv3jMvCrXJa0TzCe/oI3vD1bVC55jHDG0poGHmw3m/7A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=chNeUyIU; dkim-atps=neutral; spf=pass (client-ip=95.215.58.64; helo=mta1.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VdldZWzL;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=chNeUyIU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.64; helo=mta1.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta1.migadu.com (out-64.mta1.migadu.com [95.215.58.64])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvmkM4D82z2xnQ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2026 17:23:55 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68TNZPrD1362658;
-	Wed, 30 Sep 2026 07:23:48 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=Rgh/P9E68TQUVhTU5t6bXWPMihAslaaT359SYCVc+
-	w4=; b=VdldZWzLa9noT7RNl33bEJJ3r9IlIlp6ofWBRIogm6TJXPuCP9Oh58/a7
-	IWF0mCwDTB8NbGXuqculnWxEP4h+U/+60p5pqT+5KSh0kdz1ald0zxKxMWV5+Z+3
-	WKL7WJ2wGWzZ2QWJb8a1WsdTDnLyC1kZ1dZpJ7C6W7tbMzw3yD8Nl8WKGcm4tpLM
-	26i3F8G7ITKoX9XNI8UTmLhxFHZybDU5+n88Vpu3gAAtZbcM7oeT0tBcZMkR5Si9
-	kwP/FeWvA+9d4vQhS0JoFYbSa64O9svpsxaEWbqxIwC9biFtuXaF2kVG1Mt0qYPb
-	lzrfNmUBq/CsLU7NxT697PSsvdvlg==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gx5s5bg04-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Wed, 30 Sep 2026 07:23:47 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68U4Z6m02549090;
-	Wed, 30 Sep 2026 07:23:47 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gxrrwdfxq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 30 Sep 2026 07:23:47 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68U7NfN930606002
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 30 Sep 2026 07:23:41 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0707120040;
-	Wed, 30 Sep 2026 07:23:41 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BC31D2004B;
-	Wed, 30 Sep 2026 07:23:38 +0000 (GMT)
-Received: from li-7bb28a4c-2dab-11b2-a85c-887b5c60d769.ibm.com.com (unknown [9.39.21.243])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 30 Sep 2026 07:23:38 +0000 (GMT)
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-To: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, lkp@intel.com
-Cc: sshegde@linux.ibm.com, christophe.leroy@csgroup.eu, tglx@kernel.org,
-        linux-kernel@vger.kernel.org, ritesh.list@gmail.com
-Subject: [PATCH] powerpc/irq: Fix undefined reference to irq_proc_emit_counts on CONFIG_PROC_FS=n
-Date: Wed, 30 Sep 2026 12:53:29 +0530
-Message-ID: <20260930072329.1110379-1-sshegde@linux.ibm.com>
-X-Mailer: git-send-email 2.54.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvpkP3Jbnz2y24
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2026 18:53:58 +1000 (AEST)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=x3C9eFMj4s4C+4L8a6ck2RX+0F5Vx+DLli30NnboIh4=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1790758418; v=1; x=1791363218;
+ b=chNeUyIUcRJiEYe/HzjokB4VaM4k1Frk2WTry5hanTEkS2tnrOXiHZfITnCCETi2CMJOaiMO
+ a9onNnLbzGsVFzfoiyTFg60d1ZrM5Cu4ff3Nybfa2HFrZRe8xX0droNFettjFw8mGlH/4wzy2hu
+ qR9xeDShk5xtbFQHMl2IcyM0=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id d8889dd78a97ab2f;
+	Wed, 30 Sep 2026 08:53:38 +0000
+X-Mizu-Trace-ID: d8889dd78a97ab2f
+X-Migadu-Flow: FLOW_OUT
+From: Lance Yang <lance.yang@linux.dev>
+To: songmuchun@bytedance.com
+Cc: maddy@linux.ibm.com,
+	rppt@kernel.org,
+	akpm@linux-foundation.org,
+	david@kernel.org,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	chleroy@kernel.org,
+	ritesh.list@gmail.com,
+	sshegde@linux.ibm.com,
+	ljs@kernel.org,
+	liam@infradead.org,
+	vbabka@kernel.org,
+	surenb@google.com,
+	mhocko@suse.com,
+	qi.zheng@linux.dev,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org,
+	muchun.song@linux.dev,
+	Lance Yang <lance.yang@linux.dev>
+Subject: Re: [PATCH v3 2/6] mm/sparse-vmemmap: support device DAX in common vmemmap path
+Date: Wed, 30 Sep 2026 16:53:29 +0800
+Message-ID: <20260930085329.17337-1-lance.yang@linux.dev>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20260929053231.66085-3-songmuchun@bytedance.com>
+References: <20260929053231.66085-3-songmuchun@bytedance.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,79 +83,197 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTMwMDAyOCBTYWx0ZWRfX8KXLeI23TItI
- vf8QOutZIiKHbJ4TyeYhb9CZCVwq2lwkcckZFl9pvl+F+BoBL11prAJSJyyjUYIHD+9DpsbXHmV
- SMyYl/BTIjBmMaKJWHQVKbmYP6m+oO4=
-X-Authority-Analysis: v=2.4 cv=HJ5WhYtv c=1 sm=1 tr=0 ts=6abcb904 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8 a=QyXUC8HyAAAA:8 a=VnNF1IyMAAAA:8
- a=ZMhcdLeJ7nKILgKDWkkA:9
-X-Proofpoint-GUID: lLCbzJ3FNlQlj1S3o4Z0yMYfdz5pP7iF
-X-Proofpoint-ORIG-GUID: fZmjCMdk3c29WUBtg3dAATc3WYWte8VJ
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTMwMDAyOCBTYWx0ZWRfX1QpDO4aPN4y1
- N/fqj4vtlzqCfHj8xvQxhhOj6h99vHlpupuxVJh1EXGdCSsylETqMs6LroLM0TfTe6Xp4inNuyn
- EfwXNswVdpO/xw8lhWuu359qRXfBeJnZVPlpXr/dh2v9DHjdkud9JkZD9PmO4wf3GnEGkcJqraz
- Lb/PIshVddXNpQjFXLa0weVuJrCbxsYq8ceH8ryJ5rsNQQXUTUnG7WOSmlLroWXgzCv7vd+dhuB
- GCM36ZK52Jm60M0VrTZYwLjDgsag1ckKE+sYj9dy0ifT5jCiajCx3ijXjAANz3E/+66y4sepbHF
- 2M5zXniRegGcxhBZk190ps9VrpSr+WdoBuXCKAOn6lT6t5rvCe9aBFjY5i3Dd4cqF7Tz2JugR4s
- hC9AK4lmhsrUQVDa26HJK2QojaKw3hFT2ENCfH+Mo+iMCG7T4Fn/egat/W2SHz9TVgBhFiT66OY
- mu+jPP4dHFa9Ybjp0gQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-29_05,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 suspectscore=0 bulkscore=0 clxscore=1015 lowpriorityscore=0
- spamscore=0 impostorscore=0 phishscore=0 priorityscore=1501 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609300028
 
-kernel test robot reported a randconfig failure due to below error.
 
- ld.lld: error: undefined symbol: irq_proc_emit_counts
-    referenced by irq.c:116 (arch/powerpc/kernel/irq.c:116)
-                  arch/powerpc/kernel/irq.o:(arch_show_interrupts) in archive vmlinux.a
+On Tue, Sep 29, 2026 at 01:32:27PM +0800, Muchun Song wrote:
+>The common vmemmap population path cannot yet handle optimized Device DAX
+>mappings on its own. It uses pfn_to_zone() to find the shared tail page,
+>but Device DAX populates its vmemmap at runtime before the ZONE_DEVICE span
+>is initialized.
+>
+>Teach the common path to use device_zone() for runtime optimized vmemmap
+>population while retaining pfn_to_zone() for early boot. This allows the
+>same path to support both early boot mappings and Device DAX.
+>
+>The backing PFN supplied by the Device DAX-specific population path is no
+>longer used, allowing the redundant lookup and population code to be
+>removed later.
+>
+>Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+>Acked-by: Qi Zheng <qi.zheng@linux.dev>
+>---
+>v3:
+>- Collect Acked-by from Qi Zheng
+>
+>v2:
+>- Expand comments around slab initialization to explain zone lookup and
+>  page refcounting (suggested by Qi Zheng)
+>---
+> mm/sparse-vmemmap.c | 64 +++++++++++++++++++++++++--------------------
+> 1 file changed, 35 insertions(+), 29 deletions(-)
+>
+>diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
+>index 8219abc6c3e5..ee4c113ca938 100644
+>--- a/mm/sparse-vmemmap.c
+>+++ b/mm/sparse-vmemmap.c
+>@@ -237,18 +237,43 @@ static __meminit void *vmemmap_alloc_pte(unsigned long pfn, int node,
+> 	struct page *page;
+> 	const unsigned int order = pfn_to_section_compound_order(pfn);
+> 
+>-	/*
+>-	 * Device DAX still relies on vmemmap_populate_compound_pages() for
+>-	 * head/first-tail allocation and tail-page reuse.
+>-	 */
+> 	if (!vmemmap_optimizable_pfn(pfn))
+> 		return vmemmap_alloc_block_buf(PAGE_SIZE, node, altmap);
+> 
+>-	zone = pfn_to_zone(pfn, node);
+>+	/*
+>+	 * Before slab is available, vmemmap optimization is used for early
+>+	 * system RAM, whose zone can be determined from the PFN.
+>+	 *
+>+	 * Once slab is available, only ZONE_DEVICE memory reaches this
+>+	 * optimized population path. Its zone span has not been initialized
+>+	 * while its vmemmap is being populated, so pfn_to_zone() cannot be
+>+	 * used. Obtain ZONE_DEVICE directly from the node instead.
+>+	 */
+>+	zone = slab_is_available() ? device_zone(node) : pfn_to_zone(pfn, node);
+> 	page = vmemmap_shared_tail_page(order, zone);
+> 	if (!page)
+> 		return NULL;
+> 
+>+	/*
+>+	 * During early vmemmap population, the shared tail vmemmap backing
+>+	 * page is allocated from memblock before its struct page can safely
+>+	 * participate in page refcounting. Therefore, no reference can be
+>+	 * held for each shared PTE mapping, and the mappings must be unshared
+>+	 * before the vmemmap is depopulated.
+>+	 *
+>+	 * Once slab is available, the shared backing page is allocated from
+>+	 * the buddy allocator and can be refcounted. Hold one reference for
+>+	 * each shared PTE mapping. The architecture vmemmap teardown drops
+>+	 * the reference through __free_pages() when removing the mapping,
+>+	 * preventing the backing page from being freed while it is shared.
+>+	 *
+>+	 * The backing page may be shared by enough PTE mappings to exhaust
+>+	 * the positive range of its reference count. Stop populating the
+>+	 * vmemmap if another reference cannot be acquired.
+>+	 */
+>+	if (slab_is_available() && !try_get_page(page))
+>+		return NULL;
 
-This happens when CONFIG_PROC_FS=n, since irq_proc_emit_counts is
-defined only when it is true. Though it is a rare config, but it is a
-possible one.
+BTW, shouldn't __add_pages() undo the earlier sections on a population
+failure? Say the first section is added successfully, but populating the
+next one fails, e.g. due to an allocation failure:
 
-Fix it by gating against the config. arch_show_interrupts() is called only by
-irq_seq_show() which is compiled when CONFIG_PROC_FS=y. So keeping the config
-gating is sufficient.
+void *memremap_pages(struct dev_pagemap *pgmap, int nid)
+{
+...
+	const int nr_range = pgmap->nr_range;
+	int error, i;
+...
+	pgmap->nr_range = 0;
+	error = 0;
+	for (i = 0; i < nr_range; i++) {
+		error = pagemap_range(pgmap, &params, i, nid);
+		if (error)
+			break;
+		pgmap->nr_range++;
+	}
 
-Fixes: fbb22ceaaf8f ("powerpc/irq: Make irqstats array based")
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202609271531.8kf2NTjK-lkp@intel.com/
-Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
----
- arch/powerpc/kernel/irq.c | 2 ++
- 1 file changed, 2 insertions(+)
+	if (i < nr_range) {
+		memunmap_pages(pgmap);
+		pgmap->nr_range = nr_range;
+		return ERR_PTR(error);
+	}
+...
+}
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index bce546931a13..9d23ae0fa076 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -122,6 +122,7 @@ void inc_irq_stat_and_enable(enum irq_stat_counts which)
- 	set_bit(which, irq_stat_count_show);
- }
- 
-+#ifdef CONFIG_PROC_FS
- int arch_show_interrupts(struct seq_file *p, int prec)
+We still need to undo the sections already added in the failed range,
+though ... memunmap_pages() won't touch those, since it only removes
+completed ranges.
+
+If the range starts at a section boundary, we'd hit -EEXIST in
+fill_subsection_map() on retry while those subsection bits are still set.
+
+The old DAX path had this issue too. Could we roll back [start_pfn, pfn)
+in __add_pages() as a separate fix? Something like this:
+
+---8<---
+diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index 796af1028ee2..16a0a2c885bc 100644
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -380,6 +380,7 @@ EXPORT_SYMBOL_GPL(pfn_to_online_page);
+ int __add_pages(int nid, unsigned long pfn, unsigned long nr_pages,
+ 		struct mhp_params *params)
  {
- 	const struct irq_stat_info *info = irq_stat_info;
-@@ -155,6 +156,7 @@ int arch_show_interrupts(struct seq_file *p, int prec)
- #endif
- 	return 0;
++	const unsigned long start_pfn = pfn;
+ 	const unsigned long end_pfn = pfn + nr_pages;
+ 	unsigned long cur_nr_pages;
+ 	int err;
+@@ -417,6 +418,10 @@ int __add_pages(int nid, unsigned long pfn, unsigned long nr_pages,
+ 			break;
+ 		cond_resched();
+ 	}
++
++	/* Roll back the sections added before the failure. */
++	if (err && pfn != start_pfn)
++		__remove_pages(start_pfn, pfn - start_pfn, altmap, params->pgmap);
+ 	vmemmap_populate_print_last();
+ 	return err;
  }
-+#endif
- 
- static int __init irq_init_stats(void)
- {
--- 
-2.52.0
+--
 
+Hope I haven't missed anything :)
+
+Cheers, Lance
+
+>+
+> 	return page_address(page);
+> }
+> 
+>@@ -260,31 +285,12 @@ static pte_t * __meminit vmemmap_pte_populate(pmd_t *pmd, unsigned long addr, in
+> 
+> 	if (pte_none(ptep_get(pte))) {
+> 		pte_t entry;
+>+		void *p = vmemmap_alloc_pte(pfn, node, altmap);
+> 
+>-		if (ptpfn == (unsigned long)-1) {
+>-			void *p = vmemmap_alloc_pte(pfn, node, altmap);
+>-
+>-			if (!p)
+>-				return NULL;
+>-			ptpfn = PHYS_PFN(__pa(p));
+>-		} else {
+>-			/*
+>-			 * When a PTE/PMD entry is freed from the init_mm
+>-			 * there's a free_pages() call to this page allocated
+>-			 * above. Thus this try_get_page() is paired with the
+>-			 * put_page_testzero() on the freeing path.
+>-			 * This can only called by certain ZONE_DEVICE path,
+>-			 * and through vmemmap_populate_compound_pages() when
+>-			 * slab is available.
+>-			 *
+>-			 * Use try_get_page() to prevent the shared page refcount
+>-			 * from overflowing.
+>-			 */
+>-			if (slab_is_available() &&
+>-			    !try_get_page(pfn_to_page(ptpfn)))
+>-				return NULL;
+>-		}
+>-		entry = pfn_pte(ptpfn, PAGE_KERNEL);
+>+		if (!p)
+>+			return NULL;
+>+
+>+		entry = pfn_pte(PHYS_PFN(__pa(p)), PAGE_KERNEL);
+> 		set_pte_at(&init_mm, addr, pte, entry);
+> 	} else if (WARN_ON_ONCE(vmemmap_optimizable_pfn(pfn)))
+> 		return NULL;
+>-- 
+>2.54.0
+>
+>
 
