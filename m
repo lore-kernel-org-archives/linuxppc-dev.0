@@ -1,68 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-28578-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28579-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3EFDACA5FC5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 14:48:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28653CA5FC5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 15:05:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hvybp1HqQz2y24;
-	Thu, 01 Oct 2026 00:48:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.9
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790779734;
-	cv=none; b=Ore+ut8eybv3OXKyhBuMATgN8bK010lT8EereSm0p0HxSlfLbxGMi29w3tx9WhjaTZf97C9QNhvcZh6/svKEIW6MR/nyK6mUdm8vxlTi+5XE4G+L3s1CE8Vc/auqY2cNfCba2tb9PaLbkGX3rYKvAlBJa3wuNvl3t6LqVDhPBm3l6X0if4o6NK6gMglzM9jwMxIoVu3YBUzhIVdiGQpJpYWJhc1NiTkQP7nVKOllUH0SK8hoR16B8yjUjoR7HrMrl/dCWHN7Ul5+TlqxLJlcRB4FLtXNtTdDfbtHXpqQw3Zavx/sVpFTDs/NVtaUmVv0yl01237rge4XBw3du+Jzdg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hvyz04gcMz2y24;
+	Thu, 01 Oct 2026 01:05:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:34::f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790780732;
+	cv=none; b=HXz0aHscwKOMg9SgxQSrDb6RZ0H9aoDwiyjwSQ16Nbl8jx5wVdqL8NfOhAl014UkwU0CcWDDB3+aBwhxlQcaaL5XG6lbOnOdhQIAOvBWLa4XIJVkboN+6kb8zrwKAOu6r7/QW7QVMNB/WaKIj9pyrOn55yPxOm+snc+M551WICJ50a42id2hNvMrhxviAHMp0m0AgRX63BTZd29gvn9RPkBfwesju5NlbUtGuaW/edcZuboDjiBjAoQx7W0bikPt/EnAYpxp5iwovh4Rr+pT6LzBFvCLkg0CX7jOXs3hjl2yLZ/dn60TyE0diMREaMfMlTplW3WIizJfVhw4lrPjLA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790779734; c=relaxed/relaxed;
-	bh=a2aGC4dO3V5QF/+P7LMJ1VoazXD4n9yf6+zkVL6qLZA=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=AC/qrmEg/m0AAB9ErEuj5iuP+1Iz0ukMZqdAuDfUP31Yk48MgzhkNmEwu+KlKS2fzOj1qyBQrJ84+2iNaWad9xaVqbSh/CYuvR8SDc1yCGVAlhIN/mJKpnfsww6lLdiJZmvDnivrNWs6OJHo5zSJWKuK7QiFicq5V/MdjHWcxAVDBlAgriTp91apXwucCfsOlM6NpiwkhTDLanE7YstgvlWNn1HxNRQpWP+WXVa95/p1zV1kHa382wFpJP4Xl0D0Sq/1vcmqOeFXt6r4NPJFP09b4wwkzjc8+ZL/vgNQj6ekqsDIgDrDUhsdEyatb53N1/X75re2+PXWzcLs2+Z3Lg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=hA6zluht; dkim-atps=neutral; spf=pass (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1790780732; c=relaxed/relaxed;
+	bh=jfRtojeauzUhQb4SePcX378h8gySuQTk235TQqLiiHA=;
+	h=From:Date:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=dtK+RzWYNizZecc+hM9fMEgzdu4qgxbfurkVeRsJQw6tjA0RneuDjV6ksUukUxvYp50gpTylBGQW25gLXxSXmMOSNVZn0NMWD0AIzLOxLRk7pBQt3P8+h4OJXoW2Tq/z5zIHRVy9OewRkUbYdHwhEzPhog2pzkpvOmELsLUehbB5vaEZDkrC3LkkheAiPP0HR/9Ld7xQJ5CTkbpKF9jUjkDDisZByoMY6Be7w5EG0f7nWttjN9hEEgPKgwl4OR47bUj/ae3cM1bVNh+godVHQWvQJJoXVvGdB6OYgcEoiGjAPB5ErOSznBuBq/KDvQdRtlndUiIEOsrdILl015ZfzQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=gcsAcS+e; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:34::f; helo=mail-ej2-x0f.google.com; envelope-from=urezki@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=hA6zluht;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=gcsAcS+e;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:34::f; helo=mail-ej2-x0f.google.com; envelope-from=urezki@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ej2-x0f.google.com (mail-ej2-x0f.google.com [IPv6:2a00:1450:4864:34::f])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvybm49vlz2xwP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 00:48:51 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1790779733; x=1822315733;
-  h=date:from:to:cc:subject:message-id;
-  bh=aSy++a9RcbVgq5irPJ/xMl29hoolAX3gELM2R8Trki4=;
-  b=hA6zluhtIj7837CFYWHzSbFOxLSqw4cluonHXuO0B2zYOP/rvHg5V2gc
-   inhrBrAlFo/BiNJ1MTcLdf7Hw6YMvl+eg7nVz0N+bw+gAF01RD2FZ1mx/
-   6xPh2No3PiyWInDTl6u1LR/YaUJw5glIbTv5FVwxBgtPVuk1hMVMEUPzj
-   DC/uG4pNYzxzZiWbKFEEDU3mr3oNF5UkfoPklJpKmhme2oTCrdZHH8BG8
-   6JjmpVky0g9zoTKof1qlwHqWjHAykXrynQ/SkQ0/yFYKlvICfcQ+8hTj5
-   lToLfIFhOKfL1st/gkDkVIgJXGsQo1/nmzyqQHF5DqxOFbrnCKeBiKZPi
-   w==;
-X-CSE-ConnectionGUID: LbFa9INLQriCNvkJT7tR3g==
-X-CSE-MsgGUID: v5lmXGdgQF6ZEpfbAIiWww==
-X-IronPort-AV: E=McAfee;i="6800,10657,11920"; a="113308264"
-X-IronPort-AV: E=Sophos;i="6.27,132,1787036400"; 
-   d="scan'208";a="113308264"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
-  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Sep 2026 07:48:50 -0700
-X-CSE-ConnectionGUID: 97ZYoh2bQaqcRI1fXfj+Vw==
-X-CSE-MsgGUID: XtvlGlImR+GthiWUemIpag==
-X-ExtLoop1: 1
-Received: from lkp-server01.sh.intel.com (HELO 462990a40a85) ([10.239.97.150])
-  by fmviesa003.fm.intel.com with ESMTP; 30 Sep 2026 07:48:48 -0700
-Received: from kbuild by 462990a40a85 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1xBvbx-00000000Qkj-3HHf;
-	Wed, 30 Sep 2026 14:48:45 +0000
-Date: Wed, 30 Sep 2026 22:48:02 +0800
-From: kernel test robot <lkp@intel.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [powerpc:next-test] BUILD REGRESSION
- 0b8b0c17a8998709ecb2852d56442ea981102941
-Message-ID: <202609302258.0BXdfGnE-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvyyy4Tjtz2xSV
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 01:05:29 +1000 (AEST)
+Received: by mail-ej2-x0f.google.com with SMTP id a640c23a62f3a-c2e17e5de00so162103066b.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2026 08:05:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790780726; x=1791385526; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:date
+         :from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=jfRtojeauzUhQb4SePcX378h8gySuQTk235TQqLiiHA=;
+        b=gcsAcS+efhPvClr994C7i1d6/at8xcWoW5LIcZ8/ERyxm7tNA+6xvoTaNrQ9Lg40u5
+         OKEp36S9FhC8gnT0v1UjwxXX8Nc/2Lr3Vev4fgXk8gOList9m6VwbD35TxJx3VNQRd3c
+         fTUDbuLrpa6N+kUzKtQ4V+ia/EhFOVeNvCkedXl8yYoAFm/prlv9LZ/nZF9uLYhNP8d9
+         JdidFMv3laV6NyBL89AXb8hBNltD2FA64MC883nU6shHGGry+qJdgsV964jZ9M98ctZv
+         tmLPn/k7U/xr07PKO+r4pPia8m1bs04BYec0vaM75Bc6e/iS1tP5bbSh/Fk7KZmj/b4E
+         bTZg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790780726; x=1791385526;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:date
+         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=jfRtojeauzUhQb4SePcX378h8gySuQTk235TQqLiiHA=;
+        b=Cr2fGXs6ESR0GVCenSZTRqZTXzLNAgw71x6tDbIcFuJCO1GjE6d7ntynqHSWrR7ksp
+         Qslhz8xGEWSZrHKis5IIORA5rL5SaGCTTl9QrlucE24Gy8TNEiY+GFrUi8TSH3frBbYn
+         Si4vL6nsHo612HN0keWlJ3M1AtPsKdMBGJizjA8h/q5/QLWqxejnyjRHzCUOtf+fWjNj
+         1ry2SonjeTKLAxgf3wf5/mJWGhPzjLy54ZtrM6haSNsHa+9Wvoz6CPWS311uJ0HXN7BC
+         XMzdDd1ZaAOfjH2FPwdUZE8f2fWS/55orcV4lDz2ZWBOE7rRVpSK5cnE39HGoyn0MSv7
+         L62g==
+X-Forwarded-Encrypted: i=1; AKwUvBzfk/PTzNW5CBWEEuDipaKeRdo5IA7xQ+3C6QEJe9v7V1HzHg22ZnMJTCJogZ+0h5NoR+/2iZpfqF3tS7g=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYImSSCY6WQHRiamdk6NvWLXbvTYi2c0Q1KsQV7om86tc9M0o0qB
+	mdghhVFsheN6L05U9NG5ljD2PJS0aXjFt5znovM3fOKPy+IV4XfaOXst
+X-Gm-Gg: AYBFou37ImQBleFd1Kp1DIvjTnYUxFuOSHd5EYN6PJyNAT20gVIc66RkfTCbOTFCAdf
+	qhSG072Ph2pGFe3osomBsAJ4Mgao1JHYPQAiktYhf9HF2pOUUDgPESRbbhiJ4G5UJz5/UnF4tL5
+	4wVk1tUT93UaXMMIS7AVBXugvcDcbyecHmeCsK4bre4r1N28HAypw6yAV1tijYJRddpXxdDvDUU
+	ZRQRSJ4GE+NoU8qD/FSO86IyqclxLYPDW6vRorxuNgEwfyDBBLbJcLmd7XE6Q7Rdh/LIqQgswWh
+	QavrtMlTxB3Ipze0H7qUBj6k9ifxED34vXkDVe+/Xz4JzrwSLVuFUZFYdCZYglkFWl1B2KnqkxY
+	Mwcd49IxQ8jAXiftPx5fMuhheNEGt0KSTU13efFoWo9g/lxdKw3jSlyyqmSiKLCvRNqt8+rlHt1
+	iEBHCwrXfYXJB+LprcV8HW
+X-Received: by 2002:a17:906:ba89:b0:c2d:a4ef:64ca with SMTP id a640c23a62f3a-c2e23e39566mr171362866b.42.1790780725514;
+        Wed, 30 Sep 2026 08:05:25 -0700 (PDT)
+Received: from milan ([2001:9b1:d5a0:a500::24b])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c2e31a3cc87sm20827866b.6.2026.09.30.08.05.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 30 Sep 2026 08:05:24 -0700 (PDT)
+From: Uladzislau Rezki <urezki@gmail.com>
+X-Google-Original-From: Uladzislau Rezki <urezki@milan>
+Date: Wed, 30 Sep 2026 17:05:22 +0200
+To: Wen Jiang <jiangwenxiaomi@gmail.com>
+Cc: akpm@linux-foundation.org, catalin.marinas@arm.com, linux-mm@kvack.org,
+	urezki@gmail.com, will@kernel.org, Xueyuan.chen21@gmail.com,
+	ajd@linux.ibm.com, anshuman.khandual@arm.com, baohua@kernel.org,
+	chleroy@kernel.org, david@kernel.org, dev.jain@arm.com,
+	jiangwen6@xiaomi.com, leo.yan@arm.com,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
+	mpe@ellerman.id.au, npiggin@gmail.com, rppt@kernel.org,
+	ryan.roberts@arm.com
+Subject: Re: [PATCH v9 09/10] mm/vmalloc: map contiguous pages in batches for
+ vmap() if possible
+Message-ID: <ar0lMkKxugZV7xyw@milan>
+References: <20260923062832.479455-1-jiangwen6@xiaomi.com>
+ <20260923062832.479455-10-jiangwen6@xiaomi.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,296 +102,156 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260923062832.479455-10-jiangwen6@xiaomi.com>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
-branch HEAD: 0b8b0c17a8998709ecb2852d56442ea981102941  powerpc/pseries/iommu: Add TCEs for 16GB pages when RAM is pre-mapped
+On Wed, Sep 23, 2026 at 02:28:31PM +0800, Wen Jiang wrote:
+> From: "Barry Song (Xiaomi)" <baohua@kernel.org>
+> 
+> In many cases, the pages passed to vmap() may include high-order
+> pages. For example, the systemheap often allocates pages in descending
+> order: order 8, then 4, then 0. Currently, vmap() iterates over every
+> page individually—even pages inside a high-order block are handled
+> one by one.
+> 
+> This patch detects physically contiguous pages (regardless of whether
+> they are compound or non-compound) by scanning with
+> num_pages_contiguous(), and maps them as a single contiguous block
+> whenever possible. The mapping order is determined by taking the
+> minimum of the contiguous page count and the pfn alignment, allowing
+> graceful degradation when pfn alignment is less than the contiguous
+> range.
+> 
+> Pages with the same page_shift are coalesced and mapped via
+> vmap_pages_range_noflush_walk() to avoid page table rewalk.
+> 
+> As users typically allocate memory in descending orders (e.g.
+> 8 → 4 → 0), once an order-0 page is encountered, we stop scanning
+> for contiguous pages since subsequent pages are likely order-0 as well.
+> 
+> Signed-off-by: Barry Song (Xiaomi) <baohua@kernel.org>
+> Co-developed-by: Dev Jain <dev.jain@arm.com>
+> Signed-off-by: Dev Jain <dev.jain@arm.com>
+> Signed-off-by: Wen Jiang <jiangwen6@xiaomi.com>
+> Tested-by: Xueyuan Chen <xueyuan.chen21@gmail.com>
+> Tested-by: Leo Yan <leo.yan@arm.com>
+> ---
+>  mm/vmalloc.c | 82 ++++++++++++++++++++++++++++++++++++++++++++++++++--
+>  1 file changed, 80 insertions(+), 2 deletions(-)
+> 
+> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+> index a43965016eb4d..37cddb7f45a4f 100644
+> --- a/mm/vmalloc.c
+> +++ b/mm/vmalloc.c
+> @@ -3576,6 +3576,85 @@ static inline unsigned int vm_shift(pgprot_t prot, unsigned long size)
+>  	return arch_vmap_pte_supported_shift(size);
+>  }
+>  
+> +static inline int get_vmap_batch_order(struct page **pages,
+> +		pgprot_t prot, unsigned int nr_pages)
+>
+get_vmap_mapping_order()?
 
-Error/Warning (recently discovered and may have been fixed):
+> +{
+> +	unsigned long pfn;
+> +	unsigned int nr_contig;
+> +	int order;
+> +
+> +	if (!IS_ENABLED(CONFIG_HAVE_ARCH_HUGE_VMAP))
+> +		return 0;
+> +
+> +	/* Limit nr_pages by pfn alignment */
+> +	pfn = page_to_pfn(*pages);
+> +	if (pfn > 0)
+> +		nr_pages = min_t(size_t, nr_pages, 1UL << __ffs(pfn));
+> +
+> +	nr_contig = num_pages_contiguous(pages, nr_pages);
+> +	if (nr_contig < 2)
+> +		return 0;
+> +
+> +	order = ilog2(nr_contig);
+> +
+> +	if (vm_shift(prot, PAGE_SIZE << order) == PAGE_SHIFT)
+> +		return 0;
+> +
+> +	return order;
+> +}
+> +
+> +static int vmap_pages_range_batched(unsigned long addr, unsigned long end,
+> +		pgprot_t prot, struct page **pages)
+> +{
+> +	const unsigned int nr_pages = (end - addr) >> PAGE_SHIFT;
+> +	unsigned int prev_shift = 0, batch_idx = 0;
+> +	unsigned long batch_start = addr, batch_end = addr;
+> +	int err;
+> +
+> +	err = kmsan_vmap_pages_range_noflush(addr, end, prot, pages,
+> +					     PAGE_SHIFT, GFP_KERNEL);
+> +
+> +	if (err)
+> +		goto out;
+> +
+> +	for (unsigned int i = 0; i < nr_pages; ) {
+> +		unsigned int shift = PAGE_SHIFT +
+> +			get_vmap_batch_order(pages + i, prot, nr_pages - i);
+> +
+> +		if (!i)
+> +			prev_shift = shift;
+> +
+> +		if (shift != prev_shift) {
+> +			err = vmap_pages_range_noflush_walk(batch_start, batch_end,
+> +					prot, pages + batch_idx, prev_shift);
+> +			if (err)
+> +				goto out;
+> +			prev_shift = shift;
+> +			batch_start = batch_end;
+> +			batch_idx = i;
+> +		}
+> +
+> +		/*
+> +		 * Once we fail to batch pages, we expect to fail batching
+> +		 * for all remaining pages, so just give up.
+> +		 */
+> +		if (shift == PAGE_SHIFT)
+> +			break;
+> +
+> +		batch_end += 1UL << shift;
+> +		i += 1U << (shift - PAGE_SHIFT);
+> +	}
+> +
+> +	/* Remaining */
+> +	if (batch_start < end)
+> +		err = vmap_pages_range_noflush_walk(batch_start, end, prot,
+> +				pages + batch_idx, prev_shift);
+> +
+> +out:
+> +	flush_cache_vmap(addr, end);
+> +	return err;
+>
+On error, if kmsan_vmap_pages_range_noflush() succeed you do not do a
+proper cleanup?
 
-    https://lore.kernel.org/oe-kbuild-all/202609300040.mopAJGuz-lkp@intel.com
+i.e. to cleanup KMSAN metadata: kmsan_vunmap_range_noflush(addr, end);
 
-    arch/powerpc/kernel/irq.c:116:(.text+0x49f8): undefined reference to `irq_proc_emit_counts'
-
-Error/Warning ids grouped by kconfigs:
-
-recent_errors
-`-- powerpc64-randconfig-r2100-20260929
-    `-- arch-powerpc-kernel-irq.c:(.text):undefined-reference-to-irq_proc_emit_counts
-
-elapsed time: 1033m
-
-configs tested: 266
-configs skipped: 3
-
-tested configs:
-alpha                              allnoconfig    gcc-16.1.0
-alpha                             allyesconfig    gcc-16.1.0
-alpha                                defconfig    gcc-16.1.0
-alpha                randconfig-r2107-20260930    gcc-8.5.0  cocci
-alpha                randconfig-r2300-20260929    gcc-12.5.0 sparse
-arc                               allmodconfig    clang-24
-arc                                allnoconfig    gcc-16.1.0
-arc                               allyesconfig    clang-24
-arc                                  defconfig    gcc-16.1.0
-arc                         nsim_700_defconfig    gcc-16.1.0
-arc                   randconfig-1000-20260930    gcc-11.5.0
-arc                   randconfig-1001-20260930    gcc-11.5.0
-arc                  randconfig-r2101-20260930    gcc-16.1.0 cocci
-arc                  randconfig-r2301-20260930    clang-24   sparse
-arm                                allnoconfig    gcc-16.1.0
-arm                               allyesconfig    clang-24
-arm                                  defconfig    gcc-16.1.0
-arm                             dove_defconfig    gcc-16.1.0
-arm                       integrator_defconfig    clang-24
-arm                             mmp2_defconfig    gcc-16.1.0
-arm                         mvebu_v5_defconfig    gcc-16.1.0
-arm                             qcom_defconfig    clang-24
-arm                   randconfig-1000-20260930    gcc-11.5.0
-arm                   randconfig-1001-20260930    gcc-11.5.0
-arm                   randconfig-1002-20260930    gcc-11.5.0
-arm                   randconfig-1003-20260930    gcc-11.5.0
-arm                  randconfig-r2106-20260930    clang-21   cocci
-arm                  randconfig-r2304-20260929    gcc-15.2.0 sparse
-arm                            sama5_defconfig    gcc-16.1.0
-arm                         spear6xx_defconfig    gcc-16.1.0
-arm64                             allmodconfig    clang-24
-arm64                              allnoconfig    gcc-16.1.0
-arm64                                defconfig    gcc-16.1.0
-arm64                 randconfig-1000-20260930    gcc-16.1.0
-arm64                 randconfig-1001-20260930    gcc-16.1.0
-arm64                 randconfig-1002-20260930    gcc-16.1.0
-arm64                 randconfig-1003-20260930    gcc-16.1.0
-csky                              allmodconfig    gcc-16.1.0
-csky                               allnoconfig    gcc-16.1.0
-csky                                 defconfig    gcc-16.1.0
-csky                  randconfig-1000-20260930    gcc-16.1.0
-csky                  randconfig-1001-20260930    gcc-16.1.0
-csky                 randconfig-r2306-20260929    gcc-13.4.0 sparse
-hexagon                           allmodconfig    gcc-16.1.0
-hexagon                            allnoconfig    gcc-16.1.0
-hexagon                              defconfig    gcc-16.1.0
-hexagon               randconfig-1000-20260930    clang-24
-hexagon               randconfig-1001-20260930    clang-24
-hexagon              randconfig-r2103-20260930    gcc-16.1.0 cocci
-hexagon              randconfig-r2309-20260929    clang-17   sparse
-i386                              alldefconfig    gcc-16.1.0
-i386                              allmodconfig    clang-22
-i386                               allnoconfig    gcc-16.1.0
-i386                              allyesconfig    clang-22
-i386        buildonly-randconfig-1000-20260930    gcc-14
-i386        buildonly-randconfig-1001-20260930    gcc-14
-i386        buildonly-randconfig-1002-20260930    gcc-14
-i386        buildonly-randconfig-1003-20260930    gcc-14
-i386        buildonly-randconfig-1004-20260930    gcc-14
-i386        buildonly-randconfig-1005-20260930    gcc-14
-i386                                 defconfig    gcc-16.1.0
-i386                  randconfig-1000-20260930    gcc-14
-i386                  randconfig-1001-20260930    gcc-14
-i386                  randconfig-1002-20260930    gcc-14
-i386                  randconfig-1003-20260930    gcc-14
-i386                  randconfig-1004-20260930    gcc-14
-i386                  randconfig-1005-20260930    gcc-14
-i386                  randconfig-1006-20260930    gcc-14
-i386                  randconfig-1007-20260930    clang-22
-i386                  randconfig-1008-20260930    clang-22
-i386                  randconfig-1009-20260930    clang-22
-i386                  randconfig-1010-20260930    clang-22
-i386                  randconfig-1011-20260930    clang-22
-i386                  randconfig-1012-20260930    clang-22
-i386                  randconfig-1013-20260930    clang-22
-i386                  randconfig-2200-20260930    gcc-14     smatch
-i386                  randconfig-2300-20260930    gcc-13     sparse
-i386                  randconfig-2301-20260930    gcc-13     sparse
-i386                  randconfig-2302-20260930    gcc-13     sparse
-i386                 randconfig-r2102-20260930    gcc-16.1.0 cocci
-i386                 randconfig-r2202-20260930    gcc-13     smatch
-loongarch                         allmodconfig    clang-24
-loongarch                          allnoconfig    gcc-16.1.0
-loongarch                            defconfig    clang-24
-loongarch             randconfig-1000-20260930    clang-24
-loongarch             randconfig-1001-20260930    clang-24
-loongarch            randconfig-r2302-20260929    gcc-13.4.0 sparse
-loongarch            randconfig-r2303-20260929    gcc-16.1.0 sparse
-m68k                              allmodconfig    gcc-16.1.0
-m68k                               allnoconfig    gcc-16.1.0
-m68k                              allyesconfig    clang-24
-m68k                           atari_defconfig    clang-24
-m68k                           atari_defconfig    gcc-16.1.0
-m68k                                 defconfig    clang-24
-m68k                        m5475evb_defconfig    gcc-16.1.0
-m68k                 randconfig-r2106-20260930    gcc-8.5.0  cocci
-m68k                 randconfig-r2300-20260930    clang-24   sparse
-m68k                 randconfig-r2307-20260930    gcc-12.5.0 sparse
-m68k                 randconfig-r2308-20260929    gcc-8.5.0  sparse
-m68k                            virt_defconfig    gcc-16.1.0
-microblaze                         allnoconfig    gcc-16.1.0
-microblaze                        allyesconfig    gcc-16.1.0
-microblaze                           defconfig    clang-24
-microblaze           randconfig-r2200-20260930    gcc-11.5.0 smatch
-mips                              allmodconfig    gcc-16.1.0
-mips                               allnoconfig    gcc-16.1.0
-mips                              allyesconfig    gcc-16.1.0
-mips                         bcm63xx_defconfig    clang-24
-mips                          bigsur_defconfig    gcc-16.1.0
-mips                      loongson2k_defconfig    gcc-16.1.0
-mips                           malta_defconfig    clang-24
-mips                       maltasmvp_defconfig    gcc-16.1.0
-mips                         qi_lb60_defconfig    clang-24
-mips                         qi_lb60_defconfig    gcc-16.1.0
-nios2                             allmodconfig    clang-20
-nios2                              allnoconfig    clang-24
-nios2                                defconfig    clang-24
-nios2                 randconfig-1000-20260930    clang-24
-nios2                 randconfig-1001-20260930    clang-24
-nios2                randconfig-r2200-20260930    gcc-10.5.0 smatch
-openrisc                          allmodconfig    clang-20
-openrisc                           allnoconfig    clang-24
-openrisc                             defconfig    gcc-16.1.0
-openrisc             randconfig-r2100-20260930    gcc-16.1.0 cocci
-parisc                            allmodconfig    gcc-16.1.0
-parisc                             allnoconfig    clang-24
-parisc                            allyesconfig    clang-17
-parisc                               defconfig    gcc-16.1.0
-parisc                randconfig-1000-20260930    gcc-8.5.0
-parisc                randconfig-1001-20260930    gcc-8.5.0
-parisc64                             defconfig    clang-24
-powerpc                           allmodconfig    gcc-16.1.0
-powerpc                            allnoconfig    clang-24
-powerpc                  canyonlands_defconfig    gcc-16.1.0
-powerpc                         fsp2_defconfig    gcc-16.1.0
-powerpc                       ppc64e_defconfig    gcc-16.1.0
-powerpc               randconfig-1000-20260930    gcc-8.5.0
-powerpc               randconfig-1001-20260930    gcc-8.5.0
-powerpc              randconfig-r2105-20260930    clang-21   cocci
-powerpc              randconfig-r2201-20260930    gcc-14.3.0 smatch
-powerpc              randconfig-r2302-20260930    clang-24   sparse
-powerpc              randconfig-r2306-20260930    gcc-12.5.0 sparse
-powerpc                      sequoia_defconfig    gcc-16.1.0
-powerpc                      tqm8548_defconfig    gcc-16.1.0
-powerpc64             randconfig-1000-20260930    gcc-8.5.0
-powerpc64             randconfig-1001-20260930    gcc-8.5.0
-powerpc64            randconfig-r2107-20260930    clang-21   cocci
-riscv                             allmodconfig    clang-24
-riscv                              allnoconfig    clang-24
-riscv                             allyesconfig    clang-24
-riscv                                defconfig    gcc-16.1.0
-riscv                     nommu_k210_defconfig    clang-24
-riscv                     nommu_k210_defconfig    gcc-16.1.0
-riscv                 randconfig-1000-20260930    gcc-16.1.0
-riscv                 randconfig-1001-20260930    gcc-16.1.0
-riscv                 randconfig-2000-20260929    gcc-11.5.0
-riscv                 randconfig-2000-20260930    gcc-14.3.0
-riscv                 randconfig-2001-20260929    gcc-9.5.0
-riscv                 randconfig-2001-20260930    gcc-14.3.0
-riscv                randconfig-r2307-20260929    clang-24   sparse
-s390                              allmodconfig    clang-17
-s390                               allnoconfig    clang-24
-s390                              allyesconfig    gcc-16.1.0
-s390                                 defconfig    gcc-16.1.0
-s390                  randconfig-1000-20260930    gcc-16.1.0
-s390                  randconfig-1001-20260930    gcc-16.1.0
-s390                  randconfig-2000-20260929    clang-24
-s390                  randconfig-2000-20260930    gcc-14.3.0
-s390                  randconfig-2001-20260929    gcc-8.5.0
-s390                  randconfig-2001-20260930    gcc-14.3.0
-s390                 randconfig-r2104-20260930    gcc-8.5.0  cocci
-s390                 randconfig-r2304-20260930    clang-24   sparse
-sh                                allmodconfig    gcc-16.1.0
-sh                                 allnoconfig    clang-24
-sh                                allyesconfig    clang-17
-sh                                   defconfig    gcc-14
-sh                         edosk7760_defconfig    clang-24
-sh                              espt_defconfig    gcc-16.1.0
-sh                             hp6xx_defconfig    gcc-16.1.0
-sh                    randconfig-1000-20260930    gcc-16.1.0
-sh                    randconfig-1001-20260930    gcc-16.1.0
-sh                    randconfig-2000-20260929    gcc-14.3.0
-sh                    randconfig-2000-20260930    gcc-14.3.0
-sh                    randconfig-2001-20260929    gcc-16.1.0
-sh                    randconfig-2001-20260930    gcc-14.3.0
-sh                           urquell_defconfig    gcc-16.1.0
-sparc                              allnoconfig    clang-24
-sparc                                defconfig    gcc-16.1.0
-sparc                 randconfig-1000-20260930    clang-22
-sparc                 randconfig-1001-20260930    clang-22
-sparc                 randconfig-2000-20260930    gcc-10.5.0
-sparc                 randconfig-2001-20260930    gcc-10.5.0
-sparc                randconfig-r2308-20260930    gcc-12.5.0 sparse
-sparc64                           allmodconfig    clang-20
-sparc64                              defconfig    gcc-14
-sparc64               randconfig-1000-20260930    clang-22
-sparc64               randconfig-1001-20260930    clang-22
-sparc64               randconfig-2000-20260930    gcc-10.5.0
-sparc64               randconfig-2001-20260930    gcc-10.5.0
-sparc64              randconfig-r2104-20260930    clang-21   cocci
-sparc64              randconfig-r2303-20260930    clang-24   sparse
-sparc64              randconfig-r2305-20260930    clang-24   sparse
-um                                allmodconfig    clang-17
-um                                 allnoconfig    clang-24
-um                                allyesconfig    gcc-16.1.0
-um                                   defconfig    gcc-14
-um                              i386_defconfig    gcc-14
-um                    randconfig-1000-20260930    clang-22
-um                    randconfig-1001-20260930    clang-22
-um                    randconfig-2000-20260930    gcc-10.5.0
-um                    randconfig-2001-20260930    gcc-10.5.0
-um                   randconfig-r2105-20260930    gcc-8.5.0  cocci
-um                   randconfig-r2201-20260930    clang-17   smatch
-um                   randconfig-r2309-20260930    gcc-12.5.0 sparse
-um                            x86_64_defconfig    gcc-14
-x86_64                             allnoconfig    clang-22   checkkconfigsymbols
-x86_64                             allnoconfig    clang-24
-x86_64                            allyesconfig    clang-22
-x86_64      buildonly-randconfig-1000-20260930    clang-22
-x86_64      buildonly-randconfig-1001-20260930    clang-22
-x86_64      buildonly-randconfig-1002-20260930    clang-22
-x86_64      buildonly-randconfig-1003-20260930    clang-22
-x86_64      buildonly-randconfig-1004-20260930    clang-22
-x86_64      buildonly-randconfig-1005-20260930    clang-22
-x86_64                               defconfig    gcc-14
-x86_64                                   kexec    clang-22
-x86_64                randconfig-1000-20260930    gcc-14
-x86_64                randconfig-1001-20260930    gcc-14
-x86_64                randconfig-1002-20260930    gcc-14
-x86_64                randconfig-1003-20260930    gcc-14
-x86_64                randconfig-1004-20260930    gcc-14
-x86_64                randconfig-1005-20260930    gcc-14
-x86_64                randconfig-1006-20260930    gcc-14
-x86_64                randconfig-1007-20260930    gcc-14
-x86_64                randconfig-1008-20260930    gcc-14
-x86_64                randconfig-1009-20260930    gcc-14
-x86_64                randconfig-1010-20260930    gcc-14
-x86_64                randconfig-1011-20260930    gcc-14
-x86_64                randconfig-1012-20260930    clang-22
-x86_64                randconfig-1013-20260930    clang-22
-x86_64                randconfig-1014-20260930    clang-22
-x86_64                randconfig-1015-20260930    clang-22
-x86_64                randconfig-1016-20260930    clang-22
-x86_64                randconfig-1017-20260930    clang-22
-x86_64                randconfig-2200-20260930    gcc-14     smatch
-x86_64                randconfig-2300-20260930    gcc-13     sparse
-x86_64                randconfig-2301-20260930    gcc-13     sparse
-x86_64                randconfig-2302-20260930    gcc-13     sparse
-x86_64                                rhel-9.4    clang-22
-x86_64                            rhel-9.4-bpf    clang-22
-x86_64                            rhel-9.4-bpf    gcc-14
-x86_64                           rhel-9.4-func    clang-22
-x86_64                     rhel-9.4-kselftests    clang-22
-x86_64                          rhel-9.4-kunit    clang-22
-x86_64                          rhel-9.4-kunit    gcc-14
-x86_64                            rhel-9.4-ltp    clang-22
-x86_64                            rhel-9.4-ltp    gcc-14
-x86_64                           rhel-9.4-rust    clang-22
-x86_64                           rhel-9.4-rust    clang-22
-xtensa                             allnoconfig    clang-24
-xtensa                            allyesconfig    clang-20
-xtensa                randconfig-1000-20260930    clang-22
-xtensa                randconfig-1001-20260930    clang-22
-xtensa                randconfig-2000-20260930    gcc-10.5.0
-xtensa                randconfig-2001-20260930    gcc-10.5.0
-xtensa               randconfig-r2301-20260929    gcc-8.5.0  sparse
-
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+> +}
+> +
+>  /**
+>   * vmap - map an array of pages into virtually contiguous space
+>   * @pages: array of page pointers
+> @@ -3619,8 +3698,7 @@ void *vmap(struct page **pages, unsigned int count,
+>  		return NULL;
+>  
+>  	addr = (unsigned long)area->addr;
+> -	if (vmap_pages_range(addr, addr + size, pgprot_nx(prot),
+> -				pages, PAGE_SHIFT) < 0) {
+> +	if (vmap_pages_range_batched(addr, addr + size, pgprot_nx(prot), pages) < 0) {
+>  		vunmap(area->addr);
+>  		return NULL;
+>  	}
+> -- 
+> 2.34.1
+> 
 
