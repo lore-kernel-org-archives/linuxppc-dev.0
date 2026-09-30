@@ -1,65 +1,91 @@
-Return-Path: <linuxppc-dev+bounces-28593-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28594-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94011CA5FC1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 17:35:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F5E9CA5FC1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 17:38:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hw2JJ6dnxz2y8d;
-	Thu, 01 Oct 2026 03:35:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790789744;
-	cv=none; b=JIulQNAHPvUurpPu0c5Mq4A+2n/7G1EaA2OAlo6/yN4uE8okvAyXKQ50WMZ+WOCbvWKFiOIP793zTrSYLjiLOG7WgdSxUxzNOix5y13cXshQY/qIvOFm/XpCZM1aLVaeeODG/QRX7XtneZXF06BhmRjQGJd6G4Ta2A4hxYYQid9tSd0FG20fsn/9xojyjW7QDlmuifJrkHbKjKqOmvBVp75vZ9tB0whWO1DFZ54qgfMFXKRT1iu86dSbrCy4cdyLWciyI/GPhAodkDgQmO2Kr3FjQVUj5SHBtswC7C7lPAPlcZUxY7GFWwELleKPLehW/JOuntaYt59nwJz46d+DxA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hw2Mb12XRz2y8d;
+	Thu, 01 Oct 2026 03:38:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790789915;
+	cv=none; b=MmPp+EfCqBaFqjV7UEj/m9Y+bSouSC/Dn9e6Su6FSiJvrnKNODtLx6c3d/KPDuIKchGDklSyhmTf+kyd3ytxPN35UnN8BAKPUsV5fEUSRaYD5k4cablioO1iF8eBkTkY+zFY5JOpncTSwvYIetLeDQyhEJQrM0ThYT4k8whmyCONt1jW5vtRVhmyPHHS1+mcq0eL5c+cxjWVLVPG97KlIyzMcHPNKPm9kqhVFWRQ2JPv7ALnYlqI+TOAM0FvB5L8SuOwARcBTaXBDZb4WjaPk6kq5u+yIkzF8mEPajsTfvoZA4SXsYvkPy3hmih/WzPD8AsbyE5t+pBMFy2jDVK9Vg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790789744; c=relaxed/relaxed;
-	bh=abrwkof5q9mTnOuGs1JN3KkyOxz8hNAB+0DBPFbl00k=;
+	t=1790789915; c=relaxed/relaxed;
+	bh=ZGyDkVqpQy0Ppi79IbXe0ZSivAY/5QW1/p40R+frxk0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ndOXIqmOsMoMUUq6icuLxv28uEVqJzMvyyAoBmcXk+9iVB0iEUsidH3+2kfIaXuhQAh7vWuzA/DZn78tkmytR/4p3bQg6bbeI9WZ8ooHARUxu8v3aEvkN1EYVavSWA790jFbguE7hWbot93+W9xVWdsJL7TFVeLMaTUrSCLP3Wcrg0+pXJBsVIg6u7V+HVth9YYMOYWDilN8QFuzf5NEWljWCoc8aXXi160+23GFBQL6daJMqueK7Pngx6+RBUsyW5JUiiXf9PCpY6EUMFz1jKAfbxBaImFqEM8+9mMsCGPAjiRe5HmCnuHcw7OVur7DvJver481pYxpTyxG75KiAA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=hgagfk3j; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+	 MIME-Version:Content-Type; b=T4YSLGo55Gf9Ak//1vYG9V6i0xpFn+gFh8vdS8F+J7jpo5Q0QEN79/UkCWFpNir5i9JQcDTBd/Ehp1rKVEIZ7vITkSz+Kummixj6pk8eBlLlLoOvXVIu69bMTKygBOA1gozEMf1ExQkVfDWMR7SQwpHx+VvRBNM6CHB2riWWD9GtPJcIjPWjGHkqHbwEbwohxcz0EvT6zDi8ZUMoZF7ivnKTlQr9jLDJtRGT0g+1zfpPy2n50KKZet1VmZa89PHmpBul2II9HIxfh3OBooXJYjpPPoDC9yfY/va8bd2qzdB4KWSIcRCdBpbVbr4o7ZQh/f+nhmZ5gGZUfOIfufJL1Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=O+Zq5v2R; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=hgagfk3j;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=O+Zq5v2R;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hw2JH5Pz9z2y24
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 03:35:43 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id E61B8444FE;
-	Wed, 30 Sep 2026 17:35:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4D4C11F0089A;
-	Wed, 30 Sep 2026 17:35:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
-	s=korg; t=1790789740;
-	bh=abrwkof5q9mTnOuGs1JN3KkyOxz8hNAB+0DBPFbl00k=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=hgagfk3j/V34sntu3NnWLI8de2Ti/M30dW8GMFO+dMLglpcFm6R9bUfhFhoHWQLrR
-	 f5dgGR5zDsPKjg/bn3EdnQfPBonOQQPeWbPTVmIwfT93KmNU0F9OPZIRgSZ1ndIuok
-	 0jlvgf1fdIcati6A8aVjb7NMjWTlItm7wSRKZjkc=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: stable@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	patches@lists.linux.dev,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Farhan Ali <alifm@linux.ibm.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Tyrel Datwyler <tyreld@linux.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 6.12 582/877] PCI: Introduce PCI_SLOT_PLACEHOLDER constant for slot_nr placeholder value
-Date: Wed, 30 Sep 2026 17:24:53 +0200
-Message-ID: <20260930152427.203723901@linuxfoundation.org>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260930152414.738996857@linuxfoundation.org>
-References: <20260930152414.738996857@linuxfoundation.org>
-User-Agent: quilt/0.69
-X-stable: review
-X-Patchwork-Hint: ignore
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hw2MZ2rQtz2y24
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 03:38:34 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68UE5Slg3203201;
+	Wed, 30 Sep 2026 17:38:25 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=ZGyDkV
+	qpQy0Ppi79IbXe0ZSivAY/5QW1/p40R+frxk0=; b=O+Zq5v2R9+OcDPK9Uv6W2F
+	OkhqKt3A1nkLKhbtmxbEC+JKZKqxuDH5PcY5DW/C6lQB1otPl26wZE3RZKcDGiwN
+	le6GR7Sx7vNp3xiPC734noZvj98dc1/syW0bWEdLH+PNSj7Cd4apgByukXo+YuhM
+	PZQVFWHP+mb+mqrP8DUmT0VNOidO3mXI6Vn/esumoS0YdXYKtlMNldrfVwJ1qg5j
+	LdMt1ANG9EICIIXcFBp7/Hl/G9YMvSmq0qLoz/7CC6b72YDwZKnWoo8qrDp6WCeN
+	e86+Qhya5yqDsO5AjfSRhl5AGvDwz9h3Goo+lq5nCgJoEHOxI+wcWX+Bg8HYIW8Q
+	==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gx5j5epqa-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Wed, 30 Sep 2026 17:38:25 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68UHYCom3541491;
+	Wed, 30 Sep 2026 17:38:24 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h0hfpd06u-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 30 Sep 2026 17:38:24 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68UHcIQu25625154
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 30 Sep 2026 17:38:18 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 56EDD20043;
+	Wed, 30 Sep 2026 17:38:18 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4D3D02004B;
+	Wed, 30 Sep 2026 17:38:14 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.39.22.150])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 30 Sep 2026 17:38:14 +0000 (GMT)
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Amit Machhiwal <amachhiw@linux.ibm.com>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Shrikanth Hegde <sshegde@linux.ibm.com>, kvm-ppc@vger.kernel.org,
+        kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Gautam Menghani <gautam@linux.ibm.com>,
+        Harsh Prateek Bora <harshpb@linux.ibm.com>,
+        R Nageswara Sastry <rnsastry@linux.ibm.com>,
+        Alexander Graf <agraf@suse.de>, linux-hardening@vger.kernel.org,
+        stable@vger.kernel.org, Avi Kivity <avi@redhat.com>
+Subject: [PATCH v2 1/3] KVM: PPC: Book3S HV: Add SRCU protection for virtual-mode HPT hcalls
+Date: Wed, 30 Sep 2026 23:07:48 +0530
+Message-ID: <20260930173750.56759-2-amachhiw@linux.ibm.com>
+X-Mailer: git-send-email 2.54.0
+In-Reply-To: <20260930173750.56759-1-amachhiw@linux.ibm.com>
+References: <20260930173750.56759-1-amachhiw@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,205 +99,171 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTMwMDA3MCBTYWx0ZWRfX/jUdmMl71D3m
+ iEvlLEWon60TXTG7AAIwsRbO4RzBDL8UZcK5E9Q3YSNyYHEI39Of70aAIrsrRe/izA/thYt3f2J
+ N+gWVbfHAQwrmSfEx9B7qtVMyDNtZbk=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTMwMDA3MCBTYWx0ZWRfXxZJwwhHggklo
+ KFYgCSJCfNPn3RtqSTMsbEQZmqx11v5JBhAR9PHrMB409wuhIVc5tUCUUDYw+giALekg3MgL/HI
+ p5GxJgGpRNBdD83L/+wdZ8WpkujZHJj6VWhVy+jgCik4Txti5hwD/2XuSKOEHUWGLDeBD3EazQ5
+ CnmOUX3O/0RIikreJ5nYDnwYUuNQm6BbgwPpBpmqSILc0gyyUQMRc1Lr+l0Xs30ioGzc8mLesYP
+ 6gPu+yLFEcd4L+XUad+3CEbS1x9qJBnxMiBf2+QhRV4Or3d7Defl80m1Qu9bOIpUQH5BV2+750n
+ pLUtXUl3oZ/5zyC4wFkhkWMm6G8RVgn6vF0KPLGl+FPJaB7ag/oofH9VTVdymVSgnHmBiZZLlhB
+ KpFJX5CaWb4/rVhB1IbUtEh+rW6RkEoT9TwPIh1k7tpIkGuxbyjTsXG/JgjurpFWObtuCXBMthi
+ DgUtT88/VO5Tg2lcPwg==
+X-Proofpoint-GUID: UnmTLLQOZdY03eEbC1vMV7GG6POHvdjb
+X-Authority-Analysis: v=2.4 cv=RKcmjIi+ c=1 sm=1 tr=0 ts=6abd4911 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
+ a=pGLkceISAAAA:8 a=VnNF1IyMAAAA:8 a=DgxhUou5BkHipWTGidQA:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: MF5K6I0q-GCCnEmd7ckBx2nBuD_hdjsS
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-30_03,2026-09-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 priorityscore=1501 spamscore=0 bulkscore=0 impostorscore=0
+ adultscore=0 lowpriorityscore=0 suspectscore=0 malwarescore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609300070
 
-6.12-stable review patch.  If anyone has any objections, please let me know.
+The virtual-mode HPT hcall handlers (H_ENTER, H_REMOVE, H_BULK_REMOVE,
+H_CLEAR_REF, H_CLEAR_MOD) call into book3s_hv_rm_mmu.c, which accesses
+memslots via kvm_memslots_raw().  kvm_memslots_raw() uses
+rcu_dereference_raw_check() to bypass SRCU lockdep annotation checking.
+This is safe in real mode because the entire guest entry/exit is wrapped
+in srcu_read_lock/unlock inside kvmppc_run_core() and
+kvmhv_run_single_vcpu().
 
-------------------
+However, since commit 6165d5dd99db ("KVM: PPC: Book3S HV: add virtual
+mode handlers for HPT hcalls and page faults"), these same handlers are
+also executed in virtual mode via kvmppc_pseries_do_hcall(), which runs
+after SRCU has already been released on guest exit.
 
-From: Farhan Ali <alifm@linux.ibm.com>
+A concurrent KVM_SET_USER_MEMORY_REGION deletion or move can therefore
+call synchronize_srcu_expedited() — which does not wait for this thread —
+and then kfree(slot) and vfree(slot->arch.rmap) while the hcall handler
+still holds a raw pointer to the memslot.  lock_rmap() then writes to
+freed vmalloc memory, leading to use-after-free and memory corruption.
+Because kvm_memslots_raw() suppresses lockdep checks, this race is
+entirely silent.
 
-[ Upstream commit c243e6c470c4695965cc8287767925bc1d9a7867 ]
+Fix this by factoring out the 7 HPT hcall handlers (H_REMOVE, H_ENTER,
+H_READ, H_CLEAR_MOD, H_CLEAR_REF, H_PROTECT, H_BULK_REMOVE) into a
+helper function, kvmppc_pseries_do_hpt_hcall(), and wrapping its call
+site in srcu_read_lock(&kvm->srcu) / srcu_read_unlock(&kvm->srcu, idx).
+Targeting only the HPT hcalls avoids wrapping non-HPT hcalls that sleep
+(such as H_CONFER, H_REGISTER_VPA, H_PAGE_INIT) or handlers that already
+acquire SRCU internally (such as H_RTAS).
 
-Introduce a constant for placeholder value and update the kerneldoc for
-pci_create_slot() to reference PCI_SLOT_PLACEHOLDER instead of -1
-throughout. No functional change.
-
-Suggested-by: Bjorn Helgaas <bhelgaas@google.com>
-Signed-off-by: Farhan Ali <alifm@linux.ibm.com>
-Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Tyrel Datwyler <tyreld@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Link: https://patch.msgid.link/20260805165518.794-2-alifm@linux.ibm.com
-
-Stable backport: this tree predates 102c8b26b54e ("PCI: Allow all bus
-devices to use the same slot"). Include its PCI_SLOT_ALL_DEVICES definition,
-slot-number documentation, and core matching/address handling so that
-subsequent commit dcc5bec09e23 ("PCI: Allow per function PCI slots to fix
-slot reset on s390") applies without conflicts. Keep the PCIe hotplug
-callers unchanged; enabling bus-wide slots there is outside this dependency.
-
-Retain the stable tree's kzalloc() and ATTRIBUTE_GROUPS() implementations.
-The placeholder conversion covers both PowerPC hotplug callers and the
-PCI core. All code changes stay within existing functions.
-
-Stable-dep-of: dcc5bec09e23 ("PCI: Allow per function PCI slots to fix slot reset on s390")
-Signed-off-by: Sasha Levin <sashal@kernel.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Fixes: 6165d5dd99db ("KVM: PPC: Book3S HV: add virtual mode handlers for HPT hcalls and page faults")
+Cc: stable@vger.kernel.org # v5.14+
+Suggested-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
 ---
- drivers/pci/hotplug/pnv_php.c     |    2 -
- drivers/pci/hotplug/rpaphp_slot.c |    2 -
- drivers/pci/slot.c                |   50 ++++++++++++++++++++++++++++----------
- include/linux/pci.h               |   13 +++++++++
- 4 files changed, 51 insertions(+), 16 deletions(-)
+ arch/powerpc/kvm/book3s_hv.c | 70 ++++++++++++++++++------------------
+ 1 file changed, 35 insertions(+), 35 deletions(-)
 
---- a/drivers/pci/hotplug/pnv_php.c
-+++ b/drivers/pci/hotplug/pnv_php.c
-@@ -800,7 +800,7 @@ static struct pnv_php_slot *pnv_php_allo
- 	if (dn->child && PCI_DN(dn->child))
- 		php_slot->slot_no = PCI_SLOT(PCI_DN(dn->child)->devfn);
- 	else
--		php_slot->slot_no = -1;   /* Placeholder slot */
-+		php_slot->slot_no = PCI_SLOT_PLACEHOLDER;   /* Placeholder slot */
- 
- 	kref_init(&php_slot->kref);
- 	php_slot->state	                = PNV_PHP_STATE_INITIALIZED;
---- a/drivers/pci/hotplug/rpaphp_slot.c
-+++ b/drivers/pci/hotplug/rpaphp_slot.c
-@@ -85,7 +85,7 @@ int rpaphp_register_slot(struct slot *sl
- 	struct device_node *child;
- 	u32 my_index;
- 	int retval;
--	int slotno = -1;
-+	int slotno = PCI_SLOT_PLACEHOLDER;
- 
- 	dbg("%s registering slot:path[%pOF] index[%x], name[%s] pdomain[%x] type[%d]\n",
- 		__func__, slot->dn, slot->index, slot->name,
---- a/drivers/pci/slot.c
-+++ b/drivers/pci/slot.c
-@@ -38,11 +38,20 @@ static const struct sysfs_ops pci_slot_s
- 
- static ssize_t address_read_file(struct pci_slot *slot, char *buf)
- {
--	if (slot->number == 0xff)
-+	if (slot->number == PCI_SLOT_PLACEHOLDER)
- 		return sysfs_emit(buf, "%04x:%02x\n",
- 				  pci_domain_nr(slot->bus),
- 				  slot->bus->number);
- 
-+	/*
-+	 * Preserve legacy ABI expectations that hotplug drivers that manage
-+	 * multiple devices per slot emit 0 for the device number.
-+	 */
-+	if (slot->number == PCI_SLOT_ALL_DEVICES)
-+		return sysfs_emit(buf, "%04x:%02x:00\n",
-+				  pci_domain_nr(slot->bus),
-+				  slot->bus->number);
-+
- 	return sysfs_emit(buf, "%04x:%02x:%02x\n",
- 			  pci_domain_nr(slot->bus),
- 			  slot->bus->number,
-@@ -74,7 +83,8 @@ static void pci_slot_release(struct kobj
- 
- 	down_read(&pci_bus_sem);
- 	list_for_each_entry(dev, &slot->bus->devices, bus_list)
--		if (PCI_SLOT(dev->devfn) == slot->number)
-+		if (slot->number == PCI_SLOT_ALL_DEVICES ||
-+		    PCI_SLOT(dev->devfn) == slot->number)
- 			dev->slot = NULL;
- 	up_read(&pci_bus_sem);
- 
-@@ -167,7 +177,8 @@ void pci_dev_assign_slot(struct pci_dev
- 
- 	mutex_lock(&pci_slot_mutex);
- 	list_for_each_entry(slot, &dev->bus->slots, list)
--		if (PCI_SLOT(dev->devfn) == slot->number)
-+		if (slot->number == PCI_SLOT_ALL_DEVICES ||
-+		    PCI_SLOT(dev->devfn) == slot->number)
- 			dev->slot = slot;
- 	mutex_unlock(&pci_slot_mutex);
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index dbac3573b2c8..aa51968e206a 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -1159,6 +1159,38 @@ static long kvmppc_h_rpt_invalidate(struct kvm_vcpu *vcpu,
+ 	return H_SUCCESS;
  }
-@@ -189,7 +200,8 @@ static struct pci_slot *get_slot(struct
- /**
-  * pci_create_slot - create or increment refcount for physical PCI slot
-  * @parent: struct pci_bus of parent bridge
-- * @slot_nr: PCI_SLOT(pci_dev->devfn) or -1 for placeholder
-+ * @slot_nr: PCI_SLOT(pci_dev->devfn), PCI_SLOT_PLACEHOLDER for placeholder, or
-+ *	PCI_SLOT_ALL_DEVICES
-  * @name: user visible string presented in /sys/bus/pci/slots/<name>
-  * @hotplug: set if caller is hotplug driver, NULL otherwise
-  *
-@@ -214,15 +226,26 @@ static struct pci_slot *get_slot(struct
-  * In most cases, @pci_bus, @slot_nr will be sufficient to uniquely identify
-  * a slot. There is one notable exception - pSeries (rpaphp), where the
-  * @slot_nr cannot be determined until a device is actually inserted into
-- * the slot. In this scenario, the caller may pass -1 for @slot_nr.
-+ * the slot. In this scenario, the caller may pass PCI_SLOT_PLACEHOLDER for @slot_nr.
-  *
-  * The following semantics are imposed when the caller passes @slot_nr ==
-- * -1. First, we no longer check for an existing %struct pci_slot, as there
-- * may be many slots with @slot_nr of -1.  The other change in semantics is
-- * user-visible, which is the 'address' parameter presented in sysfs will
-- * consist solely of a dddd:bb tuple, where dddd is the PCI domain of the
-- * %struct pci_bus and bb is the bus number. In other words, the devfn of
-- * the 'placeholder' slot will not be displayed.
-+ * PCI_SLOT_PLACEHOLDER. First, we no longer check for an existing %struct
-+ * pci_slot, as there may be many slots with @slot_nr of
-+ * PCI_SLOT_PLACEHOLDER. The other change in semantics is user-visible,
-+ * which is the 'address' parameter presented in sysfs will consist solely
-+ * of a dddd:bb tuple, where dddd is the PCI domain of the %struct pci_bus
-+ * and bb is the bus number. In other words, the devfn of the 'placeholder'
-+ * slot will not be displayed.
-+ *
-+ * Bus-wide slots:
-+ * For PCIe hotplug, the physical slot encompasses the entire secondary
-+ * bus, not just a single device number. If the device supports ARI and ARI
-+ * Forwarding is enabled in the upstream bridge, a multi-function device
-+ * may include functions that appear to have several different device
-+ * numbers, i.e., PCI_SLOT() values.  Pass @slot_nr == PCI_SLOT_ALL_DEVICES
-+ * to create a slot that matches all devices on the bus. Unlike placeholder
-+ * slots, bus-wide slots go through normal slot lookup and reuse existing
-+ * slots if present.
-  */
- struct pci_slot *pci_create_slot(struct pci_bus *parent, int slot_nr,
- 				 const char *name,
-@@ -235,7 +258,7 @@ struct pci_slot *pci_create_slot(struct
  
- 	mutex_lock(&pci_slot_mutex);
- 
--	if (slot_nr == -1)
-+	if (slot_nr == PCI_SLOT_PLACEHOLDER)
- 		goto placeholder;
- 
- 	/*
-@@ -287,7 +310,8 @@ placeholder:
- 
- 	down_read(&pci_bus_sem);
- 	list_for_each_entry(dev, &parent->devices, bus_list)
--		if (PCI_SLOT(dev->devfn) == slot_nr)
-+		if (slot_nr == PCI_SLOT_ALL_DEVICES ||
-+		    PCI_SLOT(dev->devfn) == slot_nr)
- 			dev->slot = slot;
- 	up_read(&pci_bus_sem);
- 
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -72,12 +72,23 @@
- /* return bus from PCI devid = ((u16)bus_number) << 8) | devfn */
- #define PCI_BUS_NUM(x) (((x) >> 8) & 0xff)
- 
-+/*
-+ * PCI_SLOT_ALL_DEVICES indicates a slot that covers all devices on the bus.
-+ * Used for PCIe hotplug where the physical slot is the entire secondary bus,
-+ * and, if ARI Forwarding is enabled, functions may appear to be on multiple
-+ * devices.
-+ */
-+#define PCI_SLOT_ALL_DEVICES	0xfe
++static long kvmppc_pseries_do_hpt_hcall(struct kvm_vcpu *vcpu, unsigned long req)
++{
++	switch (req) {
++	case H_REMOVE:
++		return kvmppc_h_remove(vcpu, kvmppc_get_gpr(vcpu, 4),
++				       kvmppc_get_gpr(vcpu, 5),
++				       kvmppc_get_gpr(vcpu, 6));
++	case H_ENTER:
++		return kvmppc_h_enter(vcpu, kvmppc_get_gpr(vcpu, 4),
++				      kvmppc_get_gpr(vcpu, 5),
++				      kvmppc_get_gpr(vcpu, 6),
++				      kvmppc_get_gpr(vcpu, 7));
++	case H_READ:
++		return kvmppc_h_read(vcpu, kvmppc_get_gpr(vcpu, 4),
++				     kvmppc_get_gpr(vcpu, 5));
++	case H_CLEAR_MOD:
++		return kvmppc_h_clear_mod(vcpu, kvmppc_get_gpr(vcpu, 4),
++					  kvmppc_get_gpr(vcpu, 5));
++	case H_CLEAR_REF:
++		return kvmppc_h_clear_ref(vcpu, kvmppc_get_gpr(vcpu, 4),
++					  kvmppc_get_gpr(vcpu, 5));
++	case H_PROTECT:
++		return kvmppc_h_protect(vcpu, kvmppc_get_gpr(vcpu, 4),
++					kvmppc_get_gpr(vcpu, 5),
++					kvmppc_get_gpr(vcpu, 6));
++	case H_BULK_REMOVE:
++		return kvmppc_h_bulk_remove(vcpu);
++	}
 +
-+/* Used to identify a slot as a placeholder */
-+#define PCI_SLOT_PLACEHOLDER	0xff
++	return H_FUNCTION;
++}
 +
- /* pci_slot represents a physical slot */
- struct pci_slot {
- 	struct pci_bus		*bus;		/* Bus this slot is on */
- 	struct list_head	list;		/* Node in list of slots */
- 	struct hotplug_slot	*hotplug;	/* Hotplug info (move here) */
--	unsigned char		number;		/* PCI_SLOT(pci_dev->devfn) */
-+	unsigned char		number;		/* Device nr, or PCI_SLOT_ALL_DEVICES */
- 	struct kobject		kobj;
- };
+ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvm *kvm = vcpu->kvm;
+@@ -1174,47 +1206,15 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
  
-
+ 	switch (req) {
+ 	case H_REMOVE:
+-		ret = kvmppc_h_remove(vcpu, kvmppc_get_gpr(vcpu, 4),
+-					kvmppc_get_gpr(vcpu, 5),
+-					kvmppc_get_gpr(vcpu, 6));
+-		if (ret == H_TOO_HARD)
+-			return RESUME_HOST;
+-		break;
+ 	case H_ENTER:
+-		ret = kvmppc_h_enter(vcpu, kvmppc_get_gpr(vcpu, 4),
+-					kvmppc_get_gpr(vcpu, 5),
+-					kvmppc_get_gpr(vcpu, 6),
+-					kvmppc_get_gpr(vcpu, 7));
+-		if (ret == H_TOO_HARD)
+-			return RESUME_HOST;
+-		break;
+ 	case H_READ:
+-		ret = kvmppc_h_read(vcpu, kvmppc_get_gpr(vcpu, 4),
+-					kvmppc_get_gpr(vcpu, 5));
+-		if (ret == H_TOO_HARD)
+-			return RESUME_HOST;
+-		break;
+ 	case H_CLEAR_MOD:
+-		ret = kvmppc_h_clear_mod(vcpu, kvmppc_get_gpr(vcpu, 4),
+-					kvmppc_get_gpr(vcpu, 5));
+-		if (ret == H_TOO_HARD)
+-			return RESUME_HOST;
+-		break;
+ 	case H_CLEAR_REF:
+-		ret = kvmppc_h_clear_ref(vcpu, kvmppc_get_gpr(vcpu, 4),
+-					kvmppc_get_gpr(vcpu, 5));
+-		if (ret == H_TOO_HARD)
+-			return RESUME_HOST;
+-		break;
+ 	case H_PROTECT:
+-		ret = kvmppc_h_protect(vcpu, kvmppc_get_gpr(vcpu, 4),
+-					kvmppc_get_gpr(vcpu, 5),
+-					kvmppc_get_gpr(vcpu, 6));
+-		if (ret == H_TOO_HARD)
+-			return RESUME_HOST;
+-		break;
+ 	case H_BULK_REMOVE:
+-		ret = kvmppc_h_bulk_remove(vcpu);
++		idx = srcu_read_lock(&kvm->srcu);
++		ret = kvmppc_pseries_do_hpt_hcall(vcpu, req);
++		srcu_read_unlock(&kvm->srcu, idx);
+ 		if (ret == H_TOO_HARD)
+ 			return RESUME_HOST;
+ 		break;
+-- 
+2.54.0 (Apple Git-157)
 
 
