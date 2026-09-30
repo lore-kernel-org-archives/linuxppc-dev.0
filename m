@@ -1,51 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-28598-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28599-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9787ECA5FC4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 18:00:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCA3FCA5FC4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 18:09:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hw2s10tGlz2y8d;
-	Thu, 01 Oct 2026 04:00:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790791237;
-	cv=none; b=XDEivlWY1tuwl6tn7C2UqIjkmqeEkEgJIZu+/SyEQX4SUS7piG0ZAb3nHrzx2svfTt2coLvEEAoDKnAibpVOsFyNPIBc7Kuefh6CpKSMvqr6tiIjB8chfgLjjGdJHdevjh4+lC5bT4nLAig6ZXRdW3y2s25aMYW2+8sbEW9pAXqYFvji6CbLA2vs2eRd9pipT0XBrrUsi5j0vc7rFC3OdhojhnkhVCLN2lcefF3LQ6zAuy9VWTa6zZRZ53VEL+ak8zphk8u75Maop9xBRvrS+8l+c26OHmteZsMfYOqokui1B3gGdyOgj8CRNRF+WtMNNnXNsU8KZsza3tIGJFoZSw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hw33Y1176z2y8d;
+	Thu, 01 Oct 2026 04:09:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790791785;
+	cv=none; b=X6zuVBRd0793C2/g6R6zw+JS2TYYqmAPynmol04cU78GNvYnQP2KRrirtsIOOGmcKFY1kaosnpn20ccpwHm1dzaXLzq0XoKWnn2qbHiWllf6ssenP6/EUvYNoZrdr9J4+mjRWJmu88WwfvJDJuep84TpOgwNQWThpBoJRcqP3/qpNualhoxgKI1Y9z0AQzzByGw2PsWPf4YLy9lSfMOJOzpJuSbnw37QGMSs4zoWu4Zsne9ZRMZLDx1MSCYxFtnVxcOTRYvBElzASzLoWXqxeOnG9Z7OiFrGGOECyQNHonovIrVtA8y7Xw9NHC4RjgLS5SD/nYrBnLVekmxGINsGGg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790791237; c=relaxed/relaxed;
-	bh=m/yksmZi4/8K5CoXfwsmRihQ5Y6+rvb/E2mBihR25ec=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=NPsBohkPOg2JaAjuiE4uQqIYGBz9CH5lwOIbV8OYZHwqPeLqygY1ps+yKhXzYBIXOO7u3cdmh/5JTniTwntZeWFUUKUF/mU5EngEEEDFHwG0hrkvmfKUfU6gJfR67jMYGCRAJBl8X38AefEG+ZKdmRU3AKvWF+0B7dU2rLrWp9/oKm4YCeFLnTGytH/G8K6Jqupo9cdGrU4P5Jm3FmU5lQJccyNUwmY7BFgBRWRTSzkkgK41aodfW3Allw+Mxmz4RCRYJIpsXFPSd+Vk05QFjUdfbmmALGnly8CfOXEu6f2UClbqwRg0fTLj8u61jkDGnFbGwwC87QR/W/IE+phUHw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=a0lQ69ZA; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1790791785; c=relaxed/relaxed;
+	bh=fOdtxhVrtyJQ9ILNW3SJhQBtGRF48Wpq2LZd1ZVtX1g=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=hYvPxLgniohnHRnuSwTX5EGFMdDvmit3GVNImS77Qw84LWpEVB5fNlXen6mZJO3kZdsLKoVLgP0125bgdcYKgBxuQrBf58X/y7ChjQoiHxLCc3gf8GFPsyDhmlZlABn/+d3X7IAaMwMzNjDXa6Hs6SZ/pTgdzPYZ3e5+PjSav8NPd4VC6c8m+KDOe3Zed2SDeGuEShZsto9ci04PIpB110CWh74ofXQYQoYZKGpvWHrUpFqXVPBVoiKC9rm382dpWjJMtErhB9gN9TdoHWS6F74suWM2QdZ2VVM7RhFCvagUNe0RqAfD7NggavX33WFqweIH3/wKtw1PhU+sJ8kZ0Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=b7YKInIm; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=jyoti@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=a0lQ69ZA;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=b7YKInIm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=jyoti@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hw2rz1yXlz2y24
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 04:00:35 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id E463D41331;
-	Wed, 30 Sep 2026 18:00:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 399611F000FF;
-	Wed, 30 Sep 2026 18:00:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790791232;
-	bh=m/yksmZi4/8K5CoXfwsmRihQ5Y6+rvb/E2mBihR25ec=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=a0lQ69ZA3EF3oZrA8FJp6gvLHNcjv7sa0CYpXDRp5NCIpQAKZINSlmZePxs0Bu/GG
-	 ZL+K2zBU5VYOUipLGoPXy7oqxQneSnadQ1rQHA8NOucWYetyMEsqX5Z/4SkamW4nc5
-	 1CdVHa1J6L6kTXif3yRviHjfmpYWpcQTuApygeBSOtr/mbYM4/DrinXULausYGEql8
-	 7VYFIfty06grTZp9bcWuMRm+v7INjdNAwKWqGrnz2ZsA7i8lRMoOaaqJylR1vEkrSm
-	 U0STDXgARwrHn6dT0i++Q62rSNwcyw3yoJ7TPi/rAekH7TvRRK7D6GrcYSdaKfLCnS
-	 2PR9tiwtCURkQ==
-Message-ID: <36a39658-1345-40dc-8c25-44c3ec5c9750@kernel.org>
-Date: Wed, 30 Sep 2026 22:00:06 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hw33X0P9tz2y24
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 04:09:43 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68UI5NfN3708244;
+	Wed, 30 Sep 2026 18:09:34 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=fOdtxhVrtyJQ9ILNW3SJhQBtGRF48Wpq2LZd1ZVtX
+	1g=; b=b7YKInImKenFeOQVBbIr/1kumhY5sj5Lf//lIp76oCIodZookZW3/FBu5
+	G1yU3lbuhCpeO3e64vEG9V4M631ja8XUsG5YzqZ5XTyeyFHAzrGW6TQCwB3qiBxL
+	+Ca4xAm9FhvVUpPzUyBFS6mjVbZTpk0pFCHNgwUT6Fgwe5erSUe89jx/M8vs5lkA
+	d1IeuxE2mx7BsQbTSu8DMfxjNYQhyGsGQWt3gLkX7pR9GbbvbOnlrFHenqx8NZNF
+	k9rzyeZ9rAudW02EHQEZMa8LCuofTg0bl8LBiXDXORV2tjjtLetWP4vnBwrwruGr
+	Q9BzzJTEMvA6DT2OiPNnRz2LIOIAg==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gx5j5euh8-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Wed, 30 Sep 2026 18:09:33 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68UHltnl2587494;
+	Wed, 30 Sep 2026 18:09:32 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4h0q4pbryy-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 30 Sep 2026 18:09:32 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68UI9Tjx31064348
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 30 Sep 2026 18:09:29 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E62FA20049;
+	Wed, 30 Sep 2026 18:09:28 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 44C0920040;
+	Wed, 30 Sep 2026 18:09:24 +0000 (GMT)
+Received: from li-4c4c4544-0042-3610-8056-b8c04f473234.ibmuc.com (unknown [9.67.31.86])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 30 Sep 2026 18:09:23 +0000 (GMT)
+From: Jyoti Gupta <jyoti@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com,
+        sourabhjain@linux.ibm.com, amachhiw@linux.ibm.com, mkchauras@gmail.com
+Subject: [PATCH v2] powerpc/mpic: Fix memory leak of mpic on error paths
+Date: Wed, 30 Sep 2026 23:39:19 +0530
+Message-ID: <20260930180919.335930-1-jyoti@linux.ibm.com>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,110 +86,86 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] bus: fsl-mc: drop the fwnode links of the dpmacs nodes
-To: vjardin@free.fr, Ioana Ciornei <ioana.ciornei@nxp.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20260928-for-upstream-fsl-mc-dpmac-fwnode-links-v1-1-b8976244b38b@free.fr>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20260928-for-upstream-fsl-mc-dpmac-fwnode-links-v1-1-b8976244b38b@free.fr>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTMwMDA3MyBTYWx0ZWRfX33owgyI/6On1
+ CZWuIn+yacYs/zV+alorX/TxlQmPGdcafEU0cG+M7Nir9JW3uSdhL91EZvxLfvjQfTRBxouhSMU
+ KB4XQ649cCA5g+IurnPmYwUwpStQ9E0=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTMwMDA3MyBTYWx0ZWRfX8PxgYPxSr2mF
+ 1o0rik8kcJ/Z+suiZCYIhZ1rD2efJW2+iuEC7JqiPjYB1/0cZLFXpb1ZjiVoIYQwEuOluk7TlrY
+ VK1zvNq98DAl7TNt7sh/fVna/2ttcr3q63+W+RSaUn0sBhW+Ip/vn708Ax8duSpHC81TwaDp5sQ
+ 1UMZwSryylZAVqTc99YjPKlLehTQGIy6NHiR9EgmU2SwOhqFaF66+6fMcXTWY9H8YocxoqRL4Ai
+ t3xQz8Xk3cuFop6Zu5D1n/Fe44vhEpDFi99MWradUyDtcFH5k1dBzGHRYaqTlWkm+RJanxQ8q6W
+ vqNmekR4z/EgdEIchBo/QNb9vdlDDKKGMlclBGp6YUASfsNDld2KR2P9B/ALdPmnlMKrt/pmSkX
+ Ppbs9jGNMw88dtMCcQxf5rk/nQYSeindRhnu4uHGwSDCS6zLjvW1B9qpjoqqceSdpmKU4GO8u/M
+ IySzMHHSu+4X1GlOLjQ==
+X-Proofpoint-GUID: 84AbBOAzfkPmoZ1qmxt31f5jAiU8aiN6
+X-Authority-Analysis: v=2.4 cv=RKcmjIi+ c=1 sm=1 tr=0 ts=6abd505d cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=VyWIBLCL5DJSJingBiIA:9
+X-Proofpoint-ORIG-GUID: 0Izb5SmfDGcs5UjpB35MwD4upfArpORA
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-30_04,2026-09-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 priorityscore=1501 spamscore=0 bulkscore=0 impostorscore=0
+ adultscore=0 lowpriorityscore=0 suspectscore=0 malwarescore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609300073
 
+mpic_alloc() allocates struct mpic (and optionally the protected
+sources bitmap) but does not free them when mpic_setup_error_int() or
+irq_domain_create_linear() fails, leaking the memory.
 
+Free the bitmap and the mpic in the common error path before dropping the
+device node reference.
 
-Le 28/09/2026 à 15:52, Vincent Jardin via B4 Relay a écrit :
-> From: Vincent Jardin <vjardin@free.fr>
-> 
-> A DPMAC node under dpmacs/ is never the fwnode of any device:
->    the fsl-mc bus creates dpmac.N objects without one,
->    then dpaa2-mac finds its node in dpmacs/ at connect time.
-> 
-> fw_devlink therefore attaches the supplier links of those nodes (phys, ...)
-> to the nearest ancestor device, the fsl-mc bus, as SYNC_STATE_ONLY proxies.
-> 
-> device_link_add() refuses such a link once the consumer has probed, and
-> fw_devlink logs the refusal as an error.
-> 
-> On an LX2160A board with 4x25G DPMACs for which phys = <&serdes_1 N>,
-> the Serdes PHY binds after the bus and then at every boot it shows:
-> 
->    fsl_mc_bus 80c000000.fsl-mc: Failed to create device link (0x180) with supplier 1ea0000.phy for /soc/fsl-mc@80c000000/dpmacs/ethernet@3
-> 
-> once per port!
+Fixes: 996983b75ceb ("powerpc/mpic: Search for open-pic device-tree node if NULL")
+Signed-off-by: Jyoti Gupta <jyoti@linux.ibm.com>
+---
+ arch/powerpc/sysdev/mpic.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-If I understand correctly this explains the problem but it doesn't 
-explain what this patch does to fix it, allthough the patch subject 
-might be the explanation.
-
-I have taken this patch as is to give it a go into linux-next, but 
-please feel free to send a new version with a more obvious explanation 
-before begining of next week.
-
-Another question below.
-
-> 
-> Signed-off-by: Vincent Jardin <vjardin@free.fr>
-> ---
->   drivers/bus/fsl-mc/fsl-mc-bus.c | 17 +++++++++++++++++
->   1 file changed, 17 insertions(+)
-> 
-> diff --git a/drivers/bus/fsl-mc/fsl-mc-bus.c b/drivers/bus/fsl-mc/fsl-mc-bus.c
-> index 5878eafd8d44..0c37b6780c84 100644
-> --- a/drivers/bus/fsl-mc/fsl-mc-bus.c
-> +++ b/drivers/bus/fsl-mc/fsl-mc-bus.c
-> @@ -11,6 +11,7 @@
->   #define pr_fmt(fmt) "fsl-mc: " fmt
->   
->   #include <linux/module.h>
-> +#include <linux/fwnode.h>
->   #include <linux/of_device.h>
->   #include <linux/of_address.h>
->   #include <linux/ioport.h>
-> @@ -1033,6 +1034,20 @@ static int fsl_mc_firmware_check(struct platform_device *pdev)
->   	return 0;
->   }
->   
-> +static void fsl_mc_purge_dpmac_fwnode_links(struct device *dev)
-> +{
-> +	struct device_node *dpmacs, *child;
-> +
-> +	dpmacs = of_get_child_by_name(dev->of_node, "dpmacs");
-
-Is this name a valid API documented in Documentation/devicetree/bindings/ ?
-
-I'm asking because I have already been challenged by devicetree 
-reviewers on a use of undocumentated name.
-
-Christophe
-
-> +	if (!dpmacs)
-> +		return;
-> +
-> +	for_each_child_of_node(dpmacs, child)
-> +		fwnode_links_purge(of_fwnode_handle(child));
-> +
-> +	of_node_put(dpmacs);
-> +}
-> +
->   /*
->    * fsl_mc_bus_probe - callback invoked when the root MC bus is being
->    * added
-> @@ -1134,6 +1149,8 @@ static int fsl_mc_bus_probe(struct platform_device *pdev)
->   						&mc->num_translation_ranges);
->   		if (error < 0)
->   			goto error_cleanup_mc_io;
-> +
-> +		fsl_mc_purge_dpmac_fwnode_links(&pdev->dev);
->   	}
->   
->   	error = dprc_get_container_id(mc_io, 0, &container_id);
-> 
-> ---
-> base-commit: 7b3b0598c00e67f2df85d0b4cd99eaa3be6c9bfd
-> change-id: 20260928-for-upstream-fsl-mc-dpmac-fwnode-links-622b8eadb98a
-> 
-> Best regards,
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 257886ec3f70..b21a880777cc 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -1389,7 +1389,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 		if (fsl_version >= 0x401) {
+ 			ret = mpic_setup_error_int(mpic, intvec_top - 13);
+ 			if (ret)
+-				return NULL;
++				goto err_of_node_put;
+ 		}
+ 
+ 	}
+@@ -1488,12 +1488,8 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 						 intvec_top,
+ 						 &mpic_host_ops, mpic);
+ 
+-	/*
+-	 * FIXME: The code leaks the MPIC object and mappings here; this
+-	 * is very unlikely to fail but it ought to be fixed anyways.
+-	 */
+ 	if (mpic->irqhost == NULL)
+-		return NULL;
++		goto err_of_node_put;
+ 
+ 	/* Display version */
+ 	switch (greg_feature & MPIC_GREG_FEATURE_VERSION_MASK) {
+@@ -1527,6 +1523,9 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 	return mpic;
+ 
+ err_of_node_put:
++	if (mpic)
++		bitmap_free(mpic->protected);
++	kfree(mpic);
+ 	of_node_put(node);
+ 	return NULL;
+ }
+-- 
+2.55.0
 
 
