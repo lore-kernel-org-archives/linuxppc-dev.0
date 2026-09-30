@@ -1,54 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-28615-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28616-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4217ACA5FC5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 20:15:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC08FCA5FC5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 20:20:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hw5s92Mpwz2ygX;
-	Thu, 01 Oct 2026 06:15:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790799357;
-	cv=none; b=cKSuZUumYOILVU3rjpszE250l6M8dy1mum6TbZFzOijfZ/l+bZ/OiFj5xP/1aAnYTqbrVba+/uhJn+U+5AKct1ZGXMDyacBnIgEge5xC4+88Wj6taWu9X+1XdeDA06dYb0DgO/dXyBpLitBJibX/doA0UWo95KwO/Rrh5Ie934SExNMvI71vfvwkBUfFVyYQDC11prt0t/kYP1l9F2PcPbTocCN6GJj5TG66pAiDCUVHWFgMZ50CJgr/MCpqaFszqJOlPtYdcg9GDHq/kXh4O7cRxcVewOmRutUhylxRHW4qOtxlPWxpli/sS1padIGS9Tsu/ze1+toZO6dwWd9i7Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790799357; c=relaxed/relaxed;
-	bh=s+KXXJdmY3ko0gMKGF4RYmFKtidPeEYxoUxXdHgmVJg=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=MUI3N3UMQXjEZllGUrgRxSwgeLYzaX1AF3+WRfMp9x1lRfk9SEB0cUvzCU/Tu/0rdtj8HDRT98WjaM80xYgk5ywSpdIlHrBAah7ISjzV3QdmwAZgYxURjfgY7HqxnbB9iU0n++huPdXg0QIVSVXJmxOhzNAY9Uznda7X+85/OOJZnEqmH5ZOzcZoF/SQbf0KxBAGms0cqkv/HaDY0CdcRkydHP7xZHXbNmiZ+2zMPCSat8IZLPhtSyDvEgRYaEo83K2hYuREdD3mXsdpAlsZyh5BsL1ZhyYIoEQDutEN5PfqG0cGl2Ok1kB2sbkpEJA5qFMj1ZUDYJ9GICGEHe7FtA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eXEtoFW6; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+vjardin.free.fr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hw5y14jllz2ygX;
+	Thu, 01 Oct 2026 06:20:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::5" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790799609;
+	cv=pass; b=JY9Xi6zGcr8RdGaqDrBhPWR3Nh+DQJxSE8QtlUd977JCHCAaxNXLjXit0/w8WZ7mD6+Dofb5ACgXscN2C7dPyh5zLN55c118a1XK8joI3aYYDncDziwvhvbnx8ok1mlx7459FEA1hzL1dTSLc4FDVxdnxCRVmEeCEpqT1bDq2AAlEgPwhaIlPp0jsJy8tXWECPjLmM7kIp0MiU1XoBmwYQ0XGw+9c8TSx9FIQc8TbiK4oTgeHPdDuyHNe35k2/UpJ2UNmu/EzsSEsMw3pgS5Bvt6SoDr7qwnnUWH0b2HFpFLBraFcyPJMWC7gwSyEZSZ2X/n2N0uAzgcgy1orBxF8g==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1790799609; c=relaxed/relaxed;
+	bh=FyjLy732LoXSLY/3YjFdGuIybnf569ynjAUnNPiqDhg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=kp2aHMPuRyktXnltwTRl2IhFOgSOPO2Eb1BIcxWlbYGnIcaHh3nbEBcu35zKVAGTv6+CyKPShAibVyo/sE57ZjteGuac4lGL9o2bRpxco5OqRu3CvDtqCu0n8dx8yHirPyivviBGM4HTusHbXlws4SMoajcmcxRlwWZAkRFJe9BujDy4a9xVZI4VrOyb3dVCzU2w216gweVLUz8KiGBfQAUnv2+05oU0d+F35oLmKTixSKrSPTML09k7xttXrKHgjLrfO7INrP5svD4WRM2prYX26DpWAzQrWe0zAOnIJ7LjZIEkrBtCAxQdBxdjRY2RsRUVw6V71ZPK7wyUXw23fA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=e/CsBvNN; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eXEtoFW6;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=e/CsBvNN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+vjardin.free.fr@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
+Received: from DUZPR83CU001.outbound.protection.outlook.com (mail-northeuropeazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hw5s824wmz2yHT
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 06:15:56 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 4BE9B601F0;
-	Wed, 30 Sep 2026 20:15:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id ED6FFC2BCB9;
-	Wed, 30 Sep 2026 20:15:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1790799353;
-	bh=4kcMV2ayuSWtjNTLFAWlAtj1LSmyR3M6MFYIU6IRV+8=;
-	h=From:Date:Subject:To:Cc:Reply-To:From;
-	b=eXEtoFW6DqypfdVBNXJ4+UdQRIV05YFPtHjiXZkaoGl+yCNWhKUomUxDCRIc+aTyK
-	 xPHyGWkpeniX01ECLtevqWVYch+6RBS8l2FmhyVXKclxdVVJ/8HYYPrxoo6r0DxUoA
-	 q/Mx4ds6wmFyZIplNhyjh42ZkokwRpcOnC0UvItTpSXJt1XyTdEuBQOw8eEyyos4qF
-	 FTbY7tvHXjVvdsx1aX5yEW1+Z34khfI0eMfxc1XrvoZ8aSbpFvjzHvrZH36uUywB0B
-	 K1IWwPjbzzA0kvIbro6Wdwp53Vy4SRG2mG6IH7baiXRpiNx/I6Bfm2r08fkR1MVPQj
-	 bGPfHcvlH/vPw==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3CC2CA5FC5;
-	Wed, 30 Sep 2026 20:15:52 +0000 (UTC)
-From: Vincent Jardin via B4 Relay <devnull+vjardin.free.fr@kernel.org>
-Date: Wed, 30 Sep 2026 22:15:48 +0200
-Subject: [PATCH v2] bus: fsl-mc: drop the fwnode links of the dpmacs nodes
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hw5y01n4Xz2yfD
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 06:20:07 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=jeRll0wiAJDmDkfij3y2WWNEilsiQKYJhQN/ezc4o0QPUdnPD5xeBt/c27+/vSw2vA9v++n5l8aEOe4+0DxihnoXRWj/EUZ5BSvm877EYMn9Y8rBJuImArH2+zm3PAcKOxMJQadNV54mskFpSIjE3GEahmDmdpBkISyipO8AZtDTdNnK0cHOibk/cXzSN7Z8MmdgcILTNkE+Pvo820HMb1LF+8dgKhELF44PUzsl+hNsrQhAOjCSm2n5ORX4P/lwbckquFbKr5V2DllYltpffdU0b1A5z6n0NIQWj6C3QFu6W4ke58kPutQIfYM7fV2GLJcBAmyLDk8wsjbE69A0uA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=FyjLy732LoXSLY/3YjFdGuIybnf569ynjAUnNPiqDhg=;
+ b=PM75JxWfklGdnPufcwEwhCmvV3E0I2p/prlkmQf5JBs3QCG6zPx99kxCT8fIpiTV4U66Wr6XzSCpoeA3a8pPxT2mpOEsHy3IZUB7hRq/HwwyFf7iAfqH6IaXZEZaHLl+R9gSnB+Trf9HmIhFeTGELJzyEAXyTSedJnU0a1oLL8Xyk9WtW1w7V2j1baehegUQXmOK4tC3TBZD7Kb0+ndkfm1wJWvh8ml/ideFO2aZorwKskoVN2o7WM2zRR53a/vf+VQOhpOAEHphZ/9choPO8/LXUhAcvmM3ipqH24T2BCQbLkIufh/f8PLAwDjuYxC03Ky3nt+f64hMHT7doMiLtg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=FyjLy732LoXSLY/3YjFdGuIybnf569ynjAUnNPiqDhg=;
+ b=e/CsBvNNLWK09hAFRQfmoz88t4/t4q6eSgbInkjDrGHi3UANm77jBOrmDciVxhR1rxOzQl6Jgoz3ampzxM9oIVNWUNgwNnSUjD+DPHbkSSbJ+bJXiflQOiDs4o/n4EOt5Ly0DDZSobEZzE9LEgSFSGZnmywUOT/Xb2CkBN3vdpexdgqmVOQ24gRK40Ep21JK17QUo0abI6sjK+1924vejD004XFe7TsfX3/HRfb3/HCDjo7CGJI/PzcGAK0g1zprDsKqFWAwqqE6YHDB3gLyuiVgwIbWG9a9wg/gGsJpvCKRC+RaEWLQK32HPywPQU0Hbe1WEw9AirN/Jchb1kJOKQ==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
+ by MRWPR04MB12096.eurprd04.prod.outlook.com (2603:10a6:501:98::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.27; Wed, 30 Sep
+ 2026 20:19:38 +0000
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c%7]) with mapi id 15.21.0451.022; Wed, 30 Sep 2026
+ 20:19:38 +0000
+Date: Wed, 30 Sep 2026 16:19:31 -0400
+From: Frank Li <Frank.li@oss.nxp.com>
+To: Rosen Penev <rosenp@gmail.com>
+Cc: dmaengine@vger.kernel.org, Vinod Koul <vkoul@kernel.org>,
+	Frank Li <Frank.Li@kernel.org>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	open list <linux-kernel@vger.kernel.org>,
+	"open list:FREESCALE SOC DRIVERS" <linuxppc-dev@lists.ozlabs.org>,
+	"moderated list:FREESCALE SOC DRIVERS" <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [PATCHv4] dmaengine: bestcomm: use platform machinery to get irq
+Message-ID: <ar1u0wRov8d_Rxle@lizhi-Precision-Tower-5810>
+References: <20260919001931.723402-1-rosenp@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260919001931.723402-1-rosenp@gmail.com>
+X-ClientProxiedBy: CYZPR12CA0002.namprd12.prod.outlook.com
+ (2603:10b6:930:8b::13) To GV2PR04MB11799.eurprd04.prod.outlook.com
+ (2603:10a6:150:2cf::9)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,119 +86,235 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260930-for-upstream-fsl-mc-dpmac-fwnode-links-v2-1-13f7b6ef000f@free.fr>
-X-B4-Tracking: v=1; b=H4sIAPNtvWoC/5XNQQ6CMBCF4auQrh0DI8HiynsYFi2dSiO0zRRRQ
- 7i7lRu4/N/ifatIxI6SuBSrYFpccsHnwEMh+kH5O4EzuQWW2JQtSrCB4RnTzKQmsGmEqQcTJ9W
- DfflgCEbnHwkaRC1JGd1KJfJZZLLuvUO3Lvfg0hz4s7tL9Vv/JpYKKtCyPTdY1/ok9dUy0dGy6
- LZt+wJ+p8jc2gAAAA==
-To: Ioana Ciornei <ioana.ciornei@nxp.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
- Vincent Jardin <vjardin@free.fr>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1790799351; l=3039;
- i=vjardin@free.fr; s=20260525; h=from:subject:message-id;
- bh=MLGDYZOw45UD6Di3KCAHNR0GWLFDDhooxe3jcyGjVtM=;
- b=MM/lP60BsIy9mdVuQDHAoaw5n5UB2wX0fYSiZT9X2/SO1doHHOsw8KBr4mk0W0WxUN/RwWgnt
- XPjF0wbsqdrCNK2c8DdY1ToyPJSotDqmJmdS1dxPNgjVIqJetBVrmD6
-X-Developer-Key: i=vjardin@free.fr; a=ed25519;
- pk=hppgLeFpGpKOi7LNwGEZ4jOYofJCoGd4Jf1ltAabiLw=
-X-Endpoint-Received: by B4 Relay for vjardin@free.fr/20260525 with
- auth_id=871
-X-Original-From: Vincent Jardin <vjardin@free.fr>
-Reply-To: vjardin@free.fr
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|MRWPR04MB12096:EE_
+X-MS-Office365-Filtering-Correlation-Id: 851913d8-2dd2-43ab-4198-08df1f302705
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|366016|19092799006|376014|1800799024|10067099003|56012099006|11063799006|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	5qu/hXYfFP/a113frSmwkk3lyZetF98PCazgFEZA2s8VteUohbu2E7q2Q1DdA0mlVX1nb9kqzmykGi0tiFu1k881aeh52x39vFVF9U/h5drIzTpS57Jej/l0zBp96xXpbrymWnzKOkXh+IgIi9oiOLM2izRECv15OZ9gZQV0e3eQJOXYnXHuA3Gl6YP0GOVxGRfNIt9cyouFppZwuToBVL1Fc92Y2Dd7mvxWKIYRTjSDdPSq3XeCS0NoiHJR6CACghtTnz69kM4jvaxjvLbg45FxLERk9AxOhSpzSSNxb8qDgiihnaJWhqT7+0SwnRYMj6ppy4LMeXOttluIZbaSMGgcat6Fmo74/XjEymsmlm+jRKrAb7RmLJQCPatFtGwKsWrk0eBTdjNpaImi8NLCBwOPZ+vi99bJC7kE3h18rupsZRX/tKdj3QZsxaoSnek75DKBA0xdI8F3lOAZGtr00YH4Xo9t8MHrYLYT9BsSnI4T5JIffzC2HoqI9bOeGn4p2FFV6RQU2PQNt9JHkNDjJ2g8u4Gu39zepN9RfrniXSmwStsw2SYqWnHuh/1tYtd/TlR0Ox5FO2ETC49PS+8+pD2ix82GvijWXD46w/9/bN6O9NcFNbzHgVJEVsLp7vpbER3TYvHk3FAmizFH/llvj4cS4Ch1Sj5S0akLB/KCKW0=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(366016)(19092799006)(376014)(1800799024)(10067099003)(56012099006)(11063799006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?rXiAfXcYqMDGYdCfdWLIK/2v1Dv9L+smLZcX+9dPsbSfKgw2bCueh0TPlinY?=
+ =?us-ascii?Q?Dmv2m0Wdw8S18mHC8bcFh4ktB+YvTxvX9mytH6tzeDoxUFxUIFvC5jA4sSvy?=
+ =?us-ascii?Q?cQQxpNH3G3e2sknoE7OhZ4XJNIW+lqfo0I841PuxvoaM0Y9Sio+qec9qWOrv?=
+ =?us-ascii?Q?oFBjrMPiGhrVzqI01MX+7JVLfkhGrN3VEhjKei5EJpguXzuGgjSN7fLFjvxy?=
+ =?us-ascii?Q?x/nduX0wGM6nvX50RG1+CHu6mj9QNmCOakxwEDRn36Wj0tNyYHbksiJkPP7e?=
+ =?us-ascii?Q?JFDuE76/AikGluoljy0Y8tV8BSwISqUPviC2nxVSQm8zd78jLM/KYVBsKEZ+?=
+ =?us-ascii?Q?JqBITVxR+l/P3Yh7nJwJkf4JCX+wvoX+jlPcpi7k7KYhsV3vfwAzR/1SovU/?=
+ =?us-ascii?Q?oJj1ugD5MtToeNJdjqJ9feizCLkQgVPByMqCp49kEdTTrLrhNWwZzDSy7Q4A?=
+ =?us-ascii?Q?fMVWq8H0vKZiT6TGk+nqrE1CdPfj2UM4DCNIA6sn06ricCKBBSZuPX5BLmgE?=
+ =?us-ascii?Q?ZAnGNTmhW2exVTB9JVGFmHcoAV+2VMoFvtwTYT4RRzHx4AkbzjYm463v7VHa?=
+ =?us-ascii?Q?R8/jEwTnXtgmtx9qoOMj8Twi8ufdN6XJ1WxFjbnk5yH67dCAEB2lerNdKV2n?=
+ =?us-ascii?Q?Uy3biSGSMVhTG0+BZfbp4G8liLJNjKWA1WFTX62w10RipIseoWsy5uohzDaE?=
+ =?us-ascii?Q?XkA9/cZf2IFxIX90H+DsqF4u1bYmPO8XUaKb+Og38CKh6U0ZphZXtu/TZFwa?=
+ =?us-ascii?Q?LC8XYFCryR/MvbKGMB/mWkESkFm5xUPidrSrzU06ZqHF/1Xp8qvexeyQl+VP?=
+ =?us-ascii?Q?eqWNME9MiIVRsHAbYN5P62HsFmsb/OdytIiylhNjLLniV6lVzqhgZ6u0fPzv?=
+ =?us-ascii?Q?swaw5JdFP/s8FQnHRxO1+mRlLl4jBPfRh5Ejl39Y1ar+YDow3RKDhW472lM3?=
+ =?us-ascii?Q?q4CEmE1rNoWOCEQCPE5pFhmoS1uTU8I3GnXjJ3gmCqT6vxUTHJDyAFTuwIB7?=
+ =?us-ascii?Q?EQHfrqBHcVvABziBqG4wOAFCukwX504eZn1HCCdaX7KneSb7xL8lMC0QPLsS?=
+ =?us-ascii?Q?Qp+1dmmqnaNA/89t9WmfyFnOlhqhRq1gfzkkGYf0gxL/gSaZ4BUZGFoOl4WF?=
+ =?us-ascii?Q?M+uk2EPPP8ZzPy6CpEQcnanOTIYop/442bNCjkcXsankUpCG2cZfASh+oVzj?=
+ =?us-ascii?Q?VliXOW0RM9crOlgD/6LD+YzPasLSN0coxbVWA5/VUclpEpN/+CKopKLFzJUY?=
+ =?us-ascii?Q?h/eBKiK2xGmToR6NpEM4wd5iEoJ3PtvLXIxhtG49M08xqMtid5bZcl6HxC/l?=
+ =?us-ascii?Q?THMBVYBJnP/XTjIbpupUTfT8rw6rgjRljfES25uKD3oMExxn4yx0f0HzhmKJ?=
+ =?us-ascii?Q?yGNM86exTROn4uRA+BOuNmaUhA/OwzsuM4XU3o/RhVG+9G2TCueZf71zAQY3?=
+ =?us-ascii?Q?casEPKxunmtlLOLFIIzmEImz1pHZrlwjwbjBRxxpp1h8nO4vTcL2BnhLAnPq?=
+ =?us-ascii?Q?uaEkQW89OfLGvhePoL2XhYw1ZJICPTlmNg7pOgN2YIQuNc3dFY9kuTJOdoNB?=
+ =?us-ascii?Q?RGtRl+ZVs92+iU3h5MjJKsTKrhag/GAt0HS8E65RqdW965VWPx4bglNyCOB4?=
+ =?us-ascii?Q?xCzi5h/qloLyBmU6OTsDI/l6ZiaOaDLr2L1mM0flLJkh2Ser9QbOBWnj1iNk?=
+ =?us-ascii?Q?Wmr1NJFCgseb+TvUY1ybBllwNJGu0utljGvffkmnGAuT3b3Ap1AUibEhoFsT?=
+ =?us-ascii?Q?hJUu8gx4dLI2hbhDpOY7+Tr7BnTYHZuhEGDJCnkPavhB/+q3HZwJ?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 851913d8-2dd2-43ab-4198-08df1f302705
+X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Sep 2026 20:19:38.5323
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 4/ifknOMVEOmwDA3/K7+VSFP6V7sxKTucsdSr7PCincg4HiXXQ2O6Ina3tTq4zfy1tOdHrHumYgX2AQbYDf6YAdN47jgwqJ4SEaSjeEJMTm0Q8n1rNaKD81vuCrthRGV
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MRWPR04MB12096
 
-From: Vincent Jardin <vjardin@free.fr>
+On Fri, Sep 18, 2026 at 05:19:31PM -0700, Rosen Penev wrote:
+> platform_get_irq() avoids having to explicitly map and dispose of an irq
+> by having the platform_device machinery take care of it.
+>
+> This requires replacing the device_node with a platform_device in the
+> bcom_eng struct so that platform_get_irq() can use it.
+>
+> Conveniently, this also allows getting rid of of_node_get and
+> of_node_put as the platform_device machinery also handles that.
+>
+> Adjust the goto labels in bcom_task_alloc to match what is being freed.
+>
+> Signed-off-by: Rosen Penev <rosenp@gmail.com>
+> ---
 
-A DPMAC node under dpmacs/ is never the fwnode of any device:
-  the fsl-mc bus creates dpmac.N objects without one,
-  then dpaa2-mac finds its node in dpmacs/ at connect time.
+Reviewed-by: Frank Li <Frank.Li@nxp.com>
 
-fw_devlink therefore attaches the supplier links of those nodes (phys, ...)
-to the nearest ancestor device, the fsl-mc bus, as SYNC_STATE_ONLY proxies.
-
-device_link_add() refuses such a link once the consumer has probed, and
-fw_devlink logs the refusal as an error.
-
-On an LX2160A board with 4x25G DPMACs for which phys = <&serdes_1 N>,
-the Serdes PHY binds after the bus and then at every boot it shows:
-
-  fsl_mc_bus 80c000000.fsl-mc: Failed to create device link (0x180) with supplier 1ea0000.phy for /soc/fsl-mc@80c000000/dpmacs/ethernet@3
-
-once per port!
-
-To fix it, when the root MC bus probes, purge the fwnode links of every
-child of its dpmacs node, so fw_devlink has no supplier link left to
-proxy to the bus and no longer tries to create those device links.
-
-Signed-off-by: Vincent Jardin <vjardin@free.fr>
-Reviewed-by: Ioana Ciornei <ioana.ciornei@nxp.com>
-Tested-by: Ioana Ciornei <ioana.ciornei@nxp.com> # LX2160ARDB
----
-The dpmacs node is the documented child of the
-fsl-mc node: Documentation/devicetree/bindings/misc/fsl,qoriq-mc.yaml
-(and bindings/net/fsl,qoriq-mc-dpmac.yaml for its DPMAC subnodes).
-
-Changes in v2:
-- Improve commit log (Christophe)
-- Collect Ioana's Reviewed-by and Tested-by
-- Link to v1: https://lore.kernel.org/r/20260928-for-upstream-fsl-mc-dpmac-fwnode-links-v1-1-b8976244b38b@free.fr
----
- drivers/bus/fsl-mc/fsl-mc-bus.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
-
-diff --git a/drivers/bus/fsl-mc/fsl-mc-bus.c b/drivers/bus/fsl-mc/fsl-mc-bus.c
-index 5878eafd8d44..0c37b6780c84 100644
---- a/drivers/bus/fsl-mc/fsl-mc-bus.c
-+++ b/drivers/bus/fsl-mc/fsl-mc-bus.c
-@@ -11,6 +11,7 @@
- #define pr_fmt(fmt) "fsl-mc: " fmt
- 
- #include <linux/module.h>
-+#include <linux/fwnode.h>
- #include <linux/of_device.h>
- #include <linux/of_address.h>
- #include <linux/ioport.h>
-@@ -1033,6 +1034,20 @@ static int fsl_mc_firmware_check(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static void fsl_mc_purge_dpmac_fwnode_links(struct device *dev)
-+{
-+	struct device_node *dpmacs, *child;
-+
-+	dpmacs = of_get_child_by_name(dev->of_node, "dpmacs");
-+	if (!dpmacs)
-+		return;
-+
-+	for_each_child_of_node(dpmacs, child)
-+		fwnode_links_purge(of_fwnode_handle(child));
-+
-+	of_node_put(dpmacs);
-+}
-+
- /*
-  * fsl_mc_bus_probe - callback invoked when the root MC bus is being
-  * added
-@@ -1134,6 +1149,8 @@ static int fsl_mc_bus_probe(struct platform_device *pdev)
- 						&mc->num_translation_ranges);
- 		if (error < 0)
- 			goto error_cleanup_mc_io;
-+
-+		fsl_mc_purge_dpmac_fwnode_links(&pdev->dev);
- 	}
- 
- 	error = dprc_get_container_id(mc_io, 0, &container_id);
-
----
-base-commit: 7b3b0598c00e67f2df85d0b4cd99eaa3be6c9bfd
-change-id: 20260928-for-upstream-fsl-mc-dpmac-fwnode-links-622b8eadb98a
-
-Best regards,
--- 
-Vincent Jardin <vjardin@free.fr>
-
-
+>  v4: drop whitespace change
+>  v3: drop stale description
+>  v2: resend
+>  drivers/dma/bestcomm/bestcomm.c            | 46 ++++++++--------------
+>  include/linux/fsl/bestcomm/bestcomm_priv.h |  2 +-
+>  2 files changed, 18 insertions(+), 30 deletions(-)
+>
+> diff --git a/drivers/dma/bestcomm/bestcomm.c b/drivers/dma/bestcomm/bestcomm.c
+> index 241a91936fe8..310792ccd748 100644
+> --- a/drivers/dma/bestcomm/bestcomm.c
+> +++ b/drivers/dma/bestcomm/bestcomm.c
+> @@ -47,6 +47,7 @@ bcom_task_alloc(int bd_count, int bd_size, int priv_size)
+>  {
+>  	int i, tasknum = -1;
+>  	struct bcom_task *tsk;
+> +	int irq;
+>
+>  	/* Don't try to do anything if bestcomm init failed */
+>  	if (!bcom_eng)
+> @@ -67,30 +68,32 @@ bcom_task_alloc(int bd_count, int bd_size, int priv_size)
+>  	if (tasknum < 0)
+>  		return NULL;
+>
+> +	irq = platform_get_irq(bcom_eng->pdev, tasknum);
+> +	if (irq < 0)
+> +		goto err1;
+> +
+>  	/* Allocate our structure */
+>  	tsk = kzalloc(sizeof(struct bcom_task) + priv_size, GFP_KERNEL);
+>  	if (!tsk)
+> -		goto error;
+> +		goto err1;
+>
+>  	tsk->tasknum = tasknum;
+>  	if (priv_size)
+>  		tsk->priv = (void*)tsk + sizeof(struct bcom_task);
+>
+>  	/* Get IRQ of that task */
+> -	tsk->irq = irq_of_parse_and_map(bcom_eng->ofnode, tsk->tasknum);
+> -	if (!tsk->irq)
+> -		goto error;
+> +	tsk->irq = irq;
+>
+>  	/* Init the BDs, if needed */
+>  	if (bd_count) {
+>  		tsk->cookie = kmalloc_array(bd_count, sizeof(void *),
+>  					    GFP_KERNEL);
+>  		if (!tsk->cookie)
+> -			goto error;
+> +			goto err2;
+>
+>  		tsk->bd = bcom_sram_alloc(bd_count * bd_size, 4, &tsk->bd_pa);
+>  		if (!tsk->bd)
+> -			goto error;
+> +			goto err3;
+>  		memset_io(tsk->bd, 0x00, bd_count * bd_size);
+>
+>  		tsk->num_bd = bd_count;
+> @@ -99,15 +102,11 @@ bcom_task_alloc(int bd_count, int bd_size, int priv_size)
+>
+>  	return tsk;
+>
+> -error:
+> -	if (tsk) {
+> -		if (tsk->irq)
+> -			irq_dispose_mapping(tsk->irq);
+> -		bcom_sram_free(tsk->bd);
+> -		kfree(tsk->cookie);
+> -		kfree(tsk);
+> -	}
+> -
+> +err3:
+> +	kfree(tsk->cookie);
+> +err2:
+> +	kfree(tsk);
+> +err1:
+>  	bcom_eng->tdt[tasknum].stop = 0;
+>
+>  	return NULL;
+> @@ -125,7 +124,6 @@ bcom_task_free(struct bcom_task *tsk)
+>  	bcom_eng->tdt[tsk->tasknum].stop  = 0;
+>
+>  	/* Free everything */
+> -	irq_dispose_mapping(tsk->irq);
+>  	bcom_sram_free(tsk->bd);
+>  	kfree(tsk->cookie);
+>  	kfree(tsk);
+> @@ -377,16 +375,12 @@ static int mpc52xx_bcom_probe(struct platform_device *op)
+>  	if (IS_ERR(regs))
+>  		return PTR_ERR(regs);
+>
+> -	/* Get the bestcomm node */
+> -	of_node_get(op->dev.of_node);
+> -
+>  	/* Prepare SRAM */
+>  	ofn_sram = of_find_matching_node(NULL, mpc52xx_sram_ids);
+>  	if (!ofn_sram) {
+>  		printk(KERN_ERR DRIVER_NAME ": "
+>  			"No SRAM found in device tree\n");
+> -		rv = -ENODEV;
+> -		goto error_ofput;
+> +		return -ENODEV;
+>  	}
+>  	rv = bcom_sram_init(ofn_sram, DRIVER_NAME);
+>  	of_node_put(ofn_sram);
+> @@ -394,7 +388,7 @@ static int mpc52xx_bcom_probe(struct platform_device *op)
+>  	if (rv) {
+>  		printk(KERN_ERR DRIVER_NAME ": "
+>  			"Error in SRAM init\n");
+> -		goto error_ofput;
+> +		return rv;
+>  	}
+>
+>  	/* Get a clean struct */
+> @@ -405,8 +399,7 @@ static int mpc52xx_bcom_probe(struct platform_device *op)
+>  	}
+>
+>  	/* Save the node */
+> -	bcom_eng->ofnode = op->dev.of_node;
+> -
+> +	bcom_eng->pdev = op;
+>  	bcom_eng->regs = regs;
+>  	bcom_eng->regs_base = res_bcom->start;
+>
+> @@ -426,8 +419,6 @@ static int mpc52xx_bcom_probe(struct platform_device *op)
+>  	kfree(bcom_eng);
+>  	bcom_eng = NULL;
+>  	bcom_sram_cleanup();
+> -error_ofput:
+> -	of_node_put(op->dev.of_node);
+>
+>  	printk(KERN_ERR "DMA: MPC52xx BestComm init failed !\n");
+>
+> @@ -443,9 +434,6 @@ static void mpc52xx_bcom_remove(struct platform_device *op)
+>  	/* Cleanup SRAM */
+>  	bcom_sram_cleanup();
+>
+> -	/* Release the node */
+> -	of_node_put(bcom_eng->ofnode);
+> -
+>  	/* Release memory */
+>  	kfree(bcom_eng);
+>  	bcom_eng = NULL;
+> diff --git a/include/linux/fsl/bestcomm/bestcomm_priv.h b/include/linux/fsl/bestcomm/bestcomm_priv.h
+> index 3b52f3ffbdf8..cddde7c74cb5 100644
+> --- a/include/linux/fsl/bestcomm/bestcomm_priv.h
+> +++ b/include/linux/fsl/bestcomm/bestcomm_priv.h
+> @@ -66,7 +66,7 @@ struct bcom_tdt {
+>   * This holds all info needed globaly to handle the engine
+>   */
+>  struct bcom_engine {
+> -	struct device_node		*ofnode;
+> +	struct platform_device		*pdev;
+>  	struct mpc52xx_sdma __iomem     *regs;
+>  	phys_addr_t                      regs_base;
+>
+> --
+> 2.55.0
+>
 
