@@ -1,49 +1,148 @@
-Return-Path: <linuxppc-dev+bounces-28533-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28534-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42D62CA5FA5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 01:26:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0BA87CA5FA5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 02:01:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hvcpT4fG5z2yYd;
-	Wed, 30 Sep 2026 11:26:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::27"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790731617;
-	cv=none; b=bMLPYFLpAxgHm2J4hiJ9ylYAGKy+kkPJbiONWfLHBpdU3DDryufG9e+v7jO4C2Gusm2zqVfVA4KKpcRCYXw7wgNGjxNDNL4lcPPM2Y5507PJUxd1zyHF5/CWj3FM33rRpwk3UDYwIREDcbsR4j2kFq5y4wt+gL70cCIKCnJ7nogZTc//+KO6zt+J6fCBnCPwOc9mplatmYuKJ/27wjXwfpH/IBxAAyyNPVA1o/kOw2ClL8WMc4UbpTzfWaP5ul+iYB1LGwMHzRmuOV87pdEDzTLeMIGPnoTNivR9pfdQ1ED2OwUResdeyG2cFVKlawb59S1jpM/lD7iTAlJs2t5LHA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790731617; c=relaxed/relaxed;
-	bh=wCIueztMn6qtMBchJfx2etXVyYzxHf3iBKEIk5t2QtY=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=FLOGEMDvC99GSXduX+IWVvgXTw724J/09Is8GrfH+A6z8Yo5THXolIVCqsRXQ9Jzh4NHN6r1ROB/YNj165BIgZZyhusff148cQn4ufzWimMzMrsBIGTCbd0j614mdeeyQ324cBuTSIB3WXvXZFogDrNVMKjFlSLO28ZIe0kNE8Oa5Og8MBHIznzMDxuYSEqaegqlH1brPW+lsA8VEmAkw6trceIoY0XGDAIA9E1hBF20SGSkCI1bMJzWNtSnti+/2rYTKArnilwRNIfp1P2TXXj3ssWNX8Iey/MyGNUCJrGDqL4tMxEo2PF7J05vzNvDpbg7HA8y6+yYiVbuq+5GtQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=WDOIv36O; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::27; helo=mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hvdYl3Yx8z2yDD;
+	Wed, 30 Sep 2026 12:00:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c107::3" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790733659;
+	cv=pass; b=UXGzojEbo4Oxr2S1jyvRe/nJ7pR5OYlnHF8exP6UOy8YHCXlJXdnPdlayu7pC1Q18WjfOgOtDOOyCmq/Cqv12VIcqxUQu1cxaCZcVHlddVDJqmCZy6mr1WHaNtWjlgXpw2guFWeXhneN0ojfI9FY/ifpkHy00v44m1cTSJvwN/aXnGe8g3jEWfdUrUYvdZDCCR8xRt3yRKoBBrMArcDO5dl2eO5Kb2X6lVCXle3uD3bU+F5Ol1RyL77wonHzkUSQG3S/xOElQdPnLVs9pp6SBnKwaifrRJs8os4GUcor59cmRyTHI4zljVSaBFip2iuiwq831uE3aOJTq3pQ6Jottw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1790733659; c=relaxed/relaxed;
+	bh=C8C4go8E0RZzT+lyzfFvWXB7B6s98fohaHidZDOAA/w=;
+	h=Content-Type:Date:Message-Id:Subject:Cc:To:From:References:
+	 In-Reply-To:MIME-Version; b=BCN5m2hejn6WM2Llr/tpANGh/U8Eub+19nae4ie3ag+84X9B7M7ec9/FOCpofapttFdurF3wrESqJy/8pg6bi3aC3c6jZABud7Cb+veZVgfrKB/9u2bYt7e7kiJtnTsifDFxbPNExX3c/xVVCQfAnbyZWzg9p/JjctIRgsa1bNDEQ/QXD54xtwp7cdfNxiiCuUOrRbT37kT1iMb+ya9Zb+GFemHK7BO+N4E/IqmDSE+OEEYhb0FWFaZCeU9guWrtpNOgJvZofvB7BaVe5541u5GocO6aYnnMSd7ua58BerFALn1B+1YqdondCIpm3McuQd8VPDbB5LFKTnSzgD2VhQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=ct+So3rJ; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c107::3; helo=ph0pr06cu001.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=WDOIv36O;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=ct+So3rJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::27; helo=mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta0.migadu.com (out-39.mta0.migadu.com [IPv6:2001:41d0:1004:224b::27])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c107::3; helo=ph0pr06cu001.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org)
+Received: from PH0PR06CU001.outbound.protection.outlook.com (mail-westus3azlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c107::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvcpQ35fbz2xSV
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2026 11:26:52 +1000 (AEST)
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=IQRBqTSVWWALaW1mPWAac9TGAVH6p8Unuj/FQbT1y4Y=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1790731588; v=1; x=1791336388;
- b=WDOIv36OO9lrltIsdKn1p/Dl5TCsZQOqtzhZ8Dh1WEGBKT/HjfCUvVmpfOfIXp1XoKlaFc5q
- Z3PVdE5TDYrfp7jP531Qv+J/ZtxbQfGTyP0S81oSGM/0+/SL5QyDC3zfxAlgMxdGtO07+QVXXD2
- I9GSrh5b69ZqKxDrURbeoZXg=
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by mta10.migadu.com with ESMTPS id c8969253a912e5f2;
-	Wed, 30 Sep 2026 01:26:28 +0000
-X-Mizu-Trace-ID: c8969253a912e5f2
-X-Migadu-Flow: FLOW_OUT
-Content-Type: text/plain;
-	charset=us-ascii
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvdYj4M6Nz2y21
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2026 12:00:56 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=mz6bMDrTSsJCjw/YJlCnePVsGUPyTiy5egoH0kWPIaDhHi17m/ATFQ23D7kRYcUCKJbtwdrPNPj3XWmRndxsGKFhA9t4kxyq4zx4yadkNWH2MWogGB+MAJhtur0NAKxkQfHhKGTMa0eEQEDZvXq85p2LAMyWV30ahiXu21AuByV2ypBPcdZDxrz+Q92mp6ml4NXpykQRyZdwW6LWaxEVay3jq6gCYL3U8eexulHkNr3an3EH3UkIQyC6sdKZbYYfUnD5r4bRwsTUnDBL/4e3605GJc30D0ssfmlIpwMkyWB4sIoAmg0zjWJ2d7J+I8a6VzZujffgIiqVsMIsdfTaTQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=C8C4go8E0RZzT+lyzfFvWXB7B6s98fohaHidZDOAA/w=;
+ b=KZOxlmM7yRSQuDtwKavGG8SSC0VqL76FM7Tl1Ys41bq5pHnQHiMGCOhjowLeLj5rtlVkCGKidFUm4vaRxxcvAVQCUuVPQOsMTGcpZ/BkKvwm7JkSIjg+GS0IM9xoXd1hMc4mfu0l6F8hR/Xl3EQjNQs1SqBsjCWWJkkV14oZfkE8cbK3Z4rqd64PRc07EOU0HbrBClQf1ZbRO7Icap5kWoJVTUCfzPuh5/P6nAPCbMxJvHRg4ukurqtX9gJXTFj1MSghtGSkTz+rAmKBbj4s/8TvpmIVLeszWQTH4RDkNAXh7rUdqpVgIiOmoVWJhv06FxTn2zGz3Y1F4Ih6RwX3+Q==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=C8C4go8E0RZzT+lyzfFvWXB7B6s98fohaHidZDOAA/w=;
+ b=ct+So3rJDkU0SqKtyNlsQMApkkYbhC0FnHr+dREN+i0KQimHQqPVPgrigWHJjBk+V9T757jAFM6eq8gnpjdhrc2WJpznUlvQ7wrS/u0VwNKOaSdytReGI44osgbms04GLAAlSXmykaPFpvhDp6/S1Ly4nBQfZ+NKEk1Qfq61jUypan+0Jognlk6YsGGTwJbu9LSE0uTwtO1ioHtzAidk1pE2iwp8MYzqWO/RV9s7X5A/JWZnP5OFqlagnuwMvmv0vyKefROu/mMFwxIeZB8FtdLjeiQAMroqSXqFhdjJDWK9xsD1Ua5XfrYD+2KCHMFoFIT1X4SNmx5m1yVAPc2SjQ==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from IA0PR12MB8374.namprd12.prod.outlook.com (2603:10b6:208:40e::7)
+ by SJ0PR12MB6968.namprd12.prod.outlook.com (2603:10b6:a03:47b::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.26; Wed, 30 Sep
+ 2026 02:00:25 +0000
+Received: from IA0PR12MB8374.namprd12.prod.outlook.com
+ ([fe80::d85f:4c87:ae84:3f16]) by IA0PR12MB8374.namprd12.prod.outlook.com
+ ([fe80::d85f:4c87:ae84:3f16%6]) with mapi id 15.21.0451.022; Wed, 30 Sep 2026
+ 02:00:25 +0000
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 29 Sep 2026 22:00:20 -0400
+Message-Id: <DLSA38L0GZRA.3J8T0HX37HNQX@nvidia.com>
+Subject: Re: [PATCH v3 31/40] mm/vma: introduce vma[_flags]_is_persistent()
+Cc: <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
+ <linux-doc@vger.kernel.org>, <linux-usb@vger.kernel.org>,
+ <linux-rdma@vger.kernel.org>, <selinux@vger.kernel.org>,
+ <linux-sound@vger.kernel.org>, <bpf@vger.kernel.org>,
+ <linux-scsi@vger.kernel.org>, <linux-fbdev@vger.kernel.org>,
+ <dri-devel@lists.freedesktop.org>, <linux-trace-kernel@vger.kernel.org>,
+ <linux-perf-users@vger.kernel.org>, <linux-arch@vger.kernel.org>,
+ <linux-fsdevel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <kvmarm@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
+ <kvm@vger.kernel.org>, <kvm-riscv@lists.infradead.org>,
+ <linux-riscv@lists.infradead.org>, <linux-s390@vger.kernel.org>,
+ <sparclinux@vger.kernel.org>, <fuse-devel@lists.linux.dev>
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, "Andrew Morton"
+ <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>,
+ "Vlastimil Babka" <vbabka@kernel.org>, "Jann Horn" <jannh@google.com>,
+ "Pedro Falcato" <pfalcato@suse.de>, "David Hildenbrand" <david@kernel.org>,
+ "Mike Rapoport" <rppt@kernel.org>, "Suren Baghdasaryan"
+ <surenb@google.com>, "Michal Hocko" <mhocko@suse.com>, "Jonathan Corbet"
+ <corbet@lwn.net>, "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
+ "Dennis Dalessandro" <dennis.dalessandro@cornelisnetworks.com>, "Jason
+ Gunthorpe" <jgg@ziepe.ca>, "Leon Romanovsky" <leon@kernel.org>, "Paul
+ Moore" <paul@paul-moore.com>, "Stephen Smalley"
+ <stephen.smalley.work@gmail.com>, "Jaroslav Kysela" <perex@perex.cz>,
+ "Takashi Iwai" <tiwai@suse.com>, "Alexei Starovoitov" <ast@kernel.org>,
+ "Daniel Borkmann" <daniel@iogearbox.net>, "Andrii Nakryiko"
+ <andrii@kernel.org>, "Eduard Zingerman" <eddyz87@gmail.com>, "Kumar
+ Kartikeya Dwivedi" <memxor@gmail.com>, "Baolin Wang"
+ <baolin.wang@linux.alibaba.com>, "Nico Pache" <nico.pache@linux.dev>, "Ryan
+ Roberts" <ryan.roberts@arm.com>, "Dev Jain" <dev.jain@arm.com>, "Barry
+ Song" <baohua@kernel.org>, "Lance Yang" <lance.yang@linux.dev>, "Usama
+ Arif" <usama.arif@linux.dev>, "Kiryl Shutsemau" <kas@kernel.org>, "Doug
+ Gilbert" <dgilbert@interlog.com>, "James E.J. Bottomley"
+ <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen"
+ <mkp@kernel.org>, "Jaya Kumar" <jayalk@intworks.biz>, "Simona Vetter"
+ <simona@ffwll.ch>, "Helge Deller" <deller@gmx.de>, "Sebastian Reichel"
+ <sre@kernel.org>, "John Hubbard" <jhubbard@nvidia.com>, "Peter Xu"
+ <peterx@redhat.com>, "Masami Hiramatsu" <mhiramat@kernel.org>, "Oleg
+ Nesterov" <oleg@redhat.com>, "Peter Zijlstra" <peterz@infradead.org>,
+ "Thomas Gleixner" <tglx@kernel.org>, "Ingo Molnar" <mingo@redhat.com>,
+ "Borislav Petkov" <bp@alien8.de>, "Dave Hansen"
+ <dave.hansen@linux.intel.com>, <x86@kernel.org>, "Arnaldo Carvalho de Melo"
+ <acme@kernel.org>, "Namhyung Kim" <namhyung@kernel.org>, "Mark Rutland"
+ <mark.rutland@arm.com>, "Rik van Riel" <riel@surriel.com>, "Harry Yoo"
+ <harry@kernel.org>, "Juri Lelli" <juri.lelli@redhat.com>, "Vincent Guittot"
+ <vincent.guittot@linaro.org>, "Maarten Lankhorst"
+ <maarten.lankhorst@linux.intel.com>, "Maxime Ripard" <mripard@kernel.org>,
+ "Thomas Zimmermann" <tzimmermann@suse.de>, "David Airlie"
+ <airlied@gmail.com>, "Will Deacon" <will@kernel.org>, "Aneesh Kumar K.V"
+ <aneesh.kumar@kernel.org>, "Nick Piggin" <npiggin@gmail.com>, "Arnd
+ Bergmann" <arnd@arndb.de>, "Muchun Song" <muchun.song@linux.dev>, "Oscar
+ Salvador" <osalvador@suse.de>, "Matthew Wilcox (Oracle)"
+ <willy@infradead.org>, "Jan Kara" <jack@suse.cz>, "Marc Zyngier"
+ <maz@kernel.org>, "Oliver Upton" <oupton@kernel.org>, "Catalin Marinas"
+ <catalin.marinas@arm.com>, "Madhavan Srinivasan" <maddy@linux.ibm.com>,
+ "Anup Patel" <anup@brainfault.org>, "Paul Walmsley" <pjw@kernel.org>,
+ "Palmer Dabbelt" <palmer@dabbelt.com>, "Albert Ou" <aou@eecs.berkeley.edu>,
+ "Christian Borntraeger" <borntraeger@linux.ibm.com>, "Janosch Frank"
+ <frankja@linux.ibm.com>, "Claudio Imbrenda" <imbrenda@linux.ibm.com>,
+ "Alexander Gordeev" <agordeev@linux.ibm.com>, "Gerald Schaefer"
+ <gerald.schaefer@linux.ibm.com>, "Heiko Carstens" <hca@linux.ibm.com>,
+ "Vasily Gorbik" <gor@linux.ibm.com>, "David S. Miller"
+ <davem@davemloft.net>, "Andreas Larsson" <andreas@gaisler.com>, "Alexander
+ Viro" <viro@zeniv.linux.org.uk>, "Christian Brauner" <brauner@kernel.org>,
+ "Matthew Brost" <matthew.brost@intel.com>, "Joshua Hahn"
+ <joshua.hahnjy@gmail.com>, "Rakie Kim" <rakie.kim@sk.com>, "Byungchul Park"
+ <byungchul@sk.com>, "Gregory Price" <gourry@gourry.net>, "Ying Huang"
+ <ying.huang@linux.alibaba.com>, "Alistair Popple" <apopple@nvidia.com>,
+ "Chris Li" <chrisl@kernel.org>, "Kairui Song" <kasong@tencent.com>, "Kemeng
+ Shi" <shikemeng@huaweicloud.com>, "Nhat Pham" <nphamcs@gmail.com>, "Baoquan
+ He" <baoquan.he@linux.dev>, "Youngjun Park" <youngjun.park@lge.com>,
+ "Johannes Weiner" <hannes@cmpxchg.org>, "Qi Zheng" <qi.zheng@linux.dev>,
+ "Shakeel Butt" <shakeel.butt@linux.dev>, "Axel Rasmussen"
+ <axelrasmussen@google.com>, "Yuanchu Xie" <yuanchu@google.com>, "Wei Xu"
+ <weixugc@google.com>, "Chengming Zhou" <chengming.zhou@linux.dev>, "Michal
+ Hocko" <mhocko@kernel.org>, "Miklos Szeredi" <miklos@szeredi.hu>, "Xu Xin"
+ <xu.xin@linux.dev>
+From: "Zi Yan" <ziy@nvidia.com>
+X-Mailer: aerc 0.22.0
+References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org> <20260917-b4-mmap-prepare-vma-flag-sanify-v3-31-4583d8a23bca@kernel.org>
+In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-31-4583d8a23bca@kernel.org>
+X-ClientProxiedBy: BN0PR03CA0057.namprd03.prod.outlook.com
+ (2603:10b6:408:e7::32) To IA0PR12MB8374.namprd12.prod.outlook.com
+ (2603:10b6:208:40e::7)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,109 +155,119 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3901.100.1.1.11\))
-Subject: Re: [PATCH v3 0/6] mm: Unify device DAX and HugeTLB vmemmap
- population paths
-From: Muchun Song <muchun.song@linux.dev>
-In-Reply-To: <20260929143214.9061bcf284369163192968d1@linux-foundation.org>
-Date: Wed, 30 Sep 2026 09:26:09 +0800
-Cc: Muchun Song <songmuchun@bytedance.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Mike Rapoport <rppt@kernel.org>,
- David Hildenbrand <david@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <chleroy@kernel.org>,
- Ritesh Harjani <ritesh.list@gmail.com>,
- Shrikanth Hegde <sshegde@linux.ibm.com>,
- Lorenzo Stoakes <ljs@kernel.org>,
- "Liam R . Howlett" <liam@infradead.org>,
- Vlastimil Babka <vbabka@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>,
- Michal Hocko <mhocko@suse.com>,
- Qi Zheng <qi.zheng@linux.dev>,
- linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org,
- linux-mm@kvack.org
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <D1333E60-93C8-4459-9CC0-48D6F10D3EC0@linux.dev>
-References: <20260929053231.66085-1-songmuchun@bytedance.com>
- <20260929143214.9061bcf284369163192968d1@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-X-Mailer: Apple Mail (2.3901.100.1.1.11)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: IA0PR12MB8374:EE_|SJ0PR12MB6968:EE_
+X-MS-Office365-Filtering-Correlation-Id: bf8ca4dd-8368-4532-03e0-08df1e9697c2
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|7416014|366016|1800799024|23010399003|6133799003|921020|4143699003|11063799006|10067099003|56012099006|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	9UETUuqxC6BxW+AaorBBKCVEMTd2k9V9YibvYTnUVINMFcXVpJ/rYiWoXlLMJbE3TkiXa431HZI5MgF508iEqHgpNayB+mPCIFDBXsYUSBC4D3y1jXo9MJOwQ1usPWLG1Da5iCEXLNLu+Bihu7hkyBABUQcBLEdlWpqCNLc9EaVT+YfxH7U8IE9nFSw3IzrhcqZvqrgRaoeso5lpQfJapKliwaJXBR48CcjcOYNLubWfqJ1efgFYj4SHPSaR+BIpR2FlXKq+NbZ8iuVZKcaNQh1Nd4/Rkzd8JyD9QF/EJK/XstJY8zb94bJIiWYmJFpKWkKN5ateZBj6gj+VtP3oSeWEUaHA5LjPcWk03OXaBW2lzP/CTyw1N/WlthRVf+2Uaqq0r1pC1PRKlyURBcs1s6gLHA/gW5mbuTtDKX9gEPc+vf0M7WABgkUZy2kd9fFNjJGItWRB4HXlP+8H/bDyBX8j9n0Mn7wL3CVO6aDI2O0Av84JLvxtcsvHR08XMleNDopfzfXISTygNgu3botbE+76rh2SEYB59vqlDbJfTXZnFs9PsmTASogutcfYYIssKMXE+2rS4M2LKebEmyEjvBQ91xaCD+Kox+9w7SF+RzG4NjcYPzGMpW1qJSDYVHCypsWAL4Mzjk95y04SY4YTI/ElC2tLctNvH4VulxA2Ef9eR1RBx7L+bvPq5V/7GHAN5WHtOLBRqoyDBMhmsk4sLA==
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:IA0PR12MB8374.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(1800799024)(23010399003)(6133799003)(921020)(4143699003)(11063799006)(10067099003)(56012099006)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?UHVLZ3A2R2J1Z2ZHYkg2NHhiWmhjaHZ5UXRLRU1JQlpWVmFac04va3c1bjJM?=
+ =?utf-8?B?bVRjVldMTXdKSjUzMXlwK2VkWHpmTEVvaDhnUVdISG56MXdkQ1ZmNVNXU01C?=
+ =?utf-8?B?Znk3NXg4cFZWcVoyNStmbnRka3hVZVJCd3VCeC9laDE5MFRJcVMvREdQL1RG?=
+ =?utf-8?B?amE2THd1a24yWFczaGc4akE5eHFkZlo4R0pWQTFma24wWnh3bHUwT3lNMHNC?=
+ =?utf-8?B?MS81ZHZscHJNVUtGdVpCaVI0N1JHVC8welRHc0dtTWlZUkZYb0JuY0NobFln?=
+ =?utf-8?B?UlBxNElseFdzZG8rdGJwdzJ5bGJiS2gxSDF0SGJUd1kxa2pjbG5XcG56U0p4?=
+ =?utf-8?B?V1ZNRi94M0thNTR1NGE0SXhRYXpYcjliM1dzeE1TM1UydTNyU3c1R3NHR1Mv?=
+ =?utf-8?B?aEthNzNsb3BXZG1wNGdXL3JUZ1NpWVZZN01DcDFXUVFlM3BuSFhIYlI2ZzB3?=
+ =?utf-8?B?ai9qc2tqNXlyazZkbFVZOHVMZ25kQVhJQzZyRnkvSk5qaS90VmsxTjZjWmhN?=
+ =?utf-8?B?NFg4Nk9vVXZYcmgxNXdobHBTSnlJV3VDK0hnZm1JS0dxeUZWcW9ENzRKRDh4?=
+ =?utf-8?B?eEVMUVpkTFRzYlRJNUg5dVY2RTFpS1k5SHJKS01UZUYybW1jcFdGM2p4MTdP?=
+ =?utf-8?B?OFkzaGt2VFRjOVVyQlNSQzFYZWptaEcwbU9vdy9OaVc0UzJtQ0RMRm5QM3I2?=
+ =?utf-8?B?dDFWMUswZU9PVjN0R01HenFiM2xOMzk3a0hzY0w4elJxcEFVdjBLaW1OaEdp?=
+ =?utf-8?B?Vkx0dGZ0TFNXOW14cldGd2EzMm1UWVR5aVo0L1h5ZGFEY29VdWVCUXM0Znkx?=
+ =?utf-8?B?NWgzUGcrNWFjVVY0WEhGWG1vbWltS3M5V1ZrejlwVFVyM2p6eVcwTUxRZi9L?=
+ =?utf-8?B?MWJLQ0I4bUM2VE96UEhJOGpvTEh5Q1JMdVp1S1VUbUEzalprT1RUZzQza3ZP?=
+ =?utf-8?B?RXhBRWREZGZ0amhlRVEzbzhwaGpMOUt5U0d1aU5Vc3RncHNLUXB4ZTBYcVRS?=
+ =?utf-8?B?d1ZyVXVCRU1RR0NIbzVUSWY0dGhFU3lza0hsNHY2TzByTktjSmRST3FMTUk2?=
+ =?utf-8?B?WE1Jc1p3T0d0SFhydVEyd012SGhLczgybTQvSW9NTlQ3VHRhWUdtd1pZU1BO?=
+ =?utf-8?B?ZktxUURiOSsyT3Nwem1lYmx0NWZXalBVU3NjdFBTQWdVaDVQcFdJZlBPN09n?=
+ =?utf-8?B?bUZ4N2RFK1RzNkxjUHlkWnFOVzYxNVJ2VVluWmFpdHNQeGN6YmR3cElzOFkw?=
+ =?utf-8?B?SFIvQ0lodCtyWDc3K0Z4OTAzSnlVUnFYQTlsemRhckFPQm5lWGNEMkZMd2x5?=
+ =?utf-8?B?dUNoaStJWXgxS3kyTm13eDRXOUFubUFJTnF0ZzdDNjVEZkMrTjNQVjVucEhO?=
+ =?utf-8?B?eEQ2M2xKNG5VUFhHNlk5akpxbDBoWmpVYXduZFJ3Z1hSbmpWVzNJbXVWc2hP?=
+ =?utf-8?B?WDdubThRdEFVb1J6dGhJZWFpT3RlUVVkWFQ5YU8zUVJLaW5CbkNWL2pibUxS?=
+ =?utf-8?B?UGp3ckYvd0JuTHRsYmRBeTBmSElyWFVrNS85UTlqd3lKdXZsaERmaDN6QUVy?=
+ =?utf-8?B?a0UzT3ZEMk12RytzM09wekhDNmVjK2RzK1pJTDlqc0VuMXgrS3pxT0N3eUxW?=
+ =?utf-8?B?ZU9YZGVqVXduQUtvMmFmZzJ1RFE1QitSS3N6bHFWM1JXNzZsdjZZc0pyZUtG?=
+ =?utf-8?B?VloxTDZRMnU4RXpubTArQ2QyOUdSVjR0bzZuVTRDWGN1YjRrdURIejM4YUpN?=
+ =?utf-8?B?SERYVkx5SFNHYlhZUEFIeEZweUlBa2k2WnFXQlF5WFU0eUd1VDFUVGNSRGxC?=
+ =?utf-8?B?UFVVMEJZQVAzWjZQSEVNMUVtcWtLK1JDbnovQng3OHRwUFM2RjV5dzN2T1gz?=
+ =?utf-8?B?U3pIaEZ3S3hPdWszRXdBMGZHWUdEVlVobU40eHU5MGpPdnQ5b2J5M0huMFoy?=
+ =?utf-8?B?dlRzUWtTUXpOTHhBYUxnOVFIcFJNdk91a1g3cm51UjAzRkh0K3Zzc3ZHaHE2?=
+ =?utf-8?B?MW9TREFzMzVXZXBJZElVaUI4Ni9WRlJ2WGtDNWxiSUZTOENxS0hINnUrTGN5?=
+ =?utf-8?B?R0NQNGJHeCtSWHlmQmNHRTlKNE5SRExJUVJYa0ZKUlh2cUhtQS9tUzFmZ3p5?=
+ =?utf-8?B?c0hHMjFFQnlZNExwRlpqclRTbGk1RWVNOEFncVFScEJXY29SL2JqMFhKb1NH?=
+ =?utf-8?B?NXFWUnczdVJ4S1RRZTNsSjQ4RXN2OUwzV3RoTFhreUtyUG9HdHhROXY2STVz?=
+ =?utf-8?B?VCt1djFlRXlDRmRTWnN2SldrZEJIRE9ncVovMFNoRlVieTcySDMxdUNUN1BU?=
+ =?utf-8?Q?0z6NrChSeGdg8Lhdr7?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: bf8ca4dd-8368-4532-03e0-08df1e9697c2
+X-MS-Exchange-CrossTenant-AuthSource: IA0PR12MB8374.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Sep 2026 02:00:25.1595
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: XpgzFGRK+a8ufYfR4cKWq2uXAP5cOmiWR/+CojWNyW7YTQ5GV3Qk1KgEKWMsZ2cl
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR12MB6968
+
+On Thu Sep 17, 2026 at 12:22 PM EDT, Lorenzo Stoakes (ARM) wrote:
+> Introduce vma[_flags]_is_persistent() for the purposes of identifying
+> mappings that are persistent in the sense that bytes to the mapping stay
+> there, and bytes read from the mapping are the same unless changed by
+> actions taken by userland.
+>
+> Kernel-owned mappings do not fall into this category, as their owner may
+> change the contents without the user having initiated it, and nor of cour=
+se
+> does memory-mapped I/O.
+>
+> We exclude fixed mappings as these are singled out as being unmergeable a=
+nd
+> so cannot be guaranteed to persist user data.
+>
+> hugetlb mappings are fixed mappings, but their contents are entirely the
+> user's, so they are explicitly carved out as persistent, as the MADV_DODU=
+MP
+> check already does.
+>
+> It excludes droppable mappings, which by their nature are ephemeral.
+>
+> Use this functionality to update the madvise MADV_DODUMP check to test fo=
+r
+> persistence rather than open-coding this.
+>
+> This replaces the VM_SPECIAL check which means it no longer checks for
+> VMA_IO_BIT, however this is safe as we have established the invariant tha=
+t
+> only kernel-owned mappings may set VMA_IO_BIT, so we implicitly include
+> these.
+>
+> No functional change intended.
+>
+> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> ---
+>  include/linux/mm.h | 44 ++++++++++++++++++++++++++++++++++++++++++++
+>  mm/madvise.c       |  4 ++--
+>  2 files changed, 46 insertions(+), 2 deletions(-)
+>
+
+LGTM.
+
+Acked-by: Zi Yan <ziy@nvidia.com>
 
 
-
-> On Sep 30, 2026, at 05:32, Andrew Morton <akpm@linux-foundation.org> =
-wrote:
->=20
-> On Tue, 29 Sep 2026 13:32:25 +0800 Muchun Song =
-<songmuchun@bytedance.com> wrote:
->=20
->> This v3 is based on mm-new commit 2ddb90ee544a, which contains v5 of
->> "mm: Switch device DAX to section-based vmemmap optimization" [1].
->>=20
->> This series is split out from the earlier, larger series "mm: =
-Generalize
->> HVO for HugeTLB and device DAX" [2]. While the parent series =
-generalizes
->> vmemmap optimization across HugeTLB and device DAX, this subset =
-addresses
->> a single, self-contained step: unifying their vmemmap population =
-paths.
->>=20
->> After the preceding Device DAX conversion, both HugeTLB and Device =
-DAX
->> describe optimized vmemmap mappings through memory-section metadata =
-and
->> use per-zone shared tail vmemmap pages. The generic code, however, =
-still
->> carries a Device DAX-specific population flag and compound-page =
-population
->> path, along with arguments and helpers needed only by that path.
->>=20
->> This series first removes VMEMMAP_POPULATE_DAX and moves selection =
-and
->> reference handling for the shared tail page into the common vmemmap
->> population path. It then removes the generic Device DAX-specific
->> compound-page population path and routes section vmemmap population
->> through vmemmap_populate(). The powerpc radix path continues to use =
-its
->> architecture-specific compound-page population implementation for
->> optimizable sections.
->>=20
->> The remaining patches remove the unused ptpfn argument, open-code
->> vmemmap_populate_address() now that no caller needs its returned PTE, =
-and
->> add a warning for inconsistent zone initialization of shared tail =
-vmemmap
->> pages.
->>=20
->> This is the fourth smaller step toward the broader HVO =
-generalization.
->> After this series, HugeTLB and Device DAX use the same population =
-model
->> instead of parallel generic paths, while powerpc keeps its
->> architecture-specific implementation.
->=20
-> afaict the whole series is "no functional changes intended".  Apart
-> from [6/6]'s new WARN_ON.
-
-Yes.
-
->=20
-> And [3/6] is the one which could cause unintended fuctional changes!
-
-Understood. However, the resulting vmemmap layout is intended to remain
-unchanged.
-
->=20
-> Thanks.  I'll queue it.  Reluctantly.  We're up to 688 MM patches this
-> cycle and it's time to stop.
-
-Thanks for taking it despite the load.
-
-Muchun,
-Thanks.
+--=20
+Best Regards,
+Yan, Zi
 
 
