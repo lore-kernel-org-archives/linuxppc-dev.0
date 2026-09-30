@@ -1,65 +1,54 @@
-Return-Path: <linuxppc-dev+bounces-28614-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28615-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A607FCA5FC4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 19:01:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4217ACA5FC5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 20:15:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hw4C11PKnz2y24;
-	Thu, 01 Oct 2026 05:01:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790794877;
-	cv=none; b=W1osdTrccKP1NiQe3YdeZvzfuN5zYCpopHkMnqoZdgwRsxdDHNok8o/l9Css2mcasNdGoCtyq6NgNtQKQiiDFJAKGdZiRlhjPiNPo91FWatvTAxuo6vyQo+/TFdLsP1dlCYw7Z4S7AnCY4lGoTYTuXIzLyVwVbZ0FVMek6C49dnUONGUYPK4ZPPp5YJzdE6ogDuSs9ReyOueXdVFfrRm43+lfDY7f9iGMY7D97X7IKoewz1czC7RQXGWem7XzqE6rzG9+PZCU6caQW1ak945MLnoLrA53Ei1mak32noMji1SnSjdSptX5hmei3jcoO5h/0Z2R5ndyCvHk5gB+JbvYw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hw5s92Mpwz2ygX;
+	Thu, 01 Oct 2026 06:15:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790799357;
+	cv=none; b=cKSuZUumYOILVU3rjpszE250l6M8dy1mum6TbZFzOijfZ/l+bZ/OiFj5xP/1aAnYTqbrVba+/uhJn+U+5AKct1ZGXMDyacBnIgEge5xC4+88Wj6taWu9X+1XdeDA06dYb0DgO/dXyBpLitBJibX/doA0UWo95KwO/Rrh5Ie934SExNMvI71vfvwkBUfFVyYQDC11prt0t/kYP1l9F2PcPbTocCN6GJj5TG66pAiDCUVHWFgMZ50CJgr/MCpqaFszqJOlPtYdcg9GDHq/kXh4O7cRxcVewOmRutUhylxRHW4qOtxlPWxpli/sS1padIGS9Tsu/ze1+toZO6dwWd9i7Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790794877; c=relaxed/relaxed;
-	bh=XZ9p+0TXsTapVE0fUDcxcrxFDfTJp6cr+bt+UngMYk0=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=DoXV9mQam226bvGQ6s4pR3O9vwSGEyPXxGUD+t93kYmWRJ+h5DGcc/9jakpWwHW/reje3fg0dwGoCgqi8bGFyLFdL9pRE5w0xymfYhiXqh4nNRuixLi+zkkhlnl9GXbx9LMeDCpTo/35+b7BD8JdiptbBB/9C+9APFOAo1/wMzd23a3TLX7H/e/MHYSxh++14psBA4iy9JUVoEZUNacXsVyVw3r6GHvVwljnyEC/k9LcEabl3+n9bN4oPrCPz07HQWE7dtR2qP6nM+zbd4Uhpape1y55wZxaim7dOXD4D4h9xutYpJ7iJw9rHUW7b/AJiP6aX+LpnE3cqMX58o4WFw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=AfOugEP9; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1790799357; c=relaxed/relaxed;
+	bh=s+KXXJdmY3ko0gMKGF4RYmFKtidPeEYxoUxXdHgmVJg=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=MUI3N3UMQXjEZllGUrgRxSwgeLYzaX1AF3+WRfMp9x1lRfk9SEB0cUvzCU/Tu/0rdtj8HDRT98WjaM80xYgk5ywSpdIlHrBAah7ISjzV3QdmwAZgYxURjfgY7HqxnbB9iU0n++huPdXg0QIVSVXJmxOhzNAY9Uznda7X+85/OOJZnEqmH5ZOzcZoF/SQbf0KxBAGms0cqkv/HaDY0CdcRkydHP7xZHXbNmiZ+2zMPCSat8IZLPhtSyDvEgRYaEo83K2hYuREdD3mXsdpAlsZyh5BsL1ZhyYIoEQDutEN5PfqG0cGl2Ok1kB2sbkpEJA5qFMj1ZUDYJ9GICGEHe7FtA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eXEtoFW6; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+vjardin.free.fr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=AfOugEP9;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eXEtoFW6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+vjardin.free.fr@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hw4Bz0S6vz2xfP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 05:01:14 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 16668402BF;
-	Wed, 30 Sep 2026 19:01:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 617E41F008A1;
-	Wed, 30 Sep 2026 19:01:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux-foundation.org; s=korg; t=1790794872;
-	bh=XZ9p+0TXsTapVE0fUDcxcrxFDfTJp6cr+bt+UngMYk0=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=AfOugEP91NYVCmPmVOD6zXRVsG4tpdYvKHH57PQ0NhP32hoFVSp1mwVpKuJGcbMxk
-	 IVSyP/V5SJfJtM+kNKQQES/oP7r4sOtjDeBVT04Y6h8Pa9lfdAvwu2qn4YVNUMYTjK
-	 xoz1+LkQVNjPzQr88ZznUqCs7RO5t9ViwPP+3GVQ=
-Date: Wed, 30 Sep 2026 12:01:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Muchun Song <songmuchun@bytedance.com>
-Cc: David Hildenbrand <david@kernel.org>, Oscar Salvador
- <osalvador@suse.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael
- Ellerman <mpe@ellerman.id.au>, Jonathan Corbet <corbet@lwn.net>,
- linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org, Muchun Song
- <muchun.song@linux.dev>, Lorenzo Stoakes <ljs@kernel.org>, Mike Rapoport
- <rppt@kernel.org>, Qi Zheng <qi.zheng@linux.dev>, Nicholas Piggin
- <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, Ritesh Harjani
- <ritesh.list@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, Randy
- Dunlap <rdunlap@infradead.org>, Lance Yang <lance.yang@linux.dev>
-Subject: Re: [PATCH v6 00/12] mm: Switch device DAX to section-based vmemmap
- optimization
-Message-Id: <20260930120110.3ace5f23b7530e179272fac4@linux-foundation.org>
-In-Reply-To: <20260930140627.57431-1-songmuchun@bytedance.com>
-References: <20260930140627.57431-1-songmuchun@bytedance.com>
-X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hw5s824wmz2yHT
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 06:15:56 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 4BE9B601F0;
+	Wed, 30 Sep 2026 20:15:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id ED6FFC2BCB9;
+	Wed, 30 Sep 2026 20:15:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1790799353;
+	bh=4kcMV2ayuSWtjNTLFAWlAtj1LSmyR3M6MFYIU6IRV+8=;
+	h=From:Date:Subject:To:Cc:Reply-To:From;
+	b=eXEtoFW6DqypfdVBNXJ4+UdQRIV05YFPtHjiXZkaoGl+yCNWhKUomUxDCRIc+aTyK
+	 xPHyGWkpeniX01ECLtevqWVYch+6RBS8l2FmhyVXKclxdVVJ/8HYYPrxoo6r0DxUoA
+	 q/Mx4ds6wmFyZIplNhyjh42ZkokwRpcOnC0UvItTpSXJt1XyTdEuBQOw8eEyyos4qF
+	 FTbY7tvHXjVvdsx1aX5yEW1+Z34khfI0eMfxc1XrvoZ8aSbpFvjzHvrZH36uUywB0B
+	 K1IWwPjbzzA0kvIbro6Wdwp53Vy4SRG2mG6IH7baiXRpiNx/I6Bfm2r08fkR1MVPQj
+	 bGPfHcvlH/vPw==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3CC2CA5FC5;
+	Wed, 30 Sep 2026 20:15:52 +0000 (UTC)
+From: Vincent Jardin via B4 Relay <devnull+vjardin.free.fr@kernel.org>
+Date: Wed, 30 Sep 2026 22:15:48 +0200
+Subject: [PATCH v2] bus: fsl-mc: drop the fwnode links of the dpmacs nodes
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,164 +61,120 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <20260930-for-upstream-fsl-mc-dpmac-fwnode-links-v2-1-13f7b6ef000f@free.fr>
+X-B4-Tracking: v=1; b=H4sIAPNtvWoC/5XNQQ6CMBCF4auQrh0DI8HiynsYFi2dSiO0zRRRQ
+ 7i7lRu4/N/ifatIxI6SuBSrYFpccsHnwEMh+kH5O4EzuQWW2JQtSrCB4RnTzKQmsGmEqQcTJ9W
+ DfflgCEbnHwkaRC1JGd1KJfJZZLLuvUO3Lvfg0hz4s7tL9Vv/JpYKKtCyPTdY1/ok9dUy0dGy6
+ LZt+wJ+p8jc2gAAAA==
+To: Ioana Ciornei <ioana.ciornei@nxp.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+ Vincent Jardin <vjardin@free.fr>
+X-Mailer: b4 0.13.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1790799351; l=3039;
+ i=vjardin@free.fr; s=20260525; h=from:subject:message-id;
+ bh=MLGDYZOw45UD6Di3KCAHNR0GWLFDDhooxe3jcyGjVtM=;
+ b=MM/lP60BsIy9mdVuQDHAoaw5n5UB2wX0fYSiZT9X2/SO1doHHOsw8KBr4mk0W0WxUN/RwWgnt
+ XPjF0wbsqdrCNK2c8DdY1ToyPJSotDqmJmdS1dxPNgjVIqJetBVrmD6
+X-Developer-Key: i=vjardin@free.fr; a=ed25519;
+ pk=hppgLeFpGpKOi7LNwGEZ4jOYofJCoGd4Jf1ltAabiLw=
+X-Endpoint-Received: by B4 Relay for vjardin@free.fr/20260525 with
+ auth_id=871
+X-Original-From: Vincent Jardin <vjardin@free.fr>
+Reply-To: vjardin@free.fr
 
-On Wed, 30 Sep 2026 22:06:15 +0800 Muchun Song <songmuchun@bytedance.com> wrote:
+From: Vincent Jardin <vjardin@free.fr>
 
-> This version is based on mm-new commit a878c908dc92.
-> 
-> This series is split out from the earlier, larger series "mm: Generalize
-> HVO for HugeTLB and device DAX" [1]. While the parent series generalizes
-> vmemmap optimization across HugeTLB and device DAX, this subset addresses
-> a single, self-contained step: switching device DAX to the section-based
-> sparse-vmemmap optimization infrastructure introduced for HugeTLB.
-> 
-> After the HugeTLB conversion, optimized vmemmap state is described by
-> the memory section and the sparse-vmemmap population path can allocate or
-> reuse shared tail vmemmap pages based on that metadata. Device DAX still
-> uses the older DAX-specific population model, including a separate tail
-> vmemmap page reservation and architecture-specific logic to locate or
-> populate reusable tail pages.
-> 
-> This series makes device DAX use the same section-based model. Device DAX
-> records the compound page order from pgmap->vmemmap_shift in section
-> metadata before vmemmap population, uses the common per-zone shared tail
-> vmemmap page, and drops the extra reserved tail page. The powerpc radix
-> path is updated to use the same shared tail-page helper, so the generic
-> and powerpc DAX paths follow the same reservation model.
-> 
+A DPMAC node under dpmacs/ is never the fwnode of any device:
+  the fsl-mc bus creates dpmac.N objects without one,
+  then dpaa2-mac finds its node in dpmacs/ at connect time.
 
-Thanks.  I updated mm-unstable to this version.
+fw_devlink therefore attaches the supplier links of those nodes (phys, ...)
+to the nearest ancestor device, the fsl-mc bus, as SYNC_STATE_ONLY proxies.
 
-> 
-> v6:
-> - Use try_get_page() to prevent the shared device DAX tail-page
->   reference count from overflowing (suggested by Andrew Morton,
->   reported by Sashiko)
-> - Move constant declarations to the top of their functions and fold
->   the shared tail-page array lookup into vmemmap_tails() (suggested by
->   David Hildenbrand)
-> - Clarify the DAX population flag description and why optimized tail
->   pages must not be poisoned (suggested by David Hildenbrand)
-> - Collect Acked-by tags from David Hildenbrand
-> - Rebase onto mm/mm-new
+device_link_add() refuses such a link once the consumer has probed, and
+fw_devlink logs the refusal as an error.
 
+On an LX2160A board with 4x25G DPMACs for which phys = <&serdes_1 N>,
+the Serdes PHY binds after the bus and then at every boot it shows:
 
-Here's how v6 altered mm.git:
+  fsl_mc_bus 80c000000.fsl-mc: Failed to create device link (0x180) with supplier 1ea0000.phy for /soc/fsl-mc@80c000000/dpmacs/ethernet@3
 
+once per port!
 
- arch/powerpc/mm/book3s64/radix_pgtable.c |    8 +++--
- mm/sparse-vmemmap.c                      |   32 ++++++++++++---------
- 2 files changed, 25 insertions(+), 15 deletions(-)
+To fix it, when the root MC bus probes, purge the fwnode links of every
+child of its dpmacs node, so fw_devlink has no supplier link left to
+proxy to the bus and no longer tries to create those device links.
 
---- a/arch/powerpc/mm/book3s64/radix_pgtable.c~b
-+++ a/arch/powerpc/mm/book3s64/radix_pgtable.c
-@@ -1042,13 +1042,17 @@ static pte_t * __meminit radix__vmemmap_
- 			/*
- 			 * When a PTE/PMD entry is freed from the init_mm
- 			 * there's a free_pages() call to this page allocated
--			 * above. Thus this get_page() is paired with the
-+			 * above. Thus this try_get_page() is paired with the
- 			 * put_page_testzero() on the freeing path.
- 			 * This can only called by certain ZONE_DEVICE path,
- 			 * and through vmemmap_populate_compound_pages() when
- 			 * slab is available.
-+			 *
-+			 * Use try_get_page() to prevent the shared page refcount
-+			 * from overflowing.
- 			 */
--			get_page(reuse);
-+			if (!try_get_page(reuse))
-+				return NULL;
- 			p = page_to_virt(reuse);
- 			pr_debug("Tail page reuse vmemmap mapping\n");
- 		}
---- a/mm/sparse-vmemmap.c~b
-+++ a/mm/sparse-vmemmap.c
-@@ -170,10 +170,14 @@ static void * __meminit vmemmap_alloc_bl
- #ifdef CONFIG_VMEMMAP_OPTIMIZATION
- #define VMEMMAP_OPTIMIZATION_NR_ORDERS	(MAX_FOLIO_ORDER - VMEMMAP_OPTIMIZATION_MIN_ORDER + 1)
+Signed-off-by: Vincent Jardin <vjardin@free.fr>
+Reviewed-by: Ioana Ciornei <ioana.ciornei@nxp.com>
+Tested-by: Ioana Ciornei <ioana.ciornei@nxp.com> # LX2160ARDB
+---
+The dpmacs node is the documented child of the
+fsl-mc node: Documentation/devicetree/bindings/misc/fsl,qoriq-mc.yaml
+(and bindings/net/fsl,qoriq-mc-dpmac.yaml for its DPMAC subnodes).
+
+Changes in v2:
+- Improve commit log (Christophe)
+- Collect Ioana's Reviewed-by and Tested-by
+- Link to v1: https://lore.kernel.org/r/20260928-for-upstream-fsl-mc-dpmac-fwnode-links-v1-1-b8976244b38b@free.fr
+---
+ drivers/bus/fsl-mc/fsl-mc-bus.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/drivers/bus/fsl-mc/fsl-mc-bus.c b/drivers/bus/fsl-mc/fsl-mc-bus.c
+index 5878eafd8d44..0c37b6780c84 100644
+--- a/drivers/bus/fsl-mc/fsl-mc-bus.c
++++ b/drivers/bus/fsl-mc/fsl-mc-bus.c
+@@ -11,6 +11,7 @@
+ #define pr_fmt(fmt) "fsl-mc: " fmt
  
--static __ref struct page **vmemmap_tails_alloc(struct zone *zone)
-+static __ref struct page **vmemmap_tails(struct zone *zone)
- {
--	struct page **pages;
--	const size_t size = array_size(VMEMMAP_OPTIMIZATION_NR_ORDERS, sizeof(*pages));
-+	const size_t size = array_size(VMEMMAP_OPTIMIZATION_NR_ORDERS,
-+				       sizeof(*zone->vmemmap_tails));
-+	struct page **pages = READ_ONCE(zone->vmemmap_tails);
+ #include <linux/module.h>
++#include <linux/fwnode.h>
+ #include <linux/of_device.h>
+ #include <linux/of_address.h>
+ #include <linux/ioport.h>
+@@ -1033,6 +1034,20 @@ static int fsl_mc_firmware_check(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static void fsl_mc_purge_dpmac_fwnode_links(struct device *dev)
++{
++	struct device_node *dpmacs, *child;
 +
-+	if (pages)
-+		return pages;
- 
- 	pages = slab_is_available() ? kzalloc_objs(*pages, VMEMMAP_OPTIMIZATION_NR_ORDERS) :
- 		memblock_alloc(size, __alignof__(*pages));
-@@ -193,19 +197,19 @@ static __ref struct page **vmemmap_tails
- 
- struct page __ref *vmemmap_shared_tail_page(unsigned int order, struct zone *zone)
- {
--	void *addr;
--	struct page *page, **pages;
- 	const unsigned int idx = order - VMEMMAP_OPTIMIZATION_MIN_ORDER;
-+	struct page *page, **pages;
-+	void *addr;
- 
- 	if (WARN_ON_ONCE(idx >= VMEMMAP_OPTIMIZATION_NR_ORDERS))
- 		return NULL;
- 
--	pages = READ_ONCE(zone->vmemmap_tails) ? : vmemmap_tails_alloc(zone);
-+	pages = vmemmap_tails(zone);
- 	if (!pages)
- 		return NULL;
- 
- 	page = READ_ONCE(pages[idx]);
--	if (likely(page))
-+	if (page)
- 		return page;
- 
- 	addr = vmemmap_alloc_block(PAGE_SIZE, zone_to_nid(zone));
-@@ -218,9 +222,9 @@ struct page __ref *vmemmap_shared_tail_p
- 		atomic_set(&page->_mapcount, -1);
- 		set_page_node(page, zone_to_nid(zone));
- 		set_page_zone(page, zone_idx(zone));
--		prep_compound_tail(page, NULL, order);
- 		if (zone_is_zone_device(zone))
- 			__SetPageReserved(page);
-+		prep_compound_tail(page, NULL, order);
++	dpmacs = of_get_child_by_name(dev->of_node, "dpmacs");
++	if (!dpmacs)
++		return;
++
++	for_each_child_of_node(dpmacs, child)
++		fwnode_links_purge(of_fwnode_handle(child));
++
++	of_node_put(dpmacs);
++}
++
+ /*
+  * fsl_mc_bus_probe - callback invoked when the root MC bus is being
+  * added
+@@ -1134,6 +1149,8 @@ static int fsl_mc_bus_probe(struct platform_device *pdev)
+ 						&mc->num_translation_ranges);
+ 		if (error < 0)
+ 			goto error_cleanup_mc_io;
++
++		fsl_mc_purge_dpmac_fwnode_links(&pdev->dev);
  	}
  
- 	page = virt_to_page(addr);
-@@ -528,12 +532,12 @@ static int __meminit vmemmap_populate_co
- 						     unsigned long end, int node,
- 						     struct dev_pagemap *pgmap)
- {
-+	const unsigned long flags = VMEMMAP_POPULATE_DAX;
-+	const unsigned int order = pfn_to_section_compound_order(start_pfn);
- 	unsigned long size, addr;
- 	pte_t *pte;
--	int rc;
--	unsigned long flags = VMEMMAP_POPULATE_DAX;
- 	struct page *page;
--	unsigned int order = pfn_to_section_compound_order(start_pfn);
-+	int rc;
- 
- 	page = vmemmap_shared_tail_page(order, device_zone(node));
- 	if (!page)
-@@ -891,8 +895,10 @@ int __meminit sparse_add_section(int nid
- 
- 	ms = __nr_to_section(section_nr);
- 	/*
--	 * Poison uninitialized struct pages in order to catch invalid flags
--	 * combinations.
-+	 * Poison uninitialized struct pages to catch invalid flag combinations.
-+	 *
-+	 * Tail struct pages in a vmemmap-optimized section are initialized and
-+	 * shared during vmemmap population, so they must not be overwritten here.
- 	 */
- 	if (!section_vmemmap_optimizable(ms))
- 		page_init_poison(memmap, sizeof(struct page) * nr_pages);
-_
+ 	error = dprc_get_container_id(mc_io, 0, &container_id);
+
+---
+base-commit: 7b3b0598c00e67f2df85d0b4cd99eaa3be6c9bfd
+change-id: 20260928-for-upstream-fsl-mc-dpmac-fwnode-links-622b8eadb98a
+
+Best regards,
+-- 
+Vincent Jardin <vjardin@free.fr>
+
 
 
