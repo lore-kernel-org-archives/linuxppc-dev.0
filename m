@@ -1,97 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-28575-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28576-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C741CA5FC7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 14:44:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B5D6CA5FC5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 14:46:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hvyW15lwZz2y24;
-	Thu, 01 Oct 2026 00:44:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790779485;
-	cv=none; b=BJEakuFb1pQILuoGHHyE1bsxUlEz6rqhiKofMzdWqJnwZQN5ynL3/a2GtCPAlMYwSMYe2GuTc+shd6u5kGt0BthGEW5kqFwnE9eUD8yiSV8Rdkn+xgOyHeiHv2Xz/Czb2wGOxRrl98JuG8sdgBNS8yLdBra/s4/37BSCrp9WhZkBIezLLe9p5XpinvPresNuLoURiIKzekyLdiPkziQMZr6+6GGxbRWSyqJ2r/q9ZFiRkpOstJsEQLtJIAPyPDWIligjFD/rNoAq0fNeftwhMy6wWSnBsbmUuNAf7dPeG+KKQzpZNq6QC62WlVkvAZ7e4i3zQ3nt59K2zASjqaC26A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hvyXd6T5tz2y24;
+	Thu, 01 Oct 2026 00:46:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:33::10"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790779569;
+	cv=none; b=IGm25MQWek/3OGAvuAJzXMlJWonN1H1kFaM6+Vkom6H4rbDZdHbMk7dZo5OkyyjXL4VMK8p/WgWwXceM1jfZgfGaY0ysGl/W+ZE+y7oidDqdDGzwMeg+zFa9Po13ZyxWsF59hLKZOhTlzXtUW7rm94qSEtFMxKuyTvc5wOJ2l9AGtbBDSb4m3AoppkdXk1/r0+Hdc4sbG/9ujJeFTjqE5n2JzYurXgMDo1GYajx/KVQ/PuwPmitG8w+hfC7Lro4sZHrTcTKcTClXCPC4ja1wcbn9pp5ZYmRL8WJeHwCmqyF0C0VpkkbOyFylC2ooFlUGOPWNmcEjwhHABrC/PPL/9A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790779485; c=relaxed/relaxed;
-	bh=qdb5KJwsOub7GoIR9aTYq/rRFnLlERiJ3o2Jnsmzbdw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=k2DIJLSts5Dvvxwk0QFQclXiPRzi7AxUGIpzZzmMZrP08DcedCifasW+VyFFmwk4UaYNPeQLW5ircixpAFq+hBUGOFZINiZRx9Yb7ynOIfLrS8zFcof9UhFNMZRARQw8Mlxr/Uzd894yeFDevuyR2T/q6jxUQGsnMikTyg/XnD0FkTpAwqX22bUqsAXOy/B7M8mAHMNFrq950R68Ff/wxzCcQ7I6hZ8kEA61ScTq7oCGJT07bVfP3aRu2/NyhzjHYmFPKW+GMTQozxQfrLlOmJs2SkXBmCWjy/a7EpySdCAGFYig1VpRuy6y9isTr7Cb08ojRS0N+iB/EnLqViPPlQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com; dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=eGVmIQ1p; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=+etc=hw=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com
+	t=1790779569; c=relaxed/relaxed;
+	bh=/F5K+TNyy2UgzuNElF3z3QNQRpGUcw1ZJkuRwiOyvlk=;
+	h=From:Date:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=HkgQCbtcXjZyYn7duH2B1kC9SHjLYg9DWgAAe+iHjpiU291XCNrOUf3m8fZ4fm+BAaTiJrxikjmYIPdGlCzFa2mAVdvsIIYcWCXwFks4QFjdKh8gMinYqhoBdJwCsZVehuiBVxH6yso3DaYtkJcBqeYdI4zMzMzNm1jMpxLksIX0o3+vpEemu2KDC5doyej2IA3BO58iTp36d6/1A1NcvNAWb/JGUwLZk/KqhPfG9MT+skBKkl3Wv48t755ZNw2IYpy90XQHNQ3+bsiP1JqZHPf81t4ws+0uyBMrBMswnEbC4vR8TyxRSHnlihvRjynmWBpDS6jz8zkQtsx1f9+DVQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=eooFEucG; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:33::10; helo=mail-ed2-x10.google.com; envelope-from=urezki@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=eGVmIQ1p;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=eooFEucG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=+etc=hw=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:33::10; helo=mail-ed2-x10.google.com; envelope-from=urezki@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ed2-x10.google.com (mail-ed2-x10.google.com [IPv6:2a00:1450:4864:33::10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvyVx32r0z2xwP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 00:44:41 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id CB5D340259;
-	Wed, 30 Sep 2026 14:44:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 838751F000FF;
-	Wed, 30 Sep 2026 14:44:35 +0000 (UTC)
-Authentication-Results: smtp.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=eGVmIQ1p
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
-	t=1790779473;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=qdb5KJwsOub7GoIR9aTYq/rRFnLlERiJ3o2Jnsmzbdw=;
-	b=eGVmIQ1p7gCV5dnk5+JFddnWgLfBu5xMxZ854bpWe1Jl20d7doFs45uLc1gZORYJ0tlqO2
-	uH+lg4TyWRsgbKZe7UJ0gcyw4uEpd0lzcz2PcAO46tun3AzihC/zqqBjfUkChIc/WPoZwv
-	NpC/wsRCLYwN84wsE5WUkj/UVaIoBqo=
-Received: 
-	by mail.zx2c4.com (OpenSMTPD) with ESMTPSA id df032bc4 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
-	Wed, 30 Sep 2026 14:44:33 +0000 (UTC)
-Date: Wed, 30 Sep 2026 16:44:29 +0200
-From: "Jason A. Donenfeld" <Jason@zx2c4.com>
-To: Nathan Chancellor <nathan@kernel.org>
-Cc: Nick Desaulniers <ndesaulniers@google.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Andy Lutomirski <luto@kernel.org>,
-	Thomas Gleixner <tglx@kernel.org>, Theodore Ts'o <tytso@mit.edu>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	Bill Wendling <morbo@google.com>,
-	Justin Stitt <justinstitt@google.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>, Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	"H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvyXc6yB0z2xwP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 00:46:08 +1000 (AEST)
+Received: by mail-ed2-x10.google.com with SMTP id 4fb4d7f45d1cf-6a60591ae54so8700192a12.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2026 07:46:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790779566; x=1791384366; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:date:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=/F5K+TNyy2UgzuNElF3z3QNQRpGUcw1ZJkuRwiOyvlk=;
+        b=eooFEucG80m0obrQ9E4Mb0MaFMJsfrjAMAtk6PEBQC0EOYyMz9kmjg/Y90Ukz9Cq9k
+         mrBClGPzRfSJnmTSqRqrolQkzX8OtJjNG1qwhd62hFAGTO8B+bnxClfmEVvYRiUteweS
+         MirODa5DLrfE4BewxqQESY3Ios5GLeuP54iOmuXccvyFJd3RoR7xijh1TOokOpXZENBl
+         YDChZGQaFjDuv3F7DiT7+4LzVrcCVQosBw3Ef6O+jXNX30xZc+f/MFN6yHBnrUxKRx4G
+         nkYCPnoPy5Wk4tTfN66a0NUsaI3EXMuboQ6jcyQJK3TU0CJ0ZgXxdXv7ujalqtZXvvVP
+         +nUQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790779566; x=1791384366;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:date:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=/F5K+TNyy2UgzuNElF3z3QNQRpGUcw1ZJkuRwiOyvlk=;
+        b=HKEyatbWBj0u2WFjHDr8oNITB92CuhnOV8T2Brl63lrb2RPKwkZlFntuGkHPhn6Jc6
+         wGDwXKsP2pWlHkpYBGdAgbDQcQcm+CqYGm3bIJoC282B66Ec+f03m3j2NISYR0A+N2X1
+         9N2RXuKAIe1Dnmy6d5sOaQ8wfN4QpIH1t6r6dgUa/k+wges8JZTz4OYSdgxi5+dFnlZh
+         H3b0hXP/4/Xgb0zISwyF5wquImURAwtiWLJKzxDms1JbDOYsbFLBE7Srqfliqdh9DFFf
+         HKTONTv6pBjorlxCwBU6zW8CG3FjVwSHuEXVVwZ98/gudJkLlg/gUUF+RCl4lXh4v5y6
+         Hm1Q==
+X-Forwarded-Encrypted: i=1; AKwUvBxGHMbQ6bvk7VRDgYPuTN2IwICkdAmJhFAmt8jLsKHmtLLlqbt2jRybvX9dz0quY0LGv3rMqca/SxYu7eM=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYL4qDHZ7koyO9m5b2fyTusiFcaSwR1jP2Omdjwf1i23Tb5VqI3k
+	cCNA7E3wTFmNDrzTp0TTy2kAuwZ2Aa3V5E+uiBqeYZ07+lvI6mvL7fRu
+X-Gm-Gg: AYBFou3ApegB+cATD0dlf+u55y6htjBsx1gAy+Cn1XH5RRXY62lcASv+z1het8BI1Qf
+	POMkeMjYmM5G5PZH9rUs28+Ex9elGWZZ0T91tGeXS47yJG1vbuU+RHoJacKZa7f5IBl23uf1rop
+	DsIy5eMM486BvifsFkQh79sPOg4Mo8uBHmbp4y/qYzrXyH+Sq9h/zCFBWxMo4+1c3KBDwL+k42K
+	mlCjfx1Gk66W2ghR97oBZaf0PvgUeQJG5nqZzHtv3QjhmWWWNG6tBueiqhTFxo6AmiVocQYvtZa
+	rdFBrh5myMQvyPdy2EG73/8Ota7xLOrxnlkwcx6A2ccCZJ2KAvHPL1J1q5U+7qXxv/l3+AisYCg
+	b3nOzzcQsKVMDBC0M7o0sessmXADet0hWntG0i3ltxIyYWhYqftQLGDqFwtMtTEYRRWGCYExBvb
+	ujwlxdk9sXnRXqbinbkzXk4CMTgjLKXgtu4ydVPoUmBx/0jA==
+X-Received: by 2002:a05:6402:1d54:b0:6aa:734a:a084 with SMTP id 4fb4d7f45d1cf-6ae198f00d8mr1300841a12.27.1790779565320;
+        Wed, 30 Sep 2026 07:46:05 -0700 (PDT)
+Received: from milan ([2001:9b1:d5a0:a500::24b])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6ae1569b42csm924295a12.24.2026.09.30.07.46.03
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 30 Sep 2026 07:46:04 -0700 (PDT)
+From: Uladzislau Rezki <urezki@gmail.com>
+X-Google-Original-From: Uladzislau Rezki <urezki@milan>
+Date: Wed, 30 Sep 2026 16:46:01 +0200
+To: Wen Jiang <jiangwenxiaomi@gmail.com>
+Cc: akpm@linux-foundation.org, catalin.marinas@arm.com, linux-mm@kvack.org,
+	urezki@gmail.com, will@kernel.org, Xueyuan.chen21@gmail.com,
+	ajd@linux.ibm.com, anshuman.khandual@arm.com, baohua@kernel.org,
+	chleroy@kernel.org, david@kernel.org, dev.jain@arm.com,
+	jiangwen6@xiaomi.com, leo.yan@arm.com,
 	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	llvm@lists.linux.dev
-Subject: Re: [PATCH v2] random: vDSO: Avoid call to memset() when zeroing
- reserved in __cvdso_getrandom_data()
-Message-ID: <ar0gTS71qxnx9AkW@zx2c4.com>
-References: <20260925-vdso-getrandom-avoid-memset-llvm-24-v2-1-ce640f872393@kernel.org>
- <CAKwvOdmuvn0LZkYEsH84hnOGTYhTtzuWs3wMARtWdTeL6dD9sA@mail.gmail.com>
- <CAKwvOdnxKVpn=nAFaqP+9PTx4PqgHsUVWv6e60Pcr29W_eZrpQ@mail.gmail.com>
- <CAKwvOdmNZL3eFvV3v77GXDzL+XLgz+BT9TA=my0yTnbsHqVeSg@mail.gmail.com>
- <areYMjNcaqe86ds4@zx2c4.com>
- <9d1c338b-368f-4ea2-a12e-c28d49adff5e@kernel.org>
- <are6s5e6On3hpD3M@zx2c4.com>
- <CAKwvOd=BrMfFT88jsvBPhh383qqk5G+J07CsofNu0MVkziyhCg@mail.gmail.com>
- <20260930133813.GA3142230@ax162>
- <ar0a4b9CjL2YHCkY@zx2c4.com>
+	linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
+	mpe@ellerman.id.au, npiggin@gmail.com, rppt@kernel.org,
+	ryan.roberts@arm.com
+Subject: Re: [PATCH v9 08/10] mm/vmalloc: extract vm_shift() to consolidate
+ mapping shift selection
+Message-ID: <ar0gqTEf2flG1TQd@milan>
+References: <20260923062832.479455-1-jiangwen6@xiaomi.com>
+ <20260923062832.479455-9-jiangwen6@xiaomi.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,65 +103,62 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ar0a4b9CjL2YHCkY@zx2c4.com>
+In-Reply-To: <20260923062832.479455-9-jiangwen6@xiaomi.com>
 
-On Wed, Sep 30, 2026 at 04:21:21PM +0200, Jason A. Donenfeld wrote:
-> On Wed, Sep 30, 2026 at 03:38:13PM +0200, Nathan Chancellor wrote:
-> > On Tue, Sep 29, 2026 at 11:24:11AM -0700, Nick Desaulniers wrote:
-> > > arch/arm64/kvm/hyp/nvhe/Makefile has this pattern for exactly the same
-> > > problem I suspect.  Maybe that's the right tool in the toolbox?
-> > > 
-> > > ```
-> > > diff --git a/arch/riscv/kernel/vdso/Makefile b/arch/riscv/kernel/vdso/Makefile
-> > > index 8dbf2532a573..27fa72d8fb86 100644
-> > > --- a/arch/riscv/kernel/vdso/Makefile
-> > > +++ b/arch/riscv/kernel/vdso/Makefile
-> > > @@ -27,7 +27,7 @@ asflags-y += -DVDSO_CFI=1
-> > >  endif
-> > > 
-> > >  # Files to link into the vdso
-> > > -obj-vdso = $(patsubst %, %.o, $(vdso-syms)) note.o
-> > > +obj-vdso = $(patsubst %, %.o, $(vdso-syms)) note.o ../../lib/memset.o
-> > > 
-> > >  ifdef CONFIG_VDSO_GETRANDOM
-> > >  obj-vdso += vgetrandom-chacha.o
-> > > ```
-> > > Fixes `make -skj"$(nproc)" ARCH=riscv LLVM=1 mrproper allmodconfig
-> > > vdso_prepare` for me, as per
-> > 
-> > For the record, this also happens with the 32-bit PowerPC vDSO, as I
-> > noted in the commit message of v2. I should update the issue too, I only
-> > realized this after wider testing. So if this is the route we want to
-> > go, we would need a memset() for that vDSO as well.
-> > 
-> > > https://github.com/ClangBuiltLinux/linux/issues/2183
-> > > (Nathan, don't forget to link to that in the commit message)
-> > 
-> > Yes, thanks, I have added it for v3.
-> > 
-> > > I'm surprised I didn't need -fno-semantic-interposition (or one of the
-> > > related flags... -fvisibility=hidden)
-> > > 
-> > > If we want to get better, (if performance matters here and we want to
-> > > trade source+build system complexity for absolute code perf) I would
-> > > start with that, then worry about clawing back performance via things
-> > > like:
-> > > - __builtin_memset_inline
-> > > - -finline-stringops=memset
-> > > - -ffunction-sections+-Wl,--gc-sections to dead code eliminate the out
-> > > of line copy of memset, though IIRC there's potential for wasted space
-> > > due to alignment requirements (maybe the out of line copy of memset is
-> > > smaller...idk)
-> > 
-> > Yeah, I guess it is ultimately up to the maintainers what route they
-> > prefer.
+On Wed, Sep 23, 2026 at 02:28:30PM +0800, Wen Jiang wrote:
+> Extract the vmalloc mapping shift selection from
+> __vmalloc_node_range_noprof() into vm_shift(), preparing for reuse by the
+> vmap batching path.
 > 
-> I think linking in an out-of-line memset.o is not appealing. This isn't
-> a general library or something. So let's just go with your v2 approach,
-> fixed up in the ways we mentioned.
+> No functional change.
+> 
+> Suggested-by: Dev Jain <dev.jain@arm.com>
+> Signed-off-by: Wen Jiang <jiangwen6@xiaomi.com>
+> Tested-by: Xueyuan Chen <xueyuan.chen21@gmail.com>
+> Tested-by: Leo Yan <leo.yan@arm.com>
+> ---
+>  mm/vmalloc.c | 14 +++++++++-----
+>  1 file changed, 9 insertions(+), 5 deletions(-)
+> 
+> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+> index 6e0dec73107a7..a43965016eb4d 100644
+> --- a/mm/vmalloc.c
+> +++ b/mm/vmalloc.c
+> @@ -3568,6 +3568,14 @@ void vunmap(const void *addr)
+>  }
+>  EXPORT_SYMBOL(vunmap);
+>  
+> +static inline unsigned int vm_shift(pgprot_t prot, unsigned long size)
+> +{
+> +	if (arch_vmap_pmd_supported(prot) && size >= PMD_SIZE)
+> +		return PMD_SHIFT;
+> +
+> +	return arch_vmap_pte_supported_shift(size);
+> +}
+> +
+>  /**
+>   * vmap - map an array of pages into virtually contiguous space
+>   * @pages: array of page pointers
+> @@ -4079,11 +4087,7 @@ void *__vmalloc_node_range_noprof(unsigned long size, unsigned long align,
+>  		 * supporting them.
+>  		 */
+>  
+> -		if (arch_vmap_pmd_supported(prot) && size >= PMD_SIZE)
+> -			shift = PMD_SHIFT;
+> -		else
+> -			shift = arch_vmap_pte_supported_shift(size);
+> -
+> +		shift = vm_shift(prot, size);
+>  		align = max(original_align, 1UL << shift);
+>  	}
+>  
+> -- 
+> 2.34.1
+> 
+Reviewed-by: Uladzislau Rezki (Sony) <urezki@gmail.com>
 
-Nathan, would this be okay with you?
-https://git.zx2c4.com/linux-rng/commit/?id=d216701724b7d8209ff42150658ad5c712bdb503
+--
+Uladzislau Rezki
 
