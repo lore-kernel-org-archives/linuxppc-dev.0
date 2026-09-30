@@ -1,91 +1,100 @@
-Return-Path: <linuxppc-dev+bounces-28556-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28557-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 349C4CA5FC5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 13:38:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38E0CCA5FAC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 13:38:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hvx2W1PPqz2y24;
-	Wed, 30 Sep 2026 23:38:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790775507;
-	cv=none; b=OrHm+dLWrEtC6l1+YhfKW2TxxlEupJ6c2EOK3lECASUwR0AKgFIdBJVnTWeppoXWbquS3GsqKEDnpNmqGsKB2yBYzSR+c9YuMq96rCxRwugjAXQuhshIBOIJtc3EHFO6s4TgZ/x5nopj9U65k7+7q3b5rVRYPWn6hH4W54f5HHAmcagrIKx6GOGD7XedaFCr6XvIkQX/Tps1t5dDbYQLliqtR85krZnwd9NMs42FtuVtvi+AdJ3oOvaQqSz83CRzHt6DixoTw35/u9X+2H89pbTWfKTyUZ/569iI24lhvAz9oohTFc94/2nmVAu454VG8vBkfpdJId9PkZA8hnZttw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hvx2t4P55z2y2J;
+	Wed, 30 Sep 2026 23:38:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790775526;
+	cv=none; b=XOZJcKtkjDc7brXRnxgZrCgfGYY+Bjmli0Z6lJP6X1oE6VtUWOCKJYk5Ub+t0mgVtH9fFD9B+SN3JEGwuZdki1dcEloNhXfsPfUlzoA8OG7kbaKURtjOzN1fGOeXHkq5b+2j0094dCgSvjk7BVObalsFtvJVih5ZbHWE50wCyborfGF0pY6pVTkcKr2QMSbFOBMfhSlUsg7gomtSn2Nv0DntHwn72Jv14hOSxUtoU5WbAVuV2npnTph7z1bfOGqXQ+rax4mnMfINZxJ2r6BrAztznJBNrffnDgiQqyF61mMoyVcTt+jHAIsn2VfGperH74q9Pndk9SU74rKygdd64w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790775507; c=relaxed/relaxed;
-	bh=Ig13N2tfIjFRsSeqDuP4ixyXHADT+oxuPpwsFpsBiHk=;
+	t=1790775526; c=relaxed/relaxed;
+	bh=j0LRCXQRdK8U0mZCDcxBrktz5SCPHZj5h5xK40AbDWY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LgwqudTN8XSQxvPLONgHcz3sAqz0VYvBy5Tin2pUSn5hQIfCOQmNLQMDpK0Oxfbf5us0BU4X4ANoohhKB39QeUA43pbYunVfqr9sASvwaJSR7JRnZM+nVVdPyxyDxfvl+d9v1LkiigVY00MlTgQoTfrfMJIvpimxWoBh6yELouOSY1vmAxnFOdXOXMs3Xtq+wH/G0tvwFn0VniDs6EGu11rSwONHLfd3ULAsSK9Z+8n4IiLZgIGHOSItNMGPc16LW9L18Qp4bsph1g4We0k6+myQ2/kp+i03yVYeLxB8Kfykr2o4KkgDdogD8bvU9n/RYZbKCPYM5d7yrH+So7r7mQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=f+lk879y; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=Gmfc9VQUjxFp/8aW7eNrwL/obvPKyG7mZUH6iWlJPO2pLmUFy2FmE+VWmqb5lOkglszXtiX8lHKtq7Cmje9eBgjx3xgzPUGkvsjyX9gIZ5BPX9GHU/pioBVOGtQ84qz8yQBQS8aV9bXiiVWs9AwlISe/WafaZvG60AsboSN8tCKcEroWRFosaf2K9GiqNcmVZhUKFngDNCtEbGmhLX073ShQD952CUa3n6mtz0WnF3U8nKmMz7sL9W/YMg0ac+09GS0b8C7ZqB05MBgGBu9lqai0ayA43Msq2otwKBlokPqs3PdWagiJdQYA0EwwlInj6QcENWGQ3oGuBaM9oAJOGA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=C6bVeoF7; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=f+lk879y;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=C6bVeoF7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvx2V2254z2xSV
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2026 23:38:26 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 3D5BC6025A;
-	Wed, 30 Sep 2026 13:38:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DBD6B1F000FF;
-	Wed, 30 Sep 2026 13:38:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790775502;
-	bh=Ig13N2tfIjFRsSeqDuP4ixyXHADT+oxuPpwsFpsBiHk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=f+lk879yO1tcwpxTCZ8Vu9BSZUmqzoN86ot1Geu5VLUsqPRG9EiYd59TtYmDI/DQx
-	 b8PpR9XUHRj0fTYkMmqXQuU21rsM9TF4RTV+0y9feymcUMVNsiCzbuBPKCg7LcBInO
-	 A8qletS7Fjls0KgPrzllrFG2yFr3jSqVabH3BfItoBP22iHLl1D1M+B10unFPxeYbS
-	 DoBEprp5b4czipy9XTDOYyQwloYcLFKkBr+bQORPpJFN8w65Cv7oGrANxZ7mpBtWFH
-	 X/3FQ1hd+ZdBx+IV0FxW43+cOBuEql4F0qrdZWn1SclMvfp5mjwnEyjv/+mEW0gQs2
-	 c0/P6Q0/ruZRw==
-Date: Wed, 30 Sep 2026 15:38:13 +0200
-From: Nathan Chancellor <nathan@kernel.org>
-To: Nick Desaulniers <ndesaulniers@google.com>
-Cc: "Jason A. Donenfeld" <Jason@zx2c4.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Andy Lutomirski <luto@kernel.org>,
-	Thomas Gleixner <tglx@kernel.org>, Theodore Ts'o <tytso@mit.edu>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	Bill Wendling <morbo@google.com>,
-	Justin Stitt <justinstitt@google.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>, Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	"H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	llvm@lists.linux.dev
-Subject: Re: [PATCH v2] random: vDSO: Avoid call to memset() when zeroing
- reserved in __cvdso_getrandom_data()
-Message-ID: <20260930133813.GA3142230@ax162>
-References: <20260925-vdso-getrandom-avoid-memset-llvm-24-v2-1-ce640f872393@kernel.org>
- <CAKwvOdmuvn0LZkYEsH84hnOGTYhTtzuWs3wMARtWdTeL6dD9sA@mail.gmail.com>
- <CAKwvOdnxKVpn=nAFaqP+9PTx4PqgHsUVWv6e60Pcr29W_eZrpQ@mail.gmail.com>
- <CAKwvOdmNZL3eFvV3v77GXDzL+XLgz+BT9TA=my0yTnbsHqVeSg@mail.gmail.com>
- <areYMjNcaqe86ds4@zx2c4.com>
- <9d1c338b-368f-4ea2-a12e-c28d49adff5e@kernel.org>
- <are6s5e6On3hpD3M@zx2c4.com>
- <CAKwvOd=BrMfFT88jsvBPhh383qqk5G+J07CsofNu0MVkziyhCg@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvx2r2q0Bz2y24
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2026 23:38:44 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68UB5NVi2798326;
+	Wed, 30 Sep 2026 13:38:27 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=j0LRCX
+	QRdK8U0mZCDcxBrktz5SCPHZj5h5xK40AbDWY=; b=C6bVeoF7FyGyoYZGP78mDL
+	w+zvISG2GqybXhgt+p+K4ft+yC2QOz5jXeuvsBqQyE921kCJQKZEGCgDbvstN2zv
+	0CaGeFGcuuinTJh0LPTztuH4gTyAH9XOUdrWQTT5veyHTnRKlwiVBwSNmiDMq8CQ
+	q2TfeWLtVKMyORYZ4crXKixU0iSdsvx1wJtsHgVNzIiWzRqPFvKCkK9mHgZyc7ud
+	LJiXZofTQlNZ8UwaG7h4K/g6D9oc06U0sg5uMnnQmQY4ptY+DLcmwFp+wwYXROS7
+	dGKH7Zih61+7XEoYgr5sc2OVuPCF8kaXrZwuuIirtHQ4RzUeUwOJQebMg8NETO6Q
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gx5s5d7hj-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Wed, 30 Sep 2026 13:38:26 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68UBHURp3353630;
+	Wed, 30 Sep 2026 13:38:25 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4h0j23kupe-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 30 Sep 2026 13:38:25 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68UDcLRk27459952
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 30 Sep 2026 13:38:22 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CB7F820040;
+	Wed, 30 Sep 2026 13:38:21 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E781820043;
+	Wed, 30 Sep 2026 13:38:15 +0000 (GMT)
+Received: from fedora (unknown [9.5.7.39])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Wed, 30 Sep 2026 13:38:15 +0000 (GMT)
+Date: Wed, 30 Sep 2026 19:08:26 +0530
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: Shrikanth Hegde <sshegde@linux.ibm.com>
+Cc: Amit Machhiwal <amachhiw@linux.ibm.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Gautam Menghani <gautam@linux.ibm.com>,
+        Harsh Prateek Bora <harshpb@linux.ibm.com>,
+        R Nageswara Sastry <rnsastry@linux.ibm.com>,
+        Alexander Graf <agraf@suse.de>, linux-hardening@vger.kernel.org,
+        stable@vger.kernel.org, Avi Kivity <avi@redhat.com>
+Subject: Re: [RESEND PATCH 2/3] KVM: PPC: Book3S HV: Add preempt_disable()
+ around virtual-mode HPTE bit-lock users
+Message-ID: <20260930180232.ffed855b-03-amachhiw@linux.ibm.com>
+Mail-Followup-To: Shrikanth Hegde <sshegde@linux.ibm.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, 
+	Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
+	kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Gautam Menghani <gautam@linux.ibm.com>, Harsh Prateek Bora <harshpb@linux.ibm.com>, 
+	R Nageswara Sastry <rnsastry@linux.ibm.com>, Alexander Graf <agraf@suse.de>, linux-hardening@vger.kernel.org, 
+	stable@vger.kernel.org, Avi Kivity <avi@redhat.com>
+References: <20260928122837.8782-1-amachhiw@linux.ibm.com>
+ <20260928122837.8782-3-amachhiw@linux.ibm.com>
+ <57f589e4-b7cc-43d1-8d02-732d10118833@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,60 +108,204 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <CAKwvOd=BrMfFT88jsvBPhh383qqk5G+J07CsofNu0MVkziyhCg@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <57f589e4-b7cc-43d1-8d02-732d10118833@linux.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTMwMDA1NCBTYWx0ZWRfX4EgFbb6zL1BS
+ cNrvtNMsBgt3gkhirmgxsVnMCLCRc/qT5adQVks46oBQnvn5XMp9ADb1c3mvfbW5uOmqoshnoB6
+ GYM8s8ilUPQIiF7Y+M+adLwevqhkyko=
+X-Authority-Analysis: v=2.4 cv=HJ5WhYtv c=1 sm=1 tr=0 ts=6abd10d2 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=c92rfblmAAAA:8
+ a=VnNF1IyMAAAA:8 a=A1fdaXlmI8BdxGPDefsA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=GvGzcOZaWPEFPQC_NcjD:22
+X-Proofpoint-GUID: DKTSW_9HlJkEjTjvjdXXIDw1J-ICCYRx
+X-Proofpoint-ORIG-GUID: Iok8jqdxo72sJXwY6sEBRb8KbdrFdBE8
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTMwMDA1NCBTYWx0ZWRfXwBe+XxtmE3ND
+ rIJV3dJAHr4G7dV4+AfJ5tKccIUUPbn0dWP5pEl6RBdNgy1qw0iRbCd6zVOPHjLnfPxagueEkyZ
+ duFcUNDtw4do337neU1Xw1HirXT3KL9m5sM3zHaUZEsPGDGrlwtzYIghVt2dVvpmrHjl+hCrJSG
+ 6HaClja19CW0PN8c5hzz8S6zvPMymUawHaXShtdoyTdeI7SDJ+HSJ3/raxlRTn/w+hDhydF5DLu
+ cbj3NXIm3MySMaZAxNbGFz99dno60dB1DLp/aVB1iSYVzyNqkK2N02K2MGAGyKRzAn76nfcvVfm
+ s3hcpxih7qpVNYYeAiWZIedjU0v8e0EYrO6Bu3D+x32h6k6rtqMsD+JW405/ql4tDSEjOOktR+W
+ k0EZR3CeCl0RQEhiEEjSpQgAIr58uQlblQfxeuoqOlKTTzfI2uRv4jwE3WON/pgE4KNRTLh4Amr
+ gLPbh+UmZa139v3fEIQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-30_02,2026-09-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 suspectscore=0 bulkscore=0 clxscore=1015 lowpriorityscore=0
+ spamscore=0 impostorscore=0 phishscore=0 priorityscore=1501 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609300054
 
-On Tue, Sep 29, 2026 at 11:24:11AM -0700, Nick Desaulniers wrote:
-> arch/arm64/kvm/hyp/nvhe/Makefile has this pattern for exactly the same
-> problem I suspect.  Maybe that's the right tool in the toolbox?
+Hi Shrikanth,
+
+Thanks for taking a look at this patch.  Please find my responses inline.
+
+On 2026/09/29 11:48 AM, Shrikanth Hegde wrote:
 > 
-> ```
-> diff --git a/arch/riscv/kernel/vdso/Makefile b/arch/riscv/kernel/vdso/Makefile
-> index 8dbf2532a573..27fa72d8fb86 100644
-> --- a/arch/riscv/kernel/vdso/Makefile
-> +++ b/arch/riscv/kernel/vdso/Makefile
-> @@ -27,7 +27,7 @@ asflags-y += -DVDSO_CFI=1
->  endif
 > 
->  # Files to link into the vdso
-> -obj-vdso = $(patsubst %, %.o, $(vdso-syms)) note.o
-> +obj-vdso = $(patsubst %, %.o, $(vdso-syms)) note.o ../../lib/memset.o
+> On 9/28/26 5:58 PM, Amit Machhiwal wrote:
+> > kvmppc_hv_find_lock_hpte() requires virtual-mode callers to run with
+> > preemption disabled, because it can return with HPTE_V_HVLOCK still held
+> > until the caller later unlocks the HPTE.  Existing virtual-mode callers
+> > in book3s_64_mmu_hv.c already follow that rule.
+> > 
+
+<..snip..>
+
+> > diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> > index aa51968e206a..52f72f30baf0 100644
+> > --- a/arch/powerpc/kvm/book3s_hv.c
+> > +++ b/arch/powerpc/kvm/book3s_hv.c
+> > @@ -1212,9 +1212,11 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
+> >   	case H_CLEAR_REF:
+> >   	case H_PROTECT:
+> >   	case H_BULK_REMOVE:
+> > +		preempt_disable();
+> >   		idx = srcu_read_lock(&kvm->srcu);
 > 
->  ifdef CONFIG_VDSO_GETRANDOM
->  obj-vdso += vgetrandom-chacha.o
-> ```
-> Fixes `make -skj"$(nproc)" ARCH=riscv LLVM=1 mrproper allmodconfig
-> vdso_prepare` for me, as per
+> Please add a comment above kvmppc_pseries_do_hpt_hcall, saying preemption
+> is disabled and one cannot make any blocking call.
 
-For the record, this also happens with the 32-bit PowerPC vDSO, as I
-noted in the commit message of v2. I should update the issue too, I only
-realized this after wider testing. So if this is the route we want to
-go, we would need a memset() for that vDSO as well.
+Sure, will do.
 
-> https://github.com/ClangBuiltLinux/linux/issues/2183
-> (Nathan, don't forget to link to that in the commit message)
-
-Yes, thanks, I have added it for v3.
-
-> I'm surprised I didn't need -fno-semantic-interposition (or one of the
-> related flags... -fvisibility=hidden)
 > 
-> If we want to get better, (if performance matters here and we want to
-> trade source+build system complexity for absolute code perf) I would
-> start with that, then worry about clawing back performance via things
-> like:
-> - __builtin_memset_inline
-> - -finline-stringops=memset
-> - -ffunction-sections+-Wl,--gc-sections to dead code eliminate the out
-> of line copy of memset, though IIRC there's potential for wasted space
-> due to alignment requirements (maybe the out of line copy of memset is
-> smaller...idk)
+> >   		ret = kvmppc_pseries_do_hpt_hcall(vcpu, req);
+> >   		srcu_read_unlock(&kvm->srcu, idx);
+> > +		preempt_enable();
+> >   		if (ret == H_TOO_HARD)
+> >   			return RESUME_HOST;
+> >   		break;
+> > @@ -1834,8 +1836,10 @@ static int kvmppc_handle_exit_hv(struct kvm_vcpu *vcpu,
+> >   		else
+> >   			vsid = vcpu->arch.fault_gpa;
+> > +		preempt_disable();
+> >   		err = kvmppc_hpte_hv_fault(vcpu, vcpu->arch.fault_dar,
+> >   				vsid, vcpu->arch.fault_dsisr, true);
+> > +		preempt_enable();
+> >   		if (err == 0) {
+> >   			r = RESUME_GUEST;
+> >   		} else if (err == -1 || err == -2) {
+> > @@ -1881,8 +1885,10 @@ static int kvmppc_handle_exit_hv(struct kvm_vcpu *vcpu,
+> >   		else
+> >   			vsid = vcpu->arch.fault_gpa;
+> > +		preempt_disable();
+> >   		err = kvmppc_hpte_hv_fault(vcpu, vcpu->arch.fault_dar,
+> >   				vsid, vcpu->arch.fault_dsisr, false);
+> > +		preempt_enable();
+> >   		if (err == 0) {
+> >   			r = RESUME_GUEST;
+> >   		} else if (err == -1) {
+> 
+> Please check if below is possible case.
+> 
+> https://sashiko.dev/#/patchset/20260928113704.48912-4-amachhiw%40linux.ibm.com
 
-Yeah, I guess it is ultimately up to the maintainers what route they
-prefer.
+Thank you for raising this point and bringing Sashiko AI's review comment to
+attention.  After conducting a deep-dive audit of the preemption paths and the
+virtual-mode locking context, it looks like Sashiko's finding is legitimate, and
+extremely subtle.
 
--- 
-Cheers,
-Nathan
+The Deadlock Mechanism:
+=======================
+
+In this patch we added preempt_disable() / preempt_enable() pairs exclusively
+around the guest vCPU HPT hcall paths (kvmppc_pseries_do_hpt_hcall) and page
+fault paths (kvmppc_hpte_hv_fault) in virtual mode to satisfy the HPTE locking
+preemption contract.
+
+However, several host-side virtual-mode paths still acquire and hold the HPTE
+bit-lock (HPTE_V_HVLOCK) with preemption enabled.  Specifically:
+
+- While MMU notifier paths (unmapping, aging) and the dirty-log path are safe
+  (since they are called with kvm->mmu_lock held, which disables preemption),
+  the memslot flushing path (kvmppc_core_flush_memslot_hv() ->
+  kvm_unmap_rmapp()) runs with only the slots_arch_lock mutex held, leaving
+  preemption fully enabled.
+
+If a host-side thread executing kvm_unmap_rmapp() successfully acquires the
+HPTE_V_HVLOCK on CPU X and is preempted, a guest vCPU thread subsequently
+scheduled on CPU X will enter the hcall or fault path, disable preemption (via
+the current change), and spin indefinitely on try_lock_hpte().  Because
+preemption is disabled on the spinning vCPU, it will never yield CPU X.  The
+preempted host-side lock owner can never be rescheduled on CPU X to release the
+lock.
+
+This converts a potential latency/livelock issue into a permanent hard deadlock.
+
+Proposed Solution:
+==================
+
+To make this fix completely watertight and eliminate the deadlock window, no
+thread must ever be preempted while holding HPTE_V_HVLOCK in virtual mode.  This
+means we must disable preemption during the lock-hold window on both the
+vCPU-side and the host-side paths.
+
+In the next version, I'll be making following changes:
+
+Host-Side Preemption Disabling: Add preempt_disable() / preempt_enable()
+brackets around the HPTE_V_HVLOCK hold windows inside the four host-side
+virtual-mode functions in arch/powerpc/kvm/book3s_64_mmu_hv.c:
+
+  - kvm_unmap_rmapp()
+  - kvm_age_rmapp()
+  - kvm_test_clear_dirty_npages()
+  - resize_hpt_rehash_hpte()
+
+For example, inside kvm_unmap_rmapp():
+
+ diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+ index 2ccb3d138f46..59da958e09cb 100644
+ --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
+ +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+ @@ -823,7 +823,9 @@ static void kvm_unmap_rmapp(struct kvm *kvm, struct kvm_memory_slot *memslot,
+                  */
+                 i = *rmapp & KVMPPC_RMAP_INDEX;
+                 hptep = (__be64 *) (kvm->arch.hpt.virt + (i << 4));
+ +               preempt_disable();
+                 if (!try_lock_hpte(hptep, HPTE_V_HVLOCK)) {
+ +                       preempt_enable();
+                         /* unlock rmap before spinning on the HPTE lock */
+                         unlock_rmap(rmapp);
+                         while (be64_to_cpu(hptep[0]) & HPTE_V_HVLOCK)
+ @@ -834,6 +836,7 @@ static void kvm_unmap_rmapp(struct kvm *kvm, struct kvm_memory_slot *memslot,
+                 kvmppc_unmap_hpte(kvm, i, memslot, rmapp, gfn);
+                 unlock_rmap(rmapp);
+                 __unlock_hpte(hptep, be64_to_cpu(hptep[0]));
+ +               preempt_enable();
+         }
+  }
+
+To ensure complete consistency and verify there are no other potential
+preemption deadlock sites, I conducted a full audit of all 8 occurrences of
+try_lock_hpte() inside arch/powerpc/kvm/book3s_64_mmu_hv.c.
+
+The proposed v2 fixes simply bring the host-side lock users into alignment with
+the established, pre-existing design pattern used by every other virtual-mode
+caller of try_lock_hpte() in this file:
+
+- Established safe callers (4) — already wrapped in preempt_disable() /
+  preempt_enable() blocks by design:
+	- kvmppc_book3s_hv_page_fault()
+	- read_hpte_for_cma()
+	- kvmppc_hpte_hv_page_debug()
+
+- Symmetrical alignment in v2 (4):
+	- kvm_unmap_rmapp()
+	- kvm_age_rmapp()
+	- kvm_test_clear_dirty_npages()
+	- resize_hpt_rehash_hpte()
+
+This ensures 100% preemption-safety symmetry across all virtual-mode
+lock-holding windows in KVM.
+
+I hope this sounds good to you.
+
+Thanks,
+Amit
 
