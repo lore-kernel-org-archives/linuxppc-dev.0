@@ -1,69 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-28590-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28591-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B698CA5FC4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 16:41:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5A27CA5FC4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 16:42:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hw15k742Nz2xwP;
-	Thu, 01 Oct 2026 02:41:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790786490;
-	cv=none; b=QQYTKXuwbZ57pK2PIjTe7LZuVUUfEDlhH4VmGwHGsGKhhlRRvCarm8QHkquQh3omOzwVdtMjIvphG12/caoUDaAz++f9J5M+fQkkcOibCF0ajxnb0aCnlUsS197Bj/4woGgaxzdNA4+dV+qIc6l9QYi9H4JKZjU5SDsb1RxgMJjRaVAHW4P6I+S6WlgoupbB2YujZyRuDKbTOwxDrzFJgKMhU92+fLEWhDK7kn77X1V+QxYEeiAu20iC+kWrOmzf+jCEps2TxKLmd0Auqctcn//8Rdsq8KbCubNQUbUzfoLmqejm04mVYNfZ3Dapvm+wwJZ0ctcR3RnYw3gPLm/LVQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790786490; c=relaxed/relaxed;
-	bh=0oMXs5+TrKE1cJXnC3cLBqcfOFtA41Wr69Z/a67ZBXM=;
-	h=MIME-Version:Date:From:To:Subject:Message-ID:Content-Type; b=P5C87fLTlhSP1UpxqPG090Ufnwjcoy37+a340lpJNPBe6MQiSmNyuIG1oOpZ+OZ5/i7Thr1I61f4suqFZjRnD8iEZTEXOObxYy2UWRWuhU9NgkNoh5/FDcgMfaeDQpkwdP59l7K2S0CJMvcpcIC16Do88NIM8QmBax/E20eVblDVdpOEqA1aSWVqkNM6PVEZKWtnvjTTOpGoiw7jHbCwlyNEjGdEIwaudjriYsrfgmIMU2VQlCpWx9EluOes52C64dSFdh814nXTogYIDWtEg3UJoeUTKxOtLFfcCahJ/+uuYkZD+vFeQCo3EbvTtw72ksl8DRArsQpa0fq2JrHLrQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qEyThTF4; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=jyoti@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hw16S07gWz2xwP;
+	Thu, 01 Oct 2026 02:42:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::1" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790786527;
+	cv=pass; b=nWbYY8HLrk3tDJB6aXSfL8qjbIge7MIqPAOFnmVxF8O78AHSVNnhLwHYHcDJtHPHSkuLVxTgD96Pwyku9IYxfO6t6SKdC08YZNSK9xb8Z+7TWhS/71m52tkPNNRZ0HGxW0UdAtK8uUW1rXCKw7rUJ9MXakIDbmVFxFvv1yFEblRXNO3TCx6eSm2c3FgjeANIuPW88gwqcYBmpPYz0cS9Cxn95vEEmN++FuuM2+nvK2LwpCvDwSjxDGELNNHqVP5huULAoYZpfcsViRNbWrlDIxWIvjTeRqcKBceTHfhockLaxauMHrpM+CZMBcLObTSDt79H1KNZ2rJoy3qDypJewQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1790786527; c=relaxed/relaxed;
+	bh=34BUEuaQYUZ84U5Tu3lHI2XVLvNBSZd+6FjRG7uCRH8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=f60L5UxC1zlJBkgk1AgV8prKFFFd7l0EJFpbHzHsZNMlvaYLtG/V/BXXruyAFNoLm/G79Sxr9i/rDRdiusIwQO4M/+9oMZu8IdkyJ4urLkowckU+5+kqQMB8IHyaxbKAwGwzkwULMM3BsvLMGdr6XVvEzl+v+FcW7lAEqpirhJbBioxfddttl77U+qbwk+z0UXT8dUEJDyvmR58++2kZUtKeEbjYYOJ7gnNNOmwc5wUKdToxcQ4VESrrDgKqrsGo4BTaCskFzgrKwGC+4IuDZs8k/l+nEm+Q9YFcRUPfhm+dRz5qamxmxaYS9uqnuzQTI7UwAUQpMmIb9k2L+x0q/A==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=BMIO9Fl1; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qEyThTF4;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=BMIO9Fl1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=jyoti@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
+Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hw15k1xMdz2xM9
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 02:41:30 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68UE5JZr3203027;
-	Wed, 30 Sep 2026 16:41:20 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
-	content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=pp1; bh=0oMXs5+TrKE1cJXnC3cLBqcfOFtA
-	41Wr69Z/a67ZBXM=; b=qEyThTF4iZiUzkctPcHKJyEtrmi+WbwPfz0hhZs+s7iF
-	hdshmuhrfqObz7JCndZgxaRb5OKb+1lnXGWMW+jhTua/VCGTbtBPjKU3KbK4ZtzT
-	1PYGLYS/XSEl15TRa5Nz+9u6n3/yNPjHpm/mUM1c5+0l3UbBZC0SHGuar/9FMCKt
-	Ve8HdGxu+ozXfh1o/3qg7kVnQeUVehg9gz+IaBbxmmf4YK/Gz5WjSh9qv6ZTkPnH
-	dkPXAspYtK2jX9LU4R1VDiJVFKnrSjB+bUPUUZIXLLKpJkJf7Ub3aPn6xPGA8tsL
-	7sK9p4ZhNlvGUDBmmpmPToLkunj9NxjukQq7dA325w==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gx5j5ed5b-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Wed, 30 Sep 2026 16:41:20 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68UEHupv3569204;
-	Wed, 30 Sep 2026 16:41:19 GMT
-Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h0xcs9y8r-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 30 Sep 2026 16:41:19 +0000 (GMT)
-Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
-	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68UGfGU665995154
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 30 Sep 2026 16:41:17 GMT
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D738A5805D;
-	Wed, 30 Sep 2026 16:41:16 +0000 (GMT)
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 57DF458058;
-	Wed, 30 Sep 2026 16:41:16 +0000 (GMT)
-Received: from ltc.linux.ibm.com (unknown [9.5.196.140])
-	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 30 Sep 2026 16:41:16 +0000 (GMT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hw16Q3vwlz2xSV
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 02:42:05 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Sov2T8O93NsrTkb2xND+twoOQk0DGR9AE53KzPxIYk/OhudzVGAOFtigWPs90DBDGE7naPCiGU7atxiJwlITZecoRcZ0o/esKzZnDkKbHgJP7L1H8JAksRfAGiBazXp0eYlEgYR653Dn8CCM1oj7qVQ1ATN1Z/rM26E6kNwgHexH/OgfOkKccFnOg4gAeIrBUft1lX56WXNX9sOpUkNPy5WR/UxDP3fSDELBzhpqnvL0k9I2iUFo4TsJo/GovgpDgxm3Z4qjnkIJezt5ub0+pD87NFxRgT1uzoOCBy2uqmFcTImhE4Yc3iB9Dm24QWZFJSNOuxtAzbv81ycv8b1ytQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=34BUEuaQYUZ84U5Tu3lHI2XVLvNBSZd+6FjRG7uCRH8=;
+ b=VWXsW3PiYKpFkI5ehM53dMSw+ca1g302zNTr1eyB3bwOcwS/2VoEtP58lIFS3+kVJchzdg9Yvpbj9cCN40K0DoFfUuctqTZNLNE2HQD8s9e3LzA6s92KA9HODLskZoPrkLAOa8ADArO5JSRLBV/rWr/NrubGTjaxNg73rxVSWNGsL9dBrwrFKitSfuOCk1x2Dj0BLMeVYfmNy+r65pP7+mFjzfzVIXECzTXb6OR7QQaYaJVuacJC34Nv+ODjF13dOdiBSWsQATjwgbtVX3X8QVnxbV2cSUfqhDNh2F7wjypRVgM4E9/8GAiTvarAhbIFmYW+4r6yynpH/G/ZqII7Cw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=34BUEuaQYUZ84U5Tu3lHI2XVLvNBSZd+6FjRG7uCRH8=;
+ b=BMIO9Fl1zCKglS7dPiXzLTCfRbjOTQfmqjDZqqAPRbb6x5GIaAVMBic+Ma1Bnjnl+rFAyg2zwMmJEW90s03JRDyxK2ByyPVVaDuiw4Oh2S3upO7hu4JPrVThvcuzeVY+p1AZ+NCxR8AojGs/2UmYyeArToVloG2MYQUsdnWFa1QnxLCt/gZHcBTOEAQdZhbG+JFnwoYts3tYn5j3pMh6tLsWmpgdBquLtDeyoi2OYu3FPh4fZ8K04KbZkWg6N/zPZtPyN7JRfmBRtP+u5P+TvptEI13tbPN6lIbmWbKs8y/7qFPMsuRqZGLqijphd4l5w8Ovwqrj/mNCzB2H0OvKsg==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
+ by PA1PR04MB11529.eurprd04.prod.outlook.com (2603:10a6:102:4e2::20) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.24; Wed, 30 Sep
+ 2026 16:41:40 +0000
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c%7]) with mapi id 15.21.0451.022; Wed, 30 Sep 2026
+ 16:41:40 +0000
+Date: Wed, 30 Sep 2026 11:41:29 -0500
+From: Frank Li <Frank.li@oss.nxp.com>
+To: jeffbarnes@linux.microsoft.com
+Cc: linux-pci@vger.kernel.org, minghuan.Lian@nxp.com, mingkai.hu@nxp.com,
+	roy.zang@nxp.com, lpieralisi@kernel.org, kwilczynski@kernel.org,
+	mani@kernel.org, robh@kernel.org, bhelgaas@google.com,
+	Zhiqiang.Hou@nxp.com, linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev,
+	linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: [PATCH] PCI: layerscape: use default error response behavior
+Message-ID: <ar07ubdYLk-Tje1q@SMW015318>
+References: <20260929194339.233271-1-jeffbarnes@linux.microsoft.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260929194339.233271-1-jeffbarnes@linux.microsoft.com>
+X-ClientProxiedBy: PH0PR07CA0104.namprd07.prod.outlook.com
+ (2603:10b6:510:4::19) To GV2PR04MB11799.eurprd04.prod.outlook.com
+ (2603:10a6:150:2cf::9)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,243 +86,165 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Date: Wed, 30 Sep 2026 22:11:16 +0530
-From: Jyoti Gupta <jyoti@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
-        npiggin@gmail.com, chleroy@kernel.org, ritesh.list@gmail.com,
-        sshegde@linux.ibm.com, sourabhjain@linux.ibm.com,
-        amachhiw@linux.ibm.com
-Subject: Re: [PATCH] powerpc/mpic: Fix memory leak of mpic on error paths
-Message-ID: <fb3c8fc047e29000ddaab61fc707868e@linux.ibm.com>
-X-Sender: jyoti@linux.ibm.com
-Content-Type: text/plain; charset=UTF-8;
- format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTMwMDA2NiBTYWx0ZWRfX8JK13+h61AHi
- 3wr8aejjcy5gYylp5eq+f9bDyvwSY39n5DEx2wiDKbOf8oEXUwGGnqjwLsS3Mfjw1PwDlcHb2RG
- +j9QybWCiYxnuoTtEHWmDUGRejy9bkQ=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTMwMDA2NiBTYWx0ZWRfX+bwJmxaeeeIf
- xU8EYWUihaT5cZ5fyOY9FDYXZxs6YmhftaLITRteIkdDwEyDa5yacBswx/Y2d52CgjHH7NrJEXN
- 7bC+aETlUx40ZFT/BXxBriVoGZgE3jn7qp7Cz7o35HDUgAWJCzG+/Wik4eeQ1O4rIf0hvVqz6LP
- p5sEpdJ1+XppGilwnvDRWSXPbvZr97svhDfEu/3jMtL33416buM7ypxCU8zGSz+M9hw8mM+MZhS
- IKVuIiRO9ByOHEknc55mO/cEIYaBV+oIaFDLQXz5he/bpgRw0ePDq8wF9Y+q2wDekOn0Qtiowrl
- q0Xa0mKQXxCLfrJtyZKHgy/ysZCgfCwYHUCyJno7iMjLt1fPEjHXJrt5yJH5O+yX+pfOMjg+2fl
- aW4MDWqXehJv0/92N7ZgzHFpcN+HWttKW6GJLWyq2U84z04MxO0ixr+MDdcYonU+hp0vPFUCnPF
- Lc6x8nIYAczxf02iHLA==
-X-Proofpoint-GUID: HMCUrs0G3CLbfVTmiyVo09wMtrQ_N5SA
-X-Authority-Analysis: v=2.4 cv=RKcmjIi+ c=1 sm=1 tr=0 ts=6abd3bb0 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=voM4FWlXAAAA:8 a=e5wYs6-hrR6EjXF8iz8A:9 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10 a=IC2XNlieTeVoXbcui8wp:22
-X-Proofpoint-ORIG-GUID: 05ZUrhGKtacQygCjCRTCBGxLKMAyFzBw
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-30_03,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 priorityscore=1501 spamscore=0 bulkscore=0 impostorscore=0
- adultscore=0 lowpriorityscore=0 suspectscore=0 malwarescore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609300066
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|PA1PR04MB11529:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7c68e4ed-0f28-4817-25db-08df1f11b3af
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|376014|366016|7416014|1800799024|19092799006|22082099003|18002099003|6133799003|10067099003|56012099006|11063799006;
+X-Microsoft-Antispam-Message-Info:
+	VixQH2WRvFYTgTmM54j3R7/RJzxTzo6J72LF1dthBhRqFybIz7H3bJx1a4n27wiu2jbsa7RL3o6nOwTvxFFTl/kAsYejVH6Ppbh2I8iNZ/iIVfx8nh4dfQSV30KvmOFlJ3TpvOAdQhUbcAIvyRX52W8lxprUyWGiigjA6SynhdFcGmQgGfKdIr5aAaqPZAyjitAAp9op43nejHK7fzxA8MwqKD8XldJFAnkrX0H/4WWXxSEhW71yDXddFL9xBHGqpQtAWt6ZqDvoN8iLs2d9X7UrgrBi1pYCW/F/UXPtSU4CYoyllfOJ3FBWa0zWSE8eXwquFCsMKbF1I7weFT7ywN6lsrPy/Oif44CPUUkL3ApcZVIWe5KJFuEpJtSJGb86OlllZf9gLhT346Wo33LLtXzrqNMCcpRryOasHkwlL3SDpceGpMLrDvIxGJ+L30Q0wMalkSSNRIgL5iDKvUfZXE3TsBnWXYM2UgefLjAg8vKkpFSLVOOhmDPNldJOQJG4t2LoNfn/V3dZMdFsgAwDc2eFbRl4FJ6myh4AihEAygXlW5iQDvopbILb8HJgl6LyC5kvnAnI8mjt59J8s+2xKx5MwXu4kXLrtxN6BV8vDvkl7sMHYx1SC1335k0jyJQ13QP7mpPRaKmVBAwxTnyqs0PzbvkxmVDZyGkGSrHV1io=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(376014)(366016)(7416014)(1800799024)(19092799006)(22082099003)(18002099003)(6133799003)(10067099003)(56012099006)(11063799006);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?BUuxcvPEQiY3GJ7yH81EpQngfRFHZJeAnbnvje7PX5bRy/caPfU+t1amYI6U?=
+ =?us-ascii?Q?UeDL6UbuPlZunWped6mo4Hj3+oUl0YBnOS39VFEp/F4BavXPXbMsmLi4Ivjh?=
+ =?us-ascii?Q?2IcjgaSWVMMzipI/yLZFOCUEZIqyxNT732bDs2jNxybHHLqfPopV9X7rVYzd?=
+ =?us-ascii?Q?0YIbnDggjbAa8B9JtO7gzxtlAIkb+s4ei4J/xPgflMoVD911nJQ4DljgcD4v?=
+ =?us-ascii?Q?uPeNN1ZEJkRbTe9UxgW8K6g+3CakpOMtMqvqwBk4OVxGiKOlnO/l9Tfwl9ij?=
+ =?us-ascii?Q?dhjeDQ5ok5dCpQU01pk3p8BTPnzMHD12UHxsUxvmPmSj8r0U1/5mJJqRqqyL?=
+ =?us-ascii?Q?ZNmh+kFerZrCerW7PfECS5jEuYbZNDYNhmo5a1KmZBWz4LjFAtVg8gjY/ttv?=
+ =?us-ascii?Q?jIDSFDMJsxUK5OdDo4qu2H3uUKLWvFVMptaLsqfk5GCPD4q7zdn2xppOQdYo?=
+ =?us-ascii?Q?SMvUpekZrTJCgVZzWP+D6dGsKKABLPtkWv/EdjfNvm6z2UgHr/kdIZsLjdxS?=
+ =?us-ascii?Q?1u9W7rHsD/Zvp0+eqBFR2LXPHLOLf5j6vm8i7deBMxAR4u9k/krhUcj7Wf9B?=
+ =?us-ascii?Q?/z0fK5uBKJlZF3feSDPsbAB30iDzyQr68bvCy1QWEa0vHUW3trVNsG4i1Yau?=
+ =?us-ascii?Q?ixXQCCdP1DwYxlvDmKlXK+TqFBM3yyM3FgDmcdtx7HdiwZ83yRpslmHa58LD?=
+ =?us-ascii?Q?OLJVGlG/oygTOTi87JjXHHX0RHUXVoo4ASdCzXJJLd/W7311ajjXMNsZevTN?=
+ =?us-ascii?Q?NtyjZ5etoYJYSNx7Id2hMX3FkPPg5qbIjsbAwg6QPl2P/UMFPPaxwbYoPEqm?=
+ =?us-ascii?Q?7mfCzHxI5aIHIQxiFmrtwbbHy5uYbfWQjFW9zsrsb+7Y8btN41/NCaapVSSe?=
+ =?us-ascii?Q?FH7RF7FVkd82tbHhZEB6ePfb/YPbhPdN/Iq1KjA7gy2NFQCprNhdmzpG2hED?=
+ =?us-ascii?Q?z1dAPNZ9esUyegKNiZmXtLPykGdPDX1moDSpMdJbpKcv0XMig51BGcnQ4YDY?=
+ =?us-ascii?Q?TjwGxELQB2bBwIwc8EbrdG9iEAnZvuXHDPa/uhIIIHpu7Qt8QzxvlJcfbbAh?=
+ =?us-ascii?Q?PoYgpK8iDxHRTAw+6YB/5REirtumKHsA+Ipd2HId+amIgBsEwchI9KjhceQy?=
+ =?us-ascii?Q?6J6U4UhMU1UAZZLoI+gbPmEmdxf3nynMp5Wwpova7j29Bw6i6y4LQWI9qHaw?=
+ =?us-ascii?Q?CZTuxCD5qwCqX6r7qP95x1CDO6CUA+Yw0AtK4dLt9vyAZAXrcAUoXgG1anfz?=
+ =?us-ascii?Q?VoPy8E7iE6tlDnO+7l1bM6Qt5xTdabEVLmP/tBfwRfPku2lk1d3m73rYR2zX?=
+ =?us-ascii?Q?hf7kfUULoSB6csQYFIgatdbnNupF9ZHqRw8SzTu5YJKjx9vZy+WwlmedBCty?=
+ =?us-ascii?Q?qKa5fqdUQEQQddB78J3jqbMgDKuHVsoeC1DuQnVJhviuNycGDRMdTTUS+LtM?=
+ =?us-ascii?Q?DvJTDckYCRNqM0eMJcJ8xDao6BtRGq1v1vhmnIElm7Rg+tbfMrdZmkzEN06y?=
+ =?us-ascii?Q?voLeLodGlXslo+mlvVC4jNfULW0Lh8patbKXvtYg4gGH8+pZT5zt9hKkKwME?=
+ =?us-ascii?Q?uliIUFi17LjFUUv9DvqDHSYc7bvPyLnF8ytChjPkcFE6B8qWjqi2sQHbRO7J?=
+ =?us-ascii?Q?3EnduCX96/dPtTJFfY3MCVEA+My75AytHsH0/KqBFJbNaT0OVVWxZdEZc99u?=
+ =?us-ascii?Q?aYh3Ksy22ssv/yCTUx/STrp7Swwr2wuuuiG2bhm+6b9W6E5c2Rv6mZ0G34iT?=
+ =?us-ascii?Q?Bf5WUGodPxdTyEJHzG1mfmjewTYE2hCp13k8/1AgqvjxdJLdc4Ha?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7c68e4ed-0f28-4817-25db-08df1f11b3af
+X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Sep 2026 16:41:40.2966
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: mlyl3iGwVClp/U6xmhu2Oqgxb+n9fkGk9rff4OQ5Tidhn3AFzMT3O2BYj9MQTJGF7B38oV7YEnisOCDKAd/FUiI5hmc+tHEu17iGtJYHkh//zy4Z7OkxCABPdzjuImnx
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA1PR04MB11529
 
-On 2026-09-29 13:02, Amit Machhiwal wrote:
-> Hi Jyoti,
-> 
-> For some reason, you response to this thread is not appearing on the 
-> list.  I
-> think you mail client is messing up the "In-Reply-To" information in 
-> the
-> header.  Fix look into fixing it.
-> 
-> For now, I'll qoute your reply here with my further response.
-> 
-Hello Amit ,
+On Tue, Sep 29, 2026 at 03:43:39PM -0400, jeffbarnes@linux.microsoft.com wrote:
+> [You don't often get email from jeffbarnes@linux.microsoft.com. Learn why this is important at https://aka.ms/LearnAboutSenderIdentification ]
+>
+> From: Jeff Barnes <jeffbarnes@linux.microsoft.com>
+>
+> The Layerscape PCIe driver programs PCIE_ABSERR to forward errors from
+> outbound non-posted requests to the internal AXI interface.
+>
+> A PCI configuration access can race with the link going down after
+> dw_pcie_other_conf_map_bus() checks the link but before the MMIO access
+> is performed. When the resulting Completion Timeout is forwarded to
+> AXI, it causes an asynchronous SError and kernel panic.
+>
+> For example:
+>
+>   Kernel panic - not syncing: Asynchronous SError Interrupt
+>   ...
+>   Call trace:
+>    arm64_serror_panic+0x78/0x90
+>    do_serror+0x84/0x90
+>    el1h_64_error_handler+0x30/0x40
+>    el1h_64_error+0x68/0x70
+>    pci_generic_config_read+0x64/0xb0
+>    dw_pcie_rd_other_conf+0x1c/0x68
+>    pci_bus_read_config_word+0x68/0x118
+>    pcie_capability_read_word+0xa8/0xd8
+>    find_device_iter+0x8c/0x160
+>    pci_walk_bus+0x60/0xb8
+>    find_source_device+0x78/0xb0
+>    aer_isr+0x1dc/0x230
+>
+> Restore the controller's default error response behavior instead of
+> forwarding these errors to AXI.
+>
+> Reproduce the race by instrumenting dw_pcie_rd_other_conf() to call
+> map_bus() while the link is up, then schedule a worker on another CPU
+> to set PCI_EXP_LNKCTL_LD. Synchronize the CPUs immediately before the
+> Link Disable DBI write, then perform readl() using the address returned
+> by map_bus() concurrently with the link transition.
+>
+> Without this change, the overlapping configuration read results in an
+> asynchronous SError and kernel panic. With this change, the same test
+> returns 0xffffffff from the configuration read. In this test, AER
+> reports a non-fatal Completion Timeout, and no SError or kernel panic
+> occurs.
+>
+> This effectively reverts the error response behavior introduced by
+> commit 84d897d69938
+> ("PCI: layerscape: Change default error response behavior").
 
-I'm not sure why my reply did not reach the list,but it is visible at 
-the link below:
-https://lore.kernel.org/all/e3c17fc50f7897b08fbd67a120087467@linux.ibm.com/
+Subject should be revert ...
 
-let me know if this looks fine.
+I am not sure what's expect behavior by other dwc PCI controller. returns
+0xfffffffff or report bus error.
 
-> On 2026/09/24 03:05 PM, Amit Machhiwal wrote:
->> On 2026/09/24 12:00 PM, Jyoti Gupta wrote:
->> > mpic_alloc() allocates struct mpic (and optionally the protected
->> > sources bitmap) but does not free them when mpic_setup_error_int() or
->> > irq_domain_create_linear() fails, leaking the memory.
->> >
->> > Initialise mpic to NULL and free the bitmap and the mpic in the common
->> > error path before dropping the device node reference. The register
->> > mappings are not released here.
->> >
->> > Signed-off-by: Jyoti Gupta <jyoti@linux.ibm.com>
->> 
->> I see a couple of problems with this patch:
->> 
->> 1. The patch does not apply.  Both "git apply" and "git am" fail on 
->> this patch.
->>    I think the context lines around the irq_domain_create_linear() 
->> call have
->>    tabs converted to spaces, which causes the context match to fail.
->> 
->>       ❯ git apply 
->> ./20260924_jyoti_powerpc_mpic_fix_memory_leak_of_mpic_on_error_paths.mbx 
->> --check --verbose
->>       Checking patch arch/powerpc/sysdev/mpic.c...
->>       error: while searching for:
->>       						 intvec_top,
->>       						 &mpic_host_ops, mpic);
->> 
->>       	/*
->>       	 * FIXME: The code leaks the MPIC object and mappings here; 
->> this
->>       	 * is very unlikely to fail but it ought to be fixed anyways.
->>       	 */
->>       	if (mpic->irqhost == NULL)
->>       		goto err_of_node_put;
->> 
->> 
->>       error: patch failed: arch/powerpc/sysdev/mpic.c:1488
->>       error: arch/powerpc/sysdev/mpic.c: patch does not apply
->> 
->>    Please regenerate with:
->> 
->>      git format-patch -1
->> 
->>    and verify with:
->> 
->>      git apply --check <patch>
->> 
->>    before resending.
->> 
->> 2. The mpic_setup_error_int() leak is not actually fixed.  The commit 
->> message
->>    says both mpic_setup_error_int() and irq_domain_create_linear() 
->> failure paths
->>    are fixed, but the former still does a bare return NULL:
->> 
->>      if (fsl_version >= 0x401) {
->>          ret = mpic_setup_error_int(mpic, intvec_top - 13);
->>          if (ret)
->>              return NULL;   /* <-- still leaks mpic and 
->> mpic->protected */
->>      }
->> 
->>    This needs to become:
->> 
->>          if (ret)
->>              goto err_of_node_put;
->> 
->> Thanks,
->> Amit
->> 
->> > ---
->> >  arch/powerpc/sysdev/mpic.c | 9 ++++-----
->> >  1 file changed, 4 insertions(+), 5 deletions(-)
->> >
->> > diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
->> > index 6e8fa94985f3..e777b33f170d 100644
->> > --- a/arch/powerpc/sysdev/mpic.c
->> > +++ b/arch/powerpc/sysdev/mpic.c
->> > @@ -1221,7 +1221,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
->> >  				const char *name)
->> >  {
->> >  	int i, psize, intvec_top;
->> > -	struct mpic *mpic;
->> > +	struct mpic *mpic = NULL;
->> >  	u32 greg_feature;
->> >  	const char *vers;
->> >  	const u32 *psrc;
->> > @@ -1488,10 +1488,6 @@ struct mpic * __init mpic_alloc(struct device_node *node,
->> >  						 intvec_top,
->> >  						 &mpic_host_ops, mpic);
->> >
->> > -	/*
->> > -	 * FIXME: The code leaks the MPIC object and mappings here; this
->> > -	 * is very unlikely to fail but it ought to be fixed anyways.
->> > -	 */
->> >  	if (mpic->irqhost == NULL)
->> >  		goto err_of_node_put;
->> >
->> > @@ -1527,6 +1523,9 @@ struct mpic * __init mpic_alloc(struct device_node *node,
->> >  	return mpic;
->> >
->> >  err_of_node_put:
->> > +	if (mpic)
->> > +		bitmap_free(mpic->protected);
->> > +	kfree(mpic);
->> >  	of_node_put(node);
->> >  	return NULL;
->> >  }
->> > --
->> > 2.55.0
->> >
->> >
->> 
-> 
-> Response from Jyoti:
-> 
->> The mpic_setup_error_int() leak is intentionally left to a separate 
->> patch
->> already under
-> 
-> If that's the case, you shouldn't have mentioned about this change in 
-> the commit
-> log of this patch.  The commit log needs to be updated accordingly if 
-> that's
-> what your intent is.
+Frank
 
-Agree,I'llfix it in v2.
-
->>  review:
->> "[PATCH] powerpc: Fix missing of_node_put() calls"
->> That patch converts the return NULL at line 1392 to goto 
->> err_of_node_put as
->> part of a
-> 
-> I could only find below:
-> 
-> https://lore.kernel.org/all/5cef10ab1610113fe162cec1dffd97f3@linux.ibm.com/
-> 
-> Sorry, but I don't think thats the right way to send a patch.  You seem 
-> to have
-> replied to the email which did not land into the mailing lists at all.
-
-Yes, I made a mistake earlier by not keeping 
-linuxppc-dev@lists.ozlabs.org
-in the loop. I later replied to all with the list included, but I 
-understand
-that was not the right way to do it. I'll resend the patch as a fresh 
-thread
-in the proper format.
-
-> Having
-> said that, I think fixing this particular path in mpic_alloc() would 
-> make more
-> sense in the current patch itself.
-
-sure we can do that too.
-
-> Please look into fixing your mail client and send the patches/responses 
-> in
-> proper format.
-> 
-
-Got it.
-
-Thanks,
-Jyoti
-
-> Thanks,
-> Amit.
-> 
->> broader of_node_put() fix series. This patch focuses only on the
->> irq_domain_create_linear()
->> failure path.
->> 
->> Thanks,
->> Jyoti
-
+>
+> Fixes: 84d897d69938 ("PCI: layerscape: Change default error response behavior")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Jeff Barnes <jeffbarnes@linux.microsoft.com>
+> ---
+>  drivers/pci/controller/dwc/pci-layerscape.c | 12 ------------
+>  1 file changed, 12 deletions(-)
+>
+> diff --git a/drivers/pci/controller/dwc/pci-layerscape.c b/drivers/pci/controller/dwc/pci-layerscape.c
+> index 14d6ac4fc53f..d333f1ae8a41 100644
+> --- a/drivers/pci/controller/dwc/pci-layerscape.c
+> +++ b/drivers/pci/controller/dwc/pci-layerscape.c
+> @@ -28,8 +28,6 @@
+>
+>  /* PEX Internal Configuration Registers */
+>  #define PCIE_STRFMR1           0x71c /* Symbol Timer & Filter Mask Register1 */
+> -#define PCIE_ABSERR            0x8d0 /* Bridge Slave Error Response Register */
+> -#define PCIE_ABSERR_SETTING    0x9401 /* Forward error of non-posted request */
+>
+>  /* PF Message Command Register */
+>  #define LS_PCIE_PF_MCR         0x2c
+> @@ -103,14 +101,6 @@ static void ls_pcie_drop_msg_tlp(struct ls_pcie *pcie)
+>         iowrite32(val, pci->dbi_base + PCIE_STRFMR1);
+>  }
+>
+> -/* Forward error response of outbound non-posted requests */
+> -static void ls_pcie_fix_error_response(struct ls_pcie *pcie)
+> -{
+> -       struct dw_pcie *pci = pcie->pci;
+> -
+> -       iowrite32(PCIE_ABSERR_SETTING, pci->dbi_base + PCIE_ABSERR);
+> -}
+> -
+>  static u32 ls_pcie_pf_lut_readl(struct ls_pcie *pcie, u32 off)
+>  {
+>         if (pcie->big_endian)
+> @@ -180,8 +170,6 @@ static int ls_pcie_host_init(struct dw_pcie_rp *pp)
+>         struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+>         struct ls_pcie *pcie = to_ls_pcie(pci);
+>
+> -       ls_pcie_fix_error_response(pcie);
+> -
+>         dw_pcie_dbi_ro_wr_en(pci);
+>         ls_pcie_clear_multifunction(pcie);
+>         dw_pcie_dbi_ro_wr_dis(pci);
+> --
+> 2.43.0
+>
+>
 
