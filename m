@@ -1,42 +1,42 @@
-Return-Path: <linuxppc-dev+bounces-28618-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28619-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 949CACA5FC5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 21:58:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB329CA5FC5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 21:58:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hw87k67b2z2ygX;
-	Thu, 01 Oct 2026 07:58:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::1" arc.chain="microsoft.com:checkpointcloudsec.com:microsoft.com"
-ARC-Seal: i=4; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790787340;
-	cv=pass; b=GY8Z9aj541ANUI1taVOV9S75injh0vWh9JhZfbVZcQFNvlZfTSKcra8JaWkE4jupa1xQdGtMtyuPipiMHEXl8o1z2J8CXZDrkSUfYDGLOWVWqGMLdjjY1WLZPqTdPOhC682NpdChWKaGf6L/xMNRZfLcbj5hjjZnDDtsBmf8zJG4842CGCWnpMCdHLdngs7VFELaSZvfzlcgcPIiCDb8Gimn5ehNOCvmxo19dTlMeEmIUVqe5vO2W8USPC5KskwcBTsk+tLRh/BTL5EMljnq8w9+ALyT+bh1CkhsaWp5oidAmABYb2AxeHWp9pZ9LSdwo+G5SAfQJQXztSpm/e89jw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hw87r2mhmz30FB;
+	Thu, 01 Oct 2026 07:58:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::5" arc.chain="microsoft.com:checkpointcloudsec.com:microsoft.com"
+ARC-Seal: i=4; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790787343;
+	cv=pass; b=cZt2UweI8D/TetEU/XV7RRDsuIaQIc80pPdj3lMKYKMyq/z3kKjdinVwV0eRPQjJAQeLF8Q3w77huQ+y4BUuwMDdEIrQY5B5OWuVY4Y5IcFHO5P5fu262fuTP7187vJ2jfNQN+m0nr2HCeywSr9O26F7QLAs17g5Bdx2gD/34TWYkGEPeqfJSYmcJ++zn57n101z2tZN4QUyK2ouKA1kDuAYfVcMfJ3lArs/+BGCu5J9FJnE4GTDSt8umeqvxc7V6PgFybat1XGl1JSh4mnbTrX5jcjtXKUoIae5FwvI8Z47knLO30L/pxm7AbPSNTogftvjvseJLCCSbGCgxC3rgw==
 ARC-Message-Signature: i=4; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790787340; c=relaxed/relaxed;
-	bh=+dloxuTDLJqdnj+JbQ3wteTr2VciS6EA6P7oYSHkW88=;
+	t=1790787343; c=relaxed/relaxed;
+	bh=XQoXvhCFvKZx2yS6eXHkp5lVvT2hyDXkdAP6KUm1mLY=;
 	h=From:Date:Subject:Content-Type:Message-Id:References:In-Reply-To:
-	 To:Cc:MIME-Version; b=P9Tis+f97jsnVojUrhbw4yyXOAdSVlGu/giWZ7EoCtgTJitGvtCNppQI3HHuKpjrwLy+71qEN4CE6D9Lqz0eNc3wxVAE7ZFI30MePHyIbmIIblOM4qQrtWGxblLm3lJuKDguBZuve7Qp5d5Cs2lLKpS4QUgU3LQk0fmyi+JcHUrgU/cSFWbqmLXOgjD69TnpVsfKUzClt+JXXdMdpu7cn0On2dp9LhTQ+M0AHfLZuzcqJwU2wZZgQ/T7tN/aHxU0uz317Hg0EO6AO5k/nNcqy2m8E1bolDVwUZNRFsgFKn3RZ2xHdxxRIgsXAojXFkV7jBl23vXX0QIiJTzdSsn7Kw==
-ARC-Authentication-Results: i=4; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=solid-run.com; dkim=pass (2048-bit key; unprotected) header.d=solid-run.com header.i=@solid-run.com header.a=rsa-sha256 header.s=selector1 header.b=lttcV72T; dkim=pass (2048-bit key) header.d=solid-run.com header.i=@solid-run.com header.a=rsa-sha256 header.s=selector1 header.b=lttcV72T; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=josua@solid-run.com; receiver=lists.ozlabs.org) smtp.mailfrom=solid-run.com
+	 To:Cc:MIME-Version; b=QPqp5pWGqKh66mFsMtgAYo3OTKsnok8KOEUB5aeyzGluWQwicQO2MafYb05D+SroI8vQ/M6xihpCiq94ccOsnBOPYQ7Lk8bVImvkPZxxD/r2GGb59wzWSYaFWeF/Z6CvJbn1V9A1Gnhovk1SDjklvwelN6reyjAFQ9bK5zXmSgSh/I5WzkPK12cSY1zZ/pirnmLVmEiCMOJgrbPabjSXC9wGPBOZsK9/UBN3KgrxWhGjHXhsS94kx12/LOuktmSCU7E+lGlO9REd9Ngui6AHR4WIsGFeAGJsV7RnhpzK0LljGG75auFCs3+5Fw6eJ/xnfSoaMdwHO1NKIsgzQJ/Grw==
+ARC-Authentication-Results: i=4; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=solid-run.com; dkim=pass (2048-bit key; unprotected) header.d=solid-run.com header.i=@solid-run.com header.a=rsa-sha256 header.s=selector1 header.b=fmaTNboS; dkim=pass (2048-bit key) header.d=solid-run.com header.i=@solid-run.com header.a=rsa-sha256 header.s=selector1 header.b=fmaTNboS; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=josua@solid-run.com; receiver=lists.ozlabs.org) smtp.mailfrom=solid-run.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=solid-run.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=solid-run.com header.i=@solid-run.com header.a=rsa-sha256 header.s=selector1 header.b=lttcV72T;
-	dkim=pass (2048-bit key) header.d=solid-run.com header.i=@solid-run.com header.a=rsa-sha256 header.s=selector1 header.b=lttcV72T;
+	dkim=pass (2048-bit key; unprotected) header.d=solid-run.com header.i=@solid-run.com header.a=rsa-sha256 header.s=selector1 header.b=fmaTNboS;
+	dkim=pass (2048-bit key) header.d=solid-run.com header.i=@solid-run.com header.a=rsa-sha256 header.s=selector1 header.b=fmaTNboS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=solid-run.com (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=josua@solid-run.com; receiver=lists.ozlabs.org)
-Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=solid-run.com (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=josua@solid-run.com; receiver=lists.ozlabs.org)
+Received: from DUZPR83CU001.outbound.protection.outlook.com (mail-northeuropeazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hw1Q23pDbz2xSg
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 02:55:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hw1Q61G4Gz2xSg
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 02:55:42 +1000 (AEST)
 ARC-Seal: i=3; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=pass;
- b=n+lrUIuR58FzIe+XoIhkTOjTKItFxplKlMjvDYiUpnEW056K11Fz1b5YfMzHpIWwb4ereaBuNxDUUgLDoYbS2wEIk3WAM99sSo/IGFD6hdfcCb+d1deYWcrjocv9onwrigdZ0o8BTjf1CEpQ50WdSxSQGCNPHJjPpOV/EIUlDsd4LtqZfjYwmz6f0hBPZHSmoAAfZSYj2kZ5cD/o+BOCunINrcr7+VAR3Fb9HHJfucC879ruiurPAqK5lo92gb7aB7vI/XJVi+NYx0UqQLnYfXmIw02DBKXbICyCpot5q5EMiYlz04xQikjoDtAMpnx1C3TqjUgOHUDhZ1SPaiZb5w==
+ b=foNh/aiiS9je0HdW47avjdVqvm+t9YsS5pHHg3RRAjBnsW/lzq7Y6hztd8J6rKNeAl3VECwPN/970fXaQxYnpoBt0Norgai9cbMsdD0t1WJeYXXEci1eA9AetboCvakpZPYQKLYVb6syurHX32sBcz9LVeeP5eCg9RmgzdSN5BzXczJL2QwAyudzy8HGQ/0SsL9zIw834QtCNQapBfA7zFZL8PA3I2djfWjUcZWEOA9S9de+TqKlUifI8nbhJJDHclwZwHKhXo9k7X3yeUEKTxciibL117NikkzNog0g4z4bpuUctrrljkrn1wUaCzAvkiGMq7TBXMXcj8grHD/BGw==
 ARC-Message-Signature: i=3; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=+dloxuTDLJqdnj+JbQ3wteTr2VciS6EA6P7oYSHkW88=;
- b=pfIiBa68AX8gIroMec+7lY4M+WTrnzus5Q/E7nKxYSxVqC48xqqM+5+IJQ3Z+1mcCXr9z5WWkUF9W9xlwL8Wj3HHCI7VN5gsE20A1xWA1y5SwCbbBIWX3jESrOIxcFTpdIHzQXYQBIF2WJFp+ZlZvCEjMlGxMtQip14SmSfq3dcxo/vsD4TrSALuycYuShy/rt+DLRYj6b1b3YbRhM27fjKOoa4KQrLfbcLraR4GmPtBdsLOOlEwNxaYA1xF9MK3dT52rtVSbyljJxE1R2JZjlZvrDxDNIyX5kBkohiKzEvhl2qDnTWAkZDGCAORmw8gH3PyKylCGj5NwqALT+yyuw==
+ bh=XQoXvhCFvKZx2yS6eXHkp5lVvT2hyDXkdAP6KUm1mLY=;
+ b=ru1LjZgm0QyyEB4LwNIK4FAljCH4mRe50YzCkfZxuIQrR6ipFU0RefXSZuIHOWSA2tCSxjIiMYhD41PfMXAlpM+C2mNOm891chIJyWhr33O5BVEcoo+1knO95kFGm1PQZx6uF4CGuo/caQO+dm8BA6P4OrJUqQ59FVeHfe5+PrMFeIPItLawtrR5PCLCFuAdAZ9UL1FFqhYzMNusvOII43v7F9O4p0+KBhwmCwCTMQzL0KidNnRnfcoyot8FlXLefl/ORk2MyFaUod80kUunYWDl7JCa/3XO6At/PMZTwWnabltPH7JbwJtdiwQAUyVM+Tv634xgRyws/JbBzyJ80A==
 ARC-Authentication-Results: i=3; mx.microsoft.com 1; spf=fail (sender ip is
  52.17.62.50) smtp.rcpttodomain=davemloft.net smtp.mailfrom=solid-run.com;
  dmarc=pass (p=reject sp=reject pct=100) action=none
@@ -47,18 +47,18 @@ ARC-Authentication-Results: i=3; mx.microsoft.com 1; spf=fail (sender ip is
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=solid-run.com;
  s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=+dloxuTDLJqdnj+JbQ3wteTr2VciS6EA6P7oYSHkW88=;
- b=lttcV72Ti3nLiRx1KLFyNxJ9y2kMZrRqXwZwrRSzfDz2IqKHyT/nT/oVN2ZEFr+FKa3pdYndRUc5lls7+wZ33FwezZadNTH6HCTZnYBv3TToDK/+qoC+wH3l55bKWdXy9Ie+qeaZe7t7m9lTh//G5q19Q+hhCdzbwucR7mKYpFq/M2UKmeNOlGP+i3VRn1S6IQxxBk9ZB52jvbQrXEeoZK/xv2QmXSpF9705ufi4GSMg8pLEAjyzPjBSzO0mIofknQh+lO+pOmjzLGJWNbFDTcNQ3ZfmlixMsRbGjERpUREZ8Yyu1oM18DZVht22AlWeP+l1kWX3vJFdLNPRGZJUjg==
-Received: from DUZPR01CA0221.eurprd01.prod.exchangelabs.com
- (2603:10a6:10:4b4::28) by VI2PR04MB10785.eurprd04.prod.outlook.com
- (2603:10a6:800:26e::18) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.24; Wed, 30 Sep
- 2026 16:55:13 +0000
-Received: from DB1PEPF000509EC.eurprd03.prod.outlook.com
- (2603:10a6:10:4b4:cafe::a0) by DUZPR01CA0221.outlook.office365.com
- (2603:10a6:10:4b4::28) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.472.16 via Frontend Transport; Wed,
- 30 Sep 2026 16:55:13 +0000
+ bh=XQoXvhCFvKZx2yS6eXHkp5lVvT2hyDXkdAP6KUm1mLY=;
+ b=fmaTNboSZ1uS0nAEvzTY2kwGD3E89qZGn+ATZtFVnbXaaEgPf96+haJedim+MWWXYsCG2Uh77Avj5o2Chz2tTxYGDIaWHzQ9Jv4EqiLPRy75PbJZrDZRzT8n9qsYgI7E3PtZwpSBP5Ej3JdXxQl0hEz5bs72PdJsCshdy12Iie/mlfFxZoC2NKDDmwHS2GaPlknic2800xuCtjxw+p2VHEVZLrbID6/ylJKzq1Y7xSIvOCn4zU8lVDYfI+tBr1Lf3gtnn1m7MMxlJkKCrn5MjCxNCs9rcsrrLruzpom2ntjTo7YFsEUexpKVUvomZ0yTWTT/qg4rszYq01r3PmMpww==
+Received: from PAZP264CA0046.FRAP264.PROD.OUTLOOK.COM (2603:10a6:102:1fc::8)
+ by GV1PR04MB10773.eurprd04.prod.outlook.com (2603:10a6:150:202::8) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.472.15; Wed, 30 Sep
+ 2026 16:55:15 +0000
+Received: from MI3PEPF00008557.eurprd05.prod.outlook.com
+ (2603:10a6:102:1fc:cafe::67) by PAZP264CA0046.outlook.office365.com
+ (2603:10a6:102:1fc::8) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.472.15 via Frontend Transport; Wed,
+ 30 Sep 2026 16:55:14 +0000
 X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=fail (sender IP
  is 52.17.62.50) smtp.mailfrom=solid-run.com; dkim=pass (signature was
  verified) header.d=solid-run.com;dmarc=pass action=none
@@ -67,50 +67,50 @@ Received-SPF: Fail (protection.outlook.com: domain of solid-run.com does not
  designate 52.17.62.50 as permitted sender) receiver=protection.outlook.com;
  client-ip=52.17.62.50; helo=eu-dlp.cloud-sec-av.com;
 Received: from eu-dlp.cloud-sec-av.com (52.17.62.50) by
- DB1PEPF000509EC.mail.protection.outlook.com (10.167.242.70) with Microsoft
+ MI3PEPF00008557.mail.protection.outlook.com (10.167.240.11) with Microsoft
  SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.21.472.14
- via Frontend Transport; Wed, 30 Sep 2026 16:55:12 +0000
-Received: from emails-91475-12-mt-prod-cp-eu-2.checkpointcloudsec.com (ip-10-20-6-124.eu-west-1.compute.internal [10.20.6.124])
-	by mta-outgoing-dlp-942-mt-prod-cp-eu-2.checkpointcloudsec.com (Postfix) with ESMTPS id AF1647EE67;
+ via Frontend Transport; Wed, 30 Sep 2026 16:55:13 +0000
+Received: from emails-5762875-12-mt-prod-cp-eu-2.checkpointcloudsec.com (ip-10-20-6-124.eu-west-1.compute.internal [10.20.6.124])
+	by mta-outgoing-dlp-517-mt-prod-cp-eu-2.checkpointcloudsec.com (Postfix) with ESMTPS id C491580FD9;
 	Wed, 30 Sep 2026 16:55:12 +0000 (UTC)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=checkpointcloudsec.com;
  s=arcselector01; t=1790787312;
- b=Uxwl0/aw2lwWLpelRbqlOoXviBKQ/yY/3dtqMn/5qVV4JgcuMFSt3lOlKi1rAZOmU9rNu
- tQwsazRrgTL7Hf6x2n18lGeJNJBGw/7x3yqvLXaUbP+jPgaDKVWiI/5Y7szuwhT0i+XXeF+
- PuZGrYEBGavTEq5NtUrj7wqg7XMu3gU=
+ b=GsmLwuMCh0rQDYjjpUyPTXNUMW9H59n6feBNnAwVwVmblFVLH2DMvJABk/IDdsx4Tgi1p
+ oJQp6wghnuP/MRdn39eAiwNXiAJqVcfX2TvPBNXeRprRbzEd5QH16riI6DyB3XQWhPGoodB
+ cDBt/XDymWEUTinzmiaqagKR5qBT3dk=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
  d=checkpointcloudsec.com; s=arcselector01; t=1790787312; h=from : to :
  subject : date : message-id : content-type : mime-version;
- bh=+dloxuTDLJqdnj+JbQ3wteTr2VciS6EA6P7oYSHkW88=;
- b=aOOEzho4Wn7rJOeLG0HgnIZSq3ZUOoUxkmuTgNgaowHy3vzc2Ft4AmFrCKz9LrHtd9oZF
- bayLjDxo4+pHmVOerccI+CtbMsL+9v5JlBwWUGPPbKdTXlPMkjlnQqJ+nzzOldu4ZA5BB3c
- qCNa9Lys5I9+NBzySoA9aBFp7pSn6Xk=
+ bh=XQoXvhCFvKZx2yS6eXHkp5lVvT2hyDXkdAP6KUm1mLY=;
+ b=bWAYDEFDt7KsevrtFSpNij7lZ5WNOT1MeniQbcIRHt5WC+QADphbTEZ1s0E5wLyiWsVXQ
+ hIsZcTKqnsz2FT42SyS7F4DxbZQqFbDkrhmEcphHCa+748FXZZcBXbEr2I5ko54AS2DbTji
+ G1MnncbzycQ6I/xgnGBdM4DksWoZRfY=
 ARC-Authentication-Results: i=2; mx.checkpointcloudsec.com;
  arc=pass;
  dkim=pass header.d=solid-run.com
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=solid-run.com;
  s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=+dloxuTDLJqdnj+JbQ3wteTr2VciS6EA6P7oYSHkW88=;
- b=lttcV72Ti3nLiRx1KLFyNxJ9y2kMZrRqXwZwrRSzfDz2IqKHyT/nT/oVN2ZEFr+FKa3pdYndRUc5lls7+wZ33FwezZadNTH6HCTZnYBv3TToDK/+qoC+wH3l55bKWdXy9Ie+qeaZe7t7m9lTh//G5q19Q+hhCdzbwucR7mKYpFq/M2UKmeNOlGP+i3VRn1S6IQxxBk9ZB52jvbQrXEeoZK/xv2QmXSpF9705ufi4GSMg8pLEAjyzPjBSzO0mIofknQh+lO+pOmjzLGJWNbFDTcNQ3ZfmlixMsRbGjERpUREZ8Yyu1oM18DZVht22AlWeP+l1kWX3vJFdLNPRGZJUjg==
+ bh=XQoXvhCFvKZx2yS6eXHkp5lVvT2hyDXkdAP6KUm1mLY=;
+ b=fmaTNboSZ1uS0nAEvzTY2kwGD3E89qZGn+ATZtFVnbXaaEgPf96+haJedim+MWWXYsCG2Uh77Avj5o2Chz2tTxYGDIaWHzQ9Jv4EqiLPRy75PbJZrDZRzT8n9qsYgI7E3PtZwpSBP5Ej3JdXxQl0hEz5bs72PdJsCshdy12Iie/mlfFxZoC2NKDDmwHS2GaPlknic2800xuCtjxw+p2VHEVZLrbID6/ylJKzq1Y7xSIvOCn4zU8lVDYfI+tBr1Lf3gtnn1m7MMxlJkKCrn5MjCxNCs9rcsrrLruzpom2ntjTo7YFsEUexpKVUvomZ0yTWTT/qg4rszYq01r3PmMpww==
 Authentication-Results-Original: mx.checkpointcloudsec.com; arc=pass;
  dkim=pass header.d=solid-run.com
 Received: from MMZPR04MB400504.eurprd04.prod.outlook.com (2603:10a6:190:28::8)
  by DBBPR04MB7499.eurprd04.prod.outlook.com (2603:10a6:10:203::15) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.472.15; Wed, 30 Sep
- 2026 16:55:04 +0000
+ 2026 16:55:05 +0000
 Received: from MMZPR04MB400504.eurprd04.prod.outlook.com
  ([fe80::2f52:2d22:c7b3:4292]) by MMZPR04MB400504.eurprd04.prod.outlook.com
  ([fe80::2f52:2d22:c7b3:4292%5]) with mapi id 15.21.0451.022; Wed, 30 Sep 2026
- 16:55:04 +0000
+ 16:55:05 +0000
 From: Josua Mayer <josua@solid-run.com>
-Date: Wed, 30 Sep 2026 18:54:58 +0200
-Subject: [PATCH RFC net-next 1/3] dpaa2-eth: skip isolated CPUs when
- allocating channels
+Date: Wed, 30 Sep 2026 18:54:59 +0200
+Subject: [PATCH RFC net-next 2/3] crypto: caam/qi2 - skip isolated CPUs
+ when setting up queue pairs
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260930-dpaa2-isolcpus-v1-1-66c13f4fd75b@solid-run.com>
+Message-Id: <20260930-dpaa2-isolcpus-v1-2-66c13f4fd75b@solid-run.com>
 References: <20260930-dpaa2-isolcpus-v1-0-66c13f4fd75b@solid-run.com>
 In-Reply-To: <20260930-dpaa2-isolcpus-v1-0-66c13f4fd75b@solid-run.com>
 To: Ioana Ciornei <ioana.ciornei@nxp.com>, 
@@ -144,61 +144,63 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 X-MS-TrafficTypeDiagnostic:
-	MMZPR04MB400504:EE_|DBBPR04MB7499:EE_|DB1PEPF000509EC:EE_|VI2PR04MB10785:EE_
-X-MS-Office365-Filtering-Correlation-Id: 844b1b50-bb90-4a4a-49f6-08df1f139839
+	MMZPR04MB400504:EE_|DBBPR04MB7499:EE_|MI3PEPF00008557:EE_|GV1PR04MB10773:EE_
+X-MS-Office365-Filtering-Correlation-Id: 6d4e1782-53bb-43be-1eef-08df1f139881
 X-CLOUD-SEC-AV-Info: solidrun,office365_emails,sent,inline
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam-Untrusted:
  BCL:0;ARA:13230040|366016|23010399003|10070799003|1800799024|376014|7416014|52116014|22082099003|18002099003|921020|10067099003|56012099006;
 X-Microsoft-Antispam-Message-Info-Original:
- x0xq99jd3CdGj/fwcIEJR2w8Id0uTevCzl98KjL2VnIo7sVOrQXEJNSsMZxChysqdBoEbcA3lRkmuufLSNpa6F389K4ImUG+gNjul0E6U7t4MVbhDMUuxtW9vtx5JEgbUVfmII5ZLDFxqTn/u9JiPToV68dSMLipX+YD1nQHVBmiGoyd5CGuTdkOp4L+iiYAlumQYCATBA5zcX6/ZWzwyqvCXS3OcJUKZVHNQSH+W9WwYbLUzsxX/GruFv0rmjUUFUR5F/z6DmFT6j5zgJSSzQ3SZMMMkCw6SR48QMgRxxXNFT+mEF4GPcBvAuz6jmNsZj8OUjuff1O4HSCrRyB24Qo3PYqhvwZ7SDMc7Re46yTrdVHyXzdNn2BFLyyXo9VHIY/LH6ZD9FuZ84XdMcgvsPTAS8xzSVQjDFHWAqDemqDz7Ic+s1zafyBCd7RCaZPfxngL6hn8x/kIbkEyMOX9KPq6S9HammqFkBBI7BDUX3TAF1WmlMi6TCpE0S8zo7bCgYn+hRmWXzx2b8MXufpnz0Bbo4Q/aFIwQ4iZ4h49YMsG5PhSEHk2yACc1kYq3qBCKezSZ+teRyr8n8NSUGGSPqUawK6sbVzZ1VC4z548G9QZrB0JNVeg88XwKuDkF+qsFePyytibL+DVqpXryoDcyqOPuFowGCzK4nZo8SGO/pTxUyUjLxudzzjfpY+xVNj1HH/MH1WMZspP50n3e60ycw==
+ jqewYSZKTdxOvY0Duyl4fLxHf7V21X3zkMpaCPTLXn+7ZjrxvdGUx2qFIO173+qzeez9rqZrk/r80N0ROSx7BoB7mPGv4N5t7H0O48DpKdIWMzg9Zrb74zWBquCNBNAWquQ0K3h8g4b4vU/3SPxM8LcpXClILKKTRCfWmbv/PpSrqfeavvTsuqsQPx+tVdZuOl2DPDYFyzHfwiujSNYUBDCnzJJ60Al0SB/oWIuPNvzEQpSGyAdXVBLCKnBRgK60mLOeOQrKy/sdGUJLkxnCPQJcu+MlU5MU9YdgTe358b+4eHw/O2qojkSwdIwxvMUWM+KAs47aS4G1cuWcUp/CJH9JGugX24AAQyWaFtzzjeGtqadqeUgvhEsPcW8SrbOwQLi5hJsZ0/IXxiZ9UQNoTlxIV4CwmFC3vyS6oKzh9Wepd1WSjbd+FV9/Ui0LlWjL+jK2O83dfX6rbfsulWsBNfLpirz9XVhWSnR68e9iQzoeaTOalYKWt1MEnWDsCcHIqL9fMYbR5cyb+aPANLdxeHZXwPL2plPkUzvSIMLyNGoddmOEJBzHu73dPkyePCPo6dlxlhCk2TLdTRZeWEt2mCRN2GQvPKRAe3ZLIq6mGvWgjghkqA/uJ7+WQHphNyFIHI6r6nht8Bt3ZR8Zhi4jG5DR8Hz17BHNZBgQXDxjgnSPHfNsokIFAzzbidoWdXW5Omn9gR2W85Q7V0XcUAuheA==
 X-Forefront-Antispam-Report-Untrusted:
  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MMZPR04MB400504.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(23010399003)(10070799003)(1800799024)(376014)(7416014)(52116014)(22082099003)(18002099003)(921020)(10067099003)(56012099006);DIR:OUT;SFP:1102;
 X-Exchange-RoutingPolicyChecked:
- MkE9RWboo+w031aXX4ZtgIHR02PNP/gprlb9inOGFKrCiebM0F2VRNk8A0IMz24jYc8JzuaDpB50Pc7G2r41GqMiMFOHbcAkwmlf6eaJK1o6rGIS77LvOfvefManrNuvTbe3UusYpO1iyqw0Fc+EDWUQv+f5fYC1PXYEKAAKK8LMoszS3CSPrg5wzvTwhXf6EV0D/d6NBNHaqDmR4RqTLd7wdAbqcpS/3/l7JhyZWH7AR+aM/8dV4I9SkPfLfDt2b7Jl/i+5NxY4fhcisssHVnsbXjK9D17DlDkeBSKifgQ1xquI0lQYdApYzbiTvahG7d6KzjfEKMEg0vu4diqp2g==
+ 5zzwsgpZMwfrhHHSfFj/9AEbOVwKBu7BD4oMsPImFG5YT3AUHv6noQtEpjA+B/6VGVyttEPU7GfKcZO4jhfe1HtgfK6f/mKQNuFNPboetoI7MUJBN+Sy7YWzYZ7DxwiAVXaYAxAs3fXJFxoy0NbaMBzyhr4T2OG/CxTyFnKDzTwqb+wXBSAV9jx5ZgUTN63QR5jlXh8cvd1xKqWuVXmsOqz0OdvXsGk5gneU5NwN/W/AVlFD4w+VcT/Sql9Vn/tYjlAi5jJp6VW9NiQ783NV0uFiJVWup5L/Js6XChNSEJC5Buq6h0te84PYLLUeZSINkVci6X7jZB+hjxlMqGUDqw==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: DBBPR04MB7499
 X-CLOUD-SEC-AV-INT-Relay: sent<mta-outgoing-dlp-mt-prod-cp-eu-2.checkpointcloudsec.com>
-X-CLOUD-SEC-AV-UUID: a7f110e0d0994bedae12d910dd091f26:solidrun,office365_emails,sent,inline:776544cf20a4f6cb347dc8a29c053d94
+X-CLOUD-SEC-AV-UUID: f51d70866ff647a8b260f07223314ede:solidrun,office365_emails,sent,inline:776544cf20a4f6cb347dc8a29c053d94
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=j4IBhgqeQ4zWR7uvKXRVv5XUdoV70pZ2Dm/IB2KqR+GGPFI2ZPfWeextPwejr6gPs9ySMgSJt4odEZtvREXGxKpy7InVsPVzdQ7D0P5TUBI+9rhL2kbvPBhNLdNGM7qTWLFrelVcz1QTuLgZ70tyfRvNMfXj3fejPHPmQzu9GDxd+eXPCQWrcta3nLYE/MPiLfQHvisHcyWXHdOiDXo6RUPFjPELrIOfMvVMDNoe+Z7vsNzWLK1jKxrU0MS4qmwAZ8TBh78bMOb5zVyTVkkAIphwCMf8E7Lrmyi5n9g3KPmYyRcILs2mbL+pJbAFHZq7L3a0C799NhnNpcKzrHow0Q==
+ b=oVNgXMtlh6pOjzzahecWOMRT/5nyD2Sm8XLtJkTBbudkTy8+/km9DhGdMzxnEwN2xtQosYqWMpjjbKSw8X3DM3/0dvqcN0cwmlOUixviz2qN+qZDZMqM1SWR0eGi6P0mg7csAibW36rvub+xhkQPe9Psw7xrRWYuHoa21ur4bwaCsmUF3S+YlUQ2dN5aUvbWbzA8JnVWky323vIhqsOB704utcMY7Aj/h7b1N068tmLp2j0n1yNWlnk5vsiGB3hQM7UEz53YIcza/1HZ7ydf/DbU5ovFO3fHSnTcPHfxNnREFjWK4ZV7q+ep6Db4VlvaE6Mf3nEwpAoahJKOKU2ejg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=+dloxuTDLJqdnj+JbQ3wteTr2VciS6EA6P7oYSHkW88=;
- b=ioUEsABOizBBoPRSXgbMBrf9OhziUzSxopf+oZtRmplf6qFZOGfjxd0kiS2RgagxFNkY0EbAu8ssfY2wvTYieRDtiNsB7OT2vEaN63QcvS7pY79cxPR9hj9aVWy8DHCeVlw4q4V3L+0MfjE/GSGGTZsldTzVXiDpn2Bbfmgh2mcYlv0N67msXB2GOP+XV5sIGDQCDIU/hKbyPHsW11mmWYugBlbz1AMD1J8GvmbL8KRSfluJVNb5uvQaEAbsUgmcxZGH6iUVnvzcZJ+jEQ4x+Wo+OkkxZAQikrASymg7+WruDjRHbqunV1FIn/bqWIUKTdIFBXhqG2ohhTMpFOjBUw==
+ bh=XQoXvhCFvKZx2yS6eXHkp5lVvT2hyDXkdAP6KUm1mLY=;
+ b=DuGbSdC5Cxi8KrtjADC7CKQvnXHhLbHo72TIgLnSBSmdJ1iyXrqvfsVY4Ih02yA2m7nO0M0WWuSUDwNWIeMsl6w89BZqOvx6NS0aIOx3z47dbwqaB7bgLuCte1Ad2ZHnVzdvGGlqnwVF8KFh98tHTQyO32VNOMeJkBGvRs+f0bBtd5/nRuDDmX3mz1N2bEdu0kCRX5FMM5R6aqeVkw2Y/0x3ihama+BJmb+AQ2UO7nlOWpHeTlPUsbSvYL0Osci8CXC+gp0PclWLrGK9qu0mp6dbqHYyXEZTNGUcupWdonoz/6+flY9Wk8yARHVbO7Aje4ulAjK4Emxtf4v0PeOKlw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=solid-run.com; dmarc=pass action=none
  header.from=solid-run.com; dkim=pass header.d=solid-run.com; arc=none
 X-EOPAttributedMessage: 0
 X-MS-Exchange-Transport-CrossTenantHeadersStripped:
- DB1PEPF000509EC.eurprd03.prod.outlook.com
+ MI3PEPF00008557.eurprd05.prod.outlook.com
 X-MS-PublicTrafficType: Email
 X-MS-Office365-Filtering-Correlation-Id-Prvs:
-	2215630e-ba62-4ddf-1b32-08df1f139309
+	7ee1d857-d0de-4a26-0627-08df1f139357
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|36860700016|23010399003|376014|7416014|1800799024|14060799003|82310400026|35042699022|22082099003|18002099003|921020|10067099003|56012099006;
+	BCL:0;ARA:13230040|7416014|35042699022|82310400026|376014|36860700016|14060799003|23010399003|1800799024|921020|22082099003|18002099003|10067099003|56012099006;
 X-Microsoft-Antispam-Message-Info:
-	8tWo461aq4nYfTPoy9iq3W+56yEa2uMLNNu3jCnhtWi7El+lni42j0kE0rXVet1oqqmczdFz/sM3/nFNmZkB2laoWR37DiKqqKlbS4NWUOVM28wfwq8JzSttKd5e3XxFjuWT5c2UZniBaHRmV9VI4cMGPBSf8lonceLfXpGYMo7Gpp7OTvtx/KrUSSHX4xdmmxsoL6WLOKBNY6mhs2AzjzGEoQnVX4cMG7p1De0Us+HlZYU+dOqZqJarvbVUrVm7bhuEl1hsRdiyMziVD7/ro3j5SRnLuxP5Cf8SKXCMSk/2bgqsHIzsk2rzJ53uxidZn5ksPClBxfWH/Y9e7wXMmBgrnyI8EX7WoCpysIRr1oLZrJVAScW5I/pNEPs++ruq66QNsXKKAk2vF1KFesWXK0wocOyGEaVRPGokWlnZuIQmd+ewHTB6bgcx75nCHr+LFH6Le6e+kJVJhKOcPY5RBpwdHBgb1fkf76HsmeD4iHBAAX1lC0BC2bykJUNkttpnKUpgoQldM3xbM2bXbD8KEApvihVWlB/819o+3C1p3cB1x56Tw/CZ4G4gCUyWIttTyUH0/sFhzdAJshrAqIJ6957IJahE+TotrlF2G6qb6927Fgb9vT9TcllkA+6pa0bQVTjmZb+m6driQ/6h7utEG6tNHOPN05Mp3e6Rl04VbpID78LY0P4hPB3eHbH/VZldMq8teYhkkwJY24tJMn/Fog8fHEQZ2/yICWSIdz2vhhcKlurvS5OqTdA22/68G2+x
+	+TON9pMx1VJxUXMzf0/DkNvhENdOWV5ESUu8HrWPEH86N2UenJFkMeQaC7DaPDITKYxbgvFJHR/T1xniyErAsoqWD8RFCS2duW0SR3CPAcXUt7pXEKKwESi/53e9hmCbHgv3UXyq0JBrN7pmw6wpCyCK3VJHfJ3SzrlwbERlwzyhRtYlK/Kc7EUyg+3bW8nfSy7zHhGEzkX0yV7s7mX0MLxsDKYO8vUVkOu2bkIIAzdsMEWeszUIWBlEEtp3yp82WOYU8s1XM5TLp3emZHY4oxLON/qj1PGrtJwSeVVNqhUnQgucrzrvIi+P0cbZHcfdQWW/x+mKTSV0Eu8Tkiup83ZSNFvoSp2X25ZNTLrgTl6o0BnBWpzubjtegnlOPRxp/a5cwDuMl90mXf2N6CrOZnh2vgzOgLW4Gpf2E5kGLLqTmR3Sg7GDAah8uJ5CLkNH/5oMY9v/NxJ0tx4PB02pnP0UIRS7NVcFBNLqVTutFPKZ55637ljkbBMhfZJBZhhRaG8rt5ouC/hgTeocdv+zVVOQSe6Pqd54neg43ztntp6QGTmpxXF9p5NsOWyQGZqBM282mP99+4l6ibhiKzM1ivGI0im5DQ5qcbWth6p824vcFH5uyAfYkfsgMN+74Ppl0TI34mRluRDBNfjT1lei02AfeT2tb4QiJRhUe+vGVlWZDXpaketvRU/5nWEQXIDNcXEQH0nPWgFOPF8PB5WF3Wxh6Mxu9Q2qozYQm/aDcUyHqa8tuq5GQcJKi96HT9MN
 X-Forefront-Antispam-Report:
-	CIP:52.17.62.50;CTRY:IE;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:eu-dlp.cloud-sec-av.com;PTR:eu-dlp.cloud-sec-av.com;CAT:NONE;SFS:(13230040)(36860700016)(23010399003)(376014)(7416014)(1800799024)(14060799003)(82310400026)(35042699022)(22082099003)(18002099003)(921020)(10067099003)(56012099006);DIR:OUT;SFP:1102;
+	CIP:52.17.62.50;CTRY:IE;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:eu-dlp.cloud-sec-av.com;PTR:eu-dlp.cloud-sec-av.com;CAT:NONE;SFS:(13230040)(7416014)(35042699022)(82310400026)(376014)(36860700016)(14060799003)(23010399003)(1800799024)(921020)(22082099003)(18002099003)(10067099003)(56012099006);DIR:OUT;SFP:1102;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	RGRPDA4PuCAVMF/WQmbtktpcG7wjt/wRg7t34ynTIw8/zs0jsLciomERYM/9Br0ZacUv6xX3uLtYVqCOr7HyTA/r27XZT4EucdAntX+t6OZcP7O7+zR6UKX5/rgNQ5KZ1Ojnt4vd3/VHsVw6QhdVIl2RBFo4y/ucTY5r93ItDMXUvtrz6yZNOzpCiFRGrTytWN0DW4j8k3x1YDc+1N4SveKO3K5wBcZCgYJiW0Qmwwo9ZyuQXt8p1gtDGV57n8nTRcDAjJTPwTVMY1O3YpWTBsTMCelpRcwhoOKO1SzIl53RiidLy/xXgNVhjrjbupxZVzUcozEcrV2xTwq5INsIImcgUqcUL7/9zGlr0Iu+BO5HpVEumvbMlrfLPG07IHQYJa2G8aRlYlxsSVcaNWXOnXGMGfhaIFxpeLdjfK4wFYsqROl6AkCfm7yRXcrMF+sc
+	A/GG4jnD875mP+9PNsaN8w397yem+XxW7vB4/C73ORNmQH1cLw+fF2kaRvskm7aGc/a88FhzpVQ1rbKicDUZB1DW2VbykAeiyCLWlYxRLXjCXvWGfrbDsuU6siDneyBxA8StAbA9FSUr/6Mum7i60u0+WkH+I76HPdL4kArFazAgTvXS88DuEu0uNpQM28BIdgarcSd6piEu1vh3dID/Kx4v/Be/jygpoxRy/itmCk6Jg+cCFnixi9+mgUUayWQoE6KdN9jfBGtWsXVt4d+7hcNCDNmmMf73/9zgI+veUBRCari+4hNSCTrm1chey1HzDGaicppAimEX6cSipFTKBq/UYgbVCA+f9BFv0ummNdeFzZcf35BAoO+6Ms6Q9PqlyehhS4NL6PW187LthBzSYSjfDnIpLqRb/zULfW5VuTsCkXHZrE1JMxbfZMd83bc2
 X-OriginatorOrg: solid-run.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Sep 2026 16:55:12.8217
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Sep 2026 16:55:13.2012
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 844b1b50-bb90-4a4a-49f6-08df1f139839
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6d4e1782-53bb-43be-1eef-08df1f139881
 X-MS-Exchange-CrossTenant-Id: a4a8aaf3-fd27-4e27-add2-604707ce5b82
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=a4a8aaf3-fd27-4e27-add2-604707ce5b82;Ip=[52.17.62.50];Helo=[eu-dlp.cloud-sec-av.com]
 X-MS-Exchange-CrossTenant-AuthSource:
-	DB1PEPF000509EC.eurprd03.prod.outlook.com
+	MI3PEPF00008557.eurprd05.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI2PR04MB10785
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: GV1PR04MB10773
 
-The driver allocates one channel per online CPU and registers it with
-that CPU's affine DPIO.
+The driver looks up the affine DPIO and sets up one Rx/Tx queue pair for
+each online CPU, up to the number of queues. Response notifications and
+NAPI polling are handled on the DPIO object's assigned CPU. All online
+may enqueue requests.
 
 When isolcpus=managed_irq is used to reserve CPUs for latency-sensitive
 applications, those CPUs are expected to be free of routine device
@@ -206,62 +208,129 @@ interrupts.
 
 The DPIO driver assigns affine CPUs only from the HK_TYPE_MANAGED_IRQ
 housekeeping mask, leaving isolated CPUs without an affine DPIO. This
-defers dpaa2-eth probe indefinitely once channel setup reaches an
-isolated CPU.
+defers caam qi2 probe indefinitely once DPIO setup reaches an isolated
+CPU.
 
-Restrict channel setup to the online CPUs in the HK_TYPE_MANAGED_IRQ
-housekeeping mask, so that isolated CPUs are skipped and don't defer
-probe.
+Restrict queue pairs, notifications and NAPI polling to the online CPUs
+in the HK_TYPE_MANAGED_IRQ housekeeping mask, so that isolated CPUs are
+skipped and don't defer probe. Isolated CPUs may still enqueue requests,
+with responses handled on housekeeping CPUs.
+
+As the dequeuing CPUs are no longer necessarily CPUs 0 to num_pairs - 1,
+enable and disable NAPI based on the bookkeeping in clean_mask instead.
 
 Signed-off-by: Josua Mayer <josua@solid-run.com>
 ---
- drivers/net/ethernet/freescale/dpaa2/dpaa2-eth.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/crypto/caam/caamalg_qi2.c | 26 ++++++++++++++++----------
+ 1 file changed, 16 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/net/ethernet/freescale/dpaa2/dpaa2-eth.c b/drivers/net/ethernet/freescale/dpaa2/dpaa2-eth.c
-index 6f1046c9cc515..850834388790a 100644
---- a/drivers/net/ethernet/freescale/dpaa2/dpaa2-eth.c
-+++ b/drivers/net/ethernet/freescale/dpaa2/dpaa2-eth.c
-@@ -15,6 +15,7 @@
- #include <linux/bpf_trace.h>
- #include <linux/fsl/ptp_qoriq.h>
- #include <linux/ptp_classify.h>
+diff --git a/drivers/crypto/caam/caamalg_qi2.c b/drivers/crypto/caam/caamalg_qi2.c
+index 6b47bcc16a506..e9faaee009b74 100644
+--- a/drivers/crypto/caam/caamalg_qi2.c
++++ b/drivers/crypto/caam/caamalg_qi2.c
+@@ -25,6 +25,7 @@
+ #include <soc/fsl/dpaa2-fd.h>
+ #include <crypto/xts.h>
+ #include <linux/unaligned.h>
 +#include <linux/sched/isolation.h>
- #include <net/pkt_cls.h>
- #include <net/sock.h>
- #include <net/tso.h>
-@@ -3173,6 +3174,7 @@ static int dpaa2_eth_setup_dpio(struct dpaa2_eth_priv *priv)
- 	struct dpaa2_eth_channel *channel;
- 	struct dpcon_notification_cfg dpcon_notif_cfg;
- 	struct device *dev = priv->net_dev->dev.parent;
+ 
+ #define CAAM_CRA_PRIORITY	2000
+ 
+@@ -4683,9 +4684,10 @@ static int __cold dpaa2_dpseci_dpio_setup(struct dpaa2_caam_priv *priv)
+ 	struct device *dev = priv->dev;
+ 	struct dpaa2_io_notification_ctx *nctx;
+ 	struct dpaa2_caam_priv_per_cpu *ppriv;
 +	const struct cpumask *hk_mask = housekeeping_cpumask(HK_TYPE_MANAGED_IRQ);
- 	int i, err;
+ 	int err, i = 0, cpu;
  
- 	/* We want the ability to spread ingress traffic (RX, TX conf) to as
-@@ -3182,10 +3184,11 @@ static int dpaa2_eth_setup_dpio(struct dpaa2_eth_priv *priv)
- 	 * Allocate one channel per core and register it to the core's
- 	 * affine DPIO. If not enough channels are available for all cores
- 	 * or if some cores don't have an affine DPIO, there will be no
--	 * ingress frame processing on those cores.
-+	 * ingress frame processing on those cores. Isolated cores
-+	 * (isolcpus=managed_irq) have no affine DPIO.
- 	 */
- 	cpumask_clear(&priv->dpio_cpumask);
--	for_each_online_cpu(i) {
-+	for_each_cpu_and(i, cpu_online_mask, hk_mask) {
- 		/* Try to allocate a channel */
- 		channel = dpaa2_eth_alloc_channel(priv);
- 		if (IS_ERR_OR_NULL(channel)) {
-@@ -3245,6 +3248,9 @@ static int dpaa2_eth_setup_dpio(struct dpaa2_eth_priv *priv)
- 			break;
- 	}
- 
-+	if (cpumask_empty(&priv->dpio_cpumask))
-+		goto err_alloc_ch;
-+
+-	for_each_online_cpu(cpu) {
++	for_each_cpu_and(cpu, cpu_online_mask, hk_mask) {
+ 		ppriv = per_cpu_ptr(priv->ppriv, cpu);
+ 		ppriv->priv = priv;
+ 		nctx = &ppriv->nctx;
+@@ -4725,14 +4727,14 @@ static int __cold dpaa2_dpseci_dpio_setup(struct dpaa2_caam_priv *priv)
  	return 0;
  
- err_set_cdan:
+ err:
+-	for_each_online_cpu(cpu) {
++	for_each_cpu_and(cpu, cpu_online_mask, hk_mask) {
+ 		ppriv = per_cpu_ptr(priv->ppriv, cpu);
+ 		if (!ppriv->nctx.cb)
+ 			break;
+ 		dpaa2_io_service_deregister(ppriv->dpio, &ppriv->nctx, dev);
+ 	}
+ 
+-	for_each_online_cpu(cpu) {
++	for_each_cpu_and(cpu, cpu_online_mask, hk_mask) {
+ 		ppriv = per_cpu_ptr(priv->ppriv, cpu);
+ 		if (!ppriv->store)
+ 			break;
+@@ -4745,9 +4747,10 @@ static int __cold dpaa2_dpseci_dpio_setup(struct dpaa2_caam_priv *priv)
+ static void __cold dpaa2_dpseci_dpio_free(struct dpaa2_caam_priv *priv)
+ {
+ 	struct dpaa2_caam_priv_per_cpu *ppriv;
++	const struct cpumask *hk_mask = housekeeping_cpumask(HK_TYPE_MANAGED_IRQ);
+ 	int i = 0, cpu;
+ 
+-	for_each_online_cpu(cpu) {
++	for_each_cpu_and(cpu, cpu_online_mask, hk_mask) {
+ 		ppriv = per_cpu_ptr(priv->ppriv, cpu);
+ 		dpaa2_io_service_deregister(ppriv->dpio, &ppriv->nctx,
+ 					    priv->dev);
+@@ -4764,10 +4767,11 @@ static int dpaa2_dpseci_bind(struct dpaa2_caam_priv *priv)
+ 	struct device *dev = priv->dev;
+ 	struct fsl_mc_device *ls_dev = to_fsl_mc_device(dev);
+ 	struct dpaa2_caam_priv_per_cpu *ppriv;
++	const struct cpumask *hk_mask = housekeeping_cpumask(HK_TYPE_MANAGED_IRQ);
+ 	int err = 0, i = 0, cpu;
+ 
+ 	/* Configure Rx queues */
+-	for_each_online_cpu(cpu) {
++	for_each_cpu_and(cpu, cpu_online_mask, hk_mask) {
+ 		ppriv = per_cpu_ptr(priv->ppriv, cpu);
+ 
+ 		rx_queue_cfg.options = DPSECI_QUEUE_OPT_DEST |
+@@ -5012,6 +5016,8 @@ static int __cold dpaa2_dpseci_setup(struct fsl_mc_device *ls_dev)
+ 	struct device *dev = &ls_dev->dev;
+ 	struct dpaa2_caam_priv *priv;
+ 	struct dpaa2_caam_priv_per_cpu *ppriv;
++	const struct cpumask *hk_mask = housekeeping_cpumask(HK_TYPE_MANAGED_IRQ);
++	unsigned int num_online_hk_cpus = cpumask_weight_and(cpu_online_mask, hk_mask);
+ 	int err, cpu;
+ 	u8 i;
+ 
+@@ -5070,10 +5076,10 @@ static int __cold dpaa2_dpseci_setup(struct fsl_mc_device *ls_dev)
+ 
+ 	priv->num_pairs = min(priv->dpseci_attr.num_rx_queues,
+ 			      priv->dpseci_attr.num_tx_queues);
+-	if (priv->num_pairs > num_online_cpus()) {
++	if (priv->num_pairs > num_online_hk_cpus) {
+ 		dev_warn(dev, "%d queues won't be used\n",
+-			 priv->num_pairs - num_online_cpus());
+-		priv->num_pairs = num_online_cpus();
++			 priv->num_pairs - num_online_hk_cpus);
++		priv->num_pairs = num_online_hk_cpus;
+ 	}
+ 
+ 	for (i = 0; i < priv->dpseci_attr.num_rx_queues; i++) {
+@@ -5151,7 +5157,7 @@ static int dpaa2_dpseci_enable(struct dpaa2_caam_priv *priv)
+ 	struct dpaa2_caam_priv_per_cpu *ppriv;
+ 	int i;
+ 
+-	for (i = 0; i < priv->num_pairs; i++) {
++	for_each_cpu(i, priv->clean_mask) {
+ 		ppriv = per_cpu_ptr(priv->ppriv, i);
+ 		napi_enable(&ppriv->napi);
+ 	}
+@@ -5180,7 +5186,7 @@ static int __cold dpaa2_dpseci_disable(struct dpaa2_caam_priv *priv)
+ 
+ 	dev_dbg(dev, "disable: %s\n", str_false_true(enabled));
+ 
+-	for (i = 0; i < priv->num_pairs; i++) {
++	for_each_cpu(i, priv->clean_mask) {
+ 		ppriv = per_cpu_ptr(priv->ppriv, i);
+ 		napi_disable(&ppriv->napi);
+ 		netif_napi_del(&ppriv->napi);
 
 -- 
 2.51.0
