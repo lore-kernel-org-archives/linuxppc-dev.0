@@ -1,95 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-28585-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28586-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EBAA2CA5FC5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 15:38:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04183CA5FC5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2026 15:51:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hvzhc02b8z2y24;
-	Thu, 01 Oct 2026 01:38:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:34::f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790782687;
-	cv=none; b=gKVUpZBqxxsnND0072CJDtmICqrLsg7EFNfmySaNlkM6s28yeHOMhLuiFKSMybGYxn+wgfpiuUT3w/CFNmu6EnxnpfufFE34wesyl/NpfjHQ9Ef/FxMmaqBQA3S81rTruY5KnzCzSRXN5jHa9//aTYL+J8MGH7vNOhoeIvQRyKaXkzRQKP1jYScGECzyksss5gwRajO/MxY6NC74VRpuH8vbMauHmPPtaAq5rg9qKVpfwzYlf+dHPwTqPbNTqcLNhcOm2foNmWXmXGIPim25HVcCDMZQ9xpDfGfmzYgtHUlW4BE1l+NL/d/t1xXmXCz+z/ZNxROZbBZ82v2tLmTCOQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hvzzz6WQzz2xqM;
+	Thu, 01 Oct 2026 01:51:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=101.71.155.101
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790755431;
+	cv=none; b=aUwL1FZChDL17tcJLArFpEj/wZfxevN2jiUYtU9GEJXUIpF/7TiYkI/Pp/V+ANtgQRalwHIMQEGKXUeIy61pbq1aG2BvVCizf72S1kcKfFKwRU82ww5e0/YzJCZiATz0tAIyEbsHEjB4yn2EmXLCOBzy7/nZeDLpAyMGIZSAkpjVf0Oew9/fdgaO8pswEVfp+T7W6rR+A3WWLbJwR1F83eVF+CDLJGJdjviRDZuOJImHTbYAdl1LVNYWOVJkliJTtFBhZixvVu+XhliHCZUKj0Iaxfxmz2MosYhwVedAemnQ/kZc28M8dfgvkT8q7niQkfkztjP3ib21fPREElWKiQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790782687; c=relaxed/relaxed;
-	bh=blz14Kryy333MwsAfcVeWnCS/9nOHGV6aMGIkIjuVtM=;
-	h=From:Date:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=U3cli/jjcMxQg2JZez3UL0Rubgcy5MeeSK0e2wvMOt8AIncSuPEtw0BItZUuqSCRpNDO6yQcBpD6OIT5tVaCGkOJOfdsusX2N18bheWCFygsae82YiGstNWYJ969clkUMmzitblFOqOs5/mvnr8O9yYbSZF3VsJ6Yo3weKJUiZG26I9CuKwKgbXbfW80SpMNvelOgSm2Y8nWSNFVA4LBbip5qhbouIFRp3srNefqhFblwCWgQY92IThJhsitlAzpQBnVp+Aiaznp8sxjIgkbiYCPhKQhBqF/7wewZqB42IcPxC59WkpyQUDUr+jj0rHeWt7YtubjwW1IEt+jK9e5nw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=c0KHYMc0; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:34::f; helo=mail-ej2-x0f.google.com; envelope-from=urezki@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1790755431; c=relaxed/relaxed;
+	bh=BfUiU8sdifpY8ApVkV3WU0a/oKOyPdhWsydCFEavjao=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=FbNmyxD8krIyyEAkklgbdBp5VWidGlZOAwmrbaiFkdjEiXviEB3I3GBHRqyZSDmAF3Q3prZTS8dQ0mz5r6duozUKyVBC2l1S14emZbaP6WbpQI4B0k8paCDZ5o/QBwOMI66lo9GpfpE2t4/TEyNsABObabPdxnpVHfKaUgOPbpzegCIF6LvUs7WMeP0Npg32McZZxUX35t09s25sgzdje52gKAdMNubkJ+A229wBseoZCZxIQ9EjIl0q3m4Y0k+vbUGsf8yJwW5FMMqHJTP7lhDalR7xqegFADo58lXN5f6kdp6KLveZX4BWHpzGUPfw7oPwBYsmKdb/agUSoimdqw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn; dkim=pass (1024-bit key; unprotected) header.d=seu.edu.cn header.i=@seu.edu.cn header.a=rsa-sha256 header.s=default header.b=IGM0DHlC; dkim-atps=neutral; spf=pass (client-ip=101.71.155.101; helo=mail-m155101.qiye.163.com; envelope-from=runyu.xiao@seu.edu.cn; receiver=lists.ozlabs.org) smtp.mailfrom=seu.edu.cn
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=c0KHYMc0;
+	dkim=pass (1024-bit key; unprotected) header.d=seu.edu.cn header.i=@seu.edu.cn header.a=rsa-sha256 header.s=default header.b=IGM0DHlC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:34::f; helo=mail-ej2-x0f.google.com; envelope-from=urezki@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej2-x0f.google.com (mail-ej2-x0f.google.com [IPv6:2a00:1450:4864:34::f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=seu.edu.cn (client-ip=101.71.155.101; helo=mail-m155101.qiye.163.com; envelope-from=runyu.xiao@seu.edu.cn; receiver=lists.ozlabs.org)
+X-Greylist: delayed 313 seconds by postgrey-1.37 at boromir; Wed, 30 Sep 2026 18:03:47 AEST
+Received: from mail-m155101.qiye.163.com (mail-m155101.qiye.163.com [101.71.155.101])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvzhZ5RSMz2xfP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 01:38:05 +1000 (AEST)
-Received: by mail-ej2-x0f.google.com with SMTP id a640c23a62f3a-c2e17e5de00so169161566b.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2026 08:38:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790782683; x=1791387483; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:date:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=blz14Kryy333MwsAfcVeWnCS/9nOHGV6aMGIkIjuVtM=;
-        b=c0KHYMc0TmFY+sFMDDvChasFMgCFWzf6XTJeVYSEcT9Cyi97Sji3IY9Mx8D19Atl0g
-         dDKeCvIuqoy54qKq1msvA47lbCbIS+l+uN0dM1JIS+0ROlGRvzGBYJGGaiyj80jwCxLw
-         w0qSYYfX0hxP8LdWUi9FAoMHZPEA9f+ZFVe9y7gNpyafuuS0/axTvCDpj2dYqSEmDiDd
-         e+zf53N5AnMDomwAxaG5k8mei+eyDUMCp3r4XoApk/VyBqodz7EAKztBfIBy9QBBCQHf
-         7l7LC/Wx7PFFkuXhZWpQY4E68+lmBR5supl/ovwIwMPGLEDBhqH+r31Sp806zlGfIMtK
-         hjwA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790782683; x=1791387483;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=blz14Kryy333MwsAfcVeWnCS/9nOHGV6aMGIkIjuVtM=;
-        b=FmorUqTWLwAaPs1Wvho65gTwdZZ2acFZo8TNqqyjeAXEipTsFLCjLzB4/eGCSQbDt/
-         HjTulQam/BFQ9C5FpMacMSCrWaK5S332jao9ErcY/XuDNBTlcqmDR94OFUL670MHVyYy
-         r5j70sIqjVqekniQOGjnyPs0E9SHJqsGp1Ez0D3gNdWS9iPqW79KC3zf1zDeHxzDaInG
-         QpYI3/hXji9yDUyn/0a1N2JAndF2I/sgvSjg8W1TT1tNNIP0wruN6VUycvH/heyPzCF/
-         k4+tRkcl/rrKCuD2prNj7jvVCapnIAOoqj8f5EfQvSUa5vk6BIQO+IRmPx5SuRO/RQy/
-         lH9A==
-X-Forwarded-Encrypted: i=1; AKwUvBxBwy9pbVIhPpjnDN0sA9c3UJ4gJQwdPC7gYlSI9bd2fHksktt8y3FKfGiOs5Pr8cUlC0Y5kcknZXCdONg=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++nn87JtrxIIQY65fWCF0w+wsJ8DD5soXaMvv8W9NMRjoIGplqeQ
-	i7cwZTkCu5413RouEWx/Ko4rfs8V/46LbdPhQopeUOlhHZTCWoHB7MUU
-X-Gm-Gg: AYBFou3TR0I9wpoBG7jLka3ZsL4+0eevgKLT2VtCmuXDdQpJYP3yislNXxQjblKzD1m
-	r9tMkvqK73SZI3uVBEnPDqE2N/st6blvX9tYD3MQ6duW28JBAzhlczBBUc4an18+sEvs3TB9OwS
-	YCjxRwbi3JNIeo2ftviFUuIHkl+kaY7ZE9Q5/aTEF7R+QHG9aUq6kL+mZsfZPrGwxyV7fBrLRoJ
-	GdmQrN/oslc15DP1kUoeFg34aXYXRKxHsCUZb2Hw6ykmJFtuqPNw9P7f2qNFvn4rkvvo6RIun3W
-	My/BkfDpr64cFiCTAmwokrmQm965vUp5yXisUij53Hm6nVyeUaFZfCp8dbyDzutjyej2Bmzmold
-	0LqYrxQy5ywYyXUYCj+OpbdO6ixMOK0WiNTXM2uK/5GrFrO63XbKwibHQoeOQrTZtMXEdCebNOV
-	3qumKm4hvAK0kVEfWf0Dy7bClRi2fGPK3zgFNh
-X-Received: by 2002:a17:907:9628:b0:c26:24ed:39e5 with SMTP id a640c23a62f3a-c2e23cd72e3mr159226866b.18.1790782682624;
-        Wed, 30 Sep 2026 08:38:02 -0700 (PDT)
-Received: from milan ([2001:9b1:d5a0:a500::24b])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c2e31a3eb32sm30808366b.3.2026.09.30.08.38.00
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 30 Sep 2026 08:38:02 -0700 (PDT)
-From: Uladzislau Rezki <urezki@gmail.com>
-X-Google-Original-From: Uladzislau Rezki <urezki@milan>
-Date: Wed, 30 Sep 2026 17:37:59 +0200
-To: Wen Jiang <jiangwenxiaomi@gmail.com>
-Cc: akpm@linux-foundation.org, catalin.marinas@arm.com, linux-mm@kvack.org,
-	urezki@gmail.com, will@kernel.org, Xueyuan.chen21@gmail.com,
-	ajd@linux.ibm.com, anshuman.khandual@arm.com, baohua@kernel.org,
-	chleroy@kernel.org, david@kernel.org, dev.jain@arm.com,
-	jiangwen6@xiaomi.com, leo.yan@arm.com,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
-	mpe@ellerman.id.au, npiggin@gmail.com, rppt@kernel.org,
-	ryan.roberts@arm.com
-Subject: Re: [PATCH v9 05/10] arm64/vmalloc: allow
- arch_vmap_pte_range_map_size() to batch multiple CONT_PTE
-Message-ID: <ar0s14p8KPgmDKmR@milan>
-References: <20260923062832.479455-1-jiangwen6@xiaomi.com>
- <20260923062832.479455-6-jiangwen6@xiaomi.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvncM0xRCz2xnQ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2026 18:03:45 +1000 (AEST)
+Received: from PC-202605011814.localdomain (unknown [58.241.16.34])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 4f9ce8add;
+	Wed, 30 Sep 2026 15:58:07 +0800 (GMT+08:00)
+From: Runyu Xiao <runyu.xiao@seu.edu.cn>
+To: Tyrel Datwyler <tyreld@linux.ibm.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	"James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
+	"Martin K . Petersen" <martin.petersen@kernel.org>,
+	Brian King <brking@linux.vnet.ibm.com>,
+	linux-scsi@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org,
+	Runyu Xiao <runyu.xiao@seu.edu.cn>,
+	Jianhao Xu <jianhao.xu@seu.edu.cn>
+Subject: [PATCH] scsi: ibmvfc: synchronize event timer completion
+Date: Wed, 30 Sep 2026 15:58:01 +0800
+Message-Id: <20260930075801.2949514-1-runyu.xiao@seu.edu.cn>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,57 +64,176 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260923062832.479455-6-jiangwen6@xiaomi.com>
+Content-Transfer-Encoding: 8bit
+X-HM-Tid: 0aa0f15223fc03a1kunm3c39a5d2270ab8
+X-HM-MType: 10
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVkaGksdVhkfQ0JITUkYTx5PTFYeHw
+	5VEwETFhoSFyQUDg9ZV1kYEgtZQVlOQ1VJT0pVSk1VSE9ZV1kWGg8SFR0UWUFZT0tIVUpLSEpPSE
+	xVSktLVUpCS0tZBg++
+DKIM-Signature: a=rsa-sha256;
+	b=IGM0DHlCUI0ocTU9fMH2w7Jr5IhGm2zIKdcqFY5BTuJSyTVwYXN/UGX4UiMu0qHuDzacSOBLwTllk69uO4ZxApPFga19JbeoJKronBs8WqVYF77MtjCljfGsMHrm3Hd029eZCWT5Z20HP8vdQksLpP9QCmLGbB8mgGk5vn4x3Fw=; c=relaxed/relaxed; s=default; d=seu.edu.cn; v=1;
+	bh=BfUiU8sdifpY8ApVkV3WU0a/oKOyPdhWsydCFEavjao=;
+	h=date:mime-version:subject:message-id:from;
 
-On Wed, Sep 23, 2026 at 02:28:27PM +0800, Wen Jiang wrote:
-> From: "Barry Song (Xiaomi)" <baohua@kernel.org>
-> 
-> Allow arch_vmap_pte_range_map_size to batch across multiple CONT_PTE
-> blocks, reducing both PTE setup and TLB flush iterations.
-> 
-> For CONT_PTE_SIZE-aligned ranges, return a mapping size that may cover
-> multiple CONT_PTE blocks, capped below PMD_SIZE. These sizes are vmalloc
-> mapping spans, not HugeTLB hstate sizes.
-> 
-> Signed-off-by: Barry Song (Xiaomi) <baohua@kernel.org>
-> Signed-off-by: Wen Jiang <jiangwen6@xiaomi.com>
-> Tested-by: Xueyuan Chen <xueyuan.chen21@gmail.com>
-> Tested-by: Leo Yan <leo.yan@arm.com>
-> ---
->  arch/arm64/include/asm/vmalloc.h | 8 +++++++-
->  1 file changed, 7 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/arm64/include/asm/vmalloc.h b/arch/arm64/include/asm/vmalloc.h
-> index 4ec1acd3c1b34..4053b1ec1902e 100644
-> --- a/arch/arm64/include/asm/vmalloc.h
-> +++ b/arch/arm64/include/asm/vmalloc.h
-> @@ -23,10 +23,14 @@ static inline unsigned long arch_vmap_pte_range_map_size(unsigned long addr,
->  						unsigned long end, u64 pfn,
->  						unsigned int max_page_shift)
->  {
-> +	unsigned long size;
-> +
->  	/*
->  	 * If the block is at least CONT_PTE_SIZE in size, and is naturally
->  	 * aligned in both virtual and physical space, then we can pte-map the
->  	 * block using the PTE_CONT bit for more efficient use of the TLB.
-> +	 * The returned mapping size may cover multiple CONT_PTE_SIZE blocks,
-> +	 * capped below PMD_SIZE.
->  	 */
->  	if (max_page_shift < CONT_PTE_SHIFT)
->  		return PAGE_SIZE;
-> @@ -40,7 +44,9 @@ static inline unsigned long arch_vmap_pte_range_map_size(unsigned long addr,
->  	if (!IS_ALIGNED(PFN_PHYS(pfn), CONT_PTE_SIZE))
->  		return PAGE_SIZE;
->  
-> -	return CONT_PTE_SIZE;
-> +	size = min3(end - addr, 1UL << max_page_shift, PMD_SIZE >> 1);
->
-Capped below PMD_SIZE? It is half of PMD_SIZE. Where is that limitation
-comes from? I think the commit message should be improved in that sense.
+The response and purge paths remove an event from their queue and
+complete it immediately after timer_delete(). A timer callback can still
+be running on another CPU and can access the event while its completion
+returns it to the event pool for reuse.
 
---
-Uladzislau Rezki
+Use timer_delete_sync_try() in the interrupt-side completion path and defer
+the completion to workqueue context when the timer callback is active.
+Flush the work before releasing the event pool so an event cannot be reused
+or freed while its callback is still running.
+
+Fixes: 072b91f9c651 ("[SCSI] ibmvfc: IBM Power Virtual Fibre Channel Adapter Client Driver")
+Cc: stable@vger.kernel.org
+Assisted-by: LLM
+Signed-off-by: Runyu Xiao <runyu.xiao@seu.edu.cn>
+---
+ drivers/scsi/ibmvscsi/ibmvfc-core.c | 40 ++++++++++++++++++++++-------
+ drivers/scsi/ibmvscsi/ibmvfc.h      |  2 ++
+ 2 files changed, 33 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc-core.c b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+index 93b9f699c..072008411 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc-core.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+@@ -811,6 +811,28 @@ static int ibmvfc_send_crq_init_complete(struct ibmvfc_host *vhost)
+ 	return ibmvfc_send_crq(vhost, 0xC002000000000000LL, 0);
+ }
+ 
++static void ibmvfc_complete_event_work(struct work_struct *work)
++{
++	struct ibmvfc_event *evt = container_of(work, struct ibmvfc_event,
++						timer_work);
++
++	timer_delete_sync(&evt->timer);
++	evt->done(evt);
++}
++
++static void ibmvfc_complete_event(struct ibmvfc_event *evt)
++{
++	/* The response path can run in hardirq context, so defer only when the
++	 * timer callback is already executing on another context.
++	 */
++	if (timer_delete_sync_try(&evt->timer) < 0) {
++		schedule_work(&evt->timer_work);
++		return;
++	}
++
++	evt->done(evt);
++}
++
+ /**
+  * ibmvfc_init_event_pool - Allocates and initializes the event pool for a host
+  * @vhost:	ibmvfc host who owns the event pool
+@@ -859,6 +881,7 @@ static int ibmvfc_init_event_pool(struct ibmvfc_host *vhost,
+ 		 */
+ 		atomic_set(&evt->active, -1);
+ 		atomic_set(&evt->free, 1);
++		INIT_WORK(&evt->timer_work, ibmvfc_complete_event_work);
+ 		evt->crq.valid = 0x80;
+ 		evt->crq.ioba = cpu_to_be64(pool->iu_token + (sizeof(*evt->xfer_iu) * i));
+ 		evt->xfer_iu = pool->iu_storage + i;
+@@ -886,6 +909,7 @@ static void ibmvfc_free_event_pool(struct ibmvfc_host *vhost,
+ 
+ 	ENTER;
+ 	for (i = 0; i < pool->size; ++i) {
++		flush_work(&pool->events[i].timer_work);
+ 		list_del(&pool->events[i].queue_list);
+ 		BUG_ON(atomic_read(&pool->events[i].free) != 1);
+ 		if (pool->events[i].ext_list)
+@@ -1134,7 +1158,7 @@ static void ibmvfc_complete_purge(struct list_head *purge_list)
+ 	list_for_each_entry_safe(evt, pos, purge_list, queue_list) {
+ 		list_del(&evt->queue_list);
+ 		ibmvfc_trc_end(evt);
+-		evt->done(evt);
++		ibmvfc_complete_event(evt);
+ 	}
+ }
+ 
+@@ -1162,7 +1186,7 @@ static void ibmvfc_fail_request(struct ibmvfc_event *evt, int error_code)
+ 	else
+ 		evt->xfer_iu->mad_common.status = cpu_to_be16(IBMVFC_MAD_DRIVER_FAILED);
+ 
+-	timer_delete(&evt->timer);
++	timer_delete_sync_try(&evt->timer);
+ }
+ 
+ /**
+@@ -1824,7 +1848,6 @@ int ibmvfc_send_event(struct ibmvfc_event *evt,
+ 		atomic_set(&evt->active, 0);
+ 		list_del(&evt->queue_list);
+ 		spin_unlock_irqrestore(&evt->queue->l_lock, flags);
+-		timer_delete(&evt->timer);
+ 
+ 		/* If send_crq returns H_CLOSED, return SCSI_MLQUEUE_HOST_BUSY.
+ 		 * Firmware will send a CRQ with a transport event (0xFF) to
+@@ -1836,7 +1859,8 @@ int ibmvfc_send_event(struct ibmvfc_event *evt,
+ 				dev_warn(vhost->dev, "Send warning. Receive queue closed, will retry.\n");
+ 			if (evt->cmnd)
+ 				scsi_dma_unmap(evt->cmnd);
+-			ibmvfc_free_event(evt);
++			evt->done = ibmvfc_free_event;
++			ibmvfc_complete_event(evt);
+ 			return SCSI_MLQUEUE_HOST_BUSY;
+ 		}
+ 
+@@ -1851,7 +1875,7 @@ int ibmvfc_send_event(struct ibmvfc_event *evt,
+ 			evt->done = evt->_done;
+ 		}
+ 
+-		evt->done(evt);
++		ibmvfc_complete_event(evt);
+ 	} else {
+ 		spin_unlock_irqrestore(&evt->queue->l_lock, flags);
+ 		ibmvfc_trc_start(evt);
+@@ -3925,10 +3949,9 @@ static void ibmvfc_tasklet(void *data)
+ 	spin_unlock_irqrestore(vhost->host->host_lock, flags);
+ 
+ 	list_for_each_entry_safe(evt, temp, &evt_doneq, queue_list) {
+-		timer_delete(&evt->timer);
+ 		list_del(&evt->queue_list);
+ 		ibmvfc_trc_end(evt);
+-		evt->done(evt);
++		ibmvfc_complete_event(evt);
+ 	}
+ }
+ 
+@@ -4031,10 +4054,9 @@ static void ibmvfc_drain_sub_crq(struct ibmvfc_queue *scrq)
+ 	spin_unlock_irqrestore(scrq->q_lock, flags);
+ 
+ 	list_for_each_entry_safe(evt, temp, &evt_doneq, queue_list) {
+-		timer_delete(&evt->timer);
+ 		list_del(&evt->queue_list);
+ 		ibmvfc_trc_end(evt);
+-		evt->done(evt);
++		ibmvfc_complete_event(evt);
+ 	}
+ }
+ 
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.h b/drivers/scsi/ibmvscsi/ibmvfc.h
+index ca80ceffe..fba2e3a23 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.h
++++ b/drivers/scsi/ibmvscsi/ibmvfc.h
+@@ -14,6 +14,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/list.h>
+ #include <linux/types.h>
++#include <linux/workqueue.h>
+ #include <scsi/scsi_device.h>
+ #include <scsi/viosrp.h>
+ #include <linux/nvme.h>
+@@ -867,6 +868,7 @@ struct ibmvfc_event {
+ 	struct completion comp;
+ 	struct completion *eh_comp;
+ 	struct timer_list timer;
++	struct work_struct timer_work;
+ 	u16 hwq;
+ 	u8 reserved;
+ };
+-- 
+2.34.1
+
 
