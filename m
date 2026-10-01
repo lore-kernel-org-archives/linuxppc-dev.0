@@ -1,56 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-28641-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28642-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3AA56CA5FCB
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2026 10:48:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C97ECA5FB3
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2026 11:03:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hwTCw3dGLz2yTQ;
-	Thu, 01 Oct 2026 20:48:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790851708;
-	cv=none; b=VgZ25NhOlu+j2f4XWES+x4xtb/ntJGj0JvhTx9CDjCCgDgWPuKVY4+o7RRRFivIIp0rIdfwmELGetujR4TeDeDSL0SAoHuBVEmG2lcbkUnlzlJROoe+kZOjBVkcorqkT+GotsDvzlaCQ76oJE9VfMh0Q2YtAl1MtaTrh2RuyzZznQV41FLKSWCpuiRuWyi4axn8Y4WEFEKnIo0Pko8PMDpkPCe+P/oW3OJODCXCmOtkFidlHhjcEBFwWI+/LRYnGMk3kVYNFVsaUrZI0KGZcBegy5423UfKadI+fAsX/sh75K6QItrxx7VQ64/QaYcesjR9jZzcL9kjKNkBxD5O1xQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hwTY83d1Nz2yTQ;
+	Thu, 01 Oct 2026 21:03:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790852604;
+	cv=none; b=k5fJuNeatK3bryYfFU6Dd41byqEX77jOBOctx024NkcO5SFEAECWQZ2b4neveP50XW8RvV8a8YBo1LtZndmssIbceQM2PQ1TzpV7KVCIdt4Mz2K8MFfwH29k9ill+PKqwwevZIZdl7BUSUWz/Xti8vVJmSjHpGCm/Y8BzBDtD1tfJJ3CBhuCX+EFRSxrfZvRWHhgF7UYyrDOUNAbbA1oQ+37lVV1YbRF2mXE6GpZVsMDDm7/0WklFdlPRODlhK5V6eMNDREU8ekdhzzWTuhZt4NzuDhv2qI5a7G/YQqWNWTJ/0A1IJmwY7UnuGf//iiP5Q7LvP/tZLsa596oU27fSA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790851708; c=relaxed/relaxed;
-	bh=/oOpPY/gsh1NivZHQbt/4ewXmUw4hi2f8c5A+91XjAQ=;
+	t=1790852604; c=relaxed/relaxed;
+	bh=6Fz/XiVPQbxeCrS6Ooyx7iK8DZuaZzJa+GXwQ5Vs63Y=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=VTvNGwjhQ9gdkIVy0Zu+KHoQyaZj5of9J3po0BuhbHwGOCgoRYCTM+LJVLb7NIZBRd1diSQbBFb/fq2yzaxP0ss2BqlrkETCSj7jAH0qlUaedqGkC7lHn1znNv/HRhawO2nVIlCgtaATP9qW/MwPadffzmBFADrX8swkntizDk1AnTC8Xr1NiGT7n3OcemUH6u32R98ho00sJugoy9PIQYm5N00RIoalum9t0d5NBAdxJFzOMePGPI4lpDR6Z2Gx3V6EZORr1fNWW5XylvmWRyu7UZj1WOFAQk5tJ89RHevuW5zdWTjyW0eSb9ohc5In7jPSIJ1Q5PPIMK6N3Z5Rdg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com; dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=B57mDsY4; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=73p4=hx=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=I07cYk569icTjnLvPrNr0A+XZcnlupHmmo+jWmG4G0hDA3+TzwEHSwO/D4mJhYikuV41jDXWU+v6PsCc6H2OUKVwfYkkTlqkMwEy8cO8hDtb/9A31ioZ4Ka6j1dvJPbVWJscWoJC0OP0F7Ut4X/+qp0mznwTCpSyr5zZiFFHpjMlwEs9crlDc0Mapiv4Ytw8IvTA0QEcDhht4N29M1+6NX+zGePUbtyLu6UStUM3jgT+Ayk/DGNBQ3NEFT9mbhlyvdEoYCiMM3hb5/gtP43VmP2570t4MPccJo5u4IDnfUjAVvlMO6J9Xsq6YZ0jXHjgz3Z8XaQTAnlxy4VvTy7LDw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ilyZfZwc; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=B57mDsY4;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ilyZfZwc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=73p4=hx=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hwTCp694Fz2xfP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 20:48:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hwTY72K4Kz2xfP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 21:03:23 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id D801141768;
-	Thu,  1 Oct 2026 10:48:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7D6031F000FF;
-	Thu,  1 Oct 2026 10:48:17 +0000 (UTC)
-Authentication-Results: smtp.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=B57mDsY4
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
-	t=1790851695;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=/oOpPY/gsh1NivZHQbt/4ewXmUw4hi2f8c5A+91XjAQ=;
-	b=B57mDsY4+jopKLImXZNVOWxdVpQrgNONXSBu75IrKyl7123Al4mEDaeWWuv661fwT5QFtp
-	DyBe8f04ARHZI529RupFjeyvDFHWlpXWFuVEmNR4jf9UiXLsJ+Xu0/uwQUzKXb1sdqw5Bu
-	rwXQT6Por1A+lDJO9XzMggVf/BrbZ0A=
-Received: 
-	by mail.zx2c4.com (OpenSMTPD) with ESMTPSA id 03abc62d (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
-	Thu, 1 Oct 2026 10:48:15 +0000 (UTC)
-Date: Thu, 1 Oct 2026 12:48:10 +0200
-From: "Jason A. Donenfeld" <Jason@zx2c4.com>
-To: Nathan Chancellor <nathan@kernel.org>
+	by sea.source.kernel.org (Postfix) with ESMTP id D89AD401C2;
+	Thu,  1 Oct 2026 11:03:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5E9AB1F00899;
+	Thu,  1 Oct 2026 11:03:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790852600;
+	bh=6Fz/XiVPQbxeCrS6Ooyx7iK8DZuaZzJa+GXwQ5Vs63Y=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=ilyZfZwcyiaalOxi9FuCnkRKhUhFz2Rp84s1uKKcWMtsnqyjRTK4chwYRwfKNBpcG
+	 xSWBcawjlZQB5N6YjSTxTcpFx29bHpXUFY+OWY1TkZB40Znnbzavrt+0sofMnIlCUg
+	 Od59qfNTDltB+xCARwtpINaIAgDE6VSmDVPbipxbZz19xRjIq2SM0ui5Q0u18s0Gtl
+	 NeQeaadbEMr4KuuuBha6lwUTBYKyOGuVxY1TXFcDAM/cJYztQkrdJjzWvC7M2HCZFM
+	 aTGy5tCkS+EUw48u7uFYxLL2NBl9H+HwOLOBoQLTpCYdKAAi0YFeiPNJ2tJBVrTE2s
+	 KBIVWg2Z/PAVA==
+Date: Thu, 1 Oct 2026 13:03:10 +0200
+From: Nathan Chancellor <nathan@kernel.org>
+To: "Jason A. Donenfeld" <Jason@zx2c4.com>
 Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
 	Nick Desaulniers <ndesaulniers@google.com>,
 	Andy Lutomirski <luto@kernel.org>,
@@ -81,9 +77,8 @@ Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
 	llvm@lists.linux.dev
 Subject: Re: [PATCH v2] random: vDSO: Avoid call to memset() when zeroing
  reserved in __cvdso_getrandom_data()
-Message-ID: <ar46ap4jzLWyP92C@zx2c4.com>
-References: <are6s5e6On3hpD3M@zx2c4.com>
- <CAKwvOd=BrMfFT88jsvBPhh383qqk5G+J07CsofNu0MVkziyhCg@mail.gmail.com>
+Message-ID: <20261001110310.GA138012@ax162>
+References: <CAKwvOd=BrMfFT88jsvBPhh383qqk5G+J07CsofNu0MVkziyhCg@mail.gmail.com>
  <20260930133813.GA3142230@ax162>
  <ar0a4b9CjL2YHCkY@zx2c4.com>
  <ar0gTS71qxnx9AkW@zx2c4.com>
@@ -92,6 +87,7 @@ References: <are6s5e6On3hpD3M@zx2c4.com>
  <ede392d7-3104-4a0f-9fa1-99b22552dcd6@kernel.org>
  <ar4nD8aRH7wEvTMt@zx2c4.com>
  <20261001102059.GA4176271@ax162>
+ <ar46ap4jzLWyP92C@zx2c4.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,34 +101,47 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20261001102059.GA4176271@ax162>
+In-Reply-To: <ar46ap4jzLWyP92C@zx2c4.com>
 
-On Thu, Oct 01, 2026 at 12:20:59PM +0200, Nathan Chancellor wrote:
-> control. The change that introduced -max-store-memset only did it to
-> "allow fine-tuning of the inlining threshold for performance analysis
-> and optimization". If they decide to remove it for whatever reason,
-> we're back to square one.
+On Thu, Oct 01, 2026 at 12:48:10PM +0200, Jason A. Donenfeld wrote:
+> On Thu, Oct 01, 2026 at 12:20:59PM +0200, Nathan Chancellor wrote:
+> > control. The change that introduced -max-store-memset only did it to
+> > "allow fine-tuning of the inlining threshold for performance analysis
+> > and optimization". If they decide to remove it for whatever reason,
+> > we're back to square one.
+> 
+> I suppose all the more reason to get -finline-stringops=memset added to
+> clang. Then the dual-default thing you came up with below will naturally
+> start choosing the first option when it becomes available.
 
-I suppose all the more reason to get -finline-stringops=memset added to
-clang. Then the dual-default thing you came up with below will naturally
-start choosing the first option when it becomes available.
+Fair point, I can file an issue with LLVM upstream.
 
-> I know something like below would be uglier due to the ifdef but it
-> would avoid changing anything for GCC while clearing up the issue at
-> hand for clang in a guaranteed stable and succinct manner.
+> > I know something like below would be uglier due to the ifdef but it
+> > would avoid changing anything for GCC while clearing up the issue at
+> > hand for clang in a guaranteed stable and succinct manner.
+> 
+> But then we're back to the byte-by-byte codegen that Christophe pointed
+> out.
 
-But then we're back to the byte-by-byte codegen that Christophe pointed
-out.
- 
-> If that is not acceptable, something like the following does appear to
-> work for me.
+I thought that was only because the fallback memset_inline() from v2 was
+doing a byte-by-byte initialization? With my suggested diff, nothing
+should change for GCC, as it does not have __builtin_memset_inline(), so
+the "Before the patch" code generation that Christophe showed should
+still be present.
 
-Okay, great, let's do that.
+> > If that is not acceptable, something like the following does appear to
+> > work for me.
+> 
+> Okay, great, let's do that.
+> 
+> Does this commit seem okay with you? I used the diff you sent below and
+> adjusted the commit message: https://git.zx2c4.com/linux-rng/commit/?id=56ff95ee85715047eb5b5220243778af657778c8
 
-Does this commit seem okay with you? I used the diff you sent below and
-adjusted the commit message: https://git.zx2c4.com/linux-rng/commit/?id=56ff95ee85715047eb5b5220243778af657778c8
+Yeah, that seems fine to me, thanks for taking care of it!
 
-Jason
+-- 
+Cheers,
+Nathan
 
