@@ -1,96 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-28697-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28698-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C860CA5FCE
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2026 21:09:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F676CA5FCE
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2026 21:12:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hwl050cDbz30DY;
-	Fri, 02 Oct 2026 07:09:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:32::d" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790888949;
-	cv=pass; b=Sh1GzAaOQh0oQQmRqDSy6cXL81h0+tCps76eWfxSUihbB9Ea+IkNmY7EfGzDqbs16m8evo+SwOSfqLC39WKvW1uSfqUh0tCwc1WkVAdF/H58xRfGJaqtqmGZhivrbJ1q9FSjuDkKkr16ri7huuuVi5ANVVC+0/XK9PEu+sKTML8APGaAeUgNtJAyZK8YTxOqNbAxRA8DPFDVF1FnW87W1jer7EAJld8OmEgQ4Xx580RRzQS20jfvjWCtildJlnz3p6p7gkVRpjY0IhVpKdOnz/DooqjhgbRneEXpZ347zcuKf6tebpf4pHEU11ULB8EHyGzPgA3Rw8cJV7qpv0kKKw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790888949; c=relaxed/relaxed;
-	bh=aFokuiRNz9wJ8Ezep4PHoXeKqh3XHPyJk48utuNejfc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=F2kfGaZiFXMOa9dcERt/yvN4VTL/ec6N34NuhsWyMgFBlFg8CzRTRkNEgXPPAzMO1UVv0MZXUHuSb7k5ZpQwNVIdc8CVZ5Q0BEAzqCIxAZBHmzaPPRx6OGb8CmILmbCH/1XxE7a3QSznYFZ4xlTUlZrxeUneof8ZqRU5S8O17zDcCDb3Pm6+pc2+ZfSxVXOkx565RrZZvfzMuoAyJ5OaPZyp1E0DemWUwwwESuxunnoKwxO8po0OKsohGxC06ZveHVaIxH8JTWw0Z0OYFzItaXnUX8OT9/Z7J/g7PD1CtFFsDH9oMYhmgt1dFKAyMid7by/AMaqs/o1upsT8cqUIkA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=fTfzI5QU; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:32::d; helo=mail-oi2-x0d.google.com; envelope-from=jthoughton@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hwl4J40Fjz30DY;
+	Fri, 02 Oct 2026 07:12:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790889168;
+	cv=none; b=SW37YaVbyVjV4npOijOLjs7cw/ZXFEgdQrG+HEkcQ88WEE4kLplbkOpDJSd+3ZKEbA2kU2/Hp1EbcmqbW3ltFmmyyyZZSt9hne2X2dLBGbnoPTs4cVip85zg7oaRAt/rWtEav6CQywErRRvxvvedhPWtWmvtPeDTJ/8+dKTaY0J6Ilw2c10NrFMRH5Jc5J/Tss6uxPPJn/LabVtThY/UM/J4MLcq2Re29bxL+sFYlioS+kgLH6CSlB4vo+a6IoIE6LpB0FdnCbAtMsNO0Va+D/Lbr1cEJ5we1B3MKctoNK85PF3cZxOCRIP+b/nhCBsaCJtsNOgNLEN+jMizIDuDZA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1790889168; c=relaxed/relaxed;
+	bh=yV3OoqhhTOyvLfdzMAWwmTNQmt2i01UTi3FCUoHNWiw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=L4Iygyts/YC29H/NogR4a8RXh1bLmQcmMcu2WYjFBVCe4L1J6nMz4pJpsDD6iP0+XQh3Uq4AC59DBWmst7gr5jzQTbPGasR4hmHNNKAJvtT9o5WYMtZu+0V1cwL7IKAZ65Vcz2jxx87LyCccTP65NprSaYkemNkCEOzh1ajM3wQO3CSaCAzfxd+yRdkvDF9XXCaOxQ+i4f0k8xzY15/+LRisp+ty7B4u++VxJqCKHADezxPpCzEChkcOYzVeRwgL9A6TGzK72N8s6z44OPaR+GkumtaIDVtdSkxa/zKXOLElYL0+uKATluklZyZ3FaspBaK/bjtiU3+DIrVWdKHTWQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=N3eGFqkw; dkim-atps=neutral; spf=pass (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=fTfzI5QU;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=N3eGFqkw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:32::d; helo=mail-oi2-x0d.google.com; envelope-from=jthoughton@google.com; receiver=lists.ozlabs.org)
-Received: from mail-oi2-x0d.google.com (mail-oi2-x0d.google.com [IPv6:2607:f8b0:4864:32::d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org)
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hwl040QsJz308H
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 07:09:07 +1000 (AEST)
-Received: by mail-oi2-x0d.google.com with SMTP id 5614622812f47-4e9818966c6so4031863b6e.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 14:09:07 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1790888945; cv=none;
-        d=google.com; s=arc-20260327;
-        b=mB8NPm6BnQZflr9vU9fT3xU7kJka12JT0G82bVbfAogeoOHtdffWu6tFtwBmu8/f5a
-         LaitBJiqYbXX8TZVC4tUqbCwT+6e63CmvBQKN0uFMVqZTrlDrApkWrU9CsQeXgDQw2Qb
-         rGKw3/I/095MYiRiacurvEi8EfT5oCzKV8MOPTMm18tD61PO/LMAdyW1e0/NHgTp5CQN
-         njIe/TttIEku18OO+4OMdKacaT3PIHNGct4wJ2MGTeFa9NoH+X3Nkz3oFe+nQomkmo/u
-         WlSJp3XvMvHsL5BG8VwEJqOnwCSKf3ZjHfYSNHuIrhWvYcqpxZ7Auc/x17NVV2y72eg0
-         8mfw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=aFokuiRNz9wJ8Ezep4PHoXeKqh3XHPyJk48utuNejfc=;
-        fh=7/yjYIQDf7zOmNPP9vM+Zwpa0Cvssz4Ow3HCrY3Lqps=;
-        b=K2WQKqcS68zKTcfITADff87Jb+eYeviWTg8QZUKaO3n4f1GcH4FaL2krol8pXaZqne
-         9bODCTwzOPL+Dnan+yqAE0tcag7RwUiI1OIQam8DISrKOyyC/5EB6EjmOX1yC03O8U6C
-         lhrn1BrOxdBtDn2nAlzfBH/CuV2FjJR8xzT/A/zStSct7fxKaY07GNmMldjcyxteZN60
-         qw8bXsczGEsnFAGUQnfLokoz6LYOhbsmT/Dg7MzTbY9Q/IvgIvR2i0LRT/NkAE7fEFEJ
-         pTP8JTA+gUq5/VkRfXeWrG6+mXrTukXL3+THzYnoECq2geJK1M37S20OC0TlFGhanzoU
-         KTbQ==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1790888945; x=1791493745; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=aFokuiRNz9wJ8Ezep4PHoXeKqh3XHPyJk48utuNejfc=;
-        b=fTfzI5QUd754XLMQ+XwuHHLxv74dkf0ThWrEVWKEb7Y8fnyVGCR1qjlOg41op5QT29
-         RvRuVaC//sLKoNB6yD8L0WfjJqrIWkoJAyx3hzUwgHjcYHcSmYT3ZflxIOGVmaftoQLS
-         SfSUVShlSuJQ7VyexmA2xagp2DYjgBqhxJfT3LFFBKm17vDWoWyXQlH1ntw7qq/MPPqW
-         qvs/RyCnhXxTeUqCNfHtokAcJx0ICIHKoCR/dXoIpQS7J/DIqf4MBvA1Zb+/DwAAD3zE
-         CMlxSA5qRBCSX3Y05XsPxDuan+gDcXiaLteYf1DekFTKRJiRl0m6KhoUPGwxZ7ncBJd5
-         tpTg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790888945; x=1791493745;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=aFokuiRNz9wJ8Ezep4PHoXeKqh3XHPyJk48utuNejfc=;
-        b=PE4tWGjTe1qeqjYO7TcirBD1fHEgWs/ue02hIVoz7mrenDXrip38Ar29YhoUtOGvuD
-         PS7lkH7RI0J8yn3/Fk34l0w4pZF9a52FQMw9k67eIRjKBst7QEAU2OIyYnL6O7YdFhBk
-         yRhuPyf0cIB9+MwqHjLOExjCIdDF6JEh2eBqQLZwLc/e5CiYGVB/Pw2a01tNoT9lAZwC
-         Brdi9rWvcJa6Y2/bt28o0Vd9CU7wTOp7v2OoMzgrNEgHE/c15/rJJeUqAdvoIzN040je
-         PY21KSgTqAit/9FSTv86rzSr/xFc8NG+Aw83bpth83lOvFFkhuB917p5l8dQ7r7Rtz8i
-         yBUQ==
-X-Forwarded-Encrypted: i=1; AKwUvBwzdT1qySlPLx/bnpxbZB/AuvZWmY/QBSZia8c056li57ynZqPFopJcTni0RMyIGz0nwajfPZPN38rFifw=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++lqT1Pw/qTLv3ARtB3kpKz9rXodrvMUSTcn2JiYdl5+uSIMgUdt
-	P6viIV9gfOq+e2gan4718QfWCcp/FAPSzl7tWPVZCDWSGGMAWpSyeechHY3bhb5uWhZiAP+h7Ib
-	zGImQJuX2KsS1ZPCjR2HryKn11TQv0Y8SJlGeALQ3
-X-Gm-Gg: AYBFou0tIwmZAZbaEpTElf/G49zarTWjhcLGH9c9DiVsan4D7rTSq1afr8d8OlECC7v
-	wybMCUU583zgJBdjY1HlstlXjRS6+SWGLcXOUs2UxdVytAGMY5hNn4urxThHm3oM7E+uoh2ldVx
-	ucXXXNojisjprsmFRo2HMUf8cmQfQPqZqX8Z1U9IRwyA/y0f5ULOeqi2IZEKqWSG5yllZmXqSFe
-	4psPztv9lk6iEYwmu+WHkdf67p3tFT2zlHsDqSBjJ5TxCiihqJPOozouDdGxvY42onSq8j2L+jm
-	pvT67M0xkmz6HN1W9Ix7PO4msO4Iy+FDny7f30WSjPt2Bc3YdqH5IdPOaO172Ss6og8sCtVQxpO
-	iVk+tZv9vMkKJFXBb9rYbcisNVm1YKkFMMIoA5PuScwfLPglxNz7dAHz6/UHqn1zVfwhKjO3ybG
-	wZMxpJkHQhkXsJEBpy1VUu4sXp2yzGP+ZAyQ==
-X-Received: by 2002:a05:6808:178f:b0:4d6:93e2:5bc1 with SMTP id
- 5614622812f47-4f52bac82a4mr335961b6e.66.1790888943910; Thu, 01 Oct 2026
- 14:09:03 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hwl4819dPz308H
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 07:12:39 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Transfer-Encoding:
+	Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
+	Sender:Reply-To:Content-ID:Content-Description;
+	bh=yV3OoqhhTOyvLfdzMAWwmTNQmt2i01UTi3FCUoHNWiw=; b=N3eGFqkw2bH2ZVrnw5+je4uWhZ
+	J+5Vt4ELsqK0nd7/5K0Dd3phpnJ11mcwHS9Ckj3NnVfMsk3pJIqKyXmFaO6aqqA1wUOjjbfAe5arF
+	TXtggCg1hUKUMga2W9gTs9o/sg+Zks2X3RF48SVs0T94Jmo+mUUucCvXppgBF7+LGEeIqIZshggBe
+	Uj12hMsorknpIKgwpTe1E0upzf6OQpQnfPN4W6l1K6OQ73Y+dEepsFpKQcPnSMS5u6W9c74ZrdYyK
+	xX8PEkyeFYpBoW7g/MrJJK8Xb3/ePcA+lpljARA7IhJfalxxtq5SGY3d0Y5fDh4Aq7VYWlkLzvhKy
+	s/2qqAIQ==;
+Received: from willy by casper.infradead.org with local (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1xCO4e-0000000A0JS-34rA;
+	Thu, 01 Oct 2026 21:12:16 +0000
+Date: Thu, 1 Oct 2026 22:12:16 +0100
+From: Matthew Wilcox <willy@infradead.org>
+To: Barry Song <baohua@kernel.org>
+Cc: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
+	Hongru Zhang <zhanghongru06@gmail.com>, akpm@linux-foundation.org,
+	linux-mm@kvack.org, linux-kernel@vger.kernel.org, surenb@google.com,
+	david@kernel.org, liam@infradead.org, mhocko@suse.com,
+	rppt@kernel.org, shakeel.butt@linux.dev, vbabka@kernel.org,
+	zhaonanzhe@xiaomi.com, linux@armlinux.org.uk,
+	catalin.marinas@arm.com, will@kernel.org, mark.rutland@arm.com,
+	linux-arm-kernel@lists.infradead.org, chenhuacai@kernel.org,
+	kernel@xen0n.name, loongarch@lists.linux.dev, maddy@linux.ibm.com,
+	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
+	linuxppc-dev@lists.ozlabs.org, pjw@kernel.org, palmer@dabbelt.com,
+	aou@eecs.berkeley.edu, alex@ghiti.fr,
+	linux-riscv@lists.infradead.org, agordeev@linux.ibm.com,
+	gerald.schaefer@linux.ibm.com, hca@linux.ibm.com, gor@linux.ibm.com,
+	borntraeger@linux.ibm.com, svens@linux.ibm.com,
+	linux-s390@vger.kernel.org, dave.hansen@linux.intel.com,
+	luto@kernel.org, peterz@infradead.org, tglx@kernel.org,
+	mingo@redhat.com, bp@alien8.de, x86@kernel.org, hpa@zytor.com,
+	Hongru Zhang <zhanghongru@xiaomi.com>
+Subject: Re: [PATCH v6] mm: retry page faults once under the per-VMA lock
+Message-ID: <ar7MsOb6IJLt4eLo@casper.infradead.org>
+References: <20260911025613.1220845-1-zhanghongru@xiaomi.com>
+ <arFYRAa-i7CIwmHL@gremlin>
+ <arF-E3Nsw9ZliH0t@casper.infradead.org>
+ <arI_w2wTfA00Mgy9@gremlin>
+ <armexcXDiG8ryZd6@casper.infradead.org>
+ <CAGsJ_4xuFi7K+crAcFQ998SxXS0xPM6QeA34JV+6+Sy005rXLg@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,71 +85,90 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261001202234.3794060-1-seanjc@google.com> <20261001202234.3794060-2-seanjc@google.com>
-In-Reply-To: <20261001202234.3794060-2-seanjc@google.com>
-From: James Houghton <jthoughton@google.com>
-Date: Thu, 1 Oct 2026 14:08:26 -0700
-X-Gm-Features: AclHuK9qRTMsBWUaBrJsyydGSs8bKMO-n0iK8nixdC2P8OF7DD2-ohxFc2SMwec
-Message-ID: <CADrL8HWDy64UH0N4RCtvgL6zP93jnwr91xjkWerEs1MBV9JH_w@mail.gmail.com>
-Subject: Re: [PATCH v2 01/10] KVM: Reject user accesses to guest memory if
- current->mm != kvm->mm
-To: Sean Christopherson <seanjc@google.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, Paolo Bonzini <pbonzini@redhat.com>, 
-	Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Jim Mattson <jmattson@google.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAGsJ_4xuFi7K+crAcFQ998SxXS0xPM6QeA34JV+6+Sy005rXLg@mail.gmail.com>
 
-On Thu, Oct 1, 2026 at 1:24=E2=80=AFPM Sean Christopherson <seanjc@google.c=
-om> wrote:
->
-> Reject user accesses to guest memory, which are supposed to be done only
-> in the context of KVM_RUN or similar operations, if the current address
-> space is not the VM's (host userspace) address space.  If KVM writes to
-> guest memory after the owning host process has exited, or if the VM is
-> being destroyed in the context of a different process, then writing using
-> the wrong address space will corrupt a different process' memory.
->
-> Reject the access but don't WARN() or KVM_BUG_ON() event though attemptin=
-g
-> to access guest memory with a mismatched address space is a blatant KVM
-> bug, because unfortunately KVM is buggy.  On KVM VMX, when a vCPU is
-> destroyed while L2 is active, KVM synthesizes a nested VM-Exit to force t=
-he
-> vCPU out of L2 in order to free the nested VMX assets, and a side effect =
-of
-> a nested VM-Exit is that it flushes the cached shadow VMCS12 back to gues=
-t
-> memory:
->
->   vmx_vcpu_free()
->   |-> nested_vmx_free_vcpu()
->       |-> vmx_leave_nested()
->           |-> nested_vmx_vmexit(vcpu, -1, 0, 0)
->               |-> nested_flush_cached_shadow_vmcs12()
->                   |-> kvm_write_guest_cached()
->                       |-> __copy_to_user(ghc->hva, ...)
->
-> Fix the bug broadly even though the "real" bug is that KVM abuses the
-> nested VM-Exit flow for non-architectural purposes, as there may be other
-> such violations lurking.  For now, punt on fixing individual bugs and
-> hardening the common flows, e.g. with WARNs.
->
-> Opportunistically provide wrappers in anticipation of adding more checks
-> and hardening, i.e. growing the logic beyond checking current->mm.
->
-> Fixes: 61ada7488ffd ("KVM: nVMX: Cache shadow vmcs12 on VMEntry and flush=
- to memory on VMExit")
-> Cc: stable@vger.kernel.org
-> Reported-by: Jim Mattson <jmattson@google.com>
-> Closes: https://lore.kernel.org/all/20260908132838.2116068-1-jmattson@goo=
-gle.com
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
+On Mon, Sep 28, 2026 at 10:48:41AM +0800, Barry Song wrote:
+> On Mon, Sep 28, 2026 at 6:55 AM Matthew Wilcox <willy@infradead.org> wrote:
+> > So while doing my slides, I realised that what we need to avoid doing
+> > is (a) sleeping while holding the mmap_lock (b) returning RETRY while
+> > holding the VMA lock
+> >
+> > And that turns out to be as simple as this patch:
+> >
+> > diff --git a/include/linux/mm.h b/include/linux/mm.h
+> > index dd09c438fa23..94ed2333f8d8 100644
+> > --- a/include/linux/mm.h
+> > +++ b/include/linux/mm.h
+> > @@ -723,6 +723,8 @@ enum {
+> >   */
+> >  static inline bool fault_flag_allow_retry_first(enum fault_flag flags)
+> >  {
+> > +       if (flags & FAULT_FLAG_VMA_LOCK)
+> > +               return false;
+> >         return (flags & FAULT_FLAG_ALLOW_RETRY) &&
+> >             (!(flags & FAULT_FLAG_TRIED));
+> >  }
+> >
+> > OK, this is a hack.  The function is spectacularly badly named, and
+> > needs to be renamed before a patch can go upstream.  But this should
+> > fix the contention on mmap_lock.
+> 
+> Thanks for your suggestion.
+> This is exactly what we did in Android Common Kernel before we had
+> Lorenzo's proposal (bypassing `fault_flag_allow_retry_first()`):
+> 
+> https://android.googlesource.com/kernel/common/+/1b9b045a586245cc1c29b2747c6586234c7f5bad%5E%21/#F2
 
-Thanks, Sean. Feel free to add:
+Looks like that one didn't cover __folio_lock_or_retry(), but that
+doesn't invalidate your point.
 
-Reviewed-by: James Houghton <jthoughton@google.com>
+> Note that Lorenzo's proposal avoids mmap_lock contention without
+> introducing any new VMA lock contention. It also doesn't require a new
+> flag that would break KMI. So this is clearly the preferred approach.
 
-I wonder if it makes sense to add similar hardening to
-kvm_faultin_pfn(). What do you think?
+But it does retry multiple times in cases where we know the fault
+will always fail (eg the fault is on a device-private VMA)
+
+> > Could somebody try it?  I've verified it boots and runs some userspace
+> > fine, but I don't have the workload to test the contention.
+> 
+> Both Nanzhe and Hongru tested it before and reported the fork issue.
+
+So what I didn't realise is that fork() waits for page faults to finish.
+I don't think that's necessary, so we can just stop doing that (whitespace
+damaged):
+
+diff --git a/mm/mmap.c b/mm/mmap.c
+index 4bf26b0f1e6e..e79555247d3a 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -1739,9 +1739,6 @@ __latent_entropy int dup_mmap(struct mm_struct *mm, struct mm_struct *oldmm)
+        for_each_vma(vmi, mpnt) {
+                struct file *file;
+
+-               retval = vma_start_write_killable(mpnt);
+-               if (retval < 0)
+-                       goto loop_out;
+                if (vma_test(mpnt, VMA_DONTCOPY_BIT)) {
+                        retval = vma_iter_clear_gfp(&vmi, mpnt->vm_start,
+                                                    mpnt->vm_end, GFP_KERNEL);
+
+I think this is safe.  I've booted a kernel with this change, and
+everything seems to run fine.  Of course I don't have any multithreaded
+applications which call fork() because that's a stupid way to write an
+application, so it's not really tested.
+
+My argument for why it's safe is that a thread which takes a page
+fault during fork() might have taken the page fault either before or
+after fork().  The faults will definitely happen in the parent process.
+They may or may not have happened in the child process, which can't
+possibly care whether or not they've happened.
+
+The only difference I can think of being observable is that the child
+may observe some later faults to have occurred, while some earlier faults
+to have not occurred.  I have a hard time believing any application can
+possibly depend on it.
 
