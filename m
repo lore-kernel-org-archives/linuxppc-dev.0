@@ -1,68 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-28624-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28625-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE526CA5FCB
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2026 03:44:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75464CA5FA5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2026 03:57:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hwHpm2jXyz2y2Z;
-	Thu, 01 Oct 2026 13:44:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790826272;
-	cv=none; b=WK1WNrUP7dGb2/Je92CZJlEld3zxz/OUQH0dmlwnS9vnlVL6Q1DzKHf84dPO9MrTTXVox5yOLi5mfdZeuVg/bYoDZ0AwOsStVsVYX+LqkZB9VbhchEJL7NedE5EWz6OVs97uAaRQXYplrpeWBWcfxUcXvfjper7UO78HBwRHawnGkiL+o7P4OiQaWSynxSLcEZ1G5LE7mzWDQyySf2ob3pxJdAtTWrm11bjCrN9vH3VCYRVxQ1KEOjLASJgkuFcjndLjTNiW/Ok4Zdu1aJPXev2DQDn2oYE/ZAKe5Rf3dx9IiYKU+lgR/+YJ47lpioszjtPPl7WvajIL2/SIUKHv1w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hwJ5S6sVNz2y2Z;
+	Thu, 01 Oct 2026 13:57:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790827036;
+	cv=none; b=BMV7a3wKsyWTWIzA+6+WAbV7erS80yUaYwi/+zXld43bQMzuya92m9A91ujM3JOo2EX4kuYqSYsWOuby9F2XtizJzImIdGPSITqptc7ehjGtZZE39JsyyisdsZO+jr0gpWhG0KP8HiWVZ/StzQmNGydLMJTFYtlWGjoSnkPOHhNRsgH6WNmYZdnSQgq5jX/C+Uvx2SiXtipawpWU+UkbEVVVyIuy7KmPSmPX+8zjDqWClwxzhU2VBW5JxsR6RBogNSO9e7CucjqTXqRj85jULFhuz9MzHQknm/EYVTlofxf8XATwmrX3zxlivoJ90/1XmKhTql2qMymJKS/mo/khYw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790826272; c=relaxed/relaxed;
-	bh=Ca147LmwO9zZ+D2GLRySymKBir47QqJ5QhSxoqNZIAg=;
+	t=1790827036; c=relaxed/relaxed;
+	bh=j3C1jtCzYOB/7ct9Ws2eH5RhJT8FVtvOQDQxv8iP5/A=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=EUYkx5CoekRlX5TP8mHflpJB9OoGm2pwfibyYRpXp9S/7Ln/5aOUcwBGT2ZKs0rmwAJwL3bLfpxoHy9scn0+YW4wJeK5+zrwhKREx/X+wiVErLJLKXSCpufVB1dzGilEwPVj3T2SZlAgMIHnGqTlTX3A3L4Wk3X9crWCNRVVUHgB0dG2r+nqZjrzj+uJa8oKrMOrLf0CTNUVbkK1DFf4Rg1dfzd9gd6Asxu5h48J1s0a4H+YR/0a2oM4GJo70lajg7OlzAj2s13tr7JEZrjWNlmKh+6ZbrTxb8NFanpd35eZrEVFjkyXaydsLc23f/JpCICvey1shVRAQHXULzzBEw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=HDhJ2LP7; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=jA+j8R7ztYz7V9RgU83EYTdy1Ff/FlwNx3eU9IqklhvGl9uMoZpGU6/X6y96NUn9o7YQLWruhTgVReq/gu8sku8AtgbXIHI7z+XS6T7A8AvDTw3S0q0XsEHAIY7gK12KCkG692bYEYIVlUT30xG3icOZ4gmLSKfDaIrPmrvB5/d8qbUaoziUh21yhJ4tP3XWZJGRCazbRoSjcwx1/5dse9TIcxSk+QR0TXk/6LJmgF5S/+biRCudBxufiszRnxT4mzJ6xtbCuidVYbtoMA2tqI9x7q09Ni7pDGB1xk3nLiwztXnAZLQLY71/lyfdIB1+Bz9daz+jUNHhOA/hNDkUkQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rj3iqbLl; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=HDhJ2LP7;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rj3iqbLl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hwHpl1GFJz2xsW
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 13:44:30 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8451F497;
-	Wed, 30 Sep 2026 20:43:55 -0700 (PDT)
-Received: from localhost (a085714.arm.com [10.164.19.28])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 31B223F763;
-	Wed, 30 Sep 2026 20:43:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1790826238; bh=0JCYYd/gBaSkyFLVpyd+NOmYcdZtRWVCMO0JZ1HHcrk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=HDhJ2LP7L8tIyKd1JfzF5mqaev7wbGvuMn1XlYNhFrzoFnzuZbsOLJ61CXlEf3bSH
-	 zwmRV8sqrZKyUcc+ttQz5RniFr0tmdxm/yfItzUiRsv4GPrfwW/B5Tx5grx/0hEM/W
-	 YOgi2X/9uyZa3Dwoi4Su5n3QiFjSAzjqVUBevwj0=
-Date: Thu, 1 Oct 2026 09:13:55 +0530
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-To: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, 
-	Albert Ou <aou@eecs.berkeley.edu>, Alexander Gordeev <agordeev@linux.ibm.com>, 
-	Alexandre Ghiti <alex@ghiti.fr>, Borislav Petkov <bp@alien8.de>, 
-	Catalin Marinas <catalin.marinas@arm.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Christian Borntraeger <borntraeger@linux.ibm.com>, Dave Hansen <dave.hansen@linux.intel.com>, 
-	David Hildenbrand <david@kernel.org>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, 
-	Heiko Carstens <hca@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>, 
-	"Liam R. Howlett" <liam@infradead.org>, Lorenzo Stoakes <ljs@kernel.org>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Mark Rutland <mark.rutland@arm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>, 
-	Nicholas Piggin <npiggin@gmail.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
-	Paul Walmsley <pjw@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, 
-	Ritesh Harjani <ritesh.list@gmail.com>, Russell King <linux@armlinux.org.uk>, 
-	Shrikanth Hegde <sshegde@linux.ibm.com>, Suren Baghdasaryan <surenb@google.com>, 
-	Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@kernel.org>, 
-	Vasily Gorbik <gor@linux.ibm.com>, Vlastimil Babka <vbabka@kernel.org>, 
-	Will Deacon <will@kernel.org>, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org
-Subject: Re: [PATCH v2] arch, mm: promote DEBUG_WX to CHECK_WX
-Message-ID: <3u2coeidx6h34hfuajsg33vciycg7woqfxpymda3uhtinjbxrb@tkv73wxvttt7>
-References: <20260926-direct-map-verify-wx-v2-1-efcd64a6b74a@kernel.org>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hwJ5R4GzMz2xsW
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 13:57:15 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69115eZ43277034;
+	Thu, 1 Oct 2026 03:57:04 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=j3C1jtCzYOB/7ct9Ws2eH5RhJT8FVt
+	vOQDQxv8iP5/A=; b=rj3iqbLlO89Sl6vnzzUsGzN+CzC/8kNzEtBsMPDdQiDjeO
+	6UyzGokWniiMPIbJSqq+uxgveOYqweZmZRFQgUjSRaoPuaPwi86MpPim2TarDQ9L
+	qpuJhUKdpgKx5ztszruVhCjR0/fPuRuZJX4DUYAu6+PLmEvNufusnq3GpNI4HF8S
+	ZKClON2j1CR6ll8XwRYinyYtkibfR+UwvBF58FoDaG7XNJaRfgq/caOWf8bZx/y8
+	zGsIVVdw79LPf7K40EGaKwGFiUSWQE8JsbCSF6i+wt+Ny2ukIfaQiWaZbq/HM79J
+	CQu/DqgT5HHMZXxpN0nMAG5rrorGmqs0I0ZGj34Q==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gx4fefwge-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Thu, 01 Oct 2026 03:57:03 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6913le46306270;
+	Thu, 1 Oct 2026 03:57:03 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h0hfpeyes-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 01 Oct 2026 03:57:03 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6913uwAW47972792
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 1 Oct 2026 03:56:58 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7EBA420040;
+	Thu,  1 Oct 2026 03:56:58 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CA3092004B;
+	Thu,  1 Oct 2026 03:56:54 +0000 (GMT)
+Received: from li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com (unknown [9.124.215.84])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Thu,  1 Oct 2026 03:56:54 +0000 (GMT)
+Date: Thu, 1 Oct 2026 09:28:56 +0530
+From: Gautam Menghani <gautam@linux.ibm.com>
+To: Narayana Murty N <nnmlinux@linux.ibm.com>
+Cc: maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au,
+        chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com,
+        amachhiw@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+        kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        stable@vger.kernel.org,
+        Timothy Pearson <tpearson@raptorengineering.com>
+Subject: Re: [PATCH v3] KVM: PPC: Book3S HV: Avoid spurious interrupts caused
+ by LPCR_MER bit
+Message-ID: <ar3ZrgzhSwkgPuZf@li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com>
+References: <20260921111043.49825-1-gautam@linux.ibm.com>
+ <ed756a12-182f-4933-8788-8b54a4e8912a@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,472 +94,158 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260926-direct-map-verify-wx-v2-1-efcd64a6b74a@kernel.org>
+In-Reply-To: <ed756a12-182f-4933-8788-8b54a4e8912a@linux.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=FYWiV5+6 c=1 sm=1 tr=0 ts=6abdda10 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=kj9zAlcOel0A:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
+ a=yKAn6K1XAAAA:8 a=_AprYWD3AAAA:8 a=VnNF1IyMAAAA:8 a=9HMC7dwcUNEby-kk_2AA:9
+ a=CjuIK1q_8ugA:10 a=6M1ixcW_PCWoKiWyFx5v:22 a=fKH2wJO7VO9AkD4yHysb:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDAxMDAxNCBTYWx0ZWRfX0Mwwp8a+mcA+
+ kBRtTKDNRB8DfhDmk5KpUFnbXJfo7/81uwd1qUkTj+Reo/NS0D6oE0MHsdbhX9S8nkeZKiaXWWK
+ x/M2ILMvWU/iYEwU9xg1R2DcQ/RUQJU=
+X-Proofpoint-ORIG-GUID: b4ol1MZLxroLxsstq4uGJlIotdzkNjSm
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDAxMDAxNCBTYWx0ZWRfX3adJ90NN5pRW
+ kH1dhiitnZwaxcGerX+0jbDkISq/9wOKDPg5gMseRkw4mWJvGvWIznIuGfSTZcnEm73vylVs6gW
+ JtozuE+THOxtwK2lfsh0mqw3VsPM5iw10OxGmvn9hMtkFj4zLwNe6xdh+KYQabZwQWxed2EzQx6
+ 9V7Da6MPirZgsBJGVKLwZQabTnag8j8TRMefljS9WEltgn2Lkr9RS2+eaKtaU1oo3brx/RHKl2a
+ AAkvdqOlS+QUmx18z0kpxwnU1QkgQDfnKeUEXy8ulkcyet6jiVtvneigW1VwPPmmTc9IJnD62G7
+ ftiR5b8DW+Nh4sz0igqpbfDU6ZFKN4x6pSyPQpcezPSv7KVfqKmE4pB+BcFwyonYEIlnEOdlabm
+ AV+EUyL9s0MfdYysW/fwA2l/lY5E6OluTY68k4PW1jzMyeP4/8LMSep8iCpW8xkkzN36gTnlIJf
+ Zgueu6JIVWf/S2vjzZw==
+X-Proofpoint-GUID: MLpu277iUP6UEDeVLkicwtUv15akBGR7
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-01_01,2026-09-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 clxscore=1015 impostorscore=0 spamscore=0 phishscore=0
+ priorityscore=1501 malwarescore=0 bulkscore=0 lowpriorityscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
+ definitions=main-2610010014
 
-On Sat, Sep 26, 2026 at 12:29:29PM +0300, Mike Rapoport (Microsoft) wrote:
-> Verification that the kernel does not have writable + executable
-> mappings is about detecting security risks rather than a pure debug
-> feature.
+On Wed, Sep 23, 2026 at 09:08:57AM +0530, Narayana Murty N wrote:
+> Hi Gautam,
 > 
-> Major distribution configurations enable it in their kernels as well as
-> defconfigs of most architectures that have ARCH_HAS_DEBUG_WX.
+> On 21/09/26 4:40 PM, Gautam Menghani wrote:
+> > A huge number of spurious interrupts can be seen immediately after a KVM
+> > on PowerNV guest boots up in XIVE mode.
+> > 
+> > $ cat /proc/interrupts  | grep SPU
+> > SPU:     223705     192439     273526     147623   Spurious interrupts
+> > 
+> > This bug was introduced by commit ecd10702baae5 ("KVM: PPC: Book3S HV:
+> > Handle pending exceptions on guest entry with MSR_EE"). The root cause
+> > is that once LPCR_MER bit is set, it is supposed to be reset by
+> > software. But when a vCPU starts running with LPCR_MER set, the vCPU does
+> > not exit back to the host until the decrementer expires or there is an
+> > hcall, etc. This is because KVM on PowerNV guests have support for
+> > native XIVE, so they are not dependent on host for interrupt emulation.
+> > Due to this behaviour, a huge number of spurious interrupts are seen
+> > since LPCR_MER continues to be set and LPCR_MER cannot be reset until the
+> > vCPU exits to the host.
+> > 
+> > Fix this behaviour by not using the LPCR_MER bit whenever native XIVE is
+> > available (currently in case of KVM on PowerNV only), as the XIVE hardware
+> > can present interrupts to the KVM guest vCPU directly. So the LPCR_MER
+> > functionality is not required. This reduces the number of spurious
+> > interrupts drastically.
+> > 
+> > Fixes: ecd10702baae5 ("KVM: PPC: Book3S HV: Handle pending exceptions on guest entry with MSR_EE")
+> > Cc: stable@vger.kernel.org # 6.8+
+> > Reported-by: Timothy Pearson <tpearson@raptorengineering.com>
+> > Closes: https://lore.kernel.org/linuxppc-dev/582904882.11159.1786719390349.JavaMail.zimbra@raptorengineeringinc.com
+> > Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
+> > ---
+> > v3:
+> > 1. Continue the use of LPCR_MER when kernel-irqchip=off (Sashiko)
+> > 
+> > v2:
+> > 1. Handle the case where xive_interrupt_pending() is true and also the
+> > external exception bit is set. (Narayana)
+> > 
+> >   arch/powerpc/include/asm/kvm_ppc.h | 7 +++++++
+> >   arch/powerpc/kvm/book3s_hv.c       | 2 +-
+> >   2 files changed, 8 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+> > index 169ea6a7fbad..580ad2548c2b 100644
+> > --- a/arch/powerpc/include/asm/kvm_ppc.h
+> > +++ b/arch/powerpc/include/asm/kvm_ppc.h
+> > @@ -747,6 +747,11 @@ static inline int kvmppc_xive_enabled(struct kvm_vcpu *vcpu)
+> >   	return vcpu->arch.irq_type == KVMPPC_IRQ_XIVE;
+> >   }
+> > +static inline bool kvmppc_xive_native_enabled(struct kvm *kvm)
+> > +{
+> > +	return kvm->arch.xive_devices.native;
+> > +}
+> Also, should 'kvmppc_xive_native_enabled()' check the active XIVE
+> device rather than just whether a native device has been created?
 > 
-> Rename relevant generic configuration options to use CHECK_WX and move
-> their definitions from mm/Kconfig.debug to mm/Kconfig.
+> 'kvmppc_xive_native_release()' clears 'kvm->arch.xive', but explicitly
+> keeps the 'kvmppc_xive' pointer under 'xive_devices' for reuse. The
+> comment in 'book3s_xive.c' also says that when switching between XICS
+> and native XIVE, the previous KVM device is released before the new one
+> is created.
 > 
-> Rename *debug_checkwx() funcitons and macros to *pgtable_checkwx().
-> 
-> For arm that does not widely enable it, only rename its variants of the
-> config options.
-> 
-> Enabling CHECK_WX adds a few kilobytes to the kernel binary and while
-> the added size can be slightly reduced with churny updates of
-> architecture implementations of ptdump, the core functionality takes
-> most of the added size. It cannot be moved to .init.text because the
-> verification has to happen after init sections are freed.
-> 
-> With this, make generic CHECK_WX default to STRICT_KERNEL_RWX while
-> still leaving users targeting small kernels the possibility to opt-out.
-> 
-> Suggested-by: Dave Hansen <dave.hansen@linux.intel.com>
-> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> So 'xive_devices.native != NULL' seems to mean that a native XIVE
+> device has been allocated/cached, rather than that it is currently
+> active.
 
-Reviewed-by: Anshuman Khandual <anshuman.khandual@arm.com>
 
-> ---
-> Changes in v2:
-> - add rename of *debug_checkwx() to *pgtable_checkwx()
-> - Link to v1: https://patch.msgid.link/20260925-direct-map-verify-wx-v1-1-7fd2f7d6d23b@kernel.org
-> ---
->  arch/arm/Kconfig.debug               |  2 +-
->  arch/arm/configs/aspeed_g4_defconfig |  2 +-
->  arch/arm/configs/aspeed_g5_defconfig |  2 +-
->  arch/arm/configs/shmobile_defconfig  |  2 +-
->  arch/arm/include/asm/ptdump.h        |  6 +++---
->  arch/arm/mm/init.c                   |  2 +-
->  arch/arm64/Kconfig                   |  2 +-
->  arch/powerpc/Kconfig                 |  2 +-
->  arch/powerpc/configs/ppc64_defconfig |  2 +-
->  arch/powerpc/mm/ptdump/ptdump.c      |  2 +-
->  arch/riscv/Kconfig                   |  2 +-
->  arch/s390/Kconfig                    |  2 +-
->  arch/s390/configs/debug_defconfig    |  2 +-
->  arch/s390/configs/defconfig          |  2 +-
->  arch/s390/mm/dump_pagetables.c       |  2 +-
->  arch/x86/Kconfig                     |  2 +-
->  arch/x86/configs/x86_64_defconfig    |  2 +-
->  arch/x86/include/asm/pgtable.h       |  6 +++---
->  arch/x86/mm/pti.c                    |  2 +-
->  include/linux/ptdump.h               |  4 ++--
->  init/main.c                          |  2 +-
->  kernel/configs/debug.config          |  2 +-
->  mm/Kconfig                           | 41 ++++++++++++++++++++++++++++++++++++
->  mm/Kconfig.debug                     | 39 ----------------------------------
->  24 files changed, 68 insertions(+), 66 deletions(-)
+In a KVM guest on PowerNV, whatever interrupt mode the guest is booted
+in (XIVE/ XICS), you cannot switch it with kexec. So if
+'xive_devices.native' exists, we can be confident that native XIVE is
+being used. So the code in the patch should be fine.
+
 > 
-> diff --git a/arch/arm/Kconfig.debug b/arch/arm/Kconfig.debug
-> index 366f162e147d..abcf14f10276 100644
-> --- a/arch/arm/Kconfig.debug
-> +++ b/arch/arm/Kconfig.debug
-> @@ -17,7 +17,7 @@ config ARM_PTDUMP_DEBUGFS
->  	  kernel.
->  	  If in doubt, say "N"
->  
-> -config ARM_DEBUG_WX
-> +config ARM_CHECK_WX
->  	bool "Warn on W+X mappings at boot"
->  	depends on MMU
->  	select ARM_PTDUMP_CORE
-> diff --git a/arch/arm/configs/aspeed_g4_defconfig b/arch/arm/configs/aspeed_g4_defconfig
-> index f86dd4ce7d0d..2c9d5a644ae9 100644
-> --- a/arch/arm/configs/aspeed_g4_defconfig
-> +++ b/arch/arm/configs/aspeed_g4_defconfig
-> @@ -249,7 +249,7 @@ CONFIG_DEBUG_INFO_REDUCED=y
->  CONFIG_GDB_SCRIPTS=y
->  CONFIG_STRIP_ASM_SYMS=y
->  CONFIG_DEBUG_FS=y
-> -CONFIG_ARM_DEBUG_WX=y
-> +CONFIG_ARM_CHECK_WX=y
->  CONFIG_SCHED_STACK_END_CHECK=y
->  CONFIG_PANIC_ON_OOPS=y
->  CONFIG_PANIC_TIMEOUT=-1
-> diff --git a/arch/arm/configs/aspeed_g5_defconfig b/arch/arm/configs/aspeed_g5_defconfig
-> index 45b937419dbd..1327a09e163a 100644
-> --- a/arch/arm/configs/aspeed_g5_defconfig
-> +++ b/arch/arm/configs/aspeed_g5_defconfig
-> @@ -300,7 +300,7 @@ CONFIG_DEBUG_INFO_REDUCED=y
->  CONFIG_GDB_SCRIPTS=y
->  CONFIG_STRIP_ASM_SYMS=y
->  CONFIG_DEBUG_FS=y
-> -CONFIG_ARM_DEBUG_WX=y
-> +CONFIG_ARM_CHECK_WX=y
->  CONFIG_SCHED_STACK_END_CHECK=y
->  CONFIG_PANIC_ON_OOPS=y
->  CONFIG_PANIC_TIMEOUT=-1
-> diff --git a/arch/arm/configs/shmobile_defconfig b/arch/arm/configs/shmobile_defconfig
-> index 6f9696e9fe17..cc22e22b989e 100644
-> --- a/arch/arm/configs/shmobile_defconfig
-> +++ b/arch/arm/configs/shmobile_defconfig
-> @@ -225,4 +225,4 @@ CONFIG_CMA_SIZE_MBYTES=64
->  CONFIG_PRINTK_TIME=y
->  CONFIG_DEBUG_KERNEL=y
->  CONFIG_DEBUG_FS=y
-> -CONFIG_ARM_DEBUG_WX=y
-> +CONFIG_ARM_CHECK_WX=y
-> diff --git a/arch/arm/include/asm/ptdump.h b/arch/arm/include/asm/ptdump.h
-> index 46a4575146ee..3c5245220ecf 100644
-> --- a/arch/arm/include/asm/ptdump.h
-> +++ b/arch/arm/include/asm/ptdump.h
-> @@ -32,10 +32,10 @@ void ptdump_check_wx(void);
->  
->  #endif /* CONFIG_ARM_PTDUMP_CORE */
->  
-> -#ifdef CONFIG_ARM_DEBUG_WX
-> -#define arm_debug_checkwx() ptdump_check_wx()
-> +#ifdef CONFIG_ARM_CHECK_WX
-> +#define arm_pgtable_checkwx() ptdump_check_wx()
->  #else
-> -#define arm_debug_checkwx() do { } while (0)
-> +#define arm_pgtable_checkwx() do { } while (0)
->  #endif
->  
->  #endif /* __ASM_PTDUMP_H */
-> diff --git a/arch/arm/mm/init.c b/arch/arm/mm/init.c
-> index 0cc1bf04686d..c515faf22eeb 100644
-> --- a/arch/arm/mm/init.c
-> +++ b/arch/arm/mm/init.c
-> @@ -403,7 +403,7 @@ static int __mark_rodata_ro(void *unused)
->  void mark_rodata_ro(void)
->  {
->  	stop_machine(__mark_rodata_ro, NULL, NULL);
-> -	arm_debug_checkwx();
-> +	arm_pgtable_checkwx();
->  }
->  
->  #else
-> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-> index b5a51b0ef944..7e120fb21c58 100644
-> --- a/arch/arm64/Kconfig
-> +++ b/arch/arm64/Kconfig
-> @@ -11,7 +11,7 @@ config ARM64
->  	select ACPI_MCFG if (ACPI && PCI)
->  	select ACPI_SPCR_TABLE if ACPI
->  	select ACPI_PPTT if ACPI
-> -	select ARCH_HAS_DEBUG_WX
-> +	select ARCH_HAS_CHECK_WX
->  	select ARCH_BINFMT_ELF_EXTRA_PHDRS
->  	select ARCH_BINFMT_ELF_STATE
->  	select ARCH_ENABLE_HUGEPAGE_MIGRATION if HUGETLB_PAGE && MIGRATION
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 2580e27e4328..7c1fe5b4cd41 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -130,7 +130,7 @@ config PPC
->  	select ARCH_HAS_CURRENT_STACK_POINTER
->  	select ARCH_HAS_DEBUG_VIRTUAL
->  	select ARCH_HAS_DEBUG_VM_PGTABLE
-> -	select ARCH_HAS_DEBUG_WX		if STRICT_KERNEL_RWX
-> +	select ARCH_HAS_CHECK_WX		if STRICT_KERNEL_RWX
->  	select ARCH_HAS_DEVMEM_IS_ALLOWED
->  	select ARCH_HAS_DMA_MAP_DIRECT 		if PPC_PSERIES
->  	select ARCH_HAS_DMA_OPS			if PPC64
-> diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-> index 1eb8e3457e8b..5c33f0bba0e3 100644
-> --- a/arch/powerpc/configs/ppc64_defconfig
-> +++ b/arch/powerpc/configs/ppc64_defconfig
-> @@ -393,7 +393,7 @@ CONFIG_MAGIC_SYSRQ=y
->  CONFIG_PAGE_OWNER=y
->  CONFIG_PAGE_POISONING=y
->  CONFIG_DEBUG_RODATA_TEST=y
-> -CONFIG_DEBUG_WX=y
-> +CONFIG_CHECK_WX=y
->  CONFIG_DEBUG_STACK_USAGE=y
->  CONFIG_DEBUG_VM=y
->  # CONFIG_DEBUG_VM_PGTABLE is not set
-> diff --git a/arch/powerpc/mm/ptdump/ptdump.c b/arch/powerpc/mm/ptdump/ptdump.c
-> index 0d499aebee72..3451351b756b 100644
-> --- a/arch/powerpc/mm/ptdump/ptdump.c
-> +++ b/arch/powerpc/mm/ptdump/ptdump.c
-> @@ -191,7 +191,7 @@ static void note_prot_wx(struct pg_state *st, unsigned long addr)
->  	if (!pte_write(pte) || !pte_exec(pte))
->  		return;
->  
-> -	WARN_ONCE(IS_ENABLED(CONFIG_DEBUG_WX),
-> +	WARN_ONCE(IS_ENABLED(CONFIG_CHECK_WX),
->  		  "powerpc/mm: Found insecure W+X mapping at address %p/%pS\n",
->  		  (void *)st->start_address, (void *)st->start_address);
->  
-> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-> index d6c2dbf8455c..05e33d4d5efa 100644
-> --- a/arch/riscv/Kconfig
-> +++ b/arch/riscv/Kconfig
-> @@ -29,7 +29,7 @@ config RISCV
->  	select ARCH_HAS_CURRENT_STACK_POINTER
->  	select ARCH_HAS_DEBUG_VIRTUAL if MMU
->  	select ARCH_HAS_DEBUG_VM_PGTABLE
-> -	select ARCH_HAS_DEBUG_WX
-> +	select ARCH_HAS_CHECK_WX
->  	select ARCH_HAS_DELAY_TIMER
->  	select ARCH_HAS_ELF_CORE_EFLAGS if BINFMT_ELF && ELF_CORE
->  	select ARCH_HAS_FAST_MULTIPLIER
-> diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-> index 4b51bc6e8948..11b76f2b0f80 100644
-> --- a/arch/s390/Kconfig
-> +++ b/arch/s390/Kconfig
-> @@ -92,7 +92,7 @@ config S390
->  	select ARCH_HAS_CURRENT_STACK_POINTER
->  	select ARCH_HAS_DEBUG_VIRTUAL
->  	select ARCH_HAS_DEBUG_VM_PGTABLE
-> -	select ARCH_HAS_DEBUG_WX
-> +	select ARCH_HAS_CHECK_WX
->  	select ARCH_HAS_DEVMEM_IS_ALLOWED
->  	select ARCH_HAS_DMA_OPS if PCI
->  	select ARCH_HAS_ELF_RANDOMIZE
-> diff --git a/arch/s390/configs/debug_defconfig b/arch/s390/configs/debug_defconfig
-> index 3dae71474333..68d53c0bc8db 100644
-> --- a/arch/s390/configs/debug_defconfig
-> +++ b/arch/s390/configs/debug_defconfig
-> @@ -841,7 +841,7 @@ CONFIG_DEBUG_PAGEALLOC=y
->  CONFIG_SLUB_DEBUG_ON=y
->  CONFIG_PAGE_OWNER=y
->  CONFIG_DEBUG_RODATA_TEST=y
-> -CONFIG_DEBUG_WX=y
-> +CONFIG_CHECK_WX=y
->  CONFIG_PTDUMP_DEBUGFS=y
->  CONFIG_DEBUG_OBJECTS=y
->  CONFIG_DEBUG_OBJECTS_SELFTEST=y
-> diff --git a/arch/s390/configs/defconfig b/arch/s390/configs/defconfig
-> index 6f5722634b4d..8e5cfc695121 100644
-> --- a/arch/s390/configs/defconfig
-> +++ b/arch/s390/configs/defconfig
-> @@ -820,7 +820,7 @@ CONFIG_DEBUG_INFO_DWARF4=y
->  CONFIG_GDB_SCRIPTS=y
->  CONFIG_DEBUG_SECTION_MISMATCH=y
->  CONFIG_MAGIC_SYSRQ=y
-> -CONFIG_DEBUG_WX=y
-> +CONFIG_CHECK_WX=y
->  CONFIG_PTDUMP_DEBUGFS=y
->  CONFIG_DEBUG_MEMORY_INIT=y
->  CONFIG_PANIC_ON_OOPS=y
-> diff --git a/arch/s390/mm/dump_pagetables.c b/arch/s390/mm/dump_pagetables.c
-> index 89badbe72ae7..a23a0bd4d8a8 100644
-> --- a/arch/s390/mm/dump_pagetables.c
-> +++ b/arch/s390/mm/dump_pagetables.c
-> @@ -86,7 +86,7 @@ static void note_prot_wx(struct pg_state *st, unsigned long addr)
->  	 */
->  	if (addr == PAGE_SIZE && (nospec_uses_trampoline() || !cpu_has_bear()))
->  		return;
-> -	WARN_ONCE(IS_ENABLED(CONFIG_DEBUG_WX),
-> +	WARN_ONCE(IS_ENABLED(CONFIG_CHECK_WX),
->  		  "s390/mm: Found insecure W+X mapping at address %pS\n",
->  		  (void *)st->start_address);
->  	st->wx_pages += (addr - st->start_address) / PAGE_SIZE;
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index 15fd9ec5ecac..170cfcb06174 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -110,7 +110,7 @@ config X86
->  	select ARCH_HAS_SYNC_CORE_BEFORE_USERMODE
->  	select ARCH_HAS_SYSCALL_WRAPPER
->  	select ARCH_HAS_UBSAN
-> -	select ARCH_HAS_DEBUG_WX
-> +	select ARCH_HAS_CHECK_WX
->  	select ARCH_HAS_ZONE_DMA_SET if EXPERT
->  	select ARCH_HAVE_NMI_SAFE_CMPXCHG
->  	select ARCH_HAVE_EXTRA_ELF_NOTES
-> diff --git a/arch/x86/configs/x86_64_defconfig b/arch/x86/configs/x86_64_defconfig
-> index 269f7d808be4..e6896aeb77d8 100644
-> --- a/arch/x86/configs/x86_64_defconfig
-> +++ b/arch/x86/configs/x86_64_defconfig
-> @@ -263,7 +263,7 @@ CONFIG_SECURITY_SELINUX_BOOTPARAM=y
->  CONFIG_PRINTK_TIME=y
->  CONFIG_DEBUG_KERNEL=y
->  CONFIG_MAGIC_SYSRQ=y
-> -CONFIG_DEBUG_WX=y
-> +CONFIG_CHECK_WX=y
->  CONFIG_DEBUG_STACK_USAGE=y
->  CONFIG_SCHEDSTATS=y
->  CONFIG_BLK_DEV_IO_TRACE=y
-> diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
-> index d551120a7c88..ef0252a09c28 100644
-> --- a/arch/x86/include/asm/pgtable.h
-> +++ b/arch/x86/include/asm/pgtable.h
-> @@ -41,10 +41,10 @@ void ptdump_walk_user_pgd_level_checkwx(void);
->  #define pgprot_encrypted(prot)	__pgprot(cc_mkenc(pgprot_val(prot)))
->  #define pgprot_decrypted(prot)	__pgprot(cc_mkdec(pgprot_val(prot)))
->  
-> -#ifdef CONFIG_DEBUG_WX
-> -#define debug_checkwx_user()	ptdump_walk_user_pgd_level_checkwx()
-> +#ifdef CONFIG_CHECK_WX
-> +#define pgtable_checkwx_user()	ptdump_walk_user_pgd_level_checkwx()
->  #else
-> -#define debug_checkwx_user()	do { } while (0)
-> +#define pgtable_checkwx_user()	do { } while (0)
->  #endif
->  
->  extern spinlock_t pgd_lock;
-> diff --git a/arch/x86/mm/pti.c b/arch/x86/mm/pti.c
-> index 598f553cc871..31055ee6f1de 100644
-> --- a/arch/x86/mm/pti.c
-> +++ b/arch/x86/mm/pti.c
-> @@ -688,5 +688,5 @@ void pti_finalize(void)
->  	pti_clone_entry_text(true);
->  	pti_clone_kernel_text();
->  
-> -	debug_checkwx_user();
-> +	pgtable_checkwx_user();
->  }
-> diff --git a/include/linux/ptdump.h b/include/linux/ptdump.h
-> index 240bd3bff18d..af18d1459b2f 100644
-> --- a/include/linux/ptdump.h
-> +++ b/include/linux/ptdump.h
-> @@ -31,9 +31,9 @@ bool ptdump_walk_pgd_level_core(struct seq_file *m,
->  void ptdump_walk_pgd(struct ptdump_state *st, struct mm_struct *mm, pgd_t *pgd);
->  bool ptdump_check_wx(void);
->  
-> -static inline void debug_checkwx(void)
-> +static inline void pgtable_checkwx(void)
->  {
-> -	if (IS_ENABLED(CONFIG_DEBUG_WX))
-> +	if (IS_ENABLED(CONFIG_CHECK_WX))
->  		ptdump_check_wx();
->  }
->  
-> diff --git a/init/main.c b/init/main.c
-> index 31f2bf54976a..a87a3d52f3e2 100644
-> --- a/init/main.c
-> +++ b/init/main.c
-> @@ -1535,7 +1535,7 @@ static void mark_readonly(void)
->  		flush_module_init_free_work();
->  		jump_label_init_ro();
->  		mark_rodata_ro();
-> -		debug_checkwx();
-> +		pgtable_checkwx();
->  		rodata_test();
->  	} else if (IS_ENABLED(CONFIG_STRICT_KERNEL_RWX)) {
->  		pr_info("Kernel memory protection disabled.\n");
-> diff --git a/kernel/configs/debug.config b/kernel/configs/debug.config
-> index 307c97ac5fa9..ac878669c193 100644
-> --- a/kernel/configs/debug.config
-> +++ b/kernel/configs/debug.config
-> @@ -50,7 +50,7 @@ CONFIG_DEBUG_NET=y
->  # CONFIG_DEBUG_PAGEALLOC is not set
->  # CONFIG_DEBUG_KMEMLEAK_DEFAULT_OFF is not set
->  # CONFIG_DEBUG_RODATA_TEST is not set
-> -# CONFIG_DEBUG_WX is not set
-> +# CONFIG_CHECK_WX is not set
->  # CONFIG_KFENCE is not set
->  # CONFIG_PAGE_POISONING is not set
->  # CONFIG_SLUB_STATS is not set
-> diff --git a/mm/Kconfig b/mm/Kconfig
-> index 604c58199acb..ffbc641cc31f 100644
-> --- a/mm/Kconfig
-> +++ b/mm/Kconfig
-> @@ -1511,6 +1511,47 @@ config LAZY_MMU_MODE_KUNIT_TEST
->  
->  	  If unsure, say N.
->  
-> +config ARCH_HAS_CHECK_WX
-> +	bool
-> +
-> +config CHECK_WX
-> +	bool "Warn on W+X mappings at boot"
-> +	default STRICT_KERNEL_RWX
-> +	depends on ARCH_HAS_CHECK_WX
-> +	depends on ARCH_HAS_PTDUMP
-> +	depends on MMU
-> +	select PTDUMP
-> +	help
-> +	  Generate a warning if any W+X mappings are found at boot.
-> +
-> +	  This is useful for discovering cases where the kernel is leaving W+X
-> +	  mappings after applying NX, as such mappings are a security risk.
-> +
-> +	  Look for a message in dmesg output like this:
-> +
-> +	    <arch>/mm: Checked W+X mappings: passed, no W+X pages found.
-> +
-> +	  or like this, if the check failed:
-> +
-> +	    <arch>/mm: Checked W+X mappings: failed, <N> W+X pages found.
-> +
-> +	  Note that even if the check fails, your kernel is possibly
-> +	  still fine, as W+X mappings are not a security hole in
-> +	  themselves, what they do is that they make the exploitation
-> +	  of other unfixed kernel bugs easier.
-> +
-> +	  There is no runtime or memory usage effect of this option
-> +	  once the kernel has booted up - it's a one time check.
-> +
-> +	  If in doubt, say "Y".
-> +
-> +config ARCH_HAS_PTDUMP
-> +	bool
-> +
-> +config PTDUMP
-> +	bool
-> +
-> +
->  source "mm/damon/Kconfig"
->  
->  endmenu
-> diff --git a/mm/Kconfig.debug b/mm/Kconfig.debug
-> index 15dca19dd07d..75b44e4a6e36 100644
-> --- a/mm/Kconfig.debug
-> +++ b/mm/Kconfig.debug
-> @@ -180,45 +180,6 @@ config DEBUG_RODATA_TEST
->  	help
->  	  This option enables a testcase for the setting rodata read-only.
->  
-> -config ARCH_HAS_DEBUG_WX
-> -	bool
-> -
-> -config DEBUG_WX
-> -	bool "Warn on W+X mappings at boot"
-> -	depends on ARCH_HAS_DEBUG_WX
-> -	depends on ARCH_HAS_PTDUMP
-> -	depends on MMU
-> -	select PTDUMP
-> -	help
-> -	  Generate a warning if any W+X mappings are found at boot.
-> -
-> -	  This is useful for discovering cases where the kernel is leaving W+X
-> -	  mappings after applying NX, as such mappings are a security risk.
-> -
-> -	  Look for a message in dmesg output like this:
-> -
-> -	    <arch>/mm: Checked W+X mappings: passed, no W+X pages found.
-> -
-> -	  or like this, if the check failed:
-> -
-> -	    <arch>/mm: Checked W+X mappings: failed, <N> W+X pages found.
-> -
-> -	  Note that even if the check fails, your kernel is possibly
-> -	  still fine, as W+X mappings are not a security hole in
-> -	  themselves, what they do is that they make the exploitation
-> -	  of other unfixed kernel bugs easier.
-> -
-> -	  There is no runtime or memory usage effect of this option
-> -	  once the kernel has booted up - it's a one time check.
-> -
-> -	  If in doubt, say "Y".
-> -
-> -config ARCH_HAS_PTDUMP
-> -	bool
-> -
-> -config PTDUMP
-> -	bool
-> -
->  config PTDUMP_DEBUGFS
->  	bool "Export kernel pagetable layout to userspace via debugfs"
->  	depends on DEBUG_KERNEL
+> Would this be more appropriate?
 > 
-> ---
-> base-commit: 93f51579e7df248780214094418f205253383cc5
-> change-id: 20260925-direct-map-verify-wx-b81bda879781
+> return kvm->arch.xive_devices.native &&
+>        kvm->arch.xive == kvm->arch.xive_devices.native;
 > 
-> --
-> Sincerely yours,
-> Mike.
+> > +
+> >   extern int kvmppc_xive_native_connect_vcpu(struct kvm_device *dev,
+> >   					   struct kvm_vcpu *vcpu, u32 cpu);
+> >   extern void kvmppc_xive_native_cleanup_vcpu(struct kvm_vcpu *vcpu);
+> > @@ -782,6 +787,8 @@ static inline bool kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu) { return
+> >   static inline int kvmppc_xive_enabled(struct kvm_vcpu *vcpu)
+> >   	{ return 0; }
+> > +static inline bool kvmppc_xive_native_enabled(struct kvm *kvm) { return false; }
+> > +
+> >   static inline int kvmppc_xive_native_connect_vcpu(struct kvm_device *dev,
+> >   			  struct kvm_vcpu *vcpu, u32 cpu) { return -EBUSY; }
+> >   static inline void kvmppc_xive_native_cleanup_vcpu(struct kvm_vcpu *vcpu) { }
+> > diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> > index dbac3573b2c8..cb2bb29451a7 100644
+> > --- a/arch/powerpc/kvm/book3s_hv.c
+> > +++ b/arch/powerpc/kvm/book3s_hv.c
+> > @@ -4980,7 +4980,7 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
+> >   			if (!kvmhv_on_pseries() && (__kvmppc_get_msr_hv(vcpu) & MSR_EE))
+> >   				kvmppc_inject_interrupt_hv(vcpu,
+> >   							   BOOK3S_INTERRUPT_EXTERNAL, 0);
+> > -			else
+> > +			else if (!kvmppc_xive_native_enabled(vcpu->kvm))
+> >   				lpcr |= LPCR_MER;
+> Is the intent here to suppress LPCR_MER only for interrupts that
+> native XIVE can deliver directly?
 > 
+> BOOK3S_IRQPRIO_EXTERNAL is a separate software-pending exception. If
+> MSR_EE is clear it remains pending, so it seems this path should still
+> set MER even when native XIVE is active.
+> 
+> IOW, should the behavior be:
+> 
+> else if (!kvmppc_xive_native_enabled(vcpu->kvm) ||
+> 	 test_bit(BOOK3S_IRQPRIO_EXTERNAL,
+> 		  &vcpu->arch.pending_exceptions))
+> 	lpcr |= LPCR_MER;
+> 
+> so that only the native-XIVE-pending case suppresses MER?
+
+No this would still result in spurious flood. If native XIVE is being
+used, LPCR_MER cannot be set in any case. Software interrupts will
+continue to work in the same way they work in an LPAR.
 
