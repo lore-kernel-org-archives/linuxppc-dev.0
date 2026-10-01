@@ -1,73 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-28626-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28627-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 415F8CA5FA5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2026 04:18:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D19ACA5FB3
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2026 04:41:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hwJYn5NmVz2y2Z;
-	Thu, 01 Oct 2026 14:18:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790828301;
-	cv=none; b=YUI5cFSdYAtsCkc3EA8kuDEQSLsUgxhmLvUPAqQhxqDYzo4TqzdnQWieoBpY6v6iypc3aiLQh8apmybp6eXutAdXW7zE0QY68nfjDsvvm0jytnuaSa78l5q8omNEKcbb7vIix8jNSqbt9d2I8ljUkFoSqHVyieebNF4j4TnfEWj+dHNb5n209JTRW7i/qpX9RfYraa68Jb4JZ3GStCa7mFzZXUPlEjzUIH4rpa/btDqbG6GOcvj9RzB7V9IB4FbVHYSjL64rSlNwfcpMwE8t/iQmEU8iGo9JcYayWPtbY3psry7Jm4WA2bEgYU6K+eK5/oyTPLkUayQUhfZwTtXvoA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hwK4c0Sxzz2y2Z;
+	Thu, 01 Oct 2026 14:41:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790829695;
+	cv=none; b=QSfkWVC0z1slA6J1O3CwiQNjE25EKhJRCUJ4o4sMC9feM5xt13U08/xVXZ8d6bZBp0t7+eV/tRa0P0SESXWNysUUgYywfvTV94puwP0dD0DUXTSWtaJU+1RyyaDHIiziUO1hRJ/kmXJ2cw2fhasuH6wdEYKRTI/kLW/kz6ayT9B0pkUKK6t2PcaXrk+AVywwg1Zwg1yOkP+ROlIham8tI9iaCQMkvMJ6JHJTThID+xwVLLw+gXfQpfwkKlTx8+anFtoDvaGT3xLdEEDQ+4D368Jn+LRjXPWOYgk+3XXI3lqIMwyD+sV75VZsCaYOrK6FkI8pGWDpwebcqYZcoeE19Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790828301; c=relaxed/relaxed;
-	bh=FdL7tDG7uCk24aByg41uFFGTsoB8/++risqRDX1I7Hg=;
+	t=1790829695; c=relaxed/relaxed;
+	bh=tVU5xB7+vpzEDdoS9i3GNs5XYI1dWTYZUYdxVIutOtM=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=EXUN2wAvQWvbpKUpMLHw43VBCQODq+Y9GHTzJsC4Q4kbEk4sZDpLSXjyDCTGaW+MNPzLRNySA2RGQDse0FpsDUSEbyskoEq43JtO5NERt8uH76GkgTWgDlsZCQvCHANU0cTjgJgV+B3LHmzOzE7jWWLLTDxEHandcLKNq6Q7B6E/INxUVBsGqpqfObWHOi3IKFELQGju3x1taBINr/BtB3FsU7fJBiHZ0ijIMV4w1pqVnyvZ1BOCA7zYNknOeKl81ZiNjv04o4ZPrhxheicdZXKI3Cev39Hz07RBwsuTDn1GcEERmya1RPXrGj66bGDwawphEIOXMaHH6RBzORMiSw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tBc87Fs5; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 In-Reply-To:Content-Type; b=kx4kgw/i6O4JUs8igKKV+H3I5f09OW6WxcXmt7IwW4EkTQlzAuDBC7rcGpZjgu4cCTq2+LmL+T85Mzu6sBYcudweW1/g6WJXchCLftuAaTFvPMDK5VCL2SDEoQ1amGYfKdMmVnip4mTiTnS7v9vVMZfZhXrP/fwN4Sk58ICQg69/MzqULEyV9aqV/COxufhRSNS0S8BNbFG+SfOQMmGbCHTjk3u5Q1SJ0h6unlM7Y1/9psdoHnPjgZWME2LC4F9rR8JLd58RHg4Jm4wRyLXLHJoLjtGXIQhgULW0wicLvXl94I9yqf+0C+uk2eSOVENkxSNsJIHv/dA5dNlbCrrsew==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Bq0nZkKW; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tBc87Fs5;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Bq0nZkKW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hwJYm6Vxnz2xsW
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 14:18:20 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69145PG6756232;
-	Thu, 1 Oct 2026 04:18:06 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=FdL7tD
-	G7uCk24aByg41uFFGTsoB8/++risqRDX1I7Hg=; b=tBc87Fs5YPyOoeXWJzZUth
-	4gqupaIEq3yzhdGP8ji31leotjoLupP/0gWmUsu4tY/xNJRJVLa8Vf5mwpGyly5p
-	3vw4iS2DO8ZB37axFILtJUyZjpal3TM5w1ApN30pAOP5s8htnkhFtU92YiiucQDP
-	yY3Z9qr0RjYj1Gzw+T7xWNW1Fa3Nr3O3XW9IN1Gpd82JScUmzOvDKztk7CLI722r
-	p5f6p/N/qFicwyD+p+7FkUxWzRhYf37ZIdMEEM0dsz0KV/Sd0dT4BwapHAwQwxca
-	XXCUjOIYNpjswlVvim/Qi119W5OUDjTiVJRImH2B5fXke5houiSLILgmzY+XVxFg
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gx5j5h6y0-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 01 Oct 2026 04:18:05 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6913lURJ306122;
-	Thu, 1 Oct 2026 04:18:04 GMT
-Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h0hfpf2fd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 01 Oct 2026 04:18:04 +0000 (GMT)
-Received: from smtpav05.wdc07v.mail.ibm.com (smtpav05.wdc07v.mail.ibm.com [10.39.53.232])
-	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6914I3GM9372168
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 1 Oct 2026 04:18:04 GMT
-Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C042758043;
-	Thu,  1 Oct 2026 04:18:03 +0000 (GMT)
-Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B7EB658059;
-	Thu,  1 Oct 2026 04:17:58 +0000 (GMT)
-Received: from [9.123.8.83] (unknown [9.123.8.83])
-	by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  1 Oct 2026 04:17:58 +0000 (GMT)
-Message-ID: <9af9f47d-b99e-46d4-bb6c-06d28b037a34@linux.ibm.com>
-Date: Thu, 1 Oct 2026 09:47:56 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hwK4Z1dYbz2xsW
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 14:41:34 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 9E188407B2;
+	Thu,  1 Oct 2026 04:41:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B96EF1F000FF;
+	Thu,  1 Oct 2026 04:41:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790829691;
+	bh=tVU5xB7+vpzEDdoS9i3GNs5XYI1dWTYZUYdxVIutOtM=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=Bq0nZkKWMqWIxU4tIv4zapeOdCpnHz5b/zR/btuwhOI6yqWhkNa16ZLAdV0XAonaE
+	 LT/7g8b0EEn8q6WkaYSXcge2H8Yc3IFapoddC+KtKRElzzzS2tCykxpi6k5aZA9kay
+	 7Bx2fP9pScRcEmAWGN5VHfJ7AF5BwdkPUQT7ytyICmEnBPU0xblgkviAuLC9gCD0Mc
+	 1wW64Qj4Bi6OFUgghHfnyrW6ZOr1ms95vNMMwVa/6E/AhGbiTu69p6opZ+oOc4sLrS
+	 iIWKzWRMviz1dpodiBtpGvwGIBrsrPpmtw65JP7qKlykYyEAPSVgsAOV08268AC+o8
+	 rWTxHJHwYW1TQ==
+Message-ID: <ede392d7-3104-4a0f-9fa1-99b22552dcd6@kernel.org>
+Date: Thu, 1 Oct 2026 06:41:20 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,96 +60,104 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 09/11] powerpc/papr_scm: Return the string length from
- the sysfs show functions
-To: Kees Cook <kees@kernel.org>, Bill Wendling <morbo@google.com>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
-        linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Shivaprasad G Bhat
- <sbhat@linux.ibm.com>,
-        Thorsten Blum <blum@kernel.org>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Steven Rostedt <rostedt@goodmis.org>, nikitash.mariiaw@gmail.com,
-        Greg KH <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
-        linux-hardening@vger.kernel.org
-References: <20260930235231.out.387-kees@kernel.org>
- <20260930235247.157921-9-kees@kernel.org>
-Content-Language: en-US
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-In-Reply-To: <20260930235247.157921-9-kees@kernel.org>
+Subject: Re: [PATCH v2] random: vDSO: Avoid call to memset() when zeroing
+ reserved in __cvdso_getrandom_data()
+To: "Jason A. Donenfeld" <Jason@zx2c4.com>,
+ Nathan Chancellor <nathan@kernel.org>
+Cc: Nick Desaulniers <ndesaulniers@google.com>,
+ Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+ Theodore Ts'o <tytso@mit.edu>, Vincenzo Frascino
+ <vincenzo.frascino@arm.com>, Bill Wendling <morbo@google.com>,
+ Justin Stitt <justinstitt@google.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>, Huacai Chen <chenhuacai@kernel.org>,
+ WANG Xuerui <kernel@xen0n.name>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ llvm@lists.linux.dev
+References: <CAKwvOdmuvn0LZkYEsH84hnOGTYhTtzuWs3wMARtWdTeL6dD9sA@mail.gmail.com>
+ <CAKwvOdnxKVpn=nAFaqP+9PTx4PqgHsUVWv6e60Pcr29W_eZrpQ@mail.gmail.com>
+ <CAKwvOdmNZL3eFvV3v77GXDzL+XLgz+BT9TA=my0yTnbsHqVeSg@mail.gmail.com>
+ <areYMjNcaqe86ds4@zx2c4.com>
+ <9d1c338b-368f-4ea2-a12e-c28d49adff5e@kernel.org>
+ <are6s5e6On3hpD3M@zx2c4.com>
+ <CAKwvOd=BrMfFT88jsvBPhh383qqk5G+J07CsofNu0MVkziyhCg@mail.gmail.com>
+ <20260930133813.GA3142230@ax162> <ar0a4b9CjL2YHCkY@zx2c4.com>
+ <ar0gTS71qxnx9AkW@zx2c4.com> <20260930151337.GD3142230@ax162>
+ <CAHmME9pA+AntJ6hWoFYpTVjh-NUSd0ZGXp5XiUuhQcq3HjQT3g@mail.gmail.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <CAHmME9pA+AntJ6hWoFYpTVjh-NUSd0ZGXp5XiUuhQcq3HjQT3g@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDAxMDAxNiBTYWx0ZWRfX6FsMoRD4CcsF
- 6vSCZe6HpN3lttd6FWuf1EcxP+QvtROnkvjBgKTgHeqagH5md1URabZGny8amSX5YgqOUTWHskt
- y6D4Ulhs2QbhMvPIX15+pFG41szuWbg=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDAxMDAxNiBTYWx0ZWRfX1rZ+6AhcJBIv
- GmZZtmcZl1Pgw6hyxMC7cxo7/5MWt0MFg6n1EN0YXuKhHzZYy1ioyjUjoDnu5/tNZYbibffvUoc
- u6r/dTofzrlKdpk2494mLCwvA/AMkUdHCHRbJLHWlGaKa6ZSRnjsY2WTUGwrfbYbnjdgyPPOCvl
- RMavMUWmKAxXjFsCCBQTmEpR3CRMZ5nGHI1gCpIf3EpEbqGcx4z69TkbmC+4nXIlxjvZJ+DjcvK
- k0mUIBjXEAMRo3msDFPbgqt9P71V2tHXTGm28hfjbjftuYmhWlYR9nUy2NR54ErtOrpy06dkzGa
- kknctgD5BsYZVi2DJqILw7bgiE0iNmQY6QAlawLuRkplpVK+/i07QSoJJ7g00JziGBF0w8BmPro
- dPbAY0vhnPafYeEbvReGp4cdZE61F63J0x3vWhdwW2U9M3R6lTp0AA/cawzykmVL8DEayHOl7y8
- pP8gS2uBQU5HnOfqhNQ==
-X-Proofpoint-GUID: VGbzrGZZBKGE2sx6cZHjFeLt9an1RaHv
-X-Authority-Analysis: v=2.4 cv=RKcmjIi+ c=1 sm=1 tr=0 ts=6abddefe cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=QyXUC8HyAAAA:8
- a=VwQbUJbxAAAA:8 a=_Rns151wsaknvw-dtMgA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: ukRtnVfRL8ufVcKHebXtglGLxoRaJDZh
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-10-01_02,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1011 priorityscore=1501 spamscore=0 bulkscore=0 impostorscore=0
- adultscore=0 lowpriorityscore=0 suspectscore=0 malwarescore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2610010016
+Content-Transfer-Encoding: 8bit
 
+Hi,
 
-On 10/1/26 5:22 AM, Kees Cook wrote:
-> perf_stats_show() and flags_show() build their output with a seq_buf
-> and return seq_buf_used(), which may include the trailing NUL byte
-> when the seq_buf has overflowed. Use seq_buf_strlen() instead.
->
-> Build tested ARCH=powerpc ppc64_defconfig with GCC powerpc64-linux-gnu
-> 16.1.0:
-> arch/powerpc/platforms/pseries/papr_scm.o
->
-> Assisted-by: LLM
-> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> Signed-off-by: Kees Cook <kees@kernel.org>
-> ---
->   arch/powerpc/platforms/pseries/papr_scm.c | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
-> index 75da96c08cdd..b03cfd8528f5 100644
-> --- a/arch/powerpc/platforms/pseries/papr_scm.c
-> +++ b/arch/powerpc/platforms/pseries/papr_scm.c
-> @@ -1108,7 +1108,7 @@ static ssize_t perf_stats_show(struct device *dev,
->   
->   free_stats:
->   	kfree(stats);
-> -	return rc ? rc : (ssize_t)seq_buf_used(&s);
-> +	return rc ?: (ssize_t)seq_buf_strlen(&s);
->   }
->   static DEVICE_ATTR_ADMIN_RO(perf_stats);
->   
-> @@ -1150,7 +1150,7 @@ static ssize_t flags_show(struct device *dev,
->   	if (seq_buf_used(&s))
+Le 30/09/2026 à 17:16, Jason A. Donenfeld a écrit :
+> On Wed, Sep 30, 2026 at 5:13 PM Nathan Chancellor <nathan@kernel.org> wrote:
+>>
+>> On Wed, Sep 30, 2026 at 04:44:29PM +0200, Jason A. Donenfeld wrote:
+>>> Nathan, would this be okay with you?
+>>> https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgit.zx2c4.com%2Flinux-rng%2Fcommit%2F%3Fid%3Dd216701724b7d8209ff42150658ad5c712bdb503&data=05%7C02%7Cchristophe.leroy2%40cs-soprasteria.com%7C8f69935bffb344bf0ddc08df1f05e358%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639263782324080837%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=BA7Fyr0%2FynggvBnR%2FpiCvNCQHtNBagqvSb0i11AvoLU%3D&reserved=0
+>>
+>> Can you stick
+>>
+>>    Cc: stable@vger.kernel.org # v6.12+
+>>    Closes: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2FClangBuiltLinux%2Flinux%2Fissues%2F2183&data=05%7C02%7Cchristophe.leroy2%40cs-soprasteria.com%7C8f69935bffb344bf0ddc08df1f05e358%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639263782324110679%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=6C8%2FAEQoh%2B8pfgfYQkL7qf5Ue%2F5sAGtfqRptzsSG0CM%3D&reserved=0
+>>
+>> on that? Otherwise, looks good to me, that's basically what I had for my
+>> v3 locally.
+> 
+> Sure, done. Also removed the now-unused array_size.h include.
 
-this can also be seq_buf_strlen instead
+I'm still very sceptic with this patch. You are degrading the behaviour 
+with GCC for a problem with CLANG. Why ?
 
->   		seq_buf_printf(&s, "\n");
->   
-> -	return seq_buf_used(&s);
-> +	return seq_buf_strlen(&s);
->   }
->   DEVICE_ATTR_RO(flags);
->   
+Before the patch, with both GCC 13 and GCC 16 on powerpc32 I get a 
+pretty standard optimised loop that clears words 4 by 4 (with auto 
+increment of pointer) which is the most optimal on powerpc:
+
+  3f0:	39 00 00 0c 	li      r8,12
+  3f4:	35 08 ff fc 	addic.  r8,r8,-4
+  3f8:	91 49 00 04 	stw     r10,4(r9)
+  3fc:	91 49 00 08 	stw     r10,8(r9)
+  400:	91 49 00 0c 	stw     r10,12(r9)
+  404:	95 49 00 10 	stwu    r10,16(r9)
+  408:	40 82 ff ec 	bne     3f4 <__c_kernel_getrandom+0x3f4>
+
+With the patch,
+
+With GCC 13 I get a very suboptimal loop copying bytes one by one
+
+  3d8:	39 40 00 34 	li      r10,52
+...
+  3e4:	39 20 00 00 	li      r9,0
+  3e8:	7d 49 03 a6 	mtctr   r10
+  3ec:	9d 3e 00 01 	stbu    r9,1(r30)
+  3f0:	42 00 ff fc 	bdnz    3ec <__c_kernel_getrandom+0x3ec>
+
+With GCC 16 I get something a bit better but not as good as before, it 
+is a loop clearing words only one by one and incrementing pointer with 
+an additional insn instead of using auto-increment instruction stwu.
+
+  3e0:	39 40 00 0d 	li      r10,13
+...
+  3f0:	7d 49 03 a6 	mtctr   r10
+  3f4:	91 3f 00 00 	stw     r9,0(r31)
+  3f8:	3b ff 00 04 	addi    r31,r31,4
+  3fc:	42 00 ff f8 	bdnz    3f4 <__c_kernel_getrandom+0x3f4>
+
+Please restrict the patch to clang builds.
+
+Christophe
 
