@@ -1,79 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-28636-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28637-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 351F1CA5FA5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2026 10:02:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E76BCA5FB3
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2026 10:02:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hwSBy6LlMz2yTQ;
-	Thu, 01 Oct 2026 20:02:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790848954;
-	cv=none; b=jP2iPJWP6HbfBy3rq4fpH2jAGbxkuUBKto9ZagjPRtu64EnBWoKt8ik1ai7swPoM3lXTBxsMOn9GqMfAKpxKlMSdj/lMH2hx9Fzk2lmzzTNDFs2u2MH/VQtGdMOXKVVMTsZp4Ticwe0aAmzlaL8U7u2MrYJx8j42p0U3pxYsCW14+Rf12N+Py/PHtTgbEEQHqk82TOKCQvAdk6+p3mGtTLniJFIIMvy9CCtS4WU9g8pIG9NGD6hgjgr7HLy2f27Z/lXD5RYufWmU4ovDL6ZS2sb6tqI9f9Dxzpn/uifgNZLBCPAz+5bKANMqSHsvgEYlKUJf7YyNtVL2NkLEzJPRiw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hwSC01jPdz2y2Z;
+	Thu, 01 Oct 2026 20:02:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790848956;
+	cv=none; b=K3vU6v8o6mjaWBmOp8Nm60aQDHE4TQPLv+ANBP9IpzECSbgIeXADRjMTt8VKavxlYkDL2RE2Y1FChjzFtZk1uREH7JsjvNw6OT2Flv3OAPmXvTnvP4nXp1kyJ//JQX3U815ijuWYqXLSacSDuL57ipVzqUUQfkswAs5wGopsi6r9y/Byu4gChVGW8eD5118jKKWLUarVxuo0zoFpD7UlwF2miuUKwZZ+Im74BE9Mp7sAZA7npYIQHxx6ZcFhV2wCwQSEMhUG+u9TokYeSsRGuafRCdHAdni9XhuemWHtYN16S8D2hdk9C7MSkEuV8uU5L4jR26COZB45KWsta1X1Cw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790848954; c=relaxed/relaxed;
-	bh=ZB3m0fyJJhUP/96XQJqgLWHi+TlvJ6Q9QN+j7WYdzPk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=OiYTUlEuM+nmV1DPjX8IRZZd7Pmn5gfCHEuV7jBTlgQr0ftoK2BDoWFOySfIHs3PLL4LWZyX8xnwUIA6i0QkhjKsmWUZvO/nnbtIq+36Jvnmm8mf3Y81T+NrYa2v5YdbzDBxaxmf0Z7n5Uwhf3pbwDhqnDPCGPAfAYZB056W5Kaj3FCgjh/mszipdi8Z7rtYX2tb1zelyXnN2q5iw5fuTdfA5VbQYRHBwvUVIoR8H/25RU/DfPWMZ2/WtyYLuEzpl8UKrOxgNps7cOFRO9yxvnH118dGlqDIpx6INH+vG/3T0P0wEG6Nv9o5YI1zNyipSN+ztlR0fOlliiKw93kmog==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Lb0tKi0A; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1790848956; c=relaxed/relaxed;
+	bh=LIZGsJr5BmqlOfmS2T80z3mcRYeW92CV4VFwKHhdJKk=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=KQurnBqjyaVMS/X10bMyVgJlWeXarYXlgTUOlC0EYFfQ4UBS32WjOtnLCtF1j3mojTIOwA6sWqbK/hHNV+T0prMwJWWNgcSaLYd3BIF+dJHbK0ofFKEPd5Vq/OyG75T+H6rfsrw99d2nwZS3zkSAwsWULwEhMUbeqQbJKvym/xYReZl8ldsUKAXWEx3PGKxBbxwWapzfqfRz+Npzh3kI0vjcNOakSoVZb4AOXwejWqwYfe+hOy8kX/vfZcTrB3ceur3tOawnY7uALcUHGcVxbDPINx0/nPrIt2vA53TD+9gfxBpaKhi+bKaHg3G0lN8graHkFpGJ4jgVXuvzuv+eyg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WCUHBVpt; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Lb0tKi0A;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WCUHBVpt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hwSBy0YZcz2y2Z
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 20:02:33 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69175WaY1086340;
-	Thu, 1 Oct 2026 10:02:18 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hwSBz1wZvz30MY
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 20:02:34 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69175Rcb907219;
+	Thu, 1 Oct 2026 10:02:24 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=ZB3m0fyJJhUP/96XQJqgLWHi+TlvJ6Q9QN+j7WYdz
-	Pk=; b=Lb0tKi0A3JFjlWX3DIgSpDOYN73LytWl4AbDojDnQbeK7zYKVZsBV72NT
-	b4sdEVIHbCOc3E6+aH9aRCNnolisKga0fuuUHVM4kRmzZ/U8hF4ukSeimA8/HYNV
-	YB5c2XLxpxI9t3YtZxkJ0BdKAMLbGbX6xBOa20UGRUi9NNgzDncM3jAU+iT7Coeq
-	jvg+0/U1kNC8a/ksmoqE2UFdE8yDkb35A8deiqYtCqcYOwKW1zbFy1My4qkCeEI9
-	wTgvTHEay06uFyG/DZRzou161LqWCVVNjPL6XK1DW0QUgYjR7I+phnv6OSz0Z+kK
-	KkNleJbJ1U+uS+wsS+7brfYcK7Uzg==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gx5s5jefw-1
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=LIZGsJr5BmqlOfmS2
+	T80z3mcRYeW92CV4VFwKHhdJKk=; b=WCUHBVpt/efTIcVoIvF68A0Q4OEco+e4j
+	Ar1TI8ifRiylq3T5cxDHA/qCEZqgu9HNNW1l5qEEWrRWh6eWrM6o3lVJy/7n901I
+	D/Fa/rtfFi4OW31G4C8DeB/SudfqdmaE4XR5/O8h5GEypdDIxGvYiwHHDpd/w6iF
+	LZ5AUy9OAQKJKPYibWQJesEFH/+Skb+c+LyLFfKRdtp63FY8nKc+dhI5c5NnlZLq
+	h7hlzsDOv4EZ/OHOPXmrdvt/LiKIVO95zt01A4w3YT1yjO/5uaI6UzEzbt9zjDdO
+	VXuBo3elZqPIF1J7XibjYZRO7PUW1K8eAQ4TRPl1/jVR1TQpVB6qw==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gx3fkhn3n-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 01 Oct 2026 10:02:17 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69172teX3460494;
-	Thu, 1 Oct 2026 10:02:16 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4h0q4petmw-1
+	Thu, 01 Oct 2026 10:02:23 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69172TNk557896;
+	Thu, 1 Oct 2026 10:02:22 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4h0j23r0k0-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 01 Oct 2026 10:02:16 +0000 (GMT)
+	Thu, 01 Oct 2026 10:02:22 +0000 (GMT)
 Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 691A2DEO17367450
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 691A2JDr47776204
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 1 Oct 2026 10:02:13 GMT
+	Thu, 1 Oct 2026 10:02:19 GMT
 Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3140520065;
-	Thu,  1 Oct 2026 10:02:13 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 26B8F20065;
+	Thu,  1 Oct 2026 10:02:19 +0000 (GMT)
 Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0D3DA20067;
-	Thu,  1 Oct 2026 10:02:11 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id CF16B2005A;
+	Thu,  1 Oct 2026 10:02:16 +0000 (GMT)
 Received: from li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.bl1-in.ibm.com (unknown [9.123.6.5])
 	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  1 Oct 2026 10:02:10 +0000 (GMT)
+	Thu,  1 Oct 2026 10:02:16 +0000 (GMT)
 From: Gautam Menghani <gautam@linux.ibm.com>
 To: maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au,
         chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com,
         amachhiw@linux.ibm.com, harshpb@linux.ibm.com
 Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH 0/3] Fixes for KVM HV around synchronization and initializations
-Date: Thu,  1 Oct 2026 15:32:03 +0530
-Message-ID: <20261001100208.1271628-1-gautam@linux.ibm.com>
+        linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: [PATCH 1/3] KVM: PPC: Book3S HV: Ensure that calls to idr_alloc are synchronized
+Date: Thu,  1 Oct 2026 15:32:04 +0530
+Message-ID: <20261001100208.1271628-2-gautam@linux.ibm.com>
 X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20261001100208.1271628-1-gautam@linux.ibm.com>
+References: <20261001100208.1271628-1-gautam@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,54 +93,109 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDAxMDAzOCBTYWx0ZWRfX5RF8kEI6ohHr
- kyVn8jiLkguh6cfl4cdm6PukUGvRyEv8J9vNk+W8ZDYSBDVc0/KTmPAGF0WrRK+XNO1JF7ASa6r
- ifGbsKe/whLQXbIfmKnEkzBnLbG9CC4=
-X-Authority-Analysis: v=2.4 cv=HJ5WhYtv c=1 sm=1 tr=0 ts=6abe2faa cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+X-Proofpoint-ORIG-GUID: GliQW2aLIPp72OGWWIMIAvPkmGC8nqCJ
+X-Proofpoint-GUID: LuojzUTQv-XOlOmm53gahgLiY_GBx_KU
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDAxMDAzOCBTYWx0ZWRfX316ZXoq80y45
+ 7HlkrTAHvaTyEulqLxLuDM53AziCgm41ccUTUhDb/eiTHQJioMc/D/ZES4bF0jzGiR7J/gELcN/
+ fsg/lI7qQ/uRsIq9w38Q/nWPludHVRk=
+X-Authority-Analysis: v=2.4 cv=Vv62kO2n c=1 sm=1 tr=0 ts=6abe2faf cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
  a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=U7nrCbtTmkRpXpFmAIza:22 a=BB4zp169t_7L_k8pMqwA:9
-X-Proofpoint-GUID: K_flqD8z0vb_NFxw3VmAokeb1c2mK1wm
-X-Proofpoint-ORIG-GUID: JeUiZOM6sB8RCAPxJwKrTI6Nhf9I-QwZ
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDAxMDAzOCBTYWx0ZWRfX1Ixorp/QQMuz
- lnCNreRBWHOW3M0UxZ9+WLkxY3nhbvourQvcYP0QbnDpbc6HzMKLg7+2RRAqVQb4U6KIKDrQqr5
- keyolMefk4Z0ftA9A9ef7uBOHwzmtNGjxGtIGrCcer74BcG+5yZMZjtLJfXFOeBRjCJ22gJpofu
- OruxXYLn+6KvQc2WklBGwGxBz68Fely3uVJ7mVenXE2k/Gq+GlF24MbYYsI5+1lAwrYuw5C4jB1
- ObKWsfDJurqTv/DABF8QA1h2OuwuR9R7BmnP3YwURt4cxpYJUw2+UO+/8ux4r1XGqNsmjIMG8m6
- gV5iW5pONCGvDNf27vYgLJmvth725CLM7/y6iMQOHvT8iCcfvGdd4h6h1MERYC6hIUg5rFwuiNO
- H4quP+Fs4D5zV5s2j1apMEKVUUYahXGNYdWuDmAohE3VX3clbIdX8Frt0tIdLrCMRSvaUrpIVah
- 6T0p/z/5nUgocDGD6rg==
+ a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8 a=VnNF1IyMAAAA:8
+ a=6c1f-Q0peJaRmYMZMr8A:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDAxMDAzOCBTYWx0ZWRfX4saDOvOmD/ME
+ rndDVwXEVtV8/m+Dex5mzLvOUk8qPjfS3r20WxZvS3g8kRqIaSF9Gs7LmtQujILbXnBgYujxGVU
+ wtJwMmkcJaPBqw44AlBejEi0vhVy63BcTyMNMG8hRJ1dhwql/xU8WM0j52YnbWaD6sHfGGBET8O
+ mFk80IrqxJT59JhZwS0b6m/azK1FvcT+fx5wvjzl/qGl+I0DcBv5G2l4B+o4fpn2UKMpCChpF0s
+ I3QUnPWKJDTj1QJm13YIJ87sjQqLneVpUD6nqd8FHhdLeTwtoXEgwW0dL8D6kXjlkzLMr9IX+Pd
+ 3T4s6RGsKPS43VXEQPnt3qTdBBfa29aa1uvFA8rsyoT4G4CjfLAx/NDyckuk86kHc6QTcB36qEh
+ SlUfSgTDzemXqwQokNCM04VLxf+5lHBNnf6iHxusDg6FOy/MNB+/UHyk1TFhCmjX0KTz8cBboYM
+ bTutt0+KZBlXZv3OExA==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-10-01_03,2026-09-21_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 suspectscore=0 bulkscore=0 clxscore=1015 lowpriorityscore=0
- spamscore=0 impostorscore=0 phishscore=0 priorityscore=1501 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2610010038
+ suspectscore=0 spamscore=0 phishscore=0 bulkscore=0 adultscore=0
+ priorityscore=1501 malwarescore=0 clxscore=1015 lowpriorityscore=0
+ impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
+ definitions=main-2610010038
 
-This series contains the fixes for synchronization and initializations
-bugs in the KVM HV code.
+Calls to idr_alloc() in __prealloc_nested() are not currently synchronized.
+According to the documentation [1], the caller should provide their own
+locking to prevent concurrent modifications to the idr to prevent bugs.
 
-Patch 1: Fix for concurrent calls to idr_alloc
+Wrap the call to __prealloc_nested() in	a spinlock to prevent concurrent
+modifications to idr.
 
-Patch 2: Initialize the arch.irq_type correctly for cleanup to work
+[1]: lib/idr.c
 
-Patch 3: Add a srcu lock to fix "suspicious usage of
-	 rcu_dereference_check" usage.
-
-
-Gautam Menghani (3):
-  KVM: PPC: Book3S HV: Ensure that calls to idr_alloc are synchronized
-  KVM: PPC: Book3S HV: XICS: Update irq_type for cleanup to work
-  KVM: PPC: Book3s HV: Take SRCU read lock around kvmppc_h_page_init()
-    call
-
- arch/powerpc/kvm/book3s_hv.c        |  2 ++
+Fixes: c0f00a18e2a8 ("KVM: PPC: Book3S HV Nested: Change nested guest lookup to use idr")
+Cc: stable@vger.kernel.org # 5.19+
+Co-developed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
+---
  arch/powerpc/kvm/book3s_hv_nested.c | 34 +++++++++--------------------
- arch/powerpc/kvm/book3s_xive.c      |  2 +-
- 3 files changed, 13 insertions(+), 25 deletions(-)
+ 1 file changed, 10 insertions(+), 24 deletions(-)
 
+diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
+index a6ff42d7666c..e893fdd24f0a 100644
+--- a/arch/powerpc/kvm/book3s_hv_nested.c
++++ b/arch/powerpc/kvm/book3s_hv_nested.c
+@@ -702,20 +702,6 @@ static struct kvm_nested_guest *__find_nested(struct kvm *kvm, int lpid)
+ 	return idr_find(&kvm->arch.kvm_nested_guest_idr, lpid);
+ }
+ 
+-static bool __prealloc_nested(struct kvm *kvm, int lpid)
+-{
+-	if (idr_alloc(&kvm->arch.kvm_nested_guest_idr,
+-				NULL, lpid, lpid + 1, GFP_KERNEL) != lpid)
+-		return false;
+-	return true;
+-}
+-
+-static void __add_nested(struct kvm *kvm, int lpid, struct kvm_nested_guest *gp)
+-{
+-	if (idr_replace(&kvm->arch.kvm_nested_guest_idr, gp, lpid))
+-		WARN_ON(1);
+-}
+-
+ static void __remove_nested(struct kvm *kvm, int lpid)
+ {
+ 	idr_remove(&kvm->arch.kvm_nested_guest_idr, lpid);
+@@ -862,21 +848,21 @@ struct kvm_nested_guest *kvmhv_get_nested(struct kvm *kvm, int l1_lpid,
+ 	if (!newgp)
+ 		return NULL;
+ 
+-	if (!__prealloc_nested(kvm, l1_lpid)) {
+-		kvmhv_release_nested(newgp);
+-		return NULL;
+-	}
+-
++	idr_preload(GFP_KERNEL);
+ 	spin_lock(&kvm->mmu_lock);
+ 	gp = __find_nested(kvm, l1_lpid);
+ 	if (!gp) {
+-		__add_nested(kvm, l1_lpid, newgp);
+-		++newgp->refcnt;
+-		gp = newgp;
+-		newgp = NULL;
++		if (idr_alloc(&kvm->arch.kvm_nested_guest_idr, newgp,
++			      l1_lpid, l1_lpid + 1, GFP_NOWAIT) >= 0) {
++			++newgp->refcnt;
++			gp = newgp;
++			newgp = NULL;
++		}
+ 	}
+-	++gp->refcnt;
++	if (gp)
++		++gp->refcnt;
+ 	spin_unlock(&kvm->mmu_lock);
++	idr_preload_end();
+ 
+ 	if (newgp)
+ 		kvmhv_release_nested(newgp);
 -- 
 2.52.0
 
