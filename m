@@ -1,96 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-28701-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28702-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F09F9CA5FD2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2026 21:29:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 018CECA5FCE
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2026 22:56:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hwlR62tZRz30DY;
-	Fri, 02 Oct 2026 07:29:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:30::e" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790890146;
-	cv=pass; b=Hz91n8BPof13o/YAFRwoGh2OfnG/M2xv5XwbKnpJzmT6dcwyUbrg/yewdnIQuGKOc8gUEIwUSH2Vmi2QFU+IpDgn2HzJrFBcFPR37O8ZzZ2A0enwrKuGaslbBXhryrhPtrLTT4KDtCpEuYKOl+ZdvssiRC4CkxpwswbhdXpvPYilyRVul4P2YxnoV7eOufkySlo+3DdgXqxiTwabQhUWnVpw2UU0tnA4rSEF9Qw3kZcaXk0roOW+ZDlhscsm7OoLZ1kR0DpbDxo0cc6IHpLGUxmBCpEd+cE5bQ0RmfLlQ73sTlLkIfKrzUB+1XZxNUFaDOy7iG2bXIFrbeFTcX6HDA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790890146; c=relaxed/relaxed;
-	bh=WQ1yE7SGQ1qvkGbYQM1t2aSAp7h/GwrmhNcmVEqa4TM=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=mXFC+g3QD8ull2X8SgMiaiUYosQM7QsISBUZYpbsb1ZCtxxMV2YgLAjzel/aUWPOT0Ib8BnteL4gsmoCvQTP6v/LFhs/Ckuj/WZgaSbIz4U2H0jisO1QEROOaE9cL2kuywxhP7HsVFqJ1slyDZPUz3+hOuqkp+DpXwQn7BHazRSrDvtAu/DCkxcNVge8hEB7iJ95t69JJK84hTxFX43OhODLh5n58q5BXL5mmfKo5hItzBWCE+8T5H8xf6uArp+tBjHujz/YWCr4KqxnevGyJgxkKtl9p5yAIXRrP25nspj1I48GLUHF/wfwXXvKjIfvgjvZa6db7FKkGwBPIXqDNA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=JX/w/Mu1; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:30::e; helo=mail-oa2-x0e.google.com; envelope-from=jthoughton@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hwnNM0wMbz2y2T;
+	Fri, 02 Oct 2026 08:56:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790895411;
+	cv=none; b=mr3nAJH+A41kK0/hP9j92zZdbAI5fdHAaBxefNzn3myou9Eg4Uz6nr0SRI5ZjngcfWXORfBawa35fcMqTtQunRJyws35YI8KmWoD7InMFXkJ0wv3Fg+WrUI2cAzmpGasVRNJvoxWfefU0PbO8LV5FJRGZRkAckihoQKDrEb+ms4Kzojk6YQYkEircMxGoHfJH3WlchqClm3n/qqdWpDSiZCTK4UqSGz3S/y2Bv9dqspmw8KvSBZ+v/APCejOTrnafp6i1CDNershzdfXi0H89ckuZp40vBENsDugVRL+R74/eYzwgTQuB1nmIUcXoQssMpznULYzh2Y+UoVgoBW7/g==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1790895411; c=relaxed/relaxed;
+	bh=H8NFaTMuZbQ4YKm+CogUMym7Z14eCXyyMrAw+sva1Es=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=OE50C1oKwBvbX5f5gHaqLHzpFjuSnoVPTxHkauVVXXJXAg0uJgGz/QTldpaj+QepcQIYQGbs9mGATO84vOJw8AlOO0Wdi70xHLO3Dcm77L527fluRbuD7RTrFXLyvEzuhytEMt56izdaD0KLnz5h8q2f8w1zdm4huuDOHfq3eDle+udhir5ShSlsjLlUVT/GKUdbdLE9n+6j5cJpei7zmiKwnfCTxPFhZuJV03nH0yhbdgryIZgdOXLSvAWAirMZE+iSQk7/qUHoXDwsY7Fs0QgfhIXQ8vPGCVPAiMB2qFEtmdCROyuLbxSOP5w6B/3+CNmlzIaXUnOvnPBvtDDNtg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JnE+3Z6G; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=JX/w/Mu1;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JnE+3Z6G;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:30::e; helo=mail-oa2-x0e.google.com; envelope-from=jthoughton@google.com; receiver=lists.ozlabs.org)
-Received: from mail-oa2-x0e.google.com (mail-oa2-x0e.google.com [IPv6:2607:f8b0:4864:30::e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hwlR53S3cz308H
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 07:29:05 +1000 (AEST)
-Received: by mail-oa2-x0e.google.com with SMTP id 586e51a60fabf-49e0f8c0e59so477124fac.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 14:29:05 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1790890142; cv=none;
-        d=google.com; s=arc-20260327;
-        b=DMe/w2/gLTo+aDQ9i5xMTCazg3oYIaLFO7aK3VHD9X6ejdtSR/1O9ogkw8uCOC+gD+
-         Sz+rP6sAwILmIwez+7tQTncDDm4ScChqEehK3i7c9M5yi2Uwx4dO6AKtmxl4VNatqKxt
-         PX1IGfOTNa8utDVQc5SKeiyEOm1oY7oJDJBt9vWEoDhbdg3ezieXO4sGWfwSlLOte5lm
-         OBGPBdJKDtxt6u2hXkWl4PNOIYgPnL6DW+Q2Ryr30VWHDOTdI2wu0tn1HT5OMSoRKyVR
-         mRps7R3/dCSLw7rNr/BdBN+vWx/8HPnu8xADX2msayRigx7TTU1EU+XstwOjkEueiF1S
-         AbGA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=WQ1yE7SGQ1qvkGbYQM1t2aSAp7h/GwrmhNcmVEqa4TM=;
-        fh=jaWmHAOJ9aujzVMGDFuE2xUO4dp9asUm8KPqPZhzaNo=;
-        b=QLQt1XMoJOOPI6ddUX60sUhGjZEoP/f7PA0tw3BDCa5GFJpNXqyg8lgess6aaHlWpo
-         L0gjtG+ZKJW1fprcM3G3Pm4C2q05WX6xwpFe/LFscbe8mFvqE+TvfN5MUv9PUbMNItdw
-         mly4ta9LToPzL1nURmwaN3KJtly1dT+uR1zbHYs+Eol6T3r5s+b9vj+VclL9kWYMClwA
-         5gUCzEgZpZeUpaKH1o3U660gl0mLohVTRTtS7+4uufhVYiqcQKzJGpsA//G8xVcBP50b
-         H6N2Tv7OsGtZgIbBeV4KE9n8C5NVbFi7EU+FNlVcRZ4Yg5bMwJQgEahAkT7nYSI0hjcq
-         30Vg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1790890142; x=1791494942; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=WQ1yE7SGQ1qvkGbYQM1t2aSAp7h/GwrmhNcmVEqa4TM=;
-        b=JX/w/Mu1r71Rvn02llIlqqvMja0pNGYh3j5AuGlFUMKZEGhUMZhIE0YIwWKRnWfLb/
-         luaVx+jctMuv12w3Y0o5Hh4RaodnwT/YLsvmBO8L7c1IXKkIKXWmhv2i9D3rVzQhedLQ
-         S8XJDpkJqiPt/nOhZqHYIByLtpr1g2OhGbaVV3p5LRPJUggl6BBcECNyZR8EroCkyhC0
-         7rmbF1YyabqWZdjnIA0lvlA5gEPZ2VD6SxFvlkQ04sf0po5ZpVZugAfei4Dj6T7gg9Ss
-         BEG03xOwahgiCMWoBZR1odrGae00Axa4AVgxHHC+R8kKdmaJP3WZXG56YXBDc+YPzIYx
-         fciw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790890142; x=1791494942;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=WQ1yE7SGQ1qvkGbYQM1t2aSAp7h/GwrmhNcmVEqa4TM=;
-        b=CCec7fGrIwVhxjLSYFsZFw096QX62P6JFYYG3f6TLuwV0An3fkB9/VLtAKemrS2Iw7
-         DDrkbEY3Rg4PXaOjpk1SOOudXkvt+JJxXG6/g799OJzZJ9syMj4kZlggrFQsZnzELrrr
-         xsSpZfL6W6s6kPuq9s3XmhPWdNXvx60VG6OYcB3qUSUewBbV8uLdRCexyebuApOII6on
-         1ey71guc9UB8crRVp47YDkGzYXrQ1iyYNY5pAksq49XSN1owHKMsAwtsFPUT5b8IKUYT
-         T/iBZKzfSOE77SOIWHLIsDqRZES68kSFZJhuxhPX7TD7CL9emLD1ek1RcbSbxJX+MnUz
-         vKpQ==
-X-Forwarded-Encrypted: i=1; AKwUvBxSwttuul+PEeTiRuaEnUXTGlYZlqMRqZ9ZBphejt17vDYwTMvB8L2kEapZPuRcz71l/ZW55paIRy2XNpU=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++nB1zpIcO+g8/b24BzZlGZ0KU2emlPXdx8izOjOR56V9OaEszeI
-	+AxA/InjQc8PyJ6ULkzG9UpZOfrH/Bk44rufH63WoPgwqAyoaVVY/teUK9E1PRJT7mt545Vbwu6
-	SHC1oTFfvmr4Bm0UBYX3wiyXaJA8me/HaoZ3e6MY4
-X-Gm-Gg: AYBFou3QD/Mj/PthA5Bmh0EBtXWkQ5BYcnOP0CRlbet0+EpyMA9Z/pGl1nxzPVeMGuD
-	WGSFQPGKBtNNPyLfPfJPQXUHQL9aNXnW0lfY2mKrDntIrxfRcnmR0oFCJb43plxGqFR+1C4py8Z
-	JAgWkQ22lkAOMsZSEAeNPA7FrMh020F6yJdO/6ghxqanux93utm9vnIY/dvtkXZJlrgha28x632
-	g/fusotJ3h3GyT7wKCH40v8Snq+zPeDSZAZ1QH3HsffDXcOj1EAqyPV9Ghvdd8gljcbEQphRobW
-	ifMvT8cTDq65tgk67BjSuYrUMY97fyyr/hg1vygO0ZiHEEDTz8+KIXUF0HpP+8xQ3t9rI9r4F4T
-	NLUgxWCBnkPBeucChRK5hGyEXIsyzKSZm6FHdwMVzwiJthOV3Jk2HYJOuKVFbbPFWGB5iwsFx4p
-	TjCdD71/bhcRLcjvfPHhgjN4zZ7dzDHFogoQ==
-X-Received: by 2002:a05:6808:c161:b0:4c4:a240:9c3a with SMTP id
- 5614622812f47-4f526a4f2eamr499736b6e.4.1790890141800; Thu, 01 Oct 2026
- 14:29:01 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hwnNL1wsPz2xwN
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 08:56:50 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id BA14641224;
+	Thu,  1 Oct 2026 22:56:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2A8951F000FF;
+	Thu,  1 Oct 2026 22:56:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790895407;
+	bh=H8NFaTMuZbQ4YKm+CogUMym7Z14eCXyyMrAw+sva1Es=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=JnE+3Z6GNVm4dkQp3Ky/Wr4oZb5HPnSFOFhIClfGdM9SlKUX5c2p1Q0cpIZVd3rub
+	 1c0tvtQ8tuWFksgkmAWABr9k9yZ7gBu9uaXgFFiF0mzpDDE83FzLcVce6z7alwCy6M
+	 7Efmo8o1IjdqOme2j5gu5TUFRKJUgxgq9ucVim0VA9kaVebusUxmSs9qpeDM7bnn++
+	 V/9k1F7tSaJaaCX/QNwNcO5JEVN02lz8Qtun9/idy+OilA8fyG2zTLmU2Ze9Hm23F7
+	 ESxrF0h1t6jVDzrxCIKx17MLH/pSzBAKOZlR55NCdsmmWjno4sLotxQunMnlVVB+0T
+	 kg/4L13IM75Dg==
+Date: Thu, 1 Oct 2026 15:56:46 -0700
+From: Jakub Kicinski <kuba@kernel.org>
+To: mingming cao <mmc@linux.ibm.com>
+Cc: netdev@vger.kernel.org, davem@davemloft.net, horms@kernel.org,
+ edumazet@google.com, pabeni@redhat.com, andrew+netdev@lunn.ch,
+ nnac123@linux.ibm.com, maddy@linux.ibm.com, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, haren@linux.ibm.com, ricklind@linux.ibm.com,
+ davemarq@linux.ibm.com, bjking1@linux.ibm.com, shaik.abdulla1@ibm.com
+Subject: Re: [PATCH net-next v7 00/15] ibmveth: Add multi-queue RX support
+Message-ID: <20261001155646.5957a373@kernel.org>
+In-Reply-To: <966a8145-421e-4be1-8d46-2cf8e4f9fa2a@linux.ibm.com>
+References: <cover.1790319558.git.mmc@linux.ibm.com>
+	<966a8145-421e-4be1-8d46-2cf8e4f9fa2a@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,44 +70,32 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261001202234.3794060-1-seanjc@google.com> <20261001202234.3794060-2-seanjc@google.com>
- <CADrL8HWDy64UH0N4RCtvgL6zP93jnwr91xjkWerEs1MBV9JH_w@mail.gmail.com> <ar7OMwkZ9bc0tbzC@google.com>
-In-Reply-To: <ar7OMwkZ9bc0tbzC@google.com>
-From: James Houghton <jthoughton@google.com>
-Date: Thu, 1 Oct 2026 14:28:23 -0700
-X-Gm-Features: AclHuK9a_Pc6Thc4O4ojJav2PU4YvfKX_hMsholjFG7-3LGP_q73xLDGlS33olA
-Message-ID: <CADrL8HX3GeCKekMoxMuvD7kM3ebHRCqEohiDHDqK-4_XX4rHxg@mail.gmail.com>
-Subject: Re: [PATCH v2 01/10] KVM: Reject user accesses to guest memory if
- current->mm != kvm->mm
-To: Sean Christopherson <seanjc@google.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, Paolo Bonzini <pbonzini@redhat.com>, 
-	Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Jim Mattson <jmattson@google.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Oct 1, 2026 at 2:18=E2=80=AFPM Sean Christopherson <seanjc@google.c=
-om> wrote:
->
-> On Thu, Oct 01, 2026, James Houghton wrote:
-> > I wonder if it makes sense to add similar hardening to kvm_faultin_pfn(=
-).
-> > What do you think?
->
-> I'm not opposed to explicitly hardening kvm_faultin_pfn(), but I don't th=
-ink it
-> would add much value in practice.  Far more arch code uses __kvm_faultin_=
-pfn()
-> directly, and that doesn't have a @vcpu or @vm pointer to do the check.  =
-We could
-> obviously "fix" that, but nuking the memslots (patches 3-5) will prevent =
-all but
-> the most ridiculous bugs.  Getting anywhere near __kvm_faultin_pfn() with=
- the
-> wrong mm would either mean KVM is doing something amazingly stupid during=
- VM
-> teardown, or I guess maybe the scheduler or preempt notifiers went off th=
-e rails?
+On Sat, 26 Sep 2026 10:40:56 -0700 mingming cao wrote:
+> Hi Jacub,
 
-Yeah, fair enough. It would be of pretty limited benefit. Thanks.
+There's no c in my name, sir. I wonder why people do that.
+
+> I noticed this v7 series is flagged red on patchwork. The apply failure=20
+> is due to a dependency on my own [PATCH net 0/2] (Message-ID:=20
+> cover.1790357373.git.mmc@linux.ibm.com) sent the same day =E2=80=94 kept=
+=20
+> separate per your earlier feedback to peel fixes out of feature series.=20
+> Both touch ibmveth_open() in the same region, and the net pair is not=20
+> yet in net-next.
+>=20
+> The v7 MQ series is based on net-next 161ea2d4f2a7 (2026-09-24). The=20
+> fixes are already subsumed by MQ patches 3 and 6.
+>=20
+> Shall I wait and rebase MQ once the net pair lands in net-next, or send=20
+> a v8 now with the net pair folded in? Happy to do either.
+
+Sorry for the delay, hint: please put just me in the To: if you want me
+to spot the email sooner. We get 400+ messages to the list every day,
+I'm only reading the list as I review :(
+
+To answer your question - please hold off with reposting until the fixes
+are in net-next. We won't merge the patches if they conflict with fixes.
 
