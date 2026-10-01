@@ -1,78 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-28628-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28629-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 309EFCA5FC5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2026 06:53:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C311CA5FA5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2026 07:56:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hwN0G3x4Yz2yYf;
-	Thu, 01 Oct 2026 16:53:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c10d::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790813460;
-	cv=pass; b=DMtDK8TbcT2rrTUceOO+ZFd4jJLiZafNvvwOHYxjlQSEDx8gnyRP8F5Vc41DZ16e7PT1HSFwXFSQifG4E9ZDOJWINh8AhiQAbIOL4Dp9Sq9vQpLyyTRESr4xtTFt/qLhUJJgs5IzG7Wj/4YbCWP3aSW3+Sp98+nXR1SfO/3uOr9o4hQYvF+RMjMsxPI0XIUi089Knupfz+ReRaUwdEyKMno9QbqrotX/b0UJ2+tuZ94vaBsCEMcSTadv13c8CTlKzbhFTZERna8LXfueZ6QULUZ8Co2WQUrUdXKkXSgWVh3cIF39tehjOI79n/ak2AuuKD9oAflbF/zG67m1e0pppw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hwPNy2GRFz2yYf;
+	Thu, 01 Oct 2026 17:56:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:31::11" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790841362;
+	cv=pass; b=LH6rV4ArXe/ndp5Y1giYp02CYm40xqABMcgwiZG1ZnFI0Lzh+lwp4PRsPJX7skZ1x+e50ao6GKFj0SAkUIXz8TMNP+OVGlCral/hO1IQPwbBoo4y9rS58FEIopp0Ax3BpwHJSzlKKbbcwBWsRjeY+iAvwW7BfuZVp9fkhy38+CLuKTPrgatXIJG6shPdiqt4Y40aUtn/YrSl4Y0j+2WwNP8VBGufzp03fVIGy+9zHRQpH3pv9PTzeakh7ab3afQ7vy7Wd3vJeyHb1VCc4SZvzwUuX1utHCbMpyYemVKXfbcrYNHcRHaIZebrRYRxYvmcTUYrjsUkw8nn4mXiE+bC4Q==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790813460; c=relaxed/relaxed;
-	bh=N7a/bp/PO0bjhrDKIhcMe6L/5zm7OEtYBvJsXXJTZDE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=GWlo7xT92C20m8qfjZEHgEk0vM2OZxgxy8C5oM/Q4qh5pc3dP5kSWNGi1JkU+A1YW6I6aDNpKBgpkGEkN3V1qRXoziJxWH1SjEouoK/B+yfRYJZR2GVYiwrNmf1ASqLp7va97qjDoxsEDvM1/GDd0sOnTv0S7ElFoeo9ilEv0f8xCheon+JdB2E1rycTPxkMLxwSzuHwSsiLiptBRLYq+X4tfBVifx+Zcvv+btd1MPeQ0kNpSOeQA3EYKzlq/oWOi7RmmJdEuB1c8Vvn/6qLgM4EJuJfoLf115R88iGSGPCLx+UAf6fmKhAWS8BLvX+tAGTX9x0C3qQdqG7Cu7ov/A==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nokia.com; dkim=pass (2048-bit key; unprotected) header.d=nokia.com header.i=@nokia.com header.a=rsa-sha256 header.s=selector1 header.b=P1/BRXIm; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c10d::3; helo=sn4pr0501cu005.outbound.protection.outlook.com; envelope-from=anthony.pighin@nokia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nokia.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nokia.com
+	t=1790841362; c=relaxed/relaxed;
+	bh=1AHrAL5m9r+wBvSCXVxM17eZGx8eAClbgj8DyTpgrNA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=e/cHt9d/SXVFaVoi3X8R/k8amtYgI5dvnyZ2+nXnqQ1rWvQb99eT/KXuyRXktGpKArXMW0r/iidLFxoB4Ml7usGtv0ZMq8esTPzNJZzi/1aMGEycv6ybtj9Lgbb/BhHHvK/IeqwoYbgCnMqejmRQzT+bgwDxirrTcAUxeIa+oR+XrEGqYwJ+g1P9jMQCZE7MZQKNJLWtKnO8wFFdxKlR49c/ky8UyE7G5s1sKNjOptARnLr2AYBavWi8DQ7gngPAIhmjaGKM6QbtR5d/3Ly0EAG0nEP2UgYqt7K9e/FVqnu+skJtM2vjC+ijQHqnoWvCxwM9hr9W4JoyO/iryYMpxA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=B2XHItAP; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:31::11; helo=mail-wm2-x11.google.com; envelope-from=jiangwenxiaomi@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nokia.com header.i=@nokia.com header.a=rsa-sha256 header.s=selector1 header.b=P1/BRXIm;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=B2XHItAP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nokia.com (client-ip=2a01:111:f403:c10d::3; helo=sn4pr0501cu005.outbound.protection.outlook.com; envelope-from=anthony.pighin@nokia.com; receiver=lists.ozlabs.org)
-Received: from SN4PR0501CU005.outbound.protection.outlook.com (mail-southcentralusazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c10d::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:31::11; helo=mail-wm2-x11.google.com; envelope-from=jiangwenxiaomi@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm2-x11.google.com (mail-wm2-x11.google.com [IPv6:2a00:1450:4864:31::11])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hwC4L1DJtz2y2Z
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 10:10:57 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=El6qXVv4yaCmXQUl+NK5F1rRvLWi7lwMLdVbGa06/fvnzk5kzEEWlV3DlY7JV5EHvImUcaEq3UeVKb8yM96EDzVpVrf9PeeFZUBCplxBS6akQrXkbRQFq8JET8c2XIQSiJuoJ1q0c1UKATU1vXHq3qUX9p6pVurJg91ZBQ3j40KENwMjwUncjcZScZATTdw6GZJ9Be9JBS0CCt/aNoShahhSUAdyKc13ESmZkYhWFfpk/cJEAxiOFkww/0DCUDXI7vpFQ8j0RmoPRkivQCZwT+yYYryjP/ThUdeIB3swEpV6Pxq0Isj0CHblZaH0E0fqz6mrFgRDIVd9WNN+gHzaig==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=N7a/bp/PO0bjhrDKIhcMe6L/5zm7OEtYBvJsXXJTZDE=;
- b=Pz1bu6WQcxGhLHZfFhAhz04ccYG2oajX98Fgy4R+Xsvs/HS4RJsNGQSepC/97RSwjqeA/tLoI87EWxa3iUWmlXBFWKBEukHGFsscVApsHiXZLORbstG2s8R4JN2A2QYbVbZPNpoN3hzHB27mL69Aem44PIvjoXXAbnN0EJwocgNaNbm4oufrpcC5OEDYDIzC62fvnbIUsqf0OwXbSOvlobfVYcvW7AC5tgjUZIFjySpDwMo+tQDuMQ3g48kH4mJLilJzk+roJpeOGkB2sxhj0jsgpo44aBroTlsd+VnH/s8+O4S8CADpf5PjXjuWyy6pg/XJY8hQWBxjEAcE7XAlxA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nokia.com; dmarc=pass action=none header.from=nokia.com;
- dkim=pass header.d=nokia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nokia.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=N7a/bp/PO0bjhrDKIhcMe6L/5zm7OEtYBvJsXXJTZDE=;
- b=P1/BRXImThrpdrP14CtcU8NtrjqnNOQCTSSGKzUwoY3rMyW3fDbQCXwob7RyoPgDFTlx+GUvHYY+7AgzJLLSCV4vhY+xS84Yc4PhBw87ZjXa+g2g3jQKHleXU2lrRYqX0TEoXZOYUbATGM8YS8koqy/UegIASiAMxOemBn9XxmErqaKbg+mb/AIPzQ2i72/EpYwiUX2ICPtYWsp6MO8oD1eEFyA3JF1WJr1LH4EUvuPbD71HYxZ2fiKsicPG1QFKCavg9x0edR4tF5sze9A3Z3HbYaSEQxvI4X8RsrTQY+2Db1wJE0S1xtLV93AlStlo6YfQJG8coXVwR0h/VmPE6A==
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nokia.com;
-Received: from BN0PR08MB6951.namprd08.prod.outlook.com (2603:10b6:408:128::14)
- by LY0PR08MB296823.namprd08.prod.outlook.com (2603:10b6:404:20a::22) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.472.15; Thu, 1 Oct
- 2026 00:10:33 +0000
-Received: from BN0PR08MB6951.namprd08.prod.outlook.com
- ([fe80::4dd1:e1e:56b0:b178]) by BN0PR08MB6951.namprd08.prod.outlook.com
- ([fe80::4dd1:e1e:56b0:b178%5]) with mapi id 15.21.0472.015; Thu, 1 Oct 2026
- 00:10:33 +0000
-From: Anthony Pighin <anthony.pighin@nokia.com>
-To: Jaidev Shastri <jaidevshastri@vt.edu>
-Cc: Ioana Ciornei <ioana.ciornei@nxp.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH] soc: fsl: dpio: publish the dpaa2_io object only after it is initialised
-Date: Wed, 30 Sep 2026 20:08:45 -0400
-Message-ID: <20261001000845.3627423-1-anthony.pighin@nokia.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260921-mb-dpio-v1-1-9e24539059c1@vt.edu>
-References: <20260921-mb-dpio-v1-1-9e24539059c1@vt.edu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: CH2PR08CA0012.namprd08.prod.outlook.com
- (2603:10b6:610:5a::22) To BN0PR08MB6951.namprd08.prod.outlook.com
- (2603:10b6:408:128::14)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hwPNw5my9z2y2Z
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 17:55:59 +1000 (AEST)
+Received: by mail-wm2-x11.google.com with SMTP id 5b1f17b1804b1-49b912d391aso47469525e9.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2026 00:55:59 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1790841356; cv=none;
+        d=google.com; s=arc-20260327;
+        b=QlL+vfONpxRyGQPpkCjonHPJTnsANol57bKhbM+xKaBneeFZrASvHFedYgOrAVsHeD
+         /f07TBcLhlZiOtYIp3Lb6CbrzoDaK7B5MPQS9adGFrYhSGFYch8domawjd7CBuVmsLl6
+         Ibidd/MiKea2dc0CR98XNgCig4zSe7RbwiuYcEwj+mheNthCIb5W0T+AKQmRnvnNehsl
+         fVi+kvUaFJ96MuWh4z5zJ4saeESEs7YJOiHRXKMhxY06nq593rjMUY1I1NVL5X0zq0he
+         meS3ZKLT6Bjx5nYrCxL6dodHxR/HyO1LXmR6pVGJe9MkZ84Vc+sgy0hXNDMDX4szBH7i
+         KGIQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=1AHrAL5m9r+wBvSCXVxM17eZGx8eAClbgj8DyTpgrNA=;
+        fh=I8BLe4vvQJ+4y94H5JIq2IZ+vXGmqSjI/Bq+rRMadpw=;
+        b=UIcTHvx7/HW4wthpCt1580qAybB80DymcbIFNmn1dKYlh2/QA2EMm42dE1KyHJh4za
+         zcxB3clFzqniDUZu876eAq1UFbG1xjjWCy1r3UY6AomA+cUqkwvozMEs/CxfypYKr8h2
+         bi5teQ2TRKEcuDv6dX05G1mORaZyoN0QRcC9ToumyI27lLmgRYtEi9RDxdRmn5jpnygj
+         TbJOLS4R2DgrT1H/Q9pChOf7ZMKEBVkZtI1gxwMwZeLpnIspg1sN2eXdQEifdfQjvLOZ
+         YNnI90YYvD3t4fSUwD6vg1uC1V6SNaQlS12AzL57T6EwuART6xP1lj5Am5xvVom8fmec
+         vMYQ==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790841356; x=1791446156; darn=lists.ozlabs.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=1AHrAL5m9r+wBvSCXVxM17eZGx8eAClbgj8DyTpgrNA=;
+        b=B2XHItAPIe7QukC16tX/6OMRyrD5dubMGNb/3GPLPxyx0LfC5KncP0tQFPu8ogZoKP
+         qMl8qqpgdLzKV4cOHtOQKxtcVIqHT1MZ+EC6BoIKoAYU0p9t6MxunCdHf4gxFDio1/PZ
+         esBGksyZaY8xHrpqIRp0bMH/CaZonCO7IKeKyQl8V3V0pIYF/yeLludzoCd4KTSiaV+z
+         WkgZRLUEAGVhqn091HJ2qHHBvlqi3sOpM3f/93iiLscM+xSF2NiaQZTWF/e+AoQvXnh8
+         R8kR0o/R7J7KRTQh6rulboTFOA8553X5Roqf5m3Fl1ZOzgTekvWJ12v6HGz/oowBq1Do
+         syjQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790841356; x=1791446156;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=1AHrAL5m9r+wBvSCXVxM17eZGx8eAClbgj8DyTpgrNA=;
+        b=muQI719jTBoYbqrscjkWvWwgky+i4bpKnjHZK1zsK0otLemMdOOWrBCbsj6BLvyzrs
+         oynWs2CWp+ZVlLpx0UEbN7i7YCS0Y97+rw2wf5of/VV2hCjlKECiloguKGNT/rqanccG
+         L080dxC6AuKwgB4U8LzPLFNSyO/3xoj18NJaGinpSPffz/9En7yOP1XW6hjCzZ/ADUMf
+         hFPbDFWobP4T/y5eKW1PcC2IohsJBPyrWb1W6cDtM/Dsw834M9dsUftrPJjl1x/DqMKp
+         ewozs7CNDbBD9F7mqY7kS2Dwz5pusw/HoX2Oaoc3I/HS8BIk39GKphZlriszIM2mfjG4
+         2SOA==
+X-Forwarded-Encrypted: i=1; AKwUvBy/iMlpbk9EK/DXZOc2ZE3Z6p8ET1WZdf9DryeJ4SgtKQr3B6K3usvaKimt0VpivTBKYjgrXhKNOWGg5Do=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++m589WLz8O3lrSSuSJn4qZOiml4aFscmrYBrCU+wPVZlrhDrT4p
+	jKRRgn0DaAhd3buOlDgNqkwLoMfqo5hOAByDlqSwtTceDvQuL4h0om+BibYmjkVrkIVnWRD4n+m
+	ebtOuc+evRIPwLTE5DsUZSh9DHCUUueY=
+X-Gm-Gg: AYBFou3/JiwMsXtZuNsYtu5qu4UOaNwceC5U/+KVFK8SAjUL7LBau+CMH+tb3qPrpxD
+	FWuG7EhyQgfuVxfY4cJ/uD6VZn3etxKHMOWQFVi+mhbOqoTFLVRUl5a8GdvgRKkhH3keVH7mTa8
+	Wbsqhc0I3IC0ga3ATTnsy6hXUHUMqZoTYcpcKzYY21f4J3F72aZAQjntWaodNd7w3IqLr0UhPmY
+	YpCOuqlc0qlT/qv894m9YEdtn1T58SvQt4mD7Jv7mtj7gaf1pV2QZIxVeSX6N6wyq0ZlT+wEH6q
+	7wWUZg7YrZ/9nNENLfdOBTNhutPZ2HOwlF0gdJUuh9NB7E9wdfEu+jSHNg==
+X-Received: by 2002:a05:600c:5020:b0:4a0:1efa:c746 with SMTP id
+ 5b1f17b1804b1-4a01efad733mr26833895e9.21.1790841355651; Thu, 01 Oct 2026
+ 00:55:55 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,99 +101,94 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN0PR08MB6951:EE_|LY0PR08MB296823:EE_
-X-MS-Office365-Filtering-Correlation-Id: 331335be-d2d8-442e-81ee-08df1f50696f
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|23010399003|1800799024|376014|18002099003|22082099003|10067099003|56012099006|11063799006;
-X-Microsoft-Antispam-Message-Info:
-	NZBYf3jqe4JKpG9rsmQJRGrkhksv7w/Hj/jB8N4JMrAxjBFjxXOT2cPIq1oBSCgcJLduxV8McXWlEw8iJdEbahDkluZyFrTitbxtKGRGxYWVVb9nWJJGbCmlCeQGXgr4lWMf4hjx6vnocMkNt1LZRMzCxfEQ2Vf8nMRMpw1a/uG8e7+ruHHOe49tKz5D5u2JjixAmtDDK+3ofaFh/eNydaB3Q2mf9h8CsKfWaR5oLCVJdkgByISu6pCqzVGrCmPcuz1cowDtbssFFzOX5I9OlJ8TWQ+zUk4YI/Aide1289ShqmNZt0l5suB40YPAhX027Yjh+WF6SfecdYFNT0mBbYvG5gUwwImEMnKzK+P4PZxA3yHjn/MYfVBgjaCsaSu5kbyNS2PCFTcY9pMX9oyam766x27nhokQBJ4goiUr4+z8Q//Z42BEk+bCwNTOSeXsWsAYtwn/ie+oA55Vg13vPczJkULurTesSyXOOapx9U+D6EB5pyLQ7/w7z+M8NAcu9VtGL99t6CpCrcRgFieQ3bnIepMEhcGCRzCTQ50o+Aefcxlss0ifQzevcpKWHOu1Fe8Af76IFd52BsnWW1xrruIMlbje1U0bTF63TmfSI83l9IWr4th7kTHzhaiQqLBBDsJUWaThlEPyOCrs/UXsggFYAal4eHWHc3mKhwUZddk=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN0PR08MB6951.namprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(23010399003)(1800799024)(376014)(18002099003)(22082099003)(10067099003)(56012099006)(11063799006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?TEpSaHNCSUJBUVc4dC9jdUtzbTJOZVZXYmVZUzVVUzBYaHdJSDhJc3VsVWIw?=
- =?utf-8?B?bHdiTnpoalBmQkhqcHV5LzQ4akhZcGJnd0VBYUhKSjJYNFJNSkc0MVR0Y3FS?=
- =?utf-8?B?bFVIUmRCNGFwZXpMVktSRVQ1ZUdHSGZGbU9ZSCt3TjhtcEE2R3ZEM3p4RzZM?=
- =?utf-8?B?azM2QmY5eXRYb01kK0VzYzh1RlVzMDdZSGlJTnh5V0dveWo5ZE1aUjdYdG01?=
- =?utf-8?B?VjJKWnVEbGtKLzFNU0FmOG9WcFFSNlBQYW1LOEpxNDg5TjdUaFQzdVFJK3JM?=
- =?utf-8?B?c3dxeU5DakplWjRCWHNHV1ZkZzhNV3ZWeHF4R2ptTjNkdW9lZGtNcVVtaEVP?=
- =?utf-8?B?SWh3QkRKUzlzZDRjdHVFeEplMXlHQUJjdzlBemZuQWUydk4rcmVkenVPU0tD?=
- =?utf-8?B?V3E2VWxtemtyUERhQy9HVDI1NHRlb0lkNXBzVVR5emVFcTlLcmtUWVhhU1Rl?=
- =?utf-8?B?cEx6NjJkd0JEZkthMEtma1ZqaUxUaEU5NlVZUmR3dU1TYU5ybTVGaEI2d1VQ?=
- =?utf-8?B?ZVY1TW5pTDd4OEIvaHZ4ZmViTU42NXFWUWhhQWZPMXdVV0gwSG9GdElEczBU?=
- =?utf-8?B?eWV1ZDNpb3FoVE1uWmRocFFmOENBU2htcFBQTE9nTGRZRmR2YytYbWQ4REdD?=
- =?utf-8?B?RXRlbXRDQ3pnbXFGTUs5TzBRbjRmVmdVTHVLRUNSWXY1akx5UEhhU1lrdlkx?=
- =?utf-8?B?QittN3JWYlp2eU8zRHh0M0pJWFcrR0FFRExKa3hZcXJneGgva1pKN2tqMUZ5?=
- =?utf-8?B?dDBFUWZDOEROOHdQNytFSDNPdk94UnpzWGRjRncwSzlxSkZmbWJvUGFoSGdi?=
- =?utf-8?B?RkpDQzRqNDFzMGtjVVJPeWY3VUJtakVMOHJCdTRWbmRwS0QraDYvZVFDTjJX?=
- =?utf-8?B?NTcxK3A3a3k1TUpESnRnbzNUV0hYK0t0U21SNzQ4VzdCSk9DVEJ1RHVDR0E0?=
- =?utf-8?B?RS9KRVlVcU15QWtuYXgvdnlxUzNLTjdXWUFOalRBcjllZU1rckxXcU50R0t6?=
- =?utf-8?B?RVFYSzRwQlJZa014VkxHQ3MrVUMxakZZOFVabUdtakRKYjJDcG15djFaRlhu?=
- =?utf-8?B?K3FWVzlKK3Frc2UvMEdreG13eEk1L3FRTTNhZDVpWStqQ1BlcE9WZzUzVzBh?=
- =?utf-8?B?VkJISXU3SlZVakFicEJ0ZHZ5RXp5MkNpUUF4T3RsaWpzTmxVTWJHOUZSNFo4?=
- =?utf-8?B?c3dEME5nOEVhSXJrUVJmd2lEVXVrQWh3ZElUbkhtckhKYkVubnJKeDdWemU3?=
- =?utf-8?B?V3hjdW9rS3FjL0dwbFNCNUpsMTR5MStaZDZjMnVwbEVxejNIUDE3dDZNUjJ2?=
- =?utf-8?B?V3ZnTnNPbG1EU01YejFWR3RtRjV0Tmd0azRPQjYxb051NmRJYzM0dUVaL1Ru?=
- =?utf-8?B?Y3JHTnB3endEWUFwZDFsaGszSE5CQTE4V21BL2lWOVBsNnNCNU1DU1phMHkx?=
- =?utf-8?B?bHdtZGNOVS9lcEV2OHVIZTh1MURobUxTTHBTS1RhdzlPNTYyNkJDTW4wek5s?=
- =?utf-8?B?MDh3YU4wYm15VW81MDRqN25BZnZvZmtCRDdhMHF6OE9QL3k5Mkg4MndWeUJG?=
- =?utf-8?B?ZEtqczd2R1J3UXNhRXRBUkE2V1NEaDMwUWZXWWN3eE1BYkJERFN3T25OdDZr?=
- =?utf-8?B?MnJtcDJjK1kyR1BMY2toZjBqL2ZxbmxDRzJ3OEgrSTkrbDJmMnNlTWVEUVpN?=
- =?utf-8?B?OVZCckxNRlRCaUkrQ1p1QjY5akNJblRaeWxVS3F1R0Ntd3BEYmZRWlR0WnRX?=
- =?utf-8?B?Z3FUUERaZUVmajVOczVJUWdNYXU4c2RFQWlPVG0zdlBad2loVmdKUWNVSW94?=
- =?utf-8?B?d25lZlNWbVlxZnY1LzdzSjdPRWJLMlRlZTFVcGYxYkd6RldkL0lkQ2EwUlhy?=
- =?utf-8?B?bkh1SkZxbGNYU0RNWHkxZDQvV28zWFhRTVpFaVk2c2JiMEpCVUtIYnIrRk4x?=
- =?utf-8?B?RkwvS0xRODZGYUtBbFhxc2UxbDJnSkRkRzl3ZWV6eENINEdGZlVGSGg2WXRF?=
- =?utf-8?B?UzRsYTVLUGdHNHBwbkdJWVk1cWVSNkZ3S3dDeks0Q21zVUtDOUhiV3JQMzNH?=
- =?utf-8?B?T2hDay9Lc0J6Yzh6bXZVM0NvZGRVQ3d3QldER1h0eTBpU1hlNFBDb3BEVWdD?=
- =?utf-8?B?RHpMMXJsc3c4QkttdW1WV2JRcGY2NHA2RUQ3bEpmVVpLRVdjOHN2VnJsUnln?=
- =?utf-8?B?U3JsOHl1MnZKdFkySUh2VHIvdG8zb09HSUxOUVZxbCtyRURQZEV0OEpBcmpQ?=
- =?utf-8?B?Q0hEa2o5ZWErV0dZRXMvQjNmMFJjNTdrUlU1M3R1QXdVcTZZRmFWcGN0V1ps?=
- =?utf-8?B?bDFidFpsb2d0TzhkTERNUXozY01sYk9pZzBhMExOZHkwdVpJQnUxQT09?=
-X-OriginatorOrg: nokia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 331335be-d2d8-442e-81ee-08df1f50696f
-X-MS-Exchange-CrossTenant-AuthSource: BN0PR08MB6951.namprd08.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Oct 2026 00:10:33.8138
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 5d471751-9675-428d-917b-70f44f9630b0
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: W/gUmwuE1V2rk2AS63/l3wG9UIyWgQArZL1cj8D2UvNm6WD2B9+Vf6Rdih25rT/EUVB4gYLWqDpTWuoLahv9YaBM52uFXaqN/GYeu2Fis/M=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LY0PR08MB296823
+References: <20260923062832.479455-1-jiangwen6@xiaomi.com> <20260923062832.479455-6-jiangwen6@xiaomi.com>
+ <ar0s14p8KPgmDKmR@milan>
+In-Reply-To: <ar0s14p8KPgmDKmR@milan>
+From: Wen Jiang <jiangwenxiaomi@gmail.com>
+Date: Thu, 1 Oct 2026 15:55:44 +0800
+X-Gm-Features: AclHuK_wExzN3hq35-9mtJ9Vi_bHjI_pv0wB1wZZplKSMEZ1VOjoAMFGpVzuuYY
+Message-ID: <CAHKocdEF3RE5FA+LPRf_E0ns02a5akvUDKvSDvERoyTryV1X6Q@mail.gmail.com>
+Subject: Re: [PATCH v9 05/10] arm64/vmalloc: allow arch_vmap_pte_range_map_size()
+ to batch multiple CONT_PTE
+To: Uladzislau Rezki <urezki@gmail.com>
+Cc: akpm@linux-foundation.org, catalin.marinas@arm.com, linux-mm@kvack.org, 
+	will@kernel.org, Xueyuan.chen21@gmail.com, ajd@linux.ibm.com, 
+	anshuman.khandual@arm.com, baohua@kernel.org, chleroy@kernel.org, 
+	david@kernel.org, dev.jain@arm.com, jiangwen6@xiaomi.com, leo.yan@arm.com, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au, 
+	npiggin@gmail.com, rppt@kernel.org, ryan.roberts@arm.com
+Content-Type: text/plain; charset="UTF-8"
 
-On Mon, Sep 22, 2026, Jaidev Shastri wrote:
-> obj->dev is assigned after the lock is dropped, so a reader can pick the
-> object up and pass a NULL supplier to device_link_add(), which fails
-> with -EINVAL and fails the consumer's probe.
+On Wed, 30 Sept 2026 at 23:38, Uladzislau Rezki <urezki@gmail.com> wrote:
+>
+> On Wed, Sep 23, 2026 at 02:28:27PM +0800, Wen Jiang wrote:
+> > From: "Barry Song (Xiaomi)" <baohua@kernel.org>
+> >
+> > Allow arch_vmap_pte_range_map_size to batch across multiple CONT_PTE
+> > blocks, reducing both PTE setup and TLB flush iterations.
+> >
+> > For CONT_PTE_SIZE-aligned ranges, return a mapping size that may cover
+> > multiple CONT_PTE blocks, capped below PMD_SIZE. These sizes are vmalloc
+> > mapping spans, not HugeTLB hstate sizes.
+> >
+> > Signed-off-by: Barry Song (Xiaomi) <baohua@kernel.org>
+> > Signed-off-by: Wen Jiang <jiangwen6@xiaomi.com>
+> > Tested-by: Xueyuan Chen <xueyuan.chen21@gmail.com>
+> > Tested-by: Leo Yan <leo.yan@arm.com>
+> > ---
+> >  arch/arm64/include/asm/vmalloc.h | 8 +++++++-
+> >  1 file changed, 7 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/arch/arm64/include/asm/vmalloc.h b/arch/arm64/include/asm/vmalloc.h
+> > index 4ec1acd3c1b34..4053b1ec1902e 100644
+> > --- a/arch/arm64/include/asm/vmalloc.h
+> > +++ b/arch/arm64/include/asm/vmalloc.h
+> > @@ -23,10 +23,14 @@ static inline unsigned long arch_vmap_pte_range_map_size(unsigned long addr,
+> >                                               unsigned long end, u64 pfn,
+> >                                               unsigned int max_page_shift)
+> >  {
+> > +     unsigned long size;
+> > +
+> >       /*
+> >        * If the block is at least CONT_PTE_SIZE in size, and is naturally
+> >        * aligned in both virtual and physical space, then we can pte-map the
+> >        * block using the PTE_CONT bit for more efficient use of the TLB.
+> > +      * The returned mapping size may cover multiple CONT_PTE_SIZE blocks,
+> > +      * capped below PMD_SIZE.
+> >        */
+> >       if (max_page_shift < CONT_PTE_SHIFT)
+> >               return PAGE_SIZE;
+> > @@ -40,7 +44,9 @@ static inline unsigned long arch_vmap_pte_range_map_size(unsigned long addr,
+> >       if (!IS_ALIGNED(PFN_PHYS(pfn), CONT_PTE_SIZE))
+> >               return PAGE_SIZE;
+> >
+> > -     return CONT_PTE_SIZE;
+> > +     size = min3(end - addr, 1UL << max_page_shift, PMD_SIZE >> 1);
+> >
+> Capped below PMD_SIZE? It is half of PMD_SIZE. Where is that limitation
+> comes from? I think the commit message should be improved in that sense.
+>
 
-The object comes from kmalloc(), so obj->dev is not NULL but whatever
-was left in that memory. We hit this on LX2160A boards as an
-intermittent boot panic, with the deferred dpaa2-eth probe racing the
-DPIO probes.
+Hi Uladzislau,
 
-  Unable to handle kernel paging request at virtual address deadbeefdeadbfd7
-  pc : device_link_add+0x80/0x700
-  x20: deadbeefdeadbeef
-  Call trace:
-   device_link_add+0x80/0x700
-   dpaa2_io_service_register+0x40/0x120 [fsl_mc_dpio]
-   dpaa2_eth_setup_dpio+0x128/0x468 [fsl_dpaa2_eth]
-   dpaa2_eth_probe+0x1dc/0x908 [fsl_dpaa2_eth]
+You're right, and the "half" is a leftover that can be dropped entirely.
 
-Widening the window with an msleep(50) after the spin_unlock() makes it
-panic on every boot. With this patch applied to 6.12 and the same
-msleep(50) kept after the spin_unlock(), five boots in a row were clean.
+Before this series decoupled vmalloc from the HugeTLB, the value
+returned here was fed into ilog2, which reconstructs pagesize as
+1UL << shift. That forced the size to be a power of two, and PMD_SIZE >> 1
+was then the largest power of two strictly below PMD_SIZE,
 
-Since this crashes real systems, could v2 say so in the commit message
-and carry these tags so it reaches the stable kernels?
+How that pte_set_huge() takes the size directly, the size only needs
+CONT_PTE_SIZE alignment. And this function is only ever called for
+a range that the caller has already confined to a single PMD via
+pmd_addr_end(), so no explicit PMD cap is needed at all. I'll
+simplify it to:
 
-Fixes: cf9ff75d15a9 ("soc: fsl: dpio: store a backpointer to the device backing the dpaa2_io")
-Fixes: 69651bd8d303 ("soc: fsl: dpio: add Net DIM integration")
-Cc: stable@vger.kernel.org
+        size = min2(end -addr, 1UL << max_page_shift);
 
-Tested-by: Anthony Pighin <anthony.pighin@nokia.com>
+and update the commit message accordingly.
+
+Thanks,
+Wen
 
