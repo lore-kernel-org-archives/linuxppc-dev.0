@@ -1,51 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-28779-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28780-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67422CA5FE8
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 21:44:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8BD78CA5FDD
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 22:07:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hxMkW5Clyz30DK;
-	Sat, 03 Oct 2026 07:44:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790977475;
-	cv=none; b=W1CfUlJ+YCX4zIiNBT7cUtrcZNKnzKj3ez0gfSjIhulsmuUmvixDcbCbFag+sLkzIWDJGy6KUbEO6j7WSkoFThbCOvNd0ulkT9gFbOp3Ntzox2Yt8Q9yvRk8ImEX1LtDQvGitBXz9nY5nuaQZaynZp5jykY6yFcXLOAMvTUkYiMLoIs2F8HOkUpQheCOBVmcYMZy8ct2CjH9t/fKog5yybRrZUwaELNoCG43jXGiZHt7iPgCZXAcGGMsBtDcw/JELPui/jozEq1VZZAUEmXj8czQeh17duLQ4aDs9jDIG7j2AIX3+JnZQ5fq8WQpbBQqFdLRY+tBMOzvEURhn4OPYA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hxNFD5dpBz2xyh;
+	Sat, 03 Oct 2026 08:07:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.167.200
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790973029;
+	cv=none; b=PK3mBzKvxi6wyxKD5J7W+8gx0sQoCl9fz0+sgPRhv+GjIuJV59qAUTDT196nhczp91jry6Op/1CUt/lgD4qr4Lssl027lRILxAsoTogng/io5z7igaQ15mxGUaNzp1vGIew2GfrJtSaPeZXMC9WXPCZEA9aHjdTMFSnsfL9j04tUFd36Z0NBD/jqOTbHXCTfNV174ILutSy7yEHhst7sdCdUk4UE+IDpNytHHiesCpkNn6Aj09EOJ9xsgG839JxoJhNuem25MN7nfZ0Jidaal1ZYjsxVXPboeJOc/sJO4Q9NdpOCaPxha1psqZJtlCVQVnilmemrCaBkKE1ZZ8Q1NA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790977475; c=relaxed/relaxed;
-	bh=OA3SWpmyamGsgLm56ptL6ZZTSR6Zq7plBZES8synHmE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=actHLhQN9hJFn/nv2ye3qhulny67STV1bZvsK8DwpsNryIxH/816JLhGNTmeu9lCp/wn8oaDar4gtZvp7qrx4OmF/06SaazzTLC8C+n7Yf9Zd/VGanRb1dmpALFsUEFif1JL42oER2BL5aBEZXqwhKmNN/QbvbSp4IKWS/BxY40Rf7eCCiMelbb3WPqtybNGszdm1OpfF6Vemp47fNt14y0/I1/GV93BI8gFwosjReUFOjru6qTlLcJOA2G20UcJ2KIqzu7H5UqnkkbQxxrgAl0uzABxNVABh0i2IFAGb3Y2q5tnLRTWqStft9ZD0rKCukBbX2UIxZnSzO/38dUTIA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=AE3K2Vl6; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=AE3K2Vl6;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	t=1790973029; c=relaxed/relaxed;
+	bh=6wUuB592+kJPng/iRiJB4kmOBdQLCgtSi2/SJcT8bYA=;
+	h=MIME-Version:Date:In-Reply-To:Message-ID:Subject:From:To:Cc:
+	 Content-Type; b=GMMoGwTjD7x9RddZGxOw5pssUtPP42XAMN844LXsdVveXcL8TUoVvARMqAGCuBegsw7lT4urlDGG8hisw4OnwsB700K0S6O5vyczTn6Ex+qwiOWxGaDEUpM9Y8RJI3Lu5bZjsu4eMFkYzVEjZGSZAdoLwadh+iVR2UJ3UNN2/XSRDJpE5da8FBCO7r9hVtZzmxRFiMNjSqtGIhylWMpkISwO/75ha6tdHmJ/1cM6sGl8sQgtXQN22ouWRZBCNZwMJKsdeyHXBDmCPxOyWuRXuJHMDzQ/Fb9ZP17CMxCmZGw0HPnDkoI4fw97UZxzxsNhcNV7Jg9caJIbXFcYmGQ7/g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass (client-ip=209.85.167.200; helo=mail-oi1-f200.google.com; envelope-from=3xxtaagkbaoqyefqgrrkxgvvoj.muumrkaykxiutzktz.ius@m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com (client-ip=209.85.167.200; helo=mail-oi1-f200.google.com; envelope-from=3xxtaagkbaoqyefqgrrkxgvvoj.muumrkaykxiutzktz.ius@m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-oi1-f200.google.com (mail-oi1-f200.google.com [209.85.167.200])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxMkV49FJz2y8r
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Oct 2026 07:44:34 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 0192F429DA;
-	Fri,  2 Oct 2026 21:44:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 796E11F000FF;
-	Fri,  2 Oct 2026 21:43:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790977471;
-	bh=OA3SWpmyamGsgLm56ptL6ZZTSR6Zq7plBZES8synHmE=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=AE3K2Vl6OU3amVn9J34OyDXo5u1hI3Mgm76Co3njixBfbVl64pXy3KEbB1jH8gRje
-	 QzEjOx/ZmPa7dt1h1ln0FZNOs9B5d7jj1GcFevU7BKECR4TXLrzS9x+6/afNqFrGT7
-	 yNEKJavEShFhBifEUwBHpczx9wfA7LjwqY6fcQZfjIOxWvWmDdWdPhs8aj0q2SlDQn
-	 FYkHpHYM2SXBmscPVtj/tf8Xdi53y05kFVkFgW6wFqz/77U6tWGH7KCPpGkArViUfj
-	 tNE9xVruf47GFQGiBY8JlBhcz1AvwBdFtJMDo+bZCZePjO602Qjz/uH3K5WiBZ4yUf
-	 +Tq6ReP7g1HxA==
-Message-ID: <a202523f-a696-4a8e-be77-7170c3913cdf@kernel.org>
-Date: Fri, 2 Oct 2026 23:43:53 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxL4z6cpmz2y8r
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Oct 2026 06:30:27 +1000 (AEST)
+Received: by mail-oi1-f200.google.com with SMTP id 5614622812f47-4eb0b989f0eso469658b6e.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 13:30:26 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790973023; x=1791577823;
+        h=content-type:cc:to:from:subject:message-id:in-reply-to:date
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=6wUuB592+kJPng/iRiJB4kmOBdQLCgtSi2/SJcT8bYA=;
+        b=Cu2FuNak4JzQKAlCS773fBKPIRfPGmpSNu5JVIsTRZPngM8ULGaMu075r/tL4ZGyv3
+         nIjQkMsG6OFKEQ6NftQId+BVrLeXlb/Pqs9UEXEZqaOpRvgOxmVJJ6NfQHRcNJP7SFre
+         wyk3v6PcEmPQeDnokP87j9FREMHMq0QCEJVFYgp9dUPJoG+G9U0ChwZl5UZK5wGg9ZQQ
+         30nzsc+kAn/GkhFh5hLe4W/bu8Bp8YSim1HmZXCNgjPTUQhxdUpxyf4nxsXrrjW+75Ts
+         aVFFH92O7mIYGvjg6dAWcTMxfrCkhwBg7EssMJ6FdHG6oX8Jan+jbM524IMikE7dB0hq
+         upSg==
+X-Forwarded-Encrypted: i=1; AKwUvByBBbahWzhJDJBxWZmQgeOHCyGkx1qtPg5N0DIVOwuakUmH4C4vEneLxxB3naune0aCsJLysO6x2/RiP44=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++nN7XE/SXh/jWsbXHNsTJlvvip0jQx4QhtIwkWw3rwGc487vzKQ
+	lkyMb4SdlBU0yY0mVNi0U6jm/GNWKtUhqhNx9tNaFwZj0eHRxdEVq9t4itMaEraXZ7TNyAPMxTt
+	B98Np6jYYZiLDv7weyaQiTNWMzEvPUuV8NnzOPMjWAorIJQimcz/LIKYqI54=
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,212 +57,131 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 31/40] mm/vma: introduce vma[_flags]_is_persistent()
-To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>,
- Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>,
- Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
- Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>,
- Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>,
- Paul Moore <paul@paul-moore.com>,
- Stephen Smalley <stephen.smalley.work@gmail.com>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>,
- Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>,
- Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>,
- Baolin Wang <baolin.wang@linux.alibaba.com>,
- Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>,
- Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>,
- Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>,
- Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- "Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>,
- Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>,
- Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>,
- Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>,
- Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
- Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
- x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>,
- Juri Lelli <juri.lelli@redhat.com>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin
- <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
- Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>,
- "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>,
- Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>,
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
- Albert Ou <aou@eecs.berkeley.edu>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Janosch Frank <frankja@linux.ibm.com>,
- Claudio Imbrenda <imbrenda@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- "David S. Miller" <davem@davemloft.net>,
- Andreas Larsson <andreas@gaisler.com>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>,
- Matthew Brost <matthew.brost@intel.com>,
- Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>,
- Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>,
- Ying Huang <ying.huang@linux.alibaba.com>,
- Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>,
- Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>,
- Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>,
- Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>,
- Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>,
- Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>,
- Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>,
- Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
- Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-rdma@vger.kernel.org, selinux@vger.kernel.org,
- linux-sound@vger.kernel.org, bpf@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org,
- linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
- fuse-devel@lists.linux.dev
-References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
- <20260917-b4-mmap-prepare-vma-flag-sanify-v3-31-4583d8a23bca@kernel.org>
- <9bbdf4e8-6984-4477-a183-f0b236047381@kernel.org>
- <3557015d-23dd-41ef-9832-78b58587f3f4@kernel.org>
- <81e1e5ae-0aab-4584-81e6-3fc9c2634d07@kernel.org> <ar-b_Ug__TBzIZsb@gremlin>
- <2e5a4e6c-8f9c-4050-8998-454b83f4823b@kernel.org> <ar-luB9QVCRshtIw@gremlin>
- <3387642b-c39f-4f19-ba0c-267bbd2fe91d@kernel.org> <ar-ux41ILjI1Px9S@gremlin>
-From: "David Hildenbrand (Arm)" <david@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=david@kernel.org; keydata=
- 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
- qIws/H2t
-In-Reply-To: <ar-ux41ILjI1Px9S@gremlin>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-Received: by 2002:a05:6808:bd4:b0:4d6:9133:cfee with SMTP id
+ 5614622812f47-4f30caa6c35mr5991865b6e.51.1790973023528; Fri, 02 Oct 2026
+ 13:30:23 -0700 (PDT)
+Date: Fri, 02 Oct 2026 13:30:23 -0700
+In-Reply-To: <20261001202234.3794060-1-seanjc@google.com>
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <6ac0145f.34119e79.2f92f3.0003.GAE@google.com>
+Subject: [syzbot ci] Re: KVM: Fix+harden against bad uaccess using dying VM
+From: syzbot ci <syzbot+ci69d67bf25886d3bd@syzkaller.appspotmail.com>
+To: jmattson@google.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, npiggin@gmail.com, 
+	pbonzini@redhat.com, seanjc@google.com
+Cc: syzbot@lists.linux.dev, syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 
-On 10/2/26 15:59, Lorenzo Stoakes (ARM) wrote:
-> On Fri, Oct 02, 2026 at 03:11:27PM +0200, David Hildenbrand (Arm) wrote:
->> I'd be very happy if we could find a clear way to describe "this is what we call
->> user memory: anon+pagecache", if that could come handy in such a context.
-> 
-> Rather than arguing about it, how about shifting things to 'what backs the
-> mapping' and something like:
-> 
-> /* big long kdoc... */
-> static inline bool vma_flags_is_mm_backed(const vma_flags_t *flags)
-> {
-> 	/* hugetlb is a fixed mapping, but the mm owns it entirely. */
-> 	if (vma_flags_is_hugetlb(flags))
-> 		return true;
-> 
-> 	/*
-> 	 * Kernel-owned mappings are populated by their owner, and fixed mappings
-> 	 * have a layout the mm cannot assume ordinary fault semantics over.
-> 	 */
-> 	if (vma_flags_is_kernel_owned(flags) ||
-> 	    vma_flags_is_fixed_mapping(flags))
-> 		return false;
-> 
-> 	/* The mm has promised it may discard droppable memory at any time. */
-> 	return !vma_flags_test_single_mask(flags, VMA_DROPPABLE);
-> }
+syzbot ci has tested the following series
 
-In my other mail I was wondering whether we could use vma_is_mm_managed() to
-express !vma_is_kernel_owned(). Maybe vma_is_mm_backed() could fit into that
-picture.
+[v2] KVM: Fix+harden against bad uaccess using dying VM
+https://lore.kernel.org/all/20261001202234.3794060-1-seanjc@google.com
+* [PATCH v2 01/10] KVM: Reject user accesses to guest memory if current->mm != kvm->mm
+* [PATCH v2 02/10] KVM: PPC: Flush/zap all memslots on kvm_arch_flush_shadow_all()
+* [PATCH v2 03/10] KVM: x86: Unmap VMAs for KVM-internal memslots when the memslot is freed
+* [PATCH v2 04/10] KVM: Disallow setting memslots when the VM is being destroyed
+* [PATCH v2 05/10] KVM: Destroy memslots immediately after mmu_notifiers are unregistered
+* [PATCH v2 06/10] KVM: WARN if KVM attempts to do guest-related uaccess with "wrong" process
+* [PATCH v2 07/10] KVM: WARN and reject guest-based uaccess if VM is dying
+* [PATCH v2 08/10] KVM: nVMX: Don't flush shadow VMCS12 to guest memory during vCPU teardown
+* [PATCH v2 09/10] KVM: nVMX: Don't try to load eVMCS12 page when the VM is dying
+* [PATCH v2 10/10] KVM: Pre-check uaccesses in KVM's APIs to read/write guest memory
 
-Reading above I am still confused why something that expresses "backed" talks
-about "fixed mappings and ownership", sorry :(
+and found the following issue:
+WARNING in __kvm_read_guest_page
 
-It's late here, and this is a hard nut to crack.
+Full report is available here:
+https://ci.syzbot.org/series/5f8da53a-c584-4176-abcb-7a29eb02e4c4
 
-What we have here is:
+***
 
-1) Is this an ordinary MM-managed VMA. So far so good, I understand that. (with
-   a twist what I just learned about things that map random allocated pages
-   through -> fault, but so far so good)
+WARNING in __kvm_read_guest_page
 
-2) Is this MM "fixed" that makes expand/merge tricky, except if it's hugetlb
-   where we can still handle it.
+tree:      kvm-next
+URL:       https://kernel.googlesource.com/pub/scm/virt/kvm/kvm/
+base:      d4b7fb647204f0c81dfeae2d1a708e4d858e0c94
+arch:      amd64
+compiler:  Debian clang version 22.1.8 (++20260613092233+e80beda6e255-1~exp1~20260613092250.77), Debian LLD 22.1.8
+config:    https://ci.syzbot.org/builds/4d4c10d0-f56c-448f-8782-ad4dab8f46d0/config
+syz repro: https://ci.syzbot.org/findings/dc5f6c42-c3ab-41b0-9384-1a15798e4820/syz_repro
 
-I think VM_DONTEXPAND is also rather misnamed :( I assume it really means, using
-sel_mmap_policy_ops() as an example: the MM manages the things that are getting
-mapped in here (->fault), but the pages are not really pagecache/anon, but some
-other shit. So we cannot expand the mapping.
-
-Gah, so complicated.
-
-3) Can the MM drop the pages at any time.
+------------[ cut here ]------------
+!__kvm_can_do_uaccess(kvm)
+WARNING: ./include/linux/kvm_host.h:1360 at kvm_can_do_uaccess include/linux/kvm_host.h:1360 [inline], CPU#1: syz.1.18/5858
+WARNING: ./include/linux/kvm_host.h:1360 at kvm_is_guest_access_ok virt/kvm/kvm_main.c:3216 [inline], CPU#1: syz.1.18/5858
+WARNING: ./include/linux/kvm_host.h:1360 at __kvm_read_guest_page+0x38e/0x440 virt/kvm/kvm_main.c:3226, CPU#1: syz.1.18/5858
+Modules linked in:
+CPU: 1 UID: 0 PID: 5858 Comm: syz.1.18 Not tainted syzkaller #0 PREEMPT(full) 
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.2-debian-1.16.2-1 04/01/2014
+RIP: 0010:kvm_can_do_uaccess include/linux/kvm_host.h:1360 [inline]
+RIP: 0010:kvm_is_guest_access_ok virt/kvm/kvm_main.c:3216 [inline]
+RIP: 0010:__kvm_read_guest_page+0x38e/0x440 virt/kvm/kvm_main.c:3226
+Code: f2 ff ff ff 0f 44 d8 31 ff e8 5e a4 89 00 89 d8 48 83 c4 30 5b 41 5c 41 5d 41 5e 41 5f 5d e9 09 ac a8 0a cc e8 83 9e 89 00 90 <0f> 0b 90 bb f2 ff ff ff eb da e8 73 9e 89 00 90 0f 0b 90 bb f2 ff
+RSP: 0018:ffffc90003157778 EFLAGS: 00010293
+RAX: ffffffff813e2d22 RBX: 0000000000000000 RCX: ffff888174382580
+RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000000
+RBP: 1ffff1102217d82a R08: ffff888110bee183 R09: 1ffff1102217dc30
+R10: dffffc0000000000 R11: ffffed102217dc31 R12: ffff888110bee180
+R13: ffff888174382b40 R14: 1ffff1102217dc30 R15: 0000000000000000
+FS:  000055557c0db500(0000) GS:ffff8882a8cda000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f458dfeb840 CR3: 000000016c9d0000 CR4: 0000000000352ef0
+Call Trace:
+ <TASK>
+ kvm_vcpu_read_guest+0x64/0x140 virt/kvm/kvm_main.c:3284
+ nested_vmx_load_msr+0x133/0x4d0 arch/x86/kvm/vmx/nested.c:1107
+ load_vmcs12_host_state+0x10ca/0x1e20 arch/x86/kvm/vmx/nested.c:4930
+ __nested_vmx_vmexit+0x1800/0x2d10 arch/x86/kvm/vmx/nested.c:5206
+ nested_vmx_vmexit arch/x86/kvm/vmx/nested.h:46 [inline]
+ vmx_leave_nested arch/x86/kvm/vmx/nested.c:6891 [inline]
+ nested_vmx_free_vcpu+0x8e/0xd0 arch/x86/kvm/vmx/nested.c:389
+ vmx_vcpu_free+0x109/0x3e0 arch/x86/kvm/vmx/vmx.c:7653
+ kvm_arch_vcpu_destroy+0x154/0x380 arch/x86/kvm/x86.c:9463
+ kvm_vcpu_destroy virt/kvm/kvm_main.c:469 [inline]
+ kvm_destroy_vcpus+0x123/0x380 virt/kvm/kvm_main.c:489
+ kvm_arch_destroy_vm+0x55/0x120 arch/x86/kvm/x86.c:10014
+ kvm_destroy_vm virt/kvm/kvm_main.c:1326 [inline]
+ kvm_put_kvm+0x93a/0xc80 virt/kvm/kvm_main.c:1359
+ kvm_vm_release+0x43/0x50 virt/kvm/kvm_main.c:1382
+ __fput+0x418/0xa50 fs/file_table.c:512
+ task_work_run+0x1d9/0x270 kernel/task_work.c:233
+ resume_user_mode_work include/linux/resume_user_mode.h:50 [inline]
+ __exit_to_user_mode_loop kernel/entry/common.c:70 [inline]
+ exit_to_user_mode_loop+0x204/0x770 kernel/entry/common.c:101
+ __exit_to_user_mode_prepare include/linux/irq-entry-common.h:207 [inline]
+ syscall_exit_to_user_mode_prepare include/linux/irq-entry-common.h:230 [inline]
+ syscall_exit_to_user_mode include/linux/entry-common.h:336 [inline]
+ do_syscall_64+0x328/0x520 arch/x86/entry/syscall_64.c:89
+ entry_SYSCALL_64_after_hwframe+0x77/0x7f
+RIP: 0033:0x7f7fec79e159
+Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 e8 ff ff ff f7 d8 64 89 01 48
+RSP: 002b:00007fff0d2850c8 EFLAGS: 00000246 ORIG_RAX: 00000000000001b4
+RAX: 0000000000000000 RBX: 00007f7feca27da0 RCX: 00007f7fec79e159
+RDX: 0000000000000000 RSI: 000000000000001e RDI: 0000000000000003
+RBP: 00007f7feca27da0 R08: 00007f7feca26038 R09: 0000000000000000
+R10: 000000000003fdb8 R11: 0000000000000246 R12: 000000000000ec04
+R13: 00007f7feca25fac R14: 000000000000e938 R15: 00007fff0d2851d0
+ </TASK>
 
 
-I still think that 3) does not quite fit into that picture. Using something like
+***
 
-"vma_is_mm_backed" to say "this is mm-managed, but all things in there come from
-core-mm and not some other random shit people punch into ->fault" would work for me.
+If these findings have caused you to resend the series or submit a
+separate fix, please add the following tag to your commit message:
+  Tested-by: syzbot@syzkaller.appspotmail.com
 
-(not sure if there is still some other way how someone could get random pages
-into a VMA ... or how to catch someone not setting the DONTEXPAND flag)
+---
+This report is generated by a bot. It may contain errors.
+syzbot ci engineers can be reached at syzkaller@googlegroups.com.
 
-God, this is all such a confusing mess with so many ways of getting stuff messed
-up by other parts of the system. Thanks for working on cleaning that up.
+To test a fix for this bug, please reply with `#syz test`
+(on a separate line) and attach the patch to the email.
 
--- 
-Cheers,
-
-David
+Notes:
+- The patch will be applied on top of the tested series (as an
+  incremental fix).
+- To test a new version of the whole series, please send it directly
+  to syzbot@lists.linux.dev.
+- Arguments like custom git repos and branches are not supported.
 
