@@ -1,77 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-28733-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28734-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BF67CA5FE0
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 09:11:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EDC80CA5FD4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 09:11:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hx30k1yFpz30V4;
-	Fri, 02 Oct 2026 19:10:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:39::10"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790932246;
-	cv=none; b=CcjtvsltDWiNciSLQYhg8PBsnSAr4+E4a6BTYgK/c9t7+4uANWvQVgAExbJJbBI4V8ocKc4rq7FNexl2jaS1iZ4S08OzPDZyBYrdytBkw100sP34dtdhhQigi7X5A32eNOT1D2QQG/9uOtahqD4ImMbPXWHVbwsYNvYjoO+1S+OUmcd/YYwy7BJOA75TbJ8f7A3KXapotjdpNW2lH9082LEFc+K/ME7M6oplJLnBA/uLczG0XqC0blruxXa6DO9tYkuzfXBuTnKw5qQJcZe1KLndw/dNJDdow5nYwwaLMeQwQq5uuiR8fT8luFxVmZnHwYayt3BaV+r2EeDQNfM2Kg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hx30q3tGGz30VT;
+	Fri, 02 Oct 2026 19:10:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:39::d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790932251;
+	cv=none; b=fZ2+DR0FinwP555t8gr+Di+DOesGy3nSXo9pZy0J8xLD54X3jOBZQdHDbRPikrJ6LlsRIHd9wocKCKsNH2/Tp8o9SAAPJ5OSw+1U8oJYT1Mh4pZP1ipaRf/wBbJMZ1U+C8c3k9TIlIkGFLYLbVdnMszyugiXp4ztF+qZtap4oUP6Q4pEZXvXI6iASXXjOiyP0lzK45z0Bo29iCy9Kd3rExGh7zyGQaT7JjbADCWwjZHFZMWMlR/R1vMxvIpFFkYxJyMx6BTm1hiBRgG7uZLmt1UOMiEi/LXcpTaOZXMYA3e7S3YFoqb4U8ZdCeIaP/c4cgps36x0XpU2kRwxvWlTog==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790932246; c=relaxed/relaxed;
-	bh=2/5XOnfiZIWhHaazfIksBYAhb1bM+JDK1FK2T/8kf0k=;
+	t=1790932251; c=relaxed/relaxed;
+	bh=5SdFF897J19vB9gXlitk0PJAT4sCzBncom/C0yG9+Zg=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=e52kOrfu8ehv6A+cq4Fp045ZIPs9fKmFp42zqqE0CXbzWYBweDcUUWtsXarICcfEBy0erhWpwdcVZyDkWh4O0emxZhT8PfTMbfqJ0nf/sGEaRSSuhlis6Y/XEmVuYWqLYNWs+zTxb/fAZUc1FjEBlT0RIXymh93nDHm3iaQd6GKANwIAH48gXMd7mXOLh0lnrt0GCK8mDvTJXP99BY4dHcOZk6fhbgz0+romevEaZ2mjMONhKejsfiS1PnUxUFrt/9UQ0zF+OdN3sVvfIGD/Aif8do9ijLwaeyCrmsdvqaqp60/NcyvHcxqzFO1d0525XMTt09UOrdzdN3KYn77gLQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=BXG43JKm; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::10; helo=mail-pj2-x10.google.com; envelope-from=jiangwenxiaomi@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version:Content-Type; b=Ujg1Ai1OEOzb5+S2aCg/QCBVXnz3IgJ3ljNID4CeH9foQ4gZOO+aujIbvG/VbA9uNYuRU2IenqoyGF54a6aZJMJCzdUkjk60UPCMgR5msapVO2RjukV9F9BhL3fORQrdLf0DGztUqGWw0xnMDB0IH4A/uiAEJDKfoIkuLsLrpipsTWNYpUxQP07EEyTY/3A3p7g9nncsVMvJURSlS6eah8THzB3nezztIuywpQzhOVamYLDD8u7SYAH5uVLR0FeL29o/rJojl2vnH9jUvo10iZ7OrhhhVXcsVI/Tr0XcVcypolfwuxyhh3KHhcoIfP31ODqRU4J6hax55tkhRi1XEg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=aufrxIWZ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::d; helo=mail-pj2-x0d.google.com; envelope-from=jiangwenxiaomi@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=BXG43JKm;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=aufrxIWZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:39::10; helo=mail-pj2-x10.google.com; envelope-from=jiangwenxiaomi@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj2-x10.google.com (mail-pj2-x10.google.com [IPv6:2607:f8b0:4864:39::10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:39::d; helo=mail-pj2-x0d.google.com; envelope-from=jiangwenxiaomi@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj2-x0d.google.com (mail-pj2-x0d.google.com [IPv6:2607:f8b0:4864:39::d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hx30h6X73z3bxp
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 19:10:44 +1000 (AEST)
-Received: by mail-pj2-x10.google.com with SMTP id d9443c01a7336-2d747ed9866so51488515ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 02:10:44 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hx30p5Stdz30VQ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 19:10:50 +1000 (AEST)
+Received: by mail-pj2-x0d.google.com with SMTP id d9443c01a7336-2e4ba8555fdso120155ad.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 02:10:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790932243; x=1791537043; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=2/5XOnfiZIWhHaazfIksBYAhb1bM+JDK1FK2T/8kf0k=;
-        b=BXG43JKmZKaryjRPd9itUKVZJVGK1pbkJFVp356MMjz4zrP0oKJGpbxN9jD/QUG0po
-         P0Dwl/Zy1NXaCaBGrnBleKz14XuvcXRY23Hm4qnn8InS+r/Oyix5Sh7BXgcpTietgfE9
-         lh7o8zBvDpEAWIWi1uL+GCuvPRNwtDC1wElLohnf8Bmtsssvz0tqrmdLGwVeS8K1xPIb
-         eGN6Ry+HBAaqsvUooXNtCIRSG8/xJv/yKh6rTEMgWQDTtSrBx7DSxGT1c0dn9QqNZlE2
-         PIeLU8Ipqc2vK6slf4qY3I1A+YpW6+tIIbeGlKNZQnrxGVkF8X0nVttMY2EFCUufEgDT
-         cinw==
+        d=gmail.com; s=20251104; t=1790932249; x=1791537049; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=5SdFF897J19vB9gXlitk0PJAT4sCzBncom/C0yG9+Zg=;
+        b=aufrxIWZwlkHT49mNSHa8Q49lIGyIjpA9c/06II9eVtK8dvovQwH8DWU7tZqLagWpU
+         UKNAyLdlg7M7y5/5HAhq3og0XzRDsgOib6lrcUHnXnaglkBFQ5QJ4xilqFyLIkiK3/lB
+         H9l7KrMTxUxwvWOkLUwbCG9UA69NWwoDVfkD+9eidWRxkcZZe/+qya28ByQhjH0FVPKJ
+         PM4mJQUCeTYY4UcV/SRiops8F+UBj2oyMXEXPSR/WJKznyycOA7kxPaZQMJoMS5SawDQ
+         zSt9HQDv1NbBfikjheR3e9goyWPjYEeTLNnV6YntEvYx2mxFT7zabjot1EdK/b81/auZ
+         0neg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790932243; x=1791537043;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=2/5XOnfiZIWhHaazfIksBYAhb1bM+JDK1FK2T/8kf0k=;
-        b=lmk1vXc/TO3nfnpzSKaMsGsbEvBl0c+EggXmZm2CgLR5X8hT6N71VKw5hJfwvJRHZn
-         ExlEWOorwBiZ380u0tDhX0oXT0fKUg2nO2hdg0oiO1mSluhkW0r9zbx/0XFt4x1MYNPv
-         ByEejWciq+YfiQKwfoNTUpsbhv7ohWc7HBvScMn8FL5PU2xG5rMMVJX3olSuoK90UqnW
-         5gueh0kPRZs/M4xkFJGKJCjHydOusj8AijQh+Zcqne6UlELZw+NCJw2jSawsuT/kdN35
-         1cUG7Z8y3gYHuXziNDQ+QLyQ5bmz5DRzkknyQfUNnZpr0dOs3W4gQtctcnvYnirOEKRt
-         6hVw==
-X-Forwarded-Encrypted: i=1; AKwUvByCdDwS4gaQ4bm0T5qo+KGT/Be6XR0qpELIMhFdfG7FT7lsryouBWJXFAaM3qw/xWpTHp2nmyajPv6BuSU=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++mZ8WpxLW8mdxkzb85p6loWWofrAJgZayccDv21oQho2WnN76ZS
-	laJ/C8/q075t0L7RbK3oJ2eT13eg5vxBDspj0aY/QcJLqO2hDXYODCr1
-X-Gm-Gg: AYBFou347ysxPWynFSHGOgtvO3Kuuxqur3BmzYfU/mPX9o8euwfOODCHU31o/9khf0K
-	KUANMNQ83gCQejIj1cCjzQpkzY6cealEwJOrwwpbgNRImYyjQGYC2l3j6vcTPchOi9js8PaetjN
-	ndeKNyyCPtdppQ11qJImtPExWjLj4aFMzYLTP1GVl/E6ShFEL1/ObTGTh7YW8f+nW6awywtyl+X
-	jJJ8VVZ7QEpu+KC/9J4XSSvzxEF8IqrDTXIanV3YMyQ+zsDxxMIAxUV5Bd6/HwNqhYTUxhTxf2C
-	Kp/KHUjIc4+MZdrdFrpQe+dw7DvnHa0L4Ak+J28L0+VHK69Jbah6mgh2YJkxxoaWMgoctAoCo9h
-	eWsb85ufsiGJQ905789SuvvVPK4Tn6+VbgdN07SoNzKTVB9YBVX0grAlBF1v7rTCGOmBqRrbRBI
-	j03Ygc7oNDdKBSvGVnnkUBK73CmG3gKd4w8yYiDuHmqBMRytUHXy0d+ckGrEqYfFLxTh47tJIV9
-	JNufodt18j096sRJm1rew==
-X-Received: by 2002:a17:902:ebcd:b0:2d7:107c:917b with SMTP id d9443c01a7336-2e498517c3cmr18629185ad.0.1790932243081;
-        Fri, 02 Oct 2026 02:10:43 -0700 (PDT)
+        d=1e100.net; s=20260707; t=1790932249; x=1791537049;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=5SdFF897J19vB9gXlitk0PJAT4sCzBncom/C0yG9+Zg=;
+        b=Xdt5YheHTuGiw9g+0h8vkN3VvscEw2x4L0m+0ie3U7YXAcjv+mwkaCGBQBKAAVdDjb
+         ubkSmLqPk5BM5jWRuiqEg2lgncNkxx6AhGOGzW0qlGzZ7Qv7WIYj3bGmwzMUG7O8sVz4
+         LaQv5FNtWoZWlyNXC1eayQ/z7pWPAejWEPzoqhZ9toW+2xteqPTAgxj8KSl9BWVITX0w
+         RAXIGqTKEZUGozVFLMcFBgUHRvbNb7tGfVuJllvrjsqb1JE9wPyVzWjHcCRjq2e5fCFN
+         2WY+QkWYzYgk17m03fy3k7n9BXLIrW4a5kNHoVi69HPbYCGAA12gYllypkv66NvN4PxT
+         kSLA==
+X-Forwarded-Encrypted: i=1; AKwUvBwf3s6IQbQhSkidv8yUJciBrz6QqELwZUsaZ/rdYp9tiJSsHIRvoLjRVjXhWcT1uPhQCEv47ypHgcGwD9Y=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYIQTRYBtOifRFcLOFT9sUCMCcA/eD4gNtwMguLvwhhRx5gnxZvD
+	wwqsvncKkeBsabVc4vPOHUXhwB9drsyIXcOgN3jVxKb065iSWWsVMH4R
+X-Gm-Gg: AYBFou1pDIFntsiHU7Ary9DxQrAKmnKBPEVM5q4ZEa05+CGBITVsgNYRyEwr+I06AZj
+	e+Ju0U+HBaTBCVneJZwxspb+tk4LYFSBNWlDsPKsmiQQ4TfNx+847LnEwz19hRhCky3u4p95vKb
+	RJb3exYxpi4S5zbFX/qG9d2DxFyIGFIxmJfMbjPqUWA6xFFi0Djn8zOSodG1kP1J+ZV0cIYmPue
+	pSQ3uRy6HlCognnxn8XWLuVJkdwz2hPNsLW6sNkn2yy3peb+yZvfB3syr8NkG2BBiSRKm7Tkoft
+	Sku7OhAgj0nicu8l0N4tJG/zGujqs8Va+B2D9lEn//8paMb+b+qvXrHqnCvE9AdsG/ProQvUVOt
+	NJ+STd90vpyn7TvYpLpVnbrYlMZQDDfJn7tGRUp2QCOZhMgLESDzzdSti3K4JOoD6H6jUwERnvk
+	o4KBRuPbruMV8zWKXSpK4qNH4/wyrngVSTMpZZlgsJbCHnRWChpeMKmLR3WFy3uuoGIWRRe4TuL
+	b75qUar5QVD6gYjnUibMA==
+X-Received: by 2002:a17:903:b87:b0:2e2:f379:82b9 with SMTP id d9443c01a7336-2e49b821f87mr17258575ad.61.1790932248559;
+        Fri, 02 Oct 2026 02:10:48 -0700 (PDT)
 Received: from mi-OptiPlex-7060.mioffice.cn ([43.224.245.234])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2e49f6ab2b9sm5480555ad.36.2026.10.02.02.10.36
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2e49f6ab2b9sm5480555ad.36.2026.10.02.02.10.43
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 02 Oct 2026 02:10:42 -0700 (PDT)
+        Fri, 02 Oct 2026 02:10:48 -0700 (PDT)
 From: Wen Jiang <jiangwenxiaomi@gmail.com>
 X-Google-Original-From: Wen Jiang <jiangwen6@xiaomi.com>
 To: akpm@linux-foundation.org,
@@ -96,9 +97,9 @@ Cc: Xueyuan.chen21@gmail.com,
 	npiggin@gmail.com,
 	rppt@kernel.org,
 	ryan.roberts@arm.com
-Subject: [PATCH v10 08/10] mm/vmalloc: extract vm_shift() to consolidate mapping shift selection
-Date: Fri,  2 Oct 2026 17:09:45 +0800
-Message-Id: <20261002090947.869220-9-jiangwen6@xiaomi.com>
+Subject: [PATCH v10 09/10] mm/vmalloc: map contiguous pages in batches for vmap() if possible
+Date: Fri,  2 Oct 2026 17:09:46 +0800
+Message-Id: <20261002090947.869220-10-jiangwen6@xiaomi.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20261002090947.869220-1-jiangwen6@xiaomi.com>
 References: <20261002090947.869220-1-jiangwen6@xiaomi.com>
@@ -115,55 +116,143 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Extract the vmalloc mapping shift selection from
-__vmalloc_node_range_noprof() into vm_shift(), preparing for reuse by the
-vmap batching path.
+From: "Barry Song (Xiaomi)" <baohua@kernel.org>
 
-No functional change.
+In many cases, the pages passed to vmap() may include high-order
+pages. For example, the systemheap often allocates pages in descending
+order: order 8, then 4, then 0. Currently, vmap() iterates over every
+page individually—even pages inside a high-order block are handled
+one by one.
 
-Suggested-by: Dev Jain <dev.jain@arm.com>
+This patch detects physically contiguous pages (regardless of whether
+they are compound or non-compound) by scanning with
+num_pages_contiguous(), and maps them as a single contiguous block
+whenever possible. The mapping order is determined by taking the
+minimum of the contiguous page count and the pfn alignment, allowing
+graceful degradation when pfn alignment is less than the contiguous
+range.
+
+Pages with the same page_shift are coalesced and mapped via
+vmap_pages_range_noflush_walk() to avoid page table rewalk.
+
+As users typically allocate memory in descending orders (e.g.
+8 → 4 → 0), once an order-0 page is encountered, we stop scanning
+for contiguous pages since subsequent pages are likely order-0 as well.
+
+Signed-off-by: Barry Song (Xiaomi) <baohua@kernel.org>
+Co-developed-by: Dev Jain <dev.jain@arm.com>
+Signed-off-by: Dev Jain <dev.jain@arm.com>
 Signed-off-by: Wen Jiang <jiangwen6@xiaomi.com>
 Tested-by: Xueyuan Chen <xueyuan.chen21@gmail.com>
 Tested-by: Leo Yan <leo.yan@arm.com>
 Reviewed-by: Uladzislau Rezki (Sony) <urezki@gmail.com>
 ---
- mm/vmalloc.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+ mm/vmalloc.c | 82 ++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 80 insertions(+), 2 deletions(-)
 
 diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index 99bd22c086bf8..aae6141aaebf5 100644
+index aae6141aaebf5..4acd1ec27604b 100644
 --- a/mm/vmalloc.c
 +++ b/mm/vmalloc.c
-@@ -3568,6 +3568,14 @@ void vunmap(const void *addr)
+@@ -3576,6 +3576,85 @@ static inline unsigned int vm_shift(pgprot_t prot, unsigned long size)
+ 	return arch_vmap_pte_supported_shift(size);
  }
- EXPORT_SYMBOL(vunmap);
  
-+static inline unsigned int vm_shift(pgprot_t prot, unsigned long size)
++static inline int get_vmap_mapping_order(struct page **pages,
++		pgprot_t prot, unsigned int nr_pages)
 +{
-+	if (arch_vmap_pmd_supported(prot) && size >= PMD_SIZE)
-+		return PMD_SHIFT;
++	unsigned long pfn;
++	unsigned int nr_contig;
++	int order;
 +
-+	return arch_vmap_pte_supported_shift(size);
++	if (!IS_ENABLED(CONFIG_HAVE_ARCH_HUGE_VMAP))
++		return 0;
++
++	/* Limit nr_pages by pfn alignment */
++	pfn = page_to_pfn(*pages);
++	if (pfn > 0)
++		nr_pages = min_t(size_t, nr_pages, 1UL << __ffs(pfn));
++
++	nr_contig = num_pages_contiguous(pages, nr_pages);
++	if (nr_contig < 2)
++		return 0;
++
++	order = ilog2(nr_contig);
++
++	if (vm_shift(prot, PAGE_SIZE << order) == PAGE_SHIFT)
++		return 0;
++
++	return order;
++}
++
++static int vmap_pages_range_batched(unsigned long addr, unsigned long end,
++		pgprot_t prot, struct page **pages)
++{
++	const unsigned int nr_pages = (end - addr) >> PAGE_SHIFT;
++	unsigned int prev_shift = 0, batch_idx = 0;
++	unsigned long batch_start = addr, batch_end = addr;
++	int err;
++
++	err = kmsan_vmap_pages_range_noflush(addr, end, prot, pages,
++					     PAGE_SHIFT, GFP_KERNEL);
++
++	if (err)
++		goto out;
++
++	for (unsigned int i = 0; i < nr_pages; ) {
++		unsigned int shift = PAGE_SHIFT +
++			get_vmap_mapping_order(pages + i, prot, nr_pages - i);
++
++		if (!i)
++			prev_shift = shift;
++
++		if (shift != prev_shift) {
++			err = vmap_pages_range_noflush_walk(batch_start, batch_end,
++					prot, pages + batch_idx, prev_shift);
++			if (err)
++				goto out;
++			prev_shift = shift;
++			batch_start = batch_end;
++			batch_idx = i;
++		}
++
++		/*
++		 * Once we fail to batch pages, we expect to fail batching
++		 * for all remaining pages, so just give up.
++		 */
++		if (shift == PAGE_SHIFT)
++			break;
++
++		batch_end += 1UL << shift;
++		i += 1U << (shift - PAGE_SHIFT);
++	}
++
++	/* Remaining */
++	if (batch_start < end)
++		err = vmap_pages_range_noflush_walk(batch_start, end, prot,
++				pages + batch_idx, prev_shift);
++
++out:
++	flush_cache_vmap(addr, end);
++	return err;
 +}
 +
  /**
   * vmap - map an array of pages into virtually contiguous space
   * @pages: array of page pointers
-@@ -4079,11 +4087,7 @@ void *__vmalloc_node_range_noprof(unsigned long size, unsigned long align,
- 		 * supporting them.
- 		 */
+@@ -3619,8 +3698,7 @@ void *vmap(struct page **pages, unsigned int count,
+ 		return NULL;
  
--		if (arch_vmap_pmd_supported(prot) && size >= PMD_SIZE)
--			shift = PMD_SHIFT;
--		else
--			shift = arch_vmap_pte_supported_shift(size);
--
-+		shift = vm_shift(prot, size);
- 		align = max(original_align, 1UL << shift);
+ 	addr = (unsigned long)area->addr;
+-	if (vmap_pages_range(addr, addr + size, pgprot_nx(prot),
+-				pages, PAGE_SHIFT) < 0) {
++	if (vmap_pages_range_batched(addr, addr + size, pgprot_nx(prot), pages) < 0) {
+ 		vunmap(area->addr);
+ 		return NULL;
  	}
- 
 -- 
 2.34.1
 
