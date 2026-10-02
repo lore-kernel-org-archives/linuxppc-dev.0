@@ -1,75 +1,90 @@
-Return-Path: <linuxppc-dev+bounces-28723-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28724-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A8B7CA5FC4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 08:23:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBF4ECA5FC4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 08:24:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hx1xm2h6Vz2yPG;
-	Fri, 02 Oct 2026 18:23:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790929388;
-	cv=none; b=XedQmOJPM+AJdjyJaUaUhOrObDHYY6tOQi6zUCfDzDHDP6bo1MXo0YvNUDtaOuJRheGFoahJZZDuA4HygEMGKzxS8L+2TOQ+k46LRC0QFR/rFCq3c9/qG1A4fMjAcheea9SARxT4yBtZiufauyqNhnGdR0cMCJfb5Tg1aoeHNUJZ7uBT+VaLYtOZcNn6vaMNn/I8MAq7gIJnoH3wr2afwMoyuMx/kmvm6WFlfUKDtg01QCqiVCmOD3ZnPadowa2z2/An8JZRcIaYNsEvhRM//qAYBu3ezUpfc4KmCPlqa0kXXeiZpaJwGTdrr7CnmZCD70Lm36jcBecGlHAOr3cVlQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hx1zq6pMWz2yPG;
+	Fri, 02 Oct 2026 18:24:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790929495;
+	cv=none; b=ZOPuoom1pG+Dw/KAik3HnU0b8W6NBSTlQSZi/Vi584ErIeAqVsfTEG48B5Li+YBAevpfTOPm1kdJUgX5GmsA204uG+VKpFLVLNka+xShjn/X5Vw/3+9TwYSWPp3lratdJjR5KzGHi7Pe85gzMmDOD0/yth5lFTp+kwQlpPprVl1XVgjK9CfUwkVvEqUuZXJDfEmZymde3JMe6RsX8w31NaagfWJVgsANVBMnUYVvUKgmjcXTVsC716k/agZh0zderGdQhxDccGrt2aE+JA1kERGNZdMTnDzSYdSzi9kwMkq4oB4BmnLkaNEaDSZ+nU/dcwMYiTEquxSNJvPBBn+WNw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790929388; c=relaxed/relaxed;
-	bh=G/f9I4vHQK4JOyc+erbBtNclRJr/3Y4Kf9SezEHiCB0=;
+	t=1790929495; c=relaxed/relaxed;
+	bh=WJ3O4ET6uMBU8h4vN6+2G16j9dMQqJ+owsNN6HPkb0A=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jfoKRXGsCoLMjcQirlGcGjDr36AjkfPt//fGBuvdm6nX/jtqw4cXlahTRVcjgYpA8r+GzCZq+2sqInpYHlr8bBZwWCIuvpcPAzjmknyLzXC8RdLLmWSrW1TOorfzXc9SQtzVf4vfdBE58K5kzDEI6Xsr2h/bO5QE3OwdQ0VVYlAGiC9H2Il9ckCDabxIfXHZxK2Tgjeb4o/1dnzEQLMDNH79Qz6atdZ84s3WEkG4ySHsbiHpQKZsiythByd2S4bFXM1zUXDv8Hp+/HpSV9YiJ1GbDqBqkIp1KnXSBRsxhROM4RRuCd3GxsRMCMsKgBqopPI//IKhK+yUdXQqcBTQTw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HxfcHBD8; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=XOFYXb0E2/qRy4qgZElTZ5xjo70cZotmz0MQpFZx5bLS9kjEipmNB8YSAZrPaiL4lIyDN4oJjPmUJ+TH0W+UveIIv6+GdGPMm5P+ozMDhmbKuDHD+SGBLdTZu8WKE0PUMh4dnbGwiv28s0IPwcBSniDlq0PGBDrbySeIM/p5Q45V51RVysvDcEEWsOMII1jRXidlzxD13htzhNMXkKyKjV23c/xb+f1CwvlTu/fulTzSDAG3ZhPSmRZxXPLi2LiUqHqJ9Airq5sOFVvL2yAg0jy18UR6K0DzfWfNKrfzirlISzgBAi7ny4bppA+ZTiB+v/Qit8QooLS28lbYwoAKUQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=S28Pl07O; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=7DZJ0YoI; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=oAHXTXCH; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=QoX/hWQc; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HxfcHBD8;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=S28Pl07O;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=7DZJ0YoI;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=oAHXTXCH;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=QoX/hWQc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hx1xl35Q4z2xsW
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 18:23:07 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id A2B0160A6A;
-	Fri,  2 Oct 2026 08:23:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 83FB01F000FF;
-	Fri,  2 Oct 2026 08:22:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790929384;
-	bh=G/f9I4vHQK4JOyc+erbBtNclRJr/3Y4Kf9SezEHiCB0=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=HxfcHBD8rebzYNDmEhi6ZjEMfdZKUzhjRiJMId5JdydfC1VdWyb8c08N9eWtBVQDD
-	 s8ik9RohZH4US83JNfPsnlk8g//6XwGPAYSZSRPl31LER1mBTyZgYsOP6gsIdd0tXy
-	 nLTKGK1iGyLORSlzVOr6U7eeUq2VLTOa7+2TjgOF/DFKV0/MMF8BaQfnkxf64MzxSm
-	 QR1mL6j6ja0eAy9STNBKy+bhwdvUtLq18bDlZgnYUnd+JP+TZ/wmn++l1Th5RBZj67
-	 PnQXRbUhDXumsopPyQKJ5tmPfpqn8AdmtKB63Z0Mg+0rwMxgYTXHPogcXNKqrZLXFl
-	 B+elqnABketew==
-Date: Fri, 2 Oct 2026 10:22:55 +0200
-From: Mike Rapoport <rppt@kernel.org>
-To: Muchun Song <muchun.song@linux.dev>
-Cc: Muchun Song <songmuchun@bytedance.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Hildenbrand <david@kernel.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Ritesh Harjani <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Lorenzo Stoakes <ljs@kernel.org>,
-	"Liam R . Howlett" <liam@infradead.org>,
-	Vlastimil Babka <vbabka@kernel.org>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Michal Hocko <mhocko@suse.com>, Qi Zheng <qi.zheng@linux.dev>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hx1zp3DG2z2xsW
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 18:24:54 +1000 (AEST)
+Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id B33C71FE48;
+	Fri,  2 Oct 2026 08:24:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1790929481; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=WJ3O4ET6uMBU8h4vN6+2G16j9dMQqJ+owsNN6HPkb0A=;
+	b=S28Pl07OiWzIiZB5HdjU+PK7OEhTNf4qIIRRpnS2N51E1jteQOM9EQ32WUO19TeLUA6gNJ
+	4v3c0f7C7G9qUeLFodXNqUjGH3Cp/CTWpHbsLJV9dormVDCWEGX1vvWVB1vunVEaToB/hG
+	ytWOJJj/75PRujMMg/PDh6zhYaRhxIg=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1790929481;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=WJ3O4ET6uMBU8h4vN6+2G16j9dMQqJ+owsNN6HPkb0A=;
+	b=7DZJ0YoIflQ5qa/i8aXgOeo7/QFWb87n8xIrCb+a2UUxAzeq3JsdsV2RXN5riqoaRXN60b
+	PkEDTfmPA17c0dDQ==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=oAHXTXCH;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b="QoX/hWQc"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1790929477; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=WJ3O4ET6uMBU8h4vN6+2G16j9dMQqJ+owsNN6HPkb0A=;
+	b=oAHXTXCHID+6RkSPu7N15NyrqPlVJJ4jEb69G6PIjvnoVFXDRfY8BEKd8fdHP96CYZOGs+
+	jf0+/3vI6cUzG/PVnF2n0pBp789gkaTxGcevpSOPtD4cw/edWgyFzDHRNVtHDlHMNFmjZB
+	NzXXqT9u1nn+skiq54nE6Y4b9WsocF8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1790929477;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=WJ3O4ET6uMBU8h4vN6+2G16j9dMQqJ+owsNN6HPkb0A=;
+	b=QoX/hWQc4YWUps1eJKocO45zsAzZhw4eLq8je0LffYv1mvnmIPSFtTp4QQqgskkXK4xwry
+	zxooIIxY9FfwnDAg==
+Date: Fri, 2 Oct 2026 10:24:36 +0200
+From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+	chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com,
+	mkchauras@linux.ibm.com, ruanjinjie@huawei.com,
 	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org
-Subject: Re: [PATCH v3 6/6] mm/mm_init: add zone mismatch warning during page
- init
-Message-ID: <ar9p39Y9SmlxvbA_@kernel.org>
-References: <20260929053231.66085-1-songmuchun@bytedance.com>
- <20260929053231.66085-7-songmuchun@bytedance.com>
- <ar5xbQsUpSQZg0wO@kernel.org>
- <78D5D6AA-BE36-432C-B0F7-453F93DF18C0@linux.dev>
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Subject: Re: [PATCH] powerpc: fix NMI exit ordering: restore soft masks after
+ irqentry_nmi_exit()
+Message-ID: <ar9qRKA1mavDruDR@kunlun.suse.cz>
+References: <20260929071600.2963954-1-mkchauras@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,82 +98,167 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <78D5D6AA-BE36-432C-B0F7-453F93DF18C0@linux.dev>
+In-Reply-To: <20260929071600.2963954-1-mkchauras@gmail.com>
+X-Rspamd-Action: no action
+X-Spamd-Result: default: False [3.99 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
+	RDNS_NONE(2.00)[];
+	SUSPICIOUS_RECIPS(1.50)[];
+	ONCE_RECEIVED(1.20)[];
+	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-0.999];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	ARC_NA(0.00)[];
+	FREEMAIL_TO(0.00)[gmail.com];
+	RCPT_COUNT_TWELVE(0.00)[12];
+	MIME_TRACE(0.00)[0:+];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	DKIM_TRACE(0.00)[suse.de:+];
+	TO_DN_SOME(0.00)[];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b306:2000::2:from];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[linux.ibm.com,ellerman.id.au,gmail.com,kernel.org,huawei.com,lists.ozlabs.org,vger.kernel.org];
+	DWL_DNSWL_BLOCKED(0.00)[suse.de:dkim];
+	TAGGED_RCPT(0.00)[];
+	RCVD_COUNT_ZERO(0.00)[0];
+	MISSING_XM_UA(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim]
+X-Spamd-Bar: +++
+X-Rspamd-Queue-Id: B33C71FE48
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
 
-On Fri, Oct 02, 2026 at 09:48:42AM +0800, Muchun Song wrote:
+On Tue, Sep 29, 2026 at 12:46:00PM +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
+> When running with CONFIG_PPC_IRQ_SOFT_MASK_DEBUG=y and LOCKDEP=y, an
+> Oops is triggered during NMI exit:
 > 
+>   [  202.258332] Oops: Exception in kernel mode, sig: 4 [#1]
+>   NIP [000000000003e178] 0x3e178
+>   LR  [c00000000003e174] arch_local_irq_restore+0x2a4/0x328
+>   TRAP: 0700  MSR: 0000000000081000 <ME>
 > 
-> > On Oct 1, 2026, at 22:42, Mike Rapoport <rppt@kernel.org> wrote:
-> > 
-> > Hi Muchun,
+> The faulting instruction at NIP is a 'trap' (0fe00000) inside the
+> rfi_flush_fallback trampoline at a userspace-looking low address, reached
+> after a bad rfid caused by an incorrect SRR0 value.
 > 
-> Hi,
+> Root cause
+> ----------
+> DEFINE_INTERRUPT_HANDLER_NMI used to call arch_interrupt_nmi_exit_prepare()
+> *before* irqentry_nmi_exit(), giving this sequence:
 > 
-> > 
-> > On Tue, Sep 29, 2026 at 01:32:31PM +0800, Muchun Song wrote:
-> >> For vmemmap-optimized sections, tail struct pages may be backed by
-> >> shared vmemmap pages. Those shared pages must carry the same page zone
-> >> ID as the struct pages initialized for the section.
-> >> 
-> >> Warn in __init_single_page() if the shared tail page has a different
-> >> page_zone_id(), which would indicate inconsistent initialization.
-> >> 
-> >> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
-> >> Acked-by: Qi Zheng <qi.zheng@linux.dev>
-> >> ---
-> >> v3:
-> >> - Collect Acked-by from Qi Zheng
-> >> 
-> >> v2:
-> >> - New patch.
-> >> ---
-> >> mm/mm_init.c | 3 +++
-> >> 1 file changed, 3 insertions(+)
-> >> 
-> >> diff --git a/mm/mm_init.c b/mm/mm_init.c
-> >> index 1650d6bc1211..bd02e8d06965 100644
-> >> --- a/mm/mm_init.c
-> >> +++ b/mm/mm_init.c
-> >> @@ -609,6 +609,9 @@ void __meminit __init_single_page(struct page *page, unsigned long pfn,
-> >> if (!is_highmem_idx(zone))
-> >> 	set_page_address(page, __va(pfn << PAGE_SHIFT));
-> >> #endif
-> >> + 	VM_WARN_ON_ONCE(vmemmap_optimizable_order(pfn_to_section_compound_order(pfn)) &&
-> >> + 			page_zone_id(page + VMEMMAP_OPTIMIZATION_NR_STRUCT_PAGES) !=
-> >> + 			page_zone_id(page));
-> > 
-> > Hmm, page + VMEMMAP_OPTIMIZATION_NR_STRUCT_PAGES is initialized a tad later
-> > than page so it'll have stale data in the page->flags, won't it?
+>   arch_interrupt_nmi_enter_prepare()   // saves irq_soft_mask, irq_happened
+>   irqentry_nmi_enter()                 // __nmi_enter() -> nmi_count++, in_nmi()=true
+>   ____func(regs)                       // NMI handler body
+>   arch_interrupt_nmi_exit_prepare()    // RESTORES irq_soft_mask=0 (IRQS_ENABLED)
+>                                        // RESTORES irq_happened with pending bits
+>   irqentry_nmi_exit()                  // instrumentation block runs here...
+>     trace_hardirqs_on_prepare()        //   ...with in_nmi()==true still
+>     lockdep_hardirqs_on_prepare()      //   ...and irq_soft_mask already restored to 0
+>       -> arch_local_irq_restore(0)     // mask=0 -> enable path entered
+>            WARN_ON_ONCE(in_nmi())      // FIRES: __nmi_exit() hasn't run yet
+>     __nmi_exit()                       // nmi_count-- (too late)
 > 
-> Lance is right. The shared tail struct pages are already initialized by
-> vmemmap_shared_tail_page() during vmemmap population, so they're not stale.
-> The head 64 struct pages are initialized later — right here, after vmemmap
-> population.
+> arch_interrupt_nmi_exit_prepare() restores irq_soft_mask to whatever
+> the interrupted thread had (IRQS_ENABLED / 0) and restores irq_happened
+> with any pending deferred-interrupt bits that were present when the NMI
+> fired.  This is correct and necessary before rfid back to the interrupted
+> context, but it must not happen until irqentry_nmi_exit() has fully
+> completed.
+> 
+> With irq_soft_mask=0 and pending bits in irq_happened, the
+> trace_hardirqs_on_prepare() call inside irqentry_nmi_exit()'s
+> instrumentation block reaches lockdep_hardirqs_on_prepare() which
+> calls __trace_hardirqs_on_caller(), which eventually calls
+> arch_local_irq_restore(0) (the IRQS_ENABLED / enable path).
+> 
+> arch_local_irq_restore() with mask=0 hits the CONFIG_PPC_IRQ_SOFT_MASK_DEBUG
+> guards at irq_64.c:217:
+> 
+>   WARN_ON_ONCE(in_nmi());   // TRUE: __nmi_exit() not yet called
+> 
+> The WARN_ON_ONCE fires a 'trap' instruction (tw 31,0,0 / 0fe00000) in
+> kernel mode with MSR_PR=0, MSR_IR=0 (real-mode).  The program check
+> handler (TRAP 0700) takes the sig:4 (SIGILL) path via do_program_check()
+> and calls die(), producing the Oops.
+> 
+> The RESTART_TABLE mechanism in arch_local_irq_restore then causes the
+> bad rfid that lands at the userspace-looking address visible in the NIP.
+> 
+> The bug is invisible with LOCKDEP=n because trace_hardirqs_on_prepare()
+> is a no-op when CONFIG_TRACE_IRQFLAGS is not set (TRACE_IRQFLAGS is
+> selected by PROVE_LOCKING which selects LOCKDEP).
+> 
+> Fix
+> ---
 
-Still it looks out of place here, can this check be done in sparse-vmemmap
-somehow?
- 
-> Thanks,
-> Muchun
-> 
-> > 
-> >> }
-> >> 
-> >> #ifdef CONFIG_NUMA
-> >> -- 
-> >> 2.54.0
-> >> 
-> > 
-> > -- 
-> > Sincerely yours,
-> > Mike.
-> 
-> 
+Hello,
 
--- 
-Sincerely yours,
-Mike.
+please avoid excessive formatting in commit messages.
+
+When git am is used to apply this patch it strips everything after this
+line
+
+> Move arch_interrupt_nmi_exit_prepare() to after the irqentry_nmi_exit()
+> block, so that:
+> 
+>   irqentry_nmi_exit()                 // __nmi_exit() -> nmi_count--, in_nmi()=false
+>   arch_interrupt_nmi_exit_prepare()   // now safe to restore soft mask state
+> 
+> The instrumentation inside irqentry_nmi_exit() now executes while
+> in_nmi() is still true (nmi_count not yet decremented), but
+> irq_soft_mask is still IRQS_ALL_DISABLED (NMI-entry value), so
+> arch_local_irq_restore() is never called with mask=0 from that path.
+> After __nmi_exit() returns, arch_interrupt_nmi_exit_prepare() restores
+> the pre-NMI soft mask and irq_happened, which is the correct state for
+> the rfid back to the interrupted context.
+> 
+> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+> Closes: https://lore.kernel.org/all/d4cccba9-ce5c-424b-864c-2248fb0d99e6@linux.ibm.com/
+> Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
+> Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+> ---
+
+because it's the same as this line that marks the end of the commit
+message.
+
+Thanks
+
+Michal
+
+>  arch/powerpc/include/asm/interrupt.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
+> index 1b45a49e9bed..56f855c6f07e 100644
+> --- a/arch/powerpc/include/asm/interrupt.h
+> +++ b/arch/powerpc/include/asm/interrupt.h
+> @@ -301,7 +301,6 @@ interrupt_handler long func(struct pt_regs *regs)			\
+>  		state = irqentry_nmi_enter(regs);			\
+>  	}								\
+>  	ret = ____##func (regs);					\
+> -	arch_interrupt_nmi_exit_prepare(regs, &nmi_state);		\
+>  	if (mfmsr() & MSR_DR) {						\
+>  		/* nmi_exit if relocations are on */			\
+>  		irqentry_nmi_exit(regs, state);				\
+> @@ -317,6 +316,7 @@ interrupt_handler long func(struct pt_regs *regs)			\
+>  	} else {							\
+>  		irqentry_nmi_exit(regs, state);				\
+>  	}								\
+> +	arch_interrupt_nmi_exit_prepare(regs, &nmi_state);		\
+>  									\
+>  	return ret;							\
+>  }									\
+> -- 
+> 2.55.0
+> 
+> 
 
