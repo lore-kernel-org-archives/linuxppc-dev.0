@@ -1,79 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-28767-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28768-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5860DCA5FD4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 16:47:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CFF1CA5FDD
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 16:47:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hxF7F3SWvz30VQ;
-	Sat, 03 Oct 2026 02:47:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hxF7L0YBCz3bqh;
+	Sat, 03 Oct 2026 02:47:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790959625;
-	cv=none; b=TfT9tNfNKipEOYtLouPqVP+BNLI+93taXBUwp8XSvBgtMzbQv06MFJhUvo0uKvBf+15plh4Yjj7UZXrHEIvZ6KT1+MD6DbY9sHMyY926CbHU/6YDR3U+Fe03go8vh2WO68LbAsZ3F+HsLnZL2dO/BQFNbn69Xp7rJGGcwP18Tka/Zr8necf3sCNskTEYOfv1zKh/m02ue2zz/2Sj/l6T9kWYhpIb2W2ZlldQffJWpTKLV5X99PHITfB5rDdfmF836Smq3YDN5vTmh9OzCtgySxeY2hiGIP8+3fWl4wJthSeueEh5A6jHqMoYiKrlqglnwu+UuWGABn8iQ1FvrCJRzw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790959630;
+	cv=none; b=ODGjscrwDfPayNZWXENJuGOULUKFXh87FtqzjivZgcNQH7s8OnC0N3jl2CBBAEkNOQ/YyXPdDMWpP1ZF2WznNjSbO3wZar9vrNd+T2mnBRBDHhpJ3vOQRK5EBdSP8JyDKZBfcYmrEpuL9bxkQxs5SZ/GOppvnS6q+f0xBMS7lSeeFH0j1oSNknJ35sHIw7pq8JekIX/0GYGuPKUyouWk7uPJ8B+/qWV2SrGETwvCRWKbZ5PqaR3qVCV5YaunIQ2iJ9RGL0yyrJ9ghN7fUb4CQSAxvFjB+SxVFdiicqLGoJ5EGuXd9YgXy2UCr+ou/L3C1t2+DSniF463zzNIRTEQiw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790959625; c=relaxed/relaxed;
-	bh=3Gvp5ou0+F6hhFiictfosHLijedKe2DjLAQQPlO3Yro=;
+	t=1790959630; c=relaxed/relaxed;
+	bh=Q3YePuRBwA7nfK+r55t03qUaZfwhOUiQ7jUpB3lk28M=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=RQp/rlyvRD+o2OmopGa5f1V0ENrHQLLJgEMurkqWjTja1S6Z2x5ng9zHOaYcanZi41eR1+5siI1qfANmRdg3zeyLV4CvxvZ9kbKdZaneBC4xAgwYaKUhkU5AXS2HlySkfrzpiY25186K9n3qaP9LDhbsYRmQ5riafTIasR2WvRmtFJKYtcx6uaspN42xsq13o8GwgR/cxjIBG9Wv7m//73SqcHNdzxDQYWQiiMnv0rlUQuUEQDFMVEFVao4OZTcZgy8l0BCRLNQKSBcWv8ExS3kEF2Vpxdcl7fxismBO9vZl6sjkJk5oV8Nyt5skQhWfEZFvX45rq2sBUobTXEJJiw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AQiehyQ/; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=DhSPmw5CEj07uTdRX3PKd1IInknl7fYN1x2sVAzlGgi7i4gZXwN1l24z7u0ogOmFAPmRDrgiPYNlu4+bvadkgapFD72mRrx7xSrCpQiNVme6L1Z/LocS+Y/Emv0MBl+z9M+/piBBxvISUUoe2E2A6uoyxzYoaKRqkM4ok3MmfdvPO/7lQhxaO37eXKPSR+ChxTioC3Mexp+qD1jlq9p/5k+o8cCNflNzemO0no2zWF1xeHAjGPM9Jv4EpKfrFA6TPRSqY2DU5l2H/DbkBBw/KhQtOeM+H6DM6pFE3vUOmB21YQrdhYSTkc5yHiaOnLUv15E5iELoyACi0c3z6tiDGA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JbMq1qFe; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AQiehyQ/;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JbMq1qFe;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxF7C6lpmz30Qv
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Oct 2026 02:47:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxF7K2JT4z30Qv
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Oct 2026 02:47:09 +1000 (AEST)
 Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 692FZLMR3243722;
-	Fri, 2 Oct 2026 16:46:46 GMT
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 692FZMA23243751;
+	Fri, 2 Oct 2026 16:46:51 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=3Gvp5ou0+F6hhFiic
-	tfosHLijedKe2DjLAQQPlO3Yro=; b=AQiehyQ/RLN8hgzVvybi2aRJg1qQSGgda
-	U0tkat3k6zyOD/L65sgI7v/uq5ruLjCFNj260CT0CfT+OXZoUApfBYKQbd1WjQkX
-	Q4Ze0yaMmIuHzxobsFs/TKZssyjO9YwEBFoyUUqf4fBMIib128fFqpaMjK2WWqN0
-	NNGDr9C8Dy5J02fzyWYhbHTpSy6umuGJ1sGbHgzvu+3MKSU7v+L3VZ2bcZnifdzz
-	nu4sIwy92/uIqIYHpdxt2xSeOlxYkCmun/Hp8Te9ZH2Kis2TUc3vlSUcai2fXkq7
-	o4Cl23bKMTpm9qBCYyLB9Tiw15/+8rz3SBzEy430s1vNRbBaJ33BQ==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gx5qrtbbp-1
+	:mime-version:references:subject:to; s=pp1; bh=Q3YePuRBwA7nfK+r5
+	5t03qUaZfwhOUiQ7jUpB3lk28M=; b=JbMq1qFeaFwIqEhJNDFW3Ivrik9e5qxDB
+	w5TEdxFrV9yC+mP+w/JRZrxofZ56vv4m9Xny63+h3oPhGv1kF4NeU7Rtb+Ou7EeB
+	7IW9epGOzz6spq++3N4pzv56cbHvp+ozVXmk7xJ3NWxJp5deH7VsiMZB+Rdv/pyQ
+	gPhQF+1WiDgCsPxCaTd+KXb8GEYxylomk9vAjwMCtcErqDrd+hsreD1UCs4u6uE5
+	FeoKkICp9fR0wXgnuB2m8VTs+rIxMF26//dc27TnBztOFPpaanlJRhX9qvO5xep8
+	ylGKkmu5FGrhjcx628sN/Tz1GAk7bhtNgmk7gtgHs11bsM/3oRC1g==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gx5qrtbc1-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 02 Oct 2026 16:46:46 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 692FHlms1429264;
-	Fri, 2 Oct 2026 16:46:45 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4h0q4pn0y9-1
+	Fri, 02 Oct 2026 16:46:51 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 692FHffR2672049;
+	Fri, 2 Oct 2026 16:46:50 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h1y2dkgsr-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 02 Oct 2026 16:46:45 +0000 (GMT)
+	Fri, 02 Oct 2026 16:46:49 +0000 (GMT)
 Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 692GkfuY36176172
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 692GkkdO49021256
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 2 Oct 2026 16:46:41 GMT
+	Fri, 2 Oct 2026 16:46:46 GMT
 Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9F2592004B;
-	Fri,  2 Oct 2026 16:46:41 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id EA76120043;
+	Fri,  2 Oct 2026 16:46:45 +0000 (GMT)
 Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 97D6120040;
-	Fri,  2 Oct 2026 16:46:37 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 385B320040;
+	Fri,  2 Oct 2026 16:46:42 +0000 (GMT)
 Received: from li-7bb28a4c-2dab-11b2-a85c-887b5c60d769.ibm.com.com (unknown [9.124.216.180])
 	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri,  2 Oct 2026 16:46:37 +0000 (GMT)
+	Fri,  2 Oct 2026 16:46:41 +0000 (GMT)
 From: Shrikanth Hegde <sshegde@linux.ibm.com>
 To: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Cc: sshegde@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
         christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org,
         ritesh.list@gmail.com, peterz@infradead.org, boqun@kernel.org,
         will@kernel.org, jhladky@redhat.com, paulmck@kernel.org
-Subject: [RFC 2/3] powerpc64/preempt: Add need_resched bit inside preempt_count
-Date: Fri,  2 Oct 2026 22:16:18 +0530
-Message-ID: <20261002164619.1455143-3-sshegde@linux.ibm.com>
+Subject: [RFC 3/3] powerpc64/Kconfig: Enable HAS_SEPARATE_PREEMPT_RESCHED_BITS
+Date: Fri,  2 Oct 2026 22:16:19 +0530
+Message-ID: <20261002164619.1455143-4-sshegde@linux.ibm.com>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <20261002164619.1455143-1-sshegde@linux.ibm.com>
 References: <20261002164619.1455143-1-sshegde@linux.ibm.com>
@@ -93,24 +93,23 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDAyMDA2NiBTYWx0ZWRfX1ht3HzGD0+mw
- sqaoVMNPl48nLT7vKWHoh2jzBNALIcDh6vvBx9HioZNG7vC4hyd4tcx+0JQinGL/rb41Fq8kQSN
- ELUoAVXjU6ar2BM+KaGQGIXfJR9XpQpeQG9nBX2UpDqBiWgnzm03Wrg/nsWSX/l1ZtTpejXDteC
- n6kODcDH2jPRxLcKxWl4PFP2FU1yVJg9MGroUvTiraFupNvKA/0ygCH3S1iu3NKebKV/BE8lZWa
- 810anrX3h+PkE2OO2XFBtChYfJuqq8QqBzntCFheU8wAu/dz+iKx/qKOaZ4Qpgf++WqWqjDsiAs
- pC8yCWwuBdvcmGB/hyd6iO5c2WQMnWcO08I+9t1SMmmuKIBVEgrFHCqWCgL+TNqHCoYw+0gG6X1
- yA5rVQpMNe9vFRBXDkKTL/fVfqQZIMltSuGW/KHdaRaao8f6YE+x2sCe3bxDL+ZtIwaYDYQ8/KG
- prPHiy+EAoX5l+v783Q==
-X-Authority-Analysis: v=2.4 cv=SPbXx+vH c=1 sm=1 tr=0 ts=6abfdff6 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDAyMDA2NiBTYWx0ZWRfX7wox3UP2nfKp
+ K4dS4xuGtrkquQh5ctiHIx7fRbbSoAk2qPHQAFRCuZoz0mGb8yLTaVTUX0Y0KtEbx+UUkBSXaUC
+ ipZg8eKiN87iw6kwDqJgw9/3IMYTsRai4R7XE62Jtt4Xr02nESV9FukSURmDuf/SdFHXaGnazLi
+ yTGppKDQ8wno84IdPkPScWHaUx/Up+n0IHyJJYLNkX5nvR7PIrz46MauOpqhqhMXEIdCEVn6ICe
+ vJBrp9okXj4vxvQqZpeOuBgY9bAgKy6jVZrlZpjVxJZjvBfX7qwcZBtLNQZXic1AEnZPJ3C98Tz
+ BhUlSp9bN+umOCVGGVyhhPGtztQIPSsTnOs7CCBS2wdPtUoaQ9qo7sDUYpq8wgcGsUFMaXzPDeR
+ Tm0vZUCremwlqKPE6XIlrKBt5sO5w4xqmpUff/zo/Hajuf7U8G2BplPbVYou713e6Unp1it06W2
+ gHScddoQk2OUh+lntuw==
+X-Authority-Analysis: v=2.4 cv=SPbXx+vH c=1 sm=1 tr=0 ts=6abfdffb cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
  a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8 a=jEDKg6MMcPES391McfIA:9
- a=O8hF6Hzn-FEA:10
-X-Proofpoint-ORIG-GUID: RWuH2EKhBAgqVGP-VK86SjGXJ4Cq13ZE
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDAyMDA2NiBTYWx0ZWRfXz4mi18j8B2L5
- yYH9PbU0y+DZgjYs6/jHGJm5+BpS0U+mqpvEv78rUyI52aOfoscvDkjuuRdRTMT0gXXpCE4NhZY
- nWbFOLBfgJ7rujoxvkAnEqaNX+ZrFj4=
-X-Proofpoint-GUID: KnyrYjTOr9VsY5M0P2PCrgO-Z5igNFI2
+ a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8 a=xiQKgxPxu2hnmYXuNjUA:9
+X-Proofpoint-ORIG-GUID: plB92gha4kximmyTXrMo5pmNuC2fB3SE
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDAyMDA2NiBTYWx0ZWRfX/H6nYZomwEf1
+ c56cCdRwXILlcIWGVqsQsh92uOWQQzH49LlETClqaqbTbm9Q0kIa1jaxIPZr6jRwj9SxH9mGtH4
+ lyxlKmvm7daK2zlWuK71tBi44eWn+DM=
+X-Proofpoint-GUID: PvwQXvnxG5GyDoODfo9vdNwabt--mtlj
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-10-02_04,2026-10-02_01,2025-10-01_01
@@ -121,179 +120,27 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
  definitions=main-2610020066
 
-Current implementation doesn't make use of the PREEMPT_NEED_RESCHED flag,
-since this can interact badly with load/store architectures which
-rely on the preempt_count word being unchanged across an interrupt.
+Now there is separate need resched bit, enable the generic config
+of HAS_SEPARATE_PREEMPT_RESCHED_BITS. This would make use of higher bits
+of preempt count(29-32bits) for NMI bits.
 
-On PPC64 which is 64 bit and the preempt count is only 32 bits wide,
-one can simply pack it next to the resched flag and load the whole thing
-in one go, so that a dec-and-test operation doesn't need to check tif.
-
-[Adopted from arm64 implementation, including changelog bits]
 Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
 ---
- arch/powerpc/include/asm/paca.h    | 13 +++++++-
- arch/powerpc/include/asm/preempt.h | 52 ++++++++++++++++++------------
- arch/powerpc/kexec/core_64.c       |  2 +-
- 3 files changed, 44 insertions(+), 23 deletions(-)
+ arch/powerpc/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index 0aa729c2faf5..a73e214bd6f3 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -164,7 +164,18 @@ struct paca_struct {
- 	u64 saved_r1;			/* r1 save for RTAS calls or PM or EE=0 */
- 	u64 saved_msr;			/* MSR saved here by enter_rtas */
- 	u64 exit_save_r1;		/* Syscall/interrupt R1 save */
--	int preempt_count;
-+	union {
-+		u64		preempt_count;
-+		struct {
-+#ifdef __BIG_ENDIAN__
-+			u32	need_resched;
-+			u32	count;
-+#else
-+			u32	count;
-+			u32	need_resched;
-+#endif
-+		} preempt;
-+	};
- #ifdef CONFIG_PPC_BOOK3E_64
- 	u16 trap_save;			/* Used when bad stack is encountered */
- #endif
-diff --git a/arch/powerpc/include/asm/preempt.h b/arch/powerpc/include/asm/preempt.h
-index e2785d5a13e0..d17c8acac7bd 100644
---- a/arch/powerpc/include/asm/preempt.h
-+++ b/arch/powerpc/include/asm/preempt.h
-@@ -8,19 +8,20 @@
- #define __ASM_POWERPC_PREEMPT_H
- 
- #ifdef CONFIG_PPC64
--#include <linux/thread_info.h>
- #include <asm/paca.h>
- 
--#define PREEMPT_ENABLED	(0)
-+#define PREEMPT_NEED_RESCHED	BIT(32)
-+#define PREEMPT_ENABLED	(PREEMPT_NEED_RESCHED)
- 
- static __always_inline int preempt_count(void)
- {
--	return READ_ONCE(local_paca->preempt_count);
-+	return READ_ONCE(local_paca->preempt.count);
- }
- 
--static __always_inline void preempt_count_set(int pc)
-+static __always_inline void preempt_count_set(u64 pc)
- {
--	WRITE_ONCE(local_paca->preempt_count, pc);
-+	/* Preserve existing value of PREEMPT_NEED_RESCHED */
-+	WRITE_ONCE(local_paca->preempt.count, pc);
- }
- 
- #define init_task_preempt_count(p) do { } while (0)
-@@ -28,64 +29,73 @@ static __always_inline void preempt_count_set(int pc)
- 
- static inline void set_preempt_need_resched(void)
- {
-+	WRITE_ONCE(local_paca->preempt.need_resched, 0);
- }
- 
- static inline void clear_preempt_need_resched(void)
- {
-+	WRITE_ONCE(local_paca->preempt.need_resched, 1);
- }
- 
- static inline bool test_preempt_need_resched(void)
- {
--	return false;
-+	return !READ_ONCE(local_paca->preempt.need_resched);
- }
- 
- static __always_inline void __preempt_count_add(int val)
- {
--	int pc = READ_ONCE(local_paca->preempt_count);
-+	u32 pc = READ_ONCE(local_paca->preempt.count);
- 
- 	pc += val;
--	WRITE_ONCE(local_paca->preempt_count, pc);
-+	WRITE_ONCE(local_paca->preempt.count, pc);
- }
- 
- static __always_inline void __preempt_count_sub(int val)
- {
--	int pc = READ_ONCE(local_paca->preempt_count);
-+	u32 pc = READ_ONCE(local_paca->preempt.count);
- 
- 	pc -= val;
--	WRITE_ONCE(local_paca->preempt_count, pc);
-+	WRITE_ONCE(local_paca->preempt.count, pc);
- }
- 
- static inline int __preempt_count_add_return(int val)
- {
--	int pc = READ_ONCE(local_paca->preempt_count);
-+	u32 pc = READ_ONCE(local_paca->preempt.count);
- 
- 	pc += val;
--	WRITE_ONCE(local_paca->preempt_count, pc);
-+	WRITE_ONCE(local_paca->preempt.count, pc);
- 	return pc;
- }
- 
- static inline int __preempt_count_sub_return(int val)
- {
--	int pc = READ_ONCE(local_paca->preempt_count);
-+	u32 pc = READ_ONCE(local_paca->preempt.count);
- 
- 	pc -= val;
--	WRITE_ONCE(local_paca->preempt_count, pc);
-+	WRITE_ONCE(local_paca->preempt.count, pc);
- 	return pc;
- }
- 
- static inline bool __preempt_count_dec_and_test(void)
- {
--	int pc = READ_ONCE(local_paca->preempt_count);
--
--	WRITE_ONCE(local_paca->preempt_count, --pc);
--	return !pc && tif_need_resched();
-+	u64 pc = READ_ONCE(local_paca->preempt_count);
-+
-+	/* Update only the count field, leaving need_resched unchanged */
-+	WRITE_ONCE(local_paca->preempt.count, --pc);
-+	/*
-+	 * If we wrote back all zeroes, then we're preemptible and in
-+	 * need of a reschedule. Otherwise, we need to reload the
-+	 * preempt_count in case the need_resched flag was cleared by an
-+	 * interrupt occurring between the non-atomic READ_ONCE/WRITE_ONCE
-+	 * pair.
-+	 */
-+	return !pc || !READ_ONCE(local_paca->preempt_count);
- }
- 
- static inline bool should_resched(int preempt_offset)
- {
--	int pc = READ_ONCE(local_paca->preempt_count);
--
--	return unlikely(pc == preempt_offset && tif_need_resched());
-+	u64 pc = READ_ONCE(local_paca->preempt_count);
-+	return unlikely(pc == preempt_offset);
- }
- 
- #ifdef CONFIG_PREEMPTION
-diff --git a/arch/powerpc/kexec/core_64.c b/arch/powerpc/kexec/core_64.c
-index f3954695e0b5..0f17c75cee28 100644
---- a/arch/powerpc/kexec/core_64.c
-+++ b/arch/powerpc/kexec/core_64.c
-@@ -352,7 +352,7 @@ void default_machine_kexec(struct kimage *image)
- 	 * XXX: the task struct will likely be invalid once we do the copy!
- 	 */
- 	current_thread_info()->flags = 0;
--	WRITE_ONCE(local_paca->preempt_count, HARDIRQ_OFFSET);
-+	WRITE_ONCE(local_paca->preempt.count, HARDIRQ_OFFSET);
- 
- 	/* We need a static PACA, too; copy this CPU's PACA over and switch to
- 	 * it. Also poison per_cpu_offset and NULL lppaca to catch anyone using
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 143381d267ce..001bb2f3eec1 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -215,6 +215,7 @@ config PPC
+ 	select GENERIC_PCI_IOMAP		if PCI
+ 	select GENERIC_SMP_IDLE_THREAD
+ 	select HAS_IOPORT			if PCI
++	select HAS_SEPARATE_PREEMPT_RESCHED_BITS	if PPC64
+ 	select HAVE_ARCH_AUDITSYSCALL
+ 	select HAVE_ARCH_HUGE_VMALLOC		if HAVE_ARCH_HUGE_VMAP
+ 	select HAVE_ARCH_HUGE_VMAP		if PPC_RADIX_MMU || PPC_8xx
 -- 
 2.52.0
 
