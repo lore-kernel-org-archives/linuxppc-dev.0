@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-28718-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28719-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6CFACA5FC4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 07:08:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D768CA5FD9
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 07:10:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hx0J02m7bz30Cj;
-	Fri, 02 Oct 2026 17:08:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hx0Kn5b1Gz30Cj;
+	Fri, 02 Oct 2026 17:10:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790924928;
-	cv=none; b=E8Vue/wav7pCf9XFfLpwEiK+7/7BMgSOhmIOuP5tA0wNRvKEK7WtGhiZ+KgsHciVykR2MCUxiTzgjeE7ujObF2xjAyN4EtTzRABu6xHkwLvhsjJgrNesj4T0ftLm6FORZ50msgkUSDsW9t9JHwbCZRuOTNTKloxJuN2Wk/3D9GVCnWsMpKWSYv/A9HV65eFw54fS7iqU3Q44DxhkXAxcorKHEW9OwfyFpNSDYlKMf+xFF5qcANkbLSwXs1qsr+qQtu8vbkkbrojPCgPhwfYXjWsMQbiZqZGEZbgyxjWizDIhpRNZknxCsfz9o9LDLNLlBTUpg67ZuPsDtmmV1lzFCw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790925021;
+	cv=none; b=YSs59fnLFmRYaKyW00Wq5MNv/9dDRAzWZu0cHf+p8Imoyrl5rILqM79NvWMl9FqqF3HStJtAQAd1DQf1mUBJ0WjnJjIYN5AXzVz+11VF7fe+aiF6Jc6fz+BFQRtg9nLM6FxYCZHTHeV63K8wbbSFds/MJyCM/BiIlUsJ8zzo2hXLOR/2u9CiuHW51MwUKey8ldUB3bhnCWwAL/WhfEhDjeVD0v23H2uVeXlwO/1xTiRkaLv7/EUUx4hof+kdAK9aB/+jFzcPoBvB9Ujn3lygxtk2fovEimnOu5mYGHsjwnEq64AGIqsVLMaY4CNIi9TIwYWbk9V2ig3JTffZO/B0sA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790924928; c=relaxed/relaxed;
-	bh=E1yIhF4y93luJBvo++ntgk02PM9naHAGHJiTxi+AQxI=;
+	t=1790925021; c=relaxed/relaxed;
+	bh=z0R+AFuLfT7LW4bS8vfoemEDpRx0M25PpnJ7rizmkeQ=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=DFOUm8VxGzBDVwgC+G3pswrrNM1TJDH02u0b1mvRpST8QQClnDXwoJ4Q2E+DV+MqIZ9jcnsrTxP1eCJvczyIGtH+adsw+/Vkf/q7Yu0w0VD0bR0prCp+G60gDYSewmjwIBY0X6EBv9yn4blLiAYHt0VmtfHi7DEUMUPJl/NUJGq7colLGlHDFI9zzM+6+YsK4pJn+NTm0S4nLUJx7hFWuN5T4p2n6CTYJ+RMUSxr7KQvqdfO5l9p70y7XoW7QUfefdOl/UH+moyx5GQvKW2n8Y354uiJNkKZK79qIiZQcQ8hW8ELBg69rYdcXLXDLF4fo13CK1NSeLhcdUFhPQ7M3Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=L0Ii+owA; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=nyLEOEg3rv+7D0/ZPGPjnkdH2I/zulmRBA+Pau79c2CArXVRzG6oxxDvIIr8MQK2UbbLho8LdkbumQqdfwnfsAlVjdhG+1OQf+u2TgsZ5Ht4BsHbSuKTdYGPNM+AED/LHv6VAljocTknOL3Tl/fFbEC10qXHZ0DSs8oD++ELQqkqI5mfGK/mGS+BnsdzYQUuI/e/I//dUC2TyFeLNj/zIOEnbJoS2fPYALx4lAVHqYq6YZmOrnYB5zGPUA3uCBQkYGikLb2Vrbh4akofc5LDRwmjZAjFD8e3WzO7G0jnlEWK+66EJl9dTd89jmSyhB+N8lX2PVyhl9mI6WS/mZxc7A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jAQYjN8c; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=L0Ii+owA;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jAQYjN8c;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hx0Hz4VvBz2xsW
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 17:08:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hx0Km72H3z2xsW
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 17:10:20 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id E74C043E72;
-	Fri,  2 Oct 2026 07:08:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 52FD71F000FF;
-	Fri,  2 Oct 2026 07:08:06 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 3BB2A43048;
+	Fri,  2 Oct 2026 07:10:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 986B21F000FF;
+	Fri,  2 Oct 2026 07:09:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790924925;
-	bh=E1yIhF4y93luJBvo++ntgk02PM9naHAGHJiTxi+AQxI=;
+	s=k20260515; t=1790925019;
+	bh=z0R+AFuLfT7LW4bS8vfoemEDpRx0M25PpnJ7rizmkeQ=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=L0Ii+owAiMIKjEnXtHRGG0fivqXyvm7Omcwl10tfIvuyUXuWIJ8zzcRm10ppXiGFl
-	 nGZQf/Ag81LdOTsX0yKoPSrTms9RZ60WX2PqNiDDA/BU6uMDqxUB54Fr1F9z2zpihH
-	 AMEJ6uTLl6LJs/eUGk9+dcQ/77gS3Ghs5oDjCkvpBIBMGyX3LbGod/U7eVcVuFJmBF
-	 wRLKeEcTeCXwWXLdqU/4ugShns3nhEv0/y/SR3UmflTmCTdFCKZwDPiJ5soL8sVlQG
-	 L7XHtmJvC7UOChs6SWb8XontDWIlnRB0iFnOyl2yy5GEt8Rmif0pPTe2e0teyqfRiA
-	 Kl09cc+aM+pYA==
-Message-ID: <651c8852-39d1-4351-b899-80f54077b494@kernel.org>
-Date: Fri, 2 Oct 2026 09:07:49 +0200
+	b=jAQYjN8cqx2Chonfaa3UgRC+q9FNer11ZTc3ym7gN4EzSUnN9yctP+HSUzPW7Na8T
+	 XhXLG91INpSlxd1n8jme4BLqq8xlMmw9OyKrnwO/SeJSsiJsgHVqyQYRHY8JwXl4W1
+	 JBfwx5JRCqHlYGZTghTyJgnt+WhRxlmjtx1r5DTj0z3Wkm0FuPnE6IssCOmqCWX0WN
+	 i018WlOPFgg2mhJfBffqsM+y+RA+yPh22TTQPO3V2PJS5zyGxn2clBuLnsYWtkLEwW
+	 Azz54A0Xm+rXoq6gG2ZN1AUO3VP2I2JSQJCTgseE8QLMDwldkpQMvF1Okha2kXwxVR
+	 /ImSq7OK+twiw==
+Message-ID: <799f9f13-1462-468a-a6e6-6b8bd06c0fb8@kernel.org>
+Date: Fri, 2 Oct 2026 09:09:36 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,7 +60,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 37/40] mm: eliminate VM_SPECIAL, VMA_SPECIAL_FLAGS
+Subject: Re: [PATCH v3 38/40] fuse: dax: do not set VM_MIXEDMAP
 To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>,
  "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>,
@@ -142,7 +142,7 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
  fuse-devel@lists.linux.dev
 References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
- <20260917-b4-mmap-prepare-vma-flag-sanify-v3-37-4583d8a23bca@kernel.org>
+ <20260917-b4-mmap-prepare-vma-flag-sanify-v3-38-4583d8a23bca@kernel.org>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -189,27 +189,49 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-37-4583d8a23bca@kernel.org>
+In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-38-4583d8a23bca@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 9/17/26 18:22, Lorenzo Stoakes (ARM) wrote:
-> Every user of the VM_SPECIAL or VMA_SPECIAL_FLAGS has now been converted to
-> predicates which explicitly express what is actually being checked for
-> rather than the nebulous concept of possessing 'special' VMA flags.
+> Commit e1fb4a086495 ("dax: remove VM_MIXEDMAP for fsdax and device dax")
+> prevented fsdax and device-dax from setting VM_MIXEDMAP, as DAX no longer
+> relies on it to direct core mm paths.
 > 
-> In any case 'special' is not so special a term of art in mm - it includes
-> VDSO/VVAR mappings, special in the sense of vm_normal_folio() and probably
-> other cases too.
+> The fuse DAX implementation, added later, copied the old pattern and still
+> sets it.
 > 
-> Therefore make things less special by eliminating these now unused flags.
+> Fuse DAX maps pages the same way fsdax does, via dax_iomap_fault() and
+> ultimately vmf_insert_page_mkwrite() and vmf_insert_folio_pmd(), which
+> insert ordinary refcounted pages and so do not require VM_MIXEDMAP.
 > 
-> No functional change intended.
+> Setting it only serves to mark the mapping as kernel-owned, making fuse DAX
+> the sole DAX implementation whose mappings are unmergeable, cannot be
+> mlock()'d, eagerly copy page tables on fork and reject MADV_DOFORK and
+> MADV_DODUMP.
+> 
+> It also requires vma_is_special_huge() in mm/huge_memory.c to carve DAX out
+> of its kernel-owned check explicitly.
+> 
+> There is no reason for fuse DAX to keep on using this flag so drop it.
 > 
 > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 > ---
+>  fs/fuse/dax.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/fs/fuse/dax.c b/fs/fuse/dax.c
+> index 85cdf0199bc0..a5994f1c637d 100644
+> --- a/fs/fuse/dax.c
+> +++ b/fs/fuse/dax.c
+> @@ -826,7 +826,7 @@ int fuse_dax_mmap(struct file *file, struct vm_area_struct *vma)
+>  {
+>  	file_accessed(file);
+>  	vma->vm_ops = &fuse_dax_vm_ops;
+> -	vm_flags_set(vma, VM_MIXEDMAP | VM_HUGEPAGE);
+> +	vma_set_flags(vma, VMA_HUGEPAGE_BIT);
 
-Awesome, thanks for doing that!
+Yes, I think I stumbled over that in the past as well:
 
 Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
