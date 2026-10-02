@@ -1,49 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-28780-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28781-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8BD78CA5FDD
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 22:07:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF6FBCA5FE6
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 22:12:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hxNFD5dpBz2xyh;
-	Sat, 03 Oct 2026 08:07:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.167.200
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790973029;
-	cv=none; b=PK3mBzKvxi6wyxKD5J7W+8gx0sQoCl9fz0+sgPRhv+GjIuJV59qAUTDT196nhczp91jry6Op/1CUt/lgD4qr4Lssl027lRILxAsoTogng/io5z7igaQ15mxGUaNzp1vGIew2GfrJtSaPeZXMC9WXPCZEA9aHjdTMFSnsfL9j04tUFd36Z0NBD/jqOTbHXCTfNV174ILutSy7yEHhst7sdCdUk4UE+IDpNytHHiesCpkNn6Aj09EOJ9xsgG839JxoJhNuem25MN7nfZ0Jidaal1ZYjsxVXPboeJOc/sJO4Q9NdpOCaPxha1psqZJtlCVQVnilmemrCaBkKE1ZZ8Q1NA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hxNLp1RG6z2y2T;
+	Sat, 03 Oct 2026 08:12:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::548"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790979154;
+	cv=none; b=i9XYF5Hg+GM2h69YTSnbKqHQTRDTjr9qS00au/RRJAbnGIHTLvRFI3MdB0BJK8ErUNmXTv+BHOGokqEv/VPbTBVV0lHOhhpsUfw3LlNxDxmmhbYh2iaAcPstBuzSMwV9Wrrw8qae9LRbqKk7XcPZSvIZZGqh1fu0UunwjVw++wW7iYb6cu2DfHDvQzb+arEuYGFNdP1Y9icfV+Gv+OrWc+QFpwuVlH4j9R6U9c9iDB/Ov0KjWLTrM7kQg5QDKK/3iYBXVde78ozZ1UH4SM3gJ4ogDieilstdn/EJa0j58ZTndGt4ThsSltL2LiJxSrlNu4HWczbPdyEr8PrAqftnUw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790973029; c=relaxed/relaxed;
-	bh=6wUuB592+kJPng/iRiJB4kmOBdQLCgtSi2/SJcT8bYA=;
-	h=MIME-Version:Date:In-Reply-To:Message-ID:Subject:From:To:Cc:
-	 Content-Type; b=GMMoGwTjD7x9RddZGxOw5pssUtPP42XAMN844LXsdVveXcL8TUoVvARMqAGCuBegsw7lT4urlDGG8hisw4OnwsB700K0S6O5vyczTn6Ex+qwiOWxGaDEUpM9Y8RJI3Lu5bZjsu4eMFkYzVEjZGSZAdoLwadh+iVR2UJ3UNN2/XSRDJpE5da8FBCO7r9hVtZzmxRFiMNjSqtGIhylWMpkISwO/75ha6tdHmJ/1cM6sGl8sQgtXQN22ouWRZBCNZwMJKsdeyHXBDmCPxOyWuRXuJHMDzQ/Fb9ZP17CMxCmZGw0HPnDkoI4fw97UZxzxsNhcNV7Jg9caJIbXFcYmGQ7/g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass (client-ip=209.85.167.200; helo=mail-oi1-f200.google.com; envelope-from=3xxtaagkbaoqyefqgrrkxgvvoj.muumrkaykxiutzktz.ius@m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com (client-ip=209.85.167.200; helo=mail-oi1-f200.google.com; envelope-from=3xxtaagkbaoqyefqgrrkxgvvoj.muumrkaykxiutzktz.ius@m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-oi1-f200.google.com (mail-oi1-f200.google.com [209.85.167.200])
+	t=1790979154; c=relaxed/relaxed;
+	bh=m+BE8hAAq8CojA7/qWTm+y4+V1+d1I0cqoqJfhKPjfM=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=jbR90XgWwKrhbUKy9Tq7VNsxn/R2UY6T14uqyvWpobh2zB3Ao+JFBI1RaDr7uFMHwiknnCpDxG9XXGtSD2wDPB7xSD9HMs3uE60l/MpqPlJ77szaOVI+g+jfayz5ai0ughGw0T7TwoBVB80bXoZfgghT1fnziSGAB5WED81AW+mdQOtnC9eNZqBxrGA/aSTJC9ha/f6tjoC67aOixsabq75f8kJFFR0TocAEC5FQtIU+aA7Rduv5bpxVHaiPAyRRiHYysR8fjvVT8aKhnfwVzgIhFsZuf4MpZGJ2rzD4dmiaFCYHNkTmYzq0rXTzLA8Ql33mkWpIjDV813tP5+ZmuA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=gWs0CJgd; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::548; helo=mail-pg1-x548.google.com; envelope-from=3tszaagykdaqwierngksskpi.gsqpmry1ttg-hizpmwxw.s3pefw.svk@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=gWs0CJgd;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::548; helo=mail-pg1-x548.google.com; envelope-from=3tszaagykdaqwierngksskpi.gsqpmry1ttg-hizpmwxw.s3pefw.svk@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x548.google.com (mail-pg1-x548.google.com [IPv6:2607:f8b0:4864:20::548])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxL4z6cpmz2y8r
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Oct 2026 06:30:27 +1000 (AEST)
-Received: by mail-oi1-f200.google.com with SMTP id 5614622812f47-4eb0b989f0eso469658b6e.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 13:30:26 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxNLm6PKKz2xyh
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Oct 2026 08:12:32 +1000 (AEST)
+Received: by mail-pg1-x548.google.com with SMTP id 41be03b00d2f7-ccacc75a997so29395a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 15:12:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1790979150; x=1791583950; darn=lists.ozlabs.org;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=m+BE8hAAq8CojA7/qWTm+y4+V1+d1I0cqoqJfhKPjfM=;
+        b=gWs0CJgd9ROVKmKuYFAP/+Z1pZ+6NsMREbaXYu3K279X2Fg7ORc5wvBFCykWlkUech
+         ap9UzNHgfCmi82n3wN1PkdS6dQxYp8lZPhek8JLzFajIqnVOWYliD3XpQzWcdqbsDzEZ
+         iq2myk/JKfnPBfy45Mw0gWLhdoU4kVOnSjGXk0YRbi82UDF0d582TysuaaoBdOa6apdf
+         +mUbVitDFNDOISw0IcCFqEtj/xUvO5trXBBRHbl9bB9YGW9bGFe6dJvTdich34JWt1+e
+         /ve0q8eQsxpxYK7QH7N75hQfoAfuersUahLK8YPpwVW4leiZkjEFKkEdWiB0kRWOwwuQ
+         RWjA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790973023; x=1791577823;
-        h=content-type:cc:to:from:subject:message-id:in-reply-to:date
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=6wUuB592+kJPng/iRiJB4kmOBdQLCgtSi2/SJcT8bYA=;
-        b=Cu2FuNak4JzQKAlCS773fBKPIRfPGmpSNu5JVIsTRZPngM8ULGaMu075r/tL4ZGyv3
-         nIjQkMsG6OFKEQ6NftQId+BVrLeXlb/Pqs9UEXEZqaOpRvgOxmVJJ6NfQHRcNJP7SFre
-         wyk3v6PcEmPQeDnokP87j9FREMHMq0QCEJVFYgp9dUPJoG+G9U0ChwZl5UZK5wGg9ZQQ
-         30nzsc+kAn/GkhFh5hLe4W/bu8Bp8YSim1HmZXCNgjPTUQhxdUpxyf4nxsXrrjW+75Ts
-         aVFFH92O7mIYGvjg6dAWcTMxfrCkhwBg7EssMJ6FdHG6oX8Jan+jbM524IMikE7dB0hq
-         upSg==
-X-Forwarded-Encrypted: i=1; AKwUvByBBbahWzhJDJBxWZmQgeOHCyGkx1qtPg5N0DIVOwuakUmH4C4vEneLxxB3naune0aCsJLysO6x2/RiP44=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++nN7XE/SXh/jWsbXHNsTJlvvip0jQx4QhtIwkWw3rwGc487vzKQ
-	lkyMb4SdlBU0yY0mVNi0U6jm/GNWKtUhqhNx9tNaFwZj0eHRxdEVq9t4itMaEraXZ7TNyAPMxTt
-	B98Np6jYYZiLDv7weyaQiTNWMzEvPUuV8NnzOPMjWAorIJQimcz/LIKYqI54=
+        d=1e100.net; s=20260707; t=1790979150; x=1791583950;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=m+BE8hAAq8CojA7/qWTm+y4+V1+d1I0cqoqJfhKPjfM=;
+        b=hJVe/32GE/LKdvsjace6l3Rv3pvViFkXscLYPbRsleX0y6DIpW7NwCV3rdvUyuSaAr
+         qyexf/AxRAQQ5w2Rl1FNCQ22EUfP64Z1wDQ0G1bR/c/CSdeMeQdgC5DfETqY4K82Ld7k
+         vgAJC+OlTykgQYeCrYo3mLUgwcYTUiof9cNGc0Ha+C9YO7YURBVv8YrsvowLaYDBgMAW
+         zKTE9wDEXaQskFoJicw/NiDPXCxCH4TFqtQJHYUGek1rM12zlJNX9U9p/bw6saPTWe6Z
+         AcHGfQRU9wm9bsVM1yW5KxUHoDpuDWM2iID9x6EWaY2ZyMiT8NoVyCBzZ9lnZRx5Tdil
+         FB4Q==
+X-Forwarded-Encrypted: i=1; AKwUvBzceyEBgNSk1QMPJJdU/KMz45PBx2ZDltBeQIuhLb0JQ8lZZ+ltdxNmxvja8bPbxAI1v3Kzo2aT6ZbM9dk=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++mV5zFIjplKZQxoWWbe5AtHjnLAk/JKtydvMVaKKkSQjc5An1lc
+	SYKUdIX5ppWs9iyNLLkOu9fgtSUY9IQ+zB6SQrK9xKlyuAkm3KsxUuiBTluEMTlDrWNVdSBxHR5
+	9d7C0OQ==
+X-Received: from pgaa6-n2.prod.google.com ([2002:a05:6a02:6486:20b0:cca:bb35:aa9c])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a21:748a:b0:3e0:b937:8829
+ with SMTP id adf61e73a8af0-3e0d6ce0ea7mr619313637.51.1790979149504; Fri, 02
+ Oct 2026 15:12:29 -0700 (PDT)
+Date: Fri, 2 Oct 2026 15:12:28 -0700
+In-Reply-To: <de328dc973a135a956a148dd83d8353b7157d452.1790101179.git.ritesh.list@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,132 +77,68 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-X-Received: by 2002:a05:6808:bd4:b0:4d6:9133:cfee with SMTP id
- 5614622812f47-4f30caa6c35mr5991865b6e.51.1790973023528; Fri, 02 Oct 2026
- 13:30:23 -0700 (PDT)
-Date: Fri, 02 Oct 2026 13:30:23 -0700
-In-Reply-To: <20261001202234.3794060-1-seanjc@google.com>
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <6ac0145f.34119e79.2f92f3.0003.GAE@google.com>
-Subject: [syzbot ci] Re: KVM: Fix+harden against bad uaccess using dying VM
-From: syzbot ci <syzbot+ci69d67bf25886d3bd@syzkaller.appspotmail.com>
-To: jmattson@google.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, npiggin@gmail.com, 
-	pbonzini@redhat.com, seanjc@google.com
-Cc: syzbot@lists.linux.dev, syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+References: <cover.1790101179.git.ritesh.list@gmail.com> <de328dc973a135a956a148dd83d8353b7157d452.1790101179.git.ritesh.list@gmail.com>
+Message-ID: <asAsTMn8naXCxhno@google.com>
+Subject: Re: [PATCH v5 1/9] KVM: PPC: selftests: add support for powerpc
+From: Sean Christopherson <seanjc@google.com>
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Cc: kvm@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org, 
+	Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <chleroy@kernel.org>, 
+	Anushree Mathur <anushree.mathur@linux.ibm.com>, 
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Harsh Prateek Bora <harshpb@linux.ibm.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
+	linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
 
-syzbot ci has tested the following series
+On Tue, Sep 22, 2026, Ritesh Harjani (IBM) wrote:
+> ---
+>  MAINTAINERS                                   |   2 +
+>  tools/testing/selftests/kvm/Makefile          |   2 +-
+>  tools/testing/selftests/kvm/Makefile.kvm      |  10 +
+>  .../testing/selftests/kvm/include/kvm_util.h  |   9 +
+>  .../selftests/kvm/include/powerpc/hcall.h     |  17 +
+>  .../kvm/include/powerpc/kvm_util_arch.h       |  22 +
+>  .../selftests/kvm/include/powerpc/ppc_asm.h   |  32 ++
+>  .../selftests/kvm/include/powerpc/processor.h |  39 ++
+>  .../selftests/kvm/include/powerpc/ucall.h     |  21 +
+>  tools/testing/selftests/kvm/lib/guest_modes.c |  20 +-
+>  tools/testing/selftests/kvm/lib/kvm_util.c    |   8 +
+>  .../selftests/kvm/lib/powerpc/handlers.S      |  93 ++++
+>  .../testing/selftests/kvm/lib/powerpc/hcall.c |  45 ++
+>  .../selftests/kvm/lib/powerpc/processor.c     | 512 ++++++++++++++++++
+>  .../testing/selftests/kvm/lib/powerpc/ucall.c |  22 +
+>  15 files changed, 851 insertions(+), 3 deletions(-)
+>  create mode 100644 tools/testing/selftests/kvm/include/powerpc/hcall.h
+>  create mode 100644 tools/testing/selftests/kvm/include/powerpc/kvm_util_arch.h
+>  create mode 100644 tools/testing/selftests/kvm/include/powerpc/ppc_asm.h
+>  create mode 100644 tools/testing/selftests/kvm/include/powerpc/processor.h
+>  create mode 100644 tools/testing/selftests/kvm/include/powerpc/ucall.h
+>  create mode 100644 tools/testing/selftests/kvm/lib/powerpc/handlers.S
+>  create mode 100644 tools/testing/selftests/kvm/lib/powerpc/hcall.c
+>  create mode 100644 tools/testing/selftests/kvm/lib/powerpc/processor.c
+>  create mode 100644 tools/testing/selftests/kvm/lib/powerpc/ucall.c
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index fc320b373656..35df0c39e991 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -14349,6 +14349,8 @@ F:	arch/powerpc/include/asm/kvm*
+>  F:	arch/powerpc/include/uapi/asm/kvm*
+>  F:	arch/powerpc/kernel/kvm*
+>  F:	arch/powerpc/kvm/
+> +F:	tools/testing/selftests/kvm/*/powerpc/
+> +F:	tools/testing/selftests/kvm/powerpc/
 
-[v2] KVM: Fix+harden against bad uaccess using dying VM
-https://lore.kernel.org/all/20261001202234.3794060-1-seanjc@google.com
-* [PATCH v2 01/10] KVM: Reject user accesses to guest memory if current->mm != kvm->mm
-* [PATCH v2 02/10] KVM: PPC: Flush/zap all memslots on kvm_arch_flush_shadow_all()
-* [PATCH v2 03/10] KVM: x86: Unmap VMAs for KVM-internal memslots when the memslot is freed
-* [PATCH v2 04/10] KVM: Disallow setting memslots when the VM is being destroyed
-* [PATCH v2 05/10] KVM: Destroy memslots immediately after mmu_notifiers are unregistered
-* [PATCH v2 06/10] KVM: WARN if KVM attempts to do guest-related uaccess with "wrong" process
-* [PATCH v2 07/10] KVM: WARN and reject guest-based uaccess if VM is dying
-* [PATCH v2 08/10] KVM: nVMX: Don't flush shadow VMCS12 to guest memory during vCPU teardown
-* [PATCH v2 09/10] KVM: nVMX: Don't try to load eVMCS12 page when the VM is dying
-* [PATCH v2 10/10] KVM: Pre-check uaccesses in KVM's APIs to read/write guest memory
+I don't think sending KVM PPC selftests changes through the PPC tree will work.
+It's "fine" for KVM PPC changes because the volume of KVM PPC changes is low and
+rarely modifies anything outside of arch/powerpc.
 
-and found the following issue:
-WARNING in __kvm_read_guest_page
+KVM selftests tend to have a lot more cross-arch and/or common code modifications,
+i.e. I think we'll be setting ourselves up for pain if we don't route all KVM
+selftests changes through Paolo's tree.
 
-Full report is available here:
-https://ci.syzbot.org/series/5f8da53a-c584-4176-abcb-7a29eb02e4c4
-
-***
-
-WARNING in __kvm_read_guest_page
-
-tree:      kvm-next
-URL:       https://kernel.googlesource.com/pub/scm/virt/kvm/kvm/
-base:      d4b7fb647204f0c81dfeae2d1a708e4d858e0c94
-arch:      amd64
-compiler:  Debian clang version 22.1.8 (++20260613092233+e80beda6e255-1~exp1~20260613092250.77), Debian LLD 22.1.8
-config:    https://ci.syzbot.org/builds/4d4c10d0-f56c-448f-8782-ad4dab8f46d0/config
-syz repro: https://ci.syzbot.org/findings/dc5f6c42-c3ab-41b0-9384-1a15798e4820/syz_repro
-
-------------[ cut here ]------------
-!__kvm_can_do_uaccess(kvm)
-WARNING: ./include/linux/kvm_host.h:1360 at kvm_can_do_uaccess include/linux/kvm_host.h:1360 [inline], CPU#1: syz.1.18/5858
-WARNING: ./include/linux/kvm_host.h:1360 at kvm_is_guest_access_ok virt/kvm/kvm_main.c:3216 [inline], CPU#1: syz.1.18/5858
-WARNING: ./include/linux/kvm_host.h:1360 at __kvm_read_guest_page+0x38e/0x440 virt/kvm/kvm_main.c:3226, CPU#1: syz.1.18/5858
-Modules linked in:
-CPU: 1 UID: 0 PID: 5858 Comm: syz.1.18 Not tainted syzkaller #0 PREEMPT(full) 
-Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.2-debian-1.16.2-1 04/01/2014
-RIP: 0010:kvm_can_do_uaccess include/linux/kvm_host.h:1360 [inline]
-RIP: 0010:kvm_is_guest_access_ok virt/kvm/kvm_main.c:3216 [inline]
-RIP: 0010:__kvm_read_guest_page+0x38e/0x440 virt/kvm/kvm_main.c:3226
-Code: f2 ff ff ff 0f 44 d8 31 ff e8 5e a4 89 00 89 d8 48 83 c4 30 5b 41 5c 41 5d 41 5e 41 5f 5d e9 09 ac a8 0a cc e8 83 9e 89 00 90 <0f> 0b 90 bb f2 ff ff ff eb da e8 73 9e 89 00 90 0f 0b 90 bb f2 ff
-RSP: 0018:ffffc90003157778 EFLAGS: 00010293
-RAX: ffffffff813e2d22 RBX: 0000000000000000 RCX: ffff888174382580
-RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000000
-RBP: 1ffff1102217d82a R08: ffff888110bee183 R09: 1ffff1102217dc30
-R10: dffffc0000000000 R11: ffffed102217dc31 R12: ffff888110bee180
-R13: ffff888174382b40 R14: 1ffff1102217dc30 R15: 0000000000000000
-FS:  000055557c0db500(0000) GS:ffff8882a8cda000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 00007f458dfeb840 CR3: 000000016c9d0000 CR4: 0000000000352ef0
-Call Trace:
- <TASK>
- kvm_vcpu_read_guest+0x64/0x140 virt/kvm/kvm_main.c:3284
- nested_vmx_load_msr+0x133/0x4d0 arch/x86/kvm/vmx/nested.c:1107
- load_vmcs12_host_state+0x10ca/0x1e20 arch/x86/kvm/vmx/nested.c:4930
- __nested_vmx_vmexit+0x1800/0x2d10 arch/x86/kvm/vmx/nested.c:5206
- nested_vmx_vmexit arch/x86/kvm/vmx/nested.h:46 [inline]
- vmx_leave_nested arch/x86/kvm/vmx/nested.c:6891 [inline]
- nested_vmx_free_vcpu+0x8e/0xd0 arch/x86/kvm/vmx/nested.c:389
- vmx_vcpu_free+0x109/0x3e0 arch/x86/kvm/vmx/vmx.c:7653
- kvm_arch_vcpu_destroy+0x154/0x380 arch/x86/kvm/x86.c:9463
- kvm_vcpu_destroy virt/kvm/kvm_main.c:469 [inline]
- kvm_destroy_vcpus+0x123/0x380 virt/kvm/kvm_main.c:489
- kvm_arch_destroy_vm+0x55/0x120 arch/x86/kvm/x86.c:10014
- kvm_destroy_vm virt/kvm/kvm_main.c:1326 [inline]
- kvm_put_kvm+0x93a/0xc80 virt/kvm/kvm_main.c:1359
- kvm_vm_release+0x43/0x50 virt/kvm/kvm_main.c:1382
- __fput+0x418/0xa50 fs/file_table.c:512
- task_work_run+0x1d9/0x270 kernel/task_work.c:233
- resume_user_mode_work include/linux/resume_user_mode.h:50 [inline]
- __exit_to_user_mode_loop kernel/entry/common.c:70 [inline]
- exit_to_user_mode_loop+0x204/0x770 kernel/entry/common.c:101
- __exit_to_user_mode_prepare include/linux/irq-entry-common.h:207 [inline]
- syscall_exit_to_user_mode_prepare include/linux/irq-entry-common.h:230 [inline]
- syscall_exit_to_user_mode include/linux/entry-common.h:336 [inline]
- do_syscall_64+0x328/0x520 arch/x86/entry/syscall_64.c:89
- entry_SYSCALL_64_after_hwframe+0x77/0x7f
-RIP: 0033:0x7f7fec79e159
-Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 e8 ff ff ff f7 d8 64 89 01 48
-RSP: 002b:00007fff0d2850c8 EFLAGS: 00000246 ORIG_RAX: 00000000000001b4
-RAX: 0000000000000000 RBX: 00007f7feca27da0 RCX: 00007f7fec79e159
-RDX: 0000000000000000 RSI: 000000000000001e RDI: 0000000000000003
-RBP: 00007f7feca27da0 R08: 00007f7feca26038 R09: 0000000000000000
-R10: 000000000003fdb8 R11: 0000000000000246 R12: 000000000000ec04
-R13: 00007f7feca25fac R14: 000000000000e938 R15: 00007fff0d2851d0
- </TASK>
-
-
-***
-
-If these findings have caused you to resend the series or submit a
-separate fix, please add the following tag to your commit message:
-  Tested-by: syzbot@syzkaller.appspotmail.com
-
----
-This report is generated by a bot. It may contain errors.
-syzbot ci engineers can be reached at syzkaller@googlegroups.com.
-
-To test a fix for this bug, please reply with `#syz test`
-(on a separate line) and attach the patch to the email.
-
-Notes:
-- The patch will be applied on top of the tested series (as an
-  incremental fix).
-- To test a new version of the whole series, please send it directly
-  to syzbot@lists.linux.dev.
-- Arguments like custom git repos and branches are not supported.
+Does it maybe make sense to have all of KVM PPC route through Paolo?  Punting to
+PPC made sense when KVM PPC was on life support, but it looks like resuscitation
+was successful for at least some flavors of KVM PPC?
 
