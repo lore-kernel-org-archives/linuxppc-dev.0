@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-28708-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28709-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 853D3CA5FD9
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 06:54:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92F33CA5FC4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 06:55:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hwzzN6psvz2yDs;
-	Fri, 02 Oct 2026 16:54:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hx00c65jlz2yDs;
+	Fri, 02 Oct 2026 16:55:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790924064;
-	cv=none; b=XWmcRpI/9NAbwU+yjhRW4P+quXaFr//5hwLjE/VTjwg5aFpvXpPCKXtiL3Y9nfFjd24MSWUxSogjrQwbfwYO/KzfKekhtUaiGDub2p+pMen/i8WkpfkjUufA5jGRHngoAMhMlGtU94VxY8C6VCknzbEPSjZHMVmwL1FKpc4I3mI13DlkGx1aCZvkMGMKkBWBloOlXASGf+oAiqm/1Hk6Tuz0W1HpwEehJ10uRMit8/GnoLEJheGf/aOZGzCHitaBJG46LUJKeqsYFYC0qyBPkVrjj/uB0IoQKvmfzzRmZ1Lauw+XTrHZK9NDgzpwx4brpHxIUcitZyky1ZC82+OpFQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790924128;
+	cv=none; b=BEeZgnfRjY3HU+2lMYM6Falx4b2SjZxDXd5+r5lb5er8Zeck4WbYMtG1XKZiHG/jqLQVeVDtp1KC/zIUmLyeP/SZu4HJuPW1RjzOOKLtHeZGg5BsyodTxo++eYy5NIbk31hgfrHUO5X6zqf965NcsJP44JlLIOEtw4ibAyTYV35VXtT1aqXNSdKEphgaFynafmsKLEOFvq/N/+aQ0qUXqHAQSmwLVM6WB+svo/o2P6zyFA3NtsrpZliJeIZNdvJ5Y80uu/CNEmaN/9L4JwR0ex0nsWHbVlEVUUMB44fQRZM2qIIgAEqJ51B7BuBF72sJDky1u1r2fo1evkEIwJJjWA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790924064; c=relaxed/relaxed;
-	bh=ue1Cx+XYB9aBaUJ/GDXzUU8f4x3LGGlvXoDUIfnsQOI=;
+	t=1790924128; c=relaxed/relaxed;
+	bh=ISzeg/djpEJgZuQfNd3fqeQR/RcIoDTgRKI00G7Zcuw=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Q8SIqYkM8+7ftLGaS/idZQRT8ugkbXqVsbLljo+ybmhpAWRl2W4cIl+rxpqtnD2CgqP2tOS9TM5RsWIdSp/JwpQw/arJODWvyQ7XlQM8zWSQ1kXPWTIvnASZVdurSh2rONBYpVfDFCV/kSrlmyNWJ17fvmZPGpRD+gDneO0gESWM0QWa+ii0csEentoSSuiFJrgGbwkBL/cPVS0kd7vL7+Z1FQVuf0TId7YdhBP9CxCXrgyVcFxEisYwPB1GO58pzmf71nOE16QQiHobLPg9boDK3JFXvI/o9mFvkwxeflVFcYIZ6UkHpaOF69UweNyYioWZU48qZLtnDwgkCGBgbg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mOsZhNHn; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=dgTFdmderDyRFgK5J2begGH/IjzQbeCHH+JR3aqgaABVx3Cj+pG/LswRgGcLsy/RGhVMZHMHWd3mnyNldLQIL9QXzsohil4NIwyLAqYeCjbb61/M9mbbOh+Hx6npDMZk9voE919meG70PajgSt1qdVL6i29x8GoBqb/sltMoTcjrq6pi/Qy0YLeuwSdYcbUXNP3ShESA4+JvK3qYlfqf6h+01OMXGzoFFyQ4hgldiv9WlIfowiGg87ow925ZuMRdKs6duiexUO0edOVzoCm47UV/SoqeQzlgSfm24Fc/x+Vse2aEu8BTAZmwpA8tIdFePqkksIa62AmGRXojoOZ51A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jcg3T8Lt; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mOsZhNHn;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jcg3T8Lt;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hwzzN0Y9Bz2xsW
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 16:54:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hx00b72j4z2xsW
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 16:55:27 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id D759760A5F;
-	Fri,  2 Oct 2026 06:54:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CEABF1F00893;
-	Fri,  2 Oct 2026 06:53:40 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id F091560A5E;
+	Fri,  2 Oct 2026 06:55:25 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AA2B81F000FF;
+	Fri,  2 Oct 2026 06:54:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790924061;
-	bh=ue1Cx+XYB9aBaUJ/GDXzUU8f4x3LGGlvXoDUIfnsQOI=;
+	s=k20260515; t=1790924125;
+	bh=ISzeg/djpEJgZuQfNd3fqeQR/RcIoDTgRKI00G7Zcuw=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=mOsZhNHnMsuMnuEECJ60UbhrzrPksVkY2FRypuDGKP/z3vY0YEP9KoXCpAHiem8Oq
-	 ggD48Bs8Bgah4boo3ohMo9CFylA5ZUCwjYJ4nDzt8mEtmnR/OAlKvfzcfLT6PRL9qt
-	 AyUf2YrS0GT0J78RSjA2Zi2PPmB9OHRCefubG+ytUbK2IG1G03DExT+wBAXQlhqSTV
-	 jWFtArDl3+ivSm9C9vy1DlUmaToV8yniipTby+JBSUY11cWhoq3dgFFR0b+ETZK8Rz
-	 L2hL8id8VPyGredkP86S0uUBTQ4kRxOwtuh3hiAxBTpVQemlBTTghwoq2dYwKLJjmx
-	 2U7jrdc3/lxmw==
-Message-ID: <2cbf6e94-5916-4140-85d3-2d05eb0dc092@kernel.org>
-Date: Fri, 2 Oct 2026 08:53:37 +0200
+	b=jcg3T8LtVGFeCP22PjJ5Kmv9ARB/xlyzs+V7VKXWrcGliXXGU0CUjthFJOOOSg0Hx
+	 6CU6htfWrkq8uVkwnyN4p20qhOGNewwRU/UbFZx50g58zMqo9rZghxxOXE5Sgn4Byk
+	 cCtePOS4ForF7OdoDSH4CGhjCIkqhnRDQcxizGY2lVyeFq5pdQhwHHIXJGGnnpU5c5
+	 f0rMdqdkNfLNmT6GRUD7iuUwxWsVvZ303YXTDcZkh980uO2TEGwYTNmDpVxNp4xXDJ
+	 MbMPkkMYN3WygH1pwmvSsevDkxgASGDEHdWFY8ljYW0NPayHu1k6zMXETsr4Yf+YHO
+	 xBkzjLjRmFNXA==
+Message-ID: <2c01f806-0428-4a96-85de-6a853605a537@kernel.org>
+Date: Fri, 2 Oct 2026 08:54:42 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 28/40] mm: rename is_vm_hugetlb_page() to
- vma_is_hugetlb()
+Subject: Re: [PATCH v3 29/40] mm: drop some redundant checks around hugetlb
+ VMAs
 To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>,
  "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>,
@@ -143,7 +143,7 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
  fuse-devel@lists.linux.dev
 References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
- <20260917-b4-mmap-prepare-vma-flag-sanify-v3-28-4583d8a23bca@kernel.org>
+ <20260917-b4-mmap-prepare-vma-flag-sanify-v3-29-4583d8a23bca@kernel.org>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -190,30 +190,33 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-28-4583d8a23bca@kernel.org>
+In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-29-4583d8a23bca@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 9/17/26 18:22, Lorenzo Stoakes (ARM) wrote:
-> The is_vm_hugetlb_page() predicate is badly named - the mapping can span
-> more than a page and it is inconsistent with other VMA predicates that
-> typically are prefixed by vma_.
+> Adjust code which inadvertently perform redundant checks on hugetlb VMAs
+> and clean them up:
 > 
-> Rename to vma_is_hugetlb() for consistency, and while we're here update
-> some VM_BUG_ON_VMA() to VM_WARN_ON_ONCE_VMA() as to avoid unnecessary
-> oopses.
+> * hugetlb VMAs have VMA_DONTEXPAND_BIT set so a VMA_SPECIAL_FLAGS check
+>   suffices. (migrate_vma_setup() regains an explicit hugetlb test later in
+>   the series, once VMA_SPECIAL_FLAGS is removed.)
+> 
+> * hugetlb VMAs unconditionally set vma->vm_ops, so they are never
+>   anonymous.
+> 
+> * hugetlb VMAs do not set VMA_PFNMAP_BIT so checking for this is redundant.
+> 
+> While we're here also drop a VM_BUG_ON() which the simplified check above
+> makes unreachable, and use the new VMA flag API.
 > 
 > No functional change intended.
 > 
 > Acked-by: Marc Zyngier <maz@kernel.org>
-> Acked-by: Claudio Imbrenda <imbrenda@linux.ibm.com>
-> Acked-by: Anup Patel <anup@brainfault.org>
 > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 > ---
 
-
 Acked-by: David Hildenbrand (Arm) <david@kernel.org>
-
 
 -- 
 Cheers,
