@@ -1,81 +1,105 @@
-Return-Path: <linuxppc-dev+bounces-28771-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28772-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B424CA5FE0
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 19:23:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24516CA5FDD
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 19:30:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hxJbS4JKMz30DK;
-	Sat, 03 Oct 2026 05:23:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20a::7" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790968996;
-	cv=pass; b=bIh2f0PYJUgLRjAiejNy+yhgL34WlwSdU+fXiXAr7tzUAYNmCJ6Jcy+Mh/dZ6OuQebpdkNITuaFqDSCNLLZsiCfG2hNzCzSshgJ8LDCZp+SXx9mVrMBuexQI1bnQQQiM9Y6ztbB+8ktjUI/OT/npf9QwX8FEcsplZUuahFZIRujxLhh9TeVol63a3vWLuCOk/NTrdM9Y+zSVTurT+hJ6eKZsLr12zzYVQA7T/L1GV2ldtr7Hih/iz3QcQOncR63HQueTsr9VLGDzL5iDJBFLu8vIKBeuBpQ2+1X3qCqN/QmHxxotd8q1NveuQ8+rmCKHFUFhuB8+PTFqHP8BCEtwzw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790968996; c=relaxed/relaxed;
-	bh=MlMGaqKAsgQFgWCXAYibGV/KOxVYgv5A6dZveyIsXiU=;
-	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=fT8EBhrm307CYEzPXIoX6HKP5RGsyWIpS6ukSh+2P1P/iNX6wJXeArb7gczMItB63KMr9LdC+zAu45fC5oXx9OKPZrCit5q6lrATLK8d7IKIt6Zkz+qL8icysezW0IxvpkoK88bofK5cYzC98yUKbrhllGDmWbxP8HPDGKTEm1X/94wIoTKQrdTHso34hpIa7EBOrcPd5VbtaeLT/LTLgP0XaEGzW4WVuGNVHGRbtAhDIJ+TFBzuraipjHyEpi2c8eKEPbBg1/OrS2zjgtweXEgjPIRpqdklI1gLyU27lUJW5O/GEKf4h268hXk3DbFlArPTiH3ISfoVEMWSdwnJ0A==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=ZGNA3sQK; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20a::7; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hxJmC48skz30DK;
+	Sat, 03 Oct 2026 05:30:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790969451;
+	cv=none; b=XmfI5v+pv8kOl7oiZi5j2AyxpZBb/O/9/jaw6e4KNWpU6eB6IwfXgOFMmyHZGh9olZj/0pWOqK2Kk5o1HRdLrGTmoBNHUdqIcUyGlkxNm0udRuQ0opzHgZKkrKleH9v0mMJSFVT3F0BP4EeCwcE3/Vqw02dOvx8zdnWgLLd0+yg2Xyi6oncD3iHijFw2acS3bodGWidLU2mBSL0bEn0chJJofO06W4fXEjUMjrPAKgf2xae4S+UnAceUW/mqHM64lnYwsvFFTqfEj0RpmdBOL6DOkktbnTETEmjG5TOSOArA9t8jxMALqghBVt61QWrykgcNbVcSZmGzKif7if/O3A==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1790969451; c=relaxed/relaxed;
+	bh=ekKUYOby3c2j+NEGwfq/n/16hDsQN2mSgzvQPgHiWWI=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=gLt/vo0nvuFYPD10stdqvr+p4JXAYtT4dYnK7KX32toiSD12OxTYrHQv3RtuL3nACwCD5vQEvS/QGOshmoL0Ljq/dZrX6InGu+DI+YIqjpYxXaKc6P09P3XWXMIuzKlVRZvNZe12JIsnioquIeordq3Wuj9qTr33oRlqP7+BZgnV0t7jBHFjzNMq20ckqKvP8hfNgi1b3EqHS5XtG5cfmTR3mp+HXBjsk1AdG2TzFIK9/6+siQO781UiwjuMxm9gXNKgYrjD6CZYnJKv8KYwY0nCHNQmK7N9DZ7eLfgUXskIoWzY+PRdHScilmV/w6rSn9Xr5JtaEFBiy9kCINH6zQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=d2r2hK5k; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=ZGNA3sQK;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=d2r2hK5k;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c20a::7; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from PA4PR04CU001.outbound.protection.outlook.com (mail-francecentralazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20a::7])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxJbR03Xpz2xLf
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Oct 2026 05:23:13 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=aVsHl/lcbfVtcxjKJ2U6u0toH32h93oYnALFSSE8AU0CVmESfSnCPpGllacnd1Qy68ppaplQyixUHHa+9IVWUBdIM3v1GuJMlq+xPJwOXNm4GeOZuZoIzigxZsIuq0wR2ydF80638R/P8fv8BOJe+ENHM2PIIQV5zQ0H330uYfEvZqeURovwilV1RLoH3MwFre7Fy0hjOZBnrc8UXgbeXbdzQMpPPhG7ZilW3uw9sXU2iWBu1BTlCEM4pI/hIxX+eByiXZ2E2lGx4suIVhiu5+iOFT6zLtZK37Ru75IgdKAg4jgMlmb3IiX1AX2LNRkZChMSHugDhkqtVqQ0l0/KWQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=MlMGaqKAsgQFgWCXAYibGV/KOxVYgv5A6dZveyIsXiU=;
- b=twcYMvO+UVGNUs/syuWGwqWcZQksjzmEa3f814mYz3ngpyUz76PDQIlbSqQK99QOSPYHO3ig3ApUgwmfm3uTdMR+uh2gQiJnoGQtf5Br7Fh0jtpWnIYCVbA8ValkFu4of3S1InhxQJLkVgSNWKMMoHarjIZ7Ecw76QSW6ZvG6lrNNHj2gKFeJfzMmVqjdYksZlz27HlQ9HxdHybUfLMq9DDoJBTdAW7pa4w8NWaDl6pGlAomAhZ10aRGA+HNhDVTCudbQYodtDKspEHGF6xVXC3PUCvs62DRQv2ZCz26scRbKQ6DWGuyB6XIDh3ozmam3fw0gcMLe0zP9rV40r8zkw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=MlMGaqKAsgQFgWCXAYibGV/KOxVYgv5A6dZveyIsXiU=;
- b=ZGNA3sQKVblA7lHd8l27MpMeJQ0vH35RTkjQx62spOxFbvEY5wLwNs7GKuyiHO6SKT2hos35yaBVA6sq6clY6CXXOSsaoJCGOv2/4zMQj5X0397irC2YTmau8vaNnRUmMOufvcv9Fu1W1IcxziNS5lQ83qDW9O+Wsi28xhrnNdWOgKeiaj9reiB/gIpWerHNO6PaOGUOtmFAE6wTRewHpFsPxApPWEebCVp4Cel2eXK1MDppbRFz8zoNy/RWNWmKpTGC3v8W81pxxjC2H5qLPwthKJ176olvuhOWQX16DT4xd02uSWP0uVQz4ZivttOi/5vPlbU5/6CI8fOAsjgSVg==
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
- by MI9PR04MB056237.eurprd04.prod.outlook.com (2603:10a6:290:d1::10) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.472.18; Fri, 2 Oct
- 2026 19:22:48 +0000
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c%7]) with mapi id 15.21.0472.016; Fri, 2 Oct 2026
- 19:22:47 +0000
-From: Frank.Li@oss.nxp.com
-To: Anatolij Gustschin <agust@denx.de>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Frank Li <Frank.Li@nxp.com>,
-	linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC EMBEDDED MPC5XXX),
-	linux-kernel@vger.kernel.org (open list)
-Cc: vkoul@kernel.org,
-	imx@lists.linux.dev
-Subject: [PATCH 1/1] powerpc/512x: lpbfifo: use dmaengine_submit() instead of ->tx_submit()
-Date: Fri,  2 Oct 2026 15:22:33 -0400
-Message-ID: <20261002192239.143422-1-Frank.Li@oss.nxp.com>
-X-Mailer: git-send-email 2.43.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: PH7P222CA0021.NAMP222.PROD.OUTLOOK.COM
- (2603:10b6:510:33a::33) To GV2PR04MB11799.eurprd04.prod.outlook.com
- (2603:10a6:150:2cf::9)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxJm95FB5z2y8r
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Oct 2026 05:30:49 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 8CF3360D77;
+	Fri,  2 Oct 2026 19:30:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 748A01F000FF;
+	Fri,  2 Oct 2026 19:30:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790969446;
+	bh=ekKUYOby3c2j+NEGwfq/n/16hDsQN2mSgzvQPgHiWWI=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=d2r2hK5kCljTlCYwbBufk/wivX4jkvPY5GtMgJLcUIUGT4ktspgfRBivcG57guSh0
+	 hmkWr9NCuIzN8DuY1j8dpdZ4MIgpfoMkhqfwhFne9TUTm7tvkDIkyqcyp6gifsaedU
+	 mNrCV965QKAOpjo5mT0u9456Q2feFcLsrcpn4yK2t79qy6ksjZH9IjiJABakb9YbL5
+	 heJGGdWiGwwTNHAPJgbj/idVxDZSAeMzL3J8SODqqJovLo/2+7RpFWIqHOSOxNi79y
+	 Uw9DHbuSk9BoX3hzMhPL2bfOom2XjyLWZ7KwO9IQVaU87sthIFLqZfHTTSxGRCaWc8
+	 PWPWsigErZcDg==
+From: Barry Song <baohua@kernel.org>
+To: willy@infradead.org
+Cc: agordeev@linux.ibm.com,
+	akpm@linux-foundation.org,
+	alex@ghiti.fr,
+	aou@eecs.berkeley.edu,
+	baohua@kernel.org,
+	borntraeger@linux.ibm.com,
+	bp@alien8.de,
+	catalin.marinas@arm.com,
+	chenhuacai@kernel.org,
+	chleroy@kernel.org,
+	dave.hansen@linux.intel.com,
+	david@kernel.org,
+	gerald.schaefer@linux.ibm.com,
+	gor@linux.ibm.com,
+	hca@linux.ibm.com,
+	hpa@zytor.com,
+	kernel@xen0n.name,
+	liam@infradead.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org,
+	linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org,
+	linux@armlinux.org.uk,
+	linuxppc-dev@lists.ozlabs.org,
+	ljs@kernel.org,
+	loongarch@lists.linux.dev,
+	luto@kernel.org,
+	maddy@linux.ibm.com,
+	mark.rutland@arm.com,
+	mhocko@suse.com,
+	mingo@redhat.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	palmer@dabbelt.com,
+	peterz@infradead.org,
+	pjw@kernel.org,
+	rppt@kernel.org,
+	shakeel.butt@linux.dev,
+	surenb@google.com,
+	svens@linux.ibm.com,
+	tglx@kernel.org,
+	vbabka@kernel.org,
+	will@kernel.org,
+	x86@kernel.org,
+	zhanghongru06@gmail.com,
+	zhanghongru@xiaomi.com,
+	zhaonanzhe@xiaomi.com
+Subject: Re: [PATCH v6] mm: retry page faults once under the per-VMA lock
+Date: Sat,  3 Oct 2026 03:30:34 +0800
+Message-Id: <20261002193034.86218-1-baohua@kernel.org>
+X-Mailer: git-send-email 2.39.3 (Apple Git-146)
+In-Reply-To: <ar7MsOb6IJLt4eLo@casper.infradead.org>
+References: <ar7MsOb6IJLt4eLo@casper.infradead.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,86 +113,158 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|MI9PR04MB056237:EE_
-X-MS-Office365-Filtering-Correlation-Id: 720e29b2-4790-4aab-6473-08df20ba8ad5
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|1800799024|19092799006|23010399003|366016|921020|18002099003|11063799006|56012099006|10067099003;
-X-Microsoft-Antispam-Message-Info:
-	yoj9E7ShNRTAIIZr2SOWPmWbiH/62X8SGskN6RzxEA93aXdNyaM6vundZSKcm4x3OXj3x6KphDgg+eFIO2Z2ZIFaUDFkg6+GmJzwutWXwYpVQAHxF4YiSnjOpQvjaF2kBUhKs7otj1ZIreGxrRBfzy0PE+5V23SVcDNZkp2ZzkXuz23eespBVj2jhb/Tl4JorVyEQgMuqhw/WGs4/MktflZ5J6w7erT14bgx3Jvv0/Jpx00tw5Y4z0L3mlVSNqkoQ0THnfOVw++EyeUyQzlDC0fJl0zn/CKQxvw4lXJLeGXZ6wisHftreAfwcyBackC0MXULOKTA5RLg4rnegJXPcnQ7s2D4Nmi6ZU8iHVmmoeipFPzSs2kELikWaJiBOKFMNjqr7NAZu1tHa4VZO9o1Q1rC2kpPubUR3dHvrfaV3475kxp8MotV7bk0TglAfETqDCsUAyWyDyK28XXmHcT2lquIPH9YpXvjrNTMHYzXEKxJB7qw9Z6hckZziXOBJHq9CltDBvvlDLd7JRlqm/gVptV0t62+L0Lws1hZqSPkvLROLklvR2QPhttltIgj3G7Z6BW/E06Nl2APyZfQyEJ5n7217NdjIwX+EOQsxD52G0d7OZWhFiT+Bu1cnmooutjoGm8cQLwPV25Em5US+4Kdh7/KnGC6oPG+sBG+tkGdzdvIKyXRJs9VspJlcWN/p4PRb0IMU7Dwe78Tpr2vIdLU/Q==
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(19092799006)(23010399003)(366016)(921020)(18002099003)(11063799006)(56012099006)(10067099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?QBLGvCqNEhY7OQslR1SnjE70KBCXUWDHIaT3/bqD8IAHMfg0BCq3y62JtZuy?=
- =?us-ascii?Q?31a+NHdJu+TKkUibcsULscUmFVTketgnbjfohJ4CNOXA9xseKUKZaLu2+4EE?=
- =?us-ascii?Q?CpT+k4zRwr2r8EKwvauNV9whzB+k8utkOtPixtcPxyKyFoH5LZ1NSUow3VWc?=
- =?us-ascii?Q?JxzBkh1YSbSTNY/nndVu7WyCOHD/cVSsRUNrs70cNFNnnbLGBesQN8NPFaWP?=
- =?us-ascii?Q?ae1o+LWh8vhCC56yo5SrHcWj4Xw8JP/2aLNdrZEYK53viGnZtRBbgFlohJUy?=
- =?us-ascii?Q?f3tPNZzf6sQU5UsivP0MnaT4dpnK/2S6WDPT6SpxnCqHYQBKvrNUXmb/C1WV?=
- =?us-ascii?Q?aaEQs067quzEEMwWC1BYonyJsq/UcAG3vwqnuLouDBCu+sFk6os64Qz9GtOR?=
- =?us-ascii?Q?j8QJAMiX4GPuJw+RKcFfNzAJ0tUM+8IvX8o1U1KZX2TuyYtQG7Ql+eu9sVtI?=
- =?us-ascii?Q?Sx7m35tFWywERjReakhAU1nPMRY6Gnf4R4MXOMIkIyfrQnVF77uPEoEoGen1?=
- =?us-ascii?Q?sPLcLNskNw7RwumlUReJ/RBaZynoLUEkqIYnt3ACD46X290NxejefBr8TGdo?=
- =?us-ascii?Q?KW2WwEytoaS9syn9P5no4tO70RDAdTz2FjbJjRbD6JSV+fWfDxvf05D/MSI3?=
- =?us-ascii?Q?nrSskAoJrl3482BGbQmjVM03Jt9Rxu/ysK694Y+hqHQvUoX4wTRroqFr7tlH?=
- =?us-ascii?Q?WYbugG0CzFFfCcDT7xfcBakuDi44CbGOo48XIBLf82wLROYULqS8aWdt8UjM?=
- =?us-ascii?Q?rPkteu6vCb1o6pEOqIGPKovpGzPsNb+eK4XYduPT4rovNdrSICFDILhxQ6qw?=
- =?us-ascii?Q?D/+aLUU9ns7boali/aKXUphRL+0jrkC7JswR1UpH0w5G12UWs0JB11iqN5AU?=
- =?us-ascii?Q?d/m3ErxxYDv7+unwp4f39I/cP5JXBSQ6E88zdNo5Kz9W+WCu9PhEVrJzs5sJ?=
- =?us-ascii?Q?KS41ZrZJJoYvnsMSGUvUj1wwD58GF3D+l7/8qeCNvefDbBwDLMkAyRAp7q/A?=
- =?us-ascii?Q?Ea+6bAf40XvuNlhcqNfy/8MVWVWxt8doGG1S0YFxAdBe9Y1m8Yv4ODd4OYes?=
- =?us-ascii?Q?PWTR1Neumm++eMuoI+cGMMJKCREzrdmbwvmlmVsH+r7DgOekymtqNxN8Jdb1?=
- =?us-ascii?Q?wFRwj3sXzXWjQyCSuWnkaQq3V7kANk9aaAtKYvNrkdx4IMY/GPRs2c/odkU2?=
- =?us-ascii?Q?/O2uh9K5NE91BR+AMFVs3g5ZidVs9pIHLjmAgbswey5YnFUyhYyIaxKmBwsr?=
- =?us-ascii?Q?/pvZTrfOo5p6G+r6GKmsvoYnisqtvVf9EJ2DOAHpE4ailoJblB/84EgT9nuz?=
- =?us-ascii?Q?8qgmUqB1s29yUETEOyzK5iZ9UjJwke1CQd3LizpDkHflXAWzOVqMcnnu04/5?=
- =?us-ascii?Q?5qLOCrh51mm15+jPiaE9PlRqs8Dg1pquxVJo+noijnOop3jtcezIdxihVe75?=
- =?us-ascii?Q?qKEVFRWqPbwScWZjfwSa1+FP3gqUYY9XorItBty+ONYGxwBgjZp98yVFCQDQ?=
- =?us-ascii?Q?DszIdxfF6HeVA1+vkNla9fTz7qdn5eJLKPEabSz87I7NkEx+DCq9BKGHmFUB?=
- =?us-ascii?Q?6Em+DTJfEV1aCyL+d31qF9Y7Q5BSMg8RuKsR0Wn18ORfHTX7Dg0IQqaqLurv?=
- =?us-ascii?Q?nDIDme5Ub+1dAKdnPGmuxvps/6QdyYmc2TD0tGSFViV8T+Wj4gJmKcxCy5lt?=
- =?us-ascii?Q?4nZdaUBrzIlgaO8TMBRbyPF/VHLGcDTsnlmY3ub9hDvGL+m3Ju+liaFLtM4z?=
- =?us-ascii?Q?Ovyjs/IOKM0a34qqmj+gr8pos6HyxibzfghDdNlrmJ7TeDsRINN0?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 720e29b2-4790-4aab-6473-08df20ba8ad5
-X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Oct 2026 19:22:47.8815
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: tx8fh+JFQsVJNatncbogIW8x25hjzq8DEIxVjcktORCbg/GqXksE3G6kAiZ7pbJdEAZMiXZ0hTqRx7OKYo6USGPDXARL+92KPloBvb6itqQJMwLCV9grXaFP+j8CX9sZ
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MI9PR04MB056237
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-From: Frank Li <Frank.Li@nxp.com>
+On Fri, Oct 2, 2026 at 5:12 AM Matthew Wilcox <willy@infradead.org> wrote:
+>
+> On Mon, Sep 28, 2026 at 10:48:41AM +0800, Barry Song wrote:
+> > On Mon, Sep 28, 2026 at 6:55 AM Matthew Wilcox <willy@infradead.org> wrote:
+> > > So while doing my slides, I realised that what we need to avoid doing
+> > > is (a) sleeping while holding the mmap_lock (b) returning RETRY while
+> > > holding the VMA lock
+> > >
+> > > And that turns out to be as simple as this patch:
+> > >
+> > > diff --git a/include/linux/mm.h b/include/linux/mm.h
+> > > index dd09c438fa23..94ed2333f8d8 100644
+> > > --- a/include/linux/mm.h
+> > > +++ b/include/linux/mm.h
+> > > @@ -723,6 +723,8 @@ enum {
+> > >   */
+> > >  static inline bool fault_flag_allow_retry_first(enum fault_flag flags)
+> > >  {
+> > > +       if (flags & FAULT_FLAG_VMA_LOCK)
+> > > +               return false;
+> > >         return (flags & FAULT_FLAG_ALLOW_RETRY) &&
+> > >             (!(flags & FAULT_FLAG_TRIED));
+> > >  }
+> > >
+> > > OK, this is a hack.  The function is spectacularly badly named, and
+> > > needs to be renamed before a patch can go upstream.  But this should
+> > > fix the contention on mmap_lock.
+> >
+> > Thanks for your suggestion.
+> > This is exactly what we did in Android Common Kernel before we had
+> > Lorenzo's proposal (bypassing `fault_flag_allow_retry_first()`):
+> >
+> > https://android.googlesource.com/kernel/common/+/1b9b045a586245cc1c29b2747c6586234c7f5bad%5E%21/#F2
+>
+> Looks like that one didn't cover __folio_lock_or_retry(), but that
+> doesn't invalidate your point.
+Yep. `__folio_lock_or_retry()` will make the same thing true for anon
+VMAs, so we intentionally made the hook valid only for file VMAs.Only touching the file retry path seems to involve less VMA
+contention.
 
-Replace direct dma_async_tx_descriptor->tx_submit() call with the
-proper dmaengine_submit() API wrapper.
+>
+> > Note that Lorenzo's proposal avoids mmap_lock contention without
+> > introducing any new VMA lock contention. It also doesn't require a new
+> > flag that would break KMI. So this is clearly the preferred approach.
+>
+> But it does retry multiple times in cases where we know the fault
+> will always fail (eg the fault is on a device-private VMA)
+>
+Right now, these might require a single extra retry for device-private
+and `__vmf_anon_prepare()` cases. The commit log also mentions this.
 
-Assisted-by: LLM
-Signed-off-by: Frank Li <Frank.Li@nxp.com>
----
- arch/powerpc/platforms/512x/mpc512x_lpbfifo.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+"Some faults may
+retry unnecessarily, for example, those in __vmf_anon_prepare() or
+device-private fault handling, which require the mmap_lock. However,
+these cases are expected to be infrequent and only add one cheap
+per-VMA lock attempt."
 
-diff --git a/arch/powerpc/platforms/512x/mpc512x_lpbfifo.c b/arch/powerpc/platforms/512x/mpc512x_lpbfifo.c
-index f251e0f682620..5f1f8310c30cf 100644
---- a/arch/powerpc/platforms/512x/mpc512x_lpbfifo.c
-+++ b/arch/powerpc/platforms/512x/mpc512x_lpbfifo.c
-@@ -310,7 +310,7 @@ static int mpc512x_lpbfifo_kick(void)
- 	out_be32(&lpbfifo.regs->pkt_size, bits);
+If we do want to remove the extra VMA lock attempt, we might still
+need an additional flag such as VM_FAULT_NEED_MMAP_LOCK:
+
+diff --git a/arch/arm64/mm/fault.c b/arch/arm64/mm/fault.c
+index 2cecf6ba6df7..2821e3bd7462 100644
+--- a/arch/arm64/mm/fault.c
++++ b/arch/arm64/mm/fault.c
+@@ -620,6 +620,7 @@ static int __kprobes do_page_fault(unsigned long far, unsigned long esr,
+ 	struct vm_area_struct *vma;
+ 	int si_code;
+ 	int pkey = -1;
++	bool vma_lock_retried = false;
  
- 	/* 5. Finally kick DMA off */
--	cookie = dma_tx->tx_submit(dma_tx);
-+	cookie = dmaengine_submit(dma_tx);
- 	if (dma_submit_error(cookie)) {
- 		ret = -ENOSPC;
- 		goto err_dma_submit;
+ 	if (kprobe_page_fault(regs, esr))
+ 		return 0;
+@@ -688,6 +689,7 @@ static int __kprobes do_page_fault(unsigned long far, unsigned long esr,
+ 	if (!(mm_flags & FAULT_FLAG_USER))
+ 		goto lock_mmap;
+ 
++lock_vma:
+ 	vma = lock_vma_under_rcu(mm, addr);
+ 	if (!vma)
+ 		goto lock_mmap;
+@@ -734,6 +736,12 @@ static int __kprobes do_page_fault(unsigned long far, unsigned long esr,
+ 			goto no_context;
+ 		return 0;
+ 	}
++
++	if (!vma_lock_retried && !(fault & VM_FAULT_NEED_MMAP_LOCK)) {
++		vma_lock_retried = true;
++		goto lock_vma;
++	}
++
+ lock_mmap:
+ 
+ retry:
+diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+index 6141160ec652..baadab598d98 100644
+--- a/include/linux/mm_types.h
++++ b/include/linux/mm_types.h
+@@ -1734,10 +1734,11 @@ enum vm_fault_reason {
+ 	VM_FAULT_NOPAGE         = (__force vm_fault_t)0x000100,
+ 	VM_FAULT_LOCKED         = (__force vm_fault_t)0x000200,
+ 	VM_FAULT_RETRY          = (__force vm_fault_t)0x000400,
+-	VM_FAULT_FALLBACK       = (__force vm_fault_t)0x000800,
+-	VM_FAULT_DONE_COW       = (__force vm_fault_t)0x001000,
+-	VM_FAULT_NEEDDSYNC      = (__force vm_fault_t)0x002000,
+-	VM_FAULT_COMPLETED      = (__force vm_fault_t)0x004000,
++	VM_FAULT_NEED_MMAP_LOCK     = (__force vm_fault_t)0x000800,
++	VM_FAULT_FALLBACK       = (__force vm_fault_t)0x001000,
++	VM_FAULT_DONE_COW       = (__force vm_fault_t)0x002000,
++	VM_FAULT_NEEDDSYNC      = (__force vm_fault_t)0x004000,
++	VM_FAULT_COMPLETED      = (__force vm_fault_t)0x008000,
+ 	VM_FAULT_HINDEX_MASK    = (__force vm_fault_t)0x0f0000,
+ };
+ 
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index ddc631a388b9..64e08c6153cf 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -1480,7 +1480,7 @@ vm_fault_t do_huge_pmd_device_private(struct vm_fault *vmf)
+ 
+ 	if (vmf->flags & FAULT_FLAG_VMA_LOCK) {
+ 		vma_end_read(vma);
+-		return VM_FAULT_RETRY;
++		return VM_FAULT_RETRY | VM_FAULT_NEED_MMAP_LOCK;
+ 	}
+ 
+ 	ptl = pmd_lock(vma->vm_mm, vmf->pmd);
+diff --git a/mm/memory.c b/mm/memory.c
+index 1f83a26f8733..89c8c8a52c16 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -3980,7 +3980,7 @@ vm_fault_t __vmf_anon_prepare(struct vm_fault *vmf)
+ 		return 0;
+ 	if (vmf->flags & FAULT_FLAG_VMA_LOCK) {
+ 		if (!mmap_read_trylock(vma->vm_mm))
+-			return VM_FAULT_RETRY;
++			return VM_FAULT_RETRY | VM_FAULT_NEED_MMAP_LOCK;
+ 	}
+ 	if (__anon_vma_prepare(vma))
+ 		ret = VM_FAULT_OOM;
+@@ -4937,7 +4937,7 @@ vm_fault_t do_swap_page(struct vm_fault *vmf)
+ 				 * under VMA lock.
+ 				 */
+ 				vma_end_read(vma);
+-				ret = VM_FAULT_RETRY;
++				ret = VM_FAULT_RETRY | VM_FAULT_NEED_MMAP_LOCK;
+ 				goto out;
+ 			}
+ 
 -- 
-2.43.0
+2.39.3 (Apple Git-146)
 
 
