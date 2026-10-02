@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-28711-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28712-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1631CCA5FD9
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 07:00:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16B04CA5FC4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 07:03:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hx06V4VgNz2yPG;
-	Fri, 02 Oct 2026 17:00:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hx09Q28Gnz2yPG;
+	Fri, 02 Oct 2026 17:03:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790924434;
-	cv=none; b=Bg+Iq9m26Y9qjI7jQibvBTgvdcuOq8FZ/SB4eyjASUTSAhAA6if28YKmPM9SuRvcIIjjyyXSKrrncZylPjcDin80262S0OJnJXara3QWWn+bN3sabDO4r7ndE6eiIkoGYQS6d9PAvDBlHSS7ajVNEAN1lBbGlRnk983ws9gJiBOui2PKnuxl1PoVgyFaBIij5NTd6Q/XpPgyoUZ4j5V4+YBGH7pbHLO36Duwj4Pj6ZJTAATTpjv2P/w+LKdn29Ckk+19o1ONelIyuyOlpAeka4fNwGyvUQI4ts/gKtjiXUXKB9BI4khimvADGwTa47+4peGXJWmJ5q5I9fn55icJsg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790924586;
+	cv=none; b=OakLJPEH9Gh0giBPB5oggbSdRsBWP3aOiIKy7EyXsjylCqt6V6d/pbpMPe7Z/SIOP8CgvP4MXurKFga7nwchrsp81ZXuWvt9rN8LUEtQJpi7mMxZuaRpZg/eNh0kk8tzI+hY5dcJ54qnsjJmipImvcm5T7dMVXzM9MPzmcfrGOcnDekcv0IrJdMeIAPoBSM4koPJaL9UJQU6pN+NBHF4L7etWW+aqLqbJFdTx+2D9ogWIfBegIgzHljyDllsqBqQpJkYNy8oFcqlvNTdRKIfHyaTCR8+yr4uzLrRLGHCBZvyr12qFdyWKGCPn2AF5ijIaMfKVqhCekbR3+OwhlkGyQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790924434; c=relaxed/relaxed;
-	bh=gtNwuh51450zgPbNP+lOvAlJrZTcY2sBjh4xMuP21vw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Fc7AdGcKB3CiSF76U+vycykJcALiWMx593PZMaR+Y2QO+fxO/gq1xmMJJkm7vleZRsWWWT2XzrXh2HxJ4W4kECx8doltx4JiIVM1yn7WaUrNyjjJFeFqgUzKCsEBGj6SbNwCdiPpSPJdtJsmkFd2S3jPmuy7BNt4+TqH1nJQyZVukK+XaTD5l9Qzu5EhREUHaf0hVX9CwhploO3/lPsw51gCvpPaq2yPgKS4VPFnpoN5W/AYvg5NdBlYJ6tcVJviVCz4RAPytEIdNjRDW4Fk9Lu0xvmR4KTUbuIVwduuSmef6ukLDUusndbqDgWvBTNoVqNDQ4kGp5S47kJFBRFSBw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LB5MfZ8g; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1790924586; c=relaxed/relaxed;
+	bh=2e5cYzTU0sh5LNP2W4Golqb2KICqZdt5/yieI4RARk0=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=IxtZv9qkNbCXXHDIw/PsiQZX1tVmCZW2YoSMw5N9x8UJVYwVbW7VhHB4Z3dp36d37nZnFLI6e56rHlQ+HwsQI3LAqVgEnoFEIdiK1AqL36H4BPIWO+fv9qMPwfSdZ5qt+RxNaQLMwLuwlTrc9Jui683xL13q/VQiw6WlOoewtt7fSrKXU03rsLQPQdG2NhPGAeaUOeb3FxXMUCKSuzPteoaMgt51gn7DbyLZPDJBYvqE0rH6R0WZ3w6Dm5QgiGbAc5863u12nLdGDeOtluPVblFAiTgFkLr78puYEJLCoq2QPzs7H+exZGibZVlZcDI/XaGSH5v9hNHEdPqshUkQwQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ijpyrGWn; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LB5MfZ8g;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ijpyrGWn;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hx06T5f06z2yDs
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 17:00:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hx09P3B5pz2yDs
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 17:03:05 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 2A4B5402B1;
-	Fri,  2 Oct 2026 07:00:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1E2A71F000FF;
-	Fri,  2 Oct 2026 06:59:50 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id AC5BD41A72;
+	Fri,  2 Oct 2026 07:03:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6E14C1F00893;
+	Fri,  2 Oct 2026 07:02:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790924431;
-	bh=gtNwuh51450zgPbNP+lOvAlJrZTcY2sBjh4xMuP21vw=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=LB5MfZ8gwUz7jV3rjOoWGsbV2OJ22b98eGq9HqzFXlfodFfw693NurnE4J5S0k8P5
-	 9nvK1wFEP93FYpZ8Yrj+krBwOqTFfYI1uKjaBg7BblFGnLZJFGRCr0WKYuvF1lK/OX
-	 fdJdifTIwBtx5p5k5sN0Ma5IUJRPVpzBN6OjbuqHx0SsF3wmNLZBsxiOC6RcXe6U7V
-	 +Gp+TyyAbL3cPzuVxrbYnUm51uQmq0MVWARIEWZcaZLfWNyfIJo9PNR52KgaYkcjhB
-	 r2lVWQEmwik9HSiRcDRw+PK7PeWXgZqErv0EBPEud/ZTYmuWPlP+0oumFqa5u3J36B
-	 KTvwpey+7Wvbw==
-Message-ID: <9bbdf4e8-6984-4477-a183-f0b236047381@kernel.org>
-Date: Fri, 2 Oct 2026 08:59:47 +0200
+	s=k20260515; t=1790924583;
+	bh=2e5cYzTU0sh5LNP2W4Golqb2KICqZdt5/yieI4RARk0=;
+	h=Date:Subject:From:To:Cc:References:In-Reply-To;
+	b=ijpyrGWnbwdrhe2jSIA1tgjRHqpEFUuAuz2LAEPYijz+fXIwGq93mJDGEe3i4p03a
+	 1AVGdzilUttbUPpMOUj04JL1e9sSyWG+acUrJzdTAjfiLeciL3f8g6h+U/TZatFcIF
+	 U866q+DJ7IA9Boh/zre7ocVlNathCqD5gQ6etybZAUwNUTH167xXnXPTfAsZZqEwe4
+	 DuJ8aLGp5g+gqy0B3Wp22qbl+WPtsYQwd01ik2WjOH5Jg6dYWPEEx21Ac0zdqIs7+9
+	 kxAVyqvMkf8gmPDrdkN16r36L6W1KBCW+EuwCxuwuaQPDB4Lc/r7HUMYNn1ffvpga4
+	 AkJ/nVm1Xlhew==
+Message-ID: <3557015d-23dd-41ef-9832-78b58587f3f4@kernel.org>
+Date: Fri, 2 Oct 2026 09:02:21 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,6 +61,7 @@ Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v3 31/40] mm/vma: introduce vma[_flags]_is_persistent()
+From: "David Hildenbrand (Arm)" <david@kernel.org>
 To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>,
  "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>,
@@ -143,7 +144,7 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  fuse-devel@lists.linux.dev
 References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
  <20260917-b4-mmap-prepare-vma-flag-sanify-v3-31-4583d8a23bca@kernel.org>
-From: "David Hildenbrand (Arm)" <david@kernel.org>
+ <9bbdf4e8-6984-4477-a183-f0b236047381@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
  xsFNBFXLn5EBEAC+zYvAFJxCBY9Tr1xZgcESmxVNI/0ffzE/ZQOiHJl6mGkmA1R7/uUpiCjJ
@@ -189,20 +190,29 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-31-4583d8a23bca@kernel.org>
+In-Reply-To: <9bbdf4e8-6984-4477-a183-f0b236047381@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 9/17/26 18:22, Lorenzo Stoakes (ARM) wrote:
-> Introduce vma[_flags]_is_persistent() for the purposes of identifying
-> mappings that are persistent in the sense that bytes to the mapping stay
-> there, and bytes read from the mapping are the same unless changed by
-> actions taken by userland.
+On 10/2/26 08:59, David Hildenbrand (Arm) wrote:
+> On 9/17/26 18:22, Lorenzo Stoakes (ARM) wrote:
+>> Introduce vma[_flags]_is_persistent() for the purposes of identifying
+>> mappings that are persistent in the sense that bytes to the mapping stay
+>> there, and bytes read from the mapping are the same unless changed by
+>> actions taken by userland.
+> 
+> That's extremely confusing, sorry. We have to find a better name for that.
+> 
+> Is this really all about user pages (pagecache, anon) that we would find through
+> the rmap?
+> 
 
-That's extremely confusing, sorry. We have to find a better name for that.
+It's also about droppable mappings AFAIKs. How many more users will we have for
+that function?
 
-Is this really all about user pages (pagecache, anon) that we would find through
-the rmap?
+If it's "no others" then please don't add a helper function with misleading
+names for it and just keep the special "dumpable" check in the new form in
+madvise_vma_behavior().
 
 -- 
 Cheers,
