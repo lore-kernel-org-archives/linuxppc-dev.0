@@ -1,51 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-28770-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28771-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D332CA5FDD
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 18:22:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B424CA5FE0
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 19:23:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hxHDt62V1z30DK;
-	Sat, 03 Oct 2026 04:22:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790965326;
-	cv=none; b=HSdh4FTwwFxkDEeQ4ww4f6vq4qp3EqTjHQpnAGdcIYHliYRZe/f6T42lzRWz0CCRoiUneYQ4WREgkw/Q+2eJmwtkBMSNm5cklVoVuq+H9NX0Qg94GRPzYDsgoxRTvLW8S4uyn5uWKaIjwT9nlfyuhATxHZRKCP2aVeACLLf7TTRYeuDioh0ReSM4XHOi9c+MEdWVwKlwvY4KxS9RXVYLokP/XhacHVVewN3uVLSGuzwa6fO2Sts5c/ZiZ+Nc529lsOmkksQL9JwB/YWL1sVO1WoYKJzsU+Mh6naz+l5pd1BpCyjnc+38vfALAQlSpt4Xck9aFo3St9pgq3OpAp5A1g==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790965326; c=relaxed/relaxed;
-	bh=DRNHZG+0rjn+MS3ZH0CrvoAZYe+hwRcWZ5W/r+K9L0c=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=m0JwCZWHNy8sAWGgsC4Qq+URSxX8oY0Txo2CY5w9eZlIQaxKh4N6w8pC+4IULIO13R0GSiy9NeoZKtr09bk3K7Z3Zq/HQSTPIyt7+lSAOZsUn06B6A5zcYg0X2nRMxO8cYDSveDFEYvFJ9V8ftEeSdPGirH6XQH9TkK81iQAecSPXcFrmmj5U3kt7y1PUndDXpUa6DtD41KXSiTK727zBcfnUtfRFRKi7+MFbYF2b9tHf8BdDdhga4nWa6H/WKtJeQuC5ftS9w8JTLkXifGwU0dhAfZHiqOG1216aE/TnyNI0ayD2nrNVRuVsb78kPXqDVwEedR/ljLZiZJPZ9nNfA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QXsaGbmn; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hxJbS4JKMz30DK;
+	Sat, 03 Oct 2026 05:23:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20a::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790968996;
+	cv=pass; b=bIh2f0PYJUgLRjAiejNy+yhgL34WlwSdU+fXiXAr7tzUAYNmCJ6Jcy+Mh/dZ6OuQebpdkNITuaFqDSCNLLZsiCfG2hNzCzSshgJ8LDCZp+SXx9mVrMBuexQI1bnQQQiM9Y6ztbB+8ktjUI/OT/npf9QwX8FEcsplZUuahFZIRujxLhh9TeVol63a3vWLuCOk/NTrdM9Y+zSVTurT+hJ6eKZsLr12zzYVQA7T/L1GV2ldtr7Hih/iz3QcQOncR63HQueTsr9VLGDzL5iDJBFLu8vIKBeuBpQ2+1X3qCqN/QmHxxotd8q1NveuQ8+rmCKHFUFhuB8+PTFqHP8BCEtwzw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1790968996; c=relaxed/relaxed;
+	bh=MlMGaqKAsgQFgWCXAYibGV/KOxVYgv5A6dZveyIsXiU=;
+	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=fT8EBhrm307CYEzPXIoX6HKP5RGsyWIpS6ukSh+2P1P/iNX6wJXeArb7gczMItB63KMr9LdC+zAu45fC5oXx9OKPZrCit5q6lrATLK8d7IKIt6Zkz+qL8icysezW0IxvpkoK88bofK5cYzC98yUKbrhllGDmWbxP8HPDGKTEm1X/94wIoTKQrdTHso34hpIa7EBOrcPd5VbtaeLT/LTLgP0XaEGzW4WVuGNVHGRbtAhDIJ+TFBzuraipjHyEpi2c8eKEPbBg1/OrS2zjgtweXEgjPIRpqdklI1gLyU27lUJW5O/GEKf4h268hXk3DbFlArPTiH3ISfoVEMWSdwnJ0A==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=ZGNA3sQK; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20a::7; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QXsaGbmn;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=ZGNA3sQK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c20a::7; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
+Received: from PA4PR04CU001.outbound.protection.outlook.com (mail-francecentralazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20a::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxHDr6FMMz2yNj
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Oct 2026 04:22:04 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id D4CCD60A52;
-	Fri,  2 Oct 2026 18:22:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3496D1F000FF;
-	Fri,  2 Oct 2026 18:21:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790965321;
-	bh=DRNHZG+0rjn+MS3ZH0CrvoAZYe+hwRcWZ5W/r+K9L0c=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=QXsaGbmntNXtf8qGXbZm0VEFHH+Ktxq2NycVl9EA2UFJL5xoZ/7d0KfIdhvM22cGE
-	 5Br3otgO+SIMvA5iH1BDByi0k1+DbOmVY77NPu8uIBzzMghHQETQUbBZPcYRFv0a8z
-	 DRT4z9LSccwooBqwo4wg0YXKYC/2UL07N1MZQ4w/MUtqRI2DC5QYE+9qvmyD6dutEL
-	 pmpMLRcOBj6u8ddAC/t2x5aZ1IapKtAA4XNzeDWqBXI76qzsqx+oc5+bkxEYoavYYe
-	 /Q3H+GcrB9mDK4EhLPYavMssqFQA/PeSVeY0TOuLGECUEB+VovTtunZjz65tDBhUi5
-	 0EAsTq4zf3ulw==
-Message-ID: <2618625a-864d-43a4-b151-100e0d76ff87@kernel.org>
-Date: Fri, 2 Oct 2026 20:21:47 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxJbR03Xpz2xLf
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Oct 2026 05:23:13 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=aVsHl/lcbfVtcxjKJ2U6u0toH32h93oYnALFSSE8AU0CVmESfSnCPpGllacnd1Qy68ppaplQyixUHHa+9IVWUBdIM3v1GuJMlq+xPJwOXNm4GeOZuZoIzigxZsIuq0wR2ydF80638R/P8fv8BOJe+ENHM2PIIQV5zQ0H330uYfEvZqeURovwilV1RLoH3MwFre7Fy0hjOZBnrc8UXgbeXbdzQMpPPhG7ZilW3uw9sXU2iWBu1BTlCEM4pI/hIxX+eByiXZ2E2lGx4suIVhiu5+iOFT6zLtZK37Ru75IgdKAg4jgMlmb3IiX1AX2LNRkZChMSHugDhkqtVqQ0l0/KWQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=MlMGaqKAsgQFgWCXAYibGV/KOxVYgv5A6dZveyIsXiU=;
+ b=twcYMvO+UVGNUs/syuWGwqWcZQksjzmEa3f814mYz3ngpyUz76PDQIlbSqQK99QOSPYHO3ig3ApUgwmfm3uTdMR+uh2gQiJnoGQtf5Br7Fh0jtpWnIYCVbA8ValkFu4of3S1InhxQJLkVgSNWKMMoHarjIZ7Ecw76QSW6ZvG6lrNNHj2gKFeJfzMmVqjdYksZlz27HlQ9HxdHybUfLMq9DDoJBTdAW7pa4w8NWaDl6pGlAomAhZ10aRGA+HNhDVTCudbQYodtDKspEHGF6xVXC3PUCvs62DRQv2ZCz26scRbKQ6DWGuyB6XIDh3ozmam3fw0gcMLe0zP9rV40r8zkw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=MlMGaqKAsgQFgWCXAYibGV/KOxVYgv5A6dZveyIsXiU=;
+ b=ZGNA3sQKVblA7lHd8l27MpMeJQ0vH35RTkjQx62spOxFbvEY5wLwNs7GKuyiHO6SKT2hos35yaBVA6sq6clY6CXXOSsaoJCGOv2/4zMQj5X0397irC2YTmau8vaNnRUmMOufvcv9Fu1W1IcxziNS5lQ83qDW9O+Wsi28xhrnNdWOgKeiaj9reiB/gIpWerHNO6PaOGUOtmFAE6wTRewHpFsPxApPWEebCVp4Cel2eXK1MDppbRFz8zoNy/RWNWmKpTGC3v8W81pxxjC2H5qLPwthKJ176olvuhOWQX16DT4xd02uSWP0uVQz4ZivttOi/5vPlbU5/6CI8fOAsjgSVg==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
+ by MI9PR04MB056237.eurprd04.prod.outlook.com (2603:10a6:290:d1::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.472.18; Fri, 2 Oct
+ 2026 19:22:48 +0000
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c%7]) with mapi id 15.21.0472.016; Fri, 2 Oct 2026
+ 19:22:47 +0000
+From: Frank.Li@oss.nxp.com
+To: Anatolij Gustschin <agust@denx.de>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Frank Li <Frank.Li@nxp.com>,
+	linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC EMBEDDED MPC5XXX),
+	linux-kernel@vger.kernel.org (open list)
+Cc: vkoul@kernel.org,
+	imx@lists.linux.dev
+Subject: [PATCH 1/1] powerpc/512x: lpbfifo: use dmaengine_submit() instead of ->tx_submit()
+Date: Fri,  2 Oct 2026 15:22:33 -0400
+Message-ID: <20261002192239.143422-1-Frank.Li@oss.nxp.com>
+X-Mailer: git-send-email 2.43.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: PH7P222CA0021.NAMP222.PROD.OUTLOOK.COM
+ (2603:10b6:510:33a::33) To GV2PR04MB11799.eurprd04.prod.outlook.com
+ (2603:10a6:150:2cf::9)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,127 +89,86 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] random: vDSO: Avoid call to memset() when zeroing
- reserved in __cvdso_getrandom_data()
-To: "Jason A. Donenfeld" <Jason@zx2c4.com>,
- Nathan Chancellor <nathan@kernel.org>
-Cc: Nick Desaulniers <ndesaulniers@google.com>,
- Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
- Theodore Ts'o <tytso@mit.edu>, Vincenzo Frascino
- <vincenzo.frascino@arm.com>, Bill Wendling <morbo@google.com>,
- Justin Stitt <justinstitt@google.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- Mark Rutland <mark.rutland@arm.com>, Huacai Chen <chenhuacai@kernel.org>,
- WANG Xuerui <kernel@xen0n.name>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
- Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
- "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- llvm@lists.linux.dev
-References: <ar0a4b9CjL2YHCkY@zx2c4.com> <ar0gTS71qxnx9AkW@zx2c4.com>
- <20260930151337.GD3142230@ax162>
- <CAHmME9pA+AntJ6hWoFYpTVjh-NUSd0ZGXp5XiUuhQcq3HjQT3g@mail.gmail.com>
- <ede392d7-3104-4a0f-9fa1-99b22552dcd6@kernel.org>
- <ar4nD8aRH7wEvTMt@zx2c4.com> <20261001102059.GA4176271@ax162>
- <ar46ap4jzLWyP92C@zx2c4.com> <20261001110310.GA138012@ax162>
- <20261002094932.GA3435055@ax162> <ar-Dx-deXN93M24v@zx2c4.com>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <ar-Dx-deXN93M24v@zx2c4.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|MI9PR04MB056237:EE_
+X-MS-Office365-Filtering-Correlation-Id: 720e29b2-4790-4aab-6473-08df20ba8ad5
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|7416014|376014|1800799024|19092799006|23010399003|366016|921020|18002099003|11063799006|56012099006|10067099003;
+X-Microsoft-Antispam-Message-Info:
+	yoj9E7ShNRTAIIZr2SOWPmWbiH/62X8SGskN6RzxEA93aXdNyaM6vundZSKcm4x3OXj3x6KphDgg+eFIO2Z2ZIFaUDFkg6+GmJzwutWXwYpVQAHxF4YiSnjOpQvjaF2kBUhKs7otj1ZIreGxrRBfzy0PE+5V23SVcDNZkp2ZzkXuz23eespBVj2jhb/Tl4JorVyEQgMuqhw/WGs4/MktflZ5J6w7erT14bgx3Jvv0/Jpx00tw5Y4z0L3mlVSNqkoQ0THnfOVw++EyeUyQzlDC0fJl0zn/CKQxvw4lXJLeGXZ6wisHftreAfwcyBackC0MXULOKTA5RLg4rnegJXPcnQ7s2D4Nmi6ZU8iHVmmoeipFPzSs2kELikWaJiBOKFMNjqr7NAZu1tHa4VZO9o1Q1rC2kpPubUR3dHvrfaV3475kxp8MotV7bk0TglAfETqDCsUAyWyDyK28XXmHcT2lquIPH9YpXvjrNTMHYzXEKxJB7qw9Z6hckZziXOBJHq9CltDBvvlDLd7JRlqm/gVptV0t62+L0Lws1hZqSPkvLROLklvR2QPhttltIgj3G7Z6BW/E06Nl2APyZfQyEJ5n7217NdjIwX+EOQsxD52G0d7OZWhFiT+Bu1cnmooutjoGm8cQLwPV25Em5US+4Kdh7/KnGC6oPG+sBG+tkGdzdvIKyXRJs9VspJlcWN/p4PRb0IMU7Dwe78Tpr2vIdLU/Q==
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(19092799006)(23010399003)(366016)(921020)(18002099003)(11063799006)(56012099006)(10067099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?QBLGvCqNEhY7OQslR1SnjE70KBCXUWDHIaT3/bqD8IAHMfg0BCq3y62JtZuy?=
+ =?us-ascii?Q?31a+NHdJu+TKkUibcsULscUmFVTketgnbjfohJ4CNOXA9xseKUKZaLu2+4EE?=
+ =?us-ascii?Q?CpT+k4zRwr2r8EKwvauNV9whzB+k8utkOtPixtcPxyKyFoH5LZ1NSUow3VWc?=
+ =?us-ascii?Q?JxzBkh1YSbSTNY/nndVu7WyCOHD/cVSsRUNrs70cNFNnnbLGBesQN8NPFaWP?=
+ =?us-ascii?Q?ae1o+LWh8vhCC56yo5SrHcWj4Xw8JP/2aLNdrZEYK53viGnZtRBbgFlohJUy?=
+ =?us-ascii?Q?f3tPNZzf6sQU5UsivP0MnaT4dpnK/2S6WDPT6SpxnCqHYQBKvrNUXmb/C1WV?=
+ =?us-ascii?Q?aaEQs067quzEEMwWC1BYonyJsq/UcAG3vwqnuLouDBCu+sFk6os64Qz9GtOR?=
+ =?us-ascii?Q?j8QJAMiX4GPuJw+RKcFfNzAJ0tUM+8IvX8o1U1KZX2TuyYtQG7Ql+eu9sVtI?=
+ =?us-ascii?Q?Sx7m35tFWywERjReakhAU1nPMRY6Gnf4R4MXOMIkIyfrQnVF77uPEoEoGen1?=
+ =?us-ascii?Q?sPLcLNskNw7RwumlUReJ/RBaZynoLUEkqIYnt3ACD46X290NxejefBr8TGdo?=
+ =?us-ascii?Q?KW2WwEytoaS9syn9P5no4tO70RDAdTz2FjbJjRbD6JSV+fWfDxvf05D/MSI3?=
+ =?us-ascii?Q?nrSskAoJrl3482BGbQmjVM03Jt9Rxu/ysK694Y+hqHQvUoX4wTRroqFr7tlH?=
+ =?us-ascii?Q?WYbugG0CzFFfCcDT7xfcBakuDi44CbGOo48XIBLf82wLROYULqS8aWdt8UjM?=
+ =?us-ascii?Q?rPkteu6vCb1o6pEOqIGPKovpGzPsNb+eK4XYduPT4rovNdrSICFDILhxQ6qw?=
+ =?us-ascii?Q?D/+aLUU9ns7boali/aKXUphRL+0jrkC7JswR1UpH0w5G12UWs0JB11iqN5AU?=
+ =?us-ascii?Q?d/m3ErxxYDv7+unwp4f39I/cP5JXBSQ6E88zdNo5Kz9W+WCu9PhEVrJzs5sJ?=
+ =?us-ascii?Q?KS41ZrZJJoYvnsMSGUvUj1wwD58GF3D+l7/8qeCNvefDbBwDLMkAyRAp7q/A?=
+ =?us-ascii?Q?Ea+6bAf40XvuNlhcqNfy/8MVWVWxt8doGG1S0YFxAdBe9Y1m8Yv4ODd4OYes?=
+ =?us-ascii?Q?PWTR1Neumm++eMuoI+cGMMJKCREzrdmbwvmlmVsH+r7DgOekymtqNxN8Jdb1?=
+ =?us-ascii?Q?wFRwj3sXzXWjQyCSuWnkaQq3V7kANk9aaAtKYvNrkdx4IMY/GPRs2c/odkU2?=
+ =?us-ascii?Q?/O2uh9K5NE91BR+AMFVs3g5ZidVs9pIHLjmAgbswey5YnFUyhYyIaxKmBwsr?=
+ =?us-ascii?Q?/pvZTrfOo5p6G+r6GKmsvoYnisqtvVf9EJ2DOAHpE4ailoJblB/84EgT9nuz?=
+ =?us-ascii?Q?8qgmUqB1s29yUETEOyzK5iZ9UjJwke1CQd3LizpDkHflXAWzOVqMcnnu04/5?=
+ =?us-ascii?Q?5qLOCrh51mm15+jPiaE9PlRqs8Dg1pquxVJo+noijnOop3jtcezIdxihVe75?=
+ =?us-ascii?Q?qKEVFRWqPbwScWZjfwSa1+FP3gqUYY9XorItBty+ONYGxwBgjZp98yVFCQDQ?=
+ =?us-ascii?Q?DszIdxfF6HeVA1+vkNla9fTz7qdn5eJLKPEabSz87I7NkEx+DCq9BKGHmFUB?=
+ =?us-ascii?Q?6Em+DTJfEV1aCyL+d31qF9Y7Q5BSMg8RuKsR0Wn18ORfHTX7Dg0IQqaqLurv?=
+ =?us-ascii?Q?nDIDme5Ub+1dAKdnPGmuxvps/6QdyYmc2TD0tGSFViV8T+Wj4gJmKcxCy5lt?=
+ =?us-ascii?Q?4nZdaUBrzIlgaO8TMBRbyPF/VHLGcDTsnlmY3ub9hDvGL+m3Ju+liaFLtM4z?=
+ =?us-ascii?Q?Ovyjs/IOKM0a34qqmj+gr8pos6HyxibzfghDdNlrmJ7TeDsRINN0?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 720e29b2-4790-4aab-6473-08df20ba8ad5
+X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Oct 2026 19:22:47.8815
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: tx8fh+JFQsVJNatncbogIW8x25hjzq8DEIxVjcktORCbg/GqXksE3G6kAiZ7pbJdEAZMiXZ0hTqRx7OKYo6USGPDXARL+92KPloBvb6itqQJMwLCV9grXaFP+j8CX9sZ
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MI9PR04MB056237
 
+From: Frank Li <Frank.Li@nxp.com>
 
+Replace direct dma_async_tx_descriptor->tx_submit() call with the
+proper dmaengine_submit() API wrapper.
 
-Le 02/10/2026 à 12:13, Jason A. Donenfeld a écrit :
-> On Fri, Oct 02, 2026 at 11:49:32AM +0200, Nathan Chancellor wrote:
->> On Thu, Oct 01, 2026 at 01:03:10PM +0200, Nathan Chancellor wrote:
->>> On Thu, Oct 01, 2026 at 12:48:10PM +0200, Jason A. Donenfeld wrote:
->>>> Does this commit seem okay with you? I used the diff you sent below and
->>>> adjusted the commit message: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgit.zx2c4.com%2Flinux-rng%2Fcommit%2F%3Fid%3D56ff95ee85715047eb5b5220243778af657778c8&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4caf8956c2d94439c19a08df206dd40b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639265328227648970%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=H27VGYLdNkvQiA6l%2BJNnEModMbEySwTMXpLAt8iAFiI%3D&reserved=0
->>>
->>> Yeah, that seems fine to me, thanks for taking care of it!
->>
->> Can you adjust the LLVM value by one from 4294967295 to 4294967294? ~0U
->> is actually a special value, so we hit an assertion in the SystemZ
->> backend.
->>
->>    https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2Fllvm%2Fllvm-project%2Fblob%2F3f48e22a1f321d5d3341bd812803694cea588785%2Fllvm%2Flib%2FCodeGen%2FSelectionDAG%2FSelectionDAG.cpp%23L9547&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4caf8956c2d94439c19a08df206dd40b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639265328227670583%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=u8petgY9wU9ur%2By4kaOrb6VFKL%2FNf4tcCIUL%2BcUcDfs%3D&reserved=0
->>    https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2Fllvm%2Fllvm-project%2Fblob%2F3f48e22a1f321d5d3341bd812803694cea588785%2Fllvm%2Flib%2FTarget%2FSystemZ%2FSystemZISelLowering.cpp%23L1470-L1471&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4caf8956c2d94439c19a08df206dd40b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639265328227686571%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=cSwt%2BTJdYa%2Bbwe8HyO6FsIq6oU6YNplRlwCa0upif9Q%3D&reserved=0
->>
->> clang: llvm/lib/Target/SystemZ/SystemZISelLowering.cpp:1471: virtual bool llvm::SystemZTargetLowering::findOptimalMemOpLowering(LLVMContext &, std::vector<EVT> &, unsigned int, const MemOp &, unsigned int, unsigned int, const AttributeList &, EVT *) const: Assertion `Limit != ~0U && "Expected EmitTargetCodeForMemXXX() to handle AlwaysInline cases."' failed.
->> PLEASE submit a bug report to https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2Fllvm%2Fllvm-project%2Fissues%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4caf8956c2d94439c19a08df206dd40b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639265328227701575%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=%2F3q8laZb%2FDhCWp117N9EtyxLIc5lq%2FzEN2l0z%2BXwDHY%3D&reserved=0 and include the crash backtrace and dumped files.
->> Stack dump:
->> 0.      Program arguments: ...
->> 1.      <eof> parser at end of file
->> 2.      Code generation
->> 3.      Running pass 'Function Pass Manager' on module 'arch/s390/kernel/vdso/vgetrandom.c'.
->> 4.      Running pass 'SystemZ DAG->DAG Pattern Instruction Selection' on function '@__kernel_getrandom'
->> ...
-> 
-> Holy smokes. Sure, fixed:  https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgit.zx2c4.com%2Flinux-rng%2Fcommit%2F%3Fid%3Deb13a1ff271b0d180687eebb30611b0b276d5193&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4caf8956c2d94439c19a08df206dd40b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639265328227716550%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=WcnFE6S72OrDTNNvU1T06BtUTyI1sDx%2F%2Btz%2FkpGslMA%3D&reserved=0
-> 
-> 
->  From eb13a1ff271b0d180687eebb30611b0b276d5193 Mon Sep 17 00:00:00 2001
-> From: Nathan Chancellor <nathan@kernel.org>
-> Date: Fri, 25 Sep 2026 22:46:32 +0100
-> Subject: [PATCH] random: vDSO: avoid call to memset() when zeroing reserved
->   parameter
-> 
-> After a recent change in LLVM [1], builds with the random vDSO
-> implementation, such as PowerPC and RISC-V, fail when checking the vDSO:
-> 
->    arch/powerpc/kernel/vdso/vdso32.so.dbg: dynamic relocations are not supported
->    arch/riscv/kernel/vdso/vdso.so.dbg: dynamic relocations are not supported
-> 
-> memset() is now generated when zeroing params->reserved for some builds
-> because LLVM has an optimization (now run in more instances) that can
-> recognize at compile time when it is assigning a static value to a
-> contiguous area of memory and turn that into a call to memset(). Both
-> clang and GCC assume memset() is always available [2].
-> 
-> Clang has an internal fiddly hook, -max-store-memset, which we can set
-> to a high number, to disable generating out of line memset calls [3].
-> Similarly, GCC has -finline-stringops=memset to do the same [4], should
-> this issue ever hit future version of GCC. While these options wouldn't
-> make sense for normal kernel code, it is fine for the extremely limited
-> and intentionally compact vDSO code.
-> 
-> Link: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2Fllvm%2Fllvm-project%2Fcommit%2F90cebef1411617fc3eedd359bdf00cb44b1c2439&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4caf8956c2d94439c19a08df206dd40b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639265328227732238%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=cYZ2nUalY%2F6yarydfMIlcGpDVlztXRBeg7UG7tpCO9g%3D&reserved=0 [1]
-> Link: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgcc.gnu.org%2Fonlinedocs%2Fgcc-16.2.0%2Fgcc%2FStandards.html%23index-ffreestanding&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4caf8956c2d94439c19a08df206dd40b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639265328227748542%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=vRl%2BQgL5GJ0wowXAIlRIczC5XqUXyOFUvFVe5C8XWAc%3D&reserved=0 [2]
-> Link: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2Fllvm%2Fllvm-project%2Fcommit%2Fb28eeb28bea39148738dc375e8a97072a1907e64&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4caf8956c2d94439c19a08df206dd40b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639265328227762721%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=nt59J3%2BOoiEKYGzfFfAq7WoAnEMAimt6vKDaJjhvHtg%3D&reserved=0 [3]
-> Link: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgcc.gnu.org%2Fonlinedocs%2Fgcc%2FOptimize-Options.html%23index-finline-stringops&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4caf8956c2d94439c19a08df206dd40b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639265328227777215%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=fyZA9XC%2FwSAUc346VWT%2FmyeqddqeTo62dBKtiJilR9U%3D&reserved=0 [4]
-> Closes: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2FClangBuiltLinux%2Flinux%2Fissues%2F2183&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4caf8956c2d94439c19a08df206dd40b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639265328227792263%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=49HfUDlzn%2FLUeISQ7%2BFR5jE7lZkqfORaqjauLn8cdm0%3D&reserved=0
-> Cc: stable@vger.kernel.org # v6.12+
-> Signed-off-by: Nathan Chancellor <nathan@kernel.org>
-> Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
+Assisted-by: LLM
+Signed-off-by: Frank Li <Frank.Li@nxp.com>
+---
+ arch/powerpc/platforms/512x/mpc512x_lpbfifo.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Ok, I checked the version that is in the rng tree, namely commit 
-eb13a1ff271b ("random: vDSO: avoid call to memset() when zeroing 
-reserved parameter"). Looks similar to this mail.
+diff --git a/arch/powerpc/platforms/512x/mpc512x_lpbfifo.c b/arch/powerpc/platforms/512x/mpc512x_lpbfifo.c
+index f251e0f682620..5f1f8310c30cf 100644
+--- a/arch/powerpc/platforms/512x/mpc512x_lpbfifo.c
++++ b/arch/powerpc/platforms/512x/mpc512x_lpbfifo.c
+@@ -310,7 +310,7 @@ static int mpc512x_lpbfifo_kick(void)
+ 	out_be32(&lpbfifo.regs->pkt_size, bits);
+ 
+ 	/* 5. Finally kick DMA off */
+-	cookie = dma_tx->tx_submit(dma_tx);
++	cookie = dmaengine_submit(dma_tx);
+ 	if (dma_submit_error(cookie)) {
+ 		ret = -ENOSPC;
+ 		goto err_dma_submit;
+-- 
+2.43.0
 
-It looks ok, no change to generated loop on powerpc32 neither with gcc 
-13 nor gcc 16.
-
-Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-
-> ---
->   arch/arm64/kernel/vdso/Makefile     | 2 +-
->   arch/loongarch/vdso/Makefile        | 1 +
->   arch/powerpc/kernel/vdso/Makefile   | 1 +
->   arch/riscv/kernel/vdso/Makefile     | 1 +
->   arch/s390/kernel/vdso/Makefile      | 1 +
->   arch/x86/entry/vdso/vdso64/Makefile | 2 +-
->   init/Kconfig                        | 5 +++++
->   7 files changed, 11 insertions(+), 2 deletions(-)
-> 
 
