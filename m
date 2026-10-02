@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-28707-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28708-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30882CA5FD9
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 06:52:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 853D3CA5FD9
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 06:54:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hwzxg75QGz2yDs;
-	Fri, 02 Oct 2026 16:52:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hwzzN6psvz2yDs;
+	Fri, 02 Oct 2026 16:54:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790923975;
-	cv=none; b=gsp6HVYojjknhTtfKcBL88Rhb795xsoqbP0qaOEVTs6CLkVD1cKhDxnLAvprZ2dgW9KHPDVE0fx4hQlUWgG0LeSSMraNFDcZkMQqCD+/JX3PSDXc6X3LxmYoGrjUQyiENr6b76sDOZctO9gtA64lgIEcFXaiWdmITqdzF6bgikEN/D6eax/b6uSAH8zBWZppK+pN/XUDx1wwk0rF9Zmf9hF1so2iEVVuFgNpMwH9TmNwhIdtL7oD+SFlbcn7rgYahvxYNG30cyOrRtfBLdNLL8psE4120hx6Qrefgpuo8Zg91HQ1qDPClYO7Ev1jGOBkg2YOfr0D1qJwe2h+e3OXAA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790924064;
+	cv=none; b=XWmcRpI/9NAbwU+yjhRW4P+quXaFr//5hwLjE/VTjwg5aFpvXpPCKXtiL3Y9nfFjd24MSWUxSogjrQwbfwYO/KzfKekhtUaiGDub2p+pMen/i8WkpfkjUufA5jGRHngoAMhMlGtU94VxY8C6VCknzbEPSjZHMVmwL1FKpc4I3mI13DlkGx1aCZvkMGMKkBWBloOlXASGf+oAiqm/1Hk6Tuz0W1HpwEehJ10uRMit8/GnoLEJheGf/aOZGzCHitaBJG46LUJKeqsYFYC0qyBPkVrjj/uB0IoQKvmfzzRmZ1Lauw+XTrHZK9NDgzpwx4brpHxIUcitZyky1ZC82+OpFQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790923975; c=relaxed/relaxed;
-	bh=u15YH4Gk1jY734f7Ru9LTF8CNh+n4MtAogEYgBYqpnw=;
+	t=1790924064; c=relaxed/relaxed;
+	bh=ue1Cx+XYB9aBaUJ/GDXzUU8f4x3LGGlvXoDUIfnsQOI=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=OP/DkT1ew50Q1ZyB/J5oPybi+2pnqhfRRyvlMC1+ZiuzCBs+vei17YCkzwvUAqiPamRIsfZrO1vy93Pd3u8YSlsd8qbXvA4a7wPYQgtn7KCbDToJLuVdep1r+1JEryBKTVLTUlVp0xQ6fMUULMhlEUObG6d0TTN0cN84E0YfiQw5fSUc7GQ9DWD/pnthl2hEL6SHjjMbVZeRYsZtVrLJubrV4foKxFq9Y4tAbrqOPrV4Orxtg5p7E67Tkeljtx5bK/A5GGieX7ZRjaDpyq3QS3QuYOjI3LtGlJAuongLurYPiaHkAX6qVWWYUvMCurW0r0ntzSTPcK/KLcADD5sEzw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=c8bDWgyU; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=Q8SIqYkM8+7ftLGaS/idZQRT8ugkbXqVsbLljo+ybmhpAWRl2W4cIl+rxpqtnD2CgqP2tOS9TM5RsWIdSp/JwpQw/arJODWvyQ7XlQM8zWSQ1kXPWTIvnASZVdurSh2rONBYpVfDFCV/kSrlmyNWJ17fvmZPGpRD+gDneO0gESWM0QWa+ii0csEentoSSuiFJrgGbwkBL/cPVS0kd7vL7+Z1FQVuf0TId7YdhBP9CxCXrgyVcFxEisYwPB1GO58pzmf71nOE16QQiHobLPg9boDK3JFXvI/o9mFvkwxeflVFcYIZ6UkHpaOF69UweNyYioWZU48qZLtnDwgkCGBgbg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mOsZhNHn; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=c8bDWgyU;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mOsZhNHn;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hwzxf3pRhz2xsW
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 16:52:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hwzzN0Y9Bz2xsW
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 16:54:24 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id DF1516021E;
-	Fri,  2 Oct 2026 06:52:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B78DB1F000FF;
-	Fri,  2 Oct 2026 06:52:10 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id D759760A5F;
+	Fri,  2 Oct 2026 06:54:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CEABF1F00893;
+	Fri,  2 Oct 2026 06:53:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790923970;
-	bh=u15YH4Gk1jY734f7Ru9LTF8CNh+n4MtAogEYgBYqpnw=;
+	s=k20260515; t=1790924061;
+	bh=ue1Cx+XYB9aBaUJ/GDXzUU8f4x3LGGlvXoDUIfnsQOI=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=c8bDWgyU7nbSbFiXaryamWOeLdeQpMchMrG0YjFpHuBOQ1PuqIEtbmxLMXTlp4ewM
-	 OL/GoVIH5VS5zURtCMofHqaWCe4cVE9WJ8MPM3FdcVOyMRU1YSbKnFj7c9DjyEVkSw
-	 9gCmXRSqnWhhFoMhDJ/lGP59xmGFDa3YmRJMrGx+9mw3LMY8NLYorwZ19bld8oz5rO
-	 DgWfbQbiLCLEg2FXnUdwmI6B06bIL+jviB54nuqoHIQ8yrkmiuMD5hPR0jQVPoCSav
-	 mIx8HAdy4CslS+i7YzgBC1u1s9bonkEoTcmwC1glIfgxX4mWnJ3lRT0smKX9wzYurc
-	 IJYDuX5dbpfvw==
-Message-ID: <bd623df8-d5f0-46a3-927f-f0a4b458e651@kernel.org>
-Date: Fri, 2 Oct 2026 08:52:06 +0200
+	b=mOsZhNHnMsuMnuEECJ60UbhrzrPksVkY2FRypuDGKP/z3vY0YEP9KoXCpAHiem8Oq
+	 ggD48Bs8Bgah4boo3ohMo9CFylA5ZUCwjYJ4nDzt8mEtmnR/OAlKvfzcfLT6PRL9qt
+	 AyUf2YrS0GT0J78RSjA2Zi2PPmB9OHRCefubG+ytUbK2IG1G03DExT+wBAXQlhqSTV
+	 jWFtArDl3+ivSm9C9vy1DlUmaToV8yniipTby+JBSUY11cWhoq3dgFFR0b+ETZK8Rz
+	 L2hL8id8VPyGredkP86S0uUBTQ4kRxOwtuh3hiAxBTpVQemlBTTghwoq2dYwKLJjmx
+	 2U7jrdc3/lxmw==
+Message-ID: <2cbf6e94-5916-4140-85d3-2d05eb0dc092@kernel.org>
+Date: Fri, 2 Oct 2026 08:53:37 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,7 +60,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 27/40] mm: remove hugetlb_inline.h
+Subject: Re: [PATCH v3 28/40] mm: rename is_vm_hugetlb_page() to
+ vma_is_hugetlb()
 To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>,
  "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>,
@@ -142,7 +143,7 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
  fuse-devel@lists.linux.dev
 References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
- <20260917-b4-mmap-prepare-vma-flag-sanify-v3-27-4583d8a23bca@kernel.org>
+ <20260917-b4-mmap-prepare-vma-flag-sanify-v3-28-4583d8a23bca@kernel.org>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -189,19 +190,30 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-27-4583d8a23bca@kernel.org>
+In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-28-4583d8a23bca@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 9/17/26 18:22, Lorenzo Stoakes (ARM) wrote:
-> This header really makes little sense - every place it is included mm.h is
-> also included, and the header itself includes mm.h, so it does nothing to
-> reduce header size.
+> The is_vm_hugetlb_page() predicate is badly named - the mapping can span
+> more than a page and it is inconsistent with other VMA predicates that
+> typically are prefixed by vma_.
+> 
+> Rename to vma_is_hugetlb() for consistency, and while we're here update
+> some VM_BUG_ON_VMA() to VM_WARN_ON_ONCE_VMA() as to avoid unnecessary
+> oopses.
+> 
+> No functional change intended.
+> 
+> Acked-by: Marc Zyngier <maz@kernel.org>
+> Acked-by: Claudio Imbrenda <imbrenda@linux.ibm.com>
+> Acked-by: Anup Patel <anup@brainfault.org>
+> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> ---
 
-
-It's very small indeed
 
 Acked-by: David Hildenbrand (Arm) <david@kernel.org>
+
 
 -- 
 Cheers,
