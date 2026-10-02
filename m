@@ -1,77 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-28769-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28770-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 263B3CA5FDD
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 18:12:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D332CA5FDD
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 18:22:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hxH2F0w5jz30Pp;
-	Sat, 03 Oct 2026 04:12:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790964773;
-	cv=none; b=Le6bf8UqGiJbAtz6gyw17ji+T/TptpSF5SZi0kRUoa1o0JVtxhMgWYUTgTWB8VxQbB2d06YJWzaooJQeELvjT7nBW+QbpeJGnctIPrEWjFm8Ie3M2ngjJ7TkHeGVJtCi6LIFGfX5RIiiMNIc43ODijbfg4eJ5itbel/m6DIjPAgqO84cj2vOc3TDE2WPW+GxZAZan43WebkdGruhtiglplOER0aLe8kV7TAAH1t8NGFuExtSZGtXAcyGuKRftKdQPnSw5ZvrT2s6zthn7/EuAVbtQyYJmSvTO4TS3mahl2/XWlY7kyjvG359wKZim0uN3UAM24OUW6aDkXO3Cv7C4g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hxHDt62V1z30DK;
+	Sat, 03 Oct 2026 04:22:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790965326;
+	cv=none; b=HSdh4FTwwFxkDEeQ4ww4f6vq4qp3EqTjHQpnAGdcIYHliYRZe/f6T42lzRWz0CCRoiUneYQ4WREgkw/Q+2eJmwtkBMSNm5cklVoVuq+H9NX0Qg94GRPzYDsgoxRTvLW8S4uyn5uWKaIjwT9nlfyuhATxHZRKCP2aVeACLLf7TTRYeuDioh0ReSM4XHOi9c+MEdWVwKlwvY4KxS9RXVYLokP/XhacHVVewN3uVLSGuzwa6fO2Sts5c/ZiZ+Nc529lsOmkksQL9JwB/YWL1sVO1WoYKJzsU+Mh6naz+l5pd1BpCyjnc+38vfALAQlSpt4Xck9aFo3St9pgq3OpAp5A1g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790964773; c=relaxed/relaxed;
-	bh=g8XGruUG1q9NlQK3HfsezWI4sNwg1U3GmGD0QRbensM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AKglA6jscSIojZQAx7l3irHn5TaOAmu4lqDmmQzYc0LtBdvsGRbKtixe0FBtHlBVujOgJYuD6Q5s7JV30ILNnGbaUxscj7ZwHmOjaRVDB01u/cmU961vitQy1B0Cmahc0hrcV9DWd8SDzbIhEviEXmQlPbsvs5Vm2yMADdzJTjpxSHSROGk4enp1MTt5ou45RDjuq0JBbclZBcnSTLl+t9I2JQqlz5IITbsC9gJE7Z3SjOO1OC0ikr6gAKIEZdKKqA/xWhTCzDrkSGpGxcmM1aocoPbrQXDyNArIYtEaGSEoZ0viTpAYZw5XKb9uU7tfc11mWC1XXQGNbxw6dGgBnA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=V0REfLB+; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1790965326; c=relaxed/relaxed;
+	bh=DRNHZG+0rjn+MS3ZH0CrvoAZYe+hwRcWZ5W/r+K9L0c=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=m0JwCZWHNy8sAWGgsC4Qq+URSxX8oY0Txo2CY5w9eZlIQaxKh4N6w8pC+4IULIO13R0GSiy9NeoZKtr09bk3K7Z3Zq/HQSTPIyt7+lSAOZsUn06B6A5zcYg0X2nRMxO8cYDSveDFEYvFJ9V8ftEeSdPGirH6XQH9TkK81iQAecSPXcFrmmj5U3kt7y1PUndDXpUa6DtD41KXSiTK727zBcfnUtfRFRKi7+MFbYF2b9tHf8BdDdhga4nWa6H/WKtJeQuC5ftS9w8JTLkXifGwU0dhAfZHiqOG1216aE/TnyNI0ayD2nrNVRuVsb78kPXqDVwEedR/ljLZiZJPZ9nNfA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QXsaGbmn; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=V0REfLB+;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QXsaGbmn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxH2C6kXBz2xLf
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Oct 2026 04:12:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxHDr6FMMz2yNj
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Oct 2026 04:22:04 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 2D5A84025C;
-	Fri,  2 Oct 2026 18:12:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C070F1F000FF;
-	Fri,  2 Oct 2026 18:12:43 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id D4CCD60A52;
+	Fri,  2 Oct 2026 18:22:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3496D1F000FF;
+	Fri,  2 Oct 2026 18:21:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790964768;
-	bh=g8XGruUG1q9NlQK3HfsezWI4sNwg1U3GmGD0QRbensM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=V0REfLB+j9fthMzAGcutHRNmRjr4fXKGl1aG9r8XK0w+Vy31R2L9pIYOOWtSZBw3U
-	 7qyfwbDD83FmvTuz/gfIb24vWYjIoi/zze2L5JgCYcUWmqce1xusyI7j5+nqBM+MjO
-	 27DBo08CWDgdEvumIyd2DotOo5ve2+0IFdtN0jqI5CGjcyLBNLz/3AZRwe7WVDsF2+
-	 OldX0GA0jKKM+8yhQ8cXETn3mQMG47JK/JjJ2Y+VWgt70E9FZp7zqmkM8202/EeQot
-	 H5P/0nnTUDfDsBZfsNIws2Csfz0zHJOh9GPJm2AmOCw1tlEl4vfgYkJLZPYoZl6IZE
-	 j20D1JesWAFYQ==
-Date: Fri, 2 Oct 2026 20:12:40 +0200
-From: Mike Rapoport <rppt@kernel.org>
-To: Muchun Song <muchun.song@linux.dev>
-Cc: Muchun Song <songmuchun@bytedance.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Hildenbrand <david@kernel.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Ritesh Harjani <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Lorenzo Stoakes <ljs@kernel.org>,
-	"Liam R . Howlett" <liam@infradead.org>,
-	Vlastimil Babka <vbabka@kernel.org>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Michal Hocko <mhocko@suse.com>, Qi Zheng <qi.zheng@linux.dev>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org
-Subject: Re: [PATCH v3 6/6] mm/mm_init: add zone mismatch warning during page
- init
-Message-ID: <ar_0GLYM6KsIH6tQ@kernel.org>
-References: <20260929053231.66085-1-songmuchun@bytedance.com>
- <20260929053231.66085-7-songmuchun@bytedance.com>
- <ar5xbQsUpSQZg0wO@kernel.org>
- <78D5D6AA-BE36-432C-B0F7-453F93DF18C0@linux.dev>
- <ar9p39Y9SmlxvbA_@kernel.org>
- <85941AA4-7E50-4AAE-BC05-0F443B21BE8B@linux.dev>
+	s=k20260515; t=1790965321;
+	bh=DRNHZG+0rjn+MS3ZH0CrvoAZYe+hwRcWZ5W/r+K9L0c=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=QXsaGbmntNXtf8qGXbZm0VEFHH+Ktxq2NycVl9EA2UFJL5xoZ/7d0KfIdhvM22cGE
+	 5Br3otgO+SIMvA5iH1BDByi0k1+DbOmVY77NPu8uIBzzMghHQETQUbBZPcYRFv0a8z
+	 DRT4z9LSccwooBqwo4wg0YXKYC/2UL07N1MZQ4w/MUtqRI2DC5QYE+9qvmyD6dutEL
+	 pmpMLRcOBj6u8ddAC/t2x5aZ1IapKtAA4XNzeDWqBXI76qzsqx+oc5+bkxEYoavYYe
+	 /Q3H+GcrB9mDK4EhLPYavMssqFQA/PeSVeY0TOuLGECUEB+VovTtunZjz65tDBhUi5
+	 0EAsTq4zf3ulw==
+Message-ID: <2618625a-864d-43a4-b151-100e0d76ff87@kernel.org>
+Date: Fri, 2 Oct 2026 20:21:47 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,72 +59,127 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] random: vDSO: Avoid call to memset() when zeroing
+ reserved in __cvdso_getrandom_data()
+To: "Jason A. Donenfeld" <Jason@zx2c4.com>,
+ Nathan Chancellor <nathan@kernel.org>
+Cc: Nick Desaulniers <ndesaulniers@google.com>,
+ Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+ Theodore Ts'o <tytso@mit.edu>, Vincenzo Frascino
+ <vincenzo.frascino@arm.com>, Bill Wendling <morbo@google.com>,
+ Justin Stitt <justinstitt@google.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>, Huacai Chen <chenhuacai@kernel.org>,
+ WANG Xuerui <kernel@xen0n.name>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ llvm@lists.linux.dev
+References: <ar0a4b9CjL2YHCkY@zx2c4.com> <ar0gTS71qxnx9AkW@zx2c4.com>
+ <20260930151337.GD3142230@ax162>
+ <CAHmME9pA+AntJ6hWoFYpTVjh-NUSd0ZGXp5XiUuhQcq3HjQT3g@mail.gmail.com>
+ <ede392d7-3104-4a0f-9fa1-99b22552dcd6@kernel.org>
+ <ar4nD8aRH7wEvTMt@zx2c4.com> <20261001102059.GA4176271@ax162>
+ <ar46ap4jzLWyP92C@zx2c4.com> <20261001110310.GA138012@ax162>
+ <20261002094932.GA3435055@ax162> <ar-Dx-deXN93M24v@zx2c4.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <ar-Dx-deXN93M24v@zx2c4.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <85941AA4-7E50-4AAE-BC05-0F443B21BE8B@linux.dev>
 
-On Fri, Oct 02, 2026 at 05:56:40PM +0800, Muchun Song wrote:
-> > On Oct 2, 2026, at 16:22, Mike Rapoport <rppt@kernel.org> wrote:
->
-> >>>> diff --git a/mm/mm_init.c b/mm/mm_init.c
-> >>>> index 1650d6bc1211..bd02e8d06965 100644
-> >>>> --- a/mm/mm_init.c
-> >>>> +++ b/mm/mm_init.c
-> >>>> @@ -609,6 +609,9 @@ void __meminit __init_single_page(struct page *page, unsigned long pfn,
-> >>>> if (!is_highmem_idx(zone))
-> >>>> set_page_address(page, __va(pfn << PAGE_SHIFT));
-> >>>> #endif
-> >>>> + VM_WARN_ON_ONCE(vmemmap_optimizable_order(pfn_to_section_compound_order(pfn)) &&
-> >>>> + page_zone_id(page + VMEMMAP_OPTIMIZATION_NR_STRUCT_PAGES) !=
-> >>>> + page_zone_id(page));
-> >>> 
-> >>> Hmm, page + VMEMMAP_OPTIMIZATION_NR_STRUCT_PAGES is initialized a tad later
-> >>> than page so it'll have stale data in the page->flags, won't it?
-> >> 
-> >> Lance is right. The shared tail struct pages are already initialized by
-> >> vmemmap_shared_tail_page() during vmemmap population, so they're not stale.
-> >> The head 64 struct pages are initialized later — right here, after vmemmap
-> >> population.
-> > 
-> > Still it looks out of place here, can this check be done in sparse-vmemmap
-> > somehow?
-> 
-> The struct page entries of a vmemmap-optimizable compound page
-> are currently initialized in two stages. During vmemmap
-> population, the shared tail entries are initialized first. The
-> retained head area—normally 64—is initialized later through
-> __init_single_page().
-> 
-> This warning connects the two stages: while initializing the
-> retained entries in the second stage, it verifies that their zone
-> information is consistent with the shared entries initialized in
-> the first stage. Therefore, the same check cannot be performed
-> during vmemmap population.
-> 
-> I am planning to first unify the HugeTLB and Device DAX
-> compound-page initialization through a common helper [1]. Once that
-> work is complete, maybe it will be easy to move the initialization
-> of the retained head area into vmemmap population. With both the
-> retained and shared entries initialized in the same stage, there
-> will be no cross-stage inconsistency to check, and this warning
-> can be removed.
-> 
-> Would keeping the check here for now and removing it as part of
-> that follow-up sound reasonable to you?
 
-While it feels really out of place in __init_single_page(), but having it
-memmap_init_range() close to the if that skips shared tail pages makes
-sense.
 
-What do you say?
- 
-> [1] https://lore.kernel.org/20260513132044.41690-18-songmuchun@bytedance.com/
+Le 02/10/2026 à 12:13, Jason A. Donenfeld a écrit :
+> On Fri, Oct 02, 2026 at 11:49:32AM +0200, Nathan Chancellor wrote:
+>> On Thu, Oct 01, 2026 at 01:03:10PM +0200, Nathan Chancellor wrote:
+>>> On Thu, Oct 01, 2026 at 12:48:10PM +0200, Jason A. Donenfeld wrote:
+>>>> Does this commit seem okay with you? I used the diff you sent below and
+>>>> adjusted the commit message: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgit.zx2c4.com%2Flinux-rng%2Fcommit%2F%3Fid%3D56ff95ee85715047eb5b5220243778af657778c8&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4caf8956c2d94439c19a08df206dd40b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639265328227648970%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=H27VGYLdNkvQiA6l%2BJNnEModMbEySwTMXpLAt8iAFiI%3D&reserved=0
+>>>
+>>> Yeah, that seems fine to me, thanks for taking care of it!
+>>
+>> Can you adjust the LLVM value by one from 4294967295 to 4294967294? ~0U
+>> is actually a special value, so we hit an assertion in the SystemZ
+>> backend.
+>>
+>>    https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2Fllvm%2Fllvm-project%2Fblob%2F3f48e22a1f321d5d3341bd812803694cea588785%2Fllvm%2Flib%2FCodeGen%2FSelectionDAG%2FSelectionDAG.cpp%23L9547&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4caf8956c2d94439c19a08df206dd40b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639265328227670583%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=u8petgY9wU9ur%2By4kaOrb6VFKL%2FNf4tcCIUL%2BcUcDfs%3D&reserved=0
+>>    https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2Fllvm%2Fllvm-project%2Fblob%2F3f48e22a1f321d5d3341bd812803694cea588785%2Fllvm%2Flib%2FTarget%2FSystemZ%2FSystemZISelLowering.cpp%23L1470-L1471&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4caf8956c2d94439c19a08df206dd40b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639265328227686571%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=cSwt%2BTJdYa%2Bbwe8HyO6FsIq6oU6YNplRlwCa0upif9Q%3D&reserved=0
+>>
+>> clang: llvm/lib/Target/SystemZ/SystemZISelLowering.cpp:1471: virtual bool llvm::SystemZTargetLowering::findOptimalMemOpLowering(LLVMContext &, std::vector<EVT> &, unsigned int, const MemOp &, unsigned int, unsigned int, const AttributeList &, EVT *) const: Assertion `Limit != ~0U && "Expected EmitTargetCodeForMemXXX() to handle AlwaysInline cases."' failed.
+>> PLEASE submit a bug report to https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2Fllvm%2Fllvm-project%2Fissues%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4caf8956c2d94439c19a08df206dd40b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639265328227701575%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=%2F3q8laZb%2FDhCWp117N9EtyxLIc5lq%2FzEN2l0z%2BXwDHY%3D&reserved=0 and include the crash backtrace and dumped files.
+>> Stack dump:
+>> 0.      Program arguments: ...
+>> 1.      <eof> parser at end of file
+>> 2.      Code generation
+>> 3.      Running pass 'Function Pass Manager' on module 'arch/s390/kernel/vdso/vgetrandom.c'.
+>> 4.      Running pass 'SystemZ DAG->DAG Pattern Instruction Selection' on function '@__kernel_getrandom'
+>> ...
 > 
-> Thanks,
-> Muchun
+> Holy smokes. Sure, fixed:  https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgit.zx2c4.com%2Flinux-rng%2Fcommit%2F%3Fid%3Deb13a1ff271b0d180687eebb30611b0b276d5193&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4caf8956c2d94439c19a08df206dd40b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639265328227716550%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=WcnFE6S72OrDTNNvU1T06BtUTyI1sDx%2F%2Btz%2FkpGslMA%3D&reserved=0
+> 
+> 
+>  From eb13a1ff271b0d180687eebb30611b0b276d5193 Mon Sep 17 00:00:00 2001
+> From: Nathan Chancellor <nathan@kernel.org>
+> Date: Fri, 25 Sep 2026 22:46:32 +0100
+> Subject: [PATCH] random: vDSO: avoid call to memset() when zeroing reserved
+>   parameter
+> 
+> After a recent change in LLVM [1], builds with the random vDSO
+> implementation, such as PowerPC and RISC-V, fail when checking the vDSO:
+> 
+>    arch/powerpc/kernel/vdso/vdso32.so.dbg: dynamic relocations are not supported
+>    arch/riscv/kernel/vdso/vdso.so.dbg: dynamic relocations are not supported
+> 
+> memset() is now generated when zeroing params->reserved for some builds
+> because LLVM has an optimization (now run in more instances) that can
+> recognize at compile time when it is assigning a static value to a
+> contiguous area of memory and turn that into a call to memset(). Both
+> clang and GCC assume memset() is always available [2].
+> 
+> Clang has an internal fiddly hook, -max-store-memset, which we can set
+> to a high number, to disable generating out of line memset calls [3].
+> Similarly, GCC has -finline-stringops=memset to do the same [4], should
+> this issue ever hit future version of GCC. While these options wouldn't
+> make sense for normal kernel code, it is fine for the extremely limited
+> and intentionally compact vDSO code.
+> 
+> Link: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2Fllvm%2Fllvm-project%2Fcommit%2F90cebef1411617fc3eedd359bdf00cb44b1c2439&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4caf8956c2d94439c19a08df206dd40b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639265328227732238%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=cYZ2nUalY%2F6yarydfMIlcGpDVlztXRBeg7UG7tpCO9g%3D&reserved=0 [1]
+> Link: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgcc.gnu.org%2Fonlinedocs%2Fgcc-16.2.0%2Fgcc%2FStandards.html%23index-ffreestanding&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4caf8956c2d94439c19a08df206dd40b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639265328227748542%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=vRl%2BQgL5GJ0wowXAIlRIczC5XqUXyOFUvFVe5C8XWAc%3D&reserved=0 [2]
+> Link: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2Fllvm%2Fllvm-project%2Fcommit%2Fb28eeb28bea39148738dc375e8a97072a1907e64&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4caf8956c2d94439c19a08df206dd40b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639265328227762721%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=nt59J3%2BOoiEKYGzfFfAq7WoAnEMAimt6vKDaJjhvHtg%3D&reserved=0 [3]
+> Link: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgcc.gnu.org%2Fonlinedocs%2Fgcc%2FOptimize-Options.html%23index-finline-stringops&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4caf8956c2d94439c19a08df206dd40b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639265328227777215%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=fyZA9XC%2FwSAUc346VWT%2FmyeqddqeTo62dBKtiJilR9U%3D&reserved=0 [4]
+> Closes: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2FClangBuiltLinux%2Flinux%2Fissues%2F2183&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4caf8956c2d94439c19a08df206dd40b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639265328227792263%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=49HfUDlzn%2FLUeISQ7%2BFR5jE7lZkqfORaqjauLn8cdm0%3D&reserved=0
+> Cc: stable@vger.kernel.org # v6.12+
+> Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+> Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
 
--- 
-Sincerely yours,
-Mike.
+Ok, I checked the version that is in the rng tree, namely commit 
+eb13a1ff271b ("random: vDSO: avoid call to memset() when zeroing 
+reserved parameter"). Looks similar to this mail.
+
+It looks ok, no change to generated loop on powerpc32 neither with gcc 
+13 nor gcc 16.
+
+Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+
+> ---
+>   arch/arm64/kernel/vdso/Makefile     | 2 +-
+>   arch/loongarch/vdso/Makefile        | 1 +
+>   arch/powerpc/kernel/vdso/Makefile   | 1 +
+>   arch/riscv/kernel/vdso/Makefile     | 1 +
+>   arch/s390/kernel/vdso/Makefile      | 1 +
+>   arch/x86/entry/vdso/vdso64/Makefile | 2 +-
+>   init/Kconfig                        | 5 +++++
+>   7 files changed, 11 insertions(+), 2 deletions(-)
+> 
 
