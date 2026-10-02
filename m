@@ -1,97 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-28741-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28742-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F288CA5FD4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 10:13:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72BE4CA5FC4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 10:37:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hx4PK4csKz2yNj;
-	Fri, 02 Oct 2026 20:13:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790936021;
-	cv=none; b=UF0IRxr16wLXnOIaXdHGMvNJlOMTVaF4ihKLoCHX61XvDcOfYK6rvN2mbHEsPl/dbRiWXMpqsge365dV61dOuvLX1A2Mra1WFBMB694kntO0+ukntfmouRNFoSDy5E7PKvNa2ykq6ZeSWsxH5fq/ZN1nfqGnmwhruRSYCADSjfk7YfHC8QMW0Hg5Wtg0NV2IE3QWSz+A9rVJfhDFg9y3kShOqpis5NJ/KF72MH9NCNGXtTBkDsJDaM/zBH/7jhIUjKg77LkP95A9yOoB72595OP/+xnWPJHlqB5oT/RhL+Zwp3JSYnNtVcgMNbL/I+hWZ8c0LoO6uIDp3m6KC9TFfA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790936021; c=relaxed/relaxed;
-	bh=bOzm6aI90EpK2LXg0mKkr8pixnkrVyev2/1n2mK0D2E=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=YXooSONxwI/W4AxGvS1N8GPobTbvX/XKbBE7d6Pd8yCzq83Q1YrTH4atipeDEmGQ5wTUpVDCKomKfSA6aLmvm8Gsm9E2CFvJs84U/9rr6yrd4IhnpZeUlQesEf6/W5j+Q4xT+9H/Lisjfoo+RYEZr3iMo7HLhaW3mY1ypZhLriMCDA1WbTkvlxM8cLa/q0ohaGEsXUTDJCwU5x6C+AEcr+jCkw1YzSkAX5tzWTcArddao9iyHeN7HjTTBvu/a4mkZb/dpmC/572W1QRpebnUHXKkiXGo3PBgCzm4+6EZLjRnHVIEQY4ovaG785YLl8esn7L/TcybYrrtfDE8aFOZsg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com; dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=YtBXFh9D; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=ixz0=hy=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hx4wd54t8z2yDs;
+	Fri, 02 Oct 2026 20:37:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::1" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790937441;
+	cv=pass; b=Tlx2ZNW9I84+k+pr/QPwjBpbV1bMkz6XfbRMUtrpqsOAlDdfjSyjZFjBnFqsvlKKhsJ7B/2o1FqrWHH9/ky+/MV1qXgJGjYetVSFConIAAV4VxIjEj9B66jktXV82Zfl6R1NksDO3PSHBXxwdSY0jPwuc1Z8KFZEoTehYM08Ox6K8X8muY7/p4tob+eMXseINbJAaEni3WOiNnRg6kt3Fwzav+sPuLT417zjmS/15SZfWLeUCfJAio1tTV+QUBHvzC1dZJTB+0xdaWUaQx0nayv3ZirfNW6E9i2Xhqs4GqRJUHhbVLRlcXT43B3se+uX/Pv+NeHw8WuYL/mzMD9mIA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1790937441; c=relaxed/relaxed;
+	bh=hiQyeJsKEuxDWQN+Q8Iqxepfw7Kni0K8bLfTsyDB5I4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=LOSpCaAudY2OFX/M2Z8HKEGApTCBA3sMEXlU+eCXq9kJ9MlNobNOklGFx4iy64wLgvOQXwmj8NUqz90LldKiTVUTPzEnsRtnE3P2I0bF+2Xu1O0c1VYEDF/qM7n+JSbuc8R92tT6FO4BrjZTTQ10TDwnHN6SsdKG9+GFWUjFkqHIhIhoimLWXK1LMP6Hl/xKQmVNOWwQznTmD35h3XhLipGXjg2/0att930AvC0kfGwQL6p+kUjauFbo1jncmFOMScdWDusRg6CCTov8blqdJTvruoqGXqOckB6Rd/QSh92NXmNcd1TVMVFZJ7WUnitTV/xxn/jYZ50kOrJx86tlDQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=eTJi0z/3; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=ioana.ciornei@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=YtBXFh9D;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=eTJi0z/3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=ixz0=hy=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=ioana.ciornei@nxp.com; receiver=lists.ozlabs.org)
+Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hx4PH69QTz2yDs
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 20:13:39 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 1DD20415DD;
-	Fri,  2 Oct 2026 10:13:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AFE5E1F000FF;
-	Fri,  2 Oct 2026 10:13:33 +0000 (UTC)
-Authentication-Results: smtp.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=YtBXFh9D
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
-	t=1790936012;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=bOzm6aI90EpK2LXg0mKkr8pixnkrVyev2/1n2mK0D2E=;
-	b=YtBXFh9DHcA4h2DpmpNDa4WiBetUEUDqY34cjYXeg5spaRZvTZtgHlC3h9zJDu3n4WoGNL
-	eIH3xyvt4QPZt8bElnZ5+/wBUcdC0za4zMqnHaO0omBSBFmvf0W7aqB54s/3WAlVF8ST0G
-	/X9dszl5qzotlF9SKwDebP7b/CNvzVE=
-Received: 
-	by mail.zx2c4.com (OpenSMTPD) with ESMTPSA id 6ecc7897 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
-	Fri, 2 Oct 2026 10:13:31 +0000 (UTC)
-Date: Fri, 2 Oct 2026 12:13:27 +0200
-From: "Jason A. Donenfeld" <Jason@zx2c4.com>
-To: Nathan Chancellor <nathan@kernel.org>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Nick Desaulniers <ndesaulniers@google.com>,
-	Andy Lutomirski <luto@kernel.org>,
-	Thomas Gleixner <tglx@kernel.org>, Theodore Ts'o <tytso@mit.edu>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	Bill Wendling <morbo@google.com>,
-	Justin Stitt <justinstitt@google.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>, Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	"H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	llvm@lists.linux.dev
-Subject: Re: [PATCH v2] random: vDSO: Avoid call to memset() when zeroing
- reserved in __cvdso_getrandom_data()
-Message-ID: <ar-Dx-deXN93M24v@zx2c4.com>
-References: <ar0a4b9CjL2YHCkY@zx2c4.com>
- <ar0gTS71qxnx9AkW@zx2c4.com>
- <20260930151337.GD3142230@ax162>
- <CAHmME9pA+AntJ6hWoFYpTVjh-NUSd0ZGXp5XiUuhQcq3HjQT3g@mail.gmail.com>
- <ede392d7-3104-4a0f-9fa1-99b22552dcd6@kernel.org>
- <ar4nD8aRH7wEvTMt@zx2c4.com>
- <20261001102059.GA4176271@ax162>
- <ar46ap4jzLWyP92C@zx2c4.com>
- <20261001110310.GA138012@ax162>
- <20261002094932.GA3435055@ax162>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hx4wc292qz2xfq
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 20:37:19 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=AfSOpTf6ZDmBX7dmqqFzDaH992l14Wi5UrQgiBgIPmh0EgYwsXSofdYa0WZXp1188HHHDhXDXGcLwPTUGexDL84DunUsPfq+f+3qjX4ZYKpQMZWizERF8Lw9+vGEDX7ppL6t/1ZzJEP0yIVE2yPh/8cxtQUiTd7V5Mw5RxLFA2dTcrI2Hl6PxqZT2IgrWEOiTTg1QMVOl06tZgPSpZa20bC2uOQG6OsKBsCU/796kPqezvbxzZFYfc9zPpG98vvzhK2N/3HDaWHlOC1I1VsNGrjBLrjFIRGgyJbYMcMGwtLlXzTj9CWkdNcKpzkc1JGPeTPhAdRH0rDkvMCL1pl+1Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=hiQyeJsKEuxDWQN+Q8Iqxepfw7Kni0K8bLfTsyDB5I4=;
+ b=o4GxLl89yEUfD4Pn+3wxaK7oesCGv+scjlywfAYaqzMS2KsqqdkR8kLqEYndv34EgSMMpQ0xYFyakS15OyQ0Qlxb4xc/5OIn+LOTEfp2zpFGRvIUkEXbYsxSaXGH1KNrfNUsX5w/pEB1isKgSbANd7urFqWFjrfmA2S1tcQ+XhZ8irkHYMd6QI7FlgaCG8uCc4cdcYY7n63qvAMQ8YbI95iaOVCM9iiXp7DU3xlAFy7ck5mFOZMDoTOrVRBDKNYwcc4uz5SyxnvltUiNlUe3cJ/OfPfx4TIj+7gSWjVv2qB+EtSPdvIygW8wPIsJkt7GkoNDTjJ9Ea65vOKF/iD60w==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=hiQyeJsKEuxDWQN+Q8Iqxepfw7Kni0K8bLfTsyDB5I4=;
+ b=eTJi0z/3OEDYuTHKUrYvCdhF2UJmd5/RI83yKWxK6cTfJkjUIHcuaNSUVrm6bMOuq5RBZOlUxbzbXGvFct213Aj6BP88opuYcY7FS5suPtcqW6MQ9McTlLUWAWm+nOwLnhNzP9KpQWPu5SNGEWehbfQtX2+YLn68Os9hbo/0f4TAVT3Bpiz8e9U1LcOdMpfjeBylszlpej1DKPpbkgmY8p+rivGjuHTDToy5n7/m53MJdYc4aGHBSzlOtvJW3A8Hbmut7+a6tP5O26VXFqeGlNBkO5i4XHO4HIKnhnCvHPd+spoyhh+Kv8k1k9y5YALCrZ+bEaWAhbKZySi4/zi88g==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from MI9PR04MB019273.eurprd04.prod.outlook.com
+ (2603:10a6:290:d3::17) by PA1PR04MB10769.eurprd04.prod.outlook.com
+ (2603:10a6:102:488::20) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.472.18; Fri, 2 Oct
+ 2026 10:36:53 +0000
+Received: from MI9PR04MB019273.eurprd04.prod.outlook.com
+ ([fe80::263c:943a:dcb0:29d8]) by MI9PR04MB019273.eurprd04.prod.outlook.com
+ ([fe80::263c:943a:dcb0:29d8%5]) with mapi id 15.21.0472.016; Fri, 2 Oct 2026
+ 10:36:53 +0000
+Date: Fri, 2 Oct 2026 13:36:50 +0300
+From: Ioana Ciornei <ioana.ciornei@nxp.com>
+To: Myeonghun Pak <mhun512@gmail.com>
+Cc: Christophe Leroy <chleroy@kernel.org>, linux-kernel@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
+	Ijae Kim <ae878000@gmail.com>
+Subject: Re: [PATCH] soc: fsl: dpio: Release the I/O object on IRQ
+ registration failure
+Message-ID: <b6hispezu6tbs4jcejf43svafckftcnyis2f4elnr37nf7dmvy@pk5us5x2wqzt>
+References: <20260917200138.75755-1-mhun512@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260917200138.75755-1-mhun512@gmail.com>
+X-ClientProxiedBy: AM8P251CA0024.EURP251.PROD.OUTLOOK.COM
+ (2603:10a6:20b:21b::29) To MI9PR04MB019273.eurprd04.prod.outlook.com
+ (2603:10a6:290:d3::17)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,171 +83,106 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20261002094932.GA3435055@ax162>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MI9PR04MB019273:EE_|PA1PR04MB10769:EE_
+X-MS-Office365-Filtering-Correlation-Id: 899c67e7-7885-492d-0518-08df2071135a
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|366016|1800799024|19092799006|23010399003|10067099003|11063799006|56012099006|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	IgCQ58so8EblsjKt6RN/4u5GyoWKo17kqN4UMZEyaOhVrQDbbqJ/tlIkWFaWbdVMxU4+uRjRZkjmN17mAb+wuixF4513ZlR1awHqaKxNqIIb2NqjB6XiaDxDZU2Y3xpR4J/jdsPN9S1zNu11bYgBZbjO9c2ayYSyicUpaiKXP5UhHtx/oe4Qriu3CYSHcAEuaYtH2SOR6xHPrk7nuSDN2s3Do0gOAGO6rZ401/XPlo+wkRTP7bA1Uv37zbuvveQWFzGLRMz/0iI2eWvbI5CETvW5Evdv4WwMlz/eKaeygbMuzxSRo9LY50Ffexwf39lzs/NtLIapUvs98gt/pltWVEKVEUSW2MrBkogxu+gLH7J1nOWDgADGDOoZbmT2cQh4NYAEzWQob5z9m7wO+4hLmPwCvhIiXUB2d9cEyeAdp1gR+g4avO0tWJtsjKOwiWYwQBPrR/327tGMaSnYEYunp72YMWfqE1ngrYQWG7pU8BNuPrc0tfr8E5NzndS+2AuchqAwfzLf6FWVuwwsXrR/zNkTnYfxapz2wCEab2LxxVXwfpSKRT5iqEa7hnizPzNf5M0ly/pUucITQny+da2JzF8LsbjeRCx21aTNZdhvHX84XADvSPHkJtIMNvnYdOfiw5Xd6zsASwwtB89YJAYsu/b2IYimVLRDnEuxnIRnuMM=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MI9PR04MB019273.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(366016)(1800799024)(19092799006)(23010399003)(10067099003)(11063799006)(56012099006)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?zkH8e3myjTkKlJvX0HSPgM9P5Z5F9c2SW1IJAxwLjdeb7xwM7BfXObzq61F8?=
+ =?us-ascii?Q?Ty16BFMsqmtbH91eRFpIz2DpANcayXV6EeT6kAMb762eXpXFqWS8NqR8JsZj?=
+ =?us-ascii?Q?z9uIBu4KWVk50uUEQEy89hm8TtmSXgAjXsP/sORctsZROSvULEbiWqYle9Np?=
+ =?us-ascii?Q?yGEsiAwRx3g7+tuoVWcKIUsIFoCMk6RXv06UC5nvv7Mqx2N13th707AEt9A8?=
+ =?us-ascii?Q?v8JcM2d3SNwR4l/cC0GQnqDgmQ841GhCrKmO5uNgf6hkmZ+rnXDYbhL3o8r7?=
+ =?us-ascii?Q?RKtFQJTVkblpuo5jp3i1AUMfPZwW2MnfnYitju4nQEIS4wA1PxCReyAM936n?=
+ =?us-ascii?Q?+u/8vG0x/MUVJWLXN1CT+3MnHHplAPH/0poE/2tgo/7ELgzYE8wfVDY//Dbl?=
+ =?us-ascii?Q?pL4MoJjtAN01XiKV4oOA7yRlZG/s2ZGoXSlEzHsde+JIE5Hcf5idGgQKSJFV?=
+ =?us-ascii?Q?Mocnf+ADPqJG6+/ImFcyTq8BrsNiebstuic4yEgzXxFB/Um9ix/9NcWfht8+?=
+ =?us-ascii?Q?fYvgQg/KXL/I6oSQnPkUkbZKt+/dhSBm1OqiCKHpECrFIm7AJEz1vVtH7CWE?=
+ =?us-ascii?Q?V6vZyfndRl07ZjOQ2ScXm3GxKVWbM76xS6+5EKuPzr0Gnwf1LUxa0Q5sJT3G?=
+ =?us-ascii?Q?8Q1Obqb3kJiVUdlukSUTxoENP8m2u5WuI6R/Hw9jwqTfdACrRWji/DzW4Ylf?=
+ =?us-ascii?Q?JFTY9fjXH8oKuhQE8RSrAF3p3l2WU1egTI445R54PqN9Tk68jPiY26bjnUyO?=
+ =?us-ascii?Q?pdksskFB5IbVpOS9f9jCwbLwlYedGXUqLWDdkl/wvEhFSoxZLADrftP3WY9G?=
+ =?us-ascii?Q?1nf4P9IyWd2e3oKOH+7e4+ZOYWqeM/kSRMG4VCfws4geh4TgzUb2jftSfLA6?=
+ =?us-ascii?Q?u2nmEu43zwi4xKxh84i3AAX+ULn+uvaxrkUndBmMOB2QJWGCbKznAcQK2gjR?=
+ =?us-ascii?Q?grdrSGC0aWXcqFfNsdEv9KuaLs/1UfF9tA3jJYfYhkNXt48BABM+0aUW3ROJ?=
+ =?us-ascii?Q?Xfwd6ItjR0k+ZzBqeZmz8M8iNQgUSWQIOBigNRnsaFKaPBFgH2kxjiz89JnQ?=
+ =?us-ascii?Q?rXqjCpldAoAyHNbAyv9GSabn+ywThBAeLbNg77xh9wyxeNoRDGnM8F2uRVri?=
+ =?us-ascii?Q?IMg4qG0tp3j0GYZ6Lber23uzTx8C+ZrepOVT9PJzeewABYL3JuANMnDNGoRt?=
+ =?us-ascii?Q?AE9vrXbyHAi0Y3EyHmTUKW/3YAYMo1+S743QnltCLxa4xYqeLDCdqm6ARJkZ?=
+ =?us-ascii?Q?KzQQd4EqEbP7CcOKFuKgVWyJ8rGu3vlqLMBRyKUj2goRFLtME6F+RavfAjIL?=
+ =?us-ascii?Q?oTg67e6RZ1JYzrZyv1vaY4tstX4SXtUvN0lDaygzzg3fuItm71PaL1V7MktS?=
+ =?us-ascii?Q?ekeai2SfWfpAFoQYA/RsyzEavfla5O9rTM0FKx6VjorxjAyvUpBuK0qoUFfq?=
+ =?us-ascii?Q?zgtks1c97W54hzYr0YwLX7Z3Qn5ZEXBi7CR8KjCOOy7fKGGCIrL8QeteogjH?=
+ =?us-ascii?Q?L3hxbJfBnC9fmBqR4xKeBIGZl6c4e3h5KrZkpcs4FJorMkm1bz1Y6J1dN/BY?=
+ =?us-ascii?Q?uIxDOgXqKAao0o1MSXspcP+F4rKcQG3hgbkcElMIkN7Ywc4ZftmbiHh+Ab46?=
+ =?us-ascii?Q?z8yv3HW3xIJjjUgpZknn2tuQ2oApUrEOmkS1HPYx1CLIzaYAtE0fVDe4U2mh?=
+ =?us-ascii?Q?3sJ67JB31XSrefRl+K/v2JGySdSd9GzbvtcV/i96moT2TdV5VmgczRpFTuUq?=
+ =?us-ascii?Q?zCkw0iFaMA=3D=3D?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 899c67e7-7885-492d-0518-08df2071135a
+X-MS-Exchange-CrossTenant-AuthSource: MI9PR04MB019273.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Oct 2026 10:36:53.8463
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: dqb7VHDwpoVlJJBtP0fJkF8BcZxZFn9e2/NqVckRdc2njS3K9dmMsuATyWjSQTxMhGMFRuAKKitzzg2JrYgSqQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA1PR04MB10769
 
-On Fri, Oct 02, 2026 at 11:49:32AM +0200, Nathan Chancellor wrote:
-> On Thu, Oct 01, 2026 at 01:03:10PM +0200, Nathan Chancellor wrote:
-> > On Thu, Oct 01, 2026 at 12:48:10PM +0200, Jason A. Donenfeld wrote:
-> > > Does this commit seem okay with you? I used the diff you sent below and
-> > > adjusted the commit message: https://git.zx2c4.com/linux-rng/commit/?id=56ff95ee85715047eb5b5220243778af657778c8
-> > 
-> > Yeah, that seems fine to me, thanks for taking care of it!
+On Thu, Sep 17, 2026 at 04:01:38PM -0400, Myeonghun Pak wrote:
+> IRQ registration happens after dpaa2_io_create(), but its failure path
+> only releases the IRQ resources and the MC portal. The I/O object stays
+> allocated and published in the service list and per-CPU lookup table,
+> while devres unmaps its portal registers after probe fails.
 > 
-> Can you adjust the LLVM value by one from 4294967295 to 4294967294? ~0U
-> is actually a special value, so we hit an assertion in the SystemZ
-> backend.
+> Call dpaa2_io_down() on IRQ registration failure to remove the object
+> from those lookup structures and free it. Reorder the error labels so
+> that a failed dpaa2_io_create() still skips this cleanup.
 > 
->   https://github.com/llvm/llvm-project/blob/3f48e22a1f321d5d3341bd812803694cea588785/llvm/lib/CodeGen/SelectionDAG/SelectionDAG.cpp#L9547
->   https://github.com/llvm/llvm-project/blob/3f48e22a1f321d5d3341bd812803694cea588785/llvm/lib/Target/SystemZ/SystemZISelLowering.cpp#L1470-L1471
+> This issue was identified during our ongoing static-analysis research
+> while reviewing kernel code.
 > 
-> clang: llvm/lib/Target/SystemZ/SystemZISelLowering.cpp:1471: virtual bool llvm::SystemZTargetLowering::findOptimalMemOpLowering(LLVMContext &, std::vector<EVT> &, unsigned int, const MemOp &, unsigned int, unsigned int, const AttributeList &, EVT *) const: Assertion `Limit != ~0U && "Expected EmitTargetCodeForMemXXX() to handle AlwaysInline cases."' failed.
-> PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace and dumped files.
-> Stack dump:
-> 0.      Program arguments: ...
-> 1.      <eof> parser at end of file
-> 2.      Code generation
-> 3.      Running pass 'Function Pass Manager' on module 'arch/s390/kernel/vdso/vgetrandom.c'.
-> 4.      Running pass 'SystemZ DAG->DAG Pattern Instruction Selection' on function '@__kernel_getrandom'
-> ...
+> Fixes: fe8fe7723a3a ("soc: fsl: dpio: register dpio irq handlers after dpio create")
+> Assisted-by: LLM
+> Co-developed-by: Ijae Kim <ae878000@gmail.com>
+> Signed-off-by: Ijae Kim <ae878000@gmail.com>
+> Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
+> ---
+>  drivers/soc/fsl/dpio/dpio-driver.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> --- a/drivers/soc/fsl/dpio/dpio-driver.c
+> +++ b/drivers/soc/fsl/dpio/dpio-driver.c
+> @@ -244,9 +244,10 @@
+>  
+>  	return 0;
+>  
+> +err_register_dpio_irq:
+> +	dpaa2_io_down(priv->io);
 
-Holy smokes. Sure, fixed:  https://git.zx2c4.com/linux-rng/commit/?id=eb13a1ff271b0d180687eebb30611b0b276d5193
+Agreed, if register_dpio_irq_handlers() fails then the dpaa2_io_down()
+should be called.
 
+>  err_dpaa2_io_create:
+>  	unregister_dpio_irq_handlers(dpio_dev);
+> -err_register_dpio_irq:
+>  	fsl_mc_free_irqs(dpio_dev);
 
-From eb13a1ff271b0d180687eebb30611b0b276d5193 Mon Sep 17 00:00:00 2001
-From: Nathan Chancellor <nathan@kernel.org>
-Date: Fri, 25 Sep 2026 22:46:32 +0100
-Subject: [PATCH] random: vDSO: avoid call to memset() when zeroing reserved
- parameter
+But if dpaa2_io_create() fails should we still call
+unregister_dpio_irq_handlers() considering that the probe path didn't
+even reach register_dpio_irq_handlers()?
 
-After a recent change in LLVM [1], builds with the random vDSO
-implementation, such as PowerPC and RISC-V, fail when checking the vDSO:
+Please also fix that in a v2.
 
-  arch/powerpc/kernel/vdso/vdso32.so.dbg: dynamic relocations are not supported
-  arch/riscv/kernel/vdso/vdso.so.dbg: dynamic relocations are not supported
-
-memset() is now generated when zeroing params->reserved for some builds
-because LLVM has an optimization (now run in more instances) that can
-recognize at compile time when it is assigning a static value to a
-contiguous area of memory and turn that into a call to memset(). Both
-clang and GCC assume memset() is always available [2].
-
-Clang has an internal fiddly hook, -max-store-memset, which we can set
-to a high number, to disable generating out of line memset calls [3].
-Similarly, GCC has -finline-stringops=memset to do the same [4], should
-this issue ever hit future version of GCC. While these options wouldn't
-make sense for normal kernel code, it is fine for the extremely limited
-and intentionally compact vDSO code.
-
-Link: https://github.com/llvm/llvm-project/commit/90cebef1411617fc3eedd359bdf00cb44b1c2439 [1]
-Link: https://gcc.gnu.org/onlinedocs/gcc-16.2.0/gcc/Standards.html#index-ffreestanding [2]
-Link: https://github.com/llvm/llvm-project/commit/b28eeb28bea39148738dc375e8a97072a1907e64 [3]
-Link: https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-finline-stringops [4]
-Closes: https://github.com/ClangBuiltLinux/linux/issues/2183
-Cc: stable@vger.kernel.org # v6.12+
-Signed-off-by: Nathan Chancellor <nathan@kernel.org>
-Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
----
- arch/arm64/kernel/vdso/Makefile     | 2 +-
- arch/loongarch/vdso/Makefile        | 1 +
- arch/powerpc/kernel/vdso/Makefile   | 1 +
- arch/riscv/kernel/vdso/Makefile     | 1 +
- arch/s390/kernel/vdso/Makefile      | 1 +
- arch/x86/entry/vdso/vdso64/Makefile | 2 +-
- init/Kconfig                        | 5 +++++
- 7 files changed, 11 insertions(+), 2 deletions(-)
-
-diff --git a/arch/arm64/kernel/vdso/Makefile b/arch/arm64/kernel/vdso/Makefile
-index 7dec05dd33b7..f6619e1cb2ce 100644
---- a/arch/arm64/kernel/vdso/Makefile
-+++ b/arch/arm64/kernel/vdso/Makefile
-@@ -41,7 +41,7 @@ CC_FLAGS_REMOVE_VDSO := $(CC_FLAGS_FTRACE) -Os $(CC_FLAGS_SCS) \
- 			$(CC_FLAGS_LTO) $(CC_FLAGS_CFI) \
- 			-Wmissing-prototypes -Wmissing-declarations
-
--CC_FLAGS_ADD_VDSO := -O2 -mcmodel=tiny -fasynchronous-unwind-tables
-+CC_FLAGS_ADD_VDSO := -O2 -mcmodel=tiny -fasynchronous-unwind-tables $(CONFIG_CC_OPT_INLINE_MEMSET)
-
- CFLAGS_REMOVE_vgettimeofday.o = $(CC_FLAGS_REMOVE_VDSO)
- CFLAGS_REMOVE_vgetrandom.o = $(CC_FLAGS_REMOVE_VDSO)
-diff --git a/arch/loongarch/vdso/Makefile b/arch/loongarch/vdso/Makefile
-index 9c9181bb4071..0b84892d084b 100644
---- a/arch/loongarch/vdso/Makefile
-+++ b/arch/loongarch/vdso/Makefile
-@@ -16,6 +16,7 @@ ccflags-vdso := \
- 	$(filter -m64,$(KBUILD_CFLAGS)) \
- 	$(filter -march=%,$(KBUILD_CFLAGS)) \
- 	$(filter -m%-float,$(KBUILD_CFLAGS)) \
-+	$(CONFIG_CC_OPT_INLINE_MEMSET) \
- 	$(CLANG_FLAGS) \
- 	-D__VDSO__
-
-diff --git a/arch/powerpc/kernel/vdso/Makefile b/arch/powerpc/kernel/vdso/Makefile
-index 368759f81708..0d1a49529885 100644
---- a/arch/powerpc/kernel/vdso/Makefile
-+++ b/arch/powerpc/kernel/vdso/Makefile
-@@ -43,6 +43,7 @@ ccflags-y := -fno-common -fno-builtin -DBUILD_VDSO
- ccflags-y += $(DISABLE_LATENT_ENTROPY_PLUGIN)
- ccflags-y += $(call cc-option, -fno-stack-protector)
- ccflags-y += -DDISABLE_BRANCH_PROFILING
-+ccflags-y += $(CONFIG_CC_OPT_INLINE_MEMSET)
- ccflags-y += -ffreestanding -fasynchronous-unwind-tables
- ccflags-remove-y := $(CC_FLAGS_FTRACE)
- ldflags-y := -Wl,--hash-style=both -nostdlib -shared -z noexecstack $(CLANG_FLAGS)
-diff --git a/arch/riscv/kernel/vdso/Makefile b/arch/riscv/kernel/vdso/Makefile
-index 8dbf2532a573..c023046a3fd7 100644
---- a/arch/riscv/kernel/vdso/Makefile
-+++ b/arch/riscv/kernel/vdso/Makefile
-@@ -36,6 +36,7 @@ endif
- ccflags-y := -fno-stack-protector
- ccflags-y += -DDISABLE_BRANCH_PROFILING
- ccflags-y += -fno-builtin
-+ccflags-y += $(CONFIG_CC_OPT_INLINE_MEMSET)
- ccflags-y += $(KBUILD_BASE_ISA)$(CFI_MARCH)
- ccflags-y += $(CFI_FULL)
- asflags-y += $(KBUILD_BASE_ISA)$(CFI_MARCH)
-diff --git a/arch/s390/kernel/vdso/Makefile b/arch/s390/kernel/vdso/Makefile
-index 35c834b895ec..54bcf2984ca1 100644
---- a/arch/s390/kernel/vdso/Makefile
-+++ b/arch/s390/kernel/vdso/Makefile
-@@ -29,6 +29,7 @@ KBUILD_CFLAGS_VDSO := $(filter-out -munaligned-symbols,$(KBUILD_CFLAGS_VDSO))
- KBUILD_CFLAGS_VDSO := $(filter-out -fno-asynchronous-unwind-tables,$(KBUILD_CFLAGS_VDSO))
- KBUILD_CFLAGS_VDSO += -fPIC -fno-common -fno-builtin -fasynchronous-unwind-tables
- KBUILD_CFLAGS_VDSO += -fno-stack-protector $(DISABLE_KSTACK_ERASE)
-+KBUILD_CFLAGS_VDSO += $(CONFIG_CC_OPT_INLINE_MEMSET)
- ldflags-y := -shared -soname=linux-vdso.so.1 \
- 	     --hash-style=both --build-id=sha1 \
- 	     $(call ld-option, --eh-frame-hdr) -T
-diff --git a/arch/x86/entry/vdso/vdso64/Makefile b/arch/x86/entry/vdso/vdso64/Makefile
-index 7c0790065b5e..c2353a065279 100644
---- a/arch/x86/entry/vdso/vdso64/Makefile
-+++ b/arch/x86/entry/vdso/vdso64/Makefile
-@@ -14,7 +14,7 @@ vobjs-$(CONFIG_X86_SGX)			+= vsgx.o
- vobjs-$(CONFIG_FUTEX_ROBUST_UNLOCK)	+= vfutex.o
-
- # Compilation flags
--flags-y				:= -DBUILD_VDSO64 -m64 -mcmodel=small
-+flags-y				:= -DBUILD_VDSO64 -m64 -mcmodel=small $(CONFIG_CC_OPT_INLINE_MEMSET)
-
- # The location of this include matters!
- include $(src)/../common/Makefile.include
-diff --git a/init/Kconfig b/init/Kconfig
-index 8583d9f06c52..ad592fdf29af 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -173,6 +173,11 @@ config CC_HAS_ALLOC_TOKEN
- config CC_HAS_MULTIDIMENSIONAL_NONSTRING
- 	def_bool $(success,echo 'char tag[][4] __attribute__((__nonstring__)) = { };' | $(CC) $(CLANG_FLAGS) -x c - -c -o /dev/null -Werror)
-
-+config CC_OPT_INLINE_MEMSET
-+	string
-+	default "-finline-stringops=memset" if $(cc-option,-finline-stringops=memset)
-+	default "-mllvm -max-store-memset=4294967294" if $(cc-option,-mllvm -max-store-memset=4294967294)
-+
- config LD_CAN_USE_KEEP_IN_OVERLAY
- 	# ld.lld prior to 21.0.0 did not support KEEP within an overlay description
- 	# https://github.com/llvm/llvm-project/pull/130661
---
-2.55.0
+Thanks,
+Ioana
 
