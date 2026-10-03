@@ -1,53 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-28846-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28847-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A4FFCA5FEF
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Oct 2026 16:39:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D64ECA5FEF
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Oct 2026 16:39:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hxrw41DLSz30T9;
-	Sun, 04 Oct 2026 03:39:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791045572;
-	cv=none; b=Dw07T/4DK0L7j3/uF0F9deDgKaUkIOYARxR82oreuZNASdnK5bHjkHrTUIY8oY0BSMu/OV/OvmPv7HPuN90QZHbwAfMVTUekyWTyxhlZj4oldmD4uONtTSidx5Xda9fUQSBx1iI7XdNDzOb/hvDD/C1kONO58xYME+ssqCI72qoZChI9uAL8gBs0e1lhuopiuVFRcL+yKF5OmmTB2XA/vIFI39VDj1A7O7uIIF/WrT7CBjKB/ERwX0oRSnBB1vciYlaPHyU0bbMOugiQOj922GC3Iu7unnWHBHObF1appjY2/FFDN+AjvplyooIlF7SDQGk119aW8xT456WDAOOJmw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hxrwS6YkKz30TL;
+	Sun, 04 Oct 2026 03:39:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791045592;
+	cv=none; b=PtmfjYgDxO+eq54d4aiT164+XHVjj0+Bah9OyvlyqYGy12w1YVxvaxEKjgkT7FHPpjMQPQBrX2zRSYpXk5Z1AWzgB3qeh8md+7akvKkNv3fgRdvg6Fk6sS+4v37apkVRcBOlLiY2hmcGT1O3cJZ/oPcdtMRVibztsSb2clJX2rIYG4BLGtJwWFQkHpppK5feLHr2MHHzrQouEyue/2gUyefJ7+17NBdfc4ayqk1FXr3Zp2c/YPKe30SDQeYzVZkG9HvSpmLgSzZw/EFedVq6WCqJS7xz0/uhFSullIZUujfpdKbkWO+eDDUAGOOqxMs8ORiwXBlsleqHkxqQjnAZgg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791045572; c=relaxed/relaxed;
-	bh=R1TTFxJqK2JOmLB4wxg0hlSgvzQnwmSO7NGWVXFT9S4=;
+	t=1791045592; c=relaxed/relaxed;
+	bh=FhSwIhda5SwYvYTkOqlzzzYcm2yovY5S5sJ87DUE+qE=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=iIKNtaUY+xFQRyrcFh/JtyX54ey3iqis+xowhrKBV8OvOpeuJ4t08th3B72t6Qtykj2e31Vknx13rEPsnVmpsQMgTrKfNf5zBSLW+i6PoKzHmACxlp91t2F0EUN2BOcIqg9JEcNge/SfdZ3sjGa/RJdq/PfouB6NatCCMmsTxi9qhUaC3JDwWJq8GNk6wHP7i7dx6il5NY0+sCOLWezo/X6SPhIhkg2Z1v35Z6AEX3ObTtCYV5L/4KEwCAV5MjDwdC6fsk53CfaRMZnTdZJaJu1sOtKWFRpoDtM30Q7iQzUjrLIw+8ADFDiD+/8ErTCK4eU7//oYSJNL6a+YvtU/MQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CnFaDqTN; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=U5Il/QN4KjVXpuiy/RZtZC7rKVu16gSAOEEKFyrYp6nu0yECjlHsUvvbuSY+0GvmW+Kl+Z8i/8vW5ZP3lLOXnH1Lgls8dXC0UME4w6diYgUUqwmftAQYNQfkpoz71MYjTZLZRIcrJz3tyEQ8nRw2rXaLGbdOPn/971LITH1PsOV49sZ1RPGB6/0RXrpyU2jXxKc2dqqxjVCOnOajO2mZi28RUXP2qt3QkO0BjO5Ui4tbK4YBI175dHtLhCNlO4KcTFB1fKb3nanheClF+c22dy+GAdRKm4XHVM1y6WpARX+z6MPaSEK8+9bHjdNdNebwQW3f76rXTmqqZPIv9CjRdg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Eb4zke4Q; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CnFaDqTN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Eb4zke4Q;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxrw32LJQz30Sx
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Oct 2026 03:39:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxrwS1L9vz30Sx
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Oct 2026 03:39:52 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 47B5143BF1;
+	by sea.source.kernel.org (Postfix) with ESMTP id 8D83D4346B;
+	Sat,  3 Oct 2026 16:39:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 89A3C1F0089E;
 	Sat,  3 Oct 2026 16:39:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5A00F1F0089C;
-	Sat,  3 Oct 2026 16:39:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791045569;
-	bh=R1TTFxJqK2JOmLB4wxg0hlSgvzQnwmSO7NGWVXFT9S4=;
+	s=k20260515; t=1791045590;
+	bh=FhSwIhda5SwYvYTkOqlzzzYcm2yovY5S5sJ87DUE+qE=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=CnFaDqTNs28+YrjDWIpiskEJ6rTpmDO6CuCJA/tcAMkT0oG8NPdeSljHbbSjuMz0d
-	 eDy0eUOh54+NmxC7w/6XHmbLZJ6rRNWLOZv/2gKoGCbYsjPGBRzCA7PPD5hah2AO1f
-	 nzzNgS2uMfIqjYC83YeQKD/s6gO3DueDDYId4Tx3OylhgBJAsz5pU2BC/nc5VTny+U
-	 QYOWGb2o0AakJQoZ48lp1b9TeKOhOELsHB8aR+StwV+Eu0XiPHcuqWpBmvwLB3j0XH
-	 Z8aVVy6FHM2lHUCYtabJMYxKKRYif/GwXxXU7WvbfNuUM7dyeKEe3z5XECJ9Kq1cOb
-	 lfSVezkeoGM6w==
+	b=Eb4zke4Q9Qn6CRUc6WUxmkGaik5XGPQQB3DGUSAqaZINP8oiCy0hTc6caTGrqaPUC
+	 KEmNHJk1wdKBcDKWft+LsfjFGip5E/CPkShMomriDAgys/rp3Oo4iLqIOttofHBTSo
+	 B5JWTvoxy21Zj5MLEWqH01sqMoKDQHoJlALTYgLlHYXvgBDJHEW0Gnr0IOqJtDfHiW
+	 f6exisuCZMOFzUOIfHESn4G92PdiwIquASbx2xeXrZqOoQHB2FmMKYMHCR8kkO83Va
+	 cf1KfU9U/+z/3GA4QxdYbCTlHuZ4YM6cJLeRuqMWVI6oslp0KiIqphuMfI39tGgp5k
+	 w1o/LtHnirGvg==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Sat, 03 Oct 2026 17:32:49 +0100
-Subject: [PATCH v4 18/38] fbdev: defio: assert FBINFO_VIRTFB, drop VM_IO,
- add VM_MIXEDMAP
+Date: Sat, 03 Oct 2026 17:32:50 +0100
+Subject: [PATCH v4 19/38] HSI: cmt_speech: convert mmap hook to
+ mmap_prepare, refactor
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261003-b4-mmap-prepare-vma-flag-sanify-v4-18-a1f052500fd7@kernel.org>
+Message-Id: <20261003-b4-mmap-prepare-vma-flag-sanify-v4-19-a1f052500fd7@kernel.org>
 References: <20261003-b4-mmap-prepare-vma-flag-sanify-v4-0-a1f052500fd7@kernel.org>
 In-Reply-To: <20261003-b4-mmap-prepare-vma-flag-sanify-v4-0-a1f052500fd7@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -147,72 +147,94 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, 
  fuse-devel@lists.linux.dev, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2362; i=ljs@kernel.org;
- h=from:subject:message-id; bh=In9WHX8b1sLbbe6jUcP+2i7LCzJ4p//dj4w0OtHuz9I=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLIO6mkG6V+tVPmYbjbvQ7ZzpYfAdeb6I5eq/hbs3sqkv
- sBzp/vSjlIWBjEuBlkxRZbnX8T3B4mEzeu84O8GM4eVCWQIAxenAEzkcQnDP8vZ7uHiht2JnMr6
- YhZZfS8+tjKem/fqadb2m8pNvcVBTgz/jE68/pR6USiI0/C/30PFovMZEesECssElgVl38r68aS
- eHQA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2632; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=GNn4/WHo/gNb5sHnp4BEq122HpiBRxK72Bb5u1n+58g=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLIO6mm+rWSpibv2fBJnzXH27aUCq702Gh/L9dc5t3t/Y
+ nOXxrZTHaUsDGJcDLJiiizPv4jvDxIJm9d5wd8NZg4rE8gQBi5OAZjIIz+G/1lf16lKXWfId7rh
+ lJdw/Uliw9ZTQuKF/50veIVfvBlYPYXhf4n1F50Wq8l5f8pvC7ksPrPc7W9WeUzDdC4nmd83fiT
+ dYgYA
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 
-Currently all drivers which use defio allocate system memory. All of them
-also set FBINFO_VIRTFB, other than ssd1307fb, however this driver allocates
-system RAM, so simply failed to set this flag when it ought to.
+Use the mmap_prepare in favour of the deprecated mmap hook as part of the
+work to convert one to another.
 
-This patch sets FBINFO_VIRTFB on ssd1307fb probe, then drops setting VM_IO
-in fb_deferred_io_mmap() and instead requires FBINFO_VIRTFB to be set,
-erroring out with a kernel warning if not.
+Since this is simply a refcounted kernel page that has been allocated, it
+should not be marked VM_IO and should be inserted using the kernel page
+insertion mechanism, so convert it to do this instead.
 
-The logic requires a page from the driver and since commit 1ecbc7dd2902
-("fbdev/deferred-io: Always call get_page() for framebuffer pages") has
-always required it to be refcounted, so this was implicitly already the
-case.
+Use the VMA descriptor's private data field as a scratch buffer to store
+the page in - this stays valid throughout the kernel page mapping
+operation.
 
-Finally this patch sets VM_MIXEDMAP, as the logic is mapping
-kernel-allocated memory so this is appropriate.
-
-Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- drivers/video/fbdev/core/fb_defio.c | 6 +++---
- drivers/video/fbdev/ssd1307fb.c     | 2 ++
- 2 files changed, 5 insertions(+), 3 deletions(-)
+ drivers/hsi/clients/cmt_speech.c | 33 +++++++++------------------------
+ 1 file changed, 9 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
-index fd00b86e1ae6..fb359ecc3966 100644
---- a/drivers/video/fbdev/core/fb_defio.c
-+++ b/drivers/video/fbdev/core/fb_defio.c
-@@ -366,13 +366,13 @@ int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
- {
- 	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
+diff --git a/drivers/hsi/clients/cmt_speech.c b/drivers/hsi/clients/cmt_speech.c
+index 7226677ebde7..801697b74d4f 100644
+--- a/drivers/hsi/clients/cmt_speech.c
++++ b/drivers/hsi/clients/cmt_speech.c
+@@ -1084,22 +1084,6 @@ static void cs_hsi_stop(struct cs_hsi_iface *hi)
+ 	kfree(hi);
+ }
  
-+	if (WARN_ON_ONCE(!(info->flags & FBINFO_VIRTFB)))
-+		return -EINVAL;
- 	if (!try_module_get(THIS_MODULE))
+-static vm_fault_t cs_char_vma_fault(struct vm_fault *vmf)
+-{
+-	struct cs_char *csdata = vmf->vma->vm_private_data;
+-	struct page *page;
+-
+-	page = virt_to_page((void *)csdata->mmap_base);
+-	get_page(page);
+-	vmf->page = page;
+-
+-	return 0;
+-}
+-
+-static const struct vm_operations_struct cs_char_vm_ops = {
+-	.fault	= cs_char_vma_fault,
+-};
+-
+ static int cs_char_fasync(int fd, struct file *file, int on)
+ {
+ 	struct cs_char *csdata = file->private_data;
+@@ -1256,18 +1240,19 @@ static long cs_char_ioctl(struct file *file, unsigned int cmd,
+ 	return r;
+ }
+ 
+-static int cs_char_mmap(struct file *file, struct vm_area_struct *vma)
++static int cs_char_mmap_prepare(struct vm_area_desc *desc)
+ {
+-	if (vma->vm_end < vma->vm_start)
+-		return -EINVAL;
++	struct file *file = desc->file;
++	struct cs_char *csdata = file->private_data;
++	struct page **pages = (struct page **)&desc->private_data;
+ 
+-	if (vma_pages(vma) != 1)
++	if (vma_desc_pages(desc) != 1)
  		return -EINVAL;
  
- 	vma->vm_ops = &fb_deferred_io_vm_ops;
--	vm_flags_set(vma, VM_DONTEXPAND | VM_DONTDUMP);
--	if (!(info->flags & FBINFO_VIRTFB))
--		vm_flags_set(vma, VM_IO);
-+	vm_flags_set(vma, VM_MIXEDMAP | VM_DONTEXPAND | VM_DONTDUMP);
- 	vma->vm_private_data = info->fbdefio_state;
+-	vm_flags_set(vma, VM_IO | VM_DONTDUMP | VM_DONTEXPAND);
+-	vma->vm_ops = &cs_char_vm_ops;
+-	vma->vm_private_data = file->private_data;
++	vma_desc_set_flags(desc, VMA_DONTDUMP_BIT, VMA_DONTEXPAND_BIT);
  
- 	fb_deferred_io_state_get(info->fbdefio_state); /* released in vma->vm_ops->close() */
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index c4fdecafd856..958514a35433 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -763,6 +763,8 @@ static int ssd1307fb_probe(struct i2c_client *client)
- 	info->fix.smem_start = __pa(vmem);
- 	info->fix.smem_len = vmem_size;
++	*pages = virt_to_page((void *)csdata->mmap_base);
++	mmap_action_map_kernel_pages_full(desc, pages);
+ 	return 0;
+ }
  
-+	info->flags = FBINFO_VIRTFB;
-+
- 	fb_deferred_io_init(info);
- 
- 	i2c_set_clientdata(client, info);
+@@ -1353,7 +1338,7 @@ static const struct file_operations cs_char_fops = {
+ 	.write		= cs_char_write,
+ 	.poll		= cs_char_poll,
+ 	.unlocked_ioctl	= cs_char_ioctl,
+-	.mmap		= cs_char_mmap,
++	.mmap_prepare	= cs_char_mmap_prepare,
+ 	.open		= cs_char_open,
+ 	.release	= cs_char_release,
+ 	.fasync		= cs_char_fasync,
 
 -- 
 2.55.0
