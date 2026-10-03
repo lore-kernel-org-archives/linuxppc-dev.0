@@ -1,65 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-28797-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28798-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B2B4CA5FDD
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Oct 2026 03:59:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 970B7CA5FC1
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Oct 2026 03:59:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hxX350g00z30Wh;
-	Sat, 03 Oct 2026 13:59:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790999968;
-	cv=none; b=FiXMfhGFWBrA/QIzuq9iHpVAh/G/iMvGgneCjPp2dB6Sbhkfq7jS0rl56uFtMQpVKXmMWibWx4yLkjx6mlj9Y017w0MyTTqzBeDrA8wPDbFkM3OpzoipXBI4KuM+e1QuCoYDwTPzxoF0FAME8w+g0HfCJdFBguG9916IuCgjiL6fXIaTUrkfjWbaz9pZL6m/xhAd7o3wH2y2wVdPtbMtshmWrqvoAZUgCyn7k6duTWeHpXmOwd9t7t7pUZoW2uJiiKQfgNT2qGOuIk/8eL52JcEWTH5SwT4YP6i8BRvytxPQbm3SiFZzOlp7TI4KiRS2fDI8C/6iVyCvYZ1bMwW8iQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hxX3814wwz2yDc;
+	Sat, 03 Oct 2026 13:59:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790999972;
+	cv=none; b=ns2SQDQj/qnRChi8cgaEZAFc0nVbAPihA3QNlxhdI7n5CMFU7WYRqE3RlY6BDJ2uelPZHiw2olIeBMEMhQvYJpoh9IFeVuB+9Ftb/8zT/x+56CdJKmvSn4VYEBo8+hRtOoBdeiDd0efmuai5gEx+aGZ4wIsVlY9VAV8OwdbXZQDE0cOedwQ44f/7oPaDhdgAX7+YLitmB7mmWrc815+1wtp6R6fbPrkZj299FzWKojq0irw3f/p448Lfv74OwGy+QPFTa/3wVGDfOfoSjuovJUINu0NjKBUJytV5geP9yoVWetXKck2ukoReT6vlUaZvz/fHVTjVr2rVzEZds9q2fg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790999968; c=relaxed/relaxed;
-	bh=Iz/iiVNpot9SQ40RqImswFHFAvzYEcM0QzTbuF87koc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=OGIznE4xVWSc0kLrnD++OhBIc1yKGOdNfcQsFErpCivZaKR2nRT1MjYr9CgKnbA7gzQZI0uIsKKJo7kCPw/+RCZoQOqzmfrQTYt41Zk6oXE/rHsKqMss/s4ldV3EHChOQXDdCwMjWZhWZMzFdQJS4ysnqyWzjPf9cbE8bsHmKYBAhTuCbslmRl2B9SGIjtFLbpBpTV6VA5BFvhznCEkfm12UN0dL1ENYrryPkWrCqLgHMWwxGE/LpiSU71gOOtNHSJC+4HU7DmPzhKzejZ65ytykioJMe7Xe/0zYisa+icvAEIi3SHeQXbsL4YIWIiz9yWCqd6Lg5DIFzt4ypd3LOw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CRVgJThu; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1790999972; c=relaxed/relaxed;
+	bh=Y1aDauPJdFX/50NTYqGW/RNt6s7sh61+A08L3Yfzp1c=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=BhyY0XO5v9Un45zx0GtxFE2xg2DvEA4FVs2JwEHizyWuWVY9QV0KrC8ZSjaUjlutqO1BiCXjd8Grdid48eOWWMRjeuhS+nQw1vIY+0AUw7APY2Z9/+MsksL4SYx3aeuF3h8jOBMQbxSArN+G3nvLFdLlkvxGycCoeBkS34PaZcXIO7VGqgJHSPGJkjo+gR1C7OVGdHZ0Wk/bPXsVhv7inKPYMmv0wL411dsFB6Cjsa1ipLzJbme0lqUC0h9TF4ExRySLixZmg8dZqSpif/bk7RmHbdYzk2MColC8Vh9iuYGtX5ikYwhR0ioRe3kPtJ51QF1i1rJe+blVuQbBdCOvoQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RnYWsbfw; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CRVgJThu;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RnYWsbfw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxX312Ldmz2yDc
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Oct 2026 13:59:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxX323M6zz2yTQ
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Oct 2026 13:59:26 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id B261B4353E;
-	Sat,  3 Oct 2026 03:59:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6FA2A1F00893;
+	by sea.source.kernel.org (Postfix) with ESMTP id 2D87C44827;
+	Sat,  3 Oct 2026 03:59:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AF43C1F00A02;
 	Sat,  3 Oct 2026 03:59:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
 	s=k20260515; t=1790999961;
-	bh=Iz/iiVNpot9SQ40RqImswFHFAvzYEcM0QzTbuF87koc=;
-	h=From:To:Cc:Subject:Date;
-	b=CRVgJThudtPmKx6F0fS4quTB6ZiwftEwgVcOt/oHDqi+Wn2qlzhoua4NO+MWxwfBC
-	 AUkTUiMJAB971ZujH1Qwb77P9vmmtTCavBRXqeD3nBxron5keUmi4osrVSbA9ye4vi
-	 xkx7wyrgAisAXoGB4hCq+OFUyvEh0uZIQkHIvrHIOhX4Fn8kxrFCEv5jbzsJGDchpF
-	 YLHXfTDd8d8dmQR7xjAnDdeDcCBUBARDhoGYRnSMRocz51A+hxE8TLXwutTCGCP3S+
-	 SRPBHGyASdeC/cOIaIyWlmyE6GtduVzcCfdM9VsEnp2ePSNAJsCM6J8CzPNjrmUB4x
-	 KgwaXD6h4BXhQ==
+	bh=Y1aDauPJdFX/50NTYqGW/RNt6s7sh61+A08L3Yfzp1c=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=RnYWsbfwd0Mkv6Zwet6rFXDJc0F1v9LnKSJLDTY8NHPB00+kVKifK9f93G8h7KPg2
+	 QuNK02RNRwJtNEshseLwjETizIhP9nE8RnIeHWYdR0+0hYuMBgNMFjk17GiDP4jrx1
+	 owgFbD/qQHVOzKZz8HtVEX3S6XMnuZL0BPllQ8oTv3sG4UQjTAZDGm4/FNLCW3pyzD
+	 iz6ezaxzGXuExGHssu/QJCs1IaaLJhRuMz8l2l77zhv6COY9b5qRd6W7urLIxZzlNV
+	 8eCTy0F+qCAkINzPFYxu/YD7W9erP6OQEaFxbdoIwdMCRv4xelNn3gyMNnbUk6LF9e
+	 4FiV2ZIeZERkQ==
 From: Kees Cook <kees@kernel.org>
 To: Bill Wendling <morbo@google.com>
 Cc: Kees Cook <kees@kernel.org>,
-	Jonathan Corbet <corbet@lwn.net>,
+	"Matthew Wilcox (Oracle)" <willy@infradead.org>,
 	Andrew Morton <akpm@linux-foundation.org>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
 	David Gow <david@davidgow.net>,
+	Jiri Kosina <jikos@kernel.org>,
 	Petr Mladek <pmladek@suse.com>,
-	Sergey Senozhatsky <senozhatsky@chromium.org>,
 	Shuvam Pandey <shuvampandey1@gmail.com>,
 	Steven Rostedt <rostedt@goodmis.org>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Sergey Senozhatsky <senozhatsky@chromium.org>,
 	=?UTF-8?q?G=C3=BCnther=20Noack?= <gnoack@google.com>,
-	"Matthew Wilcox (Oracle)" <willy@infradead.org>,
 	=?UTF-8?q?Micka=C3=ABl=20Sala=C3=BCn?= <mic@digikod.net>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
 	Masami Hiramatsu <mhiramat@kernel.org>,
 	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	Jiri Kosina <jikos@kernel.org>,
 	Alexei Starovoitov <ast@kernel.org>,
 	Daniel Borkmann <daniel@iogearbox.net>,
 	Andrii Nakryiko <andrii@kernel.org>,
@@ -95,10 +96,12 @@ Cc: Kees Cook <kees@kernel.org>,
 	nvdimm@lists.linux.dev,
 	linux-doc@vger.kernel.org,
 	linux-hardening@vger.kernel.org
-Subject: [PATCH v4 00/11] seq_buf: Add seq_buf_strlen()
-Date: Fri,  2 Oct 2026 20:59:05 -0700
-Message-ID: <20261003035906.too.263-kees@kernel.org>
+Subject: [PATCH v4 04/11] seq_buf: Clear what a writer did not claim when a seq_buf overflows
+Date: Fri,  2 Oct 2026 20:59:09 -0700
+Message-ID: <20261003035921.1918874-4-kees@kernel.org>
 X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20261003035906.too.263-kees@kernel.org>
+References: <20261003035906.too.263-kees@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -112,73 +115,175 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2797; i=kees@kernel.org; h=from:subject:message-id; bh=o5V36NyfVK3hMKB+tbhdWbAituk8g3ITmVsNRW2Bu78=; b=owGbwMvMwCVmps19z/KJym7G02pJDFkHaic49f89dz/sTb7grdS7PYYOekF5J5isN2ulunw+8 +nK1huBHaUsDGJcDLJiiixBdu5xLh5v28Pd5yrCzGFlAhnCwMUpABN5vYThf2CNoetRRdvahU66 ermb7AoqdxeEHfrHJzBd2e/l4Zs9WxkZ9kmwzppgN1Vy0c6VPYzx5rZBptFpqeecN+7U1fsc+u8 DKwA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=5997; i=kees@kernel.org; h=from:subject; bh=ImCEZna+PC/g/biseLLYGZ6y7IF2OH0vpiCopYhdIXs=; b=owGbwMvMwCVmps19z/KJym7G02pJDFkHaifeDRWb+fZuJ9/3KxFxvZMFcn7tf5+Xah187Yj6t vsv1i116ChlYRDjYpAVU2QJsnOPc/F42x7uPlcRZg4rE8gQBi5OAZiIQSrDP23Ftn3FF6QNRFOq b054X+OrseA9+3uTRe4xpVJ9s/grZjAynL6o1+jOmxCnsUxK50uqbsjevU+s95/6q+p9jrno2/E 2ZgA=
 X-Developer-Key: i=kees@kernel.org; a=openpgp; fpr=A5C3F68F229DD60F723E6E138972F4DFDC6DC026
 Content-Transfer-Encoding: 8bit
 
-Hi,
+Using seq_buf_set_overflow() would leave the bytes between "len"
+and "size" untouched, so if seq_buf_str() is used on an overflowed
+seq_buf, those bytes may be exposed. For any paths that don't claim
+partially written bytes, by setting "len = size" before calling
+seq_buf_set_overflow(), wipe the unclaimed bytes. The seq_buf_puts()
+and related APIs already claim those bytes now, so only the unclaimed
+cases remain. A specific example of this was seq_buf_path() which uses
+d_path() and would write to the tail before discovering it was out
+of space, and would correctly mark a seq_buf as overflowed, but the
+path fragment would be left over.
 
-While working on seq_buf conversions[1], we found there was a need for
-seq_buf_strlen() (since calling strlen(seq_buf_str()) would be a waste
-of time: seq_buf already knows the length), seq_buf_init_append() (to
-start a seq_buf from an existing string buffer), and seq_buf_terminate()
-(as there are many callers using seq_buf_str() just for its termination
-side-effect). And while implementing that, we found a bunch of other
-related things that needed fixing. This is that ever-growing series,
-with tests for each fix.
+Clear from len to the end of the buffer in seq_buf_set_overflow(), which
+every overflow goes through, including seq_buf_commit() with a negative
+count.
 
- v4:
-  - add trailers from v3
-  - 03/11, 04/11: export seq_buf_putmem() and seq_buf_path(), which the
-    tests call, so they also build as a module
-  - 08/11: start out overflowed when the buffer has no NUL within its
-    size, as strlcat() treats it as already truncated (Andy)
-  - 09/11: use seq_buf_strlen() for flags_show()'s check whether any
-    flag was printed, too (Madhavan)
-  - 01/11, 05/11: drop doubled blank lines and re-wrap a declaration in
-    the tests (Andy)
-  - v3..v4 diff: https://git.kernel.org/pub/scm/linux/kernel/git/kees/linux.git/diff/?id=dev/v7.3-rc2/seq_buf/v4&id2=dev/v7.3-rc2/seq_buf/v3
- v3: https://lore.kernel.org/all/20260930235231.out.387-kees@kernel.org/
- v2: https://lore.kernel.org/all/20260919002658.stay.929-kees@kernel.org/
- v1: https://lore.kernel.org/all/20260917002312.i.923-kees@kernel.org/
+Add a test that fills a seq_buf, leaves it too little room for a path, and
+checks that nothing of the path is left in the buffer. The tests run before
+anything writable is mounted, so it takes its file from shmem.
 
-Thanks!
+seq_buf_path() was never exported, unlike the other writers, so the
+test failed to link as a module. Export it.
 
--Kees
+Tests passed under qemu on ARCH=x86_64 with GCC 16.2.0 and CONFIG_KASAN=y,
+and on big-endian ARCH=s390 with GCC s390x-linux-gnu 16.2.0, and the
+test builds as a module (CONFIG_SEQ_BUF_KUNIT_TEST=m).
 
-[1] https://lore.kernel.org/all/20260917011359.1585961-1-morbo@google.com/
+Assisted-by: LLM
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Signed-off-by: Kees Cook <kees@kernel.org>
+---
+ include/linux/seq_buf.h   |  8 +++++--
+ lib/seq_buf.c             |  5 +++++
+ lib/tests/seq_buf_kunit.c | 45 +++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 56 insertions(+), 2 deletions(-)
 
-Bill Wendling (1):
-  seq_buf: Add seq_buf_init_append()
-
-Kees Cook (10):
-  seq_buf: Do not print an empty line from an overflowed
-    seq_buf_do_printk()
-  seq_buf: Do not pop from an overflowed seq_buf
-  seq_buf: Copy what fits when seq_buf_puts() and seq_buf_putmem()
-    overflow
-  seq_buf: Clear what a writer did not claim when a seq_buf overflows
-  seq_buf: Add seq_buf_strlen()
-  seq_buf: Add seq_buf_terminate()
-  bpf: Remove dead newline stripping from format_disasm_line()
-  powerpc/papr_scm: Return the string length from the sysfs show
-    functions
-  nvdimm: ndtest: Return the string length from flags_show()
-  docs: core-api: Document the seq_buf API
-
- Documentation/core-api/kernel-api.rst     |   9 +
- include/linux/seq_buf.h                   | 139 +++++-
- include/linux/trace_seq.h                 |   5 +-
- arch/powerpc/platforms/pseries/papr_scm.c |   6 +-
- kernel/bpf/diagnostics.c                  |   8 +-
- kernel/trace/trace_events.c               |   4 +-
- kernel/trace/trace_events_hist.c          |   6 +-
- lib/seq_buf.c                             |  37 +-
- lib/tests/seq_buf_kunit.c                 | 528 +++++++++++++++++++++-
- tools/testing/nvdimm/test/ndtest.c        |   2 +-
- 10 files changed, 708 insertions(+), 36 deletions(-)
-
+diff --git a/include/linux/seq_buf.h b/include/linux/seq_buf.h
+index 77e76e283370..0c0a0db04b09 100644
+--- a/include/linux/seq_buf.h
++++ b/include/linux/seq_buf.h
+@@ -5,6 +5,7 @@
+ #include <linux/bug.h>
+ #include <linux/minmax.h>
+ #include <linux/seq_file.h>
++#include <linux/string.h>
+ #include <linux/types.h>
+ 
+ /*
+@@ -58,12 +59,15 @@ seq_buf_has_overflowed(struct seq_buf *s)
+ /*
+  * Mark @s as overflowed, which discards the length of what it holds. The
+  * bytes up to its last one are the string from then on, as that is where
+- * seq_buf_str() terminates it, so a caller that could not fill the buffer
+- * has to NUL them itself before calling this.
++ * seq_buf_str() terminates it, so clear whatever was not written: a writer
++ * sets len to how much it filled, and anything past that was never adopted.
+  */
+ static inline void
+ seq_buf_set_overflow(struct seq_buf *s)
+ {
++	if (s->len < s->size)
++		memset(s->buffer + s->len, 0, s->size - s->len);
++
+ 	s->len = s->size + 1;
+ }
+ 
+diff --git a/lib/seq_buf.c b/lib/seq_buf.c
+index 60e9eadb3ef7..8da2e9447adf 100644
+--- a/lib/seq_buf.c
++++ b/lib/seq_buf.c
+@@ -76,6 +76,8 @@ int seq_buf_vprintf(struct seq_buf *s, const char *fmt, va_list args)
+ 			s->len += len;
+ 			return 0;
+ 		}
++		/* vsnprintf() wrote as much as fits, so none of it is stale */
++		s->len = s->size;
+ 	}
+ 	seq_buf_set_overflow(s);
+ 	return -1;
+@@ -164,6 +166,8 @@ int seq_buf_bprintf(struct seq_buf *s, const char *fmt, const u32 *binary)
+ 			s->len += ret;
+ 			return 0;
+ 		}
++		/* bstr_printf() wrote as much as fits, so none of it is stale */
++		s->len = s->size;
+ 	}
+ 	seq_buf_set_overflow(s);
+ 	return -1;
+@@ -343,6 +347,7 @@ int seq_buf_path(struct seq_buf *s, const struct path *path, const char *esc)
+ 
+ 	return res;
+ }
++EXPORT_SYMBOL_GPL(seq_buf_path);
+ 
+ /**
+  * seq_buf_to_user - copy the sequence buffer to user space
+diff --git a/lib/tests/seq_buf_kunit.c b/lib/tests/seq_buf_kunit.c
+index 046614100c77..d5b819fc0ff3 100644
+--- a/lib/tests/seq_buf_kunit.c
++++ b/lib/tests/seq_buf_kunit.c
+@@ -6,6 +6,9 @@
+  */
+ 
+ #include <kunit/test.h>
++#include <linux/fs.h>
++#include <linux/seq_buf.h>
++#include <linux/shmem_fs.h>
+ #include <linux/console.h>
+ #include <linux/seq_buf.h>
+ #include <linux/string.h>
+@@ -466,6 +469,47 @@ static void seq_buf_do_printk_test(struct kunit *test)
+ 	KUNIT_EXPECT_EQ(test, seq_buf_printk_empty, 0);
+ }
+ 
++/* Long enough that it cannot fit in the room the test leaves for it. */
++#define SEQ_BUF_TEST_PATH	"/seq_buf_kunit_path_name"
++
++static void seq_buf_path_overflow_test(struct kunit *test)
++{
++	DECLARE_SEQ_BUF(s, 32);
++	const char *expected = "keep:xxxxxxxxxxxxxxxxxxxxxxx";
++	struct file *file;
++	size_t len;
++	int i;
++
++	/*
++	 * The tests run before anything writable is mounted, so take the file
++	 * whose path gets printed from shmem, which needs no mount of its own.
++	 */
++	file = shmem_file_setup(SEQ_BUF_TEST_PATH, 0, EMPTY_VMA_FLAGS);
++	if (IS_ERR(file))
++		kunit_skip(test, "cannot create a file to print the path of");
++
++	/* Leave less room than the path needs, so d_path() cannot fit it. */
++	seq_buf_puts(&s, "keep:");
++	len = seq_buf_used(&s);
++	for (i = len; i < 28; i++)
++		seq_buf_putc(&s, 'x');
++
++	KUNIT_EXPECT_EQ(test, seq_buf_path(&s, &file->f_path, "\n"), -1);
++	fput(file);
++
++	KUNIT_EXPECT_TRUE(test, seq_buf_has_overflowed(&s));
++
++	/*
++	 * d_path() keeps as much of the path as fits when it does not fit
++	 * whole, and seq_buf_str() would hand out that fragment, as it ends
++	 * the string at the last byte of an overflowed buffer.
++	 */
++	for (i = 28; i < 32; i++)
++		KUNIT_EXPECT_EQ_MSG(test, s.buffer[i], '\0',
++				    "byte %d past the data is not cleared", i);
++	KUNIT_EXPECT_STREQ(test, seq_buf_str(&s), expected);
++}
++
+ static struct kunit_case seq_buf_test_cases[] = {
+ 	KUNIT_CASE(seq_buf_init_test),
+ 	KUNIT_CASE(seq_buf_declare_test),
+@@ -482,6 +526,7 @@ static struct kunit_case seq_buf_test_cases[] = {
+ 	KUNIT_CASE(seq_buf_puts_partial_overflow_test),
+ 	KUNIT_CASE(seq_buf_putmem_partial_overflow_test),
+ 	KUNIT_CASE(seq_buf_putmem_hex_partial_overflow_test),
++	KUNIT_CASE(seq_buf_path_overflow_test),
+ 	KUNIT_CASE(seq_buf_do_printk_test),
+ 	{}
+ };
 -- 
 2.55.0
 
