@@ -1,52 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-28848-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28849-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E40DCA5FF0
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Oct 2026 16:40:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF2FACA5FF0
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Oct 2026 16:40:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hxrwt5lq1z30Tm;
-	Sun, 04 Oct 2026 03:40:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791045614;
-	cv=none; b=oDLkpTvu3w4REFgiPouFXjsy5ET5WT/fOBNUueHhvTlvwiFMxU+XxUHeKoltZeEnCaCuJoyqVlDyxoSO/iWwnOanLMxBj+h+xqRnlbeu8dpU2VSzEojJXDotY06dqfJ4+1O7TPA1gusnM59tXCTETWTWZ37iC321+fveQv9o8qHkgBz3IvTUn01vShkI3Elc/DA/Dky9bXMeaQS8SUAb7SSsBug40Zjdo+gpYfEvncUPpPv+tq1bwINp7mmKse7IreTVi5gPkB7Rl4gE2sgixOMBASo/8ei4GJFgFr82S54jfnDwFQjLDM1oyyBEqx1rN9AThwVthAWOTT4xrh4v1A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hxrxJ2NsNz30Sx;
+	Sun, 04 Oct 2026 03:40:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791045636;
+	cv=none; b=bOPS4h74nDUJNiYCiDZK0KQs8n4ckN+bitLc34zkOxIXtoowWArE95Re0I5O0YFzlxez8PoUOKGiZmdBFw3Sru844n7sGf0DzaPPPIqpt1qVuhCCfO6oXwPj1M5KgUQaex6uW+Jt8s+yvsBZWVtERr3WiL6Fk8b74SUvV7uVrwXLSnH1Kcs+/o0xaC0/E72jAYVRN2xg/G8aU3uj4IcotO/HP8c/mE/0I/sO0TPP//0NL/TYpP7CbzQnKv/LYtekmo5udX9Lmo8mNl72wz3OxdaVYbzaoBDa/92xeTAlkURqCINDSK5LLixhQBEYv3nPOtlWIOFAp8ACZr2ykUrHuw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791045614; c=relaxed/relaxed;
-	bh=++beZBnVDw6Gdsy2YFA03hSf5WP5zFDFky+TMViQI3o=;
+	t=1791045636; c=relaxed/relaxed;
+	bh=GfRJzELhUA3zmjv637fDp+tblD+oWrGBxslIXX4F7cw=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=bXUT3LtDNACmqahJfwGgmXXPUH1bIELR2+jk+dwfbB9KsvesncbF/GWBfmyMB31fFD62/1LxTaNkaEbT5YR/6ptOtKx49nNXBo9xOEGC/CKGPVwJeTUdPxw+fl9va8YWlETcuV0ffW/vNe2P4ToG37B1QLaH16JPgVzkqM57VmBIgB97YVsh9zUWXs3l3fIxH6OV448OvIjmOjRl2RMk12qN7dl9cpAZNKzgwCmpLS62Dkdr89CIM4PMAyqGIBvAg0xr+ETvJAsKx1phHx+El517nVaO2bZmGkH0oKP4lMpCDZPz1HHHaN3RAiKjlp6O1gVm/2Qg+nRD/sRCjjpj+g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kuaZkCcn; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=M5OznGiMrQ3tNZBqosytlHcClrcD0Mm6qJNteteCVSG3yB3rl5JzO7ZUQcfBdYFJYkdgC+z+op4QfCMLQx0BAwfLu9oe7BLusHjpitwolPjg6WVy22GsZKvzXb7mWh0LjbcwM4L2pw5WbP7s/YQjqPa+s9onc4ZWpkYtzKAAqA0NlwqOQMAXE/6L2I+cVx0ZxfNEx8RGYuJ87kiRQwESp9Hy0ZYPLxi6pVqN7djNaZCtwsSwpzTUMnW6fNWCakbffW98XSIkN6GIgrw2NaqACy2XuwjW66vRn64Tr/nHYHTZU2R5JECPN1py99YzkTcowXEn0ZHDoFoJJhRteLfBSw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MzEw4ieF; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kuaZkCcn;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MzEw4ieF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxrws6pttz30Sx
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Oct 2026 03:40:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxrxH3ZjRz308j
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Oct 2026 03:40:35 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 15A8E409B0;
+	by tor.source.kernel.org (Postfix) with ESMTP id 609B160D9B;
+	Sat,  3 Oct 2026 16:40:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 557FE1F0089B;
 	Sat,  3 Oct 2026 16:40:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CD8861F0089C;
-	Sat,  3 Oct 2026 16:39:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791045611;
-	bh=++beZBnVDw6Gdsy2YFA03hSf5WP5zFDFky+TMViQI3o=;
+	s=k20260515; t=1791045633;
+	bh=GfRJzELhUA3zmjv637fDp+tblD+oWrGBxslIXX4F7cw=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=kuaZkCcn4/6Hf3w1CCvyvV9EywQTIH9SvrS0fqbFcNweKa1EqQX9zkTBpYBIO6R38
-	 6gE8fRCb/fKtaxNuW+ZZQZ0v9kP4na7+sF5qysSPBNLUO1LRZaqxD0EPSsMNqoiKpn
-	 hvSWeYScJefhxBWvQ+qRuPL60er/tgzvx6d9M6/4O2voLTQugccgsQhGdx2Gn+OQse
-	 9qUmP26n65Xhld04TYdVEOD4iDiTzS1dyqqKbjIim0aVNqqEjTxrTlLjhWjuBkP1/6
-	 jFX13jvU+HuR4W9WBtwwh+aOxqbTfnD+A9+8yhK+ZF2g5HrYE3tIEQAd92BvMyuAZ0
-	 SYkXfkWuDjuGQ==
+	b=MzEw4ieFr11M5xHt2StEg6ORuVCD4VqADro6fX5jY4Ta3/+dMmpHToQqa+TKOvHpb
+	 IPMFcq6S5OlnoYGqd3tbx+zczcLOwZ049eISw3ZbGqinvJ8vB8TIJGSH+89hLlIyuu
+	 GCrEkGdm8lminJ7UdcjQx2rHVh67gDPTW89nGvvEVK3rMD2O+y61f7DyKG+EBBGv+9
+	 zNYh7D7+yvaw5+NF90qj3Wv17VO1v4AOYerCJx6Q4MN5gWC4inUQq3kshfEyJtFUv/
+	 iYdkzvnAfDCraTTT++jWofvtKAF0IvVBTVyyBbsZejJe3ay7nMmyB10uba1kwfaht9
+	 P/kq77Leo4ktg==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Sat, 03 Oct 2026 17:32:51 +0100
-Subject: [PATCH v4 20/38] mm/gup: error out early on !VMA_MAYREAD_BIT VMAs
+Date: Sat, 03 Oct 2026 17:32:52 +0100
+Subject: [PATCH v4 21/38] uprobes: remove VM_IO, set VM_MIXEDMAP for mapped
+ kernel pages
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,7 +63,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261003-b4-mmap-prepare-vma-flag-sanify-v4-20-a1f052500fd7@kernel.org>
+Message-Id: <20261003-b4-mmap-prepare-vma-flag-sanify-v4-21-a1f052500fd7@kernel.org>
 References: <20261003-b4-mmap-prepare-vma-flag-sanify-v4-0-a1f052500fd7@kernel.org>
 In-Reply-To: <20261003-b4-mmap-prepare-vma-flag-sanify-v4-0-a1f052500fd7@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -146,54 +147,71 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, 
  fuse-devel@lists.linux.dev, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1324; i=ljs@kernel.org;
- h=from:subject:message-id; bh=VtGizrlrfSqF6kXUF+L7zJP/cAO32l1luKa8gsJEK10=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLIO6mkecDhyc/mG95lKcoUrXb7NlU+ofn/O+HBD16ysb
- uWTVjFqHaUsDGJcDLJiiizPv4jvDxIJm9d5wd8NZg4rE8gQBi5OAZjI1URGhu8nONer3l7Yl6C5
- y321yqVZ/6KELx65eGb3ZtFV2xSnO+sy/OHyWVcnurchJ7daUXKN4Zrbno5/hR7osnv+aY26/dc
- tlxcA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2070; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=joQXUjvjM3OjL+Ta6QEJ1w5g7Vsv4M79ot1AULAZKpk=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLIO6mnpVu/bE3Fl5sa7KacdG3OWXlVbcOqVV+eyO1eK7
+ 2YF5n1421HKwiDGxSArpsjy/Iv4/iCRsHmdF/zdYOawMoEMYeDiFICJSN9jZPhZf5i391D042MR
+ MUZhsy7sc1b9yPr2Xruu0dtrt2b2HvVjZDi1/1bGz761fdtPvhNmnZ/7f+37frOIO3sa56ibMKs
+ 4+bEDAA==
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 
-When populating a VMA range via the aptly named populate_vma_page_range()
-an unreadable VMA will always eventually fail with -EFAULT.
+These are not MMIO pages so VMA_IO_BIT is an inappropriate flag to set.
 
-That a VMA is accessible is always checked, however VMA_MAYREAD_BIT is not.
+Instead, set them VMA_MIXEDMAP_BIT as they are kernel mappings and this is
+the appropriate flag to set for those.
 
-All user mappings always have VMA_MAYREAD_BIT set, so this check only
-impacts kernel mappings.
+This provides the semantics required - no VMA merging is permitted, but
+does not prevent GUP.
 
-It is implemented specifically to disallow population of uprobes XOL
-mappings which are exec-only.
+However this has no meaningful impact as these are refcounted and thus can
+be GUPed.
 
-A nasty interaction with these mappings may occur if they are mlocked, so
-actively disallow this early.
+A previous commit already prevented __mm_populate() from being invoked on
+XOL areas, which VMA_IO_BIT was previously relied upon to do, so that is no
+longer required.
 
-This allows a subsequent commit to remove the VM_IO check in
-__mm_populate() which otherwise requires non-MMIO mappings to be wrongly
-flagged simply as a workaround.
+Both VMAs set a VMA name, so always_dump_vma() returns true before
+vma_dump_size() reaches its VMA_IO_BIT check, and thus there is no change
+in core dump behaviour.
 
-Acked-by: Zi Yan <ziy@nvidia.com>
+Change this for both the core xol_add_vma() function and the x86-specific
+get_uprobe_trampoline() function.
+
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- mm/gup.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/x86/kernel/uprobes.c | 2 +-
+ kernel/events/uprobes.c   | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/mm/gup.c b/mm/gup.c
-index c2dfcb4744bc..e6310a7cc05b 100644
---- a/mm/gup.c
-+++ b/mm/gup.c
-@@ -1836,6 +1836,10 @@ long populate_vma_page_range(struct vm_area_struct *vma,
- 	if (!vma_is_accessible(vma))
- 		return -EFAULT;
+diff --git a/arch/x86/kernel/uprobes.c b/arch/x86/kernel/uprobes.c
+index 65a2de82ecd2..0f60c0d076b6 100644
+--- a/arch/x86/kernel/uprobes.c
++++ b/arch/x86/kernel/uprobes.c
+@@ -715,7 +715,7 @@ static struct vm_area_struct *get_uprobe_trampoline(struct mm_struct *mm, unsign
  
-+	/* Unreadable VMAs also cannot be faulted in. */
-+	if (!vma_test(vma, VMA_MAYREAD_BIT))
-+		return -EFAULT;
-+
- 	gup_flags = FOLL_TOUCH;
- 	/*
- 	 * We want to touch writable mappings with a write fault in order
+ 	*new_mapping = true;
+ 	return _install_special_mapping(mm, vaddr, PAGE_SIZE,
+-				VM_READ|VM_EXEC|VM_MAYEXEC|VM_MAYREAD|VM_IO,
++				VM_READ|VM_EXEC|VM_MAYEXEC|VM_MAYREAD|VM_MIXEDMAP,
+ 				&tramp_mapping);
+ }
+ 
+diff --git a/kernel/events/uprobes.c b/kernel/events/uprobes.c
+index 7709ea882477..b89cc5cee002 100644
+--- a/kernel/events/uprobes.c
++++ b/kernel/events/uprobes.c
+@@ -1726,8 +1726,8 @@ static int xol_add_vma(struct mm_struct *mm, struct xol_area *area)
+ 	}
+ 
+ 	vma = _install_special_mapping(mm, area->vaddr, PAGE_SIZE,
+-				VM_EXEC|VM_MAYEXEC|VM_DONTCOPY|VM_IO|
+-				VM_SEALED_SYSMAP,
++				VM_EXEC|VM_MAYEXEC|VM_DONTCOPY|
++				VM_MIXEDMAP|VM_SEALED_SYSMAP,
+ 				&xol_mapping);
+ 	if (IS_ERR(vma)) {
+ 		ret = PTR_ERR(vma);
 
 -- 
 2.55.0
