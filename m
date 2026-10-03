@@ -1,52 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-28803-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28804-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCC1ECA5FC1
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Oct 2026 04:00:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52532CA5FDD
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Oct 2026 04:00:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hxX3C206fz2yTQ;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hxX3C2TWHz3by2;
 	Sat, 03 Oct 2026 13:59:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790999974;
-	cv=none; b=XHoZGlQpf6s552bcBWajsC4oZ/4tfDFeevKnwl62OZzcWdIIrq+DveL30PjTS5AVWW5dPnljPP3FebwETLFNMmAXqqzJGU6RtxeJmbQ910/EiZFwokOAI9VAw/dMs/4WUT9wEnqwH168ncLYIWnxKHOIVVGj9Kz0a9vBb7NHa4reVdMISIvtBXEZVVubz/2dEH0Aoy8QYY50ttmI4mFK9GjnT41HlFhLU0nzVmq4+xwdd0A2IEwWfrgUdmpiMTDB/FI6cVP/lRFm24PLYx7+gTcceuMzPHCOm4S4zOAp0bNfmBsgFqgDA0QywMSAYcN/fLPv3OmBLbFodjcwjPltbQ==
+	cv=none; b=PMN0XgTD7XjS9SWvZp02BxkSj4tdmaaxTdUkwBjlES5iwotkKEl6sRLyOrKPBVHEinRqzobcy2388LF0oYmo4VV7/Mp5/dNy6a+XgdRAUxuUKW+FVM2zpoTJJp6D+xl73iEx675ZcbBXQ1dKHjQNpC9wTGn0XAWDYaZ9Dp/+K5T0On8JYP25HGNH87L5q1p7LvJT3Q7YRvyb76x6fb0Y2gUffnC6xjUU/8LdEeL2mterCVOTz8yUCVCBiERpMr3jviV1OfSLv7KB5cJrPhS3KiOgEPYnRQPcrxuNlfPfnEdRmPaYlxgRDRdTFY/+ZXCctuiOmIAM4whD9H1jLpdH6Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1790999974; c=relaxed/relaxed;
-	bh=XDlGomlR0yD+DXZBg/pGmMB7mteUfN0wwi+oXTAvHDU=;
+	bh=3OTiHc1/0syaVTh9plxPSwZX9JA+w6f18TNYUs4mWiI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Wktiz5MWGkDOjLX2tWmSGxL9137nWxgoFNjHBTK6lzCbjDWImf4gryyfy08x2znfIaBJ/sXJEmKN+Fm+pRgvM0/GE9LTnXlv5syWboO26MiWdjK3VvDx92HoO6cyDKiVQe/q+/a4ZON2k8x1lSAI+s/GDbXl/46xHX96F/AwB6lgRn9X6BQ8AHvezsFQAeD1cRE0PDZjdFriNJ7m8+PPDkHRd6L5MuMG0rUQcbIX/eTgmKm/Mj9khxBzLt0N/OScQCdFTQiDOfLh4tAYF2+qNxfFYgbGGQlbt+Y7HsCKiFF/GZC+WO+8W0CJjg0Q80DaS9NUUE2KzVN82fNIH7wXDQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OrQhgPhc; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=fUjLrNIhvkBoEfZP1CS0WGqJAS2iEz7JcmD3NcmpvKNbo8tZBuFtpSSpnlUIQkoob7Svz7QYkA65Kv0DFDGVVSUb4N5py+CSazFEW1Xa4RgWZBwoCs8g/ZTtLAumEijYEmMhAysGscA1+PAaVoT8e1D7Q0gSteQ5Ysl1tLIBMOTh03CeLvUPiKGyyX/WgD6wsgJPLruHmAQJsJOCyTv/6OCxmKXEhX14YKxCJwcoPNJq8FYbWJmr5RH7+2w27WZ6J82eXORfoHAGxikA8yD/PEoaS46npZOWeytjvDVtYyAbOP38JwR+AOhxMk9K7BKYEUErH1+67lmAckklTcjaQw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=esNzDwkF; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OrQhgPhc;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=esNzDwkF;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxX345Scdz30WS
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Oct 2026 13:59:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxX354P12z3bSw
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Oct 2026 13:59:29 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 5B6B044846;
+	by sea.source.kernel.org (Postfix) with ESMTP id 6C41A4485C;
 	Sat,  3 Oct 2026 03:59:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D30EE1F00A07;
-	Sat,  3 Oct 2026 03:59:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 048601F008A2;
+	Sat,  3 Oct 2026 03:59:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
 	s=k20260515; t=1790999962;
-	bh=XDlGomlR0yD+DXZBg/pGmMB7mteUfN0wwi+oXTAvHDU=;
+	bh=3OTiHc1/0syaVTh9plxPSwZX9JA+w6f18TNYUs4mWiI=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=OrQhgPhcT4Ea7xGuH66p0cd05bW222wqloOtK5Bw8A3JZg89l/dTcmKZUtpt6mXvU
-	 wgznY+3X429DHPSFrH/rcxBb22tRGQLwCieL3mvMnNewOd603k+g1uH0trurXrraZf
-	 XsLEwtvUR98RjktXcTzkYPBI+G8MdMf5C72q9jGbq/aFEgfCR5sEXtcHVqA9Xkpmir
-	 T7kMF9p5k840j33wFShhheD2BqJfUdMs0gxHqZp21hH7hdHQYW3+HjId68lTC/5dt6
-	 AepQp10YxJ00mln4wf2e335r6yoJ7CBlA/2TKS2sIvAHcinOu7vJf+BxJEg2jyqetz
-	 Fr+2WI1zg2oug==
+	b=esNzDwkF/ZPzuVHUwOX/wWg1G8q95GJofpLCNZ8CqjZQ3tSrgZVSe0wl0i/6tgYuB
+	 b+Og8ah3xsZ8t9cxtea4sG661YTsOMgK8WVA8wpEoh1BTI8kBHx36q6v+G2wPY7mPx
+	 z4I5y1NwZKx3SFzjqzalrK3VNGzGzXi+Mz5t8hh+znJCYY/w/7zYGnJf7LEk0Ev38H
+	 z5LVKQGZpj2BeyE843ig3p7wNG9C7eq7HmfrKRy6iuRy1T6I4c49+fSOADaKVkxXWO
+	 kl9SSeOeX8e292rsoebDYCW364bXxFepgepHcQXFCiqAipN3wEtdDK2FQylf72d8Ko
+	 +8U5XvTRO77ng==
 From: Kees Cook <kees@kernel.org>
 To: Bill Wendling <morbo@google.com>
 Cc: Kees Cook <kees@kernel.org>,
+	nvdimm@lists.linux.dev,
+	Alison Schofield <alison.schofield@intel.com>,
+	Dave Jiang <dave.jiang@intel.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Guangshuo Li <lgs201920130244@gmail.com>,
+	Ira Weiny <iweiny@kernel.org>,
+	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+	Vishal Verma <vishal.l.verma@intel.com>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Gow <david@davidgow.net>,
+	Petr Mladek <pmladek@suse.com>,
+	Sergey Senozhatsky <senozhatsky@chromium.org>,
+	Shuvam Pandey <shuvampandey1@gmail.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	=?UTF-8?q?G=C3=BCnther=20Noack?= <gnoack@google.com>,
+	"Matthew Wilcox (Oracle)" <willy@infradead.org>,
+	=?UTF-8?q?Micka=C3=ABl=20Sala=C3=BCn?= <mic@digikod.net>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+	Jiri Kosina <jikos@kernel.org>,
 	Alexei Starovoitov <ast@kernel.org>,
 	Daniel Borkmann <daniel@iogearbox.net>,
 	Andrii Nakryiko <andrii@kernel.org>,
@@ -58,22 +80,6 @@ Cc: Kees Cook <kees@kernel.org>,
 	Jiri Olsa <jolsa@kernel.org>,
 	Emil Tsalapatis <emil@etsalapatis.com>,
 	Ihor Solodrai <ihor.solodrai@linux.dev>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Petr Mladek <pmladek@suse.com>,
-	"Matthew Wilcox (Oracle)" <willy@infradead.org>,
-	Shuvam Pandey <shuvampandey1@gmail.com>,
-	David Gow <david@davidgow.net>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	bpf@vger.kernel.org,
-	linux-trace-kernel@vger.kernel.org,
-	Jonathan Corbet <corbet@lwn.net>,
-	Sergey Senozhatsky <senozhatsky@chromium.org>,
-	=?UTF-8?q?G=C3=BCnther=20Noack?= <gnoack@google.com>,
-	=?UTF-8?q?Micka=C3=ABl=20Sala=C3=BCn?= <mic@digikod.net>,
-	Jiri Kosina <jikos@kernel.org>,
 	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
 	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -81,24 +87,18 @@ Cc: Kees Cook <kees@kernel.org>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	Shivaprasad G Bhat <sbhat@linux.ibm.com>,
 	Thorsten Blum <blum@kernel.org>,
-	Alison Schofield <alison.schofield@intel.com>,
-	Dave Jiang <dave.jiang@intel.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Guangshuo Li <lgs201920130244@gmail.com>,
-	Ira Weiny <iweiny@kernel.org>,
-	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
-	Vishal Verma <vishal.l.verma@intel.com>,
 	Randy Dunlap <rdunlap@infradead.org>,
 	Shuah Khan <skhan@linuxfoundation.org>,
 	linux-kernel@vger.kernel.org,
+	bpf@vger.kernel.org,
 	linux-security-module@vger.kernel.org,
+	linux-trace-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
-	nvdimm@lists.linux.dev,
 	linux-doc@vger.kernel.org,
 	linux-hardening@vger.kernel.org
-Subject: [PATCH v4 06/11] seq_buf: Add seq_buf_terminate()
-Date: Fri,  2 Oct 2026 20:59:11 -0700
-Message-ID: <20261003035921.1918874-6-kees@kernel.org>
+Subject: [PATCH v4 10/11] nvdimm: ndtest: Return the string length from flags_show()
+Date: Fri,  2 Oct 2026 20:59:15 -0700
+Message-ID: <20261003035921.1918874-10-kees@kernel.org>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20261003035906.too.263-kees@kernel.org>
 References: <20261003035906.too.263-kees@kernel.org>
@@ -115,191 +115,44 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6401; i=kees@kernel.org; h=from:subject; bh=ABJPjYt7NWFo2zXFUU3mJzXUMXyVzwHTx+55Tm7/WDY=; b=owGbwMvMwCVmps19z/KJym7G02pJDFkHaidJiBZtarhbxsTEUr/S7PlNgw9Xov1Fj80ziZ7a0 dBaXrCko4SFQYyLQVZMkSXIzj3OxeNte7j7XEWYOaxMIEMYuDgFYCImpQzfY3U/yTuGHr3kuO92 TtUVS8b1B51dq1jv7085Je9i5vWA4b/fzfk/ZxfdemO/8aP71i2ui93mnL3ws9M0YvfqxLXO7KI cAA==
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1205; i=kees@kernel.org; h=from:subject; bh=83ejdE21ZGKoH4IcbNOtIYCWNlvKIrQjgUzARamzwfE=; b=owGbwMvMwCVmps19z/KJym7G02pJDFkHaieLvLjkuOz2nWpmDfsU5q917HcOHpCrm/clZhVX5 dEteh/WdJSyMIhxMciKKbIE2bnHuXi8bQ93n6sIM4eVCWQIAxenAEzEo5Thf0HjJa6f2wWCLz5Z ndCTresx5Vpd30Jz8x/NP1assHW/ZMzwT78//eJ0f787O6pSOef+ZToVzRjHcTRt/ZT+eYtmCc4 o4QUA
 X-Developer-Key: i=kees@kernel.org; a=openpgp; fpr=A5C3F68F229DD60F723E6E138972F4DFDC6DC026
 Content-Transfer-Encoding: 8bit
 
-Seven callers call seq_buf_str() only to NUL-terminate the buffer,
-discarding the returned pointer. Two of them need a comment to say so.
+flags_show() build their output with a seq_buf and return seq_buf_used(),
+which may include the trailing NUL byte when the seq_buf has
+overflowed. Use seq_buf_strlen() instead.
 
-Add seq_buf_terminate(), wrapping the __seq_buf_terminate() helper that
-seq_buf_str() and seq_buf_strlen() already use, and convert those
-callers. It returns void: returning the offset would just be
-seq_buf_strlen() under another name. A zero-sized seq_buf is left
-untouched, as in the other accessors.
+The flag names are far shorter than the PAGE_SIZE buffer sysfs
+provides, so this cannot overflow today.
 
-Add tests for the three cases: room for the NUL after the data, an
-overflowed buffer where it lands in the last byte, and a zero-sized
-buffer that must not be written to.
-
-Build tested ARCH=x86_64 defconfig with GCC 16.2.0, plus
-CONFIG_HIST_TRIGGERS=y and CONFIG_BPF_SYSCALL=y to reach the converted
-call sites in kernel/trace/trace_events_hist.c and
-kernel/bpf/diagnostics.c. Tests run 24/24 passing on ARCH=um.
+Build tested ARCH=x86_64 with GCC 16.2.0, built out of tree with
+make M=tools/testing/nvdimm:
+tools/testing/nvdimm/test/ndtest.o
 
 Assisted-by: LLM
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Reviewed-by: Dave Jiang <dave.jiang@intel.com>
+Reviewed-by: Alison Schofield <alison.schofield@intel.com>
 Signed-off-by: Kees Cook <kees@kernel.org>
 ---
- include/linux/seq_buf.h          | 23 +++++++++++++++++++++++
- kernel/bpf/diagnostics.c         |  6 +++---
- kernel/trace/trace_events.c      |  4 ++--
- kernel/trace/trace_events_hist.c |  6 ++----
- lib/tests/seq_buf_kunit.c        | 28 ++++++++++++++++++++++++++++
- 5 files changed, 58 insertions(+), 9 deletions(-)
+ tools/testing/nvdimm/test/ndtest.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/include/linux/seq_buf.h b/include/linux/seq_buf.h
-index 87ccc62f1c62..195e612a212a 100644
---- a/include/linux/seq_buf.h
-+++ b/include/linux/seq_buf.h
-@@ -171,6 +171,29 @@ static inline size_t seq_buf_strlen(struct seq_buf *s)
- 	return __seq_buf_terminate(s);
+diff --git a/tools/testing/nvdimm/test/ndtest.c b/tools/testing/nvdimm/test/ndtest.c
+index 2051ad5d4882..f097f2992966 100644
+--- a/tools/testing/nvdimm/test/ndtest.c
++++ b/tools/testing/nvdimm/test/ndtest.c
+@@ -693,7 +693,7 @@ static ssize_t flags_show(struct device *dev,
+ 	if (seq_buf_used(&s))
+ 		seq_buf_printf(&s, "\n");
+ 
+-	return seq_buf_used(&s);
++	return seq_buf_strlen(&s);
  }
+ static DEVICE_ATTR_RO(flags);
  
-+/**
-+ * seq_buf_terminate - NUL-terminate the string in a seq_buf
-+ * @s: the seq_buf handle
-+ *
-+ * Terminate @s->buffer exactly as seq_buf_str() and seq_buf_strlen() do,
-+ * for callers that want neither the pointer nor the length and only need
-+ * the buffer to be safe to read as a C string. A zero-sized seq_buf has
-+ * nowhere to put a NUL and is left untouched.
-+ *
-+ * Nothing is returned on purpose: a caller that wants the length should
-+ * use seq_buf_strlen(), which says so.
-+ *
-+ * After this function is called, s->buffer is safe to use
-+ * in string operations.
-+ */
-+static inline void seq_buf_terminate(struct seq_buf *s)
-+{
-+	if (s->size == 0)
-+		return;
-+
-+	__seq_buf_terminate(s);
-+}
-+
- /**
-  * seq_buf_get_buf - get buffer to write arbitrary data to
-  * @s: the seq_buf handle
-diff --git a/kernel/bpf/diagnostics.c b/kernel/bpf/diagnostics.c
-index 0abbbe177e31..594cf3c8b74c 100644
---- a/kernel/bpf/diagnostics.c
-+++ b/kernel/bpf/diagnostics.c
-@@ -351,7 +351,7 @@ static void diag_fmt_restore(struct bpf_verifier_env *env, struct diag_fmt_mark
- 
- 	if (mark.chunk) {
- 		mark.chunk->seq.len = mark.len;
--		seq_buf_str(&mark.chunk->seq);
-+		seq_buf_terminate(&mark.chunk->seq);
- 	}
- }
- 
-@@ -631,11 +631,11 @@ static void format_disasm_line(struct bpf_verifier_env *env, int insn_idx,
- 		return;
- 
- 	print_bpf_insn(&cbs, insn, env->allow_ptr_leaks);
--	seq_buf_str(&ctx.seq);
-+	seq_buf_terminate(&ctx.seq);
- 	ctx.seq.len = strnlen(line->text, sizeof(line->text));
- 	while (ctx.seq.len && line->text[ctx.seq.len - 1] == '\n')
- 		seq_buf_pop(&ctx.seq);
--	seq_buf_str(&ctx.seq);
-+	seq_buf_terminate(&ctx.seq);
- 
- 	line->valid = true;
- }
-diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index 9dbc2441763b..39bb391546de 100644
---- a/kernel/trace/trace_events.c
-+++ b/kernel/trace/trace_events.c
-@@ -4906,7 +4906,7 @@ static __init int event_trace_enable(void)
- 	 */
- 	__trace_early_add_events(tr);
- 
--	seq_buf_str(&bootup_event_seq);
-+	seq_buf_terminate(&bootup_event_seq);
- 	early_enable_events(tr, bootup_event_buf, false);
- 
- 	trace_printk_start_comm();
-@@ -4935,7 +4935,7 @@ static __init int event_trace_enable_again(void)
- 	if (!tr)
- 		return -ENODEV;
- 
--	seq_buf_str(&bootup_event_seq);
-+	seq_buf_terminate(&bootup_event_seq);
- 	early_enable_events(tr, bootup_event_buf, true);
- 
- 	return 0;
-diff --git a/kernel/trace/trace_events_hist.c b/kernel/trace/trace_events_hist.c
-index 963e0d6b61fd..57bd1cd5c657 100644
---- a/kernel/trace/trace_events_hist.c
-+++ b/kernel/trace/trace_events_hist.c
-@@ -2988,8 +2988,7 @@ find_synthetic_field_var(struct hist_trigger_data *target_hist_data,
- 	seq_buf_init(&s, synthetic_name, MAX_FILTER_STR_VAL);
- 	seq_buf_printf(&s, "synthetic_%s", field_name);
- 
--	/* Terminate synthetic_name with a NUL. */
--	seq_buf_str(&s);
-+	seq_buf_terminate(&s);
- 
- 	if (seq_buf_has_overflowed(&s)) {
- 		kfree(synthetic_name);
-@@ -3106,8 +3105,7 @@ create_field_var_hist(struct hist_trigger_data *target_hist_data,
- 	if (saved_filter)
- 		seq_buf_printf(&s, " if %s", saved_filter);
- 
--	/* Terminate cmd with a NUL. */
--	seq_buf_str(&s);
-+	seq_buf_terminate(&s);
- 
- 	if (seq_buf_has_overflowed(&s)) {
- 		kfree(cmd);
-diff --git a/lib/tests/seq_buf_kunit.c b/lib/tests/seq_buf_kunit.c
-index 569ab3d96f10..b6fc7b784859 100644
---- a/lib/tests/seq_buf_kunit.c
-+++ b/lib/tests/seq_buf_kunit.c
-@@ -633,6 +633,33 @@ static void seq_buf_strlen_zero_size_test(struct kunit *test)
- 	KUNIT_EXPECT_STREQ(test, buf, "untouched");
- }
- 
-+static void seq_buf_terminate_test(struct kunit *test)
-+{
-+	char buf[16];
-+	struct seq_buf s;
-+
-+	/* Terminates directly after the data when there is room. */
-+	memset(buf, 'z', sizeof(buf));
-+	seq_buf_init(&s, buf, sizeof(buf));
-+	seq_buf_puts(&s, "ab");
-+	seq_buf_terminate(&s);
-+	KUNIT_EXPECT_STREQ(test, buf, "ab");
-+
-+	/* Terminates in the last byte once the buffer has overflowed. */
-+	memset(buf, 'z', sizeof(buf));
-+	seq_buf_init(&s, buf, 4);
-+	seq_buf_puts(&s, "abcdef");
-+	KUNIT_EXPECT_TRUE(test, seq_buf_has_overflowed(&s));
-+	seq_buf_terminate(&s);
-+	KUNIT_EXPECT_STREQ(test, buf, "abc");
-+
-+	/* A zero-sized seq_buf is left alone. */
-+	strscpy(buf, "untouched", sizeof(buf));
-+	seq_buf_init(&s, buf, 0);
-+	seq_buf_terminate(&s);
-+	KUNIT_EXPECT_STREQ(test, buf, "untouched");
-+}
-+
- static struct kunit_case seq_buf_test_cases[] = {
- 	KUNIT_CASE(seq_buf_init_test),
- 	KUNIT_CASE(seq_buf_declare_test),
-@@ -656,6 +683,7 @@ static struct kunit_case seq_buf_test_cases[] = {
- 	KUNIT_CASE(seq_buf_strlen_puts_overflow_test),
- 	KUNIT_CASE(seq_buf_strlen_embedded_nul_test),
- 	KUNIT_CASE(seq_buf_strlen_zero_size_test),
-+	KUNIT_CASE(seq_buf_terminate_test),
- 	KUNIT_CASE(seq_buf_do_printk_test),
- 	{}
- };
 -- 
 2.55.0
 
