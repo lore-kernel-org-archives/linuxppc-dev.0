@@ -1,70 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-28785-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28787-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6C3ACA5FE6
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2026 22:38:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6DF12CA5FE4
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Oct 2026 01:57:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hxNx71T73z2y2T;
-	Sat, 03 Oct 2026 08:38:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::446"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790980731;
-	cv=none; b=G+0N87+5VdYIfGvZUmGVEwf5oOzxs9hcPo+vugc+nRqvewXmgz2WgGKYrXzHefcRqFRQl9gyfdIbMEC1g/7hwll4G2PXSMhV5HRTuCmbaputQHxGim9ul8yoRUZ/Gz4a8S3NwAAewqJ8AWySXYCt2P3pk/Bv2ZGk9QMAoP8pwSolwB/h+RXYtQHEmS0Bi+SpwnmzCr6tnMip8wY0i5mGkw+v1uO9htNOWQ4fscfzsW8AeaKsL3gGSQIEfOy+vds6lXEGUCS0XNbV2xd2kImDvn4zeWNB7t43t7ok0D2GRodje1Nth5hFRIIkNXnuD1HG++quC4RubxqoGrVCpsVq5Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hxTLg0NsCz30DH;
+	Sat, 03 Oct 2026 11:57:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790992667;
+	cv=none; b=V+leRjgyNxqHbEqwXVZVia8Wuest36u+cfVXvT8RolBlU2YMy1O8ybAxNYAcA3KoT9Iiu/khGuZvOyq0/QLKz4XVh2SaWB/azapL4lVl3ZOgmcIsXi3eoooFOelXeqMd2RKYhe+nQS/V6wD4VElBCY86cYUXzLwfqZ+1p6He+VP5yIprt1if9YCpNxC9uIhKAkoSMC6KN/sm45Hktlab69yKSH23bEbG/Jv2pzO4EonOwu1MQor0SVin2/6fKVQRjGJLnOuHaT7xbsE3gMfgv0XuGEps3q4t5oyOel0DvDXjGmf8mqWLWI8SytZ98CJKN5df4MXA4u3ZB5EhP5l0Nw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790980731; c=relaxed/relaxed;
-	bh=8FKzhc6JuX9pGuBJ5sRMzCjJd9/g4im8E9bMuOULVOQ=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=kpgkaftO0VYU3z+PYaUUz9h3wmDioWu1nobx4trupfKLKjFOu1scekhqW9wIimaQcn82wmWga5cUh+gNAl0PRlqWBfdQaILmcLiBGIvNCrAARkeeLRRkVZaawOGKfoBIMlZsiqI0ySBFl1boA0Q4ozDUTq853cesaP/pHxyzwZ2wuomAix0NWQGpUMnR881X6CsOWJBZWyISA6UGVx5QSxALCPbqvHtYHP6yiIXl+yykPJLirUS6OhiTedSlX40fPz9tSJbyQeiPf1YulUIhGqJ5qiQ35yUmq4b0rqoOOJ1kbzTO0GaZ1MOqAoOqBN74g/NPBLnMSatMbPY3+2bOVw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=vHRgQUFo; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::446; helo=mail-pf1-x446.google.com; envelope-from=3djlaagykddknzviexbjjbgz.xjhgdipskkx-yzqgdnon.jugvwn.jmb@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1790992667; c=relaxed/relaxed;
+	bh=95mqI5qzwOfO2/EjObKcngGS35A/bfnatHPqZ2Er4M8=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=RAsC58LElARXlGurkPjy+aTJ3bQdYGzsWttczL+THBi/covbKjPY6ukVat5v0RmWPnM6fHciZ6T4jZEwrikFrzCZdwAKv+PmlmfWiVM6/EJXDp6Do6SxwFnNtDEY9ii6P8zB0x1HcS0RQEu77oLoHvad8GlF+GyTmL2nfRfNqgzVHQ+SKwFTOfk7CA+9Z9ZVERI6BrtU6b13JtFGpVcsiYW/DB6QcLzQB2dL58uHH6OklTq6/B9LNMQLLe4zvu7o9FvJzLJDcd63orVbJj2dg5VVWqV7iHEytAFy5bWspf7Bi226329jbqsmbqI5/QBaMYpi/hq/Ns5gIZKmRzuwKA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ldlf7uDC; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=vHRgQUFo;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ldlf7uDC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::446; helo=mail-pf1-x446.google.com; envelope-from=3djlaagykddknzviexbjjbgz.xjhgdipskkx-yzqgdnon.jugvwn.jmb@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x446.google.com (mail-pf1-x446.google.com [IPv6:2607:f8b0:4864:20::446])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxNx60MHtz2y1W
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Oct 2026 08:38:49 +1000 (AEST)
-Received: by mail-pf1-x446.google.com with SMTP id d2e1a72fcca58-88a2c5d7ef1so106592b3a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2026 15:38:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1790980727; x=1791585527; darn=lists.ozlabs.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=8FKzhc6JuX9pGuBJ5sRMzCjJd9/g4im8E9bMuOULVOQ=;
-        b=vHRgQUFord3xAUP0Bn/XX6JfypFMYuINmHJYNLX0LAEf2MJgbWfw7ckwbvHN4StAzr
-         C5sI5ImtWU+dGDcEO11ykeZKpa6NwgeV2w1vVdNPVBWdQjrCgjWcaRHDXqnlgsZeOxhB
-         VrWnFxVD7/iHRVklkMauV7QIoNJIXVEV6Yun/RTbEuWsaXh9JM1+9DltYGh6rdWuZ+0s
-         B06+83Q9Akk6cNSQ1oHABMax/04erzmxVMgxQPVbsut04gM9LcX3N+kx0uoqwy6H6E1i
-         O9b3rQBNo4ltSkYXmAXb4QoIV1R9oR88FcT8MsBzzAeOBflhtX4BVtt3OPrXEDOczoXr
-         C7TQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790980727; x=1791585527;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=8FKzhc6JuX9pGuBJ5sRMzCjJd9/g4im8E9bMuOULVOQ=;
-        b=mcsM/BGbTSit7SbZVzCDcm96m79B/XltjYqleN9GrQAv7pgG7qGuF654aYVmgM7EPV
-         57DjXVvZsOdJnFWnRt2INpgzxryrEpIuWackHjl94DwUOtn1W0DMTsUx+EFUSbFpRo27
-         odRc3s9tDLyevInXeA2b91yYh65RsLD3XvXU2ksm+FI+9QmfwnuJ/GGAKboqQnPpx9y+
-         6gqMQ583ygmrIJd4JySqJE5808ZLis90mdNNJiC3/tYoEnWWAOdCwKCTyOYmylhbOKA6
-         nHypcTSda5NbzJz9zM0cqzmQBJ5nPop7kAQU4YVlYxtJvVH38aMByVMQoRNTNEfeUOFD
-         hx1w==
-X-Forwarded-Encrypted: i=1; AKwUvByYG6wiKiXit9aSqLL8IpHLCi0l5O6LQ9autnjex8bqiUM0trAHWC6nR9RfSaaDIVPb9kWCm0Lci2fom+w=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++nFpS++97q4XUSO3ThLULxoeIVOyCMhYCDmHERRY2R42FGCRBvU
-	1CP+nIj47RtrBCYenMZ9e31O3llpXAsLDjYRyZJrnVSOVn4+wJuCAD97CM/rC2HNMMi1dtcXUbv
-	asc482g==
-X-Received: from pfbhu35.prod.google.com ([2002:a05:6a00:69a3:b0:883:f59:2478])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:4fc1:b0:886:301:cb7d
- with SMTP id d2e1a72fcca58-88af54f7783mr3790819b3a.11.1790980726304; Fri, 02
- Oct 2026 15:38:46 -0700 (PDT)
-Date: Fri, 2 Oct 2026 15:38:45 -0700
-In-Reply-To: <pkxwkffc.ritesh.list@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxTLc5PMmz2y1W
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Oct 2026 11:57:44 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69305LkR1896546;
+	Sat, 3 Oct 2026 01:57:32 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=95mqI5qzwOfO2/EjObKcngGS35A/bfnatHPqZ2Er4
+	M8=; b=Ldlf7uDC7eGRN0mRr6pR6agoMssk3unAvgcuxlvpe4+hY6wVJBm9YZUHS
+	teJBvfRgehn2LSdi0a4eQX7UbILw4JuWBQdltRVEuEvH855lQIRcW+PVS3RhCSwH
+	BKtsrTmENEoDEfmW9nlq1Yltf8+mzRhYIAs0K83vWcvjZXMMGwhkeVkB5WN9plYe
+	j3yhGaSIzLavLLc6s8N+z5hR6Sahm+4ic8RgcU9/f8yBv43PyfRNiWB1dQfB4KhC
+	SsyjOrf6CEc1hAQvwhtsWyiAjL3WZZtUrvmuF0owh47wmcU4CIDgwIpFc7d3pmKY
+	/ELj1GSMyrFvFsV9kvbNq8job9rAg==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gx5s5veew-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Sat, 03 Oct 2026 01:57:31 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 692NlwbV3233087;
+	Sat, 3 Oct 2026 01:57:30 GMT
+Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h1y2dn71b-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 03 Oct 2026 01:57:30 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
+	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6931vS8g28771048
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sat, 3 Oct 2026 01:57:29 GMT
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C1EB458055;
+	Sat,  3 Oct 2026 01:57:28 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8395358059;
+	Sat,  3 Oct 2026 01:57:26 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.67.102.94])
+	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Sat,  3 Oct 2026 01:57:26 +0000 (GMT)
+From: Mingming Cao <mmc@linux.ibm.com>
+To: netdev@vger.kernel.org
+Cc: davem@davemloft.net, kuba@kernel.org, horms@kernel.org,
+        edumazet@google.com, pabeni@redhat.com, andrew+netdev@lunn.ch,
+        nnac123@linux.ibm.com, maddy@linux.ibm.com, mpe@ellerman.id.au,
+        linuxppc-dev@lists.ozlabs.org, davemarq@linux.ibm.com,
+        bjking1@linux.ibm.com, Mingming Cao <mmc@linux.ibm.com>
+Subject: [PATCH net-next 0/7] ibmveth: fix hangs, use-after-frees and netpoll races
+Date: Fri,  2 Oct 2026 18:57:12 -0700
+Message-Id: <cover.1790991039.git.mmc@linux.ibm.com>
+X-Mailer: git-send-email 2.39.3 (Apple Git-146)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,63 +87,120 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-References: <cover.1790101179.git.ritesh.list@gmail.com> <pkxwkffc.ritesh.list@gmail.com>
-Message-ID: <asAydfQLscU6rXQL@google.com>
-Subject: Re: [PATCH v5 0/9] KVM: selftests: add powerpc support
-From: Sean Christopherson <seanjc@google.com>
-To: Ritesh Harjani <ritesh.list@gmail.com>
-Cc: kvm@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org, 
-	Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <chleroy@kernel.org>, 
-	Anushree Mathur <anushree.mathur@linux.ibm.com>, 
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Harsh Prateek Bora <harshpb@linux.ibm.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDAzMDAwNSBTYWx0ZWRfX99keqcR+AGg6
+ G3eS2lnp1+YOasjT9V4x+iADAQraQfpWySipZTGmbPa8edbyicbIUMMTr6o9gll3yhZiLLesO6q
+ dqApMay015ee/F5AWR+WbeIybWMC5M0=
+X-Authority-Analysis: v=2.4 cv=HJ5WhYtv c=1 sm=1 tr=0 ts=6ac0610c cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=TVZ6rJpfqCA6Mtk4hssA:9
+X-Proofpoint-GUID: GpfRQ-LqGhGYJF7P0SApYPjA3QKxNHgu
+X-Proofpoint-ORIG-GUID: 9rN3-YIXwyeHJygyRuJCHMFy2Z8e_EEb
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDAzMDAwNSBTYWx0ZWRfX8ux02nR/xgAR
+ InGofc8RV2Z0jTrl7YPsxbow0vNuOiFP4g3h7KVgBt31046fY9ET7Cc/8IKbnoR7vZtvjZMcsPA
+ ybGE20flOxsBdosOAvJvwJpzTno8EU2lipCq6YvUM70BJw8BxhMaFm6Rm488nQF67aJnMFXeIa2
+ oBA7qQLsd5tTkIjPtAfwIiXMU6SpJ5CtzUJb6Xmbk5OllAcsF8sKbuqvsrWpCalaU2GVASTTr9+
+ B5qNpGUVCKiZkD93vgm40P/oqT0SmpLEplLfPxqypPM+FihQAxstVNesgEkQhyDl7hG3V6eciUI
+ NDcs1JiMU1daBsnCs52AsnG7QdJjUSNc61sFpE96p3tKhai2eYN8is1wcPICL9p8kts2NdsD5Dv
+ zWcrRBFDpKyvj6WCDAqKBrHf4b8yQrerGnCYgHrUfwOaKivfpo42ZatJhsCqRjeac7k4RyH4Usy
+ T85at9pHxyJWz/n2KtQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-02_07,2026-10-02_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 suspectscore=0 bulkscore=0 clxscore=1015 lowpriorityscore=0
+ spamscore=0 impostorscore=0 phishscore=0 priorityscore=1501 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2610030005
 
-On Tue, Sep 29, 2026, Ritesh Harjani wrote:
-> "Ritesh Harjani (IBM)" <ritesh.list@gmail.com> writes:
-> 
-> > Hi All,
-> >
-> > This series primarly adds KVM selftests support for powerpc (64-bit, BookS,
-> > radix MMU).
-> >
-> 
-> Hello Sean,
-> 
-> Just wanted to check what's our plan on this one?
+Hi,
 
-At this point, I'm not going to get a pull request to Paolo before the normal
-merge window.  I was hoping/planning to get some early pull requests to Paolo
-this cycle so y'all could build on kvm/next directly, but that didn't happen.
+Seven fixes for serious bugs in the ibmveth driver: two hang the
+system, three are use-after-frees, one corrupts memory, and one makes
+ethtool -L report success when it failed.
 
-> Are we planning for both PPC pre-enablement series of yours and this one to
-> be taken for v7.4 merge? Do you think this can go in too?
+The series is based on net-next commit 071876fd5048 ("ref_tracker: Don't
+use __GFP_NOFAIL for PF_MEMALLOC thread."). It does not depend on
+the two open() error-path fixes recently applied to net
+(commit af0524bf4ce1, commit 84bec0bf0352) and merges cleanly with them;
+patch 2 explains how it relates to them. It also applies to net with
+git am -3.
 
-I'd like to get at least a subset of this series in for 7.4.  If I'm reading
-things correctly, all of the hacky changes I don't like are for the
-kvm_create_max_vcpus_test and hardware_disable_test.  And as called out in the
-final patch, "fixes" for PPC really should be ordered so that they land *before*
-the tests are enabled.
+  1. Netpoll races with RX replenish (memory corruption, NULL
+     dereference): remove ndo_poll_controller, as was done for
+     ibmvnic, and enable NAPI only once the RX resources exist.
+     Fixes: 6b4223748895 ("[PATCH] ibmveth: Add netpoll function")
+     Fixes: bea3348eef27 ("[NET]: Make NAPI polling independent of struct net_device objects.")
 
-Actually, better idea.  Limit patch 1 to just TEST_GEN_PROGS_COMMON, then for
-the addon tests, bundle the "fix" with the PPC enablement.  AFAICT, except for
-the kvm_create_max_vcpus changes, they're all pretty small, i.e. bundling the
-PPC support with the "fix" shouldn't be too painful, and then we don't have to
-worry about ordering.
+  2. Hang after a failed internal reopen: the next close() waits in
+     napi_disable() forever with RTNL held, and only a reboot
+     recovers. Skip close() when open() did not succeed.
+     Fixes: 860f242eb534 ("[PATCH] ibmveth change buffer pools dynamically")
 
-As for kvm_create_max_vcpus and hardware_disable_test, drop them from the initial
-enablement so we can get the core support landed, and tackle them as separate
-series post-7.4.
+  3. Use-after-free in remove(): a reset queued from NAPI could run
+     on the freed adapter. Disable the reset work first.
+     Fixes: 2c91e2319ed9 ("net: ibmveth: Reset the adapter when unexpected states are detected")
 
-As for actually landing this, the easiest thing at this point would probably be
-for me to grab the patches in a dedicated topic branch that's based off the
-kvm-x86/selftests branch at an appropriate point in time.  Alternatively, I
-could provide a stable tag and someone else could grab the patches, but other
-than it being a little weird taking PPC changes through kvm-x86, that's by far
-the easiest approach since I'll be sending Paolo pull requests anyways and can
-explain the dependencies and whatnot.
+  4. RX poll hang on a bad correlator: poll restarts on the same slot
+     until RCU stalls, and an inactive pool dereferences NULL. Step
+     past the slot, reject inactive pools, count the drop.
+     Fixes: 2c91e2319ed9 ("net: ibmveth: Reset the adapter when unexpected states are detected")
+     Fixes: 860f242eb534 ("[PATCH] ibmveth change buffer pools dynamically")
 
-TL;DR: what if you post a slightly trimmed-down v6 and I take it through kvm-x86?
+  5. Use-after-free after a failed probe: the pool kobjects stay in
+     sysfs after the adapter is freed. Put them, as remove() does.
+     The pool kobjects have no release(), so with
+     CONFIG_DEBUG_KOBJECT_RELEASE a short window remains here and in
+     remove(); giving them a release() is left for a follow-up.
+     Fixes: 860f242eb534 ("[PATCH] ibmveth change buffer pools dynamically")
+
+  6. ethtool -L returns 0 when it cannot allocate the new TX queues.
+     Return the allocation error.
+     Fixes: 10c2aba89cc0 ("ibmveth: Ethtool set queue support")
+
+  7. Use-after-free of TX buffers: close(), called directly for MTU,
+     offload and buffer pool changes, frees them without waiting for
+     a running transmit. Use netif_tx_disable().
+     Fixes: d6832ca48d8a ("ibmveth: Copy tx skbs into a premapped buffer")
+
+The triggers are rare and there are no field reports, so the series
+targets net-next. All carry Fixes: tags; I am happy to repost
+against net, or add Cc: stable, if you prefer.
+
+All were found by AI-assisted review of the ibmveth multi-queue
+RX series [1]. Landing them first also shrinks that series, which
+then only extends this handling per queue.
+
+Testing: the new and extended KUnit cases in patch 4 fail on the
+unfixed driver and pass on qemu pseries (ppc64le). On a POWER10
+LPAR: netconsole under printk and ping floods, MTU and buffer pool
+changes under traffic, a forced open() failure followed by down and
+up, unbind/bind under traffic, a forced register_netdev() failure in
+probe, and ethtool -L with a forced TX buffer allocation failure.
+
+[1] https://lore.kernel.org/netdev/cover.1790319558.git.mmc@linux.ibm.com/
+
+Thanks,
+Mingming
+
+Mingming Cao (7):
+  ibmveth: fix netpoll races with RX replenish
+  ibmveth: do not close twice after a failed reopen
+  ibmveth: disable the reset work before unregister in remove
+  ibmveth: step past bad RX correlators instead of spinning or oopsing
+  ibmveth: release the pool kobjects when probe fails
+  ibmveth: return the error when set_channels cannot add TX queues
+  ibmveth: wait for in-flight transmits in ibmveth_close()
+
+ drivers/net/ethernet/ibm/ibmveth.c | 238 ++++++++++++++++++++++-------
+ drivers/net/ethernet/ibm/ibmveth.h |   2 +
+ 2 files changed, 184 insertions(+), 56 deletions(-)
+
+-- 
+2.39.3 (Apple Git-146)
 
