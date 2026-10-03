@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-28801-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28802-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF697CA5FC1
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Oct 2026 04:00:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1EFBCA5FDD
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Oct 2026 04:00:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hxX3B0wsJz3btl;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hxX3B31Fbz3bvX;
 	Sat, 03 Oct 2026 13:59:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790999973;
-	cv=none; b=Uyc9naFp5ln4oeS7yswU1sJqouXu5gfPTpz2TdfWpZ8D+XCgFjD6/QASL6SGtjT16o+c9YiPZRexmxMjRGvvQrd9PEzk3ci39kkR2xQBLlyQmal/Yeo8z0G1F47xdCkThuyxtR+yNRnCDcmmHhWS5PjS1dXDjRIpaM/9+jSlESkMxVLrsA/L76JjmEnTza/5oDPPlzQFbgjfbKQ4CXs+XmBZHBf1dGqXe+pbdufeaznZDiutoU4dFDyOZ4ZQkF9iSnL8rkMWdtZBF/cHpxqeRTvyy/qCtsu6DGlGWiv17MT1IlH4r1ZKItPH6sDWUtJ9lwmFUKdFJQ5Ht06BHdr4yw==
+	cv=none; b=neqcfqW1/gU0EpquCoGn4B9e0AljCk8E0kwgQKcKTxznPGhm4hdflSEF0mV5HYzpEoyNBFqz5+vRMyJ7tB8p8OXiKM4hmZdsvQ1PWQKbx9c+mjEm1OG8epJLOq5O2PeU7h7lwfyXg19Co8LW4UtuEkc6xoK74vNHh18q2+gbJfFloIe7Dz8slSkTJQYII9wj0+4Eme3+OSD/74aIKlmqaTZFpqb2BhO0QNazMjlbAlrgVxn7r0jlhIYC0geQh86IpNJDutnBNZysutLCeG3VcmA2QrRe+YDvqud3H0jmxUrCG01pOLDikQSIuAr3P/gW4LcZbWeLwxiksQ3gy9og9Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1790999973; c=relaxed/relaxed;
-	bh=WJOH6AQ8tetgnokAWXFnxnkRE5uHEBUR/4+Ytl/n/jo=;
+	bh=oyUJL8zjL2iIIYBSiPY1NWoLaQhp+5to3vn/xoEq/mk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=X56jqH+I8Q1mPmt/Z+VTavGcMWhPl6CeKu7M5MyPYZ/3PcwPJW1l1MCO7KE0tHsIU1M9cFczNtMt3dnR3oDsu2lxtA0h9ZL26/82iVrj2XrSF9JEbszrQTyY7cZ6iHoqU0FcapE6RtBWuPjOyXylWekIveEbClpGFssuTOTCxAzVf0X/NrDydK0JaHklAujbTJvb9lOzBfTbgmyGl2suKLfFKBX4jsFifA5UBh6UDjVDsH25jmexVWEEaJ4lmMba5nDQY3Id5f3jrcj5bGRIu0VYI+V3FbmQOFdnR+QwOCa6+xUjiTmmAu0PnZw1SlZ9rhqDVRL1Oy3KDfRMlx68Ag==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=e5FYEPVN; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=h3xO1HUT03IuXnEvW/iYp6ivMikH7Xcx8x/x9hOMIq0i7SxPYHKxELAEKmX2PQmYqApwHsssZiDEPBmYnekgnv9sY2oaL7mOpkJgScKQEu/xj8i4NdJVMNxHIKuEDWgrNX223eEMy2IEH1r9uoGeUJZUC1PcKhWxIsulKDE/HovKNniYBa8QWwc5jmO5Aj9pO+D8KQ1C290c36aLGgy0Jk5n6jqprpgEw+hbmwaPQI6yGcFcsjeVY1VtE9IQ6waS7q3PjYSJVuVkla0tCKKhSKEST9xKR8A5up/ESStZFQLpzXu28/eIDE0zZUtzos+fuy7wUVbEr2zllwp2fklnHQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Dc/TPBhB; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=e5FYEPVN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Dc/TPBhB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxX351P7Yz30YZ
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Oct 2026 13:59:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxX323XPdz308j
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Oct 2026 13:59:26 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 6BF2E4485B;
+	by sea.source.kernel.org (Postfix) with ESMTP id 4FBA54483C;
 	Sat,  3 Oct 2026 03:59:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EB15F1F0089F;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C72CF1F00A06;
 	Sat,  3 Oct 2026 03:59:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790999962;
-	bh=WJOH6AQ8tetgnokAWXFnxnkRE5uHEBUR/4+Ytl/n/jo=;
+	s=k20260515; t=1790999961;
+	bh=oyUJL8zjL2iIIYBSiPY1NWoLaQhp+5to3vn/xoEq/mk=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=e5FYEPVNUiFqWWtq94G7bfbVqkLClYCIEtkyv7o4eoHtZZ//Ri39hKIZtd3Q7jbGK
-	 LxKGz96lPn4C9SVmOezL0FMqgm+X7Tk2KNNhw02HccPM9qt1vFWQhmse9aFRtFcKIb
-	 OHZbwe+axz0cYjpyjGGSKypvo8oA9/dPVVDtPaBJKIYtRI5R5wUUFSVsNHWojsWrN9
-	 pM3MvrqpfCnRrZmTVNgECJlR9b7LFtWkmo37c7sFKbS7us4yJFJkDIQIust7Tao76T
-	 A+jlgSStzT9QczqE77XtbkV7R/lWhceiW4+8Kjs5NpU2XiCsZbXbLL0Og1qK3EQhpx
-	 SyeqMOSEsb7bA==
+	b=Dc/TPBhByuT7rB0cV4wrYmqu1wPsmlfaw/9ZFNmEXGca2qWqDNjqtOlJlChS8voXC
+	 StR+ykLolog3yOVYGGiglJjpiABIZMlLVxKXAMycx14Kyh67JUcaL9IwGnVVDeDN+G
+	 Y2bC8ikAeSQcJM1FTkeY7b7ACVIJnkSVOQ2Gtk5p54tHvuDe4QBStf+UckHM2P3O3k
+	 a7fo+XheMHWQm5A7jI3Z5ZU23Jy7sMt3UY+DNik/qVl6beXvr78cAkrDJ9NajNBFmY
+	 xh2XeXmbsjqPcRF9XUuV6LNAIKW7PU/u/nwlVqYfv/FP3jlE3/d/rNSTzk9al1N9zL
+	 IRWYggFq9DMHQ==
 From: Kees Cook <kees@kernel.org>
 To: Bill Wendling <morbo@google.com>
 Cc: Kees Cook <kees@kernel.org>,
@@ -96,9 +96,9 @@ Cc: Kees Cook <kees@kernel.org>,
 	nvdimm@lists.linux.dev,
 	linux-doc@vger.kernel.org,
 	linux-hardening@vger.kernel.org
-Subject: [PATCH v4 08/11] seq_buf: Add seq_buf_init_append()
-Date: Fri,  2 Oct 2026 20:59:13 -0700
-Message-ID: <20261003035921.1918874-8-kees@kernel.org>
+Subject: [PATCH v4 05/11] seq_buf: Add seq_buf_strlen()
+Date: Fri,  2 Oct 2026 20:59:10 -0700
+Message-ID: <20261003035921.1918874-5-kees@kernel.org>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20261003035906.too.263-kees@kernel.org>
 References: <20261003035906.too.263-kees@kernel.org>
@@ -115,156 +115,292 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5668; i=kees@kernel.org; h=from:subject; bh=ik9iA+b1cAttumuOloxZAmUkMLLeNDkCAUvz7Q3ejlM=; b=owGbwMvMwCVmps19z/KJym7G02pJDFkHaifX6/Rds12x7tNi20/Gh92mak9323hdue4TS2nP0 n8VM7t2dpSyMIhxMciKKbIE2bnHuXi8bQ93n6sIM4eVCWQIAxenAEykRIfhf8yWJGdV051bjP7f ib956C53tYL0M6n5L6Orr/6NcVgjHs3wv6aP3zrRM/+BcfvyKdbPvv7Nz0vl+/nPK2lTf6P/Qzc 2RgA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=10447; i=kees@kernel.org; h=from:subject; bh=m2MiBiV5cEDhUfyy0Bluf3R3dMlnwa8Cx+T4SlVOGV8=; b=owGbwMvMwCVmps19z/KJym7G02pJDFkHaic9/3H6c/GaJKOvlx6y5/T6lh/Pf+H5bC+3lWi0X HOW4LpVHaUsDGJcDLJiiixBdu5xLh5v28Pd5yrCzGFlAhnCwMUpABOJe87wT+O/+Hxj+/0WXMHa i53q3HO+2b849aD4xfd3hhmvV8aZnmb4H+dgmHBfwftRX+/89mdqpUbt5/206q0vbRCcc/13Qq4 QCwA=
 X-Developer-Key: i=kees@kernel.org; a=openpgp; fpr=A5C3F68F229DD60F723E6E138972F4DFDC6DC026
 Content-Transfer-Encoding: 8bit
 
-From: Bill Wendling <morbo@google.com>
-
 Several strlcat() call sites being converted to seq_buf need behavior
-seq_buf doesn't currently provide. The normal seq_buf_init() always
-sets the new buffer size to 0 via seq_buf_clear(). Code migrating from
-strlcat(buf, ...), which appends to whatever buf already contains,
-can't use seq_buf_init() without discarding that existing content. Add
-seq_buf_init_append(), which preserves the existing contents and positions
-the seq_buf to append after it. A buffer with no NUL within its size
-starts out overflowed, as strlcat() treats it as already truncated.
-Add KUnit tests for behavior coverage.
+seq_buf doesn't currently provide. The return from seq_buf_used() is
+not the length of the string in a seq_buf. Once the buffer is full or
+has overflowed it returns the buffer size, which counts the byte that
+seq_buf_str() replaces with the NUL, so a caller that needs the string
+and its length has to call seq_buf_str() and then walk the string with
+strlen().
+
+Move the termination out of seq_buf_str() into a helper that returns
+where it put the NUL, and add seq_buf_strlen(), which terminates the
+buffer in the same way and returns that offset.
+
+As discussed in review, don't add WARN_ON() for seq_buf_strlen() and
+drop it from seq_buf_str().
+
+Add tests comparing seq_buf_strlen() against strlen() of seq_buf_str()
+for empty, appended, truncated, exactly full, and overflowed buffers,
+checking that seq_buf_strlen() alone terminates a full buffer, and
+checking that a zero-sized seq_buf reports an empty string from both
+accessors without touching the buffer.
 
 Tests passed under qemu on ARCH=x86_64 with GCC 16.2.0 and CONFIG_KASAN=y,
 and on big-endian ARCH=s390 with GCC s390x-linux-gnu 16.2.0.
 
 Assisted-by: LLM
-Signed-off-by: Bill Wendling <morbo@google.com>
 Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Co-developed-by: Kees Cook <kees@kernel.org>
 Signed-off-by: Kees Cook <kees@kernel.org>
 ---
- include/linux/seq_buf.h   | 25 +++++++++++++++
- lib/tests/seq_buf_kunit.c | 67 +++++++++++++++++++++++++++++++++++++++
- 2 files changed, 92 insertions(+)
+ include/linux/seq_buf.h   |  65 +++++++++++++++++--
+ lib/tests/seq_buf_kunit.c | 129 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 188 insertions(+), 6 deletions(-)
 
 diff --git a/include/linux/seq_buf.h b/include/linux/seq_buf.h
-index 195e612a212a..50b1e78eeea6 100644
+index 0c0a0db04b09..87ccc62f1c62 100644
 --- a/include/linux/seq_buf.h
 +++ b/include/linux/seq_buf.h
-@@ -71,6 +71,31 @@ seq_buf_set_overflow(struct seq_buf *s)
- 	s->len = s->size + 1;
+@@ -89,6 +89,27 @@ static inline unsigned int seq_buf_used(struct seq_buf *s)
+ 	return min(s->len, s->size);
+ }
+ 
++/*
++ * NUL-terminate the buffer in @s: directly after the data when there is
++ * room for it, otherwise in the last byte of the buffer. @s->size must not
++ * be zero.
++ *
++ * Returns: the offset of the NUL.
++ */
++static inline size_t __seq_buf_terminate(struct seq_buf *s)
++{
++	size_t end;
++
++	if (seq_buf_buffer_left(s))
++		end = s->len;
++	else
++		end = s->size - 1;
++
++	s->buffer[end] = 0;
++
++	return end;
++}
++
+ /**
+  * seq_buf_str - get NUL-terminated C string from seq_buf
+  * @s: the seq_buf handle
+@@ -98,7 +119,12 @@ static inline unsigned int seq_buf_used(struct seq_buf *s)
+  *
+  * Note, if this is called when the buffer has overflowed, then
+  * the last byte of the buffer is zeroed, and the len will still
+- * point passed it.
++ * point passed it. The same happens when the buffer is exactly
++ * full: the NUL takes the place of the last byte written, which is
++ * lost, though seq_buf_used() still counts it.
++ *
++ * A zero-sized seq_buf has nowhere to put a NUL, so the empty string
++ * is returned instead of writing to @s->buffer.
+  *
+  * After this function is called, s->buffer is safe to use
+  * in string operations.
+@@ -107,17 +133,44 @@ static inline unsigned int seq_buf_used(struct seq_buf *s)
+  */
+ static inline const char *seq_buf_str(struct seq_buf *s)
+ {
+-	if (WARN_ON(s->size == 0))
++	if (s->size == 0)
+ 		return "";
+ 
+-	if (seq_buf_buffer_left(s))
+-		s->buffer[s->len] = 0;
+-	else
+-		s->buffer[s->size - 1] = 0;
++	__seq_buf_terminate(s);
+ 
+ 	return s->buffer;
  }
  
 +/**
-+ * seq_buf_init_append - initialize a seq_buf over a buffer that may
-+ *			 already hold NUL-terminated content
++ * seq_buf_strlen - get the length of the NUL-terminated C string in seq_buf
 + * @s: the seq_buf handle
-+ * @buf: pointer to the (possibly non-empty) buffer
-+ * @size: total size of @buf
 + *
-+ * Unlike seq_buf_init(), which always starts @buf at len=0, this
-+ * preserves whatever NUL-terminated content @buf already holds and
-+ * positions @s to append after it. Useful for converting code that used
-+ * to append to an existing buffer with strlcat()/scnprintf() and friends.
++ * This makes sure that the buffer in @s is NUL-terminated, exactly as
++ * seq_buf_str() does, and returns the length of the resulting string
++ * without walking it. Unlike seq_buf_used(), this does not count the byte
++ * given up to the NUL when the buffer is full or has overflowed. When the
++ * buffer is exactly full, that byte is the last one written, and calling
++ * either function loses it.
 + *
-+ * If @buf holds no NUL within @size, @s starts out overflowed, as
-+ * strlcat() treats such a buffer as already truncated.
++ * A zero-sized seq_buf holds no string, so 0 is returned without writing
++ * to @s->buffer, matching what seq_buf_str() returns for one.
++ *
++ * After this function is called, s->buffer is safe to use
++ * in string operations.
++ *
++ * Returns: the offset of the NUL that terminates @s->buffer. That is the
++ * length of the string unless an earlier NUL is in the way, either one the
++ * data written to @s carried itself, or one seq_buf_set_overflow() left
++ * behind when it cleared what no writer had claimed.
 + */
-+static inline void
-+seq_buf_init_append(struct seq_buf *s, char *buf, unsigned int size)
++static inline size_t seq_buf_strlen(struct seq_buf *s)
 +{
-+	s->buffer = buf;
-+	s->size = size;
-+	s->len = strnlen(buf, size);
-+	if (s->len == size)
-+		seq_buf_set_overflow(s);
++	if (s->size == 0)
++		return 0;
++
++	return __seq_buf_terminate(s);
 +}
 +
- /*
-  * How much buffer is left on the seq_buf?
-  */
+ /**
+  * seq_buf_get_buf - get buffer to write arbitrary data to
+  * @s: the seq_buf handle
 diff --git a/lib/tests/seq_buf_kunit.c b/lib/tests/seq_buf_kunit.c
-index b6fc7b784859..170524146892 100644
+index d5b819fc0ff3..569ab3d96f10 100644
 --- a/lib/tests/seq_buf_kunit.c
 +++ b/lib/tests/seq_buf_kunit.c
-@@ -29,6 +29,72 @@ static void seq_buf_init_test(struct kunit *test)
- 	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&s), 0);
+@@ -26,6 +26,7 @@ static void seq_buf_init_test(struct kunit *test)
+ 	KUNIT_EXPECT_EQ(test, seq_buf_buffer_left(&s), 32);
+ 	KUNIT_EXPECT_EQ(test, seq_buf_used(&s), 0);
+ 	KUNIT_EXPECT_STREQ(test, seq_buf_str(&s), "");
++	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&s), 0);
  }
  
-+static void seq_buf_init_append_test(struct kunit *test)
+ static void seq_buf_declare_test(struct kunit *test)
+@@ -510,6 +511,128 @@ static void seq_buf_path_overflow_test(struct kunit *test)
+ 	KUNIT_EXPECT_STREQ(test, seq_buf_str(&s), expected);
+ }
+ 
++static void seq_buf_strlen_test(struct kunit *test)
 +{
-+	char buf[32] = "hello";
-+	struct seq_buf s;
++	DECLARE_SEQ_BUF(s, 16);
 +
-+	/* Initial string contents match. */
-+	seq_buf_init_append(&s, buf, sizeof(buf));
-+	KUNIT_EXPECT_EQ(test, s.size, 32);
-+	KUNIT_EXPECT_EQ(test, s.len, 5);
-+	KUNIT_EXPECT_FALSE(test, seq_buf_has_overflowed(&s));
-+	KUNIT_EXPECT_EQ(test, seq_buf_buffer_left(&s), 32 - 5);
-+	KUNIT_EXPECT_EQ(test, seq_buf_used(&s), 5);
-+	KUNIT_EXPECT_STREQ(test, seq_buf_str(&s), "hello");
-+	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&s), 5);
-+
-+	/* Appending with space works. */
-+	seq_buf_puts(&s, " world");
-+	KUNIT_EXPECT_FALSE(test, seq_buf_has_overflowed(&s));
-+	KUNIT_EXPECT_EQ(test, seq_buf_used(&s), 11);
-+	KUNIT_EXPECT_STREQ(test, seq_buf_str(&s), "hello world");
-+	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&s), 11);
-+
-+	/* No truncation when space for NUL is present. */
-+	seq_buf_init_append(&s, buf, 12);
-+	KUNIT_EXPECT_EQ(test, s.size, 12);
-+	KUNIT_EXPECT_EQ(test, s.len, 11);
-+	KUNIT_EXPECT_FALSE(test, seq_buf_has_overflowed(&s));
-+	KUNIT_EXPECT_EQ(test, seq_buf_used(&s), 11);
-+	KUNIT_EXPECT_STREQ(test, seq_buf_str(&s), "hello world");
-+	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&s), 11);
-+
-+	/*
-+	 * No NUL within the size: the content is already truncated, as
-+	 * strlcat() would see it, so @s starts out overflowed. The content
-+	 * stays, and appending adds nothing.
-+	 */
-+	seq_buf_init_append(&s, buf, 11);
-+	KUNIT_EXPECT_EQ(test, s.size, 11);
-+	KUNIT_EXPECT_TRUE(test, seq_buf_has_overflowed(&s));
-+	KUNIT_EXPECT_EQ(test, seq_buf_buffer_left(&s), 0);
-+	KUNIT_EXPECT_EQ(test, seq_buf_used(&s), 11);
-+	KUNIT_EXPECT_MEMEQ(test, buf, "hello world", 11);
-+	seq_buf_puts(&s, "!");
-+	KUNIT_EXPECT_TRUE(test, seq_buf_has_overflowed(&s));
-+	KUNIT_EXPECT_MEMEQ(test, buf, "hello world", 11);
-+	KUNIT_EXPECT_STREQ(test, seq_buf_str(&s), "hello worl");
-+	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&s), 10);
-+
-+	/*
-+	 * The size bounds the scan: the string runs past it, so there is
-+	 * no NUL within the size either.
-+	 */
-+	seq_buf_init_append(&s, buf, 5);
-+	KUNIT_EXPECT_EQ(test, s.size, 5);
-+	KUNIT_EXPECT_TRUE(test, seq_buf_has_overflowed(&s));
-+	KUNIT_EXPECT_EQ(test, seq_buf_buffer_left(&s), 0);
-+	KUNIT_EXPECT_STREQ(test, seq_buf_str(&s), "hell");
-+
-+	/* With no room even for a NUL, @s is overflowed and @buf untouched. */
-+	seq_buf_init_append(&s, buf, 0);
-+	KUNIT_EXPECT_TRUE(test, seq_buf_has_overflowed(&s));
-+	KUNIT_EXPECT_EQ(test, seq_buf_used(&s), 0);
++	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&s), 0);
 +	KUNIT_EXPECT_STREQ(test, seq_buf_str(&s), "");
-+	KUNIT_EXPECT_EQ(test, buf[0], 'h');
++
++	seq_buf_puts(&s, "hello");
++	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&s), 5);
++	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&s), strlen(seq_buf_str(&s)));
++
++	seq_buf_printf(&s, " %s", "world");
++	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&s), 11);
++	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&s), strlen(seq_buf_str(&s)));
 +}
 +
- static void seq_buf_declare_test(struct kunit *test)
- {
- 	DECLARE_SEQ_BUF(s, 24);
-@@ -662,6 +728,7 @@ static void seq_buf_terminate_test(struct kunit *test)
- 
++static void seq_buf_strlen_printf_overflow_test(struct kunit *test)
++{
++	DECLARE_SEQ_BUF(s, 16);
++	DECLARE_SEQ_BUF(t, 8);
++
++	seq_buf_printf(&s, "%s", "1234567890abcdefghij");
++	KUNIT_EXPECT_TRUE(test, seq_buf_has_overflowed(&s));
++	KUNIT_EXPECT_EQ(test, seq_buf_used(&s), 16);
++	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&s), 15);
++	KUNIT_EXPECT_STREQ(test, seq_buf_str(&s), "1234567890abcde");
++	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&s), strlen(seq_buf_str(&s)));
++
++	/* Output one byte too long for the NUL. */
++	seq_buf_printf(&t, "%s", "12345678");
++	KUNIT_EXPECT_TRUE(test, seq_buf_has_overflowed(&t));
++	KUNIT_EXPECT_EQ(test, seq_buf_used(&t), 8);
++	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&t), 7);
++	KUNIT_EXPECT_STREQ(test, seq_buf_str(&t), "1234567");
++	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&t), strlen(seq_buf_str(&t)));
++}
++
++static void seq_buf_strlen_full_test(struct kunit *test)
++{
++	DECLARE_SEQ_BUF(s, 4);
++	DECLARE_SEQ_BUF(t, 8);
++	char *buf;
++	size_t len;
++
++	/* Filled exactly, with no room left for a NUL, but not overflowed. */
++	seq_buf_putc(&s, 'a');
++	seq_buf_putc(&s, 'b');
++	seq_buf_putc(&s, 'c');
++	seq_buf_putc(&s, 'd');
++	KUNIT_EXPECT_FALSE(test, seq_buf_has_overflowed(&s));
++	KUNIT_EXPECT_EQ(test, seq_buf_used(&s), 4);
++	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&s), 3);
++	/* seq_buf_strlen() terminates the buffer by itself. */
++	KUNIT_EXPECT_EQ(test, s.buffer[3], '\0');
++	KUNIT_EXPECT_EQ(test, strnlen(s.buffer, s.size), 3);
++	KUNIT_EXPECT_STREQ(test, seq_buf_str(&s), "abc");
++	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&s), strlen(seq_buf_str(&s)));
++
++	/* A printf into a full buffer writes nothing. */
++	KUNIT_EXPECT_EQ(test, seq_buf_printf(&s, "%s", "x"), -1);
++	KUNIT_EXPECT_TRUE(test, seq_buf_has_overflowed(&s));
++	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&s), 3);
++	KUNIT_EXPECT_STREQ(test, seq_buf_str(&s), "abc");
++	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&s), strlen(seq_buf_str(&s)));
++
++	len = seq_buf_get_buf(&t, &buf);
++	KUNIT_ASSERT_EQ(test, len, 8);
++	memset(buf, 'z', len);
++	seq_buf_commit(&t, len);
++	KUNIT_EXPECT_FALSE(test, seq_buf_has_overflowed(&t));
++	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&t), 7);
++	KUNIT_EXPECT_EQ(test, t.buffer[7], '\0');
++	KUNIT_EXPECT_EQ(test, strnlen(t.buffer, t.size), 7);
++	KUNIT_EXPECT_STREQ(test, seq_buf_str(&t), "zzzzzzz");
++	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&t), strlen(seq_buf_str(&t)));
++}
++
++static void seq_buf_strlen_puts_overflow_test(struct kunit *test)
++{
++	DECLARE_SEQ_BUF(s, 16);
++
++	/* A puts that does not fit copies as much as fits. */
++	seq_buf_puts(&s, "hello");
++	KUNIT_EXPECT_EQ(test, seq_buf_puts(&s, " this does not fit"), -1);
++	KUNIT_EXPECT_TRUE(test, seq_buf_has_overflowed(&s));
++	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&s), 15);
++	KUNIT_EXPECT_STREQ(test, seq_buf_str(&s), "hello this does");
++	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&s), strlen(seq_buf_str(&s)));
++}
++
++static void seq_buf_strlen_embedded_nul_test(struct kunit *test)
++{
++	static const char data[] = "ab\0cd";
++	DECLARE_SEQ_BUF(s, 16);
++
++	/*
++	 * seq_buf_strlen() reports where it put the terminator, not where
++	 * the first NUL is, so data carrying a NUL of its own makes the two
++	 * disagree. That is expected, and is what the documented caveat is
++	 * about.
++	 */
++	seq_buf_putmem(&s, data, sizeof(data) - 1);
++	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&s), 5);
++	KUNIT_EXPECT_EQ(test, strlen(seq_buf_str(&s)), 2);
++}
++
++static void seq_buf_strlen_zero_size_test(struct kunit *test)
++{
++	char buf[] = "untouched";
++	struct seq_buf s;
++
++	/*
++	 * A zero-sized seq_buf has nowhere to put a terminator. Both
++	 * accessors report an empty string and leave the buffer alone
++	 * rather than writing outside it.
++	 */
++	seq_buf_init(&s, buf, 0);
++	KUNIT_EXPECT_EQ(test, seq_buf_strlen(&s), 0);
++	KUNIT_EXPECT_STREQ(test, seq_buf_str(&s), "");
++	KUNIT_EXPECT_STREQ(test, buf, "untouched");
++}
++
  static struct kunit_case seq_buf_test_cases[] = {
  	KUNIT_CASE(seq_buf_init_test),
-+	KUNIT_CASE(seq_buf_init_append_test),
  	KUNIT_CASE(seq_buf_declare_test),
- 	KUNIT_CASE(seq_buf_clear_test),
- 	KUNIT_CASE(seq_buf_puts_test),
+@@ -527,6 +650,12 @@ static struct kunit_case seq_buf_test_cases[] = {
+ 	KUNIT_CASE(seq_buf_putmem_partial_overflow_test),
+ 	KUNIT_CASE(seq_buf_putmem_hex_partial_overflow_test),
+ 	KUNIT_CASE(seq_buf_path_overflow_test),
++	KUNIT_CASE(seq_buf_strlen_test),
++	KUNIT_CASE(seq_buf_strlen_printf_overflow_test),
++	KUNIT_CASE(seq_buf_strlen_full_test),
++	KUNIT_CASE(seq_buf_strlen_puts_overflow_test),
++	KUNIT_CASE(seq_buf_strlen_embedded_nul_test),
++	KUNIT_CASE(seq_buf_strlen_zero_size_test),
+ 	KUNIT_CASE(seq_buf_do_printk_test),
+ 	{}
+ };
 -- 
 2.55.0
 
