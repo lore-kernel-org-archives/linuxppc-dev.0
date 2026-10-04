@@ -1,92 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-28868-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28869-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 477A1CA5FE4
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Oct 2026 21:32:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B5DCCA5FDD
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Oct 2026 02:13:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hxzPW18DGz2xsW;
-	Sun, 04 Oct 2026 08:31:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:34::10"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791063119;
-	cv=none; b=XJ0+TYEAGOokvOE1E2Eqw/Wn+aqsJIRUn0Ku9oqoCQaOlJZqizW8RluzNyovQIwV8L53S9bnrAnlMNh2udHmxFiq86Jlbbi2wgeZndyrGfizn7o4ssJ37gwn/YbUHmsM+4LW2yoNcDKrbXUmvDbL9+7CReiqytbiqGKvSMsamGkcGNgqRRVLjTNceZU/w0PahQz+3CLgI/HxiPUBbOdhvyQEM41A1a5hLuHswY1k7pWwe4X/Ibjsq2ho7vHIMA8/W6ihM/753EdeeCOIiFOutPU9CX06MnLnsMhiFfg+yDWPIwDlIBdtaspjHIkocCMLemB1dgIbnv7rB5WW8L6/NA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hy5dr0ZG1z30BJ;
+	Sun, 04 Oct 2026 13:13:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791079983;
+	cv=none; b=jxu/O1ngCvYPObj6Pj07OyVHw/UNOHDXeRcN8X62p0nCocCDpH2acgEytqW2x3Sic9ibVxR0vG/E3IG/R1hn+34dazhq9upjCk4Y46pKpTFor5Za/0OhF9cxEncQirV3TaERNXzrVDKtGZ9D7HBaudfsnoJfGXIYXUsHcZfelKu4pdgl8/5YNuholqbaM9vMk7porm7tvLDmeauu6imgRfClWCS3TGdjtuzm6/6LWpK52aeHSjYnMz9FeRsNpw297yqyvJMU6rB7MKGIGD+qwpmBJTDgE1HgnehJIz7ty9sO8V14eBRyYtyO1uQ+GNWsN/9/xw4s3ErDx3QBh1YhkA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791063119; c=relaxed/relaxed;
-	bh=EF7nOMoHU/lXOBcLECCEmjeD1XvCzGTt0zKSXYTVC24=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=TkwwhS6xMWdwgUuv0wE8ikQmhI0F3PxQNAQbcNFJ1wVwL31tmuPra5vUOvGsYGm3aUTwuP3RAfk3qrWanosOj2I+ifxBYtugCefp0ldcWp51DyT9T+Mmj2FqkLQ9ToKeHfajhUKmygIiqLOQxQ0HgFgdHlozMU/SGJ8zvkQloJM5G9RfAG7z2fwVxqFwXoP2HJOBLcW2iC3qywmSIYfz/wpfaoTY/gxJLysVyg3JTBQQO65+bq7zz+EIxxduXDkdnZUC3EuoLC+NoWv1QHhIiJaoy/o+ZG8mHwZp/EO/xQgGGjorzOoA9O2qouHjbhkQTvIqLckPEuo8nTB8QuTCUQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=mFbG8MYj; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:34::10; helo=mail-qk2-x10.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1791079983; c=relaxed/relaxed;
+	bh=XGIPL9EuyriPZ4ZDdC2jLlOsbYSmA3TBmbbk/fQDRJU=;
+	h=Subject:From:To:Cc:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=UIz2ixFLyKKtxQl0ZrBeodeNTq11IlG8CsJffvNq+EMiOFoH5UnEVbLXGcYGg3rW1U1PzEEiiVN/aV3LR2rwXDhCAPfARAHJw4z9l3FLDY5hzaMXoFSWPd1crebEJa2REgaw7n3+ZC2zRMjSjFAp7CpWSSmH0if9c5Vft0bRo/ifO5CnOgslLuwAcZmJujZ9FTYJreEbdcNwHo4KMtGY+9BLFi6/gDd9AVelsHZumtiy/q61EM4q6kFedvFAYMSDjiGL0xPdmlGVRstnzXSR+bqPwhUpUYthlTjZrdSRxxCmUtbdzPWLi3IXITTpxCqruw8a8oePa8XpOi/jbqqGIw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=P0h/zuDd; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=mFbG8MYj;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=P0h/zuDd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:34::10; helo=mail-qk2-x10.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-qk2-x10.google.com (mail-qk2-x10.google.com [IPv6:2607:f8b0:4864:34::10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxzPT3Wncz2xnn
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Oct 2026 08:31:56 +1100 (AEDT)
-Received: by mail-qk2-x10.google.com with SMTP id af79cd13be357-93a2dea320fso43476585a.2
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Oct 2026 14:31:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791063112; x=1791667912; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=EF7nOMoHU/lXOBcLECCEmjeD1XvCzGTt0zKSXYTVC24=;
-        b=mFbG8MYjlMBzLCqxPYS7uVYSbY07WbI8C65wbtuc3D+tKBFedJxRk3TPoLu7VRG2Ge
-         V0pw50/k50Egcg5joWn1Rz5nbU/1SSuV4ZkHhVHFXQjRHWgJ10G5Ub2cRCh/a9W94kfV
-         EG10SgqIFJniMcut1z0JaxeBPT6OfIachb+fLTBqFG7scZx9SrA+0oe2JE0SFFBfEsxr
-         plFhq36udWiNGixWI7tvC7rBSr9gzSZXOENv5g5WdCUOEI0I5XV2V1z3n7B5fplSbeNs
-         6A3eHixzajeZbv5ukXK4pzsnYYK4qW7r9rAYgmaB6MivTqyc1lTaq1pDKfPwN/QuPuqQ
-         tU/Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791063112; x=1791667912;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=EF7nOMoHU/lXOBcLECCEmjeD1XvCzGTt0zKSXYTVC24=;
-        b=BHs2nwQkC5Gx6YFrptoTnu4HN/JSNI3E9fFWWTLLbKfTGtIyO+Wjnv9Hu+Z03nesR7
-         jqdFJP8vf2NNkXyYjtp7e9N8Q1BCWDA0KNY/3UR7/BBWc+bJwx7nmYj2U5SZuOKcJvjJ
-         ebIpYXSNerdiTc9oTsVl2tHzE5mTDcHUOqCbkWmsUux/iR4gvOMmp3DcUBzwuj9ldEC+
-         9nq83y3Us6mhvWOwIdyg5LlDZL6ABktdoGgJ5S+O67wBW+RtJKuZ6xv4Esnr8y69OR0t
-         ti/H5tPuVG2tBqpFdmH2foyb0hXUTdSu0P/TYV9n5HXgXYR25gSkhfF/nXb5JGs6d/Ht
-         RcDg==
-X-Forwarded-Encrypted: i=1; AKwUvBw1bRLjQCFLJfJTX17WZ+AW334yas0xxHhhH9C0O8YnO3wwkChCcIvv4I13/trOCn4yLhSNAGXcvyf5abQ=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++nJ0W0dIEXQayA8OW5acNFnepRGd6B0FZypxWAVk1pNmLjltelo
-	bLBGQMpnWH0dP+FkUyt4zACrdRjwYk01jF8kYHgQS2qzUYSyCrkXEeFN
-X-Gm-Gg: AYBFou0iS0Ay5Sf6VJ3lZtU7lngkHaBCU3wILDUQBpuf6nPTPpHQT5UsFCMWH+Fy1Th
-	QnWriHZHzsXNo6Wcxg92oqgvtKS6MuQ18gbYofA1gEXjlsd6hlurPwqVGJhcVBRr1ErUugZIH4V
-	A8T43bpnBal2xlWQzKjbYvK1/pSaNzLHr/uWb/21UohQG06oihEEu3mc8PhyNgNLfLb5jzVtjn/
-	VlCJRsRLGA9vuTkJwFgvYVJxJr4hcVWaLQgt+tMeHK9e1/oZ6kT28vNvoD0HEcFiftUSOmO7lPV
-	EhLajXTReLZIu8IYGhtXS3WIromaHNrf6ukWbiOWpK+yq2H3fmEzEcP4/KcBFd6yoCWZCSxeMBN
-	4WIfyj00MrHs5iYUfWuvLAWSfiDk6cDkjnd6EyakeYrOygiDOOSV0pZ4x8wUjGGLMUgv/TAJQfx
-	F65I977pTbK1l6S5pqBBwL7w7z7tHiSmlcMAiPXLkJJxAnyVoI/l7QWwaV18en13T2D6lmryQIy
-	gcjiRN4ynkUeSjVss1nRGn0EFbtwT+pctdURi6iuHays77Di3pbcTRLq8c7Ss8xCwGhNsSEwWtQ
-	Uk7LS8WuXZOXDVj6OIHKlNRFN8+0CSubJoIKGWUnI3pEVXcU
-X-Received: by 2002:a05:620a:6190:b0:93b:f402:a204 with SMTP id af79cd13be357-93cf1787c37mr1300849285a.51.1791063112470;
-        Sat, 03 Oct 2026 14:31:52 -0700 (PDT)
-Received: from ryzen.lan ([2601:644:8000:7a86::e34])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-93cca2c96f4sm526896985a.43.2026.10.03.14.31.49
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 03 Oct 2026 14:31:52 -0700 (PDT)
-From: Rosen Penev <rosenp@gmail.com>
-To: linux-serial@vger.kernel.org
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Jiri Slaby <jirislaby@kernel.org>,
-	linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)),
-	linux-kernel@vger.kernel.org (open list:TTY LAYER AND SERIAL DRIVERS)
-Subject: [PATCH v3] serial: hvc: use modern IRQ acquisition API
-Date: Sat,  3 Oct 2026 14:31:48 -0700
-Message-ID: <20261003213148.137206-1-rosenp@gmail.com>
-X-Mailer: git-send-email 2.56.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hy5dp4dl0z2yr0
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Oct 2026 13:13:02 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 01A3F60200;
+	Sun,  4 Oct 2026 02:13:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E84F21F0089C;
+	Sun,  4 Oct 2026 02:12:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791079979;
+	bh=XGIPL9EuyriPZ4ZDdC2jLlOsbYSmA3TBmbbk/fQDRJU=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=P0h/zuDd4yf+49PXJDojrAw8+m4YhJ2djB92J7Ebu+HBsPl4TKumPPkomYMEmqg9U
+	 c3K0t5fm0ekKAyg3i2oHmaJ22+YwMy0Cmh2vVXsdmTrnGzuMj5GtXK/VJZjLWS8XDp
+	 wyPUEv0pgZlLgOPqvYO35+t9yMoHivH23puIW5h7U3Srp+wgSCjRN2jzp0J24tt+yc
+	 WYq5B8NKNghBTrYsSTqZgfex4aWJfceRUMtkGs2kwIZJNU9MTM+i07l0Me35g92LEX
+	 9jKNXHXa3uCJLoIf7LG1wOHtzJmGrZgVZxAY4qkXobV0+GQ45vBH3tfXkdynkLEkid
+	 UL5GDgwxyPkxg==
+Subject:
+ Re: [PATCH net-next 5/7] ibmveth: release the pool kobjects when probe fails
+From: netdev-bot+sashiko@kernel.org
+To: mmc@linux.ibm.com
+Cc: netdev@vger.kernel.org, davem@davemloft.net, kuba@kernel.org,
+ horms@kernel.org, edumazet@google.com, pabeni@redhat.com,
+ andrew+netdev@lunn.ch, nnac123@linux.ibm.com, maddy@linux.ibm.com,
+ mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, davemarq@linux.ibm.com,
+ bjking1@linux.ibm.com
+Date: Sun, 04 Oct 2026 02:12:58 +0000
+Message-ID: <179107997848.434549.4525032963009141215@kernel.org>
+In-Reply-To:
+ <f0186ae5ac4f9838b01c23fc42391abc328f814f.1790991039.git.mmc@linux.ibm.com>
+References:
+ <f0186ae5ac4f9838b01c23fc42391abc328f814f.1790991039.git.mmc@linux.ibm.com>
+X-sashiko-severity: Medium
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,64 +75,109 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-Use platform_get_irq_optional() to be able to handle potential
--EPROBE_DEFER and other errors. Move it earlier to avoid having to call
-kfree() on the global array.
+Thank you for your contribution! Sashiko AI review found 1 potential
+issue(s) to consider.
 
-Signed-off-by: Rosen Penev <rosenp@gmail.com>
----
- v3: resend.
- v2: move call earlier to avoid failure to reprobe.
- drivers/tty/hvc/hvc_opal.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+Critical: 0 · High: 0 · Medium: 1 · Low: 0
 
-diff --git a/drivers/tty/hvc/hvc_opal.c b/drivers/tty/hvc/hvc_opal.c
-index 402da9e7c534..fb9a566ca213 100644
---- a/drivers/tty/hvc/hvc_opal.c
-+++ b/drivers/tty/hvc/hvc_opal.c
-@@ -13,7 +13,6 @@
- #include <linux/slab.h>
- #include <linux/console.h>
- #include <linux/of.h>
--#include <linux/of_irq.h>
- #include <linux/platform_device.h>
- #include <linux/export.h>
- #include <linux/interrupt.h>
-@@ -157,8 +156,9 @@ static int hvc_opal_probe(struct platform_device *dev)
- 	struct hvc_struct *hp;
- 	struct hvc_opal_priv *pv;
- 	hv_protocol_t proto;
--	unsigned int termno, irq, boot = 0;
-+	unsigned int termno, boot = 0;
- 	const __be32 *reg;
-+	int irq;
- 
- 	if (of_device_is_compatible(dev->dev.of_node, "ibm,opal-console-raw")) {
- 		proto = HV_PROTOCOL_RAW;
-@@ -176,6 +176,10 @@ static int hvc_opal_probe(struct platform_device *dev)
- 	reg = of_get_property(dev->dev.of_node, "reg", NULL);
- 	termno = reg ? be32_to_cpup(reg) : 0;
- 
-+	irq = platform_get_irq_optional(dev, 0);
-+	if (irq == -EPROBE_DEFER)
-+		return irq;
-+
- 	/* Is it our boot one ? */
- 	if (hvc_opal_privs[termno] == &hvc_opal_boot_priv) {
- 		pv = hvc_opal_privs[termno];
-@@ -209,8 +213,7 @@ static int hvc_opal_probe(struct platform_device *dev)
- 		dev->dev.of_node,
- 		boot ? " (boot console)" : "");
- 
--	irq = irq_of_parse_and_map(dev->dev.of_node, 0);
--	if (!irq) {
-+	if (irq < 0) {
- 		pr_info("hvc%d: No interrupts property, using OPAL event\n",
- 				termno);
- 		irq = opal_event_request(ilog2(OPAL_EVENT_CONSOLE_INPUT));
+If you believe none of the issues are legitimate, please reply to each
+issue of Medium severity or higher and explain why the AI is wrong.
+If any of them are legitimate and you plan to respin, please let patchwork
+know by including "pw-bot: cr" as a separate line at the end of your reply
+(one such reply per series is enough).
+
+- [Medium] On the new err_put_pools path in ibmveth_probe()
+  (drivers/net/ethernet/ibm/ibmveth.c), the code calls kobject_put() on…
+
+--
+
+ibmveth: release the pool kobjects when probe fails
+
+This commit adds an err_put_pools unwind label to ibmveth_probe(). The label
+calls kobject_put() on each rx_buff_pool[i].kobj before free_netdev(). It is
+used when either netif_set_real_num_tx_queues() or register_netdev() fails.
+
+> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+> index b89ce389d951f..d5ba2f2650d0f 100644
+> --- a/drivers/net/ethernet/ibm/ibmveth.c
+> +++ b/drivers/net/ethernet/ibm/ibmveth.c
+
+[ ... ]
+
+> @@ -1981,13 +1980,18 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
+>  
+>  	if (rc) {
+>  		netdev_dbg(netdev, "failed to register netdev rc=%d\n", rc);
+> -		free_netdev(netdev);
+> -		return rc;
+> +		goto err_put_pools;
+>  	}
+>  
+>  	netdev_dbg(netdev, "registered\n");
+>  
+>  	return 0;
+> +
+> +err_put_pools:
+> +	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++)
+> +		kobject_put(&adapter->rx_buff_pool[i].kobj);
+> +	free_netdev(netdev);
+> +	return rc;
+>  }
+
+[Severity: Medium]
+With CONFIG_DEBUG_KOBJECT_RELEASE=y, can this path still free the pool
+kobjects while their cleanup is pending?
+
+The kobjects are embedded in netdev_priv(netdev), and ktype_veth_pool has
+no release() callback:
+
+static struct kobj_type ktype_veth_pool = {
+	.release        = NULL,
+	.sysfs_ops      = &veth_pool_ops,
+	...
+};
+
+On that config, kobject_release() defers the cleanup to a delayed_work
+that is embedded in the kobject itself:
+
+lib/kobject.c:kobject_release() {
+	...
+	INIT_DELAYED_WORK(&kobj->release, kobject_delayed_cleanup);
+
+	schedule_delayed_work(&kobj->release, delay);
+	...
+}
+
+free_netdev() then frees the adapter while that work is still armed. The
+work runs 1 to 4 seconds later. kobject_cleanup() then works on freed
+memory: it reads kobj->state_in_sysfs and kobj->name, calls
+__kobject_del(), and drops the parent reference.
+
+Until the work runs, the pool%d active, num and size files under
+/sys/devices/vio/<unit>/ still exist. A read or write goes through
+veth_pool_show() or veth_pool_store(). Both use container_of() to reach
+the freed pool, adapter and netdev.
+
+A re-probe in that window could also fail to add pool0. That is the same
+failure this commit is meant to fix.
+
+The commit message mentions this and refers to ibmveth_remove(), which
+uses the same put-then-free pattern. kobject_cleanup() also reports this
+ktype as one that "does not have a release() function, it is broken and
+must be fixed".
+
+Calling kobject_del() before kobject_put() would remove the sysfs files
+synchronously. However, the delayed_work inside the freed adapter would
+still be armed.
+
+Would it make sense to give the pool kobjects their own lifetime? One
+option is to allocate them separately with a real release() callback.
+
+This also stays the same later in the series. "ibmveth: wait for
+in-flight transmits in ibmveth_close()" leaves both err_put_pools and the
+NULL release in place.
+
 -- 
-2.56.0
-
+Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/cover.1790991039.git.mmc%40linux.ibm.com
 
