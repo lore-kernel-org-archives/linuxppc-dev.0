@@ -1,94 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-28890-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28891-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D69C6CA5FF1
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Oct 2026 18:02:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44411CA5FE6
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Oct 2026 18:09:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hyVj725Xqz30RN;
-	Mon, 05 Oct 2026 05:02:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::831" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791136939;
-	cv=pass; b=ErBFA4+tcXWYDnKBNA8vDbMh8G0zzJSpTsvvU8NM2ksfZx+7hLBnTVM2W4lJZDiXH+9+yO88FZY7ET3uuONMUBKsbwl+mCQpPqCQpk+Fgdqj/AwzB5EFFQrACY9odqCR4vn2KUSnA6KcIMa+PPEiF4QvZlHpejHHs/6uZOGaHxJbgmrvBmhAEvNwgNlGs2teqamDWCUlZip7oJxZPsdtrldu4gvu0WF6bRDwPh4KER5c24Na+RFT5aE6/XS5Mk4u/QslDdDs8XV7eGr++NoO3ZpytNjSjpyNpci92c71eDJUeoLG34UmzQP/m1xLq26BJOwKsjiQ66z19HzuUNBJpA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hyVsq4gckz30Sx;
+	Mon, 05 Oct 2026 05:09:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::832" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791137391;
+	cv=pass; b=LqJk1OWZDwEWq80s1K3FHS0PuXXM7KLuoFE1ZmqRKNw9GKIqjExUr+YXWxaq1RGQ9HOjCx025L3SgZdbS+FgS/V7s69yHYM/vxIQ4Yfqi4h6W45AFu9UDvkeYf28U4AdqJIAS6R0qPc39U/is1z4TUgqfxehVrY17E+sRLuKVaZGFfJHtS5M+6WlIa7PR4MKC5kpVUtCxCDeOH0Bwd3hcuyeQko1X6WNb+/uXyL1CUirB54b7fv8GfqLO2zgQQ1i1VrFsKIxGzcHstxFJbzcTcSP3iw8gYGnJju63eIWNBdmQFvK1Swk+zpxvEmURnT+bcfvpHTESJM73dFF6TzRUQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791136939; c=relaxed/relaxed;
-	bh=fxl6gThguTjmryCDwAa1VxSTqh72eFueCyhgsTktke8=;
+	t=1791137391; c=relaxed/relaxed;
+	bh=XLyJnDD7le8j0fwG4PV8CX7G4WYRHL5RcOgxsV2u/6k=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=oSfLxEIgFojh+IWhLwGGzLDlt2dQojTNO82pL6/qUI9cd6DEm/rCVSywzu3ulP6TBJQAL75+jLbOYbNr737YROCIhk2fgy5REdtOZjLdq9RYGCxO2ovB3XexweSIEdCGAPoZI0Xo9YzMe8550n5VXi7pnJw8Jh46QqdEOmHPjKdN80cIwugtEEGK5yRTIhFbb0dvR2f6zjntIndbwagAAsFJ5tJyqjlY069AKiMIYFO8qfq5lpM46uQMnSmmEvs1XxcjmaF+WeHVluyBZqiE8l3H47FDShIeoLWRSbQQscvoX9LgU60PoXX+Ea336JIrKMnGMzEw0TXDRscHaP1v0g==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=fUghnaaG; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::831; helo=mail-qt1-x831.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+	 To:Cc:Content-Type; b=gPUGHZAQXqGgt9rgu7d3iWlOkHvbMYpxtnnOVDOUp6pfibOM2lWtyI3zc3NoiSgDUSM+sc3bbJlaReR8vzrvBU8REI/kjUZEbfT9EAJvD/kaaZFHPkjWItO2XDZLXXhTxOKJPUCA3gcFVFr66gVrsG5FIPFslPertZ6Ayo1TyL8eRe3ZpEIt7MF+HGIWps4XKcL48Ixk+5MMHfE4j+3ysloYq1jk8f6ItVLInoZF+lnKS9dv5DU3XUAWZNDb3QAGtpKiitfg/ldXtzMraLl1rkIeKo+4Z4OIrYY+lYheb2SM/P0Ty4p+w3y1LGPXxkWmuwoOQWP4oqCrwHvj6DBHZQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=gyY9afOu; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::832; helo=mail-qt1-x832.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=fUghnaaG;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=gyY9afOu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::831; helo=mail-qt1-x831.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x831.google.com (mail-qt1-x831.google.com [IPv6:2607:f8b0:4864:20::831])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::832; helo=mail-qt1-x832.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org)
+Received: from mail-qt1-x832.google.com (mail-qt1-x832.google.com [IPv6:2607:f8b0:4864:20::832])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hyVj56x30z2y2K
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Oct 2026 05:02:17 +1100 (AEDT)
-Received: by mail-qt1-x831.google.com with SMTP id d75a77b69052e-5337c7b9937so262871cf.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Oct 2026 11:02:17 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791136935; cv=none;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hyVsp57jpz30RN
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Oct 2026 05:09:50 +1100 (AEDT)
+Received: by mail-qt1-x832.google.com with SMTP id d75a77b69052e-5337c7b9937so263741cf.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Oct 2026 11:09:50 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1791137388; cv=none;
         d=google.com; s=arc-20260327;
-        b=Zi2GAfLiciMf18zVYNXWchKi4eXAAoH+yIH3+SAJs8/CjN57KhKNWb1tkny89ed7+s
-         xBplyWFlqVpyg+uqFHDb00DmIfQmjwFiHWdIFuLh42b0zNL2KatyThGAyQnbm9+uFT2r
-         FefBDHf/Xu3fcqfeLZK2n+QwRxQ04yIX7ZPVdIIV3GAK1EV9PuLY/r9whchDDiwa/TER
-         y6P9OjwYSi+ERfTExh7t5D2AMFBj4sCDDuISLIv0hhaxVVKYKG+5ukgU0OyIg11PuGrj
-         vbZ5/px9hT1HCoNY9iiDiCC3zgWgJ8uUurRCl5hQhvaxnMrZCDCswdYvG7aiqVIkEv9g
-         wmhg==
+        b=FFk2cGOGnu4ZWDymvfxswG3O+sR0TsiItjqd7gxGB1JVHBd5pzwiYbIy7o8Zhbn0ol
+         Iu9rEOEdwtP4lehInn9ylblAjcmShhEfVpGMN72jaeUeYPiQhzsNAPziOEUvuNqwpof8
+         ZXtjI91ZgYM2KGqxL2Aooo+vggLlDCLrcWbLk9OUnnp730HEqdQB8svK/PUiAIpc0tvM
+         8U8DnbP8GTDCXyNdxhhRHfECmXdRBjiRPv+7W6Bsha5t5DEIpv1C2uHQsCSPb2s9dQfU
+         CtiW49BAlOCVRnOyyJsppcsxO6tbl12qbKguKrVOdM6hW8xCCtmCEDAvF6R7MALZnllu
+         l5Yw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=fxl6gThguTjmryCDwAa1VxSTqh72eFueCyhgsTktke8=;
-        fh=oaBj/mv/DFql4k+20I4KJQJokXt7pkqFdCtAr/J0Nt8=;
-        b=G2ktDkmgpjgoAmsCTf8WZVBfVaEvJwe23ThTWXpLGYUXo4XvDfMA+eDQPQ5jrHddNj
-         Ki81WUzJ2szgpzE5tjHMowZCQVHtQsyZwEkM/YjQxvSEq9UaB4C0rMb4rVzmZDh5nlZ5
-         JZoQTB9YdAodOWcqwtlC7crR+UtXmSxiMH2mbxaIP7WIZymiI0QGCTlOZFmBnI9mO1ik
-         ZlrMDW2mkC/JwZ7KgeV8N6q/HeHvrvTgGQTZCZrPYGVs3Su0MQiyvgUimIMb/XfWgafD
-         jmJVe3GZ6YqG0JHdOyYhq3Arr8daI87pIYJpOmG8k9ddmclDkxQTkR0ELHbFYrK+FXO3
-         vk2w==;
+        bh=XLyJnDD7le8j0fwG4PV8CX7G4WYRHL5RcOgxsV2u/6k=;
+        fh=Ih7VX2DYbAvWO2rmQdGun0SwLx/YffF30+GMuoCOKlY=;
+        b=b0++niCV45BJpn2Qq7lSuR9U/khP7c0rVn9vG2XcC+D1A2rkzk2fjSPsg/680Ll6UC
+         3r2xZG2CRAKMutCuWSzAijjfrg1s8v7PeYOnaDkuny5C0+cLGhNB7F98p+h8/MfNpNUs
+         ukdyFSTxtPb23qKImEeDtFdJTqTG9S5xdDp556N7yw9TJGZMu2acGKHJhtG/Zsru58Zz
+         4H8vJ2CMfhHC3ZsKLb/CK7Kc8RpAVkiHJNEMgw1CL6tgYZozxRFmS800AfoRrCTVR0nf
+         2NMvcLgBSOsvPj6l3yw4/ZMFiZRUg7grP4hV4tQWXmeAR3HWqWo2ciCEuHunSWRx5igP
+         R7gg==;
         darn=lists.ozlabs.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1791136935; x=1791741735; darn=lists.ozlabs.org;
+        d=google.com; s=20251104; t=1791137388; x=1791742188; darn=lists.ozlabs.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=fxl6gThguTjmryCDwAa1VxSTqh72eFueCyhgsTktke8=;
-        b=fUghnaaGmMBBI4ey3gheIVhzBs+6Lb0RfwIUl1ffl3Xvq4ze2eN3gFN0rmNrDWdJl4
-         SdlsrduPY6qRDZWQIgxp1XSIIEVxg3eyZCUXTMzNsZMhuuD23wKjyU81zC2l+0VZEReR
-         RBocVh7mpLaYfTQ7cZuVodxCv13bnTglqqTgCi75vaMkwQa1nWX8Ah+zOOEzUhi0nn/b
-         LTIykJRJLcIdAI0xWyVYM+kQyxEBKDAPYJcAa5RtKIjKWj5jBZUWLr7NMNEAv6mEZPHr
-         313Xxb8WyfSEtb+rSJYpXgY3rp2/MHm0ei90i9rldJ/OcmJkPEvGO3miztgAdqUzggIv
-         yC6w==
+        bh=XLyJnDD7le8j0fwG4PV8CX7G4WYRHL5RcOgxsV2u/6k=;
+        b=gyY9afOum2D5mhzN2zZniDItTCnAX7EQ2XtzNsl+WJOg/8zX3V7XW454O+1tIqjFWG
+         UNXExxZdD5HIE+ypmvVup8sXiGFJj2E6kV1GsFCpZc0IV8ue7Rn+cbn9WYnLmSfPj+nN
+         Ttbyrk6QW5sTB+R2qe8cop8EGaNcoLImpHyCaihu2GLyNyy2HCtf1Y6MW3inOXECm+6q
+         sVjjw/pECT9pVYoxOuvo2HTDNMt1P8Ef73lGCefGLe8Qy+/qEISbpSb5p8OG+ugvre80
+         xTvTV70+Wcq5Eqj15zbnHLUHwgZPkp4XtHugYA8CzSBL8XcLDf8HXUL/CQh39PiIXjD6
+         jB+g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791136935; x=1791741735;
+        d=1e100.net; s=20260707; t=1791137388; x=1791742188;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=fxl6gThguTjmryCDwAa1VxSTqh72eFueCyhgsTktke8=;
-        b=a4VK0dyG/VCEuS46+PSaXSgPSQyJlXJreoHytIk4lpwMu5/FyG6gpWZvmjAwpFPvK3
-         pF4iMXXZH9Qc66pcwXKx/yhN6ZvMjfUKioI/5j+pSi2X4Tok6QbdM++VE/zNYCn5C3qy
-         YyG6mUlFyAUXMMtc2sITrdE3HSQQsxzk1+wwmhpIBtjza+F5HI+LylgXseJgd4rAC+5p
-         SewpwFpnl8QbLlbzOp+BRCZvtdkIO8lXFfrc4VJe4//o2f6SCvKGGaRmOTY5d7eru8oF
-         rOAUyIV/f2BsFIPLU9jsMyOuIkqF6eRlVMcVCG1eCbcee+LunWqi7CNm6eC/+zwjpk7G
-         RD9w==
-X-Forwarded-Encrypted: i=1; AKwUvBx4lrDxDJmhSn09r7bhetblkgx6/3zWXPtfdF47ugAVaBpILRkfWdatRmwPxowRAQnOOUTSbiP36izBVCI=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++lU6IqT/DRNIYNUJmQLcEqrPNSx01GX87HljBFzXyZx3SFZtU5A
-	AiQUsE299VCVPyJdrbg875UUx+1DLpAYfbZiql42PUPAJsQcKNNK4dtqTFbC63XbK92A37y9vOe
-	G+0Pg3ke//wDB4N4r94TGwD14XqvrpqjBWix/D1Iy
-X-Gm-Gg: AYBFou2ntOw9fTLExmLbGp+xN9IYSmzdBO0267hQZgk5yZ961VPdh3Er6Cwd4iOQcqe
-	UoEwpKNUSyYRvl/x//24i4swsSsfAwnQ0s9n2iPORITyY+UuekBUeMitXU7jCQ2eKqwjb2Jwob2
-	W1yWa8iGiEiWKPexQZNN2SfP8GMG3iYifUgBIMPOfqtIolaU0ns7FPTi2QJu5hDj3FEjlVOVW52
-	g6lwrMHzY6N7HMzRbG78c0eqoCS4OZl1Tr0Clql0CdqVV8nq38eclnVuN50eLsV3lROBtYgpoId
-	u3PBwt59hCqnXPcWB+6kg/YuPWXvsZUlJ1eY3KnDlmJ4+pf2GinHBGYz
-X-Received: by 2002:a05:622a:1b20:b0:530:e335:4ef with SMTP id
- d75a77b69052e-535113c3cb6mr18023261cf.2.1791136934142; Sun, 04 Oct 2026
- 11:02:14 -0700 (PDT)
+        bh=XLyJnDD7le8j0fwG4PV8CX7G4WYRHL5RcOgxsV2u/6k=;
+        b=xdSIuVt2wGTTqlTV14dBMdGh5tGW6V/QC/QMsdrWCRXw+eugKcCHJoHDlq9aQWavMF
+         zXWiRrMJsrb8H11cFAWdsOAefIcyG74iFDN94DjrFYkAcayydNwV6fJr9785xEIDct8k
+         0HhNxHuL5kMLNiW6IAJ2Ag3qMH4fAv6vW2JS+zEAmv72Coq7N4Ry+8+Qves8q4/1yj5g
+         Jw90HYVLCwhA0izds8xgA7z7zVMJGQrbVPrPZP4cMQtNG9yHDyjc2zEuTvtiOgM8DFe/
+         N/lPkgcv3PoX0QlxqZPXPLghzayiNwC7gA9dZEfeVZb3ixQWuEOY9PTOFuBkon0RlKZK
+         oTqA==
+X-Forwarded-Encrypted: i=1; AKwUvBxOFpE4v5lxNOdXlNYFBww1lNzlNEcCWs2RqaueN5ho047UURIpLdsP/TWI2AJt2+hM7qFmj67hyBQoMKs=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++nUCiPTqK25BUXW+X+fyFiSg6PO9L8b3ECxOsbsVkhwu3dKTX9m
+	Xkexm0CC/Oudf0WJLu/p2weKfB40lFHhInw97w3WGaZKUK+9q1RTt7zoR4Av+9J/0QoP0IFmItN
+	6+lm/DywzureD34eZa9JxgusBv1F3KhN3n7LhPAqt
+X-Gm-Gg: AYBFou07OUNY+Wcvc9fk8vg7DQ+2/ETB56ONAMusiu/bIzrlfuFgCPI6YdN2fnADO09
+	WVuWfJ/EZUYeiNZrros/los1VcOcfH4Xw2XsDsbGFt4EbFFfjWwdI/T1f2WHvRxYXAtAx4xyzWl
+	tY32RyqQkvkjddF9xUEsJuqVu/mp0Mnr13VeJwBNavMKT5WxCTIa0b4vyloaOhcTb0Q/uKVw6Co
+	1GDbL6Op/bnClb6p15DCMW7grIvq72Gjo4j5TcXELl8+TqlJLaxK/nr3JWKLYARuyg+PgImB+Fl
+	XsSar7FX9xzpfQ8OrgVW8Fq1/E+7bS8kaOwaSItmdFFVufpBbWbZ/Nlz
+X-Received: by 2002:a05:622a:e159:10b0:52f:9ed4:8d76 with SMTP id
+ d75a77b69052e-535146449camr14146121cf.14.1791137386702; Sun, 04 Oct 2026
+ 11:09:46 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,14 +103,14 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 References: <20261003-b4-mmap-prepare-vma-flag-sanify-v4-0-a1f052500fd7@kernel.org>
- <20261003-b4-mmap-prepare-vma-flag-sanify-v4-18-a1f052500fd7@kernel.org>
-In-Reply-To: <20261003-b4-mmap-prepare-vma-flag-sanify-v4-18-a1f052500fd7@kernel.org>
+ <20261003-b4-mmap-prepare-vma-flag-sanify-v4-19-a1f052500fd7@kernel.org>
+In-Reply-To: <20261003-b4-mmap-prepare-vma-flag-sanify-v4-19-a1f052500fd7@kernel.org>
 From: Suren Baghdasaryan <surenb@google.com>
-Date: Sun, 4 Oct 2026 11:02:02 -0700
-X-Gm-Features: AclHuK_nOqMX3djeZOdNLjNPymjaWdesvnL51eoG4SJjNhtYox1cB5x1yziRAMs
-Message-ID: <CAJuCfpHiaV6uDCfOMmHJ4tPosUBPRMUF9zjrB0fkCWZG1umG5w@mail.gmail.com>
-Subject: Re: [PATCH v4 18/38] fbdev: defio: assert FBINFO_VIRTFB, drop VM_IO,
- add VM_MIXEDMAP
+Date: Sun, 4 Oct 2026 11:09:35 -0700
+X-Gm-Features: AclHuK-kwJ_Uo7kW-aV-ulJRzQPF_vjK2tdCaS-4gRgk6ACv9UztvH0OKE8MWEw
+Message-ID: <CAJuCfpFKJ+31TZOWhwoTQTseOEy0AgAjz5eK9fdXmL40D0OY6Q@mail.gmail.com>
+Subject: Re: [PATCH v4 19/38] HSI: cmt_speech: convert mmap hook to
+ mmap_prepare, refactor
 To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, 
 	Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, 
@@ -178,75 +178,92 @@ Content-Transfer-Encoding: quoted-printable
 On Sat, Oct 3, 2026 at 6:39=E2=80=AFPM Lorenzo Stoakes (ARM) <ljs@kernel.or=
 g> wrote:
 >
-> Currently all drivers which use defio allocate system memory. All of them
-> also set FBINFO_VIRTFB, other than ssd1307fb, however this driver allocat=
-es
-> system RAM, so simply failed to set this flag when it ought to.
+> Use the mmap_prepare in favour of the deprecated mmap hook as part of the
+> work to convert one to another.
 >
-> This patch sets FBINFO_VIRTFB on ssd1307fb probe, then drops setting VM_I=
-O
-> in fb_deferred_io_mmap() and instead requires FBINFO_VIRTFB to be set,
-> erroring out with a kernel warning if not.
+> Since this is simply a refcounted kernel page that has been allocated, it
+> should not be marked VM_IO and should be inserted using the kernel page
+> insertion mechanism, so convert it to do this instead.
 >
-> The logic requires a page from the driver and since commit 1ecbc7dd2902
-> ("fbdev/deferred-io: Always call get_page() for framebuffer pages") has
-> always required it to be refcounted, so this was implicitly already the
-> case.
+> Use the VMA descriptor's private data field as a scratch buffer to store
+> the page in - this stays valid throughout the kernel page mapping
+> operation.
 >
-> Finally this patch sets VM_MIXEDMAP, as the logic is mapping
-> kernel-allocated memory so this is appropriate.
->
-> Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
 > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
-
-With the same disclaimer as in previous patch,
 
 Reviewed-by: Suren Baghdasaryan <surenb@google.com>
 
 
 > ---
->  drivers/video/fbdev/core/fb_defio.c | 6 +++---
->  drivers/video/fbdev/ssd1307fb.c     | 2 ++
->  2 files changed, 5 insertions(+), 3 deletions(-)
+>  drivers/hsi/clients/cmt_speech.c | 33 +++++++++------------------------
+>  1 file changed, 9 insertions(+), 24 deletions(-)
 >
-> diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/co=
-re/fb_defio.c
-> index fd00b86e1ae6..fb359ecc3966 100644
-> --- a/drivers/video/fbdev/core/fb_defio.c
-> +++ b/drivers/video/fbdev/core/fb_defio.c
-> @@ -366,13 +366,13 @@ int fb_deferred_io_mmap(struct fb_info *info, struc=
-t vm_area_struct *vma)
+> diff --git a/drivers/hsi/clients/cmt_speech.c b/drivers/hsi/clients/cmt_s=
+peech.c
+> index 7226677ebde7..801697b74d4f 100644
+> --- a/drivers/hsi/clients/cmt_speech.c
+> +++ b/drivers/hsi/clients/cmt_speech.c
+> @@ -1084,22 +1084,6 @@ static void cs_hsi_stop(struct cs_hsi_iface *hi)
+>         kfree(hi);
+>  }
+>
+> -static vm_fault_t cs_char_vma_fault(struct vm_fault *vmf)
+> -{
+> -       struct cs_char *csdata =3D vmf->vma->vm_private_data;
+> -       struct page *page;
+> -
+> -       page =3D virt_to_page((void *)csdata->mmap_base);
+> -       get_page(page);
+> -       vmf->page =3D page;
+> -
+> -       return 0;
+> -}
+> -
+> -static const struct vm_operations_struct cs_char_vm_ops =3D {
+> -       .fault  =3D cs_char_vma_fault,
+> -};
+> -
+>  static int cs_char_fasync(int fd, struct file *file, int on)
 >  {
->         vma->vm_page_prot =3D pgprot_decrypted(vma->vm_page_prot);
+>         struct cs_char *csdata =3D file->private_data;
+> @@ -1256,18 +1240,19 @@ static long cs_char_ioctl(struct file *file, unsi=
+gned int cmd,
+>         return r;
+>  }
 >
-> +       if (WARN_ON_ONCE(!(info->flags & FBINFO_VIRTFB)))
-> +               return -EINVAL;
->         if (!try_module_get(THIS_MODULE))
+> -static int cs_char_mmap(struct file *file, struct vm_area_struct *vma)
+> +static int cs_char_mmap_prepare(struct vm_area_desc *desc)
+>  {
+> -       if (vma->vm_end < vma->vm_start)
+> -               return -EINVAL;
+> +       struct file *file =3D desc->file;
+> +       struct cs_char *csdata =3D file->private_data;
+> +       struct page **pages =3D (struct page **)&desc->private_data;
+>
+> -       if (vma_pages(vma) !=3D 1)
+> +       if (vma_desc_pages(desc) !=3D 1)
 >                 return -EINVAL;
 >
->         vma->vm_ops =3D &fb_deferred_io_vm_ops;
-> -       vm_flags_set(vma, VM_DONTEXPAND | VM_DONTDUMP);
-> -       if (!(info->flags & FBINFO_VIRTFB))
-> -               vm_flags_set(vma, VM_IO);
-> +       vm_flags_set(vma, VM_MIXEDMAP | VM_DONTEXPAND | VM_DONTDUMP);
->         vma->vm_private_data =3D info->fbdefio_state;
+> -       vm_flags_set(vma, VM_IO | VM_DONTDUMP | VM_DONTEXPAND);
+> -       vma->vm_ops =3D &cs_char_vm_ops;
+> -       vma->vm_private_data =3D file->private_data;
+> +       vma_desc_set_flags(desc, VMA_DONTDUMP_BIT, VMA_DONTEXPAND_BIT);
 >
->         fb_deferred_io_state_get(info->fbdefio_state); /* released in vma=
-->vm_ops->close() */
-> diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd130=
-7fb.c
-> index c4fdecafd856..958514a35433 100644
-> --- a/drivers/video/fbdev/ssd1307fb.c
-> +++ b/drivers/video/fbdev/ssd1307fb.c
-> @@ -763,6 +763,8 @@ static int ssd1307fb_probe(struct i2c_client *client)
->         info->fix.smem_start =3D __pa(vmem);
->         info->fix.smem_len =3D vmem_size;
+> +       *pages =3D virt_to_page((void *)csdata->mmap_base);
+> +       mmap_action_map_kernel_pages_full(desc, pages);
+>         return 0;
+>  }
 >
-> +       info->flags =3D FBINFO_VIRTFB;
-> +
->         fb_deferred_io_init(info);
->
->         i2c_set_clientdata(client, info);
+> @@ -1353,7 +1338,7 @@ static const struct file_operations cs_char_fops =
+=3D {
+>         .write          =3D cs_char_write,
+>         .poll           =3D cs_char_poll,
+>         .unlocked_ioctl =3D cs_char_ioctl,
+> -       .mmap           =3D cs_char_mmap,
+> +       .mmap_prepare   =3D cs_char_mmap_prepare,
+>         .open           =3D cs_char_open,
+>         .release        =3D cs_char_release,
+>         .fasync         =3D cs_char_fasync,
 >
 > --
 > 2.55.0
