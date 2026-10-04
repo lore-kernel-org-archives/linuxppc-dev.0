@@ -1,52 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-28873-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28874-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 898DDCA5FCE
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Oct 2026 07:26:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7669CA5FCE
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Oct 2026 08:34:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hyDbm3dKBz2yr0;
-	Sun, 04 Oct 2026 18:26:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791098804;
-	cv=none; b=mNtVf23LH3SdDGZbmV3HdShhtjQ2CvjjIuokdk87u8Ap0dsSya+2CCtFS/aGa8b19GpJuu1dEKrPCM7JHVHNQDwxpA5tBfXT96ZRpzAzV6jHNog2/1DTeJ/Ybf+VQAr0iOhsfi9EXQe3VdmeXDZb+fN3F/PT8NHdyGwkn6qVLzVSTljpVdEUMzpRXuKcl2RYh0YWl5ikyw2sJFO7T+vFxW8PrYetrWaTpOkrSMdLXlQnpWGoeW45+013uN+sFz9jvTsTOmjAi7uhNlRZ5aQccg3+6Xb1YUqxnZ5XmKjrNUxx9bVewiwmIJ+vmJj/Nyb+h8QekWR3OrVGkL8RBTInFg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hyG6P0Fxyz30BJ;
+	Sun, 04 Oct 2026 19:34:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.17
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791102893;
+	cv=none; b=MipdVy4b63c8DcwVGyWc6vkRRJJ3fZ7bFOVeJC1oEzSuHiCXPei5iwAZ/fYbM/9HFFngGq4CynbOcyogG1fasO+LvFPy7OgUuAgEFNO0yohMu0+LLJxRBL62myxHkHNRagEMn8L5fGCkOOMtvXZpVju9+AfqjiisPQX7KST3sJqP/wwAbpP57EEgwosKJ6SwqEWUiODOgjILb4RovB3HlpEfr9jZBuSvpsPm+7bpL3qtFKH9qaMB4esKi2Ef/Kvy7HgqbwXTT0VdcVMyu84Gv1i/RM1zSL4TNRMnrci4lgGQhzCeV6HIMlLA/Z0WMYRnnCqmR947wPfR7hoek7rfOA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791098804; c=relaxed/relaxed;
-	bh=cgIqnoufaHq6AdaBd0wZxGfVHkwrfWk/BsoFED6yW28=;
+	t=1791102893; c=relaxed/relaxed;
+	bh=M69W4XodigGd2v1ABZQ+ndV4/a4VCqZh/WJrm/TnuuU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=JBygIqIsx/yQoNbj1JgzOSOjMLEgki3xyh+L0Ihw8WCV+TmOv3g13XsR8Llbv+ipKJNE87B+Hm/cN24n1/DFalz6LZp4uIf9m7WjXLfhAkjzlv0nzQU8eMmK6Zf0uHdfJVIVxIWPyJ0W5U6vATEYIkoeFnZ8m4NPL7p7r2ZC/yIPr7O3zEQ8bZ3VabT5iwDUE2sc1Z+814QE/C9uhPfOW72QKU/2XK2Wmfev92HafTUEq4Vb9hxIi1+QPEIL/IOstD4BPdoQ0Cd7NtATKVbvhbpJ7q3tPNMTG1JWIw4GkCdcAkvQ6Ao+54W7TkPtiRbLxg4W2PU+Uaa5kPmm03bqGA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nU5ReT3j; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=JrNJuvQja122LcrkK12ddodwDEGs7iRz0CL+olZOFaEU0OAYyyAyHEVTzB0/vrsChHFUukrEnz8MfCunTaLBcBUZdaaNavG3usxSFN5E4Ks2eulobq++tld2s4NvdCX6G8OMNMtqrFUcFZUxaLupxyExI2Nv5qjF1yrq6dHdVL+faY6rWHaUGzp8e3WurnJB8GdZgfGXwkSGmnNkyO8T4uACiCAbR06jpWuJkYd8UH/GtAMToNZ75+znvnfcMZWpOGzzhD8Vn3wJ5ByEhjP75f+qp1h/WMalb0NkJRlyJIe8ldnpfeBV9bckQ41rY6Yu7eCmjwZRw2lt3uZrEONhbg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=HrlMrCxS; dkim-atps=neutral; spf=pass (client-ip=198.175.65.17; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nU5ReT3j;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=HrlMrCxS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.17; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hyDbk51Jgz2yf9
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Oct 2026 18:26:42 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 9DA09413CA;
-	Sun,  4 Oct 2026 07:26:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 761B31F000FF;
-	Sun,  4 Oct 2026 07:26:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791098799;
-	bh=cgIqnoufaHq6AdaBd0wZxGfVHkwrfWk/BsoFED6yW28=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=nU5ReT3jHCTKrC3vFlt6lFhBY2qzd5TcweumZDdG4PoYUxRdUjykUFoBgFNWA1PjY
-	 T9Yu+RIKP64tp84D9IUIBtDjfeFi3o967G8MkqSZgLs5zg6QgwCaZo2Pxoykxskztl
-	 biV5O05MJfDy50y8GDgflF67Yd7yP+x3fcZ/CTySFwAWfFHWKch8vNf6E6pnkc8Req
-	 OzpDMqE/uOHVQp8wJMzmgk75NkJ+Q6sBYYfXWMn9gwMNio09Jz0A1FkvjaPxByIoTx
-	 USuuhCbzR7WCiikqNFCVjzo7VO44aK7kcE+i2spiWR4WgjRoXKk74e4z7OK8rvjehn
-	 Jk/eIKWbHt2nQ==
-Date: Sun, 4 Oct 2026 00:26:39 -0700
-From: Kees Cook <kees@kernel.org>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hyG6L0vLDz2yr0
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Oct 2026 19:34:48 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1791102890; x=1822638890;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=Mhi7+Hi041UrB2MzTnYXKOXt0lQgzO82otWdLKr7WgI=;
+  b=HrlMrCxS1kLHpgmYkBD3gyAL8W3lH82RmNuPDhoqEtqJ85moEkTKo8//
+   fcKbkCn8EUqVjOK0ZTbmXwtyN1K0AosxeswoBoMZA9i5cXP0Ypkuserca
+   jMhUPB74KAW5VolMFKG5VU+V5xZ0pv35EX3/eR/7El7pZZVL1ZMAMzNDN
+   knP0Prdo4q8lp0HZVNGllH6IEGD3dbAtFIzciAaccqPYOJaVOq5gJl6zE
+   BkAJZz579IgTT712+iKusyMGVcL3AKOxez0quc03QcwIW0WrKNjngCx+r
+   8YCMXQWZyVBNR0iRzzrQolecDJh0tID4NKsebLwBUpcggaLEj5EcU4pdz
+   Q==;
+X-CSE-ConnectionGUID: TYF/FiY6RpKSctxXOjOxsQ==
+X-CSE-MsgGUID: 0QtU8wlHRQCxt2aqTgdCbA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11924"; a="90834740"
+X-IronPort-AV: E=Sophos;i="6.27,139,1787036400"; 
+   d="scan'208";a="90834740"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Oct 2026 01:34:43 -0700
+X-CSE-ConnectionGUID: nrUIyO1XSTCYN10HdI6xtw==
+X-CSE-MsgGUID: HOGC8YPlQBeD01aSwPqHdw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,139,1787036400"; 
+   d="scan'208";a="275678711"
+Received: from mkosciow-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.100])
+  by orviesa008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Oct 2026 01:34:33 -0700
+Date: Sun, 4 Oct 2026 11:34:30 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Kees Cook <kees@kernel.org>
 Cc: Bill Wendling <morbo@google.com>,
 	"Matthew Wilcox (Oracle)" <willy@infradead.org>,
 	Andrew Morton <akpm@linux-foundation.org>,
@@ -91,10 +102,11 @@ Cc: Bill Wendling <morbo@google.com>,
 	nvdimm@lists.linux.dev, linux-doc@vger.kernel.org,
 	linux-hardening@vger.kernel.org
 Subject: Re: [PATCH v4 05/11] seq_buf: Add seq_buf_strlen()
-Message-ID: <202610040023.A3865A6@keescook>
+Message-ID: <asIPlnb0noMd33rr@ashevche-desk.local>
 References: <20261003035906.too.263-kees@kernel.org>
  <20261003035921.1918874-5-kees@kernel.org>
  <asEhEe0Urb5Wx7yi@ashevche-desk.local>
+ <202610040023.A3865A6@keescook>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -110,70 +122,56 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <asEhEe0Urb5Wx7yi@ashevche-desk.local>
+In-Reply-To: <202610040023.A3865A6@keescook>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Sat, Oct 03, 2026 at 06:36:49PM +0300, Andy Shevchenko wrote:
-> On Fri, Oct 02, 2026 at 08:59:10PM -0700, Kees Cook wrote:
-> > Several strlcat() call sites being converted to seq_buf need behavior
-> > seq_buf doesn't currently provide. The return from seq_buf_used() is
-> > not the length of the string in a seq_buf. Once the buffer is full or
-> > has overflowed it returns the buffer size, which counts the byte that
-> > seq_buf_str() replaces with the NUL, so a caller that needs the string
-> > and its length has to call seq_buf_str() and then walk the string with
-> > strlen().
-> > 
-> > Move the termination out of seq_buf_str() into a helper that returns
-> > where it put the NUL, and add seq_buf_strlen(), which terminates the
-> > buffer in the same way and returns that offset.
-> > 
-> > As discussed in review, don't add WARN_ON() for seq_buf_strlen() and
-> > drop it from seq_buf_str().
-> > 
-> > Add tests comparing seq_buf_strlen() against strlen() of seq_buf_str()
-> > for empty, appended, truncated, exactly full, and overflowed buffers,
-> > checking that seq_buf_strlen() alone terminates a full buffer, and
-> > checking that a zero-sized seq_buf reports an empty string from both
-> > accessors without touching the buffer.
-> > 
-> > Tests passed under qemu on ARCH=x86_64 with GCC 16.2.0 and CONFIG_KASAN=y,
-> > and on big-endian ARCH=s390 with GCC s390x-linux-gnu 16.2.0.
-> 
-> ...
-> 
-> >  static inline const char *seq_buf_str(struct seq_buf *s)
-> >  {
-> > -	if (WARN_ON(s->size == 0))
-> > +	if (s->size == 0)
-> >  		return "";
-> >  
-> > -	if (seq_buf_buffer_left(s))
-> > -		s->buffer[s->len] = 0;
-> > -	else
-> > -		s->buffer[s->size - 1] = 0;
-> > +	__seq_buf_terminate(s);
-> >  
-> >  	return s->buffer;
-> >  }
-> 
-> Looking at this again, can't it be rewritten now using _strlen()?
-> 
-> 	if (seq_buf_strlen(s))
-> 		return s->buffer;
-> 
-> 	return "";
-> 
-> ?
+On Sun, Oct 04, 2026 at 12:26:39AM -0700, Kees Cook wrote:
+> On Sat, Oct 03, 2026 at 06:36:49PM +0300, Andy Shevchenko wrote:
+> > On Fri, Oct 02, 2026 at 08:59:10PM -0700, Kees Cook wrote:
 
-It could, but I'm vaguely nervous about the difference between
-	s->buffer[0] == '\0'
-and
-	.data ""
+...
 
-i.e. we only force the return of seq_buf_str() to be _not_ just
-s->buffer when s->buffer is weirdly impossible (due to size == 0).
-I'd rather not make all 0-len strings return the .data segment's const
-"" string...
+> > >  static inline const char *seq_buf_str(struct seq_buf *s)
+> > >  {
+> > > -	if (WARN_ON(s->size == 0))
+> > > +	if (s->size == 0)
+> > >  		return "";
+> > >  
+> > > -	if (seq_buf_buffer_left(s))
+> > > -		s->buffer[s->len] = 0;
+> > > -	else
+> > > -		s->buffer[s->size - 1] = 0;
+> > > +	__seq_buf_terminate(s);
+> > >  
+> > >  	return s->buffer;
+> > >  }
+> > 
+> > Looking at this again, can't it be rewritten now using _strlen()?
+> > 
+> > 	if (seq_buf_strlen(s))
+> > 		return s->buffer;
+> > 
+> > 	return "";
+> > 
+> > ?
+> 
+> It could, but I'm vaguely nervous about the difference between
+> 	s->buffer[0] == '\0'
+> and
+> 	.data ""
+> 
+> i.e. we only force the return of seq_buf_str() to be _not_ just
+> s->buffer when s->buffer is weirdly impossible (due to size == 0).
+> I'd rather not make all 0-len strings return the .data segment's const
+> "" string...
+
+Good point. Perhaps then to add a short note to the kernel doc,
+so we won't see patches based on the suggestion like I gave?
 
 -- 
-Kees Cook
+With Best Regards,
+Andy Shevchenko
+
+
 
