@@ -1,94 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-28884-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28885-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B212CA5FE6
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Oct 2026 17:19:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34C6CCA5FF0
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Oct 2026 17:23:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hyTld4ZYRz30RN;
-	Mon, 05 Oct 2026 04:19:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::830" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791134365;
-	cv=pass; b=Zyzdn+0k3PVEQQDEYba0wVqgIXgTRbTkDbuvBrC/1JIKD51CoJZAYLjnsZq+eeTlYoCayHry5J5KO7cmGq75mQf1tH3gSCFQ5miZqJnjElvjMRpLa8YznfJCW2D0zYyPC0PqZ2/vkzIky3SKnIlNgORmOzc8S0UMuiW6DCppnMYMOxXCo97K8P9z0hhTr38IA6ai+S73papJSwU0RGWhZHJbYwA+BotzTMCkkGN+HPW71eWBDrbZqnw/aaf8vkbJqM/9dE87W9w5wPGu2ww7dZ8CmJVZdnbPENPtq0g5cu/OnyF3sx1GbGwhXnBn9dEWszCwq0TWpDlOWxffde1yKw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hyTqt5Rkhz30RN;
+	Mon, 05 Oct 2026 04:23:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::835" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791134586;
+	cv=pass; b=Gm97Hp7zp0+N5XKkGIFGVSv5vuH6DlKTVWw9EnOIfklz5DLn7Z5hloHX55NGNF51679k72jvm34NBw4y/Q/v1wAVmPK6mo4ECZHanGDxH5rQPhJRGlg44cv3zKdqS3we4gkgfqhoqCybTXksdKWJnFUZ5U0GdMNjYZXuo6JoHrHKWrhlrK7WWozt0CSVRpK/v8JB0T+FoSH/5gj6fjxgyCegtLnYwzTXUNyedIoeWYEgRNNsdTTQnoVYzjRLlt5+0QB6Tquk7RIMmjJsR+MOvZWM6pGZ42phTqaTRGe4JJycDqTKHT5p+81Ov8+LBa/vMIvRi8aPSj3+M3ZzoAdXhg==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791134365; c=relaxed/relaxed;
-	bh=LB9YQVahVaEWF6zZVDiq8xpdl9rxBex8+tzU6TEVUNY=;
+	t=1791134586; c=relaxed/relaxed;
+	bh=bqiCaT+6hB/MlQ3EgaRNQmjR57IQALnN7KoYl50i5vw=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=NyMM6WJO3KcTcMexCwz+Wt/hKJ9Nf6rcfn5LvxX1Bs5P8E+oZLFagJpyLJdYtlMu2bc8jZZzzsofNckuCy+Y2qTemP73HINrZvLtD8kAy6GcX1gdQBaYM7ppHi+SqDmHJiv8FOljO7k2Ekm2+yVgtQrzLtkl0bI7X7+2bZQ/K2d/Dcx/yAxsKamAvNpkj1MSvnv6f047v6BCjPAGjBcpeVEFvsoGPej/NVZZjFBJYuiCLz1PGyjlls04qZvG/MtqNkvy3bCSzL46ogUZiftLA0cuh6BIGPYIthCe1MUyNcVaKhFw0PCoO2HBbnTBma+vuNCb/7BIqZ0CUhUJONR4ww==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=N3Mr7AfH; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::830; helo=mail-qt1-x830.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+	 To:Cc:Content-Type; b=masEcni9+BSSRWVYXMN8njbW3hauY+Ao2c5SlBYqqlAjlq0K9V/wi6PEzVcpng72PBShEn0T/Hb8CqN4hYP1lvVlHjNf+TeUiEX7RCaMqiDqNSJd6nDV1dQrYap11oAZkqcbv4uTyUH5mIDennaMsMeHcDL5+5YOCC7tW0ux2ka0OJOIMuc+KNdJoP5FL+p5nMf/50rAKMIDCMGJcgnnr3Ubdpva0go6gkAXX5wJFYFAbvZbCI4BC0S7W+9h4P7wym6LIKyTZ7NPZGUR1w9BJC47G8K6S+57jYGHPXdhry/g5gN7tqsS62veqRRYW42d2x+dOhsr9jfqtWSs9TfPAg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=a8/palMx; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::835; helo=mail-qt1-x835.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=N3Mr7AfH;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=a8/palMx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::830; helo=mail-qt1-x830.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x830.google.com (mail-qt1-x830.google.com [IPv6:2607:f8b0:4864:20::830])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::835; helo=mail-qt1-x835.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org)
+Received: from mail-qt1-x835.google.com (mail-qt1-x835.google.com [IPv6:2607:f8b0:4864:20::835])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hyTlc5flxz2yYd
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Oct 2026 04:19:24 +1100 (AEDT)
-Received: by mail-qt1-x830.google.com with SMTP id d75a77b69052e-5337c7b9937so259271cf.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Oct 2026 10:19:24 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791134362; cv=none;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hyTqs66jcz2y2K
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Oct 2026 04:23:05 +1100 (AEDT)
+Received: by mail-qt1-x835.google.com with SMTP id d75a77b69052e-5337c7b9937so259911cf.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Oct 2026 10:23:05 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1791134583; cv=none;
         d=google.com; s=arc-20260327;
-        b=J2GKjx29p48yk1CSnpHvwuxHVwilAcbJgEjazbpZLnL/hFhP2MxQHi4pCxjtcYA5Ur
-         2SMRyjY2g2a7wve3ePiXkxsrDgEm8qCLeF8k0gLuF4x9cC4/VvmiOLlQn92lgepstj53
-         AMABty5IwNpiEP4sBiPSz7u80xgt9eKt0KOWbhmgpHwZVy09AIs/jIa3O0yga1KvObYi
-         73747x3CDu4isIny6uVR8tV9y2Pk3lUxwkGZjFRin79gi7LOR/bHTHtLXGcMICNHRn5p
-         BOp+MsDtJgadMtFhfOWyc+PbMCCwB4ySnOts1kIEOufaE+CTbqyehdIZMIvyocdjVF0z
-         r+Sg==
+        b=icsnha7AVknK33bj6CyITkvP+jvxLZvHc4ugtBNRjABmvbwnlUEGiBo26EcMfRdPdv
+         w7jQKnKVdZDKKaLkeXSSmZTMqIwWZJhKxJ1qFq5dHjA5RVJQlD0jTtLwJIpE/ivmT3wK
+         xpBh48gLN1MsIjprZBjuc33NcKKO/gfxsRvjDfv45jXM1r2rjbgJ7qaRq8xEGuGqpt0i
+         2T8h3NlKOPiDB7d3Vul+ZewW1az3jrNs4qHxuYk6Lmq8+cAQg50c69WadymeuUbPsXiy
+         5mVSDOQ+8taNmAQaJMmp/uRPVNAIaSmz5QaLcPXrq+hOG/NNQabl0myyk0SQLGiilL+4
+         N51g==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=LB9YQVahVaEWF6zZVDiq8xpdl9rxBex8+tzU6TEVUNY=;
-        fh=Nx8E7/lICRxN5D9A1NhSKMybZZl+xRw+C4QXT30Y6K8=;
-        b=pO8WI+lAeRurESrOsyXceBwK7oB7TlfcUIeS3t6odHTkpbSzoU2zsrcYPYFxWnEkFW
-         1BGpiYSIZJjYs/M/gE5qhoUWVLrvi2euKVg8Tw+2cOa0IIbJND1usl4+qEvVMoUp/RPi
-         x0ZbsV+YPDhuFujPmqq0YqTDFNiQIdwaOKYZMxCVxFE+PuAYVk9ECt5vxAGvwk756W89
-         JLoDy11xjzZfLKbfHKG1H6SbtlnRqd9mYqe1rMSuz/N/RAolCUIPINbpSODZu7X8vUrb
-         Rt/d6zHkOSWoUdnJx9ZV4LSmJIb8w0ZYzScLSIUDfwp+GJOn+rzPnLLEd6+dMyhdVIzT
-         v2Yw==;
+        bh=bqiCaT+6hB/MlQ3EgaRNQmjR57IQALnN7KoYl50i5vw=;
+        fh=/SGo+StmgDgiK3o2Ok3i5nIK6CTWNpOvLsTr4iNkWk8=;
+        b=BB30I9nLla5L6BBvVTewe5twNRmSdhX1aPm84NX2TA0LATkzjM+0KkmGmfKXpYVtsr
+         d9kP684OUHAzJgE1K4mnB9eKRvXbtFuCDnDx1RZpxyI4KlC7wMKK1iA6uBBdnowII3uw
+         pkGJyEa/t3yFzKmQqDNk33cBGnUSOVO10kCb1liqLKJLMZoxQkhW0zcgVSUyFrhHVslU
+         M9U/onRRaqttOfng4hM3iluxpEN9b/J1GBmY1WaBmDO3dGa7mznuwJoLS+slnTwVC9dV
+         74DqHYx4uenfCdRPn0TFjRlgFQWgt7zMD3K88KO201rh5AEZE2YxMaWv/NLnA/peqFjx
+         Q80w==;
         darn=lists.ozlabs.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1791134362; x=1791739162; darn=lists.ozlabs.org;
+        d=google.com; s=20251104; t=1791134583; x=1791739383; darn=lists.ozlabs.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=LB9YQVahVaEWF6zZVDiq8xpdl9rxBex8+tzU6TEVUNY=;
-        b=N3Mr7AfHm+KKXahoVhbsUA0XhpP7EXz83DzTmEwTkgSCOJS44TEaHUWOi6RsgRQiTp
-         SdUZVmaRPggE49Jt7ZKHXn9h3BMi1ncxkQ1d1dVDvefNfSOLR2ci2vR2SR/8BIrq5wp3
-         FXPIBmggkfj4n3LhGPAWL54+WRKD6qUWNEYk4ZY/DjMceyB82v1vYKMUnEUQEeO2Vt1o
-         TBX0AVwFwOpirODczZfzRATKvrHftsH5XJrGBDea9px0f8fd722y0+V9bu5VSBsgXisd
-         eQprE90ErkDhjU0iSTRQodo5q222ZSs6Di6MBZdefv5ptb/hD0zYQe80ho79qbneTnuH
-         YTBQ==
+        bh=bqiCaT+6hB/MlQ3EgaRNQmjR57IQALnN7KoYl50i5vw=;
+        b=a8/palMx3AWNSIDTvk5BaEj3pO1DkumPA7XeHXie+lq+m9ZN50H3aX0gDBBEfAZXAC
+         qSiFDP+n5XrdHPI6CyQRIXoYIpFgwbheD4takZBUTGQ73vvOKD2vgXqTMBx6B6+cZLMW
+         cV5NJt/5eREcwuqGWwEfJoZFxMT8WPzKpo6x+0d74AjMFynB6mWSkFDzKo0ZZQSbQ3vB
+         To9dtD2AfgYYZv/Cx0rV0HwXZ+YMhhzft9FVI8V5fo4kdUQoNx1u4iR3JmKzxX3xNqje
+         XO/CfiQ2keWdh7lBMXtgFiUvOh046RG0wUE4LC98Icv9zh8Jm43+WYS2xaaCuJNfR4nH
+         VYEg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791134362; x=1791739162;
+        d=1e100.net; s=20260707; t=1791134583; x=1791739383;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=LB9YQVahVaEWF6zZVDiq8xpdl9rxBex8+tzU6TEVUNY=;
-        b=dNolPBGct/Qhd/jmVTBPH5VQXYKwLPmpe56I5LkIFhQZ5poI4XFPfNMFUMoHQsx64+
-         xguTomw3n2/xNVXdPm8K/8jNbDvPlF2Z3nwWeUpFrfXIKFSFuKBcPxpMCPvungvfmc9c
-         GnYbK2Cl6XNJJLm2X6xwovcW8b7zrsXLnZesEaia+KuyP/0nwXxmdov/zd2rLjTsPuW9
-         GPNTdmdTCX2RhD6SP27kARR8GkWhBvrxuFAVJEUPlcuiB1I6r61pdLaGrLmkfoNazbFv
-         yZhVeuufezqXRyhh6BR/4hxIukIrOI818dzrs4p/NoQrdduOiPbTUGofeLem5ZIEdOjZ
-         aK5Q==
-X-Forwarded-Encrypted: i=1; AKwUvBySCarQT8YA3dmKjOFf3al/mPxrNF10H0PePcSIKQvT2tkkvW9sLhY8xFleEfVFvJm5zAqwJErTqUdhW+A=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++lWnctDegJJnc0s/dR/+WpeKV3+5HTp2brdLbGEmnvxI0SsL7oH
-	u3pcbFaBhTYzNZOXaxgxwPcgn0yQANqDDyJ8gD4CtL5u7A5YXS9aVLzEFUbsD+XvxZrPd6R+1Ht
-	GezSrBfa8lRPCn1lkrbt4NaeZY8TI9wMFAZftk5Iv
-X-Gm-Gg: AYBFou30Ag0gj91UCLjf5ICP8TMDpBwn0Xu9en0KycxV8tTQEWYEw5KesAFw4mWUhSb
-	hcj79zFfxPrP/XX7N9dQZ879rBpXtCDay57J4UP69CjbxzJjV1GfJa++xMKhUCrs2inv59AHFKu
-	9NH7F403Gtl+gWACFrYq1C0JlulJFEmPscf+4dqf//Q5lxQDN6pQNijSrzqjhtVQ24BG+nPdhYX
-	eFRQ4RjZxN8iifLKMCtMtwjD/r9iB5sqdG0g2HKq76JSbax8QjAFXuYB9D35xjom0p16PjdHEpF
-	WQ1hEGY8QDt1zVAS3V49jPbOmgNktaNPSvwc2XeHzeR94rByrODRheWCMQ==
-X-Received: by 2002:ac8:5e4d:0:b0:532:8423:1e78 with SMTP id
- d75a77b69052e-535131e75aemr16242571cf.10.1791134361196; Sun, 04 Oct 2026
- 10:19:21 -0700 (PDT)
+        bh=bqiCaT+6hB/MlQ3EgaRNQmjR57IQALnN7KoYl50i5vw=;
+        b=iMhYcbVQD417KWpQI4LbWk0O397RVAH/2VMXfdBwVHb82TB/96x5dBAeOmVnVLzQjw
+         0W7TDS6l/86GYbGWJimMUbi4/UtkK5UZKgXjGwXoC8H3y5cVDPloDQPaEaWpP+Z4DPfU
+         c1vfEmvfPqVi4YBAvuIOcgjcI+JGYqCvvJee5AeNTJmeiUUL3THMq3+WGIFr4wSpIYfQ
+         tlQmKjmEd0lHZf+Ttmt/6xJvD9K9XC9g+oBhGqKoNp3fqrCDniWujQ6tDzksi9mFzj92
+         OnTMTtb7l4Qgh7Ls5vgC17HWKp1NRxur7xDXyCbB8Mo4VOl5mKvdkDCRHukoFYOjkQ6P
+         4iZw==
+X-Forwarded-Encrypted: i=1; AKwUvBzWzybzYeehtqmiYZJgct7CvDVY6CTSzeEEKMO9G4htrr3OR3hXZTFbb3bDhiuV/E5afOqpQZGHCaCR0NY=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++kFoK1YcskQ/qlytXJRnfAQO2Jl3TPMvKMnl7+pr5c+E9uXGuvo
+	h3KGLIQg33CfhVLJRr921+HZu88Hi4Vby22oOwRU/7YyDzHfF8zC0aDIzNTNRpKYUNqCHTzY74a
+	hzyQNamK4GBMeEtLYYL0m6PGvxCZXrzS4WOC+6GtP
+X-Gm-Gg: AYBFou123fAApGcX+UNrYGXDPjY8eTUWA5bvhnIAlr0aEeZEmReiA9ZyRq2F+Sm8uy4
+	34sUO2WHXgIRTqNrzG32RAf2dWRDF61QNnLpP18bMGgW7PgFCqdq8YY/BBZci5dP1BWa8ZQ82Hd
+	TWUcCFNPWDYHAIWxT4WJfitzGpb3qTgN1ouOPeAVdBFmaFdXfKzSt5qkFBEmc8X1ixe5MxGW2xi
+	oy3OrYMQJw+8BVg4LmYyok4ictQfqX9kCpkY0oRrrsWtnGRghy76d6CJ6pkrC3lhtA49lyz2wJ/
+	uFGStZP8zLLgMz0UOznRi3BprFght/lamgKT1QUm5QLojCN1OrCO1Vh+9umfozdaM6M=
+X-Received: by 2002:ac8:574c:0:b0:531:475:4ce6 with SMTP id
+ d75a77b69052e-535131b2b85mr16362481cf.9.1791134581910; Sun, 04 Oct 2026
+ 10:23:01 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,14 +103,14 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 References: <20261003-b4-mmap-prepare-vma-flag-sanify-v4-0-a1f052500fd7@kernel.org>
- <20261003-b4-mmap-prepare-vma-flag-sanify-v4-11-a1f052500fd7@kernel.org>
-In-Reply-To: <20261003-b4-mmap-prepare-vma-flag-sanify-v4-11-a1f052500fd7@kernel.org>
+ <20261003-b4-mmap-prepare-vma-flag-sanify-v4-12-a1f052500fd7@kernel.org>
+In-Reply-To: <20261003-b4-mmap-prepare-vma-flag-sanify-v4-12-a1f052500fd7@kernel.org>
 From: Suren Baghdasaryan <surenb@google.com>
-Date: Sun, 4 Oct 2026 10:19:09 -0700
-X-Gm-Features: AclHuK8q5domRMZg3DAHzMyB2slG297Lp1_L7hWmlqEUWco5tu_MI_s_DzFbhWI
-Message-ID: <CAJuCfpGdJM=J+6tkzid_Mu+7nevdhFaTW0E9tbKXoLmzC951Fw@mail.gmail.com>
-Subject: Re: [PATCH v4 11/38] selinux: reject writable opens of policy file,
- drop mmap shared/write check
+Date: Sun, 4 Oct 2026 10:22:50 -0700
+X-Gm-Features: AclHuK9b8f-m7wgF2pmH0VTlVxkwioKHBPR714nLjuu-GaXS_Vt3fJyAlsba0Do
+Message-ID: <CAJuCfpH8GeLKqFtfC_a5i08dQ2ZyyROSrYqYP6Btq03xbF_nXA@mail.gmail.com>
+Subject: Re: [PATCH v4 12/38] ALSA: pcm: use vm_insert_page() to map PCM
+ status page
 To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, 
 	Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, 
@@ -171,74 +171,105 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead
 	kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
 	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
 	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, 
-	fuse-devel@lists.linux.dev
+	fuse-devel@lists.linux.dev, Takashi Iwai <tiwai@suse.de>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
 On Sat, Oct 3, 2026 at 6:37=E2=80=AFPM Lorenzo Stoakes (ARM) <ljs@kernel.or=
 g> wrote:
 >
-> The policy file has no write method and is exposed read-only (S_IRUGO in
-> selinux_files[]), yet sel_open_policy() performs no open mode check, so a
-> CAP_DAC_OVERRIDE caller can open it O_RDWR. Reject FMODE_WRITE at open, a=
-s
-> kernfs does.
+> There's no need to keep a fault handler around for this, instead map on
+> mmap.
 >
-> The file can then never be mapped with FMODE_WRITE, so do_mmap() always
-> clears VM_MAYWRITE and VM_SHARED for MAP_SHARED mappings and the VM_SHARE=
-D
-> check in sel_mmap_policy() cannot be reached. Remove it.
+> While we're here, rename area to vma to be consistent.
 >
-> This also stops sel_mmap_policy() clearing VM_MAYWRITE on a mapping that =
-is
-> neither a PFN map nor a mixed map, ahead of the core enforcing that only
-> such mappings may do so.
+> This correctly makes the mapping a mixed map mapping.
 >
-> Acked-by: Stephen Smalley <stephen.smalley.work@gmail.com>
-> Reviewed-by: Jann Horn <jannh@google.com>
-> Acked-by: Paul Moore <paul@paul-moore.com>
+> This works towards establishing the invariant that only PFN mapped or mix=
+ed
+> map mappings may clear the VM_MAYWRITE flag. The status page mapping clea=
+rs
+> VM_MAYWRITE, so it must not be mm-managed; the control page mapping remai=
+ns
+> writable and is left fault-based.
+>
+> The assumption is made that the struct pcm_mmap_status structure is at mo=
+st
+> a page in size, which is asserted as a build bug.
+>
+> This is safe to assume, as the size of the structure is 56 bytes at most.
+>
+> Acked-by: Takashi Iwai <tiwai@suse.de>
 > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 
 Reviewed-by: Suren Baghdasaryan <surenb@google.com>
 
 
 > ---
->  security/selinux/selinuxfs.c | 11 +++--------
->  1 file changed, 3 insertions(+), 8 deletions(-)
+>  sound/core/pcm_native.c | 38 +++++++++++++-------------------------
+>  1 file changed, 13 insertions(+), 25 deletions(-)
 >
-> diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
-> index c7d91476971c..545a6f89f9e7 100644
-> --- a/security/selinux/selinuxfs.c
-> +++ b/security/selinux/selinuxfs.c
-> @@ -340,6 +340,9 @@ static int sel_open_policy(struct inode *inode, struc=
-t file *filp)
->         struct policy_load_memory *plm =3D NULL;
->         int rc;
->
-> +       if (filp->f_mode & FMODE_WRITE)
-> +               return -EACCES;
-> +
->         rc =3D avc_has_perm(current_sid(), SECINITSID_SECURITY,
->                           SECCLASS_SECURITY, SECURITY__READ_POLICY, NULL)=
-;
->         if (rc)
-> @@ -424,14 +427,6 @@ static const struct vm_operations_struct sel_mmap_po=
-licy_ops =3D {
->
->  static int sel_mmap_policy(struct file *filp, struct vm_area_struct *vma=
-)
+> diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
+> index 62324282fcae..c98fb3df14f3 100644
+> --- a/sound/core/pcm_native.c
+> +++ b/sound/core/pcm_native.c
+> @@ -3760,39 +3760,27 @@ static __poll_t snd_pcm_poll(struct file *file, p=
+oll_table *wait)
+>  /*
+>   * mmap status record
+>   */
+> -static vm_fault_t snd_pcm_mmap_status_fault(struct vm_fault *vmf)
+> +static int snd_pcm_mmap_status(struct snd_pcm_substream *substream, stru=
+ct file *file,
+> +                              struct vm_area_struct *vma)
 >  {
-> -       if (vma->vm_flags & VM_SHARED) {
-> -               /* do not allow mprotect to make mapping writable */
-> -               vm_flags_clear(vma, VM_MAYWRITE);
+> -       struct snd_pcm_substream *substream =3D vmf->vma->vm_private_data=
+;
+> +       const unsigned long size =3D vma->vm_end - vma->vm_start;
+>         struct snd_pcm_runtime *runtime;
 > -
-> -               if (vma->vm_flags & VM_WRITE)
-> -                       return -EACCES;
-> -       }
-> -
->         vm_flags_set(vma, VM_DONTEXPAND | VM_DONTDUMP);
->         vma->vm_ops =3D &sel_mmap_policy_ops;
+> -       if (substream =3D=3D NULL)
+> -               return VM_FAULT_SIGBUS;
+> -       runtime =3D substream->runtime;
+> -       vmf->page =3D virt_to_page(runtime->status);
+> -       get_page(vmf->page);
+> -       return 0;
+> -}
+> +       struct page *page;
 >
+> -static const struct vm_operations_struct snd_pcm_vm_ops_status =3D
+> -{
+> -       .fault =3D        snd_pcm_mmap_status_fault,
+> -};
+> +       BUILD_BUG_ON(sizeof(struct snd_pcm_mmap_status) > PAGE_SIZE);
+>
+> -static int snd_pcm_mmap_status(struct snd_pcm_substream *substream, stru=
+ct file *file,
+> -                              struct vm_area_struct *area)
+> -{
+> -       long size;
+> -       if (!(area->vm_flags & VM_READ))
+> +       if (!(vma->vm_flags & VM_READ))
+>                 return -EINVAL;
+> -       size =3D area->vm_end - area->vm_start;
+> -       if (size !=3D PAGE_ALIGN(sizeof(struct snd_pcm_mmap_status)))
+> +       if (size !=3D PAGE_SIZE)
+>                 return -EINVAL;
+> -       area->vm_ops =3D &snd_pcm_vm_ops_status;
+> -       area->vm_private_data =3D substream;
+> -       vm_flags_mod(area, VM_DONTEXPAND | VM_DONTDUMP,
+> +
+> +       vm_flags_mod(vma, VM_DONTEXPAND | VM_DONTDUMP,
+>                      VM_WRITE | VM_MAYWRITE);
+> +       vma->vm_page_prot =3D vm_get_page_prot(vma->vm_flags);
+>
+> -       return 0;
+> +       runtime =3D substream->runtime;
+> +       page =3D virt_to_page(runtime->status);
+> +       return vm_insert_page(vma, vma->vm_start, page);
+>  }
+>
+>  /*
 >
 > --
 > 2.55.0
