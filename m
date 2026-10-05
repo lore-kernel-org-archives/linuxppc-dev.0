@@ -1,66 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-28941-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28942-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58AF8CA5FF0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Oct 2026 23:27:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFBB0CA5FF0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Oct 2026 23:27:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hzFsn23TFz304x;
-	Tue, 06 Oct 2026 10:27:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791242845;
-	cv=none; b=edcsqGn3mL2GWlO83Y1eXkZj3I84+wKkIAQtLMC/9O1vsWR8gp7raRHjNfryCc0FdkmEZWNEMQ4Pa8h+jyj1snBY5PtTRaAT3yzBAhMS6aybOClWQBxABZXwmMKWzOcGohCfvfuMSQ1z75vi8bw6LqJCqCmRBGk8wGfuqrEhDFL0uuPvkeJbZQExW+fDrzyOzk4/hFehqJQKnuwYBi/Nu4fFWHrS7zRk8ifWIMjgMJwns3WnV0dBKxfQsNO4KkPZBzvuxrD/gjS3eErhb4s9nFS9JSyI+p6aeAGfUg9djABRTK7jRp2zM/P9q7udaCPNHcWwi5z/s7ya/O6PBnYWdw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hzFtC02gZz304x;
+	Tue, 06 Oct 2026 10:27:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791242866;
+	cv=none; b=dtj0PViym0Yy27Fpxc5NFfRGetu5h68C3Gu8mcn1YcknJMj2Qc6G6WOMfDMWmeYJBlppbjnvMmCo5nPKh8Ypg+pbPUdCMRgPRHkl3XfgpcN2rIyEmGxXrVMQK+mfV+pn6ydknoF5AevT2AtMKGS4iNaZb7aZT7sHUD0D+Fu15SnNiiEgydQr0xE9US4RVKIfNvMkDOSpwkl1GNoKiKSOS9iWSPQc8TiG4whx0fB0+IGBrBKq415+ECx00RxsCV/Au9SR2TcxkHTbasNU52SjVoGJxy96QraTEwzETg6n9MysCsZp1GJSxul63ZLvASRKF3NaNPV2ZslGGWMUC0JyTA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791242845; c=relaxed/relaxed;
-	bh=WBg20LLYaRPC5p8DnVDECrTO6jgh2E+qFuXSSu1+OPE=;
+	t=1791242866; c=relaxed/relaxed;
+	bh=Hk4nSN1n4Iw0XZzBtZze8RtRb2pN/Wq0d66Aae2ZiSw=;
 	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=B7toltJzilzHgfDlq2gt5jisWfwYST1AHmo9k/PKt2M0JOhgNH2BvN2EYTGr0ZFQ1WC0jwXauChBt6mLrw9slxmG8PmVVS5QAPC9GgXpGjEkJ7c+a6mgfrUcxJmlkdq+EJIIGRBLCFG9ZRhTnoWW2B9LmtYE59cmx5aivBHsYGTlJDzcUOFt63jKDmdnS9GaJWWnyizb+Iyw+rtJ+6yVInhXlXFSt2AIoFWRIhnI7keUz3V700UN2E06wvmhY/EcBejSXuEjwUrWLz3IHOfrL7T/ao5/ng70GchTxUICBkwDidDDKmvBmTm5lRFd+1C9aHUat06/GZXNQ1t17jwBLA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JiAtA938; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Disposition:In-Reply-To; b=IsQRn2C016OAPx8QAQJ+WXR23XAbWmwx85HPbETRcb4rdSfG5iNM6tBI+U48IU3JRvCkn+NeWQppP6bAkB7QKq8cO3kQJV25f944TRv/jm1HebpnRLa2MbSvkGhkJxK3MKFfdNpzro2lH92d81OEM7FLqxqvmhT6G7avvG6gIytNbyB+l/85NDc4egLSw+ffDqR1EOiR3tIddgka7Zlg9SsBt/2a/hQMVzO6B7axgg3e8GOLtW/5t3vpb5+3V5RpiFwO1wSS5h5EwnGM72nOzqdsXs6QIS5/vgnrXZ+HTY57jfgRBIHFz9Y+cfGJuOKcg1w/lgvjOhNyGGSsaZNbvg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ccLkwZLA; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JiAtA938;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ccLkwZLA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hzFsl4Zhdz2ygW
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Oct 2026 10:27:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hzFtB0fBGz2ygW
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Oct 2026 10:27:46 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2CC3E60008;
-	Mon,  5 Oct 2026 23:27:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A56601F000FF;
-	Mon,  5 Oct 2026 23:27:19 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 67B1B43DA5;
+	Mon,  5 Oct 2026 23:27:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1465D1F000FF;
+	Mon,  5 Oct 2026 23:27:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791242839;
-	bh=WBg20LLYaRPC5p8DnVDECrTO6jgh2E+qFuXSSu1+OPE=;
+	s=k20260515; t=1791242863;
+	bh=Hk4nSN1n4Iw0XZzBtZze8RtRb2pN/Wq0d66Aae2ZiSw=;
 	h=Date:From:To:Cc:Subject:In-Reply-To;
-	b=JiAtA9389pKiNZ/CFNdNGZg9ElYghY3oQCZaMIdG7HN1kBL+JCey9eKAJbuxAXkIM
-	 D5TNRQ4bL6Bc9bnSaYT00Cfla7K2k95ur+YyPKYhXOrs8tln3u2NGmWfVONYo4RHuA
-	 qHVr2g17PYxa6ZWaP9e+qSo/9dmJtJbGYTdh9Zxr6aCBMMeoRh1rpyeQ7WWRosLAcS
-	 7Eu3PUUZnf741EfbF54G9O4QMgoCfFfDDVqE9anoy3l8VUI6apGYzzyZeUNmVDlDHU
-	 BtrFFsqJyrf5OlmlUUFODHWzMCreON7H3qXeHYXEsz20oOvlTg6PM0C9WJtIDkOTwO
-	 lFKUUaO+Kl8yA==
-Date: Mon, 5 Oct 2026 18:27:18 -0500
+	b=ccLkwZLA+vTQJQtDHAKltez1/rs2YjIt2DogLykXHRJR1+ec7JqgCf+/nT/X5vRHE
+	 s3uC9M/V0irEkuq+u6Zy1U8i1TfCnjP8WdmeDVBnTLvaIXPiPf2v8R1K0kdfOcQOth
+	 X6EXMeQn/GSoDCIouuh2Rdx1MACjFGq8WA41nshZIBXlOUFqz/wdHoO+L5rGQ06ywr
+	 c8L9mDwkIFkpdaQygCj5MXOvO0OJcwXOoBb26+HeYLlzovSV/fhlzeGf3YPV1bj1ZU
+	 5n7gl2JT1lLIX+Bvha1vznbLwH5U4GuoUl+lEwZOxs8SiL4FPTaC5CbahZ1PGsZj8M
+	 DLj31WvfBh0hA==
+Date: Mon, 5 Oct 2026 18:27:42 -0500
 From: Bjorn Helgaas <helgaas@kernel.org>
 To: Priyank Rathod <rathodpriyank@google.com>
 Cc: Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
 	Oliver O'Halloran <oohall@gmail.com>,
 	Bjorn Helgaas <bhelgaas@google.com>, Lukas Wunner <lukas@wunner.de>,
-	Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>,
-	Jonathan Cameron <jic23@kernel.org>,
-	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
-	Dave Jiang <dave.jiang@intel.com>,
-	Shiju Jose <shiju.jose@huawei.com>,
-	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+	Stefan Roese <stefan.roese@mailbox.org>,
+	Keith Busch <kbusch@kernel.org>, Sinan Kaya <okaya@kernel.org>,
 	linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH v5 0/3] PCI/AER: Fix ghes_estatus_pool memory leaks in
- error handling
-Message-ID: <20261005232718.GA644801@bhelgaas>
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] PCI/AER: Fix struct pci_dev reference leak in
+ aer_process_err_devices()
+Message-ID: <20261005232742.GA645076@bhelgaas>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -74,102 +70,92 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260928-b4-fix-aer-memleaks-v5-0-ba6b94c9c9a6@google.com>
+In-Reply-To: <20260918-fix-aer-refcount-leak-v2-1-bdd1ff1c35a9@google.com>
 
-On Mon, Sep 28, 2026 at 05:40:11PM +0000, Priyank Rathod wrote:
-> When firmware reports PCIe Advanced Error Reporting (AER) events via ACPI
-> APEI GHES (ghes_handle_aer()), it allocates a snapshot buffer from
-> ghes_estatus_pool to store the aer_capability_regs registers before
-> enqueuing the error record into aer_recover_ring.
+On Fri, Sep 18, 2026 at 05:24:48PM +0000, Priyank Rathod wrote:
+> When an AER error occurs, candidate error-source devices are added to
+> e_info->dev[] by add_error_device(), which takes a reference with
+> pci_dev_get().
 > 
-> aer_recover_queue() returns void, so ghes_handle_aer() cannot release that
-> buffer itself; ownership is handed to the AER code, which until now freed
-> it only on the fully successful path. If the record cannot be enqueued, or
-> if a dequeued record cannot be mapped to a pci_dev, the allocation is
-> silently leaked. Under a sustained error storm this exhausts
-> ghes_estatus_pool, which then breaks GHES hardware error reporting
-> system-wide.
+> A device can be recorded without any error status being present: the
+> Requester ID fast path in is_error_source(),
 > 
-> This series fixes both leak paths and documents the ownership rule:
+> 	if (e_info->id == pci_dev_id(dev))
+> 		return true;
 > 
-> Patch 1: aer_recover_queue() when kfifo_in_spinlocked() fails because
->          aer_recover_ring (capacity 16) is full. The rejected entry is
->          freed immediately via ghes_estatus_pool_region_free().
+> matches purely on the ID reported by the Root Port and returns true
+> without reading the device's AER status registers.
 > 
-> Patch 2: aer_recover_work_func() when a dequeued entry cannot be mapped to
->          an active PCI device (pdev is NULL). The loop is restructured so
->          ghes_estatus_pool_region_free() runs unconditionally for every
->          dequeued item.
+> In aer_process_err_devices(), handle_error_source() is called only if
+> aer_get_device_error_info() returns non-zero, i.e. only if an unmasked
+> error status bit is actually set. It returns 0 if the device has become
+> inaccessible (status and mask both read as all ones, so
+> status & ~mask == 0) or if no unmasked status bit is set.
 > 
-> Patch 3: Add a kernel-doc comment stating that aer_recover_queue() takes
->          ownership of @aer_regs, which must be allocated from
->          ghes_estatus_pool. This is documentation only, so unlike
->          patches 1 and 2 it has no Fixes: or Cc: stable tag.
+> Because handle_error_source() was responsible for calling pci_dev_put(),
+> skipping it permanently leaks the reference taken in add_error_device().
 > 
+> Decouple reference lifetime from error handling by moving pci_dev_put()
+> out of handle_error_source() and into the aer_process_err_devices() loop,
+> so every recorded device is put exactly once.
+> 
+> handle_error_source() is static and aer_process_err_devices() is its only
+> caller, so no other path is affected.
+> 
+> Fixes: 60271ab044a5 ("PCI/AER: Take reference on error devices")
 > Signed-off-by: Priyank Rathod <rathodpriyank@google.com>
 
 Applied to pci/aer for v7.4, thanks!
 
 > ---
-> Changes in v5:
-> - Add patch 3, a kernel-doc comment on aer_recover_queue() stating that
->   it takes ownership of @aer_regs, which must come from ghes_estatus_pool
->   (suggested by Kuppuswamy Sathyanarayanan). It is a separate patch so
->   that the two fixes stay minimal for stable backports, and because the
->   comment is only accurate once patch 2 is applied.
-> - Add Kuppuswamy's Reviewed-by to patches 1 and 2. Their code is
->   unchanged from v4.
-> - Still applies cleanly to pci/next (94e8d4e94266), before or after
->   Lukas' "Error reporting for AER-incapable devices" series:
->   https://lore.kernel.org/r/cover.1790531238.git.lukas@wunner.de
-> - Cc Kuppuswamy Sathyanarayanan, Jonathan Cameron, Ilpo Järvinen and
->   Dave Jiang, plus Shiju Jose and Rafael J. Wysocki as the author and
->   committer of the commit in Fixes:.
-> - Link to v4: https://lore.kernel.org/r/20260918-b4-fix-aer-memleaks-v4-0-f0a2c21ed1d1@google.com
-> 
-> Changes in v4:
-> - Rebased onto v7.3-rc3+ (f259f446f519); applies cleanly to pci/next as
->   well. No conflicts with the Advisory Non-Fatal Error support that landed
->   in the meantime.
-> - Added missing Fixes: e2abc47a5a1a ("ACPI: APEI: Fix AER info corruption
->   when error status data has multiple sections") and Cc: stable to both
->   patches; that commit (v6.7-rc1) introduced the ghes_estatus_pool
->   allocation whose ownership these paths drop.
-> - Patch 1: use braces on both arms of the if/else and fix the continuation
->   alignment (checkpatch --strict).
-> - Both patches now build warning-free with W=1 and CONFIG_ACPI_APEI_PCIEAER=y
->   (earlier revisions were only build-tested with APEI disabled, which
->   compiles neither of the modified functions).
-> - Explained in both commit messages why the caller cannot free the buffer,
->   and when the missing-pci_dev path is reachable.
-> - Cc: Lukas Wunner, who has been active in this code.
-> - Link to v3: https://lore.kernel.org/r/20260803-b4-fix-aer-memleaks-v3-1-e87159611933@google.com
-> 
-> Changes in v3:
-> - Resent to fix threading of the series.
-> - Link to v2: https://lore.kernel.org/r/20260803-b4-fix-aer-memleaks-v2-1-fd199b0171fd@google.com
-> 
 > Changes in v2:
-> - Refactored aer_recover_work_func() to ensure ghes_estatus_pool_region_free()
->   is called unconditionally for every dequeued record.
-> - Added Patch 1 to fix related memory leak in aer_recover_queue() on kfifo
->   buffer overflow.
-> - Link to v1: https://lore.kernel.org/r/20260803183853.432459-2-rathodpriyank@google.com
+> - Corrected Fixes tag from 1ab4a3c80508 to 60271ab044a5 ("PCI/AER: Take
+>   reference on error devices"), which added both the pci_dev_get() in
+>   add_error_device() and the conditionally-reached pci_dev_put() in
+>   handle_error_source(). Thanks to Lukas Wunner for catching this.
+> - Removed the speculative topology list from the commit message. As Lukas
+>   pointed out, error reporting is not enabled on devices without an AER
+>   capability (pcie_aer_is_native() bails on !dev->aer_cap), so the
+>   dev->aer_cap == 0 reasoning was wrong and is gone.
+> - Explained instead why a device with no error status can be present in
+>   e_info->dev[]: the Requester ID fast path in is_error_source() matches
+>   on e_info->id alone, without reading any AER status register.
+> - Added a Fixes tag; the imbalance dates back to v4.20. I have not added
+>   Cc: stable, since you indicated the path is an unlikely corner case -
+>   happy to add it if you think it is warranted.
+> - Cc: Keith Busch and Sinan Kaya, author and reviewer of 60271ab044a5.
+> - Rebased onto v7.3-rc3+ (f259f446f519); applies cleanly to pci/next as well.
+> - Link to v1: https://lore.kernel.org/r/20260830-fix-aer-refcount-leak-v1-1-64e1013add12@google.com
+> ---
+>  drivers/pci/pcie/aer.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+> index d8dcd238fda1..bc761410d56d 100644
+> --- a/drivers/pci/pcie/aer.c
+> +++ b/drivers/pci/pcie/aer.c
+> @@ -1340,7 +1340,6 @@ static void handle_error_source(struct pci_dev *dev, struct aer_err_info *info)
+>  {
+>  	cxl_rch_handle_error(dev, info);
+>  	pci_aer_handle_error(dev, info);
+> -	pci_dev_put(dev);
+>  }
+>  
+>  #ifdef CONFIG_ACPI_APEI_PCIEAER
+> @@ -1518,6 +1517,7 @@ static inline void aer_process_err_devices(struct aer_err_info *e_info)
+>  	for (i = 0; i < e_info->error_dev_num && e_info->dev[i]; i++) {
+>  		if (aer_get_device_error_info(e_info, i))
+>  			handle_error_source(e_info->dev[i], e_info);
+> +		pci_dev_put(e_info->dev[i]);
+>  	}
+>  }
+>  
 > 
 > ---
-> Priyank Rathod (3):
->       PCI/AER: Fix memory leak in aer_recover_queue() on kfifo buffer overflow
->       PCI/AER: Fix memory leak in aer_recover_work_func() when pci_dev is missing
->       PCI/AER: Document that aer_recover_queue() takes ownership of aer_regs
-> 
->  drivers/pci/pcie/aer.c | 48 +++++++++++++++++++++++++++++++++++-------------
->  1 file changed, 35 insertions(+), 13 deletions(-)
-> ---
-> base-commit: f259f446f5198d98e13756d2cd531812a0ad3064
-> change-id: 20260803-b4-fix-aer-memleaks-524a1bd5e888
+> base-commit: a077be4fde21ee6e751fa70eb641ef5d9bf2fc48
+> change-id: 20260830-fix-aer-refcount-leak-6378f84d62ba
 > 
 > Best regards,
 > -- 
