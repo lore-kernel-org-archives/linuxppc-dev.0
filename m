@@ -1,77 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-28901-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28902-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36855CA5FE2
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Oct 2026 03:48:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80B70CA5FE2
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Oct 2026 03:48:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hylj24KgXz30TY;
-	Mon, 05 Oct 2026 14:48:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:38::28"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791172086;
-	cv=none; b=SHTZ/XkwuwhrKm0O1p232iRtdORyN9s5VdvDje1CgsjmVEf0Qngmb708/h27NAwskLNo4+QCx8VWW6fV41QxJoVVi3rmIeWCYFQX8g3bQ1v1mbHs1GxUPjZ6mYxuBpJhFyWLZDNo7aJVljPRKqq982Qwwyy3ZBmFJZY/sODXxGNmQSVxQ/4JotX/yiK0yI4Ooxyrt7HruGzK3Wkep8ModTV+1KxdRGF+5Qnj0j6eEHt3z1pibNnUA6TsrgdiBrd46oEIBLmqDokF30dTMWfUosB7UG+pZPyiVpDnctjS4sW5xnlZT9dvKMbNsa+e2DY2LsEQDiLF7W4Bgwq/xqYrUQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hylj627cKz30Tf;
+	Mon, 05 Oct 2026 14:48:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:36::f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791172090;
+	cv=none; b=Ov2Xn4suUY6E29Cex4sr9LLLQPsw7kkQYInMkeNteeaZxCD/BqGbnraz1lgaYMNZpHUixq2XD418UIxzlAvkNcMEruQqgSPlinIkRTuW81HQC6TaZAT457+pjFYa0F6sUznBFm84KRtCd11ImRE9ge8uQGnjo2860QfJhVFfTlIXfU+ltNusnDRR06cBxIY/ilJqn5MMeIvu+fYyvMkj7Q9nJSUwY3/4bG7ULOnE4WG1TtgXSnW5irX5GPC7adQh6DPQhJh7/Lyf7nUatHGaAYGKcf2M4lvLPxvZSGeTf565bC0Er2HwFH9M4wJZHHEL+6R+FBhrlzaTICt0NWKaAQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791172086; c=relaxed/relaxed;
-	bh=HLwPHwcyBpbEdHoUdZEu0832fJUKg87xyYGklLfVx8A=;
+	t=1791172090; c=relaxed/relaxed;
+	bh=We84JRc/bHqMhmFuiHMoH3sRnXvkHgWbYpO/4GVf6wY=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=RT9JdEIygfrClz0z/guEYT4665A/l+wG6TidFkCkX/vWVOECKBnp6zzCpvVTJNY64QiiANRHgVTyQ/W5R/hGAkpaPHjWpRB3K7h7IlTokzzvSrh5lFC1ZKJkVb/qmgaC1Av/ugY4xvlaqPMGfYQDMYSb0zjq7eC4EbZoXANAIB2hFpiicxGYnb84qx3ChvKMBbdqI8kG23olDSXd6VXZLpIo2NZPmLIWVRySC5YqleUFVTtovItFDgFMXCLtPdMHafce6myUmWltVbutD6zg96cN3kK0iYJoIZZ8aK2GCnVD7FzFgWCVPWtc09yO9hwiD9VU8NUSMK6nDDg6M1/fcg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=SRkx1bzv; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:38::28; helo=mail-dl2-x28.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=WmCvKRaw0tIAbDhPXnnDN53TNDCP120UmcLxylnWYUvuA7JL4vD8mU6ZP7eoYISjaOS5t3u6vWFwCmgJjbGFPkPCLH37pnuepv1beLAIsx4h24n7op5eXJr+Ooi407dPTrPKiDImRsCBUwkEj1MKA2vx54dz6PJ0ZQK73pNoUYV18z8mo/YWf9csWtVAcxEYOeOl9u40dcGXT63pK6hk6HEqBIMqrt/YKjRUWEkOu267VQtOuUyJ1AEdLA7sQk/0hyZkj7JvzXrVgw1cRaW0jLIfki+l+M6p3ccn0L5QMsPrbgCWt+NHUe/6nzM+A9gkDnGttfVWcRLt6qnhlKtDUw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ddxERqrW; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:36::f; helo=mail-dy2-x0f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=SRkx1bzv;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ddxERqrW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:38::28; helo=mail-dl2-x28.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl2-x28.google.com (mail-dl2-x28.google.com [IPv6:2607:f8b0:4864:38::28])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:36::f; helo=mail-dy2-x0f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy2-x0f.google.com (mail-dy2-x0f.google.com [IPv6:2607:f8b0:4864:36::f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hylj11sl0z2yjw
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Oct 2026 14:48:05 +1100 (AEDT)
-Received: by mail-dl2-x28.google.com with SMTP id a92af1059eb24-14373bcc010so1027332c88.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Oct 2026 20:48:04 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hylj54GN2z2yjw
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Oct 2026 14:48:09 +1100 (AEDT)
+Received: by mail-dy2-x0f.google.com with SMTP id 5a478bee46e88-33e46a15703so1580632eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Oct 2026 20:48:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791172083; x=1791776883; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1791172088; x=1791776888; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=HLwPHwcyBpbEdHoUdZEu0832fJUKg87xyYGklLfVx8A=;
-        b=SRkx1bzvQxH7RvZFR40NGa5x3o9J8X36+PfNv1PNOpghQ/MIMXw8uCKCzAdQrJ88T4
-         5Z5yYdjOfGHbcDliizHbBX4k6cB1qApfbiurpJTJptz0qfEtmh/BRWhc7bz/X7/86Iq7
-         yHETYzO4Ko5rh9S/OklQSNtA+CM8/caJLe2Kys3nJKJ0/25c0l1DVO2d15x8V3+5noo9
-         sDPAF2B9KigC8kmb7PQm7/XYaCYHrmHhb0nku1Oe6YdSRcJm7oA0gdwSX3PLGjn4Ypoi
-         oRhJEKgpRuJq+ysLvSTv4yqIJBBFW3eKT0BjJCYZUpXUHsbAeO4hmIwg7Bd1o8p051bz
-         FGkw==
+        bh=We84JRc/bHqMhmFuiHMoH3sRnXvkHgWbYpO/4GVf6wY=;
+        b=ddxERqrWPTaxMdSMIHzm7yP4Hg2ylW2yHJEgbrsAAmOgBH7d4A+5jH7A6vZCgWmjYq
+         wh06MA4k3cMRCrRtGuO5RbT7163sE8XuxGWVRiDE8QMkK0EnEA1pfUXo/5Shyhs/925t
+         n7V6v/f4iS/Ei13myPPG6WJF+20I+Tx2xRXlO7TsqZ5wcuXLM76yj8WhCfn3KaQFTT1x
+         CfWtYt43dpBHIHWtHYNNfpRHB/dpC9ztDUcO8n8FnfzKS7dNJgptDGi3wRTcxetlWr0k
+         GlozVhtPVaLYKHAPA8dLw4yLxbCu+XMgnvhFrNoncg6ZX/T1+YGRYyY5+59fMmmzVca7
+         dqkQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791172083; x=1791776883;
+        d=1e100.net; s=20260707; t=1791172088; x=1791776888;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=HLwPHwcyBpbEdHoUdZEu0832fJUKg87xyYGklLfVx8A=;
-        b=uroGnA8e0zmP94eWtlctJfUBk4YO8YhvLx7VGwhqnuQTLuvfy7W2zr9QNe23W1DVwS
-         2zkKHrDbPtMIv/aVZqdYWle1VCpb3D1UvYos8EshBzOkSMzqGy+uP3LTuMTC85ar18ko
-         7Dst/H+CCmr+f/yooBoSIziEpdmMHNFfNDHhjf4q6Z0fJOCNIs6S7vn1sKDchtzQus4Z
-         SMdcZj6P6Y6Vis1ku8kM4iy94tCAK0iHvHh/t3of3jaAb0Q6YBR2dSAVAV55dpNVBU1P
-         uZp6rae0/866TKLyn25xkoKinZwZN6E5gTYa56krvaia4Jx0P8eRt9Mxg5wlfnEXACtU
-         aR0w==
-X-Forwarded-Encrypted: i=1; AKwUvBy+QNGZyo3y59nQ/xJBbC5O8WQx36N2wuO7Qy6u0HxVOMqwf1ulYasTb/GOmWH8C1fUKkXJ6+78B/F4PII=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++mfYofHSpI30jm6/vkosdwldratJDbTs5SCueIR8eTGuhZgEQSU
-	edK5GvYAF3K/XKg3ufV3c0xX/36wD+DVsKUpV298/fwSPyafVkECR7Q1
-X-Gm-Gg: AYBFou2gB4+kPd32xnfSwGcwvTSP/CF5UxFodOL+/dmgvGLLa5olVs2Qp0xKe3Rwzq3
-	ADD+4O4N3N/j4O3zKj8WPNI5Y7ZEm8unb3DvLuEFYNiIa/o9v7ECu6iORohagPl7ewy1Z20kF2a
-	L4HkyS+PIgW7sCPov+3MQ+0QxrQnfQ6tMB9Uhco9btLoQCYxryjkC5NMAlKZNGqG3SvxFyqZKEC
-	fa4N7jVNSDlV8RFhNx3mqskLgCQGH5FTv59EEeRNmtBlqMPX2+oA/TqaRRVLP735qS6WIDEw5Mz
-	bMxg5ePg2vtS39uhCjeF+zKM6pyu1pOXRdXe8v4xXFeXnCPLI7fYnU9vt0KZa2xMk/jmdkvHsed
-	Iz5Ry6f+hK/e09k1zwjE7xdpu2wlIXMoO5lAvRqYES9rvTvvdys1e6KwgdN30mVBwCyA+uPOS/O
-	4DTEAEuug1GDgxAXauSXuZNf/FSvlMC4XPueZr7Jfw0lo5ecavpGTC4jVDgqw8UfK1d2Azqq2DJ
-	z3TBGzY5Z8Jn3ptmdLBqBshN3Sb2OY8/YUjM+eszB4Gqbb3ruO7pVyJ2q/87g==
-X-Received: by 2002:a05:701b:2803:b0:157:cbf6:8a1c with SMTP id a92af1059eb24-157cbf68f96mr2608778c88.33.1791172082536;
-        Sun, 04 Oct 2026 20:48:02 -0700 (PDT)
+        bh=We84JRc/bHqMhmFuiHMoH3sRnXvkHgWbYpO/4GVf6wY=;
+        b=PZj93n7JME4Z4R52fZKJoWg4l5aHYWV4laAWvisIWQdItsNHJWpMe1Ibhtja919GuC
+         8kmvx3nWCINPQ5cdOnQuKikgYu1xU5M/Xhww2ZXsUJkGvN+wCkXt1z6PlPbPoBab8DTH
+         eqaIl3vBxmfKXM6ywyd7GnQi1d06WlOpsDNHG20EuJy6izEWutfH8I3NKaaNaIacZYxo
+         vyQ9dSLZOyMutSgNDt/EdObFMGij+zQ07hXI9AGYEmdzA8WW3fDeAMfyaP2sSaufcz0W
+         0etnBumsdqSCJslaTVQzbbS3IeT3FAI4cTmJo20EFhQ3Oh9YX8ulTrPaYDZZWa/LLiOc
+         d9hw==
+X-Forwarded-Encrypted: i=1; AKwUvBxgEvNjSIhQJOjH7/K36wT34xQE3b47m3eXMJ0d8nPx+wn90K7V7fSYLWVCZHaswk39rvPB8we7tBKbMf8=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYI4a5H5XUVjChWcCPqNKyr+0Qi5V1xN0ZoqBGHASfObrSzXcJgD
+	/unIVlnu+nmHYpA+vM6efhLrR0csuRyOq+ad5N0X1xvNDJYpr0H1f4ug
+X-Gm-Gg: AYBFou2beK+bUl8koYxGd1fx9jWmqqLqVYZdIbjDYsX6VfT1QLAQtPSySYF7gimKbXC
+	2S9Us6LJBTzCcmqSWRJbwvl9W9LU+jQmrcIUFqjhgKK+1B7JCRZdeeiSBSYkU7cp2my0w0W+FM0
+	Y0Sxyj8fiigURu+JCLb19TRl4Vm12UmoZYx+WS5tw8A3QrevR7PDb5uI2/CZ+CmTh/uDfN8oKU9
+	SzfNvIWMYxC/39jmihLZaSgftB/sLZIsNFw/jYdD+CCp4gy0/WZfvM5G2xdy4IQRnMBEht0WLxn
+	zC3Tl4ist7HTJVhaXtYSd4qDU0g53tEwoHLkDSuKH4J3gpgG3cxg4ryMMe/82oxXs8g7tI5qVWE
+	J/VOuxGu0c2/zPMOlCJ1livVjRliDM/nYP8WFIqZBwQJs/bkXR9+gTP7a3i8KfgRBfSkqcAbKez
+	O28kC7Pwi53pOhNdjMDtJpyYYkf4TkVd6SR/LjiFgviQ6WkREE7Yq54nh01q+XW3xw/24k1Iupx
+	TvMunVBHt0PFpFvAY6nQwvQz5dR1ua5C3FdQvs7EBIg3YDzbHBCe+Gzy6Y0
+X-Received: by 2002:a05:7301:707:b0:34a:e4f6:4a4b with SMTP id 5a478bee46e88-34f150c3c64mr10761322eec.21.1791172087608;
+        Sun, 04 Oct 2026 20:48:07 -0700 (PDT)
 Received: from pve-server.rlab ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3512718a18esm10840958eec.17.2026.10.04.20.47.57
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3512718a18esm10840958eec.17.2026.10.04.20.48.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 04 Oct 2026 20:48:01 -0700 (PDT)
+        Sun, 04 Oct 2026 20:48:07 -0700 (PDT)
 From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 To: kvm@vger.kernel.org,
 	Sean Christopherson <seanjc@google.com>
@@ -86,9 +86,9 @@ Cc: Paolo Bonzini <pbonzini@redhat.com>,
 	Shrikanth Hegde <sshegde@linux.ibm.com>,
 	linux-kernel@vger.kernel.org,
 	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [PATCH v6 4/5] KVM: PPC: selftests: Skip idle-page check when running nested on pseries LPAR
-Date: Mon,  5 Oct 2026 09:17:27 +0530
-Message-Id: <4e9622b3c3329cd32c120175b06bd30a933b8375.1791014924.git.ritesh.list@gmail.com>
+Subject: [PATCH v6 5/5] KVM: selftests: Don't limit LE dirty-bitmap bitops to s390x
+Date: Mon,  5 Oct 2026 09:17:28 +0530
+Message-Id: <0c3cf7d492acb9da38bcdd0331cb69929c947c30.1791014924.git.ritesh.list@gmail.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <cover.1791014923.git.ritesh.list@gmail.com>
 References: <cover.1791014923.git.ritesh.list@gmail.com>
@@ -107,53 +107,67 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Same nested TLB/access bit issue like x86. Use the is_pseries_lpar()
-check to detect when running nested kvm on pseries LPAR to only warn on
-idle-page check.
+dirty_log_test already has BITOP_LE_SWIZZLE helpers, but they were
+compiled in only for s390x, so every other big-endian host used native
+test_bit().
 
-Reported-by: Anushree Mathur <anushree.mathur@linux.ibm.com>
+The test fails on big-endian powerpc because it treated dirty host pages
+as clean (because of the endianness issue)
+
+w/o the fix the test fails with:
+  Clear page 1 value (1) >= iteration (1)
+
 Tested-by: Anushree Mathur <anushree.mathur@linux.ibm.com>
 Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 ---
- tools/testing/selftests/kvm/Makefile.kvm              |  1 +
- .../testing/selftests/kvm/access_tracking_perf_test.c | 11 +++++++++++
- 2 files changed, 12 insertions(+)
+ tools/testing/selftests/kvm/Makefile.kvm     |  1 +
+ tools/testing/selftests/kvm/dirty_log_test.c | 12 ++++--------
+ 2 files changed, 5 insertions(+), 8 deletions(-)
 
 diff --git a/tools/testing/selftests/kvm/Makefile.kvm b/tools/testing/selftests/kvm/Makefile.kvm
-index a7ecd7a242a9..57d1bf994fe8 100644
+index 57d1bf994fe8..38c350c5b5e3 100644
 --- a/tools/testing/selftests/kvm/Makefile.kvm
 +++ b/tools/testing/selftests/kvm/Makefile.kvm
-@@ -263,6 +263,7 @@ TEST_GEN_PROGS_powerpc += kvm_page_table_test
- TEST_GEN_PROGS_powerpc += set_memory_region_test
+@@ -264,6 +264,7 @@ TEST_GEN_PROGS_powerpc += set_memory_region_test
  TEST_GEN_PROGS_powerpc += memslot_modification_stress_test
  TEST_GEN_PROGS_powerpc += memslot_perf_test
-+TEST_GEN_PROGS_powerpc += access_tracking_perf_test
- 
+ TEST_GEN_PROGS_powerpc += access_tracking_perf_test
++TEST_GEN_PROGS_powerpc += dirty_log_test
+
  SPLIT_TESTS += arch_timer
  SPLIT_TESTS += get-reg-list
-diff --git a/tools/testing/selftests/kvm/access_tracking_perf_test.c b/tools/testing/selftests/kvm/access_tracking_perf_test.c
-index 4415c94b2866..94bfb82f7b79 100644
---- a/tools/testing/selftests/kvm/access_tracking_perf_test.c
-+++ b/tools/testing/selftests/kvm/access_tracking_perf_test.c
-@@ -470,6 +470,17 @@ static int access_tracking_unreliable(void)
- 		puts("Skipping idle page count sanity check, because the test is run nested");
- 		return 1;
- 	}
+diff --git a/tools/testing/selftests/kvm/dirty_log_test.c b/tools/testing/selftests/kvm/dirty_log_test.c
+index af5eb0334a74..8189eaac713c 100644
+--- a/tools/testing/selftests/kvm/dirty_log_test.c
++++ b/tools/testing/selftests/kvm/dirty_log_test.c
+@@ -44,8 +44,11 @@
+ #define TEST_MIN_WRITES_PER_ITERATION	0x100
+
+ /* Dirty bitmaps are always little endian, so we need to swap on big endian */
+-#if defined(__s390x__)
++#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+ # define BITOP_LE_SWIZZLE	((BITS_PER_LONG-1) & ~0x7)
++#else
++# define BITOP_LE_SWIZZLE	0
 +#endif
-+#ifdef __powerpc64__
-+	/*
-+	 * Nested KVM (pSeries LPAR) can hide accessed/idle, since KVM doesn't
-+	 * explicitely flush the TLB for access bit update. L0 keeps
-+	 * translations cached so the guest won't see the idle bit cleared.
-+	 */
-+	if (is_pseries_lpar()) {
-+		puts("Skipping idle page count sanity check, because the test is run nested");
-+		return 1;
-+	}
- #endif
- 	/*
- 	 * When NUMA balancing is enabled, guest memory will be unmapped to get
--- 
+ # define test_bit_le(nr, addr) \
+ 	test_bit((nr) ^ BITOP_LE_SWIZZLE, addr)
+ # define __set_bit_le(nr, addr) \
+@@ -56,13 +59,6 @@
+ 	__test_and_set_bit((nr) ^ BITOP_LE_SWIZZLE, addr)
+ # define __test_and_clear_bit_le(nr, addr) \
+ 	__test_and_clear_bit((nr) ^ BITOP_LE_SWIZZLE, addr)
+-#else
+-# define test_bit_le			test_bit
+-# define __set_bit_le			__set_bit
+-# define __clear_bit_le			__clear_bit
+-# define __test_and_set_bit_le		__test_and_set_bit
+-# define __test_and_clear_bit_le	__test_and_clear_bit
+-#endif
+
+ #define TEST_DIRTY_RING_COUNT		65536
+
+--
 2.39.5
 
 
