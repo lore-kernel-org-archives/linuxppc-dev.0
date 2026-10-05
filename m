@@ -1,73 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-28915-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28916-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7395BCA5FE2
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Oct 2026 06:27:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C06D9CA5FFC
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Oct 2026 07:37:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hyqFK6g40z2yjw;
-	Mon, 05 Oct 2026 17:27:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791181669;
-	cv=none; b=RasqZ+A7Gmtvt++q6WLFswpI1UUSC/lNtxgO/Rta2AilDQE4LAi+mhjVsjYLY83vqe2rJdZ2sfx5CMT5HQuWTagmGlcO6sM4E2inPtJrwUTH1PkvsO7H65ij9Y2pekSDc7Y3ypb3ZGAo6eEkSBvahcpTu//3x3rG7PSGtUXXvJNfVKCuu1qgfN9DkB1BL4P/conh0+yPadGdoHGztwXR+rzAyekJHnU0HGlhQnftCWxI/Gw3gxEvK5V+e0PT3byHmBHEq7gFaKSiCWmwAQM1GD9wn30yMUgXJKfcwtfSwS1hphVCM9j7C6jOwQ7NKGOyz19wut6mcYOtETYbEEcMgw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hyrn65ptkz2yjw;
+	Mon, 05 Oct 2026 18:36:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791185818;
+	cv=none; b=VPovbfSFuzxUuCPntPM5Yl/QXKeENFdwpF6cwZ8HjZyTf1TAS5nGG1yR4a2Zf8zjQMvgWhSrTA56VknOrnqZd2ci6LVI7zSmZ3pRkCTzGGwJywMsHF//zZkG/kATELbj6B3T6bGfbQvhlNc1HdodLk65akP/5bslC/EGr6gfmO/T8b3oxQJdVpM5NXm7WLcE+ZPfs+mrrP+IrtcgFw4t/3RWfk9M9/lkauxZZDlY4QR82sxT6QpPUMbS6DmCf4rzq20HMG0nUWwL7FGMtDPSWLTzIQz9v+orgbIphw2AZkilY1bsH8gVTTYN4IZYRiSJUj6Ce6aHQqM0haBOhYi8gg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791181669; c=relaxed/relaxed;
-	bh=KWRHNp7m2hNhZ4zXM3os5Hl5nHIxcvWa0uLmAhkFliE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PEK3J0ek26eoIyOTZfJOCG3DCenu/e08bm6tH/EbFbkbI8/AQ7yflI7gfjDzpxhN8koXkL8FThYSiIGNzkxv1TQIPhR3GxkxBOtw0LHZ1rLysug87moT9hCQYJOBi1tk/TU0gxXbHiqM3WvTJclQ3zo1KfmR/mdaOxxrMITz2k2Fvc4DtXUbGR4LgGhoyXZeMgXWvKeaRScUfMyVcO+19/Br2LV088mEIZdR0Qhfqho79ZSVivY0hDRXed7PALIpERE/Og+2XZ2Vi8K+HqG1Bs9PAgFGQJL5CQRl6vgO7wXJfreMiDGkDgea2sfQYaQHQV/XnBM2kY7N6/vUSHA14w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WryLUBJM; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1791185818; c=relaxed/relaxed;
+	bh=RJFv3jrtkC0svbmP1yEJmkw1gwKAt3tmxR7hZ8Km7N0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Ecictw+MoOWreGYh/z6P2ysxfk/mEjyhtS49ewvWulS3UCWBe86HAyGlv7ReS0TAazHs28eu+7lCfW/gkjDAGFeHIfCFVu+YIvvxTX9eucUxIIsq/RHKurLZ8m0/IYabyRjbcW8DPJpPrzNQt92Dqs+rApS2/jJ9C0TMguKzWneVcohU6XJ4OuL/m/Rbuei+6gowM4ArK2aG8SGKqMntPsTHK9+4WWgWAnNglt9oBw7l1/DGFip+LIBMeCY2/lZEtt6i4Bkcjus7azG0nttsTHYeHdZexlgdrfSqfH9nU7st7a/k7aGQq3z+/PcRV1YH6KTs+aEz5jTCqGughEE3sw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tNPrw0Xw; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WryLUBJM;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tNPrw0Xw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hyqFJ3splz2yDm
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Oct 2026 17:27:47 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69516LCd3139378;
-	Mon, 5 Oct 2026 06:27:37 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hyrn52jxXz2yf9
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Oct 2026 18:36:56 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69515LWn1475326;
+	Mon, 5 Oct 2026 07:36:48 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=KWRHNp
-	7m2hNhZ4zXM3os5Hl5nHIxcvWa0uLmAhkFliE=; b=WryLUBJMRP/5drkvEbcGc7
-	JJA15itYMyKH/Ogh9gDkXowHBe6irF7XE5srMWS4HfwM967zx1SdS46uu/HrTYzd
-	3H0t3WSHZHyg50TsU0Ps0bR7247fVt6QWlra/xtVp3/tXK3bH9LGr/Ns8zY+p4aA
-	R13t8jEgfLUJaj/YamK0rXas31nIpFWZd9zRgn7P9m7mmMIeg0dZv/VBH+V7NFdf
-	tjZDjlXSEuY7WIikmQFo0D4kG1UUkd52hH2Qr2kAk0iSs3+mePB3nvBXwBT5nPuV
-	YYPMKCu1lbXViJ8ToWIIb+cQZky6fVsmBPy2GRJe/jAN8yFlmhrYH1sUggZpg2OQ
-	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h2q4jgc9p-1
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=RJFv3jrtkC0svbmP1yEJmkw1gwKAt3
+	tmxR7hZ8Km7N0=; b=tNPrw0Xwu+PW5ZOjVHPX8f7TxEjF79+1atiHePnl+eiQyp
+	hAdgfv3wTl0NSckjkHASEaLJi1+qlrhXsRcBIjcBQx+AfZtEB1PRhmKCjQ6cY1yv
+	y2Qubi+bDhh1nFz2kNxgwSnatxj/e44T1YB81PaPumikpEK4bbSP7gGlN9Csul/C
+	M0cQ0tSeEeJpDLKgjIrzidbu30dn9HVupG9w39PjRBoXBkjRvjhu1SBkMbtqtxc9
+	HkQF3+99cwY0Xjs3tbwpOeweuMOTnMWYGOIKubwXHEQMlA78M6f4oC+b6pc1r+CF
+	2yn9HitBz9AgHz3t3HAeIPcbi77GsP+nRgqAbKcQ==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h2scr8yg5-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 05 Oct 2026 06:27:34 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6956QvZ22165205;
-	Mon, 5 Oct 2026 06:27:33 GMT
-Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4h3c1pmder-1
+	Mon, 05 Oct 2026 07:36:47 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6956PPbu899535;
+	Mon, 5 Oct 2026 07:36:46 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4h3e8g49hm-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 05 Oct 2026 06:27:33 +0000 (GMT)
-Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
-	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6956RW1U11207398
+	Mon, 05 Oct 2026 07:36:46 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6957agQ346662112
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 5 Oct 2026 06:27:32 GMT
-Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E9CA25806E;
-	Mon,  5 Oct 2026 06:27:31 +0000 (GMT)
-Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D11375806A;
-	Mon,  5 Oct 2026 06:27:29 +0000 (GMT)
-Received: from [9.67.97.222] (unknown [9.67.97.222])
-	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  5 Oct 2026 06:27:29 +0000 (GMT)
-Message-ID: <9879dd0a-2f1c-4833-b7b1-7cfd20ea946e@linux.ibm.com>
-Date: Sun, 4 Oct 2026 23:27:29 -0700
+	Mon, 5 Oct 2026 07:36:42 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4BA9C20063;
+	Mon,  5 Oct 2026 07:36:42 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 26C6C20040;
+	Mon,  5 Oct 2026 07:36:40 +0000 (GMT)
+Received: from fedora (unknown [9.5.7.39])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Mon,  5 Oct 2026 07:36:38 +0000 (GMT)
+Date: Mon, 5 Oct 2026 13:14:50 +0530
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: Jyoti Gupta <jyoti@linux.ibm.com>
+Cc: amachhiw@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
+        mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
+        ritesh.list@gmail.com, sshegde@linux.ibm.com,
+        sourabhjain@linux.ibm.com, mkchauras@gmail.com
+Subject: Re: [PATCH v2] powerpc/mpic: Fix memory leak of mpic on error paths
+Message-ID: <20261005130342.de3acc9a-b0-amachhiw@linux.ibm.com>
+Mail-Followup-To: Jyoti Gupta <jyoti@linux.ibm.com>, 
+	linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com, 
+	sourabhjain@linux.ibm.com, mkchauras@gmail.com
+References: <20260930180919.335930-1-jyoti@linux.ibm.com>
+ <20261001001512.d05b4c2a-13-amachhiw@linux.ibm.com>
+ <98cf7d072c8986bfdc5a28f577876503@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,160 +94,219 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH net-next 5/7] ibmveth: release the pool kobjects when
- probe fails
-To: netdev-bot+sashiko@kernel.org
-Cc: netdev@vger.kernel.org, davem@davemloft.net, kuba@kernel.org,
-        horms@kernel.org, edumazet@google.com, pabeni@redhat.com,
-        andrew+netdev@lunn.ch, nnac123@linux.ibm.com, maddy@linux.ibm.com,
-        mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
-        davemarq@linux.ibm.com, bjking1@linux.ibm.com
-References: <f0186ae5ac4f9838b01c23fc42391abc328f814f.1790991039.git.mmc@linux.ibm.com>
- <179107997848.434549.4525032963009141215@kernel.org>
-Content-Language: en-US
-From: mingming cao <mmc@linux.ibm.com>
-In-Reply-To: <179107997848.434549.4525032963009141215@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <98cf7d072c8986bfdc5a28f577876503@linux.ibm.com>
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: uwSRGk-KSUo8txCTrcLqyMID0-AC0Igd
-X-Proofpoint-GUID: 1U_dth-67-IRF5cFiOPrwYux4ZE6MzSg
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA1MDAyNCBTYWx0ZWRfX+dBlDRjpzvde
- ++tC/jwHaTX+gIs5HxKRLAG1mBnYBP9tuHVCKycZdaFRcw42r0Ij6XCnxF1Ub7yS3a0gMVseCgk
- nqhJg8PwReEusJjoGSylnHiDVWdLu4Y=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA1MDAyNCBTYWx0ZWRfX9jLuKTj5x8SF
- r6mSXsuLIuAwBHtAEeaMdWA9CYo+ndFM5Ft2sTzbZJv2KtRkvFpcKqoi+qmkzp7L5unCR7k6bIa
- eNTC+WrhIiny9/S0lTAfR8Cvsxb8+drXPAWJyrXZPPEzKP1tG0onw1si3GjJujgSTImj7ikJ7MK
- 5NXh1E8ZZ/+/vWugfpEKWc9fK1y77AuWEKX/IbhKeyPsaDek6xwu+hHnjJO6UYqaCSC/0uVsiyB
- Aay5vAdXwxq6ZnpKG8hu6Qvo+Lr8cm2a/RveCqNmyKTFnC+LotxVaroigthhpDH+TZhaBIAkVRq
- IgrHcl/OBKVqv7MXS6trkwmXh0UAY7IcT7etyF/PnueT/CcfG7YxOC9GAg5aLukgABe9QoaLONu
- 8GW++Cd29oFV6BUl2mA4I1smbmamYFh04q3PDKTUyy9nPyL1vOWDz/CHGDQkFNPdqy6oHqU3Fx6
- WM8Y1Ac7wditbBlFbYg==
-X-Authority-Analysis: v=2.4 cv=eYeo7LEH c=1 sm=1 tr=0 ts=6ac34356 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=7DkcN3C0X5N58BSoarIA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA1MDAzMCBTYWx0ZWRfX0jGzlFEajmGC
+ nFMXLbGcFGPnKbjs7dgC5teM2V/rTzcaa048hS2vUKjBNMyl+5X3sjaSZ8Vfll70zUwQ3VlTmhQ
+ m++gG2H5fDxiyiRGm6rpWowIGhTJJcE=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA1MDAzMCBTYWx0ZWRfX8L/WxFSR0osz
+ Py40UnxEL8q7GlQh+5YEhzpiOJ8eE8OzNEo7yav7PqSB3UUGjT8unzti7s/qEZRi1qMNyd4Puyu
+ 5PGDy1G07cU4Tydo6rqToW3XBy+/Q+SLuQEw0i6a60QpgnkIVUhdPSHLZWdA2OeRd2Ux4Lz3j8b
+ xSooFaR6ggzkrnhEvQoCA2IZajHgMy6NGIRcdkFR5ur6Ytk/N0CDTjOMumAx6/5shioOLqDUNhX
+ MAfA/OmjdF7mFPrUAhQ14RcbUDNX3Pc1O/GJCuKGY9BkMQA1XjU20x76CE/NMdpGLZ2qzBP450f
+ FCZhDmyfjHAtYpOrXvMyj876hkWQyiVV02di2qiipNuzA7ANvrwA6fTi+se2/the5CVRONHH6pQ
+ KJoTFmdbGhAxTlijG82etIzBeXUB6eFuPhotq4dyFnJZAq160MmZqIgOKwM+3kA8cW6BxGNiYff
+ ZhKfs1BvRTxupCEeVmA==
+X-Proofpoint-GUID: aA5EFFVp_JTj2QasH6w7F-RmpTFMm_Ll
+X-Proofpoint-ORIG-GUID: XwwQgjwmSU_OqqkiVgT-2OT8u3Qx7W-p
+X-Authority-Analysis: v=2.4 cv=B7osQ+tM c=1 sm=1 tr=0 ts=6ac3538f cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=kj9zAlcOel0A:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8
+ a=VwQbUJbxAAAA:8 a=qiT8vAV_IABRkjKlFogA:9 a=CjuIK1q_8ugA:10
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-10-05_01,2026-10-02_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 lowpriorityscore=0 phishscore=0 bulkscore=0 clxscore=1015
- spamscore=0 malwarescore=0 priorityscore=1501 impostorscore=0 suspectscore=0
+ priorityscore=1501 bulkscore=0 malwarescore=0 impostorscore=0 phishscore=0
+ clxscore=1015 spamscore=0 adultscore=0 lowpriorityscore=0 suspectscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2610050024
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2610050030
+
+Hi Jyoti,
+
+Please find my responses inline below.
+
+On 2026/10/01 05:29 PM, Jyoti Gupta wrote:
+> On 2026-10-01 00:20, Amit Machhiwal wrote:
+> > On 2026/09/30 11:39 PM, Jyoti Gupta wrote:
+> > > mpic_alloc() allocates struct mpic (and optionally the protected
+> > > sources bitmap) but does not free them when mpic_setup_error_int() or
+> > > irq_domain_create_linear() fails, leaking the memory.
+> > > 
+> > > Free the bitmap and the mpic in the common error path before
+> > > dropping the
+> > > device node reference.
+> > > 
+> > > Fixes: 996983b75ceb ("powerpc/mpic: Search for open-pic device-tree
+> > > node if NULL")
+> > > Signed-off-by: Jyoti Gupta <jyoti@linux.ibm.com>
+> > > ---
+> > >  arch/powerpc/sysdev/mpic.c | 11 +++++------
+> > >  1 file changed, 5 insertions(+), 6 deletions(-)
+> > 
+> > Thanks for addressing the comments from v1.
+> > 
+> > A couple of minor suggestions:
+> > 
+> > 1. Changelog & Links: It is always a good practice to include a
+> > changelog below
+> >    the "---" line detailing the changes made in this version (e.g. "v1
+> > -> v2:
+> >    ...") along with a link to the previous version(s) on
+> > lore.kernel.org. This
+> >    helps reviewers and maintainers quickly track the evolution of the
+> > patch.
+> > 
+> 
+> Got it, thank you for the suggestion. I'll keep it in mind.
+> 
+> > 2. Minor nit in cleanup logic below:
+> > 
+> > > 
+> > > diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> > > index 257886ec3f70..b21a880777cc 100644
+> > > --- a/arch/powerpc/sysdev/mpic.c
+> > > +++ b/arch/powerpc/sysdev/mpic.c
+> > > @@ -1389,7 +1389,7 @@ struct mpic * __init mpic_alloc(struct
+> > > device_node *node,
+> > >  		if (fsl_version >= 0x401) {
+> > >  			ret = mpic_setup_error_int(mpic, intvec_top - 13);
+> > >  			if (ret)
+> > > -				return NULL;
+> > > +				goto err_of_node_put;
+> > >  		}
+> > > 
+> > >  	}
+> > > @@ -1488,12 +1488,8 @@ struct mpic * __init mpic_alloc(struct
+> > > device_node *node,
+> > >  						 intvec_top,
+> > >  						 &mpic_host_ops, mpic);
+> > > 
+> > > -	/*
+> > > -	 * FIXME: The code leaks the MPIC object and mappings here; this
+> > > -	 * is very unlikely to fail but it ought to be fixed anyways.
+> > > -	 */
+> > >  	if (mpic->irqhost == NULL)
+> > > -		return NULL;
+> > > +		goto err_of_node_put;
+> > > 
+> > >  	/* Display version */
+> > >  	switch (greg_feature & MPIC_GREG_FEATURE_VERSION_MASK) {
+> > > @@ -1527,6 +1523,9 @@ struct mpic * __init mpic_alloc(struct
+> > > device_node *node,
+> > >  	return mpic;
+> > > 
+> > >  err_of_node_put:
+> > > +	if (mpic)
+> > > +		bitmap_free(mpic->protected);
+> > > +	kfree(mpic);
+> > 
+> > Both bitmap_free() and kfree() safely handle NULL pointers (and mpic is
+> > guaranteed to be non-NULL at this label anyway), so the 'if (mpic)'
+> > check is
+> > redundant.
+> > 
+> 
+> Thanks for the review.
+> 
+> Regarding the 'if (mpic)' check, I think we may need to keep it. While
+> bitmap_free() and kfree() both safely handle NULL, the concern here is
+> dereferencing mpic to obtain mpic->protected. There are two paths that
+> reach err_of_node_put before mpic is allocated (line 1276):
+> of_address_to_resource() failure at line 1258 and kzalloc_obj() returning
+> NULL at line 1278. In both cases, mpic->protected would dereference a
+> NULL/garbage pointer and crash.
+
+Good catch on the early error paths before mpic allocation!
+
+However, in v2, 'struct mpic *mpic' is left uninitialized at function entry
+(since the '= NULL' initialization was dropped).
+
+Looking more closely, if of_address_to_resource() fails at line 1258, control
+jumps to err_of_node_put where 'mpic' contains uninitialized stack garbage.  In
+that case, 'if (mpic)' evaluates to true, leading to an invalid pointer
+dereference when evaluating mpic->protected and a crash on kfree(mpic).
+
+Rather than initializing mpic to NULL and checking 'if (mpic)' on error paths,
+the preferred approach in Linux is to use layered error labels.  In fact,
+Documentation/process/coding-style.rst (Section 7, "Centralized exiting of
+functions") specifically describes this pattern when discussing "one err bugs":
 
 
-On 10/3/26 7:12 PM, netdev-bot+sashiko@kernel.org wrote:
-> Thank you for your contribution! Sashiko AI review found 1 potential
-> issue(s) to consider.
->
-> Critical: 0 · High: 0 · Medium: 1 · Low: 0
->
-> If you believe none of the issues are legitimate, please reply to each
-> issue of Medium severity or higher and explain why the AI is wrong.
-> If any of them are legitimate and you plan to respin, please let patchwork
-> know by including "pw-bot: cr" as a separate line at the end of your reply
-> (one such reply per series is enough).
->
-> - [Medium] On the new err_put_pools path in ibmveth_probe()
->    (drivers/net/ethernet/ibm/ibmveth.c), the code calls kobject_put() on…
->
-> --
->
-> ibmveth: release the pool kobjects when probe fails
->
-> This commit adds an err_put_pools unwind label to ibmveth_probe(). The label
-> calls kobject_put() on each rx_buff_pool[i].kobj before free_netdev(). It is
-> used when either netif_set_real_num_tx_queues() or register_netdev() fails.
->
->> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
->> index b89ce389d951f..d5ba2f2650d0f 100644
->> --- a/drivers/net/ethernet/ibm/ibmveth.c
->> +++ b/drivers/net/ethernet/ibm/ibmveth.c
-> [ ... ]
->
->> @@ -1981,13 +1980,18 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
->>   
->>   	if (rc) {
->>   		netdev_dbg(netdev, "failed to register netdev rc=%d\n", rc);
->> -		free_netdev(netdev);
->> -		return rc;
->> +		goto err_put_pools;
->>   	}
->>   
->>   	netdev_dbg(netdev, "registered\n");
->>   
->>   	return 0;
->> +
->> +err_put_pools:
->> +	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++)
->> +		kobject_put(&adapter->rx_buff_pool[i].kobj);
->> +	free_netdev(netdev);
->> +	return rc;
->>   }
-> [Severity: Medium]
-> With CONFIG_DEBUG_KOBJECT_RELEASE=y, can this path still free the pool
-> kobjects while their cleanup is pending?
->
-> The kobjects are embedded in netdev_priv(netdev), and ktype_veth_pool has
-> no release() callback:
->
-> static struct kobj_type ktype_veth_pool = {
-> 	.release        = NULL,
-> 	.sysfs_ops      = &veth_pool_ops,
-> 	...
-> };
->
-> On that config, kobject_release() defers the cleanup to a delayed_work
-> that is embedded in the kobject itself:
->
-> lib/kobject.c:kobject_release() {
-> 	...
-> 	INIT_DELAYED_WORK(&kobj->release, kobject_delayed_cleanup);
->
-> 	schedule_delayed_work(&kobj->release, delay);
-> 	...
-> }
->
-> free_netdev() then frees the adapter while that work is still armed. The
-> work runs 1 to 4 seconds later. kobject_cleanup() then works on freed
-> memory: it reads kobj->state_in_sysfs and kobj->name, calls
-> __kobject_del(), and drops the parent reference.
->
-> Until the work runs, the pool%d active, num and size files under
-> /sys/devices/vio/<unit>/ still exist. A read or write goes through
-> veth_pool_show() or veth_pool_store(). Both use container_of() to reach
-> the freed pool, adapter and netdev.
->
-> A re-probe in that window could also fail to add pool0. That is the same
-> failure this commit is meant to fix.
->
-> The commit message mentions this and refers to ibmveth_remove(), which
-> uses the same put-then-free pattern. kobject_cleanup() also reports this
-> ktype as one that "does not have a release() function, it is broken and
-> must be fixed".
->
-> Calling kobject_del() before kobject_put() would remove the sysfs files
-> synchronously. However, the delayed_work inside the freed adapter would
-> still be armed.
->
-> Would it make sense to give the pool kobjects their own lifetime? One
-> option is to allocate them separately with a real release() callback.
+  A common type of bug to be aware of is ``one err bugs`` which look like this:
 
-Yes. v2 adds a release() for the pool kobjects and waits for it before
-free_netdev() in both probe and remove():
+  .. code-block:: c
 
-|https://lore.kernel.org/netdev/cover.1791178212.git.mmc@linux.ibm.com/|
+  	err:
+  		kfree(foo->bar);
+  		kfree(foo);
+  		return ret;
 
+  The bug in this code is that on some exit paths ``foo`` is NULL.  Normally the
+  fix for this is to split it up into two error labels ``err_free_bar:`` and
+  ``err_free_foo:``:
 
-pw-bot: cr
+  .. code-block:: c
+
+  	err_free_bar:
+  		kfree(foo->bar);
+  	err_free_foo:
+  		kfree(foo);
+  		return ret;
+
+Applying that pattern here gives:
+
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 257886ec3f70..d799cf4da7bd 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -1389,7 +1389,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+                if (fsl_version >= 0x401) {
+                        ret = mpic_setup_error_int(mpic, intvec_top - 13);
+                        if (ret)
+-                               return NULL;
++                               goto err_free_mpic;
+                }
+ 
+        }
+@@ -1488,12 +1488,8 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+                                                 intvec_top,
+                                                 &mpic_host_ops, mpic);
+ 
+-       /*
+-        * FIXME: The code leaks the MPIC object and mappings here; this
+-        * is very unlikely to fail but it ought to be fixed anyways.
+-        */
+        if (mpic->irqhost == NULL)
+-               return NULL;
++               goto err_free_mpic;
+ 
+        /* Display version */
+        switch (greg_feature & MPIC_GREG_FEATURE_VERSION_MASK) {
+@@ -1526,6 +1522,9 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 
+        return mpic;
+ 
++err_free_mpic:
++       bitmap_free(mpic->protected);
++       kfree(mpic);
+ err_of_node_put:
+        of_node_put(node);
+        return NULL;
+
+This ensures:
+
+1. Early error paths (of_address_to_resource and kzalloc_obj failures) jump
+   directly to err_of_node_put without touching mpic.
+2. Later error paths jump to err_free_mpic where mpic is guaranteed to be valid.
+3. No 'if (mpic)' check or 'struct mpic *mpic = NULL;' is needed.
+
+What do you think?
 
 Thanks,
-
-Mingming
-
-
+Amit
 
