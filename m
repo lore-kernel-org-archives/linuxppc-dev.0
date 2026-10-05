@@ -1,70 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-28934-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28935-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 164ECCA5FFE
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Oct 2026 15:45:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 497DCCA5FF0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Oct 2026 15:57:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hz3dK3YJsz2yjN;
-	Tue, 06 Oct 2026 02:45:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1048"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791215157;
-	cv=none; b=NrtXfwbduk0FlOQ+PSZc/ntL4WVednYw1x70WfuS9tUtxipZaTNca/eA/NsOJht4/flqjCNuwIawNrlw1zXSRfF7Mhk7Q555/G9FEq4hXoxzFL7OwWtVCLomrEQVRBmAiSIaJtgsR/NRMkIeWmBylKuua2bNVvdYnNWKm+OKofTJ2I12vpcInmzSrMDjuSdDmkDvB+YRi9kj7M716Wgn+F1p2woMk77cKfrT/HK0n0oMFAjUNHzyGgwQTfvQ/gNzZX6nSwdPlt9DlBmPwajLg0kcHgTGpaOFCtkK1bnYOJfGuBA3U8D/SyrwTCJ7Sl/j4U8CgUNk/XQn7gdnKALk6g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hz3tW4gZMz2xwd;
+	Tue, 06 Oct 2026 02:57:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791215843;
+	cv=none; b=Rfs2/Q1Q08zCce928Prml1BJbEyzqxrTBlxxd+wrIsEnppBcZtlFUtKfYu9iLF9SrYEub+Mnrl+K512Qglv0XHIgfA90FB93qoAi3yHT/lzCX1oZPOuZ4apNrmUQ7sBIiMvjLvXWgL5X6ky5egsmHQtJsQOw9R34+pTlq5Hvc5nP6Q4PLgsFXGYi+dpXFTi/zHQl8DDFQwUws7P7Wabvhy7YYMsCthm9Rd5YmUHvv466IvPjqBrfNjBbAqYD9ikYfVDOPYRyIem4pNuQ1XYvITkDDh494+7T9bRCcdArR8DTRrxjHjvtg7v8low1n6U0YseKWD60d6CoCKgmgwbS3w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791215157; c=relaxed/relaxed;
-	bh=KZIMzSNQ5PyWeZjaT/gpYYDCkTtRb/oLmdPXdsZuR/8=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=oWQQQxXtzfMBA/mzIgHDCshlhpAgrB+4zIHCUmxAS7BvbnsQKqFyfmhO3dwr5E5BY1l9FUXIQRKitf4Z2TBWpUC96FWANWiR5UXD8kobSXONwa5PXBessLV59Vyy5MVpyZHL7giOpbHi67ZSo1ZPQmwfDFEb4p77Uyg9etqFmj/MTT8+aTJltzBLe7F49+JFcxh0PH7oZWAzIUuzDA4ZM2XGkgPnaXC+3wtmMgoQqE8P5idzy2C+o4v9g1XUpqwt5r+wNgHAhj0CaeC9a5HzexHBvtppt+gQSn7DmN7brW+0OYD0GRPurTg3zFOwINEdam/BnOpR9dJQWOMAtaExRg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=GOxYbJit; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1048; helo=mail-pj1-x1048.google.com; envelope-from=3mmbdag0kdckwfymtiuwndfsplttlqj.htrqnszcuuh-ijaqnxyx.teqfgx.twl@flex--rathodpriyank.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--rathodpriyank.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1791215843; c=relaxed/relaxed;
+	bh=sf8U9e/P/Ck4Sty1kLYW5Wh5J9iqRhQrRMwhuEB4BRc=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=eCb1/kFqE3afTti0HEX3KzVX0MipgcnA29m6xRNNtSE9kD+ihXUVOVzTYZ7KsmQcBER8kT62pISdkMlJ/R+5B5kiO+WNif0rjHdz19ibHKgFIKzP2oRGm5Dcw+6tBPZFfEfeKojbiesIoGSxgVpXRnEhHsYXxV3CsqvSpgX1+3QcCRadGFCR+m1xYBAv5UNL9OZ/GA7Tl+L2J+igCK3/Vx4WyiWcAVvlrUQSg0IJzvmsVH5G8X17dKwkLY+TvsM2Sh90j3gEWxAyczwJxuGszQQKDMh3ucFJPQ6f1XnJbvjW24IrPknOM8ENkogX+jF/QUOwALmVhom5n1ti1PL92Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GzoDJ0Gj; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=GOxYbJit;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GzoDJ0Gj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--rathodpriyank.bounces.google.com (client-ip=2607:f8b0:4864:20::1048; helo=mail-pj1-x1048.google.com; envelope-from=3mmbdag0kdckwfymtiuwndfsplttlqj.htrqnszcuuh-ijaqnxyx.teqfgx.twl@flex--rathodpriyank.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1048.google.com (mail-pj1-x1048.google.com [IPv6:2607:f8b0:4864:20::1048])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hz3dH6C6Rz2yMD
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Oct 2026 02:45:55 +1100 (AEDT)
-Received: by mail-pj1-x1048.google.com with SMTP id 98e67ed59e1d1-398dcfabbf8so3052818a91.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Oct 2026 08:45:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1791215152; x=1791819952; darn=lists.ozlabs.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=KZIMzSNQ5PyWeZjaT/gpYYDCkTtRb/oLmdPXdsZuR/8=;
-        b=GOxYbJitAqTvMj/CcClSuyF/OISkNRG62TGycSXZm2WGMSL1AhQGUb7bYumh/bHp7+
-         ycR4mf/HzFC3Y+IP/BKUHgD3qirELBFPdwwv1aqO0GeacI25doE3WJODHHCqWEkaqx6Y
-         8tS7Rl8xBJ+f5yKO3CHt2098+hZz9iGYo10XFLI1aFRENSZdmduAHbY5i1l/Muwr6PUk
-         O+OswtSNiSALn6op4p80Paq/4GvBuWEPBLplwAI3BqhJ+Wx/FW6BLLIO9Z8K9mBN3CTs
-         ypS8DNFgX7BHLrJXpdcn47od9jRUWgcVuQ6yFs+cJot2XHrT9da4pl4eDalGd5G0HAHZ
-         uxdA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791215152; x=1791819952;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=KZIMzSNQ5PyWeZjaT/gpYYDCkTtRb/oLmdPXdsZuR/8=;
-        b=PqsmdjfDuH7SepmSLCAWnD6XkoVwd0C4+w/bGCpU0BKODgRmx1U4XmhCDTEHJKa9RR
-         1mjauigZQQM/Mhsb7PpmVThiY0hMFxO7KUllzy08q1VVOsZFa5HPAcvCeAcY5eX5s6h0
-         piaxPizv3X3efFTwFR5ySoWvLWbjKgRwII1k+bz7mJOG3/9g2ioCmOj+6hESscqp/Z0F
-         UfUofPn15r9b5J6g4JdqItQHl8MCkolAAwsIDZWDYNo762f67GtzZZ+T61wRrsyRlU8k
-         P2FQXn0y6tM9d1E/GF4LCdMHeUv/wnOXhVxxGvxL4S/4ZnzYpl37n0ms0QDNyVnDSCW1
-         p97w==
-X-Forwarded-Encrypted: i=1; AKwUvBzjDclmudUjlg1dMIDlRAGsy74fcUoUC5sKwVBcNDMpSm0/q1yoZBUpTUgWoc1Eur7jye3hVuyUkIrpqZE=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYIZxV1lztCQcW19Ig6/aVqByXTFOjVqDTPLRwL9Xnr3KFd0hKTx
-	5z/JTxUQlAtPA9MyFd7cVCLLG5kP3ZVA2U5dckRv/ASNXcSyLl44XZ1h4BlSSzAJ/TPPKTby6nQ
-	kplYnb7C7nEc/00LEMYEl0ZKCjrEQ/I9M5g==
-X-Received: from pgby17-n1.prod.google.com ([2002:a05:6a02:6511:10b0:cc7:d4f0:846d])
- (user=rathodpriyank job=prod-delivery.src-stubby-dispatcher) by
- 2002:a17:90b:380b:b0:3a7:d9d9:b309 with SMTP id 98e67ed59e1d1-3a7d9d9b6c2mr4026235a91.41.1791215152003;
- Mon, 05 Oct 2026 08:45:52 -0700 (PDT)
-Date: Mon,  5 Oct 2026 15:45:51 +0000
-In-Reply-To: <20260928-b4-fix-aer-memleaks-v5-0-ba6b94c9c9a6@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hz3tV25J8z2xfP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Oct 2026 02:57:22 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 12423447C9;
+	Mon,  5 Oct 2026 15:57:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EA6891F008A2;
+	Mon,  5 Oct 2026 15:57:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791215839;
+	bh=sf8U9e/P/Ck4Sty1kLYW5Wh5J9iqRhQrRMwhuEB4BRc=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=GzoDJ0GjAM3eRzHs8BIN+4iEUm/L0zKHa4gLtaRR5+K9eQc2N9kAVn7BkxyJQJ0Cp
+	 C1tV9tncXEdAWc0o8xDhhLY7O7qbldHb7aH7F3Sb8FHYqjr1DudTRjoFYVedSzt/l7
+	 BzT7LLQxbgq1FI2F/ZlVBJE7cI5hbWqVPuJSGJ33sSUTo7wirqqepxIe+sBSFl9Cof
+	 yCoG9Mh+qkzYzRxEzNtYNyrTz3gGqRxWgT0UMljYwt5yqpgFq9RsKw7FIXLkx7sWNl
+	 SxlalYI6iepxEcxWxHZJJ1IF3MGYU04IVDMGZcXcRgTZSdLzSe6MjozBJ1fvXcSgsd
+	 HvlCKS/eSSifg==
+From: Kees Cook <kees@kernel.org>
+To: Bill Wendling <morbo@google.com>
+Cc: Kees Cook <kees@kernel.org>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Shivaprasad G Bhat <sbhat@linux.ibm.com>,
+	Thorsten Blum <blum@kernel.org>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	linux-kernel@vger.kernel.org,
+	linux-hardening@vger.kernel.org
+Subject: [PATCH v5 10/12] powerpc/papr_scm: Return the string length from the sysfs show functions
+Date: Mon,  5 Oct 2026 08:57:00 -0700
+Message-ID: <20261005155708.1471260-10-kees@kernel.org>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20261005155653.late.426-kees@kernel.org>
+References: <20261005155653.late.426-kees@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,36 +76,56 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-References: <20260928-b4-fix-aer-memleaks-v5-0-ba6b94c9c9a6@google.com>
-X-Mailer: git-send-email 2.56.0.360.g66cac248cb-goog
-Message-ID: <20261005154551.1508146-1-rathodpriyank@google.com>
-Subject: Re: [PATCH v5 0/3] PCI/AER: Fix ghes_estatus_pool memory leaks in
- error handling
-From: Priyank Rathod <rathodpriyank@google.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Mahesh J Salgaonkar <mahesh@linux.ibm.com>, "Oliver O'Halloran" <oohall@gmail.com>, 
-	Lukas Wunner <lukas@wunner.de>, 
-	Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>, 
-	Jonathan Cameron <jic23@kernel.org>, 
-	"=?UTF-8?q?Ilpo=20J=C3=A4rvinen?=" <ilpo.jarvinen@linux.intel.com>, Dave Jiang <dave.jiang@intel.com>, 
-	Shiju Jose <shiju.jose@huawei.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, 
-	linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1508; i=kees@kernel.org; h=from:subject; bh=QMqRTQphegL+YGqZELWHP3PitTraEh7YCZhUt0ueL+o=; b=owGbwMvMwCVmps19z/KJym7G02pJDFmHT5w11+xnnFjoOtf9nqOb5moGvykW0TM+H39+WzL3R N82pxebOkpZGMS4GGTFFFmC7NzjXDzetoe7z1WEmcPKBDKEgYtTACbiaMPwV8g17Ur1+dBdb//M ZeeQzuq3sZy7v+botN2rYnZslCwXr2X4nxr+XqntQN9iTWPjbQnPu3mDeTcz5S/7Hizor/XtV04 8HwA=
+X-Developer-Key: i=kees@kernel.org; a=openpgp; fpr=A5C3F68F229DD60F723E6E138972F4DFDC6DC026
+Content-Transfer-Encoding: 8bit
 
-Hi Bjorn,
+perf_stats_show() and flags_show() build their output with a seq_buf
+and return seq_buf_used(), which may include the trailing NUL byte
+when the seq_buf has overflowed. Use seq_buf_strlen() instead. As
+suggested in review, use it as well for flags_show()'s check whether
+any flag was printed.
 
-Gentle ping on this series. Patches 1 and 2 carry Kuppuswamy's
-Reviewed-by, and patch 3 is the kernel-doc comment he suggested. All
-three still apply cleanly to current pci/next.
+Build tested ARCH=powerpc ppc64_defconfig with GCC powerpc64-linux-gnu
+16.2.0:
+arch/powerpc/platforms/pseries/papr_scm.o
 
-Is there anything you would like changed before it can be considered
-for v7.4? I am happy to respin.
+Assisted-by: LLM
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Signed-off-by: Kees Cook <kees@kernel.org>
+---
+ arch/powerpc/platforms/pseries/papr_scm.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Kuppuswamy, if patch 3 matches what you had in mind, a Reviewed-by on
-it would be appreciated.
+diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+index 75da96c08cdd..5c3bf06bb59b 100644
+--- a/arch/powerpc/platforms/pseries/papr_scm.c
++++ b/arch/powerpc/platforms/pseries/papr_scm.c
+@@ -1108,7 +1108,7 @@ static ssize_t perf_stats_show(struct device *dev,
+ 
+ free_stats:
+ 	kfree(stats);
+-	return rc ? rc : (ssize_t)seq_buf_used(&s);
++	return rc ?: (ssize_t)seq_buf_strlen(&s);
+ }
+ static DEVICE_ATTR_ADMIN_RO(perf_stats);
+ 
+@@ -1147,10 +1147,10 @@ static ssize_t flags_show(struct device *dev,
+ 	if (health & PAPR_PMEM_SCRUBBED_AND_LOCKED)
+ 		seq_buf_printf(&s, "scrubbed locked ");
+ 
+-	if (seq_buf_used(&s))
++	if (seq_buf_strlen(&s))
+ 		seq_buf_printf(&s, "\n");
+ 
+-	return seq_buf_used(&s);
++	return seq_buf_strlen(&s);
+ }
+ DEVICE_ATTR_RO(flags);
+ 
+-- 
+2.55.0
 
-Thanks,
-Priyank
 
