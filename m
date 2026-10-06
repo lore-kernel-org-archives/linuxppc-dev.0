@@ -1,83 +1,103 @@
-Return-Path: <linuxppc-dev+bounces-28969-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28970-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C6A2CA5FFC
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Oct 2026 14:43:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25630CA5FFC
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Oct 2026 15:35:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hzfBz2PkQz30St;
-	Wed, 07 Oct 2026 01:43:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::530"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791297819;
-	cv=none; b=b3zlueEMtU5jl+E9drE9xH26FcRhFeDbiqWIroSL6hlvY+O/JtJ1d3EYGkbSQwpunLlmMyizyRKrYdsqM5hRwe9CbqsqMT+F2ZUb8iEBaZNun6c/v1fzFvvc5VJqBGGeSrd0ATL9S0PAcd7KBk3HyfqlKHHo8pSTYBFRyXLbilqATXsSaJfIZLKjITx89pelpqRjGyIgpO1yzhKFmDZRjJah1uxT7mUR6Q7V+P74lHbShTQHluG8gVy6kNRJENDhiU2pVilBtaZgz0IwgwTsIoCx9sj1JZFzdrSg42KEXRQlNuGPV9U/2FN+sfNs/Npg3LHuQ1+hF1BwUTRj0VsHQA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hzgLg6wY4z30St;
+	Wed, 07 Oct 2026 02:35:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791300923;
+	cv=none; b=UarrHlvzKFIuWjdUp41BXjPKjbBEz0wi+uMecmutOFgChxHoPYmw2FAN41GpNbFJzI7ZlCu7h25DTJ5f9ryq4wVUu2+OP9Rx2tswABOW6wI7CH3PRPhybS6liirWwGdkm//2jb72b0fgEeM00IJoWbnniy8qghgQt02dI7SXkwD4JgIrl2fb2cC65gm0K1iMpisoCxBBeGlPG2wZm28GqhofYafrSzFak4ixyAgZqU2B49KuSdoYTZpDkGtWFzFo96jibWkky6n0Z/2Nn9tkfS77fR7aSMRlTkyTsiUDnTk/FxofkloVoNGW1Z51lyhAEkAWoaU30r0WN6/SdVTwdg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791297819; c=relaxed/relaxed;
-	bh=HvIOeflQ4PBMQ3b4EoTGtarANIPxgpboZRE7irIkx6w=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=HpYxbDc/jmK7DpEX6gZB/PhdJ21sSSmIu1Oac4ZeXAAoKw9P0ZtUHursp01DHGIdQngSFygVx6tUIRAGcfdUKoSzvg/+SNRKgodILhKkLUlHpIBUA/dpfAHs+AgE1/SrGcslpZXPP8u8yKAm/79Pda9aZRYWvWPlHFxL+MW6TbMVLjncMfXZx7Wxx6ujthlQs+u+EFXBhUDg+miKb2dL11afxLgHBUQw79R64/sHt9QqKnCeh3I8iZU+PZ8jhIDZ/8F+mJJ72ZlD9kFNZraoXRacWjC1nquniXqeZQQL4nAWVQUewCztEhZjaghBe+tW+Uzm3fM8bVv7Edo9pcHRtw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=H/ipg6+s; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::530; helo=mail-pg1-x530.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1791300923; c=relaxed/relaxed;
+	bh=1lS2Oh85feGBABDtJnF9Irz1qcx8rcV4kKh2BKf2dTs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=PxuWA1kAvEJhGKBMvNz79g4o8CZ6H3p8BogghuRzoQMUN9BU4XUaVoWgBMfDhNuBXd+MLuH9Oz9Qv6Pq5bAijRhWYunt9ZvhG+EkVgCRYLPeLIIKw6dJaWE8+LeImBehELZc+RHMbU5UF8oejuSdkje1oV/zYJzrzYxr8Ru0W2BPnMevlLgNj84FO6TbP9Pgq/+dcJ2gBntST8Om/jsslVsdVtb5z6iNWBI7wK1gC2gwJSlKruGKAVDxrX2fp6YCHwJNOQCW4Jw2Qs9SQLfk9eIosXViUawNpGzwWNOtlUbWE+RRbJJcNuMylfOuHStyDvz/TLiqVB7vucrtdoaSDg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=qcSwlb5D; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=PnwecC3+; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=nIstQG35; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=T6ew+NHs; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=H/ipg6+s;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=qcSwlb5D;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=PnwecC3+;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=nIstQG35;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=T6ew+NHs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::530; helo=mail-pg1-x530.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x530.google.com (mail-pg1-x530.google.com [IPv6:2607:f8b0:4864:20::530])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hzfBy0q23z2yfD
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Oct 2026 01:43:36 +1100 (AEDT)
-Received: by mail-pg1-x530.google.com with SMTP id 41be03b00d2f7-cc4dbcf2b85so1411288a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Oct 2026 07:43:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791297815; x=1791902615; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=HvIOeflQ4PBMQ3b4EoTGtarANIPxgpboZRE7irIkx6w=;
-        b=H/ipg6+sITnMOnsWNqPEwTBte2doluY/oVCicNODOf0cQV+ON1Y7Yf63wTV4GzKFsw
-         N9AQQx7e2yiyy2FlSHmW32evwJNASynaVg6y7u0ZgELyM+/mvjdxQQDThcaExnZS/tTs
-         hJWBVoy//9fzZ4XPPlBJJgrtVfATWeX8uV1V2XJRA8x5FWm8fyqThYfg8za09Auq2em2
-         sByQBVIbrfx4CGGXMLTSQcBt2Ihp6HY+YeVac1+45F+QmeXvTKOhhGXb2OSwck6dG0cf
-         FU60Jp9GPd+T/31phOW3ipXpzEVTnJ93fnLJdKUZA/PvQUHrmsALQPnKPEdY+44Me3Co
-         6Sfw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791297815; x=1791902615;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=HvIOeflQ4PBMQ3b4EoTGtarANIPxgpboZRE7irIkx6w=;
-        b=x6ltJjlFIJ6KSY5hNRi1Apitikuxmtl6pux1eWuPhsMWK+AFTavnM/TvisKEr77U93
-         UI+60713VjMElyF9w4H7vJ0rvStFcTHQrMt14chAkE47J2Bq1KD4JE+I2uHUA5qmsidG
-         RR2QpHjhffc9nO3XTjtUZ0V8XgU5PE8N25EcKXvyegrbJQxV+4j4M1QH9HpUbyTXLtoo
-         oXSdfRkh5RtmgBgAfARMsh8ugiia+3l5b+alhziTPbSFQFsGSDdY0ByeYMCxkjjqMs3C
-         ZB4/xe71/ndIbm9MiZz5yo0f2vSldb4aQbvYkZx+xK9GziIVHnK/iUKGGvb5y6loWE+7
-         Wb3Q==
-X-Forwarded-Encrypted: i=1; AKwUvBy3phZxzoDzJy4/YIwl8uy5kduc2rT5UtWE0OZohhy/JU1vlpfFe/QW7cnKe9nTbIK9jBdkQDeb47MzxaU=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYIIqhMzv2p2ivgQz7+qnMP3t0rJ555B0edrDoezC4V5dKzUGtn+
-	ADXlgGros2K5jD+ZVbC4OlANQs0NISeRSQtwpu+uNQ20CuE8ZYkQfFKI
-X-Gm-Gg: AYBFou3JkIVs/msooBLG+0ZsHqWWVH8oLjc3PI5C/vJvV76PfZtI14HYwAhpPeohYIX
-	83qBWuTEbMi/0kE12MlEbN8JiPseQyrKd29DpFnFkwymQwr5JjFIQIF+/pvI4KXNQFMeUvInQJ6
-	NvTwng5zQoPKq8hINZ7zkPx1qsjOZ/NBK618Wkcq6O9uaQ+cpCfljLA8h2ZrawCeFNESQWHxlEq
-	wQbg7ASqlMwUUbR61bE6VEyOUQ5KZVdl10MMdZGzU083q5CzTSf7jkYIAuC+a4gg8G00ihcnoRo
-	DOGp2Aryh7G59yvaGB3B9KFOgVzcqBAOTcgzFtFffMimKEFxgKpzWrXIN1vjJgIHCTyDjJnZxki
-	YaCQAbsradaz8y4OYbQ4aIt+m3MR7DSvAyLtxCgWu6y2SQT0DrjIy0MGzaH6Xl+WqBNQ+/aunBN
-	yOcfCrmDgqh3UfvMFdZOuIYCQ+0IyDAnUkn+/7AvoOM0yQhhrEzCd9SSgtxjX+kCgEelDM4K/JT
-	6emwZw3tUOlE+8HidtVs5MPQeCO2d4KBZJkHICKG8H/7uGGWaTsiw==
-X-Received: by 2002:a17:90a:64f:b0:3a4:c895:562 with SMTP id 98e67ed59e1d1-3a893fdc3e7mr59252a91.62.1791297814580;
-        Tue, 06 Oct 2026 07:43:34 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a7ad87874esm8986502a91.0.2026.10.06.07.43.30
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 06 Oct 2026 07:43:33 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Jyoti Gupta <jyoti@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, Shrikanth Hegde <sshegde@linux.ibm.com>, Amit Machhiwal <amachhiw@linux.ibm.com>, Sourabh Jain <sourabhjain@linux.ibm.com>, Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-Subject: Re: [PATCH v3] powerpc/mpic: Fix memory leak of mpic on error paths
-In-Reply-To: <20261006065945.391637-1-jyoti@linux.ibm.com>
-Date: Tue, 06 Oct 2026 19:59:31 +0530
-Message-ID: <4ieysy0k.ritesh.list@gmail.com>
-References: <20261006065945.391637-1-jyoti@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hzgLd3JSPz2yfD
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Oct 2026 02:35:20 +1100 (AEDT)
+Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id E9EA41F7AF;
+	Tue,  6 Oct 2026 15:35:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1791300912; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=1lS2Oh85feGBABDtJnF9Irz1qcx8rcV4kKh2BKf2dTs=;
+	b=qcSwlb5D0ecD6Zsvc5tf3Ybz3+DqYnY9E863dhUfQmjDSQYnHorYa48jpHOR32JsEpC0OU
+	QjXZIveAk/Jywud1t8iQf/pXGi52+FBmYm7vayu8ardBIyFjP+4a0bPM8+qTb9EIGStb1x
+	gWOWy45Mbo8RSluEtd6jnyU9mr0U5d4=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1791300912;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=1lS2Oh85feGBABDtJnF9Irz1qcx8rcV4kKh2BKf2dTs=;
+	b=PnwecC3+PlUm3lPxzE7xLnNpRB3n8W/fC353cYH2NHMehlH6AQForVOQ/lpfFCDWslh85M
+	usxvxhNk8rol6oAQ==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=nIstQG35;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=T6ew+NHs
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1791300908; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=1lS2Oh85feGBABDtJnF9Irz1qcx8rcV4kKh2BKf2dTs=;
+	b=nIstQG359rwssueMFo1sDLwolS3Zis/9mntEKGlWymsXGarNt6gToNA/+n6FzvLAk3esW1
+	2Sbyx0IxnI5y6gRJKCg0ThvfOhzKP+IOPED0LIiBdcUFm4gPreH6tHkZ2VHuAxo7Ebm1WN
+	DbZ68FVSeZIozqApNHkVDDjyrMi9jtE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1791300908;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=1lS2Oh85feGBABDtJnF9Irz1qcx8rcV4kKh2BKf2dTs=;
+	b=T6ew+NHs8PkfE0wvUI3EPvPT8kIkbbml70l/+IC1VtcjOwhSfCJvbEdToqI2KPih36XQqX
+	Ky3dJGxlaEoErcBA==
+Date: Tue, 6 Oct 2026 17:35:06 +0200
+From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+To: Kees Cook <kees@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+	Andy Lutomirski <luto@amacapital.net>,
+	Will Drewry <wad@chromium.org>, Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	linux-riscv@lists.infradead.org, Thomas Gleixner <tglx@kernel.org>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org, Huacai Chen <chenhuacai@kernel.org>,
+	loongarch@lists.linux.dev, Sven Schnelle <svens@linux.ibm.com>,
+	linux-s390@vger.kernel.org, x86@kernel.org,
+	Mark Rutland <mark.rutland@arm.com>,
+	Jinjie Ruan <ruanjinjie@huawei.com>,
+	Magnus Lindholm <linmag7@gmail.com>,
+	"Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
+	Jonathan Corbet <corbet@lwn.net>, Radu Rendec <radu@rendec.net>,
+	Renzo Davoli <renzo@cs.unibo.it>, Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH] seccomp: Fix syscall skip logic on ptrace
+Message-ID: <asUVKrMQR_U2ySRp@kunlun.suse.cz>
+References: <20260707181957.433213175@kernel.org>
+ <al9NlZi20xHMvla2@kunlun.suse.cz>
+ <202609011132.F4A3EB7103@keescook>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,90 +110,509 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <202609011132.F4A3EB7103@keescook>
+X-Rspamd-Action: add header
+X-Spamd-Result: default: False [15.05 / 50.00];
+	SPAM_FLAG(5.00)[];
+	NEURAL_SPAM_LONG(3.50)[1.000];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_SPAM_SHORT(2.86)[0.953];
+	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
+	RDNS_NONE(2.00)[];
+	ONCE_RECEIVED(1.20)[];
+	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
+	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	RCPT_COUNT_TWELVE(0.00)[26];
+	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	FREEMAIL_CC(0.00)[vger.kernel.org,amacapital.net,chromium.org,kernel.org,dabbelt.com,eecs.berkeley.edu,ghiti.fr,lists.infradead.org,ellerman.id.au,linux.ibm.com,lists.ozlabs.org,lists.linux.dev,arm.com,huawei.com,gmail.com,lwn.net,rendec.net,cs.unibo.it,redhat.com];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b306:2000::2:from];
+	MISSING_XM_UA(0.00)[];
+	RCVD_COUNT_ZERO(0.00)[0];
+	DKIM_TRACE(0.00)[suse.de:+];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:email]
+X-Spamd-Bar: +++++++++++++++
+X-Rspamd-Queue-Id: E9EA41F7AF
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Spam: Yes
 
-Jyoti Gupta <jyoti@linux.ibm.com> writes:
+On Tue, Sep 01, 2026 at 11:34:31AM -0700, Kees Cook wrote:
+> On Tue, Jul 21, 2026 at 12:44:37PM +0200, Michal Suchanek wrote:
+> > seccomp takes a shortcut here. When the syscall number is re-read after
+> > ptrace and the sign bit is set in the syscall number the syscall is
+> > skipped right away.
+> > 
+> > This works fairly well on x86 where the return value of the syscall is
+> > preset before seccomp is processed.
+> > 
+> > However, on some architectures the syscall return value overlaps with
+> > the syscall number or syscall arguments, and as a result the return
+> > value cannot be preset in advance.
+> > 
+> > For these architectures seccomp needs to exit without flagging the
+> > syscall as skipped. Then processing of invalid syscall number in the
+> > architecture code should set the return value to -ENOSYS and skip the
+> > syscall.
+> > 
+> > This introduces a change: If the syscall number has the sign bit
+> > set, such as -1, previously the filter re-check would not be done, not
+> > applying the filter after trace. Now the re-check is done both for
+> > syscall nubers with and without sign bit set. This would only make a
+> > difference if the syscall number or the filter was changed by the
+> > tracer. Otherwise the filter would be resolved the first time around.
+> > 
+> > Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+> > ---
+> >  kernel/seccomp.c | 5 +----
+> >  1 file changed, 1 insertion(+), 4 deletions(-)
+> > 
+> > diff --git a/kernel/seccomp.c b/kernel/seccomp.c
+> > index 066909393c38..9e40a38aaedf 100644
+> > --- a/kernel/seccomp.c
+> > +++ b/kernel/seccomp.c
+> > @@ -1318,11 +1318,8 @@ static int __seccomp_filter(int this_syscall, const bool recheck_after_trace)
+> >  		 */
+> >  		if (fatal_signal_pending(current))
+> >  			goto skip;
+> > -		/* Check if the tracer forced the syscall to be skipped. */
+> > -		this_syscall = syscall_get_nr(current, current_pt_regs());
+> > -		if (this_syscall < 0)
+> > -			goto skip;
+> >  
+> > +		this_syscall = syscall_get_nr(current, current_pt_regs());
+> >  		/*
+> >  		 * Recheck the syscall, since it may have changed. This
+> >  		 * intentionally uses a NULL struct seccomp_data to force
+> 
+> Does the seccomp selftest still pass with this change? I _think_ it's
+> fine; this just induces more work on a tracer-induced skip path, which,
+> in theory, shouldn't be fast-path: kicking out to the tracer is going to
+> be the slowest part.
 
-> mpic_alloc() allocates struct mpic (and optionally the protected
-> sources bitmap) but does not free them when mpic_setup_error_int() or
-> irq_domain_create_linear() fails, leaking the memory.
->
-> Free the bitmap and the mpic in the common error path before
-> dropping the device node reference.
->
-> Fixes: 996983b75ceb ("powerpc/mpic: Search for open-pic device-tree node if NULL")
-> Signed-off-by: Jyoti Gupta <jyoti@linux.ibm.com>
-> ---
->
-> Changelog
-> ===========
-> v2->v3:
->  + Introduce 'err_free_mpic' unwind label to cleanly free mpic and mpic->protected
->  + Link to v2: https://lore.kernel.org/all/20260930180919.335930-1-jyoti@linux.ibm.com/ 
->  
-> ---
-> ---
-> arch/powerpc/sysdev/mpic.c | 11 +++++------
->  1 file changed, 5 insertions(+), 6 deletions(-)
->
-> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-> index 257886ec3f70..d799cf4da7bd 100644
-> --- a/arch/powerpc/sysdev/mpic.c
-> +++ b/arch/powerpc/sysdev/mpic.c
-> @@ -1389,7 +1389,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
->  		if (fsl_version >= 0x401) {
->  			ret = mpic_setup_error_int(mpic, intvec_top - 13);
->  			if (ret)
-> -				return NULL;
-> +				goto err_free_mpic;
->  		}
->  
->  	}
-> @@ -1488,12 +1488,8 @@ struct mpic * __init mpic_alloc(struct device_node *node,
->  						 intvec_top,
->  						 &mpic_host_ops, mpic);
->  
-> -	/*
-> -	 * FIXME: The code leaks the MPIC object and mappings here; this
-> -	 * is very unlikely to fail but it ought to be fixed anyways.
-> -	 */
+It does not pass without this change, either.
 
-I don't think the current change fixes leaked mappings for
-!CONFIG_PPC_DCR or !MPIC_USES_DCR. So removing this comment completely
-doesn't look correct.
-And maybe unless we have the HW or a way to really validate this - not
-sure whether it is worth working on a full error handling routine to
-unmap all the mappings from ioremap().
+On 7.3-rc6 I get:
 
-In that case, in this patch at-least, I think we should still keep this
-comment i.e.:
+./seccomp_bpf 
+TAP version 13
+1..111
+# Starting 111 tests from 11 test cases.
+#  RUN           global.kcmp ...
+#            OK  global.kcmp
+ok 1 global.kcmp
+#  RUN           global.mode_strict_support ...
+#            OK  global.mode_strict_support
+ok 2 global.mode_strict_support
+#  RUN           global.mode_strict_cannot_call_prctl ...
+#            OK  global.mode_strict_cannot_call_prctl
+ok 3 global.mode_strict_cannot_call_prctl
+#  RUN           global.no_new_privs_support ...
+#            OK  global.no_new_privs_support
+ok 4 global.no_new_privs_support
+#  RUN           global.mode_filter_support ...
+#            OK  global.mode_filter_support
+ok 5 global.mode_filter_support
+#  RUN           global.mode_filter_without_nnp ...
+#            OK  global.mode_filter_without_nnp
+ok 6 global.mode_filter_without_nnp
+#  RUN           global.filter_size_limits ...
+#            OK  global.filter_size_limits
+ok 7 global.filter_size_limits
+#  RUN           global.filter_chain_limits ...
+#            OK  global.filter_chain_limits
+ok 8 global.filter_chain_limits
+#  RUN           global.mode_filter_cannot_move_to_strict ...
+#            OK  global.mode_filter_cannot_move_to_strict
+ok 9 global.mode_filter_cannot_move_to_strict
+#  RUN           global.mode_filter_get_seccomp ...
+#            OK  global.mode_filter_get_seccomp
+ok 10 global.mode_filter_get_seccomp
+#  RUN           global.ALLOW_all ...
+#            OK  global.ALLOW_all
+ok 11 global.ALLOW_all
+#  RUN           global.empty_prog ...
+#            OK  global.empty_prog
+ok 12 global.empty_prog
+#  RUN           global.log_all ...
+#            OK  global.log_all
+ok 13 global.log_all
+#  RUN           global.unknown_ret_is_kill_inside ...
+#            OK  global.unknown_ret_is_kill_inside
+ok 14 global.unknown_ret_is_kill_inside
+#  RUN           global.unknown_ret_is_kill_above_allow ...
+#            OK  global.unknown_ret_is_kill_above_allow
+ok 15 global.unknown_ret_is_kill_above_allow
+#  RUN           global.KILL_all ...
+#            OK  global.KILL_all
+ok 16 global.KILL_all
+#  RUN           global.KILL_one ...
+#            OK  global.KILL_one
+ok 17 global.KILL_one
+#  RUN           global.KILL_one_arg_one ...
+#            OK  global.KILL_one_arg_one
+ok 18 global.KILL_one_arg_one
+#  RUN           global.KILL_one_arg_six ...
+#            OK  global.KILL_one_arg_six
+ok 19 global.KILL_one_arg_six
+#  RUN           global.KILL_thread ...
+#            OK  global.KILL_thread
+ok 20 global.KILL_thread
+#  RUN           global.KILL_process ...
+#            OK  global.KILL_process
+ok 21 global.KILL_process
+#  RUN           global.KILL_unknown ...
+#            OK  global.KILL_unknown
+ok 22 global.KILL_unknown
+#  RUN           global.arg_out_of_range ...
+#            OK  global.arg_out_of_range
+ok 23 global.arg_out_of_range
+#  RUN           global.ERRNO_valid ...
+#            OK  global.ERRNO_valid
+ok 24 global.ERRNO_valid
+#  RUN           global.ERRNO_zero ...
+#            OK  global.ERRNO_zero
+ok 25 global.ERRNO_zero
+#  RUN           global.ERRNO_capped ...
+#            OK  global.ERRNO_capped
+ok 26 global.ERRNO_capped
+#  RUN           global.ERRNO_order ...
+#            OK  global.ERRNO_order
+ok 27 global.ERRNO_order
+#  RUN           global.negative_ENOSYS ...
+#            OK  global.negative_ENOSYS
+ok 28 global.negative_ENOSYS
+#  RUN           global.seccomp_syscall ...
+#            OK  global.seccomp_syscall
+ok 29 global.seccomp_syscall
+#  RUN           global.seccomp_syscall_mode_lock ...
+#            OK  global.seccomp_syscall_mode_lock
+ok 30 global.seccomp_syscall_mode_lock
+#  RUN           global.detect_seccomp_filter_flags ...
+#            OK  global.detect_seccomp_filter_flags
+ok 31 global.detect_seccomp_filter_flags
+#  RUN           global.TSYNC_first ...
+#            OK  global.TSYNC_first
+ok 32 global.TSYNC_first
+#  RUN           global.syscall_restart ...
+#            OK  global.syscall_restart
+ok 33 global.syscall_restart
+#  RUN           global.filter_flag_log ...
+#            OK  global.filter_flag_log
+ok 34 global.filter_flag_log
+#  RUN           global.get_action_avail ...
+#            OK  global.get_action_avail
+ok 35 global.get_action_avail
+#  RUN           global.get_metadata ...
+#            OK  global.get_metadata
+ok 36 global.get_metadata
+#  RUN           global.user_notification_basic ...
+# seccomp_bpf.c:3488:user_notification_basic:Expected 0 (0) == WEXITSTATUS(status) (1)
+# user_notification_basic: Test failed
+#          FAIL  global.user_notification_basic
+not ok 37 global.user_notification_basic
+#  RUN           global.user_notification_with_tsync ...
+#            OK  global.user_notification_with_tsync
+ok 38 global.user_notification_with_tsync
+#  RUN           global.user_notification_kill_in_middle ...
+#            OK  global.user_notification_kill_in_middle
+ok 39 global.user_notification_kill_in_middle
+#  RUN           global.user_notification_signal ...
+#            OK  global.user_notification_signal
+ok 40 global.user_notification_signal
+#  RUN           global.user_notification_closed_listener ...
+#            OK  global.user_notification_closed_listener
+ok 41 global.user_notification_closed_listener
+#  RUN           global.user_notification_child_pid_ns ...
+# seccomp_bpf.c:3713:user_notification_child_pid_ns:Expected 0 (0) == WEXITSTATUS(status) (1)
+# user_notification_child_pid_ns: Test failed
+#          FAIL  global.user_notification_child_pid_ns
+not ok 42 global.user_notification_child_pid_ns
+#  RUN           global.user_notification_sibling_pid_ns ...
+# seccomp_bpf.c:3755:user_notification_sibling_pid_ns:Expected 0 (0) == WEXITSTATUS(status) (1)
+# seccomp_bpf.c:3791:user_notification_sibling_pid_ns:Expected 0 (0) == WEXITSTATUS(status) (1)
+# user_notification_sibling_pid_ns: Test failed
+#          FAIL  global.user_notification_sibling_pid_ns
+not ok 43 global.user_notification_sibling_pid_ns
+#  RUN           global.user_notification_fault_recv ...
+# seccomp_bpf.c:3836:user_notification_fault_recv:Expected 0 (0) == WEXITSTATUS(status) (1)
+# user_notification_fault_recv: Test failed
+#          FAIL  global.user_notification_fault_recv
+not ok 44 global.user_notification_fault_recv
+#  RUN           global.seccomp_get_notif_sizes ...
+#            OK  global.seccomp_get_notif_sizes
+ok 45 global.seccomp_get_notif_sizes
+#  RUN           global.user_notification_continue ...
+#            OK  global.user_notification_continue
+ok 46 global.user_notification_continue
+#  RUN           global.user_notification_filter_empty ...
+#            OK  global.user_notification_filter_empty
+ok 47 global.user_notification_filter_empty
+#  RUN           global.user_ioctl_notification_filter_empty ...
+#            OK  global.user_ioctl_notification_filter_empty
+ok 48 global.user_ioctl_notification_filter_empty
+#  RUN           global.user_notification_filter_empty_threaded ...
+#            OK  global.user_notification_filter_empty_threaded
+ok 49 global.user_notification_filter_empty_threaded
+#  RUN           global.user_notification_addfd ...
+# user_notification_addfd: Test terminated by timeout
+#          FAIL  global.user_notification_addfd
+not ok 50 global.user_notification_addfd
+#  RUN           global.user_notification_addfd_rlimit ...
+# seccomp_bpf.c:4366:user_notification_addfd_rlimit:Expected 0 (0) == WEXITSTATUS(status) (1)
+# user_notification_addfd_rlimit: Test failed
+#          FAIL  global.user_notification_addfd_rlimit
+not ok 51 global.user_notification_addfd_rlimit
+#  RUN           global.user_notification_sync ...
+# seccomp_bpf.c:4404:user_notification_sync:Expected ret (0) == USER_NOTIF_MAGIC (2147483647)
+# seccomp_bpf.c:4422:user_notification_sync:Expected status (256) == 0 (0)
+# user_notification_sync: Test terminated by assertion
+#          FAIL  global.user_notification_sync
+not ok 52 global.user_notification_sync
+#  RUN           global.user_notification_fifo ...
+# seccomp_bpf.c:4581:user_notification_fifo:Expected 0 (0) == WEXITSTATUS(status) (1)
+# seccomp_bpf.c:4615:user_notification_fifo:Expected 0 (0) == WEXITSTATUS(status) (1)
+# seccomp_bpf.c:4615:user_notification_fifo:Expected 0 (0) == WEXITSTATUS(status) (1)
+# seccomp_bpf.c:4615:user_notification_fifo:Expected 0 (0) == WEXITSTATUS(status) (1)
+# user_notification_fifo: Test failed
+#          FAIL  global.user_notification_fifo
+not ok 53 global.user_notification_fifo
+#  RUN           global.user_notification_wait_killable_pre_notification ...
+#            OK  global.user_notification_wait_killable_pre_notification
+ok 54 global.user_notification_wait_killable_pre_notification
+#  RUN           global.user_notification_wait_killable ...
+# seccomp_bpf.c:4788:user_notification_wait_killable:Expected 0 (0) == WEXITSTATUS(status) (1)
+# user_notification_wait_killable: Test failed
+#          FAIL  global.user_notification_wait_killable
+not ok 55 global.user_notification_wait_killable
+#  RUN           global.user_notification_wait_killable_fatal ...
+#            OK  global.user_notification_wait_killable_fatal
+ok 56 global.user_notification_wait_killable_fatal
+#  RUN           global.user_notification_wait_killable_after_reply ...
+#            OK  global.user_notification_wait_killable_after_reply
+ok 57 global.user_notification_wait_killable_after_reply
+#  RUN           global.tsync_vs_dead_thread_leader ...
+#            OK  global.tsync_vs_dead_thread_leader
+ok 58 global.tsync_vs_dead_thread_leader
+#  RUN           TRAP.dfl ...
+#            OK  TRAP.dfl
+ok 59 TRAP.dfl
+#  RUN           TRAP.ign ...
+#            OK  TRAP.ign
+ok 60 TRAP.ign
+#  RUN           TRAP.handler ...
+#            OK  TRAP.handler
+ok 61 TRAP.handler
+#  RUN           precedence.allow_ok ...
+#            OK  precedence.allow_ok
+ok 62 precedence.allow_ok
+#  RUN           precedence.kill_is_highest ...
+#            OK  precedence.kill_is_highest
+ok 63 precedence.kill_is_highest
+#  RUN           precedence.kill_is_highest_in_any_order ...
+#            OK  precedence.kill_is_highest_in_any_order
+ok 64 precedence.kill_is_highest_in_any_order
+#  RUN           precedence.trap_is_second ...
+#            OK  precedence.trap_is_second
+ok 65 precedence.trap_is_second
+#  RUN           precedence.trap_is_second_in_any_order ...
+#            OK  precedence.trap_is_second_in_any_order
+ok 66 precedence.trap_is_second_in_any_order
+#  RUN           precedence.errno_is_third ...
+#            OK  precedence.errno_is_third
+ok 67 precedence.errno_is_third
+#  RUN           precedence.errno_is_third_in_any_order ...
+#            OK  precedence.errno_is_third_in_any_order
+ok 68 precedence.errno_is_third_in_any_order
+#  RUN           precedence.trace_is_fourth ...
+#            OK  precedence.trace_is_fourth
+ok 69 precedence.trace_is_fourth
+#  RUN           precedence.trace_is_fourth_in_any_order ...
+#            OK  precedence.trace_is_fourth_in_any_order
+ok 70 precedence.trace_is_fourth_in_any_order
+#  RUN           precedence.log_is_fifth ...
+#            OK  precedence.log_is_fifth
+ok 71 precedence.log_is_fifth
+#  RUN           precedence.log_is_fifth_in_any_order ...
+#            OK  precedence.log_is_fifth_in_any_order
+ok 72 precedence.log_is_fifth_in_any_order
+#  RUN           TRACE_poke.read_has_side_effects ...
+#            OK  TRACE_poke.read_has_side_effects
+ok 73 TRACE_poke.read_has_side_effects
+#  RUN           TRACE_poke.getpid_runs_normally ...
+#            OK  TRACE_poke.getpid_runs_normally
+ok 74 TRACE_poke.getpid_runs_normally
+#  RUN           TRACE_syscall.ptrace.negative_ENOSYS ...
+#            OK  TRACE_syscall.ptrace.negative_ENOSYS
+ok 75 TRACE_syscall.ptrace.negative_ENOSYS
+#  RUN           TRACE_syscall.ptrace.syscall_allowed ...
+#            OK  TRACE_syscall.ptrace.syscall_allowed
+ok 76 TRACE_syscall.ptrace.syscall_allowed
+#  RUN           TRACE_syscall.ptrace.syscall_redirected ...
+#            OK  TRACE_syscall.ptrace.syscall_redirected
+ok 77 TRACE_syscall.ptrace.syscall_redirected
+#  RUN           TRACE_syscall.ptrace.syscall_errno ...
+#            OK  TRACE_syscall.ptrace.syscall_errno
+ok 78 TRACE_syscall.ptrace.syscall_errno
+#  RUN           TRACE_syscall.ptrace.syscall_faked ...
+#            OK  TRACE_syscall.ptrace.syscall_faked
+ok 79 TRACE_syscall.ptrace.syscall_faked
+#  RUN           TRACE_syscall.ptrace.kill_immediate ...
+#            OK  TRACE_syscall.ptrace.kill_immediate
+ok 80 TRACE_syscall.ptrace.kill_immediate
+#  RUN           TRACE_syscall.ptrace.skip_after ...
+#            OK  TRACE_syscall.ptrace.skip_after
+ok 81 TRACE_syscall.ptrace.skip_after
+#  RUN           TRACE_syscall.ptrace.kill_after ...
+#            OK  TRACE_syscall.ptrace.kill_after
+ok 82 TRACE_syscall.ptrace.kill_after
+#  RUN           TRACE_syscall.seccomp.negative_ENOSYS ...
+#            OK  TRACE_syscall.seccomp.negative_ENOSYS
+ok 83 TRACE_syscall.seccomp.negative_ENOSYS
+#  RUN           TRACE_syscall.seccomp.syscall_allowed ...
+#            OK  TRACE_syscall.seccomp.syscall_allowed
+ok 84 TRACE_syscall.seccomp.syscall_allowed
+#  RUN           TRACE_syscall.seccomp.syscall_redirected ...
+#            OK  TRACE_syscall.seccomp.syscall_redirected
+ok 85 TRACE_syscall.seccomp.syscall_redirected
+#  RUN           TRACE_syscall.seccomp.syscall_errno ...
+#            OK  TRACE_syscall.seccomp.syscall_errno
+ok 86 TRACE_syscall.seccomp.syscall_errno
+#  RUN           TRACE_syscall.seccomp.syscall_faked ...
+# seccomp_bpf.c:2253:syscall_faked:Expected 45000 (45000) == syscall(207) (0)
+# syscall_faked: Test failed
+#          FAIL  TRACE_syscall.seccomp.syscall_faked
+not ok 87 TRACE_syscall.seccomp.syscall_faked
+#  RUN           TRACE_syscall.seccomp.kill_immediate ...
+#            OK  TRACE_syscall.seccomp.kill_immediate
+ok 88 TRACE_syscall.seccomp.kill_immediate
+#  RUN           TRACE_syscall.seccomp.skip_after ...
+#            OK  TRACE_syscall.seccomp.skip_after
+ok 89 TRACE_syscall.seccomp.skip_after
+#  RUN           TRACE_syscall.seccomp.kill_after ...
+#            OK  TRACE_syscall.seccomp.kill_after
+ok 90 TRACE_syscall.seccomp.kill_after
+#  RUN           TSYNC.siblings_fail_prctl ...
+#            OK  TSYNC.siblings_fail_prctl
+ok 91 TSYNC.siblings_fail_prctl
+#  RUN           TSYNC.two_siblings_with_ancestor ...
+#            OK  TSYNC.two_siblings_with_ancestor
+ok 92 TSYNC.two_siblings_with_ancestor
+#  RUN           TSYNC.two_sibling_want_nnp ...
+#            OK  TSYNC.two_sibling_want_nnp
+ok 93 TSYNC.two_sibling_want_nnp
+#  RUN           TSYNC.two_siblings_with_no_filter ...
+#            OK  TSYNC.two_siblings_with_no_filter
+ok 94 TSYNC.two_siblings_with_no_filter
+#  RUN           TSYNC.two_siblings_with_one_divergence ...
+#            OK  TSYNC.two_siblings_with_one_divergence
+ok 95 TSYNC.two_siblings_with_one_divergence
+#  RUN           TSYNC.two_siblings_with_one_divergence_no_tid_in_err ...
+#            OK  TSYNC.two_siblings_with_one_divergence_no_tid_in_err
+ok 96 TSYNC.two_siblings_with_one_divergence_no_tid_in_err
+#  RUN           TSYNC.two_siblings_not_under_filter ...
+#            OK  TSYNC.two_siblings_not_under_filter
+ok 97 TSYNC.two_siblings_not_under_filter
+#  RUN           O_SUSPEND_SECCOMP.setoptions ...
+#            OK  O_SUSPEND_SECCOMP.setoptions
+ok 98 O_SUSPEND_SECCOMP.setoptions
+#  RUN           O_SUSPEND_SECCOMP.seize ...
+#            OK  O_SUSPEND_SECCOMP.seize
+ok 99 O_SUSPEND_SECCOMP.seize
+#  RUN           UPROBE.not_attached.uprobe_default_allow ...
+#      SKIP      __NR_uprobe ot __NR_uretprobe syscalls not defined
+#            OK  UPROBE.not_attached.uprobe_default_allow
+ok 100 UPROBE.not_attached.uprobe_default_allow # SKIP __NR_uprobe ot __NR_uretprobe syscalls not defined
+#  RUN           UPROBE.not_attached.uprobe_default_block ...
+#      SKIP      __NR_uprobe ot __NR_uretprobe syscalls not defined
+#            OK  UPROBE.not_attached.uprobe_default_block
+ok 101 UPROBE.not_attached.uprobe_default_block # SKIP __NR_uprobe ot __NR_uretprobe syscalls not defined
+#  RUN           UPROBE.not_attached.uprobe_block_syscall ...
+#      SKIP      __NR_uprobe ot __NR_uretprobe syscalls not defined
+#            OK  UPROBE.not_attached.uprobe_block_syscall
+ok 102 UPROBE.not_attached.uprobe_block_syscall # SKIP __NR_uprobe ot __NR_uretprobe syscalls not defined
+#  RUN           UPROBE.not_attached.uprobe_default_block_with_syscall ...
+#      SKIP      __NR_uprobe ot __NR_uretprobe syscalls not defined
+#            OK  UPROBE.not_attached.uprobe_default_block_with_syscall
+ok 103 UPROBE.not_attached.uprobe_default_block_with_syscall # SKIP __NR_uprobe ot __NR_uretprobe syscalls not defined
+#  RUN           UPROBE.uprobe_attached.uprobe_default_allow ...
+#      SKIP      __NR_uprobe ot __NR_uretprobe syscalls not defined
+#            OK  UPROBE.uprobe_attached.uprobe_default_allow
+ok 104 UPROBE.uprobe_attached.uprobe_default_allow # SKIP __NR_uprobe ot __NR_uretprobe syscalls not defined
+#  RUN           UPROBE.uprobe_attached.uprobe_default_block ...
+#      SKIP      __NR_uprobe ot __NR_uretprobe syscalls not defined
+#            OK  UPROBE.uprobe_attached.uprobe_default_block
+ok 105 UPROBE.uprobe_attached.uprobe_default_block # SKIP __NR_uprobe ot __NR_uretprobe syscalls not defined
+#  RUN           UPROBE.uprobe_attached.uprobe_block_syscall ...
+#      SKIP      __NR_uprobe ot __NR_uretprobe syscalls not defined
+#            OK  UPROBE.uprobe_attached.uprobe_block_syscall
+ok 106 UPROBE.uprobe_attached.uprobe_block_syscall # SKIP __NR_uprobe ot __NR_uretprobe syscalls not defined
+#  RUN           UPROBE.uprobe_attached.uprobe_default_block_with_syscall ...
+#      SKIP      __NR_uprobe ot __NR_uretprobe syscalls not defined
+#            OK  UPROBE.uprobe_attached.uprobe_default_block_with_syscall
+ok 107 UPROBE.uprobe_attached.uprobe_default_block_with_syscall # SKIP __NR_uprobe ot __NR_uretprobe syscalls not defined
+#  RUN           UPROBE.uretprobe_attached.uprobe_default_allow ...
+#      SKIP      __NR_uprobe ot __NR_uretprobe syscalls not defined
+#            OK  UPROBE.uretprobe_attached.uprobe_default_allow
+ok 108 UPROBE.uretprobe_attached.uprobe_default_allow # SKIP __NR_uprobe ot __NR_uretprobe syscalls not defined
+#  RUN           UPROBE.uretprobe_attached.uprobe_default_block ...
+#      SKIP      __NR_uprobe ot __NR_uretprobe syscalls not defined
+#            OK  UPROBE.uretprobe_attached.uprobe_default_block
+ok 109 UPROBE.uretprobe_attached.uprobe_default_block # SKIP __NR_uprobe ot __NR_uretprobe syscalls not defined
+#  RUN           UPROBE.uretprobe_attached.uprobe_block_syscall ...
+#      SKIP      __NR_uprobe ot __NR_uretprobe syscalls not defined
+#            OK  UPROBE.uretprobe_attached.uprobe_block_syscall
+ok 110 UPROBE.uretprobe_attached.uprobe_block_syscall # SKIP __NR_uprobe ot __NR_uretprobe syscalls not defined
+#  RUN           UPROBE.uretprobe_attached.uprobe_default_block_with_syscall ...
+#      SKIP      __NR_uprobe ot __NR_uretprobe syscalls not defined
+#            OK  UPROBE.uretprobe_attached.uprobe_default_block_with_syscall
+ok 111 UPROBE.uretprobe_attached.uprobe_default_block_with_syscall # SKIP __NR_uprobe ot __NR_uretprobe syscalls not defined
+# FAILED: 101 / 111 tests passed.
+# 12 skipped test(s) detected. Consider enabling relevant config options to improve coverage.
+# Totals: pass:89 fail:10 xfail:0 xpass:0 skip:12 error:0
 
-/*
- * FIXME: The code leaks the MPIC mappings here; this is very unlikely
- * to fail but it ought to be fixed anyways.
- */
+but it does have an additional failure:
 
-With that comment fixed - the change looks good to me, as it still fixes
-the memory leak in error handling path. So feel free to add:
+--- test-base.log	2026-10-06 15:18:02.387213018 +0000
++++ test-patched.log	2026-10-06 15:32:06.286523030 +0000
+@@ -279,10 +279,12 @@
+ #            OK  TRACE_syscall.seccomp.syscall_redirected
+ ok 85 TRACE_syscall.seccomp.syscall_redirected
+ #  RUN           TRACE_syscall.seccomp.syscall_errno ...
+-#            OK  TRACE_syscall.seccomp.syscall_errno
+-ok 86 TRACE_syscall.seccomp.syscall_errno
++# seccomp_bpf.c:2247:syscall_errno:Expected -(-3) (3) == errno (38)
++# syscall_errno: Test failed
++#          FAIL  TRACE_syscall.seccomp.syscall_errno
++not ok 86 TRACE_syscall.seccomp.syscall_errno
+ #  RUN           TRACE_syscall.seccomp.syscall_faked ...
+-# seccomp_bpf.c:2253:syscall_faked:Expected 45000 (45000) == syscall(207) (0)
++# seccomp_bpf.c:2253:syscall_faked:Expected 45000 (45000) == syscall(207) (-1)
+ # syscall_faked: Test failed
+ #          FAIL  TRACE_syscall.seccomp.syscall_faked
+ not ok 87 TRACE_syscall.seccomp.syscall_faked
+@@ -370,6 +372,6 @@
+ #      SKIP      __NR_uprobe ot __NR_uretprobe syscalls not defined
+ #            OK  UPROBE.uretprobe_attached.uprobe_default_block_with_syscall
+ ok 111 UPROBE.uretprobe_attached.uprobe_default_block_with_syscall # SKIP __NR_uprobe ot __NR_uretprobe syscalls not defined
+-# FAILED: 101 / 111 tests passed.
++# FAILED: 100 / 111 tests passed.
+ # 12 skipped test(s) detected. Consider enabling relevant config options to improve coverage.
+-# Totals: pass:89 fail:10 xfail:0 xpass:0 skip:12 error:0
++# Totals: pass:88 fail:11 xfail:0 xpass:0 skip:12 error:0
 
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Thanks
 
-
->  	if (mpic->irqhost == NULL)
-> -		return NULL;
-> +		goto err_free_mpic;
->  
->  	/* Display version */
->  	switch (greg_feature & MPIC_GREG_FEATURE_VERSION_MASK) {
-> @@ -1526,6 +1522,9 @@ struct mpic * __init mpic_alloc(struct device_node *node,
->  
->  	return mpic;
->  
-> +err_free_mpic:
-> +	bitmap_free(mpic->protected);
-> +	kfree(mpic);
->  err_of_node_put:
->  	of_node_put(node);
->  	return NULL;
-> -- 
-> 2.55.0
+Michal
 
