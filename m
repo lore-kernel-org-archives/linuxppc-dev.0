@@ -1,83 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-28971-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28972-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 789FBCA5FED
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Oct 2026 15:38:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C3F9CA5FFC
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Oct 2026 17:13:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hzgPt5gJJz30St;
-	Wed, 07 Oct 2026 02:38:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791301090;
-	cv=none; b=DraIl0eeT37etHgNoAa3KDGi8pLPTJ6uMolBZLumIgMFG8FTsonKVcLQy57VHG8w6JbxqqF8APGdnYQX8cyDOjQktya4NAMO2waIK2B77VVRSIxoufzUt5XW4EBrMvy1Q3sRZWNbzor1YnE+PjKjBwmaFznH0685NcP5tJGrzzeB/A4MVKGWMX4aRSgHmrtsZBr2LlKliIwLxZD2/OVhIW3yXUeIbZCnNJcmSiw4ZSCO2dRzibA8/v6bg9NJO4x+0bID3njcVYnv2tCyTANxaMFo6znnA3fY0irnwL1DQdrNZiW18YXPcMhqzM9pggrPW2k9HmW3xiqle35Noege6w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hzjWs4pTdz30St;
+	Wed, 07 Oct 2026 04:13:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.7
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791306809;
+	cv=none; b=D3yDDRMBUqsMPlhBoW40Skwr06GW/CbEaNEkrESrbmG3BB0TQJ1aAwGQKdbzIVHuXP8DZ9g3hLA5OhvBFA26bVd+SJ+7amfBJFOe8JMePIpWNceLUN1RHHLAA+PT6kx96K1RcHpwIxMbKjora48K0c3zBqOiaxY356qOnwIzdkyi0hBjLnqJc8HxptRrSsbsyOEKl49cW69P4UjofyO97M75HA2zwK+mzwb92ADInHREBOiQ8Ww7/6q1Vgla06wRc3JbXpCUl/B7E7bgc6ZEx6N7/MMU4FBOOLY3+Kby3lBF6xphZgpKgrV8hKdn02OhlgBuYceKpFFjDma3IHck1g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791301090; c=relaxed/relaxed;
-	bh=hw+blFBkhwq0BU6rMK/UkOL4OaYMHv6DGmpRcUpUguU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Dw8DuG7bOuJp6qAlK6FAH0EL7wu68mNgJyg7w3Wrcg/iAJuI3Kbcnqu6uAXV4lImZOB25Fw0BoR3b+y4qW7hq4AryfBFppFI0R5oZ6ALa1XodL5Kdur6DihZdSSbB5GNomSJ4V+7TMNmEEFJUPM4+8AAl+/YDIfPBTRjYG2ad1ZGjj+lqJi1+08zASQukJGRtWTvVJHooIgIP/BRskhv0oWPGzJpoPqH58RsEaTW5S87I2qtIA1WmqERoEI0BT5HCmbqxM8kI1sokVH9J99sCGAQ1x/TXXqcKVO3pTBVQl/fq1qejTjBYmm8KWamRGnV+Ap5z5BHRWKKvDqoCktx1g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EvwzEAHY; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1791306809; c=relaxed/relaxed;
+	bh=ByS3hT0nDIBDSSt77xeQRuOaYrar7ip6SzUCu2ZCV80=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=LUrCHahl0ozaEK8UTfP3YQ2CzK1c3ZcNnGPWFBXuEH5olURUQr26SRTABwE+sDcj+Zd2eswof888GNrWuqGSfcwM/VFGa2lznxuQqDWlIUyeUowvZFlySMwtf6GyIRtzve/fCaCOd7dHLke7NEPuqLYFdVNqSzt102cWqJ70YQy1KS6EmMyRsXO1fLVZeqmn21b0bbqE0GYmZpzMAPBQLYytVEJY347+pVbf1qLP6Llr8sdVwUCVFDgaw1tSid1B9PUVUT8hhr0HfTlT2nkkU5ZAbnIT5GHyGvwGLtiNtJvfnrsJ3ymxAKtUpxmt7lVNVmrzCKRLyZ9IfFCwPLvxZw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TxM0yQeg; dkim-atps=neutral; spf=pass (client-ip=192.198.163.7; helo=mgamail.intel.com; envelope-from=sathyanarayanan.kuppuswamy@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EvwzEAHY;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TxM0yQeg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.7; helo=mgamail.intel.com; envelope-from=sathyanarayanan.kuppuswamy@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hzgPs3mzVz2yjw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Oct 2026 02:38:08 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 696EZmLf4059342;
-	Tue, 6 Oct 2026 15:37:58 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=hw+blFBkhwq0BU6rMK/UkOL4OaYMHv
-	6DGmpRcUpUguU=; b=EvwzEAHY/XMaMZhSwDCpsVLaoWZsp4wwwO+VQEDtzT5TQS
-	NkMVm7w1ANBvr62FzVOSKhS1wLdK5rwyUWsA15jNp1Vhbj2LHn3t3qMrZO8gbBkA
-	g8gn0K/3Hf7SiYpAKLjniBrhSFMSkq4yrktTDRb0DJN/kvuHVfd/dSD1NhnKHhnN
-	Dz3GU/zlzRV43qh8b+t+iY2fPtnZaWTw9lZQkm1CMBozTIqWv0cO2FGHnMGLEkYA
-	OVJN4uNuG9Anl6c4u0hB+VQ4+WK4x6EzZ8bS8RsB74YUkE0XRpsKABB3iv8Fak23
-	wKaxjiXdgoyXD3rhu0BsamswWZGKv0cWBiYl4Scw==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h2s74rwkj-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 06 Oct 2026 15:37:57 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 696EWRr8405232;
-	Tue, 6 Oct 2026 15:37:56 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h3cdvtmfm-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 06 Oct 2026 15:37:56 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 696Fbqe251183922
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 6 Oct 2026 15:37:52 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 08FA62004B;
-	Tue,  6 Oct 2026 15:37:52 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5414820040;
-	Tue,  6 Oct 2026 15:37:48 +0000 (GMT)
-Received: from li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com (unknown [9.39.24.208])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Tue,  6 Oct 2026 15:37:48 +0000 (GMT)
-Date: Tue, 6 Oct 2026 21:07:45 +0530
-From: Gautam Menghani <gautam@linux.ibm.com>
-To: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, chzigotzky@xenosoft.de,
-        mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
-        linux-kernel@vger.kernel.org, msuchanek@suse.de, ritesh.list@gmail.com,
-        harshpb@linux.ibm.com, amachhiw@linux.ibm.com, venkat88@linux.ibm.com,
-        nnmlinux@linux.ibm.com
-Subject: Re: [PATCH 2/2] KVM: PPC: Replay pending interrupts before entering
- the guest
-Message-ID: <asUSJpOzKn3eoELi@li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com>
-References: <20260928110411.844582-1-sshegde@linux.ibm.com>
- <20260928110411.844582-3-sshegde@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hzjWp2cJhz2yfD
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Oct 2026 04:13:25 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1791306806; x=1822842806;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=6hTp7abrUCBANrVeUZr7+9orxPXfXbaltmosY1LJSGE=;
+  b=TxM0yQegx3JDOwfLypdz6eT9gsk5/ot1Eu3mtsv0gfEKpwz8bivUB5m/
+   cr5cYYJmwRQblZwkAMhsSLGmDJq8fge8DPuVYyJ/vonExMuuL6Qn5HxYW
+   akNheHkwNgmArVDkRkq/yHu1I8iDQPwuYrhLMLzg3NRfFLVr2J9ZhgGOH
+   3R6/2HAO9FPwwcdHQiZuYTqnv2PhnrgBN7QI0iDBxjkDPtGjknI0/1zDl
+   MIL1wcs6XRZ8wr7AxChT1ZPj2EvRcEWT3RHHOynlKy4iIVvtKbD6pd9PU
+   aLzPuUb7yjLAsOUBYC/vYUuX9DOhFIGpRD9jMwRp6WGjkuZ5nRtt2ybN7
+   g==;
+X-CSE-ConnectionGUID: 9s2KgXteSX6upbElqk4HYg==
+X-CSE-MsgGUID: 6MhLUm4hT4CgUN9C/bYOlQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11927"; a="117526838"
+X-IronPort-AV: E=Sophos;i="6.27,143,1787036400"; 
+   d="scan'208";a="117526838"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Oct 2026 10:13:21 -0700
+X-CSE-ConnectionGUID: RISsF7C2Tba5ZlFsLqWc9g==
+X-CSE-MsgGUID: 0BJZiU5xQMqTmvD1a68euw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,143,1787036400"; 
+   d="scan'208";a="274994321"
+Received: from soc-pf446t5c.clients.intel.com (HELO [10.24.80.90]) ([10.24.80.90])
+  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Oct 2026 10:13:21 -0700
+Message-ID: <eec2107f-2c08-44ad-98c8-2c92f7a31fd3@linux.intel.com>
+Date: Tue, 6 Oct 2026 10:13:21 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,42 +70,94 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260928110411.844582-3-sshegde@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: Q3UWwK9jQEUaXJXEEMUdLh2-0tZii7B-
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA2MDA2MiBTYWx0ZWRfX9rD3zSQ/gXer
- JJFHvSklUES3z2EkxuUcU9eeCdQrMaLy/XOZQIkw8zDdicNxYuVEpkAcTTxxvstsh7OcZe/CYCu
- hE5FG2p1rCRgP10qSQI6kx13DOAoSlQ=
-X-Proofpoint-GUID: SMNSYJbOe9yE7vRVdSkN5CJHwtRKCNBo
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA2MDA2MiBTYWx0ZWRfXy/U72B4Ue8J7
- 9S8L+5W6FIIeNphLtGVha39IO2+QLIGriZsX2eZvDUigsGo/2wO0Qk92VvRJ+puGV/Kaup4qHcJ
- Mwq/BoBooNf8B/6E9CTOxAwLQNztXZw6QXUFJVKFX4SgFa7bNBfa+su8HPG3B8jR+xULitz5xcg
- 5NY2qUaeyNST+H0NWwOxW7pgDnr9yxwJalRIjBupQqb/ibkzK39Kx4IAKFm2sZBPs+LixSwcx94
- NkNuw1hdwM/hNQk7oxXAV3aSLXzVZ43+NBDeNvffd1aPzwsx/TTiZcs/yxizhnj/kP/pV/sofd5
- qbh2x3xebucjrvQL7xC5QuAAGtnK7XOFaAQvxu/uzHMA8pwJE7FKtzvLsCpKo2u8SiEi8JAhyyP
- 1OoOr628hTwWKUiT6cmnaWzTBBkG159R9uKu2GM5WAzznhFLyi/omgQIo5SKkpiUQUlhpVRXbSw
- kVKMws3dfP8o8VQKtWg==
-X-Authority-Analysis: v=2.4 cv=fM2sTpae c=1 sm=1 tr=0 ts=6ac515d6 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=kj9zAlcOel0A:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=iqMu5c-nzsFV77I-cpIA:9
- a=CjuIK1q_8ugA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-10-06_04,2026-10-06_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 bulkscore=0 priorityscore=1501 spamscore=0 lowpriorityscore=0
- phishscore=0 adultscore=0 malwarescore=0 clxscore=1011 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2610060062
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 3/3] PCI/AER: Document that aer_recover_queue() takes
+ ownership of aer_regs
+To: Priyank Rathod <rathodpriyank@google.com>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+ Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>
+Cc: Lukas Wunner <lukas@wunner.de>, Jonathan Cameron <jic23@kernel.org>,
+ =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+ Dave Jiang <dave.jiang@intel.com>, Shiju Jose <shiju.jose@huawei.com>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20260928-b4-fix-aer-memleaks-v5-0-ba6b94c9c9a6@google.com>
+ <20260928-b4-fix-aer-memleaks-v5-3-ba6b94c9c9a6@google.com>
+Content-Language: en-US
+From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+In-Reply-To: <20260928-b4-fix-aer-memleaks-v5-3-ba6b94c9c9a6@google.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
+Hi,
 
-I'll test this with our internal CI to validate the change. Will update
-once done.
+On 9/28/2026 10:40 AM, Priyank Rathod wrote:
+> ghes_handle_aer() allocates the AER register snapshot that it passes to
+> aer_recover_queue() from ghes_estatus_pool.  aer_recover_queue() returns
+> void, so the caller cannot tell whether the record was queued, and the
+> AER code owns the buffer from then on and must free it on every path.
+> 
+> None of this is documented at the definition of this exported function.
+> With GHES enabled, a new caller that passed a buffer from any other
+> allocator would hit the BUG() in gen_pool_free_owner() when the AER code
+> returns the buffer to ghes_estatus_pool, and a caller that freed the
+> buffer itself would cause a double free.
+> 
+> Add a kernel-doc comment that describes the parameters and states that
+> aer_recover_queue() takes ownership of @aer_regs, which must have been
+> allocated from ghes_estatus_pool.
+> 
+> No functional change.
+> 
 
-Thanks,
-Gautam
+Thanks, this matches what I had in mind. 
+
+Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+
+Bjorn, I see you already applied the series to pci/aer. Feel free to
+pick up the tag if it is still convenient.
+
+> Suggested-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+> Link: https://lore.kernel.org/r/4513e7d4-4e2f-42d8-8f0c-2f0e03815dee@linux.intel.com
+> Signed-off-by: Priyank Rathod <rathodpriyank@google.com>
+> ---
+>  drivers/pci/pcie/aer.c | 18 ++++++++++++++++++
+>  1 file changed, 18 insertions(+)
+> 
+> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+> index a6600801af6e..a58244e00bc4 100644
+> --- a/drivers/pci/pcie/aer.c
+> +++ b/drivers/pci/pcie/aer.c
+> @@ -1404,6 +1404,24 @@ static void aer_recover_work_func(struct work_struct *work)
+>  static DEFINE_SPINLOCK(aer_recover_ring_lock);
+>  static DECLARE_WORK(aer_recover_work, aer_recover_work_func);
+>  
+> +/**
+> + * aer_recover_queue - queue an AER error record reported by firmware
+> + * @domain: PCI domain (segment) of the device that reported the error
+> + * @bus: bus number of the device that reported the error
+> + * @devfn: encoded device and function number, as returned by PCI_DEVFN()
+> + * @severity: AER_CORRECTABLE, AER_NONFATAL or AER_FATAL
+> + * @aer_regs: snapshot of the device's AER Capability registers
+> + *
+> + * Queue an error record received from firmware through APEI GHES.  The
+> + * record is processed later from a workqueue, which logs the error and,
+> + * for uncorrectable errors, attempts recovery of the device.
+> + *
+> + * Takes ownership of @aer_regs, which must have been allocated from
+> + * ghes_estatus_pool with a size of sizeof(struct aer_capability_regs).
+> + * The buffer is freed with ghes_estatus_pool_region_free() by the work
+> + * item that processes the record, or immediately if the queue is full.
+> + * The caller must not access or free @aer_regs after this call.
+> + */
+>  void aer_recover_queue(int domain, unsigned int bus, unsigned int devfn,
+>  		       int severity, struct aer_capability_regs *aer_regs)
+>  {
+> 
+
+-- 
+Sathyanarayanan Kuppuswamy
+Linux Kernel Developer
+
 
