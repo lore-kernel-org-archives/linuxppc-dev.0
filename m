@@ -1,62 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-28942-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28943-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFBB0CA5FF0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Oct 2026 23:27:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6FEA9CA5FFD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Oct 2026 03:01:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hzFtC02gZz304x;
-	Tue, 06 Oct 2026 10:27:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791242866;
-	cv=none; b=dtj0PViym0Yy27Fpxc5NFfRGetu5h68C3Gu8mcn1YcknJMj2Qc6G6WOMfDMWmeYJBlppbjnvMmCo5nPKh8Ypg+pbPUdCMRgPRHkl3XfgpcN2rIyEmGxXrVMQK+mfV+pn6ydknoF5AevT2AtMKGS4iNaZb7aZT7sHUD0D+Fu15SnNiiEgydQr0xE9US4RVKIfNvMkDOSpwkl1GNoKiKSOS9iWSPQc8TiG4whx0fB0+IGBrBKq415+ECx00RxsCV/Au9SR2TcxkHTbasNU52SjVoGJxy96QraTEwzETg6n9MysCsZp1GJSxul63ZLvASRKF3NaNPV2ZslGGWMUC0JyTA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hzLd32fS4z304x;
+	Tue, 06 Oct 2026 14:01:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791255703;
+	cv=none; b=edM3vHd6zbAF0NTJp4V0C7FpegE/CPfELhjsgBV1+vpb1NKg7hEF0aJdYudJG1rdkd4h6v0GhYHU/+cTTVnXZHwnsEUA/BqFPGkgc5g2Mz9vmQgOtgZrE/O1m2bYXhdu8C58f6UJaDmabXM8V8P3PWxupfFtZ8MaXTNVwc6Nl9+4rlV9PH5RWPos5gj5ioumYkVEyohUdy0jbmc0BddHqjZQFeFtOUrHbBfSRjbQCYTJxiiwRolSaHBIITKvefFSod56ZEwzVUGzIW7k41IZXxYg9L8fxdkeyJ6XrxfGnwcY6V2MERvLmsc9JqgEPs9pDLPMLisybzM67DdmLrb5LA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791242866; c=relaxed/relaxed;
-	bh=Hk4nSN1n4Iw0XZzBtZze8RtRb2pN/Wq0d66Aae2ZiSw=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=IsQRn2C016OAPx8QAQJ+WXR23XAbWmwx85HPbETRcb4rdSfG5iNM6tBI+U48IU3JRvCkn+NeWQppP6bAkB7QKq8cO3kQJV25f944TRv/jm1HebpnRLa2MbSvkGhkJxK3MKFfdNpzro2lH92d81OEM7FLqxqvmhT6G7avvG6gIytNbyB+l/85NDc4egLSw+ffDqR1EOiR3tIddgka7Zlg9SsBt/2a/hQMVzO6B7axgg3e8GOLtW/5t3vpb5+3V5RpiFwO1wSS5h5EwnGM72nOzqdsXs6QIS5/vgnrXZ+HTY57jfgRBIHFz9Y+cfGJuOKcg1w/lgvjOhNyGGSsaZNbvg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ccLkwZLA; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1791255703; c=relaxed/relaxed;
+	bh=3tHCZi0tNdUGxWfesBbWABUFMFRLzDxwYBg9AIa/Ec0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=oA8Kv4Ic5YGxe4paF9Lht/p82JG+y+fnWSuURySvS0+0v3GVvopAqvh9e5ahlr996RrpHvOyqqw7luO+KPgUftBMlu9YjyuZynynGWJbsC39ydVFGGlc2I0Qdxv6MsnA4+y2AaKX2e3ZMiwcDPrsqg4gMIhAUr+MYNk98rSBWnZL/PyMqt6ND0Ms1fdE+Hzr4/A+B0RsXlFfElvqoYdpm95UvOGNZJk1N9nl6l3TzgNa5K7PhBzgm0cEIwWZiw4Tr+LYhtNlY97vcJABtc1RIJjAqMjTe1AhHbnCs+4Je/wFXWxQ7SBMHrBBwjkzxT/JNQ3cvVl6Ld8Y6P902QwU8Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nPE0VVHH; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ccLkwZLA;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nPE0VVHH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hzFtB0fBGz2ygW
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Oct 2026 10:27:46 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 67B1B43DA5;
-	Mon,  5 Oct 2026 23:27:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1465D1F000FF;
-	Mon,  5 Oct 2026 23:27:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791242863;
-	bh=Hk4nSN1n4Iw0XZzBtZze8RtRb2pN/Wq0d66Aae2ZiSw=;
-	h=Date:From:To:Cc:Subject:In-Reply-To;
-	b=ccLkwZLA+vTQJQtDHAKltez1/rs2YjIt2DogLykXHRJR1+ec7JqgCf+/nT/X5vRHE
-	 s3uC9M/V0irEkuq+u6Zy1U8i1TfCnjP8WdmeDVBnTLvaIXPiPf2v8R1K0kdfOcQOth
-	 X6EXMeQn/GSoDCIouuh2Rdx1MACjFGq8WA41nshZIBXlOUFqz/wdHoO+L5rGQ06ywr
-	 c8L9mDwkIFkpdaQygCj5MXOvO0OJcwXOoBb26+HeYLlzovSV/fhlzeGf3YPV1bj1ZU
-	 5n7gl2JT1lLIX+Bvha1vznbLwH5U4GuoUl+lEwZOxs8SiL4FPTaC5CbahZ1PGsZj8M
-	 DLj31WvfBh0hA==
-Date: Mon, 5 Oct 2026 18:27:42 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Priyank Rathod <rathodpriyank@google.com>
-Cc: Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver O'Halloran <oohall@gmail.com>,
-	Bjorn Helgaas <bhelgaas@google.com>, Lukas Wunner <lukas@wunner.de>,
-	Stefan Roese <stefan.roese@mailbox.org>,
-	Keith Busch <kbusch@kernel.org>, Sinan Kaya <okaya@kernel.org>,
-	linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] PCI/AER: Fix struct pci_dev reference leak in
- aer_process_err_devices()
-Message-ID: <20261005232742.GA645076@bhelgaas>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hzLd15Pd3z2yDm
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Oct 2026 14:01:41 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 695Haejv3660244;
+	Tue, 6 Oct 2026 03:01:32 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
+	content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=3tHCZi
+	0tNdUGxWfesBbWABUFMFRLzDxwYBg9AIa/Ec0=; b=nPE0VVHH+E0I+PE8ASqXLv
+	H9hbiVJXqpzFIfgw2X9Iw/PHJEyGm594qVueleo4dHeKkf6kz5oh1lxxFgO4aCvB
+	6eZ3CbhmZWGREfLb706sRDTKJ1G4f6GEuwetBc2qLD7ocjKq5eOFuf97OtGyLi3C
+	h5ZBrmAH6jmzFe6BAlDboCWaYP9yzwjcazvetDctENv5WArkajgZo/tIHb+82iSB
+	FkLnTCBJI4UjIsbAPDEsAJbwCg83rKxemNhPyO5VXc9HOs7HCTqxrAeb4aJ+ydyQ
+	570L6jhOyZRXkN++JabuAKT1wElXFc0kB30Idseuf3TSaLmLdxOZ52bWmAxs2oTQ
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h2scrdmg2-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Tue, 06 Oct 2026 03:01:31 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 695LpI3k3280960;
+	Tue, 6 Oct 2026 03:01:30 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h3dhgr37s-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 06 Oct 2026 03:01:30 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69631QTc42402184
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 6 Oct 2026 03:01:26 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0958220040;
+	Tue,  6 Oct 2026 03:01:26 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 597352004B;
+	Tue,  6 Oct 2026 03:01:22 +0000 (GMT)
+Received: from [9.124.213.110] (unknown [9.124.213.110])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue,  6 Oct 2026 03:01:22 +0000 (GMT)
+Message-ID: <ad91f624-ea6f-441f-995e-14fd4fd30ebe@linux.ibm.com>
+Date: Tue, 6 Oct 2026 08:31:21 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,95 +81,82 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260918-fix-aer-refcount-leak-v2-1-bdd1ff1c35a9@google.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 2/3] KVM: PPC: Book3S HV: Add preempt_disable() around
+ virtual-mode HPTE bit-lock users
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Gautam Menghani <gautam@linux.ibm.com>,
+        Harsh Prateek Bora <harshpb@linux.ibm.com>,
+        R Nageswara Sastry <rnsastry@linux.ibm.com>,
+        Alexander Graf <agraf@suse.de>, linux-hardening@vger.kernel.org,
+        stable@vger.kernel.org, Avi Kivity <avi@redhat.com>
+References: <20260930173750.56759-1-amachhiw@linux.ibm.com>
+ <20260930173750.56759-3-amachhiw@linux.ibm.com>
+ <fb954b17-c3b9-49f0-a7d4-8e0f7fc0e404@linux.ibm.com>
+ <20261005234024.20213ac7-78-amachhiw@linux.ibm.com>
+Content-Language: en-US
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+In-Reply-To: <20261005234024.20213ac7-78-amachhiw@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA2MDAxMCBTYWx0ZWRfXzIrFcDKLio3b
+ BtZ3WnKhtuvm4VaRvPi6Wie5XaRznTT0C4ZrSYmlw1BjODD35oz20abNC73QeQWl1IBs/CWJMnk
+ 5b0YZPPYStB/RzoQ8VwlZWtQOSb0RWA=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA2MDAxMCBTYWx0ZWRfX7p5qNES/zKzv
+ auvGdkZCWOjqQCSx34p89Er0CvI62GP34su8OZu2VPgudAljoZq9sqeiVYPIZxJ3AbYM8MrReAJ
+ yJJp16O9X7Rzf7lcoIHbPU2Q9da3TbDu0qfEINzCm3TdMFB6Tsj4pP3DK/xTpdeufvBdxBIdTen
+ 8HponTRZ7OMfaNH5MW8at3yjVNt4rkmrhJql4KllBziT9vgQjL7cnKhte7heobTQ7BucybLMUtU
+ JcPwTyDxnCmstPqd41G3M70OFyR/3ngHSzlKRmAzu0+ke9G/COTEflkymfaPmQ7ND2sqlBmbtLy
+ 8DmytLwXu8US63695zTOLUB0JraY2LrKjWvBVtRR7MynX5AIS/65CxDvL3lG4/3lTSSxkVz3r54
+ OFEwlLK942v/3mkF5WOCU6xGzVo1kZz67bA/TqaBdGFqOB2ywtCQYImF4QxCk/72+DoASp7c8G+
+ BBmtKXBnlYZwXCld5PA==
+X-Proofpoint-GUID: 3OSaq9WWDPw38Y2gOSJIk5gwPyhZqYCz
+X-Proofpoint-ORIG-GUID: qeSoUgWU6eepVwJoT9V5pStS7Vlo_yhX
+X-Authority-Analysis: v=2.4 cv=B7osQ+tM c=1 sm=1 tr=0 ts=6ac4648b cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8
+ a=anADAJyGIn8O9P3fJOYA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-05_05,2026-10-05_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 bulkscore=0 malwarescore=0 impostorscore=0 phishscore=0
+ clxscore=1015 spamscore=0 adultscore=0 lowpriorityscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2610060010
 
-On Fri, Sep 18, 2026 at 05:24:48PM +0000, Priyank Rathod wrote:
-> When an AER error occurs, candidate error-source devices are added to
-> e_info->dev[] by add_error_device(), which takes a reference with
-> pci_dev_get().
-> 
-> A device can be recorded without any error status being present: the
-> Requester ID fast path in is_error_source(),
-> 
-> 	if (e_info->id == pci_dev_id(dev))
-> 		return true;
-> 
-> matches purely on the ID reported by the Root Port and returns true
-> without reading the device's AER status registers.
-> 
-> In aer_process_err_devices(), handle_error_source() is called only if
-> aer_get_device_error_info() returns non-zero, i.e. only if an unmasked
-> error status bit is actually set. It returns 0 if the device has become
-> inaccessible (status and mask both read as all ones, so
-> status & ~mask == 0) or if no unmasked status bit is set.
-> 
-> Because handle_error_source() was responsible for calling pci_dev_put(),
-> skipping it permanently leaks the reference taken in add_error_device().
-> 
-> Decouple reference lifetime from error handling by moving pci_dev_put()
-> out of handle_error_source() and into the aer_process_err_devices() loop,
-> so every recorded device is put exactly once.
-> 
-> handle_error_source() is static and aer_process_err_devices() is its only
-> caller, so no other path is affected.
-> 
-> Fixes: 60271ab044a5 ("PCI/AER: Take reference on error devices")
-> Signed-off-by: Priyank Rathod <rathodpriyank@google.com>
 
-Applied to pci/aer for v7.4, thanks!
 
-> ---
-> Changes in v2:
-> - Corrected Fixes tag from 1ab4a3c80508 to 60271ab044a5 ("PCI/AER: Take
->   reference on error devices"), which added both the pci_dev_get() in
->   add_error_device() and the conditionally-reached pci_dev_put() in
->   handle_error_source(). Thanks to Lukas Wunner for catching this.
-> - Removed the speculative topology list from the commit message. As Lukas
->   pointed out, error reporting is not enabled on devices without an AER
->   capability (pcie_aer_is_native() bails on !dev->aer_cap), so the
->   dev->aer_cap == 0 reasoning was wrong and is gone.
-> - Explained instead why a device with no error status can be present in
->   e_info->dev[]: the Requester ID fast path in is_error_source() matches
->   on e_info->id alone, without reading any AER status register.
-> - Added a Fixes tag; the imbalance dates back to v4.20. I have not added
->   Cc: stable, since you indicated the path is an unlikely corner case -
->   happy to add it if you think it is warranted.
-> - Cc: Keith Busch and Sinan Kaya, author and reviewer of 60271ab044a5.
-> - Rebased onto v7.3-rc3+ (f259f446f519); applies cleanly to pci/next as well.
-> - Link to v1: https://lore.kernel.org/r/20260830-fix-aer-refcount-leak-v1-1-64e1013add12@google.com
-> ---
->  drivers/pci/pcie/aer.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+On 10/5/26 11:57 PM, Amit Machhiwal wrote:
+> Hi Shrikanth,
 > 
-> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-> index d8dcd238fda1..bc761410d56d 100644
-> --- a/drivers/pci/pcie/aer.c
-> +++ b/drivers/pci/pcie/aer.c
-> @@ -1340,7 +1340,6 @@ static void handle_error_source(struct pci_dev *dev, struct aer_err_info *info)
->  {
->  	cxl_rch_handle_error(dev, info);
->  	pci_aer_handle_error(dev, info);
-> -	pci_dev_put(dev);
->  }
->  
->  #ifdef CONFIG_ACPI_APEI_PCIEAER
-> @@ -1518,6 +1517,7 @@ static inline void aer_process_err_devices(struct aer_err_info *e_info)
->  	for (i = 0; i < e_info->error_dev_num && e_info->dev[i]; i++) {
->  		if (aer_get_device_error_info(e_info, i))
->  			handle_error_source(e_info->dev[i], e_info);
-> +		pci_dev_put(e_info->dev[i]);
->  	}
->  }
->  
+> Thanks for the review.  Please find my responses inline below.
 > 
-> ---
-> base-commit: a077be4fde21ee6e751fa70eb641ef5d9bf2fc48
-> change-id: 20260830-fix-aer-refcount-leak-6378f84d62ba
+
+>> I don't like this sprinkling of preempt disable/enable.
+>> Is there not a way to embedd this in try_lock_hpte/unlock_hpte?
 > 
-> Best regards,
-> -- 
-> Priyank Rathod <rathodpriyank@google.com>
+> I understand the scattering of preempt_disable()/preempt_enable() looks ugly.
+> But there are two blockers for that approach:
 > 
+> 1. The real-mode hcall dispatch table (hcall_real_table in
+>     book3s_hv_rmhandlers.S) calls kvmppc_h_enter(), kvmppc_h_remove(),
+>     kvmppc_h_bulk_remove() and others in book3s_hv_rm_mmu.c, which all call
+>     try_lock_hpte() from real mode.  Adding preempt_disable() inside
+>     try_lock_hpte() would affect those real-mode callers, which brings us to your
+>     second point.
+> 
+
+Fair enough.
+
+Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+
 
