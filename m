@@ -1,103 +1,96 @@
-Return-Path: <linuxppc-dev+bounces-28979-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28980-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09E88CA5FFC
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Oct 2026 21:49:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E462CA5FED
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Oct 2026 21:49:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hzqfR4yHnz2yjN;
-	Wed, 07 Oct 2026 08:49:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791323375;
-	cv=none; b=BQDXj0AnhybeDupz392QsnlVvT2syb15BF/tgn01zkgVXAbsWOYJDdi8JVpspajX97oArutknDB9xLS2GBPFopV2eGzMOfHtRd7cRjc3tw0b7lUr6YxI31xu/Xa0CWtM2KMxY5fiRct6REvG/bICWu6IQs0Npm17ATLtJ/rOkZg7l8wB1i3U92/MP2X2nspsNUDlfuCzCYPsq/OXMuH41/0/7DLKGQ78FCdvT0SEri43gTtZus03EWc/yblf4MVrGsrFo0PesOHd3pAGkYl8nkvkpb/0BzsG5oBNogrUg2eMzUb5FwMQZXkfB/j1mqHQeaiW5vRioox/cPrEXDfATw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hzqfd6Qt4z2yjN;
+	Wed, 07 Oct 2026 08:49:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791323385;
+	cv=none; b=l3DEwwI9AdsZITUB76mwnEVUoVjRGqk/NY7mU4+8vUGudf/uDp2KQMPlz5E1iNYeLBBf53Mfqi0ftTMCv2YIShLp7txpxZBvK0VDtqLKj0UXOpuOb1MkXmVeD1vCMu9KIyRrmNfzM1l+eQJPeZejZERhTgcfZPVautVIyMpJDiqedcl84mJcsFUyeo6xNCyVFqTMqhN21ERC0vyjQy6nwez0aMo3M+MMZ1f6YMIZm4YQezmZuy/b6ydrOxjSP+aEIF0QITQwmEl7kq1eLCEXEmbMM3R/r03ZGmtY3KsqmI/4g/0Wpb9LwXXTFLA9P7r5SKNAMTtQRUFaOenCSfjMXQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791323375; c=relaxed/relaxed;
-	bh=MR/kKzdKUbRbxIo5AlBnzLpoRKt6DdnYtuH9HxT5rZg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=BzTmzAEcp4IKoX131B9+qIo4smR5RZVRTxdtY3yWyicbsbEY1tcuysU4vCoaNrNnt7OveHPvqV1klkcZF3goU4p5OtwNme5079AgECFqrdNSdBNbC9ajD6n45iOynHDvS6QApjUWJezR+q75RKADFxmjH4x+Z3mAXW+7ywWCiPTUAv3NxqPWchnYQXhtxY70BXMk/mB7zgQ1JxstrgrLOF6c/yW7Yl8QFRNzf2egCRI5k6/O72D5tV+et8CXDd4NpVVJDbdLikcAh0F0/0Av8c4SPOiTErGKMPiPpkJooQao7tqMb75IP/cHYOJ6PwkPXT9cd6Q9cVKFrouT5InrOQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Z+T8EQwQ; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=will@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1791323385; c=relaxed/relaxed;
+	bh=Cu+GVkCajxPYQmFp/AWJCNy8qQQm8s58jI6EnwyitRY=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=UHQ1BGnMXllEQPhB3yU4WE7T04VOKz9gOuPZVcjxkzAYyyqez1mn9yrk7O6KSul0WGute5STQgmWNJlCdJE5edLA+SLVDgwxzisM8QSV1Ocy15mk+HanQ3+9FS837VGqp/9544WPAKUta/0G1K6H4Yuopt2NqtgAGbkzsYZr3yAKyGrHMASquBN6Hv0rWsTHSz/OurN2Vo+k/YM2pNiS0nAak4BEXLtfjnS3rgfI2YIR1QF3uDEx2KnlyfnV/YpYM2N5hy+ErJ9JJBDl4qqqFFoPdLMlBqB71R3IrbDLvuI5Cn5xtdMOBn6LKId7lpB/XIIYJ/kv1S+kTUVA7WvmDw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=aHE/l+nJ; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32b; helo=mail-wm1-x32b.google.com; envelope-from=michal.pecio@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Z+T8EQwQ;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=aHE/l+nJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=will@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::32b; helo=mail-wm1-x32b.google.com; envelope-from=michal.pecio@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hzqfQ4FkPz2yVd
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Oct 2026 08:49:34 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 5B2D5601FE;
-	Tue,  6 Oct 2026 21:49:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 873651F0089B;
-	Tue,  6 Oct 2026 21:49:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791323371;
-	bh=MR/kKzdKUbRbxIo5AlBnzLpoRKt6DdnYtuH9HxT5rZg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=Z+T8EQwQfcC4Dsl0rfHAy7DAr3ckjnc55xRY9k8ihf2V06by9utsJIUbvm4QE+qHR
-	 QKdcDlyOBwe3F4rGUU5EdOvz65Jgt+VzWFiWaBtahe3bL5n/K61Ms7q595gvqrDB72
-	 Ez27iKZ/SQ1f/FuWmqqDU3Guw4kpQZ2aiSIWeXp3/Fi2cDErexzgESkZmUkPWv20Vo
-	 49yv64pLvV9ZDzsc7eMwgznEKqg8QdJ8I29J3N+TnSgVCEcytw3htWHfNzQjfFCe5P
-	 LSItfvLQ9ixCWlP4yZR7plvTFG2lBxy8cZ/+eIE5upXhl7h44DyChdW/rFTzCXyyRz
-	 k1f+1HOXPJh8g==
-Date: Tue, 6 Oct 2026 22:49:17 +0100
-From: Will Deacon <will@kernel.org>
-To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
-Cc: iommu@lists.linux.dev, linux-kernel@vger.kernel.org,
-	Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	Mark Rutland <mark.rutland@arm.com>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>,
-	Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Stefano Stabellini <sstabellini@kernel.org>,
-	Russell King <linux@armlinux.org.uk>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Jiaxun Yang <jiaxun.yang@flygoat.com>,
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Andy Lutomirski <luto@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
-	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	x86@kernel.org
-Subject: Re: [PATCH v6 6/8] dma: swiotlb: Centralize memory-encryption pool
- sizing
-Message-ID: <asVs3doaJ4WrT3M2@willie-the-truck>
-References: <20260924060756.1325156-1-aneesh.kumar@kernel.org>
- <20260924060756.1325156-7-aneesh.kumar@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hzqfc0SWRz2yVd
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Oct 2026 08:49:43 +1100 (AEDT)
+Received: by mail-wm1-x32b.google.com with SMTP id 5b1f17b1804b1-4980fe6b3beso7940055e9.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Oct 2026 14:49:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1791323379; x=1791928179; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=Cu+GVkCajxPYQmFp/AWJCNy8qQQm8s58jI6EnwyitRY=;
+        b=aHE/l+nJEjBkF/+hFbE3wc5hR8Ujm5/1w67tEiaRz8TaBMNUO5uoZCSFMyJcyCI/HS
+         kZAYHq31P5wh0kcPxNekoKjqvh9/CPHYd7j2/fKk2TC/kaErHZMuURYUXoEycsPdxUcj
+         7v8IbtGQbBHzcsm+EcJeQwylMf2e0gz/ylvUWko0izunKiB+jBFp1p36wftCiMoEVuMm
+         p1aAzp5t24VgiJxrBPhph1F+LPdx9CW7axENFnsNyCE7FYL60Eh1qsqT2MmgNbrE7Rmh
+         Ij5E54o3tbdVWeDyJHRm1CuECuXzPNk+NGLWVBIqqb2XNTgQmCqkgyHPKSkVs9Hwx456
+         on5w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791323379; x=1791928179;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Cu+GVkCajxPYQmFp/AWJCNy8qQQm8s58jI6EnwyitRY=;
+        b=WldOLskdsAN1p3R2G4yFKdio8VQmXTAd8FnMKX5AhVYB39wzzAg9zGZlijUViiJF3N
+         9b2VEK2XLvnwPD/GGHfHpFucGa+4qw2H9oI+YBMNTgCXkSB6CJpnoJaBM64GMfbwnIWQ
+         VQ5/rcjnmljQ6Op/r4acYPFa7Pb7iailGhfj8Xt96c+AfR0QFXZgmKy7D7Mu+HJyjk07
+         BZJjkT9+W4A/+xbH+0jxr0uGqAQe317x3132/2Zube+soBtVIhFJc653huesAz5EF5JA
+         yj2HM1tzxXhhqDlZNl7iLpmhw11B0tXzQ2TuCXycAlmC39n8pvuMdQmzqhPdWc6ND13O
+         oH6w==
+X-Forwarded-Encrypted: i=1; AKwUvBwKqFOGshTVgt5qDSmHjqwoKBuiI4yLcQCC+KZv8xtXU1XTKxMAfKymjunodZZ7No+PH6mQ6k2pNI3oYD4=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++nGPbdkv/al4QmEulx/DBKkcjZhg1lgnhCOq2ydkhIXGiTl2i/D
+	Tk10kCJAzF/R90LJp2fyySsbNjr8vBHJFuPCpRrHACsDXchFAiaHvvX4
+X-Gm-Gg: AYBFou1MYr4ZLfwEzvvHJmto5cbIxmRuV6kvHmG15ou/cptmTBNaj76ahLieAE3FTRe
+	lknWbYtTaeClcKWGtgIqNo6ozhg33lFaTaQvA/7edR+elKx876WeZ/fb81v80Te2MVfdvUUPz5H
+	hk088EEjJIYqWIxVvA6OJFWSotXw2o6FT6tvtpmT2yKQXFSzp+9hNWQ/Bph8BhQDacaDxy8ibvY
+	Jg5MPV2Q80dda6QK97GyX7jT/0cZjcxQrWFV+uC1wXBRdnCWzedC9aMkbU5ENFqPy3UoC9gk4BW
+	gzmPtzJdUqo1sLBvgOM/GTSgBMvqs/MvRi1GUoUf0qcbZjv8d5J4Mt1BP4OIw39FF9HZVZiZZ2C
+	a9j0vUzlNBkblQMUKgOa7Nta26Vsv1blaHkqIfcR2WvzyWL7ZIkubH5g17IYg4YT1bWoKa90dmH
+	RzeK+Xnq5sZXnDy0XhPzzZiid1drqGvUguIy/vTpXEqxdunmSFcGIfeH52lVPbpYiuD6jSPfALD
+	ZRSjCLr3g==
+X-Received: by 2002:a05:600c:154c:b0:4a1:6282:1cf3 with SMTP id 5b1f17b1804b1-4a18043b284mr2285345e9.9.1791323379475;
+        Tue, 06 Oct 2026 14:49:39 -0700 (PDT)
+Received: from foxbook (bez186.neoplus.adsl.tpnet.pl. [83.28.37.186])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a17a0fc2e4sm97768435e9.3.2026.10.06.14.49.38
+        (version=TLS1_2 cipher=AES128-SHA bits=128/128);
+        Tue, 06 Oct 2026 14:49:39 -0700 (PDT)
+Date: Tue, 6 Oct 2026 23:49:35 +0200
+From: Michal Pecio <michal.pecio@gmail.com>
+To: Paul Menzel <pmenzel@molgen.mpg.de>
+Cc: Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, LKML
+ <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: IBM Power S822LC: pci 0021:0d:00.0: xHCI HW did not halt within
+ 32000 usec status = 0x0
+Message-ID: <20261006234935.0c40c635.michal.pecio@gmail.com>
+In-Reply-To: <eff5ca07-26a9-40bd-8668-6e6ed69fe587@molgen.mpg.de>
+References: <fb68e15d-b8f2-42ac-aa65-0d9fedcfcdbd@molgen.mpg.de>
+	<20260506193037.6de9e355.michal.pecio@gmail.com>
+	<69fa1c3f-3ea9-42cb-a49a-7da39f72806e@molgen.mpg.de>
+	<20260512012006.66aeb0c5.michal.pecio@gmail.com>
+	<6106b5b9-17d2-48be-8215-3320f3d1d261@molgen.mpg.de>
+	<20260512102233.290d3665.michal.pecio@gmail.com>
+	<eff5ca07-26a9-40bd-8668-6e6ed69fe587@molgen.mpg.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -111,146 +104,76 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260924060756.1325156-7-aneesh.kumar@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Sep 24, 2026 at 11:37:54AM +0530, Aneesh Kumar K.V (Arm) wrote:
-> Memory-encrypted guests use shared or unencrypted memory for DMA and may
-> route all DMA through SWIOTLB. The default pool can therefore be too
-> small for I/O-intensive workloads.
-> 
-> Move the existing x86 guest-sizing policy into the SWIOTLB core. For
-> SWIOTLB_POOL_CC_GUEST, size the pool to 6% of guest memory, clamped
-> between the normal default and 1 GiB. Preserve an explicit swiotlb=
-> size.
-> 
-> Host memory encryption still selects a normal-sized shared pool and
-> does not use the guest-sizing policy.
-> 
-> A restricted DMA pool already provides shared bounce buffers for its
-> devices. Record its presence during reserved-memory initialization and
-> do not select the confidential-guest default-pool policy solely because
-> guest memory encryption is active.
-> 
-> Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Dave Hansen <dave.hansen@linux.intel.com>
-> Cc: Andy Lutomirski <luto@kernel.org>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Thomas Gleixner <tglx@kernel.org>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Borislav Petkov <bp@alien8.de>
-> Cc: x86@kernel.org
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> Cc: Marek Szyprowski <m.szyprowski@samsung.com>
-> Cc: Robin Murphy <robin.murphy@arm.com>
-> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
-> ---
->  arch/x86/mm/mem_encrypt.c | 24 ------------------------
->  kernel/dma/swiotlb.c      | 27 +++++++++++++++++++++++++--
->  2 files changed, 25 insertions(+), 26 deletions(-)
-> 
-> diff --git a/arch/x86/mm/mem_encrypt.c b/arch/x86/mm/mem_encrypt.c
-> index 95bae74fdab2..912f22ca838f 100644
-> --- a/arch/x86/mm/mem_encrypt.c
-> +++ b/arch/x86/mm/mem_encrypt.c
-> @@ -101,9 +101,6 @@ void __init mem_encrypt_init(void)
->  
->  void __init mem_encrypt_setup_arch(void)
->  {
-> -	phys_addr_t total_mem = memblock_phys_mem_size();
-> -	unsigned long size;
-> -
->  	/*
->  	 * Do RMP table fixups after the e820 tables have been setup by
->  	 * e820__memory_setup().
-> @@ -114,27 +111,6 @@ void __init mem_encrypt_setup_arch(void)
->  	if (!cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
->  		return;
->  
-> -	/*
-> -	 * For SEV and TDX, all DMA has to occur via shared/unencrypted pages.
-> -	 * Kernel uses SWIOTLB to make this happen without changing device
-> -	 * drivers. However, depending on the workload being run, the
-> -	 * default 64MB of SWIOTLB may not be enough and SWIOTLB may
-> -	 * run out of buffers for DMA, resulting in I/O errors and/or
-> -	 * performance degradation especially with high I/O workloads.
-> -	 *
-> -	 * Adjust the default size of SWIOTLB using a percentage of guest
-> -	 * memory for SWIOTLB buffers. Also, as the SWIOTLB bounce buffer
-> -	 * memory is allocated from low memory, ensure that the adjusted size
-> -	 * is within the limits of low available memory.
-> -	 *
-> -	 * The percentage of guest memory used here for SWIOTLB buffers
-> -	 * is more of an approximation of the static adjustment which
-> -	 * 64MB for <1G, and ~128M to 256M for 1G-to-4G, i.e., the 6%
-> -	 */
-> -	size = total_mem * 6 / 100;
-> -	size = clamp_val(size, IO_TLB_DEFAULT_SIZE, SZ_1G);
-> -	swiotlb_adjust_size(size);
-> -
->  	/* Set restricted memory access for virtio. */
->  	virtio_set_mem_acc_cb(virtio_require_restricted_mem_acc);
->  }
-> diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
-> index 75ee63cd354e..e626cca63ad1 100644
-> --- a/kernel/dma/swiotlb.c
-> +++ b/kernel/dma/swiotlb.c
-> @@ -33,6 +33,7 @@
->  #include <linux/kmsan-checks.h>
->  #include <linux/iommu-helper.h>
->  #include <linux/init.h>
-> +#include <linux/math64.h>
->  #include <linux/memblock.h>
->  #include <linux/mm.h>
->  #include <linux/pfn.h>
-> @@ -80,6 +81,7 @@ struct io_tlb_slot {
->  
->  static bool swiotlb_force_bounce;
->  static bool swiotlb_force_disable;
-> +static bool restricted_dma_pool_present __initdata;
->  
->  enum swiotlb_pool_policy {
->  	SWIOTLB_POOL_NONE,
-> @@ -478,7 +480,25 @@ swiotlb_adjust_pool_size(enum swiotlb_pool_policy policy)
->  		size = min(swiotlb_default_pool_size(), size);
->  		break;
->  	case SWIOTLB_POOL_CC_GUEST:
-> -		return;
-> +		/*
-> +		 * For SEV and TDX and CCA, all DMA has to occur via
-> +		 * shared/unencrypted pages. Kernel uses SWIOTLB to make this
-> +		 * happen without changing device drivers. However, depending on
-> +		 * the workload being run, the default 64MB of SWIOTLB may not be
-> +		 * enough and SWIOTLB may run out of buffers for DMA, resulting in
-> +		 * I/O errors and/or performance degradation especially with high
-> +		 * I/O workloads.
-> +		 *
-> +		 * Adjust the default size of SWIOTLB using a percentage of guest
-> +		 * memory for SWIOTLB buffers.
-> +		 *
-> +		 * The percentage of guest memory used here for SWIOTLB buffers is
-> +		 * more of an approximation of the static adjustment which 64MB for
-> +		 * <1G, and ~128M to 256M for 1G-to-4G, i.e., the 6%
-> +		 */
-> +		size = div_u64((u64)memblock_phys_mem_size() * 6, 100);
-> +		size = clamp_val(size, IO_TLB_DEFAULT_SIZE, SZ_1G);
-> +		break;
->  	case SWIOTLB_POOL_NONE:
->  		WARN(true, "Cannot adjust SWIOTLB size without a pool\n");
->  		return;
-> @@ -496,7 +516,8 @@ swiotlb_select_pool_policy(unsigned int flags)
->  	if (swiotlb_force_disable)
->  		return SWIOTLB_POOL_NONE;
->  
-> -	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
-> +	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT) &&
-> +	    !restricted_dma_pool_present)
->  		return SWIOTLB_POOL_CC_GUEST;
+On Tue, 12 May 2026 17:32:09 +0200, Paul Menzel wrote:
+> As a further data point, adding `ppc_pci_reset_phbs` to the command line=
+=20
+> also gets xhci_hcd to initialize the TI xHCI host controller:
+>=20
+>      $ lspci -nn -s 0021:0d:00.0
+>      0021:0d:00.0 USB controller [0c03]: Texas Instruments TUSB73x0=20
+> SuperSpeed USB 3.0 xHCI Host Controller [104c:8241] (rev 02)
+>=20
+>=20
+>      [   14.050249]   Issue PHB reset ...
+>      [=E2=80=A6]
+>      [   19.339822] ehci_hcd: block sizes: qh 144 qtd 96 itd 192 sitd 96
+>      [   19.339919] ohci_hcd: block sizes: ed 112 td 96
+>      [   19.340538] xhci_hcd 0021:0d:00.0: xHCI Host Controller
 
-I think this check on the restricted DMA pool is too general -- the pool
-could be tied to a specific DMA-capable peripheral and so treating its
-presence as a global property isn't right.
+Hi Paul,
 
-Will
+Are you still interested in this issue, or happy with your workaround?
+Maybe both?
+
+I have some updates:
+
+We learned that the kernel does dodgy things with the FW handoff
+protocol, particularly with TI chips. This may possibly matter if
+FW is involved. I could supply patches to test this hypothesis.
+
+A suspiciously similar case has been reported here:
+https://lore.kernel.org/linux-usb/b43b9d21-4134-4e4c-89d8-f867207b125e@linu=
+x.intel.com/T/
+
+There is a new workaround: PCI device reset before kexec. Weird.
+
+> No log `xHCI HW did not halt within 32000 usec status =3D 0x0` (or 0x10=20
+> with the other patch). In `arch/powerpc/platforms/powernv/pci-ioda.c`,=20
+> reading the comment in `pnv_pci_init_ioda_phb()` suggests, that PHB=20
+> should be reset also in the kexec case:
+>=20
+>          /*
+>           * If we're running in kdump kernel, the previous kernel never
+>           * shutdown PCI devices correctly. We already got IODA table
+>           * cleaned out. So we have to issue PHB reset to stop all PCI
+>           * transactions from previous kernel. The ppc_pci_reset_phbs
+>           * kernel parameter will force this reset too. Additionally,
+>           * if the IODA reset above failed then use a bigger hammer.
+>           * This can happen if we get a PHB fatal error in very early
+>           * boot.
+>           */
+>          if (is_kdump_kernel() || pci_reset_phbs || rc) {
+>                  pr_info("  Issue PHB reset ...\n");
+>                  pnv_eeh_phb_reset(hose, EEH_RESET_FUNDAMENTAL);
+>                  pnv_eeh_phb_reset(hose, EEH_RESET_DEACTIVATE);
+>          }
+>=20
+> At least, I=E2=80=99d assume that kdump and kexec are similar, that both =
+do not=20
+> shut down PCI devices? (Commit 361f2a2a1536 (powrpc/powernv: Reset PHB=20
+> in kdump kernel) from 2024 adds (some) the code above.)
+
+Apparently, we try to shut down PCI devices on kexec, unless loading a
+crash dump kernel on panic. So as I wrote in the new thread, we already
+call xhci_halt() before kexec, the xHC should be halted, and for new
+kernel xhci_halt() should be almost a no-op with guaranteed success.
+
+It seems that we are failing to actually halt it, or something (FW?)
+touches the chip during kexec, or something else is quite weird.
+
+Regards,
+Michal
 
