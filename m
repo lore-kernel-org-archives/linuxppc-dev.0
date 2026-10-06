@@ -1,79 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-28952-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28953-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A7ACCA5FFF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Oct 2026 09:24:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F840CA5FF0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Oct 2026 10:29:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hzW7D4YfRz30Pp;
-	Tue, 06 Oct 2026 20:24:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791278696;
-	cv=none; b=DbtHmjuLL4yUoZ7sB6tXHKS0YCSK06gEU1zt4ASfL1TI4G36o4sg69VZvuya6zSPfLqU3N0pMHkJyiooh6ZSweDxjiRC9Y20IKUYZbQkeSSC6e/VPjjRXQd27NuuH48BCNcE9ti2QKEJADE+icVqX/osbncdlRuO1U7NDRKf07lJoEnXQaeY6okNcwbnkbzXgV65QMPF5Qlpaxwt4bZPJQVJUL6N5O59sag/hkK8eBZDrkltZRAi2QO8U0kMgFs1pd0Z6irVSepjyL4I1PdQwBzX7jXfsMQkvWkCjov2Rf0DxuCDLESvjJrhTCIt+ZpKFP6GFVyr+2RRmb6VEFJsfQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hzXZ616q9z2y2h;
+	Tue, 06 Oct 2026 21:29:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1233"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791282590;
+	cv=none; b=YAd/JBdmREl1maaME5ns/s3hELe91+NAas/udDnJnrDG1fa4wIXe9cNjZgKnAWLRj8meK6pQjTVGpLYfJbENPuwFta3ZTzfZKehv17KsxvXrlkArD9O9g0iYEhoxNXdBi8NpxndSve7EmcB1SglBFePAHTW1PN/ukgtWTHIPA0/766uokd2X3s8oBuzv9xkVLyNL8snlPJpSJIlDv2Hbv7eNnHI3UeYR8JcznKeSKyb4r4KC98J1G2UsBqDKFAg9hStuoIQF1VOroHZmTFMJMmdKzPNBl0iDjxdbWL97A6DaPmnNUxxSuJuP1wYGhzaYwBnNB0fE/r3+FUS00XGV0A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791278696; c=relaxed/relaxed;
-	bh=FwTlJ5UQ6AWxL4SurT47yrw+s88iAmevtRb+S78ziO8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=A5L3tCljBqOCTuDEz3Gvsv1sLQhgpoJMYJsFbWTilNM7ZvdkIjtQwjejHtsu9j0svMqsnmQX0g9SDxf3hoeDxk/0Mg1kjFxyOV7swKC8bRfqzWJfwTa8S92hH1B5UnehyS3UfqoomA7Uf/Ir8H6sqag49S0c5T/wkuMd2sGTi3309l3dkBPFB1p/FjG4oVQHocU0dqiYebl4ifaghTTD/pgItH3LQH0uRWQj5IIGEo4oc39AUrV+1UnC+6G0pjcM6eYlAIDtkL58Ie5Qo9AZh8RDbmPloi/7SLHjm2DEVYU+YoSLDclMCZcUvKpp5pm2NbXR51jwOl25kQZ7A82TXw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KK/0lhIC; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1791282590; c=relaxed/relaxed;
+	bh=05GXKUT/YWkG/6TjV8sM9LD7ngJ6Vk2E269NPbqlb5Q=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=GOnACWbmSTIHENakAB1sKngHH5PGsLaYCtJ5Da7bISIbuvQIOYeIdRjIhEx9drzt2IJY3187qY7Uuzfdkeu93eqp2X1p9NODVYWpouHDUQ+opaFjc0HsSHdILKr9PIF4c66h2mlgiKfavmPPW1JMtiB1tw96dgAefokN7DmVKqN3Ykz7yD7nGd5UVypFoqQzyptnnNiwaOyFH20bvZzrtmZYPEq1twnX8XGeKvU74L5fToMYETiwhAWzS+xgULZ9XtIz8JoqusY3elPUswiSBRQf3yRS+V1YIvcB9lDUpqV1zToqz53TPrBLJPRsYkWI6dkjtWuNnNTjDtIkdVKxWQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=bvo4owB0; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1233; helo=mail-dl1-x1233.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KK/0lhIC;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=bvo4owB0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1233; helo=mail-dl1-x1233.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dl1-x1233.google.com (mail-dl1-x1233.google.com [IPv6:2607:f8b0:4864:20::1233])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hzW7C5Gs1z2yMP
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Oct 2026 20:24:55 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6966brUx2929762;
-	Tue, 6 Oct 2026 09:24:53 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=FwTlJ5UQ6AWxL4SurT47yrw+s88iAm
-	evtRb+S78ziO8=; b=KK/0lhICAcVKMl3zTAaOYzz1y1vzi/2OB0O9FT7hyR/l1+
-	3pA+wt7DzhA+USKKDAPIpZp3TvdlULqok8jfE7eSyBhImJEVwPD/EioUr8NT90ud
-	Lzy6m+UpIXs0oHemxKQiTUIQImCS6Nx3Wzc+NfQKNRhQ/VwtX4Wv1lhHJpOOVlpO
-	RQMWYUa9rKTGmj+hhQbeR5hPYt+rm2AqBOWM0Zgf87bchFGvPDl3DYvr7XYmQsz0
-	wb23v/+28f0PQ1qopzqEqzlF0KRkiqAv2MBKFem4P0RVllJWgLoTMxWep8doH7kD
-	15wmUd7WgaNydbWtS3/lxpt27ulgcu97e5hSsBMw==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h2sbv65g2-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 06 Oct 2026 09:24:52 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6966leWW2849998;
-	Tue, 6 Oct 2026 09:24:51 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4h3e8g933r-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 06 Oct 2026 09:24:51 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6969Oolx42139998
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 6 Oct 2026 09:24:50 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0699D2004E;
-	Tue,  6 Oct 2026 09:24:50 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DD14A20040;
-	Tue,  6 Oct 2026 09:24:48 +0000 (GMT)
-Received: from li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com (unknown [9.39.24.208])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Tue,  6 Oct 2026 09:24:48 +0000 (GMT)
-Date: Tue, 6 Oct 2026 14:54:45 +0530
-From: Gautam Menghani <gautam@linux.ibm.com>
-To: Timothy Pearson <tpearson@raptorengineering.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        Ritesh Harjani <ritesh.list@gmail.com>
-Subject: Re: [REGRESSION] RAID10 severe performance regression / unable to
- rebuild degraded array
-Message-ID: <asS9dPrjE7CDRPcM@li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com>
-References: <610543697.64938.1788619385880.JavaMail.zimbra@raptorengineeringinc.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hzXZ44vLsz2xwd
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Oct 2026 21:29:47 +1100 (AEDT)
+Received: by mail-dl1-x1233.google.com with SMTP id a92af1059eb24-14fd9dafb0dso661441c88.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Oct 2026 03:29:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1791282583; x=1791887383; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=05GXKUT/YWkG/6TjV8sM9LD7ngJ6Vk2E269NPbqlb5Q=;
+        b=bvo4owB0lWmlrRgpl8jxY7ReR0i0JAcvRhYVRCbvkAtoqBbHEMRZmuk8xJFO83gJ//
+         u6VzJp8TGvqhBtXpJpONqQohvF3yfQ6Rm7YfFqbUlOn2CDxHcEwD8a50GCSIu4nVIX86
+         J6aUErah5cM3HNrtNFwwXufKSJVfPV++VK59pD5jNR7broBwBiXkEdDwhOiBFxMe2Nd0
+         FY+KNf1Wr3RX4zfeO5DkeU0uukNTANp4pHZBjjEZ4se9Z8w6yMSQnAHyJKK8VdH/oYX1
+         RG2CgqS72aMgOMLTnhR/VQxPXi9cgeNHRwQx/U2d5lgbiQxthjRWbivMTJwxbxFPIBME
+         8znA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791282583; x=1791887383;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=05GXKUT/YWkG/6TjV8sM9LD7ngJ6Vk2E269NPbqlb5Q=;
+        b=JytCW4MIcCyOdXYhnGNf+OWM2Zk3ogG+MOrBZ2CyAvPk7izc3Sl5VHmpYfU+EreQ/9
+         53a6WW4sNfCg3w//qDTPt5WiSY+mYFO012My7BeNbxodeH0ZNBeJ0nyW6VabTGaA2Q2f
+         9nq9oaLwTpzUjvxKOGzDi4pugy/nK84HOUuPPMbNszYRz99osGn9AqnXDP4zvuJcllvL
+         7GWbVpUdV3LQAh3l+iz217A/LE0id20koKmxr+R5wpm8OS8qcvhwrVSdbLJ2jVbL3PLn
+         PGtpb29aq19oRj6Bsw+Hv0t+W1bXF4UEmyxa7RiPM8viL9AmDhiyZIPlMJNHn708oVOG
+         w5Mw==
+X-Forwarded-Encrypted: i=1; AKwUvBxLa4QKyrm50jXL1SDh/gMEKjBAtf4NW7hzO/2oBdMq9TZmdBlDEUrv1wI2s551SbPHI/Yn//fly45oDDw=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++mRGvLbojYyJJcva1QRgqaByW+Ce1+j5ZJBna0s8qBeF3oEzxoF
+	bybGuklF1RSqFgegVq5kUfqxwq1nU2RAV+mCX6yCv64OCmupuxHtvFgK
+X-Gm-Gg: AYBFou1qsArX1HKXnQmOTQClpOsQmuMlgBs/AMxmWnlGXJhX0rJHYoXgQiONBgoAQvc
+	2Ox0QsLnulqchtLOt5He0Q3UAE7EeLuOWHj1vDgA8iK2VVXjhBm/L1EUW6NEExyjhzZStjUIJBb
+	wQThbYI8LLSj7d0w2RNrHFQjfaA/5iRgp4fucgcC+FKOwscNQrh5j7GHUVN2R2o+iUrA/+abFRt
+	uMFCAvdmepXCEr+kn+VKT5LLgX9jUBSVmdsqSxax5vKVIod2V07ULUYaf0sRRAQiu5kAfUy2g+0
+	UdQBftykZNyVGAVbHyvsvGzrfljJ+0TwdVp591QQBUItLso2H2JqQacjnZ/kMWPz1uN6auVMvzP
+	oGhu4MCcKJ03t4tVAbrRMoGJsHyZekWCJDI2IkL7T1BMhC2NqVUQhlVGy9H5P5KMowg5s54ZDaB
+	03VVYOs7yhKXSCWjO1nZABu976PlwF3nyuJ44xyeNnGwfZJ8CH8kFBCf8jkqXbtpzkk3OtTyoKC
+	tlOv3u9T9Pe1oTAC8pVic4eGwsXioxtKeLxoOjFJDW0WWm6cggFOxodgI01
+X-Received: by 2002:a05:7022:5f07:b0:14e:906f:9c8e with SMTP id a92af1059eb24-151c3a9ebf3mr12917648c88.20.1791282583240;
+        Tue, 06 Oct 2026 03:29:43 -0700 (PDT)
+Received: from pve-server.rlab ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-351469fa189sm7443970eec.6.2026.10.06.03.29.38
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 06 Oct 2026 03:29:42 -0700 (PDT)
+From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+To: kvm@vger.kernel.org,
+	Sean Christopherson <seanjc@google.com>
+Cc: Paolo Bonzini <pbonzini@redhat.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Anushree Mathur <anushree.mathur@linux.ibm.com>,
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+	Harsh Prateek Bora <harshpb@linux.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	linux-kernel@vger.kernel.org,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Subject: [PATCH v7 0/8] KVM: selftests: add powerpc support
+Date: Tue,  6 Oct 2026 15:58:34 +0530
+Message-Id: <cover.1791280439.git.ritesh.list@gmail.com>
+X-Mailer: git-send-email 2.39.5
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,53 +101,111 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <610543697.64938.1788619385880.JavaMail.zimbra@raptorengineeringinc.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: 8Ea7olivVEVdwBk2Ep4bd0fG-Fn_QSP1
-X-Authority-Analysis: v=2.4 cv=KJHPn1Fo c=1 sm=1 tr=0 ts=6ac4be64 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=kj9zAlcOel0A:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=_MR6v-QCxBS8ncdU9A4A:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-GUID: tWkzs2AerZvY3tZbJYl6DC676JLCblhP
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA2MDAzNiBTYWx0ZWRfX1ZiqTJIwSKhK
- RZPge/erZ+hIOlfzUzXVGjSxM1ILNRqD/yXudQADwK9WgLXXpl3DNWSAMDwxMH0QoSJhp7mLPny
- kPHbwEdPK/w7uB5KSj1mN5zj4Z06+L06Vs3XBRS2qjvFoiLtP28BC3B9MG3cg/vu2mYWKZ7EiEr
- rpG8HAk5VCJfq6ah4sBL8BBK/bJk2hLkRR3MU/8NwGNEBZqJEYKqabTfBkgSxE0Mj7GzQMqQuxi
- MELdafeVAeybewnmAj/PV4LVeL5frG3210GFdLLR9tuck7o32yqbiTA9GQ4RwcXDucxzDLlWzCE
- NhwepwGIwVMOt+nZp6FePa21CrlTwX1SHiGkWFxZmLse0cKeybjEuCspYXurzLQ7NYXNh1RLDp/
- yEngBSjVMb4qabhfygqiQG8hJyKIqBGHgAiUl38Z4vQYqti/qVmagWiVRRGatwN0XUvN6m3YvMw
- afosebIYZAQp2svJKKQ==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA2MDAzNiBTYWx0ZWRfXyuJcegX7RGTS
- mcbkEHAGRWxwLUDjQWT83M8S7bichHS5e3AaKXx8ZEjyO6Y7j74oLYMmZDwjKYzhWnKHwsEH6Iw
- jk7PofGJkLpChLufKaxsYmDmQmEqW2I=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-10-06_02,2026-10-05_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 malwarescore=0 spamscore=0 lowpriorityscore=0
- priorityscore=1501 phishscore=0 impostorscore=0 adultscore=0 clxscore=1015
- bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
- definitions=main-2610060036
+Content-Transfer-Encoding: 8bit
 
-On Sat, Sep 05, 2026 at 09:43:05AM -0500, Timothy Pearson wrote:
-> After upgrading a POWER9 pSeries guest on a PowerNV host from Linux 6.1.0-18 to 6.12.94, rebuilding a degraded RAID10 array behind an LSI SAS3008 controller passed through via VFIO proceeds at ~1MB/s with 100% CPU load on one core.  Booting the same guest with the old 6.1 series kernel and resuming the rebuild of the same array proceeds at over 200MB/s with minimal CPU load.  For completeness, the default 6.12 readahead settings were adjusted back down to the same values as the 6.1 kernel, with no improvement observed.
-> 
-> No variation in the regression was found between host kernel 6.12 and host kernel 6.18.  Since there are no other reports of similar issues from amd64 users, it is presumed this is a POWER-specific regression.
-> 
+Patch v5 -> v7:
+================
+(Suggestions from Sean):
+1. Added kvm_is_ppc_pseries_lpar() helper in kvm_util.h to avoid sprinkling
+   multiple #ifdef __powerpc64__ checks.
+2. Enable all tests via TEST_GEN_PROGS_COMMON for powerpc
+3. Enable hardware_disable_test and skip when running on powerpc pseries LPAR
+   (nested).
+4. Re-arranged the fixes in appropriate order.
 
-Hi Timothy,
+This is based off v2 of Sean PPC pre-enablement series [1].
+[1]: https://lore.kernel.org/kvm/20260902164123.2546762-1-seanjc@google.com/
 
-We suspect this degradation is caused by the spurious interrupt problem
-you reported. I had posted a fix for that problem [1], would it be
-possible for you to see if this problem persists with my patch applied?
+Patch v4 -> v5:
+==============
+- Fixed the issues reported by Anushree while running on kvm on powervm
+  (nested).
+- Fixed memslot_perf_test on powerpc.
 
-[1]: https://lore.kernel.org/linuxppc-dev/20261005084534.1588611-1-gautam@linux.ibm.com/
+PATCH v3 -> PATCH v4:
+==================
+- Rebased on top of Sean's new page allocator patch series v2 [1]
+  This allowed to drop and patch-2 since it will now come from Sean's
+  v2.
+- Addressed review comments from Sean - squashed patches 6-10 in patch-1 of
+  this.
+- Dropped patch-5 to print vcpu_id when KVM_CREATE_VCPU ioctl fails.
+- Added additional patch-3 to this series to allow dirty_log_test to run on all
+  big-endian machines.
 
-Thanks,
-Gautam
+[1]: https://lore.kernel.org/kvm/20260902164123.2546762-1-seanjc@google.com/
+[v3]: https://lore.kernel.org/linuxppc-dev/2d2c46be7f051c7f1c645afaec67f57067d37a81.1781093720.git.ritesh.list@gmail.com/
+
+Testing updates:
+================
+I have done some fair amount of testing of the selftests both on real HW and
+using various combinations on qemu (powernv+LE (default), pseries+cap-nested-hv,
+pseries+cap-nested-papr, powernv+BE). There were few powerpc kvm kernel fixes
+which were identified as part of this work. I will send those patches separately
+as those anyway needs to go in separately.
+
+<pasted snippet of cover letter from previous versions>
+=======================================================
+
+Hi All,
+
+This series primarly adds KVM selftests support for powerpc (64-bit, BookS,
+radix MMU).
+
+This patch series is originally Nick's work. I have mainly only rebased it on
+the latest upstream tree. Since the rebase required few changes to all the four
+patches (Patch 1-4), I have dropped the earlier Acked-by from Michael Ellerman.
+
+Since the last series was posted three years ago [1], I am resetting the version
+to RFC. This rebase was done as part of a larger effort to improve the selftests
+infrastructure for Linux on PowerPC tree. Thanks to Harsh and Maddy for their
+help on this.
+
+
+Nicholas Piggin (1):
+  KVM: PPC: selftests: add support for powerpc
+
+Ritesh Harjani (IBM) (7):
+  KVM: selftests: Don't limit LE dirty-bitmap bitops to s390x
+  KVM: selftests: Move memslot_perf_test off the 256M ELF load address
+  KVM: selftests: Skip the max vCPU ID test when KVM_CAP_PPC_SMT is set
+  KVM: selftests: Add helper for checking if running on powerpc pseries LPAR
+  KVM: selftests: Skip kvm_create_max_vcpus on powerpc pseries LPAR
+  KVM: selftests: Only warn for idle-page checks on powerpc pseries LPAR
+  KVM: selftests: Skip hardware_disable_test on powerpc pseries LPAR
+
+ MAINTAINERS                                   |   2 +
+ tools/testing/selftests/kvm/Makefile          |   2 +-
+ tools/testing/selftests/kvm/Makefile.kvm      |   9 +
+ .../selftests/kvm/access_tracking_perf_test.c |  10 +
+ tools/testing/selftests/kvm/dirty_log_test.c  |  12 +-
+ .../selftests/kvm/hardware_disable_test.c     |   3 +
+ .../testing/selftests/kvm/include/kvm_util.h  |  26 +
+ .../selftests/kvm/include/powerpc/hcall.h     |  17 +
+ .../kvm/include/powerpc/kvm_util_arch.h       |  22 +
+ .../selftests/kvm/include/powerpc/ppc_asm.h   |  32 ++
+ .../selftests/kvm/include/powerpc/processor.h |  39 ++
+ .../selftests/kvm/include/powerpc/ucall.h     |  21 +
+ .../selftests/kvm/kvm_create_max_vcpus.c      |  14 +-
+ tools/testing/selftests/kvm/lib/guest_modes.c |  20 +-
+ tools/testing/selftests/kvm/lib/kvm_util.c    |   8 +
+ .../selftests/kvm/lib/powerpc/handlers.S      |  93 ++++
+ .../testing/selftests/kvm/lib/powerpc/hcall.c |  45 ++
+ .../selftests/kvm/lib/powerpc/processor.c     | 512 ++++++++++++++++++
+ .../testing/selftests/kvm/lib/powerpc/ucall.c |  22 +
+ .../testing/selftests/kvm/memslot_perf_test.c |   2 +-
+ 20 files changed, 898 insertions(+), 13 deletions(-)
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/hcall.h
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/kvm_util_arch.h
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/ppc_asm.h
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/processor.h
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/ucall.h
+ create mode 100644 tools/testing/selftests/kvm/lib/powerpc/handlers.S
+ create mode 100644 tools/testing/selftests/kvm/lib/powerpc/hcall.c
+ create mode 100644 tools/testing/selftests/kvm/lib/powerpc/processor.c
+ create mode 100644 tools/testing/selftests/kvm/lib/powerpc/ucall.c
+
+--
+2.39.5
+
 
