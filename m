@@ -1,104 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-28981-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28982-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C24B7CA5FFC
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Oct 2026 21:52:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6ECECA5FF1
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Oct 2026 03:52:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hzqk62TmHz2yVd;
-	Wed, 07 Oct 2026 08:52:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791323566;
-	cv=none; b=i31CzU448gQNgSl8XkRoNs7SRRKEXUDh767AGl545QcDA/PoeRfu6M/A8Fxg5nXSTq9qeMzEJw+DGWm133d8OrjS4QWct+pKitppiTIbjBBfJcEmTXJ/CtM0uXHJnLemxrNot3DLKEQtSoDZpGrkC3/JZ+d0oATUxQCRIAdCvbkSntVTvxIBHJ5dusPn5MJTFiALoQwy4Rw+woCXJlLUgg+K1sZzizGhMxVgUIeodsWAFbgypvw3rdazt0XeEPzvOjZlCRjBwN3ZnLqrtnvCOVhAOUkljaTybLzeK4pIKBEzVhYqjcEnyJIydzKAxZeD2u7CPPGjd1IFaefmYZ5dog==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791323566; c=relaxed/relaxed;
-	bh=aLltj2KeDqF9OosT0AEoWFskj5jYY5VnqnzaqsV3VgY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LkWPOqSsLKABWVgY2JysGiP7WXWOS2jUTxRqH8mAWYcNpSNrf49GA/Xe4eZpKEaB9bBps/IwSkvIWO/deBBNIzYqLzfqGknALWMXNa21m6PPUQ1iGIhjFQqbls1gBwLtmllfSSNVUPxoay4AuD1GMnjkWFBlgSE1+SJt6UNfsFQyqVzgdxqqtRMNsnquTyJT5iYXfOhapDebFz9RAKK7+gCWxPu1DAqOSBrPpdJWY84rcbIDy0btM4AMEybiI0OY8E2JPQGcl43qZHxLsc4TcA9uQvQ+ALiqjZTTnOinrpjP5XVIsDKI+V1E9eK+eCLz7wB7P/D7aPsjpy3eJ9iz5w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ftqi5JxY; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=will@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hzzjM6Wq2z2yS4;
+	Wed, 07 Oct 2026 14:52:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c105::1" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791345159;
+	cv=pass; b=HzQPXAyrUQdsz7TSebP5107pec43VbMVxd5b1FAoR2A7IdaA3cpkksN+73oVEun0tGD6MZAzhlTqCVkgPggFQCGlxVWG389CgGOvi2Wiu9bxNnqXfH1Gi13rm4TqGeAGJtdopuaBSeJ2cgvG74ahlUiQHG8Jy2u5wfi36zAOQXjofRscuQZPnfa2JUSzIO0Uqv/TG57mhLTChw0BeaIiUV8IY2YaUdrTZqR2XrsVebhEeET1DXhisj9w6NeiG1DwIDJvG3bsU4TIPcs/DaLPYXmUfMKU6tCuVGO6+dYEKxncgYH+u/l5lnQqt3ZRIJKiWumW4Ycv4RPz5yXI77M0xQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1791345159; c=relaxed/relaxed;
+	bh=vZ+DC0JoMWhS7jo9SIJsTqdVce7Oa/joX/iBL2Qpb8M=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=aA5AzlZrua+lgOB9Vophky+Q1aZnm7YnPKo9qG2JfjtqCgq3eLRywrM+myb8Thv41UTh+XHrO9GiclGwE/Si5FvHummJOUwW+OxPsykX+pkuquxGduXhULcDIxAHKRSCrPGmoOKUW0fCAl/R/HJx2Xhz1LjyA8CmlNin0D7iYRlblkxjlagZbjsOKmD6PsVwN5In6uI+e6jjgHBMnSD7/9cZaPSLlCrZwXw9cuZcUKWAC/TB13CN3U0OfFR9IXw2TYciqcqaJBDlckKGfFhO/DufyfIr78V4Utmg0WWNyW44UJCEvsJ/VuALYtbwCj9s7GQSQTV3OerM/mN+qo6pJw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=OAYGMNsg; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c105::1; helo=ch1pr05cu001.outbound.protection.outlook.com; envelope-from=kprateek.nayak@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ftqi5JxY;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=OAYGMNsg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=will@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c105::1; helo=ch1pr05cu001.outbound.protection.outlook.com; envelope-from=kprateek.nayak@amd.com; receiver=lists.ozlabs.org)
+Received: from CH1PR05CU001.outbound.protection.outlook.com (mail-northcentralusazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c105::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hzqk537wtz2y2h
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Oct 2026 08:52:45 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 4B2F643AE3;
-	Tue,  6 Oct 2026 21:52:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4D5A61F0089B;
-	Tue,  6 Oct 2026 21:52:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791323562;
-	bh=aLltj2KeDqF9OosT0AEoWFskj5jYY5VnqnzaqsV3VgY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=Ftqi5JxYQ7+lOH0e3/qLZoDI1z82JKInnQfYcKqixAXYDv4KmRLetT2yf6MF8YU1u
-	 kUk9ToRlzIe8Nl1vp2TYck54k5ulwPMNvsOqte7ISHa1gh1TIEKVm+Z5mbwpXSF1AD
-	 crVr7MkSiyiM2du+fk37Zp93ECnO4ni6RGEVcicG7VzMtvaS8p6SOzT+i9R5N0nIz1
-	 /esNqVbVK14/jTVs7oNE7q6G/lw1RUNITEX+RT16CVY0u83mLVBpntBf5Str+DsaJe
-	 LT4RGmc1J/WMANFyagqs0E7dcbEUuVDQE0vhXKYthrpnZNsogcBHN1Y8oBt35CXUDx
-	 Enb5fk2CRE8Ww==
-Date: Tue, 6 Oct 2026 22:52:29 +0100
-From: Will Deacon <will@kernel.org>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
-	iommu@lists.linux.dev, linux-kernel@vger.kernel.org,
-	Robin Murphy <robin.murphy@arm.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	Mark Rutland <mark.rutland@arm.com>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>,
-	Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Stefano Stabellini <sstabellini@kernel.org>,
-	Russell King <linux@armlinux.org.uk>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Jiaxun Yang <jiaxun.yang@flygoat.com>,
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Andy Lutomirski <luto@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
-	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	x86@kernel.org
-Subject: Re: [PATCH v6 0/8] dma: swiotlb: Centralize default pool policy and
- sizing
-Message-ID: <asVtnRSeHRJr5mp3@willie-the-truck>
-References: <CGME20260924060823eucas1p1d27fbf57221c9b4c0e9831a9b0cdd7d3@eucas1p1.samsung.com>
- <20260924060756.1325156-1-aneesh.kumar@kernel.org>
- <ff4f59ea-6c51-41d6-a92d-d1dd205b1e78@samsung.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hzzjK3tb8z2y8r
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Oct 2026 14:52:36 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=JtlEvfQTccbbwetc/XuwGNtUgF4q+cxYSO/z4Um4bSTj32VGiGOpvofvT0d0ddOASKiGRoGQZNz14oSmJ9I//wqAUzLsfutPGW3X6uKnf7nfdEyaOJE97/uegotJmFuwZeqJJXQaqbMYkJAnPf9rMzXY/7HaO84xneWPTBVjIMy1o38ZW3lTj5z0jBeumHuuwnLCcO02XLOS8W0BllQ67i0xXXvFoY2/uMyEaPRhhduBNi6qtcu3CVAwdhSzlUq4n5TFft66BmLNick5IwtJJu4oFF02KfYuOtCmNbXVBdWo/z9G0+dyvpXQgMFGPhOR5OF7bW0lf4QIPKCqKCciuw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=vZ+DC0JoMWhS7jo9SIJsTqdVce7Oa/joX/iBL2Qpb8M=;
+ b=vquob4HHr4JAe9hPZ8uMCYwODHgzadTOoxQ8jVCLq23b0QYdpkAIAblIaZPRrYRWydaqLDYSRkDSIx57MJcoXuSeNUOriofaCxOLmwVywiyZx91NlUj5clnpeLaRt8rxRH+LoL9raO6nEiuYCe5Cojr03e37+B82OUrtbo0w1bfZKIWFBgELcBIXKghV++qVOLCLZ9IrlLu5z4o0ceWXmBrNcdIhlRzA+MoUMvod0+YXbin2oYSKceMIbANFTA51rMUjTr71DZbbvU+1CA7JDvBJ0Tt4yDtx/0wMm+VFRwlkOcrOEPpJV2jwmqOcY0M9KbClUnH0kKc4mLLzegcLhw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=infradead.org smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=vZ+DC0JoMWhS7jo9SIJsTqdVce7Oa/joX/iBL2Qpb8M=;
+ b=OAYGMNsggaWudo2WmxfLDOr4m5v2LO0dvdx8j5vOiQQRkQgVSYvz5OmdpJEIMWDbIZLR7tYCt4Bs7hxtJvmahdwIIamG74QK6hPvMDwxyfqhDkN4400rSc5NIiE5mAyURSQLA1ePGfmxhwUTvlvUIsqaOwWJqP3MQAtNmLFjWyg=
+Received: from BLAPR03CA0010.namprd03.prod.outlook.com (2603:10b6:208:32b::15)
+ by DS0PR12MB7850.namprd12.prod.outlook.com (2603:10b6:8:146::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.19; Wed, 7 Oct
+ 2026 03:52:06 +0000
+Received: from BN1PEPF00018073.namprd04.prod.outlook.com
+ (2603:10b6:208:32b:cafe::3a) by BLAPR03CA0010.outlook.office365.com
+ (2603:10b6:208:32b::15) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.472.20 via Frontend Transport; Wed, 7
+ Oct 2026 03:52:06 +0000
+X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
+ is 165.204.84.17) smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
+Received: from satlexmb07.amd.com (165.204.84.17) by
+ BN1PEPF00018073.mail.protection.outlook.com (10.167.245.201) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.496.14 via Frontend Transport; Wed, 7 Oct 2026 03:52:05 +0000
+Received: from BLRKPRNAYAK.amd.com (10.180.168.240) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.49; Tue, 6 Oct
+ 2026 22:51:59 -0500
+From: K Prateek Nayak <kprateek.nayak@amd.com>
+To: Peter Zijlstra <peterz@infradead.org>, Chen Yu <yu.c.chen@intel.com>, "Tim
+ Chen" <tim.c.chen@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Juri
+ Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>,
+	"Andrew Morton" <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
+	<linux-kernel@vger.kernel.org>, <linux-arch@vger.kernel.org>,
+	<linux-s390@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-mips@vger.kernel.org>, <loongarch@lists.linux.dev>,
+	<driver-core@lists.linux.dev>, Huacai Chen <chenhuacai@kernel.org>
+CC: Dietmar Eggemann <dietmar.eggemann@arm.com>, Steven Rostedt
+	<rostedt@goodmis.org>, Ben Segall <bsegall@google.com>, Mel Gorman
+	<mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>, Shrikanth Hegde
+	<sshegde@linux.ibm.com>, K Prateek Nayak <kprateek.nayak@amd.com>, "WANG
+ Xuerui" <kernel@xen0n.name>
+Subject: [RFC PATCH v3.1 04/13] LoongArch: Configure sbm topology during SMP preparation
+Date: Wed, 7 Oct 2026 03:51:35 +0000
+Message-ID: <20261007035135.3819-1-kprateek.nayak@amd.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20261001192849.74788-5-kprateek.nayak@amd.com>
+References: <20261001192849.74788-5-kprateek.nayak@amd.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -112,44 +101,174 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ff4f59ea-6c51-41d6-a92d-d1dd205b1e78@samsung.com>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.180.168.240]
+X-ClientProxiedBy: satlexmb08.amd.com (10.181.42.217) To satlexmb07.amd.com
+ (10.181.42.216)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN1PEPF00018073:EE_|DS0PR12MB7850:EE_
+X-MS-Office365-Filtering-Correlation-Id: 4d264537-46a1-488c-0378-08df24265ac7
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|7416014|1800799024|82310400026|376014|36860700016|921020|10067099003|11063799006|22082099003|56012099006|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	IRkiWmf3yyh7o284aps0SmufpgRetKtwzV6/Pq5yNtVBM0MQ9IXbL2FNkxSdNH9/IMU7dViI+us3/0JoHAu1b0bzXoaNPQ9IPQMpkz3UEqPxi4MNplJCceDlaX5CXJym0It4L0NsOK/6s4S+MTIspBLBza7EHNHLEA/VXxE1bqqaNvU8Lf956W5ryLYR4PUMxO8PDaOLyC55L+xp3grpHJe5/dwWtMPdiB53vICGOeRSdTj/W8/vC11ZfBBUHIaop1Q9f1C28GnJfvW93nyGdITWOIpjslcaXFdAliPBAvYYbVtuQz+Ji1xC7mYUNbHtpRbS4dYbWgzaIreW1tr1Ol17NNB2Xj0mvG9fxFUJTw/4UFngpO6qHG8EcKBTPbbZWEpaH80HFktLlis+Zi5aEKvSakhvbUnUdp/yTQQhltmkwN9qRsXoFk0tswR6LHybqQ4QpDt520+2Rjg98fbxc9ti8CtLSGwi9wXHdPmF/hBsmtA4jNwhReQDK3BBXz2aGkek+xBS8IsEwY948on1+TEBIShyUfuQcsiaV+bjjLKqhWuMYWr/oU30f6jSlWnLVAm5E8Ksvvvrw926GhtEtT0UeLpqkppcKmDkid5vDH0XL9jKyPhwA6/zW6XdsmL0W1WCr5TUOi8tMP6+2v8HehBiQIFTpt+Ze7CjXWa56hBMxV2Gd6LVw+yG2mEj0PHccvK0cF6dWony3H/a2HluDuDKq9VRK+y+tRbeKipIPw5J4ICImtwHRFc2eDOztLQX
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(23010399003)(7416014)(1800799024)(82310400026)(376014)(36860700016)(921020)(10067099003)(11063799006)(22082099003)(56012099006)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	o8Yfs8RA2sGVSuVhTXM8TpUpZxt5pX7IfTK/UYInrW0/M6zOlDTuODa3jqa0B/Wu2027v/nQu7AH+NIlH7TozFi1cKiI4u8GgTuNcvL7WQfPBGf4uAfuIY3MJLpTdBC1AdEMJqxLCaNsKLihHyuHHzzvHf46NQUx53KFpPm1lNUokMVM3u3cBhrEgXHSU1Lolw6dUtptaISc2rHuOYNdyPmcxu807fjATfeGkiGmFj3ZYa8AcQeNzJ2rBIY/lrRZZxZqbMM+P5sNL1NyKzRvsrketuVrAWQdGSKNeYBqsajLe2LB95cWpjzSwD0mWclgZizEMWAKmWQGcVmA0PLCawz5zhIo36BYg+zSwUsPnJgiE7oKmqPJlzsgwEsCFx/H1Evb5ZcUuMx1B6znKhwxmpbUxA3coYqBWJHFiESv/Dk52Yf0iI9Ewtk17sEQVIkz
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Oct 2026 03:52:05.9817
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4d264537-46a1-488c-0378-08df24265ac7
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	BN1PEPF00018073.namprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB7850
 
-On Tue, Oct 06, 2026 at 11:42:54PM +0200, Marek Szyprowski wrote:
-> On 24.09.2026 08:07, Aneesh Kumar K.V (Arm) wrote:
-> > This series centralizes swiotlb default-pool selection and sizing, and
-> > simplifies the initialization flags used to describe pool placement.
-> >
-> > The first patch replaces the addressing-limit argument with initialization
-> > flags and introduces explicit policies for the different reasons a default
-> > pool may be needed. Architectures now report DMA addressing constraints with
-> > SWIOTLB_INIT_ADDRESSING_LIMIT, while the core selects the corresponding pool
-> > policy.
-> >
-> > The second patch moves the reduced sizing used when the pool is needed only
-> > for unaligned kmalloc bouncing from arm64 and RISC-V into the swiotlb core.
-> >
-> > The third patch centralizes swiotlb sizing for memory-encrypted systems. It
-> > moves the existing x86 guest-sizing policy into the core. Host memory
-> > encryption retains the normal pool size, and a shared default pool is not
-> > selected solely for guest memory encryption when a restricted DMA pool is
-> > present.
-> >
-> > The fourth patch removes SWIOTLB_ANY. Pool placement is derived directly from
-> > SWIOTLB_INIT_ADDRESSING_LIMIT: pools required for limited DMA addressing are
-> > allocated below the architecture's low address limit, while other pools may
-> > be allocated anywhere in directly mapped memory. Xen continues to request a
-> > pool explicitly with SWIOTLB_INIT_REMAP without imposing a low-address
-> > constraint.
-> 
-> 
-> I will give this patchset a chance in linux-next. If one feels that it still needs
-> to be improved or sees any other reason why it shouldn't be merged, let me know
-> asap.
+Configure the sparsebitmask (sbm) topology for multi-node processors
+once SRAT is parsed and early_cpu_to_node() mappings are stable.
 
-I think the restricted-dma pool heuristic is horribly naive, so please drop
-that part for now.
+The _PXM mappings are not reliable for disabled CPUs, and the worst case
+scenario is considered where the disabled CPUs can either form their own
+NUMA node (increases num_instances) or joins the node with the largest
+CPU count (increases max_cpus_per_instance).
 
-Will
+Since the final topology cannot be predicted at boot time, both are
+incremented with the count of disabled CPUs to account for topology
+going either ways.
+
+The sbm core will limit traversals to the nodes that are onlined and it
+is acceptable to overshoot the final limits.
+
+Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
+---
+Changelog rfc v3 .. rfc v3.1:
+
+o Alternate scheme to use disabled CPUs to find the worst case topology
+  instead of relying of incorrect changes to SRAT parsing. 
+
+This was cross-compiled and tested on QEMU with:
+
+  qemu-system-loongarch64 \
+  -machine virt \
+  -m 4G \
+  -cpu la464 \
+  -smp sockets=2,cores=8 \
+  -bios QEMU_EFI.fd \
+  -kernel arch/loongarch/boot/vmlinuz.efi \
+  -initrd ramdisk \
+  -serial stdio \
+  -append "root=/dev/ram rdinit=/sbin/init console=ttyS0,115200" \
+  -object memory-backend-ram,size=2G,id=mem0 \
+  -object memory-backend-ram,size=2G,id=mem1 \
+  -numa node,nodeid=0,memdev=mem0,cpus=0-7 \
+  -numa node,nodeid=1,memdev=mem1,cpus=8-15
+  ...
+
+The incorrect SRAT parsing changes from v3 Patch 03/13 is no longer
+required with this alternate fallback.
+---
+
+ arch/loongarch/kernel/smp.c | 52 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 52 insertions(+)
+
+diff --git a/arch/loongarch/kernel/smp.c b/arch/loongarch/kernel/smp.c
+index d4b5d1b6bb01..6cf1f5ada038 100644
+--- a/arch/loongarch/kernel/smp.c
++++ b/arch/loongarch/kernel/smp.c
+@@ -15,6 +15,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/irq_work.h>
+ #include <linux/profile.h>
++#include <linux/sbm.h>
+ #include <linux/seq_file.h>
+ #include <linux/smp.h>
+ #include <linux/threads.h>
+@@ -73,6 +74,10 @@ static cpumask_t cpu_llc_shared_setup_map;
+ /* representing cpus for which core maps can be computed */
+ static cpumask_t cpu_core_setup_map;
+ 
++/* sbm setup data - only needed during init */
++static cpumask_t cpu_sbm_setup_map __initdata;
++static int __node_thread_count[NR_CPUS] __initdata;
++
+ struct secondary_data cpuboot_data;
+ static DEFINE_PER_CPU(int, cpu_state);
+ 
+@@ -362,10 +367,17 @@ void __init loongson_smp_setup(void)
+ 	pr_info("Detected %i available CPU(s)\n", loongson_sysconf.nr_cpus);
+ }
+ 
++int arch_sbm_cpu_instance_id(int cpu)
++{
++	return cpu_to_node(cpu);
++}
++
+ void __init loongson_prepare_cpus(unsigned int max_cpus)
+ {
+ 	int i = 0;
++	int disabled_cpus = 0;
+ 	int threads_per_core = 0;
++	int num_sbm_instances, max_threads_per_instance = 1;
+ 
+ 	parse_acpi_topology();
+ 	cpu_data[0].global_id = cpu_logical_map(0);
+@@ -388,6 +400,46 @@ void __init loongson_prepare_cpus(unsigned int max_cpus)
+ 
+ 	per_cpu(cpu_state, smp_processor_id()) = CPU_ONLINE;
+ 	cpu_smt_set_num_threads(threads_per_core, threads_per_core);
++
++	for_each_possible_cpu(i) {
++		unsigned int node = early_cpu_to_node(i);
++		bool found = false;
++		int j;
++
++		if (node == NUMA_NO_NODE) {
++			disabled_cpus++;
++			continue;
++		}
++
++		for_each_cpu(j, &cpu_sbm_setup_map) {
++			if (node == early_cpu_to_node(j)) {
++				found = true;
++				break;
++			}
++		}
++
++		if (!found) {
++			cpumask_set_cpu(i, &cpu_sbm_setup_map);
++			__node_thread_count[i] = 1;
++			continue;
++		}
++
++		__node_thread_count[j] += 1;
++		max_threads_per_instance = max(max_threads_per_instance,
++					       __node_thread_count[j]);
++	}
++
++	/*
++	 * In case of disabled CPUs, expect them to either show up as a
++	 * new node or get added to the largest NUMA node.
++	 *
++	 * XXX: Is there a way to establish the correct CPU <-> node
++	 * relation for CPUs that have disabled APIC?
++	 */
++	num_sbm_instances = cpumask_weight(&cpu_sbm_setup_map) + disabled_cpus;
++	max_threads_per_instance += disabled_cpus;
++
++	sbm_set_topology(num_sbm_instances, max_threads_per_instance);
+ }
+ 
+ /*
+-- 
+2.34.1
+
 
