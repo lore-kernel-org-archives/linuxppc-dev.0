@@ -1,73 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-28984-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28985-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBC60CA5FFF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Oct 2026 05:44:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F086CA5FFF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Oct 2026 07:01:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j02Bf6pXcz2yVM;
-	Wed, 07 Oct 2026 16:44:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791351882;
-	cv=none; b=az/69oSUj3CA7r8t1ItplCxLoiAmLZJT0s9ID0zq000qWchaBTYn4IoKFvJZwy5wBkx7rnDYhfptp6mUgBDQYNPUR7CJjlsokiDxdc/N/eX0f1LBY+1UgEstBa5PAFNuRuyPon3nHOWgoO6+j8Ec6LBXA0r81RFqmIX9i1R13uRIGsDZy2JtJpdAtyGPq1xEzcrKgrkVGZGEg/w5xKOCoZtAUQJQVZzMaEiJP8l11kZuvUJlZkeTeP+DWcycEXJmSlzecCY/Zbp/5O67/FWR6mUDQ0cwDsSqaFZJDbxYL0gzPPYSCj+92S9IQa13SmK35mbnV/0hwTAQFYl/gQdPfA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j03vF39CRz30CZ;
+	Wed, 07 Oct 2026 18:01:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791356489;
+	cv=none; b=Wg2CFViiC77rcIfzSz6oZcBUm9ZrXWf4Ir1L7pNYd2eQe7wO0HK09gqJsT5OvArRuR+k+mV1l3o9iYyeBRFMAQPgo9cOGMEwXUYwovW64Koc1bEebdkSRoFbo6EgEqtB7tZUM1/+25/RKP3OCgFIARsU1hTKoSQL7eoIkEvJz5m5iNUB/RrwQ1QlVkAK3lYh9CCZu8OZWhKZwj6DwiXFJSyPAq+s1X/RYxFn6hFFDdu1bAV8aFwHFH1p1l5H5attEUAm+naigivyEVZQRGNWHZyMdbd50U4elKx5Btu/HbqB93yj3qWTPRMA4GUIZCpi8WQj7gaClHPP8VoTKoCBFw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791351882; c=relaxed/relaxed;
-	bh=v7L/IshaQTpFkZXyxWFqEsTIV8AsMHyaRbeSGHo8YfA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=hk0//yd05vpsxZPvBWLt8asNPByMTPdCGzw+aijk7sm3tDwRplAvJ2Ka3C4A2jtPFaoR1Ze997fkqY7jLSgXn6Eoz9STH8Js4NeST/Ppr89RXbqz5L2iTkBTyYLSEk/LeRhYa7DrwHig0o4MJyC+4tgBBjBvmsTJnvAuccIpXrLpMivQYb9Mk9MmLfaTi4Z5Vtbmy7Fb6H5AUKtW13fYUrPPj2fZfmyZj1pYUSbnpfWX5m+/e0bhE9xfneXj9Y63VIcejsOShahvhSgzJdZxfRIopMgd1rKGek4Z3nSNSR0Hj5f4maaQIiT+wxueJOangk6Q+TRzLBVtrp6+rgptXw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Lg9gZRDv; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1791356489; c=relaxed/relaxed;
+	bh=oLpEQSu57uD4VcTdj38WGaIEWGG6OR3d21k199k1TPg=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=O01q67jwbWtFYsX92ZpEalxWDZ3++tgAIY5ws8JK6shOeXpYYtgdFR8ajju3NZkuB3nHlFJVuN0yGA2LXOywuLNEXxRU0xdNMVSpTdfMcIUgfwq318qTuG/+tVSfOatrqNiKJ/qxTZSW2oa/cN/bbu6KsTm+l0Y1+epcQ0xWr4BM/X7zNfl0SfhQCY98ASYnuxwZcDQTgs3h38FXrwaD4a5vR14hN9o7RyPoOlRpuC6K8Xt+cDb4RRjUTbBbBxQhvx8GDi4Iy698MtIX1yxgtdKvc3fjicSTopCGJOZDIyPF0F5qVktC5MZI8Lu9kjJeL9b2NwkInTcB1Ag6oFBFGQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=VdtbGS6j; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132c; helo=mail-dy1-x132c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Lg9gZRDv;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=VdtbGS6j;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132c; helo=mail-dy1-x132c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x132c.google.com (mail-dy1-x132c.google.com [IPv6:2607:f8b0:4864:20::132c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j02Bd4X0kz2xwd
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Oct 2026 16:44:40 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6974aRBi1409397;
-	Wed, 7 Oct 2026 05:43:44 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=v7L/Is
-	haQTpFkZXyxWFqEsTIV8AsMHyaRbeSGHo8YfA=; b=Lg9gZRDv/AHcQhkK/ClVn8
-	F7Z087kOG8Oqv6jFqCO1Y29YjeCsU0/Vw+AGbjUO/rdEfzmGEf7Oe0uvkcqX2x/A
-	dYe0tQ7/oBLop+5HaqG5vnGDLubnYIgjSWBloU8AHWuWVuTsSZWzTWBPgLT0v+6T
-	Of4tkObUBhrHZDhmS5D/RGbKgEdpQQSdEZbub841mF6ZfUOJJOiQzjg1HGr5zZis
-	qXZmS7tJYBFc3qpXPifsMHYoCleyno+zTpYsIUIZ39Ei1LFayBILCYG77FUpx39R
-	z1Po0XMCA/LyfcaPx5UfdNSwd/SoBe7q7zQsXPir93A6CDms6uLbJB1yexP6aWfw
-	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h2q4ju8ym-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Wed, 07 Oct 2026 05:43:43 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6974WZAa1376982;
-	Wed, 7 Oct 2026 05:43:43 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4h5a6dh4tx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 07 Oct 2026 05:43:42 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6975hdCp53346648
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 7 Oct 2026 05:43:39 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 091E120043;
-	Wed,  7 Oct 2026 05:43:39 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 44B6E20040;
-	Wed,  7 Oct 2026 05:43:24 +0000 (GMT)
-Received: from [9.39.25.200] (unknown [9.39.25.200])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  7 Oct 2026 05:43:23 +0000 (GMT)
-Message-ID: <bebd59dc-9932-41fe-9fa6-4d2cc8d15080@linux.ibm.com>
-Date: Wed, 7 Oct 2026 11:13:22 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j03vD2Lhpz2yS4
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Oct 2026 18:01:27 +1100 (AEDT)
+Received: by mail-dy1-x132c.google.com with SMTP id 5a478bee46e88-3282db206d3so10597140eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Oct 2026 00:01:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1791356486; x=1791961286; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=oLpEQSu57uD4VcTdj38WGaIEWGG6OR3d21k199k1TPg=;
+        b=VdtbGS6jKE9/Sqj+2SxWDQfj8xvRTLHmt0Z++cgpcQcrem7ClPuvSbN/Es8dYAOsGW
+         31PPDVqQFYjl6lIF2qm19E/dQ7Ur10wu0YL7Qc6f9JL08QSPWTDHE7BzCgCG5oldUinQ
+         P9F/vzUHgH7EH1p9JN5eiLYJwN7oL1bknZRBUJyb1LvzUiwfjaSp/+RT7Xk2opCuuGBV
+         Cglg5pQCutHnBrL6/KxOTI63muFXsBzNGMGlQJ7mS57/dzxCztdqwxOytqad57TYyrHi
+         uHLTFapchNOhPaeym1dcrmjqmRRP7yaYVjdGyaTNHiW+TQFjOziXgWBQ5j1Ny1HplY+z
+         QhyA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791356486; x=1791961286;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=oLpEQSu57uD4VcTdj38WGaIEWGG6OR3d21k199k1TPg=;
+        b=E4nYS6NPUlyHxJu8L/MnH0/85+lR7M7TfJw4nxu/ME0FxEeMGzRDF46aVWmUdrni+j
+         TIaNgzMca6f42HdQzsFh3IfRhVWz9RoWQLOVkGbUFWNoZbc5Ywm/Hxz7CdCoKuejza6s
+         5UB7o2UkKQUQtbYr2x8CEYnrIBeGA+hlurOB80Paxz5AUJH1olKmybwR4QgNQAVR/fx3
+         hAfyn1T80gvtPO4UYriTaBK3gGhxgRRXEzr08TpMrrpnTjAB5ycvWgIvn2SCRzWuVPa7
+         MVyODy+P+kOoRz+alpCm4er6pGx8V01giomoBNiKtg6AaQwtebERsTOl6gC0W8MywuYq
+         uo6w==
+X-Forwarded-Encrypted: i=1; AKwUvBzKVXDrCxSGbDz7xdI5QFYYsyPMWe2kXlqT32LCF8ob21OnNhuK3hO5kjS+pQIpbsAkHTB9bM0Fz3N4BuE=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYI6yxTuSPmzeoFW8DjxOKYDkfAbz4aXHLcTQ5oDJisE3zEaqwFc
+	SnTyIyKv3dn8GJpwYV45g8fNyLBlaDojhS8cJpNcazl9VEFc2LFjgi+E
+X-Gm-Gg: AYBFou0j920Ta6nmnafyyMq9NuIUI1wZK3mS6ir7JQ+qt34AaPcekSUcJqnKmyBgYnr
+	4gHeGyVTrD55Fp0M272pMrAQ1eQVeTwbjBzLBUzXR/sqihymvCfaoE8mqfpxHc8ADlIOgD+qWoF
+	teO+C29KwF8JhxHbTLUinNRZitZxztULtLE4PfgGIunZp0/FGUR+zjSUPXsADHGu9pdbzwPW8fc
+	qopsbf7/gY3A7NEYRgr8OdWE9zdapc4T5qmz6/dsRJ0ostxLs0HcZdc83H8augVpZ99POM5Tnfj
+	vNWjhXWwh34yKBhez1zGAq92N7juuoLu/ScSOgXPP4/iLJ4J7H/TFE5v7TWalHqojWmaDDR6rJY
+	V6ZNplgFhnIzfMswnVqYTQAe5h5eheTEWWlGSEhkihVAw3ytDN+xvXfIif5Y+LBZvvHofzYYdEd
+	oAmeDHq+56I1K89nNIk7V/z9Tqiv1PQUqeq6jpLPevbz0tV64tSBCH5gLLEMKAR7X+qzB5rfwx3
+	P+iWMFqAfn/PkXdnnKFP/fA9908zmEqunaixx3NDU5hyITDxuKInQ==
+X-Received: by 2002:a05:7301:6907:b0:34c:85c:da56 with SMTP id 5a478bee46e88-3515dde8fa4mr1393173eec.17.1791356485497;
+        Wed, 07 Oct 2026 00:01:25 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3515af26f10sm5850369eec.13.2026.10.07.00.01.19
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 07 Oct 2026 00:01:24 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Amit Machhiwal <amachhiw@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Amit Machhiwal <amachhiw@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Shrikanth Hegde <sshegde@linux.ibm.com>, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, Gautam Menghani <gautam@linux.ibm.com>, Harsh Prateek Bora <harshpb@linux.ibm.com>, R Nageswara Sastry <rnsastry@linux.ibm.com>, Alexander Graf <agraf@suse.de>, linux-hardening@vger.kernel.org, stable@vger.kernel.org, Avi Kivity <avi@redhat.com>
+Subject: Re: [PATCH v3 2/3] KVM: PPC: Book3S HV: Add preempt_disable() around virtual-mode HPTE bit-lock users
+In-Reply-To: <20261006122404.99358-3-amachhiw@linux.ibm.com>
+Date: Wed, 07 Oct 2026 11:48:24 +0530
+Message-ID: <33uirq33.ritesh.list@gmail.com>
+References: <20261006122404.99358-1-amachhiw@linux.ibm.com> <20261006122404.99358-3-amachhiw@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,173 +90,102 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH v3 01/13] lib/sbm: Introduce helpers for architectures
- to configure LLC properties
-To: K Prateek Nayak <kprateek.nayak@amd.com>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>,
-        Mel Gorman <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>,
-        WANG Xuerui <kernel@xen0n.name>, Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Christophe Leroy <chleroy@kernel.org>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        Sven Schnelle <svens@linux.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
-        Peter Zijlstra <peterz@infradead.org>, Chen Yu <yu.c.chen@intel.com>,
-        Tim Chen <tim.c.chen@linux.intel.com>, Ingo Molnar <mingo@redhat.com>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
-        linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org,
-        loongarch@lists.linux.dev, driver-core@lists.linux.dev,
-        Sudeep Holla <sudeep.holla@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Danilo Krummrich <dakr@kernel.org>,
-        Huacai Chen <chenhuacai@kernel.org>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Jiaxun Yang <jiaxun.yang@flygoat.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Heiko Carstens
- <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
-        Alexander Gordeev <agordeev@linux.ibm.com>,
-        "David S. Miller" <davem@davemloft.net>,
-        Andreas Larsson <andreas@gaisler.com>,
-        Thomas Gleixner <tglx@kernel.org>, Borislav Petkov <bp@alien8.de>,
-        Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org
-References: <20261001192849.74788-1-kprateek.nayak@amd.com>
- <20261001192849.74788-2-kprateek.nayak@amd.com>
-Content-Language: en-US
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-In-Reply-To: <20261001192849.74788-2-kprateek.nayak@amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: vXOs2a9YsPxXPDWlk_fQyGt8XKTYkFF0
-X-Proofpoint-GUID: 2WtIRldL-8sD5UVml5UoIOzm4QtQsPt2
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA3MDAyMiBTYWx0ZWRfX4mmsO4sZrzgh
- Mnz82Xsy9mtTsApcqK0EAgEkzT4QpnInFmT6PSo9P+6m7GNW3kllHyAFrEHvN8jteYJUtvpuHQj
- El1nV5BdZCUVdPS8R8bOCCO0l8cdcDs=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA3MDAyMiBTYWx0ZWRfXz5bhW5BOP3yo
- AXAKxpdMGdB9WPsPxUav3ccKlkRMSPMiL1DdhZ/aaocq9pBD5owUvsjp7UwsLADW+LfHCXgHXOV
- ICGHlnq44UE3Wn3keBJD7fz/SzRvqaVtLPF6iUY5SeMSpB/xn1nSNa9jbZSH45cW99+vJoKuWQv
- MCGXoYLJ+vbML8Yo03KebUPu3SEePbQlxMlqfB0nBozsITzDNYz4sab2NN13tJLUE6QaCKS5XOB
- lqR1d167/luKGtIMXXtHrSvyP4QyawZIixwl88x3raFUxxSqX45J1mrcbPY/3gmp8yvqgx/hKVE
- itpSyPUNRseZXLG5uA+3p8F8CA7g9XihfRSltNw4fYtBqPV7qtzIUT+bo3QR5kBBxf3ZxMPexG6
- Q4gjmHEvySzZMPerQ11VZS0GwUj1hSAI9DhooY2dnKV5223VIfs4ozYNRv1VhGSZpk8+kfNaL0K
- Kt0sBNcLkTQefrFM9OQ==
-X-Authority-Analysis: v=2.4 cv=eYeo7LEH c=1 sm=1 tr=0 ts=6ac5dc10 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=zd2uoN0lAAAA:8
- a=H_lJn1gU1r1qM_BORgYA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-10-07_02,2026-10-06_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 lowpriorityscore=0 phishscore=0 bulkscore=0 clxscore=1011
- spamscore=0 malwarescore=0 priorityscore=1501 impostorscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2610070022
 
-Hi Prateek.
+Amit Machhiwal <amachhiw@linux.ibm.com> writes:
 
-I ran the series on 320 CPU power11 system today.
-hackbench shows high regression across the different number of groups and
-it is more severe at lower number of groups. I haven't run anything else yet.
+> kvmppc_hv_find_lock_hpte() requires virtual-mode callers to run with
+> preemption disabled, because it can return with HPTE_V_HVLOCK still held
+> until the caller later unlocks the HPTE.  Existing virtual-mode callers
+> in book3s_64_mmu_hv.c already follow that rule, but several paths do
+> not.
+>
+> kvmppc_handle_exit_hv() calls kvmppc_hpte_hv_fault() for hash-mode
+> data-side and instruction-side faults after guest exit with preemption
+> enabled.  kvmppc_pseries_do_hcall() executes virtual-mode HPT hcall
+> handlers via kvmppc_pseries_do_hpt_hcall() with preemption enabled; the
+> handlers for H_ENTER, H_REMOVE, H_READ, H_CLEAR_MOD, H_CLEAR_REF,
+> H_PROTECT, and H_BULK_REMOVE all spin on try_lock_hpte() or lock_rmap().
+> H_ENTER also reaches kvmppc_do_h_enter(), which uses arch_spin_lock() on
+> kvm->mmu_lock.  That raw lock choice is intentional because
+> kvmppc_do_h_enter() is also called from real-mode paths, so the correct
+> fix is to establish the proper preemption context at the virtual-mode
+> caller boundary.
+>
+> On the host side, kvm_unmap_rmapp(), kvm_age_rmapp(),
+> kvm_test_clear_dirty_npages(), and resize_hpt_rehash_hpte() also acquire
+> HPTE_V_HVLOCK via try_lock_hpte() in process context with preemption
+> enabled, serving MMU notifier callbacks, dirty-log harvesting, and HPT
+> resize respectively.
+>
 
-I haven't taken a look at the patches yet. Post your talk today will try to
-go through and see if i can spot something.
+I was going over all the callers of lock_rmap() and try_lock_hpte() on,
+and I see that we might have missed kvm_htab_write() path...
 
-On 10/2/26 12:58 AM, K Prateek Nayak wrote:
-> Subsequent commits will add arch/ hooks to configure the sparsebitmask
-> (sbm) topology - number of sbm instance and the maximum CPUs that a
-> single instance can represent.
-> 
-> Introduce sbm_set_topology() that helps architectures configure the sbm
-> topology. Also add arch_sbm_cpu_instance_id() which will be used to map
-> CPUs to the sbm instances during init to keep CPUs on the same instance
-> on the same sbm leaf.
-> 
-> Individual arch/ users will be added one at a time in the subsequent
-> commits.
-> 
-> Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
-> ---
->   include/linux/sbm.h |  8 ++++++++
->   lib/Makefile        |  2 +-
->   lib/sbm.c           | 27 +++++++++++++++++++++++++++
->   3 files changed, 36 insertions(+), 1 deletion(-)
->   create mode 100644 include/linux/sbm.h
->   create mode 100644 lib/sbm.c
-> 
-> diff --git a/include/linux/sbm.h b/include/linux/sbm.h
-> new file mode 100644
-> index 000000000000..adac12ed233a
-> --- /dev/null
-> +++ b/include/linux/sbm.h
-> @@ -0,0 +1,8 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +#ifndef _LINUX_SBM_H
-> +#define _LINUX_SBM_H
-> +
-> +int arch_sbm_cpu_instance_id(int cpu);
-> +void sbm_set_topology(int num_instances, int max_threads_per_instance);
-> +
-> +#endif /* _LINUX_SBM_H */
-> diff --git a/lib/Makefile b/lib/Makefile
-> index dfab958327c5..7776330f5b25 100644
-> --- a/lib/Makefile
-> +++ b/lib/Makefile
-> @@ -40,7 +40,7 @@ lib-y := ctype.o string.o vsprintf.o cmdline.o \
->   	 is_single_threaded.o plist.o decompress.o kobject_uevent.o \
->   	 earlycpio.o seq_buf.o siphash.o dec_and_lock.o \
->   	 nmi_backtrace.o win_minmax.o memcat_p.o \
-> -	 buildid.o objpool.o iomem_copy.o sys_info.o
-> +	 buildid.o objpool.o iomem_copy.o sys_info.o sbm.o
->   
->   lib-$(CONFIG_UNION_FIND) += union_find.o
->   lib-$(CONFIG_PRINTK) += dump_stack.o
-> diff --git a/lib/sbm.c b/lib/sbm.c
-> new file mode 100644
-> index 000000000000..82280e3306de
-> --- /dev/null
-> +++ b/lib/sbm.c
-> @@ -0,0 +1,27 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +#include <linux/sbm.h>
-> +#include <linux/init.h>
-> +#include <linux/printk.h>
-> +
-> +static int sbm_max_threads_per_instance = -1;
-> +static int sbm_num_instance = -1;
-> +
-> +/*
-> + * In absence of an arch definition, consider all CPUs to
-> + * belong to the same sbm instance.
-> + */
-> +int __weak arch_sbm_cpu_instance_id(int cpu)
-> +{
-> +	return 0;
-> +}
-> +
-> +void __init sbm_set_topology(int num_instances, int max_threads_per_instance)
-> +{
-> +	sbm_max_threads_per_instance = max_threads_per_instance;
-> +	sbm_num_instance = num_instances;
-> +
-> +	pr_info("sbm topology set to %d instance(s) with a maximum of %d thread(s) per instance\n",
-> +		sbm_num_instance,
-> +		sbm_max_threads_per_instance);
-> +}
+... after spending sometime looks like we need this diff for
+kvm_htab_write() path as well, since it calls kvmppc_do_h_remove() which
+calls try_lock_hpte() and lock_rmap(), although the race window is much
+narrower and maybe very hard to hit.
 
-nit: Stray empty line at the end.
+But still, could you kindly look into this and if needed please take it
+forward too. Please note that this is not tested, so hoping that you
+could take care of that too.
 
-> +
+
+Thanks!
+-ritesh
+
+
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index 908495f2b001b..916db7ceb51a9 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -47,6 +47,8 @@
+ static long kvmppc_virtmode_do_h_enter(struct kvm *kvm, unsigned long flags,
+                                long pte_index, unsigned long pteh,
+                                unsigned long ptel, unsigned long *pte_idx_ret);
++static void kvmppc_virtmode_do_h_remove(struct kvm *kvm,
++                               unsigned long pte_index, unsigned long *hpret);
+
+ struct kvm_resize_hpt {
+        /* These fields read-only after init */
+@@ -308,6 +310,19 @@ static long kvmppc_virtmode_do_h_enter(struct kvm *kvm, unsigned long flags,
+
+ }
+
++/*
++ * Virtual-mode H_REMOVE.  kvmppc_do_h_remove() is also called from real
++ * mode, where preempt_disable() is not usable, so the guard stays here.
++ * The helper takes HPTE_V_HVLOCK and the rmap bit and does not sleep.
++ */
++static void kvmppc_virtmode_do_h_remove(struct kvm *kvm,
++                               unsigned long pte_index, unsigned long *hpret)
++{
++       preempt_disable();
++       kvmppc_do_h_remove(kvm, 0, pte_index, 0, hpret);
++       preempt_enable();
++}
++
+ static struct kvmppc_slb *kvmppc_mmu_book3s_hv_find_slbe(struct kvm_vcpu *vcpu,
+                                                         gva_t eaddr)
+ {
+@@ -1878,7 +1893,7 @@ static ssize_t kvm_htab_write(struct file *file, const char __user *buf,
+                        nb += HPTE_SIZE;
+
+                        if (be64_to_cpu(hptp[0]) & (HPTE_V_VALID | HPTE_V_ABSENT))
+-                               kvmppc_do_h_remove(kvm, 0, i, 0, tmp);
++                               kvmppc_virtmode_do_h_remove(kvm, i, tmp);
+                        err = -EIO;
+                        ret = kvmppc_virtmode_do_h_enter(kvm, H_EXACT, i, v, r,
+                                                         tmp);
+@@ -1907,7 +1922,7 @@ static ssize_t kvm_htab_write(struct file *file, const char __user *buf,
+
+                for (j = 0; j < hdr.n_invalid; ++j) {
+                        if (be64_to_cpu(hptp[0]) & (HPTE_V_VALID | HPTE_V_ABSENT))
+-                               kvmppc_do_h_remove(kvm, 0, i, 0, tmp);
++                               kvmppc_virtmode_do_h_remove(kvm, i, tmp);
+                        ++i;
+                        hptp += 2;
+                }
 
 
 
