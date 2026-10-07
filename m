@@ -1,98 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-28987-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-28988-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62FD5CA5FF1
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Oct 2026 10:04:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72E35CA5FFF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Oct 2026 10:06:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j07ys4JXrz30CZ;
-	Wed, 07 Oct 2026 21:04:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791367493;
-	cv=none; b=d4vMJQANDGWC0KLavuOzIXR4cslW89Y1ntfUGAERGGnfaLqx6EnFh5oN3UHd1z7h15oS9OZGIzWqQSZywhXW3rDXMYMRW3D+BBK+I5Dexi6s4eWeMvKID2P/n7BbaxPyWta5RGu8z7CIeIZ1f8TAouHVsnHcKSiTIKzPsq+u2zxRP4N0CyMTt3x6CC781cPwxtMsTJ4veAHAvWBagup3LR1N+VRtTLzJKKYH4ska5Llc6ouVHjf3kBuz5aX+7Rblb36YJlp4BqnlQZy1hX4cInNoiX0bn2tkuD3OvkU+Ma9nhGSFdSOypj+MYDu0bG79OK7Vqtj073Y4gfYSVfzITg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j080y6m2Bz30Cj;
+	Wed, 07 Oct 2026 21:06:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791367602;
+	cv=none; b=OGJg3fiJFdbIex23OcUSPryLrez//MXqNOdh58cqGDqKaXZO+X8P7YszHjg+Rv71zwsHz8MwfdAs+2WiMhn62Wtifbz5Jzfh+IYhEFpXT9mxlGFMih1Uq00IHLf9fHsLe4p5nJ+P5HG9KjUqViUhjlV8aTtO1OV/9UZpKHVNhsrD5+aDTD1ESc34UDv7UsnGort6r/LNhzMTT32y0BeXsIw9cqgHIxRPwon0GCewfcld4FzogL5lH1oLLFyL4vtJ6S/9rOlA+zWnZFjNE2nUCefRNxCyKjvay6ykffDOuezmrbeRgQCOJqo/ZeTc2GLGb9i9FL4lxnd+YWlg4HMzPw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791367493; c=relaxed/relaxed;
-	bh=tXoZOat7TSm0SoGp6Oxn3YyJRs/T7t1zTztyNMt36pM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jDKPOhQogy24siMMnOp1eFNR3xD2FxZWTiEIZI8STOEkx8SiPVTknIkpi9I99mQARZz+FhSV++F/PQr6riHP8VTHhd1y5c5v4oMyuWsTthNWlNPyqBiMDO6EXycvvlpCZWyDsyqQKkYpXdudvB3niy8d57UlIyGbbbTICYTjE0l2wnIfarrA/inhTwJhCNOhf9iZlY0slISymtjfI00ITu30gFxvPP0j88vgUZ3BWpqFo9cipB5Ol91Fqz0J15yOIscYEnNj4grLUYpdickD3a+BzkixWUHt+x/3C97AhClLBBrq/LDrJ/Goc+x4Ww02oSvpOJLyLBj77C2Aqk5O3A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=FvDQmLy4; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=catalin.marinas@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+	t=1791367602; c=relaxed/relaxed;
+	bh=APsB50ihhU3A5Y/b7mc2nvs0/aMHP/B00/9rsQ9YSxA=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=KKr2x0RvI1xJpExknEbAKIy0BwDZtVoIBmdv7mBn47HHrzUS1TTezWwTD1U5qKGezPW/3Ij9QHF/bQyl/SMIJ+LDt5JhgMzcp7U6llGR+JXscp/llFdH2+P1RnXSSZ7f10Qy48/2SDxC3kUT+ddC24Y5DJKgn3KbWEmk80Aqe8Er+BbpBj5r1UfCmjFgens7NJPcJJIp2ExMNLKjvrSSFsSmU3mPcO8XAbyTp7I/0SefAyMYwGX6al270/KwiUqcKBief50Sn1gyKoTCcIp0uo2tDn0tjykPbksBvZVh2E3DLGNQLFiWRghVHXUnKSgtDm3ajHmDAb0z8GfH8V9oGA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Peb6+4o/; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=maz@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=FvDQmLy4;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Peb6+4o/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=catalin.marinas@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j07yp2gMgz2yqf
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Oct 2026 21:04:48 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 85BE1152B;
-	Wed,  7 Oct 2026 03:04:12 -0700 (PDT)
-Received: from arm.com (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6D0133F86F;
-	Wed,  7 Oct 2026 03:04:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1791367455; bh=CbXWi9ehHUC17LrX7h7fiWJISOx4QxW252o3EdbyLB8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=FvDQmLy4EGj89GAfvZk4KGPda4lF9dF5oeqcn5GaKKWzv0KKEFA+8t3r7QqyDC8G5
-	 15dMv0AaR5+XBy9C4yatPq0j3+EwXMtpi531/x06RJAiNh8Dw7kgMptDkWV6AFLItD
-	 7tFE/6cK6Ee5diPXgRQlJIGJZozxaEJpY12Bwfsw=
-Date: Wed, 7 Oct 2026 11:04:05 +0100
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Will Deacon <will@kernel.org>
-Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
-	iommu@lists.linux.dev, linux-kernel@vger.kernel.org,
-	Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	Mark Rutland <mark.rutland@arm.com>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>,
-	Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>,
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=maz@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j080x5KsPz30CZ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Oct 2026 21:06:41 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id E91EF601FF;
+	Wed,  7 Oct 2026 10:06:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9D9BE1F0089B;
+	Wed,  7 Oct 2026 10:06:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791367598;
+	bh=APsB50ihhU3A5Y/b7mc2nvs0/aMHP/B00/9rsQ9YSxA=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=Peb6+4o/Fn/871ib2bcjk6CVPyHsZ+t3auV/PL1ronyahYmQVdjngxwCs6X//kxNr
+	 YK0UXr80xdGYqWr//KVL1FP4ErY2mQ3/Yi0Hp9C4cZAaaJzP6pe2wFn2Tled1Abeyf
+	 fvf0gD+qSIk1LN2XC3lJzu/OlZ4x9OhnY3BNyumK3QDKj3ncenA92PbkY0hxofvgVj
+	 uu4kbhRA5MxkCbm2sFKurjTlNHl1IObRD+Qg9PBEwxFOMB5nZa6E2Au4YzlJ8FcMtm
+	 yR2R2CBs6YwiLLbvPt8TRczYHbMIOkmBaWOy0pOXhldTOrH8Nvq6G872nFft8g6/sf
+	 d7GT5kCx2W/cg==
+Received: from sofa.misterjones.org ([185.219.108.64] helo=valley-girl.lan)
+	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.98.2)
+	(envelope-from <maz@kernel.org>)
+	id 1xEOXk-00000000Den-0sAt;
+	Wed, 07 Oct 2026 10:06:36 +0000
+From: Marc Zyngier <maz@kernel.org>
+To: Paolo Bonzini <pbonzini@redhat.com>,
+	Oliver Upton <oupton@kernel.org>,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
+	Fuad Tabba <fuad.tabba@linux.dev>
+Cc: Sean Christopherson <seanjc@google.com>,
+	Joey Gouly <joey.gouly@arm.com>,
+	Suzuki K Poulose <suzuki.poulose@arm.com>,
+	Zenghui Yu <yuzenghui@huawei.com>,
+	Steffen Eiden <seiden@linux.ibm.com>,
 	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Stefano Stabellini <sstabellini@kernel.org>,
-	Russell King <linux@armlinux.org.uk>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Jiaxun Yang <jiaxun.yang@flygoat.com>,
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Andy Lutomirski <luto@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
-	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	x86@kernel.org
-Subject: Re: [PATCH v6 6/8] dma: swiotlb: Centralize memory-encryption pool
- sizing
-Message-ID: <asYZFXGyafRjjBS0@arm.com>
-References: <20260924060756.1325156-1-aneesh.kumar@kernel.org>
- <20260924060756.1325156-7-aneesh.kumar@kernel.org>
- <asVs3doaJ4WrT3M2@willie-the-truck>
+	Will Deacon <will@kernel.org>,
+	kvm@vger.kernel.org,
+	kvmarm@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-doc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] KVM: Replace VCPU_RUN with KVM_RUN in comments and docs
+Date: Wed,  7 Oct 2026 11:06:33 +0100
+Message-ID: <179136758616.696606.4614783559462928506.b4-ty@b4>
+X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20260915084441.3846947-1-fuad.tabba@linux.dev>
+References: <20260915084441.3846947-1-fuad.tabba@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,38 +87,39 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <asVs3doaJ4WrT3M2@willie-the-truck>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 185.219.108.64
+X-SA-Exim-Rcpt-To: pbonzini@redhat.com, oupton@kernel.org, maddy@linux.ibm.com, fuad.tabba@linux.dev, seanjc@google.com, joey.gouly@arm.com, suzuki.poulose@arm.com, yuzenghui@huawei.com, seiden@linux.ibm.com, npiggin@gmail.com, will@kernel.org, kvm@vger.kernel.org, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+X-SA-Exim-Mail-From: maz@kernel.org
+X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
 
-On Tue, Oct 06, 2026 at 10:49:17PM +0100, Will Deacon wrote:
-> On Thu, Sep 24, 2026 at 11:37:54AM +0530, Aneesh Kumar K.V (Arm) wrote:
-> > @@ -496,7 +516,8 @@ swiotlb_select_pool_policy(unsigned int flags)
-> >  	if (swiotlb_force_disable)
-> >  		return SWIOTLB_POOL_NONE;
-> >  
-> > -	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
-> > +	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT) &&
-> > +	    !restricted_dma_pool_present)
-> >  		return SWIOTLB_POOL_CC_GUEST;
+On Tue, 15 Sep 2026 09:44:38 +0100, Fuad Tabba wrote:
+> This one has been bugging me for a while. Five comments and doc lines
+> name a VCPU_RUN ioctl (KVM_VCPU_RUN in book3s_hv.c, VCPU RUN in
+> kvm_host.h). The ioctl that enters the guest is KVM_RUN.
 > 
-> I think this check on the restricted DMA pool is too general -- the pool
-> could be tied to a specific DMA-capable peripheral and so treating its
-> presence as a global property isn't right.
+> The patches are independent and split by tree, one each for generic
+> KVM, KVM/arm64 and Book3S HV, so each can go through its own
+> maintainer. Nothing else in the tree refers to the ioctl by a wrong
+> name.
+> 
+> [...]
 
-I agree it's a hack but that was the simplest way to avoid the pVMs
-getting a bounce buffer after this patch. More than happy to leave it
-out and reduce the buffer on cmdline or we come up with some better
-heuristics.
+Applied to next, thanks!
 
-Another option could be the arch code passing another flag that it
-doesn't want an encrypted pool (e.g. when running in a pKVM guest) but I
-don't particularly this either. The arch code doesn't know whether
-there's an alternative pool.
+[1/3] KVM: Fix comments that refer to the non-existent VCPU_RUN ioctl
+      commit: 8233000034a630432a7da0311d94e8725207a095
+[2/3] KVM: arm64: Fix references to the non-existent VCPU_RUN ioctl
+      commit: 0ab1034969130967bda8e6eab5b8dd6745604f1b
+[3/3] KVM: PPC: Book3S HV: Fix comment naming a non-existent KVM_VCPU_RUN ioctl
+      commit: 6ce8b5c0effb227f5625b35965c0f74c0e953efb
 
-That said, such heuristics should have been a separate patch to make it
-easier to review/drop.
+Cheers,
 
+	M.
 -- 
-Catalin
+Without deviation from the norm, progress is not possible.
+
+
 
