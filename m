@@ -1,115 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-29018-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29019-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55DC6CA6002
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2026 00:19:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C718ECA6007
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2026 01:57:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j0VwY3mShz2ygK;
-	Thu, 08 Oct 2026 11:19:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c000::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791399521;
-	cv=pass; b=evIb7Rg2gNxUutTx8P7A+55wHaOMR8G3TW5TljwgwAKVNhVM+SjsRD63NMnBeE0ih0PnH659oHej+ECnxXszr9xPplBnrXzLgivcxWR7CKsucAOKyVjQbL4/KoH2QCqdfK4Z6PfP0ojCvXqJOHuQkULDXqNKBpaMnwLF3cTk5xnbcGhetjURpCp+Xxbs5vVdU+EJ9Kta+xiP+TXWpexWcK86Cb/juB3dQXZtdUc8HRRlA7Su3L78Rx11JcZcITsw/XMBxkvAHeV2j9aCIkSrJ++fdknAIyHNQjbrIgDpva2LhP2bCZUBfoE4J6a7br9kZH8uidfcVbexnvNTB66JPw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791399521; c=relaxed/relaxed;
-	bh=UNTBad831l2/inXBznQ/GDVm005QmSgHz3Tz5Ypc0nM=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=dDlKt1mKGS2Qb9erH460yc7E25rkPj/Civx4Iq9IakcoLeMFCM60mw068mq3M8tdbIB7AYxEKgcZLeoB5jU0Dy4mG3YA2IOc6M86FcWzPLxAdLfkn9U2c3HJqNXf2RWVg54oFx8DG9f/r8iBmgfIAAsKk+q2QO0c4HirX4DMCj9ySnA0edFuhS38prLRx171ZT9XT0M1LIpHCg9Efq6T6DWQJ382b1CumNLL+gu6oYHbCgoVACQm/QNAz3Ez+i+/rQTdkzoTY1qtb8jnYb4pZpvjxRU/l6vEZZR9VGo3RgHEU3eqjNjSd7QCSahb9rahMwt7JnlKgCcKfHV9dfyNew==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=oAOhUaJw; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c000::1; helo=byapr05cu005.outbound.protection.outlook.com; envelope-from=joelagnelf@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j0Y6W6R9Gz2yWy;
+	Thu, 08 Oct 2026 12:57:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.225
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791424675;
+	cv=none; b=CJaMHvUqYHaNm2WBugidC1oLp2z7CNr1eyuXUMXWx6FkjyepprI1TVwyNZh3qnuBXDB6nZhIR+dTLfQ7+Zn4IRp/9mDx8Im9x2kgmMYXaH7GsswGGHs8BotFgglF2di12S/2wkHWddlOkb3jvple1Oq/HMchTRhEjRIQyJf3iq+4dPOQ1VEx6HUOiD1aR0cW6Ttn1RSFDE+Fj2bTmBYQO3NSX81GSO7EsYblBItr0bY9Djx+v2om5avatdJSBETV9vgVgxs3OY0i0a4dC1vTYMCsccJMp6AF2UzCQrfQ8ZINANBSJVVMOONd5OXlXuakIItKbf2qD8XTjZD7Cp1/nA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1791424675; c=relaxed/relaxed;
+	bh=bXamncWaqlfk8qQgL1B8Mu0pQVkhOxTSHqjddGG4KBw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=IbDuVX5zt1ReRYDPI9gLGY6Coxymh3zuDtiYrjGo1FIMUpIvpyc7A5oKDbUWJkaO+Pn3DS53OgdmQ5GqvFcdDtjk7cKyTpgnio+9Yj5ULzmZROY0Tck0DSTlfgy/4O8zo30uqcLU+89/TDpSHMnzZfcSvg68yfi+JAIeywFsGLzcW/hjpiHafU95FmO6l/147mr2Q/ckpSq/VSO/KngD3LxY/r4kycU1Km8HvmBHW+Ylb4gbgH9puL6HE9G0W4YEhFUGDSROq7YvGF3vXHz8YeNFi3PJNqrpL8BI84LQzsP+oySboVB6SKh71zl4LbjEAj9zlr8PZ+FUSBv29ewT3Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=g78aXu5F; dkim-atps=neutral; spf=pass (client-ip=113.46.200.225; helo=canpmsgout10.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=oAOhUaJw;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=g78aXu5F;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c000::1; helo=byapr05cu005.outbound.protection.outlook.com; envelope-from=joelagnelf@nvidia.com; receiver=lists.ozlabs.org)
-Received: from BYAPR05CU005.outbound.protection.outlook.com (mail-westusazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c000::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.225; helo=canpmsgout10.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout10.his.huawei.com (canpmsgout10.his.huawei.com [113.46.200.225])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j0Mpm5CBJz30Cj
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Oct 2026 05:58:39 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=diZe8xMi+e34p5RL6niL23UveGkQrUEYa26x3TOMPCmP4ozgYk/E28DKDbTPinLvi83fJYpzcj+TAJ7GgwlcWecFxaqkE5a8C30QEChebjluqbY+mSh0KUpM8R6wQTLtiiUo1VRFg62/0uY7XFiYNlx+N/ZyGFiUPieuSN3tjrC6NOmF+dM/sqTXg5O3jTZFAjKYm5+trirsg4PNmodkYGtHpaBS2YpuMsFfr+Ol0jlxeutWPe2v1dcPbg3C5i5DpGLN+2/zWx3ESP2b3wniQZGZ8XCv88epqjSHTwh5ia7lCDht7cQKV97rSBAhQGWsQLxwoee9Se6yVBDfso9rbA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=UNTBad831l2/inXBznQ/GDVm005QmSgHz3Tz5Ypc0nM=;
- b=yexhBcshC0G8/zr0FjJ71emRCWXHUbnJYW/cGvwBrBScvvHrZ9YTwf2O/5KJgz4TyONrmSZJsyqrf80W6Xx1AJUaQw2VZwMcc7i2mN+cljCKLN1gYEIDLKcvqbwyN/joXkFHYKbsRR7ogXjgKeB9sEWFR8pvd+glvKrOfqU1lTTIPlCH55JX8Vegvfcep/k3A2NTP8CyTpM/z/IZ6CuS2p3yMlANCvD5DZk2omE4Pl5ke4LrhStFNG+v3KxL85/QKZ3qJvRTInAtozUi2KOuImmdsdRxSLqWLisPWxWk2nF3S48IrH2xTG0iqpKfbyTkGqa6JSSQtiCqL7fNcku18g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=UNTBad831l2/inXBznQ/GDVm005QmSgHz3Tz5Ypc0nM=;
- b=oAOhUaJwuoucyKU2DqH2tdp7FV8JBqCfJ8HRFB7m/0BPMSUiD88gFhXJsSMEetz5zkV76OIKlJUDxbN8XkI6QyF7rmeQx7OyB6uqBwcWb1SaEUwZiBAbXMVlbkSK5Gks7HH9yMPfnhut3hX0GUBonw5i6+X3qdBh56civHQUBa5dhimIaZUiMh8VC2OeUbeDm0JHHhcw0lMX+cejvSrD6Pb0GnjkS9aCAmczu6brxO4nogWbr+p80eWLiAV6FQbKYIZuNplAJXNjWRNIhoqpDbHt6LuCzpAZADXNUyd6NawYZBe8aufu2nXtMcw/YPvwyMX2xldFLT4s5Z7i72Mv5A==
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from DS0PR12MB6486.namprd12.prod.outlook.com (2603:10b6:8:c5::21) by
- SA1PR12MB8723.namprd12.prod.outlook.com (2603:10b6:806:385::12) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.472.16; Wed, 7 Oct
- 2026 18:58:10 +0000
-Received: from DS0PR12MB6486.namprd12.prod.outlook.com
- ([fe80::88a9:f314:c95f:8b33]) by DS0PR12MB6486.namprd12.prod.outlook.com
- ([fe80::88a9:f314:c95f:8b33%6]) with mapi id 15.21.0496.010; Wed, 7 Oct 2026
- 18:58:09 +0000
-Message-ID: <038a4b64-3f7d-47f7-9ba9-a962c265e0e8@nvidia.com>
-Date: Wed, 7 Oct 2026 14:58:04 -0400
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 16/17] rcu: assert static storage for RCU sync and SRCU
- definitions
-To: Yury Norov <ynorov@nvidia.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- "Jason A. Donenfeld" <Jason@zx2c4.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Matthew Wilcox <willy@infradead.org>, Peter Zijlstra <peterz@infradead.org>,
- Ingo Molnar <mingo@redhat.com>, Will Deacon <will@kernel.org>,
- Boqun Feng <boqun@kernel.org>, Waiman Long <longman@redhat.com>,
- Dennis Zhou <dennis@kernel.org>, Tejun Heo <tj@kernel.org>,
- Christoph Lameter <cl@gentwo.org>, "Paul E. McKenney" <paulmck@kernel.org>,
- Frederic Weisbecker <frederic@kernel.org>,
- Neeraj Upadhyay <neeraj.upadhyay@kernel.org>,
- Josh Triplett <josh@joshtriplett.org>, Uladzislau Rezki <urezki@gmail.com>,
- Steven Rostedt <rostedt@goodmis.org>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Lai Jiangshan <jiangshanlai@gmail.com>, Zqiang <qiang.zhang@linux.dev>,
- =?UTF-8?Q?Onur_=C3=96zkan?= <work@onurozkan.dev>, Kees Cook
- <kees@kernel.org>, Joel Granados <joel.granados@kernel.org>,
- Anna-Maria Behnsen <anna-maria@linutronix.de>,
- Thomas Gleixner <tglx@kernel.org>, Juri Lelli <juri.lelli@redhat.com>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>, Ben Segall
- <bsegall@google.com>, Mel Gorman <mgorman@suse.de>,
- Valentin Schneider <vschneid@redhat.com>,
- K Prateek Nayak <kprateek.nayak@amd.com>, Mike Rapoport <rppt@kernel.org>,
- "Liam R. Howlett" <liam@infradead.org>, Lorenzo Stoakes <ljs@kernel.org>,
- Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>,
- Pedro Falcato <pfalcato@suse.de>, "Michael S. Tsirkin" <mst@redhat.com>,
- Jason Wang <jasowangio@gmail.com>, Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
- =?UTF-8?Q?Eugenio_P=C3=A9rez?= <eperezma@redhat.com>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Clark Williams <clrkwllms@kernel.org>, Nathan Chancellor
- <nathan@kernel.org>, Nick Desaulniers <ndesaulniers@google.com>,
- Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- wireguard@lists.zx2c4.com, netdev@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, rcu@vger.kernel.org,
- virtualization@lists.linux.dev, linux-rt-devel@lists.linux.dev,
- llvm@lists.linux.dev, Yury Norov <yury.norov@gmail.com>
-References: <20260915030336.1192299-1-ynorov@nvidia.com>
- <20260915031334.1194975-11-ynorov@nvidia.com>
- <20261007184105.GA3837481@joelbox> <asaUECwON5PS98M8@yury>
-Content-Language: en-US
-From: Joel Fernandes <joelagnelf@nvidia.com>
-In-Reply-To: <asaUECwON5PS98M8@yury>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: BN8PR04CA0051.namprd04.prod.outlook.com
- (2603:10b6:408:d4::25) To DS0PR12MB6486.namprd12.prod.outlook.com
- (2603:10b6:8:c5::21)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j0Y6S3pg6z2xnQ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Oct 2026 12:57:50 +1100 (AEDT)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=bXamncWaqlfk8qQgL1B8Mu0pQVkhOxTSHqjddGG4KBw=;
+	b=g78aXu5F+eX1vFGrdr7ODw3mfWRzJ2xHcdspBUNlAxc5IhvP2m+84BEowtEnJ7toedzRiDPqJ
+	c5RrHPIU8ToMw1OQpK0Wh1ee8RrekPA+Bcg43S7Q5Mtdi8Sp9wD1KAgm7iJsyXAjU3PESGUAKbY
+	aQDiKZOBs1rzK16wrPIzn0k=
+Received: from mail.maildlp.com (unknown [172.19.163.200])
+	by canpmsgout10.his.huawei.com (SkyGuard) with ESMTPS id 4j0Xr464hkz1K97G;
+	Thu,  8 Oct 2026 09:45:24 +0800 (CST)
+Received: from kwepemk200008.china.huawei.com (unknown [7.202.194.74])
+	by mail.maildlp.com (Postfix) with ESMTPS id 6AC8D4055B;
+	Thu,  8 Oct 2026 09:57:39 +0800 (CST)
+Received: from [10.67.110.68] (10.67.110.68) by kwepemk200008.china.huawei.com
+ (7.202.194.74) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Thu, 8 Oct
+ 2026 09:57:32 +0800
+Message-ID: <f4ba3a6b-537d-4328-b0c1-c0e5aa61924f@huawei.com>
+Date: Thu, 8 Oct 2026 09:57:30 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -123,98 +61,164 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS0PR12MB6486:EE_|SA1PR12MB8723:EE_
-X-MS-Office365-Filtering-Correlation-Id: cf668440-b0e8-43fb-bf25-08df24a4ee0f
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|7416014|1800799024|366016|23010399003|10067099003|56012099006|3023799007|4143699003|11063799006|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	421eAfrguhnyzMb5VnpgE8yWymDanFTnxgGUExLCMmwXuI4rTJlW8Px7jH1giYUmKNFdjnArWNOuIaorrI1YwaTWGPoHdDvXH5A4OAVEE0Hyzo3L4FKULLXFmd8BIpY52YJ27HFCJzg2zoWrvHkf8D/z3+cKkkSH8+UvOlEXOsuq55VuK2a0YXpGhu0x18CGPDn60HKnnYqsSqyLeQz0T0I0ntbL8BNiqaV82kPVAuaQRn5ajmZSdRKqPhBSqdXDpeNi2Q6zQ8Hvqw2lq2iQaBzH6OpceovjXrusQ8lNAJQfgNVxwlPciyrvgR1PaBFkuPqZd+MEuMIk/SrUL9n5+L5wPEU4gzeWji22KRVFjH6IzjGph8i7mszT0u+xk5ULaWyChK+xkTBIePPg+wttscAE/f5dCeJevwQG5zgQbQNJ+5BwvE56hKZbnCGC8/z/4BKpqUuVUoNao402zH8dyfAQ+Gh3A3ega/1DOOgqtSzmWUeM4XjovCcvmXA4bjfhRkyxhdnX8YRiCkg8Fwwx+HKtuAI7Tl4P/t1M23GyN17euY0lTBTuTC0zLg/mUEEMwo/F0PnQLkvg0DWLEeOSmg7A+vSRolCAr4VDk7dsoLHOwMdZVgvL+UPJB7Wc2/xeJrS9bxhwt5pt3pChueFIqYtK+dulAxdW3rPfzY8nzY8=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS0PR12MB6486.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(366016)(23010399003)(10067099003)(56012099006)(3023799007)(4143699003)(11063799006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?U21QRUt6UXA4QktJV2Y3a2Z6dTlDdDNRQkVQMER0bnB2YWwyWW9mdU13MVZx?=
- =?utf-8?B?anBNYWpHWlZpODVIaXp4S1Y4UGgrN0k0c2lzcUUyeHVWSXpjOFR3TWpvR3Bx?=
- =?utf-8?B?aERqYitFT0lyRi9NVStwcFlacytQNVA3QUpVVFl4NVFkV0oycTFoUnVOTFFW?=
- =?utf-8?B?bWxnb0VWRzc4VDJxdHpwK2hmREZlZWVaVTdsWnI1OUJCcVZLeGlPWEdGcmli?=
- =?utf-8?B?anZ2dmc1Y0U2eGE5eWNuMS9TeGU1YXYvM2EvS24wdkRoalNMQXNsa25KUEFF?=
- =?utf-8?B?ajJLK2JEdDQ4K0xyM0ozTHpaSTJ1ZE1OMHNEYlJzN2lEamk4UmtwU2xFYXRy?=
- =?utf-8?B?RkJkU3ZhZysyMHMzNTZoT1hmOTIxUUlVVlBHbHJ6am5VbTFQSCt6bGNxckFW?=
- =?utf-8?B?S01ENFlyV1N3bmx1a0pObEVPSHI3N2ZwOHp4emFpYWlJMmxxY3ltR2U0bFFi?=
- =?utf-8?B?clMrdFJsRHo4ZW96b2piek81TVFjQkw0bXI4ZzNrblpOeTlXRXZJWk4wVG5E?=
- =?utf-8?B?bGc0VkNCMlFBNW9uNzFGK0hMT0JHRWgzQlRxOGM2K3N4ZjkyaS9BTHorQ09y?=
- =?utf-8?B?WjNyZzRYcjBnNXVGQ2lyTEpERW5rZCszZjVjT1ZkZEV4emdZZlZuNlBFTjJW?=
- =?utf-8?B?QjBMY2NCK2oyTHJnV2l4ekZmL2w3VjcyYUZEVDJGSUNpQm11VDZnS3ZDSUNE?=
- =?utf-8?B?NStVdDFicVdJRHVlc2ZRbE1lVFBYb0YxaHFLWVgvT2orYkJVbjZEY05XSU9Y?=
- =?utf-8?B?UTcvQXA2R0ZoWEJkaHpDSnVWU1E3UldZQVErYjN5MDQ1Ykk1VllZVHN6RmlY?=
- =?utf-8?B?MDRvNndZSXRRZFUvSkJWZ1ZiMXhJMEhSckZKQkM4ZThxSUE3aExhMkNzTWM0?=
- =?utf-8?B?bS9mdStWR09XSDgwMi9CYWdnamhTK0FTZGdMc3ZUaFBzYVl5K3A2aHdzcG1k?=
- =?utf-8?B?SGZibCthTnU2SEd3blhPT3hSbUxXUVBLTmhmSU1ISFY2SkdmWmJOVXpPRXFk?=
- =?utf-8?B?Q1YvZllGS0FoYk80VXhWTm9yUUZWOFo5YWFhdXlOK3AzQ0Q3TmdWamw0ckFl?=
- =?utf-8?B?OXdiejVXMUV0TGJseGJXUDkrWVdIYlRjcVkxL3Q3NFFERGNzUEpiOU14Yk5P?=
- =?utf-8?B?OERPTm4xaGxGZDdld0M5ZnJvVExiNytzYWhkU1JHcnZwbmpkaEFVOUxSaHc5?=
- =?utf-8?B?UVdFNnVHa1R3UkxnN3p1RUNEam1EYmV4MzE3b3o1Y0tBcUVIQWtzY294ZnJQ?=
- =?utf-8?B?WmFmVmRiQ01aR3BOZHRIOVowQmxyVFlhVEUwZXpnYzZ1TWJWNGtOUUFqR1JU?=
- =?utf-8?B?cnJCU3QzM3ZvMU9TaWdrVmFKRmtvZDJtRTJ1U0YvS2VySUs4YWlFUE5lbWll?=
- =?utf-8?B?TkFJODEwNVg4M0lqekV6bHp4ajRSY3FEVFpidS9rM2trZEQxL0NnbVNtU3g1?=
- =?utf-8?B?b2ZUdno4dm5zbUdKUlk4aFlpcFhtUFBJaWlaeXF2eGI4YTAremJibTVTRk9n?=
- =?utf-8?B?a2c2cjJZdWNiYU5WMWpsY3UxZ3Q4L3A0L2lMMVhTd2YyZTUxWEgrL1FKcUR0?=
- =?utf-8?B?WjVqVE9BQi9JMlBRNHozZVF4R1NlMElFa09XS3laeE1DTjZONWI5Z0llTmJ5?=
- =?utf-8?B?K1RFaThOVmNWUmpGeU91SU5XNEpJUUQ2alZoMHRzQ2lkcmMycWFsaURZWFIy?=
- =?utf-8?B?VHh6c01tVGgzdm52WlllRGJTY2VTbG42K21lcHdPSFZaNmhDWXlnMkt4OEZl?=
- =?utf-8?B?dElBaFlOd0JRWXRwOWFyRGZsb1oxcm1IVWYvS1V3bVBmTDBlOFM1b2RaQmxD?=
- =?utf-8?B?KzRmelNNVGNuZ095NHpvYy9aSlcxUWJjdFpkSWNUek1LK000VkowU2s0OTBp?=
- =?utf-8?B?bDVOOUJUVGxIQVVIaUN2ZkVFdkJyVGlsNWtJSGZ5aWlyOElrVkFETnF6M0Zj?=
- =?utf-8?B?cldUT1p1ZXFMdThXdDdJOVdnUWl0amd2cVhPMjVBY3ZNRFlQRUR2Y2dXL3p6?=
- =?utf-8?B?TVhlbTlIQUpqNDdrZk8wNGh2Q05ubU1QM0swL0Jlc2lMR0pWZGpqQ1RCemhn?=
- =?utf-8?B?cUZHdDVyeHZRdit2Yll0eGcvcVFMRkFZci9FVWJ5UmxualNuYlJnclcxTWZz?=
- =?utf-8?B?Q29LZUxOMmVseXJYUTRvRGRhaCtVZzBMQUJhR2ZJVVRrRzg1KzJ4UmNlbTQ0?=
- =?utf-8?B?Z2RvaUVmQlkzZDdLMWMzSW5qTE54VmhMZ3BYR3hDbVlhOHFMYndsTk9jOEpW?=
- =?utf-8?B?ZktibUZoeXVKSm1pNVRHeGpMOE5mL0c2UUcySk1nKzl6TCtFN1N1dEorQVdR?=
- =?utf-8?B?SmVkUFYxbkRwSk43TFpMelp3M1A0eWxaWmZXYnJTOS81dWI2aXZWUT09?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: cf668440-b0e8-43fb-bf25-08df24a4ee0f
-X-MS-Exchange-CrossTenant-AuthSource: DS0PR12MB6486.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Oct 2026 18:58:09.8614
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: pWeCOYfpw2qqy3ftpTMrz04yc6pmjptUYgQ/QNA12Fn2ybkYus4tgKDiPvUCa1kWIWsaP2xssmwjFW+gm8wsGg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR12MB8723
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 00/14] crash: Fix several bugs
+To: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
+	<chenhuacai@kernel.org>, <kernel@xen0n.name>, <maddy@linux.ibm.com>,
+	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <chleroy@kernel.org>,
+	<ritesh.list@gmail.com>, <sshegde@linux.ibm.com>, <tglx@kernel.org>,
+	<mingo@redhat.com>, <bp@alien8.de>, <dave.hansen@linux.intel.com>,
+	<hpa@zytor.com>, <gregkh@linuxfoundation.org>, <rafael@kernel.org>,
+	<dakr@kernel.org>, <akpm@linux-foundation.org>, <baoquan.he@linux.dev>,
+	<rppt@kernel.org>, <pasha.tatashin@soleen.com>, <pratyush@kernel.org>,
+	<ruirui.yang@linux.dev>, <leitao@debian.org>, <yeoreum.yun@arm.com>,
+	<sourabhjain@linux.ibm.com>, <robh@kernel.org>, <coxu@redhat.com>,
+	<kees@kernel.org>, <tangyouling@kylinos.cn>, <liukexin@kylinos.cn>,
+	<zhangtianyang@loongson.cn>, <guodongtai@kylinos.cn>,
+	<maqianga@uniontech.com>, <chao.gao@intel.com>, <kai.huang@intel.com>,
+	<vishal.l.verma@intel.com>, <seanjc@google.com>, <piliu@redhat.com>,
+	<thuth@redhat.com>, <jbouron@amazon.com>, <me@linux.beauty>,
+	<mclapinski@google.com>, <graf@amazon.com>, <bgwin@google.com>,
+	<hbathini@linux.ibm.com>, <eric.devolder@oracle.com>,
+	<takahiro.akashi@linaro.org>, <james.morse@arm.com>, <palmer@rivosinc.com>,
+	<x86@kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-kernel@vger.kernel.org>, <loongarch@lists.linux.dev>,
+	<linuxppc-dev@lists.ozlabs.org>, <driver-core@lists.linux.dev>,
+	<kexec@lists.infradead.org>
+References: <20260921090450.807575-1-ruanjinjie@huawei.com>
+From: Jinjie Ruan <ruanjinjie@huawei.com>
+In-Reply-To: <20260921090450.807575-1-ruanjinjie@huawei.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.67.110.68]
+X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
+ kwepemk200008.china.huawei.com (7.202.194.74)
 
 
 
-On 10/7/2026 2:48 PM, Yury Norov wrote:
-> On Wed, Oct 07, 2026 at 02:41:05PM -0400, Joel Fernandes wrote:
->> On Mon, Sep 14, 2026 at 11:13:31PM -0400, Yury Norov wrote:
->>> DEFINE_RCU_SYNC() contains a statically initialized wait queue. SRCU
->>> static definitions similarly rely on persistent lockdep keys and, in
->>> Tiny SRCU, a statically initialized work item.
->>>
->>> Add ASSERT_STATIC_STORAGE() to DEFINE_RCU_SYNC(), both Tree SRCU
->>> __DEFINE_SRCU() variants and Tiny SRCU's common DEFINE_SRCU() declaration.
->>> This covers the non-static FAST and FAST_UPDOWN wrappers too. Tiny SRCU's
->>> explicitly static declarations already enforce the required duration.
->>> The existing per-CPU restrictions on Tree SRCU declarations still apply.
->>>
->>> Assisted-by: OpenAI Codex
->>> Signed-off-by: Yury Norov <ynorov@nvidia.com>
->>
->> All the changes make sense to me. I'm ok with carrying this for -rcu 7.5
->> unless you want to take it.
->>
->> Reviewed-by: Joel Fernandes <joelagnelf@nvidia.com>
+在 2026/9/21 17:04, Jinjie Ruan 写道:
+> As Baoquan and Catalin suggested, this patch set fixes
+> several pre-existing code issues found by Sashiko AI [1][2][3].
 > 
-> Thanks Joel, carrying it with the RCU branch is the preferred route IMO.
-Ok, applying this patch for -rcu 7.5, thanks!
+> The major improvements and fixes included in this series are:
+> - Fix several memory leaks for arm64, and similar issues on LoongArch.
+> - Fix out-of-bounds write on 32-bit Highmem for x86.
+> - Fix TOCTOU race in crash memory range collection.
 
-thanks,
+Hi all,
 
-Joel Fernandes
+Gentle ping.
+
+Could anyone take a look or let me know if there's anything
+else needed? I can rebase/resend if required.
+
+> 
+> This patch set is rebased on v7.3-rc3. Compared to the previous version,
+> split out arm64 crash hotplug patches as Breno suggested, which are based
+> on these bugfix patches and will be resubmitted after this patch series
+> is merged.
+> 
+> Slightly tested on x86_64 and arm64 qemu with:
+> - kexec_load (--kexec-syscall --hotplug)
+> - kexec_load (--kexec-file-syscall)
+> 
+> All boot successfully into the second kernel.
+> 
+> [1]: https://lore.kernel.org/all/20260601094805.2928614-1-ruanjinjie@huawei.com/
+> [2]: https://sashiko.dev/#/patchset/20260729031235.2840255-1-ruanjinjie%40huawei.com
+> [3]: https://sashiko.dev/#/patchset/20260907125404.922123-1-ruanjinjie%40huawei.com
+> 
+> Changes in v6:
+> - Split out arm64 crash hotplug patches as Breno suggested.
+> - Remove unused elfcorehdr_updated [4].
+> - Make the patch split more clear.
+> - Link to v5: https://lore.kernel.org/all/20260918100442.3841135-1-ruanjinjie@huawei.com/
+> 
+> [4]: https://sashiko.dev/#/patchset/20260907125404.922123-1-ruanjinjie%40huawei.com
+> 
+> Changs in v5:
+> - Rebased on v7.3-rc3.
+> - Fix several pre-existing code issues reported by Sashiko AI review. [3]
+> - Add an extra slot for memory hot-unplug.
+> - Add device_hotplug_lock_assert_held() helper.
+> - Rework to let the hotplug paths to skip CPU events entirely, which avoid
+>   the TOCTOU race of memory hotplug events and internal CPU offline path
+>   without holding device_hotplug_lock.
+> - Link to v4: https://lore.kernel.org/all/20260907125404.922123-1-ruanjinjie@huawei.com/
+> 
+> Changes in v4:
+> - Rebased on v7.3-rc1.
+> - Update the kexec_core code as Mike suggested.
+> - Update the LoongArch subject as Huacai suggested.
+> - Drop crash_dump_dm_crypt patch which will be fixed by Coiby in [4] as
+>   Sourabh suggested.
+> - Drop x86 related patches because of branch conflict, which will
+>   be done later.
+> - Drop the incorrect CRASH_MAX_MEMORY_RANGES patch.
+> - Handle elfcorehdr_index in arm64 arch code.
+> - Link to v3: https://lore.kernel.org/all/20260826092541.3905933-1-ruanjinjie@huawei.com/
+> 
+> [4] https://lore.kernel.org/all/20260828084900.1496839-2-coiby.xu@gmail.com/
+> 
+> Changes in v3:
+> - Handle "KEXEC_CRASH_HP_REMOVE_MEMORY" action.
+> - Fix several pre-existing code issues reported by Sashiko AI review [3].
+> - Introduce crash_extra_elfcorehdr_size() and elf64_phdr_size() helper.
+> - Rework related crash and arch code.
+> - Add test method.
+> - v2: https://lore.kernel.org/all/20260729031235.2840255-1-ruanjinjie@huawei.com/
+> 
+> Changes in v2:
+> - Split out Powerpc bugfix patch as Mike suggested.
+> - Use phys_to_virt() instead of __va() in update_crash_elfcorehdr().
+> - Convert pnum_hdr_sz() to a function.
+> - Only assign elfcorehdr_index after kexec_add_buffer succeeds, considering
+>   crash_handle_hotplug_event() already performs validity check on
+>   elfcorehdr_index:
+>   - We can safely remove the check for CPU hotplug
+>     in arch_crash_handle_hotplug_event().
+>   - The elfcorehdr_index's segment mem will be valid in
+>     update_crash_elfcorehdr(), so we can safely remove the NULL check.
+> - Simplify the commit message.
+> - v1: https://lore.kernel.org/all/20260723131242.1537633-1-ruanjinjie@huawei.com/#t
+> 
+> Jinjie Ruan (14):
+>   kexec: Fix CMA segment address translation with non-zero text_offset
+>   kexec: Record allocated CMA pages to fix release size mismatch
+>   kexec: Extract kexec_free_segment_cma() from kimage_free_cma()
+>   arm64: kexec_file: Fix CMA page leaks in segment placement retry loops
+>   arm64: kexec_file: Fix elf_headers memory leak in retry loop
+>   LoongArch: kexec_file: Fix CMA page leaks in segment placement retry
+>     loops
+>   LoongArch: kexec_file: Fix elf_headers memory leak in retry loop
+>   LoongArch: kexec_file: Fix a modified_cmdline leak
+>   x86/crash: Fix massive out-of-bounds write on 32-bit Highmem
+>   crash: Extract crash_get_memory_ranges() helper
+>   crash: Factor out crash_find_elfcorehdr() helper
+>   crash: Normalize the kexec_load elfcorehdr at load time
+>   driver core: Add device_hotplug_lock_assert_held() helper
+>   crash: Fix TOCTOU race in crash memory range collection
+> 
+>  arch/arm64/kernel/kexec_image.c            |   1 +
+>  arch/arm64/kernel/machine_kexec_file.c     |   9 +-
+>  arch/loongarch/kernel/kexec_efi.c          |   1 +
+>  arch/loongarch/kernel/machine_kexec.c      |   2 +
+>  arch/loongarch/kernel/machine_kexec_file.c |  10 +-
+>  arch/powerpc/kexec/crash.c                 |   1 +
+>  arch/x86/kernel/crash.c                    |  40 +++++---
+>  drivers/base/core.c                        |   5 +
+>  include/linux/crash_core.h                 |   2 +
+>  include/linux/device.h                     |   1 +
+>  include/linux/kexec.h                      |   4 +-
+>  kernel/crash_core.c                        | 114 +++++++++++++++++----
+>  kernel/kexec.c                             |   4 +
+>  kernel/kexec_core.c                        |  43 +++++---
+>  kernel/kexec_file.c                        |  13 ++-
+>  15 files changed, 192 insertions(+), 58 deletions(-)
+> 
+
+-- 
+Best regards,
+Jinjie
 
 
