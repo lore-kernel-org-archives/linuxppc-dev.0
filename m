@@ -1,49 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-29025-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29026-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 179F1CA6007
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2026 08:17:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFA29CA600A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2026 09:21:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j0jXJ1R9dz30TY;
-	Thu, 08 Oct 2026 19:17:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791447440;
-	cv=none; b=eUvUN7FW+Qhnn2LXO93Ytv5z8V2qp82SJy6nYx9j1QNfLhh2QjIRwdbY0Jk++PQk0CKqsTsXlxrSH/w0apen7p2DhZDnBLuTSrlKx01yr9XsGNdxQwJhPvJImNOcqvJmEYiOU/iScc3n1Vt5Qhiozrj2kWuFUwlZa9YRrbwekjwLkSAA6TOTZvBCxhpgmIOMhjPntIPV+q+YApjXd2hmaLYhwzKWZz5Z+C9GT0iKKeN7DcjqOoTy8vQErzI96VppKvsgVvRPFjfYrsfpFRDJqkym0odycjqSfaIF3fT8tNcZgHi/5J/FiHPS4/CUzlftI/E9vjqkjlqstl88xxOMqw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791447440; c=relaxed/relaxed;
-	bh=MHAPwba2bGTS8af5kSWYut1fycRyI5aoznVbcbDNoEY=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=NJWT/KxtqAlx0ODKiObO56PYT+2wmIOqKoTTYr7RbMFu64ZLiYs79yxcob7FRy5KPDsnHnhqigSXNLaAd2ZWyB6ONbt7dtoPt6fp7jg0Zcl3cknz6oSveA8bW28ygct/6yIjxoNll6J/NRKTdXHXucM9euEZgxrIV3SC0KzJJuEaqDm2MmVTX/yCWEohH86Z6wEE1zPdd9bxHAnQC2ymX79VHuWytLIwykTQ7dZZdh2yq74vx9XycR32RuCtW7NK+zkwEHMW/9kq67cK2gcm9I8ASAhiz87UUd1Rr0Lv/7jcoSNz9Xk3guiejuTTD8M2zQCQBP1NlzCOJwffCWcsJw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=BkJY+0QS; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::e; helo=mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j0ky10djsz30TY;
+	Thu, 08 Oct 2026 20:21:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c202::1" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791451273;
+	cv=pass; b=QsRCRPtW7p48XKeY3z1G1sBE3lH/6DlH848rTSUsnqVBJ3kJ7r/Yz/Lvk9le8yfdZa2Ye//mRVO+oP6CZM+78ffCh/RbTs1OQxeSQLisumFXCCZhVnJZEpErpQnQQzDQDV/RwEmonTnenRQ82pMuUR8xsz8sShTeKqQq5fw1p052SGeJ0otnn1QtrOfhAQKES5R9KTz7fRCwNDh2VQvOHf72xFQB2wCjE6Rwll9T9rdZ5ZBphhYnNps4BuTKQfUCHLZq+0cUabfQLiRSjgq5qsDTY9i5lmbxhEUoU+IZsc3ZDyCkuoocJJ9XDJHTA9pUhVb+gkP1A86a7Q3Mn9Zcfg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1791451273; c=relaxed/relaxed;
+	bh=nChlZmlrvLWslmoho1/5aTc9r9JcLlsuI9ltEi1anog=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=kKA1HjMbqts0BgC84D//OS+ed4NPN2nAFohbWxeemvmnCagYHRXd+3KbAR30K1xtprCFHcWblHZapEGNhbQjtRreZD3ihECJuratP0FB80M4865XXwhj87fcnZHT5uNHBXjcEFWs15HmQNDTlcrQGqe0anPx+pAtOUaIuyDo2lPi8VS/syQqKmEjFs5+yaTDdoJ+GobVygiIzEZSqhKjPt1xyQZ7R6bjJw87Vn4OHd2Qkoj35RACDpHH+bnyO1r2DVPHbc8y36Gd+idmnVhD3Ps87rXFZGk2MicZc5+Yg5B7wJfH9FpCe70qDjVAR40HJ/BGRMy2bKB1/ID88YGvqg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=permerror header.from=gaisler.com; dkim=pass (2048-bit key; unprotected) header.d=gaisler.com header.i=@gaisler.com header.a=rsa-sha256 header.s=selector1 header.b=INuFnRN8; dkim-atps=neutral; spf=temperror (client-ip=2a01:111:f403:c202::1; helo=gv3p280cu013.outbound.protection.outlook.com; envelope-from=andreas.larsson@gaisler.com; receiver=lists.ozlabs.org) smtp.mailfrom=gaisler.com
+Authentication-Results: lists.ozlabs.org; dmarc=permerror header.from=gaisler.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=BkJY+0QS;
+	dkim=pass (2048-bit key; unprotected) header.d=gaisler.com header.i=@gaisler.com header.a=rsa-sha256 header.s=selector1 header.b=INuFnRN8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::e; helo=mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta0.migadu.com (out-14.mta0.migadu.com [IPv6:2001:41d0:1004:224b::e])
+Authentication-Results: lists.ozlabs.org; spf=temperror (SPF Temporary Error: DNS Timeout) smtp.mailfrom=gaisler.com (client-ip=2a01:111:f403:c202::1; helo=gv3p280cu013.outbound.protection.outlook.com; envelope-from=andreas.larsson@gaisler.com; receiver=lists.ozlabs.org)
+Received: from GV3P280CU013.outbound.protection.outlook.com (mail-swedencentralazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c202::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j0jXD3z43z2yjN
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Oct 2026 19:17:14 +1100 (AEDT)
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=MHAPwba2bGTS8af5kSWYut1fycRyI5aoznVbcbDNoEY=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1791447411; v=1; x=1792052211;
- b=BkJY+0QSb2PH8p++GP4mjbq/HTFXm3+f5i36xosvBRk3rKj/t6A+Zf9vTPO0ab3uN82FxXOs
- 4FLjSIpaL/NTT7gDSHZCCHiXwebn3WT+VNicvpy/TSH/XW+Ggg3P7v01nSZjBj+rcvWnub7bOId
- bpVdqVmv+ZmiprT5PjTWaEaQ=
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id 5d61374c685aff04;
-	Thu, 08 Oct 2026 08:16:50 +0000
-X-Mizu-Trace-ID: 5d61374c685aff04
-X-Migadu-Flow: FLOW_OUT
-Content-Type: text/plain;
-	charset=utf-8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j0kxv1hrTz30DK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Oct 2026 20:20:46 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=wWYCaXyqJi4ZWPF6qGx6PPahhWGHET64lXKc47FBjG7p2ybmlaSw3rSqwcUE/w6495DBBi00Msx1Pad4CqMHlQlVM/qJIb43Q5vas6TnhUz2FdJfY3o6B2lwCryb05C+irQEX9CK9zOP4PCPwtgggpydvj9tiGz5gFS6IjMBwPI6bAh3/u5LsJOt+jF5jWza6nAnQNwx7cGLV5HlOz3lAZgm2cs+gOYRAbkzrFUX7971nLmSWo/Vtm1aZx2dKuksQVEeWsAvwcOHAAlC2BAH2vckuGtUVDeqtRen6KsZsXENvEjTjnymAkIWFVRdV6NxSVMk43cdlaX24bz4xvnycw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=nChlZmlrvLWslmoho1/5aTc9r9JcLlsuI9ltEi1anog=;
+ b=EWlQpJR1KYsOvtPjPBUbxCi4oXSmjhItlg/0F5aiUdQvXqIqDoCkmDk8i9oy4P1UZrVAO50NbeQ2qOyuzNSviNYashd2A8Iio0MztmgBkxQtH8DrkGsak+6QUS5bTPwAObwhg6jYu7nAYFdphTRQNywuypUTYJT/jkCyrJ9wD715p9Nijg4YPW7QZCwJmjdD5lPzVTSrr5yeqR3JkVu02DcEbyuv9s+t7ECmIaAbzjrAq85WOSi50rlHBNq4tuWFkqH6xfbV3WD7KshbsfI9ufAaE4aHcWpvGYL5/aaP+AGRDHan8ZnF+AtHymELnX+JmRaqAwL9nnBZoN4FVLBWTA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=gaisler.com; dmarc=pass action=none header.from=gaisler.com;
+ dkim=pass header.d=gaisler.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gaisler.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=nChlZmlrvLWslmoho1/5aTc9r9JcLlsuI9ltEi1anog=;
+ b=INuFnRN8HZTZOmhztmeE+FWSg1C4ii9V9BgUPQhgDJ8RNd+LGyBWi29rZlGXHvH4Z0GZukAbrrEUd0nzmbqjHKg79DgHWjVgSQ0gc4YaqpMmpuSQB1UaoPfWU4gZjqGOATUuLN7KeBByoJkt4/4D6lM0ztbm/o5DPbwPmtuEgBaTMP0iptchQ/0h5NNjuKKvSwcf3Zc7zJKLoWCgKKhqaM0rYpC5qZi9c5buiMvfMK5GC5lkxReIkyvtUoaD2PFCY5fggNJ/0O0fl7QtbwSDi8zqAFCsedpUclVBHil2D/RLwqNrbjWzjN+WTGlLd8zLfiUjSYM5paTFCQs0O7ZJJA==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=gaisler.com;
+Received: from MM0P280MB495062.SWEP280.PROD.OUTLOOK.COM (2603:10a6:190:2f::5)
+ by GVZP280MB1086.SWEP280.PROD.OUTLOOK.COM (2603:10a6:150:f5::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.496.17; Thu, 8 Oct
+ 2026 09:20:17 +0000
+Received: from MM0P280MB495062.SWEP280.PROD.OUTLOOK.COM
+ ([fe80::1f13:f10:e16b:7939]) by MM0P280MB495062.SWEP280.PROD.OUTLOOK.COM
+ ([fe80::1f13:f10:e16b:7939%4]) with mapi id 15.21.0472.016; Thu, 8 Oct 2026
+ 09:20:17 +0000
+Message-ID: <c24fc419-7bee-4fe4-be12-9aa378d49af1@gaisler.com>
+Date: Thu, 8 Oct 2026 11:20:14 +0200
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 8/8] mm: Drop pxd_ERROR()
+To: Anshuman Khandual <anshuman.khandual@arm.com>, linux-mm@kvack.org
+Cc: samuel.holland@sifive.com, David Hildenbrand <david@kernel.org>,
+ Mike Rapoport <rppt@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Lorenzo Stoakes <ljs@kernel.org>, Yoshinori Sato
+ <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
+ John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>,
+ WANG Xuerui <kernel@xen0n.name>, linux-alpha@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+ linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
+ loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
+ linux-mips@vger.kernel.org, linux-openrisc@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-um@lists.infradead.org, linux-arch@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
+References: <20260831054331.625505-1-anshuman.khandual@arm.com>
+ <20260831054331.625505-9-anshuman.khandual@arm.com>
+Content-Language: en-US
+From: Andreas Larsson <andreas@gaisler.com>
+In-Reply-To: <20260831054331.625505-9-anshuman.khandual@arm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: BE1P281CA0084.DEUP281.PROD.OUTLOOK.COM
+ (2603:10a6:b10:78::11) To MM0P280MB495062.SWEP280.PROD.OUTLOOK.COM
+ (2603:10a6:190:2f::5)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,171 +99,144 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3901.100.1.1.12\))
-Subject: Re: [PATCH v3 6/6] mm/mm_init: add zone mismatch warning during page
- init
-From: Muchun Song <muchun.song@linux.dev>
-In-Reply-To: <asdKHy_xHHa0wJ65@kernel.org>
-Date: Thu, 8 Oct 2026 10:16:36 +0200
-Cc: Muchun Song <songmuchun@bytedance.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <chleroy@kernel.org>,
- Ritesh Harjani <ritesh.list@gmail.com>,
- Shrikanth Hegde <sshegde@linux.ibm.com>,
- Lorenzo Stoakes <ljs@kernel.org>,
- "Liam R . Howlett" <liam@infradead.org>,
- Vlastimil Babka <vbabka@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>,
- Michal Hocko <mhocko@suse.com>,
- Qi Zheng <qi.zheng@linux.dev>,
- linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org,
- linux-mm@kvack.org
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <3466BD00-1B0E-4F15-B104-88A22807ECD2@linux.dev>
-References: <20260929053231.66085-1-songmuchun@bytedance.com>
- <20260929053231.66085-7-songmuchun@bytedance.com>
- <ar5xbQsUpSQZg0wO@kernel.org>
- <78D5D6AA-BE36-432C-B0F7-453F93DF18C0@linux.dev>
- <ar9p39Y9SmlxvbA_@kernel.org>
- <85941AA4-7E50-4AAE-BC05-0F443B21BE8B@linux.dev>
- <ar_0GLYM6KsIH6tQ@kernel.org>
- <D91CEA1E-6B79-434D-AF49-16C62C0FD095@linux.dev>
- <asTS6OtxPMVshuIO@kernel.org>
- <CF8ED1DC-9745-42D3-92F0-424A02385EC1@linux.dev>
- <asdKHy_xHHa0wJ65@kernel.org>
-To: Mike Rapoport <rppt@kernel.org>
-X-Mailer: Apple Mail (2.3901.100.1.1.12)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MM0P280MB495062:EE_|GVZP280MB1086:EE_
+X-MS-Office365-Filtering-Correlation-Id: 83646bf6-eeda-498e-e234-08df251d5e2c
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|366016|23010399003|376014|7416014|56012099006|4143699003|11063799006|10067099003|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	NC/qpKPoxiyUAIaFboaEX4yQJbeZ+vmHWvsqeQ5kGT8l7X9fcYqp9eBx5WDlxiVvR0L+48Kj8haTuGmN+ee23fz3oSbjQL0jDYSXa+8gvblI86UZZh4H3rc1iI63OnAtUl/Bc29s8THJfx5bFeLN0emAE2uZAHoMFHy90APywhP9Z8AjykGKVGL0t0c2nvMe3PsGovHxRyjauii+CaAg7FIwI2CS/HOCQfII4YJSPtE4I0SRp+V6w4RmvmGuzeCsqZSrWw82tVXGVw0nRXYEEjprr2bBi/k2erOTWX+ty2uFPb9NPtUYLqYJ9PHu+KDHk4Q/vhMUK3yGm+xZ+4lHwTIkrPlcoR9I3RrI4QZlUmJ2jnb0OByBCKTN6WeW3SPL7RUqYcLSHKhK7REebKrFE0KT0iexUictJu2Fnotxo5BB3aWPdM5djXsume4Uu/+LrZgrVePGx8jVXrq7s0fx3tDDa8Its7qN4Q+p0W/zrq+NcYe8ULVC7XRuOjK0vRn8IJYPzelV1nlbTqr5dOdn1l7Ngd1FRLzsM1A/gAKUICvJl7+yqtc729F6ZYuOPgHw3w2EZKjndGEXmpox7kfKl6X1HCrim3tkhks2tAZ3SktjZtPITkfZDdVBJ/FfT8XA3Aw4kbnTbKOULc4nRgbN9ElLoKLj3Wvavjhkq2aZS/c=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MM0P280MB495062.SWEP280.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(23010399003)(376014)(7416014)(56012099006)(4143699003)(11063799006)(10067099003)(22082099003)(18002099003);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?Qnc4WTMwaVBFYzJqcExMa05CL2Z6N2lPTHJIWHJ6RkNtSjQ4YTA2YWhOWHNP?=
+ =?utf-8?B?c3h4MGNyVWpGRXAxYkV5a0VycHRMZmJ4cENISm5EeHF6NFR4U0grNHpzVFNw?=
+ =?utf-8?B?SitEcWRXSExhV2gvMW5hZUQweld3N2JSdVEyZGRDckVZMXZ5SlNzSklhcmk5?=
+ =?utf-8?B?VEt1RHBCbXFKb0lDcVBwRXdFOHRDUTNqemh4TFExRnJhM0ZzTTR2N0JVYlZ1?=
+ =?utf-8?B?VlA1YXo4RHIrbFRpa2QxeFM0VWJwVzQ1WGlaQmdBTFhnK1VLaHllLzdqSFNL?=
+ =?utf-8?B?WE9BWUlhaHJKZkNPd0kvZ2U5TEZTUWZHOHVtMTduYW1wdUlaTTIxeFFmU3Qw?=
+ =?utf-8?B?QWxmQ1NNSHgraGRsb1pkbmVORHF2eDF0bUFWTjBiNXFzZDczRDZ5R2xqdFRR?=
+ =?utf-8?B?Kzhmc3ArU25pcDQyUEpkekh5RmxrVnV0TFVCajVUN2czMGc4UGFqZEx2SEpl?=
+ =?utf-8?B?NVVVcjBRaFoxb24wVmZrTVBOR2FoYnRaUFpZSmxXcnVvV2w5TzEzaVgzODNh?=
+ =?utf-8?B?eWdPV0J4ekp4bkVpdGUxY2RLYTRSWGZqSUlwVHNRdlFyMVEwNTZLcVQ3dlh4?=
+ =?utf-8?B?UGdtOGNwb2g0d2MwQ0Y3ajRUVWRMc1dIbnRsVTFpSTJtclZzNFFPc255cnhQ?=
+ =?utf-8?B?TU5abWFjbjBrS25UU01WMzhjdU9VZTZuVUpaQ2xBSHBSOWlGejFWK3RLaldG?=
+ =?utf-8?B?RkJERVNnbHJnWFZTUkxTVjBlVTJ1d1JNdmkwUWhROHZtMUM2dlJJeHQyRmdl?=
+ =?utf-8?B?UW5MU0cySjFHWUpkZ1RQSTA3SE82Rlczb1hqakhiVi80U3cxT2swK0t5OVcw?=
+ =?utf-8?B?UjkyekRsR0JuZTk3QWZuR0RwYjV1SUNUbnNwaFBOQjA1TEdKWFRRRTNNNyt0?=
+ =?utf-8?B?Y2YrTmZralIvNllYNG1aKzRONTJrZWYvTFFBbjg1S0lEcmZ3amo4UVMwWTZ6?=
+ =?utf-8?B?Sm1VZXc4aStLMWx4dE9PWElQZlg4eXhaRGMwcHlVWFlJNE53NXh2ejl3NVZH?=
+ =?utf-8?B?Y0dyaVc0bm9xVXpDV00ySWtnT1AzSElIQTJieHlKTys2a1ZpRDdUVElIKzBw?=
+ =?utf-8?B?Yk9sRWlTQTlKeUZpQUYydnIvazY3ZjVBYXkzZXdZWjAxRlYrYXAxKy9PU2gr?=
+ =?utf-8?B?UFo1U0hFSGRzUUZwYmFmalNmVTBrNHVmTmVSVVEwUGFxL0VlWHVCL3dIMFhN?=
+ =?utf-8?B?ajNyNDJwblBVbjRDR1dvVHpuNEx6VUk5MldTY0ptMEgrNUZVUlRCd3kzMlB6?=
+ =?utf-8?B?bnNBb1lya3pVd2g1YzJwVFpHNzUrRlJEVHdyMGg0dDBQck9zL0w0SGRjcC9S?=
+ =?utf-8?B?NHM3L0RyU3hIaWl6QnFzbEcwZ3NwWG1uc0FsOGg4citQTTFRTWdKdEdORi9R?=
+ =?utf-8?B?WEwySCtxUDBxYkRmMzhmNHVSVWR5SjgzeEt1WFN3U3lVKzdZY2k2UzBURmda?=
+ =?utf-8?B?YXUvTFo3c0EvTVNnR0dieTh2VzRrWGJCY0prTWc0Z04vWXpJbFFVcjZLc3hF?=
+ =?utf-8?B?WDRBbUFkbzBTMzMzcnIxTGlJTW9QOW1zVU5HSkc4NFNkLzczV3hYTUtzcjRY?=
+ =?utf-8?B?WitCZ1g3SzNjbXFONGNDWEcxWlUyR0piM2p6dThwQlREaXFzWDhoYlc5Unlk?=
+ =?utf-8?B?dWpjRk00c25DQW9ITEVTU0ZITDRJSm50MWZoeGNFRjlVZzlqZXBxVmIwbnFL?=
+ =?utf-8?B?bnRRakpsRC82V3R4ZzBRbGl0aEtBM1A0UlduY2xCUUp5Q05VVXNpNFgxM0tS?=
+ =?utf-8?B?U0loRGpFckpUUElXTkRSV01VV3hXN3F0QXBOMjRxWUJYY0V6QTdEZThMZDEv?=
+ =?utf-8?B?SU04Y0VqU21ydmNCS3VMOXNQK2psemZXRHk4UDZPOFpvcmV6eFlndi9ocm9v?=
+ =?utf-8?B?eXRVampFMmZvNVBQSCsxVGxkbXVCcENac0RGOXhnMldaVmhaelhlcXB0dnB3?=
+ =?utf-8?B?RFdack1RQVdGVU94RWxQQXBsdlNrd0pTRkVneVFVRXZybnM0ZUVLMHYyRDVC?=
+ =?utf-8?B?UkVKb0h2Qk13VVNiOXNkUWs1RHpKd2UvU2lRVlgvRnU5VlJ3ell6czZPN1Bk?=
+ =?utf-8?B?d2VHdDZVUTdaYWIrYkdmYXFmNktSQjhyNWVlRHNOZ2c3RTJyL3puSm40V2lQ?=
+ =?utf-8?B?RnJwQjhzRnp0bUZVeWx0bUxVN0E3NlJadU9oOGFDOGNRbFVjdzRxNjl4ek8v?=
+ =?utf-8?B?UzFka04xY01xUEV4TmRoc29xUEcydDM1Z05kNWhmMjl3OVhHTnJDUVJ5WGth?=
+ =?utf-8?B?cFFId1A1RHJEbitNS012U2x6NTcwM0gvbk9rekpFYVZZbG4zYS84elM5b2lY?=
+ =?utf-8?B?d3N0d0dNS3h1RWRYR0NLUmFaeVVVWlByVURvc3JuTFh1SHp2SkxtSVpGZUE5?=
+ =?utf-8?Q?yjjhfEohdeTOoAqE=3D?=
+X-OriginatorOrg: gaisler.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 83646bf6-eeda-498e-e234-08df251d5e2c
+X-MS-Exchange-CrossTenant-AuthSource: MM0P280MB495062.SWEP280.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Oct 2026 09:20:17.5038
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 91fa4a59-2167-458a-8318-e45d80469d7e
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 5BZfB4EAaSFJ84qYftmRVMohK/eymk8QLHXJzzFm4elUHya77EOOlIY25xck2qu/+rvHfHMgpADg5257wP54q4lxf3y+8uFBxp0svqv6SU8=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: GVZP280MB1086
 
+On 2026-08-31 07:43, Anshuman Khandual wrote:
+> There are no more users left for any pxd_ERROR() either in generic MM or in
+> the platform MM. Hence all these platform macros along with their generic
+> fallback could be dropped across the tree.
+> 
+> Cc: linux-alpha@vger.kernel.org
+> Cc: linux-snps-arc@lists.infradead.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-csky@vger.kernel.org
+> Cc: linux-hexagon@vger.kernel.org
+> Cc: loongarch@lists.linux.dev
+> Cc: linux-m68k@lists.linux-m68k.org
+> Cc: linux-mips@vger.kernel.org
+> Cc: linux-openrisc@vger.kernel.org
+> Cc: linux-parisc@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-riscv@lists.infradead.org
+> Cc: linux-s390@vger.kernel.org
+> Cc: linux-sh@vger.kernel.org
+> Cc: sparclinux@vger.kernel.org
+> Cc: linux-um@lists.infradead.org
+> Cc: linux-arch@vger.kernel.org
+> Cc: linux-mm@kvack.org
+> Cc: linux-kernel@vger.kernel.org
+> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org> # m68k
+> Acked-by: David Hildenbrand (Arm) <david@kernel.org>
+> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+...>  /*
+>   * Encode/decode swap entries and swap PTEs. Swap PTEs are all PTEs that
+>   * are !pte_none() && !pte_present().
+> diff --git a/arch/sparc/include/asm/pgtable_32.h b/arch/sparc/include/asm/pgtable_32.h
+> index f89b1250661d..5a5f54a090f5 100644
+> --- a/arch/sparc/include/asm/pgtable_32.h
+> +++ b/arch/sparc/include/asm/pgtable_32.h
+> @@ -40,9 +40,6 @@ void load_mmu(void);
+>  unsigned long calc_highpages(void);
+>  unsigned long __init bootmem_init(unsigned long *pages_avail);
+>  
+> -#define pte_ERROR(e)   __builtin_trap()
+> -#define pmd_ERROR(e)   __builtin_trap()
+> -#define pgd_ERROR(e)   __builtin_trap()
+>  
+>  #define PTRS_PER_PTE    	64
+>  #define PTRS_PER_PMD    	64
+> diff --git a/arch/sparc/include/asm/pgtable_64.h b/arch/sparc/include/asm/pgtable_64.h
+> index 0837ebbc5dce..44d1333065a6 100644
+> --- a/arch/sparc/include/asm/pgtable_64.h
+> +++ b/arch/sparc/include/asm/pgtable_64.h
+> @@ -96,16 +96,6 @@ bool kern_addr_valid(unsigned long addr);
+>  #define PTRS_PER_PUD	(1UL << PUD_BITS)
+>  #define PTRS_PER_PGD	(1UL << PGDIR_BITS)
+>  
+> -#define pmd_ERROR(e)							\
+> -	pr_err("%s:%d: bad pmd %p(%016lx) seen at (%pS)\n",		\
+> -	       __FILE__, __LINE__, &(e), pmd_val(e), __builtin_return_address(0))
+> -#define pud_ERROR(e)							\
+> -	pr_err("%s:%d: bad pud %p(%016lx) seen at (%pS)\n",		\
+> -	       __FILE__, __LINE__, &(e), pud_val(e), __builtin_return_address(0))
+> -#define pgd_ERROR(e)							\
+> -	pr_err("%s:%d: bad pgd %p(%016lx) seen at (%pS)\n",		\
+> -	       __FILE__, __LINE__, &(e), pgd_val(e), __builtin_return_address(0))
+> -
+>  #endif /* !(__ASSEMBLER__) */
 
+Perhaps a bit of a pity to lose the printing of the address of the pxd
+that a number of architectures did before this series, but i have no
+strong opinion.
 
-> On Oct 8, 2026, at 09:45, Mike Rapoport <rppt@kernel.org> wrote:
->=20
-> On Tue, Oct 06, 2026 at 03:32:43PM +0200, Muchun Song wrote:
->>> On Oct 6, 2026, at 12:52, Mike Rapoport <rppt@kernel.org> wrote:
->>>=20
->>> On Mon, Oct 05, 2026 at 06:27:52PM +0200, Muchun Song wrote:
->>>>> On Oct 2, 2026, at 20:12, Mike Rapoport <rppt@kernel.org> wrote:
->>>>>=20
->>>>> On Fri, Oct 02, 2026 at 05:56:40PM +0800, Muchun Song wrote:
->>>>>>> On Oct 2, 2026, at 16:22, Mike Rapoport <rppt@kernel.org> wrote:
->>>>>>=20
->>>>>>>>>> diff --git a/mm/mm_init.c b/mm/mm_init.c
->>>>>>>>>> index 1650d6bc1211..bd02e8d06965 100644
->>>>>>>>>> --- a/mm/mm_init.c
->>>>>>>>>> +++ b/mm/mm_init.c
->>>>>>>>>> @@ -609,6 +609,9 @@ void __meminit __init_single_page(struct =
-page *page, unsigned long pfn,
->>>>>>>>>> if (!is_highmem_idx(zone))
->>>>>>>>>> set_page_address(page, __va(pfn << PAGE_SHIFT));
->>>>>>>>>> #endif
->>>>>>>>>> + =
-VM_WARN_ON_ONCE(vmemmap_optimizable_order(pfn_to_section_compound_order(pf=
-n)) &&
->>>>>>>>>> + page_zone_id(page + VMEMMAP_OPTIMIZATION_NR_STRUCT_PAGES) =
-!=3D
->>>>>>>>>> + page_zone_id(page));
->>>>>>>>>=20
->>>>>>>>> Hmm, page + VMEMMAP_OPTIMIZATION_NR_STRUCT_PAGES is =
-initialized a tad later
->>>>>>>>> than page so it'll have stale data in the page->flags, won't =
-it?
->>>>>>>>=20
->>>>>>>> Lance is right. The shared tail struct pages are already =
-initialized by
->>>>>>>> vmemmap_shared_tail_page() during vmemmap population, so =
-they're not stale.
->>>>>>>> The head 64 struct pages are initialized later =E2=80=94 right =
-here, after vmemmap
->>>>>>>> population.
->>>>>>>=20
->>>>>>> Still it looks out of place here, can this check be done in =
-sparse-vmemmap
->>>>>>> somehow?
->>>>>>=20
->>>>>> The struct page entries of a vmemmap-optimizable compound page
->>>>>> are currently initialized in two stages. During vmemmap
->>>>>> population, the shared tail entries are initialized first. The
->>>>>> retained head area=E2=80=94normally 64=E2=80=94is initialized =
-later through
->>>>>> __init_single_page().
->>>>>>=20
->>>>>> This warning connects the two stages: while initializing the
->>>>>> retained entries in the second stage, it verifies that their zone
->>>>>> information is consistent with the shared entries initialized in
->>>>>> the first stage. Therefore, the same check cannot be performed
->>>>>> during vmemmap population.
->>>>>>=20
->>>>>> I am planning to first unify the HugeTLB and Device DAX
->>>>>> compound-page initialization through a common helper [1]. Once =
-that
->>>>>> work is complete, maybe it will be easy to move the =
-initialization
->>>>>> of the retained head area into vmemmap population. With both the
->>>>>> retained and shared entries initialized in the same stage, there
->>>>>> will be no cross-stage inconsistency to check, and this warning
->>>>>> can be removed.
->>>>>>=20
->>>>>> Would keeping the check here for now and removing it as part of
->>>>>> that follow-up sound reasonable to you?
->>>>>=20
->>>>> While it feels really out of place in __init_single_page(), but =
-having it
->>>>> memmap_init_range() close to the if that skips shared tail pages =
-makes
->>>>> sense.
->>>>>=20
->>>>> What do you say?
->>>>=20
->>>> Sorry for the late reply because of traveling to LPC.
->>>>=20
->>>> Putting the check in memmap_init_range() would validate the
->>>> invariant for the shared-tail range skipped there. It would
->>>> not, however, cover all vmemmap-optimized initialization
->>>> paths: optimized Device DAX bypasses memmap_init_range()
->>>> when there is no altmap, and deferred boot-time HugeTLB
->>>> initialization may also initialize retained entries
->>>> elsewhere.
->>>>=20
->>>> If the intention is to validate only the skip in
->>>> memmap_init_range(), moving it there makes sense. If we want
->>>> the warning to cover both HugeTLB and Device DAX generally,
->>>> it still needs to remain in __init_single_page() or be
->>>> called from the individual initialization paths.
->>>=20
->>> Yeah, putting this into all the callers sucks too :(
->>>=20
->>> With all the callers,__init_single_page() is the right place for =
-this
->>> check, but I think we can add a static inline in sparse.h, like e.g.
->>>=20
->>> vmemmap_optimization_verify_zone(page, pfn)
->>>=20
->>> to make it a bit nicer.
->>=20
->> Yeah, factoring this into a helper makes sense.
->>=20
->> Since it currently has only one caller, how about keeping it as a =
-local
->> static inline in mm_init.c instead of putting it in sparse.h?
->=20
-> Presuming we don't expect new callers any time soon let's put it just =
-above
-> __init_single_page().
+Acked-by: Andreas Larsson <andreas@gaisler.com> # sparc
 
-Make sense.
-
-Thanks,
-Muchun
-
->=20
-> --=20
-> Sincerely yours,
-> Mike.
-
+Cheers,
+Andreas
 
 
