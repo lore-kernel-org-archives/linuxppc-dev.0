@@ -1,112 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-29022-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29023-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D2ACCA6007
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2026 05:33:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0031CA600B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2026 06:42:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j0dvd4Y34z308H;
-	Thu, 08 Oct 2026 16:33:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791437629;
-	cv=none; b=lmM7uaT6a2fqope82EWwUS7JMtRSIXCFERNM1kPG8OYhTqk+0NuJwDB3MOHVMsHiVnjk1oktuBFtTwfEPQu7hdoMPOPGhFnI4vRmf2UcQje7P6Onb97xWRe7+MFcpmL7lmauEh6owxSoTqpiZt+MdFWZo8eh2CXXNAGI+/JX7LLKPgWf5L9md/BvCEdUYqoYo1HA1wcOadC8skLUU2eZwDt5RpAEjqkMsrZgeNaSePVCUJq80c/lMie1uyaS/rM9/ldV0niaH6y4PMmzC9bhZVn54uCPU9xoYWBcU0XuCGv5j3UwTnafBNBdeEHRQnrDXUWGsI/mSk3ZvO4+gMIXEg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j0gRG1gsYz2yYK;
+	Thu, 08 Oct 2026 17:42:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791441770;
+	cv=none; b=OKD8xupMUKonVmOicc+/f7DTy7YjJmC6vTMQ6VZrdti4aeUyS+gR/hf5D0nwGbsataHs5o5TmJo00ywa4dz8m2hYDmEtHS+YRwUYa4JcTdjpU3Ogob5t/OkHWi+zmHGAIsugBRiYPagaFQ4SJtsYDqPO6bwjp8BOaLmDm8Hjn9DuXNtZ0oMuVqRE61zbt9hlb/2MGOg1ppt+nn+Q6lKxbDjNZ4JUnSwcH5sHt5UdVLLKgd/y4tyBk0j1x5W5J/AtyFA88OGRCv0aWh2xk+sBdpeFaoY7Owm3MLHTjjtFd0wsqygHdhJ8moDFwp/wSntfMmE25E2iTxvHbqW2l8SXLQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791437629; c=relaxed/relaxed;
-	bh=DiCB3zTU35Q/So7+8YpTI1O1VNazQCwPsoCqXsbVCxA=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=l1fRShwoK5L+oL8QHhR5v3GHTW+Jr01fkjHnDEkeHnku1RLH6pCLl3GkQffx881MMeUuAfG6AvwYHWC3s0h4sX6vLlPvDK8nvctOgA8A6Br+UwzMSNt06bNHbhSpHz9gSDZjn188jjVPCCbW8gD4zl9kMdxtzyA2jLXrNOBUXHfBSShYV6WLMaCvyvHY+x3jHWEo/vhgNPohh/kYiHtodPXdVQnpIW0h3ZEioeBEyXRjmsbz0f+RZd2fQcTUuONbDcHJOi3NvLZGnAx8dJV453osBLqSqxgxoQQBBqg2SLPl8Pmw4NNptM1YWrdmQ2oiURA7uT9aqxJON15bjnmKDQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MlFvX1x1; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1791441770; c=relaxed/relaxed;
+	bh=QYjlbETRxQW9RMjfplUAnmTLI8vDWVyFt6dBT1ysNAc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=fKfrT3T2qiq+umNp7u70+LwqoDhH7LoyD7u0fnceugjy5ARoxz41XUAmkzQUjkCIyWUA551l8GntlcWsvPzNS3nL8+WTD4oNt/4hiPQmRP0XAZ9qj1jFlDtOFBBbzjPnKOvu6soisBMazft9rLjIRHLWMYwdn9UoGepwuDGJx2OeHxTcNE+fkN01mLzLitN4z9cK4bq3uG6obn0QT2BEWzHrIK+eORMI0jQ9Ep/XaZRd5LhQJiC2fH0Xqnalu5UfS8nM9Fqcx0ZIv3hwIDAFh+ysTNdtqazzIOfLF/7b6knLa4UjXOAC1JdZci/ArKdj+fdWNijPd0UIfs1e07TvIg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LzwrJChR; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MlFvX1x1;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LzwrJChR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j0dvc2kPRz2yYd
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Oct 2026 16:33:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j0gRD4T1kz2xdX
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Oct 2026 17:42:48 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id C069A60252;
-	Thu,  8 Oct 2026 05:33:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ADBD61F000FF;
-	Thu,  8 Oct 2026 05:33:30 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 7EB1D41836;
+	Thu,  8 Oct 2026 06:42:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF9461F000FF;
+	Thu,  8 Oct 2026 06:42:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791437624;
-	bh=DiCB3zTU35Q/So7+8YpTI1O1VNazQCwPsoCqXsbVCxA=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date;
-	b=MlFvX1x1UhWZRY1blp5vdgZEPOMCBXQinqSZI84kOfHvYoEphDSM4c94C8k0YCneZ
-	 +CvWpN13IHO40ySHjg36SGLM6p3x45bPMR627QwPtHEOxGz1S8+sT5TicHHAqfnwbg
-	 bqFKdwKME2OoCRwQAo2p4meLpit9e42WrSXDC9nPxddpD1ycCgJPlJjEd5pDoDOqWs
-	 ennUOXzrVpLk3Kqhf1z0mNeMc81DduJcnqdwFkPFglVDZ80bS0a6JisTfrcpB+qHEQ
-	 B2B7dFO8dNiI2LLj/G2xvndmsNBdA4U85+1Ksxk77R/C0BzNaKttWJhMVtqisJgUfF
-	 7H/HlTSl2Xjzw==
-X-Mailer: emacs 31.1 (via feedmail 11-beta-1 I)
-From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
-To: Will Deacon <will@kernel.org>,
-	Catalin Marinas <catalin.marinas@arm.com>
-Cc: iommu@lists.linux.dev, linux-kernel@vger.kernel.org,
-	Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	Mark Rutland <mark.rutland@arm.com>,
-	Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>,
-	Jason Gunthorpe <jgg@ziepe.ca>,
-	Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Stefano Stabellini <sstabellini@kernel.org>,
-	Russell King <linux@armlinux.org.uk>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Jiaxun Yang <jiaxun.yang@flygoat.com>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Andy Lutomirski <luto@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
-	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	x86@kernel.org
-Subject: Re: [PATCH v6 6/8] dma: swiotlb: Centralize memory-encryption pool
- sizing
-In-Reply-To: <yq5awlrt3dwo.fsf@kernel.org>
-References: <20260924060756.1325156-1-aneesh.kumar@kernel.org>
- <20260924060756.1325156-7-aneesh.kumar@kernel.org>
- <asVs3doaJ4WrT3M2@willie-the-truck> <asYZFXGyafRjjBS0@arm.com>
- <asYiOgskwi8JYLe_@willie-the-truck> <yq5awlrt3dwo.fsf@kernel.org>
-Date: Thu, 08 Oct 2026 11:03:27 +0530
-Message-ID: <yq5av77c92oo.fsf@kernel.org>
+	s=k20260515; t=1791441765;
+	bh=QYjlbETRxQW9RMjfplUAnmTLI8vDWVyFt6dBT1ysNAc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=LzwrJChRSmVjEsRakCz7KZMyALTXRiMMTQqt+Pq1DfhvTRhANdPa2qsjY85CoeKmU
+	 +smyn7Lotjz8Z+6My1XtXdRcAWv0Bk3+so9601+yHD0hXOPoxrMliq4uNlyMYvPyEN
+	 /KxKGNEGsRLbC5gh5Fpx/irufkYMSkObZy2nAEfpl7+01CgTBFC4KUpi+Rt44aL8Zf
+	 NTIbo4/T2UBb6sZftaMcHpGWW78wNUfUZX3n+aegjkdkvaCrfhtnmdLmCzyRFXWi5O
+	 KzhbRY6JsNtjGiT0SU3GKlmfmu9GhVSnGRLyWq6PEohhumSDv1uECF+lTxE7sLA503
+	 DyPwUh9lm6nsw==
+Date: Thu, 8 Oct 2026 08:42:25 +0200
+From: Mike Rapoport <rppt@kernel.org>
+To: Jinjie Ruan <ruanjinjie@huawei.com>
+Cc: catalin.marinas@arm.com, will@kernel.org, mark.rutland@arm.com,
+	chenhuacai@kernel.org, kernel@xen0n.name, maddy@linux.ibm.com,
+	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
+	ritesh.list@gmail.com, sshegde@linux.ibm.com, tglx@kernel.org,
+	mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com,
+	hpa@zytor.com, gregkh@linuxfoundation.org, rafael@kernel.org,
+	dakr@kernel.org, akpm@linux-foundation.org, baoquan.he@linux.dev,
+	pasha.tatashin@soleen.com, pratyush@kernel.org,
+	ruirui.yang@linux.dev, leitao@debian.org, yeoreum.yun@arm.com,
+	sourabhjain@linux.ibm.com, robh@kernel.org, coxu@redhat.com,
+	kees@kernel.org, tangyouling@kylinos.cn, liukexin@kylinos.cn,
+	zhangtianyang@loongson.cn, guodongtai@kylinos.cn,
+	maqianga@uniontech.com, chao.gao@intel.com, kai.huang@intel.com,
+	vishal.l.verma@intel.com, seanjc@google.com, piliu@redhat.com,
+	thuth@redhat.com, jbouron@amazon.com, me@linux.beauty,
+	mclapinski@google.com, graf@amazon.com, bgwin@google.com,
+	hbathini@linux.ibm.com, eric.devolder@oracle.com,
+	takahiro.akashi@linaro.org, james.morse@arm.com,
+	palmer@rivosinc.com, x86@kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+	driver-core@lists.linux.dev, kexec@lists.infradead.org
+Subject: Re: [PATCH v6 00/14] crash: Fix several bugs
+Message-ID: <asc7UdlRsy7502j8@kernel.org>
+References: <20260921090450.807575-1-ruanjinjie@huawei.com>
+ <f4ba3a6b-537d-4328-b0c1-c0e5aa61924f@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -120,138 +86,55 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <f4ba3a6b-537d-4328-b0c1-c0e5aa61924f@huawei.com>
 
-Aneesh Kumar K.V <aneesh.kumar@kernel.org> writes:
+Hi Jinjie,
 
-> Will Deacon <will@kernel.org> writes:
->
->> On Wed, Oct 07, 2026 at 11:04:05AM +0100, Catalin Marinas wrote:
->>> On Tue, Oct 06, 2026 at 10:49:17PM +0100, Will Deacon wrote:
->>> > On Thu, Sep 24, 2026 at 11:37:54AM +0530, Aneesh Kumar K.V (Arm) wrote:
->>> > > @@ -496,7 +516,8 @@ swiotlb_select_pool_policy(unsigned int flags)
->>> > >  	if (swiotlb_force_disable)
->>> > >  		return SWIOTLB_POOL_NONE;
->>> > >  
->>> > > -	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
->>> > > +	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT) &&
->>> > > +	    !restricted_dma_pool_present)
->>> > >  		return SWIOTLB_POOL_CC_GUEST;
->>> > 
->>> > I think this check on the restricted DMA pool is too general -- the pool
->>> > could be tied to a specific DMA-capable peripheral and so treating its
->>> > presence as a global property isn't right.
->>> 
->>> I agree it's a hack but that was the simplest way to avoid the pVMs
->>> getting a bounce buffer after this patch. More than happy to leave it
->>> out and reduce the buffer on cmdline or we come up with some better
->>> heuristics.
->>
->> Hrm, that does mean that reverting just this part will regress pVMs
->> because they'll suddenly be allocating a tonne more memory for an
->> entirely unused swiotlb buffer. So I think I'd prefer to drop the entire
->> series until this has been worked out properly.
->>
->>> Another option could be the arch code passing another flag that it
->>> doesn't want an encrypted pool (e.g. when running in a pKVM guest) but I
->>> don't particularly this either. The arch code doesn't know whether
->>> there's an alternative pool.
->>
->> At that point, the default size may as well be driven by the
->> drivers/virt/coco driver.
->>
->>> That said, such heuristics should have been a separate patch to make it
->>> easier to review/drop.
->>
->> I think the only right way to get a semi-accurate heuristic is to take
->> into account the set of dma-capable devices that will use the swiotlb
->> pool, but that's fiddly and should probably be tackled as a separate
->> series. Maybe a simpler hack in that direction would be to take the
->> SWIOTLB_POOL_CC_GUEST if _any_ device is going to use swiotlb? You'll
->> run into the usual problem of not being able to tell if a device is
->> DMA-capable or not, but you could probably look for a global restricted
->> DMA pool and, if that doesn't exist, check for per-device restricted pools
->> on dma-coherent devices (since restricted DMA isn't supported by ACPI) as
->> a reasonable approximation.
->
-> So, something like this?
->
-> 	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT) &&
-> 	    swiotlb_cc_guest_needs_default_pool())
-> 		return SWIOTLB_POOL_CC_GUEST;
->
+On Thu, Oct 08, 2026 at 09:57:30AM +0800, Jinjie Ruan wrote:
+> 
+> 在 2026/9/21 17:04, Jinjie Ruan 写道:
+> > As Baoquan and Catalin suggested, this patch set fixes
+> > several pre-existing code issues found by Sashiko AI [1][2][3].
+> > 
+> > The major improvements and fixes included in this series are:
+> > - Fix several memory leaks for arm64, and similar issues on LoongArch.
+> > - Fix out-of-bounds write on 32-bit Highmem for x86.
+> > - Fix TOCTOU race in crash memory range collection.
+> 
+> Hi all,
+> 
+> Gentle ping.
+> 
+> Could anyone take a look or let me know if there's anything
+> else needed? I can rebase/resend if required.
 
-Detecting a DMA-capable device is not straightforward, and if we get it
-wrong, we will enable SWIOTLB_POOL_CC_GUEST unnecessarily. Would the
-code below be a reasonable approximation of what you suggested?
+Sorry for the delay, I was travelling for the past few weeks.
+I'm planning to review this next week. 
 
-Another option would be to make swiotlb_cc_guest_needs_default_pool() a
-weak function that architectures can override. arm64 pKVM could then use
-a different scheme (for this patch series default to false). Would that
-be preferable?
+And we do need acks from arch maintainers for most of the patches in this
+series.
 
-#ifdef CONFIG_DMA_RESTRICTED_POOL
-static bool __init swiotlb_of_dma_candidate(struct device_node *np)
-{
-	struct device_node *node __free(device_node) = of_node_get(np);
+> > Jinjie Ruan (14):
+> >   kexec: Fix CMA segment address translation with non-zero text_offset
+> >   kexec: Record allocated CMA pages to fix release size mismatch
+> >   kexec: Extract kexec_free_segment_cma() from kimage_free_cma()
+> >   arm64: kexec_file: Fix CMA page leaks in segment placement retry loops
+> >   arm64: kexec_file: Fix elf_headers memory leak in retry loop
+> >   LoongArch: kexec_file: Fix CMA page leaks in segment placement retry
+> >     loops
+> >   LoongArch: kexec_file: Fix elf_headers memory leak in retry loop
+> >   LoongArch: kexec_file: Fix a modified_cmdline leak
+> >   x86/crash: Fix massive out-of-bounds write on 32-bit Highmem
+> >   crash: Extract crash_get_memory_ranges() helper
+> >   crash: Factor out crash_find_elfcorehdr() helper
+> >   crash: Normalize the kexec_load elfcorehdr at load time
+> >   driver core: Add device_hotplug_lock_assert_held() helper
+> >   crash: Fix TOCTOU race in crash memory range collection
 
-	/*
-	 * Ignore nodes that don't have compatible and reg property
-	 * So we don't wrongly consider a node as device node.
-	 */
-	if (!of_property_present(np, "compatible") ||
-	    !of_property_present(np, "reg"))
-		return false;
-
-	while (node) {
-		if (!of_device_is_available(node))
-			return false;
-		/*
-		 * Ignore reserved-memory nodes because that have compatible
-		 * and reg property
-		 */
-		if (node->parent == of_root &&
-		    of_node_name_eq(node, "reserved-memory"))
-			return false;
-		node = of_get_next_parent(node);
-	}
-	return of_dma_is_coherent(np);
-}
-
-static bool __init swiotlb_of_dma_needs_default_pool(struct device_node *np)
-{
-	if (!of_dma_get_restricted_pool(np))
-		return true;
-
-	return false;
-}
-#endif
-
-static bool __init swiotlb_cc_guest_needs_default_pool(void)
-{
-#ifdef CONFIG_DMA_RESTRICTED_POOL
-	struct device_node *np;
-	bool found = false;
-
-	if (!of_root)
-		return true;
-	/*
-	 * DMA capability is not explicitly described for every DT device.
-	 * Use coherent, addressed device nodes as an approximation, and keep
-	 * guest sizing unless every candidate has an initialized restricted
-	 * pool.
-	 */
-	for_each_of_allnodes(np) {
-		if (!swiotlb_of_dma_candidate(np))
-			continue;
-		found = true;
-		if (swiotlb_of_dma_needs_default_pool(np))
-			return true;
-	}
-
-	return !found;
-#else
-	return true;
-#endif
-}
+-- 
+Sincerely yours,
+Mike.
 
