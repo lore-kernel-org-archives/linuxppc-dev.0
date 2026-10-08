@@ -1,45 +1,101 @@
-Return-Path: <linuxppc-dev+bounces-29057-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29058-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 975AECA6007
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2026 12:26:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57462CA6007
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2026 12:52:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j0q3d4Td3z2y8r;
-	Thu, 08 Oct 2026 23:26:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:37:1000::53df:5fcc:0"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791462381;
-	cv=none; b=Z4pN3rh0UpGUKEdxVYY6PUBtXcjqlDvKozpnivsQoytnvdAfPJTdlqgVXAsaNk4PRii0tjYZhkwP/Unuqeu19sutfzDv+u8p1jpPN3jlRiT66kQ7rLw8fCjm4tvghEbyeq+9Dti15L/ns+oXNgPGe+R1PsOHeSa3VhPVwb1S5/4LpSnpwIk98+zeCzcAFGbpdwGvPLj3R6hgvvwWxt1jQ6WwN8YEjoJBL/pd88oxiMcmu3JcR6C/vcsIzEmLiMu9gVDkZfBg2hZ4CpmIYErDV57o+lhovI78Dd+cbN1RzFashZpUrPJ/z8qnLMNyD3ahNxacSMtuhqN1t7dwUlUbDg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j0qdh2Dfnz2yWy;
+	Thu, 08 Oct 2026 23:52:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791463944;
+	cv=none; b=b54g0xPmZUXBxe919LHyoIk4uFveLDbK2AGKHbH7mwZ5quCY/PDwaFP7h1nVJprPD+Z8rOSb6jpQ6w9iBOKC6H5I5iB36t9p3xIpM4iOht8R3M2fZr9Miom7OwWZFqnu/B/7G22pSJFYCx8FSo9jqV0xRc/8PBJXmBq38BLVOogPY7I9y+w9blFO+xOrWOTNA4oVAZsGT66Cu5bbDwYzc3fSH1zJ+/Ru44T1NUvaosO1iKT+DqBmQMrPbmXR7cDtQY8g0OdIDOVCTgDheEYmO4Y64jOXFG5DeVvCBm6GkrwbRvHN8781K4qiR3eDdeiGttzZ9xxoQ6MwA9+YZTxwdQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791462381; c=relaxed/relaxed;
-	bh=/GfpWXwAOilJ4rkEDqTPKgUj9LGTGNX3kHGPlnWrKC0=;
-	h=Message-ID:From:Date:Subject:To:Cc; b=UIVe/tHuTXje4EHL89XySMLgfBSWJPEtY6b4xDcxzivqQ0exs7xZsFD62+zrUV51R2zU3VgnnEtwJfzbeuJDqHPtt37DfbU8I3eRoD4A4RpGiHlxOr2Z7I/frGSs+MZeszVjDYgJCHBylOAGDwZpDqTdpivgJ5u5CsW5ndQq/rp687PqHBmxPJ7ma/v7ViAo5rPqzWady0IBlLtPwoGttwFMd4ETtHcVMvPhfkrb87AcdleCzRc1A370KdbvDeptEWKWiJopYrHIMhk2sz+isjY9KII+PPv+4+V7l49XJru5hWx2upEAfuxSZPoqghPNd+xb5sm9QUfGiZkt01ZzjQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=2a01:37:1000::53df:5fcc:0; helo=mailout1.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org) smtp.mailfrom=wunner.de
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wunner.de (client-ip=2a01:37:1000::53df:5fcc:0; helo=mailout1.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org)
-Received: from mailout1.hostsharing.net (mailout1.hostsharing.net [IPv6:2a01:37:1000::53df:5fcc:0])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j0q3b4w2xz2xrL
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Oct 2026 23:26:19 +1100 (AEDT)
-Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature ECDSA (secp384r1) server-digest SHA384
-	 client-signature ECDSA (secp384r1) client-digest SHA384)
-	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
-	by mailout1.hostsharing.net (Postfix) with ESMTPS id 12987390;
-	Thu, 08 Oct 2026 14:26:02 +0200 (CEST)
-Received: by h08.hostsharing.net (Postfix, from userid 100393)
-	id 0BE12609B7A5; Thu,  8 Oct 2026 14:26:02 +0200 (CEST)
-Message-ID: <0552ed277e40a288e0157af799257ee6ec722534.1791460615.git.lukas@wunner.de>
-From: Lukas Wunner <lukas@wunner.de>
-Date: Thu, 8 Oct 2026 14:26:00 +0200
-Subject: [PATCH for-linus] PCI/AER: Skip error recovery on false alarms
-To: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org
-Cc: "Mahesh J Salgaonkar" <mahesh@linux.ibm.com>, Oliver OHalloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org, Alex Deucher <alexdeucher@gmail.com>, Christian Koenig <christian.koenig@amd.com>, Vitaly Prosyak <vitaly.prosyak@amd.com>, amd-gfx@lists.freedesktop.org, Aditya Garg <aditya.garg@linux.dev>, Jason Perlow <jperlow@gmail.com>
+	t=1791463944; c=relaxed/relaxed;
+	bh=EvhagocGhH9OIskTDt4UAiR8i2SYh/u0Afii5qvgjNw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Gxyne8MjS9e5+m6lnaOaAyhZ0XMOd5r1pdSDStoTSHWRifIjUZhpXQ5L0aWs7osBY93a6QUjHXH1Wcl1AErYhwWWswNugo4WVhqPWdu5GOhLp/DF98bptulckqQEwVuK0rY8TN9mbARt5aQntrcmzUU2izzGaKZ5ZgO6uUPeXIwwHtB/3i6obDOxEkN31bcl4oLSpxoU+MvxC8OZMcCH2HQfbdpZlyEsjER0aZnEQujzN0FgpKr1hwUvO7uo122j7VQrehuYP/O8SQy5EfQ42ofV9BMqz3cvbF3cT5ZZIF6rcR7SdaT/P8VbGgiqsit/qUiW1lBjJlW0B+x0bCZ97A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=jHcYeO7P; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=catalin.marinas@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=jHcYeO7P;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=catalin.marinas@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j0qdd5yPvz2xwN
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Oct 2026 23:52:20 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EF9301477;
+	Thu,  8 Oct 2026 05:51:43 -0700 (PDT)
+Received: from arm.com (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 385483F66F;
+	Thu,  8 Oct 2026 05:51:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1791463907; bh=yybsjxVTbzd8fZs72yNrXHsa7ZAel783Veu0/ZplOjs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=jHcYeO7PQ4uywop/cdz4Sp+A+aFbl0MgQD1Ls+p5EdipEXi6WD0t37Ph73w/vv0DU
+	 zaE58iHLndSo+/C52KBqYxok8UD7CtjGoRjaBmsWgfa74P8A2xQIUgYTR13WaYMyPN
+	 MJYzbhW+p/gSjdnlF9y+DSqgMqvawjjqEWGiXB4w=
+Date: Thu, 8 Oct 2026 13:51:24 +0100
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
+Cc: Will Deacon <will@kernel.org>, iommu@lists.linux.dev,
+	linux-kernel@vger.kernel.org, Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	Randy Dunlap <rdunlap@infradead.org>,
+	Mark Rutland <mark.rutland@arm.com>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>,
+	Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Stefano Stabellini <sstabellini@kernel.org>,
+	Russell King <linux@armlinux.org.uk>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	WANG Xuerui <kernel@xen0n.name>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Jiaxun Yang <jiaxun.yang@flygoat.com>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Andy Lutomirski <luto@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
+	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+	x86@kernel.org
+Subject: Re: [PATCH v6 6/8] dma: swiotlb: Centralize memory-encryption pool
+ sizing
+Message-ID: <aseRzPshcoys7AJS@arm.com>
+References: <20260924060756.1325156-1-aneesh.kumar@kernel.org>
+ <20260924060756.1325156-7-aneesh.kumar@kernel.org>
+ <asVs3doaJ4WrT3M2@willie-the-truck>
+ <asYZFXGyafRjjBS0@arm.com>
+ <asYiOgskwi8JYLe_@willie-the-truck>
+ <yq5awlrt3dwo.fsf@kernel.org>
+ <yq5av77c92oo.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -52,98 +108,94 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <yq5av77c92oo.fsf@kernel.org>
 
-Alex is seeing a probe failure of the amdgpu driver after the Root Port
-above an AMD Navi10 GPU has been reset.  The reset was performed to
-recover from a Firmware First reported Fatal Error.
+On Thu, Oct 08, 2026 at 11:03:27AM +0530, Aneesh Kumar K.V wrote:
+> Aneesh Kumar K.V <aneesh.kumar@kernel.org> writes:
+> > Will Deacon <will@kernel.org> writes:
+> >> On Wed, Oct 07, 2026 at 11:04:05AM +0100, Catalin Marinas wrote:
+> >>> On Tue, Oct 06, 2026 at 10:49:17PM +0100, Will Deacon wrote:
+> >>> > On Thu, Sep 24, 2026 at 11:37:54AM +0530, Aneesh Kumar K.V (Arm) wrote:
+> >>> > > @@ -496,7 +516,8 @@ swiotlb_select_pool_policy(unsigned int flags)
+> >>> > >  	if (swiotlb_force_disable)
+> >>> > >  		return SWIOTLB_POOL_NONE;
+> >>> > >  
+> >>> > > -	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
+> >>> > > +	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT) &&
+> >>> > > +	    !restricted_dma_pool_present)
+> >>> > >  		return SWIOTLB_POOL_CC_GUEST;
+> >>> > 
+> >>> > I think this check on the restricted DMA pool is too general -- the pool
+> >>> > could be tied to a specific DMA-capable peripheral and so treating its
+> >>> > presence as a global property isn't right.
+> >>> 
+> >>> I agree it's a hack but that was the simplest way to avoid the pVMs
+> >>> getting a bounce buffer after this patch. More than happy to leave it
+> >>> out and reduce the buffer on cmdline or we come up with some better
+> >>> heuristics.
+> >>
+> >> Hrm, that does mean that reverting just this part will regress pVMs
+> >> because they'll suddenly be allocating a tonne more memory for an
+> >> entirely unused swiotlb buffer. So I think I'd prefer to drop the entire
+> >> series until this has been worked out properly.
+> >>
+> >>> Another option could be the arch code passing another flag that it
+> >>> doesn't want an encrypted pool (e.g. when running in a pKVM guest) but I
+> >>> don't particularly this either. The arch code doesn't know whether
+> >>> there's an alternative pool.
+> >>
+> >> At that point, the default size may as well be driven by the
+> >> drivers/virt/coco driver.
+> >>
+> >>> That said, such heuristics should have been a separate patch to make it
+> >>> easier to review/drop.
+> >>
+> >> I think the only right way to get a semi-accurate heuristic is to take
+> >> into account the set of dma-capable devices that will use the swiotlb
+> >> pool, but that's fiddly and should probably be tackled as a separate
+> >> series. Maybe a simpler hack in that direction would be to take the
+> >> SWIOTLB_POOL_CC_GUEST if _any_ device is going to use swiotlb? You'll
+> >> run into the usual problem of not being able to tell if a device is
+> >> DMA-capable or not, but you could probably look for a global restricted
+> >> DMA pool and, if that doesn't exist, check for per-device restricted pools
+> >> on dma-coherent devices (since restricted DMA isn't supported by ACPI) as
+> >> a reasonable approximation.
+> >
+> > So, something like this?
+> >
+> > 	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT) &&
+> > 	    swiotlb_cc_guest_needs_default_pool())
+> > 		return SWIOTLB_POOL_CC_GUEST;
+> >
+> 
+> Detecting a DMA-capable device is not straightforward, and if we get it
+> wrong, we will enable SWIOTLB_POOL_CC_GUEST unnecessarily. Would the
+> code below be a reasonable approximation of what you suggested?
+> 
+> Another option would be to make swiotlb_cc_guest_needs_default_pool() a
+> weak function that architectures can override. arm64 pKVM could then use
+> a different scheme (for this patch series default to false). Would that
+> be preferable?
 
-However all status registers in the Root Port's AER Extended Capability
-are blank, so apparently the platform firmware raised a false alarm.
+Even the rmem check for each device is still a hack that may bite us in
+the future (private devices for example would not need swiotlb). I'm
+thinking more and more of leaving the sizing an arch-specific decision,
+don't bother generalising it at all.
 
-The issue is only occurring since commit eddba19b8b5f ("PCI/AER: Support
-Advisory Non-Fatal Errors").  It looks like enabling Advisory Non-Fatal
-Errors causes code paths to be exercised in platform firmware which
-were never validated before.
+On pKVM vs CCA guests, there's really nothing specific here to pKVM
+guests. The only difference is that confidential guests that so far have
+run without a swiotlb buffer will regress if their memory is tight. For
+confidential guests without dedicated rmem (either CCA or pKVM), I think
+our options are either command line swiotlb sizing or dynamic swiotlb.
 
-Skip error recovery on false alarms, i.e. if no unmasked errors were
-actually signaled.
+Could you respin your series while leaving out the generic sizing? IOW,
+no x86 code generalisation. We can discuss the best strategy on sizing
+later (I haven't checked how much of this series still makes sense
+without the generic sizing).
 
-Note that this will also skip recovery if both the Status and Mask
-registers are "all ones", as would be the case for inaccessible devices.
-However that seems justified because it would imply either a hot-unplug
-event or a Surprise Down Error further up in the hierarchy.  Interfering
-with recovery from that seems uncalled for.
-
-Fixes: eddba19b8b5f ("PCI/AER: Support Advisory Non-Fatal Errors")
-Reported-by: Alex Deucher <alexander.deucher@amd.com>
-Tested-by: Alex Deucher <alexander.deucher@amd.com>
-Closes: https://bugzilla.kernel.org/show_bug.cgi?id=222095
-Signed-off-by: Lukas Wunner <lukas@wunner.de>
----
- When applied to pci/for-linus, this will cause a conflict during the
- merge window with a commit queued on pci/aer, d4c842c3af5b ("PCI/AER:
- Fix memory leak in aer_recover_work_func() when pci_dev is missing").
- 
- To resolve the conflict, change "if (pdev)" to "if (pdev && err)"
- and move the pci_dev_put() out of the if-clause (so that it gets
- called if pdev != NULL but err == 0).
- 
- If this is all too complicated and/or late, I can respin on top of
- pci/aer or v7.4-rc1.
- 
- drivers/pci/pcie/aer.c | 22 ++++++++++++++++------
- 1 file changed, 16 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index d8dcd238fda1..922a726a52a5 100644
---- a/drivers/pci/pcie/aer.c
-+++ b/drivers/pci/pcie/aer.c
-@@ -1360,8 +1360,10 @@ static DEFINE_KFIFO(aer_recover_ring, struct aer_recover_entry,
- 
- static void aer_recover_work_func(struct work_struct *work)
- {
-+	struct aer_capability_regs *regs;
- 	struct aer_recover_entry entry;
- 	struct pci_dev *pdev;
-+	u32 err;
- 
- 	while (kfifo_get(&aer_recover_ring, &entry)) {
- 		pdev = pci_get_domain_bus_and_slot(entry.domain, entry.bus,
-@@ -1375,6 +1377,12 @@ static void aer_recover_work_func(struct work_struct *work)
- 		}
- 		pci_print_aer(pdev, entry.severity, entry.regs);
- 
-+		regs = entry.regs;
-+		if (entry.severity == AER_CORRECTABLE)
-+			err = regs->cor_status & ~regs->cor_mask;
-+		else
-+			err = regs->uncor_status & ~regs->uncor_mask;
-+
- 		/*
- 		 * Memory for aer_capability_regs(entry.regs) is being
- 		 * allocated from the ghes_estatus_pool to protect it from
-@@ -1385,12 +1393,14 @@ static void aer_recover_work_func(struct work_struct *work)
- 		ghes_estatus_pool_region_free((unsigned long)entry.regs,
- 					    sizeof(struct aer_capability_regs));
- 
--		if (entry.severity == AER_NONFATAL)
--			pcie_do_recovery(pdev, pci_channel_io_normal,
--					 aer_root_reset);
--		else if (entry.severity == AER_FATAL)
--			pcie_do_recovery(pdev, pci_channel_io_frozen,
--					 aer_root_reset);
-+		if (err) {
-+			if (entry.severity == AER_NONFATAL)
-+				pcie_do_recovery(pdev, pci_channel_io_normal,
-+						 aer_root_reset);
-+			else if (entry.severity == AER_FATAL)
-+				pcie_do_recovery(pdev, pci_channel_io_frozen,
-+						 aer_root_reset);
-+		}
- 		pci_dev_put(pdev);
- 	}
- }
 -- 
-2.53.0
-
+Catalin
 
