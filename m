@@ -1,101 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-29058-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29059-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57462CA6007
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2026 12:52:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9EAC8CA6007
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2026 13:58:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j0qdh2Dfnz2yWy;
-	Thu, 08 Oct 2026 23:52:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791463944;
-	cv=none; b=b54g0xPmZUXBxe919LHyoIk4uFveLDbK2AGKHbH7mwZ5quCY/PDwaFP7h1nVJprPD+Z8rOSb6jpQ6w9iBOKC6H5I5iB36t9p3xIpM4iOht8R3M2fZr9Miom7OwWZFqnu/B/7G22pSJFYCx8FSo9jqV0xRc/8PBJXmBq38BLVOogPY7I9y+w9blFO+xOrWOTNA4oVAZsGT66Cu5bbDwYzc3fSH1zJ+/Ru44T1NUvaosO1iKT+DqBmQMrPbmXR7cDtQY8g0OdIDOVCTgDheEYmO4Y64jOXFG5DeVvCBm6GkrwbRvHN8781K4qiR3eDdeiGttzZ9xxoQ6MwA9+YZTxwdQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j0s6B5NZ2z2xwM;
+	Fri, 09 Oct 2026 00:58:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=13.77.154.182
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791467922;
+	cv=none; b=M6iPgZFS0vOns71GCTwomUBJkGnBLZSzSF7aUyxHXK4jZsogYMNIYxSa/pjXrfth4pV1FqX39dqXCpqntlmXhEB1/NhIUwtphK3qOHwylvIvUXoFMNmUUL028VY+URp9wOc/VF1tikmw+TEWGHX+Ou0K67ewWUkOGLYmEtg6+dmRI4Bi/uG9aMjbgdHxSUfSrf+xDJ725X0GIJzS0C9PjRkcIR5N7KBzGeMC4P4zT9RP79fTHTIpBlItSZZFuuQU/Xwk41YZqttpg3PAjbFs/5qWdcTS8WEDIGTN5V7boHCRg0zIlwm/E2sv3dqJHbN2vaEStaBLJkUyN1ba+vMrHw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791463944; c=relaxed/relaxed;
-	bh=EvhagocGhH9OIskTDt4UAiR8i2SYh/u0Afii5qvgjNw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Gxyne8MjS9e5+m6lnaOaAyhZ0XMOd5r1pdSDStoTSHWRifIjUZhpXQ5L0aWs7osBY93a6QUjHXH1Wcl1AErYhwWWswNugo4WVhqPWdu5GOhLp/DF98bptulckqQEwVuK0rY8TN9mbARt5aQntrcmzUU2izzGaKZ5ZgO6uUPeXIwwHtB/3i6obDOxEkN31bcl4oLSpxoU+MvxC8OZMcCH2HQfbdpZlyEsjER0aZnEQujzN0FgpKr1hwUvO7uo122j7VQrehuYP/O8SQy5EfQ42ofV9BMqz3cvbF3cT5ZZIF6rcR7SdaT/P8VbGgiqsit/qUiW1lBjJlW0B+x0bCZ97A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=jHcYeO7P; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=catalin.marinas@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+	t=1791467922; c=relaxed/relaxed;
+	bh=6vZ8Ejj8aZrBU856Cgb+Aq9cC3Vyu+mZba06VVhY2u0=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=l2S7geTow2K7LL6+1bLJ7uLETjiG+p3PKHslGDuta08ql4CS3ILZXR+YjesIE/9A5RiZXwRqwYsflkTgnZ7bfdC40m8S2wwoQKUrkKah+pUcdc9BE+jc7HGZyJvR/p0Wb9nqbemI1DkrA/CHgJEjfrgJjTyBSQRgWc/ALYZtXfvkh1ygzrpigCrDPfIF5fi82eIfIgFYNOmBV6WMkHMBbdgxchlHe8mW+dJ+8fzi14t/qkNRrXucbKmQRLDQPsCQUmODQsyKZIswcKTtsa3jnobrsOumQfQDfl1IM2YCPdmwzznPNdYac8o+tTOk50UeLU40HX9tp3hcDiG2NkwA/Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=N2MldErZ; dkim-atps=neutral; spf=pass (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=jeffbarnes@linux.microsoft.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.microsoft.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=jHcYeO7P;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=N2MldErZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=catalin.marinas@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j0qdd5yPvz2xwN
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Oct 2026 23:52:20 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EF9301477;
-	Thu,  8 Oct 2026 05:51:43 -0700 (PDT)
-Received: from arm.com (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 385483F66F;
-	Thu,  8 Oct 2026 05:51:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1791463907; bh=yybsjxVTbzd8fZs72yNrXHsa7ZAel783Veu0/ZplOjs=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=jHcYeO7PQ4uywop/cdz4Sp+A+aFbl0MgQD1Ls+p5EdipEXi6WD0t37Ph73w/vv0DU
-	 zaE58iHLndSo+/C52KBqYxok8UD7CtjGoRjaBmsWgfa74P8A2xQIUgYTR13WaYMyPN
-	 MJYzbhW+p/gSjdnlF9y+DSqgMqvawjjqEWGiXB4w=
-Date: Thu, 8 Oct 2026 13:51:24 +0100
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
-Cc: Will Deacon <will@kernel.org>, iommu@lists.linux.dev,
-	linux-kernel@vger.kernel.org, Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	Mark Rutland <mark.rutland@arm.com>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>,
-	Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Stefano Stabellini <sstabellini@kernel.org>,
-	Russell King <linux@armlinux.org.uk>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Jiaxun Yang <jiaxun.yang@flygoat.com>,
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Andy Lutomirski <luto@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
-	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	x86@kernel.org
-Subject: Re: [PATCH v6 6/8] dma: swiotlb: Centralize memory-encryption pool
- sizing
-Message-ID: <aseRzPshcoys7AJS@arm.com>
-References: <20260924060756.1325156-1-aneesh.kumar@kernel.org>
- <20260924060756.1325156-7-aneesh.kumar@kernel.org>
- <asVs3doaJ4WrT3M2@willie-the-truck>
- <asYZFXGyafRjjBS0@arm.com>
- <asYiOgskwi8JYLe_@willie-the-truck>
- <yq5awlrt3dwo.fsf@kernel.org>
- <yq5av77c92oo.fsf@kernel.org>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=jeffbarnes@linux.microsoft.com; receiver=lists.ozlabs.org)
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j0s696MQQz2xrL
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Oct 2026 00:58:41 +1100 (AEDT)
+Received: from jeffbarnes-ThinkPad-P14s-Gen-2i.corp.microsoft.com (unknown [52.167.115.14])
+	by linux.microsoft.com (Postfix) with ESMTPSA id E381620B7166;
+	Thu,  8 Oct 2026 06:57:10 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com E381620B7166
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+	s=default; t=1791467832;
+	bh=6vZ8Ejj8aZrBU856Cgb+Aq9cC3Vyu+mZba06VVhY2u0=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=N2MldErZ7BuYtSeyaXTL/+JFoAjR43/8BqyXcXYCQCRU7mBNoqNY7iCRa66+DhoJX
+	 rFz+UuSy554Glphg6bl8DrPa++tx9SgytfynLo4JgRkwm+R9oDAJDTHXXPDjmikCuz
+	 cuG6NT1cQr9USDmP+24a9RJLxq2CC5ohAg4F2O/I=
+From: Jeff Barnes <jeffbarnes@linux.microsoft.com>
+To: linux-pci@vger.kernel.org
+Cc: Frank.Li@nxp.com,
+	minghuan.Lian@nxp.com,
+	mingkai.hu@nxp.com,
+	roy.zang@nxp.com,
+	lpieralisi@kernel.org,
+	kwilczynski@kernel.org,
+	mani@kernel.org,
+	robh@kernel.org,
+	bhelgaas@google.com,
+	Zhiqiang.Hou@nxp.com,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	imx@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] Revert "PCI: layerscape: Change default error response behavior"
+Date: Thu,  8 Oct 2026 09:57:47 -0400
+Message-ID: <20261008135747.76755-1-jeffbarnes@linux.microsoft.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20261001153323.1965074-1-jeffbarnes@linux.microsoft.com>
+References: <20261001153323.1965074-1-jeffbarnes@linux.microsoft.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -109,93 +72,13 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <yq5av77c92oo.fsf@kernel.org>
+Content-Transfer-Encoding: 8bit
 
-On Thu, Oct 08, 2026 at 11:03:27AM +0530, Aneesh Kumar K.V wrote:
-> Aneesh Kumar K.V <aneesh.kumar@kernel.org> writes:
-> > Will Deacon <will@kernel.org> writes:
-> >> On Wed, Oct 07, 2026 at 11:04:05AM +0100, Catalin Marinas wrote:
-> >>> On Tue, Oct 06, 2026 at 10:49:17PM +0100, Will Deacon wrote:
-> >>> > On Thu, Sep 24, 2026 at 11:37:54AM +0530, Aneesh Kumar K.V (Arm) wrote:
-> >>> > > @@ -496,7 +516,8 @@ swiotlb_select_pool_policy(unsigned int flags)
-> >>> > >  	if (swiotlb_force_disable)
-> >>> > >  		return SWIOTLB_POOL_NONE;
-> >>> > >  
-> >>> > > -	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
-> >>> > > +	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT) &&
-> >>> > > +	    !restricted_dma_pool_present)
-> >>> > >  		return SWIOTLB_POOL_CC_GUEST;
-> >>> > 
-> >>> > I think this check on the restricted DMA pool is too general -- the pool
-> >>> > could be tied to a specific DMA-capable peripheral and so treating its
-> >>> > presence as a global property isn't right.
-> >>> 
-> >>> I agree it's a hack but that was the simplest way to avoid the pVMs
-> >>> getting a bounce buffer after this patch. More than happy to leave it
-> >>> out and reduce the buffer on cmdline or we come up with some better
-> >>> heuristics.
-> >>
-> >> Hrm, that does mean that reverting just this part will regress pVMs
-> >> because they'll suddenly be allocating a tonne more memory for an
-> >> entirely unused swiotlb buffer. So I think I'd prefer to drop the entire
-> >> series until this has been worked out properly.
-> >>
-> >>> Another option could be the arch code passing another flag that it
-> >>> doesn't want an encrypted pool (e.g. when running in a pKVM guest) but I
-> >>> don't particularly this either. The arch code doesn't know whether
-> >>> there's an alternative pool.
-> >>
-> >> At that point, the default size may as well be driven by the
-> >> drivers/virt/coco driver.
-> >>
-> >>> That said, such heuristics should have been a separate patch to make it
-> >>> easier to review/drop.
-> >>
-> >> I think the only right way to get a semi-accurate heuristic is to take
-> >> into account the set of dma-capable devices that will use the swiotlb
-> >> pool, but that's fiddly and should probably be tackled as a separate
-> >> series. Maybe a simpler hack in that direction would be to take the
-> >> SWIOTLB_POOL_CC_GUEST if _any_ device is going to use swiotlb? You'll
-> >> run into the usual problem of not being able to tell if a device is
-> >> DMA-capable or not, but you could probably look for a global restricted
-> >> DMA pool and, if that doesn't exist, check for per-device restricted pools
-> >> on dma-coherent devices (since restricted DMA isn't supported by ACPI) as
-> >> a reasonable approximation.
-> >
-> > So, something like this?
-> >
-> > 	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT) &&
-> > 	    swiotlb_cc_guest_needs_default_pool())
-> > 		return SWIOTLB_POOL_CC_GUEST;
-> >
-> 
-> Detecting a DMA-capable device is not straightforward, and if we get it
-> wrong, we will enable SWIOTLB_POOL_CC_GUEST unnecessarily. Would the
-> code below be a reasonable approximation of what you suggested?
-> 
-> Another option would be to make swiotlb_cc_guest_needs_default_pool() a
-> weak function that architectures can override. arm64 pKVM could then use
-> a different scheme (for this patch series default to false). Would that
-> be preferable?
+Hi,
 
-Even the rmem check for each device is still a hack that may bite us in
-the future (private devices for example would not need swiotlb). I'm
-thinking more and more of leaving the sizing an arch-specific decision,
-don't bother generalising it at all.
+Gentle ping on this fix. Please let me know if any additional changes
+or testing are needed.
 
-On pKVM vs CCA guests, there's really nothing specific here to pKVM
-guests. The only difference is that confidential guests that so far have
-run without a swiotlb buffer will regress if their memory is tight. For
-confidential guests without dedicated rmem (either CCA or pKVM), I think
-our options are either command line swiotlb sizing or dynamic swiotlb.
-
-Could you respin your series while leaving out the generic sizing? IOW,
-no x86 code generalisation. We can discuss the best strategy on sizing
-later (I haven't checked how much of this series still makes sense
-without the generic sizing).
-
--- 
-Catalin
+Thanks,
+Jeff
 
