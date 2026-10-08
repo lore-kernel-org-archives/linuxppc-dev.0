@@ -1,54 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-29064-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29065-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FF9BCA600D
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2026 17:09:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28596CA600D
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2026 17:37:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j0xKw2bZ5z30Vs;
-	Fri, 09 Oct 2026 04:09:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=144.76.133.104
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791479348;
-	cv=none; b=XNbdhMD15zNNc9k8Lz87/k4zMQGnZk0f3ABFPh+rgeqV2wlX9dUQm4aDPyQPdeCefHwG7E5LmY+lkV8Y/L1usigLFqhESSX5Lp3LpK9bYw102u8LvJOiIjyCkoHphXCqCMRTGp5IVSbTs35CRusSOpsL8KrxGpElwjRoh0CH6/OymlhxSTwSWixQ23eCMztt+8xNyVASuvMwFATSq2Z6IXCvq+nioQuRGemXFqHev3sDxFCz86PMVxAo2ZVelKMWRsdH6N0oFjwQVTuMMHQVOlMGNrNTQ0EJoZld4/Wq3z36AM7/PAyJkP3Rm7ixfwlMUksElmE07SfP+rD99ZIbPg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j0xyY2C6Fz30Vs;
+	Fri, 09 Oct 2026 04:37:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=13.77.154.182
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791481045;
+	cv=none; b=M/zcQG0OjbeSjr/TTMD/Cg7rmbwJZM9CQp4K5IbfYd/udJaT9Pv1fNHbkBm8/kXSXCch7RXWAoBY0d4xHJT9MiDErKYlWQvqQnvUBLRsC2KjEDvTUfuhEdnxHTeyKiec9+8uze/DGqtxG7lRwgTUseXqYMh5nD0dtQz5XVkEDCELX5N+mfhgV9EatpTt1wgqcdyjYgscrTEJuHbz4O/JkOQzGbx6uuI5fTLksc2w9OPcHECEFGRHllqpSFZwG2ZMjEM3xoDTtxJdjepLMxWRSncBlZ+vtar+3AsdOTsQwIs4WDzia3Xv7uyznLhckdCkYiNPOiEwPKCUFs+KQZSb6A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791479348; c=relaxed/relaxed;
-	bh=LUiHH3i1cpV1opUDZgMH1uHOC1nsLlpdYBsXQMPkMIM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=k4WWyH/bC323Ea4a07mjexpHSKY5gOkWZNXSZWgoBDvZK3bTyZGObAhWLz+d1j6cgGJZEX7T6MXhFKEv2Db4Me4CetuVDB4Khfy/dtpDhEkd2FgJqRWKxR31kRH5OzkhwJPNiHhQDbL2CvKzs/O/xp6AgIOeZFViYQv/pURBuDFIe7sTXeFMluIdG5K8rWc8ugfizgrPChiqGcXHUOs/d04mWbDL+cvF21cuDzxJEh7XXx6JaXmHWH3KjPqMjzO/trdvwAbaG0cbEDV9CtXsZtcsdoky0R8WJskVgkGi1X8sIrYGdUFfxknDMAYcSd3WLVWXR7+X99R4Gu21Of4grQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=144.76.133.104; helo=mailout3.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org) smtp.mailfrom=wunner.de
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wunner.de (client-ip=144.76.133.104; helo=mailout3.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org)
-Received: from mailout3.hostsharing.net (mailout3.hostsharing.net [144.76.133.104])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j0xKt6vxxz2yqs
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Oct 2026 04:09:06 +1100 (AEDT)
-Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature ECDSA (secp384r1) server-digest SHA384
-	 client-signature ECDSA (secp384r1) client-digest SHA384)
-	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
-	by mailout3.hostsharing.net (Postfix) with ESMTPS id 5554CC37;
-	Thu, 08 Oct 2026 19:09:00 +0200 (CEST)
-Received: by h08.hostsharing.net (Postfix, from userid 100393)
-	id 3333560CF5D2; Thu,  8 Oct 2026 19:09:00 +0200 (CEST)
-Date: Thu, 8 Oct 2026 19:09:00 +0200
-From: Lukas Wunner <lukas@wunner.de>
-To: Alex Deucher <alexdeucher@gmail.com>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org,
-	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver OHalloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
-	Christian Koenig <christian.koenig@amd.com>,
-	Vitaly Prosyak <vitaly.prosyak@amd.com>,
-	amd-gfx@lists.freedesktop.org, Aditya Garg <aditya.garg@linux.dev>,
-	Jason Perlow <jperlow@gmail.com>
-Subject: Re: [PATCH for-linus] PCI/AER: Skip error recovery on false alarms
-Message-ID: <asfOLOMCKt2ZxrJv@wunner.de>
-References: <0552ed277e40a288e0157af799257ee6ec722534.1791460615.git.lukas@wunner.de>
- <CADnq5_PVD6G_VMepJ3mAz=60vM1PHtun51Kccxyz9sdBsx_7wA@mail.gmail.com>
+	t=1791481045; c=relaxed/relaxed;
+	bh=A8RQx+fik1nAgLPhUlMGBh2lF8JrPl+XwdH5+V2+NII=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=SrUicXUo7AIenG+iMfwIwKO3DnUWezDheUv8ESyeYSZZkGafg1emeZAjAlorOtCv6uVwP1/pCpRz4IrT65QX3VmM4X2TFXXCr6FBrlez74hK3zXatCwsFULRui96ZN7pVJmjuMnrkQOT8P32MmxU91GcYUlBTiER4YiaTSoKyoda7S324ieLihvUbUOuwBltzIiSCgzUmyxylUrQkA37/PTEoXbY80gTaHfyqV6edteH65EtgoGx5zFFlzu8+y78XcFOQRM7BqiXQ6FtUhPgCinWjZt6OnvGkB4v1H+nq6AGmCLGMUh9smAcnqW8KQj20e3M56BkTi+VuJdSThyRcA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=Ku5IO7c5; dkim-atps=neutral; spf=pass (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=jeffbarnes@linux.microsoft.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.microsoft.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=Ku5IO7c5;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=jeffbarnes@linux.microsoft.com; receiver=lists.ozlabs.org)
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j0xyX3Bqzz30Vb
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Oct 2026 04:37:24 +1100 (AEDT)
+Received: from jeffbarnes-ThinkPad-P14s-Gen-2i.corp.microsoft.com (unknown [52.167.112.163])
+	by linux.microsoft.com (Postfix) with ESMTPSA id 3B66420B7166;
+	Thu,  8 Oct 2026 10:35:54 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 3B66420B7166
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+	s=default; t=1791480956;
+	bh=A8RQx+fik1nAgLPhUlMGBh2lF8JrPl+XwdH5+V2+NII=;
+	h=From:To:Cc:Subject:Date:From;
+	b=Ku5IO7c54PeOmd/+DKb1ICtuJh3p36JqBkyT91r4A94vfZ5nxZXplA49YaornScpC
+	 QH/cjtd8hyocTZg/651FgqckDZUOWqIP/R9FARHGJcO9j7iv9UAUo8c1ZEmquKbvx3
+	 k02kl2+G7Bcu+TuKDZEM2SGVPuB9tayCbCrlNhd0=
+From: Jeff Barnes <jeffbarnes@linux.microsoft.com>
+To: linux-pci@vger.kernel.org
+Cc: minghuan.Lian@nxp.com,
+	mingkai.hu@nxp.com,
+	roy.zang@nxp.com,
+	lpieralisi@kernel.org,
+	kwilczynski@kernel.org,
+	mani@kernel.org,
+	robh@kernel.org,
+	bhelgaas@google.com,
+	Zhiqiang.Hou@nxp.com,
+	easwar.hariharan@linux.microsoft.com,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	imx@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH v3] Revert "PCI: layerscape: Change default error response behavior"
+Date: Thu,  8 Oct 2026 13:36:41 -0400
+Message-ID: <20261008173641.199142-1-jeffbarnes@linux.microsoft.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,57 +70,120 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CADnq5_PVD6G_VMepJ3mAz=60vM1PHtun51Kccxyz9sdBsx_7wA@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
 
-On Thu, Oct 08, 2026 at 11:19:22AM -0400, Alex Deucher wrote:
-> On Thu, Oct 8, 2026 at 8:26???AM Lukas Wunner <lukas@wunner.de> wrote:
-> > Alex is seeing a probe failure of the amdgpu driver after the Root Port
-> > above an AMD Navi10 GPU has been reset.  The reset was performed to
-> > recover from a Firmware First reported Fatal Error.
-> >
-> > However all status registers in the Root Port's AER Extended Capability
-> > are blank, so apparently the platform firmware raised a false alarm.
-[...]
-> > Skip error recovery on false alarms, i.e. if no unmasked errors were
-> > actually signaled.
-[...]
-> > Fixes: eddba19b8b5f ("PCI/AER: Support Advisory Non-Fatal Errors")
-> > Reported-by: Alex Deucher <alexander.deucher@amd.com>
-> > Tested-by: Alex Deucher <alexander.deucher@amd.com>
-> 
-> FWIW, I only tested this patch in conjunction with the other two
-> patches you had posted on the ticket.  I haven't tried just this patch
-> alone.
+This reverts commit 84d897d69938
+("PCI: layerscape: Change default error response behavior").
 
-This patch alone should avoid the issues you're seeing both
-on the Vega20 system (the first one you reported in the bugzilla) and
-on the Navi10 system (the second one).
+The Layerscape PCIe driver programs the DesignWare
+AMBA_ERROR_RESPONSE_DEFAULT register at offset 0x8d0 with 0x9401.
 
-On both systems, the BIOS is signaling a Fatal Error via Firmware First
-error handling even though the error status registers are blank.
+For AXI, the documented default with AMBA_ERROR_RESPONSE_GLOBAL cleared
+returns OKAY with all-ones data for errors on non-posted requests.
+Setting AMBA_ERROR_RESPONSE_GLOBAL causes an AXI error response instead,
+with AMBA_ERROR_RESPONSE_MAP selecting SLVERR or DECERR for individual
+PCIe completion errors.
 
-The Vega20 log says that error recovery failed because no driver was
-bound to the GPU.  The two additional patches you tested with avoid this
-error message because they change error recovery to tolerate unbound
-devices.  But by not attempting recovery on false alarms in the first
-place, it becomes irrelevant whether the device is bound.
+The value 0x9401 sets AMBA_ERROR_RESPONSE_GLOBAL and maps Unsupported
+Request, Completer Abort, and Completion Timeout to SLVERR.
 
-I had skimmed the log after your initial report, saw the message about
-recovery failing for unbound devices and hence pointed you to the
-patches which tolerate unbound devices on error recovery.
+A PCI configuration access can race with the link going down after
+dw_pcie_other_conf_map_bus() checks the link but before
+pci_generic_config_read() performs the MMIO access. If the transaction
+results in a Completion Timeout, the Layerscape error response setting
+propagates it to AXI as SLVERR, resulting in an asynchronous SError and
+kernel panic.
 
-Then on closer inspection of the logs I realized that the error status
-registers are completely blank, so the error reported by firmware is
-bogus and attempting recovery is pointless.
+For example:
 
-For native error handling (i.e. not Firmware First), we already check
-whether "status & ~mask" is zero in aer_get_device_error_info() and
-skip recovery if so.  This patch aligns Firmware First error handling
-with native error handling in that regard.
+Kernel panic - not syncing: Asynchronous SError Interrupt
+...
+Call trace:
+arm64_serror_panic+0x78/0x90
+do_serror+0x84/0x90
+el1h_64_error_handler+0x30/0x40
+el1h_64_error+0x68/0x70
+pci_generic_config_read+0x64/0xb0
+dw_pcie_rd_other_conf+0x1c/0x68
+pci_bus_read_config_word+0x68/0x118
+pcie_capability_read_word+0xa8/0xd8
+find_device_iter+0x8c/0x160
+pci_walk_bus+0x60/0xb8
+find_source_device+0x78/0xb0
+aer_isr+0x1dc/0x230
 
-Thanks,
+Reproduce the race by obtaining the configuration-space mapping while
+the link is up, then disabling the link from another CPU immediately
+before performing the MMIO configuration read.
 
-Lukas
+With the error response override enabled, the overlapping configuration
+read results in an asynchronous SError and kernel panic. With the
+DesignWare default behavior restored, the same test returns 0xffffffff.
+AER reports a non-fatal Completion Timeout, and no SError or kernel
+panic occurs.
+
+Restore the documented DesignWare default error response behavior so a
+failed non-posted PCIe transaction does not become a fatal AXI error.
+
+Fixes: 84d897d69938 ("PCI: layerscape: Change default error response behavior")
+Cc: stable@vger.kernel.org
+Reviewed-by: Frank Li <Frank.Li@nxp.com>
+Reviewed-by: Easwar Hariharan <easwar.hariharan@linux.microsoft.com>
+Signed-off-by: Jeff Barnes <jeffbarnes@linux.microsoft.com>
+---
+Changes in v3:
+- Restore the kernel panic backtrace from v1, as requested by Easwar
+ Hariharan.
+
+Changes in v2:
+- Change the subject to identify this as a revert, as requested by
+ Frank Li.
+- Document the DesignWare AMBA_ERROR_RESPONSE_DEFAULT behavior and
+ decode the 0x9401 setting used by Layerscape.
+- Clarify that the setting propagates Completion Timeout as AXI SLVERR
+ rather than causing the underlying PCIe transaction failure.
+
+ drivers/pci/controller/dwc/pci-layerscape.c | 12 ------------
+ 1 file changed, 12 deletions(-)
+
+diff --git a/drivers/pci/controller/dwc/pci-layerscape.c b/drivers/pci/controller/dwc/pci-layerscape.c
+index 14d6ac4fc53f..d333f1ae8a41 100644
+--- a/drivers/pci/controller/dwc/pci-layerscape.c
++++ b/drivers/pci/controller/dwc/pci-layerscape.c
+@@ -28,8 +28,6 @@
+ 
+ /* PEX Internal Configuration Registers */
+ #define PCIE_STRFMR1		0x71c /* Symbol Timer & Filter Mask Register1 */
+-#define PCIE_ABSERR		0x8d0 /* Bridge Slave Error Response Register */
+-#define PCIE_ABSERR_SETTING	0x9401 /* Forward error of non-posted request */
+ 
+ /* PF Message Command Register */
+ #define LS_PCIE_PF_MCR		0x2c
+@@ -103,14 +101,6 @@ static void ls_pcie_drop_msg_tlp(struct ls_pcie *pcie)
+ 	iowrite32(val, pci->dbi_base + PCIE_STRFMR1);
+ }
+ 
+-/* Forward error response of outbound non-posted requests */
+-static void ls_pcie_fix_error_response(struct ls_pcie *pcie)
+-{
+-	struct dw_pcie *pci = pcie->pci;
+-
+-	iowrite32(PCIE_ABSERR_SETTING, pci->dbi_base + PCIE_ABSERR);
+-}
+-
+ static u32 ls_pcie_pf_lut_readl(struct ls_pcie *pcie, u32 off)
+ {
+ 	if (pcie->big_endian)
+@@ -180,8 +170,6 @@ static int ls_pcie_host_init(struct dw_pcie_rp *pp)
+ 	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+ 	struct ls_pcie *pcie = to_ls_pcie(pci);
+ 
+-	ls_pcie_fix_error_response(pcie);
+-
+ 	dw_pcie_dbi_ro_wr_en(pci);
+ 	ls_pcie_clear_multifunction(pcie);
+ 	dw_pcie_dbi_ro_wr_dis(pci);
+-- 
+2.43.0
+
 
