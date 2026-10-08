@@ -1,92 +1,54 @@
-Return-Path: <linuxppc-dev+bounces-29026-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29027-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFA29CA600A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2026 09:21:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9987FCA600E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2026 10:06:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j0ky10djsz30TY;
-	Thu, 08 Oct 2026 20:21:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c202::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791451273;
-	cv=pass; b=QsRCRPtW7p48XKeY3z1G1sBE3lH/6DlH848rTSUsnqVBJ3kJ7r/Yz/Lvk9le8yfdZa2Ye//mRVO+oP6CZM+78ffCh/RbTs1OQxeSQLisumFXCCZhVnJZEpErpQnQQzDQDV/RwEmonTnenRQ82pMuUR8xsz8sShTeKqQq5fw1p052SGeJ0otnn1QtrOfhAQKES5R9KTz7fRCwNDh2VQvOHf72xFQB2wCjE6Rwll9T9rdZ5ZBphhYnNps4BuTKQfUCHLZq+0cUabfQLiRSjgq5qsDTY9i5lmbxhEUoU+IZsc3ZDyCkuoocJJ9XDJHTA9pUhVb+gkP1A86a7Q3Mn9Zcfg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791451273; c=relaxed/relaxed;
-	bh=nChlZmlrvLWslmoho1/5aTc9r9JcLlsuI9ltEi1anog=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=kKA1HjMbqts0BgC84D//OS+ed4NPN2nAFohbWxeemvmnCagYHRXd+3KbAR30K1xtprCFHcWblHZapEGNhbQjtRreZD3ihECJuratP0FB80M4865XXwhj87fcnZHT5uNHBXjcEFWs15HmQNDTlcrQGqe0anPx+pAtOUaIuyDo2lPi8VS/syQqKmEjFs5+yaTDdoJ+GobVygiIzEZSqhKjPt1xyQZ7R6bjJw87Vn4OHd2Qkoj35RACDpHH+bnyO1r2DVPHbc8y36Gd+idmnVhD3Ps87rXFZGk2MicZc5+Yg5B7wJfH9FpCe70qDjVAR40HJ/BGRMy2bKB1/ID88YGvqg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=permerror header.from=gaisler.com; dkim=pass (2048-bit key; unprotected) header.d=gaisler.com header.i=@gaisler.com header.a=rsa-sha256 header.s=selector1 header.b=INuFnRN8; dkim-atps=neutral; spf=temperror (client-ip=2a01:111:f403:c202::1; helo=gv3p280cu013.outbound.protection.outlook.com; envelope-from=andreas.larsson@gaisler.com; receiver=lists.ozlabs.org) smtp.mailfrom=gaisler.com
-Authentication-Results: lists.ozlabs.org; dmarc=permerror header.from=gaisler.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j0lxt3Mfhz2yWy;
+	Thu, 08 Oct 2026 21:06:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=210.118.77.11
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791453970;
+	cv=none; b=CoZjCSlgNv+PWqf1J2QYCqBv7m2NmGimA5C5P8Ppc/GU7Bwm+pI2ZiltOm6esFTMhrA6Z0p3uSbMAJ0RqrU+FyiOQtL9tlJ5nfbpqtvH1Va6rAUQ9gRzYVCmPFTIbdvPyrWid1HkJrTMEMaxOIWzDTkNMXTIntuyXiy5AWmk44qH0AmH/8SGnKoT9Uo3wJH2sR7NG5qMh0owJKPpLxDUSwNV6f3sPwZsX7Fn1bK/Sb1BX6Eo41CvYYYJKP7UF0ptDBdJISoDDR1ACVlMyc9n20ROXeTzvS4kMErkAk+JD6bFMtL1xtInFcEOwOXS0FpbCRv4jTNU+/AAKFbG0MDU6Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1791453970; c=relaxed/relaxed;
+	bh=thtf1qJ6pn16hrB0yVRIR4hu2iu+45ubB7fAojJOTKk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:From:In-Reply-To:
+	 Content-Type:References; b=Tz5zOR/6leEGbU75vFvKbhxYh0rLJ1gcQoo3+CJAIamjAUsOdtpKY2KoaE0Na4O7bz8tyZm8JhPujZIjgdIfBjKuo5wlfGBuK2argz7PlYoWYKtytkXHKrWLWgWX2iEPwmP8Ft3HN7FQ4tiDHJu22iVO3C1HVQTAfKFYc7QRpeTwsXAHCYJUNR8MeF80zIgxLpI4ZYD7XqkdUA2BPbwikb35HEUz2E3O8sLCG+wEejtn4VA/3J+Png2HHPk9TYvRZjit+ozzpQLoiabKzD4hzO8HlXnbRQ+wpyzrUW0e+nuBgVLwvnyDWD1vKkrefDr85aO3/dzK/7+cohADiyEH2A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=samsung.com; dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=Ffs2UN8c; dkim-atps=neutral; spf=pass (client-ip=210.118.77.11; helo=mailout1.w1.samsung.com; envelope-from=m.szyprowski@samsung.com; receiver=lists.ozlabs.org) smtp.mailfrom=samsung.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=samsung.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gaisler.com header.i=@gaisler.com header.a=rsa-sha256 header.s=selector1 header.b=INuFnRN8;
+	dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=Ffs2UN8c;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=temperror (SPF Temporary Error: DNS Timeout) smtp.mailfrom=gaisler.com (client-ip=2a01:111:f403:c202::1; helo=gv3p280cu013.outbound.protection.outlook.com; envelope-from=andreas.larsson@gaisler.com; receiver=lists.ozlabs.org)
-Received: from GV3P280CU013.outbound.protection.outlook.com (mail-swedencentralazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c202::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=samsung.com (client-ip=210.118.77.11; helo=mailout1.w1.samsung.com; envelope-from=m.szyprowski@samsung.com; receiver=lists.ozlabs.org)
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com [210.118.77.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j0kxv1hrTz30DK
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Oct 2026 20:20:46 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=wWYCaXyqJi4ZWPF6qGx6PPahhWGHET64lXKc47FBjG7p2ybmlaSw3rSqwcUE/w6495DBBi00Msx1Pad4CqMHlQlVM/qJIb43Q5vas6TnhUz2FdJfY3o6B2lwCryb05C+irQEX9CK9zOP4PCPwtgggpydvj9tiGz5gFS6IjMBwPI6bAh3/u5LsJOt+jF5jWza6nAnQNwx7cGLV5HlOz3lAZgm2cs+gOYRAbkzrFUX7971nLmSWo/Vtm1aZx2dKuksQVEeWsAvwcOHAAlC2BAH2vckuGtUVDeqtRen6KsZsXENvEjTjnymAkIWFVRdV6NxSVMk43cdlaX24bz4xvnycw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=nChlZmlrvLWslmoho1/5aTc9r9JcLlsuI9ltEi1anog=;
- b=EWlQpJR1KYsOvtPjPBUbxCi4oXSmjhItlg/0F5aiUdQvXqIqDoCkmDk8i9oy4P1UZrVAO50NbeQ2qOyuzNSviNYashd2A8Iio0MztmgBkxQtH8DrkGsak+6QUS5bTPwAObwhg6jYu7nAYFdphTRQNywuypUTYJT/jkCyrJ9wD715p9Nijg4YPW7QZCwJmjdD5lPzVTSrr5yeqR3JkVu02DcEbyuv9s+t7ECmIaAbzjrAq85WOSi50rlHBNq4tuWFkqH6xfbV3WD7KshbsfI9ufAaE4aHcWpvGYL5/aaP+AGRDHan8ZnF+AtHymELnX+JmRaqAwL9nnBZoN4FVLBWTA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=gaisler.com; dmarc=pass action=none header.from=gaisler.com;
- dkim=pass header.d=gaisler.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gaisler.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=nChlZmlrvLWslmoho1/5aTc9r9JcLlsuI9ltEi1anog=;
- b=INuFnRN8HZTZOmhztmeE+FWSg1C4ii9V9BgUPQhgDJ8RNd+LGyBWi29rZlGXHvH4Z0GZukAbrrEUd0nzmbqjHKg79DgHWjVgSQ0gc4YaqpMmpuSQB1UaoPfWU4gZjqGOATUuLN7KeBByoJkt4/4D6lM0ztbm/o5DPbwPmtuEgBaTMP0iptchQ/0h5NNjuKKvSwcf3Zc7zJKLoWCgKKhqaM0rYpC5qZi9c5buiMvfMK5GC5lkxReIkyvtUoaD2PFCY5fggNJ/0O0fl7QtbwSDi8zqAFCsedpUclVBHil2D/RLwqNrbjWzjN+WTGlLd8zLfiUjSYM5paTFCQs0O7ZJJA==
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=gaisler.com;
-Received: from MM0P280MB495062.SWEP280.PROD.OUTLOOK.COM (2603:10a6:190:2f::5)
- by GVZP280MB1086.SWEP280.PROD.OUTLOOK.COM (2603:10a6:150:f5::15) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.496.17; Thu, 8 Oct
- 2026 09:20:17 +0000
-Received: from MM0P280MB495062.SWEP280.PROD.OUTLOOK.COM
- ([fe80::1f13:f10:e16b:7939]) by MM0P280MB495062.SWEP280.PROD.OUTLOOK.COM
- ([fe80::1f13:f10:e16b:7939%4]) with mapi id 15.21.0472.016; Thu, 8 Oct 2026
- 09:20:17 +0000
-Message-ID: <c24fc419-7bee-4fe4-be12-9aa378d49af1@gaisler.com>
-Date: Thu, 8 Oct 2026 11:20:14 +0200
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 8/8] mm: Drop pxd_ERROR()
-To: Anshuman Khandual <anshuman.khandual@arm.com>, linux-mm@kvack.org
-Cc: samuel.holland@sifive.com, David Hildenbrand <david@kernel.org>,
- Mike Rapoport <rppt@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- Lorenzo Stoakes <ljs@kernel.org>, Yoshinori Sato
- <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>,
- WANG Xuerui <kernel@xen0n.name>, linux-alpha@vger.kernel.org,
- linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
- loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
- linux-mips@vger.kernel.org, linux-openrisc@vger.kernel.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-um@lists.infradead.org, linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
-References: <20260831054331.625505-1-anshuman.khandual@arm.com>
- <20260831054331.625505-9-anshuman.khandual@arm.com>
-Content-Language: en-US
-From: Andreas Larsson <andreas@gaisler.com>
-In-Reply-To: <20260831054331.625505-9-anshuman.khandual@arm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: BE1P281CA0084.DEUP281.PROD.OUTLOOK.COM
- (2603:10a6:b10:78::11) To MM0P280MB495062.SWEP280.PROD.OUTLOOK.COM
- (2603:10a6:190:2f::5)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j0lxq70CRz2yK7
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Oct 2026 21:06:06 +1100 (AEDT)
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+	by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20261008100554euoutp01b5e0785e05ac13ce90bc8734175063c9~cheFafjgw1538215382euoutp01k;
+	Thu,  8 Oct 2026 10:05:54 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20261008100554euoutp01b5e0785e05ac13ce90bc8734175063c9~cheFafjgw1538215382euoutp01k
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+	s=mail20170921; t=1791453954;
+	bh=thtf1qJ6pn16hrB0yVRIR4hu2iu+45ubB7fAojJOTKk=;
+	h=Date:Subject:To:Cc:From:In-Reply-To:References:From;
+	b=Ffs2UN8c+lhZVqPctNaH71dPdZgnpC9GBlMn0Pu2AcLvwJRnzKjKW20rP+N6NAx9b
+	 CYu4cNuLEL9aRm/we2ZsXI8ZwYfFuet/9PCopkwaDO1nNYEjGFMkZ3hD/E2nWjucJq
+	 9wC1LP/UsovOldkgXNkvScaIRbrdmfyP5AHC36lI=
+Received: from eusmtip1.samsung.com (unknown [203.254.199.221]) by
+	eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
+	20261008100554eucas1p27f258fa39628a4434038c547a2acf284~cheFLOkCq3274432744eucas1p2u;
+	Thu,  8 Oct 2026 10:05:54 +0000 (GMT)
+Received: from [106.210.134.192] (unknown [106.210.134.192]) by
+	eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+	20261008100550eusmtip1ffb5506b783e810998439d4d6ef58931~cheBSDOkD2330023300eusmtip1S;
+	Thu,  8 Oct 2026 10:05:50 +0000 (GMT)
+Message-ID: <bc0fdf46-eaf6-49b9-a015-1742c66829a6@samsung.com>
+Date: Thu, 8 Oct 2026 12:05:49 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,143 +62,85 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: MM0P280MB495062:EE_|GVZP280MB1086:EE_
-X-MS-Office365-Filtering-Correlation-Id: 83646bf6-eeda-498e-e234-08df251d5e2c
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|366016|23010399003|376014|7416014|56012099006|4143699003|11063799006|10067099003|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	NC/qpKPoxiyUAIaFboaEX4yQJbeZ+vmHWvsqeQ5kGT8l7X9fcYqp9eBx5WDlxiVvR0L+48Kj8haTuGmN+ee23fz3oSbjQL0jDYSXa+8gvblI86UZZh4H3rc1iI63OnAtUl/Bc29s8THJfx5bFeLN0emAE2uZAHoMFHy90APywhP9Z8AjykGKVGL0t0c2nvMe3PsGovHxRyjauii+CaAg7FIwI2CS/HOCQfII4YJSPtE4I0SRp+V6w4RmvmGuzeCsqZSrWw82tVXGVw0nRXYEEjprr2bBi/k2erOTWX+ty2uFPb9NPtUYLqYJ9PHu+KDHk4Q/vhMUK3yGm+xZ+4lHwTIkrPlcoR9I3RrI4QZlUmJ2jnb0OByBCKTN6WeW3SPL7RUqYcLSHKhK7REebKrFE0KT0iexUictJu2Fnotxo5BB3aWPdM5djXsume4Uu/+LrZgrVePGx8jVXrq7s0fx3tDDa8Its7qN4Q+p0W/zrq+NcYe8ULVC7XRuOjK0vRn8IJYPzelV1nlbTqr5dOdn1l7Ngd1FRLzsM1A/gAKUICvJl7+yqtc729F6ZYuOPgHw3w2EZKjndGEXmpox7kfKl6X1HCrim3tkhks2tAZ3SktjZtPITkfZDdVBJ/FfT8XA3Aw4kbnTbKOULc4nRgbN9ElLoKLj3Wvavjhkq2aZS/c=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MM0P280MB495062.SWEP280.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(23010399003)(376014)(7416014)(56012099006)(4143699003)(11063799006)(10067099003)(22082099003)(18002099003);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?Qnc4WTMwaVBFYzJqcExMa05CL2Z6N2lPTHJIWHJ6RkNtSjQ4YTA2YWhOWHNP?=
- =?utf-8?B?c3h4MGNyVWpGRXAxYkV5a0VycHRMZmJ4cENISm5EeHF6NFR4U0grNHpzVFNw?=
- =?utf-8?B?SitEcWRXSExhV2gvMW5hZUQweld3N2JSdVEyZGRDckVZMXZ5SlNzSklhcmk5?=
- =?utf-8?B?VEt1RHBCbXFKb0lDcVBwRXdFOHRDUTNqemh4TFExRnJhM0ZzTTR2N0JVYlZ1?=
- =?utf-8?B?VlA1YXo4RHIrbFRpa2QxeFM0VWJwVzQ1WGlaQmdBTFhnK1VLaHllLzdqSFNL?=
- =?utf-8?B?WE9BWUlhaHJKZkNPd0kvZ2U5TEZTUWZHOHVtMTduYW1wdUlaTTIxeFFmU3Qw?=
- =?utf-8?B?QWxmQ1NNSHgraGRsb1pkbmVORHF2eDF0bUFWTjBiNXFzZDczRDZ5R2xqdFRR?=
- =?utf-8?B?Kzhmc3ArU25pcDQyUEpkekh5RmxrVnV0TFVCajVUN2czMGc4UGFqZEx2SEpl?=
- =?utf-8?B?NVVVcjBRaFoxb24wVmZrTVBOR2FoYnRaUFpZSmxXcnVvV2w5TzEzaVgzODNh?=
- =?utf-8?B?eWdPV0J4ekp4bkVpdGUxY2RLYTRSWGZqSUlwVHNRdlFyMVEwNTZLcVQ3dlh4?=
- =?utf-8?B?UGdtOGNwb2g0d2MwQ0Y3ajRUVWRMc1dIbnRsVTFpSTJtclZzNFFPc255cnhQ?=
- =?utf-8?B?TU5abWFjbjBrS25UU01WMzhjdU9VZTZuVUpaQ2xBSHBSOWlGejFWK3RLaldG?=
- =?utf-8?B?RkJERVNnbHJnWFZTUkxTVjBlVTJ1d1JNdmkwUWhROHZtMUM2dlJJeHQyRmdl?=
- =?utf-8?B?UW5MU0cySjFHWUpkZ1RQSTA3SE82Rlczb1hqakhiVi80U3cxT2swK0t5OVcw?=
- =?utf-8?B?UjkyekRsR0JuZTk3QWZuR0RwYjV1SUNUbnNwaFBOQjA1TEdKWFRRRTNNNyt0?=
- =?utf-8?B?Y2YrTmZralIvNllYNG1aKzRONTJrZWYvTFFBbjg1S0lEcmZ3amo4UVMwWTZ6?=
- =?utf-8?B?Sm1VZXc4aStLMWx4dE9PWElQZlg4eXhaRGMwcHlVWFlJNE53NXh2ejl3NVZH?=
- =?utf-8?B?Y0dyaVc0bm9xVXpDV00ySWtnT1AzSElIQTJieHlKTys2a1ZpRDdUVElIKzBw?=
- =?utf-8?B?Yk9sRWlTQTlKeUZpQUYydnIvazY3ZjVBYXkzZXdZWjAxRlYrYXAxKy9PU2gr?=
- =?utf-8?B?UFo1U0hFSGRzUUZwYmFmalNmVTBrNHVmTmVSVVEwUGFxL0VlWHVCL3dIMFhN?=
- =?utf-8?B?ajNyNDJwblBVbjRDR1dvVHpuNEx6VUk5MldTY0ptMEgrNUZVUlRCd3kzMlB6?=
- =?utf-8?B?bnNBb1lya3pVd2g1YzJwVFpHNzUrRlJEVHdyMGg0dDBQck9zL0w0SGRjcC9S?=
- =?utf-8?B?NHM3L0RyU3hIaWl6QnFzbEcwZ3NwWG1uc0FsOGg4citQTTFRTWdKdEdORi9R?=
- =?utf-8?B?WEwySCtxUDBxYkRmMzhmNHVSVWR5SjgzeEt1WFN3U3lVKzdZY2k2UzBURmda?=
- =?utf-8?B?YXUvTFo3c0EvTVNnR0dieTh2VzRrWGJCY0prTWc0Z04vWXpJbFFVcjZLc3hF?=
- =?utf-8?B?WDRBbUFkbzBTMzMzcnIxTGlJTW9QOW1zVU5HSkc4NFNkLzczV3hYTUtzcjRY?=
- =?utf-8?B?WitCZ1g3SzNjbXFONGNDWEcxWlUyR0piM2p6dThwQlREaXFzWDhoYlc5Unlk?=
- =?utf-8?B?dWpjRk00c25DQW9ITEVTU0ZITDRJSm50MWZoeGNFRjlVZzlqZXBxVmIwbnFL?=
- =?utf-8?B?bnRRakpsRC82V3R4ZzBRbGl0aEtBM1A0UlduY2xCUUp5Q05VVXNpNFgxM0tS?=
- =?utf-8?B?U0loRGpFckpUUElXTkRSV01VV3hXN3F0QXBOMjRxWUJYY0V6QTdEZThMZDEv?=
- =?utf-8?B?SU04Y0VqU21ydmNCS3VMOXNQK2psemZXRHk4UDZPOFpvcmV6eFlndi9ocm9v?=
- =?utf-8?B?eXRVampFMmZvNVBQSCsxVGxkbXVCcENac0RGOXhnMldaVmhaelhlcXB0dnB3?=
- =?utf-8?B?RFdack1RQVdGVU94RWxQQXBsdlNrd0pTRkVneVFVRXZybnM0ZUVLMHYyRDVC?=
- =?utf-8?B?UkVKb0h2Qk13VVNiOXNkUWs1RHpKd2UvU2lRVlgvRnU5VlJ3ell6czZPN1Bk?=
- =?utf-8?B?d2VHdDZVUTdaYWIrYkdmYXFmNktSQjhyNWVlRHNOZ2c3RTJyL3puSm40V2lQ?=
- =?utf-8?B?RnJwQjhzRnp0bUZVeWx0bUxVN0E3NlJadU9oOGFDOGNRbFVjdzRxNjl4ek8v?=
- =?utf-8?B?UzFka04xY01xUEV4TmRoc29xUEcydDM1Z05kNWhmMjl3OVhHTnJDUVJ5WGth?=
- =?utf-8?B?cFFId1A1RHJEbitNS012U2x6NTcwM0gvbk9rekpFYVZZbG4zYS84elM5b2lY?=
- =?utf-8?B?d3N0d0dNS3h1RWRYR0NLUmFaeVVVWlByVURvc3JuTFh1SHp2SkxtSVpGZUE5?=
- =?utf-8?Q?yjjhfEohdeTOoAqE=3D?=
-X-OriginatorOrg: gaisler.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 83646bf6-eeda-498e-e234-08df251d5e2c
-X-MS-Exchange-CrossTenant-AuthSource: MM0P280MB495062.SWEP280.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Oct 2026 09:20:17.5038
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 91fa4a59-2167-458a-8318-e45d80469d7e
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 5BZfB4EAaSFJ84qYftmRVMohK/eymk8QLHXJzzFm4elUHya77EOOlIY25xck2qu/+rvHfHMgpADg5257wP54q4lxf3y+8uFBxp0svqv6SU8=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: GVZP280MB1086
+User-Agent: Betterbird (Windows)
+Subject: Re: [PATCH v6 6/8] dma: swiotlb: Centralize memory-encryption pool
+ sizing
+To: Will Deacon <will@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>
+Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
+	iommu@lists.linux.dev, linux-kernel@vger.kernel.org, Robin Murphy
+	<robin.murphy@arm.com>, Jonathan Corbet <corbet@lwn.net>, Shuah Khan
+	<skhan@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>, Mark
+	Rutland <mark.rutland@arm.com>, Marc Zyngier <maz@kernel.org>, Steven Price
+	<steven.price@arm.com>, Suzuki K Poulose <Suzuki.Poulose@arm.com>, Jiri
+	Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>, Mostafa Saleh
+	<smostafa@google.com>, Petr Tesarik <ptesarik@suse.com>, Alexey
+	Kardashevskiy <aik@amd.com>, Dan Williams <dan.j.williams@intel.com>, Xu
+	Yilun <yilun.xu@linux.intel.com>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "Ritesh Harjani (IBM)"
+	<ritesh.list@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, Alexander
+	Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer
+	<gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Vasily
+	Gorbik <gor@linux.ibm.com>, Christian Borntraeger
+	<borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, Stefano
+	Stabellini <sstabellini@kernel.org>, Russell King <linux@armlinux.org.uk>,
+	Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, Thomas
+	Bogendoerfer <tsbogend@alpha.franken.de>, Jiaxun Yang
+	<jiaxun.yang@flygoat.com>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt
+	<palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti
+	<alex@ghiti.fr>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra
+	<peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar
+	<mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
+	<dave.hansen@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
+	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
+	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, x86@kernel.org
+Content-Language: en-US
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+In-Reply-To: <asYiOgskwi8JYLe_@willie-the-truck>
+Content-Transfer-Encoding: 7bit
+X-CMS-MailID: 20261008100554eucas1p27f258fa39628a4434038c547a2acf284
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20261007104325eucas1p2277d74db794e285f33038204d52dc843
+X-EPHeader: CA
+X-CMS-RootMailID: 20261007104325eucas1p2277d74db794e285f33038204d52dc843
+References: <20260924060756.1325156-1-aneesh.kumar@kernel.org>
+	<20260924060756.1325156-7-aneesh.kumar@kernel.org>
+	<asVs3doaJ4WrT3M2@willie-the-truck> <asYZFXGyafRjjBS0@arm.com>
+	<CGME20261007104325eucas1p2277d74db794e285f33038204d52dc843@eucas1p2.samsung.com>
+	<asYiOgskwi8JYLe_@willie-the-truck>
 
-On 2026-08-31 07:43, Anshuman Khandual wrote:
-> There are no more users left for any pxd_ERROR() either in generic MM or in
-> the platform MM. Hence all these platform macros along with their generic
-> fallback could be dropped across the tree.
-> 
-> Cc: linux-alpha@vger.kernel.org
-> Cc: linux-snps-arc@lists.infradead.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-csky@vger.kernel.org
-> Cc: linux-hexagon@vger.kernel.org
-> Cc: loongarch@lists.linux.dev
-> Cc: linux-m68k@lists.linux-m68k.org
-> Cc: linux-mips@vger.kernel.org
-> Cc: linux-openrisc@vger.kernel.org
-> Cc: linux-parisc@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-riscv@lists.infradead.org
-> Cc: linux-s390@vger.kernel.org
-> Cc: linux-sh@vger.kernel.org
-> Cc: sparclinux@vger.kernel.org
-> Cc: linux-um@lists.infradead.org
-> Cc: linux-arch@vger.kernel.org
-> Cc: linux-mm@kvack.org
-> Cc: linux-kernel@vger.kernel.org
-> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org> # m68k
-> Acked-by: David Hildenbrand (Arm) <david@kernel.org>
-> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
-...>  /*
->   * Encode/decode swap entries and swap PTEs. Swap PTEs are all PTEs that
->   * are !pte_none() && !pte_present().
-> diff --git a/arch/sparc/include/asm/pgtable_32.h b/arch/sparc/include/asm/pgtable_32.h
-> index f89b1250661d..5a5f54a090f5 100644
-> --- a/arch/sparc/include/asm/pgtable_32.h
-> +++ b/arch/sparc/include/asm/pgtable_32.h
-> @@ -40,9 +40,6 @@ void load_mmu(void);
->  unsigned long calc_highpages(void);
->  unsigned long __init bootmem_init(unsigned long *pages_avail);
->  
-> -#define pte_ERROR(e)   __builtin_trap()
-> -#define pmd_ERROR(e)   __builtin_trap()
-> -#define pgd_ERROR(e)   __builtin_trap()
->  
->  #define PTRS_PER_PTE    	64
->  #define PTRS_PER_PMD    	64
-> diff --git a/arch/sparc/include/asm/pgtable_64.h b/arch/sparc/include/asm/pgtable_64.h
-> index 0837ebbc5dce..44d1333065a6 100644
-> --- a/arch/sparc/include/asm/pgtable_64.h
-> +++ b/arch/sparc/include/asm/pgtable_64.h
-> @@ -96,16 +96,6 @@ bool kern_addr_valid(unsigned long addr);
->  #define PTRS_PER_PUD	(1UL << PUD_BITS)
->  #define PTRS_PER_PGD	(1UL << PGDIR_BITS)
->  
-> -#define pmd_ERROR(e)							\
-> -	pr_err("%s:%d: bad pmd %p(%016lx) seen at (%pS)\n",		\
-> -	       __FILE__, __LINE__, &(e), pmd_val(e), __builtin_return_address(0))
-> -#define pud_ERROR(e)							\
-> -	pr_err("%s:%d: bad pud %p(%016lx) seen at (%pS)\n",		\
-> -	       __FILE__, __LINE__, &(e), pud_val(e), __builtin_return_address(0))
-> -#define pgd_ERROR(e)							\
-> -	pr_err("%s:%d: bad pgd %p(%016lx) seen at (%pS)\n",		\
-> -	       __FILE__, __LINE__, &(e), pgd_val(e), __builtin_return_address(0))
-> -
->  #endif /* !(__ASSEMBLER__) */
+On 07.10.2026 12:43, Will Deacon wrote:
+> On Wed, Oct 07, 2026 at 11:04:05AM +0100, Catalin Marinas wrote:
+>> On Tue, Oct 06, 2026 at 10:49:17PM +0100, Will Deacon wrote:
+>>> On Thu, Sep 24, 2026 at 11:37:54AM +0530, Aneesh Kumar K.V (Arm) wrote:
+>>>> @@ -496,7 +516,8 @@ swiotlb_select_pool_policy(unsigned int flags)
+>>>>  	if (swiotlb_force_disable)
+>>>>  		return SWIOTLB_POOL_NONE;
+>>>>  
+>>>> -	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
+>>>> +	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT) &&
+>>>> +	    !restricted_dma_pool_present)
+>>>>  		return SWIOTLB_POOL_CC_GUEST;
+>>> I think this check on the restricted DMA pool is too general -- the pool
+>>> could be tied to a specific DMA-capable peripheral and so treating its
+>>> presence as a global property isn't right.
+>> I agree it's a hack but that was the simplest way to avoid the pVMs
+>> getting a bounce buffer after this patch. More than happy to leave it
+>> out and reduce the buffer on cmdline or we come up with some better
+>> heuristics.
+> Hrm, that does mean that reverting just this part will regress pVMs
+> because they'll suddenly be allocating a tonne more memory for an
+> entirely unused swiotlb buffer. So I think I'd prefer to drop the entire
+> series until this has been worked out properly.
+I've dropped the entire series from dma-mapping-for-next. Aneesh, please respin
+it again and move the pKVM/restricted_dma_pool related code into the separate
+patch.
 
-Perhaps a bit of a pity to lose the printing of the address of the pxd
-that a number of architectures did before this series, but i have no
-strong opinion.
-
-Acked-by: Andreas Larsson <andreas@gaisler.com> # sparc
-
-Cheers,
-Andreas
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
 
 
