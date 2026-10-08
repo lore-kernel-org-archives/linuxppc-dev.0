@@ -1,73 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-29071-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29072-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C975CA600D
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2026 19:45:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3024CA6017
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2026 21:08:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j10pq4X44z30Vb;
-	Fri, 09 Oct 2026 06:45:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791488755;
-	cv=none; b=MPhnVHSbz5XsvcBtZsXd+7tz1wH2P6IsBla/02wNnMJqHgvnDkHWxAWCbZxNU15VfoJ4/TWUufpesh67ZYisEvFC6WJ4j7A2vq0jrZluZBfcJuMwwEjAhNTi69sD4SNbKAT8etgsh/uepSQJ/UK7+I/UkQPJNFMjiPeJ3Bmaqo4QoEwsyClR+2jQFaFViOqQ8OoZa7EvjiOU2MyY5zwg1h4vSAKQP5PZafzgXNA8fZ9VqVELw/tY9jGpG48AkzuDcwa24djtnstalZkkShvI8HDhsJUHjBdW6VodAR9pOVaTvh79UL+yQMDe1ICEBO7Y2xUxUB+do3SS/DACgXLdKw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j12fV0R4Xz2yHD;
+	Fri, 09 Oct 2026 08:08:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791493729;
+	cv=none; b=CO0Xa4kpONiIEPCeIodAVtXBGyOfGNbCL5z+5Jtr/SnjrGUxTv23Lbs6NZ5bsg68ef2WP0d3Y5qgatb/bRgIg4h1sHVO3mquNJegf58o2kjE3jW4BPlnA6c29PRT05903sZzBS3pXJd/SKCEkLl0t56gmrxMLvatUEu4wCOEP9UbYXe4BXerBNKKxUDWG5CmeiSVmi4xAHgzpr3xs2aoBKKYc+55ZxAms9BhLwPaO0akScid+VfkPldXi8tlvvdKIVL0+IktZEoYhI/XOV73kM7z2XdxGlbd/mkPgStMHgKDi1mxrp12U3a3uGvzLmhVlY0/6Wo6zL9f2fIMrl0ExA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791488755; c=relaxed/relaxed;
-	bh=/lrjjjlNn91KMBz6pzu9kExNdFo3rxhRlGa78fgGi/A=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=WDN6UjG7mRzc0nZl2Wumsm7PBjhTmq7On6Mqjirk0W19U2XSwbogKUQ41UQLsnrIMKqT0HVBj0R2RQV7P+k2t5ETTB6/i7E4fr4028UHsQvObdJgD9xQvieZuX4DmJHCmpI3ek4EL4Fp2GOGkjF60yuk3StSGBSGgB/ZVa7+yqTPijMjqxDCZ9Ne4iCEYIv4zzk012sYOisZqgzN8zTG/IBqw8fOXrshAS02Wx4DlQraDBEDjY6GuXJV6lvOTimI3ex+KJ0EjwIy4Hr8lNoO8FukVxPrfLtBcNjq/Lzp2OKtkB6XGopBS+DyaxBRp83SCOqJeRF2/wQLPM6YnZsC3g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dHTW14vQ; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1791493729; c=relaxed/relaxed;
+	bh=udzqviPeQAmd4a3ztX+c5gHSOwTCz3cVPXAnwWZa3Vg=;
+	h=Subject:From:To:Cc:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=JOgTXhfAn9DpHPu6Ul16XdxhSPWqjpF+QchcIHioNKFxwCF0g8XbH0A82jEow1BlHdixPq/zDAd68gVdJItrWNc6idpi1lvblDMCTNoxV21KIDzH6Ev22RLxaJtj47wEXV4PLPfJzsIHPb5AAGcoM+agXb4QmxmeGW/lEP+j1kJNPKORNClQwT4ttgWFM0U46DRrKIxUp7PJxpdirBB2R3yYlHSqni450RHHgUkP8Z4UIRUcTVNgvuiMlAX+jyQDt3y7EPlyCRp81F3TrNpuulSgxFi7NhL0TxNUA37NxYMM6ewPvh0cQ2aIxr754XPjCES8jNpP3sWjsZhy9g4rsQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Oi3LJxQX; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dHTW14vQ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Oi3LJxQX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j10pp11d1z2y8r
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Oct 2026 06:45:53 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 698HZPfq2063934;
-	Thu, 8 Oct 2026 19:45:37 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=/lrjjj
-	lNn91KMBz6pzu9kExNdFo3rxhRlGa78fgGi/A=; b=dHTW14vQ/YyDwDg5VZkgfm
-	mGeQOLRRoRoWC5xLUe0IIaPOxnh/g5CrdPR/76fSWAtco4SNa0dAuGT1rCW54Qsq
-	80VWHI4E8hEaXrk72ppkk/MhvTs6WS96DmdcKHBrCAXMuUSyYhSWITgnsqndcbKs
-	jn4dvIhqJ9L1stU9XFfpM0DeZUC1LnvcWuCgB9di88hJN/zP8H59UgcQrKk9r+o+
-	O360JJXIm6+kQfSEC94YokYu0/Jx1XQ7UeK6eAjRbDrlojL7qz6we1bp+b700PZC
-	GfDaxMdLvYpmfoMwJFByr2BnGtFERUn8Uv3EZgsfaHUf6kW5e2IOwgZsof0XZirA
-	==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h5xjvx7at-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 08 Oct 2026 19:45:36 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 698HldAo3802948;
-	Thu, 8 Oct 2026 19:45:35 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h5s34wnkb-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 08 Oct 2026 19:45:35 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 698JjVXm27853230
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 8 Oct 2026 19:45:31 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F1F0720043;
-	Thu,  8 Oct 2026 19:45:30 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C387E20040;
-	Thu,  8 Oct 2026 19:45:27 +0000 (GMT)
-Received: from [9.124.217.41] (unknown [9.124.217.41])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  8 Oct 2026 19:45:27 +0000 (GMT)
-Message-ID: <703a731c-efc3-476f-b9b6-77b4bdcb3b55@linux.ibm.com>
-Date: Fri, 9 Oct 2026 01:15:26 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j12fS06ZSz2y32
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Oct 2026 08:08:47 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 0C77B600CB;
+	Thu,  8 Oct 2026 21:08:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AC2351F000FF;
+	Thu,  8 Oct 2026 21:08:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791493724;
+	bh=udzqviPeQAmd4a3ztX+c5gHSOwTCz3cVPXAnwWZa3Vg=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=Oi3LJxQXCiDGwxIaOEPewZVHnK0sF3DVFnUviceDAtpul8LjQet7WAMFMW8UexlWT
+	 6SELdLLOHw0KoVoC1IdjymseZd/56u8koqFjyAqy9miu1f8IoSJoOfeQw+Cw2juQcy
+	 bnFcR/mW9bhq4ii425JHaWdfKdNPePXd+l4gwxkU6WNtcQ2qxY34tCZ/8iADgBVezf
+	 1TWkl7kgAbFn/7y0T3YyndOBwoYskkhq9iGDNEbHnFKgMBrVAbnlS0NCwm8xkvEK7X
+	 vmz/bHQRcDxq6ZFf+iCf6seUppB+/DASdwEO59fHIKtqcqs1HCNehcjNcShNnpU+oo
+	 iz7olbmjWC/3A==
+Subject: Re: [PATCH net-next v2 4/8] ibmveth: step past bad RX correlators
+ instead of spinning or oopsing
+From: netdev-bot+sashiko@kernel.org
+To: mmc@linux.ibm.com
+Cc: netdev@vger.kernel.org, horms@kernel.org, davemarq@linux.ibm.com,
+ bjking1@linux.ibm.com, nnac123@linux.ibm.com, maddy@linux.ibm.com,
+ mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
+ ritesh.list@gmail.com, sshegde@linux.ibm.com, andrew+netdev@lunn.ch,
+ davem@davemloft.net, edumazet@kernel.org, kuba@kernel.org, pabeni@redhat.com,
+ stephen@networkplumber.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Date: Thu, 08 Oct 2026 21:08:43 +0000
+Message-ID: <179149372321.434549.3176990477501610987@kernel.org>
+In-Reply-To:
+ <26003e69cff6824798d289d67c163f868bfbefc1.1791178212.git.mmc@linux.ibm.com>
+References:
+ <26003e69cff6824798d289d67c163f868bfbefc1.1791178212.git.mmc@linux.ibm.com>
+X-sashiko-severity: High
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,141 +77,135 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4] KVM: PPC: Book3S HV: Avoid spurious interrupts caused
- by LPCR_MER bit
-To: Gautam Menghani <gautam@linux.ibm.com>, maddy@linux.ibm.com,
-        npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org,
-        ritesh.list@gmail.com, sshegde@linux.ibm.com, amachhiw@linux.ibm.com,
-        harshpb@linux.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, stable@vger.kernel.org,
-        Timothy Pearson <tpearson@raptorengineering.com>
-References: <20261005084534.1588611-1-gautam@linux.ibm.com>
-Content-Language: en-US
-From: Narayana Murty N <nnmlinux@linux.ibm.com>
-In-Reply-To: <20261005084534.1588611-1-gautam@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: YxkVyBYcvhWmpOKD6KP6eWYhIe47SGYS
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA4MDA3OCBTYWx0ZWRfX8u3GjcZVhHFQ
- /4QPLrXa6sfLu0jvwt97s86x0e3GGhZf9XVldyYk8YWCXaE6i7OjGaYqMfzkF8aOrJY9HY9feKP
- n+4jZ9VE0mDyiw0/aAY6h8+KnSrUi80rDUxWo+4+Qgcycn2ZUf+Zn29pWzOp4FdCDdVrrytaB7X
- jeUGgctJtuJ9Krq8/JHzxqdnbrqNtaQti5krZTgr1D3G7+reZKVBzDoK5saHVTeGR7dn4T3pUEf
- scotCFRHBZV3ixFEOE6S9r8DAQiHUa8PJb6W3dgj6pPtovJbdCWDXbc35r4ab62qgQvzVlzyTmx
- To1Ae6rWF4dni0cp2Q18M/9iQMB+0Rfg/fO4JQzM0V9esO60+c277dUXIurQgp0YCEFJ35n4exY
- Hj4dpIz6lzObvkZ2QSsNrw+CLWpcjL691t5JJxM9Zp5I/buK1B70OzF+7Y1VRcb5T0kKfrNUt8s
- 5a+f2WbtfL0NPxCjH0Q==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA4MDA3OCBTYWx0ZWRfX3+RnJKsTjs9L
- U289GfKKWa61wIwrZQsaC0q5a4j1a3om3J/qLNoAdGif69OG7XZBeMsAXa2evr80JHkBzkAP6yb
- Ih7vliZK0cHFWPv5hUARn0BqA1daktc=
-X-Proofpoint-GUID: 8E0aK5kgsyfbJ4_x8o7e6AS8MHkS8Q2b
-X-Authority-Analysis: v=2.4 cv=FLCOVOos c=1 sm=1 tr=0 ts=6ac7f2e0 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
- a=yKAn6K1XAAAA:8 a=_AprYWD3AAAA:8 a=VnNF1IyMAAAA:8 a=EThlqOoKbmT7VKALfbcA:9
- a=QEXdDO2ut3YA:10 a=6M1ixcW_PCWoKiWyFx5v:22 a=fKH2wJO7VO9AkD4yHysb:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-10-08_06,2026-10-08_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 impostorscore=0 adultscore=0 priorityscore=1501 suspectscore=0
- clxscore=1015 bulkscore=0 spamscore=0 phishscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610020000 definitions=main-2610080078
 
+Thank you for your contribution! Sashiko AI review found 1 potential
+issue(s) to consider.
 
+Critical: 0 · High: 1 · Medium: 0 (1) · Low: 0
 
-On 05/10/26 2:15 PM, Gautam Menghani wrote:
-> A huge number of spurious interrupts can be seen immediately after a KVM
-> on PowerNV guest boots up in XIVE mode.
-> 
-> $ cat /proc/interrupts  | grep SPU
-> SPU:     223705     192439     273526     147623   Spurious interrupts
-> 
-> This bug was introduced by commit ecd10702baae5 ("KVM: PPC: Book3S HV:
-> Handle pending exceptions on guest entry with MSR_EE"). The root cause
-> is that once LPCR_MER bit is set, it is supposed to be reset by
-> software. But when a vCPU starts running with LPCR_MER set, the vCPU does
-> not exit back to the host until the decrementer expires or there is an
-> hcall, etc. This is because KVM on PowerNV guests have support for
-> native XIVE, so they are not dependent on host for interrupt emulation.
-> Due to this behaviour, a huge number of spurious interrupts are seen
-> since LPCR_MER continues to be set and LPCR_MER cannot be reset until the
-> vCPU exits to the host.
-> 
-> Fix this behaviour by not using the LPCR_MER bit whenever native XIVE is
-> available (currently in case of KVM on PowerNV only), as the XIVE hardware
-> can present interrupts to the KVM guest vCPU directly. So the LPCR_MER
-> functionality is not required. This reduces the number of spurious
-> interrupts drastically.
-> 
-> Fixes: ecd10702baae5 ("KVM: PPC: Book3S HV: Handle pending exceptions on guest entry with MSR_EE")
-> Cc: stable@vger.kernel.org # 6.8+
-> Reported-by: Timothy Pearson <tpearson@raptorengineering.com>
-> Closes: https://lore.kernel.org/linuxppc-dev/582904882.11159.1786719390349.JavaMail.zimbra@raptorengineeringinc.com
-> Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
-> ---
-> v4:
-> 1. If interrupt mode is changed to XICS during guest reboot, MER should
-> be used. (Amit)
-> 
-> v3:
-> 1. Continue the use of LPCR_MER when kernel-irqchip=off (Sashiko)
-> 
-> v2:
-> 1. Handle the case where xive_interrupt_pending() is true and also the
-> external exception bit is set. (Narayana)
-> 
->   arch/powerpc/include/asm/kvm_ppc.h | 7 +++++++
->   arch/powerpc/kvm/book3s_hv.c       | 2 +-
->   2 files changed, 8 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-> index 169ea6a7fbad..9178406dc365 100644
-> --- a/arch/powerpc/include/asm/kvm_ppc.h
-> +++ b/arch/powerpc/include/asm/kvm_ppc.h
-> @@ -747,6 +747,11 @@ static inline int kvmppc_xive_enabled(struct kvm_vcpu *vcpu)
->   	return vcpu->arch.irq_type == KVMPPC_IRQ_XIVE;
->   }
->   
-> +static inline bool kvmppc_xive_native_enabled(struct kvm_vcpu *vcpu)
-> +{
-> +	return kvmppc_xive_enabled(vcpu) && vcpu->kvm->arch.xive_devices.native;
-> +}
-> +
->   extern int kvmppc_xive_native_connect_vcpu(struct kvm_device *dev,
->   					   struct kvm_vcpu *vcpu, u32 cpu);
->   extern void kvmppc_xive_native_cleanup_vcpu(struct kvm_vcpu *vcpu);
-> @@ -782,6 +787,8 @@ static inline bool kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu) { return
->   
->   static inline int kvmppc_xive_enabled(struct kvm_vcpu *vcpu)
->   	{ return 0; }
-> +static inline bool kvmppc_xive_native_enabled(struct kvm_vcpu *vcpu) { return false; }
-> +
->   static inline int kvmppc_xive_native_connect_vcpu(struct kvm_device *dev,
->   			  struct kvm_vcpu *vcpu, u32 cpu) { return -EBUSY; }
->   static inline void kvmppc_xive_native_cleanup_vcpu(struct kvm_vcpu *vcpu) { }
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index dbac3573b2c8..dec89c014c52 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -4980,7 +4980,7 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
->   			if (!kvmhv_on_pseries() && (__kvmppc_get_msr_hv(vcpu) & MSR_EE))
->   				kvmppc_inject_interrupt_hv(vcpu,
->   							   BOOK3S_INTERRUPT_EXTERNAL, 0);
-> -			else
-> +			else if (!kvmppc_xive_native_enabled(vcpu))
->   				lpcr |= LPCR_MER;
->   		} else {
->   			/*
+If you believe none of the issues are legitimate, please reply to each
+issue of Medium severity or higher and explain why the AI is wrong.
+If any of them are legitimate and you plan to respin, please let patchwork
+know by including "pw-bot: cr" as a separate line at the end of your reply
+(one such reply per series is enough).
 
-The v4 change also handles switching back to XICS while the native XIVE 
-device is still present. With that, the interrupt-mode cases look 
-covered to me, feel free to add
-Reviewed-by: Narayana Murty <nnmlinux@linux.ibm.com>
+- [High] net: NAPI list corruption and panic on bad RX correlator
 
+Pre-existing issues:
+- [Medium] Not introduced by this patch, but ibmveth_poll() takes the
+  frame offset (flags & IBMVETH_RXQ_OFF_MASK, up to 0xFFFF) and length…
+
+--
+
+ibmveth: step past bad RX correlators instead of spinning or oopsing
+
+This patch moves RX correlator validation into one helper. The helper also
+rejects pools that have no skbuff array, such as inactive pools. On a bad
+slot, ibmveth_poll() now advances the RX ring, counts the drop in
+rx_dropped and schedules a reset, and it logs with a ratelimited
+netdev_err() instead of WARN_ON(). The patch also adds and extends KUnit
+cases for these paths.
+
+> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+> index d269599f5a990..3bac6cabbbb4c 100644
+> --- a/drivers/net/ethernet/ibm/ibmveth.c
+> +++ b/drivers/net/ethernet/ibm/ibmveth.c
+
+[ ... ]
+
+> @@ -1515,12 +1556,19 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+>  				if (rx_flush)
+>  					ibmveth_flush_buffer(skb->data,
+>  						length + offset);
+> -				if (unlikely(ibmveth_rxq_harvest_buffer(adapter, true)))
+> +				rc = ibmveth_rxq_harvest_buffer(adapter, true);
+> +				if (unlikely(rc)) {
+> +					dev_kfree_skb_any(new_skb);
+> +					netdev->stats.rx_dropped++;
+>  					break;
+> +				}
+>  				skb = new_skb;
+>  			} else {
+> -				if (unlikely(ibmveth_rxq_harvest_buffer(adapter, false)))
+> +				rc = ibmveth_rxq_harvest_buffer(adapter, false);
+> +				if (unlikely(rc)) {
+> +					netdev->stats.rx_dropped++;
+>  					break;
+> +				}
+>  				skb_reserve(skb, offset);
+>  			}
+>  
+
+[Severity: High]
+Now that the ring is advanced before each of these break statements,
+can ibmveth_poll() leave the loop with descriptors still pending and
+go down the completion path before the budget is used up?
+
+After the break, frames_processed is below budget, so poll calls
+napi_complete_done(), re-enables the interrupt with h_vio_signal() and
+then finds ibmveth_rxq_pending_buffer() true for the next slot. It
+calls napi_schedule() and jumps to restart_poll without resetting
+frames_processed.
+
+If the restarted loop then uses the rest of the budget, ibmveth_poll()
+returns budget after it has already rescheduled itself. The NAPI core
+expects a driver that consumes its whole budget to leave the NAPI
+state alone.
+
+In net_rx_action(), __napi_poll() catches this and only prints the
+"Budget exhausted after napi rescheduled" warning. However,
+busy_poll_stop() calls __napi_schedule() whenever poll returns
+budget. Would that put napi->poll_list on the per-CPU poll list a
+second time and corrupt it?
+
+A burst of traffic right behind a single bad correlator would be
+enough to get there.
+
+The !ibmveth_rxq_buffer_valid() recycle path already keeps looping
+after it harvests a slot. Now that the ring is advanced on every
+error, is there still a reason to break here rather than continue
+with the next slot?
+
+The same restart_poll sequence can already return budget today if a
+burst arrives right after the interrupt is re-enabled. Should the
+restart also avoid returning the full budget once napi_schedule()
+has succeeded?
+
+[Severity: Medium]
+This is a pre-existing issue, not one introduced by this patch. The patch
+hardens ibmveth_poll() against bad correlators from PHYP, so should the
+frame offset and length from the same RX descriptor be checked as well?
+
+ibmveth_poll() reads both values straight from the queue entry:
+
+    int length = ibmveth_rxq_frame_length(adapter);
+    int offset = ibmveth_rxq_frame_offset(adapter);
+
+offset is flags_off & IBMVETH_RXQ_OFF_MASK, so it can be up to 0xFFFF.
+length is a full be32. Neither is compared against
+rx_buff_pool[pool].buff_size.
+
+On the rx_copybreak path:
+
+    skb_copy_to_linear_data(new_skb,
+                            skb->data + offset,
+                            length);
+
+Can this read past the end of the RX buffer? If so, nearby heap memory
+would be copied into a packet that is passed up the stack.
+
+On the non-copybreak path:
+
+    skb_reserve(skb, offset);
+    ...
+    skb_put(skb, length);
+
+If offset + length is too large, would this reach skb_over_panic() and
+BUG() in softirq context?
+
+As with the bad correlator case, this can only happen if PHYP reports an
+offset or length larger than the buffer it was given.
+
+-- 
+Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/cover.1791178212.git.mmc%40linux.ibm.com
 
