@@ -1,76 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-29028-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29029-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7CCDBCA600B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2026 10:39:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ABF97CA600B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2026 10:39:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j0mgx6r5pz2yWy;
-	Thu, 08 Oct 2026 21:39:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791455949;
-	cv=none; b=P5YQLOxT88H9IGhJWU8Gl5HBFNI2U2Uhzh0MHwpNxqqReHt37HZI4k1MFRmZZeB1Y2xR3GHLgQQDYR+N/ngdIZB/tGUNv+i6l/71n4HKuckUXoQTIeiOOs4KtiyPjLIsykffR8d8wmij7HZHXoX8A/eVW+Wg3qC9fs3B/ksGTajG1wElg5z1wZYlCfgzIgLy/fEwPL+WzV3hYPQxcMYTjkFPy7//N3NXG/pAfCkj3b4Pm5ln2JxRm6K/bJodXxUzRcLX4u7yCiW0I1eINw2RFo+xJpnFwvGb+q0421Ql6waCX/fkdOR1p9Mq6Jtayco8o0WjYT/6+Fl3YXOt+bmrvQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j0mhD5nzsz2y8r;
+	Thu, 08 Oct 2026 21:39:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791455964;
+	cv=none; b=DiMNJXBHFLEFO1yfvkPnDZXHr76g1M2bMU+qU41vnzAPIJCqCgDL1wk5aLErYDJYOy5Tb+UUg3//LT/8/AYWIWVNG9kNOfc+A2343hgidE6T+Sf/++M0uImZEYjCaF1KvrOpS7bsFNv14bux7FZj/ew0TePisnwv+BGI3jIuCdAGxP/+rk1mrjDoeY8473AF5flrTSjC2Esia5R9MEUk//w9SrmKqtVILyx9ZxBts2BvP4E7PfEbYrWdVAXwNtmSRXzDlO/Pl+URv8oHSh7Hd6I+RZEypgoQ9hGl4wO92pgR+UJh0ZJ7d2v64/H1ijeupvgrfa9DIfuYfXZJWtZVsQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791455949; c=relaxed/relaxed;
-	bh=2hpUwEsGMPkIBbYBiNYjLbx5Pg/A2Eh/bQSXX+ThuQY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=J9lD8IXbI1Ec86tszB9pAKupx80zq9V6xVXGeGZwHirFDB/V6GSHQR/BNfNf95/FvbKWwZQauZFftaMVTX7ddLO3SjkkcabFO4+TXxweLkV7OLFTgc2sE9kgGptPEvS36uhMiJmf8HAQ0U2113ObSNquhiVYTmtLT3HB5449fsknugPv5m8rsq24jgD+rqA5eZIembH1QO5v6L4qgiSGkd7fROiv6P/LuL0q8Ywho3OR7OR0UIBbP+L9PeWYL2VQS3andyf8MD7rFuC+c7PT2v1O083aqVDkmHKX6gR1P3DBJpMhTmRDB4CgNZH38GgO2g0pEFs4j0hGKJgADY7ZCA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=PiVIuJta; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132e; helo=mail-dy1-x132e.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1791455964; c=relaxed/relaxed;
+	bh=eUBcm/HidbDHRMMNHvpjEcX/Cn/b4904BqGN3eWGjuM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Vag9L7UJ/pHXnYLodAOIuXekcPLo66c+bIy8mR6nyzemdHFhJr+gA6M8/DkjKii90+HlULEuokJHMioyuUr8D0qLgeozYl17T/e12NKmNjx13omOLfttuNihPZXLMAEdLbb9PyNMrxUtg+5pZfBIk2zrA5o/qivYXrycxZxVIU8HrOdyRlh+ivAzjlZ1gFyIR/iQqgT102e2jK6gHNQ2QrmfbxrHY0rnzzZZoTZEAAoGlHZT4jhPHSkaMHYSXG6YfkhavqBgLMwBNvzApip7WI0i1uOgYvZLtkTvlD8SLOhybIsGyWdOeEp3Fvd4uu0VXr5TLXv3/AF0qBtB5490QA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=L6U42Ukm; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132a; helo=mail-dy1-x132a.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=PiVIuJta;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=L6U42Ukm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132e; helo=mail-dy1-x132e.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x132e.google.com (mail-dy1-x132e.google.com [IPv6:2607:f8b0:4864:20::132e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132a; helo=mail-dy1-x132a.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x132a.google.com (mail-dy1-x132a.google.com [IPv6:2607:f8b0:4864:20::132a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j0mgw3Nxhz2y8r
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Oct 2026 21:39:08 +1100 (AEDT)
-Received: by mail-dy1-x132e.google.com with SMTP id 5a478bee46e88-33bf40b0c8bso1963408eec.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Oct 2026 03:39:07 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j0mhD0Yd0z2yWy
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Oct 2026 21:39:23 +1100 (AEDT)
+Received: by mail-dy1-x132a.google.com with SMTP id 5a478bee46e88-3516c82e96cso2572626eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Oct 2026 03:39:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791455945; x=1792060745; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=2hpUwEsGMPkIBbYBiNYjLbx5Pg/A2Eh/bQSXX+ThuQY=;
-        b=PiVIuJtaTISVK42fpQa/i22uuycw4G/QnEBix5I+7P+Rm5Io7MAGbUIkibrFSiwIot
-         55UjorSRv5CwXGXiynJjXFDM7bvVmYZ/yCgyX4kDvqamX6BuNzkzGL8lotGtv8m7wUWl
-         BC8PjV3hfn5a6adYbEe+H5/nDMptFs7sfUHzFlmrDlZNq88VFb7NQOihEGmBgydCYhPI
-         NYuhyLEmJA3GPslirUBaNsopI3ugkKzfi0y1wCK7hZ3cG08iLhViLv5U4SIcUDKqnPM6
-         D3oDVEBDTTc0V3kZIqfo3EZtN+DkvnIFayvHwfiRa2EpE7GRXSqzVJ3Ig3FULdP0nNMi
-         88wg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791455945; x=1792060745;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1791455962; x=1792060762; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=2hpUwEsGMPkIBbYBiNYjLbx5Pg/A2Eh/bQSXX+ThuQY=;
-        b=xTC/IAVo9lq0eZZOBm5g3adknkKFLvmPO0yTLMnomZVOuBoTzUIK0sgAYJc38A/1jq
-         TEFfEYRNKUhH+nnd4tScwwgj+0mtrHCHrgWj0ZwqN+6rlMuz6DNUgR51IWnmDD00iSnu
-         NfaBR3ioYPuMD0610C9X7+qYlLGQVw1UVWkJLOg9d/QZaJmPfLDLgBiCh/V2B7xvjgfB
-         aqm7kado+C20BaIL3iLrpOoHNdYo7dV4K8O1CGciXnIknw1w/u1d5HTahoPZbntrkbL/
-         cJ47j9zx0tO75dKWetWy5cqOODmEs/m3Sq8NbLEGulOsvOKLozAFKYKIoUalogieZA6u
-         tITA==
-X-Forwarded-Encrypted: i=1; AKwUvBzLkU8JzqHk5v4Zze++A5qNJvLV4gKskkKLuKeIODK5jt8qclHZQN21ESBNGfTp648LZIL/3dql+fiqFNA=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++lNzluM78U6+1kCMyQ7vsz0GDjvM0LNRzHF57fbhfeFqL7BeETl
-	y+ZR4p6FmeYVNNX5KAscUico9s5gW6o4rjjmH3VpQm6sKJLq5tyH2YWQ
-X-Gm-Gg: AYBFou3tfv9LL2dVzmx5n5Mx+rB9pqB0hlWKHphAFQnMbOXcMlbeejQZWb41VsH2n8p
-	g4NoChhWulPlqrsLwhGOgk0og3OWdIB+OVCxiZEfNAYVGY2tS1z6CuMadTwxzmdffZa+qyeQmZ9
-	Q8ZhVAp0I7zCpl0JD3/M1V8i/WTQQN8oz6pfyPUMcEOD32WZeTCSbWL9uTfK0HE3vRyVA3yoyfK
-	oqNOIJSkEW/vWl4/mwYktrz1AieqbUcWBphlPRYBDywTmPwkKWrpuxZLqSGrCBhhKt1cs4H86eo
-	OWFLydM0AcJ60Tk5cZuGd3QgmT/+By7XJWZ09/TKwIfpno4Hs/7JIexbmpQpON81lR0nRzo6Cqj
-	7KzS4TRFDQfT7V5V3eXFrP0d4FJEILzGrSiU3bPBVbNAHhVIuxgIEkwxj0UYtzZHee2sOGulo9z
-	eN7SEwI/yOmV1ZSnea61jS+mkkAWp4VhO4lxdpVarHOYnoPRNfkkoamfBDx2tjAZdTxlm1b3io3
-	ukSs3PhCcQU1PUqsadoE8tnM9LNscVoAAUItGn3QkinJi1f6vDaJazXZF79kav1NFjTOqChTfSJ
-	f65FZF6XiyAb8Q==
-X-Received: by 2002:a05:693c:8819:10b0:352:2e15:49a9 with SMTP id 5a478bee46e88-3522e154b4amr965099eec.33.1791455944704;
-        Thu, 08 Oct 2026 03:39:04 -0700 (PDT)
+        bh=eUBcm/HidbDHRMMNHvpjEcX/Cn/b4904BqGN3eWGjuM=;
+        b=L6U42UkmDPvW4X2fJKUMuvxuD3QiUJbHHae+80q9e+4WD6/geOHVjGmHPJsA5cJDIj
+         sSKLJbZETJF51s8ACQ3ZC9pOyz3ePdDnMmv5DcYfxmenhcTwA6pj88u9sgBxPyku1hhm
+         WNRCmaj9q7Qloi0OBJY2hvUz4fzKU734VDQi/s2gjZ4Jm5b9D7MMX8gKoYGsm+vuqfY7
+         VY1XM2hBHI5MewsHe1NfIEPAsyX6bp9lNtGP3IBTdqSvXYhI8RpTxN0kODbJ8sE81R0E
+         65BbyKMwFZSkfE7KnPAVIVuTG2IxdHUFEGz1PQPp3Yq+Lc6YXu8jVZ/wBiW5h/6bQDKP
+         RadA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791455962; x=1792060762;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=eUBcm/HidbDHRMMNHvpjEcX/Cn/b4904BqGN3eWGjuM=;
+        b=JWpyj0VEBx56B53Bl5sd87qnJorjl2IkC1QJ5QFZ9lrsRjisRJtCovARBnJsp5tHK/
+         7SLzQ9q3kpExtC0i3xrd/gPg9eVMsHsNUvGGjDqfCYEyAIDszlFrwsmhYwlZDOwRiIGi
+         CIS2mR6/8BbNJLeF3yODlt5/kb2z3Ajji9JKqXnTaqA/s0APobTqPsT8L60hVhfT3FRB
+         heLqs32+5ohFfULMmZIIMpsDhwppMY/M/sXANaydrfcn8Wc7IRSBuqq9G3IQEdRDS0f+
+         J5XIVe7zOUgY8FvzVTRR1AbzADtjzVsdCiIA1p/SL3gXAGe7lKdrfblyPtC0Fj5JGGSe
+         c54Q==
+X-Forwarded-Encrypted: i=1; AKwUvBwYJTJswDNJ35pEOWInPix8Qfv9AXAnC56xOzg/ySCyMjnZUUuUVCp8vRN67Texk8UH/X/+/B7LkUgIbGk=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++lqmPnJY7YpgSsfirm0+elQUzYGQg7eeFzbzHKP8DX82N4nCK28
+	AzOcLIndGZUTjIkSVGDu5gPGw2g2ck6OCJSMHCxrZFVQVmqbjr3AruBe
+X-Gm-Gg: AYBFou1rzCy6xyE2oUwxHHvwQjOWRWKAQfoaHLSCi0wK5iqvAsmdo1DrInYDp/r+ciQ
+	MIThDIvECYnr17fS6lBVEmW67klaWeJkQK65LmM5K8AHBxycFoVGSz/ciqH4LO8zTi1AqxH/gdm
+	qcUUQFhrrIpDvi6nuICWJ+CyYmTy6plKWYG1HqLO1JhnMk6EyQILJ6vVA+MsMDzdp7Kayxt3OIA
+	s0j8cm0Iy6I6ukozs2sO61Ye0t8n3THHBsToaz9U2Wzi/NDf+ehnfelNrgEFX8OpNSGs1AJFTos
+	0fAfOBE9oEnVEaZpLzunqk/pkdMq5PyA8/vwCsG9A6/U5N0PNjDwj0yEZLHTmIKn/EbhN75DjWP
+	JEi7wPdaTU9fQn8wKiiZxyKw6Ed00sWLvNsBNcKXV8J6QRDfVomev1YnbUn4DEAxbNLIFnryIlk
+	m6JFqrb6vJP/jH5fHFN/8vSG7eU4vzvMf2xWDVKEX5k3rsHZi7PBm+HZGzHCWEaiGVUO+/2WieO
+	l22M6YxtDurU4mLLXtp82A2WIuW8bUd8W8eIb5GKSqUS92x0PKlNPEQ6sB+uj588xhQshJ4pO7s
+	BBTq7ZJrKwj5Qw==
+X-Received: by 2002:a05:693c:41d1:20b0:351:b65:63e5 with SMTP id 5a478bee46e88-3515de8cbe2mr5796544eec.41.1791455961706;
+        Thu, 08 Oct 2026 03:39:21 -0700 (PDT)
 Received: from phuc-desktop.. ([183.91.15.56])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3517810b895sm7496369eec.17.2026.10.08.03.38.51
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3517810b895sm7496369eec.17.2026.10.08.03.39.09
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 08 Oct 2026 03:39:03 -0700 (PDT)
+        Thu, 08 Oct 2026 03:39:21 -0700 (PDT)
 From: phucduc.bui@gmail.com
 To: Vijendar Mukunda <Vijendar.Mukunda@amd.com>,
 	Venkata Prasad Potturu <venkataprasad.potturu@amd.com>,
@@ -133,10 +135,12 @@ Cc: Kees Cook <kees@kernel.org>,
 	linux-renesas-soc@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	bui duc phuc <phucduc.bui@gmail.com>
-Subject: [PATCH 00/24] ASoC: Fix constraint return value handling
-Date: Thu,  8 Oct 2026 17:38:07 +0700
-Message-ID: <20261008103831.542533-1-phucduc.bui@gmail.com>
+Subject: [PATCH 01/24] ASoC: amd: acp: Fix .close() being skipped on rollback
+Date: Thu,  8 Oct 2026 17:38:08 +0700
+Message-ID: <20261008103831.542533-2-phucduc.bui@gmail.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20261008103831.542533-1-phucduc.bui@gmail.com>
+References: <20261008103831.542533-1-phucduc.bui@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -154,79 +158,31 @@ Content-Transfer-Encoding: 8bit
 
 From: bui duc phuc <phucduc.bui@gmail.com>
 
-Hi all,
+snd_pcm_hw_constraint_integer() may return 1, which is then returned
+from acp_dma_open(). ASoC only marks the component as opened when
+.open() returns 0, so .close() can be skipped on rollback.
 
-snd_pcm_hw_constraint_minmax() and snd_pcm_hw_constraint_integer()
-may return positive values on success. However, ASoC only marks the
-DAI, link, or component as started or opened when the corresponding
-callback returns 0.
+Return 0 explicitly on success.
 
-This series fixes affected ASoC drivers to return 0 on success and
-properly handle rollback paths.
+Fixes: 623621a9f9e1 ("ASoC: amd: Add common framework to support I2S on ACP SOC")
+Signed-off-by: bui duc phuc <phucduc.bui@gmail.com>
+---
+ sound/soc/amd/acp/acp-platform.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Found by manual code inspection.
-
-Compile-tested only.
-
-Best regards,
-Phuc
-
-bui duc phuc (24):
-  ASoC: amd: acp: Fix .close() being skipped on rollback
-  ASoC: amd: ps: Fix acp63_pdm_dma_close() being skipped on rollback
-  ASoC: amd: ps: Fix acp63_sdw_dma_close() being skipped on rollback
-  ASoC: amd: raven: Fix acp3x_dma_close() being skipped on rollback
-  ASoC: amd: renoir: Fix acp_pdm_dma_close() being skipped on rollback
-  ASoC: amd: vangogh: Fix acp5x_dma_close() being skipped on rollback
-  ASoC: amd: yc: Fix acp6x_pdm_dma_close() being skipped on rollback
-  ASoC: apple: mca: Ensure the DAI is marked as started on success
-  ASoC: atmel: atmel-pcm-pdc: Fix atmel_pcm_close() being skipped on
-    rollback
-  ASoC: codecs: cs42l42: Ensure the DAI is marked as started on success
-  ASoC: codecs: nau8325: Ensure the DAI is marked as started on success
-  ASoC: codecs: nau8540: Ensure the DAI is marked as started on success
-  ASoC: codecs: nau8821: Ensure the DAI is marked as started on success
-  ASoC: codecs: nau8824: Ensure the DAI is marked as started on success
-  ASoC: codecs: nau8825: Ensure the DAI is marked as started on success
-  ASoC: codecs: wm8580: Ensure the DAI is marked as started on success
-  ASoC: codecs: wm8782: Ensure the DAI is marked as started on success
-  ASoC: imx-pcm-rpmsg: Fix imx_rpmsg_pcm_close() being skipped on
-    rollback
-  ASoC: intel: atom: Fix .shutdown() being skipped on rollback
-  ASoC: renesas: fsi: Ensure the component is marked as opened on
-    success
-  ASoC: renesas: msiof: Fix msiof_close() being skipped on rollback
-  ASoC: renesas: rz-ssi: Ensure the component is marked as opened on
-    success
-  ASoC: rockchip: rk3399_gru_sound: Mark the link as started on success
-  ASoC: rockchip: rockchip_max98090: Mark the link as started on success
-
- sound/soc/amd/acp/acp-platform.c             |  2 +-
- sound/soc/amd/ps/ps-pdm-dma.c                |  2 +-
- sound/soc/amd/ps/ps-sdw-dma.c                |  2 +-
- sound/soc/amd/raven/acp3x-pcm-dma.c          |  2 +-
- sound/soc/amd/renoir/acp3x-pdm-dma.c         |  2 +-
- sound/soc/amd/vangogh/acp5x-pcm-dma.c        |  2 +-
- sound/soc/amd/yc/acp6x-pdm-dma.c             |  2 +-
- sound/soc/apple/mca.c                        | 11 ++++++++---
- sound/soc/atmel/atmel-pcm-pdc.c              |  2 ++
- sound/soc/codecs/cs42l42.c                   | 11 ++++++++---
- sound/soc/codecs/nau8325.c                   | 11 ++++++++---
- sound/soc/codecs/nau8540.c                   | 11 ++++++++---
- sound/soc/codecs/nau8821.c                   | 11 ++++++++---
- sound/soc/codecs/nau8824.c                   | 11 ++++++++---
- sound/soc/codecs/nau8825.c                   | 11 ++++++++---
- sound/soc/codecs/wm8580.c                    | 10 ++++++++--
- sound/soc/codecs/wm8782.c                    |  7 ++++++-
- sound/soc/fsl/imx-pcm-rpmsg.c                |  2 +-
- sound/soc/intel/atom/sst-mfld-platform-pcm.c |  2 +-
- sound/soc/renesas/fsi.c                      |  6 ++++--
- sound/soc/renesas/rcar/msiof.c               |  6 ++++--
- sound/soc/renesas/rz-ssi.c                   | 18 +++++++++++++++---
- sound/soc/rockchip/rk3399_gru_sound.c        |  9 +++++++--
- sound/soc/rockchip/rockchip_max98090.c       | 10 ++++++++--
- 24 files changed, 119 insertions(+), 44 deletions(-)
-
+diff --git a/sound/soc/amd/acp/acp-platform.c b/sound/soc/amd/acp/acp-platform.c
+index 6b1e18b31c1c..ba6dfe8fb6b7 100644
+--- a/sound/soc/amd/acp/acp-platform.c
++++ b/sound/soc/amd/acp/acp-platform.c
+@@ -248,7 +248,7 @@ static int acp_dma_open(struct snd_soc_component *component, struct snd_pcm_subs
+ 	list_add_tail(&stream->list, &chip->stream_list);
+ 	spin_unlock_irq(&chip->acp_lock);
+ 
+-	return ret;
++	return 0;
+ }
+ 
+ static int acp_dma_hw_params(struct snd_soc_component *component,
 -- 
 2.43.0
 
