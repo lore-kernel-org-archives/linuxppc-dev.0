@@ -1,78 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-29023-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29024-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0031CA600B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2026 06:42:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D09ACA600A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2026 07:45:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j0gRG1gsYz2yYK;
-	Thu, 08 Oct 2026 17:42:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791441770;
-	cv=none; b=OKD8xupMUKonVmOicc+/f7DTy7YjJmC6vTMQ6VZrdti4aeUyS+gR/hf5D0nwGbsataHs5o5TmJo00ywa4dz8m2hYDmEtHS+YRwUYa4JcTdjpU3Ogob5t/OkHWi+zmHGAIsugBRiYPagaFQ4SJtsYDqPO6bwjp8BOaLmDm8Hjn9DuXNtZ0oMuVqRE61zbt9hlb/2MGOg1ppt+nn+Q6lKxbDjNZ4JUnSwcH5sHt5UdVLLKgd/y4tyBk0j1x5W5J/AtyFA88OGRCv0aWh2xk+sBdpeFaoY7Owm3MLHTjjtFd0wsqygHdhJ8moDFwp/wSntfMmE25E2iTxvHbqW2l8SXLQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j0hqy13cFz30TY;
+	Thu, 08 Oct 2026 18:45:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791445550;
+	cv=none; b=KJevga22wpsmwEVMXihSJzaSshzTL5IQH+QPeEyC7djBpUEfL7wUNOJptsF0gnTo3vFwLnZteztOVOAdhrB3YFBhAxbItTmI/hSxgh+/gs29+w1chlNZapkVqBTkVRrK3ij25mdbOnldO/AsXINzbLjs6IEUMxNuA6aUgBPa23w+23J00ydzrgjuHAQNa0/JXcLJt42+gQCNTJvP44WJLDKBouz51ux2/FwpyGROX56jd6TbEVdAHG3U3xi0n18UMpTZ91DmJGtXxbmQ3xi/CB3QB91zUkmJzdPZRLhrpptrKr67Nw9ptZGT+a2etbjdbdFd3DooCGZFJ/5f1QdatA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791441770; c=relaxed/relaxed;
-	bh=QYjlbETRxQW9RMjfplUAnmTLI8vDWVyFt6dBT1ysNAc=;
+	t=1791445550; c=relaxed/relaxed;
+	bh=Y82KYwy06rNpAA7M8MsmLg3p1srKgmRdrrUbRlrqajQ=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=fKfrT3T2qiq+umNp7u70+LwqoDhH7LoyD7u0fnceugjy5ARoxz41XUAmkzQUjkCIyWUA551l8GntlcWsvPzNS3nL8+WTD4oNt/4hiPQmRP0XAZ9qj1jFlDtOFBBbzjPnKOvu6soisBMazft9rLjIRHLWMYwdn9UoGepwuDGJx2OeHxTcNE+fkN01mLzLitN4z9cK4bq3uG6obn0QT2BEWzHrIK+eORMI0jQ9Ep/XaZRd5LhQJiC2fH0Xqnalu5UfS8nM9Fqcx0ZIv3hwIDAFh+ysTNdtqazzIOfLF/7b6knLa4UjXOAC1JdZci/ArKdj+fdWNijPd0UIfs1e07TvIg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LzwrJChR; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=jwPvHiRFx6Jx6xAVzKJH/hdV0u6pzKOYZ0Gen0SetMJvPVqwOpMTTc4SP1gVi9ZyBuRraog9lP4Kl25HIzFFQqCu46HE4BylS6ZyNPonC2+X22zwqdOV970YANTBC2GpfkbmNBcv8eep/W1BHGA3QXWILVbjFnK/pRoeWksFZpq2MoKifKoPOPBdHmu0Zqmbah6SR3cxB8r9JE0b6Mz3aQm4fZ7FjfwqIw75gALBzdw8Y/v9ypqcm5zfCnD/H2xvO6gL+PxcmEyuhcuM0kfknPUttSV+zAuv52D0H5sVQACQcDWgEg0qir5LBe2IwpGe6qz0N9jg4qIccuiva88UqQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=efbSkEJ2; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LzwrJChR;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=efbSkEJ2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j0gRD4T1kz2xdX
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Oct 2026 17:42:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j0hqw2GjGz30DK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Oct 2026 18:45:48 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 7EB1D41836;
-	Thu,  8 Oct 2026 06:42:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF9461F000FF;
-	Thu,  8 Oct 2026 06:42:28 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id BD6B960252;
+	Thu,  8 Oct 2026 07:45:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 80CE81F00893;
+	Thu,  8 Oct 2026 07:45:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791441765;
-	bh=QYjlbETRxQW9RMjfplUAnmTLI8vDWVyFt6dBT1ysNAc=;
+	s=k20260515; t=1791445544;
+	bh=Y82KYwy06rNpAA7M8MsmLg3p1srKgmRdrrUbRlrqajQ=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=LzwrJChRSmVjEsRakCz7KZMyALTXRiMMTQqt+Pq1DfhvTRhANdPa2qsjY85CoeKmU
-	 +smyn7Lotjz8Z+6My1XtXdRcAWv0Bk3+so9601+yHD0hXOPoxrMliq4uNlyMYvPyEN
-	 /KxKGNEGsRLbC5gh5Fpx/irufkYMSkObZy2nAEfpl7+01CgTBFC4KUpi+Rt44aL8Zf
-	 NTIbo4/T2UBb6sZftaMcHpGWW78wNUfUZX3n+aegjkdkvaCrfhtnmdLmCzyRFXWi5O
-	 KzhbRY6JsNtjGiT0SU3GKlmfmu9GhVSnGRLyWq6PEohhumSDv1uECF+lTxE7sLA503
-	 DyPwUh9lm6nsw==
-Date: Thu, 8 Oct 2026 08:42:25 +0200
+	b=efbSkEJ2rpc8pzH1kPR2J923tKrUfBE7MQ7w+c75c9zz7kP1udsRu2q9egp9bcVVb
+	 yex1rX8rZYHKwIlwUyH2D2Nfd7iXsk6ngLByQ5EeiA/VKWQkHNdXr8/pXHIKH0dF7e
+	 emoGLzk9iEzmtV9p95S1RT0gfKJWTc7J3Dgx36p8pUvMlNWbOldrTtDeHL3Yv4cV6X
+	 AAFv3A5HqO2wgDoihb0FNE4EngPcehF9Tar+Xv/l2XFB9bLf8yaK76ERBqLZmgDALH
+	 jop9A4VdvQ42FDAVIQQXT2hSlZQaTyJEtnunTHbyiGbEObu/a3PDj2b/kuWjWl/j+Z
+	 c1Oo6pn9hqBsw==
+Date: Thu, 8 Oct 2026 09:45:35 +0200
 From: Mike Rapoport <rppt@kernel.org>
-To: Jinjie Ruan <ruanjinjie@huawei.com>
-Cc: catalin.marinas@arm.com, will@kernel.org, mark.rutland@arm.com,
-	chenhuacai@kernel.org, kernel@xen0n.name, maddy@linux.ibm.com,
-	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
-	ritesh.list@gmail.com, sshegde@linux.ibm.com, tglx@kernel.org,
-	mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com,
-	hpa@zytor.com, gregkh@linuxfoundation.org, rafael@kernel.org,
-	dakr@kernel.org, akpm@linux-foundation.org, baoquan.he@linux.dev,
-	pasha.tatashin@soleen.com, pratyush@kernel.org,
-	ruirui.yang@linux.dev, leitao@debian.org, yeoreum.yun@arm.com,
-	sourabhjain@linux.ibm.com, robh@kernel.org, coxu@redhat.com,
-	kees@kernel.org, tangyouling@kylinos.cn, liukexin@kylinos.cn,
-	zhangtianyang@loongson.cn, guodongtai@kylinos.cn,
-	maqianga@uniontech.com, chao.gao@intel.com, kai.huang@intel.com,
-	vishal.l.verma@intel.com, seanjc@google.com, piliu@redhat.com,
-	thuth@redhat.com, jbouron@amazon.com, me@linux.beauty,
-	mclapinski@google.com, graf@amazon.com, bgwin@google.com,
-	hbathini@linux.ibm.com, eric.devolder@oracle.com,
-	takahiro.akashi@linaro.org, james.morse@arm.com,
-	palmer@rivosinc.com, x86@kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
-	driver-core@lists.linux.dev, kexec@lists.infradead.org
-Subject: Re: [PATCH v6 00/14] crash: Fix several bugs
-Message-ID: <asc7UdlRsy7502j8@kernel.org>
-References: <20260921090450.807575-1-ruanjinjie@huawei.com>
- <f4ba3a6b-537d-4328-b0c1-c0e5aa61924f@huawei.com>
+To: Muchun Song <muchun.song@linux.dev>
+Cc: Muchun Song <songmuchun@bytedance.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Hildenbrand <david@kernel.org>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Ritesh Harjani <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Lorenzo Stoakes <ljs@kernel.org>,
+	"Liam R . Howlett" <liam@infradead.org>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>, Qi Zheng <qi.zheng@linux.dev>,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org
+Subject: Re: [PATCH v3 6/6] mm/mm_init: add zone mismatch warning during page
+ init
+Message-ID: <asdKHy_xHHa0wJ65@kernel.org>
+References: <20260929053231.66085-1-songmuchun@bytedance.com>
+ <20260929053231.66085-7-songmuchun@bytedance.com>
+ <ar5xbQsUpSQZg0wO@kernel.org>
+ <78D5D6AA-BE36-432C-B0F7-453F93DF18C0@linux.dev>
+ <ar9p39Y9SmlxvbA_@kernel.org>
+ <85941AA4-7E50-4AAE-BC05-0F443B21BE8B@linux.dev>
+ <ar_0GLYM6KsIH6tQ@kernel.org>
+ <D91CEA1E-6B79-434D-AF49-16C62C0FD095@linux.dev>
+ <asTS6OtxPMVshuIO@kernel.org>
+ <CF8ED1DC-9745-42D3-92F0-424A02385EC1@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,50 +92,101 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <f4ba3a6b-537d-4328-b0c1-c0e5aa61924f@huawei.com>
+In-Reply-To: <CF8ED1DC-9745-42D3-92F0-424A02385EC1@linux.dev>
 
-Hi Jinjie,
-
-On Thu, Oct 08, 2026 at 09:57:30AM +0800, Jinjie Ruan wrote:
-> 
-> 在 2026/9/21 17:04, Jinjie Ruan 写道:
-> > As Baoquan and Catalin suggested, this patch set fixes
-> > several pre-existing code issues found by Sashiko AI [1][2][3].
+On Tue, Oct 06, 2026 at 03:32:43PM +0200, Muchun Song wrote:
+> > On Oct 6, 2026, at 12:52, Mike Rapoport <rppt@kernel.org> wrote:
 > > 
-> > The major improvements and fixes included in this series are:
-> > - Fix several memory leaks for arm64, and similar issues on LoongArch.
-> > - Fix out-of-bounds write on 32-bit Highmem for x86.
-> > - Fix TOCTOU race in crash memory range collection.
+> > On Mon, Oct 05, 2026 at 06:27:52PM +0200, Muchun Song wrote:
+> >>> On Oct 2, 2026, at 20:12, Mike Rapoport <rppt@kernel.org> wrote:
+> >>> 
+> >>> On Fri, Oct 02, 2026 at 05:56:40PM +0800, Muchun Song wrote:
+> >>>>> On Oct 2, 2026, at 16:22, Mike Rapoport <rppt@kernel.org> wrote:
+> >>>> 
+> >>>>>>>> diff --git a/mm/mm_init.c b/mm/mm_init.c
+> >>>>>>>> index 1650d6bc1211..bd02e8d06965 100644
+> >>>>>>>> --- a/mm/mm_init.c
+> >>>>>>>> +++ b/mm/mm_init.c
+> >>>>>>>> @@ -609,6 +609,9 @@ void __meminit __init_single_page(struct page *page, unsigned long pfn,
+> >>>>>>>> if (!is_highmem_idx(zone))
+> >>>>>>>> set_page_address(page, __va(pfn << PAGE_SHIFT));
+> >>>>>>>> #endif
+> >>>>>>>> + VM_WARN_ON_ONCE(vmemmap_optimizable_order(pfn_to_section_compound_order(pfn)) &&
+> >>>>>>>> + page_zone_id(page + VMEMMAP_OPTIMIZATION_NR_STRUCT_PAGES) !=
+> >>>>>>>> + page_zone_id(page));
+> >>>>>>> 
+> >>>>>>> Hmm, page + VMEMMAP_OPTIMIZATION_NR_STRUCT_PAGES is initialized a tad later
+> >>>>>>> than page so it'll have stale data in the page->flags, won't it?
+> >>>>>> 
+> >>>>>> Lance is right. The shared tail struct pages are already initialized by
+> >>>>>> vmemmap_shared_tail_page() during vmemmap population, so they're not stale.
+> >>>>>> The head 64 struct pages are initialized later — right here, after vmemmap
+> >>>>>> population.
+> >>>>> 
+> >>>>> Still it looks out of place here, can this check be done in sparse-vmemmap
+> >>>>> somehow?
+> >>>> 
+> >>>> The struct page entries of a vmemmap-optimizable compound page
+> >>>> are currently initialized in two stages. During vmemmap
+> >>>> population, the shared tail entries are initialized first. The
+> >>>> retained head area—normally 64—is initialized later through
+> >>>> __init_single_page().
+> >>>> 
+> >>>> This warning connects the two stages: while initializing the
+> >>>> retained entries in the second stage, it verifies that their zone
+> >>>> information is consistent with the shared entries initialized in
+> >>>> the first stage. Therefore, the same check cannot be performed
+> >>>> during vmemmap population.
+> >>>> 
+> >>>> I am planning to first unify the HugeTLB and Device DAX
+> >>>> compound-page initialization through a common helper [1]. Once that
+> >>>> work is complete, maybe it will be easy to move the initialization
+> >>>> of the retained head area into vmemmap population. With both the
+> >>>> retained and shared entries initialized in the same stage, there
+> >>>> will be no cross-stage inconsistency to check, and this warning
+> >>>> can be removed.
+> >>>> 
+> >>>> Would keeping the check here for now and removing it as part of
+> >>>> that follow-up sound reasonable to you?
+> >>> 
+> >>> While it feels really out of place in __init_single_page(), but having it
+> >>> memmap_init_range() close to the if that skips shared tail pages makes
+> >>> sense.
+> >>> 
+> >>> What do you say?
+> >> 
+> >> Sorry for the late reply because of traveling to LPC.
+> >> 
+> >> Putting the check in memmap_init_range() would validate the
+> >> invariant for the shared-tail range skipped there. It would
+> >> not, however, cover all vmemmap-optimized initialization
+> >> paths: optimized Device DAX bypasses memmap_init_range()
+> >> when there is no altmap, and deferred boot-time HugeTLB
+> >> initialization may also initialize retained entries
+> >> elsewhere.
+> >> 
+> >> If the intention is to validate only the skip in
+> >> memmap_init_range(), moving it there makes sense. If we want
+> >> the warning to cover both HugeTLB and Device DAX generally,
+> >> it still needs to remain in __init_single_page() or be
+> >> called from the individual initialization paths.
+> > 
+> > Yeah, putting this into all the callers sucks too :(
+> > 
+> > With all the callers,__init_single_page() is the right place for this
+> > check, but I think we can add a static inline in sparse.h, like e.g.
+> > 
+> > vmemmap_optimization_verify_zone(page, pfn)
+> > 
+> > to make it a bit nicer.
 > 
-> Hi all,
+> Yeah, factoring this into a helper makes sense.
 > 
-> Gentle ping.
-> 
-> Could anyone take a look or let me know if there's anything
-> else needed? I can rebase/resend if required.
+> Since it currently has only one caller, how about keeping it as a local
+> static inline in mm_init.c instead of putting it in sparse.h?
 
-Sorry for the delay, I was travelling for the past few weeks.
-I'm planning to review this next week. 
-
-And we do need acks from arch maintainers for most of the patches in this
-series.
-
-> > Jinjie Ruan (14):
-> >   kexec: Fix CMA segment address translation with non-zero text_offset
-> >   kexec: Record allocated CMA pages to fix release size mismatch
-> >   kexec: Extract kexec_free_segment_cma() from kimage_free_cma()
-> >   arm64: kexec_file: Fix CMA page leaks in segment placement retry loops
-> >   arm64: kexec_file: Fix elf_headers memory leak in retry loop
-> >   LoongArch: kexec_file: Fix CMA page leaks in segment placement retry
-> >     loops
-> >   LoongArch: kexec_file: Fix elf_headers memory leak in retry loop
-> >   LoongArch: kexec_file: Fix a modified_cmdline leak
-> >   x86/crash: Fix massive out-of-bounds write on 32-bit Highmem
-> >   crash: Extract crash_get_memory_ranges() helper
-> >   crash: Factor out crash_find_elfcorehdr() helper
-> >   crash: Normalize the kexec_load elfcorehdr at load time
-> >   driver core: Add device_hotplug_lock_assert_held() helper
-> >   crash: Fix TOCTOU race in crash memory range collection
+Presuming we don't expect new callers any time soon let's put it just above
+__init_single_page().
 
 -- 
 Sincerely yours,
