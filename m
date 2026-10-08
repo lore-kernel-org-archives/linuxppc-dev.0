@@ -1,95 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-29069-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29070-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DECB7CA600C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2026 19:29:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B58CCA600C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2026 19:34:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j10SH4Rnxz30Vb;
-	Fri, 09 Oct 2026 06:29:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::230" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791487791;
-	cv=pass; b=OzZaDSLC64xEt6Hxm6qdnIZT+Ctsd3FBPUcoRcFxYfYgM3l2ybI/b5YLkSXdpFoTtxLviLOODgt4uemMu6WByaLS0CS+fDkRVOtS9Dq2pNmmL56eitUqTFRY2iyAOXXojuniyVs6wpEsNs6VfK8GgEluwLFmoaoAY4aAY4YkTjMktROq2LWBDfBPUL8HzFpMYyA3CWnKekVrbkM66cdYI1o2YT5XvHESheoW+Ya8eOXpGU62j7M420MhQTNIGYa6PJW370qYZScGs5TZjR6p2dEUzd/NXP9mmuo0GYGYD40/w442uirKhMLvF1Zm8LDX3K2E4N5o6Mxk2uESPEJRIw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791487791; c=relaxed/relaxed;
-	bh=bH3Ys777xJyJceuaHq+fKZvqaHs2+JI/CEfT6ut+TY0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=a6Js+2AT6YDb1krBJ6MHaY622EU55gq8nPClBgH8h1A6UTYy3nfWc2v3LCc7Eyxx9jERdyNoPv95sjcswWq//fMLrqsTyQQgA4iZXsJNz/tdobyag0xelRnhj7zEzM9v5XRGS49frSSHCHkYVm8grpsNsXsjZmaCwT9l+l7FG1eKV/72H9ah3S042diK+3kZF8M85dv2mTVr2eNUYIYDE7wVsyiPPc2wGjXcJ6IVkpa+PQRKEgWTnSR/TcOMjfLU6sN6BDYDgR+B2gFL5xX8FFOBmEDtNlTuo+y+SguDygxuwSCtLeVfgv/WcRlEAtoDLIprMQKmJZOGHyZVV8budQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=jnm7YV9a; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::230; helo=mail-lj1-x230.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j10Y557RBz30WQ;
+	Fri, 09 Oct 2026 06:34:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791488041;
+	cv=none; b=YoLo1gN6IWtnH8Gt8Rs+vx7jYv9e5p5JG/8KFZ9SzjzJt1aBmEM+6nNXKO4R6Tv26LQGaBrbQSP6IkiZIjtskHFQRSZsD0Yq/fWOuGk8+z/tO4cUa8OhkNhuvTw1XM3DFJEmH/BNUYGSACaB4FX3ZqaLHseaF/nR1pluIx+R8us8WFIScXwu5j1OTtBbPZcXAyV81VkCNcvOD6bSsA8I3RaQ5AllFgCDZ0kZBZSkHMj80d4eLgGjfn5jyCGZOLEayoUh79qk8B5PODKUPZQAKf+3aG+a2WlaltzC+ZtsHgqomc30PmiuNaSm+rhgK9GXg+LgKszBGud3cNQ4nbYoqQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1791488041; c=relaxed/relaxed;
+	bh=IJJ5yNSuhj+U00DAS2C+gX8mlhxc2VewJrIizDNf7kA=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=AEg5WgWNr2EZUKxq4QhAdPZFIELgLc+sFrj9Vm6+oirDbTNgriTaI+Zd4brXokUDttTOCZ3VrsvHVtT6VielMdjsd79uEVk7lpG9r/25vXeWLaO2MYGWJsWuihsPnnYdLlqrxU6MpqWoe7FR2aj2rF1C8VI8hEY1MPjaWmowdKmqOHYrrX2VvIdA6WL/ZUMe/vSOPZjD30E4gEYUH9I5NaMXnVYAiBR7rixiw93Fw6a7tLj0NLiZd54YbNr4zvCjp+V36uulgusxQPAA2uWzR8+dbGIqGp39bCuhpOVr5FkoJrmMyLrhUJg/L7KwndlCzQMX46QEX0gv7n6Feod6QQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ERZwJz7N; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=jnm7YV9a;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ERZwJz7N;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::230; helo=mail-lj1-x230.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-lj1-x230.google.com (mail-lj1-x230.google.com [IPv6:2a00:1450:4864:20::230])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j10SG2PQFz2xyk
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Oct 2026 06:29:49 +1100 (AEDT)
-Received: by mail-lj1-x230.google.com with SMTP id 38308e7fff4ca-3a65ed9c7cfso25808301fa.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Oct 2026 12:29:49 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791487781; cv=none;
-        d=google.com; s=arc-20260327;
-        b=GrcDw8bM+rQVbx5ly8e4c7H9iXjPMusJ0SlSpThBEe5gmF4wq41bXXNsUdyyZQo43b
-         WuN7bpYTbv3DaCVVwCcMXDjyaq85Diy1hXRhM5b846bgpFfKHtU/+jvXnfaRwwmhMgQB
-         97iOLI/cPdROnl+LmxsGStv6/7w1pouMwrUdJ+AQqHaftMR8gM5WuabOTUVQu0men0Ix
-         Zzb1p2jtDX2zr/UV7KO1RcC2sPJiIYLUVlUKVt8cUsCxpdiilUcU2BIAYywywTn7bzsh
-         qXfqCIZUOvdk6iSZQmHSo4kWXtFcHL3POy/bRdQImJmOU9VASWSzgKSpARFc6zhiHz4a
-         leVA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=bH3Ys777xJyJceuaHq+fKZvqaHs2+JI/CEfT6ut+TY0=;
-        fh=qJ/zPTuh4olSn7HizzoAd1BGFIWzxMma5uIIeoeSMcw=;
-        b=SvGdrjA2vroIVbnH0kF2OaGfNZ911rKvW4oNO11BQGbPsDRgf5dC+vwicxLJmgyJiT
-         KU6FOyyakhjaG09TapKK+F6ViomXhIQWMTPKM/L32nvHRusmyt8naVHibVaIBsxXzEjj
-         FCKQIP1r1xcvxs0mCFK4b2cD6XbYyJQ10JJe2gKvVJakDlx1U+KQj283LBEgMWVuQPKn
-         WU8chvcIm0heh4ikMBDJOIi0NT7scsogen0hs7vH/hzopkyy19UY+qWolVnp0t2MxbBb
-         lu5IEXmKTWk76v9SQ62cGEhaYD3YFbiipqZvG/+IWdjhsg9X2gMbKYm9gfXdQH+ViE1K
-         Ecjw==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791487781; x=1792092581; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=bH3Ys777xJyJceuaHq+fKZvqaHs2+JI/CEfT6ut+TY0=;
-        b=jnm7YV9aZ5PvlV/qtK4revQPgSMs/+Ev8tJDd2ttQuIilO7LL1QSiVbCjX9bc7OUsG
-         2NrtKkT5dDTU8iYZQrW5Gzz47rN9c/YlWVAmzlZpu+wcqSxDecpY9Av5GqjeivSf2CKo
-         lGetewYtnOAMcr2cHi7XLGOCYfWFRcBMgqbb2WzBiiZo9GoOUmeb+u9AgoZUnzwx0R+b
-         FgaWynE2/Gz9oplHJHN/iT8oHAcdMcHuEn7p8l85wuji8RmqhK6aoHGUJk/hQI4Fbp91
-         zPwPSQy3m1YFfyCY+mJg6WNi8isRp+d7cbmUZmxtoWKP8e5eWKeA/XDSoCDUgQjwQazg
-         Yo0Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791487781; x=1792092581;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=bH3Ys777xJyJceuaHq+fKZvqaHs2+JI/CEfT6ut+TY0=;
-        b=GqsofF5dSccHrdODmi4B53avQgLAXTLiWHMrIbU394mDX5gc+4qrUV9qpnuEeVgYxX
-         +MjpU8pu/7mw9qoUakSfUD19uM9qA8+Mh3ek56kMDYG3aD2BBhPrQJaUL/Z/mkeqY0R2
-         uIqQ5keVWBQnUaQ+PmB5k2lcQ/NhJVt417i0lWtlbJC19Xp+J9hrpTmqdJAp1vy5UxYH
-         AIcgZnZCBHRWbSCwPuIeMC73kA3vpqlSBFwIIKdMxmhKlp50Ux8e5mk8YbLP082AzefS
-         QJlub7inEatrx264+8DHRvG4RXLtw/ZmcAHhUyowvvJnDnlNNEYY2C/S1kY78gCKA1JY
-         zKcQ==
-X-Forwarded-Encrypted: i=1; AKwUvBwbJfr4LGukQkZZwam19LZRHdwALlPmLA9ojrygHQDoLulDSsUXGuRAw+6Wb/duRiTlhHl9RxnpNWV5op4=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYK/MVNNLyDppVfiTZSBvf35ebqn8l0Hz2AYjiOTrqvJ9u7bSuoo
-	bh12sobTjBd/GVZozCFy9bW263GtJl413ccntR2DALRQp0IonWpbx/LbPogMCTz8cQnNQ6i/4cO
-	8XzyTeD+Ze86QdQj7ZEdPtYSyv+vETOE=
-X-Gm-Gg: AYBFou0v9JVTMsDbvBJf1jlFSu1giRDjiV5HoUoFpN7RoBFiNZhxa/sJCEJ5qyj44HL
-	FlQ24xSnXyUIhix9kFFLS4HR8i4N+MbjgX/hJoHKZ9XPb9IbeHMkdfAP1OuXcw+qwAAs9CP5yxt
-	cBsIbyqX96MWjXn+FoxkhJrjUlfDswbytIzNR4bssT+WOjM2v+6TWt1GUWteJrqyoCM5Eq6vxsI
-	d8/CbZNiuTwXyFg++FL1s8LfMD2RsqswJyeoMcXpXhOAaDhkGGitv4nhoCDgLlyyrKMYc7u/Udd
-	Kicc8v6Jx6nJ6ET2fHzofA5o2z/i7XIghztLH87vvXCN/ezIJqc/TPZEKiZRN3e6vlHKcmHc17N
-	IJkcdIz+/KmGT3Q==
-X-Received: by 2002:a05:651c:15c4:20b0:3a6:58fb:8540 with SMTP id
- 38308e7fff4ca-3a9c2a6f0d9mr491601fa.19.1791487780457; Thu, 08 Oct 2026
- 12:29:40 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j10Y50K6pz30Vb
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Oct 2026 06:34:00 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 6240941827;
+	Thu,  8 Oct 2026 19:33:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 147A81F00893;
+	Thu,  8 Oct 2026 19:33:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791488038;
+	bh=IJJ5yNSuhj+U00DAS2C+gX8mlhxc2VewJrIizDNf7kA=;
+	h=Date:From:To:Cc:Subject:In-Reply-To;
+	b=ERZwJz7N+wX+TSPIf81a+BxDW1Dxx9hAtAu5MOJanUYuVnpOb6vidAmt2wvz365Zl
+	 C784VjqrHPX4XdPzEWo9ccbMmlZK8gnp1oKGEYqM37qw1jow+UVdIgBKyPbCZe+01m
+	 CGLuEqD25+SlNvnkAlreiu1grazNfH/DEXsfm2guZSDUjiH2VYlcU9UUYriBWxYDMf
+	 9v5biTK+W/Gtc5ynAUk3sLfeqty5EEpK59LReGV4u9uNlGd7O68m1WyzyeI7yTfwVw
+	 r23cgM7Dd+3vAYmV2tD4CBua+xcomr1P3prDxmHhnw2hDkFX9aLVIPN//yGgYXcrtR
+	 dSO/H1gH9VrsQ==
+Date: Thu, 8 Oct 2026 14:33:56 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Alex Deucher <alexdeucher@gmail.com>
+Cc: Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org,
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Oliver OHalloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+	Christian Koenig <christian.koenig@amd.com>,
+	Vitaly Prosyak <vitaly.prosyak@amd.com>,
+	amd-gfx@lists.freedesktop.org, Aditya Garg <aditya.garg@linux.dev>,
+	Jason Perlow <jperlow@gmail.com>,
+	Thorsten Leemhuis <regressions@leemhuis.info>
+Subject: Re: [PATCH for-linus] PCI/AER: Skip error recovery on false alarms
+Message-ID: <20261008193356.GA920772@bhelgaas>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,57 +70,48 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260803-alpha-fp-exceptions-v1-0-c99d75608e60@gmail.com>
- <20260803-alpha-fp-exceptions-v1-3-c99d75608e60@gmail.com>
- <CA+=Fv5QUxT-T0XgXccAF=1_6Dz=nCpY=NQu=ruOrYjbB+q7YCA@mail.gmail.com> <CA+=Fv5S_ZrHedEVPR9Oet2Egg2hwy33pEqEXaQa0zGdQdNjWRg@mail.gmail.com>
-In-Reply-To: <CA+=Fv5S_ZrHedEVPR9Oet2Egg2hwy33pEqEXaQa0zGdQdNjWRg@mail.gmail.com>
-From: Matt Turner <mattst88@gmail.com>
-Date: Thu, 8 Oct 2026 15:29:27 -0400
-X-Gm-Features: AclHuK-YAox1Xf7NjC5L8Z-SfaibsiX2e4acSu8a9kwaQSKw1rOePouwIqBhWL0
-Message-ID: <CAEdQ38EM0FyqYZH6b30oxScZ481dGqnsqu23iePLdx2gCpqzxA@mail.gmail.com>
-Subject: Re: [PATCH 3/3] alpha: determine tininess after rounding in the FP emulation
-To: Magnus Lindholm <linmag7@gmail.com>
-Cc: Richard Henderson <richard.henderson@linaro.org>, linux-alpha@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org, 
-	"David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, stable@vger.kernel.org, 
-	Michael Ellerman <mpe@ellerman.id.au>, Yoshinori Sato <ysato@users.sourceforge.jp>, dalias@libc.org, 
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CADnq5_P_y-6Ra4Swoxz-CmL1Q3nGhM3RVJUAB2iw1E1D-r1cjQ@mail.gmail.com>
 
-On Fri, Sep 4, 2026 at 2:13=E2=80=AFAM Magnus Lindholm <linmag7@gmail.com> =
-wrote:
->
-> Hi everyone,
->
-> Adding Michael, Yoshinori, Rich and Adrian directly, although this
-> is an alpha series, patch 3/3 also touches the shared soft-fp code in
-> include/math-emu/ (op-common.h, soft-fp.h), which your architectures
-> build against too (confirmed by grepping arch/{powerpc,sh,sparc} for
-> includes of those headers; parisc/m68k/mips/x86 have their own
-> separate math-emu and aren't touched).
-> The new _FP_TININESS_AFTER_ROUNDING macro defaults to 0, so the
-> intent is no behavioural change on your side. The new guard it adds
-> in op-common.h is a regular runtime `if` rather than `#if` though, so
-> it still gets compiled against your macro instantiations even if it
-> should dead-code-eliminate at -O.
-> No action needed if it builds fine for you, just flagging since it's
-> tagged for stable. Let us know if it causes any problems, or feel
-> free to ack if you're happy with it.
-> I've reviewed and tested patch 3/3 on alpha already (Reviewed-by/
-> Tested-by posted).
->
-> Thanks,
-> Magnus
+On Thu, Oct 08, 2026 at 03:23:34PM -0400, Alex Deucher wrote:
+> On Thu, Oct 8, 2026 at 3:17 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
+> > On Thu, Oct 08, 2026 at 02:26:00PM +0200, Lukas Wunner wrote:
+> > > Alex is seeing a probe failure of the amdgpu driver after the Root Port
+> > > above an AMD Navi10 GPU has been reset.  The reset was performed to
+> > > recover from a Firmware First reported Fatal Error.
+> > >
+> > > However all status registers in the Root Port's AER Extended Capability
+> > > are blank, so apparently the platform firmware raised a false alarm.
+> > >
+> > > The issue is only occurring since commit eddba19b8b5f ("PCI/AER: Support
+> > > Advisory Non-Fatal Errors").  It looks like enabling Advisory Non-Fatal
+> > > Errors causes code paths to be exercised in platform firmware which
+> > > were never validated before.
+> > >
+> > > Skip error recovery on false alarms, i.e. if no unmasked errors were
+> > > actually signaled.
+> > >
+> > > Note that this will also skip recovery if both the Status and Mask
+> > > registers are "all ones", as would be the case for inaccessible devices.
+> > > However that seems justified because it would imply either a hot-unplug
+> > > event or a Surprise Down Error further up in the hierarchy.  Interfering
+> > > with recovery from that seems uncalled for.
+> > >
+> > > Fixes: eddba19b8b5f ("PCI/AER: Support Advisory Non-Fatal Errors")
+> > > Reported-by: Alex Deucher <alexander.deucher@amd.com>
+> > > Tested-by: Alex Deucher <alexander.deucher@amd.com>
+> > > Closes: https://bugzilla.kernel.org/show_bug.cgi?id=222095
+> > > Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> >
+> > Applied to pci/for-linus for v7.3, thanks!  I dropped Alex's Tested-by
+> > since he hasn't tested this change by itself.
+> 
+> FWIW, I just tested this patch by itself and it works as expected.
+> Feel free to add:
+> Tested-by: Alex Deucher <alexander.deucher@amd.com>
+> Acked-by: Alex Deucher <alexander.deucher@amd.com>
 
-Hello all,
-
-Could a maintainer of this code find time to have a look?
-
-We can take it through the alpha tree, but we'd certainly prefer some
-review first.
-
-Thanks,
-Matt
+Added, thanks very much!
 
