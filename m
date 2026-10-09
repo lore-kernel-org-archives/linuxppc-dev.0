@@ -1,53 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-29131-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29132-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9EB4CA9EBD
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2026 18:11:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD35ECA601F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2026 18:11:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j1Zg91frKz30Wd;
-	Sat, 10 Oct 2026 05:11:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791569477;
-	cv=none; b=l/aKVRLdUUJBdyBbpNbRumUxyB86YZLeQFD3YKsMsr0vp2EDVX+JJH8aa3XQ4SmBz2EuFpe6kF/BhhqW4c6ETgnGbQgi74ENR9/xI2Cmk24LTHNf2tSwMMSogvAA1nzmjiZu4uq7r5eI0alcOP5EREEt8pMrhZWs+0NJd2ETQLjKanKfblzEzKR/pOcNl4jYlGgzjs5DQt6npvY2IcOQtv9TJg1l5E6ik8TE5s8TtbjK4nDzazs6wP3QWq6U0DSu4pG4cTemGltgDTfjdio8RoFqyl9N5hB7pFgP+X3sZcMgBzkPknu5YnG2Bw0r2QYUVbC0FurxkOdf3Uj/6dYIbQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j1ZgZ3CnMz3bpH;
+	Sat, 10 Oct 2026 05:11:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791569498;
+	cv=none; b=M8G4R4FW1u0L6xqx9mMMEb8Ofyn58iyJmIISj/EJ7Ou9bM3uJmdBXQRcMhcdyXUJZXuqlfF19jyPm7u9JRIfJO84+gD9ukAsf8vlLq9EY5S+DCiNxEWO806kbiEj5oxnKEPZ4GfUbT8itvj1I596cM5krSxeU80379frwd6+EDNbkYpqyeHihX8ch7uJs8qrQCPW/XpiQj8CJpD4M7OOg7hpKdwZuH5w091GVEkztjDkNHHuiTXqvswmKW9sNFSpzu5bLr2LkDHSKtrRuZeCskEI1WjAaIMbcZL2jYGj3vzdaweY2pXrqb+0kDPJNWZfSa87W2fA311xfNUAD/dQKA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791569477; c=relaxed/relaxed;
-	bh=i4y1sz7ZVghomqASsiy9XjZk1iqHWnAgN1nUm45xiCg=;
+	t=1791569498; c=relaxed/relaxed;
+	bh=el2jCgXoJXHv+Kw12WkowqS11UrU+02k++d1dTT+Yhs=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=i7gKrmZkYxA1JoGGR9IwV2Oq/JA+08VNtDp6Z+nJvf1ZWYrkhFQ3kUC/kRwOkr20TmdkcEA8sZy77dUtwKtHwU8Rju6LAGgDvItzP5XlFHwtwlFRdmf4JvVqwPQ++fGqri4XIrxkV8JM1kpNUNE/nVqEQdIQajjTUYBwYGqpMDIexbtPha8o3RNoQvDD03a8usbcg1BZVMiIzP+dQpQ4Fvllrfx6NZgt7w1WIUdWnCO88A1A0fMjl57uM6noplxQ7bPzFxfzDhf02OOAzK9Em0d2DW4K8eWOnvCkPMM9Ick+UpcZaX9dbEVGHejNBM/vkTh8WqqUM2IaQZMj9lCmRQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZLFT1XEI; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=dCXxX+RlXs3FluBeQukdAgHKQS0GS0GpqAwikrBvmkTiFXSNocghNzboXptNPgn0J+TmC17zYbVrD/YJhXDLs8UMp/Cy5xTrGYopNA5TwVBHlzqAlhwQ0c/39k7YvPmZtNFxnUvYXF/haDmYvLiGsYShbsJGbHMQaaHMJcp36OzR1pxyFCgfwSHrzbqU5hElDU7UgarFRGOsV5uIp619MDofoYyawi2sC5zDkW2OvlXQEd1b/AfyI5b49DYAFCBzQtVBZEnd1KHu0H7kzbD0zuLI6Ls9sHn3SFmQshf4tY/7oLdO21ERceLFYrR0n1D27lIm68GQIkxZGDLurEZeWw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=a7/Ll5oy; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZLFT1XEI;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=a7/Ll5oy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j1Zg83NBGz30WX
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 05:11:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j1ZgY4Fhpz3bp7
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 05:11:37 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id CCDC940AB0;
+	by sea.source.kernel.org (Postfix) with ESMTP id B6F4E40AB0;
+	Fri,  9 Oct 2026 18:11:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 14F1F1F00893;
 	Fri,  9 Oct 2026 18:11:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2ADB91F000FF;
-	Fri,  9 Oct 2026 18:10:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791569474;
-	bh=i4y1sz7ZVghomqASsiy9XjZk1iqHWnAgN1nUm45xiCg=;
+	s=k20260515; t=1791569495;
+	bh=el2jCgXoJXHv+Kw12WkowqS11UrU+02k++d1dTT+Yhs=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=ZLFT1XEIIbgkZgYbl2cjVccfZl0WKiE8m0l03W59DgDeneiv+L+92FBild3sPyde0
-	 wzuqOjF3Vi0Eodv+kRyAn0GxTK/vytccPEoGWPP+suajfvmc+F08VZ1oopYqvzdtOI
-	 gILxTUEONu48fqVbkejv2G+UmDtjgipP/1mz81o3k6pHGvEd/jbGl2ey//6m4Sc6aa
-	 EwtFe6k4gZiCPvFZ7ccHgXdRKe704eDpyuT7oMGEQ02V5L8/keYilUw7mGeP9K/b5J
-	 YIPgLlCxq8hWwy+A73RCX9v4hfjY2Oi0k2pU+usaU8PsYFavcgQ591QEr+WIPN7KJx
-	 VunBPOI806UKQ==
+	b=a7/Ll5oyWfbHwIZTdPhw1BCs0zSOIpXzIB9G2bV6vu5nmuFmsJ0pdb52fh9rABH2s
+	 96A4dXiIvofjJLpaQ/2+AIypxGZsiKbNt8Nt9m/dXtT3NJbzAAX1Djv4PZ1enJEZvA
+	 94IdhLEAjNBtv/9JhU/sL0NDsFQTy2/rrsErEax1jdpl4wjOUEFkbnCdHWqA8WVoG3
+	 YHYKFFIlhxG2/t8YQBZW9WfvXVK+5SdPgQEJ9Hsq3BqUzG0KCpyJ6MSETsoXPD3p7/
+	 LWpfPY9G0Op7qqbPkTrtpBd4BrvPufFypLL36yAM0HHuuPUrlE9cWWqF8S6rf6Y1S2
+	 iU7TIPpkYAELg==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Fri, 09 Oct 2026 19:04:13 +0100
-Subject: [PATCH v5 19/38] HSI: cmt_speech: convert mmap hook to
- mmap_prepare, refactor
+Date: Fri, 09 Oct 2026 19:04:14 +0100
+Subject: [PATCH v5 20/38] mm/gup: error out early on !VMA_MAYREAD_BIT VMAs
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +62,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-19-923b70125b1e@kernel.org>
+Message-Id: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-20-923b70125b1e@kernel.org>
 References: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-0-923b70125b1e@kernel.org>
 In-Reply-To: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-0-923b70125b1e@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -148,95 +147,55 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  fuse-devel@lists.linux.dev, Ihor Solodrai <ihor.solodrai@linux.dev>, 
  Bert Karwatzki <spasswolf@web.de>, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2685; i=ljs@kernel.org;
- h=from:subject:message-id; bh=MY9UuAl0nfMrM4GSY6SwItqCUTxM/pJjBHtqUqIj4oQ=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJO6szhFQzwb7tUeoPRuuPlFgPj5tXbDD5Iius9vRzo/
- m6mlbhYRykLgxgXg6yYIsvzL+L7g0TC5nVe8HeDmcPKBDKEgYtTACZSwMTwz2b9vWTG1ESd96su
- dPx99u6Q85TpVdvX7pLb9cDO7/j9db0M/zQuLxdM+WWdy3d7yS57i4s8Cw9F8E4Ld5p+416nzHk
- XeX4A
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1377; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=9EZavFkFq061KOoliOxtk7vpVQljz+WstI3qyeYua5A=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJO6swJmNKrm3zTdM72XNVZ/SrFRSvX6ZhuzdWoXDDTa
+ /apfqNFHaUsDGJcDLJiiizPv4jvDxIJm9d5wd8NZg4rE8gQBi5OAZhI3UyGf4p3p1yyENZf/7rc
+ JbcqbXLih1/8F/b6rt5R9ZVhLj/TnemMDHeE7BZvWvxIqlktUGvDQX5VHsMtLz0CazXNtkR/PcJ
+ SzwQA
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 
-Use the mmap_prepare in favour of the deprecated mmap hook as part of the
-work to convert one to another.
+When populating a VMA range via the aptly named populate_vma_page_range()
+an unreadable VMA will always eventually fail with -EFAULT.
 
-Since this is simply a refcounted kernel page that has been allocated, it
-should not be marked VM_IO and should be inserted using the kernel page
-insertion mechanism, so convert it to do this instead.
+That a VMA is accessible is always checked, however VMA_MAYREAD_BIT is not.
 
-Use the VMA descriptor's private data field as a scratch buffer to store
-the page in - this stays valid throughout the kernel page mapping
-operation.
+All user mappings always have VMA_MAYREAD_BIT set, so this check only
+impacts kernel mappings.
 
+It is implemented specifically to disallow population of uprobes XOL
+mappings which are exec-only.
+
+A nasty interaction with these mappings may occur if they are mlocked, so
+actively disallow this early.
+
+This allows a subsequent commit to remove the VM_IO check in
+__mm_populate() which otherwise requires non-MMIO mappings to be wrongly
+flagged simply as a workaround.
+
+Acked-by: Zi Yan <ziy@nvidia.com>
 Reviewed-by: Suren Baghdasaryan <surenb@google.com>
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- drivers/hsi/clients/cmt_speech.c | 33 +++++++++------------------------
- 1 file changed, 9 insertions(+), 24 deletions(-)
+ mm/gup.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/hsi/clients/cmt_speech.c b/drivers/hsi/clients/cmt_speech.c
-index 7226677ebde7..801697b74d4f 100644
---- a/drivers/hsi/clients/cmt_speech.c
-+++ b/drivers/hsi/clients/cmt_speech.c
-@@ -1084,22 +1084,6 @@ static void cs_hsi_stop(struct cs_hsi_iface *hi)
- 	kfree(hi);
- }
+diff --git a/mm/gup.c b/mm/gup.c
+index c2dfcb4744bc..e6310a7cc05b 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -1836,6 +1836,10 @@ long populate_vma_page_range(struct vm_area_struct *vma,
+ 	if (!vma_is_accessible(vma))
+ 		return -EFAULT;
  
--static vm_fault_t cs_char_vma_fault(struct vm_fault *vmf)
--{
--	struct cs_char *csdata = vmf->vma->vm_private_data;
--	struct page *page;
--
--	page = virt_to_page((void *)csdata->mmap_base);
--	get_page(page);
--	vmf->page = page;
--
--	return 0;
--}
--
--static const struct vm_operations_struct cs_char_vm_ops = {
--	.fault	= cs_char_vma_fault,
--};
--
- static int cs_char_fasync(int fd, struct file *file, int on)
- {
- 	struct cs_char *csdata = file->private_data;
-@@ -1256,18 +1240,19 @@ static long cs_char_ioctl(struct file *file, unsigned int cmd,
- 	return r;
- }
- 
--static int cs_char_mmap(struct file *file, struct vm_area_struct *vma)
-+static int cs_char_mmap_prepare(struct vm_area_desc *desc)
- {
--	if (vma->vm_end < vma->vm_start)
--		return -EINVAL;
-+	struct file *file = desc->file;
-+	struct cs_char *csdata = file->private_data;
-+	struct page **pages = (struct page **)&desc->private_data;
- 
--	if (vma_pages(vma) != 1)
-+	if (vma_desc_pages(desc) != 1)
- 		return -EINVAL;
- 
--	vm_flags_set(vma, VM_IO | VM_DONTDUMP | VM_DONTEXPAND);
--	vma->vm_ops = &cs_char_vm_ops;
--	vma->vm_private_data = file->private_data;
-+	vma_desc_set_flags(desc, VMA_DONTDUMP_BIT, VMA_DONTEXPAND_BIT);
- 
-+	*pages = virt_to_page((void *)csdata->mmap_base);
-+	mmap_action_map_kernel_pages_full(desc, pages);
- 	return 0;
- }
- 
-@@ -1353,7 +1338,7 @@ static const struct file_operations cs_char_fops = {
- 	.write		= cs_char_write,
- 	.poll		= cs_char_poll,
- 	.unlocked_ioctl	= cs_char_ioctl,
--	.mmap		= cs_char_mmap,
-+	.mmap_prepare	= cs_char_mmap_prepare,
- 	.open		= cs_char_open,
- 	.release	= cs_char_release,
- 	.fasync		= cs_char_fasync,
++	/* Unreadable VMAs also cannot be faulted in. */
++	if (!vma_test(vma, VMA_MAYREAD_BIT))
++		return -EFAULT;
++
+ 	gup_flags = FOLL_TOUCH;
+ 	/*
+ 	 * We want to touch writable mappings with a write fault in order
 
 -- 
 2.55.0
