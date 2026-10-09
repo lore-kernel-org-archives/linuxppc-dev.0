@@ -1,81 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-29096-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29097-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A87CACA601E
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2026 13:23:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1C91CA6019
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2026 13:32:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j1SHM1K6zz2y8Z;
-	Sat, 10 Oct 2026 00:23:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.16
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791552223;
-	cv=none; b=IaA8yKZnNDF6nvQXBGo2hl/AZ7T2pDWAjGdjz8eyImnNL0F477bmCm0JWt5zfLxBYzT+LGbz7Nmj7x9KLLmzxJ4TMC6ODUjvYdp2+kdXJwhzWuNOGVz/j03GoSCZZ5Rloe40+MEW8rlaJZAha3Lp6CHfo3tuQygQ8jyqKaNuFE1SHYj/ePGgiiOdpRzCuuJ6W2otcN3pw2l/MImIIwIQvggPqdcrxZVMuBpQxERMEouqX0uA1ew4kSFFqflHiz55Mjf8hi8G+IBeEKytIJW754ou/qlaSPHINmUOF7dHNnGdTqNPFjxArWCuTQGEbmCW9pf0CfrqBtnQD3pFiUJVzg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j1STQ6kGxz3048;
+	Sat, 10 Oct 2026 00:32:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::2a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791527804;
+	cv=none; b=R1Nxx56RotJGaZnfNm42ej4BeZ4/XgVEulWhhge5PyVSk0qoCLUb5/kFMOjPSlVIdsEupjXP5HC7vrF5ZONG0UxjHf+F02nMWSwKrTlpmYbKJxN+gM0EBNZPJq7tweyQc121IG7M5hfNT9ehnbl11djTYi1ShgYA4E54mVnCWGOVreFfRs47ZgFPTlNU276MVTxsyhSUSLutweQIblxiwD3o5yjloW4rETDeV5EGTlrA0HPXJAEtrPt2+0lugqeC4AVFZbwlL+WUWmA7MzX+ApjxCw0/mvN96SA8c4zj/U6wu7X5f1R1CRTeUsNW+j3OceRo233sPgKLim8p38+QEg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791552223; c=relaxed/relaxed;
-	bh=SCLWZU8blPIXaqVZoHf8GiELwJrChoHcATn6ja6MFJs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=eNUoV/ciRdVE/+thpR63yFIRtq2Hua74J4Ikxk3yU8aI0tFELC1Wc1n2BoR9MCf6h++xDvTVliip5aB5rpQ0VteoDoLtJg975F3lKvZvjzrzKxGaClS0FA9wSoWRBb3yhQ1SqfMpm/CLYf3jn0EC1uJdapuV6EFwexKrQp4CrXAktMS/v8UG8ChYiX69BM0lCVaAAhe0C/nrcLm84xpEvS1JLbac6Pz2fx+oKrnEw3cJZj1c7gAAJ4E47GzWtSbGg0J2SUKPcptkZAiq/lNXE88rSte73Khv5m0W5ky3xpq+2ip31hRtTxhWNcm/VIbtw/PHHqN9usS+Sz/HwlUz8w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=EDODdzvD; dkim-atps=neutral; spf=pass (client-ip=192.198.163.16; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1791527804; c=relaxed/relaxed;
+	bh=Uh2O0hPc7+AfgiciCPNYS5qtLSlalh9WpPtHIZy4QUM=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=kRRqLKxI/ze8zBWYEcggJQiOI0CWR462iPzqwAHr6Kd+UAQrCzZ/OUFzBf0VWvDJLYWxAfmkYLokjqSj8PuA67TJb9wKfq+WVuHMATy23Cb/zSzRhN97FEy0yjdLW5oB9I/XLILcpn/C0aUY1B9c2wJLqsmL2B4kgc8FEvoLgcBstBtu0da5cNqqyQPTopGnMsNOPpog0yQg7NRIHhxpSCbqgfvnkJed8pZqrIZMNWwKbXlwgKyXHRjJ1B5fUOlqzLk6axl51un9apLC6ZMi+2nf9PncA+J24HDl+weW2KQPs2a0293sk+RmKkZGCht2yJnb25QZznGPhvxlvbx/Ig==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Tq5jaOpF; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::2a; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=EDODdzvD;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Tq5jaOpF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.16; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::2a; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
+X-Greylist: delayed 61 seconds by postgrey-1.37 at boromir; Fri, 09 Oct 2026 17:36:41 AEDT
+Received: from mta1.migadu.com (out-42.mta1.migadu.com [IPv6:2001:41d0:203:375::2a])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j1SHJ436Lz2y1W
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 00:23:38 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1791552220; x=1823088220;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=4H+cfQ6gedWLiGYFeWv9qkDPH02uU6E0Vl/1XEXCSTU=;
-  b=EDODdzvDacuP01ExugiFRnSnW2M3bPqeuE1g5uXDeRz/4EX9Rx5ZUGop
-   RkM+RYLU6jyiQgUghTcsfn1GD/w9PWQJTD66Bf+fOD2jMU2841eqZJiyh
-   KVWj4kVpjzh66piGxVh72yp8A0emWL2sEhkN5YYGEPHAfrQZNRltkxrmx
-   lV85SfOjkWTblrnfMm/XMRwu+FRIUdJHE6NvqjgWfBUxzSSbdUVPeQzHD
-   Jnu/A+BuTm70khEPwtUEjvAZLqRXo1zOjngDLWTDPndCJr23NuxTgyhUc
-   tcm4mr3NVADQrECVDUttp/563wogoqNXG2hFl2gYaqIhqRzQ9tj0SXyKM
-   g==;
-X-CSE-ConnectionGUID: qOKRrcMyQIaMI6pQgSKHzQ==
-X-CSE-MsgGUID: EMIEWoA1TkGvcr7iAHsVBw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11930"; a="351443"
-X-IronPort-AV: E=Sophos;i="6.27,148,1787036400"; 
-   d="scan'208";a="351443"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Oct 2026 06:23:35 -0700
-X-CSE-ConnectionGUID: fM27SqKuQ1a9/cYZZhFHCQ==
-X-CSE-MsgGUID: aqHt4obJTHKybI4bEsAbVg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,148,1787036400"; 
-   d="scan'208";a="437266"
-Received: from lkp-server01.sh.intel.com (HELO 0caa9d2d175c) ([10.239.97.150])
-  by fmviesa002.fm.intel.com with ESMTP; 09 Oct 2026 06:23:33 -0700
-Received: from kbuild by 0caa9d2d175c with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1xFAZN-000000005q0-2wVU;
-	Fri, 09 Oct 2026 13:23:29 +0000
-Date: Fri, 9 Oct 2026 21:22:57 +0800
-From: kernel test robot <lkp@intel.com>
-To: Dave Marquardt via B4 Relay <devnull+davemarq.linux.ibm.com@kernel.org>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j1HFj1wjcz2ynZ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Oct 2026 17:36:40 +1100 (AEDT)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=XX490udm4Ta6ALheN6Xuua3sT0ZXTpdEDmRJNuiAJBs=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1791527782; v=1; x=1792132582;
+ b=Tq5jaOpF3DaN/KjM1sTJ9Kt+qtUR74OOFPzsUK5mu/rJy7iP8nwLZ/U5qbYT1NJrDtUpI0m4
+ Pr3i264mbDoSlhbZEgkdKDC4I4tpufbBOvXapzekMxm/smgT4vG8u5GvDFPRUlx8gN8+xMFt9tz
+ I0h43YIcNzUzCi+1GNSf+5t4=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id a2f462b3a15301f0;
+	Fri, 09 Oct 2026 06:36:22 +0000
+X-Mizu-Trace-ID: a2f462b3a15301f0
+X-Migadu-Flow: FLOW_OUT
+From: Hao Ge <hao.ge@linux.dev>
+To: Suren Baghdasaryan <surenb@google.com>,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-	"Martin K. Petersen" <mkp@kernel.org>,
-	Tyrel Datwyler <tyreld@linux.ibm.com>
-Cc: oe-kbuild-all@lists.linux.dev, linux-scsi@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	Dave Marquardt <davemarq@linux.ibm.com>
-Subject: Re: [PATCH v13 07/11] scsi: ibmvfc: extend async event handlers for
- async sub-CRQ events
-Message-ID: <202610092107.e7gHIyl7-lkp@intel.com>
-References: <20261007-ibmvfc-fpin-support-v13-7-b816abfa4fcc@linux.ibm.com>
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Alexander Potapenko <glider@google.com>,
+	Marco Elver <elver@google.com>,
+	Dmitry Vyukov <dvyukov@google.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Dennis Zhou <dennis@kernel.org>,
+	Tejun Heo <tj@kernel.org>,
+	Christoph Lameter <cl@gentwo.org>,
+	Uladzislau Rezki <urezki@gmail.com>
+Cc: Hao Ge <hao.ge@linux.dev>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	kasan-dev@googlegroups.com,
+	linux-mm@kvack.org
+Subject: [RFC PATCH 4/4] mm/percpu: stop unmapping the CPU that failed to map
+Date: Fri,  9 Oct 2026 14:36:19 +0800
+Message-Id: <20261009063619.112313-5-hao.ge@linux.dev>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20261009063619.112313-1-hao.ge@linux.dev>
+References: <20261009063619.112313-1-hao.ge@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,56 +83,36 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261007-ibmvfc-fpin-support-v13-7-b816abfa4fcc@linux.ibm.com>
+Content-Transfer-Encoding: 8bit
 
-Hi Dave,
+__pcpu_map_pages() clears the PTEs it installed when it fails, so
+pcpu_map_pages() only has to tear down the CPUs it mapped before
+the failing one.
 
-kernel test robot noticed the following build warnings:
+Signed-off-by: Hao Ge <hao.ge@linux.dev>
+---
+ mm/percpu-vm.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-[auto build test WARNING on c3cff7fac01638ab58e85fe7df41a04fa25c5bae]
+diff --git a/mm/percpu-vm.c b/mm/percpu-vm.c
+index 509d8901835c..59d3a336a6bd 100644
+--- a/mm/percpu-vm.c
++++ b/mm/percpu-vm.c
+@@ -252,10 +252,11 @@ static int pcpu_map_pages(struct pcpu_chunk *chunk, struct page **pages,
+ 	return 0;
+ err:
+ 	for_each_possible_cpu(tcpu) {
+-		__pcpu_unmap_pages(pcpu_chunk_addr(chunk, tcpu, page_start),
+-				   page_end - page_start);
++		/* The failing CPU's partial mapping undoes itself */
+ 		if (tcpu == cpu)
+ 			break;
++		__pcpu_unmap_pages(pcpu_chunk_addr(chunk, tcpu, page_start),
++				   page_end - page_start);
+ 	}
+ 	pcpu_post_unmap_tlb_flush(chunk, page_start, page_end);
+ 	return err;
+-- 
+2.25.1
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Dave-Marquardt-via-B4-Relay/scsi-ibmvfc-fix-IRQ-leak-and-guard-deregister-on-channel-reg-failure/20261007-142545
-base:   c3cff7fac01638ab58e85fe7df41a04fa25c5bae
-patch link:    https://lore.kernel.org/r/20261007-ibmvfc-fpin-support-v13-7-b816abfa4fcc%40linux.ibm.com
-patch subject: [PATCH v13 07/11] scsi: ibmvfc: extend async event handlers for async sub-CRQ events
-config: powerpc-allmodconfig (https://download.01.org/0day-ci/archive/20261009/202610092107.e7gHIyl7-lkp@intel.com/config)
-compiler: powerpc64-linux-gcc (GCC) 16.1.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20261009/202610092107.e7gHIyl7-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202610092107.e7gHIyl7-lkp@intel.com/
-
-All warnings (new ones prefixed by >>):
-
-   Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:1907 expecting prototype for ibmvfc_relogin(). Prototype was for ibmvfc_scsi_relogin() instead
-   Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3321 function parameter 'fpin_status' not described in 'ibmvfc_common_fpin_to_desc'
-   Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3321 function parameter 'wwpn' not described in 'ibmvfc_common_fpin_to_desc'
-   Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3321 function parameter 'type' not described in 'ibmvfc_common_fpin_to_desc'
-   Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3321 function parameter 'modifier' not described in 'ibmvfc_common_fpin_to_desc'
-   Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3321 function parameter 'threshold' not described in 'ibmvfc_common_fpin_to_desc'
-   Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3321 function parameter 'event_count' not described in 'ibmvfc_common_fpin_to_desc'
-   Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3403 function parameter 'crq' not described in 'ibmvfc_basic_fpin_to_desc'
-   Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3403 function parameter 'wwpn' not described in 'ibmvfc_basic_fpin_to_desc'
-   Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3403 Excess function parameter 'ibmvfc_fpin' description in 'ibmvfc_basic_fpin_to_desc'
->> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3442 function parameter 'wwpn' not described in 'ibmvfc_full_fpin_to_desc'
-   Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:5367 function parameter 'protocol' not described in 'ibmvfc_alloc_target'
-   Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3321 function parameter 'fpin_status' not described in 'ibmvfc_common_fpin_to_desc'
-   Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3321 function parameter 'wwpn' not described in 'ibmvfc_common_fpin_to_desc'
-   Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3321 function parameter 'type' not described in 'ibmvfc_common_fpin_to_desc'
-   Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3321 function parameter 'modifier' not described in 'ibmvfc_common_fpin_to_desc'
-   Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3321 function parameter 'threshold' not described in 'ibmvfc_common_fpin_to_desc'
-   Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3321 function parameter 'event_count' not described in 'ibmvfc_common_fpin_to_desc'
-   Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3403 function parameter 'crq' not described in 'ibmvfc_basic_fpin_to_desc'
-   Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3403 function parameter 'wwpn' not described in 'ibmvfc_basic_fpin_to_desc'
-   Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3403 Excess function parameter 'ibmvfc_fpin' description in 'ibmvfc_basic_fpin_to_desc'
->> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3442 function parameter 'wwpn' not described in 'ibmvfc_full_fpin_to_desc'
-   Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:5367 function parameter 'protocol' not described in 'ibmvfc_alloc_target'
-
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
 
