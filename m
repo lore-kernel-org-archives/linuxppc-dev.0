@@ -1,53 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-29117-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29118-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7D67CA601F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2026 18:06:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9158CA9EBD
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2026 18:06:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j1ZYX1hQNz3bV5;
-	Sat, 10 Oct 2026 05:06:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791569184;
-	cv=none; b=ZfKeUMKCLZu9LPMm2iil7ALSpu/rMtLD9Eg1LcK8dqm7rJBrGbt/R6qj9GcqI6QAkIRLLSCJrJRRm5gsKFh0eA74VpQ23b9IlKVd9yAi9ifcx1M/OVigA6mNke93PaNUoxz6j35qQLVuoqhx0lMz+GDFRRMXWZ9l33+chtg2FeJhD463X88nPOHEpN6vcxrcHeDO0L6RYDHMESC7HCYNl71WLNBZ9Ws+I1xauyr5Uf8O5ge0ly2Ylm2ucvQ+Q5DcWHK3rHUT3b5TLVkFdLWLCV3YWpozOZaGGLRVoMIoElk9b/bUbTpvpviYL+ODSfKTHcJbN+bpNRIoSgGjNALlUw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j1ZYx47VFz30VT;
+	Sat, 10 Oct 2026 05:06:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791569205;
+	cv=none; b=JRvE49JUuKxZyW7m9CUrS751xupxCGy2A6V0TY3cPTWYcFFbs3qof/Pa2dq4RA6xB7XaBrm7em2umiHkrpDKD/E02Ptj2Q7khzx6hw5JQBg3kDn48FT/10Bu/h+hC3suwU3r814nf7Mp+TcuLVKhx6KHws1C2wIQqzYctOElVTxUKJz6gCot6eSEjUGb0uVO/uBHFpokx9IOnxkYkadvc92yRLqXEowWDlpsy8YaPH/Mf1/kg824AltjhhHl9O2RFx+c+RdCYfdK+JVAs4fNpvrjGOKEpykX4BlQ2p8ksa8c45bP+Lh/qo2BjixSzk/DYizBsZHWC8t/NlNJ/5R3yA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791569184; c=relaxed/relaxed;
-	bh=SAzG9Wth1XJ2c0bU3DI60XqRT1mNgvn5WEld38uFlsY=;
+	t=1791569205; c=relaxed/relaxed;
+	bh=+lV50szqwhlOdZvvntvc8L71JtBIxPo0bLUpU4NKXmU=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=OoyAiIMv0y2Fc1XC3OrkLI4NwqniM6pF+1I4nEYtedUEbECnx6aT7aZuVmyxpgbosSZicy3rNPGEljAmCdDnj55PiRgrNRqzYRc0B6PlMWLjyLdU4Hfs5dOXaGJjdviZQ5I+XwaS5ZqyuqraRvAUgEcievyoP0qyGVV73dNsYPQDG8jyqkafn3VybVVAh36d9nWJ7B9rV6rucf117EKsBlL05tzP2boKEQSAXQcOcot6ho7eZhM28Z4ADAtkQnJ2vlMtpl8jAVYuQo5nODUy7G7ugbFcJZjqqTmht9AIFRlBIUeWWmn/Dq55fYM0qFCpiNULjdC3s1ihrBWmwhR2ug==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=d+b8wTFf; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=FMiMualbDmXIucn7vO9j+6erAcjm46uHe/pe0y+g73sMGlzXGT8AJ9U9YX4vurcUXjQM7qBBb09ozzcxdUR4oJa/a/r/Xw2ls7Avg5b5keQQ/IneIFHkxOJQMpLBz2eLLrFDtSMJZc5lh3eeeqxZ+bnu7I4gt4ny2URDUv9yd/PgLs4tRVbNJVE1endXCs7gZ1UqAKC1bniTB5xf9XOX6q6sRMyLCC+YSVW/l3r/EMS/VOxA5n3agc7Pg76i09FCZpio8nwQg9GOqli98e0B3LkcdxNd17cHWNiA3mWZN5VVUZ7XPK7tyTrYCvkFBBprSwnZ1JFRDDQNNGLl6ZiScw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HIQYUm0D; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=d+b8wTFf;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HIQYUm0D;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j1ZYW33KYz30TQ
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 05:06:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j1ZYw56WLz30TQ
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 05:06:44 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id DB6934030C;
+	by sea.source.kernel.org (Postfix) with ESMTP id C886141613;
+	Fri,  9 Oct 2026 18:06:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 240C31F00898;
 	Fri,  9 Oct 2026 18:06:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 36F351F00893;
-	Fri,  9 Oct 2026 18:06:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791569181;
-	bh=SAzG9Wth1XJ2c0bU3DI60XqRT1mNgvn5WEld38uFlsY=;
+	s=k20260515; t=1791569202;
+	bh=+lV50szqwhlOdZvvntvc8L71JtBIxPo0bLUpU4NKXmU=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=d+b8wTFfrUQ8jmcrAK3KmrwEgBliaTXeFDj86MnPlTPMIMnYedIfLBUmim+zSePtq
-	 UiwBe3e3wudgLqlmR9vuD68Tayt0xK2rYcueEdm1uHrOO5VMNajbaH0+m3IGkEoFDo
-	 9P8vYCgL6KUze0m/6htzdTfZiU/D1x2UDZbLNxsrSVR53mxRl9yglP/jRajhOPeoKK
-	 r1Dv7XsFbXJBcDoi9Q1sw7SyZiAzX5r9bHoTHt6zfJ7xcqF/GYmPnPtYysW7rCjNsi
-	 EKX1TPRIdDWJS/C/1YvtA8/xU6+WziFiHmsi65Gb5ogjUgzQTQE+10EMp+/PgVWPGk
-	 iYMN/rphhdJVg==
+	b=HIQYUm0DLx/2bKzu66ezACO7GBokL8d6VcBRDYg55Zn4Va9F0v3kunAGC0L9W4d5b
+	 hHz2ojBcicsTT0lGgtbhzgEPJ/o0NHbUsWdd+36z93oRd5OTOwid7Fpxq5JlvboqQ8
+	 nHsW0BujxzAyfC/urZMNuug3vDxijOAlqlXve0WOvl1wvHUkSAVON7aZOTHGZ1pQU9
+	 cNbPPSpf7UMIWeX5IxzcpXQFjOEvEIam0meh5LWCITsb64k8WUQ49ynfluF7//78jj
+	 Qs8wye2NHfNLTB42oPTPtyZ25J5aTsiVuQ+4kMEVzE78xiccvR3JItPXy0ZzNxrl1e
+	 J5koIBJyXk5FQ==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Fri, 09 Oct 2026 19:03:59 +0100
-Subject: [PATCH v5 05/38] mm: make map_kernel_pages_[prepare,complete]
- internal and unexported
+Date: Fri, 09 Oct 2026 19:04:00 +0100
+Subject: [PATCH v5 06/38] mm/vma: tidy up map kernel pages enum values
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +62,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-5-923b70125b1e@kernel.org>
+Message-Id: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-6-923b70125b1e@kernel.org>
 References: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-0-923b70125b1e@kernel.org>
 In-Reply-To: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-0-923b70125b1e@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -148,21 +147,22 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  fuse-devel@lists.linux.dev, Ihor Solodrai <ihor.solodrai@linux.dev>, 
  Bert Karwatzki <spasswolf@web.de>, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2708; i=ljs@kernel.org;
- h=from:subject:message-id; bh=W5EJA/cmsVT7jDTw6eYY8+j+S742rFhYZzwOfLirwec=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJO6sws8px184BXlMYNnaRekyN5kgvOVk122ur3tlL88
- KH+koPuHaUsDGJcDLJiiizPv4jvDxIJm9d5wd8NZg4rE8gQBi5OAZiIqT8jw1UnLrF7Ss+Se14I
- HP62U1T88wUR48jznP0vvqTt5Q6qusjwv2jGPLFPwhc9TOK3Za803r3pQPWzqSGn4vfMtAy9d8x
- 4Gy8A
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4144; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=nvhkE4iVPWt6ZMbpDqr0VjZaPTTvkSGU9Bdm3A6LGuc=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJO6sz0ecuhabPRdpPK2Q2xbqfD67XmL3erXzXlSdUsS
+ 0GX2ZyfOkpZGMS4GGTFFFmefxHfHyQSNq/zgr8bzBxWJpAhDFycAjARX2eGfwqMUa37yooF/+aL
+ czQu1hOX2d9kaRxstGbleU4p3QuZjYwMhx/P6ddiYrn85V5Rm4dPSMdf3oxXOc6tuj8ez976/Po
+ dHgA=
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 
-There's no reason to export the symbols for these functions which are only
-called from internal mm logic, additionally there's no reason for them to
-be declared in mm.h.
+MMAP_MAP_KERNEL_PAGES is a mouthful, discard the MAP_ as that's implied by
+MMAP.
 
-This patch therefore removes the exports and moves the declarations to
-mm/internal.h.
+Also while we're here delete useless comments for mmap actions whose names
+clearly indicate what they are for.
+
+Also update the userland VMA tests to reflect this change.
 
 No functional change intended.
 
@@ -172,59 +172,105 @@ Reviewed-by: Gregory Price (Meta) <gourry@gourry.net>
 Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- include/linux/mm.h | 3 ---
- mm/internal.h      | 3 +++
- mm/memory.c        | 2 --
- 3 files changed, 3 insertions(+), 5 deletions(-)
+ include/linux/mm.h              | 2 +-
+ include/linux/mm_types.h        | 8 ++++----
+ mm/util.c                       | 8 ++++----
+ tools/testing/vma/include/dup.h | 8 ++++----
+ 4 files changed, 13 insertions(+), 13 deletions(-)
 
 diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 68250ece4219..0c17f0932b76 100644
+index 0c17f0932b76..a1f2d375cf7d 100644
 --- a/include/linux/mm.h
 +++ b/include/linux/mm.h
-@@ -4768,9 +4768,6 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
- int vm_insert_page(struct vm_area_struct *, unsigned long addr, struct page *);
- int vm_insert_pages(struct vm_area_struct *vma, unsigned long addr,
- 			struct page **pages, unsigned long *num);
--int map_kernel_pages_prepare(struct vm_area_desc *desc);
--int map_kernel_pages_complete(struct vm_area_struct *vma,
--			      struct mmap_action *action);
- int vm_map_pages(struct vm_area_struct *vma, struct page **pages,
- 				unsigned long num);
- int vm_map_pages_zero(struct vm_area_struct *vma, struct page **pages,
-diff --git a/mm/internal.h b/mm/internal.h
-index 061a87f9c3fb..fc4e249e2343 100644
---- a/mm/internal.h
-+++ b/mm/internal.h
-@@ -1512,6 +1512,9 @@ int remap_pfn_range_prepare(struct vm_area_desc *desc);
- int remap_pfn_range_complete(struct vm_area_struct *vma,
- 			     struct mmap_action *action);
- int simple_ioremap_prepare(struct vm_area_desc *desc);
-+int map_kernel_pages_prepare(struct vm_area_desc *desc);
-+int map_kernel_pages_complete(struct vm_area_struct *vma,
-+			      struct mmap_action *action);
- 
- static inline int io_remap_pfn_range_prepare(struct vm_area_desc *desc)
+@@ -4623,7 +4623,7 @@ static inline void mmap_action_map_kernel_pages(struct vm_area_desc *desc,
  {
-diff --git a/mm/memory.c b/mm/memory.c
-index 926276d41920..448342883e9d 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2628,7 +2628,6 @@ int map_kernel_pages_prepare(struct vm_area_desc *desc)
+ 	struct mmap_action *action = &desc->action;
  
- 	return 0;
- }
--EXPORT_SYMBOL(map_kernel_pages_prepare);
+-	action->type = MMAP_MAP_KERNEL_PAGES;
++	action->type = MMAP_KERNEL_PAGES;
+ 	action->map_kernel.start = start;
+ 	action->map_kernel.pages = pages;
+ 	action->map_kernel.nr_pages = nr_pages;
+diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+index 5413bd10fff2..9ca2ea3664bc 100644
+--- a/include/linux/mm_types.h
++++ b/include/linux/mm_types.h
+@@ -815,11 +815,11 @@ struct pfnmap_track_ctx {
  
- int map_kernel_pages_complete(struct vm_area_struct *vma,
- 			      struct mmap_action *action)
-@@ -2640,7 +2639,6 @@ int map_kernel_pages_complete(struct vm_area_struct *vma,
- 			    action->map_kernel.pages,
- 			    &nr_pages, vma->vm_page_prot);
- }
--EXPORT_SYMBOL(map_kernel_pages_complete);
+ /* What action should be taken after an .mmap_prepare call is complete? */
+ enum mmap_action_type {
+-	MMAP_NOTHING,		/* Mapping is complete, no further action. */
+-	MMAP_REMAP_PFN,		/* Remap PFN range. */
+-	MMAP_IO_REMAP_PFN,	/* I/O remap PFN range. */
++	MMAP_NOTHING,
++	MMAP_REMAP_PFN,
++	MMAP_IO_REMAP_PFN,
+ 	MMAP_SIMPLE_IO_REMAP,	/* I/O remap with guardrails. */
+-	MMAP_MAP_KERNEL_PAGES,	/* Map kernel page range from array. */
++	MMAP_KERNEL_PAGES,	/* Map kernel page range from array. */
+ };
  
- /**
-  * vm_insert_page - insert single page into user vma
+ /*
+diff --git a/mm/util.c b/mm/util.c
+index d809e08c7b4d..1660910e2a22 100644
+--- a/mm/util.c
++++ b/mm/util.c
+@@ -1467,7 +1467,7 @@ int mmap_action_prepare(struct vm_area_desc *desc)
+ 		return io_remap_pfn_range_prepare(desc);
+ 	case MMAP_SIMPLE_IO_REMAP:
+ 		return simple_ioremap_prepare(desc);
+-	case MMAP_MAP_KERNEL_PAGES:
++	case MMAP_KERNEL_PAGES:
+ 		return map_kernel_pages_prepare(desc);
+ 	}
+ 
+@@ -1498,7 +1498,7 @@ int mmap_action_complete(struct vm_area_struct *vma,
+ 	case MMAP_REMAP_PFN:
+ 		err = remap_pfn_range_complete(vma, action);
+ 		break;
+-	case MMAP_MAP_KERNEL_PAGES:
++	case MMAP_KERNEL_PAGES:
+ 		err = map_kernel_pages_complete(vma, action);
+ 		break;
+ 	case MMAP_IO_REMAP_PFN:
+@@ -1521,7 +1521,7 @@ int mmap_action_prepare(struct vm_area_desc *desc)
+ 	case MMAP_REMAP_PFN:
+ 	case MMAP_IO_REMAP_PFN:
+ 	case MMAP_SIMPLE_IO_REMAP:
+-	case MMAP_MAP_KERNEL_PAGES:
++	case MMAP_KERNEL_PAGES:
+ 		WARN_ON_ONCE(1); /* nommu cannot handle these. */
+ 		break;
+ 	}
+@@ -1542,7 +1542,7 @@ int mmap_action_complete(struct vm_area_struct *vma,
+ 	case MMAP_REMAP_PFN:
+ 	case MMAP_IO_REMAP_PFN:
+ 	case MMAP_SIMPLE_IO_REMAP:
+-	case MMAP_MAP_KERNEL_PAGES:
++	case MMAP_KERNEL_PAGES:
+ 		WARN_ON_ONCE(1); /* nommu cannot handle this. */
+ 
+ 		err = -EINVAL;
+diff --git a/tools/testing/vma/include/dup.h b/tools/testing/vma/include/dup.h
+index 077df510a311..023ad6092e9c 100644
+--- a/tools/testing/vma/include/dup.h
++++ b/tools/testing/vma/include/dup.h
+@@ -454,11 +454,11 @@ static __always_inline bool vma_flags_empty(const vma_flags_t *flags)
+ 
+ /* What action should be taken after an .mmap_prepare call is complete? */
+ enum mmap_action_type {
+-	MMAP_NOTHING,		/* Mapping is complete, no further action. */
+-	MMAP_REMAP_PFN,		/* Remap PFN range. */
+-	MMAP_IO_REMAP_PFN,	/* I/O remap PFN range. */
++	MMAP_NOTHING,
++	MMAP_REMAP_PFN,
++	MMAP_IO_REMAP_PFN,
+ 	MMAP_SIMPLE_IO_REMAP,	/* I/O remap with guardrails. */
+-	MMAP_MAP_KERNEL_PAGES,	/* Map kernel page range from an array. */
++	MMAP_KERNEL_PAGES,	/* Map kernel page range from array. */
+ };
+ 
+ /*
 
 -- 
 2.55.0
