@@ -1,53 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-29124-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29125-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95D3FCA9EC3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2026 18:08:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B229CA601E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2026 18:09:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j1ZcM1JGgz3bp7;
-	Sat, 10 Oct 2026 05:08:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791569331;
-	cv=none; b=hAh1Ta5xOkCWZvD67q2XVjUQNpXY3V7n82rBiIMm3MBUHfLK5aspvKLdFSU6EZr5LBgMIR3xGa4qfbFiXq6mAxMTAc1DKd/2Vjow46QaW4UpFwCbA+Hyle6tCQ9PDiAtf8W4Kmnan/3TNTmxn1QicAu94fs+MtXaaFgE7KucbBOAkIVTecM92bq4GUHn7PJ0J4isqpxlCqdp5lmzfZjqp7OjrLCaxmJJSUkG33uh8Zp8wHq/A9rYUKozNX8CbZZVuS/gnrTbylWv0Yj9BeygVzRnra81MhQKz7o3WBL84qBIY2fCLrTNuHoUjr9gA5DgsZCUPVsIqcx9+C4Pk4vBlg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j1Zcl5yRWz3bs2;
+	Sat, 10 Oct 2026 05:09:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791569351;
+	cv=none; b=BVkiCi4VxGDGYTKPEeQtbXFdh9iez1dMQoCDI+6vdxWfMU4ZnxEMdmazlvlSC8S5+P1kQQW4eyQQC2/6kQKrOeajx4+bRkoKFx8w3gwKeraTQQ1qQr4AultdlyenstjyzHI3y2mRxdUT4lPtCISDeGbZRblkf29v4U97T1Oq/fytTtbKTzw2t0ufZQzLP17GDBIdIpnyQ3YDOQNJ+a20yeIKJaRWRnSnXdrMtQ/1ayhkZQN+Mn8pVpMdhRJUhCbiiPsZ45wXf9oXhlJaYL5t7m7laHe/H8KNJN7kSFZ2sma1ql+aGxYy46j6FOrwMZ26I6QVkzCkQQTVgHPwmcJ+5g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791569331; c=relaxed/relaxed;
-	bh=GMtIN+4F9Qb+gUfI9aB/QG5XlGE+8TEC3chxVq3fBvM=;
+	t=1791569351; c=relaxed/relaxed;
+	bh=HXvAGJ21GFXlCXFIOD7WMGr+Kl6vRRefqbwPXSBjAug=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=KK+A8Bqp1irFnpB2x1iRRnw+JVji1M5G7DpCPeCS21uUCVOOFDQrBPDex6a7ho1/RLo6Fqvzju76gtpqje7x5V3mOP4ThJI/sLVxR92t+Z5yy7t15mn1e6b6RosHO9UiRnFaOPegE3Hlv2PU5n/mThJprUYpYxrC1yJtf2pciZxA+lAISv4LoKXb4Fqm7/IUbYypYWQq3TOhylHHCAfD8sCpNmBj47cXoQkbPCWdQ1fzpPghKQR6tcjUi4Dm63QWzWq3yky8XHdg/a6SwxcJ+w4v8UwOwysZHj6vR66v+Pj9478aOaHfJStzMJrDMUDOqTdKDNu1U2jJvNSsidJjMw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RG79TTsX; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=UtXg+eU+WtWspe28A3LMK6IchkV8BhwHisDYWbPHxj2bMYo05L5NYU1SZrj/RPvzCAyedthGVfZv+V0g8a0PjknSRGE7WmuM8qmEADpduVz14xrPOFcuBOc6jH66XrGuYPWNj+pI/+DbLc/hE+18lZJTZfY9rC35FsRD6cDCU2hXHE3rkI2yk2Nxeay7nmcDhkberhytPsnv2kswKtg7UjG9yp6HpJIK5dDQpJFPAru9YstQZfvHnyw1Fhnjr6BoAxR6GrHBUctebrDgyzDtatA5COQgTYuRK7M9/mB1psABT+vJ9j8jsCyhk220pukSo9bPEo4rBiX+KJd/R0e8Vg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aMQjGNH0; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RG79TTsX;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aMQjGNH0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j1ZcL2J1cz3bh4
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 05:08:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j1Zcl0T9Nz3bh4
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 05:09:11 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 708E6405ED;
+	by sea.source.kernel.org (Postfix) with ESMTP id 83E6641264;
+	Fri,  9 Oct 2026 18:09:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AD2C41F000FF;
 	Fri,  9 Oct 2026 18:08:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9F8321F00904;
-	Fri,  9 Oct 2026 18:08:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791569328;
-	bh=GMtIN+4F9Qb+gUfI9aB/QG5XlGE+8TEC3chxVq3fBvM=;
+	s=k20260515; t=1791569349;
+	bh=HXvAGJ21GFXlCXFIOD7WMGr+Kl6vRRefqbwPXSBjAug=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=RG79TTsXtdLFNVIBfTJxF8oLuu+5m7NNZ56wCA57RHrAz6MJ75qyRN5mJCOUUkxgy
-	 jbQOyUlzFyiMdDEA2YJb3Gql3kIAq7ri83iTnPxD/rXsuPjDaBsoPHcv+Mcg5yy3pp
-	 i/dFx9+dZsKRNmJJH08I/jbObL4QYF4o7512qtve4lYqt+/aSzrla2xDuoWgUrcQd6
-	 iRMdACfI86yBKKzR8mB0HRM2q53Cqod73gMqGUu1nLR7rtBem1EMO6HDkuF6kKdWQ2
-	 22d8wFTLnY9rHOopat/hNlZpNZNWdxLCE3OpqHg9FemWhtsVIFlDrXcsgeljQBpPTU
-	 RQ/zjA1a4Aa0Q==
+	b=aMQjGNH0miqmoIl35ZayS+qH0MGRnd6Cko1KN+6mGkZIpvojG35ka6MQIUlxiWhAU
+	 7Ln8zh9hhLq9/1AZ4CUIHLlvwH0EJqJ/tkD2FYwjagFYPQvhXEaEdBgtp2EvRgPG3r
+	 QJzdFeOiI1gTGjDg02fgNZbpIh+cL8WbTHfWopYGPffFMnOoPodyytvyqjVbOMnbR/
+	 nvG64vKUGzUmcI49cSMjb/bTMNTJdjOHcsa3Rfch1jqWEUoXTjC3q09cCAnIvErO5g
+	 4uFSPk+KvS5ycVdSSSYkwgl0u37j84fms9RT6yPBIOZhoQoMlKgF2fwxAJG4LoYA6l
+	 Bnv2OZu8cljig==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Fri, 09 Oct 2026 19:04:06 +0100
-Subject: [PATCH v5 12/38] ALSA: pcm: use vm_insert_page() to map PCM status
- page
+Date: Fri, 09 Oct 2026 19:04:07 +0100
+Subject: [PATCH v5 13/38] bpf: arena: mark arena_map_mmap() mappings
+ VM_MIXEDMAP
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-12-923b70125b1e@kernel.org>
+Message-Id: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-13-923b70125b1e@kernel.org>
 References: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-0-923b70125b1e@kernel.org>
 In-Reply-To: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-0-923b70125b1e@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -147,98 +147,67 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, 
  fuse-devel@lists.linux.dev, Ihor Solodrai <ihor.solodrai@linux.dev>, 
  Bert Karwatzki <spasswolf@web.de>, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, 
- Takashi Iwai <tiwai@suse.de>
+ Emil Tsalapatis <emil@etsalapatis.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2824; i=ljs@kernel.org;
- h=from:subject:message-id; bh=9ugH4FT9/gtznAktS44gGpUEq4pOXZMJ2VeeFOF3Z44=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJO6sySeVmdcf50TK0o57eC76+W2Sh5z/RiXMolLlTIH
- P9ap+N8RykLgxgXg6yYIsvzL+L7g0TC5nVe8HeDmcPKBDKEgYtTACYidZiR4fA3i8qOls98hQcu
- H06vOvDwtH/CO9GL7PNKo3hz2qW2ODMyXCuZGnQj6OVy3Yii6daF179XuJrLFc0O9ej9Zvxy2/9
- XPAA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2179; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=tM59zMzSvZAL0eIh8BMq6f95yGj1GJaZNA6qSluVUvo=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJO6sx6cN9+uxBv5cu51X66TDxRzjfPdew4Fa0+5eqjw
+ BzdRZded5SwMIhxMciKKbI8/yK+P0gkbF7nBX83mDmsTCBDGLg4BWAiu/kY/nv+0eN+Pz1UTJJD
+ f+40+6cJWZdfSV9cLmrpVVTBMWXDYRaGH+tvRH5S+Kjxrzdz+h1B1VNqyYaS59t8t3G4Bvjtexb
+ GBAA=
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 
-There's no need to keep a fault handler around for this, instead map on
-mmap.
+The bpf_map->ops->map_mmap callback invoked by bpf_map_mmap() can be set to
+one of ringbuf_map_mmap_kern(), ringbuf_map_mmap_user(), array_map_mmap()
+or arena_map_mmap().
 
-While we're here, rename area to vma to be consistent.
+It is convention in mm to mark mappings whose pages the kernel manages
+itself with VM_MIXEDMAP, so core mm knows not to treat them as ordinary
+page cache or anonymous memory.
 
-This correctly makes the mapping a mixed map mapping.
+The map_mmap callbacks ringbuf_map_mmap_kern() and ringbuf_map_mmap_user()
+use remap_vmalloc_range(), which ultimately invokes vm_insert_page() and so
+marks the ranges VM_MIXEDMAP, and array_map_mmap() sets VM_MIXEDMAP
+explicitly.
 
-This works towards establishing the invariant that only PFN mapped or mixed
-map mappings may clear the VM_MAYWRITE flag. The status page mapping clears
-VM_MAYWRITE, so it must not be mm-managed; the control page mapping remains
-writable and is left fault-based.
+However, the exception to this is arena_map_mmap(), which doesn't set the
+flag.
 
-The assumption is made that the struct pcm_mmap_status structure is at most
-a page in size, which is asserted as a build bug.
+This patch corrects this and updates the comment to reflect it.
 
-This is safe to assume, as the size of the structure is 56 bytes at most.
+The pages are refcounted and vm_normal_page() finds them regardless of the
+flag, and VM_DONTEXPAND remains set (marking the memory as VM_SPECIAL and
+thus unmergeable). The one effect is that NUMA balancing now skips these
+VMAs, as it already does for the other bpf map mappings, which is the
+reason array_map_mmap() gives for setting the flag.
 
-Acked-by: Takashi Iwai <tiwai@suse.de>
+The intent of this patch is to be able to establish the invariant that only
+PFN-mapped or mixed map ranges may clear the VM_MAYWRITE flag, as is done
+in bpf_map_mmap().
+
+Reviewed-by: Emil Tsalapatis <emil@etsalapatis.com>
 Reviewed-by: Suren Baghdasaryan <surenb@google.com>
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- sound/core/pcm_native.c | 38 +++++++++++++-------------------------
- 1 file changed, 13 insertions(+), 25 deletions(-)
+ kernel/bpf/arena.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
-index 62324282fcae..c98fb3df14f3 100644
---- a/sound/core/pcm_native.c
-+++ b/sound/core/pcm_native.c
-@@ -3760,39 +3760,27 @@ static __poll_t snd_pcm_poll(struct file *file, poll_table *wait)
- /*
-  * mmap status record
-  */
--static vm_fault_t snd_pcm_mmap_status_fault(struct vm_fault *vmf)
-+static int snd_pcm_mmap_status(struct snd_pcm_substream *substream, struct file *file,
-+			       struct vm_area_struct *vma)
- {
--	struct snd_pcm_substream *substream = vmf->vma->vm_private_data;
-+	const unsigned long size = vma->vm_end - vma->vm_start;
- 	struct snd_pcm_runtime *runtime;
--	
--	if (substream == NULL)
--		return VM_FAULT_SIGBUS;
--	runtime = substream->runtime;
--	vmf->page = virt_to_page(runtime->status);
--	get_page(vmf->page);
--	return 0;
--}
-+	struct page *page;
- 
--static const struct vm_operations_struct snd_pcm_vm_ops_status =
--{
--	.fault =	snd_pcm_mmap_status_fault,
--};
-+	BUILD_BUG_ON(sizeof(struct snd_pcm_mmap_status) > PAGE_SIZE);
- 
--static int snd_pcm_mmap_status(struct snd_pcm_substream *substream, struct file *file,
--			       struct vm_area_struct *area)
--{
--	long size;
--	if (!(area->vm_flags & VM_READ))
-+	if (!(vma->vm_flags & VM_READ))
- 		return -EINVAL;
--	size = area->vm_end - area->vm_start;
--	if (size != PAGE_ALIGN(sizeof(struct snd_pcm_mmap_status)))
-+	if (size != PAGE_SIZE)
- 		return -EINVAL;
--	area->vm_ops = &snd_pcm_vm_ops_status;
--	area->vm_private_data = substream;
--	vm_flags_mod(area, VM_DONTEXPAND | VM_DONTDUMP,
-+
-+	vm_flags_mod(vma, VM_DONTEXPAND | VM_DONTDUMP,
- 		     VM_WRITE | VM_MAYWRITE);
-+	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
- 
--	return 0;
-+	runtime = substream->runtime;
-+	page = virt_to_page(runtime->status);
-+	return vm_insert_page(vma, vma->vm_start, page);
+diff --git a/kernel/bpf/arena.c b/kernel/bpf/arena.c
+index 7b6847200b43..b69fe5e34339 100644
+--- a/kernel/bpf/arena.c
++++ b/kernel/bpf/arena.c
+@@ -620,8 +620,9 @@ static int arena_map_mmap(struct bpf_map *map, struct vm_area_struct *vma)
+ 	 * clears VM_MAYEXEC. Set VM_DONTEXPAND to avoid potential change
+ 	 * of user_vm_start. Set VM_DONTCOPY to prevent arena VMA from
+ 	 * being copied into the child process on fork.
++	 * This is a kernel page so set VM_MIXEDMAP.
+ 	 */
+-	vm_flags_set(vma, VM_DONTEXPAND | VM_DONTCOPY);
++	vm_flags_set(vma, VM_MIXEDMAP | VM_DONTEXPAND | VM_DONTCOPY);
+ 	vma->vm_ops = &arena_vm_ops;
+ 	return 0;
  }
- 
- /*
 
 -- 
 2.55.0
