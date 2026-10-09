@@ -1,110 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-29089-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29090-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83597CA6019
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2026 10:18:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C04B7CA6018
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2026 11:39:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j1N9V3vg5z2yK7;
-	Fri, 09 Oct 2026 21:18:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791541102;
-	cv=none; b=C63V5xzvNsbCzzjMyLPpERbbpaA3BSf52hsS4rKL+9UIf2Bc4yQGrTxd2UPfWcl1DzNBZIE19aNeWZM3sW1C8c1FqP/xgY20iYOezboWaOcJaX2iykPUnjH/T0vD0ZKgI4RBGKNyHoshzhCdHY6lrsLylo5/E1PQe+X5EHWd4NJP+3/D05MOo6BKdtiV27/iD3VitVC9CfY4HuF7dM32bXk5K/GWDCKoLtKvzX8w22EfNaTvitb1QoAXxyAL2KIr4t2QyBDYnRBX88genB3ps/x9GxJGs+4neESHasjxLm/BO0QQDvS1eqvA3XIDTpvkP+OX7ResSdngS0UcKPRGnQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j1Pz96pgyz2yr0;
+	Fri, 09 Oct 2026 22:39:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791545973;
+	cv=none; b=KYr6O/TmrUuF7fxCoKC295Us078VPuNsGGKtsyLDtCp5ETYcV0UlNNafHX4hCqAyBp4AfWDqQozp5NFjvkqhqKu5O/C+tVd4f683xi+9AAMgzgWD67/MlNPHuYtEpIKxYSde0R2QE8iZh46Bbxxb7z4HaRXoP4obbJm/GqV+dlxKyVbknRNK+YB4EvxNO7xg7cCOyz0oueUIvbJIzO99r6uBS24RHBbLsqKlwnSypYC6K0vp6vuZgr1e/VUXyOo7Hlb9txETMRHCF3r5n6vNIL6KqgSD2RedDfT3hGhG/c5Gop7WJ4qbYKZnTnWeRJ0suOUWewkN3M5jAuXGbYzVkA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791541102; c=relaxed/relaxed;
-	bh=wxARsjGuquaiLxgSm18RK/GYX/5yHnqt2BOAs4KeGsQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Y8f7dZ1eyVuc2QXrXBtQnj9hAqDvCgTjoJ5yh1jZpnK3ZrzNVFde5Ac6dbJF51Ql9xBCYDawGX1kZNgJm6zO1/oNK4Iq1VtLv6uHmkxkB/YKSPu8buzNia44J0JMYwsHRiHyNLmUyATzT5FVQYF3ymkPfuZSga4tzXFn/E3meygGOqa+lqWQPS1q9oD7rJp2j6Rn2LLgPjqw5DUuuBenVtK3Y39VLNleDHZ58Gy5SYh05q/dxDcSSyuaAmhMXyJWqgno+SW73eOhq3BFKIfEn2v88D2T65LVzv1X3OKWeJUUB21uPf4AndxYRaQ81r+9h9W5+GsZvVIN4OH8okwv7Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=J/Ulp1ki; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=will@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1791545973; c=relaxed/relaxed;
+	bh=frbc1baQqWe/mpJv3xogK/lCPrQ3j/t7YFJYnj7uamU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=AOxGaFq1nhTlQl7Ih0ralNRySpTlBSr76+ekC3sH+yxkOHEznbI83jd7k50G7TOY/wILFMxeG1dnAwcRqgIWsMJ8ko0S69CUkUfgsIRLHibKUDpqImoUCrkdtmkwibxIja/rtljAOL8uFI3QxdiLSsuIzZen1Gy+6ibOhbR8Nbx5vqxEg2r8nwMxgI/rAkax+XDDH3OhYevA/Lp5GIPhsPNXoDVW+DYMEEIVhhb0c+QKhnmmZPEevfGDl+HycbQWnWQt42gsfyZxqwHzwxPEHY00k/XVdTvtav3SiWrIWjFJlzdL4k11l9ZHLwpE0LwPaxhzet+wmBIHjxHISRkKJA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gQjRgpMt; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=avinash@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=J/Ulp1ki;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gQjRgpMt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=will@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=avinash@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j1N9T1Lhxz2y1W
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Oct 2026 21:18:21 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id E416541471;
-	Fri,  9 Oct 2026 10:18:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 40FA51F000FF;
-	Fri,  9 Oct 2026 10:18:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791541098;
-	bh=wxARsjGuquaiLxgSm18RK/GYX/5yHnqt2BOAs4KeGsQ=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=J/Ulp1kiU/fHLorufnUGZviVewHpZ4i2nh7ovjmbgtSVM9rKK3zfjolFAXlJiCoG/
-	 BMW5Ubh23ZkHDtz2gC3M7BH0DoQb7aWS09Fvb5ai3Tah7LXu0pj6waoAyV4+Ys7d5Z
-	 +iywIF9ht9ECEh7ry8yPogWZ87BGl4TKzbkbZrEJI5fQcCBS3ROhYfkTdcqveZDJbP
-	 aeEe9F9SdlEQjf4RfVxNp6TljhzSQkjK1V50hbw9FBfJgs2u42Zj9iTGwDxFCYK4CY
-	 7TdAyz5T7sPBsEmViOMRCDgegOg9M7rT99tg9OQAo14hJB5idOZRFpneZ6VooRc89y
-	 jEHJjjoVpql9w==
-Date: Fri, 9 Oct 2026 11:18:05 +0100
-From: Will Deacon <will@kernel.org>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
-	Catalin Marinas <catalin.marinas@arm.com>, iommu@lists.linux.dev,
-	linux-kernel@vger.kernel.org, Robin Murphy <robin.murphy@arm.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	Mark Rutland <mark.rutland@arm.com>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>,
-	Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Stefano Stabellini <sstabellini@kernel.org>,
-	Russell King <linux@armlinux.org.uk>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Jiaxun Yang <jiaxun.yang@flygoat.com>,
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Andy Lutomirski <luto@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
-	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	x86@kernel.org
-Subject: Re: [PATCH v6 6/8] dma: swiotlb: Centralize memory-encryption pool
- sizing
-Message-ID: <asi_XW2FaVjjWhxk@willie-the-truck>
-References: <20260924060756.1325156-7-aneesh.kumar@kernel.org>
- <asVs3doaJ4WrT3M2@willie-the-truck>
- <asYZFXGyafRjjBS0@arm.com>
- <asYiOgskwi8JYLe_@willie-the-truck>
- <yq5awlrt3dwo.fsf@kernel.org>
- <yq5av77c92oo.fsf@kernel.org>
- <aseRzPshcoys7AJS@arm.com>
- <CGME20261008143238eucas1p1ee087352709f2a82d2aec95540ae2031@eucas1p1.samsung.com>
- <yq5ao6d48dqr.fsf@kernel.org>
- <c2e38455-cb31-4854-ab84-4a370fabc1f9@samsung.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j1Pz850YJz2yjp
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Oct 2026 22:39:31 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6998ZSHZ2007491;
+	Fri, 9 Oct 2026 11:39:21 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=frbc1b
+	aQqWe/mpJv3xogK/lCPrQ3j/t7YFJYnj7uamU=; b=gQjRgpMtfqnC0hStwZSE0S
+	6Rys1hGxgXgxyJ2+2+lYCsnXtGj9y2Awkv56BrUz81m2wcXlc2+R4uIuj6gxSQV0
+	bREVgaQt67Y0JdwGJA/vq1vwQ5BT7HHZKuOyysE1feEtcntkjh4zt/KYBGpqrXmS
+	n5ylxsFayCdR9x1Nh94nSd2pHrgVuC8/67XtdcN+VtOeJsN+ctbJCUL6tuV04/9V
+	yhtIWYCRPMnFFbnJfiz0BX5CIW+ohI0Dvvx6I3DIySO4xy6VyCRCC2tOyC6+QkTT
+	ZF7iKgSSe2U5f+wU2h2LicU4OtodZ+tC33b/eW8W4uVvKUZAxaZwQnR42o5WHugA
+	==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h5xjwad9v-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Fri, 09 Oct 2026 11:39:20 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6998I1j5559738;
+	Fri, 9 Oct 2026 11:39:20 GMT
+Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h6udd0wqh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 09 Oct 2026 11:39:20 +0000 (GMT)
+Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
+	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 699BdIC129032988
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 9 Oct 2026 11:39:18 GMT
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2CA1D5805F;
+	Fri,  9 Oct 2026 11:39:18 +0000 (GMT)
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 391EE5805E;
+	Fri,  9 Oct 2026 11:39:14 +0000 (GMT)
+Received: from [9.39.24.183] (unknown [9.39.24.183])
+	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Fri,  9 Oct 2026 11:39:13 +0000 (GMT)
+Message-ID: <4e2d9b0a-86b7-4c92-a6fe-994debe89122@linux.ibm.com>
+Date: Fri, 9 Oct 2026 17:09:12 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -118,19 +81,150 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <c2e38455-cb31-4854-ab84-4a370fabc1f9@samsung.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] PCI: quirks: Add warm reset quirk for IBM Spyre
+ accelerator
+To: mahesh@linux.ibm.com
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, bhelgaas@google.com,
+        npiggin@gmail.com, chleroy@kernel.org, sbhat@linux.ibm.com,
+        linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Avinash Roy <avinash.roy1@linux.ibm.com>
+References: <20260821123401.1375297-1-avinash@linux.ibm.com>
+ <apZOqDGq16sTPZYP@linux.ibm.com>
+Content-Language: en-US
+From: Avinash Roy <avinash@linux.ibm.com>
+In-Reply-To: <apZOqDGq16sTPZYP@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: yT35uhABl-5lw6PaybfVssFwIRiVrOPr
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA5MDA0NiBTYWx0ZWRfX2Q8ee3j4ELk6
+ uoiKZY7eeCahbwNVjXaaKwApj+IYZF44UqOWWRjNbgnZ8FSAlFdM2gp+Y7XN5Bv7VNwYgfZ0NF7
+ ksKd2vywtFJ4nt+72Wd9Lx8JbrHou37w5NGs0hZ3x/icN2kcKrGogS+gafoda6h4FtrHyEbvWBH
+ Wp6bGIYhPHj1AHtVQLXrpjAvKD67jZ7hAbGQet8kMw7hLJQExYD/KE/jv60O8nX8VDQof8x2pjx
+ FtF/lA46LiLfz85Oy4gyjH6gpc3QT3ULWiY8YuCinWeaxhySVDYwVvTVoDdprWPdPvgSpMQQMkT
+ bSAaA806ciMImOF7AvjlJUwpBW5N+5oCMhlXNLb7f/Ug5wG13vrsKzJoML+bkHlnP2PjU4qkLr6
+ ZlHMAe1yXGQ4CrgBCBGnbVQfBwXOU+0l4esT+7afuloQfp72xcO4PgMTcoxlsm6akc8VLUeoJH6
+ ofHrywuRUNI+3a8Q9xQ==
+X-Authority-Analysis: v=2.4 cv=cIt1IVeN c=1 sm=1 tr=0 ts=6ac8d269 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=pFy-_tqO5D2utgubRJ4A:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA5MDA0NiBTYWx0ZWRfXzi6/KyleNLeS
+ bFtkBNOF1EdwQZs+2/3wVCF1P36NRR66LbrfwhVlx9YKxNC8CHO5B2+2L16UfNtkDc10Yrj2c0/
+ XG0uRMXCiAFRz/uA/++A61dO/kJ1ygg=
+X-Proofpoint-ORIG-GUID: qr9bZ4NJLHaHU-lQOu81TFEZ9wRcjB7z
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-09_03,2026-10-08_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1011 malwarescore=0 priorityscore=1501 adultscore=0 impostorscore=0
+ lowpriorityscore=0 suspectscore=0 spamscore=0 phishscore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610020000 definitions=main-2610090046
 
-On Thu, Oct 08, 2026 at 05:32:44PM +0200, Marek Szyprowski wrote:
-> On 08.10.2026 16:32, Aneesh Kumar K.V wrote:
-> > Patch 3 is a fix, so you may want to take it even if we drop the rest of
-> > the series. Perhaps the first three patches could be taken together?
-> 
-> Okay, I will take only the first 3 patches to dma-mapping-for-next branch now
-> and wait for the remaining patches until they gets sorted out.
 
-Thanks, Marek.
+On 9/1/26 9:39 AM, Mahesh J Salgaonkar wrote:
+> On 2026-08-21 18:04:01 Fri, Avinash Roy wrote:
+>> From: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+>>
+>> The IBM Spyre accelerator (PCI ID 1014:06a7) requires a dedicated warm
+>> reset method for reliable EEH recovery on pSeries/ppc64 platforms.
+>>
+>> FLR alone is insufficient because it does not re-initialize firmware
+>> state machine for the current version of the card. The existing API
+>> pci_set_pcie_reset_state() is used to drive the platform-level
+>> PERST# using the EEH interfaces by adding a device specific quirk.
+>>
+>> The reset function is placed in arch/powerpc/platforms/pseries/pci.c
+>> where the EEH infrastructure is already present, declared in
+>> pseries.h, and registered in the generic pci_dev_reset_methods[] table
+>> in drivers/pci/quirks.c under a CONFIG_PPC_PSERIES guard.
+>>
+>> This reset method is only registered when CONFIG_PPC_PSERIES is enabled,
+>> so it is not available on other platforms.
+>>
+>> Reset sequence:
+>>    - Assert PERST# via pcie_warm_reset, hold 250 ms
+>>    - Deassert PERST# via pcie_deassert_reset
+>>    - Wait 250 ms for PCIe link retrain 	
+>>
+>> Signed-off-by: Avinash Roy <avinash.roy1@linux.ibm.com>
+>> Signed-off-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+>>
+>> ---
+>> Changelog
+>> v1: https://lore.kernel.org/linux-pci/20260805125100.1-1-avinash.roy1@linux.ibm.com/
+>>
+>>     Reworded the commit message to highlight the warm reset requirement being
+>>     a need of the current card and not a platform deficiency.
+>>
+>> diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
+>> index 84e4ffe957a8..7aa58d57208f 100644
+>> --- a/arch/powerpc/platforms/pseries/pci.c
+>> +++ b/arch/powerpc/platforms/pseries/pci.c
+>> @@ -11,6 +11,7 @@
+>>   #include <linux/kernel.h>
+>>   #include <linux/pci.h>
+>>   #include <linux/string.h>
+>> +#include <linux/delay.h>
+>>   
+>>   #include <asm/eeh.h>
+>>   #include <asm/pci-bridge.h>
+>> @@ -236,6 +237,41 @@ static void fixup_winbond_82c105(struct pci_dev* dev)
+>>   DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_WINBOND, PCI_DEVICE_ID_WINBOND_82C105,
+>>   			 fixup_winbond_82c105);
+>>   
+>> +/*
+>> + * Reset Spyre adapter using pci_set_pcie_reset_state()
+>> + * This is specifically for PPC platforms where EEH (Enhanced Error Handling)
+>> + * requires this reset method for proper device recovery.
+>> + */
+>> +int reset_spyre(struct pci_dev *dev, bool probe)
+>> +{
+>> +	int ret;
+>> +
+>> +	if (probe)
+>> +		return 0;
+>> +
+>> +	/* Assert warm reset */
+>> +	ret = pci_set_pcie_reset_state(dev, pcie_warm_reset);
+>> +	if (ret) {
+>> +		pci_err(dev, "Failed to assert reset: %d\n", ret);
+>> +		return ret;
+>> +	}
+>> +
+>> +	/* Wait for reset to take effect */
+>> +	msleep(250);
+> How did you arriver on this number ? Is this time defined by
+> hardware/firmware specs for reset ?  Also, Can you #define the value 250
+> and use macro instead of constant numbmer.
 
-Will
+This was the delay shared by the hardware team derived from their 
+calibrations.
+
+Thanks,
+Avinash
+>
+>> +
+>> +	/* Deassert reset */
+>> +	ret = pci_set_pcie_reset_state(dev, pcie_deassert_reset);
+>> +	if (ret) {
+>> +		pci_err(dev, "Failed to deassert reset: %d\n", ret);
+>> +		return ret;
+>> +	}
+>> +
+>> +	/* Wait for device to recover */
+>> +	msleep(250);
+> same here.
+>
+>> +
+>> +	return 0;
+>> +}
+>> +
+> Thanks,
+> -Mahesh.
+>
 
