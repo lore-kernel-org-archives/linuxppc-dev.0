@@ -1,60 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-29084-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29085-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 308C1CA6015
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2026 06:10:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E93E0CA601A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2026 06:10:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j1GgH3GYYz30gC;
-	Fri, 09 Oct 2026 17:10:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791526219;
-	cv=none; b=Cu38vzxwlT92A1zgWhXbTD/2atrSudBJTuofwHPhOsQCYIOZWtpIumSOfY2aDDuFRny8SBpa5yzaBKSJhKJ5InF10oiLZgmMzBl3Z4KErt+WIYJ1FYHNhZewZZv92e32Sx79q8CcRpuRxEGdGQQLnNWdJgMTNfoJEmHuvR4ak2bpFpCdLL2weHUIJrnfVUS8RRhJZVa7Vd4dEwNlUSDc4GLZ6kba7xyxmS9v+sbwQmUlgDS3tGuQ4EfQwPP87+nxnSVr/T/QKRgO7tT2XKq5vKpnnjpy/Pr5FFiLfT4bE7aNnwfwjasKBbgTkzOjK4IUAT6Dcyks66fxVlDAxKml9A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j1Ggk4jc2z30Ng;
+	Fri, 09 Oct 2026 17:10:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791526242;
+	cv=none; b=ELfi/E+IBq+xZ2rieCG0BdESYmL4ax60PsNYwFzYsVAmCUmObmLGr9Nt+OcPluGGd63NpT1TbMXM+LFmFnA7gYjAMImTX/ft5Hty+fOITk4m0Ob/0oZQ+Xa0G5fsjxi0HXUg5MbmGFk4RtmcFZekGA29ilJvNpS810EvURLolaOMnBej5QW7GzphOCpMZqDY0G6B0EsrLbL5V+2rxLvMi6NRJjO441mg39TjBV2oSx2GsLAbMnybn0fYuQ9TT+vAu2Lx+nIq/sKYMhCN/e5Ojy7u6tNu3Cw+Or9Gbeo0b1tZgQawGr9Alw5ouJbk87ZbhZqD42HWcZy4r5jHapMBrg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791526219; c=relaxed/relaxed;
-	bh=1l5hIGSoizBJ4+ECoX3r7MfK+993Pnzr6WRToZvHfW0=;
+	t=1791526242; c=relaxed/relaxed;
+	bh=Bnt9ePZGN5hBqrnLAmtnR+vNRgS1zeRKnODE66mwB2k=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ItXHH+GgLLDCm9ywTY0FdW6mtg+KdRVgXdNPqJiNFGUKQKdG81VFIyAQ8NCGQjsQgOurRkJXeRi9Sqo9yjxBgio43zEr4XjqpzqaOzyEs1wpbc64PPK5Mu5ow/QYk7wTDGJdngF50vW6px9bY6TkPNfb26JpcTVzgkESp5NNybf9Bz2C2HQp2TtAwuwRk7qnIlPcUOhabdEM8zflStjx6WtnKeWxGQgg2g+1WW9IkWqoQBHs3HuQy0OWlg28Zt/DadCVjlq0r6e65LLnTcl3Ehi4WYlw9ceG6prETcw1tMbHxboKDulW0gEA/NwIldBKtarBc7vBl2uOQm62j1RfLQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cuPLDbsq; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=CKvA/ZGtc72sJl+9u/475Lmu4WC/rwjgfMyDKm4egAreyp2RnWLeN53i6t4hSE5k3JFuSC4LImgWNNlSnxADN3ypq4aKlhVDU+bO+o3VR6vqXDpykfpgyrnxTOrKKXn+x5KgzjpdFaLjTVGipbhPSuAiKZ7efE9ltwpUnWzGSmqxVWiT6whwskjHO76LQ9mtQ5xT7dvWc9Qi8/FJ9z4YJR9AlclJ3lnByBqpquqrk9C71ON/tJUr84zB+phQB1bp3ISBkIvgNr9sxmSLkehSFpD4Rb84b8BUfiHm81rQWCsIgGlkjsFvYi514NFWlkoW0Fwk0E4eOYasocqVoQqYww==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YYI0RK2f; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cuPLDbsq;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YYI0RK2f;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j1GgG08nzz30DZ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Oct 2026 17:10:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j1Ggj2Ywnz30DZ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Oct 2026 17:10:41 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id A7DA160A75;
-	Fri,  9 Oct 2026 06:10:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9939F1F000FF;
-	Fri,  9 Oct 2026 06:10:14 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id D65194078E;
+	Fri,  9 Oct 2026 06:10:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EE73E1F00898;
+	Fri,  9 Oct 2026 06:10:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791526215;
-	bh=1l5hIGSoizBJ4+ECoX3r7MfK+993Pnzr6WRToZvHfW0=;
+	s=k20260515; t=1791526238;
+	bh=Bnt9ePZGN5hBqrnLAmtnR+vNRgS1zeRKnODE66mwB2k=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=cuPLDbsqxxrWPpjOtxYva0hqHGIOsTqPhuw0K3MrIPdTBtW2XYREqvc28E/7r4f25
-	 AaCh3+hEo+OfBSjJNgMDBTojJxsHb36GvRaLW4ELkXyvJpitzZYupq3mw31apvOqVy
-	 rXIplgrkBnVkZsilwzYtlPHxsu1046VN5hDZ7tvR2fdvTtbTTT5N9mTt4ZZrg8KJxY
-	 afcE/AbFHac4MVldmoM77HxmY1v7yjpSkCU4RETytekKZVyasSJwSuASaPJJiE+OFb
-	 n7R9LIum9vWm/b6yEKJdoOeCFmgpfsgz4pcQSPT38TC4ZMKcp5n1Nnnx5WtD+oMS31
-	 +yy8/X2N9mBGA==
-Date: Fri, 9 Oct 2026 08:10:12 +0200
+	b=YYI0RK2fKOWNLtf06iFFTM/c2Swa7r6ktaEWLBX37GtHtm+y8br8hoXW8SfoxMD6X
+	 p9wwdbmSNnqM2lgVvUavLWls7JV8YBJnzcTAObR2B6/3NGPzfKRZlggneb/4qyzH/0
+	 CoxZ6wIcuBTRLLWoKx6C7uL1/xm5WloPiQJaFIfcdO7BFq1wxH/Ct4E75Uiyt1NsGj
+	 bbeJ0vC1Zjbg2mKFXXQ4mQgI1vsLFusKoul+oAph61wmotwXv4atCQF3uK4cJB1jZ2
+	 GvypOvn8fWj2Dj8X/CjV6Or2ldbcBTQV9snCTrkkecd925NqZoZjp11i6AKUoOH5qf
+	 L+0alVP96hUeA==
+Date: Fri, 9 Oct 2026 08:10:35 +0200
 From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Haotian Zhang <vulab@iscas.ac.cn>
-Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, 
-	Shrikanth Hegde <sshegde@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, 
-	linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/pseries: fix device_node leak in drc-info lookup
- error paths
-Message-ID: <20261009-proud-dog-of-stamina-476677@quoll>
-References: <20261009035445.3079660-1-vulab@iscas.ac.cn>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, 
+	Hari Bathini <hbathini@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org, 
+	Shrikanth Hegde <sshegde@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc/opalcore: fix device node leak on incompatible
+ dump node
+Message-ID: <20261009-lurking-curvy-piculet-ba68dc@quoll>
+References: <20261008190549.2800467-1-vulab@iscas.ac.cn>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,26 +70,24 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20261009035445.3079660-1-vulab@iscas.ac.cn>
+In-Reply-To: <20261008190549.2800467-1-vulab@iscas.ac.cn>
 
 
-On Fri, 09 Oct 2026 11:54:45 +0800, Haotian Zhang wrote:
-> cpu_to_drc_index() and drc_index_to_cpu() acquire the /cpus device_node
-> with of_find_node_by_path() and then walk the ibm,drc-info property. When
-> an entry whose drc_type is not "CPU" is encountered, the code jumps to the
-> err label, which is *after* the err_of_node_put label, so of_node_put() is
-> skipped and the reference taken on the /cpus node is leaked on every such
-> exit.
+On Fri, 09 Oct 2026 03:05:49 +0800, Haotian Zhang wrote:
+> opalcore_config_init() gets a reference on the "/ibm,opal/dump" device
+> node with of_find_node_by_path(), but when the node is not compatible
+> with "ibm,opal-dump" it warns and returns without dropping that
+> reference, leaking the node. Every other exit path, including the
+> adjacent of_get_property() failure, releases it.
 > 
-> Jump to err_of_node_put instead so the device_node reference is always
-> released.
+> Release the device node reference before returning from that error path.
 > 
-> Fixes: e83636ac3334 ("pseries/drc-info: Search DRC properties for CPU indexes")
+> Fixes: 6f713d18144c ("powerpc/opalcore: export /sys/firmware/opal/core for analysing opal crashes")
 > Assisted-by: DeepSeek-V4.1-Flash
 > Signed-off-by: Haotian Zhang <vulab@iscas.ac.cn>
 > ---
->  arch/powerpc/platforms/pseries/pseries_energy.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  arch/powerpc/platforms/powernv/opal-core.c | 1 +
+>  1 file changed, 1 insertion(+)
 > 
 
 
