@@ -1,75 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-29101-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29102-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31227CA601E
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2026 13:33:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B5E8CA6019
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2026 14:45:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j1SVT3v8dz30VT;
-	Sat, 10 Oct 2026 00:33:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791528183;
-	cv=none; b=jLqXp++crbhIuMf9ddcHmZfZb8W8OmXolENEWTH1SNNOESlza4PVvP2WfcosFdPg+NTT81v7hBkOKbqxcRHmEkb5I/BF//IZ0CeTmutB7N1IF18kXbb3TJipjQbP3UySdNhPAQ/YKLzhhr5L22zSmXUhRM1wOKWZi6RgFG4xvjDLNtVuPvLuckveYxbCKAdsQzFvXmy6pFZ1KO5z17KTOEc5dPyKJ5xFZA0vYq1zfW9+lP4lQdH3/dOD1CQpgFrQkBj9w97yyGHePwH4j1to4aKc+WRhaa3UcqDcFy8qY7ZmzkaIJUVwBwjVNN8m2YpOVuZPOtOWLHkoQoAJ5OU67Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j1V6C1xTGz30Ng;
+	Sat, 10 Oct 2026 01:45:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791557155;
+	cv=none; b=EOR0DOcz1mYM0xu3bIKJw+P9qXeAT9JhkNwjnAazysnC8BiTeRLvRESIWu30BdA6qrsfSVaK+wJ8sXQh2oomLiNvTaF0J6qYlDmLs+cwrLcU0vcCB29mZnw0lcvqDSHli/kl8xIBOhVDl+4AbwIZvWWL79A19Rk2Z8zllrCkKyJsNy0qdfSpcaeKYDpCmO0BIAbs+kY/8WWr6kTx4PvAOwRUqWkdI/3h9q7Y4a1Dcb7gjqZPFYKXe68KOIyprzwfGwF8PHMDlOxPvx19shn0NqoUWsdTiGWrw2BKjosU/eH6nTkUYoMiLFeL33JAjIDwmUSXDDvcmWHpVItrynLEZA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791528183; c=relaxed/relaxed;
-	bh=KYR9hmmlunLwlcPkfdlYex/YxbhhYAayQiuZbtPkf/E=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=PlkTARNA2uJ/uPKKClDzCB1ndDuaXUWfbRJSFqC3GCQjWYyWXBCp1mTK/V3yBzda90r/1lVucZZxR5ihVDsdj1lsxJupz0QuDsScOcD1VfD0TXKKC0MqO5MW0Lye7U8wopvmzQm4SJk7Xb9QNMIom3k2yWs0l4gotMeYf5aW0jLdjdA8aNWGdC18NPGw9pOct2s57ONqsYNUKLSUwg4WuwvhVg3VJiRgnurYa4shY2Or7Gbzz3oUsl8TfDZqHR1erTcdFKIQPcGVmycOWu1bTyjqobqri5yUjN3kZYiYTEMxf2MdWdTHFppc33tucXs6jZAKShzDH/1HSruhvFqtJw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=iKmY8zCV; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::e; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1791557155; c=relaxed/relaxed;
+	bh=ZJ2P/ehtfYR76otRuiUkFjUlIWNYpLz4lj6YtBrjrkw=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=jIWQLTBZUhXOOoVhczDUPa8pcKwwFN3jabOpWg0/IosJjNPwOA6Bxtn4suz1HEbRdTLuJ/NP0CUnk+p8LyBZ2wYZ5xOJgu8JhmgiYsDlTy3rm1KX67Uql7167yjcibd2WN/7+N7Ct/Swsx1t/rpJ41FOFyDX1Y4N80bidyev4Vg8aZQ6ldkQOv+3smAw1jqudkt9xNuPWhwJncUwr90+WzEZjVnxDvLBFcvs/5Ox0mvU+Qgtts/cNvxELDK2v58hXxMXzLTWNJNf2N8hWrKsiouFKbvBeyL/UGYT9vzX/Rq/H3bW/Navwh8KGhKTC/Rke2Kh2ARIryNOusCQn8GH2A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BuVvntKJ; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=davemarq@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=iKmY8zCV;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BuVvntKJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::e; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta1.migadu.com (out-14.mta1.migadu.com [IPv6:2001:41d0:203:375::e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=davemarq@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j1HP148nSz2y2h
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Oct 2026 17:43:01 +1100 (AEDT)
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=Lh2LMrtSYDDnCgnAv7ysw9EHYWIC+fUbykvCTSebHms=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1791528163; v=1; x=1792132963;
- b=iKmY8zCVNHGuoI0P1zf75heIfh3kDai++4znQJ2YIZ1KwbaUF2dgv57ZEvPeZx0I3/fTT9zb
- va07wgDd560a9CV2ibrrABofejLjGA9bZQLSPjcqnM3Z+sto/Q0IdGp/esoMpY2AGomOQOIR7xd
- Gbyhm4j1k1pwco+qoFbS5hqk=
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id bf8d544524139af5;
-	Fri, 09 Oct 2026 06:36:05 +0000
-X-Mizu-Trace-ID: bf8d544524139af5
-X-Migadu-Flow: FLOW_OUT
-From: Hao Ge <hao.ge@linux.dev>
-To: Suren Baghdasaryan <surenb@google.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Alexander Potapenko <glider@google.com>,
-	Marco Elver <elver@google.com>,
-	Dmitry Vyukov <dvyukov@google.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Dennis Zhou <dennis@kernel.org>,
-	Tejun Heo <tj@kernel.org>,
-	Christoph Lameter <cl@gentwo.org>,
-	Uladzislau Rezki <urezki@gmail.com>
-Cc: Hao Ge <hao.ge@linux.dev>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	kasan-dev@googlegroups.com,
-	linux-mm@kvack.org,
-	Sashiko <sashiko-bot@kernel.org>
-Subject: [RFC PATCH 2/4] mm/vmalloc: undo partial mappings inside the mapping functions
-Date: Fri,  9 Oct 2026 14:36:17 +0800
-Message-Id: <20261009063619.112313-3-hao.ge@linux.dev>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20261009063619.112313-1-hao.ge@linux.dev>
-References: <20261009063619.112313-1-hao.ge@linux.dev>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j1V686Ppzz2yTH
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 01:45:51 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 699DZtsN3214290;
+	Fri, 9 Oct 2026 14:45:37 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=ZJ2P/ehtfYR76otRuiUkFjUlIWNYpL
+	z4lj6YtBrjrkw=; b=BuVvntKJVZl/2049mEym7N/04BXIsgOfmLyS24ttCdERm6
+	c3XeV/gTZ3i4ua7+ivf1N0lHsf7YsPS8jeMilBpkIVd99LVAjQKRLMEl7p0fDnnR
+	J8Jg0sHo7i+a+JpsyNWNuDWu/VnvTlZV4iRTggWwuXRVKQrBPQy58ZWWkrPEfLGL
+	eHOEt8hsLZdsaTE++nMnKQkR0LkNJgMvSTFxSFXsQC9JJ5x7NhFzD3r8om7fXYwX
+	Vym4cTf9jspNL6Y6ci0yvIffMvjqW6BpHO99LP3mcyZ+sTNd8jrcthJTblLUrb4l
+	tUrqKOQllcDD8ZAf7N6jHSOBoEokMpXVWCd/LO7Q==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h5xk1jh0d-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Fri, 09 Oct 2026 14:45:36 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 699DWVQD965690;
+	Fri, 9 Oct 2026 14:45:35 GMT
+Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4h6x1y8xtj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 09 Oct 2026 14:45:35 +0000 (GMT)
+Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
+	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 699EjX8v61473268
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 9 Oct 2026 14:45:34 GMT
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D12AB5805A;
+	Fri,  9 Oct 2026 14:45:33 +0000 (GMT)
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8F47D58056;
+	Fri,  9 Oct 2026 14:45:33 +0000 (GMT)
+Received: from d (unknown [9.61.186.115])
+	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTPS;
+	Fri,  9 Oct 2026 14:45:33 +0000 (GMT)
+From: Dave Marquardt <davemarq@linux.ibm.com>
+To: kernel test robot <lkp@intel.com>
+Cc: Dave Marquardt via B4 Relay <devnull+davemarq.linux.ibm.com@kernel.org>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman
+ <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Christophe
+ Leroy (CS GROUP)" <chleroy@kernel.org>,
+        "James E.J. Bottomley"
+ <James.Bottomley@hansenpartnership.com>,
+        "Martin K. Petersen"
+ <mkp@kernel.org>,
+        Tyrel Datwyler <tyreld@linux.ibm.com>, oe-kbuild-all@lists.linux.dev,
+        linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v13 04/11] scsi: ibmvfc: add basic FPIN support
+In-Reply-To: <202610091350.pfimX8kZ-lkp@intel.com> (kernel test robot's
+	message of "Fri, 9 Oct 2026 13:20:05 +0800")
+References: <20261007-ibmvfc-fpin-support-v13-4-b816abfa4fcc@linux.ibm.com>
+	<202610091350.pfimX8kZ-lkp@intel.com>
+Date: Fri, 09 Oct 2026 09:45:33 -0500
+Message-ID: <87a4onlype.fsf@linux.ibm.com>
+User-Agent: Gnus/5.13 (Gnus v5.13)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,119 +102,81 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=YtCa1IYX c=1 sm=1 tr=0 ts=6ac8fe10 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=V8glGbnc2Ofi9Qvn3v5h:22 a=NEAV23lmAAAA:8 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=i3X5FwGiAAAA:8 a=QyXUC8HyAAAA:8 a=DpkWlw5QTZI3BuQtO8gA:9
+ a=mmqRlSCDY2ywfjPLJ4af:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA5MDA1OCBTYWx0ZWRfX1DMBQvZ1oV9B
+ 7K4kf2thLqLcsmX+xF+cju3DKnw+pPMd6SzJR/c6iHHvV/Kwozu0vx328Lnljp2Pg5MLc7eCNmk
+ 7oV24YBYVA+qGuSYnkFKy0C+tgI9kjM3alEsNefBQlaD3nsSEMjzfGuSwegDBjCgddZGTMTEd06
+ E9/QOO+nr4HZz8d8neudpyfZ+x4chUNn2UKDdojI0ayqz8XWrFhE0qkbhWZpvGbAsGCjv1ku+oH
+ +JDrxVv91VIiO3vvLzN7O1SC94zi08PAVcgN5KTGhrSSfGr5JhobT7xNkmYE1fSOdap6f6KzxmJ
+ IMqW1jiQS2Aap5AKtDcPEZv76LkK/ad3GzHpNyk8UxqKYNXJ6TKUKj2+6ld3U9AXZ2Zv/fAp62t
+ My+MfXVoAmsBHvshu7+tXQ8SwoGL1WbSfGs10RW0aXIy4qUa7CRcb2ehR/fL/A0/1Cjc3rJnRf5
+ cFrijtfoc7dFQcbNRng==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA5MDA1OCBTYWx0ZWRfXyaK1dWi2ofc9
+ k1X8YhHuZbTXhbAlWTqAvWSp0tWPHIG3af7B8ObMZp6gQXNqGDV0yhJcP8KNug+6zBTopO+monS
+ DhxGCp+FWomo7oilnatHeaW2q7BOxnY=
+X-Proofpoint-GUID: 4fX-i6NOi1__0d4TrwOlYkjldxZcFa75
+X-Proofpoint-ORIG-GUID: OT9yZWI9hT2Xar28hNGoK32M5rS05EoP
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-09_04,2026-10-08_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 phishscore=0 bulkscore=0 clxscore=1011 priorityscore=1501
+ lowpriorityscore=0 suspectscore=0 malwarescore=0 adultscore=0 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610020000 definitions=main-2610090058
 
-__vmap_pages_range_noflush() and friends can install some PTEs before
-failing and leave them mapped, and the kernel callers do not agree on
-who cleans them up. pcpu_map_pages() and kmsan_ioremap_page_range()
-roll back what they mapped before the failure, while
-vm_module_tags_populate() and the __GFP_NOFAIL retry loop in
-__vmalloc_area_node() rely on the mapping functions cleaning up and
-do not call anything like vunmap_range() themselves. When the same
-range is mapped again, the attempt hits the leftovers and fails, with
-a BUG() in vmap_pte_range() for huge mappings and a warning on the
-small-page path.
+kernel test robot <lkp@intel.com> writes:
 
-After discussing with Suren and Ulad, we decided to put the rollback
-into the entry points of the vmap API rather than into every low-level
-helper. __vmap_pages_range_noflush() undoes the whole range it was
-asked to map when it fails, and vmap_page_range() undoes its range
-for the ioremap-style mappings.
+> kernel test robot noticed the following build warnings:
+>
+> [auto build test WARNING on c3cff7fac01638ab58e85fe7df41a04fa25c5bae]
+>
+> url:    https://github.com/intel-lab-lkp/linux/commits/Dave-Marquardt-via-B4-Relay/scsi-ibmvfc-fix-IRQ-leak-and-guard-deregister-on-channel-reg-failure/20261007-142545
+> base:   c3cff7fac01638ab58e85fe7df41a04fa25c5bae
+> patch link:    https://lore.kernel.org/r/20261007-ibmvfc-fpin-support-v13-4-b816abfa4fcc%40linux.ibm.com
+> patch subject: [PATCH v13 04/11] scsi: ibmvfc: add basic FPIN support
+> config: powerpc-allmodconfig (https://download.01.org/0day-ci/archive/20261009/202610091350.pfimX8kZ-lkp@intel.com/config)
+> compiler: powerpc64-linux-gcc (GCC) 16.1.0
+> reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20261009/202610091350.pfimX8kZ-lkp@intel.com/reproduce)
+>
+> If you fix the issue in a separate patch/commit (i.e. not just a new version of
+> the same patch/commit), kindly add following tags
+> | Reported-by: kernel test robot <lkp@intel.com>
+> | Closes: https://lore.kernel.org/oe-kbuild-all/202610091350.pfimX8kZ-lkp@intel.com/
+>
+> All warnings (new ones prefixed by >>):
+>
+>    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:1905 expecting prototype for ibmvfc_relogin(). Prototype was for ibmvfc_scsi_relogin() instead
+>>> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3319 function parameter 'fpin_status' not described in 'ibmvfc_common_fpin_to_desc'
+>>> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3319 function parameter 'wwpn' not described in 'ibmvfc_common_fpin_to_desc'
+>>> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3319 function parameter 'type' not described in 'ibmvfc_common_fpin_to_desc'
+>>> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3319 function parameter 'modifier' not described in 'ibmvfc_common_fpin_to_desc'
+>>> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3319 function parameter 'threshold' not described in 'ibmvfc_common_fpin_to_desc'
+>>> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3319 function parameter 'event_count' not described in 'ibmvfc_common_fpin_to_desc'
+>>> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3401 function parameter 'crq' not described in 'ibmvfc_basic_fpin_to_desc'
+>>> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3401 function parameter 'wwpn' not described in 'ibmvfc_basic_fpin_to_desc'
+>>> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3401 Excess function parameter 'ibmvfc_fpin' description in 'ibmvfc_basic_fpin_to_desc'
+>    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:5258 function parameter 'protocol' not described in 'ibmvfc_alloc_target'
+>>> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3319 function parameter 'fpin_status' not described in 'ibmvfc_common_fpin_to_desc'
+>>> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3319 function parameter 'wwpn' not described in 'ibmvfc_common_fpin_to_desc'
+>>> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3319 function parameter 'type' not described in 'ibmvfc_common_fpin_to_desc'
+>>> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3319 function parameter 'modifier' not described in 'ibmvfc_common_fpin_to_desc'
+>>> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3319 function parameter 'threshold' not described in 'ibmvfc_common_fpin_to_desc'
+>>> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3319 function parameter 'event_count' not described in 'ibmvfc_common_fpin_to_desc'
+>>> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3401 function parameter 'crq' not described in 'ibmvfc_basic_fpin_to_desc'
+>>> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3401 function parameter 'wwpn' not described in 'ibmvfc_basic_fpin_to_desc'
+>>> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3401 Excess function parameter 'ibmvfc_fpin' description in 'ibmvfc_basic_fpin_to_desc'
+>    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:5258 function parameter 'protocol' not described in 'ibmvfc_alloc_target'
 
-The rollback is __vunmap_range_noflush(), it only clears the PTEs,
-no TLB flush, nothing has touched these mappings.
-vmap_pages_range_noflush() drops the KMSAN metadata when the data
-mapping fails, and an empty range bails out with -EINVAL now, which
-used to BUG_ON() on the small-page path and map nothing at all on
-the huge-page one.
+Thanks. I will fix in the next patch series revision.
 
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Suggested-by: Uladyslau Rezki <urezki@gmail.com>
-Signed-off-by: Hao Ge <hao.ge@linux.dev>
----
- mm/vmalloc.c | 44 ++++++++++++++++++++++++++++++++------------
- 1 file changed, 32 insertions(+), 12 deletions(-)
-
-diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index db669103dc66..e1b376f57dd2 100644
---- a/mm/vmalloc.c
-+++ b/mm/vmalloc.c
-@@ -363,6 +363,9 @@ int vmap_page_range(unsigned long addr, unsigned long end,
- 	if (!err)
- 		err = kmsan_ioremap_page_range(addr, end, phys_addr, prot,
- 					       ioremap_max_page_shift);
-+	if (err)
-+		__vunmap_range_noflush(addr, end);
-+
- 	return err;
- }
- 
-@@ -683,27 +686,35 @@ int __vmap_pages_range_noflush(unsigned long addr, unsigned long end,
- 		pgprot_t prot, struct page **pages, unsigned int page_shift)
- {
- 	unsigned int i, nr = (end - addr) >> PAGE_SHIFT;
-+	unsigned long start = addr;
-+	int err = 0;
-+
-+	if (WARN_ON_ONCE(addr >= end))
-+		return -EINVAL;
- 
- 	if (WARN_ON_ONCE(page_shift < PAGE_SHIFT))
- 		return -EINVAL;
- 
- 	if (!IS_ENABLED(CONFIG_HAVE_ARCH_HUGE_VMALLOC) ||
--			page_shift == PAGE_SHIFT)
--		return vmap_small_pages_range_noflush(addr, end, prot, pages);
--
--	for (i = 0; i < nr; i += 1U << (page_shift - PAGE_SHIFT)) {
--		int err;
--
--		err = vmap_range_noflush(addr, addr + (1UL << page_shift),
-+			page_shift == PAGE_SHIFT) {
-+		err = vmap_small_pages_range_noflush(addr, end, prot, pages);
-+	} else {
-+		for (i = 0; i < nr; i += 1U << (page_shift - PAGE_SHIFT)) {
-+			err = vmap_range_noflush(addr, addr + (1UL << page_shift),
- 					page_to_phys(pages[i]), prot,
- 					page_shift);
--		if (err)
--			return err;
-+			if (err)
-+				break;
- 
--		addr += 1UL << page_shift;
-+			addr += 1UL << page_shift;
-+		}
- 	}
- 
--	return 0;
-+	/* Undo the PTEs installed before the failure. */
-+	if (err)
-+		__vunmap_range_noflush(start, end);
-+
-+	return err;
- }
- 
- int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
-@@ -715,7 +726,16 @@ int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
- 
- 	if (ret)
- 		return ret;
--	return __vmap_pages_range_noflush(addr, end, prot, pages, page_shift);
-+
-+	ret = __vmap_pages_range_noflush(addr, end, prot, pages, page_shift);
-+	/*
-+	 * The page tables undo themselves on failure. Tear down the
-+	 * metadata that was fully set up before the mapping failed.
-+	 */
-+	if (ret)
-+		kmsan_vunmap_range_noflush(addr, end);
-+
-+	return ret;
- }
- 
- static int __vmap_pages_range(unsigned long addr, unsigned long end,
--- 
-2.25.1
-
+-Dave
 
