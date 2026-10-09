@@ -1,51 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-29106-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29107-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6AC10CA601D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2026 16:23:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88ECDCA601E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2026 16:36:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j1XGb4Rkcz30TQ;
-	Sat, 10 Oct 2026 03:23:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791562999;
-	cv=none; b=Evj3szkCH+DFZamep+vmhq/yau9ceowo5/amyca9KueuWtoolnNbOtK54XwHqW19FmTM+AwjibQ5hoqQHEdTMGvfkyHsOSNsg5/pHNffvERzm9QCXeO9eRxy2DMwzNhg++A6lWUviO05mktfJbre/mN9EH8vG1CqM2X8qSudgbR1faQvMhlVCthiNMaU6TT2IqQ2nEfYcKVY4GUf5y773/1B+Kpo1N8HWiUawYJg2uv+qx6wpopZZAG60NUlrdXSZxfrVJI88q7zyeATcTpULLPQrn0JMo8M187UpCFDzouXw70cH5N6IPZOdwqWRSSlMmb3dTuGaCk9fFReuYWgKA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j1XYy1PWTz2yr0;
+	Sat, 10 Oct 2026 03:36:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791563798;
+	cv=none; b=glxFxCX2zOgU/1D02Y9UJOHlQmcsI2DNpZQPpbr+02Dazzfo4+7x5L+mlQHd4oop0ekqXMm6U6Q9BegAaNcxwIQsEXYpWc0h3uPgeGjnGDgHqOQp/oh4VlZAI3YyTmHASlbH+j2H0GuHpfnVadui2JbLwf73DcGkt/VcngN9hwzeiJ5MRQX7BqLr8VAbfTvhrMy7wVNzQdQ4FZXx2nEtlvLpKoJw/kvzssehiIYI/TBBVfjXnOtbQ5uPWbRyLeXj83kcKvHJrzsxJvs9cIRRZieJWR2Y9jGNJTsSlRCRsaS44mesc7pZRrsBAMKCJTHmMa6du59FHIJbB8H0U/2zNg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791562999; c=relaxed/relaxed;
-	bh=YfWBggPRcNUfmpocAPmpGBAvAjUX6S4h9gFS+GGWMfE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=jyqTWyG6lDEENBKq4P2dJ0IHk/KBlKlsuA9Ije27O/yTQ4vwIgX7DnSuUorm/2/pNvQGNUgjDBL9C4I6dVYaCtD2h2EcC73FK8Yx3vt7a3XKfJ9j+g0facnOiyX2xOociBOM4ZQjzqPFv1o8m8QZjnJzlHiyMScRf0qAbL+c1AroF6r+GMuAjz6FyhjfB++FGOGLpPnqPSwCCf5crwCJdT00wEMbeLM2wAijW8VgIqGB7GzuBziD52G52ixmNoT/1osLiRQi5fH6Grj+Az1qqKuKvOWIO3osSXo3TBHzl8IE/y6hzH3dv8yDJzophOmnitA/tNlKCRMHuiW66HqHfA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RdqZDfCX; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1791563798; c=relaxed/relaxed;
+	bh=6WnS1Z+WYMP3nfRbFwUB3ixiVVzH/TwTlKG3XdhXwx0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=RI6IW6OEqTBo7p7AkrzPz8sTj6WzlVDQ/nM0nydZ1XIToxnQ+qyrkdBlMySGqG7SgkauBwE8fz3EKaZ1GREjXJ5RRT3uWi3JbvyMYkyXMxCHrFyKDli/NgW67z/T3yoGIPrtWxf/dqikONl2M/vsNC8Km5uMViECUcxUTU9m08uNb8GdkLoCU07JJmfvF9J6eoAi7KMx2KQct0qBXzvleBej8FTFD4VVaRPShScjJU9SnbJpJEjW+3wpoMG6mqMjJnL4A7hCPO5+H8bsCvVR7gfDf3ZRNudyvLWItF2qLH/FDyBtvXDG2aqrcxzAZ7uT9wi9eByue5xg595dDdzW5Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TaVQEteb; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RdqZDfCX;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TaVQEteb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j1XGZ4sr8z2xnQ
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 03:23:18 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 1E6DA60098;
-	Fri,  9 Oct 2026 16:23:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 30EB31F000FF;
-	Fri,  9 Oct 2026 16:23:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791562995;
-	bh=YfWBggPRcNUfmpocAPmpGBAvAjUX6S4h9gFS+GGWMfE=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=RdqZDfCXJ+/1LS6pv+4dduHj4eW1XE2E6t7zJZQqkM6PoeYMuDwIyy7x/aqqF2jAg
-	 pZpyADJFfR2Y/zGJLxoFOJSm3GM7AzHemdtW82eB528KrITgGYfpjErBMhxTIaNIRb
-	 AtWwrVo4zGslaRl0SIrwyVXobipGuAx6KV9EI5tcxnz1/yrUeehqYh3f4vaFLAPCWK
-	 twXdwvStfePpiuAM7XseTqi/1j78HWMV2XVUFE7GYndwfWizbfN20Oq/6FPrFMfC+s
-	 TErWb4h0o3EAKHtlZ0ATAshCB0RepoAFAgMTnqHOliUoblfTNLooqDmmt41tAf8nOd
-	 p2HL7bTxee0bA==
-Message-ID: <509cac24-1b3b-4b85-8ad2-ef90da521dd6@kernel.org>
-Date: Fri, 9 Oct 2026 18:23:10 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j1XYx0y7Mz2xnQ
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 03:36:36 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 699GZPOa571712;
+	Fri, 9 Oct 2026 16:36:29 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=pp1; bh=6WnS1Z+WYMP3nfRbFwUB3ixiVVzH
+	/TwTlKG3XdhXwx0=; b=TaVQEtebaXnKpbCtSpTT2P/CsdVfzvpR+rxSzh4OBQFM
+	7f16laA6lVCmuprlJg6FJ1pKDZSVWOZWX0CKna0H3NNfyAiu8TxVCS5AWxRxvih7
+	YX5ryTaem1Z/mkFI5jgacbi7/fnVjF7kx4kW50RdfNrLxOknEV5gxk+2uDdbekS1
+	hhnFleeYR52MWEoW1n100X1aIbAZD0XG/IRgS+S0dkkTQ4xKsD1H5pNCUsewuyIj
+	WNgNiJlQHnArzq6ocOyeNkHb/ncWzvD2el/UG4DSZzHEZjibFfFtTaNAJe+N9HdP
+	JQEaICddIwyu15Zm4yXstndNqbbVvXiO81VKpIL3jA==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h5xjvkus0-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Fri, 09 Oct 2026 16:36:28 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 699GJhwB1150431;
+	Fri, 9 Oct 2026 16:36:27 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h6hsnks01-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 09 Oct 2026 16:36:27 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 699GaNIg29164190
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 9 Oct 2026 16:36:23 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2EE6220043;
+	Fri,  9 Oct 2026 16:36:23 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5BE5320040;
+	Fri,  9 Oct 2026 16:36:19 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.124.216.129])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri,  9 Oct 2026 16:36:19 +0000 (GMT)
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>,
+        Masami Hiramatsu <mhiramat@kernel.org>,
+        linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Amit Machhiwal <amachhiw@linux.ibm.com>,
+        =?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>,
+        Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Harsh Prateek Bora <harshpb@linux.ibm.com>,
+        linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+        kvm-ppc@vger.kernel.org, Mark-PK Tsai <mark-pk.tsai@mediatek.com>,
+        stable@vger.kernel.org
+Subject: [PATCH 0/2] tracing: Fix early boot trace buffer allocation and tracefs init crash
+Date: Fri,  9 Oct 2026 22:05:55 +0530
+Message-ID: <20261009163557.88467-1-amachhiw@linux.ibm.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,93 +94,74 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/lib: prefetch ahead in __csum_partial()
-To: Rosen Penev <rosenp@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- Shrikanth Hegde <sshegde@linux.ibm.com>,
- open list <linux-kernel@vger.kernel.org>
-References: <20261008034932.3180490-1-rosenp@gmail.com>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20261008034932.3180490-1-rosenp@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: Smr1VNDOKKJwWEIil9nnNa__2PTR1iih
+X-Proofpoint-ORIG-GUID: he5gvaUNxEV-a3_alhW7dMrc12SgFLpG
+X-Authority-Analysis: v=2.4 cv=H8NOUOYi c=1 sm=1 tr=0 ts=6ac9180d cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
+ a=TwISAZj8YnJKlnGNUAAA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDA5MDA2NiBTYWx0ZWRfXyaesTwI4TsMU
+ NTymUp9qzvi7lBKp/duE+WS1CTN8vMXXfESfzILXfhOGQGz4HaGn+r2MbD+5WKG3Q/YwhXt3gbm
+ Na135d83T1xT3YMKjr0tZmFg5RInXIF+/4v+6qmMcwNHxh/+SEt5rqex80GWpOCo5eFch/XqHlE
+ at8wjqJLwUmB/cahcKIaTh2lUVlfw1v9txfVQGtqIE2z+zfsA6b9GMg6yMLN7h/O7Fmj51YfZ0i
+ W/C4yjgJNETFj8RAwzLZmVvfL8mcVncyTR7Un71girdQ0JGY9yrRzaw6J6RvTqEgz4D4hR04nGu
+ Tu/yagrS+tce3w2CLkmwTEGhPD4E7MPepubb2LX81eE+PH1xNKqm+YOYKK/VqXONYrnYr4M99oQ
+ ur0d3vHY5EkTogNbfP2Y0+PLje7RxHbsjQXdWq7H3S5ZgnDL4BSD2WXOcMm++pQ51v+g5SXfNKS
+ 6ea65Mn+URvKAe2Pl7Q==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDA5MDA2NiBTYWx0ZWRfX18RPMGxnr5Bs
+ vVWYbcu197S9D+4Hl0ArOADpgc6ZhLd17utdx6zwQkDjjW32/yWVJ2YTVLVT8/Hq3ZULLT3MeWZ
+ eTakYJfEwGhI691dU+fXhAX/yVO4e1Q=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-09_04,2026-10-09_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 adultscore=0 phishscore=0 lowpriorityscore=0 impostorscore=0
+ clxscore=1011 spamscore=0 priorityscore=1501 malwarescore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610020000 definitions=main-2610090066
 
-Hi Rosen,
+This series addresses an early boot crash and trace buffer allocation
+failure reported on ppc64le KVM guests [1] (and reproducible under
+CONFIG_DEFERRED_STRUCT_PAGE_INIT=y with large static kernel footprints).
 
-Le 08/10/2026 à 05:49, Rosen Penev a écrit :
-> __csum_partial() reads every byte of the buffer once and never touches
-> it again, so on cores without a hardware prefetcher every cache line is
-> a demand miss. After a non-coherent DMA the received data is never in
-> the cache, which makes the GRO checksum validation of forwarded TCP
-> traffic the top entry in the profile on a 464FP (APM82181): 22% of all
-> cycles were spent in __csum_partial() when routing with GRO enabled.
+Patch 1 fixes the crash (NULL pointer dereference in __find_event_file()):
+When trace buffer allocation fails during early boot, tracing is left
+disabled.  However, tracer_init_tracefs_work_func() runs asynchronously via
+fs_initcall and traverses uninitialized event lists without checking
+tracing_disabled.  Checking tracing_disabled early averts the crash.
 
-Very nice patch. What is the new % after the change ?
+Patch 2 fixes the root cause of the early allocation failure:
+During early_trace_init(), __rb_allocate_pages() performs a heuristic check
+using si_mem_available().  Under CONFIG_DEFERRED_STRUCT_PAGE_INIT=y,
+NR_FREE_PAGES only reflects the initial non-deferred pool (e.g. 1 section
+per node) because the remaining memory has not yet been initialized.  On
+kernels with large static binary footprints (debug configs, early
+SLUB/vmalloc/ftrace records), this pool is quickly consumed, causing
+si_mem_available() to return 0 and trigger a false -ENOMEM before the buddy
+allocator has the opportunity to grow the zone on demand via
+deferred_grow_zone().  Skipping the check during SYSTEM_BOOTING allows the
+allocation to succeed.
 
-How do you test that ? I'd like to do some performance test on 8xx and 83xx.
+Both fixes have been verified by Michal Suchánek.
+
+[1] https://lore.kernel.org/all/arYskzbiaNzBR9MD@kunlun.suse.cz/
+
+Amit Machhiwal (2):
+  tracing: Do not initialize tracefs work if tracing is disabled
+  ring-buffer: Do not check si_mem_available() during SYSTEM_BOOTING
+
+ kernel/trace/ring_buffer.c | 8 +++++++-
+ kernel/trace/trace.c       | 6 ++++++
+ 2 files changed, 13 insertions(+), 1 deletion(-)
 
 
-When you say "never touches it again", do you mean the data is not used 
-again after that ? In that case would it help to do a 'dcbi' after using 
-the data in order to make the cache line available again and avoid 
-possible writeback to free a new cache line ?
-
-> 
-> Issue a dcbt four cache lines ahead in the main loop. dcbt is a hint and
-> never faults, so prefetching past the end of the buffer is harmless.
-> 
-> On a Meraki MX60 (APM82181 at 800 MHz, single TCP stream routed through
-> a qca8k DSA switch, iperf3 median of 3, A/B in the same boot):
-> 
->    prefetch distance   LAN->WAN   WAN->LAN  (Mbit/s)
->    none                370        341
->    64 bytes            430        381
->    96 bytes            438        397
->    128 bytes           438        385
->    160 bytes           434        386
->    256 bytes           423        383
-
-3x CACHE_SIZE distance seems the most efficient, why did you choose to 
-implement 4x CACHE_SIZE ?
-
-> 
-> Prefetching the first lines before the loop made no measurable
-> difference and is not done.
-> 
-> Assisted-by: LLM
-
-In what way did LLM help ?
-
-> Signed-off-by: Rosen Penev <rosenp@gmail.com>
-> ---
->   arch/powerpc/lib/checksum_32.S | 4 +++-
->   1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/lib/checksum_32.S b/arch/powerpc/lib/checksum_32.S
-> index cd00b9bdd772..5a14d45c7b9d 100644
-> --- a/arch/powerpc/lib/checksum_32.S
-> +++ b/arch/powerpc/lib/checksum_32.S
-> @@ -43,6 +43,7 @@ _GLOBAL(__csum_partial)
->   	bdnz	2b
->   21:	srwi.	r6,r4,4		/* # blocks of 4 words to do */
->   	beq	3f
-> +	li	r9,4*L1_CACHE_BYTES	/* prefetch distance */
->   	lwz	r0,4(r3)
->   	mtctr	r6
->   	lwz	r6,8(r3)
-> @@ -52,7 +53,8 @@ _GLOBAL(__csum_partial)
->   	lwzu	r8,16(r3)
->   	adde	r5,r5,r7
->   	bdz	23f
-> -22:	lwz	r0,4(r3)
-> +22:	dcbt	r3,r9
-> +	lwz	r0,4(r3)
->   	adde	r5,r5,r8
->   	lwz	r6,8(r3)
->   	adde	r5,r5,r0
+base-commit: af32da41b0327b9c6a37856ba82b6760d6c8d10e
+-- 
+2.54.0 (Apple Git-157)
 
 
