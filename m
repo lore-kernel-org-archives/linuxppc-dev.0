@@ -1,53 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-29133-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29134-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CEB9FCA9EC1
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2026 18:12:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A19FCA9EC1
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2026 18:12:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j1Zh02ynzz3bs5;
-	Sat, 10 Oct 2026 05:12:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791569520;
-	cv=none; b=JNsd2PWLzqb5jYpUKMzgPXsAPBIwCjOXCsmxfBfHE+CluwPzPXoS/pQwB2i1j29tgPQCqL3iTiDAPReku5xRIPRTJ4DffKPk01Fz9IbeAcsbMr0KS8xhoMteJYvycs4Oc/INcV6Mdj6cjtqxHzuW0UKaVuBIVgH0G17A9tOhklCXZiD4BaaNRpSlr6mwVZL66pu5JbnCkBtr/YCtZdFQ6GJYoQ20n65wLqItW4eKG01rGK2qiwWmyO8UpYN9zvdNtCTXRPyJ4nuulwgiBsaw3mhDFzC1wJ4VSfEK0+1XwxNIE+a2ZOkbWLHQEahhR3rf7XAvo91pvgZe6G3DpLCqVA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j1ZhN4kj1z3bwp;
+	Sat, 10 Oct 2026 05:12:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791569540;
+	cv=none; b=Q0q6Jun0kI9t2uHflct4xKWh2XzGKA0IHRcGGYKXERbCcn6wMSh5x5hbiI60+yrivAo+7CLSvzIv8wSbCN4JrjVMm2mmCxMhpzQOXm/ajUI7Oni/Yig3k1p4ddbOWTkAJbj0ZiudKDtvZEH73hoL40uRUqjUzJQVNpgOP3LoyJBCmtNH8o/hUDgGLTmIrUu6QwKWY0bIkSRlvSOrt8wG84R6PfEegzogVE4ftmbIQ8O4WYSSCX61lL9gzx4Ld4OPCJUYeec3p2bUsiAlYJCQpaj99ncbXGqS6rYHi1/smQ33ltZJZZ+Mch62fNSvWEpOitiJTUepCgCFgUh0uyKIpQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791569520; c=relaxed/relaxed;
-	bh=LVsKBqVWvO2goFpEXdlOxthsdTnnCRoJk7yo/PPrnVs=;
+	t=1791569540; c=relaxed/relaxed;
+	bh=FZ5vcpIzeMnQD61R3Z7f2Q7Zoun1RactPZJC7NXk5O8=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=HLnT/DdKiFfnMci5HHWfVeuVIxjG0jNi00v1IMrH++mkt/IAUUSjjzQ58neCTkWYHky3UYoJtBqDqFnPNZb5eHKnhZWBdI2GfJBo/7Q1aaNYlHA7XubwELHmth1MFFQp+6NWQNc3aVGp7B0WKI3oJyO4pVLU8sDOPLRxfl9IeDH+MYB0JEQJ5sutCFUCCzmQ7ixeYeJd9ZU+zowMF1qDswPQ10jZg4l56WZ4RFBnAPwfdscBuWRBffz71eVgobE6N0bVcHLms5SSizfnprdNIekZ1GpFza5O/hxc0maqjckfvgpyeLB5wFrppjo731R2uSeUVFbnUmyajJOI15sPSg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YmlBlEw2; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=OZHVjIKjTTuFqEzdECZBzDZuz5hGNOpDmGzdgwF7hj+vQOr68RAZkNpagxGf9D3cgp6qOXZxbioeuLFbHrHsJGAOgrO70LXjMC8GF1VNcykVEvzXmD6OJKt2VL6XzvAz98fUfLwjRfvCUffid3e9B2AtISHKUpHUCdlQvp7akLRJwKtUCzSZk6nljMXWzCSi5BvVC8Bwg53mmbE9mysL1yoERcDG1eWVXwF/bWgrKWg4+JhJBXPRpPwANeXjiK4GJsmIALANBZFB7z08Bo4eTWZSm6ZDlsuqZGK1+WeT6YOCm7GoZ+FYJljEnxVuJhyUh4w2972p6PIP+3HRJmTKqA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=B36pcNNv; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YmlBlEw2;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=B36pcNNv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j1Zgz45P4z3bs2
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 05:11:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j1ZhM5P6Lz3bwk
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 05:12:19 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id CE4C76020C;
+	by sea.source.kernel.org (Postfix) with ESMTP id AC7CA41AAC;
+	Fri,  9 Oct 2026 18:12:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E20971F00898;
 	Fri,  9 Oct 2026 18:11:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 006361F000FF;
-	Fri,  9 Oct 2026 18:11:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791569516;
-	bh=LVsKBqVWvO2goFpEXdlOxthsdTnnCRoJk7yo/PPrnVs=;
+	s=k20260515; t=1791569537;
+	bh=FZ5vcpIzeMnQD61R3Z7f2Q7Zoun1RactPZJC7NXk5O8=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=YmlBlEw20GnNRAi0WeBFfkS+cdj1zT6uWTbp0O8prPQdyoccO3eXZVZGVr9xsDdBw
-	 j1uuZZsWOJepfs4c3FO1hJBtW3Sute0o263POAqkrdUQDCSvV+zPmoaCANn1S+IfWb
-	 jtFQ1Ub9VCpM6VuDJgS4BkSyTMjbYmTrV30UtURfNzoXVhIl551+iV87N9QkBjXFaG
-	 EWC9lfZE2XE21VTnGzvUZ49H5ybi2jZnnznZqyAMud911Nd5M9PdWWYjmZEq/biNZ2
-	 AkKA9UuyTiSw8uv1+1WGWXSLSvvpM8VEG0Hym04wvA05kqMQITzi07SzsyPSnsLwsY
-	 juJmQlICqvk2g==
+	b=B36pcNNvjsz/zhdFcUlv9KirsSW7/GJs06knxU38HgJ6J0B49mAO7Fe4kaRQlQYDn
+	 fbIfq/4ZW43Owg8tsEjgw8JTiXrJ6extsqa6m5mz4irFrXmF7jljftGaOCgzcXA3Ba
+	 TdTtURY0IEC0zLjQeLlEJq1cu7nQcPcNWib5YfW35aAru2ThGHARKxwpqoCZ+Lyski
+	 OO0pw7pVFQPI4WVrqqrpnzymrmWQAt0zO680NtPa1LIFqzzE9rkKXj8Ih/g36hSr9S
+	 HyOEUjIdhzuSQ6zSG43VfYwVw5cSKjiIAATTi39RG0z7NubiemAL6qtEvojkl/u57j
+	 aRmCTtCpOGVrA==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Fri, 09 Oct 2026 19:04:15 +0100
-Subject: [PATCH v5 21/38] uprobes: remove VM_IO, set VM_MIXEDMAP for mapped
- kernel pages
+Date: Fri, 09 Oct 2026 19:04:16 +0100
+Subject: [PATCH v5 22/38] mm/mlock: clear VMA_LOCKED_MASK over mmap
+ callback
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-21-923b70125b1e@kernel.org>
+Message-Id: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-22-923b70125b1e@kernel.org>
 References: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-0-923b70125b1e@kernel.org>
 In-Reply-To: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-0-923b70125b1e@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -148,72 +148,96 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  fuse-devel@lists.linux.dev, Ihor Solodrai <ihor.solodrai@linux.dev>, 
  Bert Karwatzki <spasswolf@web.de>, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2123; i=ljs@kernel.org;
- h=from:subject:message-id; bh=Z+RdhWQ0b5VD679RGsODXA4DFYVH3rkRqMWlJZjTGXE=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJO6sx5+Dex2eSZiuQkXsbz1+2f7zK7JGG06cSKn4UuI
- rmz+BV6OkpZGMS4GGTFFFmefxHfHyQSNq/zgr8bzBxWJpAhDFycAjCRj24M/zNWe1beyfvX7Prg
- dd2JlczFGW4HTWvnb9+reLfwT1TvlYMM/+O0cqLYTwZyv487XXAnrtX9sZue4+p/Zgc89lxYuqW
- BlxsA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2804; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=d+EvKVA+pcfu65IMeGqrSLR7pkk/b5ufT4uPydKYcbA=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJO6sx5zWj+db1RtX1++g5OEbMfUbW3YzrfNDxRvXbgb
+ YCHX+TCjlIWBjEuBlkxRZbnX8T3B4mEzeu84O8GM4eVCWQIAxenAExEXYrhn+0a7ZjDS7YvnHum
+ XuBC6nyHuYpmVdf2tXu+idp3iGX5GW2G/362n5NtgzrquU329EWFcH43Y2Y3ZvK6paT46WbG290
+ qnAA=
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 
-These are not MMIO pages so VMA_IO_BIT is an inappropriate flag to set.
+Currently there's a confusing mess around VMA_LOCKED_BIT and
+VMA_LOCKONFAULT_BIT.
 
-Instead, set them VMA_MIXEDMAP_BIT as they are kernel mappings and this is
-the appropriate flag to set for those.
+It is permitted for drivers to set any flags they like, with the VMA
+already possessing lock flags.
 
-This provides the semantics required - no VMA merging is permitted, but
-does not prevent GUP.
+This results in the absurd situation of a VMA possessing both
+VMA_SPECIAL_FLAGS and VMA_LOCKED_MASK flags, which is not permitted.
 
-However this has no meaningful impact as these are refcounted and thus can
-be GUPed.
+This has resulted in mlock_vma_folio() having a very silly check for this
+scenario to work around it.
 
-A previous commit already prevented __mm_populate() from being invoked on
-XOL areas, which VMA_IO_BIT was previously relied upon to do, so that is no
-longer required.
+There is no need for this - just clear the flags before invoking the hook
+and reinstate them afterwards if they are required.
 
-Both VMAs set a VMA name, so always_dump_vma() returns true before
-vma_dump_size() reaches its VMA_IO_BIT check, and thus there is no change
-in core dump behaviour.
+Nothing relies upon this being set during the mmap operation.
 
-Change this for both the core xol_add_vma() function and the x86-specific
-get_uprobe_trampoline() function.
+mmap_prepare is unaffected by this so requires no fix.
 
-Reviewed-by: Suren Baghdasaryan <surenb@google.com>
+Reviewed-by: Zi Yan <ziy@nvidia.com>
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- arch/x86/kernel/uprobes.c | 2 +-
- kernel/events/uprobes.c   | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ mm/internal.h |  9 +--------
+ mm/vma.c      | 17 +++++++++++++++++
+ 2 files changed, 18 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/kernel/uprobes.c b/arch/x86/kernel/uprobes.c
-index 65a2de82ecd2..0f60c0d076b6 100644
---- a/arch/x86/kernel/uprobes.c
-+++ b/arch/x86/kernel/uprobes.c
-@@ -715,7 +715,7 @@ static struct vm_area_struct *get_uprobe_trampoline(struct mm_struct *mm, unsign
- 
- 	*new_mapping = true;
- 	return _install_special_mapping(mm, vaddr, PAGE_SIZE,
--				VM_READ|VM_EXEC|VM_MAYEXEC|VM_MAYREAD|VM_IO,
-+				VM_READ|VM_EXEC|VM_MAYEXEC|VM_MAYREAD|VM_MIXEDMAP,
- 				&tramp_mapping);
+diff --git a/mm/internal.h b/mm/internal.h
+index 557e629db8c5..4ae08fedffff 100644
+--- a/mm/internal.h
++++ b/mm/internal.h
+@@ -970,14 +970,7 @@ void mlock_folio(struct folio *folio);
+ static inline void mlock_vma_folio(struct folio *folio,
+ 				struct vm_area_struct *vma)
+ {
+-	/*
+-	 * The VM_SPECIAL check here serves two purposes.
+-	 * 1) VM_IO check prevents migration from double-counting during mlock.
+-	 * 2) Although mmap_region() and mlock_fixup() take care that VM_LOCKED
+-	 *    is never left set on a VM_SPECIAL vma, there is an interval while
+-	 *    file->f_op->mmap() is using vm_insert_page(s), when VM_LOCKED may
+-	 *    still be set while VM_SPECIAL bits are added: so ignore it then.
+-	 */
++	/* The VM_IO check prevents migration from double-counting during mlock. */
+ 	if (unlikely((vma->vm_flags & (VM_LOCKED|VM_SPECIAL)) == VM_LOCKED))
+ 		mlock_folio(folio);
  }
+diff --git a/mm/vma.c b/mm/vma.c
+index 39ceb03023e2..4f09fb98a2fd 100644
+--- a/mm/vma.c
++++ b/mm/vma.c
+@@ -2607,6 +2607,11 @@ static int __mmap_new_file_vma(struct mmap_state *map,
+ 	if (!map->vm_file->f_op->mmap)
+ 		return 0;
  
-diff --git a/kernel/events/uprobes.c b/kernel/events/uprobes.c
-index 7709ea882477..b89cc5cee002 100644
---- a/kernel/events/uprobes.c
-+++ b/kernel/events/uprobes.c
-@@ -1726,8 +1726,8 @@ static int xol_add_vma(struct mm_struct *mm, struct xol_area *area)
++	/*
++	 * Driver-specified flags may make the lock flags invalid, so clear
++	 * VMA_LOCKED_MASK and reinstate it afterwards if appropriate.
++	 */
++	vma_clear_flags_mask(vma, VMA_LOCKED_MASK);
+ 	error = mmap_file(vma->vm_file, vma);
+ 	map->vm_file = vma->vm_file;
+ 
+@@ -2629,6 +2634,18 @@ static int __mmap_new_file_vma(struct mmap_state *map,
+ 		return error;
  	}
  
- 	vma = _install_special_mapping(mm, area->vaddr, PAGE_SIZE,
--				VM_EXEC|VM_MAYEXEC|VM_DONTCOPY|VM_IO|
--				VM_SEALED_SYSMAP,
-+				VM_EXEC|VM_MAYEXEC|VM_DONTCOPY|
-+				VM_MIXEDMAP|VM_SEALED_SYSMAP,
- 				&xol_mapping);
- 	if (IS_ERR(vma)) {
- 		ret = PTR_ERR(vma);
++	/*
++	 * If the VMA is still eligible for mlock(), reinstate any original
++	 * VMA_LOCKED_BIT and/or VMA_LOCKONFAULT_BIT flags.
++	 */
++	if (vma_supports_mlock(vma)) {
++		const vma_flags_t mask =
++			vma_flags_and_mask(&map->vma_flags,
++					   VMA_LOCKED_MASK);
++
++		vma_set_flags_mask(vma, mask);
++	}
++
+ 	map->vma_flags = vma->flags;
+ 
+ 	return 0;
 
 -- 
 2.55.0
