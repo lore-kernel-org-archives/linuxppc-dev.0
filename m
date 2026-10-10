@@ -1,73 +1,65 @@
-Return-Path: <linuxppc-dev+bounces-29186-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29187-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C24CBCA6017
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2026 20:01:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE253CA9EC1
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2026 20:42:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j2F4F61Fqz2yjp;
-	Sun, 11 Oct 2026 07:01:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791662509;
-	cv=none; b=Q7+fhQZQLQWRJJbXne39fABNzenLNczE/gCNzFKdN6XXAEopKI+k1pK1FC38QSFOiXt2vXkg299DyqC/+whv7t68KkJvZS6WXtrdmWN/Y2guiYvJQ6/NqcqoO7I7wsm4IG9oyfTXCp7mH4vwFzXpU/mcmML0MUFs623QJAUDCUSCm5k3ktUidhX0O+hkcxISudwvOgj0zwwGhWZU5fc+4n06//gRCwvbgLpJ0LK8WgkTc+XncdKVFLM7DC1AnGggtuaLtR4Q+4UocjTYc7G0nPC43ATzivtoKSDlTKbQ0paiZ1X1M+dnyQrFcvifkYydQL1qHdlY/G3KVfJwOVwmuw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j2Fz96JZtz2yqT;
+	Sun, 11 Oct 2026 07:42:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791664949;
+	cv=none; b=YLUcLi7Y3EcyjooA/rEmR0ZkRHz7mN4kB9wUIdJwUc5Zq6PIvhGe+IsPDbxCT4oNnyLSDZTgjaFUthRoyTvvKF28nFoXSNicrFNyXcM3a8uSkHBuU6SRXnNH9dXD6FSVZ7DQMHE3p+cz4qhbNkWHXs1HNH0soak/MokRwa3BiXf4wQDCBCaC1cC0WGbxyBUd4j8ntaNzrhllWEZTdrKY/KH2h2bMhFl+AuE3Es0XBclUVjtRtw/ilLumE21Jn0hJMOyPDMuCfEBbaunhznBWayyixBmwdO5x77VZ0fomXAsc08ysLP9/hXLFCVo0/VCd7zxE66tjBUJxbQlFCm+LGg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791662509; c=relaxed/relaxed;
-	bh=D5xIJ77nP8pyKk1j4aNr1bPe3m2dUcpcnAVPDVOA+vg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=SnlxeMJpT3btHYTOahD6jRpRTzzh6y3ePqxVPpGuDzKue5zTfqud2Ii4fBTG3r1R0qqdpJ5umCawBN9jDw9/D91UP7disj0fvshTcmRsG0cQRjT/wI2jNwpKc0Lym7tU3KFx2LjDIwRt5+iWm4913FCZ1/NjCBS/d3LDXhCYqR6BL6I3bpiO0cEmmTOG80rW1Ba7VamF5Zx8kIUGyjoPL39HrkQ9glpVANyG0ftV1i5vyyix+jWzhNZmiDCU3dRf4shmYK3GHcWzdgBrRj0Sco89qQjjuIdttTW7wX6r7HRMwjVQFChjWoB61MALPTgYa42kAgV3fUjXAVLZQBEKXQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=WRSxdsDg; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=catalin.marinas@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+	t=1791664949; c=relaxed/relaxed;
+	bh=KaeVwRqfGMljaxW8Ah6Cx9zT6uiRBSSC1dP0zE7Q/ko=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=lmkBP2J1TrTHcc8UUng4WrfawpdR3cCHTJzvHEvcmAOriFV9/xypkkoS9sNT5HpY8Nz9CAcTd+ztN5JdRz3giSYUrXYzjs+0sEor4h0M6NeZJT9U2aMqy6n6ovX8bQtoElyAXEIuWN++HKrEjQU/DIZqNQHMSSyS8rBdnwEYcVUfITxAmKyg2J90FNoibDrlL4ro25AVPmFmwNg5wDDImg/nw92TXMz3OPwFIBT88iFrNNnJbfXQLj4Q929ym+Zl8MzihijI4f8vIBOFARLU5QDl9+8X9zQ5xxujgRCZQU0Z2D5MCEwV1EK25o3Lt1i/pQEWBhvuwkndu/r7ocxrqA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=RmLqUv8s; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=WRSxdsDg;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=RmLqUv8s;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=catalin.marinas@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j2F4C37Myz2y8Z
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Oct 2026 07:01:45 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EC41E1692;
-	Sat, 10 Oct 2026 13:01:08 -0700 (PDT)
-Received: from arm.com (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9A0AC3F882;
-	Sat, 10 Oct 2026 13:00:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1791662472; bh=0ej4w9K2k1nE5MBAzVddXwAyLDwy2dxb36CJ0bopUEc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=WRSxdsDg02jA7Wxmfp7hUM+7z5or2VN4zazCFutQjZjCNRVVo7Znbg22CVLNz7YAi
-	 ObuzEMW4ie3Brz5P5fTbQVvsd7oFGit6h9P3YDLOgc08xfbI46WYb8fvEkIjCXqCBo
-	 Fa+IHGI5x3Zu1VuORzdk3Muk8yB8P1D4NRA1la+w=
-Date: Sat, 10 Oct 2026 21:00:51 +0100
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Jinjie Ruan <ruanjinjie@huawei.com>
-Cc: will@kernel.org, mark.rutland@arm.com, chenhuacai@kernel.org,
-	kernel@xen0n.name, maddy@linux.ibm.com, mpe@ellerman.id.au,
-	npiggin@gmail.com, chleroy@kernel.org, ritesh.list@gmail.com,
-	sshegde@linux.ibm.com, tglx@kernel.org, mingo@redhat.com,
-	bp@alien8.de, dave.hansen@linux.intel.com, hpa@zytor.com,
-	gregkh@linuxfoundation.org, rafael@kernel.org, dakr@kernel.org,
-	akpm@linux-foundation.org, baoquan.he@linux.dev, rppt@kernel.org,
-	pasha.tatashin@soleen.com, pratyush@kernel.org,
-	ruirui.yang@linux.dev, leitao@debian.org, yeoreum.yun@arm.com,
-	sourabhjain@linux.ibm.com, robh@kernel.org, coxu@redhat.com,
-	kees@kernel.org, tangyouling@kylinos.cn, liukexin@kylinos.cn,
-	zhangtianyang@loongson.cn, guodongtai@kylinos.cn,
-	maqianga@uniontech.com, chao.gao@intel.com, kai.huang@intel.com,
-	vishal.l.verma@intel.com, seanjc@google.com, piliu@redhat.com,
-	thuth@redhat.com, jbouron@amazon.com, me@linux.beauty,
-	mclapinski@google.com, graf@amazon.com, bgwin@google.com,
-	hbathini@linux.ibm.com, eric.devolder@oracle.com,
-	takahiro.akashi@linaro.org, james.morse@arm.com,
-	palmer@rivosinc.com, x86@kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
-	driver-core@lists.linux.dev, kexec@lists.infradead.org
-Subject: Re: [PATCH v6 05/14] arm64: kexec_file: Fix elf_headers memory leak
- in retry loop
-Message-ID: <asqZcwg99QbA7Sma@arm.com>
-References: <20260921090450.807575-1-ruanjinjie@huawei.com>
- <20260921090450.807575-6-ruanjinjie@huawei.com>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j2Fz76vHvz2yjp
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Oct 2026 07:42:27 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id D5CDB602CC;
+	Sat, 10 Oct 2026 20:42:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 04A691F000FF;
+	Sat, 10 Oct 2026 20:42:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux-foundation.org; s=korg; t=1791664943;
+	bh=KaeVwRqfGMljaxW8Ah6Cx9zT6uiRBSSC1dP0zE7Q/ko=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=RmLqUv8syW5KCaLrBRHaqB+hdxZmebnLFbyFQcAzsE8K8GyM/v72kmzM2p52+uyUk
+	 JY4X3rsdpU0z8m/Mytez5hAFfN73+lJQkTAJ2ZdwOIQwtDH7dUz67d2wNhBrUxR1xC
+	 zb3jPxE5vNJ3UNmy+gKrU8kH2wFXF/E3KA17J4EE=
+Date: Sat, 10 Oct 2026 13:42:22 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Muchun Song <songmuchun@bytedance.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, Mike Rapoport
+ <rppt@kernel.org>, David Hildenbrand <david@kernel.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy
+ <chleroy@kernel.org>, Ritesh Harjani <ritesh.list@gmail.com>, Shrikanth
+ Hegde <sshegde@linux.ibm.com>, Lorenzo Stoakes <ljs@kernel.org>,
+ "Liam R . Howlett" <liam@infradead.org>, Vlastimil Babka
+ <vbabka@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko
+ <mhocko@suse.com>, Qi Zheng <qi.zheng@linux.dev>, Lance Yang
+ <lance.yang@linux.dev>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, muchun.song@linux.dev
+Subject: Re: [PATCH v4 0/6] mm: Unify device DAX and HugeTLB vmemmap
+ population paths
+Message-Id: <20261010134222.b6fdcb20d8fec5aaceab66ec@linux-foundation.org>
+In-Reply-To: <20261010075755.83339-1-songmuchun@bytedance.com>
+References: <20261010075755.83339-1-songmuchun@bytedance.com>
+X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,37 +72,92 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260921090450.807575-6-ruanjinjie@huawei.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-On Mon, Sep 21, 2026 at 05:04:41PM +0800, Jinjie Ruan wrote:
-> If load_other_segments() fails after image->elf_headers is assigned,
-> the memory lifecycle is safely managed by the global kimage object
-> and will be freed in arch_kimage_file_post_load_cleanup().
-> 
-> However, during a retry loop in image_load(), a subsequent iteration
-> will allocate a new buffer and overwrite image->elf_headers. This
-> permanently leaks the stale memory from the previous iteration before
-> the global cleanup can track it.
-> 
-> Fix this by explicitly freeing the stale `image->elf_headers` buffer
-> before assigning the newly allocated headers.
-> 
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Will Deacon <will@kernel.org>
-> Cc: Thomas Huth <thuth@redhat.com>
-> Cc: Breno Leitao <leitao@debian.org>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Yeoreum Yun <yeoreum.yun@arm.com>
-> Cc: Baoquan He <bhe@redhat.com>
-> Cc: stable@vger.kernel.org
-> Fixes: 108aa503657e ("arm64: kexec_file: try more regions if loading segments fails")
-> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
-> ---
->  arch/arm64/kernel/machine_kexec_file.c | 4 ++++
->  1 file changed, 4 insertions(+)
+On Sat, 10 Oct 2026 15:57:49 +0800 Muchun Song <songmuchun@bytedance.com> wrote:
 
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+> This v4 is based on mm-new commit d5207c6d152c, which contains v6 of
+> "mm: Switch device DAX to section-based vmemmap optimization" [1].
+> 
+> This series is split out from the earlier, larger series "mm: Generalize
+> HVO for HugeTLB and device DAX" [2]. While the parent series generalizes
+> vmemmap optimization across HugeTLB and device DAX, this subset addresses
+> a single, self-contained step: unifying their vmemmap population paths.
+> 
+> After the preceding Device DAX conversion, both HugeTLB and Device DAX
+> describe optimized vmemmap mappings through memory-section metadata and
+> use per-zone shared tail vmemmap pages. The generic code, however, still
+> carries a Device DAX-specific population flag and compound-page population
+> path, along with arguments and helpers needed only by that path.
+> 
+> This series first removes VMEMMAP_POPULATE_DAX and moves selection and
+> reference handling for the shared tail page into the common vmemmap
+> population path. It then removes the generic Device DAX-specific
+> compound-page population path and routes section vmemmap population
+> through vmemmap_populate(). The powerpc radix path continues to use its
+> architecture-specific compound-page population implementation for
+> optimizable sections.
+> 
+> The remaining patches remove the unused ptpfn argument, open-code
+> vmemmap_populate_address() now that no caller needs its returned PTE, and
+> add a warning for inconsistent zone initialization of shared tail vmemmap
+> pages.
+> 
+> This is the fourth smaller step toward the broader HVO generalization.
+> After this series, HugeTLB and Device DAX use the same population model
+> instead of parallel generic paths, while powerpc keeps its
+> architecture-specific implementation.
+
+Thanks, I've updated mm-unstable to this version, including the -fix.
+
+> v4:
+> - Rebase onto mm-new commit d5207c6d152c, which contains v6 of the Device
+>   DAX section-based vmemmap series.
+> - Factor the zone mismatch check into a local helper as suggested by Mike
+>   Rapoport.
+> - Collect Reviewed-by tags from Lance Yang.
+
+Here's how v4 altered mm.git:
+
+
+ mm/mm_init.c |   17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
+
+--- a/mm/mm_init.c~b
++++ a/mm/mm_init.c
+@@ -593,6 +593,15 @@ out:
+ 	node_states[N_MEMORY] = saved_node_state;
+ }
+ 
++static inline void vmemmap_optimization_verify_zone(struct page *page)
++{
++	const unsigned int order = pfn_to_section_compound_order(page_to_pfn(page));
++
++	VM_WARN_ON_ONCE(vmemmap_optimizable_order(order) &&
++			page_zone_id(page + VMEMMAP_OPTIMIZATION_NR_STRUCT_PAGES) !=
++			page_zone_id(page));
++}
++
+ void __meminit __init_single_page(struct page *page, unsigned long pfn,
+ 				unsigned long zone, int nid)
+ {
+@@ -609,9 +618,11 @@ void __meminit __init_single_page(struct
+ 	if (!is_highmem_idx(zone))
+ 		set_page_address(page, __va(pfn << PAGE_SHIFT));
+ #endif
+-	VM_WARN_ON_ONCE(vmemmap_optimizable_order(pfn_to_section_compound_order(pfn)) &&
+-			page_zone_id(page + VMEMMAP_OPTIMIZATION_NR_STRUCT_PAGES) !=
+-			page_zone_id(page));
++	/*
++	 * Shared tail struct pages are initialized during vmemmap population,
++	 * before retained struct pages reach here.
++	 */
++	vmemmap_optimization_verify_zone(page);
+ }
+ 
+ #ifdef CONFIG_NUMA
+_
+
 
