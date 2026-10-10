@@ -1,43 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-29174-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29175-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 273A2CA9EBE
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2026 10:14:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E05A3CA6004
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2026 10:34:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j202q4ld9z30gC;
-	Sat, 10 Oct 2026 21:14:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=117.135.210.6
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791627283;
-	cv=none; b=ZVONHb0NTxU4EOJAfwxY63eiCc8VQCM6ruYUzfO6lLxlS6pbeRWcuB4gvVd9lwgDQkDcjYntloDr7XN+C7RumrtBZFPlRdRjruTcGa/dNiz9kC+Dgxt5B2gCVM5DYGJktiQPZc7hOQcJ7OcpSHyMCSM25bnuBSuHn5B8vsxAGI9PUkk4hpSscV1NfTg5F8QzjbKHhF5hvn+PwjdTn+5iK22Svny7+7Ks6rWub/vBPg5AYI07vlmyUn+HAgFd5KLhWuHb1RybPy4c+PfMO3pmJpMOkpdQHdetYZN0HKLvYKVEc2bDXwcCNX+Mu4dtJRCl5jjbAKtaYCgCn50nz2BQiQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j20Tw1sDXz2y1W;
+	Sat, 10 Oct 2026 21:34:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::a6"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791628484;
+	cv=none; b=GRCO/8SJsoSrAxPsErCA2VMMh56t2UjjNGRMsQWLn4aJF1B3RKsV4SY/AHpZNMBG7NHq6PN3/kGloWqOIvDH4Au2tutWeSOaAPOqwf3Phl+9mNtd5Mgq5qoIhajOxPLSqBzzPBJx7Zm37Jwfm/YVeOZueptwEAyasYrHRaJ3r/yJFaHHq9iWwjQDYRuhQecQYH3CpvBZb4f7ykoMZVodvn3ZBRAS9UgawaSBT1BLw1OsmymoJ8QkkBeVt+gp2O+AjMYgu0kewBS5LvqaVC2UsLYPNP7AKhin4x7Vusf3H0Lb8JtKxk9pO34ICXmoIdYsUkxe44WBFecalLlUhmvH0Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791627283; c=relaxed/relaxed;
-	bh=A4y04JzxldO260/+1JjQhaM7OPWp1qTRLmXAqMl3EHU=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=RdodsMKPTrsreFnRMwq4ayW6xXamRRAR/RgigiOFysO4+Qwjbet163YqRPIHKSBy9dVGfUOm7ZbUIubI0PtHBvHF4HfqVkTh43qj2/nP6A/Igpv81nMI6tHzujHP37iCPWg6bSw2tY4zspKtO4EWAKnKXgz7Dr8WsjIvKm+644igs0kXdm7ll6uM0QwjhcLhcwPTXmO45SNVpmnak2puUgIfkA6wnsk1+vzkl8T9/lsFQrzh//qkLCK6CubRRFSO3N5lfCb39iQ74C7hBWR85tItMXI9qWS/+QW3FqwfxEv54g1+13wotseLBRAcMuEiVZEX3aAzg08eiBY21NEenA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=126.com; dkim=pass (1024-bit key; unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=d48qZgmD; dkim-atps=neutral; spf=pass (client-ip=117.135.210.6; helo=m16.mail.126.com; envelope-from=chensong_2000@126.com; receiver=lists.ozlabs.org) smtp.mailfrom=126.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=126.com
+	t=1791628484; c=relaxed/relaxed;
+	bh=g2VyDxK77mq7FOSsOuc0VjLLB5/X+CTe8SCo2xbPUpo=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=eea7rvkynKEwOqP1MTaw06rn3c5RIF8cizc9193EmsR14skfNm/EkYeoTbHyNWf6z0mzZsJfAVAeDlZecwF2vHYTPu41WCxjAPNeXc+Yqrsh3p9pq3DsNwi9IJ2KGOtdltvD5crDnRU0dHvZ5KRQUOvNL68zYcnOu66vQzQ1YFUswAVe57jSCCZCVNjqdTqcnS8DmUS3hGbUu4jxzNvnSg5qfWZyTA+l1n7A86AwuTWWz07yRGLHGM9cXoAUtAsXae8pgQRDJOKbmurQlLBqeBvabWEG/UEOF0Btzif319pPFXzSKXPA2pwg2iSfe47ywHpTj0XM09puRdrPfLvqbw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=o7v6ZlxE; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::a6; helo=mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=d48qZgmD;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=o7v6ZlxE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=126.com (client-ip=117.135.210.6; helo=m16.mail.126.com; envelope-from=chensong_2000@126.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 257 seconds by postgrey-1.37 at boromir; Sat, 10 Oct 2026 21:14:39 AEDT
-Received: from m16.mail.126.com (m16.mail.126.com [117.135.210.6])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::a6; helo=mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta1.migadu.com (out-166.mta1.migadu.com [IPv6:2001:41d0:203:375::a6])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j202l3GXNz30V1
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 21:14:35 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=126.com;
-	s=s110527; h=Message-ID:Date:MIME-Version:From:Subject:To:
-	Content-Type; bh=A4y04JzxldO260/+1JjQhaM7OPWp1qTRLmXAqMl3EHU=;
-	b=d48qZgmD7kERcBnmME6e5d/+8X02i3aRnMPZ51by6aY+s0Mvxn6UmORGNrc14P
-	GAs5qG3Cxdpp6rmfM/ardD0xQCs5jKmZ0tHvp4pcDtdiSY6HGwsdQxO5Q6OoPBVc
-	qqu8kyMskMLqVaioNR3Z/WkUbk96NKBcA0a25t7oXN4SY=
-Message-ID: <e550befe-8399-4349-8b67-6a01367db165@126.com>
-Date: Sat, 10 Oct 2026 18:04:47 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j20Tq68X5z2xwZ
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 21:34:37 +1100 (AEDT)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=g2VyDxK77mq7FOSsOuc0VjLLB5/X+CTe8SCo2xbPUpo=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1791628454; v=1; x=1792233254;
+ b=o7v6ZlxEAY/w3T0uAInbokQuLcImEW3tq4ieDxhluOmHWMHdYELr/fwxx8FY6ovKgcaAPvIR
+ sgstR7BOlg1LcwRisOLKHZ3kZtaNkiKDvz/NSS6mpN/mOefcvCMaQLWpESuYIHQvXXBpHV2t1qN
+ q8IXJ7HYo6HeXnL1zi+H6nSU=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id 44cd96bd31e91f15;
+	Sat, 10 Oct 2026 10:34:14 +0000
+X-Mizu-Trace-ID: 44cd96bd31e91f15
+X-Migadu-Flow: FLOW_OUT
+Content-Type: text/plain;
+	charset=us-ascii
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -50,99 +56,82 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: Song Chen <chensong_2000@126.com>
-Subject: Re: [RFC PATCH v2 0/3] btrfs: add error injection support for
- checksum verification
-To: dsterba@suse.cz
-Cc: arnd@arndb.de, kees@kernel.org, clm@fb.com, dsterba@suse.com,
- linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org,
- guoren@kernel.org, kernel@xen0n.name, maddy@linux.ibm.com,
- mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, pjw@kernel.org,
- palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr, gor@linux.ibm.com,
- borntraeger@linux.ibm.com, agordeev@linux.ibm.com, svens@linux.ibm.com,
- tglx@kernel.org, mingo@redhat.com, bp@alien8.de,
- dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com,
- jpoimboe@kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-csky@vger.kernel.org, loongarch@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20260724021229.47302-1-chensong_2000@126.com>
- <20260907161330.GX9053@suse.cz>
-Content-Language: en-US
-In-Reply-To: <20260907161330.GX9053@suse.cz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:PikvCgDnz_jADcpqUfIkBQ--.28557S2
-X-Coremail-Antispam: 1Uf129KBjvJXoW7Zw47Cw4xCFWkWw15Kr1kAFb_yoW8trW5pr
-	W8C3s3WrWrJrWxArsaya4Fv34Fkrs5W34UJFnrG34Ik3s3Za4kta1kK348u3W7ur48Gw17
-	Z3WDKr4kWr1UAFJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07jDvtAUUUUU=
-X-CM-SenderInfo: xfkh02prqjsjqqqqqiyswou0bp/xtbBsgLAQGrKDcJ3nQAA31
-
-Hi David,
-
-If no maintainer else sees it and comments, i'm going to send a new 
-patch, only keep btrfs part and withdraw rest, and take care of sashiko 
-comments as well.
-
-Please still find it, many thanks.
-
-Best regards,
-
-Song
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3901.100.1.1.12\))
+Subject: Re: [PATCH v4 6/6] mm/mm_init: add zone mismatch warning during page
+ init
+From: Muchun Song <muchun.song@linux.dev>
+In-Reply-To: <asoMN5F-3qvaW5w0@kernel.org>
+Date: Sat, 10 Oct 2026 18:33:59 +0800
+Cc: Muchun Song <songmuchun@bytedance.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <chleroy@kernel.org>,
+ Ritesh Harjani <ritesh.list@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>,
+ Lorenzo Stoakes <ljs@kernel.org>,
+ "Liam R . Howlett" <liam@infradead.org>,
+ Vlastimil Babka <vbabka@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>,
+ Michal Hocko <mhocko@suse.com>,
+ Qi Zheng <qi.zheng@linux.dev>,
+ Lance Yang <lance.yang@linux.dev>,
+ linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <7E20DFEA-72C0-4417-92E3-66A077904AE5@linux.dev>
+References: <20261010075755.83339-1-songmuchun@bytedance.com>
+ <20261010075755.83339-7-songmuchun@bytedance.com>
+ <434B0573-BF18-4413-9BDF-C5873CC13206@linux.dev>
+ <asoMN5F-3qvaW5w0@kernel.org>
+To: Mike Rapoport <rppt@kernel.org>
+X-Mailer: Apple Mail (2.3901.100.1.1.12)
 
 
 
-在 2026/9/8 00:13, David Sterba 写道:
-> On Fri, Jul 24, 2026 at 10:12:26AM +0800, Song Chen wrote:
->> This patchset adds fault injection support for btrfs_data_csum_ok,
->> enabling controlled simulation of checksum mismatches to test btrfs
->> silent data corruption detection and reporting paths.
->>
->> The first patch extends the error injection framework with a new type,
->> EI_ETYPE_FALSE, which allows bool-returning functions to be overridden
->> with a false return value directly.
->>
->> The second patch marks btrfs_data_csum_ok with ALLOW_ERROR_INJECTION
->> using this new type.
->>
->> The third patch adds a parent field to fei_attr to allow fault injection
->> on a function only when called from a specific parent function.
->>
->> Song Chen (3):
->>    error-injection: Introduce EI_ETYPE_FALSE for fail_function
->>    btrfs: Allow error injection on btrfs_data_csum_ok
->>    error-injection: Introduce parent in fei_attr
-> 
-> I'm going through my mailbox and found this. No objections to add the
-> injection point to btrfs, but the rest is generic fault injection code
-> so I can't take it via btrfs tree without acks.
-> 
-> There are some sashiko comments (as replies in the thread [1]) and there
-> have been some changes to btrfs code too so the patchset needs a
-> refresh.
-> 
-> I see maintainers in CC, if somebody could please let us know how to
-> proceed.
-> 
-> [1] https://lore.kernel.org/all/20260724021229.47302-1-chensong_2000@126.com/
-> 
->>   arch/arm/lib/error-inject.c           |  6 ++
->>   arch/arm64/lib/error-inject.c         |  6 ++
->>   arch/csky/lib/error-inject.c          |  6 ++
->>   arch/loongarch/lib/error-inject.c     |  6 ++
->>   arch/powerpc/lib/error-inject.c       |  6 ++
->>   arch/riscv/lib/error-inject.c         |  6 ++
->>   arch/s390/lib/error-inject.c          |  6 ++
->>   arch/x86/lib/error-inject.c           |  6 ++
->>   fs/btrfs/inode.c                      |  1 +
->>   include/asm-generic/error-injection.h |  6 ++
->>   kernel/fail_function.c                | 98 ++++++++++++++++++++++++++-
->>   11 files changed, 152 insertions(+), 1 deletion(-)
-> 
+> On Oct 10, 2026, at 17:58, Mike Rapoport <rppt@kernel.org> wrote:
+>=20
+> On Sat, Oct 10, 2026 at 05:32:59PM +0800, Muchun Song wrote:
+>>=20
+>>=20
+>>> On Oct 10, 2026, at 15:57, Muchun Song <songmuchun@bytedance.com> =
+wrote:
+>>>=20
+>>> For vmemmap-optimized sections, tail struct pages may be backed by
+>>> shared vmemmap pages. Those shared pages must carry the same page =
+zone
+>>> ID as the struct pages initialized for the section.
+>>>=20
+>>> Warn in __init_single_page() if the shared tail page has a different
+>>> page_zone_id(), which would indicate inconsistent initialization.
+>>=20
+>> Please ignore Sashiko's report [1], both are false positive. It =
+didn't
+>> realize that shared vmemmap pages are initialized early before =
+__init_single_page().
+>=20
+> I didn't realize it too when I read this first :)
+>=20
+> How about a short comment above vmemmap_optimization_verify_zone()?
+
+Good point. A short comment there would be helpful.
+
+Thanks,
+Muchun
+
+>=20
+>> [1] =
+https://sashiko.dev/#/patchset/20261010075755.83339-1-songmuchun%40bytedan=
+ce.com?part=3D6
+>>=20
+>> Thanks.
+>=20
+> --=20
+> Sincerely yours,
+> Mike.
 
 
 
