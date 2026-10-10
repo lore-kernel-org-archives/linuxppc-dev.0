@@ -1,92 +1,101 @@
-Return-Path: <linuxppc-dev+bounces-29163-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29164-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72A7BCA6017
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2026 03:49:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21D27CA9EBE
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2026 07:58:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j1qVq2P7lz2yQl;
-	Sat, 10 Oct 2026 14:49:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::535" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791604195;
-	cv=pass; b=QRq4ro8f61LF3y6m0fkRkTQxYAjmz2xiNwu/7zc+UJYzOfL10gLgGYTJZYx7dyRgLOTx/JwxnnRK74GiX0aUlCqSILNyyPpIAp7Jea8cbwdQYMpJlIfg5j4wpCd8IwEGmW22OjyzsBkktnvKT2WR+OSlHPwS/Q9qxfj1OrVXqQKrjBl3n+ab+5zF93VhluGby7CGZKF04zF0OIWewpHNbptruPT0VhifqPqTlWYupU+ozDw3G0TFKh9YiaEApq1ER5M/RPVaPsChTTcqndcwBL4n6+c8LRqHPV2LuZuakhJ/5l2dfAAc3ppqOlio0lPFs8AvSNz4lI+mABb2gE0RPA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791604195; c=relaxed/relaxed;
-	bh=XvvY7S8HRq9XwIfKh5P7GJDm6dvfslD5dk/W3mmoMKU=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=hhETSxbu1jt/r75kjlm4GYQ6S1zEQFrseMbryC1BcYKHwFzDraqkaydm2pcZ+YIiw8yninZxbJfVFO4tyuEquw/H9IehVuCaqvGW8uWjPLcsxqk3XfyDNHThZG3Bn7tKD+HOMtaCsJw8NJvln6glcSY+U5U0+PwWKeB3rf6Ql/GPezmjpS64NT6kAqPfc0MeFBUMPaiUAWMwPkrvsTXq7g02iFibRozpZJsO1xPeA9RXz+zh3FcSa+n21RDgjMUCl33sLpb8RorTwGaj4vjRNlXl/eRzp6ky9PsNNVR3IjO3C7RkNrnqo4wwOS/dSGDr/sEHJplh/va4NroyjcmodA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=mT2V7QSo; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::535; helo=mail-ed1-x535.google.com; envelope-from=jperlow@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j1x1d24vBz2xrL;
+	Sat, 10 Oct 2026 18:58:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::535"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791619109;
+	cv=none; b=nIKhzVzKS6wPln0ERdPB5VRAiq7NuU++coC4Hg3RD5BdYHaiJJVS4FexlYOGie3qro0TWajzIkohLIgci9dPUIwVW+wrjJcEhcPLUAw5RfTaX9UzEfNaX1nPh8QuxKt0P0yElNQUz1lQ3K+xXFwWBlOhtlKPc1xZZXqHB1Oe+NbFAYG5NoyQY6WXtiXASnLUm1QD6+zZq8Y9mlXGO17O6b1G5y0OC6XbEcUH1Lij2xWiOhV0nCAHno2SjyN6DDyCdBimDNun5i8rEtvG85zozbCwk8W45+TAxNxJcH5L+sazrmg+NwOD98PXbZX+oR6mA2Ndj5fgRj+YPC3oGbYSGg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1791619109; c=relaxed/relaxed;
+	bh=s931g07PMq4Bu75kY5DuvEAvn6osmlRZp6J1l7oOErg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=KLlMRH8hrj8gOPVFaiIOR5evY3nz3egRjnkq9DaCp932TXwK175RV2tP1xRZcYBwTkV+y3lO9dTOdbuDXTKpquPWT6HmlJY7FKKqJIkrY8RemPe1UbrpnpY77P+QfSTmCPf6Rwts6iHnUSiHgDIGuY4eNLJ/6ntmcfvWz5mxWDmL/HYSy2g6W63aCruoWl5xsQvWkaKLdVDa/hgGuJBYbmfUelA9cvLUImyrM/XOYguY34/7J6IlutA1lMOn4L8RLGSqjbgr8KJ3gFy3pSn2huHA6G/S0L2RN6scdYAdoTjikG/WJqLwRKQ+m8Mr2BDzzzsJVwalWaMd4tfOqqi69A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=ckpW4hl0; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::535; helo=mail-pg1-x535.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=mT2V7QSo;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=ckpW4hl0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::535; helo=mail-ed1-x535.google.com; envelope-from=jperlow@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com [IPv6:2a00:1450:4864:20::535])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::535; helo=mail-pg1-x535.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x535.google.com (mail-pg1-x535.google.com [IPv6:2607:f8b0:4864:20::535])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j1qVm2LJ4z2y8Z
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 14:49:51 +1100 (AEDT)
-Received: by mail-ed1-x535.google.com with SMTP id 4fb4d7f45d1cf-6afe8d3980aso417669a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Oct 2026 20:49:51 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791604187; cv=none;
-        d=google.com; s=arc-20260327;
-        b=hmMQ9wkCz9BXlUAGLL7y53Uy2OgVovcDrktgt6Yj6V72mSkRq2Uw5Ns/HbMPshNm5G
-         kFGheFAEvYi55v85LkJ0Hp8cXtzqFxItOCk7kZVHX/rVQYRybZhiMx/62YXi/PppDYSM
-         knEqrfIwJ9AOclubbKyvh25cCDRSPbJIDtP3ZikyzAo2i+RTJJxkNZpbNlkLayHXBeq3
-         pADdZa7wzfkbrUmIOQlkHX8vCxt/MUw0CSl5Z5hK8nQTEywWD8TVTNl3s43Qd+T7NFZr
-         sslYsKT1S3PXJS5uXl6Qyy6UWIQOkoVe+dmZR3VRSn3JsWsgjhXhH1vhe8fnHvaeacfz
-         TuRw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
-        bh=XvvY7S8HRq9XwIfKh5P7GJDm6dvfslD5dk/W3mmoMKU=;
-        fh=LzIyGW3RKhk2uGRwRT5Nt2/4FSCWgrWdVbsD5lxajyg=;
-        b=dgKepWSnrKz6V7WVsu2RfxYdtaiKhu+Cx6OpomUVySK5Mn7JT53il3D/XpX+uRdYEN
-         0kVrBYdxhRcU+XFczvW9nQJbIcFEN12DxIBjSYqKUuQzJir5+LFmtQbEMUgZGRPFY1MR
-         RAq4Qyctv1WTfU1yRZCgXhD009XsxQwdCtnwQ2vQl44mgrdynZTR4OPzEvqWJe4dusLv
-         GZM4G8Cfy7PkAP8pon8HsybNl0FWF5Jo9KRFxvskB0FuJEEtlT1OaAA5ty+kirR85N84
-         Lm6+a6iRV99oLeQ8wKY0gIilFxX01Nji4cBLeD2UoKMs7xnJegDbVOiCLAddkhugkv4X
-         WNzQ==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j1x1b00ybz2xrC
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 18:58:25 +1100 (AEDT)
+Received: by mail-pg1-x535.google.com with SMTP id 41be03b00d2f7-cc7cc8aafe6so146028a12.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 00:58:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791604187; x=1792208987; darn=lists.ozlabs.org;
-        h=content-type:cc:to:subject:message-id:date:from:mime-version:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=XvvY7S8HRq9XwIfKh5P7GJDm6dvfslD5dk/W3mmoMKU=;
-        b=mT2V7QSo5B4JjXLi6VMQE4xeFZu4K1DLjMfDzevzwPJbQpmhljW/9D4nsbJ0AM1uPI
-         RUHfaR2kGXEPj560OiCVsfSKqyYPSYIDNCcAJI6dukEZkUGAsNJCBa77ShjaEzUKq8ro
-         V2aknD3AzoiWohxQPu551IvOpit2ClUk+OFWMm1DOdQ1y+T7EJ4q2b9zxLpATNDBF+2V
-         yb4sGY4EMseZlgX5O80OvYf4YcWBpWlfkngNBt7jnKzd2rGL7wefVM9+SoBFgwxxp2Ky
-         phoOioBvJtis5ZtiZ6TV/aGJi2+jDD90eECFjfVHXt8q4I0P1UgAyvKYIXV43JweDSRz
-         2WoQ==
+        d=bytedance.com; s=google; t=1791619103; x=1792223903; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=s931g07PMq4Bu75kY5DuvEAvn6osmlRZp6J1l7oOErg=;
+        b=ckpW4hl0R2pNbeXG74Iu+pjRg+P+tfz82X85eFjXMvNkLvbOrgHtkNIypOv18TVu52
+         2fPAM7kqZySIXDvf/r//5Z5C841VFp0/WcLBNWSLdGmrerxvjNJMIXz5gb0++AAAPbyA
+         eFfj+ofDqlYnZwG6+iCW00Esl3in7B5L8qbdrIEvwFyzZ++nrQkiM/eoMvIACjcurXs2
+         AjDDDD8aPgP+67YiRBPQo15VgdjSetiFBJAk+b+ItVWsAMNYTUw/1RT0WiNaAs24v2aj
+         VJrrDUf1G1YD77FNg5qFxa1UANZ+jjF1h5uNmJxUYsn4A+zz7vQbjhXWakY7DZmAwLqh
+         D2cg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791604187; x=1792208987;
-        h=content-type:cc:to:subject:message-id:date:from:mime-version
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=XvvY7S8HRq9XwIfKh5P7GJDm6dvfslD5dk/W3mmoMKU=;
-        b=BOwjOVc5juzBfOFdz4+pSQ610dM1nGGtNNYP9BbY4tx570oCTa8pJ2r5EZA+SQ0nJa
-         zWTx2SqwcbuzBOaCxYwqOF424qoJiQekGJn+1+omipFdcc/KkUwfBxLYzIacvenVAotv
-         0lGJJGg+2ImfkXH9+dAW7PZVgzT6GNdMnAJ/1LA2nMkX9FwvvVR0VD1+r+kV/dVt0B7n
-         mpWib6TQbizDrAhsQBXg36RmVd3RluehtqvOV7A/IEywyGZxLGu933zL7d3Q1IFmosrc
-         ggfhh4AyN1ajTh/cSznmPeO5bvBObXALVb1kjtFbNzUmhl7lZNyzX5u9IA0gH9na4cau
-         iwjw==
-X-Forwarded-Encrypted: i=1; AKwUvBxr4ujDifSiUzy6qjvAUjdPlfo8bnIK74pLJIN/Xme8mxLgZLA9P6C6G6ETSQF0Y9uEfHTvWnXM0ipw3aw=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYLWSeiPvuHO6PfieSPxuR8mwfotOxvIjdkc1xfoanWNxIhRNUbJ
-	zIaI+KchPjubQRmpeLCek5xQVrCBWwrdsSPKOQ9UqlZoEx1N/bZ4yebYffapr9m+mZlQnKwvyO6
-	3pZ38yhS3u7NZtDb9Bo3lyMPt6VvJHhc=
-X-Gm-Gg: AYBFou3oBpFoqQUd0WA63cOUvLGqkYOHB7o+2WCJaVi9/OKh7yboSnqjKE5TS7iJOvc
-	bY7qCy0/E6D7dxKvtCFQ9XHRbASN9l81eb5yFAkLkqSjzYPmGp+KvtoTMTtlE87y8ifq6eRrzc6
-	un2Ay8cUUER1vjOJ8NoU1XumXPUpNJzrQszIuAfcX3jE7qvuxQ6ZQsqCZ+TGRCiqYcjL2PgyB5N
-	cuuMTAzZN6pNIpAkF4zj6Pngv2x5D8AkkdK5U82pnqYYsP3S7uUGy+d85/SlzbE0bOEoTo1fNWT
-	t8NZH97Ozb514TTjuAjPRHYyK0GG1Edu/esXpMr4WzM5sJ+Tl577GYl+yEhsxBcTqKaP2pxX284
-	WV9sqbVmU3UY+lMpy6wF0m6OI9Yv72ac90FRl68Rkv4ms9hSGJT7LIakD0V4vWdgc6jMtfpsp8F
-	T+hINtMarfUIuaCzb/JxtB
-X-Received: by 2002:a17:907:3f8e:b0:c29:f5d5:5aa7 with SMTP id
- a640c23a62f3a-c31aa0c0ae8mr355096366b.49.1791604186895; Fri, 09 Oct 2026
- 20:49:46 -0700 (PDT)
+        d=1e100.net; s=20260707; t=1791619103; x=1792223903;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=s931g07PMq4Bu75kY5DuvEAvn6osmlRZp6J1l7oOErg=;
+        b=AAkcKqhD8LjSSEBFa5p2CfyPuSSK+hYVOj4/mQb4nt1qxz+8Sp4lW6IZkDaULWt4fa
+         Sm5IeBgIPwuwuq+mSoGx7/7QonwIZ+aBKmtuweE4XL5GzOH2t1BZCr0ZnUAS9LkmwQn1
+         LJEfPWQw3M4/2iECAumX9BTbruGwHlQq8W7A10ko4SCKwUSkZmp4zqG1hP6cYkMk0rGP
+         9ktbpBntnLJpJlCmhimnma4qM3FJzOT6UEuGvmnFVHa7GYEq9ACtQA2BrchqJutau+Bf
+         C0+QAc0YMeCsyJn0VZHCiFKip1IaidolmiFoLkIg2kRR8LKA+tSvUols4vAOz8fOvt4l
+         IgLw==
+X-Forwarded-Encrypted: i=1; AKwUvByARA8Apk7f+GrwUUYZMNdO7KIKSk6uFWe0+L/nwOSEfERsMUM1sa7LT+gH2E0duOzhgX6nLTUKmckz3Lc=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYJTFh4q3taKoby0dgch1Zy/NGsVNR0cUWxxy/jxGqTHJxC0p1aS
+	STb7DLGENjzlgqdOHrBP0OwOohEGGA0/7Sf8bEjVdCGrtvLCnHeYDewvNXpyK4UehAQ=
+X-Gm-Gg: AYBFou2Y/jtdK8CMf9GJr164ZC1/0qC7WmBtzIgpYYfI94C3v/I3fnpzpGqd/LcXN0/
+	YfxLSz0zsdjmtYg2UW8zMfLNS3x5H8aQltUV2c37FG8Ux/pJfGWWa2CYth6nyYLdgNL+VZC98qk
+	xblPfqo++YY0pj/MsakePSUFSHz4kWqaz3Ejr/FrgNgQaxXKDKS2Hb9VYkbW7L1RhlRNwFhhTjh
+	4Xp9QoPscr5pKlSNASQ3MmQROLgsEbWIx/BQENZsXfaAwssax5FXYetfsWw/msqzI2WCWVBhLME
+	l3E6rEu2b3JT8OIOkPKXDTqZMhNnbpGZqzVm5mL4SMjz3lzszgUiMKIZ3q5ODvsEc6XLMpBW/DW
+	L595DAGmPyKVUfHD/I1LmV7SM3CCGFl2kVgNBnf9Ht3YUL7/1UWpzq/BZIpUpQ+//L//gyJr4if
+	W/bYzy3ZNSfYCL2J+YAfCjRdfitDu8NBr0/WcrEGpiG0tcjOq5PELTm3RGSm0KbqtaunMp1HLdy
+	L0AVdH4n7Tc+CZ/87bFcaJ+O1OGSGkii/dvHw==
+X-Received: by 2002:a17:90b:4b:b0:3aa:f2c4:12ea with SMTP id 98e67ed59e1d1-3ab3ab5e193mr3041362a91.20.1791619102741;
+        Sat, 10 Oct 2026 00:58:22 -0700 (PDT)
+Received: from G6L4RL2QG9.bytedance.net ([139.177.225.249])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ab57c05724sm3473569a91.4.2026.10.10.00.58.13
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Sat, 10 Oct 2026 00:58:21 -0700 (PDT)
+From: Muchun Song <songmuchun@bytedance.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Mike Rapoport <rppt@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Hildenbrand <david@kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Ritesh Harjani <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Lorenzo Stoakes <ljs@kernel.org>,
+	"Liam R . Howlett" <liam@infradead.org>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>,
+	Qi Zheng <qi.zheng@linux.dev>,
+	Lance Yang <lance.yang@linux.dev>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org,
+	Muchun Song <songmuchun@bytedance.com>,
+	muchun.song@linux.dev
+Subject: [PATCH v4 0/6] mm: Unify device DAX and HugeTLB vmemmap population paths
+Date: Sat, 10 Oct 2026 15:57:49 +0800
+Message-ID: <20261010075755.83339-1-songmuchun@bytedance.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,141 +109,85 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-From: "Perlow, Jason" <jperlow@gmail.com>
-Date: Fri, 9 Oct 2026 23:49:35 -0400
-X-Gm-Features: AclHuK8tLlsj04-qdY1M1uq0VlVi4LCtBYcpexWHP6C-VMCJXIeCQa4uODnFQf4
-Message-ID: <CABZrw2EfeChvuWDJ_hiwr9Oh_QpyrfZKLq_-jOxkzZH=fr575Q@mail.gmail.com>
-Subject: PCI/AER: MacBookPro16,1 test results with Apple SEP ANFE quirk
-To: Bjorn Helgaas <bhelgaas@google.com>, Lukas Wunner <lukas@wunner.de>
-Cc: Aditya Garg <aditya.garg@linux.dev>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
-	"Oliver O'Halloran" <oohall@gmail.com>, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/mixed; boundary="0000000000002cd88d065d745b4d"
+Content-Transfer-Encoding: 8bit
 
---0000000000002cd88d065d745b4d
-Content-Type: text/plain; charset="UTF-8"
+This v4 is based on mm-new commit d5207c6d152c, which contains v6 of
+"mm: Switch device DAX to section-based vmemmap optimization" [1].
 
-Bjorn, Lukas,
+This series is split out from the earlier, larger series "mm: Generalize
+HVO for HugeTLB and device DAX" [2]. While the parent series generalizes
+vmemmap optimization across HugeTLB and device DAX, this subset addresses
+a single, self-contained step: unifying their vmemmap population paths.
 
-I have tested the Apple SEP ANFE quirk together with Lukas's false-alarm
-recovery fix on two MacBookPro16,1 systems. Both stayed up for over two
-hours after booting the candidate kernel. The patch is being prepared
-against pci/for-linus at 79c168e2aa957ed0054c93db17caba653b95e377.
+After the preceding Device DAX conversion, both HugeTLB and Device DAX
+describe optimized vmemmap mappings through memory-section metadata and
+use per-zone shared tail vmemmap pages. The generic code, however, still
+carries a Device DAX-specific population flag and compound-page population
+path, along with arguments and helpers needed only by that path.
 
-The candidate retains eddba19b8b5f ("PCI/AER: Support Advisory Non-Fatal
-Errors"), adds 79c168e2aa95 ("PCI/AER: Skip error recovery on false
-alarms"), and leaves the ANFE mask unchanged only on the Apple T2 Secure
-Enclave Processor [106b:1802]. The global ANFE revert is absent from the
-test kernel. The per-device flag approach follows Aditya's earlier
-proposal, with an EARLY fixup so the flag is set before pci_aer_init().
+This series first removes VMEMMAP_POPULATE_DAX and moves selection and
+reference handling for the shared tail page into the common vmemmap
+population path. It then removes the generic Device DAX-specific
+compound-page population path and routes section vmemmap population
+through vmemmap_populate(). The powerpc radix path continues to use its
+architecture-specific compound-page population implementation for
+optimizable sections.
 
-The test systems are:
+The remaining patches remove the unused ptpfn argument, open-code
+vmemmap_populate_address() now that no caller needs its returned PTE, and
+add a warning for inconsistent zone initialization of shared tail vmemmap
+pages.
 
-  MEDUSA:  MacBookPro16,1, Core i7-9750H
-  CHIMERA: MacBookPro16,1, Core i9-9980HK
+This is the fourth smaller step toward the broader HVO generalization.
+After this series, HugeTLB and Device DAX use the same population model
+instead of parallel generic paths, while powerpc keeps its
+architecture-specific implementation.
 
-Both ran 7.3.0-rc6-6-t2-edge-apple-sep-anfe-test, confirmed by uname and
-the kernel banner in each current boot journal. At the 23:24 EDT check
-on October 9, MEDUSA had 2 hours 22 minutes uptime and Chimera had
-2 hours 21 minutes. Their boot IDs were unchanged from the initial
-successful candidate boots. graphical.target and the display manager
-were active on both, and neither had failed systemd units.
+[1] https://lore.kernel.org/20260930140627.57431-1-songmuchun@bytedance.com/
+[2] https://lore.kernel.org/20260513130542.35604-1-songmuchun@bytedance.com/
 
-Read-only config-space checks gave the same results on both systems:
+v4:
+- Rebase onto mm-new commit d5207c6d152c, which contains v6 of the Device
+  DAX section-based vmemmap series.
+- Factor the zone mismatch check into a local helper as suggested by Mike
+  Rapoport.
+- Collect Reviewed-by tags from Lance Yang.
 
-  Function                    Correctable error mask
-  Apple SEP, 04:00.2           0x00006000
-  Apple function, 04:00.0      0x00004000
-  Apple function, 04:00.1      0x00004000
-  AMD GPU, 03:00.0             0x00000000
+v3: https://lore.kernel.org/20260929053231.66085-1-songmuchun@bytedance.com/
+- Rebase onto mm-new commit 2ddb90ee544a, which contains v5 of the Device
+  DAX section-based vmemmap series.
+- Document the exact dependency order as suggested by David Hildenbrand
+  and Ritesh Harjani.
+- Use the public order-based optimization predicate in the powerpc path.
+- Collect Acked-by tags from Qi Zheng.
 
-ANFE bit 13 is therefore masked on the SEP and unmasked on the other
-observed functions. No config-register writes were used in these checks.
-The implementation matches vendor/device ID, not these bus addresses.
+v2: https://lore.kernel.org/20260924075259.2013039-1-songmuchun@bytedance.com/
+- Expand the comments around the slab initialization boundary as suggested
+  by Qi Zheng.
+- Collect Acked-by tags from Qi Zheng.
+- Defer the patch making vmemmap_populate_compound_pages() static to a
+  follow-up series that cleans up the powerpc vmemmap population code.
+- Add a new patch to warn about mismatched zone IDs between a page and its
+  shared tail vmemmap page.
 
-Neither candidate boot journal contains an AER/GHES report, kernel
-panic, oops, BUG or call trace. Neither recorded additional kernel
-messages after the initial 21:04 checks through the 23:24 check.
+v1: https://lore.kernel.org/20260913083734.86802-1-songmuchun@bytedance.com/
 
-The earlier Wunner-only candidate booted on MEDUSA but then powered off,
-as I reported on October 8. Its retained journal ended before that event;
-there was no recorded shutdown sequence or panic. The cause of the power
-loss is still unknown, and this quirk does not establish a firmware
-mechanism. The combined candidate has not reproduced that symptom within
-the observed interval.
+Muchun Song (6):
+  mm/sparse-vmemmap: drop VMEMMAP_POPULATE_DAX
+  mm/sparse-vmemmap: support device DAX in common vmemmap path
+  mm/sparse-vmemmap: drop Device DAX-specific population path
+  mm/sparse-vmemmap: remove the unused ptpfn argument
+  mm/sparse-vmemmap: open-code vmemmap_populate_address()
+  mm/mm_init: add zone mismatch warning during page init
 
-There are remaining boot warnings unrelated to the reported AER symptom:
-ACPI duplicate-table/method errors, AMD SDMA fence fallback warnings,
-HID rotation probe failures, and Broadcom P2P failures. Chimera also logs
-CPU 0 machine-check records in banks 12 and 13. These warning categories,
-including the same machine-check status/address records, appear in the
-previous boot logs. I am retaining them as separate follow-up issues.
+ arch/powerpc/mm/book3s64/radix_pgtable.c |   3 +
+ mm/mm_init.c                             |  12 +-
+ mm/sparse-vmemmap.c                      | 208 ++++++-----------------
+ 3 files changed, 70 insertions(+), 153 deletions(-)
 
-This was a v7.3-rc6 test build with the existing T2 driver/patch stack,
-using Debian Forky GCC 16.2 and binutils 2.47. It was not a vanilla
-upstream kernel or an identical-toolchain comparison to the older GCC 14
-release image. Artifact checksums, exact source/provenance, config checks,
-t2gmux/t2smc builds and imported-symbol CRC checks passed. A generic
-KVM/OVMF boot also passed; the hardware observations above come from the
-two physical systems, not KVM.
 
-The T2 team reports that [106b:1802] identifies the SEP across T2 models,
-but this report covers only these two MacBookPro16,1 machines. I have not
-tested other T2 models, power-off/cold-start, suspend/resume, reset, kexec
-or deliberate AER error injection. Physical confirmation of the rendered
-GUI is not included in this report; desktop service state was checked
-remotely. The existing release/rescue boot files were preserved.
+base-commit: d5207c6d152c88761f604ca461e67d6b0fe7402e
+-- 
+2.54.0
 
-The patch (enclosed) leaves other ANFE handling enabled and is idempotent across
-repeated fixup/AER initialization. Please review it as a targeted workaround
-for the MacBookPro16,1 regression, with the testing limits above.
-I also have a zip file with all logs/evidence if needed.
-
-Thanks,
-Jason
-
---0000000000002cd88d065d745b4d
-Content-Type: application/octet-stream; 
-	name="apple-sep-anfe-quirk-clean.patch"
-Content-Disposition: attachment; filename="apple-sep-anfe-quirk-clean.patch"
-Content-Transfer-Encoding: base64
-Content-ID: <f_mv1urcfi0>
-X-Attachment-Id: f_mv1urcfi0
-
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvcGNpL3BjaWUvYWVyLmMgYi9kcml2ZXJzL3BjaS9wY2llL2Fl
-ci5jCmluZGV4IDkyMmE3MjZhNTJhNS4uNzMyZjc1YTMxNzYwIDEwMDY0NAotLS0gYS9kcml2ZXJz
-L3BjaS9wY2llL2Flci5jCisrKyBiL2RyaXZlcnMvcGNpL3BjaWUvYWVyLmMKQEAgLTQyOCw3ICs0
-MjgsOCBAQCB2b2lkIHBjaV9hZXJfaW5pdChzdHJ1Y3QgcGNpX2RldiAqZGV2KQogCSAqIEFkdmlz
-b3J5IE5vbi1GYXRhbCBFcnJvcnMgYXJlIG1hc2tlZCBieSBkZWZhdWx0IChQQ0llIHI3LjAsIHNl
-YwogCSAqIDcuOC40LjYpLgogCSAqLwotCWlmIChwY2llX2Flcl9pc19uYXRpdmUoZGV2KSAmJiBk
-ZXYtPmRldmNhcCAmIFBDSV9FWFBfREVWQ0FQX1JCRVIpCisJaWYgKHBjaWVfYWVyX2lzX25hdGl2
-ZShkZXYpICYmIGRldi0+ZGV2Y2FwICYgUENJX0VYUF9ERVZDQVBfUkJFUiAmJgorCSAgICAhZGV2
-LT5ub19hZXJfYW5mZSkKIAkJcGNpX2NsZWFyX2FuZF9zZXRfY29uZmlnX2R3b3JkKGRldiwKIAkJ
-CQkJICAgICAgIGRldi0+YWVyX2NhcCArIFBDSV9FUlJfQ09SX01BU0ssCiAJCQkJCSAgICAgICBQ
-Q0lfRVJSX0NPUl9BRFZfTkZBVCwgMCk7CmRpZmYgLS1naXQgYS9kcml2ZXJzL3BjaS9xdWlya3Mu
-YyBiL2RyaXZlcnMvcGNpL3F1aXJrcy5jCmluZGV4IGRlOWJiY2NkYTIxZi4uNjc3Y2Q4Nzk3ZDE5
-IDEwMDY0NAotLS0gYS9kcml2ZXJzL3BjaS9xdWlya3MuYworKysgYi9kcml2ZXJzL3BjaS9xdWly
-a3MuYwpAQCAtMjU3NCw2ICsyNTc0LDE3IEBAIHN0YXRpYyB2b2lkIHF1aXJrX3A2NGgyXzFrX2lv
-KHN0cnVjdCBwY2lfZGV2ICpkZXYpCiB9CiBERUNMQVJFX1BDSV9GSVhVUF9IRUFERVIoUENJX1ZF
-TkRPUl9JRF9JTlRFTCwgMHgxNDYwLCBxdWlya19wNjRoMl8xa19pbyk7CiAKKy8qCisgKiBVbm1h
-c2tpbmcgQWR2aXNvcnkgTm9uLUZhdGFsIEVycm9ycyBvbiB0aGUgQXBwbGUgVDIgU2VjdXJlIEVu
-Y2xhdmUKKyAqIGNhdXNlcyBhIE1hY0Jvb2tQcm8xNiwxIHRvIGxvc2UgcG93ZXIuICBTZXQgdGhp
-cyBiZWZvcmUgcGNpX2Flcl9pbml0KCkKKyAqIHNvIHRoYXQgaXQgbGVhdmVzIHRoZSBBTkZFIG1h
-c2sgYml0IHVuY2hhbmdlZC4KKyAqLworc3RhdGljIHZvaWQgcXVpcmtfbm9fYWVyX2FuZmUoc3Ry
-dWN0IHBjaV9kZXYgKmRldikKK3sKKwlkZXYtPm5vX2Flcl9hbmZlID0gMTsKK30KK0RFQ0xBUkVf
-UENJX0ZJWFVQX0VBUkxZKFBDSV9WRU5ET1JfSURfQVBQTEUsIDB4MTgwMiwgcXVpcmtfbm9fYWVy
-X2FuZmUpOworCiAvKgogICogVW5kZXIgc29tZSBjaXJjdW1zdGFuY2VzLCBBRVIgaXMgbm90IGxp
-bmtlZCB3aXRoIGV4dGVuZGVkIGNhcGFiaWxpdGllcy4KICAqIEZvcmNlIGl0IHRvIGJlIGxpbmtl
-ZCBieSBzZXR0aW5nIHRoZSBjb3JyZXNwb25kaW5nIGNvbnRyb2wgYml0IGluIHRoZQpkaWZmIC0t
-Z2l0IGEvaW5jbHVkZS9saW51eC9wY2kuaCBiL2luY2x1ZGUvbGludXgvcGNpLmgKaW5kZXggZDMx
-YThkMTA3YjFlLi41ZmZjZjVjZThjOTYgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbGludXgvcGNpLmgK
-KysrIGIvaW5jbHVkZS9saW51eC9wY2kuaApAQCAtNDY3LDYgKzQ2Nyw3IEBAIHN0cnVjdCBwY2lf
-ZGV2IHsKIAogCXVuc2lnbmVkIGludAlpc19idXNtYXN0ZXI6MTsJCS8qIElzIGJ1c21hc3RlciAq
-LwogCXVuc2lnbmVkIGludAlub19tc2k6MTsJCS8qIE1heSBub3QgdXNlIE1TSSAqLworCXVuc2ln
-bmVkIGludAlub19hZXJfYW5mZToxOwkJLyogRG8gbm90IHVubWFzayBBTkZFICovCiAJdW5zaWdu
-ZWQgaW50CWJsb2NrX2NmZ19hY2Nlc3M6MTsJLyogQ29uZmlnIHNwYWNlIGFjY2VzcyBibG9ja2Vk
-ICovCiAJdW5zaWduZWQgaW50CWJyb2tlbl9wYXJpdHlfc3RhdHVzOjE7CS8qIEdlbmVyYXRlcyBm
-YWxzZSBwb3NpdGl2ZSBwYXJpdHkgKi8KIAl1bnNpZ25lZCBpbnQJaXJxX3Jlcm91dGVfdmFyaWFu
-dDoyOwkvKiBOZWVkcyBJUlEgcmVyb3V0aW5nIHZhcmlhbnQgKi8K
---0000000000002cd88d065d745b4d--
 
