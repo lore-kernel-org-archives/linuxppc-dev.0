@@ -1,64 +1,126 @@
-Return-Path: <linuxppc-dev+bounces-29187-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29188-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE253CA9EC1
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2026 20:42:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C11AECA9EC5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2026 22:00:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j2Fz96JZtz2yqT;
-	Sun, 11 Oct 2026 07:42:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791664949;
-	cv=none; b=YLUcLi7Y3EcyjooA/rEmR0ZkRHz7mN4kB9wUIdJwUc5Zq6PIvhGe+IsPDbxCT4oNnyLSDZTgjaFUthRoyTvvKF28nFoXSNicrFNyXcM3a8uSkHBuU6SRXnNH9dXD6FSVZ7DQMHE3p+cz4qhbNkWHXs1HNH0soak/MokRwa3BiXf4wQDCBCaC1cC0WGbxyBUd4j8ntaNzrhllWEZTdrKY/KH2h2bMhFl+AuE3Es0XBclUVjtRtw/ilLumE21Jn0hJMOyPDMuCfEBbaunhznBWayyixBmwdO5x77VZ0fomXAsc08ysLP9/hXLFCVo0/VCd7zxE66tjBUJxbQlFCm+LGg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j2HjD1cblz30gC;
+	Sun, 11 Oct 2026 09:00:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791669632;
+	cv=none; b=HqJoEoUfxS8UM4tqztPlnPiA8AYO3+8pjNIfmR815l0S0WA7sNmCwdBKLyboyAAcE6BjXlIyt1dt0uhK7a/MiIQ9STPwAux04R1ZF2hoFQpn4cIa1w1eLe/Qgb09MJcUO0BDsdITmjikyu4Ia1PRug2w4jMTLK9LrmwsowjoJkPKRTdipaaN58RwYr5oPQY+NyMrOVmv7lh4AyWFrHH9i74Bb0rMR+br49vg3xHGb3rl+1VTPoJwFwyEQ6NlLbaCEttxBANnabvZr6AggTMc6S/07iQUMksqdmBivreJ6wcLkyO79P/OaG6EEQ8+UD6kuw3yUDhXf0jYeqBoMwDdHA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791664949; c=relaxed/relaxed;
-	bh=KaeVwRqfGMljaxW8Ah6Cx9zT6uiRBSSC1dP0zE7Q/ko=;
+	t=1791669632; c=relaxed/relaxed;
+	bh=N2jYfqmPt2es1xuCkTol8NOahRHgRnTcTOUiwhGzkTU=;
 	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=lmkBP2J1TrTHcc8UUng4WrfawpdR3cCHTJzvHEvcmAOriFV9/xypkkoS9sNT5HpY8Nz9CAcTd+ztN5JdRz3giSYUrXYzjs+0sEor4h0M6NeZJT9U2aMqy6n6ovX8bQtoElyAXEIuWN++HKrEjQU/DIZqNQHMSSyS8rBdnwEYcVUfITxAmKyg2J90FNoibDrlL4ro25AVPmFmwNg5wDDImg/nw92TXMz3OPwFIBT88iFrNNnJbfXQLj4Q929ym+Zl8MzihijI4f8vIBOFARLU5QDl9+8X9zQ5xxujgRCZQU0Z2D5MCEwV1EK25o3Lt1i/pQEWBhvuwkndu/r7ocxrqA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=RmLqUv8s; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
+	 Mime-Version:Content-Type; b=oDbqX5sqHMDJKLGvb3BrzxAt0EQQ1E6/43cfP9n6J63/3OCRFWmeiQDei3bTW3GaPYiuAijVwrOwFE0edh6LMKkAH5B6Z8eC1GYNDund6dvVCYknCMPhoQpJDtigS0fihWXMIzSejLbYGN9zVw38vjIjX9JG8oscwdqVjbh9tP4VFmLcfE/9sQSZIrBCZ6Kg/Bph+zwyLU1ipyZix9LCroG6IEGO/94SO1Jz+DOzU6ytifS4PltP3qh26kNjDQOfFrzHCHLMeQmG6AOQKsz4HtElp7aIvtuL/XIr0TB1kzIf2RU6IzXKKb5X8OFMcd+hevzSg4FRuZDwaUbbq2lHtg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=ffP+TPLt; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=RmLqUv8s;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=ffP+TPLt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j2Fz76vHvz2yjp
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Oct 2026 07:42:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j2HjB3dfsz2yNj
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Oct 2026 09:00:29 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id D5CDB602CC;
-	Sat, 10 Oct 2026 20:42:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 04A691F000FF;
-	Sat, 10 Oct 2026 20:42:22 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 6A595602CC;
+	Sat, 10 Oct 2026 22:00:25 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4AADC1F000FF;
+	Sat, 10 Oct 2026 22:00:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux-foundation.org; s=korg; t=1791664943;
-	bh=KaeVwRqfGMljaxW8Ah6Cx9zT6uiRBSSC1dP0zE7Q/ko=;
+	d=linux-foundation.org; s=korg; t=1791669625;
+	bh=N2jYfqmPt2es1xuCkTol8NOahRHgRnTcTOUiwhGzkTU=;
 	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=RmLqUv8syW5KCaLrBRHaqB+hdxZmebnLFbyFQcAzsE8K8GyM/v72kmzM2p52+uyUk
-	 JY4X3rsdpU0z8m/Mytez5hAFfN73+lJQkTAJ2ZdwOIQwtDH7dUz67d2wNhBrUxR1xC
-	 zb3jPxE5vNJ3UNmy+gKrU8kH2wFXF/E3KA17J4EE=
-Date: Sat, 10 Oct 2026 13:42:22 -0700
+	b=ffP+TPLt1hBG2zdntJGpA4a6eo1Kktyl63gUdmTPWoDV5PB8j6QZDH7O5pu6DND18
+	 83jrFOWryJ2h63yrCPBw+Uh9wavAQ633twrY1q8Eu4fcsINr1B1dFygd9ev9/B+B/N
+	 PiED0VbjIV4o5yPrrgsINTWJg6/2ZfXlko4ls4sM=
+Date: Sat, 10 Oct 2026 15:00:20 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Muchun Song <songmuchun@bytedance.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, Mike Rapoport
- <rppt@kernel.org>, David Hildenbrand <david@kernel.org>, Michael Ellerman
- <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy
- <chleroy@kernel.org>, Ritesh Harjani <ritesh.list@gmail.com>, Shrikanth
- Hegde <sshegde@linux.ibm.com>, Lorenzo Stoakes <ljs@kernel.org>,
- "Liam R . Howlett" <liam@infradead.org>, Vlastimil Babka
- <vbabka@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko
- <mhocko@suse.com>, Qi Zheng <qi.zheng@linux.dev>, Lance Yang
- <lance.yang@linux.dev>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, muchun.song@linux.dev
-Subject: Re: [PATCH v4 0/6] mm: Unify device DAX and HugeTLB vmemmap
- population paths
-Message-Id: <20261010134222.b6fdcb20d8fec5aaceab66ec@linux-foundation.org>
-In-Reply-To: <20261010075755.83339-1-songmuchun@bytedance.com>
-References: <20261010075755.83339-1-songmuchun@bytedance.com>
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Cc: "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka
+ <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato
+ <pfalcato@suse.de>, David Hildenbrand <david@kernel.org>, Mike Rapoport
+ <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko
+ <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Dennis Dalessandro
+ <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>,
+ Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>,
+ Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela
+ <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov
+ <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko
+ <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya
+ Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, Baolin Wang
+ <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, Ryan
+ Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song
+ <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif
+ <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert
+ <dgilbert@interlog.com>, "James E.J. Bottomley"
+ <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen"
+ <mkp@kernel.org>, Simona Vetter <simona@ffwll.ch>, Helge Deller
+ <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard
+ <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, Masami Hiramatsu
+ <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra
+ <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar
+ <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
+ <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo
+ <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Mark Rutland
+ <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo
+ <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot
+ <vincent.guittot@linaro.org>, Maarten Lankhorst
+ <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>,
+ Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>,
+ Will Deacon <will@kernel.org>, "Aneesh Kumar K.V"
+ <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann
+ <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador
+ <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan
+ Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, Oliver Upton
+ <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Madhavan
+ Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul
+ Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou
+ <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda
+ <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>,
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens
+ <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller"
+ <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Alexander
+ Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>,
+ Matthew Brost <matthew.brost@intel.com>, Joshua Hahn
+ <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park
+ <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang
+ <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, Chris
+ Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi
+ <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He
+ <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, Johannes
+ Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt
+ <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>,
+ Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Chengming
+ Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, Miklos
+ Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-usb@vger.kernel.org, linux-rdma@vger.kernel.org,
+ selinux@vger.kernel.org, linux-sound@vger.kernel.org, bpf@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org,
+ linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+ fuse-devel@lists.linux.dev, Ihor Solodrai <ihor.solodrai@linux.dev>, Bert
+ Karwatzki <spasswolf@web.de>, Takashi Iwai <tiwai@suse.de>, Emil Tsalapatis
+ <emil@etsalapatis.com>
+Subject: Re: [PATCH v5 00/38] mm: make VMA flag semantics explicit,
+ eliminate VM_SPECIAL
+Message-Id: <20261010150020.cbd6ce3038e3b6d72e2c92c9@linux-foundation.org>
+In-Reply-To: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-0-923b70125b1e@kernel.org>
+References: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-0-923b70125b1e@kernel.org>
 X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -76,88 +138,158 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 
-On Sat, 10 Oct 2026 15:57:49 +0800 Muchun Song <songmuchun@bytedance.com> wrote:
+On Fri, 09 Oct 2026 19:03:54 +0100 "Lorenzo Stoakes (ARM)" <ljs@kernel.org> wrote:
 
-> This v4 is based on mm-new commit d5207c6d152c, which contains v6 of
-> "mm: Switch device DAX to section-based vmemmap optimization" [1].
+> The VM_SPECIAL / VMA_SPECIAL_FLAGS mask conflates several unrelated
+> properties:
 > 
-> This series is split out from the earlier, larger series "mm: Generalize
-> HVO for HugeTLB and device DAX" [2]. While the parent series generalizes
-> vmemmap optimization across HugeTLB and device DAX, this subset addresses
-> a single, self-contained step: unifying their vmemmap population paths.
+> * Is this managed by core mm, or by a driver mapping MMIO, kernel-allocated
+>   pages, or even ordinary pages itself?
+> * Can it be expanded or merged?
+> * Is this a 'weird' case like mlock where migration might race and we
+>   'have' to set invalid flags to notify?
+> * Is it another 'weird' case where we just want to stop GUP from touching
+>   it?
 > 
-> After the preceding Device DAX conversion, both HugeTLB and Device DAX
-> describe optimized vmemmap mappings through memory-section metadata and
-> use per-zone shared tail vmemmap pages. The generic code, however, still
-> carries a Device DAX-specific population flag and compound-page population
-> path, along with arguments and helpers needed only by that path.
+> Driver writers have often been confused about this, and who can blame them?
 > 
-> This series first removes VMEMMAP_POPULATE_DAX and moves selection and
-> reference handling for the shared tail page into the common vmemmap
-> population path. It then removes the generic Device DAX-specific
-> compound-page population path and routes section vmemmap population
-> through vmemmap_populate(). The powerpc radix path continues to use its
-> architecture-specific compound-page population implementation for
-> optimizable sections.
+> It also interacts badly with the eternal edgecase known as hugetlb - which
+> sets VMA_DONTEXPAND_BIT but doesn't also want to be treated like a
+> 'special' flag.
 > 
-> The remaining patches remove the unused ptpfn argument, open-code
-> vmemmap_populate_address() now that no caller needs its returned PTE, and
-> add a warning for inconsistent zone initialization of shared tail vmemmap
-> pages.
+> Another issue is that we cannot make sensible assumptions about flag
+> use. It's not possible to assume VMA_IO_BIT means iommu because drivers
+> abuse it and mlock abuses it.
 > 
-> This is the fourth smaller step toward the broader HVO generalization.
-> After this series, HugeTLB and Device DAX use the same population model
-> instead of parallel generic paths, while powerpc keeps its
-> architecture-specific implementation.
+> Special is also an overloaded term in mm. VDSO and VVAR mappings are also
+> called 'special' but they're special in a... special way.
+> 
+> Sometimes things are called special that are a subset of
+> VMA_SPECIAL_FLAGS (VMA_PFNMAP_BIT and VMA_MIXEDMAP_BIT for instance when it
+> comes to zapping or vm_normal_folio()).
+> 
+> There's a specific kind of special for THP too, which considers
+> PFN map, mixed map 'special' but DAX not.
+> 
+> It's all rather a mess.
+> 
+> This series brings some order to things by both limiting what drivers can
+> do with VMA flags and switching to using predicates that describe
+> behaviour, not arbitrary flags.
 
-Thanks, I've updated mm-unstable to this version, including the -fix.
+Thanks, I've updated mm-unstable to this version.
 
-> v4:
-> - Rebase onto mm-new commit d5207c6d152c, which contains v6 of the Device
->   DAX section-based vmemmap series.
-> - Factor the zone mismatch check into a local helper as suggested by Mike
->   Rapoport.
-> - Collect Reviewed-by tags from Lance Yang.
+For some reason, new versions of this series aren't applying when I
+drop the new series in place of the old.  I made the same old bunch of
+reject-fixups, so the below interdiff will show if I messed any of them up.
 
-Here's how v4 altered mm.git:
+> v5:
+> * Applied tags (thanks everybody!)
+> * Updated 3/38 to fix a bug in __mmap_new_file_vma() by zapping + closing
+>   the VMA before setting vma->vm_file NULL to avoid an i_mmap_writable
+>   imbalance. A repro was tested before/after and confirmed fixed.
+> * Updated 7/38 to make __map_kernel_pages_prepare() use
+>   mmap_assert_write_locked() rather than the weird
+>   assert-on-mmap_read_trylock() pattern, as per Suren.
+> * Also update vm_insert_page(), vm_insert_pages() to fix the same pattern
+>   and to use the new VMA API, and converted a BUG_ON to a
+>   VM_WARN_ON_ONCE().
 
+Here's how v5 altered mm.git:
 
- mm/mm_init.c |   17 ++++++++++++++---
- 1 file changed, 14 insertions(+), 3 deletions(-)
+ mm/memory.c                       |   20 +++++++++++---------
+ mm/vma.c                          |   16 ++++++++--------
+ tools/testing/vma/include/stubs.h |    4 ++++
+ 3 files changed, 23 insertions(+), 17 deletions(-)
 
---- a/mm/mm_init.c~b
-+++ a/mm/mm_init.c
-@@ -593,6 +593,15 @@ out:
- 	node_states[N_MEMORY] = saved_node_state;
+--- a/mm/memory.c~b
++++ a/mm/memory.c
+@@ -2611,10 +2611,11 @@ int vm_insert_pages(struct vm_area_struc
+ 
+ 	if (!range_in_vma(vma, addr, end))
+ 		return -EFAULT;
+-	if (!(vma->vm_flags & VM_MIXEDMAP)) {
+-		VM_WARN_ON_ONCE(mmap_read_trylock(vma->vm_mm));
+-		VM_WARN_ON_ONCE(vma->vm_flags & VM_PFNMAP);
+-		vm_flags_set(vma, VM_MIXEDMAP);
++	if (!vma_test(vma, VMA_MIXEDMAP_BIT)) {
++		mmap_assert_write_locked(vma->vm_mm);
++		VM_WARN_ON_ONCE(vma_test(vma, VMA_PFNMAP_BIT));
++		vma_start_write(vma);
++		vma_set_flags(vma, VMA_MIXEDMAP_BIT);
+ 	}
+ 	/* Defer page refcount checking till we're about to map that page. */
+ 	return insert_pages(vma, addr, pages, num, vma->vm_page_prot);
+@@ -2626,7 +2627,7 @@ static void __map_kernel_pages_prepare(s
+ 	if (vma_desc_test(desc, VMA_MIXEDMAP_BIT))
+ 		return;
+ 
+-	VM_WARN_ON_ONCE(mmap_read_trylock(desc->mm));
++	mmap_assert_write_locked(desc->mm);
+ 	VM_WARN_ON_ONCE(vma_desc_test(desc, VMA_PFNMAP_BIT));
+ 	vma_desc_set_flags(desc, VMA_MIXEDMAP_BIT);
+ }
+@@ -2785,10 +2786,11 @@ int vm_insert_page(struct vm_area_struct
+ {
+ 	if (addr < vma->vm_start || addr >= vma->vm_end)
+ 		return -EFAULT;
+-	if (!(vma->vm_flags & VM_MIXEDMAP)) {
+-		BUG_ON(mmap_read_trylock(vma->vm_mm));
+-		BUG_ON(vma->vm_flags & VM_PFNMAP);
+-		vm_flags_set(vma, VM_MIXEDMAP);
++	if (!vma_test(vma, VMA_MIXEDMAP_BIT)) {
++		mmap_assert_write_locked(vma->vm_mm);
++		VM_WARN_ON_ONCE(vma_test(vma, VMA_PFNMAP_BIT));
++		vma_start_write(vma);
++		vma_set_flags(vma, VMA_MIXEDMAP_BIT);
+ 	}
+ 	return insert_page(vma, addr, page, vma->vm_page_prot, false);
+ }
+--- a/mm/vma.c~b
++++ a/mm/vma.c
+@@ -2631,21 +2631,21 @@ static int __mmap_new_file_vma(struct mm
+ 	map->vm_file = vma->vm_file;
+ 
+ 	if (error) {
+-		struct file *file = vma->vm_file;
+ 		UNMAP_STATE(unmap, vmi, vma, vma->vm_start, vma->vm_end,
+ 			    map->prev, map->next);
+ 
++		if (vma->vm_ops->close) {
++			zap_vma(vma);
++			/* Safe, because VMA zapped. */
++			vma_close(vma);
++		}
++		if (map_same_file(map))
++			fput(map->vm_file);
++
+ 		vma->vm_file = NULL;
+ 		vma_iter_set(vmi, vma->vm_end);
+ 		/* Undo any partial mapping done by a device driver. */
+ 		unmap_region(&unmap);
+-		vma->vm_file = file;
+-		/* Only safe once unmapped. */
+-		vma_close(vma);
+-
+-		if (map_same_file(map))
+-			fput(map->vm_file);
+-		vma->vm_file = NULL;
+ 		return error;
+ 	}
+ 
+--- a/tools/testing/vma/include/stubs.h~b
++++ a/tools/testing/vma/include/stubs.h
+@@ -329,6 +329,10 @@ static inline void vma_close(struct vm_a
+ {
  }
  
-+static inline void vmemmap_optimization_verify_zone(struct page *page)
++static inline void zap_vma(struct vm_area_struct *vma)
 +{
-+	const unsigned int order = pfn_to_section_compound_order(page_to_pfn(page));
-+
-+	VM_WARN_ON_ONCE(vmemmap_optimizable_order(order) &&
-+			page_zone_id(page + VMEMMAP_OPTIMIZATION_NR_STRUCT_PAGES) !=
-+			page_zone_id(page));
 +}
 +
- void __meminit __init_single_page(struct page *page, unsigned long pfn,
- 				unsigned long zone, int nid)
+ static inline int mmap_file(struct file *file, struct vm_area_struct *vma)
  {
-@@ -609,9 +618,11 @@ void __meminit __init_single_page(struct
- 	if (!is_highmem_idx(zone))
- 		set_page_address(page, __va(pfn << PAGE_SHIFT));
- #endif
--	VM_WARN_ON_ONCE(vmemmap_optimizable_order(pfn_to_section_compound_order(pfn)) &&
--			page_zone_id(page + VMEMMAP_OPTIMIZATION_NR_STRUCT_PAGES) !=
--			page_zone_id(page));
-+	/*
-+	 * Shared tail struct pages are initialized during vmemmap population,
-+	 * before retained struct pages reach here.
-+	 */
-+	vmemmap_optimization_verify_zone(page);
- }
- 
- #ifdef CONFIG_NUMA
+ 	return 0;
 _
 
 
