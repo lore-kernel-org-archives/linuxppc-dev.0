@@ -1,76 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-29178-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29179-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E4AECA6004
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2026 12:22:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B756CA6004
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2026 12:22:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j22sf1Pw5z3br2;
-	Sat, 10 Oct 2026 23:21:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1234"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791634918;
-	cv=none; b=a4ZQY8ikUKARDJIBWyFDpBQK+p3HCR62uYygZHRycgaPWzc7Uk3V/iEQ4+QiO7nnpSh6fiFlK9cKwXd3Vps8omlrB5yfGGmmPVmcF+/sjzGoyxVfSiAFpnQDiK8pCveU7tOs9HpSHYEt9lLwG7FHOfGPMC5E7q1sIWOSYLucn0QyWKy3co9rT2liVLaaFuseWcK1GgQRtkOAz3o4z82lth2OxVDEZ7ajhoZ1ynJfrWxN3L12u0mTRetR3FaRzk0/JUEbZufrjZ+xXyNfSnEi6USjrIATrgJ8S6d2b0ZRsuyyQNUBSEJczjwbgCMCNFWLJO7M9zUFRtmvvd74icOodg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j22sk33lhz3bsP;
+	Sat, 10 Oct 2026 23:22:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1332"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791634922;
+	cv=none; b=X8xlQZbHsT859zDCsTgYImcLNu6kNppUqHqjYXILLl6133mTYDEKhraxXQVzS4o7WGVX0kPdgxAOJsz2xlS0BzZAC6tF4Lb8Upm4PPRcdARkGa2G/rJzYuRh2iDq8KgQjmmAzysYBRabST1C1H47CqroR+ztpXFSZQ5h5gqPCc8KbV24rpDzQAx3VmcrYWy+Nud7leV9hD2bQ4uj7fa9DP7dxIkDRCKvIb/uTE6XlR0D+SDDSYOCuVXElykORU2ha6zpmHZrxiu3EhKMw+ieAHotzNLpZ4RNy6kEj6rbjUaWvwU253dY/+oD7wqNZgpDZg9SNgHLboArIsSKAOcvdQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791634918; c=relaxed/relaxed;
-	bh=CEEN2Zy6O9+c2gqiVvvZWE7KSK1IHYRZNAT8ZPZiGT0=;
+	t=1791634922; c=relaxed/relaxed;
+	bh=+TWFeRXhI9U2gCQnYURwRZ/xBRhQqIxrja99sCT1wuU=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=fQhQYmwGugcFpUxCPWv/Tiu5jeCVK/jVFT3RHa6FTphnklg8YZ/ohsgj2Az5uUc9f32f4UgKjLu46YPuRz0OhF6AtR+DAxABlB8lM/M7291uhKYu3GC7zz0/CZigdgFPFTj7p/kZ68hK6iv9jS+xIb03G31bJzBV9pdEemSFk/cijpWiGnCk+rT+bp0W3n0fDvW1McgavJtykWtMkFdQUkofGSPa3z37ijRYqa+kruSdh1AEA+iFcw9gTRMhJ6khzYxaKnXAcmcZQ1oLTWMPx9gh7Po5mPL+shRdkRv/Sha7npCRXE1dS5No8t6QJZstoowGzDXJDuKmhajUP2TdEQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=FQWb4Evs; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1234; helo=mail-dl1-x1234.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=jlDo7cJPscQLbOLWqI6veLqbcAG9SQE7yVIEFSHkVcSxBsSON5d7rs+1JDIH6E4bJbNnwyfi3qzZPkJktInpABGcuVnNAMm/Ln7TNc4ypYlhBv8wVCvrsd/MeTJ1q/CtbzN6LZvBsD6T3xeNthLDO03Ix3FP/Dimc7mV59ceB8lzT/E3nYjccQlAVTTdD54BEK6VSfnEUq+Hmu6tSXpV/5Cv6m3YqiIGRcuxpRBq0wcCfRVwNM3MdYcAfl5I8boGbHfmnB2+IOMO3b3GzEapokDj5cTt/1qv2P7eF5011wC4/vTJdm83GCtNRaQpEklNsOwZPkhmkmMDt8Mdb2Y1tg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=VSzYUlN3; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1332; helo=mail-dy1-x1332.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=FQWb4Evs;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=VSzYUlN3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1234; helo=mail-dl1-x1234.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x1234.google.com (mail-dl1-x1234.google.com [IPv6:2607:f8b0:4864:20::1234])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1332; helo=mail-dy1-x1332.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x1332.google.com (mail-dy1-x1332.google.com [IPv6:2607:f8b0:4864:20::1332])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j22sd1gqhz3bSn
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 23:21:56 +1100 (AEDT)
-Received: by mail-dl1-x1234.google.com with SMTP id a92af1059eb24-1419d3416ceso989179c88.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 05:21:56 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j22sj5C4Gz3bSn
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 23:22:01 +1100 (AEDT)
+Received: by mail-dy1-x1332.google.com with SMTP id 5a478bee46e88-30b6dad2382so1213247eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 05:22:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791634915; x=1792239715; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1791634919; x=1792239719; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=CEEN2Zy6O9+c2gqiVvvZWE7KSK1IHYRZNAT8ZPZiGT0=;
-        b=FQWb4EvsugEYHwrWkoPeNR2CuNeuMmu+MGXFW3M+Zje+OyYkpj3JN2/NOPZnrxqaFd
-         xUjO3x+fMGEgVEdslwSWFoJXKzwaV63JZumHsvPtmJKBfKMm9mINFxpwdntsLHEimeDO
-         iQFOeBbOwatwHRaWpVPs2LgeLBjaWJpU4e5fpz5Vzhz+Z4zNLgH4hkUeHQe2qhePgN6F
-         ar5GoyVCuOUX7rPF1M2OcxHoZ0WYBCJlRXyi7YzWb7phR6H1UNMLKYtxfnG5jdJuwZUF
-         quAQjZqmsOz+aFGxGh46JmTEn9zLKZeSLc9hGHTPCPb+pWBqcH3XuQBAekwvwyreRDMv
-         ZmCg==
+        bh=+TWFeRXhI9U2gCQnYURwRZ/xBRhQqIxrja99sCT1wuU=;
+        b=VSzYUlN3Ldhn4NB5j0uyowBg5nvhP6Oxd2m0uufrM6d99+XR50cGcDHqNsgFlKVvv+
+         b3oj6LbDajxJn/494tJGrAsX1+ebJn7B3GavemC+4CGZ+MpiwPC8vLUmrczqKeIsxGJB
+         d96EmNqIH66deTRcPybewfupt2XzQQNePNby/Kscc8tClBnH0/LejSlEk4U9jIrNftWV
+         /QK+xdyQUd67Q1+JhTK20cDYVIU+8WleMEUF8b7RdXCugX/sDC32pIby4rYiiHl3j1Pp
+         0EmRiQEQ0DhXJoEPZK1dQprRlxRwE0S7hNI31JJmStZyDZzQfK5dHqqTsO3ciepbH8vP
+         m3qQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791634915; x=1792239715;
+        d=1e100.net; s=20260707; t=1791634919; x=1792239719;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=CEEN2Zy6O9+c2gqiVvvZWE7KSK1IHYRZNAT8ZPZiGT0=;
-        b=U2lIraC+QLzgnex3Bx3c1uG1/mqFIDn99A0ICNECmsNdHwNlUDBSdeV/jUZ8C0AwPi
-         JGLtFzxCNO+SgUGZ0J++30FXzn+UTkAki9bpMNEUta4dKIfWZqb99q4OAWpdZEcBSAAu
-         JYodYZEYBMc65ZZyzGNZXAvaHgmD9n7F21MxHzXdAQaZPq73k8tix3K55UiNvq+/J9pr
-         4UJa/ZZGyIcY7w/RVldM6rwTle0sPQLBLvxtU0pyOzlp5pyQDtO390MvVr1mdIobkhXO
-         hzgImBkJq/lcOrxGj7Elht5xUvHgv32REOKV3BSPzm1qileU0rNKjCUY3M8MQMO1ZUol
-         s43A==
-X-Gm-Message-State: AFq9FYLIZaWoEkPrQAt6w79BHelnQDY3ws+SC8cNtbcsZn7Y/MHA/exe
-	MljkP8DN0WomN8ssdO8KYfuzKq35u8QkiJBThIqwiTdfZxZOv+T3JNsoPX6sjya8
-X-Gm-Gg: AYBFou0bFGEMIeWl+Y/Zvr/AR4I4+UyS8BQhsesr4kMSxHxqWU59tOT5+COxK+7sO3Q
-	JZZPNNEqEaCB1Tk6sEySpkyypE9noRQ74F1n67t46SsKsvmnG8wZ/Q1hIb/XWgVn3IVo4W/ikiG
-	v0JbmDqs25GJ78zcXpnkwrmOC5HiOX9q3ihUyz9SFeB0T0XD0Eb97lTmlm01d2mEBJa94HMPPI0
-	9VLkbb5jP4PLKlxZCQ4SZBm3oAcqLOZ1ARi2G/WCw642cKKvc9Kog5ODmYbYgzbxkNQo0MvU3i/
-	I+7kAip4VocJz93eoVMhGto9opp7VzqFPELgwSjiWHZXovo3kQ6X8gmR2a5Jk0NZJlPKOrM3q9V
-	Ch4ng1UeSvlVrK3XovoxbbtC1daj4kJ4yt23RBE52JTInCkxmNdC2J8S7TbwmNtwvPr6fra34YZ
-	QC9PiWvlWmjIqAXrEAJzo7SK+si5vSM9XYM+3Q8mQMpinclQocqKL5fApeYRBfagNRHX44CdpTL
-	D+84ohHOttXZzaEFEAgbNxSKo4lyPDpW1q8HxMUlOOl1UVJOaHiWp3/hs2Z
-X-Received: by 2002:a05:7022:ea4e:b0:144:eaa7:2765 with SMTP id a92af1059eb24-16a60ce72e1mr5151179c88.18.1791634914808;
-        Sat, 10 Oct 2026 05:21:54 -0700 (PDT)
+        bh=+TWFeRXhI9U2gCQnYURwRZ/xBRhQqIxrja99sCT1wuU=;
+        b=In3ltAf32SFLZ2nvC7MkHp8ijpT+j6dE2kYz9VC46af/kqJSWrU05bqy2q1LSyQ4m2
+         KBYXlK5q7w9WX2BT/IH5g3Nxu8sIccaQ6VzN/ZzbwtGf+XFDvhef1Q1XwRco8x/GRBcn
+         c64E+rmPY6IzkE+hgAax/onYTFOXgfpWvCeKPuJ4d+pCaoutmQGbmxI67eYAHEB8U4p5
+         Kq13XZkkUoLtD3SZAyqzNC/52Vl6grlB6Fya4XDC7ImsgqcYDS7HSPD96vT7bybzPkXp
+         yhMyezd3bwbvMHeniSz7lKoCL4YoFwY2O9iqBLE2RVeSAvUj1WKDdI6pIUfcVC4VfmyP
+         thxg==
+X-Gm-Message-State: AFq9FYIqghrzxrmecDGCmsK6jSZcmG3R+L1NqIDbe+V67R1dL06c9R5t
+	91ZrWTlhZw8k9hYlJMDoiy7Yd5B+JbIojsthCO/8vh/1P9nx2j+4fW3Igjc/BE5o
+X-Gm-Gg: AYBFou2XxLMFYrPDhzf9zhAsmukJKcOHnxDmjJt122cndnlSOe2kHWMdsddjRmUeaax
+	pN/CXXipcDlDOckNRsEtiDOg7f2mDCmxTGccHu21AqOnDauRPSblRL1ExpoCqWxI/ir3iUlmM70
+	Fghb2oTg4Fs4/eYpEpWUCRzD6z0oUw1KNTsiOVtHtNOotbtcs9q3WQZDR0xvPxGx3AO7NGrLTPi
+	/yfoM710yWdbfAiZIeG0xU0wqhCsb04kq24b+T/ZSkb7Jl9FvcZJlJxS8ujOUSluaLHW6OAjjz/
+	zb4t+SEPES9DFJU9n9EFdX3csas8YWZD/A6Y+EebMvT4pqqXK47Y+9xbmCZezeHr3fsiztv7jg+
+	LDOBTs64zCJN4MpOq1jtS8xU0Krb9K9eW6PLnFmH5dcxBZXVwVVrcVGHkdzM/eF75/3zxakJfPC
+	1wlne0OqW/jNZmgurDOMjfjQFK1q193WIdHUpeDVI9XEq7V4USZMMD7If/DcZlpSwvzKTQa63Bn
+	tEw9jgjH9k6f9JKL+25HnSGHqgD+9Pro4GLJrnxaGZkm95fK6J3wR8aP+Es
+X-Received: by 2002:a05:7022:1507:b0:15b:53a4:3495 with SMTP id a92af1059eb24-16a60bf1f13mr8414869c88.35.1791634919405;
+        Sat, 10 Oct 2026 05:21:59 -0700 (PDT)
 Received: from pve-server.rlab ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-169a1becf08sm15401816c88.5.2026.10.10.05.21.51
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-169a1becf08sm15401816c88.5.2026.10.10.05.21.55
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 10 Oct 2026 05:21:54 -0700 (PDT)
+        Sat, 10 Oct 2026 05:21:58 -0700 (PDT)
 From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -80,9 +80,9 @@ Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Shrikanth Hegde <sshegde@linux.ibm.com>,
 	linux-kernel@vger.kernel.org,
 	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [RFC 1/4] powerpc/64s: Add linear_map_use_base_page command line option
-Date: Sat, 10 Oct 2026 17:51:09 +0530
-Message-Id: <69b592b9741156be07b745f61f45b15c7a6aa31e.1791608423.git.ritesh.list@gmail.com>
+Subject: [RFC 2/4] powerpc/64s/radix: Implement ARCH_HAS_SET_DIRECT_MAP
+Date: Sat, 10 Oct 2026 17:51:10 +0530
+Message-Id: <744ed18f924d7aeb1a92993e90971120f0b7d4d4.1791608423.git.ritesh.list@gmail.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <cover.1791608423.git.ritesh.list@gmail.com>
 References: <cover.1791608423.git.ritesh.list@gmail.com>
@@ -101,111 +101,182 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The radix linear map is built with 1G and 2M mappings wherever it can.
-That is the right default for TLB reach, but it also means a single page
-cannot be pulled out of the linear map later. There is no support for
-splitting a live leaf, so memfd_secret() has nothing to work with.
+memfd_secret() keeps a secret by taking its page out of the kernel
+linear map. The process that owns the page can still read and write it
+through its own mapping, but the kernel no longer has a translation for
+that physical page, so a kernel read or a speculative walk of the linear
+map cannot see it.
 
-debug_pagealloc=on already forces PAGE_SIZE mappings, but that turns on
-a lot of allocator debugging that nobody wants just for secretmem. Add
-linear_map_use_base_page so the linear map can be built out of base
-pages on its own. debug_pagealloc=on still implies it.
+Note that set_memory_np() and set_memory_p() already clear and restore the
+present bit for debug_pagealloc and KFENCE, so the same direct-map helpers
+are used here to implement ARCH_HAS_SET_DIRECT_MAP for radix.
 
-The extra page tables are roughly 3% of RAM (for 64K pagesize) and it
-can also cause extra TLB pressure, so leave the option off by default.
+Note that they can only run when the linear map is already made of base
+pages. For implementing this feature when the linear map is mapped with
+2M (PMD) or 1G (PUD) mapping - a 2M or 1G leaf would have to be broken
+into PTEs first and doing that while the large translation is still in
+the TLB installs a second translation for the same address at
+a different page size.
 
-Only radix honours this for now (later we will implement this for Hash as
-well).
+On this, the processor architecture manual says that it is fatal:
+  If a given virtual address is mapped by two overlapping pages of
+  different sizes (for example, a small page is mapped initially but is
+  later re-mapped into a larger page without invalidating the original
+  TLB entry), a machine check interrupt can result with an indication
+  that either a parity error or a multi-hit occurred when the TLB was
+  accessed to translate the address. The error condition can be
+  corrected by invalidating the entire TLB and SLB.
+
+The same multi-hit applies if the large page was installed first and is
+then replaced by PTEs without invalidating that TLB entry. Since today
+there is no support for doing that split safely, so can_set_direct_map()
+stays false unless the linear map is already page-sized.
 
 Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 ---
- .../admin-guide/kernel-parameters.txt         | 10 +++++++++
- arch/powerpc/include/asm/book3s/64/mmu.h      |  2 ++
- arch/powerpc/mm/book3s64/pgtable.c            | 22 +++++++++++++++++++
- arch/powerpc/mm/book3s64/radix_pgtable.c      |  2 +-
- 4 files changed, 35 insertions(+), 1 deletion(-)
+ arch/powerpc/Kconfig                  |  1 +
+ arch/powerpc/include/asm/set_memory.h |  9 +++
+ arch/powerpc/mm/pageattr.c            | 96 +++++++++++++++++++++++++++
+ 3 files changed, 106 insertions(+)
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 33cd30996e47..382d18c6e8e8 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -3563,6 +3563,16 @@ Kernel parameters
- 			If there are multiple matching configurations changing
- 			the same attribute, the last one is used.
- 
-+	linear_map_use_base_page[=<bool>]
-+			[PPC(Radix), EARLY]
-+			Build the kernel linear mapping out of PAGE_SIZE
-+			mappings only, instead of using 2M/1G mappings where
-+			possible. This allows individual pages to be removed
-+			from the linear mapping at runtime, which is required
-+			by memfd_secret(2). It costs roughly 3% extra memory for
-+			page tables and increases kernel TLB pressure, so it is
-+			off by default. debug_pagealloc=on implies this.
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 2580e27e4328..3c5c07c67a5b 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -150,6 +150,7 @@ config PPC
+ 	select ARCH_HAS_PTDUMP
+ 	select ARCH_HAS_PTE_SPECIAL
+ 	select ARCH_HAS_SCALED_CPUTIME		if VIRT_CPU_ACCOUNTING_NATIVE && PPC_BOOK3S_64
++	select ARCH_HAS_SET_DIRECT_MAP		if PPC_RADIX_MMU
+ 	select ARCH_HAS_SET_MEMORY
+ 	select ARCH_HAS_STRICT_KERNEL_RWX	if (PPC_BOOK3S || PPC_8xx) && !HIBERNATION
+ 	select ARCH_HAS_STRICT_KERNEL_RWX	if PPC_85xx && !HIBERNATION && !RANDOMIZE_BASE
+diff --git a/arch/powerpc/include/asm/set_memory.h b/arch/powerpc/include/asm/set_memory.h
+index 9c8d5747755d..24779c00c1ca 100644
+--- a/arch/powerpc/include/asm/set_memory.h
++++ b/arch/powerpc/include/asm/set_memory.h
+@@ -48,4 +48,13 @@ static inline int __must_check set_memory_rox(unsigned long addr, int numpages)
+ }
+ #define set_memory_rox set_memory_rox
+
++#ifdef CONFIG_ARCH_HAS_SET_DIRECT_MAP
++bool can_set_direct_map(void);
++#define can_set_direct_map can_set_direct_map
 +
- 	liveupdate=	[KNL,EARLY]
- 			Format: <bool>
- 			Enable Live Update Orchestrator (LUO).
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-index 48631365b48c..3739e5677312 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-@@ -73,6 +73,8 @@ extern unsigned int mmu_base_pid;
- 
- extern unsigned long __ro_after_init memory_block_size;
- 
-+bool linear_map_uses_base_pagesize(void);
++int set_direct_map_invalid_noflush(struct page *page, unsigned int numpages);
++int set_direct_map_default_noflush(struct page *page, unsigned int numpages);
++bool kernel_page_present(struct page *page);
++#endif
 +
- #define PRTB_SIZE_SHIFT	(mmu_pid_bits + 4)
- #define PRTB_ENTRIES	(1ul << mmu_pid_bits)
- 
-diff --git a/arch/powerpc/mm/book3s64/pgtable.c b/arch/powerpc/mm/book3s64/pgtable.c
-index 85ab6723c8f2..1a007902f307 100644
---- a/arch/powerpc/mm/book3s64/pgtable.c
-+++ b/arch/powerpc/mm/book3s64/pgtable.c
-@@ -48,6 +48,28 @@ static int __init parse_kfence_early_init(char *arg)
- early_param("kfence.sample_interval", parse_kfence_early_init);
  #endif
- 
-+static bool __ro_after_init linear_map_use_base_page;
-+
-+static int __init parse_linear_map_use_base_page(char *p)
+diff --git a/arch/powerpc/mm/pageattr.c b/arch/powerpc/mm/pageattr.c
+index ac22bf28086f..a85ac2419e6d 100644
+--- a/arch/powerpc/mm/pageattr.c
++++ b/arch/powerpc/mm/pageattr.c
+@@ -103,6 +103,102 @@ int change_memory_attr(unsigned long addr, int numpages, long action)
+ 					    change_page_attr, (void *)action);
+ }
+
++#ifdef CONFIG_ARCH_HAS_SET_DIRECT_MAP
++/*
++ * Removing a single page from the linear mapping requires that the linear
++ * mapping is built out of PAGE_SIZE mappings in the first place. Radix only
++ * does that when explicitly asked to and there is no support for splitting
++ * a live 2M/1G mapping yet.
++ * TODO: Hash is also not supported yet.
++ */
++bool can_set_direct_map(void)
 +{
-+	bool val;
++	if (!radix_enabled())
++		return false;
 +
-+	if (!p)
-+		val = true;
-+	else if (kstrtobool(p, &val))
-+		return -EINVAL;
-+
-+	linear_map_use_base_page = val;
-+
-+	return 0;
++	return linear_map_uses_base_pagesize();
 +}
-+early_param("linear_map_use_base_page", parse_linear_map_use_base_page);
 +
-+bool linear_map_uses_base_pagesize(void)
++/*
++ * Note that the set_memory_p()/set_memory_np() helpers below already flush the
++ * TLB for the range they touch, so the _noflush() naming is not honoured
++ * literally here.
++ * Since as of now this is not in the performance path, so it should be ok.
++ * Later, once the support for breaking the large mappings (PUD/PMD) into PTE is
++ * added, then this can be improved since it will anyway require a custom
++ * implementation for walking the page table and breaking the mapping.
++ */
++int set_direct_map_invalid_noflush(struct page *page, unsigned int numpages)
 +{
-+	return debug_pagealloc_enabled() || linear_map_use_base_page;
++	unsigned long addr = (unsigned long)page_address(page);
++
++	if (!can_set_direct_map())
++		return 0;
++
++	return set_memory_np(addr, numpages);
 +}
 +
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
- /*
-  * This is called when relaxing access to a hugepage. It's also called in the page
-diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
-index cf692b2b5f7b..2c4cb6d6ab6e 100644
---- a/arch/powerpc/mm/book3s64/radix_pgtable.c
-+++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
-@@ -308,7 +308,7 @@ static int __meminit create_physical_mapping(unsigned long start,
- 	if (mapping_sz_limit < max_mapping_size)
- 		max_mapping_size = mapping_sz_limit;
- 
--	if (debug_pagealloc_enabled())
-+	if (linear_map_uses_base_pagesize())
- 		max_mapping_size = PAGE_SIZE;
- 
- 	start = ALIGN(start, PAGE_SIZE);
--- 
++int set_direct_map_default_noflush(struct page *page, unsigned int numpages)
++{
++	unsigned long addr = (unsigned long)page_address(page);
++
++	if (!can_set_direct_map())
++		return 0;
++
++	return set_memory_p(addr, numpages);
++}
++
++/*
++ * Walk the kernel page table looking for the entry that translates @addr.
++ * Currently secretmemfd is the only usecase for this.
++ */
++static bool radix_page_present(unsigned long addr)
++{
++	pgd_t *pgdp;
++	p4d_t *p4dp, p4d;
++	pud_t *pudp, pud;
++	pmd_t *pmdp, pmd;
++	pte_t *ptep;
++
++	pgdp = pgd_offset_k(addr);
++
++	p4dp = p4d_offset(pgdp, addr);
++	p4d = READ_ONCE(*p4dp);
++	if (p4d_none(p4d))
++		return false;
++
++	pudp = pud_offset(p4dp, addr);
++	pud = READ_ONCE(*pudp);
++	if (pud_none(pud))
++		return false;
++	if (pud_leaf(pud))
++		return pud_present(pud);
++
++	pmdp = pmd_offset(pudp, addr);
++	pmd = READ_ONCE(*pmdp);
++	if (pmd_none(pmd))
++		return false;
++	if (pmd_leaf(pmd))
++		return pmd_present(pmd);
++
++	ptep = pte_offset_kernel(pmdp, addr);
++	return pte_hw_valid(ptep_get(ptep));
++}
++
++bool kernel_page_present(struct page *page)
++{
++	/*
++	 * Nothing ever removes entries from the linear mapping in this
++	 * configuration, so everything is present.
++	 */
++	if (!can_set_direct_map())
++		return true;
++
++	return radix_page_present((unsigned long)page_address(page));
++}
++#endif /* CONFIG_ARCH_HAS_SET_DIRECT_MAP */
++
++
+ #if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_KFENCE)
+ #ifdef CONFIG_ARCH_SUPPORTS_DEBUG_PAGEALLOC
+ void __kernel_map_pages(struct page *page, int numpages, int enable)
+--
 2.39.5
 
 
