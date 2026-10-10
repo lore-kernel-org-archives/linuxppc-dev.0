@@ -1,91 +1,105 @@
-Return-Path: <linuxppc-dev+bounces-29181-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29182-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24FBBCA9EBE
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2026 12:22:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38BAACA9EBE
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2026 16:03:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j22st1jNpz3by2;
-	Sat, 10 Oct 2026 23:22:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1229"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791634930;
-	cv=none; b=URhQkzx1imzApxaJUJt+O3SiyFJczjhSngCvKBiB+7V0O9Px+j+9RxvmqKvJBE5Fk54cl8vpltoloYR1v5LQrNyD3e84syNjvHhnqam31AgsQ27dEfHL/VfZekK+RW3d0cuR4mgXKiIkqoXgU7tDT3RlOPzqiQrBqkUPL9bcKWt9+ZZNvJgG0S91ZbbuRkPd8BjsIvpRZqOeW4zngWPIp8oannU8MtQD71jQ70dGoLAsjZxCKLfBjWopQFsYZpq+frbE4h48vWn5HPYp39wPXIc72O+r/cz6cLr8v3dVyp9HUfKvqpoGDaoJNSV9trVDXccNTd0DEfsFAkYzjm+6yw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791634930; c=relaxed/relaxed;
-	bh=OQBXMXTlhy1CovXj6ndFCC7fPIXVPzECjvtJukEq3LI=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=HTFU4vBSEmCzz9XcDi6BDnkIZHOoiODL/40VVXZFYbFa/J0kryuUiVSjLbDb0mYA8aSZakXCK86St29iFh/YBFrv09SkX1x/STZx8AANVnerGFxu2yRMESOYORXY6Chh9wrv4K3DvfjHPF5pOlQQjHk7ngWSsUmV8zUiVOUIwBKE40xkUsYcdw82Ys8vYHVFgZ/A/M8GcpGBEjksPS0zkg9bQj68q9DTJqcCufKyN+d/gLqTJOy9MF/Z8TjUP8F96jSlOH+z2ItfzWysxuQhT2ggvygHuD7KTV6iV/JIkw8j+UVR97NFfkiE20mb4N2ydD0nJe19jwwO/mvjkCvn7A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=lsoLzTjB; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1229; helo=mail-dl1-x1229.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j27nm1nxpz2yqT;
+	Sun, 11 Oct 2026 03:03:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=85.215.255.50 arc.chain=strato.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791648236;
+	cv=pass; b=Dd96a5bYwBzrHnwrMaEEUQs3nDvXdVQFn5LxToYMRM0NRdEY5sJf7oCzbX0GzP0Wx2N9ywYAYxTF17CAfaZ2G9Hj+rqmvX+uTm3oIYf2VKU27zTya02Cy7XCiqquvR5G1jisJfWP3P++qah3fj1MWcmBHaZf2bnhgSrdJxX/wrdMTw69QIp9ab3QDCqw/8zg7gy0hwE3fzMrpGtJ8AbJsN5+fkXIDL05V3T8+/6Co4gDE4V4HDCty7lgrDhxnHTgGGJgtUEVHzryi1l7b4AQM1fnLVN4Lij+HjZrqxlDNRfHRfRsKw3cMYVID99SMWTU5XXiJXD9q4p+OhXwwwvBOw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1791648236; c=relaxed/relaxed;
+	bh=8Dn09naFX34dB8eLy8oKRKU9r7nHmJhKKpa22bIqJYs=;
+	h=Subject:To:Cc:References:From:Message-ID:Date:MIME-Version:
+	 In-Reply-To:Content-Type; b=o0skq26HB/nI0Xj6bcswl/PmdlNUqQ6UUmtoW3zQmFtwq/v54zmILip6euhew3puZ1dZubGWH5VkFjEI/WSLiW7fXGlPbdc6qqcDrFm4v2HJWtqOCRNvD7qurhG0CPg22yVRj++nq4HA6vbgoAch4ITZu5hEx5KORqdncGNiXGBRJVO/Nb5nAZseeb5yACuujJiJLXtsMPRbosnNb9Dr33/x3aZe1F1y+59b6uE7JNlOVS+ON2c4msNbr3HljrPZU6PZ1VmXdQQaowSIAUoSNL8xC/NJkr3Ed+hUYVJmrRXYCRydWIToYKG+v2jqVyPqS2bdaCzqKTIlHyTl09/yHQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=Frpi7HjM; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=BC3njdNb; dkim-atps=neutral; spf=pass (client-ip=85.215.255.50; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p01-ob.smtp.rzone.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=lsoLzTjB;
+	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=Frpi7HjM;
+	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=BC3njdNb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1229; helo=mail-dl1-x1229.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x1229.google.com (mail-dl1-x1229.google.com [IPv6:2607:f8b0:4864:20::1229])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=85.215.255.50; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [85.215.255.50])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j22ss3jRtz3bSn
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 23:22:09 +1100 (AEDT)
-Received: by mail-dl1-x1229.google.com with SMTP id a92af1059eb24-15354aa70e8so531020c88.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 05:22:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791634928; x=1792239728; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=OQBXMXTlhy1CovXj6ndFCC7fPIXVPzECjvtJukEq3LI=;
-        b=lsoLzTjBPzk8VKkf1hx+GdY7tG5iWbHET6TCEFtqBM86NCCfySLEZZB9MeUQ6fzyAz
-         TqeOeahEhV0Wpj8uN11Pkpft8MOQ+sX2chV5Ifzksulxhof17RDA0mVd31KL3MSNqRrM
-         BHPwO9Y7ZrqvNuGgzD2VQ6+ApL5+uLeVkccBH2TcgySY4Frqh7vwYw/nDXWy/boexAQS
-         BRwt6RH+/4n88XJyR8uKIcOS+A7aiPLsoZYjTPYPx2hqVvlSVH69M/0bMeqI6iaYbmHt
-         G+2uJQr5PFk7ZCRVBs3QVOCDcMhcfznUqxsrsNyOLhih0QIVhmhSRdtbM+E3kbRAFgbq
-         2HQw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791634928; x=1792239728;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=OQBXMXTlhy1CovXj6ndFCC7fPIXVPzECjvtJukEq3LI=;
-        b=FK+GTUFA83pJqoG8SONTIl5kjf8i8J7++iaaWyIdbkbk7ygOkqcqISGjbn4zb+00Pv
-         ZfLzG+QtfKt3Ixx3/lGDRoFNQhXbZa5Vtg1ILeYa3k3YzvbnW/7Zad8IMggcRsAAdSc6
-         a+yE2y0QL/kbkrzF3oL6lifd+SDtHnVdn8vM6diUA7ZT1GFigV4NbwAljrLU2mYVN4zn
-         UdR1fYHxTdz3D5V4in3CtWk5sdYTNEZ2XZj9+c51TV3hgh7hRTFPU519OzLD0YooQRBR
-         2Ihic/PerwA3MqjJ3XRWFWEbEPDmJzp3a+y2YC7YFTUdhwaFm9N/YHQ4sSL873Ni63VL
-         j3jg==
-X-Gm-Message-State: AFq9FYJbb+5hEF1MEJCXF6n9Owy9l/o4E/FBAAIdNHWvm7Xk0+E6cr+E
-	je6VIGCGwk3mx8zb1w6bBXvXNnv23ZVyAAoHZzU+dJEr4xpoG0VZ9AuMjkGihLZM
-X-Gm-Gg: AYBFou3CQDbKNUkIk66SHmptfIWugQnosIoO+vqrjpeKUYKhBC4k6RSt7LejO18Fejm
-	3QVbisInQjhF4Fa6PihCN7Mel5RfjIKy9oePpzggdL98Bwrvsl0U3U+CDizsm1k3s0/t7ryQKf9
-	wevnN/acNX0KNnNJB2BKrrRZm9G9fVhpC+Lts4poqZOXaxYSdC5HWIZIS9eeMigTMRyiNekuT02
-	ndaiO9FadfdFk/+vBm9x9aVwoczjCd3Tv/9DvOVqCNY2hO8eOcghf2wsfyj3usQGF7GFN/NLotE
-	D0rvdjRlXP4iS+hrRhaSW6WRCKqY2DwoV+kXMJOf0+K7YpkXNf8sXTENhc/GL7g3eFe1Rtht9hp
-	Jdw+dfCRW1uPlCSYRvHDkfs1etr6WtVCeZeD5BBJc+cIwHRl1xXWhtaddv3PrYsOwcQtp+52dKr
-	dZ8nsCuTy0nETxYk84tpMgGFrTEIlj4Xxu3NwDluBE4msnTSeUMKWmdYj3lBH3/l0WDBKAtnqz7
-	1lcmRdvWqqQf1rVrAme40AP52CNATtA4oVbvsPbBT/M9T11vb8wcvCp4DcI
-X-Received: by 2002:a05:7022:3a88:b0:14a:88ce:74fb with SMTP id a92af1059eb24-16a61d5c320mr8327477c88.45.1791634927663;
-        Sat, 10 Oct 2026 05:22:07 -0700 (PDT)
-Received: from pve-server.rlab ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-169a1becf08sm15401816c88.5.2026.10.10.05.22.04
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 10 Oct 2026 05:22:06 -0700 (PDT)
-From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	linux-kernel@vger.kernel.org,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [RFC 4/4] selftests: mm: Enable memfd_secret for powerpc
-Date: Sat, 10 Oct 2026 17:51:12 +0530
-Message-Id: <80c52d3311e732619c0c339b4a03e92859ba98a1.1791608423.git.ritesh.list@gmail.com>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <cover.1791608423.git.ritesh.list@gmail.com>
-References: <cover.1791608423.git.ritesh.list@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j27ng2Rrgz2xnQ
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Oct 2026 03:03:48 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1791648181; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=I0/tEQDH63gdnc/RHpijRQd2irgTXY2u5sdn4FaZWi/Bi4YDfmZLyu56EbJ7FxZtx1
+    va4juYfqzke8sMoTl90NpHsyNJDxVfIXGnla/UHcFo04dpRPuzjMON9SSR/BvMIs8B2Q
+    CaXljBwhyBFNfRVBcLM/OMoTTIUUuAzRjCeHAJPNXHijNEQ6zUqe5DPu2bPAUGc2Vakk
+    v3rpGp/3qSuU0G3dcJ82LtMmcx70noyjCNFVF3gZ/ET6jrJlp7qvbTkJnyGePET7rJSO
+    /5emxJnzcEv5xX9emf1uXN7nnO7qeFGXfR7DD7CtNj18pEUHon0z5xbNGsVfJrudtsZq
+    ISVg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1791648181;
+    s=strato-dkim-0002; d=strato.com;
+    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=8Dn09naFX34dB8eLy8oKRKU9r7nHmJhKKpa22bIqJYs=;
+    b=sAFroKuwVFLrJxOCGSLp+vyADD55tBJTELb6jXK46xgCxZnAjbm5/eOilaIWJ+nSJk
+    dS86GiZA4Zl/XWt4hfg2QNAd2WitIpL1DMCiaWm+x7ifOzxnfbNlQa93HSxV7aFtgYta
+    jJkiofONFNbQIogG2p8vhAQS+GLGhckBm3aYIkd1Zm+XLsUfGYog4T1tDKKyq+4KUori
+    BzICd6VGFJ9xEMyXfZ+sSObHWPpjzIn9GLYuNkzxfyV0Us4ujZF4L57E+vlUvIqtz6Jn
+    u0UY4uW6yypZAXs/rnalyiq70DFQVA6FdWsSpzC0sowD8NFfbEdrk50RRsnkV92peyh2
+    VqQw==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo01
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1791648181;
+    s=strato-dkim-0002; d=xenosoft.de;
+    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=8Dn09naFX34dB8eLy8oKRKU9r7nHmJhKKpa22bIqJYs=;
+    b=Frpi7HjM00W/fu4y5Vj5szP9PeuCe3/CewrtwPBJZ9FdD/RMnImDivVPF6FzwIxa3a
+    Ve4kSmUrWUG3Q+Yhv9Gr5SMiqJqz8U2F/OqoKsGST76Rw6y4Y1VaElX6obs8YKxF3TL2
+    GtPdkVeRHS9aLbtYODUXdNatzLU0MdK9ppBmL2GAzaxGv25PozTtv+2dfMONchzOqRq2
+    y0+0cllknQtsv9rpDbpBtfM3niYOgvFFJii4FgB2/loleIOhqFcNuWiOWFtvn81E0RLq
+    LQ2UIuEfv1DQkMRNo2KGMpSRHUumZtMnykV+agf/bty0cOg7OsLmXFSKBLZA0b8Lq6RG
+    JVMQ==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1791648181;
+    s=strato-dkim-0003; d=xenosoft.de;
+    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=8Dn09naFX34dB8eLy8oKRKU9r7nHmJhKKpa22bIqJYs=;
+    b=BC3njdNbFvBiKxTqU7OxtDyrx9RW8QnUoDN4SmmDObwTIEO9owv2/fYnDvRjuhB9VQ
+    /pQsIWyb0XOWzkRXDQCw==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr4thIFiqT9BURIC+m7Xc="
+Received: from void-ppc.a-eon.tld
+    by smtp.strato.de (RZmta 55.6.2 DYNA|AUTH)
+    with ESMTPSA id e0463b29AG30iMc
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Sat, 10 Oct 2026 18:03:00 +0200 (CEST)
+Subject: Re: [PATCH] Connecting the SB600's i8259 controller rather in
+ pasemi's pci.c than in pasemi's setup.c.
+To: Philip Li <philip.li@intel.com>
+Cc: kernel test robot <lkp@intel.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Krzysztof Kozlowski <krzk@kernel.org>,
+ "(open list:LINUX FOR POWERPC \\(32-BIT AND 64-BIT\\))"
+ <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org,
+ oe-kbuild-all@lists.linux.dev, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ Darren Stevens <darren@stevens-zone.net>,
+ Damien Stewart <hypexed@yahoo.com.au>, Christian Zigotzky <info@xenosoft.de>
+References: <20260701125941.906-2-chzigotzky@xenosoft.de>
+ <202608142355.4AeDorvg-lkp@intel.com>
+ <5ad17e60-7c02-2cd9-7cad-0c14896b8f3d@xenosoft.de>
+ <aoFPwEi0iQRSmmSu@rli9-mobl>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Organization: A-EON Open Source
+Message-ID: <0a1c01c3-d50b-90eb-6736-16628ed18099@xenosoft.de>
+Date: Sat, 10 Oct 2026 18:02:59 +0200
+X-Mailer: BrassMonkey/34.3.2.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,30 +113,45 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <aoFPwEi0iQRSmmSu@rli9-mobl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Now that we have the needed support on PowerPC Book3s64 for
-memfd_secret, enable the necessary selftests for the same.
+On 08/16/2026 07:50 AM, Philip Li wrote:
+> On Sat, Aug 15, 2026 at 11:56:56AM +0200, Christian Zigotzky wrote:
+>> On 14/08/26 17:42, kernel test robot wrote:
+>>> Hi Christian,
+>>>
+>>> kernel test robot noticed the following build warnings:
+>>>
+>>> [auto build test WARNING on powerpc/next]
+>>> [also build test WARNING on powerpc/fixes linus/master v7.2-rc7
+>> next-20260813]
+>>> [If your patch is applied to the wrong git tree, kindly drop us a note.
+>>> And when submitting patch, we suggest to use '--base' as documented in
+>>> https://git-scm.com/docs/git-format-patch#_base_tree_information]
+>>>
+>>> url: https://github.com/intel-lab-lkp/linux/commits/Christian-Zigotzky/Connecting-the-SB600-s-i8259-controller-rather-in-pasemi-s-pci-c-than-in-pasemi-s-setup-c/20260813-054214
+>>>
+>>> All warnings (new ones prefixed by >>):
+>>>
+>>>>> arch/powerpc/platforms/pasemi/setup.c:217:6: warning: no previous
+>> prototype for function 'nemo_init_IRQ' [-Wmissing-prototypes]
+>>
+>> This is the old patch.
+> Sorry about this meaningless report, we will improve the bot to check
+> new patches to avoid such report.
+>
+When will the patch be integrated into the kernel? Would it be possible 
+to integrate the patch into kernel 7.4?
+Yesterday I adapted the patch for the stable long-term kernel 6.12.
 
-Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
----
- tools/testing/selftests/mm/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Link to the patch for the kernel 6.12: 
+https://raw.githubusercontent.com/chzigotzky/kernels/refs/heads/6_12/patches/X1000/pas_pci_init_v6.patch
 
-diff --git a/tools/testing/selftests/mm/Makefile b/tools/testing/selftests/mm/Makefile
-index 2d5366196e30..3ada7f5f4151 100644
---- a/tools/testing/selftests/mm/Makefile
-+++ b/tools/testing/selftests/mm/Makefile
-@@ -70,7 +70,7 @@ TEST_GEN_FILES += khugepaged
- TEST_GEN_FILES += madv_populate
- TEST_GEN_FILES += map_fixed_noreplace
- TEST_GEN_FILES += map_populate
--ifneq (,$(filter $(ARCH),arm64 riscv riscv64 x86 x86_64 loongarch32 loongarch64))
-+ifneq (,$(filter $(ARCH),arm64 riscv riscv64 x86 x86_64 loongarch32 loongarch64 powerpc))
- TEST_GEN_FILES += memfd_secret
- endif
- TEST_GEN_FILES += memory-failure
---
-2.39.5
+-- Christian
+
+-- 
+Sent with BrassMonkey 34.3.2.1 (https://github.com/chzigotzky/Web-Browsers-and-Suites-for-Linux-PPC/releases/tag/BrassMonkey_34.3.2.1)
 
 
