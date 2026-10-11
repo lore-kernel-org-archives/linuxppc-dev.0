@@ -1,82 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-29191-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29192-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5457ECA9EC9
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Oct 2026 11:40:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72805CA9EBD
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Oct 2026 11:40:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j2dtl456jz2yPR;
-	Sun, 11 Oct 2026 22:39:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1332"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791690603;
-	cv=none; b=gtChw/gkNHSsmNZ9hX2ZRMR/PjXPggs5+PpHk4uRuD1B1mTnW1VRvPA92/U6A5hbSCwVl3aMRZyT1IwnSFOt/XQEFsIzx/XP9Jdhrone7l23ZvwfNkY8inbJbYTe6e8M3iaJf/A8ryTpr5GZ9Kk/GwMtsTS848vnvNaZnJLoVeGCmWjbV52OApXMlh1X2aAR/4jcxgL+KwhJPTRjHhVeLobkl5dmCB4jmVYEh3UECZmodSzYALFbG+M8pvIErw/BM21t1K6e67nf3BOnw7nsvxPeLH4YcXawJCrVvrt9b6yAD2qV49sGIIZn5eGdZn5eBdR7BvoH8v768bUgh74mpQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j2dvM6t71z2yY0;
+	Sun, 11 Oct 2026 22:40:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1333"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791697501;
+	cv=none; b=avHSX8hWD7LEXvttxjplZQ0UWJbE/dCxq4bNRqpwwbe/A9wJPWwsJexPRutwhu2xexVMm+y9JzPQFYoDIPJ7hlQzNPnYkFGXNYOsAklPjtkVfDKLa7LpEJioKG+04aofcS5xRhXMnfojlsPct4waIzKbAdDZ2jSh9UIN5GjYReu/ahZHBV9gO6godcXliJZlKdizZ/zYzUyfGQ/SfRuU7GDToeVddrlxXv+uX0t9DWpjKSHNJbPxjso8gjnzye4bfvs8V98AFKEJXeKGuCGyz7Ib195p6aZu5y6PmSDr08MXeySjaHEQkzK1ze3KbIqJDNaIvWISj+gXgxDwq08U/A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791690603; c=relaxed/relaxed;
-	bh=FyjOs8U6Ak5u7Fn/oZM+fBDOPJMJH3TRgM8xKhmhhZ0=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=ZPcCoRldqEVziCmsZzb0yvXaFtdX/UmwMnE39rKM+64QcTEH62boYI6Bj8dRForXkhItSmtZGZNNOShCWDg7Io//MUH+DT2wvqyfdwsbcDlk/VLECWwMcpHrkfLWUP0PAqh+GBOlz+MCodOlOq/CHx6PY16b+acqNgDCI9sdti2QFz/zCSqZgf/QD5WdEXs3fgMpRpp4oKU5m8/nZeSxZyDdQH+I5orXivJ1BNLZPil6NwC8fqP4z+dQVPbFf7f4BRFPuFkyqphgB3vV1EIiYHJqvXD4nq1p4F4B8LDHAAqYAAO/jNgFaS+YiZ19Iz8EFnK/htYYilCD1wbS1AIjRg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Bu7ACG1X; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1332; helo=mail-dy1-x1332.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1791697501; c=relaxed/relaxed;
+	bh=T8diuNZ+zrgNOaX3UMVCcddQtmK2jbIBOVFz+8CGVq0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=dWsqhjYcN35g5yZWwcTc7gxmrhCEvKjPfMVHtxP0F3MnMeDMBjge1vG1fgFhr4FCW5hYaDf9sFyLG19i7tKkHM+lc81Rki8ck9xr/RSHqrh8vr32SRO/LB9XiCCt2Wykmp+y2v+BrTLDyvr8B0M7anqjK88qgUIbONeAIm18Xv/LzTE1RkIjcacBDY4q1Pgj0YZwczjEP4cw/2u5u4U30U0s/EutukGq9+JsUYeX13Ny9lUMNFuFRQH9ermDYQWQyQOXS0GoktEG1jqse4g1dyl/HHhiN3VIMx66CYG3yfc4nnvl8cyv+Dlw423xv9on8FHB9EWM9TD8LTPUIkd/cg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=PCwn/8Sc; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1333; helo=mail-dy1-x1333.google.com; envelope-from=unixpro1970@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Bu7ACG1X;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=PCwn/8Sc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1332; helo=mail-dy1-x1332.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x1332.google.com (mail-dy1-x1332.google.com [IPv6:2607:f8b0:4864:20::1332])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1333; helo=mail-dy1-x1333.google.com; envelope-from=unixpro1970@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x1333.google.com (mail-dy1-x1333.google.com [IPv6:2607:f8b0:4864:20::1333])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j2RST6FqGz2yNj
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Oct 2026 14:50:01 +1100 (AEDT)
-Received: by mail-dy1-x1332.google.com with SMTP id 5a478bee46e88-33fb4680717so3367685eec.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 20:50:01 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j2V171t9fz2yLY
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Oct 2026 16:44:57 +1100 (AEDT)
+Received: by mail-dy1-x1333.google.com with SMTP id 5a478bee46e88-33bf40b0c8bso3222236eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2026 22:44:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791690599; x=1792295399; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=FyjOs8U6Ak5u7Fn/oZM+fBDOPJMJH3TRgM8xKhmhhZ0=;
-        b=Bu7ACG1XTRgcIAYj4Mt3GPt0nSH5fa/KAFw/559jx8aEO+/996qgQPWTPYEEGICrV5
-         mhtufX+QKflGRC61ad1bGr6c41ytRl0TjZjsOQc+1bS1PuIwnmo2zNbCX6VloVScCBxc
-         jGNCLbxEqs2NJAqkBo+C1Ac4eaqoPCnTOk2cQo+NLSi+QqBgcQkWBa/nmM1v7B2pzXau
-         +2IVUKvL4Dk5dHZlAXNAdANAt7ejX+M17d68Arjs9YatYSYQM9/RTteJ2XiMrpSrvdGz
-         OlW2tsvFc5qmHBHKw+AzreKo3vezAKY7qaEvMjQvVmoOND8uPPzLLgzONN5WEEEcfjdR
-         9+pQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791690599; x=1792295399;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=gmail.com; s=20251104; t=1791697495; x=1792302295; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=FyjOs8U6Ak5u7Fn/oZM+fBDOPJMJH3TRgM8xKhmhhZ0=;
-        b=uHBCY7zkimNRczgcOaZJ+u1gLKsVmYcX4uWkgdmhNicRk0B/k1GGAjgMNnwt5+CTL0
-         w9pcrlgbiYWFD9zJzWrAB15yj3EkmzQX14xLPnkVqBLPd0uVK1tFra9AU4qgxWIncyLk
-         XJYEsKaZ/iEF7l5f7+XK8/Dj7EN1zxR/MTSovya2TA0FJIKcF850nyE3Zh+73UXe1Fyt
-         CopyZCyF+IxYPxKIJ+1l+ITQUAtr0D2ZaOddf9gzrRE5TKyaHPFwICC7QYLJsz8050bU
-         cAHE3Na6G9wCwd0MpN4KQ7irxTJtL4BaoZYZ0EuvSZbNc58KZsvjcvOmd7mnub6TLUvi
-         lWkQ==
-X-Forwarded-Encrypted: i=1; AKwUvBxJ+5fsOVcNPYFf6GIG28UMnSTLf0OgmkdZO2HhihOdHY3DRo0rlUfYCGQ5beP5PfkSo/OslnPQ5Cw2Jmo=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYK8uucUedQwXurfwIjprgGgtFwYSMM5GM+VKjYBO1Emu5PCRiZq
-	1xhdbs6RtCaBbH5pHS53mIy/Go814Td26w6Kde0sFvQQeHeWAMOuZLXC
-X-Gm-Gg: AYBFou0NUyzzr+iJvjrDtZEGytwKWrmvIZmTY1bkRFDZ1ln9KA/Subj3VxAgJFTM0wp
-	W7Hyh5DhwS8Uo1ANVQKmsNHZ4Vd6J8IySYqR6b7t9/JRKrXbZy+GKwZTQqdfvPWWBHsMUH8A9Cl
-	u3I6ao0wjnMj6nhab4A15WtTZdEIlixDWPvm8CgAnYF7gKi8+flLlsZrwr0hfp3zy4L95FHHI55
-	sOzMsIlG+Akflfk4MGBqsoYIyi13lIXiHJYnbRa1BNTvMu4ZBIHM9TuL1gQJ7VTiyrKlLLeMemT
-	ZFEJaNskN4+cC4EJVHJSBm4GYAWJTP7LEgVYZbwfcQeZ8TEt0uqIkLdI7Zo89o2szAswkwxc6xz
-	ONp9m+MtwzIxT6EYxOmoMKcxAvj3KggruiGtNjzCkAGgdw5mAcrQoUKvkIeCgKQKsXOgbvcntzH
-	xfCGgVYh0a483vGN6pR9eSExbS9l4vWF2nr3MYGYeYT3a1yl4LW9Uiyn6gDKRtoynm15kD
-X-Received: by 2002:a05:7300:2442:b0:351:39db:42db with SMTP id 5a478bee46e88-3537dfe388fmr8395787eec.20.1791690598985;
-        Sat, 10 Oct 2026 20:49:58 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-358de54fe47sm7430579eec.31.2026.10.10.20.49.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 10 Oct 2026 20:49:58 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Gautam Menghani <gautam@linux.ibm.com>, 
-Cc: maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org, sshegde@linux.ibm.com, amachhiw@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH v2 1/4] KVM: PPC: Book3S HV: Ensure that calls to idr_alloc are synchronized
-In-Reply-To: <20261009123035.157770-2-gautam@linux.ibm.com>
-Date: Sun, 11 Oct 2026 08:47:35 +0530
-Message-ID: <zewlq628.ritesh.list@gmail.com>
-References: <20261009123035.157770-1-gautam@linux.ibm.com> <20261009123035.157770-2-gautam@linux.ibm.com>
+        bh=T8diuNZ+zrgNOaX3UMVCcddQtmK2jbIBOVFz+8CGVq0=;
+        b=PCwn/8Sc8IUOr4fLPB3ZV64LPkAtAuXfEiuk3GIkrW93dGtIEEReDxbmvtwZ/wAG4I
+         SA+ZGA/ugW0Mukd3jAHIB2T86r6o8584iHwdkG7aSXpEKQsPfFMa8n9+m7frTOaNd/1x
+         hqzm1bAFuYTb/pP/wNVj1rU5J7/ZOxfdjEQ77TAm4sNOOxhy0kkPwOscg/08uXBBJrsZ
+         2aNmCbg2DO36Dn339WolbCbw5GF+nmh/uT1U7J3uy9oXxdr3TYssEZTb8grI41gkpSCR
+         DTcnBWLhLVaeJZMKhjew6v965wE6qmxLLrK4KSEy3Wl0gAsA/oLqbv4J3oPwRGxXdpMu
+         PsDQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791697495; x=1792302295;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=T8diuNZ+zrgNOaX3UMVCcddQtmK2jbIBOVFz+8CGVq0=;
+        b=sHJX4tXAkTGEvnlV/RYyfexeMMj7+ctLfAZdtt0Km0e8dT2VODYRA9Za8r5cIwqA1V
+         AMilzSFmVTITbOHiCuk/rVQXt8KgRSN4aTP+o3iRotQ6iAoz07D0VearkA7FaMFpiP3g
+         3y+c6wJoA72rHxiuHLpeLbQITujPFT646US+y3cgV1hIq2YVn0c95GDogb1lSkmMhlTW
+         V4pKOoACi8+R7hJ5TgKTX8CdG3NIrth9VyCBzTQIEWxZiT3TF0R5kvdmWTNv6sCSwfCa
+         BrgtAuTQtj8b/C2LipSAZsv6xMP7ysU7sVS3UiG1v2+1t5/oyrP7GxKvK+HVBth6kTZC
+         t2IQ==
+X-Forwarded-Encrypted: i=1; AKwUvBzhhy/ZSbRJsd/8DyGOJxLfcGmAL7rjAUO5yTQghQyxOpt3E628HHJUXc0iEulEQA5GDiAZFo4T4Q9C5b0=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYJ1WbFpnV5bFBtf2z05Icb2MjAVKFuOyXFHsH/6GkIkYmk769bC
+	VdUTku7l215fTbtS5F8mWyjPJGDVQ+s4rE3rHHLtbRseZPiJDxRWEipk
+X-Gm-Gg: AYBFou2Sm9Y5llooyr8ZMBbbRcHZatScXuoZhqwzZPC810XS1oev6YnKESrNDe3Kwii
+	tJ8emp7V98YewFkABle1Gb9n9fB497BfXLk43pYPw07iNAD0oiM4K5pBs1wkjWv4T9Jw2cje+wE
+	UKAlhOP05eC8U8s5DWQpvMz1wutEmEJZ0hmR9DybYhiTQg+scgJvLFB6KwB5nMNu2qh6nPCMcuu
+	48GkA1BSTs3AgtvZcRytebp2LxRX8r78QFsX6WAS0gnm5mndckhfP4Ebc/AJ7hHKwneE/gUUqDk
+	yYiHiXovM4bDYARkvpJRG/8NDLtnRy2c6msRXDAK54ebQ9ztH7fpToAkkgtRTu7XuhQlG8V7jIF
+	9SRUHuiQtNZh8hOL0OmrTSdcU/dVVz/+ufKyOtzpMkyYWR+7dxsHMvqgsaU90G9qWlWGlbZOduv
+	azA3xpDvsiFmM94GFqLzhYbT+BQGiMPM+LzIO2qnc7T94XSuKLT2/YRGm994Jy+RSgrdIDV5/99
+	829j/pE0nFrZQC48I4BALxpDb6YT29XXiW4/oy/vruPZA==
+X-Received: by 2002:a05:693c:8811:20b0:356:7ddb:2e54 with SMTP id 5a478bee46e88-3567ddb2f02mr6808511eec.29.1791697494583;
+        Sat, 10 Oct 2026 22:44:54 -0700 (PDT)
+Received: from [192.168.21.192] ([24.18.106.4])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3537c841648sm23485573eec.3.2026.10.10.22.44.53
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 10 Oct 2026 22:44:54 -0700 (PDT)
+Message-ID: <17a20959-44ed-43e5-8414-201120468f2f@gmail.com>
+Date: Sat, 10 Oct 2026 22:44:52 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,53 +88,82 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+User-Agent: Betterbird (Linux)
+Subject: Re: [PATCH] PCI: Set supported_speeds in set_pcie_port_type()
+To: Stian Halseth <stian@itx.no>, Bjorn Helgaas <bhelgaas@google.com>
+Cc: =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+ Andreas Larsson <andreas@gaisler.com>, linux-pci@vger.kernel.org,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <20261007131304.309511-1-stian@itx.no>
+Content-Language: en-US
+From: Tony Rodriguez <unixpro1970@gmail.com>
+In-Reply-To: <20261007131304.309511-1-stian@itx.no>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Gautam Menghani <gautam@linux.ibm.com> writes:
+This patch also works on the Sparc S7-2, the correct x8 link is shown 
+instead of unknown.
 
-> Calls to idr_alloc() in __prealloc_nested() are not currently synchronized.
-> According to the documentation [1], the caller should provide their own
-> locking to prevent concurrent modifications to the idr to prevent bugs.
+# dmesg | grep -iE x8 | grep -iE link
+[    8.421411] mlx5_core 0001:03:00.0: 63.008 Gb/s available PCIe 
+bandwidth (8.0 GT/s PCIe x8 link)
+[    9.472465] mlx5_core 0001:03:00.1: 63.008 Gb/s available PCIe 
+bandwidth (8.0 GT/s PCIe x8 link)
+[   14.734746] mlx4_core 0001:04:00.0: 63.008 Gb/s available PCIe 
+bandwidth (8.0 GT/s PCIe x8 link)
+
+Tested-by: Tony Rodriguez <unixpro1970@gmail.com>
+
+On 10/7/26 6:13 AM, Stian Halseth wrote:
+> sparc64 and powerpc create PCI devices from the device tree in
+> of_create_pci_dev(), which calls set_pcie_port_type() but not
+> pci_setup_device(). Since d2bd39c0456b, supported_speeds is only set in
+> pci_setup_device(), so it stays 0 for these devices.
+> pcie_get_speed_cap() then returns PCI_SPEED_UNKNOWN, max_link_speed
+> reads "Unknown", and the failed link retraining quirk passes
+> PCI_SPEED_UNKNOWN to pcie_set_target_speed(), which warns on a SPARC
+> T7-1:
 >
-> Wrap the call to __prealloc_nested() in	a spinlock to prevent concurrent
-> modifications to idr.
+>    WARNING: drivers/pci/pcie/bwctrl.c:125 at pcie_set_target_speed+0x284/0x2e0
 >
-
-This looks to be the leftover of previous implementation. IMO, the
-commit msg needs fixing.
-
-How about this?
-
-Calls to idr_alloc() in __prealloc_nested() are not currently synchronized.
-According to the documentation [1], the caller should provide their own
-locking to prevent concurrent modifications to the idr to prevent bugs.
-
-Now __prealloc_nested() calls idr_alloc() with GFP_KERNEL which can
-sleep and mmu_lock is a spinlock. So idr_alloc() cannot be moved under
-mmu_lock. In such cases the idr Documentation says:
-    If you need to take a lock while allocating a new ID from the IDR,
-    you may need to pass a restrictive set of GFP flags, which can lead
-    to the IDR being unable to allocate memory.  To work around this,
-    you can call idr_preload() before taking the lock, and then
-    idr_preload_end() after the allocation.
-
-Hence preload the idr memory with idr_preload() before taking mmu_lock,
-which allows us to use idr_alloc(..., GFP_NOWAIT) under the spinlock.
-
-This also allows to kill __prealloc_nested() and __add_nested(), as they
-are not needed anymore with idr_preload().
-
-[1]: lib/idr.c
-<...>
-
-> [1]: lib/idr.c
+> Set supported_speeds in set_pcie_port_type(), which all three paths
+> call.
 >
-> Fixes: c0f00a18e2a8 ("KVM: PPC: Book3S HV Nested: Change nested guest lookup to use idr")
-> Cc: stable@vger.kernel.org # 5.19+
-> Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
-> Co-developed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-
-Otherwise LGTM. Thanks for taking it ahead and validating this.
-
--ritesh
+> Fixes: d2bd39c0456b ("PCI: Store all PCIe Supported Link Speeds")
+> Closes: https://github.com/sparclinux/issues/issues/109
+> Signed-off-by: Stian Halseth <stian@itx.no>
+> ---
+> Tested on a SPARC T7-1: before, max_link_speed reads "Unknown" and the
+> warning above appears with CONFIG_PCIEPORTBUS; after, all 23 PCIe
+> devices report their real speed and the quirk lifts the 2.5GT/s
+> restriction without a warning. Not tested on powerpc.
+>
+>   drivers/pci/probe.c | 5 ++---
+>   1 file changed, 2 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> index 27008e2ea5afc..52a79b033b069 100644
+> --- a/drivers/pci/probe.c
+> +++ b/drivers/pci/probe.c
+> @@ -1651,6 +1651,8 @@ void set_pcie_port_type(struct pci_dev *pdev)
+>   		pdev->aspm_l1_support = 1;
+>   #endif
+>   
+> +	pdev->supported_speeds = pcie_get_supported_speeds(pdev);
+> +
+>   	parent = pci_upstream_bridge(pdev);
+>   	if (!parent)
+>   		return;
+> @@ -2074,9 +2076,6 @@ int pci_setup_device(struct pci_dev *dev)
+>   
+>   	set_pcie_untrusted(dev);
+>   
+> -	if (pci_is_pcie(dev))
+> -		dev->supported_speeds = pcie_get_supported_speeds(dev);
+> -
+>   	/* "Unknown power state" */
+>   	dev->current_state = PCI_UNKNOWN;
+>   
 
