@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-29300-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29301-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FC1ECA9ED0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 18:45:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97C77CA9EDE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 18:47:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3RHn0HhZz30HB;
-	Tue, 13 Oct 2026 05:45:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791830756;
-	cv=none; b=J8tqN3RHcaIgFs5Zv/JJWT3F8litTp2HFJPI14uMT4+a6nEWGigVEID4h45eGVsBsDpQt/rGPbV3GIwD7APRk3LWgDwRsw2LlFiYO5smgrYdldC/0Y39zhuPEktvJtUBxLd4q9q9XGTQF4HUajU2YFMnDdHkdoq8iaFA/wPswxSKNV48vFygcOY24R+0Pfce6wdIJvChnmi/ujM+lTDKk+z2nfXtUKASJCVX/5pVUY5H64ZbqyhVSO2E4ptKblr4l/dnc6dCV+pOlyxWBNP855OOBMm0OHrNgNmWNRotKu5oLGAtb6wsd/09UlzrG/uyfJUKIV//uaMyC2JvvlTCnQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3RKB24z4z30HB;
+	Tue, 13 Oct 2026 05:47:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791830830;
+	cv=none; b=J+VxPBZG9tsRghJ5uPmLHUVQI7zcPFxHbmCZk4Q4s5ASTcXBm90Ps5h04SOfRXXKN3VDUozci2ORRUOayqJBnkS+AiygTJ7RmgSkKonhF9qHlwxHuTfvdCo8VtafmKJUJKzNurGX1NTcme0i2r1gkfscF5le5v7WuFRzNd0c3Ky4jWB+5Lmj7UWwGdr9yhGiZS+nmygocNLWyXTtJZKNSXT8UkYUZFIMxVyC4ZuXVhh6vVwIWvlx9ZVF6zpgfoaxXghX157pf0Kf+OncRuVOYUBkw9FJ06bzLjWrhkHb3/QkP+3yEkuekPUC7dw5VUyU4KELxZocNSUfCDAe56JzPQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791830756; c=relaxed/relaxed;
-	bh=KI+fzgQwEiyuK2apx4uDGmy8H+VNSYQ2Fwx2d5pIup4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=EBOJw4HMNpcPdB0lh2GJdQKBzm4GcdZmjOACdCURPu9oJda4vJr76oVPZFEgJaZuYz+h9fOmsa5kxW3M95fu3OEnoh+P13adNMbz4T0U8UBQ7apBiI7wAd0rq2QabAcS+vPJqNVTNlXAqsqfWCtX4G4plfx2TyDSvezEaU4lhMCjriZhedGTtlYfHJv+cbdcXugg5l+8xkUn9OrodDl57CVy/xmgGXiMkyYAhWyKCnZwYEl/yDYR2Ykveo1qzyZbFjJAOUTIOq55SX3IUkH+oCJasnZZuenDl2Wr1ZtVnQteeDmoHdT+k2hLnuAQdXTf/NoQHsXu+PCkXagVZEzeoQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hjWrxaem; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1791830830; c=relaxed/relaxed;
+	bh=qSlbvrIHwU3Y3EaiCo+j8HqkUnlq3n6fYvrvq7B0imw=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=cEfbfjWRAQUHH66W/vKPlNRzMEwTmM4KEbN+AnaC5OCChgf6gDcn2KtAtNcI0+WgZZcNyhIPC9H7+Dtl49c/pvY5E36vXpX1C5pG/7mCeqHiVcw4+f5YMVuOu0LJPe9VkINY6D2Au79FcEgbm0xMXFWmwV2MWJGhT6sNAi/rJlRVRTkSpwmb+f9qEhX7pQwxD7YPqEzLiC//UW0ZfKk+VDIbKm9hD7/7gFjmpjJGT0azbCi2tnIyzqMmdQWr8hVw4vu5qU6lBqRcGJ1+1KBrvRII2P3XeWQ/03Bab72skZ244bBt2xPeIhnUQPHpG0YCnD5Dv5yPU+wLO1gKnPq9+g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ifoy46Di; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hjWrxaem;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ifoy46Di;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3RHm16zNz2xnQ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 05:45:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3RK93fS2z2xnQ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 05:47:09 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id B4BDE601E4;
-	Mon, 12 Oct 2026 18:45:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BCEA31F008A1;
-	Mon, 12 Oct 2026 18:45:19 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id C5917419DB;
+	Mon, 12 Oct 2026 18:47:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8956B1F008A1;
+	Mon, 12 Oct 2026 18:46:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791830753;
-	bh=KI+fzgQwEiyuK2apx4uDGmy8H+VNSYQ2Fwx2d5pIup4=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=hjWrxaemgQIAy0VI71DGFBjmeo3u0jkeRxOMqy7BoqZ/W9u+ymJ7mEas0GsWImzhc
-	 flbp4TMOKiQO6KfZp57FCitnC9KNkqZQKbjs3rKvW9AK9dzNGznommua8ryR/VPg0G
-	 IMHh9SLlVDzr5qkD/M6su3mSho454w2cd6rH82b7g0g4syW51uXFUgh4fEGBdxcdBX
-	 /vdRxwsILB6yAtD2m5LK+zcjfCCd3cc3PNdcsUVGMD0otTqf07c2OfCVDedxT9SlJC
-	 lS+iaRr74Ul6y2Jkqg/poElsdZhpNt/w6ePhVB38uVJ+q/vSobduzrA5fPJz50twpQ
-	 SjkIx4h/BDWmg==
-Message-ID: <c79d2d40-0f1c-43ec-bc25-b75ce975f27e@kernel.org>
-Date: Mon, 12 Oct 2026 20:45:17 +0200
+	s=k20260515; t=1791830827;
+	bh=qSlbvrIHwU3Y3EaiCo+j8HqkUnlq3n6fYvrvq7B0imw=;
+	h=Date:Subject:From:To:Cc:References:In-Reply-To;
+	b=ifoy46DiXGWrvn9hHlC9sWpEOIJfnolR01lkmYmzMt8oZMHwULKUu405XHQyvJvcd
+	 specWDspHy4xMW8bFKyZ8rpWjPIMeUNqSVWgVGRDTn907gomOPrB4hpaV/MLQBUx2M
+	 8VIFQ806d0QftmuijbNPIH////VvTEwrO1SHh8+NpG+s7sRK1rsSEUt1INVLlwjZxt
+	 1QIZU7Bw3nRpNkkvYBJS0tGBVjoOR8H8l0vwpksiXTvLIzHxaRPkznNHaA4C38A3Zs
+	 mBuQbebXHvgoFrYLsANA2bsPxTBg5880xj3MQZLIL8NXEYnBg06LwVEG1x0EDcqIUu
+	 3KRtQ3mdnAWNg==
+Message-ID: <8819f458-894a-429a-8038-cd9bc0617bd2@kernel.org>
+Date: Mon, 12 Oct 2026 20:46:31 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,6 +61,7 @@ Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v5 30/38] mm/vma: introduce vma[_flags]_is_mm_backed()
+From: "David Hildenbrand (Arm)" <david@kernel.org>
 To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>,
  "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>,
@@ -144,7 +145,7 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  Bert Karwatzki <spasswolf@web.de>
 References: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-0-923b70125b1e@kernel.org>
  <20261009-b4-mmap-prepare-vma-flag-sanify-v5-30-923b70125b1e@kernel.org>
-From: "David Hildenbrand (Arm)" <david@kernel.org>
+ <c79d2d40-0f1c-43ec-bc25-b75ce975f27e@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
  xsFNBFXLn5EBEAC+zYvAFJxCBY9Tr1xZgcESmxVNI/0ffzE/ZQOiHJl6mGkmA1R7/uUpiCjJ
@@ -190,88 +191,91 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-30-923b70125b1e@kernel.org>
+In-Reply-To: <c79d2d40-0f1c-43ec-bc25-b75ce975f27e@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 10/9/26 20:04, Lorenzo Stoakes (ARM) wrote:
-> Introduce vma[_flags]_is_mm_backed() for the purposes of identifying
-> mappings which are mm-managed and whose contents were placed there by core
-> mm's own fault path - rather than a custom ->fault handler - and which core
-> mm has not reserved the right to discard.
+On 10/12/26 20:45, David Hildenbrand (Arm) wrote:
+> On 10/9/26 20:04, Lorenzo Stoakes (ARM) wrote:
+>> Introduce vma[_flags]_is_mm_backed() for the purposes of identifying
+>> mappings which are mm-managed and whose contents were placed there by core
+>> mm's own fault path - rather than a custom ->fault handler - and which core
+>> mm has not reserved the right to discard.
+>>
+>> Mappings not managed by core mm do not fall into this category, as they are
+>> populated by their owner, and nor of course does memory-mapped I/O.
+>>
+>> We exclude fixed mappings as these have a layout core mm cannot assume
+>> ordinary fault semantics over.
+>>
+>> hugetlb mappings are fixed mappings, but core mm owns them entirely, so
+>> they are explicitly carved out as mm-backed, as the MADV_DODUMP check
+>> already does.
+>>
+>> Droppable mappings are excluded as core mm has promised it may discard them
+>> at any time.
+>>
+>> Use this functionality to update the madvise MADV_DODUMP check to test for
+>> this rather than open-coding it.
+>>
+>> This replaces the VM_SPECIAL check which means it no longer checks for
+>> VMA_IO_BIT, however this is safe as we have established the invariant that
+>> mm-managed mappings may not set VMA_IO_BIT, so we implicitly include
+>> these.
+>>
+>> No functional change intended.
+>>
+>> Acked-by: Zi Yan <ziy@nvidia.com>
+>> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+>> ---
+>>  include/linux/mm.h | 50 ++++++++++++++++++++++++++++++++++++++++++++++++++
+>>  mm/madvise.c       |  4 ++--
+>>  2 files changed, 52 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/include/linux/mm.h b/include/linux/mm.h
+>> index 2ce68713e4c3..55320cf2c525 100644
+>> --- a/include/linux/mm.h
+>> +++ b/include/linux/mm.h
+>> @@ -1738,6 +1738,56 @@ static inline bool vma_can_merge(const struct vm_area_struct *vma)
+>>  	return vma_flags_can_merge(&vma->flags);
+>>  }
+>>  
+>> +/**
+>> + * vma_flags_is_mm_backed() - Do the specified VMA flags imply the mapping is
+>> + * backed by core mm?
+>> + * @flags: The VMA flags to test.
+>> + *
+>> + * An mm-backed mapping is one managed by core mm (see
+>> + * vma_flags_is_mm_managed()) for which two further things are true:
+>> + *
+>> + * 1. Everything mapped was placed there by core mm's fault path (no custom
+>> + *    ->fault).
+>> + * 2. What is mapped stays there until it is zapped or unmapped by the user.
 > 
-> Mappings not managed by core mm do not fall into this category, as they are
-> populated by their owner, and nor of course does memory-mapped I/O.
+> I still dislike squeezing the VMA_DROPPABLE check in here.
 > 
-> We exclude fixed mappings as these have a layout core mm cannot assume
-> ordinary fault semantics over.
+> It's just weird semantics to squeeze pages that are *managed* by core MM (#1)
+> but are simply always lazyfree into this check.
 > 
-> hugetlb mappings are fixed mappings, but core mm owns them entirely, so
-> they are explicitly carved out as mm-backed, as the MADV_DODUMP check
-> already does.
+> In fact, core-mm manages (zaps) these pages, they are really just just
+> permanently lazyfree.
 > 
-> Droppable mappings are excluded as core mm has promised it may discard them
-> at any time.
+> Open-coding "this (DUMP, UFFD, MLOCK) does not make sense for droppable
+> mappings" is IMHO the right decision, because there you could say
 > 
-> Use this functionality to update the madvise MADV_DODUMP check to test for
-> this rather than open-coding it.
+> "dumping something that can get zapped every second does not make any sense"
 > 
-> This replaces the VM_SPECIAL check which means it no longer checks for
-> VMA_IO_BIT, however this is safe as we have established the invariant that
-> mm-managed mappings may not set VMA_IO_BIT, so we implicitly include
-> these.
+> "placing pages through uffd does not make any sense if it can get zapped any second"
 > 
-> No functional change intended.
+> "mlock'ing (and thereby allocating!) droppable mapping does not make any sense
+> and could actually break droppable semantics"
 > 
-> Acked-by: Zi Yan <ziy@nvidia.com>
-> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
-> ---
->  include/linux/mm.h | 50 ++++++++++++++++++++++++++++++++++++++++++++++++++
->  mm/madvise.c       |  4 ++--
->  2 files changed, 52 insertions(+), 2 deletions(-)
+> Not a hill I will die on, but I much rather have the droppable mapping be
+> outside or  have it called something nasty like
 > 
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index 2ce68713e4c3..55320cf2c525 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -1738,6 +1738,56 @@ static inline bool vma_can_merge(const struct vm_area_struct *vma)
->  	return vma_flags_can_merge(&vma->flags);
->  }
->  
-> +/**
-> + * vma_flags_is_mm_backed() - Do the specified VMA flags imply the mapping is
-> + * backed by core mm?
-> + * @flags: The VMA flags to test.
-> + *
-> + * An mm-backed mapping is one managed by core mm (see
-> + * vma_flags_is_mm_managed()) for which two further things are true:
-> + *
-> + * 1. Everything mapped was placed there by core mm's fault path (no custom
-> + *    ->fault).
-> + * 2. What is mapped stays there until it is zapped or unmapped by the user.
+> vma[_flags]_is_mm_backed_or_droppable()
 
-I still dislike squeezing the VMA_DROPPABLE check in here.
-
-It's just weird semantics to squeeze pages that are *managed* by core MM (#1)
-but are simply always lazyfree into this check.
-
-In fact, core-mm manages (zaps) these pages, they are really just just
-permanently lazyfree.
-
-Open-coding "this (DUMP, UFFD, MLOCK) does not make sense for droppable
-mappings" is IMHO the right decision, because there you could say
-
-"dumping something that can get zapped every second does not make any sense"
-
-"placing pages through uffd does not make any sense if it can get zapped any second"
-
-"mlock'ing (and thereby allocating!) droppable mapping does not make any sense
-and could actually break droppable semantics"
-
-Not a hill I will die on, but I much rather have the droppable mapping be
-outside or  have it called something nasty like
-
-vma[_flags]_is_mm_backed_or_droppable()
+Noting that that does not make sense, as we would have to reve
 
 -- 
 Cheers,
