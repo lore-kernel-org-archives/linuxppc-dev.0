@@ -1,49 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-29328-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29329-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5907BCA9ED0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 20:02:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6920FCA9ED0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 20:13:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3Szt4sm1z30HB;
-	Tue, 13 Oct 2026 07:02:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=82.65.109.163
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791835338;
-	cv=none; b=KX7p+QocI2yTgEFmtKuak/weiAs6l5P1PwFVLNZfjd37MoTlzXBjFyjUU89xKI74mG2iIXrTs2XcGkfh9Ec03xPP0xwduIV/FWVhbDqHB1EmBxqWahdirQcDT93W06yCMj4zOjd+LB1JUM7ztNDDf/hAuZ4HKcGM9tQvDMXSxJgclBhWE2R3LPojjyipZadWA2VxCaouqYvVPygPc48s2yeWOSiYGuQ21JQiynb45M8LcBDpIm0mxv8F5tCLCkmdy7azemy+3XsSiUeF7rGdJD4xzo9ft63/bJZD8svoXolWvRKxLflLoVbuOAXZ3OiOuQoKT/AnSlUnQaH9hS8zLg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3TDq6wKGz30NF;
+	Tue, 13 Oct 2026 07:13:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791836011;
+	cv=none; b=Kw52pWfrcxjkue0YCfF0mFkykIns5i5rJSMZevDxhOgMemtszwsWGK80sc9yHM4maPPFGIi8vhB6VFUwNxZH7JGcLSLWeyTr2zsAeKH3Vb2psYjRFLJlVamp74g0VRIKohGJ1Wyrzvv7yhh6gtZV59BLDqeaghQ5dt2JOfNiBku0johDEPBwR7q/BXNENRWitCPpeHr2A5aCedPYnnBo6zUPC8Z9wVqx3CCik6Z9ZLzHmSpO00rrekVqgCU2Cn+mD3Eywa65v5MqlDlmEGC1j6ekPNgxQfzo6O5S97i6jgmUl4v0b60HmMNxfVnRLC00YK+l7nSOvDJcaV5HuzKL+g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791835338; c=relaxed/relaxed;
-	bh=Y/bZ4dLmv7i4RVDI4xOEB4OXN5lAcE4aeJ3+9CerRK4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Uzq25IwjuCl9vnHQ590zE7YjFoaOGPkdt5+c6Wfx5N6ZImqvMERcN2DiXCByFxnU2euWn+93+rGGdS85IccT38Vvv4ACAWx794z6GbTS2FTJmawrk3SuRsZVtvBChLcogwCctO3V5tWxfW/JMd+REdOGzp69LCGVEKrbR9Lr53KbzJZ/Peq72leI4P+M63VaOUcUN1b7LtMT99sJZky4u4Qa9o7KuevUk1Xh7qeWMQpZayikko1D+zSCmYpGxmoZsTiBNY7gt78b4E69VdP9AxwCy7LYefn13Svg6ikVNo8gcM+Li5r8c1mBs+Ce8jJcJZKxhuoK6sN9mXhlWfv4Xw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr; spf=pass (client-ip=82.65.109.163; helo=linkmauve.fr; envelope-from=linkmauve@linkmauve.fr; receiver=lists.ozlabs.org) smtp.mailfrom=linkmauve.fr
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linkmauve.fr (client-ip=82.65.109.163; helo=linkmauve.fr; envelope-from=linkmauve@linkmauve.fr; receiver=lists.ozlabs.org)
-Received: from linkmauve.fr (linkmauve.fr [82.65.109.163])
+	t=1791836011; c=relaxed/relaxed;
+	bh=ipfnvz0/kYIxjRDd3MrcP9WRjs1t+zUVD4kVE6VTnwU=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=QSBc4O2/VRliAtQS+v8y875K2xvg5gHs64yb0dcMxXsvJ09vw90zpgGmyVWZmVuS+OActrgJAh32J4IaIrslJM7oYyWh2cKL3EgFMaQ8aQ5X5XqVdZzUJmrOXc/qpICaKt9mcPNVXSBvx02N0WbCo4Jc2NCQYBJlRTlwurTYh2H9dVJ/4R/wRuuccjVrYh8uw8V7us+4mBWpKv4LgfJNoBsYbVhh/dmiXsqz5KiPzoK8M2sNaXeJYZOWaXYhrkAN9kMOxvjh/Akhp1qsNjSjyU6ZGe4N7U6CuMrkiOHCtBt5hZauRe1YPBlEc1BP5v+NSZ13/zZ+NZDtp0OocCo3MA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hyoLdGpv; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hyoLdGpv;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3Szr6Yltz304Q
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 07:02:15 +1100 (AEDT)
-Received: by linkmauve.fr (Postfix, from userid 1000)
-	id 71B8071FB3CE; Mon, 12 Oct 2026 22:02:10 +0200 (CEST)
-Date: Mon, 12 Oct 2026 22:02:10 +0200
-From: Link Mauve <linkmauve@linkmauve.fr>
-To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-	chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com,
-	ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net,
-	bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org,
-	aliceryhl@google.com, tmgross@umich.edu, dakr@kernel.org,
-	daniel.almeida@collabora.com, tamird@kernel.org,
-	acourbot@nvidia.com, work@onurozkan.dev, linkmauve@linkmauve.fr,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	rust-for-linux@vger.kernel.org, FUJITA Tomonori <tomo@flapping.org>
-Subject: Re: [PATCH V6] powerpc/bug: Add ARCH_WARN_ASM and refactor
- _EMIT_BUG_ENTRY for Rust support
-Message-ID: <as08wgiYOGOx5Jzo@desktop>
-References: <20260922054311.906816-1-mkchauras@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3TDq0Shzz304Q
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 07:13:31 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 4BC6240898;
+	Mon, 12 Oct 2026 20:13:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F36091F0089B;
+	Mon, 12 Oct 2026 20:13:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791836008;
+	bh=ipfnvz0/kYIxjRDd3MrcP9WRjs1t+zUVD4kVE6VTnwU=;
+	h=Date:From:To:Cc:Subject:In-Reply-To;
+	b=hyoLdGpv1N7sGAm4AzcgqI1HFHbe9lWlVuA3Xsh44J4j5++B7nzx8MNFy6RYzr12C
+	 iwqiQ0OvFbdYiGii4edVrqlWETtX6iGWSl8ifOtoJ3+n2j/P270LtV7sFm5BlcwvAk
+	 dcMkM+/KPOaunj9hNmijb7wT/r6jNqgmKyTqNSvgPJ3i1NPFvzF7pENZhnXP+zYQPj
+	 o346GIOlTfOzowVTN6JWDvHXWlge+N3ggnejNlJgqvW3ji4T4EvdtXpb9TkKr/L/d4
+	 kT0EfCGjux5TZ3AoMUUe+51ASBBzIQgmJcWv8U1FRXNwF9LkyLM9JOzTw7UXyOS3QD
+	 aavAHvs1d6AJg==
+Date: Mon, 12 Oct 2026 15:13:26 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: "Perlow, Jason" <jperlow@gmail.com>
+Cc: "To: Bjorn Helgaas" <bhelgaas@google.com>,
+	Lukas Wunner <lukas@wunner.de>,
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Oliver O'Halloran <oohall@gmail.com>, linux-pci@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Aditya Garg <aditya.garg@linux.dev>
+Subject: Re: PCI/AER: MacBookPro16,1 test results with Apple SEP ANFE quirk
+Message-ID: <20261012201326.GA1374572@bhelgaas>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,191 +68,89 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260922054311.906816-1-mkchauras@gmail.com>
-Jabber-ID: linkmauve@linkmauve.fr
+In-Reply-To: <CABZrw2H+3yt2Y7xiq6OyAWaJM7P9ox-2nJxoQuJMwoJHLgi+YQ@mail.gmail.com>
 
-Hi,
+On Fri, Oct 09, 2026 at 11:38:50PM -0400, Perlow, Jason wrote:
+> Bjorn, Lukas,
+> 
+> I have tested the Apple SEP ANFE quirk together with Lukas's false-alarm
+> recovery fix on two MacBookPro16,1 systems. Both stayed up for over two
+> hours after booting the candidate kernel. The patch is being prepared
+> against pci/for-linus at 79c168e2aa957ed0054c93db17caba653b95e377.
+> 
+> The candidate retains eddba19b8b5f ("PCI/AER: Support Advisory Non-Fatal
+> Errors"), adds 79c168e2aa95 ("PCI/AER: Skip error recovery on false
+> alarms"), and leaves the ANFE mask unchanged only on the Apple T2 Secure
+> Enclave Processor [106b:1802]. The global ANFE revert is absent from the
+> test kernel. The per-device flag approach follows Aditya's earlier
+> proposal, with an EARLY fixup so the flag is set before pci_aer_init().
+> 
+> The test systems are:
+> 
+>   MEDUSA:  MacBookPro16,1, Core i7-9750H
+>   CHIMERA: MacBookPro16,1, Core i9-9980HK
+> 
+> Both ran 7.3.0-rc6-6-t2-edge-apple-sep-anfe-test, confirmed by uname and
+> the kernel banner in each current boot journal. At the 23:24 EDT check
+> on October 9, MEDUSA had 2 hours 22 minutes uptime and Chimera had
+> 2 hours 21 minutes. Their boot IDs were unchanged from the initial
+> successful candidate boots. graphical.target and the display manager
+> were active on both, and neither had failed systemd units.
+> 
+> Read-only config-space checks gave the same results on both systems:
+> 
+>   Function                    Correctable error mask
+>   Apple SEP, 04:00.2           0x00006000
+>   Apple function, 04:00.0      0x00004000
+>   Apple function, 04:00.1      0x00004000
+>   AMD GPU, 03:00.0             0x00000000
+> 
+> ANFE bit 13 is therefore masked on the SEP and unmasked on the other
+> observed functions. No config-register writes were used in these checks.
+> The implementation matches vendor/device ID, not these bus addresses.
+> 
+> Neither candidate boot journal contains an AER/GHES report, kernel
+> panic, oops, BUG or call trace. Neither recorded additional kernel
+> messages after the initial 21:04 checks through the 23:24 check.
+> 
+> The earlier Wunner-only candidate booted on MEDUSA but then powered off,
+> as I reported on October 8. Its retained journal ended before that event;
+> there was no recorded shutdown sequence or panic. The cause of the power
+> loss is still unknown, and this quirk does not establish a firmware
+> mechanism. The combined candidate has not reproduced that symptom within
+> the observed interval.
+> 
+> There are remaining boot warnings unrelated to the reported AER symptom:
+> ACPI duplicate-table/method errors, AMD SDMA fence fallback warnings,
+> HID rotation probe failures, and Broadcom P2P failures. Chimera also logs
+> CPU 0 machine-check records in banks 12 and 13. These warning categories,
+> including the same machine-check status/address records, appear in the
+> previous boot logs. I am retaining them as separate follow-up issues.
+> 
+> This was a v7.3-rc6 test build with the existing T2 driver/patch stack,
+> using Debian Forky GCC 16.2 and binutils 2.47. It was not a vanilla
+> upstream kernel or an identical-toolchain comparison to the older GCC 14
+> release image. Artifact checksums, exact source/provenance, config checks,
+> t2gmux/t2smc builds and imported-symbol CRC checks passed. A generic
+> KVM/OVMF boot also passed; the hardware observations above come from the
+> two physical systems, not KVM.
+> 
+> The T2 team reports that [106b:1802] identifies the SEP across T2 models,
+> but this report covers only these two MacBookPro16,1 machines. I have not
+> tested other T2 models, power-off/cold-start, suspend/resume, reset, kexec
+> or deliberate AER error injection. Physical confirmation of the rendered
+> GUI is not included in this report; desktop service state was checked
+> remotely. The existing release/rescue boot files were preserved.
+> 
+> The patch (enclosed) leaves other ANFE handling enabled and is idempotent
+> across
+> repeated fixup/AER initialization. Please review it as a targeted workaround
+> for the MacBookPro16,1 regression, with the testing limits above.
 
-With 7.3 close to release, and this patch still not merged, the kernel
-will still fail to build with CONFIG_RUST=y on PowerPC.
-
-Should the Rust support for this architecture get disabled as an
-emergency measure before 7.3?  Should this patch get in instead?  Should
-we ignore the issue as not many people will use this architecture
-anyway?  Is there another solution I’m not seeing?
-
-Sorry I haven’t made it known sooner, I was busy with things.
-
-As an aside, this patch does fix building Rust drivers for a Wii, so it
-gets my:
-Tested-by: Link Mauve <linkmauve@linkmauve.fr>
-
-On Tue, Sep 22, 2026 at 11:13:11AM +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
-> The Rust kernel infrastructure generates inline asm for WARN() via
-> ARCH_WARN_ASM(file, line, flags, size), expanding it through a C
-> preprocessor pass (generated_arch_warn_asm.rs.S) to produce an
-> arch-specific asm template string for use in Rust's core::arch macros.
-> 
-> powerpc currently lacks ARCH_WARN_ASM and ARCH_WARN_REACHABLE, causing
-> Rust builds to fail on powerpc with
-> ```
-> error: no rules expected `ARCH_WARN_ASM`
->    --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_warn_asm.rs:1:28
->     |
->   1 | ::kernel::concat_literals!(ARCH_WARN_ASM("{file}", "{line}", "{flags}", "{size}"))
->     |                            ^^^^^^^^^^^^^ no rules expected this token in macro call
->     |
->    ::: ../rust/kernel/lib.rs:279:1
->     |
-> 279 | macro_rules! concat_literals {
->     | ---------------------------- when calling this macro
->     |
->     = note: while trying to match sequence start
-> 
-> error: no rules expected `ARCH_WARN_REACHABLE`
->    --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_reachable_asm.rs:1:28
->     |
->   1 | ::kernel::concat_literals!(ARCH_WARN_REACHABLE)
->     |                            ^^^^^^^^^^^^^^^^^^^ no rules expected this token in macro call
->     |
->    ::: ../rust/kernel/lib.rs:279:1
->     |
-> 279 | macro_rules! concat_literals {
->     | ---------------------------- when calling this macro
->     |
->     = note: while trying to match sequence start
-> 
-> error: aborting due to 2 previous errors
-> ```
-> 
-> To add ARCH_WARN_ASM, _EMIT_BUG_ENTRY first needs to be refactored.
-> The old definition was a bare macro with no parameters, relying on
-> positional asm operand references (%0-%3), hardcoding the backward
-> reference to local label 1b, and including .org/.previous directives
-> inline. That made it impossible to compose as a plain string outside of
-> an asm operand context, and left an invisible contract that callers must
-> always emit their trap at label 1:.
-> 
-> Refactor _EMIT_BUG_ENTRY to take explicit (bug_entry, trap, file, line, flags)
-> string arguments via string concatenation. This removes the dependency
-> on asm operand numbering and makes the labels an explicit argument,
-> so the caller's intent is visible at the call site and a future caller
-> using a different label cannot silently produce a wrong bug table entry.
-> 
-> Move the .org and .previous directives out of _EMIT_BUG_ENTRY and into
-> each call site, so BUG_ENTRY() can still pass sizeof(struct bug_entry)
-> as an asm operand while ARCH_WARN_ASM can supply its own size string
-> independently.
-> 
-> Add ARCH_WARN_REACHABLE as an empty define, matching the arm64
-> convention, indicating that no additional reachability annotation is
-> needed after a WARN on powerpc.
-> 
-> Reported-by: FUJITA Tomonori <tomo@flapping.org>
-> Closes: https://lore.kernel.org/all/anG67Q6Y59kDqh-c@desktop
-> Fixes: 73b741adb264 ("rust: Add PowerPC support")
-> Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-> ---
-> Changelog:
-> V5 -> V6:
->  - Dropped KUit tests from this series. It will be sent separately.
-> V5: https://lore.kernel.org/all/20260915090453.1227034-1-mkchauras@gmail.com/
-> 
-> V4 -> V5:
->  - Fixed a build error with DEBUG_BUGVERBOSE=n
->  - Added a label for bug entry
-> V4: https://lore.kernel.org/all/20260912065902.24017-1-mkchauras@gmail.com/
-> 
-> V3 -> V4:
->  - Fix Label with appending b at end
->  - Add KUnit test patch
->  - Tested on ppc64le pseries: pass:5 fail:0 skip:0
->  - Tested on ppc32 QEMU mac99 G4: pass:5 fail:0 skip:0
->  - Tested on ppc64le QEMU pseries: pass:5 fail:0 skip:0
-> V3: https://lore.kernel.org/all/20260910100801.2159785-2-mkchauras@gmail.com
-> 
-> V2 -> V3:
->  - Add label argument in _EMIT_BUG_ENTRY
-> V2: https://lore.kernel.org/all/20260910071252.1950488-2-mkchauras@gmail.com
-> 
-> V1 -> V2:
->  - commit message now has error, fixes tag and closes tag
-> V1: https://lore.kernel.org/all/20260819084825.969116-1-mkchauras@gmail.com
-> 
->  arch/powerpc/include/asm/bug.h | 46 ++++++++++++++++++----------------
->  1 file changed, 25 insertions(+), 21 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
-> index 0db48977c70c..bf31ee1e902a 100644
-> --- a/arch/powerpc/include/asm/bug.h
-> +++ b/arch/powerpc/include/asm/bug.h
-> @@ -32,34 +32,38 @@
->  #endif /* verbose */
->  
->  #else /* !__ASSEMBLER__ */
-> -/* _EMIT_BUG_ENTRY expects args %0,%1,%2,%3 to be FILE, LINE, flags and
-> -   sizeof(struct bug_entry), respectively */
->  #ifdef CONFIG_DEBUG_BUGVERBOSE
-> -#define _EMIT_BUG_ENTRY				\
-> -	".section __bug_table,\"aw\"\n"		\
-> -	"2:	.4byte 1b - .\n"		\
-> -	"	.4byte %0 - .\n"		\
-> -	"	.short %1, %2\n"		\
-> -	".org 2b+%3\n"				\
-> -	".previous\n"
-> +#define _EMIT_BUG_ENTRY(bug_entry, trap, file, line, flags)	\
-> +	".section __bug_table,\"aw\"\n"				\
-> +	#bug_entry ":	.4byte " #trap " - .\n"			\
-> +	"		.4byte " file " - .\n"			\
-> +	"		.short " line ", " flags "\n"
->  #else
-> -#define _EMIT_BUG_ENTRY				\
-> -	".section __bug_table,\"aw\"\n"		\
-> -	"2:	.4byte 1b - .\n"		\
-> -	"	.short %2\n"			\
-> -	".org 2b+%3\n"				\
-> -	".previous\n"
-> +#define _EMIT_BUG_ENTRY(bug_entry, trap, file, line, flags)	\
-> +	".section __bug_table,\"aw\"\n"				\
-> +	#bug_entry ":	.4byte " #trap " - .\n"			\
-> +	"		.short " flags "\n"
->  #endif
->  
-> -#define BUG_ENTRY(cond_str, insn, flags, ...)		\
-> -	__asm__ __volatile__(				\
-> -		"1:	" insn "\n"			\
-> -		_EMIT_BUG_ENTRY				\
-> +#define BUG_ENTRY(cond_str, insn, flags, ...)			\
-> +	__asm__ __volatile__(					\
-> +		"1:	" insn "\n"				\
-> +		_EMIT_BUG_ENTRY(2, 1b, "%0", "%1", "%2")	\
-> +		".org 2b+%3\n"					\
-> +		".previous\n"					\
->  		: : "i" (WARN_CONDITION_STR(cond_str) __FILE__), "i" (__LINE__),	\
-> -		  "i" (flags),				\
-> -		  "i" (sizeof(struct bug_entry)),	\
-> +		  "i" (flags),					\
-> +		  "i" (sizeof(struct bug_entry)),		\
->  		  ##__VA_ARGS__)
->  
-> +#define ARCH_WARN_ASM(file, line, flags, size)			\
-> +		"1:	twi 31, 0, 0\n"				\
-> +		_EMIT_BUG_ENTRY(2, 1b, file, line, flags)	\
-> +		".org 2b+" size "\n"				\
-> +		".previous\n"
-> +
-> +#define ARCH_WARN_REACHABLE
-> +
->  /*
->   * BUG_ON() and WARN_ON() do their best to cooperate with compile-time
->   * optimisations. However depending on the complexity of the condition
-> -- 
-> 2.55.0
-> 
-
--- 
-Link Mauve
+Thanks for this!  Since you posted this before Aditya's essentially
+identical patch
+(https://lore.kernel.org/all/20261010172301.12764-1-aditya.garg@linux.dev/),
+I used this one instead.  It's on pci/for-linus for v7.3.
 
