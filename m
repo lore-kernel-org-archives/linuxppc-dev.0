@@ -1,70 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-29256-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29257-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54B7ECA9ED2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 10:21:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 283B2CA9ED0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 10:21:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3D5W09bKz3bqh;
-	Mon, 12 Oct 2026 21:21:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791800478;
-	cv=none; b=KNj2j4ZUxAAg/iT4lWsWKLziYSvKul5QfTI4Dv/WnjC6GoN8MTtogMCi8Yws/nNAKFPCx+piDtDpofuHlNknZ5O+qgpaIhu0R4xEiHAiXOt2aAgsERogVAvOIj5HNRMmdd2vvs9PisYsOxxHpCemk/CcsMJpUWL++X/4ymEZZbRvgR3NMwtQHV9Bl3Kvzd1hCjUOUf0G40z0pBmbQTwjqvOU9AkQUzAHwQ7m4GIWhQSzZtXVMYkYS1GaNoKk4QIei0yhy280b9wWEhC93EBFF9q9+O2EQYgBNmwAA721w3gXwgK6W8uo81gQtVzJ7IpRANYbF+KKxxChdxeBa9/W2Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3D5k51B3z30DY;
+	Mon, 12 Oct 2026 21:21:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791800490;
+	cv=none; b=ZLmAVDGepTg1Mf7S89kL3pMkq/FDb4xjNLo/hoz64x8RSeyO3Wff9yruXjNJ4CjzwmOuAiu5tXA8kJ2dWOKJ/KHTHgahBwfzlmcYG3C6LtPWJwhF/SdkTCCmWJ2XkZ9coHn3ZYsRWjxh5MQgTn2cqNh8zeHblHoflm9ke0p+HqBag2S8XbMo83JiH+2JgzmTkKPLJbf8vOjtKbQgTKekVNJYVlI2xH84avOizcFlrISnzidxWumWPGFBxkT8tD/dQrAVIKCivyHd3rjZ5oV6gdohvWl63uYZ7fdCxa8mAyePcdHMCaUXOBBdJNoXS3MzbpHrF7GjbqmZodnx5hvEWA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791800478; c=relaxed/relaxed;
-	bh=xzx8yyTa2N6kW8axf0T5qGy+PahAfVEqrKrf7jTmM0k=;
+	t=1791800490; c=relaxed/relaxed;
+	bh=OKt43nUGy6+rdipgQqPi4PhGSSle6SI2iNz6e78gMqI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=SVUKffWZ4+ci3dObmBI5IVdC56O6Esp/qH7GWYTd1ulU9GQrKOBxMB2S+iSy1MmM5YmDyrDtZd4glB88QnPdzFxe8PQntjfzyHReoXO+7GOSVYU39ywTEVjwi+stGU/jahYaxSpVWcRM7VCsIYvS4YVcDhZAWhR8FM0RKkE709rV4Ce05GqgAshNjW1oLSNJkuKdPdPDFAu8v/h6V8UXJCzDwGC8frkwapFmt6+97mXrGt0QTokmofpOWWs/VxG3zTHilv+MJu5DfU78leztrLBwxrNddbZnb2FJka7b5NRZmzEYK8rl4EcBKZPLuTybywlRSqWm8qxPqS+SRLuZHA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k8rY7mMV; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=lX3QpSnGl+cK2NuAfEAWDqqC96d7yrsCETvf0SBcnUGuf94Wa/vYuXMeoLUR/jWsnLQUb/1UhvVTD4o5ZF7nua5amXyNaPVNfL0PZFFAmEyYGBckRBLSwAVp+LZPKmVblBZynw8tBplFrRsa1FRzFVZL0Cv0+JYlKq5m4qHKGhhLEhdikkirXAM3GC+8gNWx8lANrNsx0YHiBRQz3EVWKM9kmdzCdrLMb9zq2K4FFaPL3VpT70UvGWyBkfwSK6wPOFgUxqI33cvfm6yftpAoI9N+l5qU2IsAYbPa2hiLsNEMLXteR8biIdj1UhOf1v7OPOngSOVjgcwNOfSiUkzwoA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PlgBVWJh; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k8rY7mMV;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PlgBVWJh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3D5V2LvRz3bSw
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2026 21:21:18 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69C8iAFD3917815;
-	Mon, 12 Oct 2026 10:21:01 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3D5j5RF5z30Tm
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2026 21:21:29 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69C8iQn93968445;
+	Mon, 12 Oct 2026 10:21:06 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=xzx8yyTa2N6kW8axf
-	0T5qGy+PahAfVEqrKrf7jTmM0k=; b=k8rY7mMVHFMmFsMQpvCuVbAteIS7UIfWk
-	S27lvueGLvwr1LpfivHufVF5ioxpYksGfHd340iIKGhVdIa6NDuV3tuehts7u89u
-	4WmSlUk6Gj5OBPyYIx8JiT/a8ZpXRPjJ2uUTzdyeXXJnhtEMh3ipembHvaybpZbg
-	AfyLunugQ30getrsbVdQp6S9GTsEH8VA2HbFKBhp3vcBbTvmTjygMTr9CicaZm3+
-	9Z2q1OXE9pEIeOvBUhvC2vD65KkDzqa6lhTkrlJiLxW3Wvocv5C/F+kNwHfwWAle
-	3pWzEMbb1wAblXzUqbyOzjFSDHw8w7mR9ZSkJ9dcEgYHrQ6RlV7dA==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7dv38b08-1
+	:mime-version:references:subject:to; s=pp1; bh=OKt43nUGy6+rdipgQ
+	qPi4PhGSSle6SI2iNz6e78gMqI=; b=PlgBVWJhrRC7eVto+z+9nMq9fCqA8uKw9
+	1F/ME0d3j3TBnIx0WeumxQq61c0Vz0f7DOrAgBSpIQFkXj564SeBTYX658cQCYV1
+	JMEnzmBqNocjwRvZv2cCXH6j1HozJimy2MiyGRlQMZUKMk4S6NQAs49SBqEhU02g
+	+1uIlB51dpsKpDPWbcZ9UCkDuWWhhagOHytM1ESg0xNU0DGg5R0xsSxCuGGtOhQa
+	vSeHyyltDkMdY0U/cFoaXgtXqfTgFhpxxSFAUseFBdRQc9hgGDpk1aOFCXisys4/
+	F8LI6h1ssJkaHC/qG/DphotzCluVtbecDBFlND94nwJIvBXXjZa7g==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7e1w00dn-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 12 Oct 2026 10:21:00 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69C8K0de1013351;
-	Mon, 12 Oct 2026 10:21:00 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4h82cycdre-1
+	Mon, 12 Oct 2026 10:21:05 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69C8K079964559;
+	Mon, 12 Oct 2026 10:21:05 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4h7yppmtyy-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 12 Oct 2026 10:20:59 +0000 (GMT)
+	Mon, 12 Oct 2026 10:21:05 +0000 (GMT)
 Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69CAKuq352494756
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69CAL1v130146832
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 12 Oct 2026 10:20:56 GMT
+	Mon, 12 Oct 2026 10:21:01 GMT
 Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1BE962004E;
+	by IMSVA (Postfix) with ESMTP id 6B63D20040;
+	Mon, 12 Oct 2026 10:21:01 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B0AFE2004B;
 	Mon, 12 Oct 2026 10:20:56 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 94C3920043;
-	Mon, 12 Oct 2026 10:20:51 +0000 (GMT)
 Received: from li-7bb28a4c-2dab-11b2-a85c-887b5c60d769.ibm.com.com (unknown [9.124.215.77])
 	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 12 Oct 2026 10:20:51 +0000 (GMT)
+	Mon, 12 Oct 2026 10:20:56 +0000 (GMT)
 From: Shrikanth Hegde <sshegde@linux.ibm.com>
 To: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, peterz@infradead.org,
         tim.c.chen@linux.intel.com
@@ -73,9 +73,9 @@ Cc: sshegde@linux.ibm.com, christophe.leroy@csgroup.eu,
         kprateek.nayak@amd.com, yu.c.chen@intel.com, vineethr@linux.ibm.com,
         vincent.guittot@linaro.org, srikar@linux.ibm.com, npiggin@gmail.com,
         mpe@ellerman.id.au
-Subject: [PATCH 2/4] powerpc/topology: Add docs for llc_override
-Date: Mon, 12 Oct 2026 15:50:35 +0530
-Message-ID: <20261012102037.2477378-3-sshegde@linux.ibm.com>
+Subject: [PATCH 3/4] powerpc/topology: Update mc/pkg flags based on llc_override
+Date: Mon, 12 Oct 2026 15:50:36 +0530
+Message-ID: <20261012102037.2477378-4-sshegde@linux.ibm.com>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <20261012102037.2477378-1-sshegde@linux.ibm.com>
 References: <20261012102037.2477378-1-sshegde@linux.ibm.com>
@@ -95,91 +95,145 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: D00o8eQo1I5r_OUBgNR4TM6igOoIh_zm
-X-Proofpoint-ORIG-GUID: cue31ZNCDUOhHaSWz9uV0JPq7rXszquz
-X-Authority-Analysis: v=2.4 cv=aqInmiZV c=1 sm=1 tr=0 ts=6accb48d cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEyMDA0MCBTYWx0ZWRfXz2RF04lXDzzZ
+ QboL2M4XwEA8WwDDY/z+K2nNjV5hbyO04ximYVgdtlBSsbL0+GDwVy+YyxBMN5cgjYqpuvJIqm9
+ n4XIWT0QiihsCnBRTcxT37/e2nXeNV8=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEyMDA0MCBTYWx0ZWRfXzj0fdkm9XAOS
+ olazDlj2sslvWDITiVp0xgmLVyygY826zte+tw8Q2My7p4B0k5VrXrEx29Z2dJJOH9z96KdH7p6
+ rDUaUMjKi9+4qSzriH7NadASfOfjoOFHSJ51h3VU1lUuoR6uounzfI+lj+sl+MIGuQvRvTkv1Vu
+ mWtiyjwAEPe0UCQeCi7W9U/peY4g60FqHgV+0CoYTkjDptb9wpuylg/CPWcvUnXpZGgWaLGxNSr
+ e7SdE9S7rRuxilD1HwDN3D51PYaSTNHBgcMQXD2MqeF2cLTaj3xps/qF/ecaQtfnNigdf12QIm7
+ 1wDy8nHQh8AKF14Q4MbyYikVvLDj+u6ANJXEaRbbVdLX7yc5hRnGw6t0TaTIpYn1F4E0Tujphbh
+ 7hX4uyD6Cldfl6dsLLyNsdkffxV/ZVyM3/qtsKK4/PUI1f2XON55wM7cCtJxhgIK5exuIcxndLh
+ FImgV7JpRGicRMfnwuQ==
+X-Authority-Analysis: v=2.4 cv=E6pYNqdl c=1 sm=1 tr=0 ts=6accb492 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
  a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8 a=goSn6fUrnbwpz7W_l2oA:9
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEyMDA0MCBTYWx0ZWRfX9aWDIc4qItRz
- RpkRNHG86foXdlPfCig8dgD/nchbdOTCiK90hxrnwZIH7LTdCgPgJEkl4MfgzIiKzeHSw5+bvEM
- Knj52vhenh549ZA0vrRtrhEoN2K8Nlk=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEyMDA0MCBTYWx0ZWRfX59MHEgoRBjbx
- iYlLp5V+uM219zBggafAzsj7YVA+tLuNQtWmIxkEgDpeE7k6jlBVf7AibbsXZIH4tqdlLB3QKi4
- 0oUKqo71ImeYzpreCMK1GnThC259dr/gNWani5my6jMrCVgTG5XIn4gzjSFaNk8D++0ENpPxLPJ
- XcMJ+wHy+udeO5Fp8Ph2a/5udwQBuXiwlzzeRQvmboAqTSqKuvlL256nbyChbPAa0XkFUSKEeyM
- XQd0i/2+Rl0tLDhS78gxcjq/ZrdaLU6uux8FjGxpNfTb/WhPTUmHTeXccT5mTPbIFRbmUXG6C6d
- jtmivh+m+v+FMz7yzNa7tvUaeOsmIhUGR5zLFBXAl4U7oipr8auQ0BUxjGo+LkiSLdI8AoAaDgp
- NwQ3lcRBDDB9FJrE6gTTSTRBcAlDj+NfxI+E1IVeF2R9T9m/03HmJ7tfp06xHyXZkyWB/rABERb
- jAedTmoHBdHuGyySTMQ==
+ a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=XpzEG_ADxOFJZZFOhUYA:9
+X-Proofpoint-ORIG-GUID: 2B0avF2aNIbRhpKQVidRoRIpP8m88ZtN
+X-Proofpoint-GUID: 3jVEwJ-BniKGkx4JeQw_VSQ905Dsguap
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-10-12_03,2026-10-09_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 clxscore=1015 spamscore=0 malwarescore=0 suspectscore=0
- bulkscore=0 adultscore=0 impostorscore=0 priorityscore=1501
- lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
- definitions=main-2610120040
+ impostorscore=0 phishscore=0 clxscore=1015 bulkscore=0 priorityscore=1501
+ spamscore=0 adultscore=0 suspectscore=0 malwarescore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610080000 definitions=main-2610120040
 
-Provide documentation for the newly introduced debug knob
-named as llc_override.
+Update the flags passed for building the scheduler topology.
 
-This may help one if they want to experiment with cache aware
-scheduling.
+SD_SHARE_LLC is used to determine the highest domain where the LLC is.
+Also when set at a particular domain, all the child domains are expected
+to have it set as well.
 
 Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
 ---
- Documentation/arch/powerpc/index.rst    |  1 +
- Documentation/arch/powerpc/topology.rst | 27 +++++++++++++++++++++++++
- 2 files changed, 28 insertions(+)
- create mode 100644 Documentation/arch/powerpc/topology.rst
+ arch/powerpc/kernel/smp.c | 63 +++++++++++++++++++++++++--------------
+ 1 file changed, 40 insertions(+), 23 deletions(-)
 
-diff --git a/Documentation/arch/powerpc/index.rst b/Documentation/arch/powerpc/index.rst
-index 40419bea8e10..0f4caf50a9e7 100644
---- a/Documentation/arch/powerpc/index.rst
-+++ b/Documentation/arch/powerpc/index.rst
-@@ -33,6 +33,7 @@ powerpc
-     qe_firmware
-     syscall64-abi
-     transactional_memory
-+    topology
-     ultravisor
-     vas-api
-     vcpudispatch_stats
-diff --git a/Documentation/arch/powerpc/topology.rst b/Documentation/arch/powerpc/topology.rst
-new file mode 100644
-index 000000000000..9ed3cf7ade69
---- /dev/null
-+++ b/Documentation/arch/powerpc/topology.rst
-@@ -0,0 +1,27 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+.. _topology:
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 433757511adb..4b6512d25f73 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -141,6 +141,24 @@ volatile unsigned int cpu_callin_map[NR_CPUS];
+ 
+ int smt_enabled_at_boot = 1;
+ 
++enum llc_override_values {
++	LLC_OVERRIDE_DISABLED,
++	LLC_OVERRIDE_SMT,
++	LLC_OVERRIDE_MC,
++	LLC_OVERRIDE_PKG,
++};
 +
++static int llc_override;
++static int llc_override_changed;
++static DEFINE_MUTEX(llc_override_mutex);
 +
-+llc_override
-+==============
++static const char * const llc_override_str[] = {
++	[LLC_OVERRIDE_DISABLED]	= "0",
++	[LLC_OVERRIDE_SMT]	= "smt",
++	[LLC_OVERRIDE_MC]	= "mc",
++	[LLC_OVERRIDE_PKG]	= "pkg",
++};
 +
-+Override the scheduler-visible LLC domain on PowerPC.
+ /*
+  * Returns 1 if the specified cpu should be brought up during boot.
+  * Used to inhibit booting threads if they've been disabled or
+@@ -1022,14 +1040,31 @@ static int powerpc_shared_cache_flags(void)
+ 	return SD_SHARE_LLC;
+ }
+ 
+-static int powerpc_shared_proc_flags(void)
++static int powerpc_mc_flags(void)
+ {
++	int flags = 0;
 +
-+Having LLC(last level cache) at MC/PKG helps to experiment with new
-+scheduler feature called cache aware scheduling which expects LLC to have
-+at least more than 1 core. Scheduler uses notion of LLC for wakeup and
-+load balancing decisions.
+ 	if (static_branch_unlikely(&splpar_asym_pack))
+-		return SD_ASYM_PACKING;
++		flags |= SD_ASYM_PACKING;
+ 
+-	return 0;
++	if (READ_ONCE(llc_override) >= LLC_OVERRIDE_MC)
++		flags |= SD_SHARE_LLC;
 +
-+Accepted values are:
++	return flags;
+ }
+ 
++static int powerpc_pkg_flags(void)
++{
++	int flags = 0;
 +
-+  0    Disable the override and use the platform default.
-+  smt  LLC will be at SMT domain.
-+  mc   LLC will be at MC domain, including at SMT domains.
-+  pkg  LLC will be at PKG domain, including at MC and SMT domains,
++	if (static_branch_unlikely(&splpar_asym_pack))
++		flags |= SD_ASYM_PACKING;
 +
-+Writing a new value rebuilds the scheduler domains. One can check the
-+domain flags and look for SD_SHARE_LLC to confirm if it took effect.
++	if (READ_ONCE(llc_override) >= LLC_OVERRIDE_PKG)
++		flags |= SD_SHARE_LLC;
 +
-+Note that this doesn't change HW cache topology. It is only a debug knob
-+to experiment with scheduler related functionalities. So set it to sensible
-+values. Also note that there is no performance guarantees across the values.
++	return flags;
++}
+ /*
+  * We can't just pass cpu_l2_cache_mask() directly because
+  * returns a non-const pointer and the compiler barfs on that.
+@@ -1737,10 +1772,10 @@ static void __init build_sched_topology(void)
+ 
+ 	if (has_coregroup_support()) {
+ 		powerpc_topology[i++] =
+-			SDTL_INIT(tl_mc_mask, powerpc_shared_proc_flags, MC);
++			SDTL_INIT(tl_mc_mask, powerpc_mc_flags, MC);
+ 	}
+ 
+-	powerpc_topology[i++] = SDTL_INIT(tl_pkg_mask, powerpc_shared_proc_flags, PKG);
++	powerpc_topology[i++] = SDTL_INIT(tl_pkg_mask, powerpc_pkg_flags, PKG);
+ 
+ 	/* There must be one trailing NULL entry left.  */
+ 	BUG_ON(i >= ARRAY_SIZE(powerpc_topology) - 1);
+@@ -1828,24 +1863,6 @@ void __noreturn arch_cpu_idle_dead(void)
+ 
+ #endif
+ 
+-enum llc_override_values {
+-	LLC_OVERRIDE_DISABLED,
+-	LLC_OVERRIDE_SMT,
+-	LLC_OVERRIDE_MC,
+-	LLC_OVERRIDE_PKG,
+-};
+-
+-static int llc_override;
+-static int llc_override_changed;
+-static DEFINE_MUTEX(llc_override_mutex);
+-
+-static const char * const llc_override_str[] = {
+-	[LLC_OVERRIDE_DISABLED]	= "0",
+-	[LLC_OVERRIDE_SMT]	= "smt",
+-	[LLC_OVERRIDE_MC]	= "mc",
+-	[LLC_OVERRIDE_PKG]	= "pkg",
+-};
+-
+ static ssize_t llc_override_get(struct file *file, char __user *ubuf,
+ 				size_t count, loff_t *ppos)
+ {
 -- 
 2.52.0
 
