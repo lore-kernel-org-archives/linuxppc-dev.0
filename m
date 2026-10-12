@@ -1,94 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-29327-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29328-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03F7FCA9ED0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 19:51:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5907BCA9ED0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 20:02:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3Sks0Xv6z2yS4;
-	Tue, 13 Oct 2026 06:51:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791834661;
-	cv=none; b=V1PI0BXKr33wvkGVvKFlWJ3L9r945YwX2qJg3L4q9kTxRTB4ixkpPnRRL2W4kPn1WCdmNs1GK2BX1orV4DFbPccp1h/TamlgepnDd5DyKw/kPiuoYhLHpIJ/fOPLxR3jmy/SFwMfxsJgRJm92KNL1Q7JB/lLgDgDeB/nAYeohApBgZqZSD5YRgOrJPN/E8KAJcVfMQjc1pRozjT6ZstHin0CWnJDjEkcQ0BNh+drhKSSSLt4NXiTHzZN5sgyO/NLqu+ftT8dCVzHWzMfLQu9cTf00/AuoSleAlw3OnHLDsoCRpSxnPsVwM+R/lmYvoNmk4t3kGc6i8ugfNPcqo4sGQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3Szt4sm1z30HB;
+	Tue, 13 Oct 2026 07:02:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=82.65.109.163
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791835338;
+	cv=none; b=KX7p+QocI2yTgEFmtKuak/weiAs6l5P1PwFVLNZfjd37MoTlzXBjFyjUU89xKI74mG2iIXrTs2XcGkfh9Ec03xPP0xwduIV/FWVhbDqHB1EmBxqWahdirQcDT93W06yCMj4zOjd+LB1JUM7ztNDDf/hAuZ4HKcGM9tQvDMXSxJgclBhWE2R3LPojjyipZadWA2VxCaouqYvVPygPc48s2yeWOSiYGuQ21JQiynb45M8LcBDpIm0mxv8F5tCLCkmdy7azemy+3XsSiUeF7rGdJD4xzo9ft63/bJZD8svoXolWvRKxLflLoVbuOAXZ3OiOuQoKT/AnSlUnQaH9hS8zLg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791834661; c=relaxed/relaxed;
-	bh=J+O3fVyOO2ZbFKIlKlHMfnu+b7bqqO98EcUBEWl2d28=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=Qyg1VVthn8aIhU7rNV4zSXtBvz8PGFo0VfVK86GfijLYj3k+C4FGdBU0hFV0jaPuzaqQ/sk4o1OJ1RHHGHM5FJ5wlsGI90zW90KSRHDM9vHOOwoPJlhvtFD3eh1vgZqG/QlTp/lxrkXtSeunuF8jnqyFghd6MxYHt6MSTMs9RNy7n0tfkWxfa1cne1yAe/L17WY6jawi5b4or7LVltdgz7zoEy+kv0BaOopQlRXnYsdXfyI62NoZG+LKja+iZMSG9x1j8mQYx1gU0qKXDuU4Y42a3VEUSTbUWXjO7bBlV5W6rr8b+xMH0YjwPr7lDuCSeVIynC7BuJ1Fvsc3MrDFUA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YzBR/JXx; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=davemarq@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YzBR/JXx;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=davemarq@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	t=1791835338; c=relaxed/relaxed;
+	bh=Y/bZ4dLmv7i4RVDI4xOEB4OXN5lAcE4aeJ3+9CerRK4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Uzq25IwjuCl9vnHQ590zE7YjFoaOGPkdt5+c6Wfx5N6ZImqvMERcN2DiXCByFxnU2euWn+93+rGGdS85IccT38Vvv4ACAWx794z6GbTS2FTJmawrk3SuRsZVtvBChLcogwCctO3V5tWxfW/JMd+REdOGzp69LCGVEKrbR9Lr53KbzJZ/Peq72leI4P+M63VaOUcUN1b7LtMT99sJZky4u4Qa9o7KuevUk1Xh7qeWMQpZayikko1D+zSCmYpGxmoZsTiBNY7gt78b4E69VdP9AxwCy7LYefn13Svg6ikVNo8gcM+Li5r8c1mBs+Ce8jJcJZKxhuoK6sN9mXhlWfv4Xw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr; spf=pass (client-ip=82.65.109.163; helo=linkmauve.fr; envelope-from=linkmauve@linkmauve.fr; receiver=lists.ozlabs.org) smtp.mailfrom=linkmauve.fr
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linkmauve.fr (client-ip=82.65.109.163; helo=linkmauve.fr; envelope-from=linkmauve@linkmauve.fr; receiver=lists.ozlabs.org)
+Received: from linkmauve.fr (linkmauve.fr [82.65.109.163])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3Skp6NP9z2xwN
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 06:50:58 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69CJiHps992347;
-	Mon, 12 Oct 2026 19:50:42 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=J+O3fVyOO2ZbFKIlKlHMfnu+b7bqqO
-	98EcUBEWl2d28=; b=YzBR/JXxLZrlOQ3JW26c7OuLMB/TLb9OHSvVpV1F9bCpck
-	A0Rje676Zm7NzN8utwneLBdhlKuZ+wEVHmo7Te22JsTN5C/eojXdUd1OjZ6XBI5Q
-	ICUjNeXLkLBVtBj5lYpOy2RwKGdb12H1aT882pH+4WUw1OJISCZB/RvHZeOeilZy
-	Az9PcLCIk6z9MwMVU36Gy6oubsk9kJMQMyCwqIuev3lrmzSH2zu7Xn/El6Y2O4to
-	LSWBN+/Nz9ICYrC4fJUU1vlS1IhKvIKk0CKdpCwyAyuS2hnEsMf6Q4dF1OaKj3le
-	mVOx1OuetJ+77774hvCkXA3kXbTHchSuanJtPiPw==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7dwhtanx-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 12 Oct 2026 19:50:42 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69CJdLMm1828949;
-	Mon, 12 Oct 2026 19:50:41 GMT
-Received: from smtprelay02.wdc07v.mail.ibm.com ([172.16.1.69])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h802vpt72-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 12 Oct 2026 19:50:41 +0000 (GMT)
-Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
-	by smtprelay02.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69CJoeSb2359936
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 12 Oct 2026 19:50:40 GMT
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2873158060;
-	Mon, 12 Oct 2026 19:50:40 +0000 (GMT)
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D216A5805E;
-	Mon, 12 Oct 2026 19:50:39 +0000 (GMT)
-Received: from d (unknown [9.61.18.84])
-	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTPS;
-	Mon, 12 Oct 2026 19:50:39 +0000 (GMT)
-From: Dave Marquardt <davemarq@linux.ibm.com>
-To: kernel test robot <lkp@intel.com>
-Cc: Dave Marquardt via B4 Relay <devnull+davemarq.linux.ibm.com@kernel.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman
- <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe
- Leroy (CS GROUP)" <chleroy@kernel.org>,
-        "James E.J. Bottomley"
- <James.Bottomley@hansenpartnership.com>,
-        "Martin K. Petersen"
- <mkp@kernel.org>,
-        Tyrel Datwyler <tyreld@linux.ibm.com>, oe-kbuild-all@lists.linux.dev,
-        linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v13 11/11] scsi: ibmvfc: handle extended FPIN events
-In-Reply-To: <202610100443.UCrGdTXp-lkp@intel.com> (kernel test robot's
-	message of "Sat, 10 Oct 2026 04:29:11 +0800")
-References: <20261007-ibmvfc-fpin-support-v13-11-b816abfa4fcc@linux.ibm.com>
-	<202610100443.UCrGdTXp-lkp@intel.com>
-Date: Mon, 12 Oct 2026 14:50:39 -0500
-Message-ID: <87ik36vgts.fsf@linux.ibm.com>
-User-Agent: Gnus/5.13 (Gnus v5.13)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3Szr6Yltz304Q
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 07:02:15 +1100 (AEDT)
+Received: by linkmauve.fr (Postfix, from userid 1000)
+	id 71B8071FB3CE; Mon, 12 Oct 2026 22:02:10 +0200 (CEST)
+Date: Mon, 12 Oct 2026 22:02:10 +0200
+From: Link Mauve <linkmauve@linkmauve.fr>
+To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+	chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com,
+	ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net,
+	bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org,
+	aliceryhl@google.com, tmgross@umich.edu, dakr@kernel.org,
+	daniel.almeida@collabora.com, tamird@kernel.org,
+	acourbot@nvidia.com, work@onurozkan.dev, linkmauve@linkmauve.fr,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	rust-for-linux@vger.kernel.org, FUJITA Tomonori <tomo@flapping.org>
+Subject: Re: [PATCH V6] powerpc/bug: Add ARCH_WARN_ASM and refactor
+ _EMIT_BUG_ENTRY for Rust support
+Message-ID: <as08wgiYOGOx5Jzo@desktop>
+References: <20260922054311.906816-1-mkchauras@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,86 +57,191 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEyMDA3OCBTYWx0ZWRfX1808nKSq3ova
- cGnqJkKDalWn3VLqoK8CfbVvwXLYKrKogkmmck9azYq+Nf+HuqG6q4AOcX/lj1lUQsifZiuMYKt
- Kk7J4Au/rbTeHEJalU8plNadoSpZZ+8Yq5oR/4JwiHagDp9eretaoy6zWZhUXt6+7LSkQsEsGaw
- R6xIFdTGXeQg+XJ/FA0zdeh1+8/SDZag6YsD92uOv3SS6wE2CqZDR2soIyKEYOvsXDFMKtB131W
- /N2wbjIbv7REuJeTNEVTuSdT8bdLdlJsEoJ9lS79XeKcJGnm1lyhOOmHp+AysENz/3txnx28VXC
- 72+XnX3XkiVTJR6oxD+LhHSTa7/niyhWR/S3WPyks8W6avpXA87ZKQhipr4LqfmN6C14869Jvtc
- rw5cNHyK9sGm9pOARaVRMT7OKS2Cie9QV+fKwUQvwV4lHb/C3ybySMG/Foot/KanARql10Urrxd
- f0hLP39yw+2fNcQwK2Q==
-X-Proofpoint-GUID: prRqJ9MVp5KbEE0uwBEzkzMsS4JRZ-B6
-X-Proofpoint-ORIG-GUID: 0tsrNUyzzcmw0gUPB74Vd-PPPZZ881fP
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEyMDA3OCBTYWx0ZWRfXzgEnpH3Nk94X
- 5aI4p+wwnDzV1t2Yh/VWp6oSZIpE9z9NHbbKitTRkEFruwhOPJgvBwx/xOrYC5jHuMzX3kVmEZA
- uR1ukJw9q89Jb2KPZA4IkGroPAFW698=
-X-Authority-Analysis: v=2.4 cv=btHZl0ai c=1 sm=1 tr=0 ts=6acd3a12 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=Y2IxJ9c9Rs8Kov3niI8_:22 a=NEAV23lmAAAA:8 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=i3X5FwGiAAAA:8 a=QyXUC8HyAAAA:8 a=rGKbgntH6m_7XyyKOiwA:9
- a=mmqRlSCDY2ywfjPLJ4af:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-10-12_06,2026-10-09_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 malwarescore=0 phishscore=0 impostorscore=0 adultscore=0
- lowpriorityscore=0 priorityscore=1501 clxscore=1015 spamscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
- definitions=main-2610120078
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260922054311.906816-1-mkchauras@gmail.com>
+Jabber-ID: linkmauve@linkmauve.fr
 
-kernel test robot <lkp@intel.com> writes:
+Hi,
 
-> kernel test robot noticed the following build warnings:
->
-> [auto build test WARNING on c3cff7fac01638ab58e85fe7df41a04fa25c5bae]
->
-> url:    https://github.com/intel-lab-lkp/linux/commits/Dave-Marquardt-via-B4-Relay/scsi-ibmvfc-fix-IRQ-leak-and-guard-deregister-on-channel-reg-failure/20261007-142545
-> base:   c3cff7fac01638ab58e85fe7df41a04fa25c5bae
-> patch link:    https://lore.kernel.org/r/20261007-ibmvfc-fpin-support-v13-11-b816abfa4fcc%40linux.ibm.com
-> patch subject: [PATCH v13 11/11] scsi: ibmvfc: handle extended FPIN events
-> config: powerpc-allmodconfig (https://download.01.org/0day-ci/archive/20261010/202610100443.UCrGdTXp-lkp@intel.com/config)
-> compiler: powerpc64-linux-gcc (GCC) 16.1.0
-> reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20261010/202610100443.UCrGdTXp-lkp@intel.com/reproduce)
->
-> If you fix the issue in a separate patch/commit (i.e. not just a new version of
-> the same patch/commit), kindly add following tags
-> | Reported-by: kernel test robot <lkp@intel.com>
-> | Closes: https://lore.kernel.org/oe-kbuild-all/202610100443.UCrGdTXp-lkp@intel.com/
->
-> All warnings (new ones prefixed by >>):
->
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:1914 expecting prototype for ibmvfc_relogin(). Prototype was for ibmvfc_scsi_relogin() instead
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3328 function parameter 'fpin_status' not described in 'ibmvfc_common_fpin_to_desc'
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3328 function parameter 'wwpn' not described in 'ibmvfc_common_fpin_to_desc'
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3328 function parameter 'type' not described in 'ibmvfc_common_fpin_to_desc'
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3328 function parameter 'modifier' not described in 'ibmvfc_common_fpin_to_desc'
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3328 function parameter 'threshold' not described in 'ibmvfc_common_fpin_to_desc'
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3328 function parameter 'event_count' not described in 'ibmvfc_common_fpin_to_desc'
->>> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3328 function parameter 'severity' not described in 'ibmvfc_common_fpin_to_desc'
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3410 function parameter 'crq' not described in 'ibmvfc_basic_fpin_to_desc'
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3410 function parameter 'wwpn' not described in 'ibmvfc_basic_fpin_to_desc'
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3410 Excess function parameter 'ibmvfc_fpin' description in 'ibmvfc_basic_fpin_to_desc'
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3449 function parameter 'wwpn' not described in 'ibmvfc_full_fpin_to_desc'
->>> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3488 function parameter 'wwpn' not described in 'ibmvfc_ext_fpin_to_desc'
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:5505 function parameter 'protocol' not described in 'ibmvfc_alloc_target'
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3328 function parameter 'fpin_status' not described in 'ibmvfc_common_fpin_to_desc'
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3328 function parameter 'wwpn' not described in 'ibmvfc_common_fpin_to_desc'
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3328 function parameter 'type' not described in 'ibmvfc_common_fpin_to_desc'
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3328 function parameter 'modifier' not described in 'ibmvfc_common_fpin_to_desc'
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3328 function parameter 'threshold' not described in 'ibmvfc_common_fpin_to_desc'
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3328 function parameter 'event_count' not described in 'ibmvfc_common_fpin_to_desc'
->>> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3328 function parameter 'severity' not described in 'ibmvfc_common_fpin_to_desc'
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3410 function parameter 'crq' not described in 'ibmvfc_basic_fpin_to_desc'
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3410 function parameter 'wwpn' not described in 'ibmvfc_basic_fpin_to_desc'
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3410 Excess function parameter 'ibmvfc_fpin' description in 'ibmvfc_basic_fpin_to_desc'
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3449 function parameter 'wwpn' not described in 'ibmvfc_full_fpin_to_desc'
->>> Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:3488 function parameter 'wwpn' not described in 'ibmvfc_ext_fpin_to_desc'
->    Warning: drivers/scsi/ibmvscsi/ibmvfc-core.c:5505 function parameter 'protocol' not described in 'ibmvfc_alloc_target'
+With 7.3 close to release, and this patch still not merged, the kernel
+will still fail to build with CONFIG_RUST=y on PowerPC.
 
-These will be fixed in v14 of the series.
+Should the Rust support for this architecture get disabled as an
+emergency measure before 7.3?  Should this patch get in instead?  Should
+we ignore the issue as not many people will use this architecture
+anyway?  Is there another solution I’m not seeing?
+
+Sorry I haven’t made it known sooner, I was busy with things.
+
+As an aside, this patch does fix building Rust drivers for a Wii, so it
+gets my:
+Tested-by: Link Mauve <linkmauve@linkmauve.fr>
+
+On Tue, Sep 22, 2026 at 11:13:11AM +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
+> The Rust kernel infrastructure generates inline asm for WARN() via
+> ARCH_WARN_ASM(file, line, flags, size), expanding it through a C
+> preprocessor pass (generated_arch_warn_asm.rs.S) to produce an
+> arch-specific asm template string for use in Rust's core::arch macros.
+> 
+> powerpc currently lacks ARCH_WARN_ASM and ARCH_WARN_REACHABLE, causing
+> Rust builds to fail on powerpc with
+> ```
+> error: no rules expected `ARCH_WARN_ASM`
+>    --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_warn_asm.rs:1:28
+>     |
+>   1 | ::kernel::concat_literals!(ARCH_WARN_ASM("{file}", "{line}", "{flags}", "{size}"))
+>     |                            ^^^^^^^^^^^^^ no rules expected this token in macro call
+>     |
+>    ::: ../rust/kernel/lib.rs:279:1
+>     |
+> 279 | macro_rules! concat_literals {
+>     | ---------------------------- when calling this macro
+>     |
+>     = note: while trying to match sequence start
+> 
+> error: no rules expected `ARCH_WARN_REACHABLE`
+>    --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_reachable_asm.rs:1:28
+>     |
+>   1 | ::kernel::concat_literals!(ARCH_WARN_REACHABLE)
+>     |                            ^^^^^^^^^^^^^^^^^^^ no rules expected this token in macro call
+>     |
+>    ::: ../rust/kernel/lib.rs:279:1
+>     |
+> 279 | macro_rules! concat_literals {
+>     | ---------------------------- when calling this macro
+>     |
+>     = note: while trying to match sequence start
+> 
+> error: aborting due to 2 previous errors
+> ```
+> 
+> To add ARCH_WARN_ASM, _EMIT_BUG_ENTRY first needs to be refactored.
+> The old definition was a bare macro with no parameters, relying on
+> positional asm operand references (%0-%3), hardcoding the backward
+> reference to local label 1b, and including .org/.previous directives
+> inline. That made it impossible to compose as a plain string outside of
+> an asm operand context, and left an invisible contract that callers must
+> always emit their trap at label 1:.
+> 
+> Refactor _EMIT_BUG_ENTRY to take explicit (bug_entry, trap, file, line, flags)
+> string arguments via string concatenation. This removes the dependency
+> on asm operand numbering and makes the labels an explicit argument,
+> so the caller's intent is visible at the call site and a future caller
+> using a different label cannot silently produce a wrong bug table entry.
+> 
+> Move the .org and .previous directives out of _EMIT_BUG_ENTRY and into
+> each call site, so BUG_ENTRY() can still pass sizeof(struct bug_entry)
+> as an asm operand while ARCH_WARN_ASM can supply its own size string
+> independently.
+> 
+> Add ARCH_WARN_REACHABLE as an empty define, matching the arm64
+> convention, indicating that no additional reachability annotation is
+> needed after a WARN on powerpc.
+> 
+> Reported-by: FUJITA Tomonori <tomo@flapping.org>
+> Closes: https://lore.kernel.org/all/anG67Q6Y59kDqh-c@desktop
+> Fixes: 73b741adb264 ("rust: Add PowerPC support")
+> Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+> ---
+> Changelog:
+> V5 -> V6:
+>  - Dropped KUit tests from this series. It will be sent separately.
+> V5: https://lore.kernel.org/all/20260915090453.1227034-1-mkchauras@gmail.com/
+> 
+> V4 -> V5:
+>  - Fixed a build error with DEBUG_BUGVERBOSE=n
+>  - Added a label for bug entry
+> V4: https://lore.kernel.org/all/20260912065902.24017-1-mkchauras@gmail.com/
+> 
+> V3 -> V4:
+>  - Fix Label with appending b at end
+>  - Add KUnit test patch
+>  - Tested on ppc64le pseries: pass:5 fail:0 skip:0
+>  - Tested on ppc32 QEMU mac99 G4: pass:5 fail:0 skip:0
+>  - Tested on ppc64le QEMU pseries: pass:5 fail:0 skip:0
+> V3: https://lore.kernel.org/all/20260910100801.2159785-2-mkchauras@gmail.com
+> 
+> V2 -> V3:
+>  - Add label argument in _EMIT_BUG_ENTRY
+> V2: https://lore.kernel.org/all/20260910071252.1950488-2-mkchauras@gmail.com
+> 
+> V1 -> V2:
+>  - commit message now has error, fixes tag and closes tag
+> V1: https://lore.kernel.org/all/20260819084825.969116-1-mkchauras@gmail.com
+> 
+>  arch/powerpc/include/asm/bug.h | 46 ++++++++++++++++++----------------
+>  1 file changed, 25 insertions(+), 21 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
+> index 0db48977c70c..bf31ee1e902a 100644
+> --- a/arch/powerpc/include/asm/bug.h
+> +++ b/arch/powerpc/include/asm/bug.h
+> @@ -32,34 +32,38 @@
+>  #endif /* verbose */
+>  
+>  #else /* !__ASSEMBLER__ */
+> -/* _EMIT_BUG_ENTRY expects args %0,%1,%2,%3 to be FILE, LINE, flags and
+> -   sizeof(struct bug_entry), respectively */
+>  #ifdef CONFIG_DEBUG_BUGVERBOSE
+> -#define _EMIT_BUG_ENTRY				\
+> -	".section __bug_table,\"aw\"\n"		\
+> -	"2:	.4byte 1b - .\n"		\
+> -	"	.4byte %0 - .\n"		\
+> -	"	.short %1, %2\n"		\
+> -	".org 2b+%3\n"				\
+> -	".previous\n"
+> +#define _EMIT_BUG_ENTRY(bug_entry, trap, file, line, flags)	\
+> +	".section __bug_table,\"aw\"\n"				\
+> +	#bug_entry ":	.4byte " #trap " - .\n"			\
+> +	"		.4byte " file " - .\n"			\
+> +	"		.short " line ", " flags "\n"
+>  #else
+> -#define _EMIT_BUG_ENTRY				\
+> -	".section __bug_table,\"aw\"\n"		\
+> -	"2:	.4byte 1b - .\n"		\
+> -	"	.short %2\n"			\
+> -	".org 2b+%3\n"				\
+> -	".previous\n"
+> +#define _EMIT_BUG_ENTRY(bug_entry, trap, file, line, flags)	\
+> +	".section __bug_table,\"aw\"\n"				\
+> +	#bug_entry ":	.4byte " #trap " - .\n"			\
+> +	"		.short " flags "\n"
+>  #endif
+>  
+> -#define BUG_ENTRY(cond_str, insn, flags, ...)		\
+> -	__asm__ __volatile__(				\
+> -		"1:	" insn "\n"			\
+> -		_EMIT_BUG_ENTRY				\
+> +#define BUG_ENTRY(cond_str, insn, flags, ...)			\
+> +	__asm__ __volatile__(					\
+> +		"1:	" insn "\n"				\
+> +		_EMIT_BUG_ENTRY(2, 1b, "%0", "%1", "%2")	\
+> +		".org 2b+%3\n"					\
+> +		".previous\n"					\
+>  		: : "i" (WARN_CONDITION_STR(cond_str) __FILE__), "i" (__LINE__),	\
+> -		  "i" (flags),				\
+> -		  "i" (sizeof(struct bug_entry)),	\
+> +		  "i" (flags),					\
+> +		  "i" (sizeof(struct bug_entry)),		\
+>  		  ##__VA_ARGS__)
+>  
+> +#define ARCH_WARN_ASM(file, line, flags, size)			\
+> +		"1:	twi 31, 0, 0\n"				\
+> +		_EMIT_BUG_ENTRY(2, 1b, file, line, flags)	\
+> +		".org 2b+" size "\n"				\
+> +		".previous\n"
+> +
+> +#define ARCH_WARN_REACHABLE
+> +
+>  /*
+>   * BUG_ON() and WARN_ON() do their best to cooperate with compile-time
+>   * optimisations. However depending on the complexity of the condition
+> -- 
+> 2.55.0
+> 
+
+-- 
+Link Mauve
 
