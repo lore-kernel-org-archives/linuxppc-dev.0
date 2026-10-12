@@ -1,73 +1,98 @@
-Return-Path: <linuxppc-dev+bounces-29335-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29336-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD160CA9ED2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 21:16:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81476CA9EC5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 22:23:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3VdQ252mz2xwP;
-	Tue, 13 Oct 2026 08:16:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791839786;
-	cv=none; b=N5vEc5M1Lj7lqJq3/RcF6pYt5diV4ul53j/9OiXm/Z92r9rG8I1AC076FxG713sGi9yj6ECkwxq7o7jbe0B59j7yK7D8kaMiOYks7JNUN/Aq2PDIjqA6IBN2KzChXL6QMTZHNokXes7Fz8z1BPVJ6VUWhWZBKOcCsrU2Z66J8qpnGz0lhBeFYAo7vMZBZJZycFkUNdJwXcMyHzUxBdNzsX2qJ5PI7ddi48vtVyxbgPLYjFuJWFg88rbKlkegoaLQaxqGLzaJaJ5wskeSPF7HvlpcvnX28UjE5kpsxUt5xAe5hFO2j08UpMomTfeGtjKJ9y2Us62VoEavrJRZ3m8jgQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3X6h1FMXz308Q;
+	Tue, 13 Oct 2026 09:23:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791843804;
+	cv=none; b=Aj4smzu+je+A0JwITQQu7qOg06Gnzv4JMmH6DIIow84H2r0CLpMqpgh3T/XnmlxScfC2324ikXbkgkrN449s8q6msDnR7Sxrm1i8CHzwiAMmQhlMugPc1PI7WSWlHkzjXITU+xOPULj45RP78H2MEBoK0noCUvHfQv9ZZ2TlsTKwrS1ADTebmxn1WxrE8umOYyx5rtjElvqcMXQCSNABqR5DVwKW4QNUIVhaSyzH+aOjAr5B8hhmce/jZWjIfC/Kwv7zoz6220Xmc5edZv79p9hkj4Tv6mYEODHBUlLBClm9L+zia3VZF2Njs7o9liHavFyQr44IUx9vJ664XIng+Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791839786; c=relaxed/relaxed;
-	bh=uOeRbY5zd/YMwkNv8/66VsyHhlD9kyU9Q3Cur7XCeV4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=hpaAa4JHO5UZEV3lp9A0yxkNMtfu1iUhj77uy3nil76y2RU/qDMXjr1yZjbMWDp0opthxzv5VtwQ50k31OyM4fFJW4zzL7aOOMjvng7MjjE0PhY48BOSq9GXyuHoSnphqxMO6Pzl9JXWFxL6eeJNYSOecOoE0h7kRQ2imkejKV0aVybGPUIgnTgSM3r9nkTuh9vYzFveQKRclXxLOO1hMnd60wxtJxosvOPTVl4K2lA0+yQPuZagaHej6ZaJ1DndHUn4af/dJ0zHaLU7FTPfiRHnhZNfpqG6EVkL1JZzF2uhPe5uWlLxsVzag6DYVqE5srFM4Q5r8gxD+4osrwkz6Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=S3cd/pSB; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1791843804; c=relaxed/relaxed;
+	bh=3DJW+8ttSN+m0sshWeLbzAFqyZm04EcgN2ppzpFFZUM=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=RyvjczotmFne8SPhGiGmIZL1ZODw6rKDt7ky3H8CS1mUjojv5vv3czWZsPG6OOZQG9fgrggdV0erlDcag8xMGMnB2FndjXhZ+w1/sQm+j1ZYtBgbr1oQ6+oeoeQ+7oaE6XnxM7jYqk56EsP+xBx2NBu+uL+TxrRqGXkj+IFa1OQXtIB0SolmSRTtrF8Mj8/3nwHjAU6Up9/nEv8VjNvvRG0iid57rgErasqtE8AjWQW4ZRIYdj6TDXzTfkhL0v6lQm244YwijjjqUpMg/sd6OHIkvmXMAf8Y9je+PtkMBcUsuFJPzoJcppGxKb4G2c+QhkFnGOO/gm83IQuxRk3bdQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Cbq1aRpo; dkim-atps=neutral; spf=pass (client-ip=192.198.163.10; helo=mgamail.intel.com; envelope-from=tim.c.chen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=S3cd/pSB;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Cbq1aRpo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.10; helo=mgamail.intel.com; envelope-from=tim.c.chen@linux.intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 64 seconds by postgrey-1.37 at boromir; Tue, 13 Oct 2026 09:23:18 AEDT
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3VdP3Fqmz2xsW
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 08:16:25 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69CJiWnb1149521;
-	Mon, 12 Oct 2026 21:10:37 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=uOeRbY
-	5zd/YMwkNv8/66VsyHhlD9kyU9Q3Cur7XCeV4=; b=S3cd/pSB5SFi9qQcfyqkfz
-	w1DJl3CKIUOb8zriuiIZ+fXSB43G1xKBQL9Kx7JEsEGVSQbQGvYDIpbTrEob4KeL
-	ov4B/RBd1pc7TyABPCtJkVrsaQasZl7CtwezYMB19GOinidRxsO3og3yvJCvwd5B
-	Zfmidd82CoVbBWpnVooSZhjbABPJUYVYfUEOeqolTM+aQ2xQWMPfK8XT/WjGMLr5
-	p6pEx4CntrNZGBy157Buy4B9MszsShr38imY+PSnkR3Gux1TxcqRM6wL/mr9q5LX
-	ZiwjOh6zAXbu7qrylrJ31n0fxpBg5en0yMFDf8i0xPgCrerwokpRisamnhyROz7A
-	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7e1w2gqb-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 12 Oct 2026 21:10:36 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69CJONOC1811998;
-	Mon, 12 Oct 2026 21:10:36 GMT
-Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4h7yppq2pr-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 12 Oct 2026 21:10:36 +0000 (GMT)
-Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
-	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69CLAZhM64291212
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 12 Oct 2026 21:10:35 GMT
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id EE4BA58057;
-	Mon, 12 Oct 2026 21:10:34 +0000 (GMT)
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DF9F158058;
-	Mon, 12 Oct 2026 21:10:33 +0000 (GMT)
-Received: from [9.67.101.21] (unknown [9.67.101.21])
-	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 12 Oct 2026 21:10:33 +0000 (GMT)
-Message-ID: <85244b39-017b-4978-8a4e-ff8e8dc89ffb@linux.ibm.com>
-Date: Mon, 12 Oct 2026 14:10:33 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3X6Z2V2wz2y1W
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 09:23:18 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1791843798; x=1823379798;
+  h=message-id:subject:from:to:cc:date:in-reply-to:
+   references:content-transfer-encoding:mime-version;
+  bh=5iYML6suNYDZHpJCoRMwwkKPkNnfmUYM0wRwTPR5wTg=;
+  b=Cbq1aRpo/54ecGYyvdiCkE+CChetExD44JGvTN1rRHV1ntMFSCD1zITu
+   hc7OmJ8/6U1Ukkj4xowPaGunzbMJOwciHhIQXF9Q8erg06qi0XCwBBwlT
+   TSpoFQ9rN9Xi62tFomwo2FwxIk4FVzaeQ+uM7jyo2+HINShLm2dC8Q2jm
+   2H8eWZk9t/dyjgKivb9aQi8Scq5c7m1NBuFMvLB2J/jDpltsRthmXVGcU
+   OSietPvNC5X+cRR8YnWLNyDyAMiIO1e65a9Pa/KCzAAJnJIgk1Ubm8z4L
+   taCpH5boBkvFbHbbew5axTv073jPQzaRmQnd6LZD8atFbJNx9tY9shBA1
+   g==;
+X-CSE-ConnectionGUID: VJFCMHv3TmW7YaJUqVAyEg==
+X-CSE-MsgGUID: XEwr7p0kSvehWnrcSmo7gQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11933"; a="465272"
+X-IronPort-AV: E=Sophos;i="6.27,154,1787036400"; 
+   d="scan'208";a="465272"
+Received: from orviesa002.jf.intel.com ([10.64.159.142])
+  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Oct 2026 15:22:09 -0700
+X-CSE-ConnectionGUID: bsNifrMSSyi0AAQqyZ3Cpw==
+X-CSE-MsgGUID: qdV+tLJBSweNMNI+jxDX3g==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,154,1787036400"; 
+   d="scan'208";a="974426"
+Received: from unknown (HELO [10.241.242.105]) ([10.241.242.105])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Oct 2026 15:22:09 -0700
+Message-ID: <460a7726022740feeee606538e4cf63adf6090c2.camel@linux.intel.com>
+Subject: Re: [RFC PATCH v3 01/13] lib/sbm: Introduce helpers for
+ architectures to configure LLC properties
+From: Tim Chen <tim.c.chen@linux.intel.com>
+To: K Prateek Nayak <kprateek.nayak@amd.com>, Peter Zijlstra	
+ <peterz@infradead.org>, Chen Yu <yu.c.chen@intel.com>, Ingo Molnar	
+ <mingo@redhat.com>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot	
+ <vincent.guittot@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, 
+ Arnd Bergmann	 <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+ linux-arch@vger.kernel.org, 	linux-s390@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, 	linux-mips@vger.kernel.org,
+ loongarch@lists.linux.dev, 	driver-core@lists.linux.dev, Sudeep Holla
+ <sudeep.holla@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich	
+ <dakr@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Thomas Bogendoerfer
+	 <tsbogend@alpha.franken.de>, Jiaxun Yang <jiaxun.yang@flygoat.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>, Heiko Carstens
+ <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,  Alexander Gordeev
+ <agordeev@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Andreas
+ Larsson	 <andreas@gaisler.com>, Thomas Gleixner <tglx@kernel.org>, Borislav
+ Petkov	 <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+ x86@kernel.org
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, Steven Rostedt	
+ <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>, Mel Gorman	
+ <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>, Shrikanth
+ Hegde	 <sshegde@linux.ibm.com>, WANG Xuerui <kernel@xen0n.name>, Michael
+ Ellerman	 <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy	 <chleroy@kernel.org>, Christian Borntraeger
+ <borntraeger@linux.ibm.com>,  Sven Schnelle <svens@linux.ibm.com>, "H.
+ Peter Anvin" <hpa@zytor.com>
+Date: Mon, 12 Oct 2026 15:22:08 -0700
+In-Reply-To: <20261001192849.74788-2-kprateek.nayak@amd.com>
+References: <20261001192849.74788-1-kprateek.nayak@amd.com>
+	 <20261001192849.74788-2-kprateek.nayak@amd.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.58.1 (3.58.1-1.fc43) 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,151 +106,105 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 RESEND 2/3] powerpc/pseries: switch to dynamic ibmebus
- root device
-To: Johan Hovold <johan@kernel.org>, Geoff Levand <geoff@infradead.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>,
-        Christophe Leroy
- <chleroy@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20260812142016.55136-1-johan@kernel.org>
- <20260812142016.55136-3-johan@kernel.org>
-Content-Language: en-US
-From: mingming cao <mmc@linux.ibm.com>
-In-Reply-To: <20260812142016.55136-3-johan@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEyMDA4MiBTYWx0ZWRfX4jm1s17p7m4a
- 8AXeQna4bddFo0wjBacUmoesRy5dysvN/oiivDaDFihLP/mweu8+zXvRfJ4mxJOn6VJlJGRXHe3
- SCesNQCq5McNGOiz8W0PQaEymDJfPsc=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEyMDA4MiBTYWx0ZWRfX8qTZ+EyLKK90
- Cz+q67knmRZc4PyrZr0fjluLr2i7wwqPpNbUlG4x/2DfAkHHCSpOoy0aArBplY/U7ZrzVG9UeGh
- Q0zfQn3quUJj65xf/+/gbYJvpNxenVVYWGLqqPCWXKY0q2D45CYTNJP3dKeKTleW5d0SH4Qe97Y
- 2PMIiGbTfHadGpKqOGFMzdu1AK979/1KDZSYuc/FhxpMwQrXyVvPA/TQ4JkXnjJi75Obkd9VIgV
- NWW7SgHhzgbYQxeqG2w6UWj0EZRRVm/RGOYuY81FAzjpBq9hTPnu5kLmncb7yGxF4y11oNwmPyD
- HMMrTxtvPlYaIY0fJSxToY1045pURPb6FOBpHUKOjgY+ps5kPqBFP3hDFRFI6SjLRob3KbKEoAF
- yujFb6o8xIwDI+1dosmqm6DWjDcGK5OIlMgsH5QLaRkC+lfOl45pTfzAQsww7hdudnovtG/ZCaX
- 7/hwERXSLqwlwsFb6hw==
-X-Authority-Analysis: v=2.4 cv=E6pYNqdl c=1 sm=1 tr=0 ts=6acd4ccd cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=KVws_vwQB_PUgFkgaC8A:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: 9FlBh5Fau2QIPUMtfXf7FTs3ruR3S-ld
-X-Proofpoint-GUID: 692mHVGhtEQmnnpE3l61Ukqs4nvewVUo
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-10-12_06,2026-10-09_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 phishscore=0 clxscore=1011 bulkscore=0 priorityscore=1501
- spamscore=0 adultscore=0 suspectscore=0 malwarescore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610080000 definitions=main-2610120082
 
-On 8/12/26 7:20 AM, Johan Hovold wrote:
-> Driver core expects devices to be dynamically allocated and will, for
-> example, complain loudly if a device that lacks a release function is
-> ever freed.
-> 
-> Use root_device_register() to allocate and register the root device
-> instead of open coding using a static device.
-> 
-> Also add the missing sanity check when registering ibmebus devices to
-> avoid use-after-free if the bus failed to register (which would
-> previously have triggered a bunch of use-after-free warnings).
-> 
-> Signed-off-by: Johan Hovold <johan@kernel.org>
+On Thu, 2026-10-01 at 19:28 +0000, K Prateek Nayak wrote:
+> Subsequent commits will add arch/ hooks to configure the sparsebitmask
+> (sbm) topology - number of sbm instance and the maximum CPUs that a
+> single instance can represent.
+>=20
+> Introduce sbm_set_topology() that helps architectures configure the sbm
+> topology. Also add arch_sbm_cpu_instance_id() which will be used to map
+> CPUs to the sbm instances during init to keep CPUs on the same instance
+> on the same sbm leaf.
+>=20
+> Individual arch/ users will be added one at a time in the subsequent
+> commits.
+
+Thanks for working on this series.
+
+>=20
+> Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
 > ---
->   arch/powerpc/platforms/pseries/ibmebus.c | 39 ++++++++++++++----------
->   1 file changed, 23 insertions(+), 16 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/ibmebus.c b/arch/powerpc/platforms/pseries/ibmebus.c
-> index 2d0f991da2c8..48076fe6ab30 100644
-> --- a/arch/powerpc/platforms/pseries/ibmebus.c
-> +++ b/arch/powerpc/platforms/pseries/ibmebus.c
-> @@ -52,9 +52,7 @@
->   #include <asm/ibmebus.h>
->   #include <asm/machdep.h>
->   
-> -static struct device ibmebus_bus_device = { /* fake "parent" device */
-> -	.init_name = "ibmebus",
-> -};
-> +static struct device *ibmebus_bus_device;	/* fake "parent" device */
->   
->   const struct bus_type ibmebus_bus_type;
->   
-> @@ -172,7 +170,10 @@ static int ibmebus_create_device(struct device_node *dn)
->   	struct platform_device *dev;
->   	int ret;
->   
-> -	dev = of_device_alloc(dn, NULL, &ibmebus_bus_device);
-> +	if (!ibmebus_bus_device)
-> +		return -ENOENT;
+>  include/linux/sbm.h |  8 ++++++++
+>  lib/Makefile        |  2 +-
+>  lib/sbm.c           | 27 +++++++++++++++++++++++++++
+>  3 files changed, 36 insertions(+), 1 deletion(-)
+>  create mode 100644 include/linux/sbm.h
+>  create mode 100644 lib/sbm.c
+>=20
+> diff --git a/include/linux/sbm.h b/include/linux/sbm.h
+> new file mode 100644
+> index 000000000000..adac12ed233a
+> --- /dev/null
+> +++ b/include/linux/sbm.h
+> @@ -0,0 +1,8 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +#ifndef _LINUX_SBM_H
+> +#define _LINUX_SBM_H
 > +
-> +	dev = of_device_alloc(dn, NULL, ibmebus_bus_device);
->   	if (!dev)
->   		return -ENOMEM;
->   
-> @@ -448,6 +449,7 @@ EXPORT_SYMBOL(ibmebus_bus_type);
->   
->   static int __init ibmebus_bus_init(void)
->   {
-> +	struct device *root;
->   	int err;
->   
->   	printk(KERN_INFO "IBM eBus Device Driver\n");
-> @@ -459,23 +461,28 @@ static int __init ibmebus_bus_init(void)
->   		return err;
->   	}
->   
-> -	err = device_register(&ibmebus_bus_device);
-> -	if (err) {
-> -		printk(KERN_WARNING "%s: device_register returned %i\n",
-> +	root = root_device_register("ibmebus");
-> +	if (IS_ERR(root)) {
-> +		err = PTR_ERR(root);
-> +		printk(KERN_WARNING "%s: root_device_register returned %i\n",
->   		       __func__, err);
-> -		put_device(&ibmebus_bus_device);
-> -		bus_unregister(&ibmebus_bus_type);
-> -
-> -		return err;
-> +		goto err_deregister_bus;
->   	}
->   
-> +	ibmebus_bus_device = root;
+> +int arch_sbm_cpu_instance_id(int cpu);
+> +void sbm_set_topology(int num_instances, int max_threads_per_instance);
 > +
->   	err = ibmebus_create_devices(ibmebus_matches);
-> -	if (err) {
-> -		device_unregister(&ibmebus_bus_device);
-> -		bus_unregister(&ibmebus_bus_type);
-> -		return err;
-> -	}
-> +	if (err)
-> +		goto err_deregister_root;
->   
->   	return 0;
-> +
-> +err_deregister_root:
-> +	ibmebus_bus_device = NULL;
-> +	root_device_unregister(root);
-> +err_deregister_bus:
-> +	bus_unregister(&ibmebus_bus_type);
-> +
-> +	return err;
->   }
->   machine_postcore_initcall(pseries, ibmebus_bus_init);
+> +#endif /* _LINUX_SBM_H */
+> diff --git a/lib/Makefile b/lib/Makefile
+> index dfab958327c5..7776330f5b25 100644
+> --- a/lib/Makefile
+> +++ b/lib/Makefile
+> @@ -40,7 +40,7 @@ lib-y :=3D ctype.o string.o vsprintf.o cmdline.o \
+>  	 is_single_threaded.o plist.o decompress.o kobject_uevent.o \
+>  	 earlycpio.o seq_buf.o siphash.o dec_and_lock.o \
+>  	 nmi_backtrace.o win_minmax.o memcat_p.o \
+> -	 buildid.o objpool.o iomem_copy.o sys_info.o
+> +	 buildid.o objpool.o iomem_copy.o sys_info.o sbm.o
+> =20
+>  lib-$(CONFIG_UNION_FIND) +=3D union_find.o
+>  lib-$(CONFIG_PRINTK) +=3D dump_stack.o
+> diff --git a/lib/sbm.c b/lib/sbm.c
+> new file mode 100644
+> index 000000000000..82280e3306de
+> --- /dev/null
+> +++ b/lib/sbm.c
+> @@ -0,0 +1,27 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
 
-I went through the init error paths and they look right: the global is
-only set once the root device exists and is cleared before the root is
-unregistered, so the new NULL check in ibmebus_create_device() stays
-valid after a failed init.
+Minor nits.  Convention is
 
-Reviewed-by: Mingming Cao <mmc@linux.ibm.com>
+// SPDX-License-Identifier: GPL-2.0=20
+
+for .c file according to
+Documentation/process/license-rules.rst
+
+checkpatch asks for a MAINTAINERS entry for include/linux/sbm.h and
+lib/sbm.c.
+
+Tim
+
+> +#include <linux/sbm.h>
+> +#include <linux/init.h>
+> +#include <linux/printk.h>
+> +
+> +static int sbm_max_threads_per_instance =3D -1;
+> +static int sbm_num_instance =3D -1;
+> +
+> +/*
+> + * In absence of an arch definition, consider all CPUs to
+> + * belong to the same sbm instance.
+> + */
+> +int __weak arch_sbm_cpu_instance_id(int cpu)
+> +{
+> +	return 0;
+> +}
+> +
+> +void __init sbm_set_topology(int num_instances, int max_threads_per_inst=
+ance)
+> +{
+> +	sbm_max_threads_per_instance =3D max_threads_per_instance;
+> +	sbm_num_instance =3D num_instances;
+> +
+> +	pr_info("sbm topology set to %d instance(s) with a maximum of %d thread=
+(s) per instance\n",
+> +		sbm_num_instance,
+> +		sbm_max_threads_per_instance);
+> +}
+> +
 
