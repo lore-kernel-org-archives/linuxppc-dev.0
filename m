@@ -1,97 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-29333-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29334-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C981CA9ED0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 20:39:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6161CA9ED2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 21:15:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3Tq239RDz30RN;
-	Tue, 13 Oct 2026 07:39:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::429"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791823135;
-	cv=none; b=fZhG5KgubpleN/gcgWeBLlFaFmNN0Dg+qUdsg1jdD14Jj1GBQrRuPumHHfhmP/6qM1VejBcNFKHC9a1uD4y3K4UDWiHJJBwoveoYODyw16ND+JpqZXti00hhJaRKXgyzbor1KRXRFhV1vlihUckpKVpNDAGSGy2FEAuV9kEBpckbQnHEIjGPE4jrR1l70Tt8sVoSH4st14MIBU/0xF8lFoS0g9lmbmNws60QDjSXi5ktf+Kj13Er+RnFGrkeHv4S/k5JXONQ6PRqAeOQxoNq1YErHtsRcD+2wP0GBu0KUz8dp6+CZS3aR5/3no6mRrT5XexCdfRhOvLXm4Is6Qzh8g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3Vcl5zyHz2xwP;
+	Tue, 13 Oct 2026 08:15:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.9
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791839751;
+	cv=none; b=F1KlnQ/cxiJp5zzCzzytsvxOErp4RlWBvbpSGWkAK9M9tb7i0Wm97PVN0+t4R1+pcdGiju1Oq5Qa+nYQSjPn7CGHnMJHHho3dQArpB0i2NPpricqIFte9vhEkjVJmseaTVngnGGOqOTfGT3gtvWTzSolWAV548eZNJHS10mLXqn7EfromFQSsFyKOfEd7i2q7o9oy50YDzIFUA/8L2LQfFJrNA3zuK9I43DMx2KxIh0UlKthjbj2aLCNqBAbBmG4Eo+0Z46hfU41Mj5LhlkAdYqiyJavBehlb1YR0EiMC6jnL+q7mX9kBLf7UJXFjTC8t8LR7IafYRUbzIp6SG0YTg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791823135; c=relaxed/relaxed;
-	bh=HuWCbCHALjFKQvI6kk2Kyts8iE/+EiR+kuOdFcAFHro=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Gp0sSdT2Nqu4Kefr4mGXoXhAoihdDGfhBreNOC6cU/KOaJXM3aE1axHOm8Pu8/VB5wXg5KpxHZskrl1Ju4Rwk0gOZKiFSawpcRA7ntYf9WAYxRLBGKrRLsd5wltGtxo0A2IAFwTSgjOYdVSJ8CymZxe9hboO9HMETnWrRgZhJDDKHE0QQFebnqukyedG4VWdJ52uIU7a27HfhAT6pJH+kLWWv350ZKl1cgJylXud+BbMEKh38kyOlYscqZ2g9j0mLblKQBbsplGwnD1l0D/q0r2bjD9B7eyu2KqNxqAHmqUPs2Khz0Mtlb1V9/YIYJ+x4YaXEq0+h25ZM2N51TMU+w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=o8m/jSda; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::429; helo=mail-wr1-x429.google.com; envelope-from=vdonnefort@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1791839751; c=relaxed/relaxed;
+	bh=IzU1r7+TJV+1GRyQGwQyIAR97tOoRaolqHOy5rbawEw=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=CpQGdD+JYdkd/ZZR6UcF7QbSnbZV/UGBCHsbsLG7YuSYpFCsMquoR26rw/6JNTzmz8bP34TbGMw+7L+ih64CF12QXDxdW5qSUiklILWO6C2/6l5couSbgUW76Fful1I33YOdK0bT8UDVX6fI++ZuSgfWPS32Heu4GVB07qlvQwynr2s5Mm8QDLyUVl7ZbewqBkIZ5bTxNWQUeiLfo31ulPivzXn8WHW1lL7xrd1Gfb5/P82Wvvmlfy/XhHusD2XBfmnqZCuRhyYaK6CqsWeLuh09xWcmba6uEXm+/JSaDb75rlzitnMPkdBPcx5occZHqAsL87SJDfMWuLzfbBUS0w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=UzQDFRd1; dkim-atps=neutral; spf=pass (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=tim.c.chen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=o8m/jSda;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=UzQDFRd1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::429; helo=mail-wr1-x429.google.com; envelope-from=vdonnefort@google.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=tim.c.chen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3NTB097nz3bNr
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 03:38:53 +1100 (AEDT)
-Received: by mail-wr1-x429.google.com with SMTP id ffacd0b85a97d-48c02782159so1280274f8f.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2026 09:38:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1791823128; x=1792427928; darn=lists.ozlabs.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=HuWCbCHALjFKQvI6kk2Kyts8iE/+EiR+kuOdFcAFHro=;
-        b=o8m/jSdav+qV9sUwEahmdTBBouzSR9qc6cFpNWqZJeTgTAeDxcS9Eyaa0shHoYiuI7
-         9qigoNGLizgxAG4YmSbZrIh6/9ekfhKwKyEj/oSWkSq4adbuZyBatd9SQO0G5bLY0hDd
-         Jk++rhZzoZJ0d0HfgbP+PsMEzE2Zcyej0mA2jHgSnOFsfd5YS17Ft9KRFUMzLF+lLRlu
-         re8HB2xuS+WhF0HRveSLAfABnSXJ4wWN7crFjTQHP64kWMEbJtr/zSt3sQS+7ih1By+R
-         440vyBZ61hOfhGsroFTHMSfAMeITgT2gxzFFuXDxrxxa1Bal8nv7iJ/i2zr67IZXrNSi
-         fVVg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791823128; x=1792427928;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=HuWCbCHALjFKQvI6kk2Kyts8iE/+EiR+kuOdFcAFHro=;
-        b=ODaM9cwp5qS1w8af8fhmk2mISBHZUOkcus6vLvogyNfeJ3Td5qkL12oIR3Y8CYh53C
-         S/Xm4eF0YcevggsqBr8FDU0s35BX7jBVwx7ulWOmzofP8Kly0zvRAR6+ESIi4UbpiO8Z
-         hAiORDdAYHEIlNjdbfn1LL3gkSME1oTJy4RTugFvdX9bC/cjP46CnixBCeUAhoicaerS
-         1XB0wFAmojj9GYcln0S4dQVTbRDsOz6fORl05Z2o1juMz0QkAGsHt9wX114TDnT7l0UK
-         45sa6C/iLNihWouCdYmwR6VN6hZ9ZXO6131JZ6gMiMikajn3BiQPvKF7rY1so6bTLRDp
-         nR/w==
-X-Forwarded-Encrypted: i=1; AKwUvByyK9ndX7HcWtpkfqUdkhz/exzv+QHq7004u+WcU1TtoqRvqw6kGZIcanIv17NxPDXQFkyGk8i/4mXUXPk=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYKdUYPn1RM7uDpLN2r+gm1ylyjEgrld5l6ckpVxiU5OiiBIEmv5
-	4XsPmGPqOzz/g54GOXFNuzQ5fVKGSkBd3v+O2oQFfm7l6SP5nyLB3P8/bDQW6FQ40w==
-X-Gm-Gg: AYBFou3DESo0QtVEpmqdARq5zbq1ojqf5nRlZoLLMt2UEWOutEp/58L6fK0vToQuOZI
-	/47xNJxZ2r46cB5oBTZcJ8S7J8i4TwHDAlfPa5QN+rrxy0NxYQFGjFwRMyzLoTTTqv/lSh6wBJt
-	RqAd6MBGjFGeVVa39Tb8g912HQMwl8MHcWbA6kPQabiZdOqvJL3KrVO/FXXsDdZ+V1VfO3GvTHC
-	pTGGQgP+coc/N4RUTUYOZ9+NlzvDqG+RrYrQXxsXNm4smvBvq5Meu30cWmlDxgTkV9tCuWrWMmd
-	vE84OKJC1fzt9qmCfunZup1LzcYJLCDHbdq3gUz8sDo2aeUSP7XlXRQQQCcz0JDD9mfJ+9ohhhJ
-	KZl8pn+9e5AlURQQNvhEfhCsmWi3BWjHA69ctyL0uaFLg+Z/dq8qJ1jVGxqxhM2nEhh8oC6OP5w
-	/tgKyEyxm9jtyvJZcpUOM3RCNGtmo85CUwceYZDVbWFqA3h1kJ7WDyFVjqmzfFueYpmJLoqDKWD
-	r5svOUKhyLUcHo9A36woWePrdE3yS6LCDOKMdD7x2U=
-X-Received: by 2002:a05:6000:4a0b:b0:48b:11e1:8bc8 with SMTP id ffacd0b85a97d-48dbace678emr18199465f8f.39.1791823126911;
-        Mon, 12 Oct 2026 09:38:46 -0700 (PDT)
-Received: from google.com (197.183.140.34.bc.googleusercontent.com. [34.140.183.197])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48de0bc91e2sm297646f8f.55.2026.10.12.09.38.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 12 Oct 2026 09:38:44 -0700 (PDT)
-Date: Mon, 12 Oct 2026 17:38:39 +0100
-From: Vincent Donnefort <vdonnefort@google.com>
-To: Amit Machhiwal <amachhiw@linux.ibm.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Harsh Prateek Bora <harshpb@linux.ibm.com>,
-	linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-	kvm-ppc@vger.kernel.org, Mark-PK Tsai <mark-pk.tsai@mediatek.com>,
-	stable@vger.kernel.org
-Subject: Re: [PATCH 2/2] ring-buffer: Do not check si_mem_available() during
- SYSTEM_BOOTING
-Message-ID: <as0NDyaXsfQnWPQ4@google.com>
-References: <20261009163557.88467-1-amachhiw@linux.ibm.com>
- <20261009163557.88467-3-amachhiw@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3Vcj0GRqz2xsW
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 08:15:47 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1791839749; x=1823375749;
+  h=message-id:subject:from:to:cc:date:in-reply-to:
+   references:content-transfer-encoding:mime-version;
+  bh=OvNfoi5TfPg0aDxWnEIBfeyompPiV9OHwqDMJHAE7kg=;
+  b=UzQDFRd1t79lUevB0dZtI3E+NerMs+7Wu6wJdH0GVyVYWJZKEmStsFmj
+   IPXJMmuHzRO8cANQhglCJTwSTW8xWGZP3FmcxV7HUKbGn+QN6MbBMiY/q
+   rf89DqIgMbwbyFQVQXXByahUjur6Z3B9eYDApIS6F5WXw3f8YxG2as41u
+   vYLampuE3SgYeb54JangfRKU7q2+IoVRKJ59pxkU36RnxtEtOXSz4toSJ
+   CuWdiD5eEIOH0cLqyNWCFYUHFgaFwK8o+vfxy4E4a7kGtwDV9YXU2y+PB
+   mnv6OKavEy3yty2lIBLJuFgKjyflDAjsQfPcq/xTVOWUZxspX4agSeqOy
+   Q==;
+X-CSE-ConnectionGUID: rMjMgcqDQbmBo3UvMZ/q6Q==
+X-CSE-MsgGUID: ei9yg1HYQoG8Yk7tuknJFw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11933"; a="454777"
+X-IronPort-AV: E=Sophos;i="6.27,154,1787036400"; 
+   d="scan'208";a="454777"
+Received: from orviesa005.jf.intel.com ([10.64.159.145])
+  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Oct 2026 14:15:43 -0700
+X-CSE-ConnectionGUID: QD+0puqZR8ybGqNIS7c+pg==
+X-CSE-MsgGUID: f4SdzYWoT/+67DJLSxRvPw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,154,1787036400"; 
+   d="scan'208";a="928002"
+Received: from unknown (HELO [10.241.242.105]) ([10.241.242.105])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Oct 2026 14:15:44 -0700
+Message-ID: <0cbd60fcf328ffcb317739f60d327da3af6145f1.camel@linux.intel.com>
+Subject: Re: [PATCH 0/4] powerpc/topology: Introduce llc_override debugfs
+From: Tim Chen <tim.c.chen@linux.intel.com>
+To: Shrikanth Hegde <sshegde@linux.ibm.com>, maddy@linux.ibm.com, 
+	linuxppc-dev@lists.ozlabs.org, peterz@infradead.org
+Cc: christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org, 
+	ritesh.list@gmail.com, kprateek.nayak@amd.com, yu.c.chen@intel.com, 
+	vineethr@linux.ibm.com, vincent.guittot@linaro.org, srikar@linux.ibm.com, 
+	npiggin@gmail.com, mpe@ellerman.id.au
+Date: Mon, 12 Oct 2026 14:15:42 -0700
+In-Reply-To: <20261012102037.2477378-1-sshegde@linux.ibm.com>
+References: <20261012102037.2477378-1-sshegde@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.58.1 (3.58.1-1.fc43) 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,89 +83,101 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20261009163557.88467-3-amachhiw@linux.ibm.com>
 
-On Fri, Oct 09, 2026 at 10:05:57PM +0530, Amit Machhiwal wrote:
-> During early boot (early_trace_init() called from start_kernel()),
-> tracing allocates initial ring buffers (temp_buffer, array_buffer, and
-> snapshot_buffer) for CPU 0.
-> 
-> Before attempting page allocation, __rb_allocate_pages() performs a
-> heuristic check using si_mem_available() to return early with -ENOMEM if
-> memory appears insufficient.
-> 
-> However, on kernels built with CONFIG_DEFERRED_STRUCT_PAGE_INIT=y,
-> defer_init() leaves only a single section per node (e.g.  16 MiB with 64
-> KB pages) initialized up-front.  On kernels with large static binary
-> footprints (such as debug configurations enabling PAGE_OWNER,
-> DEBUG_PAGEALLOC, KFENCE, or SLUB_DEBUG), the static kernel image and
-> early core initialisations (SLUB caches, vmalloc, static ftrace records)
-> consume virtually all managed pages in this initial pool.
-> 
-> At T=0.000000, watermarks have not yet been established
-> (totalreserve_pages = 0), so si_mem_available() returns the raw free
-> page count (often 0-1 pages).  When the snapshot buffer or global trace
-> buffer attempts to allocate 2 sub-pages, si_mem_available() returns <
-> nr_pages and prematurely aborts with -ENOMEM.
-> 
-> This failure is false: if the page allocation were actually attempted
-> via alloc_pages_node(), the page allocator would trigger
-> deferred_grow_zone() on demand to initialise additional deferred memory
-> sections.  Checking si_mem_available() before attempting the allocation
-> short-circuits this on-demand growth.
-> 
-> Skip the si_mem_available() check when system_state == SYSTEM_BOOTING.
-> Once the system transitions past early boot and page_alloc_init_late()
-> initialises all deferred memory, si_mem_available() accurately reflects
-> system-wide free memory and the check operates as intended for runtime
-> allocations.
-> 
-> Fixes: 2a872fa4e9c8 ("ring-buffer: Check if memory is available before allocation")
-> Cc: stable@vger.kernel.org
-> Reported-by: Michal Suchánek <msuchanek@suse.de>
-> Closes: https://lore.kernel.org/all/arYskzbiaNzBR9MD@kunlun.suse.cz/
-> Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
-> ---
->  kernel/trace/ring_buffer.c | 8 +++++++-
->  1 file changed, 7 insertions(+), 1 deletion(-)
-> 
-> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-> index 04bb94c29f58..a9f82e2f8fad 100644
-> --- a/kernel/trace/ring_buffer.c
-> +++ b/kernel/trace/ring_buffer.c
-> @@ -2452,9 +2452,15 @@ static int __rb_allocate_pages(struct ring_buffer_per_cpu *cpu_buffer,
->  	 * memory. It may not be accurate. But we don't care, we just want
->  	 * to prevent doing any allocation when it is obvious that it is
->  	 * not going to succeed.
-> +	 *
-> +	 * Skip this check during early boot: with CONFIG_DEFERRED_STRUCT_PAGE_INIT,
-> +	 * NR_FREE_PAGES only reflects the initial non-deferred pool at this
-> +	 * stage. si_mem_available() returns a false negative while actual
-> +	 * allocations succeed by growing the zone on demand via
-> +	 * deferred_grow_zone().
+On Mon, 2026-10-12 at 15:50 +0530, Shrikanth Hegde wrote:
+> There is a new feature in scheduler called as Cache Aware Scheduling [1].
+> It tries to keep related tasks within the same LLC domain while
+> keeping the system reasonably balanced.
+>=20
+> Cache Aware Scheduling assumes that the scheduler LLC domain is large eno=
+ugh
+> to be a useful placement target. This is true on many systems where an LL=
+C spans
+> several cores, but not on PowerPC systems where the scheduler-visible LLC=
+ is at
+> the SMT level. In that case, sd_llc_size is effectively the SMT width.
+>=20
+> This becomes visible in the capacity check:
+>         return !fits_capacity((mm->sc_stat.nr_running_avg * cpu_smt_num_t=
+hreads),
+>                               scale * per_cpu(sd_llc_size, cpu));
+>=20
+> As a result, Cache aware scheduling may be enabled but has no room to ope=
+rate.
+>=20
+> Hence provide a debugfs option to set LLC at specific domain so that
+> one can try experiment their workload with cache aware scheduling.
+> This also provides ways to explore it on system with SMT=3D4 to see if
+> there are any opportunities to improve or uncover bugs if there is any.
+>=20
+> Note it is a debug option and it is recommended to keep it disabled.
+> There is no performance guarantees across different values.
+>=20
+> [1]: https://lore.kernel.org/all/cover.1778703694.git.tim.c.chen@linux.in=
+tel.com/
 
-As Sashiko pointed-out, if si_mem_available() is only ready after
-page_alloc_init_late() when CONFIG_DEFERRED_STRUCT_PAGE_INIT, then checking for
-system_state >= SYSTEM_FREEING_INITMEM might be more correct.
+Shrikanth,
 
-Also I wonder if we don't want to guard with CONFIG_DEFERRED_STRUCT_PAGE_INIT,
-to keep the verification when CONFIG_DEFERRED_STRUCT_PAGE_INIT is unset.
+This is an interesting idea. One question from a quick look at the code.
 
->  	 */
->  	i = si_mem_available();
-> -	if (i < nr_pages)
-> +	if (system_state != SYSTEM_BOOTING && i < nr_pages)
->  		return -ENOMEM;
->  
->  	/*
-> -- 
-> 2.54.0 (Apple Git-157)
-> 
-> 
+The override moves sd_llc, sd_llc_size and sd_llc_shared, but not
+sd_llc_id. The id comes from arch_llc_mask(), which is
+cpu_l2_cache_mask() on powerpc, so after your patches it is still
+unique per core. It is also sticky: build_sched_domains() assigns it
+only when it is -1, and it is reset only on CPU offline. So a rebuild
+from the knob keeps the old ids.
 
--- 
-Vincent
+Cache aware scheduling uses this id as the identity of an LLC:
+p->preferred_llc, nr_pref_dst_llc/llc_counts[], and the
+llc_id(cpu) =3D=3D llc_id(grp->cpu) check in task_cache_work(). In that
+loop the occupancy is now summed over the MC span, but the id check
+rarely matches and is broken.
+
+To make this work, arch_llc_mask() needs to follow the override, and
+the llc ids need to be reset when the topology is forced to rebuild.
+
+>=20
+> Tim, Chenyu, Peter,
+> Are there any selftest or patches which is used for
+> functional validation of cache aware scheduling?
+
+We haven't created one. We validate mostly with workloads such as
+hackbench, schbench and yogini (which can vary the number of threads
+over time and track CPU assignment). I agree they are not ideal for
+functional checks of the load balance path.
+
+> per-LLC occupancy in /proc/{PID}/schedstat may not tell the full
+> story when there are multiple processes and multiple LLC's.
+>=20
+> Atleast for functional verification, we might need one if there is
+> not one already. The reason being,
+> - At present, we may need a custom workload. hackbench/schbench are
+>   wakeup intensive and typically bail out even before load balance.
+> - stress-ng is per process. So doesn't get cache aware scheduling.
+> - A selftest could spwan specific number of threads till llc size etc
+>   and ensure packing happens till core_count(llc_size) by default.
+>   This could also be used for tunable verfifications.
+> - Provide an ability to observe how much of the workload was contained
+>   within the LLC due to cache aware scheduling or number of load
+>   balances stopped due to preferred llc.
+
+A selftest would be great and much welcomed. =20
+
+Tim
+
+>=20
+> These are some initial thoughts I had. If it sounds ok, I can try to add
+> a new selftest/kunit test.=20
+>=20
+> Shrikanth Hegde (4):
+>   powerpc/topology: Introduce llc_override debug knob
+>   powerpc/topology: Add docs for llc_override
+>   powerpc/topology: Update mc/pkg flags based on llc_override
+>   powerpc/topology: Rebuild sched domains on llc_override change
+>=20
+>  Documentation/arch/powerpc/index.rst    |   1 +
+>  Documentation/arch/powerpc/topology.rst |  27 +++++
+>  arch/powerpc/kernel/smp.c               | 128 +++++++++++++++++++++++-
+>  3 files changed, 151 insertions(+), 5 deletions(-)
+>  create mode 100644 Documentation/arch/powerpc/topology.rst
 
