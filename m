@@ -1,73 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-29263-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29264-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0FA5CA9EC5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 14:11:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 389EECA9EC5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 14:15:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3KBb0lRHz3bV5;
-	Tue, 13 Oct 2026 01:11:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3KH83PRwz3bV5;
+	Tue, 13 Oct 2026 01:15:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791814263;
-	cv=none; b=bUVUZdvJDumQlJgoEXJhv2enwKPLzto403l0Rz4aei6yjeQGKHIB8GtCkqmndD3t6U8t+rszMkXRKLvh+wIF5rCXkZEY7K7hxqt0B93J+fSm8+QL0xRBva6JbP0j/6s4RPieheX5FrGYm9dLBUrnB4pRuHbzkovyYl8gDwRnK6VnmNYPVW8JwGBa3E4TWcDQjrTPuCXa1xFgE0+n4rMchDQR6DfSAJPHnWY48QMiLDWTUCPIJ3RdR54bMQtBWc+HSavYflfbsswEdo2NMouiaoIz4ev9iCB1v9E/aoz+IvwRlAkvclwD8LLufrAkC1noy2L3p1DiJbgRPxXB1HSYKw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791814500;
+	cv=none; b=jYf+8MyOfxjVh6Jansm+ZPFzTtXBtTuCTbM7nIJYBKoCUsDrwk1IjKxojBpbK2Fdk254J7LaI6o/PCarszvPIu9+utnDJjchQ/gJ131MzOx8gDrkbzeRyur1fqNZaH0OoA48XKPIkZ3Lb9iTMg1MOI8uJJRA2yNZfMlOTktGRuGNcJNCWvySs5Al6APmCLFrLjmjH8edRYOl3tWqcI7jmjbEu70yEiWQ9cmQdndQYLBT8bx0GZ1ThfY0L9pR+McMbeE1+E95/Te/yzdLeKPUUWNoyUv4fE0E3PQPAo1wb3qBrH1rYEGQaVc6MtQkl9luSJZuQzB8mwTW3A+OZm7BaA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791814263; c=relaxed/relaxed;
-	bh=efBpskySx2r6rwOhoxKbmkJwGKa4F1rH4LPN+taI554=;
+	t=1791814500; c=relaxed/relaxed;
+	bh=nYBY2BEdKW3Ee2M0WH1npF5tIdNC/HdlhrA4UKHvRsA=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=fTx7FjYD9HBpcTRYs8Y59ZTFSWJ5Y7R51pEVUvrc5HHwm+4CtjydBKeJYLgyjN3hFbAmxSDr+FbvsycTK2cEOuqGclYXAQgW3tsXVszStTtVvA6K1Otc/FaUP5qZEYGF5Gegs8BZezPoUER6Mi7cQZP9GlfT3CJ/+hon45vN4WJ07mUoKs4FnzseLgVW45EcApzCTdzPiQgp20+QGG9Ng3H9SxBPwAFIfTchmsjSOxDdgL9hIQ24KYWCeG2nDtwTuXbG3XhVmyilDZ3kJ4aqe8163Iea7Q3Z7xVd7yTC4yKeL6J57TRSROZRdRV6jycLpTZM9BECZ3AgZgPNkfogGg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WMm/OEI9; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 In-Reply-To:Content-Type; b=EXxW6tfDZgdPx1IshCZHIElVoL1vv6sbFPILrhFe/dUI+r86T89KgTzV96mfAuVG8/bnJhjrJxN0cPbX+1IuEq4xNNByvnfQe0D0m8lSn62jh27U8+CFDXvxGZPbPGiIj3Nv0IGnmzOG0+mc1JvxzIN0BOZpnCpoHW9E0QQkDfdrus/mMUzGGp6RQ+dPuxQt7xSBgvyVh9IqsO9kW+xqg7PBU38MNSCWaWb6XQ9V/WBr/xbExwUgB3WNexSgMeNdv421VV0LqVCbuKbJroh5iiHtHJHaBt1hChg0OpbrlZblBLKab2ORzshq/Bfv4K9vCFrBMyptFEkR9TiT2QEZIQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=S6YJ0l1U; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WMm/OEI9;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=S6YJ0l1U;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3KBZ09qtz30hC
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 01:11:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3KH74cMFz3bNr
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 01:14:59 +1100 (AEDT)
 Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69CCE551181594;
-	Mon, 12 Oct 2026 14:10:42 GMT
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69CCE5Ee181674;
+	Mon, 12 Oct 2026 14:14:41 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=efBpsk
-	ySx2r6rwOhoxKbmkJwGKa4F1rH4LPN+taI554=; b=WMm/OEI9+RIS8/Nhnp2aEQ
-	aWERC/vRo/IOpUOJlK08SAwPtQwWcQz6MhRjaalK9wsnOZJAdta3O7/7NbAR1DHH
-	ENfI4a1YPhjm60tDNM2Pg2hnU29bBFqr0/YsHmpHdYrgSxoD45cOdNzmt2FvqUtb
-	3uZH2q29tTidRyRFIXYGz7Bdx4LaT8KGZjv+stSJBA39WG6GP8f4wtjNds3P2dls
-	1ZzNVVg4atc3o9rI4gUQcppFZxhYfoxdfygtdEuQ+MkBZ/WFVfQqogxhF7/QdC8Y
-	vuNXv4Fh91TFKvP5YeUIxv4NdUXMbVQ9vgV9BkRMOFz3qqEQN1Ys8J+EdwQn2zEQ
+	:message-id:mime-version:references:subject:to; s=pp1; bh=nYBY2B
+	EdKW3Ee2M0WH1npF5tIdNC/HdlhrA4UKHvRsA=; b=S6YJ0l1UVh67BG/Tnq2gAK
+	CMcuogwmlFY8lXEv3VfIXRy7hV1M/oKX3bQXKy2e2TI4FCzxYZhdYoCBdl7tJCJa
+	3EvyBf32NI8B/FO2LS3puCtVkeGym44WKNrilNHm8ka4xKsAbybTGfFe2WUki0tt
+	tYBxZLE+4EVDW3yXoAS40U81kEsGzzRPZhjPIKk84UY0ThlLU2GII9mLqBqbN3zj
+	+16YLd9Cx+Xgk9xMzfuwA7oPC3oDgS/+0XKwsjQT+lF6h8ocXAuRyG0M3m9DakyM
+	Msb+Zdj9ii5aZ/Q/6qTkcPWPQX0jskvXanfXrlhh5dGObVRNCXNAGHLB3nL/dZuA
 	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7dv3995f-1
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7dv399qs-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 12 Oct 2026 14:10:42 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69CC4seJ1286234;
-	Mon, 12 Oct 2026 14:10:41 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4h82cyd7p2-1
+	Mon, 12 Oct 2026 14:14:41 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69CC4uRN013441;
+	Mon, 12 Oct 2026 14:14:40 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4h81wfwask-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 12 Oct 2026 14:10:41 +0000 (GMT)
+	Mon, 12 Oct 2026 14:14:40 +0000 (GMT)
 Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69CEAb1454985152
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69CEEamn49414452
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 12 Oct 2026 14:10:37 GMT
+	Mon, 12 Oct 2026 14:14:36 GMT
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7C94D20043;
-	Mon, 12 Oct 2026 14:10:37 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id A607820043;
+	Mon, 12 Oct 2026 14:14:36 +0000 (GMT)
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 611BB20040;
-	Mon, 12 Oct 2026 14:10:34 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 60F4E20040;
+	Mon, 12 Oct 2026 14:14:33 +0000 (GMT)
 Received: from [9.124.214.197] (unknown [9.124.214.197])
 	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 12 Oct 2026 14:10:34 +0000 (GMT)
-Message-ID: <26486e03-b1f0-4a84-b6df-75b747d9f1a1@linux.ibm.com>
-Date: Mon, 12 Oct 2026 19:40:33 +0530
+	Mon, 12 Oct 2026 14:14:33 +0000 (GMT)
+Message-ID: <b03786e6-28f3-4fad-bd32-33803ea2fd8c@linux.ibm.com>
+Date: Mon, 12 Oct 2026 19:44:32 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,7 +82,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/4] powerpc/topology: Introduce llc_override debug knob
+Subject: Re: [PATCH 0/4] powerpc/topology: Introduce llc_override debugfs
 To: Srikar Dronamraju <srikar@linux.ibm.com>
 Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, peterz@infradead.org,
         tim.c.chen@linux.intel.com, christophe.leroy@csgroup.eu,
@@ -90,33 +90,33 @@ Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, peterz@infradead.org,
         kprateek.nayak@amd.com, yu.c.chen@intel.com, vineethr@linux.ibm.com,
         vincent.guittot@linaro.org, npiggin@gmail.com, mpe@ellerman.id.au
 References: <20261012102037.2477378-1-sshegde@linux.ibm.com>
- <20261012102037.2477378-2-sshegde@linux.ibm.com>
- <aszPQppmUXcJER1x@linux.ibm.com>
+ <aszQR3jtdzE0OeB-@linux.ibm.com>
 Content-Language: en-US
 From: Shrikanth Hegde <sshegde@linux.ibm.com>
-In-Reply-To: <aszPQppmUXcJER1x@linux.ibm.com>
+In-Reply-To: <aszQR3jtdzE0OeB-@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: VWKI_jMXA0P5Zyx_NXJLsX8_YrN_R6By
-X-Proofpoint-ORIG-GUID: kQ4lXvMh1A4bc9lxmT3TKRTcZ7Z210ZD
-X-Authority-Analysis: v=2.4 cv=aqInmiZV c=1 sm=1 tr=0 ts=6accea62 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+X-Proofpoint-GUID: yPdxMBPrbcYv-xVpP5DYG2SaviyOF7R0
+X-Proofpoint-ORIG-GUID: KEof3A7tF05NuSUDuOscKlfq1zk3eMJA
+X-Authority-Analysis: v=2.4 cv=aqInmiZV c=1 sm=1 tr=0 ts=6acceb51 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
  a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=2npZI0HAQQjSB1Li4OYA:9
- a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEyMDA1NCBTYWx0ZWRfX/7CEXfTH6q/I
- bmjpEeTxk9H9SL8rrjbP3u4sjYMHIOgTlhy5027nxmfdyOotxN3z6UMfjJUxmOVWsO6d3v5hMC0
- bszJHaL0D3r977XEl3jAEPJ/iwxsNNU=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEyMDA1NCBTYWx0ZWRfX1rwqEcuFfmtc
- 0/daJ/3l8GNxfP9tjACqytZ3EHcHswXtOhv2EK8acSgjZdcwQHp/3kp+zk+mXxwL+FUBKlbS9HS
- hAtclkIrMLQ6RCdRvbvc0qb3pGSx2Xo5Fp8AVOcnlfeI0GlE2iGtt+Ss0+ifFdC8eSdeCxFKEIJ
- 70n4hClKgeprpEQh6AOrshM7ggdAfYezb9qiUa0uWLq1l+E6Vg5FtonZOv+k08LLMklYGc5QqsF
- uABke0og7822lcLfoCg3vs7WjIdvjploeStu5PgXBGQJq4PfgIt24idAEEVK4lHO43NLSpLGTgi
- Bgt5LdBJAmGYbiPYAu0W6QklnJMmKumUha8nhFZahPpbtv4kGnmkZifGEX5zJx51C8inO+p7f50
- 4u59f22sfpYN2Og55Pc0gf3ZEzR+jmZPH9hfIjh/qs8t7ECNIGQPw5JCWCIIWzkCCrCU61Lx4My
- e8SpV/jhlmrCH3tnxbQ==
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=jaEAVqPHSARQqII2670A:9 a=QEXdDO2ut3YA:10 a=ZXulRonScM0A:10
+ a=zZCYzV9kfG8A:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEyMDA1NiBTYWx0ZWRfXzFwW0OkYCtXA
+ XWBJw8zU9SXsRUaYuaon8JRp+wiXx7pNnhkYzl4v0+DLWrRASsWdVtr46qg6BdSqvv0gXyh2xdW
+ 2EvSN4UC6/OpKy3xr7DFc8vd6yBBn+w=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEyMDA1NiBTYWx0ZWRfX54YNnjNeMuvS
+ cD8is9WWS4DM41RT3+p5b7QgtsqJDMwmzvRPE65xeOmE5Ez3zxU09PYILNz9r3cijrxPhu5fE63
+ +xotzyo1BpQ+xXmdmJC5PlT0Zf/AIuSVth9yjpnmRFGARSStIin+h5ymGdiu7O9hymauEYDm8Yg
+ /XdCqLrEEKd6i11P1qvWSwb4FBRep6XZuo+ZhdniGUVvoRNPt/+fgsQx0OrGf1a3Sp7Ide3GWKU
+ wG8MggQ/kNbodePgu6qKzD1jaAhjB0YFK+FtThwX/VFxJzKEqKGrZY1zgABG1UQ4uXY4utAMQIg
+ uE3sRy+HbXY5nm/x2mPKBWTuE7S93JHSNSrchtHLrKRaWSWu6lGiOQpHJxE7I6v2CZhh1aLPOW8
+ SMIayCy2tU8awO1ntoWLvAQK1AfHfMSXZbXTfjmPW0Zy9AuSqITvifAFnln19NLOTdm82wJnsby
+ d42PTB1vEPhgqv15PnQ==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-10-12_04,2026-10-09_01,2025-10-01_01
@@ -125,27 +125,33 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  bulkscore=0 adultscore=0 impostorscore=0 priorityscore=1501
  lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
  route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
- definitions=main-2610120054
+ definitions=main-2610120056
 
-Hi Srikar. Thanks for taking a look at the patches.
-    
->>   #endif
->> +
->> +enum llc_override_values {
->> +	LLC_OVERRIDE_DISABLED,
->> +	LLC_OVERRIDE_SMT,
->> +	LLC_OVERRIDE_MC,
->> +	LLC_OVERRIDE_PKG,
->> +};
->> +
-> 
-> For the current experiments, would it help to keep it simple and have just
-> SMT and MC. I mean we can include disabled and pkg based on our experiments.
-> 
-I think we should keep disabled. So it is clear when disabled, there is no adverse
-effect of it.
 
-I think keeping pkg for experimentation seems okay. If not necessary we can remove it later.
-Having at pkg gives you to try increased number of cores in a llc. So it may be a useful
-too IMHO.
+
+On 10/12/26 5:49 PM, Srikar Dronamraju wrote:
+> * Shrikanth Hegde <sshegde@linux.ibm.com> [2026-10-12 15:50:33]:
+> 
+> 
+> Hi Shrikanth,
+> 
+>> There is a new feature in scheduler called as Cache Aware Scheduling [1].
+>> It tries to keep related tasks within the same LLC domain while
+>> keeping the system reasonably balanced.
+>>
+>> Cache Aware Scheduling assumes that the scheduler LLC domain is large enough
+>> to be a useful placement target. This is true on many systems where an LLC spans
+>> several cores, but not on PowerPC systems where the scheduler-visible LLC is at
+>> the SMT level. In that case, sd_llc_size is effectively the SMT width.
+>>
+> 
+> Can we add a reference to the earlier attempt to try MCLLC a few years back.
+> 
+
+Ah yes. will add it.
+
+It is this one.
+https://lore.kernel.org/all/1617341874-1205-1-git-send-email-ego@linux.vnet.ibm.com/
+
+But I couldn't find an email id of Gautham which won't bounce. Based on what i know :)
 
