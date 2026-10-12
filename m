@@ -1,64 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-29336-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29337-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81476CA9EC5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 22:23:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 268D3CA9ED0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 23:43:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3X6h1FMXz308Q;
-	Tue, 13 Oct 2026 09:23:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791843804;
-	cv=none; b=Aj4smzu+je+A0JwITQQu7qOg06Gnzv4JMmH6DIIow84H2r0CLpMqpgh3T/XnmlxScfC2324ikXbkgkrN449s8q6msDnR7Sxrm1i8CHzwiAMmQhlMugPc1PI7WSWlHkzjXITU+xOPULj45RP78H2MEBoK0noCUvHfQv9ZZ2TlsTKwrS1ADTebmxn1WxrE8umOYyx5rtjElvqcMXQCSNABqR5DVwKW4QNUIVhaSyzH+aOjAr5B8hhmce/jZWjIfC/Kwv7zoz6220Xmc5edZv79p9hkj4Tv6mYEODHBUlLBClm9L+zia3VZF2Njs7o9liHavFyQr44IUx9vJ664XIng+Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3YtZ6Dlqz30P3;
+	Tue, 13 Oct 2026 10:43:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.9
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791848582;
+	cv=none; b=Xk+5H3NjwRfLdJmS7xPLnzCVj+O7/it4Sy0UIQ3DT7qyg1qOeXdCNjymoe5Lisj7S88kG4x/Y90j64kxXcXahnnaKhDjwYqVo8/dZGG1fI6BJw4OQNchqcdm9SIVgVJNifK5+QLimIrwtWOCl499J4yNPZgq7Jh9mmZBUaoLFsJnGoMGgvdHWd5YH6R9UN84Mix2d9s6ITDN8tMQVJ3ZIWZqFSp5SF6lPeaFTZXQaZnex/7Ry/k0RHYPzmW5AF4jGZON+7D5FfaMrzErZxdyFEwrsbCDl77mXoPcEMZPi+pkeLaGloB1oJanvF0bwwmcEraSVgJF+8z2JZHjWat+3w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791843804; c=relaxed/relaxed;
-	bh=3DJW+8ttSN+m0sshWeLbzAFqyZm04EcgN2ppzpFFZUM=;
+	t=1791848582; c=relaxed/relaxed;
+	bh=hcMc5kxaRCotym6m6gq0Qq1bWYN2zF8BRCFaH4SbkNs=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=RyvjczotmFne8SPhGiGmIZL1ZODw6rKDt7ky3H8CS1mUjojv5vv3czWZsPG6OOZQG9fgrggdV0erlDcag8xMGMnB2FndjXhZ+w1/sQm+j1ZYtBgbr1oQ6+oeoeQ+7oaE6XnxM7jYqk56EsP+xBx2NBu+uL+TxrRqGXkj+IFa1OQXtIB0SolmSRTtrF8Mj8/3nwHjAU6Up9/nEv8VjNvvRG0iid57rgErasqtE8AjWQW4ZRIYdj6TDXzTfkhL0v6lQm244YwijjjqUpMg/sd6OHIkvmXMAf8Y9je+PtkMBcUsuFJPzoJcppGxKb4G2c+QhkFnGOO/gm83IQuxRk3bdQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Cbq1aRpo; dkim-atps=neutral; spf=pass (client-ip=192.198.163.10; helo=mgamail.intel.com; envelope-from=tim.c.chen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	 Content-Type:MIME-Version; b=QIwbIRjt8KFQyVHHWeHq/DKJdwJS1xV/L4NzKM0JdE57zvtvS+UBiyAEZpz3PaJ9mQXYqa+xwkQ2DUqKTYva3wq9l7Mn4pLNTkzwkAccXoJrBTNqCHq849Xv4oQnKM/5pQutxSPVLWr8oUnivy48MQRzZYnO2RUJtAweIGBLADabpsZo5nwErEL5KR/Byufnucoe8TdVopm/cQ1fNtRByd1Iw9Dyz7Z3/FgI+VjxD8J7k3loPOBfISfD6HXbVqLY4oq9dHw8ZrEe6ztSTSwtIsPN/vFuI4d5oU0dFdOCWRKHagvobhzN9jUPldNzw4brIEANAhEOdLLtlsuEq2r5MA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AGCams7N; dkim-atps=neutral; spf=pass (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=tim.c.chen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Cbq1aRpo;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AGCams7N;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.10; helo=mgamail.intel.com; envelope-from=tim.c.chen@linux.intel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 64 seconds by postgrey-1.37 at boromir; Tue, 13 Oct 2026 09:23:18 AEDT
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=tim.c.chen@linux.intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 64 seconds by postgrey-1.37 at boromir; Tue, 13 Oct 2026 10:42:59 AEDT
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3X6Z2V2wz2y1W
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 09:23:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3YtW3ZzMz30PJ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 10:42:59 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1791843798; x=1823379798;
+  t=1791848580; x=1823384580;
   h=message-id:subject:from:to:cc:date:in-reply-to:
    references:content-transfer-encoding:mime-version;
-  bh=5iYML6suNYDZHpJCoRMwwkKPkNnfmUYM0wRwTPR5wTg=;
-  b=Cbq1aRpo/54ecGYyvdiCkE+CChetExD44JGvTN1rRHV1ntMFSCD1zITu
-   hc7OmJ8/6U1Ukkj4xowPaGunzbMJOwciHhIQXF9Q8erg06qi0XCwBBwlT
-   TSpoFQ9rN9Xi62tFomwo2FwxIk4FVzaeQ+uM7jyo2+HINShLm2dC8Q2jm
-   2H8eWZk9t/dyjgKivb9aQi8Scq5c7m1NBuFMvLB2J/jDpltsRthmXVGcU
-   OSietPvNC5X+cRR8YnWLNyDyAMiIO1e65a9Pa/KCzAAJnJIgk1Ubm8z4L
-   taCpH5boBkvFbHbbew5axTv073jPQzaRmQnd6LZD8atFbJNx9tY9shBA1
-   g==;
-X-CSE-ConnectionGUID: VJFCMHv3TmW7YaJUqVAyEg==
-X-CSE-MsgGUID: XEwr7p0kSvehWnrcSmo7gQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11933"; a="465272"
+  bh=iD+/aLbLxyN4OPgQVnmXQ+36xaYhRSs8OGa/lzPqXVQ=;
+  b=AGCams7NHd92kMY0wnvZHyDg0WL+LMKlrrVjnohxeUutP1XGJtKKt+DY
+   3K9PEQX0myQM215ECpCS2zN7vOXp1tGkXg75hbFvvKteIPE72xCaqih69
+   6vSGeQ13WIwgFhwr9JKZmH+l5wETpZYyO5roIC83BKLQjS+UDsSN1Yqqn
+   bpa9KpFhHgYkTWdf3qt3xE60IFMwP8B8L/au9Gu/lKOR36gEbIzPy7fXS
+   x3sr/l+bWRELm6ElwnkaDG/AtDINpK8Wp/oU3vyenTElSqoZtKKdG71s0
+   jfLRq/ANSZdqrh0/dmWhB0Oc0b0kZM44k1SqXpv1JBrLQDdebOuSp+1Ah
+   Q==;
+X-CSE-ConnectionGUID: qN9yp8DERg2HFs77wst+jg==
+X-CSE-MsgGUID: A7b8PPOYRaaIgYRszT7HTw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11933"; a="450031"
 X-IronPort-AV: E=Sophos;i="6.27,154,1787036400"; 
-   d="scan'208";a="465272"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
-  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Oct 2026 15:22:09 -0700
-X-CSE-ConnectionGUID: bsNifrMSSyi0AAQqyZ3Cpw==
-X-CSE-MsgGUID: qdV+tLJBSweNMNI+jxDX3g==
+   d="scan'208";a="450031"
+Received: from fmviesa001.fm.intel.com ([10.60.135.141])
+  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Oct 2026 16:41:48 -0700
+X-CSE-ConnectionGUID: Ul+a5TfqQzeWtVVntqfNIw==
+X-CSE-MsgGUID: d0HMC7X4QHe9fpBC8h1eFA==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,154,1787036400"; 
-   d="scan'208";a="974426"
+   d="scan'208";a="1209371"
 Received: from unknown (HELO [10.241.242.105]) ([10.241.242.105])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Oct 2026 15:22:09 -0700
-Message-ID: <460a7726022740feeee606538e4cf63adf6090c2.camel@linux.intel.com>
-Subject: Re: [RFC PATCH v3 01/13] lib/sbm: Introduce helpers for
- architectures to configure LLC properties
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Oct 2026 16:41:48 -0700
+Message-ID: <cf703658d922b4d698d35e35bb942f359971d850.camel@linux.intel.com>
+Subject: Re: [RFC PATCH v3 02/13] drivers/base/arch_topology: Add support
+ for initializing sbm topology
 From: Tim Chen <tim.c.chen@linux.intel.com>
 To: K Prateek Nayak <kprateek.nayak@amd.com>, Peter Zijlstra	
  <peterz@infradead.org>, Chen Yu <yu.c.chen@intel.com>, Ingo Molnar	
@@ -69,27 +69,15 @@ To: K Prateek Nayak <kprateek.nayak@amd.com>, Peter Zijlstra
  linuxppc-dev@lists.ozlabs.org, 	linux-mips@vger.kernel.org,
  loongarch@lists.linux.dev, 	driver-core@lists.linux.dev, Sudeep Holla
  <sudeep.holla@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich	
- <dakr@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Thomas Bogendoerfer
-	 <tsbogend@alpha.franken.de>, Jiaxun Yang <jiaxun.yang@flygoat.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>, Heiko Carstens
- <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,  Alexander Gordeev
- <agordeev@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Andreas
- Larsson	 <andreas@gaisler.com>, Thomas Gleixner <tglx@kernel.org>, Borislav
- Petkov	 <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
- x86@kernel.org
+ "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich	 <dakr@kernel.org>
 Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, Steven Rostedt	
  <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>, Mel Gorman	
  <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>, Shrikanth
- Hegde	 <sshegde@linux.ibm.com>, WANG Xuerui <kernel@xen0n.name>, Michael
- Ellerman	 <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy	 <chleroy@kernel.org>, Christian Borntraeger
- <borntraeger@linux.ibm.com>,  Sven Schnelle <svens@linux.ibm.com>, "H.
- Peter Anvin" <hpa@zytor.com>
-Date: Mon, 12 Oct 2026 15:22:08 -0700
-In-Reply-To: <20261001192849.74788-2-kprateek.nayak@amd.com>
+ Hegde	 <sshegde@linux.ibm.com>
+Date: Mon, 12 Oct 2026 16:41:47 -0700
+In-Reply-To: <20261001192849.74788-3-kprateek.nayak@amd.com>
 References: <20261001192849.74788-1-kprateek.nayak@amd.com>
-	 <20261001192849.74788-2-kprateek.nayak@amd.com>
+	 <20261001192849.74788-3-kprateek.nayak@amd.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.58.1 (3.58.1-1.fc43) 
@@ -108,103 +96,256 @@ Precedence: list
 MIME-Version: 1.0
 
 On Thu, 2026-10-01 at 19:28 +0000, K Prateek Nayak wrote:
-> Subsequent commits will add arch/ hooks to configure the sparsebitmask
-> (sbm) topology - number of sbm instance and the maximum CPUs that a
-> single instance can represent.
+> Add (fragile) support for initializing sparsebitmap topology for
+> architectures that support GENERIC_ARCH_TOPOLOGY.
 >=20
-> Introduce sbm_set_topology() that helps architectures configure the sbm
-> topology. Also add arch_sbm_cpu_instance_id() which will be used to map
-> CPUs to the sbm instances during init to keep CPUs on the same instance
-> on the same sbm leaf.
+> Similar to setting cpu_smt_set_num_threads(), count the number of unique
+> LLCs (if last_level_cache_is_valid() true, otherwise) / packages, and
+> the maximum threads that exist in those instance and set
+> sbm_set_proc_config().
 >=20
-> Individual arch/ users will be added one at a time in the subsequent
-> commits.
-
-Thanks for working on this series.
-
+> Any failure on the path will default to considering the entire processor
+> as a single sbm domain and the default logic will divide the system into
+> BITS_PER_LONG chunks. In case of a failure, sbm core will skip using
+> arch_sbm_cpu_instance_id() and assume all CPUs belong to the same
+> instance with the same instance id.
 >=20
 > Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
 > ---
->  include/linux/sbm.h |  8 ++++++++
->  lib/Makefile        |  2 +-
->  lib/sbm.c           | 27 +++++++++++++++++++++++++++
->  3 files changed, 36 insertions(+), 1 deletion(-)
->  create mode 100644 include/linux/sbm.h
->  create mode 100644 lib/sbm.c
+>  drivers/base/arch_topology.c | 122 ++++++++++++++++++++++++++++++++++-
+>  1 file changed, 121 insertions(+), 1 deletion(-)
 >=20
-> diff --git a/include/linux/sbm.h b/include/linux/sbm.h
-> new file mode 100644
-> index 000000000000..adac12ed233a
-> --- /dev/null
-> +++ b/include/linux/sbm.h
-> @@ -0,0 +1,8 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +#ifndef _LINUX_SBM_H
-> +#define _LINUX_SBM_H
-> +
-> +int arch_sbm_cpu_instance_id(int cpu);
-> +void sbm_set_topology(int num_instances, int max_threads_per_instance);
-> +
-> +#endif /* _LINUX_SBM_H */
-> diff --git a/lib/Makefile b/lib/Makefile
-> index dfab958327c5..7776330f5b25 100644
-> --- a/lib/Makefile
-> +++ b/lib/Makefile
-> @@ -40,7 +40,7 @@ lib-y :=3D ctype.o string.o vsprintf.o cmdline.o \
->  	 is_single_threaded.o plist.o decompress.o kobject_uevent.o \
->  	 earlycpio.o seq_buf.o siphash.o dec_and_lock.o \
->  	 nmi_backtrace.o win_minmax.o memcat_p.o \
-> -	 buildid.o objpool.o iomem_copy.o sys_info.o
-> +	 buildid.o objpool.o iomem_copy.o sys_info.o sbm.o
+> diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
+> index 8c5e47c28d9a..f55745a93298 100644
+> --- a/drivers/base/arch_topology.c
+> +++ b/drivers/base/arch_topology.c
+> @@ -20,6 +20,7 @@
+>  #include <linux/cpumask.h>
+>  #include <linux/init.h>
+>  #include <linux/rcupdate.h>
+> +#include <linux/sbm.h>
+>  #include <linux/sched.h>
+>  #include <linux/units.h>
 > =20
->  lib-$(CONFIG_UNION_FIND) +=3D union_find.o
->  lib-$(CONFIG_PRINTK) +=3D dump_stack.o
-> diff --git a/lib/sbm.c b/lib/sbm.c
-> new file mode 100644
-> index 000000000000..82280e3306de
-> --- /dev/null
-> +++ b/lib/sbm.c
-> @@ -0,0 +1,27 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
+> @@ -930,6 +931,114 @@ __weak int __init parse_acpi_topology(void)
+>  	return 0;
+>  }
+> =20
+> +/*
+> + * Note: arch_sbm_cpu_instance_id() is only used if init_sbm_topology()
+> + * below succeeds at setting the sbm topology. Either the LLC
+> + * information is valid or package_id is dependable.
+> + */
+> +int arch_sbm_cpu_instance_id(int cpu)
+> +{
+> +	if (last_level_cache_is_valid(cpu)) {
+> +		struct cacheinfo *llc_info =3D get_cpu_cacheinfo_llc(cpu);
+> +
+> +		if (!llc_info)
+> +			goto out;
+> +
+> +		if (llc_info->attributes & CACHE_ID)
+> +			return llc_info->id;
+> +
+> +		/*
+> +		 * XXX: fw_token be truncated from cast
+> +		 * when the value is returned as an int.
+> +		 */
+> +		return (int)((long)llc_info->fw_token);
+> +	}
+> +out:
+> +	return cpu_topology[cpu].package_id;
+> +}
+> +
+> +static void __init init_sbm_topology(void)
+> +{
+> +	int num_sbm_instances =3D 0, max_threads_per_instance =3D -1;
+> +	bool has_cache =3D false, has_package =3D false;
+> +	cpumask_var_t unique_cpus;
+> +	struct xarray instances;
+> +	unsigned long cpu, *count;
+> +
+> +	/*
+> +	 * If the allocation fails, the sbm core will use
+> +	 * the default logic of splitting CPUs evenly in
+> +	 * BITS_PER_LONG chunk.
+> +	 */
+> +	if (!zalloc_cpumask_var(&unique_cpus, GFP_KERNEL))
+> +		return;
+> +
+> +	xa_init(&instances);
+> +
+> +	for_each_possible_cpu(cpu) {
+> +		bool found =3D false;
+> +		int unique_cpu;
+> +
+> +		for_each_cpu(unique_cpu, unique_cpus) {
+> +			/*
+> +			 * XXX: Assumes last_level_cache_is_valid() is uniformly true
+> +			 * across the entire system if it is true for one CPU.
+> +			 */
+> +			if (last_level_cache_is_valid(cpu)) {
 
-Minor nits.  Convention is
+I don't think last_level_cache_is_valid() can be true for any CPU at
+this point. Here is the call order on arm64. riscv is the same in
+arch/riscv/kernel/smpboot.c.
 
-// SPDX-License-Identifier: GPL-2.0=20
+  smp_prepare_cpus()                          arch/arm64/kernel/smp.c
+    init_cpu_topology()
+      fetch_cache_info(cpu)                   for every possible CPU
+        allocate_cache_info(cpu)              kzalloc: all leaves are zero
+      init_sbm_topology()                     <-- counts instances HERE
+        last_level_cache_is_valid(cpu)        false for every CPU
+        =3D> groups by package_id
+    store_cpu_topology(boot cpu)
+      update_siblings_masks()
+        detect_cache_attributes()             boot CPU leaves filled HERE
+   =20
+  kernel_init_freeable()                      init/main.c=20
+    sbm_init()
+    alloc_sbm_index(boot cpu)
+      arch_sbm_cpu_instance_id()              boot CPU: LLC id
 
-for .c file according to
-Documentation/process/license-rules.rst
+  secondary_start_kernel()                    on each secondary CPU
+    store_cpu_topology(cpu)
+      update_siblings_masks()
+        detect_cache_attributes(cpu)          this CPU's leaves filled HERE
+  sched_cpu_activate(cpu)
+    alloc_sbm_index(cpu)
+      arch_sbm_cpu_instance_id()              this CPU: LLC id
 
-checkpatch asks for a MAINTAINERS entry for include/linux/sbm.h and
-lib/sbm.c.
+last_level_cache_is_valid() only returns true when the LLC leaf has
+CACHE_ID set or a fw_token:
+
+        return (llc->attributes & CACHE_ID) || !!llc->fw_token;
+
+Both are written only from detect_cache_attributes(), through
+cache_shared_cpu_map_setup() -> cache_setup_properties():
+
+  - DT:   cache_setup_of_node() sets fw_token and CACHE_ID
+          (drivers/base/cacheinfo.c)
+  - ACPI: cache_setup_acpi() sets fw_token and CACHE_ID
+          (drivers/acpi/pptt.c)
+
+fetch_cache_info() only counts the cache levels and allocates the
+leaves with kzalloc, so at init_sbm_topology() time every leaf still
+has attributes =3D=3D 0 and fw_token =3D=3D NULL. Not even the boot CPU has=
+ its
+leaves filled yet, because its store_cpu_topology() runs after
+init_cpu_topology().
+
+I think complications arise if we don't have the complete cache info.
+
+How about updating the design to wait for cache detection instead? The
+earliest point where all booted CPUs have their cacheinfo is
+sched_init_smp(). That is also where the scheduler builds its own LLC
+domains, from the llc_sibling masks that store_cpu_topology() fills.
+Nothing needs an sbm index before then: nohz_balance_enter_idle()
+returns early on on_null_domain() until the domains exist, and 12/13
+already moves the nohz allocation into sched_init_smp(). Roughly:
+
+ 1. Move sbm_init() and the boot CPU's alloc_sbm_index() from
+    kernel_init_freeable() to the start of sched_init_smp(), before
+    init_sched_fair_class_smp().
+   =20
+ 2. Count the instances there, over the online CPUs, with
+    arch_sbm_cpu_instance_id(). At that point it can safely return
+    the LLC ID. Counting and runtime then use the same function on
+    the same data.
+   =20
+ 3. Hand out indices to all active CPUs in one pass at that point. In
+    sched_cpu_activate(), call alloc_sbm_index() only once
+    sched_smp_initialized is set, i.e. for CPUs hotplugged later.
+
+ 4. Leave room for possible CPUs that did not boot (maxcpus=3D, or arm64
+    ACPI vCPU hotplug). Their cacheinfo is still unknown at
+    sched_init_smp(). Possible choice is what powerpc and s390
+    do in this series: assume each of them may add a new instance, or
+    land in the largest one. Their package could give a tighter bound.
+
+Perhaps this could simplify the design.
+
+Thanks.
 
 Tim
 
-> +#include <linux/sbm.h>
-> +#include <linux/init.h>
-> +#include <linux/printk.h>
+> +				has_cache =3D true;
+> +				if (last_level_cache_is_shared(cpu, unique_cpu)) {
+> +					found =3D true;
+> +					break;
+> +				}
+> +			} else {
+> +				/* Go by package_id if no LLC information is found. */
+> +				has_package =3D true;
+> +				if (cpu_topology[unique_cpu].package_id =3D=3D
+> +				    cpu_topology[cpu].package_id) {
+> +					found =3D true;
+> +					break;
+> +				}
+> +			}
+> +		}
 > +
-> +static int sbm_max_threads_per_instance =3D -1;
-> +static int sbm_num_instance =3D -1;
+> +		/* XXX: CPUs should not suddenly switch IDs mid way. */
+> +		if (has_cache && has_package)
+> +			goto out;
 > +
-> +/*
-> + * In absence of an arch definition, consider all CPUs to
-> + * belong to the same sbm instance.
-> + */
-> +int __weak arch_sbm_cpu_instance_id(int cpu)
-> +{
-> +	return 0;
+> +		if (!found) {
+> +			count =3D kzalloc_obj(*count);
+> +			if (!count)
+> +				goto out;
+> +
+> +			cpumask_set_cpu(cpu, unique_cpus);
+> +			*count +=3D 1;
+> +
+> +			xa_store(&instances, cpu, count, GFP_KERNEL);
+> +			continue;
+> +		}
+> +
+> +		count =3D xa_load(&instances, unique_cpu);
+> +		if (!count)
+> +			goto out;
+> +
+> +		*count +=3D 1;
+> +	}
+> +
+> +	xa_for_each(&instances, cpu, count) {
+> +		max_threads_per_instance =3D max_t(int, max_threads_per_instance, *cou=
+nt);
+> +		num_sbm_instances++;
+> +	}
+> +
+> +	sbm_set_topology(num_sbm_instances, max_threads_per_instance);
+> +out:
+> +	xa_for_each(&instances, cpu, count) {
+> +		xa_erase(&instances, cpu);
+> +		kfree(count);
+> +	}
+> +	xa_destroy(&instances);
+> +	free_cpumask_var(unique_cpus);
 > +}
 > +
-> +void __init sbm_set_topology(int num_instances, int max_threads_per_inst=
-ance)
-> +{
-> +	sbm_max_threads_per_instance =3D max_threads_per_instance;
-> +	sbm_num_instance =3D num_instances;
+>  void __init init_cpu_topology(void)
+>  {
+>  	int cpu, ret;
+> @@ -954,8 +1063,19 @@ void __init init_cpu_topology(void)
+>  			continue;
+>  		else if (ret !=3D -ENOENT)
+>  			pr_err("Early cacheinfo failed, ret =3D %d\n", ret);
+> -		return;
+> +		break;
+>  	}
 > +
-> +	pr_info("sbm topology set to %d instance(s) with a maximum of %d thread=
-(s) per instance\n",
-> +		sbm_num_instance,
-> +		sbm_max_threads_per_instance);
-> +}
-> +
+> +	/*
+> +	 * If fetch_cache_info() fails for first CPU,
+> +	 * init_cpu_sbm_topology() will use pacakge_id instead.
+> +	 *
+> +	 * Uniform cache topology is a necessary since implementation
+> +	 * assumes last_level_cache_is_valid() gives same result for
+> +	 * all possible CPUs
+> +	 */
+> +	if (!ret || (cpu =3D=3D 0 && ret =3D=3D -ENOENT))
+> +		init_sbm_topology();
+>  }
+> =20
+>  void store_cpu_topology(unsigned int cpuid)
 
