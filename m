@@ -1,95 +1,117 @@
-Return-Path: <linuxppc-dev+bounces-29331-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29332-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BC62CA9ED2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 20:28:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15844CA9ED2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 20:29:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3TYf34C5z30NF;
-	Tue, 13 Oct 2026 07:28:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::531" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791836886;
-	cv=pass; b=bWRbTAO86voz6BGCQ++E6IvaGkAyKENEHihwVx4/MAWRyHtMwahR+CwXKS3FbI/gv0XbX/Jyrk3UfyE+xxE6ghZ96O/A8qebQPW0kfDN31YbDmDrZLPGxdGYqFYPBZdqqH/mCwWGxvTm9b/rYZoJ3E4YjSFzARP+eirPDsfg65f7FEeDWiNQ69zxDKv3tLef10yzI5hiE50krUM6tJnEly93Gt9ID21+PDQwqPlQwg8H9UanCuk5bZYoccJ6xAEhusqCVt0Ay1ZQ10GvX1CxYUteMSj7UFDXfxlBqXn5Nz7Y2UdOMctontvvoOQ9VfXCOV5+pxfbWWaMdW11Cbtrow==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791836886; c=relaxed/relaxed;
-	bh=IN1Nd1jOf1uIqNtCm/iqSeHZvrqnmZGz6JuPiV7jclo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=R+CcXcmfGhm/yFwCVVxH8+cHwxq/vYQNITCekuFqepE1BC5aQn+/OcDuFG95LrrufkVwZdxHWrc9nONSURBEo3PJWvYePj3bzYOz7EuYbtVTm3dYmACq7njs2TCHzCy+u3mHEr5j/w6JZKmKUka50AMEyFBPIX0GD6TolZE9ZmaTbbkk8hrQx8WFHWo5KHJ/SvY01BZ6T16MZIYhEmvaN1n/usFK8r5eRzM1b1OSSGqKn6ad5u500PmOAv2BvQLYmszL8vMu7RuxUubC8IP/CcDBKI+Zdu4/7xmFMyVW/XDhwSWMBXwZ9A03wcOBEZcztT3N+tMbIuP2Ae61as6uzA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=pJx88FKN; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::531; helo=mail-ed1-x531.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3Tb24MSCz30RN;
+	Tue, 13 Oct 2026 07:29:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791836958;
+	cv=none; b=iXs882JLcIRKsoknAQQRlpxeZYDI+lgGTA7YbDewZKxjNR27NmLJLThlNmUznd6vHSq6nmnnahPUIYiVv/WOENSwHeU2UP2qseNe9EHhX70TP5OIcj4rPZuaIvpNKoANLKJAnHDAn6YFOMoLPz88ZGiyEsWeEMzI3IBeRc/vCmQfo+WsNiW4oTZNKj9kb6ctImCEa3krTSG/IvHJWpZZU/Prl3K1MCkW/s7KfInktQcf41XJziSG/XqBATa2Goi81djpPAqSMEvauqklX4xCqvgRN5+7M35048vF9CKrzx8J9k9QEczEjyUs0nwt3xf2J2LoFFysSZvBYOIFbvbHJQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1791836958; c=relaxed/relaxed;
+	bh=Q7xPBIsF6msFjcBPFQV3z4MewG9jXZq7/+SDCBWWB/g=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 In-Reply-To:Content-Type:Content-Disposition; b=lc2GsM2kyGLqReoN/HRUidy9JZxCdfHntxiIk8V9OnuE3vl3SazZDpA8cvA6FcoIcJUPO7dh5s7wKzt+HGCamuPSYL+qf3VVTiOh0JJ6b1umkNf/8QJqd/IGzrEjKVww6mc3BX56xC8cKFzAOUkh0/yeUFwGhSvnBJxr+VglsDWuX6fKtuz/g28OGV3nB1uwctoODAOw0wv0TXVhhs6BJLJpkAlV2jmP9rpkJZuGjoq5OBoMT+r/qsATKI4brLj1/TkI0FDXvmvBJ7lrY2VJjykKsBldUi9JymmiircXJ+wXysdMdtlH42EvZFPIDxJUs7K+hKhYVNcq2PjL0HDWTA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=B83nw9M7; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=B83nw9M7; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=B83nw9M7; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=mst@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=pJx88FKN;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=B83nw9M7;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=B83nw9M7;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=B83nw9M7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::531; helo=mail-ed1-x531.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x531.google.com (mail-ed1-x531.google.com [IPv6:2a00:1450:4864:20::531])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=mst@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3TYc67pYz304Q
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 07:28:03 +1100 (AEDT)
-Received: by mail-ed1-x531.google.com with SMTP id 4fb4d7f45d1cf-6b1cc392d8bso1351540a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2026 13:28:03 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791836878; cv=none;
-        d=google.com; s=arc-20260327;
-        b=mclCMtYXz+aNFxv5PLNLaRtzsI7j3uPCRVlPT2lfa0Ss745/+YwLoJ6XdT3JCZyXGb
-         t9cWp5Gc3Mhj2+2G/xmPIzmoLDsdopDooN4m8nHVm5GJJgs6XJUk9erXa6QdVmXO548C
-         SntDJAJ8+dINzEi6lLNkYWkVxkCFyGp/zEQ9B8wPb6CQVkE2S2ffEJo05VSLG+vmYMJp
-         AgwJ0O1zrshOdd64vnus4bKq4juHwqAAgbsmMrSElGVlJMsv9a7vCHsDCG6n3mqRE0Fn
-         nu1Kvm/E6oOZntlIMWwbJZTetClsAzwXYac8p68O6ulk8bu5YYRnATNMTp7Weh8S/y58
-         ILnA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=IN1Nd1jOf1uIqNtCm/iqSeHZvrqnmZGz6JuPiV7jclo=;
-        fh=JTZ9cu29awM4EnLP6O2sUrrlQSUYp0sUyGKz5kVoD/w=;
-        b=Juz/qOpA9qqEvfx+JaIqoYrGyvBf1VZuSEo9QhfI4fZrzTCnA//3I/o3T7ESrFN2NV
-         bLHHbT8KVwICMtUhm0HEtnOuyzAcHIjnhnYS/jS/wCCNSNwbzhcGRGxQojFY2scUmZtT
-         r8rS0DNeaUJHoGjSyvznFsSJcvAm2s6uqLa+VhWLCy9BM7jLVAIrSmIWqtAyMw30mQDp
-         97ymJhm3Rj4pQwCp4MfY1D5+1JgcfTyb5FqnbRcYowU/B5aJEy6zeaJaiT1LORX6weL0
-         vN39GonN/hMST4U2A0LKcgoNPIYktr4uYjp3lTnCZ3IGHRX+dewhYCurxAEeSYYstqmA
-         YFnQ==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791836878; x=1792441678; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=IN1Nd1jOf1uIqNtCm/iqSeHZvrqnmZGz6JuPiV7jclo=;
-        b=pJx88FKNUc9YH5dRHDtDdCe3BB8W41BEXg9Kd7bKvcFT7+aoTZdHTKRjYo5uBLaBYP
-         F6rHLmM1adi3TofpuT91jru4ovivAHjnTf2cBlp9nq3LtBV87tMWJsLp4AHNOYyKRVHG
-         asvrF8qU/CSFnxF/wOkMLvRmlFMXE3j/SQ+cEFvZyZsGLEs4lBGKpdtNZM0dMZ7tEQhh
-         KoBDGqozxsOTr3QpbwQ7ytIn44KiNtHAw0vERxOVoAxca/XvMY65jcwo+bFwO0plVJDF
-         tUiHzh9nis1nQThT7M+UPnahRER/UguuNGI+nnbvPOLfGw9HiEBmxyS7Ed7jwPlWE1Np
-         HDnQ==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3TZy6W0Wz304Q
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 07:29:13 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1791836945;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Q7xPBIsF6msFjcBPFQV3z4MewG9jXZq7/+SDCBWWB/g=;
+	b=B83nw9M7c7a25vJRV8iJ3NQmCOVd5pAb8CdCQsKMMJBKuJHGNGxN1vDeoJw3267N9gIxG6
+	jrBGqQbehjK+8VfPGshxFvedhvzd1kJA0qpXqbK5Zbyl2WPxodWSHnaYEY2UY9Q3f0jk9T
+	8/zzDRzJfZkybwMXxiWBICkvYRUyciM=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1791836945;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Q7xPBIsF6msFjcBPFQV3z4MewG9jXZq7/+SDCBWWB/g=;
+	b=B83nw9M7c7a25vJRV8iJ3NQmCOVd5pAb8CdCQsKMMJBKuJHGNGxN1vDeoJw3267N9gIxG6
+	jrBGqQbehjK+8VfPGshxFvedhvzd1kJA0qpXqbK5Zbyl2WPxodWSHnaYEY2UY9Q3f0jk9T
+	8/zzDRzJfZkybwMXxiWBICkvYRUyciM=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1791836945;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Q7xPBIsF6msFjcBPFQV3z4MewG9jXZq7/+SDCBWWB/g=;
+	b=B83nw9M7c7a25vJRV8iJ3NQmCOVd5pAb8CdCQsKMMJBKuJHGNGxN1vDeoJw3267N9gIxG6
+	jrBGqQbehjK+8VfPGshxFvedhvzd1kJA0qpXqbK5Zbyl2WPxodWSHnaYEY2UY9Q3f0jk9T
+	8/zzDRzJfZkybwMXxiWBICkvYRUyciM=
+Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
+ [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-127-zyWjsyzeM3amhgWsv6iTXw-1; Mon, 12 Oct 2026 20:29:02 +0000
+X-MC-Unique: zyWjsyzeM3amhgWsv6iTXw-1
+X-Mimecast-MFC-AGG-ID: zyWjsyzeM3amhgWsv6iTXw_1791836941
+Received: by mail-wr1-f70.google.com with SMTP id ffacd0b85a97d-48c7fe9736eso1743381f8f.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2026 13:29:02 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791836878; x=1792441678;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
+        d=1e100.net; s=20260707; t=1791836941; x=1792441741;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=IN1Nd1jOf1uIqNtCm/iqSeHZvrqnmZGz6JuPiV7jclo=;
-        b=zHzvRXC3l9UJsCI06HIEmfsS2Pd99t5x7Bf+zfiQVMBcMPWri/shiZejxF9C/LL2vy
-         32CJxIh7I8JkfGOEVyood3lxXW2vxZ2jym/5pCN8MOnth9IGprs+uDpAiLso7xsRPyzD
-         /wqSGnCqEjakNnSTwCuM1lITWh6ejM6Ql8In6lP3gaqNWRQGr5/Oggrb6TGzY/5sEmJx
-         +7P4eOyl+bUXzmvoPcQiP9UhoBO7b3LnFnDcIyDYxT9ECw3oEXCJTE/DXdwJphZ1RoU5
-         45Jhmi1CGahRHXJAsbpPeFUEAFjEoYl5PuJff8f+jK98Ga6idDJBo4Yvhw2x9u52YGmq
-         jhaA==
-X-Gm-Message-State: AFq9FYKpHJpfiTjrOrgKZMgwx6/g0SbxkVYghEugrJWh+a3WiHGSv/9l
-	+JeNVfNECuV2rgVJZDY4p/UZsI1p1OvTwkRHt8kx7/MOSct13bU8SsnxZIJxX4w4K3Blv+TTDtm
-	2Js1plAhbVzSm9qsq8jP9qqYNZ01jTjA=
-X-Gm-Gg: AYBFou3lrO5wnNNtg6jXA4uUKkoLoomMdvVLrCxJ8vz2MF3NGdIqPdoImJFPrmbXmwR
-	3qEFIpU0yWgvWwpRfxFv7+J79WB0rz9z1HOsTPP6wrzz/I6W6TKU1qalAdrQw+oocYMaPUGWXbC
-	jXiUkFNX0gqMYXyyjUyGIGJdpxQLmlRDks1++79omWRRUPM/Vt4u3mXdcDA3Zb/qrszVZO3ovIz
-	3aqJS2DeJRvXa3cuqIreBqLJBvq7wHd8shU1XJYaARlj3TahaDG3hx/tTNovE53ot3HM/jjgXpB
-	PIKVJVR8vs8fov2/ZK777GdsGlfaS92ZqOEskXJ3bL5t2KDMSeVYXuMkU0DmDYZKX84fv0L+VSw
-	jUO9lf++S45V6Whsp5CdBEv01L5f0tEVHtOFZuyDIsEcFsf8CwMUnXB14v/uh6vimbz1B8j2Z+b
-	9U2CrQi18see3R5lPmi8oscp2ZPb5PwNgr/G1LfF7srKhaSuyeGEULZotyNdcogmbx+A==
-X-Received: by 2002:a05:6402:2498:b0:6aa:f187:26bc with SMTP id
- 4fb4d7f45d1cf-6b17c4e9257mr8599396a12.39.1791836878084; Mon, 12 Oct 2026
- 13:27:58 -0700 (PDT)
+        bh=Q7xPBIsF6msFjcBPFQV3z4MewG9jXZq7/+SDCBWWB/g=;
+        b=GRQTrt1RZjcX+W2vgK4R2geAIY91ezgv5Lc3Z6lebhSKB86fR4c15KRB0XaEPUdG0j
+         SR2CBKO28tcMq3tX5dVcGaLwjDLOeOcPtINaIbUkpZ27ztpzkMGNf0mkr86Qx2JRvuIc
+         8eX/EyZ4JYZmHDidsnOx42Wp1cooH6WeJ7ItN9THkFoQVa058Ln8rwS/UZtQtqWNsi7t
+         BbHPlDgdEAKqWJ75nkiLkmLr6CeGLh2RT+PIQPGsbgXVU3GljALV8Hvecx2utOqPMosi
+         ks4b+XO8ogrKI4se+H7fxJoW2hJuY4LXzM3jDhVRfkH50rUQkYUSgfihcLMATguqR4g8
+         ciQg==
+X-Forwarded-Encrypted: i=1; AKwUvBykoXYaJ4KM6+x0cHbL0QKdsbEPB4zU2+N62q91XGVztGJYDz7rjrE32WlRE6TtE4oihcdF4ab6vmd6rm8=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYI+EALS8TOnUDeQ/G2bqgqY/ywxN2ZP1UYALebQZVLRY++q6+RQ
+	amIKNDCq9pbCSVqRq3gyFSPXQPFYdEP6Q2hkJ5sRvR7xxX6Xpzxo6WNvO0yrE91P+ULZ05D6lUS
+	ok/LA2Xub1xUL0V0OKO6TO7hlWv3M84Nt+wE+z+sf2ckpTGx+Pc7KgE/2wc4knwDqPe8=
+X-Gm-Gg: AYBFou00n8tzj/9x29ntRHd39sls6b7ZGB3Ud7VJ/D+VBLTGVQLzUPd+APS0O9i1dGt
+	Fcx9eq1aX97fTgifCNr66PgAePPjmKmpv5dDjIlIz/+prTep/WucAz0p3HDzcFcwjf/DViC1N+E
+	u4fkzI/oKpIZaPDqlONKx4kAxPiZPOWrfE2zPHJYYa3Q36ufHCCXPhyxv2k2//2woEOCQKAPDJS
+	pKcsBxextTZZ9rHzqYAYfkRV94qvIom60Fn0FtmxZSB1vuguvHqZDEFWM0qG6tQxWGoGKc8p3Rq
+	sST78SsGh6GsU87T1veRLJZlw3o5CFxsdwMEfVHcrenz/N1PENfy78a/h9UggRVJDkMzYw==
+X-Received: by 2002:a05:6000:128b:b0:487:27f9:83d with SMTP id ffacd0b85a97d-48dbace43eemr14685529f8f.50.1791836940849;
+        Mon, 12 Oct 2026 13:29:00 -0700 (PDT)
+X-Received: by 2002:a05:6000:128b:b0:487:27f9:83d with SMTP id ffacd0b85a97d-48dbace43eemr14685501f8f.50.1791836940216;
+        Mon, 12 Oct 2026 13:29:00 -0700 (PDT)
+Received: from redhat.com ([2a0d:6fc0:3fd7:5300:3d6b:52a4:a23f:9d0b])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48de0ab48a7sm1232865f8f.24.2026.10.12.13.28.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 12 Oct 2026 13:28:58 -0700 (PDT)
+Date: Mon, 12 Oct 2026 16:28:55 -0400
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Abhin Parekadan Jose <abhinjoses@gmail.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Lukas Wunner <lukas@wunner.de>,
+	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Shuai Xue <xueshuai@linux.alibaba.com>, Kees Cook <kees@kernel.org>,
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Oliver O'Halloran <oohall@gmail.com>, linux-pci@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC v4 0/5] PCI: pciehp: Report surprise removal during
+ safe removal
+Message-ID: <20261012162837-mutt-send-email-mst@kernel.org>
+References: <20260927182017.938565-1-abhinjoses@gmail.com>
+ <asxylqif72Lcldx1@home-desktop>
+ <20261012022556-mutt-send-email-mst@kernel.org>
+ <as0uFfzw83f9aPpn@home-desktop>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,141 +125,226 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261012180052.55578-1-rosenp@gmail.com> <a877ad04-c4ed-4e32-a1eb-da524146be14@kernel.org>
- <CAKxU2N-VQ9fWGvdNvyZ7te1gp08qMSvbSpgLrKRkqDO+Y+bYwg@mail.gmail.com> <04d806cb-24dc-4597-ae03-6dbef11d0a86@kernel.org>
-In-Reply-To: <04d806cb-24dc-4597-ae03-6dbef11d0a86@kernel.org>
-From: Rosen Penev <rosenp@gmail.com>
-Date: Mon, 12 Oct 2026 13:27:45 -0700
-X-Gm-Features: AclHuK-PuBwSNNAvYqlgFuSYA3HSPeHQkO0IbmJgKlgWgfIF0-Rmq6V_xt21rwg
-Message-ID: <CAKxU2N-2NSEzr-Cz5V23TWbH1SJLRnitMFFvSKZo9MbSggOQbw@mail.gmail.com>
-Subject: Re: [PATCH v2] powerpc/lib: prefetch ahead in __csum_partial()
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
-	open list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <as0uFfzw83f9aPpn@home-desktop>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: r6nTWHmcaqDmaajP3t2auMtIzRZ1i6iKChJ2TWpEvIk_1791836941
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Mon, Oct 12, 2026 at 11:38=E2=80=AFAM Christophe Leroy (CS GROUP)
-<chleroy@kernel.org> wrote:
->
->
->
-> Le 12/10/2026 =C3=A0 20:28, Rosen Penev a =C3=A9crit :
-> > On Mon, Oct 12, 2026 at 11:18=E2=80=AFAM Christophe Leroy (CS GROUP)
-> > <chleroy@kernel.org> wrote:
-> >>
-> >>
-> >>
-> >> Le 12/10/2026 =C3=A0 20:00, Rosen Penev a =C3=A9crit :
-> >>> __csum_partial() walks the buffer linearly and reads each cache line
-> >>> exactly once. On cores without a hardware prefetcher, such as the 464=
-FP
-> >>> in the APM82181, every new line is therefore a demand miss that stall=
-s
-> >>> the loop. Packets received by non-coherent DMA are never in the cache=
-,
-> >>> so this is the common case for GRO checksum validation: when routing
-> >>> TCP with GRO enabled on a Meraki MX60, __csum_partial() takes about 3=
-0%
-> >>> of all cycles and is the top entry in the profile.
-> >>>
-> >>> Issue a dcbt four cache lines (128 bytes) ahead in the main loop.
-> >>> dcbt is only a hint and never faults, so prefetching past the end of
-> >>> the buffer is harmless. Lines that are already cached, for example wh=
-en
-> >>> checksumming data the CPU just wrote, are left untouched.
-> >>>
-> >>> Measured on a Meraki MX60 (APM82181 at 800 MHz), single TCP stream
-> >>> routed through a qca8k DSA switch, iperf3 median of 5. Only the dcbt
-> >>> was toggled at runtime, in the same boot:
-> >>>
-> >>>                 LAN->WAN               WAN->LAN
-> >>>                 Mbit/s  csum cycles    Mbit/s  csum cycles
-> >>>     before      495     30.5%          439     27.2%
-> >>>     after       599     15.3%          520     13.7%
-> >>>
-> >>> That is 58% less time spent in __csum_partial() per byte.
-> >>>
-> >>> The prefetch distance was chosen with an earlier, slower driver
-> >>> configuration (median of 3, Mbit/s):
-> >>>
-> >>>     distance    LAN->WAN   WAN->LAN
-> >>>     none        370        341
-> >>>     64 bytes    430        381
-> >>>     96 bytes    438        397
-> >>>     128 bytes   438        385
-> >>>     160 bytes   434        386
-> >>>     256 bytes   423        383
-> >>>
-> >>> Prefetching the first lines before entering the loop made no
-> >>> measurable difference and is not done.
-> >>>
-> >>> Assisted-by: LLM
-> >>> Signed-off-by: Rosen Penev <rosenp@gmail.com>
-> >>
-> >> csum_partial_copy_generic() does the same, so your patch makes sense.
-> >>
-> >> Wondering if you should use MAX_COPY_PREFETCH instead of hardcoding va=
-lue 4.
-> > li      r9,MAX_COPY_PREFETCH*L1_CACHE_BYTES /* prefetch distance */
+On Mon, Oct 12, 2026 at 08:59:33PM +0200, Abhin Parekadan Jose wrote:
+> On Mon, Oct 12, 2026 at 02:32:02AM -0400, Michael S. Tsirkin wrote:
+> > On Mon, Oct 12, 2026 at 07:39:34AM +0200, Abhin Parekadan Jose wrote:
+> > > Gentle ping on this RFC.
+> > >
+> > > Lukas, Bjorn, could you let me know whether the general direction is
+> > > acceptable before I work on a non-RFC version? Any comments on the
+> > > approach would help.
+> > >
+> > > Thanks,
+> > > Abhin
 > >
-> > LLM comment:
+> > I'd say, complete the picture. acpi,shpc,polling...
+> 
+> Ok.
+> 
 > >
-> > What changes per platform: MAX_COPY_PREFETCH is 4 on every 32-bit
-> > config except 8xx, where it is 1. So 44x, 47x and e500mc behave
-> > exactly as before; on the 44x (canyonlands) build the instruction is
-> > still li r9, 128. The one difference is 8xx, which now prefetches 16
-> > bytes ahead instead of 64. That fits how the copy routine already
-> > treats 8xx, but I didn't benchmark it.
+> > Maybe think about how this interacts with pci_ignore_hotplug
+> > (seems to weirdly check presence then ignore)?
+> 
+> Yeah, the order is wrong in v4. The presence read should come after
+> the `ignore_hotplug` check. Will fix.
+> (Need to still find out why this was introduced. Looks like only the GPU drivers
+> use it.)
+> 
 > >
-> > My comment:
-> > I don't have an 8xx device so I don't know if this works properly there=
- or not.
->
-> I have an 885 and might do the test one day, but I won't have time
-> during the coming weeks. Nevertheless I have the feeling it makes sense
-> to implement something based on MAX_COPY_PREFETCH to resemble
-> csum_partial_copy_generic()
-I got a user to test this setup with MAX_COPY_PREFETCH
+> > And test with virtio not with edu.
+> 
+> Bjorn had asked me to keep this puerly PCI[1], So I had decoupled it from the
+> virtio changes. I could post another series with those changes with a dependecy
+> to this series.
+> 
+> [1] https://lore.kernel.org/all/20260826194815.GA1552818@bhelgaas/
 
-Using Sophos RED 15w, right after sysupgrade -n, got an iperf3 -c
-result of ~633Mb/s with the suggested change, vs. ~583Mb/s with the
-latest snapshot build from the web site, ie. without this PR.
->
-> >>
-> >> Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-> > I'll keep this in v3.
-> >>
-> >>> ---
-> >>>    v2: reword commit message and retest numbers.
-> >>>    arch/powerpc/lib/checksum_32.S | 4 +++-
-> >>>    1 file changed, 3 insertions(+), 1 deletion(-)
-> >>>
-> >>> diff --git a/arch/powerpc/lib/checksum_32.S b/arch/powerpc/lib/checks=
-um_32.S
-> >>> index cd00b9bdd772..5a14d45c7b9d 100644
-> >>> --- a/arch/powerpc/lib/checksum_32.S
-> >>> +++ b/arch/powerpc/lib/checksum_32.S
-> >>> @@ -43,6 +43,7 @@ _GLOBAL(__csum_partial)
-> >>>        bdnz    2b
-> >>>    21: srwi.   r6,r4,4         /* # blocks of 4 words to do */
-> >>>        beq     3f
-> >>> +     li      r9,4*L1_CACHE_BYTES     /* prefetch distance */
-> >>>        lwz     r0,4(r3)
-> >>>        mtctr   r6
-> >>>        lwz     r6,8(r3)
-> >>> @@ -52,7 +53,8 @@ _GLOBAL(__csum_partial)
-> >>>        lwzu    r8,16(r3)
-> >>>        adde    r5,r5,r7
-> >>>        bdz     23f
-> >>> -22:  lwz     r0,4(r3)
-> >>> +22:  dcbt    r3,r9
-> >>> +     lwz     r0,4(r3)
-> >>>        adde    r5,r5,r8
-> >>>        lwz     r6,8(r3)
-> >>>        adde    r5,r5,r0
-> >>
->
+yea sure.
+
+> >
+> > > On Sun, Sep 27, 2026 at 06:20:11PM +0000, Abhin Parekadan Jose wrote:
+> > > > If a safe removal is already in progress when the device is surprise
+> > > > removed, pciehp cannot report the disconnect [1]. The removal blocks
+> > > > waiting on a device interrupt or status read, and pciehp's IRQ thread is
+> > > > single-threaded and is itself executing that removal, so it never runs
+> > > > again to report the device gone. The removal hangs indefinitely.
+> > > >
+> > > > pciehp_isr() does run while the IRQ thread is blocked, but pciehp_ist()
+> > > > must ignore link and presence changes caused by Secondary Bus Reset or
+> > > > DPC, and telling those apart takes seconds which cannot be spent in
+> > > > hardirq.
+> > > >
+> > > > Patch 4 does not do that work in hardirq. pciehp_isr() only checks
+> > > > whether the card is present or the link is active, and defers the rest
+> > > > to a work item in process context. The work item does not need to know
+> > > > why the link changed, only whether the card is gone: it waits for DPC
+> > > > recovery or a Secondary Bus Reset in progress to complete, then checks
+> > > > again under reset_lock, and if the card is absent and the link is down
+> > > > marks the devices below disconnected, which schedules the driver's
+> > > > disconnect work from patch 1. pciehp_ist() is unchanged and
+> > > > remains the only consumer of the one-shot flags PCI_DPC_RECOVERED and
+> > > > PCI_LINK_CHANGED, which tell it whether a link change can be ignored.
+> > > >
+> > > > Patches:
+> > > >
+> > > >   1/5 Michael's "PCI: Report surprise removal event" from his RFC v5,
+> > > >       which adds disconnect_work_enable and pdev->disconnect_work.
+> > > >       Changed to serialize disconnect_work_enable with a per-device
+> > > >       spinlock.
+> > > >
+> > > >   2/5 Add pci_hp_wait_link_change(), which awaits a Secondary Bus Reset
+> > > >       in progress without consuming PCI_LINK_CHANGED.
+> > > >
+> > > >   3/5 Add pci_dpc_wait_recovery(), which awaits DPC recovery without
+> > > >       consuming PCI_DPC_RECOVERED.
+> > > >
+> > > >   4/5 The pciehp change. Adds disconnect_work to struct controller,
+> > > >       scheduled from pciehp_isr() on PDC or DLLSC when neither Presence
+> > > >       Detect State nor Data Link Layer Link Active indicates a card.
+> >
+> >
+> > how about including the virtio patch? seems more relevant than
+> > fooling around with edu.
+> >
+> > > >   5/5 A POC driver for the QEMU edu device that blocks in remove()
+> > > >       waiting for an interrupt, standing in for del_gendisk() stuck in
+> > > >       blk_mq_freeze_queue_wait(). Not for merge -- included so the
+> > > >       hang can be reproduced.
+> > > >
+> > > > Changes since RFC v3 [5]:
+> > > >
+> > > >   - 5/5: Reinitialize the completion in remove() before requesting the
+> > > >     delayed interrupt, so that an earlier completion cannot let remove()
+> > > >     return while the interrupt is still pending. (Sashiko)
+> > > >   - 1/5 to 4/5: No changes.
+> > > >
+> > > > Changes since RFC v2 [4]:
+> > > >
+> > > >   - 1/5: Protect disconnect_work_enable with a per-device spinlock, held
+> > > >     while testing it and scheduling the work, instead of lockless
+> > > >     accesses and barriers.  pci_dev_set_disconnected() could otherwise
+> > > >     test the flag, get preempted, and queue the work while a newly bound
+> > > >     driver re-initializes it.  With the lock, cancel_work_sync() is
+> > > >     sufficient again, so go back to it from disable_work_sync().
+> > > >     (Sashiko)
+> > > >   - 2/5: Test PCI_LINK_CHANGING with test_bit_acquire(), so that the
+> > > >     caller's subsequent accesses are ordered after the end of the code
+> > > >     section even if wait_event() returns without sleeping. (Sashiko)
+> > > >   - 3/5, 4/5, 5/5: No changes.
+> > > >
+> > > > Changes since RFC v1 [2]:
+> > > >
+> > > >   - 1/5: Use disable_work_sync() instead of cancel_work_sync() in
+> > > >     pci_clear_disconnect_work(), so that a racing schedule_work() cannot
+> > > >     queue the work after remove() has returned. (Sashiko)
+> > > >   - 2/5, 3/5: New.
+> > > >   - 4/5: Drop schedule_notification_work(); pci_dev_set_disconnected()
+> > > >     schedules the driver's disconnect work for all callers again.
+> > > >     (Michael)
+> > > >   - 4/5: Don't consume PCI_DPC_RECOVERED and PCI_LINK_CHANGED in the
+> > > >     work item.  In v1 it ran the same spurious link change test as
+> > > >     pciehp_ist(), and whichever ran first took the flags, so pciehp_ist()
+> > > >     could tear down a device that was only reset. (Sashiko)
+> > > >   - 4/5: Check presence with pciehp_card_present_or_link_active() in
+> > > >     both pciehp_isr() and the work item, as pciehp_ist() does, so that a
+> > > >     port with Presence Detect State hardwired to zero is not mistaken
+> > > >     for an empty slot.
+> > > >   - 4/5: Return early from the work item if pciehp_ist() has already
+> > > >     taken the pending events, and treat a read error of the presence
+> > > >     check as "not present". (Sashiko)
+> > > >   - 4/5: In pciehp_isr(), check presence before dropping the runtime PM
+> > > >     reference on the port's parent.  In the work item, take a runtime PM
+> > > >     reference and check presence under reset_lock, since a slot reset
+> > > >     may make Presence Detect State and Link Active flap.
+> > > >   - 5/5: Build only with CONFIG_EDU_SRPOC, which depends on PCI; don't
+> > > >     claim the interrupt when the device reads all ones; clear bus
+> > > >     mastering on teardown. (Sashiko)
+> > > >
+> > > > Testing
+> > > >
+> > > > Reproducing this needs QEMU changes, since neither device_del nor the
+> > > > attention button produces a true surprise removal.  A branch with both
+> > > > is here [3]:
+> > > >
+> > > >   - a delayed-IRQ register on the edu device (BAR0 0x30, write N ms)
+> > > >   - a pcie_surprise_del monitor command that drops the device and
+> > > >     generates PDC=1, DLLSC=1, PDS=0
+> > > >
+> > > > Both tests use:
+> > > >
+> > > >   ./qemu-system-aarch64 -machine virt,gic-version=3 -cpu cortex-a57 \
+> > > >     -m 512 -smp 2 -kernel Image -initrd initramfs.cpio.gz \
+> > > >     -device pcie-root-port,id=rp1,chassis=1,slot=1 \
+> > > >     -device edu,bus=rp1,id=edu0 -append "console=ttyAMA0 rdinit=/init" \
+> > > >     -nographic -monitor unix:/tmp/qemu-mon.sock,server,nowait
+> > > >
+> > > >   and need a guest kernel with CONFIG_EDU_SRPOC=y.
+> > > >
+> > > > Test 1 (Hang in remove() on a user thread, then surprise removal):
+> > > >
+> > > >   guest# echo 1 > /sys/bus/pci/devices/0000:01:00.0/remove &
+> > > >   host$  echo "pcie_surprise_del edu0" | socat - unix-connect:/tmp/qemu-mon.sock
+> > > >
+> > > >   This is the case patch 1 solves on its own: pciehp's IRQ thread is
+> > > >   free and handles the removal.
+> > > >
+> > > > Test 2 (Hang in remove() on pciehp's IRQ thread, then surprise removal):
+> > > >
+> > > >   guest# echo 0 > /sys/bus/pci/slots/1/power &
+> > > >   host$  echo "pcie_surprise_del edu0" | socat - unix-connect:/tmp/qemu-mon.sock
+> > > >
+> > > >   Without patch 4 the safe removal does not return until the delayed
+> > > >   interrupt fires 600 s later.  With it,
+> > > >   pciehp_isr() schedules ctrl->disconnect_work, which marks the device
+> > > >   disconnected; the POC driver's disconnect work completes the wait and
+> > > >   remove() proceeds.
+> > > >
+> > > > Open questions
+> > > >
+> > > >   - Is this a viable approach?
+> > > >
+> > > > [1] https://lore.kernel.org/all/aHlZE18kPuHuDtTT@wunner.de/
+> > > > [2] https://lore.kernel.org/all/20260905183905.997833-1-abhinjoses@gmail.com/
+> > > > [3] https://gitlab.com/abhinkop/qemu/-/commits/suprise-removal
+> > > > [4] https://lore.kernel.org/all/20260927165459.829900-1-abhinjoses@gmail.com/
+> > > > [5] https://lore.kernel.org/all/20260927175203.928270-1-abhinjoses@gmail.com/
+> > > >
+> > > > Assisted-by: LLM
+> > > >
+> > > > Abhin Parekadan Jose (4):
+> > > >   PCI: pciehp: Add pci_hp_wait_link_change()
+> > > >   PCI/DPC: Add pci_dpc_wait_recovery()
+> > > >   PCI: pciehp: Report surprise removal from pciehp_isr()
+> > > >   misc: Add edu_srpoc surprise removal POC driver
+> > > >
+> > > > Michael S. Tsirkin (1):
+> > > >   PCI: Report surprise removal event
+> > > >
+> > > >  drivers/misc/Kconfig                   |  11 ++
+> > > >  drivers/misc/Makefile                  |   1 +
+> > > >  drivers/misc/edu_srpoc.c               | 172 +++++++++++++++++++++++++
+> > > >  drivers/pci/hotplug/pci_hotplug_core.c |  21 ++-
+> > > >  drivers/pci/hotplug/pciehp.h           |   1 +
+> > > >  drivers/pci/hotplug/pciehp_hpc.c       |  67 ++++++++++
+> > > >  drivers/pci/pci.h                      |  10 ++
+> > > >  drivers/pci/pcie/dpc.c                 |  54 ++++++--
+> > > >  drivers/pci/probe.c                    |   1 +
+> > > >  include/linux/pci.h                    |  57 ++++++++
+> > > >  10 files changed, 381 insertions(+), 14 deletions(-)
+> > > >  create mode 100644 drivers/misc/edu_srpoc.c
+> > > >
+> > > >
+> > > > base-commit: fd179f8a05be3ccae366b9b96e176b51fbe54aab
+> > > > --
+> > > > 2.51.1
+> > > >
+> >
+
 
