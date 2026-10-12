@@ -1,96 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-29293-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29294-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29A69CA9ED0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 18:28:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7E6BCC6B01
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 18:32:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3Qvd2Jcwz2xyk;
-	Tue, 13 Oct 2026 05:28:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::62c" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791829709;
-	cv=pass; b=AJopif7gV3SWnGNmvpY1zJdv6Yg0VTfwQTaIaZuGBbR8jLH2jJ1wqzjnXal/nh1+M4CHKXA37D8a+sOGCDXGzgg8SNY6SEtqMyJhIG2RbLpSE3FLIn+BLl9Gny3DmSlNzNohwXFHWDyWjpIvhvG4pf7TeBUIcPJVClaPweumMRHJBYey9kA/Q32s3xv8xnZapiHx6W9s1mHBUm+EE/G/T/DrEK4C4pOSjAb8s9B7V/yOp3YRkCMsiWVydEjsX9KmL5EZS8FiZi8NhsUql2de/DDzstRUaEoxnyC0MJ5N/N45DxkTNFxKHcsDiFCQ41HjpNe2DBFW082/lUhzfKuW4Q==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791829709; c=relaxed/relaxed;
-	bh=X1HT9Pt+o9MrzBBoQCfbPBHKtSg9tMq6DaY0MoNl9E0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=hs9mM17xm3RAin2RikekE6BZNFqx1EWY29sC9mpIM2lwKzIdvDw++0Cib1Wl0elixcxvjgkSIGYpD5SBS7HMcvSsy/HUbYsNB9PioAEzhBiT5SfsEHAjLkZncYYtUCQLxjD1qBbZF9fxYXWMvOuIL7OgM0v7qo7bDiWhgaf4xNfLEe/Fn46NwxxOKBUfhOcS1UtBQZ9u1y/7WDNxQSEwAynvblmo8nTPf4w8XjgstyywsOw4zduF4LJiapJVwxOasiKQv7DjUs0RPZ2UCcLoqRKkLW1Uum9k4gV9YcEEeMhDNgBH3pE36rhXZc0IScpErRY2q3CV3Jd8cPLC0axPzw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=HPMwp31P; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::62c; helo=mail-ej1-x62c.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3R0T1xStz30Vs;
+	Tue, 13 Oct 2026 05:32:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791829961;
+	cv=none; b=M485nw+s4QRS+FIKQ25aghrIrxt6Zf6cZ7X63XUqOfSqT5wAKnrbc+rTwszH14zVOMlCyg/rrThh1EixzZnfrLlhje6ZjRObMZu/IM1/ss7/+/GBnt2sS+wCy4NPNguFiMrPWMscv/S/HeHoc12sNz4BbjdyKMHkkvztKUEooYg8iTvMS4vCESpUnHaTUfoipd16vOldz9Z8Gne7B6DMNSj/21VPQHqFqQutv17XHE0jsQAQ0Z5AlcpYRimt0uiGOXIYPqysc8e/ZSE7W3AlOfqiqqA86HF/EWBCbN0pFQTa1kMvDZkpCJt8U4iVLB9h04uwhlBtWGEw4JYBLLsf4A==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1791829961; c=relaxed/relaxed;
+	bh=MR3QSDnJDSPQxchGzKX8rD0iI2DqeBRHMbI1BZ7pOVs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=eex2y1Kbay/6YxHc1AgNVWUw/+6tlpfvb35LElAXdf+Xde/xrwrCCCW+5mdGfuVs6N/GYaabLSWNB3x6lLBauHrWY2GGAiO0FpSRM4mfX6uC7xtwP/5g8IX/GGKrc44YUU4Tlf3HohHJJC4qNTPXBmzaSG8tJSOUg+hxkxVh3PrQShdBTC5GwJ/nJiA4WvNdoBf0uY7x4b+GXpLj87ji2Zy2oDhzqx+HlWNOTgq8Lq0azNZkiXp9wsgkktdzg6Zo08/dIoJPXAoO7M2e3w7x63x8roOPOoF78nsRqMp64/w9Qx2tDVENBnJdzxVHNlRym1boRPc7GgDHKb5I+cRQVg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LJrxmNyf; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=HPMwp31P;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LJrxmNyf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::62c; helo=mail-ej1-x62c.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x62c.google.com (mail-ej1-x62c.google.com [IPv6:2a00:1450:4864:20::62c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3Qvb6QmKz2xnv
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 05:28:27 +1100 (AEDT)
-Received: by mail-ej1-x62c.google.com with SMTP id a640c23a62f3a-c2e8e738ae0so344296466b.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2026 11:28:27 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791829704; cv=none;
-        d=google.com; s=arc-20260327;
-        b=SnOXZBkzrI5jXXTJLt24EIFVkwTDUyx9lpVD4L/bfYWNxJEJmEk17/4+Item/dC0VV
-         wjIc4KN6DAsf4pkjf/+qXbrU4FI/lRBvg+IvOyTOxTGJMkiYSeqvLelSq6eBxkFbvmIW
-         8DhUSl39f0aHpD9Fjwvn3DyyVinY5q0JimtIKSGwFlgPjTeiIf/BLJz7ux3GZ+kbWyAM
-         NbuWMk9J3IOxiobWe12taMFWN2zf+5N233ygBFEsa0sAnsH9gPWBm1x8ImKYqYsPejbU
-         XHUc9UiKXiZ0PkyKReh5wMVF3t6YIQm4SwMmgf8UuJtQ/CaCkG+PSexo8Ns8UodsD1RD
-         DO5Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=X1HT9Pt+o9MrzBBoQCfbPBHKtSg9tMq6DaY0MoNl9E0=;
-        fh=JTZ9cu29awM4EnLP6O2sUrrlQSUYp0sUyGKz5kVoD/w=;
-        b=gkVyEMhc561JW3TjrDRT/i7IgYVgGY7AtMaFxtedhcfRJCZHFwx8LyLgGZ8ywp0uDX
-         9effwew5qTdUQV4J3bowwF8qnLC7IsRky6vpM9sWsKtS1Lpyv7+zCcPxPV53vAQ5h4BI
-         OaLdGz2q3V0rRx62TIqg6UqeTydnlH3QtngDI+Zn731jqgzTwgB/lzRsrPjcdYBDjFPN
-         7lGGGX6UXmMawkP5wqOC4SCM5+8JU9Esh0NYDyrQGbov/nl/UsHKTrwBEdbM4xRM+X2+
-         jBkMLynmmJsaQDRGtZYghruzBju+RbB+DQ50BthlTD4d+T2zs2Qh2QlEFUYu7LCm924b
-         xx4w==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791829704; x=1792434504; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=X1HT9Pt+o9MrzBBoQCfbPBHKtSg9tMq6DaY0MoNl9E0=;
-        b=HPMwp31PxV6xHxsMNSiVDcYGCHoAfEAT82xoT9urRzZqhxmR8b1zLUY36EKH8tvaFs
-         qDn60de3F/F31LickuM2aLH4uZGZxzgyGuKbs9xzp1XWkLRo/jq1lpuIpZpwZ4hDsebo
-         16HNv+AatOoRnTOvp9RiQNOYD9OXQURsGL32Fk+JQedIVLk9gwP3VdkCF5mN6+9++DFe
-         Es78hK0ZYfGTK2lFk+WQ/E7qwY15UND9ffY9fa3vtAUkOIf/yikfoCrQGAXQTZ4T7p4T
-         IUf7uXFA4H+acihtRUFkEkzzmqsT1+30byVaTcmaEZ3gzr5gIkwdWV0XOmmtriW7e7U8
-         FF7g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791829704; x=1792434504;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=X1HT9Pt+o9MrzBBoQCfbPBHKtSg9tMq6DaY0MoNl9E0=;
-        b=K4QOvmgSykDaPZHPfYhCPQR/tmlffaKmfhvk1X8pmt6zTvZkV6Tgz4i81pqPnTcV59
-         20tcUCSWMAVc8XpzyTNlvf/aCnCcPv+2bVzwLBauZdy9JsP2/yf2us7/WGt2W4jcQntp
-         KLbwXb2I+O/fAAmWZF1CsLdow7LamWFwEvcxEVlygxf/UbGvjvFXwKPA196aONZFFwHo
-         2FvUcyWSp10/00D7gn0ySfR3R2IzJep+dey9UumVppnEwK+G+uT4SDMwAUaNtI/TjOUb
-         O7nO4Q5BYPFTZLmXAPJWoT77oVvySziVw2Tsg7SElafGmn3yB9S88jgOQEBxqJ5+Sejx
-         iuHw==
-X-Gm-Message-State: AFq9FYJaZHHhnQuNPNG0HSFQ6AedVckStXQ9XQohSVQF+COLCMvbpXpA
-	WswYQ+7BLtYdJUgJgUibWDmrFwayYIYTBShMGsIStNLFCw0Ad3/Kn0nqzQUHPC08g8ae5qUwkHi
-	9HSjDKrVuKcVu7PvHDdqslGmA10RnsZg=
-X-Gm-Gg: AYBFou3KwwcsD4HIYAgsTLsUlK+CoNBUZak+5q9tq54jX3cQsw/ESh/sUNNwOAfUwhk
-	sULw90zTKg7PlKrG/Jw3ty1HOTsmfez1/Xg3UX35IrNE7NjF/mZqolpOwzFxYCwPlplsgBubQyU
-	VkuCfRG4H4yevpEx0wjg5YnQrWfJ67V82J+cAtTxgk1Bzsz6bBQ4FnGZTimnnqhnO4poCKzJ/i8
-	7FnuT4wvw7EX0vCVm9GnEoNHO+45XxYCTKz8kKittuXCERnnJiUt4Nm0DN9YSDLkA+jtO4sSiex
-	NaxP5d6Aay0HUCUHX/icv5AM8MsF1EL8QaZcKBkgXHqvzZPvFgQaGYTOFtkORUR0AHt4Zo5K5ew
-	tsHe5RxZKoy3ryuGo7KDekB4Onvvw9Iw0AjMA6LGLbAITaTJxTSrgUhHwLw+QJxzFNJmGp6KMZ3
-	k9vfg5j8/fEBrUMhaQ1a2wWjrY65mJe85mHazGCWPzNHNOy21XsBiunMmYgSkwYD31t4FDlHG0H
-	eDP
-X-Received: by 2002:a17:907:6d16:b0:c26:1649:47ab with SMTP id
- a640c23a62f3a-c31a9f8d2c1mr953059566b.33.1791829704105; Mon, 12 Oct 2026
- 11:28:24 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3R0S197Fz30HB
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 05:32:40 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id D73DE601E4;
+	Mon, 12 Oct 2026 18:32:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 320051F0089B;
+	Mon, 12 Oct 2026 18:32:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791829956;
+	bh=MR3QSDnJDSPQxchGzKX8rD0iI2DqeBRHMbI1BZ7pOVs=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=LJrxmNyfv4doXTKsvMR8Iw9B51t5c5xFJDtYRKmU1dHUtf+9U90XD86OtNFb0w1Zj
+	 6d0laWdCJCGOqGdcF/w/H7Kut9bsHxub56BAKK2evbqD1Htp8Y5RdUPMWan4gJgCy5
+	 cWmt6/DIUTBPO30ptvLUTNgAPExQ3TR6z6mtRmDYcHDEaS7V+PXMJkXy84x5sGAAeD
+	 dZBmxs+SqaGZnr/oBLA9Yj04OzVM0x9cCZlzoPkp72RccEb0UoxksX/kkQlTpc+5U+
+	 YmF88SRh4WZXNh2ZgsPVTykyA2nSPdEzfba5mQGgWRtjShzglmPaDCDbqeVrCZb2XD
+	 jE7Tz7jOtPk6A==
+Message-ID: <c43caa45-6a4a-47ab-bfa8-c9875491a9e6@kernel.org>
+Date: Mon, 12 Oct 2026 20:31:59 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,117 +59,289 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261012180052.55578-1-rosenp@gmail.com> <a877ad04-c4ed-4e32-a1eb-da524146be14@kernel.org>
-In-Reply-To: <a877ad04-c4ed-4e32-a1eb-da524146be14@kernel.org>
-From: Rosen Penev <rosenp@gmail.com>
-Date: Mon, 12 Oct 2026 11:28:11 -0700
-X-Gm-Features: AclHuK9om4-s7JbX2EeWgr9wdpDS-k9VE1RFDW2IRINiiqHf6FMCUdMdoAcCjcc
-Message-ID: <CAKxU2N-VQ9fWGvdNvyZ7te1gp08qMSvbSpgLrKRkqDO+Y+bYwg@mail.gmail.com>
-Subject: Re: [PATCH v2] powerpc/lib: prefetch ahead in __csum_partial()
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
-	open list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 25/38] mm: remove VMA_IO_BIT check in
+ vma[_flags]_is_mm_managed()
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>,
+ Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>,
+ Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
+ Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>,
+ Paul Moore <paul@paul-moore.com>,
+ Stephen Smalley <stephen.smalley.work@gmail.com>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>,
+ Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>,
+ Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>,
+ Baolin Wang <baolin.wang@linux.alibaba.com>,
+ Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>,
+ Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>,
+ Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>,
+ Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ "Martin K. Petersen" <mkp@kernel.org>, Simona Vetter <simona@ffwll.ch>,
+ Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>,
+ John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>,
+ Juri Lelli <juri.lelli@redhat.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin
+ <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
+ Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>,
+ "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>,
+ Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>,
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ Albert Ou <aou@eecs.berkeley.edu>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Janosch Frank <frankja@linux.ibm.com>,
+ Claudio Imbrenda <imbrenda@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Andreas Larsson <andreas@gaisler.com>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Christian Brauner <brauner@kernel.org>,
+ Matthew Brost <matthew.brost@intel.com>,
+ Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>,
+ Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>,
+ Ying Huang <ying.huang@linux.alibaba.com>,
+ Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>,
+ Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>,
+ Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>,
+ Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>,
+ Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>,
+ Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>,
+ Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>,
+ Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
+ Xu Xin <xu.xin@linux.dev>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-rdma@vger.kernel.org, selinux@vger.kernel.org,
+ linux-sound@vger.kernel.org, bpf@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org,
+ linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+ fuse-devel@lists.linux.dev, Ihor Solodrai <ihor.solodrai@linux.dev>,
+ Bert Karwatzki <spasswolf@web.de>
+References: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-0-923b70125b1e@kernel.org>
+ <20261009-b4-mmap-prepare-vma-flag-sanify-v5-25-923b70125b1e@kernel.org>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=david@kernel.org; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-25-923b70125b1e@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Mon, Oct 12, 2026 at 11:18=E2=80=AFAM Christophe Leroy (CS GROUP)
-<chleroy@kernel.org> wrote:
->
->
->
-> Le 12/10/2026 =C3=A0 20:00, Rosen Penev a =C3=A9crit :
-> > __csum_partial() walks the buffer linearly and reads each cache line
-> > exactly once. On cores without a hardware prefetcher, such as the 464FP
-> > in the APM82181, every new line is therefore a demand miss that stalls
-> > the loop. Packets received by non-coherent DMA are never in the cache,
-> > so this is the common case for GRO checksum validation: when routing
-> > TCP with GRO enabled on a Meraki MX60, __csum_partial() takes about 30%
-> > of all cycles and is the top entry in the profile.
-> >
-> > Issue a dcbt four cache lines (128 bytes) ahead in the main loop.
-> > dcbt is only a hint and never faults, so prefetching past the end of
-> > the buffer is harmless. Lines that are already cached, for example when
-> > checksumming data the CPU just wrote, are left untouched.
-> >
-> > Measured on a Meraki MX60 (APM82181 at 800 MHz), single TCP stream
-> > routed through a qca8k DSA switch, iperf3 median of 5. Only the dcbt
-> > was toggled at runtime, in the same boot:
-> >
-> >                LAN->WAN               WAN->LAN
-> >                Mbit/s  csum cycles    Mbit/s  csum cycles
-> >    before      495     30.5%          439     27.2%
-> >    after       599     15.3%          520     13.7%
-> >
-> > That is 58% less time spent in __csum_partial() per byte.
-> >
-> > The prefetch distance was chosen with an earlier, slower driver
-> > configuration (median of 3, Mbit/s):
-> >
-> >    distance    LAN->WAN   WAN->LAN
-> >    none        370        341
-> >    64 bytes    430        381
-> >    96 bytes    438        397
-> >    128 bytes   438        385
-> >    160 bytes   434        386
-> >    256 bytes   423        383
-> >
-> > Prefetching the first lines before entering the loop made no
-> > measurable difference and is not done.
-> >
-> > Assisted-by: LLM
-> > Signed-off-by: Rosen Penev <rosenp@gmail.com>
->
-> csum_partial_copy_generic() does the same, so your patch makes sense.
->
-> Wondering if you should use MAX_COPY_PREFETCH instead of hardcoding value=
- 4.
-li      r9,MAX_COPY_PREFETCH*L1_CACHE_BYTES /* prefetch distance */
+On 10/9/26 20:04, Lorenzo Stoakes (ARM) wrote:
+> We have now made it such that every driver which sets VMA_IO_BIT marks it
+> as not mm-managed.
 
-LLM comment:
+Confusing given that mm-managed check tests VMA_IO_BIT.
 
-What changes per platform: MAX_COPY_PREFETCH is 4 on every 32-bit
-config except 8xx, where it is 1. So 44x, 47x and e500mc behave
-exactly as before; on the 44x (canyonlands) build the instruction is
-still li r9, 128. The one difference is 8xx, which now prefetches 16
-bytes ahead instead of 64. That fits how the copy routine already
-treats 8xx, but I didn't benchmark it.
+Maybe combining this with the next paragraph could make this easier to grasp
 
-My comment:
-I don't have an 8xx device so I don't know if this works properly there or =
-not.
->
-> Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-I'll keep this in v3.
->
-> > ---
-> >   v2: reword commit message and retest numbers.
-> >   arch/powerpc/lib/checksum_32.S | 4 +++-
-> >   1 file changed, 3 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/arch/powerpc/lib/checksum_32.S b/arch/powerpc/lib/checksum=
-_32.S
-> > index cd00b9bdd772..5a14d45c7b9d 100644
-> > --- a/arch/powerpc/lib/checksum_32.S
-> > +++ b/arch/powerpc/lib/checksum_32.S
-> > @@ -43,6 +43,7 @@ _GLOBAL(__csum_partial)
-> >       bdnz    2b
-> >   21: srwi.   r6,r4,4         /* # blocks of 4 words to do */
-> >       beq     3f
-> > +     li      r9,4*L1_CACHE_BYTES     /* prefetch distance */
-> >       lwz     r0,4(r3)
-> >       mtctr   r6
-> >       lwz     r6,8(r3)
-> > @@ -52,7 +53,8 @@ _GLOBAL(__csum_partial)
-> >       lwzu    r8,16(r3)
-> >       adde    r5,r5,r7
-> >       bdz     23f
-> > -22:  lwz     r0,4(r3)
-> > +22:  dcbt    r3,r9
-> > +     lwz     r0,4(r3)
-> >       adde    r5,r5,r8
-> >       lwz     r6,8(r3)
-> >       adde    r5,r5,r0
->
+"vma_flags_is_mm_managed() still checks for VMA_IO_BIT, and if set, treats it as
+non-mm-managed. This was previously required to handle driver that would set
+VMA_IO_BIT but none of the other flags that would indicate a VMA as non-mm-managed.
+
+We already established now that a driver that sets VMA_IO_BIT must set one of
+the other VMA flags that allow for identifying it as non-mm-managed.
+
+...
+"
+
+> 
+> However, vma_flags_is_mm_managed() currently treats VMA_IO_BIT as
+> disqualifying. This was a product of drivers previously marking a range as
+> not mm-managed by
+> setting VMA_IO_BIT alone.
+> 
+> Fix this by removing the VMA_IO_BIT check in vma_flags_is_mm_managed(),
+> and update mmap_validate_vma_flags() to use vma_flags_is_mm_managed()
+> rather than open-coding the VMA_PFNMAP_BIT, VMA_MIXEDMAP_BIT check.
+> 
+> This change means that vma[_flags]_can_merge() doesn't check VMA_IO_BIT any
+> longer (which is now redundant) as it calls vma_flags_is_mm_managed().
+> 
+> Now that the predicate means precisely VMA_PFNMAP_BIT or VMA_MIXEDMAP_BIT,
+> also use it at the other sites which open-code that pair, so the intent is
+> stated rather than the flags, with no functional change:
+> 
+> zap_special_vma_range() only zaps mappings which are not mm-managed, as
+> drivers use it
+> to tear down ranges they established themselves.
+> 
+> The mprotect() arch PFN modification check applies to mappings not managed
+> by core mm, which may map PFNs without struct pages.
+> 
+> NUMA balancing skips VM_MIXEDMAP mappings having already excluded VM_IO
+> and VM_PFNMAP mappings via vma_migratable(), so it skips exactly the
+> mappings not managed by core mm - say so.
+> 
+> Finally, update the VMA userland merge 'special' flag tests to no longer
+> assert that VMA_IO_BIT prevents merge as VMA_PFNMAP_BIT, VMA_MIXEDMAP_BIT
+> now suffices.
+> 
+> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> ---
+>  include/linux/mm.h              |  3 +--
+>  kernel/sched/fair.c             |  2 +-
+>  mm/memory.c                     |  7 ++++---
+>  mm/mprotect.c                   |  3 +--
+>  mm/vma.c                        |  2 +-
+>  tools/testing/vma/include/dup.h |  3 +--
+>  tools/testing/vma/tests/merge.c | 10 ++--------
+>  7 files changed, 11 insertions(+), 19 deletions(-)
+> 
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 6b5f06cd174a..3ddb463db895 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -1627,8 +1627,7 @@ static inline bool vma_is_shared_maywrite(const struct vm_area_struct *vma)
+>   */
+>  static inline bool vma_flags_is_mm_managed(const vma_flags_t *flags)
+>  {
+> -	return !vma_flags_test_any(flags, VMA_PFNMAP_BIT, VMA_MIXEDMAP_BIT,
+> -				   VMA_IO_BIT);
+> +	return !vma_flags_test_any(flags, VMA_PFNMAP_BIT, VMA_MIXEDMAP_BIT);
+>  }
+>  
+>  /**
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index 8dff37059faf..a07a658cd99f 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -4212,7 +4212,7 @@ static void task_numa_work(struct callback_head *work)
+>  
+>  	for (; vma; vma = vma_next(&vmi)) {
+>  		if (!vma_migratable(vma) || !vma_policy_mof(vma) ||
+> -			is_vm_hugetlb_page(vma) || (vma->vm_flags & VM_MIXEDMAP)) {
+> +			is_vm_hugetlb_page(vma) || !vma_is_mm_managed(vma)) {
+>  			trace_sched_skip_vma_numa(mm, vma, NUMAB_SKIP_UNSUITABLE);
+>  			continue;
+>  		}
+> diff --git a/mm/memory.c b/mm/memory.c
+> index e5c1d1c35bc7..094983683f24 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -2343,19 +2343,20 @@ void zap_vma_range(struct vm_area_struct *vma, unsigned long address,
+>  }
+>  
+>  /**
+> - * zap_special_vma_range - zap all page table entries in a special vma range
+> + * zap_special_vma_range - zap all page table entries in a VMA which is not
+> + * mm-managed
+>   * @vma: the vma covering the range to zap
+>   * @address: starting address of the range to zap
+>   * @size: number of bytes to zap
+>   *
+>   * This function does nothing when the provided address range is not fully
+> - * contained in @vma, or when the @vma is not VM_PFNMAP or VM_MIXEDMAP.
+> + * contained in @vma, or when @vma is mm-managed.
+>   */
+>  void zap_special_vma_range(struct vm_area_struct *vma, unsigned long address,
+>  		unsigned long size)
+>  {
+>  	if (!range_in_vma(vma, address, address + size) ||
+> -	   !(vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP)))
+> +	   vma_is_mm_managed(vma))
+>  		return;
+>  
+>  	zap_vma_range(vma, address, size);
+> diff --git a/mm/mprotect.c b/mm/mprotect.c
+> index 2888ee638d87..706c679d4281 100644
+> --- a/mm/mprotect.c
+> +++ b/mm/mprotect.c
+> @@ -783,8 +783,7 @@ mprotect_fixup(struct vma_iterator *vmi, struct mmu_gather *tlb,
+>  	 * uncommon case, so doesn't need to be very optimized.
+>  	 */
+>  	if (arch_has_pfn_modify_check() &&
+> -	    vma_flags_test_any(&old_vma_flags, VMA_PFNMAP_BIT,
+> -			       VMA_MIXEDMAP_BIT) &&
+> +	    !vma_flags_is_mm_managed(&old_vma_flags) &&
+>  	    !vma_flags_test_any_mask(&new_vma_flags, VMA_ACCESS_FLAGS)) {
+>  		pgprot_t new_pgprot = vm_get_page_prot(newflags);
+>  
+> diff --git a/mm/vma.c b/mm/vma.c
+> index 51bdbe08bb02..cb8729b195ea 100644
+> --- a/mm/vma.c
+> +++ b/mm/vma.c
+> @@ -2796,7 +2796,7 @@ static int mmap_validate_vma_flags(const vma_flags_t *flags)
+>  		return -EINVAL;
+>  #endif
+>  
+> -	if (!vma_flags_test_any(flags, VMA_PFNMAP_BIT, VMA_MIXEDMAP_BIT)) {
+> +	if (vma_flags_is_mm_managed(flags)) {
+
+Ah, there is the change.
+
+Acked-by: David Hildenbrand (Arm) <david@kernel.org>
+
+-- 
+Cheers,
+
+David
 
