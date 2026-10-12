@@ -1,73 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-29213-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29214-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFFC0CA9EC5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 03:51:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF249CA9ED5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 05:04:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j33S53CYXz2yDc;
-	Mon, 12 Oct 2026 14:51:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791777109;
-	cv=none; b=Yi2AaseE3ZDmIBsNZKbv996hDCQXeDfnlCmzrQHzsTubsu6BrvRLUDOnmY9HdVRFa9v/+Amixcm0chya0B2BnfSha4uaQctAMPMQCFmKg+UY1TFKQkhGD7YTSoQZ5XmFXK7TR2V93bozz5qSaqOAbXbxHWZmjS3mYw5sAEXm0mW4G+BMCevNw0w5GUQpFoSzUwNZMn6rUum5tlZ85ITRhjn2XzPfjrn9oIiE6bra8bWSe15X4idnh+ogkHNEnuzINt+QfHbZqex8K1I5ek9em+GShwc/e1+6lGFputySa78e9h951pUQ5fQ1GmzEIEqW8cAbR/9W+2gj2fDqLzJgqw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j353f05Pgz2yYY;
+	Mon, 12 Oct 2026 16:04:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791781453;
+	cv=none; b=FilKoJA4jPyuZG/XzpThOPH4tPSdTN2GJpD2/HpMtxJFLXbzjLSgPiMZikbKJIpTOseu73FS7Z2Nml6cfggrwOyLJ1g0RoHa4sMaefDON/87Rm9Epp5Zy+4xDD6YaWQSmvB7XajcJADTeGAZuCdI/HZvEFQnZQDQ9qhcjMsKBy5Tuc8+StAH7jOF4cXZZYNfaGNsn9mwIbFCIF+o9psRmN4bB6UDM7D09NTLO1p85C6kRk7HmNxFCtg/opTidR8lIi6awQ7Ptc4MzQpW0LpSAf909ivazdhFYdccaDCKVC3oR0PCxO4c5mBIHeuTEzB/cXCxf7RkQFWq7hovuZIvFw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791777109; c=relaxed/relaxed;
-	bh=Fh+cmRtEbXcmwWD44V7PpRx5S2436EpwTjabRkFFgx8=;
+	t=1791781453; c=relaxed/relaxed;
+	bh=uFU+800bsccEesRqUvmAZL8rkHq2KyNXzUK3BpApTmQ=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=iwR3FZy0QRJxhLlYlzooubnsIgHy9tKXf7w/gbqIs5urcxmknXhf6NVRcDSlbXuZDUglcoGgsLkuRoxbGq/2Yjc+VxN94eRc/tJ2IlIQkGh+RNS81khoSJi+Uq2vQdmAizLsmKmSGu9ZT43JTrdtbQbY4OIjGkVyX8e31oE3niP6iSzoko+0aISAJE28618uHH32MFQz8tTV/l6fLtR1g7jso/5tf4BEGUsfZh7bkjMx82Z6If3SORBOLCF6uiw+8AANGzNR8Byix/MG9rfRY3GquQQbXDgQpiV5UGAZGpb+Od1H7hyybrYvD1FKwB/cBhj8S+YP3ZMsOQLm0v5CHw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RquGCIGj; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 In-Reply-To:Content-Type; b=glJqnP7L8Mob1ZlWy3DEVy7gahMMSJQ1Bh7gsuAoB2o6jG80wl6VuW/BlyXOdgi6OdnQCT+PvuESs4Xtun2U1J7tlRkMDnJaSAqZumQUJRy2f3NlnFxDFRWWED/jygjZpl14yy340Ik39cl3pk1ib3x2IQh0vsgKbo3W1JG0GG95E+miRSJOZFy1nXGs6lwiplThwbeyPbxE6/02p6fEqrVjw3odcWKFb7kQ4fVep1n3/272MvPtq8MdWxrcdgFICWQtAZRe5dAJ/u0FzdymjFaWBrXjbWllXziJjC6202yKpyJcN67COUO/6isLZ22q70c1FOeyOz/v1BL7OO2rGg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DkX5FW+e; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RquGCIGj;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DkX5FW+e;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j33S40v4Lz2y2B
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2026 14:51:47 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69C2EEDQ3070856;
-	Mon, 12 Oct 2026 03:51:37 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j353c56rpz2xyk
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2026 16:04:12 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69C2F1K73019042;
+	Mon, 12 Oct 2026 05:04:03 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=Fh+cmR
-	tEbXcmwWD44V7PpRx5S2436EpwTjabRkFFgx8=; b=RquGCIGjKi8FgksoepE589
-	1JQmtcH6aeFKmnZCAUFreUSD9guyufUS4spo7Zc9uQWM71Bd9cViaXM7+ju2qIai
-	IgIQ2YvRQXQRWcYA+o9OX+Fy1b5FqM7ZB372rs3nUrCuBbU3pZEhThZZoICTKYKP
-	C0Kg+5bEX50USssK55JbT9JZn307IbNmDhtiOIuqkqsrSE/fmlbC4KZS7iDHqdvz
-	NOZAFRC4JwQ8xEdd/kulvQ2dXzWw8EYsNGiOMmdlQoBsovBjZ/Fc+IyrNqiXf8ZT
-	DrXqo8QP3Y0x5G7RNikxQ86J+bRLgi3YNJ2E9x7ywRNBWUNpZXy2W0lS9sKP3Irg
+	:message-id:mime-version:references:subject:to; s=pp1; bh=uFU+80
+	0bsccEesRqUvmAZL8rkHq2KyNXzUK3BpApTmQ=; b=DkX5FW+ef8GuEuJ39as0op
+	1dIYFeNLUk/6glGuRGp/1lbaFHMxPT286whRxbhPxQZXzl7/QwL2yT2fQY6ZcADn
+	f6RjXBhhbV255H34DBz+xORxklanf3fbOCAm3sIb535cEZ60PCO0qLrl+UZtfarl
+	LdM8c4eqAcQ1YcprlJ6RyFn7PxkZ/mQIUkpQ94TazyHFFbFUJiFTI+mcUqdSWodm
+	tQwNThnI6wT86SgHrE8IBptudwrlHqEZkwncAiSS46z23jxXbRu3TwvZt1Ey8I7m
+	LK6hYhiAK3gkaXhpjeqRjDls3Rpl+oa7GHgg2JCyHbodHPHMXYxgVd++kkCMqXjA
 	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7e1vxqm2-1
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7dv3789u-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 12 Oct 2026 03:51:36 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69C1o7Av598375;
-	Mon, 12 Oct 2026 03:51:35 GMT
-Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4h82cybaud-1
+	Mon, 12 Oct 2026 05:04:02 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69C1o6ih522249;
+	Mon, 12 Oct 2026 05:04:01 GMT
+Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h80pjks8c-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 12 Oct 2026 03:51:35 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
-	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69C3pYCw54067562
+	Mon, 12 Oct 2026 05:04:01 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
+	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69C53x7466519326
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 12 Oct 2026 03:51:35 GMT
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E40FF58055;
-	Mon, 12 Oct 2026 03:51:34 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D9C8A58059;
-	Mon, 12 Oct 2026 03:51:30 +0000 (GMT)
-Received: from [9.123.8.83] (unknown [9.123.8.83])
-	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 12 Oct 2026 03:51:30 +0000 (GMT)
-Message-ID: <94cd4203-1be8-4f8d-b015-0c02760e5770@linux.ibm.com>
-Date: Mon, 12 Oct 2026 09:21:28 +0530
+	Mon, 12 Oct 2026 05:03:59 GMT
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0BF505810F;
+	Mon, 12 Oct 2026 05:03:59 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0949858115;
+	Mon, 12 Oct 2026 05:03:56 +0000 (GMT)
+Received: from [9.67.163.79] (unknown [9.67.163.79])
+	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 12 Oct 2026 05:03:55 +0000 (GMT)
+Message-ID: <93cc87b4-14ce-43d9-a29e-d9a6795bb0d5@linux.ibm.com>
+Date: Sun, 11 Oct 2026 22:03:55 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,160 +82,313 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 0/8] KVM: selftests: add powerpc support
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, kvm@vger.kernel.org,
-        Sean Christopherson <seanjc@google.com>
-Cc: Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Christophe Leroy
- <chleroy@kernel.org>,
-        Anushree Mathur <anushree.mathur@linux.ibm.com>,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-        Harsh Prateek Bora <harshpb@linux.ibm.com>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>, linux-kernel@vger.kernel.org
-References: <cover.1791280439.git.ritesh.list@gmail.com>
+Subject: Re: [PATCH net-next v3 4/8] ibmveth: step past bad RX correlators
+ instead of spinning or oopsing
+To: netdev-bot+sashiko@kernel.org
+Cc: netdev@vger.kernel.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
+        npiggin@gmail.com, chleroy@kernel.org, ritesh.list@gmail.com,
+        sshegde@linux.ibm.com, nnac123@linux.ibm.com, andrew+netdev@lunn.ch,
+        davem@davemloft.net, edumazet@kernel.org, kuba@kernel.org,
+        pabeni@redhat.com, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org, horms@kernel.org, davemarq@linux.ibm.com,
+        bjking1@linux.ibm.com, stephen@networkplumber.org
+References: <20261009183258.18624-5-mmc@linux.ibm.com>
+ <179166081271.434549.2458181310224040226@kernel.org>
 Content-Language: en-US
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-In-Reply-To: <cover.1791280439.git.ritesh.list@gmail.com>
+From: mingming cao <mmc@linux.ibm.com>
+In-Reply-To: <179166081271.434549.2458181310224040226@kernel.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEyMDAxNCBTYWx0ZWRfXwfcHgwa6F8F1
- 8+Xb8jlXeIVF4vbwNLHGxTqCnjqxEVIpcUpgfX4e6fWztGHMs62FTes2xRJU3x56nYbubABrEYp
- idgcS/PW9izzuw0/3IU6Fyyr3Wbf4Rg=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEyMDAxNCBTYWx0ZWRfX7Cj0jI8n7Owq
- NqEz8zD2aCoKct+/eQ/KdnVZf6nWcgzy2729OhoUXoj5eTzYrizrJslM25eYSeKdWAFdUoD5aQ2
- +zu928m6BUJRzAbSeQ7Mp6vVSEANUW3fd8pzL137OAHEH7ymWALQTooBBrFwlkZAQJg6sJpI6QT
- I39ueCKqzinYRVvXiaqIac7ASk/CcHsR1An2aN3ot5K3i5l8nU7pZ22J/Zizy+hKQ1bKrHvnzQD
- ImllwfwkP1Re+SE4bl7s/Ul/Q3x9Bl4tr4iYRnwj+khKRPmAgPnA7t0KbCfw+kMb8Qrl4PPh4iq
- lwI+cixxK7ly+6Xtl7DBeX7tYa1kddka04htaYdRNIgF370TxX9oMFe08waYRIOF7q5bCfp7B0L
- lf545DwvdCG+MUHXREq8KUTQFPYpq9XPtzcRvfZSQZFtsfztEg9kDHd4RNwJP7YEjPT7i6hP8Ve
- 1nYvYxY7xJU+MjmOluA==
-X-Authority-Analysis: v=2.4 cv=E6pYNqdl c=1 sm=1 tr=0 ts=6acc5948 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+X-Proofpoint-GUID: u8b1v0peDjrQLPqgg1Rb4ofNq2OGPsxd
+X-Proofpoint-ORIG-GUID: cYnn2M_sA5Qw1tEFTV2dg9lLqStR4cIJ
+X-Authority-Analysis: v=2.4 cv=aqInmiZV c=1 sm=1 tr=0 ts=6acc6a42 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
  a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
- a=1XWaLZrsAAAA:8 a=pGLkceISAAAA:8 a=VnNF1IyMAAAA:8 a=XUvtLocL4moM6XFFuJEA:9
- a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: wcyoAUsnYWyartj_LMssaGR2zbXpmQ44
-X-Proofpoint-GUID: 6L66dTfzpY_Xhq72Nqee6HcVU9AJ5lpm
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
+ a=CpsONLjkRwPTLDU7ZUkA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEyMDAxOCBTYWx0ZWRfX0LOxcmnFJ4dc
+ BI4qRXd4zf5kCznDK4thDyVPE7LxnW6oc8+nvUrnRYyWjT3eyIYM8xEwWRYdV34qf3QJm7+tNkW
+ RJQP5Y2dciV0/C+ywTBya3FZAddMm30=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEyMDAxOCBTYWx0ZWRfX8zhWFzwWO9wA
+ omUqgpMfkwrOTzz7Wldo7Ho54u3HX8h2b4/k1I+nDwVQ+5KLiFzbE81ov0ge9dzjKSTmGqPIEmZ
+ FX7ZdEJyQQpYnA/WWiZosTaFFavqhGq+fGgu/0I6mBsogyOvzmGfELCJ7r4CGhduK/JSE1ptDHz
+ foMRmpq/HRlAEOgl1r8941PnkogOu6mfx0AOP3/A2tjckvkg6KKher9V2jWpX7zdztg2o3Zf6KP
+ B3uSAEzlPicXNJDwzrARJW7SFIkvn9vxozHZB8PYUOkkqbZTiMFqLgPtk68s+O/zWDEtqSyA8ED
+ G4Ln8vOGoyXtGj2s85vuSeeb0zI5e4e500F88QwR7PPInNyByhUF3GtOaKhNpQYmot19ZCS4TbA
+ 1RZXRId0ON99Pcp/4b7WmM8PJVoo9YX5Mx9maYPFQkCaDS0pCuAusBstQuQ6+Mk673ubn1GW8GF
+ fJgVFWS8Qoh+S9UeXzg==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-10-12_01,2026-10-09_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 phishscore=0 clxscore=1015 bulkscore=0 priorityscore=1501
- spamscore=0 adultscore=0 suspectscore=0 malwarescore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610080000 definitions=main-2610120014
+ phishscore=0 clxscore=1015 spamscore=0 malwarescore=0 suspectscore=0
+ bulkscore=0 adultscore=0 impostorscore=0 priorityscore=1501
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
+ definitions=main-2610120018
 
 
-On 10/6/26 3:58 PM, Ritesh Harjani (IBM) wrote:
-> Patch v5 -> v7:
-> ================
-> (Suggestions from Sean):
-> 1. Added kvm_is_ppc_pseries_lpar() helper in kvm_util.h to avoid sprinkling
->     multiple #ifdef __powerpc64__ checks.
-> 2. Enable all tests via TEST_GEN_PROGS_COMMON for powerpc
-> 3. Enable hardware_disable_test and skip when running on powerpc pseries LPAR
->     (nested).
-> 4. Re-arranged the fixes in appropriate order.
+On 10/10/26 12:33 PM, netdev-bot+sashiko@kernel.org wrote:
+> Thank you for your contribution! Sashiko AI review found 3 potential
+> issue(s) to consider.
 >
-> This is based off v2 of Sean PPC pre-enablement series [1].
-> [1]: https://lore.kernel.org/kvm/20260902164123.2546762-1-seanjc@google.com/
+> Critical: 0 · High: 3 (1) · Medium: 0 · Low: 0
 >
-> Patch v4 -> v5:
-> ==============
-> - Fixed the issues reported by Anushree while running on kvm on powervm
->    (nested).
-> - Fixed memslot_perf_test on powerpc.
+> If you believe none of the issues are legitimate, please reply to each
+> issue of Medium severity or higher and explain why the AI is wrong.
+> If any of them are legitimate and you plan to respin, please let patchwork
+> know by including "pw-bot: cr" as a separate line at the end of your reply
+> (one such reply per series is enough).
 >
-> PATCH v3 -> PATCH v4:
-> ==================
-> - Rebased on top of Sean's new page allocator patch series v2 [1]
->    This allowed to drop and patch-2 since it will now come from Sean's
->    v2.
-> - Addressed review comments from Sean - squashed patches 6-10 in patch-1 of
->    this.
-> - Dropped patch-5 to print vcpu_id when KVM_CREATE_VCPU ioctl fails.
-> - Added additional patch-3 to this series to allow dirty_log_test to run on all
->    big-endian machines.
+> - [High] This patch's short-frame check is incomplete.
+> - [High] Returning budget - 1 does not make ibmveth_poll()'s schedule-
+>    and-continue path safe when threaded NAPI and busy polling are both…
+> - [High] net/ibmveth: TOCTOU double-fetch of RX correlator in
+>    harvest_buffer
 >
-> [1]: https://lore.kernel.org/kvm/20260902164123.2546762-1-seanjc@google.com/
-> [v3]: https://lore.kernel.org/linuxppc-dev/2d2c46be7f051c7f1c645afaec67f57067d37a81.1781093720.git.ritesh.list@gmail.com/
->
-> Testing updates:
-> ================
-> I have done some fair amount of testing of the selftests both on real HW and
-> using various combinations on qemu (powernv+LE (default), pseries+cap-nested-hv,
-> pseries+cap-nested-papr, powernv+BE). There were few powerpc kvm kernel fixes
-> which were identified as part of this work. I will send those patches separately
-> as those anyway needs to go in separately.
->
-> <pasted snippet of cover letter from previous versions>
-> =======================================================
->
-> Hi All,
->
-> This series primarly adds KVM selftests support for powerpc (64-bit, BookS,
-> radix MMU).
->
-> This patch series is originally Nick's work. I have mainly only rebased it on
-> the latest upstream tree. Since the rebase required few changes to all the four
-> patches (Patch 1-4), I have dropped the earlier Acked-by from Michael Ellerman.
->
-> Since the last series was posted three years ago [1], I am resetting the version
-> to RFC. This rebase was done as part of a larger effort to improve the selftests
-> infrastructure for Linux on PowerPC tree. Thanks to Harsh and Maddy for their
-> help on this.
->
-Sean/Paolo, hope you take this via your tree.
-Acked-by: Madhavan Srinivasan <maddy@linux.ibm.com>
-> Nicholas Piggin (1):
->    KVM: PPC: selftests: add support for powerpc
->
-> Ritesh Harjani (IBM) (7):
->    KVM: selftests: Don't limit LE dirty-bitmap bitops to s390x
->    KVM: selftests: Move memslot_perf_test off the 256M ELF load address
->    KVM: selftests: Skip the max vCPU ID test when KVM_CAP_PPC_SMT is set
->    KVM: selftests: Add helper for checking if running on powerpc pseries LPAR
->    KVM: selftests: Skip kvm_create_max_vcpus on powerpc pseries LPAR
->    KVM: selftests: Only warn for idle-page checks on powerpc pseries LPAR
->    KVM: selftests: Skip hardware_disable_test on powerpc pseries LPAR
->
->   MAINTAINERS                                   |   2 +
->   tools/testing/selftests/kvm/Makefile          |   2 +-
->   tools/testing/selftests/kvm/Makefile.kvm      |   9 +
->   .../selftests/kvm/access_tracking_perf_test.c |  10 +
->   tools/testing/selftests/kvm/dirty_log_test.c  |  12 +-
->   .../selftests/kvm/hardware_disable_test.c     |   3 +
->   .../testing/selftests/kvm/include/kvm_util.h  |  26 +
->   .../selftests/kvm/include/powerpc/hcall.h     |  17 +
->   .../kvm/include/powerpc/kvm_util_arch.h       |  22 +
->   .../selftests/kvm/include/powerpc/ppc_asm.h   |  32 ++
->   .../selftests/kvm/include/powerpc/processor.h |  39 ++
->   .../selftests/kvm/include/powerpc/ucall.h     |  21 +
->   .../selftests/kvm/kvm_create_max_vcpus.c      |  14 +-
->   tools/testing/selftests/kvm/lib/guest_modes.c |  20 +-
->   tools/testing/selftests/kvm/lib/kvm_util.c    |   8 +
->   .../selftests/kvm/lib/powerpc/handlers.S      |  93 ++++
->   .../testing/selftests/kvm/lib/powerpc/hcall.c |  45 ++
->   .../selftests/kvm/lib/powerpc/processor.c     | 512 ++++++++++++++++++
->   .../testing/selftests/kvm/lib/powerpc/ucall.c |  22 +
->   .../testing/selftests/kvm/memslot_perf_test.c |   2 +-
->   20 files changed, 898 insertions(+), 13 deletions(-)
->   create mode 100644 tools/testing/selftests/kvm/include/powerpc/hcall.h
->   create mode 100644 tools/testing/selftests/kvm/include/powerpc/kvm_util_arch.h
->   create mode 100644 tools/testing/selftests/kvm/include/powerpc/ppc_asm.h
->   create mode 100644 tools/testing/selftests/kvm/include/powerpc/processor.h
->   create mode 100644 tools/testing/selftests/kvm/include/powerpc/ucall.h
->   create mode 100644 tools/testing/selftests/kvm/lib/powerpc/handlers.S
->   create mode 100644 tools/testing/selftests/kvm/lib/powerpc/hcall.c
->   create mode 100644 tools/testing/selftests/kvm/lib/powerpc/processor.c
->   create mode 100644 tools/testing/selftests/kvm/lib/powerpc/ucall.c
+> Pre-existing issues:
+> - [High] This problem wasn't introduced by this patch, but
+>    ibmveth_rx_csum_helper() calls ip_fast_csum(iph, iph->ihl) whenever…
 >
 > --
-> 2.39.5
+
+
+Thank you for the review. I agree with all four High findings on this
+patch.
+
+I will address them in v4 on the same net-next base (d8674294aefe).
+Patches 1-3 and 5-8 are unchanged from v3. Patch 4 fixes the poll
+tail (no restart_poll after napi_complete_done; mask then queue the
+NAPI), passes the correlator poll already read into harvest, and
+keeps the buffer-bound and ETH_HLEN drops without claiming they cover
+the RX offload helpers.
+
+The helper header checks (short frames, ihl,
+doff, fragments, and the ip_fast_csum() case) are split into a new
+patch 9 at the end of the series, with their own Fixes: tags and KUnit
+cases.
+
+I will post v4 on netdev shortly.
+v4 was tested with KUnit on qemu pseries and on a POWER10 LPAR (the v3
+suite plus large-send iperf3 over IPv4/IPv6 at MTU 1500 and 9000).
+
+Thanks,
+Mingming
+
+pw-bot: cr
+
+> ibmveth: step past bad RX correlators instead of spinning or oopsing
 >
+> This patch makes ibmveth_poll() advance the RX ring past slots with a bad
+> correlator, including correlators that name an inactive pool, instead of
+> breaking out and restarting on the same slot. It counts those slots as
+> drops and schedules a reset. It also drops frames that do not fit the pool
+> buffer or are shorter than an Ethernet header, and returns budget - 1 once
+> napi_schedule() has queued the NAPI.
+>
+>> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+>> index cee0e9783b2ab..55c0b5d6e0a9f 100644
+>> --- a/drivers/net/ethernet/ibm/ibmveth.c
+>> +++ b/drivers/net/ethernet/ibm/ibmveth.c
+> [ ... ]
+>
+>> @@ -1481,19 +1525,46 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+> [ ... ]
+>
+>>   		} else {
+>>   			struct sk_buff *skb, *new_skb;
+>>   			int length = ibmveth_rxq_frame_length(adapter);
+>>   			int offset = ibmveth_rxq_frame_offset(adapter);
+>>   			int csum_good = ibmveth_rxq_csum_good(adapter);
+>>   			int lrg_pkt = ibmveth_rxq_large_packet(adapter);
+>> +			u64 correlator = ibmveth_rxq_correlator(adapter);
+>> +			unsigned int pool, room, off, len;
+>>   			__sum16 iph_check = 0;
+> [Severity: High]
+> The commit message says the bound uses the pool "from the correlator
+> that was validated, read once, not from a second read of the ring".
+> Doesn't ibmveth_rxq_harvest_buffer() still do that second read?
+>
+> ibmveth_poll() now reads the correlator once with
+> ibmveth_rxq_correlator(). It uses that value to look up skb in
+> ibmveth_rxq_get_buffer() and to compute room. Every harvest after that
+> ignores it, though: this call, the copybreak call and the one on the
+> bad-frame path. ibmveth_rxq_harvest_buffer() loads
+> queue_addr[rx_queue.index].correlator again with a plain load and
+> passes that to ibmveth_remove_buffer_from_pool(). Nothing ties the
+> second value to the one poll validated.
+>
+> Suppose the entry changes between the two loads, so skb is looked up
+> from slot A and harvested from slot B. On this reuse=false path:
+>
+> - rx_buff_pool[].skbuff[B] is cleared and dma_addr[B] is unmapped.
+>    B goes on free_map, and the skb that was in slot B is leaked.
+>
+> - skb A goes to napi_gro_receive() while it is still in skbuff[A],
+>    still DMA mapped and not on free_map. The driver still treats it
+>    as a posted buffer.
+>
+> - On close or reset, ibmveth_free_buffer_pool() finds skb A in
+>    skbuff[A], unmaps it and calls dev_kfree_skb_any() on it after the
+>    stack has already freed it.
+>
+> The copybreak and bad-frame paths would recycle slot B instead of A
+> in the same way.
+>
+> ibmveth_rxq_correlator_valid() does not catch this, because both
+> correlators can be in range and name live skbs.
+>
+> PHYP should not rewrite an entry once the toggle is set. But this
+> patch treats the correlator as untrusted, and the changelog says it
+> is read once. Should ibmveth_rxq_harvest_buffer() take the correlator
+> from its caller, so poll uses one value for lookup, bound check and
+> harvest? The new KUnit harvest test could read the ring entry itself
+> before calling it.
+>
+> [ ... ]
+>
+>> +			pool = correlator >> 32;
+>> +			room = min_t(unsigned int, skb_tailroom(skb),
+>> +				     adapter->rx_buff_pool[pool].buff_size);
+>> +			off = offset;
+>> +			len = length;
+>> +			if (unlikely(len < ETH_HLEN || off >= room ||
+>> +				     len > room - off)) {
+>> +				if (net_ratelimit())
+>> +					netdev_err(netdev,
+>> +						   "bad RX frame offset %u length %u (buffer %u), dropping\n",
+>> +						   off, len, room);
+>> +				ibmveth_rxq_harvest_buffer(adapter, true);
+>> +				netdev->stats.rx_dropped++;
+>> +				frames_processed++;
+>> +				continue;
+>> +			}
+> [Severity: High]
+>
+> The commit message says this check fixes the case where "the checksum
+> helpers would write past a short frame". Is an ETH_HLEN minimum enough
+> for that?
+>
+> Once this check passes, ibmveth_poll() and its helpers assume a full IP
+> header and TCP header and never look at skb->len:
+>
+> ibmveth_poll()
+>      iph_check = iph->check;
+>      ibmveth_rx_mss_helper()     /* lrg_pkt or iph_check == 0xffff */
+>          skb_shinfo(skb)->gso_size = ntohs(tcph->check);
+>          tcph->check = 0;
+>          hdr_len = offset + tcph->doff * 4;
+>          skb_shinfo(skb)->gso_segs =
+>                  DIV_ROUND_UP(skb->len - hdr_len, ...);
+>      ibmveth_rx_csum_helper()    /* csum_good */
+>          iph->check = ip_fast_csum((unsigned char *)iph, iph->ihl);
+>          struct tcphdr *tcph = (struct tcphdr *)(skb->data + iphlen);
+>          if (tcph->check == 0x0000) {
+>              tcph->check = ~csum_tcpudp_magic(...);
+>
+> A frame of about 14 to 92 bytes passes the new check, but these helpers
+> still read and write past the end of the frame. In
+> ibmveth_rx_mss_helper(), skb->len - hdr_len can also wrap.
+>
+> On the copybreak path, those accesses land in the uninitialized tailroom
+> of new_skb.
+>
+> On the non-copybreak path, they land in the pool buffer past the frame.
+> That path runs when the GFP_ATOMIC copybreak allocation fails, or when
+> rx_copybreak is set at or below the frame length.
+>
+> The new bound also accepts a short frame at the very end of the buffer.
+> For pool 0 with room = 512, off = room - 34 and len = 34 leave
+> skb->tail == skb->end after skb_put(). eth_type_trans() then leaves 20
+> bytes of IPv4 header, so tcph sits at skb->end.
+>
+> Wouldn't the tcph->check writes then land in struct skb_shared_info
+> (hwtstamps, gso_type, tskey or dataref, depending on ihl)?
+> skb_partial_csum_set() rejects this only after the write has already
+> happened.
+>
+> Should there be per-protocol skb->len checks, or pskb_may_pull(), before
+> the IP and TCP headers are parsed, rather than a fixed minimum?
+>
+> [Severity: High]
+>
+> This isn't a bug introduced by this patch, but since this patch hardens
+> the RX path: should ibmveth_rx_csum_helper() check iph->ihl before it
+> calls ip_fast_csum()?
+>
+>      if (iph->check == 0xffff) {
+>          iph->check = 0;
+>          iph->check = ip_fast_csum((unsigned char *)iph,
+>                                    iph->ihl);
+>      }
+>
+> On ppc64, ip_fast_csum_nofold() in arch/powerpc/include/asm/checksum.h
+> documents that ihl "is always >= 5" and does:
+>
+>      for (i = 0; i < ihl - 1; i++, ptr++)
+>          s += *ptr;
+>
+> ihl is unsigned, so with ihl == 0, ihl - 1 wraps to 0xFFFFFFFF and the
+> loop reads about 16 GiB starting at the RX buffer, in NAPI softirq
+> context.
+>
+> The ihl, check and ethertype fields and the IBMVETH_RXQ_CSUM_GOOD flag
+> all come from the sending partition. Could a single IPv4 frame with
+> ihl = 0 and check = 0xffff from a peer on the same virtual LAN oops or
+> stall this partition?
+>
+> [ ... ]
+>
+>> @@ -1581,10 +1661,16 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+>>   	if (ibmveth_rxq_pending_buffer(adapter) && napi_schedule(napi)) {
+>>   		lpar_rc = h_vio_signal(adapter->vdev->unit_address,
+>>   				       VIO_IRQ_DISABLE);
+>> +		rescheduled = 1;
+>>   		goto restart_poll;
+>>   	}
+>>   
+>>   out:
+>> +	/* napi_schedule() already queued us. Returning budget would
+>> +	 * make busy_poll_stop() queue the napi a second time.
+>> +	 */
+>> +	if (rescheduled && budget && frames_processed >= budget)
+>> +		return budget - 1;
+>>   	return frames_processed;
+>>   }
+> [Severity: High]
+>
+> Does returning budget - 1 cover the case where threaded NAPI and busy
+> polling are both enabled?
+>
+> busy_poll_stop() clears NAPI_STATE_IN_BUSY_POLL before it calls the
+> driver poll. Its own comment says "Unless rc == budget we no longer own
+> the NAPI instance". From there:
+>
+> busy_poll_stop()
+>    ibmveth_poll()
+>      napi_complete_done()             /* succeeds */
+>      h_vio_signal(..., VIO_IRQ_ENABLE)
+>      napi_schedule()
+>        ____napi_schedule()
+>          set_bit(NAPI_STATE_SCHED_THREADED, &napi->state);
+>          wake_up_process(thread);
+>      goto restart_poll;               /* keeps processing the ring */
+>
+> The woken kthread sees NAPI_STATE_SCHED_THREADED in napi_thread_wait()
+> and calls __napi_poll()->ibmveth_poll() on another CPU. Meanwhile the
+> original call is still running from restart_poll.
+>
+> Can the two pollers then race, with no lock, on rx_queue.index and
+> toggle, rx_buff_pool[].skbuff[], free_map and producer_index? For
+> example, one harvest with reuse=false could clear and unmap an skb while
+> the other poller passes the same skb to napi_gro_receive().
+>
+> The budget - 1 return only runs after this overlap. Continuing to poll
+> after napi_schedule() predates this patch, but this patch now reasons
+> about NAPI ownership after napi_schedule(). Would it be better to stop
+> processing once napi_schedule() succeeds, instead of jumping back to
+> restart_poll?
 >
 
