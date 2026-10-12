@@ -1,117 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-29272-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29273-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13B3ACA9EDD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 15:56:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 325FECA9ED1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 15:56:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3MX629PZz3bV5;
-	Tue, 13 Oct 2026 02:56:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791820582;
-	cv=none; b=jLS8R4fsZu3quH4GAbW1L8OVvZMUkdeE5HCJiuTRIaTCecOewnryMKrLXd8SMOk+UwBviU9tw1PXq36bqGAdh0AkwlCzVCZtIz9isN9HraxLZKGUC0H3OeqSsIQPEEIfNrzIvO2OitP6sFtOP6kdh1wylJ76e1+bMgYnRdTG1MGeEcgHNqil8atYgPOf7v9Owtr6AxDjIhh3JNH19s5FSWIf5Oy3i+ye1J1NSPsPxIW5jsh0bOLC7KiHd/v80SMswNDzNGLnvjppuHS+fc/BZlaT3xggSVPb4y2GodayvuCmVkx99GuRrRQlpFwKwOeQz3adKUghYoa9TdQ9JeDO+A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3MXY3vt9z3bdq;
+	Tue, 13 Oct 2026 02:56:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791820605;
+	cv=none; b=XPFrmt/l4yHFTIJ0dokyUskhmATrZiHheK9nIg1z0KOAIqUX8OIaBDX7Amej3T7y/u2CpM1x7i2g18n7Pqgeq9NijZMZjHNqg3RDwu3aAgh2e2n44w4uppyeoQCTBXI7cyjia/KN/h41vtEjtpZZsXlmn73OnkS27C0/HuIuO5yArP1IYPoJVu6iD65Gqhrqlvw/rYKrZiY3OlpwNrA1n4+ulyDE8wxhvj1KTrkylrEe17bj4hrAMZRV51B8DkC8cF5NiGvZ9xJv4F3dfAoKs2NZZ+p/5CyxmgzgSkb0lAXfGV22CruvIadOOD2sQBkVyOVW2ZyOuOiar4hNuKoqyw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791820582; c=relaxed/relaxed;
-	bh=rFbms1O2vgiDwDr5XNy7hfOQCE1GiDGN4QD7DcgiMNU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=TbiXYdwiuZ233Chm5xjGWicSzSI4m8+jXPTx5zuVXpiIxqXYGwIGQgL92lar9qYMwL4Z1sGafCapggz1HE/1bUWptWUhk0jwzWe6PdOeBC0KL3BmOE20zAwnZriV+venrmsDE6AqjsG3i9vdi6/rpWVxsbF8MDIlmMb6GcPkSgmsptEGWq1E4e9H9iVilH/ONOx09WpPlUC1m8zsb2WazPLyDrREyk0LnHS1OVtyR/X/GKYdSlIvHe6vo3gei+8uaEHOF61swUOvertSIjSBO4CcFu/hzbilxZVVFy0MoL4M8cUq5EcmE4aNFDBSKgwXadYMq+RfBaK2x7snkR/Xpg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lcCuIdrm; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1791820605; c=relaxed/relaxed;
+	bh=p/1CbzogE0uACzgyIvPXejRWL13emiWfqsLVrwpn6GI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=IOByVJ/jG9QH1MI+MQ8Ib8orrOOaG8HuQ9ApTpKS+wWjSNjONNhfrZyuEZ/N/aZ8vQhhC1YIThKbJBz4Vmqb4RxS2ZOD3eIe48Z00FFSfcVDJCnmh3pOAwiYane+yJt9bl/+bxIglJ3+UFh2OiBFPxoP2/EnGCYuuIEzwFi683LsEx/4FRhhHDwMLA3TxbfzQYo4yp058nJICO5+3k11KbR27hBrr25/VlqQIztQDv0w0GIY4eB1Z759GOwEjCnqI34GLRhRjv0ldsHHG0cdRUhqjIRtMcAG9diJl1KEfi/nBjNnfT62wkkdPC2jvW75RaDRiKEHwqD9Wz/IaKyaAg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Tn+TP6o/; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lcCuIdrm;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Tn+TP6o/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3MX51NgTz3bNr
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 02:56:21 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id EEBE4404DC;
-	Mon, 12 Oct 2026 15:56:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CFCE21F0089B;
-	Mon, 12 Oct 2026 15:55:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791820577;
-	bh=rFbms1O2vgiDwDr5XNy7hfOQCE1GiDGN4QD7DcgiMNU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=lcCuIdrmMQTUiPwLl5e5Z+CrC201P9TaW7VntAlAQ0wuTIeWArybWpskzP1Cw5dV6
-	 ylJBpTsnaVkD11Tx3RuJLQfK/a8MthDkbqh/N2Qo+NL+mbeJ3F+l2nHLzRgl2fwWrH
-	 B2VMH6xZ4mSRm44O1aVrnpq4KXOYj1KBkqJhj4Zhsip2ZHKhYDPIEZ9S25S3KUpDrh
-	 0/izKAMAcRM9eWvuTZfpYIL58pwYVIybump371ArBjzbMrNsvpmDwuL9EdnDMlpqUp
-	 x6n3EvLO70LPCbwLxz+x7mIQrXQvvZz8TgmnlRpMjxmuB8UzGsynS78NvOMo7KMLyg
-	 CQyvIZ4fN7eXw==
-Date: Mon, 12 Oct 2026 16:55:44 +0100
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: "David Hildenbrand (Arm)" <david@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, 
-	"Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, 
-	Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, 
-	Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
-	Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, 
-	Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, 
-	Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, 
-	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
-	Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
-	Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, 
-	Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, 
-	Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, 
-	Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, 
-	Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, 
-	Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, 
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, 
-	Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, 
-	John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, 
-	Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
-	Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, 
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, 
-	Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
-	Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, 
-	Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
-	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
-	David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, 
-	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, 
-	Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, 
-	"Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, 
-	Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
-	Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, 
-	Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, 
-	Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, 
-	Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, 
-	Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, 
-	Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, 
-	Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, 
-	Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, 
-	Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, 
-	Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, 
-	Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, 
-	Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, 
-	Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org, 
-	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, 
-	linux-rdma@vger.kernel.org, selinux@vger.kernel.org, linux-sound@vger.kernel.org, 
-	bpf@vger.kernel.org, linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, 
-	linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
-	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
-	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev, 
-	Ihor Solodrai <ihor.solodrai@linux.dev>, Bert Karwatzki <spasswolf@web.de>, 
-	Emil Tsalapatis <emil@etsalapatis.com>
-Subject: Re: [PATCH v5 13/38] bpf: arena: mark arena_map_mmap() mappings
- VM_MIXEDMAP
-Message-ID: <as0Buhi_-VCC7xLZ@gremlin>
-References: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-0-923b70125b1e@kernel.org>
- <20261009-b4-mmap-prepare-vma-flag-sanify-v5-13-923b70125b1e@kernel.org>
- <5b8ef0ce-7429-4d74-b4da-a0561c59b1e2@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3MXX3nC8z3bNr
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 02:56:44 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69CFiK5u664557;
+	Mon, 12 Oct 2026 15:56:33 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=p/1CbzogE0uACzgyIvPXejRWL13emiWfqsLVrwpn6
+	GI=; b=Tn+TP6o/btBIZeYx3WfiSfJBoD8M5tV0sgOnrNil4ROibISpZLnabz2eM
+	gnftgXAPMvpTL5+AgcO2ubNNHTWDynt7ZI8ZreKsV2iqNFycfdPXZ/GLE1fqLsIk
+	HaN/c18+tRzkKyacSd08avNwm3z1Bmarmc9NRmdujiUnyF8QZuE+JnwPCuA5NWVg
+	BhWqn1DCzZy6WtW/iRWr5yV5vuowOCHYqpirWiep0JY7kXU97brTtKsPx96PsW2f
+	5tuZg7fdkulM+CsCGghCICN3TZ93J3ZJxmnjOX+4VTPkc7GvVgp7ltBbCIbp7eky
+	styTfn+Nu4IaUJc+mGrmSo7tBo7EQ==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7e1w1ch3-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Mon, 12 Oct 2026 15:56:32 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69CFo2Ga1519777;
+	Mon, 12 Oct 2026 15:56:32 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h80pjnv33-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 12 Oct 2026 15:56:31 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69CFuRB741091472
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 12 Oct 2026 15:56:27 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A29FA20049;
+	Mon, 12 Oct 2026 15:56:27 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6719520040;
+	Mon, 12 Oct 2026 15:56:25 +0000 (GMT)
+Received: from sapthagiri.in.ibm.com (unknown [9.111.24.104])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 12 Oct 2026 15:56:25 +0000 (GMT)
+From: Srikar Dronamraju <srikar@linux.ibm.com>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Srikar Dronamraju <srikar@linux.ibm.com>,
+        Samir Mulani <samir@linux.ibm.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] pseries/hotplug: Add CPU-to-node mappings for all present CPUs
+Date: Mon, 12 Oct 2026 21:25:49 +0530
+Message-ID: <20261012155549.557256-2-srikar@linux.ibm.com>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -125,52 +89,99 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5b8ef0ce-7429-4d74-b4da-a0561c59b1e2@kernel.org>
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEyMDA2MiBTYWx0ZWRfX8/J/iEy6BizF
+ o+6DEht232O1fnlVTTqDkYnrX2X1rLQAfeVYV+k8qOKKRj9Nn/Nxnh80hxKUL07zBhIStiafIg3
+ 8pOd1JIyMOJwMUmhVKFMpx0A6UxgRKI=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEyMDA2MiBTYWx0ZWRfX92xShyhueUe+
+ HzHIV5dWQG9Sg1kQIO4HS5L8rjbjYzTXLfNuPFC06BhxkhpZor+x3KdlDrshKihsFsRP8gq1D2m
+ 3vtIbYx0EZTyE4n2hGWCB2YQozWGsCOT0bGwkk39apVkU7RqCNRzHvo0QKADDBqRXcMFZD88MPJ
+ 1UaO24NU4DH38icehm89aESUo+UtrywpuqOCtLNVGGTfFnCFCABIlmNyEZrY4AOH1RXmMeEd+y2
+ 4ksjIDzWMpeNVL+ZMrV00Q4A2BDazuV7BJm9VAB3+mBBP1QKHPYglD9BQpuZlb+N6YZp0NuarLd
+ aiQciVjqZBDPa1LvpL9v50nFbMYRGIt+s1VRafyw92CEe3bZr5xFshimZfisqY5AbKUqtUQOoHC
+ rWS92EEU7UcsU9il01mloiFBAtj+DQZ7jiVLlSH1LJmErb+wptUCqr9RXaT13+Lmz8PH6yebW6v
+ rWcITSb7IErVH4nK8gw==
+X-Authority-Analysis: v=2.4 cv=E6pYNqdl c=1 sm=1 tr=0 ts=6acd0330 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=1fnlYXJgojCpgBqSObwA:9
+X-Proofpoint-ORIG-GUID: J2EDGii9-ZfR0zQNa_vMe303D77Np5XZ
+X-Proofpoint-GUID: kCoXKPNGlw59eoCCDhnc01PEroamWMBE
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-12_05,2026-10-09_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 phishscore=0 clxscore=1015 bulkscore=0 priorityscore=1501
+ spamscore=0 adultscore=0 suspectscore=0 malwarescore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610080000 definitions=main-2610120062
 
-On Mon, Oct 12, 2026 at 05:08:09PM +0200, David Hildenbrand (Arm) wrote:
-> On 10/9/26 20:04, Lorenzo Stoakes (ARM) wrote:
+When cores are added while the system is running in a lower SMT mode,
+some threads of those cores remain offline. Moving the system to a
+higher SMT mode later fails to online those threads.
 
-> > diff --git a/kernel/bpf/arena.c b/kernel/bpf/arena.c
-> > index 7b6847200b43..b69fe5e34339 100644
-> > --- a/kernel/bpf/arena.c
-> > +++ b/kernel/bpf/arena.c
-> > @@ -620,8 +620,9 @@ static int arena_map_mmap(struct bpf_map *map, struct vm_area_struct *vma)
-> >  	 * clears VM_MAYEXEC. Set VM_DONTEXPAND to avoid potential change
-> >  	 * of user_vm_start. Set VM_DONTCOPY to prevent arena VMA from
-> >  	 * being copied into the child process on fork.
-> > +	 * This is a kernel page so set VM_MIXEDMAP.
-> >  	 */
-> > -	vm_flags_set(vma, VM_DONTEXPAND | VM_DONTCOPY);
-> > +	vm_flags_set(vma, VM_MIXEDMAP | VM_DONTEXPAND | VM_DONTCOPY);
-> >  	vma->vm_ops = &arena_vm_ops;
-> >  	return 0;
-> >  }
-> >
->
-> Historically, VM_MIXEDMAP really just means: can contain refcounted and
-> non-refcounted things. Everything with a struct page is refcounted.
->
-> I think we are now changing the semantics to mean "maps kernel pages". I think
+For example, on a system with four cores:
 
-Yes.
+  1. ppc64_cpu --smt=off
+  2. nproc
+       expected: 4
+  3. ppc64_cpu --smt
+       expected/actual: "SMT is off"
+  4. drmgr -c cpu -a -q 4
+  5. ppc64_cpu --smt
+       expected/actual: "SMT is off"
+  6. ppc64_cpu --smt=8
+  7. ppc64_cpu --smt
+       expected: SMT=8
+       actual:   SMT=1: 4-7; SMT=8: 0-3
+  8. nproc
+       expected: 64
+       actual:   36
 
-It was sort of implicit before given insert_page() etc. but still really meaning
-that it _might_ be both.
+Post commit d1099e2276df ("powerpc/pseries: Honour current SMT state
+when DLPAR onlining CPUs"), when new CPUs are added, the CPU-to-node
+mapping is currently updated only for CPUs that are immediately onlined.
+CPUs that are made present but remain offline due to the current SMT
+mode therefore do not get a CPU-to-node mapping.
 
-> this is fine, but we really have to update the documentation (and possibly
-> rename this thing to something more expressive?)
+When those CPUs are subsequently onlined after switching to a higher
+SMT mode, the online operation fails because the required CPU-to-node
+mapping is missing.
 
-Yeah I completely agree.
+Update the CPU-to-node mapping before applying the SMT restrictions so
+that all newly present CPUs have a node mapping, including CPUs that
+remain offline in the current SMT mode.
 
-I will rename it, but I think that's best for 7.5 obviously! :)
+Fixes: d1099e2276df ("powerpc/pseries: Honour current SMT state when DLPAR onlining CPUs")
+Reported-by: Samir Mulani <samir@linux.ibm.com>
+Signed-off-by: Srikar Dronamraju <srikar@linux.ibm.com>
+---
+ arch/powerpc/platforms/pseries/hotplug-cpu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
->
-> Acked-by: David Hildenbrand (Arm) <david@kernel.org>
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index bc6926dbf148..b5dc942eec63 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -402,6 +402,7 @@ static int dlpar_online_cpu(struct device_node *dn)
+ 			if (get_hard_smp_processor_id(cpu) != thread)
+ 				continue;
+ 
++			find_and_update_cpu_nid(cpu);
+ 			if (!topology_is_primary_thread(cpu)) {
+ 				if (cpu_smt_control != CPU_SMT_ENABLED)
+ 					break;
+@@ -410,7 +411,6 @@ static int dlpar_online_cpu(struct device_node *dn)
+ 			}
+ 
+ 			cpu_maps_update_done();
+-			find_and_update_cpu_nid(cpu);
+ 			rc = device_online(get_cpu_device(cpu));
+ 			if (rc) {
+ 				dlpar_offline_cpu(dn);
+-- 
+2.43.7
 
-Thanks!
-
---
-Cheers, Lorenzo
 
