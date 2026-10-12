@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-29269-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29270-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C788CA9EDE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 15:03:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D88CCA9EDD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 15:06:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3LML07L5z3bV5;
-	Tue, 13 Oct 2026 02:03:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791817421;
-	cv=none; b=N4Aco8Yuk57wQXZNc9NDLO1DS8Je5ZfUb4BxprwYdQ0vpHpO9Z7IdS4FGGXppm0uGPF1BhLsytKmdQjBstfR3B4iY7qbG1d+Hc6LEhTNAIT6eSF8w2F7tQknp447JLtAj/1GVY2NE3Jt7Yya1N6ELyL+m8XX7CuOKOVcozakOE1jh7q+1bfjLcsOc5BQMNKl6NKycysgTb5lJteHowSwac8WMUatpwiD7/6Ndz/u4It/aqZ/zg91kxnIBMk30ClVZKdIzv4KEu1KITRHuShdpfZq4GTsCO5VZSvkV9V4kSyVm46cha6n6MhGjc+7JiEilhAV2qiHccS/ZJaOlZ9hyw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3LQp0X8Gz3bV5;
+	Tue, 13 Oct 2026 02:06:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791817602;
+	cv=none; b=TLYqNtw/l8hRCICLpFHsLGLFUsLpHAxtll6c5ii5g1+02BcUpz5tGNrJTJjqBvosYbJMIN8lw5Ci6Ou1p97c+oVaxfImoCNtKvuASjrebdiECz4gxt8G1BhqpdjRnje1mihyoNN+NqFbuxbrY/PXqady2oYF1xmCn71cXBO+h8NmK2a40Wy2YNemRFaE9vR8fyWvCfpds5S1vopclDDP2hq8WmzW2b/SUVer23FSzaE/HZHtEFjvvJ1wW8vehS9qmbd3lRHzEfnPiLQIr3RwmvGtI1ZkR2ZthC7uaKQUChmY/N8v4wJtZ1tF08fLgcWORMlSUigd6qxuLKisQTQ7GQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791817421; c=relaxed/relaxed;
-	bh=TUxOJIoEwWGSOtnlIj5KDXixurt7xGhOIGc9/JpBlPw=;
+	t=1791817602; c=relaxed/relaxed;
+	bh=+fwk8Fzg9As63QxslE7FFTAR8w3HhELt7wLLL/Vq43E=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=MUjDLuP1+s/oyyubnKCcySuab4Os1CjmTXByNYev52crjil/S+rp8OKzI5YTsTZ2zNqo/+NzvnXk1rWc5NIRN4WlRZMlv3Ie6ERC2PCKDhkHkj0leRtEu+cjC/WaDYwcPM8Z56BljXrr7KeuBw6HBIa34QDaRkGUoaq8vcUvVLWKoq6qbmAJSAAdx151mn4FAOAsi3IqvQN6vuPKuF1yvoF10XP3iDN5wSyd+tK48fXy8rgKRNRBOFJu5W3ySjzAcL8SQzM24X5aOF5PmU4gHIV1+v06d4pOmWnPT6hhJ80oPBjgdu5qPabFaMHvy3+irKsT7/wqq/gfwV9cdzyGNA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KqQnzUmK; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=T65B4YFyiDPscu6bgfR+WcdM4aStMEkulnlnZLbrSFFzmABmSaU3BO1+ExjOzRKik1TfnhceybGsjfd+HhyHbpMh38t7W7JrsHQVCd36nWgbdxJ4MNNLSLoLkBQ+C+IMHWTfaWSvTmuL0VZSmEqdL+M3tesj4BwyPMgZ9lgOc2GfdA7i5CH90cdQZLyFxkPunyCNpDymnrz1QBuo99f4xhdDK/Ck//XLpmfqAaEefqF21nFie+9LaUm9dAJNmoYoTs0f5enYHR0KUpycUsGQ9BNGGrt4rl0SDBh+ZZpLIVZkxxQmmGLZbvFeE3zF0Xma7p563gDY6c8HABQsJYyM2g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=e5RGRP0n; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KqQnzUmK;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=e5RGRP0n;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3LMJ6q6Xz3bNr
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 02:03:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3LQn1V52z3bNr
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 02:06:41 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 8E12F40500;
-	Mon, 12 Oct 2026 15:03:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AE88D1F0089B;
-	Mon, 12 Oct 2026 15:03:04 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 79F22601FB;
+	Mon, 12 Oct 2026 15:06:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 05D391F0089D;
+	Mon, 12 Oct 2026 15:06:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791817418;
-	bh=TUxOJIoEwWGSOtnlIj5KDXixurt7xGhOIGc9/JpBlPw=;
+	s=k20260515; t=1791817598;
+	bh=+fwk8Fzg9As63QxslE7FFTAR8w3HhELt7wLLL/Vq43E=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=KqQnzUmKbn/q8oL6O0MmGCPP5O+Y6m2jAfrhciRJULIkfNkMEFSgUq3BTPaW+lXQx
-	 GIwV4tZup+P4INDs4Gn6nMeTOyRttCGB24ku/aRmE4h4WcBzlEyPvcWIHvQsluvDPe
-	 ljJQY7vjnwKB4kDQMjmJr95y6KkjQ1QY4GJ0jzz1aEiI5jrcTnKctyGRt+DiJUzcVl
-	 47GeIw3nxp9Q1Ghh3zHPmCdVZscbz0DjbAe1gvPifzTBpsYgdm/5vuHzgvbF8sqMDn
-	 r1xUZgUlhap/cdcEC7S+qkylXJ9w9p9Qhm4cMonxJ4hpaAzFFcuPOeDysNEgt9wr+t
-	 bj7khxv0wkoSQ==
-Message-ID: <56cc2787-134b-48f0-a9e2-840f57b28607@kernel.org>
-Date: Mon, 12 Oct 2026 17:03:02 +0200
+	b=e5RGRP0nwBgCPjhy9NB/ds3xyGnyicrGAHf+JIIXqPvb8xcIe3yPzo0f/SDZ0nQck
+	 5LadVxqyRrVSJewB7Y13xf8imY+HiKWl35Li2dG5MeEodaw0ZhX2awp/szISHE0yZh
+	 zwD8hS8dQu1UPTS1zTh7//vnMz26H5e8L9DZLUZegDZ0PQfA1TNwG4sE53llBGlgEh
+	 uvVblq3VsJRFftCZRllEyQdaQYht0l4PW98viZbump8TDubyttPFim9TR1Bz5DZ9tt
+	 ouWdJgcGMrdwgnAwv/j+WQpa6hdpTB7VoUiUqAmKtkL111nem7AxiJmpcCoq3hUMCm
+	 7WED4cTbH+GdA==
+Message-ID: <6eb2b306-b386-4955-9469-5cd5bf05a315@kernel.org>
+Date: Mon, 12 Oct 2026 17:06:01 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 07/38] mm: add mmap action for discontiguous kernel
- page mapping
+Subject: Re: [PATCH v5 11/38] selinux: reject writable opens of policy file,
+ drop mmap shared/write check
 To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>,
  "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>,
@@ -144,7 +144,7 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  fuse-devel@lists.linux.dev, Ihor Solodrai <ihor.solodrai@linux.dev>,
  Bert Karwatzki <spasswolf@web.de>
 References: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-0-923b70125b1e@kernel.org>
- <20261009-b4-mmap-prepare-vma-flag-sanify-v5-7-923b70125b1e@kernel.org>
+ <20261009-b4-mmap-prepare-vma-flag-sanify-v5-11-923b70125b1e@kernel.org>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -191,271 +191,32 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-7-923b70125b1e@kernel.org>
+In-Reply-To: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-11-923b70125b1e@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 10/9/26 20:04, Lorenzo Stoakes (ARM) wrote:
-> The existing kernel page mapping mmap actions allow for partial and full
-> mapping of an array of struct page pointers.
+> The policy file has no write method and is exposed read-only (S_IRUGO in
+> selinux_files[]), yet sel_open_policy() performs no open mode check, so a
+> CAP_DAC_OVERRIDE caller can open it O_RDWR. Reject FMODE_WRITE at open, as
+> kernfs does.
 > 
-> However some drivers require the mapping of discontiguous ranges. Permit
-> this by providing discontig_kernel_page_ops which allows a driver to
-> specify how the operation should begin and how batches of pages should be
-> retrieved.
+> The file can then never be mapped with FMODE_WRITE, so do_mmap() always
+> clears VM_MAYWRITE and VM_SHARED for MAP_SHARED mappings and the VM_SHARED
+> check in sel_mmap_policy() cannot be reached. Remove it.
 > 
-> It uses the minimum exposed interface to do so, providing address, page
-> offset and both vm_private_data state and a local private state object.
+> This also stops sel_mmap_policy() clearing VM_MAYWRITE on a mapping that is
+> neither a PFN map nor a mixed map, ahead of the core enforcing that only
+> such mappings may do so.
 > 
-> ops->init can establish state for the operation, and ops->get outputs the
-> pages to map and their count. Should an error arise the core unmaps the
-> VMA, invoking vm_ops->close, which is therefore where any state established
-> by ops->init is released.
-> 
-> Also update the compatibility layer to do this too via
-> compat_mmap_action_abort().
-> 
-> Batches may not exceed the VMA, but may map less than its full range in
-> case the driver wishes to allow the user to map an area larger than the
-> available data.
-> 
-> To use it, users invoke mmap_action_map_discontig_kernel_pages() with
-> initial local private state and a set of operations.
-> 
-> Users can then use one of the provided helper functions to perform an
-> action:
-> 
-> * discontig_kernel_map_abort() - Abort and leave the mapping as it has
->   been accumulated so far.
-> * discontig_kernel_map_page() - Map a single page, or a compound page given
->   its head page.
-> * discontig_kernel_map_page_range() - Maps a struct page ** array of a
->   specified count, mapping only those pages which fit in the VMA.
-> 
-> While here, update vm_insert_page() and vm_insert_pages() to assert the
-> mmap write lock is held rather than the bizarre assert !mmap_read_trylock()
-> and use the new VMA API so all code paths are consistent.
-> 
-> Also convert a BUG_ON() to a VM_WARN_ON_ONCE() in vm_insert_page().
-> 
-> The userland VMA tests are updated accordingly.
-> 
-> Acked-by: Zi Yan <ziy@nvidia.com>
+> Acked-by: Stephen Smalley <stephen.smalley.work@gmail.com>
+> Reviewed-by: Jann Horn <jannh@google.com>
+> Acked-by: Paul Moore <paul@paul-moore.com>
+> Reviewed-by: Suren Baghdasaryan <surenb@google.com>
 > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> ---
 
-
-Finally finding time to go over this. In the future I want to have more time to
-review such massive series, as it causes severe stress to be forced to review
-this last minute before it goes upstream.
-
-So if I push back in order to give me some more room to breathe in the future
-it's nothing personal, I just have to keep my sanity somehow.
-
-I hate being forced to review because we pick up stuff way to early. There is
-just way too much other stuff going on.
-
-I'm planning on picking up most stuff I maintain in the next cycle. For
-cross-component stuff (esp. VMA) I expect Andrew to pick stuff up until we
-tackle this once cycle later.
-
-
-> +static inline
-> +void mmap_action_map_discontig_kernel_pages(struct vm_area_desc *desc,
-> +		void *init_private, const struct discontig_kernel_page_ops *ops)
-> +{
-> +	struct mmap_action *action = &desc->action;
-> +
-> +	action->type = MMAP_DISCONTIG_KERNEL_PAGES;
-> +	action->map_kernel_discontig.init_private = init_private;
-> +	action->map_kernel_discontig.ops = ops;
-> +}
-> +
->  int mmap_action_prepare(struct vm_area_desc *desc);
->  int mmap_action_complete(struct vm_area_struct *vma,
->  			 struct mmap_action *action, bool is_compat);
-
-There is a mixture of two tab vs. different in your changes.
-
->  
-> +static inline void
-> +discontig_kernel_map_abort(struct discontig_kernel_page_state *state)
-> +{
-> +	state->action = DISCONTIG_KERNEL_PAGE_ABORT;
-> +}
-> +
-> +static inline void
-> +discontig_kernel_map_page(struct discontig_kernel_page_state *state,
-> +			  struct page *page)
-> +{
-> +	struct folio *folio = page_folio(page);
-> +
-> +	if (folio_test_large(folio)) {
-> +		VM_WARN_ON_ONCE(page != folio_page(folio, 0));
-> +		state->action = DISCONTIG_KERNEL_PAGE_MAP_COMPOUND_PAGE;
-> +		state->__folio = folio;
-> +		state->__nr_pages = min(state->nr_pages_remain,
-> +					folio_nr_pages(folio));
-> +	} else {
-> +		state->action = DISCONTIG_KERNEL_PAGE_MAP_PAGE;
-> +		state->__page = page;
-> +		state->__nr_pages = 1;
-> +	}
-
-Why are both separate? Isn't it sufficient to represent that through _page +
-_nr_pages > 1 ? See below.
-
-> +}
-> +
-> +static inline void
-> +discontig_kernel_map_page_range(struct discontig_kernel_page_state *state,
-> +				struct page **page_arr, unsigned long nr_pages)
-
-Is this actually "map_pages"? A range is rather a number of consectuive pages
-part of the same folio/compound page, no?
-
-(we call insert_pages() later ... )
-
-> +{
-> +	state->action = DISCONTIG_KERNEL_PAGE_MAP_PAGE_RANGE;
-> +	state->__page_arr = page_arr;
-> +	state->__nr_pages = min(nr_pages, state->nr_pages_remain);
-
-So we expect all of them to be non-compound?
-
-
-[...]
-
-> diff --git a/mm/internal.h b/mm/internal.h
-> index fc4e249e2343..557e629db8c5 100644
-> --- a/mm/internal.h
-> +++ b/mm/internal.h
-> @@ -1515,6 +1515,9 @@ int simple_ioremap_prepare(struct vm_area_desc *desc);
->  int map_kernel_pages_prepare(struct vm_area_desc *desc);
->  int map_kernel_pages_complete(struct vm_area_struct *vma,
->  			      struct mmap_action *action);
-> +int map_discontig_kernel_pages_prepare(struct vm_area_desc *desc);
-> +int map_discontig_kernel_pages_complete(struct vm_area_struct *vma,
-> +					struct mmap_action *action);
->  
->  static inline int io_remap_pfn_range_prepare(struct vm_area_desc *desc)
->  {
-> diff --git a/mm/memory.c b/mm/memory.c
-> index 448342883e9d..e5c1d1c35bc7 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -2599,27 +2599,34 @@ int vm_insert_pages(struct vm_area_struct *vma, unsigned long addr,
->  
->  	if (!range_in_vma(vma, addr, end))
->  		return -EFAULT;
-> -	if (!(vma->vm_flags & VM_MIXEDMAP)) {
-> -		VM_WARN_ON_ONCE(mmap_read_trylock(vma->vm_mm));
-> -		VM_WARN_ON_ONCE(vma->vm_flags & VM_PFNMAP);
-> -		vm_flags_set(vma, VM_MIXEDMAP);
-> +	if (!vma_test(vma, VMA_MIXEDMAP_BIT)) {
-> +		mmap_assert_write_locked(vma->vm_mm);
-> +		VM_WARN_ON_ONCE(vma_test(vma, VMA_PFNMAP_BIT));
-
-I would prefer to have these changes in a separate patch. Or is it strictly
-required to have this in this very patch?
-
-
-> +		vma_start_write(vma);
-> +		vma_set_flags(vma, VMA_MIXEDMAP_BIT);
->  	}
->  	/* Defer page refcount checking till we're about to map that page. */
->  	return insert_pages(vma, addr, pages, num, vma->vm_page_prot);
->  }
->  EXPORT_SYMBOL(vm_insert_pages);
->  
-> +static void __map_kernel_pages_prepare(struct vm_area_desc *desc)
-> +{
-> +	if (vma_desc_test(desc, VMA_MIXEDMAP_BIT))
-> +		return;
-> +
-> +	mmap_assert_write_locked(desc->mm);
-> +	VM_WARN_ON_ONCE(vma_desc_test(desc, VMA_PFNMAP_BIT));
-> +	vma_desc_set_flags(desc, VMA_MIXEDMAP_BIT);
-> +}
-> +
->  int map_kernel_pages_prepare(struct vm_area_desc *desc)
->  {
->  	const struct mmap_action *action = &desc->action;
->  	const unsigned long addr = action->map_kernel.start;
->  	unsigned long nr_pages, end;
->  
-> -	if (!vma_desc_test(desc, VMA_MIXEDMAP_BIT)) {
-> -		VM_WARN_ON_ONCE(mmap_read_trylock(desc->mm));
-> -		VM_WARN_ON_ONCE(vma_desc_test(desc, VMA_PFNMAP_BIT));
-> -		vma_desc_set_flags(desc, VMA_MIXEDMAP_BIT);
-> -	}
-> +	__map_kernel_pages_prepare(desc);
->  
->  	nr_pages = action->map_kernel.nr_pages;
->  	end = addr + PAGE_SIZE * nr_pages;
-> @@ -2640,6 +2647,98 @@ int map_kernel_pages_complete(struct vm_area_struct *vma,
->  			    &nr_pages, vma->vm_page_prot);
->  }
->  
-> +int map_discontig_kernel_pages_prepare(struct vm_area_desc *desc)
-> +{
-> +	const struct mmap_action *action = &desc->action;
-> +	const struct discontig_kernel_page_ops *ops =
-> +		action->map_kernel_discontig.ops;
-> +
-> +	/* At minimum need to be able to get pages. */
-> +	if (WARN_ON_ONCE(!ops || !ops->get))
-> +		return -EINVAL;
-> +
-> +	__map_kernel_pages_prepare(desc);
-> +	return 0;
-> +}
-> +
-> +static int apply_discontig_action(struct vm_area_struct *vma,
-> +				  struct discontig_kernel_page_state *state)
-> +{
-> +	unsigned long nr_pages = state->__nr_pages;
-> +	unsigned long addr = state->addr;
-> +	unsigned long i;
-> +
-> +	if (state->action == DISCONTIG_KERNEL_PAGE_MAP_PAGE)
-> +		return insert_page(vma, addr, state->__page,
-> +				   vma->vm_page_prot, /*mkwrite=*/false);
-> +	if (state->action == DISCONTIG_KERNEL_PAGE_MAP_PAGE_RANGE)
-> +		return insert_pages(vma, addr, state->__page_arr,
-> +				    &nr_pages, vma->vm_page_prot);
-> +
-> +	/* Compound folio - have to iterate through each page. */
-> +	for (i = 0; i < nr_pages; i++, addr += PAGE_SIZE) {
-> +		struct page *page = folio_page(state->__folio, i);
-> +		int err;
-> +
-> +		err = insert_page(vma, addr, page, vma->vm_page_prot,
-> +				  /*mkwrite=*/false);
-> +		if (err)
-> +			return err;
-> +	}
-
-Summarizing some of my comments below, I wonder if this could be:
-
-DISCONTIG_KERNEL_PAGE_MAP_PAGES - array of individual apges
-DISCONTIG_KERNEL_PAGE_MAP_CONTIG_PAGES - 1..N contiguous pages
-
-
-if (state->action == DISCONTIG_KERNEL_PAGE_MAP_PAGES)
-	return insert_pages(vma, addr, state->__page_arr,
-			    &nr_pages, vma->vm_page_prot);
-
-VM_WARN_ON_ONCE(state->action != DISCONTIG_KERNEL_PAGE_MAP_CONTIG_PAGES)
-for (i = 0; i < nr_pages; i++, addr += PAGE_SIZE) {
-	struct page *page = state->__page + i;
-	int err;
-
-	err = insert_page(vma, addr, page, vma->vm_page_prot,
-			  /*mkwrite=*/false);
-	if (err)
-		return err;
-}
-...
+Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
 -- 
 Cheers,
