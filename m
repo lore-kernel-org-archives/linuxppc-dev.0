@@ -1,51 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-29228-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29229-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 011CBCA9ED5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 06:46:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1978CA9EC5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 07:34:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j37Kq4Kjnz2yPR;
-	Mon, 12 Oct 2026 17:46:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791787599;
-	cv=none; b=KaXXgxqLlOyMc8BCRV5mrM80qy6yhVKZRcciLmLUp8Yax4T3J/5GPsL7+rCROsXBlSzeq5kuQ+/EFYp8mZKrZ8Sl3s2rGiDmgdX5wmWJU5ccgRQnS2xyoKPl9/ulvSVvQYlibxhQHxzhntvp/r6VBHKkk61RSxpIAH6ohOaAB8cWSqE0Q5rJw31bZy+T7pRtge3Gjsc2HlMJBRDkXIIhUJh1SSeElu0/JMB0NvWQfweEyG1/51p8wbytkUfSzxm4ikO3eCw/KR9ofXW4mnlS5eb0UDjw/xCLR9lxWf8UPu3IYFMZcyr0poWcOWnVCBXBNtOJbUcZxIh7lX4bVg9Jpw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791787599; c=relaxed/relaxed;
-	bh=1er6KN0USDluOlCwl7bI7udanJGh8XBrVh6eYmX9B2E=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=KfWxQ5StHmjzsUKwmyeWGoW3axc3oW1jS2HNnQi1cnlnZ6Kp5KOmzIprnyaKCP65b4i/7q/lLPDMSL23NezFx0DvKVlqQXszxbWg4xVINZ4KVhtA7Re7OTctUpZiNajL3c+4/Cmw15mlri9Ke89yVwhTYja22hEjxlKrLmpRpsTRTwMuZBs/LEjmkH50GZ2GWNkclYHdN4q8ahLGnOFCQDHq2v49HlzpQvWf38NRzskaQTPk5TmhCz7jLcE8SErTNDs85x3unedZ5jvFh+USm9rt3L0oD9a9NSluz2Le8Kdy4/nKwV3xe7G6pjoKddi3rwI62Jt/2y29RAi8PpNK8g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mP4GUgGY; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jirislaby@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j38Nt6PB7z2yYY;
+	Mon, 12 Oct 2026 18:34:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::431" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791790462;
+	cv=pass; b=lseI5yI4xa5mUs3cvW6kTUpf6Ru65JJXMXASsCl/K0Eeeh7zsNgQiXDW7jmQdXSZ44tFYIzdhDJs2yGXCaAO+RclmhGAK5xMsahDBCMc98HyOmEiO2RXh1Yi8jPMLVgWg3yBwaU9/LjdttAgFEfAyo3GQamINqji/bjhOPoRGfiVAOGZxSWP5knhPRO0xUZHXA6g6bRPPczSD6Wm+JDMSNQPQprpjzpgCuIgyqooxdgGoz65cIDYZP5LDzq9YBw6AWYXUZjV9zmP+SKeA4laop5IeFuNrTsDYOQ3SqsCxeVMeORq9Fban0kEOxDlkLR5mOM1a/QO+qLOajTkD9lf2w==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1791790462; c=relaxed/relaxed;
+	bh=TB1tvVpc7k0BKK/tU4j4YuTf01twWs+L2M2upFeIsNA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=R8C0HAgLbQxofbNlMxWr+K/ldG1RlzNw4oEJog67AFTHrGxDF0R2RHNvYL5iqxASk0mxDnMro1mdwGoYCvRJ7WWa5HZq5LY/+UyVgVn2Zbf2/JwpYZ2s+eIYNaW6iszvpj+xV4vIbcN1lgR7bytp+eZw+cxv3R++I2abBCQf5KCSJDclB92cbK7vJ0PKptn1cNKXoxw3Cipgb6eOAlFDKoj8pzIdfn3uzNAC8vgls0Y1Lr2oSTGBWkR1eBTOcrmUhQNAJpbjuP4xrG8l8/mX1sApAOod30gt8IC7sd6/2euTAIVvr5YxKLZw8MLtr4cHIMRUmj5UqK6PWfVfN6A1iQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=QCsPuILz; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::431; helo=mail-wr1-x431.google.com; envelope-from=jiangwenxiaomi@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mP4GUgGY;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=QCsPuILz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jirislaby@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::431; helo=mail-wr1-x431.google.com; envelope-from=jiangwenxiaomi@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j37Kp4NdJz2xwZ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2026 17:46:38 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 30E3F41F97;
-	Mon, 12 Oct 2026 06:46:35 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E65741F008A1;
-	Mon, 12 Oct 2026 06:46:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791787595;
-	bh=1er6KN0USDluOlCwl7bI7udanJGh8XBrVh6eYmX9B2E=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=mP4GUgGYNCxnuPmvg1lujMqLPA7vMvng2SS0pBMHoCRbwwxluGZ1CHCAITsQFxIwd
-	 x7wKsblnmPblKZwTGS63Z/VPkeuzGjAUyGwhVXZx5K7K7unAzwoOLZVUFY+nkDURjW
-	 X0PNZL/iyeF9Cmy/UiMXAC9LcPt+sCJ2zDtDxDVofUzZDrWFH4BbiVCkN31UXOkwew
-	 7cFyBQv7+jpMiLRzknsZ4/q2Gv1tg6cM3zuY9oI8TvIJk3SVGG9xD3lPxaYZfAFa/o
-	 FSMhNavBKkxYI/LnLbQ/SDmexIWtlzK0PhS9vRqFDnFRDwv0wP34GrPxp+Iu/3/Ysz
-	 nTnGWliycn2uQ==
-Message-ID: <1f66c850-faa7-477f-9535-761074ccc077@kernel.org>
-Date: Mon, 12 Oct 2026 08:46:30 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j38Nr5rfFz2yPR
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2026 18:34:19 +1100 (AEDT)
+Received: by mail-wr1-x431.google.com with SMTP id ffacd0b85a97d-48b001cd92bso864722f8f.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2026 00:34:19 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1791790455; cv=none;
+        d=google.com; s=arc-20260327;
+        b=K+2IkyztVz04/kYWccJGzdV1mXiWJWlQOobRP/nfsB2VpWwD8XxJDfU53D6BnA8v7O
+         sEBwlTeMW4jq4ogGJIxC2C71Szr/g+a8DEPWy6aqHbtwflXOP5HBlPT74PO+R5+Wlj4D
+         UAJAgzz3KVDAUcaKMZRK1QERgER4cqrdNNLQcv/kLCBHhBfEkuCBEDnImPUoK8ImPr3V
+         rEerdcRLzCQntbsUKdbo8qekt7wMBPAUxyEp1AdW3qUnvs0Q7dg6kiitj3ZPz5EDvpGQ
+         zG21JrZbycnWLfNZ+0oxzTI9V9H6ABaLyDudDIaPnx5MYio3EpA72sFJn1hPDoeXBMVd
+         dm1w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=TB1tvVpc7k0BKK/tU4j4YuTf01twWs+L2M2upFeIsNA=;
+        fh=WO3YBLhy5ba/NjrIcvZ7SWnNRGvgYqpse0OacP32q9g=;
+        b=VDSCN4Nnewo0n8UQ4JbP4QLr/AgxLSntZZ0d6vGoG0ifMijLVUfG926biwnfNvE9eK
+         K4XM4niKRg4ZNRzewxjgE/sZIzi+2J9k98hd0BNnc4lT2Hb/D5YcxiXhuNIJU/NVvmiR
+         NYB4/Nrnaa6TaMOzOHQe7ZFG74KWK8gBJwk79aJ+H44Z347394AkUEOd7RdvW9WOll9F
+         jjC0OoER8Yw7c1p7RbI+Ri8Sqw1IihZMB0lCPHRLq/qBGDO4+cAEC16u+wG4VPdZwlss
+         iutJFNtxz45TBWR1AONEoVgF63hvJhjR8jipJWfbua0v4jaWFG7tEC91gYcaXuLHqE8e
+         T/cA==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1791790455; x=1792395255; darn=lists.ozlabs.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=TB1tvVpc7k0BKK/tU4j4YuTf01twWs+L2M2upFeIsNA=;
+        b=QCsPuILznfZPK9HpEQh6gF3SIWKycsGIcXnoLO+crRmcadNxyJS9mInkxtCID6fIT9
+         koLnFtbX7pF6nHOOGNR0UO+Q49cmFMe57RreCaoSbuGDkOWoxtAPeiA6TsNLy4XhvMLc
+         ihL3NBnXBSFzmF2+iMYLMijYf8ddkvYJXJw9WgHdNNnI+wEwXBs3xVmdIGgTvvaAA8lO
+         oM/khDLp6SayNPOPVGP9lIQu0VIUN3p4L7i9MpJbH1hKsI1SLp4wYGkUD0sHNM3FQodx
+         H3tehtXIVOaYXCO1jRLz1tissX4MXx/x/SJpOFn4ShIocmbWuLFKMVMsdfTlVt6wiFuC
+         732Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791790455; x=1792395255;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=TB1tvVpc7k0BKK/tU4j4YuTf01twWs+L2M2upFeIsNA=;
+        b=ToIve/itU2tI3IA6unptK0A755IfTsB9OFxBBI7l8+P1BJwpcHvSgNJTVMKZjtxR1G
+         akLJIyX519JEvQ0BFM5sk70f9A5N3ykz8U2fW9gSnYorveY3ofWktnDD5Ni4WrBssROi
+         EjMhq6xnkzEHg1V0eUWVmhqEjkDX6Tn8xeGsft568RCCqVYIRd1RwJHfA9ow96u8KRn+
+         peCNn7MremDgtRpigwrgIfuwfypv4ut3ILdDTgA7swKvuy4ec6hc2Z05qZW4kc1bHaJS
+         /NMmeOC0FgU/9bRSnWcFKrVvkTjI0r/Wuta5D6/p4OVRRYoWspKPtHfW7bgGQKZaGttl
+         N1ZQ==
+X-Forwarded-Encrypted: i=1; AKwUvBy9O5jAYlAlvdtVZTjZwOCsrH18U5kekVGRbvLEszmEcOIHmD0WvNLr8OSAh50g+1C8J6ZI80f97IJ29xY=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYJ/DZp35X6gPa13O1IWLnCldyD40uGLV74jHSNjzWsACAhHBQrN
+	ZdEEo9ShvR4Sqh07fnVLVwDmwoOZQJEwHRV6uBBIxtAhxIExaQgODVQKFaizzUQF68pQhEuD27b
+	wrxrGmWM0t0dLQdhufngwj8hAqa1cscs=
+X-Gm-Gg: AYBFou03uQoWO4FzkV5IKJsRIW/YF8yqTSxEa+y5toXyfIHPf4CYFb2odYm4piYCBMq
+	po61IlTS8VtFoPUB7sLStcYnK/HNSW/OACr/oU9yIYjvHK0eWGx0AakGHHYCXvX9d5Jw3dwnuRp
+	6YBeoyaVjdTwKgal+To5TaL/EMpq7rcPujJX8ZeDOvDb/pRfuT+q5QFkGUu5G3bMz3lBA3IruVJ
+	IZitDY+xRqrHYoJyBkGcAsnBQR7sGO5qigcVRbuWoLiN+8KIdsjvCCYEFGd1unkAd1oU5xtSFbG
+	FKcpWD3ojk5wwvcN54Vcvwb7LnJ6NaPyTgfcmVIC7cc1nSk/0zLA0eic
+X-Received: by 2002:a05:600c:154b:b0:49c:fed6:cd3f with SMTP id
+ 5b1f17b1804b1-4a18e4d0be2mr158510455e9.23.1791790455069; Mon, 12 Oct 2026
+ 00:34:15 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,183 +101,144 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 6/6] hvc: add an M3000 firmware console backend
-To: Magnus Lindholm <linmag7@gmail.com>, davem@davemloft.net,
- andreas@gaisler.com, sparclinux@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org,
- linux-serial@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- krzk@kernel.org, oleg@redhat.com
-References: <20261011195729.981243-1-linmag7@gmail.com>
- <20261011195729.981243-7-linmag7@gmail.com>
-Content-Language: en-US
-From: Jiri Slaby <jirislaby@kernel.org>
-Autocrypt: addr=jirislaby@kernel.org; keydata=
- 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
-In-Reply-To: <20261011195729.981243-7-linmag7@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <20261002090947.869220-1-jiangwen6@xiaomi.com> <20261002090947.869220-4-jiangwen6@xiaomi.com>
+ <asudY_EhrT5fZGmZ@milan>
+In-Reply-To: <asudY_EhrT5fZGmZ@milan>
+From: Wen Jiang <jiangwenxiaomi@gmail.com>
+Date: Mon, 12 Oct 2026 15:34:02 +0800
+X-Gm-Features: AclHuK_LlxXaCmKE3CgA4amsUlg18qyTu4ifi545sZ2ZwusM-AnLpZx1y3tgmDI
+Message-ID: <CAHKocdH9Cmjb4oEVvZnxDhYRKfK+b00k3mm_YwWmSnO4fZ+qyg@mail.gmail.com>
+Subject: Re: [PATCH v10 03/10] mm/vmalloc: use pte_set_huge()/pte_clear_huge()
+ for PTE-level block mappings
+To: Uladzislau Rezki <urezki@gmail.com>
+Cc: akpm@linux-foundation.org, catalin.marinas@arm.com, linux-mm@kvack.org, 
+	will@kernel.org, Xueyuan.chen21@gmail.com, ajd@linux.ibm.com, 
+	anshuman.khandual@arm.com, baohua@kernel.org, chleroy@kernel.org, 
+	david@kernel.org, dev.jain@arm.com, jiangwen6@xiaomi.com, leo.yan@arm.com, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au, 
+	npiggin@gmail.com, rppt@kernel.org, ryan.roberts@arm.com
+Content-Type: text/plain; charset="UTF-8"
 
-On 11. 10. 26, 21:55, Magnus Lindholm wrote:
-...
-> --- /dev/null
-> +++ b/drivers/tty/hvc/hvc_m3000.c
-> @@ -0,0 +1,205 @@
+On Sun, 11 Oct 2026 at 22:29, Uladzislau Rezki <urezki@gmail.com> wrote:
+>
+> On Fri, Oct 02, 2026 at 05:09:40PM +0800, Wen Jiang wrote:
+> > vmap installs PTE-level block mappings by reusing set_huge_pte_at() and
+> > huge_ptep_get_and_clear() under #ifdef CONFIG_HUGETLB_PAGE. This makes
+> > the feature silently unavailable on CONFIG_HUGETLB_PAGE=n kernels and
+> > couples mm/vmalloc.c to HugeTLB internals it does not otherwise need.
+> >
+> > Now that arm64 and powerpc/8xx provide pte_set_huge() and
+> > pte_clear_huge(), add the generic fallbacks next to the existing
+> > pmd/pud_set_huge() family and convert vmap_pte_range() and
+> > vunmap_pte_range() to the new helpers. The CONFIG_HUGETLB_PAGE guards
+> > around the block-mapping paths are dropped, so PTE-level block mappings
+> > now also work on CONFIG_HUGETLB_PAGE=n kernels, and mm/vmalloc.c no
+> > longer includes <linux/hugetlb.h>.
+> >
+> > The fallbacks exist only to keep the build working on architectures
+> > without PTE-level block mapping support. They are unreachable there:
+> > the callers only run when arch_vmap_pte_range_map_size() or
+> > arch_vmap_pte_range_unmap_size() return a size other than PAGE_SIZE,
+> > which requires an arch implementation. BUILD_BUG() makes that
+> > explicit rather than silently doing nothing.
+> >
+> > Signed-off-by: Wen Jiang <jiangwen6@xiaomi.com>
+> > Reviewed-by: Barry Song <baohua@kernel.org>
+> > ---
+> >  include/linux/pgtable.h | 29 +++++++++++++++++++++++++++++
+> >  mm/vmalloc.c            | 19 ++++++-------------
+> >  2 files changed, 35 insertions(+), 13 deletions(-)
+> >
+> > diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
+> > index 8c093c119e5a8..a7fd51fec8a17 100644
+> > --- a/include/linux/pgtable.h
+> > +++ b/include/linux/pgtable.h
+> > @@ -2204,6 +2204,35 @@ static inline int pmd_free_pte_page(pmd_t *pmd, unsigned long addr)
+> >  }
+> >  #endif       /* CONFIG_HAVE_ARCH_HUGE_VMAP */
+> >
+> > +/*
+> > + * PTE-level block mappings for vmap.
+> > + *
+> > + * pte_set_huge() only has to be implemented by architectures whose
+> > + * arch_vmap_pte_range_map_size() can return a size other than PAGE_SIZE.
+> > + */
+> > +#ifndef __HAVE_ARCH_PTE_SET_HUGE
+> > +static inline void pte_set_huge(pte_t *ptep, unsigned long addr,
+> > +                             phys_addr_t phys, pgprot_t prot,
+> > +                             unsigned long size)
+> > +{
+> > +     BUILD_BUG();
+> > +}
+> > +#endif
+> > +
+> > +/*
+> > + * Likewise, pte_clear_huge() only has to be implemented by architectures
+> > + * whose arch_vmap_pte_range_unmap_size() can return a size other than
+> > + * PAGE_SIZE.
+> > + */
+> > +#ifndef __HAVE_ARCH_PTE_CLEAR_HUGE
+> > +static inline pte_t pte_clear_huge(pte_t *ptep, unsigned long addr,
+> > +                                unsigned long size)
+> > +{
+> > +     BUILD_BUG();
+> > +     return __pte(0);
+> > +}
+> > +#endif
+> > +
+> >  #ifndef __HAVE_ARCH_FLUSH_PMD_TLB_RANGE
+> >  #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+> >  /*
+> > diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+> > index bea9f76ed7e74..fb757d95bde25 100644
+> > --- a/mm/vmalloc.c
+> > +++ b/mm/vmalloc.c
+> > @@ -38,7 +38,6 @@
+> >  #include <linux/rbtree_augmented.h>
+> >  #include <linux/overflow.h>
+> >  #include <linux/pgtable.h>
+> > -#include <linux/hugetlb.h>
+> >  #include <linux/sched/mm.h>
+> >  #include <asm/tlbflush.h>
+> >  #include <asm/shmparam.h>
+> > @@ -100,7 +99,7 @@ static int vmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+> >       pte_t *pte;
+> >       u64 pfn;
+> >       struct page *page;
+> > -     unsigned long size = PAGE_SIZE;
+> > +     unsigned long size;
+> >
+> >       if (WARN_ON_ONCE(!PAGE_ALIGNED(end - addr)))
+> >               return -EINVAL;
+> > @@ -121,17 +120,12 @@ static int vmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+> >                       BUG();
+> >               }
+> >
+> > -#ifdef CONFIG_HUGETLB_PAGE
+> >               size = arch_vmap_pte_range_map_size(addr, end, pfn, max_page_shift);
+> >               if (size != PAGE_SIZE) {
+> > -                     pte_t entry = pfn_pte(pfn, prot);
+> > -
+> > -                     entry = arch_make_huge_pte(entry, ilog2(size), 0);
+> > -                     set_huge_pte_at(&init_mm, addr, pte, entry, size);
+> > +                     pte_set_huge(pte, addr, PFN_PHYS(pfn), prot, size);
+> >
+> As far as i understand, X86_64 arches do not use this path. This
+> specifically is only for ARM64 or powerpc. pte_set_huge() makes me
+> thinking about huge-page mappings(PMD/PUD/hugetlb). This helper is
+> about mutli page mapping on the PTE level.
+>
+> Better naming? pte_set_large()?
+>
+> Any thoughts?
+>
 
-> +struct m3000_console {
-> +	int stdin;
-> +	bool ready;
-> +	u8 buffer[256];
-> +	raw_spinlock_t buffer_lock;
-> +	struct timer_list poll_timer;
-> +	struct mutex poll_mutex; /* Serialize open against synchronous close. */
-> +	spinlock_t poll_lock; /* Protect active state and timer rearming. */
-> +	bool poll_active;
+Agreed, "huge" is misleading here: on arm64 these are CONT_PTE entries
+and the helper writes a range of PTEs rather than a single leaf, so it
+is not a PMD/PUD/hugetlb huge mapping. I'll rename them to
+pte_set_large()/pte_clear_large() in v11.
 
-Perhaps group these a bit better, so that there are not such holes?
-
-> +};
-...
-> +/*
-> + * HVC's idle backoff can exceed the firmware input FIFO's capacity.
-> + * Wake its worker each tick while open; keep PROM calls out of the timer.
-> + */
-> +static void m3000_poll_tick(struct timer_list *timer)
-> +{
-> +	struct m3000_console *con = timer_container_of(con, timer, poll_timer);
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&con->poll_lock, flags);
-
-Any reason not to use guard()s?
-
-> +	if (con->poll_active) {
-> +		hvc_kick();
-> +		mod_timer(&con->poll_timer, jiffies + 1);
-> +	}
-> +	spin_unlock_irqrestore(&con->poll_lock, flags);
-> +}
-> +
-> +static int m3000_open(struct hvc_struct *hp, int data)
-> +{
-> +	struct m3000_console *con = m3000_console(hp->vtermno);
-> +	unsigned long flags;
-> +
-> +	if (!con)
-> +		return -ENODEV;
-> +	mutex_lock(&con->poll_mutex);
-> +	spin_lock_irqsave(&con->poll_lock, flags);
-
-Same here.
-
-> +	con->poll_active = true;
-> +	mod_timer(&con->poll_timer, jiffies + 1);
-> +	spin_unlock_irqrestore(&con->poll_lock, flags);
-> +	mutex_unlock(&con->poll_mutex);
-> +	return 0;
-> +}
-> +
-> +static void m3000_close(struct hvc_struct *hp, int data)
-> +{
-> +	struct m3000_console *con = m3000_console(hp->vtermno);
-> +	unsigned long flags;
-> +
-> +	if (!con)
-> +		return;
-> +	mutex_lock(&con->poll_mutex);
-> +	spin_lock_irqsave(&con->poll_lock, flags);
-
-And here.
-
-> +	con->poll_active = false;
-> +	spin_unlock_irqrestore(&con->poll_lock, flags);
-> +	/* Block reopen until the callback has finished and cannot rearm. */
-> +	timer_delete_sync(&con->poll_timer);
-> +	mutex_unlock(&con->poll_mutex);
-> +}
-> +
-> +static ssize_t m3000_io(struct m3000_console *con, u8 *in,
-> +			const u8 *out, size_t count)
-> +{
-> +	unsigned long args[7], flags;
-> +	bool input = in;
-
-You can test "in" below directly, right?
-
-> +	int ret;
-> +
-> +	if (!count)
-> +		return 0;
-> +	count = min(count, input ? 1 : sizeof(con->buffer));
-> +	/* Console writes can run with interrupts disabled; this lock cannot sleep. */
-> +	raw_spin_lock_irqsave(&con->buffer_lock, flags);
-
-scoped_guard()
-
-> +	if (!input)
-> +		memcpy(con->buffer, out, count);
-> +	args[0] = (unsigned long)(input ? "read" : "write");
-> +	args[1] = 3;
-> +	args[2] = 1;
-> +	args[3] = (unsigned int)(input ? con->stdin : prom_stdout);
-> +	args[4] = (unsigned long)con->buffer;
-> +	args[5] = count;
-> +	args[6] = (unsigned long)-1;
-> +	p1275_cmd_direct(args);
-> +	ret = (int)args[6];
-> +	if (ret > 0 && ret <= count && input)
-> +		memcpy(in, con->buffer, ret);
-> +	raw_spin_unlock_irqrestore(&con->buffer_lock, flags);
-> +	if (ret == -2 || ret == 0)
-
-That's full of magic constants. Can we have defines for those?
-
-> +		return 0;
-> +	if (ret < 0 || ret > count)
-> +		return -EIO;
-> +	return ret;
-thanks,
--- 
-js
-suse labs
+Thanks,
+Wen
 
