@@ -1,120 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-29320-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29321-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07999CA9EDE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 18:58:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B274CA9ED0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 18:59:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3RZ93x76z2xbQ;
-	Tue, 13 Oct 2026 05:58:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791831505;
-	cv=none; b=Wbk6GuhCo8SPKf57QysJVpvg3mjlSy8bb+NYS6Aw+lcJGuXv4IF+ThwnwjgS09FUdsZlYgePfezSOexPqWKS6OboS2aqLHk3NtcuzjA+3ks87lb/D+7HAUI8aFxx0fcgYxwOBNh6RvecJb+eR8EE4KO2RGAfwP2EVOZIC/yFDIsxBR2aI0i/bYG2IYu35xvJl3ragtJqWb0ny+vmOgqixr78A95rjT57NBO83zOTEY4metKcLIHBW7rhq9RGL9x/Cksfi/+kNesf3BGMObppPnBVKopPPR1z1xrZp8/DERst6XY6dXKau5Lc4Kec5xUGqSWR1jyPSGk8fh4K26J49A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3Rbd6g1Wz30hC;
+	Tue, 13 Oct 2026 05:59:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791831581;
+	cv=none; b=ZB4tVqwWy09ArLFtAMetbmW48sZygjwjQwMIh+lEYLI383wLNYvQlZyRjVTjkyZX7gGIru6HOZkCq62jD8n3ZCPgKbVZy+HhugaUgei3sKi/3RX62vjOXoxmgbS0F/Ch2tpYB5S2x2711VAJLTCQTSpS/Nk2QoEtz6IDeCylpkxRab6RVZnrZJJjp0F3KQBDxbAOkppZ7UuhxGy6HFgIL9BiWLv1Gx6aC+TO+vORi+67oJGKyRriUWu973F16jetbuEuHIuwJWhLzsxy0qx3DYnQPR/cHBptPz2R5AR2CUDQTBbkwVeMCCztiTo5zQyUFRiBGMOUCfOrELCrrps4rg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791831505; c=relaxed/relaxed;
-	bh=qH+yTBGHMx4kskcBpBDKONKQ96Db6V1NplbT44nRvZo=;
+	t=1791831581; c=relaxed/relaxed;
+	bh=YHE/SGYcUV1OUJwt26eXa2xg6GrIMfRUdwuOqUARZ48=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=JBTiJvPnq3SSfxu7eywrql3ybWHX1NPbx+dnLgl79CW7r8/Rxxokv1PRPlHBlzcU4AWs69f2IzpZrt991km4Iw6Ly8qT0K2A7DDh0oBSN6V9U69FAgaMhbYDIVHJ2qm/5sC4h7MZDy8Wiz0qkpGR9ee1rYrZeBcAS79qfHBhzM5tFNmlCtjEU5HWGFZxfkUMyuN/bQSS0kkPTvqFxhDKXNZkm9P6x5fbSRI26HKqI5nhJ3OOYJkn/teSGOv5Fu4gbt8fpsZ2b+vUg+7t+cy4OsKJTxBelWat0wUj/3QcPxZvwUGifhA5IWtyNN0/oGVfahS4UZ6Vzd/GfDGgXoHO/g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=looXlA6f; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=IgofYZOPRozfN5QaXHImT6D42JEVQiHRsgMAxppb+VZPF40Wr7Chs9+mwnHCVthwGWvg59npJrj4tuFD9+9KL+vV4v1+/tFd2xO6/AQYb1i25M0TCKR3c6aLfUhe2ZIETNfAO+aCaFiA2AHzggMr1sXg8q02TePcCo6E47KvX4X+MPaYaol/HCyMEGu2fftCjVGttxDV+S3rg11VJl/CK9JsqIgoZXdcgztkJQNssamFzXbxGZ2Paa7ffcj/fSs3Wy1EF3XQwTbnc8cW0LE81xlLr/EWDRH7gHtH/+7vlLOCONGu7ET/QhCcn8sh3xKJC1wBOpdZWvTikruFqAYF6g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=M78lF7zK; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42a; helo=mail-wr1-x42a.google.com; envelope-from=abhinjoses@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=looXlA6f;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=M78lF7zK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42a; helo=mail-wr1-x42a.google.com; envelope-from=abhinjoses@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x42a.google.com (mail-wr1-x42a.google.com [IPv6:2a00:1450:4864:20::42a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3RZ84gz6z2xSV
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 05:58:24 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 2980C42E9B;
-	Mon, 12 Oct 2026 18:58:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D5EB01F0089B;
-	Mon, 12 Oct 2026 18:57:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791831502;
-	bh=qH+yTBGHMx4kskcBpBDKONKQ96Db6V1NplbT44nRvZo=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=looXlA6fTwVHV01oPQjKIsaLN7qg4gOfpfxfIKT2JYCP5qc6mtNOfKXzipcBrh5Ot
-	 PwTlWcUh8iMGaWDsLLerJWirxQS11zQ+uNPPZD56vjlnfd4Xt8Ty0QR2gLNZRLAVmZ
-	 XB2AV4YuqJ2oKkV2g5m/6Icmp243c7oQwlXcOgSGhet9aPBJl7BLHiRyQaIFfTFg5f
-	 R5mIs3NuvgJeGZzERtd7pZ/l5Ywtb7I+I+N5/X1JMKypG8+SLTaEsyrMX/W1aLWQJP
-	 x0/ar3g7y36ElH0BWNMVIYJBfaYlLx77JuLREXrJFvmLlG+LDzzGKzUyJUzEJO7zAF
-	 41OpXgdKh9hhA==
-Date: Mon, 12 Oct 2026 19:57:46 +0100
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: "David Hildenbrand (Arm)" <david@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, 
-	"Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, 
-	Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, 
-	Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
-	Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, 
-	Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, 
-	Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, 
-	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
-	Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
-	Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, 
-	Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, 
-	Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, 
-	Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, 
-	Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, 
-	Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, 
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, 
-	Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, 
-	John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, 
-	Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
-	Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, 
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, 
-	Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
-	Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, 
-	Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
-	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
-	David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, 
-	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, 
-	Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, 
-	"Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, 
-	Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
-	Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, 
-	Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, 
-	Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, 
-	Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, 
-	Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, 
-	Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, 
-	Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, 
-	Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, 
-	Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, 
-	Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, 
-	Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, 
-	Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, 
-	Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org, 
-	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, 
-	linux-rdma@vger.kernel.org, selinux@vger.kernel.org, linux-sound@vger.kernel.org, 
-	bpf@vger.kernel.org, linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, 
-	linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
-	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
-	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev, 
-	Ihor Solodrai <ihor.solodrai@linux.dev>, Bert Karwatzki <spasswolf@web.de>
-Subject: Re: [PATCH v5 24/38] mm/vma: enforce that mm-managed mappings may
- not set VMA_IO_BIT
-Message-ID: <as0tfn85BbcLs-Kn@gremlin>
-References: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-0-923b70125b1e@kernel.org>
- <20261009-b4-mmap-prepare-vma-flag-sanify-v5-24-923b70125b1e@kernel.org>
- <5d51b6b3-ad58-4827-bedf-f1a79ebd5c86@kernel.org>
- <as0nF53W7dug-Fem@gremlin>
- <5ba7305f-0ad1-44ee-be0b-36752684cdb9@kernel.org>
- <as0qUOfS-FQgRnm4@gremlin>
- <c0b212bb-da62-476b-a16d-2ce78e1e2639@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3Rbc1mnZz2xSV
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 05:59:39 +1100 (AEDT)
+Received: by mail-wr1-x42a.google.com with SMTP id ffacd0b85a97d-48b060ec084so1364623f8f.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2026 11:59:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1791831577; x=1792436377; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=YHE/SGYcUV1OUJwt26eXa2xg6GrIMfRUdwuOqUARZ48=;
+        b=M78lF7zKAdUB9KgZ/4baDQM8sa/8nXuBtGbKlo4ExhplLFSzjhYbpaDKBXKGsbGs2+
+         e6mH3+Qlsi5tM4HskMgUorykiNwChxiA0+WRGpvwoDtna5/IzdxJlQtT8tUcMyhUbg5X
+         KW7N85TzFoDHQBvbDDSIIlEmDfoYc2yh7Za8Yby5N4dlwv/nPmVmd9gTJlpZvvDoMopM
+         SuZuLA36v2kVK3slN5BZMWWF1M4v5XBGwsWjLEdxds0nxeELmw+UWWQ7nEjd/tFytU/p
+         vHxrfIwfL+sF8K7gUTsLH9f+Is2a3ViHenwLCzXjUjMw1BXApgyIsasvqPf9KlpWSv99
+         n1Uw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791831577; x=1792436377;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=YHE/SGYcUV1OUJwt26eXa2xg6GrIMfRUdwuOqUARZ48=;
+        b=Q6uC7l5WwOHyjMKzBuWMQw4Qaa2E0YTMRQs2CrA1aRM2Fnsx7Tc78aUb16qVTUKTTt
+         3DhU7+qVKTDVtMGTPHTqfiLETKWiNta2NWcmCPkSy/OGXLRPZh6pDdEsy44+SpjhSJup
+         MpxND17pOzTENW/Xs/hP3ARS2Wfd4kTdH65/J7hc0I0Hfqmb6uQDvChem1uzIEfMzKnQ
+         mD8I/g7PPgB1Bpnw2zRX8ar2O5MAwX8h2FJf6NBI7YWiO+zA2viYn1Hh/TtPk54zTEup
+         uEep19SUJnVI09iLkxffUOzSn/BSDblo8OWl2Z4MYTQX6qdPDe2liUy5K1lrwy161TYp
+         2lgg==
+X-Forwarded-Encrypted: i=1; AKwUvByyi2Oj25oRPrHPxHicIQm/rljWAStakm787Yz8xXSos6m76U8ZfAPvu4uCeWzmlhyuMbMbpGuw3lXmosw=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYJG3NffyMeY6LSAwccYEN2hPpr1VVEOUMlEOecuGQYfC+/ESTm7
+	v38iPGfby8JlcMgFPqkiiJ7uSd2bhaojgKQHFpvsMthEB5ygjTKO2CRC
+X-Gm-Gg: AYBFou2UFpEGdAASSg1SyDwngSR0Ppmgj0/ThFBD7247JD/Y+RW9Ltnzgv/MSnakMxZ
+	sXnPL4IFcVrSYVP+E5X4dyaWlWzL9eeaWzfTo3e3S2OTFpo/BcmxqcrHIjD/hkOvtggdtD7eZa1
+	6r/tTcBci1UZ/PR/4doUKDQkEAwCgbe3TDFHKTLrINrm0C6Zgo50NAxscqzZN81s1MyvbV7BmiM
+	K+h0KjCOAlLVJ/mIz+ms9Ut03bTnJTacd/zxoxq9i+mZZvhbmLnNclDLWoNyEy4vOGIe9r/JhXq
+	7FGD3j0xFN4w/14IP0nBP0fOL5zSUR1kxDKdnxpFs3q/Lxwx7DhHTub3wCd5LONvqs1s25WIfrf
+	LbL1aFa4RbUchoski827waG7x4nLKY7R4eWOP9Sm4eH5V76xEcmJS5R6FHiw2KoCYEN9vu85SKU
+	0lMYWalBuPFmhDmZW0JihOyJffeAqwqN/myNuC5j6umUEAshxTo+uwTdZuNpo3BNnGUly445v/g
+	q0KduLlWTFO3Iql0t4jv93JC4kjq2x8LrymBiEFakcyyH1UXcQG/JJJb7za0NPRIQ==
+X-Received: by 2002:a05:6000:4818:b0:48a:ffcc:5b50 with SMTP id ffacd0b85a97d-48dbace8c04mr18035952f8f.40.1791831576447;
+        Mon, 12 Oct 2026 11:59:36 -0700 (PDT)
+Received: from home-desktop (dynamic-002-214-019-128.2.214.pool.telefonica.de. [2.214.19.128])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48de0ab5262sm871105f8f.22.2026.10.12.11.59.34
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 12 Oct 2026 11:59:36 -0700 (PDT)
+Date: Mon, 12 Oct 2026 20:59:33 +0200
+From: Abhin Parekadan Jose <abhinjoses@gmail.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Lukas Wunner <lukas@wunner.de>,
+	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
+	Shuai Xue <xueshuai@linux.alibaba.com>, Kees Cook <kees@kernel.org>,
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Oliver O'Halloran <oohall@gmail.com>, linux-pci@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC v4 0/5] PCI: pciehp: Report surprise removal during
+ safe removal
+Message-ID: <as0uFfzw83f9aPpn@home-desktop>
+References: <20260927182017.938565-1-abhinjoses@gmail.com>
+ <asxylqif72Lcldx1@home-desktop>
+ <20261012022556-mutt-send-email-mst@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -130,82 +103,217 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <c0b212bb-da62-476b-a16d-2ce78e1e2639@kernel.org>
+In-Reply-To: <20261012022556-mutt-send-email-mst@kernel.org>
 
-On Mon, Oct 12, 2026 at 08:51:10PM +0200, David Hildenbrand (Arm) wrote:
-> On 10/12/26 20:48, Lorenzo Stoakes (ARM) wrote:
-> > On Mon, Oct 12, 2026 at 08:39:35PM +0200, David Hildenbrand (Arm) wrote:
-> >> On 10/12/26 20:35, Lorenzo Stoakes (ARM) wrote:
-> >>>
-> >>> That gets removed.
-> >>>
-> >>>
-> >>> I mean we do that in a subsequent commit, I think even the next one?
-> >>>
-> >>>
-> >>>
-> >>> Yeah, but to do that the code would now be something like:
-> >>>
-> >>> 	vma_flags_t masked = flags;
-> >>>
-> >>> 	/*
-> >>> 	  * vma_flags_is_mm_managed() tests VMA_IO_BIT, which will be removed
-> >>> 	 * in the next commit.
-> >>> 	 */
-> >>> 	vma_flags_clear(&flags, VMA_IO_BIT);
-> >>> 	if (!vma_flags_is_mm_managed(masked)) {
-> >>> 		...
-> >>> 	}
-> >>>
-> >>> Is that really worth it?
-> >>>
-> >>> I don't think there's really too much confusion intra-patch about that is there?
-> >>
-> >> I would do it as above (- the comment, as that is the next patch indeed) and
-> >> only remove the vma_flags_clear() in the next patch.
-> >>
-> >> But in any case, you should spell out that this is only temporary in the patch
-> >> description :)
+On Mon, Oct 12, 2026 at 02:32:02AM -0400, Michael S. Tsirkin wrote:
+> On Mon, Oct 12, 2026 at 07:39:34AM +0200, Abhin Parekadan Jose wrote:
+> > Gentle ping on this RFC.
 > >
-> > And then there's a 'masked' variable that is unused?
+> > Lukas, Bjorn, could you let me know whether the general direction is
+> > acceptable before I work on a non-RFC version? Any comments on the
+> > approach would help.
 > >
-> > You need to have two vma_flags_t variables to be able both clear VMA_IO_BIT
-> > and use vma_flags_is_mm_managed().
-> >
-> > So the change would have to be
-> >
-> > + 	vma_flags_t masked = *flags;
-> > +
-> > + 	vma_flags_clear(&flags, VMA_IO_BIT);
-> > + 	if (!vma_flags_is_mm_managed(&masked)) {
-> > + 		...
-> > + 	}
-> >
-> > Then:
-> >
-> > - 	vma_flags_t masked = *flags;
-> > -
-> > - 	vma_flags_clear(&flags, VMA_IO_BIT);
-> > - 	if (!vma_flags_is_mm_managed(&masked)) {
-> > + 	if (!vma_flags_is_mm_managed(flags)) {
-> >  		...
-> >  	}
-> >
-> > Which doesn't really seem worth it for somebody who is confused between two
-> > patches mid-series.
-> >
-> > But if you feel strongly I can make the change like that?
+> > Thanks,
+> > Abhin
 >
-> Whatever you prefer. Most important thing for me was finding it in the next
-> patch and being pleasantly surprised ;)
+> I'd say, complete the picture. acpi,shpc,polling...
 
-I'd rather not then!
+Ok.
 
-It was always intended that way, this was all part of a careful dance to ensure
-correct behaviour right up until the point where we enforce that VMA_IO_BIT is only set when appropriate.
+>
+> Maybe think about how this interacts with pci_ignore_hotplug
+> (seems to weirdly check presence then ignore)?
 
-I can update the commit message to reflect it.
+Yeah, the order is wrong in v4. The presence read should come after
+the `ignore_hotplug` check. Will fix.
+(Need to still find out why this was introduced. Looks like only the GPU drivers
+use it.)
 
---
-Cheers, Lorenzo
+>
+> And test with virtio not with edu.
+
+Bjorn had asked me to keep this puerly PCI[1], So I had decoupled it from the
+virtio changes. I could post another series with those changes with a dependecy
+to this series.
+
+[1] https://lore.kernel.org/all/20260826194815.GA1552818@bhelgaas/
+
+>
+> > On Sun, Sep 27, 2026 at 06:20:11PM +0000, Abhin Parekadan Jose wrote:
+> > > If a safe removal is already in progress when the device is surprise
+> > > removed, pciehp cannot report the disconnect [1]. The removal blocks
+> > > waiting on a device interrupt or status read, and pciehp's IRQ thread is
+> > > single-threaded and is itself executing that removal, so it never runs
+> > > again to report the device gone. The removal hangs indefinitely.
+> > >
+> > > pciehp_isr() does run while the IRQ thread is blocked, but pciehp_ist()
+> > > must ignore link and presence changes caused by Secondary Bus Reset or
+> > > DPC, and telling those apart takes seconds which cannot be spent in
+> > > hardirq.
+> > >
+> > > Patch 4 does not do that work in hardirq. pciehp_isr() only checks
+> > > whether the card is present or the link is active, and defers the rest
+> > > to a work item in process context. The work item does not need to know
+> > > why the link changed, only whether the card is gone: it waits for DPC
+> > > recovery or a Secondary Bus Reset in progress to complete, then checks
+> > > again under reset_lock, and if the card is absent and the link is down
+> > > marks the devices below disconnected, which schedules the driver's
+> > > disconnect work from patch 1. pciehp_ist() is unchanged and
+> > > remains the only consumer of the one-shot flags PCI_DPC_RECOVERED and
+> > > PCI_LINK_CHANGED, which tell it whether a link change can be ignored.
+> > >
+> > > Patches:
+> > >
+> > >   1/5 Michael's "PCI: Report surprise removal event" from his RFC v5,
+> > >       which adds disconnect_work_enable and pdev->disconnect_work.
+> > >       Changed to serialize disconnect_work_enable with a per-device
+> > >       spinlock.
+> > >
+> > >   2/5 Add pci_hp_wait_link_change(), which awaits a Secondary Bus Reset
+> > >       in progress without consuming PCI_LINK_CHANGED.
+> > >
+> > >   3/5 Add pci_dpc_wait_recovery(), which awaits DPC recovery without
+> > >       consuming PCI_DPC_RECOVERED.
+> > >
+> > >   4/5 The pciehp change. Adds disconnect_work to struct controller,
+> > >       scheduled from pciehp_isr() on PDC or DLLSC when neither Presence
+> > >       Detect State nor Data Link Layer Link Active indicates a card.
+>
+>
+> how about including the virtio patch? seems more relevant than
+> fooling around with edu.
+>
+> > >   5/5 A POC driver for the QEMU edu device that blocks in remove()
+> > >       waiting for an interrupt, standing in for del_gendisk() stuck in
+> > >       blk_mq_freeze_queue_wait(). Not for merge -- included so the
+> > >       hang can be reproduced.
+> > >
+> > > Changes since RFC v3 [5]:
+> > >
+> > >   - 5/5: Reinitialize the completion in remove() before requesting the
+> > >     delayed interrupt, so that an earlier completion cannot let remove()
+> > >     return while the interrupt is still pending. (Sashiko)
+> > >   - 1/5 to 4/5: No changes.
+> > >
+> > > Changes since RFC v2 [4]:
+> > >
+> > >   - 1/5: Protect disconnect_work_enable with a per-device spinlock, held
+> > >     while testing it and scheduling the work, instead of lockless
+> > >     accesses and barriers.  pci_dev_set_disconnected() could otherwise
+> > >     test the flag, get preempted, and queue the work while a newly bound
+> > >     driver re-initializes it.  With the lock, cancel_work_sync() is
+> > >     sufficient again, so go back to it from disable_work_sync().
+> > >     (Sashiko)
+> > >   - 2/5: Test PCI_LINK_CHANGING with test_bit_acquire(), so that the
+> > >     caller's subsequent accesses are ordered after the end of the code
+> > >     section even if wait_event() returns without sleeping. (Sashiko)
+> > >   - 3/5, 4/5, 5/5: No changes.
+> > >
+> > > Changes since RFC v1 [2]:
+> > >
+> > >   - 1/5: Use disable_work_sync() instead of cancel_work_sync() in
+> > >     pci_clear_disconnect_work(), so that a racing schedule_work() cannot
+> > >     queue the work after remove() has returned. (Sashiko)
+> > >   - 2/5, 3/5: New.
+> > >   - 4/5: Drop schedule_notification_work(); pci_dev_set_disconnected()
+> > >     schedules the driver's disconnect work for all callers again.
+> > >     (Michael)
+> > >   - 4/5: Don't consume PCI_DPC_RECOVERED and PCI_LINK_CHANGED in the
+> > >     work item.  In v1 it ran the same spurious link change test as
+> > >     pciehp_ist(), and whichever ran first took the flags, so pciehp_ist()
+> > >     could tear down a device that was only reset. (Sashiko)
+> > >   - 4/5: Check presence with pciehp_card_present_or_link_active() in
+> > >     both pciehp_isr() and the work item, as pciehp_ist() does, so that a
+> > >     port with Presence Detect State hardwired to zero is not mistaken
+> > >     for an empty slot.
+> > >   - 4/5: Return early from the work item if pciehp_ist() has already
+> > >     taken the pending events, and treat a read error of the presence
+> > >     check as "not present". (Sashiko)
+> > >   - 4/5: In pciehp_isr(), check presence before dropping the runtime PM
+> > >     reference on the port's parent.  In the work item, take a runtime PM
+> > >     reference and check presence under reset_lock, since a slot reset
+> > >     may make Presence Detect State and Link Active flap.
+> > >   - 5/5: Build only with CONFIG_EDU_SRPOC, which depends on PCI; don't
+> > >     claim the interrupt when the device reads all ones; clear bus
+> > >     mastering on teardown. (Sashiko)
+> > >
+> > > Testing
+> > >
+> > > Reproducing this needs QEMU changes, since neither device_del nor the
+> > > attention button produces a true surprise removal.  A branch with both
+> > > is here [3]:
+> > >
+> > >   - a delayed-IRQ register on the edu device (BAR0 0x30, write N ms)
+> > >   - a pcie_surprise_del monitor command that drops the device and
+> > >     generates PDC=1, DLLSC=1, PDS=0
+> > >
+> > > Both tests use:
+> > >
+> > >   ./qemu-system-aarch64 -machine virt,gic-version=3 -cpu cortex-a57 \
+> > >     -m 512 -smp 2 -kernel Image -initrd initramfs.cpio.gz \
+> > >     -device pcie-root-port,id=rp1,chassis=1,slot=1 \
+> > >     -device edu,bus=rp1,id=edu0 -append "console=ttyAMA0 rdinit=/init" \
+> > >     -nographic -monitor unix:/tmp/qemu-mon.sock,server,nowait
+> > >
+> > >   and need a guest kernel with CONFIG_EDU_SRPOC=y.
+> > >
+> > > Test 1 (Hang in remove() on a user thread, then surprise removal):
+> > >
+> > >   guest# echo 1 > /sys/bus/pci/devices/0000:01:00.0/remove &
+> > >   host$  echo "pcie_surprise_del edu0" | socat - unix-connect:/tmp/qemu-mon.sock
+> > >
+> > >   This is the case patch 1 solves on its own: pciehp's IRQ thread is
+> > >   free and handles the removal.
+> > >
+> > > Test 2 (Hang in remove() on pciehp's IRQ thread, then surprise removal):
+> > >
+> > >   guest# echo 0 > /sys/bus/pci/slots/1/power &
+> > >   host$  echo "pcie_surprise_del edu0" | socat - unix-connect:/tmp/qemu-mon.sock
+> > >
+> > >   Without patch 4 the safe removal does not return until the delayed
+> > >   interrupt fires 600 s later.  With it,
+> > >   pciehp_isr() schedules ctrl->disconnect_work, which marks the device
+> > >   disconnected; the POC driver's disconnect work completes the wait and
+> > >   remove() proceeds.
+> > >
+> > > Open questions
+> > >
+> > >   - Is this a viable approach?
+> > >
+> > > [1] https://lore.kernel.org/all/aHlZE18kPuHuDtTT@wunner.de/
+> > > [2] https://lore.kernel.org/all/20260905183905.997833-1-abhinjoses@gmail.com/
+> > > [3] https://gitlab.com/abhinkop/qemu/-/commits/suprise-removal
+> > > [4] https://lore.kernel.org/all/20260927165459.829900-1-abhinjoses@gmail.com/
+> > > [5] https://lore.kernel.org/all/20260927175203.928270-1-abhinjoses@gmail.com/
+> > >
+> > > Assisted-by: LLM
+> > >
+> > > Abhin Parekadan Jose (4):
+> > >   PCI: pciehp: Add pci_hp_wait_link_change()
+> > >   PCI/DPC: Add pci_dpc_wait_recovery()
+> > >   PCI: pciehp: Report surprise removal from pciehp_isr()
+> > >   misc: Add edu_srpoc surprise removal POC driver
+> > >
+> > > Michael S. Tsirkin (1):
+> > >   PCI: Report surprise removal event
+> > >
+> > >  drivers/misc/Kconfig                   |  11 ++
+> > >  drivers/misc/Makefile                  |   1 +
+> > >  drivers/misc/edu_srpoc.c               | 172 +++++++++++++++++++++++++
+> > >  drivers/pci/hotplug/pci_hotplug_core.c |  21 ++-
+> > >  drivers/pci/hotplug/pciehp.h           |   1 +
+> > >  drivers/pci/hotplug/pciehp_hpc.c       |  67 ++++++++++
+> > >  drivers/pci/pci.h                      |  10 ++
+> > >  drivers/pci/pcie/dpc.c                 |  54 ++++++--
+> > >  drivers/pci/probe.c                    |   1 +
+> > >  include/linux/pci.h                    |  57 ++++++++
+> > >  10 files changed, 381 insertions(+), 14 deletions(-)
+> > >  create mode 100644 drivers/misc/edu_srpoc.c
+> > >
+> > >
+> > > base-commit: fd179f8a05be3ccae366b9b96e176b51fbe54aab
+> > > --
+> > > 2.51.1
+> > >
+>
 
