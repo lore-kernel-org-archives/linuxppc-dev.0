@@ -1,73 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-29238-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29239-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBD59CA9ED1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 09:05:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B399CA9ED0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 09:16:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3BPv6BKCz2yPR;
-	Mon, 12 Oct 2026 20:05:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791795923;
-	cv=none; b=iFmsYbYslUK9K5JcQmU1VeBTd+7T7dsWae/trfbcItc9AJfacjY+EigQ33UKrI0kt4qNomXn8qm+xYXycbhCQmm24OxViiYEMQHb+e16UsbNvUfV8hy+RGhkvoXqWHERyw35KXTMGsOhIkPeSWWyZUxuvF5q2BKlexMhBOL1KSI2gZv7hAWHxv4uRTtdzaqXZIExpsOk4wXLZCcRI+BklDLXx7cDfnHkEGZIsZ4CjINTBbGETqnHrpofDBKivs13BqSdOHojb9SAi160eE+OIGI+WSPnLvKaF99moriqHjlLJkwXnWWxxvfRP2RPXFo0kFYBdMs3MypOBr5gH0kU9w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3BfG18hCz2yPR;
+	Mon, 12 Oct 2026 20:16:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791796566;
+	cv=none; b=VjF0AhscN56e9EEVwtU0yschJ05o53HobYLMDjOsMvIQ0d8X1EyD2IuKMmyXku0xwMfwzzKUBUwqoxXewx0ztAd/GL7fNfBioLV5320sOyJSS2nlUuIuKmzq5YvTAGcaovSuEXj7Pcf+9c0/1RxlSulcWBnHd4wC06vkg+Pu34WLcI54CCrQ9BDHCvqwAxE6cXJ06SYPUGSTtnWBvn3wPDIiQPbFp5+yT+wRA74MZqrP0w5i4tnBDDjdeHZsXJwj3GMxQ7z+3t1HDyvmb4/he0kOCYHrf8tZqAvjjiO9nY9PxAVESfQq0WZ6vGgxKcGANfH9A5KVbqWhxIHhjqGxbg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791795923; c=relaxed/relaxed;
-	bh=CqlPhJz1sX/bStLCD096eMu+evQZLyASjyEBTk8Gsys=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PIwm2uul528cqzaGZY3TXBlPJjICTBQVwz7PNOZsyFtZRkYVkKlxLIj5011zAgZ1cXJ0CSm6SCxxo6NNN+Tb/zJlevtn0hb+Fsn93UGwtRj8w1m4uLzSgdS2/E/zt6Jpdfe5O/UGQLQwQuKwMfezCm6gdHKpDCD5oDJyesC9BHeMNsTVD5Tbe9g2a4LBf7CB+rWYn6dO3C+lK9sBOebuc41gNWETFFIQblvLRd+JklY4gEFxe+R1d7m18lXJpJ/0d7p7TOdBBEHHKcs0yIipmp+FhmAOsNGMFDXNwnJa3Bxw5EA4P6j913jzVKqBfG1apY3T/Swbn+DWm/1QznyF/Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ex3TwE2t; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1791796566; c=relaxed/relaxed;
+	bh=I0HNRCS/h711M+WA/GHMYCEaRzzHTm0vVBiP9fZikGI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=T1edvKwGcMchhKj1gFpKn60qfV4x7peygQ4dyHmIh6eSHBZNIFgMiPssLL6e1xxELiDOS0XYueE0Ugngmrv/EDCpYP++JvNEb01ODYK3BSDXkKrNdEGSThHhYb7O4V3JQl6IABP2Je7s/tEFDnd1wkOJ/CGRYp2m10ry4c5q2ZrLVZrOuTON2f2roVMyipyP+Yax6TH8Yor5m6zJB+k4K/wmxNRnMfdUxlY+ao7ZaibM4WFgwULSuuO18PHt/B26VUKEIZj92z0Vjz6TlaTxRPAlBp0aMG+bpKZ8/CTWr11RP8msAkJFKj7oEUsY9nFyJL5o3Qg/HdmIWrx/5mxiIQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EMB9HcnR; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=alx+linux-hardening@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ex3TwE2t;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EMB9HcnR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=alx+linux-hardening@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3BPt3jYGz2xwZ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2026 20:05:21 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69C8iIuA3968332;
-	Mon, 12 Oct 2026 09:05:12 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=CqlPhJ
-	z1sX/bStLCD096eMu+evQZLyASjyEBTk8Gsys=; b=ex3TwE2tsOY5/vfKBfv2iK
-	v1N0XWlYjRG5pTLperKmQp1CMMeTlhU3fkQwWQlm9Nf38p2YvlEM3B9ErceZVZUw
-	zNVBaDwuA/Z3YGX1+iKUGk49eGoFVR8gWkWcNRwXIWYY+OA6wZVpVdwJV8kl8CR5
-	i9YFWO4T9Kr8/OI3G+GT5RVsfEFZ7BAqNdA868RwP44v4XnJYFPIXi8EZ3Q6VZQJ
-	/4X4nmWNVxhb8tcqDjuUeBQrdEmFkyf1qZmsMLY5LTEpIbhD/JVuWPeF2g78SajY
-	rHEv3a/Jz2jUlsfYH4hA/Zoicg1OmSY5yfSj4mlyennBCVDMFc2IaOB6/DkjpXQw
-	==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7e1vyqnj-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 12 Oct 2026 09:05:11 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69C8YvCQ978624;
-	Mon, 12 Oct 2026 09:05:11 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h802vmjus-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 12 Oct 2026 09:05:10 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69C956tX47120740
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 12 Oct 2026 09:05:07 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DA9122004E;
-	Mon, 12 Oct 2026 09:05:06 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DBDEE2004B;
-	Mon, 12 Oct 2026 09:05:04 +0000 (GMT)
-Received: from [9.124.215.77] (unknown [9.124.215.77])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 12 Oct 2026 09:05:04 +0000 (GMT)
-Message-ID: <35446573-c8ba-414a-8a0d-d682a84d589e@linux.ibm.com>
-Date: Mon, 12 Oct 2026 14:35:03 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3BfC50qCz2xwZ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2026 20:16:03 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 526DB601DB;
+	Mon, 12 Oct 2026 09:16:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 075251F0089B;
+	Mon, 12 Oct 2026 09:15:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791796560;
+	bh=I0HNRCS/h711M+WA/GHMYCEaRzzHTm0vVBiP9fZikGI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=EMB9HcnR2Vy1CAnUk7OHOf5GsCaVPZ7a6Bro4eKk5SUaBIH94yOCIIzkHLk/dn29g
+	 kV8aB+iGe4QM9ZmQqytyp1noivDVB6UtVQb5bb2D2X08dewTXGvGNOyFzYt7aWPou9
+	 sUgXqAh09Pcup1sCOdYqDR+BacTYknTjLFf6XdQkB+ifvAqaXyOnlrtogEEhpZ8brj
+	 r7mW4WAB9D1fJ+rHQJcJhySpnlLAb1oYZJOVxiPuABLWHmaPPa61rJvRfygQG9hGJe
+	 iDkCjJKuTlNSHA3hlUKE9BPI/4vLJ63BW6D8A+VpIZfP9YwnHLUUu8rgBLrGz7Ioz5
+	 COyMaej6bm63A==
+Date: Mon, 12 Oct 2026 11:15:39 +0200
+From: Alejandro Colomar <alx+linux-hardening@kernel.org>
+To: Kees Cook <kees@kernel.org>
+Cc: Alejandro Colomar <alx@kernel.org>, 
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Bill Wendling <morbo@google.com>, 
+	"Matthew Wilcox (Oracle)" <willy@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, 
+	David Gow <david@davidgow.net>, Petr Mladek <pmladek@suse.com>, 
+	Shuvam Pandey <shuvampandey1@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, 
+	Jonathan Corbet <corbet@lwn.net>, Sergey Senozhatsky <senozhatsky@chromium.org>, 
+	=?utf-8?Q?G=C3=BCnther?= Noack <gnoack@google.com>, =?utf-8?Q?Micka=C3=ABl_Sala=C3=BCn?= <mic@digikod.net>, 
+	Masami Hiramatsu <mhiramat@kernel.org>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, 
+	Jiri Kosina <jikos@kernel.org>, Alexei Starovoitov <ast@kernel.org>, 
+	Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, 
+	Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, 
+	Martin KaFai Lau <martin.lau@linux.dev>, Song Liu <song@kernel.org>, 
+	Yonghong Song <yonghong.song@linux.dev>, Jiri Olsa <jolsa@kernel.org>, 
+	Emil Tsalapatis <emil@etsalapatis.com>, Ihor Solodrai <ihor.solodrai@linux.dev>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Shivaprasad G Bhat <sbhat@linux.ibm.com>, 
+	Thorsten Blum <blum@kernel.org>, Alison Schofield <alison.schofield@intel.com>, 
+	Dave Jiang <dave.jiang@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Guangshuo Li <lgs201920130244@gmail.com>, Ira Weiny <iweiny@kernel.org>, 
+	Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Vishal Verma <vishal.l.verma@intel.com>, 
+	Randy Dunlap <rdunlap@infradead.org>, Shuah Khan <skhan@linuxfoundation.org>, 
+	linux-kernel@vger.kernel.org, bpf@vger.kernel.org, linux-security-module@vger.kernel.org, 
+	linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, nvdimm@lists.linux.dev, 
+	linux-doc@vger.kernel.org, linux-hardening@vger.kernel.org
+Subject: Re: [PATCH v4 05/11] seq_buf: Add seq_buf_strlen()
+Message-ID: <asyalCF06dhpVxPc@debian>
+References: <20261003035906.too.263-kees@kernel.org>
+ <20261003035921.1918874-5-kees@kernel.org>
+ <asEhEe0Urb5Wx7yi@ashevche-desk.local>
+ <202610040023.A3865A6@keescook>
+ <asIPlnb0noMd33rr@ashevche-desk.local>
+ <20261005112209.1e47fa-kees@kernel.org>
+ <asOKvhT01aNb5-Dg@debian>
+ <20261005155839.d5d200-kees@kernel.org>
+ <asPSYn7sLqiH39Fu@debian>
+ <20261012005620.466497-kees@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,61 +97,267 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] powerpc/configs: Add debug configs for debugging
-To: Gautam Menghani <gautam@linux.ibm.com>, maddy@linux.ibm.com,
-        mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
-        ritesh.list@gmail.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20260827121309.94434-1-gautam@linux.ibm.com>
- <asyep4EEG-lNR72Z@li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com>
-Content-Language: en-US
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-In-Reply-To: <asyep4EEG-lNR72Z@li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEyMDAzNCBTYWx0ZWRfX4XxDACEFGuRc
- F0GbsSD+QHI989Q7HMT8RB9P3U+q+W8Uz+U3h+Xjw4snAYzq9eeFUkJK1NdKVOmeG5/cwQkIevl
- OKt2AOQZDVV81+PyMhDuLQphKPIfcWk=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEyMDAzNCBTYWx0ZWRfXyO/tDWO8vaDT
- ufHC1t7HnC9VVLmN81AuzwuQ86Grxo2TXW60BYkjwtgV/TPcnaJukbIJaAU5MpAz0LU6k7cIBWt
- cOEEOaVRSABC3gyUfalFNyJg50RMoL8XWDR9+JGczHXJqhbaMvucBPUupJqvWunk+DWl3fcC1Eb
- fwJFcJiRIYbetSeUXytNAEzpzmzUBTHNwThjOO3VCbXAJqNKCYxjBp55YiRgNVPnCrkUrKZ3088
- FcAGMoIJsCzWoQDTut1vFwgXsjG/HwYySBX4fFSs/6rTKsyMfd4Qb6WLbxzsMT/QMOzjc/LcS3H
- c5+ePdgqwNtMXKpvGKmK43r3AQSAmfo3kU2AApSYN3QJiCzi6ihPFPdjWfsnCBMp9Ljd2eujLbW
- YiYpZUP6o9slWSfvW/H96NhQnQcPefB+1g1g7qyjQV1TKR19jb+9QtNdIUOofSa5trcEH5V25pG
- T3usmJneJ2Wuu7Bq5CA==
-X-Authority-Analysis: v=2.4 cv=E6pYNqdl c=1 sm=1 tr=0 ts=6acca2c7 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=CyTxvfVHbQM6u8GbU7kA:9
- a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: BpnJB0wFhT3PBczyPt27ATm7HAjAc2ks
-X-Proofpoint-GUID: PKemi8W4puwuOrKSOOftae7E9U3yQVtV
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-10-12_03,2026-10-09_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 phishscore=0 clxscore=1015 bulkscore=0 priorityscore=1501
- spamscore=0 adultscore=0 suspectscore=0 malwarescore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610080000 definitions=main-2610120034
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="j57xlliim47wxj7u"
+Content-Disposition: inline
+In-Reply-To: <20261012005620.466497-kees@kernel.org>
 
-Hi Gautam.
 
-On 10/12/26 2:20 PM, Gautam Menghani wrote:
-> Hi,
-> 
-> Can this patch be pulled in? Or is something else needed here?
-> 
-> Thanks,
-> Gautam
+--j57xlliim47wxj7u
+Content-Type: text/plain; protected-headers=v1; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+From: Alejandro Colomar <alx+linux-hardening@kernel.org>
+To: Kees Cook <kees@kernel.org>
+Cc: Alejandro Colomar <alx@kernel.org>, 
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Bill Wendling <morbo@google.com>, 
+	"Matthew Wilcox (Oracle)" <willy@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, 
+	David Gow <david@davidgow.net>, Petr Mladek <pmladek@suse.com>, 
+	Shuvam Pandey <shuvampandey1@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, 
+	Jonathan Corbet <corbet@lwn.net>, Sergey Senozhatsky <senozhatsky@chromium.org>, 
+	=?utf-8?Q?G=C3=BCnther?= Noack <gnoack@google.com>, =?utf-8?Q?Micka=C3=ABl_Sala=C3=BCn?= <mic@digikod.net>, 
+	Masami Hiramatsu <mhiramat@kernel.org>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, 
+	Jiri Kosina <jikos@kernel.org>, Alexei Starovoitov <ast@kernel.org>, 
+	Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, 
+	Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, 
+	Martin KaFai Lau <martin.lau@linux.dev>, Song Liu <song@kernel.org>, 
+	Yonghong Song <yonghong.song@linux.dev>, Jiri Olsa <jolsa@kernel.org>, 
+	Emil Tsalapatis <emil@etsalapatis.com>, Ihor Solodrai <ihor.solodrai@linux.dev>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Shivaprasad G Bhat <sbhat@linux.ibm.com>, 
+	Thorsten Blum <blum@kernel.org>, Alison Schofield <alison.schofield@intel.com>, 
+	Dave Jiang <dave.jiang@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Guangshuo Li <lgs201920130244@gmail.com>, Ira Weiny <iweiny@kernel.org>, 
+	Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Vishal Verma <vishal.l.verma@intel.com>, 
+	Randy Dunlap <rdunlap@infradead.org>, Shuah Khan <skhan@linuxfoundation.org>, 
+	linux-kernel@vger.kernel.org, bpf@vger.kernel.org, linux-security-module@vger.kernel.org, 
+	linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, nvdimm@lists.linux.dev, 
+	linux-doc@vger.kernel.org, linux-hardening@vger.kernel.org
+Subject: Re: [PATCH v4 05/11] seq_buf: Add seq_buf_strlen()
+Message-ID: <asyalCF06dhpVxPc@debian>
+References: <20261003035906.too.263-kees@kernel.org>
+ <20261003035921.1918874-5-kees@kernel.org>
+ <asEhEe0Urb5Wx7yi@ashevche-desk.local>
+ <202610040023.A3865A6@keescook>
+ <asIPlnb0noMd33rr@ashevche-desk.local>
+ <20261005112209.1e47fa-kees@kernel.org>
+ <asOKvhT01aNb5-Dg@debian>
+ <20261005155839.d5d200-kees@kernel.org>
+ <asPSYn7sLqiH39Fu@debian>
+ <20261012005620.466497-kees@kernel.org>
+MIME-Version: 1.0
+In-Reply-To: <20261012005620.466497-kees@kernel.org>
 
-Why it can't be part of existing debug.config? Why add component specific
-config and merge into def config?
+Hi Kees,
 
-Wouldn't that cause more confusion? If not, could you please add detail in
-changelog on how one can make use of these?
+> Date: 2026-10-11 17:56:27-0700
+> From: Kees Cook <kees@kernel.org>
+>
+> On Mon, Oct 05, 2026 at 06:43:23PM +0200, Alejandro Colomar wrote:
+> > > Yes, though not often: the sched_ext debug dump builds a nested per-C=
+PU
+> > > seq_buf from seq_buf_get_buf(), which returns a size of 0 once the du=
+mp
+> > > buffer has overflowed, and it handles that case on purpose (see the
+> > > "$s may already have overflowed" comment in kernel/sched/ext/ext.c).
+> >
+> > Hmmmm, so IIUC, it is a sentinel value, and not really a buffer size?
+>=20
+> It's the real size of what's left. seq_buf_get_buf() hands out the
+> unused tail of the seq_buf. Once that has overflowed there is no tail,
+> so it returns NULL for the buffer and 0 for the size, and sched_ext
+> initializes the nested seq_buf with both. So that case does get the NULL;
+> the 0 is how much room it has.
+>=20
+> > Did you consider not holding the size of the buffer, but rather an end
+> > pointer?  It also allows you to find how much you can write to the
+> > buffer, but has slightly better semantics: the end doesn't change if you
+> > advance the position.  'end' can only change through reallocations
+> > (which I don't know if you do in the kernel).
+>=20
+> The size doesn't change either: it is set by seq_buf_init(), and writers
+> advance "len", an offset from the start of the buffer. seq_buf never
+> reallocates.
+
+The size changes here:
+
+	$ grepc -h -B8 seq_buf_get_buf include/
+	/**
+	 * seq_buf_get_buf - get buffer to write arbitrary data to
+	 * @s: the seq_buf handle
+	 * @bufp: the beginning of the buffer is stored here
+	 *
+	 * Returns: the number of bytes available in the buffer, or zero if
+	 * there's no space.
+	 */
+	static inline size_t seq_buf_get_buf(struct seq_buf *s, char **bufp)
+	{
+		WARN_ON(s->len > s->size + 1);
+
+		if (s->len < s->size) {
+			*bufp =3D s->buffer + s->len;
+			return s->size - s->len;
+		}
+
+		*bufp =3D NULL;
+		return 0;
+	}
+
+With an end pointer, that would be simplified to:
+
+	static inline size_t my_seq_buf_get_buf(struct seq_buf *s, char **bufp)
+	{
+		WARN_ON(s->p >=3D s->end);
+
+		*bufp =3D s->p;
+		if (s->p !=3D NULL)
+			return s->end - s->p;
+		return 0;
+	}
+
+Moreover, if we change the API of that function, we could entirely get
+rid of this function.  Here's an example where I see seq_buf_get_buf()
+used, where I've modified it to use pointers:
+
+diff --git i/kernel/sched/ext/ext.c w/kernel/sched/ext/ext.c
+index 3219f0da0fe4..82904e4456e3 100644
+--- i/kernel/sched/ext/ext.c
++++ w/kernel/sched/ext/ext.c
+@@ -6893,8 +6893,7 @@ static void scx_dump_cpu(struct scx_sched *sch, struc=
+t seq_buf *s,
+         * Use a nested seq_buf to generate the standard dump so that we
+         * can decide whether to commit later.
+         */
+-       avail =3D seq_buf_get_buf(s, &buf);
+-       seq_buf_init(&ns, buf, avail);
++       seq_buf_init(&ns, s->p, s->end);
+=20
+        dump_newline(&ns);
+        scx_dump_line(&ns, "CPU %-4d: nr_run=3D%u flags=3D0x%x cpu_rel=3D%d=
+ ops_qseq=3D%lu ksync=3D%lu",
+
+Considering the .p would replace the current .len, and would encode
+overflow as a NULL pointer, and .end would replace the current .size,
+and wouldn't ever change (not even on overflow, sice that info would be
+stored in .p).  Now you wouldn't need to test whether the remaining
+size can be 0, but would instead test whether ->p is NULL (you could do
+that internally if you want to avoid accessing internals).
+
+> An end pointer wouldn't remove the empty case: buffer =3D=3D end is the s=
+ame
+
+The thing is that you'd never reach buffer=3D=3Dend.  If that would have to
+happen, you'd instead store a NULL in buffer.  This has the nice
+property that if you try to read it as a string, it will crash (instead
+of giving you a pointer that is not a string, which could result in a
+buffer overrun).
+
+> condition as size =3D=3D 0, so the accessors would still need the check. =
+It
+> also makes overflow harder to record. seq_buf marks it with len =3D=3D si=
+ze +
+> 1, and the matching position pointer, end + 1, would be weird.
+
+Not really.  I'll show an example without the structure; just using
+plain string-copying functions, which shows it more obviously.  The
+structures are, after all, just an encapsulation of this logic.
+
+With sizes and lengths:
+
+	char    buf[42];
+	size_t  len, size;
+
+	len =3D 0;
+	for (int i =3D 0; i < 10; i++) {
+		x =3D strscpy(buf + len, "foo", size - len);
+		if (x < 0)
+			goto fail;
+		len +=3D x;
+	}
+vs
+	char  buf[42];
+	char  *p, *end;
+
+	p =3D buf;
+	e =3D ARRAY_END(buf);
+	for (int i =3D 0; i < 10; i++)
+		p =3D stpecpy(p, end, "foo");
+	if (p =3D=3D NULL)
+		goto fail;
+
+Let's say that each iteration of the loop is a step where we'd inherit
+an old buffer into a new one with the functions showed above.  With a
+length and a size, you need to update the size.  With a position pointer
+and an end pointer, you only need to update the position pointer, and it
+encodes the information about the overflow/truncation too.  Because
+truncation is encoded as an invalid position (NULL), we can never
+recover from that, and thus we don't need to have so many checks in each
+iteration.
+
+An important detail is that the functions that use such a position
+pointer should check whether the position is NULL, and do nothing.
+In this example, stpecpy() has such an early check:
+
+	char *
+	stpecpy(char *dst, const char *end, const char *restrict src)
+	{
+		ssize_t  dlen;
+
+		if (dst =3D=3D NULL)
+			return NULL;
+
+		dlen =3D strscpy(dst, src, end - dst);
+		if (dlen < 0)
+			return NULL;
+
+		return dst + dlen;
+	}
+
+As you can see, we can never reach a point where p=3D=3Dend, because once
+truncation happens, p becomes NULL and never recovers from that.  This
+simplifies greatly the handling of truncation.
+
+> Changing the representation would also means changes outside
+> lib/seq_buf.c, since tracing reads seq.len and seq.size directly
+> (trace_seq treats a zero size as "not yet initialized", for one). I'm
+> not saying that's a good thing to bypass the API, but rather that such
+> a change should be its own series.
+
+Agree.  I was just mentioning as an idea to keep for the long term.
+
+
+Have a lovely day!
+Alex
+
+>=20
+> -Kees
+>=20
+> --=20
+> Kees Cook
+
+--=20
+<https://www.alejandro-colomar.es>
+
+--j57xlliim47wxj7u
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEES7Jt9u9GbmlWADAi64mZXMKQwqkFAmrMpTUACgkQ64mZXMKQ
+wqmKKQ/+IUju4v7dG+hkUEBJrKJ5n4nq9IotpO+uHWDqtRhvFizqNIkQyTz4OEtR
+YgKwo2cKL6kofiJKTMGBBldjXFFiCg7b+7kUg6wAV9E+86Ot801bmAh/OV4B2rEN
+px81p+fJHLcVo3zqLs4M1PHaMP360L55Qv6YKJT7ZOpcheH/J0Z5AdDV0lxSamn+
+NIXLfOTeDyo/Xs3BKslEKlSj3mzn9/mWAeKhr77fwDeRMD5w63mw3GZp/ai6QQMY
+dwwo2ZOuFrfGZfnkqhbKxt0IyHPx2Vh5o6bxDWBFT9XYR0V/ENLJOxG9PvvtinZ5
+EOt+S2erq7A9ShZchVCDsrHrx+CskREubVno6D3cLh3sGfQp6dP+f8j7VG1pInsK
+D12+Fjibzz8JSNVNKlvkXTj9WufaoQX5Jqy5HU/ly1C64yFa0Cijq0jm2JlVyTB1
+/jyYXfCDECCcyzTMygd9rEFwoAm9f2wO4cN4KZNWflAOfJudJ+Qbkt7Q77YYaxfo
+d9+FUb5tqbWCzeuGTfTgL/ALDBbXJpremH0jWr3F18SEsYUWCbZYEgzl/KWG0NSD
+gcJhuZHt4/9ZrXBmSqmI5ud/iPJ/JQ8l3vqeLNt+XZgG3E5H3AN9N1aE4ATAZ5kI
+5bpoml/6Uim7ljbxOPFn7JLwYh+UPaCQ3zlZvA1wE/uBnkNr8Q0=
+=dcL8
+-----END PGP SIGNATURE-----
+
+--j57xlliim47wxj7u--
 
