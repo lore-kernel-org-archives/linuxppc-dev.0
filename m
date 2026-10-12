@@ -1,96 +1,97 @@
-Return-Path: <linuxppc-dev+bounces-29274-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29275-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFBF2CA9ED1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 17:27:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C86C2CA9ED0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 17:38:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3PYm0k7vz30DY;
-	Tue, 13 Oct 2026 04:27:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::62a" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791826076;
-	cv=pass; b=KXARVLgkUObGUoit9mIbDRs3nyEGBs5TndYXDfQERiUEMmZYMEuCNGKuF9ArgR2bsn57npAzgHCojFL3qr14wJf0NZvWHydWcLPsTkCwuxRK4DznU7vmIEnfiBp33y7LlEIaOBElvveVawRcJxbn3rhCclPDBFva6/rBjWiIK66D0f4v21+Pza8X7+NQoiUweoT8DU7UsrnfS/O2zJfofDdYhGd+2QaAj01jx1X0vLd5CDS8nxBraVH1XiQhTTmt2ct6/icsMHAi+wL8DWEDgyR8tUZ2O5JUUqyYuQPsQtXgH+DqaYujBtLPg1cUfgnfbYDW04CoCPhjig8zwl48nA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791826076; c=relaxed/relaxed;
-	bh=OtJOsVO1K2acZAU4qcatnAuGrI6UgGvUj/f3n1t6+og=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=NPP9KSPYfXJAMeZTbt4GH6CG6AU+9doENxV3YvOlTYs//KOMKdh45lwLUB2om7XjYnYQ1m6byzCSf3MI77Buu4whJm5yEsvHNFOH10WSax/YaBirzrdL3YeofSJQ9euYKNFC28EYn89BJxd0QLDJGGi77FrJbJxoQTBLcp74Yq0/M9DK8krJbh+1ddtdq7gBumVPlZ7yZ4bp+yJDDRFO7C1mvN4uuGSeHMQZFlJL1DSYTucRKz7W+0kqhita8c71aXYBxCz1sH5SuiuV8yptxFroN7zbOGxp9yudX2Cehy4sQfd2r8Bn5Aocuzg8bIlBHqxFU+/Nuegbxo3iuftRtQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=NH+64nGo; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::62a; helo=mail-ej1-x62a.google.com; envelope-from=jperlow@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3PpC366hz2xnn;
+	Tue, 13 Oct 2026 04:38:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791826723;
+	cv=none; b=WGRtUMalj2EiqnJP7uDuDxdpQNIMXpeQA0ssXNOBtctJPvMLpBkmZ1a2bbjhFv4sks3d6iYopBlOuaLtT8L3A7LJh+qI2sx9wn2wMAck7yYE0Ej6NsgwUuPVkT3JXPLUpgsOKdiv5E4kw618E81MYRgAaCY7EoJ+N5nPbEXb17pRkN/NHsN+HcCdq9Q+2AE7sXGQbpB8tSon0RfaGbqV3l4TsEzqUEit3HbWLBxY1ROkWnkevHGIQP1gpjjDK0UFFGmsO0bKOCKcore1opfkHoZL4p8w6PWAQEXWul1L15rTBLxwvB/RlECNK7Am4s0WSG/uhGCTDsqpv/OFJ8lVRQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1791826723; c=relaxed/relaxed;
+	bh=8SZv8+95iAQyqraQGrneJoLymgjYWATeCs9ikvc3cC8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=lTi2V0RhnokOpfDBC9PAp3Ku73WXOGCtMXxCmb9X7Jrm1KqlPPWeCLOgfZLKtVq6qU0HtEsGLrnpx45dZZ+GlRu0Gt0Jh2WhaYcI5yWbOERk2jEuJoxahKnSXUmICllcRmzZh9ML1xSRiApuhoe75nrsfdn/iKDiqD9K/fbWjPl2Ak2V/isJBbtU2X1u4RqehwAi+Qk+wCE0VWFof/UMtcd2Gj1hRRW8U7kbHY09xTOYzgBdmno2SKla/QjoMggKdFQ5zloWjhZQHOm0Rg2qTHM7Jq8gXhwSgvnd1ht605qQr3YL+zESQDesCDU1nsPnm6vayGlX/PZtau5lJFdQhA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=pmilQCrB; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=WFDwT4H3; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=pmilQCrB; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=WFDwT4H3; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=NH+64nGo;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=pmilQCrB;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=WFDwT4H3;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=pmilQCrB;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=WFDwT4H3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::62a; helo=mail-ej1-x62a.google.com; envelope-from=jperlow@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x62a.google.com (mail-ej1-x62a.google.com [IPv6:2a00:1450:4864:20::62a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3PYj3nvYz2xnQ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 04:27:52 +1100 (AEDT)
-Received: by mail-ej1-x62a.google.com with SMTP id a640c23a62f3a-c2a4e013a44so312086066b.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2026 10:27:52 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791826069; cv=none;
-        d=google.com; s=arc-20260327;
-        b=kX4oJ1emEagB1E1iy9PCKL5sftOIkgNVzh+KUqApQrVhPYbWRfvYhJilFqnPSgAbFV
-         bp7CfYoVaPvKfo2JwC1k7RsmWAmu4r453WrQ5oxrCKNwxoHXfG4t5vZmaEHoh36k35Ns
-         XfDxxXenU1K8SA88pB6kjgvKNfdxbibFrHIR97AOJFLsFDK0FBGQs5Xupg3Ww/cSyCZg
-         5N6DOlu7CPYvEDB0wTMSDkwUnwzogSm4MkgGd63ltvfuZcXgw0iOx71KFfVPmCyt9VFD
-         BcRSBHA3nAgUBi5Mlm/TqJsAS1qED7m4mIlwWL3iJAzw7Uo7ZeDHggOeYzjdcL9vuxwC
-         fY3Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=OtJOsVO1K2acZAU4qcatnAuGrI6UgGvUj/f3n1t6+og=;
-        fh=XIh41z6BmKllZa4VNS0ds4v8Ri3jCwR6m3eP41ku/Zk=;
-        b=bjrItNmAmVgL09Uf3cCq3y9RiJmzBzhkHsUa193XfgNphd2iONlo2OuvqjJUg/WcTJ
-         IXPGhk91/yYG4ngVDcdqq0//lkf3cL5k/By6Pq8ePnUcxyXBqfPp8y8PZeFZzLq9rlDF
-         AP7EgoA4urwRbzhViDRyHyD8BXgQBCkO9nwMhjAFbQosOhf65LRPOdPzajsah7kkjKtB
-         V0++DURvAL1jPnLZUH7Xxnzjo8pkPfZt12tov5uEYeN9064BZodzZLMlqw15peapTC0k
-         nwe05XuZ+WY4V/vkl8eftKEV/zxm7uL73nx77EyKbI6MwWv8YkzpbA6aC7CVO/krdIZ4
-         zOAA==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791826069; x=1792430869; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=OtJOsVO1K2acZAU4qcatnAuGrI6UgGvUj/f3n1t6+og=;
-        b=NH+64nGohDDebsiua2kCMGJ6BNSKcRkzMycchmoxnoX21kC6DO+7vr6+cV5V4VeaEv
-         S12ITMrzSJJ3vK0QsIDXaIH0XPqAWaBnX4zRsfElhzI+H7lZqugUWIsAHKR+4Naoi1Up
-         pXHhx1yr73jGHu4gf1I6nxZteDh3WhMtysNkxOq9dRACqxQSffRJu8me71WuJchot9Ri
-         LNxSQLcRJL1+kw1sa6gCGnkB/Jlr0BcEiI8n1xL2ynMwVLZJevoOZ26US+H/LjI1XQMu
-         jXC3gH7vRgLhBJWXFWIDSIQhFbVnzpuH9pQu0hVDNU1XAN16ZAp50ypfMga5lftw2jDM
-         H5Bg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791826069; x=1792430869;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=OtJOsVO1K2acZAU4qcatnAuGrI6UgGvUj/f3n1t6+og=;
-        b=Cjc0VvuASkJc6oR20n/36jOtUzXQEcNe9Ok3MU7mxsKDHB1GLkt3M2bQSKeEJSi7Hx
-         tikKGAPoiOex8S8Ze//BLGTZQBeUpd7Zm0oqGwE8i3JQeZUl/jhMXnODx3CZ0KMaNxdY
-         e3gMfNw49Fcmf6vgcYexHPOQu5a4BArKWIQZaOuCZ3DX+JYgwc1s4yZjKQZCLNCXfD89
-         e12skBf+HmsBjnJ0Efwz1NT2HHUXMYePBXOSR5QCFha4lMarzZnKMVeiYybyWYsazrCC
-         UsCou2LN5MU3XBsAzp0WIHjh2XBJ/72HBdg3kGKzkC65NbBd6lylr7He9vk40nyfvjDU
-         N37g==
-X-Forwarded-Encrypted: i=1; AKwUvBzLhZCnDmd2ehkQP+85KuuDFFfvkaQqqq+5aHYIcH0M4PTd3bo2+ULuySWUlGcZHp+9aYQ+2v2otDPIPWI=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYIOx0phHoc2fBXVa6oz4rqeQwrFceqTCXGBvWdvO7v4DAZzRk4H
-	wdelwQNw0n4AJBJjMLrpU1eXlmUiob/5RY3diRsgOmadZRU5HoQM5ZRvKCw1qhxPEmORzkOCCIV
-	ulNG8NOklTVBYI1qPgzyk+vD/zg/GqDE=
-X-Gm-Gg: AYBFou1NAGnQ7vlpGMslgixGhhc3KWLy3ECC0NyqXIWVvo+KiPTzjJzssEDoBuwA5pe
-	8oVfi05fkQnopJEUhJd0zA9Tn516PIOaF/o3zjdZudRacWyNZYsvB7N0z+sIvV26fA0l/lZP8Hc
-	6fjsjgFwzU/KkX1JgJNrnT6OnAV/34vGVHvMYJiYgbzZFvcM0xVhyXiBlXDaYTkOshuf1ZcNK5J
-	FoNnfYPr9x50L5tjfJjsXON8V6R3UhRhk8cYcu5ZTQ6+EQt9OJcTMO+0qujN3vXbILjf7GlOExl
-	+yUj0k6ftiC3ShFj/G8rC1yHN68+im8z8YB/1GClYVY1YgWuIt98Cc6Rj5k4Fb9Nii0va+MiZdp
-	v2mrgdzdOsDrwJDa0C/3N/WUIcxo4zkYD5jXfj6GYvXYVssLCDhp9YH9M2JEvzAib4cGp+EB+7O
-	4M56gKn9yHnW0lehK0CntI2Q==
-X-Received: by 2002:a17:907:1c89:b0:c2e:2d8c:4585 with SMTP id
- a640c23a62f3a-c31a9fdb266mr1030063566b.36.1791826068900; Mon, 12 Oct 2026
- 10:27:48 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3PpB2l3jz2xSV
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 04:38:41 +1100 (AEDT)
+Received: from tenko.suse.cz (unknown [IPv6:2a07:de40:b2bf:1b::11d2])
+	by smtp-out1.suse.de (Postfix) with ESMTP id 666B921EA0;
+	Mon, 12 Oct 2026 17:38:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1791826718; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=8SZv8+95iAQyqraQGrneJoLymgjYWATeCs9ikvc3cC8=;
+	b=pmilQCrBh829bXvFXvrw1ccFYRM1PPZO1rzZCOXKGcUhCa7ifbB1vjTL6jNAjJU4+Cb4qX
+	G6XwLH1W92hJ46cIl/PGp6CmZW10o5bQJam0go60KmMbaeIgllVrPaMxrJshEroNk70yQC
+	AuJ5wVXLnQnSgQ/mQl0bChxZL7THcXQ=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1791826718;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=8SZv8+95iAQyqraQGrneJoLymgjYWATeCs9ikvc3cC8=;
+	b=WFDwT4H3MBBAC0jVxPYN8WGxnMs4w1GCVreCKK48kfyPw1mT/N0ZwPTIDgk4kqikq16xSR
+	plOW3uDL2R6AR3CQ==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=pmilQCrB;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=WFDwT4H3
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1791826718; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=8SZv8+95iAQyqraQGrneJoLymgjYWATeCs9ikvc3cC8=;
+	b=pmilQCrBh829bXvFXvrw1ccFYRM1PPZO1rzZCOXKGcUhCa7ifbB1vjTL6jNAjJU4+Cb4qX
+	G6XwLH1W92hJ46cIl/PGp6CmZW10o5bQJam0go60KmMbaeIgllVrPaMxrJshEroNk70yQC
+	AuJ5wVXLnQnSgQ/mQl0bChxZL7THcXQ=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1791826718;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=8SZv8+95iAQyqraQGrneJoLymgjYWATeCs9ikvc3cC8=;
+	b=WFDwT4H3MBBAC0jVxPYN8WGxnMs4w1GCVreCKK48kfyPw1mT/N0ZwPTIDgk4kqikq16xSR
+	plOW3uDL2R6AR3CQ==
+From: Michal Suchanek <msuchanek@suse.de>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michal Suchanek <msuchanek@suse.de>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Kees Cook <kees@kernel.org>,
+	Andy Lutomirski <luto@amacapital.net>,
+	Will Drewry <wad@chromium.org>,
+	"Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
+	Kevin Brodsky <kevin.brodsky@arm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>,
+	"Bernhard M. Wiedemann" <bwiedemann@suse.de>,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH 1/2] powerpc: Restore all registers after a traced syscall again
+Date: Mon, 12 Oct 2026 19:38:28 +0200
+Message-ID: <4c1da7f31a6603455ec452960af529e4d77f5334.1791826411.git.msuchanek@suse.de>
+X-Mailer: git-send-email 2.51.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,160 +105,247 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <CABZrw2EfeChvuWDJ_hiwr9Oh_QpyrfZKLq_-jOxkzZH=fr575Q@mail.gmail.com>
-In-Reply-To: <CABZrw2EfeChvuWDJ_hiwr9Oh_QpyrfZKLq_-jOxkzZH=fr575Q@mail.gmail.com>
-From: "Perlow, Jason" <jperlow@gmail.com>
-Date: Mon, 12 Oct 2026 13:27:37 -0400
-X-Gm-Features: AclHuK_bqLyPVGQ-mr7n1NMFfYWUOt-_0I21LZphufLfVxtdEishkHylWbha0rs
-Message-ID: <CABZrw2H0ArT0nJdMGe5zXZOrfxD79NZc84PZVfCPmWzUfvyhRg@mail.gmail.com>
-Subject: Re: PCI/AER: MacBookPro16,1 test results with Apple SEP ANFE quirk
-To: Bjorn Helgaas <bhelgaas@google.com>, Lukas Wunner <lukas@wunner.de>
-Cc: Aditya Garg <aditya.garg@linux.dev>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
-	"Oliver O'Halloran" <oohall@gmail.com>, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Rspamd-Action: no action
+X-Spamd-Result: default: False [3.99 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
+	SUSPICIOUS_RECIPS(1.50)[];
+	ONCE_RECEIVED(1.20)[];
+	HFILTER_HELO_IP_A(1.00)[tenko.suse.cz];
+	RDNS_NONE(1.00)[];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	HFILTER_HELO_NORES_A_OR_MX(0.30)[tenko.suse.cz];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-0.986];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	RCPT_COUNT_TWELVE(0.00)[18];
+	ARC_NA(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	DIRECT_TO_MX(0.00)[git-send-email 2.51.0];
+	MIME_TRACE(0.00)[0:+];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	FREEMAIL_CC(0.00)[suse.de,linux.ibm.com,ellerman.id.au,gmail.com,kernel.org,amacapital.net,chromium.org,arm.com,vger.kernel.org];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b2bf:1b::11d2:from];
+	TAGGED_RCPT(0.00)[];
+	RCVD_COUNT_ZERO(0.00)[0];
+	DKIM_TRACE(0.00)[suse.de:+];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,suse.de:dkim]
+X-Spamd-Bar: +++
+X-Rspamd-Queue-Id: 666B921EA0
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
 
-Bjorn, Lukas,
+From: Bernhard M. Wiedemann <bwiedemann@suse.de>
 
-Follow-up to my October 10 report. I have now tested the quirk on v7.3-rc7,
-which already contains 79c168e2aa95 ("PCI/AER: Skip error recovery on false
-alarms").
+syscall_exit_prepare() asks the exit assembly to reload all GPRs, CTR
+and XER from pt_regs only if the thread flags contain any of the flags
+in _TIF_SYSCALL_DOTRACE. With the new entry code based GENERIC_ENTRY the
+flags are no longer set.
 
-Kernel: v7.3-rc7 (24a19b953e2a) with the Apple T2 patch stack and the SEP A=
-NFE
-quirk. The quirk is an EARLY fixup on Apple [106b:1802] that sets a per-dev=
-ice
-flag, so pci_aer_init() leaves ANFE masked on that one function. ANFE handl=
-ing
-is unchanged everywhere else. There is no global revert of eddba19b8b5f in
-this kernel.
+This breaks tracers that modify a stopped syscall, for example ones that
+re-execute the syscall instruction by moving the NIP back by 4 at the
+syscall-exit stop with the syscall number put back into r0: the sc then
+runs with r0 = 0, which is __NR_restart_syscall. dettrace fails like
+this with "No filter rule for system call: restart_syscall". A tracer
+that writes r4 at the syscall-exit stop of an sc sees the tracee
+continue with r4 = 0 instead; with a 7.1 kernel both work.
 
-Systems: two MacBookPro16,1 (Core i7-9750H and Core i9-9980HK), freshly
-installed on this kernel.
+Check the equivalent syscall_work bits instead, and drop the now unused
+_TIF_SYSCALL_DOTRACE.
 
-Results, both machines:
+Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
+Cc: stable@vger.kernel.org # 7.2.x: c7585b8e99ad: powerpc: Don't drop _TIF_RESTOREALL on syscall restart
+Cc: stable@vger.kernel.org # 7.2.x
+Assisted-by: LLM
+Signed-off-by: Bernhard M. Wiedemann <bwiedemann@suse.de>
+[ms: reword commit message]
+Signed-off-by: Michal Suchánek <msuchanek@suse.de>
+---
+A backport also needs commit c7585b8e99ad ("powerpc: Don't drop
+_TIF_RESTOREALL on syscall restart"), without which the flag can still
+be lost.
 
-  - Boots to the graphical session, confirmed on the panel (not only by
-    service state).
-  - Suspend and resume complete with the session intact.
-  - Cold boot from power off works (both machines).
-  - 2 hour idle soak: no AER, GHES or MCE report, oops, BUG or call trace i=
-n
-    the journal.
-  - Read-only config space check of the correctable error mask:
-        04:00.2 [106b:1802]  0x00006000   (ANFE, bit 13, masked)
-        04:00.0 / .1 / .3    0x00004000   (ANFE unmasked)
+It has been pointed out that the newly defined
+PPC_SYSCALL_WORK_RESTOREALL is almost the same as SYSCALL_WORK_ENTER and
+the existing define might be used instead. However, it is not clear if
+this is expected or if this is merely coincidence, and not guaranteed.
 
-Controls: an ASUS GU502LV and an Intel Arrow Lake desktop boot the same ker=
-nel
-with no SEP device present. The quirk does nothing there and nothing regres=
-ses.
+Testing: a small tracer (pokes r4 at the syscall-exit stop of an sc,
+and replays a syscall by moving NIP back with a new r0) shows both
+writes lost on a ppc64le and both working on 7.1.8.
+------------[ cut here ]------------
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Does a register a tracer writes at the syscall-exit stop of an "sc"
+ * reach the tracee? Checks r4, and a replay: NIP moved back onto the sc
+ * with r0 set to another syscall number.
+ * Build: gcc -O2 -o ppc-exitregs ppc-exitregs.c (powerpc64 only)
+ */
 
-Limits: two units of one model. No AER error injection, kexec or other T2
-models. The test kernel was built with gcc 16.2; the release kernel I compa=
-red
-against used gcc 14. The quirk matches on vendor/device ID, which the T2 te=
-am
-says is the same on all T2 models, not on DMI. I still do not know why
-unmasking ANFE on this function powers the machine off; the quirk is a
-targeted workaround, not an explanation.
+/* word offsets in struct pt_regs, arch/powerpc/include/uapi/asm/ptrace.h */
 
+static long do_sc(long nr, long *r4io)
+{
+	register long r0 __asm__("r0") = nr;
+	register long r3 __asm__("r3") = 0;
+	register long r4 __asm__("r4") = *r4io;
 
-On Fri, Oct 9, 2026 at 11:49=E2=80=AFPM Perlow, Jason <jperlow@gmail.com> w=
-rote:
->
-> Bjorn, Lukas,
->
-> I have tested the Apple SEP ANFE quirk together with Lukas's false-alarm
-> recovery fix on two MacBookPro16,1 systems. Both stayed up for over two
-> hours after booting the candidate kernel. The patch is being prepared
-> against pci/for-linus at 79c168e2aa957ed0054c93db17caba653b95e377.
->
-> The candidate retains eddba19b8b5f ("PCI/AER: Support Advisory Non-Fatal
-> Errors"), adds 79c168e2aa95 ("PCI/AER: Skip error recovery on false
-> alarms"), and leaves the ANFE mask unchanged only on the Apple T2 Secure
-> Enclave Processor [106b:1802]. The global ANFE revert is absent from the
-> test kernel. The per-device flag approach follows Aditya's earlier
-> proposal, with an EARLY fixup so the flag is set before pci_aer_init().
->
-> The test systems are:
->
->   MEDUSA:  MacBookPro16,1, Core i7-9750H
->   CHIMERA: MacBookPro16,1, Core i9-9980HK
->
-> Both ran 7.3.0-rc6-6-t2-edge-apple-sep-anfe-test, confirmed by uname and
-> the kernel banner in each current boot journal. At the 23:24 EDT check
-> on October 9, MEDUSA had 2 hours 22 minutes uptime and Chimera had
-> 2 hours 21 minutes. Their boot IDs were unchanged from the initial
-> successful candidate boots. graphical.target and the display manager
-> were active on both, and neither had failed systemd units.
->
-> Read-only config-space checks gave the same results on both systems:
->
->   Function                    Correctable error mask
->   Apple SEP, 04:00.2           0x00006000
->   Apple function, 04:00.0      0x00004000
->   Apple function, 04:00.1      0x00004000
->   AMD GPU, 03:00.0             0x00000000
->
-> ANFE bit 13 is therefore masked on the SEP and unmasked on the other
-> observed functions. No config-register writes were used in these checks.
-> The implementation matches vendor/device ID, not these bus addresses.
->
-> Neither candidate boot journal contains an AER/GHES report, kernel
-> panic, oops, BUG or call trace. Neither recorded additional kernel
-> messages after the initial 21:04 checks through the 23:24 check.
->
-> The earlier Wunner-only candidate booted on MEDUSA but then powered off,
-> as I reported on October 8. Its retained journal ended before that event;
-> there was no recorded shutdown sequence or panic. The cause of the power
-> loss is still unknown, and this quirk does not establish a firmware
-> mechanism. The combined candidate has not reproduced that symptom within
-> the observed interval.
->
-> There are remaining boot warnings unrelated to the reported AER symptom:
-> ACPI duplicate-table/method errors, AMD SDMA fence fallback warnings,
-> HID rotation probe failures, and Broadcom P2P failures. Chimera also logs
-> CPU 0 machine-check records in banks 12 and 13. These warning categories,
-> including the same machine-check status/address records, appear in the
-> previous boot logs. I am retaining them as separate follow-up issues.
->
-> This was a v7.3-rc6 test build with the existing T2 driver/patch stack,
-> using Debian Forky GCC 16.2 and binutils 2.47. It was not a vanilla
-> upstream kernel or an identical-toolchain comparison to the older GCC 14
-> release image. Artifact checksums, exact source/provenance, config checks=
-,
-> t2gmux/t2smc builds and imported-symbol CRC checks passed. A generic
-> KVM/OVMF boot also passed; the hardware observations above come from the
-> two physical systems, not KVM.
->
-> The T2 team reports that [106b:1802] identifies the SEP across T2 models,
-> but this report covers only these two MacBookPro16,1 machines. I have not
-> tested other T2 models, power-off/cold-start, suspend/resume, reset, kexe=
-c
-> or deliberate AER error injection. Physical confirmation of the rendered
-> GUI is not included in this report; desktop service state was checked
-> remotely. The existing release/rescue boot files were preserved.
->
-> The patch (enclosed) leaves other ANFE handling enabled and is idempotent=
- across
-> repeated fixup/AER initialization. Please review it as a targeted workaro=
-und
-> for the MacBookPro16,1 regression, with the testing limits above.
-> I also have a zip file with all logs/evidence if needed.
->
-> Thanks,
-> Jason
+	__asm__ volatile("sc"
+			 : "+r"(r0), "+r"(r3), "+r"(r4)
+			 :
+			 : "r5", "r6", "r7", "r8", "r9", "r10", "r11", "r12",
+			   "cr0", "ctr", "xer", "memory");
+	*r4io = r4;
+	return r3;
+}
 
+static long peek(pid_t pid, int w)
+{
+	errno = 0;
+	long v = ptrace(PTRACE_PEEKUSER, pid, (void *)(w * sizeof(long)), 0);
+	if (errno) {
+		perror("PEEKUSER");
+		exit(2);
+	}
+	return v;
+}
 
+static void poke(pid_t pid, int w, long v)
+{
+	if (ptrace(PTRACE_POKEUSER, pid, (void *)(w * sizeof(long)), (void *)v)) {
+		perror("POKEUSER");
+		exit(2);
+	}
+}
 
---=20
-Jason Perlow | Argonaut Media Communications
+/* Resume to the next syscall stop, which must be one. */
+static void next_stop(pid_t pid)
+{
+	int st;
 
-Voice/Text  (954) 242-3484 | jperlow@gmail.com | Blog: techbroiler.net
-Read my Tech and Food Industry articles: https://linktr.ee/jperlow
-Bluesky: https://bsky.app/profile/jperlow.bsky.social
+	ptrace(PTRACE_SYSCALL, pid, 0, 0);
+	if (waitpid(pid, &st, 0) != pid || !WIFSTOPPED(st) ||
+	    WSTOPSIG(st) != (SIGTRAP | 0x80)) {
+		fprintf(stderr, "unexpected wait status %#x\n", st);
+		exit(2);
+	}
+}
 
-Need to schedule a meeting with me? https://bit.ly/3y8P3Gp
+int main(void)
+{
+	pid_t pid = fork();
+	int st, fail = 0;
+
+	if (pid == 0) {
+		long r4 = 0x1111, r4a, ret;
+
+		ptrace(PTRACE_TRACEME, 0, 0, 0);
+		raise(SIGSTOP);
+		do_sc(__NR_getpid, &r4);
+		r4a = r4;
+		ret = do_sc(__NR_getpid, &r4);
+		/* bit 0: the tracer's r4 was lost; bit 1: the replay of
+		 * the second getpid as getppid returned something else */
+		_exit((r4a != 0x2222) | (ret != getppid()) << 1);
+	}
+
+	waitpid(pid, &st, 0);
+	ptrace(PTRACE_SETOPTIONS, pid, 0, (void *)PTRACE_O_TRACESYSGOOD);
+
+	/* 1: write r4 at the exit stop of getpid */
+	next_stop(pid);				/* entry */
+	next_stop(pid);				/* exit */
+	poke(pid, W_R4, 0x2222);
+	next_stop(pid);				/* entry of the second getpid */
+
+	/* 2: replay the second getpid as getppid */
+	next_stop(pid);				/* exit */
+	poke(pid, W_NIP, peek(pid, W_NIP) - 4);
+	poke(pid, W_R0, __NR_getppid);
+	next_stop(pid);				/* entry of the replay */
+	long nr = peek(pid, W_R0);
+	printf("replayed syscall arrives as nr %ld (%s)\n", nr,
+	       nr == __NR_getppid ? "getppid, OK" :
+	       nr == __NR_restart_syscall ? "restart_syscall, BUG" : "?");
+	if (nr != __NR_getppid) {
+		fail = 1;
+		poke(pid, W_R0, __NR_getppid);	/* entry writes do work */
+	}
+	next_stop(pid);				/* exit */
+	ptrace(PTRACE_CONT, pid, 0, 0);
+	waitpid(pid, &st, 0);
+	if (!WIFEXITED(st)) {
+		printf("child did not exit normally: %#x\n", st);
+		return 2;
+	}
+	printf("r4 written at the exit stop: %s\n",
+	       WEXITSTATUS(st) & 1 ? "lost, BUG" : "kept, OK");
+	printf("replay result: %s\n",
+	       WEXITSTATUS(st) & 2 ? "wrong" : "getppid(), OK");
+	return fail || WEXITSTATUS(st);
+}
+---
+ arch/powerpc/include/asm/thread_info.h |  3 ---
+ arch/powerpc/kernel/interrupt.c        | 16 ++++++++++++++--
+ 2 files changed, 14 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+index 1e069a2e7ce87..0e8dc71c8d3fe 100644
+--- a/arch/powerpc/include/asm/thread_info.h
++++ b/arch/powerpc/include/asm/thread_info.h
+@@ -142,9 +142,6 @@ void arch_setup_new_exec(void);
+ #define _TIF_SYSCALL_TRACEPOINT	(1<<TIF_SYSCALL_TRACEPOINT)
+ #define _TIF_EMULATE_STACK_STORE	(1<<TIF_EMULATE_STACK_STORE)
+ #define _TIF_SYSCALL_EMU	(1<<TIF_SYSCALL_EMU)
+-#define _TIF_SYSCALL_DOTRACE	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
+-				 _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT | \
+-				 _TIF_SYSCALL_EMU)
+ 
+ #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
+ 				 _TIF_NEED_RESCHED_LAZY | _TIF_NOTIFY_RESUME | \
+diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
+index 55f9c0c9922ac..524c51104e4c9 100644
+--- a/arch/powerpc/kernel/interrupt.c
++++ b/arch/powerpc/kernel/interrupt.c
+@@ -75,6 +75,18 @@ static notrace __always_inline bool prep_irq_for_enabled_exit(bool restartable)
+ 	return true;
+ }
+ 
++/*
++ * Syscall work after which the exit must reload all registers from
++ * pt_regs: a tracer may have changed any of them at a syscall or seccomp
++ * stop, or under PTRACE_SYSEMU. Audit and the tracepoint are included to
++ * keep the pre-GENERIC_ENTRY behaviour.
++ */
++#define PPC_SYSCALL_WORK_RESTOREALL	(SYSCALL_WORK_SECCOMP |		\
++					 SYSCALL_WORK_SYSCALL_TRACEPOINT | \
++					 SYSCALL_WORK_SYSCALL_TRACE |	\
++					 SYSCALL_WORK_SYSCALL_EMU |	\
++					 SYSCALL_WORK_SYSCALL_AUDIT)
++
+ /*
+  * This should be called after a syscall returns, with r3 the return value
+  * from the syscall. If this function returns non-zero, the system call
+@@ -117,9 +129,9 @@ notrace unsigned long syscall_exit_prepare(unsigned long r3,
+ 		regs->gpr[3] = r3;
+ 	}
+ 
+-	if (unlikely(ti_flags & _TIF_SYSCALL_DOTRACE)) {
++	if (unlikely(READ_ONCE(current_thread_info()->syscall_work) &
++		     PPC_SYSCALL_WORK_RESTOREALL))
+ 		ret |= _TIF_RESTOREALL;
+-	}
+ 
+ 	syscall_exit_to_user_mode(regs);
+ 
+-- 
+2.51.0
+
 
