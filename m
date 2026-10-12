@@ -1,83 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-29227-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29228-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E570FCA9ED5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 06:41:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 011CBCA9ED5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 06:46:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j37DB6sZBz2yPR;
-	Mon, 12 Oct 2026 17:41:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791787306;
-	cv=none; b=IK0sDxmWx6+XkyafRKw+bHxspJTKsOamvpkUfCRGWrQ804PuG7FINUoKoQJMe7ZP7TJ7uwt2SAtORpNS45SARXVPCOb41UBGE2adYDvq4UjIOl5lCSujd+AKM+OqIeWx23R99BNONW+KBBvYs0tqxK/tjTB5qXTPoSBWMrpiZEWvXpSDT2RZv5VU8PFxqzqH5TCrSepkWqukRuyxD8xtVJb9EUnR2G3U5cF43cC4/IzE0MOXpJEXE1XaK0c6nnF6qL3Z8PLoQRFLW8fGGN5WoBORHWLeYaqENXebSiyzemfUs54CC00DYkLKKS4fY8LTSNt4Bm7o5B9BTDpvLTHkYw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j37Kq4Kjnz2yPR;
+	Mon, 12 Oct 2026 17:46:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791787599;
+	cv=none; b=KaXXgxqLlOyMc8BCRV5mrM80qy6yhVKZRcciLmLUp8Yax4T3J/5GPsL7+rCROsXBlSzeq5kuQ+/EFYp8mZKrZ8Sl3s2rGiDmgdX5wmWJU5ccgRQnS2xyoKPl9/ulvSVvQYlibxhQHxzhntvp/r6VBHKkk61RSxpIAH6ohOaAB8cWSqE0Q5rJw31bZy+T7pRtge3Gjsc2HlMJBRDkXIIhUJh1SSeElu0/JMB0NvWQfweEyG1/51p8wbytkUfSzxm4ikO3eCw/KR9ofXW4mnlS5eb0UDjw/xCLR9lxWf8UPu3IYFMZcyr0poWcOWnVCBXBNtOJbUcZxIh7lX4bVg9Jpw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791787306; c=relaxed/relaxed;
-	bh=PcBuV+5B9AhRqChzjKe031ir1zqSXQT5AWBsIXAlezs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=WtdbeGeFbr+/u9YEXzqhiD94qEwCIvNjcBkUkEHoFThOrJE/6uJfEQ/zVc4u5Tp2Fm96Y2C1bQ2rpTvRTgsaZHsNnq+7rjL2o0C2pjCYixF6Theunsrf8AgXHlxNRn3R5+Ts/nNtj71gBl1amwS2BsUqLaVVzgnJQVAMl1HQ+9d/F4YI+IM1viV+cbfiCvNo+yUgCCAyVOvZO3Fm7H9OKQCDS6DRcjBksVaOGJm6Y/VkOCikwca7tcnFU2G7NEjc+kaH0uB9SLNI52VQI2fhU76k4m9CDIWkxA4c953bm0J3ldDpusduWh0wLf9qiwQ2+YFjyU/Hci9iqz7XwVGYnw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DREjDhvs; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1791787599; c=relaxed/relaxed;
+	bh=1er6KN0USDluOlCwl7bI7udanJGh8XBrVh6eYmX9B2E=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=KfWxQ5StHmjzsUKwmyeWGoW3axc3oW1jS2HNnQi1cnlnZ6Kp5KOmzIprnyaKCP65b4i/7q/lLPDMSL23NezFx0DvKVlqQXszxbWg4xVINZ4KVhtA7Re7OTctUpZiNajL3c+4/Cmw15mlri9Ke89yVwhTYja22hEjxlKrLmpRpsTRTwMuZBs/LEjmkH50GZ2GWNkclYHdN4q8ahLGnOFCQDHq2v49HlzpQvWf38NRzskaQTPk5TmhCz7jLcE8SErTNDs85x3unedZ5jvFh+USm9rt3L0oD9a9NSluz2Le8Kdy4/nKwV3xe7G6pjoKddi3rwI62Jt/2y29RAi8PpNK8g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mP4GUgGY; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jirislaby@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DREjDhvs;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mP4GUgGY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jirislaby@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j37D93MxCz2xwZ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2026 17:41:44 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69C5EUoG3428290;
-	Mon, 12 Oct 2026 06:41:35 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=PcBuV+5B9AhRqChzjKe031ir1zqSXQ
-	T5AWBsIXAlezs=; b=DREjDhvsTcQVp3uNcc5wEm9IQGMy13a4xo4v1GIej7+syS
-	EJsGHE/FIYs4amzLO5vjuWmovQenU2ynXPAW7HVJUBwkL+KBd8jPVyMDiNXps4ZJ
-	YWCCqq0atnW5tD1P57H5O0XA5qrTiaFYY6lwszxmJyCWpo2oShRuiZEUXTO2QH48
-	J+y7TvQvOVLIGr7wZz88+99e7kDeWVEPJ0yIqJJNll+6Tt19d3w1d3CdvxW9/XN3
-	EihFUfg5ODzuUcjYwPimwFxOZ2Rz1/wSNZwGisN/9csUNPqNC3wl494ZK78eNL1M
-	ibAZkKF89DvMAZPuKXIBu73vhbGFtz7dzDRx+W0w==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7dv37hwp-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 12 Oct 2026 06:41:35 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69C5596W726899;
-	Mon, 12 Oct 2026 06:41:34 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h80pjm1vj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 12 Oct 2026 06:41:34 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69C6fTEL49414408
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 12 Oct 2026 06:41:30 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DCB5520040;
-	Mon, 12 Oct 2026 06:41:29 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 240F32004B;
-	Mon, 12 Oct 2026 06:41:27 +0000 (GMT)
-Received: from li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com (unknown [9.39.28.91])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Mon, 12 Oct 2026 06:41:26 +0000 (GMT)
-Date: Mon, 12 Oct 2026 12:11:24 +0530
-From: Gautam Menghani <gautam@linux.ibm.com>
-To: Ritesh Harjani <ritesh.list@gmail.com>
-Cc: maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au,
-        chleroy@kernel.org, sshegde@linux.ibm.com, amachhiw@linux.ibm.com,
-        linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH v2 1/4] KVM: PPC: Book3S HV: Ensure that calls to
- idr_alloc are synchronized
-Message-ID: <asyAu4PJz9fyPWV5@li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com>
-References: <20261009123035.157770-1-gautam@linux.ibm.com>
- <20261009123035.157770-2-gautam@linux.ibm.com>
- <zewlq628.ritesh.list@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j37Kp4NdJz2xwZ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2026 17:46:38 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 30E3F41F97;
+	Mon, 12 Oct 2026 06:46:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E65741F008A1;
+	Mon, 12 Oct 2026 06:46:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791787595;
+	bh=1er6KN0USDluOlCwl7bI7udanJGh8XBrVh6eYmX9B2E=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=mP4GUgGYNCxnuPmvg1lujMqLPA7vMvng2SS0pBMHoCRbwwxluGZ1CHCAITsQFxIwd
+	 x7wKsblnmPblKZwTGS63Z/VPkeuzGjAUyGwhVXZx5K7K7unAzwoOLZVUFY+nkDURjW
+	 X0PNZL/iyeF9Cmy/UiMXAC9LcPt+sCJ2zDtDxDVofUzZDrWFH4BbiVCkN31UXOkwew
+	 7cFyBQv7+jpMiLRzknsZ4/q2Gv1tg6cM3zuY9oI8TvIJk3SVGG9xD3lPxaYZfAFa/o
+	 FSMhNavBKkxYI/LnLbQ/SDmexIWtlzK0PhS9vRqFDnFRDwv0wP34GrPxp+Iu/3/Ysz
+	 nTnGWliycn2uQ==
+Message-ID: <1f66c850-faa7-477f-9535-761074ccc077@kernel.org>
+Date: Mon, 12 Oct 2026 08:46:30 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,92 +59,183 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <zewlq628.ritesh.list@gmail.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: UE0v6LLYTCi9Mii3Wj1COcaWLQ2xA-o1
-X-Proofpoint-ORIG-GUID: XJd1Bxj_Mle-K2cR3qC97U4q0-Oy87cz
-X-Authority-Analysis: v=2.4 cv=aqInmiZV c=1 sm=1 tr=0 ts=6acc811f cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=kj9zAlcOel0A:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8
- a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8 a=b6S7UqY0JXT-N64pkT4A:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEyMDAyNCBTYWx0ZWRfX1Y8iffh/otoC
- 4e4pxqZimfavlwQWYKivf3Wmn4IDV3N3FOqL5k3vSA+NSjZYTSF1n8ubyVB+PeCBgnh25QaOA82
- 2NeWtmFL8nETQvikIHKfOTI1UKKrFdo=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEyMDAyNCBTYWx0ZWRfXxMTktw37mHP5
- fSOxIl/U/A3dBir2xUqhvu/NkZkCH4Q5ZLMMIUGm9VEZwAMJiv61gMFq1I9Ymx+w7PB1HQ8TIta
- K6vdNDlHZ/FbojOrqJ+kRjkg6YIwagjhi/N9wPk8Vgt96suptkZcJ7oHAMyc3LertjyKSmHRkQX
- fpgTYG1Q/SwQZcK86NWbNQuCoYQTuOSD8iuz5vLKTomrxg8E1hPszSbj9dxR5z90uKZvUnZv6hw
- VJCd/aX5F8pYvEvUuUEA60a+ok8s6jFPAxzENCIgt0jkKHGOsxbu6zc3pvw70jSY6tY9kkt4mem
- RAhogQKQSCrqYX58nL+xNGhVo6Ct4LC2uO6WSczAhG3zjxaItKDHVoENSFvL4PThVnsTDrpvpH5
- tVCsqRjjIqITP+Op4yV6lEVPXQSxJwyGjoyeLB4+rysZEz6aXvsSSoSTXd32a9kypttPtQEBXsA
- djVQ+zACitw+yalGMDw==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-10-12_02,2026-10-09_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 clxscore=1015 spamscore=0 malwarescore=0 suspectscore=0
- bulkscore=0 adultscore=0 impostorscore=0 priorityscore=1501
- lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
- definitions=main-2610120024
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 6/6] hvc: add an M3000 firmware console backend
+To: Magnus Lindholm <linmag7@gmail.com>, davem@davemloft.net,
+ andreas@gaisler.com, sparclinux@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org,
+ linux-serial@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ krzk@kernel.org, oleg@redhat.com
+References: <20261011195729.981243-1-linmag7@gmail.com>
+ <20261011195729.981243-7-linmag7@gmail.com>
+Content-Language: en-US
+From: Jiri Slaby <jirislaby@kernel.org>
+Autocrypt: addr=jirislaby@kernel.org; keydata=
+ xsFNBE6S54YBEACzzjLwDUbU5elY4GTg/NdotjA0jyyJtYI86wdKraekbNE0bC4zV+ryvH4j
+ rrcDwGs6tFVrAHvdHeIdI07s1iIx5R/ndcHwt4fvI8CL5PzPmn5J+h0WERR5rFprRh6axhOk
+ rSD5CwQl19fm4AJCS6A9GJtOoiLpWn2/IbogPc71jQVrupZYYx51rAaHZ0D2KYK/uhfc6neJ
+ i0WqPlbtIlIrpvWxckucNu6ZwXjFY0f3qIRg3Vqh5QxPkojGsq9tXVFVLEkSVz6FoqCHrUTx
+ wr+aw6qqQVgvT/McQtsI0S66uIkQjzPUrgAEtWUv76rM4ekqL9stHyvTGw0Fjsualwb0Gwdx
+ ReTZzMgheAyoy/umIOKrSEpWouVoBt5FFSZUyjuDdlPPYyPav+hpI6ggmCTld3u2hyiHji2H
+ cDpcLM2LMhlHBipu80s9anNeZhCANDhbC5E+NZmuwgzHBcan8WC7xsPXPaiZSIm7TKaVoOcL
+ 9tE5aN3jQmIlrT7ZUX52Ff/hSdx/JKDP3YMNtt4B0cH6ejIjtqTd+Ge8sSttsnNM0CQUkXps
+ w98jwz+Lxw/bKMr3NSnnFpUZaxwji3BC9vYyxKMAwNelBCHEgS/OAa3EJoTfuYOK6wT6nadm
+ YqYjwYbZE5V/SwzMbpWu7Jwlvuwyfo5mh7w5iMfnZE+vHFwp/wARAQABzSFKaXJpIFNsYWJ5
+ IDxqaXJpc2xhYnlAa2VybmVsLm9yZz7CwXcEEwEIACEFAlW3RUwCGwMFCwkIBwIGFQgJCgsC
+ BBYCAwECHgECF4AACgkQvSWxBAa0cEnVTg//TQpdIAr8Tn0VAeUjdVIH9XCFw+cPSU+zMSCH
+ eCZoA/N6gitEcnvHoFVVM7b3hK2HgoFUNbmYC0RdcSc80pOF5gCnACSP9XWHGWzeKCARRcQR
+ 4s5YD8I4VV5hqXcKo2DFAtIOVbHDW+0okOzcecdasCakUTr7s2fXz97uuoc2gIBB7bmHUGAH
+ XQXHvdnCLjDjR+eJN+zrtbqZKYSfj89s/ZHn5Slug6w8qOPT1sVNGG+eWPlc5s7XYhT9z66E
+ l5C0rG35JE4PhC+tl7BaE5IwjJlBMHf/cMJxNHAYoQ1hWQCKOfMDQ6bsEr++kGUCbHkrEFwD
+ UVA72iLnnnlZCMevwE4hc0zVhseWhPc/KMYObU1sDGqaCesRLkE3tiE7X2cikmj/qH0CoMWe
+ gjnwnQ2qVJcaPSzJ4QITvchEQ+tbuVAyvn9H+9MkdT7b7b2OaqYsUP8rn/2k1Td5zknUz7iF
+ oJ0Z9wPTl6tDfF8phaMIPISYrhceVOIoL+rWfaikhBulZTIT5ihieY9nQOw6vhOfWkYvv0Dl
+ o4GRnb2ybPQpfEs7WtetOsUgiUbfljTgILFw3CsPW8JESOGQc0Pv8ieznIighqPPFz9g+zSu
+ Ss/rpcsqag5n9rQp/H3WW5zKUpeYcKGaPDp/vSUovMcjp8USIhzBBrmI7UWAtuedG9prjqfO
+ wU0ETpLnhgEQAM+cDWLL+Wvc9cLhA2OXZ/gMmu7NbYKjfth1UyOuBd5emIO+d4RfFM02XFTI
+ t4MxwhAryhsKQQcA4iQNldkbyeviYrPKWjLTjRXT5cD2lpWzr+Jx7mX7InV5JOz1Qq+P+nJW
+ YIBjUKhI03ux89p58CYil24Zpyn2F5cX7U+inY8lJIBwLPBnc9Z0An/DVnUOD+0wIcYVnZAK
+ DiIXODkGqTg3fhZwbbi+KAhtHPFM2fGw2VTUf62IHzV+eBSnamzPOBc1XsJYKRo3FHNeLuS8
+ f4wUe7bWb9O66PPFK/RkeqNX6akkFBf9VfrZ1rTEKAyJ2uqf1EI1olYnENk4+00IBa+BavGQ
+ 8UW9dGW3nbPrfuOV5UUvbnsSQwj67pSdrBQqilr5N/5H9z7VCDQ0dhuJNtvDSlTf2iUFBqgk
+ 3smln31PUYiVPrMP0V4ja0i9qtO/TB01rTfTyXTRtqz53qO5dGsYiliJO5aUmh8swVpotgK4
+ /57h3zGsaXO9PGgnnAdqeKVITaFTLY1ISg+Ptb4KoliiOjrBMmQUSJVtkUXMrCMCeuPDGHo7
+ 39Xc75lcHlGuM3yEB//htKjyprbLeLf1y4xPyTeeF5zg/0ztRZNKZicgEmxyUNBHHnBKHQxz
+ 1j+mzH0HjZZtXjGu2KLJ18G07q0fpz2ZPk2D53Ww39VNI/J9ABEBAAHCwV8EGAECAAkFAk6S
+ 54YCGwwACgkQvSWxBAa0cEk3tRAAgO+DFpbyIa4RlnfpcW17AfnpZi9VR5+zr496n2jH/1ld
+ wRO/S+QNSA8qdABqMb9WI4BNaoANgcg0AS429Mq0taaWKkAjkkGAT7mD1Q5PiLr06Y/+Kzdr
+ 90eUVneqM2TUQQbK+Kh7JwmGVrRGNqQrDk+gRNvKnGwFNeTkTKtJ0P8jYd7P1gZb9Fwj9YLx
+ jhn/sVIhNmEBLBoI7PL+9fbILqJPHgAwW35rpnq4f/EYTykbk1sa13Tav6btJ+4QOgbcezWI
+ wZ5w/JVfEJW9JXp3BFAVzRQ5nVrrLDAJZ8Y5ioWcm99JtSIIxXxt9FJaGc1Bgsi5K/+dyTKL
+ wLMJgiBzbVx8G+fCJJ9YtlNOPWhbKPlrQ8+AY52Aagi9WNhe6XfJdh5g6ptiOILm330mkR4g
+ W6nEgZVyIyTq3ekOuruftWL99qpP5zi+eNrMmLRQx9iecDNgFr342R9bTDlb1TLuRb+/tJ98
+ f/bIWIr0cqQmqQ33FgRhrG1+Xml6UXyJ2jExmlO8JljuOGeXYh6ZkIEyzqzffzBLXZCujlYQ
+ DFXpyMNVJ2ZwPmX2mWEoYuaBU0JN7wM+/zWgOf2zRwhEuD3A2cO2PxoiIfyUEfB9SSmffaK/
+ S4xXoB6wvGENZ85Hg37C7WDNdaAt6Xh2uQIly5grkgvWppkNy4ZHxE+jeNsU7tg=
+In-Reply-To: <20261011195729.981243-7-linmag7@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Sun, Oct 11, 2026 at 08:47:35AM +0530, Ritesh Harjani wrote:
-> Gautam Menghani <gautam@linux.ibm.com> writes:
-> 
-> > Calls to idr_alloc() in __prealloc_nested() are not currently synchronized.
-> > According to the documentation [1], the caller should provide their own
-> > locking to prevent concurrent modifications to the idr to prevent bugs.
-> >
-> > Wrap the call to __prealloc_nested() in	a spinlock to prevent concurrent
-> > modifications to idr.
-> >
-> 
-> This looks to be the leftover of previous implementation. IMO, the
-> commit msg needs fixing.
-> 
-> How about this?
-> 
-> Calls to idr_alloc() in __prealloc_nested() are not currently synchronized.
-> According to the documentation [1], the caller should provide their own
-> locking to prevent concurrent modifications to the idr to prevent bugs.
-> 
-> Now __prealloc_nested() calls idr_alloc() with GFP_KERNEL which can
-> sleep and mmu_lock is a spinlock. So idr_alloc() cannot be moved under
-> mmu_lock. In such cases the idr Documentation says:
->     If you need to take a lock while allocating a new ID from the IDR,
->     you may need to pass a restrictive set of GFP flags, which can lead
->     to the IDR being unable to allocate memory.  To work around this,
->     you can call idr_preload() before taking the lock, and then
->     idr_preload_end() after the allocation.
-> 
-> Hence preload the idr memory with idr_preload() before taking mmu_lock,
-> which allows us to use idr_alloc(..., GFP_NOWAIT) under the spinlock.
-> 
-> This also allows to kill __prealloc_nested() and __add_nested(), as they
-> are not needed anymore with idr_preload().
-> 
-> [1]: lib/idr.c
-> <...>
-> 
+On 11. 10. 26, 21:55, Magnus Lindholm wrote:
+...
+> --- /dev/null
+> +++ b/drivers/tty/hvc/hvc_m3000.c
+> @@ -0,0 +1,205 @@
 
-Yes this is a miss from my end, will fix in v3.
+> +struct m3000_console {
+> +	int stdin;
+> +	bool ready;
+> +	u8 buffer[256];
+> +	raw_spinlock_t buffer_lock;
+> +	struct timer_list poll_timer;
+> +	struct mutex poll_mutex; /* Serialize open against synchronous close. */
+> +	spinlock_t poll_lock; /* Protect active state and timer rearming. */
+> +	bool poll_active;
 
-> > [1]: lib/idr.c
-> >
-> > Fixes: c0f00a18e2a8 ("KVM: PPC: Book3S HV Nested: Change nested guest lookup to use idr")
-> > Cc: stable@vger.kernel.org # 5.19+
-> > Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
-> > Co-developed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> > Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> 
-> Otherwise LGTM. Thanks for taking it ahead and validating this.
-> 
-> -ritesh
+Perhaps group these a bit better, so that there are not such holes?
 
-Thanks,
-Gautam
+> +};
+...
+> +/*
+> + * HVC's idle backoff can exceed the firmware input FIFO's capacity.
+> + * Wake its worker each tick while open; keep PROM calls out of the timer.
+> + */
+> +static void m3000_poll_tick(struct timer_list *timer)
+> +{
+> +	struct m3000_console *con = timer_container_of(con, timer, poll_timer);
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&con->poll_lock, flags);
+
+Any reason not to use guard()s?
+
+> +	if (con->poll_active) {
+> +		hvc_kick();
+> +		mod_timer(&con->poll_timer, jiffies + 1);
+> +	}
+> +	spin_unlock_irqrestore(&con->poll_lock, flags);
+> +}
+> +
+> +static int m3000_open(struct hvc_struct *hp, int data)
+> +{
+> +	struct m3000_console *con = m3000_console(hp->vtermno);
+> +	unsigned long flags;
+> +
+> +	if (!con)
+> +		return -ENODEV;
+> +	mutex_lock(&con->poll_mutex);
+> +	spin_lock_irqsave(&con->poll_lock, flags);
+
+Same here.
+
+> +	con->poll_active = true;
+> +	mod_timer(&con->poll_timer, jiffies + 1);
+> +	spin_unlock_irqrestore(&con->poll_lock, flags);
+> +	mutex_unlock(&con->poll_mutex);
+> +	return 0;
+> +}
+> +
+> +static void m3000_close(struct hvc_struct *hp, int data)
+> +{
+> +	struct m3000_console *con = m3000_console(hp->vtermno);
+> +	unsigned long flags;
+> +
+> +	if (!con)
+> +		return;
+> +	mutex_lock(&con->poll_mutex);
+> +	spin_lock_irqsave(&con->poll_lock, flags);
+
+And here.
+
+> +	con->poll_active = false;
+> +	spin_unlock_irqrestore(&con->poll_lock, flags);
+> +	/* Block reopen until the callback has finished and cannot rearm. */
+> +	timer_delete_sync(&con->poll_timer);
+> +	mutex_unlock(&con->poll_mutex);
+> +}
+> +
+> +static ssize_t m3000_io(struct m3000_console *con, u8 *in,
+> +			const u8 *out, size_t count)
+> +{
+> +	unsigned long args[7], flags;
+> +	bool input = in;
+
+You can test "in" below directly, right?
+
+> +	int ret;
+> +
+> +	if (!count)
+> +		return 0;
+> +	count = min(count, input ? 1 : sizeof(con->buffer));
+> +	/* Console writes can run with interrupts disabled; this lock cannot sleep. */
+> +	raw_spin_lock_irqsave(&con->buffer_lock, flags);
+
+scoped_guard()
+
+> +	if (!input)
+> +		memcpy(con->buffer, out, count);
+> +	args[0] = (unsigned long)(input ? "read" : "write");
+> +	args[1] = 3;
+> +	args[2] = 1;
+> +	args[3] = (unsigned int)(input ? con->stdin : prom_stdout);
+> +	args[4] = (unsigned long)con->buffer;
+> +	args[5] = count;
+> +	args[6] = (unsigned long)-1;
+> +	p1275_cmd_direct(args);
+> +	ret = (int)args[6];
+> +	if (ret > 0 && ret <= count && input)
+> +		memcpy(in, con->buffer, ret);
+> +	raw_spin_unlock_irqrestore(&con->buffer_lock, flags);
+> +	if (ret == -2 || ret == 0)
+
+That's full of magic constants. Can we have defines for those?
+
+> +		return 0;
+> +	if (ret < 0 || ret > count)
+> +		return -EIO;
+> +	return ret;
+thanks,
+-- 
+js
+suse labs
 
