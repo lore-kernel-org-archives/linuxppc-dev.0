@@ -1,95 +1,109 @@
-Return-Path: <linuxppc-dev+bounces-29201-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29202-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35D26CA9EBD
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Oct 2026 19:58:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF696CA9ECF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 00:56:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j2rxQ5T7Bz3bwd;
-	Mon, 12 Oct 2026 06:58:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::62d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791748682;
-	cv=none; b=Uh1YZdwUBi21ODtYfqzIn8cVQsnd8UEdE2sRNosXC7ImY77ReR+qrPaXjoEjXI1LYq64JYD08O6fFEqpQ2r3ULQGmzQ7CzRihzrn35xp94PZsXROFbpY714b0kct3Ddoz0ULqRhKquZDABmbSB12ABFsA3wP3p7KHG6waVdpQtWGNO2yluRU0SsHNIogsrhYx8Ylu5zIUowXyqQc6l0OLJXeIR1MBT6GvELbqFMWM1OCwMoJko+fWvFnkunRVhYfmDw4nQU+L2IrzJK+VxjhV31pkU+IprtZZOUxEpZieELCG3Tzy3C59V+84qrpP6ewfqAx5jmtwn36Rby4uNFa0Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j2zYs6Zy6z2yjN;
+	Mon, 12 Oct 2026 11:56:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791766593;
+	cv=none; b=jZxwBMAK9LSmnoDa31TAF8Q6cJWgVMMs8QV4CvvO5V7NEIPwO70KF0Q79H4Ey7/MElBJnG+0ps7JE4T/41YCyJ+WglcHU2t8SHwyPtaA25Og5XD5Y5omP6ldSULy7pyZp86fUxYigk14CoUeYWd/YsteH10Z+0dua3R//THoVjoDXdZVl/zDbLosZzFJoNrlUTiC7BEQqckh0h4sGYk/Ax3fv8SIsK7GUqqN7D5wiRDLb09UoQ2R8cOlWdSsBqtvh3sTtFTVxxKVRT5orLcQ6SPGGBXm8bO3G9pYixSDUaFt6NjZXMW/x45WhpwUmTUwmlDOODlXTHU746KoNh8WbQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791748682; c=relaxed/relaxed;
-	bh=anERnWHtuXwEcIQ8AkUzNcW+B0MsW+CJ1YCPxhosgmo=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=DZmfN93CDzkMLbmLbEcQhTvoB9UeKh7U9sDB2SPotN7sEVXq1YJrDHv0weTAhJi3FVpH35cq3baWFpqvvhOr+2RwSEdd9hwi+qVktoEPeuX+oNyTnn2oMJrSBGzGfD41h1pncuXmlGvWKU5lWK+GEqAngibTZef0KOJYGd+e0ZlYZL4ROnD5TLygdbAZYzFcPCS9FgTa/+ZbTU/Zf4qBRzEPDJMGPyHJqc1/Rkz4p6/tXqinN+MRQo/eGibuT0aM8XeYAJI+2q0qPbQFO5CIUJcQWTOUdMs0+/2nHbg262rlXQKFWmLQZI5naeW7hgjdxXNx1NQ68S5Sr6D+PJtbmw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=QMki68TI; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::62d; helo=mail-ej1-x62d.google.com; envelope-from=linmag7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1791766593; c=relaxed/relaxed;
+	bh=hxf53qqklnBrLDOnVa563Rz7Xv1pTGUtJCKz14BmezI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=G7e5bQFjA64VlN0zca+oPf6npxgzfzUM7RP6ogt4nYqyDJ7qIe7qLPShigiztZSSTRNLYMjVvvdbSiobOy7qrVG9j4Jl3Y61Z+Kmav3+3ujKABZwfeVWDJG0x+CC/twgOdLh/pEFLJlbemC2F0zrhjM0VFg69KLBv2GDy1OpUwoD98MYrXQnDnWV4AxLM7EAVIp65x8WgmIIh1rVaVSQd+dP7nhxCcWZlhUMniZqjhT/VVNTrc6CUZYrwMEJ5CEwWh11lgkUGkA3Uj11XwnjVw7DOjgkY0e6qxVec4SWMtJgZ+cAgHO93xdCJU8Lct9B32+UJXbvUNdvBVM9U+AcJQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Srp4lxTv; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=QMki68TI;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Srp4lxTv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::62d; helo=mail-ej1-x62d.google.com; envelope-from=linmag7@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com [IPv6:2a00:1450:4864:20::62d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j2rxP51Z4z3c1L
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2026 06:58:01 +1100 (AEDT)
-Received: by mail-ej1-x62d.google.com with SMTP id a640c23a62f3a-c2e3846d1caso220308266b.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Oct 2026 12:58:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791748678; x=1792353478; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=anERnWHtuXwEcIQ8AkUzNcW+B0MsW+CJ1YCPxhosgmo=;
-        b=QMki68TI0y/EGCWIhS6nk7XU+RQUYorQyS3RJIFc5FszrflCAosT+dyDwcrc+dQ4ga
-         ErYJqbtxQFI42jJ3xNhBYOhGS4H8UozEuWj9lSkFhl7ouZWMGrk00jh4evvADmaYq/hk
-         86czK1HT4V+/GZCUphM8rFTuygTsa6EV+GaY/qvsRS+CWxMHu1XQRm66Icwon2HcVtMk
-         U6DhXZ6ADHvnxKGizxJKIqooe7xFpdXeK0G6fgkqoz+Bm9kS9p+E2Wjgq1y+syHQ7szm
-         VL1Cp482N3NnkP7DzXG/YVaUgLof+n8NjPw8qgGbA80AgoSWQfzimyfZHCxd1Vt8FgOm
-         VVXw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791748678; x=1792353478;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=anERnWHtuXwEcIQ8AkUzNcW+B0MsW+CJ1YCPxhosgmo=;
-        b=GeWQAECXtXOdxJGGG6ewwNw74kOHcFhK9+FHTHoSLi0f9azIPrTrCAYzsNHC41HOqt
-         bxf2ln9+5RXN56T7+aVoa5f2VKvIOqN2yWfrWvtX1LavblXJQmFwu9tHz360Lg41Rpf4
-         +m0lt6zliwHzA5CYUMBhCKwP9BJb7L+imfZ8SRHdbkt6hA+n/B/EsMfT4zDxqzCsmKGZ
-         G7IWPrbjQyXmMVYuIqzatEwUYnF88DcaL2QyCVbLfROvS5JhDnbui3hqEB/UD3dzZYVw
-         dAzOMGVaoIT5O4ZROu64nygXioj0HmqSngvDwaprRRiRelTgD2ePqxw3mUv5WlL3gfUr
-         OH6A==
-X-Forwarded-Encrypted: i=1; AKwUvBzgzPenqSnfkZzvif6BSQkpWoQGK0shfS86jDq3c2PlNvp2youNuEIP+DGZQ6cvb9BNPIqwvm/dI45VYqs=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYI0fYxRED17uB6vEAv0/BmEGQDNJ4DrMJbVY+ucr+J8BFYq5bFy
-	QWrNtLCUuDqFLohPPeLOUSI6kK/eCKIIHVyFZgh3nI9pPXp9rQpuDUlXGFRPC3bL
-X-Gm-Gg: AYBFou0iRdfa5Z3BoCug1BCkOGJxUG2tQcIX26K4PjKV+O56Ng2XEfIE1Xex/gSuLCZ
-	ywDwxifkS8kIuvolK7eJAtHPjKCl7XFecqGnvVgJ5PO3WktxRWUMyzyJ1/mrynDsPJnygD4s1VT
-	N8HxgSXFETDCrJNH0FTfYH+AqOkicW3coRVCnR6Pg/pk4Cw4QAtG+n2YC+4pbOsHrgDdguqt0e3
-	mGiYLRBw2mwsWVFbezH6jwsagVcCej8l9gjLiBODqxoBU1LGJBb2w31tvqWP+IoVCMd7UIjj0uG
-	s4ij1L+Y2BVsngn21bPxHB2BhASxL/p6TN5H+d/6Qhp+K3YCmt1PvuV2Vm/MTUEmkqm6OSWoM4T
-	rVOLr7qpAjB3Mvlw3l9zoOKPHLum3p95VX6KahehGiPFnkEx2jjCWq2SGjaYw1tg2GobLBQmcL5
-	zSUceA3xUKm5LIy+v2GUPowc0P36hyJ7zALubgKBwYG5rHMYr52F06zz5ezjiwJKbx8rGYCvu6I
-	Y5UhmBdWqKM5GG2gThHctr6DxtlFn95U9316qQk
-X-Received: by 2002:a17:907:3e0d:b0:c2e:80b0:deb3 with SMTP id a640c23a62f3a-c31a9a10e74mr851073766b.7.1791748678067;
-        Sun, 11 Oct 2026 12:57:58 -0700 (PDT)
-Received: from buildhost.darklands.se ([2001:9b1:ff:d701:51eb:176f:63d9:53f8])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c31a9a3ae9fsm381315566b.26.2026.10.11.12.57.55
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 11 Oct 2026 12:57:56 -0700 (PDT)
-From: Magnus Lindholm <linmag7@gmail.com>
-To: davem@davemloft.net,
-	andreas@gaisler.com,
-	sparclinux@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
-	gregkh@linuxfoundation.org,
-	jirislaby@kernel.org,
-	linux-serial@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	krzk@kernel.org,
-	oleg@redhat.com,
-	linmag7@gmail.com
-Subject: [PATCH v2 6/6] hvc: add an M3000 firmware console backend
-Date: Sun, 11 Oct 2026 21:55:58 +0200
-Message-ID: <20261011195729.981243-7-linmag7@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20261011195729.981243-1-linmag7@gmail.com>
-References: <20261011195729.981243-1-linmag7@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j2zYr1bPRz2yDc
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2026 11:56:32 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 6947A42EA7;
+	Mon, 12 Oct 2026 00:56:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 37FB71F0089B;
+	Mon, 12 Oct 2026 00:56:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791766588;
+	bh=hxf53qqklnBrLDOnVa563Rz7Xv1pTGUtJCKz14BmezI=;
+	h=Date:From:To:List-Id:Cc:Subject:References:In-Reply-To;
+	b=Srp4lxTvswzQGSZurZdIgokznIEj5wyrJNY9T77hd+9PMBPDY7gvvfunlGvn3ilAt
+	 c3UqltVrr8pDMp7TpDjaT+8DWh+uNsnVzDM/cCacLNCkmQrqU91rplRALKRe2zQEwJ
+	 jMlbkTkanGJ47er7L6/E5P3rPXC8cQsk79+DBESejMhm2sHhgCTx5z2mewZh/Q+eCS
+	 F8OdoYFePL+Ri0/RcYD/MmZKZu+FdwiV3IGzDWFNxqUREJ9KJfdvF45vhgPbd5Rpxn
+	 5C0t0G6buQIudJ3rTCmzqaMebg7XdlTR/4PYtBXFKymc2w62JaoqVSbDQu81sYb3fr
+	 9hXGvCVno8tUA==
+Date: Sun, 11 Oct 2026 17:56:27 -0700
+From: Kees Cook <kees@kernel.org>
+To: Alejandro Colomar <alx@kernel.org>
+List-Id: <linux-hardening.lore.kernel.org>
+Cc: Alejandro Colomar <alx+linux-hardening@kernel.org>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Bill Wendling <morbo@google.com>,
+	"Matthew Wilcox (Oracle)" <willy@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Gow <david@davidgow.net>, Petr Mladek <pmladek@suse.com>,
+	Shuvam Pandey <shuvampandey1@gmail.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Sergey Senozhatsky <senozhatsky@chromium.org>,
+	=?iso-8859-1?Q?G=FCnther?= Noack <gnoack@google.com>,
+	=?iso-8859-1?Q?Micka=EBl_Sala=FCn?= <mic@digikod.net>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+	Jiri Kosina <jikos@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
+	Daniel Borkmann <daniel@iogearbox.net>,
+	Andrii Nakryiko <andrii@kernel.org>,
+	Eduard Zingerman <eddyz87@gmail.com>,
+	Kumar Kartikeya Dwivedi <memxor@gmail.com>,
+	Martin KaFai Lau <martin.lau@linux.dev>, Song Liu <song@kernel.org>,
+	Yonghong Song <yonghong.song@linux.dev>,
+	Jiri Olsa <jolsa@kernel.org>,
+	Emil Tsalapatis <emil@etsalapatis.com>,
+	Ihor Solodrai <ihor.solodrai@linux.dev>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@baylibre.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Shivaprasad G Bhat <sbhat@linux.ibm.com>,
+	Thorsten Blum <blum@kernel.org>,
+	Alison Schofield <alison.schofield@intel.com>,
+	Dave Jiang <dave.jiang@intel.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Guangshuo Li <lgs201920130244@gmail.com>,
+	Ira Weiny <iweiny@kernel.org>,
+	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+	Vishal Verma <vishal.l.verma@intel.com>,
+	Randy Dunlap <rdunlap@infradead.org>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	linux-kernel@vger.kernel.org, bpf@vger.kernel.org,
+	linux-security-module@vger.kernel.org,
+	linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	nvdimm@lists.linux.dev, linux-doc@vger.kernel.org,
+	linux-hardening@vger.kernel.org
+Subject: Re: [PATCH v4 05/11] seq_buf: Add seq_buf_strlen()
+Message-ID: <20261012005620.466497-kees@kernel.org>
+References: <20261003035906.too.263-kees@kernel.org>
+ <20261003035921.1918874-5-kees@kernel.org>
+ <asEhEe0Urb5Wx7yi@ashevche-desk.local>
+ <202610040023.A3865A6@keescook>
+ <asIPlnb0noMd33rr@ashevche-desk.local>
+ <20261005112209.1e47fa-kees@kernel.org>
+ <asOKvhT01aNb5-Dg@debian>
+ <20261005155839.d5d200-kees@kernel.org>
+ <asPSYn7sLqiH39Fu@debian>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,283 +117,47 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <asPSYn7sLqiH39Fu@debian>
 
-Provide hvc0 through the M3000 Open Firmware pseudo-console, validating
-the firmware model and console endpoints before registering it. Keep
-firmware buffers in locked kernel mappings and serialize their use in
-atomic console contexts through the existing SPARC p1275 interface.
+On Mon, Oct 05, 2026 at 06:43:23PM +0200, Alejandro Colomar wrote:
+> > Yes, though not often: the sched_ext debug dump builds a nested per-CPU
+> > seq_buf from seq_buf_get_buf(), which returns a size of 0 once the dump
+> > buffer has overflowed, and it handles that case on purpose (see the
+> > "$s may already have overflowed" comment in kernel/sched/ext/ext.c).
+>
+> Hmmmm, so IIUC, it is a sentinel value, and not really a buffer size?
 
-Poll input while the TTY is open and synchronize close with timer
-rearming. Return zero on no progress so HVC retries buffered TTY output
-but drops stalled console chunks instead of spinning indefinitely.
-A firmware call that does not return remains unbounded.
+It's the real size of what's left. seq_buf_get_buf() hands out the
+unused tail of the seq_buf. Once that has overflowed there is no tail,
+so it returns NULL for the buffer and 0 for the size, and sched_ext
+initializes the nested seq_buf with both. So that case does get the NULL;
+the 0 is how much room it has.
 
-Signed-off-by: Magnus Lindholm <linmag7@gmail.com>
----
- MAINTAINERS                 |   6 ++
- drivers/tty/hvc/Kconfig     |  10 ++
- drivers/tty/hvc/Makefile    |   1 +
- drivers/tty/hvc/hvc_m3000.c | 205 ++++++++++++++++++++++++++++++++++++
- 4 files changed, 222 insertions(+)
- create mode 100644 drivers/tty/hvc/hvc_m3000.c
+> Did you consider not holding the size of the buffer, but rather an end
+> pointer?  It also allows you to find how much you can write to the
+> buffer, but has slightly better semantics: the end doesn't change if you
+> advance the position.  'end' can only change through reallocations
+> (which I don't know if you do in the kernel).
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 3a19da74d00c..5bc9b1cabd0a 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -10728,6 +10728,12 @@ L:	platform-driver-x86@vger.kernel.org
- S:	Maintained
- F:	drivers/platform/x86/fujitsu-laptop.c
- 
-+FUJITSU M3000 FIRMWARE CONSOLE
-+M:	Magnus Lindholm <linmag7@gmail.com>
-+L:	linux-serial@vger.kernel.org
-+S:	Maintained
-+F:	drivers/tty/hvc/hvc_m3000.c
-+
- FUJITSU TABLET EXTRAS
- M:	Robert Gerlach <khnz@gmx.de>
- L:	platform-driver-x86@vger.kernel.org
-diff --git a/drivers/tty/hvc/Kconfig b/drivers/tty/hvc/Kconfig
-index 5866195de26a..0feb7ec98f4f 100644
---- a/drivers/tty/hvc/Kconfig
-+++ b/drivers/tty/hvc/Kconfig
-@@ -134,3 +134,13 @@ config HVCS
- 	  will depend on arch specific APIs exported from hvcserver.ko
- 	  which will also be compiled when this driver is built as a
- 	  module.
-+
-+config HVC_M3000
-+	bool "M3000 firmware pseudo-console"
-+	depends on SPARC64_VII
-+	select HVC_DRIVER
-+	help
-+	  Provide hvc0 using Open Firmware stdin/stdout on IKKAKU only.
-+	  Input is polled; no native UART registers are accessed.
-+	  Firmware calls are serialized and use a locked-image bounce buffer.
-+	  Say Y to use the M3000 firmware pseudo-console as hvc0.
-diff --git a/drivers/tty/hvc/Makefile b/drivers/tty/hvc/Makefile
-index 98880e357941..38c8cf349053 100644
---- a/drivers/tty/hvc/Makefile
-+++ b/drivers/tty/hvc/Makefile
-@@ -11,3 +11,4 @@ obj-$(CONFIG_HVC_IUCV)		+= hvc_iucv.o
- obj-$(CONFIG_HVC_UDBG)		+= hvc_udbg.o
- obj-$(CONFIG_HVC_RISCV_SBI)	+= hvc_riscv_sbi.o
- obj-$(CONFIG_HVCS)		+= hvcs.o
-+obj-$(CONFIG_HVC_M3000)		+= hvc_m3000.o
-diff --git a/drivers/tty/hvc/hvc_m3000.c b/drivers/tty/hvc/hvc_m3000.c
-new file mode 100644
-index 000000000000..1285e2db2fab
---- /dev/null
-+++ b/drivers/tty/hvc/hvc_m3000.c
-@@ -0,0 +1,205 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * M3000 Open Firmware pseudo-console backend.
-+ * Copyright (C) 2026 Magnus Lindholm
-+ */
-+#include <linux/console.h>
-+#include <linux/err.h>
-+#include <linux/init.h>
-+#include <linux/irqflags.h>
-+#include <linux/mutex.h>
-+#include <linux/string.h>
-+#include <linux/spinlock.h>
-+#include <linux/timer.h>
-+#include <asm/oplib.h>
-+#include <asm/spitfire.h>
-+#include "hvc_console.h"
-+
-+struct m3000_console {
-+	int stdin;
-+	bool ready;
-+	u8 buffer[256];
-+	raw_spinlock_t buffer_lock;
-+	struct timer_list poll_timer;
-+	struct mutex poll_mutex; /* Serialize open against synchronous close. */
-+	spinlock_t poll_lock; /* Protect active state and timer rearming. */
-+	bool poll_active;
-+};
-+
-+/* Keep the firmware buffer within the locked kernel image mappings. */
-+static struct m3000_console m3000_consoles[] = {
-+	{
-+		.buffer_lock = __RAW_SPIN_LOCK_UNLOCKED(m3000_consoles[0].buffer_lock),
-+		.poll_mutex = __MUTEX_INITIALIZER(m3000_consoles[0].poll_mutex),
-+		.poll_lock = __SPIN_LOCK_UNLOCKED(m3000_consoles[0].poll_lock),
-+	},
-+};
-+
-+static struct m3000_console *m3000_console(u32 termno)
-+{
-+	if (termno >= ARRAY_SIZE(m3000_consoles))
-+		return NULL;
-+	return &m3000_consoles[termno];
-+}
-+
-+/*
-+ * HVC's idle backoff can exceed the firmware input FIFO's capacity.
-+ * Wake its worker each tick while open; keep PROM calls out of the timer.
-+ */
-+static void m3000_poll_tick(struct timer_list *timer)
-+{
-+	struct m3000_console *con = timer_container_of(con, timer, poll_timer);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&con->poll_lock, flags);
-+	if (con->poll_active) {
-+		hvc_kick();
-+		mod_timer(&con->poll_timer, jiffies + 1);
-+	}
-+	spin_unlock_irqrestore(&con->poll_lock, flags);
-+}
-+
-+static int m3000_open(struct hvc_struct *hp, int data)
-+{
-+	struct m3000_console *con = m3000_console(hp->vtermno);
-+	unsigned long flags;
-+
-+	if (!con)
-+		return -ENODEV;
-+	mutex_lock(&con->poll_mutex);
-+	spin_lock_irqsave(&con->poll_lock, flags);
-+	con->poll_active = true;
-+	mod_timer(&con->poll_timer, jiffies + 1);
-+	spin_unlock_irqrestore(&con->poll_lock, flags);
-+	mutex_unlock(&con->poll_mutex);
-+	return 0;
-+}
-+
-+static void m3000_close(struct hvc_struct *hp, int data)
-+{
-+	struct m3000_console *con = m3000_console(hp->vtermno);
-+	unsigned long flags;
-+
-+	if (!con)
-+		return;
-+	mutex_lock(&con->poll_mutex);
-+	spin_lock_irqsave(&con->poll_lock, flags);
-+	con->poll_active = false;
-+	spin_unlock_irqrestore(&con->poll_lock, flags);
-+	/* Block reopen until the callback has finished and cannot rearm. */
-+	timer_delete_sync(&con->poll_timer);
-+	mutex_unlock(&con->poll_mutex);
-+}
-+
-+static ssize_t m3000_io(struct m3000_console *con, u8 *in,
-+			const u8 *out, size_t count)
-+{
-+	unsigned long args[7], flags;
-+	bool input = in;
-+	int ret;
-+
-+	if (!count)
-+		return 0;
-+	count = min(count, input ? 1 : sizeof(con->buffer));
-+	/* Console writes can run with interrupts disabled; this lock cannot sleep. */
-+	raw_spin_lock_irqsave(&con->buffer_lock, flags);
-+	if (!input)
-+		memcpy(con->buffer, out, count);
-+	args[0] = (unsigned long)(input ? "read" : "write");
-+	args[1] = 3;
-+	args[2] = 1;
-+	args[3] = (unsigned int)(input ? con->stdin : prom_stdout);
-+	args[4] = (unsigned long)con->buffer;
-+	args[5] = count;
-+	args[6] = (unsigned long)-1;
-+	p1275_cmd_direct(args);
-+	ret = (int)args[6];
-+	if (ret > 0 && ret <= count && input)
-+		memcpy(in, con->buffer, ret);
-+	raw_spin_unlock_irqrestore(&con->buffer_lock, flags);
-+	if (ret == -2 || ret == 0)
-+		return 0;
-+	if (ret < 0 || ret > count)
-+		return -EIO;
-+	return ret;
-+}
-+
-+static ssize_t m3000_get(u32 termno, u8 *buf, size_t count)
-+{
-+	struct m3000_console *con = m3000_console(termno);
-+
-+	return con ? m3000_io(con, buf, NULL, count) : -ENODEV;
-+}
-+
-+static ssize_t m3000_put(u32 termno, const u8 *buf, size_t count)
-+{
-+	struct m3000_console *con = m3000_console(termno);
-+
-+	/* HVC retries zero for TTY writes but drops stalled console output. */
-+	return con ? m3000_io(con, NULL, buf, count) : -ENODEV;
-+}
-+
-+static const struct hv_ops m3000_ops = {
-+	.get_chars = m3000_get,
-+	.put_chars = m3000_put,
-+	.notifier_add = m3000_open,
-+	.notifier_del = m3000_close,
-+	.notifier_hangup = m3000_close,
-+};
-+
-+static bool __init m3000_property_matches(phandle node, const char *prop,
-+					  const char *expected)
-+{
-+	char value[64];
-+	int len;
-+
-+	len = prom_getproperty(node, prop, value, sizeof(value) - 1);
-+	if (len <= 0)
-+		return false;
-+	value[len] = '\0';
-+	return !strcmp(value, expected);
-+}
-+
-+static int __init m3000_console_init(void)
-+{
-+	struct m3000_console *con = &m3000_consoles[0];
-+	phandle node;
-+	int ret;
-+
-+	if (tlb_type != sparc64_vii)
-+		return -ENODEV;
-+	if (!m3000_property_matches(prom_finddevice("/"), "model", "IKKAKU"))
-+		return -ENODEV;
-+	con->stdin = prom_getint(prom_chosen_node, "stdin");
-+	if (!con->stdin || con->stdin == -1 || !prom_stdout || prom_stdout == -1)
-+		return -ENODEV;
-+	node = prom_inst2pkg(prom_stdout);
-+	if (!m3000_property_matches(node, "name", "pseudo-console"))
-+		return -ENODEV;
-+	node = prom_inst2pkg(con->stdin);
-+	if (!m3000_property_matches(node, "name", "pseudo-console"))
-+		return -ENODEV;
-+	ret = hvc_instantiate(0, 0, &m3000_ops);
-+	if (ret < 0)
-+		return ret;
-+	con->ready = true;
-+	return 0;
-+}
-+console_initcall(m3000_console_init);
-+
-+static int __init m3000_tty_init(void)
-+{
-+	struct m3000_console *con = &m3000_consoles[0];
-+	struct hvc_struct *hp;
-+
-+	if (!con->ready)
-+		return -ENODEV;
-+	timer_setup(&con->poll_timer, m3000_poll_tick, 0);
-+	hp = hvc_alloc(0, 0, &m3000_ops, sizeof(con->buffer));
-+	if (IS_ERR(hp))
-+		return PTR_ERR(hp);
-+	hp->ws.ws_row = 24;
-+	hp->ws.ws_col = 80;
-+	return 0;
-+}
-+device_initcall(m3000_tty_init);
+The size doesn't change either: it is set by seq_buf_init(), and writers
+advance "len", an offset from the start of the buffer. seq_buf never
+reallocates.
+
+An end pointer wouldn't remove the empty case: buffer == end is the same
+condition as size == 0, so the accessors would still need the check. It
+also makes overflow harder to record. seq_buf marks it with len == size +
+1, and the matching position pointer, end + 1, would be weird.
+
+Changing the representation would also means changes outside
+lib/seq_buf.c, since tracing reads seq.len and seq.size directly
+(trace_seq treats a zero size as "not yet initialized", for one). I'm
+not saying that's a good thing to bypass the API, but rather that such
+a change should be its own series.
+
+-Kees
+
 -- 
-2.43.0
-
+Kees Cook
 
