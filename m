@@ -1,70 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-29433-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29434-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D4EACC6B1A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 19:46:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 723ECCC6B19
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 20:44:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j44bC3FYfz2y2h;
-	Wed, 14 Oct 2026 06:46:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::448"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791920791;
-	cv=none; b=MST81686m9sePmLuKUm4TpiJStwI/wjy2tFTAFPa0zGSJfjlnxDJr2VUqZyPw0bdOoLhLl5imC/puJ2XgXqrHQkjRY8k3xOHL3XfwS86YWx6VF9Wa6EaolAndbLTFAweE87RG0AirayYFbH4diIfx/t6X3osTDvoooBh1lK0WUJjRzjnmG6RqXjVKBT4lPte/iTLmpd4rBgBl9sXUcp9XVjUWI/Hp2CuVSjyEJM4UMXG89kRk04/qv81lk/L01M3KkKnFjc8qczpd1eOsjm0o90rvOzhQU4D6zFdLMrg1poevtuze1GbNxvqn5ifEJmybYbgAEKyMLY2Kq/dIvVrIQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j45tS2vtDz30hC;
+	Wed, 14 Oct 2026 07:44:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.18
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791924288;
+	cv=none; b=bSdSDv6vi0m1On+4AWdgzY/iOqwM6gHtNT/7AUzx3N+dYmtkKWkaPjQw+QgnBYuOfVaBrUf61CLFSQmUn+0PXIZckahImawmj5YOCs20OPBkhPAn8DrXazb6JO9KH0D69JV65xbB5l3OSEq4iRD8zJ5BYXceFxZqMXhGScK97KUvOM+Qa2268yhIt7BpnC2NLrTfKQ+dip9vgEsc3oK3m8/5a60PEV0FtEgHvaHR7Pwzw6oU6DWjo+WZeZh3wpgj0X0/W3+acF1vOFO46nerUux4evSZNMWtwDh3EaAlTWViemEs6nTPYlTOb+GXUAk9FU95BcK4daCYavtaPd5RZA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791920791; c=relaxed/relaxed;
-	bh=LeOkNArJ14T449fGvcCB00uvB/PZ25DWOhBo0IuHU3o=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=f84O6dRujGcPn4LEuoSVZFXHh6N8MlMbNUHCGyVvzeK64XuT1LCyCkiN6WDh1ksKc/Xg/tPen0EzCY5AvwjiQyZwjZB+Uqw/3hzYQtg9vl8SUInvXHGkqlGpALHFBSH9aMCsoDw5zle6wupSCjbBAwYFUMgFwXCZpplSyaQFxFpW5uarSlk6pE7ri/xsQsIhB+Wl3vSbyZwZLrEAg7CqoAUKyPlCOOhZETCGFQaulJzLRdV+TjPnFeIT4PwRIXY/ud2Ix4WE6MR9FzL9ZWZbAaNX5SDW48mzYebBCuDBDsD9QtnBAw1OQ124+23yZyd2xdB4yn54O1ldc5/spTjzOQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=rwIXYfTk; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::448; helo=mail-pf1-x448.google.com; envelope-from=3kyroagykdd4xjfsohlttlqj.htrqnsz2uuh-ij0qnxyx.t4qfgx.twl@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1791924288; c=relaxed/relaxed;
+	bh=m3wbzeKnN192GR421OBCIel3qP9yeoQm43Qr6LemHA4=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=IN4OV3641HWOFXORQPBjxxw66Z5PGS2Itx+jOpMtAjQkDezbfJBfm5zS9mcfoUA8z5wPy8Z/phl9iRFnP5iiDuH2qnMfHwnDmXM7eK85YAr/VsbH+iSyb8sGbfk9/eOi30H4kVVfc8j4p+XV1/b/dAkk/AQJEuvMMYlUBAQ+BlhrNch3hTJV7q9+zbI6wBbIxOjnrSog9qJ0Bx7R7Wh1QSwD9p6V79kSgaEBJZT3MUH+yX63DNS4gGsHv225+OBMbVD+00ICZM4C01fszn49oV23UnYW9T1S+AG3iW7p+eV2XRpP+7M0hUjfxXmRtUT3yjHzRPzffcvUs2Zke97Swg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Um5mcRt5; dkim-atps=neutral; spf=pass (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=tim.c.chen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=rwIXYfTk;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Um5mcRt5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::448; helo=mail-pf1-x448.google.com; envelope-from=3kyroagykdd4xjfsohlttlqj.htrqnsz2uuh-ij0qnxyx.t4qfgx.twl@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x448.google.com (mail-pf1-x448.google.com [IPv6:2607:f8b0:4864:20::448])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=tim.c.chen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j44b95RgPz2y2B
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 06:46:28 +1100 (AEDT)
-Received: by mail-pf1-x448.google.com with SMTP id d2e1a72fcca58-8881a7875e5so2172349b3a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 12:46:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1791920785; x=1792525585; darn=lists.ozlabs.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=LeOkNArJ14T449fGvcCB00uvB/PZ25DWOhBo0IuHU3o=;
-        b=rwIXYfTk1HCWKiATZVnm0O5HD1plaegteK0x03dhll9TkINuOvo9KS1GqQrySZgNeN
-         lEueoLU1oJOawGoCwVKzi4q0Vi7ijJi0RbU8AiBFvrkShQaSZyegLv+hkdFHplmnVB+P
-         bA+HdwOdn21Nq9DRmTHlr/yvA4PqSJwQSxTmjczdD7yOlcQ0ir8eUlI1kBu9eWS5aWe4
-         uazSezWVi+iQqK0eHP9BweEbXb/5eotmP2YjwqaTK+uYQLQtcMYeTHQUvC5turAdY4k8
-         T+nL+YI21T+8yAHkKkr8c/FEU7myfk9RpK/pUyb+hHrlNhlbKLjynzChDWBUAdgQ6Tsk
-         N2OA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791920785; x=1792525585;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=LeOkNArJ14T449fGvcCB00uvB/PZ25DWOhBo0IuHU3o=;
-        b=dIZGKl1Rkcg3DQF64ut0k9TcRaxT3Cw2lda57Yqo4KYhwd/9Y04Qc9PrRSPTAXFdB8
-         oaNYzLXYo8iKmJdjH0xNU3DZ6rLmFIcXop4krStXXhct6UZQiBi1wQ8+BfalRcPi8K96
-         YWBUp/23SByNe1ONbsJFNy04MkwF7VyiUpL6Hl926xnzoVWGPCG2jp77qWtKpO9GlauT
-         uNf1tVPp0uOb8L9o1VpYP97pem/gIE93C5uw/WyiAwGS1hpyq30Q7Wu6VuAPGlXeRWmK
-         lS10Wb31n/aiKDVWqPaeEryz8aE3jg6Nb+h7gfTV7LWtJjOFxMumyT+U6Rx7/r0XdTF6
-         qunQ==
-X-Forwarded-Encrypted: i=1; AKwUvBx1+PE3PyDrXSjL9ckMXZmdpnF8Bu9Z7ssG8udwYXP0DarNZ8SZ4Tjz2Okavjglt4G1N4Tck1fljAWTEms=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYK+xaOms+eX0iwhKdWODMkIOk8d8AhlQKMPwAb0NEF+FjgT10y1
-	oIT8eGoJaxyQBwaUHLH3L1K2kIMjywVxzJVqOEYSrgNiggbw2Y/y1Iri9w8IoFebv7dp8vVOZq8
-	hfFud2A==
-X-Received: from pfbdw16.prod.google.com ([2002:a05:6a00:3690:b0:893:3763:ceda])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:94f2:b0:874:705d:f659
- with SMTP id d2e1a72fcca58-897c6d1e526mr11766098b3a.39.1791920785216; Tue, 13
- Oct 2026 12:46:25 -0700 (PDT)
-Date: Tue, 13 Oct 2026 12:46:24 -0700
-In-Reply-To: <94cd4203-1be8-4f8d-b015-0c02760e5770@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j45tP5Nxnz2xwN
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 07:44:43 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1791924286; x=1823460286;
+  h=message-id:subject:from:to:cc:date:in-reply-to:
+   references:content-transfer-encoding:mime-version;
+  bh=hKPtDA6WNH3/iKEwQ7cGCkaW1k5mutPIIOA3W63nodI=;
+  b=Um5mcRt537bvksqDmJ+KUH5l76aXiNxZKK1+Xi5ZlLbYI1PwIshTa7wf
+   K17Fz+OK1By7taDkU3sXFoaUxycKu3h0VHLEvjZekpASeXln1Td27O74H
+   S3W3f5GX0HmeHmlS8wmADhWwlBbbEMWDzY2u0M9vFPPELU6MLfUqgl2VS
+   gPo3OJHzIe0YabTWhO7xe/87gp+I6xS3kcXA9TUu+6Lc1XSU0xLp/EHs/
+   PK3+1iPWWWeNo0CHh6eGqdeIRmJqk5ME8s9POdWjG4A6/irdOUNa4WQH2
+   EHXlRV89UkY+eoooeV1fEJFlspz6G0cHj3ptIshlj0tJYXzSIQ6+nZUrH
+   g==;
+X-CSE-ConnectionGUID: llC3BmKYSfyk7L4AL6sV0A==
+X-CSE-MsgGUID: ArVgcsTUTf+MwrZ5keTbYQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11934"; a="681167"
+X-IronPort-AV: E=Sophos;i="6.27,156,1787036400"; 
+   d="scan'208";a="681167"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Oct 2026 13:44:41 -0700
+X-CSE-ConnectionGUID: KStLpYvNRqyhG2cKmcGMJg==
+X-CSE-MsgGUID: vSXiOx4xT3euS2RFd67gdQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,156,1787036400"; 
+   d="scan'208";a="1196521"
+Received: from unknown (HELO [10.241.242.105]) ([10.241.242.105])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Oct 2026 13:44:40 -0700
+Message-ID: <4d0f2f4631f2f836bb1aec140c2c8e3e11d7ba20.camel@linux.intel.com>
+Subject: Re: [PATCH 0/4] powerpc/topology: Introduce llc_override debugfs
+From: Tim Chen <tim.c.chen@linux.intel.com>
+To: Shrikanth Hegde <sshegde@linux.ibm.com>, maddy@linux.ibm.com, 
+	linuxppc-dev@lists.ozlabs.org, peterz@infradead.org
+Cc: christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org, 
+	ritesh.list@gmail.com, kprateek.nayak@amd.com, yu.c.chen@intel.com, 
+	vineethr@linux.ibm.com, vincent.guittot@linaro.org, srikar@linux.ibm.com, 
+	npiggin@gmail.com, mpe@ellerman.id.au
+Date: Tue, 13 Oct 2026 13:44:40 -0700
+In-Reply-To: <dfd8312d-a59c-4480-b054-d94d2e66110e@linux.ibm.com>
+References: <20261012102037.2477378-1-sshegde@linux.ibm.com>
+	 <0cbd60fcf328ffcb317739f60d327da3af6145f1.camel@linux.intel.com>
+	 <dfd8312d-a59c-4480-b054-d94d2e66110e@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.58.1 (3.58.1-1.fc43) 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,38 +84,192 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-References: <cover.1791280439.git.ritesh.list@gmail.com> <94cd4203-1be8-4f8d-b015-0c02760e5770@linux.ibm.com>
-Message-ID: <as6KkH-MnbfDeuAi@google.com>
-Subject: Re: [PATCH v7 0/8] KVM: selftests: add powerpc support
-From: Sean Christopherson <seanjc@google.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, kvm@vger.kernel.org, 
-	Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org, 
-	Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <chleroy@kernel.org>, 
-	Anushree Mathur <anushree.mathur@linux.ibm.com>, 
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Harsh Prateek Bora <harshpb@linux.ibm.com>, 
-	Shrikanth Hegde <sshegde@linux.ibm.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 
-On Mon, Oct 12, 2026, Madhavan Srinivasan wrote:
-> On 10/6/26 3:58 PM, Ritesh Harjani (IBM) wrote:
-> > This series primarly adds KVM selftests support for powerpc (64-bit, BookS,
-> > radix MMU).
-> > 
-> > This patch series is originally Nick's work. I have mainly only rebased it on
-> > the latest upstream tree. Since the rebase required few changes to all the four
-> > patches (Patch 1-4), I have dropped the earlier Acked-by from Michael Ellerman.
-> > 
-> > Since the last series was posted three years ago [1], I am resetting the version
-> > to RFC. This rebase was done as part of a larger effort to improve the selftests
-> > infrastructure for Linux on PowerPC tree. Thanks to Harsh and Maddy for their
-> > help on this.
-> > 
-> Sean/Paolo, hope you take this via your tree.
+On Tue, 2026-10-13 at 15:28 +0530, Shrikanth Hegde wrote:
+>=20
 
-I've pushed this to kvm-x86/ppc_selftests, and to kvm-x86/next.  It should show
-up in tomorrow's build of linux-next.  If all goes well, I'll send "official"
-thanks in a few days (I'll be offline for the next ~48 hours), and include
-ppc_selftests in my pull requests for 7.4.
+[snip]
+
+>=20
+> One way to fix it is with a change like below.
+> But more thoughts after the patch.
+>=20
+> ---
+>   arch/powerpc/include/asm/topology.h |  7 +------
+>   arch/powerpc/kernel/smp.c           | 23 +++++++++++++++++++++++
+>   include/linux/sched.h               |  2 +-
+>   kernel/sched/topology.c             |  7 +++++++
+>   4 files changed, 32 insertions(+), 7 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/a=
+sm/topology.h
+> index 44ec416fa489..f4555632e692 100644
+> --- a/arch/powerpc/include/asm/topology.h
+> +++ b/arch/powerpc/include/asm/topology.h
+> @@ -135,12 +135,7 @@ struct cpumask *cpu_coregroup_mask(int cpu);
+>   const struct cpumask *cpu_die_mask(int cpu);
+>   int cpu_die_id(int cpu);
+>  =20
+> -/*
+> - * Points to where the LLC is. On power9 this will point at CACHE
+> - * domain, On others it will point to SMT domain. In all cases
+> - * cpu_l2_cache_mask points to where LLC is
+> - */
+> -#define arch_llc_mask(cpu)     cpu_l2_cache_mask(cpu)
+> +const struct cpumask *arch_llc_mask(int cpu);
+
+You will need to add
+#define arch_llc_mask arch_llc_mask
+here.
+
+Otherwise kernel/sched/topology.c looks for a macro:
+
+  # ifndef arch_llc_mask
+  #define arch_llc_mask(cpu) cpu_coregroup_mask(cpu)
+  # endif
+
+With the #define gone, the generic code falls back to
+cpu_coregroup_mask().
+
+>  =20
+>   #ifdef CONFIG_PPC64
+>   #include <asm/smp.h>
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index 6a4ee7d3b8e5..139c54fc3e2d 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -1864,6 +1864,28 @@ void __noreturn arch_cpu_idle_dead(void)
+>  =20
+>   #endif
+>  =20
+> +/*
+> + * Points to where the LLC is. On power9 this will point at CACHE
+> + * domain, On others it will point to SMT domain. In all cases
+> + * cpu_l2_cache_mask points to where LLC is.
+> + *
+> + * If there is llc_override debug knob, return appropriate mask
+> + */
+> +const struct cpumask *arch_llc_mask(int cpu)
+> +{
+> +	switch (READ_ONCE(llc_override)) {
+> +	case LLC_OVERRIDE_SMT:
+> +		return cpu_smt_mask(cpu);
+> +	case LLC_OVERRIDE_MC:
+> +		return cpu_coregroup_mask(cpu);
+> +	case LLC_OVERRIDE_PKG:
+> +		return cpu_die_mask(cpu);
+> +	case LLC_OVERRIDE_DISABLED:
+> +	default:
+> +		return cpu_l2_cache_mask(cpu);
+> +	}
+> +}
+> +
+
+The mask here has to match the span of the highest SD_SHARE_LLC
+domain, and there seems to be some mismatches.                             =
+     =20
+                                                                           =
+   =20
+- PKG: On power pc, seems like cpu_die_mask() returns
+  cpu_coregroup_map when coregroups are
+  supported,=C2=A0
+
+	if (has_coregroup_support())                                              =
+                                                                           =
+                         =20
+		return per_cpu(cpu_coregroup_map, cpu);                                  =
+                                                                           =
+                  =20
+	else                                                                      =
+                                                                           =
+                         =20
+		return cpu_node_mask(cpu);            =20
+
+  so this is the MC span while sd_llc sits at PKG. It
+  should be cpu_node_mask(), the same as tl_pkg_mask().  =20
+
+- SMT: patch 3 adds SD_SHARE_LLC only to MC/PKG, so for "smt" the
+  flags are as before. I think it is possible for P9 to have
+  shared_caches between two cores:
+
+  /*
+   * P9 has a slightly odd architecture where pairs of cores share an L2 ca=
+che.
+   * This topology makes it *much* cheaper to migrate tasks between adjacen=
+t cores
+   * since the migrated task remains cache hot. We want to take advantage o=
+f this
+   * at the scheduler level so an extra topology level is required.
+   */
+
+  the CACHE level also has SD_SHARE_LLC, and highest_flag_domain() picks it=
+, so sd_llc spans
+  cpu_l2_cache_map. shared_caches is only set when that map is wider
+  than the core's threads, e.g. a P9 core pair sharing an L2:
+
+    CPU:               0 1 2 3 | 4 5 6 7
+    cpu_smt_mask():    core A  | core B
+    sd_llc (CACHE):    0-7
+
+  The ids follow cpu_smt_mask(), so 0-3 and 4-7 get different ids
+  while sd_llc and sd_llc_size cover all eight, and
+  cpus_share_cache(0, 4) is false, which is incorrect.
+
+>   int arch_update_cpu_topology(void)
+>   {
+>   	if (READ_ONCE(llc_override_changed)) {
+> @@ -1923,6 +1945,7 @@ static ssize_t llc_override_set(struct file *file, =
+const char __user *ubuf,
+>   		pr_info("sched LLC override set to %s. Rebuilding sched domains\n",
+>   			llc_override_str[override]);
+>  =20
+> +		sched_reset_llc_id();
+
+The reset here seems racy without taking cpus_read_lock, and taking
+sched_domains_mutex for each CPU and you could have a cpu hot plug event
+or cpu set rebuild in between. =20
+
+That's why I would go with the boot parameter. The llc ids are assigned onc=
+e,
+with the right mask, so there is nothing to reset or rebuild, no
+change to kernel/sched/, and everything stays in arch/powerpc. Since
+this is an experiment knob, needing a reboot to change it is a small
+cost, and every run starts from a clean state.
+
+Tim
+
+>   		rebuild_sched_domains();
+>   	}
+>  =20
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 7b91cae4a59c..4d7e2ee841a9 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -2505,5 +2505,5 @@ extern void migrate_enable(void);
+>   #endif /* MODULE */
+>  =20
+>   DEFINE_LOCK_GUARD_0(migrate, migrate_disable(), migrate_enable())
+> -
+> +void sched_reset_llc_id(void);
+>   #endif
+> diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
+> index dd2b1d70ec9d..63c9bca4c5eb 100644
+> --- a/kernel/sched/topology.c
+> +++ b/kernel/sched/topology.c
+> @@ -3087,6 +3087,13 @@ void sched_domains_free_llc_id(int cpu)
+>   	sched_domains_mutex_unlock();
+>   }
+>  =20
+> +void sched_reset_llc_id(void)
+> +{
+> +	int cpu;
+> +
+> +	for_each_online_cpu(cpu)
+> +		sched_domains_free_llc_id(cpu);
+> +}
+>   /*
+>    * Build sched domains for a given set of CPUs and attach the sched dom=
+ains
+>    * to the individual CPUs
 
