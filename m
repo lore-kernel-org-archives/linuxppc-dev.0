@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-29361-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29362-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9FA48CA9ED2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 11:43:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52915CC6B10
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 11:45:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3stM0dnSz3brr;
-	Tue, 13 Oct 2026 22:43:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791891835;
-	cv=none; b=WduB4cVa57LeRjywoB9I5iaB5Qf8eF/3+pjtJsZxYYTnJY5gviOc5iug+RrtQnKqsijg8fIgi9zIU/Qc82QO8cYKPGcf6HVGlocJxi2erEQ927GzDOT2CU8J3i6lwSLIWdyOFXhlOxP+5LhJMyYVZTz5ChQskzWOoCqM5ss5mwj3KeslNiD9PNFyNPuQNcZP4awN3RrC7NcPorJh7lLQhBBmUYayCtgQ1bC1qfcS1Ygac0bwDEiWVqlq5N8hHzeiv6+LWoBDxNxGc2bmnegaYI4HX18m2krKME12C2jn15ZeHqm/W6ZWPW4abxb3OGD+mLiOsdwGOWojp9dGxOCnvw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3swh4yKwz3brr;
+	Tue, 13 Oct 2026 22:45:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791891956;
+	cv=none; b=Gxcme+TvBOJQDkJrPABUjG0FbOEEskjIf1AwbGbDai3td5P03+bOXN0HqMnA6iWCNMFKr/82TgKab42zVw5/RR5/MWZXFBqM7wqDE7JmOublHySB1WRHMMor52lrU9UHSS5fqvldFNY0ZgRuuJvkVd2QmdEuihZ4ijSbnP1a5BrqGJgPhbV3i1i9GMgV3sr8Li/C2v9TKgw/GAFOman2+6B9CwL4artCn+r10gI3WC4amVn5jvtrrcOx6wL/DW7ZxbyZ/O1mcXfEnSiq62emrFeO8BRBp+H+zrKBI/2SFc+MtKf748DTpJTN9fwmTq8DiHMtM0i7UVfcwb+wB/2pQg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791891835; c=relaxed/relaxed;
-	bh=S3kwk859qFodmpxj3OxHRi9StcyZ/IRrGX/kgBYEpD4=;
+	t=1791891956; c=relaxed/relaxed;
+	bh=zuSfDICaEiGsOUsuUUs/M8PT2xH5gVwuhSNYHaltNBM=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=gMUd2QbbjLo9g1pzoOGMv4vw63VyWtL32Kolfk+CG9OiC4lgjUtRz8YikhfMe9aeTDFzdMcB6O+xg4bgFa0EX2fuIim3UNLgTstDrgYvU9Tbumag5eqAEXj9sEb6bp7aM/6kMBrDAHt8tFa3INHdCrrhoCwhNKXq8Gxd5BYcIyD1JOXdOBLyhnfgEbXoTJaAvIpTdGMAw0+lg8l7J3O0U8ZPHbAfu/dGi+bE+saRxs/KozhNrmvq9KOzyT6Gf88XeX1ujMxN8z6/Es43c+3dXB0EzCXbxc/+3ZshhnJI+Gp7L5ncdWnVMswh4nRIc8lAa6vtULXX9dlXSjQIm3dJVg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JvOEi1vy; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=UXg9BNrXM9arUIRzNEzD5KgF/NuKnDrDeHMMbCRU0OzEXi+HqgGqd50rMMbE0cpkGUpTEP9b/EO1XQp+2BoZZgtrd6FYS+B/IlfgJCE3G0isrqkRGppyYtjhtf3JemR2cPBLCUXO1yVBcfk5+qkuUF6emvy+UJEwI3yDVDdjdolpJJgHOl36XxP1nohbHR2zs9a1SuelNbmaddmsUtPUQPrj5yTkAP3hXWxbzGWztxdT6cTrZPUPPK2GTwuN+n040CIyJuwnczoX0bFTqD7TRnPACebKqKu8jZRidy0YOGzZEgEl1dFHslGLdKhXU3A0Xv3HcuPnkB+nxcIiTLrP3g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WcbsB3jt; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JvOEi1vy;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WcbsB3jt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3stK53g1z3brm
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 22:43:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3swg3xKdz3brm
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 22:45:55 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 9605E416EE;
-	Tue, 13 Oct 2026 11:43:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E2ACB1F000FF;
-	Tue, 13 Oct 2026 11:43:21 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id AF67960A59;
+	Tue, 13 Oct 2026 11:45:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A7DD31F00893;
+	Tue, 13 Oct 2026 11:45:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791891831;
-	bh=S3kwk859qFodmpxj3OxHRi9StcyZ/IRrGX/kgBYEpD4=;
+	s=k20260515; t=1791891952;
+	bh=zuSfDICaEiGsOUsuUUs/M8PT2xH5gVwuhSNYHaltNBM=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=JvOEi1vyoPSPHIK+3e1cFSGk5Nq5aIKf+aPMRBqWK+jdkr+GJ34ZVhlK6KFh95ok4
-	 LFLkrLVzES/VjnqmInEE0Ue+CxRK2fSBE6/QrhXBRNAYjd1RCgj1C7FcX3LsnkXKK/
-	 FcPKD5CYRd5utm0PX1a/JlzYfAu81YBwmUTmdu2jSQfZJQIWOLsgxo2IqY17WGdyK/
-	 VwX9jgqE+oS/qTJ+U+MBVqNS1wFKQ3L5PC8a3V+m0KpECoP3Lv5uQdi+xwTGUWhyVU
-	 JXNNX9WvbPCWhJAa1Kpla3Kp/XCy1sGiLGPzH2fxY+k3JRj8YHefM/4npCF3FyIv1o
-	 RUlJ/KsSCGPhA==
-Date: Tue, 13 Oct 2026 12:43:19 +0100
+	b=WcbsB3jt6ggnUvGzUReaKgzEI8mDtTInytfY/4L0UY2EorEe9hphgicKzItvTX39t
+	 Nkvy8qOh6DKVrPbR5TjupziSaZgBvlcvCG2RK2XVAR40JpMRWs5Fnw3WxwN8wSQcSm
+	 e4Pa/CbDfrSNggneSmDwlGAvBdaa5OpY2Eb28vX1tjG+241iKbITOTrqylwnvqPLJf
+	 v4RTtDmN5pnh9VqNzHooU8Qhyjm3hlSSYraGaunuKyYvgkLudVqglMi2nhQG7J7WTg
+	 aJaagzot2j4wk7DRAQoe19+N65hUjPHU95de4mavPa6fMUPk9Di3NymEkazMnwOysp
+	 y3A1k4Y5PuPrw==
+Date: Tue, 13 Oct 2026 12:45:19 +0100
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 To: "David Hildenbrand (Arm)" <david@kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, 
@@ -105,12 +105,12 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
 	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
 	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev, 
 	Ihor Solodrai <ihor.solodrai@linux.dev>, Bert Karwatzki <spasswolf@web.de>
-Subject: Re: [PATCH v5 33/38] mm: eliminate VMA_SPECIAL_FLAGS usage when
- hugetlb explicitly tested
-Message-ID: <as4ZGTa7tHwVwv-1@gremlin>
+Subject: Re: [PATCH v5 34/38] mm: eliminate VMA_SPECIAL_FLAGS check in
+ lru_gen_look_around()
+Message-ID: <as4ZgBbVflWECfxW@gremlin>
 References: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-0-923b70125b1e@kernel.org>
- <20261009-b4-mmap-prepare-vma-flag-sanify-v5-33-923b70125b1e@kernel.org>
- <e65264f1-52dd-4ed4-a647-87e7a1778b6b@kernel.org>
+ <20261009-b4-mmap-prepare-vma-flag-sanify-v5-34-923b70125b1e@kernel.org>
+ <22dc04ac-c046-4baa-9bdf-a5ba07c0c0ca@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -126,31 +126,30 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <e65264f1-52dd-4ed4-a647-87e7a1778b6b@kernel.org>
+In-Reply-To: <22dc04ac-c046-4baa-9bdf-a5ba07c0c0ca@kernel.org>
 
-On Mon, Oct 12, 2026 at 08:49:11PM +0200, David Hildenbrand (Arm) wrote:
+On Mon, Oct 12, 2026 at 08:50:09PM +0200, David Hildenbrand (Arm) wrote:
 > On 10/9/26 20:04, Lorenzo Stoakes (ARM) wrote:
 
-> > diff --git a/mm/ksm.c b/mm/ksm.c
-> > index 624f37975e12..ed66a90e0031 100644
-> > --- a/mm/ksm.c
-> > +++ b/mm/ksm.c
-> > @@ -747,9 +747,7 @@ static bool ksm_compatible(const struct file *file, vma_flags_t vma_flags)
-> >  	if (vma_flags_test_any(&vma_flags, VMA_SHARED_BIT, VMA_MAYSHARE_BIT,
-> >  			       VMA_HUGETLB_BIT))
-> >  		return false;
-> > -	if (vma_flags_test_single_mask(&vma_flags, VMA_DROPPABLE))
-> > -		return false;
-> > -	if (vma_flags_test_any_mask(&vma_flags, VMA_SPECIAL_FLAGS))
-> > +	if (!vma_flags_is_mm_backed(&vma_flags))
-> >  		return false;
+> > diff --git a/mm/vmscan.c b/mm/vmscan.c
+> > index 3b318efa2916..7adffe8182b3 100644
+> > --- a/mm/vmscan.c
+> > +++ b/mm/vmscan.c
+> > @@ -4418,8 +4418,8 @@ bool lru_gen_look_around(struct page_vma_mapped_walk *pvmw, unsigned int nr)
+> >  	if (spin_is_contended(pvmw->ptl))
+> >  		return true;
+> >
+> > -	/* exclude special VMAs containing anon pages from COW */
+> > -	if (vma->vm_flags & VM_SPECIAL)
+> > +	/* exclude fixed and non-mm-managed VMAs containing anon pages from COW */
+> > +	if (!vma_is_mm_managed(vma) || vma_is_fixed_mapping(vma))
+> >  		return true;
 >
-> Same here, it's hard for me to tell my brain that "permanently lazyfree pages
-> are not backed by core-mm".
+> If you keep the droppable thing out there you can just use
+>
+> vma_is_mm_backed() here I think.
 
-Yeah :) 'mm backed' is definitely too broad for this.
-
-Will reinstate the explicit droppable check in v6.
+Yeah I think you're right, will update for v6!
 
 >
 > Acked-by: David Hildenbrand (Arm) <david@kernel.org>
