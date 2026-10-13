@@ -1,73 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-29351-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29352-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 285CECC6B03
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 10:14:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0614CA9ED2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 10:57:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3qvX5kC6z3brH;
-	Tue, 13 Oct 2026 21:14:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791886488;
-	cv=none; b=WXaFIEv2JQYgr5IGpOVSoIesHx7aOLH6ZEutE32vjnxve3b5oetXsAqyLqylVuXe+t1QtZDOdOKd4m57oCDKkFEn6dfVr+tJdHMF25dPbpcooACqMQqc9r4/rjUKMW7NKyu5XE0DDNSmoEz7tUhLndhwHAUeSorwI+wflvEgUs/6ZwNwWfwSZ0vtv6eZLJtC6T8iY0U1Ch1htiVU9PRCTayx9Kz3MaLyPuL5c9CAO6xZu8/vlfbT8Viu0hJ3XHkSBxr6OuR3muujTIlTxzoWuAsH1fkC41eG4LvIqXcFuygo9Em9ffCesd+9Gxoj7g+prqnG7srumT4UV+l74WzjQQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3rsK5RVPz3brV;
+	Tue, 13 Oct 2026 21:57:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791889077;
+	cv=none; b=QpD1mZkxgjLtK0Eygd4whFcuiKQpkrMUn8PThzqKJvBcyJwsldBc9c5atjRxTqoCzPmsbMhqO7bO8kX/TjuR7Lua0wRwnNP4e6bQ5gcG9iFnc+GoVyF3sxlk315gEO4vM/0wgu6k6G2wbu/C7EEx7nVOEX50oh9XZpkengLnJc45DsHud9EwWiqOCxH0x0Rpcbqnn1N2dXtN2x1TjLYb7HnPFRasleKzbHxevmC6h0YhRIfYPEQFRfArGqafwvpnblyjOZNB6A84vG6d7qMicf/yy0rzLhQZsX8RJ8A0ZlhJnuG7dHXgM4UvSQIziehoyl3L/AMUkeruXrW7zkNevg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791886488; c=relaxed/relaxed;
-	bh=HBC19oTVnwVJK9cz9Z6gTP/0q3sl5mSYM70iPHlJcI0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=VxRp2+OIsfNKQdYTNjtjDL4gHejh2XVoWaEO+1IOwJ4LhmZ9LbsCWLFpyoJ7HtH68r5T/pV+rFWXTDvHCvYAbd6rixRTjtC3SIiH19Al271y+jtFa1VOWOo8XGVrb/HcBypZQiz19XgwhR3nBCoCFwpGKL31H2QLJAbcT5A7WUL8pDTyjk9e0VdOUxwHuEPDrt/5Wp3hk9Uu5AYu5FQsRqYEHsyfd9/33JC2I6QEuA1zvpcRHG9BoBjxJ5wyhRRitLqJdaVNvLwJ6lnFXN+uNwoMiHf+Jd3EeEALLFmUEXeqTMXVe366vgwoTUo02AjEHUCCsMii7NX8a8zDxKU0qQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=P/Lh0XMo; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=meted@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1791889077; c=relaxed/relaxed;
+	bh=oXLSiEF0IbD5c5Y/dirPwQYZ27Ijc9UIrfKVhG9lics=;
+	h=Subject:From:To:Cc:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=Ll0quXv0wXbVNI+VT1vMNNtSwh9jHHjvtAU2nlZyrNevTviayUe+11tbuuAjN+8AztpjiGMtuHBG+p9or2fcMRNCZnUTGTnHSHfj/fV+9YIWuU4HqTyKp0eMcwPR2YwzmybRivgQ2pHXtCUB7FMIU1kGR7ZIjmWmFth1r8fTsbgxZLcz/sKBhaKCQPDGoRRoNt60bw3v9/XO8ozfCqXs6iBlhqzG63yKvNimDFZ5dxil6/UZsUkzL1id3gj6ZpCdEtUqUL0+kaFZOghOhXeIsnwoZ+eI3K3ROxYxoVSHOyptNS2N/CjZlXl4gr5VzNyheCGWiBUkTvgVfI/2rmBTlA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NDM2u2u6; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=P/Lh0XMo;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NDM2u2u6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=meted@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3qvV4Xm0z3br5
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 21:14:46 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69D2F3GI1775867;
-	Tue, 13 Oct 2026 10:14:22 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=HBC19o
-	TVnwVJK9cz9Z6gTP/0q3sl5mSYM70iPHlJcI0=; b=P/Lh0XMocFsfvaeR3zXL1B
-	hNT1JM+DcsozXthMxVasX0SIJOs9HCSatjk+QFYa1x4XgP4Fr5qceIvWRkyFoZG8
-	3Tq1t1yVuXvZkxxCbICsXGnbnL6zFGVMFytC+QKsd6OQp4CKpJFfV7IM5jRBH5n2
-	WhAgOQotKlr0lIk/VrFBdeDj5o3axyrukSlaBvhvOJaaGJl9DSyh5WgXCVxmf9ey
-	x+2pMfJ1PLo4IfYG0CmU05PPNBPXQVZOkk65/X5t3H7FBLYBN+hompALMVGB5ETj
-	uQZsHWw/ib+I95WrgeptwwMQjVAa06kJ7vI/TYYGo0Os1k3ZUQOeECQcndfeQ8Xw
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7dwhw0rv-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 13 Oct 2026 10:14:21 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69D8Ug3L1440297;
-	Tue, 13 Oct 2026 10:14:20 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4h81wg118d-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 13 Oct 2026 10:14:20 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69DAEGCB41681224
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 13 Oct 2026 10:14:17 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DA5952004B;
-	Tue, 13 Oct 2026 10:14:16 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D5EB72004D;
-	Tue, 13 Oct 2026 10:14:15 +0000 (GMT)
-Received: from [9.87.128.189] (unknown [9.87.128.189])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 13 Oct 2026 10:14:15 +0000 (GMT)
-Message-ID: <4169abb8-6745-41a8-ab03-14f0ad08a118@linux.ibm.com>
-Date: Tue, 13 Oct 2026 12:14:15 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3rsJ1Mgjz2xrL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 21:57:56 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 1CD52600D1;
+	Tue, 13 Oct 2026 10:57:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E6B881F00898;
+	Tue, 13 Oct 2026 10:57:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791889072;
+	bh=oXLSiEF0IbD5c5Y/dirPwQYZ27Ijc9UIrfKVhG9lics=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=NDM2u2u68Vrs4dIlY6eEnOWD5LQ43rY0JHUxZsTwFnxNcLaYqhfFN5XHx9Ki8LxJQ
+	 kFcXgTqwrZdtv1hjYXOGJZM6XNVwIKjDnQzIDrhdJ5R/lO+kxtJCMMjDqeSxnB3Kbc
+	 DuhCSi/YbU/GQfuzuMUdHTLV+7WZ3/dSfkrNTAGp7LFOGPnWsLnYQPYoq/sotFQwe/
+	 Q8oDsf5OCnbq4a1Je9L4cfBHRGIr8VoVT8147YrN71qmVijXTXH7YZoEXJCyed8ZEN
+	 wlGwfxN6DrpXOwgEZ4D8QsZI+f9+4AQYIHQwFeQlTn5BC0kcNi+o6rZhMRE6GRDUBG
+	 JlxgxcT5enpGQ==
+Subject: Re: [PATCH v5 net-next 4/9] net: dsa: netc: tie setup resources and
+ reset to DSA setup/teardown
+From: netdev-bot+sashiko@kernel.org
+To: wei.fang@oss.nxp.com
+Cc: xiaoning.wang@nxp.com, andrew@lunn.ch, olteanv@gmail.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, horms@kernel.org,
+ richardcochran@gmail.com, linusw@kernel.org, wei.fang@nxp.com,
+ imx@lists.linux.dev, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Date: Tue, 13 Oct 2026 10:57:51 +0000
+Message-ID: <179188907149.434549.9657555602480791517@kernel.org>
+In-Reply-To: <20261012095924.1129312-5-wei.fang@oss.nxp.com>
+References: <20261012095924.1129312-5-wei.fang@oss.nxp.com>
+X-sashiko-severity: High
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,215 +74,199 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH v3 07/13] s390/topology: Initialize sbm topology
- during topology_init_early()
-To: K Prateek Nayak <kprateek.nayak@amd.com>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>,
-        Mel Gorman <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        Sven Schnelle <svens@linux.ibm.com>,
-        Peter Zijlstra <peterz@infradead.org>, Chen Yu <yu.c.chen@intel.com>,
-        Tim Chen <tim.c.chen@linux.intel.com>, Ingo Molnar <mingo@redhat.com>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
-        linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org,
-        loongarch@lists.linux.dev, driver-core@lists.linux.dev,
-        Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
-        Alexander Gordeev <agordeev@linux.ibm.com>
-References: <20261001192849.74788-1-kprateek.nayak@amd.com>
- <20261001192849.74788-8-kprateek.nayak@amd.com>
- <bd5201d9-19bb-410e-8954-6c53a5aeb753@linux.ibm.com>
- <91a1bbf9-0409-408f-bedf-a5414be4d1a2@amd.com>
-Content-Language: en-US
-From: Mete Durlu <meted@linux.ibm.com>
-In-Reply-To: <91a1bbf9-0409-408f-bedf-a5414be4d1a2@amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEzMDA0MCBTYWx0ZWRfX5CVPkR85gy/v
- f+XDycBlYjDcDnkBPagylMpeuB5l00dchHVlbYmI6sjKMYJitBON1FRUqYVGFZ/Cvvi4/NJRi7k
- dLx/lPdNrjXYd4JbKV0jz8albbxgAE6VrH6W2g/78YDt0cS7IwahLvAbW/epEccqZlvspdpObrV
- DUA7fhBIrQ61JvdI5I8vrgcL8JzOt93ndTJq0BtUnbx4g4T/RYHXCAB6ZScA9QitBQgU5B74ggW
- Lm2hp3kq7PdH0xsU4iw15nCPEt0v8n9DZmLThjE5ka+k4G1ONay3qmA+RBC1CEUDDP7A7oAPdVq
- PfP0oL7mMRGhpBXECcglexnxR0UTpY3ekbJso06xzrV6/Qo2XZA/4sISK2+sLJXCDjKRy+4MOii
- kUTWY275BiuoTjxxKcksKsh4z+Al83JP9xP70U+qwbSUVVYBAajVn4OeeMGLcM1Rk69Pi0698IB
- VTMCIX/ov18u6ryKNRg==
-X-Proofpoint-GUID: rY5TYunTuczcuj_-lSR0cag8KryRH0hD
-X-Proofpoint-ORIG-GUID: p5BFlEyDSpUpg5MlxGSsrMVUOuaVZFKu
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEzMDA0MCBTYWx0ZWRfX2W7jPYfE4QrM
- BeppqJgiXu7GMosRaD7zo0Ec6LefBxv5kEhHwX0b1INOt+lUbhJ4WwpetPyTuSeUw8CrUUK4Uqm
- 2r+WwZNh2k8DAIi8Gb9RWlrrqeHSXOU=
-X-Authority-Analysis: v=2.4 cv=btHZl0ai c=1 sm=1 tr=0 ts=6ace047e cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=ID6ng7r3AAAA:8
- a=zd2uoN0lAAAA:8 a=ap9W0rVQlQxy6KeNSgcA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=AkheI1RvQwOzcTXhi5f4:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-10-13_01,2026-10-09_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 malwarescore=0 phishscore=0 impostorscore=0 adultscore=0
- lowpriorityscore=0 priorityscore=1501 clxscore=1015 spamscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
- definitions=main-2610130040
 
-On 12/10/2026 04:20, K Prateek Nayak wrote:
-> Hello Mete,
-> 
-> On 10/7/2026 3:49 PM, Mete Durlu wrote:
->> On 01/10/2026 21:28, K Prateek Nayak wrote:
->>> When the topology mode is TOPOLOGY_MODE_HW, topology_init_early()
->>> already parses the set of socket present on the system.
->>>
->>> Use the socket_info to configure the sparsebitmask (sbm) properties for
->>> the system - namely the number of sockets and maximum threads in a
->>> socket instance.
->>>
->>> arch_sbm_cpu_instance_id() traverses all socket instances to find
->>> a matching CPU which is not optimal but instance ID is only checked
->>> when the CPU is coming online. Since this is a rare event, the
->>> inefficiency is tolerable.
->>>
->>> Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
->>> ---
->>> Build tested with LKP's s390 randconfig with QEMU cmdline:
->>>
->>>     qemu-system-s390x \
->>>     -cpu max \
->>>     -smp 2 \
->>>     -m 2048 \
->>>     -kernel ./arch/s390/boot/vmlinux  \
->>>     -append "console=ttyAMA0 earlycon ignore_loglevel log_buf_len=10M print_fatal_signals=1 LOGLEVEL=8 sched_debug" \
->>>     -nographic
->>>
->>> Note: Since ctop needs KVM acceleration to emulate TOPOLOGY_MODE_HW, the
->>> actual spasemask setting is only build tested at the moment.
->>>
->>> XXX: Any way around this using cross-compile and QEMU?
->>> ---
->>>    arch/s390/kernel/topology.c | 52 +++++++++++++++++++++++++++++++++++++
->>>    1 file changed, 52 insertions(+)
->>>
->>> diff --git a/arch/s390/kernel/topology.c b/arch/s390/kernel/topology.c
->>> index 1377c6f3f670..80dc51f5ce6f 100644
->>> --- a/arch/s390/kernel/topology.c
->>> +++ b/arch/s390/kernel/topology.c
->>> @@ -20,6 +20,7 @@
->>>    #include <linux/init.h>
->>>    #include <linux/slab.h>
->>>    #include <linux/cpu.h>
->>> +#include <linux/sbm.h>
->>>    #include <linux/smp.h>
->>>    #include <linux/mm.h>
->>>    #include <linux/nodemask.h>
->>> @@ -561,6 +562,55 @@ static int __init detect_polarization(union topology_entry *tle)
->>>        return tl_core->pp != POLARIZATION_HRZ;
->>>    }
->>
->> topology_init_early() is called once during early boot and never again.
->> Considering that s390's topology can change during runtime this
->> implementation won't work as sbm won't be able to adapt.
->> On s390 max_threads_per_instance can change during runtime.
->>
->> Like sashiko pointed out, this approach also does not consider
->> any newly added cpus.
->>
->> IMHO, there is a slight redesign required so that smb_set_topology()
->> and smb_init() can be called each time a topology rebuild is necessary.
-> 
-> So based on my limited understanding, doesn't store_topology() populate
-> the mask for the entire system on s390? Are you saying that can change
-> or that stsi() may return a partial topology for only the online CPUs?
+Thank you for your contribution! Sashiko AI review found 3 potential
+issue(s) to consider.
 
-On s390 LPAR(logical partition) cpu topology can change during runtime.
-Depending on the decisions made by the underlying hypervisor there
-can be topology adjustments to find the optimal LPAR placement within
-the physical machine.
+Critical: 0 · High: 1 · Medium: 2 · Low: 0
 
-To give a concrete example:
-On an LPAR with 7 cores spanning 2 chips with the following topology;
+If you believe none of the issues are legitimate, please reply to each
+issue of Medium severity or higher and explain why the AI is wrong.
+If any of them are legitimate and you plan to respin, please let patchwork
+know by including "pw-bot: cr" as a separate line at the end of your reply
+(one such reply per series is enough).
 
-CPU NODE DRAWER BOOK SOCKET CORE ONLINE ADDRESS
-   0    0      0    0      0    0    yes 0
-   1    0      0    0      0    0    yes 1
-   2    0      0    0      0    1    yes 2
-   3    0      0    0      0    1    yes 3
-   4    0      0    0      0    2    yes 4
-   5    0      0    0      0    2    yes 5
-   6    0      0    0      0    3    yes 6
-   7    0      0    0      0    3    yes 7
-   8    0      0    0      1    4    yes 8
-   9    0      0    0      1    4    yes 9
-  10    0      0    0      1    5    yes 10
-  11    0      0    0      1    5    yes 11
-  12    0      0    0      1    6    yes 12
-  13    0      0    0      1    6    yes 13
+- [High] netc_setup() now calls pci_reset_function(A->pdev) whenever
+  A->in_probe is false.
+- [Medium] priv->in_probe is a plain bool.
+- [Medium] Moving the initial reset from before pcim_enable_device() into
+  netc_setup() means pci_set_master() (netc_switch_pci_init(), line…
 
-Initially max_threads_per_instance would be 8, right?
-After a topology update from the hypervisor we can end up with
-all cores placed in the same chip.
+--
 
-CPU NODE DRAWER BOOK SOCKET CORE ONLINE ADDRESS
-   0    0      0    0      0    0    yes 0
-   1    0      0    0      0    0    yes 1
-   2    0      0    0      0    1    yes 2
-   3    0      0    0      0    1    yes 3
-   4    0      0    0      0    2    yes 4
-   5    0      0    0      0    2    yes 5
-   6    0      0    0      0    3    yes 6
-   7    0      0    0      0    3    yes 7
-   8    0      0    0      0    4    yes 8
-   9    0      0    0      0    4    yes 9
-  10    0      0    0      0    5    yes 10
-  11    0      0    0      0    5    yes 11
-  12    0      0    0      0    6    yes 12
-  13    0      0    0      0    6    yes 13
+net: dsa: netc: tie setup resources and reset to DSA setup/teardown
 
-According to the new topology max_threads_per_instance now
-should be 14.
+This patch replaces the one-time pcie_flr() in probe with a
+netc_switch_reset() call at the start of netc_setup(). The reset uses
+pci_reset_function_locked() during probe and pci_reset_function()
+otherwise. It also converts the devm_ allocations on the setup path to
+explicit alloc/free, so their lifetime matches DSA setup and teardown.
 
-On top of that we support hotplugging in new CPUs which
-means we can then get a new topology after adding a
-completely new core. (QEMU supports feature [1])
+> diff --git a/drivers/net/dsa/netc/netc_main.c b/drivers/net/dsa/netc/netc_main.c
+> index 77077352c1a57..c639ae67c9b71 100644
+> --- a/drivers/net/dsa/netc/netc_main.c
+> +++ b/drivers/net/dsa/netc/netc_main.c
 
-CPU NODE DRAWER BOOK SOCKET CORE ONLINE ADDRESS
-   0    0      0    0      0    0    yes 0
-   1    0      0    0      0    0    yes 1
-   2    0      0    0      0    1    yes 2
-   3    0      0    0      0    1    yes 3
-   4    0      0    0      0    2    yes 4
-   5    0      0    0      0    2    yes 5
-   6    0      0    0      0    3    yes 6
-   7    0      0    0      0    3    yes 7
-   8    0      0    0      0    4    yes 8
-   9    0      0    0      0    4    yes 9
-  10    0      0    0      0    5    yes 10
-  11    0      0    0      0    5    yes 11
-  12    0      0    0      0    6    yes 12
-  13    0      0    0      0    6    yes 13
-  14    0      0    0      0    7    yes 14
-  15    0      0    0      0    7    yes 15
+[ ... ]
 
-max_threads_per_instance should now be 16.
+> +static int netc_switch_reset(struct netc_switch *priv)
+> +{
+> +	if (priv->in_probe)
+> +		return pci_reset_function_locked(priv->pdev);
+> +
+> +	return pci_reset_function(priv->pdev);
+>  }
 
-Considering these cases I asked for a redesign that
-allows smb_set_topology() and smb_init() to be called
-during topology_rebuild() operations.
+[Severity: High]
+Can the pci_reset_function() branch deadlock against unbind in the
+multi-switch case this patch is preparing for?
 
-Please correct me if I misunderstood a something
-from your proposal.
+In a multi-switch tree, ds->ops->setup() runs under dsa2_mutex for every
+switch in the tree, including switches that are already bound:
 
-[1] https://www.qemu.org/docs/master/system/s390x/cpu-topology.html
+dsa_register_switch(B)
+  mutex_lock(&dsa2_mutex)
+  dsa_switch_probe()
+    dsa_tree_setup()
+      ...
+        netc_setup(A)
+          netc_switch_reset(A)
+            pci_reset_function(A->pdev)
+              pci_dev_lock(A->pdev)    /* device_lock(A) */
 
-Thanks,
--Mete
+The remove path takes the same two locks in the opposite order, because
+the driver core already holds device_lock(A) when it calls the driver:
+
+device_release_driver(A)           /* holds device_lock(A) */
+  netc_switch_remove()
+    dsa_unregister_switch()
+      mutex_lock(&dsa2_mutex)
+
+Shutdown has the same ordering through
+netc_switch_shutdown()->dsa_switch_shutdown().
+
+If CPU0 is probing switch B while CPU1 is unbinding switch A, would both
+threads hang forever? Re-probing A while B is being unbound looks like
+the same inversion with the roles swapped.
+
+device->mutex uses lockdep_set_novalidate_class(), so lockdep would not
+report this.
+
+This code is still the same at the end of the series. Should this
+branch use a different approach, rather than resetting another switch
+under its device lock from inside .setup while dsa2_mutex is held?
+
+>  static int netc_setup(struct dsa_switch *ds)
+> @@ -875,6 +957,10 @@ static int netc_setup(struct dsa_switch *ds)
+>  	struct dsa_port *dp;
+>  	int err;
+>  
+> +	err = netc_switch_reset(priv);
+> +	if (err)
+> +		return err;
+> +
+>  	err = netc_init_switch_id(priv);
+>  	if (err)
+>  		return err;
+
+[ ... ]
+
+> @@ -1045,7 +1136,6 @@ static int netc_switch_pci_init(struct pci_dev *pdev)
+>  	void __iomem *base;
+>  	int err;
+>  
+> -	pcie_flr(pdev);
+>  	err = pcim_enable_device(pdev);
+>  	if (err)
+>  		return dev_err_probe(dev, err, "Failed to enable device\n");
+
+[Severity: Medium]
+Now that pcie_flr() is gone from here, netc_switch_pci_init() calls
+pci_set_master() before the switch has been reset. The first reset now
+comes much later. It happens after netc_switch_get_ip_revision() and
+netc_switch_platform_probe(), once dsa_register_switch() reaches
+netc_setup().
+
+Is that ordering safe after a kexec? pci_device_shutdown() only clears
+bus mastering:
+
+	if (kexec_in_progress && (pci_dev->current_state <= PCI_D3hot))
+		pci_clear_master(pci_dev);
+
+netc_switch_shutdown()->dsa_switch_shutdown() does not call
+netc_teardown() or ntmp_free_cbdr(). Also, netc_xmit_ntmp_cmd() can
+return on a read_poll_timeout() expiry after it has already advanced the
+producer index.
+
+The switch could then keep enabled command BD rings with a pending
+command that points at the previous kernel's DMA addresses. If the
+hardware resumes fetching as soon as bus mastering is set again, could
+it access memory the new kernel has reused? With an IOMMU, would it
+cause faults instead?
+
+Also, if probe fails between pci_set_master() and netc_setup(), for
+example in netc_switch_platform_probe() or dsa_register_switch(), the
+device is never reset before devres disables it.
+
+Would it work to keep a probe-time reset in netc_switch_pci_init()
+before pci_set_master()?
+
+[ ... ]
+
+> @@ -2475,12 +2565,15 @@ static int netc_switch_probe(struct pci_dev *pdev,
+>  	ds->ageing_time_max = U32_MAX;
+>  	ds->priv = priv;
+>  	priv->ds = ds;
+> +	priv->in_probe = true;
+>  
+>  	err = dsa_register_switch(ds);
+>  	if (err)
+>  		return dev_err_probe(dev, err,
+>  				     "Failed to register DSA switch\n");
+>  
+> +	priv->in_probe = false;
+> +
+>  	return 0;
+>  }
+
+[Severity: Medium]
+netc_switch_reset() reads priv->in_probe to decide whether the current
+thread holds A's device lock. The flag only records that A's probe is in
+progress somewhere, not that the current thread owns the lock.
+
+dsa_register_switch() drops dsa2_mutex before it returns, and it returns
+0 when the tree is still incomplete. Consider this sequence:
+
+CPU0 (probe of A)
+  priv->in_probe = true;
+  dsa_register_switch(A)
+    mutex_unlock(&dsa2_mutex);
+  <window>
+  priv->in_probe = false;
+
+CPU1 (probe of B, async probe or deferred probe)
+  dsa_register_switch(B)
+    dsa_tree_setup()
+      netc_setup(A)
+        netc_switch_reset(A)    /* sees in_probe == true */
+          pci_reset_function_locked(A->pdev)
+
+In this case pci_reset_function_locked() runs on B's thread, which does
+not hold A's device lock. Wouldn't device_lock_assert() fire under
+lockdep?
+
+The FLR includes msleep(100) and a readiness poll. Could it still be
+running after A's probe returns and the driver core releases
+device_lock(A)? If so, it would not be serialized against other
+device-locked operations such as a sysfs reset.
+
+The cross-CPU write and read of in_probe is also unsynchronized.
+
+This code is still the same at the end of the series. Could the caller
+context decide whether the lock is held, for example through a parameter
+or by doing the probe-time reset directly in probe, instead of a shared
+per-device flag?
+
+-- 
+Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20261012095924.1129312-1-wei.fang%40oss.nxp.com
 
