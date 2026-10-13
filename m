@@ -1,69 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-29439-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29440-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1447CC6B1D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 22:40:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D8D0CC6B15
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 22:40:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j48Rn5v2Vz3brM;
-	Wed, 14 Oct 2026 09:40:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1346"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791931221;
-	cv=none; b=GFt971W08IwMMJV49GYcgcP/fcsWG8UehrOe8qCSHZHhmtETF1YGQZmr3E50d0q0h2w1zqjvHzZrG+j/GmFVlzpIkulrHk2OACPo4FW4dleEhQD0j/63FvDVWRsi+L9+sAn/tLuw1Sg3EN7aMjZB8nauoz7jagM7kEq2Tv19j5OkBx8Rx7HS2IgwiOCmAY5nZDIHw6FXlukfVJ03nNBk8KQCbiOdFa5djbjtq4ADnCiunL6RrClmDrqDqO6Q8uTG9e3Q0nRAV4keC60gT0x0zmvmAWjhIVeY5SkQEU1ucAKy57TLVPmEcASzznLVwcjfcmxO1mWy44eBTsgOaVWwwA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j48Rq0Qs6z3bx1;
+	Wed, 14 Oct 2026 09:40:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1345"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791931222;
+	cv=none; b=FDA+MFsXOnFs3URXJ1zqIwhRpugrGP6t4/NW7ezqC+w/DlfIeKpu/RClXq4o9rCAAONr4xEzysM1Qhu5sE9wllxFpvgZ5fipVwg6qIk+0WHd74y8UrEGlvGckMnKp+mVw6Ah+J7tQarPqzPVIEdNUTyCJu49WFVvo7K2k7tKzcffxliJJimFew6W8dzLmQaGra3VYGUbBItDqZQ9Q04Jy0dmNw/Ek1QFlB8DBBDiv2d7pw1FS49Qt0wuSKi3+uSGUTGLwyLfB/MoZJg5YJ374sbgpqo0xIoI6/iaXWNv8UGAxopxL2k/hl3dd2lIPH+SlfheSt4IAARvTAqVnInfbA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791931221; c=relaxed/relaxed;
-	bh=qdtOvNbLAOJ9idJnmqNXkxs2lXj3bNW1pL8KRmE6mUU=;
+	t=1791931222; c=relaxed/relaxed;
+	bh=4r3hXDLd6Bqk9XmcFR/JS5uHIdkPs2TN+2FSnsngXIE=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=K12F3B3XNfcr4zzfmirfBzUZ7OVOJgO+eLmCidnuWCnD5pwV0pwrMalP6nw6hpkLEQJhwmZ6+70+n6GwQp3Q/f6CXw27/L8w4k3WCyTAQht+s07h01kcVk+aU6B5O2cv960F6dV+XIhGrHfA8yYLmjqd+iNnTEDJTrAI2+XEXhSrvz6rLd+dBx2MRPsN4FczJtxzhpKZoYmCdQl/UHdfADAZOSJRiQjWz07EIH2M+LGq57+Te5AsKBTY/qWm0IRSZyWBPGeXuPHRqG1DV3YwXD//ohstlVnLWV4xLJeDOpOGR8hmWE6gPvgKilHP8fWjnhrFtRKN3GDxkIbW+sdU1g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=LkbTUbHV; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1346; helo=mail-dy1-x1346.google.com; envelope-from=3ulpoagckde8z85xv89x55x2v.t532z4be66t-uvc2z9a9.5g2rs9.58x@flex--irogers.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--irogers.bounces.google.com
+	 To:Cc:Content-Type; b=H34+2sS8kmzzAxGLEsqTM8OJnNYXq/ZBiWwFygkfPlKKBeckDbIl3QIPtI4+2Ihqoi2KNtBO/TfEkMk3dZp/WTyE0zfaBBpVr8U94rIcUUyh8TllXibXcEw3vsBic68dXj+yTTKsd41nYwbF82gkzRIafCWJhxV4Dg3l2ETfxGcdU8Upi+wd9wDonPP3Os9uS1FvueY7yPHCGgRezSK83Yd4kobtdAWbK4Yu8KdaVaQpNKVFPtXyCSALyL/q1eaJtSlVMVHp+tpwFe63UPRz0sZy5Akh0VT2DtZsoLCsMWd6vTHWYsFY1fyQpxBTgjMmaPQztD/bXUEMYcNPrvNbLw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=FCCaZU9a; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1345; helo=mail-dy1-x1345.google.com; envelope-from=3u7poagckdfi2b80ybc08805y.w86527eh99w-xyf52cdc.8j5uvc.8b0@flex--irogers.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--irogers.bounces.google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=LkbTUbHV;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=FCCaZU9a;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--irogers.bounces.google.com (client-ip=2607:f8b0:4864:20::1346; helo=mail-dy1-x1346.google.com; envelope-from=3ulpoagckde8z85xv89x55x2v.t532z4be66t-uvc2z9a9.5g2rs9.58x@flex--irogers.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x1346.google.com (mail-dy1-x1346.google.com [IPv6:2607:f8b0:4864:20::1346])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--irogers.bounces.google.com (client-ip=2607:f8b0:4864:20::1345; helo=mail-dy1-x1345.google.com; envelope-from=3u7poagckdfi2b80ybc08805y.w86527eh99w-xyf52cdc.8j5uvc.8b0@flex--irogers.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x1345.google.com (mail-dy1-x1345.google.com [IPv6:2607:f8b0:4864:20::1345])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j48Rl4XQMz30St
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 09:40:19 +1100 (AEDT)
-Received: by mail-dy1-x1346.google.com with SMTP id 5a478bee46e88-351788121cfso4936549eec.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 15:40:19 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j48Rp1skBz3bsm
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 09:40:21 +1100 (AEDT)
+Received: by mail-dy1-x1345.google.com with SMTP id 5a478bee46e88-35c5aef2a74so1454366eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 15:40:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1791931217; x=1792536017; darn=lists.ozlabs.org;
+        d=google.com; s=20251104; t=1791931220; x=1792536020; darn=lists.ozlabs.org;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=qdtOvNbLAOJ9idJnmqNXkxs2lXj3bNW1pL8KRmE6mUU=;
-        b=LkbTUbHVUH2BKFswfizACECvspUMkD9tJFIbbHQbNboij6Y26G8mMPc5YyEXiSpauL
-         6XBPzlSQVoHmJt8LJD1JKlQO3ARU9UB1IKvRaKOKWuZAQ7ucNeRXOtaKadgn62eIT6eZ
-         PDazRjWcxRsfcgDv0hXrdOTXLYUI/IzfEQb2FMrAJuALwzCDIocdAzUybjxer5xn75rv
-         MTKllXz+Jga54e5kcPSTJW3GDDTeVDkq53AcDA5NPXo0uyCgnzGMZfvF1j5egJ7ekgbL
-         vA+x+mK8K4o7DAVD0oPGhnueExZOjZCg5MGLnCbYbMLjB/3mpBgf1rwB3h/ZgLXMoUb6
-         8xZw==
+        bh=4r3hXDLd6Bqk9XmcFR/JS5uHIdkPs2TN+2FSnsngXIE=;
+        b=FCCaZU9ac9DzGBs7qxFpxE/TooslFuSocyMOxIL/qTN0u8j/bHL6Ys58a2kX1r7dRn
+         WcxrwsuRoJdc2pyeZHmpvFyE9iR4iZCanCSGLdkFFtw/Ob3mObBQr5MCXXglkxdCWuqE
+         sAVRy8fW9kjEyze/kpHUclDIsVdjEL0UnyExDSsE/t6ifl0DenylN3Yw0wbhqAroWnar
+         XbuctMuoprYo9oXVXqAgO8Luj2l20xK8FouwX0s1mNeVgOcKP7TeVbkUU0oIqkT/Y5fC
+         8zdXXtKTGMDee7Q56YDk3TZfvn4Nx7TE1nrnYr7oCNTOI3cptXGq4q+hFdjHZHPtYf0t
+         Mhmw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791931217; x=1792536017;
+        d=1e100.net; s=20260707; t=1791931220; x=1792536020;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=qdtOvNbLAOJ9idJnmqNXkxs2lXj3bNW1pL8KRmE6mUU=;
-        b=t2UBonz5YpGdRI7VtUh+YjXP1k75VLYtnSMtEFrPG5mSlqJqpNjDgCIanhRY8jk5DH
-         gLIcZatNOSo2daBZfjDgOG60qwN/5o1/cK/sQeSJD3uXAvtssefDqrqQ9JRX13SqNH2Z
-         tlSTdwQB+YoAk1i8i4nqv4amwi2pRv46FNkYxfQdTqVweQC45fQW/VKLsiZdXmGHcPmt
-         3B0FUu8HsEoBJmC9DQlyGPib1shS1V6PIJQBax4yBP2A0yavhmunGHuxUkaDDYf6+S7O
-         ONwAgxitFkdxKBUSVCNYTHfJ+niAu+zlF87IU02qzyIRIz82Uucy0gktIyAGv7E95GwW
-         tmLA==
-X-Forwarded-Encrypted: i=1; AKwUvBwAkMchrE9MBvQnMHap3kmDyrEnk4ZbVbQa28/6/nFJN2DheZRFwVZRddW3L661QOg4Eko5QefpTx82pbQ=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYLSN45uiTmy8NcOi76akYC7BDIpDlto90e4yfLAI3SFQ32fXMYU
-	fJyG/o7v6NGgcNXx7Y6WnlGQJLRbzM8UD/hjMhv17M711+9bf/YaSf02P1C7l2PExyRGz2VjxLv
-	+CISi5vslPA==
-X-Received: from dycrm16.prod.google.com ([2002:a05:693c:2a10:b0:358:f250:485f])
- (user=irogers job=prod-delivery.src-stubby-dispatcher) by 2002:a05:693c:4141:20b0:35c:8d1f:5634
- with SMTP id 5a478bee46e88-35c8d1f58e8mr4713972eec.12.1791931216820; Tue, 13
- Oct 2026 15:40:16 -0700 (PDT)
-Date: Tue, 13 Oct 2026 15:39:37 -0700
+        bh=4r3hXDLd6Bqk9XmcFR/JS5uHIdkPs2TN+2FSnsngXIE=;
+        b=LhSEVhILbHdfW+80Sm82SBHcGFBJMInePtr5yM+48WJo3Sw2UELHEsjxHMufSUt5CN
+         mYjUGxSWwzbF3PHt20BfZFNZiYQZeHgwGy8rlgqihuB/J5akqZ8hPjqAwcwu7nQPjvRd
+         puEQg8uF9r7u2Ex8wVLgKQW0C2UQk62tu2m87/guyZUCtpNCOCpzvX2Z3zR57xHMxcJI
+         uuCPGlSZ090FZS1o64a4M2vPZUqhoKTGSCTalU7HfEm5N78q6REGoxL+CiGfQajv0xKt
+         YeppFBZW9WdD7v89v7yofzuZhh12QSk4zwCT4hGEMRC/BPZjqNtdYl7chcw0yqXRX8Bt
+         yemQ==
+X-Forwarded-Encrypted: i=1; AKwUvBzouhXqfDRIWxti96PX63yDMApi5cJt91mPhWWjaNi/uF2S+aXQdfjA9SsDnAssVhlGSvknJ1LJ7qmmJAE=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYIpM50hbFAtnsi3paCT8khVx3JS2CvDuKiJp6+/48Ovot+wDQBV
+	+Vk50pzOXVwI7tfXgTEIGmL+RC5ZGjmEJiSp1jta2nMYpfCsh3WGO5rEsdMftGxdaJUOFTj0am5
+	Jqa0QDwc7gA==
+X-Received: from dyu6.prod.google.com ([2002:a05:693c:8106:b0:352:94e:a8c9])
+ (user=irogers job=prod-delivery.src-stubby-dispatcher) by 2002:a05:7301:71a8:b0:358:f717:ff61
+ with SMTP id 5a478bee46e88-358f717ff90mr13337962eec.6.1791931219210; Tue, 13
+ Oct 2026 15:40:19 -0700 (PDT)
+Date: Tue, 13 Oct 2026 15:39:38 -0700
 In-Reply-To: <20261013223946.1836757-1-irogers@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -80,8 +80,8 @@ Precedence: list
 Mime-Version: 1.0
 References: <20261013223946.1836757-1-irogers@google.com>
 X-Mailer: git-send-email 2.56.0.385.gd3acb90ef8-goog
-Message-ID: <20261013223946.1836757-3-irogers@google.com>
-Subject: [PATCH 02/11] powerpc/secvar: Add missing kobject release callback to secvar_ktype
+Message-ID: <20261013223946.1836757-4-irogers@google.com>
+Subject: [PATCH 03/11] sh: sq: Add missing kobject release callback to ktype_percpu_entry
 From: Ian Rogers <irogers@google.com>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J . Wysocki" <rafael@kernel.org>, 
 	Danilo Krummrich <dakr@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, Kees Cook <kees@kernel.org>, 
@@ -110,39 +110,37 @@ Cc: Nick Desaulniers <ndesaulniers@google.com>, Bill Wendling <morbo@google.com>
 	Ian Rogers <irogers@google.com>
 Content-Type: text/plain; charset="UTF-8"
 
-In add_var(), a struct kobject is dynamically allocated with
-kzalloc_obj() and initialized with secvar_ktype. If kobject_add() or
-sysfs_create_file() fails, kobject_put(kobj) is called to clean up.
-However, secvar_ktype does not define a .release callback, which results
-in a memory leak of kobj (and a pr_debug warning in kobject_cleanup()
-when CONFIG_DEBUG_KOBJECT_RELEASE is enabled).
+In sq_dev_add(), sq_kobject[cpu] is dynamically allocated with
+kzalloc_obj() and initialized with ktype_percpu_entry. When
+sq_dev_remove() calls kobject_put(kobj), the kobject is never freed
+because ktype_percpu_entry lacks a .release callback.
 
-Provide a secvar_release() callback that calls kfree(kobj).
+Provide a sq_kobj_release() callback that calls kfree(kobj).
 
-Fixes: bd5d9c743d38 ("powerpc: expose secure variables to userspace via sysfs")
+Fixes: d7c30c682a27 ("sh: Store Queue API rework.")
 Assisted-by: Antigravity:gemini-3.1-pro
 Signed-off-by: Ian Rogers <irogers@google.com>
 ---
- arch/powerpc/kernel/secvar-sysfs.c | 6 ++++++
+ arch/sh/kernel/cpu/sh4/sq.c | 6 ++++++
  1 file changed, 6 insertions(+)
 
-diff --git a/arch/powerpc/kernel/secvar-sysfs.c b/arch/powerpc/kernel/secvar-sysfs.c
-index 395399bbab2c..f3f6ac25ea78 100644
---- a/arch/powerpc/kernel/secvar-sysfs.c
-+++ b/arch/powerpc/kernel/secvar-sysfs.c
-@@ -126,7 +126,13 @@ static const struct attribute_group secvar_attr_group = {
+diff --git a/arch/sh/kernel/cpu/sh4/sq.c b/arch/sh/kernel/cpu/sh4/sq.c
+index 908a8e09113b..f33864958487 100644
+--- a/arch/sh/kernel/cpu/sh4/sq.c
++++ b/arch/sh/kernel/cpu/sh4/sq.c
+@@ -331,7 +331,13 @@ static const struct sysfs_ops sq_sysfs_ops = {
+ 	.store	= sq_sysfs_store,
  };
- __ATTRIBUTE_GROUPS(secvar_attr);
  
-+static void secvar_release(struct kobject *kobj)
++static void sq_kobj_release(struct kobject *kobj)
 +{
 +	kfree(kobj);
 +}
 +
- static const struct kobj_type secvar_ktype = {
-+	.release	= secvar_release,
- 	.sysfs_ops	= &kobj_sysfs_ops,
- 	.default_groups = secvar_attr_groups,
+ static struct kobj_type ktype_percpu_entry = {
++	.release	= sq_kobj_release,
+ 	.sysfs_ops	= &sq_sysfs_ops,
+ 	.default_groups	= sq_sysfs_groups,
  };
 -- 
 2.56.0.385.gd3acb90ef8-goog
