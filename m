@@ -1,92 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-29369-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29370-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80CF6CA9ED2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 13:16:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E31F4CC6B0F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 13:52:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3vx46Pzpz3brM;
-	Wed, 14 Oct 2026 00:16:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b136"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791897384;
-	cv=none; b=Ufp8d+uOwnUO0fbTiJegdvh0FD6lg/V9jmKVCJzruEgGtC3M2MQDS6suOB76yMOcjkTr2VedJCMr+qil1XVt68vzp4iN5zLyYr4hAPi4bA6KN2xlSRNbyg6GHwY0ZO1BCUqdeKlXWV6tWZZN57DfVrZf6SqzVudLYmRA2qcxS7CI7roe7Oc3VPYRNPwNb4V203AHNOEcs/4MX+QXQk3ayTNKjqpSdiYJTSLjGAoJ0m2KvCpAQmIEVzWtkz18xeNPWQ92mPza32W+npoG0ensASBPjDtrHru8npSf37SV4EJy+N3QzGDIA9RDBTV+4bL40MpUwtwXoQl5z7RirsmUrQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3wk72vpBz3brM;
+	Wed, 14 Oct 2026 00:51:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791899519;
+	cv=none; b=cY4BzTCjYRH0O+v+k90NY85WDuEhRwuQ2ZgsnkAqXZbIz6Gc3lx0zWthqZjcIEHqmsj9Gx3fRABwDRcFu8ZwI8vs9Qn1LN1uPQCRK46FcFcxj/oqjCPcnZeeTO+V9Fov6utgv1gmK4vQHYV3UCIHJG5GZw4h59KizOrEuxWLaZ2R3oaYzApl8GhgXomONxSmYIw7Z5WPkeYf9cNl/L9PnOcZ9zO2Xgqzu60iEm6vV4s1vuGK2uK+OVSbNazKA+v87zpZdZkcZl6AWuDBdBs1Gbhz77ssAmdIitlBYXxdiaKa7MyFb67AUU0aES+P+ccFueESg2ha13PGuo9ktwFKtA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791897384; c=relaxed/relaxed;
-	bh=/Q6uCkX+rlTkR+bq8MdQcJ9FUDBjBYXnucYbcKrw8i0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dGK3tnvZEmFhoaVDYNYx4+2/Xt9Nz8zD2KdbD17DaerTBK9hMHymci+o22BX121WS0UwKlTkggs8bZLtCXlunq9FT1HH90lWTATtweOtN2vryMDhUohkko4kxdgdTUHf8TFrFma8SMzpvL3H46d1orE+s0k6anhzpHrk/9tVrYcfbdjjHqx5PL37XNJdYmiQ6UXylTxta7qIieG5Zql1p03qBLsjWbf8FOG7HDTNuMLvjeaCqQ+1EvPudQTxCkC6o/AidBF2bolb1mDWUukgv659bjVVcoIAj+VXPaiZuiqVLk1JHqLaelcAmRApcyLsjudi+VeHuOfK7SVO431zrw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=lvSZOhA3; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b136; helo=mail-yx1-xb136.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1791899519; c=relaxed/relaxed;
+	bh=U5xnG/NtUMReCXQao0FA4/KlTc/AyPWVukE5Q54M1JI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=SlJsWImbi2zO0Y2pbUYbD8GMatdX3Pvb4bo5X10UXHB81BVBkLvAzihszALcuP3XGAdRAzuAWfYG6Fw7u00Te5BEwBO2KDfBTDlNNbR6OiBCU82ymi6RMBKTYfA22SR/LQ5yUhxz/XHf88MOOpwYxQWVZ8FlJQapgyw4+EoKebFGQOvXNHI5RsoEUZKU8DNmJN50ldl+wn6jaUv/J5KbECIH5btS0R+g7HG0BMqjAefkaWmX9C3VhojOtCx9wvYPCVf8Dcs8Z7TB3pshezqbhtz6gI0kpUegpoHDmM+BX1KHRUSLPZ9E0QSmJUFTVogpFNR68U9UzJcmCtHir0JaTg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=T/FnqOjv; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=lvSZOhA3;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=T/FnqOjv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b136; helo=mail-yx1-xb136.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yx1-xb136.google.com (mail-yx1-xb136.google.com [IPv6:2607:f8b0:4864:20::b136])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3vx40fz0z30VV
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 00:16:23 +1100 (AEDT)
-Received: by mail-yx1-xb136.google.com with SMTP id 956f58d0204a3-677cc343120so2863639d50.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 06:16:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791897381; x=1792502181; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=/Q6uCkX+rlTkR+bq8MdQcJ9FUDBjBYXnucYbcKrw8i0=;
-        b=lvSZOhA3IUK1Dszt8qb4EqYsBvZnhEKV3+/kzDTmpYJWr3en56P4bqTo9Nt9WnVuHt
-         hjeIkyadNJSlkb0AOfZNZN/bC8lS84n8DLUENs5SaXh8bXZ0haePLZNJ6kfQqfapVPXp
-         /X4XkIZYxY/DFqZICSxf7yxCayDGDgSNIUiuTJyhvoql1sFbv4p7385JkmNDwBwLuOjT
-         Rnw5UPuR/yyWnMcCQVjR4ROXJl2/DteS4QXUPIBegF8voa2ddquXpcQ5QONQTu1r0Kae
-         +BviA/zLwiJAkM1pL+KPL6Iikt7aMsnTew3nkO45ZiiTVKH++W5CQClarORz1H1I0BUV
-         1vUg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791897381; x=1792502181;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=/Q6uCkX+rlTkR+bq8MdQcJ9FUDBjBYXnucYbcKrw8i0=;
-        b=MVaPus7YqUvHLqPXQEuWoZi0zbAS1K/45pA5SsZquDYoMgUocq+ZqHtH40Jmbq6Z9k
-         DQu1V/3KNAsAcTxOxb/iT9HVron4P6JGQo/H1RHUsGyWuEYFHE25dtoLJkwuWABTHQim
-         TVVrCtYYs1sbr4D0HdN5J885MUqTVoA9RkwFNKfg9YtwgUrqMjP9R0kn9T9YtNgrzg7q
-         fbViaeP0wblgBTOUP/d2qUGZlaRYQM1cSs0V9uiuj1Snyn/qJle2FaO9lImRzdULMz6C
-         rL8MbHvbY2J21grb8j+pZ1U1T4zVNqhYAuuLw3Fzo46yM9UkQdodAuwQpR0Dlfmbuny7
-         xa5Q==
-X-Gm-Message-State: AFq9FYIRHaXducUIpjsXc4kOpNk/ssqbUvXjwLD9A9tG/lsVQL8oS7bS
-	JcIyySZDgwWGHZpx4AnyYKi24buaCNfxuO8dkKEi85T6JPgdOFsx5Lqy
-X-Gm-Gg: AYBFou0ikQGX92BM2Zz4lT3o4ZuFloCVyDxihiMDRY/y0+yxO1+BzLpyYoa5fbMv4CH
-	8iJMCA9CMHtBv14kmOsWXI6NvUVXtUrsAAILxvZTH+NLHE3Wrm8SgumCrJ3khepepF7fUuUYliu
-	veSNWFZLnfF4El81NOqdH24yS4zHGCPyV3uwhlQ2xYoJYpxcci6jzJ1UrCy+WTJV0AqQSUXPy0o
-	mxf6+xJ+IlXoM86JLRrgU4aaDTbRIxw64s+cY7Tj5MVjuH+AbTWBX+tWZRdndfk1GJZVU8UYs6x
-	cEiYYsDwzWVChdcI2X+YPS+zon0NTF4al7PRYnbmabAKv9LUeePRFl7XuXsDy8I0xm8GtOjTHfK
-	b0HCwQzOfkjCnRgQUYYrzt4EQlHbEz3CWlC0LPLppw3Nj3R0ZPAgzs5fGoTzpk5BiU7FCQsCkmB
-	GVflJzvCycuu4UdC4uwfQXomMX+OUS9o/NEJ+PDm2MsevN0y4cWFLB37bhC6hbD1d1swC2jsec9
-	I7OXhhRRh3LQ1gQPT8NzziEGWbwChFheICpuTRDeYLN
-X-Received: by 2002:a05:690e:118e:b0:677:d21f:b632 with SMTP id 956f58d0204a3-67935f1c7b5mr5301132d50.2.1791897381320;
-        Tue, 13 Oct 2026 06:16:21 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.165.23])
-        by smtp.gmail.com with ESMTPSA id 956f58d0204a3-6793570cfe3sm4726812d50.25.2026.10.13.06.16.15
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 13 Oct 2026 06:16:20 -0700 (PDT)
-Date: Tue, 13 Oct 2026 18:46:12 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Michal Suchanek <msuchanek@suse.de>
-Cc: linuxppc-dev@lists.ozlabs.org, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
-	Kees Cook <kees@kernel.org>, Andy Lutomirski <luto@amacapital.net>, 
-	Will Drewry <wad@chromium.org>, Kevin Brodsky <kevin.brodsky@arm.com>, 
-	Alexander Gordeev <agordeev@linux.ibm.com>, Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>, 
-	"Bernhard M. Wiedemann" <bwiedemann@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] powerpc: Remove unused thread info flags
-Message-ID: <as4vCZiuc8h4zjQ7@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <4c1da7f31a6603455ec452960af529e4d77f5334.1791826411.git.msuchanek@suse.de>
- <dcbd135c06fcf013b8aa902fbea8f6b1827d06c2.1791826411.git.msuchanek@suse.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3wk610dnz3br2
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 00:51:57 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69DDPQxp726064;
+	Tue, 13 Oct 2026 13:51:43 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=U5xnG/
+	NtUMReCXQao0FA4/KlTc/AyPWVukE5Q54M1JI=; b=T/FnqOjvF2uAVYBdaxooLh
+	4R5TqNLjkVX3lLquQ8cl00tPJ3/w+KJYmde4xz5pXKS40jkxJXC2fDFcxanTSCl1
+	7YUrQl4nQI0ptlKN0Ff2jdXRfssA5ETAAKXWK7kfI0XxZb5yON/CHEuvdX6BPa/l
+	cGo1FtQRvSeGgx8zeT8nG/vsa0w+Xu44o+64ehPXOSDCNRy7wRh7vxAeeITWf1kE
+	nLXL1mENB80vch1n27Hkz+u5mXeBBGj+BwIF3fvw+v1Lj9ltkyk4u++F5/w6mH7N
+	MQxLrc0qiQ6AraMkrjdCRsrIFQZymmaJ3d9MymTG5XLpXPsASRnJUIuU2Qbv257Q
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7dv0e1vs-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Tue, 13 Oct 2026 13:51:42 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69DCUBcL1440163;
+	Tue, 13 Oct 2026 13:51:42 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4h81wg1xq2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 13 Oct 2026 13:51:42 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69DDpcoI56230270
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 13 Oct 2026 13:51:38 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E1D5C2005A;
+	Tue, 13 Oct 2026 13:51:37 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 44F1820040;
+	Tue, 13 Oct 2026 13:51:33 +0000 (GMT)
+Received: from [9.39.27.235] (unknown [9.39.27.235])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 13 Oct 2026 13:51:33 +0000 (GMT)
+Message-ID: <33d572db-8e3b-4f2c-aee6-380c6c935bdb@linux.ibm.com>
+Date: Tue, 13 Oct 2026 19:21:32 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,75 +81,271 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <dcbd135c06fcf013b8aa902fbea8f6b1827d06c2.1791826411.git.msuchanek@suse.de>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/2] powerpc: Restore all registers after a traced syscall
+ again
+To: Michal Suchanek <msuchanek@suse.de>, linuxppc-dev@lists.ozlabs.org,
+        Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Kees Cook <kees@kernel.org>, Andy Lutomirski <luto@amacapital.net>,
+        Will Drewry <wad@chromium.org>,
+        "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
+        Kevin Brodsky <kevin.brodsky@arm.com>,
+        Alexander Gordeev <agordeev@linux.ibm.com>,
+        "Bernhard M. Wiedemann" <bwiedemann@suse.de>,
+        linux-kernel@vger.kernel.org, stable@vger.kernel.org
+References: <4c1da7f31a6603455ec452960af529e4d77f5334.1791826411.git.msuchanek@suse.de>
+Content-Language: en-US
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+In-Reply-To: <4c1da7f31a6603455ec452960af529e4d77f5334.1791826411.git.msuchanek@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEzMDA1NCBTYWx0ZWRfX3Kq0dg8RA49p
+ tG2J/dlRvjuqqs2BBpZGaFatzC+XHipAy6ElziYJmELOHyWwK02M8D3eGdYMLjMZ66kMdS2swBu
+ YlE7OYC7+lbIzBWGDno6uquWhqvgyqYf6vYMCK3Mhyq1lgwtF+SF4JF5t8hPJ7/Io+5ULhtCXL4
+ VR1up8HoBTRDzrElMe8HVbPXVyn4GXgCT2/ZO229cIkEtx5rSzRi8QuaK+SmJXcZbfgUiDUbLGx
+ aaaVcp6k6V2FT5mPXnKOhAXPxyLBSBag6Ed7Tsx36/grCD4oZpdCEtRbNzP+jHPxYOzW4d+lozr
+ RKt/GbRX8WUBQglITgRvZyDeBhMdQZb9gE6GS1q1rvceWayDoXdH1yLlZ/HozCItfSTMPA6hilV
+ xjqIUW3+o+OcjCnioHLA+mEP6b3IuVrFPUchi0UxRCXDyJN4C1PYZUiMFa+9WE5rHO6vaVXtyag
+ xVfwyxxNgdrM76z5Otg==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEzMDA1NCBTYWx0ZWRfX0WpvdizbK3T4
+ Z8CaPS0fRG3uxhVyPjOpke5TQWzz5b6gjxpVOBwPLxOdR1XftL3yZ7dDMqEcWb7yoL87CbKT7T4
+ w4I2B8aH6YW6h1iqP2h+bdXWr5y9EOU=
+X-Proofpoint-ORIG-GUID: K9jRIhetC1kOBNm8_0bWouxjChTyPUAv
+X-Authority-Analysis: v=2.4 cv=a6KlZkSF c=1 sm=1 tr=0 ts=6ace376f cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
+ a=A6yvPGAzM_-C_JAlvVIA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=O8hF6Hzn-FEA:10
+X-Proofpoint-GUID: XLHQLAgsj-KrxklxXyxzI2AQPlNOT-9o
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-13_01,2026-10-09_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 malwarescore=0 spamscore=0 suspectscore=0 clxscore=1011
+ phishscore=0 priorityscore=1501 lowpriorityscore=0 impostorscore=0
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
+ definitions=main-2610130054
 
-On Mon, Oct 12, 2026 at 07:38:29PM +0200, Michal Suchanek wrote:
-> These are no longer used with the generic entry code
+Hi Michal,
+
+On 10/12/26 11:08 PM, Michal Suchanek wrote:
+> From: Bernhard M. Wiedemann <bwiedemann@suse.de>
 > 
-> Fixes: 6ed60999d33d4 ("powerpc: Remove unused functions")
-> Suggested-by: Shrikanth Hegde <sshegde@linux.ibm.com>
-> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+> syscall_exit_prepare() asks the exit assembly to reload all GPRs, CTR
+> and XER from pt_regs only if the thread flags contain any of the flags
+> in _TIF_SYSCALL_DOTRACE. With the new entry code based GENERIC_ENTRY the
+> flags are no longer set.
+> 
+> This breaks tracers that modify a stopped syscall, for example ones that
+> re-execute the syscall instruction by moving the NIP back by 4 at the
+> syscall-exit stop with the syscall number put back into r0: the sc then
+> runs with r0 = 0, which is __NR_restart_syscall. dettrace fails like
+> this with "No filter rule for system call: restart_syscall". A tracer
+> that writes r4 at the syscall-exit stop of an sc sees the tracee
+> continue with r4 = 0 instead; with a 7.1 kernel both work.
+> 
+> Check the equivalent syscall_work bits instead, and drop the now unused
+> _TIF_SYSCALL_DOTRACE.
+> 
+> Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
+> Cc: stable@vger.kernel.org # 7.2.x: c7585b8e99ad: powerpc: Don't drop _TIF_RESTOREALL on syscall restart
+> Cc: stable@vger.kernel.org # 7.2.x
+> Assisted-by: LLM
+> Signed-off-by: Bernhard M. Wiedemann <bwiedemann@suse.de>
+> [ms: reword commit message]
+> Signed-off-by: Michal Suchánek <msuchanek@suse.de>
 > ---
->  arch/powerpc/include/asm/thread_info.h | 10 ----------
->  1 file changed, 10 deletions(-)
+> A backport also needs commit c7585b8e99ad ("powerpc: Don't drop
+> _TIF_RESTOREALL on syscall restart"), without which the flag can still
+> be lost.
+> 
+> It has been pointed out that the newly defined
+> PPC_SYSCALL_WORK_RESTOREALL is almost the same as SYSCALL_WORK_ENTER and
+> the existing define might be used instead. However, it is not clear if
+> this is expected or if this is merely coincidence, and not guaranteed.
+> 
+
+They seems to semantically different. So for now, we can keep it separate.
+
+> Testing: a small tracer (pokes r4 at the syscall-exit stop of an sc,
+> and replays a syscall by moving NIP back with a new r0) shows both
+> writes lost on a ppc64le and both working on 7.1.8.
+> ------------[ cut here ]------------
+> // SPDX-License-Identifier: GPL-2.0
+> /*
+>   * Does a register a tracer writes at the syscall-exit stop of an "sc"
+>   * reach the tracee? Checks r4, and a replay: NIP moved back onto the sc
+>   * with r0 set to another syscall number.
+>   * Build: gcc -O2 -o ppc-exitregs ppc-exitregs.c (powerpc64 only)
+>   */
+> 
+> /* word offsets in struct pt_regs, arch/powerpc/include/uapi/asm/ptrace.h */
+> 
+> static long do_sc(long nr, long *r4io)
+> {
+> 	register long r0 __asm__("r0") = nr;
+> 	register long r3 __asm__("r3") = 0;
+> 	register long r4 __asm__("r4") = *r4io;
+> 
+> 	__asm__ volatile("sc"
+> 			 : "+r"(r0), "+r"(r3), "+r"(r4)
+> 			 :
+> 			 : "r5", "r6", "r7", "r8", "r9", "r10", "r11", "r12",
+> 			   "cr0", "ctr", "xer", "memory");
+> 	*r4io = r4;
+> 	return r3;
+> }
+> 
+> static long peek(pid_t pid, int w)
+> {
+> 	errno = 0;
+> 	long v = ptrace(PTRACE_PEEKUSER, pid, (void *)(w * sizeof(long)), 0);
+> 	if (errno) {
+> 		perror("PEEKUSER");
+> 		exit(2);
+> 	}
+> 	return v;
+> }
+> 
+> static void poke(pid_t pid, int w, long v)
+> {
+> 	if (ptrace(PTRACE_POKEUSER, pid, (void *)(w * sizeof(long)), (void *)v)) {
+> 		perror("POKEUSER");
+> 		exit(2);
+> 	}
+> }
+> 
+> /* Resume to the next syscall stop, which must be one. */
+> static void next_stop(pid_t pid)
+> {
+> 	int st;
+> 
+> 	ptrace(PTRACE_SYSCALL, pid, 0, 0);
+> 	if (waitpid(pid, &st, 0) != pid || !WIFSTOPPED(st) ||
+> 	    WSTOPSIG(st) != (SIGTRAP | 0x80)) {
+> 		fprintf(stderr, "unexpected wait status %#x\n", st);
+> 		exit(2);
+> 	}
+> }
+> 
+> int main(void)
+> {
+> 	pid_t pid = fork();
+> 	int st, fail = 0;
+> 
+> 	if (pid == 0) {
+> 		long r4 = 0x1111, r4a, ret;
+> 
+> 		ptrace(PTRACE_TRACEME, 0, 0, 0);
+> 		raise(SIGSTOP);
+> 		do_sc(__NR_getpid, &r4);
+> 		r4a = r4;
+> 		ret = do_sc(__NR_getpid, &r4);
+> 		/* bit 0: the tracer's r4 was lost; bit 1: the replay of
+> 		 * the second getpid as getppid returned something else */
+> 		_exit((r4a != 0x2222) | (ret != getppid()) << 1);
+> 	}
+> 
+> 	waitpid(pid, &st, 0);
+> 	ptrace(PTRACE_SETOPTIONS, pid, 0, (void *)PTRACE_O_TRACESYSGOOD);
+> 
+> 	/* 1: write r4 at the exit stop of getpid */
+> 	next_stop(pid);				/* entry */
+> 	next_stop(pid);				/* exit */
+> 	poke(pid, W_R4, 0x2222);
+> 	next_stop(pid);				/* entry of the second getpid */
+> 
+> 	/* 2: replay the second getpid as getppid */
+> 	next_stop(pid);				/* exit */
+> 	poke(pid, W_NIP, peek(pid, W_NIP) - 4);
+> 	poke(pid, W_R0, __NR_getppid);
+> 	next_stop(pid);				/* entry of the replay */
+> 	long nr = peek(pid, W_R0);
+> 	printf("replayed syscall arrives as nr %ld (%s)\n", nr,
+> 	       nr == __NR_getppid ? "getppid, OK" :
+> 	       nr == __NR_restart_syscall ? "restart_syscall, BUG" : "?");
+> 	if (nr != __NR_getppid) {
+> 		fail = 1;
+> 		poke(pid, W_R0, __NR_getppid);	/* entry writes do work */
+> 	}
+> 	next_stop(pid);				/* exit */
+> 	ptrace(PTRACE_CONT, pid, 0, 0);
+> 	waitpid(pid, &st, 0);
+> 	if (!WIFEXITED(st)) {
+> 		printf("child did not exit normally: %#x\n", st);
+> 		return 2;
+> 	}
+> 	printf("r4 written at the exit stop: %s\n",
+> 	       WEXITSTATUS(st) & 1 ? "lost, BUG" : "kept, OK");
+> 	printf("replay result: %s\n",
+> 	       WEXITSTATUS(st) & 2 ? "wrong" : "getppid(), OK");
+> 	return fail || WEXITSTATUS(st);
+> }
+> ---
+>   arch/powerpc/include/asm/thread_info.h |  3 ---
+>   arch/powerpc/kernel/interrupt.c        | 16 ++++++++++++++--
+>   2 files changed, 14 insertions(+), 5 deletions(-)
 > 
 > diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-> index 0e8dc71c8d3fe..4b7ec1db30349 100644
+> index 1e069a2e7ce87..0e8dc71c8d3fe 100644
 > --- a/arch/powerpc/include/asm/thread_info.h
 > +++ b/arch/powerpc/include/asm/thread_info.h
-> @@ -96,22 +96,17 @@ void arch_setup_new_exec(void);
->  /*
->   * thread information flag bit numbers
->   */
-> -#define TIF_SYSCALL_TRACE	0	/* syscall trace active */
->  #define TIF_SIGPENDING		1	/* signal pending */
->  #define TIF_NEED_RESCHED	2	/* rescheduling necessary */
->  #define TIF_NOTIFY_SIGNAL	3	/* signal notifications exist */
-> -#define TIF_SYSCALL_EMU		4	/* syscall emulation active */
->  #define TIF_RESTORE_TM		5	/* need to restore TM FP/VEC/VSX */
->  #define TIF_PATCH_PENDING	6	/* pending live patching update */
-> -#define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
->  #define TIF_SINGLESTEP		8	/* singlestepping active */
->  #define TIF_NEED_RESCHED_LAZY	9       /* Scheduler driven lazy preemption */
-> -#define TIF_SECCOMP		10	/* secure computing */
->  #define TIF_RESTOREALL		11	/* Restore all regs (implies NOERROR) */
->  #define TIF_NOERROR		12	/* Force successful syscall return */
->  #define TIF_NOTIFY_RESUME	13	/* callback before returning to user */
->  #define TIF_UPROBE		14	/* breakpointed or single-stepping */
-> -#define TIF_SYSCALL_TRACEPOINT	15	/* syscall tracepoint instrumentation */
->  #define TIF_EMULATE_STACK_STORE	16	/* Is an instruction emulation
->  						for stack store? */
->  #define TIF_MEMDIE		17	/* is terminating due to OOM killer */
-> @@ -123,7 +118,6 @@ void arch_setup_new_exec(void);
->  #define TIF_SYSCALL_RET		21	/* syscall error value set */
->  
->  /* as above, but as bit values */
-> -#define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
->  #define _TIF_SIGPENDING		(1<<TIF_SIGPENDING)
->  #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
->  #define _TIF_NEED_RESCHED_LAZY	(1<<TIF_NEED_RESCHED_LAZY)
-> @@ -132,16 +126,12 @@ void arch_setup_new_exec(void);
->  #define _TIF_32BIT		(1<<TIF_32BIT)
->  #define _TIF_RESTORE_TM		(1<<TIF_RESTORE_TM)
->  #define _TIF_PATCH_PENDING	(1<<TIF_PATCH_PENDING)
-> -#define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
->  #define _TIF_SINGLESTEP		(1<<TIF_SINGLESTEP)
-> -#define _TIF_SECCOMP		(1<<TIF_SECCOMP)
->  #define _TIF_RESTOREALL		(1<<TIF_RESTOREALL)
->  #define _TIF_NOERROR		(1<<TIF_NOERROR)
->  #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
->  #define _TIF_UPROBE		(1<<TIF_UPROBE)
-> -#define _TIF_SYSCALL_TRACEPOINT	(1<<TIF_SYSCALL_TRACEPOINT)
->  #define _TIF_EMULATE_STACK_STORE	(1<<TIF_EMULATE_STACK_STORE)
-> -#define _TIF_SYSCALL_EMU	(1<<TIF_SYSCALL_EMU)
->  
->  #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
->  				 _TIF_NEED_RESCHED_LAZY | _TIF_NOTIFY_RESUME | \
-> -- 
-> 2.51.0
-> 
-LGTM
-Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+> @@ -142,9 +142,6 @@ void arch_setup_new_exec(void);
+>   #define _TIF_SYSCALL_TRACEPOINT	(1<<TIF_SYSCALL_TRACEPOINT)
+>   #define _TIF_EMULATE_STACK_STORE	(1<<TIF_EMULATE_STACK_STORE)
+>   #define _TIF_SYSCALL_EMU	(1<<TIF_SYSCALL_EMU)
+> -#define _TIF_SYSCALL_DOTRACE	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
+> -				 _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT | \
+> -				 _TIF_SYSCALL_EMU)
+>   
+>   #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
+>   				 _TIF_NEED_RESCHED_LAZY | _TIF_NOTIFY_RESUME | \
+> diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
+> index 55f9c0c9922ac..524c51104e4c9 100644
+> --- a/arch/powerpc/kernel/interrupt.c
+> +++ b/arch/powerpc/kernel/interrupt.c
+> @@ -75,6 +75,18 @@ static notrace __always_inline bool prep_irq_for_enabled_exit(bool restartable)
+>   	return true;
+>   }
+>   
+> +/*
+> + * Syscall work after which the exit must reload all registers from
+> + * pt_regs: a tracer may have changed any of them at a syscall or seccomp
+> + * stop, or under PTRACE_SYSEMU. Audit and the tracepoint are included to
+> + * keep the pre-GENERIC_ENTRY behaviour.
+> + */
+> +#define PPC_SYSCALL_WORK_RESTOREALL	(SYSCALL_WORK_SECCOMP |		\
+> +					 SYSCALL_WORK_SYSCALL_TRACEPOINT | \
+> +					 SYSCALL_WORK_SYSCALL_TRACE |	\
+> +					 SYSCALL_WORK_SYSCALL_EMU |	\
+> +					 SYSCALL_WORK_SYSCALL_AUDIT)
+> +
+
+nit: Apart from mukesh's comment,
+can we keep the name as SYSCALL_WORK_RESTOREALL instead? It is already in PPC folder.
+
+>   /*
+>    * This should be called after a syscall returns, with r3 the return value
+>    * from the syscall. If this function returns non-zero, the system call
+> @@ -117,9 +129,9 @@ notrace unsigned long syscall_exit_prepare(unsigned long r3,
+>   		regs->gpr[3] = r3;
+>   	}
+>   
+> -	if (unlikely(ti_flags & _TIF_SYSCALL_DOTRACE)) {
+> +	if (unlikely(READ_ONCE(current_thread_info()->syscall_work) &
+> +		     PPC_SYSCALL_WORK_RESTOREALL))
+>   		ret |= _TIF_RESTOREALL;
+> -	}
+>   
+>   	syscall_exit_to_user_mode(regs);
+>   
 
