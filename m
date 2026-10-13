@@ -1,121 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-29347-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29348-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2DF5CCC6B0E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 06:15:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66E61CC6B10
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 09:59:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3kZz50xtz3bqh;
-	Tue, 13 Oct 2026 17:15:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.156
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791855356;
-	cv=none; b=FsfnJvmbT0CHW4amNdw9fr8hqttJEuHhK6a7zXU29aEqqwQ9rIaLxJEEuV4kR9VKucZ+JPGYi9wZN1Q3rFg5O85tdNUaChZ0bda6KCHAsCmT16jRXgH1/5Tgk6S7qCkmcW2d0XueKBr3iPQJIkyb0bOuVE0Cc3IRFgDw2QVEkqAx4WWFAEGGgX7A6c0FwwxUkTrU6/9ZPbBwErPlhRTkaf9ULLk39nAbhtdMCZvEgAsfJYQggNLzx0WtiR7re1E0vH//6Ow2LMggMg3M7M84BalLdqR0LV/esK2h4oALrMe8jIMvr7Q80shJQqdRlqQRe+rdMhCnM5EPvkxHBeT53w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3qYR3t7Xz3br5;
+	Tue, 13 Oct 2026 20:59:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791885547;
+	cv=none; b=H7b2o6TmC6CFGGt1uqhhfjU2nbNu08TE0JUvs7uxKNpEaaOuxPofpIDCUtdJYUFaZKEKrwUM8TXtCqprto8V9Bb03Gs4ecgslh7mMG7DzdnSSMp/ijGYFnxk5MfC4ZGr2nDgWyPuZLZXwYQjvbak1v4uOMQuQ2MLUoHozRl0KfOEVxqc5h7aBeEpvAOHL8O0rMJBC3ugOgtnO/wYJFdvtF1LN9An3Tve6wf7uE+qw374o0h2BXTh1rvzww5iywhDBD/KMug949JQZ7A3KksaJ8EGwWTs2tylEzQ10B9sg3yETV75RT6PymxI7MXVQcsRihQJG3mzQrZTES81IjNV7w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791855356; c=relaxed/relaxed;
-	bh=T9DPR+2n3dWm0xXe4jJx+wMjBkoYkR/+x3n7hyULjmY=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=IOo0KnuSPAK7SHH2p7qOwTvo1TtbtDPoKCSxQ/WUXJQQaGiAX2kWg2fhfWW2fydgj9HOnivHkcpGzeNCs/slEtSs+INZWCeAn+wuzbLHBg02635T6AmCT9S78DYLsIlhJqhudW7H7TEalsun2p/ddavYLtaKyaWWXCto3hqcezSHURXD/TUVbwqM40b+/Qi6RXHcVhOtSsdCq01I5CpnhUDsgHf5JBieiF1kVs/G4tW/h9t11lQHnFH0NyxHq8Py29cjYZP0tOvxLx5PAprQkL1dqFOPghaUlc9UFSF79xnh50zz6+YaSNo2wGClaG2jjoXrjzASf9YAcFuSPH97/g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=timdoug.com; dkim=pass (2048-bit key; unprotected) header.d=timdoug.com header.i=@timdoug.com header.a=rsa-sha256 header.s=fm2 header.b=QRx/vrQj; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=kswQaqdR; dkim-atps=neutral; spf=pass (client-ip=103.168.172.156; helo=fhigh-a5-smtp.messagingengine.com; envelope-from=me@timdoug.com; receiver=lists.ozlabs.org) smtp.mailfrom=timdoug.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=timdoug.com
+	t=1791885547; c=relaxed/relaxed;
+	bh=NJ8tXYQSPboSDMyNtnaiCexVh6DJ8MlokRCqNdsihLY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=e53cqc89B4k/bo2WxAgQ70puKTciiYgyXkR2gAYMhPittY4lAahXVa8LS/RnOcB5jFMvxmrMZ+f0SmOhF7VpWnvMYbOkKvGVTcCzYadDCkz68VdBCIeBZShSaBf+fgZ5srwZVfaii3dtfOT2Zi4YR8kiX/GFudwwjiD6i/neoLKiNZLD7hBivhkKh+Mf/p6BtXITqQe7Fm87y0aMotYSyRWIJqRpafWl4xdkuKEX+HwSAbbvy4P7Hi0s60Sc6isXUlwcEtYNC213A0VotNKgaAJNaW9+/eMjpyGN8DIqti8Dq1RQo0RzdBqz7Eho1pYkcwRoupbLz84a/r20zsOQyA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aucDJChA; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=timdoug.com header.i=@timdoug.com header.a=rsa-sha256 header.s=fm2 header.b=QRx/vrQj;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=kswQaqdR;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aucDJChA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=timdoug.com (client-ip=103.168.172.156; helo=fhigh-a5-smtp.messagingengine.com; envelope-from=me@timdoug.com; receiver=lists.ozlabs.org)
-Received: from fhigh-a5-smtp.messagingengine.com (fhigh-a5-smtp.messagingengine.com [103.168.172.156])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3cNp58rgz30DY
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 12:35:54 +1100 (AEDT)
-Received: from phl-compute-09.internal (phl-compute-09.internal [10.202.2.49])
-	by mailfhigh.phl.internal (Postfix) with ESMTP id 33E98140012C
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2026 21:35:52 -0400 (EDT)
-Received: from phl-frontend-03 ([10.202.2.162])
-  by phl-compute-09.internal (MEProxy); Mon, 12 Oct 2026 21:35:52 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=timdoug.com; h=
-	cc:cc:content-transfer-encoding:content-type:date:date:from:from
-	:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to; s=fm2; t=1791855352; x=
-	1791941752; bh=T9DPR+2n3dWm0xXe4jJx+wMjBkoYkR/+x3n7hyULjmY=; b=Q
-	Rx/vrQjGS4aIvL+6atXZ/EJgExF6J+Cpo76zfb03yrOM+60+6v7uArudhJ+H1QeJ
-	xTZtgktnMh6WvThrLqhTXso1BF7bQHcoqmFpIwfeA2EYsEuL7UeNQG8VSuHLDkFj
-	Vz13RXcyWWMIDw5qeqNVObJAl6bntLhuCADRyqXfBVKOPGF/8qa8W0lvAQ0LRAy3
-	KHVhtmpcf56SgpG/0kUQAgp0iSpM3e6gKBNpnUdNEQATnr4+MMqqTPc5yGcT00IT
-	ZXVlFVTe4vs255+MyjvnURFRbE/cIe8Yy5oxnLaROPr5Qu8WiZhI2hvEKzWHeXf5
-	ibBIaLPHlUaY4YEZms93g==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:date:date:feedback-id:feedback-id:from:from
-	:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
-	:x-me-sender:x-sasl-enc; s=fm2; t=1791855352; x=1791941752; bh=T
-	9DPR+2n3dWm0xXe4jJx+wMjBkoYkR/+x3n7hyULjmY=; b=kswQaqdR1CqvQNd/j
-	DH3k9yIBZLtSSbmKqpxBQHajK++XFzKM/ugzlbHMR/rA31MdaSryaFu1GiuY42TQ
-	aLBGFBMPEj+J/oFMadW+rwjaopWKzSHEAUVYcEN9kKgF6tds+hA3ze5y4sPCbb7H
-	ZQMycuW3IBD85U7Ry5D7T3qDquIhOS7MMCjngongwHztRjjvvu4vpCgOGScgUajG
-	VnZ9iATREWoQAri6WJrrsZ0PDIh2IK4ceVi9onA8KzGm1seB1UkNbRuHX5tFXxmB
-	wognCfNqhPxY4KR5klcgGYtdNEcY4Wswk3ntTpP/dLmsugCNhHeQrQ+92CeiQSpg
-	y3yrA==
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-06;
-	repo=github.com/dkim2wg/interop; date=2026-10-04; sw=lmtpprox;
-	action=sign d=timdoug.com a=rsa-sha256;
-DKIM2-Signature: i=1; m=1; t=1791855352; d=timdoug.com;
-	mf=PG1lQHRpbWRvdWcuY29tPg==;
-	rt=PGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnPg==;
-	s=fm2:rsa-sha256:kAcfha0biMhO9rP0oxaqEnk+oODqOMTs5QgCffEbfULb5dK
-	5mk0ml+g0xWtGiSC8hzUmGPYGjxSRhAaRL3JF4f1bbDHjUX0WaXFYwONDpBx4Sca
-	sZELyBrSbubDcCL+Sw/htEQp7V+BPiGnLGZOxQijDZ87kwWhNLh6/LPnUFTlKZtn
-	9lWXyVF83VwvdiNCRyT+FpoluUNKwVi4XxmYEbQc2Bj3qALGUUlEa6SXxnljLp/w
-	rZpdtW5fC9S3tyLUsP/quJwPGjJOzo14n8yfqzW3vFrL6wxlt6z4o5Tkwy9bwi2R
-	Sb3jXBIyKjeU8b3SuUMGyTGKll9pwZ5o1Hc7ggQ==;
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-06;
-	repo=github.com/dkim2wg/interop; date=2026-10-04; sw=lmtpprox;
-	action=mi-m=1; hc=11;
-	hn=cc,content-transfer-encoding,date,feedback-id,from,
-	in-reply-to,message-id,mime-version,references,subject,to;
-Message-Instance: m=1; h=sha256:PrJ717gr86u/8jEwEDf0Kba/XI0ZzKRLKWY3qUAP+p4=:sFJ72AgPE1Tu7+0QasszMAieCLJI86cGxQyysbzgmZo=;
-X-ME-Sender: <xms:94rNauaQUoD4JYgxey6jAGfgXwXq7ZwhbOJ7SD71hJhzS9MwxQr0Tg>
-    <xme:94rNavrb1jt46q3lHthhH0uc8hRbTYWNliNU0GYLm4Z3Y4NwVBkcG5FPBxCw0S3n6
-    ERSkWNzuV0fbDUE9wCCDS3f-6rqTKguZmjyMu2zS2p8zW9Jv34ksRY>
-X-ME-Received: <xmr:94rNaiSJ5BEQlHH_nOhrcLzEtCQn_-o1x45EfkBPZNP6iXl6cJ8_gpplsQwy>
-X-ME-Proxy-Cause: dmFkZTGNbHk6fXAkhTsvEfU2amaovOmEajQYoQOBQ1jMMVTp78asCsTJKEOp2KUEoCfFhn
-    jYQALR5baaW2Zmb2DSGiJU/TnUm2SfI3WostCaGFlcqIuQLSHsZ9RdgXfBjYku/rYSwytg
-    gG+1Aavqm07SB9Nn6UC7/pwAlSnVJ/PwqLx0Zmi8Ps17l4MBClYGyctPQiDIoTu2tkkI4I
-    +6r+oLdSUUBoLun+FPRvQnzwVjLQxo28j78W4Y4bg5ruy1wHbYTNmkWF91Y2zTMHrsLkbj
-    qi0arGzxtkYavMM9fPhINZUuIXe1wxSlfZK0MTfoZfYvKJ5SD5BpIp5OQ6fEuy6blOsuKw
-    nW3eLSjF2BND2Vjd97g59nD2DKqYZQu+JlfKwLQE9lwE88zee9wSf4CNj8n9SzXihMKcpZ
-    Zs4p6+rzdHsFXI7syolFYyNB5I91mkE9iGE9b2x16B2MmkCHxTb8By+z7HsxsTcQ9rW4x+
-    416IK9L8AYd4buUMJu6+7LDzkBydq0YrPQCwv2Vdj6Cv6beKVo5eL5egddT1MitD2oxa6L
-    6US4AknzJ8UIp+SokIdMhItMdbeJRTd9GzV0GWOvk15FOcu61RhAyrpm4kcpP48hL4X5Oo
-    FflG0RpWyZK/HpbuK0AJwUxFkUlqg5WuyC8qypY8zrSBHuFCOWKh43VBacmg
-X-ME-Proxy: <xmx:94rNajqPmY2ZSWPPxJfXqCyJ4D_fTjfL20eEeGabkwpZxUCeAInFiQ>
-    <xmx:94rNas0yU2ZDS9Gfi176s1AAZ8sPdDTqo2UdfoTW6shA7C3aRNV-jg>
-    <xmx:94rNai46Pqk-WOfb_rXbsFNnQs5-L-hxY3Lk0NqXWjSVg1pYHXFkzg>
-    <xmx:94rNagRTfUbBCTDIEh2OT5ePTQzYybdIDgD3ySg7vRHrQWaLcdjjzg>
-    <xmx:-IrNahQ6Ea3zrp06XyzDGRg_fYH7RaJg4fHN_GzfuQ9EmBgTChCaQ2yH>
-Feedback-ID: i12bc4175:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
- 12 Oct 2026 21:35:50 -0400 (EDT)
-From: Tim Douglas <me@timdoug.com>
-To: gregkh@linuxfoundation.org,
-	jirislaby@kernel.org
-Cc: linux-serial@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	Tim Douglas <me@timdoug.com>
-Subject: [PATCH 2/2] serial: pmac_zilog: report received breaks
-Date: Mon, 12 Oct 2026 21:35:41 -0400
-Message-ID: <20261013013541.4535-3-me@timdoug.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20261013013541.4535-1-me@timdoug.com>
-References: <20261013013541.4535-1-me@timdoug.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3qYQ2KPBz30hC
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 20:59:05 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69D2EIlV1774554;
+	Tue, 13 Oct 2026 09:58:37 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=NJ8tXY
+	QSPboSDMyNtnaiCexVh6DJ8MlokRCqNdsihLY=; b=aucDJChAOK5cS6ZMMBgB4l
+	a6VbIV1bDOiKobgRK5f82iS+rHRq4EdtkzsxIQfDaKsoc/b97Rwat3VTAPlZ8+Bb
+	Neri2untfdcObJvEMRixsG3gFrIoGDfsUNyw37fyiDoXYfHUpz9JLciC4f+9Ng1Z
+	ZUMR9sMhIdruGXsPaJz6m+g4C6a6uUdcXiLaxs/iaK1P+t3l15GAWx4cGaDZ+aOz
+	tc8E2zN/FqAc5TVbOWTemfHZmu2FQ+QrTCbx3Q9Ckvh52MF/OpuX78lNPzO4NgAX
+	h+gTzuRIhmuPzTIr8aCQ36doE6IR7wfSV39zSVrMaqpBkj840ei/EHgZJB2wRDmw
+	==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7dwhvxmf-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Tue, 13 Oct 2026 09:58:36 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69D8Tv3I2644067;
+	Tue, 13 Oct 2026 09:58:35 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h80pjs5a8-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 13 Oct 2026 09:58:35 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69D9wVDZ52298034
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 13 Oct 2026 09:58:31 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8D1AA20040;
+	Tue, 13 Oct 2026 09:58:31 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id AE17620043;
+	Tue, 13 Oct 2026 09:58:26 +0000 (GMT)
+Received: from [9.39.27.235] (unknown [9.39.27.235])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 13 Oct 2026 09:58:26 +0000 (GMT)
+Message-ID: <dfd8312d-a59c-4480-b054-d94d2e66110e@linux.ibm.com>
+Date: Tue, 13 Oct 2026 15:28:25 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -129,37 +81,254 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 0/4] powerpc/topology: Introduce llc_override debugfs
+To: Tim Chen <tim.c.chen@linux.intel.com>, maddy@linux.ibm.com,
+        linuxppc-dev@lists.ozlabs.org, peterz@infradead.org
+Cc: christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org,
+        ritesh.list@gmail.com, kprateek.nayak@amd.com, yu.c.chen@intel.com,
+        vineethr@linux.ibm.com, vincent.guittot@linaro.org,
+        srikar@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au
+References: <20261012102037.2477378-1-sshegde@linux.ibm.com>
+ <0cbd60fcf328ffcb317739f60d327da3af6145f1.camel@linux.intel.com>
+Content-Language: en-US
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+In-Reply-To: <0cbd60fcf328ffcb317739f60d327da3af6145f1.camel@linux.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEzMDAzOCBTYWx0ZWRfX4pC8ZOeJaJVG
+ OTY0fBn2S9Vbm3Dn0BGS+bAnjvj4n9w2S/j5KLGhJneCxVWIbrXX7uqdcudT1N27IBnvQDh6ZGb
+ VJ7Ne0nmDxaWmE7qnJCCOAMyz5fB4T2YQ/qItJe6feJ3OW6mLDxF20EuGKlTl5IxK/dAtW3OvFu
+ WIFiHVjK7V5UWWVEPqbBtSKvTRQ7GhQD5cYDXYfFL9ZUG/vvSBM8lHlxvOdsXoYouGXc3Lz6FKK
+ hkETIos9ypGW6srDHBERThgu/QbAJ0qjJsIdn/app3j/A2yguGgRYaGLECY6Q8HHJgYq/BkniNl
+ yiTRUj8nvN4yikcgl1XtWuDPi/ywswGzXK2KmZbOiWdZEbu037Aj6wzWq6AqtiGk/i9XduhakfN
+ GbAZpGmVOcuU0VHbtyLQP47N5vsA6pT9m+gczzGhwMxS/SoRssTDI/LFM0PGvKresN0jcej4JBF
+ TKFlzPMiEzQ+34L+qlg==
+X-Proofpoint-GUID: tOU3g9CFxMU0adCdQZ97G7nsc4qB6hDD
+X-Proofpoint-ORIG-GUID: IF37tyWFD9MEi2djcMGGrVUR_F6F5wPj
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEzMDAzOCBTYWx0ZWRfX6FMZf/iuVDx9
+ TyHpo4U4x1PQh60IWPINvYJUO9WUXWV0fPpdnXXcn5bHSuwT539OJJRVsuVglfPq/JIQYkqUUKl
+ aKTQVmlwmbitTqFycgV+g5jivGCdNpY=
+X-Authority-Analysis: v=2.4 cv=btHZl0ai c=1 sm=1 tr=0 ts=6ace00cc cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
+ a=QyXUC8HyAAAA:8 a=MLKLHRpHX2oh2FcDP8MA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-13_01,2026-10-09_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 malwarescore=0 phishscore=0 impostorscore=0 adultscore=0
+ lowpriorityscore=0 priorityscore=1501 clxscore=1015 spamscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
+ definitions=main-2610130038
 
-pmz_status_handle() sets PMACZILOG_FLAG_BREAK from RR0, and
-pmz_receive_chars() clears it on the null character that ends the
-break without marking that character, then tests BRK_ABRT in RR1,
-where the SCC does not set it in asynchronous mode. Breaks therefore
-arrive as plain NULs: brk is never counted and BRKINT, PARMRK and SysRq
-never see them.
+Hi Tim, Thanks for taking a look and findings.
 
-Set BRK_ABRT in r1 for that character, as sunzilog does.
+On 10/13/26 2:45 AM, Tim Chen wrote:
+> On Mon, 2026-10-12 at 15:50 +0530, Shrikanth Hegde wrote:
+>> There is a new feature in scheduler called as Cache Aware Scheduling [1].
+>> It tries to keep related tasks within the same LLC domain while
+>> keeping the system reasonably balanced.
+>>
+>> Cache Aware Scheduling assumes that the scheduler LLC domain is large enough
+>> to be a useful placement target. This is true on many systems where an LLC spans
+>> several cores, but not on PowerPC systems where the scheduler-visible LLC is at
+>> the SMT level. In that case, sd_llc_size is effectively the SMT width.
+>>
+>> This becomes visible in the capacity check:
+>>          return !fits_capacity((mm->sc_stat.nr_running_avg * cpu_smt_num_threads),
+>>                                scale * per_cpu(sd_llc_size, cpu));
+>>
+>> As a result, Cache aware scheduling may be enabled but has no room to operate.
+>>
+>> Hence provide a debugfs option to set LLC at specific domain so that
+>> one can try experiment their workload with cache aware scheduling.
+>> This also provides ways to explore it on system with SMT=4 to see if
+>> there are any opportunities to improve or uncover bugs if there is any.
+>>
+>> Note it is a debug option and it is recommended to keep it disabled.
+>> There is no performance guarantees across different values.
+>>
+>> [1]: https://lore.kernel.org/all/cover.1778703694.git.tim.c.chen@linux.intel.com/
+> 
+> Shrikanth,
+> 
+> This is an interesting idea. One question from a quick look at the code.
+> 
+> The override moves sd_llc, sd_llc_size and sd_llc_shared, but not
+> sd_llc_id. The id comes from arch_llc_mask(), which is
+> cpu_l2_cache_mask() on powerpc, so after your patches it is still
+> unique per core. It is also sticky: build_sched_domains() assigns it
+> only when it is -1, and it is reset only on CPU offline. So a rebuild
+> from the knob keeps the old ids.
+> 
+> Cache aware scheduling uses this id as the identity of an LLC:
+> p->preferred_llc, nr_pref_dst_llc/llc_counts[], and the
+> llc_id(cpu) == llc_id(grp->cpu) check in task_cache_work(). In that
+> loop the occupancy is now summed over the MC span, but the id check
+> rarely matches and is broken.
+> 
+> To make this work, arch_llc_mask() needs to follow the override, and
+> the llc ids need to be reset when the topology is forced to rebuild.
+> 
 
-Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
-Assisted-by: LLM
-Signed-off-by: Tim Douglas <me@timdoug.com>
+Thanks for catching this. I missed to see that.
+
+One way to fix it is with a change like below.
+But more thoughts after the patch.
+
 ---
- drivers/tty/serial/pmac_zilog.c | 1 +
- 1 file changed, 1 insertion(+)
+  arch/powerpc/include/asm/topology.h |  7 +------
+  arch/powerpc/kernel/smp.c           | 23 +++++++++++++++++++++++
+  include/linux/sched.h               |  2 +-
+  kernel/sched/topology.c             |  7 +++++++
+  4 files changed, 32 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/tty/serial/pmac_zilog.c b/drivers/tty/serial/pmac_zilog.c
-index f49d605..a612f1d 100644
---- a/drivers/tty/serial/pmac_zilog.c
-+++ b/drivers/tty/serial/pmac_zilog.c
-@@ -233,6 +233,7 @@ static bool pmz_receive_chars(struct uart_pmac_port *uap)
- 		ch &= uap->parity_mask;
- 		if (ch == 0 && uap->flags & PMACZILOG_FLAG_BREAK) {
- 			uap->flags &= ~PMACZILOG_FLAG_BREAK;
-+			r1 |= BRK_ABRT;
- 		}
- 
- #if defined(CONFIG_MAGIC_SYSRQ) && defined(CONFIG_SERIAL_CORE_CONSOLE)
+diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+index 44ec416fa489..f4555632e692 100644
+--- a/arch/powerpc/include/asm/topology.h
++++ b/arch/powerpc/include/asm/topology.h
+@@ -135,12 +135,7 @@ struct cpumask *cpu_coregroup_mask(int cpu);
+  const struct cpumask *cpu_die_mask(int cpu);
+  int cpu_die_id(int cpu);
+  
+-/*
+- * Points to where the LLC is. On power9 this will point at CACHE
+- * domain, On others it will point to SMT domain. In all cases
+- * cpu_l2_cache_mask points to where LLC is
+- */
+-#define arch_llc_mask(cpu)     cpu_l2_cache_mask(cpu)
++const struct cpumask *arch_llc_mask(int cpu);
+  
+  #ifdef CONFIG_PPC64
+  #include <asm/smp.h>
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 6a4ee7d3b8e5..139c54fc3e2d 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -1864,6 +1864,28 @@ void __noreturn arch_cpu_idle_dead(void)
+  
+  #endif
+  
++/*
++ * Points to where the LLC is. On power9 this will point at CACHE
++ * domain, On others it will point to SMT domain. In all cases
++ * cpu_l2_cache_mask points to where LLC is.
++ *
++ * If there is llc_override debug knob, return appropriate mask
++ */
++const struct cpumask *arch_llc_mask(int cpu)
++{
++	switch (READ_ONCE(llc_override)) {
++	case LLC_OVERRIDE_SMT:
++		return cpu_smt_mask(cpu);
++	case LLC_OVERRIDE_MC:
++		return cpu_coregroup_mask(cpu);
++	case LLC_OVERRIDE_PKG:
++		return cpu_die_mask(cpu);
++	case LLC_OVERRIDE_DISABLED:
++	default:
++		return cpu_l2_cache_mask(cpu);
++	}
++}
++
+  int arch_update_cpu_topology(void)
+  {
+  	if (READ_ONCE(llc_override_changed)) {
+@@ -1923,6 +1945,7 @@ static ssize_t llc_override_set(struct file *file, const char __user *ubuf,
+  		pr_info("sched LLC override set to %s. Rebuilding sched domains\n",
+  			llc_override_str[override]);
+  
++		sched_reset_llc_id();
+  		rebuild_sched_domains();
+  	}
+  
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 7b91cae4a59c..4d7e2ee841a9 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -2505,5 +2505,5 @@ extern void migrate_enable(void);
+  #endif /* MODULE */
+  
+  DEFINE_LOCK_GUARD_0(migrate, migrate_disable(), migrate_enable())
+-
++void sched_reset_llc_id(void);
+  #endif
+diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
+index dd2b1d70ec9d..63c9bca4c5eb 100644
+--- a/kernel/sched/topology.c
++++ b/kernel/sched/topology.c
+@@ -3087,6 +3087,13 @@ void sched_domains_free_llc_id(int cpu)
+  	sched_domains_mutex_unlock();
+  }
+  
++void sched_reset_llc_id(void)
++{
++	int cpu;
++
++	for_each_online_cpu(cpu)
++		sched_domains_free_llc_id(cpu);
++}
+  /*
+   * Build sched domains for a given set of CPUs and attach the sched domains
+   * to the individual CPUs
 -- 
-2.54.0 (Apple Git-157)
+2.52.0
 
+
+
+Another way to avoid all this is with kernel parameter i think.
+That would fix the LLC at specific domain and this reset/rebuild of llc_id
+won't be necessary. If one is happy to change the debugfs, i guess they
+would okay with rebooting the kernel with specific parameter too.
+And at this point, I think that would mean the code will be arch/powerpc/
+contained too.
+(Yes, that would need updating arch_llc_mask, but no need to do the rebuilding
+the sd_llc_id stuff)
+
+
+So two ways.
+
+- debugfs way with above changes.
+- kernel parameters way.
+
+
+Tim, Peter, Maddy, What do you guys suggest?
+>>
+>> Tim, Chenyu, Peter,
+>> Are there any selftest or patches which is used for
+>> functional validation of cache aware scheduling?
+> 
+> We haven't created one. We validate mostly with workloads such as
+> hackbench, schbench and yogini (which can vary the number of threads
+> over time and track CPU assignment). I agree they are not ideal for
+> functional checks of the load balance path.
+> 
+>> per-LLC occupancy in /proc/{PID}/schedstat may not tell the full
+>> story when there are multiple processes and multiple LLC's.
+>>
+>> Atleast for functional verification, we might need one if there is
+>> not one already. The reason being,
+>> - At present, we may need a custom workload. hackbench/schbench are
+>>    wakeup intensive and typically bail out even before load balance.
+>> - stress-ng is per process. So doesn't get cache aware scheduling.
+>> - A selftest could spwan specific number of threads till llc size etc
+>>    and ensure packing happens till core_count(llc_size) by default.
+>>    This could also be used for tunable verfifications.
+>> - Provide an ability to observe how much of the workload was contained
+>>    within the LLC due to cache aware scheduling or number of load
+>>    balances stopped due to preferred llc.
+> 
+> A selftest would be great and much welcomed.
+> 
+
+Cool. Will give it a try. but only after start implementing
+will come to know the challenges. LLM's are there to help anyway!.
+
+> Tim
+> 
 
