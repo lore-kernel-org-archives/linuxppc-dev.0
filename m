@@ -1,51 +1,102 @@
-Return-Path: <linuxppc-dev+bounces-29418-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29419-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C705CC6B1A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 15:31:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 594EBCC6B0E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 16:39:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3yxN5n9tz3brH;
-	Wed, 14 Oct 2026 02:31:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791905512;
-	cv=none; b=EySgRtKu2v6DkowescomjEztJHfeFWPmTDwFhccO9l3YRSpvudMOpaQeEhRJQtkYtrSOWROfP+4tpyms2QwCuQgKLGJfTcbMSfW41Of65293HBjMjCp0jBJWIafWngq4R2X2i+wAwHDqM9Z+F4vtMaEemMNO5eb5tCh+4/tNstfm4s1gBGE1/+05KiSAW3VEJ0yktJUHeOZE4rgDc+qoLi5i5AXQ7Ccxte1BjYvNubAMuZuyfDZ1frH+5z8+rwxM/bcUFWliQJKkRB3kcFdFkcfH3VKF3abD2kkxf+VRxP/xpNiaor990OXGwp6jM9zPAGAprCoHjDpRO+l8ShsIKw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j40R329Xtz3brH;
+	Wed, 14 Oct 2026 03:39:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::134"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791909551;
+	cv=none; b=MA0wZRfTE0TBu+PMTl3MW64J4yBXwIIw27Zipdyh474b1E6WaZ8ZDiYRBxdh02VydPfnK6VgfxhxAEsLbm5RN1eu388qWQ4HULnBFsJj3pjHd8NB+4BAl25x/5IS22InvzoKbFzTwwc+8jsJ5vczgSxsXcoANltvyYx6Hg5uGQXtUlIUottDRGP+kpfX+uBtZ82v9x/hkgJKlono3cpdxh1flplbKmINIRfQK0YIO50dk/eJ4Z5tS8qZLIOhkKL+ZcS+jSlagV31/FLbRmVGbY1VWvPiidqpCwgQ4ytgrTpHYE542EpRRgoyQUvEZLwV/4DQUUMk5kXmtU3aWEc7LA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791905512; c=relaxed/relaxed;
-	bh=ABcU0W+nIwCqZSTy0PPdZy1uyj317pAS/O9WDDdnQZw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=HeM6v0jtOtDuOknEuKD+n/KGmS+LexBPS7ivdGi6AjlbBVo4axVxvgYyDH+eYiVXt8NOINiDDxeaklAmQ5Ly02AXab7x7wwQ85msLpzHjGTmvpUi8k2N9/1kqJ4eiGKgHAw1IYZbNjRM+RIjYisCWknvzOAnaGujVUcrj8miGORVXV/CAVbb41e2jV+wsNm9XDkuG4CC7JnBoNI/Tnvt8bW22WNCTX4j4pVdzsguoXiS6g3nfnU2W0s8NBDW5yfcUB9kB2/S2Am/L2s+tiUwzAciOvtlvkaJmGy3X8ws9+s8e+JuvN/Bf2Tgcr8wgoblcumgNwigGSDiTsEDW3dmrw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=D5BClKMk; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1791909551; c=relaxed/relaxed;
+	bh=hMGgj7z4LL/41SC/RzPSs++jA5iS5B4RotyfALMsZXw=;
+	h=From:Date:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=d8DqZ/bFtmvBbg1ObZOpUzfOUuBKzVCV32LLkdlRs6ZDRBuwsANakEIVCNc+fhHZQOcr9vrii4c4MY/Sb6Ho7FIZpCdUNMx5tiv161JTRrrxb7ahDaFINHTiq5nRku6wXagRheglc8WIVQm2ojDvMKI913aaMZ082RWWHzslMxY4k5hvQw6pUl2VF5WNg06IVL6Pqe51pd7cl3pKkwAHNEW9o2v2v7Rn1MPvIQUII7C/SRY+SWaB/digR9nXzyxhCqM3XsRWgjxKEDMJ8CwfyRDfvJ7FN01N+OmVl8Ahkll3D8ci9tOcHQHlZg2I01bXbLYuVkFx1eZtArubo6XWMA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=IOwggLVd; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::134; helo=mail-lf1-x134.google.com; envelope-from=urezki@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=D5BClKMk;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=IOwggLVd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::134; helo=mail-lf1-x134.google.com; envelope-from=urezki@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3yxM53Dxz3br5
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 02:31:51 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id EC5C660A56;
-	Tue, 13 Oct 2026 15:31:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0ABA81F000FF;
-	Tue, 13 Oct 2026 15:31:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791905508;
-	bh=ABcU0W+nIwCqZSTy0PPdZy1uyj317pAS/O9WDDdnQZw=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=D5BClKMkyjHNOoeNuUKWF6HwQ8es4HwocZa/1vk5hPJxYK0OE2MtOdN0S2gmcH6lC
-	 h2bS5ASLQ2jbvKrWro4RUW2U8G5muKxncrLmF+Jou2z0+IhaAxzQhCEY/LrmDDFWT6
-	 M6xKr2R3fPo+unNvnMZSc2FKExJxWD5IMaBvhhbtafRSFGB4ueb89jIBT5sOdDSJZN
-	 GDOdloqs53ZQ9vDKS7F/ry5KwOabJqSqdFue4yGsWFChcPdcnrWzVPTjRyPqdUgvoo
-	 j9GhCWKrZ4bFEjuUrlQ3XmGuaXcGd+p+mRRvlVf6aiAfRoUGE+Fx6LYN+MBnX0qWdK
-	 WFMXQD15T+n7w==
-Message-ID: <7bf5a2dc-f7be-425b-99e3-75b4546c8e19@kernel.org>
-Date: Tue, 13 Oct 2026 17:31:13 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j40R13pWcz3br2
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 03:39:08 +1100 (AEDT)
+Received: by mail-lf1-x134.google.com with SMTP id 2adb3069b0e04-5bce4e278baso10287e87.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 09:39:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1791909544; x=1792514344; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:date
+         :from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=hMGgj7z4LL/41SC/RzPSs++jA5iS5B4RotyfALMsZXw=;
+        b=IOwggLVdO+V8AwuCdPDi4EGbNzpiK+hgUW03UGNs/GAHQaxBjjJd+cN5JBH4cxnejd
+         yjx6ov7s9NT26YPofHwy7R3KE2mGxwSh5g/tXKAXLzwoO7IHeTdsV2/s63lJ/uUglCXg
+         zS879MWftdGDn6n4yOlumSnHhSSIwdK4GmeYOmjn10LXfaZpLvRrHsk39M0o0HxK1XKZ
+         xLSwrrXJGwBPPOnJlndwkjtz1hUSjp22QZyjTO+DHoPJ9zJYagaZpsASAfhm4aTVSJxH
+         zBpahF2QVDtn4ucxn8cUcyI5P1rECaEJ2bu3aqjNENYQD78TFm06PGzAFhbKGZhRKp9x
+         xw2Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791909544; x=1792514344;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:date
+         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=hMGgj7z4LL/41SC/RzPSs++jA5iS5B4RotyfALMsZXw=;
+        b=qTB/k/WCx05C24lPvZCtZAFs4pabhoYY/wpbsm1xZLxDN+UWdecCWwTirukxDcSHGC
+         IfI4ZxXkc10WLdXzRuRLhFgBaH+WY7ZlV0hHORilY1H/hdeU2tEULXGytRg3RqIdiomt
+         Yt/9l6wk8T5mdyBCc/u15Nki7QMb3+zzckOzCSngvDmU5CVAOhxZ8zDQVM8Wt+2qfDwK
+         4PLGevmDvviUcVtEPWFireHkmkSzRv8nc+91QhOMugSCSTQdvxmntFdZXy5bUvBE8r8Y
+         PdTNvkjEh+aZ6wlPPwr/BsRJuGInK6k+nvPduQ6/apVc9Ap0oW4Xk+KZXJRlskWjwAOP
+         vk/Q==
+X-Forwarded-Encrypted: i=1; AKwUvBw0fqTsSAFBnhunqhoW/PCq+Aq6TxAE387MndAbWxrfmG4ZNQfaRmUwO93vxvS8/WgNLGiLOtm/T97bY9M=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYJP1Qu/Xg56tlozcRexTcK/i3myRNW2PcrX1N4U0RwrLDtKZI0M
+	taTlsn0WF2IClXePrekYmDbH6rRGtPEaK2x4T3YEzs7X09wtZi7CbVB+
+X-Gm-Gg: AYBFou2HePuwk3R5MSHXwDb+2/u+mqXrLT0r/RUA0ge2ZKQBhQLEx3rnNwr6vjcNWbw
+	+yNIDh8xnh0k5+/Ql4k26BHuiFr4bJOiy24pVLZ8Yeq/DJV4gLm5aQXVJO1T5SbqADbbsULvpgi
+	E0VGaiyTgohzSsUiLXqLQoUtzrLJrEul7lzNm5FlxJTLUUt8wzUfdqxO4tzZsHLwASUMkF4mD6H
+	2/gCy2Ia1NHqd1wXSWSURtfyRVDNrkP2kucGFLPykovepbYV2QZDVIwY+wI+rRUlKmy/LC+7jt8
+	ZMJqmvu31W+ebC3vnoT+GzzNMFctkW34K7X8pHdAg0wTQlZlm7Scse/4yU557YRl2OnNBflYM8d
+	n4rVMXg5X8IKzykpFIb2CbXiVm/0FeRI4s/KGnWKPspIdcTV4wSdi8nsuuT3OmxbceMl880k8DY
+	nb6pFa9XnIxw4Ss24TsfI5aW5ziMtf2jVYOdQZBPoVX/c+IchLPemFCNLz0BR7bKM3S/rY3Em9L
+	Y9K1HAK+SuIp9jr/kgs7ZkHxfbCuv8j9hs=
+X-Received: by 2002:a05:6512:3d94:b0:5b4:af24:3612 with SMTP id 2adb3069b0e04-5bcdd509e2bmr4530333e87.20.1791909543917;
+        Tue, 13 Oct 2026 09:39:03 -0700 (PDT)
+Received: from pc636 (host-95-203-22-87.mobileonline.telia.com. [95.203.22.87])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5be33d8a485sm45759e87.54.2026.10.13.09.39.02
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 13 Oct 2026 09:39:03 -0700 (PDT)
+From: Uladzislau Rezki <urezki@gmail.com>
+X-Google-Original-From: Uladzislau Rezki <urezki@pc636>
+Date: Tue, 13 Oct 2026 18:39:00 +0200
+To: Suren Baghdasaryan <surenb@google.com>, Hao Ge <hao.ge@linux.dev>
+Cc: Hao Ge <hao.ge@linux.dev>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Alexander Potapenko <glider@google.com>,
+	Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Dennis Zhou <dennis@kernel.org>, Tejun Heo <tj@kernel.org>,
+	Christoph Lameter <cl@gentwo.org>,
+	Uladzislau Rezki <urezki@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com,
+	linux-mm@kvack.org, Sashiko <sashiko-bot@kernel.org>
+Subject: Re: [RFC PATCH 2/4] mm/vmalloc: undo partial mappings inside the
+ mapping functions
+Message-ID: <as5epHFQF4iE_VQK@pc636>
+References: <20261009063619.112313-1-hao.ge@linux.dev>
+ <20261009063619.112313-3-hao.ge@linux.dev>
+ <CAJuCfpE9VfgTw2ZNMJTEVh41H_R+1RY_MtzeMuZNCD3BFm-Piw@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,181 +110,110 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 30/39] mm/vma: introduce vma[_flags]_is_mm_backed()
-To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>,
- Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>,
- Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
- Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>,
- Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>,
- Paul Moore <paul@paul-moore.com>,
- Stephen Smalley <stephen.smalley.work@gmail.com>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>,
- Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>,
- Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>,
- Baolin Wang <baolin.wang@linux.alibaba.com>,
- Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>,
- Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>,
- Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>,
- Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- "Martin K. Petersen" <mkp@kernel.org>, Simona Vetter <simona@ffwll.ch>,
- Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>,
- John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>,
- Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
- Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>,
- Juri Lelli <juri.lelli@redhat.com>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin
- <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
- Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>,
- "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>,
- Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>,
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
- Albert Ou <aou@eecs.berkeley.edu>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Janosch Frank <frankja@linux.ibm.com>,
- Claudio Imbrenda <imbrenda@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- "David S. Miller" <davem@davemloft.net>,
- Andreas Larsson <andreas@gaisler.com>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>,
- Matthew Brost <matthew.brost@intel.com>,
- Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>,
- Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>,
- Ying Huang <ying.huang@linux.alibaba.com>,
- Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>,
- Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>,
- Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>,
- Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>,
- Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>,
- Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>,
- Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>,
- Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
- Xu Xin <xu.xin@linux.dev>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-rdma@vger.kernel.org, selinux@vger.kernel.org,
- linux-sound@vger.kernel.org, bpf@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org,
- linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
- fuse-devel@lists.linux.dev, Ihor Solodrai <ihor.solodrai@linux.dev>,
- Bert Karwatzki <spasswolf@web.de>
-References: <20261013-b4-mmap-prepare-vma-flag-sanify-v6-0-1aa3c9b139f9@kernel.org>
- <20261013-b4-mmap-prepare-vma-flag-sanify-v6-30-1aa3c9b139f9@kernel.org>
-From: "David Hildenbrand (Arm)" <david@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=david@kernel.org; keydata=
- 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
- qIws/H2t
-In-Reply-To: <20261013-b4-mmap-prepare-vma-flag-sanify-v6-30-1aa3c9b139f9@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAJuCfpE9VfgTw2ZNMJTEVh41H_R+1RY_MtzeMuZNCD3BFm-Piw@mail.gmail.com>
 
-On 10/13/26 17:05, Lorenzo Stoakes (ARM) wrote:
-> Introduce vma[_flags]_is_mm_backed() for the purposes of identifying
-> mappings which are mm-managed and whose contents were placed there by core
-> mm's own fault path - rather than a custom ->fault handler.
+On Tue, Oct 13, 2026 at 03:23:14PM +0400, Suren Baghdasaryan wrote:
+> On Fri, Oct 9, 2026 at 10:36 AM Hao Ge <hao.ge@linux.dev> wrote:
+> >
+> > __vmap_pages_range_noflush() and friends can install some PTEs before
+> > failing and leave them mapped, and the kernel callers do not agree on
+> > who cleans them up. pcpu_map_pages() and kmsan_ioremap_page_range()
+> > roll back what they mapped before the failure, while
+> > vm_module_tags_populate() and the __GFP_NOFAIL retry loop in
+> > __vmalloc_area_node() rely on the mapping functions cleaning up and
+> > do not call anything like vunmap_range() themselves. When the same
+> > range is mapped again, the attempt hits the leftovers and fails, with
+> > a BUG() in vmap_pte_range() for huge mappings and a warning on the
+> > small-page path.
+> >
+> > After discussing with Suren and Ulad, we decided to put the rollback
+> > into the entry points of the vmap API rather than into every low-level
+> > helper. __vmap_pages_range_noflush() undoes the whole range it was
+> > asked to map when it fails, and vmap_page_range() undoes its range
+> > for the ioremap-style mappings.
+> >
+> > The rollback is __vunmap_range_noflush(), it only clears the PTEs,
+> > no TLB flush, nothing has touched these mappings.
+> > vmap_pages_range_noflush() drops the KMSAN metadata when the data
+> > mapping fails, and an empty range bails out with -EINVAL now, which
+> > used to BUG_ON() on the small-page path and map nothing at all on
+> > the huge-page one.
+> >
+> > Reported-by: Sashiko <sashiko-bot@kernel.org>
+> > Suggested-by: Uladyslau Rezki <urezki@gmail.com>
+> > Signed-off-by: Hao Ge <hao.ge@linux.dev>
+> > ---
+> >  mm/vmalloc.c | 44 ++++++++++++++++++++++++++++++++------------
+> >  1 file changed, 32 insertions(+), 12 deletions(-)
+> >
+> > diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+> > index db669103dc66..e1b376f57dd2 100644
+> > --- a/mm/vmalloc.c
+> > +++ b/mm/vmalloc.c
+> > @@ -363,6 +363,9 @@ int vmap_page_range(unsigned long addr, unsigned long end,
+> >         if (!err)
+> >                 err = kmsan_ioremap_page_range(addr, end, phys_addr, prot,
+> >                                                ioremap_max_page_shift);
+> > +       if (err)
+> > +               __vunmap_range_noflush(addr, end);
+> > +
+> >         return err;
+> >  }
+> >
+> > @@ -683,27 +686,35 @@ int __vmap_pages_range_noflush(unsigned long addr, unsigned long end,
+> >                 pgprot_t prot, struct page **pages, unsigned int page_shift)
+> >  {
+> >         unsigned int i, nr = (end - addr) >> PAGE_SHIFT;
+> > +       unsigned long start = addr;
+> > +       int err = 0;
+> > +
+> > +       if (WARN_ON_ONCE(addr >= end))
+> > +               return -EINVAL;
+> >
+> >         if (WARN_ON_ONCE(page_shift < PAGE_SHIFT))
+> >                 return -EINVAL;
+> >
+> >         if (!IS_ENABLED(CONFIG_HAVE_ARCH_HUGE_VMALLOC) ||
+> > -                       page_shift == PAGE_SHIFT)
+> > -               return vmap_small_pages_range_noflush(addr, end, prot, pages);
+> > -
+> > -       for (i = 0; i < nr; i += 1U << (page_shift - PAGE_SHIFT)) {
+> > -               int err;
+> > -
+> > -               err = vmap_range_noflush(addr, addr + (1UL << page_shift),
+> > +                       page_shift == PAGE_SHIFT) {
+> > +               err = vmap_small_pages_range_noflush(addr, end, prot, pages);
+> > +       } else {
+> > +               for (i = 0; i < nr; i += 1U << (page_shift - PAGE_SHIFT)) {
+> > +                       err = vmap_range_noflush(addr, addr + (1UL << page_shift),
+> >                                         page_to_phys(pages[i]), prot,
+> >                                         page_shift);
+> > -               if (err)
+> > -                       return err;
+> > +                       if (err)
+> > +                               break;
+> >
+> > -               addr += 1UL << page_shift;
+> > +                       addr += 1UL << page_shift;
+> > +               }
+> >         }
+> >
+> > -       return 0;
+> > +       /* Undo the PTEs installed before the failure. */
+> > +       if (err)
+> > +               __vunmap_range_noflush(start, end);
 > 
-> Mappings not managed by core mm do not fall into this category, as they are
-> populated by their owner, and nor of course does memory-mapped I/O.
+> Would it be too complicated to track how much was actually mapped and
+> unmap only that portion?
 > 
-> We exclude fixed mappings as these have a layout core mm cannot assume
-> ordinary fault semantics over.
-> 
-> hugetlb mappings are fixed mappings, but core mm owns them entirely, so
-> they are explicitly carved out as mm-backed, as the MADV_DODUMP check
-> already does.
-> 
-> Use this functionality to update the madvise MADV_DODUMP check to test for
-> this rather than open-coding it.
-> 
-> Also update vma_flags_can_merge() so it is written in terms of
-> vma_flags_is_mm_backed() - all mm-backed mappings can be merged except
-> hugetlb mappings, whose flags and fields do not completely describe them.
-> 
-> Also update __thp_vma_allowable_orders() to use vma_is_mm_backed() rather
-> than testing for mergeability, which is irrelevant to this function.
-> 
-> This replaces the VM_SPECIAL check which means it no longer checks for
-> VMA_IO_BIT, however this is safe as we have established the invariant that
-> mm-managed mappings may not set VMA_IO_BIT, so we implicitly include
-> these.
-> 
-> No functional change intended.
-> 
-> Acked-by: Zi Yan <ziy@nvidia.com>
-> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
-> ---
+I think it is possible to vunmap the range which is already unmapped.
+i.e. in this case it is better to no to track anything as soon as a
+mapping failure is a corner case. Also it is more reliable without
+extra track logic.
 
-Acked-by: David Hildenbrand (Arm) <david@kernel.org>
-
--- 
-Cheers,
-
-David
+--
+Uladzislau Rezki
 
