@@ -1,69 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-29444-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29445-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D2B8CC6B0F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 22:41:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E294CC6B12
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 22:41:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j48S01s9xz3c56;
-	Wed, 14 Oct 2026 09:40:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j48S20tTjz30Vs;
+	Wed, 14 Oct 2026 09:40:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1348"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791931232;
-	cv=none; b=JXG5+AI9IipkLqvn2PzyAbGbbjLVN5GB/EKmTmZQ1qOEuTUUEltNdC1UNiLrgnkL8iO/CHJtjdkDQ/cNiH2aZZPUhXhW494DT50wBaXHm/U2Av+sJfGhNpNvqH+u/3WlU7Tg7wYjgU2axlaj+9EV1ZNmFLeTJVNjfLbTGDzUhhTma8l+/Rfu3tPsjGyOxCr0tcQRTiMHiN7jT5/URAlp2Xm3eXUhdVxk1JjNjJBhhJRWOYvPqPl6ymo1zKSBTMpTWDhYUo2HHT0Pvobr9jzVLIyh08nZ5SV/v7+fCVWMP7b9HC50Q0At9SgCfeLc0bFedysMWP1U6ML+dlgfXnGNdg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791931234;
+	cv=none; b=Z65tj9C/Tyi2Ul6eSL136iCZ/Q/i2H+oMUrr3Befe1Ldgvmx7kbvcfSlrV6QM07QT2zI6b0xnVZdK71jVGPbTZZWtRs2kA+Idvplj+YmUP3oBqhBvCLYAzg5rOdAkTvMR1GyiKkc/CSfRNohNSVuPDPUE+HllwgL76w8Y2GrroFwW7APUI0JPTgbAlGwgn0dFaKkRyCXWiefLj0rd9PTVkYd/LQYhh4EItDs1htYWJYb3mHuX7PtK6QoSc7GTYNR8ieODhnio7K2PaDIGruBmm+HC4LiPlqRfkQD889hLHR0wlJ1YYKhpqpdXW6h4qxLU/ed8vb3eEkKZTpJgSrmuA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791931232; c=relaxed/relaxed;
-	bh=SzuEQJa4uF6wSn0s7ZpxNvjcEHFt9KB4NkbiARikmlQ=;
+	t=1791931234; c=relaxed/relaxed;
+	bh=E3db36lwsPWQArDIHzP6eqDHTacNJpd6D0FMiQjZlVc=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=WKbySYRYNv6bSpgckVdiI/sEYDYR66oaeuI8oaMxLpip+rd8DRidPtEXeXYkEXAPCRcxdeBwsAPUiuCTCOw6hMLzheQ+Il24SyA2ltCPnxERodkrpTDsegDiP6dqhDQzkRxngpVRVaqJbXi3YVdbPO/k3sDdeWmOFTlmURz8d39TPgERs/7WXsnkYseDGW4lCVAS4StyrFa6DWWaW+e8NxYKlqGdIJ51tjNy3d+GVQfHSkh7wUbN9d+A+E/uqZCB5DRqdHcJ0R5Ysk7FxJsMcJ91Wzu22uJ3nylkQiliPbmde3KuzGNioDV0G9/9LnPQ9+7vaCt2nuXvHORCGQhhnw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=XhZe7GxO; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1348; helo=mail-dy1-x1348.google.com; envelope-from=3xlpoagckdfsbkh97kl9hh9e7.5hfebgnqii5-67oeblml.hse34l.hk9@flex--irogers.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--irogers.bounces.google.com
+	 To:Cc:Content-Type; b=Gs6KTUwJQDgtpBpUxxho6BHHfGmRueF88uyOcTyptQ0CPL4CNPtamc6kxnxYUtc4IHQdm0CdvKCtdNfRgTbvvVwbS8eUJsLWtIcePWwPTPgkGJ76FHGgtWht0dbixylS/wxT1MAZJB7R1gBp0RhODaRy6ihtVE4O6V2TaYzyW4w2HzLxoUGCPNEBfLGDfRkfMyDX9BAUz1AZqbeNfILxQH29kBkP+ggFhLvc+eySXm4AF2ZSld544AxfWTFf/Ik36nYu8lf0KIedEMOwYENVGlqqW5jISsxGi6gnhRprlNa1jBMBXtmH/lv2txGFdHcOjpHoZqkbCK9e2w5PkLlWIw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=oyubUZdB; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1348; helo=mail-dy1-x1348.google.com; envelope-from=3xrpoagckdf0dmjb9mnbjjbg9.7jhgdipskk7-89qgdnon.jug56n.jmb@flex--irogers.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--irogers.bounces.google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=XhZe7GxO;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=oyubUZdB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--irogers.bounces.google.com (client-ip=2607:f8b0:4864:20::1348; helo=mail-dy1-x1348.google.com; envelope-from=3xlpoagckdfsbkh97kl9hh9e7.5hfebgnqii5-67oeblml.hse34l.hk9@flex--irogers.bounces.google.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--irogers.bounces.google.com (client-ip=2607:f8b0:4864:20::1348; helo=mail-dy1-x1348.google.com; envelope-from=3xrpoagckdf0dmjb9mnbjjbg9.7jhgdipskk7-89qgdnon.jug56n.jmb@flex--irogers.bounces.google.com; receiver=lists.ozlabs.org)
 Received: from mail-dy1-x1348.google.com (mail-dy1-x1348.google.com [IPv6:2607:f8b0:4864:20::1348])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j48Rz51f6z3c13
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 09:40:31 +1100 (AEDT)
-Received: by mail-dy1-x1348.google.com with SMTP id 5a478bee46e88-3580c07911eso9020118eec.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 15:40:31 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j48S12NJ2z3c6Z
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 09:40:33 +1100 (AEDT)
+Received: by mail-dy1-x1348.google.com with SMTP id 5a478bee46e88-30bcb065bfdso6716350eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 15:40:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1791931230; x=1792536030; darn=lists.ozlabs.org;
+        d=google.com; s=20251104; t=1791931231; x=1792536031; darn=lists.ozlabs.org;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=SzuEQJa4uF6wSn0s7ZpxNvjcEHFt9KB4NkbiARikmlQ=;
-        b=XhZe7GxOlZcEF+0gEgjgL0oBJRdlgI5z2/Pf3w+yTMX2Wos8ztdlrjsMFW/OQqrBDh
-         LukzoCtrSLpv7SFrUUiRy6J+/AeiO52L4ztTgtsxC54Z+Xfd2HgdIrKd9iag2zJ0y9IM
-         nwwefXW4sZyRTgc8mU/9wpjyF5mCBMQA4K/LxMirhjGCGLsJcmi66agN8OLfxAlsA8wI
-         ippFFzrSxvf8AiM6RCA/NjHSsPG9A2OSc77fxHiMdw1p3cX8aoA0LJOt+u4cE6ZiSWPB
-         PBZpWG31xk+9LtmQZ2k0ESV1X6vaFQuYN0acXFHPs8PG+h/hD18vnK+mYM0NTHAMuGLI
-         8VVg==
+        bh=E3db36lwsPWQArDIHzP6eqDHTacNJpd6D0FMiQjZlVc=;
+        b=oyubUZdBxUdTy4ob1yZn7yDDYu1DRYYjwQIVjODdZIzviqF7K+gfenBNcl5+ChWWeB
+         ePyNj9cVlIyRsg7ftuE0mePd3mQMSE7C3OFR4l828zy98VwXN+Gw1DxakbDPukgcHaDK
+         GIy3AuaR/Hx1RSo24lnjFQtLTxDiaQO8WYG0Z5dAUEOdWAUPpCuOX4drbnh6ksdQZDiy
+         WfQVxLJpnMjiAg/BJRSrZrneiAn5dq9gF8/PJqwEDzRncZGZv/JDbUS6+MivmUTLX5TY
+         IAKad+VTndj5Un1CEVwvwKixbsW+1T/Y9B20fBssCzfrnm1/8vmjoXljTqULddQEmpuY
+         2gYA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791931230; x=1792536030;
+        d=1e100.net; s=20260707; t=1791931231; x=1792536031;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=SzuEQJa4uF6wSn0s7ZpxNvjcEHFt9KB4NkbiARikmlQ=;
-        b=PNPRSQkd82lUM+H0Q2yKV/pul+39+SQXGobqIisZha6OXSFV39D3Y4cayu6BLZjh1K
-         KxCv239jk7opdNyk4ZzazImeSssELEDMpxnQgoquXuOOFwfjKkH5DFs9TIUAEKFxi1+/
-         z/A0jB5L1CEPwXPOQN8MHv8ZYtFpEEJZMrwwF2keELfxz28/1dJfsshgVXfCvktHGQe7
-         FV8HwMSpX/WQ7cpJf3j02x1hObs/AZ8BKBnV2FUefDD1zG/DOhEdJvYEaqOJLtUR72zX
-         GUTn4WdqCb9MoIzDOwwgqZtFEEZRRr6Qe/orFelfQDhhl5/Ni9VH1PbnyXY/YFh/agyQ
-         lltw==
-X-Forwarded-Encrypted: i=1; AKwUvBw+UqD5kPzmsSg/bV14A5TvKeP6jGQ69HSSdDFtO+eqoPYzeoVBmog2zaUyB+nmV6+69qxw5Hiqtaq4hoY=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYIpn616ZU2lEvN8qscC13EGBazZ6+/g4C5FNnWD4+5OpRcZ1YdW
-	bogorfaLoNwbmpIxGdnKu2By7E0giQE85JD8iyClfiRljNF5/OwSyyZTK3rmkYocqpb4PO3p17Q
-	XTI6bemt5yw==
-X-Received: from dybmf44.prod.google.com ([2002:a05:7301:92c:b0:358:41fa:f46f])
- (user=irogers job=prod-delivery.src-stubby-dispatcher) by 2002:a05:7300:c8c2:b0:35a:8dad:6724
- with SMTP id 5a478bee46e88-35a8dad7ec8mr9213311eec.22.1791931228757; Tue, 13
- Oct 2026 15:40:28 -0700 (PDT)
-Date: Tue, 13 Oct 2026 15:39:42 -0700
+        bh=E3db36lwsPWQArDIHzP6eqDHTacNJpd6D0FMiQjZlVc=;
+        b=SvQwujfujyw9pw//UaY3B/oOEwC/XlG5jdeQ/UyZGpeDBXyB/8mSsPL2BJ5GVbMFS4
+         cr+Tj5OC2pDiWf+S+yHC5tG9Uwz8UAQfHg/6jOxGboThW3Rshgs9wBCJZycdYziPAx+I
+         cqZmStbhbuc+dRTdwuPNZ5xdpACOPnVEWIwR1+h1p+Rh9d2FlJJYRjWC30cm7WKMkcO8
+         Wb1XFQIFnz8xo0jHZ1+ehE0/oXh4gMuRsA6Xw2AjyRxjhvqhiAYPopta2PFcLVKSvYLV
+         sD3wfjx7iXMrRIJQzIEndKs2307QGWBjdE4ztOi4sGQBdYm+yELzJky9bSH+XVUw0XUA
+         Sh9Q==
+X-Forwarded-Encrypted: i=1; AKwUvBwaIEN793O6VThIxlvKO94FjSDDsZdK5EZjD2PVshyDrnbWG+bfCXVHsEzDvrW0V1RycsN3n0BQmoTbhYM=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYJe1fR9MFzekCUrHtFoVsewGT67YRfv9u2H6V5TUQCV7Kfa9vuh
+	zZ0N7pmwad+qSv4upKLMwoJ5rU+ZY+CxZw9wHgEVmaiJ1/F2P1jfCeiStxoNli6K1e9wIsbinDM
+	KFVHP1CJrzg==
+X-Received: from dybmd37.prod.google.com ([2002:a05:7301:1825:b0:351:1da6:c2e7])
+ (user=irogers job=prod-delivery.src-stubby-dispatcher) by 2002:a05:7301:78cb:b0:351:515b:4e85
+ with SMTP id 5a478bee46e88-3537e088bd7mr19706222eec.16.1791931230851; Tue, 13
+ Oct 2026 15:40:30 -0700 (PDT)
+Date: Tue, 13 Oct 2026 15:39:43 -0700
 In-Reply-To: <20261013223946.1836757-1-irogers@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -80,8 +80,9 @@ Precedence: list
 Mime-Version: 1.0
 References: <20261013223946.1836757-1-irogers@google.com>
 X-Mailer: git-send-email 2.56.0.385.gd3acb90ef8-goog
-Message-ID: <20261013223946.1836757-8-irogers@google.com>
-Subject: [PATCH 07/11] xen/sys-hypervisor: Add release callback to hyp_sysfs_kobj_type
+Message-ID: <20261013223946.1836757-9-irogers@google.com>
+Subject: [PATCH 08/11] s390/sclp_mem: Allocate struct sclp_mem dynamically and
+ add kobject release
 From: Ian Rogers <irogers@google.com>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J . Wysocki" <rafael@kernel.org>, 
 	Danilo Krummrich <dakr@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, Kees Cook <kees@kernel.org>, 
@@ -110,40 +111,176 @@ Cc: Nick Desaulniers <ndesaulniers@google.com>, Bill Wendling <morbo@google.com>
 	Ian Rogers <irogers@google.com>
 Content-Type: text/plain; charset="UTF-8"
 
-hypervisor_init() in drivers/base/hypervisor.c creates hypervisor_kobj
-with kobject_create_and_add() (which allocates a dynamic kobject using
-dynamic_kobj_ktype), and hypervisor_subsys_init() in
-drivers/xen/sys-hypervisor.c then overwrites hypervisor_kobj->ktype with
-&hyp_sysfs_kobj_type, which had no .release callback.
+sclp_init_mem() allocated a single array of struct sclp_mem with
+kzalloc_objs() and registered each embedded kobject using a kobj_type
+without a .release callback. Allocate each struct sclp_mem individually
+with kzalloc_obj() instead and add sclp_mem_release() to free it.
 
-Add hyp_sysfs_release() calling kfree(kobj) to preserve the dynamic
-kobject release behavior.
-
-Fixes: cff7e81b3dd7 ("xen: add /sys/hypervisor support")
+Fixes: ff18dcb19aab ("s390/sclp: Add support for dynamic (de)configuration of memory")
 Assisted-by: Antigravity:gemini-3.1-pro
 Signed-off-by: Ian Rogers <irogers@google.com>
 ---
- drivers/xen/sys-hypervisor.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/s390/char/sclp_mem.c | 73 +++++++++++++++++-------------------
+ 1 file changed, 34 insertions(+), 39 deletions(-)
 
-diff --git a/drivers/xen/sys-hypervisor.c b/drivers/xen/sys-hypervisor.c
-index 91923242a5ae..0e8a2cd69fd6 100644
---- a/drivers/xen/sys-hypervisor.c
-+++ b/drivers/xen/sys-hypervisor.c
-@@ -659,7 +659,13 @@ static const struct sysfs_ops hyp_sysfs_ops = {
- 	.store = hyp_sysfs_store,
+diff --git a/drivers/s390/char/sclp_mem.c b/drivers/s390/char/sclp_mem.c
+index 6df1926d4c62..f7c161e0d836 100644
+--- a/drivers/s390/char/sclp_mem.c
++++ b/drivers/s390/char/sclp_mem.c
+@@ -49,11 +49,6 @@ struct sclp_mem {
+ #endif
  };
  
-+static void hyp_sysfs_release(struct kobject *kobj)
+-struct sclp_mem_arg {
+-	struct sclp_mem *sclp_mems;
+-	struct kset *kset;
+-};
+-
+ struct assign_storage_sccb {
+ 	struct sccb_header header;
+ 	u16 rn;
+@@ -304,7 +299,15 @@ static ssize_t sclp_memmap_on_memory_store(struct kobject *kobj, struct kobj_att
+ 	return rc ? rc : count;
+ }
+ 
++static void sclp_mem_release(struct kobject *kobj)
 +{
-+	kfree(kobj);
++	struct sclp_mem *sclp_mem = container_of(kobj, struct sclp_mem, kobj);
++
++	kfree(sclp_mem);
 +}
 +
- static const struct kobj_type hyp_sysfs_kobj_type = {
-+	.release = hyp_sysfs_release,
- 	.sysfs_ops = &hyp_sysfs_ops,
+ static const struct kobj_type ktype = {
++	.release = sclp_mem_release,
+ 	.sysfs_ops = &kobj_sysfs_ops,
  };
  
+@@ -321,36 +324,40 @@ static struct attribute_group sclp_mem_attr_group = {
+ 	.attrs = sclp_mem_attrs,
+ };
+ 
+-static int sclp_create_mem(struct sclp_mem *sclp_mem, struct kset *kset,
+-			   unsigned int id, bool config, bool memmap_on_memory)
++static int sclp_create_mem(struct kset *kset, unsigned int id, bool config,
++			   bool memmap_on_memory)
+ {
++	struct sclp_mem *sclp_mem;
+ 	int rc;
+ 
++	sclp_mem = kzalloc_obj(*sclp_mem);
++	if (!sclp_mem)
++		return -ENOMEM;
+ 	sclp_mem->memmap_on_memory = memmap_on_memory;
+ 	sclp_mem->config = config;
+ #ifdef CONFIG_KASAN
+ 	sclp_mem->early_shadow_mapped = config;
+ #endif
+ 	sclp_mem->id = id;
+-	kobject_init(&sclp_mem->kobj, &ktype);
+-	rc = kobject_add(&sclp_mem->kobj, &kset->kobj, "memory%d", id);
+-	if (rc)
++	rc = kobject_init_and_add(&sclp_mem->kobj, &ktype, &kset->kobj,
++				  "memory%d", id);
++	if (rc) {
++		kobject_put(&sclp_mem->kobj);
+ 		return rc;
+-	return sysfs_create_group(&sclp_mem->kobj, &sclp_mem_attr_group);
++	}
++	rc = sysfs_create_group(&sclp_mem->kobj, &sclp_mem_attr_group);
++	if (rc) {
++		kobject_put(&sclp_mem->kobj);
++		return rc;
++	}
++	return 0;
+ }
+ 
+ static int sclp_create_configured_mem(struct memory_block *mem, void *argument)
+ {
+-	struct sclp_mem *sclp_mems;
+-	struct sclp_mem_arg *arg;
+-	struct kset *kset;
+-	unsigned int id;
++	struct kset *kset = argument;
+ 
+-	id = mem->dev.id;
+-	arg = (struct sclp_mem_arg *)argument;
+-	sclp_mems = arg->sclp_mems;
+-	kset = arg->kset;
+-	return sclp_create_mem(&sclp_mems[id], kset, id, true, false);
++	return sclp_create_mem(kset, mem->dev.id, true, false);
+ }
+ 
+ static void __init align_to_block_size(unsigned long *start,
+@@ -368,8 +375,7 @@ static void __init align_to_block_size(unsigned long *start,
+ 	*size = size_align;
+ }
+ 
+-static int __init sclp_create_standby_mems_merged(struct sclp_mem *sclp_mems,
+-						  struct kset *kset, u16 rn)
++static int __init sclp_create_standby_mems_merged(struct kset *kset, u16 rn)
+ {
+ 	unsigned long start, size, addr, block_size;
+ 	static u16 first_rn, num;
+@@ -394,7 +400,7 @@ static int __init sclp_create_standby_mems_merged(struct sclp_mem *sclp_mems,
+ 		goto skip_add;
+ 	for (addr = start; addr < start + size; addr += block_size) {
+ 		id = addr / block_size;
+-		rc = sclp_create_mem(&sclp_mems[id], kset, id, false,
++		rc = sclp_create_mem(kset, id, false,
+ 				     mhp_supports_memmap_on_memory());
+ 		if (rc)
+ 			break;
+@@ -405,45 +411,34 @@ static int __init sclp_create_standby_mems_merged(struct sclp_mem *sclp_mems,
+ 	return rc;
+ }
+ 
+-static int __init sclp_create_standby_mems(struct sclp_mem *sclp_mems, struct kset *kset)
++static int __init sclp_create_standby_mems(struct kset *kset)
+ {
+ 	struct memory_increment *incr;
+ 	int rc = 0;
+ 
+ 	list_for_each_entry(incr, &sclp_mem_list, list) {
+ 		if (incr->standby)
+-			rc = sclp_create_standby_mems_merged(sclp_mems, kset, incr->rn);
++			rc = sclp_create_standby_mems_merged(kset, incr->rn);
+ 		if (rc)
+ 			return rc;
+ 	}
+-	return sclp_create_standby_mems_merged(sclp_mems, kset, 0);
++	return sclp_create_standby_mems_merged(kset, 0);
+ }
+ 
+ static int __init sclp_init_mem(void)
+ {
+-	const unsigned long block_size = memory_block_size_bytes();
+-	unsigned int max_sclp_mems;
+-	struct sclp_mem *sclp_mems;
+-	struct sclp_mem_arg arg;
+ 	struct kset *kset;
+ 	int rc;
+ 
+-	max_sclp_mems = roundup(sclp.rnmax * sclp.rzm, block_size) / block_size;
+-	/* Allocate memory for all blocks ahead of time. */
+-	sclp_mems = kzalloc_objs(struct sclp_mem, max_sclp_mems);
+-	if (!sclp_mems)
+-		return -ENOMEM;
+ 	kset = kset_create_and_add("memory", NULL, firmware_kobj);
+ 	if (!kset)
+ 		return -ENOMEM;
+ 	/* Initial memory is in the "configured" state already. */
+-	arg.sclp_mems = sclp_mems;
+-	arg.kset = kset;
+-	rc = for_each_memory_block(&arg, sclp_create_configured_mem);
++	rc = for_each_memory_block(kset, sclp_create_configured_mem);
+ 	if (rc)
+ 		return rc;
+ 	/* Standby memory is "deconfigured". */
+-	return sclp_create_standby_mems(sclp_mems, kset);
++	return sclp_create_standby_mems(kset);
+ }
+ 
+ static void __init insert_increment(u16 rn, int standby, int assigned)
 -- 
 2.56.0.385.gd3acb90ef8-goog
 
