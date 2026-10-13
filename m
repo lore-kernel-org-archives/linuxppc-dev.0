@@ -1,137 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-29372-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29373-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA79ECC6B10
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 14:10:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8FD1CC6B16
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 15:06:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3x7J15Qhz30Tf;
-	Wed, 14 Oct 2026 01:10:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip=192.198.163.19
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791900620;
-	cv=fail; b=GwX5BVU9+HHu0cwv4N7aJrb8TBOj3E9ju4JPo6tZGjWRllpDg79PR7bRi46a/D90ZMDztEMqMHvq6i1yHdtQlLkavGJ8FF/2ZnNKQtjZ6nb3mwJEZwxyvdK0GLs3A+ixuYMprxef+27RByrPmOZG9wP7TqfjkwREmG93w9psXOmP7LMmvFA9+U6QVCezrwah0+FW1hFGggAT+Knk7dUuN5QVkSWIfCj06kQf2Ry9UbyYEks07n0t8JLR2C9y725sLXruhI1H6BM3nrNo7SEmET7e3b3vK9tLBCE2MEztmY2YQTJVt3uE49HLtX5P8KQDVNqbpyl42do8cDWGBvUvWQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791900620; c=relaxed/relaxed;
-	bh=RDZnApntZDZEkaR3/QuQ+NVmKivCF9edby+QxqsQ0UI=;
-	h=Date:From:To:CC:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=FtW/hwwSqwpNngCoxEX6V4N6fG5J7fUUt4AtcogxpcQvH1pDvS1PdHVfK634/Sgd+99gacmGWY/qF44nV2aPUlr/kpqK9Q/Ij0F+r9cGJC/+k6HUXc+US5Uv+eTjf2Pq1vJoCId1UAOV255vMdAK2gSdtltjjdL6kCvv/+MPuxzMI/DKFBWx31UlKwOUWJmnKhVq9dWfi97e6/GyFE8y5Yg0toepdqZbn54cdWx6ZC+62N6D2loJ0RsOpNMcpvqjHRAzTT/UIvkilywMRDVkhgSE7Q7KDOs5Q1rUxgEmPKDHJwB5WF5cPRGOqofPfVD0ktk2eW+J0JUR/Yo1kFAy1w==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=egOkQX/7; dkim-atps=neutral; spf=pass (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=rodrigo.vivi@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3yN15zZKz3brm;
+	Wed, 14 Oct 2026 02:06:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791903985;
+	cv=none; b=BLJMEiGQo3/xhE1z4roIJPn16pKr1mE+PMgO1jltmNd1lBhq4gywQhGXItPqyy59PxeEBpxr/rigVAQtkdtl69HXdkMvR/KOvgQwnkPvSRqe9KcsnlDQNgtXcok6yJZbPkSlL2sgCLWOJTJULeuAMqH1Ln1oHHLzL+kGMiu49y2v+gY8BCX6VhBkQ8BJTz9JD7/xIoQoWEywxMTp3U8KfBjj6dwgoxR7CukUT8GCYB2lwwUwUGppYg2Mgub5O7dGdZUAvcjhA42cXg2sOC+TCIRrMJnayxueZj781ch8OlsBxkFhwNkoVoC7ZUoPfYhIaP2/KCxqDdZStGMw6UkE3Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1791903985; c=relaxed/relaxed;
+	bh=ipiG6keSybtKrvN7hSi75asiM4v29y28tsNz0um4DUw=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=WRJG9BMZCKWckWY1pZOyl7YS8bb5XxTLgod/UGG+CQNDbGhj6SIfi81rkssjZXuIsekVvhsUDsf2v2A6vC0MeB3A+Em7LQkqM3eO0uaLfnqEpaiC3ccluWy9qruxXPP0k/g1er1fq0+7VJJPJjsVptDr2GbrFNAT/9JYlDe4pPLIL5jWS2TwVRQUMu2mWc1C5NwVipLG9lqegMB6A3GgbBCIwr312vKzpSO5YjD/Yb9ZqKXayygrAnhjM00vNafH5dNuQvfBSWvEDXlQU0T/heeiWvCJbGFZtcVIBp2n35KuZsd1r5UDTo9yKJOjGZcS8xyDPdUbbgGYj62m1rFEKw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=f3tAZisT; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=egOkQX/7;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=f3tAZisT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=rodrigo.vivi@intel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 63 seconds by postgrey-1.37 at boromir; Wed, 14 Oct 2026 01:10:16 AEDT
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3x7D75Rlz308H
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 01:10:16 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1791900618; x=1823436618;
-  h=date:from:to:cc:subject:message-id:references:
-   content-transfer-encoding:in-reply-to:mime-version;
-  bh=/PPptRWdZ5Ab82Cxr5GwM7a6IrdsLqXwviq1vJyDyXQ=;
-  b=egOkQX/7lmUWIuYIL5HDz2MuWru61fJ1CNb631EKqQ5hAiRNcVcrGNjJ
-   aO0zgXJ5xI5+7oIVWVRJmrfNMDMVNVqWUxukRSp83SbGI/ve9JDsTDhnt
-   CspstJKvpgvqP/bh5y3yUdZGGDRfOyqK4z+ZvHfIrbxgHhK5qWbddA58u
-   9WKdqhk5fa/MP2ZrbeVLYQdK1x54FxDM5QHAQWym71xdlcXkZfWCaHp0h
-   XEPK+uxnB6hvIog0m366/2V4nQ3z5t6KhIp8+HMBH5SXoXP6Nx+700YBQ
-   fX3VBMUO/cOwy40tGDIXNGgnUX+60YCSlNSC4TZ7eUt+Wd7yZwTMEcEld
-   A==;
-X-CSE-ConnectionGUID: Gjbv48q6Th6wmBWGPi37EQ==
-X-CSE-MsgGUID: IHCkjGMiSS68kpkgiODLWQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11934"; a="729762"
-X-IronPort-AV: E=Sophos;i="6.27,155,1787036400"; 
-   d="scan'208";a="729762"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
-  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Oct 2026 07:08:56 -0700
-X-CSE-ConnectionGUID: 72KsqCRNTFajriGjBYWVYQ==
-X-CSE-MsgGUID: B1YwFK8tREKdb2yGze3srQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,155,1787036400"; 
-   d="scan'208";a="1177340"
-Received: from fmsmsx902.amr.corp.intel.com ([10.18.126.91])
-  by orviesa004.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Oct 2026 07:08:54 -0700
-Received: from FMSMSX902.amr.corp.intel.com (10.18.126.91) by
- fmsmsx902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.49; Tue, 13 Oct 2026 07:08:54 -0700
-Received: from fmsedg903.ED.cps.intel.com (10.1.192.145) by
- FMSMSX902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.49 via Frontend Transport; Tue, 13 Oct 2026 07:08:53 -0700
-Received: from SA9PR02CU001.outbound.protection.outlook.com (40.93.196.53) by
- edgegateway.intel.com (192.55.55.83) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.49; Tue, 13 Oct 2026 07:08:53 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=sybFoqkK8o50CMZVf5hBnwe12Rcjw8OQdCL0Zpc7xvVYtHm+mxtWmasrV/h7i19cfqG1IT5jnkee23yFe1zMF9V+GTdWeJ+ccG012lnwPvLovqR+1f3+yTbuVfX3rUPc9EAUVFD3Xo/J3LbeArRLvXh4IG0nwSZHP71xTa+9KqlQYze244WXXf1d22muXNpWMTyQGoG8+S3jN6M2n+UgsuEy9uqCPAdzu0QNvY8ZaEODeWt32PzIrByJW5toyx50a8kPdP2j+wlhwmRi3edf9bgjd+5GpZG6wucAuMEouKaSp3f3pyMq8hUIhtKbeuhbUl8ee/sqjPEB57QZETrtXA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=+rTV6bdBHnVNR7hG3nX3yUN+lUDWMEWvhFtqJNb0k4E=;
- b=hSiwO6WKCPuJ40UZGicx1hyFrlPLtNO1pAo17N8mcYethbSL1iavUlrONQT2r75fXlVVPnGZJJGTSHGOvjWwARPBMrTkAyyl5b/lZFW41yn4oLocuJ24myiScjlrPV6vi/1k5KvDRfmfpMibLHyeeQ5G1rd/g49sHg/tdMCu+dWt0SUQx8bfBjeEMmGcCsPz9tH5+GC6xg8Us3Vlx0uTP0W5vJasfCy0lTEX9U7iN144l5LejYIHsxMKleLA1CzqDaj2W7eLkG6YHdDzJbShjTwuwW5XcrTZRjMoZtsLlJhQUSVHZzljXGWyzWWpR6JPHNc2TU1Drhf0Z2s15HMn7g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Received: from CH3PR11MB7180.namprd11.prod.outlook.com (2603:10b6:610:148::5)
- by CH3PR11MB901483.namprd11.prod.outlook.com (2603:10b6:610:348::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.496.21; Tue, 13 Oct
- 2026 14:08:50 +0000
-Received: from CH3PR11MB7180.namprd11.prod.outlook.com
- ([fe80::70dc:90b2:50b4:31a8]) by CH3PR11MB7180.namprd11.prod.outlook.com
- ([fe80::70dc:90b2:50b4:31a8%7]) with mapi id 15.21.0496.015; Tue, 13 Oct 2026
- 14:08:50 +0000
-Date: Tue, 13 Oct 2026 10:08:06 -0400
-From: Rodrigo Vivi <rodrigo.vivi@intel.com>
-To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>
-CC: Maciej Grochowski <Maciej.Grochowski@sony.com>, Nikolas Joshua Britton
-	<nbritton@exabit.io>, Geramy Loveless <gloveless@jqluv.com>, Eric Auger
-	<eauger@redhat.com>, Alexey Fomenko <alexey.fomenko@intel.com>, Bjorn Helgaas
-	<bhelgaas@google.com>, <linux-pci@vger.kernel.org>, Lorenzo Pieralisi
-	<lorenzo.pieralisi@arm.com>, Rob Herring <robh@kernel.org>, Krzysztof
- =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>, Richard Henderson
-	<richard.henderson@linaro.org>, Matt Turner <mattst88@gmail.com>, "Magnus
- Lindholm" <linmag7@gmail.com>, Russell King <linux@armlinux.org.uk>, "Geert
- Uytterhoeven" <geert@linux-m68k.org>, Thomas Bogendoerfer
-	<tsbogend@alpha.franken.de>, "James E.J. Bottomley"
-	<James.Bottomley@hansenpartnership.com>, Helge Deller <deller@gmx.de>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman
-	<mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy
- (CS GROUP)" <chleroy@kernel.org>, Yoshinori Sato
-	<ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, "John Paul
- Adrian Glaubitz" <glaubitz@physik.fu-berlin.de>, Thomas Gleixner
-	<tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov
-	<bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, <x86@kernel.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, Chris Zankel <chris@zankel.net>, Max
- Filippov <jcmvbkbc@gmail.com>, David Airlie <airlied@redhat.com>, Jani Nikula
-	<jani.nikula@linux.intel.com>, Joonas Lahtinen
-	<joonas.lahtinen@linux.intel.com>, Tvrtko Ursulin <tursulin@ursulin.net>,
-	Simona Vetter <simona@ffwll.ch>, <linux-alpha@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-m68k@lists.linux-m68k.org>, <linux-mips@vger.kernel.org>,
-	<linux-parisc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
-	<linux-sh@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
-	<intel-gfx@lists.freedesktop.org>, Bradley Morgan <brads@mainlining.org>,
-	Sashiko <sashiko-bot@kernel.org>
-Subject: Re: [PATCH v3 3/8] PCI: Honor alignment overrides
-Message-ID: <as47Rs1SN3zKRObs@intel.com>
-References: <20261013130948.6231-1-ilpo.jarvinen@linux.intel.com>
- <20261013130948.6231-4-ilpo.jarvinen@linux.intel.com>
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20261013130948.6231-4-ilpo.jarvinen@linux.intel.com>
-X-ClientProxiedBy: PN4P287CA0107.INDP287.PROD.OUTLOOK.COM
- (2603:1096:c01:276::10) To CH3PR11MB7180.namprd11.prod.outlook.com
- (2603:10b6:610:148::5)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3yN03BBxz3brM
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 02:06:24 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 6750543485;
+	Tue, 13 Oct 2026 15:06:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 25F871F000FF;
+	Tue, 13 Oct 2026 15:05:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791903980;
+	bh=ipiG6keSybtKrvN7hSi75asiM4v29y28tsNz0um4DUw=;
+	h=From:Subject:Date:To:Cc;
+	b=f3tAZisTGwoBgYNvPKnh28vh+5gOi3ht3c3vhvOT+i5muvtp8+ooud2i9NkasQMRm
+	 GIgGtRoRMkSntFRI31dy+aXPDy8Nx5U/Z/rC98osXT+tdSjNSTItr5sJfNCDLEVT8x
+	 u47dGUaWzcqN6SSS1osBTbgNRF6NVj4X0gAm58Ksh+bbfCV7RR8RzXDQekysLWQ1xq
+	 +FQd0Eg/aeNxlk9YEFY8luk05/hpK+OFKbfszDlykkjnSFFWe/got64rzG0PkD6u7T
+	 eLj4cFgJ6mWODpGuPUrUcctH+D+oiIsCmRovz2iul2aKhv3EjBWTa4M2dCMknc4T+3
+	 T47o3l7EQnQBQ==
+From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Subject: [PATCH v6 00/39] mm: make VMA flag semantics explicit, eliminate
+ VM_SPECIAL
+Date: Tue, 13 Oct 2026 16:04:40 +0100
+Message-Id: <20261013-b4-mmap-prepare-vma-flag-sanify-v6-0-1aa3c9b139f9@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -145,519 +61,414 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CH3PR11MB7180:EE_|CH3PR11MB901483:EE_
-X-MS-Office365-Filtering-Correlation-Id: 317735f5-bea6-4089-c44e-08df293380e9
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|376014|7416014|1800799024|23010399003|366016|18002099003|10067099003|22082099003|3023799007|4143699003|261009223027099003|260925022911599003|11063799006|260925021911599003|260925021311599003|56012099006;
-X-Microsoft-Antispam-Message-Info: GvXCWXjW0VR/qcHH1lMbLxlIOm2Iv44np71/iI7hmjo2MYNOjs+1K6lG3STdVqmTDTOEui+JW/Mc1Ykuv81WKxwWlIO3GugGxkLhu/ZlCb7VGCX2vvvLrSPSNbBZ4RwxfEbHj/bZmfaNJM5bsswgRweiBRm6BO4Gy4JNnNlTWhOOAiGYyt4vT25DIF/WmC5wg/O+vAWRxMngVEG8VZycPFvWCA9mbp8i+EqvzhmVEfnTJ5Fc8Q2B+HDyjYpKChLJjBeOCIDikaRjWHfqihpNvAhy4NDDOX87KXH2uACN9mv6bTVxc/P/7gpTj/jOGpcttyOehyaVr3MeJjzKjMYafEt7jEV2EK/xbOKkk7fnq4CEloYtglJdP4Aho7K+KAy7gijY7efg7EfUkQwXhrMQG9HhvF13lj6hP1P15X8a/9S6vVZJptEK8rmhs4DK32gRMM5jmQnkwFLE/USK0bk83dNd+nu1E2n7J6GqxVHtU2DzpJa/+S093rYk8KjyB7yZRbwGYioaDvkqxAPa102eIr+xUxerNOci3ihTDLdHKQJ8uT1VDnjZHNUOHqQLQ/iAPj5N469IoAzDcH5GgvjWersn5fLZQ9tTiRk7LaHx6Ex0S6WTrybtrO77dkS8Lr40
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CH3PR11MB7180.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(23010399003)(366016)(18002099003)(10067099003)(22082099003)(3023799007)(4143699003)(261009223027099003)(260925022911599003)(11063799006)(260925021911599003)(260925021311599003)(56012099006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?iso-8859-1?Q?axPnn678ilZYjxjFERui0HuZe3fXuWXi5iEV74EQ4PCzTHkJLL0sBqHgus?=
- =?iso-8859-1?Q?0bxHorXlbzptJGhR+QHr5TIwqMGd6m9e9U7oEWSI1cpG2Ev+ATmF11VxXe?=
- =?iso-8859-1?Q?tOTKyJCKLJh7jV9v5dQ3fY9FsD0QU6EFtGhD6lp7+FUeWQGy8WSzDsEu7a?=
- =?iso-8859-1?Q?stOcIj5sn1FltrSA548MW09BClr0b7g0UzmUJaX3NHwO0a5evpNeBdB4Gw?=
- =?iso-8859-1?Q?U11qaStRcUEoQtPy4ul9XQNuma268YtEWGyEFLPqUTG7OTIghuCWgHaHAk?=
- =?iso-8859-1?Q?gIYMlbgQk3o7hNmqgb1e848mBHzEmi2+N6OaXwdlpnejIcKvrPwlJl9deN?=
- =?iso-8859-1?Q?hgnJkMoBXrdkuANPGvtsbvflSDYDocwPL05mRbeeI+H/1pJmulzfEVIJ+J?=
- =?iso-8859-1?Q?3sBPDJSZZ4BKzXSFUs+3NftmnFINpJ/a7HmM4uRFwinY50gIlqOuhE1jYs?=
- =?iso-8859-1?Q?uQym+DQqC42KQ6VPkbx/iL41g5QUawmdRWAzaCb11P6zp+R8b2UQV79dVl?=
- =?iso-8859-1?Q?SMuSw2y50eydansMJlTFDTT7v2TilSaqWxXp6O4LcM1bYk/QsZsDoGm0pn?=
- =?iso-8859-1?Q?gkqwi0DIaCteIcFbZjPoPFlDRUSJtOmtITqctBsD1keKi/0m0YgP2E1JE6?=
- =?iso-8859-1?Q?hqlrjeeF80ORbB5w2SvBNEF+U8lwoZI/fy8UUGf4TFw6LiydI8Ay0x8e9O?=
- =?iso-8859-1?Q?9HBp17RXpVaJ+bdMZVTM4mNVMwx192hWTCfp8HelnbVg3Uc8j+DKwX0LMw?=
- =?iso-8859-1?Q?UfCqEROSw7nN78X/KQ/Rg5FW5Js/U3wpnESHT0ExnIbJBQe/vQCrBSHQ+6?=
- =?iso-8859-1?Q?LSjswb8fZ9viiwGlCY1JPI4hVlfqpmMn/Be8K6bgDXDNLyFmqr7rm191w6?=
- =?iso-8859-1?Q?iqsVQMZLuUQT3/x4PGSBa0OQOGf77roIq2pBUkwhvD2ECL23kOgt3cPzP8?=
- =?iso-8859-1?Q?3PPuTvjxklUof5bsv/mgISfXCRho+1cB7t/TlWgqTAS9iZqWYaF9i+aU3u?=
- =?iso-8859-1?Q?5Rz9EbxxyrvwMhPhcRtWfgqhgTF6cmSl4WBQGD+hBjhoeI90UHjtvr5Ll4?=
- =?iso-8859-1?Q?cgPNP2q+/CBG+YUzU5EUy27BmKdtZi5T9Pzkib/zBhrOG8s9kbT++yjsoB?=
- =?iso-8859-1?Q?KNTEpEVAejNrIl0wYbkZpCcyApsNiUSZQ2fdWs4iou57YlOVCSBnqjbP9y?=
- =?iso-8859-1?Q?jNQD5HbKfNlEGKAJ5y5yQf+j7TRRE6sMyTIbfzrcLCG6/3vMsy8ToVz7L1?=
- =?iso-8859-1?Q?2HEvezJc6crt6nubVanCihBuQ16LDyaudItxBvjQfxFMdFwpFaweqGiYea?=
- =?iso-8859-1?Q?+AKEuuvlc7zFi0wkm8eVSg/9OoSMWLnxfMnl4yguMop8PCy1KU8dVnCgm5?=
- =?iso-8859-1?Q?7BenbTktxcsS3kxBttcqUAC58+bUHVlbFNXm6UYjIi6C3P7tO54pi5SdOq?=
- =?iso-8859-1?Q?/vMWulax2Gh7osBRKJIQyR7uJ8idlK8Psf1a+YkYaX4YYlsiwRbzWOZ+Gb?=
- =?iso-8859-1?Q?Z0yToWeMPlRFqC1RSb/r6xGdVG/75SGmihBvBMCKknl9Lqkotw11ZrYkYj?=
- =?iso-8859-1?Q?U0NDKyIWquvqgdzc54zW3SKouI2Gz/RJx5cAAY0K124IUSBD9pTLOIjoJL?=
- =?iso-8859-1?Q?bcoJ8U5c8Gl2+05cK1iA6u0eBGZFpZR5hKx86FbHbHAOO587JOvNUiJ7Tn?=
- =?iso-8859-1?Q?29TAlIwL0BVaKiDxQ/cVN1+twT42FOKohpwDd6SpQRvZh6vR9Rb8u845NE?=
- =?iso-8859-1?Q?VISEAdS2q8AonGHLNYw7Qiqvn1DHN8EfO0OvhEkdN/+aKJTzGUCF2w/1RS?=
- =?iso-8859-1?Q?m6u0KzKC83z8cWIjBQqJhD3BcMkxPQg=3D?=
-X-Exchange-RoutingPolicyChecked: LaQqN0TLac931NvHaij7r+92wV0d2n4O7FE2zQ4SzX/LdeaDPlnLW8SG6FaNIx3VONbAPS2fdqzpGjK8ht9V/k8hsXyqcxeyKHzFWJzJ3uPa1NMZ7L1ye1a+/el2HoEVbkOMaSwEkL5Ob44bISKiN6mrHGruovi4djzEX2Yas1fMG2DcL790HmY+Qek8Zoyf1pjHJ4lWPW7dnFoXTVbYSBohbH4MA3UiBgZkNjPUlswO1xBwQgqQSHwT/ngZLd1OTaAdv6EaPBSdTe0W4QpD8scLpmIziIhnRlKf/+5EURCK8z3MRICqNtidLZ57+/Rht7J6KC98rrx+zXnMmjwSfw==
-X-MS-Exchange-CrossTenant-Network-Message-Id: 317735f5-bea6-4089-c44e-08df293380e9
-X-MS-Exchange-CrossTenant-AuthSource: CH3PR11MB7180.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Oct 2026 14:08:50.1982
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Fbu5XCkkuvEtrlOC7D2IE+PGJAilqFA5NQJqSkeG0TRGt57A1GhfXMmd85e+GDX7OGhHWc3+eO8WKkjd8xay6A==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR11MB901483
-X-OriginatorOrg: intel.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/4XQTWrDMBAF4KsErasijSTLzqr3KF2MpZGjNv5BS
+ k1D8N0rJ1BcsvDyweN7w9xYphQps+PhxhLNMcdxKKF6OTB3wqEjHn3JDARUwoLkreZ9jxOfEk2
+ YiM898nDGjmccYrhykEJoMD4YRFaU0gvx577w/vHI+bv9JHdZ2bVxivkypuv9hFmuvcdaI+rdt
+ VlywT26IBvnCKB9+6I00Pl1TB1b52bYgFLvg1BA6xtbS/JGVfIJVFvQ7oOqgNrUytcIqnX4BOo
+ /sLxO7YO6gCiDMGCECN4+gWYLNvugKWBTbrNCgmkl/QOXZfkFl1dUKCUCAAA=
+X-Change-ID: 20260721-b4-mmap-prepare-vma-flag-sanify-2100425df5aa
+To: Andrew Morton <akpm@linux-foundation.org>, 
+ "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, 
+ Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, 
+ David Hildenbrand <david@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, 
+ Jonathan Corbet <corbet@lwn.net>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, 
+ Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, 
+ Paul Moore <paul@paul-moore.com>, 
+ Stephen Smalley <stephen.smalley.work@gmail.com>, 
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
+ Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
+ Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, 
+ Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, 
+ Baolin Wang <baolin.wang@linux.alibaba.com>, 
+ Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, 
+ Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, 
+ Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, 
+ Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, 
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
+ "Martin K. Petersen" <mkp@kernel.org>, Simona Vetter <simona@ffwll.ch>, 
+ Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, 
+ John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, 
+ Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
+ Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, 
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+ Arnaldo Carvalho de Melo <acme@kernel.org>, 
+ Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
+ Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, 
+ Juri Lelli <juri.lelli@redhat.com>, 
+ Vincent Guittot <vincent.guittot@linaro.org>, 
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+ David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, 
+ "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, 
+ Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, 
+ Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, 
+ "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, 
+ Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, 
+ Catalin Marinas <catalin.marinas@arm.com>, 
+ Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, 
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
+ Albert Ou <aou@eecs.berkeley.edu>, 
+ Christian Borntraeger <borntraeger@linux.ibm.com>, 
+ Janosch Frank <frankja@linux.ibm.com>, 
+ Claudio Imbrenda <imbrenda@linux.ibm.com>, 
+ Alexander Gordeev <agordeev@linux.ibm.com>, 
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>, 
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+ "David S. Miller" <davem@davemloft.net>, 
+ Andreas Larsson <andreas@gaisler.com>, 
+ Alexander Viro <viro@zeniv.linux.org.uk>, 
+ Christian Brauner <brauner@kernel.org>, 
+ Matthew Brost <matthew.brost@intel.com>, 
+ Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, 
+ Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, 
+ Ying Huang <ying.huang@linux.alibaba.com>, 
+ Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, 
+ Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, 
+ Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, 
+ Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, 
+ Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, 
+ Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, 
+ Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>, 
+ Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>, 
+ Xu Xin <xu.xin@linux.dev>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, 
+ linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, 
+ linux-rdma@vger.kernel.org, selinux@vger.kernel.org, 
+ linux-sound@vger.kernel.org, bpf@vger.kernel.org, 
+ linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+ dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, 
+ linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, 
+ linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
+ kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, 
+ fuse-devel@lists.linux.dev, Ihor Solodrai <ihor.solodrai@linux.dev>, 
+ Bert Karwatzki <spasswolf@web.de>, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, 
+ Takashi Iwai <tiwai@suse.de>, Emil Tsalapatis <emil@etsalapatis.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=16095; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=FhhB57HHY8K3ixwyCkdwoK3LAKY2E8FhaX1ugHEv4IA=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLOeRzJW7ivymDPKf3NC/5M1VT8dUVlYeP3IC79gxH7D
+ Q09ld7P6ihlYRDjYpAVU2R5/kV8f5BI2LzOC/5uMHNYmUCGMHBxCsBEnv1k+B+0P2RJMn8V+9Wi
+ h0X1vzO0arfz9l5lEs20YXPvKTjAuorhF9OpNsP0BTGdghteJa7wTfC9/+mR/FxDyxqLLbfvzmb
+ ZxgQA
+X-Developer-Key: i=ljs@kernel.org; a=openpgp;
+ fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 
-On Tue, Oct 13, 2026 at 04:09:37PM +0300, Ilpo Järvinen wrote:
-> pci=resource_alignment argument can override the default alignment for
-> the resource. The remainder code introduced in the commit 9036bd0efcb6
-> ("PCI: Align head space better") can move remainder space (non-aligning
-> part of the size) before the aligning left edge which results in
-> violating the requested alignment.
-> 
-> Introduce struct pci_resreq_data to hold device and user-given alignment
-> to be able to honor it in pci_align_resource(). When user-given alignment
-> is found, any remainder movement is skipped.
-> 
-> Fixes: 9036bd0efcb6 ("PCI: Align head space better")
-> Reported-by: Sashiko <sashiko-bot@kernel.org>
-> Link: https://lore.kernel.org/linux-pci/20260923133202.07DF61F000FF@smtp.kernel.org/
-> Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
-> ---
-> 
-> IMO, PPC rigging the user alignment override to enforce arch specific
-> min alignment is mixing things wrongly. It would be more appropriate
-> to do arch alignment overrides by overriding pci_resource_alignment().
-> 
-> Jani Nikula <jani.nikula@intel.com> did ack this with a condition that
-> there is a proper review done by somebody else so I've not yet included
-> his tag.
-> 
-> ---
->  arch/alpha/kernel/pci.c          |  3 ++-
->  arch/arm/kernel/bios32.c         |  5 +++--
->  arch/m68k/kernel/pcibios.c       |  4 ++--
->  arch/mips/pci/pci-generic.c      |  5 +++--
->  arch/mips/pci/pci-legacy.c       |  5 +++--
->  arch/parisc/kernel/pci.c         |  5 +++--
->  arch/powerpc/kernel/pci-common.c |  5 +++--
->  arch/sh/drivers/pci/pci.c        |  5 +++--
->  arch/x86/pci/i386.c              |  5 +++--
->  arch/xtensa/kernel/pci.c         |  5 +++--
->  drivers/char/agp/intel-gtt.c     |  5 ++++-
->  drivers/gpu/drm/i915/i915_gmch.c |  5 +++--
+The VM_SPECIAL / VMA_SPECIAL_FLAGS mask conflates several unrelated
+properties:
 
-Acked-by: Rodrigo Vivi <rodrigo.vivi@intel.com>
+* Is this managed by core mm, or by a driver mapping MMIO, kernel-allocated
+  pages, or even ordinary pages itself?
+* Can it be expanded or merged?
+* Is this a 'weird' case like mlock where migration might race and we
+  'have' to set invalid flags to notify?
+* Is it another 'weird' case where we just want to stop GUP from touching
+  it?
 
->  drivers/pci/pci.c                |  5 +++--
->  drivers/pci/setup-res.c          | 19 +++++++++++++------
->  include/linux/pci.h              | 32 ++++++++++++++++++++++++++++++--
->  15 files changed, 81 insertions(+), 32 deletions(-)
-> 
-> diff --git a/arch/alpha/kernel/pci.c b/arch/alpha/kernel/pci.c
-> index 11df411b1d18..c5d725a9781f 100644
-> --- a/arch/alpha/kernel/pci.c
-> +++ b/arch/alpha/kernel/pci.c
-> @@ -128,7 +128,8 @@ pcibios_align_resource(void *data, const struct resource *res,
->  		       const struct resource *empty_res,
->  		       resource_size_t size, resource_size_t align)
->  {
-> -	struct pci_dev *dev = data;
-> +	struct pci_resreq_data *rr = data;
-> +	struct pci_dev *dev = rr->dev;
->  	struct pci_controller *hose = dev->sysdata;
->  	unsigned long alignto;
->  	resource_size_t start = res->start;
-> diff --git a/arch/arm/kernel/bios32.c b/arch/arm/kernel/bios32.c
-> index ac0e890510da..3e61826f07fb 100644
-> --- a/arch/arm/kernel/bios32.c
-> +++ b/arch/arm/kernel/bios32.c
-> @@ -564,7 +564,8 @@ resource_size_t pcibios_align_resource(void *data, const struct resource *res,
->  				       resource_size_t size,
->  				       resource_size_t align)
->  {
-> -	struct pci_dev *dev = data;
-> +	struct pci_resreq_data *rr = data;
-> +	struct pci_dev *dev = rr->dev;
->  	resource_size_t start = res->start;
->  	struct pci_host_bridge *host_bridge;
->  
-> @@ -578,7 +579,7 @@ resource_size_t pcibios_align_resource(void *data, const struct resource *res,
->  				start, size, align);
->  
->  	if (res->flags & IORESOURCE_MEM)
-> -		return pci_align_resource(dev, res, empty_res, size, align);
-> +		return pci_align_resource(rr, res, empty_res, size, align);
->  
->  	return start;
->  }
-> diff --git a/arch/m68k/kernel/pcibios.c b/arch/m68k/kernel/pcibios.c
-> index 7a9e60df79c5..3024408412bc 100644
-> --- a/arch/m68k/kernel/pcibios.c
-> +++ b/arch/m68k/kernel/pcibios.c
-> @@ -31,14 +31,14 @@ resource_size_t pcibios_align_resource(void *data, const struct resource *res,
->  				       resource_size_t size,
->  				       resource_size_t align)
->  {
-> -	struct pci_dev *dev = data;
-> +	struct pci_resreq_data *rr = data;
->  	resource_size_t start = res->start;
->  
->  	if ((res->flags & IORESOURCE_IO) && (start & 0x300))
->  		start = (start + 0x3ff) & ~0x3ff;
->  
->  	if (res->flags & IORESOURCE_MEM)
-> -		return pci_align_resource(dev, res, empty_res, size, align);
-> +		return pci_align_resource(rr, res, empty_res, size, align);
->  
->  	return start;
->  }
-> diff --git a/arch/mips/pci/pci-generic.c b/arch/mips/pci/pci-generic.c
-> index c2e23d0c1d77..7f3ecb91b85b 100644
-> --- a/arch/mips/pci/pci-generic.c
-> +++ b/arch/mips/pci/pci-generic.c
-> @@ -25,7 +25,8 @@ resource_size_t pcibios_align_resource(void *data, const struct resource *res,
->  				       const struct resource *empty_res,
->  				       resource_size_t size, resource_size_t align)
->  {
-> -	struct pci_dev *dev = data;
-> +	struct pci_resreq_data *rr = data;
-> +	struct pci_dev *dev = rr->dev;
->  	resource_size_t start = res->start;
->  	struct pci_host_bridge *host_bridge;
->  
-> @@ -39,7 +40,7 @@ resource_size_t pcibios_align_resource(void *data, const struct resource *res,
->  				start, size, align);
->  
->  	if (res->flags & IORESOURCE_MEM)
-> -		return pci_align_resource(dev, res, empty_res, size, align);
-> +		return pci_align_resource(rr, res, empty_res, size, align);
->  
->  	return start;
->  }
-> diff --git a/arch/mips/pci/pci-legacy.c b/arch/mips/pci/pci-legacy.c
-> index dae6dafdd6e0..82d4b01db64e 100644
-> --- a/arch/mips/pci/pci-legacy.c
-> +++ b/arch/mips/pci/pci-legacy.c
-> @@ -55,7 +55,8 @@ pcibios_align_resource(void *data, const struct resource *res,
->  		       const struct resource *empty_res,
->  		       resource_size_t size, resource_size_t align)
->  {
-> -	struct pci_dev *dev = data;
-> +	struct pci_resreq_data *rr = data;
-> +	struct pci_dev *dev = rr->dev;
->  	struct pci_controller *hose = dev->sysdata;
->  	resource_size_t start = res->start;
->  
-> @@ -70,7 +71,7 @@ pcibios_align_resource(void *data, const struct resource *res,
->  		if (start & 0x300)
->  			start = (start + 0x3ff) & ~0x3ff;
->  	} else if (res->flags & IORESOURCE_MEM) {
-> -		start = pci_align_resource(dev, res, empty_res, size, align);
-> +		start = pci_align_resource(rr, res, empty_res, size, align);
->  
->  		/* Make sure we start at our min on all hoses */
->  		if (start < PCIBIOS_MIN_MEM + hose->mem_resource->start)
-> diff --git a/arch/parisc/kernel/pci.c b/arch/parisc/kernel/pci.c
-> index 96950fe9c2b7..36a3a439f609 100644
-> --- a/arch/parisc/kernel/pci.c
-> +++ b/arch/parisc/kernel/pci.c
-> @@ -193,7 +193,8 @@ resource_size_t pcibios_align_resource(void *data, const struct resource *res,
->  				       resource_size_t size,
->  				       resource_size_t alignment)
->  {
-> -	struct pci_dev *dev = data;
-> +	struct pci_resreq_data *rr = data;
-> +	struct pci_dev *dev = rr->dev;
->  	resource_size_t align, start = res->start;
->  
->  	pci_dbg(dev, "%pR: pcibios_align_resource(%lx, 0x%llx, 0x%llx)\n",
-> @@ -205,7 +206,7 @@ resource_size_t pcibios_align_resource(void *data, const struct resource *res,
->  	if (align > alignment)
->  		start = ALIGN(start, align);
->  	else
-> -		start = pci_align_resource(dev, res, empty_res, size, alignment);
-> +		start = pci_align_resource(rr, res, empty_res, size, alignment);
->  
->  	return start;
->  }
-> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-> index 4fc52c21fe5d..23594759cfe2 100644
-> --- a/arch/powerpc/kernel/pci-common.c
-> +++ b/arch/powerpc/kernel/pci-common.c
-> @@ -1131,7 +1131,8 @@ resource_size_t pcibios_align_resource(void *data, const struct resource *res,
->  				       resource_size_t size,
->  				       resource_size_t align)
->  {
-> -	struct pci_dev *dev = data;
-> +	struct pci_resreq_data *rr = data;
-> +	struct pci_dev *dev = rr->dev;
->  	resource_size_t start = res->start;
->  
->  	if (res->flags & IORESOURCE_IO) {
-> @@ -1140,7 +1141,7 @@ resource_size_t pcibios_align_resource(void *data, const struct resource *res,
->  		if (start & 0x300)
->  			start = (start + 0x3ff) & ~0x3ff;
->  	} else if (res->flags & IORESOURCE_MEM) {
-> -		start = pci_align_resource(dev, res, empty_res, size, align);
-> +		start = pci_align_resource(rr, res, empty_res, size, align);
->  	}
->  
->  	return start;
-> diff --git a/arch/sh/drivers/pci/pci.c b/arch/sh/drivers/pci/pci.c
-> index 878a27a1acfb..279f2770ff4b 100644
-> --- a/arch/sh/drivers/pci/pci.c
-> +++ b/arch/sh/drivers/pci/pci.c
-> @@ -172,7 +172,8 @@ resource_size_t pcibios_align_resource(void *data, const struct resource *res,
->  				       resource_size_t size,
->  				       resource_size_t align)
->  {
-> -	struct pci_dev *dev = data;
-> +	struct pci_resreq_data *rr = data;
-> +	struct pci_dev *dev = rr->dev;
->  	struct pci_channel *hose = dev->sysdata;
->  	resource_size_t start = res->start;
->  
-> @@ -186,7 +187,7 @@ resource_size_t pcibios_align_resource(void *data, const struct resource *res,
->  		if (start & 0x300)
->  			start = (start + 0x3ff) & ~0x3ff;
->  	} else if (res->flags & IORESOURCE_MEM) {
-> -		start = pci_align_resource(dev, res, empty_res, size, align);
-> +		start = pci_align_resource(rr, res, empty_res, size, align);
->  	}
->  
->  	return start;
-> diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
-> index e2de26b82940..4178ae4380c2 100644
-> --- a/arch/x86/pci/i386.c
-> +++ b/arch/x86/pci/i386.c
-> @@ -156,7 +156,8 @@ pcibios_align_resource(void *data, const struct resource *res,
->  		       const struct resource *empty_res,
->  		       resource_size_t size, resource_size_t align)
->  {
-> -	struct pci_dev *dev = data;
-> +	struct pci_resreq_data *rr = data;
-> +	struct pci_dev *dev = rr->dev;
->  	resource_size_t start = res->start;
->  
->  	if (res->flags & IORESOURCE_IO) {
-> @@ -165,7 +166,7 @@ pcibios_align_resource(void *data, const struct resource *res,
->  		if (start & 0x300)
->  			start = (start + 0x3ff) & ~0x3ff;
->  	} else if (res->flags & IORESOURCE_MEM) {
-> -		start = pci_align_resource(dev, res, empty_res, size, align);
-> +		start = pci_align_resource(rr, res, empty_res, size, align);
->  
->  		/* The low 1MB range is reserved for ISA cards */
->  		if (start < BIOS_END)
-> diff --git a/arch/xtensa/kernel/pci.c b/arch/xtensa/kernel/pci.c
-> index 305031551136..4e8ad4a3c9fe 100644
-> --- a/arch/xtensa/kernel/pci.c
-> +++ b/arch/xtensa/kernel/pci.c
-> @@ -42,7 +42,8 @@ pcibios_align_resource(void *data, const struct resource *res,
->  		       const struct resource *empty_res,
->  		       resource_size_t size, resource_size_t align)
->  {
-> -	struct pci_dev *dev = data;
-> +	struct pci_resreq_data *rr = data;
-> +	struct pci_dev *dev = rr->dev;
->  	resource_size_t start = res->start;
->  
->  	if (res->flags & IORESOURCE_IO) {
-> @@ -55,7 +56,7 @@ pcibios_align_resource(void *data, const struct resource *res,
->  		if (start & 0x300)
->  			start = (start + 0x3ff) & ~0x3ff;
->  	} else if (res->flags & IORESOURCE_MEM) {
-> -		start = pci_align_resource(dev, res, empty_res, size, align);
-> +		start = pci_align_resource(rr, res, empty_res, size, align);
->  	}
->  
->  	return start;
-> diff --git a/drivers/char/agp/intel-gtt.c b/drivers/char/agp/intel-gtt.c
-> index bcc26785175d..2214347906a6 100644
-> --- a/drivers/char/agp/intel-gtt.c
-> +++ b/drivers/char/agp/intel-gtt.c
-> @@ -1038,10 +1038,13 @@ static struct agp_memory *intel_fake_agp_alloc_by_type(size_t pg_count,
->  
->  static int intel_alloc_chipset_flush_resource(void)
->  {
-> +	struct pci_resreq_data rr;
->  	int ret;
-> +
-> +	pci_init_pci_resreq_data(&rr, intel_private.bridge_dev);
->  	ret = pci_bus_alloc_resource(intel_private.bridge_dev->bus, &intel_private.ifp_resource, PAGE_SIZE,
->  				     PAGE_SIZE, PCIBIOS_MIN_MEM, 0,
-> -				     pcibios_align_resource, intel_private.bridge_dev);
-> +				     pcibios_align_resource, &rr);
->  
->  	return ret;
->  }
-> diff --git a/drivers/gpu/drm/i915/i915_gmch.c b/drivers/gpu/drm/i915/i915_gmch.c
-> index b0ef6ef577a3..d35097bebc0f 100644
-> --- a/drivers/gpu/drm/i915/i915_gmch.c
-> +++ b/drivers/gpu/drm/i915/i915_gmch.c
-> @@ -38,6 +38,7 @@ static int mchbar_reg(struct drm_i915_private *i915)
->  static int
->  intel_alloc_mchbar_resource(struct drm_i915_private *i915)
->  {
-> +	struct pci_resreq_data rr;
->  	u32 temp_lo, temp_hi = 0;
->  	u64 mchbar_addr;
->  	int ret;
-> @@ -55,12 +56,12 @@ intel_alloc_mchbar_resource(struct drm_i915_private *i915)
->  	/* Get some space for it */
->  	i915->gmch.mch_res.name = "i915 MCHBAR";
->  	i915->gmch.mch_res.flags = IORESOURCE_MEM;
-> +	pci_init_pci_resreq_data(&rr, i915->gmch.pdev);
->  	ret = pci_bus_alloc_resource(i915->gmch.pdev->bus,
->  				     &i915->gmch.mch_res,
->  				     MCHBAR_SIZE, MCHBAR_SIZE,
->  				     PCIBIOS_MIN_MEM,
-> -				     0, pcibios_align_resource,
-> -				     i915->gmch.pdev);
-> +				     0, pcibios_align_resource, &rr);
->  	if (ret) {
->  		drm_dbg(&i915->drm, "failed bus alloc: %d\n", ret);
->  		i915->gmch.mch_res.start = 0;
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index b2879a6be5f8..1b7a4469c6ca 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -6444,8 +6444,8 @@ static DEFINE_SPINLOCK(resource_alignment_lock);
->   * RETURNS: Resource alignment if it is specified.
->   *          Zero if it is not specified.
->   */
-> -static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
-> -							bool *resize)
-> +resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
-> +						 bool *resize)
->  {
->  	int align_order, count;
->  	resource_size_t align = pcibios_default_alignment();
-> @@ -6497,6 +6497,7 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
->  	spin_unlock(&resource_alignment_lock);
->  	return align;
->  }
-> +EXPORT_SYMBOL_GPL(pci_specified_resource_alignment);
->  
->  static void pci_request_resource_alignment(struct pci_dev *dev, int bar,
->  					   resource_size_t align, bool resize)
-> diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
-> index 376f09630a4a..441a62807719 100644
-> --- a/drivers/pci/setup-res.c
-> +++ b/drivers/pci/setup-res.c
-> @@ -265,17 +265,21 @@ resource_size_t pci_resource_alignment(const struct pci_dev *dev,
->   * before res->start if there's enough free space there. This enables
->   * tighter packing for resources.
->   */
-> -resource_size_t pci_align_resource(struct pci_dev *dev,
-> +resource_size_t pci_align_resource(struct pci_resreq_data *rr,
->  				   const struct resource *res,
->  				   const struct resource *empty_res,
->  				   resource_size_t size,
->  				   resource_size_t align)
->  {
-> +	struct pci_dev *dev = rr->dev;
->  	resource_size_t remainder, start_addr;
->  
->  	if (!(res->flags & IORESOURCE_MEM))
->  		return res->start;
->  
-> +	if (rr->user_align)
-> +		return res->start;
-> +
->  	if (IS_ALIGNED(size, align))
->  		return res->start;
->  
-> @@ -306,18 +310,21 @@ resource_size_t __weak pcibios_align_resource(void *data,
->  					      resource_size_t size,
->  					      resource_size_t align)
->  {
-> -	struct pci_dev *dev = data;
-> +	struct pci_resreq_data *rr = data;
->  
-> -	return pci_align_resource(dev, res, empty_res, size, align);
-> +	return pci_align_resource(rr, res, empty_res, size, align);
->  }
->  
->  static int __pci_assign_resource(struct pci_bus *bus, struct pci_dev *dev,
->  		int resno, resource_size_t size, resource_size_t align)
->  {
->  	struct resource *res = pci_resource_n(dev, resno);
-> +	struct pci_resreq_data rr;
->  	resource_size_t min;
->  	int ret;
->  
-> +	pci_init_pci_resreq_data(&rr, dev);
-> +
->  	min = (res->flags & IORESOURCE_IO) ? PCIBIOS_MIN_IO : PCIBIOS_MIN_MEM;
->  
->  	/*
-> @@ -329,7 +336,7 @@ static int __pci_assign_resource(struct pci_bus *bus, struct pci_dev *dev,
->  	 */
->  	ret = pci_bus_alloc_resource(bus, res, size, align, min,
->  				     IORESOURCE_PREFETCH | IORESOURCE_MEM_64,
-> -				     pcibios_align_resource, dev);
-> +				     pcibios_align_resource, &rr);
->  	if (ret == 0)
->  		return 0;
->  
-> @@ -341,7 +348,7 @@ static int __pci_assign_resource(struct pci_bus *bus, struct pci_dev *dev,
->  	     (IORESOURCE_PREFETCH | IORESOURCE_MEM_64)) {
->  		ret = pci_bus_alloc_resource(bus, res, size, align, min,
->  					     IORESOURCE_PREFETCH,
-> -					     pcibios_align_resource, dev);
-> +					     pcibios_align_resource, &rr);
->  		if (ret == 0)
->  			return 0;
->  	}
-> @@ -354,7 +361,7 @@ static int __pci_assign_resource(struct pci_bus *bus, struct pci_dev *dev,
->  	 */
->  	if (res->flags & (IORESOURCE_PREFETCH | IORESOURCE_MEM_64))
->  		ret = pci_bus_alloc_resource(bus, res, size, align, min, 0,
-> -					     pcibios_align_resource, dev);
-> +					     pcibios_align_resource, &rr);
->  
->  	return ret;
->  }
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index d31a8d107b1e..ea7d75871269 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -1217,12 +1217,40 @@ int __must_check pcibios_enable_device(struct pci_dev *, int mask);
->  /* Architecture-specific versions may override this (weak) */
->  char *pcibios_setup(char *str);
->  
-> -/* Used only when drivers/pci/setup.c is used */
-> +/* Resource assignment request handling */
-> +/**
-> + * struct pci_resreq_data - Data passed to pcibios_align_resource()
-> + * @dev: PCI device
-> + * @user_align: User provided alignment override (pci=resource_alignment param)
-> + */
-> +struct pci_resreq_data {
-> +	struct pci_dev *dev;
-> +	resource_size_t user_align;
-> +};
-> +
-> +resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
-> +						 bool *resize);
-> +/*
-> + * TODO: Improve PCI resource assignment interface so that callers outside PCI
-> + * core do not need to know about this detail.
-> + */
-> +static inline void pci_init_pci_resreq_data(struct pci_resreq_data *rr,
-> +					    struct pci_dev *dev)
-> +{
-> +	bool user_aligned;
-> +
-> +	memset(rr, 0, sizeof(*rr));
-> +	rr->dev = dev;
-> +	rr->user_align = pci_specified_resource_alignment(dev, &user_aligned);
-> +	if (!user_aligned)
-> +		rr->user_align = 0;
-> +}
-> +
->  resource_size_t pcibios_align_resource(void *data, const struct resource *res,
->  				       const struct resource *empty_res,
->  				       resource_size_t size,
->  				       resource_size_t align);
-> -resource_size_t pci_align_resource(struct pci_dev *dev,
-> +resource_size_t pci_align_resource(struct pci_resreq_data *rr,
->  				   const struct resource *res,
->  				   const struct resource *empty_res,
->  				   resource_size_t size,
-> -- 
-> 2.47.3
-> 
+Driver writers have often been confused about this, and who can blame them?
+
+It also interacts badly with the eternal edgecase known as hugetlb - which
+sets VMA_DONTEXPAND_BIT but doesn't also want to be treated like a
+'special' flag.
+
+Another issue is that we cannot make sensible assumptions about flag
+use. It's not possible to assume VMA_IO_BIT means iommu because drivers
+abuse it and mlock abuses it.
+
+Special is also an overloaded term in mm. VDSO and VVAR mappings are also
+called 'special' but they're special in a... special way.
+
+Sometimes things are called special that are a subset of
+VMA_SPECIAL_FLAGS (VMA_PFNMAP_BIT and VMA_MIXEDMAP_BIT for instance when it
+comes to zapping or vm_normal_folio()).
+
+There's a specific kind of special for THP too, which considers
+PFN map, mixed map 'special' but DAX not.
+
+It's all rather a mess.
+
+This series brings some order to things by both limiting what drivers can
+do with VMA flags and switching to using predicates that describe
+behaviour, not arbitrary flags.
+
+It establishes the invariant that mm-managed mappings may neither set
+VMA_IO_BIT nor clear VMA_MAYWRITE_BIT in an mmap hook, enforcing this by
+validating VMA state after every mmap and mmap_prepare hook.
+
+It updates usbmon and sg to mmap_prepare in order to do so, adding a new
+mmap action for mapping discontiguous kernel pages, and has hfi1 and the
+ALSA PCM status page map their pages eagerly instead.
+
+It also establishes the invariant that VMA_MIXEDMAP_BIT be set when mapping
+kernel memory, something that is usually the case but happens not to be for
+some users - specifically defio, cmt_speech, uprobes and the bpf arena, all
+of which are updated to do the right thing.
+
+It replaces VM_SPECIAL and arbitrary flag tests with predicates that say
+what is actually being tested:
+
+     vma_is_mm_managed()   Are the VMA's contents established and managed
+                           by core mm, rather than a driver or other kernel
+                           component?
+
+      vma_is_mm_backed()   Is the VMA backed by memory core mm itself
+                           faults in, rather than a driver or device?
+
+  vma_is_fixed_mapping()   Is the VMA not permitted to be expanded or
+                           merged?
+
+         vma_can_merge()   Can the VMA be merged with a compatible
+                           neighbour?
+
+Remaining raw VMA_IO_BIT, VMA_PFNMAP_BIT and VMA_MIXEDMAP_BIT tests
+scattered across mm are converted to predicates where they express one, and
+left as explicit flag tests where they do not.
+
+And also the opportunity is taken to eliminate THP's vma_is_special_huge()
+which was an existing source of confusion.
+
+Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+---
+v6:
+* Applied tags (thanks David!)
+* Added 7/39 to split out the vm_insert_page() / vm_insert_pages()
+  mmap lock assertions and VMA API changes out into their own patch,
+  as per David.
+* Updated 8/39 (was 7/38) to collapse the discontig single page case to
+  a single one and to rename things, as per David.
+* Updated 9/39 (was 8/38) to update the discontig docs to reflect the
+  change.
+* Updated 23/39 (was 22/38) to put expression on single line, as per David.
+* Updated 25/39 (was 24/38) to mention the open-coding in the commit
+  message (fixed in next commit), as per discussion with David.
+* Updated 26/39 (was 25/38) to clarify the commit message around the
+  removal of the VMA_IO_BIT check in vma_flags_is_mm_managed(), as per
+  David.
+* Updated 30/39 (was 30/38) to no longer exclude droppable mappings from
+  vma_flags_is_mm_backed(), as it doesn't quite fit into the broader
+  definition, as per David.
+* Updated 30/39 (was 30/38) to express vma_flags_can_merge() in terms of
+  vma_flags_is_mm_backed() (with an explicit hugetlb exclusion), and to
+  no longer use vma_can_merge() in __thp_vma_allowable_orders().
+* Updated 31/39 (was 29/38) to use vma_is_mm_backed() (with hugetlb
+  exclusion) rather than vma_can_merge(), as guard regions have nothing to
+  do with mergeability.
+* Updated 32/39 (was 31/38) to retain an explicit droppable check in
+  vma_can_userfault(), as per David.
+* Updated 33/39 (was 32/38) to use vma_is_mm_backed() with an explicit
+  hugetlb exclusion, rather than vma_can_merge() which makes no sense here.
+* Updated 34/39 (was 33/38) to retain explicit droppable checks in
+  vma_supports_mlock() and ksm_compatible(), as per David.
+* Updated 34/39 (was 33/38) to use vma_is_mm_backed() in should_skip_vma(),
+  based on discussion with David.
+* Updated 35/39 (was 34/38) to use vma_is_mm_backed() in
+  lru_gen_look_around(), as per David.
+* Updated 36/39 (was 35/38) to use vma_is_mm_backed() with an explicit
+  hugetlb exclusion in migrate_vma_setup(), as per David.
+
+v5:
+* Applied tags (thanks everybody!)
+* Updated 3/38 to fix a bug in __mmap_new_file_vma() by zapping + closing
+  the VMA before setting vma->vm_file NULL to avoid an i_mmap_writable
+  imbalance. A repro was tested before/after and confirmed fixed.
+* Updated 7/38 to make __map_kernel_pages_prepare() use
+  mmap_assert_write_locked() rather than the weird
+  assert-on-mmap_read_trylock() pattern, as per Suren.
+* Also update vm_insert_page(), vm_insert_pages() to fix the same pattern
+  and to use the new VMA API, and converted a BUG_ON to a
+  VM_WARN_ON_ONCE().
+https://lore.kernel.org/r/20261009-b4-mmap-prepare-vma-flag-sanify-v5-0-923b70125b1e@kernel.org
+
+v4:
+* Pulled what was 2/40 out of the series to send as a fix instead, as per
+  Suren.
+* Updated 1/38 to rename put_map() to map_put_vm_file(), as per Suren and
+  Liam.
+* Updated 3/38 (was 4/40) to perform the vma_close() after unmapping the
+  range as per Gregory.
+* Updated 3/38 (was 4/40) to rename prev_* to orig_* in the mmap hook
+  validation code, as per Suren.
+* Updated 4/38 (was 5/40) to clarify that the mergeable-VMA action check
+  runs after mmap_action_prepare(), as per Zi.
+* Updated 7/38 (was 8/40) to have discontig_kernel_map_page_range() map
+  only the pages which fit in the VMA, consistent with
+  discontig_kernel_map_page(), as per Suren and Zi.
+* Updated 7/38 (was 8/40) to unmap and close the VMA when an mmap action
+  fails under the mmap_prepare compatibility layer, so state is correctly
+  released there too, as per Lance.
+* Updated 8/38 (was 9/40) to document this, as per Zi.
+* Updated 14/38 (was 15/40) to replace vma[_flags]_is_kernel_owned() with
+  its inverse, vma[_flags]_is_mm_managed() and reword accordingly
+  throughout, as per David.
+* Updated 22/38 (was 23/40) to add a clarifying comment, as per Zi.
+* Updated 23/38 (was 24/40) to test VMA_LOCKED_MASK before draining the
+  mlock batch in try_to_unmap_one() and try_to_migrate_one(), as per Lance.
+* Updated 30/38 (was 31/40) to rename vma[_flags]_is_persistent() to
+  vma[_flags]_is_mm_backed() and reword its documentation around what backs
+  the mapping rather than persistence, as per David.
+* Updated 31/38 (was 32/40) to make the code more succinct in
+  vma_move_compatible(), as per David.
+* Dropped what was 40/40, vma[_flags]_can_gup(), as per David.
+https://lore.kernel.org/r/20261003-b4-mmap-prepare-vma-flag-sanify-v4-0-a1f052500fd7@kernel.org
+
+v3:
+* Fixed up bug in patch 1 as reported by Mike - have to delay setting
+  map->vma_flags until after action prepare, though map->vm_file needs to
+  be set before for correct reference count management.
+* Updated 4/40 to add a symmetric vm_end check as well as vm_start in case
+  of a dangerously insane driver, as per Sashiko.
+* Updated 8/40 to check if a driver did something REALLY stupid like having
+  a NULL discontig_kernel_page_ops ptr, as per Sashiko.
+* Updated 15/40 to trivially synchronise userland test comments.
+* Updated 17/40 to correctly duplicate code to the userland VMA tests as
+  per Sashiko.
+https://lore.kernel.org/r/20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org
+
+v2:
+* Rebased on mm-unstable.
+* Introduced new patch to fix various mmap_prepare and file interactions
+  that weren't quite right as per Sashiko. None impact anything upstream
+  yet so it doesn't need to be a fix.
+* Restore vma->vm_start if an mmap hook has moved it before tearing the
+  VMA down, so we unmap the range we established rather than the one the
+  hook invented, as per Sashiko.
+* Reject a discontiguous kernel page batch of zero pages rather than
+  looping forever, and bound batches by the pages remaining in the VMA,
+  as per Sashiko.
+* Add the missing map_kernel_discontig member to the userland VMA tests'
+  copy of struct mmap_action as per Sashiko.
+* Set VM_DONTEXPAND on hfi1's RCV_HDRQ, RCV_EGRBUF and RTAIL mappings, as
+  dma_mmap_coherent() doesn't on the IOMMU-DMA path, as per Sashiko.
+* Recompute vma->vm_page_prot in snd_pcm_mmap_status() after clearing
+  VM_WRITE, as vm_insert_page() uses it immediately rather than at fault
+  time, as per Sashiko.
+* munlock_vma_folio() now tests VMA_LOCKED_MASK so an unmap racing the
+  mlock walk still munlocks folios the walk has already counted, as per
+  Sashiko.
+https://lore.kernel.org/r/20260914-b4-mmap-prepare-vma-flag-sanify-v2-0-7d9781ed5361@kernel.org
+
+v1:
+https://lore.kernel.org/r/20260908-b4-mmap-prepare-vma-flag-sanify-v1-0-dacf19cce22b@kernel.org
+
+---
+Lorenzo Stoakes (ARM) (39):
+      mm/vma: fix mmap_prepare file handling, remove file_doesnt_need_get
+      mm/vma: introduce and use vma_[flags_]can_merge()
+      mm: consistently validate VMA state after mmap[_prepare] hooks
+      mm/vma: ensure mmap_prepare doesn't set actions on a mergeable vma
+      mm: make map_kernel_pages_[prepare,complete] internal and unexported
+      mm/vma: tidy up map kernel pages enum values
+      mm: assert mmap lock held, use new flags API in vm_insert_page[s]
+      mm: add mmap action for discontiguous kernel page mapping
+      docs: filesystems: update mmap_prepare docs for discontig kernel pgs
+      drivers/usb/mon: update to use mmap_prepare + map kernel pages
+      infiniband: update hfi1 to use remap_vmalloc_range()
+      selinux: reject writable opens of policy file, drop mmap shared/write check
+      ALSA: pcm: use vm_insert_page() to map PCM status page
+      bpf: arena: mark arena_map_mmap() mappings VM_MIXEDMAP
+      mm/vma: add vma[_flags]_is_mm_managed() predicates
+      mm/vma: only allow mmap to clear VMA_MAYWRITE_BIT if not mm-managed
+      mm/vma: add and use vma_[flags]_is_fixed_mapping
+      scsi: sg: convert mmap hook to mmap_prepare and rework
+      fbdev: defio: assert FBINFO_VIRTFB, drop VM_IO, add VM_MIXEDMAP
+      HSI: cmt_speech: convert mmap hook to mmap_prepare, refactor
+      mm/gup: error out early on !VMA_MAYREAD_BIT VMAs
+      uprobes: remove VM_IO, set VM_MIXEDMAP for mapped kernel pages
+      mm/mlock: clear VMA_LOCKED_MASK over mmap callback
+      mm/mlock: eliminate weird VMA_IO_BIT abuse and simplify
+      mm/vma: enforce that mm-managed mappings may not set VMA_IO_BIT
+      mm: remove VMA_IO_BIT check in vma[_flags]_is_mm_managed()
+      mm: remove hugetlb_inline.h
+      mm: rename is_vm_hugetlb_page() to vma_is_hugetlb()
+      mm: drop some redundant checks around hugetlb VMAs
+      mm/vma: introduce vma[_flags]_is_mm_backed()
+      mm/madvise: update is_valid_guard_vma() to use vma_is_mm_backed()
+      mm/uffd: use predicates for userfaultfd checks
+      mm/madvise: use predicates for madvise(..., MADV_DOFORK)
+      mm: eliminate VMA_SPECIAL_FLAGS usage when hugetlb explicitly tested
+      mm: eliminate VMA_SPECIAL_FLAGS check in lru_gen_look_around()
+      mm: avoid use of VMA_SPECIAL_FLAGS in migrate_vma_setup()
+      mm: eliminate VM_SPECIAL, VMA_SPECIAL_FLAGS
+      fuse: dax: do not set VM_MIXEDMAP
+      mm/huge_memory: remove vma_is_special_huge()
+
+ Documentation/filesystems/mmap_prepare.rst |  81 ++++++++++
+ arch/arm64/kvm/mmu.c                       |   4 +-
+ arch/powerpc/mm/book3s64/radix_tlb.c       |   6 +-
+ arch/powerpc/mm/nohash/e500_hugetlbpage.c  |   2 +-
+ arch/powerpc/mm/nohash/tlb.c               |   2 +-
+ arch/riscv/kvm/mmu.c                       |   2 +-
+ arch/riscv/mm/tlbflush.c                   |   2 +-
+ arch/s390/mm/gmap_helpers.c                |   6 +-
+ arch/sparc/mm/init_64.c                    |   2 +-
+ arch/x86/kernel/uprobes.c                  |   2 +-
+ drivers/gpu/drm/drm_gpusvm.c               |   5 +-
+ drivers/hsi/clients/cmt_speech.c           |  33 ++--
+ drivers/infiniband/hw/hfi1/file_ops.c      |  83 +++-------
+ drivers/scsi/sg.c                          | 115 ++++++-------
+ drivers/usb/mon/mon_bin.c                  |  82 ++++++----
+ drivers/video/fbdev/core/fb_defio.c        |   6 +-
+ drivers/video/fbdev/ssd1307fb.c            |   2 +
+ fs/coredump.c                              |   2 +-
+ fs/fuse/dax.c                              |   2 +-
+ fs/hugetlbfs/inode.c                       |   2 +-
+ fs/proc/task_mmu.c                         |   8 +-
+ include/asm-generic/tlb.h                  |   4 +-
+ include/linux/hugetlb.h                    |   5 +-
+ include/linux/hugetlb_inline.h             |  28 ----
+ include/linux/mm.h                         | 236 +++++++++++++++++++++++++--
+ include/linux/mm_types.h                   |  48 +++++-
+ include/linux/pagemap.h                    |   1 -
+ include/linux/rmap.h                       |   2 +-
+ include/linux/userfaultfd_k.h              |   1 -
+ kernel/bpf/arena.c                         |   3 +-
+ kernel/events/core.c                       |   2 +-
+ kernel/events/uprobes.c                    |   4 +-
+ kernel/sched/fair.c                        |   3 +-
+ mm/folio.c                                 |   2 +-
+ mm/gup.c                                   |   8 +-
+ mm/huge_memory.c                           |  30 ++--
+ mm/hugetlb.c                               |  14 +-
+ mm/internal.h                              |  79 +++++----
+ mm/ksm.c                                   |   5 +-
+ mm/madvise.c                               |  31 ++--
+ mm/memory.c                                | 145 ++++++++++++++---
+ mm/mempolicy.c                             |   2 +-
+ mm/migrate_device.c                        |  12 +-
+ mm/mlock.c                                 |  51 +++---
+ mm/mmap.c                                  |   2 +-
+ mm/mmu_gather.c                            |   2 +-
+ mm/mprotect.c                              |   5 +-
+ mm/mremap.c                                |  11 +-
+ mm/page_vma_mapped.c                       |   4 +-
+ mm/pagewalk.c                              |   2 +-
+ mm/rmap.c                                  |   8 +-
+ mm/swapfile.c                              |   2 +-
+ mm/userfaultfd.c                           |  46 +++---
+ mm/util.c                                  |  49 ++++--
+ mm/vma.c                                   | 248 ++++++++++++++++++++++-------
+ mm/vma.h                                   |  31 +++-
+ mm/vma_internal.h                          |   1 -
+ mm/vmscan.c                                |   8 +-
+ security/selinux/selinuxfs.c               |  11 +-
+ sound/core/pcm_native.c                    |  38 ++---
+ tools/testing/vma/include/dup.h            | 106 ++++++++++--
+ tools/testing/vma/include/stubs.h          |   6 +-
+ tools/testing/vma/tests/merge.c            |  10 +-
+ 63 files changed, 1187 insertions(+), 568 deletions(-)
+---
+base-commit: 6b41451631cabf9ea3b384c2a099088e1598f963
+change-id: 20260721-b4-mmap-prepare-vma-flag-sanify-2100425df5aa
+
+Cheers,
+-- 
+Lorenzo Stoakes (ARM) <ljs@kernel.org>
+
 
