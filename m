@@ -1,53 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-29399-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29400-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1716DCC6B12
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 15:19:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9BD2CC6B1C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 15:20:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3ygW5gyvz2xrC;
-	Wed, 14 Oct 2026 02:19:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791904791;
-	cv=none; b=iibGuffmgP5Y2Yj4J09ZYvBkbEvBUuMIV4tIu7JZvaauyaHx2pgCkIAUh1cUCoGuSKEgV7jGB8TlwTHajW17gCM7z0AHomvKzH3AwSMjw7FdfRwG1ZhG+K+NMsro+9NqC7+7UL3pfdB2gJ2A2hbGLnF6C2A4TSkvQx6pQTouCj4cfbgyy5QkUZEaoyZEqnpuCF7B8cBpb/BdtnJfOSePed0lCs6sbpFUFDcowEPSi9X68Agx1tfFCRL5+VRiDG8EBsCDHGOITUbYg9/Tvg43zlW1vWQ8b1TC1tfe1lgKOX1VLhDSHV3iutOOZFQu0gP1ru5NxIbyHPHMr0Cy72R5XA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3yh81pBzz3bsZ;
+	Wed, 14 Oct 2026 02:20:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791904824;
+	cv=none; b=eZ8AlKWkFwaCuvULnpBCnNGOaNAkeDTi8R+Hj0xOUxt/OvLFos37K/dBmZswZm4OuoXTfiSxA2Y0Jief+uEPLrsFGkBVVbp2tSVI3I+ItFsTVnrzlGzSZWdUOhDbSyWiNIHe1+/KOVv0qFZpsSFTnypRJyqYfUDzqZrbUn9Q3RRHEydIMt2XrXpDFovzCH7QPP87N7UqnyUtZCDh/PbRNU/5aLrz8mW6IkIXVgRRE3HSg89NNBzD1QSRIt5dXjBUMh+2Nr4+OItbyU2K3Nr7Y0CPxDlC9UWOGHFAy8FkKySVMA98FuF+llhgTVUznfXa5qsUYUmlMmZzWB5t63uu4Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791904791; c=relaxed/relaxed;
-	bh=PGsBHP0M3dhNSNjZ8IyLwxEUTTLsUEI8U0YmZVga3eU=;
+	t=1791904824; c=relaxed/relaxed;
+	bh=Bp2H797bR90jkJwAq1C3XYleL8CpghUWk7gBOV5n4l0=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ejpUxXw6W+Syx26nIxTwLXeU1JIaGFvP38XKBr/QfzKn44ipU5iaopX//YaufQPw1snyHu2Tkk17iH0xg3boNtN5Vsgde7G9OKzmq3WkAt4Nc4hyr0j5LrqlWtr+uSS0PMkhzNYQ7UHRNxCrFU1DUISB8J8oiB9sJVFIWlgjWDUoM7c09rVcW7gMItDGpsHFjcyaIt2Xufbipnzi3KllkUxbXrUJqH3Jme1doa+UK6Tvlvt9YRNB//8D634KLL/ywuxzDL8lVinvTsgu3Lct6c6uFOCOy42JvNTGkEVtQTetoJaOu59KONpxhVMThfO3t7qYHq1j+y9I7/DvVuBS4Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mnR9GGkP; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=lj0Tg7Gaus9K4M/+eG5Ac5X+b4TfpfGlzD0GNflCu+7d598CkyheELVRo/IpbGhbkttf4T7+FLxfG/FaE4V50fqRM8fc96JjN8e2FZ9a54FM7/QWQFiA4xtJ9ajRC4VRYIh6QOJHTPkhtQNBEuAoBQGhwQCMB7ABuYMXP5K0CooeWQ9VPpdcq3XaUuCjDU02w5qF/sEW6XtZchYlfSHXj6zpbFwVQl71XE9sVdg0EpyplCl1bRQxjcbD2OQ2gSYGxQzjCFEaKspvF2kQzVpKeeeq9OmCL3lkX5dkPLe801qKIdlh9+XQNyPw4ohhhxK5RsrW5BBpPq91XugVIzFg4A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=W+6pKgzj; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mnR9GGkP;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=W+6pKgzj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3ygW0YhHz2xnn
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 02:19:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3yh72ZSVz2xnn
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 02:20:23 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 81F83410C4;
+	by tor.source.kernel.org (Postfix) with ESMTP id 27010602C3;
+	Tue, 13 Oct 2026 15:20:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E09D31F000FF;
 	Tue, 13 Oct 2026 15:19:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 773B81F00899;
-	Tue, 13 Oct 2026 15:19:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791904789;
-	bh=PGsBHP0M3dhNSNjZ8IyLwxEUTTLsUEI8U0YmZVga3eU=;
+	s=k20260515; t=1791904820;
+	bh=Bp2H797bR90jkJwAq1C3XYleL8CpghUWk7gBOV5n4l0=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=mnR9GGkPzl1l01E4TFmf3VOAC4weG5a7IZALgwa4swAlutZ0+6qL854KxsyAmbTAO
-	 co71clZ6S+0juvyA6UgaRso/HwPIpIJb6u0CVybGofCQlBb49mjxkOBNrQTal1EbDB
-	 MdaKB5NdJogXJYsCPF605IYNj0Gd6A4fkJW4CFnF4XC6TPqvNMfqE5tcinu6Ivgl6A
-	 2yWfne7Gy9x6hfDVFdMwwO80y8yryn2F5gEOHwxDu+TSOnZsQcixdsyYZuLJRX+dp0
-	 1Wb9+ItLsPJu8AuWU4EZ0UmRaSHScZ4VJ6zBO1O59MWi1erOk6VdFWiqLVo9URQwEe
-	 tuOqnF+IPsOCw==
+	b=W+6pKgzjr8nSCRT2dgEyqvgkYgT8NTCEYfaFPp17/D5qGypyvw5fQaIEOpNXdBN6+
+	 3A4ilQ6EI+RZQj1RUhPmMhehHGrwcI0swvB3prQY/W4grP+/Nn58QGB13ckT95tKQn
+	 vXsBIMj5udJtc6fSQgb45AB5lo2gOYTOhNE33bG1zUwDEX+vQQUaaGSkTJl0BQobSA
+	 mNsU7YBb/hFgtjpEetR65oCuAnwYRUVzDrNsAQ09mDnlPaJB3nFNQiRmmybaiNGCgm
+	 cgm4W/rgcpS6+VNlRkFSqgMckSTzNzaJv9E/YNaAfzDuIVudJyFLrx9ZA1VciVg99I
+	 zQOD1Gp0ejMNw==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Tue, 13 Oct 2026 16:05:06 +0100
-Subject: [PATCH v6 26/39] mm: remove VMA_IO_BIT check in
- vma[_flags]_is_mm_managed()
+Date: Tue, 13 Oct 2026 16:05:07 +0100
+Subject: [PATCH v6 27/39] mm: remove hugetlb_inline.h
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +62,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261013-b4-mmap-prepare-vma-flag-sanify-v6-26-1aa3c9b139f9@kernel.org>
+Message-Id: <20261013-b4-mmap-prepare-vma-flag-sanify-v6-27-1aa3c9b139f9@kernel.org>
 References: <20261013-b4-mmap-prepare-vma-flag-sanify-v6-0-1aa3c9b139f9@kernel.org>
 In-Reply-To: <20261013-b4-mmap-prepare-vma-flag-sanify-v6-0-1aa3c9b139f9@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -148,191 +147,195 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  fuse-devel@lists.linux.dev, Ihor Solodrai <ihor.solodrai@linux.dev>, 
  Bert Karwatzki <spasswolf@web.de>, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=7076; i=ljs@kernel.org;
- h=from:subject:message-id; bh=+FdGKRK/eGuIEVAkxlmlyX+6HKRyDMstVhSwFk3rgp4=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLOeZze9qvjQqXtnE6bgJL+qMplxw9tk1oj1XlZf8b/S
- fX7jl7+3VHKwiDGxSArpsjy/Iv4/iCRsHmdF/zdYOawMoEMYeDiFICJGB9lZHhfWLO/Q31r6afM
- 9pDUyYsLV8zRUgnltrsvw2fZa35tjgUjQ5/E9YMHOW5f+333lqmVYZbEDd6MySXZ680v+fLuyp3
- /jh0A
+X-Developer-Signature: v=1; a=openpgp-sha256; l=5629; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=9Oo5fqV6FNbJ4su4+2CeHmVo6IndjrVx8LcKpn+6Y/4=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLOeZzulTR7u/P259lOT7sZPE9MX5uVGhHyKVDCtJvnW
+ ERfTsPijlIWBjEuBlkxRZbnX8T3B4mEzeu84O8GM4eVCWQIAxenAExEzYaRYVqqyKzT8/u0cx/+
+ UHdsEYk12LddtWxD8yaTi771R95atzMyvA134Wb5ut2uQijoWWl0Js+yv/NTe3+FLCiY/ua3+8d
+ frAA=
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 
-We have now made it such that every driver which sets VMA_IO_BIT marks it
-as not mm-managed.
+This header really makes little sense - every place it is included mm.h is
+also included, and the header itself includes mm.h, so it does nothing to
+reduce header size.
 
-However, vma_flags_is_mm_managed() still checks for VMA_IO_BIT and, if
-set, treats the mapping as not mm-managed. This was previously required to
-handle drivers which set VMA_IO_BIT but none of the other flags which
-identify a mapping as not mm-managed.
+It also oddly does an #ifdef around checking VMA_HUGETLB_BIT, however
+VMA_HUGETLB_BIT is unconditionally available, and will never be set if
+hugetlb is not enabled.
 
-We have now established that a driver which sets VMA_IO_BIT must also set
-one of those flags, so the VMA_IO_BIT check is redundant.
+Simply remove the header, eliminate the odd ifdeffery and place the
+predicates in mm.h.
 
-So remove the VMA_IO_BIT check in vma_flags_is_mm_managed() and update
-mmap_validate_vma_flags() to use vma_flags_is_mm_managed() rather than
-open-coding the VMA_PFNMAP_BIT, VMA_MIXEDMAP_BIT check.
+The naming of these predicates is odd, but to keep changes separate, we
+will address this in a separate patch.
 
-This change means that vma[_flags]_can_merge() doesn't check VMA_IO_BIT any
-longer (which is now redundant) as it calls vma_flags_is_mm_managed().
+The file was never put into MAINTAINERS so there's no change required
+there.
 
-Now that the predicate means precisely VMA_PFNMAP_BIT or VMA_MIXEDMAP_BIT,
-also use it at the other sites which open-code that pair, so the intent is
-stated rather than the flags, with no functional change:
+No functional change intended.
 
-zap_special_vma_range() only zaps mappings which are not mm-managed, as
-drivers use it to tear down ranges they established themselves.
-
-The mprotect() arch PFN modification check applies to mappings not managed
-by core mm, which may map PFNs without struct pages.
-
-NUMA balancing skips VM_MIXEDMAP mappings having already excluded VM_IO
-and VM_PFNMAP mappings via vma_migratable(), so it skips exactly the
-mappings not managed by core mm - say so.
-
-Finally, update the VMA userland merge 'special' flag tests to no longer
-assert that VMA_IO_BIT prevents merge as VMA_PFNMAP_BIT, VMA_MIXEDMAP_BIT
-now suffices.
-
+Reviewed-by: Zi Yan <ziy@nvidia.com>
 Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- include/linux/mm.h              |  3 +--
- kernel/sched/fair.c             |  2 +-
- mm/memory.c                     |  7 ++++---
- mm/mprotect.c                   |  3 +--
- mm/vma.c                        |  2 +-
- tools/testing/vma/include/dup.h |  3 +--
- tools/testing/vma/tests/merge.c | 10 ++--------
- 7 files changed, 11 insertions(+), 19 deletions(-)
+ drivers/gpu/drm/drm_gpusvm.c   |  2 +-
+ include/asm-generic/tlb.h      |  2 +-
+ include/linux/hugetlb.h        |  1 -
+ include/linux/hugetlb_inline.h | 28 ----------------------------
+ include/linux/mm.h             | 11 +++++++++++
+ include/linux/pagemap.h        |  1 -
+ include/linux/userfaultfd_k.h  |  1 -
+ kernel/sched/fair.c            |  1 -
+ mm/vma_internal.h              |  1 -
+ 9 files changed, 13 insertions(+), 35 deletions(-)
 
+diff --git a/drivers/gpu/drm/drm_gpusvm.c b/drivers/gpu/drm/drm_gpusvm.c
+index a93eee7ddb9e..793dacec2100 100644
+--- a/drivers/gpu/drm/drm_gpusvm.c
++++ b/drivers/gpu/drm/drm_gpusvm.c
+@@ -9,9 +9,9 @@
+ #include <linux/dma-mapping.h>
+ #include <linux/export.h>
+ #include <linux/hmm.h>
+-#include <linux/hugetlb_inline.h>
+ #include <linux/memremap.h>
+ #include <linux/mm_types.h>
++#include <linux/mm.h>
+ #include <linux/slab.h>
+ 
+ #include <drm/drm_device.h>
+diff --git a/include/asm-generic/tlb.h b/include/asm-generic/tlb.h
+index 044dabc1fe9c..8b8123e5b7d7 100644
+--- a/include/asm-generic/tlb.h
++++ b/include/asm-generic/tlb.h
+@@ -11,9 +11,9 @@
+ #ifndef _ASM_GENERIC__TLB_H
+ #define _ASM_GENERIC__TLB_H
+ 
++#include <linux/mm.h>
+ #include <linux/mmu_notifier.h>
+ #include <linux/swap.h>
+-#include <linux/hugetlb_inline.h>
+ #include <asm/tlbflush.h>
+ #include <asm/cacheflush.h>
+ 
+diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+index 80a5a03e9cee..d7e6563cef75 100644
+--- a/include/linux/hugetlb.h
++++ b/include/linux/hugetlb.h
+@@ -7,7 +7,6 @@
+ #include <linux/mm_types.h>
+ #include <linux/mmdebug.h>
+ #include <linux/fs.h>
+-#include <linux/hugetlb_inline.h>
+ #include <linux/cgroup.h>
+ #include <linux/page_ref.h>
+ #include <linux/list.h>
+diff --git a/include/linux/hugetlb_inline.h b/include/linux/hugetlb_inline.h
+deleted file mode 100644
+index 5c29cd3223a1..000000000000
+--- a/include/linux/hugetlb_inline.h
++++ /dev/null
+@@ -1,28 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-#ifndef _LINUX_HUGETLB_INLINE_H
+-#define _LINUX_HUGETLB_INLINE_H
+-
+-#include <linux/mm.h>
+-
+-#ifdef CONFIG_HUGETLB_PAGE
+-
+-static inline bool is_vma_hugetlb_flags(const vma_flags_t *flags)
+-{
+-	return vma_flags_test(flags, VMA_HUGETLB_BIT);
+-}
+-
+-#else
+-
+-static inline bool is_vma_hugetlb_flags(const vma_flags_t *flags)
+-{
+-	return false;
+-}
+-
+-#endif
+-
+-static inline bool is_vm_hugetlb_page(const struct vm_area_struct *vma)
+-{
+-	return is_vma_hugetlb_flags(&vma->flags);
+-}
+-
+-#endif
 diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 2ecf39bc857b..1006d8567e06 100644
+index 1006d8567e06..2c41974704a9 100644
 --- a/include/linux/mm.h
 +++ b/include/linux/mm.h
-@@ -1627,8 +1627,7 @@ static inline bool vma_is_shared_maywrite(const struct vm_area_struct *vma)
-  */
- static inline bool vma_flags_is_mm_managed(const vma_flags_t *flags)
- {
--	return !vma_flags_test_any(flags, VMA_PFNMAP_BIT, VMA_MIXEDMAP_BIT,
--				   VMA_IO_BIT);
-+	return !vma_flags_test_any(flags, VMA_PFNMAP_BIT, VMA_MIXEDMAP_BIT);
+@@ -1609,6 +1609,17 @@ static inline bool vma_is_shared_maywrite(const struct vm_area_struct *vma)
+ 	return is_shared_maywrite(&vma->flags);
  }
  
++static inline bool is_vma_hugetlb_flags(const vma_flags_t *flags)
++{
++	return IS_ENABLED(CONFIG_HUGETLB_PAGE) &&
++	       vma_flags_test(flags, VMA_HUGETLB_BIT);
++}
++
++static inline bool is_vm_hugetlb_page(const struct vm_area_struct *vma)
++{
++	return is_vma_hugetlb_flags(&vma->flags);
++}
++
  /**
+  * vma_flags_is_mm_managed() - Do the specified VMA flags indicate that the
+  * contents of the VMA are managed by core mm?
+diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
+index 939f3a5e973f..d7d8b312466c 100644
+--- a/include/linux/pagemap.h
++++ b/include/linux/pagemap.h
+@@ -14,7 +14,6 @@
+ #include <linux/gfp.h>
+ #include <linux/bitops.h>
+ #include <linux/hardirq.h> /* for in_interrupt() */
+-#include <linux/hugetlb_inline.h>
+ 
+ struct folio_batch;
+ 
+diff --git a/include/linux/userfaultfd_k.h b/include/linux/userfaultfd_k.h
+index a4351cffc60c..a14b8a9ffb7b 100644
+--- a/include/linux/userfaultfd_k.h
++++ b/include/linux/userfaultfd_k.h
+@@ -18,7 +18,6 @@
+ #include <linux/swap.h>
+ #include <linux/leafops.h>
+ #include <asm-generic/pgtable_uffd.h>
+-#include <linux/hugetlb_inline.h>
+ 
+ /* The set of all possible UFFD-related VM flags. */
+ #define __VM_UFFD_FLAGS (VM_UFFD_MISSING | VM_UFFD_MINOR | \
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 8dff37059faf..a07a658cd99f 100644
+index a07a658cd99f..9eb12d0b6f1b 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -4212,7 +4212,7 @@ static void task_numa_work(struct callback_head *work)
- 
- 	for (; vma; vma = vma_next(&vmi)) {
- 		if (!vma_migratable(vma) || !vma_policy_mof(vma) ||
--			is_vm_hugetlb_page(vma) || (vma->vm_flags & VM_MIXEDMAP)) {
-+			is_vm_hugetlb_page(vma) || !vma_is_mm_managed(vma)) {
- 			trace_sched_skip_vma_numa(mm, vma, NUMAB_SKIP_UNSUITABLE);
- 			continue;
- 		}
-diff --git a/mm/memory.c b/mm/memory.c
-index 1a6bb0aef8cf..142a8ef13f6a 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2343,19 +2343,20 @@ void zap_vma_range(struct vm_area_struct *vma, unsigned long address,
- }
- 
- /**
-- * zap_special_vma_range - zap all page table entries in a special vma range
-+ * zap_special_vma_range - zap all page table entries in a VMA which is not
-+ * mm-managed
-  * @vma: the vma covering the range to zap
-  * @address: starting address of the range to zap
-  * @size: number of bytes to zap
-  *
-  * This function does nothing when the provided address range is not fully
-- * contained in @vma, or when the @vma is not VM_PFNMAP or VM_MIXEDMAP.
-+ * contained in @vma, or when @vma is mm-managed.
+@@ -22,7 +22,6 @@
   */
- void zap_special_vma_range(struct vm_area_struct *vma, unsigned long address,
- 		unsigned long size)
- {
- 	if (!range_in_vma(vma, address, address + size) ||
--	   !(vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP)))
-+	   vma_is_mm_managed(vma))
- 		return;
- 
- 	zap_vma_range(vma, address, size);
-diff --git a/mm/mprotect.c b/mm/mprotect.c
-index 2888ee638d87..706c679d4281 100644
---- a/mm/mprotect.c
-+++ b/mm/mprotect.c
-@@ -783,8 +783,7 @@ mprotect_fixup(struct vma_iterator *vmi, struct mmu_gather *tlb,
- 	 * uncommon case, so doesn't need to be very optimized.
- 	 */
- 	if (arch_has_pfn_modify_check() &&
--	    vma_flags_test_any(&old_vma_flags, VMA_PFNMAP_BIT,
--			       VMA_MIXEDMAP_BIT) &&
-+	    !vma_flags_is_mm_managed(&old_vma_flags) &&
- 	    !vma_flags_test_any_mask(&new_vma_flags, VMA_ACCESS_FLAGS)) {
- 		pgprot_t new_pgprot = vm_get_page_prot(newflags);
- 
-diff --git a/mm/vma.c b/mm/vma.c
-index affe464a7c92..5df02665d1ed 100644
---- a/mm/vma.c
-+++ b/mm/vma.c
-@@ -2794,7 +2794,7 @@ static int mmap_validate_vma_flags(const vma_flags_t *flags)
- 		return -EINVAL;
- #endif
- 
--	if (!vma_flags_test_any(flags, VMA_PFNMAP_BIT, VMA_MIXEDMAP_BIT)) {
-+	if (vma_flags_is_mm_managed(flags)) {
- 		/* mm-managed mappings may not set VMA_IO_BIT. */
- 		if (WARN_ON_ONCE(vma_flags_test(flags, VMA_IO_BIT)))
- 			return -EINVAL;
-diff --git a/tools/testing/vma/include/dup.h b/tools/testing/vma/include/dup.h
-index 442ea9eb098d..94bf818ad0e1 100644
---- a/tools/testing/vma/include/dup.h
-+++ b/tools/testing/vma/include/dup.h
-@@ -1667,8 +1667,7 @@ static inline bool file_is_dev_zero(const struct file *file)
- 
- static inline bool vma_flags_is_mm_managed(const vma_flags_t *flags)
- {
--	return !vma_flags_test_any(flags, VMA_PFNMAP_BIT, VMA_MIXEDMAP_BIT,
--				   VMA_IO_BIT);
-+	return !vma_flags_test_any(flags, VMA_PFNMAP_BIT, VMA_MIXEDMAP_BIT);
- }
- 
- static inline bool vma_is_mm_managed(const struct vm_area_struct *vma)
-diff --git a/tools/testing/vma/tests/merge.c b/tools/testing/vma/tests/merge.c
-index acaab282939c..b26f1a66a170 100644
---- a/tools/testing/vma/tests/merge.c
-+++ b/tools/testing/vma/tests/merge.c
-@@ -496,17 +496,11 @@ static bool test_vma_merge_special_flags(void)
- 		.mm = &mm,
- 		.vmi = &vmi,
- 	};
--	vma_flag_t special_flags[] = { VMA_IO_BIT, VMA_DONTEXPAND_BIT,
-+	vma_flag_t special_flags[] = { VMA_DONTEXPAND_BIT,
- 		VMA_PFNMAP_BIT, VMA_MIXEDMAP_BIT };
--	vma_flags_t all_special_flags = EMPTY_VMA_FLAGS;
- 	int i;
- 	struct vm_area_struct *vma_left, *vma;
- 
--	/* Make sure there aren't new VM_SPECIAL flags. */
--	for (i = 0; i < ARRAY_SIZE(special_flags); i++)
--		vma_flags_set(&all_special_flags, special_flags[i]);
--	ASSERT_FLAGS_SAME_MASK(&all_special_flags, VMA_SPECIAL_FLAGS);
--
- 	/*
- 	 * 01234
- 	 * AAA
-@@ -520,7 +514,7 @@ static bool test_vma_merge_special_flags(void)
- 	 * 01234
- 	 * AAA*
- 	 *
--	 * This should merge if not for the VM_SPECIAL flag.
-+	 * This should merge if not for the 'special' flag.
- 	 */
- 	vmg_set_range(&vmg, 0x3000, 0x4000, 3, vma_flags);
- 	for (i = 0; i < ARRAY_SIZE(special_flags); i++) {
+ #include <linux/energy_model.h>
+ #include <linux/mmap_lock.h>
+-#include <linux/hugetlb_inline.h>
+ #include <linux/jiffies.h>
+ #include <linux/mm_api.h>
+ #include <linux/highmem.h>
+diff --git a/mm/vma_internal.h b/mm/vma_internal.h
+index 4d300e7bbaf4..4f73f0a4db79 100644
+--- a/mm/vma_internal.h
++++ b/mm/vma_internal.h
+@@ -18,7 +18,6 @@
+ #include <linux/fs.h>
+ #include <linux/huge_mm.h>
+ #include <linux/hugetlb.h>
+-#include <linux/hugetlb_inline.h>
+ #include <linux/kernel.h>
+ #include <linux/ksm.h>
+ #include <linux/khugepaged.h>
 
 -- 
 2.55.0
