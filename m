@@ -1,102 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-29421-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29422-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E37ACC6B19
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 16:48:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69AD3CC6B12
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 18:30:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j40dT6kfdz3brv;
-	Wed, 14 Oct 2026 03:48:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::136"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791910093;
-	cv=none; b=F0bs9Wo9uGFSsjSNdKwIDTpehVyCF2J9al/IaEF3cr6v4FU0j6Lq4d+Y7zcLvzCrlQ0geLh85LG/m2YKM9zmYeaOX50z0J7+Kf/mDq0lMvCiJVH5fIURvaz3IT/+d3m5/RLCmwNnKMzRsewSKtMHBB3Pp++boe0cbeuS4qPDiQjuKSefN+v3QxWroFEDAlV/oAIORpFjz8eZZRKL4j32tffhpbvv5idzTQiZioUynz9ZAdBxSylee/Qgo7Kta9KMo3eKLqPh3XvT7lUlo2Sw+CO/a6SesehBiMV4GCdiSXr+ITyxMT0FaWVW0fq6e61JLJZBcIUvJfkENjU1PTZ1AQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j42tz26X5z3brM;
+	Wed, 14 Oct 2026 05:30:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791916203;
+	cv=none; b=WVySgF9Fqm4QYfzD+KXYEnPdf6dsAGaoaSUJNh4aLozzZgB4VBEAcmaFDxHDexlyu7R4gDPq8NgwwuSZs7cogk+9zZV+Ux4ZVNsJixONz7g15QIBWUOPgjwfM7ugR6VJlIcrNGEXwyxmxwnbtLMO9UhpwWdP3mYYpVfBT89UgTA0U4devtgG8JC9KyEWeHRB74vzAR2HBFE59lyWF4wR4kl9a3aYSxJHfK6U1w3oDgdAO3wcunIsFnZvK8etcRj4Di9OTrfYBe0dz1AlQLQGYPgWr0QK8P8ucUGPvSw1/ykgE7JJUtBF6RCuIj+yjwidxsTMot9KGyFSWogWy6ZSng==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791910093; c=relaxed/relaxed;
-	bh=JrdkhjVWS0paU+Qy/xA3FUiCVMdE6viTRALFdsJ0zOM=;
-	h=From:Date:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=f0D8tiVvKD4QjBmPgQUktZwNhkPtWazXnZ2wgLkxwE34zFhDtS0GgNfoWnH1HHlkJCYr4MklV1ZkP89vt9CD66oUQhiFq9P7VHQhZ5AG8UyIAue2DXFC7tpSwAb2NF1nNu/lNsuf5DnRBpwpuLXnBmywkBHHtUU06JzSRgu78iKleLxaxw072d4eGwvWyZvwq4bGqiNmqJcCygcOHg+TGPTasPH4xKb4NdcrBChLPP32y1b2sVTi5VdSt2QkReSswTN9cQ4S+b2mf3SjR4sm88ZyGqpH4P1pOnKlH7h60RfDMRThR+AOmdkXzR745cBlYpkQDR4YF9Vgmbvr/8Ufcg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=YrKRHa+8; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::136; helo=mail-lf1-x136.google.com; envelope-from=urezki@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1791916203; c=relaxed/relaxed;
+	bh=dV4L07n8DwyGtSMilOVhQzVq4CXdM6B5ECJPGyiM9JA=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=ncca9r1m+Lo3tSGpgsLpL4eAv+S7HTyiIkGOPkdmXpbKQauVnDsRCdmgiMGNk2f7xYa1s2txtm02BXEnC7CmyUSWSauyTo7REhcFvmy9Bm1FyxNyy79gA1uNhekQYYdctkkaTJPjHK2Zc7cg8lGtwDjqQ5i80iJy+Gc10yMqUwsCg7J1fjc5erRKOE70SKltu8bgu6dT3wQTVNkm17vpPZxgxpGkViAEARnelHL60dz1GMuHtlv3ahC4o+5OiZ5a74vswPaTOUh2Orh28yEdN95Uz/bbr0nap++V19d5KDtJjA/qZP4hvFGaQmQ70p3F4MBnpSibqIVFfD8SPj4UPA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=B9itd55M; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=YrKRHa+8;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=B9itd55M;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::136; helo=mail-lf1-x136.google.com; envelope-from=urezki@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-lf1-x136.google.com (mail-lf1-x136.google.com [IPv6:2a00:1450:4864:20::136])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j40dS6Qs1z3brM
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 03:48:12 +1100 (AEDT)
-Received: by mail-lf1-x136.google.com with SMTP id 2adb3069b0e04-5bced78b3dfso1955975e87.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 09:48:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791910089; x=1792514889; darn=lists.ozlabs.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:date
-         :from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=JrdkhjVWS0paU+Qy/xA3FUiCVMdE6viTRALFdsJ0zOM=;
-        b=YrKRHa+8qoXGymmDDZFDBdHDN24Gnfro9ofh17c4J2sIXX4XOOz0Rt4U3BD7VrY3xr
-         oLGonV/kbEYldyKLdJQgiVXhbQk3LxcWJ25ewxbsl6BamHKCPcH+V31d6bXco/evM+DF
-         SlDeaaFuD7Otp5FF41o1Kpn29yDY00smVDMLEQu+i49XoRqPM+5dLdacG5CG+WSZD4M9
-         MSBYHvFur8mmegs73zhZZ26YV+XL6apYSQVeU87Z9Kb4oan3vScCZnBhv5duu+qljDIN
-         aGbZ/IaAwGU1yc2SaP221Vj2dVKXgePrPSWxdAZzBvXkqr4mBZShXUoos8HIYpWsCbx0
-         VNvA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791910089; x=1792514889;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:date
-         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=JrdkhjVWS0paU+Qy/xA3FUiCVMdE6viTRALFdsJ0zOM=;
-        b=HM43OH8w3TkT66cuqG3gspP+Qdk22APVrEj6XfcvL7DeMrOUsQVTIUfOqOkXpKJ1lg
-         WKKYfnR0vtu8KZ6btTf5XV08MRSBM+jeMSKvNOLxdAPaR5uNLIadifFK+LrwfE8ytLbN
-         mkpu1a0MjIZr7yTQ6YNejoi3nRdWbRFmBnFOdIQLZOc7vPcsQdDZyPcoL1qxWZWK6RLq
-         VBVutdK1P/u+MBXtabnB11yqTHNcdIUaNCl0GI0dUMLmJ9sPrD5aQ1vsFFmFPdP4mO68
-         t6M6O7p0/PsXFZJPld+GlosaWQBoyCJEffvxb5W689iGURB1CXhjGB21figQlL4hLYS8
-         Bdlg==
-X-Forwarded-Encrypted: i=1; AKwUvBwiIN8p1WdpH0EWz8d8KTtfmeeyNPzy/Sv7RQ+Qc7opxZLnqR9cKdUOmr/MQWdTcv8iDg4hqbaHT0qItos=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYKgczxUOg32s6YCR/hUUyaM5p6axdJpn/lnCN7GRKTr142s+K5D
-	0uVNXSdjHbOIt3kDc1sxnBJ/3tK5130LWrj9ajDQyHJdPT8VOWeOnB2p
-X-Gm-Gg: AYBFou0VwXVqv5pDaLnW4tysjgzMbwnn4f0YQcG7IXbUgjjUT/QL8ZgmfYJoMWTBY/L
-	oLkcxy38ibOUWaidiXsbDuFtWOYOyidjd+ACq4hRHWk02cdHSssDFNFVCfMvw4XKA1vhZYi0Mog
-	5vqcBCmSFEnEiAKhx1Yd4HBdENc1ZrxiKOUydKXy1sdDxKwQw1qsEt3KF4EwFePBxC/shHcIqOL
-	LIlmnUCEbKvX7WgEdGEdexytzGzEkM1KJIt8/jHReAr5WiQ8ap7P82G6HfwenvTBMmqovyYfdfk
-	n4dH3LX7o9QWhtExohiU8nyUa+SEt6npc+eCMBYiQCzypsvC10HGC4DXkIlJ1eXT0mU8ZShtQRY
-	7GYxooULnsV+xqlcnrxT/orhgNirq5/ZMOUbgt0WPiric6irLZpxP3C5hbLnAISAmkjt11Uv1fx
-	UYjMQw/XXXCrrS6QfsnWJ+k9J5ZM430OCgGSsak3bb1ZPXe5pdpZAbVa9sXLK23A5hOImUOMau2
-	Kmb94z65VhYK/bB/n1wDGL/
-X-Received: by 2002:a05:6512:3d0c:b0:5b8:f309:f275 with SMTP id 2adb3069b0e04-5bcde8cea91mr4857257e87.58.1791910089239;
-        Tue, 13 Oct 2026 09:48:09 -0700 (PDT)
-Received: from pc636 (host-95-203-22-87.mobileonline.telia.com. [95.203.22.87])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-3a9c3cd2f24sm37276021fa.28.2026.10.13.09.48.07
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 13 Oct 2026 09:48:08 -0700 (PDT)
-From: Uladzislau Rezki <urezki@gmail.com>
-X-Google-Original-From: Uladzislau Rezki <urezki@pc636>
-Date: Tue, 13 Oct 2026 18:48:06 +0200
-To: Suren Baghdasaryan <surenb@google.com>, Hao Ge <hao.ge@linux.dev>
-Cc: Hao Ge <hao.ge@linux.dev>, Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Alexander Potapenko <glider@google.com>,
-	Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Dennis Zhou <dennis@kernel.org>, Tejun Heo <tj@kernel.org>,
-	Christoph Lameter <cl@gentwo.org>,
-	Uladzislau Rezki <urezki@gmail.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com,
-	linux-mm@kvack.org
-Subject: Re: [RFC PATCH 4/4] mm/percpu: stop unmapping the CPU that failed to
- map
-Message-ID: <as5gxn6i2DD0iprj@pc636>
-References: <20261009063619.112313-1-hao.ge@linux.dev>
- <20261009063619.112313-5-hao.ge@linux.dev>
- <CAJuCfpGEgTocqrdpOtkOfks-geU0vVMZudNEG5+XWi3sxQdymQ@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j42tx4BdHz3brH
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 05:30:01 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69DDtkal149837;
+	Tue, 13 Oct 2026 18:29:44 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=dV4L07n8DwyGtSMilOVhQzVq4CXdM6B5ECJPGyiM9
+	JA=; b=B9itd55M92YZDfJIgBm+5qkRkZ3p6UsAGDYQjgwAYuJByF771ey1Mfy1h
+	aj3L3ChtxC0CyqAk8jhRpN3rCswjXoR/uBnSkq0aunOVdmyVvwsGmvaapqHGCLbI
+	QV+dohdRXQZskMS5ZXiMlqnlHXDie9fQJSxEEGtlKQo8q50wNxnc0HtLtk78AZEm
+	eQV8upLp6XqPS3JOuL2AzW+pXFtGeeBuCu8ZW5gTc0g/bRgVo3pW3HnODRZGs6lt
+	XJDHVxnl+QmBINPh7voJF7eLlnfVRKXvEHBTtha4NHnKT6g2aMERAV4CXqnrJ0ey
+	iPyfMxG03nT/7fQTntc1Yjugcg6pA==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7dwhg5d2-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Tue, 13 Oct 2026 18:29:43 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69DIFmeV3303971;
+	Tue, 13 Oct 2026 18:29:42 GMT
+Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4h9qb6ryt9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 13 Oct 2026 18:29:42 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
+	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69DITeTV33096368
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 13 Oct 2026 18:29:40 GMT
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2396858064;
+	Tue, 13 Oct 2026 18:29:40 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 493C05805F;
+	Tue, 13 Oct 2026 18:29:37 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.67.58.174])
+	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 13 Oct 2026 18:29:37 +0000 (GMT)
+From: Mingming Cao <mmc@linux.ibm.com>
+To: netdev@vger.kernel.org
+Cc: Mingming Cao <mmc@linux.ibm.com>, maddy@linux.ibm.com, mpe@ellerman.id.au,
+        npiggin@gmail.com, chleroy@kernel.org, ritesh.list@gmail.com,
+        sshegde@linux.ibm.com, nnac123@linux.ibm.com, andrew+netdev@lunn.ch,
+        davem@davemloft.net, edumazet@kernel.org, kuba@kernel.org,
+        pabeni@redhat.com, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org, horms@kernel.org, davemarq@linux.ibm.com,
+        bjking1@linux.ibm.com
+Subject: [PATCH net-next v5 0/9] ibmveth: fix hangs, use-after-frees and netpoll races
+Date: Tue, 13 Oct 2026 11:29:17 -0700
+Message-Id: <20261013182926.30417-1-mmc@linux.ibm.com>
+X-Mailer: git-send-email 2.39.3 (Apple Git-146)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -110,50 +90,212 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAJuCfpGEgTocqrdpOtkOfks-geU0vVMZudNEG5+XWi3sxQdymQ@mail.gmail.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDEzMDA3MiBTYWx0ZWRfX3IQTpmnxPmSw
+ zsfd1W044iNWAnxOw2eJB7BRSJHSEudK3AesOu2IbNsQr2h8LrrbvhfTWEPr7o8VchyDf8AegaA
+ jUIJ3rrfrirb+ctlTuiXi595RWa9QsQ=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDEzMDA3MiBTYWx0ZWRfX854zsPK+5TGU
+ IDK6ZfA0SATSDB4xvv3+b++kirsywMdyDbxIx/dIQuxs81RJPRRP/6VtbZhrRTr0AY1C5ZSmZuZ
+ 3YcP3Iioo7POWuLUXQKgWZ0L43cCTUOvR34EQ6pVIMZsBABaM3sY2z6ot0ogaxNWSzcmk3re8iB
+ ZSeKKIp+T4zkZhnLwyETIize4c0DifWU23VUC6TwRGOOj2UA8gB+M9V17pwQ/9VJXa5/a/9+xRD
+ 9dq+dzSqnY39qMK/9Q2LHy5CWqTx2Fkn/jM5SRuzGZDKz4/sRCXqaPP0DktKGnr17JBY/GmcjpP
+ 4pj9NOan0PB8zwuguYhi/XLMSSmIHPasqfSmuPWi2vwrajec9g9Q+WcZAGc3narRpZnr8jbhwK4
+ RbZIu5EoOYgxOxbqWheMaCnrqx3Z5v9VkZPgAZ8aTHEWD1sN6VDH/zfvgR8lrMGMjDMJHAeHCAe
+ kw3ylFHEzl6lLnZ09Ag==
+X-Proofpoint-GUID: CT8p4vqj609I_GvV569ElPwQ0uYUy2JX
+X-Authority-Analysis: v=2.4 cv=RoFQvymK c=1 sm=1 tr=0 ts=6ace7897 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=5OozSIiGgT2l7B_rfTcA:9
+X-Proofpoint-ORIG-GUID: Ehtej9PXnbAAt8YWsY9ktxB5CK6JWNnO
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-13_01,2026-10-09_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 spamscore=0 phishscore=0 adultscore=0 bulkscore=0
+ impostorscore=0 suspectscore=0 malwarescore=0 clxscore=1015
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
+ definitions=main-2610130072
 
-On Tue, Oct 13, 2026 at 03:46:43PM +0400, Suren Baghdasaryan wrote:
-> On Fri, Oct 9, 2026 at 10:36 AM Hao Ge <hao.ge@linux.dev> wrote:
-> >
-> > __pcpu_map_pages() clears the PTEs it installed when it fails, so
-> > pcpu_map_pages() only has to tear down the CPUs it mapped before
-> > the failing one.
-> >
-> > Signed-off-by: Hao Ge <hao.ge@linux.dev>
-> 
-> Reviewed-by: Suren Baghdasaryan <surenb@google.com>
-> 
-> 
-> > ---
-> >  mm/percpu-vm.c | 5 +++--
-> >  1 file changed, 3 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/mm/percpu-vm.c b/mm/percpu-vm.c
-> > index 509d8901835c..59d3a336a6bd 100644
-> > --- a/mm/percpu-vm.c
-> > +++ b/mm/percpu-vm.c
-> > @@ -252,10 +252,11 @@ static int pcpu_map_pages(struct pcpu_chunk *chunk, struct page **pages,
-> >         return 0;
-> >  err:
-> >         for_each_possible_cpu(tcpu) {
-> > -               __pcpu_unmap_pages(pcpu_chunk_addr(chunk, tcpu, page_start),
-> > -                                  page_end - page_start);
-> > +               /* The failing CPU's partial mapping undoes itself */
-> >                 if (tcpu == cpu)
-> >                         break;
-> > +               __pcpu_unmap_pages(pcpu_chunk_addr(chunk, tcpu, page_start),
-> > +                                  page_end - page_start);
-> >         }
-> >         pcpu_post_unmap_tlb_flush(chunk, page_start, page_end);
-> >         return err;
-> > --
-> > 2.25.1
-> >
-Reviewed-by: Uladzislau Rezki (Sony) <urezki@gmail.com>
+Hi,
 
---
-Uladzislau Rezki
+Nine fixes for serious bugs in the ibmveth driver: two hang the
+system, four are use-after-frees, one corrupts memory, one lets a
+frame from another partition stall or oops the receiver, and one makes
+ethtool -L report success when it failed.
+
+  1. Netpoll races with RX replenish (memory corruption, NULL
+     dereference): remove ndo_poll_controller, as was done for
+     ibmvnic, skip RX replenish in netpoll's budget-0 poll, and
+     enable NAPI only once the RX resources exist.
+     Fixes: 6b4223748895, bea3348eef27
+
+  2. Hang after a failed internal reopen: the next close() waits in
+     napi_disable() forever with RTNL held, and only a reboot
+     recovers. Skip close() when open() did not succeed.
+     Fixes: 860f242eb534
+
+  3. Use-after-free in remove(): a reset queued from NAPI could run
+     on the freed adapter. Disable the reset work first.
+     Fixes: 2c91e2319ed9
+
+  4. Hang or NULL dereference on a bad RX correlator from PHYP: poll
+     spun on that slot until RCU stalled, and a correlator naming an
+     inactive pool dereferenced NULL. A frame that does not fit its
+     buffer was copied past the end. Move past the bad slot and stay
+     in poll, and drop a frame that does not fit.
+     Fixes: 2c91e2319ed9, 860f242eb534
+
+  5. Use-after-free after a failed probe: the pool kobjects stay in
+     sysfs after the adapter is freed. Put them, as remove() does,
+     and give them a release() that probe and remove() wait for, so
+     CONFIG_DEBUG_KOBJECT_RELEASE cannot free them early either.
+     Fixes: 860f242eb534
+
+  6. ethtool -L returns 0 when it cannot allocate the new TX queues.
+     Return the allocation error.
+     Fixes: 10c2aba89cc0
+
+  7. Use-after-free of TX buffers: close() frees them without
+     waiting for a running transmit. It is called directly for MTU,
+     offload and buffer pool changes, and through dev_close(), which
+     does not wait either with a noqueue qdisc. Use
+     netif_tx_disable().
+     Fixes: d6832ca48d8a
+
+  8. Use-after-free of the RX queue: napi_disable() returns before
+     the poll has finished, and the rest of the poll re-enables the
+     interrupt and reads the RX queue that close() then frees. Wait
+     with synchronize_net().
+     Fixes: bea3348eef27
+
+  9. Stall or oops from a frame sent by another partition: the RX
+     checksum helper passes the IPv4 ihl to ip_fast_csum(), which on
+     ppc64 reads up to 16 GiB for ihl 0, and both RX offload helpers
+     trust the IP and TCP header lengths. Check the headers before
+     use, with KUnit cases.
+     Fixes: 9c7e8bc584f5, 7b5967389f5a, 66aa0678efc2
+
+Patches 1-8 were found in review of the ibmveth multi-queue RX
+series [1] (the patch 4 frame bound by the Sashiko review of v2), and
+patch 9 by the Sashiko review of v3 and the review that followed it.
+Landing them first also shrinks that series, which then only extends
+this handling per queue.
+
+Testing: the new and extended KUnit cases in patches 4 and 9 fail or
+oops on the unfixed driver and pass on qemu pseries (ppc64le). On a
+POWER10 LPAR: the v3 suite (netconsole under printk and ping floods,
+MTU and buffer pool changes under traffic, a forced open() failure
+followed by down and up, unbind/bind under traffic, a forced
+register_netdev() failure in probe, ethtool -L with a forced TX
+buffer allocation failure, and rapid link down/up and MTU cycles under
+a ping flood for patch 8) and patch 9 large-send regression on v5
+(iperf3 over IPv4 and IPv6 at MTU 1500 and 9000, threaded NAPI and
+busy polling; no new drops or InCsumErrors). The forced failures used
+test-only module parameters that are not part of this series.
+
+The triggers are rare and there are no field reports, so the series
+targets net-next. It is based on net-next d8674294aefe ("Merge
+git://git.kernel.org/pub/scm/linux/kernel/git/netdev/net"), which
+includes the two open() error-path fixes (af0524bf4ce1,
+84bec0bf0352). Patch 2 explains how it relates to them. It also
+applies cleanly to net. All carry Fixes: tags; I am happy to
+repost against net, or add Cc: stable, if you prefer.
+
+Changes in v5:
+
+Patches 1-8: commit message wording only; the code is unchanged.
+
+Patch 9 fixes a gso_segs undercount found by the Sashiko review of v4.
+The large send helper accepted a frame longer than its IP length and
+computed gso_segs from the IP length. Bytes past the IP length stay in
+a bridged or switched frame, so the egress path produced more segments
+than gso_segs claimed. The helper now refuses a frame whose IP length
+is not the frame length.
+
+Also in patch 9: new KUnit cases for that and for header-only frames,
+so the TCP payload check is still covered. The message no longer says
+a refused frame is checked by the stack, which a bridged or switched
+frame is not.
+
+v4: https://lore.kernel.org/netdev/20261012050518.88858-1-mmc@linux.ibm.com/
+
+Changes in v4:
+
+Patches 1-3 and 5-8 are unchanged.
+
+Patch 4: the poll tail queues the NAPI instead of polling again, so
+it cannot race a threaded NAPI under busy polling, and harvest uses
+the correlator poll already read (Sashiko review of v3). The message
+no longer claims the frame bound protects the offload helpers.
+
+New patch 9: the RX offload helpers' header checks that the review of
+v3 patch 4 asked for, as their own patch with their own Fixes: tags
+and KUnit cases.
+
+v3: https://lore.kernel.org/netdev/20261009183258.18624-1-mmc@linux.ibm.com/
+
+Changes in v3:
+
+From the Sashiko review of v2:
+- Patch 4: on a bad RX slot, stay in the poll loop and return
+  budget - 1 after napi_schedule() has queued the napi. Breaking
+  out was queuing it twice.
+- Patch 4: drop a frame that does not fit its buffer, instead of
+  copying past the end.
+- Patch 4: also drop a frame shorter than an Ethernet header, and
+  take the pool for the buffer bound from the correlator that was
+  validated, read once.
+- Patch 2: commit message: the two open() fixes are now in net-next.
+
+v2: https://lore.kernel.org/netdev/cover.1791178212.git.mmc@linux.ibm.com/
+
+Changes in v2:
+
+From the Sashiko review of v1:
+- Patch 5: give the pool kobjects a release() and wait for it before
+  free_netdev() in probe and remove(), which closes the
+  CONFIG_DEBUG_KOBJECT_RELEASE window.
+- New patch 8: wait for the poll to return before close() frees the
+  RX queue (raised on patch 1 as a pre-existing bug).
+
+Other small changes:
+- Patch 1: also skip RX replenish in netpoll's budget-0 poll.
+- Patch 4: count rx_dropped when recycling an invalid buffer fails.
+- Commit messages: say how each bug was found and tested, with small
+  clarifications in patches 2 and 7.
+
+Rebased on current net-next.
+
+v1: https://lore.kernel.org/netdev/cover.1790991039.git.mmc@linux.ibm.com/
+
+[1] https://lore.kernel.org/netdev/cover.1790319558.git.mmc@linux.ibm.com/
+
+Thanks,
+Mingming
+
+Mingming Cao (9):
+  ibmveth: fix netpoll races with RX replenish
+  ibmveth: do not close twice after a failed reopen
+  ibmveth: disable the reset work before unregister in remove
+  ibmveth: step past bad RX correlators instead of spinning or oopsing
+  ibmveth: release the pool kobjects when probe fails
+  ibmveth: return the error when set_channels cannot add TX queues
+  ibmveth: wait for in-flight transmits in ibmveth_close()
+  ibmveth: wait for the RX poll to return before freeing the RX queue
+  ibmveth: check headers in the RX large send and checksum helpers
+
+ drivers/net/ethernet/ibm/ibmveth.c | 670 +++++++++++++++++++++++++----
+ drivers/net/ethernet/ibm/ibmveth.h |   5 +
+ 2 files changed, 584 insertions(+), 91 deletions(-)
+
+
+base-commit: d8674294aefef02266c4d47ad10131f1bffbe534
+-- 
+2.50.1 (Apple Git-155)
+
 
