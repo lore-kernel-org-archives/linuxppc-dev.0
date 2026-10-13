@@ -1,101 +1,104 @@
-Return-Path: <linuxppc-dev+bounces-29346-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29347-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D59D6CC6B03
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 06:14:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2DF5CCC6B0E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 06:15:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3kZm1rN4z3bqh;
-	Tue, 13 Oct 2026 17:14:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.147
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3kZz50xtz3bqh;
+	Tue, 13 Oct 2026 17:15:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.156
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791855356;
-	cv=none; b=J/apEmx5RX2UYQFb+wDfQNlq+r5TK6wN2bVJ0GmqBJ8p+vadDUbGP+5s/beRRPD5ySBNUwlliqw18Wj/Wxns/i83fe8o3R6OFdqXqde+aPnUmo8e4rPFfIu1qmDanFvANhOBAiRSpEfQo02gaBbkXdHJAMuf94YdAZMIM00YbCG0hao7y9IeWNADW3VapyqzogBsgqEVbe6xnmXHCbvPpE37mAsplg5NdujYwVNW4HTH7zEeFRvLrXyLltwH+cPy/V5u6ESdHY77haiSYHXI0JkM025hZf9dCLbIIpZVRFe5yLuVzOJi+jP4GlA9GaOqm9qc0cZlWRPaNKyDE5Jrmw==
+	cv=none; b=FsfnJvmbT0CHW4amNdw9fr8hqttJEuHhK6a7zXU29aEqqwQ9rIaLxJEEuV4kR9VKucZ+JPGYi9wZN1Q3rFg5O85tdNUaChZ0bda6KCHAsCmT16jRXgH1/5Tgk6S7qCkmcW2d0XueKBr3iPQJIkyb0bOuVE0Cc3IRFgDw2QVEkqAx4WWFAEGGgX7A6c0FwwxUkTrU6/9ZPbBwErPlhRTkaf9ULLk39nAbhtdMCZvEgAsfJYQggNLzx0WtiR7re1E0vH//6Ow2LMggMg3M7M84BalLdqR0LV/esK2h4oALrMe8jIMvr7Q80shJQqdRlqQRe+rdMhCnM5EPvkxHBeT53w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1791855356; c=relaxed/relaxed;
-	bh=yocduj0ABMyh/bTv9hbcPrlJvMoW1kyYLcIfo6RegkE=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=IH98EiJmmnakz7g/qOJxKGNoSh5Q/pi/B7nUXv6e8GKR1Ebvo3wWsBytMnwlur/F5gVt/V2/jA28Cqyd3Ymr2jpv54XVzZy5AvXkbqxo/4YK/f8KaoyhQ9JONre5Ba1BDBGWLvfXN9exu9jBIDMhUeoYuGTJr1OWD3VpP1B3DL25vQs1gfgt2DE9daOzL1OFm7Zuu15RtfnUqJ7AP3jNG/0zyeftO444uoVKXvT12ti7q2wxNDdbbrn/Kf4BUjcXYjeD5elofO7s95RBlywvjrIiLXQAVWbk/p8hmrPsPz9Tlpvebz13afgvmPuDN/AGHOjWZBiECP5x2inTKrUaHQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=timdoug.com; dkim=pass (2048-bit key; unprotected) header.d=timdoug.com header.i=@timdoug.com header.a=rsa-sha256 header.s=fm2 header.b=YxX9qm0h; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=L9jaAj2y; dkim-atps=neutral; spf=pass (client-ip=103.168.172.147; helo=fout-a4-smtp.messagingengine.com; envelope-from=me@timdoug.com; receiver=lists.ozlabs.org) smtp.mailfrom=timdoug.com
+	bh=T9DPR+2n3dWm0xXe4jJx+wMjBkoYkR/+x3n7hyULjmY=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=IOo0KnuSPAK7SHH2p7qOwTvo1TtbtDPoKCSxQ/WUXJQQaGiAX2kWg2fhfWW2fydgj9HOnivHkcpGzeNCs/slEtSs+INZWCeAn+wuzbLHBg02635T6AmCT9S78DYLsIlhJqhudW7H7TEalsun2p/ddavYLtaKyaWWXCto3hqcezSHURXD/TUVbwqM40b+/Qi6RXHcVhOtSsdCq01I5CpnhUDsgHf5JBieiF1kVs/G4tW/h9t11lQHnFH0NyxHq8Py29cjYZP0tOvxLx5PAprQkL1dqFOPghaUlc9UFSF79xnh50zz6+YaSNo2wGClaG2jjoXrjzASf9YAcFuSPH97/g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=timdoug.com; dkim=pass (2048-bit key; unprotected) header.d=timdoug.com header.i=@timdoug.com header.a=rsa-sha256 header.s=fm2 header.b=QRx/vrQj; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=kswQaqdR; dkim-atps=neutral; spf=pass (client-ip=103.168.172.156; helo=fhigh-a5-smtp.messagingengine.com; envelope-from=me@timdoug.com; receiver=lists.ozlabs.org) smtp.mailfrom=timdoug.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=timdoug.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=timdoug.com header.i=@timdoug.com header.a=rsa-sha256 header.s=fm2 header.b=YxX9qm0h;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=L9jaAj2y;
+	dkim=pass (2048-bit key; unprotected) header.d=timdoug.com header.i=@timdoug.com header.a=rsa-sha256 header.s=fm2 header.b=QRx/vrQj;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=kswQaqdR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=timdoug.com (client-ip=103.168.172.147; helo=fout-a4-smtp.messagingengine.com; envelope-from=me@timdoug.com; receiver=lists.ozlabs.org)
-Received: from fout-a4-smtp.messagingengine.com (fout-a4-smtp.messagingengine.com [103.168.172.147])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=timdoug.com (client-ip=103.168.172.156; helo=fhigh-a5-smtp.messagingengine.com; envelope-from=me@timdoug.com; receiver=lists.ozlabs.org)
+Received: from fhigh-a5-smtp.messagingengine.com (fhigh-a5-smtp.messagingengine.com [103.168.172.156])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3cNm125Vz2yDm
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 12:35:50 +1100 (AEDT)
-Received: from phl-compute-01.internal (phl-compute-01.internal [10.202.2.41])
-	by mailfout.phl.internal (Postfix) with ESMTP id CA0D2EC0922
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2026 21:35:46 -0400 (EDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3cNp58rgz30DY
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 12:35:54 +1100 (AEDT)
+Received: from phl-compute-09.internal (phl-compute-09.internal [10.202.2.49])
+	by mailfhigh.phl.internal (Postfix) with ESMTP id 33E98140012C
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2026 21:35:52 -0400 (EDT)
 Received: from phl-frontend-03 ([10.202.2.162])
-  by phl-compute-01.internal (MEProxy); Mon, 12 Oct 2026 21:35:46 -0400
+  by phl-compute-09.internal (MEProxy); Mon, 12 Oct 2026 21:35:52 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=timdoug.com; h=
 	cc:cc:content-transfer-encoding:content-type:date:date:from:from
-	:in-reply-to:message-id:mime-version:reply-to:subject:subject:to
-	:to; s=fm2; t=1791855346; x=1791941746; bh=yocduj0ABMyh/bTv9hbcP
-	rlJvMoW1kyYLcIfo6RegkE=; b=YxX9qm0h1gyNDvweeV0CHnOxTbKTjjUtU6Foo
-	2zaHLRoh81zK/ZOaR4nCxsQjdVcpVPSyTsWBCCLPt14oqqBAsxmUIZFhie824052
-	p1ehC0AfVd8GNxjhOfaNXph23nCJ98GpfA7eHf9JzW/eTCExt8sI+nr4IuoPVoZe
-	eN7AMrU54gmxqIwYXtH6JeIzzIHBVPEPojVMrzowx/oi6uRvAbr0Dyv+UFbLDQGe
-	lXIYkWGWa77NA3i8wDDGK1q0/bYqPyvzDw2UV8Y6/b0dxrOBJAj8bnpFxDZ9dq0e
-	g8ffDLKkhYnxxOTz+Gg3HL95nsdg6MwbOPe4Ta+jZ5x639RiA==
+	:in-reply-to:in-reply-to:message-id:mime-version:references
+	:reply-to:subject:subject:to:to; s=fm2; t=1791855352; x=
+	1791941752; bh=T9DPR+2n3dWm0xXe4jJx+wMjBkoYkR/+x3n7hyULjmY=; b=Q
+	Rx/vrQjGS4aIvL+6atXZ/EJgExF6J+Cpo76zfb03yrOM+60+6v7uArudhJ+H1QeJ
+	xTZtgktnMh6WvThrLqhTXso1BF7bQHcoqmFpIwfeA2EYsEuL7UeNQG8VSuHLDkFj
+	Vz13RXcyWWMIDw5qeqNVObJAl6bntLhuCADRyqXfBVKOPGF/8qa8W0lvAQ0LRAy3
+	KHVhtmpcf56SgpG/0kUQAgp0iSpM3e6gKBNpnUdNEQATnr4+MMqqTPc5yGcT00IT
+	ZXVlFVTe4vs255+MyjvnURFRbE/cIe8Yy5oxnLaROPr5Qu8WiZhI2hvEKzWHeXf5
+	ibBIaLPHlUaY4YEZms93g==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:date:date:feedback-id:feedback-id:from:from
-	:in-reply-to:message-id:mime-version:reply-to:subject:subject:to
-	:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=
-	1791855346; x=1791941746; bh=yocduj0ABMyh/bTv9hbcPrlJvMoW1kyYLcI
-	fo6RegkE=; b=L9jaAj2y0nI0OWKSVDxKvoARZg7/bnnqa+LUOVkRqOKeAtEhXzY
-	w/Q29FbPy4wMmDFJnrTcFUpvLokkrZ/Tgt8W2h4VK35XeVGFDnFMFUNUl0rg7z/u
-	bHaKsOyqgJMMMymxpNw3e1BOkZHXwS8HzI7nfnpg26vun210at1iNa2J/rMqk7+O
-	U6sX4vpnXFJuJ9n6BJ6+neFJ9etLzM7hxKsyNgR8UcPUu8qGguLEvds8RSy2sjLe
-	n2PblY95PoJuP757NxEl9dfWbW0TvY/9kHswC6xfnjQK0VYSY20Rvnc11wrLOVwv
-	7RbhSF65FH5ghappvA6Mf+9CwqZvuvaEwqA==
+	:in-reply-to:in-reply-to:message-id:mime-version:references
+	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
+	:x-me-sender:x-sasl-enc; s=fm2; t=1791855352; x=1791941752; bh=T
+	9DPR+2n3dWm0xXe4jJx+wMjBkoYkR/+x3n7hyULjmY=; b=kswQaqdR1CqvQNd/j
+	DH3k9yIBZLtSSbmKqpxBQHajK++XFzKM/ugzlbHMR/rA31MdaSryaFu1GiuY42TQ
+	aLBGFBMPEj+J/oFMadW+rwjaopWKzSHEAUVYcEN9kKgF6tds+hA3ze5y4sPCbb7H
+	ZQMycuW3IBD85U7Ry5D7T3qDquIhOS7MMCjngongwHztRjjvvu4vpCgOGScgUajG
+	VnZ9iATREWoQAri6WJrrsZ0PDIh2IK4ceVi9onA8KzGm1seB1UkNbRuHX5tFXxmB
+	wognCfNqhPxY4KR5klcgGYtdNEcY4Wswk3ntTpP/dLmsugCNhHeQrQ+92CeiQSpg
+	y3yrA==
 X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-06;
 	repo=github.com/dkim2wg/interop; date=2026-10-04; sw=lmtpprox;
 	action=sign d=timdoug.com a=rsa-sha256;
-DKIM2-Signature: i=1; m=1; t=1791855346; d=timdoug.com;
+DKIM2-Signature: i=1; m=1; t=1791855352; d=timdoug.com;
 	mf=PG1lQHRpbWRvdWcuY29tPg==;
 	rt=PGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnPg==;
-	s=fm2:rsa-sha256:VS+Yhw84tC8UZRC9fdXQePEK8dqA0Wmafs86aE///CfYNL2
-	CoW2qMDqsjEqfNoujUuWa+pOg01vxG+y0d2CBR7S5KcfBtgwIul7S2sME+t/QuRs
-	zFLYzVYdsROfxupMm0G0L6h1cOq4O+DBGRVnu38gvXqfy2NV1vlLkzw+KIMEF0k7
-	UlyZneeXorh0ELpfNd7n6x/qQn0qwfi406MRDJT5ESonOQQV1WMSfVCMeVJS/uZ8
-	P/2nnkepeM6EoE831XxKTOanBpbO8vMNgzyY6hb7VKv1wWHN8d8jqFzKqpwjWCJs
-	Zr6SXI9KrZPTCsh5F3geKCJNm2oyZzADgVDLvzQ==;
+	s=fm2:rsa-sha256:kAcfha0biMhO9rP0oxaqEnk+oODqOMTs5QgCffEbfULb5dK
+	5mk0ml+g0xWtGiSC8hzUmGPYGjxSRhAaRL3JF4f1bbDHjUX0WaXFYwONDpBx4Sca
+	sZELyBrSbubDcCL+Sw/htEQp7V+BPiGnLGZOxQijDZ87kwWhNLh6/LPnUFTlKZtn
+	9lWXyVF83VwvdiNCRyT+FpoluUNKwVi4XxmYEbQc2Bj3qALGUUlEa6SXxnljLp/w
+	rZpdtW5fC9S3tyLUsP/quJwPGjJOzo14n8yfqzW3vFrL6wxlt6z4o5Tkwy9bwi2R
+	Sb3jXBIyKjeU8b3SuUMGyTGKll9pwZ5o1Hc7ggQ==;
 X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-06;
 	repo=github.com/dkim2wg/interop; date=2026-10-04; sw=lmtpprox;
-	action=mi-m=1; hc=9;
+	action=mi-m=1; hc=11;
 	hn=cc,content-transfer-encoding,date,feedback-id,from,
-	message-id,mime-version,subject,to;
-Message-Instance: m=1; h=sha256:8WelGVUf5dphIQ2F89IJTaWhXv1ZAojAwJqZh9CFkd0=:TCNbQGeKRAXh2LRLq1pF3WRun0kySjQuoswn8eVi6ZY=;
-X-ME-Sender: <xms:8YrNaqKIlB6MxsRKi7XpVa_XPMMVxODrdU1PvTsRyt5V2UVOWFAhlQ>
-    <xme:8YrNagY_0EuzN2WovgO-vo_lDi5cA_qI-0L9liozhIklzZ2qSM25fS5QWclGWQRme
-    zYXLx2JD676wnTojLt0hpjmYnOblZ68ISrgf90Q-0y4oiJwW4Bd8Q>
-X-ME-Received: <xmr:8YrNakB9IKVDSJeBp47CaeCrgjFFDaGvC8YeW7C6xMqDTk2rhvuCsztKPt6y>
-X-ME-Proxy-Cause: dmFkZTF67q9b7fmY2tTOoiQhmTSVWZXwqMvJEdwkUZ8DSEmFTt29UUAIFfkcFFqhCEpEXv
-    R3kqLflvBe6WUnJo1ku6LxFHkPzgFM/ILqkAHvJZ6eEux0LBThdrCGn+hFniXwQelhmL6B
-    GapF9C+LeWGzk3PB8qlmDgM3xgCF8lgeK5JOTiLCio4o4RlNQEWrIONQsWbClWvBGYfwbw
-    lpFfmrGR+yFLeFcp5UmxB6AvuOm8UKABeidGNPVWo1KZ7Q6Yxo9X1WAx0cwGgCXAfbP8EG
-    OgRLVARpMopZ64aF9Xu2aEjuM2rGfBBHLx7+k5QNwhxQrosCFvKIx9TRg/pVf0qTumS2Y2
-    +8OQw4nQX8C4bgS7V226SKYgqLCDBNISAzXMW+3Wt4MsHe4uA7yVxr+Lh0dHOdKX4GdDIm
-    ZSAh8GPIY7i3ijleSoIuDAhnGzjm/OwSCyEdJ9Kbx5qoAi+s/z8PoLRoxwIKw8xpu96YN5
-    6TQrnqgz7g07UeoDHd9sOoAMBqy+thh4g8BH+SP6Zh2PthQisXkVCwt62Gf/31+guT5c0o
-    TwPXCrSZJx8LTNIjTtpk1Zgmve63e86YTgMmlt7T5YL7PZUD1yu1AboQwBT0WDDfFiSFLi
-    TuI+PEEj1T3HV/9EEiRDD8nex5LO1twHV8yPjaPCZf27WXcZas8uidvfYdgg
-X-ME-Proxy: <xmx:8YrNaianQW1TEM1EThVf1H1E4c9wNpd2zAsNFNJbcj8p8sZQGDaWFQ>
-    <xmx:8YrNaklq81slHKomDexCgW_W2Tp9V4oCHCRpz7KyHvwIXVBlaYmGig>
-    <xmx:8YrNavpBn95l-Ttu_riva2Tii27o9ATVHEFgGY8H2pjf9UWh7DY8Ig>
-    <xmx:8YrNauDs3kUhIdPmGWucNT7hKsnEWnNBXNZANXWkU4DMJakHmP1FMA>
-    <xmx:8orNanZppZXtrKeMQ2kmdyDT0W1j2GAdZg16aNsgPRGeR7yyqLmlas7D>
+	in-reply-to,message-id,mime-version,references,subject,to;
+Message-Instance: m=1; h=sha256:PrJ717gr86u/8jEwEDf0Kba/XI0ZzKRLKWY3qUAP+p4=:sFJ72AgPE1Tu7+0QasszMAieCLJI86cGxQyysbzgmZo=;
+X-ME-Sender: <xms:94rNauaQUoD4JYgxey6jAGfgXwXq7ZwhbOJ7SD71hJhzS9MwxQr0Tg>
+    <xme:94rNavrb1jt46q3lHthhH0uc8hRbTYWNliNU0GYLm4Z3Y4NwVBkcG5FPBxCw0S3n6
+    ERSkWNzuV0fbDUE9wCCDS3f-6rqTKguZmjyMu2zS2p8zW9Jv34ksRY>
+X-ME-Received: <xmr:94rNaiSJ5BEQlHH_nOhrcLzEtCQn_-o1x45EfkBPZNP6iXl6cJ8_gpplsQwy>
+X-ME-Proxy-Cause: dmFkZTGNbHk6fXAkhTsvEfU2amaovOmEajQYoQOBQ1jMMVTp78asCsTJKEOp2KUEoCfFhn
+    jYQALR5baaW2Zmb2DSGiJU/TnUm2SfI3WostCaGFlcqIuQLSHsZ9RdgXfBjYku/rYSwytg
+    gG+1Aavqm07SB9Nn6UC7/pwAlSnVJ/PwqLx0Zmi8Ps17l4MBClYGyctPQiDIoTu2tkkI4I
+    +6r+oLdSUUBoLun+FPRvQnzwVjLQxo28j78W4Y4bg5ruy1wHbYTNmkWF91Y2zTMHrsLkbj
+    qi0arGzxtkYavMM9fPhINZUuIXe1wxSlfZK0MTfoZfYvKJ5SD5BpIp5OQ6fEuy6blOsuKw
+    nW3eLSjF2BND2Vjd97g59nD2DKqYZQu+JlfKwLQE9lwE88zee9wSf4CNj8n9SzXihMKcpZ
+    Zs4p6+rzdHsFXI7syolFYyNB5I91mkE9iGE9b2x16B2MmkCHxTb8By+z7HsxsTcQ9rW4x+
+    416IK9L8AYd4buUMJu6+7LDzkBydq0YrPQCwv2Vdj6Cv6beKVo5eL5egddT1MitD2oxa6L
+    6US4AknzJ8UIp+SokIdMhItMdbeJRTd9GzV0GWOvk15FOcu61RhAyrpm4kcpP48hL4X5Oo
+    FflG0RpWyZK/HpbuK0AJwUxFkUlqg5WuyC8qypY8zrSBHuFCOWKh43VBacmg
+X-ME-Proxy: <xmx:94rNajqPmY2ZSWPPxJfXqCyJ4D_fTjfL20eEeGabkwpZxUCeAInFiQ>
+    <xmx:94rNas0yU2ZDS9Gfi176s1AAZ8sPdDTqo2UdfoTW6shA7C3aRNV-jg>
+    <xmx:94rNai46Pqk-WOfb_rXbsFNnQs5-L-hxY3Lk0NqXWjSVg1pYHXFkzg>
+    <xmx:94rNagRTfUbBCTDIEh2OT5ePTQzYybdIDgD3ySg7vRHrQWaLcdjjzg>
+    <xmx:-IrNahQ6Ea3zrp06XyzDGRg_fYH7RaJg4fHN_GzfuQ9EmBgTChCaQ2yH>
 Feedback-ID: i12bc4175:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
- 12 Oct 2026 21:35:45 -0400 (EDT)
+ 12 Oct 2026 21:35:50 -0400 (EDT)
 From: Tim Douglas <me@timdoug.com>
 To: gregkh@linuxfoundation.org,
 	jirislaby@kernel.org
@@ -107,10 +110,12 @@ Cc: linux-serial@vger.kernel.org,
 	npiggin@gmail.com,
 	chleroy@kernel.org,
 	Tim Douglas <me@timdoug.com>
-Subject: [PATCH 0/2] serial: pmac_zilog: two receive fixes
-Date: Mon, 12 Oct 2026 21:35:39 -0400
-Message-ID: <20261013013541.4535-1-me@timdoug.com>
+Subject: [PATCH 2/2] serial: pmac_zilog: report received breaks
+Date: Mon, 12 Oct 2026 21:35:41 -0400
+Message-ID: <20261013013541.4535-3-me@timdoug.com>
 X-Mailer: git-send-email 2.54.0
+In-Reply-To: <20261013013541.4535-1-me@timdoug.com>
+References: <20261013013541.4535-1-me@timdoug.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -126,34 +131,34 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-These two patches fix receive problems in pmac_zilog that I ran into
-while bringing up the serial ports on a Performa 6200CD, a NuBus Power
-Macintosh. The first stops data received on one port from being left in
-its flip buffer while the other port is open. The second makes received
-breaks visible; until now they arrived as plain NUL characters.
+pmz_status_handle() sets PMACZILOG_FLAG_BREAK from RR0, and
+pmz_receive_chars() clears it on the null character that ends the
+break without marking that character, then tests BRK_ABRT in RR1,
+where the SCC does not set it in asynchronous mode. Breaks therefore
+arrive as plain NULs: brk is never counted and BRKINT, PARMRK and SysRq
+never see them.
 
-I tested both on the 6200, running 7.2.8 with an out-of-tree platform
-port and a loopback plug on the printer port. Without the series, only 3
-of 8 bytes written to ttyPZ1 came back while ttyPZ0 was open, and a
-break sent with tcsendbreak() arrived as a NUL with no break counted.
-With the series, all 8 bytes came back, the break was counted, and with
-PARMRK set it read as FF 00 00.
+Set BRK_ABRT in r1 for that character, as sunzilog does.
 
-The series also builds on v7.3-rc7 with pmac32_defconfig and W=1 without
-warnings. I have not tested 68k Macs or macio Power Macs.
+Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+Assisted-by: LLM
+Signed-off-by: Tim Douglas <me@timdoug.com>
+---
+ drivers/tty/serial/pmac_zilog.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-I found these bugs and wrote the patches with the help of Claude Opus
-5.5. I have reviewed both patches and run the tests on the 6200 myself.
-
-Tim Douglas (2):
-  serial: pmac_zilog: push received data to the port that received it
-  serial: pmac_zilog: report received breaks
-
- drivers/tty/serial/pmac_zilog.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-
-base-commit: 24a19b953e2a3d0ea5a8c4951a0ab8f32720c907
+diff --git a/drivers/tty/serial/pmac_zilog.c b/drivers/tty/serial/pmac_zilog.c
+index f49d605..a612f1d 100644
+--- a/drivers/tty/serial/pmac_zilog.c
++++ b/drivers/tty/serial/pmac_zilog.c
+@@ -233,6 +233,7 @@ static bool pmz_receive_chars(struct uart_pmac_port *uap)
+ 		ch &= uap->parity_mask;
+ 		if (ch == 0 && uap->flags & PMACZILOG_FLAG_BREAK) {
+ 			uap->flags &= ~PMACZILOG_FLAG_BREAK;
++			r1 |= BRK_ABRT;
+ 		}
+ 
+ #if defined(CONFIG_MAGIC_SYSRQ) && defined(CONFIG_SERIAL_CORE_CONSOLE)
 -- 
 2.54.0 (Apple Git-157)
 
