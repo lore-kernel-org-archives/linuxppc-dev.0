@@ -1,86 +1,132 @@
-Return-Path: <linuxppc-dev+bounces-29337-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29338-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 268D3CA9ED0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2026 23:43:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70B89CA9EC5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 00:03:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3YtZ6Dlqz30P3;
-	Tue, 13 Oct 2026 10:43:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.9
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791848582;
-	cv=none; b=Xk+5H3NjwRfLdJmS7xPLnzCVj+O7/it4Sy0UIQ3DT7qyg1qOeXdCNjymoe5Lisj7S88kG4x/Y90j64kxXcXahnnaKhDjwYqVo8/dZGG1fI6BJw4OQNchqcdm9SIVgVJNifK5+QLimIrwtWOCl499J4yNPZgq7Jh9mmZBUaoLFsJnGoMGgvdHWd5YH6R9UN84Mix2d9s6ITDN8tMQVJ3ZIWZqFSp5SF6lPeaFTZXQaZnex/7Ry/k0RHYPzmW5AF4jGZON+7D5FfaMrzErZxdyFEwrsbCDl77mXoPcEMZPi+pkeLaGloB1oJanvF0bwwmcEraSVgJF+8z2JZHjWat+3w==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791848582; c=relaxed/relaxed;
-	bh=hcMc5kxaRCotym6m6gq0Qq1bWYN2zF8BRCFaH4SbkNs=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=QIwbIRjt8KFQyVHHWeHq/DKJdwJS1xV/L4NzKM0JdE57zvtvS+UBiyAEZpz3PaJ9mQXYqa+xwkQ2DUqKTYva3wq9l7Mn4pLNTkzwkAccXoJrBTNqCHq849Xv4oQnKM/5pQutxSPVLWr8oUnivy48MQRzZYnO2RUJtAweIGBLADabpsZo5nwErEL5KR/Byufnucoe8TdVopm/cQ1fNtRByd1Iw9Dyz7Z3/FgI+VjxD8J7k3loPOBfISfD6HXbVqLY4oq9dHw8ZrEe6ztSTSwtIsPN/vFuI4d5oU0dFdOCWRKHagvobhzN9jUPldNzw4brIEANAhEOdLLtlsuEq2r5MA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AGCams7N; dkim-atps=neutral; spf=pass (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=tim.c.chen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3ZKd5j3Rz2yD8;
+	Tue, 13 Oct 2026 11:03:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c407::1" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791849781;
+	cv=pass; b=P7ywJP+BAatZkKqG+dsAvPCK8HRgkl+0P2ZkkJJyrXpHc51sj+ZEptimIa/WR7NjpXdZBWsvya/Ge/qAGCkF8ZvEEWj3ZBvcBPGoTgZuzGb46TKpGDn+689nW7XLNuGt04TKRCq1ofXNNC76NpknQpgI8+JyMQSUPoxQQJArs2luVChP1yF+yhBP2byre21DJuInbmDmlY9P5GzPUOWw9wkplR7wR16i3SfFLvgEBrleZ/PlT17Hx2pmYfguAD+HcXO48pe4CzZcUa4EpGZEz+oeXw7876R7Gis2hdXbNEzz6mvH6MphMxLrlORn4AxMcP/brAbRCZpp6mf8AYIq5g==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1791849781; c=relaxed/relaxed;
+	bh=jxgaGAP8pLC+BmI8ukX1jfb5CQ/im84yKraARY1OSWo=;
+	h=Message-ID:From:To:Cc:Subject:In-Reply-To:References:Content-Type:
+	 Date:MIME-Version; b=BVmk9r/RC1Z00sD35UzDIfT0QhSIfEC+tCjVV46nVVoBI77Adv/TkPzLHS5LJFcQ6PKFzaOCBRsmlkRvd5sYwVcdcNJcI/fHVSSDFlQUkTOz+Gz+XC/jiaaO/JhQdt/tBGRNz+4htfr/n99m7TbyLJsNxhVYX8QXYeIWSEp7VpZY1BPHuVcfITyD0HZv1Gsugqh6YLgvneJo+3tup2FQuWnTT4Xl7RCAYnh/93353ilL9QNvjlEL4D3Mx64igElyRRWO6cCt+Dosf1dtZ8nvKyIQb0Oqv0+wShQ3pIGzHcKudXhKSRUjqCPdY4GBuBTnu+MG21Lu0SrTpj3SCj/J9g==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=renesas.com; dkim=pass (1024-bit key; unprotected) header.d=renesas.com header.i=@renesas.com header.a=rsa-sha256 header.s=selector1 header.b=QUeSO+NF; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c407::1; helo=os0p286cu010.outbound.protection.outlook.com; envelope-from=kuninori.morimoto.gx@renesas.com; receiver=lists.ozlabs.org) smtp.mailfrom=renesas.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=renesas.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AGCams7N;
+	dkim=pass (1024-bit key; unprotected) header.d=renesas.com header.i=@renesas.com header.a=rsa-sha256 header.s=selector1 header.b=QUeSO+NF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=tim.c.chen@linux.intel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 64 seconds by postgrey-1.37 at boromir; Tue, 13 Oct 2026 10:42:59 AEDT
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=renesas.com (client-ip=2a01:111:f403:c407::1; helo=os0p286cu010.outbound.protection.outlook.com; envelope-from=kuninori.morimoto.gx@renesas.com; receiver=lists.ozlabs.org)
+Received: from OS0P286CU010.outbound.protection.outlook.com (mail-japanwestazlp170110001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c407::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3YtW3ZzMz30PJ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 10:42:59 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1791848580; x=1823384580;
-  h=message-id:subject:from:to:cc:date:in-reply-to:
-   references:content-transfer-encoding:mime-version;
-  bh=iD+/aLbLxyN4OPgQVnmXQ+36xaYhRSs8OGa/lzPqXVQ=;
-  b=AGCams7NHd92kMY0wnvZHyDg0WL+LMKlrrVjnohxeUutP1XGJtKKt+DY
-   3K9PEQX0myQM215ECpCS2zN7vOXp1tGkXg75hbFvvKteIPE72xCaqih69
-   6vSGeQ13WIwgFhwr9JKZmH+l5wETpZYyO5roIC83BKLQjS+UDsSN1Yqqn
-   bpa9KpFhHgYkTWdf3qt3xE60IFMwP8B8L/au9Gu/lKOR36gEbIzPy7fXS
-   x3sr/l+bWRELm6ElwnkaDG/AtDINpK8Wp/oU3vyenTElSqoZtKKdG71s0
-   jfLRq/ANSZdqrh0/dmWhB0Oc0b0kZM44k1SqXpv1JBrLQDdebOuSp+1Ah
-   Q==;
-X-CSE-ConnectionGUID: qN9yp8DERg2HFs77wst+jg==
-X-CSE-MsgGUID: A7b8PPOYRaaIgYRszT7HTw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11933"; a="450031"
-X-IronPort-AV: E=Sophos;i="6.27,154,1787036400"; 
-   d="scan'208";a="450031"
-Received: from fmviesa001.fm.intel.com ([10.60.135.141])
-  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Oct 2026 16:41:48 -0700
-X-CSE-ConnectionGUID: Ul+a5TfqQzeWtVVntqfNIw==
-X-CSE-MsgGUID: d0HMC7X4QHe9fpBC8h1eFA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,154,1787036400"; 
-   d="scan'208";a="1209371"
-Received: from unknown (HELO [10.241.242.105]) ([10.241.242.105])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Oct 2026 16:41:48 -0700
-Message-ID: <cf703658d922b4d698d35e35bb942f359971d850.camel@linux.intel.com>
-Subject: Re: [RFC PATCH v3 02/13] drivers/base/arch_topology: Add support
- for initializing sbm topology
-From: Tim Chen <tim.c.chen@linux.intel.com>
-To: K Prateek Nayak <kprateek.nayak@amd.com>, Peter Zijlstra	
- <peterz@infradead.org>, Chen Yu <yu.c.chen@intel.com>, Ingo Molnar	
- <mingo@redhat.com>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot	
- <vincent.guittot@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, 
- Arnd Bergmann	 <arnd@arndb.de>, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, 	linux-s390@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, 	linux-mips@vger.kernel.org,
- loongarch@lists.linux.dev, 	driver-core@lists.linux.dev, Sudeep Holla
- <sudeep.holla@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich	 <dakr@kernel.org>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, Steven Rostedt	
- <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>, Mel Gorman	
- <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>, Shrikanth
- Hegde	 <sshegde@linux.ibm.com>
-Date: Mon, 12 Oct 2026 16:41:47 -0700
-In-Reply-To: <20261001192849.74788-3-kprateek.nayak@amd.com>
-References: <20261001192849.74788-1-kprateek.nayak@amd.com>
-	 <20261001192849.74788-3-kprateek.nayak@amd.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.58.1 (3.58.1-1.fc43) 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3ZKc4Ny4z2y8r
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 11:02:59 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=rV1ttbA/Ye+3cQEEMo0qFGR+VZiXn2uJ4efKTNY0sta60hCkYUVFjdEMjuP7BigObFdU9lEOk0UpxJGIGPIJrz2qiSsNFuy5rPB1bEAvFIRibNpHdyvhSGIrvEZbJyDufYrZZsGZo1tavfEKRdI2tEF3zUavFG2nuZhxh8YPUEs9R1Dham72rh8+speKc9v3TuAYuvR+8EcTpR6VMF+0mCpfGJmZCWSe+6Alcqe6qaKwSRs+JSGVRpq8uJh7ahGlbVNE9PgqvVDZ2/3lSLNO9+8bB+sPEGagvthljuB2l9BR8VsmuMwgfl6ANlrjrG0lz5C+F0czztRXOyJKuHmZVA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=jxgaGAP8pLC+BmI8ukX1jfb5CQ/im84yKraARY1OSWo=;
+ b=i72icGRLi/dkoFimUmnTPOaLV1IwSMeMVCtt+lSBQsR52VL+IztFlvN/87aYlD7D50Bn79tMK2B0/exmI8Liy3yDCy8pxSyPQj2vGZfjmmg9KrQq9QfLg+mFgyWjqpJntsCgsfBzZdHVZGFnmH4zQRtAExkpFTqcg0xy/BTZbE1CSFa4BwuFxxQVduVtTNiZmOrRlDakIai1IGqXFwBGMvbm9P0Om6Cuoqt5QFiAIXr2QxlfqhhRidggq3Sll8amzX9LKKf5zCfAy39pxNxsKxBJFegtejMvfepVICh67WS6jdWVI98YxIZe2RncBDx+mGweLTxtYBllBI/ZIWiFsA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=renesas.com; dmarc=pass action=none header.from=renesas.com;
+ dkim=pass header.d=renesas.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=renesas.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=jxgaGAP8pLC+BmI8ukX1jfb5CQ/im84yKraARY1OSWo=;
+ b=QUeSO+NF6/jDw9ndhS9J1qhcNkezwyUkzBzeqfVOewms5Vy1S4IKQibaQtnDKSvjshgD9kTLzw5KNl83fiNanZfrJSzlIRllnfvu7QYl5stihHTbgrZxWXochJ55gRUS6w96/FJDz5aAo9dV3Iu1y1geyyMs+MSIKTLMc4BDsJ4=
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=renesas.com;
+Received: from OS9PR01MB820914.jpnprd01.prod.outlook.com
+ (2603:1096:604:50f::14) by TYCPR01MB11460.jpnprd01.prod.outlook.com
+ (2603:1096:400:388::7) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.496.23; Tue, 13 Oct
+ 2026 00:02:35 +0000
+Received: from OS9PR01MB820914.jpnprd01.prod.outlook.com
+ ([fe80::12e4:c507:3730:2294]) by OS9PR01MB820914.jpnprd01.prod.outlook.com
+ ([fe80::12e4:c507:3730:2294%6]) with mapi id 15.21.0496.021; Tue, 13 Oct 2026
+ 00:02:35 +0000
+Message-ID: <87o6cyxyau.wl-kuninori.morimoto.gx@renesas.com>
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+To: phucduc.bui@gmail.com
+Cc: Vijendar Mukunda <Vijendar.Mukunda@amd.com>,
+	Venkata Prasad Potturu <venkataprasad.potturu@amd.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>,
+	povik+lin@cutebit.org,
+	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
+	Andrei Simion <andrei.simion@microchip.com>,
+	Nicolas Ferre <nicolas.ferre@microchip.com>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	David Rhodes <david.rhodes@cirrus.com>,
+	Richard Fitzgerald <rf@opensource.cirrus.com>,
+	Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Cezary Rojewski <cezary.rojewski@intel.com>,
+	Peter Ujfalusi <peter.ujfalusi@linux.intel.com>,
+	Bard Liao <yung-chuan.liao@linux.intel.com>,
+	Kai Vehmanen <kai.vehmanen@linux.intel.com>,
+	Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Biju Das <biju.das.jz@bp.renesas.com>,
+	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+	Heiko Stuebner <heiko@sntech.de>,
+	Kees Cook <kees@kernel.org>,
+	Syed Saba Kareem <syed.sabakareem@amd.com>,
+	wangdicheng <wangdicheng@kylinos.cn>,
+	Chris Bainbridge <chris.bainbridge@gmail.com>,
+	Linus Walleij <linusw@kernel.org>,
+	Charles Keepax <ckeepax@opensource.cirrus.com>,
+	Neo Chang <YLCHANG2@nuvoton.com>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
+	u.kleine-koenig@baylibre.com,
+	Pengpeng Hou <pengpeng@iscas.ac.cn>,
+	Cristian Ciocaltea <cristian.ciocaltea@collabora.com>,
+	Hemanth Selam <hemanth.selam@gmail.com>,
+	Md Shofiqul Islam <shofiqtest@gmail.com>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Zain Aboobacker <zainaboobacker33@gmail.com>,
+	Sang-Heon Jeon <ekffu200098@gmail.com>,
+	Ajit Kumar Pandey <AjitKumar.Pandey@amd.com>,
+	Ravulapati Vishnu vardhan rao <Vishnuvardhanrao.Ravulapati@amd.com>,
+	Bo Shen <voice.shen@atmel.com>,
+	Vinod Koul <vkoul@kernel.org>,
+	linux-sound@vger.kernel.org,
+	asahi@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	patches@opensource.cirrus.com,
+	linuxppc-dev@lists.ozlabs.org,
+	imx@lists.linux.dev,
+	linux-rockchip@lists.infradead.org,
+	linux-renesas-soc@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 21/24] ASoC: renesas: msiof: Fix msiof_close() being skipped on rollback
+In-Reply-To: <20261008103831.542533-22-phucduc.bui@gmail.com>
+References: <20261008103831.542533-1-phucduc.bui@gmail.com>
+	<20261008103831.542533-22-phucduc.bui@gmail.com>
+User-Agent: Wanderlust/2.15.9 Emacs/30.2 Mule/6.0
+Content-Type: text/plain; charset=US-ASCII
+Date: Tue, 13 Oct 2026 00:02:33 +0000
+X-ClientProxiedBy: TYCP301CA0082.JPNP301.PROD.OUTLOOK.COM
+ (2603:1096:405:7b::20) To OS9PR01MB820914.jpnprd01.prod.outlook.com
+ (2603:1096:604:50f::14)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,258 +140,84 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: OS9PR01MB820914:EE_|TYCPR01MB11460:EE_
+X-MS-Office365-Filtering-Correlation-Id: 6478e393-ee5b-4890-17b6-08df28bd4913
+X-LD-Processed: 53d82571-da19-47e4-9cb4-625a166a4a2a,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|376014|1800799024|52116014|7416014|366016|18002099003|22082099003|10067099003|11063799006|4143699003|261009223027099003|56012099006|38350700014;
+X-Microsoft-Antispam-Message-Info:
+	B6U3afTkf7VLXQKinV3m/9XC8elWhApxBH+FQzvshZe4INQHXDLCl5gxgqNcoA9Msw/YE3kbENXU+LEsdKoofIF56H7qV0nR5zI05gaIWPcGFaDL5MR/VR2I4g5rQP2dZprVME79f849Y9REscwVwAqWoAhgat9GQ8r1iKLNJwWVMDi0oltFZoKq1MaFscgTlk1nZWb5Narvcr35VoZWDnQKWyfXcYPDBEtroEInlyUfHIBpsjKuPhC5IY9GnXFclWBWIcptSGWTWrceYVthuUA0mijs5EKVwC3vHPXcaJYQ5AHESdQdFI40DshLh4jAD7DP8kegJBOgak5Xn6kqAu90f6G2/rmwYOT4yrq49CijemiOlv1Ps1ZmQkSW+veCFot6MXMf6ombY6/23YNk8w98FrrjgTW/MWuZRRoBaJyfp1D+pT2hcWQgcV8PuLonF1KNRKhfLLdphVgYv/OKo0+Ge4GP5HiEEW3nVi8b5lwB73jsGjCesgiRm932Spph8ZFce2Ab20tCruw80z/9gzE9nJI+dJBs69lstHtQNXowtkR9IEedl9H44GSZGFj8sdeb2gssT6IEs4uCcH6U1IL3JGb0i4I2sEc6IPp3G3eVWC1WS/7BvQb70eTWRd2xpVtRGeMM1qgBWSCfJRqFRNNgciMV96vouyxnYEZj94YsrN3CU7CJGbO01z/7K3hKD3nuoi9qTGTCakY3sWhRkj9dsSEfrDSPDlzK/94hP3A=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:OS9PR01MB820914.jpnprd01.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(376014)(1800799024)(52116014)(7416014)(366016)(18002099003)(22082099003)(10067099003)(11063799006)(4143699003)(261009223027099003)(56012099006)(38350700014);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?2Y0MHFmRQVecE6UWj4+qneyKAKTfupSRmsdcjbsldQpxWBwR8g/Gbmc7Tfun?=
+ =?us-ascii?Q?02+Xgy7BowWAcG4EEkiugsbJHHNEDcRjjVrbfWUsXflQCsp0UAh63d/2bOMb?=
+ =?us-ascii?Q?wkz1G5i4CR3kmYEVPUOJnesW4jQgaYzzlGUf0Q0zeXfjt9j3IxeUcP0xWwD4?=
+ =?us-ascii?Q?/jgwlU2luJDfDcyT3m+U582/5y8P1c7O/FBYLm7eaypblUy0V6jAKHSRvr8j?=
+ =?us-ascii?Q?4xVmusNL9nuWNyJhvrQKD8r8hjMUUbK1rYa4hGutmZ5ftEFvJyzf8sFsDbzw?=
+ =?us-ascii?Q?reQxmSqsKakR3a9ZA2VQcjy3XLGuRP1rygXZBXcl4btz6Tu0o19/vkIQVA6q?=
+ =?us-ascii?Q?INwGLU+VV7SZ+QB9nXmg2Werp0BbDdiDdRsFD68so/jgGL5YUyzpawock0tL?=
+ =?us-ascii?Q?o1UW8E6BZw4TP8VxCaxo3eP1SWsd2gxizASb4cuuXlGdFp0AG0UuD1LjxX5R?=
+ =?us-ascii?Q?vhJIFpGa+lw95jckCPj5FBU0dA3ndVRj9WJVS+WXPYegOpCrBs+8kkBVv/Ei?=
+ =?us-ascii?Q?U8qAc6DR2fgFraMhUKnnhCOGuNGPdb/O07cQSFO666IFz++7XkoYL9ImTVxD?=
+ =?us-ascii?Q?lOCkFtt2nm+Yfl6jtTFaDg4FCsM2s/KTByyqPb3D+RG1zghEsjTQ3T8m5Lk5?=
+ =?us-ascii?Q?EBJuMVCDf/DhqpuLEXmrcmRQCb0kAC0MH27WXMiIrWeNyAbC08u5maDGPTel?=
+ =?us-ascii?Q?g5ZWDKs6TyZSQyTfhVVyESQV6uzGtgaw5sNn5vLGVxGau3urv+a0tS5dovJe?=
+ =?us-ascii?Q?Ob66Ac/ct4dVGViS/gTQXl99cce5snc9QbrtMO8/Ctu8P81zSGSnCQLQmoff?=
+ =?us-ascii?Q?1n6yNTVQxGeRvarOMH7GZZhthrXWyJxFC6ODn4g9OQ+c45gLlfUUE1QH11AE?=
+ =?us-ascii?Q?KHKh2aehY3ALtoZchKX5Tam0q1S6XM4rlOKsVo6Emb9lrHAXmbhvh21QRe7N?=
+ =?us-ascii?Q?qZP878bBuO+0x8yIjKebbaDp8V6P/lB0PXvVqGonPS8A7AS9P6tbl0punLUE?=
+ =?us-ascii?Q?2Pu+meKMXBFQzdmG9qe9hi0gvITtwgEux2JpOv11sq3DOdvweX/Mfb8PVABC?=
+ =?us-ascii?Q?GfpQGMxVGDIubdoEmB0YuBQBQBX1OhnaFp6JDv7QX1ZpEkwKuKnehlNuvqf4?=
+ =?us-ascii?Q?0+wH8IdDtGsDVUawvi//fg56C+qtC4Ee+MINcbk7y51XcBhrZDh/2C70cIy2?=
+ =?us-ascii?Q?VbU1sjtqs4KiuxhSsP6RWpE566DEf7guGOatHg4gR/W5F9YAUBcU3TlseaGs?=
+ =?us-ascii?Q?VXtnkbBPpFc0Okxnsf3KdZuXS0y7I5klfDJhTxfDxR/DSw1RtXOmkTJXYol2?=
+ =?us-ascii?Q?17oJ6E9CZxaTqQSXP0dSm84qeqVIHNXV68cCmj1mcilkOXfpQscQyOtpH5q5?=
+ =?us-ascii?Q?hCy3vfjl4m8o2bceO4yX3ImLCu6/R0xuSgAvlXsQNrBkRAUkUNmsqFX2FIt2?=
+ =?us-ascii?Q?jwOdtogQ/mf19kyXfw4/TxCTm/zrDWYPGnhkCP3gW/DOiDmiByI5lZ1xmAFG?=
+ =?us-ascii?Q?8jjjIklLz+8ZU2JcA04Yx6NX+RNXpo5NQXVqo4+27APVc/PDEL8X9o908wJE?=
+ =?us-ascii?Q?TGNG84phtWmZM3oRwyHpxiMGPeiwzv2sBye+t5ihCbTnhR88wKlWhTm03hUG?=
+ =?us-ascii?Q?BQxl5DbNpMoPJ8Xn26FtjogiZOf7wpOgT2TYJgHvnS5tAsEgPBn6G3OtWyH3?=
+ =?us-ascii?Q?MZt2tc/VB/7A4m+Y3b+MQmsJQ+quQEZi7OmV4d8Aj2Hi1O3NdFZLe0EM6OeF?=
+ =?us-ascii?Q?sYhwevaKCofcyToBLApqNLv8flc2Jxc=3D?=
+X-OriginatorOrg: renesas.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6478e393-ee5b-4890-17b6-08df28bd4913
+X-MS-Exchange-CrossTenant-AuthSource: OS9PR01MB820914.jpnprd01.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Oct 2026 00:02:35.1392
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 53d82571-da19-47e4-9cb4-625a166a4a2a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: xPXbv9+4JIq43tVogX7MCApz4tHDqhyI12nJcIfpeTvwrnUfuP5qGbKcyB4uZ0UcTM4xDazKMtHd6Xzh8jX989H8ZmLhH2qaHyjRVXmgNA1BjHKziYyZq090ZFn2PsfA
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYCPR01MB11460
 
-On Thu, 2026-10-01 at 19:28 +0000, K Prateek Nayak wrote:
-> Add (fragile) support for initializing sparsebitmap topology for
-> architectures that support GENERIC_ARCH_TOPOLOGY.
->=20
-> Similar to setting cpu_smt_set_num_threads(), count the number of unique
-> LLCs (if last_level_cache_is_valid() true, otherwise) / packages, and
-> the maximum threads that exist in those instance and set
-> sbm_set_proc_config().
->=20
-> Any failure on the path will default to considering the entire processor
-> as a single sbm domain and the default logic will divide the system into
-> BITS_PER_LONG chunks. In case of a failure, sbm core will skip using
-> arch_sbm_cpu_instance_id() and assume all CPUs belong to the same
-> instance with the same instance id.
->=20
-> Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
+
+Hi
+
+> From: bui duc phuc <phucduc.bui@gmail.com>
+> 
+> snd_pcm_hw_constraint_integer() may return 1, which is then returned
+> from msiof_open(). ASoC only marks the component as opened
+> when .open() returns 0, so .close() can be skipped on rollback.
+> 
+> Return 0 explicitly on success.
+> 
+> Fixes: c61caec22820 ("ASoC: renesas: add MSIOF sound support")
+> Signed-off-by: bui duc phuc <phucduc.bui@gmail.com>
 > ---
->  drivers/base/arch_topology.c | 122 ++++++++++++++++++++++++++++++++++-
->  1 file changed, 121 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-> index 8c5e47c28d9a..f55745a93298 100644
-> --- a/drivers/base/arch_topology.c
-> +++ b/drivers/base/arch_topology.c
-> @@ -20,6 +20,7 @@
->  #include <linux/cpumask.h>
->  #include <linux/init.h>
->  #include <linux/rcupdate.h>
-> +#include <linux/sbm.h>
->  #include <linux/sched.h>
->  #include <linux/units.h>
-> =20
-> @@ -930,6 +931,114 @@ __weak int __init parse_acpi_topology(void)
->  	return 0;
->  }
-> =20
-> +/*
-> + * Note: arch_sbm_cpu_instance_id() is only used if init_sbm_topology()
-> + * below succeeds at setting the sbm topology. Either the LLC
-> + * information is valid or package_id is dependable.
-> + */
-> +int arch_sbm_cpu_instance_id(int cpu)
-> +{
-> +	if (last_level_cache_is_valid(cpu)) {
-> +		struct cacheinfo *llc_info =3D get_cpu_cacheinfo_llc(cpu);
-> +
-> +		if (!llc_info)
-> +			goto out;
-> +
-> +		if (llc_info->attributes & CACHE_ID)
-> +			return llc_info->id;
-> +
-> +		/*
-> +		 * XXX: fw_token be truncated from cast
-> +		 * when the value is returned as an int.
-> +		 */
-> +		return (int)((long)llc_info->fw_token);
-> +	}
-> +out:
-> +	return cpu_topology[cpu].package_id;
-> +}
-> +
-> +static void __init init_sbm_topology(void)
-> +{
-> +	int num_sbm_instances =3D 0, max_threads_per_instance =3D -1;
-> +	bool has_cache =3D false, has_package =3D false;
-> +	cpumask_var_t unique_cpus;
-> +	struct xarray instances;
-> +	unsigned long cpu, *count;
-> +
-> +	/*
-> +	 * If the allocation fails, the sbm core will use
-> +	 * the default logic of splitting CPUs evenly in
-> +	 * BITS_PER_LONG chunk.
-> +	 */
-> +	if (!zalloc_cpumask_var(&unique_cpus, GFP_KERNEL))
-> +		return;
-> +
-> +	xa_init(&instances);
-> +
-> +	for_each_possible_cpu(cpu) {
-> +		bool found =3D false;
-> +		int unique_cpu;
-> +
-> +		for_each_cpu(unique_cpu, unique_cpus) {
-> +			/*
-> +			 * XXX: Assumes last_level_cache_is_valid() is uniformly true
-> +			 * across the entire system if it is true for one CPU.
-> +			 */
-> +			if (last_level_cache_is_valid(cpu)) {
 
-I don't think last_level_cache_is_valid() can be true for any CPU at
-this point. Here is the call order on arm64. riscv is the same in
-arch/riscv/kernel/smpboot.c.
+If so, we would like to have such comment to indicate such background,
+because it is not intuitive for people.
+Otherwise, someone (maybe me :) will return to the original code.
 
-  smp_prepare_cpus()                          arch/arm64/kernel/smp.c
-    init_cpu_topology()
-      fetch_cache_info(cpu)                   for every possible CPU
-        allocate_cache_info(cpu)              kzalloc: all leaves are zero
-      init_sbm_topology()                     <-- counts instances HERE
-        last_level_cache_is_valid(cpu)        false for every CPU
-        =3D> groups by package_id
-    store_cpu_topology(boot cpu)
-      update_siblings_masks()
-        detect_cache_attributes()             boot CPU leaves filled HERE
-   =20
-  kernel_init_freeable()                      init/main.c=20
-    sbm_init()
-    alloc_sbm_index(boot cpu)
-      arch_sbm_cpu_instance_id()              boot CPU: LLC id
+Thank you for your help !!
 
-  secondary_start_kernel()                    on each secondary CPU
-    store_cpu_topology(cpu)
-      update_siblings_masks()
-        detect_cache_attributes(cpu)          this CPU's leaves filled HERE
-  sched_cpu_activate(cpu)
-    alloc_sbm_index(cpu)
-      arch_sbm_cpu_instance_id()              this CPU: LLC id
-
-last_level_cache_is_valid() only returns true when the LLC leaf has
-CACHE_ID set or a fw_token:
-
-        return (llc->attributes & CACHE_ID) || !!llc->fw_token;
-
-Both are written only from detect_cache_attributes(), through
-cache_shared_cpu_map_setup() -> cache_setup_properties():
-
-  - DT:   cache_setup_of_node() sets fw_token and CACHE_ID
-          (drivers/base/cacheinfo.c)
-  - ACPI: cache_setup_acpi() sets fw_token and CACHE_ID
-          (drivers/acpi/pptt.c)
-
-fetch_cache_info() only counts the cache levels and allocates the
-leaves with kzalloc, so at init_sbm_topology() time every leaf still
-has attributes =3D=3D 0 and fw_token =3D=3D NULL. Not even the boot CPU has=
- its
-leaves filled yet, because its store_cpu_topology() runs after
-init_cpu_topology().
-
-I think complications arise if we don't have the complete cache info.
-
-How about updating the design to wait for cache detection instead? The
-earliest point where all booted CPUs have their cacheinfo is
-sched_init_smp(). That is also where the scheduler builds its own LLC
-domains, from the llc_sibling masks that store_cpu_topology() fills.
-Nothing needs an sbm index before then: nohz_balance_enter_idle()
-returns early on on_null_domain() until the domains exist, and 12/13
-already moves the nohz allocation into sched_init_smp(). Roughly:
-
- 1. Move sbm_init() and the boot CPU's alloc_sbm_index() from
-    kernel_init_freeable() to the start of sched_init_smp(), before
-    init_sched_fair_class_smp().
-   =20
- 2. Count the instances there, over the online CPUs, with
-    arch_sbm_cpu_instance_id(). At that point it can safely return
-    the LLC ID. Counting and runtime then use the same function on
-    the same data.
-   =20
- 3. Hand out indices to all active CPUs in one pass at that point. In
-    sched_cpu_activate(), call alloc_sbm_index() only once
-    sched_smp_initialized is set, i.e. for CPUs hotplugged later.
-
- 4. Leave room for possible CPUs that did not boot (maxcpus=3D, or arm64
-    ACPI vCPU hotplug). Their cacheinfo is still unknown at
-    sched_init_smp(). Possible choice is what powerpc and s390
-    do in this series: assume each of them may add a new instance, or
-    land in the largest one. Their package could give a tighter bound.
-
-Perhaps this could simplify the design.
-
-Thanks.
-
-Tim
-
-> +				has_cache =3D true;
-> +				if (last_level_cache_is_shared(cpu, unique_cpu)) {
-> +					found =3D true;
-> +					break;
-> +				}
-> +			} else {
-> +				/* Go by package_id if no LLC information is found. */
-> +				has_package =3D true;
-> +				if (cpu_topology[unique_cpu].package_id =3D=3D
-> +				    cpu_topology[cpu].package_id) {
-> +					found =3D true;
-> +					break;
-> +				}
-> +			}
-> +		}
-> +
-> +		/* XXX: CPUs should not suddenly switch IDs mid way. */
-> +		if (has_cache && has_package)
-> +			goto out;
-> +
-> +		if (!found) {
-> +			count =3D kzalloc_obj(*count);
-> +			if (!count)
-> +				goto out;
-> +
-> +			cpumask_set_cpu(cpu, unique_cpus);
-> +			*count +=3D 1;
-> +
-> +			xa_store(&instances, cpu, count, GFP_KERNEL);
-> +			continue;
-> +		}
-> +
-> +		count =3D xa_load(&instances, unique_cpu);
-> +		if (!count)
-> +			goto out;
-> +
-> +		*count +=3D 1;
-> +	}
-> +
-> +	xa_for_each(&instances, cpu, count) {
-> +		max_threads_per_instance =3D max_t(int, max_threads_per_instance, *cou=
-nt);
-> +		num_sbm_instances++;
-> +	}
-> +
-> +	sbm_set_topology(num_sbm_instances, max_threads_per_instance);
-> +out:
-> +	xa_for_each(&instances, cpu, count) {
-> +		xa_erase(&instances, cpu);
-> +		kfree(count);
-> +	}
-> +	xa_destroy(&instances);
-> +	free_cpumask_var(unique_cpus);
-> +}
-> +
->  void __init init_cpu_topology(void)
->  {
->  	int cpu, ret;
-> @@ -954,8 +1063,19 @@ void __init init_cpu_topology(void)
->  			continue;
->  		else if (ret !=3D -ENOENT)
->  			pr_err("Early cacheinfo failed, ret =3D %d\n", ret);
-> -		return;
-> +		break;
->  	}
-> +
-> +	/*
-> +	 * If fetch_cache_info() fails for first CPU,
-> +	 * init_cpu_sbm_topology() will use pacakge_id instead.
-> +	 *
-> +	 * Uniform cache topology is a necessary since implementation
-> +	 * assumes last_level_cache_is_valid() gives same result for
-> +	 * all possible CPUs
-> +	 */
-> +	if (!ret || (cpu =3D=3D 0 && ret =3D=3D -ENOENT))
-> +		init_sbm_topology();
->  }
-> =20
->  void store_cpu_topology(unsigned int cpuid)
+Best regards
+---
+Kuninori Morimoto
 
