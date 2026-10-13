@@ -1,96 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-29474-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29475-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D29FCC6B1D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 11:07:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 712E5CC6B1A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 11:18:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j4T1c5bH4z3bs2;
-	Wed, 14 Oct 2026 22:07:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791976036;
-	cv=none; b=RZUxOKy5E+RfprVClPNklSI3YJvdiw6BN8RSmD9QNhElmLV7gjSP5DpRzlNFX9oOVODQy/a26LUNnAEB7CmjlHC/cuKUL2BFMCMa1HqcD7bmEcMjLkHI1PcwVGAzr80zXKzyLzN3dGafzTxwciDVjLtART/aNhHWQOh+MOSgMocCBwZqSgQq9c7nBVzZl6165HysA3E+NAxbYatJjHPd4mVMj58R9zenswnBRQjejn7quCviOTpijOM01VWmoMBM2jmHkEnyuHpOU9MZjNmFqwuPj7MRM4cLE2opFmak5vO8gW5bDy6kR1li65RKmSES+vc6MDgjC91DSwERfPDbBw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j4TH45Vxqz2y8p;
+	Wed, 14 Oct 2026 22:18:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791902001;
+	cv=none; b=TuK9Q2SMwZvFjrW354I+8OHqxjVH2RTLvxlL/c4WozRIJwQK3WydNZpQ/yl0pG8/rBaacw6+9Gd5UHdhWd3cT+qhbS6JiX3kWqfGNlLgj0FxCU86vzlTNsAc6yehlNSDtkinEnT0Zovr5u0fU9uRpx18E3LDy/5gY1q9RL6n4yXvtm618TfXYR4SuAVAc4YvN6j2TJ3iBCjexGr4WXWJ9r+3/d7rRvvpcOyCXOaq12NbaJOA8qvlHkPB90H8ZkxY0WlDVMzttN/Rcjv7NpuPvsCzZMnN6qFK97e1O+vkXP76xTSYh0HFlO6ghiu8lp6ITtDQPKsyKtBCtsLlplCduw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791976036; c=relaxed/relaxed;
-	bh=j5ZzIJC5K8j+7idHsvAQgAUDnKla5hwoBc5YSYp6UQM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=XdfCXNS+R84/iJjH8+I16U2TJU8ztnnC7MTsqBjyGcBpwgUCwmtWCgECkDNzQIKcaUhjSGaoS8Y6uq6Nw3rRfQQqdanUHXH/U8vFSO7Sxw8eNQ9YzJlgalbMlEXFI1P/teAjmgfpBXxRtrTtUuDbR0LPtphrir30wZ6T2a3hlMq8G51jNdTgT+LT2r6H1ICmvU9dvAF4JaJD4patCGyFAhRZSaKRaGEte2l1ayp6P4x6FyTSz7gq+NvVjV9/QaFA8XBEo2P5sxv+mcanRqP4V8kqFRHZaE1FRckUsMABYDgljiIsnY2t0DbVcmk82r0aejjMzEmDHGPp+fEj3TCMoA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=T/RqYTdU; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=5Vux5liv; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=T/RqYTdU; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=5Vux5liv; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1791902001; c=relaxed/relaxed;
+	bh=2D70tRlN9hXWyqkkdtTDdIyLlgX6luaffedR+k/mZw4=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=LnAjTJYFLrTfTQ8laOFeCo8ueqCn6heye+VazxeIsNDwrIa+St6c29vg67MfLA9C7D14ST88LP6Wv4LsTO+lIszdmMp1runhd2HZaKbLC9fCJdzSle2Q2p40+AJY7VeYAVhdHEUyZ1UVsJWHiMg66L2xIv3vsP2H/cXbCTWasted8VrrCKoROMgnJxuCJc1UXEs6s4PJ07yxu/kKR2dttK6J3P4Z2FTAnmhXTEQrKmp+rD8u6pNbatzNx0Etn0TrK4IKclTxMm6do38EFNZgNLSOWlFnc5bc47HgsjlEgCtcf2+kAM/M2enhHQZM33uZ7+C9FEKWGNFjyyzh2ZaMTg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=M0o9Lj74; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132d; helo=mail-dy1-x132d.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=T/RqYTdU;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=5Vux5liv;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=T/RqYTdU;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=5Vux5liv;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=M0o9Lj74;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132d; helo=mail-dy1-x132d.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x132d.google.com (mail-dy1-x132d.google.com [IPv6:2607:f8b0:4864:20::132d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4T1b5hjgz2yVd
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 22:07:15 +1100 (AEDT)
-Received: from tenko.suse.cz (unknown [IPv6:2a07:de40:b2bf:1b::11d2])
-	by smtp-out2.suse.de (Postfix) with ESMTP id 5E4721F7C9;
-	Wed, 14 Oct 2026 11:07:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1791976027; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=j5ZzIJC5K8j+7idHsvAQgAUDnKla5hwoBc5YSYp6UQM=;
-	b=T/RqYTdUXRtBjRFSarYR5VcTFNDUj3R49tlT9ThP9UVXNShdtNitXj7/2t4yL/y3caqWlV
-	fKjqP6waUO+6DvxncVq9SqVi4OsqhaV5O0D7+EGTkrKVQ7mqlokiW92FekPoQnQtRgqyUC
-	3OfdBRBmQzSPPROAySbRd6x+NzbPoNw=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1791976027;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=j5ZzIJC5K8j+7idHsvAQgAUDnKla5hwoBc5YSYp6UQM=;
-	b=5Vux5liv+ETIkuX4cXQ2lGKqilubm7HkaDI2fdl8HQ1I0HJ+8yxLq6LJlSW2hDBEAronmq
-	N0goqmBbqZDVjeBA==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b="T/RqYTdU";
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=5Vux5liv
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1791976027; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=j5ZzIJC5K8j+7idHsvAQgAUDnKla5hwoBc5YSYp6UQM=;
-	b=T/RqYTdUXRtBjRFSarYR5VcTFNDUj3R49tlT9ThP9UVXNShdtNitXj7/2t4yL/y3caqWlV
-	fKjqP6waUO+6DvxncVq9SqVi4OsqhaV5O0D7+EGTkrKVQ7mqlokiW92FekPoQnQtRgqyUC
-	3OfdBRBmQzSPPROAySbRd6x+NzbPoNw=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1791976027;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=j5ZzIJC5K8j+7idHsvAQgAUDnKla5hwoBc5YSYp6UQM=;
-	b=5Vux5liv+ETIkuX4cXQ2lGKqilubm7HkaDI2fdl8HQ1I0HJ+8yxLq6LJlSW2hDBEAronmq
-	N0goqmBbqZDVjeBA==
-From: Michal Suchanek <msuchanek@suse.de>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Michal Suchanek <msuchanek@suse.de>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Kees Cook <kees@kernel.org>,
-	Andy Lutomirski <luto@amacapital.net>,
-	Will Drewry <wad@chromium.org>,
-	"Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>,
-	"Bernhard M. Wiedemann" <bwiedemann@suse.de>,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH v2 1/2] powerpc: Restore all registers after a traced syscall again
-Date: Wed, 14 Oct 2026 13:06:51 +0200
-Message-ID: <961c058f3f3e03045552186c083a68a0fde3f43f.1791975972.git.msuchanek@suse.de>
-X-Mailer: git-send-email 2.51.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3xdq6Ctlz30Tf
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 01:33:18 +1100 (AEDT)
+Received: by mail-dy1-x132d.google.com with SMTP id 5a478bee46e88-3282db206d3so800703eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2026 07:33:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1791901995; x=1792506795; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=2D70tRlN9hXWyqkkdtTDdIyLlgX6luaffedR+k/mZw4=;
+        b=M0o9Lj74ocil2qhi5LAn/DcWhjVww1sG3sLPkulamnKw+tKXno1TlwDKa5KLgJLtsr
+         NV+xurE95gDLsDzpFfB2HCANaT9YyZ6ECwz3h/9sefI83IdYQcHEDZBM18i2wqpYpIWk
+         dcN18j4VKn60xweFoGHZ0PDCryJkQiDiOdJfOTSKSTTb7Vr8DWZiGoLRBA0tlwUg/KXI
+         bxX2w6IH57eJP8VdJYcPGGgcn25rWRK1FCoLnokZhwanEPhE8vm5M3GRQooUv8NwMo6o
+         LHxqzt7oNuiJgQ5h84wLNFFgPwEROqDdf+s/kfVorDxcKN4an3pC0A3aJCduHZZnWDdo
+         enwg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791901995; x=1792506795;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=2D70tRlN9hXWyqkkdtTDdIyLlgX6luaffedR+k/mZw4=;
+        b=UARDXwpE51GUeRTFuUfsazE8iMWnhBiOmLOo4Y/4fgISdIVMKXTg9KgeSjfDRdP3VJ
+         3zf5jXSDeLduMVtXGCj85gtM6BnUpAfNaL2X9kEF9/HTZcBOHDWt+dSQfpAG1IxSEIub
+         B4d2OKEKc94c8thOcaicCBTZ6L8j0KF1SkIz9eJGW1Lxxqe4ZeTCT25uUYnbmdFnhjVT
+         PW72OmcbPsh4azAhUhv7ZvFRCFPPepHiRhpyDXnohsU2jbtEGNOHVpxcuBLieWscbOBF
+         6iNVrK+oiZpuSm1XOYlgB4li1UoJkHuviTw7MOwDGPCigONY8XePjK7mp6DpipvhKS2p
+         jFrw==
+X-Gm-Message-State: AFq9FYKXYs7myCNxoBxYMzNMzDGp6P3GnQ4+MRDXKKviETHFZijg5O+I
+	93sQ1YY0t0zzu0Q3NR8k4zDd3Jujs48ChzZZ+wH0ESi8IvDRX3UxnWOw
+X-Gm-Gg: AYBFou05t4dnjxo9WqdcFFEozHn0JoSXe0Sano3eZl5xr+wJQXWJrSs/3Rk5EY4im1Q
+	NolSg3NbZU3UeVNNNPX05sNJEz9p6xG0IVeej96+5LQT1cckeS62ooR72PPR7qrDLiMMpnJVIQF
+	FWatwDv0Rp2/k4yQwHxeOFsMsP3knpRJDoz8gUaQqdwHA3rVcwm60L9TnRdttalNY/tGSlSWXtU
+	X0gAXWbWflHriEHaBxUaFjKALZwqevRuzejRNkxRhz4dZfoGs4x9Fnc6HtiwJgqMMyCL6JXRaes
+	5aV5MWPEMLhI8YgAvyb1G/uAC75YmYXgHnzEX+uTc9pccDe2kiSWoE3eK5TtzaHCKMXiSVhAaVr
+	3A67AFsOicUeHCL1gInwcQsI1xxw1Mf6IaPXRrLRF4r2gnIVWqChIjjDaJ7qZindOmrdQL649B7
+	AYhyGhoYr4XmQlbyBmYmf0FvkxKnNPJ4ZuVSNc/CgGfaygwRdSFhqEbv/Pap9p+NArfRgNfWjeY
+	qWtMwLz
+X-Received: by 2002:a05:693c:821a:b0:35c:813a:1c81 with SMTP id 5a478bee46e88-35c813a23b6mr2871023eec.18.1791901995288;
+        Tue, 13 Oct 2026 07:33:15 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3537ca6d20dsm47942824eec.12.2026.10.13.07.33.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 13 Oct 2026 07:33:13 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Gautam Menghani <gautam@linux.ibm.com>, maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org, sshegde@linux.ibm.com, amachhiw@linux.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: [PATCH v3 4/4] KVM: PPC: Book3S HV: Take SRCU read lock around kvmppc_h_page_init() call
+In-Reply-To: <20261012082922.218799-5-gautam@linux.ibm.com>
+Date: Tue, 13 Oct 2026 20:01:51 +0530
+Message-ID: <y0c1r7s8.ritesh.list@gmail.com>
+References: <20261012082922.218799-1-gautam@linux.ibm.com> <20261012082922.218799-5-gautam@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,247 +89,48 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Action: no action
-X-Spamd-Result: default: False [4.01 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
-	SUSPICIOUS_RECIPS(1.50)[];
-	ONCE_RECEIVED(1.20)[];
-	HFILTER_HELO_IP_A(1.00)[tenko.suse.cz];
-	RDNS_NONE(1.00)[];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	HFILTER_HELO_NORES_A_OR_MX(0.30)[tenko.suse.cz];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.18)[-0.886];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	RCPT_COUNT_TWELVE(0.00)[17];
-	ARC_NA(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	DIRECT_TO_MX(0.00)[git-send-email 2.51.0];
-	MIME_TRACE(0.00)[0:+];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	FREEMAIL_CC(0.00)[suse.de,linux.ibm.com,ellerman.id.au,gmail.com,kernel.org,amacapital.net,chromium.org,vger.kernel.org];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b2bf:1b::11d2:from];
-	TAGGED_RCPT(0.00)[];
-	RCVD_COUNT_ZERO(0.00)[0];
-	DKIM_TRACE(0.00)[suse.de:+];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,suse.de:dkim]
-X-Spamd-Bar: ++++
-X-Rspamd-Queue-Id: 5E4721F7C9
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
 
-From: Bernhard M. Wiedemann <bwiedemann@suse.de>
+Gautam Menghani <gautam@linux.ibm.com> writes:
 
-syscall_exit_prepare() asks the exit assembly to reload all GPRs, CTR
-and XER from pt_regs only if the thread flags contain any of the flags
-in _TIF_SYSCALL_DOTRACE. With the new entry code based GENERIC_ENTRY the
-flags are no longer set.
+> Since there is no srcu read lock around kvmppc_h_page_init(), a
+> "suspicious rcu_dereference_check() usage" can be triggered by running
+> host linux with CONFIG_PROVE_RCU=y and the following code in the guest:
+>
+> plpar_hcall_norets(H_PAGE_INIT, H_ZERO_PAGE, phys_addr, 0);
+>
+>  =============================
+>  WARNING: suspicious RCU usage
+>  7.0.0-dirty #227 Not tainted
+>  -----------------------------
+> ./include/linux/kvm_host.h:1074 suspicious rcu_dereference_check() usage!
+>
+> other info that might help us debug this:
+>
+> rcu_scheduler_active = 2, debug_locks = 1
+> 1 lock held by qemu-system-ppc/2093:
+>  #0: c000000354197ab0 (&vcpu->mutex){+.+.}-{3:3}, at: kvm_vcpu_ioctl+0x10c/0xaf0
+>
+> stack backtrace:
+> CPU: 30 UID: 0 PID: 2093 Comm: qemu-system-ppc Not tainted 7.0.0-dirty #227 PREEMPT(full)
+> Hardware name: IBM,9080-HEX POWER10 (architected) 0x800200 0xf000006 of:IBM,FW1060.60 (NH1060_158) hv:phyp pSeries
+> Call Trace:
+> [c00000033e1bf430] [c000000001b3dbd4] dump_stack_lvl+0xc8/0x130 (unreliable)
+> [c00000033e1bf470] [c0000000003da964] lockdep_rcu_suspicious+0x1f4/0x290
+> [c00000033e1bf520] [c000000000231424] gfn_to_memslot+0x1b4/0x1c0
+> [c00000033e1bf560] [c00000000023637c] kvm_clear_guest+0x9c/0x110
+> [c00000033e1bf5c0] [c0000000002714a4] kvmppc_h_page_init+0x160/0x1a0
+> [c00000033e1bf610] [c00000000026c040] kvmppc_pseries_do_hcall+0x1930/0x1940
+> [c00000033e1bf6d0] [c00000000026fb18] kvmppc_vcpu_run_hv+0x268/0x800
+> [c00000033e1bf7a0] [c000000000246b30] kvmppc_vcpu_run+0x30/0x50
+> [c00000033e1bf7c0] [c000000000241ed4] kvm_arch_vcpu_ioctl_run+0x364/0x530
+> [c00000033e1bf860] [c00000000022b870] kvm_vcpu_ioctl+0x1b0/0xaf0
+> [c00000033e1bfa50] [c0000000009b4514] sys_ioctl+0x144/0x190
+> [c00000033e1bfab0] [c000000000034330] system_call_exception+0x170/0x370
+> [c00000033e1bfe50] [c00000000000d05c] system_call_vectored_common+0x15c/0x2ec
+>
+> Fix this by taking a srcu read lock around kvmppc_h_page_init().
 
-This breaks tracers that modify a stopped syscall, for example ones that
-re-execute the syscall instruction by moving the NIP back by 4 at the
-syscall-exit stop with the syscall number put back into r0: the sc then
-runs with r0 = 0, which is __NR_restart_syscall. dettrace fails like
-this with "No filter rule for system call: restart_syscall". A tracer
-that writes r4 at the syscall-exit stop of an sc sees the tracee
-continue with r4 = 0 instead; with a 7.1 kernel both work.
-
-Check the equivalent syscall_work bits instead, and drop the now unused
-_TIF_SYSCALL_DOTRACE.
-
-Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
-Cc: stable@vger.kernel.org # 7.2.x: c7585b8e99ad: powerpc: Don't drop _TIF_RESTOREALL on syscall restart
-Cc: stable@vger.kernel.org # 7.2.x
-Assisted-by: LLM
-Signed-off-by: Bernhard M. Wiedemann <bwiedemann@suse.de>
-[ms: reword commit message]
-Signed-off-by: Michal Suchánek <msuchanek@suse.de>
----
-A backport also needs commit c7585b8e99ad ("powerpc: Don't drop
-_TIF_RESTOREALL on syscall restart"), without which the flag can still
-be lost.
-
-v2: rename PPC_SYSCALL_WORK_RESTOREALL to SYSCALL_WORK_RESTOREALL and
-move it from interrupt.c to thread_info.h
-
-v1: https://lore.kernel.org/linuxppc-dev/4c1da7f31a6603455ec452960af529e4d77f5334.1791826411.git.msuchanek@suse.de/
-
-Testing: a small tracer (pokes r4 at the syscall-exit stop of an sc,
-and replays a syscall by moving NIP back with a new r0) shows both
-writes lost on a ppc64le and both working on 7.1.8.
-------------[ cut here ]------------
-// SPDX-License-Identifier: GPL-2.0
-/*
- * Does a register a tracer writes at the syscall-exit stop of an "sc"
- * reach the tracee? Checks r4, and a replay: NIP moved back onto the sc
- * with r0 set to another syscall number.
- * Build: gcc -O2 -o ppc-exitregs ppc-exitregs.c (powerpc64 only)
- */
-
-/* word offsets in struct pt_regs, arch/powerpc/include/uapi/asm/ptrace.h */
-
-static long do_sc(long nr, long *r4io)
-{
-	register long r0 __asm__("r0") = nr;
-	register long r3 __asm__("r3") = 0;
-	register long r4 __asm__("r4") = *r4io;
-
-	__asm__ volatile("sc"
-			 : "+r"(r0), "+r"(r3), "+r"(r4)
-			 :
-			 : "r5", "r6", "r7", "r8", "r9", "r10", "r11", "r12",
-			   "cr0", "ctr", "xer", "memory");
-	*r4io = r4;
-	return r3;
-}
-
-static long peek(pid_t pid, int w)
-{
-	errno = 0;
-	long v = ptrace(PTRACE_PEEKUSER, pid, (void *)(w * sizeof(long)), 0);
-	if (errno) {
-		perror("PEEKUSER");
-		exit(2);
-	}
-	return v;
-}
-
-static void poke(pid_t pid, int w, long v)
-{
-	if (ptrace(PTRACE_POKEUSER, pid, (void *)(w * sizeof(long)), (void *)v)) {
-		perror("POKEUSER");
-		exit(2);
-	}
-}
-
-/* Resume to the next syscall stop, which must be one. */
-static void next_stop(pid_t pid)
-{
-	int st;
-
-	ptrace(PTRACE_SYSCALL, pid, 0, 0);
-	if (waitpid(pid, &st, 0) != pid || !WIFSTOPPED(st) ||
-	    WSTOPSIG(st) != (SIGTRAP | 0x80)) {
-		fprintf(stderr, "unexpected wait status %#x\n", st);
-		exit(2);
-	}
-}
-
-int main(void)
-{
-	pid_t pid = fork();
-	int st, fail = 0;
-
-	if (pid == 0) {
-		long r4 = 0x1111, r4a, ret;
-
-		ptrace(PTRACE_TRACEME, 0, 0, 0);
-		raise(SIGSTOP);
-		do_sc(__NR_getpid, &r4);
-		r4a = r4;
-		ret = do_sc(__NR_getpid, &r4);
-		/* bit 0: the tracer's r4 was lost; bit 1: the replay of
-		 * the second getpid as getppid returned something else */
-		_exit((r4a != 0x2222) | (ret != getppid()) << 1);
-	}
-
-	waitpid(pid, &st, 0);
-	ptrace(PTRACE_SETOPTIONS, pid, 0, (void *)PTRACE_O_TRACESYSGOOD);
-
-	/* 1: write r4 at the exit stop of getpid */
-	next_stop(pid);				/* entry */
-	next_stop(pid);				/* exit */
-	poke(pid, W_R4, 0x2222);
-	next_stop(pid);				/* entry of the second getpid */
-
-	/* 2: replay the second getpid as getppid */
-	next_stop(pid);				/* exit */
-	poke(pid, W_NIP, peek(pid, W_NIP) - 4);
-	poke(pid, W_R0, __NR_getppid);
-	next_stop(pid);				/* entry of the replay */
-	long nr = peek(pid, W_R0);
-	printf("replayed syscall arrives as nr %ld (%s)\n", nr,
-	       nr == __NR_getppid ? "getppid, OK" :
-	       nr == __NR_restart_syscall ? "restart_syscall, BUG" : "?");
-	if (nr != __NR_getppid) {
-		fail = 1;
-		poke(pid, W_R0, __NR_getppid);	/* entry writes do work */
-	}
-	next_stop(pid);				/* exit */
-	ptrace(PTRACE_CONT, pid, 0, 0);
-	waitpid(pid, &st, 0);
-	if (!WIFEXITED(st)) {
-		printf("child did not exit normally: %#x\n", st);
-		return 2;
-	}
-	printf("r4 written at the exit stop: %s\n",
-	       WEXITSTATUS(st) & 1 ? "lost, BUG" : "kept, OK");
-	printf("replay result: %s\n",
-	       WEXITSTATUS(st) & 2 ? "wrong" : "getppid(), OK");
-	return fail || WEXITSTATUS(st);
-}
----
- arch/powerpc/include/asm/thread_info.h | 15 ++++++++++++---
- arch/powerpc/kernel/interrupt.c        |  3 +--
- 2 files changed, 13 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index 1e069a2e7ce87..31a7a157bc902 100644
---- a/arch/powerpc/include/asm/thread_info.h
-+++ b/arch/powerpc/include/asm/thread_info.h
-@@ -142,9 +142,6 @@ void arch_setup_new_exec(void);
- #define _TIF_SYSCALL_TRACEPOINT	(1<<TIF_SYSCALL_TRACEPOINT)
- #define _TIF_EMULATE_STACK_STORE	(1<<TIF_EMULATE_STACK_STORE)
- #define _TIF_SYSCALL_EMU	(1<<TIF_SYSCALL_EMU)
--#define _TIF_SYSCALL_DOTRACE	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
--				 _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT | \
--				 _TIF_SYSCALL_EMU)
- 
- #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
- 				 _TIF_NEED_RESCHED_LAZY | _TIF_NOTIFY_RESUME | \
-@@ -153,6 +150,18 @@ void arch_setup_new_exec(void);
- 
- #define _TIF_PERSYSCALL_MASK	(_TIF_RESTOREALL|_TIF_NOERROR)
- 
-+/*
-+ * Syscall work after which the exit must reload all registers from
-+ * pt_regs: a tracer may have changed any of them at a syscall or seccomp
-+ * stop, or under PTRACE_SYSEMU. Audit and the tracepoint are included to
-+ * keep the pre-GENERIC_ENTRY behaviour.
-+ */
-+#define SYSCALL_WORK_RESTOREALL (SYSCALL_WORK_SECCOMP |			\
-+				 SYSCALL_WORK_SYSCALL_TRACEPOINT |	\
-+				 SYSCALL_WORK_SYSCALL_TRACE |		\
-+				 SYSCALL_WORK_SYSCALL_EMU |		\
-+				 SYSCALL_WORK_SYSCALL_AUDIT)
-+
- /* Bits in local_flags */
- /* Don't move TLF_NAPPING without adjusting the code in entry_32.S */
- #define TLF_NAPPING		0	/* idle thread enabled NAP mode */
-diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
-index 55f9c0c9922ac..d6a7b6d2b4bd2 100644
---- a/arch/powerpc/kernel/interrupt.c
-+++ b/arch/powerpc/kernel/interrupt.c
-@@ -117,9 +117,8 @@ notrace unsigned long syscall_exit_prepare(unsigned long r3,
- 		regs->gpr[3] = r3;
- 	}
- 
--	if (unlikely(ti_flags & _TIF_SYSCALL_DOTRACE)) {
-+	if (unlikely(READ_ONCE(current_thread_info()->syscall_work) & SYSCALL_WORK_RESTOREALL))
- 		ret |= _TIF_RESTOREALL;
--	}
- 
- 	syscall_exit_to_user_mode(regs);
- 
--- 
-2.51.0
+Looks good to me. Please feel free to add:
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 
 
