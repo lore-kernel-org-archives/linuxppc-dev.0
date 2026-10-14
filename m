@@ -1,49 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-29459-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29460-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95887CC6B27
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 07:30:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E2F5CC6B29
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 07:32:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j4NBy6mcqz2ynZ;
-	Wed, 14 Oct 2026 18:30:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::fc"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791963002;
-	cv=none; b=dQZp1fVXPdTZ+diG92TPLwrhAJsxejZiq5EWf5YxUFzfDJtwx6dwg4OgmETu35Ezrbe2I6WHPIr3fzeTUzxaauyiJNp2u2XMNXLtMuhnYxpTuOrJ9Mny1YGtepdc1nl8ncIZ8C+oY3Y1ZSnzk+lbNOZXw68ZP+Px4CjP4O4uWzrtOry4lPXpj1X9vPeGiKmer8PAsWjth+ZkwJjjCIiCQNyuo2Ge0LsdAoeZVjfV2ynwwxu7FVOGrbp4cGlqlz9PBMdveYsQVEFP+3GBjgr8lj9wh1x5dJkwEldky+3D2g3jorTWq+gGlVKVZx1aJ+OAiJtyDkSQen7U80vHDQWHKw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j4NFY2VDvz2ynZ;
+	Wed, 14 Oct 2026 18:32:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791963137;
+	cv=none; b=Do4fzHsLCro8vJG+Umw7mBLIZ1qf4XuqpdBncd+ZA6eJALOWXkxaL/euFDLS8ZF2f0cDlwG3rcezZoeFg46BOsdbTYtVvgHda/4T3LsdgOTp4teYX/l1Ef36SaFYFEorOIrIIg5TEJ21xgtPDjz0Wxf7sEMqI9iPEesalh1mHndAhuB1A50VuS/aFmY1+pD4J2ZQNHRVDA35lE00exo+WUcE0tDLdUPFWwNUG+1bVgwxPussBr1n8GQn5IkoXf+aaKTjdhJQdx6Xv+zxJBUwL5oxOBDTp/ot0IZ6n5dslL/OUmuJ8uvNRKBsTCwf6P1pmf5yd632vZZB6rSVJqBgIw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791963002; c=relaxed/relaxed;
-	bh=sKdAh4DSPDajzvJegyN5GGao4FMUHTTyQLWPRHfK9UI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=kz9TNBONdHI7PJLSHoTzR29FomCAhY9VXOVZlSMTY/7x07yAQjnzO32uMyYqRD0MKm8f5IC0Gq2axiW/uD4Cq2feAiwj6g9rs7Bckmq2MDWHzxRD6wgULfUFEiWfUTKKMpLTJJFEme26VHB7yah7WUGeyhtbJb7z0HfGid9JMsEjrfkQsi3/WEiZUPeApylI1IvhYmbAQtw8xrEHPKZIDSvmJimNrfjKwIDvWJOi8NH3i4dClsrEfiAp0CebJbv7wyt3zRhAQVR7LdvUAHbwPNJVLi/EmML/qe38ZBXlynMl90XzTTSuCGBvSMNP3kW1PtedjTdjgPmGJXBFR5K3VQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=SBFV9XRV; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::fc; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1791963137; c=relaxed/relaxed;
+	bh=6ssQU9tcZgqqK8UDDocvoF+gguiEeHDG3OnM1utzXEA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=JwJR/3rnmYPqhXeNHS3XybSW6pextexVkmvcOm3c4xam/xYRLMytOsL2Ya4HqI2BW2UJ6+OxDW1Yr9DaVUSOZunA9IAsxdVeCjUpDrIYXUEY0NF/jZLpIbTfm0rInBOMlw+cXoqH9mAi93OJvihOZl1ltCWIYeR/P76BcnVeY5kNfS1rit8wM/zWPcLA9pUeDnKnQ/m8F3R8uqsgTzqTqY+Z1ifhubnfN/KhdmtK760Pjhq8Vpr4PQAxeGwXp3B8dzI+rG//160SDx1RbxeizswZeqSuhhB9e4p+GrXYDvdY1Qqa/+NwTmEauNX/kIL8XriN3Ypg/Q1+kNKkvgY4VQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AaptHzDP; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nysal@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=SBFV9XRV;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AaptHzDP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::fc; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta1.migadu.com (out-252.mta1.migadu.com [IPv6:2001:41d0:203:375::fc])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nysal@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4NBv5TKqz2yYd
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 18:29:59 +1100 (AEDT)
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=KIpg8DK6yUzBXoPal9V2gzxOahvuwx1OXybBEt4rIgk=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1791962981; v=1; x=1792567781;
- b=SBFV9XRVzu5cfNcVjTL6/iN3TVt1tW5tz+3rSIMj0r6YVCMBRykNexaHafZKt9EjVUO8uG25
- xa2rCOQdoStUF+FM2UAIc0vVoeeJ9bDpENNtxpSopEhfCL5kKA5eanNGbd5/0fFyCR4Vv+FYQ4T
- ZyaoueHY2Hn+ItyZC21+gTTc=
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id d0234dd56ab13b63;
-	Wed, 14 Oct 2026 07:28:15 +0000
-X-Mizu-Trace-ID: d0234dd56ab13b63
-X-Migadu-Flow: FLOW_OUT
-Message-ID: <bdcf2425-c0cf-48df-96a8-7ee1d23125d7@linux.dev>
-Date: Wed, 14 Oct 2026 15:29:08 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4NFX1DHQz2xrC
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 18:32:15 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69DLTmRE1890530;
+	Wed, 14 Oct 2026 07:32:06 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=6ssQU9tcZgqqK8UDDocvoF+gguiEeH
+	DG3OnM1utzXEA=; b=AaptHzDPk9q3QnurSioZWZHY8WCloILf+kBfn93Nf+lUqS
+	kEVbGoqwHHjbR4stEJjwxsA+G3wbcIHJRuHIKIROfXRfyMqpRVUctI0yk/G1mZbo
+	u2uK8QR5B9vI6HawKDoC6B8RixyUIlR0QCmNFPy4e3nQxrg0F4dGnnPdHC002iwI
+	d6Pf7AR3eifMbsnQrG52R4xVJwjZDkXnbNUVQ1ajfnndboBT5yirK5di2CFZz5zB
+	ebNDvnR+BPM2Kp9xVlY1H/lr7I48n0VIgxb9U5j+pNBqpA23KZ9/EWkmKxwSKain
+	bF8t0qOoClh6vu2pRnqbVH4As2IYqPAjHwsNNzmw==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7dv3k1e4-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Wed, 14 Oct 2026 07:32:05 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69E6KdvA3211854;
+	Wed, 14 Oct 2026 07:32:04 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h9q2ykrne-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 14 Oct 2026 07:32:04 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69E7W0U739977312
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 14 Oct 2026 07:32:00 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C4B0D20043;
+	Wed, 14 Oct 2026 07:32:00 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6907020040;
+	Wed, 14 Oct 2026 07:32:00 +0000 (GMT)
+Received: from localhost (unknown [9.43.85.119])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 14 Oct 2026 07:32:00 +0000 (GMT)
+Date: Wed, 14 Oct 2026 13:01:59 +0530
+From: "Nysal Jan K.A." <nysal@linux.ibm.com>
+To: Srikar Dronamraju <srikar@linux.ibm.com>,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Samir Mulani <samir@linux.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] pseries/hotplug: Add CPU-to-node mappings for all
+ present CPUs
+Message-ID: <as8sWxTnsmk9rc3k@li-398ad3cc-28e7-11b2-a85c-e030a5b10d54.ibm.com>
+References: <20261012155549.557256-2-srikar@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,151 +91,56 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 2/4] mm/vmalloc: undo partial mappings inside the
- mapping functions
-To: Uladzislau Rezki <urezki@gmail.com>,
- Suren Baghdasaryan <surenb@google.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- Shrikanth Hegde <sshegde@linux.ibm.com>,
- Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
- Dmitry Vyukov <dvyukov@google.com>, Andrew Morton
- <akpm@linux-foundation.org>, Dennis Zhou <dennis@kernel.org>,
- Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@gentwo.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kasan-dev@googlegroups.com, linux-mm@kvack.org,
- Sashiko <sashiko-bot@kernel.org>
-References: <20261009063619.112313-1-hao.ge@linux.dev>
- <20261009063619.112313-3-hao.ge@linux.dev>
- <CAJuCfpE9VfgTw2ZNMJTEVh41H_R+1RY_MtzeMuZNCD3BFm-Piw@mail.gmail.com>
- <as5epHFQF4iE_VQK@pc636>
-Content-Language: en-US
-From: Hao Ge <hao.ge@linux.dev>
-In-Reply-To: <as5epHFQF4iE_VQK@pc636>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261012155549.557256-2-srikar@linux.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: N6Rc_U2Z5jtpBdyoOcb6cEbLHRIYmRzY
+X-Proofpoint-ORIG-GUID: d0c8A-9cvIwHxq8fNUBl-1hO3kW1ECr7
+X-Authority-Analysis: v=2.4 cv=aqInmiZV c=1 sm=1 tr=0 ts=6acf2ff6 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=kj9zAlcOel0A:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=Bv3w2hTe2OTDbRRUDo0A:9
+ a=CjuIK1q_8ugA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE0MDAyOCBTYWx0ZWRfX+EWBNuCWySJI
+ woI/uZLlcZq0YJ3KUY7NHneOJYT42n/pFDM6O5iSMU3Wkhin6uWbJKQybUtmcjWwU6iN1ovHs9u
+ bdE9kukABoT37WXmKA5fnwIw/Mi5EmE=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE0MDAyOCBTYWx0ZWRfXxO43yNKbxHV8
+ fI6bWcvVmiMobkqU4aXXWNj1cFvi3O+w6tnEMk6pRcBFlfzv7TjBTNWFa30eefC9X5bUoLFLdhS
+ LZEPWebQsuvCpZy8JrwM1K/37KdCd19Y7FSoQefsszsALJVaolVX9rOC1BPQxdVwehLPuy3Qb2d
+ KKwAwoKKZ1OOf6fV7msEeZEuQXqdfZZo6sT1qhUL0TnCLyZirmXc5N/vQLj6pTklw9ibWfAOnv9
+ v4zB1pfeH+4Y05Ikz5WYxrHFWwxJgt4soqJSGIKoYBcHMna+C0kmD+8jt7DnVkb3fCuknEYQ6uI
+ 4VVtRphVo7WmpvRzLKTmgFmKO4H8PsNHeLm7t24RTGn7oy0JDXMKIOhatLbBwE3Ww0wpYTmsCdO
+ MGNToWejZL/+UlK4vYNsAM94WD+n5XbU3pC3kWYI80a5ZDni8dvakybt6ft7q2zCMVgn4NvC3RZ
+ 4UH/eaivJB/MERUW3KA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-13_01,2026-10-09_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 clxscore=1011 spamscore=0 malwarescore=0 suspectscore=0
+ bulkscore=0 adultscore=0 impostorscore=0 priorityscore=1501
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
+ definitions=main-2610140028
 
-Hi Uladzislau and Suren
+On Mon, Oct 12, 2026 at 09:25:49PM +0530, Srikar Dronamraju wrote:
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> index bc6926dbf148..b5dc942eec63 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> @@ -402,6 +402,7 @@ static int dlpar_online_cpu(struct device_node *dn)
+>  			if (get_hard_smp_processor_id(cpu) != thread)
+>  				continue;
+>  
+> +			find_and_update_cpu_nid(cpu);
+>  			if (!topology_is_primary_thread(cpu)) {
+>  				if (cpu_smt_control != CPU_SMT_ENABLED)
+>  					break;
 
-On 2026/10/14 00:39, Uladzislau Rezki wrote:
-> On Tue, Oct 13, 2026 at 03:23:14PM +0400, Suren Baghdasaryan wrote:
->> On Fri, Oct 9, 2026 at 10:36 AM Hao Ge <hao.ge@linux.dev> wrote:
->>>
->>> __vmap_pages_range_noflush() and friends can install some PTEs before
->>> failing and leave them mapped, and the kernel callers do not agree on
->>> who cleans them up. pcpu_map_pages() and kmsan_ioremap_page_range()
->>> roll back what they mapped before the failure, while
->>> vm_module_tags_populate() and the __GFP_NOFAIL retry loop in
->>> __vmalloc_area_node() rely on the mapping functions cleaning up and
->>> do not call anything like vunmap_range() themselves. When the same
->>> range is mapped again, the attempt hits the leftovers and fails, with
->>> a BUG() in vmap_pte_range() for huge mappings and a warning on the
->>> small-page path.
->>>
->>> After discussing with Suren and Ulad, we decided to put the rollback
->>> into the entry points of the vmap API rather than into every low-level
->>> helper. __vmap_pages_range_noflush() undoes the whole range it was
->>> asked to map when it fails, and vmap_page_range() undoes its range
->>> for the ioremap-style mappings.
->>>
->>> The rollback is __vunmap_range_noflush(), it only clears the PTEs,
->>> no TLB flush, nothing has touched these mappings.
->>> vmap_pages_range_noflush() drops the KMSAN metadata when the data
->>> mapping fails, and an empty range bails out with -EINVAL now, which
->>> used to BUG_ON() on the small-page path and map nothing at all on
->>> the huge-page one.
->>>
->>> Reported-by: Sashiko <sashiko-bot@kernel.org>
->>> Suggested-by: Uladyslau Rezki <urezki@gmail.com>
->>> Signed-off-by: Hao Ge <hao.ge@linux.dev>
->>> ---
->>>  mm/vmalloc.c | 44 ++++++++++++++++++++++++++++++++------------
->>>  1 file changed, 32 insertions(+), 12 deletions(-)
->>>
->>> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
->>> index db669103dc66..e1b376f57dd2 100644
->>> --- a/mm/vmalloc.c
->>> +++ b/mm/vmalloc.c
->>> @@ -363,6 +363,9 @@ int vmap_page_range(unsigned long addr, unsigned long end,
->>>         if (!err)
->>>                 err = kmsan_ioremap_page_range(addr, end, phys_addr, prot,
->>>                                                ioremap_max_page_shift);
->>> +       if (err)
->>> +               __vunmap_range_noflush(addr, end);
->>> +
->>>         return err;
->>>  }
->>>
->>> @@ -683,27 +686,35 @@ int __vmap_pages_range_noflush(unsigned long addr, unsigned long end,
->>>                 pgprot_t prot, struct page **pages, unsigned int page_shift)
->>>  {
->>>         unsigned int i, nr = (end - addr) >> PAGE_SHIFT;
->>> +       unsigned long start = addr;
->>> +       int err = 0;
->>> +
->>> +       if (WARN_ON_ONCE(addr >= end))
->>> +               return -EINVAL;
->>>
->>>         if (WARN_ON_ONCE(page_shift < PAGE_SHIFT))
->>>                 return -EINVAL;
->>>
->>>         if (!IS_ENABLED(CONFIG_HAVE_ARCH_HUGE_VMALLOC) ||
->>> -                       page_shift == PAGE_SHIFT)
->>> -               return vmap_small_pages_range_noflush(addr, end, prot, pages);
->>> -
->>> -       for (i = 0; i < nr; i += 1U << (page_shift - PAGE_SHIFT)) {
->>> -               int err;
->>> -
->>> -               err = vmap_range_noflush(addr, addr + (1UL << page_shift),
->>> +                       page_shift == PAGE_SHIFT) {
->>> +               err = vmap_small_pages_range_noflush(addr, end, prot, pages);
->>> +       } else {
->>> +               for (i = 0; i < nr; i += 1U << (page_shift - PAGE_SHIFT)) {
->>> +                       err = vmap_range_noflush(addr, addr + (1UL << page_shift),
->>>                                         page_to_phys(pages[i]), prot,
->>>                                         page_shift);
->>> -               if (err)
->>> -                       return err;
->>> +                       if (err)
->>> +                               break;
->>>
->>> -               addr += 1UL << page_shift;
->>> +                       addr += 1UL << page_shift;
->>> +               }
->>>         }
->>>
->>> -       return 0;
->>> +       /* Undo the PTEs installed before the failure. */
->>> +       if (err)
->>> +               __vunmap_range_noflush(start, end);
->>
->> Would it be too complicated to track how much was actually mapped and
->> unmap only that portion?
->>
-> I think it is possible to vunmap the range which is already unmapped.
-> i.e. in this case it is better to no to track anything as soon as a
-> mapping failure is a corner case. Also it is more reliable without
-> extra track logic.
+The fix looks correct to me. As an improvement, would limiting only the primary
+thread to making the H_HOME_NODE_ASSOCIATIVITY hcall perhaps be quicker?
+The primary thread can then update the nid of its sibling threads?
 
-Thank you both.
-I take note of Suren's concerns. The worst case is a single PMD where only
-the first page was installed, __vunmap_range_noflush() then loops 512 times
-to undo one PTE, plus 511 empty ones.
-
-And tracking the exact progress would require vmap_pages_p4d/pud/pmd_range()
-to report how far they got. That also puts counting instructions on the successful
-mapping path, while the saving only pays off on the failure one.
-
-So I agree with Ulad.
-
-Thanks
-Best Regards
-Hao
-
-> 
-> --
-> Uladzislau Rezki
+--Nysal
 
