@@ -1,92 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-29454-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29455-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67282CC6B1A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 05:36:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4AEB0CC6B1A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 06:04:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j4KhQ2DTNz2yYK;
-	Wed, 14 Oct 2026 16:36:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791956214;
-	cv=none; b=LQsP+IM7wNylIr82NQR4x6jlPQvtvAuGOva42/R4mZ5ak4TNyaNGobecHca2oDx9V9CP0hCfYm1tryz9Y2rHF6yPNOnKCywGvvZGqVJStTkAqmmKxm4rzrE/yhaaoSI4/5YU8GRuR8CP4rBOf9cE98n93q+1edChzaxhAnO51GQXyYV2LoybpBCr8QiEk7NjPOJQxaBeWb2oJM4mcmZyPMKjHfNbqN+2O1XRYmo6QPyb+W0php+wfe8JSVLFIgBsM1mnDNs3uc84a9nJ6iA+IeqMcsaY0x4Q7jjP5qf76oD220PFkBzQQjiIfdNj0+osQ7DcCRko+7nDnKrUxEEujw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j4LJK3hnsz2yYK;
+	Wed, 14 Oct 2026 17:04:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791957873;
+	cv=none; b=Eu8Agvm2UE0ofvBKmbPAf7ZQPa5aNf4dQFmfdKUQCPCf7FTYmgwhBWZJpVtGY3YK6BpUx60FTBs3ffMSK+CIGDwA0n7blrY3A3cLXMJ5KHG+LavN81bX5kpq4Sad952MRrJALUoMycCp4tSoiYxOW8o32ja8sHvyjV2h32KyFtB5QZH8OhXkhHIWoBPJsZZ2z8qFQ7pKnSypcrOggUY+AtYr4G26nLc9aGpCDf4omasE5TviO63oySUoW+Y/fwTx3lekUyDTUUO+ZbzZIPkPuSAzlUn5I5IxY9V9qtbz3zs05tF+xcU+9Q+orZh3zv5OFPnoHM8YiX39aIbfealsLA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791956214; c=relaxed/relaxed;
-	bh=20IeJwlfbHOwAOqBybbPglj4DioVDbfCTggyOUmG6AM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=CPbRAmuBEamfmeiUFFdvT2JyxAC0u13e555CoK6NCnm2GXhCiJU80vELka9MPVGQ5kggl6+mwOGJDcgX1I5mxKTO0eNifZ2E5m7kUM0BzLYOfn+vmhiDph4Ed5tNIBEhRCTUlWhohlhQvOWxGJ/tgm0vsLqDfXM7YdkgQNXXKj9nafVOl2Ck0ZeV3ZDbrEHGGCiLkQMWcKWA6vZ55imjgKDFa/lke5lS0EVr1v5Lc5OfhH6VyxS9T/dy6MtNYnborvzGg4Nb1ssFYoO3Nx3M/IJQA0LJt3amPqBtwFwOGZwLRHsigdgTX2hvu6jnIe5/9IB+QepIqlUtxZmFg9VdQQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=Qh2L+lns; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+	t=1791957873; c=relaxed/relaxed;
+	bh=ESeptom+XdILDBZ1SV9z+qsZLUlrAdxL/MtsJa3zQY8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=gg38l/ZY1IpzL63doVL6TAZbFQJTMRZiHoZTNv+xdd801BIi/G3mmXjO0H4urhgHtHwmXknTPanNSIdKpe4IR8qHuXSXFWqMHIGpu3fG5x+ax4lb7ZixXBFyZY8tJkAf1/Ln9nGtP4bDzoxjCMaKQwDtPaUfqoygO8q73jz5maHySmxhEt5KFyqSn7btclgATEEE7lYMUBGhu4GsR8Oj4kwaPCGxCKUydJoMCEJsimi8hIJ17iIso6z8NULYlaSmGlRZKyYMA2raurOOrHH6dgYI2Ukxm35JbsWTqc0YEUosVB7nFth5+KbSuUN/puUHXzY0IH+g4OuD/LgPVuAPUQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=NGFOsBqQ; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=dev.jain@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=Qh2L+lns;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=NGFOsBqQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4KhM4CsJz2yLY
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 16:36:50 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 8D84B407C1;
-	Wed, 14 Oct 2026 05:36:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B60E01F000FF;
-	Wed, 14 Oct 2026 05:36:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
-	s=korg; t=1791956207;
-	bh=20IeJwlfbHOwAOqBybbPglj4DioVDbfCTggyOUmG6AM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=Qh2L+lns+TC45tZ3ta2Bf3sHpQuD7ArGYrxTnkjJVsISJDd215cAUFX7buojC10XX
-	 PxZbUFGpn526urHl9iW1zA+jq+Q49VIAoWCaSVIjSYQA+Pdp0aIxZO/l3JMBTZ5a0o
-	 W38eNJtQMa+oY0XJ4+Fg38TXLC108OEL5jmzsnVI=
-Date: Wed, 14 Oct 2026 07:36:41 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Ian Rogers <irogers@google.com>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>, Miguel Ojeda <ojeda@kernel.org>,
-	Kees Cook <kees@kernel.org>, Nathan Chancellor <nathan@kernel.org>,
-	Nick Desaulniers <ndesaulniers@google.com>,
-	Bill Wendling <morbo@google.com>,
-	Justin Stitt <justinstitt@google.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Nayna Jain <nayna@linux.ibm.com>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Rich Felker <dalias@libc.org>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	David Teigland <teigland@redhat.com>,
-	Alexander Aring <aahringo@redhat.com>,
-	Juergen Gross <jgross@suse.com>,
-	Stefano Stabellini <sstabellini@kernel.org>,
-	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Richard Weinberger <richard@nod.at>,
-	Zhihao Cheng <chengzhihao1@huawei.com>,
-	Felix Kuehling <Felix.Kuehling@amd.com>,
-	Alex Deucher <alexander.deucher@amd.com>,
-	Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
-	driver-core@lists.linux.dev, llvm@lists.linux.dev,
-	linux-hardening@vger.kernel.org, linux-doc@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
-	gfs2@lists.linux.dev, xen-devel@lists.xenproject.org,
-	linux-s390@vger.kernel.org, linux-mtd@lists.infradead.org,
-	amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/11] kobject: Require explicit initialization of struct
- kobj_type::release
-Message-ID: <2026101425-why-boring-4f2d@gregkh>
-References: <20261013223946.1836757-1-irogers@google.com>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=dev.jain@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j4LJG5cnlz2yLY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 17:04:28 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 98CEA15A1;
+	Tue, 13 Oct 2026 23:03:52 -0700 (PDT)
+Received: from [10.164.19.62] (unknown [10.164.19.62])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6D3F03F7B4;
+	Tue, 13 Oct 2026 23:03:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1791957835; bh=a+ePuoScWznFCdZL7kuuIwctTxuRzsdaAnI868FjqvY=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=NGFOsBqQlkYzYRc6c9oeI62OwONXctPXAWs1X+w9O0ZGSX08mzBFLCRloqvuXoEcs
+	 l+RKSocjuhfxG9ajTVLYRvJo74qsxS3Fa4vk2551oznUYNciNmnhrtaKCzGd4OvWLE
+	 xxJq6dznjLsg4ngtYlAUgjw44+L1Kvxk1pfNNxrY=
+Message-ID: <7b3c3a39-4cf3-430d-9fd3-ba83e5175e72@arm.com>
+Date: Wed, 14 Oct 2026 11:33:47 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,46 +53,112 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261013223946.1836757-1-irogers@google.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v10 01/10] arm64/mm: add pte_set_huge() and
+ pte_clear_huge()
+To: Wen Jiang <jiangwenxiaomi@gmail.com>, akpm@linux-foundation.org,
+ catalin.marinas@arm.com, linux-mm@kvack.org, urezki@gmail.com,
+ will@kernel.org
+Cc: Xueyuan.chen21@gmail.com, ajd@linux.ibm.com, anshuman.khandual@arm.com,
+ baohua@kernel.org, chleroy@kernel.org, david@kernel.org,
+ jiangwen6@xiaomi.com, leo.yan@arm.com, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, rppt@kernel.org,
+ ryan.roberts@arm.com
+References: <20261002090947.869220-1-jiangwen6@xiaomi.com>
+ <20261002090947.869220-2-jiangwen6@xiaomi.com>
+Content-Language: en-US
+From: Dev Jain <dev.jain@arm.com>
+In-Reply-To: <20261002090947.869220-2-jiangwen6@xiaomi.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Tue, Oct 13, 2026 at 03:39:35PM -0700, Ian Rogers wrote:
-> Clang supports the 'require_explicit_initialization' attribute on struct
-> fields to enforce that the field is explicitly initialized when an
-> aggregate object is constructed, emitting -Wuninitialized-explicit-init
-> (enabled by default) if the field is omitted.
+
+
+On 02/10/26 2:39 pm, Wen Jiang wrote:
+> vmap installs PTE-level block mappings (PTE_CONT on arm64) by reusing
+> set_huge_pte_at() and huge_ptep_get_and_clear(), which are HugeTLB
+> helpers gated by CONFIG_HUGETLB_PAGE. This makes the feature silently
+> unavailable on CONFIG_HUGETLB_PAGE=n kernels and couples mm/vmalloc.c to
+> HugeTLB internals it does not otherwise need.
 > 
-> Following discussion at the Linux Plumbers Conference [1], this series
-> introduces __require_explicit_initialization in
-> include/linux/compiler_attributes.h and applies it to
-> struct kobj_type::release.
-
-Cool, sorry I missed that talk.
-
-> As Documentation/core-api/kobject.rst notes:
->   "One important point cannot be overstated: every kobject must have a
->   release() method, and the kobject must persist (in a consistent state)
->   until that method is called. If these constraints are not met, the code
->   is flawed."
+> Add pte_set_huge()/pte_clear_huge() to arm64, joining the existing
+> pmd_set_huge()/pud_set_huge() family in mm/mmu.c. They build on
+> __set_ptes() and __get_and_clear_full_ptes() directly, so they do not
+> depend on CONFIG_HUGETLB_PAGE.
 > 
-> Annotating struct kobj_type::release caught 30 struct kobj_type
-> definitions across the tree that omitted .release:
-> - Patches 2-10 fix 10 struct kobj_type definitions where dynamically
->   allocated kobjects, ksets, or enclosing structures were either leaked on
->   kobject_put() or freed prematurely before kobject release (risking a
->   use-after-free when CONFIG_DEBUG_KOBJECT_RELEASE=y).
-> - Patch 11 annotates struct kobj_type::release with
->   __require_explicit_initialization and explicitly sets .release = NULL
->   (with explanatory comments) on the remaining legacy struct kobj_type
->   definitions whose kobjects are static, per-CPU, or embedded in devm- or
->   parent-managed structures.
+> There is no caller yet: mm/vmalloc.c is converted later in this series,
+> once the generic fallbacks are in place.
+> 
+> Signed-off-by: Wen Jiang <jiangwen6@xiaomi.com>
+> Reviewed-by: Barry Song <baohua@kernel.org>
+> ---
+>  arch/arm64/include/asm/pgtable.h |  6 ++++++
+>  arch/arm64/mm/mmu.c              | 23 +++++++++++++++++++++++
+>  2 files changed, 29 insertions(+)
+> 
+> diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
+> index 6000905a2e865..9b762eb68cff0 100644
+> --- a/arch/arm64/include/asm/pgtable.h
+> +++ b/arch/arm64/include/asm/pgtable.h
+> @@ -1978,6 +1978,12 @@ static inline void clear_young_dirty_ptes(struct vm_area_struct *vma,
+>  
+>  #endif /* CONFIG_ARM64_CONTPTE */
+>  
+> +#define __HAVE_ARCH_PTE_SET_HUGE
+> +void pte_set_huge(pte_t *ptep, unsigned long addr, phys_addr_t phys,
+> +		  pgprot_t prot, unsigned long size);
+> +#define __HAVE_ARCH_PTE_CLEAR_HUGE
+> +pte_t pte_clear_huge(pte_t *ptep, unsigned long addr, unsigned long size);
+> +
+>  #endif /* !__ASSEMBLER__ */
+>  
+>  #endif /* __ASM_PGTABLE_H */
+> diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
+> index 79d90226fd5dc..ae2f15618c97d 100644
+> --- a/arch/arm64/mm/mmu.c
+> +++ b/arch/arm64/mm/mmu.c
+> @@ -1912,6 +1912,29 @@ int pmd_clear_huge(pmd_t *pmdp)
+>  	return 1;
+>  }
+>  
+> +void pte_set_huge(pte_t *ptep, unsigned long addr, phys_addr_t phys,
+> +		  pgprot_t prot, unsigned long size)
+> +{
+> +	unsigned long pfn = __phys_to_pfn(phys);
+> +	pte_t pte = pte_mkcont(pfn_pte(pfn, prot));
+> +	unsigned int nr = size >> PAGE_SHIFT;
+> +
+> +	VM_WARN_ON(!IS_ALIGNED(size, CONT_PTE_SIZE));
+> +	VM_WARN_ON(!IS_ALIGNED(addr, CONT_PTE_SIZE));
+> +	VM_WARN_ON(!IS_ALIGNED(pfn, CONT_PTES));
+> +
+> +	/* For vmap, there is no valid -> valid transition */
+> +	VM_WARN_ON(pte_valid(__ptep_get(ptep)));
+> +
+> +	__set_ptes(&init_mm, addr, ptep, pte, nr);
+> +}
+> +
+> +pte_t pte_clear_huge(pte_t *ptep, unsigned long addr, unsigned long size)
+> +{
+> +	return __get_and_clear_full_ptes(&init_mm, addr, ptep,
+> +					 size >> PAGE_SHIFT, 0);
+> +}
 
-Sounds great, but let's fix up the users before adding the attribute.
-Looks like some of these need another version so it might take a bit of
-time to get them all merged.
+I think we should have the same VM_WARN_ON() checks here, as for
+pte_clear_huge(), in addition to also warning for
+current->mm != &init_mm.
 
-thanks,
+We should make it clear that pte_clear_huge() gets called only for
+kernel mappings, and the range we operate on is definitely an aligned
+CONT range - which is why we do not go through get_and_clear_full_ptes ->
+contpte_get_and_clear_full_ptes, and possibly contpte_try_unfold(), but
+directly use __get_and_clear_full_ptes.
 
-greg k-h
+
+> +
+>  int pmd_free_pte_page(pmd_t *pmdp, unsigned long addr)
+>  {
+>  	pte_t *table;
+
 
