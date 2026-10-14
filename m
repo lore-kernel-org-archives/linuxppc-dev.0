@@ -1,49 +1,97 @@
-Return-Path: <linuxppc-dev+bounces-29492-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29493-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3C92CC6B1A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 16:05:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 712C4CC6B2C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 16:37:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j4bdK26zbz2yqs;
-	Thu, 15 Oct 2026 03:05:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::47"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791993909;
-	cv=none; b=LWeGRqfMvEGYWlxnU/z6cabCJrNzVXs+gZzbHaDMS7xd4VdXP5aYJDaMDaNAIgiCSrjPhD3qlEd7NrW95NWkh9tYHv0VVCrCbkEikBA+nSivgDIq1a9/3klHs2FBvRD2SkHhWlRisaBnmORcGtICv+bceXuS+GY7WCGZ0fijKZ5Dhpc5ulnpeFVjDPbiKLM+MSKbWn4BKD1TR5FWHNqd/4lw3Zr/wlWEoOjyml+PrM8q4MX/WslsGQrEut4Q4A6pSgUdJ8SLSau5faKCXZNEs7+Gq9UVZzYI8TZcLXser73VsUp8e+UtMMd0FdkUu8GsmB+qewyB5LHUndfi27iVmg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j4cLN54cqz2ynZ;
+	Thu, 15 Oct 2026 03:37:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791995836;
+	cv=none; b=lPHFjwZUsBaQM1s6l9pnturSA4sqBhiUypOvB9/gdIwdsZkH7CAwKUlGZwkXuAEAIubNBMooWPvEmBdD3uwfo+asO944r6ywiazFFaxN6mAQPslZEfNVJyt3jaTa35nWbsl0gfdSLQQBqMojNeSRlYy1HIhmq+ViphbCtHQMV+Y1bBOkCR+rDYgau3NVwlWx1vkxaT2vydHD09/hBq6m6za2rCj5WZUp7VOyFuyb5pHN/3InX1sfhFMGrWQ/K9yVhNL3/lYjbyP+WLofD6MXGEBZyg9iI2pDat9CMBFzm9eQvi/4WcUY06xHzMKdRXEccApJCQOxh809lHXGJExyag==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791993909; c=relaxed/relaxed;
-	bh=IkZZR0p9Vzi9220+twT+gKA4/7OY831iNe+HO/zdAnU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bd9SMPk3ARRnGIaI2xMTxlDuIzQ7ipazt+uvaJIbUupBiIQv4NS7VDqKLfvPSKcepckzW/Z6h39mtrmo+HBgnmHW//ePiWif3CYOyhdM9eIymdjlzZQY7eK8AMa5iOZaYrdW57PXK7CEEKv+ybQuBbokKKrWEvKg/kUzH98ceDIuyjBez5zeCyTqEQHZHJ9aIMs+/1esy5xeOy1VnLOewKf8KhX2AdkvdDq6Q8RwwWg+lGgxJ3Nws9J/F+e96VN3IAnsr7ePVHMtp1VgWp2R1DKm2cfcAg9divCRvigbquUCjh4T/2WAow3R9xWnSkwxiEbEwY+EwwWhd5j1PHbhvA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=FB2ic1WG; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::47; helo=mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1791995836; c=relaxed/relaxed;
+	bh=D0qFplMD3JegnW7i3iVJkwgfMDmyoOPsyHFrtj+nxBA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=csSx+6462gSL8RgV+odT1iF0gJLfyRuhnteua8T3N9wmpXe6LCMsoWgRXJQ2gdvqRN8BG9Vi4fDuU1YymgTgly+XV+GBYV+zh6AbPGJgKYCf0XhY/w0YX2DV2l9ormsNxVA6TsmdHgokidOcAstI4PZRaWN1AGWZQ/RQm/e2sRFQIXSR2gLUpVFFrTIEhdsGpWPym02/5UKj9r1KoM1Ce0/UkM78hJCsZvuq3iOx9mf/a0iYiE62TKUZUzzrw9T69ku7vHH2DsY8U4VYqXvNsOdtufqyE+cSEqMMxsSlbGQPNt4qKtzGKdJPLzbMalyZ6oLO7MHKBleo1Qjj38/0lA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=n9IplbiX; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=FB2ic1WG;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=n9IplbiX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::47; helo=mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta0.migadu.com (out-71.mta0.migadu.com [IPv6:2001:41d0:1004:224b::47])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4bdB2FgPz2ynZ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 03:05:01 +1100 (AEDT)
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=PI0fOAv5zzJ41Ji3Z2QtwoPTiCXvJem5/RFTA0ekY0U=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1791993881; v=1; x=1792598681;
- b=FB2ic1WGugcHaPbviCEivRkLZWw6rAaFPdy2BZYb5aDlbMVpLQ4QRp/EaFsTU3lA6tRJugoS
- l/P+Y1zD2kd/5w573b/aFKTNx03vEhPg5K6XeQ/2N/QhYiJ3qoDoGXWldnKvH6p88DlRCbbU0h+
- /CIC+skOEpBCvkjLuyFJijRo=
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id 0ac52b3081cf7048;
-	Wed, 14 Oct 2026 16:04:41 +0000
-X-Mizu-Trace-ID: 0ac52b3081cf7048
-X-Migadu-Flow: FLOW_OUT
-Message-ID: <73f0dafd-5b26-42b9-a77b-90c32976942f@linux.dev>
-Date: Thu, 15 Oct 2026 00:04:23 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4cLM60qNz2yDm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 03:37:15 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 4A7DB4138B;
+	Wed, 14 Oct 2026 16:37:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 258481F000C4;
+	Wed, 14 Oct 2026 16:37:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791995832;
+	bh=D0qFplMD3JegnW7i3iVJkwgfMDmyoOPsyHFrtj+nxBA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=n9IplbiX+93nceH23XmnKeZ5oYecY++a3sP1FSp8/eoJQHlwosXybufpa8S8KQDs4
+	 JSOYDlE3dW0Tstqig9001fDQnyF55nygDlSOHNkJdYmGR6xIoM+nl1dQhuyjrtkVwj
+	 EuXqe73P+3VZ6BDKW7wiUBDkX32NJU8qFo902yMRcaug/7BAm5oKbDw4gxCh7LxUqC
+	 Y7NxYDYR/y/z28DqpEx8zGTH0dUYz2jKMESyevlBsADLYmloXFD5sbjroBfTPOb1YO
+	 EAaIr8VM2TPJc/hDXYqOW71XwpeyatwvwVWF6WB1T2qG0eJVVmvgIrJgOh3HFB8l/2
+	 2qpSERGwTKhRA==
+Date: Wed, 14 Oct 2026 09:37:11 -0700
+From: Kees Cook <kees@kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Ian Rogers <irogers@google.com>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>, Miguel Ojeda <ojeda@kernel.org>,
+	Nathan Chancellor <nathan@kernel.org>,
+	Nick Desaulniers <ndesaulniers@google.com>,
+	Bill Wendling <morbo@google.com>,
+	Justin Stitt <justinstitt@google.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Nayna Jain <nayna@linux.ibm.com>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Rich Felker <dalias@libc.org>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	David Teigland <teigland@redhat.com>,
+	Alexander Aring <aahringo@redhat.com>,
+	Juergen Gross <jgross@suse.com>,
+	Stefano Stabellini <sstabellini@kernel.org>,
+	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Richard Weinberger <richard@nod.at>,
+	Zhihao Cheng <chengzhihao1@huawei.com>,
+	Felix Kuehling <Felix.Kuehling@amd.com>,
+	Alex Deucher <alexander.deucher@amd.com>,
+	Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
+	driver-core@lists.linux.dev, llvm@lists.linux.dev,
+	linux-hardening@vger.kernel.org, linux-doc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+	gfs2@lists.linux.dev, xen-devel@lists.xenproject.org,
+	linux-s390@vger.kernel.org, linux-mtd@lists.infradead.org,
+	amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/11] kobject: Require explicit initialization of struct
+ kobj_type::release
+Message-ID: <202610140932.5F9CFCE5@keescook>
+References: <20261013223946.1836757-1-irogers@google.com>
+ <2026101425-why-boring-4f2d@gregkh>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,89 +105,57 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 0/2] mm/huge_memory: fix the copy of special PMDs at
- fork
-Content-Language: en-US
-To: Konstantin Khorenko <khorenko@virtuozzo.com>, Zi Yan <ziy@nvidia.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>,
- Baolin Wang <baolin.wang@linux.alibaba.com>,
- "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>,
- Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>,
- Barry Song <baohua@kernel.org>, Usama Arif <usama.arif@linux.dev>,
- Kiryl Shutsemau <kas@kernel.org>, Peter Xu <peterx@redhat.com>,
- Alex Williamson <alex@shazbot.org>, kvm@vger.kernel.org,
- =?UTF-8?Q?Lo=C3=AFc_Molinari?= <loic.molinari@collabora.com>,
- dri-devel@lists.freedesktop.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>,
- stable@vger.kernel.org, Sashiko <sashiko-bot@kernel.org>
-References: <20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v3-0-85eaec8417f6@virtuozzo.com>
- <F6337325-E635-43BB-9E5E-DCD25F4FC951@nvidia.com>
-From: Lance Yang <lance.yang@linux.dev>
-In-Reply-To: <F6337325-E635-43BB-9E5E-DCD25F4FC951@nvidia.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2026101425-why-boring-4f2d@gregkh>
 
-
-
-On 2026/10/14 23:57, Zi Yan wrote:
-> On 14 Oct 2026, at 11:46, Konstantin Khorenko wrote:
+On Wed, Oct 14, 2026 at 07:36:41AM +0200, Greg Kroah-Hartman wrote:
+> On Tue, Oct 13, 2026 at 03:39:35PM -0700, Ian Rogers wrote:
+> > Clang supports the 'require_explicit_initialization' attribute on struct
+> > fields to enforce that the field is explicitly initialized when an
+> > aggregate object is constructed, emitting -Wuninitialized-explicit-init
+> > (enabled by default) if the field is omitted.
+> > 
+> > Following discussion at the Linux Plumbers Conference [1], this series
+> > introduces __require_explicit_initialization in
+> > include/linux/compiler_attributes.h and applies it to
+> > struct kobj_type::release.
 > 
-> <snip>
+> Cool, sorry I missed that talk.
+
+Yeah, I'm really liking these compile-time checks. :)
+
 > 
->>
->>
->> Signed-off-by: Konstantin Khorenko <khorenko@virtuozzo.com>
->> ---
->> Changes in v3:
->> - Patch 1: recheck the PMD with pmd_none(), as only a zap can change
->>    it and a zap leaves it none (Lance Yang).
->> - Link to v2: https://patch.msgid.link/20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v2-0-e1548488fa68@virtuozzo.com
->>
->> Changes in v2:
->> - Add patch 2, the page table deposit for ppc64 hash, reported by
->>    Sashiko.
->> - Patch 1: name panthor instead of drm_gem_shmem as the driver whose
->>    stale child mapping reaches freed pages: drm_gem_shmem keeps the
->>    pages of a purged object until the last mapping goes away.
->> - Link to v1: https://patch.msgid.link/20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v1-1-d225c60bc316@virtuozzo.com
->>
+> > As Documentation/core-api/kobject.rst notes:
+> >   "One important point cannot be overstated: every kobject must have a
+> >   release() method, and the kobject must persist (in a consistent state)
+> >   until that method is called. If these constraints are not met, the code
+> >   is flawed."
+> > 
+> > Annotating struct kobj_type::release caught 30 struct kobj_type
+> > definitions across the tree that omitted .release:
+> > - Patches 2-10 fix 10 struct kobj_type definitions where dynamically
+> >   allocated kobjects, ksets, or enclosing structures were either leaked on
+> >   kobject_put() or freed prematurely before kobject release (risking a
+> >   use-after-free when CONFIG_DEBUG_KOBJECT_RELEASE=y).
+> > - Patch 11 annotates struct kobj_type::release with
+> >   __require_explicit_initialization and explicitly sets .release = NULL
+> >   (with explanatory comments) on the remaining legacy struct kobj_type
+> >   definitions whose kobjects are static, per-CPU, or embedded in devm- or
+> >   parent-managed structures.
 > 
-> Please stop sending new versions of a patchset repeatedly.
-> Wait at least a day for others to catch up.
+> Sounds great, but let's fix up the users before adding the attribute.
+> Looks like some of these need another version so it might take a bit of
+> time to get them all merged.
 
-+1
+I'd really like to have the attribute available, and I've got at least
+one user I can apply today that don't require fix-ups (seq_file), so
+if Miguel is okay with it, I'd like to snag patch 1 and send it with
+my seq_file "first user" for this coming merge window so it's available
+starting with v7.4-rc1, and we don't end up needing to wait 10 weeks for
+other subsystems to be able to use it. And the kobj fixups can continue
+in parallel. Does that sounds okay?
 
-Please slow down a bit. You don't need to respin every few
-hours. That just makes everyone start over ...
-
-Post a version, wait for feedback, then revise. Twice a week
-is plenty, honestly :)
-
-Cheers, Lance
-
-> Thanks.
-> 
->> ---
->> Konstantin Khorenko (2):
->>        mm/huge_memory: recheck a special PMD under the lock in copy_huge_pmd()
->>        mm/huge_memory: deposit a page table for a special PMD copied by fork
->>
->>   mm/huge_memory.c | 34 +++++++++++++++++++++++++++-------
->>   1 file changed, 27 insertions(+), 7 deletions(-)
->> ---
->> base-commit: 24a19b953e2a3d0ea5a8c4951a0ab8f32720c907
->> change-id: 20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-bdf7efb612c2
->>
->> Best regards,
->> --
->> Konstantin Khorenko <khorenko@virtuozzo.com>
-> 
-> 
-> Best Regards,
-> Yan, Zi
-
+-- 
+Kees Cook
 
