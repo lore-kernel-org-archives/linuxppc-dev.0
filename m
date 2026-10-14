@@ -1,60 +1,96 @@
-Return-Path: <linuxppc-dev+bounces-29498-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29499-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51377C3DA7A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 17:13:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02364CC6B1A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 17:45:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j4d8H3fJzz3btP;
-	Thu, 15 Oct 2026 04:13:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791998015;
-	cv=none; b=NqTAA7z7vhmY9L1LnaReg0BV1QAnHGe81salk+worD+XBLJrvnZWcYKcPuYM+2T9WayEgnQSe1HqrmJTIsIpZ0GcSxqjBgh2tfh6CA8TBfAz+a8p9P/PY8hz7NHy22ployL2pW1isjIYqYq8w5H94gyD/1ytUsGl3MwELXcxVC/oVO0mjuk+/sHrXdKaLfjoCzJq1/MPr0+gssVzMbJV5DJsyonQt2jAHa5pHZiKOhK+MBajF5WWIqa019gvd3cw+FGGSG5GEmkmma2IWEYpCDJGcwpXrMirhziBDh7p+8b+OZjzByFuCNQcfLwaZy6H9zTl8PTMfCBf+zw391b9AA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j4drZ0nHKz2y8p;
+	Thu, 15 Oct 2026 04:45:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791999902;
+	cv=none; b=mdfsCVIKI0TeYVKr+p3nduv4z/dGpbCgex29y03DDyx7ZcQ5rdlwZcnwEoaqcU6+kOXR6KYLLHsQKVyqEhfhvVs7YxycNAkHFQHjQw/lC0NVdU/KJLaj8xPQHw2rCCBwBb1Zh5FguLqmhsfGMM+tcD11wAaeHACN8gbL6mA1VM8bDDvZwlx4y8PpGOfvMUJFRtBNp4tYg+GoF4M1KUgjo36bvsROjpbcuRe1mb4KLAiroOGgcptpVdovlk4dojU//BcyPl2SiwmDMbmzE70v+1T8655ULLnPjHCnKCY0rmq5fOrAdwG+XVhxALX9PgUk0oxWfY3IVg9R+V0bS1Szzw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791998015; c=relaxed/relaxed;
-	bh=TIXKZ1EmqWU/VUc5XZWDJM5gBsBtYEI+Xauv3IN18ZA=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=NP3mDJmkwHv88buxA7Pe1ePjgXrbOdigvaxMW7rGmI5C7l41glDcMDym6g15VgQLdoGMRiG1dcL6Ml3UatS+kK7uHJTIqb6wVZpfJoeH0CFNb6RSm8EsWa2x2ojRN+ZvSFCsKpBenvfW/GanMDGofhFskD9mDk09+3vkZbeN0ke11wcat9GGYzYt6XlBz0X9vJUCAOAG7OBTjulFfbMBE+ZqSAgLlwNZCK1KmJ60L1G+vfYVwQHJWorKHILKdX1oCXPdXwRXcx+ENdOBXS28cJK+DfzfKwRYEGCJlUpAvLNOWcz3VxljzDvJH4vZ3sbJVfDiBjqbG8Rx2potOAQztw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=X3551b1+; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1791999902; c=relaxed/relaxed;
+	bh=sTxxFIiD6mgFs2UdEY1I8MyQnekZZiyPvhQw7RuhHrg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=VEGV+D+u6twquTSKOtESdI0gJfnnlDAF9poin/3KSZyAgVjlneXDM8GiEZ9y74mRsydy3lGwAEshEMKjIsWUH9Ffz5A8Lni5DQYoJbHPd9Vpr165UF/gWIn2zLb9oWrCLdbyoyujvFhL8g9pUZ++3AbmvZtMl5S9vLjN4e/imMZ3L/8nuxr+7QXAbxG3U9n/iwyrK+E/7ZHZnyxGoGqbtxNqec5F0LiA7cck06nd/l+V0SlbtilOhtAhqMed9I/JzGlmkmNnpjfV4zHcJiSSNa7BxqJYAki7mjWKVXXNx+6VLT1sLPjBZC7CwveWPddB4r62FWZ6yaFKZegQ7aHkZQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=Y/JbqQJU; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=X3551b1+;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=Y/JbqQJU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4d8G4CQvz3br2
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 04:13:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4drX5W6Dz2xnv
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 04:44:59 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id C421860098;
-	Wed, 14 Oct 2026 17:13:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4C0391F000C4;
-	Wed, 14 Oct 2026 17:13:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791998011;
-	bh=TIXKZ1EmqWU/VUc5XZWDJM5gBsBtYEI+Xauv3IN18ZA=;
-	h=Date:From:To:Cc:Subject:In-Reply-To;
-	b=X3551b1+kerHLKkgoLyynluZRnT89nmMlG9rlmLWW8V9C4QCUneI15E6Pz3rcKqf9
-	 mHnyjzbkFavDjWlFHf3RQCcLasCJq9HAfrPjw3hWkHHxXB/PP60RQaugTlwBPfl59b
-	 pouU/CIq0JT/xXxfgqJ8zi10vGqVshJB/NPqD4ah7IwicwPdAhINXhJbu3uBmxBBWH
-	 0eoTAFzK4Rtfqjsqm1ipr19biNYZmoLMgRC76IWxb4YPVFWDAFGMFWxDgGABfGSWKF
-	 jUMX9Z2ufQqTXjt7hhXt2o9rt+9NtBSFpf0Cr2/CbUP18y1wdK41b5qjpg8KBgtQSP
-	 ipexh62I4hXbQ==
-Date: Wed, 14 Oct 2026 12:13:30 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Stian Halseth <stian@itx.no>
-Cc: Bjorn Helgaas <bhelgaas@google.com>,
-	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
-	Andreas Larsson <andreas@gaisler.com>, linux-pci@vger.kernel.org,
-	sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Tony Rodriguez <unixpro1970@gmail.com>
-Subject: Re: [PATCH] PCI: Set supported_speeds in set_pcie_port_type()
-Message-ID: <20261014171330.GA1640628@bhelgaas>
+	by sea.source.kernel.org (Postfix) with ESMTP id 7156940856;
+	Wed, 14 Oct 2026 17:44:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 330F01F000C4;
+	Wed, 14 Oct 2026 17:44:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
+	s=korg; t=1791999896;
+	bh=sTxxFIiD6mgFs2UdEY1I8MyQnekZZiyPvhQw7RuhHrg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=Y/JbqQJUIEWFLFscjenxW9GCe5wNUa4lKG/qtufKEMdVe8I7JjwbgDqX5hbrhnbnk
+	 g11pdaabApMfzBMkfpM3w5n1u6n4ty6P15W2DYuVy6e5rpnrYB4vdZc0i3KcsTyQQY
+	 TKLv1ClTGNe42312p3oiyQs34X3dYVxDiKaB2oxQ=
+Date: Wed, 14 Oct 2026 19:45:00 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Cc: Kees Cook <kees@kernel.org>, Ian Rogers <irogers@google.com>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>, Miguel Ojeda <ojeda@kernel.org>,
+	Nathan Chancellor <nathan@kernel.org>,
+	Nick Desaulniers <ndesaulniers@google.com>,
+	Bill Wendling <morbo@google.com>,
+	Justin Stitt <justinstitt@google.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Nayna Jain <nayna@linux.ibm.com>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Rich Felker <dalias@libc.org>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	David Teigland <teigland@redhat.com>,
+	Alexander Aring <aahringo@redhat.com>,
+	Juergen Gross <jgross@suse.com>,
+	Stefano Stabellini <sstabellini@kernel.org>,
+	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Richard Weinberger <richard@nod.at>,
+	Zhihao Cheng <chengzhihao1@huawei.com>,
+	Felix Kuehling <Felix.Kuehling@amd.com>,
+	Alex Deucher <alexander.deucher@amd.com>,
+	Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
+	driver-core@lists.linux.dev, llvm@lists.linux.dev,
+	linux-hardening@vger.kernel.org, linux-doc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+	gfs2@lists.linux.dev, xen-devel@lists.xenproject.org,
+	linux-s390@vger.kernel.org, linux-mtd@lists.infradead.org,
+	amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/11] kobject: Require explicit initialization of struct
+ kobj_type::release
+Message-ID: <2026101434-scam-padding-87a5@gregkh>
+References: <20261013223946.1836757-1-irogers@google.com>
+ <2026101425-why-boring-4f2d@gregkh>
+ <202610140932.5F9CFCE5@keescook>
+ <CANiq72=4WQ1B1oCSW=69u_Z=FFLE56hYCqDwWr+poQdzSTS31A@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -68,68 +104,39 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20261007131304.309511-1-stian@itx.no>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CANiq72=4WQ1B1oCSW=69u_Z=FFLE56hYCqDwWr+poQdzSTS31A@mail.gmail.com>
 
-[+cc Tony]
+On Wed, Oct 14, 2026 at 06:44:18PM +0200, Miguel Ojeda wrote:
+> On Wed, Oct 14, 2026 at 6:37 PM Kees Cook <kees@kernel.org> wrote:
+> >
+> > I'd really like to have the attribute available, and I've got at least
+> > one user I can apply today that don't require fix-ups (seq_file), so
+> > if Miguel is okay with it, I'd like to snag patch 1 and send it with
+> > my seq_file "first user" for this coming merge window so it's available
+> > starting with v7.4-rc1, and we don't end up needing to wait 10 weeks for
+> > other subsystems to be able to use it. And the kobj fixups can continue
+> > in parallel. Does that sounds okay?
+> 
+> Of course, please feel free to pick it up (with the small tweak I
+> requested) if you have a user.
+> 
+> And if you don't pick the user, I could still pick the first patch up
+> through the compiler attributes tree if you and other folks want to
+> use it after -rc1.
+> 
+> Greg: adding the attribute itself should be safe and would unblock
+> others that may want to "protect" themselves, without having to wait
+> for every potential user to get fixed (but of course I agree they
+> should get fixed -- we should not forget about them, if that is your
+> concern).
 
-On Wed, Oct 07, 2026 at 03:13:04PM +0200, Stian Halseth wrote:
-> sparc64 and powerpc create PCI devices from the device tree in
-> of_create_pci_dev(), which calls set_pcie_port_type() but not
-> pci_setup_device(). Since d2bd39c0456b, supported_speeds is only set in
-> pci_setup_device(), so it stays 0 for these devices.
-> pcie_get_speed_cap() then returns PCI_SPEED_UNKNOWN, max_link_speed
-> reads "Unknown", and the failed link retraining quirk passes
-> PCI_SPEED_UNKNOWN to pcie_set_target_speed(), which warns on a SPARC
-> T7-1:
-> 
->   WARNING: drivers/pci/pcie/bwctrl.c:125 at pcie_set_target_speed+0x284/0x2e0
-> 
-> Set supported_speeds in set_pcie_port_type(), which all three paths
-> call.
-> 
-> Fixes: d2bd39c0456b ("PCI: Store all PCIe Supported Link Speeds")
-> Closes: https://github.com/sparclinux/issues/issues/109
-> Signed-off-by: Stian Halseth <stian@itx.no>
+I agree, not a problem to add the attribute now as long as it doesn't
+break the build.
 
-Applied with Tony's Tested-by to pci/enumeration for v7.4, thanks!
+thanks,
 
-I added a stable tag since d2bd39c0456b appeared in v6.13.
-
-> ---
-> Tested on a SPARC T7-1: before, max_link_speed reads "Unknown" and the
-> warning above appears with CONFIG_PCIEPORTBUS; after, all 23 PCIe
-> devices report their real speed and the quirk lifts the 2.5GT/s
-> restriction without a warning. Not tested on powerpc.
-> 
->  drivers/pci/probe.c | 5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-> index 27008e2ea5afc..52a79b033b069 100644
-> --- a/drivers/pci/probe.c
-> +++ b/drivers/pci/probe.c
-> @@ -1651,6 +1651,8 @@ void set_pcie_port_type(struct pci_dev *pdev)
->  		pdev->aspm_l1_support = 1;
->  #endif
->  
-> +	pdev->supported_speeds = pcie_get_supported_speeds(pdev);
-> +
->  	parent = pci_upstream_bridge(pdev);
->  	if (!parent)
->  		return;
-> @@ -2074,9 +2076,6 @@ int pci_setup_device(struct pci_dev *dev)
->  
->  	set_pcie_untrusted(dev);
->  
-> -	if (pci_is_pcie(dev))
-> -		dev->supported_speeds = pcie_get_supported_speeds(dev);
-> -
->  	/* "Unknown power state" */
->  	dev->current_state = PCI_UNKNOWN;
->  
-> -- 
-> 2.43.0
-> 
+greg k-h
 
