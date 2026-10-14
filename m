@@ -1,82 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-29490-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29491-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60069CC6B1A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 15:36:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6AEB2CC6B1D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 15:58:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j4Zzw5Ygpz2ynZ;
-	Thu, 15 Oct 2026 02:36:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791992172;
-	cv=none; b=JMuJjUyyL3tvVtxVTc9Kd4XTzBvPXoAItTEnS9GqutodY3VBElb5M8jH19m+rwRBh6Jd1bqelZuExS68qAtrzZXeriaRKnd0Afg4H1S0ScKbPyJu/9+wQR0K2rgQT+qs6hHAZc+USPXIcXwvVsew2cXElp+orpP8lGK3bVyjdmVscEcEcznxxvm6p7yWxACqh9PSGn0Lr+eWM0lBgcpbMYdUXqwhuWOthdMhOnOzGgMm6HO4osuYpAErh/dGI9+BTtjsnU6CKOnbmx/d8fqLG2ZVYpAKPZKPTUeUnOXGq1YCKpXlc0BG1Dv+c/wts1+VyQGTM2qMXRqcglNx93DV7w==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791992172; c=relaxed/relaxed;
-	bh=qA6YOwaVdkDe5WPMOWVzqY8zBl+ZRCOyb3XB7KK+18Y=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=adHHmobpm5lmRWoEaCwaWonrXjN6i5wyk97fCWjmzhKqPCCiw0Uug8IqyD4rEZNxf5wUc+eERMrUodPnkmNRzmqUUf5qPRVqVvl4A7YO0Wqpz34x5o+vjnTS2VbWKpDWcY4k2P1f4CrMiGXE7+X/pymx0HS4rKsoaHFa5IH2XfoFHuz1kZRvz/07l5CRP72Is4/KjtJ3LIxlMibTphLDF9AGAHs0IPQDoUPIWb7RWOuq+A/WbE1PwxLZfLpVpE7NR7vR6sSxIGe/w+rZcrNRcodqfqLmkcAoxeAyVX69yNcCWjT4P0MX+YUl7gDvW89/39XiVaYUijpnaYVikc9rdQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=fvQXGdjo; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132c; helo=mail-dy1-x132c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j4bTH3qN2z2y2B;
+	Thu, 15 Oct 2026 02:58:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c101::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791993491;
+	cv=pass; b=B6U9VpfFjLjY1djTs5uiYCwZP/rBLzilfxJoWml8a9DDV8/qQIMXUpxtxuKAi6vMI5tCJYMNDcqtdr4iObQp65XCe/Bc+7Clt5DX9Pm40NI9+LODdm6vrl3WmgzHwUBlX8tACd5v42UbbP9tsaow9UvoysJCmFXNeTTx/i2XaxYR5/5ZXcW7F9h7WaePBTnkB/46skGumD07dwqFA8DrodsUiuoksVXeH5yg9xvlY4ELjw1Qqq1A9C/6e1+huVA3pAOzwIoX7ZaugFzpufcbTeaUPf+yCtYdilQeRymp7K1ix7w5UalIBk92D8VpW1TgoDbEivcsS4rNqTb9se2jaA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1791993491; c=relaxed/relaxed;
+	bh=ak/GRoxtPd9wUY5LzDypLCXKUGLNOsekS0T+T4BkU9o=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=bvYU7O1mKY/nT2B9qZCOiG+8UKRE6EYIwkyiLHTZYJyP2mW/mG0qB36CkVJyXO6Y6hNxrKmQMNwd3VLTPW/LXlAtXoI6Fs+R4QjdPsixg+UNhSJMYZ6YNrLnXzHnfmM1+y3MG5Q9C36wekVfqzRhgRJmdaud2ip5RO551q4xrAXy7aQFbX9rX00hfMrcnUCmIdK6TiuWnIUdxR04BRi7xuh0xhoCrSn+wJO/CFaetkmDObqeDHyw8pD7LtXm7p7c90eAjQCH5fwNH7E64UIvQPcEeZ72cPpOS8FHC7hHK5y0fSAFW1cCCN9xykdM24nS0nZtCSPLWbREdU3LwaaSOg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=fZXYAkcl; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c101::7; helo=bl0pr03cu003.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=fvQXGdjo;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=fZXYAkcl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132c; helo=mail-dy1-x132c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x132c.google.com (mail-dy1-x132c.google.com [IPv6:2607:f8b0:4864:20::132c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c101::7; helo=bl0pr03cu003.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org)
+Received: from BL0PR03CU003.outbound.protection.outlook.com (mail-eastusazlp170120007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c101::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4Zzt2BvZz2yK7
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 02:36:09 +1100 (AEDT)
-Received: by mail-dy1-x132c.google.com with SMTP id 5a478bee46e88-3535a54bed9so1607708eec.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 08:36:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791992168; x=1792596968; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=qA6YOwaVdkDe5WPMOWVzqY8zBl+ZRCOyb3XB7KK+18Y=;
-        b=fvQXGdjol8mr85oyIV/8sMn+u2gMfzzNDPiD4fmpztPMuqigOQ30+eAw5SF2k3J4yA
-         dvlS+5TMHTXKhCkR0hnwsMz5r57xKIFSq/NlEHrKCrGhRmCQBHRsYCsf8quI0i8Wf06O
-         +XcUiN1x8mZ0rE77jm4myC2i3PAJF8PNUKebDn+bYr0aPN/dHBvKOVSJ1OqqYEgN0Nzc
-         W5UbuY3T6v8WEoRqXpt6CJc+/ohYVN4orQU1vu0dUbcofQl7PJq5G8lsTmNT3uc1EwT+
-         CMLp89/wuqjBTRzSd1Dkxuks50cPpbCIkp0k28GbFVqmejpwnmqEm6pCgSX/6GY3yDLr
-         vLvg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791992168; x=1792596968;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=qA6YOwaVdkDe5WPMOWVzqY8zBl+ZRCOyb3XB7KK+18Y=;
-        b=RUrL3ZzoF481UHZ53XI6EeatbQWVdu+Q6qbOBlyUCbS4pMN/dd6DiG9KabRLwbee5V
-         zRRzREEKniKE1gh7GVqahsZvf83J3mkCjZjkPiCwJKkh1L04MME2psX4altqDQUpySSn
-         T0QudK6NdUnMyS1E+6khMIqUOCNaz1LL6LPEVkw71eBdZXLc9fmTJNHU8TzjjPJP4yNF
-         xkNfL7MpeSWqzoFPDiuX8IlbtRxSP1TTvy+pFZr4osg15Y7dBr8cVApj3KypoAHJdziP
-         4+YE4mtZk5uB5j8XAh3Miat4aZ5CXf3b/pyohfLNvWrHkjrGlsDuGu9/p7PLYNznkZW+
-         /EKA==
-X-Forwarded-Encrypted: i=1; AKwUvBy08vb7jJjfNc639JzB0DyhuUtNYTlXiHatLwxGhG1BQ+2Qcc+sJ8diudDcqnaTp9tdi3zzBBH8t6a6DLY=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYKA+hPF3l4znBbI6Lk0jmOUgzODWYVB0kjLK87YG7bxksB/pZ12
-	O88vsV8DuTbL2hInLJlOt6KUcDRsOEBbaXXyIa91Bw/fjtgIkFwQn63D
-X-Gm-Gg: AYBFou0uzzruhvOXtOtSodJdA2wYBjmkiqtIqPrWMadmY5+QXkwEQ33OrPZk1VTSlGV
-	QpT3obmZrwDzz8fP883azTUEq4U7iiWxPHGS+JlJgQ2ogdTIebLP0tx3oIpb7B+bM2+3V+YUUH0
-	RXPq6JjpXsNxKrMhcdJPJJ8cC/UhKC9PWH+J2lixj8X4qWEOiBiKV4Jd5NC77kJv/XahmNlm9QS
-	lgbFsVMS5LRdoilYuLZe1je5ASmUinTCujJQ/JDs3nF9sL5EMBqm6/+YwOuloRHIkEJTghrk8iU
-	a8aqs/f8aqRk3CCHsmeBUgyYXOj6TZzxt79zQcBAM2PrDf/VuRwwYbBckiBbVIPiL72G2+vT9sd
-	M+Y1PqyTZ2qoSBA9Cqn8jZ4uaMGtz1onBRHH6UrsZwnb0l2WKl7F4M9Z2j9SVyDS11maMJ1y2GT
-	8NtOn9SWusEZRuVXRamkrOHZQ8gvZEskBQqnOh4elbkeAMYaEBnGUcS4xybgX2MfzViO1z
-X-Received: by 2002:a05:7300:e9d6:10b0:359:bdc8:c9d5 with SMTP id 5a478bee46e88-359bdd83104mr17479248eec.21.1791992167458;
-        Wed, 14 Oct 2026 08:36:07 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3537ca6d20dsm58172660eec.12.2026.10.14.08.35.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 14 Oct 2026 08:36:06 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Muchun Song <songmuchun@bytedance.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Mike Rapoport <rppt@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, David Hildenbrand <david@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, Shrikanth Hegde <sshegde@linux.ibm.com>, Lorenzo Stoakes <ljs@kernel.org>, "Liam R . Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Qi Zheng <qi.zheng@linux.dev>, Lance Yang <lance.yang@linux.dev>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Muchun Song <songmuchun@bytedance.com>, muchun.song@linux.dev
-Subject: Re: [PATCH v4 0/6] mm: Unify device DAX and HugeTLB vmemmap population paths
-In-Reply-To: <20261010075755.83339-1-songmuchun@bytedance.com>
-Date: Wed, 14 Oct 2026 20:19:23 +0530
-Message-ID: <wlrkqqvg.ritesh.list@gmail.com>
-References: <20261010075755.83339-1-songmuchun@bytedance.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4bTF5Y7Hz2xrL
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 02:58:08 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=nXiPw9jBE3zEgAfQB/MR6HZiKOsDupeq86tyyWeCTrxXh5kghm32RBHTi321CsT14rNYA9xD93iMtPWsuZZVOCX/zsuWENjkd6P3OeVgkd4fXNOBtsuW6//UJ7ZsQJJn0rHKgDoaMUtW3VVPyK7bvWLlYu4ELZA+2kdAVffIdj5ibcl2t9tB5OU5zocGzuXCxGUqMiXpnmVOPyuus+LyUc40DelY7v+nHOzYxeL7O1FP+XQ+N0MuZtiob+VALhqo+Moz7g8kwmeyxEg7k+mfUFQgsoLvUxPSAW54RhcI8imY99dnl62++KyX0Dp/wQDDo90wTGBa/uA5DNUtJfvnjA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ak/GRoxtPd9wUY5LzDypLCXKUGLNOsekS0T+T4BkU9o=;
+ b=R49OX1MBZmJ4v/zRj1MR7x5JPljVsrvnPVG6AX1sxcqQYsmIyKsSdbvH51OO9FQ9NgdhncGEX3Lmne1cJS69J7gMc+W/vG449rBNArZrrVfXA9J9sNJ51fnPxdQCsGqBFJSHaZevfDZdFtRb7+WeQbwJ/kuqHTpMubRa9ZTVW0bQt3CBrM+264pzR0M66jOwa6hchvbttmYSJb/veDYI6SOaUUWzXXPtRWAa7T8t5iim4anQJqn6+2SzZsoEgI4TF2GF36qAJjSIA4S6Dfi4tAcaW449KXbMCuembi62rbHVc0JFwfI8U2boIMoco5fW4+O1pcmvA/HhLjLbn938hg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ak/GRoxtPd9wUY5LzDypLCXKUGLNOsekS0T+T4BkU9o=;
+ b=fZXYAkclmIhtCD+rF1m4+6Pb4z5ZkOGs34HqbLy7MyfaM9nUXZr2PCBlHgbpg2XCcaeurLr2/fe7SsDpyGtRJPjd6bmU0pBQauMYj3fIMo6udMe72cIFW++0Vr4P64/X8ZrdNgjWzYsIPXaAIg2zxZbJTTXpseU+Gf844fd6GwepqKtjGId56sOsZwv5hOx3LndX4uswiSYLps114J/9mhp21DYgfA58dSrE8DNt9Ge014LwBlWd7Hkjy2Gb+sJoBP3XkmreqQgP1mTplpSfyOAGUJdm/RYYSCZ0dJ3SXZwH6iuNv4POx9Tf5Yk+gRUOIuiKn7/4Hc5UChJuaPda3A==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from IA0PR12MB8374.namprd12.prod.outlook.com (2603:10b6:208:40e::7)
+ by DM4PR12MB5916.namprd12.prod.outlook.com (2603:10b6:8:69::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.496.23; Wed, 14 Oct
+ 2026 15:57:36 +0000
+Received: from IA0PR12MB8374.namprd12.prod.outlook.com
+ ([fe80::d85f:4c87:ae84:3f16]) by IA0PR12MB8374.namprd12.prod.outlook.com
+ ([fe80::d85f:4c87:ae84:3f16%6]) with mapi id 15.21.0472.016; Wed, 14 Oct 2026
+ 15:57:33 +0000
+From: Zi Yan <ziy@nvidia.com>
+To: Konstantin Khorenko <khorenko@virtuozzo.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@kernel.org>,
+ Baolin Wang <baolin.wang@linux.alibaba.com>,
+ "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>,
+ Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>,
+ Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>,
+ Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>,
+ Peter Xu <peterx@redhat.com>, Alex Williamson <alex@shazbot.org>,
+ kvm@vger.kernel.org,
+ =?utf-8?q?Lo=C3=AFc_Molinari?= <loic.molinari@collabora.com>,
+ dri-devel@lists.freedesktop.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>,
+ stable@vger.kernel.org, Sashiko <sashiko-bot@kernel.org>
+Subject: Re: [PATCH v3 0/2] mm/huge_memory: fix the copy of special PMDs at
+ fork
+Date: Wed, 14 Oct 2026 11:57:27 -0400
+X-Mailer: MailMate (3.0r7032)
+Message-ID: <F6337325-E635-43BB-9E5E-DCD25F4FC951@nvidia.com>
+In-Reply-To:
+ <20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v3-0-85eaec8417f6@virtuozzo.com>
+References:
+ <20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v3-0-85eaec8417f6@virtuozzo.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+X-MS-Reactions: disallow
+X-ClientProxiedBy: PH8P222CA0030.NAMP222.PROD.OUTLOOK.COM
+ (2603:10b6:510:2d7::11) To IA0PR12MB8374.namprd12.prod.outlook.com
+ (2603:10b6:208:40e::7)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,171 +99,109 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: IA0PR12MB8374:EE_|DM4PR12MB5916:EE_
+X-MS-Office365-Filtering-Correlation-Id: b3c7d39c-6231-4071-d6ff-08df2a0bdc1a
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|7416014|366016|1800799024|376014|23010399003|11063799006|56012099006|261009223027099003|10067099003|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	lq6C1Or0kBPNiESn5H/vKv+soZ60NqYCUpN/QAu9/9GDcqtvQg6Pu7I1E8+ycrnc0aOcc1wSFGburRsHTPhyuELlsExGuwbPDYiQTj1QnTeGraeAWfqPCj6E0i3wxj+GEVDKKnT4N1uzpdyPXindlelYDee/KK4CJBx6A7Q2LPg7xbOqdjXv+Fmi7vnfFTxNkit8ZsVA6plAtofY9mB2lPabbHHgNM6GivSxN3uv1A0JhoCzxu29/dthOf4Q4UN6Np1cAB2+NtcfC1N+QxB7+1S77O0FfUhH168VN4Jr5GGI7YXg2g28fuFhVAsCRasMfx6ETtiShnZ/j9CpFMHwV2b/C4jTLlDkniambZyNMpHOtydfgZ7R8S0s/fhTfVgYJH1rMObCDwYzci39gIOIfkRla80j2dbqgvluQ3Q3rV64tl6Oc0J1UJZlEO0CGel7qwzVHI6d/Vmvdo8VkaQIf1ADFJVEwfkFoneffAYd8WPaOtUmy0+qVknqKM3/i+s8hQsGcFd7LODB/BiV3fiCdySkJh+999o8IwDxfSe9kJ2ClIkwIGRFBWY3tuGZ9el2bmC3fdGbbiR8cG6ycuIRcQ3J3RJozbppuv7Gtq/qAAoLeC4xeaQJDyHSPY5orABw7zm/zujthe2cAc9hKwQJ3WICNN1t2tsF8l+evfR05sY=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:IA0PR12MB8374.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(366016)(1800799024)(376014)(23010399003)(11063799006)(56012099006)(261009223027099003)(10067099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?ArhIWKm4v9YU3mvNhPw0e/dQvVixyWlSsm9+J+Wuvr8MzVg/9sUzl4Rf9NO7?=
+ =?us-ascii?Q?1fB9r0900kVk7O4R7gB9zmAb2PQR8iBPBVN4Ny8j76Uin1slEM/4NEwNRWGc?=
+ =?us-ascii?Q?0vpJ3tIdL0L8xSsmZWBJ+i0iC/pbByR5bqrHBe/8aalud1imjb2LmLnRS+eP?=
+ =?us-ascii?Q?MlIV+GvbjBHRYwHjhGWXmKPfCR6CWr0ai/+HNMxAdi+VyAJFO/kL+Fq7Z30e?=
+ =?us-ascii?Q?KXE0W6WvCq6eogaJpzq6cgyrVjdTq1u33UBiVfw1+//oya82XQxOAsuMSjGy?=
+ =?us-ascii?Q?cD24XMRRCtBcbiyyyTaF/PGqETLil8hoOId2orsE4XIG0dFcBk47swt6vZgF?=
+ =?us-ascii?Q?LtcUyrJ1/Dp3DvJRfD+m2r91QghadMSx/+ZWyKK2Tj/Hm8fxSIt+BVp2Dey6?=
+ =?us-ascii?Q?LtPVqtb/dslZgMGZLX5qRFpv+xlUvuR4dh7xAsXgcuCXIwf6Mirp7dJGDzi2?=
+ =?us-ascii?Q?/A330zrgfyzybAnpOfwjE1spCcN9EWtXi/qIn2TPzG6tb2jLz5GAaKi35Vq+?=
+ =?us-ascii?Q?4Ejk6eI2TFifSuOrK7fixto0N7C96MQalzDWfnffYggTTcs13EdRZtybmxwU?=
+ =?us-ascii?Q?htcQAQTAq2Yfn9qwzeKHG2Ip0+JTuy7Tu4hc9kEJqU4lVoqHCtRcI9DAN/es?=
+ =?us-ascii?Q?oObJj3OpF1kgnKTDDmbvD6CZoXmOZCuQxLQSQ6GmCkVqGdO05bbvBoaKnTaL?=
+ =?us-ascii?Q?I87s2Ja43aY5HiT/ixpt62/MXJsjMxRMXQijqcNb2vfgOG7yhJkXKl319EHa?=
+ =?us-ascii?Q?kgq0vVBtdl5Tt33qYBgfbuo+qc3FTKT4f8udaK7a0K9N5DT1ZKzIJwJBF+XY?=
+ =?us-ascii?Q?SXrbI9Kd4dsmB8MBMwPOUzqOPYTE8620mS82BOh0QWGZD3svMqfud+N1ro4h?=
+ =?us-ascii?Q?DSIOK3o1XiomCu4InGLO4pNhCNMBtVcjKEi1gcTZjyjWeZ51MtSUwVQhMotm?=
+ =?us-ascii?Q?pszjc0E2neoi5zKHIaSxzNT/9gl/CBK5w5e7eCTMSKVc96OGMxUhHOMNGJTU?=
+ =?us-ascii?Q?rFMHkF9T41Zixrri/dy0sxNcz2CAMeNJ+rQ806lTyt0wQDcSeyw0O+FI0/0p?=
+ =?us-ascii?Q?jF/k6yRTC5eU4ksBuOo4RV5DQPE9wn7D6eHaHUqh9D4RGn0uVJ7NMvFdDGj4?=
+ =?us-ascii?Q?7psoHBCbeQfaf83bZ6L8xsi3affCBqEHGkOkO30WmBllF96l5FIrvkzejgNI?=
+ =?us-ascii?Q?eEbghvwaMfxtWVDioVN648TlhmAtoNoqO9ZBpAy89AKIL8idHiW/UbNLU07q?=
+ =?us-ascii?Q?jI5yVJ/w4xplPfcyrYDjuW2dn7wqPb7qF/JkUrpi/gb7Hn9mzrX66DdsFIu3?=
+ =?us-ascii?Q?ouqYFy5+Yq5ls2RVpdP5EQKqFgA90Fjrcy2a4N5G4Si9gL3/SRFSujmHSOmZ?=
+ =?us-ascii?Q?bT0+vtJplfGnmwipmLjMF26oiiyXkBphusJTKTZlwktl9lpkqSDVM1kwhMto?=
+ =?us-ascii?Q?pynNnVBQuCTdFDBGQSIuLVm2Jh6VfivQVvGfWz4WPijzUahd3KLS6Fw5C5RR?=
+ =?us-ascii?Q?6DJUBLK5ZrGPZakukUnXtCyQzYG3ao/OfCGeTvQ1e+vvguj/kxc8zH3TBkH0?=
+ =?us-ascii?Q?b+FGps/cnuRy03oUFzsH6r1NdfcHYj/IoLzj8USvo+OekKw2vO+XBlljk7zM?=
+ =?us-ascii?Q?ZZRdPy3D249bxf4hMYpwEtad77EJW0HE+MfRZ4krSNQnZBYS1rnVGbpMu2Pp?=
+ =?us-ascii?Q?wt4Nixm0awPnwcP9K4+Q8WadS96vhiXc80OMo+T9aWmRE3Xs?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: b3c7d39c-6231-4071-d6ff-08df2a0bdc1a
+X-MS-Exchange-CrossTenant-AuthSource: IA0PR12MB8374.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Oct 2026 15:57:33.7661
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: rSnTeAga5AM9+8KwznrN15TMxXBZEjEMYYg6oHbQWRzag2FU07Zh/KYohyBlfNBj
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB5916
 
-Muchun Song <songmuchun@bytedance.com> writes:
+On 14 Oct 2026, at 11:46, Konstantin Khorenko wrote:
 
-> This v4 is based on mm-new commit d5207c6d152c, which contains v6 of
-> "mm: Switch device DAX to section-based vmemmap optimization" [1].
+<snip>
+
+>
+>
+> Signed-off-by: Konstantin Khorenko <khorenko@virtuozzo.com>
+> ---
+> Changes in v3:
+> - Patch 1: recheck the PMD with pmd_none(), as only a zap can change
+>   it and a zap leaves it none (Lance Yang).
+> - Link to v2: https://patch.msgid.link/20261014-b4-prep-vstor-149847-co=
+py_huge_pmd-recheck-special-pmd-v2-0-e1548488fa68@virtuozzo.com
+>
+> Changes in v2:
+> - Add patch 2, the page table deposit for ppc64 hash, reported by
+>   Sashiko.
+> - Patch 1: name panthor instead of drm_gem_shmem as the driver whose
+>   stale child mapping reaches freed pages: drm_gem_shmem keeps the
+>   pages of a purged object until the last mapping goes away.
+> - Link to v1: https://patch.msgid.link/20261014-b4-prep-vstor-149847-co=
+py_huge_pmd-recheck-special-pmd-v1-1-d225c60bc316@virtuozzo.com
 >
 
-Hi Muchun,
+Please stop sending new versions of a patchset repeatedly.
+Wait at least a day for others to catch up.
 
-I was checking this patch series and seems like I am hitting an issue on
-mm-new, which most likely is due to this patch series.
-(Note that a similar issue was reported by Pavithra on PowerPC)
+Thanks.
 
-Let me first give the call stack:
-
-[   79.930815] page: refcount:0 mapcount:1 mapping:0000000000000000 index:0x0 pfn:0x140000
-[   79.930833] flags: 0x0(node=0|zone=0|lastcpupid=0x0)
-[   79.930838] raw: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-[   79.930840] raw: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-[   79.930841] page dumped because: VM_BUG_ON_PAGE(!zone_spans_pfn(page_zone(page), pfn))
-[   79.931043] ------------[ cut here ]------------
-[   79.931051] kernel BUG at mm/page_alloc.c:373!
-[   79.931109] Oops: invalid opcode: 0000 [#1] SMP DEBUG_PAGEALLOC PTI
-[   79.940576] CPU: 2 UID: 0 PID: 743 Comm: ndctl Tainted: G                 N  7.3.0-rc5-01065-g45f4c1453cbe #23 PREEMPT(full)
-[   79.942647] Tainted: [N]=TEST
-[   79.943190] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS rel-1.16.3-0-ga6ed6b701f0a-prebuilt.qemu.org 04/01/2014
-[   79.945080] RIP: 0010:__set_pfnblock_flags_mask.constprop.0+0xef/0x110
-[   79.946231] Code: 48 8b 07 48 89 d1 48 f7 d1 48 89 c2 48 21 ca 48 09 f2 f0 48 0f b1 17 75 f0 c3 cc cc cc cc 48 c7 c6 b0 9b 5a 83 e8 91 be fa ff <0f> 0b ba 00 10 00 00 e9 7a ff ff ff 48 c7 c6 a8 b5 56 83 e8 79 be
-[   79.949296] RSP: 0018:ffffc90011ebf7b0 EFLAGS: 00010246
-[   79.950179] RAX: 000000000000004a RBX: 0000000000140000 RCX: 0000000000000000
-[   79.951366] RDX: 0000000000000000 RSI: 0000000000000001 RDI: ffffffffffffffff
-[   79.952562] RBP: 0000000000180000 R08: 0000000000000001 R09: 0000000000000000
-[   79.953759] R10: 0000000000000118 R11: 0000000000008000 R12: 0000000000000001
-[   79.954948] R13: 0000000000000000 R14: 0000000000180000 R15: 0000000000190000
-[   79.956151] FS:  00007ffff7e36d40(0000) GS:ffff8880f7f22000(0000) knlGS:0000000000000000
-[   79.957490] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[   79.958464] CR2: 000055555572ce90 CR3: 0000000031130003 CR4: 0000000000172ef0
-[   79.959657] Call Trace:
-[   79.960096]  <TASK>
-[   79.960487]  pageblock_migratetype_init_range.constprop.0+0x50/0x90
-[   79.961561]  memmap_init_zone_device+0x2fb/0x380
-[   79.962392]  pagemap_range+0x272/0x590
-[   79.963069]  memremap_pages+0x125/0x210
-[   79.963726]  ? lockdep_hardirqs_on+0x7d/0x100
-[   79.964488]  devm_memremap_pages+0x21/0x70
-[   79.965191]  dev_dax_probe+0x1db/0x300
-[   79.965870]  dax_bus_probe+0x6f/0xa0
-[   79.966495]  call_driver_probe+0x24/0xf0
-[   79.967190]  really_probe+0xb6/0x310
-[   79.967810]  ? __pfx___device_attach_driver+0x10/0x10
-[   79.968667]  __driver_probe_device+0x87/0x190
-[   79.969415]  ? __pfx___device_attach_driver+0x10/0x10
-[   79.970270]  driver_probe_device+0x1f/0x90
-[   79.970976]  __device_attach_driver+0x89/0x130
-[   79.971734]  bus_for_each_drv+0x86/0xe0
-[   79.972412]  __device_attach+0xb6/0x1d0
-[   79.973078]  device_initial_probe+0x40/0x60
-[   79.973791]  bus_probe_device+0x3d/0xa0
-[   79.974453]  device_add+0x4f0/0x6c0
-[   79.975068]  __devm_create_dev_dax+0x18b/0x3f0
-[   79.975830]  devm_create_dev_dax+0x21/0x40
-[   79.976530]  __dax_pmem_probe+0x1c3/0x200
-[   79.977244]  dax_pmem_probe+0xe/0x20
-[   79.977867]  nvdimm_bus_probe+0x89/0x250
-[   79.978566]  call_driver_probe+0x24/0xf0
-[   79.979242]  really_probe+0xb6/0x310
-[   79.979868]  __driver_probe_device+0x87/0x190
-[   79.980618]  device_driver_attach+0x47/0xb0
-[   79.981336]  bind_store+0x76/0xc0
-[   79.981922]  kernfs_fop_write_iter+0x152/0x200
-[   79.982715]  vfs_write+0x276/0x520
-[   79.983323]  ksys_write+0x6b/0xe0
-[   79.983900]  do_syscall_64+0xa6/0x470
-[   79.984543]  entry_SYSCALL_64_after_hwframe+0x76/0x7e
+> ---
+> Konstantin Khorenko (2):
+>       mm/huge_memory: recheck a special PMD under the lock in copy_huge=
+_pmd()
+>       mm/huge_memory: deposit a page table for a special PMD copied by =
+fork
+>
+>  mm/huge_memory.c | 34 +++++++++++++++++++++++++++-------
+>  1 file changed, 27 insertions(+), 7 deletions(-)
+> ---
+> base-commit: 24a19b953e2a3d0ea5a8c4951a0ab8f32720c907
+> change-id: 20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-=
+pmd-bdf7efb612c2
+>
+> Best regards,
+> --
+> Konstantin Khorenko <khorenko@virtuozzo.com>
 
 
-also - 
-
-[    4.426995] BUG: kernel NULL pointer dereference, address: 0000000000000090
-[    4.428266] #PF: supervisor read access in kernel mode
-[    4.428266] #PF: error_code(0x0000) - not-present page
-[    4.428266] PGD 0 P4D 0
-[    4.428266] Oops: Oops: 0000 [#1] SMP DEBUG_PAGEALLOC PTI
-[    4.428266] CPU: 6 UID: 0 PID: 1 Comm: swapper/0 Not tainted 7.3.0-rc5-01065-g45f4c1453c
-[    4.428266] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS rel-1.16.3-0-ga6ed6b701f04
-[    4.428266] RIP: 0010:__set_pfnblock_flags_mask.constprop.0+0x3d/0x110
-[    4.428266] Code: 84 e3 00 00 00 48 8b 17 48 89 d1 48 c1 ea 37 83 e2 07 48 c1 e9 3a 48 8d 14 52 40
-[    4.428266] RSP: 0000:ffffc9000001b770 EFLAGS: 00010246
-[    4.428266] RAX: 0000000000140000 RBX: 0000000000140000 RCX: 0000000000000020
-[    4.428266] RDX: 0000000000000000 RSI: 0000000000000001 RDI: ffffea0005000000
-[    4.428266] RBP: 0000000000180000 R08: ffff8880093e1600 R09: 0000000000000040
-[    4.428266] R10: 0000000000000001 R11: 0000000000000000 R12: 0000000000000001
-[    4.428266] R13: 0000000000000000 R14: 0000000000180000 R15: 0000000000190000
-[    4.428266] FS:  0000000000000000(0000) GS:ffff8880f8722000(0000) knlGS:0000000000000000
-[    4.428266] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[    4.428266] CR2: 0000000000000090 CR3: 0000000003aac001 CR4: 0000000000172ef0
-[    4.428266] Call Trace:
-[    4.428266]  <TASK>
-[    4.428266]  pageblock_migratetype_init_range.constprop.0+0x50/0x90
-[    4.428266]  memmap_init_zone_device+0x2fb/0x380
-[    4.428266]  pagemap_range+0x272/0x590
-[    4.428266]  memremap_pages+0x125/0x210
-[    4.428266]  ? lockdep_hardirqs_on+0x7d/0x100
-[    4.428266]  devm_memremap_pages+0x21/0x70
-[    4.428266]  dev_dax_probe+0x1db/0x300
-[    4.428266]  dax_bus_probe+0x6f/0xa0
-[    4.428266]  call_driver_probe+0x24/0xf0
-[    4.428266]  really_probe+0xb6/0x310
-[    4.428266]  ? __pfx___device_attach_driver+0x10/0x10
-[    4.428266]  __driver_probe_device+0x87/0x190
-[    4.428266]  ? __pfx___device_attach_driver+0x10/0x10
-[    4.428266]  driver_probe_device+0x1f/0x90
-[    4.428266]  __device_attach_driver+0x89/0x130
-[    4.428266]  bus_for_each_drv+0x86/0xe0
-[    4.428266]  __device_attach+0xb6/0x1d0
-[    4.428266]  device_initial_probe+0x40/0x60
-[    4.428266]  bus_probe_device+0x3d/0xa0
-[    4.428266]  device_add+0x4f0/0x6c0
-[    4.428266]  __devm_create_dev_dax+0x18b/0x3f0
-[    4.428266]  devm_create_dev_dax+0x21/0x40
-[    4.428266]  __dax_pmem_probe+0x1c3/0x200
-[    4.428266]  dax_pmem_probe+0xe/0x20
-[    4.428266]  nvdimm_bus_probe+0x89/0x250
-[    4.428266]  call_driver_probe+0x24/0xf0
-[    4.428266]  really_probe+0xb6/0x310
-[    4.428266]  ? __pfx___driver_attach+0x10/0x10
-[    4.428266]  __driver_probe_device+0x87/0x190
-[    4.428266]  ? __pfx___driver_attach+0x10/0x10
-[    4.428266]  driver_probe_device+0x1f/0x90
-[    4.428266]  __driver_attach+0xd7/0x200
-[    4.428266]  bus_for_each_dev+0x79/0xc0
-[    4.428266]  bus_add_driver+0x127/0x250
-[    4.428266]  driver_register+0x59/0x100
-[    4.428266]  ? __pfx_dax_pmem_init+0x10/0x10
-[    4.428266]  do_one_initcall+0x59/0x3a0
-[    4.428266]  do_initcalls+0xdd/0x1b0
-[    4.428266]  kernel_init_freeable+0x16f/0x2b0
-[    4.428266]  ? __pfx_kernel_init+0x10/0x10
-[    4.428266]  kernel_init+0x1f/0x1d0
-[    4.428266]  ret_from_fork+0x244/0x280
-[    4.428266]  ? __pfx_kernel_init+0x10/0x10
-[    4.428266]  ret_from_fork_asm+0x1a/0x30
-[    4.428266]  </TASK>
-
-
-- I am hitting this issue on x86 kvm itself (and also on PowerPC)
-- I am able to hit the issue with the following extra qemu params:
-    -m 2G,slots=4,maxmem=16G
-    -object memory-backend-file,id=mem1,mem-path=/tmp/nvdimm.img,size=2560M,share=on -device nvdimm,id=nvdimm0,memdev=mem1,label-size=256M,addr=0x100000000
-
-    # then once the system comes up
-    ndctl disable-region region0
-    ndctl init-labels all
-    ndctl enable-region region0
-
-    ndctl create-namespace -r region0 -t pmem -m raw -s 256M
-    ndctl create-namespace -r region0 -t pmem -m devdax -M mem -a 1G -s 2G 
-
-I am still debugging this issue - but from the logs it looks like that
-some struct page was never initialized which caused the VM_BUG_ON().
-
-Can you take a look at this once?
-
-Thanks!
--ritesh
-
-
+Best Regards,
+Yan, Zi
 
