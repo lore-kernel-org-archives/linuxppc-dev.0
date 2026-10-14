@@ -1,95 +1,96 @@
-Return-Path: <linuxppc-dev+bounces-29495-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29496-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DDFDBCC6B1A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 16:41:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B85BC3DA7A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 16:44:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j4cRW2rv1z30Vs;
-	Thu, 15 Oct 2026 03:41:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::82f" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791996103;
-	cv=pass; b=EKyawZgviR3vIgw/A8LggYfIvtT6KA2sKHA+UMD3EoWsouHUN21vszoiImnvmBDWKhUbfYxCFVlQsGWI/WTPgYKePWtsq7HFshUeAVQQdTaS6XjBRn3dNU6n/OU/MXE4SZJqTJ1nMYe7eQRztUh3d6jWBy98lMkSp8ryjwhVVvoGb4LgacWbwVo9c5lgxZ3P+wCDBvMGU+yOovu0hdW/pvMZUmz6+5njTCuhSyxplWHnZjahFK5S2boNHLoBHc7rgmBbM2eDShJmUi50NCZxb8MPzHvQXT3cRHrSWzusf+TVfsr/Bu3FrHDBUx1vS/jdR6ioV4FbDfIDH6vz8TJwbw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j4cVq5snQz3bt2;
+	Thu, 15 Oct 2026 03:44:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::132b" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791996275;
+	cv=pass; b=EricDsP5XlIqIBgbR8ThlfVJrsWWeY67fTN/3BjXNWByHQXxPJlqs7LZpQFrqpQRK/kuvUq6xuFm1pgrCgWhLlwwHDRVQG2aB9UWb7wjtuF/qadLwCxCBTm8xuZFG6Qp6Ia8GSW7yF6j8CS2qVoNqx81W+oM1Hv16FRq1XDlvnwmfIG9NzwldbYwfvmw6EtUkYOKMzOll+E1N20vN13S7jNdzC9HUTSPpAxXRcvly4Ab4tZjq7fquX3kblg3RfjJhAYq+iqR/6BXxvZEJdN55UYtbRSOdb3Q+Qq1IZThY+c8gXoruQZv8lfI8djq8/KPuo9fRes1i0q0wtl5ntTLiA==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791996103; c=relaxed/relaxed;
-	bh=NIItl0pCQ/aBq2U1h8kgQBz3yZb99mdO46VMaoMNnUw=;
+	t=1791996275; c=relaxed/relaxed;
+	bh=lG5fR4/c9rTkKwB+dH11HXxHn5DhiwcqDirk4k17QlI=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=HraG9Pj1fKizoEGoNDlLyZwWpZH8XN/agN4Cv9mymGLG3arOmU1XU/yP1mUYrTZGdKGV7o17MQLNbq6j58ntAPhIxvLiJ/2ZfQz6QXd2QOSW0qKl4N8gjYs8GxEg0j7R34Efm8YIK47NcCzWYZMYOSdLxTNVMbXzx/C2Gv5Vd+XXlEf/nNSuadzc2Eqt858Z3jfKGKOxsfH5anoErFmH4dYwqogUwFb9htEh/ifPjNJ9VvLq4NEUL8ov3K8Blu6q1jmWrGNMVskGtmtucSzzKfYFzxBoY0vw/EBCeHKIpdVij6yKXPzJ+OcjiSY8gKtY97fYBQrtfpOAFuR75p9PAg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=c0tbN9tQ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::82f; helo=mail-qt1-x82f.google.com; envelope-from=irogers@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	 To:Cc:Content-Type; b=ZhbAeQ7KM3zuKmu2127mYykGS68zfw80SD9FxZpfTw9PcR7QfOK2j2dxU7Ey5Gc6049YXPRHAx20xV8Yjud1VqitfZ4clrIY87gffVmmD+5QWLunEwIv+alM8BKuRNwocvYy4Ge9wXSCwOnKIoiLwLGgKhrMCoLQA/sDGD9wwBy/UHoHOnCVA1EU9HzcqTFZAQwJ9DNYE5Zy24YIwav/hhwnj61xv3Np26OcGRqZYypDW+m6jZi3kCz4SJwK+EbmdTtj6EVCvwDK2ReOZ0af/HUgWIw3lXfb0PT7yGQVYVvxNuJFgLSqgW/u3u1alMxNcsidMTWzY4oUGrX/tdyr0w==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=fFqrqQW0; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132b; helo=mail-dy1-x132b.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=c0tbN9tQ;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=fFqrqQW0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::82f; helo=mail-qt1-x82f.google.com; envelope-from=irogers@google.com; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x82f.google.com (mail-qt1-x82f.google.com [IPv6:2607:f8b0:4864:20::82f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132b; helo=mail-dy1-x132b.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x132b.google.com (mail-dy1-x132b.google.com [IPv6:2607:f8b0:4864:20::132b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4cRV07NJz30Tp
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 03:41:41 +1100 (AEDT)
-Received: by mail-qt1-x82f.google.com with SMTP id d75a77b69052e-533202fe429so1288911cf.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 09:41:41 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791996098; cv=none;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4cVp31fdz2xLf
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 03:44:34 +1100 (AEDT)
+Received: by mail-dy1-x132b.google.com with SMTP id 5a478bee46e88-33bb5afa736so522829eec.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 09:44:34 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1791996272; cv=none;
         d=google.com; s=arc-20260327;
-        b=Y60ogG81vi9+J1EZOj3bJMaPkLG9ik6aVI+zUI+ZpsIwgBCr32NHA5sTNVzJJOmDN+
-         YxImu/PrMbo7IDLLQePhudylv8RqcGXi6/kPIRvKVY6NzFP4VooU5pHRq2TynTE6pq1o
-         4DKMiOVwevjnkn3LGJfDRgJG2NsquiySNPOq0MyqpgQCpIrW9B1lJv47JbWYJmMcl6pA
-         AHbmvecFaFblN+zBSsQx42aYrWbrypvjaEzd3ZfgCTD/svzV+IZnu/hhlzCH1iNo5mu+
-         N4EZ4JmUbQpoPj0BQfvknM28S2Y7ZYenB1RXd2pwfU7dgI//ON+5IYpxNhZCUNIFFSB/
-         MEQg==
+        b=mvwxpVuwbfldzKr+AHQVCe18fivqC+kaVPSyRlWCmU108MqisdvTZR+LiuPY5K6fe9
+         qijwE1si75kDaYZceX21rPBAHaKiPz3eGxIrPe3dBw61+DJXLJqqcsChkyGPF1YicJ1j
+         PJb0YVIPGnKTjV/k532lFNHS1MBhryl0QeHINmB/cXHCgnVZHxdWa0I+me81/CziYk8M
+         heNg7B2e2KqHmu0zgxK40ExKJDAmzrBDTFebPDITUXw6xrskZv0MuugMAUh1JngZbSTI
+         rxejYVin6phIV2o1wRxtJdiqAkulIn9ZWlFAagwvjfSUH53V6WnT9WqSBtL4t9zNUZpZ
+         rrzA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=NIItl0pCQ/aBq2U1h8kgQBz3yZb99mdO46VMaoMNnUw=;
-        fh=16S6xr/5A08E5Ck2+v9GaKtkahzMDY8qbIgfXgNnPdU=;
-        b=B8RXClV7xuvXSFiOQSrs8GITaKGNH/+Insc5Kl4ptY1A/utEf/wKm/c6Py3YG+85Yo
-         XKKGtouvTcirLoTImhcvig03LG13zMAdGIGLS/9uSar/5wVp7913SwqoXw3jtakwrDii
-         J+pZx3ocNTuWQ22xk9bD/6u73uZ40SVIafCPF9LAV/E4Oqt3IiDZz9QysyvaH0BmVGA6
-         jB9xDb/cpwXwAv9TiqudND+G42LP1DZxouK56JVpYsf0QEF7TauHupcHr6mUAqVXkyTS
-         8EPROBtWJhpS7d4L1UPDowRTxMaq9Td2b9PMNmYubuspph7E+LbR3FQdDZWr+ZVoueKr
-         k6dw==;
+        bh=lG5fR4/c9rTkKwB+dH11HXxHn5DhiwcqDirk4k17QlI=;
+        fh=4/nOvn0GxX1OTlDx1hMs3ABhV0XTVrkseeiaUWGuGA0=;
+        b=euNqyVmjKDBVbjnjFS1rVzSwcFaweki5oyBwwCSNIYmTNjVaGmjXWdxYuSdPiYH0nz
+         VU9V9K9VKT93E6sYGK+o0I/0dTHXRk8/psqhS2DBNsvveA1fbtr48dhI03cM0NNGzItx
+         beQEdIrXbrJzM5/IKsx3oUI5iG6s7BeKClSbfjrckx+5SV+3CdiKDTxJc2VnfyYp8fcU
+         VPFfT+7yg4G6y/bYYvuqDRHFnVVb/dSpqMT7fXMV4/Xw4EPz02h+gacKUEqs4gY8yJQ2
+         Eb5tJZvYao111EJQPbH3l/LJc7/F+OU+mqJ00sOHJb9N6hbBL9SvKyH+ZtzrrvFb8JXs
+         qO+w==;
         darn=lists.ozlabs.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1791996098; x=1792600898; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1791996272; x=1792601072; darn=lists.ozlabs.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=NIItl0pCQ/aBq2U1h8kgQBz3yZb99mdO46VMaoMNnUw=;
-        b=c0tbN9tQE2qE777vM5Wlyc3PuOiYsqKi5Cwvwqrrog/18gWY6Y3DTVOzRqtAh45Tg5
-         BJVC46g/LMk2zSpDKNbHr5lQmxZxTmWpHLr88uSIruw9mzzM7TaO0XHocfHgRtlSMKiW
-         KjmZAyOKdSsu9Um3Xd+7pqLbz9IPhryghcJ4CAMlnt6NHFsTUYRE69IWqv/wFwTasMoT
-         IdoLZxRZM0O+2E85g8is1VvCcgwWTzft8MVUY17xqFRRaXme6MslxPQQGi0l7mS9oyfk
-         eas+a9SO0OkScqn7gJQjavDmqBboRdlcpN04A41c2OdQH1eSl5vQxh4cGJasmssmsbUb
-         QOWw==
+        bh=lG5fR4/c9rTkKwB+dH11HXxHn5DhiwcqDirk4k17QlI=;
+        b=fFqrqQW0FyVL214fBiAMvnxyPRqzFPnctZtwdHDUT0lzOjF+dHFAJfA7A11oyW75eG
+         WFvC0IZo/ibM70QuTLlJ/QdTt6hDRuzw0oQrwIW1xDSwINk227TrSTxiiSCFkPNVpIoc
+         xjwe4fiu2DM8GkZlERQ/88Oui9WzWmh4aeaki5VcgznbJOmoh2bvXYWrpSNHeMH+QNfX
+         cIU3nS9u1lAtrEHxPmuMBZcetBD0MkdXzhe4EjCR8Fq59R9MIogDMGgnKkAAsrxibRLQ
+         AFVo6evu14UjIwkf8NiSIrSkKcyemEtXb2GW7oVZwKub5io+93NGi725Nc1QPmLllRuz
+         Gcaw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791996098; x=1792600898;
+        d=1e100.net; s=20260707; t=1791996272; x=1792601072;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=NIItl0pCQ/aBq2U1h8kgQBz3yZb99mdO46VMaoMNnUw=;
-        b=05FnzwS/6xkyZr1utVqxGeQRCGrp44WWaFbZ3te/h0gswJDKZ95znFgbEWpafQfd/2
-         1I2yKtuI/+p8eJWvQ7qwUPC4NGK1U+z+fRjlAZ1kHD13fLrqRE9C6HiMFi4f0aKCmi+W
-         TKC0DEc+ljLSFu+cfwEbJFEATRqFf9G8N61mazz2mI/6mT+P8jKWbok3IbacUHuaJrg8
-         r74Yqg18nUzjCoIX5eQa+IsVWGIAOS9lOykO4UcuxMDR2titBZCm14KE5BAAmFCMZqVw
-         Tl4N72LkpPELN0MaKF3K0WleeqBo1LYDEdBYctd0Zb1B94OdhJC6dY/G852WC5seb4Es
-         Z7Eg==
-X-Forwarded-Encrypted: i=1; AKwUvBxNLYITKOWSxMMYIS4VXGcoXm/sFPqZZBFmoL/U5xxSmn0d3byWcm/zFhbar/paSCUmjcNqzQRekihLP54=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYJR454ycI1grgTCfsk2J2gRXaQDeZe+RqGBLPKFPS9IUsXrW1XK
-	NT6JboVnmQ+v8RbVT5+gdgKt24hSWYtkXKVSzAXYl0NFJ1mT2OAsymg/zZMlDevxPlEfNI/adC+
-	qiSQEvvmAUFroqjMy2QxUk4bXjQ3Sm0LoWx9MljHL
-X-Gm-Gg: AYBFou04+AmxHrSgOnvJw86/L2Rfi+SQKLOQSBtx4bDXf0B2S0QMuMR7Q3koDC4H38M
-	IPSPYuVbQcNzJxCEZCSm66uPP2Tj26UllxM/3zd5EHfuY3JpbzAHpL3qRAIAXRzdhidzTWwQT19
-	SdoAU+zw14e9l5ogSgmwPnvB0r9pF7uGIQj3qesw896Gts49XYOLRW8ymus304SpMGq6pvHihtA
-	TSLYdJR6OO1iY/bM3dDeQFUIJgAFgk3ZOmr01C1g4y+DFKnXRzpT9IXQutxc16EMigcb9q7aKXV
-	y02teiPj90pEcKn8d5ocrjki650k1gu0p3WtC//9jM8z2WoRO62v2nV9FnFU43XmTkH5bRDRr7S
-	uStlrP6+yrg==
-X-Received: by 2002:a05:622a:1108:b0:533:9746:9a86 with SMTP id
- d75a77b69052e-5360573c96fmr14813151cf.5.1791996097367; Wed, 14 Oct 2026
- 09:41:37 -0700 (PDT)
+        bh=lG5fR4/c9rTkKwB+dH11HXxHn5DhiwcqDirk4k17QlI=;
+        b=FIKuwFWkbuaVxDdNDfFczfpy+f7hvbcz15mRp5Tb5VgabCXN8Sjklvmjf5lfo0q3aU
+         xXcc75um2ansoS1W5u+32/atyaoNg69El5Evs4ZYzX9Mo5GHxF8VEH1dyhXTdU5zWcWW
+         Y+xjKqPTArbPsfApP8Sa7/a62DhLLnUBd0bemaHSFNmtGGRmR1p1T5DRHAlBu1LPxK0m
+         pJIp5oFtfECNMAWLeAPJE9P6EFUh9/mwjGD8jmolDmJmfAOVQoNhA0bC5iy2AJ/gOsh7
+         LL5YNDBxOZ/LuYeLyoNH/Hrqiis4vnzq3MpxkXyvcYFJBeCBWPvqNZym5erg470wtzbN
+         iIQQ==
+X-Forwarded-Encrypted: i=1; AKwUvBw+IyuSbhJ7WSCcjLx0vWGNHHw1D/IWYfu51DFEsxZUDREaraguHn+K8rZaIIUj40fPv3lbTT6c3q1pDSw=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYK3SmChVHluWkW1giMMFeJKXg7zUCt2kbP08aCR05lihzWtNqHa
+	c0/z72dry/6kQu1g3wKd9cYbMbGnomswC5yZvvfQec+xJt17OZndcQvWvHVfAdxK2MPNTFEYQfK
+	aB2ost5HRESil/cgbHlSxumnwKEl5Dlc=
+X-Gm-Gg: AYBFou16/bJWCnDtDsl9NEI4AEkYdQB4miq3IaZVZTFM9mVGVa9N28V9MY4JoOIoD22
+	FdjfCtRtiunF1wLwrbRMgBq/ixAKT9LP4SEkkf8E9blPKsEmw8X1wTk6rVxev+QXPAivTaqVR57
+	1pPga/7Q1p63n2JItw88L0Wd99VXu1N3g5EjLia0QV02Ro6o8LiQWwV8YFhb/jjZyT8DtO//ksW
+	SpApZXVliU+CnybX48Jm4iJyHbejG3ZUnAixQCSVH4k5dvIa9kDyCFYxSOgup3fZm0+jgrgTutP
+	LmepQ7MkKCQ0zsW9M86v2QbjsIpah5wAqSggb1cWJxJIDMSszQZU8R37lZFVnogXn7UKD8iNbN2
+	TRJN2O5a0QjiFxGnk9/DtPUXH2lSZjk0juDxodRbkABP6bvW79bSr3AjOvrh6sxfRtURpWIx9iF
+	N0eupc7N283VWv3bV2n1+8QEmTYz3DnJ4f3WVylH1UXufMXjEzhck=
+X-Received: by 2002:a05:7301:5413:b0:358:c9f3:b055 with SMTP id
+ 5a478bee46e88-358c9f3b260mr28158500eec.1.1791996271702; Wed, 14 Oct 2026
+ 09:44:31 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,13 +107,13 @@ MIME-Version: 1.0
 References: <20261013223946.1836757-1-irogers@google.com> <2026101425-why-boring-4f2d@gregkh>
  <202610140932.5F9CFCE5@keescook>
 In-Reply-To: <202610140932.5F9CFCE5@keescook>
-From: Ian Rogers <irogers@google.com>
-Date: Wed, 14 Oct 2026 09:41:25 -0700
-X-Gm-Features: AclHuK8_g-YOJgMR77fEpf5RTsveF4u_ERdXz6lvoN6wh_uF7KP8ZsaUSV1ti8A
-Message-ID: <CAP-5=fVLWh4uay2HGy6DOpZmtTr5WAd-TehAkN+P-pQgq_BZhg@mail.gmail.com>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Wed, 14 Oct 2026 18:44:18 +0200
+X-Gm-Features: AclHuK_d31yoge0njHjovdIQh7JfJY6W-PLjzMLBq14NjY-schAqigzEJUAQwG8
+Message-ID: <CANiq72=4WQ1B1oCSW=69u_Z=FFLE56hYCqDwWr+poQdzSTS31A@mail.gmail.com>
 Subject: Re: [PATCH 00/11] kobject: Require explicit initialization of struct kobj_type::release
-To: Kees Cook <kees@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J . Wysocki" <rafael@kernel.org>, 
+To: Kees Cook <kees@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Ian Rogers <irogers@google.com>, "Rafael J . Wysocki" <rafael@kernel.org>, 
 	Danilo Krummrich <dakr@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, 
 	Nathan Chancellor <nathan@kernel.org>, Nick Desaulniers <ndesaulniers@google.com>, 
 	Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>, 
@@ -139,57 +140,7 @@ Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J . Wysocki" <rafae
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Oct 14, 2026 at 9:37=E2=80=AFAM Kees Cook <kees@kernel.org> wrote:
->
-> On Wed, Oct 14, 2026 at 07:36:41AM +0200, Greg Kroah-Hartman wrote:
-> > On Tue, Oct 13, 2026 at 03:39:35PM -0700, Ian Rogers wrote:
-> > > Clang supports the 'require_explicit_initialization' attribute on str=
-uct
-> > > fields to enforce that the field is explicitly initialized when an
-> > > aggregate object is constructed, emitting -Wuninitialized-explicit-in=
-it
-> > > (enabled by default) if the field is omitted.
-> > >
-> > > Following discussion at the Linux Plumbers Conference [1], this serie=
-s
-> > > introduces __require_explicit_initialization in
-> > > include/linux/compiler_attributes.h and applies it to
-> > > struct kobj_type::release.
-> >
-> > Cool, sorry I missed that talk.
->
-> Yeah, I'm really liking these compile-time checks. :)
->
-> >
-> > > As Documentation/core-api/kobject.rst notes:
-> > >   "One important point cannot be overstated: every kobject must have =
-a
-> > >   release() method, and the kobject must persist (in a consistent sta=
-te)
-> > >   until that method is called. If these constraints are not met, the =
-code
-> > >   is flawed."
-> > >
-> > > Annotating struct kobj_type::release caught 30 struct kobj_type
-> > > definitions across the tree that omitted .release:
-> > > - Patches 2-10 fix 10 struct kobj_type definitions where dynamically
-> > >   allocated kobjects, ksets, or enclosing structures were either leak=
-ed on
-> > >   kobject_put() or freed prematurely before kobject release (risking =
-a
-> > >   use-after-free when CONFIG_DEBUG_KOBJECT_RELEASE=3Dy).
-> > > - Patch 11 annotates struct kobj_type::release with
-> > >   __require_explicit_initialization and explicitly sets .release =3D =
-NULL
-> > >   (with explanatory comments) on the remaining legacy struct kobj_typ=
-e
-> > >   definitions whose kobjects are static, per-CPU, or embedded in devm=
-- or
-> > >   parent-managed structures.
-> >
-> > Sounds great, but let's fix up the users before adding the attribute.
-> > Looks like some of these need another version so it might take a bit of
-> > time to get them all merged.
+On Wed, Oct 14, 2026 at 6:37=E2=80=AFPM Kees Cook <kees@kernel.org> wrote:
 >
 > I'd really like to have the attribute available, and I've got at least
 > one user I can apply today that don't require fix-ups (seq_file), so
@@ -199,15 +150,19 @@ e
 > other subsystems to be able to use it. And the kobj fixups can continue
 > in parallel. Does that sounds okay?
 
-I'm happy with that. I'm working to address/incorporate the other
-feedback for a v2 of this series, but I can drop individual patches
-that have already been merged. Thanks, everyone, for the positive
-reception in getting this landed, I plan to follow up with patch
-series for the other uses I found.
+Of course, please feel free to pick it up (with the small tweak I
+requested) if you have a user.
 
-Thanks!
-Ian
+And if you don't pick the user, I could still pick the first patch up
+through the compiler attributes tree if you and other folks want to
+use it after -rc1.
 
-> --
-> Kees Cook
+Greg: adding the attribute itself should be safe and would unblock
+others that may want to "protect" themselves, without having to wait
+for every potential user to get fixed (but of course I agree they
+should get fixed -- we should not forget about them, if that is your
+concern).
+
+Cheers,
+Miguel
 
