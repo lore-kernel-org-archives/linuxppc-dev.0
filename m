@@ -1,136 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-29450-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29451-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BA2FCC6B1D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2026 23:39:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CAEE8CC6B1A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 03:16:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j49lR3YmVz30Vb;
-	Wed, 14 Oct 2026 10:38:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c405::" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791934739;
-	cv=pass; b=PfNSRdSywNtvdVnCMYPtnQcPCJqybc27n9OFp79/pGz2zBg5eK6dJdcLYw0oBSSF0dlBYQu+su4IWThsGscEkAQuoBI4/5oT6lv3qj73hzi/WXrCQfEOLcD70X+CAv9/DU5YjpVl7Nf36YEMKlBeU0ciaF5k5lsU7KYblQc6W16fpvs/ZL3M7y6daL1Waen2wPCCA+B2rKSei4JngozDT1i8UskMrABAdfY7Ilf81HgKuZsul9otLdIvC7WalMLlK0B5+R86us0drKEhjvvlcjXfHvvgPogLjGHA2iFIQ4d8aAftdsR8beu77zU58+pzw9waM6cidxZ2LQhMLQsPrw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791934739; c=relaxed/relaxed;
-	bh=DNjMIbYe7x/VN6lJjjX2RJGkFclmdFsRfB1RcKtZNtA=;
-	h=Message-ID:From:To:Cc:Subject:In-Reply-To:References:Content-Type:
-	 Date:MIME-Version; b=U1Vb4HJRebu3OM+8wU8TM6mzW+a+Ri6KLuaQMFDtBCM7TGKV72HHL5bcO3UEM2+3SvL7r+/xecsbjJ/6rYT0A65jfPxEpU5rI3tnJecglDw3A99duDIObZ/DHWy4M5Jb7c1ryFolvulhgTKmeaGBU60L4sKrST4pk7IoeQ1lWb7oSAQjhJi2Jjb+9GVyG+HnPqVrhQVo0IXoYOJWyDVEIbx26+1oGKI8kWXe8DKwMP3DyVGgr+U7DUugEqRluJsLeogCvQPzXs2PzMrZnQpZi0c+zWigpE62WBD82aT5DU2Y2l2jQcc+HA7vFxgK7/BqFn9W4f7BH07uBV8+tKMVYQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=renesas.com; dkim=pass (1024-bit key; unprotected) header.d=renesas.com header.i=@renesas.com header.a=rsa-sha256 header.s=selector1 header.b=DUpJpENU; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c405::; helo=ty3p286cu002.outbound.protection.outlook.com; envelope-from=kuninori.morimoto.gx@renesas.com; receiver=lists.ozlabs.org) smtp.mailfrom=renesas.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=renesas.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j4GZv08Dkz2yYK;
+	Wed, 14 Oct 2026 14:16:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791947814;
+	cv=none; b=Ns7PmZZRQq/1R4e0pmkY2Gx4uGyXfPuswCia/qTT5uklqXie20FTkrAei0Vx1i9kjwXSro1Bi/LYI1vP60UQ5tREJk33JQqzHz5Rga3xLIKYFAQ2Eh7Q04vIcCmhtcR3LCvVMtFePChXhNefD0gWziEGHrtn219UO16pUJluLWirUOGGDqDEmgStshDbcapm0ZK6n5ir9Ha9IMUvAqfTmnAo4ieaVeCbKdQ1NKH9VUCF1jZoO+dmSrupOeCyPTmyzQc7k/UYiFIrYC78Lxzhz5UexDSstykMSnPSUGoRP676h34nFWmEQAOOtpGdaQsIbsvF2VNhsSg8zxzbIvgSug==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1791947814; c=relaxed/relaxed;
+	bh=vfjXevxmmjpEfgjWMFTXwdTqXsK/H4tcoFH11uvIfLA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=csu0Uz8T/HUV+cCK//0eyvfYiSluZDOrr8sO7usQ3foTKkeTEm5WTXZN59eN5wJEsaA/mZFi8o0K5lE/S2/erf85t17NCXW3LlK5qTy5KBXElpnhwd2qO9bQj5QizQVpXZcTlLshdNujfw6UsBG2cBBflXLX9RPeBjopdaI/gKIZU3dRa2UwDr6ttiCUtc92TeEkmsC8gogg1tlmocJecqbur/eGuWZoaqceNRxJ3FL72vqnjceR3iuB9IGmIHs3IkqxXKfSEGJfK1cEcimoy2qqkWL5xq/e3cF8mkUuh2elH4TC3wPpvz8rRSUfHkmhKbYQQ3iP5nUc4L9K/JfnNw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NbEdq29a; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=renesas.com header.i=@renesas.com header.a=rsa-sha256 header.s=selector1 header.b=DUpJpENU;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NbEdq29a;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=renesas.com (client-ip=2a01:111:f403:c405::; helo=ty3p286cu002.outbound.protection.outlook.com; envelope-from=kuninori.morimoto.gx@renesas.com; receiver=lists.ozlabs.org)
-Received: from TY3P286CU002.outbound.protection.outlook.com (mail-japaneastazlp170100000.outbound.protection.outlook.com [IPv6:2a01:111:f403:c405::])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j49lL4y8cz30B9
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 10:38:53 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=H+TyebYn52hGNNENKZEr+pEWa+VFDzn7z7QjbswxO/xFVZ4mQ01sPMoliUQFQakNlazMb78Vt/4hqHp1/wghjd+asxOB6S04xrO3GkjLxU9JwA/vUeukln3UZV3R1VuAjvVqCF0+QxbF0HUunPBzJeoEy3op5kuYjgIeRoOn7qSLJXURd/sf2w8AkWFX7d5i6k53NqSN/52qV7xrmTfbabEvLEUirUHXR8G7CwfFaiXAjcOqWGECY6lcDAeL3sos38AM2D5yjiVe9QBV6WiQHAmCTw4e+wGqmF34v3yK4WSejUnffI20Tk3w4KHYDIUYyJVO2acMUBml9K3qVjx/ow==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=DNjMIbYe7x/VN6lJjjX2RJGkFclmdFsRfB1RcKtZNtA=;
- b=hJwGBcSVQZr1jVTHpa2PW5ICddG/467OUCn1NEbQ+Bm3EssnayuVSFA1wZz0trkGMg5ih5df1+z/fgwg9E4aNQTDTmS7gcBm4wykKTSYQmJUWpbr9jNDSqdmFItNe/SKI5eirkfIOcL4fbWKFBUzOH1ddgHpGhaKoN0PxWlAZwuqikqe1peUsKgtMT+HdKDIHciwEH6BzUeiBFYdtwUmmt0dYcZj8HsSDchSPvsWTRty4kfAoXI0iKSEhvuV/laYOAiw7SAp7PioS/PtHtx2RELHOEUPE0Jp3sAA8Rk4a6MONf3ax1+lEdoQcZnFKBYghgJj7NC9wjbRCAprv3BcGw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=renesas.com; dmarc=pass action=none header.from=renesas.com;
- dkim=pass header.d=renesas.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=renesas.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=DNjMIbYe7x/VN6lJjjX2RJGkFclmdFsRfB1RcKtZNtA=;
- b=DUpJpENUy1AA2WaZqtZeU9153uyKIvqHBvQfv7QJcMJwi6KJdV0BmJqP6/YOTJRIVwcezWdOiZKAhmF8HUF+hPomcAwcW4bv9TiXoErb5Vid6toMpe3FTHLG8FuAj6TIIQymJ/USTnAenSiqIShO/zGGmVR15fx8Jh/gL0CJx+0=
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=renesas.com;
-Received: from OS9PR01MB820914.jpnprd01.prod.outlook.com
- (2603:1096:604:50f::14) by TYCPR01MB9642.jpnprd01.prod.outlook.com
- (2603:1096:400:198::7) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.522.12; Tue, 13 Oct
- 2026 23:38:21 +0000
-Received: from OS9PR01MB820914.jpnprd01.prod.outlook.com
- ([fe80::12e4:c507:3730:2294]) by OS9PR01MB820914.jpnprd01.prod.outlook.com
- ([fe80::12e4:c507:3730:2294%6]) with mapi id 15.21.0496.021; Tue, 13 Oct 2026
- 23:38:19 +0000
-Message-ID: <87qzhtyxw6.wl-kuninori.morimoto.gx@renesas.com>
-From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-To: Bui Duc Phuc <phucduc.bui@gmail.com>, Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>
-Cc: Vijendar Mukunda <Vijendar.Mukunda@amd.com>,
-	Venkata Prasad Potturu <venkataprasad.potturu@amd.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>,
-	povik+lin@cutebit.org,
-	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
-	Andrei Simion <andrei.simion@microchip.com>,
-	Nicolas Ferre <nicolas.ferre@microchip.com>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	David Rhodes <david.rhodes@cirrus.com>,
-	Richard Fitzgerald <rf@opensource.cirrus.com>,
-	Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Cezary Rojewski <cezary.rojewski@intel.com>,
-	Peter Ujfalusi <peter.ujfalusi@linux.intel.com>,
-	Bard Liao <yung-chuan.liao@linux.intel.com>,
-	Kai Vehmanen <kai.vehmanen@linux.intel.com>,
-	Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	Biju Das <biju.das.jz@bp.renesas.com>,
-	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
-	Heiko Stuebner <heiko@sntech.de>,
-	Kees Cook <kees@kernel.org>,
-	Syed Saba Kareem <syed.sabakareem@amd.com>,
-	wangdicheng <wangdicheng@kylinos.cn>,
-	Chris Bainbridge <chris.bainbridge@gmail.com>,
-	Linus Walleij <linusw@kernel.org>,
-	Charles Keepax <ckeepax@opensource.cirrus.com>,
-	Neo Chang <YLCHANG2@nuvoton.com>,
-	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
-	u.kleine-koenig@baylibre.com,
-	Pengpeng Hou <pengpeng@iscas.ac.cn>,
-	Cristian Ciocaltea <cristian.ciocaltea@collabora.com>,
-	Hemanth Selam <hemanth.selam@gmail.com>,
-	Md Shofiqul Islam <shofiqtest@gmail.com>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Zain Aboobacker <zainaboobacker33@gmail.com>,
-	Sang-Heon Jeon <ekffu200098@gmail.com>,
-	Ajit Kumar Pandey <AjitKumar.Pandey@amd.com>,
-	Ravulapati Vishnu vardhan rao <Vishnuvardhanrao.Ravulapati@amd.com>,
-	Bo Shen <voice.shen@atmel.com>,
-	Vinod Koul <vkoul@kernel.org>,
-	linux-sound@vger.kernel.org,
-	asahi@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	patches@opensource.cirrus.com,
-	linuxppc-dev@lists.ozlabs.org,
-	imx@lists.linux.dev,
-	linux-rockchip@lists.infradead.org,
-	linux-renesas-soc@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 21/24] ASoC: renesas: msiof: Fix msiof_close() being skipped on rollback
-In-Reply-To: <CAABR9nG-YJZEdj6pVD-gbGU6J2EfRMQYsKd7u0UTgfrWOyAPXA@mail.gmail.com>
-References: <20261008103831.542533-1-phucduc.bui@gmail.com>
-	<20261008103831.542533-22-phucduc.bui@gmail.com>
-	<87o6cyxyau.wl-kuninori.morimoto.gx@renesas.com>
-	<CAABR9nHvCfabGfBu85bm1r=hP3b0ZiCsgZfShhOv3gNUfjjhGg@mail.gmail.com>
-	<87se2aw3ot.wl-kuninori.morimoto.gx@renesas.com>
-	<CAABR9nG-YJZEdj6pVD-gbGU6J2EfRMQYsKd7u0UTgfrWOyAPXA@mail.gmail.com>
-User-Agent: Wanderlust/2.15.9 Emacs/30.2 Mule/6.0
-Content-Type: text/plain; charset=US-ASCII
-Date: Tue, 13 Oct 2026 23:38:18 +0000
-X-ClientProxiedBy: TY4P286CA0081.JPNP286.PROD.OUTLOOK.COM
- (2603:1096:405:36d::13) To OS9PR01MB820914.jpnprd01.prod.outlook.com
- (2603:1096:604:50f::14)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4GZs1vjPz2yWy
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 14:16:52 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69DM0oDY1775031;
+	Wed, 14 Oct 2026 03:16:21 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=vfjXev
+	xmmjpEfgjWMFTXwdTqXsK/H4tcoFH11uvIfLA=; b=NbEdq29aHj18kt8RqSm4qt
+	g8IaKSPczksIyPIM3sdVRW0UpzhyJp+La0K9phvfvutUxfzOwV6LsVbxcn76YyLl
+	7UWDW5bHfyNk2cVWg5ubg248K3v3XCbTZO5hXx9sjLwcEeqqOz6UC14eQ87bzDrV
+	O40bLSkIOS9ymR1a6WOz7S6RVTIfC8Vj31zpw9GMvnggXIYngkWtdlcvGFX+4haA
+	hCO544wHGmXsUTOBgTS3czGy+6GxOtY/j5oJFdOzB84Jk7ohdHIvSYKk4sQEoL8R
+	TUn3H44qp9tJrUNL/BecnSppJFUvVrFjqJBvzUzRFBdEK1Vo/YhbgEiJlbPtchIg
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7dwj1qdk-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Wed, 14 Oct 2026 03:16:20 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69E1sECD2709272;
+	Wed, 14 Oct 2026 03:16:20 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h816h5f77-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 14 Oct 2026 03:16:20 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69E3GFkI43188556
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 14 Oct 2026 03:16:16 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DD99E2004E;
+	Wed, 14 Oct 2026 03:16:15 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id ACCB52004B;
+	Wed, 14 Oct 2026 03:16:12 +0000 (GMT)
+Received: from [9.124.213.187] (unknown [9.124.213.187])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 14 Oct 2026 03:16:12 +0000 (GMT)
+Message-ID: <5f107344-7ddf-402e-809c-7229ff6fb6d5@linux.ibm.com>
+Date: Wed, 14 Oct 2026 08:46:11 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -144,78 +81,247 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: OS9PR01MB820914:EE_|TYCPR01MB9642:EE_
-X-MS-Office365-Filtering-Correlation-Id: 3d96b994-ccb8-4879-4bba-08df29831008
-X-LD-Processed: 53d82571-da19-47e4-9cb4-625a166a4a2a,ExtAddr
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|52116014|376014|366016|23010399003|1800799024|11063799006|38350700014|4143699003|56012099006|18002099003|22082099003|10067099003;
-X-Microsoft-Antispam-Message-Info:
-	GK5KKkYP25Jh8tCvPd70U8oTdLYzvuxJ5D/cVTA66+mFo5DhVmLWk5o7thkpNwyml4l84D2UgLdNzkC6ZM7vUurQSiGBbgQ+uEcc5E7/hMFJB5e2glr/vvFwn6D701dPo+74mQgEdtBkuBds6iLEtRJ3l77+BDyDKYRQJyS9S6XtG1wUloSFbSvemUAk7WSwvRtRqYgZ7kGme+Pd1QXn5LfLMZ5O1WKY8Tiz4TUiL9Iw5F9expXeDeFg9dT2XMACDYwFh/3E2xtM+nCTPyLO9wmDrPgqTVu23irFzDIKB3D5J8JfnkmmpzPr3ZhtPcZp/6gIhdqnuB6raTtOrXnZLo3q8J6ac8HNuijAfVkXy4/dX3KmGk91SBg2777jcWPG2x8PBjAAZfNvl1INjA2mTWb/SQ/gHMbtcljkhjUHOcQmipGMX4f1eLiFelkzwP47Jsb+gbH6XAUM2hxuqJzzmvZzcDSSySITx0PrfWYlnbopu8ZaAhMvTJKSVqO/AGRstGWaqx4hE+Lw/1ADyrrojJNLtvQOx5UHZ/d7sv7YLc5N9be0Jn+glz4I63994p2uJitmfqJLvM7UPis+3O4J+gCKazA3bqis9MWDD+D8xZAD62FQZ4HkYJuYUhEedDu66Z071grpe6zjM8brVDgUl+XelSyI/wNHLl6BkEgyOJ0z6HiIl6f5FSLHhuMTV74fMVeBFU6iQyVDoXDMdfiZv2AT3cdMVzx95EBXKxriqjA=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:OS9PR01MB820914.jpnprd01.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(52116014)(376014)(366016)(23010399003)(1800799024)(11063799006)(38350700014)(4143699003)(56012099006)(18002099003)(22082099003)(10067099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?UrzHlCRbWQ7VHHR8+3IKlJsg1Jusni4X+Tf8NmYynVO3e48dOPCyxZ0Vs2lt?=
- =?us-ascii?Q?z0ngWqsn/OfeNGKMLaTGpQ/Nh7y5Vz5ZpLFyKZjoS2Z9Ak+oWR8Ax7GlFT+S?=
- =?us-ascii?Q?sfbSx+Z8WB1DqMLm44NF1x8JjsfaDup/4Zx1GX6uBJasNExD2uprdOVjN6rD?=
- =?us-ascii?Q?KG7nY/RwoF+ofwWct7C0cZwkxBqbhhsNzPA2P5yLYrprfr6pkcoHZ0jGDbMi?=
- =?us-ascii?Q?p5vGljdGeUYwSC57nyrVpHSd9+U6Mpthl+lYWT0KMVDV00/+SvyLtXJpof/N?=
- =?us-ascii?Q?hb9jftKgUmYfq5/V/j5+L+6ic1EJd8BrPNaX6UfJ//anamlJDt9nR1HxxYTa?=
- =?us-ascii?Q?36haUuCym2i3ONmSLy3hJsL4VFqqYnvt0lXFI/tGFxxq481BwAScbCXu4XsN?=
- =?us-ascii?Q?9iNZiY53ToZlYVKrrX82dzF1rN/jaEPxtXTfZb7OXdZLbmYQvyPSer1EL5sF?=
- =?us-ascii?Q?IRQPtvMphF+3IdYnF5Zqa/89fb4SM62/8TSpH15NTMptY+kM31lB8wh7jRse?=
- =?us-ascii?Q?GE3Dq/Z/Yj/GKxQzULQRyX2b12rJddRpiD5nUPVI3pcHpTq3CvHACJhG95QY?=
- =?us-ascii?Q?wo9sw/edkO5A6WUNfDh069LSJr/tPuGDNo99NLnxYSNAZbaiNXHVIks0PRsT?=
- =?us-ascii?Q?UjPva9zqrux1kmEt8fWb3vEE7rja69KxmjpcomQznzs8Hx/bLgfKtWmnnBzQ?=
- =?us-ascii?Q?77Te3OB9ADQcuyZf7F7a1Z5Bfzitid4xSkuFvSjWkOC6QQBUD5z7bKegEdtr?=
- =?us-ascii?Q?g2lR2rpABIlFChnuy0fEWNBef3ncXkQjO+pbp/sAmgaRs0oNBGWmx0uYZwgZ?=
- =?us-ascii?Q?BOYYgoIY2qJQxCqMk1RuFFio2ClLzYEEDgH8UKjaa/nr0iJ7aabq0f0LiZuz?=
- =?us-ascii?Q?hRhqEa+3baPjj1BHEdd4GiAFMROs4kk18VkWi0gREiHKyzPJ376T4aHH/fI8?=
- =?us-ascii?Q?phRhAV79ga5tsbC4kxuN/IDix0M7oPv/bXuFuW6I6Bx6nat2m29WlBKmEk6/?=
- =?us-ascii?Q?J8qNb90JL68Ovr3+k/jtazRuGzxgWMO3oTdZ9fFI/T+e8MMtFhTYrtobQPz3?=
- =?us-ascii?Q?DZwSt/BqcuvvqhvJgYBzwEUDQ8GdgAHZwUf4BMI+rrXj1oVMeHqngZY4bAf1?=
- =?us-ascii?Q?jyWiPPqlb0SzF8XiJ81hOLrEiZxUXFJo+Dz0vc+ph2jM6Z6BCs0ET4IfOG5y?=
- =?us-ascii?Q?7+6ZglRBnlQGqt11mDnD67/nW3VHIwK4BcnvWlHFPmlRwZdlbgSpHig4fKRX?=
- =?us-ascii?Q?/q81rGnuQKbPQCOKgFRZYRZgniEtgHNeMIRUwkSg5tODsRRsGsc3rQrVULKD?=
- =?us-ascii?Q?Vn2l/263Fkaab4QWV/TBXKjzjj8B5PLbUZ2OjlERuBjRqovz1PoBs7xyns5s?=
- =?us-ascii?Q?pOvG/UMksjXXD/szXG2Xzf7ElmETsEb6ecWp00jVLifhS1dAsEFWBLPwGfsZ?=
- =?us-ascii?Q?4lg45/gnlxBINPq6QR7bfSbirLKHPJiQhTMY677eAP/HOfw4vZJNg+FPvlTQ?=
- =?us-ascii?Q?v8F9+viOQMEVPmk+zAcL1nlys/EXM+/lr/bMtKJyn3qY6xOKJdCNvgQszQpb?=
- =?us-ascii?Q?+yanpkgSIvbSZHCJ51g6EKMcMEtoExibm6wCJKddY9O/hs/ZL+mE1slOVX+0?=
- =?us-ascii?Q?LmwqYxVfoBJnohkXnkZqCqF2aMl9bsanswSNgeyjrkoiuDIRjvfWAv5CTVbw?=
- =?us-ascii?Q?k1CYI8HEQKPWx7NdQBwuZmZfcbE8dPpDec9OlWlSDh8YYcYajmY+185B28s3?=
- =?us-ascii?Q?p3o3vanwSV+oqpzHus+kZRHeWnp881FBth64Z8QiLLaUAT4KahhR?=
-X-OriginatorOrg: renesas.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 3d96b994-ccb8-4879-4bba-08df29831008
-X-MS-Exchange-CrossTenant-AuthSource: OS9PR01MB820914.jpnprd01.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Oct 2026 23:38:19.7706
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 53d82571-da19-47e4-9cb4-625a166a4a2a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Dfy96rc6m6W9BYpy905fbKvLWhuCgPnwOwaRf/cmLXT/nLfxoCHUctYahDIdyvXmlKTMM13jGUKgE1LSwOleTw48338QZhUOitVTV5Ef2L+KomBAVvTup96uIRQlEMEC
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYCPR01MB9642
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 0/4] powerpc/topology: Introduce llc_override debugfs
+To: Tim Chen <tim.c.chen@linux.intel.com>
+Cc: christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org,
+        ritesh.list@gmail.com, kprateek.nayak@amd.com, yu.c.chen@intel.com,
+        vineethr@linux.ibm.com, vincent.guittot@linaro.org,
+        srikar@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au,
+        maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+        peterz@infradead.org
+References: <20261012102037.2477378-1-sshegde@linux.ibm.com>
+ <0cbd60fcf328ffcb317739f60d327da3af6145f1.camel@linux.intel.com>
+ <dfd8312d-a59c-4480-b054-d94d2e66110e@linux.ibm.com>
+ <4d0f2f4631f2f836bb1aec140c2c8e3e11d7ba20.camel@linux.intel.com>
+Content-Language: en-US
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+In-Reply-To: <4d0f2f4631f2f836bb1aec140c2c8e3e11d7ba20.camel@linux.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE0MDAxMiBTYWx0ZWRfX6i56fBXqo8DT
+ jGPA/utDhheJL89A5rOScXi3plxsfDP1opIPD8n2RHxhB48JuSOaYRVSHMZ1Hfas5tZoqQ85Mm1
+ jmSjrXmb2eV1EFftGmEogVGYCDwkU2X/Z00ccFOVSRTNhwmaxEQbfJt7dFio04ND1maO5dFvODX
+ WIw2bkNEQYBqEDiz8YspY9KEXVGldaxXlfbxaZMB9+BfJyIRb1AeFU0h9BkmBR5IeChZj8PaM5d
+ hz52lm6ula03kHuzTHQarZW7biyGp0jwRYIfACiyXFHyWc9ktUzRTQuVvfZQpOFVBpaWjHZPfA6
+ 6tFX8WLJVG4b1GacNL40dsHZf7TnbSdmRQ31lyBwT+cTWNJDob6h8OzhOm5aj9/YucCxfT15zb+
+ uFPj1g8y/qZgFKvsy9/bzT5TXVuZp9/Qb0xW7QEv9dxyMDBSTymXRlTz79gH4AvAd4XZQ5Wz9n9
+ 6CrbHIBQTRxguX2ye/Q==
+X-Proofpoint-GUID: E5reA7hJtXl3dRwHFJCbCN9ZNuvHwB7e
+X-Proofpoint-ORIG-GUID: T8XHE_d19YmQUy8zpn2yaoosPKieZ6Y1
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE0MDAxMiBTYWx0ZWRfX4ZBCkDXv0Z+O
+ 4TNCvWkysTAVQ6sEFFrGZb+V0/rUsOSrjkg3Fn2QRw/q2BfmdB8zzPrsqvy9OFjWmMeuUdAKrpJ
+ 2tqtJcpFQ+2KeHlx6f1Jwau4k90jypY=
+X-Authority-Analysis: v=2.4 cv=btHZl0ai c=1 sm=1 tr=0 ts=6acef405 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=LSd69HplV2GyPLOmy40A:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-13_01,2026-10-09_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 malwarescore=0 phishscore=0 impostorscore=0 adultscore=0
+ lowpriorityscore=0 priorityscore=1501 clxscore=1015 spamscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
+ definitions=main-2610140012
 
 
-Hi Bui, Claudiu
 
-> For rz-ssi: in DMA mode, the driver registers the generic dmaengine
-> PCM component, whose .open callback already applies the integer
-> PERIODS constraint via snd_dmaengine_pcm_open().
+On 10/14/26 2:14 AM, Tim Chen wrote:
+> On Tue, 2026-10-13 at 15:28 +0530, Shrikanth Hegde wrote:
+>>
 > 
-> Could we drop rz_ssi_pcm_open_dma() instead, and keep the return
-> value fix only for rz_ssi_pcm_open_pio()?
+> [snip]
+> 
+>>
+>> One way to fix it is with a change like below.
+>> But more thoughts after the patch.
+>>
+>> ---
+>>    arch/powerpc/include/asm/topology.h |  7 +------
+>>    arch/powerpc/kernel/smp.c           | 23 +++++++++++++++++++++++
+>>    include/linux/sched.h               |  2 +-
+>>    kernel/sched/topology.c             |  7 +++++++
+>>    4 files changed, 32 insertions(+), 7 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+>> index 44ec416fa489..f4555632e692 100644
+>> --- a/arch/powerpc/include/asm/topology.h
+>> +++ b/arch/powerpc/include/asm/topology.h
+>> @@ -135,12 +135,7 @@ struct cpumask *cpu_coregroup_mask(int cpu);
+>>    const struct cpumask *cpu_die_mask(int cpu);
+>>    int cpu_die_id(int cpu);
+>>    
+>> -/*
+>> - * Points to where the LLC is. On power9 this will point at CACHE
+>> - * domain, On others it will point to SMT domain. In all cases
+>> - * cpu_l2_cache_mask points to where LLC is
+>> - */
+>> -#define arch_llc_mask(cpu)     cpu_l2_cache_mask(cpu)
+>> +const struct cpumask *arch_llc_mask(int cpu);
+> 
+> You will need to add
+> #define arch_llc_mask arch_llc_mask
 
-It seems fine, but I don't know detail of rz-ssi.
-Claudiu, what do you think ?
+Yes.
 
-Thank you for your help !!
+> here.
+> 
+> Otherwise kernel/sched/topology.c looks for a macro:
+> 
+>    # ifndef arch_llc_mask
+>    #define arch_llc_mask(cpu) cpu_coregroup_mask(cpu)
+>    # endif
+> 
+> With the #define gone, the generic code falls back to
+> cpu_coregroup_mask().
+> 
+>>    
+>>    #ifdef CONFIG_PPC64
+>>    #include <asm/smp.h>
+>> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+>> index 6a4ee7d3b8e5..139c54fc3e2d 100644
+>> --- a/arch/powerpc/kernel/smp.c
+>> +++ b/arch/powerpc/kernel/smp.c
+>> @@ -1864,6 +1864,28 @@ void __noreturn arch_cpu_idle_dead(void)
+>>    
+>>    #endif
+>>    
+>> +/*
+>> + * Points to where the LLC is. On power9 this will point at CACHE
+>> + * domain, On others it will point to SMT domain. In all cases
+>> + * cpu_l2_cache_mask points to where LLC is.
+>> + *
+>> + * If there is llc_override debug knob, return appropriate mask
+>> + */
+>> +const struct cpumask *arch_llc_mask(int cpu)
+>> +{
+>> +	switch (READ_ONCE(llc_override)) {
+>> +	case LLC_OVERRIDE_SMT:
+>> +		return cpu_smt_mask(cpu);
+>> +	case LLC_OVERRIDE_MC:
+>> +		return cpu_coregroup_mask(cpu);
+>> +	case LLC_OVERRIDE_PKG:
+>> +		return cpu_die_mask(cpu);
+>> +	case LLC_OVERRIDE_DISABLED:
+>> +	default:
+>> +		return cpu_l2_cache_mask(cpu);
+>> +	}
+>> +}
+>> +
+> 
+> The mask here has to match the span of the highest SD_SHARE_LLC
+> domain, and there seems to be some mismatches.
+>                                                                                 
+> - PKG: On power pc, seems like cpu_die_mask() returns
+>    cpu_coregroup_map when coregroups are
+>    supported,
+> 
+> 	if (has_coregroup_support())
+> 		return per_cpu(cpu_coregroup_map, cpu);
+> 	else
+> 		return cpu_node_mask(cpu);
+> 
+>    so this is the MC span while sd_llc sits at PKG. It
+>    should be cpu_node_mask(), the same as tl_pkg_mask().
+> 
 
-Best regards
----
-Kuninori Morimoto
+facepalm :/
+
+> - SMT: patch 3 adds SD_SHARE_LLC only to MC/PKG, so for "smt" the
+>    flags are as before. I think it is possible for P9 to have
+>    shared_caches between two cores:
+> 
+>    /*
+>     * P9 has a slightly odd architecture where pairs of cores share an L2 cache.
+>     * This topology makes it *much* cheaper to migrate tasks between adjacent cores
+>     * since the migrated task remains cache hot. We want to take advantage of this
+>     * at the scheduler level so an extra topology level is required.
+>     */
+> 
+>    the CACHE level also has SD_SHARE_LLC, and highest_flag_domain() picks it, so sd_llc spans
+>    cpu_l2_cache_map. shared_caches is only set when that map is wider
+>    than the core's threads, e.g. a P9 core pair sharing an L2:
+> 
+>      CPU:               0 1 2 3 | 4 5 6 7
+>      cpu_smt_mask():    core A  | core B
+>      sd_llc (CACHE):    0-7
+> 
+>    The ids follow cpu_smt_mask(), so 0-3 and 4-7 get different ids
+>    while sd_llc and sd_llc_size cover all eight, and
+>    cpus_share_cache(0, 4) is false, which is incorrect.
+> 
+
+Yes. I doubt anyone wants to try this experiment on Power9.
+But yes, functionally updating the flags is needed.
+
+@srikar,
+That is also the reason for having the disabled. By default on P9,
+llc will be at CACHE domain. But, one may want to experiment with =smt
+which i doubt anyone will ever do.
+
+
+>>    int arch_update_cpu_topology(void)
+>>    {
+>>    	if (READ_ONCE(llc_override_changed)) {
+>> @@ -1923,6 +1945,7 @@ static ssize_t llc_override_set(struct file *file, const char __user *ubuf,
+>>    		pr_info("sched LLC override set to %s. Rebuilding sched domains\n",
+>>    			llc_override_str[override]);
+>>    
+>> +		sched_reset_llc_id();
+> 
+> The reset here seems racy without taking cpus_read_lock, and taking
+> sched_domains_mutex for each CPU and you could have a cpu hot plug event
+> or cpu set rebuild in between.
+> 
+> That's why I would go with the boot parameter. The llc ids are assigned once,
+> with the right mask, so there is nothing to reset or rebuild, no
+> change to kernel/sched/, and everything stays in arch/powerpc. Since
+> this is an experiment knob, needing a reboot to change it is a small
+> cost, and every run starts from a clean state.
+> 
+> Tim
+
+
+Yes. That is what i prefer at this moment too. It will be cleaner.
+Only thing is, need to get the masks right in different domains.
+
+> 
+>>    		rebuild_sched_domains();
+>>    	}
+>>    
+>> diff --git a/include/linux/sched.h b/include/linux/sched.h
+>> index 7b91cae4a59c..4d7e2ee841a9 100644
+>> --- a/include/linux/sched.h
+>> +++ b/include/linux/sched.h
+>> @@ -2505,5 +2505,5 @@ extern void migrate_enable(void);
+>>    #endif /* MODULE */
+>>    
+>>    DEFINE_LOCK_GUARD_0(migrate, migrate_disable(), migrate_enable())
+>> -
+>> +void sched_reset_llc_id(void);
+>>    #endif
+>> diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
+>> index dd2b1d70ec9d..63c9bca4c5eb 100644
+>> --- a/kernel/sched/topology.c
+>> +++ b/kernel/sched/topology.c
+>> @@ -3087,6 +3087,13 @@ void sched_domains_free_llc_id(int cpu)
+>>    	sched_domains_mutex_unlock();
+>>    }
+>>    
+>> +void sched_reset_llc_id(void)
+>> +{
+>> +	int cpu;
+>> +
+>> +	for_each_online_cpu(cpu)
+>> +		sched_domains_free_llc_id(cpu);
+>> +}
+>>    /*
+>>     * Build sched domains for a given set of CPUs and attach the sched domains
+>>     * to the individual CPUs
+
 
