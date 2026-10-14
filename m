@@ -1,51 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-29502-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29503-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 708EFC3DA7A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 18:05:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F163C3DA7A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 18:06:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j4fJ85h6Wz2yr0;
-	Thu, 15 Oct 2026 05:05:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=130.117.225.111
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791989936;
-	cv=none; b=fQUynDypkiguL8wnhl7fcp6bkoGNMNS4U15uKaTibKEisSIkBvvUSNISYmFpG6nmuSNKtwM/FWNRHof7uZ4ZueFV5mZLBlVlTNU3D7/3qyYsl756CTmO4wlUAmUOorFsjzdA1EcA1EeKTgxwf/hd/kgzbaTJZ3upiCYpeN68Elg6oFWKwQsTi1aa5oeK02bT/IBKbPyXEqU7+mBHqsYPVLQfCKcO0uG3DgMMi3fdyKXU2rIjIjLOq6Ch8537nhQHQ2ocotyhT/cLG8hy8ybXl5lqZ8kWM7WoOBnohwUa1xBX8xEJfb/tHLQGU0Mc++fVmw6sCFADB5zSKtOOtg5xqg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j4fKf06CFz2yr0;
+	Thu, 15 Oct 2026 05:06:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=14.137.139.46
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791991147;
+	cv=none; b=H8cVuznRih8GLmCCceDPLGgefyGGjVO4+wu6pj4ml0JYXi/HAE3S0nVbIRO0iltNcTy6pDQGzL+alToTwrwsn8JSwFSZLL3oNeLth9vDk6NLBD7Q4Q+HLTlE1juV0TEtuZWGV/C8ZOUPX3h5LYkiHh7Ahxv7KS65xHzrUms06dyrkPkPjwE+aAs4TaKPUdJO5/WHtQXB5b0edJTZkocSO6W1xcCJebrH4D7doKi/ecbiO3tLYjM1ksKNYqUkWSprdJgjReECMMVKODylUS2r7nOF6uBtQ6nnetyJ/dwzLLUnpQDNux+BDkHCarbmcsmmzjp4weeXmOLREUvEQ9yQNw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791989936; c=relaxed/relaxed;
-	bh=sYtW+VE4ZIn8TTTh5BivteRD5oYs9WNeRvx7SQ+Utbk=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=XFae/ofQPKg6W05Jc0MEh3hQ+uP8TiJ7WQkLGIFXIsWEGGZT1Pr3n62129RV63u0eyWUvKxNXxFheViA6+NAEJkaWFNbKEmO8PvtJlo4Jd4LQY/HvKR1TqGWFOROyFPxQ0tYgLr830IE6UV+KwLA9a3G4XSo4xtmw+wRe0kKaFies0TVKLHYAwuyEDHbcIfexajDAWhEafIwyuB1NPXtLxRh/PZm39c9cH58L+m2NJQ6ffazXEJA7p/oViQoa5rnhxCUU8D/FZvL6dz59FhbIKMWoadZNyTAMvWvTPclvCVfGHRWvMocM+FFbpVAKxsVl8Q9HfK0VcV5QSwflELyEA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=virtuozzo.com; dkim=pass (2048-bit key; secure) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=relay header.b=iDcev7wC; dkim-atps=neutral; spf=pass (client-ip=130.117.225.111; helo=relay.virtuozzo.com; envelope-from=khorenko@virtuozzo.com; receiver=lists.ozlabs.org) smtp.mailfrom=virtuozzo.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=virtuozzo.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=relay header.b=iDcev7wC;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=virtuozzo.com (client-ip=130.117.225.111; helo=relay.virtuozzo.com; envelope-from=khorenko@virtuozzo.com; receiver=lists.ozlabs.org)
-Received: from relay.virtuozzo.com (relay.virtuozzo.com [130.117.225.111])
+	t=1791991147; c=relaxed/relaxed;
+	bh=PXK7JMjdfk8dKRV1XgHoVncMXnqvo2eFdCwkNrcesvQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=eySEp8X1bMMVD/nZvJl84WecdNRfaXwDfRSSdHydKYKp7+f0c8FDwiwMBMYcha4bR4nI16m60qW8R7LMZt6/AtkB8C/IZtq18bJh5X4C2che2ZQpZxLDHa5/8dR80k3JYVwEvmw6MNqXolB2/C/q9xDXtaiXRgsbPtBcIqMhQP/D1JnphC06bvTpY7VXeVOwfPZhngMELqxxcfRr3dm3w76XnjzMjxNZjA8maNaKmSR3cz4xWNw0D4Av2CP0qBpCzOwSgMXqg7bLs4ekLQCa8T3U/T0oN7L9TAPS8LErCYN/nJCh2glg0Z/Z7WBe7+dQaCd/Q6Cdjz2ev3ngmDfTFg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com; spf=pass (client-ip=14.137.139.46; helo=frasgout13.his.huawei.com; envelope-from=roberto.sassu@huaweicloud.com; receiver=lists.ozlabs.org) smtp.mailfrom=huaweicloud.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huaweicloud.com (client-ip=14.137.139.46; helo=frasgout13.his.huawei.com; envelope-from=roberto.sassu@huaweicloud.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 1079 seconds by postgrey-1.37 at boromir; Thu, 15 Oct 2026 02:19:06 AEDT
+Received: from frasgout13.his.huawei.com (frasgout13.his.huawei.com [14.137.139.46])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4Z8v40ZMz2yWy
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 01:58:55 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=virtuozzo.com; s=relay; h=Content-Type:MIME-Version:Message-Id:Date:Subject
-	:From; bh=sYtW+VE4ZIn8TTTh5BivteRD5oYs9WNeRvx7SQ+Utbk=; b=iDcev7wCfcKKbLwaOK4
-	7Zg9XC368hf+cQzBOLfoT770NptNgOhRiiYfFi3BuTUlLTDOrsSSsoH1o0mLTWv2fzvobIWgqZfuR
-	OILGEXDT7x+pOd7OMLOsZY5YrBwdcQ0yavsJP9YGj1KNz/2DtWIFCIbcXaLh3IrPHpClqOOO5bTvi
-	Jm7gTcNSVODoiCI4DClTV0RwihJBMSV8mwN5b3e6keS/74lfdSt6r2Un/fxFm6OXY0+2PcJvxnPfe
-	lBqY2nLp8u5z6HMA9oznCuYQz1856rz6SDesKKk6UA0TauKdeg8WxBkvH0TDUB2ZnCvemAHzAFZbR
-	WgRkis0PTVUpfhQ==;
-Received: from ch-demo-asa.virtuozzo.com ([130.117.225.8] helo=f0.sw.ru)
-	by relay.virtuozzo.com with esmtp (Exim 4.96)
-	(envelope-from <khorenko@virtuozzo.com>)
-	id 1xH089-005A8J-31;
-	Wed, 14 Oct 2026 16:42:30 +0200
-From: Konstantin Khorenko <khorenko@virtuozzo.com>
-Subject: [PATCH v2 0/2] mm/huge_memory: fix the copy of special PMDs at
- fork
-Date: Wed, 14 Oct 2026 16:42:20 +0200
-Message-Id: <20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v2-0-e1548488fa68@virtuozzo.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4ZcB0pFpz2yWy
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 02:19:03 +1100 (AEDT)
+Received: from mail.maildlp.com (unknown [172.18.224.235])
+	by frasgout13.his.huawei.com (SkyGuard) with ESMTPS id 4j4Z240wRwzpV4g
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 22:53:00 +0800 (CST)
+Received: from mail02.huawei.com (unknown [7.182.16.47])
+	by mail.maildlp.com (Postfix) with ESMTP id 081D740559
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 23:01:00 +0800 (CST)
+Received: from huaweicloud.com (unknown [10.204.63.22])
+	by APP1 (Coremail) with UTF8SMTPA id LxC2BwAX6Rgbmc9qaZI3AA--.19900S2;
+	Wed, 14 Oct 2026 16:00:59 +0100 (CET)
+From: Roberto Sassu <roberto.sassu@huaweicloud.com>
+To: catalin.marinas@arm.com,
+	will@kernel.org,
+	mark.rutland@arm.com,
+	chenhuacai@kernel.org,
+	kernel@xen0n.name,
+	maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	chleroy@kernel.org,
+	pjw@kernel.org,
+	palmer@dabbelt.com,
+	aou@eecs.berkeley.edu,
+	alex@ghiti.fr,
+	tglx@kernel.org,
+	mingo@redhat.com,
+	bp@alien8.de,
+	dave.hansen@linux.intel.com,
+	hpa@zytor.com,
+	robh@kernel.org,
+	saravanak@kernel.org
+Cc: x86@kernel.org,
+	linux-kernel@vger.kernel.org,
+	loongarch@lists.linux.dev,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org,
+	devicetree@vger.kernel.org,
+	zohar@linux.ibm.com,
+	noodles@fb.com,
+	linux-integrity@vger.kernel.org,
+	linux-security-module@vger.kernel.org,
+	Roberto Sassu <roberto.sassu@huawei.com>
+Subject: [PATCH] kexec: Select ima_get/free_kexec_buffer() with CONFIG_HAVE_IMA_KEXEC(_OF)
+Date: Wed, 14 Oct 2026 17:00:05 +0200
+Message-ID: <20261014150005.138309-1-roberto.sassu@huaweicloud.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,375 +84,169 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAM2Uz2oC/6WOQQ6CMBREr0K69htaEdSV9zCE0M8HqkKbFhqBc
- HcpHsHlm0zmzcIcWUWO3aKFWfLKKd1vIA4Rw7bsGwJVbcxELFIe8wRkAsaSAe8GbYEn10uSAWo
- zFe3YUGG6CixhS/gCZwhV+YaQyarOqJYpFyjYNr5t1Oqzix/5j90on4RDsIVGq4Jh2p95Hnp/n
- /AcOFRCnDGNJZ54evfKDqOeZ31E3bF8XdcvxO1r0hIBAAA=
-X-Change-ID: 20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-bdf7efb612c2
-To: Andrew Morton <akpm@linux-foundation.org>, 
- David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>, 
- Baolin Wang <baolin.wang@linux.alibaba.com>, 
- "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>, 
- Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
- Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
- Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, 
- Peter Xu <peterx@redhat.com>
-Cc: Alex Williamson <alex@shazbot.org>, kvm@vger.kernel.org, 
- =?utf-8?q?Lo=C3=AFc_Molinari?= <loic.molinari@collabora.com>, 
- dri-devel@lists.freedesktop.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, 
- linux-kernel@vger.kernel.org, Konstantin Khorenko <khorenko@virtuozzo.com>, 
- Jason Gunthorpe <jgg@ziepe.ca>, stable@vger.kernel.org, 
- Sashiko <sashiko-bot@kernel.org>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=12065;
- i=khorenko@virtuozzo.com; h=from:subject:message-id;
- bh=+RqzOK3/QqQOg1EY/Bo3MknmkU1tht2xWnZTAlV1tUY=;
- b=owEBbQKS/ZANAwAKAVGWCkf5YVwqAcsmYgBqz5TTf5aWAdhEPC6suWP9TdI9LEouFUr7QFe04
- yn80tWK9/6JAjMEAAEKAB0WIQRWD23IPcXT0GO9CCxRlgpH+WFcKgUCas+U0wAKCRBRlgpH+WFc
- KtbND/0eJ0yNE4DVC932JBecBmc2sviqNkexcmQKztNoFqgwswg//07fc6XPvO9X9Plsg7nrCB0
- pBfpXgyVG1WqEuNxNjE47SWWsAlDes1hUOdYvax0h9HoebMRPoyCQ9ut0P8s9vc0Hi879ErigEn
- S1P1XYykov+sMqzJ7VfpMx3ThuyDs1X3WPq28s1Wy365DX5XseOlhgtJQwziboAufP+0lbGPLsm
- gdzr583a/9vEWwwj/huIUF5uPRTHn3BJAd8f1Ee5WPzM496Qdh7mWQL+LkaWDroPM3wzM+YwGuA
- +psP+oC7RG3xFBIHjL0RQUN2MtfECfcSnnOqRcpvF2pKi+dstDPYCbGuY/AuLazzUMhoCmZmM0i
- NiAdTtGHplRKJosvY+gY5mkxNkGFNmjMU+A5Dq/IR1UK9n5iOoB1/eb+QUDZBjLMP5KILJa3U0h
- Mhq+cofZJmvZBG5R256YIuGMo/GsVffkUKk9fmtLHvUlOrMwtXuWtcF5cOITTjd/28qThWOCsWH
- bsMlmQ1pKfiQHUBbpXf0yUh1nAmWGcyaAeh3bZxagxSr7UkyN4TzNT2N7VVRkcsgiZae+OX0JpT
- eEHXarQhoOuMf2dssoHL2ayaa8zCJTNwj8VtuL7iXMA4x+2B1RTgts6qZVRfvotnKYxuzmWfRyb
- qHxZ8tkBf2Z/Sxg==
-X-Developer-Key: i=khorenko@virtuozzo.com; a=openpgp;
- fpr=560F6DC83DC5D3D063BD082C51960A47F9615C2A
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:LxC2BwAX6Rgbmc9qaZI3AA--.19900S2
+X-Coremail-Antispam: 1UD129KBjvJXoWxtw1DWry8XFyfZFWkWw4Uurg_yoW7XFWfpw
+	sIyr1UJrZrXFs8t3yqg348Wry5Z3Z7JrW3ur1rC34kZFy3A3yDur1vq3W7ZFyj9rWkKFyx
+	uFyFgFy0gr4UKw7anT9S1TB71UUUUUDqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUvFb4IE77IF4wAFF20E14v26rWj6s0DM7CY07I20VC2zVCF04k2
+	6cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4
+	vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Jr0_JF4l84ACjcxK6xIIjxv20xvEc7Cj
+	xVAFwI0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVW8JVWxJwA2z4x0Y4vEx4A2jsIEc7CjxV
+	AFwI0_Gr0_Gr1UM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40E
+	x7xfMcIj6xIIjxv20xvE14v26r106r15McIj6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x
+	0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64vIr41lFIxGxcIEc7CjxVA2Y2ka0xkIwI1lc7CjxVAa
+	w2AFwI0_Wrv_ZF1l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxV
+	Aqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r4a
+	6rW5MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6x
+	kF7I0E14v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AK
+	xVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvj
+	xUsPfHUUUUU
+X-CM-SenderInfo: purev21wro2thvvxqx5xdzvxpfor3voofrz/1tbiAgAGBGrPKR9GdAADsi
 
-Two fixes for the special-PMD branch that commit bc02afbd4d73
-("mm/fork: accept huge pfnmap entries") added to copy_huge_pmd():
+From: Roberto Sassu <roberto.sassu@huawei.com>
 
-1. The child gets a PMD value read without the lock, so it can keep a
-   huge PFN mapping that its driver has just zapped.
-2. The child gets no deposited page table, which ppc64 in hash mode
-   dereferences on the first fault and on the zap. That is reachable
-   since commit d1503aa9ab805 ("powerpc/64s: Add support for huge
-   pfnmaps") enabled special PMDs on ppc64. Sashiko found it in the
-   review of v1.
+The ima_get/free_kexec_buffer() device tree implementation relies on the
+arch code calling of_kexec_alloc_and_setup_fdt() to pass the information
+about where the IMA kexec buffer is located. Only the arm64, powerpc and
+riscv architectures support that. LoongArch implicitly assumes that the
+device tree implementation is used, but it does not call that function.
 
-Patch 2 goes on top of the -EAGAIN path that patch 1 adds.
+The ima_get/free_kexec_buffer() x86 implementation instead still relies on
+the setup data to pass the kexec buffer information, and is built only if
+CONFIG_OF_FLATTREE is not defined.
 
-It is not tested on ppc64. On x86 it was exercised with a test-only
-hack that makes special PMDs carry a deposited table, as ppc64 hash
-does for every huge PMD: insert_pmd(), the zap and the split deposit
-and withdraw it.
+However, if CONFIG_OF_FLATTREE is selected in x86, x86 attempts to use the
+device tree implementations of ima_get/free_kexec_buffer(), which are never
+going to succeed because of_kexec_alloc_and_setup_fdt() is not called for
+that architecture.
 
-Without patch 2, the first child of the reproducer oopses at exit in
-pgtable_trans_huge_withdraw(). With it, 3400 forks gave no oops and no
-non-zero pgtables_bytes at mm teardown; the recheck returned -EAGAIN
-864 times, each freeing the table it had allocated.
+Instead, define CONFIG_HAVE_IMA_KEXEC_OF (automatically selects
+HAVE_IMA_KEXEC), select it for the architectures that should use the
+ima_get/free_kexec_buffer() device tree implementation, and enable these
+functions if the new config option is enabled. Set it also on LoongArch, to
+preserve the current behavior and avoid a link failure. LoongArch does not
+pass the buffer location to the next kernel yet; this will be addressed
+separately.
 
-Patch 1
-=======
+Finally, don't select it for x86, and use x86's own setup_data-based
+implementation regardless of CONFIG_OF_FLATTREE.
 
-The window is short: the zap has to clear the parent's PMD and pass
-the child's VMA between fork's lockless read and its taking the source
-PMD lock. I have not hit it without help, but a delay in that
-window makes it reproducible with vfio-pci, and the patch closes it.
-
-Setup: v7.3-rc7, KVM guest with 4 vCPUs and no IOMMU, the guest's QXL
-device bound to vfio-pci in no-IOMMU mode, BAR0 of 64 MB mapped with
-PMDs. The reproducer below forks while a second thread clears
-PCI_COMMAND_MEMORY through the vfio config region after a random
-delay; the child waits for the write to finish and reads one byte of
-each 2 MB of the BAR. A child that reads anything without SIGBUS kept
-a stale mapping.
-
-  kernel                  delay in window  forks   stale children
-  7.3-rc7                 none             20900   0
-  7.3-rc7                 2 ms             150     128
-  7.3-rc7 + this patch    none             10600   0
-  7.3-rc7 + this patch    2 ms             400     0
-
-The delay is an mdelay(2) right after pmdp_get_lockless() in the
-special-PMD branch of copy_huge_pmd(), switched on by a test-only
-debugfs knob. The rows without it ran on the same test kernels with
-the knob at 0, except 5000 patched forks that ran on this patch alone.
-The revoke started after a random delay of up to 0.2, 1 or 3 ms
-(max_delay_us 200, 1000, 3000). A counter in the test-only hunk
-confirmed that the forks copied the BAR as PMDs, and in the last 200
-patched forks with the delay the recheck returned -EAGAIN 183 times.
-
-drm_gem_shmem and mshv_vtl map special PMDs with vmf_insert_pfn_pmd()
-as well.
-
-copy_huge_pud() reads the source entry under the lock already, and
-the PTE level does too, so only the PMD path needs the recheck.
-
-Reproducer. It writes the BAR as a control and reads it with the
-memory disabled, which is harmless for QXL VRAM in a guest; do not
-point it at a BAR that holds device registers. Build with
-"gcc -O2 -pthread -o fork_revoke fork_revoke.c", run as root with the
-device bound to vfio-pci; arguments: BDF, iterations, BAR index, max
-revoke delay in microseconds, e.g. "./fork_revoke 0000:00:02.0 100 0
-3000".
-
-    // SPDX-License-Identifier: GPL-2.0
-    /*
-     * Fork while vfio-pci revokes a BAR mapped with huge PMDs.
-     *
-     * The parent maps a BAR of a vfio-pci device and faults it in. A second
-     * thread disables the device memory through the command register, which
-     * makes vfio-pci zap all BAR mappings, while the main thread forks. Once
-     * the memory is disabled, every access to the BAR must raise SIGBUS. A
-     * child that can still read a BAR chunk kept a mapping the zap removed.
-     *
-     * usage: fork_revoke <domain:bus:dev.fn> [iterations [bar [max_delay_us]]]
-     *
-     * The revoke starts after a random delay of up to max_delay_us, so that it
-     * lands at different points of fork.
-     */
-    #define _GNU_SOURCE
-    #include <errno.h>
-    #include <fcntl.h>
-    #include <limits.h>
-    #include <pthread.h>
-    #include <sched.h>
-    #include <setjmp.h>
-    #include <signal.h>
-    #include <stdint.h>
-    #include <stdio.h>
-    #include <stdlib.h>
-    #include <string.h>
-    #include <unistd.h>
-    #include <sys/ioctl.h>
-    #include <sys/mman.h>
-    #include <sys/wait.h>
-    #include <linux/pci_regs.h>
-    #include <linux/vfio.h>
-
-    #define SZ_2M	(2UL << 20)
-
-    static int dev;
-    static off_t cfg_off;
-    static int go_pipe[2], done_pipe[2];
-    static volatile uint32_t *shared;	/* [0]: iteration whose revoke finished */
-    static unsigned long iter;
-    static unsigned int max_delay_us;
-    static sigjmp_buf jb;
-
-    static void die(const char *what)
-    {
-    	fprintf(stderr, "%s: %s\n", what, strerror(errno));
-    	exit(2);
-    }
-
-    static int device_fd(const char *bdf)
-    {
-    	char path[PATH_MAX], link[PATH_MAX], *group_id;
-    	int container, group, noiommu;
-    	ssize_t len;
-
-    	snprintf(path, sizeof(path), "/sys/bus/pci/devices/%s/iommu_group", bdf);
-    	len = readlink(path, link, sizeof(link) - 1);
-    	if (len < 0)
-    		die("iommu_group");
-    	link[len] = 0;
-    	group_id = strrchr(link, '/') + 1;
-    	snprintf(path, sizeof(path), "/dev/vfio/%s", group_id);
-    	noiommu = access(path, F_OK);
-    	if (noiommu)
-    		snprintf(path, sizeof(path), "/dev/vfio/noiommu-%s", group_id);
-    	container = open("/dev/vfio/vfio", O_RDWR);
-    	group = open(path, O_RDWR);
-    	if (container < 0 || group < 0)
-    		die(path);
-    	if (ioctl(group, VFIO_GROUP_SET_CONTAINER, &container) ||
-    	    ioctl(container, VFIO_SET_IOMMU,
-    		  noiommu ? VFIO_NOIOMMU_IOMMU : VFIO_TYPE1v2_IOMMU))
-    		die("vfio container");
-    	return ioctl(group, VFIO_GROUP_GET_DEVICE_FD, bdf);
-    }
-
-    static void set_memory(int on)
-    {
-    	uint16_t cmd;
-
-    	if (pread(dev, &cmd, 2, cfg_off + PCI_COMMAND) != 2)
-    		die("read PCI_COMMAND");
-    	cmd = on ? cmd | PCI_COMMAND_MEMORY : cmd & ~PCI_COMMAND_MEMORY;
-    	if (pwrite(dev, &cmd, 2, cfg_off + PCI_COMMAND) != 2)
-    		die("write PCI_COMMAND");
-    }
-
-    static void *revoker(void *arg)
-    {
-    	unsigned long i;
-
-    	while (read(go_pipe[0], &i, sizeof(i)) == sizeof(i)) {
-    		if (max_delay_us)
-    			usleep(random() % max_delay_us);
-    		set_memory(0);
-    		shared[0] = i;
-    		if (write(done_pipe[1], &i, sizeof(i)) != sizeof(i))
-    			die("done pipe");
-    	}
-    	return NULL;
-    }
-
-    static void sigbus(int sig)
-    {
-    	siglongjmp(jb, 1);
-    }
-
-    /* Number of 2MB chunks of the BAR that can be read without SIGBUS. */
-    static unsigned long readable(volatile uint8_t *bar, size_t size)
-    {
-    	volatile unsigned long n = 0;
-    	volatile size_t off;
-
-    	for (off = 0; off < size; off += SZ_2M) {
-    		if (sigsetjmp(jb, 1))
-    			continue;
-    		(void)bar[off];
-    		n++;
-    	}
-    	return n;
-    }
-
-    int main(int argc, char **argv)
-    {
-    	unsigned long iterations = argc > 2 ? strtoul(argv[2], NULL, 0) : 1000;
-    	unsigned int index = argc > 3 ? atoi(argv[3]) : 0;
-    	struct vfio_region_info cfg = { .argsz = sizeof(cfg),
-    					.index = VFIO_PCI_CONFIG_REGION_INDEX };
-    	struct vfio_region_info bar = { .argsz = sizeof(bar), .index = index };
-    	unsigned long stale_children = 0, stale_chunks = 0, n;
-    	volatile uint8_t *map;
-    	pthread_t thread;
-    	size_t size, off;
-    	uint8_t *resv;
-    	int status;
-    	pid_t pid;
-
-    	if (argc < 2) {
-    		fprintf(stderr, "usage: %s <bdf> [iterations [bar [max_delay_us]]]\n",
-    			argv[0]);
-    		return 2;
-    	}
-    	max_delay_us = argc > 4 ? atoi(argv[4]) : 0;
-    	signal(SIGBUS, sigbus);
-    	dev = device_fd(argv[1]);
-    	if (dev < 0)
-    		die("device fd");
-    	if (ioctl(dev, VFIO_DEVICE_GET_REGION_INFO, &cfg) ||
-    	    ioctl(dev, VFIO_DEVICE_GET_REGION_INFO, &bar))
-    		die("region info");
-    	if (!(bar.flags & VFIO_REGION_INFO_FLAG_MMAP) || bar.size < SZ_2M) {
-    		fprintf(stderr, "BAR %u: no mmap or smaller than 2MB\n", index);
-    		return 2;
-    	}
-    	cfg_off = cfg.offset;
-    	size = bar.size & ~(SZ_2M - 1);
-
-    	/* A 2MB aligned address lets vfio-pci map the BAR with huge PMDs. */
-    	resv = mmap(NULL, size + SZ_2M, PROT_NONE,
-    		    MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, -1, 0);
-    	if (resv == MAP_FAILED)
-    		die("reserve");
-    	resv = (uint8_t *)(((uintptr_t)resv + SZ_2M - 1) & ~(SZ_2M - 1));
-    	map = mmap(resv, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED,
-    		   dev, bar.offset);
-    	if (map == MAP_FAILED)
-    		die("mmap BAR");
-    	shared = mmap(NULL, 4096, PROT_READ | PROT_WRITE,
-    		      MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-    	if (shared == MAP_FAILED)
-    		die("shared page");
-
-    	/* Control: without a revoke the child reads what the parent wrote. */
-    	set_memory(1);
-    	for (off = 0; off < size; off += SZ_2M)
-    		map[off] = (uint8_t)(off / SZ_2M) ^ 0x5a;
-    	pid = fork();
-    	if (!pid) {
-    		for (off = 0; off < size; off += SZ_2M)
-    			if (map[off] != ((uint8_t)(off / SZ_2M) ^ 0x5a))
-    				_exit(1);
-    		_exit(0);
-    	}
-    	if (pid < 0 || waitpid(pid, &status, 0) != pid ||
-    	    !WIFEXITED(status) || WEXITSTATUS(status)) {
-    		fprintf(stderr, "control: child does not see the parent's BAR\n");
-    		return 2;
-    	}
-    	printf("BAR %u: %zu MB, %lu iterations, revoke delay < %u us\n",
-    	       index, size >> 20, iterations, max_delay_us);
-
-    	/* Premise: with the memory disabled the BAR cannot be read. */
-    	set_memory(0);
-    	n = readable(map, size);
-    	set_memory(1);
-    	if (n) {
-    		fprintf(stderr, "memory disabled, parent still reads %lu chunks\n", n);
-    		return 2;
-    	}
-
-    	if (pipe(go_pipe) || pipe(done_pipe))
-    		die("pipe");
-    	if (pthread_create(&thread, NULL, revoker, NULL))
-    		die("thread");
-
-    	for (iter = 1; iter <= iterations; iter++) {
-    		set_memory(1);
-    		for (off = 0; off < size; off += SZ_2M)
-    			(void)map[off];
-    		if (write(go_pipe[1], &iter, sizeof(iter)) != sizeof(iter))
-    			die("go pipe");
-    		pid = fork();
-    		if (pid < 0)
-    			die("fork");
-    		if (!pid) {
-    			while (shared[0] != iter)
-    				sched_yield();
-    			n = readable(map, size);
-    			_exit(n > 255 ? 255 : n);
-    		}
-    		if (read(done_pipe[0], &n, sizeof(n)) != sizeof(n))
-    			die("done pipe");
-    		if (waitpid(pid, &status, 0) != pid || !WIFEXITED(status))
-    			die("child");
-    		if (WEXITSTATUS(status)) {
-    			stale_children++;
-    			stale_chunks += WEXITSTATUS(status);
-    		}
-    	}
-    	set_memory(1);
-    	printf("children with a stale BAR mapping: %lu of %lu (%lu 2MB chunks)\n",
-    	       stale_children, iterations, stale_chunks);
-    	return stale_children ? 1 : 0;
-    }
-
-Signed-off-by: Konstantin Khorenko <khorenko@virtuozzo.com>
+Fixes: b69a2afd5afc ("x86/kexec: Carry forward IMA measurement log on kexec")
+Signed-off-by: Roberto Sassu <roberto.sassu@huawei.com>
 ---
-Changes in v2:
-- Add patch 2, the page table deposit for ppc64 hash, reported by
-  Sashiko.
-- Patch 1: name panthor instead of drm_gem_shmem as the driver whose
-  stale child mapping reaches freed pages: drm_gem_shmem keeps the
-  pages of a purged object until the last mapping goes away.
-- Link to v1: https://patch.msgid.link/20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v1-1-d225c60bc316@virtuozzo.com
+ arch/arm64/Kconfig      | 2 +-
+ arch/loongarch/Kconfig  | 2 +-
+ arch/powerpc/Kconfig    | 2 +-
+ arch/riscv/Kconfig      | 2 +-
+ arch/x86/kernel/setup.c | 2 +-
+ drivers/of/kexec.c      | 4 ++--
+ kernel/Kconfig.kexec    | 4 ++++
+ 7 files changed, 11 insertions(+), 7 deletions(-)
 
----
-Konstantin Khorenko (2):
-      mm/huge_memory: recheck a special PMD under the lock in copy_huge_pmd()
-      mm/huge_memory: deposit a page table for a special PMD copied by fork
-
- mm/huge_memory.c | 34 +++++++++++++++++++++++++++-------
- 1 file changed, 27 insertions(+), 7 deletions(-)
----
-base-commit: 24a19b953e2a3d0ea5a8c4951a0ab8f32720c907
-change-id: 20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-bdf7efb612c2
-
-Best regards,
---  
-Konstantin Khorenko <khorenko@virtuozzo.com>
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index b5a51b0ef944..4b7e248b6c91 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -1697,7 +1697,7 @@ config ARCH_SUPPORTS_KEXEC_FILE
+ config ARCH_SELECTS_KEXEC_FILE
+ 	def_bool y
+ 	depends on KEXEC_FILE
+-	select HAVE_IMA_KEXEC if IMA
++	select HAVE_IMA_KEXEC_OF if IMA
+ 
+ config ARCH_SUPPORTS_KEXEC_SIG
+ 	def_bool y
+diff --git a/arch/loongarch/Kconfig b/arch/loongarch/Kconfig
+index 2067d1f2ad7a..b5420d482da4 100644
+--- a/arch/loongarch/Kconfig
++++ b/arch/loongarch/Kconfig
+@@ -690,7 +690,7 @@ config ARCH_SELECTS_KEXEC_FILE
+ 	depends on KEXEC_FILE
+ 	select KEXEC_ELF
+ 	select RELOCATABLE
+-	select HAVE_IMA_KEXEC if IMA
++	select HAVE_IMA_KEXEC_OF if IMA
+ 
+ config ARCH_SUPPORTS_CRASH_DUMP
+ 	def_bool 64BIT
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 2580e27e4328..096c6061893b 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -643,7 +643,7 @@ config ARCH_SELECTS_KEXEC_FILE
+ 	def_bool y
+ 	depends on KEXEC_FILE
+ 	select KEXEC_ELF
+-	select HAVE_IMA_KEXEC if IMA
++	select HAVE_IMA_KEXEC_OF if IMA
+ 
+ config PPC64_BIG_ENDIAN_ELF_ABI_V2
+ 	# Option is available to BFD, but LLD does not support ELFv1 so this is
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index f8e26c4bed2b..161bf8a65beb 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -1118,7 +1118,7 @@ config ARCH_SUPPORTS_KEXEC_FILE
+ config ARCH_SELECTS_KEXEC_FILE
+ 	def_bool y
+ 	depends on KEXEC_FILE
+-	select HAVE_IMA_KEXEC if IMA
++	select HAVE_IMA_KEXEC_OF if IMA
+ 	select KEXEC_ELF
+ 
+ config ARCH_SUPPORTS_KEXEC_PURGATORY
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index cda6adb9f69c..bc17e353c099 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -421,7 +421,7 @@ static void __init add_early_ima_buffer(u64 phys_addr)
+ #endif
+ }
+ 
+-#if defined(CONFIG_HAVE_IMA_KEXEC) && !defined(CONFIG_OF_FLATTREE)
++#ifdef CONFIG_HAVE_IMA_KEXEC
+ int __init ima_free_kexec_buffer(void)
+ {
+ 	if (!ima_kexec_buffer_size)
+diff --git a/drivers/of/kexec.c b/drivers/of/kexec.c
+index 029903b986cb..724f29fef0c0 100644
+--- a/drivers/of/kexec.c
++++ b/drivers/of/kexec.c
+@@ -116,7 +116,7 @@ static int do_get_kexec_buffer(const void *prop, int len, unsigned long *addr,
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_HAVE_IMA_KEXEC
++#ifdef CONFIG_HAVE_IMA_KEXEC_OF
+ /**
+  * ima_get_kexec_buffer - get IMA buffer from the previous kernel
+  * @addr:	On successful return, set to point to the buffer contents.
+@@ -196,7 +196,7 @@ static void remove_ima_buffer(void *fdt, int chosen_node)
+ 	size_t size;
+ 	const void *prop;
+ 
+-	if (!IS_ENABLED(CONFIG_HAVE_IMA_KEXEC))
++	if (!IS_ENABLED(CONFIG_HAVE_IMA_KEXEC_OF))
+ 		return;
+ 
+ 	prop = fdt_getprop(fdt, chosen_node, "linux,ima-kexec-buffer", &len);
+diff --git a/kernel/Kconfig.kexec b/kernel/Kconfig.kexec
+index 15632358bcf7..c6ed60f04ea4 100644
+--- a/kernel/Kconfig.kexec
++++ b/kernel/Kconfig.kexec
+@@ -17,6 +17,10 @@ config KEXEC_ELF
+ config HAVE_IMA_KEXEC
+ 	bool
+ 
++config HAVE_IMA_KEXEC_OF
++	bool
++	select HAVE_IMA_KEXEC
++
+ config KEXEC
+ 	bool "Enable kexec system call"
+ 	depends on ARCH_SUPPORTS_KEXEC
+-- 
+2.43.0
 
 
