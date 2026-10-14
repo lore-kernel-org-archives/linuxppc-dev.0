@@ -1,45 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-29466-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29467-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A196ECC6B27
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 09:01:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FC32CC6B1A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 09:15:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j4QDl6qM2z2yLY;
-	Wed, 14 Oct 2026 20:01:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791968503;
-	cv=none; b=P3Uerc1NpZ0A7He3TPn9O2FG5VWQ7CmSzdO6H03VjwZVkptyQ1tnYjz57v6D55vEi8dXtF6CUA2PkZ6LZn/WD49EbID0YW3CjGatY7g2vT8ixOlasctxWslPLn2zBibUKsyHatZLFmGOYYVX9KmXdEHC0cXXQw7XyE/DCc2cQhtZj+LxjGxQKVOQQd4jQHJv02t7NFDhT8hemIPozoSAG8HSc9/xED+lSByWe+qypyYEpE7MzDH/lTaf3RuSAO7cRCPntmRkYvgg++Dz5l+0+xlM1wfUE4+XGgFIkletoBTmG8TdiSKbGLaGmdWSYYIlJ689MJTzfCyIayBYMp7paQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j4QXG0F3Vz2yLY;
+	Wed, 14 Oct 2026 20:15:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791969309;
+	cv=none; b=ebXSCGXECjjqg6T+PXU2k3eM5K9M4oZGTB1O3DuTo8x0YVKc2i1r1IGNWV1q7MFmRxhLZ+qCW3ud787vfcP7tapqk8rVwXFpEuhvfwjEXWlzEg1EAxNOmwOijoKa6lqA4nR0auyJ6slbWy/H+t11Qff97Qtdh9d6i82HipYNYGOo8ivDEsoqJdn4pLVmauBiSoJKoBojtY9M/PxEU4ehNBQzqLm9sUDzX4iHjVPrtcAkSB9oAesZp3Psb6w65H/ZZCOY5K+//MzAhCtQoOA2LkfKaeNRqImQoxmguU6DGQAovHF++9vUVQls6l3AnSDJFdwdqyZt2+OmUHUJihXw3g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791968503; c=relaxed/relaxed;
-	bh=w6d1ZGliYPhieSuvjGZO3kxTg3x67TSdLveb34MEzAE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=T3scGQS927+/B06rtvW08sIjV7V4h/amvTfK8tL97fJ7X9O+Mzo93V1oOKdR3p5zpF2ThYkMHV8WXbs7Rhepr4M0meDqmcQ0xAlh0TRM4iM3AxFNYFzhOsu/esCRlkK7yEY0LgmD1oxkNvxmLe+TLDVRTGDjoL2QGAhtxpDmZJSigGH/1YGGob9fda9i9B7szjzX6oGZgser9yfGaraF/7XM/ZiAapE5q4JZQTUnW1WOQePypx4rNeQvTUiB0+vYx3mTkk64xG0mfbGA9J0ePKfrIIFSU1aVYqUREtm7vwOTmxys3ZbzwS0ByPjSSJ5WjzbX7wgPG3tby4aBy2YF8A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=pQFtufiM; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=dev.jain@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+	t=1791969309; c=relaxed/relaxed;
+	bh=9MMuWmaBQE0Yk81UrgCWRU+L8Qsuq2BfoEqTh+Kyjgc=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=YWHu5pnTRYHm1ayuT7Q9Zflrg3px8xVdq58dxDvnQ7CcK86/73vdSpnrbDBe0v2DQjJg48Srn4h16cPMV+mRiP4iXA6LM+TF0/QFZJ03vJTL8zhw2KEyeE0r+BL2crpnc3J8S6jJX620cgqZz9zySWQkW7ZBEZDncFp1YkSrQ1YQXsFb2eIAb4HnB1rmTPm4j+QRbxMyzY/w70Rkx98V8mQMrUX+yaELvEAhEJlhnob/9Zn5vXMkWrYab1ImrRh1bX7wUiNEOOoHHKmnNWUfC0i6zpmNr2O4FwzJTfDdhdta3aO/ajx5teNthUMtwrTpHcEuqonpzlhBC7y1FU/qAw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KvTtKK3/; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=pQFtufiM;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KvTtKK3/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=dev.jain@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j4QDk6Gdlz2yK7
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 20:01:42 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 865661596;
-	Wed, 14 Oct 2026 02:01:07 -0700 (PDT)
-Received: from [10.164.19.62] (unknown [10.164.19.62])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E9B7A3F7B4;
-	Wed, 14 Oct 2026 02:01:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1791968470; bh=rara4mkQth8pYyWlFJvWmDaJu5z0cXsBOp7HoWDPrJE=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=pQFtufiMGehtJM9AcAsnwXLGqTJECDqjyuBHqaMUB/gJ0L3WUOI5EUTEsk2dHjdsf
-	 R99tb64LVgVWafMjWaPf3mdnd4dVDS58qabNcRdPk/FvmuqeNwUiGSRcWLC3RtnKhS
-	 UFcMMAZVO7L2zOSVKereOgmlQX/zL1pbdiQBv3Ng=
-Message-ID: <e0354457-8ca4-474d-b8cc-0ba843be8897@arm.com>
-Date: Wed, 14 Oct 2026 14:31:02 +0530
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4QXC4Qk1z2yK7
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 20:15:07 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69DKNu3I727758;
+	Wed, 14 Oct 2026 09:14:47 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
+	content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=9MMuWm
+	aBQE0Yk81UrgCWRU+L8Qsuq2BfoEqTh+Kyjgc=; b=KvTtKK3/hcmyf66a/tCTxX
+	bT0OXIqoPJdQ9rtI5IfPMp1SVm58aIC145L258jcA1pQTkeUgdtZ1369iDU2R6Jo
+	HD+t2kKoWuCYE7K/mp+uM/SMEA+SZznvT53KyI54cajJmfG/JlUEjolb7uaGPJnX
+	ughy7a/9EaWKQd+dHReU9TPu2DvFesCHwvDqs/rYlwbHaDIkN1YSiuOEF6qeIEA3
+	uhX2yywjtgbQ5LowfO11LWgcIpAswLo9CcbPZP2Q5A+Jsoiawf+qVKwWvfqEsUCg
+	PLyYetV9HCwMwwBntqfX6ri22L4pnKKD8d4I7f+o8DC5D+pVY3nnJNZ0V9/Htk2w
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7dv0jyr9-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Wed, 14 Oct 2026 09:14:47 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69E74Z6u3303971;
+	Wed, 14 Oct 2026 09:14:46 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4h9qb6v1wk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 14 Oct 2026 09:14:46 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69E9Eg7G25887152
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 14 Oct 2026 09:14:42 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9C83520043;
+	Wed, 14 Oct 2026 09:14:42 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 20DA420040;
+	Wed, 14 Oct 2026 09:14:40 +0000 (GMT)
+Received: from Linuxdev.bl1-in.ibm.com (unknown [9.123.8.83])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 14 Oct 2026 09:14:39 +0000 (GMT)
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+To: mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
+        ritesh.list@gmail.com, sshegde@linux.ibm.com, ruanjinjie@huawei.com,
+        tglx@kernel.org, mkchauras@linux.ibm.com, ryan.roberts@arm.com,
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+        "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+Subject: Re: [PATCH] powerpc/syscall: Avoid atomic test_and_clear_thread_flag on fast path
+Date: Wed, 14 Oct 2026 14:44:39 +0530
+Message-ID: <179196918692.1557523.17395120735511864815.b4-ty@linux.ibm.com>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20260929071744.2965058-1-mkchauras@gmail.com>
+References: <20260929071744.2965058-1-mkchauras@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,158 +91,55 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v10 01/10] arm64/mm: add pte_set_huge() and
- pte_clear_huge()
-To: Wen Jiang <jiangwenxiaomi@gmail.com>
-Cc: akpm@linux-foundation.org, catalin.marinas@arm.com, linux-mm@kvack.org,
- urezki@gmail.com, will@kernel.org, Xueyuan.chen21@gmail.com,
- ajd@linux.ibm.com, anshuman.khandual@arm.com, baohua@kernel.org,
- chleroy@kernel.org, david@kernel.org, jiangwen6@xiaomi.com, leo.yan@arm.com,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
- npiggin@gmail.com, rppt@kernel.org, ryan.roberts@arm.com
-References: <20261002090947.869220-1-jiangwen6@xiaomi.com>
- <20261002090947.869220-2-jiangwen6@xiaomi.com>
- <7b3c3a39-4cf3-430d-9fd3-ba83e5175e72@arm.com>
- <CAHKocdFOoDhjcuWXJatQ-AbSXyXuV+Q=sA1-iGiGrp7vhHZMBQ@mail.gmail.com>
-Content-Language: en-US
-From: Dev Jain <dev.jain@arm.com>
-In-Reply-To: <CAHKocdFOoDhjcuWXJatQ-AbSXyXuV+Q=sA1-iGiGrp7vhHZMBQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE0MDAzNiBTYWx0ZWRfXzCAdLouhoV3n
+ y1paSCiSazFXyRL6sSFbQ51H5/GBdS1Zh+OiNC2mZ9bTW/pr417TEG1gbk8l1tYJ7OHDvBlyqvm
+ NExSTKnOZDm2Uj7e2J/s1OpRr4JaNlLHQeuXtAQmw/viF9B8i8RsXyVUXFtsDfEosoOamOf5LRw
+ 1SYUbaEtbJSVKUU1RsqOYM4PrVlcznyJHcgPpbX6he//VHC9jANojE+6nnaM6nFvnl5+abewTLe
+ jjdE4mXDI7BWscKRHLiqnDELnww0WFsZQzrDVfegfUMRGp17RKqiY27YDc8S6z2MB8eXTV6j0G5
+ 4g+LPyW+fjpm9WVObonC7yBLRuEspEoU/EH6345J2kb2nW8hQPKPngp+TMI52eUMn8bnv3DnNyw
+ vTKQy1MtUpCxegdB9UkhvVwa9S8ZYiyCUFFsEEFsyJw0rQZEYYhlBIEuhGY6mlApej3bVJQ5O33
+ tbsl4kTsJK/yZd2Ba+A==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE0MDAzNiBTYWx0ZWRfX8wh7QTUYDeuZ
+ M1hAqmtXmhJoyu0GCKTmDtBDB2wq2PFRZJfRuAsfWtQjj7Fxx9Cq2JRI2IamyYsruyvd1vwcbZn
+ bmMYIbK8vlPZMrw/YYua37jDz6+/fi4=
+X-Proofpoint-ORIG-GUID: TfzCe80kH1Y6V91PPDAJFVeunKSOuUbw
+X-Authority-Analysis: v=2.4 cv=a6KlZkSF c=1 sm=1 tr=0 ts=6acf4807 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
+ a=VpCeHquL0c4hwlvbhsYA:9 a=QEXdDO2ut3YA:10 a=zZCYzV9kfG8A:10
+X-Proofpoint-GUID: CSNDcm0iyy1Kz1Fm51xw5OJ1n-rFbNO3
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-13_01,2026-10-09_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 malwarescore=0 spamscore=0 suspectscore=0 clxscore=1015
+ phishscore=0 priorityscore=1501 lowpriorityscore=0 impostorscore=0
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
+ definitions=main-2610140036
 
-
-
-On 14/10/26 2:16 pm, Wen Jiang wrote:
-> On Wed, 14 Oct 2026 at 14:03, Dev Jain <dev.jain@arm.com> wrote:
->>
->>
->>
->> On 02/10/26 2:39 pm, Wen Jiang wrote:
->>> vmap installs PTE-level block mappings (PTE_CONT on arm64) by reusing
->>> set_huge_pte_at() and huge_ptep_get_and_clear(), which are HugeTLB
->>> helpers gated by CONFIG_HUGETLB_PAGE. This makes the feature silently
->>> unavailable on CONFIG_HUGETLB_PAGE=n kernels and couples mm/vmalloc.c to
->>> HugeTLB internals it does not otherwise need.
->>>
->>> Add pte_set_huge()/pte_clear_huge() to arm64, joining the existing
->>> pmd_set_huge()/pud_set_huge() family in mm/mmu.c. They build on
->>> __set_ptes() and __get_and_clear_full_ptes() directly, so they do not
->>> depend on CONFIG_HUGETLB_PAGE.
->>>
->>> There is no caller yet: mm/vmalloc.c is converted later in this series,
->>> once the generic fallbacks are in place.
->>>
->>> Signed-off-by: Wen Jiang <jiangwen6@xiaomi.com>
->>> Reviewed-by: Barry Song <baohua@kernel.org>
->>> ---
->>>  arch/arm64/include/asm/pgtable.h |  6 ++++++
->>>  arch/arm64/mm/mmu.c              | 23 +++++++++++++++++++++++
->>>  2 files changed, 29 insertions(+)
->>>
->>> diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
->>> index 6000905a2e865..9b762eb68cff0 100644
->>> --- a/arch/arm64/include/asm/pgtable.h
->>> +++ b/arch/arm64/include/asm/pgtable.h
->>> @@ -1978,6 +1978,12 @@ static inline void clear_young_dirty_ptes(struct vm_area_struct *vma,
->>>
->>>  #endif /* CONFIG_ARM64_CONTPTE */
->>>
->>> +#define __HAVE_ARCH_PTE_SET_HUGE
->>> +void pte_set_huge(pte_t *ptep, unsigned long addr, phys_addr_t phys,
->>> +               pgprot_t prot, unsigned long size);
->>> +#define __HAVE_ARCH_PTE_CLEAR_HUGE
->>> +pte_t pte_clear_huge(pte_t *ptep, unsigned long addr, unsigned long size);
->>> +
->>>  #endif /* !__ASSEMBLER__ */
->>>
->>>  #endif /* __ASM_PGTABLE_H */
->>> diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
->>> index 79d90226fd5dc..ae2f15618c97d 100644
->>> --- a/arch/arm64/mm/mmu.c
->>> +++ b/arch/arm64/mm/mmu.c
->>> @@ -1912,6 +1912,29 @@ int pmd_clear_huge(pmd_t *pmdp)
->>>       return 1;
->>>  }
->>>
->>> +void pte_set_huge(pte_t *ptep, unsigned long addr, phys_addr_t phys,
->>> +               pgprot_t prot, unsigned long size)
->>> +{
->>> +     unsigned long pfn = __phys_to_pfn(phys);
->>> +     pte_t pte = pte_mkcont(pfn_pte(pfn, prot));
->>> +     unsigned int nr = size >> PAGE_SHIFT;
->>> +
->>> +     VM_WARN_ON(!IS_ALIGNED(size, CONT_PTE_SIZE));
->>> +     VM_WARN_ON(!IS_ALIGNED(addr, CONT_PTE_SIZE));
->>> +     VM_WARN_ON(!IS_ALIGNED(pfn, CONT_PTES));
->>> +
->>> +     /* For vmap, there is no valid -> valid transition */
->>> +     VM_WARN_ON(pte_valid(__ptep_get(ptep)));
->>> +
->>> +     __set_ptes(&init_mm, addr, ptep, pte, nr);
->>> +}
->>> +
->>> +pte_t pte_clear_huge(pte_t *ptep, unsigned long addr, unsigned long size)
->>> +{
->>> +     return __get_and_clear_full_ptes(&init_mm, addr, ptep,
->>> +                                      size >> PAGE_SHIFT, 0);
->>> +}
->>
->> I think we should have the same VM_WARN_ON() checks here, as for
->> pte_clear_huge(), in addition to also warning for
->> current->mm != &init_mm.
->>
->> We should make it clear that pte_clear_huge() gets called only for
->> kernel mappings, and the range we operate on is definitely an aligned
->> CONT range - which is why we do not go through get_and_clear_full_ptes ->
->> contpte_get_and_clear_full_ptes, and possibly contpte_try_unfold(), but
->> directly use __get_and_clear_full_ptes.
->>
+On Tue, 29 Sep 2026 12:47:44 +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
+> In system_call_exception(), test_and_clear_thread_flag(TIF_SYSCALL_RET)
+> performs an atomic bit test-and-clear operation on every system call entry.
+> This introduces an unnecessary performance regression on the syscall fast
+> path.
 > 
-> Hi Dev,
+> Combine the TIF_SYSCALL_RET check with the unlikely error condition from
+> syscall_enter_from_user_mode_randomize_stack() using non-atomic
+> test_thread_flag(). If the flag is set or entry failed, only then clear the
+> flag via clear_thread_flag() and return the error value.
 > 
-> I'll add the alignment VM_WARN_ON() checks to pte_clear_huge() to
-> match pte_set_huge().
-> 
-> Regarding the current->mm != &init_mm check: these functions don't take
-> an mm parameter -- &init_mm is hardcoded in the function body.
-> current->mm would never equal &init_mm in practice: for user processes it
-> points to the process's own mm, and for kernel threads it is NULL.
-> So VM_WARN_ON(current->mm != &init_mm) would always fire.
+> [...]
 
-Right.
+Applied to powerpc/next.
 
+[1/1] powerpc/syscall: Avoid atomic test_and_clear_thread_flag on fast path
+      https://git.kernel.org/powerpc/c/66236558dfac63d9bea5b0b6a66a4d717529c118
 
-> 
-> The existing hugetlb helpers that vmalloc used before this decoupling
-> (huge_ptep_get_and_clear -> get_clear_contig) also take mm as a
-> parameter
-> and don't check current->mm either -- the caller simply passes &init_mm.
-> 
-> How about adding a comment to make the "kernel mapping only" intent
-> more explicit?
-> Something like:
-
-I think then we should just call the functions vmap_pte_set_huge and
-vmap_pte_clear_huge. In arm64 we have init_pte() which sets the cont bit
-at init time for kernel mappings. So to differentiate I think we should
-prefix the function name by vmap.
-
-
-> 
->  pte_t pte_clear_huge(pte_t *ptep, unsigned long addr, unsigned long size)
->  {
-> +       /* Kernel mappings only */
-> +
-> +       VM_WARN_ON(!IS_ALIGNED(size, CONT_PTE_SIZE));
-> +       VM_WARN_ON(!IS_ALIGNED(addr, CONT_PTE_SIZE));
-> +
->         return __get_and_clear_full_ptes(&init_mm, addr, ptep,
->                                          size >> PAGE_SHIFT, 0);
->  }
-> 
-> Thanks,
-> Wen
-
+cheers
 
