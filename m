@@ -1,51 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-29506-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29507-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 100A3CC6B1A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 18:08:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6926BC3DA7A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 18:52:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j4fMD45gMz2y2h;
-	Thu, 15 Oct 2026 05:08:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=130.117.225.111
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791992790;
-	cv=none; b=l8aSACgQVJt0kcTt1bdS395JJa2CK+8TH8GKqHqyHGvmYN6+jrD5gPqds80Go+VZkiYJ2W5/DlkoP4cc2XSevxDQKO7pH7SRrIFr/ioYCN4u0oTEDP0cE5zTLdtP3BNfENd8zBADpZoLkVeMeC//D/RfJFK9Wyhs8pNJlQuB1L0HXWVG5DA/o5gmgD9C++gAPkVzfpRLJ+mOvlPjzS2Dcg0uxnTiun+ZbaijgldeBjJalk1rCtCueqJXgHCNPvQWNmL1QxOOIKLWfdjY3c1wMOMit5YaX1C98oblIJC7EP5SbUKqGjJ0yMZzRZJDKJeY3O1Za5hFIBm2RFbdcHHXYQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j4gLr1vy3z2y2B;
+	Thu, 15 Oct 2026 05:52:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792003972;
+	cv=none; b=g702GDmHO5CifadBMadZStzmLvd53qnVmo0drwNJoHENLYGxvk8/x3g/d7A5jH0CxpkyicCFmg6FBJOOdOQb31Wkk9rxdv3hhSQnbgDgNeFIYQIMsdbR+V2Jv6GRnypoleeQ6WU4fKxIaNrB+tMaSiqDwJ6Hughcwm87BT1NB9B/OxEecWAqGJSDc3oStkxNBaK8KbZ5P1k3IeAf5tlCz+EkTWhHVNdPCx1KVcNVYLoy9R7LKA023ObyzK5xbXRyhWddbTnIZocreaCjxfIEMsHjd7faDKk6fJhPKx7nKohzmLDrUZTGtRxwWduLiMW167mQkWkCGgLdpI2rq+A8Yw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791992790; c=relaxed/relaxed;
-	bh=DIdLG1s7xeSfUfVFwx+WMc53/dX+ey6761mazAwZsw4=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=UUEeB30ukcN7YUgtiYXisOA+Z0BALOK4mP3ydVsU6wIyXuzkHW0xMjbYZ5VkOx3G26hDCqnS43ucKydR3uh4yd1T9ZLeI01qXvPmzjXAlHio2AtTdtqjpuhEyZ6UOwa0+iEy+r5qE2mYXk81zwy6flSlya++DCkrM3tYXZ4Ecc6VyQlyF+irgB+6CNCbzV+izqU1WBajc77+byIlEcl8Wcpapp4LE4Eqh7+4oxex9oPSzseBGsG0IwmnxrpYsUTk09iaJJaX9LGyhNEt6Z0nmdUB/EtEQ467oz1urmCRxNFZ3mkf9NWN1L1aMmCjoafOW2NK23u8XoGodEeBcbxEAQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=virtuozzo.com; dkim=pass (2048-bit key; secure) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=relay header.b=TNlVm+xB; dkim-atps=neutral; spf=pass (client-ip=130.117.225.111; helo=relay.virtuozzo.com; envelope-from=khorenko@virtuozzo.com; receiver=lists.ozlabs.org) smtp.mailfrom=virtuozzo.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=virtuozzo.com
+	t=1792003972; c=relaxed/relaxed;
+	bh=f8KsDhg9pm4bCQDb3ubPaEk/2DRbxsFtwc6KrYfMi3Y=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=MF1j1snk2jBydCLGBlKi1Zky7BpKYbop0RWbDWT2iiBA6hfL864qtvxpMQhymRfLsZJRAvJp1jJ/FMurcYZbJGG+vtfeLXDL+tkQCV/3Vd/ruzIH2cJnP4aWoLVCRw/dFLH/bgQv8ZLEoto2wyJhYdGlJ6rrYEB9UVMpuMFg472KXpHkcZCXxk9tsTgCux0UasNAtW4LZGppIyPWP0LRIcevhwWmG6iAZZtfURiLggm4REP2EEAO/2o5bVt2rUcyjU1RE30acQSBmCmgXH6WWG5lUoKX5glXcyaa5ReOVLGR9XXZx1pLpCQd/ytnyKF1Uxe2Nrgzd1YRbfd4XnnMdg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YEaKUVGw; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=relay header.b=TNlVm+xB;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YEaKUVGw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=virtuozzo.com (client-ip=130.117.225.111; helo=relay.virtuozzo.com; envelope-from=khorenko@virtuozzo.com; receiver=lists.ozlabs.org)
-Received: from relay.virtuozzo.com (relay.virtuozzo.com [130.117.225.111])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4bCl35rlz2yK7
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 02:46:26 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=virtuozzo.com; s=relay; h=Content-Type:MIME-Version:Message-Id:Date:Subject
-	:From; bh=DIdLG1s7xeSfUfVFwx+WMc53/dX+ey6761mazAwZsw4=; b=TNlVm+xBUHuC5OJzgfj
-	Pwsv0l0/Yzn+gUnw+NCELecy1dnW/HMob1WsDwR+KyT6s7XLSsxhVsFb7PaDlC6Bj4sZgURrJ9mj1
-	ZlJC9NNTa8Zze+lFaLInENTGPei5BSHyTS2xMA7d3ffUkrjRCWfs747N81hWSRf+fXxiuCsWhCrzT
-	0dwia+CuzRTNFrK9/TmmnwHRQfOSSs/dbRm+jtljjL4meRLC/RpmHgHWOqFQcX7wJ9WEJvQ1jDjsl
-	39R7Ty0d0iXY2MpqgG6uDXp5eGG8OkeUZAyNgeFNhSuaocTlddSBbZqiNcz/D31HaA082kJhX50FD
-	S+p8KsWZQskf2hA==;
-Received: from ch-demo-asa.virtuozzo.com ([130.117.225.8] helo=f0.sw.ru)
-	by relay.virtuozzo.com with esmtp (Exim 4.96)
-	(envelope-from <khorenko@virtuozzo.com>)
-	id 1xH17p-006OFq-38;
-	Wed, 14 Oct 2026 17:46:14 +0200
-From: Konstantin Khorenko <khorenko@virtuozzo.com>
-Subject: [PATCH v3 0/2] mm/huge_memory: fix the copy of special PMDs at
- fork
-Date: Wed, 14 Oct 2026 17:46:08 +0200
-Message-Id: <20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v3-0-85eaec8417f6@virtuozzo.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4gLq0JFFz2y1Y
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 05:52:50 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69EEiGuL695126;
+	Wed, 14 Oct 2026 18:52:34 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=f8KsDhg9pm4bCQDb3ubPaEk/2DRbxsFtwc6KrYfMi
+	3Y=; b=YEaKUVGwcffdWAbPunpGiF7HEz0HVD3TRk7oQVmFvhAWYXX5cvMozD96/
+	MYW0nKcZs0Xsg++/0INRrxsSbP1uNnP9363m6bEPejaf46qm/9W4eEz+IGkkZ4qe
+	gcBpLN8HhiiIy3mUTtWZj5sXMdnpfE4NzYpL23VNGw3Sk9GTVaVynvrP2cP68A98
+	QDJQvqqRIBJ5xw1mDVep5pdVIAIuDCIPh6M8uqL/LRMAnHEn571fqfi5eWzgu54Y
+	u5j+fRgCgPcl7AeJD8u12jYJ8RS95pSGHQaHMF+3OoY/+e8NEqyMemT+KoWSXVHN
+	i+7Wax51N3Q9e1LDn9WNE7BezW7Rw==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7dwhp79y-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Wed, 14 Oct 2026 18:52:34 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69EIl1rE669873;
+	Wed, 14 Oct 2026 18:52:33 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h9ypq3mth-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 14 Oct 2026 18:52:33 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69EIqTqI14615038
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 14 Oct 2026 18:52:29 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1C80320049;
+	Wed, 14 Oct 2026 18:52:29 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F1E5120040;
+	Wed, 14 Oct 2026 18:52:24 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.39.30.160])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 14 Oct 2026 18:52:24 +0000 (GMT)
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Amit Machhiwal <amachhiw@linux.ibm.com>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Shrikanth Hegde <sshegde@linux.ibm.com>,
+        Alexander Graf <agraf@suse.de>, Avi Kivity <avi@redhat.com>,
+        kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Gautam Menghani <gautam@linux.ibm.com>,
+        Harsh Prateek Bora <harshpb@linux.ibm.com>,
+        R Nageswara Sastry <rnsastry@linux.ibm.com>,
+        linux-hardening@vger.kernel.org, stable@vger.kernel.org
+Subject: [PATCH] KVM: PPC: Book3S HV: Disable preemption around host-side HPT lock users
+Date: Thu, 15 Oct 2026 00:22:15 +0530
+Message-ID: <20261014185215.71832-1-amachhiw@linux.ibm.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,381 +95,221 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAMCjz2oC/62OS47CMBBEr4K8nkZpY4xnVtwDIRR3OsQwYMtOL
- D7K3YlhxxaWr1SqV3eRODpO4m92F5GzS86fJ1j8zAR19XnP4JqJhaykxgoVWAUhcoCceh8B1a9
- RKyAfrrtu2PMunBqITB3TEVJgcvU/lMw27Ypbq1GSFNP4tNG6y1O82b44DfbA1BdbaXSuGK7PZ
- xlL7+MTGQGhkXJJurK0QL3OLvaDv938nPxJlCNZfkcloQLGpTLKmLbW5l01juMDF1cvMn0BAAA
- =
-X-Change-ID: 20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-bdf7efb612c2
-To: Andrew Morton <akpm@linux-foundation.org>, 
- David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>, 
- Baolin Wang <baolin.wang@linux.alibaba.com>, 
- "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>, 
- Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
- Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
- Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, 
- Peter Xu <peterx@redhat.com>
-Cc: Alex Williamson <alex@shazbot.org>, kvm@vger.kernel.org, 
- =?utf-8?q?Lo=C3=AFc_Molinari?= <loic.molinari@collabora.com>, 
- dri-devel@lists.freedesktop.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, 
- linux-kernel@vger.kernel.org, Konstantin Khorenko <khorenko@virtuozzo.com>, 
- Jason Gunthorpe <jgg@ziepe.ca>, stable@vger.kernel.org, 
- Sashiko <sashiko-bot@kernel.org>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=12334;
- i=khorenko@virtuozzo.com; h=from:subject:message-id;
- bh=bG/hM08izbfvjjSFkiR+6VwLa+FKI4HwYntCjtNgScA=;
- b=owEBbQKS/ZANAwAKAVGWCkf5YVwqAcsmYgBqz6PF26H9SCuy61sYV2+aIq9hVB88uVhN0z1dD
- sfcCF0bGnuJAjMEAAEKAB0WIQRWD23IPcXT0GO9CCxRlgpH+WFcKgUCas+jxQAKCRBRlgpH+WFc
- Kgf3EACG7npEAeyN33083+nGn1/QEQ+iiQXWTjA8IqCglCExnEN02ItH1jPuX8dLMWmNhLa+NsF
- pLjmK+D2MuPTrx8Ldzran2/TVEoP5LNkGJ8qU1N+xYwwinZDTd7RDlxRxv7cXbTF78awmPvKuUA
- 2HPVdmxHEoInAbpzCVkoROpAw5InzXvgCuHhVhr4Rh2+Zt4MpNSb44GxOY1oVEGbmxSZapyop1g
- 1luBhoGh68+M0vvPWvXIVCjr2jyKemag5O/BtAjCtXMLhJsZZ3sDh2PFzygefjbLq/FSAnP3TL8
- rq/THlwx3W/XbVMYv9Vo1RcbcLMn6tjPxETsT1ElGbxeF013/tAMbjHz4yNd5DKVJou/fsG0PgH
- yF1K8cyM1OS7Rf3JfejT9Rt9R0MBKETMegRj5YZWIaF/suFlfvb4zvNRIhFJJoKODTAwM8855HC
- BLubp5ZMhLvN9mthl1wsdcaa5hmj+y8K6R+Id9ibuPMGJVnu10O7yX5AaaGd+TWSKCQVvqa8H3g
- EY7xY/SYD+aQrAAd8u8605uP82WJW2Syz2OeRW0ZU00x0//XQfXSXW9q9xu5BNVIRN3fjlX4oF1
- 8vn2laxvgQ9WgotIL81wfMYeIbYdi/RATFUshy8vQ4mi+RKgnU+XntBt97cLjhqgkXIiCOwJESW
- 3Rf6HM14Bak7KgA==
-X-Developer-Key: i=khorenko@virtuozzo.com; a=openpgp;
- fpr=560F6DC83DC5D3D063BD082C51960A47F9615C2A
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE0MDA3NCBTYWx0ZWRfX/rpnX+F4eBgz
+ z5lT9nz+ksuhkq+gv7WXD/aY8F6rDEs3tC2JlhC50cpDtahxXaHau+6KRBVUy+J7PQMr9H4Et2c
+ iUjtanx5svSKKQYiN1EwPQH4mzVfnvE=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE0MDA3NCBTYWx0ZWRfX5VGGHo4MHb1W
+ fuXPLSrUIbAtR+aIjkopl2hLro0/nkvlAg9dCNrwH0d3kKO4kZa3UwVBFr66rrV7khFhOjZfn/i
+ pW+3OtrbA1hHs3ugAXRYpGzxcdi/g8uEGGsL76MXsrW4ti88VaDNlu8Jz6mlFi9wfbK5nhUG45O
+ jY2N4+SdIIuQvvfFn1F/9eXE5Z9vVIcWUdAT/r1JnQv4bAkN9Y4B91pjJiCkRbddnq2E8FaSA/c
+ rRhhHJqyW4ox2S5EL1cs/WOfb4/bTG+PnFQMQZ9VvE/HbonjM0GA8/vdBBN7+NZRCoOX7DQbxqw
+ Lt5qAqzhlmej1jJlz4pjgDiVT+vRJTOMZJnSSuQKEMC1zBLA4v2kUpsJohjajEyNfa3OTDfZJP/
+ ImzfWRXl0fFgVcygUmoA79Mws67JNo+DH3KkfD8szQlyWsbYLzNXs9GYCK+MEZM+JmqOQjvgmG9
+ DHDVfsoSrcnFyg6slQg==
+X-Proofpoint-GUID: C7-rivORfCE_a47V-oulqYAVOzzDM0CZ
+X-Authority-Analysis: v=2.4 cv=RoFQvymK c=1 sm=1 tr=0 ts=6acfcf72 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=bIpB81lF2ro1xIxEYW0A:9
+X-Proofpoint-ORIG-GUID: EHiEmg6MJkJBDjBwUsu5bPi_G4yvROIy
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-13_01,2026-10-14_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 spamscore=0 phishscore=0 adultscore=0 bulkscore=0
+ impostorscore=0 suspectscore=0 malwarescore=0 clxscore=1015
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
+ definitions=main-2610140074
 
-Two fixes for the special-PMD branch that commit bc02afbd4d73
-("mm/fork: accept huge pfnmap entries") added to copy_huge_pmd():
+A previous change ("KVM: PPC: Book3S HV: Add preempt_disable() around
+virtual-mode HPTE bit-lock users") at [1] added preempt_disable() around
+guest vCPU HPT hcalls and page fault handlers executed in virtual mode.
+This ensures vCPU threads cannot be preempted while holding
+HPTE_V_HVLOCK or the reverse-map lock.
 
-1. The child gets a PMD value read without the lock, so it can keep a
-   huge PFN mapping that its driver has just zapped.
-2. The child gets no deposited page table, which ppc64 in hash mode
-   dereferences on the first fault and on the zap. That is reachable
-   since commit d1503aa9ab805 ("powerpc/64s: Add support for huge
-   pfnmaps") enabled special PMDs on ppc64. Sashiko found it in the
-   review of v1.
+However, several host-side virtual-mode paths in book3s_64_mmu_hv.c also
+acquire HPTE_V_HVLOCK and lock_rmap() in process context with preemption
+enabled.  Specifically, kvm_unmap_rmapp() and kvm_age_rmapp() take both
+locks during MMU notifier callbacks and memslot flushes, while
+resize_hpt_rehash_hpte() acquires HPTE_V_HVLOCK during HPT resizing.  If
+a host thread is preempted while holding either bit-lock, any guest vCPU
+thread scheduled on the same CPU spinning for the same lock with
+preemption disabled will never yield, resulting in a permanent CPU hang.
 
-Patch 2 goes on top of the -EAGAIN path that patch 1 adds.
+Fix this by disabling preemption across these host-side critical
+sections.
 
-It is not tested on ppc64. On x86 it was exercised with a test-only
-hack that makes special PMDs carry a deposited table, as ppc64 hash
-does for every huge PMD: insert_pmd(), the zap and the split deposit
-and withdraw it.
+For kvm_unmap_rmapp() and kvm_age_rmapp(), place preempt_disable()
+before lock_rmap() so that both the rmap chain lock and the subsequent
+HPTE_V_HVLOCK bit-lock are held under a single non-preemptible window.
+To preserve the ABBA lock ordering between the two locks, re-enable
+preemption after dropping the rmap lock on any retry or early-exit path
+before spinning on cpu_relax(), allowing the lock holder to be
+scheduled.
 
-Without patch 2, the first child of the reproducer oopses at exit in
-pgtable_trans_huge_withdraw(). With it, 3400 forks gave no oops and no
-non-zero pgtables_bytes at mm teardown; the recheck returned -EAGAIN
-864 times, each freeing the table it had allocated.
+For kvm_htab_write(), the HPT migration restore path, replace the direct
+calls to kvmppc_do_h_remove() with kvmppc_virtmode_do_h_remove(), a thin
+wrapper that brackets kvmppc_do_h_remove() with preempt_disable() and
+preempt_enable(), mirroring the existing kvmppc_virtmode_do_h_enter()
+helper.
 
-Patch 1
-=======
+For resize_hpt_rehash_hpte(), place preempt_disable() before the
+try_lock_hpte() spin loop and preempt_enable() after unlock_hpte() at
+the function exit.
 
-The window is short: the zap has to clear the parent's PMD and pass
-the child's VMA between fork's lockless read and its taking the source
-PMD lock. I have not hit it without help, but a delay in that
-window makes it reproducible with vfio-pci, and the patch closes it.
+[1] https://git.kernel.org/powerpc/c/abbbe5ff83e7c9ed3a4d61b73011f1df7bf87907
 
-Setup: v7.3-rc7, KVM guest with 4 vCPUs and no IOMMU, the guest's QXL
-device bound to vfio-pci in no-IOMMU mode, BAR0 of 64 MB mapped with
-PMDs. The reproducer below forks while a second thread clears
-PCI_COMMAND_MEMORY through the vfio config region after a random
-delay; the child waits for the write to finish and reads one byte of
-each 2 MB of the BAR. A child that reads anything without SIGBUS kept
-a stale mapping.
-
-  kernel                  delay in window  forks   stale children
-  7.3-rc7                 none             20900   0
-  7.3-rc7                 2 ms             150     128
-  7.3-rc7 + this patch    none             10600   0
-  7.3-rc7 + this patch    2 ms             400     0
-
-The delay is an mdelay(2) right after pmdp_get_lockless() in the
-special-PMD branch of copy_huge_pmd(), switched on by a test-only
-debugfs knob. The rows without it ran on the same test kernels with
-the knob at 0, except 5000 patched forks that ran on this patch alone.
-The revoke started after a random delay of up to 0.2, 1 or 3 ms
-(max_delay_us 200, 1000, 3000). A counter in the test-only hunk
-confirmed that the forks copied the BAR as PMDs, and in the last 200
-patched forks with the delay the recheck returned -EAGAIN 183 times.
-
-drm_gem_shmem and mshv_vtl map special PMDs with vmf_insert_pfn_pmd()
-as well.
-
-copy_huge_pud() reads the source entry under the lock already, and
-the PTE level does too, so only the PMD path needs the recheck.
-
-Reproducer. It writes the BAR as a control and reads it with the
-memory disabled, which is harmless for QXL VRAM in a guest; do not
-point it at a BAR that holds device registers. Build with
-"gcc -O2 -pthread -o fork_revoke fork_revoke.c", run as root with the
-device bound to vfio-pci; arguments: BDF, iterations, BAR index, max
-revoke delay in microseconds, e.g. "./fork_revoke 0000:00:02.0 100 0
-3000".
-
-    // SPDX-License-Identifier: GPL-2.0
-    /*
-     * Fork while vfio-pci revokes a BAR mapped with huge PMDs.
-     *
-     * The parent maps a BAR of a vfio-pci device and faults it in. A second
-     * thread disables the device memory through the command register, which
-     * makes vfio-pci zap all BAR mappings, while the main thread forks. Once
-     * the memory is disabled, every access to the BAR must raise SIGBUS. A
-     * child that can still read a BAR chunk kept a mapping the zap removed.
-     *
-     * usage: fork_revoke <domain:bus:dev.fn> [iterations [bar [max_delay_us]]]
-     *
-     * The revoke starts after a random delay of up to max_delay_us, so that it
-     * lands at different points of fork.
-     */
-    #define _GNU_SOURCE
-    #include <errno.h>
-    #include <fcntl.h>
-    #include <limits.h>
-    #include <pthread.h>
-    #include <sched.h>
-    #include <setjmp.h>
-    #include <signal.h>
-    #include <stdint.h>
-    #include <stdio.h>
-    #include <stdlib.h>
-    #include <string.h>
-    #include <unistd.h>
-    #include <sys/ioctl.h>
-    #include <sys/mman.h>
-    #include <sys/wait.h>
-    #include <linux/pci_regs.h>
-    #include <linux/vfio.h>
-
-    #define SZ_2M	(2UL << 20)
-
-    static int dev;
-    static off_t cfg_off;
-    static int go_pipe[2], done_pipe[2];
-    static volatile uint32_t *shared;	/* [0]: iteration whose revoke finished */
-    static unsigned long iter;
-    static unsigned int max_delay_us;
-    static sigjmp_buf jb;
-
-    static void die(const char *what)
-    {
-    	fprintf(stderr, "%s: %s\n", what, strerror(errno));
-    	exit(2);
-    }
-
-    static int device_fd(const char *bdf)
-    {
-    	char path[PATH_MAX], link[PATH_MAX], *group_id;
-    	int container, group, noiommu;
-    	ssize_t len;
-
-    	snprintf(path, sizeof(path), "/sys/bus/pci/devices/%s/iommu_group", bdf);
-    	len = readlink(path, link, sizeof(link) - 1);
-    	if (len < 0)
-    		die("iommu_group");
-    	link[len] = 0;
-    	group_id = strrchr(link, '/') + 1;
-    	snprintf(path, sizeof(path), "/dev/vfio/%s", group_id);
-    	noiommu = access(path, F_OK);
-    	if (noiommu)
-    		snprintf(path, sizeof(path), "/dev/vfio/noiommu-%s", group_id);
-    	container = open("/dev/vfio/vfio", O_RDWR);
-    	group = open(path, O_RDWR);
-    	if (container < 0 || group < 0)
-    		die(path);
-    	if (ioctl(group, VFIO_GROUP_SET_CONTAINER, &container) ||
-    	    ioctl(container, VFIO_SET_IOMMU,
-    		  noiommu ? VFIO_NOIOMMU_IOMMU : VFIO_TYPE1v2_IOMMU))
-    		die("vfio container");
-    	return ioctl(group, VFIO_GROUP_GET_DEVICE_FD, bdf);
-    }
-
-    static void set_memory(int on)
-    {
-    	uint16_t cmd;
-
-    	if (pread(dev, &cmd, 2, cfg_off + PCI_COMMAND) != 2)
-    		die("read PCI_COMMAND");
-    	cmd = on ? cmd | PCI_COMMAND_MEMORY : cmd & ~PCI_COMMAND_MEMORY;
-    	if (pwrite(dev, &cmd, 2, cfg_off + PCI_COMMAND) != 2)
-    		die("write PCI_COMMAND");
-    }
-
-    static void *revoker(void *arg)
-    {
-    	unsigned long i;
-
-    	while (read(go_pipe[0], &i, sizeof(i)) == sizeof(i)) {
-    		if (max_delay_us)
-    			usleep(random() % max_delay_us);
-    		set_memory(0);
-    		shared[0] = i;
-    		if (write(done_pipe[1], &i, sizeof(i)) != sizeof(i))
-    			die("done pipe");
-    	}
-    	return NULL;
-    }
-
-    static void sigbus(int sig)
-    {
-    	siglongjmp(jb, 1);
-    }
-
-    /* Number of 2MB chunks of the BAR that can be read without SIGBUS. */
-    static unsigned long readable(volatile uint8_t *bar, size_t size)
-    {
-    	volatile unsigned long n = 0;
-    	volatile size_t off;
-
-    	for (off = 0; off < size; off += SZ_2M) {
-    		if (sigsetjmp(jb, 1))
-    			continue;
-    		(void)bar[off];
-    		n++;
-    	}
-    	return n;
-    }
-
-    int main(int argc, char **argv)
-    {
-    	unsigned long iterations = argc > 2 ? strtoul(argv[2], NULL, 0) : 1000;
-    	unsigned int index = argc > 3 ? atoi(argv[3]) : 0;
-    	struct vfio_region_info cfg = { .argsz = sizeof(cfg),
-    					.index = VFIO_PCI_CONFIG_REGION_INDEX };
-    	struct vfio_region_info bar = { .argsz = sizeof(bar), .index = index };
-    	unsigned long stale_children = 0, stale_chunks = 0, n;
-    	volatile uint8_t *map;
-    	pthread_t thread;
-    	size_t size, off;
-    	uint8_t *resv;
-    	int status;
-    	pid_t pid;
-
-    	if (argc < 2) {
-    		fprintf(stderr, "usage: %s <bdf> [iterations [bar [max_delay_us]]]\n",
-    			argv[0]);
-    		return 2;
-    	}
-    	max_delay_us = argc > 4 ? atoi(argv[4]) : 0;
-    	signal(SIGBUS, sigbus);
-    	dev = device_fd(argv[1]);
-    	if (dev < 0)
-    		die("device fd");
-    	if (ioctl(dev, VFIO_DEVICE_GET_REGION_INFO, &cfg) ||
-    	    ioctl(dev, VFIO_DEVICE_GET_REGION_INFO, &bar))
-    		die("region info");
-    	if (!(bar.flags & VFIO_REGION_INFO_FLAG_MMAP) || bar.size < SZ_2M) {
-    		fprintf(stderr, "BAR %u: no mmap or smaller than 2MB\n", index);
-    		return 2;
-    	}
-    	cfg_off = cfg.offset;
-    	size = bar.size & ~(SZ_2M - 1);
-
-    	/* A 2MB aligned address lets vfio-pci map the BAR with huge PMDs. */
-    	resv = mmap(NULL, size + SZ_2M, PROT_NONE,
-    		    MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, -1, 0);
-    	if (resv == MAP_FAILED)
-    		die("reserve");
-    	resv = (uint8_t *)(((uintptr_t)resv + SZ_2M - 1) & ~(SZ_2M - 1));
-    	map = mmap(resv, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED,
-    		   dev, bar.offset);
-    	if (map == MAP_FAILED)
-    		die("mmap BAR");
-    	shared = mmap(NULL, 4096, PROT_READ | PROT_WRITE,
-    		      MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-    	if (shared == MAP_FAILED)
-    		die("shared page");
-
-    	/* Control: without a revoke the child reads what the parent wrote. */
-    	set_memory(1);
-    	for (off = 0; off < size; off += SZ_2M)
-    		map[off] = (uint8_t)(off / SZ_2M) ^ 0x5a;
-    	pid = fork();
-    	if (!pid) {
-    		for (off = 0; off < size; off += SZ_2M)
-    			if (map[off] != ((uint8_t)(off / SZ_2M) ^ 0x5a))
-    				_exit(1);
-    		_exit(0);
-    	}
-    	if (pid < 0 || waitpid(pid, &status, 0) != pid ||
-    	    !WIFEXITED(status) || WEXITSTATUS(status)) {
-    		fprintf(stderr, "control: child does not see the parent's BAR\n");
-    		return 2;
-    	}
-    	printf("BAR %u: %zu MB, %lu iterations, revoke delay < %u us\n",
-    	       index, size >> 20, iterations, max_delay_us);
-
-    	/* Premise: with the memory disabled the BAR cannot be read. */
-    	set_memory(0);
-    	n = readable(map, size);
-    	set_memory(1);
-    	if (n) {
-    		fprintf(stderr, "memory disabled, parent still reads %lu chunks\n", n);
-    		return 2;
-    	}
-
-    	if (pipe(go_pipe) || pipe(done_pipe))
-    		die("pipe");
-    	if (pthread_create(&thread, NULL, revoker, NULL))
-    		die("thread");
-
-    	for (iter = 1; iter <= iterations; iter++) {
-    		set_memory(1);
-    		for (off = 0; off < size; off += SZ_2M)
-    			(void)map[off];
-    		if (write(go_pipe[1], &iter, sizeof(iter)) != sizeof(iter))
-    			die("go pipe");
-    		pid = fork();
-    		if (pid < 0)
-    			die("fork");
-    		if (!pid) {
-    			while (shared[0] != iter)
-    				sched_yield();
-    			n = readable(map, size);
-    			_exit(n > 255 ? 255 : n);
-    		}
-    		if (read(done_pipe[0], &n, sizeof(n)) != sizeof(n))
-    			die("done pipe");
-    		if (waitpid(pid, &status, 0) != pid || !WIFEXITED(status))
-    			die("child");
-    		if (WEXITSTATUS(status)) {
-    			stale_children++;
-    			stale_chunks += WEXITSTATUS(status);
-    		}
-    	}
-    	set_memory(1);
-    	printf("children with a stale BAR mapping: %lu of %lu (%lu 2MB chunks)\n",
-    	       stale_children, iterations, stale_chunks);
-    	return stale_children ? 1 : 0;
-    }
-
-Signed-off-by: Konstantin Khorenko <khorenko@virtuozzo.com>
+Fixes: 6165d5dd99db ("KVM: PPC: Book3S HV: add virtual mode handlers for HPT hcalls and page faults")
+Cc: stable@vger.kernel.org # v5.14+
+Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
 ---
-Changes in v3:
-- Patch 1: recheck the PMD with pmd_none(), as only a zap can change
-  it and a zap leaves it none (Lance Yang).
-- Link to v2: https://patch.msgid.link/20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v2-0-e1548488fa68@virtuozzo.com
+Changes in this version:
+- Separated host-side fixes in book3s_64_mmu_hv.c into a standalone patch
+  (guest-side paths were merged from v1 resend).
+- Previous discussion: https://lore.kernel.org/all/20261007182116.12479-3-amachhiw@linux.ibm.com/
 
-Changes in v2:
-- Add patch 2, the page table deposit for ppc64 hash, reported by
-  Sashiko.
-- Patch 1: name panthor instead of drm_gem_shmem as the driver whose
-  stale child mapping reaches freed pages: drm_gem_shmem keeps the
-  pages of a purged object until the last mapping goes away.
-- Link to v1: https://patch.msgid.link/20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v1-1-d225c60bc316@virtuozzo.com
+ arch/powerpc/kvm/book3s_64_mmu_hv.c | 33 +++++++++++++++++++++++++++--
+ 1 file changed, 31 insertions(+), 2 deletions(-)
 
----
-Konstantin Khorenko (2):
-      mm/huge_memory: recheck a special PMD under the lock in copy_huge_pmd()
-      mm/huge_memory: deposit a page table for a special PMD copied by fork
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index 2ccb3d138f46..8d85ce3440ae 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -47,6 +47,9 @@
+ static long kvmppc_virtmode_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 				long pte_index, unsigned long pteh,
+ 				unsigned long ptel, unsigned long *pte_idx_ret);
++static void kvmppc_virtmode_do_h_remove(struct kvm *kvm, unsigned long flags,
++				unsigned long pte_index, unsigned long avpn,
++				unsigned long *hpret);
+ 
+ struct kvm_resize_hpt {
+ 	/* These fields read-only after init */
+@@ -308,6 +311,22 @@ static long kvmppc_virtmode_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 
+ }
+ 
++/*
++ * Virtual-mode H_REMOVE. kvmppc_do_h_remove() is also called from real mode,
++ * where preempt_disable() is not usable, so the guard stays here. The function
++ * spins on HPTE_V_HVLOCK and then lock_rmap() (via remove_revmap_chain());
++ * preemption must be disabled across both bit-locks so that spinning callers
++ * holding preempt_disable() can make forward progress.
++ */
++static void kvmppc_virtmode_do_h_remove(struct kvm *kvm, unsigned long flags,
++				unsigned long pte_index, unsigned long avpn,
++				unsigned long *hpret)
++{
++	preempt_disable();
++	kvmppc_do_h_remove(kvm, flags, pte_index, avpn, hpret);
++	preempt_enable();
++}
++
+ static struct kvmppc_slb *kvmppc_mmu_book3s_hv_find_slbe(struct kvm_vcpu *vcpu,
+ 							 gva_t eaddr)
+ {
+@@ -810,9 +829,11 @@ static void kvm_unmap_rmapp(struct kvm *kvm, struct kvm_memory_slot *memslot,
+ 
+ 	rmapp = &memslot->arch.rmap[gfn - memslot->base_gfn];
+ 	for (;;) {
++		preempt_disable();
+ 		lock_rmap(rmapp);
+ 		if (!(*rmapp & KVMPPC_RMAP_PRESENT)) {
+ 			unlock_rmap(rmapp);
++			preempt_enable();
+ 			break;
+ 		}
+ 
+@@ -826,6 +847,7 @@ static void kvm_unmap_rmapp(struct kvm *kvm, struct kvm_memory_slot *memslot,
+ 		if (!try_lock_hpte(hptep, HPTE_V_HVLOCK)) {
+ 			/* unlock rmap before spinning on the HPTE lock */
+ 			unlock_rmap(rmapp);
++			preempt_enable();
+ 			while (be64_to_cpu(hptep[0]) & HPTE_V_HVLOCK)
+ 				cpu_relax();
+ 			continue;
+@@ -834,6 +856,7 @@ static void kvm_unmap_rmapp(struct kvm *kvm, struct kvm_memory_slot *memslot,
+ 		kvmppc_unmap_hpte(kvm, i, memslot, rmapp, gfn);
+ 		unlock_rmap(rmapp);
+ 		__unlock_hpte(hptep, be64_to_cpu(hptep[0]));
++		preempt_enable();
+ 	}
+ }
+ 
+@@ -890,6 +913,7 @@ static bool kvm_age_rmapp(struct kvm *kvm, struct kvm_memory_slot *memslot,
+ 
+ 	rmapp = &memslot->arch.rmap[gfn - memslot->base_gfn];
+  retry:
++	preempt_disable();
+ 	lock_rmap(rmapp);
+ 	if (*rmapp & KVMPPC_RMAP_REFERENCED) {
+ 		*rmapp &= ~KVMPPC_RMAP_REFERENCED;
+@@ -897,6 +921,7 @@ static bool kvm_age_rmapp(struct kvm *kvm, struct kvm_memory_slot *memslot,
+ 	}
+ 	if (!(*rmapp & KVMPPC_RMAP_PRESENT)) {
+ 		unlock_rmap(rmapp);
++		preempt_enable();
+ 		return ret;
+ 	}
+ 
+@@ -912,6 +937,7 @@ static bool kvm_age_rmapp(struct kvm *kvm, struct kvm_memory_slot *memslot,
+ 		if (!try_lock_hpte(hptep, HPTE_V_HVLOCK)) {
+ 			/* unlock rmap before spinning on the HPTE lock */
+ 			unlock_rmap(rmapp);
++			preempt_enable();
+ 			while (be64_to_cpu(hptep[0]) & HPTE_V_HVLOCK)
+ 				cpu_relax();
+ 			goto retry;
+@@ -931,6 +957,7 @@ static bool kvm_age_rmapp(struct kvm *kvm, struct kvm_memory_slot *memslot,
+ 	} while ((i = j) != head);
+ 
+ 	unlock_rmap(rmapp);
++	preempt_enable();
+ 	return ret;
+ }
+ 
+@@ -1219,6 +1246,7 @@ static unsigned long resize_hpt_rehash_hpte(struct kvm_resize_hpt *resize,
+ 	if (!(vpte & HPTE_V_VALID) && !(vpte & HPTE_V_ABSENT))
+ 		return 0; /* nothing to do */
+ 
++	preempt_disable();
+ 	while (!try_lock_hpte(hptep, HPTE_V_HVLOCK))
+ 		cpu_relax();
+ 
+@@ -1346,6 +1374,7 @@ static unsigned long resize_hpt_rehash_hpte(struct kvm_resize_hpt *resize,
+ 
+ out:
+ 	unlock_hpte(hptep, vpte);
++	preempt_enable();
+ 	return ret;
+ }
+ 
+@@ -1868,7 +1897,7 @@ static ssize_t kvm_htab_write(struct file *file, const char __user *buf,
+ 			nb += HPTE_SIZE;
+ 
+ 			if (be64_to_cpu(hptp[0]) & (HPTE_V_VALID | HPTE_V_ABSENT))
+-				kvmppc_do_h_remove(kvm, 0, i, 0, tmp);
++				kvmppc_virtmode_do_h_remove(kvm, 0, i, 0, tmp);
+ 			err = -EIO;
+ 			ret = kvmppc_virtmode_do_h_enter(kvm, H_EXACT, i, v, r,
+ 							 tmp);
+@@ -1897,7 +1926,7 @@ static ssize_t kvm_htab_write(struct file *file, const char __user *buf,
+ 
+ 		for (j = 0; j < hdr.n_invalid; ++j) {
+ 			if (be64_to_cpu(hptp[0]) & (HPTE_V_VALID | HPTE_V_ABSENT))
+-				kvmppc_do_h_remove(kvm, 0, i, 0, tmp);
++				kvmppc_virtmode_do_h_remove(kvm, 0, i, 0, tmp);
+ 			++i;
+ 			hptp += 2;
+ 		}
 
- mm/huge_memory.c | 34 +++++++++++++++++++++++++++-------
- 1 file changed, 27 insertions(+), 7 deletions(-)
----
-base-commit: 24a19b953e2a3d0ea5a8c4951a0ab8f32720c907
-change-id: 20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-bdf7efb612c2
-
-Best regards,
---  
-Konstantin Khorenko <khorenko@virtuozzo.com>
+base-commit: 129f5d395fd66b6587a5ac156b232cca060d6512
+-- 
+2.54.0 (Apple Git-157)
 
 
