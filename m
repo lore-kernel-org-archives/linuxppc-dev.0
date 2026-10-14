@@ -1,144 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-29540-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29541-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E77FECC6B30
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2026 01:50:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99D32CC6B2D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2026 03:21:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j4rcw3b5Zz3byZ;
-	Thu, 15 Oct 2026 12:50:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::629"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792029040;
-	cv=none; b=PbhPdeo48br5oRXnM+K24ap2O/ljIr88oSUR6XcqPLKW++KRTWmm0yU6ULXRJJSZUUIkdefyIghmNqtrXmN2XY0RujwId6O0xr9BGD5q+1puw4J1E0VB0s6XpKW00JZCu//QGntJyHoadnopUw4QCKUeS7deEa/3o4CzOgRS5uf0oIFt78L0iqlL7B84JrD7oDBYE9KBk4j2UZXjYMsLYOmZAwQZs6HJpDRITFtAsM8B4JhFoVZ5oJO796cKez1GTgS5Muxmfgj8eJt1uzuvtsFBoqfSqZWD0zVTGwRhlMwPteJtfnkmMzDtRHodJIHf9iI8eclDctAQqwyXOtvIkA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792029040; c=relaxed/relaxed;
-	bh=Lmt1bwfRxOTKjQOsp9tkvpG9ehM8yzZulL3eFnlXWR4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=XcAbQn2O7InsK38xySIfeV5k3clcxZ1Gvhs3yvtDickrkvqar4Oe7qTu0uyHEJWyeKVRuOti5Rzo2WprKbSU4r7qC29fPDt2+o421o7twqeEnJyEaR3KmtLT7tUno1GYjdnoY+QGmLYLq7J3bfnARE8V89jPya+pvCn6PC3VRSVvDKkVkFoudqBSiOCe2p1/B7vyt5HZ/1kNF3hNBYPXTj4/51Y7lHam8ToF2FM3QjckFopwMABDHbmf7UKDipVH3GQtYePQ4zQHzvrAubiXi/ueF/cRNyxgfcFo5iMUdfcggA+MNRP1ioX9Q0ZoNHnOJCZNfWYsXdzMmZ9mG8RBCQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=HaFtn1kB; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j4tf62Mx4z2yqT;
+	Thu, 15 Oct 2026 14:21:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::f2f" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792010396;
+	cv=pass; b=hCInKxKRTXw8v2qDhsPPdZNFjyKaQWMJHIhcxL5ymHef08RU9LKqgCBCifZrflnhVV0D8jgHFM3bUmjFYseAl++1uNAmemRrrFQYj/vL1rj3IeTX2IJsST8AkSoxXOlK9zo45QSFhB4khK1Y3stjetT1ZyO0v6X5sZby/FMum3n7Ezv4xr6LnDdfqZUtCQTmn7zFQiy+9pbeeuPBSMe/x4ZfRn2q9Hgg3tTr2a4ywUvF+SMLzkmg1avUyiukcHzpX/8lxiCObsNIiKKAOAkhTpDurJC5dchZ7gozgHCQlxE1zEExLwoxqhkAl+1Y2t/JPcagyx05zs21q+6uV53azg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792010396; c=relaxed/relaxed;
+	bh=Hvbv4h83/gh3e9PL4i/Jed17SUFA0/98By/JOQOBZh0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=E90VNgEpQbk/0W3Fdu3UL5Xfe3WLiVglYQVVD9avx9+0V2FlJvfS0SUs3hqobGtgC7HIkHHvI2SVVn3JRCi4zWKKLuDGetSyZg5Dn/LTxtH5q5Fs3T5au8VTb8bc3dPMUl+n/5LzCVahVYEudwQXUv0/rm0a5e/EEXlE7ZXLgYJnER/ilfLRWv36TIWZtnEtS3hafUXb+AvX4zE6l+8MdlmYbh3D5WV6KkZSdjx0nImKNydcSJknws6rqZJax2VewPmBvmfk86EnYCLwAFwH9M77DpRDPINgsOgyr+hbSO9whdL7cXHV3B8qvJyv074i0EcLsleDYc63/rYMpmD6jg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=genproof.com; dkim=pass (2048-bit key; unprotected) header.d=genproof-com.20251104.gappssmtp.com header.i=@genproof-com.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=lMOTz0u4; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::f2f; helo=mail-qv1-xf2f.google.com; envelope-from=vladimir@genproof.com; receiver=lists.ozlabs.org) smtp.mailfrom=genproof.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=genproof.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=HaFtn1kB;
+	dkim=pass (2048-bit key; unprotected) header.d=genproof-com.20251104.gappssmtp.com header.i=@genproof-com.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=lMOTz0u4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=genproof.com (client-ip=2607:f8b0:4864:20::f2f; helo=mail-qv1-xf2f.google.com; envelope-from=vladimir@genproof.com; receiver=lists.ozlabs.org)
+Received: from mail-qv1-xf2f.google.com (mail-qv1-xf2f.google.com [IPv6:2607:f8b0:4864:20::f2f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4rcv51J9z2yqT
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 12:50:39 +1100 (AEDT)
-Received: by mail-pl1-x629.google.com with SMTP id d9443c01a7336-2e86dce4510so24259075ad.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 18:50:39 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4jkM07j3z2yK7
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 07:39:53 +1100 (AEDT)
+Received: by mail-qv1-xf2f.google.com with SMTP id 6a1803df08f44-917ad52d7b6so8964336d6.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 13:39:53 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1792010391; cv=none;
+        d=google.com; s=arc-20260327;
+        b=FjkPFm/We9zxEbaKkhRGVcgmqxekEgumLfkMQPrOUeGt10xw6UMzXrxi7axhE5Tc0t
+         XOkNeuvTWwLeCuC8uIND9WclePYFfZMZ2ZjH0yWPYvCpLvv5BtMcLuhq98fkGtIYagOU
+         Eewb3iQFs3rjbEBnDSZl31SNwK+GCIE/ANUe106T9iBp8nk6D8WDEy6GJieXD0jH93ku
+         W/ATKPhBtlmuqKr7FP68igUIQIE8UW7YuODPzF7AdCIUTJ/ElFr4WBKwPB882J8Zzw/g
+         Bvcm0SiJxU2dp2eHE197IVaxY3EVxkvNxQtVhQ43RM+intfGHblOC5bXBmp520eL64w2
+         ldSA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=Hvbv4h83/gh3e9PL4i/Jed17SUFA0/98By/JOQOBZh0=;
+        fh=MNtOKxbGTeltHMBV/w89dWOYPofIF4vIsHr2MuWlHPk=;
+        b=YUeh7eoJoNQBRbNHxx2gXXrURXPMSPj+eFLXGFjBtwWcKWG5NVUtd0wiwMQ4Y5HbKd
+         Mk2l/62MtvHmpCqmo2fIA1xPJqO5o4SBGI4yVNVSkpWXrup2A8Aw69hgaV2M7nzjtYme
+         hH7h2lJ4+HnV1oOcxh28IQq3JWgrLoNki9gWqZzfn4LAkpK1+E8b4vZ2Bo8IDHL+iY4o
+         Kqv3nCmVhj0p59hwDSdE8uUM5c5RV6+0sN8TRnWvJQMd2OCEce7Gi4QywoE2DkINNYS2
+         XqIwboEZeRgMcce9jhOSPaAtdY0L9RZr2JJDBd1sF+nwGYE/dvg8aIMpqLdfCwKWS/hA
+         5q6w==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792029037; x=1792633837; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=Lmt1bwfRxOTKjQOsp9tkvpG9ehM8yzZulL3eFnlXWR4=;
-        b=HaFtn1kBHjF6jO7Vtpoxsdnl7iJNcJvyO0DBux6mX+OMFPcmAC8bCSmTGF97sHYCAJ
-         oWakrMR3Id6qc79m76j0W5S8ehNLkN1PZXMJ7aH+64YXr2nd14cS0chqzypmtxhUOTrI
-         R4E4fS8tds9ghLh59FCj5AawCXU/bQT3Xf7KHc7Ks3wexhfh0iOG3qzrCefRbxi18mEY
-         5fvoM1UADJjYMcUHCWiMwNT43B5n/ZxT/uZ7G2k7+MaTvOqG0EVPP+yhILNMBUOePZJy
-         y0gNhIGg5glIlOO5mdmEou2tHOqmdpy5bJKFBJqgVRiFsykmJ1+LiSl96ATkjVStege8
-         XxEA==
+        d=genproof-com.20251104.gappssmtp.com; s=20251104; t=1792010391; x=1792615191; darn=lists.ozlabs.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Hvbv4h83/gh3e9PL4i/Jed17SUFA0/98By/JOQOBZh0=;
+        b=lMOTz0u4k7YaPgnEWErbCnbUO40ZihLi9Z+fu5TO766ZarbU7JK5XTLf5IQGzoXV6w
+         KggrNeLVtQkRmAKPoRJhWEN6xV58CPo/gcTdv1Ds43YVoLOxvDW9JCFjTVN26S6HPgPT
+         8Uv/NCvKWoSFWNNWY6nfLFfgQ0VexD2XgNUAz+/3q2IFaZyjrFcW+gdN1dC5qnrDPJiC
+         G9n0m/Fim5zDiLL07Zqp2ZaK90Sb7HRdvQQObOY9PvrBy7CWHcXIOqB2xrKAwkRzHIWz
+         Lbjw9MRHciWeUv8QW/4/u+ARrrw6mX0bxi61YZjlDmWsng2fETQ2cu+FLTP2ffNOXY0h
+         FhWA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792029037; x=1792633837;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Lmt1bwfRxOTKjQOsp9tkvpG9ehM8yzZulL3eFnlXWR4=;
-        b=W8IqLu7xpV9nmwM4l0xRc6rv2G0TAbTARIBmtV/WfTLOvjsQzAZwxqzrYOo/P7enx7
-         kAfDokCgsHV2h4ABC6mNQ7ajI80greZASdnkhcsYOefdTApiGa40BdQGc+bU3rUkSw5g
-         OMCNRX8qLji18rDi1YlTS8fG+q7zXy1tTllyLW4qCmzE/CUXIj18NHpMiXTB1V6V0Ozv
-         6/JH+Xt31B1jNmxNJq/4qbpsAZNvvGEFrhXPbXz/oxT4iJnOBan6qta+zwPM3qbRKOMJ
-         TdIWvu2DvwnnP2qEg28f9J4QZDv4nHpbzrY6QoBWkBqmD8mUGoMbSF1+Z4BmSC+gR2xU
-         oa+A==
-X-Forwarded-Encrypted: i=1; AKwUvBzT9cvCPRShr7+yvXvZ74/iIsk3l97IFI3XMwII2ta12oYpF7IBzaCo2iW2lYbhHPWm8b5JoJFPA02KkSA=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYKLTNRoYMhQJuvHbYuX8ISMWNw0WnNH5xI27uAe8nBZOHt3moAO
-	NuJRypswUYc/PdT4pE0D37p+OsYAJmQGOlih4bxBm2bpvQxlSv14h0Xv
-X-Gm-Gg: AYBFou3he42Hs7zccSotKWDLjoBzQSykRUj/alsZITvp4HjHPGpXPxJ2zjQEQ/GS6a8
-	qUckIVPRvF3RdbaUwGYGLCSMzSmc5vyITie2PsAg8Pezc+JV43txarvbc6MyBjtxhB7puz9l4sD
-	GpKZAut1vjWOWKkmbqrqquOrWeRRZTFuslYhTCiJYyaflTNNFDx8JeeVIQ4VIE83lsaqDETfz20
-	+vCqd4oaDHpSypBje77lW9XhZQexsz8HvXjVpLqxTsNLRN8zlLpFf+ydKSXjOPPmqTI3IE9FImz
-	fI16rnUkSbThHGvbjS4Nm2Cbm4y0Gq8RSCKRMRkFI3uoKirDOiwS6Rj6H6qu1HDyBQKT4HaNJeG
-	4+YwV8DFoR5y/wKuv1PvbPQItJJv1OCNlUX3gFLqGLMDYwOptutZZWRnY3PR8QWMO1FDjLhWRVw
-	9f1PXCQRrKXXk9DCSfRT0BUnyZa81tKqn2umOElih203k764hSZQDpsEMFDWHVXSoaCf7fl4jZ1
-	pL6xJPLV0oAM/AWVuZhllNKp5kxWKXgxOjxsCl1fs/jK6rYIDeEtpKvxuTLBCOL4m9Uj7S0+cLp
-	kUlB2l9moIplzA==
-X-Received: by 2002:a17:902:f706:b0:2dd:c053:82f1 with SMTP id d9443c01a7336-2e842cdb110mr149481055ad.40.1792029037428;
-        Wed, 14 Oct 2026 18:50:37 -0700 (PDT)
-Received: from phuc-desktop.. ([183.91.15.56])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2e8422b8cc1sm73202995ad.54.2026.10.14.18.50.23
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 14 Oct 2026 18:50:35 -0700 (PDT)
-From: phucduc.bui@gmail.com
-To: Vijendar Mukunda <Vijendar.Mukunda@amd.com>,
-	Venkata Prasad Potturu <venkataprasad.potturu@amd.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>,
-	povik+lin@cutebit.org,
-	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
-	Andrei Simion <andrei.simion@microchip.com>,
-	Nicolas Ferre <nicolas.ferre@microchip.com>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	David Rhodes <david.rhodes@cirrus.com>,
-	Richard Fitzgerald <rf@opensource.cirrus.com>,
-	Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Cezary Rojewski <cezary.rojewski@intel.com>,
-	Peter Ujfalusi <peter.ujfalusi@linux.intel.com>,
-	Bard Liao <yung-chuan.liao@linux.intel.com>,
-	Kai Vehmanen <kai.vehmanen@linux.intel.com>,
-	Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>,
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	Biju Das <biju.das.jz@bp.renesas.com>,
-	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
-	Heiko Stuebner <heiko@sntech.de>
-Cc: Kees Cook <kees@kernel.org>,
-	Syed Saba Kareem <syed.sabakareem@amd.com>,
-	wangdicheng <wangdicheng@kylinos.cn>,
-	Chris Bainbridge <chris.bainbridge@gmail.com>,
-	Linus Walleij <linusw@kernel.org>,
-	Charles Keepax <ckeepax@opensource.cirrus.com>,
-	Neo Chang <YLCHANG2@nuvoton.com>,
-	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
-	u.kleine-koenig@baylibre.com,
-	Pengpeng Hou <pengpeng@iscas.ac.cn>,
-	Cristian Ciocaltea <cristian.ciocaltea@collabora.com>,
-	Hemanth Selam <hemanth.selam@gmail.com>,
-	Md Shofiqul Islam <shofiqtest@gmail.com>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Zain Aboobacker <zainaboobacker33@gmail.com>,
-	Sang-Heon Jeon <ekffu200098@gmail.com>,
-	Bo Shen <voice.shen@atmel.com>,
-	Vinod Koul <vkoul@kernel.org>,
-	linux-sound@vger.kernel.org,
-	asahi@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	patches@opensource.cirrus.com,
-	linuxppc-dev@lists.ozlabs.org,
-	imx@lists.linux.dev,
-	linux-rockchip@lists.infradead.org,
-	linux-renesas-soc@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	bui duc phuc <phucduc.bui@gmail.com>
-Subject: [PATCH v2 24/25] ASoC: rockchip: rk3399_gru_sound: Mark the link as started on success
-Date: Thu, 15 Oct 2026 08:43:23 +0700
-Message-ID: <20261015014324.5569-25-phucduc.bui@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20261015014324.5569-1-phucduc.bui@gmail.com>
-References: <20261015014324.5569-1-phucduc.bui@gmail.com>
+        d=1e100.net; s=20260707; t=1792010391; x=1792615191;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=Hvbv4h83/gh3e9PL4i/Jed17SUFA0/98By/JOQOBZh0=;
+        b=KgiMiTVjcs3gUWj4q3ZbR0mCBRTEji4YZ0VjNjUcFfux0TT6zP9vA4fPcG7lrzvyvr
+         ApEBySSSTYywex/bAwtJjsqFZdnu8dYitfbc25h15Ty8ZzaZfHACjM0vJhiqD3wpaGs1
+         pI36vG6+fpZFGgE6rgHMa0J2chqowXvasV2Nk2mB+fmhgWkb1QFl0J1dsdiCsh05Q3jW
+         J+B0xygRlqVQLFJ8KPXyk5YHiU7a03CL5hJZ1aJ3aIEwNG18IfFt6//sQjihTQg89Yne
+         7cmKYxzCcPXOc1G3VOgQZkc5TtXFEeTV2CUchNNVTQPFpun4KjveYp2Ncdhn6hbsRwTp
+         yakQ==
+X-Forwarded-Encrypted: i=1; AKwUvBygYh8nHDg4ltzx3ua4MlDTGEMgXvooimL+3mM5uO6lW1P9+aHlyjb5XkGsBhhCiC1djYoqCHF7nP3Wnyw=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYJTugK3WHVIfuIS6pShT5xTiyQLqlP3O2eJnDDc+mmEaylsyRpx
+	u8r1XYM2S7eFhbrthXI9KSmIfC2e2Ynn/ukSWR97e5Z2KglwUs/wlZxGzEndfoOZMc8fgxDNo20
+	IVtZ5Orbj7HGJ+3OoSvLYL/VZIMNnjv937RAknkr2Z0o=
+X-Gm-Gg: AYBFou1xfnbSqi8BtRVwbTxDF1XclUJSjMg8qtAuJRZMc0JK/ULykOEzE/Jm8SOFI33
+	UrbgYH4lov3lN1kLMT+kSzHErjYtkHgQP2Z+BwqKsudF/cFQ4ebMjnX8x1/QtuYVtdISMIaTqc+
+	kteN9LqLJqaGRuyRqoGwqf7o/Gh2Gmz7haa2OY/fernsbBLO8e3Er9Gy42Msyw4qyDuUZO6YJZ8
+	e7EP85d4h1QtKhm1IsdGwug0oi7JdCs40ZfY/F5wXX2qs9oHrg2XNKaMbRUsWBSygEsDamX/P7K
+	ZgEtL7fCdEw4zf9aSrS94vDSIOeHaTAQtUqWvPu3xhpz/UTPC1n2tZazUJSoFtzrkANUwzYqhF1
+	1jlivaM8P04RF
+X-Received: by 2002:a05:6214:5082:b0:91b:80ac:66ea with SMTP id
+ 6a1803df08f44-91b80ac67d2mr172010016d6.24.1792010390916; Wed, 14 Oct 2026
+ 13:39:50 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -152,52 +102,53 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20261014152604.323310-1-ebiggers@kernel.org>
+In-Reply-To: <20261014152604.323310-1-ebiggers@kernel.org>
+From: Vladimir Kukharenko <vladimir@genproof.com>
+Date: Wed, 14 Oct 2026 22:39:39 +0200
+X-Gm-Features: AclHuK9hyj4qEGknIGYgSBtc9GBfZkkTP8Pl6YErh1Uue02KgFYR-0JbdSeWHNE
+Message-ID: <CABB2QaKKvuTFt5fHa6+=n3siom4TFYCqZ67bcHyHTrD+PogojA@mail.gmail.com>
+Subject: Re: [PATCH 0/2] lib/crypto: Use size_t lengths for Poly1305 and ChaCha
+To: Eric Biggers <ebiggers@kernel.org>
+Cc: linux-crypto@vger.kernel.org, Ard Biesheuvel <ardb@kernel.org>, 
+	"Jason A . Donenfeld" <Jason@zx2c4.com>, Herbert Xu <herbert@gondor.apana.org.au>, 
+	linux-arm-kernel@lists.infradead.org, x86@kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org, 
+	linux-riscv@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
 
-From: bui duc phuc <phucduc.bui@gmail.com>
+Hi Eric,
 
-snd_pcm_hw_constraint_minmax() may return 1, which is then returned
-from rockchip_sound_startup(). ASoC only marks the DAI link as started
-when .startup() returns 0.
+Sorry for not replying to your question on v1. I was already reworking
+the series in that direction and should have told you.
 
-This currently has no functional impact, as there is no .shutdown()
-callback in the relevant snd_soc_ops. Still, return 0 explicitly on
-success to match what ASoC expects and ensure the DAI link is correctly
-marked as started.
+Thanks for doing this. I tested your two patches with the lib/crypto
+KUnit tests in QEMU on x86_64, i386, arm, arm64, powerpc64le, riscv64,
+mips, mips64, s390x and UML, plus temporary tests with buffers over
+2 GiB and 4 GiB. Everything passed, except for two things that fail the
+same way without your patches: the POWER10 Poly1305 interrupt context
+tests (I force-enabled that code, which depends on BROKEN), and two
+Poly1305 tests that crash under QEMU with AVX2 because of a QEMU bug.
 
-Signed-off-by: bui duc phuc <phucduc.bui@gmail.com>
----
- sound/soc/rockchip/rk3399_gru_sound.c | 14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+Tested-by: Vladimir Kukharenko <vladimir@genproof.com>
 
-diff --git a/sound/soc/rockchip/rk3399_gru_sound.c b/sound/soc/rockchip/rk3399_gru_sound.c
-index 04e7bed8275d..d4a0daabfb42 100644
---- a/sound/soc/rockchip/rk3399_gru_sound.c
-+++ b/sound/soc/rockchip/rk3399_gru_sound.c
-@@ -258,10 +258,20 @@ static int rockchip_sound_dmic_hw_params(struct snd_pcm_substream *substream,
- static int rockchip_sound_startup(struct snd_pcm_substream *substream)
- {
- 	struct snd_pcm_runtime *runtime = substream->runtime;
-+	int ret;
- 
- 	runtime->hw.formats = SNDRV_PCM_FMTBIT_S16_LE;
--	return snd_pcm_hw_constraint_minmax(runtime, SNDRV_PCM_HW_PARAM_RATE,
--			8000, 96000);
-+	ret = snd_pcm_hw_constraint_minmax(runtime, SNDRV_PCM_HW_PARAM_RATE,
-+					   8000, 96000);
-+	if (ret < 0)
-+		return ret;
-+
-+	/*
-+	 * ASoC only marks the DAI link as started when .startup() returns 0.
-+	 * Since snd_pcm_hw_constraint_minmax() may return 1, explicitly
-+	 * return 0 to ensure the DAI link is correctly marked as started.
-+	 */
-+	return 0;
- }
- 
- static const struct snd_soc_ops rockchip_sound_max98357a_ops = {
--- 
-2.43.0
+One gap remains on 32-bit arm and MIPS: the ChaCha assembly there
+treats the length as signed, and size_t is 32 bits, so lengths of 2 GiB
+or more are still handled incorrectly. On a Cortex-A7, which always
+uses the scalar code, a 2 GiB + 4101 byte in-place chacha20_crypt()
+changed only one byte.
 
+As a suggestion, I've sent two small fixes on top of your series:
+
+- arm: use unsigned conditions in chacha-scalar-core.S, and
+  DIV_ROUND_UP_POW2() for the block count, since DIV_ROUND_UP() wraps
+  above 0xffffffc0.
+- MIPS: the partial block code also relies on the sign of the remaining
+  length, so a small C chacha_crypt_arch() passes the assembly at most
+  1 GiB at a time.
+
+Feel free to fold them into your series or handle it differently.
+
+Thanks,
+Vladimir Kukharenko
 
