@@ -1,96 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-29497-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29498-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C7B1CC6B2D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 16:44:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51377C3DA7A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 17:13:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j4cW76zM3z3btP;
-	Thu, 15 Oct 2026 03:44:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::32c" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791996291;
-	cv=pass; b=IDXIGTqB2jDvcDwhTBLqfj4QooafGiEDIE9Tyk0DBY707G8ZsRqt0GxAlkR2BaXTJw9KRgXt7ziGQIMJ3x4/8eB10e+QWz+ClBmIg33HBnsbLyOXrPwtUkkYRQPyvqhhtJD2QxaX9A9sSHkZ89TFFTro9ryyWbTj1Xlhb5PD63o1jGN3MtaG6JmhJm9olkWJvYus2mZvjUyp7pJt5yFc4kPAQH3uvH+ZdbWvYVMOZBU91hgFA6dU3Obvub4LdBJ9MyQXbLtyyeK0ZpTy6Nyco51P4Y6EojTyobvl+ztPfs1z6wnVriEc+XqMGZ7e5CUeTNddEY6nXtSQ539zddvwHw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791996291; c=relaxed/relaxed;
-	bh=hsPwLhsDZInozncTdS3m6Cc033xIb80Yu7bEmy4I9fE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=OJCIWgDxnSCOS8efOYpuHTznEQMySvy2jn0lZKcDD1FwULvNDaB1SqAAB3x1XuWlsmdoYe/u1o1GPUnaUofSv0h7OIxNWelCVYNb2TgbtwK0hroR2IcDKSDSLCb4RvOp/V/m2DupMDIf+1zj9g22wsC7sNICLWoo/qO4twc/xZCQZcSGLmDDhUp3BsHWIldqNdP/XGBHpKtG8CJ51SNdyqB+fG+uIRFqgFLaWZBOFeGQt2PZG2OTwcPEJota//JCBL7e4ePPQrSSY4ClZRonzIQxvHOYpG9gMKJS8y15N6lrPhz4+9cpLpNBg7p/VJ4r+tW3Zz63id4gJ/bhAHOuVQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=uTak2yhq; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32c; helo=mail-wm1-x32c.google.com; envelope-from=ndesaulniers@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j4d8H3fJzz3btP;
+	Thu, 15 Oct 2026 04:13:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791998015;
+	cv=none; b=NqTAA7z7vhmY9L1LnaReg0BV1QAnHGe81salk+worD+XBLJrvnZWcYKcPuYM+2T9WayEgnQSe1HqrmJTIsIpZ0GcSxqjBgh2tfh6CA8TBfAz+a8p9P/PY8hz7NHy22ployL2pW1isjIYqYq8w5H94gyD/1ytUsGl3MwELXcxVC/oVO0mjuk+/sHrXdKaLfjoCzJq1/MPr0+gssVzMbJV5DJsyonQt2jAHa5pHZiKOhK+MBajF5WWIqa019gvd3cw+FGGSG5GEmkmma2IWEYpCDJGcwpXrMirhziBDh7p+8b+OZjzByFuCNQcfLwaZy6H9zTl8PTMfCBf+zw391b9AA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1791998015; c=relaxed/relaxed;
+	bh=TIXKZ1EmqWU/VUc5XZWDJM5gBsBtYEI+Xauv3IN18ZA=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=NP3mDJmkwHv88buxA7Pe1ePjgXrbOdigvaxMW7rGmI5C7l41glDcMDym6g15VgQLdoGMRiG1dcL6Ml3UatS+kK7uHJTIqb6wVZpfJoeH0CFNb6RSm8EsWa2x2ojRN+ZvSFCsKpBenvfW/GanMDGofhFskD9mDk09+3vkZbeN0ke11wcat9GGYzYt6XlBz0X9vJUCAOAG7OBTjulFfbMBE+ZqSAgLlwNZCK1KmJ60L1G+vfYVwQHJWorKHILKdX1oCXPdXwRXcx+ENdOBXS28cJK+DfzfKwRYEGCJlUpAvLNOWcz3VxljzDvJH4vZ3sbJVfDiBjqbG8Rx2potOAQztw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=X3551b1+; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=uTak2yhq;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=X3551b1+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::32c; helo=mail-wm1-x32c.google.com; envelope-from=ndesaulniers@google.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com [IPv6:2a00:1450:4864:20::32c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4cW674dSz2xLf
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 03:44:50 +1100 (AEDT)
-Received: by mail-wm1-x32c.google.com with SMTP id 5b1f17b1804b1-4a022fee0caso41009325e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 09:44:50 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791996282; cv=none;
-        d=google.com; s=arc-20260327;
-        b=HnTRsqpYiyJSWVRdCpzZacVTeFE8GiJAYjOKQ/AKxYVU3/0GWnPSfpqybnL7t366Bm
-         Ew/FeWRalfj9TOPrY68id3kWhUCiJpFGoZSJqNN53GcfKfTjK1udVHeWPcVlJAcumFsv
-         PiCrS/cmu92ypCFLttpxaEX0c8njc57meuP8KqrzAs/Hgj8XVFjLjpBv8r0NotX/kcM0
-         OaWU0OdVMuw/GyS/TVaqzoIOPR0b9vREhRyAeAyY2lVHHm1wVlMP4XZN8FXWWFmfzsQu
-         OjnbdGAcdvMTBo407xlnjwmeFkrpx/jBhj0UetQNDHyprP2DxosG3NFQO1yq9G8eO1CP
-         +c6g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=hsPwLhsDZInozncTdS3m6Cc033xIb80Yu7bEmy4I9fE=;
-        fh=zaNcJ+r1is9MIBOuNUqiC5Lg4MVlJ6vIryNGVZGCy5I=;
-        b=YyTjdveo1HIUp6RN/jsUt3BnJVh7Gae1S2da6a4zef06kdTKPq6nmgYS6Qqh08zWzC
-         LRkmVwAES5LgN7fF+3TQB4gcuvdfsS79VHFk3hpIdxBMUasXdCl67lDr0uTJOatk5c+m
-         TLU36Vzy1XGEv45baBQSKkm8sTbbgztlTeeTXyQzkrihXsXEkWo8OKAvRTI8CF2gKPCX
-         HOlwow3AIZzF/os81t0WDzNu/znV8pRjErRSXyPnoYcukSAFUUDqnm2bLhOlTATxQ4+A
-         yZ4hJoDkQCoeYNQZaRpkNm1IFdwET0iMIHelU8s5+T3m0+CHmq8TGT7izDfSmckf0pIV
-         ewFg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1791996282; x=1792601082; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=hsPwLhsDZInozncTdS3m6Cc033xIb80Yu7bEmy4I9fE=;
-        b=uTak2yhqKH+UU7GtvNoCMK5i8el41ozddCqOeTouMGDDwEZ9VAthKOm3rhn7JuJXiP
-         IHTr03a2Qwo4NCrr/ZIgUyJDFcF5wt6IdwarDlhH/oZDJhgVufheyZMF98HWFKW+AOHh
-         Vl8PD1ngD0vQGxLbP+3xzFQo/+G2mmyQXBQoaRinXTH3gmc/grnV1n/oG5pSsugBnst9
-         d7w3J0zJ3NOuBhMWzZOWhT9SLORbKMscNb6LV3W9je93eDjWlTe7r2vliZmwi3iHDQZa
-         sWSNRvvMkwLf54Gy0a8CbC10auXO+h4jvXrn8msGnUamFX/rMN57njlM+y15TnO5tjZi
-         SlKg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791996282; x=1792601082;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=hsPwLhsDZInozncTdS3m6Cc033xIb80Yu7bEmy4I9fE=;
-        b=AW0M1X5bk7KlvHoU0Fd0Q4+yzyE6zkuaz3FhRtyWIiv+oXNHmMkTyknNfDAsQ/UtuC
-         6fpYPpE8AjGr5tp2BEbbccinZO9HJ/CQeWEtIfIyoRUJU7G/EX0GHPaHaRitFCCNe2hN
-         /b10xSZIkr+QdygB/MR7mrcCbaXVnae5PfcH48uZgXDFDldtvt/Tvi0tWU9E2jfoJt5S
-         3Elc5rM8GHwHYioW6Om8S9wTnf16icXymxyWZXT/JKiUY8l/+SpzbwUU43kdFvL9TLeq
-         iBAuQpbH3V9daCcViPhoBkRTksHVDPzbJw1cF1o3gDYr5P/wxteGxt/KJtBREm1011M/
-         FwNw==
-X-Forwarded-Encrypted: i=1; AKwUvBwE8u3ApaJ9a2s09tMOSKtDNN2i56Dvogs4uqHJGYAgDHrCsdHVXQEN5yJnIhP9+QY0kSwM5Q90gzX1oqA=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYLa4baILiaTDSXUtOWXGF6NgR+SMDwUJMVJKKXQOM1GG/S1a9wM
-	iVKOnPnxjEUZonSlDGP/A9GM2o/Cu3By80etGNrSV0ZSLi9DKGpg9ClVQlmPxUaN3PiIzMSDOLB
-	XoPiwhZCTmg98VRLVzqfxUl9kNiYrlVHB3JQEM5nF
-X-Gm-Gg: AYBFou19LLlLyja5+uzVJxmSc0oP2VTtZ2LzJwcgIEMRyMXuV4Ysqin1QMubIxMZUl+
-	/py8sJV4yQC2Evy1svGmmJ3Bm+riiFyRNM9kqye/Rm0Vh4DvIYKd3O7j5lp4/mNND0uM1lBKtQR
-	sJWkkjW5n0Rt0khn7jF9s7r/41SYOSR5vbWGNDn9i40zEyIzA2r3gv4+KawBEvy5GplajKcaNnJ
-	gbiwSWG9UsxBjx8ESSp4qJkavmM5Fvd1JZSlKsCbrGm5UzffQ4wxZrFTY4uCUnBTFOzP5jzg72c
-	ixCvz/ziTWmmfxQPa9Rp+mZxdN6FtN/zjFZSVDJ5fWTj10fzqUCAHuSxJd2A/z+iEPLQmidgD5C
-	fCv3Cahx0HQwG2mX8SwYhBCiPFH8E5QSdG8XnbncNzZ6SUz8xxGA9u92E13iCU0XtZSTPF9C1CA
-	IifdckF6USv5/QTPsQteMerPSF444Emd3ySNwGfnqWL54XRWIUlq9u
-X-Received: by 2002:a05:600c:354a:b0:49c:d019:70c5 with SMTP id
- 5b1f17b1804b1-4a18e3ef23cmr329192565e9.0.1791996281614; Wed, 14 Oct 2026
- 09:44:41 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4d8G4CQvz3br2
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 04:13:34 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id C421860098;
+	Wed, 14 Oct 2026 17:13:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4C0391F000C4;
+	Wed, 14 Oct 2026 17:13:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791998011;
+	bh=TIXKZ1EmqWU/VUc5XZWDJM5gBsBtYEI+Xauv3IN18ZA=;
+	h=Date:From:To:Cc:Subject:In-Reply-To;
+	b=X3551b1+kerHLKkgoLyynluZRnT89nmMlG9rlmLWW8V9C4QCUneI15E6Pz3rcKqf9
+	 mHnyjzbkFavDjWlFHf3RQCcLasCJq9HAfrPjw3hWkHHxXB/PP60RQaugTlwBPfl59b
+	 pouU/CIq0JT/xXxfgqJ8zi10vGqVshJB/NPqD4ah7IwicwPdAhINXhJbu3uBmxBBWH
+	 0eoTAFzK4Rtfqjsqm1ipr19biNYZmoLMgRC76IWxb4YPVFWDAFGMFWxDgGABfGSWKF
+	 jUMX9Z2ufQqTXjt7hhXt2o9rt+9NtBSFpf0Cr2/CbUP18y1wdK41b5qjpg8KBgtQSP
+	 ipexh62I4hXbQ==
+Date: Wed, 14 Oct 2026 12:13:30 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Stian Halseth <stian@itx.no>
+Cc: Bjorn Helgaas <bhelgaas@google.com>,
+	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
+	Andreas Larsson <andreas@gaisler.com>, linux-pci@vger.kernel.org,
+	sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Tony Rodriguez <unixpro1970@gmail.com>
+Subject: Re: [PATCH] PCI: Set supported_speeds in set_pcie_port_type()
+Message-ID: <20261014171330.GA1640628@bhelgaas>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,87 +68,68 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261013223946.1836757-1-irogers@google.com> <20261013223946.1836757-2-irogers@google.com>
- <CANiq72mLUh1JB=9e=tqStuL_H3=Ormx5v-uFkCDp-0zZm7tBrQ@mail.gmail.com> <202610140937.B68C8C9AAC@keescook>
-In-Reply-To: <202610140937.B68C8C9AAC@keescook>
-From: Nick Desaulniers <ndesaulniers@google.com>
-Date: Wed, 14 Oct 2026 09:44:29 -0700
-X-Gm-Features: AclHuK9LUe2FvddsKjj0vYiArabpm2vrSaqioSsrjl7koqqOn_VyYRh6l-6milM
-Message-ID: <CAKwvOdm6nO6skW4-AZtmzpGoNyO126L_AN3Mz2fu23+3QXcshg@mail.gmail.com>
-Subject: Re: [PATCH 01/11] Compiler Attributes: Add __require_explicit_initialization
- macro
-To: Kees Cook <kees@kernel.org>, Ian Rogers <irogers@google.com>
-Cc: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J . Wysocki" <rafael@kernel.org>, 
-	Danilo Krummrich <dakr@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, 
-	Nathan Chancellor <nathan@kernel.org>, Bill Wendling <morbo@google.com>, 
-	Justin Stitt <justinstitt@google.com>, Jonathan Corbet <corbet@lwn.net>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, Nayna Jain <nayna@linux.ibm.com>, 
-	Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	David Teigland <teigland@redhat.com>, Alexander Aring <aahringo@redhat.com>, 
-	Juergen Gross <jgross@suse.com>, Stefano Stabellini <sstabellini@kernel.org>, 
-	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, Heiko Carstens <hca@linux.ibm.com>, 
-	Vasily Gorbik <gor@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
-	Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, 
-	Richard Weinberger <richard@nod.at>, Zhihao Cheng <chengzhihao1@huawei.com>, 
-	Felix Kuehling <Felix.Kuehling@amd.com>, Alex Deucher <alexander.deucher@amd.com>, 
-	=?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, 
-	driver-core@lists.linux.dev, llvm@lists.linux.dev, 
-	linux-hardening@vger.kernel.org, linux-doc@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, gfs2@lists.linux.dev, 
-	xen-devel@lists.xenproject.org, linux-s390@vger.kernel.org, 
-	linux-mtd@lists.infradead.org, amd-gfx@lists.freedesktop.org, 
-	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261007131304.309511-1-stian@itx.no>
 
-On Wed, Oct 14, 2026 at 9:37=E2=80=AFAM Kees Cook <kees@kernel.org> wrote:
->
-> On Wed, Oct 14, 2026 at 01:28:55PM +0200, Miguel Ojeda wrote:
-> > On Wed, Oct 14, 2026 at 12:40=E2=80=AFAM Ian Rogers <irogers@google.com=
-> wrote:
-> > >
-> > > +/*
-> > > + * Optional: not supported by gcc
-> > > + *
-> > > + * clang: https://clang.llvm.org/docs/AttributeReference.html#requir=
-e-explicit-initialization
-> > > + */
-> > > +#if __has_attribute(__require_explicit_initialization__)
-> > > +# define __require_explicit_initialization __attribute__((__require_=
-explicit_initialization__))
-> > > +#else
-> > > +# define __require_explicit_initialization
-> > > +#endif
-> >
-> > The LPC slides mention Clang 14+, but from a quick test in Compiler
-> > Explorer and a `git log --grep` on the LLVM repository to confirm, it
-> > seems the attribute was introduced in Clang 20+, no?
-> >
-> > If that is correct, then it is not available in all LLVM versions we
-> > support (LLVM 17+), so we should add:
-> >
-> >      * Optional: only supported since clang >=3D 20.0
-> >
-> > With that:
-> >
-> > Acked-by: Miguel Ojeda <ojeda@kernel.org>
->
-> Yup, I can confirm, I only see it with 20+ too.
+[+cc Tony]
 
-Fix up the comment and have a coin, witcher.
-Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+On Wed, Oct 07, 2026 at 03:13:04PM +0200, Stian Halseth wrote:
+> sparc64 and powerpc create PCI devices from the device tree in
+> of_create_pci_dev(), which calls set_pcie_port_type() but not
+> pci_setup_device(). Since d2bd39c0456b, supported_speeds is only set in
+> pci_setup_device(), so it stays 0 for these devices.
+> pcie_get_speed_cap() then returns PCI_SPEED_UNKNOWN, max_link_speed
+> reads "Unknown", and the failed link retraining quirk passes
+> PCI_SPEED_UNKNOWN to pcie_set_target_speed(), which warns on a SPARC
+> T7-1:
+> 
+>   WARNING: drivers/pci/pcie/bwctrl.c:125 at pcie_set_target_speed+0x284/0x2e0
+> 
+> Set supported_speeds in set_pcie_port_type(), which all three paths
+> call.
+> 
+> Fixes: d2bd39c0456b ("PCI: Store all PCIe Supported Link Speeds")
+> Closes: https://github.com/sparclinux/issues/issues/109
+> Signed-off-by: Stian Halseth <stian@itx.no>
 
->
-> --
-> Kees Cook
+Applied with Tony's Tested-by to pci/enumeration for v7.4, thanks!
 
+I added a stable tag since d2bd39c0456b appeared in v6.13.
 
-
---=20
-Thanks,
-~Nick Desaulniers
+> ---
+> Tested on a SPARC T7-1: before, max_link_speed reads "Unknown" and the
+> warning above appears with CONFIG_PCIEPORTBUS; after, all 23 PCIe
+> devices report their real speed and the quirk lifts the 2.5GT/s
+> restriction without a warning. Not tested on powerpc.
+> 
+>  drivers/pci/probe.c | 5 ++---
+>  1 file changed, 2 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> index 27008e2ea5afc..52a79b033b069 100644
+> --- a/drivers/pci/probe.c
+> +++ b/drivers/pci/probe.c
+> @@ -1651,6 +1651,8 @@ void set_pcie_port_type(struct pci_dev *pdev)
+>  		pdev->aspm_l1_support = 1;
+>  #endif
+>  
+> +	pdev->supported_speeds = pcie_get_supported_speeds(pdev);
+> +
+>  	parent = pci_upstream_bridge(pdev);
+>  	if (!parent)
+>  		return;
+> @@ -2074,9 +2076,6 @@ int pci_setup_device(struct pci_dev *dev)
+>  
+>  	set_pcie_untrusted(dev);
+>  
+> -	if (pci_is_pcie(dev))
+> -		dev->supported_speeds = pcie_get_supported_speeds(dev);
+> -
+>  	/* "Unknown power state" */
+>  	dev->current_state = PCI_UNKNOWN;
+>  
+> -- 
+> 2.43.0
+> 
 
