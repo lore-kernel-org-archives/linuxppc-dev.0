@@ -1,67 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-29489-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29490-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5AECACC6B1D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 15:27:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60069CC6B1A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2026 15:36:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j4Zp457PDz30Tp;
-	Thu, 15 Oct 2026 02:27:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791991660;
-	cv=none; b=KdpNmXWHAv/dUJ6lSeQluaTiH9J3YghuPe1PxGx6I2++hVV89TJyu3LQ4IZo01+aWsu3IkXzi2xsbX0UDLKoy37+ybKPIkcE9qvFbglER5Tchiq8qrZYoX8sW7Ee9Z2qYL/Csv5HNsZMUOl1WFw6zzg7NHMft0UXa8Tx4e+5F69gbNjw/dz0GMXScysL63PfiDowz6layVtaJRK3LU2wcNA/67Zg8Z0c2GdD6v4TR/ARB7VzOHxx8tfoj+1qsvG6OgxLIeuXHfEal4AgoKXInNsT9DgpmuY8iP20JQjH9gmA7l/bQutUBIG9/PNvEiBCOdbt0Mo4twFt4D8FFLOF2Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j4Zzw5Ygpz2ynZ;
+	Thu, 15 Oct 2026 02:36:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791992172;
+	cv=none; b=JMuJjUyyL3tvVtxVTc9Kd4XTzBvPXoAItTEnS9GqutodY3VBElb5M8jH19m+rwRBh6Jd1bqelZuExS68qAtrzZXeriaRKnd0Afg4H1S0ScKbPyJu/9+wQR0K2rgQT+qs6hHAZc+USPXIcXwvVsew2cXElp+orpP8lGK3bVyjdmVscEcEcznxxvm6p7yWxACqh9PSGn0Lr+eWM0lBgcpbMYdUXqwhuWOthdMhOnOzGgMm6HO4osuYpAErh/dGI9+BTtjsnU6CKOnbmx/d8fqLG2ZVYpAKPZKPTUeUnOXGq1YCKpXlc0BG1Dv+c/wts1+VyQGTM2qMXRqcglNx93DV7w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791991660; c=relaxed/relaxed;
-	bh=uOQE4G5vU2NQ5ZaBGGdj2Ya8VgNb7iH0ONyBIwd7aZo=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=BSJAhC0MmZfd7yu0wFmKfLF4pere2paihydM+WHVs2zQ8E89YvXQ6cmb49gPLcOS7UoqdYa7TakT7EL6aVNSFnhZWZvM9XaM+zIAIyovfS2ZMHCE0efQL6/HDfGWi8efUoC6OJNW5uI//By2joINGA5gUMrlbYnV1zhNSoRRitFWXp6c3rDAZObktCbmfhq6ejPrujAjSsGqu10r+OyIC4eivgPS1KRSCu0obXIiHy5cWc4yIzW6wAGEQHwHfHqEvulQpO5mSgELLE0Y2HgTuC87oAMugRIxxXPujkExg8lSjcTf7DJPGFBfoUnT0oeaVIcwa43bCUWtmqDoJW43mA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TPlMek9W; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1791992172; c=relaxed/relaxed;
+	bh=qA6YOwaVdkDe5WPMOWVzqY8zBl+ZRCOyb3XB7KK+18Y=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=adHHmobpm5lmRWoEaCwaWonrXjN6i5wyk97fCWjmzhKqPCCiw0Uug8IqyD4rEZNxf5wUc+eERMrUodPnkmNRzmqUUf5qPRVqVvl4A7YO0Wqpz34x5o+vjnTS2VbWKpDWcY4k2P1f4CrMiGXE7+X/pymx0HS4rKsoaHFa5IH2XfoFHuz1kZRvz/07l5CRP72Is4/KjtJ3LIxlMibTphLDF9AGAHs0IPQDoUPIWb7RWOuq+A/WbE1PwxLZfLpVpE7NR7vR6sSxIGe/w+rZcrNRcodqfqLmkcAoxeAyVX69yNcCWjT4P0MX+YUl7gDvW89/39XiVaYUijpnaYVikc9rdQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=fvQXGdjo; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132c; helo=mail-dy1-x132c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TPlMek9W;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=fvQXGdjo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132c; helo=mail-dy1-x132c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x132c.google.com (mail-dy1-x132c.google.com [IPv6:2607:f8b0:4864:20::132c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4Zp35h5fz30NF
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 02:27:39 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 4969D40659;
-	Wed, 14 Oct 2026 15:27:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C9F5B1F000C4;
-	Wed, 14 Oct 2026 15:27:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791991658;
-	bh=uOQE4G5vU2NQ5ZaBGGdj2Ya8VgNb7iH0ONyBIwd7aZo=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=TPlMek9W75wVjNxsr62uYjHpFW/ZTjFv35CbHwROiYINy+gIo32mtmvqn398+r/VK
-	 naNNAslfbWgUO0zxkn2GK3fJe10yBP3j/IEwbNKkvZubODZcF7qCG8edn31io7iB7p
-	 IHuJneCVOaJIa2X4F8B2hrDaZA4X4QxSL+p3p0VCZn1CfW9DOrFFg+1Ktbof8m9esR
-	 UCrsw5xevf3Nvq3eIeU1FT7dswdMGkM1SvF/g+z9zSpgIvs5Fo1YYvKOZM9TrlzorB
-	 MUxABTWp6MK8y/fMexf5Jg7rjq+N/38gO1tpzZUwj954gl5snqPkJ6IrtvaQ6uzyQR
-	 nCfKCtZnwmzwg==
-From: Eric Biggers <ebiggers@kernel.org>
-To: linux-crypto@vger.kernel.org
-Cc: Ard Biesheuvel <ardb@kernel.org>,
-	"Jason A . Donenfeld" <Jason@zx2c4.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	linux-arm-kernel@lists.infradead.org,
-	x86@kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-mips@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	Vladimir Kukharenko <vladimir@genproof.com>,
-	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 2/2] lib/crypto: chacha: Use size_t length
-Date: Wed, 14 Oct 2026 17:26:04 +0200
-Message-ID: <20261014152604.323310-3-ebiggers@kernel.org>
-X-Mailer: git-send-email 2.56.0
-In-Reply-To: <20261014152604.323310-1-ebiggers@kernel.org>
-References: <20261014152604.323310-1-ebiggers@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4Zzt2BvZz2yK7
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 02:36:09 +1100 (AEDT)
+Received: by mail-dy1-x132c.google.com with SMTP id 5a478bee46e88-3535a54bed9so1607708eec.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 08:36:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1791992168; x=1792596968; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=qA6YOwaVdkDe5WPMOWVzqY8zBl+ZRCOyb3XB7KK+18Y=;
+        b=fvQXGdjol8mr85oyIV/8sMn+u2gMfzzNDPiD4fmpztPMuqigOQ30+eAw5SF2k3J4yA
+         dvlS+5TMHTXKhCkR0hnwsMz5r57xKIFSq/NlEHrKCrGhRmCQBHRsYCsf8quI0i8Wf06O
+         +XcUiN1x8mZ0rE77jm4myC2i3PAJF8PNUKebDn+bYr0aPN/dHBvKOVSJ1OqqYEgN0Nzc
+         W5UbuY3T6v8WEoRqXpt6CJc+/ohYVN4orQU1vu0dUbcofQl7PJq5G8lsTmNT3uc1EwT+
+         CMLp89/wuqjBTRzSd1Dkxuks50cPpbCIkp0k28GbFVqmejpwnmqEm6pCgSX/6GY3yDLr
+         vLvg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791992168; x=1792596968;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=qA6YOwaVdkDe5WPMOWVzqY8zBl+ZRCOyb3XB7KK+18Y=;
+        b=RUrL3ZzoF481UHZ53XI6EeatbQWVdu+Q6qbOBlyUCbS4pMN/dd6DiG9KabRLwbee5V
+         zRRzREEKniKE1gh7GVqahsZvf83J3mkCjZjkPiCwJKkh1L04MME2psX4altqDQUpySSn
+         T0QudK6NdUnMyS1E+6khMIqUOCNaz1LL6LPEVkw71eBdZXLc9fmTJNHU8TzjjPJP4yNF
+         xkNfL7MpeSWqzoFPDiuX8IlbtRxSP1TTvy+pFZr4osg15Y7dBr8cVApj3KypoAHJdziP
+         4+YE4mtZk5uB5j8XAh3Miat4aZ5CXf3b/pyohfLNvWrHkjrGlsDuGu9/p7PLYNznkZW+
+         /EKA==
+X-Forwarded-Encrypted: i=1; AKwUvBy08vb7jJjfNc639JzB0DyhuUtNYTlXiHatLwxGhG1BQ+2Qcc+sJ8diudDcqnaTp9tdi3zzBBH8t6a6DLY=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYKA+hPF3l4znBbI6Lk0jmOUgzODWYVB0kjLK87YG7bxksB/pZ12
+	O88vsV8DuTbL2hInLJlOt6KUcDRsOEBbaXXyIa91Bw/fjtgIkFwQn63D
+X-Gm-Gg: AYBFou0uzzruhvOXtOtSodJdA2wYBjmkiqtIqPrWMadmY5+QXkwEQ33OrPZk1VTSlGV
+	QpT3obmZrwDzz8fP883azTUEq4U7iiWxPHGS+JlJgQ2ogdTIebLP0tx3oIpb7B+bM2+3V+YUUH0
+	RXPq6JjpXsNxKrMhcdJPJJ8cC/UhKC9PWH+J2lixj8X4qWEOiBiKV4Jd5NC77kJv/XahmNlm9QS
+	lgbFsVMS5LRdoilYuLZe1je5ASmUinTCujJQ/JDs3nF9sL5EMBqm6/+YwOuloRHIkEJTghrk8iU
+	a8aqs/f8aqRk3CCHsmeBUgyYXOj6TZzxt79zQcBAM2PrDf/VuRwwYbBckiBbVIPiL72G2+vT9sd
+	M+Y1PqyTZ2qoSBA9Cqn8jZ4uaMGtz1onBRHH6UrsZwnb0l2WKl7F4M9Z2j9SVyDS11maMJ1y2GT
+	8NtOn9SWusEZRuVXRamkrOHZQ8gvZEskBQqnOh4elbkeAMYaEBnGUcS4xybgX2MfzViO1z
+X-Received: by 2002:a05:7300:e9d6:10b0:359:bdc8:c9d5 with SMTP id 5a478bee46e88-359bdd83104mr17479248eec.21.1791992167458;
+        Wed, 14 Oct 2026 08:36:07 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3537ca6d20dsm58172660eec.12.2026.10.14.08.35.59
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 14 Oct 2026 08:36:06 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Muchun Song <songmuchun@bytedance.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Mike Rapoport <rppt@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, David Hildenbrand <david@kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, Shrikanth Hegde <sshegde@linux.ibm.com>, Lorenzo Stoakes <ljs@kernel.org>, "Liam R . Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Qi Zheng <qi.zheng@linux.dev>, Lance Yang <lance.yang@linux.dev>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Muchun Song <songmuchun@bytedance.com>, muchun.song@linux.dev
+Subject: Re: [PATCH v4 0/6] mm: Unify device DAX and HugeTLB vmemmap population paths
+In-Reply-To: <20261010075755.83339-1-songmuchun@bytedance.com>
+Date: Wed, 14 Oct 2026 20:19:23 +0530
+Message-ID: <wlrkqqvg.ritesh.list@gmail.com>
+References: <20261010075755.83339-1-songmuchun@bytedance.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -74,381 +89,171 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-Upgrade the ChaCha functions from 32-bit lengths to size_t.
+Muchun Song <songmuchun@bytedance.com> writes:
 
-'size_t' is the best practice for buffer lengths, and it's what the rest
-of the crypto library uses.
+> This v4 is based on mm-new commit d5207c6d152c, which contains v6 of
+> "mm: Switch device DAX to section-based vmemmap optimization" [1].
+>
 
-Moreover, all the ChaCha assembly functions actually already treated the
-length as size_t, despite it being declared as 32-bit on the 64-bit
-architectures arm64, ppc64, and x86_64.  For arm64 and x86_64, this
-caused unspecified behavior due to the high 32 bits of the corresponding
-register having an unspecified value in those architectures' ABIs.
-However, in practice these bits are always zero and no issue occurred.
+Hi Muchun,
 
-(ppc64 was fine too, since there the ABI zero-extends 32-bit arguments.)
+I was checking this patch series and seems like I am hitting an issue on
+mm-new, which most likely is due to this patch series.
+(Note that a similar issue was reported by Pavithra on PowerPC)
 
-These issues date to the original introduction of the ChaCha code.
-However, as noted above, they don't have any real-world impact
-currently; so this is an API robustness improvement only.
+Let me first give the call stack:
 
-Reported-by: Vladimir Kukharenko <vladimir@genproof.com>
-Closes: https://lore.kernel.org/r/20261012-libcrypto-4gib-lengths-v1-0-ea566c129a2e@genproof.com
-Signed-off-by: Eric Biggers <ebiggers@kernel.org>
----
- include/crypto/chacha.h              |  6 ++---
- lib/crypto/arm/chacha-scalar-core.S  |  2 +-
- lib/crypto/arm/chacha.h              | 14 +++++-----
- lib/crypto/arm64/chacha.h            | 10 +++----
- lib/crypto/chacha.c                  |  8 +++---
- lib/crypto/mips/chacha.h             |  5 ++--
- lib/crypto/powerpc/chacha-p10le-8x.S |  2 +-
- lib/crypto/powerpc/chacha.h          | 10 +++----
- lib/crypto/riscv/chacha.h            |  6 ++---
- lib/crypto/s390/chacha.h             |  2 +-
- lib/crypto/x86/chacha.h              | 40 ++++++++++++++--------------
- 11 files changed, 52 insertions(+), 53 deletions(-)
+[   79.930815] page: refcount:0 mapcount:1 mapping:0000000000000000 index:0x0 pfn:0x140000
+[   79.930833] flags: 0x0(node=0|zone=0|lastcpupid=0x0)
+[   79.930838] raw: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+[   79.930840] raw: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+[   79.930841] page dumped because: VM_BUG_ON_PAGE(!zone_spans_pfn(page_zone(page), pfn))
+[   79.931043] ------------[ cut here ]------------
+[   79.931051] kernel BUG at mm/page_alloc.c:373!
+[   79.931109] Oops: invalid opcode: 0000 [#1] SMP DEBUG_PAGEALLOC PTI
+[   79.940576] CPU: 2 UID: 0 PID: 743 Comm: ndctl Tainted: G                 N  7.3.0-rc5-01065-g45f4c1453cbe #23 PREEMPT(full)
+[   79.942647] Tainted: [N]=TEST
+[   79.943190] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS rel-1.16.3-0-ga6ed6b701f0a-prebuilt.qemu.org 04/01/2014
+[   79.945080] RIP: 0010:__set_pfnblock_flags_mask.constprop.0+0xef/0x110
+[   79.946231] Code: 48 8b 07 48 89 d1 48 f7 d1 48 89 c2 48 21 ca 48 09 f2 f0 48 0f b1 17 75 f0 c3 cc cc cc cc 48 c7 c6 b0 9b 5a 83 e8 91 be fa ff <0f> 0b ba 00 10 00 00 e9 7a ff ff ff 48 c7 c6 a8 b5 56 83 e8 79 be
+[   79.949296] RSP: 0018:ffffc90011ebf7b0 EFLAGS: 00010246
+[   79.950179] RAX: 000000000000004a RBX: 0000000000140000 RCX: 0000000000000000
+[   79.951366] RDX: 0000000000000000 RSI: 0000000000000001 RDI: ffffffffffffffff
+[   79.952562] RBP: 0000000000180000 R08: 0000000000000001 R09: 0000000000000000
+[   79.953759] R10: 0000000000000118 R11: 0000000000008000 R12: 0000000000000001
+[   79.954948] R13: 0000000000000000 R14: 0000000000180000 R15: 0000000000190000
+[   79.956151] FS:  00007ffff7e36d40(0000) GS:ffff8880f7f22000(0000) knlGS:0000000000000000
+[   79.957490] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[   79.958464] CR2: 000055555572ce90 CR3: 0000000031130003 CR4: 0000000000172ef0
+[   79.959657] Call Trace:
+[   79.960096]  <TASK>
+[   79.960487]  pageblock_migratetype_init_range.constprop.0+0x50/0x90
+[   79.961561]  memmap_init_zone_device+0x2fb/0x380
+[   79.962392]  pagemap_range+0x272/0x590
+[   79.963069]  memremap_pages+0x125/0x210
+[   79.963726]  ? lockdep_hardirqs_on+0x7d/0x100
+[   79.964488]  devm_memremap_pages+0x21/0x70
+[   79.965191]  dev_dax_probe+0x1db/0x300
+[   79.965870]  dax_bus_probe+0x6f/0xa0
+[   79.966495]  call_driver_probe+0x24/0xf0
+[   79.967190]  really_probe+0xb6/0x310
+[   79.967810]  ? __pfx___device_attach_driver+0x10/0x10
+[   79.968667]  __driver_probe_device+0x87/0x190
+[   79.969415]  ? __pfx___device_attach_driver+0x10/0x10
+[   79.970270]  driver_probe_device+0x1f/0x90
+[   79.970976]  __device_attach_driver+0x89/0x130
+[   79.971734]  bus_for_each_drv+0x86/0xe0
+[   79.972412]  __device_attach+0xb6/0x1d0
+[   79.973078]  device_initial_probe+0x40/0x60
+[   79.973791]  bus_probe_device+0x3d/0xa0
+[   79.974453]  device_add+0x4f0/0x6c0
+[   79.975068]  __devm_create_dev_dax+0x18b/0x3f0
+[   79.975830]  devm_create_dev_dax+0x21/0x40
+[   79.976530]  __dax_pmem_probe+0x1c3/0x200
+[   79.977244]  dax_pmem_probe+0xe/0x20
+[   79.977867]  nvdimm_bus_probe+0x89/0x250
+[   79.978566]  call_driver_probe+0x24/0xf0
+[   79.979242]  really_probe+0xb6/0x310
+[   79.979868]  __driver_probe_device+0x87/0x190
+[   79.980618]  device_driver_attach+0x47/0xb0
+[   79.981336]  bind_store+0x76/0xc0
+[   79.981922]  kernfs_fop_write_iter+0x152/0x200
+[   79.982715]  vfs_write+0x276/0x520
+[   79.983323]  ksys_write+0x6b/0xe0
+[   79.983900]  do_syscall_64+0xa6/0x470
+[   79.984543]  entry_SYSCALL_64_after_hwframe+0x76/0x7e
 
-diff --git a/include/crypto/chacha.h b/include/crypto/chacha.h
-index 1cc301a484697..bacf253781d52 100644
---- a/include/crypto/chacha.h
-+++ b/include/crypto/chacha.h
-@@ -86,10 +86,10 @@ static inline void chacha_init(struct chacha_state *state,
- }
- 
- void chacha_crypt(struct chacha_state *state, u8 *dst, const u8 *src,
--		  unsigned int bytes, int nrounds);
-+		  size_t bytes, int nrounds);
- 
--static inline void chacha20_crypt(struct chacha_state *state,
--				  u8 *dst, const u8 *src, unsigned int bytes)
-+static inline void chacha20_crypt(struct chacha_state *state, u8 *dst,
-+				  const u8 *src, size_t bytes)
- {
- 	chacha_crypt(state, dst, src, bytes, 20);
- }
-diff --git a/lib/crypto/arm/chacha-scalar-core.S b/lib/crypto/arm/chacha-scalar-core.S
-index 4951df05c158d..509b2f277b57f 100644
---- a/lib/crypto/arm/chacha-scalar-core.S
-+++ b/lib/crypto/arm/chacha-scalar-core.S
-@@ -366,7 +366,7 @@
- .endm	// _chacha
- 
- /*
-- * void chacha_doarm(u8 *dst, const u8 *src, unsigned int bytes,
-+ * void chacha_doarm(u8 *dst, const u8 *src, size_t bytes,
-  *		     const struct chacha_state *state, int nrounds);
-  */
- ENTRY(chacha_doarm)
-diff --git a/lib/crypto/arm/chacha.h b/lib/crypto/arm/chacha.h
-index 836e49088e983..8ce5375f58aa5 100644
---- a/lib/crypto/arm/chacha.h
-+++ b/lib/crypto/arm/chacha.h
-@@ -17,14 +17,14 @@
- asmlinkage void chacha_block_xor_neon(const struct chacha_state *state,
- 				      u8 *dst, const u8 *src, int nrounds);
- asmlinkage void chacha_4block_xor_neon(const struct chacha_state *state,
--				       u8 *dst, const u8 *src,
--				       int nrounds, unsigned int nbytes);
-+				       u8 *dst, const u8 *src, int nrounds,
-+				       size_t nbytes);
- asmlinkage void hchacha_block_arm(const struct chacha_state *state,
- 				  u32 out[HCHACHA_OUT_WORDS], int nrounds);
- asmlinkage void hchacha_block_neon(const struct chacha_state *state,
- 				   u32 out[HCHACHA_OUT_WORDS], int nrounds);
- 
--asmlinkage void chacha_doarm(u8 *dst, const u8 *src, unsigned int bytes,
-+asmlinkage void chacha_doarm(u8 *dst, const u8 *src, size_t bytes,
- 			     const struct chacha_state *state, int nrounds);
- 
- static __ro_after_init DEFINE_STATIC_KEY_FALSE(use_neon);
-@@ -35,12 +35,12 @@ static inline bool neon_usable(void)
- }
- 
- static void chacha_doneon(struct chacha_state *state, u8 *dst, const u8 *src,
--			  unsigned int bytes, int nrounds)
-+			  size_t bytes, int nrounds)
- {
- 	u8 buf[CHACHA_BLOCK_SIZE];
- 
- 	while (bytes > CHACHA_BLOCK_SIZE) {
--		unsigned int l = min(bytes, CHACHA_BLOCK_SIZE * 4U);
-+		size_t l = min(bytes, CHACHA_BLOCK_SIZE * 4U);
- 
- 		chacha_4block_xor_neon(state, dst, src, nrounds, l);
- 		bytes -= l;
-@@ -73,7 +73,7 @@ static void hchacha_block_arch(const struct chacha_state *state,
- }
- 
- static void chacha_crypt_arch(struct chacha_state *state, u8 *dst,
--			      const u8 *src, unsigned int bytes, int nrounds)
-+			      const u8 *src, size_t bytes, int nrounds)
- {
- 	if (!IS_ENABLED(CONFIG_KERNEL_MODE_NEON) || !neon_usable() ||
- 	    bytes <= CHACHA_BLOCK_SIZE) {
-@@ -83,7 +83,7 @@ static void chacha_crypt_arch(struct chacha_state *state, u8 *dst,
- 	}
- 
- 	do {
--		unsigned int todo = min_t(unsigned int, bytes, SZ_4K);
-+		size_t todo = min(bytes, SZ_4K);
- 
- 		scoped_ksimd()
- 			chacha_doneon(state, dst, src, todo, nrounds);
-diff --git a/lib/crypto/arm64/chacha.h b/lib/crypto/arm64/chacha.h
-index c6f8ddf98e2de..793ee9112eb99 100644
---- a/lib/crypto/arm64/chacha.h
-+++ b/lib/crypto/arm64/chacha.h
-@@ -28,18 +28,18 @@
- asmlinkage void chacha_block_xor_neon(const struct chacha_state *state,
- 				      u8 *dst, const u8 *src, int nrounds);
- asmlinkage void chacha_4block_xor_neon(const struct chacha_state *state,
--				       u8 *dst, const u8 *src,
--				       int nrounds, int bytes);
-+				       u8 *dst, const u8 *src, int nrounds,
-+				       size_t bytes);
- asmlinkage void hchacha_block_neon(const struct chacha_state *state,
- 				   u32 out[HCHACHA_OUT_WORDS], int nrounds);
- 
- static __ro_after_init DEFINE_STATIC_KEY_FALSE(have_neon);
- 
- static void chacha_doneon(struct chacha_state *state, u8 *dst, const u8 *src,
--			  unsigned int bytes, int nrounds)
-+			  size_t bytes, int nrounds)
- {
- 	while (bytes) {
--		int l = min(bytes, CHACHA_BLOCK_SIZE * 5);
-+		size_t l = min(bytes, CHACHA_BLOCK_SIZE * 5);
- 
- 		if (l <= CHACHA_BLOCK_SIZE) {
- 			u8 buf[CHACHA_BLOCK_SIZE];
-@@ -70,7 +70,7 @@ static void hchacha_block_arch(const struct chacha_state *state,
- }
- 
- static void chacha_crypt_arch(struct chacha_state *state, u8 *dst,
--			      const u8 *src, unsigned int bytes, int nrounds)
-+			      const u8 *src, size_t bytes, int nrounds)
- {
- 	if (!static_branch_likely(&have_neon) || bytes <= CHACHA_BLOCK_SIZE ||
- 	    !crypto_simd_usable())
-diff --git a/lib/crypto/chacha.c b/lib/crypto/chacha.c
-index 86e5d382a4e0c..95ecd6f989e35 100644
---- a/lib/crypto/chacha.c
-+++ b/lib/crypto/chacha.c
-@@ -11,9 +11,9 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
- 
--static void __maybe_unused
--chacha_crypt_generic(struct chacha_state *state, u8 *dst, const u8 *src,
--		     unsigned int bytes, int nrounds)
-+static void __maybe_unused chacha_crypt_generic(struct chacha_state *state,
-+						u8 *dst, const u8 *src,
-+						size_t bytes, int nrounds)
- {
- 	/* aligned to potentially speed up crypto_xor() */
- 	u8 stream[CHACHA_BLOCK_SIZE] __aligned(sizeof(long));
-@@ -39,7 +39,7 @@ chacha_crypt_generic(struct chacha_state *state, u8 *dst, const u8 *src,
- #endif
- 
- void chacha_crypt(struct chacha_state *state, u8 *dst, const u8 *src,
--		  unsigned int bytes, int nrounds)
-+		  size_t bytes, int nrounds)
- {
- 	chacha_crypt_arch(state, dst, src, bytes, nrounds);
- }
-diff --git a/lib/crypto/mips/chacha.h b/lib/crypto/mips/chacha.h
-index 0c18c0dc2a406..5a565d0a8c26e 100644
---- a/lib/crypto/mips/chacha.h
-+++ b/lib/crypto/mips/chacha.h
-@@ -7,8 +7,7 @@
- 
- #include <linux/kernel.h>
- 
--asmlinkage void chacha_crypt_arch(struct chacha_state *state,
--				  u8 *dst, const u8 *src,
--				  unsigned int bytes, int nrounds);
-+asmlinkage void chacha_crypt_arch(struct chacha_state *state, u8 *dst,
-+				  const u8 *src, size_t bytes, int nrounds);
- asmlinkage void hchacha_block_arch(const struct chacha_state *state,
- 				   u32 out[HCHACHA_OUT_WORDS], int nrounds);
-diff --git a/lib/crypto/powerpc/chacha-p10le-8x.S b/lib/crypto/powerpc/chacha-p10le-8x.S
-index b29562bd5d40d..7a32fc6493f12 100644
---- a/lib/crypto/powerpc/chacha-p10le-8x.S
-+++ b/lib/crypto/powerpc/chacha-p10le-8x.S
-@@ -573,7 +573,7 @@
- 
- #
- # void chacha_p10le_8x(const struct chacha_state *state, u8 *dst, const u8 *src,
--#		       unsigned int len, int nrounds);
-+#		       size_t len, int nrounds);
- #
- SYM_FUNC_START(chacha_p10le_8x)
- .align 5
-diff --git a/lib/crypto/powerpc/chacha.h b/lib/crypto/powerpc/chacha.h
-index 1df6e1ce31c46..706060b2fa1ba 100644
---- a/lib/crypto/powerpc/chacha.h
-+++ b/lib/crypto/powerpc/chacha.h
-@@ -13,7 +13,7 @@
- #include <asm/switch_to.h>
- 
- asmlinkage void chacha_p10le_8x(const struct chacha_state *state, u8 *dst,
--				const u8 *src, unsigned int len, int nrounds);
-+				const u8 *src, size_t len, int nrounds);
- 
- static __ro_after_init DEFINE_STATIC_KEY_FALSE(have_p10);
- 
-@@ -30,9 +30,9 @@ static void vsx_end(void)
- }
- 
- static void chacha_p10_do_8x(struct chacha_state *state, u8 *dst, const u8 *src,
--			     unsigned int bytes, int nrounds)
-+			     size_t bytes, int nrounds)
- {
--	unsigned int l = bytes & ~0x0FF;
-+	size_t l = bytes & ~0x0FF;
- 
- 	if (l > 0) {
- 		chacha_p10le_8x(state, dst, src, l, nrounds);
-@@ -49,14 +49,14 @@ static void chacha_p10_do_8x(struct chacha_state *state, u8 *dst, const u8 *src,
- #define hchacha_block_arch hchacha_block_generic /* not implemented yet */
- 
- static void chacha_crypt_arch(struct chacha_state *state, u8 *dst,
--			      const u8 *src, unsigned int bytes, int nrounds)
-+			      const u8 *src, size_t bytes, int nrounds)
- {
- 	if (!static_branch_likely(&have_p10) || bytes <= CHACHA_BLOCK_SIZE ||
- 	    !crypto_simd_usable())
- 		return chacha_crypt_generic(state, dst, src, bytes, nrounds);
- 
- 	do {
--		unsigned int todo = min_t(unsigned int, bytes, SZ_4K);
-+		size_t todo = min(bytes, SZ_4K);
- 
- 		vsx_begin();
- 		chacha_p10_do_8x(state, dst, src, todo, nrounds);
-diff --git a/lib/crypto/riscv/chacha.h b/lib/crypto/riscv/chacha.h
-index 5c000c6aef4be..a84913c4ece8e 100644
---- a/lib/crypto/riscv/chacha.h
-+++ b/lib/crypto/riscv/chacha.h
-@@ -19,11 +19,11 @@ asmlinkage void chacha_zvkb(struct chacha_state *state, const u8 *in, u8 *out,
- #define hchacha_block_arch hchacha_block_generic /* not implemented yet */
- 
- static void chacha_crypt_arch(struct chacha_state *state, u8 *dst,
--			      const u8 *src, unsigned int bytes, int nrounds)
-+			      const u8 *src, size_t bytes, int nrounds)
- {
- 	u8 block_buffer[CHACHA_BLOCK_SIZE];
--	unsigned int full_blocks = bytes / CHACHA_BLOCK_SIZE;
--	unsigned int tail_bytes = bytes % CHACHA_BLOCK_SIZE;
-+	size_t full_blocks = bytes / CHACHA_BLOCK_SIZE;
-+	size_t tail_bytes = bytes % CHACHA_BLOCK_SIZE;
- 
- 	if (!static_branch_likely(&use_zvkb) || !crypto_simd_usable())
- 		return chacha_crypt_generic(state, dst, src, bytes, nrounds);
-diff --git a/lib/crypto/s390/chacha.h b/lib/crypto/s390/chacha.h
-index fd9c4a4223656..fa7dfc63cb2f5 100644
---- a/lib/crypto/s390/chacha.h
-+++ b/lib/crypto/s390/chacha.h
-@@ -15,7 +15,7 @@
- #define hchacha_block_arch hchacha_block_generic /* not implemented yet */
- 
- static void chacha_crypt_arch(struct chacha_state *state, u8 *dst,
--			      const u8 *src, unsigned int bytes, int nrounds)
-+			      const u8 *src, size_t bytes, int nrounds)
- {
- 	/* s390 chacha20 implementation has 20 rounds hard-coded,
- 	 * it cannot handle a block of data or less, but otherwise
-diff --git a/lib/crypto/x86/chacha.h b/lib/crypto/x86/chacha.h
-index 10cf8f1c569dc..b971fb0f3d472 100644
---- a/lib/crypto/x86/chacha.h
-+++ b/lib/crypto/x86/chacha.h
-@@ -11,46 +11,46 @@
- #include <linux/sizes.h>
- 
- asmlinkage void chacha_block_xor_ssse3(const struct chacha_state *state,
--				       u8 *dst, const u8 *src,
--				       unsigned int len, int nrounds);
-+				       u8 *dst, const u8 *src, size_t len,
-+				       int nrounds);
- asmlinkage void chacha_4block_xor_ssse3(const struct chacha_state *state,
--					u8 *dst, const u8 *src,
--					unsigned int len, int nrounds);
-+					u8 *dst, const u8 *src, size_t len,
-+					int nrounds);
- asmlinkage void hchacha_block_ssse3(const struct chacha_state *state,
- 				    u32 out[HCHACHA_OUT_WORDS], int nrounds);
- 
- asmlinkage void chacha_2block_xor_avx2(const struct chacha_state *state,
--				       u8 *dst, const u8 *src,
--				       unsigned int len, int nrounds);
-+				       u8 *dst, const u8 *src, size_t len,
-+				       int nrounds);
- asmlinkage void chacha_4block_xor_avx2(const struct chacha_state *state,
--				       u8 *dst, const u8 *src,
--				       unsigned int len, int nrounds);
-+				       u8 *dst, const u8 *src, size_t len,
-+				       int nrounds);
- asmlinkage void chacha_8block_xor_avx2(const struct chacha_state *state,
--				       u8 *dst, const u8 *src,
--				       unsigned int len, int nrounds);
-+				       u8 *dst, const u8 *src, size_t len,
-+				       int nrounds);
- 
- asmlinkage void chacha_2block_xor_avx512vl(const struct chacha_state *state,
--					   u8 *dst, const u8 *src,
--					   unsigned int len, int nrounds);
-+					   u8 *dst, const u8 *src, size_t len,
-+					   int nrounds);
- asmlinkage void chacha_4block_xor_avx512vl(const struct chacha_state *state,
--					   u8 *dst, const u8 *src,
--					   unsigned int len, int nrounds);
-+					   u8 *dst, const u8 *src, size_t len,
-+					   int nrounds);
- asmlinkage void chacha_8block_xor_avx512vl(const struct chacha_state *state,
--					   u8 *dst, const u8 *src,
--					   unsigned int len, int nrounds);
-+					   u8 *dst, const u8 *src, size_t len,
-+					   int nrounds);
- 
- static __ro_after_init DEFINE_STATIC_KEY_FALSE(chacha_use_simd);
- static __ro_after_init DEFINE_STATIC_KEY_FALSE(chacha_use_avx2);
- static __ro_after_init DEFINE_STATIC_KEY_FALSE(chacha_use_avx512vl);
- 
--static unsigned int chacha_advance(unsigned int len, unsigned int maxblocks)
-+static size_t chacha_advance(size_t len, size_t maxblocks)
- {
- 	len = min(len, maxblocks * CHACHA_BLOCK_SIZE);
- 	return round_up(len, CHACHA_BLOCK_SIZE) / CHACHA_BLOCK_SIZE;
- }
- 
- static void chacha_dosimd(struct chacha_state *state, u8 *dst, const u8 *src,
--			  unsigned int bytes, int nrounds)
-+			  size_t bytes, int nrounds)
- {
- 	if (static_branch_likely(&chacha_use_avx512vl)) {
- 		while (bytes >= CHACHA_BLOCK_SIZE * 8) {
-@@ -137,14 +137,14 @@ static void hchacha_block_arch(const struct chacha_state *state,
- }
- 
- static void chacha_crypt_arch(struct chacha_state *state, u8 *dst,
--			      const u8 *src, unsigned int bytes, int nrounds)
-+			      const u8 *src, size_t bytes, int nrounds)
- {
- 	if (!static_branch_likely(&chacha_use_simd) ||
- 	    bytes <= CHACHA_BLOCK_SIZE)
- 		return chacha_crypt_generic(state, dst, src, bytes, nrounds);
- 
- 	do {
--		unsigned int todo = min_t(unsigned int, bytes, SZ_4K);
-+		size_t todo = min(bytes, SZ_4K);
- 
- 		kernel_fpu_begin();
- 		chacha_dosimd(state, dst, src, todo, nrounds);
--- 
-2.56.0
+
+also - 
+
+[    4.426995] BUG: kernel NULL pointer dereference, address: 0000000000000090
+[    4.428266] #PF: supervisor read access in kernel mode
+[    4.428266] #PF: error_code(0x0000) - not-present page
+[    4.428266] PGD 0 P4D 0
+[    4.428266] Oops: Oops: 0000 [#1] SMP DEBUG_PAGEALLOC PTI
+[    4.428266] CPU: 6 UID: 0 PID: 1 Comm: swapper/0 Not tainted 7.3.0-rc5-01065-g45f4c1453c
+[    4.428266] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS rel-1.16.3-0-ga6ed6b701f04
+[    4.428266] RIP: 0010:__set_pfnblock_flags_mask.constprop.0+0x3d/0x110
+[    4.428266] Code: 84 e3 00 00 00 48 8b 17 48 89 d1 48 c1 ea 37 83 e2 07 48 c1 e9 3a 48 8d 14 52 40
+[    4.428266] RSP: 0000:ffffc9000001b770 EFLAGS: 00010246
+[    4.428266] RAX: 0000000000140000 RBX: 0000000000140000 RCX: 0000000000000020
+[    4.428266] RDX: 0000000000000000 RSI: 0000000000000001 RDI: ffffea0005000000
+[    4.428266] RBP: 0000000000180000 R08: ffff8880093e1600 R09: 0000000000000040
+[    4.428266] R10: 0000000000000001 R11: 0000000000000000 R12: 0000000000000001
+[    4.428266] R13: 0000000000000000 R14: 0000000000180000 R15: 0000000000190000
+[    4.428266] FS:  0000000000000000(0000) GS:ffff8880f8722000(0000) knlGS:0000000000000000
+[    4.428266] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[    4.428266] CR2: 0000000000000090 CR3: 0000000003aac001 CR4: 0000000000172ef0
+[    4.428266] Call Trace:
+[    4.428266]  <TASK>
+[    4.428266]  pageblock_migratetype_init_range.constprop.0+0x50/0x90
+[    4.428266]  memmap_init_zone_device+0x2fb/0x380
+[    4.428266]  pagemap_range+0x272/0x590
+[    4.428266]  memremap_pages+0x125/0x210
+[    4.428266]  ? lockdep_hardirqs_on+0x7d/0x100
+[    4.428266]  devm_memremap_pages+0x21/0x70
+[    4.428266]  dev_dax_probe+0x1db/0x300
+[    4.428266]  dax_bus_probe+0x6f/0xa0
+[    4.428266]  call_driver_probe+0x24/0xf0
+[    4.428266]  really_probe+0xb6/0x310
+[    4.428266]  ? __pfx___device_attach_driver+0x10/0x10
+[    4.428266]  __driver_probe_device+0x87/0x190
+[    4.428266]  ? __pfx___device_attach_driver+0x10/0x10
+[    4.428266]  driver_probe_device+0x1f/0x90
+[    4.428266]  __device_attach_driver+0x89/0x130
+[    4.428266]  bus_for_each_drv+0x86/0xe0
+[    4.428266]  __device_attach+0xb6/0x1d0
+[    4.428266]  device_initial_probe+0x40/0x60
+[    4.428266]  bus_probe_device+0x3d/0xa0
+[    4.428266]  device_add+0x4f0/0x6c0
+[    4.428266]  __devm_create_dev_dax+0x18b/0x3f0
+[    4.428266]  devm_create_dev_dax+0x21/0x40
+[    4.428266]  __dax_pmem_probe+0x1c3/0x200
+[    4.428266]  dax_pmem_probe+0xe/0x20
+[    4.428266]  nvdimm_bus_probe+0x89/0x250
+[    4.428266]  call_driver_probe+0x24/0xf0
+[    4.428266]  really_probe+0xb6/0x310
+[    4.428266]  ? __pfx___driver_attach+0x10/0x10
+[    4.428266]  __driver_probe_device+0x87/0x190
+[    4.428266]  ? __pfx___driver_attach+0x10/0x10
+[    4.428266]  driver_probe_device+0x1f/0x90
+[    4.428266]  __driver_attach+0xd7/0x200
+[    4.428266]  bus_for_each_dev+0x79/0xc0
+[    4.428266]  bus_add_driver+0x127/0x250
+[    4.428266]  driver_register+0x59/0x100
+[    4.428266]  ? __pfx_dax_pmem_init+0x10/0x10
+[    4.428266]  do_one_initcall+0x59/0x3a0
+[    4.428266]  do_initcalls+0xdd/0x1b0
+[    4.428266]  kernel_init_freeable+0x16f/0x2b0
+[    4.428266]  ? __pfx_kernel_init+0x10/0x10
+[    4.428266]  kernel_init+0x1f/0x1d0
+[    4.428266]  ret_from_fork+0x244/0x280
+[    4.428266]  ? __pfx_kernel_init+0x10/0x10
+[    4.428266]  ret_from_fork_asm+0x1a/0x30
+[    4.428266]  </TASK>
+
+
+- I am hitting this issue on x86 kvm itself (and also on PowerPC)
+- I am able to hit the issue with the following extra qemu params:
+    -m 2G,slots=4,maxmem=16G
+    -object memory-backend-file,id=mem1,mem-path=/tmp/nvdimm.img,size=2560M,share=on -device nvdimm,id=nvdimm0,memdev=mem1,label-size=256M,addr=0x100000000
+
+    # then once the system comes up
+    ndctl disable-region region0
+    ndctl init-labels all
+    ndctl enable-region region0
+
+    ndctl create-namespace -r region0 -t pmem -m raw -s 256M
+    ndctl create-namespace -r region0 -t pmem -m devdax -M mem -a 1G -s 2G 
+
+I am still debugging this issue - but from the logs it looks like that
+some struct page was never initialized which caused the VM_BUG_ON().
+
+Can you take a look at this once?
+
+Thanks!
+-ritesh
+
 
 
