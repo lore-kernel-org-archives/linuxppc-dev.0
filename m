@@ -1,92 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-29546-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29547-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BB11CC6B34
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2026 06:33:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DABACC6B34
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2026 06:35:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j4yty40S7z2ylj;
-	Thu, 15 Oct 2026 17:33:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792045994;
-	cv=none; b=Flf4FyOSCBTSvynMfQ3jRXcRREQuOLzAHXBv7hydCTCJ2zYC1+TLnt53yz2lBa+27A5oMskaZr5Y8NjWdtclpde1se0YdXX/JkA8skQDw8cXxUN9+hTEfFmWIW9wr1nq0vukntjG78ZASZ4gk4jhot5u5/OJ7Alr7i8/hznjXMPxm+XyYsaLW2efbvcQTb+y1vOAM9pjjPeGQxWBO2UZRFZBFB0JPmotX1D60cVVEIeypYoImmN+j7oV4bkd8fcAn0swXrzmFh6QxapLTsB1O9E+8jVJ/oPl0dWuzd4UURI35EhnEH4FhQ2pCIQOMVMf5MDdlQMq1RFmZ5l2oRzE5Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j4yxQ6KTbz30RN;
+	Thu, 15 Oct 2026 17:35:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792046122;
+	cv=none; b=hSNeGgX7wqgi794RZtgDi8empMNOewnAkeYSQOGcukxwHbeuXVubvWBadh1jE06vwmSF8BVeV2Dv7+JIImUWEgviozEeBnSe6KMzTDE631OMVSFJiEpwMsfMotvfvYhpEE+ps+x1Ew9oysgam86C8f/wjMPddw+x897Jiym6sY8Qbq+Z64kGeb+/rb1U4YOt9mWGsTYPL9fd5RWHNdRZVB8sw9J3g84rNB0s0XsF5e5D+Ywn3cos9wfBUHJf6avZs6qCgwwfjIgV/VgZ1enzklBYXVx/3ee2dAuV1YYXRwHtbAbcLj7ZOK83ewK64oV1OAxjctUKaPiAE3omw1pNCA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792045994; c=relaxed/relaxed;
-	bh=hShrhkKhE7cqzWAVYxt1KlRI8LNhnsqtVeQ5CSO7Esw=;
+	t=1792046122; c=relaxed/relaxed;
+	bh=vx7M7s3SuZxFkSx1BxbOLI08ri7SD/5H0oyHxOOrQc0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mAVPHxKnfUdV5k79qqb2wJ7s2E92QChSEZGJ95kieKTIONOrTF5YtVuAF4fqv27KqllAa/HMF/+ALyX/pXeYRRIev5E9qbG67jN0jwoRLRdFYOg3WhT6ixhd5bdLAIdzhYbv92D9cY0hGUZ0sZNeaZ1x2FqXVW2zWDLI+pMtLOAlr3bEZNo0I1O9lIeJcA+RPtddQZPyY+TK9WMt4ZatTa4chuSQO4beL0X9SydsXbQboDJHbFLkq7RC08rS7nV+vV0qOadz8GoKRGYONXJRvs7gAfDjyzY77VMi8fychSS3jOhRoLRIqyy6ZTjVQ71KwAWjyuZKP1SqEkeHvneN6Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=DiuXyXTX; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42a; helo=mail-pf1-x42a.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=lCaS1arDr8+41K27GHqr1O7sC8l9gKCshmUkMN0ZMpT9eig1qIo7g+FOdpweLhzMGc6R9jYwBV+AbNHDolvN6wmzxcsTkMAUwuAE06RRkZykGwC88HiU6uJ+dwAixItk5qiaOP2UTi0pXEU7pkWEPGCtFtsGCNxr1/pRFyK6ZzkZ3gVWuK27XGMD78+FKEKSp5Pqr/3PGs5l7I6S+Nu4RAPNXhyycXT7pS7WTOL9maujyKKhmEqORhPzQoTVwSdnboe3lYB0HrYAv24ADoJwvQUFV5eX8AMNFifBXfh6MAKmPEHknmQESez979Cif8srYhIrYQ/GahKdA8bI5mDHOA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=eoHNCHjm; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=DiuXyXTX;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=eoHNCHjm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42a; helo=mail-pf1-x42a.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com [IPv6:2607:f8b0:4864:20::42a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4ytx24tlz2yWy
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 17:33:11 +1100 (AEDT)
-Received: by mail-pf1-x42a.google.com with SMTP id d2e1a72fcca58-88bd2b44f3aso2398012b3a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 23:33:11 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4yxQ0Cw8z2ylj
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 17:35:21 +1100 (AEDT)
+Received: by mail-pj1-x102b.google.com with SMTP id 98e67ed59e1d1-3ac77270fbfso841804a91.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 23:35:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792045988; x=1792650788; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1792046119; x=1792650919; darn=lists.ozlabs.org;
         h=in-reply-to:content-transfer-encoding:content-disposition
          :content-type:mime-version:references:message-id:subject:cc:to:from
          :date:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=hShrhkKhE7cqzWAVYxt1KlRI8LNhnsqtVeQ5CSO7Esw=;
-        b=DiuXyXTXy5J6EweVYFUWHUOcn0LQ9uAXZziXPFSA6CD9EthLNgkcZx93Tv7w71CoVP
-         YinctLcbAus3apZvFl+pfEa9U9vbZixeuWlDk39RVk8e9NagtPpj/a+CacGkFhUB2cUk
-         Yg4UzQuw+YAt1QZq4uZjrd0gGonNV+z+ickSJPG29UBemUkVjMdmIeReaCr01il/wBLO
-         JQycs25Pp0fbXLPJVtHnImzx6SJ18qndj1aWvR/xeUkmpf4IzpR2/Ngsdwc5CLO5QFI+
-         fF1GCA4Jz0cARql/OvcJbzWlAi7jnzHAMqWHdTxT+2+OXpwOC/zCOyYfM9X7ruaZ0Bj4
-         rpjQ==
+        bh=vx7M7s3SuZxFkSx1BxbOLI08ri7SD/5H0oyHxOOrQc0=;
+        b=eoHNCHjms6+pVl8zLrT5BtkdBpz2bJO+Sfnl+JWqULJz4uZf70AHuzlDVSZ5uZyBeN
+         p8KpCXnFOARcCRI9RY186CKcYovtit0IaXUem7xp7Gd1yXkTeRXP7HhuoNaIqJmZxGZF
+         pR//fBKJEIiMCCkjTuFChxeW96a3vYxYxfI9ctQM8gGx1CzX0tnliAM2JWZUU2wkyk8c
+         ZDzmG8dq8KdFXE8642ySZWONfIoG9fPqwo8u7LTGFM4qkcmGlxUDlU8kyhH58xx+iBz4
+         UHuhuXeC84v9/U7xxDisi+YmN1JJp1V7C4u8WuFli8/7USCVa2njETF6AWtuX9kgo3KC
+         sDcw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792045988; x=1792650788;
+        d=1e100.net; s=20260707; t=1792046119; x=1792650919;
         h=in-reply-to:content-transfer-encoding:content-disposition
          :content-type:mime-version:references:message-id:subject:cc:to:from
          :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to:content-type;
-        bh=hShrhkKhE7cqzWAVYxt1KlRI8LNhnsqtVeQ5CSO7Esw=;
-        b=Axd/dAkmx6n3xqFgH58vXlrX4rKpNcWZKnrK0Z4umXetu8KtArOsgVrL24Llk68vhg
-         E/LXS8tOmDRrlwp7gTyCB0xHjI45yQr/56l6A/uD98w2NFKOVr3O3jyT2WS0WixZKETH
-         Yi5/ohGYxii0PkHDPoEIjmq1v3JjECsaLPReuWaItZAY8SVwOB0nfkEoAwNb6XE5C6sm
-         XECvUPFmNALdulBd9UvDBrNRXBw5FM/jo5MUKTuF82SrMAnOjEHu18dtxGSsw5OdQU1a
-         SeaGkxsvoRgDINat+zLUO/FlXte7n6hcZ8mPRUZIFiCSU2ec4+M/AMNOYf7JvImvXS7S
-         bW3g==
-X-Gm-Message-State: AFq9FYIwfOREFUUHi/fOJd+KqdnfE1LskJF109lrdm+6wGKSW2gk6N7o
-	htdSAPeWs4KlVHlI2DAdAojY65gqanqeFes2du7Nqo+XxECjyP/30fPw
-X-Gm-Gg: AYBFou12SynRO1lCM1VKfoglTwdvX1jaeeBxb2NSgIoXZf/vlt8/dgGcovLExrtOe5s
-	LyGGRo0NuQAqZaMMG2xkA+ST/1oDsJXuLZJaLi2jjl1aMyX+Kq8y/kh/WwgQsvWXyLirc4Drf86
-	hNrJpQGA8Hi3iUtchYd0LPOGyly16DUIyqpmDliN0eTrCSgfeQ9aCm9GgFwvkOTOKctI1YjpuNu
-	1ihZbUIELjWbnuqGOoHztgjGHwfoq1OcnUZvAYk+tmScfG8vyDth057nkHYDlm3OJLA/IHnCRhn
-	e3/+roCVX9La2oLwydJmCH/94VOseDkEem6nwsRxuY9+4h/uXUlU73BI242nWSWx/lBwRu7T4Zd
-	1o0mAt33iKnOPMN5ySuCh4aqTjC+zbWYuhr0YGCivSet3IN0vnfaX+PSA8B/q/oRierXtYw0wTg
-	ObALL+uXjkJ/BUtqi88WKDKXIj+Afd8V22spgE05GuVVZAQepzR2i9Pb1c22MMMZjQ5W/EL/Ujb
-	hJdG/KMwALrSJRv1awXio820mO5GAbzturV+deUZxV4kLbn/A1x9w==
-X-Received: by 2002:a05:6a00:1798:b0:893:12e5:c07c with SMTP id d2e1a72fcca58-897c6d1e604mr15127064b3a.27.1792045988486;
-        Wed, 14 Oct 2026 23:33:08 -0700 (PDT)
+        bh=vx7M7s3SuZxFkSx1BxbOLI08ri7SD/5H0oyHxOOrQc0=;
+        b=NVhGMpdi45/ownW8rlNPb5FxX4vvHgqeOHMIfnXSKpQova0TQ9zAX1BGEurziZvKCa
+         zWsclu7Vj1utRqk4bZ92W3qv6hJrHet6YaKhUyGiJqXJ4wR/Djom0CP4DgdqWqRTkGQe
+         UjKhgYsh7ztHxLkk9qKFApbmtikoOht55v5/goMSiHhkSS0vC9JaacDRTAOrBKpb5UoQ
+         S4Z/B9eOys4l9z7T09gojgPMrjNqYl0Gl3ZngZn0D7vSQe8ov1AvcLh7lYT1xqxWIhc6
+         8WUgL56ugfOGPqAboVg6IiFAMxY67JpCMTTKFCcXMqM+3ukcDvNKQUdsKxc5kTsays6Y
+         JqIA==
+X-Forwarded-Encrypted: i=1; AKwUvBxPyzzOPISOpOE1Qz1KPQxg8ikdy5b1E22eHTh3yXVbIv5S5BQnA1FIYWxot582g6xfZkKjTGnY1dw5kN0=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYIyEA8DtAUr7XYBLVisf2+npn9S+QgEkhImMKrX+NghE8QsxxOn
+	Aw8H0hyPL2CwL3B3v2QvzSC1Bfiqdvsl36aFdijEhIlaD4nE2XZgJWIr
+X-Gm-Gg: AYBFou2jIqWvPaU8agC1SrwXUYgbIz/O1KxkhYppBM1SJkYygJHme0zmMKJSy4hjioy
+	mJgQndO98i8XMDAktX59jLz7DXOpe44P4I0nad1rJHEfTIC1nxVrw6mnbdGX9rYPeI5EPiXucuj
+	1PJSsuZe2MU2Ue4ujDZrEvHTp4MXflR2yq7eonnCIuV4XM4wNKP7Y65GigZjAj19DLMzcAvOnxV
+	20klOeHJkBwviztuCt6YSFlyylDRu0RoOISgz67IanwCJqjnX2HSM4QHfUd075quUUZgy42bhFw
+	QXKd0wGf/6Z8e88y5TE34s7qtuLnMJFWgsQ35qktmsJFGwbzfq8aNy/9urleD77S+G05ovpiKnS
+	6kYEKqE37a9/zq3GXeCPiT2JRHtWvm37crRvDuAMp3TgrKfhIvpLVT0ymPT+sXUAgXChXiEHu6N
+	C8/1LwIHMTGlHIgClZBbgAXtHnR7x/AXTXC3aMJgajkTA2f0k8np4tAS5+4nO8dJX33sqgeBa+s
+	FVUHJmjwBRgpm1SoPiTvqzxga/3vMX+PYiW214lRgc=
+X-Received: by 2002:a17:90b:384a:b0:39e:6a81:c923 with SMTP id 98e67ed59e1d1-3ab3a90a112mr13973663a91.22.1792046118994;
+        Wed, 14 Oct 2026 23:35:18 -0700 (PDT)
 Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([129.41.58.4])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-89d7f51ff63sm1855103b3a.5.2026.10.14.23.33.02
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ac943e755bsm2856756a91.2.2026.10.14.23.35.09
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 14 Oct 2026 23:33:07 -0700 (PDT)
-Date: Thu, 15 Oct 2026 12:02:59 +0530
+        Wed, 14 Oct 2026 23:35:18 -0700 (PDT)
+Date: Thu, 15 Oct 2026 12:05:07 +0530
 From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Michal Suchanek <msuchanek@suse.de>
-Cc: linuxppc-dev@lists.ozlabs.org, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
-	Kees Cook <kees@kernel.org>, Andy Lutomirski <luto@amacapital.net>, 
-	Will Drewry <wad@chromium.org>, Alexander Gordeev <agordeev@linux.ibm.com>, 
-	Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>, "Bernhard M. Wiedemann" <bwiedemann@suse.de>, 
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH v2 1/2] powerpc: Restore all registers after a traced
- syscall again
-Message-ID: <atBzk84t0QT5_ote@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <961c058f3f3e03045552186c083a68a0fde3f43f.1791975972.git.msuchanek@suse.de>
+To: Link Mauve <linkmauve@linkmauve.fr>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com, ojeda@kernel.org, 
+	boqun@kernel.org, gary@garyguo.net, bjorn3_gh@protonmail.com, lossin@kernel.org, 
+	a.hindborg@kernel.org, aliceryhl@google.com, tmgross@umich.edu, dakr@kernel.org, 
+	daniel.almeida@collabora.com, tamird@kernel.org, acourbot@nvidia.com, work@onurozkan.dev, 
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org, 
+	FUJITA Tomonori <tomo@flapping.org>
+Subject: Re: [PATCH V6] powerpc/bug: Add ARCH_WARN_ASM and refactor
+ _EMIT_BUG_ENTRY for Rust support
+Message-ID: <atBzxk9JFdXKYHfN@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <20260922054311.906816-1-mkchauras@gmail.com>
+ <as08wgiYOGOx5Jzo@desktop>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,216 +101,197 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <961c058f3f3e03045552186c083a68a0fde3f43f.1791975972.git.msuchanek@suse.de>
+In-Reply-To: <as08wgiYOGOx5Jzo@desktop>
 
-On Wed, Oct 14, 2026 at 01:06:51PM +0200, Michal Suchanek wrote:
-> From: Bernhard M. Wiedemann <bwiedemann@suse.de>
+On Mon, Oct 12, 2026 at 10:02:10PM +0200, Link Mauve wrote:
+> Hi,
 > 
-> syscall_exit_prepare() asks the exit assembly to reload all GPRs, CTR
-> and XER from pt_regs only if the thread flags contain any of the flags
-> in _TIF_SYSCALL_DOTRACE. With the new entry code based GENERIC_ENTRY the
-> flags are no longer set.
+> With 7.3 close to release, and this patch still not merged, the kernel
+> will still fail to build with CONFIG_RUST=y on PowerPC.
 > 
-> This breaks tracers that modify a stopped syscall, for example ones that
-> re-execute the syscall instruction by moving the NIP back by 4 at the
-> syscall-exit stop with the syscall number put back into r0: the sc then
-> runs with r0 = 0, which is __NR_restart_syscall. dettrace fails like
-> this with "No filter rule for system call: restart_syscall". A tracer
-> that writes r4 at the syscall-exit stop of an sc sees the tracee
-> continue with r4 = 0 instead; with a 7.1 kernel both work.
+> Should the Rust support for this architecture get disabled as an
+> emergency measure before 7.3?  Should this patch get in instead?  Should
+> we ignore the issue as not many people will use this architecture
+> anyway?  Is there another solution I’m not seeing?
 > 
-> Check the equivalent syscall_work bits instead, and drop the now unused
-> _TIF_SYSCALL_DOTRACE.
+> Sorry I haven’t made it known sooner, I was busy with things.
 > 
-> Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
-> Cc: stable@vger.kernel.org # 7.2.x: c7585b8e99ad: powerpc: Don't drop _TIF_RESTOREALL on syscall restart
-> Cc: stable@vger.kernel.org # 7.2.x
-> Assisted-by: LLM
-> Signed-off-by: Bernhard M. Wiedemann <bwiedemann@suse.de>
-> [ms: reword commit message]
-> Signed-off-by: Michal Such�nek <msuchanek@suse.de>
-> ---
-> A backport also needs commit c7585b8e99ad ("powerpc: Don't drop
-> _TIF_RESTOREALL on syscall restart"), without which the flag can still
-> be lost.
+> As an aside, this patch does fix building Rust drivers for a Wii, so it
+> gets my:
+> Tested-by: Link Mauve <linkmauve@linkmauve.fr>
 > 
-> v2: rename PPC_SYSCALL_WORK_RESTOREALL to SYSCALL_WORK_RESTOREALL and
-> move it from interrupt.c to thread_info.h
+Hey Link,
+
+This is in line for 7.4.
+
+Regards,
+Mukesh
+> On Tue, Sep 22, 2026 at 11:13:11AM +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
+> > The Rust kernel infrastructure generates inline asm for WARN() via
+> > ARCH_WARN_ASM(file, line, flags, size), expanding it through a C
+> > preprocessor pass (generated_arch_warn_asm.rs.S) to produce an
+> > arch-specific asm template string for use in Rust's core::arch macros.
+> > 
+> > powerpc currently lacks ARCH_WARN_ASM and ARCH_WARN_REACHABLE, causing
+> > Rust builds to fail on powerpc with
+> > ```
+> > error: no rules expected `ARCH_WARN_ASM`
+> >    --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_warn_asm.rs:1:28
+> >     |
+> >   1 | ::kernel::concat_literals!(ARCH_WARN_ASM("{file}", "{line}", "{flags}", "{size}"))
+> >     |                            ^^^^^^^^^^^^^ no rules expected this token in macro call
+> >     |
+> >    ::: ../rust/kernel/lib.rs:279:1
+> >     |
+> > 279 | macro_rules! concat_literals {
+> >     | ---------------------------- when calling this macro
+> >     |
+> >     = note: while trying to match sequence start
+> > 
+> > error: no rules expected `ARCH_WARN_REACHABLE`
+> >    --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_reachable_asm.rs:1:28
+> >     |
+> >   1 | ::kernel::concat_literals!(ARCH_WARN_REACHABLE)
+> >     |                            ^^^^^^^^^^^^^^^^^^^ no rules expected this token in macro call
+> >     |
+> >    ::: ../rust/kernel/lib.rs:279:1
+> >     |
+> > 279 | macro_rules! concat_literals {
+> >     | ---------------------------- when calling this macro
+> >     |
+> >     = note: while trying to match sequence start
+> > 
+> > error: aborting due to 2 previous errors
+> > ```
+> > 
+> > To add ARCH_WARN_ASM, _EMIT_BUG_ENTRY first needs to be refactored.
+> > The old definition was a bare macro with no parameters, relying on
+> > positional asm operand references (%0-%3), hardcoding the backward
+> > reference to local label 1b, and including .org/.previous directives
+> > inline. That made it impossible to compose as a plain string outside of
+> > an asm operand context, and left an invisible contract that callers must
+> > always emit their trap at label 1:.
+> > 
+> > Refactor _EMIT_BUG_ENTRY to take explicit (bug_entry, trap, file, line, flags)
+> > string arguments via string concatenation. This removes the dependency
+> > on asm operand numbering and makes the labels an explicit argument,
+> > so the caller's intent is visible at the call site and a future caller
+> > using a different label cannot silently produce a wrong bug table entry.
+> > 
+> > Move the .org and .previous directives out of _EMIT_BUG_ENTRY and into
+> > each call site, so BUG_ENTRY() can still pass sizeof(struct bug_entry)
+> > as an asm operand while ARCH_WARN_ASM can supply its own size string
+> > independently.
+> > 
+> > Add ARCH_WARN_REACHABLE as an empty define, matching the arm64
+> > convention, indicating that no additional reachability annotation is
+> > needed after a WARN on powerpc.
+> > 
+> > Reported-by: FUJITA Tomonori <tomo@flapping.org>
+> > Closes: https://lore.kernel.org/all/anG67Q6Y59kDqh-c@desktop
+> > Fixes: 73b741adb264 ("rust: Add PowerPC support")
+> > Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+> > ---
+> > Changelog:
+> > V5 -> V6:
+> >  - Dropped KUit tests from this series. It will be sent separately.
+> > V5: https://lore.kernel.org/all/20260915090453.1227034-1-mkchauras@gmail.com/
+> > 
+> > V4 -> V5:
+> >  - Fixed a build error with DEBUG_BUGVERBOSE=n
+> >  - Added a label for bug entry
+> > V4: https://lore.kernel.org/all/20260912065902.24017-1-mkchauras@gmail.com/
+> > 
+> > V3 -> V4:
+> >  - Fix Label with appending b at end
+> >  - Add KUnit test patch
+> >  - Tested on ppc64le pseries: pass:5 fail:0 skip:0
+> >  - Tested on ppc32 QEMU mac99 G4: pass:5 fail:0 skip:0
+> >  - Tested on ppc64le QEMU pseries: pass:5 fail:0 skip:0
+> > V3: https://lore.kernel.org/all/20260910100801.2159785-2-mkchauras@gmail.com
+> > 
+> > V2 -> V3:
+> >  - Add label argument in _EMIT_BUG_ENTRY
+> > V2: https://lore.kernel.org/all/20260910071252.1950488-2-mkchauras@gmail.com
+> > 
+> > V1 -> V2:
+> >  - commit message now has error, fixes tag and closes tag
+> > V1: https://lore.kernel.org/all/20260819084825.969116-1-mkchauras@gmail.com
+> > 
+> >  arch/powerpc/include/asm/bug.h | 46 ++++++++++++++++++----------------
+> >  1 file changed, 25 insertions(+), 21 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
+> > index 0db48977c70c..bf31ee1e902a 100644
+> > --- a/arch/powerpc/include/asm/bug.h
+> > +++ b/arch/powerpc/include/asm/bug.h
+> > @@ -32,34 +32,38 @@
+> >  #endif /* verbose */
+> >  
+> >  #else /* !__ASSEMBLER__ */
+> > -/* _EMIT_BUG_ENTRY expects args %0,%1,%2,%3 to be FILE, LINE, flags and
+> > -   sizeof(struct bug_entry), respectively */
+> >  #ifdef CONFIG_DEBUG_BUGVERBOSE
+> > -#define _EMIT_BUG_ENTRY				\
+> > -	".section __bug_table,\"aw\"\n"		\
+> > -	"2:	.4byte 1b - .\n"		\
+> > -	"	.4byte %0 - .\n"		\
+> > -	"	.short %1, %2\n"		\
+> > -	".org 2b+%3\n"				\
+> > -	".previous\n"
+> > +#define _EMIT_BUG_ENTRY(bug_entry, trap, file, line, flags)	\
+> > +	".section __bug_table,\"aw\"\n"				\
+> > +	#bug_entry ":	.4byte " #trap " - .\n"			\
+> > +	"		.4byte " file " - .\n"			\
+> > +	"		.short " line ", " flags "\n"
+> >  #else
+> > -#define _EMIT_BUG_ENTRY				\
+> > -	".section __bug_table,\"aw\"\n"		\
+> > -	"2:	.4byte 1b - .\n"		\
+> > -	"	.short %2\n"			\
+> > -	".org 2b+%3\n"				\
+> > -	".previous\n"
+> > +#define _EMIT_BUG_ENTRY(bug_entry, trap, file, line, flags)	\
+> > +	".section __bug_table,\"aw\"\n"				\
+> > +	#bug_entry ":	.4byte " #trap " - .\n"			\
+> > +	"		.short " flags "\n"
+> >  #endif
+> >  
+> > -#define BUG_ENTRY(cond_str, insn, flags, ...)		\
+> > -	__asm__ __volatile__(				\
+> > -		"1:	" insn "\n"			\
+> > -		_EMIT_BUG_ENTRY				\
+> > +#define BUG_ENTRY(cond_str, insn, flags, ...)			\
+> > +	__asm__ __volatile__(					\
+> > +		"1:	" insn "\n"				\
+> > +		_EMIT_BUG_ENTRY(2, 1b, "%0", "%1", "%2")	\
+> > +		".org 2b+%3\n"					\
+> > +		".previous\n"					\
+> >  		: : "i" (WARN_CONDITION_STR(cond_str) __FILE__), "i" (__LINE__),	\
+> > -		  "i" (flags),				\
+> > -		  "i" (sizeof(struct bug_entry)),	\
+> > +		  "i" (flags),					\
+> > +		  "i" (sizeof(struct bug_entry)),		\
+> >  		  ##__VA_ARGS__)
+> >  
+> > +#define ARCH_WARN_ASM(file, line, flags, size)			\
+> > +		"1:	twi 31, 0, 0\n"				\
+> > +		_EMIT_BUG_ENTRY(2, 1b, file, line, flags)	\
+> > +		".org 2b+" size "\n"				\
+> > +		".previous\n"
+> > +
+> > +#define ARCH_WARN_REACHABLE
+> > +
+> >  /*
+> >   * BUG_ON() and WARN_ON() do their best to cooperate with compile-time
+> >   * optimisations. However depending on the complexity of the condition
+> > -- 
+> > 2.55.0
+> > 
 > 
-> v1: https://lore.kernel.org/linuxppc-dev/4c1da7f31a6603455ec452960af529e4d77f5334.1791826411.git.msuchanek@suse.de/
-> 
-> Testing: a small tracer (pokes r4 at the syscall-exit stop of an sc,
-> and replays a syscall by moving NIP back with a new r0) shows both
-> writes lost on a ppc64le and both working on 7.1.8.
-> ------------[ cut here ]------------
-> // SPDX-License-Identifier: GPL-2.0
-> /*
->  * Does a register a tracer writes at the syscall-exit stop of an "sc"
->  * reach the tracee? Checks r4, and a replay: NIP moved back onto the sc
->  * with r0 set to another syscall number.
->  * Build: gcc -O2 -o ppc-exitregs ppc-exitregs.c (powerpc64 only)
->  */
-> 
-> /* word offsets in struct pt_regs, arch/powerpc/include/uapi/asm/ptrace.h */
-> 
-> static long do_sc(long nr, long *r4io)
-> {
-> 	register long r0 __asm__("r0") = nr;
-> 	register long r3 __asm__("r3") = 0;
-> 	register long r4 __asm__("r4") = *r4io;
-> 
-> 	__asm__ volatile("sc"
-> 			 : "+r"(r0), "+r"(r3), "+r"(r4)
-> 			 :
-> 			 : "r5", "r6", "r7", "r8", "r9", "r10", "r11", "r12",
-> 			   "cr0", "ctr", "xer", "memory");
-> 	*r4io = r4;
-> 	return r3;
-> }
-> 
-> static long peek(pid_t pid, int w)
-> {
-> 	errno = 0;
-> 	long v = ptrace(PTRACE_PEEKUSER, pid, (void *)(w * sizeof(long)), 0);
-> 	if (errno) {
-> 		perror("PEEKUSER");
-> 		exit(2);
-> 	}
-> 	return v;
-> }
-> 
-> static void poke(pid_t pid, int w, long v)
-> {
-> 	if (ptrace(PTRACE_POKEUSER, pid, (void *)(w * sizeof(long)), (void *)v)) {
-> 		perror("POKEUSER");
-> 		exit(2);
-> 	}
-> }
-> 
-> /* Resume to the next syscall stop, which must be one. */
-> static void next_stop(pid_t pid)
-> {
-> 	int st;
-> 
-> 	ptrace(PTRACE_SYSCALL, pid, 0, 0);
-> 	if (waitpid(pid, &st, 0) != pid || !WIFSTOPPED(st) ||
-> 	    WSTOPSIG(st) != (SIGTRAP | 0x80)) {
-> 		fprintf(stderr, "unexpected wait status %#x\n", st);
-> 		exit(2);
-> 	}
-> }
-> 
-> int main(void)
-> {
-> 	pid_t pid = fork();
-> 	int st, fail = 0;
-> 
-> 	if (pid == 0) {
-> 		long r4 = 0x1111, r4a, ret;
-> 
-> 		ptrace(PTRACE_TRACEME, 0, 0, 0);
-> 		raise(SIGSTOP);
-> 		do_sc(__NR_getpid, &r4);
-> 		r4a = r4;
-> 		ret = do_sc(__NR_getpid, &r4);
-> 		/* bit 0: the tracer's r4 was lost; bit 1: the replay of
-> 		 * the second getpid as getppid returned something else */
-> 		_exit((r4a != 0x2222) | (ret != getppid()) << 1);
-> 	}
-> 
-> 	waitpid(pid, &st, 0);
-> 	ptrace(PTRACE_SETOPTIONS, pid, 0, (void *)PTRACE_O_TRACESYSGOOD);
-> 
-> 	/* 1: write r4 at the exit stop of getpid */
-> 	next_stop(pid);				/* entry */
-> 	next_stop(pid);				/* exit */
-> 	poke(pid, W_R4, 0x2222);
-> 	next_stop(pid);				/* entry of the second getpid */
-> 
-> 	/* 2: replay the second getpid as getppid */
-> 	next_stop(pid);				/* exit */
-> 	poke(pid, W_NIP, peek(pid, W_NIP) - 4);
-> 	poke(pid, W_R0, __NR_getppid);
-> 	next_stop(pid);				/* entry of the replay */
-> 	long nr = peek(pid, W_R0);
-> 	printf("replayed syscall arrives as nr %ld (%s)\n", nr,
-> 	       nr == __NR_getppid ? "getppid, OK" :
-> 	       nr == __NR_restart_syscall ? "restart_syscall, BUG" : "?");
-> 	if (nr != __NR_getppid) {
-> 		fail = 1;
-> 		poke(pid, W_R0, __NR_getppid);	/* entry writes do work */
-> 	}
-> 	next_stop(pid);				/* exit */
-> 	ptrace(PTRACE_CONT, pid, 0, 0);
-> 	waitpid(pid, &st, 0);
-> 	if (!WIFEXITED(st)) {
-> 		printf("child did not exit normally: %#x\n", st);
-> 		return 2;
-> 	}
-> 	printf("r4 written at the exit stop: %s\n",
-> 	       WEXITSTATUS(st) & 1 ? "lost, BUG" : "kept, OK");
-> 	printf("replay result: %s\n",
-> 	       WEXITSTATUS(st) & 2 ? "wrong" : "getppid(), OK");
-> 	return fail || WEXITSTATUS(st);
-> }
-> ---
->  arch/powerpc/include/asm/thread_info.h | 15 ++++++++++++---
->  arch/powerpc/kernel/interrupt.c        |  3 +--
->  2 files changed, 13 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-> index 1e069a2e7ce87..31a7a157bc902 100644
-> --- a/arch/powerpc/include/asm/thread_info.h
-> +++ b/arch/powerpc/include/asm/thread_info.h
-> @@ -142,9 +142,6 @@ void arch_setup_new_exec(void);
->  #define _TIF_SYSCALL_TRACEPOINT	(1<<TIF_SYSCALL_TRACEPOINT)
->  #define _TIF_EMULATE_STACK_STORE	(1<<TIF_EMULATE_STACK_STORE)
->  #define _TIF_SYSCALL_EMU	(1<<TIF_SYSCALL_EMU)
-> -#define _TIF_SYSCALL_DOTRACE	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
-> -				 _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT | \
-> -				 _TIF_SYSCALL_EMU)
->  
->  #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
->  				 _TIF_NEED_RESCHED_LAZY | _TIF_NOTIFY_RESUME | \
-> @@ -153,6 +150,18 @@ void arch_setup_new_exec(void);
->  
->  #define _TIF_PERSYSCALL_MASK	(_TIF_RESTOREALL|_TIF_NOERROR)
->  
-> +/*
-> + * Syscall work after which the exit must reload all registers from
-> + * pt_regs: a tracer may have changed any of them at a syscall or seccomp
-> + * stop, or under PTRACE_SYSEMU. Audit and the tracepoint are included to
-> + * keep the pre-GENERIC_ENTRY behaviour.
-> + */
-> +#define SYSCALL_WORK_RESTOREALL (SYSCALL_WORK_SECCOMP |			\
-> +				 SYSCALL_WORK_SYSCALL_TRACEPOINT |	\
-> +				 SYSCALL_WORK_SYSCALL_TRACE |		\
-> +				 SYSCALL_WORK_SYSCALL_EMU |		\
-> +				 SYSCALL_WORK_SYSCALL_AUDIT)
-> +
->  /* Bits in local_flags */
->  /* Don't move TLF_NAPPING without adjusting the code in entry_32.S */
->  #define TLF_NAPPING		0	/* idle thread enabled NAP mode */
-> diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
-> index 55f9c0c9922ac..d6a7b6d2b4bd2 100644
-> --- a/arch/powerpc/kernel/interrupt.c
-> +++ b/arch/powerpc/kernel/interrupt.c
-> @@ -117,9 +117,8 @@ notrace unsigned long syscall_exit_prepare(unsigned long r3,
->  		regs->gpr[3] = r3;
->  	}
->  
-> -	if (unlikely(ti_flags & _TIF_SYSCALL_DOTRACE)) {
-> +	if (unlikely(READ_ONCE(current_thread_info()->syscall_work) & SYSCALL_WORK_RESTOREALL))
->  		ret |= _TIF_RESTOREALL;
-> -	}
->  
->  	syscall_exit_to_user_mode(regs);
->  
 > -- 
-> 2.51.0
-> 
-Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+> Link Mauve
 
