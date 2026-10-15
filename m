@@ -1,94 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-29541-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29542-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99D32CC6B2D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2026 03:21:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B03CCC6B1C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2026 03:45:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j4tf62Mx4z2yqT;
-	Thu, 15 Oct 2026 14:21:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::f2f" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792010396;
-	cv=pass; b=hCInKxKRTXw8v2qDhsPPdZNFjyKaQWMJHIhcxL5ymHef08RU9LKqgCBCifZrflnhVV0D8jgHFM3bUmjFYseAl++1uNAmemRrrFQYj/vL1rj3IeTX2IJsST8AkSoxXOlK9zo45QSFhB4khK1Y3stjetT1ZyO0v6X5sZby/FMum3n7Ezv4xr6LnDdfqZUtCQTmn7zFQiy+9pbeeuPBSMe/x4ZfRn2q9Hgg3tTr2a4ywUvF+SMLzkmg1avUyiukcHzpX/8lxiCObsNIiKKAOAkhTpDurJC5dchZ7gozgHCQlxE1zEExLwoxqhkAl+1Y2t/JPcagyx05zs21q+6uV53azg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792010396; c=relaxed/relaxed;
-	bh=Hvbv4h83/gh3e9PL4i/Jed17SUFA0/98By/JOQOBZh0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=E90VNgEpQbk/0W3Fdu3UL5Xfe3WLiVglYQVVD9avx9+0V2FlJvfS0SUs3hqobGtgC7HIkHHvI2SVVn3JRCi4zWKKLuDGetSyZg5Dn/LTxtH5q5Fs3T5au8VTb8bc3dPMUl+n/5LzCVahVYEudwQXUv0/rm0a5e/EEXlE7ZXLgYJnER/ilfLRWv36TIWZtnEtS3hafUXb+AvX4zE6l+8MdlmYbh3D5WV6KkZSdjx0nImKNydcSJknws6rqZJax2VewPmBvmfk86EnYCLwAFwH9M77DpRDPINgsOgyr+hbSO9whdL7cXHV3B8qvJyv074i0EcLsleDYc63/rYMpmD6jg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=genproof.com; dkim=pass (2048-bit key; unprotected) header.d=genproof-com.20251104.gappssmtp.com header.i=@genproof-com.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=lMOTz0u4; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::f2f; helo=mail-qv1-xf2f.google.com; envelope-from=vladimir@genproof.com; receiver=lists.ozlabs.org) smtp.mailfrom=genproof.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=genproof.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j4v9V4GvWz2yqT;
+	Thu, 15 Oct 2026 14:45:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792035934;
+	cv=none; b=kqAyKvjSmXef45weVuPj/vch0PbvdIttffSgRWQs1iPFXfF9FO4p3P44c4tzJQhPStec/FENFnqbelA/APznQctp0ZAdJ6q0dSFYW/NcSketgE4uH8G2e5jv2lOqhhD6XsvgMw44FmC83J5Vd03VNSQn+7To9tE5CyhSZr3xRkCLir1nGDJ1hv8UJcTPfc3FZiN4/kf5qrwoyplBN+fr56azhj/s2j5wMvvt4AbhvaDjcxsr7r+wKpn8IXqxCp6b/b0FodK/rWhwaHTIFvO4VGykHr8xLo2RYbT48H51g1rL46ev66xK6a+FMWDeXRpU+L0wAJ6H/ynofwmHxFLtTQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792035934; c=relaxed/relaxed;
+	bh=ekxAbaTw9lcA/repE4rySfHgfzkYuU+ooIR190sGV+c=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=l98CF5xIdBxQNtBpAg7ddjjvcmLdZYXStxBKYJ+DdK0R+lJA/S0f76f1bx8CTCU3AquBoUbLIK5s8xiRxmyHa+/Xl6xBlDlSMXQZxzqVxWc6lWuGcNE5gB7ZnkejnNw9FIlp6GIHPznooedDLoU5tiaxuqc9JEntN8frrjJMYOGyxK1KdkSpwrqmsWF90v90DQcOAVp6ywZ6B6m3W5B7gH7E9REcGPb+w83SS5inRDb1cGnGWm1JOwt4nN2qTMEFEDL3LxKp+b64XrFtA4PvxPX/J9BHmGo1vzAhcyqnas8bkiykgZgB21otl/BHZJzKu31MVK7UTPIjN5KzCBsPzQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=FRZsCNv+; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122a; helo=mail-dl1-x122a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=genproof-com.20251104.gappssmtp.com header.i=@genproof-com.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=lMOTz0u4;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=FRZsCNv+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=genproof.com (client-ip=2607:f8b0:4864:20::f2f; helo=mail-qv1-xf2f.google.com; envelope-from=vladimir@genproof.com; receiver=lists.ozlabs.org)
-Received: from mail-qv1-xf2f.google.com (mail-qv1-xf2f.google.com [IPv6:2607:f8b0:4864:20::f2f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122a; helo=mail-dl1-x122a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dl1-x122a.google.com (mail-dl1-x122a.google.com [IPv6:2607:f8b0:4864:20::122a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4jkM07j3z2yK7
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 07:39:53 +1100 (AEDT)
-Received: by mail-qv1-xf2f.google.com with SMTP id 6a1803df08f44-917ad52d7b6so8964336d6.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 13:39:53 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1792010391; cv=none;
-        d=google.com; s=arc-20260327;
-        b=FjkPFm/We9zxEbaKkhRGVcgmqxekEgumLfkMQPrOUeGt10xw6UMzXrxi7axhE5Tc0t
-         XOkNeuvTWwLeCuC8uIND9WclePYFfZMZ2ZjH0yWPYvCpLvv5BtMcLuhq98fkGtIYagOU
-         Eewb3iQFs3rjbEBnDSZl31SNwK+GCIE/ANUe106T9iBp8nk6D8WDEy6GJieXD0jH93ku
-         W/ATKPhBtlmuqKr7FP68igUIQIE8UW7YuODPzF7AdCIUTJ/ElFr4WBKwPB882J8Zzw/g
-         Bvcm0SiJxU2dp2eHE197IVaxY3EVxkvNxQtVhQ43RM+intfGHblOC5bXBmp520eL64w2
-         ldSA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=Hvbv4h83/gh3e9PL4i/Jed17SUFA0/98By/JOQOBZh0=;
-        fh=MNtOKxbGTeltHMBV/w89dWOYPofIF4vIsHr2MuWlHPk=;
-        b=YUeh7eoJoNQBRbNHxx2gXXrURXPMSPj+eFLXGFjBtwWcKWG5NVUtd0wiwMQ4Y5HbKd
-         Mk2l/62MtvHmpCqmo2fIA1xPJqO5o4SBGI4yVNVSkpWXrup2A8Aw69hgaV2M7nzjtYme
-         hH7h2lJ4+HnV1oOcxh28IQq3JWgrLoNki9gWqZzfn4LAkpK1+E8b4vZ2Bo8IDHL+iY4o
-         Kqv3nCmVhj0p59hwDSdE8uUM5c5RV6+0sN8TRnWvJQMd2OCEce7Gi4QywoE2DkINNYS2
-         XqIwboEZeRgMcce9jhOSPaAtdY0L9RZr2JJDBd1sF+nwGYE/dvg8aIMpqLdfCwKWS/hA
-         5q6w==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4v9T02PZz2yYd
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 14:45:31 +1100 (AEDT)
+Received: by mail-dl1-x122a.google.com with SMTP id a92af1059eb24-14394530ec6so3980581c88.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 20:45:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=genproof-com.20251104.gappssmtp.com; s=20251104; t=1792010391; x=1792615191; darn=lists.ozlabs.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Hvbv4h83/gh3e9PL4i/Jed17SUFA0/98By/JOQOBZh0=;
-        b=lMOTz0u4k7YaPgnEWErbCnbUO40ZihLi9Z+fu5TO766ZarbU7JK5XTLf5IQGzoXV6w
-         KggrNeLVtQkRmAKPoRJhWEN6xV58CPo/gcTdv1Ds43YVoLOxvDW9JCFjTVN26S6HPgPT
-         8Uv/NCvKWoSFWNNWY6nfLFfgQ0VexD2XgNUAz+/3q2IFaZyjrFcW+gdN1dC5qnrDPJiC
-         G9n0m/Fim5zDiLL07Zqp2ZaK90Sb7HRdvQQObOY9PvrBy7CWHcXIOqB2xrKAwkRzHIWz
-         Lbjw9MRHciWeUv8QW/4/u+ARrrw6mX0bxi61YZjlDmWsng2fETQ2cu+FLTP2ffNOXY0h
-         FhWA==
+        d=gmail.com; s=20251104; t=1792035929; x=1792640729; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=ekxAbaTw9lcA/repE4rySfHgfzkYuU+ooIR190sGV+c=;
+        b=FRZsCNv+jvhSY+EomO4M6tjUfRO1cuPgOy4EHKctmAnouWqS/u2mtMgmRvrqN8gpRi
+         TPtBJDSr+FQVAOKK0feKHs+SqEqJOmqXYFaOVlyrVPeLnxqgdhBpc4x8R9RK/AtNzQID
+         7nYXgMPlft74N5FBBeq1zyDRhCvjVzixPccb8ZOMHA1SVsfqDj6HWKDHfsr+zm9fiD/d
+         l8sNufkEQc5fTG6YZc1KJ8xJY2TsKWrOc+iRix6Hv9rDqqmIMbVyy7aMYPZQVT/1IjM4
+         IQtw/j6Ez8gSi57yIKRAF+D98+kuYoESSwDHBkRxfDdrgtuReuLHAT+DL8TAkX+IWGFW
+         TogA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792010391; x=1792615191;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=Hvbv4h83/gh3e9PL4i/Jed17SUFA0/98By/JOQOBZh0=;
-        b=KgiMiTVjcs3gUWj4q3ZbR0mCBRTEji4YZ0VjNjUcFfux0TT6zP9vA4fPcG7lrzvyvr
-         ApEBySSSTYywex/bAwtJjsqFZdnu8dYitfbc25h15Ty8ZzaZfHACjM0vJhiqD3wpaGs1
-         pI36vG6+fpZFGgE6rgHMa0J2chqowXvasV2Nk2mB+fmhgWkb1QFl0J1dsdiCsh05Q3jW
-         J+B0xygRlqVQLFJ8KPXyk5YHiU7a03CL5hJZ1aJ3aIEwNG18IfFt6//sQjihTQg89Yne
-         7cmKYxzCcPXOc1G3VOgQZkc5TtXFEeTV2CUchNNVTQPFpun4KjveYp2Ncdhn6hbsRwTp
-         yakQ==
-X-Forwarded-Encrypted: i=1; AKwUvBygYh8nHDg4ltzx3ua4MlDTGEMgXvooimL+3mM5uO6lW1P9+aHlyjb5XkGsBhhCiC1djYoqCHF7nP3Wnyw=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYJTugK3WHVIfuIS6pShT5xTiyQLqlP3O2eJnDDc+mmEaylsyRpx
-	u8r1XYM2S7eFhbrthXI9KSmIfC2e2Ynn/ukSWR97e5Z2KglwUs/wlZxGzEndfoOZMc8fgxDNo20
-	IVtZ5Orbj7HGJ+3OoSvLYL/VZIMNnjv937RAknkr2Z0o=
-X-Gm-Gg: AYBFou1xfnbSqi8BtRVwbTxDF1XclUJSjMg8qtAuJRZMc0JK/ULykOEzE/Jm8SOFI33
-	UrbgYH4lov3lN1kLMT+kSzHErjYtkHgQP2Z+BwqKsudF/cFQ4ebMjnX8x1/QtuYVtdISMIaTqc+
-	kteN9LqLJqaGRuyRqoGwqf7o/Gh2Gmz7haa2OY/fernsbBLO8e3Er9Gy42Msyw4qyDuUZO6YJZ8
-	e7EP85d4h1QtKhm1IsdGwug0oi7JdCs40ZfY/F5wXX2qs9oHrg2XNKaMbRUsWBSygEsDamX/P7K
-	ZgEtL7fCdEw4zf9aSrS94vDSIOeHaTAQtUqWvPu3xhpz/UTPC1n2tZazUJSoFtzrkANUwzYqhF1
-	1jlivaM8P04RF
-X-Received: by 2002:a05:6214:5082:b0:91b:80ac:66ea with SMTP id
- 6a1803df08f44-91b80ac67d2mr172010016d6.24.1792010390916; Wed, 14 Oct 2026
- 13:39:50 -0700 (PDT)
+        d=1e100.net; s=20260707; t=1792035929; x=1792640729;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=ekxAbaTw9lcA/repE4rySfHgfzkYuU+ooIR190sGV+c=;
+        b=MaANVVflNqVgJtBpSpNXVLrYTGRETLvKMOiJxywXcPl7vBccL8bdGLqMM42OUI8IVp
+         jKAXwvfSRapOAlkjFV8NwSjz2YywBOafjK8VWO7i0BrOfGXY2s3tRGbqBBwgYghHOXQ1
+         jLSTu0PHT9PmRFFqMr0lUi9hbc6OEApq84eNk+8JwOxpdkfAU96VXHCmMl758TJN7zpa
+         btq31JJbp1KLNeINj7RmX+UZLaKOW/eP3kdfs9fAKZ0+OpSjp/OLzvG41OLXO42IqHQt
+         qlsy9k5guTTj26zXMSGTo15hqQkpZ2YrQ9CtbLYjkB/wh9gZYhK73gnfNffJnLiONUG9
+         0e9g==
+X-Forwarded-Encrypted: i=1; AKwUvBym/QvGb9QWC+IdwbhMYSegCSftpQx0WlJwrj6ROBhfe46Ej5RCNrO01XpqKQ1gsr3CKULdon35pw4A1zw=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYLCbITJfNOIsYlSBTz5coigZVOX9pV3HsIa1q5eie0pEH10Qcaj
+	aTKvnY2bkjDGNfz1c/oLIapqO+OH58Bx5ZFfnp70bLMsIYUEjMVrsf9r
+X-Gm-Gg: AYBFou1llqCEN2LlYiAXrVcWc+YTUKl4Aq63U3g3zec0/3nSllQ96HwcSXF25agcVi4
+	0erlC+q2zpY4g0ei+/X3mHuK0CfXbv4uzTjIMj8kvKYS9jqxtDCHYZpnXKs0boVUp9jlbOHDuU6
+	WCBP8z8ye+tp4MJLkEHnktXfjawis0qdpaeesCdDbQMRTUgmlxSbzkIE+PGg0Itf3Fya8Padk+f
+	MjJH+yG2Vv3l5m6I+1nQx5I5i3vQQDmJVNZdUJtBnJ8ucA+LMFVxTbqn3SU0Tc3kQmeppiTOPUs
+	Mbb3FtECpcaQIJynQAaJeQPknPZJuZma8gtZsSLBqOpQCar08kb0v1CzsVlHQ1QYpF7jVErIn76
+	8wUzzhLvVxPe5/VgeyV8TqmGVQt0QW+5f+8nsjM793T6esRVLG1dmLXIeYkTN1RjMemxHn6IJLc
+	A24NMk4KHUHPpg4bfkqBMqYiv7FPaFfoLjnY9aHCIjvLO+IZoqyGjLldObTsPmjh5idyOQ
+X-Received: by 2002:a05:7022:7e08:b0:144:fa58:95d8 with SMTP id a92af1059eb24-16a61a6ebb0mr33060504c88.27.1792035929111;
+        Wed, 14 Oct 2026 20:45:29 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-169a5866477sm50853605c88.22.2026.10.14.20.45.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 14 Oct 2026 20:45:28 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Amit Machhiwal <amachhiw@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Amit Machhiwal <amachhiw@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Shrikanth Hegde <sshegde@linux.ibm.com>, Alexander Graf <agraf@suse.de>, Avi Kivity <avi@redhat.com>, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, Gautam Menghani <gautam@linux.ibm.com>, Harsh Prateek Bora <harshpb@linux.ibm.com>, R Nageswara Sastry <rnsastry@linux.ibm.com>, linux-hardening@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: [PATCH] KVM: PPC: Book3S HV: Disable preemption around host-side HPT lock users
+In-Reply-To: <20261014185215.71832-1-amachhiw@linux.ibm.com>
+Date: Thu, 15 Oct 2026 09:14:32 +0530
+Message-ID: <v773r5jz.ritesh.list@gmail.com>
+References: <20261014185215.71832-1-amachhiw@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,54 +89,57 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-References: <20261014152604.323310-1-ebiggers@kernel.org>
-In-Reply-To: <20261014152604.323310-1-ebiggers@kernel.org>
-From: Vladimir Kukharenko <vladimir@genproof.com>
-Date: Wed, 14 Oct 2026 22:39:39 +0200
-X-Gm-Features: AclHuK9hyj4qEGknIGYgSBtc9GBfZkkTP8Pl6YErh1Uue02KgFYR-0JbdSeWHNE
-Message-ID: <CABB2QaKKvuTFt5fHa6+=n3siom4TFYCqZ67bcHyHTrD+PogojA@mail.gmail.com>
-Subject: Re: [PATCH 0/2] lib/crypto: Use size_t lengths for Poly1305 and ChaCha
-To: Eric Biggers <ebiggers@kernel.org>
-Cc: linux-crypto@vger.kernel.org, Ard Biesheuvel <ardb@kernel.org>, 
-	"Jason A . Donenfeld" <Jason@zx2c4.com>, Herbert Xu <herbert@gondor.apana.org.au>, 
-	linux-arm-kernel@lists.infradead.org, x86@kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org, 
-	linux-riscv@lists.infradead.org
-Content-Type: text/plain; charset="UTF-8"
 
-Hi Eric,
+Amit Machhiwal <amachhiw@linux.ibm.com> writes:
 
-Sorry for not replying to your question on v1. I was already reworking
-the series in that direction and should have told you.
+> A previous change ("KVM: PPC: Book3S HV: Add preempt_disable() around
+> virtual-mode HPTE bit-lock users") at [1] added preempt_disable() around
+> guest vCPU HPT hcalls and page fault handlers executed in virtual mode.
+> This ensures vCPU threads cannot be preempted while holding
+> HPTE_V_HVLOCK or the reverse-map lock.
+>
+> However, several host-side virtual-mode paths in book3s_64_mmu_hv.c also
+> acquire HPTE_V_HVLOCK and lock_rmap() in process context with preemption
+> enabled.  Specifically, kvm_unmap_rmapp() and kvm_age_rmapp() take both
+> locks during MMU notifier callbacks and memslot flushes, while
+> resize_hpt_rehash_hpte() acquires HPTE_V_HVLOCK during HPT resizing.  If
+> a host thread is preempted while holding either bit-lock, any guest vCPU
+> thread scheduled on the same CPU spinning for the same lock with
+> preemption disabled will never yield, resulting in a permanent CPU hang.
+>
+> Fix this by disabling preemption across these host-side critical
+> sections.
+>
+> For kvm_unmap_rmapp() and kvm_age_rmapp(), place preempt_disable()
+> before lock_rmap() so that both the rmap chain lock and the subsequent
+> HPTE_V_HVLOCK bit-lock are held under a single non-preemptible window.
+> To preserve the ABBA lock ordering between the two locks, re-enable
+> preemption after dropping the rmap lock on any retry or early-exit path
+> before spinning on cpu_relax(), allowing the lock holder to be
+> scheduled.
+>
+> For kvm_htab_write(), the HPT migration restore path, replace the direct
+> calls to kvmppc_do_h_remove() with kvmppc_virtmode_do_h_remove(), a thin
+> wrapper that brackets kvmppc_do_h_remove() with preempt_disable() and
+> preempt_enable(), mirroring the existing kvmppc_virtmode_do_h_enter()
+> helper.
+>
+> For resize_hpt_rehash_hpte(), place preempt_disable() before the
+> try_lock_hpte() spin loop and preempt_enable() after unlock_hpte() at
+> the function exit.
+>
+> [1] https://git.kernel.org/powerpc/c/abbbe5ff83e7c9ed3a4d61b73011f1df7bf87907
+>
+> Fixes: 6165d5dd99db ("KVM: PPC: Book3S HV: add virtual mode handlers for HPT hcalls and page faults")
+> Cc: stable@vger.kernel.org # v5.14+
+> Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
+> ---
+> Changes in this version:
+> - Separated host-side fixes in book3s_64_mmu_hv.c into a standalone patch
+>   (guest-side paths were merged from v1 resend).
+> - Previous discussion: https://lore.kernel.org/all/20261007182116.12479-3-amachhiw@linux.ibm.com/
+>
 
-Thanks for doing this. I tested your two patches with the lib/crypto
-KUnit tests in QEMU on x86_64, i386, arm, arm64, powerpc64le, riscv64,
-mips, mips64, s390x and UML, plus temporary tests with buffers over
-2 GiB and 4 GiB. Everything passed, except for two things that fail the
-same way without your patches: the POWER10 Poly1305 interrupt context
-tests (I force-enabled that code, which depends on BROKEN), and two
-Poly1305 tests that crash under QEMU with AVX2 because of a QEMU bug.
-
-Tested-by: Vladimir Kukharenko <vladimir@genproof.com>
-
-One gap remains on 32-bit arm and MIPS: the ChaCha assembly there
-treats the length as signed, and size_t is 32 bits, so lengths of 2 GiB
-or more are still handled incorrectly. On a Cortex-A7, which always
-uses the scalar code, a 2 GiB + 4101 byte in-place chacha20_crypt()
-changed only one byte.
-
-As a suggestion, I've sent two small fixes on top of your series:
-
-- arm: use unsigned conditions in chacha-scalar-core.S, and
-  DIV_ROUND_UP_POW2() for the block count, since DIV_ROUND_UP() wraps
-  above 0xffffffc0.
-- MIPS: the partial block code also relies on the sign of the remaining
-  length, so a small C chacha_crypt_arch() passes the assembly at most
-  1 GiB at a time.
-
-Feel free to fold them into your series or handle it differently.
-
-Thanks,
-Vladimir Kukharenko
+Thanks. Looks good to me. Please feel free to add:
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 
