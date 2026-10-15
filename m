@@ -1,101 +1,91 @@
-Return-Path: <linuxppc-dev+bounces-29551-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29552-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53A9ACC6B3A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2026 11:12:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9A17CC6B3A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2026 11:50:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j555J4j1Xz2xNk;
-	Thu, 15 Oct 2026 22:12:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792062756;
-	cv=none; b=JkyNNyhcXBWHtepEpHuQpqnTQnhWnqPMWX/5KaMw1W/S9xY9Qweyooq3p7HtXXaX9C4NGq0P6VLGoyVQVFW6IsSeClz2EsAE327W9acpgoDm/X8Jefum5zhFbTQiRWA9JMy/MBGWOLF+TlksoOFa9Y9q/4zcycPa10SDns9/4/C1gtt0GXwoQLiGTINYTl/6B8jDIH7Il+Ok784TRJ7B8gyT9IeKPTYacCFv0Y3EALyno+DQm5NotjgD+M164n/qVGHO7CtfObQqediFhp9tqM13ClsyLkp1SN77tQ/kuhoH1EvRHGe9RGLav4xAP5mQ7iwSdy9NolQKX/eQlwAGpA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792062756; c=relaxed/relaxed;
-	bh=Hd6BBnEO5pGpbCON7Q87RSeR9u1q3VXpiWY+WMKFASs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ezPa4E3rOvh/uRI3pQ7Oq8nN587QNKJRZ3TG08DDP28KMyGrpHqhJlJaGGFAl1mlZrGOgsBPpRapkRLDvKbQ3/EkA5NV0v0iCnMcfbexVfTudWizjxHTIyZYuRJTdEvvdioYr4UOeH0GEl+lzrvTlSVCdG3cINWUO3cVzaven9yu1ljGkI2zS1fsHAdSOnpPyN2a5UD9wGGu6Gexl7WIph3tcHDy+k7jWZ2PAl8td/kmjcmhUk+drve4RN8SGQAOkWbXLKe3gEnW8wo2AgSPMRoJ2NXifgEUg8SqcrVqZUsjjohLpEqdTjBaU65n9UFxn0UALWpHvSjY219D2Ps8/A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=R+8xOXUk; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j55x06gCVz2xNk;
+	Thu, 15 Oct 2026 22:50:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::1" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792065028;
+	cv=pass; b=UYcScxpKU9luh9+RdOLFoo8IOiIGZlafWhXuILDl/C1Q9uP4KqtS9lzwpveS+BXTdE+fsNmGF8pKV5VELP9X7+ZdylWJhDifOfmhaPIupYert7C6Dij7AwwbppaKnBb4rwWljtJlQ3lh0EiKf/peo5cz+FCIrx8op0JcT5vtQG6tyM4GrVcu8jkp3wDuXL/3dXE06l+uIMoNHLY1Up4K79BYk3XPLz4o1pa5GJ97pXQZyEjwNE4Xe7a47m5J25UcCz9rqrLc+My1774k1fpsH8GIKMGzp5RMpwaxIuWOu9kZpyn+aIxvvp45jHdvITKP3CFniMX/egCmkjaFVw3tIw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792065028; c=relaxed/relaxed;
+	bh=/F/QfutoVtb0NefGr+53LzvfokLJJ62aYtcbzphVAgM=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=az6nEi70aN4vh39gBhYYK3W+S09haeKvTX9iiY9yJb2FnyLYIKWsph2eOMqSklF+U6VTRLfrtkbgpAmZGAbY3qo94r0n4eSAVzASATA9b+iYNf2MlYYj6BY1aGk1DjVTasbTKphR5eLk7Bsxi/NZ1ora1S/TFZmZE14Oq7z2T8kawIQwvI1aVw/Tn4Hrl3MuFmSqEVZHQaHZ3TGWk1SvvQKyFXr6gkN+T7u24IcLB+e0IniCTqjrDc/iQJhCsQU4IxrV8AeQTruFuCc1yE6Be0iBFF/ZTSLFmIas4Y02sI7UOLv1Bult1apoyXYeVwPwav+udsTBzPKMd4O12eJonA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=virtuozzo.com; dkim=pass (2048-bit key; unprotected) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=selector2 header.b=s5iFyO8L; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=khorenko@virtuozzo.com; receiver=lists.ozlabs.org) smtp.mailfrom=virtuozzo.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=virtuozzo.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=R+8xOXUk;
+	dkim=pass (2048-bit key; unprotected) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=selector2 header.b=s5iFyO8L;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=virtuozzo.com (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=khorenko@virtuozzo.com; receiver=lists.ozlabs.org)
+Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j555H5s6jz2xNg
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 22:12:35 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id CFC5443277;
-	Thu, 15 Oct 2026 11:12:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5727F1F000C4;
-	Thu, 15 Oct 2026 11:12:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792062751;
-	bh=Hd6BBnEO5pGpbCON7Q87RSeR9u1q3VXpiWY+WMKFASs=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=R+8xOXUkDkZ9pKZHBmcNtj8NyuP6cR0oqQgoZ8UCc+tB3DzT4QCvEJXW8Nh+PAHLO
-	 l4qO7p4Clap8JJBD57iJA17dF9oaApVDpvp9NMyxi2p9zza3C5/jxCXVuqp97P3kH/
-	 6RncdVn38CsHW39zcgI8DIfqy4X+t2GhIU9JFMzzboPBxl+hGJOmX6ojQV+MHKJjzv
-	 keBaU7H/dW4cHXdRTPAOoj3PXUzd0obz4/xGRkI4yhpdkI4hjeNJmNTCIIZMIQGcGL
-	 wUvK5fhMpbxaZqaxQQpRrEEA+IDFwqvTiLrkNMorRjRdP64wUDyKUMoYHX3QYp6pVZ
-	 cc0SD3e32mliw==
-Date: Thu, 15 Oct 2026 12:12:17 +0100
-From: Mark Brown <broonie@kernel.org>
-To: phucduc.bui@gmail.com
-Cc: Vijendar Mukunda <Vijendar.Mukunda@amd.com>,
-	Venkata Prasad Potturu <venkataprasad.potturu@amd.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
-	povik+lin@cutebit.org, Claudiu Beznea <claudiu.beznea@tuxon.dev>,
-	Andrei Simion <andrei.simion@microchip.com>,
-	Nicolas Ferre <nicolas.ferre@microchip.com>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	David Rhodes <david.rhodes@cirrus.com>,
-	Richard Fitzgerald <rf@opensource.cirrus.com>,
-	Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>, Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Cezary Rojewski <cezary.rojewski@intel.com>,
-	Peter Ujfalusi <peter.ujfalusi@linux.intel.com>,
-	Bard Liao <yung-chuan.liao@linux.intel.com>,
-	Kai Vehmanen <kai.vehmanen@linux.intel.com>,
-	Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>,
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	Biju Das <biju.das.jz@bp.renesas.com>,
-	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
-	Heiko Stuebner <heiko@sntech.de>, Kees Cook <kees@kernel.org>,
-	Syed Saba Kareem <syed.sabakareem@amd.com>,
-	wangdicheng <wangdicheng@kylinos.cn>,
-	Chris Bainbridge <chris.bainbridge@gmail.com>,
-	Linus Walleij <linusw@kernel.org>,
-	Charles Keepax <ckeepax@opensource.cirrus.com>,
-	Neo Chang <YLCHANG2@nuvoton.com>,
-	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
-	u.kleine-koenig@baylibre.com, Pengpeng Hou <pengpeng@iscas.ac.cn>,
-	Cristian Ciocaltea <cristian.ciocaltea@collabora.com>,
-	Hemanth Selam <hemanth.selam@gmail.com>,
-	Md Shofiqul Islam <shofiqtest@gmail.com>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Zain Aboobacker <zainaboobacker33@gmail.com>,
-	Sang-Heon Jeon <ekffu200098@gmail.com>,
-	Bo Shen <voice.shen@atmel.com>, Vinod Koul <vkoul@kernel.org>,
-	linux-sound@vger.kernel.org, asahi@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, patches@opensource.cirrus.com,
-	linuxppc-dev@lists.ozlabs.org, imx@lists.linux.dev,
-	linux-rockchip@lists.infradead.org,
-	linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 00/25] ASoC: Fix constraint return value handling
-Message-ID: <ad722297-5ca5-42c5-a07e-59fa958387c1@sirena.org.uk>
-References: <20261015014324.5569-1-phucduc.bui@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j55wy6Rg5z2xNg
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 22:50:26 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=MLABI5K1NvWy/Q1iQbAyfcRM4CGrRQGSK/f+QMBHs0q6rxke7uv+ufisbdjAOwafOSEjGtuFYqvjbtoJAz6cWjiWo4Tcyog8jTvWeV93ngwjigNU7cm/o+3Q6EB/CMziJCSApvU7jCr4TBAeEGm7e+vf3yz8LvhhsJ/3zsLVBj6okCOlurt+M8DpU0oJko4thG8sX24IHJshPdxe4y67/6opFcNvTUhCKmliX0WYU7c3ikVCcjmYC9Xa21EZ5rTu4UM5NC9Jk/TSDqcSu9TgPoQIXyKghwJGC4VNhx+VFduaZnZiWDMEB9JUnFq0HeXgYuEgJO8eaicABPMmT219rg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=/F/QfutoVtb0NefGr+53LzvfokLJJ62aYtcbzphVAgM=;
+ b=yoIZYDvISD8DWWlaT8rOUpLtvPJsb61aNMqOuNE9QO2IFPSACN+N3w58Dr+StuVNk2+UwbjrT5zvnlAtLBi9NJ686lsyNkwJNbY9iN1/b/5yzsFI59bCi3ur2qymf/Fw+JAHIuUTbejU3UgSelKME6JwsGovGVa0cN4+8R+9aHpLy0Wqyg8YfynMiuAgus+TtYAgsLYmUlCbMXgwlUSyh2f0W2WTVf6u1pxiUteWsalNCDh1MqiQ+FF0z8xSvkFA1GEjHlo2HP3weW3LcrOi/awbf9n+MidFyqw8T30NMHffMQBwSl8tkwyY/ZrgBeSvsT2lE8XtsY0QMSdeEIN3jA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=virtuozzo.com; dmarc=pass action=none
+ header.from=virtuozzo.com; dkim=pass header.d=virtuozzo.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=virtuozzo.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=/F/QfutoVtb0NefGr+53LzvfokLJJ62aYtcbzphVAgM=;
+ b=s5iFyO8LVsMk20zMN5H/Hf/HzZewC0FBQdm6+gMNike7C5h8Yn8ePVigJyL/BXAA90DD6DLIjAB3NOJy+pc2MIi4JKUhTiTQ1gR0hMzZ7YM2ixI04z7JkzItNvHAYZexsCzPGEmBAJceZoq7sJw5CMSuNahfIVVCv+9MwYZwD3ZjPXpXRiHE24JfbQpTVa+BLlNEoIRoTmVknER7SExWru/ZZETEq6+q+YJZlgX3TZt4OR1v83ghUUDkYAQYbXOxrEWV+lwENmoYbdHhRuIU5EYaRRhM9epwpUCoc/U4Otk35FQZcNtMkpPQPU4tVArmlGCcGjSXH5HF6HHhzgxbcA==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=virtuozzo.com;
+Received: from PA6PR08MB10708.eurprd08.prod.outlook.com
+ (2603:10a6:102:3c7::20) by DU0PR08MB9876.eurprd08.prod.outlook.com
+ (2603:10a6:10:424::11) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.522.10; Thu, 15 Oct
+ 2026 11:49:58 +0000
+Received: from PA6PR08MB10708.eurprd08.prod.outlook.com
+ ([fe80::1999:c6db:dc55:494a]) by PA6PR08MB10708.eurprd08.prod.outlook.com
+ ([fe80::1999:c6db:dc55:494a%5]) with mapi id 15.21.0546.006; Thu, 15 Oct 2026
+ 11:49:57 +0000
+Message-ID: <3cb6df0a-2606-486b-9667-3952cc631759@virtuozzo.com>
+Date: Thu, 15 Oct 2026 13:49:55 +0200
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 0/2] mm/huge_memory: fix the copy of special PMDs at
+ fork
+To: Lance Yang <lance.yang@linux.dev>, Zi Yan <ziy@nvidia.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@kernel.org>,
+ Baolin Wang <baolin.wang@linux.alibaba.com>,
+ "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>,
+ Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>,
+ Barry Song <baohua@kernel.org>, Usama Arif <usama.arif@linux.dev>,
+ Kiryl Shutsemau <kas@kernel.org>, Peter Xu <peterx@redhat.com>,
+ Alex Williamson <alex@shazbot.org>, kvm@vger.kernel.org,
+ =?UTF-8?Q?Lo=C3=AFc_Molinari?= <loic.molinari@collabora.com>,
+ dri-devel@lists.freedesktop.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>,
+ stable@vger.kernel.org, Sashiko <sashiko-bot@kernel.org>
+References: <20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v3-0-85eaec8417f6@virtuozzo.com>
+ <F6337325-E635-43BB-9E5E-DCD25F4FC951@nvidia.com>
+ <73f0dafd-5b26-42b9-a77b-90c32976942f@linux.dev>
+Content-Language: en-US, ru, sr
+From: Konstantin Khorenko <khorenko@virtuozzo.com>
+In-Reply-To: <73f0dafd-5b26-42b9-a77b-90c32976942f@linux.dev>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: AS4P190CA0029.EURP190.PROD.OUTLOOK.COM
+ (2603:10a6:20b:5d0::19) To PA6PR08MB10708.eurprd08.prod.outlook.com
+ (2603:10a6:102:3c7::20)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -109,41 +99,111 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="syrl3Afg657kytt3"
-Content-Disposition: inline
-In-Reply-To: <20261015014324.5569-1-phucduc.bui@gmail.com>
-X-Cookie: Tax and title extra.
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PA6PR08MB10708:EE_|DU0PR08MB9876:EE_
+X-MS-Office365-Filtering-Correlation-Id: 41f4e592-ea0a-4984-8612-08df2ab26fbc
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|7416014|376014|23010399003|366016|1800799024|10067099003|18002099003|22082099003|4143699003|261009223027099003|56012099006;
+X-Microsoft-Antispam-Message-Info:
+	VHCIdSNsVkEcpoaOOnjateHWJUluDLm2LhtnAcT71KmzJCYoELo+qm8lHi4AAglY/NqPsXHbG8h2kOqqbNsB2boMcrL+2UozLQaxzwfGBKO/Gf9+e+gat9lfx3TsBcDhOswgCw1Tra60FhUnkSWbsUf4citJaMTQqQbbOBhdKhpaY4wSh35Z9OMUMBFt2gwd+roMD7xYd6NJ6IKemtmQail/CeNLbo0P/QffraMzaCgtKzrqbckhj8Dc9JPdMe5ric1Dbdlwb+AxUsYZS18TDvfrKKZwME/00zIZ3qXPXPfBiOCIKaOq2x8fOS/EaoaHS+nZKaNDnNmvKJnNKPWHLyZ+0OpcT3ciaIVttv4Id9AqhnzWuF6rVRrXMhG+/SU9Iu7U1zP2u7qeTzKrj4dhkr8tG6so3xcWS7loS08gIzNoqpITCXthbgPcPH45fuUAaaNy6xnVqgh8Dn+YO9BiQfE6B7mEslLcs3/8x9Za9NUjwKCThgxRKOD7bXCC+mvNV7blqJhgYHjhexYzyLMQOI3qFvCUAOQqh5Ssrvh1Kz28KtY24ULq08BeUKhRlTNk892MLI5BXHhsZUwDKnj7Ed6sbIznL1ioxvWdquNuBc3cH4r6etghhfPjxiAjx3i4
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PA6PR08MB10708.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(23010399003)(366016)(1800799024)(10067099003)(18002099003)(22082099003)(4143699003)(261009223027099003)(56012099006);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?KzZKUW44eXBBeE8vNGVlMTVIOUJwbGo2MklsTUkzeE5WZmlLeTFocW94VlBC?=
+ =?utf-8?B?aks3VCs1b1J3WGNxUXRCS1BIMFlKeUZrdGRsU0ZGZGc1WUJ0RzlqeUlzS1dT?=
+ =?utf-8?B?dmg5VzZ0Qk9ReFBkY1F0VFdaRGVuMklMNy9CYk9scjFFaHNUbWlQMkx4c1F5?=
+ =?utf-8?B?bmxzdzg2TGQxWXowOU16RUtSRXMxcDkreFZVRnhZbnlhK0ZTWmNnWkxBQ1Jy?=
+ =?utf-8?B?YTdnN3BBSkZIU2IrVFptMWpvckVaUVl5Y3dqWXl1QWlud1lzWUl5K1gvZXJ0?=
+ =?utf-8?B?c1hDWFNDVnlhTFJybU05TGxSMmw1Z0owc2VGVXczODl6a0NkUHFyaXFuNE5I?=
+ =?utf-8?B?QmkzTnpWenRneFZwTis2STRLOUErNjFSS01SdXpFdWdEdXBwQk5wL09NTDRw?=
+ =?utf-8?B?ZHNnajVqWmt2bytqb1l4V2c4R2ZzSENuT0NadHl5czF1a0hIYU1qbnpsS0tJ?=
+ =?utf-8?B?OUFUbHQvNW1VVERoSkl3K3hFdmdjeDFXdy9weTV6eHRmVHVUMGcyZjFtRnk4?=
+ =?utf-8?B?amJxbmR3NUdKamNXZnRQTDR0WnpTcHlCVUVWOW0ycmFsRWk0WFZ4cW03S0dD?=
+ =?utf-8?B?WFpaUVcrTE1Sd25vR2dKLzBWeUdFUkczYVNMTnhwVnBFYUlPWlZ3ZjJqSkl6?=
+ =?utf-8?B?T1pjbEZtaFY4cDF1WFlZU3lsVm1xRnI2eVFLSUtlYTl6VXNxeHRCZTNYYWZ1?=
+ =?utf-8?B?aU1kZ2tEMkFxQThwUVdDeXNoZjZZNHJtWHVzOUxxQkFDNjFxUEhVYisxd2l3?=
+ =?utf-8?B?NUx0LzVoUkFTZ1cveFNrNlFRL2Jzd2ZVMWE5U3RXcFpPd0l1WW9CVUVBN0Nm?=
+ =?utf-8?B?Sm9yNm5WaGtxSmNJVTN5bkZQb0hrRDJTazUxQVE2S1dFbjRsU1gwSVhvMGNk?=
+ =?utf-8?B?TzNoYlZ6cmRUeUFZa042eG4xVno2RFhFeGMxWTV0SkQ2eEVsOElHc3kvcDdp?=
+ =?utf-8?B?bTRIb0NVMVdQN2pMZithR1FvcFRTcUZPOTlqd0RwOWRHTGdMS2RUd0txRklK?=
+ =?utf-8?B?MUJSZ2NwOEhBNVhNMTJYUXBHS3duZXJWZzF5ZW9VbFc3QTIxZ2ExazU1bHpU?=
+ =?utf-8?B?bEhJNXR5K2htRjQyVFFtOC9xVE1qT1FYNVFuVDZhdm5ybTdKbFp2WTIyUzd0?=
+ =?utf-8?B?UjJpNWVTeDROdEhBZHhDVjEyYWI2VTV4NXJSQlgxb0h0RTBQNGVYbmRuU20r?=
+ =?utf-8?B?d0hEV2JabExsaXNkOUl1V2RWNUZtUmQzUTI0MkQzNFczWFlLRnlnS05WckJO?=
+ =?utf-8?B?aGdmS1dQM3FnM3dsbUcvcnlJOE9mUjhvT2pWZXNXSWlNNnZZd1BiZG1TemVP?=
+ =?utf-8?B?K0VMcEFNZzMvRWFKUXNlZTYxa1BWbW16VktweFNDYmlMM1pRS2Z2Qjh3YzJK?=
+ =?utf-8?B?NVZnVHg3OFJ2b0lRdjVJQ2JhcllsbklGWHJhMnJTbS9zZ2tRSzlsY20zOWxq?=
+ =?utf-8?B?N2ttUHV1OSt1cFoxM0FIaW1qK2lleUdIQ2ErU3ZQc09MMUhnOVVFb1FMMVR0?=
+ =?utf-8?B?anliVUhDL2tsMmJwQWxZT0Qyb2NDOFBRUitWSkFEVURSeWxxM0JWMzRwZXVj?=
+ =?utf-8?B?WjZCOUFoaytLSXByQnBicHJqQUtGdHBsQUlHMURjdUZuVDhoNnJjUkdRNkYr?=
+ =?utf-8?B?R1VVY2lGSGNqUVZ6c2s2L3NRc3RoZUtOSy9LT1F3TkRqVTZGdlhxa01Jbm9y?=
+ =?utf-8?B?UFdJU1g1UmJyS3orOTJpeWJQMk9ubWhRTFdwemQvNlFSVTdMd1NpNnRVSXht?=
+ =?utf-8?B?S2xqc3JXWmdqR09ydGY5aEdOZW1Bd2kzREw2VHpiTURnYlNlRWNEMC9TWUxN?=
+ =?utf-8?B?WGE4RDN3TFFEeFQ2YjgrOUwrekdaZGcyNmpldUV4SWVSNU96SzNIUFpxZUVn?=
+ =?utf-8?B?UEpaQnZwRDRFeUhKRS9DRTAvKzJCS2IwaWwrQ2Y1ck5rWEtEYmYrQy96clk3?=
+ =?utf-8?B?VytsaDQzRytVWGNVMFd1L09FYWRPeVQyN0VFL0ZMdnJTQzJXOFhVQ3FoY0J4?=
+ =?utf-8?B?TXF0dXc1VVcxVzZ2MFl3cnM5clVkdGU2YUs4ZFg3cG5HWmlYTlZXN1VjY0dW?=
+ =?utf-8?B?WHFyby9NMUR4Q2M2NWM4OWQwVzZjTVZqUm9YcThkRU13SjRMeDljclBoYnBi?=
+ =?utf-8?B?Rk5nRXA3Q2R3OEd0WXY3dFN4QTJiVWR5a0cwaGVvbjcwa0h0cm56d1cwRVVB?=
+ =?utf-8?B?b1RjNDJIQnpWcUtCT3NXa2p4MGFPL09HUDM5UCtuRS90L0IvRVRod3R5V1ZK?=
+ =?utf-8?B?b3JsZ0MvYkRab2h6Ukc4MzlDQ3FjYi8rN0gvKy95RHdYZk5HcUFtbjYxOGdD?=
+ =?utf-8?B?S2tocG1wWkthYXpHMzVESktGL3U2bzBjd1RKTGhhTnplTUM1NXV4QT09?=
+X-OriginatorOrg: virtuozzo.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 41f4e592-ea0a-4984-8612-08df2ab26fbc
+X-MS-Exchange-CrossTenant-AuthSource: PA6PR08MB10708.eurprd08.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Oct 2026 11:49:57.8307
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 0bc7f26d-0264-416e-a6fc-8352af79c58f
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 5J1ycRV1BGsx8AO3bWHF61tBNlk3k9lWh9ldJ4ruF0yGUSrc0rChLSZ74CEiVP2vhqy3C4pyL1gEcd1Qsm2Hng==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU0PR08MB9876
 
+On 10/14/26 18:04, Lance Yang wrote:
+> On 2026/10/14 23:57, Zi Yan wrote:
+>> On 14 Oct 2026, at 11:46, Konstantin Khorenko wrote:
+>>
+>> <snip>
+>>
+>>> Signed-off-by: Konstantin Khorenko <khorenko@virtuozzo.com>
+>>> ---
+>>> Changes in v3:
+>>> - Patch 1: recheck the PMD with pmd_none(), as only a zap can change
+>>>    it and a zap leaves it none (Lance Yang).
+>>> - Link to v2: https://patch.msgid.link/20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v2-0-e1548488fa68@virtuozzo.com
+>>>
+>>> Changes in v2:
+>>> - Add patch 2, the page table deposit for ppc64 hash, reported by
+>>>    Sashiko.
+>>> - Patch 1: name panthor instead of drm_gem_shmem as the driver whose
+>>>    stale child mapping reaches freed pages: drm_gem_shmem keeps the
+>>>    pages of a purged object until the last mapping goes away.
+>>> - Link to v1: https://patch.msgid.link/20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v1-1-d225c60bc316@virtuozzo.com
+>>>
+>>
+>> Please stop sending new versions of a patchset repeatedly.
+>> Wait at least a day for others to catch up.
+> 
+> +1
+> 
+> Please slow down a bit. You don't need to respin every few
+> hours. That just makes everyone start over ...
+> 
+> Post a version, wait for feedback, then revise. Twice a week
+> is plenty, honestly :)
 
---syrl3Afg657kytt3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Guys, you are awesome. :)
 
-On Thu, Oct 15, 2026 at 08:42:59AM +0700, phucduc.bui@gmail.com wrote:
+Trying myself to do the very best i can and yes,
+"too many and too fast" sometime does not leads to the "very best" result.
+Set myself a hard upper limit to 1 rework per week. :)
 
-> Changes in v2:=20
->  - Add Reviewed-by tags from Vijendar Mukunda and Chancel Liu.
->  - Remove redundant integer constraints already applied by=20
->    snd_dmaengine_pcm_open().
+Have a nice day and thank you for looking into this!
 
-v1 was applied, please send incremental changes for the differences.
+Cheers, Konstantin
 
---syrl3Afg657kytt3
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmrQtRAACgkQJNaLcl1U
-h9DzAQf/WcguhgqKmLmBlSGrfAmohZap9b+qyUgyk3gBcdL4pfDRN2N0m/jg80sq
-EGu7yBR6LzgAalcEkMLnjACfVsi4kZuopa6nijef9rrYX/cJcxUrOSjK3l2G+rD8
-U6h20fO6YVWgAkmtLtV9G7PU+gy+06ZO8snDL9dTODv9DYyWZvQ4mTgJvAK7rYQP
-mBKi2rhlpXe2rMyRIvXW4FQtX1kqOzt+gtSHjApzltjchxaDuM6/jThE4a8+o4Ms
-XpUeCo9/Bg4u29Zt4okIN1S1up/cOjyNcEQwgf+5Lf0qlZXbV4Dyk43TNms3vuED
-ZSE26kZ6DpaP/lgPoejNuYeJrPX9Pw==
-=HbjQ
------END PGP SIGNATURE-----
-
---syrl3Afg657kytt3--
 
