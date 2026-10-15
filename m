@@ -1,82 +1,130 @@
-Return-Path: <linuxppc-dev+bounces-29542-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29543-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B03CCC6B1C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2026 03:45:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DD8CCA9EDE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2026 03:56:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j4v9V4GvWz2yqT;
-	Thu, 15 Oct 2026 14:45:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792035934;
-	cv=none; b=kqAyKvjSmXef45weVuPj/vch0PbvdIttffSgRWQs1iPFXfF9FO4p3P44c4tzJQhPStec/FENFnqbelA/APznQctp0ZAdJ6q0dSFYW/NcSketgE4uH8G2e5jv2lOqhhD6XsvgMw44FmC83J5Vd03VNSQn+7To9tE5CyhSZr3xRkCLir1nGDJ1hv8UJcTPfc3FZiN4/kf5qrwoyplBN+fr56azhj/s2j5wMvvt4AbhvaDjcxsr7r+wKpn8IXqxCp6b/b0FodK/rWhwaHTIFvO4VGykHr8xLo2RYbT48H51g1rL46ev66xK6a+FMWDeXRpU+L0wAJ6H/ynofwmHxFLtTQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792035934; c=relaxed/relaxed;
-	bh=ekxAbaTw9lcA/repE4rySfHgfzkYuU+ooIR190sGV+c=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=l98CF5xIdBxQNtBpAg7ddjjvcmLdZYXStxBKYJ+DdK0R+lJA/S0f76f1bx8CTCU3AquBoUbLIK5s8xiRxmyHa+/Xl6xBlDlSMXQZxzqVxWc6lWuGcNE5gB7ZnkejnNw9FIlp6GIHPznooedDLoU5tiaxuqc9JEntN8frrjJMYOGyxK1KdkSpwrqmsWF90v90DQcOAVp6ywZ6B6m3W5B7gH7E9REcGPb+w83SS5inRDb1cGnGWm1JOwt4nN2qTMEFEDL3LxKp+b64XrFtA4PvxPX/J9BHmGo1vzAhcyqnas8bkiykgZgB21otl/BHZJzKu31MVK7UTPIjN5KzCBsPzQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=FRZsCNv+; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122a; helo=mail-dl1-x122a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j4vPc71c7z2yqT;
+	Thu, 15 Oct 2026 14:56:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c405::" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792036564;
+	cv=pass; b=emL7dtsiA62mZeBmqfB01yn2aPujVGR5LDj96NEOrwo6QapgJmidHsLagmYImNpzoXdfx+tXtKhLohfS+kSGujm2YbzvyZZKcp/izPiMYRUmRUMpiywDsO/utW1ina4YDVZkC4N0QYBAM5MUIqJlaCDo85RAQ6Ac6Q1W/J1vHkafex0eKKN2zAFvIARXshXerwlLWCVL4VlVI25zKvdl5H7c1UcF9KoPeIuwME0B8CA1zMzNWQXWekI35Nr6xuQDw2E8d5zhWW8A7MMakPKlIzXD8w5b9yQjNeLA1BGmczlRIpYFTSpDBaa6KeVtFNhJFjSIs3ZuNqg7bXStiNFv3A==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792036564; c=relaxed/relaxed;
+	bh=KZKG7VedI2F519QjQdrOyP6oaqPlPsfvKP+aeqJt8pE=;
+	h=Message-ID:From:To:Cc:Subject:In-Reply-To:References:Content-Type:
+	 Date:MIME-Version; b=J6pybfKN15BF4vPinJWe9WHMm79IkHPMDiRt3B8yg/Z7AaTKeJ4WjNeJLjxgxwQIhH0YMqwLuw36ZQwdhvA9ZLthCnjhrD4EZxrG9aFelxxBSGWr4oijZdLskylGuorfSL5otPPYAZztXdsPh3kNhjGfvaTd4Ha5scItuzrRq7Iym6FOSJhM8TKsrwMtL9s3WPSztaIAxPV1o7ySt2fvTZH1KXtOS/N2vaTsJHtiXb1UocLf3YfIu/Gs7L9ajF8+1i04H1ufOfoHixCXA3PRz6jfKhrNB5My0rXAgvaOPvyUs6iu4iEQzPHepozqlZdna39xOQ0nOZDjacZLYld3DA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=renesas.com; dkim=pass (1024-bit key; unprotected) header.d=renesas.com header.i=@renesas.com header.a=rsa-sha256 header.s=selector1 header.b=PvT4CPoS; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c405::; helo=ty3p286cu002.outbound.protection.outlook.com; envelope-from=kuninori.morimoto.gx@renesas.com; receiver=lists.ozlabs.org) smtp.mailfrom=renesas.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=renesas.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=FRZsCNv+;
+	dkim=pass (1024-bit key; unprotected) header.d=renesas.com header.i=@renesas.com header.a=rsa-sha256 header.s=selector1 header.b=PvT4CPoS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122a; helo=mail-dl1-x122a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x122a.google.com (mail-dl1-x122a.google.com [IPv6:2607:f8b0:4864:20::122a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=renesas.com (client-ip=2a01:111:f403:c405::; helo=ty3p286cu002.outbound.protection.outlook.com; envelope-from=kuninori.morimoto.gx@renesas.com; receiver=lists.ozlabs.org)
+Received: from TY3P286CU002.outbound.protection.outlook.com (mail-japaneastazlp170100000.outbound.protection.outlook.com [IPv6:2a01:111:f403:c405::])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4v9T02PZz2yYd
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 14:45:31 +1100 (AEDT)
-Received: by mail-dl1-x122a.google.com with SMTP id a92af1059eb24-14394530ec6so3980581c88.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2026 20:45:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792035929; x=1792640729; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=ekxAbaTw9lcA/repE4rySfHgfzkYuU+ooIR190sGV+c=;
-        b=FRZsCNv+jvhSY+EomO4M6tjUfRO1cuPgOy4EHKctmAnouWqS/u2mtMgmRvrqN8gpRi
-         TPtBJDSr+FQVAOKK0feKHs+SqEqJOmqXYFaOVlyrVPeLnxqgdhBpc4x8R9RK/AtNzQID
-         7nYXgMPlft74N5FBBeq1zyDRhCvjVzixPccb8ZOMHA1SVsfqDj6HWKDHfsr+zm9fiD/d
-         l8sNufkEQc5fTG6YZc1KJ8xJY2TsKWrOc+iRix6Hv9rDqqmIMbVyy7aMYPZQVT/1IjM4
-         IQtw/j6Ez8gSi57yIKRAF+D98+kuYoESSwDHBkRxfDdrgtuReuLHAT+DL8TAkX+IWGFW
-         TogA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792035929; x=1792640729;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=ekxAbaTw9lcA/repE4rySfHgfzkYuU+ooIR190sGV+c=;
-        b=MaANVVflNqVgJtBpSpNXVLrYTGRETLvKMOiJxywXcPl7vBccL8bdGLqMM42OUI8IVp
-         jKAXwvfSRapOAlkjFV8NwSjz2YywBOafjK8VWO7i0BrOfGXY2s3tRGbqBBwgYghHOXQ1
-         jLSTu0PHT9PmRFFqMr0lUi9hbc6OEApq84eNk+8JwOxpdkfAU96VXHCmMl758TJN7zpa
-         btq31JJbp1KLNeINj7RmX+UZLaKOW/eP3kdfs9fAKZ0+OpSjp/OLzvG41OLXO42IqHQt
-         qlsy9k5guTTj26zXMSGTo15hqQkpZ2YrQ9CtbLYjkB/wh9gZYhK73gnfNffJnLiONUG9
-         0e9g==
-X-Forwarded-Encrypted: i=1; AKwUvBym/QvGb9QWC+IdwbhMYSegCSftpQx0WlJwrj6ROBhfe46Ej5RCNrO01XpqKQ1gsr3CKULdon35pw4A1zw=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYLCbITJfNOIsYlSBTz5coigZVOX9pV3HsIa1q5eie0pEH10Qcaj
-	aTKvnY2bkjDGNfz1c/oLIapqO+OH58Bx5ZFfnp70bLMsIYUEjMVrsf9r
-X-Gm-Gg: AYBFou1llqCEN2LlYiAXrVcWc+YTUKl4Aq63U3g3zec0/3nSllQ96HwcSXF25agcVi4
-	0erlC+q2zpY4g0ei+/X3mHuK0CfXbv4uzTjIMj8kvKYS9jqxtDCHYZpnXKs0boVUp9jlbOHDuU6
-	WCBP8z8ye+tp4MJLkEHnktXfjawis0qdpaeesCdDbQMRTUgmlxSbzkIE+PGg0Itf3Fya8Padk+f
-	MjJH+yG2Vv3l5m6I+1nQx5I5i3vQQDmJVNZdUJtBnJ8ucA+LMFVxTbqn3SU0Tc3kQmeppiTOPUs
-	Mbb3FtECpcaQIJynQAaJeQPknPZJuZma8gtZsSLBqOpQCar08kb0v1CzsVlHQ1QYpF7jVErIn76
-	8wUzzhLvVxPe5/VgeyV8TqmGVQt0QW+5f+8nsjM793T6esRVLG1dmLXIeYkTN1RjMemxHn6IJLc
-	A24NMk4KHUHPpg4bfkqBMqYiv7FPaFfoLjnY9aHCIjvLO+IZoqyGjLldObTsPmjh5idyOQ
-X-Received: by 2002:a05:7022:7e08:b0:144:fa58:95d8 with SMTP id a92af1059eb24-16a61a6ebb0mr33060504c88.27.1792035929111;
-        Wed, 14 Oct 2026 20:45:29 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-169a5866477sm50853605c88.22.2026.10.14.20.45.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 14 Oct 2026 20:45:28 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Amit Machhiwal <amachhiw@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Amit Machhiwal <amachhiw@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Shrikanth Hegde <sshegde@linux.ibm.com>, Alexander Graf <agraf@suse.de>, Avi Kivity <avi@redhat.com>, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, Gautam Menghani <gautam@linux.ibm.com>, Harsh Prateek Bora <harshpb@linux.ibm.com>, R Nageswara Sastry <rnsastry@linux.ibm.com>, linux-hardening@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Disable preemption around host-side HPT lock users
-In-Reply-To: <20261014185215.71832-1-amachhiw@linux.ibm.com>
-Date: Thu, 15 Oct 2026 09:14:32 +0530
-Message-ID: <v773r5jz.ritesh.list@gmail.com>
-References: <20261014185215.71832-1-amachhiw@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4vPb6TZKz2yYd
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 14:56:03 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=FfF7rqipWK5EwGyUQNAf0qIDenlTrT0/6vcDXnFU2BXQJfZkSuVoqvBabVbfA843yXb5yUfl9wttT63Pdm2t8Y0sjP+xARRaElejHPcN78eyEC0YiI2oNhi4xULJwcOTCVPVxqR2Sp0eWMuQdwwyustpODyJ8ILlG4va7NcIL/DAjzR/acCogWa9/shvji0T19xygN/6D9Ky63cWKtbFKTCcwqjOZmdF41zjt739xytX22bHkY8jmV9wTiszFFnSdnwlmTfJSdb35vFijII4hp8GLZvQAveZilG8R3NY/EHe4y01helLx0+VRQtBvO3YNBTNIBG93RASbRPXZqFnUQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=KZKG7VedI2F519QjQdrOyP6oaqPlPsfvKP+aeqJt8pE=;
+ b=ASMOEEhkUxoJceF8Wj/AHVHCc6J/GGRoZ21+WZNHvnda2ofGBswjesmf4D+CnuuKPJkxcUXIxFiOMtWWOEJbehowJU0g9KzokLZZrrDycKcBRA/u1HzrBoh4D8Rwy9ISCcfMzUYWOFOjlprB4ewzqGAiwmKCei9+AY8m5povFL5HKbF/TJHR9kQWyNYqN8G1hL8bt9geuWCSUos805EvIp/1mobBFePujjxDU7neEqJCRlZ5wJbix4yD/vfJM65nph9wvAwdakvn9eNy9454HtIAs93EZkWfweTWMLsqIDxTA0hj3Mi8mAcv5eK3dXOn+xXaAK8vpEQw+Ld/5ZJ5OQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=renesas.com; dmarc=pass action=none header.from=renesas.com;
+ dkim=pass header.d=renesas.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=renesas.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=KZKG7VedI2F519QjQdrOyP6oaqPlPsfvKP+aeqJt8pE=;
+ b=PvT4CPoSjWtD2SDUgQ959gBp7fwM8LuMVL8EQctTbjFK+9Zl/GvyStG/b/9tbsvHBWJzrSDzn9NzKdLyzlFTxKTlzsVpCD8IFyp88wp9ZQ3B0FlnUvPiPANS8mUhUrDyFGHOxU/gSYOyU8OFscAR0v0JCXo1GznNZbh2gqFe4bg=
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=renesas.com;
+Received: from OS9PR01MB820914.jpnprd01.prod.outlook.com
+ (2603:1096:604:50f::14) by OSCPR01MB12498.jpnprd01.prod.outlook.com
+ (2603:1096:604:329::13) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.522.13; Thu, 15 Oct
+ 2026 03:55:38 +0000
+Received: from OS9PR01MB820914.jpnprd01.prod.outlook.com
+ ([fe80::12e4:c507:3730:2294]) by OS9PR01MB820914.jpnprd01.prod.outlook.com
+ ([fe80::12e4:c507:3730:2294%6]) with mapi id 15.21.0496.021; Thu, 15 Oct 2026
+ 03:55:37 +0000
+Message-ID: <874iend3d3.wl-kuninori.morimoto.gx@renesas.com>
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+To: phucduc.bui@gmail.com
+Cc: Vijendar Mukunda <Vijendar.Mukunda@amd.com>,
+	Venkata Prasad Potturu <venkataprasad.potturu@amd.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>,
+	povik+lin@cutebit.org,
+	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
+	Andrei Simion <andrei.simion@microchip.com>,
+	Nicolas Ferre <nicolas.ferre@microchip.com>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	David Rhodes <david.rhodes@cirrus.com>,
+	Richard Fitzgerald <rf@opensource.cirrus.com>,
+	Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Cezary Rojewski <cezary.rojewski@intel.com>,
+	Peter Ujfalusi <peter.ujfalusi@linux.intel.com>,
+	Bard Liao <yung-chuan.liao@linux.intel.com>,
+	Kai Vehmanen <kai.vehmanen@linux.intel.com>,
+	Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Biju Das <biju.das.jz@bp.renesas.com>,
+	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+	Heiko Stuebner <heiko@sntech.de>,
+	Kees Cook <kees@kernel.org>,
+	Syed Saba Kareem <syed.sabakareem@amd.com>,
+	wangdicheng <wangdicheng@kylinos.cn>,
+	Chris Bainbridge <chris.bainbridge@gmail.com>,
+	Linus Walleij <linusw@kernel.org>,
+	Charles Keepax <ckeepax@opensource.cirrus.com>,
+	Neo Chang <YLCHANG2@nuvoton.com>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
+	u.kleine-koenig@baylibre.com,
+	Pengpeng Hou <pengpeng@iscas.ac.cn>,
+	Cristian Ciocaltea <cristian.ciocaltea@collabora.com>,
+	Hemanth Selam <hemanth.selam@gmail.com>,
+	Md Shofiqul Islam <shofiqtest@gmail.com>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Zain Aboobacker <zainaboobacker33@gmail.com>,
+	Sang-Heon Jeon <ekffu200098@gmail.com>,
+	Bo Shen <voice.shen@atmel.com>,
+	Vinod Koul <vkoul@kernel.org>,
+	linux-sound@vger.kernel.org,
+	asahi@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	patches@opensource.cirrus.com,
+	linuxppc-dev@lists.ozlabs.org,
+	imx@lists.linux.dev,
+	linux-rockchip@lists.infradead.org,
+	linux-renesas-soc@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 20/25] ASoC: renesas: fsi: Ensure the component is marked as opened on success
+In-Reply-To: <20261015014324.5569-21-phucduc.bui@gmail.com>
+References: <20261015014324.5569-1-phucduc.bui@gmail.com>
+	<20261015014324.5569-21-phucduc.bui@gmail.com>
+User-Agent: Wanderlust/2.15.9 Emacs/30.2 Mule/6.0
+Content-Type: text/plain; charset=US-ASCII
+Date: Thu, 15 Oct 2026 03:55:37 +0000
+X-ClientProxiedBy: TY4P286CA0126.JPNP286.PROD.OUTLOOK.COM
+ (2603:1096:405:37c::19) To OS9PR01MB820914.jpnprd01.prod.outlook.com
+ (2603:1096:604:50f::14)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,57 +137,83 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: OS9PR01MB820914:EE_|OSCPR01MB12498:EE_
+X-MS-Office365-Filtering-Correlation-Id: ace0e022-a42d-46de-8b4b-08df2a702c49
+X-LD-Processed: 53d82571-da19-47e4-9cb4-625a166a4a2a,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|1800799024|376014|366016|52116014|7416014|10067099003|18002099003|22082099003|11063799006|4143699003|261009223027099003|38350700014|56012099006;
+X-Microsoft-Antispam-Message-Info:
+	z6R8T3o7ZeAH5eXF+zm+E8UZixXFytr5hrsAV+BvPmkqiJ0yEWeMzonFLUq5W9/3Oh0HojE2KVfk9/Hwz5PoEzjd/hcaCeFXmwi7iNSK0hIriu919ByvwdzzMyAx00U389G4j9Qs959F/DAqCaqIdjuXXDXRPtgvRu3zD75/yNs/Y/kVbXtDddax8/oYhOn7jRPPLcexh1mc40CigqeEEcYJs+lkguibRQhHdf79+M5cXB/OEvt2MIo5wMqeIbXRW+PLLySUVP1+qZNGmTGDa2CrxWezYZRP28fFGf6sv/kE06yrjU/iBNqLFaQ7OoyKtnorp/sfykTAG6bxrJVVYsa80ZsOCj2i3dhug8qt7GGOm2zYP58QmuHUpdnmureWuz75bqSeVDA81mTryZSlWFZ1GyVjYSODZ4a2l0F6sFbcRZIYVMy+QNZmTkHvwU6aIvlBkd5NtJBE25rD1Cnjrx8afQxNJFfLm8rGdHKptB/mIXE89pVJBpHqNK7EKN7uj0Bmn5qldZx3b29pXlgXZKuotz0i65OvVThUTQiJYgZNf3504RgwkXKaB0pAimIGH2U8aTerXitVWB7c4WBCWVIv+FnsS+GcZLwP6X+Lf7JDqTWnuutGK/8XUx+aDoWXhc78zfZXLt4zrZoGojoRsf+r1xj4sTVIgxneUuh3G+VlTInDtqqcickNbSPC7Pv1RalDOLG8dwxkz4v0W5HRA71j7aYyCf70HgNcJHO+RjQ=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:OS9PR01MB820914.jpnprd01.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(1800799024)(376014)(366016)(52116014)(7416014)(10067099003)(18002099003)(22082099003)(11063799006)(4143699003)(261009223027099003)(38350700014)(56012099006);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?3vNs7Te4KDwOFb4mEDDyLjbeE2faePT7qpSdXx6iWzYvRs6dbd4xOZu8rRpH?=
+ =?us-ascii?Q?b8v6X7yVNJJBppqFEqo6oHcZM1/Yg2DsHee89+wHHHdE6yY7JLCnBqipSw5b?=
+ =?us-ascii?Q?zqv2YC37W8II2M54DhfPNDukOE1zfFJWie7HjjQI3Ff9UVQgifb2KCt8kKJY?=
+ =?us-ascii?Q?rwR7BmJrUMVNI+BLVSBrM/yXW6zxtD6KZ0rqWNIdzNBP1gFUq9CcPrVaOA2F?=
+ =?us-ascii?Q?j4QPCB+PsEWdrp/Isuw1r0KcJZXLVD0l6ltNuSVdPtCZW+zh3MzQJWZqGm+f?=
+ =?us-ascii?Q?rXGpi9+pMCEdLVx10qchSRdjP9cHjFICkCCdFVnuSHbSeM3qj8dkTkdIer1P?=
+ =?us-ascii?Q?sq4XPZUihBk5r1G6aOruN3w+1UCV7OJfrzMkgeuoPNcXDe6I701sirvuCBfP?=
+ =?us-ascii?Q?zZ+rHG9BMpzwusgBXGHRXTttaMjjxJ/qg7/zpXkjMFUAINhdnEFv1MUmYT4y?=
+ =?us-ascii?Q?Jj3dTsRjnCzB7GONB86ST6CIOFqj1Mx4RCfuB9aO0jfLOaLOXxLtC2ZuAPbn?=
+ =?us-ascii?Q?KuaAv1SPu0lIma6iABJeOb6TMO2hFl7o5AiD+TQvrcHWnA+L7B+McvKEt1+n?=
+ =?us-ascii?Q?S9AmtTqUdXrP4KCzGSzFibDyz+URxObthhtAV/Qjo2JcTGmaJyLsFjjB84DA?=
+ =?us-ascii?Q?K0TR4fzpcUnPL7D9JOc27ry5/QzX/d4/zYWBc/yIyezMiMv4AZOHdsSaxi9x?=
+ =?us-ascii?Q?Q8P1eQUlXsplvTjOZK6xJcvnvcpVUweNS8Gl0bLV/NawuAWL7Fcme41RGuwn?=
+ =?us-ascii?Q?WEJxOWYV6rvU7BJ/Xar7Y5s5raVPKApzmaDHLasiZ97odDwDTXMEDp4Y56ts?=
+ =?us-ascii?Q?TctElz6eRah6wX6uTqYcutvz8V9gcXTr7wftCtE3BfFwb1ucbyqurAYebdHW?=
+ =?us-ascii?Q?+Fk07K4KkEL4Xlgxcdv1nFTSeSC9uPzfJPARSZ2fVwRztWcTv5NWnYM/eiD7?=
+ =?us-ascii?Q?i8mrlkwTLcQYpXPH8jTWU505sNR2+EYpTqLb9+rZv1JI6stcTsJtRMRp7L+Y?=
+ =?us-ascii?Q?b9vhfeLSl/3RvFBn6CA38hi7pyL6UAVL96v9uCtb2yngfvDbMSGNKeJRVful?=
+ =?us-ascii?Q?NMJwjS+gUadoifLTho7i4jMZ9vhs4psh+y3SdwiSGaRXHAN+F2qHiXU4eKPi?=
+ =?us-ascii?Q?1UIQVM3VkbQhsZkMHVoEvHrEDtdYHWUI+Htcqh5s0UbX2ZMpdZKG3APBe97M?=
+ =?us-ascii?Q?96TAayjCA0wEgWGEubMJQ2/aYS1hfJLn9qbMS2mb4zeWTWcmpDIKbOWN8pfV?=
+ =?us-ascii?Q?ZQAi1kuuwu7yBNxE3or+fzieq4eL1zkdoFdOjk/BrVqFRE38A+5qns15ZRs5?=
+ =?us-ascii?Q?uwb+98OjzAjFW5LyYX6zKt1vLWLtRzZ2Vbzpgz3xivMB54l75d/mQ+rvwnxp?=
+ =?us-ascii?Q?DzEfWIgKnOUHB5MBx1fyrd/Op5b0nD/+h/Bit9vuRgFHwfx5Pt99W8qftPXC?=
+ =?us-ascii?Q?11tzYFj1hWuG4SecA2J02UOjhEHmpAhho++J6iA/vjK6x0TLE9BfaHvaYMzT?=
+ =?us-ascii?Q?jEH4/pwySbiW7fmtuqLn9X0NXN9pv89heAdH8dfWAH72t8cjgyzD8KZXOX5T?=
+ =?us-ascii?Q?QiH7YCdQJpfijsAI5tpmzxXP9oZ0zEhkLExJWVSNlp4Ph7je3jhQu+myGXC1?=
+ =?us-ascii?Q?Pb3qsBWhVY7j5Yb4ZL4nElcL78wbrZXsubJvZ9eLLIJEeYdSMqhB0GUiR1EA?=
+ =?us-ascii?Q?4M2p1fqqKrCPazOJ+tO4owuahR7OGGGMfA1u7MQ0ulU79t8xN/se3/p1C0lg?=
+ =?us-ascii?Q?QgZoB4FH0Tld6Cg6NlzwHt7MRBmcj4UjcSyP9uZJFPR8bTPP9506?=
+X-OriginatorOrg: renesas.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: ace0e022-a42d-46de-8b4b-08df2a702c49
+X-MS-Exchange-CrossTenant-AuthSource: OS9PR01MB820914.jpnprd01.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Oct 2026 03:55:37.8728
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 53d82571-da19-47e4-9cb4-625a166a4a2a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: cIePopiuKVEKWDMPgqz/a5Fv8NC0WbzNeIxBcKelsGxo10QUd1jQ0PJS9O2ZI8lxosfaczu9y619JBuDafIWzD9fzMMCQQuInJmpSdSnbzGBKYttNmmJTVoaRHA5jGlI
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: OSCPR01MB12498
 
-Amit Machhiwal <amachhiw@linux.ibm.com> writes:
 
-> A previous change ("KVM: PPC: Book3S HV: Add preempt_disable() around
-> virtual-mode HPTE bit-lock users") at [1] added preempt_disable() around
-> guest vCPU HPT hcalls and page fault handlers executed in virtual mode.
-> This ensures vCPU threads cannot be preempted while holding
-> HPTE_V_HVLOCK or the reverse-map lock.
->
-> However, several host-side virtual-mode paths in book3s_64_mmu_hv.c also
-> acquire HPTE_V_HVLOCK and lock_rmap() in process context with preemption
-> enabled.  Specifically, kvm_unmap_rmapp() and kvm_age_rmapp() take both
-> locks during MMU notifier callbacks and memslot flushes, while
-> resize_hpt_rehash_hpte() acquires HPTE_V_HVLOCK during HPT resizing.  If
-> a host thread is preempted while holding either bit-lock, any guest vCPU
-> thread scheduled on the same CPU spinning for the same lock with
-> preemption disabled will never yield, resulting in a permanent CPU hang.
->
-> Fix this by disabling preemption across these host-side critical
-> sections.
->
-> For kvm_unmap_rmapp() and kvm_age_rmapp(), place preempt_disable()
-> before lock_rmap() so that both the rmap chain lock and the subsequent
-> HPTE_V_HVLOCK bit-lock are held under a single non-preemptible window.
-> To preserve the ABBA lock ordering between the two locks, re-enable
-> preemption after dropping the rmap lock on any retry or early-exit path
-> before spinning on cpu_relax(), allowing the lock holder to be
-> scheduled.
->
-> For kvm_htab_write(), the HPT migration restore path, replace the direct
-> calls to kvmppc_do_h_remove() with kvmppc_virtmode_do_h_remove(), a thin
-> wrapper that brackets kvmppc_do_h_remove() with preempt_disable() and
-> preempt_enable(), mirroring the existing kvmppc_virtmode_do_h_enter()
-> helper.
->
-> For resize_hpt_rehash_hpte(), place preempt_disable() before the
-> try_lock_hpte() spin loop and preempt_enable() after unlock_hpte() at
-> the function exit.
->
-> [1] https://git.kernel.org/powerpc/c/abbbe5ff83e7c9ed3a4d61b73011f1df7bf87907
->
-> Fixes: 6165d5dd99db ("KVM: PPC: Book3S HV: add virtual mode handlers for HPT hcalls and page faults")
-> Cc: stable@vger.kernel.org # v5.14+
-> Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
+Hi
+
+> snd_pcm_hw_constraint_integer() may return 1, which is then returned
+> from fsi_pcm_open(). ASoC only marks the component as opened when
+> .open() returns 0.
+> 
+> This currently has no functional impact, as fsi_soc_component has no
+> .close() callback. Still, return 0 explicitly on success to
+> match what ASoC expects and ensure the component is correctly marked
+> as opened.
+> 
+> Signed-off-by: bui duc phuc <phucduc.bui@gmail.com>
 > ---
-> Changes in this version:
-> - Separated host-side fixes in book3s_64_mmu_hv.c into a standalone patch
->   (guest-side paths were merged from v1 resend).
-> - Previous discussion: https://lore.kernel.org/all/20261007182116.12479-3-amachhiw@linux.ibm.com/
->
 
-Thanks. Looks good to me. Please feel free to add:
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Acked-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+
+Thank you for your help !!
+
+Best regards
+---
+Kuninori Morimoto
 
