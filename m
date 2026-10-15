@@ -1,91 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-29552-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29553-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9A17CC6B3A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2026 11:50:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1AD8ECC6B34
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2026 12:02:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j55x06gCVz2xNk;
-	Thu, 15 Oct 2026 22:50:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792065028;
-	cv=pass; b=UYcScxpKU9luh9+RdOLFoo8IOiIGZlafWhXuILDl/C1Q9uP4KqtS9lzwpveS+BXTdE+fsNmGF8pKV5VELP9X7+ZdylWJhDifOfmhaPIupYert7C6Dij7AwwbppaKnBb4rwWljtJlQ3lh0EiKf/peo5cz+FCIrx8op0JcT5vtQG6tyM4GrVcu8jkp3wDuXL/3dXE06l+uIMoNHLY1Up4K79BYk3XPLz4o1pa5GJ97pXQZyEjwNE4Xe7a47m5J25UcCz9rqrLc+My1774k1fpsH8GIKMGzp5RMpwaxIuWOu9kZpyn+aIxvvp45jHdvITKP3CFniMX/egCmkjaFVw3tIw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792065028; c=relaxed/relaxed;
-	bh=/F/QfutoVtb0NefGr+53LzvfokLJJ62aYtcbzphVAgM=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=az6nEi70aN4vh39gBhYYK3W+S09haeKvTX9iiY9yJb2FnyLYIKWsph2eOMqSklF+U6VTRLfrtkbgpAmZGAbY3qo94r0n4eSAVzASATA9b+iYNf2MlYYj6BY1aGk1DjVTasbTKphR5eLk7Bsxi/NZ1ora1S/TFZmZE14Oq7z2T8kawIQwvI1aVw/Tn4Hrl3MuFmSqEVZHQaHZ3TGWk1SvvQKyFXr6gkN+T7u24IcLB+e0IniCTqjrDc/iQJhCsQU4IxrV8AeQTruFuCc1yE6Be0iBFF/ZTSLFmIas4Y02sI7UOLv1Bult1apoyXYeVwPwav+udsTBzPKMd4O12eJonA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=virtuozzo.com; dkim=pass (2048-bit key; unprotected) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=selector2 header.b=s5iFyO8L; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=khorenko@virtuozzo.com; receiver=lists.ozlabs.org) smtp.mailfrom=virtuozzo.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=virtuozzo.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j56C03mJTz2xMQ;
+	Thu, 15 Oct 2026 23:02:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792065756;
+	cv=none; b=aggBOEFgUPcf7LyRXBulfuK3o+gXCCXRQV8oBVDnAHUcm+jJqrWmAVfq+SDpQGLLTUr/bURzfHEDIKtpLWNcVmKrFYDk9OnaLE3ETmhtl09BXSRrcPyON0dELGTL4zRfl3o06R7i25BOE4hT/3XCe4jcRgTwjWRgrvKXZWi/Kf/q2BWYjuPRqo4Hfg1RPHuI4zHXmSOgRIL7q+5t+YJEIB/VOn885iMk5phhviRX/YKc25kSSQju3/xdN7m44f8lZB/vAgX0xby8fQ12+lan+VKeWVI5LWotnetHHlwAAdy+eQI/eksrLZpIzLJnd2lM2wJMMFwvRIdrejRnl77gzg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792065756; c=relaxed/relaxed;
+	bh=locun8ff2u85xFcCJpcxGMt3fOvIahGuElM0G4kdsjE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=jXN6mDx2DKdIsgKLpprKLKLKII+wZNoSFffBEe5T0mgGCCK6aenfS5278+ft7IwL0p/0rnGl+4QQKuoyzINPbPsOFO9zQ2rsnARKIZ0j0rsoh4zNRpSKr9Uin+hOz+FK/ypliaQU1aENL2/Nepq4N2D3Uq2oobMQEJV9nWj0vtKN1zoLkcQTwtMGEovfdYfcW/zvX751QKUFMB4h9U+sh2hXIfvVXvJWro8swTDKpr3RIP0XFvayPSuDvcT6BrSqSItiiGWqgwgmst6mg1vUuHcogfCzvUhS9UFbJoSne3SiA3MjKUrxaaDTh+jDYTXI0vfKXNWmN5b9u+b62Mbc/g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KZN+lQD3; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=selector2 header.b=s5iFyO8L;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KZN+lQD3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=virtuozzo.com (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=khorenko@virtuozzo.com; receiver=lists.ozlabs.org)
-Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j55wy6Rg5z2xNg
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 22:50:26 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=MLABI5K1NvWy/Q1iQbAyfcRM4CGrRQGSK/f+QMBHs0q6rxke7uv+ufisbdjAOwafOSEjGtuFYqvjbtoJAz6cWjiWo4Tcyog8jTvWeV93ngwjigNU7cm/o+3Q6EB/CMziJCSApvU7jCr4TBAeEGm7e+vf3yz8LvhhsJ/3zsLVBj6okCOlurt+M8DpU0oJko4thG8sX24IHJshPdxe4y67/6opFcNvTUhCKmliX0WYU7c3ikVCcjmYC9Xa21EZ5rTu4UM5NC9Jk/TSDqcSu9TgPoQIXyKghwJGC4VNhx+VFduaZnZiWDMEB9JUnFq0HeXgYuEgJO8eaicABPMmT219rg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=/F/QfutoVtb0NefGr+53LzvfokLJJ62aYtcbzphVAgM=;
- b=yoIZYDvISD8DWWlaT8rOUpLtvPJsb61aNMqOuNE9QO2IFPSACN+N3w58Dr+StuVNk2+UwbjrT5zvnlAtLBi9NJ686lsyNkwJNbY9iN1/b/5yzsFI59bCi3ur2qymf/Fw+JAHIuUTbejU3UgSelKME6JwsGovGVa0cN4+8R+9aHpLy0Wqyg8YfynMiuAgus+TtYAgsLYmUlCbMXgwlUSyh2f0W2WTVf6u1pxiUteWsalNCDh1MqiQ+FF0z8xSvkFA1GEjHlo2HP3weW3LcrOi/awbf9n+MidFyqw8T30NMHffMQBwSl8tkwyY/ZrgBeSvsT2lE8XtsY0QMSdeEIN3jA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=virtuozzo.com; dmarc=pass action=none
- header.from=virtuozzo.com; dkim=pass header.d=virtuozzo.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=virtuozzo.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=/F/QfutoVtb0NefGr+53LzvfokLJJ62aYtcbzphVAgM=;
- b=s5iFyO8LVsMk20zMN5H/Hf/HzZewC0FBQdm6+gMNike7C5h8Yn8ePVigJyL/BXAA90DD6DLIjAB3NOJy+pc2MIi4JKUhTiTQ1gR0hMzZ7YM2ixI04z7JkzItNvHAYZexsCzPGEmBAJceZoq7sJw5CMSuNahfIVVCv+9MwYZwD3ZjPXpXRiHE24JfbQpTVa+BLlNEoIRoTmVknER7SExWru/ZZETEq6+q+YJZlgX3TZt4OR1v83ghUUDkYAQYbXOxrEWV+lwENmoYbdHhRuIU5EYaRRhM9epwpUCoc/U4Otk35FQZcNtMkpPQPU4tVArmlGCcGjSXH5HF6HHhzgxbcA==
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=virtuozzo.com;
-Received: from PA6PR08MB10708.eurprd08.prod.outlook.com
- (2603:10a6:102:3c7::20) by DU0PR08MB9876.eurprd08.prod.outlook.com
- (2603:10a6:10:424::11) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.522.10; Thu, 15 Oct
- 2026 11:49:58 +0000
-Received: from PA6PR08MB10708.eurprd08.prod.outlook.com
- ([fe80::1999:c6db:dc55:494a]) by PA6PR08MB10708.eurprd08.prod.outlook.com
- ([fe80::1999:c6db:dc55:494a%5]) with mapi id 15.21.0546.006; Thu, 15 Oct 2026
- 11:49:57 +0000
-Message-ID: <3cb6df0a-2606-486b-9667-3952cc631759@virtuozzo.com>
-Date: Thu, 15 Oct 2026 13:49:55 +0200
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 0/2] mm/huge_memory: fix the copy of special PMDs at
- fork
-To: Lance Yang <lance.yang@linux.dev>, Zi Yan <ziy@nvidia.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>,
- Baolin Wang <baolin.wang@linux.alibaba.com>,
- "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>,
- Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>,
- Barry Song <baohua@kernel.org>, Usama Arif <usama.arif@linux.dev>,
- Kiryl Shutsemau <kas@kernel.org>, Peter Xu <peterx@redhat.com>,
- Alex Williamson <alex@shazbot.org>, kvm@vger.kernel.org,
- =?UTF-8?Q?Lo=C3=AFc_Molinari?= <loic.molinari@collabora.com>,
- dri-devel@lists.freedesktop.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>,
- stable@vger.kernel.org, Sashiko <sashiko-bot@kernel.org>
-References: <20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v3-0-85eaec8417f6@virtuozzo.com>
- <F6337325-E635-43BB-9E5E-DCD25F4FC951@nvidia.com>
- <73f0dafd-5b26-42b9-a77b-90c32976942f@linux.dev>
-Content-Language: en-US, ru, sr
-From: Konstantin Khorenko <khorenko@virtuozzo.com>
-In-Reply-To: <73f0dafd-5b26-42b9-a77b-90c32976942f@linux.dev>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: AS4P190CA0029.EURP190.PROD.OUTLOOK.COM
- (2603:10a6:20b:5d0::19) To PA6PR08MB10708.eurprd08.prod.outlook.com
- (2603:10a6:102:3c7::20)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j56Bz5HSzz2xGg
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 23:02:35 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69F9kLvU531670;
+	Thu, 15 Oct 2026 12:02:20 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=locun8ff2u85xFcCJpcxGMt3fOvIahGuElM0G4kds
+	jE=; b=KZN+lQD3hjUCsic6eI8ee+0xqm8NVKZMCZ16vvnqYbBeMjhJ5Rys3IXbu
+	b8TnCAMxYFtgVfdt/M4HwnBY6/YpdVK01DPAyk/j4uTV1hlP6JRj4QdBbXKQmZL4
+	zGR3sO4L6TbRZOFR6x0oOEtoU0PL7Jyo5qWPbcjJOLk2Hv7CWCBiqFt7QaI8QRA3
+	+w0vdLGNHXqe9Bwt9P8AVNZxN9wn19M1sSINW92DsHuxnLQfOMFmdqEaZwvE0tal
+	mwze+F3G7pQKfzZZOhUR1oQxPdS+7fxfXP3YVhdRzdA3kmjkaGeA/NB2yMTpT6oZ
+	t25keoNVhmqCihWSq0xvPm0TRlcdw==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7dv3sq1m-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Thu, 15 Oct 2026 12:02:20 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69F9ntdQ1891164;
+	Thu, 15 Oct 2026 12:02:19 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h9q2ysatk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 15 Oct 2026 12:02:19 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69FC2F7U49742278
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 15 Oct 2026 12:02:15 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 16B4420043;
+	Thu, 15 Oct 2026 12:02:15 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 596BE20040;
+	Thu, 15 Oct 2026 12:02:12 +0000 (GMT)
+Received: from Narayanas-MacBook-Pro.ibm.com (unknown [9.39.29.169])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 15 Oct 2026 12:02:12 +0000 (GMT)
+From: Narayana Murty N <nnmlinux@linux.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+        kvm@vger.kernel.org
+Cc: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
+        Christophe Leroy <chleroy@kernel.org>,
+        Ritesh Harjani <ritesh.list@gmail.com>,
+        Shrikanth Hegde <sshegde@linux.ibm.com>,
+        Alexey Kardashevskiy <aik@ozlabs.ru>, stable@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v1 1/1] KVM: PPC: Book3S: Protect TCE IOMMU table walks with RCU
+Date: Thu, 15 Oct 2026 17:31:37 +0530
+Message-ID: <20261015120137.28843-1-nnmlinux@linux.ibm.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,111 +90,142 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PA6PR08MB10708:EE_|DU0PR08MB9876:EE_
-X-MS-Office365-Filtering-Correlation-Id: 41f4e592-ea0a-4984-8612-08df2ab26fbc
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|23010399003|366016|1800799024|10067099003|18002099003|22082099003|4143699003|261009223027099003|56012099006;
-X-Microsoft-Antispam-Message-Info:
-	VHCIdSNsVkEcpoaOOnjateHWJUluDLm2LhtnAcT71KmzJCYoELo+qm8lHi4AAglY/NqPsXHbG8h2kOqqbNsB2boMcrL+2UozLQaxzwfGBKO/Gf9+e+gat9lfx3TsBcDhOswgCw1Tra60FhUnkSWbsUf4citJaMTQqQbbOBhdKhpaY4wSh35Z9OMUMBFt2gwd+roMD7xYd6NJ6IKemtmQail/CeNLbo0P/QffraMzaCgtKzrqbckhj8Dc9JPdMe5ric1Dbdlwb+AxUsYZS18TDvfrKKZwME/00zIZ3qXPXPfBiOCIKaOq2x8fOS/EaoaHS+nZKaNDnNmvKJnNKPWHLyZ+0OpcT3ciaIVttv4Id9AqhnzWuF6rVRrXMhG+/SU9Iu7U1zP2u7qeTzKrj4dhkr8tG6so3xcWS7loS08gIzNoqpITCXthbgPcPH45fuUAaaNy6xnVqgh8Dn+YO9BiQfE6B7mEslLcs3/8x9Za9NUjwKCThgxRKOD7bXCC+mvNV7blqJhgYHjhexYzyLMQOI3qFvCUAOQqh5Ssrvh1Kz28KtY24ULq08BeUKhRlTNk892MLI5BXHhsZUwDKnj7Ed6sbIznL1ioxvWdquNuBc3cH4r6etghhfPjxiAjx3i4
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PA6PR08MB10708.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(23010399003)(366016)(1800799024)(10067099003)(18002099003)(22082099003)(4143699003)(261009223027099003)(56012099006);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?KzZKUW44eXBBeE8vNGVlMTVIOUJwbGo2MklsTUkzeE5WZmlLeTFocW94VlBC?=
- =?utf-8?B?aks3VCs1b1J3WGNxUXRCS1BIMFlKeUZrdGRsU0ZGZGc1WUJ0RzlqeUlzS1dT?=
- =?utf-8?B?dmg5VzZ0Qk9ReFBkY1F0VFdaRGVuMklMNy9CYk9scjFFaHNUbWlQMkx4c1F5?=
- =?utf-8?B?bmxzdzg2TGQxWXowOU16RUtSRXMxcDkreFZVRnhZbnlhK0ZTWmNnWkxBQ1Jy?=
- =?utf-8?B?YTdnN3BBSkZIU2IrVFptMWpvckVaUVl5Y3dqWXl1QWlud1lzWUl5K1gvZXJ0?=
- =?utf-8?B?c1hDWFNDVnlhTFJybU05TGxSMmw1Z0owc2VGVXczODl6a0NkUHFyaXFuNE5I?=
- =?utf-8?B?QmkzTnpWenRneFZwTis2STRLOUErNjFSS01SdXpFdWdEdXBwQk5wL09NTDRw?=
- =?utf-8?B?ZHNnajVqWmt2bytqb1l4V2c4R2ZzSENuT0NadHl5czF1a0hIYU1qbnpsS0tJ?=
- =?utf-8?B?OUFUbHQvNW1VVERoSkl3K3hFdmdjeDFXdy9weTV6eHRmVHVUMGcyZjFtRnk4?=
- =?utf-8?B?amJxbmR3NUdKamNXZnRQTDR0WnpTcHlCVUVWOW0ycmFsRWk0WFZ4cW03S0dD?=
- =?utf-8?B?WFpaUVcrTE1Sd25vR2dKLzBWeUdFUkczYVNMTnhwVnBFYUlPWlZ3ZjJqSkl6?=
- =?utf-8?B?T1pjbEZtaFY4cDF1WFlZU3lsVm1xRnI2eVFLSUtlYTl6VXNxeHRCZTNYYWZ1?=
- =?utf-8?B?aU1kZ2tEMkFxQThwUVdDeXNoZjZZNHJtWHVzOUxxQkFDNjFxUEhVYisxd2l3?=
- =?utf-8?B?NUx0LzVoUkFTZ1cveFNrNlFRL2Jzd2ZVMWE5U3RXcFpPd0l1WW9CVUVBN0Nm?=
- =?utf-8?B?Sm9yNm5WaGtxSmNJVTN5bkZQb0hrRDJTazUxQVE2S1dFbjRsU1gwSVhvMGNk?=
- =?utf-8?B?TzNoYlZ6cmRUeUFZa042eG4xVno2RFhFeGMxWTV0SkQ2eEVsOElHc3kvcDdp?=
- =?utf-8?B?bTRIb0NVMVdQN2pMZithR1FvcFRTcUZPOTlqd0RwOWRHTGdMS2RUd0txRklK?=
- =?utf-8?B?MUJSZ2NwOEhBNVhNMTJYUXBHS3duZXJWZzF5ZW9VbFc3QTIxZ2ExazU1bHpU?=
- =?utf-8?B?bEhJNXR5K2htRjQyVFFtOC9xVE1qT1FYNVFuVDZhdm5ybTdKbFp2WTIyUzd0?=
- =?utf-8?B?UjJpNWVTeDROdEhBZHhDVjEyYWI2VTV4NXJSQlgxb0h0RTBQNGVYbmRuU20r?=
- =?utf-8?B?d0hEV2JabExsaXNkOUl1V2RWNUZtUmQzUTI0MkQzNFczWFlLRnlnS05WckJO?=
- =?utf-8?B?aGdmS1dQM3FnM3dsbUcvcnlJOE9mUjhvT2pWZXNXSWlNNnZZd1BiZG1TemVP?=
- =?utf-8?B?K0VMcEFNZzMvRWFKUXNlZTYxa1BWbW16VktweFNDYmlMM1pRS2Z2Qjh3YzJK?=
- =?utf-8?B?NVZnVHg3OFJ2b0lRdjVJQ2JhcllsbklGWHJhMnJTbS9zZ2tRSzlsY20zOWxq?=
- =?utf-8?B?N2ttUHV1OSt1cFoxM0FIaW1qK2lleUdIQ2ErU3ZQc09MMUhnOVVFb1FMMVR0?=
- =?utf-8?B?anliVUhDL2tsMmJwQWxZT0Qyb2NDOFBRUitWSkFEVURSeWxxM0JWMzRwZXVj?=
- =?utf-8?B?WjZCOUFoaytLSXByQnBicHJqQUtGdHBsQUlHMURjdUZuVDhoNnJjUkdRNkYr?=
- =?utf-8?B?R1VVY2lGSGNqUVZ6c2s2L3NRc3RoZUtOSy9LT1F3TkRqVTZGdlhxa01Jbm9y?=
- =?utf-8?B?UFdJU1g1UmJyS3orOTJpeWJQMk9ubWhRTFdwemQvNlFSVTdMd1NpNnRVSXht?=
- =?utf-8?B?S2xqc3JXWmdqR09ydGY5aEdOZW1Bd2kzREw2VHpiTURnYlNlRWNEMC9TWUxN?=
- =?utf-8?B?WGE4RDN3TFFEeFQ2YjgrOUwrekdaZGcyNmpldUV4SWVSNU96SzNIUFpxZUVn?=
- =?utf-8?B?UEpaQnZwRDRFeUhKRS9DRTAvKzJCS2IwaWwrQ2Y1ck5rWEtEYmYrQy96clk3?=
- =?utf-8?B?VytsaDQzRytVWGNVMFd1L09FYWRPeVQyN0VFL0ZMdnJTQzJXOFhVQ3FoY0J4?=
- =?utf-8?B?TXF0dXc1VVcxVzZ2MFl3cnM5clVkdGU2YUs4ZFg3cG5HWmlYTlZXN1VjY0dW?=
- =?utf-8?B?WHFyby9NMUR4Q2M2NWM4OWQwVzZjTVZqUm9YcThkRU13SjRMeDljclBoYnBi?=
- =?utf-8?B?Rk5nRXA3Q2R3OEd0WXY3dFN4QTJiVWR5a0cwaGVvbjcwa0h0cm56d1cwRVVB?=
- =?utf-8?B?b1RjNDJIQnpWcUtCT3NXa2p4MGFPL09HUDM5UCtuRS90L0IvRVRod3R5V1ZK?=
- =?utf-8?B?b3JsZ0MvYkRab2h6Ukc4MzlDQ3FjYi8rN0gvKy95RHdYZk5HcUFtbjYxOGdD?=
- =?utf-8?B?S2tocG1wWkthYXpHMzVESktGL3U2bzBjd1RKTGhhTnplTUM1NXV4QT09?=
-X-OriginatorOrg: virtuozzo.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 41f4e592-ea0a-4984-8612-08df2ab26fbc
-X-MS-Exchange-CrossTenant-AuthSource: PA6PR08MB10708.eurprd08.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Oct 2026 11:49:57.8307
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 0bc7f26d-0264-416e-a6fc-8352af79c58f
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 5J1ycRV1BGsx8AO3bWHF61tBNlk3k9lWh9ldJ4ruF0yGUSrc0rChLSZ74CEiVP2vhqy3C4pyL1gEcd1Qsm2Hng==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU0PR08MB9876
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: 1WAN7T4O-doXYrz1-eOQ0s57d3CV7HFd
+X-Proofpoint-ORIG-GUID: elbUbtBM_G0zj52YCSSwR8rqL9TJHCIZ
+X-Authority-Analysis: v=2.4 cv=aqInmiZV c=1 sm=1 tr=0 ts=6ad0c0cc cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=h1-L7VZ7pQEXAjHVqXwA:9
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE1MDA0NiBTYWx0ZWRfX7dyVA/CBAjJU
+ JQFrbAlG5OW48GOeSxVLiJVT4wOkx69OKJnkTz/z/NAq27URr33dL8/R9GxL7kN49gl01/dq5WM
+ Wp8NwaJTspVmtAFn0HKbpbHGCzN5RGg=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE1MDA0NiBTYWx0ZWRfX0KetqF6ZPEvB
+ os8OU0yuAh0uLX4kDSeDU9TgqRuir1RL7mBXnr16htwDXh8jvqXWbG60jyXktKrsJ61MTIiX5JN
+ Ew7LyBPfap+ZD/EVwaTNOmAOE6ynZGtyhXjXjFjCLGSWMNSwVJCOr4nW3mdjGlC1J7EbEk0mfOq
+ PlKqdLgDPgn1mMcBuPOnhLDI5IMzHmfasTbDRMzWnTgYBpgWfAqVg6ecyYM5T53z72Xgaq6MUtD
+ N7b68oOBf9k1BmX8KLZ+qkiAVw6b5w+u6w1+XQm98Vuj0W8bq4h/k9B+zgTYKw9+pFW8Ou4sitt
+ QDb5/ITNUid6PLs/laG/Il4O9BJp4xDTkuoQakSp9tHKMz8eI9I6CYH4tvy3Iv/vOoJD0SXDZgl
+ Vowadk2x4IhsUgdZDcoIJf021yZrJAEgrLGg2CtvMkY13NrD4Yu6fNlk3rgC9V8gCU8T86HkVFb
+ xhaA+2CkVh9eK/aCEQg==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-14_01,2026-10-14_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 clxscore=1015 spamscore=0 malwarescore=0 suspectscore=0
+ bulkscore=0 adultscore=0 impostorscore=0 priorityscore=1501
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
+ definitions=main-2610150046
 
-On 10/14/26 18:04, Lance Yang wrote:
-> On 2026/10/14 23:57, Zi Yan wrote:
->> On 14 Oct 2026, at 11:46, Konstantin Khorenko wrote:
->>
->> <snip>
->>
->>> Signed-off-by: Konstantin Khorenko <khorenko@virtuozzo.com>
->>> ---
->>> Changes in v3:
->>> - Patch 1: recheck the PMD with pmd_none(), as only a zap can change
->>>    it and a zap leaves it none (Lance Yang).
->>> - Link to v2: https://patch.msgid.link/20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v2-0-e1548488fa68@virtuozzo.com
->>>
->>> Changes in v2:
->>> - Add patch 2, the page table deposit for ppc64 hash, reported by
->>>    Sashiko.
->>> - Patch 1: name panthor instead of drm_gem_shmem as the driver whose
->>>    stale child mapping reaches freed pages: drm_gem_shmem keeps the
->>>    pages of a purged object until the last mapping goes away.
->>> - Link to v1: https://patch.msgid.link/20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v1-1-d225c60bc316@virtuozzo.com
->>>
->>
->> Please stop sending new versions of a patchset repeatedly.
->> Wait at least a day for others to catch up.
-> 
-> +1
-> 
-> Please slow down a bit. You don't need to respin every few
-> hours. That just makes everyone start over ...
-> 
-> Post a version, wait for feedback, then revise. Twice a week
-> is plenty, honestly :)
+Commit cad32d9d42e8 ("KVM: PPC: Book3s: Retire H_PUT_TCE/etc real mode
+handlers") moved the TCE hcalls from real mode to preemptible virtual
+mode.
 
-Guys, you are awesome. :)
+The stt->iommu_tables list is RCU managed. Entries are added with
+list_add_rcu(), removed with list_del_rcu(), and released after an RCU
+grace period with call_rcu().
 
-Trying myself to do the very best i can and yes,
-"too many and too fast" sometime does not leads to the "very best" result.
-Set myself a hard upper limit to 1 rework per week. :)
+However, kvmppc_h_put_tce(), kvmppc_h_put_tce_indirect(), and
+kvmppc_h_stuff_tce() traverse iommu_tables using
+list_for_each_entry_lockless() without an RCU read-side critical
+section.
 
-Have a nice day and thank you for looking into this!
+A concurrent IOMMU table detach can therefore remove an entry while a
+TCE hcall is traversing or using it, without the traversal preventing
+the entry from being reclaimed.
 
-Cheers, Konstantin
+Use list_for_each_entry_rcu() under rcu_read_lock() for these walks so
+that an entry removed concurrently is not reclaimed until the reader
+has completed.
+
+Fixes: cad32d9d42e8 ("KVM: PPC: Book3s: Retire H_PUT_TCE/etc real mode handlers")
+Cc: stable@vger.kernel.org
+Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
+---
+ arch/powerpc/kvm/book3s_64_vio.c | 18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index c5f3f5b29d89..d8625488c3c5 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -602,7 +602,8 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 
+ 	entry = ioba >> stt->page_shift;
+ 
+-	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
++	rcu_read_lock();
++	list_for_each_entry_rcu(stit, &stt->iommu_tables, next) {
+ 		if (dir == DMA_NONE)
+ 			ret = kvmppc_tce_iommu_unmap(vcpu->kvm, stt,
+ 					stit->tbl, entry);
+@@ -613,9 +614,11 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 
+ 		if (ret != H_SUCCESS) {
+ 			kvmppc_clear_tce(vcpu->kvm->mm, stt, stit->tbl, entry);
++			rcu_read_unlock();
+ 			goto unlock_exit;
+ 		}
+ 	}
++	rcu_read_unlock();
+ 
+ 	kvmppc_tce_put(stt, entry, tce);
+ 
+@@ -697,7 +700,8 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+ 			goto unlock_exit;
+ 		}
+ 
+-		list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
++		rcu_read_lock();
++		list_for_each_entry_rcu(stit, &stt->iommu_tables, next) {
+ 			ret = kvmppc_tce_iommu_map(vcpu->kvm, stt,
+ 					stit->tbl, entry + i, ua,
+ 					iommu_tce_direction(tce));
+@@ -705,9 +709,11 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+ 			if (ret != H_SUCCESS) {
+ 				kvmppc_clear_tce(vcpu->kvm->mm, stt, stit->tbl,
+ 						 entry + i);
++				rcu_read_unlock();
+ 				goto unlock_exit;
+ 			}
+ 		}
++		rcu_read_unlock();
+ 
+ 		kvmppc_tce_put(stt, entry + i, tce);
+ 	}
+@@ -739,7 +745,8 @@ long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
+ 	if (tce_value & (TCE_PCI_WRITE | TCE_PCI_READ))
+ 		return H_PARAMETER;
+ 
+-	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
++	rcu_read_lock();
++	list_for_each_entry_rcu(stit, &stt->iommu_tables, next) {
+ 		unsigned long entry = ioba >> stt->page_shift;
+ 
+ 		for (i = 0; i < npages; ++i) {
+@@ -749,13 +756,16 @@ long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
+ 			if (ret == H_SUCCESS)
+ 				continue;
+ 
+-			if (ret == H_TOO_HARD)
++			if (ret == H_TOO_HARD) {
++				rcu_read_unlock();
+ 				return ret;
++			}
+ 
+ 			WARN_ON_ONCE(1);
+ 			kvmppc_clear_tce(vcpu->kvm->mm, stt, stit->tbl, entry + i);
+ 		}
+ 	}
++	rcu_read_unlock();
+ 
+ 	for (i = 0; i < npages; ++i, ioba += (1ULL << stt->page_shift))
+ 		kvmppc_tce_put(stt, ioba >> stt->page_shift, tce_value);
+-- 
+2.54.0
 
 
