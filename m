@@ -1,89 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-29612-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29613-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E558FCCF2C4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2026 20:04:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F65CCCF2C4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2026 21:20:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j5wrn48pSz2yfl;
-	Sat, 17 Oct 2026 07:04:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c202::7" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792181081;
-	cv=pass; b=JkoXHsbE+91uJUNDl5BVb8BO6kElS5f19VbltVI5xSjYOsdGJ7TvHPKPITENwhRt+Gou/uyG82phaQ0TFSzXsRZxgP8DnY7iNYiMC2xYRdoHSE1GuBwYHQI9xKyKA5BJ2xZDZbCHXHoGVfxWRMZ7VqtNvWZ1+oJxARDZgvP4CY1fUJpnEsn335dxJp2kZBIDLLHqCM+cqG8zqwKwQWQ7ij5qTieTOHpwPmaWKXV16qncXy5Q1s0UkI5r5AoTcKBzA+rBY/h70Bu2deJIysaY5wI74lOP8LUj36CPGx8rDlo4Ue1C8qz2oiksluCt7RdZrhKlZgeSEtxxJKH5Wm+Vug==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792181081; c=relaxed/relaxed;
-	bh=hWwisaTYUIwZ3OS/8NuzHKqZ+RuwFfRPzT1eJ0ZVf8U=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=D1eBasI7ZO3eB8L1LEfKz9h6aDj/nS7cG5PUCIsdLRtgGvnH45xuKAXf7EjM07itWHMmFA22XgOxQLlGgWINIEYr7M+ErAbD2JBMZV4nZFES0cymfnPQcW+NiFHBafsfuLTP7cp/24N7MUePe6dd7P9rYmumzrG06IqwSw0zmWF2HVcDxEzihcOKvvLhw+q+n2qf5rFfWxcv8OsZBMuKxsof9rFGCRJXuhO/xgOoZOljsfxpQyG6oMK0pCjmlIeHtFfy0BQZiZRIy56qOy1mTmozx+dAFJqBnMd5famAMoUg5HfN0Q6KcTc7zQW0TgPQOz4mcaYX8AR8kY6GlyFODA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=DO7VVq6f; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c202::7; helo=gvxpr05cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j5yX519dBz2y1W;
+	Sat, 17 Oct 2026 08:20:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792185621;
+	cv=none; b=ZUp+Y84GntdLFbGJhVZFXPLiffxjfB72gluFxF5SMlQD9SS9HMSlloE/HypN3GnmgnJlg1snlZGU80pHIXGM3sGbNboCN221Geo1PdWRnjWJ0BOoT4pSsN4Vl9OkUE3zL81Sj7wqTKtXzgIu4kw3A4vOgU0GHuzQ5+trqR8ha/yQNJv87SUa1KPEio4DsT7KWisGmc/H4H4eQmRU6q0C2DPrH50W8XTANp9gfYtxLO5QvvdlL/mVxI+SFCdgF6iukhxaLzuDj9rEDuTy/TNeUA5x2q5/J6EtvwdkLqEJZ2jrH32qIwPlJwvOQlQskRoAHRflTFeDjGeNEtB3KEfKsA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792185621; c=relaxed/relaxed;
+	bh=xNPZw3EXSZ4uPiOZfoHoPbFl9PKDY4YhWD1OfoEY5XM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=DzmDQSQiSHgUXkZnpWcu3Syd9JG4avIH/kLGOHV+3hHH4yMF53bt/gX74fcB0dXbIyMZqrc0QbPZw+ekhOxAzwmWotE3rLSN5kA1j/X4hVVgq5wFY6jo4HfZ5kSsGNRs5a2f8dzBQ7T4IdWUIgD7/02ehwye7ivPiViqSkVuDFRI77s6dHO/LzpcjphIuYAMK3/OyPWa0pPW0Pgy+e7oks5K8GCI0l+4ZvLTn+WggM/76+Izd4ljY89fID8saUUYpKRhMMSYk2atzwKBpzYQPX6QV1dvBkdO/lfBrWYUVOwyB9voU4pbK+UbfGZP0Km0ZBsow4UMMrltt7DBjGDsFQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EgU4zL2z; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=DO7VVq6f;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EgU4zL2z;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c202::7; helo=gvxpr05cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from GVXPR05CU001.outbound.protection.outlook.com (mail-swedencentralazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c202::7])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j5wrm4mqDz2xlk
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2026 07:04:40 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=OBuryLrL8w5Ani3y2tToHCizuVdW7M9ug8Pgme7QacZv770ZoQgTZ8PnSorG7hImwxd8AW8TzorlgyUIl0IYc4YenKzvwpRFBimyubp+7VCK5Ukzfj5WKgW/fAa+48hLTB0uB6qSqb7fQrqP3ehK9sSJhYcmWhURolj8H4pl3RbGtmqlNcCTI62O8w/Eih9edTEn8W+P4sxMGXWaz3ssEkeIbvK2J/Uo+HNpeh1LH7iLYXHBi0wikv6P7h0hKXZ9GOm/o516gLUfNRVg0YPYFUMphGcpRt0a7hKc0UDDpa3Fpl0yEtGCV6mlP01RAyZPz+o6oBJb1KMVoHS2IdYw8Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=hWwisaTYUIwZ3OS/8NuzHKqZ+RuwFfRPzT1eJ0ZVf8U=;
- b=Vpjthlkan4EZVMlyNYz5afmkwN8WCkYRwJ5lxvZlfT3+s5ZENox0hUgnFnV4+se4ZIIocNOExra4dW5IiepxoSMUIZwVHiqdCYiMFVIUeLRcwZE8NQoPSmmfzPN5pPB/rBYO4OpZA/dLbUCDXhXSXI80XOuEmQ7mDZ3xAK7fCifKrEIYGg0VpoZnUA7bAJ4CUY6BUOr9BW71yRRl9y7iaKS2k1s3JJTeP7pOvOXY1HzfgmSqxa9k1JHy99F1DwCaMSDawOeGfYVq/URBCO8vREOrXA+e4Cf4v8uSpLJ+QTwpoS9jdSXnlw3KQvI8S7/rQ40KfVtoDbQSU5CmPVrw1Q==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=hWwisaTYUIwZ3OS/8NuzHKqZ+RuwFfRPzT1eJ0ZVf8U=;
- b=DO7VVq6fLGmy3LUT7SHty/Lmf1re8cXXz1NQVsTn2DJb2jf1J+Xudljd0CASkOslh8dTblEJJ++9fIM8p9qjRfbzn6hqj7hi70akgIouZtXol0zMNqfU7Y2ZYlN8T27gMVqZuTmGFGPHQKoJTG1mFnXhDB343o2WqQxmpHREP/dJ+eyIIOzbGYWZqerA9mHazIXIEy5DOqrlHzWQKihPabmaYdCUpC4amMPZfgn4hAeN57X6fotEenuRv9CUZ2J6Nh1hptuThgHPm7N4OiTbOd5vVZojIt4CcGjhYYqU5k3lZLdltwhuFV/VPpKKowUsx3MYQkXNkJWeT6xt5501fA==
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
- by AM9PR04MB8796.eurprd04.prod.outlook.com (2603:10a6:20b:40b::23) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.522.15; Fri, 16 Oct
- 2026 20:04:15 +0000
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c%7]) with mapi id 15.21.0522.013; Fri, 16 Oct 2026
- 20:04:15 +0000
-Date: Fri, 16 Oct 2026 15:04:05 -0500
-From: Frank Li <Frank.li@oss.nxp.com>
-To: Marek Vasut <marex@nabladev.com>
-Cc: netdev@vger.kernel.org, Vladimir Oltean <vladimir.oltean@nxp.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	Clark Wang <xiaoning.wang@nxp.com>,
-	Claudiu Manoil <claudiu.manoil@nxp.com>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Eric Dumazet <edumazet@kernel.org>, Frank Li <Frank.Li@nxp.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>, Rob Herring <robh@kernel.org>,
-	UNGLinuxDriver@microchip.com, Wei Fang <wei.fang@nxp.com>,
-	devicetree@vger.kernel.org, imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: Re: [net-next,PATCH 2/2] enetc: Make eMDIO MDC rate configurable
- from DT
-Message-ID: <atKDNdxl0w65s8yQ@SMW015318>
-References: <20261016193344.115518-1-marex@nabladev.com>
- <20261016193344.115518-2-marex@nabladev.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261016193344.115518-2-marex@nabladev.com>
-X-ClientProxiedBy: PH7P222CA0026.NAMP222.PROD.OUTLOOK.COM
- (2603:10b6:510:33a::29) To GV2PR04MB11799.eurprd04.prod.outlook.com
- (2603:10a6:150:2cf::9)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j5yX4341lz2xsW
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2026 08:20:19 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69GJiVVm490428;
+	Fri, 16 Oct 2026 21:19:53 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=xNPZw3
+	EXSZ4uPiOZfoHoPbFl9PKDY4YhWD1OfoEY5XM=; b=EgU4zL2z5Z3ACfQgm9YYeA
+	1fne1LemoT36UHHAGYYzoZH9vt/JRw9kqpFILWJmG5lR1JugUkgQ4prOEPiHb9oa
+	Xzf9AhCkooX9waQTcDUZ5/36erULE3ftofRk+Eyw3m9L4cG5NApO1ObNn2ax6RQ9
+	jJVY7m4cgVH/HY6USwIc65cFX9ElOFiDLal8W3O9AGSX0VoLTvXJuCHwK6C9ImaY
+	bwnxQBFELop56xFQldWhe3R1MuNO9/iJ6IIx+f8jh91J/mYt0s8lfcT5K38I+niT
+	e4B3sgsYW8ctBN4C/QcUkwqlniqMcUM+SwgUJb5T5f0RPpmslSdrzsV2y+oO+8gw
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7dv41jcm-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Fri, 16 Oct 2026 21:19:52 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69GJo89t2965759;
+	Fri, 16 Oct 2026 21:19:51 GMT
+Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4hbne4sg7y-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 16 Oct 2026 21:19:51 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
+	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69GLJohX32899590
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 16 Oct 2026 21:19:50 GMT
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 21EA358059;
+	Fri, 16 Oct 2026 21:19:50 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F1CE158067;
+	Fri, 16 Oct 2026 21:19:46 +0000 (GMT)
+Received: from [9.67.103.235] (unknown [9.67.103.235])
+	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 16 Oct 2026 21:19:46 +0000 (GMT)
+Message-ID: <de6d786b-fdbd-42f8-b2c9-b175a6a33c69@linux.ibm.com>
+Date: Fri, 16 Oct 2026 14:19:46 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,210 +81,210 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|AM9PR04MB8796:EE_
-X-MS-Office365-Filtering-Correlation-Id: c24913f2-b7a4-48a9-f101-08df2bc0a78f
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|23010399003|1800799024|19092799006|366016|56012099006|11063799006|4143699003|10067099003|261009223027099003|22082099003|6133799003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	acwNeZL9MJWg1Vc9XzjdBo69Lp9g08sAt+g0KQacxzvLfHyfVELGxBPqudxBwPPkjtSsJawRD4C+mp95BWT0Yly+1p2gmYett3wEIeEd+rAGHAkeg41UHBBIicC5YMmgqLy2zDkOAftaXSR/vx7UJHzW/lc+C/RNMPVnqSiNt0QWWBglEs4q5VpWlJXhMidNtFZqvcpKHelf6LW/eS2qK6Hn6o7gYWDDNqcr4DMnC5FOD8lUnm8jPuZYeNJ/1XfDL6Z52IcZd/AZDPfjWGqPYOB2k0WGTMRZ9axnQjHUcXX3T7L0mpmIPvagDG/5aF5VJ5ZdSfeBHwf5dCDJFOLt+IRIWa7QJkIFPnats8U7ttAIh9tUijJDm/IvVeFJhYyNImAiAGHzDWxw8PkO7U9U71iYIZ8JaXZifq4PSKcMpmqtw9p+t34BA70O+sMrlxaOOD24md4Bpm8u+AfrJohcxjmlC29HZt2svnECB3HEhXQvo7QUUltyGvDG8IL/j05rTULWkCviEDbSI5PGap5LOyEC99s7LHPvOmYXBnChKknG6uR51WmTCK9j2Z+tJE9pHf9XOI9ZWqvlOrYkQ94ikIGIzoJLOCkr+3Yvo1Il1ucblliKekh9Ipq2E6MJw9KYNXyqz2uCC5Sv+ulbMnQ57BHI/iYUJPtLyGc1h/jhGvk=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(23010399003)(1800799024)(19092799006)(366016)(56012099006)(11063799006)(4143699003)(10067099003)(261009223027099003)(22082099003)(6133799003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?fMiSyx5k7aZQfZRwYkZ1M5cwLXRzcUm5n5nIwN36X2zTWNNfMQqA5Ixi6GxQ?=
- =?us-ascii?Q?7fB20BkRs5JGMb90oMqY+7jcUukIU2MKpq09cXkSi4i0MB5fPCv3nc/px6rX?=
- =?us-ascii?Q?uOOi4rxC8FRf6Y5quJSR2NiBCuSDs526Ti6vV7Qi5t7aSqnbrkeX9HaEK5Kp?=
- =?us-ascii?Q?UVvtsT3VkRh4ZRepuLVPUQfH3TtAqKWQz2OUjp5Gnt7E0/lu2SdsygiPkAxp?=
- =?us-ascii?Q?4Ujl57Exor5SqRYgm3ShFi/A0tvHMVB4M+im8vga8P94/wdFBihHxUCdVVxP?=
- =?us-ascii?Q?C/R+tB6J0GuJgcCGo+wzEwoaJ1Mw1pb3ClH7TNrmLULT6b38kJaD4y74B8PC?=
- =?us-ascii?Q?CYog9tFxzGW+Xp3+nLcDJW1e9qrZ6wkHXAh4NylVbVZJoI5eKA+q25Jkz73y?=
- =?us-ascii?Q?oSXjYFhOduA1/Yw0AOhE5YANUEE/v0644deXWffJke6RalBoP8ePgu9DUEbb?=
- =?us-ascii?Q?9mmyAMvzIYO1N1en+Ovvl32YFhdp2HT0ens5jqyoRxAXyXX///Q65NuP2Zhb?=
- =?us-ascii?Q?v+34/JKxQIjUByP8qRd4VLYxctCzOlZtAEX8GSOFoRHwOATEN9bypUT4K2bn?=
- =?us-ascii?Q?lLH2wk9aeVQx9BTZLgMAVJVoS2ySAf4b3WfwoJgFPPQuurA418bS9av8IFWk?=
- =?us-ascii?Q?gtWeVSgDf77gHPp54Wo28y4XpXJp6/m2v6x2W5bFfexrr2wolX+oXA1yXRwo?=
- =?us-ascii?Q?SFIc5RKbYVHm2cy7tJb+NzUY6ogJhAuGIRYG6wDRNtuGNt1oxR2m9S54FBab?=
- =?us-ascii?Q?iCTq8a54XLk7UHUIn8WYxICedoSv1/7ghItGWH0Mt0O8CjeF+fMrpgzFsh7e?=
- =?us-ascii?Q?3YXaYvWdUpw+t7P+IYsvydrrU9fU0cUO0/KnFYDuiK/Eezzw44eSFcoZFydK?=
- =?us-ascii?Q?catjiTHX2rrlilddk3rE29UnzSefw0Fid/rXV3KhhN1b5DQ1aFjKyIXgPfXL?=
- =?us-ascii?Q?UvRJV9QMKBi0qTjJ4y4N8IeM4lWWnEgBp1R2clxyDODtwIGz3caL7Hg5bnLJ?=
- =?us-ascii?Q?Ybj07uVHOduEmExPpodCgQOKiB+mjFsOnZ5TOgJzVLsPzQpG6xKCCdDhagvn?=
- =?us-ascii?Q?29gmLAEiiuwWtdUYbay84ckPJeMXhuX+/tpVubEjgfIb3ghtmC8KRsSuR7Ic?=
- =?us-ascii?Q?YU43JvcJjYl6wKkcM8smlKXP1aSIcQ4sB99j96dCRI1+nIxWQzSYagQKlTyP?=
- =?us-ascii?Q?kVRy3RC126zL3YwtJ7OTWUXw1aMGEl6jugsEaAFRxkAB+c6hNMYIiX38hwEy?=
- =?us-ascii?Q?4NPe7lJziqZ0OQP7b1odOrTRMD3OjqyfVCoShllbwnzmQ5xfe2F99KG8usvA?=
- =?us-ascii?Q?tqEj+gTNWwwrrE6X5H20hR+QfYyMZZBkkS4F2tzwmnwqEagzhg9GgfzERyGG?=
- =?us-ascii?Q?w9k3gTAfaNGzDDZV2J5HYDJJqnhvn6cvlSWF0arNeeAXelUaoFqtWlZItDWQ?=
- =?us-ascii?Q?JWfpF05Ci5bkaESfkQ3gIxkWPpIE2zFBjmlGE9M5sxz+OslPIckKioOIFFUH?=
- =?us-ascii?Q?bBM2oQRoS82s69CdhBGof8aFvJLYCT99j7MamotYpj18a+BZZDdDX0ETO2Y5?=
- =?us-ascii?Q?O/S7GvihGxp2RKvkpnIEoiQS9f0LTqI0GLxeksZFKw4EdcKrKmPILwhNnfx+?=
- =?us-ascii?Q?FbiGL0laZbK9BIZnXqDMX1DcFvZxiVnj/UouZPNSaO+v4nzLBqMVX3S7roG+?=
- =?us-ascii?Q?TvV7iyCCPof2wfWhrolulj9O/O2Md6en27qTOf1uzu9n3SnmmgSVujpb1j6z?=
- =?us-ascii?Q?R3WVVO8EoCZ376B2ATLZmYho7d4pNfublK+E/WzIcoWzYR8vLRwU?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: c24913f2-b7a4-48a9-f101-08df2bc0a78f
-X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Oct 2026 20:04:15.7614
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: M4E4rb/9zlWPr/VBQ1LpRXsWzAbO4UTeJk3XKl/bVeDSEPkL9qY8e2TjQEZqvmEKb+aAiA04lNHzXKCzJ6Zxp8Nyhxq8qkPJYn8AGHqs0KaZDuNZMbk8Ulb7wRTb+TnB
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR04MB8796
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH net-next v4 1/6] ibmvnic: Move long delayed work on
+ system_dfl_long_wq
+To: Marco Crivellari <marco.crivellari@suse.com>, linux-kernel@vger.kernel.org,
+        netdev@vger.kernel.org
+Cc: Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>,
+        Frederic Weisbecker <frederic@kernel.org>,
+        Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+        Michal Hocko <mhocko@suse.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
+        "David S . Miller" <davem@davemloft.net>,
+        Eric Dumazet
+ <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>, Haren Myneni <haren@linux.ibm.com>,
+        Rick Lindsley <ricklind@linux.ibm.com>,
+        Nick Child <nnac123@linux.ibm.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        linuxppc-dev@lists.ozlabs.org
+References: <20261012095452.135828-1-marco.crivellari@suse.com>
+ <20261012095452.135828-2-marco.crivellari@suse.com>
+Content-Language: en-US
+From: mingming cao <mmc@linux.ibm.com>
+In-Reply-To: <20261012095452.135828-2-marco.crivellari@suse.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: LGXgFU0TpwWO4Rmjiw6wRlCKA4EQoH_L
+X-Proofpoint-ORIG-GUID: TjZICohO1dTAQx0xDC9FPrm7GTarATKr
+X-Authority-Analysis: v=2.4 cv=aqInmiZV c=1 sm=1 tr=0 ts=6ad294f9 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8
+ a=pGLkceISAAAA:8 a=VwQbUJbxAAAA:8 a=voM4FWlXAAAA:8 a=iox4zFpeAAAA:8
+ a=tkcf6-MeEqR6izG4hBoA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=O8hF6Hzn-FEA:10 a=IC2XNlieTeVoXbcui8wp:22 a=WzC6qhA0u3u7Ye7llzcV:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE2MDA4NCBTYWx0ZWRfX0bt0ILkmD9/o
+ jTvfNCQLa1mQGB/qU9SmRmSyCy5cu6kye+YCQsWqwlXlzFl5nj/HnIpudSINruK9rVsCdUTSVvy
+ /I0QQ5fxZglk3YjzxiKRNLMgy/Yczb8=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE2MDA4NCBTYWx0ZWRfXxB+JlbBJyzI3
+ Acx+6yxotE9DfpYHkf7VC14+iL7TU8Hkt15f+nOtqxnd7LARup7oYoSbbqmTh+mD+yqBolAZafH
+ yldDBD2tWVkwoWks82qds8rjeJJ9Xtxklko5ODfDfdWcc2BN0gmcE6v/MZKAThuQXlYRBm7p/K9
+ bKhLIuUtrfOP/V0bGnxH/NHPuUBCYPDh+DHAvTKzzk3tEFxWD0cYFjGIIFWEKhERFSsZtIMzPfj
+ 3l4voCqS1xDaESbmSKwkAMQZ7rnEcIYo15yhsMnGDF282GmxBFeYuKBh9N+vyRQbv2CIxpOXoFj
+ Z2atUTKMJhOZILSlv0SJQWakYrfyA53cy5MZf2s796AnetRBgL/qgra21Y0d28kxzekHwfaHt7v
+ XNqjgbdwOFMczd8sWJ5K684vumk87mkCXJV8uA4MYdRCMGyzBQG/+mYbZzzTUploGq3z0gqTIZx
+ 8kdTtEk5emp9CPiF64w==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-16_03,2026-10-14_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 clxscore=1011 spamscore=0 malwarescore=0 suspectscore=0
+ bulkscore=0 adultscore=0 impostorscore=0 priorityscore=1501
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
+ definitions=main-2610160084
 
-On Fri, Oct 16, 2026 at 09:32:01PM +0200, Marek Vasut wrote:
-> The current eMDIO MDC rate is hard-coded in the drivers which use the
-> eMDIO MDC, this is not flexible for various deployments of SoCs which
-> use the eMDIO interface, for example i.MX95 B0 MDC clock is currently
-> set to 644 kHz.
->
-> Introduce enetc_mdio_priv .mdc_div field which contains the divider
-> used for MDC clock and pass it around, including into functions which
-> configure the MDC clock. This way, drivers which use the eMDIO can set
-> the divider as needed. Introduce enetc_mdio_update_mdc_div() function
-> which calculates the divider from upstream clock and clock-frequency
-> DT property, both of which are optional to retain compatibility with
-> older DTs. This is modeled according to xgmac_mdio_set_mdc_freq().
->
-> Suggested-by: Vladimir Oltean <vladimir.oltean@nxp.com>
-> Signed-off-by: Marek Vasut <marex@nabladev.com>
-> ---
-> Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: Andrew Lunn <andrew+netdev@lunn.ch>
-> Cc: Clark Wang <xiaoning.wang@nxp.com>
-> Cc: Claudiu Manoil <claudiu.manoil@nxp.com>
-> Cc: Conor Dooley <conor+dt@kernel.org>
-> Cc: Eric Dumazet <edumazet@kernel.org>
-> Cc: Frank Li <Frank.Li@nxp.com>
-> Cc: Jakub Kicinski <kuba@kernel.org>
-> Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>
-> Cc: Paolo Abeni <pabeni@redhat.com>
-> Cc: Rob Herring <robh@kernel.org>
-> Cc: UNGLinuxDriver@microchip.com
-> Cc: Vladimir Oltean <vladimir.oltean@nxp.com>
-> Cc: Wei Fang <wei.fang@nxp.com>
-> Cc: devicetree@vger.kernel.org
-> Cc: imx@lists.linux.dev
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-kernel@vger.kernel.org
+On 10/12/26 2:54 AM, Marco Crivellari wrote:
+> Currently the code enqueue work items using {queue|mod}_delayed_work(),
+> using system_long_wq. This workqueue should be used when long works are
+> expected and it is a per-cpu workqueue.
+> 
+> The function(s) end up calling __queue_delayed_work(), which set a global
+> timer that could fire anywhere, enqueuing the work where the timer fired.
+> 
+> Unbound works could benefit from scheduler task placement, to optimize
+> performance and power consumption. Long work shouldn't stick to a single
+> CPU.
+> 
+> Recently, a new unbound workqueue specific for long running work has
+> been added:
+> 
+>      c116737e972e ("workqueue: Add system_dfl_long_wq for long unbound works")
+> 
+> Since the workqueue work doesn't rely on per-cpu variables, there is no
+> obvious reason that justify the use of a per-cpu workqueue. So change
+> system_long_wq with system_dfl_long_wq so that the work may benefit from
+> scheduler task placement.
+> 
+> Cc: Haren Myneni <haren@linux.ibm.com>
+> Cc: Rick Lindsley <ricklind@linux.ibm.com>
+> Cc: Nick Child <nnac123@linux.ibm.com>
+> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Nicholas Piggin <npiggin@gmail.com>
+> Cc: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
 > Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: netdev@vger.kernel.org
+> Signed-off-by: Marco Crivellari <marco.crivellari@suse.com>
 > ---
-> NOTE: I could only test i.MX95 , I could not test LS or Felix
-> ---
->  drivers/net/dsa/ocelot/felix_vsc9959.c        |  5 +++
->  .../net/ethernet/freescale/enetc/enetc_mdio.c | 39 ++++++++++++++++---
->  .../ethernet/freescale/enetc/enetc_pci_mdio.c |  5 +++
->  .../freescale/enetc/enetc_pf_common.c         | 10 +++++
->  include/linux/fsl/enetc_mdio.h                |  6 +++
->  5 files changed, 59 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/net/dsa/ocelot/felix_vsc9959.c b/drivers/net/dsa/ocelot/felix_vsc9959.c
-> index 8387dd208adb9..dbeec1b229325 100644
-> --- a/drivers/net/dsa/ocelot/felix_vsc9959.c
-> +++ b/drivers/net/dsa/ocelot/felix_vsc9959.c
-> @@ -1008,8 +1008,13 @@ static int vsc9959_mdio_bus_alloc(struct ocelot *ocelot)
->  	 * starting with the proper offset.
->  	 */
->  	mdio_priv->mdio_base = 0;
-> +	mdio_priv->mdc_div = ENETC_MDIO_DEFAULT_DIVIDER;
->  	snprintf(bus->id, MII_BUS_ID_SIZE, "%s-imdio", dev_name(dev));
->
-> +	rc = enetc_mdio_update_mdc_div(bus);
-> +	if (rc)
-> +		return rc;
-> +
->  	/* Needed in order to initialize the bus mutex lock */
->  	rc = mdiobus_register(bus);
->  	if (rc < 0) {
-> diff --git a/drivers/net/ethernet/freescale/enetc/enetc_mdio.c b/drivers/net/ethernet/freescale/enetc/enetc_mdio.c
-> index 998aaa394e9c4..93d61c2f1464f 100644
-> --- a/drivers/net/ethernet/freescale/enetc/enetc_mdio.c
-> +++ b/drivers/net/ethernet/freescale/enetc/enetc_mdio.c
-> @@ -1,6 +1,7 @@
->  // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
->  /* Copyright 2019 NXP */
->
-> +#include <linux/clk.h>
->  #include <linux/fsl/enetc_mdio.h>
->  #include <linux/mdio.h>
->  #include <linux/of_mdio.h>
-> @@ -22,9 +23,9 @@
->   /* external MDIO only - driven on neg MDC edge */
->  #define MDIO_CFG_NEG		BIT(23)
->
-> -#define ENETC_EMDIO_CFG \
-> +#define ENETC_EMDIO_CFG(mdc_div) \
->  	(MDIO_CFG_HOLD(2) | \
-> -	 MDIO_CFG_CLKDIV(258) | \
-> +	 MDIO_CFG_CLKDIV(mdc_div) | \
->  	 MDIO_CFG_NEG)
->
->  #define MDIO_CTL_DEV_ADDR(x)	((x) & 0x1f)
-> @@ -63,7 +64,7 @@ int enetc_mdio_write_c22(struct mii_bus *bus, int phy_id, int regnum,
->  	u16 dev_addr;
->  	int ret;
->
-> -	mdio_cfg = ENETC_EMDIO_CFG;
-> +	mdio_cfg = ENETC_EMDIO_CFG(mdio_priv->mdc_div);
->  	dev_addr = regnum & 0x1f;
->  	mdio_cfg &= ~MDIO_CFG_ENC45;
->
-> @@ -95,7 +96,7 @@ int enetc_mdio_write_c45(struct mii_bus *bus, int phy_id, int dev_addr,
->  	u32 mdio_ctl, mdio_cfg;
->  	int ret;
->
-> -	mdio_cfg = ENETC_EMDIO_CFG;
-> +	mdio_cfg = ENETC_EMDIO_CFG(mdio_priv->mdc_div);
->  	mdio_cfg |= MDIO_CFG_ENC45;
->
->  	enetc_mdio_wr(mdio_priv, ENETC_MDIO_CFG, mdio_cfg);
-> @@ -133,7 +134,7 @@ int enetc_mdio_read_c22(struct mii_bus *bus, int phy_id, int regnum)
->  	u16 dev_addr, value;
->  	int ret;
->
-> -	mdio_cfg = ENETC_EMDIO_CFG;
-> +	mdio_cfg = ENETC_EMDIO_CFG(mdio_priv->mdc_div);
->  	dev_addr = regnum & 0x1f;
->  	mdio_cfg &= ~MDIO_CFG_ENC45;
->
-> @@ -176,7 +177,7 @@ int enetc_mdio_read_c45(struct mii_bus *bus, int phy_id, int dev_addr,
->  	u16 value;
->  	int ret;
->
-> -	mdio_cfg = ENETC_EMDIO_CFG;
-> +	mdio_cfg = ENETC_EMDIO_CFG(mdio_priv->mdc_div);
->  	mdio_cfg |= MDIO_CFG_ENC45;
->
->  	enetc_mdio_wr(mdio_priv, ENETC_MDIO_CFG, mdio_cfg);
-> @@ -231,6 +232,32 @@ struct enetc_hw *enetc_hw_alloc(struct device *dev, void __iomem *port_regs)
->  }
->  EXPORT_SYMBOL_GPL(enetc_hw_alloc);
->
-> +int enetc_mdio_update_mdc_div(struct mii_bus *bus)
-> +{
-> +	struct enetc_mdio_priv *mdio_priv = bus->priv;
-> +	struct device *dev = bus->parent;
-> +	struct clk *enet_clk;
-> +	u32 div, mdc_freq;
-> +
-> +	if (device_property_read_u32(dev, "clock-frequency", &mdc_freq))
-> +		return 0;
-> +
-> +	enet_clk = devm_clk_get(dev, NULL);
-> +	if (IS_ERR(enet_clk))
-> +		return dev_err_probe(dev, PTR_ERR(enet_clk),
-> +				     "Input clock unknown, not changing MDC frequency\n");
+>   drivers/net/ethernet/ibm/ibmvnic.c | 6 +++---
+>   1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+> index 5a510eed335e..d4c284c8ef43 100644
+> --- a/drivers/net/ethernet/ibm/ibmvnic.c
+> +++ b/drivers/net/ethernet/ibm/ibmvnic.c
+> @@ -3229,7 +3229,7 @@ static void __ibmvnic_reset(struct work_struct *work)
+>   	if (adapter->state == VNIC_PROBING &&
+>   	    !wait_for_completion_timeout(&adapter->probe_done, timeout)) {
+>   		dev_err(dev, "Reset thread timed out on probe");
+> -		queue_delayed_work(system_long_wq,
+> +		queue_delayed_work(system_dfl_long_wq,
+>   				   &adapter->ibmvnic_delayed_reset,
+>   				   IBMVNIC_RESET_DELAY);
+>   		return;
+> @@ -3267,7 +3267,7 @@ static void __ibmvnic_reset(struct work_struct *work)
+>   	spin_lock(&adapter->rwi_lock);
+>   	if (!list_empty(&adapter->rwi_list)) {
+>   		if (test_and_set_bit_lock(0, &adapter->resetting)) {
+> -			queue_delayed_work(system_long_wq,
+> +			queue_delayed_work(system_dfl_long_wq,
+>   					   &adapter->ibmvnic_delayed_reset,
+>   					   IBMVNIC_RESET_DELAY);
+>   		} else {
+> @@ -3454,7 +3454,7 @@ static int ibmvnic_reset(struct ibmvnic_adapter *adapter,
+>   	list_add_tail(&rwi->list, &adapter->rwi_list);
+>   	netdev_dbg(adapter->netdev, "Scheduling reset (reason %s)\n",
+>   		   reset_reason_to_string(reason));
+> -	queue_work(system_long_wq, &adapter->ibmvnic_reset);
+> +	queue_work(system_dfl_long_wq, &adapter->ibmvnic_reset);
+>   
+>   	ret = 0;
+>   err:
+On 10/12/26 2:54 AM, Marco Crivellari wrote:
+ > Currently the code enqueue work items using {queue|mod}_delayed_work(),
+ > using system_long_wq. This workqueue should be used when long works are
+ > expected and it is a per-cpu workqueue.
+ >
+ > The function(s) end up calling __queue_delayed_work(), which set a global
+ > timer that could fire anywhere, enqueuing the work where the timer fired.
+ >
+ > Unbound works could benefit from scheduler task placement, to optimize
+ > performance and power consumption. Long work shouldn't stick to a single
+ > CPU.
+ >
+ > Recently, a new unbound workqueue specific for long running work has
+ > been added:
+ >
+ >      c116737e972e ("workqueue: Add system_dfl_long_wq for long 
+unbound works")
+ >
+ > Since the workqueue work doesn't rely on per-cpu variables, there is no
+ > obvious reason that justify the use of a per-cpu workqueue. So change
+ > system_long_wq with system_dfl_long_wq so that the work may benefit from
+ > scheduler task placement.
+ >
+ > Cc: Haren Myneni <haren@linux.ibm.com>
+ > Cc: Rick Lindsley <ricklind@linux.ibm.com>
+ > Cc: Nick Child <nnac123@linux.ibm.com>
+ > Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+ > Cc: Michael Ellerman <mpe@ellerman.id.au>
+ > Cc: Nicholas Piggin <npiggin@gmail.com>
+ > Cc: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+ > Cc: linuxppc-dev@lists.ozlabs.org
+ > Signed-off-by: Marco Crivellari <marco.crivellari@suse.com>
+ > ---
+ >   drivers/net/ethernet/ibm/ibmvnic.c | 6 +++---
+ >   1 file changed, 3 insertions(+), 3 deletions(-)
+ >
+ > diff --git a/drivers/net/ethernet/ibm/ibmvnic.c 
+b/drivers/net/ethernet/ibm/ibmvnic.c
+ > index 5a510eed335e..d4c284c8ef43 100644
+ > --- a/drivers/net/ethernet/ibm/ibmvnic.c
+ > +++ b/drivers/net/ethernet/ibm/ibmvnic.c
+ > @@ -3229,7 +3229,7 @@ static void __ibmvnic_reset(struct work_struct 
+*work)
+ >   	if (adapter->state == VNIC_PROBING &&
+ >   	    !wait_for_completion_timeout(&adapter->probe_done, timeout)) {
+ >   		dev_err(dev, "Reset thread timed out on probe");
+ > -		queue_delayed_work(system_long_wq,
+ > +		queue_delayed_work(system_dfl_long_wq,
+ >   				   &adapter->ibmvnic_delayed_reset,
+ >   				   IBMVNIC_RESET_DELAY);
+ >   		return;
+ > @@ -3267,7 +3267,7 @@ static void __ibmvnic_reset(struct work_struct 
+*work)
+ >   	spin_lock(&adapter->rwi_lock);
+ >   	if (!list_empty(&adapter->rwi_list)) {
+ >   		if (test_and_set_bit_lock(0, &adapter->resetting)) {
+ > -			queue_delayed_work(system_long_wq,
+ > +			queue_delayed_work(system_dfl_long_wq,
+ >   					   &adapter->ibmvnic_delayed_reset,
+ >   					   IBMVNIC_RESET_DELAY);
+ >   		} else {
+ > @@ -3454,7 +3454,7 @@ static int ibmvnic_reset(struct ibmvnic_adapter 
+*adapter,
+ >   	list_add_tail(&rwi->list, &adapter->rwi_list);
+ >   	netdev_dbg(adapter->netdev, "Scheduling reset (reason %s)\n",
+ >   		   reset_reason_to_string(reason));
+ > -	queue_work(system_long_wq, &adapter->ibmvnic_reset);
+ > +	queue_work(system_dfl_long_wq, &adapter->ibmvnic_reset);
+ >
+ >   	ret = 0;
+ >   err:
+I walked through the reset path and the conversion looks fine.
 
-binding said clock is optional. If return failure here, it will block
-existing dts, which have not clock property.
+All three system_long_wq users move together and there are no
+remaining users in the driver. The work items don't rely on per-CPU
+state, so system_dfl_long_wq seems appropriate here.
 
-should be devm_clk_get_optional()?
+Minor commit message nit: ibmvnic doesn't use mod_delayed_work(), and
+one of the conversions is queue_work() rather than delayed work.
 
-Frank
+Acked-by: Mingming Cao <mmc@linux.ibm.com>
 
