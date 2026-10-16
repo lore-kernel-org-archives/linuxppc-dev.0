@@ -1,90 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-29607-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29608-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52CBBCC6B38
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2026 13:43:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FF3CCCA46C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2026 15:21:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j5mNc3H0Vz30Pp;
-	Sat, 17 Oct 2026 00:43:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792158192;
-	cv=none; b=a3PlVREzKOKCSqZJFdQDiUUR3ECiGtwPNHE2BpZ6rXdWYFGlSQsIcN5CBVGMdqtjIvTipiLcWoxTcaIPPIcIVle9ims20QzC7ZQkNM1LJPEUxRTn/2vwohzScooIGqJ/qjvnaoCwBrhFFjSoP2TaGdRMrH5V+ximylhPIzJmx2/MvD5i4T/C+a5aRS03cOx8a3fVwRq68oojJmU50+7rFOghllCDGxuoiBKlx1iA7W6AK8ZOvNhAdqGcSX/6+2IbS/PDZfcPVhwA1AvNFV08ugR3FV714eBA5TUweGAt+whD2hCt+gJWbfmAE6tUMtQgv3DvnhQK059kaRc8ZUlyLw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j5pYX6DzDz2yql;
+	Sat, 17 Oct 2026 02:21:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::a3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792164064;
+	cv=none; b=PGa3whJoTDNU10uPJbwb6cQfFIurGxc0sU2Gb2Ux86s7+CAbaBf/gqlmCDPfx9ZjSvLgNaRUfH4jremYh9h/xeQrDRyvZiIe82QxIkMJlzog8d0FNvt1CkcVI7orf0X7CR+v645r1ryaCvxs8p/82nMb55fay2izcwDiVkt5WxewbuTnZdjR9G38hKS7lWqAnZv8+g4bonkO2KDSvgiVC2wLrRZleg/u5pMozTnLpe7nYale0XuveUfoojG05QnlpCZC6qUpIFCE3tgBqtylO30mKDXVjqVZphtQrNJ8ITyw1eAVHLOMeTktT4gg5Il4aaIA/dSwc/C9HWzgpyAMOg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792158192; c=relaxed/relaxed;
-	bh=hz/Wzrr7Ghfv/m9Znn7aTpfAD1ntAjz54+O38Sp8PJI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=e7ziYQhNjmJ0qSXlC83TKz5xufMTSOEcwueNwLjtE5RyjmKBP/J0Sc3RYD5Tz7pN/+Shm4oWe5g6gAi85ml5rgGr9OGXRQcYb5S2n5Wy29FHSUFIzp51EMjhZaIViZkkji1g/j0MZfc81xRZvlya1v1z+la3j6lz4YQ2PA76v9zqW1hCOlAPoJ4e9aU94A8zFVwZj7ygaMOBsNYoBP9AFmvxoTpu7+P+9NuIzdj3v5P2sKWgw+wyuvrVeUy+8JpjG8pMKjRuph7ItYLgdVUiTdMY1LJVh2WiDUs/1AH7xqTHE4PoqHVFx8r9cb4HYJ0LapaWoT9WDT7G3XwZ3cwNqQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=S4qsFaaK; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1792164064; c=relaxed/relaxed;
+	bh=GQR+UVqtdqHo+p84ll+R7GQUXSSsvkHaMsIaIIobxhc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=gkMb5+kpqpDTp/A3AKoo5OQlVJoNndSp+WJHww3UBeDEub+qfHXUmqJt6mYOKJkiYGEja5RseBZ0hev943FCvaMDNkEU6lvostGcjYscHjcNJI2wQ83A5uRXdwEa18LSslJxQV/olmWwRP2l5SpbYKL7oumrb39P6UW0yUbILZJcHbKttE3S9E7h3pPNtXbSfP77nF5h81WUCO/s5rY3rjRdzB7oU7ZxWvc+YNByyJghQyAwGKLGhrfYG6oEIWLBNPZl3BrgISyMmoMODWzTXMyNGzexsxKK0ybeHisUW+YWd4bkmZEYaJa+LfbZX9p3WhhF3CTIg6vsuOxRbGuqWQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=nWSUl4hl; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::a3; helo=mta1.migadu.com; envelope-from=qingfang.deng@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=S4qsFaaK;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=nWSUl4hl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::a3; helo=mta1.migadu.com; envelope-from=qingfang.deng@linux.dev; receiver=lists.ozlabs.org)
+X-Greylist: delayed 81 seconds by postgrey-1.37 at boromir; Sat, 17 Oct 2026 02:21:00 AEDT
+Received: from mta1.migadu.com (out-163.mta1.migadu.com [IPv6:2001:41d0:203:375::a3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j5mNb2JHQz30PJ
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2026 00:43:10 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69GAESmr3540566;
-	Fri, 16 Oct 2026 13:43:02 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=hz/Wzr
-	r7Ghfv/m9Znn7aTpfAD1ntAjz54+O38Sp8PJI=; b=S4qsFaaKSsv41leWspk3u3
-	a0Fs63zUvkOcSzTwUdHXX+MVNpDo/HU+qIoCyQhpk5gCi1Azy/8HIM77gwAK19tI
-	dICk2fInxkCDSx0CV0K9B8nmvMAhPdU4GMMv8zT1+302AvS+qJMcZD0PV90oNIuM
-	TdNyGlWMhDSTP9wwmLiGXyj+Z0eT3CwqSyx4ClzJvA3pe3AtVKPRYERRCmhfOS7l
-	sEF8rN9HUNVF9h3T66wR5jE4syAxgk0mOQkfXcqwOMAFsDCH22PjUCrXgu/hDGPv
-	tK1tNEl6uWyIkBg0VCL3MCASIm8hdz195QcpjJnsfECh9NJCsF3PA/76SNJQmZmg
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7e1wptcr-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 16 Oct 2026 13:43:01 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69GAJs0d3503283;
-	Fri, 16 Oct 2026 13:43:01 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4hb34mkq61-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 16 Oct 2026 13:43:00 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69GDgvPl33227166
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 16 Oct 2026 13:42:57 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E3FFA20043;
-	Fri, 16 Oct 2026 13:42:56 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5CAE520040;
-	Fri, 16 Oct 2026 13:42:53 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.124.217.170])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 16 Oct 2026 13:42:53 +0000 (GMT)
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>,
-        Masami Hiramatsu <mhiramat@kernel.org>,
-        linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Amit Machhiwal <amachhiw@linux.ibm.com>,
-        =?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>,
-        Vincent Donnefort <vdonnefort@google.com>,
-        Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        Harsh Prateek Bora <harshpb@linux.ibm.com>,
-        linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-        kvm-ppc@vger.kernel.org, stable@vger.kernel.org
-Subject: [PATCH v2] ring-buffer: Do not check si_mem_available() before deferred init completes
-Date: Fri, 16 Oct 2026 19:12:47 +0530
-Message-ID: <20261016134247.70722-1-amachhiw@linux.ibm.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20261009163557.88467-3-amachhiw@linux.ibm.com>
-References: <20261009163557.88467-3-amachhiw@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j5pYS5PJVz2yh4
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2026 02:21:00 +1100 (AEDT)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=JgjAGc1yvO+GZR/lMz41Sy+B81/XedX2R7qPQROM1P0=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1792164042; v=1; x=1792768842;
+ b=nWSUl4hlokvwgLuhWa48Yuch2a5eeT874fDdERarqgr5Z5NhzlYB6m/1hT5bgfmpWuNlyfXm
+ 86jIxEXNzxqM3atokqQMUSRoLByurW4VLRCGERrOr59Vw7TcVd4UWIMqcXd4m7LWX0XgNdsdtBw
+ c7Qqm9CCWheMrEGAWsG1Ra7M=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id 8e118369b878a887;
+	Fri, 16 Oct 2026 15:19:13 +0000
+X-Mizu-Trace-ID: 8e118369b878a887
+X-Migadu-Flow: FLOW_OUT
+Message-ID: <6d16da53-0917-45cb-a5eb-5b85de5e2fb1@linux.dev>
+Date: Fri, 16 Oct 2026 23:19:02 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,127 +58,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE2MDA1MiBTYWx0ZWRfX4WHfQ1W7wcu6
- yaUgmPuJg+SPqEGkimZtjqa1vy4PJdUR4nD6nG8hB+bcPG6rGKC5+wVsoYEcDlRdTLilGo02wF8
- uMaIPfKxgFyAaIURCbxQwb+yqmzcV4E=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE2MDA1MiBTYWx0ZWRfX2tZyr/57vI0K
- wjhX+iajny+iBnHRHRUN/VOJcAfOprHG6oFvrMN+FCT/GuEdPhKd4WzBmHdiF5Aj/zypnWLOmDB
- sPAJwmWj0m1/AUukOGoJmnh93VMQUIX/xUMPNnbDWTrIT3f9VHvZIJbgkvye6+y28AngnkH2nBz
- CjneMuH6GzvtKj1ws5mWy/iWgudcbMpzUjwKiM58Geed2yn7BK+liba3DJsuPit/EIzkLbUNLAj
- 0BOl628uFCQfXwStaDC5KQTmmQsw5O/20+Txl9Fwj59ms6jDzeP7lc/W1MdTwKguaM5wMfzX+6A
- 5JVIzV5mNiIXsqMOazz5QDfHIQxS5tf0PHw6lN1WGhBkUEHODZ9wR26ik+aMtUvO67ZlCEzr80N
- GIl7eLdffnAnpo1ysxJKYXc7cZsDe+awTOxzPt987pzF+nC85QMDaUR2OpDGkT7LIsV6VajCiSU
- mU8N8LQ8XyJNNN+VsaA==
-X-Authority-Analysis: v=2.4 cv=E6pYNqdl c=1 sm=1 tr=0 ts=6ad229e6 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=K0jeOQhstxwOhyhfrK8A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: DkEQCYaunIu9jw2BbyhxhUMgtZ1rsqrC
-X-Proofpoint-GUID: 6jv_EiBt89_ZMqRCvPVa1SGK35B2xEw_
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-10-16_01,2026-10-14_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 phishscore=0 clxscore=1015 bulkscore=0 priorityscore=1501
- spamscore=0 adultscore=0 suspectscore=0 malwarescore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610080000 definitions=main-2610160052
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH net-next net] netdev: Hide the netdev_priv() origin from
+ GCC in netdev_from_priv()
+To: Kees Cook <kees@kernel.org>, Jakub Kicinski <kuba@kernel.org>
+Cc: Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
+ <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
+ "Gustavo A. R. Silva" <gustavoars@kernel.org>, Jiri Pirko
+ <jiri@resnulli.us>, Brad Spengler <spender@grsecurity.net>,
+ PaX Team <pageexec@gmail.com>, Bill Wendling <morbo@google.com>,
+ Justin Stitt <justinstitt@google.com>, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-hardening@vger.kernel.org,
+ Yeswanth Krishna Tellakula <yeswanth@linux.ibm.com>, stable@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20261015165959.i.798-kees@kernel.org>
+Content-Language: en-US
+From: Qingfang Deng <qingfang.deng@linux.dev>
+In-Reply-To: <20261015165959.i.798-kees@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-During early boot (early_trace_init() called from start_kernel()),
-tracing allocates initial ring buffers (temp_buffer, array_buffer, and
-snapshot_buffer) for CPU 0.  Later, as secondary CPUs come online during
-smp_init(), each CPU's ring buffer is allocated via trace_rb_cpu_prepare().
+Hi,
 
-Before attempting page allocation, __rb_allocate_pages() performs a
-heuristic check using si_mem_available() to return early with -ENOMEM if
-memory appears insufficient.
+On 10/16/2026 1:00 AM, Kees Cook wrote:
+> --- a/include/linux/netdevice.h
+> +++ b/include/linux/netdevice.h
+> @@ -2838,6 +2838,13 @@ static inline void *netdev_priv(const struct net_device *dev)
+>    */
+>   static inline struct net_device *netdev_from_priv(const void *priv)
+>   {
+> +	/*
+> +	 * When GCC can see that @priv came from netdev_priv(), it can
+> +	 * compute an object size of 0 for the net_device and its members,
+> +	 * which makes FORTIFY_SOURCE fail valid accesses through the result:
+> +	 * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=127875
+> +	 */
+> +	OPTIMIZER_HIDE_VAR(priv);
 
-However, on kernels built with CONFIG_DEFERRED_STRUCT_PAGE_INIT=y,
-NR_FREE_PAGES only reflects the initial non-deferred pool across the entire
-period from early_trace_init() through smp_init().  defer_init() leaves
-only a single section per node (e.g.  16 MiB with 64 KB pages) initialized
-up-front, and on kernels with large static binary footprints (debug
-configurations enabling PAGE_OWNER, DEBUG_PAGEALLOC, KFENCE, or SLUB_DEBUG),
-early core initialisations (SLUB caches, vmalloc, static ftrace records)
-consume virtually all managed pages in this pool.
+If this bug only affects GCC, you may wrap it with a
+#ifdef CONFIG_CC_IS_GCC block.
 
-si_mem_available() therefore returns a false negative (often 0-1 pages)
-across both SYSTEM_BOOTING (for the initial CPU 0 buffers) and
-SYSTEM_SCHEDULING (for secondary CPU buffers via trace_rb_cpu_prepare()),
-causing __rb_allocate_pages() to prematurely abort with -ENOMEM.
+>   	return container_of(priv, struct net_device, priv);
+>   }
+>   
 
-This failure is false: the buddy allocator is designed to replenish
-ZONE_NORMAL on demand via deferred_grow_zone() when an actual allocation
-is attempted.  Checking si_mem_available() before calling alloc_pages_node()
-short-circuits this on-demand growth entirely.
-
-deferred_grow_zone() is only permanently disabled after page_alloc_init_late()
-completes (it spawns per-node kthreads and blocks until done), which happens
-inside kernel_init_freeable() — before system_state is set to
-SYSTEM_FREEING_INITMEM.  Skip the si_mem_available() check until
-SYSTEM_FREEING_INITMEM, at which point all deferred pages are initialized
-and si_mem_available() is accurate.
-
-Wrap the guard in #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT so that on kernels
-without deferred init the original check is preserved unchanged.
-
-Fixes: 2a872fa4e9c8 ("ring-buffer: Check if memory is available before allocation")
-Cc: stable@vger.kernel.org
-Reported-by: Michal Suchánek <msuchanek@suse.de>
-Closes: https://lore.kernel.org/all/arYskzbiaNzBR9MD@kunlun.suse.cz/
-Link: https://lore.kernel.org/all/arYskzbiaNzBR9MD@kunlun.suse.cz/
-Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
----
-Changes since v1:
- - Extend the guard to cover SYSTEM_SCHEDULING as well: smp_init() calls
-   trace_rb_cpu_prepare() -> __rb_allocate_pages() before page_alloc_init_late()
-   completes, so the false negative window spans both SYSTEM_BOOTING and
-   SYSTEM_SCHEDULING. Use system_state >= SYSTEM_FREEING_INITMEM as the correct
-   boundary.  (Sashiko, Vincent Donnefort)
- - Wrap in #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT to preserve the original
-   check unchanged on non-deferred kernels. (Vincent Donnefort)
- - Drop Tested-by: guard condition changed, requesting fresh test.
-
- kernel/trace/ring_buffer.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
-
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 04bb94c29f58..aa877a272c89 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -2452,10 +2452,24 @@ static int __rb_allocate_pages(struct ring_buffer_per_cpu *cpu_buffer,
- 	 * memory. It may not be accurate. But we don't care, we just want
- 	 * to prevent doing any allocation when it is obvious that it is
- 	 * not going to succeed.
-+	 *
-+	 * With CONFIG_DEFERRED_STRUCT_PAGE_INIT, NR_FREE_PAGES only reflects
-+	 * the initial non-deferred pool during early boot and throughout SMP
-+	 * bring-up (smp_init() runs before page_alloc_init_late() completes
-+	 * deferred initialization). si_mem_available() returns a false negative
-+	 * across this entire window while actual allocations succeed by growing
-+	 * the zone on demand via deferred_grow_zone(). Only re-enable the check
-+	 * from SYSTEM_FREEING_INITMEM onward, after page_alloc_init_late() has
-+	 * finished and si_mem_available() is accurate.
- 	 */
- 	i = si_mem_available();
-+#ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
-+	if (system_state >= SYSTEM_FREEING_INITMEM && i < nr_pages)
-+		return -ENOMEM;
-+#else
- 	if (i < nr_pages)
- 		return -ENOMEM;
-+#endif
- 
- 	/*
- 	 * If a user thread allocates too much, and si_mem_available()
-
-base-commit: 2f2f7eeef8b0a1a9b9ca998231419873ccae8d4e
--- 
-2.54.0 (Apple Git-157)
-
+Kind regards,
 
