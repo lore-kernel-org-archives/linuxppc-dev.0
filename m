@@ -1,91 +1,99 @@
-Return-Path: <linuxppc-dev+bounces-29605-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29606-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 750DCCCA46C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2026 13:05:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35116CCA462
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2026 13:25:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j5lYY3zvbz30Tp;
-	Sat, 17 Oct 2026 00:05:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::6" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792155953;
-	cv=pass; b=bHiNcARA0d9l/wmAOrgP8bllrxS0UJcwb2FM1DIVQJN2c49yKj8KgwMaNnHPtVwgLBqaZii5PuTDYx//EY8PmHuPCyPVIJ98qAsaZk0jcAR7KsTmdJ5WHteLAGKOMo5MoWfGtLec/duIMwKuJzLIsbeh9ZgyWUlyA5IMFVzRQ/deJ7+ugSVPNxGUws3BXzgKSxaedZ6JteHCHNNibv6nIktNblVcP6KUrPDWYBmoJr6yBWe2kET5LwFIqHyerokLlTsGUiySRss4aRwm4oocxeGLjMTe6XDde+Pl2T3SMIr9GfhSfPwkQJEmhHRzvJsPAtG50zzO0OwLfp8MygNk6g==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792155953; c=relaxed/relaxed;
-	bh=8qwltEA+LdaFLY9jWzx3NBsq/jKxvBN588c+pmAnkFo=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=k9EGmCQXRzoi2w667tY4WG2Eg5KefUZk0BNu5jHAvYzigONey24NwY4HM17utP2Mmo21f4VAHuiARAPtQm08lxXLoJIfX/jVIMmveicDNX9tpDUWNv4D6z4iOd35lB+AKASoCn8MgScy1D5xe+hHylplyYIvKi+uIAJfHudf5v+Iz3mjJAQ2+8zGgA1EVbdldGV5xXucG9Vz/Vw+plVj6La8yhswd+uh9UcAxV1+xLjoHSXvf39In4pNRogHUVq2TL/TNvkad8+8oIDLuWtm2sMl4edJxLhGeabFc/+NFC61jstDxDQ84yucbIUuifI6X+Lg4jj39If1m1mfsrMQGw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=virtuozzo.com; dkim=pass (2048-bit key; unprotected) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=selector2 header.b=fAAZRWQ+; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=khorenko@virtuozzo.com; receiver=lists.ozlabs.org) smtp.mailfrom=virtuozzo.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=virtuozzo.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j5m0V0kqBz30TL;
+	Sat, 17 Oct 2026 00:25:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792157146;
+	cv=none; b=L0C2L/vhP5rN7KQCLxZ7I5V1OxSZDPnVh2i5FXN69MxWR8x8HM4V029zveO6W/2M9osTXmXMlfb+m8u5cwIm1HKAWYaFZkJYtVE+ZeDlKb2ZjN02DtsDJUZ60v2oc++sR/C1NyZcWyLXhIGa8g3tx7D6JlRYlwxXozKpq4ND8qyd/tnPHP+fqv2xUcCGr7xnkZsLeVw3yfz8uYGL4TjmoMea5kblUFIEOkfiH9USPzpGs/ei0QYLbKn2Nk7DDpxojDkjHSKdSt0vZlF3lIy+H1DDkcAxdX5zb+CKtoMwCrOY9kzSNRzbHati7DhZWKdlajPfXwqE9+RDhZaKPvO9Sw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792157146; c=relaxed/relaxed;
+	bh=A1oGMJNudXu36XPK/yxV+yodSQqNeuzr6WgFF4E8wpw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=nB5/PWoAUWQbX3GAZC7iMHk6vIn9TN8r9ffpj5ZWPYh4KXl4f2KnYw47VvgsRKNYzmF8jKiWILPYWz2uI4xFkOvbfBU2y9vw5lOjfUwD2oOgrBctRZCAj8cwKf701wYXSbKdZ/0jMeXviGoIXbJ0HGOdELbkTtojNDzNBhY27mGammW0sXP8BWLZy1oGTtSYWfONEzMoFCwEBvn4C+0lgKi7hOUnVKWupUbVFlh4G8aYeP9mFSyJVg8njnF8w1HGDPjtFsXAZiu7rHQsTb/DTOW09DcUOxqeLN/tpk8LLH9q6JF4DWKyw7MZbYKJuI2eVK2+cNCiP4pF5sPA2AZH3g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cgW8WHP0; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=selector2 header.b=fAAZRWQ+;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cgW8WHP0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=virtuozzo.com (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=khorenko@virtuozzo.com; receiver=lists.ozlabs.org)
-Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazlp170130006.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::6])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j5lYW0f7hz30TL
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2026 00:05:50 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=xxDp/6U72eDhmpp4yBJQh3WS/HOXwFZE4Dg9uy1nzpz6qzj6zARunwnq2izxwnwEQdQkwhY/GGEOO0ggvMyfq1nqj3bqk0bygGqnMHPIZtpZ2xtEyWXKGBRtVmLlLLJXxm1HZsM5SwD/8uUueNfn5RR52423XrLZRXuMqL644ccNIcmubHqvYeY+ktTz83hqy/TtNfXxDbGh3GmvgUGCtxp/YnpYPxQWqAFUyM8MeXwRMKYxGIBJ2DMVz5avMvhrNOY+TgCeuXGKTauc10Ac9qVklbM++VsFUsdJa4Q4QH7P8im2k6tzT1tTyAl80d/c+XGmxdCHp8u0YpZI7YMXvA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=8qwltEA+LdaFLY9jWzx3NBsq/jKxvBN588c+pmAnkFo=;
- b=s2RIgFgPdAN3Eikea8zJezdf5rfYeWdFvayw75gP2hxRV8g7CozkxEcJB1EShZ3zu6OAtSFnO4UJfYSQkyUYx1ias6is3yTTwR9w3qtW5seDVhBUiPzybI9lDFi5sAQ41FjX17rVr/oIsnfuVY4bv17Uf3ofzEXjK+K4N4UvbYevk7Tsv6/KcUcusaN7yTmb6IUSpzDjRZTPHQJaLl2kIPCKuiPOuJfSA8sBLqQTvh9j9x7VeuXOIEyobsIM2q68WS2/fMc0jbwMoHpxq5e9PKtQkD4EuYWbXsfBXxIEY6gWTGbsaKOs0rWVTt5KPfpEWWNmPbvOQDxPBPYhY4MEuw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=virtuozzo.com; dmarc=pass action=none
- header.from=virtuozzo.com; dkim=pass header.d=virtuozzo.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=virtuozzo.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=8qwltEA+LdaFLY9jWzx3NBsq/jKxvBN588c+pmAnkFo=;
- b=fAAZRWQ+EG9llF3zMeswlJ96b3Wbb2hbAiEE5OF8arT2qnww+ae11SVWz+vanSuccjwnAx4YAGi8X6ouK9LzZ+eQA7cG6n3yC8iw3Vc/FBDT5exzLOtVfwh7jWZROfAZXDMxgB/gLLkH+EdyFEMoZ3YJhapSoQ70H8XGJV3/NBxiTrHIHEMLlTYTnolfnGWmOuhmRRe3hphCbpfvnMIr7A0EX68N69AL+RWcZeqpdbmSyTXJ6kZxCrDHWBDVvva6FkyzBkUU8Iy72L5WJbX42hXHsetCtbwWrHDdYyBadZ+4kqokcfe+GEY59m3nLij+WYO7U3rL3CJ/b0QttbqfFA==
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=virtuozzo.com;
-Received: from PA6PR08MB10708.eurprd08.prod.outlook.com
- (2603:10a6:102:3c7::20) by AM0PR08MB644083.eurprd08.prod.outlook.com
- (2603:10a6:20b:7fd::16) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.546.11; Fri, 16 Oct
- 2026 13:05:21 +0000
-Received: from PA6PR08MB10708.eurprd08.prod.outlook.com
- ([fe80::1999:c6db:dc55:494a]) by PA6PR08MB10708.eurprd08.prod.outlook.com
- ([fe80::1999:c6db:dc55:494a%5]) with mapi id 15.21.0546.006; Fri, 16 Oct 2026
- 13:05:21 +0000
-Message-ID: <03a10e8e-f14e-4612-9c23-70f94137a29e@virtuozzo.com>
-Date: Fri, 16 Oct 2026 15:05:18 +0200
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/2] mm/huge_memory: recheck a special PMD under the
- lock in copy_huge_pmd()
-To: "David Hildenbrand (Arm)" <david@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>, Zi Yan <ziy@nvidia.com>,
- Baolin Wang <baolin.wang@linux.alibaba.com>,
- "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>,
- Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>,
- Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>,
- Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>,
- Peter Xu <peterx@redhat.com>
-Cc: Alex Williamson <alex@shazbot.org>, kvm@vger.kernel.org,
- =?UTF-8?Q?Lo=C3=AFc_Molinari?= <loic.molinari@collabora.com>,
- dri-devel@lists.freedesktop.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>,
- stable@vger.kernel.org
-References: <20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v3-0-85eaec8417f6@virtuozzo.com>
- <20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v3-1-85eaec8417f6@virtuozzo.com>
- <5800bc6e-7671-41eb-bb09-7fbc8f2d085c@kernel.org>
-Content-Language: en-US, ru, sr
-From: Konstantin Khorenko <khorenko@virtuozzo.com>
-In-Reply-To: <5800bc6e-7671-41eb-bb09-7fbc8f2d085c@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: AM9P192CA0009.EURP192.PROD.OUTLOOK.COM
- (2603:10a6:20b:21d::14) To PA6PR08MB10708.eurprd08.prod.outlook.com
- (2603:10a6:102:3c7::20)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j5m0S4B7Sz2y8Z
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2026 00:25:43 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69GAEDEE3424962;
+	Fri, 16 Oct 2026 13:25:34 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=A1oGMJ
+	NudXu36XPK/yxV+yodSQqNeuzr6WgFF4E8wpw=; b=cgW8WHP0tcEwPbkwgMC0h+
+	MhSyL+6DoggdkX+LOnamLDX/LFTDPxdyEXLhsX6VZMNxf7BZbH+UT9R4peVbnWc8
+	vc8zWbd5AU9lREb+oY+gk0zAcSfm6mQO5l+iw8GOI9/r4cvNNkHpO4Nk4v4vUTKI
+	v+m738i/hqD3H+npVjse7ohz3vHu7fzoLfwXwvDSxFC/a/S2rNHo5Sva5rvKIqXM
+	YPTNx0xXQKioSmLTn/ce2Bg/v6Gu8N7QzB1NvMidwwIDqHEJApvUZjP+HPwLDGjm
+	WQ/zRAMv5USdK8mF74sl8K6vNQ9i4JDZ/RN0dYGHVg/S0gTQUG+c3v53l9HUYG7A
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7dwjevn4-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Fri, 16 Oct 2026 13:25:33 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69GAK3ro3580924;
+	Fri, 16 Oct 2026 13:25:32 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4hawqww07j-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 16 Oct 2026 13:25:32 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69GDPS6e43647362
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 16 Oct 2026 13:25:28 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5FC7920043;
+	Fri, 16 Oct 2026 13:25:28 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 53C0220040;
+	Fri, 16 Oct 2026 13:25:25 +0000 (GMT)
+Received: from fedora (unknown [9.5.7.39])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Fri, 16 Oct 2026 13:25:25 +0000 (GMT)
+Date: Fri, 16 Oct 2026 19:03:44 +0530
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: Vincent Donnefort <vdonnefort@google.com>
+Cc: Amit Machhiwal <amachhiw@linux.ibm.com>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Masami Hiramatsu <mhiramat@kernel.org>,
+        linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        Michal =?utf-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>,
+        Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Harsh Prateek Bora <harshpb@linux.ibm.com>,
+        linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+        kvm-ppc@vger.kernel.org, Mark-PK Tsai <mark-pk.tsai@mediatek.com>,
+        stable@vger.kernel.org
+Subject: Re: [PATCH 2/2] ring-buffer: Do not check si_mem_available() during
+ SYSTEM_BOOTING
+Message-ID: <20261016190235.cef361be-9e-amachhiw@linux.ibm.com>
+Mail-Followup-To: Vincent Donnefort <vdonnefort@google.com>, 
+	Steven Rostedt <rostedt@goodmis.org>, Masami Hiramatsu <mhiramat@kernel.org>, 
+	linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	Michal =?utf-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
+	Harsh Prateek Bora <harshpb@linux.ibm.com>, linux-kernel@vger.kernel.org, kvm@vger.kernel.org, 
+	kvm-ppc@vger.kernel.org, Mark-PK Tsai <mark-pk.tsai@mediatek.com>, stable@vger.kernel.org
+References: <20261009163557.88467-1-amachhiw@linux.ibm.com>
+ <20261009163557.88467-3-amachhiw@linux.ibm.com>
+ <as0NDyaXsfQnWPQ4@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,271 +107,114 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PA6PR08MB10708:EE_|AM0PR08MB644083:EE_
-X-MS-Office365-Filtering-Correlation-Id: de8ddfb5-f6df-4cee-67dd-08df2b86222b
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|7416014|23010399003|1800799024|366016|921020|56012099006|4143699003|261009223027099003|10067099003|22082099003|18002099003|3023799007;
-X-Microsoft-Antispam-Message-Info:
-	YjlHwmXJs7lL3lqZQfueXROKTu6rLm9F68uG0SnigR9ntYSIq0Ai380uc4wiu27KGSQIQrucprrzPvWLnpJwTv0gDLdpCeKAFsAwJrmSgUAudT1tD97NCwa/xTFZNn++YY9jmA07uqN90e2fe1hKWqrzEF+GFemO/aM3RHBQuzcM9UswAdz06sTmVwyDUe1z5h2KcRbQqaY4UjD4bLhocB2GmSLIFnlF1uo3sHlwuE//DghDHPeIBRO7RXxk1+4nmHpv4kWinblsPVGhDMcJt+QjBLHUrWG9O/nQNVVW9QeywGapHiSkQ+dYm+jinywc2KHHpeqsMusjp3jMaXEbkt6M0L2nvkDA8AjGQNbiVQMB4bs0QQIwaZJWcDASoyoa4CfMJ0yxAivvg2B5nC4nhu6ZEBPGWZ43FLw1SzfOWuZA7UJ8lyVhMaK2s0FUv/WWGhQXkCLnd7uJad2uith8J9oZtzc3mfeRRBlODAs+uhrEAyOjsU4u/oMxBPe8ts4fdfoq9T56lUvwXeriQY2CkcOGK68FZJ9FCowZ92YflVO9G4jaFjrz+ipHp1CaAfDuJj7hubo8bWPtQRWsiovbWc1SDZG4hWddKw4cNqZF0yzn+deTz8pwTAreQwECgsAJX2OYeeI0fSltKvEuCIt4kriqo4/YuH+DbTTN8suNP10+bDAaE/m5FjWOMrEsG65srUjfGq/sEXbbGxpskHD/WQ==
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PA6PR08MB10708.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(23010399003)(1800799024)(366016)(921020)(56012099006)(4143699003)(261009223027099003)(10067099003)(22082099003)(18002099003)(3023799007);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?Z00rMzNUbG5ZeDNCbHhjOWFTUnVBMm9qN1JwdkNJbCs3RmZqYSs4U2NVcUN2?=
- =?utf-8?B?T2lrbjVQQnFhMmVlRURzS1gydFJBa3A3SDdqcjhaUlg3WkwxWHNxYTJDODc0?=
- =?utf-8?B?bUFKNllwVDIvSllieGRsRGFQVkRpSkNQOUhaNDFvRlF0NTV5TFphcXRua2da?=
- =?utf-8?B?Q3FrUHpsS3l6YkQ2SXNSdWNaVnZMQnNyc1d3c3NIZFlXSk1pc0lxY21FeldH?=
- =?utf-8?B?U1NkSFlyOGdveTJXSDhhNnpFbXlJYTNLRHJ0UStYb1dWQ2x1Z2xwVjZIR3Yw?=
- =?utf-8?B?dlVHazU2cW4vc3R2SFpMUWZDR2FVR05ycjJIdDhPdHJNbDM5ZTdORGRFUUNt?=
- =?utf-8?B?UDB3Wmt1Mnl3cHBQb25tUUV3UVc0bEJUcGY2WDUxZU51ZVR3bUIzUGpiU3Vk?=
- =?utf-8?B?ME1QMHBtVlladDhHalBCTjZDQ0FsR2V2WlRJcUJ3NHN2ODIvT3p1VkZUa0FX?=
- =?utf-8?B?WlhsVFZCQXN0U1NPekNKTzFodG1pZmJYUkZFNVRlVVFMc1BzUXhvbVBpRThz?=
- =?utf-8?B?aUl3b0RQQzgzZWVwRkxiM1J6ZjE3VTRsd2NvbjBySGU0ZGdoR1d5dGh3anli?=
- =?utf-8?B?NXlUY3pvUzY5UGdXWlBsd3JOYVpGN0JGOCtUdVg3VGJyUklUbHBNK2MvcVNu?=
- =?utf-8?B?L0pxTGd3OXdlclV2ZHJFeE1Xc093akZNVXE2SWJYOEl0T2xqekNHdFJ1blRj?=
- =?utf-8?B?cmNlRG5zMEFLNW4rODVrczU4M0piL2dUU29XQ1dMckZsMXpqSVc4OVZoNWpF?=
- =?utf-8?B?WWFvUTR4WnNjaFg1QjJtQkdrYTBtZE5adklkMnZLN2c2K3ZTandKamZKVmxD?=
- =?utf-8?B?SjRIZm1xWGdHL1FydVdGM0xGU0NyM3JnUlg5dzJQL0p3WGt3NEQyRDMySDBX?=
- =?utf-8?B?MjNSSkxkZVNCRm9udXZXZXZYZVVud0k4MWdBVktvUXgrTUovcTFVV3E0Tk9J?=
- =?utf-8?B?SVR0dXJid2M5QUJMemx0aTNBTFhLM296UkdFc0RQdGpoNEFYb0pYSHplSHdX?=
- =?utf-8?B?a2p1bEJLazQwaVpSN0FNVndLUmh6MUxNbGY3c1VrQkJuZm1sT0sxcHVuRTE5?=
- =?utf-8?B?VVFZenIrSGd5VGdodDloTUNpbi9HUDlpNi9PMDc0Z1JJczJxcmN6OTYvWE5k?=
- =?utf-8?B?U1lNWnRsaHF3Zk5qVkNubWdGUFpnekIvYlFTcTUzd0JUTDYvamhXTjFoc3pq?=
- =?utf-8?B?TXNzRmNFUnNXd1hMUjVRSWhYMmJoc1Z4QzZaQkJXUjlqMzlDeDdlOGVmYkRs?=
- =?utf-8?B?b0U5UTdKREJ6N0I5QXV3bjJxTnROSS8yMXBxNGVtTE9LU1pGS2VxaWJGM1l2?=
- =?utf-8?B?T0E5WCtXYmprNGJRZ1h6a1pmTGVrMXFkMTQxY2FGRkRLTWdPVkJIbU10UVhy?=
- =?utf-8?B?ME9icmdBektTMUEwcmNPeVVFQUhVN2VjRGpGdjJsWGJwM1U1K3J2NnJCKzY3?=
- =?utf-8?B?TktVbEU5bUYrN1RFSUh4VFRLNmpvTHpTdlBibkZWdGM5Mm8wTk9TbitPeXRk?=
- =?utf-8?B?TFl0eUJIanh1akpWU283Z25pWVZKTE4raW00UFVoVEdYeEZMSSs0cnFmOUpE?=
- =?utf-8?B?TXJObG1FV2pQaVhnVW4xcTFlMVgzbGh0bXFSQmUzYXNZUyt2SWorNHRIaXJ4?=
- =?utf-8?B?NmZTZ21VQlcrK0FWYnBQSXNNam9YQTVmdmRYRi9VTkxUWVRVRUQ2dU1jWXV5?=
- =?utf-8?B?NjVHK2FUNlBoU1Bkd0Q2VzdacG9iOGZnQTREMFE2a25NM3IxZzAvK3o2WXFM?=
- =?utf-8?B?cjExZUlJT1h1ZzIxbE9jWVNlejRjb3M2akNQcWtVVGpkUGY4SURUMCtPYTkw?=
- =?utf-8?B?anF3Vk9nUVNGZHJMdmJMU2NsN0tIcGxYTU5Tckd0enJlM2w5T3FuUWpJMHd3?=
- =?utf-8?B?aC9GZjhyQ2lKM0huOEc0L1dmVVBobHp2Y2N5Si9leWlmU2IrYkdGck1HSm01?=
- =?utf-8?B?ejRXZnQ1TWVmakRwQUEzWVF5ZWR1c2JWUjNZdWhVcmpobzVpeng1VUxxa1Yv?=
- =?utf-8?B?SmZBelBEb1Bra3JJM2YrUlBPalk2M2o5RXNqU1pncmZnKzB1MUJ3SVErMnlk?=
- =?utf-8?B?REQxMlp5RUJzeXVFTW5MVW1MbUFYdm1PWlQ5QUZDTjFNODdiRkRQSEd1dDNM?=
- =?utf-8?B?SWVCVlJELysyVlBYZE5Rc0ZzWVdoNWwrTWFlWCt5cDJuUDJyTUQvMnBKVXM2?=
- =?utf-8?B?YkNyWkxFRWw5UHhiMW42OVVtaWQwb21VYWpxVXBZVzNiaGIyRVNwVGJTVlVk?=
- =?utf-8?B?TFNjMHphOERVU2pTcjlpdEhSOGhOTk9PT3RsaVlweXZCeFNQNjd1alNVSk50?=
- =?utf-8?B?T0hXek9wU3JJQm1JK3g2d0hIdXMyOTNhaU85MGtTWi9KcEhlWlU3Zz09?=
-X-OriginatorOrg: virtuozzo.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: de8ddfb5-f6df-4cee-67dd-08df2b86222b
-X-MS-Exchange-CrossTenant-AuthSource: PA6PR08MB10708.eurprd08.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Oct 2026 13:05:21.0554
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 0bc7f26d-0264-416e-a6fc-8352af79c58f
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: G8JBA2rEgGR4ilCt7G5NvslYlUpsRfoTgGFalXVK+SnVMW55QEGNQIVAbXmQg32yPLkr1E3plBmRhbJwjL/w5w==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM0PR08MB644083
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <as0NDyaXsfQnWPQ4@google.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE2MDA1MiBTYWx0ZWRfX1B7DwnvE2ZEB
+ ZRiQKFd017ZkLJ6lx/GN0Yv/cIpG1mfbEPXwKjRV6HaJ6J5OfuVVXY2YF6Qcbl0+jCpe1AAGd+2
+ x2BcSvvOjBXzKhv5Wv8cqRDY+PUUtt8YMQrHC/Wk8tdqZ9FPabRSReZGVWxkeHlp1n3IGsExqKA
+ lMXlhyBqOCyWW6GlJbnEXDVWD5Rmc1DCwCKyEdoeaUQWpk+EC7950uKr1uqRr/8Y1HZhrIaFPXj
+ WNCX9XmloMkDNe3NJWx5pZI7Z3ICStyCShvrrQOMLwy1OuTJzToc9+VUmBJnjEGeVFXuWlzaLj3
+ 2aNsA3FjUovGHJRmjb/jzipIQbwCWxS+QUWpPKZeItGavknOe0a4f3LwkgKgn8yIC5hXMLT89vZ
+ 0CUp+yain6Hl+VX3kUh/iKs0sg66qTJkmsVaIZKNWOFAYF9QP22qD4uJCwOK4v4CD/QJ4IMxdjP
+ YJvJnPPtW4Z7TgPssDA==
+X-Proofpoint-GUID: BI2cxKGAEKJYjpJtdhn7B-QEcpA1kyCp
+X-Proofpoint-ORIG-GUID: qYdT_-xCKwD220TGgWg54Kp8opywLsvm
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE2MDA1MiBTYWx0ZWRfX8QDgacc7g/xQ
+ R45WROGLPAbi8OaA0R2kULYl5urC62K2wuewINkM1+Rm44n0HIYLOVTtchd4A32Evje1KsgqdRU
+ +wHkkM8pKRO1Ddbq93xCai2bVyWQeXQ=
+X-Authority-Analysis: v=2.4 cv=btHZl0ai c=1 sm=1 tr=0 ts=6ad225cd cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=dlV8YpW79Mn5UFwVz3cA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-16_01,2026-10-14_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 malwarescore=0 phishscore=0 impostorscore=0 adultscore=0
+ lowpriorityscore=0 priorityscore=1501 clxscore=1015 spamscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
+ definitions=main-2610160052
 
-On 10/15/26 16:14, David Hildenbrand (Arm) wrote:
-> I would have thought that unmap_mapping_pages() is only called in
-> corner cases when we would have concurrent fork().
->
-> Like vfio_pci_zap_bars().
->
-> But yeah, likely there is a theoretical race.
+Hi Vincent,
 
-Agreed, it needs a zap such as vfio_pci_zap_bars() racing with fork()
-of the mapping owner. I only hit it with a delay injected into the
-window.
+Thanks for reviewing this patch.
 
-> TBH, I think we can drop this comment entirely. That's just simply
-> the right thing to do?
+On 2026/10/12 05:38 PM, Vincent Donnefort wrote:
+> On Fri, Oct 09, 2026 at 10:05:57PM +0530, Amit Machhiwal wrote:
+> > During early boot (early_trace_init() called from start_kernel()),
+> > tracing allocates initial ring buffers (temp_buffer, array_buffer, and
+> > snapshot_buffer) for CPU 0.
+> > 
+> > Before attempting page allocation, __rb_allocate_pages() performs a
+> > heuristic check using si_mem_available() to return early with -ENOMEM if
+> > memory appears insufficient.
+> > 
+> > However, on kernels built with CONFIG_DEFERRED_STRUCT_PAGE_INIT=y,
+> > defer_init() leaves only a single section per node (e.g.  16 MiB with 64
+> > KB pages) initialized up-front.  On kernels with large static binary
+> > footprints (such as debug configurations enabling PAGE_OWNER,
+> > DEBUG_PAGEALLOC, KFENCE, or SLUB_DEBUG), the static kernel image and
+> > early core initialisations (SLUB caches, vmalloc, static ftrace records)
+> > consume virtually all managed pages in this initial pool.
+> > 
+> > At T=0.000000, watermarks have not yet been established
+> > (totalreserve_pages = 0), so si_mem_available() returns the raw free
+> > page count (often 0-1 pages).  When the snapshot buffer or global trace
+> > buffer attempts to allocate 2 sub-pages, si_mem_available() returns <
+> > nr_pages and prematurely aborts with -ENOMEM.
+> > 
+> > This failure is false: if the page allocation were actually attempted
+> > via alloc_pages_node(), the page allocator would trigger
+> > deferred_grow_zone() on demand to initialise additional deferred memory
+> > sections.  Checking si_mem_available() before attempting the allocation
+> > short-circuits this on-demand growth.
+> > 
+> > Skip the si_mem_available() check when system_state == SYSTEM_BOOTING.
+> > Once the system transitions past early boot and page_alloc_init_late()
+> > initialises all deferred memory, si_mem_available() accurately reflects
+> > system-wide free memory and the check operates as intended for runtime
+> > allocations.
+> > 
+> > Fixes: 2a872fa4e9c8 ("ring-buffer: Check if memory is available before allocation")
+> > Cc: stable@vger.kernel.org
+> > Reported-by: Michal Suchánek <msuchanek@suse.de>
+> > Closes: https://lore.kernel.org/all/arYskzbiaNzBR9MD@kunlun.suse.cz/
+> > Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
+> > ---
+> >  kernel/trace/ring_buffer.c | 8 +++++++-
+> >  1 file changed, 7 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+> > index 04bb94c29f58..a9f82e2f8fad 100644
+> > --- a/kernel/trace/ring_buffer.c
+> > +++ b/kernel/trace/ring_buffer.c
+> > @@ -2452,9 +2452,15 @@ static int __rb_allocate_pages(struct ring_buffer_per_cpu *cpu_buffer,
+> >  	 * memory. It may not be accurate. But we don't care, we just want
+> >  	 * to prevent doing any allocation when it is obvious that it is
+> >  	 * not going to succeed.
+> > +	 *
+> > +	 * Skip this check during early boot: with CONFIG_DEFERRED_STRUCT_PAGE_INIT,
+> > +	 * NR_FREE_PAGES only reflects the initial non-deferred pool at this
+> > +	 * stage. si_mem_available() returns a false negative while actual
+> > +	 * allocations succeed by growing the zone on demand via
+> > +	 * deferred_grow_zone().
+> 
+> As Sashiko pointed-out, if si_mem_available() is only ready after
+> page_alloc_init_late() when CONFIG_DEFERRED_STRUCT_PAGE_INIT, then checking for
+> system_state >= SYSTEM_FREEING_INITMEM might be more correct.
+> 
+> Also I wonder if we don't want to guard with CONFIG_DEFERRED_STRUCT_PAGE_INIT,
+> to keep the verification when CONFIG_DEFERRED_STRUCT_PAGE_INIT is unset.
 
-Will do. I kept the comment on the CoW warning below it, which is
-about something else.
+Both suggestions adopted in v2 — using system_state >= SYSTEM_FREEING_INITMEM
+and wrapping in #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT.
 
-> But why do we do this early copy dance *at all*? I think I
-> complained about this vma_is_anonymous handling in the past.
-> vma_needs_copy() is the one deciding whether something should get
-> copied or not.
->
-> So, can't we just get rid of the vma_is_anonymous() handling and
-> perform the weird special-pte check (that I hate entirely) when
-> already holding the PTL?
-
-I tried exactly that first, see "try 1" below. The early
-vma_is_anonymous() return is gone, the locks are taken for every huge
-PMD, and both the special check and the skip of non-anonymous VMAs
-run on the value read under the lock. The lockless read is gone, and
-the race with it. The skip itself has to stay, as the anonymous path
-cannot copy a file THP.
-
-That makes fork slower when it walks a VMA full of huge PMDs that it
-then skips. vma_needs_copy() sends such VMAs here, for example a
-MAP_PRIVATE file mapping with an anon_vma. fork() of a process with
-4 GB of shmem THPs mapped MAP_PRIVATE and an anon_vma on the VMA
-(2047 PMD-mapped THPs), median of 2000 forks, 4-vCPU KVM guest:
-
-  v7.3-rc7     86-87 us
-  try 1       131-148 us
-
-That is about 25 ns per huge PMD, spent taking and dropping the two
-PMD locks only to skip it.
-
-So "try 2" keeps the early return, but decides it from the VMA flags
-instead of a lockless read of the PMD: a non-anonymous VMA without
-VM_PFNMAP or VM_MIXEDMAP cannot hold a special PMD other than the huge
-zero one, as vmf_insert_pfn_pmd() requires one of the flags, and the
-flags cannot change under the mmap write lock fork holds. Everything
-else is decided under the PTL, as in try 1. fork() is back at
-86-87 us.
-
-I also tried vma_is_special_huge() for that check, but its
-vma_is_dax() test on every huge PMD made fork cost about 17% more
-kernel instructions than v7.3-rc7 here, against about 1% for the
-flags test.
-
-Both diffs are against v7.3-rc7 and leave out the deposit fix from
-patch 2, which goes on top as before. If try 2 looks right to you, v4
-will be try 2 plus the deposit patch.
-
-Try 1:
-
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -1958,39 +1958,36 @@ int copy_huge_pmd(struct mm_struct *dst_mm, struct mm_struct *src_mm,
-        pgtable_t pgtable = NULL;
-        int ret = -ENOMEM;
-
--       pmd = pmdp_get_lockless(src_pmd);
-+       if (vma_is_anonymous(dst_vma)) {
-+               pgtable = pte_alloc_one(dst_mm);
-+               if (unlikely(!pgtable))
-+                       goto out;
-+       }
-+
-+       dst_ptl = pmd_lock(dst_mm, dst_pmd);
-+       src_ptl = pmd_lockptr(src_mm, src_pmd);
-+       spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
-+
-+       ret = -EAGAIN;
-+       pmd = *src_pmd;
-+
-        if (unlikely(pmd_present(pmd) && pmd_special(pmd) &&
-                     !is_huge_zero_pmd(pmd))) {
--               dst_ptl = pmd_lock(dst_mm, dst_pmd);
--               src_ptl = pmd_lockptr(src_mm, src_pmd);
--               spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
-                /*
--                * No need to recheck the pmd, it can't change with write
--                * mmap lock held here.
--                *
--                * Meanwhile, making sure it's not a CoW VMA with writable
--                * mapping, otherwise it means either the anon page wrongly
--                * applied special bit, or we made the PRIVATE mapping be
--                * able to wrongly write to the backend MMIO.
-+                * Make sure it's not a CoW VMA with writable mapping,
-+                * otherwise it means either the anon page wrongly applied
-+                * special bit, or we made the PRIVATE mapping be able to
-+                * wrongly write to the backend MMIO.
-                 */
-                VM_WARN_ON_ONCE(vma_is_cow_mapping(src_vma) && pmd_write(pmd));
-                goto set_pmd;
-        }
-
-        /* Skip if can be re-fill on fault */
--       if (!vma_is_anonymous(dst_vma))
--               return 0;
--
--       pgtable = pte_alloc_one(dst_mm);
--       if (unlikely(!pgtable))
--               goto out;
--
--       dst_ptl = pmd_lock(dst_mm, dst_pmd);
--       src_ptl = pmd_lockptr(src_mm, src_pmd);
--       spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
--
--       ret = -EAGAIN;
--       pmd = *src_pmd;
-+       if (!vma_is_anonymous(dst_vma)) {
-+               ret = 0;
-+               goto out_unlock;
-+       }
-
-        if (unlikely(thp_migration_supported() &&
-                     pmd_is_valid_softleaf(pmd))) {
-
-Try 2:
-
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -1958,32 +1958,16 @@ int copy_huge_pmd(struct mm_struct *dst_mm, struct mm_struct *src_mm,
-        pgtable_t pgtable = NULL;
-        int ret = -ENOMEM;
-
--       pmd = pmdp_get_lockless(src_pmd);
--       if (unlikely(pmd_present(pmd) && pmd_special(pmd) &&
--                    !is_huge_zero_pmd(pmd))) {
--               dst_ptl = pmd_lock(dst_mm, dst_pmd);
--               src_ptl = pmd_lockptr(src_mm, src_pmd);
--               spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
--               /*
--                * No need to recheck the pmd, it can't change with write
--                * mmap lock held here.
--                *
--                * Meanwhile, making sure it's not a CoW VMA with writable
--                * mapping, otherwise it means either the anon page wrongly
--                * applied special bit, or we made the PRIVATE mapping be
--                * able to wrongly write to the backend MMIO.
--                */
--               VM_WARN_ON_ONCE(vma_is_cow_mapping(src_vma) && pmd_write(pmd));
--               goto set_pmd;
--       }
--
-        /* Skip if can be re-fill on fault */
--       if (!vma_is_anonymous(dst_vma))
-+       if (!vma_is_anonymous(dst_vma) &&
-+           !vma_test_any(dst_vma, VMA_PFNMAP_BIT, VMA_MIXEDMAP_BIT))
-                return 0;
-
--       pgtable = pte_alloc_one(dst_mm);
--       if (unlikely(!pgtable))
--               goto out;
-+       if (vma_is_anonymous(dst_vma)) {
-+               pgtable = pte_alloc_one(dst_mm);
-+               if (unlikely(!pgtable))
-+                       goto out;
-+       }
-
-        dst_ptl = pmd_lock(dst_mm, dst_pmd);
-        src_ptl = pmd_lockptr(src_mm, src_pmd);
-@@ -1992,6 +1976,23 @@ int copy_huge_pmd(struct mm_struct *dst_mm, struct mm_struct *src_mm,
-        ret = -EAGAIN;
-        pmd = *src_pmd;
-
-+       if (unlikely(pmd_present(pmd) && pmd_special(pmd) &&
-+                    !is_huge_zero_pmd(pmd))) {
-+               /*
-+                * Make sure it's not a CoW VMA with writable mapping,
-+                * otherwise it means either the anon page wrongly applied
-+                * special bit, or we made the PRIVATE mapping be able to
-+                * wrongly write to the backend MMIO.
-+                */
-+               VM_WARN_ON_ONCE(vma_is_cow_mapping(src_vma) && pmd_write(pmd));
-+               goto set_pmd;
-+       }
-+
-+       if (!vma_is_anonymous(dst_vma)) {
-+               ret = 0;
-+               goto out_unlock;
-+       }
-+
-        if (unlikely(thp_migration_supported() &&
-                     pmd_is_valid_softleaf(pmd))) {
-                copy_huge_non_present_pmd(dst_mm, src_mm, dst_pmd, src_pmd, addr,
-
---
-Cheers,
-Konstantin
+Thanks,
+Amit
 
