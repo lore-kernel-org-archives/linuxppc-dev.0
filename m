@@ -1,64 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-29611-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29612-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3E3CCCF2C4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2026 20:00:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E558FCCF2C4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2026 20:04:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j5wln5ybBz2ylm;
-	Sat, 17 Oct 2026 07:00:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::6" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792180821;
-	cv=pass; b=LQ+0z3jWgQXbBIccufcttPp8GlZuKArEY253Oah6cTrlvAmVGtl8qWIH3k0DXM7dwUC95Y0GeWGqDmSIFHLznMMjl3/ytRDZZ1+WFQ28glwIPEyu43Pbkab8hbu0Sr7/a1GhzSsoE9v6o0eXLEyqIH9u9mP53D2mK7XL/vy171wTZKDKnxjBm1k8+Q9OnyCQa+Yo5xlSe43G0/z9hNpsL3qDC5pmlnk6sR98ljQMWb8mIGMGuNiteouqQSzhi3LkL88eTmtlrOi3gXc2BMZGquG6Vk42DtmUTxPY7xb2IzMQu2vtgJ2acCip2TnDJbFIYlu9Co/py00IyaqXyTkZqA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j5wrn48pSz2yfl;
+	Sat, 17 Oct 2026 07:04:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c202::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792181081;
+	cv=pass; b=JkoXHsbE+91uJUNDl5BVb8BO6kElS5f19VbltVI5xSjYOsdGJ7TvHPKPITENwhRt+Gou/uyG82phaQ0TFSzXsRZxgP8DnY7iNYiMC2xYRdoHSE1GuBwYHQI9xKyKA5BJ2xZDZbCHXHoGVfxWRMZ7VqtNvWZ1+oJxARDZgvP4CY1fUJpnEsn335dxJp2kZBIDLLHqCM+cqG8zqwKwQWQ7ij5qTieTOHpwPmaWKXV16qncXy5Q1s0UkI5r5AoTcKBzA+rBY/h70Bu2deJIysaY5wI74lOP8LUj36CPGx8rDlo4Ue1C8qz2oiksluCt7RdZrhKlZgeSEtxxJKH5Wm+Vug==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792180821; c=relaxed/relaxed;
-	bh=C18b9HSGMPw0L46fNtigi+g7MMS8VXgK6KifXzqgpOk=;
+	t=1792181081; c=relaxed/relaxed;
+	bh=hWwisaTYUIwZ3OS/8NuzHKqZ+RuwFfRPzT1eJ0ZVf8U=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=hXgsqRgkNU2FNMMy9hE+QnY2J9UR1YX6CWXDEYBOKsatsblMEc0rMxbhKlhlhEChyZbBePCDzVmxmkw0Ug+1h5/rBoYQRhbDwBnS3u9pmSudS9ehnEm5OTTSBSgwGJGissd01Us/armpYQ9z3oScwth8anLsxrVbENOXV6GCWEpbQFxOfGMw19xB7/kzY+v4QPxO6JS3cbzoh3SyIrmBqsat7X8IYMQWoS76smHrFYQmnpGIrV2Tt2gZ/zbKRifF2hqzS0KDTaiDWq8MnZwAhYVE6g7ld6mgUIpzmeMyedIZYkR4JWa9UJ36Gw7RCr8Bx61jkmNdG5OtvS3JOXOb0w==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=ch7VwI7f; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+	 Content-Disposition:In-Reply-To:MIME-Version; b=D1eBasI7ZO3eB8L1LEfKz9h6aDj/nS7cG5PUCIsdLRtgGvnH45xuKAXf7EjM07itWHMmFA22XgOxQLlGgWINIEYr7M+ErAbD2JBMZV4nZFES0cymfnPQcW+NiFHBafsfuLTP7cp/24N7MUePe6dd7P9rYmumzrG06IqwSw0zmWF2HVcDxEzihcOKvvLhw+q+n2qf5rFfWxcv8OsZBMuKxsof9rFGCRJXuhO/xgOoZOljsfxpQyG6oMK0pCjmlIeHtFfy0BQZiZRIy56qOy1mTmozx+dAFJqBnMd5famAMoUg5HfN0Q6KcTc7zQW0TgPQOz4mcaYX8AR8kY6GlyFODA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=DO7VVq6f; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c202::7; helo=gvxpr05cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=ch7VwI7f;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=DO7VVq6f;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazlp170130006.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::6])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c202::7; helo=gvxpr05cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
+Received: from GVXPR05CU001.outbound.protection.outlook.com (mail-swedencentralazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c202::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j5wlm2PpCz2ygK
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2026 07:00:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j5wrm4mqDz2xlk
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2026 07:04:40 +1100 (AEDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=lx7KohWuMluhcL7KHp3hNGoh7WIfHvOQko5yQbMZy/0Lq5boRUXej0R7p4KXPu923J4Ihi0j1auPImbjfUy89J99RKq4Wa1k6UTyqx76Af2SZy6qfLKbEr4MhNwxmZsqoujDTg2KPAIplyAMps9Z5TCjnX5VC+oU3WFY7LfV2Xslv0+6zdAMBXpbjdK9BT4YKxrpEAKlCgcznLUk8YSGn6JLPkwbyVYFXEi3ua78fxUCn8ZhrhDFXE4qiI2OCmr9fPvLvYNiUiW4Fy/BB+3aBnvALcGpLIR9Fv4q3XM5WH3dFfl9a2EANNQvOjhAcsX9JdskQJKjtx3qrsUdMgDCgQ==
+ b=OBuryLrL8w5Ani3y2tToHCizuVdW7M9ug8Pgme7QacZv770ZoQgTZ8PnSorG7hImwxd8AW8TzorlgyUIl0IYc4YenKzvwpRFBimyubp+7VCK5Ukzfj5WKgW/fAa+48hLTB0uB6qSqb7fQrqP3ehK9sSJhYcmWhURolj8H4pl3RbGtmqlNcCTI62O8w/Eih9edTEn8W+P4sxMGXWaz3ssEkeIbvK2J/Uo+HNpeh1LH7iLYXHBi0wikv6P7h0hKXZ9GOm/o516gLUfNRVg0YPYFUMphGcpRt0a7hKc0UDDpa3Fpl0yEtGCV6mlP01RAyZPz+o6oBJb1KMVoHS2IdYw8Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=C18b9HSGMPw0L46fNtigi+g7MMS8VXgK6KifXzqgpOk=;
- b=oZNopwHYSgCYCbNOvIei9jn5xepd36dvdAVEPv7wjPmMbuSVxFAF8avw2ob83gdC9y87PW4SpyrxRDizwlXwvWq4lr2y3adkvVgiKpXkxzwlcHbV7cNHP6IRaoKLxPLWs6sR8SeoznsNp2AMyy31yd4DZZDAbN+h8f26R40KB2psNKaE8ofwdTQARuoV/4/S1XvwYfAIjG7TBeVkTc+1EEeIuxxcLHiTgFgmscK2yIeA1HFcxS7BoPCfC3WJRamxSKqEnzsnNAMFhaaGCYMPEwAYs8nv0HJaROiNqX0HlnRiGmXrGFH+LmY4m+4ehgKU0F4Kjs8CGhyz1rjDihP6VQ==
+ bh=hWwisaTYUIwZ3OS/8NuzHKqZ+RuwFfRPzT1eJ0ZVf8U=;
+ b=Vpjthlkan4EZVMlyNYz5afmkwN8WCkYRwJ5lxvZlfT3+s5ZENox0hUgnFnV4+se4ZIIocNOExra4dW5IiepxoSMUIZwVHiqdCYiMFVIUeLRcwZE8NQoPSmmfzPN5pPB/rBYO4OpZA/dLbUCDXhXSXI80XOuEmQ7mDZ3xAK7fCifKrEIYGg0VpoZnUA7bAJ4CUY6BUOr9BW71yRRl9y7iaKS2k1s3JJTeP7pOvOXY1HzfgmSqxa9k1JHy99F1DwCaMSDawOeGfYVq/URBCO8vREOrXA+e4Cf4v8uSpLJ+QTwpoS9jdSXnlw3KQvI8S7/rQ40KfVtoDbQSU5CmPVrw1Q==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
  dkim=pass header.d=oss.nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
  s=selector1-NXP1-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=C18b9HSGMPw0L46fNtigi+g7MMS8VXgK6KifXzqgpOk=;
- b=ch7VwI7fSqYtBDTG/o8IXpO5eihU9AtVtBuXiIfU6f6zGhicFvAmkq16oo2uNsbDMqI0+oiHhPGj5Xj9NXE6665Mg7qOeAOx4WBwXO0cyQ64XGdp+Ah69HmqxqkSHqPuFxvZlRpm/NBGVxJXJR9kSsmlEg45aHnKMpq5MLaXCdnXE9vUIxqyY+fccETabk1O03j6n4tfXG00xkVwXqxuCJIvV9E9a3vEa/DpYNNOYh3xL3hWFq21lpHwgiA2De+vbsnejT5fUDmEowweMb1YHMkjL8mYz/K1A6u/IPK62R0LhUrdkGcwgj9ZNYjr34/3y802knHQ6XJ2OLdADujn1g==
+ bh=hWwisaTYUIwZ3OS/8NuzHKqZ+RuwFfRPzT1eJ0ZVf8U=;
+ b=DO7VVq6fLGmy3LUT7SHty/Lmf1re8cXXz1NQVsTn2DJb2jf1J+Xudljd0CASkOslh8dTblEJJ++9fIM8p9qjRfbzn6hqj7hi70akgIouZtXol0zMNqfU7Y2ZYlN8T27gMVqZuTmGFGPHQKoJTG1mFnXhDB343o2WqQxmpHREP/dJ+eyIIOzbGYWZqerA9mHazIXIEy5DOqrlHzWQKihPabmaYdCUpC4amMPZfgn4hAeN57X6fotEenuRv9CUZ2J6Nh1hptuThgHPm7N4OiTbOd5vVZojIt4CcGjhYYqU5k3lZLdltwhuFV/VPpKKowUsx3MYQkXNkJWeT6xt5501fA==
 Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=oss.nxp.com;
 Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
- by AM7PR04MB7190.eurprd04.prod.outlook.com (2603:10a6:20b:115::23) with
+ by AM9PR04MB8796.eurprd04.prod.outlook.com (2603:10a6:20b:40b::23) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.522.13; Fri, 16 Oct
- 2026 19:59:53 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.522.15; Fri, 16 Oct
+ 2026 20:04:15 +0000
 Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
  ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
  ([fe80::2146:83a2:5329:b7c%7]) with mapi id 15.21.0522.013; Fri, 16 Oct 2026
- 19:59:53 +0000
-Date: Fri, 16 Oct 2026 14:59:42 -0500
+ 20:04:15 +0000
+Date: Fri, 16 Oct 2026 15:04:05 -0500
 From: Frank Li <Frank.li@oss.nxp.com>
 To: Marek Vasut <marex@nabladev.com>
-Cc: netdev@vger.kernel.org,
+Cc: netdev@vger.kernel.org, Vladimir Oltean <vladimir.oltean@nxp.com>,
 	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
 	"David S. Miller" <davem@davemloft.net>,
 	Andrew Lunn <andrew+netdev@lunn.ch>,
@@ -69,20 +69,20 @@ Cc: netdev@vger.kernel.org,
 	Jakub Kicinski <kuba@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	Paolo Abeni <pabeni@redhat.com>, Rob Herring <robh@kernel.org>,
-	UNGLinuxDriver@microchip.com,
-	Vladimir Oltean <vladimir.oltean@nxp.com>,
-	Wei Fang <wei.fang@nxp.com>, devicetree@vger.kernel.org,
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [net-next,PATCH 1/2] dt-bindings: net: enetc-mdio: Document
- optional MDC clock
-Message-ID: <atKCLsgM2V4_RxyY@SMW015318>
+	UNGLinuxDriver@microchip.com, Wei Fang <wei.fang@nxp.com>,
+	devicetree@vger.kernel.org, imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: Re: [net-next,PATCH 2/2] enetc: Make eMDIO MDC rate configurable
+ from DT
+Message-ID: <atKDNdxl0w65s8yQ@SMW015318>
 References: <20261016193344.115518-1-marex@nabladev.com>
+ <20261016193344.115518-2-marex@nabladev.com>
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20261016193344.115518-1-marex@nabladev.com>
-X-ClientProxiedBy: PH0P220CA0016.NAMP220.PROD.OUTLOOK.COM
- (2603:10b6:510:d3::19) To GV2PR04MB11799.eurprd04.prod.outlook.com
+In-Reply-To: <20261016193344.115518-2-marex@nabladev.com>
+X-ClientProxiedBy: PH7P222CA0026.NAMP222.PROD.OUTLOOK.COM
+ (2603:10b6:510:33a::29) To GV2PR04MB11799.eurprd04.prod.outlook.com
  (2603:10a6:150:2cf::9)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -98,71 +98,77 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|AM7PR04MB7190:EE_
-X-MS-Office365-Filtering-Correlation-Id: 6b4bcf05-4a5d-4798-e446-08df2bc00ad9
+X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|AM9PR04MB8796:EE_
+X-MS-Office365-Filtering-Correlation-Id: c24913f2-b7a4-48a9-f101-08df2bc0a78f
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|23010399003|19092799006|376014|7416014|366016|22082099003|18002099003|10067099003|261009223027099003|11063799006|56012099006;
+	BCL:0;ARA:13230040|7416014|376014|23010399003|1800799024|19092799006|366016|56012099006|11063799006|4143699003|10067099003|261009223027099003|22082099003|6133799003|18002099003;
 X-Microsoft-Antispam-Message-Info:
-	0BHFqfblMdqrkODqWu7m0DxP7uyzQXz4EENWq3VR9vwP2/PhP0DQZDB5FEEmZDTVg/k6TEbyCTfE/+d6a78LM4qRP5DgFwkk7MVCmyeamRCcKNLdpZFntjYBNRk72rYElPwCXJ7G+wmB5l7WFEMiyf3rb3Hkp0LoluM9ycLk/5+eeNOAB41fGsBRCP5Dq6zdK0mplUwUCj43lQ6HlCjdVseNYALPFjIcf/7wIOlzP+MK0n99jEPOZX+RR+zsr8cOlkVq4n4UEHnKqG57mPMLKEI6W+G1FjLEtm38yyLWXpr0ahXLVXAeQZvpDp2TY6AENNNCAFe94VU/ghCs4tk4064mUTQNiyqjxi4xkF/gs8GKIKELlwT9K8b17bFdgebv218NR8N1/xgVLBnDIxMzk5XRzjmQNUJLzODscDwJ6IPLfnhZ/fV/VR0I62PbnRknH+3rzhnObWF9ZmMUyen/xG54PJWYktiQ25s/qS6YwGI0ZuU+vbjsYb3F/blWVDK5kltHjjyu3QpC/g4HdgZLZbrroX60QnskNW0dTuwrCJ2Pvobp9LFAstXTakPaJYHYZ6s9Ecr3JU+gjlzC7bZoNfP5jJpBcPIQxjI0MEzWVJH1Ip8htWCg5E8yZYyWcXPgSeCKUjpUI5EbpKpYOJoTY2odUQq5e9IbFGxqyIuSkwY=
+	acwNeZL9MJWg1Vc9XzjdBo69Lp9g08sAt+g0KQacxzvLfHyfVELGxBPqudxBwPPkjtSsJawRD4C+mp95BWT0Yly+1p2gmYett3wEIeEd+rAGHAkeg41UHBBIicC5YMmgqLy2zDkOAftaXSR/vx7UJHzW/lc+C/RNMPVnqSiNt0QWWBglEs4q5VpWlJXhMidNtFZqvcpKHelf6LW/eS2qK6Hn6o7gYWDDNqcr4DMnC5FOD8lUnm8jPuZYeNJ/1XfDL6Z52IcZd/AZDPfjWGqPYOB2k0WGTMRZ9axnQjHUcXX3T7L0mpmIPvagDG/5aF5VJ5ZdSfeBHwf5dCDJFOLt+IRIWa7QJkIFPnats8U7ttAIh9tUijJDm/IvVeFJhYyNImAiAGHzDWxw8PkO7U9U71iYIZ8JaXZifq4PSKcMpmqtw9p+t34BA70O+sMrlxaOOD24md4Bpm8u+AfrJohcxjmlC29HZt2svnECB3HEhXQvo7QUUltyGvDG8IL/j05rTULWkCviEDbSI5PGap5LOyEC99s7LHPvOmYXBnChKknG6uR51WmTCK9j2Z+tJE9pHf9XOI9ZWqvlOrYkQ94ikIGIzoJLOCkr+3Yvo1Il1ucblliKekh9Ipq2E6MJw9KYNXyqz2uCC5Sv+ulbMnQ57BHI/iYUJPtLyGc1h/jhGvk=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(23010399003)(19092799006)(376014)(7416014)(366016)(22082099003)(18002099003)(10067099003)(261009223027099003)(11063799006)(56012099006);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(23010399003)(1800799024)(19092799006)(366016)(56012099006)(11063799006)(4143699003)(10067099003)(261009223027099003)(22082099003)(6133799003)(18002099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?AjgF99lN488KpWYj+Dzgfi2FQcMQhDNd8tMbYrFln+8MYFQ2Aa0YMVm2YfO4?=
- =?us-ascii?Q?s1Sp7xxDUDY1E+9d75fgcZ0MmHFfvLYqJwmK5OYTsgS0zL/ZvtcDD+Rnq9vr?=
- =?us-ascii?Q?L0kom2UqNzEDymnGBMJlgSoxRuobXtL5xzvcBfokKzFHZLpakeYt0iK2Y2eb?=
- =?us-ascii?Q?pXW0ofK629Y4QW240SXsDr8ggV63KpIzPzrMR8mCkFr7L6RFfgKj/3+5JQW8?=
- =?us-ascii?Q?3ZLJz+VJxRX3Sgg63/eeNNqimrr5/20pg2YiGFux/lKev6Nf1suVgDCwk1VO?=
- =?us-ascii?Q?D7U2BmH4sexJftoEfgOB4tUEJ0a6jgqjI/RXLoAaNcVcUeZ8xuz5mmRg/oW1?=
- =?us-ascii?Q?a1wWIq+EY1c1kaTU6SBqB3mzWA5N7EiiiezezmmU2vdT1RSXao3/zmTxKY5C?=
- =?us-ascii?Q?laMG6/O58Iua0tuL453zcnAcfEW0IKNNWwi+8H6ZIYxQ5qZak4t0NG8xMnEw?=
- =?us-ascii?Q?ZGDaA4RHNPQFtfWjwSmmpnSeiCBZmU1iA64zNPNIgX1ha7P/PCCdRDkRYmw1?=
- =?us-ascii?Q?8nYWAScOVaq+mu6S3lveGYd3BT6G8okKEHhJZdKVI+5W7c31m5ByZolCeO9/?=
- =?us-ascii?Q?ccbL5kUp/FH4nCB+7xTETDuXQfcDgp403Jiwq6WWnUw/4qUHrj3SIuHX+8rF?=
- =?us-ascii?Q?C74mnQkiDNTCuOusnAP+I4hlHxDGyvYXIufq9dTPrLSsgMypiJbmRfsHD5XO?=
- =?us-ascii?Q?QWGL089GPO32+0sf+hvgcWzg1meU0Nfx0s8dABGwKOAj3p0tex/nhAvpN1/h?=
- =?us-ascii?Q?RG8maCZu3CaHPYPI3HZq/3MSzINAXDiKuJoZzfJKFdprO1TaoRFcc3qPcETv?=
- =?us-ascii?Q?McLkTtY5+dbjkG427yr12oqZhf4bVufcsx+MVNBb1CQ1EQeKKJqAo0nao/1i?=
- =?us-ascii?Q?u1O+rjcQOKvPeJiRmCzMkL8mMjq9d3ut612phH+Xat8uzuk2JemjlWoO16SR?=
- =?us-ascii?Q?3QCbQE7YlKpzcd+rI4Lczk9sE6JEaozYcX2rBzu+Y/DMvMZDZ2qqg+P+BFqe?=
- =?us-ascii?Q?wsvWo1FHnuswo4/xwjw00mezWmip6xlTQ5Tlya4Q1Sfza6/LV0Ipx1s00cs2?=
- =?us-ascii?Q?JClNdPmTSRwtd0CC6Qg1TkyUCPKVnGgpxUg3hgvdoJr3WB6vWh+1UICl6xG9?=
- =?us-ascii?Q?dQoIkOEq/IofY1VM1dAChX7lg8NM5wBtIONPsTq8QH9ZDlnoNLCdiYRSWMUP?=
- =?us-ascii?Q?zYwlRY/jT7YOTy14ykIwgKppDWizp95C/gEp+1b7MLcjM1LoLKm9bxXhc9qQ?=
- =?us-ascii?Q?BASzp+SO3nJctE+1ss1OrxEzFb0jJNxq4pQWCmZ4nhNtdptoUZSQK6SP2zPa?=
- =?us-ascii?Q?lgfuG56bpGNSyDBVR4nqPAg7zVvD0HGBfNZkLmChx0YwvjcqsMfZHyrG2dKr?=
- =?us-ascii?Q?wWrcpX6NvkqpukreOgASTOUPI6ZtsMwGyruHq6t/PtqlZVhRGMHMtGbj0n/K?=
- =?us-ascii?Q?PsPV5Pk0C3l/ytMQUyeksJ3M/2RXuQUUw2uh/0c73K0kFLZRC7KGJgtc1b/h?=
- =?us-ascii?Q?qc3zJmWGrcoe8eO1H/5O3sUDpyxvQ94eZ8Bh35EmQCicwhVM+YGmp/3nRxwl?=
- =?us-ascii?Q?xTFe/2CkX1K4ur7j3/2TtuxRLYuHX6qGzevsArMJ6/GfIarU6C855tgVfomu?=
- =?us-ascii?Q?d2UbNAwJ8jII/FktqqMdetcahWwzbfMHCtqqeouYjbo2cp81yVYd9mtbyaeA?=
- =?us-ascii?Q?dtZXb70yP7rtMbgGjnxwAwmyJjW6m9MB1Hdd0xdavWa9EM+nqnVqVSd4aw1a?=
- =?us-ascii?Q?NNlZ+DatXYqd2ZpqpwmmnkUv8+XyBsON/q2z9Wya/9dwHEPrc1Hc?=
+	=?us-ascii?Q?fMiSyx5k7aZQfZRwYkZ1M5cwLXRzcUm5n5nIwN36X2zTWNNfMQqA5Ixi6GxQ?=
+ =?us-ascii?Q?7fB20BkRs5JGMb90oMqY+7jcUukIU2MKpq09cXkSi4i0MB5fPCv3nc/px6rX?=
+ =?us-ascii?Q?uOOi4rxC8FRf6Y5quJSR2NiBCuSDs526Ti6vV7Qi5t7aSqnbrkeX9HaEK5Kp?=
+ =?us-ascii?Q?UVvtsT3VkRh4ZRepuLVPUQfH3TtAqKWQz2OUjp5Gnt7E0/lu2SdsygiPkAxp?=
+ =?us-ascii?Q?4Ujl57Exor5SqRYgm3ShFi/A0tvHMVB4M+im8vga8P94/wdFBihHxUCdVVxP?=
+ =?us-ascii?Q?C/R+tB6J0GuJgcCGo+wzEwoaJ1Mw1pb3ClH7TNrmLULT6b38kJaD4y74B8PC?=
+ =?us-ascii?Q?CYog9tFxzGW+Xp3+nLcDJW1e9qrZ6wkHXAh4NylVbVZJoI5eKA+q25Jkz73y?=
+ =?us-ascii?Q?oSXjYFhOduA1/Yw0AOhE5YANUEE/v0644deXWffJke6RalBoP8ePgu9DUEbb?=
+ =?us-ascii?Q?9mmyAMvzIYO1N1en+Ovvl32YFhdp2HT0ens5jqyoRxAXyXX///Q65NuP2Zhb?=
+ =?us-ascii?Q?v+34/JKxQIjUByP8qRd4VLYxctCzOlZtAEX8GSOFoRHwOATEN9bypUT4K2bn?=
+ =?us-ascii?Q?lLH2wk9aeVQx9BTZLgMAVJVoS2ySAf4b3WfwoJgFPPQuurA418bS9av8IFWk?=
+ =?us-ascii?Q?gtWeVSgDf77gHPp54Wo28y4XpXJp6/m2v6x2W5bFfexrr2wolX+oXA1yXRwo?=
+ =?us-ascii?Q?SFIc5RKbYVHm2cy7tJb+NzUY6ogJhAuGIRYG6wDRNtuGNt1oxR2m9S54FBab?=
+ =?us-ascii?Q?iCTq8a54XLk7UHUIn8WYxICedoSv1/7ghItGWH0Mt0O8CjeF+fMrpgzFsh7e?=
+ =?us-ascii?Q?3YXaYvWdUpw+t7P+IYsvydrrU9fU0cUO0/KnFYDuiK/Eezzw44eSFcoZFydK?=
+ =?us-ascii?Q?catjiTHX2rrlilddk3rE29UnzSefw0Fid/rXV3KhhN1b5DQ1aFjKyIXgPfXL?=
+ =?us-ascii?Q?UvRJV9QMKBi0qTjJ4y4N8IeM4lWWnEgBp1R2clxyDODtwIGz3caL7Hg5bnLJ?=
+ =?us-ascii?Q?Ybj07uVHOduEmExPpodCgQOKiB+mjFsOnZ5TOgJzVLsPzQpG6xKCCdDhagvn?=
+ =?us-ascii?Q?29gmLAEiiuwWtdUYbay84ckPJeMXhuX+/tpVubEjgfIb3ghtmC8KRsSuR7Ic?=
+ =?us-ascii?Q?YU43JvcJjYl6wKkcM8smlKXP1aSIcQ4sB99j96dCRI1+nIxWQzSYagQKlTyP?=
+ =?us-ascii?Q?kVRy3RC126zL3YwtJ7OTWUXw1aMGEl6jugsEaAFRxkAB+c6hNMYIiX38hwEy?=
+ =?us-ascii?Q?4NPe7lJziqZ0OQP7b1odOrTRMD3OjqyfVCoShllbwnzmQ5xfe2F99KG8usvA?=
+ =?us-ascii?Q?tqEj+gTNWwwrrE6X5H20hR+QfYyMZZBkkS4F2tzwmnwqEagzhg9GgfzERyGG?=
+ =?us-ascii?Q?w9k3gTAfaNGzDDZV2J5HYDJJqnhvn6cvlSWF0arNeeAXelUaoFqtWlZItDWQ?=
+ =?us-ascii?Q?JWfpF05Ci5bkaESfkQ3gIxkWPpIE2zFBjmlGE9M5sxz+OslPIckKioOIFFUH?=
+ =?us-ascii?Q?bBM2oQRoS82s69CdhBGof8aFvJLYCT99j7MamotYpj18a+BZZDdDX0ETO2Y5?=
+ =?us-ascii?Q?O/S7GvihGxp2RKvkpnIEoiQS9f0LTqI0GLxeksZFKw4EdcKrKmPILwhNnfx+?=
+ =?us-ascii?Q?FbiGL0laZbK9BIZnXqDMX1DcFvZxiVnj/UouZPNSaO+v4nzLBqMVX3S7roG+?=
+ =?us-ascii?Q?TvV7iyCCPof2wfWhrolulj9O/O2Md6en27qTOf1uzu9n3SnmmgSVujpb1j6z?=
+ =?us-ascii?Q?R3WVVO8EoCZ376B2ATLZmYho7d4pNfublK+E/WzIcoWzYR8vLRwU?=
 X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6b4bcf05-4a5d-4798-e446-08df2bc00ad9
+X-MS-Exchange-CrossTenant-Network-Message-Id: c24913f2-b7a4-48a9-f101-08df2bc0a78f
 X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Oct 2026 19:59:52.8859
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Oct 2026 20:04:15.7614
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: dzw1JHNonSmOp+yh0uQHa28ctVuUJJZROsTJT4/L6dyr8buzYFdTl6t1eiPH2nCuX4H6z+dPlaoAwKuWXKSQ0xTZ8hnmodtGl5xhIRwPI+RpoNUXf7G3iRsLXVeoDQ/j
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM7PR04MB7190
+X-MS-Exchange-CrossTenant-UserPrincipalName: M4E4rb/9zlWPr/VBQ1LpRXsWzAbO4UTeJk3XKl/bVeDSEPkL9qY8e2TjQEZqvmEKb+aAiA04lNHzXKCzJ6Zxp8Nyhxq8qkPJYn8AGHqs0KaZDuNZMbk8Ulb7wRTb+TnB
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR04MB8796
 
-On Fri, Oct 16, 2026 at 09:32:00PM +0200, Marek Vasut wrote:
-> Document clock from which the MDIO MDC clock are derived from.
-> While those clock are always present in every SoC, they are not
-> described in legacy DTs, make them optional. The clock-frequency
-> DT property is not described here, it is already part of mdio.yaml .
+On Fri, Oct 16, 2026 at 09:32:01PM +0200, Marek Vasut wrote:
+> The current eMDIO MDC rate is hard-coded in the drivers which use the
+> eMDIO MDC, this is not flexible for various deployments of SoCs which
+> use the eMDIO interface, for example i.MX95 B0 MDC clock is currently
+> set to 644 kHz.
 >
+> Introduce enetc_mdio_priv .mdc_div field which contains the divider
+> used for MDC clock and pass it around, including into functions which
+> configure the MDC clock. This way, drivers which use the eMDIO can set
+> the divider as needed. Introduce enetc_mdio_update_mdc_div() function
+> which calculates the divider from upstream clock and clock-frequency
+> DT property, both of which are optional to retain compatibility with
+> older DTs. This is modeled according to xgmac_mdio_set_mdc_freq().
+>
+> Suggested-by: Vladimir Oltean <vladimir.oltean@nxp.com>
 > Signed-off-by: Marek Vasut <marex@nabladev.com>
 > ---
-
-Reviewed-by: Frank Li <Frank.Li@nxp.com>
-
 > Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
 > Cc: "David S. Miller" <davem@davemloft.net>
 > Cc: Andrew Lunn <andrew+netdev@lunn.ch>
@@ -185,27 +191,116 @@ Reviewed-by: Frank Li <Frank.Li@nxp.com>
 > Cc: linuxppc-dev@lists.ozlabs.org
 > Cc: netdev@vger.kernel.org
 > ---
->  Documentation/devicetree/bindings/net/fsl,enetc-mdio.yaml | 5 +++++
->  1 file changed, 5 insertions(+)
+> NOTE: I could only test i.MX95 , I could not test LS or Felix
+> ---
+>  drivers/net/dsa/ocelot/felix_vsc9959.c        |  5 +++
+>  .../net/ethernet/freescale/enetc/enetc_mdio.c | 39 ++++++++++++++++---
+>  .../ethernet/freescale/enetc/enetc_pci_mdio.c |  5 +++
+>  .../freescale/enetc/enetc_pf_common.c         | 10 +++++
+>  include/linux/fsl/enetc_mdio.h                |  6 +++
+>  5 files changed, 59 insertions(+), 6 deletions(-)
 >
-> diff --git a/Documentation/devicetree/bindings/net/fsl,enetc-mdio.yaml b/Documentation/devicetree/bindings/net/fsl,enetc-mdio.yaml
-> index 71c43ece82954..708d410187baa 100644
-> --- a/Documentation/devicetree/bindings/net/fsl,enetc-mdio.yaml
-> +++ b/Documentation/devicetree/bindings/net/fsl,enetc-mdio.yaml
-> @@ -31,6 +31,11 @@ properties:
->    reg:
->      maxItems: 1
+> diff --git a/drivers/net/dsa/ocelot/felix_vsc9959.c b/drivers/net/dsa/ocelot/felix_vsc9959.c
+> index 8387dd208adb9..dbeec1b229325 100644
+> --- a/drivers/net/dsa/ocelot/felix_vsc9959.c
+> +++ b/drivers/net/dsa/ocelot/felix_vsc9959.c
+> @@ -1008,8 +1008,13 @@ static int vsc9959_mdio_bus_alloc(struct ocelot *ocelot)
+>  	 * starting with the proper offset.
+>  	 */
+>  	mdio_priv->mdio_base = 0;
+> +	mdio_priv->mdc_div = ENETC_MDIO_DEFAULT_DIVIDER;
+>  	snprintf(bus->id, MII_BUS_ID_SIZE, "%s-imdio", dev_name(dev));
 >
-> +  clocks:
-> +    items:
-> +      - description: A reference to the input clock of the controller
-> +          from which the MDC frequency is derived.
+> +	rc = enetc_mdio_update_mdc_div(bus);
+> +	if (rc)
+> +		return rc;
 > +
->  required:
->    - compatible
->    - reg
-> --
-> 2.53.0
+>  	/* Needed in order to initialize the bus mutex lock */
+>  	rc = mdiobus_register(bus);
+>  	if (rc < 0) {
+> diff --git a/drivers/net/ethernet/freescale/enetc/enetc_mdio.c b/drivers/net/ethernet/freescale/enetc/enetc_mdio.c
+> index 998aaa394e9c4..93d61c2f1464f 100644
+> --- a/drivers/net/ethernet/freescale/enetc/enetc_mdio.c
+> +++ b/drivers/net/ethernet/freescale/enetc/enetc_mdio.c
+> @@ -1,6 +1,7 @@
+>  // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+>  /* Copyright 2019 NXP */
 >
+> +#include <linux/clk.h>
+>  #include <linux/fsl/enetc_mdio.h>
+>  #include <linux/mdio.h>
+>  #include <linux/of_mdio.h>
+> @@ -22,9 +23,9 @@
+>   /* external MDIO only - driven on neg MDC edge */
+>  #define MDIO_CFG_NEG		BIT(23)
 >
+> -#define ENETC_EMDIO_CFG \
+> +#define ENETC_EMDIO_CFG(mdc_div) \
+>  	(MDIO_CFG_HOLD(2) | \
+> -	 MDIO_CFG_CLKDIV(258) | \
+> +	 MDIO_CFG_CLKDIV(mdc_div) | \
+>  	 MDIO_CFG_NEG)
+>
+>  #define MDIO_CTL_DEV_ADDR(x)	((x) & 0x1f)
+> @@ -63,7 +64,7 @@ int enetc_mdio_write_c22(struct mii_bus *bus, int phy_id, int regnum,
+>  	u16 dev_addr;
+>  	int ret;
+>
+> -	mdio_cfg = ENETC_EMDIO_CFG;
+> +	mdio_cfg = ENETC_EMDIO_CFG(mdio_priv->mdc_div);
+>  	dev_addr = regnum & 0x1f;
+>  	mdio_cfg &= ~MDIO_CFG_ENC45;
+>
+> @@ -95,7 +96,7 @@ int enetc_mdio_write_c45(struct mii_bus *bus, int phy_id, int dev_addr,
+>  	u32 mdio_ctl, mdio_cfg;
+>  	int ret;
+>
+> -	mdio_cfg = ENETC_EMDIO_CFG;
+> +	mdio_cfg = ENETC_EMDIO_CFG(mdio_priv->mdc_div);
+>  	mdio_cfg |= MDIO_CFG_ENC45;
+>
+>  	enetc_mdio_wr(mdio_priv, ENETC_MDIO_CFG, mdio_cfg);
+> @@ -133,7 +134,7 @@ int enetc_mdio_read_c22(struct mii_bus *bus, int phy_id, int regnum)
+>  	u16 dev_addr, value;
+>  	int ret;
+>
+> -	mdio_cfg = ENETC_EMDIO_CFG;
+> +	mdio_cfg = ENETC_EMDIO_CFG(mdio_priv->mdc_div);
+>  	dev_addr = regnum & 0x1f;
+>  	mdio_cfg &= ~MDIO_CFG_ENC45;
+>
+> @@ -176,7 +177,7 @@ int enetc_mdio_read_c45(struct mii_bus *bus, int phy_id, int dev_addr,
+>  	u16 value;
+>  	int ret;
+>
+> -	mdio_cfg = ENETC_EMDIO_CFG;
+> +	mdio_cfg = ENETC_EMDIO_CFG(mdio_priv->mdc_div);
+>  	mdio_cfg |= MDIO_CFG_ENC45;
+>
+>  	enetc_mdio_wr(mdio_priv, ENETC_MDIO_CFG, mdio_cfg);
+> @@ -231,6 +232,32 @@ struct enetc_hw *enetc_hw_alloc(struct device *dev, void __iomem *port_regs)
+>  }
+>  EXPORT_SYMBOL_GPL(enetc_hw_alloc);
+>
+> +int enetc_mdio_update_mdc_div(struct mii_bus *bus)
+> +{
+> +	struct enetc_mdio_priv *mdio_priv = bus->priv;
+> +	struct device *dev = bus->parent;
+> +	struct clk *enet_clk;
+> +	u32 div, mdc_freq;
+> +
+> +	if (device_property_read_u32(dev, "clock-frequency", &mdc_freq))
+> +		return 0;
+> +
+> +	enet_clk = devm_clk_get(dev, NULL);
+> +	if (IS_ERR(enet_clk))
+> +		return dev_err_probe(dev, PTR_ERR(enet_clk),
+> +				     "Input clock unknown, not changing MDC frequency\n");
+
+binding said clock is optional. If return failure here, it will block
+existing dts, which have not clock property.
+
+should be devm_clk_get_optional()?
+
+Frank
 
