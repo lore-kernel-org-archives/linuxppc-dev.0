@@ -1,78 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-29586-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29587-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DBAFCC6B38
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2026 04:11:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1E66CC6B38
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2026 04:11:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j5Wj85LFsz2ygW;
-	Fri, 16 Oct 2026 15:11:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792123900;
-	cv=none; b=W2HovbxjbD0RrkZyOHoyBoDML97WC4OiK28Shnusmq+Xgd/BUxFyZbZ8+yHOFdYNx2d4scGZRmVttJG/EJPCe2QfugwygZ1hJp24O4654KiGeYhkmdpZRIM0sye3ie+Y5iW3nF8Yo8vEiYwyzouE/9VUVdqGBaqVC2yUQep3PkJOeWj4631wgPs7rUfnKr5CPghFXqJSoWjsRAzffZhlFkmtXfbPnHUB8lK0HN0KZA+hadhV8Py0QSjuvVhZVRkttqMlxgm+LhJEpTN1MsIboAaeG1K7puHFc6n7oTQHBws44Gw07wS5u6QqDLJYxAl+1lKKMej7rARASZHHQsnIsg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j5WjP0LLCz2yf9;
+	Fri, 16 Oct 2026 15:11:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::629"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792123913;
+	cv=none; b=b+KUzhf5dGvqZF+0IhDe50Yhcgdl9Am3fp/dOn9XKogwoC3xFvu/MBtFC8J6nKgLtSeqLiQVC7+ZPQ4tJrzyF78lmuP7jc8COMSknLRysE1pRJ9WyBFkj/NrjOgpmIeG6KRzpJYVzVUZstMfl6nnmlNkDaqojvtc0Vu2EaqGS8zC/8VZmjTjpTPOYMvG3D8HHMguRDC3uzYsiR14mXWKWH83BtGoWmWrOIes6IDAiqACf2zLr61r330CDrR0YrG+TrmUTgcS1zPUjSljNDUgvZRHSn++fD3i4cgDXgjp+mSiXclC3oRiJX24txw3nPlZSgECCTUD+B4zYYljCZntxg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792123900; c=relaxed/relaxed;
-	bh=6AfJhOKZbdns69Qk3jxc+qI7b+rXXsiPaDqc4PQO3Hk=;
+	t=1792123913; c=relaxed/relaxed;
+	bh=DnS3efznOy4aR/sEoOKiH1O7kNcA8JAEG4dTp1VvwAA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=BKah0gnnRi1FkDaAXwyjkJroabnjbF6+MQ+pO4Svroc1V5j39YArZFXunjklfKhDjAOPZof0eEvoWiBmJu+eOLPxowvKdKRw/suJZy/8QpGeUgyClxxC0F6CySCEABJ7CNdV5jjl4bMJni6UZKBaSO/sXYbgCn2Zp7Wvm6+nrUB9c7xSAKlc69++7HfKvZp4NGBVDsZA1IiDUqvlm+dug9geFUXjAewQv1kjyy0kbnmXAbdxFJkyojq0/miDzNgdz1CB1iZkjrypWVD5ACDOeVdYkrcihHbVC2jGJKbditb4u3gFWHKloXKhYvDe1mI4m5UHS9bXS9tneFKF45y5Tg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ZPEC8FMH; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=aqXym1I6LoaruaCs9VlWO7WKWU4IgTB0DjAgj5lKWVxxwN9HQ1q3YoagsWvltHtOy6ZYtarjOhG8CZ2TSBmJvZSfKr9ey34OyF7+PNUJ9hbZJg64G9SB6/upf0E5gYHbaYFtRgTcnXGXWjsR1uSegAzLFcmHssZejMVsZww2IFrXuB7s18qoxFIH59PjnYrfwrnxGTdKKSF/GfYQqGf4nNAo0uNH8awLkW1D588gQvCfdNZFT97JxUICzDnT2ykeLELziK82ZPKrCw9732ng8VurmcsHEefAY5xQ2/y811Csg/EOxuzOFJcc7n01ULogZoulb81ramxOc1/qSXU7Yg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=c2tqpacA; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ZPEC8FMH;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=c2tqpacA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j5Wj80lHxz2ygK
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2026 15:11:39 +1100 (AEDT)
-Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-2e7e742a2c7so5032155ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 21:11:39 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j5WjN23wdz2xNC
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2026 15:11:52 +1100 (AEDT)
+Received: by mail-pl1-x629.google.com with SMTP id d9443c01a7336-2e977109392so5456155ad.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 21:11:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792123898; x=1792728698; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1792123910; x=1792728710; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=6AfJhOKZbdns69Qk3jxc+qI7b+rXXsiPaDqc4PQO3Hk=;
-        b=ZPEC8FMHNQd6DPaApECizDV0+jwzlIDMpp4ZJ7A3gLpe1JZ8S+257HCgdC2ucAdkH/
-         x6Un8LQZVltwiU4IBQvaX06KcAqjVueFL7xa5Xn7g9q/jgsUwAFDJFPujQbSWDn1uSwy
-         WD1onKTHahdaD12QKBSvJyzkhJunfUhTub8Yzi02Ocl6yPhYi10XccQ+gkOtDGAfkwNs
-         5casqLtSRgzhaYLOAfdENI+Hl029unTwywkDiFQr7A0pmy/YAlDr6NYyNlocyMInrwWl
-         KuFpvklgBGwh2Qx5ZxZBCFrJz9Jny7BPrAQqyACre3VpQ9fX0WhgvkccDT3aVM56caLi
-         joyw==
+        bh=DnS3efznOy4aR/sEoOKiH1O7kNcA8JAEG4dTp1VvwAA=;
+        b=c2tqpacAAS1hIy0EeJOVx0xpVD242gpwRwNrtvExic4noCakblewpHgiFjenYknO3G
+         7qSXVyyjPyIR3+6MJljcB5AofLSoEG8/WDksOli8gq2CjroWKPExcxiDojs7d0UePLyi
+         TooGEumRrmJOR6sX8vC62TwrP10K7rz5XmLvZfY9UegADxJRX9/aJ5DoHhjt+vydui+V
+         QQHDOdwS9SEp7Uakq2Y8LTwBPWhgBZ3ICCE2zVLtjXn4biL0dYBLG12f4l8fuvh2iSWA
+         01EzIr9Z/jOmCYsk9zgOiB6pzS7ZlzpC6irvMJw3pGun1UnQSjntJNyCBIAr6o7Np3fr
+         DfwA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792123898; x=1792728698;
+        d=1e100.net; s=20260707; t=1792123910; x=1792728710;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=6AfJhOKZbdns69Qk3jxc+qI7b+rXXsiPaDqc4PQO3Hk=;
-        b=ODMvW7yolWf9Q6x7rhACM1VRj5mxX4dpQdXbkDEasYICXHpuOu0HMctpPStThyl8TN
-         hz5bM9w4LvWSTe8c+4ffJsjH92nN046O00YBH5nC7zpaOsoRwbX2zniNpG27SJ9Kt7u6
-         ZLYiZAgf0FUDCr7rBhqMA58tRHLua+Zuc61PFHLSlin0l9UeT7nj+KTt62FHOy7CdLqG
-         QcOUWNxXVtjFH4mJSO7r3fO77O9NrBFqYLc3b+0oEmAW55Ape6I4StudhKumo1IqKSEb
-         4li8G/kcHdGELv/e18B6lI1SvpAlGUCTOjjgBh+exTkSDHDcK+lUX/hFx0ptMHAE03jY
-         SuSg==
-X-Forwarded-Encrypted: i=1; AKwUvBx7YyUY3zf2xHmG61cMhzb9WExJjM8yYMSus4fCCiwxVNbhzRh+LGHJnvQ+1TnRcKf+VwnyxxP6piSoVlA=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYIYwY7sP7nnczOdFmJZ9kKI1Wamq52kP3D/TVLDtHEpRQrGkDsJ
-	sT+iH/U4VZJICvskvaVDJvqaN0ZTURzKwztWVp49kggNBiUgIBXScvUX
-X-Gm-Gg: AYBFou27nDZp+8kCztyXuMTYxoXUK4MPb1og+ACS8IkxR5ijkamNLmSpAvGabLmg7C8
-	Hx+secRrAc9Ofw39yiuLnj6oxecI162Ge9CLOn1mSbSsYCBIG6Q2nfEuzcqQMpVMJVLPGXJfCek
-	ZgQJLLy39820WsKgqwVXliOBH5DAywuK9fBv96IO76jm4VwA3mwZx/e53kT/Kf1RF5xE5EBBT7l
-	9KDEtNcWlfUnBCDU2BZsUDqQSYIWBWZFHPkeoF4zAKXk7iXB2AwvagaQLVobJJ5QPpjdD6pd041
-	DiF1ldoU794CL6LPuJeJMG/ZOxnFmGF2Kzt4SvLo6jLF3gk0FENQ/r9bZs59mVKby36Nc/QiKCs
-	3/QbXTNvdJMeCiVCzbwYz6FL7xD2ph4f6OkqvJn++PE8fkm3p1Nr5M8uGp4xyf+coIXWyjNVxz/
-	bGCOWCjdOLi374Eu5STi6dLpV/tQJshanUN9Winp7/9RuwD8wkvNYon3PvL0gpJQZ8oBNQngDEV
-	iwI94yloi4jbo4hO5XmmjhdAZ5OT3JHOrQt4R20cYT6bTDFme85V5J/HXs+ZHlwm2Ur9Y6SEcEB
-	aPxis8kIJ4m4wA==
-X-Received: by 2002:a17:902:e54e:b0:2e8:3b2d:c0e1 with SMTP id d9443c01a7336-2e977597291mr13010325ad.41.1792123897928;
-        Thu, 15 Oct 2026 21:11:37 -0700 (PDT)
+        bh=DnS3efznOy4aR/sEoOKiH1O7kNcA8JAEG4dTp1VvwAA=;
+        b=EfS/jBQE5OfQFIPErCezUexYTWQJEkURuWvRi02CNkXNMb4+4xuUciZelWnuag+IMr
+         n5UsU/KMT65P7ts7QEm1scpmapPNprhyNe/PQxAWjS/7cVqlkzryc5buGk6kFmndM4m2
+         NiG4A7wnIy4/tAE0zWlRDXQi4Tb2fsGxPqiQFqh6Vt6uqKn/r7rcA+KOXm7h/3kCj43L
+         8VTb0x4FYch5Pra8okANUyxpaNEjON1O6gcAt/3mljNO+NIgZ0c+pMANWHNFRHzc9Moa
+         CaarDuEbFFU758s4aMnl80SghAXa0HcSxVrXI9TECw1fmD9t5fZEoXqBZp0ie3wcIoVA
+         iaRw==
+X-Forwarded-Encrypted: i=1; AKwUvBw42W9ijs+fUGjE5CYcPaX/VvYWTABAGbS3Y8C8opzvOknynPn9+wZ+D+iszBjQG8HpKrSnNS6oFv8sRE4=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYJV5Ciuk5axtt9/ArmfNtoFlo/C/wrE6ZypHx8hySTR7ttAOKRn
+	gh9dmjGtMoYW5dlf25tU2Phj20G6hw30izq2gd6WJRoCXFvHbIMcMRfs
+X-Gm-Gg: AYBFou3wcT7s7FftP/TSAdSuK7HqgP1u1aZaNHYyADCbNhPPovZ7qJ1O1og6V6ku7jj
+	ThVi2RcaydjVw966yUViY/V6c1bzLlnd3D7A4dsmP/9pG5b2TPsie43yBYdbzKQlocVyN3g/IG6
+	B8Yj6hu2BUNJzVyqVulufmwnoz79FNZi68PZjsEOS7Ip8qxc4qAJTsvu/K/cNsHyh7vOLZ5eH3L
+	tEEXvwSeSPEjoOFfCskZglsqkPa9Epsu/SudBrhdd8JMP+7iEEB0cs04ePXuuCVWOFeUa4am1A8
+	JOvn3G/uyILkRa55odTXfdPakUqa5nkMt3ElvdvPfmUW+j8mtKsksyHBr7AFiBY1wpiC1qRnx6X
+	3hsXgUDlFdDAdZ09t7XhK1u92OCsxNIkhZq1pWcJCjqWobk9+H8e6BDGiowDJShuwcyTasSBfJp
+	Hx1C0Pl7DfDRvspX0mVabfKHZQ1Iv++RJvgK7Zlb2F8ddQHiYhfjd7S/WKmxGYY7CcxL6DHD1sh
+	YbKVxQT9Ja3lkuhg5u4X+mtfz0zkxGEg71DeQJQlHZEzrMLAYgi5Lo1oibfu2lxcY6bvKzjRzhZ
+	p+3lwZrZmg/Cbg==
+X-Received: by 2002:a17:903:38c4:b0:2dd:c100:4257 with SMTP id d9443c01a7336-2e842f11875mr181177615ad.59.1792123910214;
+        Thu, 15 Oct 2026 21:11:50 -0700 (PDT)
 Received: from phuc-desktop.. ([183.91.15.56])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2e97e8ab443sm3815785ad.65.2026.10.15.21.11.26
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2e97e8ab443sm3815785ad.65.2026.10.15.21.11.38
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 15 Oct 2026 21:11:37 -0700 (PDT)
+        Thu, 15 Oct 2026 21:11:49 -0700 (PDT)
 From: phucduc.bui@gmail.com
 To: Vijendar Mukunda <Vijendar.Mukunda@amd.com>,
 	Venkata Prasad Potturu <venkataprasad.potturu@amd.com>,
@@ -133,9 +133,9 @@ Cc: Kees Cook <kees@kernel.org>,
 	linux-renesas-soc@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	bui duc phuc <phucduc.bui@gmail.com>
-Subject: [PATCH 07/11] ASoC: renesas: msiof: Explain component open return value handling
-Date: Fri, 16 Oct 2026 11:09:42 +0700
-Message-ID: <20261016040946.521195-8-phucduc.bui@gmail.com>
+Subject: [PATCH 08/11] ASoC: renesas: msiof: Remove redundant period constraint
+Date: Fri, 16 Oct 2026 11:09:43 +0700
+Message-ID: <20261016040946.521195-9-phucduc.bui@gmail.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20261016040946.521195-1-phucduc.bui@gmail.com>
 References: <20261016040946.521195-1-phucduc.bui@gmail.com>
@@ -156,29 +156,42 @@ Content-Transfer-Encoding: 8bit
 
 From: bui duc phuc <phucduc.bui@gmail.com>
 
-Add a comment explaining why .open() must return 0 on success
-to ensure the component is correctly marked as opened and
-prevent future changes from reintroducing the issue.
+snd_pcm_hw_constraint_integer() is already called by
+snd_dmaengine_pcm_open(). Calling it again in msiof_open() is
+unnecessary, as the constraint is already applied and the second
+call returns 0.
+
+Remove the redundant constraint call.
 
 Acked-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 Signed-off-by: bui duc phuc <phucduc.bui@gmail.com>
 ---
- sound/soc/renesas/fsi.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ sound/soc/renesas/rcar/msiof.c | 10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
 
-diff --git a/sound/soc/renesas/fsi.c b/sound/soc/renesas/fsi.c
-index 88618e4b052d..74e2ea002fbb 100644
---- a/sound/soc/renesas/fsi.c
-+++ b/sound/soc/renesas/fsi.c
-@@ -1820,6 +1820,11 @@ static int fsi_pcm_open(struct snd_soc_component *component,
- 	if (ret < 0)
- 		return ret;
+diff --git a/sound/soc/renesas/rcar/msiof.c b/sound/soc/renesas/rcar/msiof.c
+index 9fead9a22cdc..11a6f22ec0ad 100644
+--- a/sound/soc/renesas/rcar/msiof.c
++++ b/sound/soc/renesas/rcar/msiof.c
+@@ -419,19 +419,13 @@ static int msiof_open(struct snd_soc_component *component,
+ 		return PTR_ERR(chan);
  
-+	/*
-+	 * ASoC only marks the component as opened when .open() returns 0.
-+	 * Since snd_pcm_hw_constraint_integer() may return 1, explicitly
-+	 * return 0 to ensure the component is correctly marked as opened.
-+	 */
+ 	ret = snd_dmaengine_pcm_open(substream, chan);
+-	if (ret < 0)
+-		goto open_err_dma;
+-
+-	snd_soc_set_runtime_hwparams(substream, &msiof_pcm_hardware);
+-
+-	ret = snd_pcm_hw_constraint_integer(substream->runtime, SNDRV_PCM_HW_PARAM_PERIODS);
+-
+-open_err_dma:
+ 	if (ret < 0) {
+ 		dma_release_channel(chan);
+ 		return ret;
+ 	}
+ 
++	snd_soc_set_runtime_hwparams(substream, &msiof_pcm_hardware);
++
  	return 0;
  }
  
