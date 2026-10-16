@@ -1,78 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-29578-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29579-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E2FFCC6B2D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2026 04:01:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4ACC9CC6B38
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2026 04:10:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j5WTD44VZz2xS6;
-	Fri, 16 Oct 2026 15:01:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792123280;
-	cv=none; b=bSJk4I3gvtRCYoost6xT+qKnWEq8HBFDFjgNdpFzfnX3WbxMNqGzRhAhqgtTY5mzuH+dEizwzP8Msei8Wbp5HuuV/dZ+goNmU8EcLEY+VaMhmjyX0zsINBy4t2DWOpO8/pfur6AihVfHIRtN/G0ofj9O4AxDxkQs2XohYIJ3CFFH56I+05guKk96FdSdNc/e1V5ZHc2P12ik/5zmXEZkYOjtEhXI1GwryNCUVWCZc39p2KNgg1EnOqJBw/Li6+0TwHIEvmGp5le9Aoxbb6ZxS6Nelsro6yXTsuquHbBV6huUJO0SYvJtafFV7NrfEzTKnj/CZlRJ24DImIDk2bmZSQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j5WgT4D6Vz2xS6;
+	Fri, 16 Oct 2026 15:10:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::629"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792123813;
+	cv=none; b=dFJzX6a4PODFPsICyZTZw2jiG6goS3PKT/Z69yc5046JH9ur8XO+8LfdcrYJgWbTvX3sE7TrDhE6C/krgvqj0zBa0o/Nh6Ow40WieG64TP3xFih5AzBYMRtaFnjI0k8VNlYON1VCZuDeuXrdgfC0RlzlsOFQRFU2IEPoEykPTJXsuPL+N6gdTzdY2y4/Kz6Onz6wKigKbVj/sel2NmJR+554maoFMcljc/Y5vx8o0oRc3MQDHbGBqKJZhDJb+WJMCG4sUvzUFSs5q30V4ZX9OeI26GdXdgdvUlNnuZSwgm/hxXHa5S0ORLrd+GfVEXENojLTb4ZckxW9INdmZ+pNxg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792123280; c=relaxed/relaxed;
-	bh=5Qhe5E4dgThyJhSYyDtuQ9hNBBoGOWOTPXhOMe7iZzE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=QZiCrQLFqYROHCY2nftbW2/Mvek/+FRt45uC/badFXJqGEbiRjH7WAReHReMvQl6L6Lgdxve+g4nykE7BopWh4jbC3B7OG5azZQm3He6SxkQWEbYXcf0wjOWOWHgpuMClG4GnwKkRzC5Pzfj5zum7EiEmzfO1dfhvyz+EeJGqMACIG5CrF0+IFs6WQ+qtk17JJF9if3rIpUgSQihyiyHFuJrTFfohPitlEuRa7On1+QsMhrnyWhTiYu9W5s/OVIFDlOKbsw5RBYfqmry5mLfxD4djgonEfGWWd2ED79b1cl73GQNuiDH3izDwlw7CNGbJrsu6pS2A3RsKFFFR9mubw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=gubZvrrJ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1792123813; c=relaxed/relaxed;
+	bh=SYnQxKBL88L7bG0SnRsZyN/ibAKxj/QjIVLFKTNculY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=V6Sw1uRUvYL5Wo0U92YvOGbWlSp9tiawCz+3Ko6WmcyjDpXhPNdX6Y3Mp+9fabyScrwTW4ec4rn2uI033Pf5lWqxTBTyedFJW62U0XFU5T7tacT5wzoUGx4jvjISNUvlW/XEfcrz+HHJ/25cVhGnVQX6WybX+ZPhyssdCR+KkBuYGRAx4keT0FcaX+PGJRAlDHQ24jIRCrAwqY2eHWnDW/DM+U1J0IZrG1UMP4fCDZnSfDh3HSAx4/quYV0tEdgjLWgsMjG5nmQfIO7G00PM9O9Uv71cOMxkBOJLT9pK6FJ7CX2TUTnsflDN0fglpHqb+P8SRZnx4+BmVBo2bKz+9w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=OuMTz33W; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=gubZvrrJ;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=OuMTz33W;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j5WTB6bsdz2xNC
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2026 15:01:17 +1100 (AEDT)
-Received: by mail-pl1-x62f.google.com with SMTP id d9443c01a7336-2e987b4a710so1115245ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 21:01:17 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j5WgS4mqPz2xNC
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2026 15:10:11 +1100 (AEDT)
+Received: by mail-pl1-x629.google.com with SMTP id d9443c01a7336-2e60f9af6e6so22915265ad.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2026 21:10:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792123274; x=1792728074; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=5Qhe5E4dgThyJhSYyDtuQ9hNBBoGOWOTPXhOMe7iZzE=;
-        b=gubZvrrJT/whiBs3uOABt/vRvlqX8YudUZmHDNn2v3wO05ZAmVUDwfTqgd0ud4wLms
-         Qe9P1Kerna2wc0fWk/c2plx/Okj9tMNeUUfLK61x1MHWdR9bPZJMBzDgA2FLbNwVmYYN
-         95Rcmwe+UvoDmm848cHz9D9qAYOHExsYVOonynkwBnvaTYkhnANWMkC+qTNl3dyKUqWt
-         Sahy/Ms19FAWdxF/3Ff6UfVUpSe8MbDWN81r0fAWflUhgGPn8FlBZgi212gkYcBugtdj
-         8siaTSdvqNbuckIVoEcgFd1UthOm4WH+J6PBQR0VZkRhxlDWLEgSENAvYHa0rBX3O+Ol
-         gOew==
+        d=gmail.com; s=20251104; t=1792123809; x=1792728609; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=SYnQxKBL88L7bG0SnRsZyN/ibAKxj/QjIVLFKTNculY=;
+        b=OuMTz33W4Lx17wJgHZ0uwAaNELbo7nUg4L0D+uxJhHCVX3iiukkFVbtzXX2tYr/khd
+         J8tP6SFn0uIOjvdIzK+KSvVDGBOdrQftq50hN0tkGgI6JYvXSoP+s170uwm4UgxG55HJ
+         pbH1hF/BjLkkjR12jgsuiS6dsmINlKKxGzq+SK/mBx4XMs0G0mO1kJEFj+NmTIbcGonG
+         36//2Mqmgd7uacv6FQHjT5PipCn/3btNV8EhbptHZEhbwMYK12hCQ2Un6C19V824xgvr
+         s9fssx1p+J/yJoQY0phh6tlZ47q1N39JoUUyrOY3pOVe9ShQuZHucC4mUfmNPOVzlzOd
+         X55Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792123274; x=1792728074;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=5Qhe5E4dgThyJhSYyDtuQ9hNBBoGOWOTPXhOMe7iZzE=;
-        b=CpVeQ27X7gIKwePbY2TjuICGmjdGj2KM3KKinUiWeGWfOOpzKjnqVtpsBBHeB6OqGu
-         +f/YHnl2ATeboHqazEVqF84jsdkwDjugk3k1nMTBQlTNkwZJHnsir4IIPp+lDntDaeUr
-         3O//G6y5UHI9foDsk/4/9AxiQMhbsdLE/dDCMOg/weTKrDt6dKgCftZGQFriIf2vMGS4
-         p5iuXZnf0oSUwNM3q8Qi4yj4xVo+TdiAI8ohmGEx/K/Qn8mGXBcukJh9TG4r6Gf+iWrK
-         SkMcGL1oYAQHBseHPq62jTcAfcPjY5RPY0dcpMTv3uDdceP33iX4MNW/zyRA9D2kROHY
-         /1Tg==
-X-Forwarded-Encrypted: i=1; AKwUvByWLCI1qqMO8HtsUnrKz1bMPWvplg331neimp32oj2Rnisx7FUQLcVyPHuHYhpZPoO6AUiX8q8dg+kj9NM=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYIU0z6DRPrGiYvjttg/5YvBC1VvF5KWkhTXITB0L1F4RjyRBOVc
-	T6YTNGnxlr6IK+RtAPhucligjd5VJAa7IJk7H8YIqI92mvxlUgRutN6/
-X-Gm-Gg: AYBFou0V+o+zqCSR9uxena1YygxRki67TMzkOFZ4ydYe6IY/Gx3EjkkfgpNexANl9Oc
-	nuZwp/wOH8NObwAGYYWW4CNwSkNVu+1wG9KmuNaH9tSiu0kOXZBy+AGZga5/msnGa/+RvgpmNBa
-	eFZBBl9JsVlsoq+bHn4qBfzEJP2CQXmY87SgH6GNHHDTV3hGoC4w2T1MQFDFvQgvUfpN0P+SuUj
-	I8pzUKX9rbcb/fxqHQW+aXh5RyluEzWojP2OroTBz31AtXjPcIwnfUWGn+pNDq2064WFlgyKMhA
-	/Y/2ND+AmiV7dyXNsqDYMnE05Paeywkk/EQEvRqDPPNS8v1tr39CkGqVdT3JR8N/ErIIpWOj4ZT
-	aByu/Nb9yBZkJQWOzR863cRN+P1KWs+NR1Kvg29bUMvcS191y621bNsNjT6VeCrIH6kMvbJmZeC
-	d6ZSfM72Oow7FGXL+HF7lwCIhmKMlCn4Ky3gV7prWl0IlrstXehPYlnAOUDIovxzK3CTg5vcGcV
-	5L7eYrrZVy0aQc8ZGZcsCMB+5GxojdQ2dENY8c4Qh4Jlykz5l7Q1EYNNOnMu7qqE5IpI1unpH9L
-	N9eSAREGAVFh3S4=
-X-Received: by 2002:a17:90b:39a4:b0:3ac:b764:8521 with SMTP id 98e67ed59e1d1-3acbb9255ccmr1718768a91.38.1792123274359;
-        Thu, 15 Oct 2026 21:01:14 -0700 (PDT)
+        d=1e100.net; s=20260707; t=1792123809; x=1792728609;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=SYnQxKBL88L7bG0SnRsZyN/ibAKxj/QjIVLFKTNculY=;
+        b=qL4nFCl97C9qwKn70zihcELVuQdDBYucf0d/DGRkz9m4YY9fTtiOJm4n2VZ61U9w/c
+         EPs/dDqX5dAnvyN0UK6c5D3C1wSGIjnZTqrryEdBY4uWl9AJgGpy4uGMZmxfD/sgF9yR
+         PanIIOjOvNZa9FdvlVYLoANX+dkcyRf0lFiuFZHOtFZOwihYzSaRr7a+KiyFf62powTL
+         HyrIgLYlBPe2jzFnp8n4Tg0XkLQ2VFPTySartmQxQ9msXM1OT5m9k8vAyoosB2W8AOID
+         qux48i2RqEn+Pj3SE/GUVhLn+H5UIQ4rW5xQ7P7yZxpzSpgce3jSq5rXC4BI6nBBSohT
+         Iflw==
+X-Forwarded-Encrypted: i=1; AKwUvBzXXnz5+giJ9i/WrXJ5WpR0IG68IwvU0QggtSvqYwChUg/9XinI3Yr9INbTXvMa5j1Jc4MtBzFkXgsm/lE=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYKNh99BqBmLA1mJ/JvlftMTGA+GY3AlgnNBWSV7XS2jTE7vdNz0
+	S0kdZsGjJKALBk1v4ZGMJgdSAse7exA/xjOIGKqzKcMb5DYFjT9yrdHt
+X-Gm-Gg: AYBFou3nBrnByTfaBxeEaRzC8np3VCaUa4hONZdbt1UC095YId84+9z983ETT8eKqat
+	lisN3er03/GpsgLO8wC+0l4DDPh0Eglgj3jYmh+hR71cfvAC7TOU0Oftb8Bud/SmWnRp8uoC14X
+	6PBsc+kZM1Q0NKq86Kp2vNo2Wn+6AAo00RIYpeTzmkI1kcaSlncUxXpm5CfsxyAwbQbiF3/oMk2
+	s1J2lCFkR27j7/qjEmz0DsVxQ/xsn+hhStT8OrpE78nGAXpWIrTF6/WbcHFhETpqmQgvCjCZjIJ
+	eDtc4BYZwu7cXWaOkuYthVkqFRMiUuyubOjAB+8vgRnwK+0CPkKSfiPMyupwoXPzWcg7ipqWQWe
+	f7hVDOZD/IxUcFpQeuALwxSs/iDiXb8jJ96ir/a6vgXyju9cXGs5Lg37vUL1gvetVEoxdpJM4AN
+	VOuZVJbhlWQm0Pg5x9Lg4JEaFXnalni4UaC0U2Q4WB8QdofK+RDCZshP7WAdTFe9MAeUSj/VDcd
+	sMpThCdeNSM/kBeb6kXwM2jGJeQmtvW+/KEgNZtQCzQjlIRH/XZo3BMcRqZd7Rrgstdt9lIATZZ
+	84r56hB7Jg/oDQ==
+X-Received: by 2002:a17:902:cec2:b0:2db:7941:9e11 with SMTP id d9443c01a7336-2e842cd431cmr197979565ad.9.1792123809100;
+        Thu, 15 Oct 2026 21:10:09 -0700 (PDT)
 Received: from phuc-desktop.. ([183.91.15.56])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3acc4872861sm2304450a91.7.2026.10.15.21.01.03
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2e97e8ab443sm3815785ad.65.2026.10.15.21.09.56
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 15 Oct 2026 21:01:13 -0700 (PDT)
+        Thu, 15 Oct 2026 21:10:08 -0700 (PDT)
 From: phucduc.bui@gmail.com
 To: Vijendar Mukunda <Vijendar.Mukunda@amd.com>,
 	Venkata Prasad Potturu <venkataprasad.potturu@amd.com>,
@@ -133,12 +131,10 @@ Cc: Kees Cook <kees@kernel.org>,
 	linux-renesas-soc@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	bui duc phuc <phucduc.bui@gmail.com>
-Subject: [PATCH v2 25/25] ASoC: rockchip: rockchip_max98090: Mark the link as started on success
-Date: Fri, 16 Oct 2026 11:00:48 +0700
-Message-ID: <20261016040048.506531-1-phucduc.bui@gmail.com>
+Subject: [PATCH 00/11] ASoC: Address remaining PCM constraint issues
+Date: Fri, 16 Oct 2026 11:09:35 +0700
+Message-ID: <20261016040946.521195-1-phucduc.bui@gmail.com>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20261015014324.5569-1-phucduc.bui@gmail.com>
-References: <20261015014324.5569-1-phucduc.bui@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -156,50 +152,66 @@ Content-Transfer-Encoding: 8bit
 
 From: bui duc phuc <phucduc.bui@gmail.com>
 
-snd_pcm_hw_constraint_minmax() may return 1, which is then returned
-from rk_aif1_startup(). ASoC only marks the DAI link as started
-when .startup() returns 0.
+Hi all,
 
-This currently has no functional impact, as there is no .shutdown()
-callback in the relevant snd_soc_ops. Still, return 0 explicitly on
-success to match what ASoC expects and ensure the DAI link is correctly
-marked as started.
+Since v1 has already been applied, this series provides incremental 
+changes to address the remaining items from v2:
+ - Add comments explaining why .open() and .startup() must return 0 
+   on success to prevent the issue from being reintroduced.
+ - Add Reviewed-by tags from Vijendar Mukunda and Chancel Liu, 
+   and Acked-by tags from Morimoto-san and Cezary.
+ - Remove redundant integer constraints already applied 
+   by snd_dmaengine_pcm_open().
 
-Signed-off-by: bui duc phuc <phucduc.bui@gmail.com>
----
- sound/soc/rockchip/rockchip_max98090.c | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+Link v1: 
+https://lore.kernel.org/all/20261008103831.542533-1-phucduc.bui@gmail.com/
+Link v2: 
+https://lore.kernel.org/all/20261015014324.5569-1-phucduc.bui@gmail.com/
 
-diff --git a/sound/soc/rockchip/rockchip_max98090.c b/sound/soc/rockchip/rockchip_max98090.c
-index 426506a8e18e..de392b420ebd 100644
---- a/sound/soc/rockchip/rockchip_max98090.c
-+++ b/sound/soc/rockchip/rockchip_max98090.c
-@@ -191,12 +191,23 @@ static int rk_aif1_hw_params(struct snd_pcm_substream *substream,
- 
- static int rk_aif1_startup(struct snd_pcm_substream *substream)
- {
-+	int ret;
- 	/*
- 	 * Set period size to 240 because pl330 has issue
- 	 * dealing with larger period in stress testing.
- 	 */
--	return snd_pcm_hw_constraint_minmax(substream->runtime,
--			SNDRV_PCM_HW_PARAM_PERIOD_SIZE, 240, 240);
-+	ret = snd_pcm_hw_constraint_minmax(substream->runtime,
-+					   SNDRV_PCM_HW_PARAM_PERIOD_SIZE,
-+					   240, 240);
-+	if (ret < 0)
-+		return ret;
-+
-+	/*
-+	 * ASoC only marks the DAI link as started when .startup() returns 0.
-+	 * Since snd_pcm_hw_constraint_minmax() may return 1, explicitly
-+	 * return 0 to ensure the DAI link is correctly marked as started.
-+	 */
-+	return 0;
- }
- 
- static const struct snd_soc_ops rk_aif1_ops = {
+Compile-tested only.
+
+Best regards,
+Phuc
+
+bui duc phuc (11):
+  ASoC: amd: Explain component open return value handling
+  ASoC: apple: Explain DAI startup return value handling
+  ASoC: atmel: Explain component open return value handling
+  ASoC: codecs: Explain DAI startup return value handling
+  ASoC: imx-pcm-rpmsg: Explain component open return value handling
+  ASoC: intel: atom: Explain DAI startup return value handling
+  ASoC: renesas: msiof: Explain component open return value handling
+  ASoC: renesas: msiof: Remove redundant period constraint
+  ASoC: renesas: rz-ssi: Explain component open return value handling
+  ASoC: renesas: rz-ssi: Remove redundant component open callback
+  ASoC: rockchip: Explain DAI link startup return value handling
+
+ sound/soc/amd/acp/acp-platform.c             |  5 +++++
+ sound/soc/amd/ps/ps-pdm-dma.c                |  6 ++++++
+ sound/soc/amd/ps/ps-sdw-dma.c                |  6 ++++++
+ sound/soc/amd/raven/acp3x-pcm-dma.c          |  6 ++++++
+ sound/soc/amd/renoir/acp3x-pdm-dma.c         |  6 ++++++
+ sound/soc/amd/vangogh/acp5x-pcm-dma.c        |  6 ++++++
+ sound/soc/amd/yc/acp6x-pdm-dma.c             |  6 ++++++
+ sound/soc/apple/mca.c                        |  5 +++++
+ sound/soc/atmel/atmel-pcm-pdc.c              |  5 +++++
+ sound/soc/codecs/cs42l42.c                   |  5 +++++
+ sound/soc/codecs/nau8325.c                   |  5 +++++
+ sound/soc/codecs/nau8540.c                   |  5 +++++
+ sound/soc/codecs/nau8821.c                   |  5 +++++
+ sound/soc/codecs/nau8824.c                   |  5 +++++
+ sound/soc/codecs/nau8825.c                   |  5 +++++
+ sound/soc/codecs/wm8580.c                    |  5 +++++
+ sound/soc/codecs/wm8782.c                    |  5 +++++
+ sound/soc/fsl/imx-pcm-rpmsg.c                |  6 ++++++
+ sound/soc/intel/atom/sst-mfld-platform-pcm.c |  5 +++++
+ sound/soc/renesas/fsi.c                      |  5 +++++
+ sound/soc/renesas/rcar/msiof.c               | 10 ++--------
+ sound/soc/renesas/rz-ssi.c                   | 19 +++++--------------
+ sound/soc/rockchip/rk3399_gru_sound.c        |  5 +++++
+ sound/soc/rockchip/rockchip_max98090.c       |  5 +++++
+ 24 files changed, 124 insertions(+), 22 deletions(-)
+
 -- 
 2.43.0
 
