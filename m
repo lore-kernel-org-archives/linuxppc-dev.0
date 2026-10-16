@@ -1,84 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-29603-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29604-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9FBAACC6B38
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2026 11:06:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EDA63CCA462
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2026 11:26:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j5htP2Wszz3c2G;
-	Fri, 16 Oct 2026 22:05:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792148717;
-	cv=none; b=UQNbpHRVTj9lvUs1q79tqefure6uikkIMh3rzf6OkDDd8IMgj7GzfIGrmAVRop4rU2AaW5TFMF67PK3JxEfwxTCLamPjDyIFoH54q+lEIVAIkjL0W+uXb1dNLvV8IR3qx9pj0nFWxbQbt401WqXiIvK0dRSHlSAdJrRgWmS+rxAxC+ACjRlZO7L852jdrSzW3R6OXqZzY6iwTkwwgWY+nIbhr1weLd7dRm18kbxKIR/zjR/KpzgloYn3UYKXeXzN00HoaweeaT0gCwFNVTx9vpW9NPKBFmKOlrpdPV6Xiof4qbLwvNhsY3dE+K7aZpDXhX+cgYNXzKOid3GtAw0zew==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792148717; c=relaxed/relaxed;
-	bh=3LdbEFi7r4NaTkcBEcyhUB1vIUkbFrOAU/v3p1r9X2k=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=I3Cp6blZP56I1h1EeaKDtDReEDSvCxzjHpdoH1fJxCsZVxDNmFf9udRjThVgwpffqK1iYTS7UjTVqAGjIsYZLpDxvYSQoYr+m6Ewowd84e9i6UmQQp/iFlaRZmkQEJBq32/T0MruD9zt0ehyB59YFUuPB9H4uX5HGBfWv7MAKWE8dcjOUMyxI6sw/SCZTOmJScRH87TgaFWgcftmMH9MJlaADZrmuIFTkgbIn4J0mYkfcF5WWV096p2Cd1mXnPpMTQndkvtpwl4ahb9oeDUO99wuQ4957okoWWAXikLsdb3T7JShasuOwZIM+qvH+KBG8wE3DJ49Bfw5jG8C7LNLYg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WLw8oWXt; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j5jLX2yndz30Tf;
+	Fri, 16 Oct 2026 22:26:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::633" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792149972;
+	cv=pass; b=WsQatS2RU4zr6ujvNRrmVMt/e/wjfbqOlA98g11+LSMq3eBucRc3RmQVVQB/kqBh7AswvkVQ0L+paw+xFL5h23HHB+193CFQTM1SKorXYcgXQWP2woMsVQXgL3HIgw4SL7PLfFToGcx/IByAp/vYopt8hswruaLjPsvRlhw44dmrBKXfWGRhh1rc5P0H6USU+ZUTRohy8L8gFrjAceGURwHzQPG9Rof23CI6RbJUXY3473wYFQhHM7hbkLZoqpRhyYTNWsrQfLx4fv6lS4kpWww4O6ogNpAGGSVEKSk9sOHEKOQOcRbENF1kRLPc3dSPXIZQV8HJQUhtEyDFqChSCA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792149972; c=relaxed/relaxed;
+	bh=vApPRxEqpGQADna5mwyiV+wtnRS+6fLHQ7GBxAw9kX8=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=PWFaru3rVIfwEgFLDRwhyhlCjWDTnQOOgmGEUVIARFPSF0XNTTOvv+8I/QKADTy+tVslIWdZu7K6uAnoRLf261rH/Fz/Wu39GJ9DsCq5OjP5uEcIC+QUWQfykrlic+KDAig/jb3W9mdtAR8EfwSYHMBMvsm2ffRhcbVRVYyDMrH4TaOKCmlqKkDXkuV3ihqZlKwYYhWNyR33SJLSIcczSSXyg6A9QLMroQkyZyoqmpFi2ojhlfMyiFNxOjz+8i22hHBeXKFWiGIhYHF6t3WYkkAClgFM1yaTiV0gBCG3KxSe9yoEFgMkBMioiVx/d8OAodxFNSii8TSZoIwpAmeqxw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Ek0TV6ha; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WLw8oWXt;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Ek0TV6ha;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j5htN4gMDz3c2F
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2026 22:05:16 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69GAE5iO1774726;
-	Fri, 16 Oct 2026 11:05:05 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=3LdbEFi7r4NaTkcBE
-	cyhUB1vIUkbFrOAU/v3p1r9X2k=; b=WLw8oWXtaPaDjy+Gd+pG29ADnQ2NkSDe9
-	kk5hbV1pZ2pZgXQoZhkGKp1xv+3K0BB0jWEWacQPtcl3GxJ+NVuVPjN5Vahy8eDD
-	ebKRtH2IucGyZWm7v2hff604tMS9yhhhFzsmjA+KmY+zgps9v27flvT+Ttd/JMLF
-	RoPm4DGNyWE3/1AWzBT9mKXVKVgmhM/YTfslHG1V6pQxbFjQc+2ZIiW7+rIuB0cJ
-	c7gcpJ7S2SwfhSW4yXkiD/eLIl34bubXfC/edqQtc7toCsp0EXPPAfIWPhHtVK+U
-	u/Pg70oWpGP4/ehHThd/Q8JeI8Y6e+0Rs5GYttw7MTm9+54oyY4Xg==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7dwhxweq-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 16 Oct 2026 11:05:04 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69GAYpGB3534796;
-	Fri, 16 Oct 2026 11:05:03 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4h9ypqb2se-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 16 Oct 2026 11:05:01 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69GB4vq36619426
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 16 Oct 2026 11:04:57 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3CC3020040;
-	Fri, 16 Oct 2026 11:04:57 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7FCD82004B;
-	Fri, 16 Oct 2026 11:04:55 +0000 (GMT)
-Received: from sapthagiri.in.ibm.com (unknown [9.123.124.175])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 16 Oct 2026 11:04:55 +0000 (GMT)
-From: Srikar Dronamraju <srikar@linux.ibm.com>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>, chleroy@kernel.org,
-        Srikar Dronamraju <srikar@linux.ibm.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>,
-        Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 7/7] powerpc/numa: Enable coregroup support for shared LPARs
-Date: Fri, 16 Oct 2026 16:34:12 +0530
-Message-ID: <20261016110412.1380298-8-srikar@linux.ibm.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20261016110412.1380298-1-srikar@linux.ibm.com>
-References: <20261016110412.1380298-1-srikar@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j5jLV54bHz30TP
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2026 22:26:10 +1100 (AEDT)
+Received: by mail-pl1-x633.google.com with SMTP id d9443c01a7336-2db80fcdf8bso37339665ad.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2026 04:26:09 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1792149968; cv=none;
+        d=google.com; s=arc-20260327;
+        b=ZWQiWfd0iOb6wqvXksi5oXgispma2hUFxe+z6hTCfJEklVPg9bYLKv8zoxjsZ5gKka
+         5myRoYiAaNJaBF8nGXwLvf686jKEOojNU6PJ6BvzNToBTBBSvkInQbVE0SJJ6Glvqojf
+         Xdu1ikORTL60a3TLj/bQspYw7Ho/Va/W/jR+QUDSGJcpQ/cBQLButQZ16aCHgNEyTEWf
+         pLliFnWkE/VEghlkNryl+nh1ftA2ttozWtcKw9fBqiEEj3nci/f+0F60MNwYa5AvRsiZ
+         +TRe65W58qfx4ZDbgnwQRwXy8hDxU/+fhLJTCvITwUKtuIVqiD098GBf7BhrgWk1uxxY
+         S4Jg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=vApPRxEqpGQADna5mwyiV+wtnRS+6fLHQ7GBxAw9kX8=;
+        fh=RjOJbQhobvHf94tfJ6AfOpa+bA3yCZqYcpzUCe/PD6A=;
+        b=WE6Qxar/11u4XeztqIrUK5u10NZLXn3OACWg9AhQImWbAWgdIvtHkzIVJo4m36wGen
+         cR7rlp9EP3ZT30D50awj043ibNX/h6ySibLp83mCqAu0s6ybhp4oqZFBE4+pXjHPGTLP
+         SfX4OmS3kqnl8WXwrEDLSMcz/FC6W0Fe0ziuqUwKAepXw1ItAO+w38fp/LOydYVjqIyL
+         Wc4K3sZeqwQ6LKA8fPyyuMr7BpOBKCblQQIYpA+MxU+YcbWbT99hqHethX4Tj/9hKBFJ
+         0xtP14jAasbyH828T7xEFAAeNCkUg0mEU0MMvQFeaH9a1Q3L9hT4LULogU2iMALaylO3
+         ARiw==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1792149968; x=1792754768; darn=lists.ozlabs.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=vApPRxEqpGQADna5mwyiV+wtnRS+6fLHQ7GBxAw9kX8=;
+        b=Ek0TV6ha/QvY29QHaocBYKS4D84jKYBhLWXlVM4zxbySW5QwX6bAqja5cUnEQG42F+
+         +KLtRtXMPirQ10m0sXfDx4Wj2rsm6ifs9KUu1S4FlGevH7p8czpW5fOeUR0Kaxdexz7P
+         uVS0RCe6LZkaI+Cl8bGB2MgUDGBDSvhKt1SObURskWQ6fB+28xSXVHit73kTCANctwHV
+         IpOXYX2H3Aqvjbh3mVm6BvNJA4POVNZZ8yeFFmL24/khPJz9m/HDmZfSD9hkl+zQeYnm
+         4H2hVIBCIranSOHLXGvpg5YSsQP/DbvBtPU3OXTyEI8Z+L1i2PLZbGbAbpTE0RIqVbjA
+         AfnA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792149968; x=1792754768;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=vApPRxEqpGQADna5mwyiV+wtnRS+6fLHQ7GBxAw9kX8=;
+        b=l6ZCRUB7/eEdQgiaNWZbsWHpjuvA/Bi5e6U/Ec8eV9Gx8pd8l2i3bKRKLwRwaxbsVW
+         iIvStVuw6Ie1QNspLk3TRn+InjB8VDiubRUJoLiyL+mV+TJEROt84STs1OVbFofh5mM9
+         vQtliYfbPxCWy3nGGfKewi6intMxnh4GKUP12X+7zXFPxxLKNMG3f48wSKDjDKRhZ/ku
+         Twtaxh7lbSOS7bwNzuDNKPXMnz16ugLdnwW7e5sXfx/iw48zMddqNkX0uyZKD/yK2rNz
+         69Ca15I0C5hcJdwK1DmYKikkzidCzzUzv2sl8LQLozf/GZ0czPqJqw9HWJy1lQ1rt2zy
+         TWTA==
+X-Forwarded-Encrypted: i=1; AKwUvBwM369bEn5gJXo70vqtHoUER793mJclhKD7K0fc/3RqyfcLeT0dNQahcTPyKOFVlgiBK0/v94GE6z3ox60=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYIekXzGFvFZNyRyzp2uxEsbFeYA46vdU8koOGCXCpjroNelXZIA
+	mDfGt1Lg+D1EJ3AdXlfOC+diTSAZlOKB3x1KYjs0zfI//yJiVL3qOVIU8TXOKPQ+alMZXSfQjms
+	h7DzsvZpoj+IK3WupQIZ/0vxy1/MJCtE=
+X-Gm-Gg: AYBFou2MRd3MD4npCMmsZKzR4ry6qYeIAbnTExw0c2waxQJlyHtZNpVF8P+qR9xhgsH
+	C8kLEIiSCJVyfk20k2KAYy292HahohfrHBnDJSqxHy3koFz9zTokJ6qAkv9xgn8uiYEIGSqx6bt
+	GAA/Pi1iMb0KtQx8rQBqllkEw1yHGHg8I6do8Az2+pGLAxljVFB3Wt+lnbpXSnTIuIHVjKH5CQv
+	5t27BVFsuPsEV03rfhUn03dzHi0x/TKePTHh4OAy0QCjJ3uUheHTobE0nz3BnWBLFhzIK+VGUZn
+	LBZA6OT6+9Pjh5a3Jcct20oCwPryGsZrEO9U0PUzgNhe9t/HQF34lcIka0Nji+e36DpUTBQyBVi
+	dKoTbnxiqs6ruwTAyvefKxhpUXJ4HgjrcR3zY0WTm/ys9l9YZRY0LoeYuw9zH+70MKR0r
+X-Received: by 2002:a17:903:11ce:b0:2e9:4e83:1979 with SMTP id
+ d9443c01a7336-2e94e836527mr62789995ad.32.1792149967287; Fri, 16 Oct 2026
+ 04:26:07 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,203 +102,85 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE2MDA0MiBTYWx0ZWRfXxNZVbJpFQjTi
- xXMedP2L3qspXb/a1XpPyDul3/Bic2P5SezBAlsGMf/e0zcEO5cqOpp5Sy95djiTcDc+kUW6cmS
- w1PU6whY5KnNZi6ORP3ICW/E+byfOTs=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE2MDA0MiBTYWx0ZWRfX3bSV21Vsz3jB
- x783BzY8bNa/l32+BdyoFXjQynf+FAMNiSSi+0booy13BlbcbYAIyMOZy/OCGJeYv00XP2wSQJW
- +9EmrTMZKaiKcmiz70xHe3+4D+ueNzI8oP0gIXByCR6FE/JuRLqZpf1wrdI65lZ+7cAR1zOf/5q
- jkxMoiXhE6yRhvQM78EQh+lhmoggmfgtg0kk+rp/Lv7zdLtOmJaaOOFLkFMuyDquiXngFZgcrb6
- xp4V4U3XdgxbATGqQzOwIeFnmB7d5l+XTO9cBfNDEMR2kyVaKd5wQdU6GKO6eUKastE+sBB38Yy
- JNpR9NXw5oYOj3sSDzqy3MpaQhfEku7YQ5PRgGjlodBwuWtZ2+qmKNffRYv8x5bD1QGxKh2Y1gD
- VNj6BfdqTFcHJ1B2zCI7p+TAfEeFHlNFL57U31ebLaaxViHOcs6AMDbWjbE0vFUjVb7otfumiVd
- saQ+BSghCk09btnjjaw==
-X-Proofpoint-GUID: sohdhe-9vh2IxJvBOihArff0YZFKHRFE
-X-Authority-Analysis: v=2.4 cv=RoFQvymK c=1 sm=1 tr=0 ts=6ad204e0 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8 a=LnY_ip3p0wky2DI6E4oA:9
-X-Proofpoint-ORIG-GUID: OnOjFEw8nJcbZEEI1p6HPAA0TLn4mnfg
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-10-16_01,2026-10-14_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 spamscore=0 phishscore=0 adultscore=0 bulkscore=0
- impostorscore=0 suspectscore=0 malwarescore=0 clxscore=1015
- lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
- definitions=main-2610160042
+References: <20261015014324.5569-1-phucduc.bui@gmail.com> <20261016040048.506531-1-phucduc.bui@gmail.com>
+ <46a96bc8-2ee7-4c6f-ad8e-94321f8b9630@sirena.org.uk>
+In-Reply-To: <46a96bc8-2ee7-4c6f-ad8e-94321f8b9630@sirena.org.uk>
+From: Bui Duc Phuc <phucduc.bui@gmail.com>
+Date: Fri, 16 Oct 2026 18:25:56 +0700
+X-Gm-Features: AclHuK9bobvuHZz0ZvKJfKfhAJdiG3c7XQlmqU2uHEyUuNfyFRrkKv-rn3SiKZ0
+Message-ID: <CAABR9nG8PeQS4GBGwENfHTRBUnroKYQiEu29iztix+py=Arprg@mail.gmail.com>
+Subject: Re: [PATCH v2 25/25] ASoC: rockchip: rockchip_max98090: Mark the link
+ as started on success
+To: Mark Brown <broonie@kernel.org>
+Cc: Vijendar Mukunda <Vijendar.Mukunda@amd.com>, 
+	Venkata Prasad Potturu <venkataprasad.potturu@amd.com>, Liam Girdwood <lgirdwood@gmail.com>, 
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, povik+lin@cutebit.org, 
+	Claudiu Beznea <claudiu.beznea@tuxon.dev>, Andrei Simion <andrei.simion@microchip.com>, 
+	Nicolas Ferre <nicolas.ferre@microchip.com>, 
+	Alexandre Belloni <alexandre.belloni@bootlin.com>, David Rhodes <david.rhodes@cirrus.com>, 
+	Richard Fitzgerald <rf@opensource.cirrus.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, 
+	Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>, 
+	Nicolin Chen <nicoleotsuka@gmail.com>, Frank Li <Frank.Li@nxp.com>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Cezary Rojewski <cezary.rojewski@intel.com>, Peter Ujfalusi <peter.ujfalusi@linux.intel.com>, 
+	Bard Liao <yung-chuan.liao@linux.intel.com>, 
+	Kai Vehmanen <kai.vehmanen@linux.intel.com>, 
+	Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>, 
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, 
+	Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, 
+	Biju Das <biju.das.jz@bp.renesas.com>, 
+	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>, Heiko Stuebner <heiko@sntech.de>, 
+	Kees Cook <kees@kernel.org>, Syed Saba Kareem <syed.sabakareem@amd.com>, 
+	wangdicheng <wangdicheng@kylinos.cn>, Chris Bainbridge <chris.bainbridge@gmail.com>, 
+	Linus Walleij <linusw@kernel.org>, Charles Keepax <ckeepax@opensource.cirrus.com>, 
+	Neo Chang <YLCHANG2@nuvoton.com>, 
+	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, u.kleine-koenig@baylibre.com, 
+	Pengpeng Hou <pengpeng@iscas.ac.cn>, 
+	Cristian Ciocaltea <cristian.ciocaltea@collabora.com>, Hemanth Selam <hemanth.selam@gmail.com>, 
+	Md Shofiqul Islam <shofiqtest@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, 
+	Zain Aboobacker <zainaboobacker33@gmail.com>, Sang-Heon Jeon <ekffu200098@gmail.com>, 
+	Bo Shen <voice.shen@atmel.com>, Vinod Koul <vkoul@kernel.org>, linux-sound@vger.kernel.org, 
+	asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+	patches@opensource.cirrus.com, linuxppc-dev@lists.ozlabs.org, 
+	imx@lists.linux.dev, linux-rockchip@lists.infradead.org, 
+	linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-Coregroup support is currently disabled for shared LPARs even when the
-associativity hierarchy contains the information required to identify
-the coregroup level.
+Hi Mark,
 
-The associativity hierarchy differs between shared and dedicated LPARs.
-For dedicated LPARs, the hierarchy must extend beyond
-primary_domain_index + 1 to contain a coregroup level. Shared LPARs have
-one fewer level, so a coregroup is available when the hierarchy extends
-beyond primary_domain_index.
+> Can you please resubmit this as a separate patch as a new thread without
+> the series numbering?  This is really going to mess with the tooling :(
+>
+> Please don't send new patches in reply to old patches or serieses, this
+> makes it harder for both people and tools to understand what is going
+> on - it can bury things in mailboxes and make it difficult to keep track
+> of what current patches are, both for the new patches and the old ones.
+>
+> Series numbering only makes sense within a series for ordering, if
+> you're sending something separately to a series or a new series then
+> preserving the ordering of the series just causes confusion.
 
-Remove the unconditional exclusion of shared processors from coregroup
-support and use the appropriate hierarchy when detecting a coregroup
-level. Read the coregroup ID from the associativity level immediately
-following the primary NUMA domain. If no distinct coregroup ID is
-available, fall back to the core ID.
+Sorry for the inconvenience.
 
-The processor sharing mode is not known when NUMA properties are
-initially parsed and is determined later in pSeries_setup_arch().
-Therefore, initially process CPU associativity using the existing
-dedicated-LPAR interpretation and reprocess it after shared processor
-mode is known. During the second pass, only reevaluate coregroup
-information and avoid repeating NUMA node and distance initialization.
+This was patch 25 of v2. I had only managed to send the first 24
+patches previously.
+Patch 25 failed to send due to an error, so I sent it afterward to
+complete the series history.
 
-This allows coregroup topology to be enabled on shared LPARs when the
-required associativity information is available.
+Link to v2:
+https://lore.kernel.org/all/20261015014324.5569-1-phucduc.bui@gmail.com/
 
-Signed-off-by: Srikar Dronamraju <srikar@linux.ibm.com>
----
- arch/powerpc/include/asm/topology.h    |  2 ++
- arch/powerpc/kernel/smp.c              |  4 ----
- arch/powerpc/mm/numa.c                 | 28 +++++++++++++++++---------
- arch/powerpc/platforms/pseries/setup.c |  6 ++++++
- 4 files changed, 26 insertions(+), 14 deletions(-)
+Since you had already applied v1, this patch does not necessarily need
+to be resubmitted,
+so please feel free to ignore it.
 
-diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
-index 02c3c9ab3ea9..35230011ef84 100644
---- a/arch/powerpc/include/asm/topology.h
-+++ b/arch/powerpc/include/asm/topology.h
-@@ -67,6 +67,7 @@ int of_drconf_to_nid_single(struct drmem_lmb *lmb);
- void update_numa_distance(struct device_node *node);
- 
- extern void map_cpu_to_node(int cpu, int node);
-+void process_cpu_associativity(bool first_pass);
- #ifdef CONFIG_HOTPLUG_CPU
- extern void unmap_cpu_from_node(unsigned long cpu);
- #endif /* CONFIG_HOTPLUG_CPU */
-@@ -104,6 +105,7 @@ static inline void update_numa_distance(struct device_node *node) {}
- 
- #ifdef CONFIG_SMP
- static inline void map_cpu_to_node(int cpu, int node) {}
-+static inline void process_cpu_associativity(bool first_pass) {}
- #ifdef CONFIG_HOTPLUG_CPU
- static inline void unmap_cpu_from_node(unsigned long cpu) {}
- #endif /* CONFIG_HOTPLUG_CPU */
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 6a5a5469aaae..0213ef8d855a 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -1052,10 +1052,6 @@ struct cpumask *cpu_coregroup_mask(int cpu)
- 
- static bool has_coregroup_support(void)
- {
--	/* Coregroup identification not available on shared systems */
--	if (is_shared_processor())
--		return 0;
--
- 	return coregroup_enabled;
- }
- 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index fde79f34340e..2a5d94550dc0 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -890,12 +890,15 @@ static int __init numa_setup_drmem_lmb(struct drmem_lmb *lmb,
- }
- 
- /*
-- * Coregroup info is present in associativity property just after
-- * primary_domain_index. In dedicated LPARs, coregroup info is present only
-- * if primary_domain_index is third from the last or earlier.
-+ * Coregroup information follows the primary NUMA domain in the
-+ * associativity hierarchy. Shared LPARs have one fewer associativity
-+ * level than dedicated LPARs.
-  */
- static bool has_coregroup_level(int index)
- {
-+	if (is_shared_processor())
-+		return index > primary_domain_index;
-+
- 	return index > primary_domain_index + 1;
- }
- 
-@@ -918,7 +921,7 @@ static int detect_and_enable_coregroup(const __be32 *associativity, int index)
- 	return -1;
- }
- 
--static void process_cpu_associativity(void)
-+void process_cpu_associativity(bool first_pass)
- {
- 	bool vphn = firmware_has_feature(FW_FEATURE_VPHN);
- 	unsigned long i;
-@@ -947,15 +950,17 @@ static void process_cpu_associativity(void)
- 			associativity = of_get_associativity(cpu);
- 		}
- 		if (associativity) {
--			nid = associativity_to_nid(associativity);
--			initialize_form1_numa_distance(associativity);
-+			if (first_pass) {
-+				nid = associativity_to_nid(associativity);
-+				initialize_form1_numa_distance(associativity);
-+			}
- 			index = detect_and_enable_coregroup(associativity, index);
- 		}
- 		if (cpu)
- 			of_node_put(cpu);
- 
- 		/* node_set_online() is an UB if 'nid' is negative */
--		if (likely(nid >= 0) && numa_enabled)
-+		if (first_pass && likely(nid >= 0) && numa_enabled)
- 			node_set_online(nid);
- 	}
- }
-@@ -990,7 +995,7 @@ static int __init parse_numa_properties(void)
- 	 * init, we need to know the node ids now. This is because
- 	 * each node to be onlined must have NODE_DATA etc backing it.
- 	 */
--	process_cpu_associativity();
-+	process_cpu_associativity(true);
- 
- 	if (numa_enabled == 0) {
- 		pr_warn("disabled by user\n");
-@@ -1463,12 +1468,15 @@ int cpu_to_coregroup_id(int cpu)
- 		goto out;
- 
- 	index = of_read_number(associativity, 1);
--	if (index > primary_domain_index + 1)
--		coregroup_id = of_read_number(&associativity[index - 1], 1);
-+	if (has_coregroup_level(index))
-+		coregroup_id = (int)of_read_number(&associativity[primary_domain_index + 1], 1);
- 
- out:
- 	if (cpunode)
- 		of_node_put(cpunode);
- 
-+	if (coregroup_id == -1)
-+		return cpu_to_core_id(cpu);
-+
- 	return coregroup_id;
- }
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index f29e7547c995..fd8163200b97 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -874,6 +874,12 @@ static void __init pSeries_setup_arch(void)
- 
- 		if (lppaca_shared_proc()) {
- 			static_branch_enable(&shared_processor);
-+
-+			/*
-+			 * Reprocess CPU associativity now that the shared
-+			 * LPAR hierarchy can be interpreted correctly.
-+			 */
-+			process_cpu_associativity(false);
- 			pv_spinlocks_init();
- #ifdef CONFIG_PARAVIRT_TIME_ACCOUNTING
- 			static_key_slow_inc(&paravirt_steal_enabled);
--- 
-2.47.1
+Link v1 :
+https://lore.kernel.org/all/20261008103831.542533-1-phucduc.bui@gmail.com/
 
+I have also sent the incremental changes in a separate thread, as you requested:
+
+https://lore.kernel.org/all/20261016040946.521195-1-phucduc.bui@gmail.com/
+
+Best regards,
+Phuc
 
