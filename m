@@ -1,99 +1,90 @@
-Return-Path: <linuxppc-dev+bounces-29606-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29607-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35116CCA462
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2026 13:25:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52CBBCC6B38
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2026 13:43:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j5m0V0kqBz30TL;
-	Sat, 17 Oct 2026 00:25:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j5mNc3H0Vz30Pp;
+	Sat, 17 Oct 2026 00:43:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792157146;
-	cv=none; b=L0C2L/vhP5rN7KQCLxZ7I5V1OxSZDPnVh2i5FXN69MxWR8x8HM4V029zveO6W/2M9osTXmXMlfb+m8u5cwIm1HKAWYaFZkJYtVE+ZeDlKb2ZjN02DtsDJUZ60v2oc++sR/C1NyZcWyLXhIGa8g3tx7D6JlRYlwxXozKpq4ND8qyd/tnPHP+fqv2xUcCGr7xnkZsLeVw3yfz8uYGL4TjmoMea5kblUFIEOkfiH9USPzpGs/ei0QYLbKn2Nk7DDpxojDkjHSKdSt0vZlF3lIy+H1DDkcAxdX5zb+CKtoMwCrOY9kzSNRzbHati7DhZWKdlajPfXwqE9+RDhZaKPvO9Sw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792158192;
+	cv=none; b=a3PlVREzKOKCSqZJFdQDiUUR3ECiGtwPNHE2BpZ6rXdWYFGlSQsIcN5CBVGMdqtjIvTipiLcWoxTcaIPPIcIVle9ims20QzC7ZQkNM1LJPEUxRTn/2vwohzScooIGqJ/qjvnaoCwBrhFFjSoP2TaGdRMrH5V+ximylhPIzJmx2/MvD5i4T/C+a5aRS03cOx8a3fVwRq68oojJmU50+7rFOghllCDGxuoiBKlx1iA7W6AK8ZOvNhAdqGcSX/6+2IbS/PDZfcPVhwA1AvNFV08ugR3FV714eBA5TUweGAt+whD2hCt+gJWbfmAE6tUMtQgv3DvnhQK059kaRc8ZUlyLw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792157146; c=relaxed/relaxed;
-	bh=A1oGMJNudXu36XPK/yxV+yodSQqNeuzr6WgFF4E8wpw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=nB5/PWoAUWQbX3GAZC7iMHk6vIn9TN8r9ffpj5ZWPYh4KXl4f2KnYw47VvgsRKNYzmF8jKiWILPYWz2uI4xFkOvbfBU2y9vw5lOjfUwD2oOgrBctRZCAj8cwKf701wYXSbKdZ/0jMeXviGoIXbJ0HGOdELbkTtojNDzNBhY27mGammW0sXP8BWLZy1oGTtSYWfONEzMoFCwEBvn4C+0lgKi7hOUnVKWupUbVFlh4G8aYeP9mFSyJVg8njnF8w1HGDPjtFsXAZiu7rHQsTb/DTOW09DcUOxqeLN/tpk8LLH9q6JF4DWKyw7MZbYKJuI2eVK2+cNCiP4pF5sPA2AZH3g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cgW8WHP0; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1792158192; c=relaxed/relaxed;
+	bh=hz/Wzrr7Ghfv/m9Znn7aTpfAD1ntAjz54+O38Sp8PJI=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=e7ziYQhNjmJ0qSXlC83TKz5xufMTSOEcwueNwLjtE5RyjmKBP/J0Sc3RYD5Tz7pN/+Shm4oWe5g6gAi85ml5rgGr9OGXRQcYb5S2n5Wy29FHSUFIzp51EMjhZaIViZkkji1g/j0MZfc81xRZvlya1v1z+la3j6lz4YQ2PA76v9zqW1hCOlAPoJ4e9aU94A8zFVwZj7ygaMOBsNYoBP9AFmvxoTpu7+P+9NuIzdj3v5P2sKWgw+wyuvrVeUy+8JpjG8pMKjRuph7ItYLgdVUiTdMY1LJVh2WiDUs/1AH7xqTHE4PoqHVFx8r9cb4HYJ0LapaWoT9WDT7G3XwZ3cwNqQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=S4qsFaaK; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cgW8WHP0;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=S4qsFaaK;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j5m0S4B7Sz2y8Z
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2026 00:25:43 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69GAEDEE3424962;
-	Fri, 16 Oct 2026 13:25:34 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j5mNb2JHQz30PJ
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2026 00:43:10 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69GAESmr3540566;
+	Fri, 16 Oct 2026 13:43:02 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=A1oGMJ
-	NudXu36XPK/yxV+yodSQqNeuzr6WgFF4E8wpw=; b=cgW8WHP0tcEwPbkwgMC0h+
-	MhSyL+6DoggdkX+LOnamLDX/LFTDPxdyEXLhsX6VZMNxf7BZbH+UT9R4peVbnWc8
-	vc8zWbd5AU9lREb+oY+gk0zAcSfm6mQO5l+iw8GOI9/r4cvNNkHpO4Nk4v4vUTKI
-	v+m738i/hqD3H+npVjse7ohz3vHu7fzoLfwXwvDSxFC/a/S2rNHo5Sva5rvKIqXM
-	YPTNx0xXQKioSmLTn/ce2Bg/v6Gu8N7QzB1NvMidwwIDqHEJApvUZjP+HPwLDGjm
-	WQ/zRAMv5USdK8mF74sl8K6vNQ9i4JDZ/RN0dYGHVg/S0gTQUG+c3v53l9HUYG7A
+	:message-id:mime-version:references:subject:to; s=pp1; bh=hz/Wzr
+	r7Ghfv/m9Znn7aTpfAD1ntAjz54+O38Sp8PJI=; b=S4qsFaaKSsv41leWspk3u3
+	a0Fs63zUvkOcSzTwUdHXX+MVNpDo/HU+qIoCyQhpk5gCi1Azy/8HIM77gwAK19tI
+	dICk2fInxkCDSx0CV0K9B8nmvMAhPdU4GMMv8zT1+302AvS+qJMcZD0PV90oNIuM
+	TdNyGlWMhDSTP9wwmLiGXyj+Z0eT3CwqSyx4ClzJvA3pe3AtVKPRYERRCmhfOS7l
+	sEF8rN9HUNVF9h3T66wR5jE4syAxgk0mOQkfXcqwOMAFsDCH22PjUCrXgu/hDGPv
+	tK1tNEl6uWyIkBg0VCL3MCASIm8hdz195QcpjJnsfECh9NJCsF3PA/76SNJQmZmg
 	==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7dwjevn4-1
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7e1wptcr-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 16 Oct 2026 13:25:33 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69GAK3ro3580924;
-	Fri, 16 Oct 2026 13:25:32 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4hawqww07j-1
+	Fri, 16 Oct 2026 13:43:01 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69GAJs0d3503283;
+	Fri, 16 Oct 2026 13:43:01 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4hb34mkq61-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 16 Oct 2026 13:25:32 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69GDPS6e43647362
+	Fri, 16 Oct 2026 13:43:00 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69GDgvPl33227166
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 16 Oct 2026 13:25:28 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5FC7920043;
-	Fri, 16 Oct 2026 13:25:28 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 53C0220040;
-	Fri, 16 Oct 2026 13:25:25 +0000 (GMT)
-Received: from fedora (unknown [9.5.7.39])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Fri, 16 Oct 2026 13:25:25 +0000 (GMT)
-Date: Fri, 16 Oct 2026 19:03:44 +0530
+	Fri, 16 Oct 2026 13:42:57 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E3FFA20043;
+	Fri, 16 Oct 2026 13:42:56 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5CAE520040;
+	Fri, 16 Oct 2026 13:42:53 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.124.217.170])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 16 Oct 2026 13:42:53 +0000 (GMT)
 From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: Vincent Donnefort <vdonnefort@google.com>
-Cc: Amit Machhiwal <amachhiw@linux.ibm.com>,
-        Steven Rostedt <rostedt@goodmis.org>,
+To: Steven Rostedt <rostedt@goodmis.org>,
         Masami Hiramatsu <mhiramat@kernel.org>,
-        linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        Michal =?utf-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>,
+        linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Amit Machhiwal <amachhiw@linux.ibm.com>,
+        =?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>,
+        Vincent Donnefort <vdonnefort@google.com>,
         Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
         Madhavan Srinivasan <maddy@linux.ibm.com>,
         "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
         Harsh Prateek Bora <harshpb@linux.ibm.com>,
         linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-        kvm-ppc@vger.kernel.org, Mark-PK Tsai <mark-pk.tsai@mediatek.com>,
-        stable@vger.kernel.org
-Subject: Re: [PATCH 2/2] ring-buffer: Do not check si_mem_available() during
- SYSTEM_BOOTING
-Message-ID: <20261016190235.cef361be-9e-amachhiw@linux.ibm.com>
-Mail-Followup-To: Vincent Donnefort <vdonnefort@google.com>, 
-	Steven Rostedt <rostedt@goodmis.org>, Masami Hiramatsu <mhiramat@kernel.org>, 
-	linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	Michal =?utf-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
-	Harsh Prateek Bora <harshpb@linux.ibm.com>, linux-kernel@vger.kernel.org, kvm@vger.kernel.org, 
-	kvm-ppc@vger.kernel.org, Mark-PK Tsai <mark-pk.tsai@mediatek.com>, stable@vger.kernel.org
-References: <20261009163557.88467-1-amachhiw@linux.ibm.com>
- <20261009163557.88467-3-amachhiw@linux.ibm.com>
- <as0NDyaXsfQnWPQ4@google.com>
+        kvm-ppc@vger.kernel.org, stable@vger.kernel.org
+Subject: [PATCH v2] ring-buffer: Do not check si_mem_available() before deferred init completes
+Date: Fri, 16 Oct 2026 19:12:47 +0530
+Message-ID: <20261016134247.70722-1-amachhiw@linux.ibm.com>
+X-Mailer: git-send-email 2.54.0
+In-Reply-To: <20261009163557.88467-3-amachhiw@linux.ibm.com>
+References: <20261009163557.88467-3-amachhiw@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -107,114 +98,127 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <as0NDyaXsfQnWPQ4@google.com>
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE2MDA1MiBTYWx0ZWRfX1B7DwnvE2ZEB
- ZRiQKFd017ZkLJ6lx/GN0Yv/cIpG1mfbEPXwKjRV6HaJ6J5OfuVVXY2YF6Qcbl0+jCpe1AAGd+2
- x2BcSvvOjBXzKhv5Wv8cqRDY+PUUtt8YMQrHC/Wk8tdqZ9FPabRSReZGVWxkeHlp1n3IGsExqKA
- lMXlhyBqOCyWW6GlJbnEXDVWD5Rmc1DCwCKyEdoeaUQWpk+EC7950uKr1uqRr/8Y1HZhrIaFPXj
- WNCX9XmloMkDNe3NJWx5pZI7Z3ICStyCShvrrQOMLwy1OuTJzToc9+VUmBJnjEGeVFXuWlzaLj3
- 2aNsA3FjUovGHJRmjb/jzipIQbwCWxS+QUWpPKZeItGavknOe0a4f3LwkgKgn8yIC5hXMLT89vZ
- 0CUp+yain6Hl+VX3kUh/iKs0sg66qTJkmsVaIZKNWOFAYF9QP22qD4uJCwOK4v4CD/QJ4IMxdjP
- YJvJnPPtW4Z7TgPssDA==
-X-Proofpoint-GUID: BI2cxKGAEKJYjpJtdhn7B-QEcpA1kyCp
-X-Proofpoint-ORIG-GUID: qYdT_-xCKwD220TGgWg54Kp8opywLsvm
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE2MDA1MiBTYWx0ZWRfX8QDgacc7g/xQ
- R45WROGLPAbi8OaA0R2kULYl5urC62K2wuewINkM1+Rm44n0HIYLOVTtchd4A32Evje1KsgqdRU
- +wHkkM8pKRO1Ddbq93xCai2bVyWQeXQ=
-X-Authority-Analysis: v=2.4 cv=btHZl0ai c=1 sm=1 tr=0 ts=6ad225cd cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE2MDA1MiBTYWx0ZWRfX4WHfQ1W7wcu6
+ yaUgmPuJg+SPqEGkimZtjqa1vy4PJdUR4nD6nG8hB+bcPG6rGKC5+wVsoYEcDlRdTLilGo02wF8
+ uMaIPfKxgFyAaIURCbxQwb+yqmzcV4E=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE2MDA1MiBTYWx0ZWRfX2tZyr/57vI0K
+ wjhX+iajny+iBnHRHRUN/VOJcAfOprHG6oFvrMN+FCT/GuEdPhKd4WzBmHdiF5Aj/zypnWLOmDB
+ sPAJwmWj0m1/AUukOGoJmnh93VMQUIX/xUMPNnbDWTrIT3f9VHvZIJbgkvye6+y28AngnkH2nBz
+ CjneMuH6GzvtKj1ws5mWy/iWgudcbMpzUjwKiM58Geed2yn7BK+liba3DJsuPit/EIzkLbUNLAj
+ 0BOl628uFCQfXwStaDC5KQTmmQsw5O/20+Txl9Fwj59ms6jDzeP7lc/W1MdTwKguaM5wMfzX+6A
+ 5JVIzV5mNiIXsqMOazz5QDfHIQxS5tf0PHw6lN1WGhBkUEHODZ9wR26ik+aMtUvO67ZlCEzr80N
+ GIl7eLdffnAnpo1ysxJKYXc7cZsDe+awTOxzPt987pzF+nC85QMDaUR2OpDGkT7LIsV6VajCiSU
+ mU8N8LQ8XyJNNN+VsaA==
+X-Authority-Analysis: v=2.4 cv=E6pYNqdl c=1 sm=1 tr=0 ts=6ad229e6 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
  a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=dlV8YpW79Mn5UFwVz3cA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=K0jeOQhstxwOhyhfrK8A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: DkEQCYaunIu9jw2BbyhxhUMgtZ1rsqrC
+X-Proofpoint-GUID: 6jv_EiBt89_ZMqRCvPVa1SGK35B2xEw_
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-10-16_01,2026-10-14_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 malwarescore=0 phishscore=0 impostorscore=0 adultscore=0
- lowpriorityscore=0 priorityscore=1501 clxscore=1015 spamscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
- definitions=main-2610160052
+ impostorscore=0 phishscore=0 clxscore=1015 bulkscore=0 priorityscore=1501
+ spamscore=0 adultscore=0 suspectscore=0 malwarescore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610080000 definitions=main-2610160052
 
-Hi Vincent,
+During early boot (early_trace_init() called from start_kernel()),
+tracing allocates initial ring buffers (temp_buffer, array_buffer, and
+snapshot_buffer) for CPU 0.  Later, as secondary CPUs come online during
+smp_init(), each CPU's ring buffer is allocated via trace_rb_cpu_prepare().
 
-Thanks for reviewing this patch.
+Before attempting page allocation, __rb_allocate_pages() performs a
+heuristic check using si_mem_available() to return early with -ENOMEM if
+memory appears insufficient.
 
-On 2026/10/12 05:38 PM, Vincent Donnefort wrote:
-> On Fri, Oct 09, 2026 at 10:05:57PM +0530, Amit Machhiwal wrote:
-> > During early boot (early_trace_init() called from start_kernel()),
-> > tracing allocates initial ring buffers (temp_buffer, array_buffer, and
-> > snapshot_buffer) for CPU 0.
-> > 
-> > Before attempting page allocation, __rb_allocate_pages() performs a
-> > heuristic check using si_mem_available() to return early with -ENOMEM if
-> > memory appears insufficient.
-> > 
-> > However, on kernels built with CONFIG_DEFERRED_STRUCT_PAGE_INIT=y,
-> > defer_init() leaves only a single section per node (e.g.  16 MiB with 64
-> > KB pages) initialized up-front.  On kernels with large static binary
-> > footprints (such as debug configurations enabling PAGE_OWNER,
-> > DEBUG_PAGEALLOC, KFENCE, or SLUB_DEBUG), the static kernel image and
-> > early core initialisations (SLUB caches, vmalloc, static ftrace records)
-> > consume virtually all managed pages in this initial pool.
-> > 
-> > At T=0.000000, watermarks have not yet been established
-> > (totalreserve_pages = 0), so si_mem_available() returns the raw free
-> > page count (often 0-1 pages).  When the snapshot buffer or global trace
-> > buffer attempts to allocate 2 sub-pages, si_mem_available() returns <
-> > nr_pages and prematurely aborts with -ENOMEM.
-> > 
-> > This failure is false: if the page allocation were actually attempted
-> > via alloc_pages_node(), the page allocator would trigger
-> > deferred_grow_zone() on demand to initialise additional deferred memory
-> > sections.  Checking si_mem_available() before attempting the allocation
-> > short-circuits this on-demand growth.
-> > 
-> > Skip the si_mem_available() check when system_state == SYSTEM_BOOTING.
-> > Once the system transitions past early boot and page_alloc_init_late()
-> > initialises all deferred memory, si_mem_available() accurately reflects
-> > system-wide free memory and the check operates as intended for runtime
-> > allocations.
-> > 
-> > Fixes: 2a872fa4e9c8 ("ring-buffer: Check if memory is available before allocation")
-> > Cc: stable@vger.kernel.org
-> > Reported-by: Michal Suchánek <msuchanek@suse.de>
-> > Closes: https://lore.kernel.org/all/arYskzbiaNzBR9MD@kunlun.suse.cz/
-> > Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
-> > ---
-> >  kernel/trace/ring_buffer.c | 8 +++++++-
-> >  1 file changed, 7 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-> > index 04bb94c29f58..a9f82e2f8fad 100644
-> > --- a/kernel/trace/ring_buffer.c
-> > +++ b/kernel/trace/ring_buffer.c
-> > @@ -2452,9 +2452,15 @@ static int __rb_allocate_pages(struct ring_buffer_per_cpu *cpu_buffer,
-> >  	 * memory. It may not be accurate. But we don't care, we just want
-> >  	 * to prevent doing any allocation when it is obvious that it is
-> >  	 * not going to succeed.
-> > +	 *
-> > +	 * Skip this check during early boot: with CONFIG_DEFERRED_STRUCT_PAGE_INIT,
-> > +	 * NR_FREE_PAGES only reflects the initial non-deferred pool at this
-> > +	 * stage. si_mem_available() returns a false negative while actual
-> > +	 * allocations succeed by growing the zone on demand via
-> > +	 * deferred_grow_zone().
-> 
-> As Sashiko pointed-out, if si_mem_available() is only ready after
-> page_alloc_init_late() when CONFIG_DEFERRED_STRUCT_PAGE_INIT, then checking for
-> system_state >= SYSTEM_FREEING_INITMEM might be more correct.
-> 
-> Also I wonder if we don't want to guard with CONFIG_DEFERRED_STRUCT_PAGE_INIT,
-> to keep the verification when CONFIG_DEFERRED_STRUCT_PAGE_INIT is unset.
+However, on kernels built with CONFIG_DEFERRED_STRUCT_PAGE_INIT=y,
+NR_FREE_PAGES only reflects the initial non-deferred pool across the entire
+period from early_trace_init() through smp_init().  defer_init() leaves
+only a single section per node (e.g.  16 MiB with 64 KB pages) initialized
+up-front, and on kernels with large static binary footprints (debug
+configurations enabling PAGE_OWNER, DEBUG_PAGEALLOC, KFENCE, or SLUB_DEBUG),
+early core initialisations (SLUB caches, vmalloc, static ftrace records)
+consume virtually all managed pages in this pool.
 
-Both suggestions adopted in v2 — using system_state >= SYSTEM_FREEING_INITMEM
-and wrapping in #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT.
+si_mem_available() therefore returns a false negative (often 0-1 pages)
+across both SYSTEM_BOOTING (for the initial CPU 0 buffers) and
+SYSTEM_SCHEDULING (for secondary CPU buffers via trace_rb_cpu_prepare()),
+causing __rb_allocate_pages() to prematurely abort with -ENOMEM.
 
-Thanks,
-Amit
+This failure is false: the buddy allocator is designed to replenish
+ZONE_NORMAL on demand via deferred_grow_zone() when an actual allocation
+is attempted.  Checking si_mem_available() before calling alloc_pages_node()
+short-circuits this on-demand growth entirely.
+
+deferred_grow_zone() is only permanently disabled after page_alloc_init_late()
+completes (it spawns per-node kthreads and blocks until done), which happens
+inside kernel_init_freeable() — before system_state is set to
+SYSTEM_FREEING_INITMEM.  Skip the si_mem_available() check until
+SYSTEM_FREEING_INITMEM, at which point all deferred pages are initialized
+and si_mem_available() is accurate.
+
+Wrap the guard in #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT so that on kernels
+without deferred init the original check is preserved unchanged.
+
+Fixes: 2a872fa4e9c8 ("ring-buffer: Check if memory is available before allocation")
+Cc: stable@vger.kernel.org
+Reported-by: Michal Suchánek <msuchanek@suse.de>
+Closes: https://lore.kernel.org/all/arYskzbiaNzBR9MD@kunlun.suse.cz/
+Link: https://lore.kernel.org/all/arYskzbiaNzBR9MD@kunlun.suse.cz/
+Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
+---
+Changes since v1:
+ - Extend the guard to cover SYSTEM_SCHEDULING as well: smp_init() calls
+   trace_rb_cpu_prepare() -> __rb_allocate_pages() before page_alloc_init_late()
+   completes, so the false negative window spans both SYSTEM_BOOTING and
+   SYSTEM_SCHEDULING. Use system_state >= SYSTEM_FREEING_INITMEM as the correct
+   boundary.  (Sashiko, Vincent Donnefort)
+ - Wrap in #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT to preserve the original
+   check unchanged on non-deferred kernels. (Vincent Donnefort)
+ - Drop Tested-by: guard condition changed, requesting fresh test.
+
+ kernel/trace/ring_buffer.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index 04bb94c29f58..aa877a272c89 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -2452,10 +2452,24 @@ static int __rb_allocate_pages(struct ring_buffer_per_cpu *cpu_buffer,
+ 	 * memory. It may not be accurate. But we don't care, we just want
+ 	 * to prevent doing any allocation when it is obvious that it is
+ 	 * not going to succeed.
++	 *
++	 * With CONFIG_DEFERRED_STRUCT_PAGE_INIT, NR_FREE_PAGES only reflects
++	 * the initial non-deferred pool during early boot and throughout SMP
++	 * bring-up (smp_init() runs before page_alloc_init_late() completes
++	 * deferred initialization). si_mem_available() returns a false negative
++	 * across this entire window while actual allocations succeed by growing
++	 * the zone on demand via deferred_grow_zone(). Only re-enable the check
++	 * from SYSTEM_FREEING_INITMEM onward, after page_alloc_init_late() has
++	 * finished and si_mem_available() is accurate.
+ 	 */
+ 	i = si_mem_available();
++#ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
++	if (system_state >= SYSTEM_FREEING_INITMEM && i < nr_pages)
++		return -ENOMEM;
++#else
+ 	if (i < nr_pages)
+ 		return -ENOMEM;
++#endif
+ 
+ 	/*
+ 	 * If a user thread allocates too much, and si_mem_available()
+
+base-commit: 2f2f7eeef8b0a1a9b9ca998231419873ccae8d4e
+-- 
+2.54.0 (Apple Git-157)
+
 
