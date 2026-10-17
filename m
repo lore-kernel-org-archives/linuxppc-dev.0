@@ -1,136 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-29616-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29617-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD434CCA46C
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Oct 2026 02:25:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2825ACC6B2A
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Oct 2026 07:49:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j65J206spz2yqx;
-	Sat, 17 Oct 2026 13:25:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::6" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792203921;
-	cv=pass; b=UYFMVoE0Ktbotd0CTPbJ1kipcAIkaQcPGeXOi3OFLd6mmQ5tQOlS2KhIZWBA0H9+LJqWJBzsPVW7mKzsl3kj/GI5M2HpukTA6zPpf4qCmXeXNkk3/z3vPUhyTLE6czKCrSSPQ/JtICPt4jhNHyJPsK39HSrMRWrxgIunaY+2ACIyxy+HN0VEswOU7pHs8lCSM2nKtamOfoe7Ry4z9eHXCTLDsaxl5WkK6ingRdks9vQBtiUSlYNlEubQ8Ta/TUuJe2zbxTuc32TsvdODKBUHJaEvTi/Qep2SJ3N/o/oAWf5aburAN7+gZngmGNKA8T76gI1SZmMQZOIGLxf7c+TJDQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792203921; c=relaxed/relaxed;
-	bh=RlmdC/ZrC2wE8s5bUwcx60nsjLZEKFAjdQUiwuhb7TU=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=W59sag00m7724MyxLquveh//13BhxxWfT4cCsRnw54OSpUiKkf0z3VLhTIJfVG6C8UTQUAo0TRRnLVudNTmigK9BPWY7OB/ad0K0Qhw2v/mJpA+Smnaax8SIHpO5rwBhdBscNbk5CxGT+2rte7dOPm12Nk/8Ny3G75QQJOql3glKKigBd+3tcYPk4l2qtdGzSNyJpweP03QCfGFm0oe60JqwIoUt6t0rUdgDbH3Aui/nWygp2BJZj6Njd7RRGWuukiUmAg1VzuojRJyI2uiWzTAHc04x7Awi9FfD3P4AFzsA6n5SlBW8SghYIzr7mzhNtZqx2hjuaWp+GVy9h40+Ug==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=jSMcoIF7; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j6DV33jChz2y8p;
+	Sat, 17 Oct 2026 18:49:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792223371;
+	cv=none; b=clkGPWkQKqDoE9AeEjCyILtZlgAAoTa6+f0D19yCq9sEAZOl4eQ9T+YipbM0jqXzvfxplM6DnGuj2xcWz+EIPiKmujaj8INwx9MJdxHDP9QNxtm6xnhSBJcHjwdBj2EZjOwCWG8wlLORIRONNbq2OQuV7otbrQ5Dkdvbqotv+Qkfo8HCOlnuwk4TDiZeB6HQhUVbmLx0unLBWwXhS1Fb2doaocfkXtVSP/qz6Gd6hSvLoRTFGWvMQI+ca+/6QpSuOounfiHbkflELY4DdeAjdC0BmtMMdHYtOv6biBr/LTYLPLWZWHz+s0Nge6d8WwdsdSmwtEewktECoMHb7KnJAg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792223371; c=relaxed/relaxed;
+	bh=YGtmJBwKncS1PAThUiWF9iq283hv0ltSY2UFhEGSTPw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=HIddR+CBTBDBhSNOyYp6b7CkDwr4mrQ2KEqhDGiRb3SlVdyJrfGZf6szQLI8q+1zTkQp+SSafUT2eBCaIq/NK5iUXFJ8Gq+ldlpvPVFOllvFlShLDdhlUqs6qFFLL1Z2bNuBJyfQvxvvFA1XLKWjVpge541fvlqLzoO0MteEyFM/wFTFMtYreJIUYS4P/WmTinak+Th/pp4lGFUzGDvnLKksH4A6KbCh/jtFf3N32C3biNUALfHajgGq3i+TJnslMAp3vP9+wcWcGuKIdsEJ3T7AbCtF1HJ0JmUHvm1lLahGm1HPLnGQZZPsqA5qcccudTLGgAf9oT7ytIMA2OrfMQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BnyR++cR; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=jSMcoIF7;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BnyR++cR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
-Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazlp170130006.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::6])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j65Hz4Qn5z2yfs
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2026 13:25:18 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=fGRSqtPrGB1UWsIMBLXKAIEibVODe0iFB2TSq3/iRpqLPjDZeA46wmE6FnzE3PFr0Wlwqbz8mAZXogsvLSkIod5k4aMrcg1/QKfheqwWY8aKSbx7Hu3difETiVrfwQCWY6L4l4TSjjvF86gpN/m90GVCFdSsVWvYaihk9yFqTW4dkg9bKb4FSzlJJLobXI3Y932Vi5gi33ifZAvuCwHqKgb+4Gjbz9/ip1zEYICKCMbZ1lHHvgGZzQx/8P43Y11O/58+m+y6pzKbN8QAFaeaE0+69JeZ24ymQet3PaN+g6Pq4CI+5SQoT486vOaX4syoblp56hPBWLKY1rcCf0XwIQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=RlmdC/ZrC2wE8s5bUwcx60nsjLZEKFAjdQUiwuhb7TU=;
- b=EnnTZ7efK97Oa86yOnDGb5DG5W9SRY1gv5xlsJgA8mcqhw+HJXs26zGQce9vT+9X60SGAdl8GPYzwtT8LEZ6g3GX2FDoP4uvSPqrCuPqOZnlpwSmoRMBK1lDuLV22Y3vw+mrbREfX7ga6SLSLEhaO1jZA2WHXBVawIaJGe4uBea62fv7L9m/bJhvUBiGkizw15Y+l7zpGmUAFKbsfVK3lmsgJYOXnPMAsp2U+oRlvb0oeaJ82oNrmTu57Z3ASlsiGXajGUTgjuCjboeKEbfziYIQjYoUUSqT9xmNqcfT4WGZvlgZ/oPpaYfsdBZGd7bCZRPDUFvddPpjr20tTsb/XA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=RlmdC/ZrC2wE8s5bUwcx60nsjLZEKFAjdQUiwuhb7TU=;
- b=jSMcoIF7eu67kLk7m2ZS/jG5rrVVp45RenXa+oaKDmpAWZP3g+nb5vT3UImcPB6xHorkDGedLnHZrpsrLM8afg0N8v/IeAxVOLWf8TJasj0UMwPEcTzOqcHoOHmKaC3gwP+M1hIK0dxtu4wT28I9L1uZpfPV8fsrykgC/7MQlWjHxEfZjbJ44cclBy9fdwBQMi3qeJDQ4SFaRXtnHRfHk/098FWwpB7qxRbNBJmYWVxghc2TVmhwgLlw5XkHJKmoc5HWOwrIrBQq+7QTsIEwizLn1REMl3cV8VFp4SZyPmH3LUEi5i9wqMnO6XyrihV3L//YttyAwR1D12wGtd4MBg==
-Received: from DB9PR04MB9332.eurprd04.prod.outlook.com (2603:10a6:10:36c::6)
- by GVXPR04MB10754.eurprd04.prod.outlook.com (2603:10a6:150:225::10) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.522.14; Sat, 17 Oct
- 2026 02:24:50 +0000
-Received: from DB9PR04MB9332.eurprd04.prod.outlook.com
- ([fe80::75d8:3bd9:28df:cfdb]) by DB9PR04MB9332.eurprd04.prod.outlook.com
- ([fe80::75d8:3bd9:28df:cfdb%2]) with mapi id 15.21.0522.013; Sat, 17 Oct 2026
- 02:24:50 +0000
-From: Wei Fang <wei.fang@nxp.com>
-To: "Frank Li (OSS)" <frank.li@oss.nxp.com>, Marek Vasut <marex@nabladev.com>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Vladimir Oltean
-	<vladimir.oltean@nxp.com>, "Christophe Leroy (CS GROUP)"
-	<chleroy@kernel.org>, "David S. Miller" <davem@davemloft.net>, Andrew Lunn
-	<andrew+netdev@lunn.ch>, Clark Wang <xiaoning.wang@nxp.com>, Claudiu Manoil
-	<claudiu.manoil@nxp.com>, Conor Dooley <conor+dt@kernel.org>, Eric Dumazet
-	<edumazet@kernel.org>, Frank Li <frank.li@nxp.com>, Jakub Kicinski
-	<kuba@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Paolo Abeni
-	<pabeni@redhat.com>, Rob Herring <robh@kernel.org>,
-	"UNGLinuxDriver@microchip.com" <UNGLinuxDriver@microchip.com>,
-	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-	"imx@lists.linux.dev" <imx@lists.linux.dev>,
-	"linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
-	<linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [net-next,PATCH 2/2] enetc: Make eMDIO MDC rate configurable from
- DT
-Thread-Topic: [net-next,PATCH 2/2] enetc: Make eMDIO MDC rate configurable
- from DT
-Thread-Index: AQHdXaVPTB8CJdKLoUewahs8NUD/ZLcAl7OAgABoBfA=
-Date: Sat, 17 Oct 2026 02:24:50 +0000
-Message-ID:
- <DB9PR04MB933217F7ADCB6223A44DACA7889A2@DB9PR04MB9332.eurprd04.prod.outlook.com>
-References: <20261016193344.115518-1-marex@nabladev.com>
- <20261016193344.115518-2-marex@nabladev.com> <atKDNdxl0w65s8yQ@SMW015318>
-In-Reply-To: <atKDNdxl0w65s8yQ@SMW015318>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-msip_labels:
-authentication-results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: DB9PR04MB9332:EE_|GVXPR04MB10754:EE_
-x-ms-office365-filtering-correlation-id: 886d8eae-da9c-4722-6146-08df2bf5d273
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|19092799006|23010399003|376014|1800799024|7416014|366016|261009223027099003|6133799003|18002099003|10067099003|22082099003|4143699003|11063799006|38070700021|56012099006;
-x-microsoft-antispam-message-info:
- giYjXPglTBeQWDBLuEXOHODYW3VeC/AddZnYh2zykdTi3fxSKePv3mMOyUJCVq5onkFATkW4Gs79DDYPVOBL2FSZQqa7MnB9aCKf7ss8CNlmUZxExm/UouCGxRhTNDXXniGsRhHsSE5Kt9KK4UPvaSR+pjwEW6R66MAxgiKGm0bLHRyYMWQBJk+o43Zr5NJIvxb+tyoj8Kcg1C4GgeslSAE5uw+GMJjD0Bet03EGUcpEecz/KrivWkOIBqwHS4EC6Hm/74C8OenK10f8O5P9HijiPOka8AVrUDAhic2Ddhcc90kUHzlNfeBM4FJFXcPlxF1SVpbTwMvPHeybx+e5S679HSj8xRsAAZJO197OwxySixUbqqMdI37s/5afipTlAUVC8I5m5YIC2gHXF2C/UK5Dy3jejIvF+l7Toa9d30Fm9kM+rnvvxCwbMbNs61rZBTAzXKvUG/tGjQLVl7hMJ9Ut/HO5We1rNBSKoL/5mAoK+BXfJSgnKkA2+g/XwO3LwWZV4BH0i4tKzvSIT3WWWi5A1dNgAVL63aha7Dw0YIpoou89MTwfvhZMOJ5Hr2GlYfKMXO69RlBAAXVM8/LMMDAWVY3OJPAiOLpevdmTqmYVkGONX3gnH3vnRJ04ffmo+w+DOEaF55iaMEx5pMh//enOasg9W6ERI4dOaRJ/M8bpXCeQ+LPlSjMpfhiRimXJ6kH0gBrgHq65ZWwWcQL78w9siplbhWw+mfBq4gDRmiQ=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR04MB9332.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(23010399003)(376014)(1800799024)(7416014)(366016)(261009223027099003)(6133799003)(18002099003)(10067099003)(22082099003)(4143699003)(11063799006)(38070700021)(56012099006);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?TXoMRRWqcoF2V1IhUfs6nIOWYB5jWNG3KyaQjCVanuqwItF2ZeP5wFsTWTUc?=
- =?us-ascii?Q?52OxOxyx7RzCJeiHre4PqgpaUByfFmvq+hwi1o3gPdu7UsaoyoDbXFJGUQuo?=
- =?us-ascii?Q?JxXyondc5H3yDc4lZ9y7SMnuPQdksxpZVfrMlyfffoSedK4KtiM3VjDifiuJ?=
- =?us-ascii?Q?XPdPMRSkpGN+vRx0vtb+VtjyhJM5/AgNHEoEQzrV1+Un3F0B0IEBlAJ1mks3?=
- =?us-ascii?Q?bDLDlVKrHNTJEF0BJ+dpcXdIT8jluRhZqSn/uGqw7vh1MkOPiIkrA2nDfIOo?=
- =?us-ascii?Q?5WGWE5Sx5W0A5OQxcFBcXG6rC2sWb27N+6W3SI/0QMtogF3psCq4qniDJj4H?=
- =?us-ascii?Q?Ze+vBB9GZn5kORTPuGlYJL5WXW1+0R/qaj4731SLjg7s0oodQEDZuCRdM7Z8?=
- =?us-ascii?Q?EzUpExAp577SLvEvG+iYrShLJ7IVdT5W33Tx8GuzVEUhWqnz2J/c7qrKraVO?=
- =?us-ascii?Q?R20mNkMpCyUnoXnc4G0PGda0oyfUGKyou5rk+JyjaawHvLQZMPQYZzUL/kY7?=
- =?us-ascii?Q?Ay9BMraypVRIt7PMGNSj639h4kzHOiFn34+JuL74H+5wmjyofE203fvpdq2M?=
- =?us-ascii?Q?tiviGpwT9HVDwv7SEdRboNTREBopkROWPMjGgypn+TZsvPuA27kZyLcLL/li?=
- =?us-ascii?Q?whbPCn5rjV+RZM0sVsVeB+vFNu+ccvencAOXKc+3nVPPuVOuHPfFmOiCdO9a?=
- =?us-ascii?Q?KveOujJZ//LGsBVmrYRqFW0nBdwsQvJTuqubS8zZVeaiUzlIufz++a2rgYSG?=
- =?us-ascii?Q?pI9/QTSV7a9g9xFC+eJbVue/JCCT4UmLQpBfG/LXKVHFDov6GZ8mi70vlf4n?=
- =?us-ascii?Q?pM152kYMJfMr/Lz273GDSddJK3UsjIr/3mpH9TdACaVfl17HW7EFFwp/wmEg?=
- =?us-ascii?Q?H2KMPcheE0/lZFOFNfrD7Ny7sW0WPoHFPrCOXcZiRgVBlHrqBeFc+A/m7ZVy?=
- =?us-ascii?Q?QDZ9kpRPPJgrcI5YAOt87i5+A1/OEAgzFoisQoBRhFPzbdzuh0AxnO5/Pyx+?=
- =?us-ascii?Q?a9atvfLp3v0zxF5y2iBWcac1y5J+vtz9+a+x8/pLx+iNPUKhnMs/sDOu2vRm?=
- =?us-ascii?Q?aARCkEV8eQCMxg5tGE1CpAYfWIQI4fSmO1untf0Apua0ulfEWVVSLPa1B8lZ?=
- =?us-ascii?Q?JV8LxrR1tbV9tAZNCxFPLQNvNZ7cPZD5UIslrn4/2cElxdqfPnexRadAMkoY?=
- =?us-ascii?Q?DvO4vPyeIFWl64N5ONzN+oVI2XAF4ArRnrf4vnyQLMdM8YquYyfVRUb96UNO?=
- =?us-ascii?Q?415xX/yIPXX8y8XKtOzPQ8x6GOF3pQ+yTcWkps5jK9LHkcvYYVMBU2cGZBZN?=
- =?us-ascii?Q?+J+J0/SC0xN+TqKnEC9dLPkStE1Xy1jshNgKhMtDAMlltIc4H5ZI/1rImAUE?=
- =?us-ascii?Q?6IZRhrwKV8r2RTW2na8Ainth1J/V4ZTt8FGF8bliXMrY2ohia1PsMUNVBJ1/?=
- =?us-ascii?Q?iOaS1T79dX2bM2u0YpKHL4Bu+JM/4jZMYQFqZMo9PJvzoDoH4SQBebtLScor?=
- =?us-ascii?Q?PvGVBGOn++6UvEsHK2iVhVBHD6Py9hneWPBsBBdUJswPOADc9xqACboEPaoQ?=
- =?us-ascii?Q?G8sSe9uZiDAKus/GtIbbb7UAyWx8vlQ+FtXQnhZqMKuageU0FvA7CDgBJFCW?=
- =?us-ascii?Q?zHf83kj6Np4TYsZAjNwL4soqroybt8IP/q3Z7SSa6jPLfALLdzTCpDdjd3qO?=
- =?us-ascii?Q?HJZ+vw4Nq+ZXQWqinSKliXlW6k4WEjWAX3Yc3YDQNBg8h6dF?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j6DV227nPz2y8Z
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2026 18:49:29 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69H7EG0Q096800;
+	Sat, 17 Oct 2026 07:49:14 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=YGtmJBwKncS1PAThUiWF9iq283hv0ltSY2UFhEGST
+	Pw=; b=BnyR++cRw9tUnJHWX5DmTr2Os/iwMF1c4FW8yTIFEix1KdfrMhMSgX8Dz
+	6TLqT4VnAeo4EZ6Ax+JU+9h+mHy0y2gAZzwTyGJMQYCpUWXUGe3Mtv0+6IjVWejT
+	QRdSWxn/rqw3MpxLvbb3ZRKcC42B5jES46OQthhjuFho8o006Cg+Ut9sWkAcJqOy
+	/NWLl2SozF9IMdm+V8uiOZQe1zgp0Y32mx1Q4EKpv5WmedDoFJSFocFu7IHB2x9F
+	B1XMbcmsIAr5X3BP1z/c6IFntbj3JvwSPjZQkpOuQ9qvo5wCjAkw7Ghf1wf0kmOF
+	jgVrc9vonz8ftB10kuMBopAHPOH8A==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hc0pt8s5x-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Sat, 17 Oct 2026 07:49:13 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69H6o5HW729247;
+	Sat, 17 Oct 2026 07:49:12 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4hb36wpuuk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 17 Oct 2026 07:49:12 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69H7n8kJ52953590
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sat, 17 Oct 2026 07:49:09 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DC59E20043;
+	Sat, 17 Oct 2026 07:49:08 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CFB9A20040;
+	Sat, 17 Oct 2026 07:49:00 +0000 (GMT)
+Received: from li-fc74f8cc-3279-11b2-a85c-ef5828687581.ibm.com (unknown [9.67.66.83])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sat, 17 Oct 2026 07:49:00 +0000 (GMT)
+From: Srish Srinivasan <ssrish@linux.ibm.com>
+To: linux-integrity@vger.kernel.org, keyrings@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org
+Cc: maddy@linux.ibm.com, ritesh.list@gmail.com, sshegde@linux.ibm.com,
+        mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
+        James.Bottomley@HansenPartnership.com, jarkko@kernel.org,
+        zohar@linux.ibm.com, linux-kernel@vger.kernel.org,
+        linux-security-module@vger.kernel.org, nayna@linux.ibm.com,
+        rnsastry@linux.ibm.com, ssrish@linux.ibm.com
+Subject: [PATCH v3 0/6] Extend PKWM to support user-created wrapping keys
+Date: Sat, 17 Oct 2026 13:18:44 +0530
+Message-ID: <20261017074850.164031-1-ssrish@linux.ibm.com>
+X-Mailer: git-send-email 2.56.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -144,182 +90,103 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: DB9PR04MB9332.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 886d8eae-da9c-4722-6146-08df2bf5d273
-X-MS-Exchange-CrossTenant-originalarrivaltime: 17 Oct 2026 02:24:50.7335
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: MXpGZIatfbKKxUfTK3B59AUPDBD0FwoN+GRKqtDpf2qrirz8/lF6UOhxjFDOevHjG71kBL/Oq32ps08iehIp7w==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: GVXPR04MB10754
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE3MDAzMCBTYWx0ZWRfX8+mGcT6BvRW1
+ zuJLWEiN9oB/KMyRIIf/n+acoPjcx46L8HxGkJXtbZbdiUeYQ/fhFz/rLlyIAJk3jwZOcrQUlg1
+ v1mEX8VHZk7pFEIbYbpGv1wfWKQnM4N8/7eVbqzdWKl1EFTzznXT6DzLe+ssrbfmph9MORzG8gn
+ HLsj4EZNzdxP4h/EbNMgsLwNk+buKXZ/s8OciMx2dv+ke/DDsyVMkzoyqMomMU4FH4c7JKkXnEk
+ fUlaGmVHCcLBB2jjK0zTyKaqRE/jRb9Au8d+/IlDvXXVb7FeC0WiLmsFCZAVwK+N63ibccklIPQ
+ 1nrEK56MAVAp0ymP+S2nNcr/BkO0FY2M1NobYfzIe4YhAFXi/0mRqfmgi1yvuIHSVpR9ssiG8Jr
+ 470EyZDqR3sTCpSHi2d42MysXGH4yV5W4mmS4pEZT+gx61W50VyfCpYrnNTULYy5qos0Lfk9sh2
+ frpyKitvd9ckmppzh9Q==
+X-Authority-Analysis: v=2.4 cv=WNvqzXsR c=1 sm=1 tr=0 ts=6ad3287a cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=UMd8ISttMeN8S66s6c4A:9
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE3MDAzMCBTYWx0ZWRfX4yaf8oFa67a9
+ h8EBVoi994u4nJjED2M0/cBs09OfjwYkFsuG+w/fgLNr5228tEkZTE9avjmVWtRrxFTYR59biYg
+ Oi8cGVYFbn9vNsW61yBlIxp+qm9R2Dk=
+X-Proofpoint-GUID: oyrami6cW6x-CayfwHU7c7pVvgygQcB9
+X-Proofpoint-ORIG-GUID: tca4IdchuDNSe4N3CVqNcUUFkAcn0Skj
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-17_02,2026-10-14_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 malwarescore=0 spamscore=0 impostorscore=0 phishscore=0
+ suspectscore=0 bulkscore=0 priorityscore=1501 adultscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610080000 definitions=main-2610170030
 
-> On Fri, Oct 16, 2026 at 09:32:01PM +0200, Marek Vasut wrote:
-> > The current eMDIO MDC rate is hard-coded in the drivers which use the
-> > eMDIO MDC, this is not flexible for various deployments of SoCs which
-> > use the eMDIO interface, for example i.MX95 B0 MDC clock is currently
-> > set to 644 kHz.
-> >
-> > Introduce enetc_mdio_priv .mdc_div field which contains the divider
-> > used for MDC clock and pass it around, including into functions which
-> > configure the MDC clock. This way, drivers which use the eMDIO can set
-> > the divider as needed. Introduce enetc_mdio_update_mdc_div() function
-> > which calculates the divider from upstream clock and clock-frequency
-> > DT property, both of which are optional to retain compatibility with
-> > older DTs. This is modeled according to xgmac_mdio_set_mdc_freq().
-> >
-> > Suggested-by: Vladimir Oltean <vladimir.oltean@nxp.com>
-> > Signed-off-by: Marek Vasut <marex@nabladev.com>
-> > ---
-> > Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-> > Cc: "David S. Miller" <davem@davemloft.net>
-> > Cc: Andrew Lunn <andrew+netdev@lunn.ch>
-> > Cc: Clark Wang <xiaoning.wang@nxp.com>
-> > Cc: Claudiu Manoil <claudiu.manoil@nxp.com>
-> > Cc: Conor Dooley <conor+dt@kernel.org>
-> > Cc: Eric Dumazet <edumazet@kernel.org>
-> > Cc: Frank Li <Frank.Li@nxp.com>
-> > Cc: Jakub Kicinski <kuba@kernel.org>
-> > Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>
-> > Cc: Paolo Abeni <pabeni@redhat.com>
-> > Cc: Rob Herring <robh@kernel.org>
-> > Cc: UNGLinuxDriver@microchip.com
-> > Cc: Vladimir Oltean <vladimir.oltean@nxp.com>
-> > Cc: Wei Fang <wei.fang@nxp.com>
-> > Cc: devicetree@vger.kernel.org
-> > Cc: imx@lists.linux.dev
-> > Cc: linux-arm-kernel@lists.infradead.org
-> > Cc: linux-kernel@vger.kernel.org
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > Cc: netdev@vger.kernel.org
-> > ---
-> > NOTE: I could only test i.MX95 , I could not test LS or Felix
-> > ---
-> >  drivers/net/dsa/ocelot/felix_vsc9959.c        |  5 +++
-> >  .../net/ethernet/freescale/enetc/enetc_mdio.c | 39 ++++++++++++++++---
-> >  .../ethernet/freescale/enetc/enetc_pci_mdio.c |  5 +++
-> >  .../freescale/enetc/enetc_pf_common.c         | 10 +++++
-> >  include/linux/fsl/enetc_mdio.h                |  6 +++
-> >  5 files changed, 59 insertions(+), 6 deletions(-)
-> >
-> > diff --git a/drivers/net/dsa/ocelot/felix_vsc9959.c
-> b/drivers/net/dsa/ocelot/felix_vsc9959.c
-> > index 8387dd208adb9..dbeec1b229325 100644
-> > --- a/drivers/net/dsa/ocelot/felix_vsc9959.c
-> > +++ b/drivers/net/dsa/ocelot/felix_vsc9959.c
-> > @@ -1008,8 +1008,13 @@ static int vsc9959_mdio_bus_alloc(struct ocelot
-> *ocelot)
-> >  	 * starting with the proper offset.
-> >  	 */
-> >  	mdio_priv->mdio_base =3D 0;
-> > +	mdio_priv->mdc_div =3D ENETC_MDIO_DEFAULT_DIVIDER;
-> >  	snprintf(bus->id, MII_BUS_ID_SIZE, "%s-imdio", dev_name(dev));
-> >
-> > +	rc =3D enetc_mdio_update_mdc_div(bus);
-> > +	if (rc)
-> > +		return rc;
-> > +
-> >  	/* Needed in order to initialize the bus mutex lock */
-> >  	rc =3D mdiobus_register(bus);
-> >  	if (rc < 0) {
-> > diff --git a/drivers/net/ethernet/freescale/enetc/enetc_mdio.c
-> b/drivers/net/ethernet/freescale/enetc/enetc_mdio.c
-> > index 998aaa394e9c4..93d61c2f1464f 100644
-> > --- a/drivers/net/ethernet/freescale/enetc/enetc_mdio.c
-> > +++ b/drivers/net/ethernet/freescale/enetc/enetc_mdio.c
-> > @@ -1,6 +1,7 @@
-> >  // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
-> >  /* Copyright 2019 NXP */
-> >
-> > +#include <linux/clk.h>
-> >  #include <linux/fsl/enetc_mdio.h>
-> >  #include <linux/mdio.h>
-> >  #include <linux/of_mdio.h>
-> > @@ -22,9 +23,9 @@
-> >   /* external MDIO only - driven on neg MDC edge */
-> >  #define MDIO_CFG_NEG		BIT(23)
-> >
-> > -#define ENETC_EMDIO_CFG \
-> > +#define ENETC_EMDIO_CFG(mdc_div) \
-> >  	(MDIO_CFG_HOLD(2) | \
-> > -	 MDIO_CFG_CLKDIV(258) | \
-> > +	 MDIO_CFG_CLKDIV(mdc_div) | \
-> >  	 MDIO_CFG_NEG)
-> >
-> >  #define MDIO_CTL_DEV_ADDR(x)	((x) & 0x1f)
-> > @@ -63,7 +64,7 @@ int enetc_mdio_write_c22(struct mii_bus *bus, int
-> phy_id, int regnum,
-> >  	u16 dev_addr;
-> >  	int ret;
-> >
-> > -	mdio_cfg =3D ENETC_EMDIO_CFG;
-> > +	mdio_cfg =3D ENETC_EMDIO_CFG(mdio_priv->mdc_div);
-> >  	dev_addr =3D regnum & 0x1f;
-> >  	mdio_cfg &=3D ~MDIO_CFG_ENC45;
-> >
-> > @@ -95,7 +96,7 @@ int enetc_mdio_write_c45(struct mii_bus *bus, int
-> phy_id, int dev_addr,
-> >  	u32 mdio_ctl, mdio_cfg;
-> >  	int ret;
-> >
-> > -	mdio_cfg =3D ENETC_EMDIO_CFG;
-> > +	mdio_cfg =3D ENETC_EMDIO_CFG(mdio_priv->mdc_div);
-> >  	mdio_cfg |=3D MDIO_CFG_ENC45;
-> >
-> >  	enetc_mdio_wr(mdio_priv, ENETC_MDIO_CFG, mdio_cfg);
-> > @@ -133,7 +134,7 @@ int enetc_mdio_read_c22(struct mii_bus *bus, int
-> phy_id, int regnum)
-> >  	u16 dev_addr, value;
-> >  	int ret;
-> >
-> > -	mdio_cfg =3D ENETC_EMDIO_CFG;
-> > +	mdio_cfg =3D ENETC_EMDIO_CFG(mdio_priv->mdc_div);
-> >  	dev_addr =3D regnum & 0x1f;
-> >  	mdio_cfg &=3D ~MDIO_CFG_ENC45;
-> >
-> > @@ -176,7 +177,7 @@ int enetc_mdio_read_c45(struct mii_bus *bus, int
-> phy_id, int dev_addr,
-> >  	u16 value;
-> >  	int ret;
-> >
-> > -	mdio_cfg =3D ENETC_EMDIO_CFG;
-> > +	mdio_cfg =3D ENETC_EMDIO_CFG(mdio_priv->mdc_div);
-> >  	mdio_cfg |=3D MDIO_CFG_ENC45;
-> >
-> >  	enetc_mdio_wr(mdio_priv, ENETC_MDIO_CFG, mdio_cfg);
-> > @@ -231,6 +232,32 @@ struct enetc_hw *enetc_hw_alloc(struct device
-> *dev, void __iomem *port_regs)
-> >  }
-> >  EXPORT_SYMBOL_GPL(enetc_hw_alloc);
-> >
-> > +int enetc_mdio_update_mdc_div(struct mii_bus *bus)
-> > +{
-> > +	struct enetc_mdio_priv *mdio_priv =3D bus->priv;
-> > +	struct device *dev =3D bus->parent;
-> > +	struct clk *enet_clk;
-> > +	u32 div, mdc_freq;
-> > +
-> > +	if (device_property_read_u32(dev, "clock-frequency", &mdc_freq))
-> > +		return 0;
-> > +
-> > +	enet_clk =3D devm_clk_get(dev, NULL);
-> > +	if (IS_ERR(enet_clk))
-> > +		return dev_err_probe(dev, PTR_ERR(enet_clk),
-> > +				     "Input clock unknown, not changing MDC
-> frequency\n");
->=20
-> binding said clock is optional. If return failure here, it will block
-> existing dts, which have not clock property.
->=20
+The PKWM trusted source currently uses a single default wrapping key per
+LPAR. This key is created during trusted source initialization, and all
+trusted keys backed by PKWM are sealed and unsealed using it.
 
-For EMDIO device, the clocks property is not added to
-fsl,enetc-mdio.yaml, I suppose this property should be added to the
-dt-binding doc if the clock is really needed here.
+Recent versions of PKWM allow users to create and manage their own wrapping
+keys through a set of lifecycle operations. This patch series brings these
+PKWM capabilities into the kernel, allowing users to create, manage, and
+select wrapping keys for sealing and unsealing their trusted keys, rather
+than requiring all trusted keys to use the default wrapping key.
 
-For ENETC device, we already have a 'ref' clock in the enetc node,
-so devm_clk_get(dev, NULL) may get the 'ref' clock rather than the
-system clock of NETC.
+This series extends PKWM to support user-created wrapping keys. It adds
+the required hcalls, allows users to select a wrapping key by label when
+creating PKWM-backed trusted keys, and introduces a sysfs interface for
+managing wrapping keys from userspace.
+
+This patchset also includes three fixes: one aligning the PLPKS wrapping
+length types with the underlying hcall interfaces, another preserving the
+original error returned when default wrapping key generation fails, and a
+third clearing sensitive PKWM seal and unseal buffers before freeing them.
+
+This series depends on the following PLPKS refactoring and hardening series
+and must be applied on top of it:
+
+https://lore.kernel.org/all/20260923182816.151451-1-ssrish@linux.ibm.com/
+
+Changelog:
+
+v2 -> v3:
+- Moved most of the refactoring and hardening patches into a separate
+  series:
+  https://lore.kernel.org/all/20260923182816.151451-1-ssrish@linux.ibm.com/
+- Added a fix to clear sensitive PKWM seal and unseal buffers before
+  freeing them
+- Retained Nageswara's Tested-by tag
+- Refined error handling and documented default wrapping key restrictions
+
+v1 -> v2:
+- Addressed parameter validation issues reported by Nageswara
+- Tweaked PLPKS_WRAPKEY_SYSFS Kconfig help text
+- Added two preparatory bug-fix patches
+- Cc'd stable@vger.kernel.org where applicable
+
+Srish Srinivasan (6):
+  pseries/plpks: fix length types for wrapping operations
+  keys/trusted_keys: propagate wrapping key generation errors
+  keys/trusted_keys: clear sensitive PKWM buffers
+  pseries/plpks: add HCALLs for PKWM wrapping key life cycle management
+  keys/trusted_keys: enable PKWM wrapping key selection by label
+  pseries/plpks/wrapkey: expose PKWM wrapping key management to
+    userspace via sysfs
+
+ .../ABI/testing/sysfs-firmware-plpks          | 116 ++++
+ Documentation/arch/powerpc/papr_hcalls.rst    |  33 ++
+ .../security/keys/trusted-encrypted.rst       |   4 +-
+ arch/powerpc/include/asm/hvcall.h             |   5 +-
+ arch/powerpc/include/asm/plpks.h              |  40 +-
+ arch/powerpc/platforms/pseries/Kconfig        |  15 +
+ arch/powerpc/platforms/pseries/Makefile       |   1 +
+ arch/powerpc/platforms/pseries/plpks-sysfs.c  |  11 +
+ .../platforms/pseries/plpks-wrapkey-sysfs.c   | 399 ++++++++++++++
+ arch/powerpc/platforms/pseries/plpks.c        | 502 ++++++++++++++++--
+ include/keys/trusted_pkwm.h                   |   3 +
+ security/keys/trusted-keys/trusted_pkwm.c     |  48 +-
+ 12 files changed, 1126 insertions(+), 51 deletions(-)
+ create mode 100644 arch/powerpc/platforms/pseries/plpks-wrapkey-sysfs.c
+
+-- 
+2.52.0
 
 
