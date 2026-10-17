@@ -1,73 +1,136 @@
-Return-Path: <linuxppc-dev+bounces-29615-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29616-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 498B5CCF2C1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2026 21:55:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD434CCA46C
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Oct 2026 02:25:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j5zJt3VXVz2ygK;
-	Sat, 17 Oct 2026 08:55:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792187742;
-	cv=none; b=H4BHldhMEk1m1ktpog5YsP3f8GAKjfml62SNG/M8P69xPbllraWx27WGivggq2xi/BR99P1DqeTRA7YpAa7CmeXECtdq1rv0C53Wbwd6eUXaQWHp/+uBUscFQKmEBcREOj/au3zazyzhdIM4QfsBkWroL1//gg0RGhjyTAnD0wW0hPKzJt+4jXijnyNb8E+jZSVxk6y72zQ2DRuGa6F1xT7BT3sK2yJhC0pH/v9q8fXwldfCeAOOI4441qsIcIEAjd88vLxu6Oy4XBxzjqntGcprOSEJtDHqg5/uywpU7IzG8zq3X5VHOJ9NX2LTlfFP/S4aKW2pL9IV9Cea1ampaw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792187742; c=relaxed/relaxed;
-	bh=0BADyPuttV1npo1QJ/U5gqBi08d6l31PT4PbdQjqd1U=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Dq1VhHV9gfe9WhW6jpS1RrI6L/4CEjsayTkwoQTCTHeqT+4lst0RjMT+mf3OyizObSz7zKGEqUKewBmRn1DwmfIBnGCDiiAqZRyyRPKqXUjGD91xNLJojd/QbGRiM2DOtBigOfEiRrYSSjvExND6PByyKmJTccWUrlJcOwVU5xGURSRq4u/8EaNm3TzC7qwhfEl2hTipf3Dz5V37KzgSBbq4c87v0Jf4RFaMf9U0P7BVPhY58cj+4E0KRJMaqLmbKkuSzNcQMNLmDyUu02X33TtxxCemGly3/Vlto94I5ykHuGSpvi2tXw47hZHGEk0fPREH+3iQx7XlD5UPpcc76A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JtwqICHl; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j65J206spz2yqx;
+	Sat, 17 Oct 2026 13:25:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::6" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792203921;
+	cv=pass; b=UYFMVoE0Ktbotd0CTPbJ1kipcAIkaQcPGeXOi3OFLd6mmQ5tQOlS2KhIZWBA0H9+LJqWJBzsPVW7mKzsl3kj/GI5M2HpukTA6zPpf4qCmXeXNkk3/z3vPUhyTLE6czKCrSSPQ/JtICPt4jhNHyJPsK39HSrMRWrxgIunaY+2ACIyxy+HN0VEswOU7pHs8lCSM2nKtamOfoe7Ry4z9eHXCTLDsaxl5WkK6ingRdks9vQBtiUSlYNlEubQ8Ta/TUuJe2zbxTuc32TsvdODKBUHJaEvTi/Qep2SJ3N/o/oAWf5aburAN7+gZngmGNKA8T76gI1SZmMQZOIGLxf7c+TJDQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792203921; c=relaxed/relaxed;
+	bh=RlmdC/ZrC2wE8s5bUwcx60nsjLZEKFAjdQUiwuhb7TU=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=W59sag00m7724MyxLquveh//13BhxxWfT4cCsRnw54OSpUiKkf0z3VLhTIJfVG6C8UTQUAo0TRRnLVudNTmigK9BPWY7OB/ad0K0Qhw2v/mJpA+Smnaax8SIHpO5rwBhdBscNbk5CxGT+2rte7dOPm12Nk/8Ny3G75QQJOql3glKKigBd+3tcYPk4l2qtdGzSNyJpweP03QCfGFm0oe60JqwIoUt6t0rUdgDbH3Aui/nWygp2BJZj6Njd7RRGWuukiUmAg1VzuojRJyI2uiWzTAHc04x7Awi9FfD3P4AFzsA6n5SlBW8SghYIzr7mzhNtZqx2hjuaWp+GVy9h40+Ug==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=jSMcoIF7; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JtwqICHl;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=jSMcoIF7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
+Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazlp170130006.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::6])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j5zJs11BLz2y1Y
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2026 08:55:40 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69GJiVwm490437;
-	Fri, 16 Oct 2026 21:55:31 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=0BADyP
-	uttV1npo1QJ/U5gqBi08d6l31PT4PbdQjqd1U=; b=JtwqICHlaB7B/VfYkd8oBQ
-	MuCmOOkU71MNmo+grW8DzYRVKYCmvDaZQ89e7sJiPfbWFIGLZsSFXVfMRGPuSCx9
-	oZaH7+5QjRDlaiYiDTG3505DJrQhRaydSIKjnCOGwJMasDQJoSY1Q7X7nZyTzoF+
-	lo3GvI5Npoc+bn3hMZhlTIPIwZleaHsLDhLT/idvFC6Jj7fV2kzX6KsoeGiC4HEX
-	SPoo/K1Cqq5ukrAcOgLMiQK+gTGPbrhhBCKibRt1p8SJBwDqELRHdk54Bsgi5t8k
-	CY4z7fXQIxu0RgnSq3J9Nbzmu6JkS9e7y9KcOhnplAqQoGDOdQdMVe/Z9jUHEzwA
-	==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4h7dv41nne-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 16 Oct 2026 21:55:30 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69GJnv5S022322;
-	Fri, 16 Oct 2026 21:55:29 GMT
-Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4hawqwxqth-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 16 Oct 2026 21:55:29 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
-	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69GLtRK96161298
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 16 Oct 2026 21:55:28 GMT
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CCDED58063;
-	Fri, 16 Oct 2026 21:55:27 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 19AA558059;
-	Fri, 16 Oct 2026 21:55:25 +0000 (GMT)
-Received: from [9.67.103.235] (unknown [9.67.103.235])
-	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 16 Oct 2026 21:55:24 +0000 (GMT)
-Message-ID: <3ae9b5c4-424f-4048-b78b-5f9bd36fef48@linux.ibm.com>
-Date: Fri, 16 Oct 2026 14:55:24 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j65Hz4Qn5z2yfs
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2026 13:25:18 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=fGRSqtPrGB1UWsIMBLXKAIEibVODe0iFB2TSq3/iRpqLPjDZeA46wmE6FnzE3PFr0Wlwqbz8mAZXogsvLSkIod5k4aMrcg1/QKfheqwWY8aKSbx7Hu3difETiVrfwQCWY6L4l4TSjjvF86gpN/m90GVCFdSsVWvYaihk9yFqTW4dkg9bKb4FSzlJJLobXI3Y932Vi5gi33ifZAvuCwHqKgb+4Gjbz9/ip1zEYICKCMbZ1lHHvgGZzQx/8P43Y11O/58+m+y6pzKbN8QAFaeaE0+69JeZ24ymQet3PaN+g6Pq4CI+5SQoT486vOaX4syoblp56hPBWLKY1rcCf0XwIQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=RlmdC/ZrC2wE8s5bUwcx60nsjLZEKFAjdQUiwuhb7TU=;
+ b=EnnTZ7efK97Oa86yOnDGb5DG5W9SRY1gv5xlsJgA8mcqhw+HJXs26zGQce9vT+9X60SGAdl8GPYzwtT8LEZ6g3GX2FDoP4uvSPqrCuPqOZnlpwSmoRMBK1lDuLV22Y3vw+mrbREfX7ga6SLSLEhaO1jZA2WHXBVawIaJGe4uBea62fv7L9m/bJhvUBiGkizw15Y+l7zpGmUAFKbsfVK3lmsgJYOXnPMAsp2U+oRlvb0oeaJ82oNrmTu57Z3ASlsiGXajGUTgjuCjboeKEbfziYIQjYoUUSqT9xmNqcfT4WGZvlgZ/oPpaYfsdBZGd7bCZRPDUFvddPpjr20tTsb/XA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=RlmdC/ZrC2wE8s5bUwcx60nsjLZEKFAjdQUiwuhb7TU=;
+ b=jSMcoIF7eu67kLk7m2ZS/jG5rrVVp45RenXa+oaKDmpAWZP3g+nb5vT3UImcPB6xHorkDGedLnHZrpsrLM8afg0N8v/IeAxVOLWf8TJasj0UMwPEcTzOqcHoOHmKaC3gwP+M1hIK0dxtu4wT28I9L1uZpfPV8fsrykgC/7MQlWjHxEfZjbJ44cclBy9fdwBQMi3qeJDQ4SFaRXtnHRfHk/098FWwpB7qxRbNBJmYWVxghc2TVmhwgLlw5XkHJKmoc5HWOwrIrBQq+7QTsIEwizLn1REMl3cV8VFp4SZyPmH3LUEi5i9wqMnO6XyrihV3L//YttyAwR1D12wGtd4MBg==
+Received: from DB9PR04MB9332.eurprd04.prod.outlook.com (2603:10a6:10:36c::6)
+ by GVXPR04MB10754.eurprd04.prod.outlook.com (2603:10a6:150:225::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.522.14; Sat, 17 Oct
+ 2026 02:24:50 +0000
+Received: from DB9PR04MB9332.eurprd04.prod.outlook.com
+ ([fe80::75d8:3bd9:28df:cfdb]) by DB9PR04MB9332.eurprd04.prod.outlook.com
+ ([fe80::75d8:3bd9:28df:cfdb%2]) with mapi id 15.21.0522.013; Sat, 17 Oct 2026
+ 02:24:50 +0000
+From: Wei Fang <wei.fang@nxp.com>
+To: "Frank Li (OSS)" <frank.li@oss.nxp.com>, Marek Vasut <marex@nabladev.com>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Vladimir Oltean
+	<vladimir.oltean@nxp.com>, "Christophe Leroy (CS GROUP)"
+	<chleroy@kernel.org>, "David S. Miller" <davem@davemloft.net>, Andrew Lunn
+	<andrew+netdev@lunn.ch>, Clark Wang <xiaoning.wang@nxp.com>, Claudiu Manoil
+	<claudiu.manoil@nxp.com>, Conor Dooley <conor+dt@kernel.org>, Eric Dumazet
+	<edumazet@kernel.org>, Frank Li <frank.li@nxp.com>, Jakub Kicinski
+	<kuba@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Paolo Abeni
+	<pabeni@redhat.com>, Rob Herring <robh@kernel.org>,
+	"UNGLinuxDriver@microchip.com" <UNGLinuxDriver@microchip.com>,
+	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+	"imx@lists.linux.dev" <imx@lists.linux.dev>,
+	"linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+	<linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [net-next,PATCH 2/2] enetc: Make eMDIO MDC rate configurable from
+ DT
+Thread-Topic: [net-next,PATCH 2/2] enetc: Make eMDIO MDC rate configurable
+ from DT
+Thread-Index: AQHdXaVPTB8CJdKLoUewahs8NUD/ZLcAl7OAgABoBfA=
+Date: Sat, 17 Oct 2026 02:24:50 +0000
+Message-ID:
+ <DB9PR04MB933217F7ADCB6223A44DACA7889A2@DB9PR04MB9332.eurprd04.prod.outlook.com>
+References: <20261016193344.115518-1-marex@nabladev.com>
+ <20261016193344.115518-2-marex@nabladev.com> <atKDNdxl0w65s8yQ@SMW015318>
+In-Reply-To: <atKDNdxl0w65s8yQ@SMW015318>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+msip_labels:
+authentication-results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: DB9PR04MB9332:EE_|GVXPR04MB10754:EE_
+x-ms-office365-filtering-correlation-id: 886d8eae-da9c-4722-6146-08df2bf5d273
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|19092799006|23010399003|376014|1800799024|7416014|366016|261009223027099003|6133799003|18002099003|10067099003|22082099003|4143699003|11063799006|38070700021|56012099006;
+x-microsoft-antispam-message-info:
+ giYjXPglTBeQWDBLuEXOHODYW3VeC/AddZnYh2zykdTi3fxSKePv3mMOyUJCVq5onkFATkW4Gs79DDYPVOBL2FSZQqa7MnB9aCKf7ss8CNlmUZxExm/UouCGxRhTNDXXniGsRhHsSE5Kt9KK4UPvaSR+pjwEW6R66MAxgiKGm0bLHRyYMWQBJk+o43Zr5NJIvxb+tyoj8Kcg1C4GgeslSAE5uw+GMJjD0Bet03EGUcpEecz/KrivWkOIBqwHS4EC6Hm/74C8OenK10f8O5P9HijiPOka8AVrUDAhic2Ddhcc90kUHzlNfeBM4FJFXcPlxF1SVpbTwMvPHeybx+e5S679HSj8xRsAAZJO197OwxySixUbqqMdI37s/5afipTlAUVC8I5m5YIC2gHXF2C/UK5Dy3jejIvF+l7Toa9d30Fm9kM+rnvvxCwbMbNs61rZBTAzXKvUG/tGjQLVl7hMJ9Ut/HO5We1rNBSKoL/5mAoK+BXfJSgnKkA2+g/XwO3LwWZV4BH0i4tKzvSIT3WWWi5A1dNgAVL63aha7Dw0YIpoou89MTwfvhZMOJ5Hr2GlYfKMXO69RlBAAXVM8/LMMDAWVY3OJPAiOLpevdmTqmYVkGONX3gnH3vnRJ04ffmo+w+DOEaF55iaMEx5pMh//enOasg9W6ERI4dOaRJ/M8bpXCeQ+LPlSjMpfhiRimXJ6kH0gBrgHq65ZWwWcQL78w9siplbhWw+mfBq4gDRmiQ=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR04MB9332.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(23010399003)(376014)(1800799024)(7416014)(366016)(261009223027099003)(6133799003)(18002099003)(10067099003)(22082099003)(4143699003)(11063799006)(38070700021)(56012099006);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?TXoMRRWqcoF2V1IhUfs6nIOWYB5jWNG3KyaQjCVanuqwItF2ZeP5wFsTWTUc?=
+ =?us-ascii?Q?52OxOxyx7RzCJeiHre4PqgpaUByfFmvq+hwi1o3gPdu7UsaoyoDbXFJGUQuo?=
+ =?us-ascii?Q?JxXyondc5H3yDc4lZ9y7SMnuPQdksxpZVfrMlyfffoSedK4KtiM3VjDifiuJ?=
+ =?us-ascii?Q?XPdPMRSkpGN+vRx0vtb+VtjyhJM5/AgNHEoEQzrV1+Un3F0B0IEBlAJ1mks3?=
+ =?us-ascii?Q?bDLDlVKrHNTJEF0BJ+dpcXdIT8jluRhZqSn/uGqw7vh1MkOPiIkrA2nDfIOo?=
+ =?us-ascii?Q?5WGWE5Sx5W0A5OQxcFBcXG6rC2sWb27N+6W3SI/0QMtogF3psCq4qniDJj4H?=
+ =?us-ascii?Q?Ze+vBB9GZn5kORTPuGlYJL5WXW1+0R/qaj4731SLjg7s0oodQEDZuCRdM7Z8?=
+ =?us-ascii?Q?EzUpExAp577SLvEvG+iYrShLJ7IVdT5W33Tx8GuzVEUhWqnz2J/c7qrKraVO?=
+ =?us-ascii?Q?R20mNkMpCyUnoXnc4G0PGda0oyfUGKyou5rk+JyjaawHvLQZMPQYZzUL/kY7?=
+ =?us-ascii?Q?Ay9BMraypVRIt7PMGNSj639h4kzHOiFn34+JuL74H+5wmjyofE203fvpdq2M?=
+ =?us-ascii?Q?tiviGpwT9HVDwv7SEdRboNTREBopkROWPMjGgypn+TZsvPuA27kZyLcLL/li?=
+ =?us-ascii?Q?whbPCn5rjV+RZM0sVsVeB+vFNu+ccvencAOXKc+3nVPPuVOuHPfFmOiCdO9a?=
+ =?us-ascii?Q?KveOujJZ//LGsBVmrYRqFW0nBdwsQvJTuqubS8zZVeaiUzlIufz++a2rgYSG?=
+ =?us-ascii?Q?pI9/QTSV7a9g9xFC+eJbVue/JCCT4UmLQpBfG/LXKVHFDov6GZ8mi70vlf4n?=
+ =?us-ascii?Q?pM152kYMJfMr/Lz273GDSddJK3UsjIr/3mpH9TdACaVfl17HW7EFFwp/wmEg?=
+ =?us-ascii?Q?H2KMPcheE0/lZFOFNfrD7Ny7sW0WPoHFPrCOXcZiRgVBlHrqBeFc+A/m7ZVy?=
+ =?us-ascii?Q?QDZ9kpRPPJgrcI5YAOt87i5+A1/OEAgzFoisQoBRhFPzbdzuh0AxnO5/Pyx+?=
+ =?us-ascii?Q?a9atvfLp3v0zxF5y2iBWcac1y5J+vtz9+a+x8/pLx+iNPUKhnMs/sDOu2vRm?=
+ =?us-ascii?Q?aARCkEV8eQCMxg5tGE1CpAYfWIQI4fSmO1untf0Apua0ulfEWVVSLPa1B8lZ?=
+ =?us-ascii?Q?JV8LxrR1tbV9tAZNCxFPLQNvNZ7cPZD5UIslrn4/2cElxdqfPnexRadAMkoY?=
+ =?us-ascii?Q?DvO4vPyeIFWl64N5ONzN+oVI2XAF4ArRnrf4vnyQLMdM8YquYyfVRUb96UNO?=
+ =?us-ascii?Q?415xX/yIPXX8y8XKtOzPQ8x6GOF3pQ+yTcWkps5jK9LHkcvYYVMBU2cGZBZN?=
+ =?us-ascii?Q?+J+J0/SC0xN+TqKnEC9dLPkStE1Xy1jshNgKhMtDAMlltIc4H5ZI/1rImAUE?=
+ =?us-ascii?Q?6IZRhrwKV8r2RTW2na8Ainth1J/V4ZTt8FGF8bliXMrY2ohia1PsMUNVBJ1/?=
+ =?us-ascii?Q?iOaS1T79dX2bM2u0YpKHL4Bu+JM/4jZMYQFqZMo9PJvzoDoH4SQBebtLScor?=
+ =?us-ascii?Q?PvGVBGOn++6UvEsHK2iVhVBHD6Py9hneWPBsBBdUJswPOADc9xqACboEPaoQ?=
+ =?us-ascii?Q?G8sSe9uZiDAKus/GtIbbb7UAyWx8vlQ+FtXQnhZqMKuageU0FvA7CDgBJFCW?=
+ =?us-ascii?Q?zHf83kj6Np4TYsZAjNwL4soqroybt8IP/q3Z7SSa6jPLfALLdzTCpDdjd3qO?=
+ =?us-ascii?Q?HJZ+vw4Nq+ZXQWqinSKliXlW6k4WEjWAX3Yc3YDQNBg8h6dF?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,283 +144,182 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH net] net: ibmvnic: defer close from reset allocation
- failure
-To: Runyu Xiao <runyu.xiao@seu.edu.cn>, Haren Myneni <haren@linux.ibm.com>,
-        Rick Lindsley <ricklind@linux.ibm.com>,
-        Nick Child <nnac123@linux.ibm.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Christophe Leroy <chleroy@kernel.org>,
-        Andrew Lunn <andrew+netdev@lunn.ch>,
-        "David S . Miller" <davem@davemloft.net>,
-        Eric Dumazet
- <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
-        Paolo Abeni <pabeni@redhat.com>
-Cc: linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, stable@vger.kernel.org,
-        Jianhao Xu <jianhao.xu@seu.edu.cn>
-References: <20261004103131.1205618-1-runyu.xiao@seu.edu.cn>
-Content-Language: en-US
-From: mingming cao <mmc@linux.ibm.com>
-In-Reply-To: <20261004103131.1205618-1-runyu.xiao@seu.edu.cn>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: iqUmtBv8nkL_E4y1V0qYb60OLHwY1X3j
-X-Proofpoint-ORIG-GUID: qI2N-qs_PpX8yC6_fbPQnY7MKWLLxEqX
-X-Authority-Analysis: v=2.4 cv=aqInmiZV c=1 sm=1 tr=0 ts=6ad29d53 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
- a=ELaMOE5r3NirCJLtdPEA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE2MDA4NiBTYWx0ZWRfX97FDx2fshrwb
- ywbBh28/Z85Tg5UZXAtx/FV5zdU2ee0EvxInTOv5MrcxuRjbt8K6TijFV5Mgo9BoEnrPM2nqQqK
- ZqMhqQKP+j7hb0VqUoQUtttMdrQLjFs=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE2MDA4NiBTYWx0ZWRfX/6gU/g8cLloY
- bFLluykvjATMODFwhhRyuP1vzKH3B54SuKeTjVSARVemBJxG10FC+zTQ0dD37OkBeuyPDN9hk2r
- R7R9vmfiHYDxwTwCGfMLO1Ei6O3NmrCbwKrintppSr+gDgnxD5HOEFZZIITd9KZDwD9D2SsoFXi
- dUZn6NTSlec22D7cqObRhZmP70/MCboqngj9vO5BKGgi/E/30+IytXPnzRNG1iC1ACIq3dHMO1d
- mbTYUWwY8AxKuFmgvmzEATfBAjKoveoHDC3xQn5lqNdB2/qhnCA2w5uSZQgh7D88ldiN6lxz6te
- hVAMALgApN+sHEKsInN7IzpRoeWEia7CxvK7+aKHOUmCqPeMany65xWc7VuDX0Y48dCx4K/7yzt
- GHos50eRJ89+uAkWsMOKgH97O70UmXPLRbMc2xNOvGkAUu3r+fRfC+/cC3EbN+BJdKWvneufBR9
- ZsUCQ8xjEp3wuXauUew==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-10-16_03,2026-10-14_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 clxscore=1011 spamscore=0 malwarescore=0 suspectscore=0
- bulkscore=0 adultscore=0 impostorscore=0 priorityscore=1501
- lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610080000
- definitions=main-2610160086
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: DB9PR04MB9332.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 886d8eae-da9c-4722-6146-08df2bf5d273
+X-MS-Exchange-CrossTenant-originalarrivaltime: 17 Oct 2026 02:24:50.7335
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: MXpGZIatfbKKxUfTK3B59AUPDBD0FwoN+GRKqtDpf2qrirz8/lF6UOhxjFDOevHjG71kBL/Oq32ps08iehIp7w==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: GVXPR04MB10754
 
+> On Fri, Oct 16, 2026 at 09:32:01PM +0200, Marek Vasut wrote:
+> > The current eMDIO MDC rate is hard-coded in the drivers which use the
+> > eMDIO MDC, this is not flexible for various deployments of SoCs which
+> > use the eMDIO interface, for example i.MX95 B0 MDC clock is currently
+> > set to 644 kHz.
+> >
+> > Introduce enetc_mdio_priv .mdc_div field which contains the divider
+> > used for MDC clock and pass it around, including into functions which
+> > configure the MDC clock. This way, drivers which use the eMDIO can set
+> > the divider as needed. Introduce enetc_mdio_update_mdc_div() function
+> > which calculates the divider from upstream clock and clock-frequency
+> > DT property, both of which are optional to retain compatibility with
+> > older DTs. This is modeled according to xgmac_mdio_set_mdc_freq().
+> >
+> > Suggested-by: Vladimir Oltean <vladimir.oltean@nxp.com>
+> > Signed-off-by: Marek Vasut <marex@nabladev.com>
+> > ---
+> > Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+> > Cc: "David S. Miller" <davem@davemloft.net>
+> > Cc: Andrew Lunn <andrew+netdev@lunn.ch>
+> > Cc: Clark Wang <xiaoning.wang@nxp.com>
+> > Cc: Claudiu Manoil <claudiu.manoil@nxp.com>
+> > Cc: Conor Dooley <conor+dt@kernel.org>
+> > Cc: Eric Dumazet <edumazet@kernel.org>
+> > Cc: Frank Li <Frank.Li@nxp.com>
+> > Cc: Jakub Kicinski <kuba@kernel.org>
+> > Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>
+> > Cc: Paolo Abeni <pabeni@redhat.com>
+> > Cc: Rob Herring <robh@kernel.org>
+> > Cc: UNGLinuxDriver@microchip.com
+> > Cc: Vladimir Oltean <vladimir.oltean@nxp.com>
+> > Cc: Wei Fang <wei.fang@nxp.com>
+> > Cc: devicetree@vger.kernel.org
+> > Cc: imx@lists.linux.dev
+> > Cc: linux-arm-kernel@lists.infradead.org
+> > Cc: linux-kernel@vger.kernel.org
+> > Cc: linuxppc-dev@lists.ozlabs.org
+> > Cc: netdev@vger.kernel.org
+> > ---
+> > NOTE: I could only test i.MX95 , I could not test LS or Felix
+> > ---
+> >  drivers/net/dsa/ocelot/felix_vsc9959.c        |  5 +++
+> >  .../net/ethernet/freescale/enetc/enetc_mdio.c | 39 ++++++++++++++++---
+> >  .../ethernet/freescale/enetc/enetc_pci_mdio.c |  5 +++
+> >  .../freescale/enetc/enetc_pf_common.c         | 10 +++++
+> >  include/linux/fsl/enetc_mdio.h                |  6 +++
+> >  5 files changed, 59 insertions(+), 6 deletions(-)
+> >
+> > diff --git a/drivers/net/dsa/ocelot/felix_vsc9959.c
+> b/drivers/net/dsa/ocelot/felix_vsc9959.c
+> > index 8387dd208adb9..dbeec1b229325 100644
+> > --- a/drivers/net/dsa/ocelot/felix_vsc9959.c
+> > +++ b/drivers/net/dsa/ocelot/felix_vsc9959.c
+> > @@ -1008,8 +1008,13 @@ static int vsc9959_mdio_bus_alloc(struct ocelot
+> *ocelot)
+> >  	 * starting with the proper offset.
+> >  	 */
+> >  	mdio_priv->mdio_base =3D 0;
+> > +	mdio_priv->mdc_div =3D ENETC_MDIO_DEFAULT_DIVIDER;
+> >  	snprintf(bus->id, MII_BUS_ID_SIZE, "%s-imdio", dev_name(dev));
+> >
+> > +	rc =3D enetc_mdio_update_mdc_div(bus);
+> > +	if (rc)
+> > +		return rc;
+> > +
+> >  	/* Needed in order to initialize the bus mutex lock */
+> >  	rc =3D mdiobus_register(bus);
+> >  	if (rc < 0) {
+> > diff --git a/drivers/net/ethernet/freescale/enetc/enetc_mdio.c
+> b/drivers/net/ethernet/freescale/enetc/enetc_mdio.c
+> > index 998aaa394e9c4..93d61c2f1464f 100644
+> > --- a/drivers/net/ethernet/freescale/enetc/enetc_mdio.c
+> > +++ b/drivers/net/ethernet/freescale/enetc/enetc_mdio.c
+> > @@ -1,6 +1,7 @@
+> >  // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+> >  /* Copyright 2019 NXP */
+> >
+> > +#include <linux/clk.h>
+> >  #include <linux/fsl/enetc_mdio.h>
+> >  #include <linux/mdio.h>
+> >  #include <linux/of_mdio.h>
+> > @@ -22,9 +23,9 @@
+> >   /* external MDIO only - driven on neg MDC edge */
+> >  #define MDIO_CFG_NEG		BIT(23)
+> >
+> > -#define ENETC_EMDIO_CFG \
+> > +#define ENETC_EMDIO_CFG(mdc_div) \
+> >  	(MDIO_CFG_HOLD(2) | \
+> > -	 MDIO_CFG_CLKDIV(258) | \
+> > +	 MDIO_CFG_CLKDIV(mdc_div) | \
+> >  	 MDIO_CFG_NEG)
+> >
+> >  #define MDIO_CTL_DEV_ADDR(x)	((x) & 0x1f)
+> > @@ -63,7 +64,7 @@ int enetc_mdio_write_c22(struct mii_bus *bus, int
+> phy_id, int regnum,
+> >  	u16 dev_addr;
+> >  	int ret;
+> >
+> > -	mdio_cfg =3D ENETC_EMDIO_CFG;
+> > +	mdio_cfg =3D ENETC_EMDIO_CFG(mdio_priv->mdc_div);
+> >  	dev_addr =3D regnum & 0x1f;
+> >  	mdio_cfg &=3D ~MDIO_CFG_ENC45;
+> >
+> > @@ -95,7 +96,7 @@ int enetc_mdio_write_c45(struct mii_bus *bus, int
+> phy_id, int dev_addr,
+> >  	u32 mdio_ctl, mdio_cfg;
+> >  	int ret;
+> >
+> > -	mdio_cfg =3D ENETC_EMDIO_CFG;
+> > +	mdio_cfg =3D ENETC_EMDIO_CFG(mdio_priv->mdc_div);
+> >  	mdio_cfg |=3D MDIO_CFG_ENC45;
+> >
+> >  	enetc_mdio_wr(mdio_priv, ENETC_MDIO_CFG, mdio_cfg);
+> > @@ -133,7 +134,7 @@ int enetc_mdio_read_c22(struct mii_bus *bus, int
+> phy_id, int regnum)
+> >  	u16 dev_addr, value;
+> >  	int ret;
+> >
+> > -	mdio_cfg =3D ENETC_EMDIO_CFG;
+> > +	mdio_cfg =3D ENETC_EMDIO_CFG(mdio_priv->mdc_div);
+> >  	dev_addr =3D regnum & 0x1f;
+> >  	mdio_cfg &=3D ~MDIO_CFG_ENC45;
+> >
+> > @@ -176,7 +177,7 @@ int enetc_mdio_read_c45(struct mii_bus *bus, int
+> phy_id, int dev_addr,
+> >  	u16 value;
+> >  	int ret;
+> >
+> > -	mdio_cfg =3D ENETC_EMDIO_CFG;
+> > +	mdio_cfg =3D ENETC_EMDIO_CFG(mdio_priv->mdc_div);
+> >  	mdio_cfg |=3D MDIO_CFG_ENC45;
+> >
+> >  	enetc_mdio_wr(mdio_priv, ENETC_MDIO_CFG, mdio_cfg);
+> > @@ -231,6 +232,32 @@ struct enetc_hw *enetc_hw_alloc(struct device
+> *dev, void __iomem *port_regs)
+> >  }
+> >  EXPORT_SYMBOL_GPL(enetc_hw_alloc);
+> >
+> > +int enetc_mdio_update_mdc_div(struct mii_bus *bus)
+> > +{
+> > +	struct enetc_mdio_priv *mdio_priv =3D bus->priv;
+> > +	struct device *dev =3D bus->parent;
+> > +	struct clk *enet_clk;
+> > +	u32 div, mdc_freq;
+> > +
+> > +	if (device_property_read_u32(dev, "clock-frequency", &mdc_freq))
+> > +		return 0;
+> > +
+> > +	enet_clk =3D devm_clk_get(dev, NULL);
+> > +	if (IS_ERR(enet_clk))
+> > +		return dev_err_probe(dev, PTR_ERR(enet_clk),
+> > +				     "Input clock unknown, not changing MDC
+> frequency\n");
+>=20
+> binding said clock is optional. If return failure here, it will block
+> existing dts, which have not clock property.
+>=20
 
-On 10/4/26 3:31 AM, Runyu Xiao wrote:
-> ibmvnic_reset() can be called by the CRQ tasklet. If allocating the
-> reset work item fails, it currently calls ibmvnic_close() after
-> dropping rwi_lock, but ibmvnic_close() reaches napi_disable() and
-> other sleepable teardown paths.
->
-> Defer the close to a work item and keep the work within the adapter
-> lifetime. Track removal separately from the visible adapter state so
-> ibmvnic_close() cannot make removal look active again after remove()
-> has begun. Check that monotonic flag while scheduling reset and
-> delayed reset work, and drain all work before releasing the adapter.
->
-> Use complete_all() for probe_done because the reset and close workers
-> may wait for probe completion concurrently.
->
-> The issue was identified by code inspection. No runtime reproduction or
-> real hardware testing is available.
->
-> Fixes: ed651a10875f ("ibmvnic: Updated reset handling")
-> Cc: stable@vger.kernel.org
-> Assisted-by: LLM
-> Signed-off-by: Runyu Xiao <runyu.xiao@seu.edu.cn>
-> ---
->   drivers/net/ethernet/ibm/ibmvnic.c | 54 ++++++++++++++++++++++++------
->   drivers/net/ethernet/ibm/ibmvnic.h |  2 ++
->   2 files changed, 45 insertions(+), 11 deletions(-)
->
-> diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-> index 5a510eed33..4da3fd7ce0 100644
-> --- a/drivers/net/ethernet/ibm/ibmvnic.c
-> +++ b/drivers/net/ethernet/ibm/ibmvnic.c
-> @@ -2152,6 +2152,26 @@ static int ibmvnic_close(struct net_device *netdev)
->   	return rc;
->   }
->   
-> +static void ibmvnic_close_work(struct work_struct *work)
-> +{
-> +	struct ibmvnic_adapter *adapter = container_of(work,
-> +							struct ibmvnic_adapter,
-> +							ibmvnic_close_work);
-> +	unsigned long flags;
-> +	bool removing;
-> +
-> +	/* The close path can sleep, so run it outside the CRQ tasklet. */
-> +	wait_for_completion(&adapter->probe_done);
-> +	rtnl_lock();
-> +	spin_lock_irqsave(&adapter->rwi_lock, flags);
-> +	removing = adapter->removing;
-> +	spin_unlock_irqrestore(&adapter->rwi_lock, flags);
-> +
-> +	if (!removing)
-> +		ibmvnic_close(adapter->netdev);
-> +	rtnl_unlock();
-> +}
-> +
->   /**
->    * get_hdr_lens - fills list of L2/L3/L4 hdr lens
->    * @hdr_field: bitfield determining needed headers
-> @@ -3229,9 +3249,12 @@ static void __ibmvnic_reset(struct work_struct *work)
->   	if (adapter->state == VNIC_PROBING &&
->   	    !wait_for_completion_timeout(&adapter->probe_done, timeout)) {
->   		dev_err(dev, "Reset thread timed out on probe");
-> -		queue_delayed_work(system_long_wq,
-> -				   &adapter->ibmvnic_delayed_reset,
-> -				   IBMVNIC_RESET_DELAY);
-> +		spin_lock_irqsave(&adapter->rwi_lock, flags);
-> +		if (!adapter->removing)
-> +			queue_delayed_work(system_long_wq,
-> +					   &adapter->ibmvnic_delayed_reset,
-> +					   IBMVNIC_RESET_DELAY);
-> +		spin_unlock_irqrestore(&adapter->rwi_lock, flags);
->   		return;
->   	}
->   
-> @@ -3265,7 +3288,7 @@ static void __ibmvnic_reset(struct work_struct *work)
->   	 */
->   	need_reset = false;
->   	spin_lock(&adapter->rwi_lock);
-> -	if (!list_empty(&adapter->rwi_list)) {
-> +	if (!adapter->removing && !list_empty(&adapter->rwi_list)) {
->   		if (test_and_set_bit_lock(0, &adapter->resetting)) {
->   			queue_delayed_work(system_long_wq,
->   					   &adapter->ibmvnic_delayed_reset,
-> @@ -3422,7 +3445,8 @@ static int ibmvnic_reset(struct ibmvnic_adapter *adapter,
->   	 * a failover reset scheduled, we will detect and drop the
->   	 * duplicate reset when walking the ->rwi_list below.
->   	 */
-> -	if (adapter->state == VNIC_REMOVING ||
-> +	if (adapter->removing ||
-> +	    adapter->state == VNIC_REMOVING ||
->   	    adapter->state == VNIC_REMOVED ||
->   	    (adapter->failover_pending && reason != VNIC_RESET_FAILOVER)) {
->   		ret = EBUSY;
-> @@ -3458,11 +3482,11 @@ static int ibmvnic_reset(struct ibmvnic_adapter *adapter,
->   
->   	ret = 0;
->   err:
-> -	/* ibmvnic_close() below can block, so drop the lock first */
-> -	spin_unlock_irqrestore(&adapter->rwi_lock, flags);
-> -
->   	if (ret == ENOMEM)
-> -		ibmvnic_close(netdev);
-> +		queue_work(system_long_wq, &adapter->ibmvnic_close_work);
-> +
-> +	/* ibmvnic_close() can block, so defer it out of atomic context. */
-> +	spin_unlock_irqrestore(&adapter->rwi_lock, flags);
->   
->   	return -ret;
->   }
-> @@ -6466,6 +6490,7 @@ static int ibmvnic_probe(struct vio_dev *dev, const struct vio_device_id *id)
->   	SET_NETDEV_DEV(netdev, &dev->dev);
->   
->   	INIT_WORK(&adapter->ibmvnic_reset, __ibmvnic_reset);
-> +	INIT_WORK(&adapter->ibmvnic_close_work, ibmvnic_close_work);
->   	INIT_DELAYED_WORK(&adapter->ibmvnic_delayed_reset,
->   			  __ibmvnic_delayed_reset);
->   	INIT_LIST_HEAD(&adapter->rwi_list);
-> @@ -6568,7 +6593,8 @@ static int ibmvnic_probe(struct vio_dev *dev, const struct vio_device_id *id)
->   		goto cpu_notif_add_failed;
->   	}
->   
-> -	complete(&adapter->probe_done);
-> +	complete_all(&adapter->probe_done);
-> +	flush_work(&adapter->ibmvnic_close_work);
->   
->   	return 0;
->   
-> @@ -6591,10 +6617,14 @@ static int ibmvnic_probe(struct vio_dev *dev, const struct vio_device_id *id)
->   	/* cleanup worker thread after releasing CRQ so we don't get
->   	 * transport events (i.e new work items for the worker thread).
->   	 */
-> +	spin_lock_irqsave(&adapter->rwi_lock, flags);
-> +	adapter->removing = true;
->   	adapter->state = VNIC_REMOVING;
-> -	complete(&adapter->probe_done);
-> +	spin_unlock_irqrestore(&adapter->rwi_lock, flags);
-> +	complete_all(&adapter->probe_done);
->   	flush_work(&adapter->ibmvnic_reset);
->   	flush_delayed_work(&adapter->ibmvnic_delayed_reset);
-> +	flush_work(&adapter->ibmvnic_close_work);
->   
->   	flush_reset_queue(adapter);
->   
-> @@ -6620,6 +6650,7 @@ static void ibmvnic_remove(struct vio_dev *dev)
->   	 * from the flush_work() below, can make progress.
->   	 */
->   	spin_lock(&adapter->rwi_lock);
-> +	adapter->removing = true;
->   	adapter->state = VNIC_REMOVING;
->   	spin_unlock(&adapter->rwi_lock);
->   
-> @@ -6629,6 +6660,7 @@ static void ibmvnic_remove(struct vio_dev *dev)
->   
->   	flush_work(&adapter->ibmvnic_reset);
->   	flush_delayed_work(&adapter->ibmvnic_delayed_reset);
-> +	flush_work(&adapter->ibmvnic_close_work);
->   
->   	rtnl_lock();
->   	unregister_netdevice(netdev);
-> diff --git a/drivers/net/ethernet/ibm/ibmvnic.h b/drivers/net/ethernet/ibm/ibmvnic.h
-> index 480dc58707..d8c8a6d230 100644
-> --- a/drivers/net/ethernet/ibm/ibmvnic.h
-> +++ b/drivers/net/ethernet/ibm/ibmvnic.h
-> @@ -1045,6 +1045,7 @@ struct ibmvnic_adapter {
->   
->   	struct tasklet_struct tasklet;
->   	enum vnic_state state;
-> +	bool removing;
->   	/* Used for serialization of state field. When taking both state
->   	 * and rwi locks, take state lock first.
->   	 */
-> @@ -1056,6 +1057,7 @@ struct ibmvnic_adapter {
->   	 */
->   	spinlock_t rwi_lock;
->   	struct work_struct ibmvnic_reset;
-> +	struct work_struct ibmvnic_close_work;
->   	struct delayed_work ibmvnic_delayed_reset;
->   	unsigned long resetting;
->   	/* last device reset time */
+For EMDIO device, the clocks property is not added to
+fsl,enetc-mdio.yaml, I suppose this property should be added to the
+dt-binding doc if the clock is really needed here.
 
-Thanks for looking at this. The bug is real — deferring close out of
-the CRQ tasklet is the right direction.
-
-I walked ibmvnic_close_work() against the probe success path. Can a
-probe-time ENOMEM leave the adapter in VNIC_CLOSED with no
-init_resources()?
-
-ibmvnic_reset() does not reject VNIC_PROBING, and the CRQ tasklet can
-reach it during probe (e.g. CRQ_INIT -> VNIC_RESET_FAILOVER when state
-is not VNIC_DOWN, or an XPORT_EVENT -> FATAL/MOBILITY). On GFP_ATOMIC
-failure your worker waits on probe_done, then:
-
-probe sets VNIC_PROBED / VNIC_DOWN, register_netdev()
-   -> complete_all() + flush_work(close_work)
-   -> ibmvnic_close() sets VNIC_CLOSED
-next open sees state == VNIC_CLOSED, skips login/init_resources()
-   -> ibmvnic_napi_enable() uses adapter->napi[i] while napi is
-      still NULL (allocated only in init_napi() via init_resources())
-
-Previously the inline close ran under VNIC_PROBING and probe overwrote
-the final state afterwards. flush_work() after complete_all() reverses
-that.
-
-Should the worker only close when the iface was actually running
-(netif_running() / state == VNIC_OPEN)?
-
-While you are here: would dev_close() be better than calling
-ibmvnic_close() directly? A bare ndo_stop leaves IFF_UP set when the
-device was up (same as the old inline ENOMEM path). Keep rtnl_lock() in
-the worker — dev_close() only takes the ops lock; __dev_close_many()
-still expects rtnl. And netif_close() is a no-op when !(flags & IFF_UP),
-which also avoids this post-probe VNIC_CLOSED case.
-
-Minor on adapter->removing: the commit message is a bit stronger than
-what a snapshot under rwi_lock can guarantee vs ibmvnic_remove(). Fine
-to simplify in v2 if you prefer guarding VNIC_REMOVING in
-__ibmvnic_close() instead of a new bool.
-
-Happy to look at v2.
-
-Thanks,
-
-Mingming
+For ENETC device, we already have a 'ref' clock in the enetc node,
+so devm_clk_get(dev, NULL) may get the 'ref' clock rather than the
+system clock of NETC.
 
 
