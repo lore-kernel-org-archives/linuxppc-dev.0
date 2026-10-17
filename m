@@ -1,85 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-29639-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29640-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2CD1CCF2C4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Oct 2026 18:40:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CA10CCF2C9
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Oct 2026 19:08:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j6VxZ4RtQz2ynW;
-	Sun, 18 Oct 2026 05:40:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792262450;
-	cv=none; b=BACKKAjO5TW3csjENNjTNkfoQX0wJ7kcByttiwnpi3Gu6U3rH4/4x+AGn4vN0xM29O/NwcQUYvp76qdLaz+Inov93yVbAwh3gWaStYACSaAzXzEbEa90hehOlfElfMg60mIHP3UEADfoooiE8EFWD+yRdJReSgwu5qqZiHXpSFhM4JiToVax4DdlYL8Ct6fcncWQdfrN++8HUnlv1HXH8y4kMuhTk1aK6YGxCynqdprLQtX+1lyE0WGFNiFq0f6MYbPSSH2wzW84Qi6qUmct1Ywz/ZgcflvX3XESB8ZCpED8Tya3R3vriODhynXvU0/qWFYdiQfR1hWU+kBlLo+jMw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j6WYG42vpz2xSl;
+	Sun, 18 Oct 2026 06:08:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792264098;
+	cv=none; b=bDIxYRh0qXRR7kolYKpfwcK8N0jo4qfjfUojFFg7Nt5znqYbbc9Wx7+l8NNtmfYi9RIhPINF3x9JLFMsR8lRUXKUXTqIm4MwnmqWPXS9PwBMsSInmwbOb/c2TpnGucLuypBGCuVaXY0ufaup+cnPnn8gGp7kODV41msCj0t81I5r2VATAgDhs3sN8osnJnJ+pQAgMUnlvOiWbK+UPdMJ7FRmC8vMXDvmRdY1Pq+MNj3KwS0biu1NNfMZNEZTjZP61eQaaPOIwR7yS6nSHXJIy37xqYTLZqtCbyyqPa0merSL5TC3/d81MCQOGglgu2dezaPzyh4S16bAq3YKweG/mA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792262450; c=relaxed/relaxed;
-	bh=Fh8GoPJl/6INKcbG8T3Eod1TyD4yTvYjTZq2EEbsyGo=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=B9FBARylL5VMurCd9RpVjahz7r28SIBAoMDL0z72ykmSHmnPawCZBhggbPpQKNxTJxltavAbnd4wuQBiihYU6WGvX+kmgmjWBJI8gZzuoBv2Tf2zeKR785HLeI/0yc0Jr4aljgDetO0TPFA/7IrNVs+KEQBGrNJBD63Ai3HNrYs7RxhAT99iUl4JRsilX+qxrGgSd9hhSv2pfN2zA6viPIOuYx6NEhLDiaaDlIAou3pxAxDvLKA7DmneswQOGoQDjxdGNSkCLdNb6Qgbo3wO5zDK7JQhXd1Eu+Gf2cvsEzJlb6jspX8QdCZAvULMtVltySJgabBtZxZ0bF6K6dMRzw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DHhH0Rtz; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1792264098; c=relaxed/relaxed;
+	bh=80e7dn/9HosAZfscXoCerVzxvFXCY8gzTImPcrb+cas=;
+	h=Subject:From:To:Cc:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=mgZeLodx8ZPofHNbNYAIFi8+OrUwWn5Q1jYbiOS0sKk7pTO4lPofYN8gVMuX2o+vPsIXKRrUR8Hi83TfJR6JGz7+kaFAcNXDb6a/yVQapUGtQwVpEIQtwQ8LZmYUUdyVnIjczf2iZSPTmJiNyd1uat1B8GN4+A4LKPBvrHg6Ch7N5vCNOb9rSSypFjh7sJORV0DPAvaNwq4di5Im9atMcxHhqKJVnyJ2tC8pzOIgM1FOxILvSxj40z2d7IHpO3h4p2jHClGhUqSOSHuJWG47D+LSiZo8efkOEG5efPC++qlUzumWUBiYmw9cFLM06l80RuFVHJwS6xEgMj5j1Iq3pQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jigt6WS/; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DHhH0Rtz;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jigt6WS/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j6VxY2XKBz2ylm
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Oct 2026 05:40:49 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69HGF2rH2884930;
-	Sat, 17 Oct 2026 18:40:37 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=Fh8GoPJl/6INKcbG8
-	T3Eod1TyD4yTvYjTZq2EEbsyGo=; b=DHhH0Rtzp90iFuv9yMO9Mhp7YRF7uAytu
-	OpQlzSwNbxmgrwAzZxQEJCfg7+UECKNDvOcD6Vvnm90EaMJ7k2t3JtxaRHAdp5/5
-	oKdjWlXOrq3M/7cipemT5zvc86tK2gV/ac8XhVL0svz2fNX5yjkdBNR/ZPnodBxU
-	PMciL5ws+agCMqXkWxUzjnN2zn36uXyb4rD5jJ8RqXRIt3zX5kO+P8seANKVq3n2
-	6EnsUxkFKMN8SF5HuGoEI2yGJGDfuuat9ECNjn9/mWafWw4c6/rXHC09ETE31EjW
-	0HyEYmGut7MdwMUkSVFLVl08oOfRWx02PHSrKch4Lh/hgQqHW2BWg==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hc0nvjhad-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Sat, 17 Oct 2026 18:40:36 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69HGJxiI1277496;
-	Sat, 17 Oct 2026 18:40:36 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4hb2398unm-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 17 Oct 2026 18:40:36 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69HIeWYT40305076
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 17 Oct 2026 18:40:32 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5149520043;
-	Sat, 17 Oct 2026 18:40:32 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E3DBE20040;
-	Sat, 17 Oct 2026 18:40:23 +0000 (GMT)
-Received: from li-fc74f8cc-3279-11b2-a85c-ef5828687581.ibm.com (unknown [9.67.66.83])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sat, 17 Oct 2026 18:40:23 +0000 (GMT)
-From: Srish Srinivasan <ssrish@linux.ibm.com>
-To: linux-integrity@vger.kernel.org, keyrings@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org
-Cc: maddy@linux.ibm.com, ritesh.list@gmail.com, sshegde@linux.ibm.com,
-        mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
-        James.Bottomley@HansenPartnership.com, jarkko@kernel.org,
-        zohar@linux.ibm.com, linux-kernel@vger.kernel.org,
-        linux-security-module@vger.kernel.org, nayna@linux.ibm.com,
-        rnsastry@linux.ibm.com, ssrish@linux.ibm.com
-Subject: [PATCH v4 9/9] pseries/plpks/wrapkey: expose PKWM wrapping key management to userspace via sysfs
-Date: Sun, 18 Oct 2026 00:08:53 +0530
-Message-ID: <20261017183853.596052-10-ssrish@linux.ibm.com>
-X-Mailer: git-send-email 2.56.0
-In-Reply-To: <20261017183853.596052-1-ssrish@linux.ibm.com>
-References: <20261017183853.596052-1-ssrish@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j6WYF298mz2xST
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Oct 2026 06:08:17 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id D68F1414D4;
+	Sat, 17 Oct 2026 19:08:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 911A21F000C4;
+	Sat, 17 Oct 2026 19:08:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1792264094;
+	bh=80e7dn/9HosAZfscXoCerVzxvFXCY8gzTImPcrb+cas=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=jigt6WS/v8NaNnoQ/m9rQZHuMrE2oJlyk3oL6Hn7qo3Aqp+VC2El0HLIQTQ9uyuCR
+	 f+qZMNHeKG+l0cq9jt7q3J/ck3OYifbWtZH6jQ4WoWb+PN7lIahfhBmhmsT0EvA3AM
+	 cN3rNDON8q78L/WkmJonddQoqsYMNHM87OBk49XXsySah2szc4zJP9Eoy6wGu/qkSU
+	 I5YXlnetyLuqB008GFQdoXAXnmS8BihkB5Mu2o3QHPprd53o7frHpqSoXlHkyCCR+W
+	 CJZihwQimOEo+eAlY3LjODnu+YBarfb868Jx6ykBZWrcwMrcmZMoWGa4yb0BPGND7U
+	 U0JNHtHqCcJzg==
+Subject:
+ Re: [PATCH net-next v5 1/9] ibmveth: fix netpoll races with RX replenish
+From: netdev-bot+sashiko@kernel.org
+To: mmc@linux.ibm.com
+Cc: netdev@vger.kernel.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
+ npiggin@gmail.com, chleroy@kernel.org, ritesh.list@gmail.com,
+ sshegde@linux.ibm.com, nnac123@linux.ibm.com, andrew+netdev@lunn.ch,
+ davem@davemloft.net, edumazet@kernel.org, kuba@kernel.org, pabeni@redhat.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, horms@kernel.org,
+ davemarq@linux.ibm.com, bjking1@linux.ibm.com, tlfalcon@linux.vnet.ibm.com,
+ brking@linux.vnet.ibm.com, zdai@us.ibm.com, pradeeps@linux.vnet.ibm.com,
+ ksiva@linux.vnet.ibm.com
+Date: Sat, 17 Oct 2026 19:08:13 +0000
+Message-ID: <179226409314.3135.18021801258743580648@kernel.org>
+In-Reply-To: <20261013182926.30417-2-mmc@linux.ibm.com>
+References: <20261013182926.30417-2-mmc@linux.ibm.com>
+X-sashiko-severity: Medium
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,721 +76,183 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE3MDA3MiBTYWx0ZWRfX7CEcfuI+PrUf
- f0CjptHHicGXjc7HpHY2vPz4EefTLmvGRLN1TdeG7ErXw2a59ZWu4yh4KrXpeqdGR1EykPKV9Bk
- 86Y9RyLAPWFGHC4RzTuefOe6by+ZwoQ=
-X-Proofpoint-ORIG-GUID: 5Pk6cT5p3ZkS0hWWUwxXqSDKbCjkFf4y
-X-Proofpoint-GUID: tqv8iCj4munAaAbjOUP4r9ipS2fGnAZK
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE3MDA3MiBTYWx0ZWRfX6Yb4GYRCIfBk
- Hn9J0xdwjyF4cqtjtyJLsNltbTCzkLydLJOTn215bTJ3643uHMhWaP1gZUla1wQYiXpaVn2VKb+
- vk4ou9mz4VK/LM9vd6eXkthg+lpd/UYF6SdzDcD3Shr0c8zGLDk7KeNubi7Fd7Xz96w/jQLUQ+r
- Xun7GocjRZk/5sYmkIjwvnL/oal8VQDkQlOBTkwe/EaJVE2EpLwWgOZ9IvqJQJmaFzJY/NlNtMC
- HAuCxVoY6IpUSXFkTisSGyLmH1740G+zGdBQAZzmLIphWWgxu7QHehK3GdNWNjwIS09uUzWku40
- pK4NtMvyMDSskPqOXjlu7392dyuMj4uofpuymGGP8WXtcl7CFOPlhfGdaOSntMwhsI+7TyFqe2h
- 4iSf5I4Gzx3wl3C1Mash69nrJ0A7Y97ihYo5skQ42CNapFr45bmuV5V24zGBUSYXnZZ/h4MT8Bu
- y0s14P0iBhfu/+6qcMg==
-X-Authority-Analysis: v=2.4 cv=MY35KJ/f c=1 sm=1 tr=0 ts=6ad3c125 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=Dm_dBKYgswZ8qGTShzQA:9
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-10-17_05,2026-10-14_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 adultscore=0 suspectscore=0 malwarescore=0 lowpriorityscore=0
- clxscore=1015 impostorscore=0 bulkscore=0 priorityscore=1501 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610080000 definitions=main-2610170072
 
-The PKWM trusted source currently uses a single default wrapping key
-created during initialization. However, PKWM also supports user-created
-wrapping keys for better isolation between trusted keys.
+Thank you for your contribution! Sashiko AI review found 1 potential
+issue(s) to consider.
 
-Expose wrapping key lifecycle operations through sysfs to allow users to
-create and manage their own wrapping keys.
+Critical: 0 · High: 0 (2) · Medium: 1 · Low: 0
 
-Create a sysfs interface at /sys/firmware/plpks/wrapkey with the following
-attributes:
+If you believe none of the issues are legitimate, please reply to each
+issue of Medium severity or higher and explain why the AI is wrong.
+If any of them are legitimate and you plan to respin, please let patchwork
+know by including "pw-bot: cr" as a separate line at the end of your reply
+(one such reply per series is enough).
 
-  create        - Create a new wrapping key with a user-provided label
-  delete        - Delete a revoked wrapping key by label
-  revoke        - Revoke a wrapping key by label
-  unrevoke      - Unrevoke a previously revoked wrapping key by label
-  list_active   - List labels of all active (non-revoked) wrapping keys
-  list_revoked  - List labels of all revoked wrapping keys
+- [Medium] napi_disable() waits only for ownership (SCHED/NPSVC) to be
+  released, not for the ibmveth_poll() callback to return.
 
-User-provided labels are validated to contain only alphanumeric characters.
+Pre-existing issues:
+- [High] Not introduced by this patch: ibmveth_remove() calls
+  cancel_work_sync(&adapter->work)…
+- [High] Not introduced by this patch: ibmveth_rx_mss_helper() trusts the
+  IPv4 header of a received frame.
 
-Wrapping key lifecycle constraints:
-- A wrapping key must be revoked before it can be deleted
-- Revoked wrapping keys cannot be used for wrap operations until unrevoked
-- The default wrapping key cannot be revoked or deleted; it always appears
-  in list_active
+--
 
-The wrapping keys themselves are confidential objects stored in PLPKS. Only
-the user-provided labels are exposed to userspace for identification and
-management purposes.
+ibmveth: fix netpoll races with RX replenish
 
-These user-created wrapping keys can be used in seal operations via the
-wrapping_key=<label> option.
+This patch removes ibmveth_poll_controller(), so netpoll now polls NAPI
+directly with budget 0. ibmveth_poll() skips RX replenish when budget is
+0. ibmveth_open() now enables NAPI just before request_irq(), after the
+RX resources exist.
 
-Signed-off-by: Srish Srinivasan <ssrish@linux.ibm.com>
----
- .../ABI/testing/sysfs-firmware-plpks          | 116 +++++
- arch/powerpc/include/asm/plpks.h              |   9 +
- arch/powerpc/platforms/pseries/Kconfig        |  15 +
- arch/powerpc/platforms/pseries/Makefile       |   1 +
- arch/powerpc/platforms/pseries/plpks-sysfs.c  |  11 +
- .../platforms/pseries/plpks-wrapkey-sysfs.c   | 408 ++++++++++++++++++
- arch/powerpc/platforms/pseries/plpks.c        |   1 -
- 7 files changed, 560 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/platforms/pseries/plpks-wrapkey-sysfs.c
+> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+> index abebdb1fc2628..4a5869183be66 100644
+> --- a/drivers/net/ethernet/ibm/ibmveth.c
+> +++ b/drivers/net/ethernet/ibm/ibmveth.c
 
-diff --git a/Documentation/ABI/testing/sysfs-firmware-plpks b/Documentation/ABI/testing/sysfs-firmware-plpks
-index cba061e4eee2..4144e868da1b 100644
---- a/Documentation/ABI/testing/sysfs-firmware-plpks
-+++ b/Documentation/ABI/testing/sysfs-firmware-plpks
-@@ -56,3 +56,119 @@ Description:	Bitmask of the wrapping features indicating the wrapping
- 		algorithms that are supported for the H_PKS_WRAP_OBJECT requests
- 		, represented as a 8 byte hexadecimal ASCII string. Consult the
- 		hypervisor documentation for what these flags mean.
-+
-+What:		/sys/firmware/plpks/wrapkey
-+Date:		August 2026
-+Contact:	Srish Srinivasan <ssrish@linux.ibm.com>
-+Description:	This directory provides the interface for creating and managing
-+		user-created PKWM wrapping keys.
-+
-+		The directory is present only when CONFIG_PLPKS_WRAPKEY_SYSFS is
-+		enabled and the system supports the H_PKS_{UN}REVOKE_OBJECT
-+		interfaces.
-+
-+		Only alphanumeric characters are accepted in wrapping key
-+		labels. The wrapping keys themselves are confidential PLPKS
-+		objects and are not exposed to userspace. Only their labels are
-+		exposed for identification and management.
-+
-+		Each write is processed as an independent operation and accepts
-+		exactly one wrapping key label. The resulting state can be
-+		verified through list_active or list_revoked, as appropriate.
-+
-+		The default wrapping key, named "default-wrapping-key", cannot
-+		be created, revoked, unrevoked, or deleted through this
-+		interface.
-+
-+What:		/sys/firmware/plpks/wrapkey/create
-+Date:		August 2026
-+Contact:	Srish Srinivasan <ssrish@linux.ibm.com>
-+Description:	(WO) Create a wrapping key with the specified label, except
-+		"default-wrapping-key", which is reserved for the default
-+		wrapping key.
-+
-+		On success, the label appears in list_active.
-+
-+		For example, to create a wrapping key labelled "wk1":
-+
-+			echo -n wk1 > /sys/firmware/plpks/wrapkey/create
-+
-+		or:
-+
-+			printf '%s' 'wk1' > /sys/firmware/plpks/wrapkey/create
-+
-+What:		/sys/firmware/plpks/wrapkey/delete
-+Date:		August 2026
-+Contact:	Srish Srinivasan <ssrish@linux.ibm.com>
-+Description:	(WO) Delete a revoked wrapping key identified by the specified
-+		label. A wrapping key must be revoked before it can be deleted.
-+		The default wrapping key, named "default-wrapping-key", cannot
-+		be deleted.
-+
-+		On success, the label no longer appears in list_revoked.
-+
-+		For example, to delete a revoked wrapping key labelled "wk1":
-+
-+			echo -n wk1 > /sys/firmware/plpks/wrapkey/delete
-+
-+		or:
-+
-+			printf '%s' 'wk1' > /sys/firmware/plpks/wrapkey/delete
-+
-+What:		/sys/firmware/plpks/wrapkey/revoke
-+Date:		August 2026
-+Contact:	Srish Srinivasan <ssrish@linux.ibm.com>
-+Description:	(WO) Revoke a wrapping key identified by the specified label. A
-+		revoked wrapping key cannot be used for seal or unseal
-+		operations until it is unrevoked. The default wrapping key,
-+		named "default-wrapping-key", cannot be revoked.
-+
-+		On success, the label appears in list_revoked and no longer
-+		appears in list_active.
-+
-+		For example, to revoke a wrapping key labelled "wk1":
-+
-+			echo -n wk1 > /sys/firmware/plpks/wrapkey/revoke
-+
-+		or:
-+
-+			printf '%s' 'wk1' > /sys/firmware/plpks/wrapkey/revoke
-+
-+What:		/sys/firmware/plpks/wrapkey/unrevoke
-+Date:		August 2026
-+Contact:	Srish Srinivasan <ssrish@linux.ibm.com>
-+Description:	(WO) Unrevoke a revoked wrapping key identified by the specified
-+		label. The default wrapping key, named "default-wrapping-key",
-+		cannot be unrevoked through this interface because it cannot be
-+		revoked.
-+
-+		On success, the label appears in list_active and no longer
-+		appears in list_revoked.
-+
-+		For example, to unrevoke a revoked wrapping key labelled "wk1":
-+
-+			echo -n wk1 > /sys/firmware/plpks/wrapkey/unrevoke
-+
-+		or:
-+
-+			printf '%s' 'wk1' > /sys/firmware/plpks/wrapkey/unrevoke
-+
-+What:		/sys/firmware/plpks/wrapkey/list_active
-+Date:		August 2026
-+Contact:	Srish Srinivasan <ssrish@linux.ibm.com>
-+Description:	(RO) List the labels of active, non-revoked wrapping keys. The
-+		default wrapping key, named "default-wrapping-key", is always
-+		included in this list.
-+
-+		For example:
-+
-+			cat /sys/firmware/plpks/wrapkey/list_active
-+
-+What:		/sys/firmware/plpks/wrapkey/list_revoked
-+Date:		August 2026
-+Contact:	Srish Srinivasan <ssrish@linux.ibm.com>
-+Description:	(RO) List the labels of revoked wrapping keys.
-+
-+		For example:
-+
-+			cat /sys/firmware/plpks/wrapkey/list_revoked
-diff --git a/arch/powerpc/include/asm/plpks.h b/arch/powerpc/include/asm/plpks.h
-index abf8a71cf3f2..fa0380560f12 100644
---- a/arch/powerpc/include/asm/plpks.h
-+++ b/arch/powerpc/include/asm/plpks.h
-@@ -56,6 +56,8 @@
- // Component for a PKWM wrapping key
- #define PLPKS_WRAPKEY_COMPONENT	"PLPKSWR"
- 
-+#define PLPKS_OBJLABEL_LEN_FIELD_SIZE	2
-+
- struct plpks_var {
- 	char *component;
- 	u8 *name;
-@@ -144,6 +146,9 @@ int plpks_get_object_labels(u8 **output_buf, u64 *output_len,
- 
- bool plpks_revoke_is_supported(void);
- 
-+int plpks_init_child_kobj(struct kobject *kobj, const struct kobj_type *ktype,
-+			  const char *name);
-+
- #else // CONFIG_PSERIES_PLPKS
- static inline bool plpks_is_available(void) { return false; }
- static inline u16 plpks_get_passwordlen(void) { BUILD_BUG(); }
-@@ -151,6 +156,10 @@ static inline void plpks_early_init_devtree(void) { }
- static inline int plpks_populate_fdt(void *fdt) { BUILD_BUG(); }
- static inline int plpks_config_create_softlink(struct kobject *from)
- 						{ return 0; }
-+static inline int plpks_init_child_kobj(struct kobject *kobj,
-+					const struct kobj_type *ktype,
-+					const char *name)
-+						{ return 0; }
- #endif // CONFIG_PSERIES_PLPKS
- 
- #endif // _ASM_POWERPC_PLPKS_H
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-index 74910ce3a541..d0dcfbae6fc9 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -216,3 +216,18 @@ config PPC_SVM
- 	 those guests.
- 
- 	 If unsure, say "N".
-+
-+config PLPKS_WRAPKEY_SYSFS
-+	bool "Enable sysfs interface for managing PKWM wrapping keys"
-+	default n
-+	depends on PSERIES_PLPKS
-+	depends on SYSFS
-+	depends on TRUSTED_KEYS_PKWM
-+	help
-+	  The PKWM trusted source supports user-created wrapping keys that are
-+	  managed by the OS. These wrapping keys can be created, revoked,
-+	  unrevoked, and deleted through sysfs. Their labels can also be viewed
-+	  through sysfs.
-+
-+	  Say Y if PLPKS and PKWM are enabled and you want to isolate trusted
-+	  keys using user-created wrapping keys.
-diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-index 3ced289a675b..c604be40f546 100644
---- a/arch/powerpc/platforms/pseries/Makefile
-+++ b/arch/powerpc/platforms/pseries/Makefile
-@@ -33,6 +33,7 @@ obj-$(CONFIG_FA_DUMP)		+= rtas-fadump.o
- obj-$(CONFIG_PSERIES_PLPKS)	+= plpks.o plpks-sysfs.o
- obj-$(CONFIG_PPC_SECURE_BOOT)	+= plpks-secvar.o
- obj-$(CONFIG_PSERIES_PLPKS_SED)	+= plpks_sed_ops.o
-+obj-$(CONFIG_PLPKS_WRAPKEY_SYSFS) += plpks-wrapkey-sysfs.o
- obj-$(CONFIG_SUSPEND)		+= suspend.o
- obj-$(CONFIG_PPC_VAS)		+= vas.o vas-sysfs.o
- 
-diff --git a/arch/powerpc/platforms/pseries/plpks-sysfs.c b/arch/powerpc/platforms/pseries/plpks-sysfs.c
-index f2436229f323..0ca13bb6405f 100644
---- a/arch/powerpc/platforms/pseries/plpks-sysfs.c
-+++ b/arch/powerpc/platforms/pseries/plpks-sysfs.c
-@@ -55,6 +55,17 @@ static umode_t plpks_config_attr_is_visible(struct kobject *kobj,
- 	return attr->mode;
- }
- 
-+int plpks_init_child_kobj(struct kobject *kobj, const struct kobj_type *ktype,
-+			  const char *name)
-+{
-+	kobject_init(kobj, ktype);
-+
-+	if (!plpks_kobj)
-+		return -ENODEV;
-+
-+	return kobject_add(kobj, plpks_kobj, "%s", name);
-+}
-+
- int plpks_config_create_softlink(struct kobject *from)
- {
- 	if (!plpks_config_kobj)
-diff --git a/arch/powerpc/platforms/pseries/plpks-wrapkey-sysfs.c b/arch/powerpc/platforms/pseries/plpks-wrapkey-sysfs.c
-new file mode 100644
-index 000000000000..d810d6d64fb9
---- /dev/null
-+++ b/arch/powerpc/platforms/pseries/plpks-wrapkey-sysfs.c
-@@ -0,0 +1,408 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Copyright (C) 2026 IBM Corporation <ssrish@linux.ibm.com>
-+ *
-+ * This code exposes wrapping key management options to the user via the
-+ * sysfs
-+ */
-+
-+#define pr_fmt(fmt) "wrapkey-sysfs: " fmt
-+#define PLPKS_WRAPKEY_REVOKED 1
-+#define PLPKS_WRAPKEY_UNREVOKED 0
-+
-+#include <linux/slab.h>
-+#include <linux/compat.h>
-+#include <linux/string.h>
-+#include <linux/of.h>
-+#include <linux/ctype.h>
-+#include <linux/unaligned.h>
-+#include <asm/machdep.h>
-+#include <asm/plpks.h>
-+
-+static struct kobject *wrapkey_kobj;
-+
-+static bool is_wrapkey_label_alnum(const char *key_label, size_t len)
-+{
-+	size_t i;
-+
-+	for (i = 0; i < len; i++) {
-+		if (!isalnum((unsigned char)key_label[i])) {
-+			pr_err("key label <%*pE> is not alphanumeric\n",
-+			       (int)len, key_label);
-+			return false;
-+		}
-+	}
-+
-+	return true;
-+}
-+
-+static ssize_t list_key_labels(char *buf, u8 *obj_labels_buf,
-+			       u64 obj_labels_count, int revoked)
-+{
-+	struct plpks_var var = { 0 };
-+	u8 *obj_labels_buf_ptr, *comp_prefix;
-+	u8 *key_label_ptr;
-+	u16 obj_label_len;
-+	int len = 0;
-+	int is_revoked;
-+	u64 i;
-+
-+	var.os = PLPKS_VAR_LINUX;
-+	var.component = PLPKS_WRAPKEY_COMPONENT;
-+	obj_labels_buf_ptr = obj_labels_buf;
-+
-+	for (i = 0; i < obj_labels_count; ++i) {
-+		obj_label_len = get_unaligned_be16(obj_labels_buf_ptr);
-+		comp_prefix = obj_labels_buf_ptr +
-+			      PLPKS_OBJLABEL_LEN_FIELD_SIZE;
-+
-+		var.namelen = obj_label_len - PLPKS_MAX_LABEL_ATTR_SIZE;
-+		var.name = kzalloc(var.namelen + 1, GFP_KERNEL);
-+
-+		if (!var.name)
-+			return -ENOMEM;
-+
-+		key_label_ptr = comp_prefix + PLPKS_MAX_LABEL_ATTR_SIZE;
-+		memcpy(var.name, key_label_ptr, var.namelen);
-+
-+		is_revoked = plpks_is_wrapping_key_revoked(&var);
-+		if (is_revoked == revoked)
-+			len += sysfs_emit_at(buf, len, "<%s>\n",
-+					     (char *)var.name);
-+		else if (is_revoked < 0)
-+			pr_warn("Failed to get revocation status for <%s>\n",
-+				(char *)var.name);
-+
-+		kfree(var.name);
-+		obj_labels_buf_ptr = key_label_ptr + var.namelen;
-+	}
-+
-+	return len;
-+}
-+
-+static ssize_t list_active_show(struct kobject *kobj,
-+				struct kobj_attribute *attr, char *buf)
-+{
-+	u8 *obj_labels_buf;
-+	u64 obj_labels_count = 0;
-+	int rc;
-+
-+	rc = plpks_get_object_labels(&obj_labels_buf, &obj_labels_count,
-+				     PLPKS_WRAPKEY_COMPONENT);
-+	if (rc) {
-+		pr_err("Retrieving object labels failed. rc=%d\n", rc);
-+		goto out;
-+	}
-+
-+	rc = list_key_labels(buf, obj_labels_buf, obj_labels_count,
-+			     PLPKS_WRAPKEY_UNREVOKED);
-+
-+out:
-+	kfree(obj_labels_buf);
-+	return rc;
-+}
-+
-+static ssize_t list_revoked_show(struct kobject *kobj,
-+				 struct kobj_attribute *attr, char *buf)
-+{
-+	u8 *obj_labels_buf;
-+	u64 obj_labels_count = 0;
-+	int rc;
-+
-+	rc = plpks_get_object_labels(&obj_labels_buf, &obj_labels_count,
-+				     PLPKS_WRAPKEY_COMPONENT);
-+	if (rc) {
-+		pr_err("Retrieving object labels failed. rc=%d\n", rc);
-+		goto out;
-+	}
-+
-+	rc = list_key_labels(buf, obj_labels_buf, obj_labels_count,
-+			     PLPKS_WRAPKEY_REVOKED);
-+
-+out:
-+	kfree(obj_labels_buf);
-+	return rc;
-+}
-+
-+static ssize_t create_store(struct kobject *kobj, struct kobj_attribute *attr,
-+			    const char *buf, size_t count)
-+{
-+	struct plpks_var var = { 0 };
-+	int rc;
-+
-+	if (!capable(CAP_SYS_ADMIN)) {
-+		rc = -EPERM;
-+		goto out;
-+	}
-+
-+	if (!count) {
-+		rc = -EINVAL;
-+		goto out;
-+	}
-+
-+	if (count > PLPKS_MAX_NAME_SIZE) {
-+		rc = -ENAMETOOLONG;
-+		goto out;
-+	}
-+
-+	if (!strcmp(buf, PLPKS_DEFAULT_WRAPKEY_LABEL)) {
-+		rc = -EEXIST;
-+		goto out;
-+	}
-+
-+	if (!is_wrapkey_label_alnum(buf, count)) {
-+		rc = -EINVAL;
-+		goto out;
-+	}
-+
-+	var.name = kstrndup(buf, count, GFP_KERNEL);
-+	if (!var.name) {
-+		rc = -ENOMEM;
-+		goto out;
-+	}
-+
-+	var.namelen = count;
-+	var.policy = PLPKS_WRAPPINGKEY;
-+	var.os = PLPKS_VAR_LINUX;
-+	var.component = PLPKS_WRAPKEY_COMPONENT;
-+
-+	rc = plpks_gen_wrapping_key(&var);
-+	if (rc) {
-+		pr_err("creation of wrapping key <%s> failed. rc = %d\n",
-+		       (char *)var.name, rc);
-+		goto out;
-+	}
-+
-+	rc = count;
-+out:
-+	kfree(var.name);
-+	return rc;
-+}
-+
-+static ssize_t revoke_store(struct kobject *kobj, struct kobj_attribute *attr,
-+			    const char *buf, size_t count)
-+{
-+	struct plpks_var var = { 0 };
-+	int rc;
-+
-+	if (!capable(CAP_SYS_ADMIN)) {
-+		rc = -EPERM;
-+		goto out;
-+	}
-+
-+	if (!count) {
-+		rc = -EINVAL;
-+		goto out;
-+	}
-+
-+	if (count > PLPKS_MAX_NAME_SIZE) {
-+		rc = -ENAMETOOLONG;
-+		goto out;
-+	}
-+
-+	if (!strcmp(buf, PLPKS_DEFAULT_WRAPKEY_LABEL)) {
-+		rc = -EPERM;
-+		goto out;
-+	}
-+
-+	if (!is_wrapkey_label_alnum(buf, count)) {
-+		rc = -EINVAL;
-+		goto out;
-+	}
-+
-+	var.name = kstrndup(buf, count, GFP_KERNEL);
-+	if (!var.name) {
-+		rc = -ENOMEM;
-+		goto out;
-+	}
-+
-+	var.namelen = count;
-+	var.os = PLPKS_VAR_LINUX;
-+	var.component = PLPKS_WRAPKEY_COMPONENT;
-+
-+	rc = plpks_revoke_wrapping_key(&var);
-+
-+	if (rc) {
-+		pr_err("revocation of wrapping key <%s> failed. rc = %d\n",
-+		       (char *)var.name, rc);
-+		goto out;
-+	}
-+
-+	rc = count;
-+out:
-+	kfree(var.name);
-+	return rc;
-+}
-+
-+static ssize_t unrevoke_store(struct kobject *kobj, struct kobj_attribute *attr,
-+			      const char *buf, size_t count)
-+{
-+	struct plpks_var var = { 0 };
-+	int rc;
-+
-+	if (!capable(CAP_SYS_ADMIN)) {
-+		rc = -EPERM;
-+		goto out;
-+	}
-+
-+	if (!count) {
-+		rc = -EINVAL;
-+		goto out;
-+	}
-+
-+	if (count > PLPKS_MAX_NAME_SIZE) {
-+		rc = -ENAMETOOLONG;
-+		goto out;
-+	}
-+
-+	if (!strcmp(buf, PLPKS_DEFAULT_WRAPKEY_LABEL)) {
-+		rc = -EINVAL;
-+		goto out;
-+	}
-+
-+	if (!is_wrapkey_label_alnum(buf, count)) {
-+		rc = -EINVAL;
-+		goto out;
-+	}
-+
-+	var.name = kstrndup(buf, count, GFP_KERNEL);
-+	if (!var.name) {
-+		rc = -ENOMEM;
-+		goto out;
-+	}
-+
-+	var.namelen = count;
-+	var.os = PLPKS_VAR_LINUX;
-+	var.component = PLPKS_WRAPKEY_COMPONENT;
-+
-+	rc = plpks_unrevoke_wrapping_key(&var);
-+
-+	if (rc) {
-+		pr_err("un-revocation of wrapping key <%s> failed. rc = %d\n",
-+		       (char *)var.name, rc);
-+		goto out;
-+	}
-+
-+	rc = count;
-+out:
-+	kfree(var.name);
-+	return rc;
-+}
-+
-+static ssize_t delete_store(struct kobject *kobj, struct kobj_attribute *attr,
-+			    const char *buf, size_t count)
-+{
-+	struct plpks_var var = { 0 };
-+	int rc;
-+
-+	if (!capable(CAP_SYS_ADMIN)) {
-+		rc = -EPERM;
-+		goto out;
-+	}
-+
-+	if (!count) {
-+		rc = -EINVAL;
-+		goto out;
-+	}
-+
-+	if (count > PLPKS_MAX_NAME_SIZE) {
-+		rc = -ENAMETOOLONG;
-+		goto out;
-+	}
-+
-+	if (!strcmp(buf, PLPKS_DEFAULT_WRAPKEY_LABEL)) {
-+		rc = -EPERM;
-+		goto out;
-+	}
-+
-+	if (!is_wrapkey_label_alnum(buf, count)) {
-+		rc = -EINVAL;
-+		goto out;
-+	}
-+
-+	var.name = kstrndup(buf, count, GFP_KERNEL);
-+	if (!var.name) {
-+		rc = -ENOMEM;
-+		goto out;
-+	}
-+
-+	var.namelen = count;
-+	var.os = PLPKS_VAR_LINUX;
-+	var.component = PLPKS_WRAPKEY_COMPONENT;
-+
-+	rc = plpks_del_wrapping_key(&var);
-+
-+	if (rc) {
-+		pr_err("deletion of wrapping key <%s> failed. rc = %d\n",
-+		       (char *)var.name, rc);
-+		goto out;
-+	}
-+
-+	rc = count;
-+out:
-+	kfree(var.name);
-+	return rc;
-+}
-+
-+static void wrapkey_kobj_release(struct kobject *kobj)
-+{
-+	kfree(kobj);
-+}
-+
-+static struct kobj_attribute view_active_attr = __ATTR_RO(list_active);
-+
-+static struct kobj_attribute view_revoked_attr = __ATTR_RO(list_revoked);
-+
-+static struct kobj_attribute create_attr = __ATTR_WO(create);
-+
-+static struct kobj_attribute revoke_attr = __ATTR_WO(revoke);
-+
-+static struct kobj_attribute unrevoke_attr = __ATTR_WO(unrevoke);
-+
-+static struct kobj_attribute delete_attr = __ATTR_WO(delete);
-+
-+static struct attribute *wrapkey_attrs[] = {
-+	&view_active_attr.attr,
-+	&view_revoked_attr.attr,
-+	&create_attr.attr,
-+	&revoke_attr.attr,
-+	&unrevoke_attr.attr,
-+	&delete_attr.attr,
-+	NULL,
-+};
-+
-+static const struct attribute_group wrapkey_attr_group = {
-+	.attrs = wrapkey_attrs,
-+};
-+__ATTRIBUTE_GROUPS(wrapkey_attr);
-+
-+static const struct kobj_type wrapkey_ktype = {
-+	.release	= wrapkey_kobj_release,
-+	.sysfs_ops	= &kobj_sysfs_ops,
-+	.default_groups = wrapkey_attr_groups,
-+};
-+
-+static __init int wrapkey_sysfs_init(void)
-+{
-+	int rc;
-+
-+	if (!plpks_revoke_is_supported()) {
-+		pr_err("H_PKS_{UN}REVOKE_OBJECT interface not supported\n");
-+		return -ENODEV;
-+	}
-+
-+	wrapkey_kobj = kzalloc_obj(*wrapkey_kobj);
-+	if (!wrapkey_kobj)
-+		return -ENOMEM;
-+
-+	rc = plpks_init_child_kobj(wrapkey_kobj, &wrapkey_ktype, "wrapkey");
-+
-+	if (rc) {
-+		kobject_put(wrapkey_kobj);
-+		wrapkey_kobj = NULL;
-+	}
-+
-+	return rc;
-+}
-+
-+machine_late_initcall(pseries, wrapkey_sysfs_init);
-diff --git a/arch/powerpc/platforms/pseries/plpks.c b/arch/powerpc/platforms/pseries/plpks.c
-index 6a7b84e087f0..c483f68c7a47 100644
---- a/arch/powerpc/platforms/pseries/plpks.c
-+++ b/arch/powerpc/platforms/pseries/plpks.c
-@@ -28,7 +28,6 @@
- #define PLPKS_OBJLABEL_BUF_SIZE	\
- 	roundup_pow_of_two(PLPKS_OBJLABEL_BUF_BASE_SIZE)
- 
--#define PLPKS_OBJLABEL_LEN_FIELD_SIZE	2
- #define PLPKS_OBJLABEL_PREFIX_LEN	8
- 
- #define PLPKS_WRAP_INTERFACE_BIT	3
+[ ... ]
+
+> @@ -717,10 +715,18 @@ static int ibmveth_open(struct net_device *netdev)
+>  		}
+>  	}
+>  
+> +	/* NAPI can run as soon as it is enabled, from netpoll during the
+> +	 * direct close()/open() pairs or from a direct ibmveth_interrupt()
+> +	 * call, so enable it only once everything ibmveth_poll() touches
+> +	 * exists.
+> +	 */
+> +	napi_enable(&adapter->napi);
+> +
+>  	netdev_dbg(netdev, "registering irq 0x%x\n", netdev->irq);
+>  	rc = request_irq(netdev->irq, ibmveth_interrupt, 0, netdev->name,
+>  			 netdev);
+>  	if (rc != 0) {
+> +		napi_disable(&adapter->napi);
+>  		netdev_err(netdev, "unable to request irq 0x%x, rc %d\n",
+>  			   netdev->irq, rc);
+>  		goto out_free_buffer_pools;
+
+[Severity: Medium]
+Is napi_disable() enough here before the goto frees the RX queue?
+
+napi_disable() waits for the NAPI ownership bits to clear. It does not
+wait for ibmveth_poll() to return. After napi_complete_done(), the poll
+keeps running:
+
+ibmveth_poll()
+    napi_complete_done(napi, frames_processed)
+    h_vio_signal(adapter->vdev->unit_address, VIO_IRQ_ENABLE)
+    ibmveth_rxq_pending_buffer(adapter)   <- reads rx_queue.queue_addr
+
+The out_free_buffer_pools path then reaches dma_free_coherent() on
+adapter->rx_queue.queue_addr. ibmveth_close() has the same gap between
+napi_disable() and its dma_free_coherent() of the RX queue.
+
+A poll can run in this window. netpoll can poll NAPI once it is
+enabled, and veth_pool_store() kicks the interrupt handler after
+dropping RTNL:
+
+veth_pool_store()
+    rtnl_unlock();
+
+    /* kick the interrupt handler to allocate/deallocate pools */
+    ibmveth_interrupt(netdev->irq, netdev);
+
+Can the end of the poll read the freed RX queue, or re-enable the
+interrupt after close() has masked it?
+
+The later commit "ibmveth: wait for the RX poll to return before
+freeing the RX queue" in this series seems to fix this. It adds
+synchronize_net() after napi_disable() in ibmveth_close() and in this
+request_irq() failure path. The new comment says this patch hardens the
+direct close()/open() window. Could that change be folded in here?
+
+[ ... ]
+
+> @@ -1542,7 +1547,11 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+>  		}
+>  	}
+>  
+> -	ibmveth_replenish_task(adapter);
+> +	/* netpoll polls with budget 0 for TX only, and is not serialized
+> +	 * with a NAPI poll that was already running when it was set up
+> +	 */
+> +	if (budget)
+> +		ibmveth_replenish_task(adapter);
+>  
+>  	if (frames_processed == budget)
+>  		goto out;
+
+[Severity: High]
+This is a pre-existing issue and was not introduced by this patch. The
+RX loop in ibmveth_poll() calls ibmveth_rx_mss_helper() whenever the
+IPv4 checksum field is 0xffff, whatever csum_good says:
+
+    if ((length > netdev->mtu + ETH_HLEN) ||
+        lrg_pkt || iph_check == 0xffff) {
+            ibmveth_rx_mss_helper(skb, mss, lrg_pkt);
+
+The helper uses iph->ihl * 4 as the TCP offset. It does not check
+skb_headlen(), ihl >= 5, or fragmentation:
+
+ibmveth_rx_mss_helper()
+    offset = iph->ihl * 4;
+    ...
+    tcph = (struct tcphdr *)(skb->data + offset);
+    ...
+        skb_shinfo(skb)->gso_size = ntohs(tcph->check);
+        tcph->check = 0;
+    ...
+        hdr_len = offset + tcph->doff * 4;
+        skb_shinfo(skb)->gso_segs =
+                DIV_ROUND_UP(skb->len - hdr_len,
+                             skb_shinfo(skb)->gso_size);
+
+Can a short IPv4/TCP frame from another partition on the virtual LAN,
+with check set to 0xffff and a large ihl, make this read and write
+tcph->check past the received data? On the copybreak path, those bytes
+are uninitialized skb memory.
+
+With an oversized doff, can skb->len - hdr_len underflow and put bogus
+gso_segs into the skb passed up the stack?
+
+The later commit "ibmveth: check headers in the RX large send and
+checksum helpers" in this series adds skb_headlen(), ihl, fragment,
+doff and ip_len checks to ibmveth_rx_mss_helper() before it touches the
+headers. That looks like it fixes this.
+
+[Severity: High]
+This isn't a bug introduced by this patch, but further down,
+ibmveth_poll() can still queue the reset work when re-enabling the
+interrupt fails:
+
+    lpar_rc = h_vio_signal(adapter->vdev->unit_address, VIO_IRQ_ENABLE);
+    if (WARN_ON(lpar_rc != H_SUCCESS)) {
+            schedule_work(&adapter->work);
+            goto out;
+    }
+
+ibmveth_remove() cancels that work before it unregisters the device,
+so NAPI can still run after the cancel:
+
+ibmveth_remove()
+    cancel_work_sync(&adapter->work);
+    ...
+    unregister_netdev(netdev);
+
+    free_netdev(netdev);
+
+If a poll queues adapter->work after cancel_work_sync() returns, can
+ibmveth_reset() run on the adapter after free_netdev() has freed it?
+
+The later commit "ibmveth: disable the reset work before unregister in
+remove" in this series seems to fix this. It replaces cancel_work_sync()
+with disable_work_sync(), which waits for a running reset and blocks
+later queueing.
+
+[ ... ]
+
 -- 
-2.52.0
-
+Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20261013182926.30417-1-mmc%40linux.ibm.com
 
