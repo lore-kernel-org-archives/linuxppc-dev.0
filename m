@@ -1,77 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-29652-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29653-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5EEEFCCF2C4
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Oct 2026 13:50:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3002DCCF2C4
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Oct 2026 13:50:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j70RF4gwmz30Ng;
-	Mon, 19 Oct 2026 00:49:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::62d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792331385;
-	cv=none; b=M3QUXi4P4zOuyUm+eoUb6FEYkyH03IoRsyES2B/06cUiAa/2nhW2/g4u4KMo5PLx5cQOsR/ubFad9KeJMeHeSOpE1rdSBjNidEXUpM/f+E/FH7KMpDF/xQsiMA5Xg6ZzoSDXw+TAeQEKFamO4xB4Db8WY0OKaS9HvcB4AY+kJInSwWsV+NYSwnrIB9LJluLzvrpj6qDjh5Dbf1q2nqL24ELGD9NP8N5PAxgThyYXen7NYTFrHysqbBNZ6rwEGFITwbZUgRy7QXd5rNkaV05V3QjXgE/S8p9i+fGvyAzZL1SPalai0CrW1T8z0ZrkFYoeeIPg4Ebus2X0YcznRp50xg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j70RH22JKz30B0;
+	Mon, 19 Oct 2026 00:49:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::634"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792331387;
+	cv=none; b=AU4eHkdEFMTTEnWdGQ0GEeMvKG8/YZMGb1sHOZiadbUuwLK5Tyqyy+iJ4RhTsClcA5vsSw/mc3Q2ox7X25LOtu4P7RwMR4xvHnHtStyBA3Eex2A1aVbcEhzj1h2OtD7t98VHrLCDrXGQ7WGE1MUnaerfA1U1jalceheybYzcXhPjgdlvxtFAprVNKqOJA7a5sSA5dA8THD4csSZMQ60k0A+R25Ba/3rQX7Iv0FeRLPAis0+h7wL6l9OFTMWMbLCCp9ycj+Fp5ULuthZnPP+OfD5JL5up0HjEoAjEbgLvPziYpnu0g+Hky10UHX1s5Wms4qFPVelbDjW2fxDGkXvkrw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792331385; c=relaxed/relaxed;
-	bh=vELiqmiLg0My2qE0CYP1TlLdsSmoEcWN2hANkQsUo3o=;
+	t=1792331387; c=relaxed/relaxed;
+	bh=j0iP+m3EX5ucikvDp402dsq76Smx73BsFN2IxwK6/bU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=BfjYMZM/Q8xQ62Kv/gnHEb/Z+1+t9aPz4qiJPiNLvWJFc4oGHQ3SvmJSro142WKcMmRqHXbPcBj/Qz3J7sZ9vOyvvRajAPWwuotHRkuFpGBd3jlQHBDSU+0LvSIBpXVZZUBXIFOSx8YTsc9Uqa3AcMh3gkn/sZrz78bUZL0w6K/LN8ysStmOabeBkpgmjmX7hUMxlz3YiQ2VhcA5UDX0H1IDxLFUl/vlvUrMS5F0e/mlRx/u3nZ+7OX/NGxmOp5QDx/PXRRnqDep+/5Mj/TQcKgHuidkyrDRp5QYY6X2FCintl/da7xulQ4Nt9XJ1RTc6iwfXiCsBPyx6VrK5fqilQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ki1/TKwc; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::62d; helo=mail-ej1-x62d.google.com; envelope-from=linmag7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=H8On2UfZ4WXelK1IHQN5pI3MPLz0o1ZhcjWzm+BMMfJyACGh+NxvBzpdeTxGXUHSoP5NZ3qCSr8hqx5FMz+ICl3lh/1Pdqq7KgiWyDRSv32wJx5AMvKZDN82J2FM9NuIza1VM93RurYz25VTQMXZCxTnUzRTiSVYJOtrkyzB+8AtyJ5ti3ARXLAa86E6zNjt85q/GrQTFakoi7qWwwFs6ltTppdhaW0uJ38sixHjSCwl0O5PFCyILGmj60QU98jTCSxUKb1UUIESywQC7DOQWmw2TF9nmXAfnb0rx+YFk6DFUgpKcNfL40No2fSyoEP/iuzdyEh3xc+97K3ZHZB2Hg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=OMKUrZCk; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::634; helo=mail-ej1-x634.google.com; envelope-from=linmag7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ki1/TKwc;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=OMKUrZCk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::62d; helo=mail-ej1-x62d.google.com; envelope-from=linmag7@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com [IPv6:2a00:1450:4864:20::62d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::634; helo=mail-ej1-x634.google.com; envelope-from=linmag7@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x634.google.com (mail-ej1-x634.google.com [IPv6:2a00:1450:4864:20::634])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j70RD2xmNz30B0
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2026 00:49:44 +1100 (AEDT)
-Received: by mail-ej1-x62d.google.com with SMTP id a640c23a62f3a-c4086e892a4so151693766b.2
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Oct 2026 06:49:44 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j70RG2zKwz30Wh
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2026 00:49:46 +1100 (AEDT)
+Received: by mail-ej1-x634.google.com with SMTP id a640c23a62f3a-c4086e892a4so151695366b.2
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Oct 2026 06:49:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792331381; x=1792936181; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1792331383; x=1792936183; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=vELiqmiLg0My2qE0CYP1TlLdsSmoEcWN2hANkQsUo3o=;
-        b=ki1/TKwcIfYLGmdkhNswI0liHSakw7IaueyIfKHmwbXqXI3KfSFrObCEecbg6lNuV4
-         xliicMzMxc+yKz6x9sSOYBtwYrLCdBSi0E5U21BNlbVlp2YOKH3y5Kj/K+OqQq/f94Yv
-         9WUAssZ2nkIQ8TRXkQq8qPPCdDGILEmw4maYLEEJlisZ32PV/Itp+XbJ6wVTdhBUUUQC
-         8Po6Vq0fkgHIYyv+q2xNnTKy3wkf0PuHQGBEyWhq0rWaGap6kyJYTQYgrLYO9G3hTuQz
-         KkUU2JHb1sM2zFvJ1bzZpt8LL7ir6McdZRwVs76zVdICm5R2pyNTI8NAv4P0MG2dv9sO
-         PHZw==
+        bh=j0iP+m3EX5ucikvDp402dsq76Smx73BsFN2IxwK6/bU=;
+        b=OMKUrZCkCTpFY/2etPpVnd33ZBYOoD104cq/KCuOHzebzAymd9jslmo8vor4/ZAizQ
+         QGBUQ4uHlu09K+pL9cGD7HNYV0Gv7ibax3ZWVNdOKUeqqbHKR38FNg35tr8v+Jzh9abT
+         9W0EYQUl1yg5KjpujUAGWO6iF2qudTsEYvR/DP+lIiGeaqY4NLQi2J3kso3tZxslwz+j
+         X+g9DzXZTcaHWZVshAb7j7QzXVI0dQeBTljBzRGFSITH/bKMfad7m9JNL6sJxI3StUQy
+         JloMtsqeefR/RyuHfFOBaituX+qVoLpirQn2H7vJuXgb3DOBXUho6vibeS/0BVgFiwsT
+         vGXA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792331381; x=1792936181;
+        d=1e100.net; s=20260707; t=1792331383; x=1792936183;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=vELiqmiLg0My2qE0CYP1TlLdsSmoEcWN2hANkQsUo3o=;
-        b=iypLClh7yKyQAxc5N+WuvvQYYlepR0Kx8bIzVmb5N1ayadoqaxl98Th1j3QEWmqD/F
-         6wcRbxTLHfR+n7gVkMjk6g1AQiP5XZuzwRyEfZGN0RypI+bHT07Gefi7+sw4UEicV3oq
-         lFE44t0RrqtW/+eT1Vq81gTy7r1S6KWNY47GvhmtCSFMWxOp2WdkWGP0YbRHGlUENcpk
-         lLMzARFGS1So6Aw60mwROoLn7tUF6V/Jg1fdAy0fhLOMV1/1bJVpVZoOq7d7ft2c+FOo
-         U4NOjrXdX70JXzfe2CRZiaJPs8SEZCjFcgx1i04+H3cSLR1d8RbE4AsYhtLFy4Md/r7x
-         rSeg==
-X-Forwarded-Encrypted: i=1; AKwUvBx1ExoitMv28Xwao0OWBZoewYiu+Ozjr/2JJeG0lWozSjN52TGOVrHKTVevbVH/ALOeHt9/iZNOQrymt0c=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYIIIkudhWTQETQh2eAZccMXUtyALxCYccL/TGrn1433R3QY/2cl
-	2kfRePM5HHZUbUJsPyu5ClrQYKgNPzN89LozurI5+NswhzGRywZhpHrL
-X-Gm-Gg: AYBFou38rJLr6QNdpQwpywnyqgELvS96dfLREtIpiHc0YowEXJF4Bfdq8WvnlEktwK6
-	oqfNhj6JEoGabjBTMgdFxHXUouF9Y5tZlGCzznw8BYb7KBqimy3BZxlQlyEV39bz0f/cbHxAnmO
-	3EOnTcEGGYNMRLMLv3JrMxkw+i8kt4eJEGVXlM9p1k8S6+VWxlF1Ny8IXelVAwVKHr0WredVJtF
-	nGdtVV0sd9knbuk51a5EhQq6R1jE83Ov/zRerNs/fhn5wfDh0z9W3P6sirZjs5gK9Yqzp2G8fTx
-	oNhfN30B209C9vRU9zMoQ3MU7nw0dVINLX/Bvw0Ao+QYJQZUlidD8nt/8PVfmjViyq6GpaJrDoM
-	h7tY2MiO1Grpj+VgOYLJ7SBdPvYaZgTIZRjEbWv9iU9iQnUHrlE2rBRhsNuVNXa3DORGyB+TcY0
-	KDunP6FtexHOU2BFN6ujsx5hrhK3UMUaV//6B/Y/jckCbEdQs6PRYbDeqvwB9XjXxduUM8GOspN
-	Lk+glX2jLAPb44lHCRTACDIyQVlNi5NbGELj4uR
-X-Received: by 2002:a17:907:3fa0:b0:c40:c6c8:6bd8 with SMTP id a640c23a62f3a-c419e838694mr368578466b.20.1792331380945;
-        Sun, 18 Oct 2026 06:49:40 -0700 (PDT)
+        bh=j0iP+m3EX5ucikvDp402dsq76Smx73BsFN2IxwK6/bU=;
+        b=kX35R/znObJLqiuwXVxdv7dxxNM43IIITCUnrmXl2vdUTQr4wjmgSER89qmIdYtipE
+         aFxWKX2+xjph1aqlPZYzjjvTuLV40C3zph4bJV/md3WHyrhDmdO+OBb/CXxX5wWICGZa
+         kjQnQaYA8zmhrrcg25k/z3DS9gPTh8ZIQJ7X7RqFstR8fRRFtTSCHdGD1hGDTRE/7D64
+         ZI+RqUYineXouQ6D2wKGqb6EKdfpQJc+yn63NDLnpl8MKlbhtNcI85OCdWopioGZomGL
+         aliMAtNGO1z1rmv3VL08lhzseCKI4ucKVBQWeG4R7tCsXbgwnvKnl8Ejkv5b8/bZ6ofP
+         kRtg==
+X-Forwarded-Encrypted: i=1; AKwUvBzcE97nK/P5HDzjNwvnpx2aXC18RqVTcO2I5mJHb67MpRIUrnrzY/mZtVnmD4sxsVAC680ZhaL8hJrBFlA=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYLghDAhpD+medp35+n+y1jRocgv4Qbj5XvZa5j9760t7ZE0Sqdi
+	weBZIgFJ1iiS9oVucfIzJazmQ4oVS8k6x93Y9k3WKcjyZNAYt6eWZYCH
+X-Gm-Gg: AYBFou000tJwuI8W1IMJfmAlY5EMlxl7ADFxqFSCE/yW1AJqTsPnJrBWETXrmXFIDCo
+	vUTVdzDrxDWyCYJ9rBN1tU28pRObGmBNycfXWXonPeVa4MAnhBx8pqJtvlKmUQe0XyA7TzYQXUy
+	6g6e0B/PkvQWo99sdEiRj7kV2GN3eGfxxj6Hl72/d5b4U+GYrhYiUlrF1vtt0E+fof0IjyWhCxn
+	EL8DA3hQckbQo7KZSjHxWi78VVe8pSuo47jWPrxnfjOz28lgXCtRUGcw5KfN5yzyxZy6/AQ98yu
+	im8MonG/oCAqfOUZU6uo9bF3gApAz70yNZQBF3UcCLyft1rPVPJMDZYOE6oVCcN9mHqGWPfbOUW
+	NdinnTfMcHk/9cw8bb9RA2sdL2ZTDeQILgyfq56oTA8DTA9j4dx79moQIwnLSJM07zDvFbGcTng
+	6sDzPn8GxpiwUVoEuv65plzq8PjcHGUkvurTxjG+W9N2g1QTUBQRTsw/Zgd6DjXh+USI6ILncE8
+	RPa8RcDYlpO6HUK9F5yrgeizqVkcpB+izmjloqp
+X-Received: by 2002:a17:907:c22:b0:c41:1e13:8891 with SMTP id a640c23a62f3a-c419df3e64emr310042766b.9.1792331382777;
+        Sun, 18 Oct 2026 06:49:42 -0700 (PDT)
 Received: from buildhost.darklands.se ([2001:9b1:ff:d701:51eb:176f:63d9:53f8])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c40919c0402sm267678266b.61.2026.10.18.06.49.38
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c40919c0402sm267678266b.61.2026.10.18.06.49.41
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 18 Oct 2026 06:49:40 -0700 (PDT)
+        Sun, 18 Oct 2026 06:49:41 -0700 (PDT)
 From: Magnus Lindholm <linmag7@gmail.com>
 To: davem@davemloft.net,
 	andreas@gaisler.com,
@@ -84,9 +84,9 @@ Cc: linux-kernel@vger.kernel.org,
 	krzk@kernel.org,
 	oleg@redhat.com,
 	linmag7@gmail.com
-Subject: [PATCH v4 06/10] sparc64: retain the DMA segment start across SG entries
-Date: Sun, 18 Oct 2026 15:45:08 +0200
-Message-ID: <20261018134738.1016106-7-linmag7@gmail.com>
+Subject: [PATCH v4 07/10] sparc64: zero newly allocated IOMMU page tables
+Date: Sun, 18 Oct 2026 15:45:09 +0200
+Message-ID: <20261018134738.1016106-8-linmag7@gmail.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20261018134738.1016106-1-linmag7@gmail.com>
 References: <20261018134738.1016106-1-linmag7@gmail.com>
@@ -105,65 +105,35 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The SG mapping loops reset out_entry to zero for each input entry.
-When extending an output segment, the boundary check therefore tests
-entry zero instead of the segment's actual starting IOMMU entry.
-Adjacent allocations can be merged across a device segment boundary.
+iopte_make_dummy() replaces only the physical page field, preserving
+all attributes. Applying it to an uninitialized table leaves validity,
+permissions, context and reserved bits dependent on prior page contents.
 
-Keep out_entry for the lifetime of the mapping loop and update it only
-when starting an output segment, in both sun4u and sun4v.
+Zero the table allocation before installing dummy page addresses. Keep
+iopte_make_dummy() unchanged for unmap callers that preserve attributes.
 
-Fixes: f08802572965 ("sparc64: add the segment boundary checking to IOMMUs while merging SG entries")
+This initialization pattern is already present in the initial Git
+import; the Fixes tag identifies its earliest recorded version.
+
+Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
 Signed-off-by: Magnus Lindholm <linmag7@gmail.com>
 ---
- arch/sparc/kernel/iommu.c     | 4 ++--
- arch/sparc/kernel/pci_sun4v.c | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ arch/sparc/kernel/iommu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/sparc/kernel/iommu.c b/arch/sparc/kernel/iommu.c
-index 7613ab0ffb89..a23105b64fb9 100644
+index a23105b64fb9..66aaafbf1621 100644
 --- a/arch/sparc/kernel/iommu.c
 +++ b/arch/sparc/kernel/iommu.c
-@@ -451,7 +451,7 @@ static int dma_4u_map_sg(struct device *dev, struct scatterlist *sglist,
- 	int outcount, incount, i;
- 	struct strbuf *strbuf;
- 	struct iommu *iommu;
--	unsigned long base_shift;
-+	unsigned long base_shift, out_entry = 0;
+@@ -130,7 +130,7 @@ int iommu_table_init(struct iommu *iommu, int tsbsize,
  
- 	BUG_ON(direction == DMA_NONE);
- 
-@@ -485,7 +485,7 @@ static int dma_4u_map_sg(struct device *dev, struct scatterlist *sglist,
- 	seg_boundary_size = dma_get_seg_boundary_nr_pages(dev, IO_PAGE_SHIFT);
- 	base_shift = iommu->tbl.table_map_base >> IO_PAGE_SHIFT;
- 	for_each_sg(sglist, s, nelems, i) {
--		unsigned long paddr, npages, entry, out_entry = 0, slen;
-+		unsigned long paddr, npages, entry, slen;
- 		iopte_t *base;
- 
- 		slen = s->length;
-diff --git a/arch/sparc/kernel/pci_sun4v.c b/arch/sparc/kernel/pci_sun4v.c
-index 61f14b4c8f90..22584c4de973 100644
---- a/arch/sparc/kernel/pci_sun4v.c
-+++ b/arch/sparc/kernel/pci_sun4v.c
-@@ -489,7 +489,7 @@ static int dma_4v_map_sg(struct device *dev, struct scatterlist *sglist,
- 	struct atu *atu;
- 	struct iommu_map_table *tbl;
- 	u64 mask;
--	unsigned long base_shift;
-+	unsigned long base_shift, out_entry = 0;
- 	long err;
- 
- 	BUG_ON(direction == DMA_NONE);
-@@ -530,7 +530,7 @@ static int dma_4v_map_sg(struct device *dev, struct scatterlist *sglist,
- 	base_shift = tbl->table_map_base >> IO_PAGE_SHIFT;
- 
- 	for_each_sg(sglist, s, nelems, i) {
--		unsigned long paddr, npages, entry, out_entry = 0, slen;
-+		unsigned long paddr, npages, entry, slen;
- 
- 		slen = s->length;
- 		/* Sanity check */
+ 	/* Now allocate and setup the IOMMU page table itself.  */
+ 	order = get_order(tsbsize);
+-	page = alloc_pages_node(numa_node, GFP_KERNEL, order);
++	page = alloc_pages_node(numa_node, GFP_KERNEL | __GFP_ZERO, order);
+ 	if (!page) {
+ 		printk(KERN_ERR "IOMMU: Error, gfp(tsb) failed.\n");
+ 		goto out_free_dummy_page;
 -- 
 2.43.0
 
