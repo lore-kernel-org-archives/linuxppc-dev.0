@@ -1,95 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-29656-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29657-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F29D6CCF2C4
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Oct 2026 13:50:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4AA0FCCF2C9
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Oct 2026 15:26:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j70RS6q7Mz2yD8;
-	Mon, 19 Oct 2026 00:49:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.218.48
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792331396;
-	cv=none; b=kr4uR3+FVQxH1wHeIZsrm3BawglpSyqUL51ufnovKgiAT3PlDP+e682Z+hVHUIuE0E8siIr2Vt4MKemIRWR5Vf0qas7FSt3ljNcLmqyf20Ba9+BVOEwviPUlQs2pI/aPvRljCvZsANmoAGeoJS9lRgnY+80ndvFDCQBuJ1vGtSWjr/4Qt1+RE8Mp446z7mfI6ECtEuc8CWGwsllps8hrlz8WH5+PBCkWiD+x/6KZuUXOiI8Qptvjzaa2BAV5Hev61DRLyP4lWMTOPQghM6mMPtBNLBuD7rkC5aNgc0kIFfJyVhLMzMySGfc+gqwsBciD0P9jk4Hk8CREiCnRPMkUOw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j72Zt1t9wz2xST;
+	Mon, 19 Oct 2026 02:26:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792337190;
+	cv=none; b=Hi73J2mASRpfd6ysEdEp58/SaULNoTcifK7PYPwAgmNXjbcDRNMcgtT5PXx4DbfIAkb880Uw14qhxmAlfkKQj8TsZuwps+sUSlPsLuZoYNBixtP4RoqjMrTWA3/dr5BdDlD+lrxiT72fKKYBBlTrgA1t+uqjpdJ3wfEVtkBCp5/UpEDYpdqxfihOrrAMy7pMqANpU1RuwG6XF2lLAE1ukjHzIxVR+RYyNNTx0L6wtiPzGi/eWRNSUNhqNT6I/yY0zg0l9hJHx4CklChctg8pXHwSYlQ9pXOutoDYuutNxu/DzUhN4ruJ8mRimANQrrsoaEQlq3UuBdvwsP3DmIIHXw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792331396; c=relaxed/relaxed;
-	bh=lpRhgnnQ3c69BKtA52SSfn2OKHjIwq2qtwMcYorMrto=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=LP1duBoywbT2c754hrabFS2icanL64fDbnPp4CrWshHfpvTVrn+kFjDaLDVEgi6ksnASdaRyPe/nIHzNO3QmbLkUu+zSTiYxGclZyFd0KYE4H3ad9LJ6Sr/wFz0CRPFfqz4O+7zAFJa3ZY1X4aDb2XP3CPz8rkGoS743eZyTEgCWIP2cn2RKJXicMUcfeA0s47NyCsg1JPcxxMyectGg1sJ2ZXdSvei7Y7V6kvt0G7BkqEhMdpIVQgJZLp6YX3Abta5HP4RFhxKZ9mu3SiGIdf07HjcBVEZfkCscWTG/e1cRbQ+Q4a8CP/veWv2jaVNCd8kxVFFI42ErCybv/ADRTA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=IW/dyFYx; dkim-atps=neutral; spf=pass (client-ip=209.85.218.48; helo=mail-ej1-f48.google.com; envelope-from=linmag7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1792337190; c=relaxed/relaxed;
+	bh=whoUjQfO/MaEvOa7tAljG49R0UiUJE6SLq9r+UfLh/8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=DuUpQ1obCofTxrRYbMzseQM1BuqRPqbVLIR/ZCJzpUrF+4psuburqY8ZpG3P8RQ5mdEaLwKw6K665Rl3Dbr6oJKN45SFxMnqyVH/Sg3TSL+1ONhaxKVU9Zy/wTDuYeG+12T9gKBofNROzXHSYzP2sqK7o3WoJdJt3EKV+eMtXsyVa2q/hXwhX/v/b/Szkaxt9Hdk1TL3aSxYVvrdHZRtfyLmPCbsL7MyL0adzywxozrwAJBbegvIocfHzfEKMl5hUR6BacXsvums5Ff2pafB4K6/edvnwtnH/djYb/4w3eVOZ0dLQE7wf/Ap+wJidJ583VQnp1jm1bsRY2nAASM4nQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lO1TLL37; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=IW/dyFYx;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lO1TLL37;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.218.48; helo=mail-ej1-f48.google.com; envelope-from=linmag7@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-f48.google.com (mail-ej1-f48.google.com [209.85.218.48])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j70RR6BVbz2xqh
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2026 00:49:55 +1100 (AEDT)
-Received: by mail-ej1-f48.google.com with SMTP id a640c23a62f3a-c2055573c8cso147218566b.3
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Oct 2026 06:49:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792331390; x=1792936190; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=lpRhgnnQ3c69BKtA52SSfn2OKHjIwq2qtwMcYorMrto=;
-        b=IW/dyFYxhV9QtvsvEq+w1/lI12aOFfbh06weFYq0/4a1X1lE5LtyAgz98sMd8BhYko
-         mLGrbr8y6CzCYe1qROcIwHRU4DPLpdzPGOItneTxd1pA5h1bsnqD/3NEaInM7dB3R/2h
-         ZvgrEvPDZ6CmjN2ETfA0uRNkLsToSk1bd9bPftGGxTCpgs1QOHh+9t4u2++EzedfmqvA
-         jBetflyfhaFqAjFwicrv1cmDBW7OrCuSyMrxH+0Vc8srPfazCg5LzkXx5T+h/qtRH3H1
-         XSFtxVmbFvTM3XDul6uzTA/MNKpaQOcTx+Wn+D+5mqz2KwvK0lRo8KX0Ofb2Be3X7by2
-         /0uw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792331390; x=1792936190;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=lpRhgnnQ3c69BKtA52SSfn2OKHjIwq2qtwMcYorMrto=;
-        b=rVD7ety9ZpG5boG/cOIAkFehvgGHKI8WCqXGa5mTq7xhZBnMp8oL+9DWpeTzhl1m6K
-         z1VCsjGuBYaHNKv9yEAi/OplqAYyynSPJpvRaN96+uA2MeCFP+PQ4+yYLElpOVp0EEJ5
-         1zOCatHxBL2NnqBeAQh0IRUPs9ywgC7N7TJQpKhVf/LiJjR7JUny5gQ0ZgMcO+I/YPFt
-         mF1Pw/dVt6DKAdLVhXi5IoQIRMtEQlWdLLteXCEg7E9jCdhBtqBpuvsPH9l5qlzQ1yz9
-         aVEHDvut0IwX8JeT2VZhBx+/Zvp3dZNLtjP2ZXcMCZwxTHz0EPUCfK2T4qdKqAoTHQV9
-         eW0w==
-X-Forwarded-Encrypted: i=1; AKwUvBzFwG41vDVR/ZXCG/HFjOG1YZMZRgIiV+qrS2SGmiTOf7MQxD/dAcBwKTSx09W6EMuf/9fPJEftN8M8AgY=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYKeWgK88GEpkkyxLE7JPl4LNstMcja2vhxDB37KzTMRk/bPwK0t
-	yNTH4ZqFJR3ZrPomKfKpROtZLVLQwn0C6C71JUo925eWbWTkjipwXMkW
-X-Gm-Gg: AYBFou0ZNLX7Tn/rIPrVTFzUTpqjHm7yZ04H5/3MBajrH3BOlv9n77UvBvkl9/N3dla
-	y1UkOMyGPpcDm43R0rAhoLc3CttpcvRabTtllOd6qsrxh9DBXluwzam1JRGwrKY5El/fE8WoO/N
-	VsmEFJQaGMu10fkuLuBACygD3ztj+0QOyqV2tTzOfVd6EJODmmXzKOFJYDB4Wnz5QuoWj3Lalot
-	Vqnyo3tUo6s1n2vrXx00ZCwnBKp0yGRf5gh23PM4GhtRYOSYUgk9dVabGD9zS6waIVkw1VIcqp6
-	Tvzp+vEBg3xHDKQHE0gTXIbw43uZCG0Sug2k/8llcpTHWSQzGadnpctBsVd3uTORVw3Q6Ecx1MM
-	e6Bk3bKfSscrICdlZyrj8nJAoJucKLO/x8Li8QRstPWWMISYqzTmSJDA2GjX8JywgmUNMeN0RiO
-	JD6gzeawSxuJHSfFzxygeXWire6CTuNl97Fth823o71jwXl+YWGFeYFZ47LsifUG3estXg4ttJs
-	Eb1BWZbZcZC0mnZuE2rZ7+kxwc/BBQWbUgrQ3AP
-X-Received: by 2002:a17:907:1c8f:b0:c26:1649:47a5 with SMTP id a640c23a62f3a-c419f121280mr341217266b.27.1792331390333;
-        Sun, 18 Oct 2026 06:49:50 -0700 (PDT)
-Received: from buildhost.darklands.se ([2001:9b1:ff:d701:51eb:176f:63d9:53f8])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c40919c0402sm267678266b.61.2026.10.18.06.49.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 18 Oct 2026 06:49:48 -0700 (PDT)
-From: Magnus Lindholm <linmag7@gmail.com>
-To: davem@davemloft.net,
-	andreas@gaisler.com,
-	sparclinux@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
-	gregkh@linuxfoundation.org,
-	jirislaby@kernel.org,
-	linux-serial@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	krzk@kernel.org,
-	oleg@redhat.com,
-	linmag7@gmail.com
-Subject: [PATCH v4 10/10] hvc: add an M3000 firmware console backend
-Date: Sun, 18 Oct 2026 15:45:12 +0200
-Message-ID: <20261018134738.1016106-11-linmag7@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20261018134738.1016106-1-linmag7@gmail.com>
-References: <20261018134738.1016106-1-linmag7@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j72Zr4X4Fz2xPW
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2026 02:26:27 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69IFEM5k1294246;
+	Sun, 18 Oct 2026 15:26:24 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=whoUjQfO/MaEvOa7tAljG49R0UiUJE6SLq9r+UfLh
+	/8=; b=lO1TLL37qXwVVO1hlWhXGeFtxzsXC4HM+WAl1uv8Mw8FFvOChfVseJipf
+	gz+ermWKrVVHBv/4TQVdLe1TqHkKnEP0+MxsOralVOSmigYF5q9XBEYareeGLuSD
+	3Zy493gK+9g3WJf4CUyfbd7jBtZA3zfbGlBYAe14mhBQW3NXpYt3Vyu2qOZ/mzCw
+	wSMwZTIpfLYmKm8y0IjsGLLXsQLq7vIO1pRfIJkw9ZQ8B+x8LuZPgiBHDr29xw0q
+	MBQbFwfCIvMU3QB9ridyC4C6tSSqwU/RqJQkl5QDif7bLrkykHGWKOfoaZTIOA36
+	ScqaGQMryRDXqz7yUZGr1bL2r0SOA==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hc0r7ea6v-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Sun, 18 Oct 2026 15:26:23 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69IFK8oc2779299;
+	Sun, 18 Oct 2026 15:26:23 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4hcp1y9nan-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 18 Oct 2026 15:26:23 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69IFQJJX47055280
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sun, 18 Oct 2026 15:26:19 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 279EC20043;
+	Sun, 18 Oct 2026 15:26:19 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DFDBD20040;
+	Sun, 18 Oct 2026 15:26:16 +0000 (GMT)
+Received: from li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibmuc.com (unknown [9.124.217.98])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sun, 18 Oct 2026 15:26:16 +0000 (GMT)
+From: Gautam Menghani <gautam@linux.ibm.com>
+To: kees@kernel.org, maddy@linux.ibm.com, chleroy@kernel.org,
+        ritesh.list@gmail.com, sshegde@linux.ibm.com
+Cc: linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
+Subject: [RFC PATCH] gcc-plugins: Add a plugin to ease debugging of memory ordering bugs
+Date: Sun, 18 Oct 2026 20:56:06 +0530
+Message-ID: <20261018152608.1323494-1-gautam@linux.ibm.com>
+X-Mailer: git-send-email 2.56.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,282 +87,231 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE4MDA2MCBTYWx0ZWRfX6/cXMyoNLVZM
+ 7wRZ7fEKKbsbhgQhxyUi31OrpDYq9BZ+3KriVyWy6SzX5vDZzTye90lxRb3xbICJ2FbEztQHjTh
+ Kjg0+HsCT3Z2TwFmKsrqi5QtRn7Z5oA=
+X-Authority-Analysis: v=2.4 cv=PrUG/AM3 c=1 sm=1 tr=0 ts=6ad4e520 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=SMgOnqTPEg9jcWRg:21 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=XxtmG6sFAAAA:8
+ a=VnNF1IyMAAAA:8 a=Z-CbJQqKeFpCzIUWG4sA:9 a=CYKbh7h7szYBv2aNwBbU:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE4MDA2MCBTYWx0ZWRfX+6PydY49q/Cf
+ uZFJIDw0KZjvP4YoDfhZeNAiT7XyywZbkNSF9k92Xq5Xyrdnoy7+wXH7wsSJ6KtBobjNAnLTreT
+ IcZ+/To8ToEtzvUvPbfVA6ZbZ2Wv19XwBG+t8uoOelDvro2yD9U3829yncdUlo2i3Bl1BTJi3WZ
+ bpPaSOlpnNLcFQ3j3V89Lk8W7JEhnFlN6VRx0N1d7FKft51cXi2V3ALfg9oh58Ff7DskmF7noZf
+ dKhFNWnmMPKerT25zKsMNelGoyr69mH8tZ2oyOesr3dgdyKmQlnRNc3G64ei5Qu7KuUNDBitRFo
+ LQGgoyiqddZgKaT0XOceUf1xOFJksfJER40fQjmf0OCCDyeg2UPo/KcBGHJx4m3V2fpa9sG4qP9
+ Le0L7DXiMypHPabWcySqvPmRzbZoO9zQOnUuUztMlO0/B1yL5yQwaM6H+CuxfNrjXIwF89RUvP3
+ 5Ezvn5jcKx56Zl6Mu1w==
+X-Proofpoint-GUID: n7YQTyMxVFC0rcuCiZ0P3DPaZT7iAWIb
+X-Proofpoint-ORIG-GUID: 6VrlyuLNsFKf0D5A5dGykHD2sSqE8Ncn
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-18_03,2026-10-14_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 adultscore=0 bulkscore=0 impostorscore=0 phishscore=0
+ clxscore=1011 priorityscore=1501 malwarescore=0 suspectscore=0 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610080000 definitions=main-2610180060
 
-Provide hvc0 through the M3000 Open Firmware pseudo-console, validating
-the firmware model and console endpoints before registering it. Keep
-firmware buffers in locked kernel mappings and serialize their use in
-atomic console contexts through the existing SPARC p1275 interface.
+On CPUs that support out of order execution, barriers are used to make
+sure that if a cpu updates a variable, all other cpus see the correct
+value. However, sometimes developers forget to put the barriers in the
+right place and this ends up causing bugs.
 
-Poll input while the TTY is open and synchronize close with timer
-rearming. Return zero on no progress so HVC retries buffered TTY output
-but drops stalled console chunks instead of spinning indefinitely.
-A firmware call that does not return remains unbounded.
+Introduce a new plugin that can insert barriers after every load/store
+to memory to make it easy to verify if a given bug is due to a missing
+barrier.
 
-Signed-off-by: Magnus Lindholm <linmag7@gmail.com>
-Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Testing:
+To test this plugin on IBM Power systems, I reverted the commit
+bb9b52bd51dc ("KVM: PPC: Book3S HV: Add missing barriers to XIVE code and document them").
+
+I was able to see lockups in the KVM guest with the commit reverted. I
+then used the barriers plugin to insert barriers, and noticed that the
+lockups were no longer observed in the KVM guest.
+
+Assisted-by: LLM IBM-Bob
+Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
 ---
- MAINTAINERS                 |   7 ++
- drivers/tty/hvc/Kconfig     |  11 ++
- drivers/tty/hvc/Makefile    |   1 +
- drivers/tty/hvc/hvc_m3000.c | 202 ++++++++++++++++++++++++++++++++++++
- 4 files changed, 221 insertions(+)
- create mode 100644 drivers/tty/hvc/hvc_m3000.c
+ scripts/Makefile.gcc-plugins          |   2 +
+ scripts/gcc-plugins/Kconfig           |   6 ++
+ scripts/gcc-plugins/barriers_plugin.c | 134 ++++++++++++++++++++++++++
+ 3 files changed, 142 insertions(+)
+ create mode 100644 scripts/gcc-plugins/barriers_plugin.c
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 3a19da74d00c..21e4f4e558bd 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -10728,6 +10728,13 @@ L:	platform-driver-x86@vger.kernel.org
- S:	Maintained
- F:	drivers/platform/x86/fujitsu-laptop.c
+diff --git a/scripts/Makefile.gcc-plugins b/scripts/Makefile.gcc-plugins
+index b0e1423b09c2..cefc1cdad8df 100644
+--- a/scripts/Makefile.gcc-plugins
++++ b/scripts/Makefile.gcc-plugins
+@@ -8,6 +8,8 @@ ifdef CONFIG_GCC_PLUGIN_LATENT_ENTROPY
+ endif
+ export DISABLE_LATENT_ENTROPY_PLUGIN
  
-+FUJITSU M3000 FIRMWARE CONSOLE
-+M:	Magnus Lindholm <linmag7@gmail.com>
-+L:	linux-serial@vger.kernel.org
-+L:	sparclinux@vger.kernel.org
-+S:	Maintained
-+F:	drivers/tty/hvc/hvc_m3000.c
++gcc-plugin-$(CONFIG_GCC_PLUGIN_BARRIERS)	+= barriers_plugin.so
 +
- FUJITSU TABLET EXTRAS
- M:	Robert Gerlach <khnz@gmx.de>
- L:	platform-driver-x86@vger.kernel.org
-diff --git a/drivers/tty/hvc/Kconfig b/drivers/tty/hvc/Kconfig
-index 5866195de26a..d940fa0d68e0 100644
---- a/drivers/tty/hvc/Kconfig
-+++ b/drivers/tty/hvc/Kconfig
-@@ -134,3 +134,14 @@ config HVCS
- 	  will depend on arch specific APIs exported from hvcserver.ko
- 	  which will also be compiled when this driver is built as a
- 	  module.
-+
-+config HVC_M3000
-+	bool "M3000 firmware pseudo-console"
-+	depends on SPARC64
-+	select HVC_DRIVER
+ # All the plugin CFLAGS are collected here in case a build target needs to
+ # filter them out of the KBUILD_CFLAGS.
+ GCC_PLUGINS_CFLAGS := $(strip $(addprefix -fplugin=$(objtree)/scripts/gcc-plugins/, $(gcc-plugin-y)) $(gcc-plugin-cflags-y)) -DGCC_PLUGINS
+diff --git a/scripts/gcc-plugins/Kconfig b/scripts/gcc-plugins/Kconfig
+index 6b34ba19358d..d73e00fbb732 100644
+--- a/scripts/gcc-plugins/Kconfig
++++ b/scripts/gcc-plugins/Kconfig
+@@ -36,4 +36,10 @@ config GCC_PLUGIN_LATENT_ENTROPY
+ 	   * https://grsecurity.net/
+ 	   * https://pax.grsecurity.net/
+ 
++config GCC_PLUGIN_BARRIERS
++	bool "Insert barriers after every load/store"
 +	help
-+	  Provide hvc0 using Open Firmware stdin/stdout on the Fujitsu M3000
-+	  (IKKAKU platform).
-+	  Input is polled; no native UART registers are accessed.
-+	  Firmware calls are serialized and use a locked-image bounce buffer.
-+	  Say Y to use the M3000 firmware pseudo-console as hvc0.
-diff --git a/drivers/tty/hvc/Makefile b/drivers/tty/hvc/Makefile
-index 98880e357941..38c8cf349053 100644
---- a/drivers/tty/hvc/Makefile
-+++ b/drivers/tty/hvc/Makefile
-@@ -11,3 +11,4 @@ obj-$(CONFIG_HVC_IUCV)		+= hvc_iucv.o
- obj-$(CONFIG_HVC_UDBG)		+= hvc_udbg.o
- obj-$(CONFIG_HVC_RISCV_SBI)	+= hvc_riscv_sbi.o
- obj-$(CONFIG_HVCS)		+= hvcs.o
-+obj-$(CONFIG_HVC_M3000)		+= hvc_m3000.o
-diff --git a/drivers/tty/hvc/hvc_m3000.c b/drivers/tty/hvc/hvc_m3000.c
++	  By saying Y here barriers will be inserted after every load/store
++	  instruction.
++
+ endif
+diff --git a/scripts/gcc-plugins/barriers_plugin.c b/scripts/gcc-plugins/barriers_plugin.c
 new file mode 100644
-index 000000000000..e2150d479308
+index 000000000000..54ee8b12e77b
 --- /dev/null
-+++ b/drivers/tty/hvc/hvc_m3000.c
-@@ -0,0 +1,202 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * M3000 Open Firmware pseudo-console backend.
-+ * Copyright (C) 2026 Magnus Lindholm
-+ */
-+#include <linux/cleanup.h>
-+#include <linux/console.h>
-+#include <linux/err.h>
-+#include <linux/init.h>
-+#include <linux/irqflags.h>
-+#include <linux/mutex.h>
-+#include <linux/string.h>
-+#include <linux/spinlock.h>
-+#include <linux/timer.h>
-+#include <asm/oplib.h>
-+#include <asm/spitfire.h>
-+#include "hvc_console.h"
++++ b/scripts/gcc-plugins/barriers_plugin.c
+@@ -0,0 +1,134 @@
++// SPDX-License-Identifier: GPL-2.0-only
++#include "gcc-common.h"
 +
-+#define M3000_PROM_IO_ARGS	3
-+#define M3000_PROM_IO_RETURNS	1
-+#define M3000_PROM_ERROR		(-1)
-+#define M3000_PROM_NO_DATA	(-2)
++#if defined(__powerpc__)
++# define BARRIER_ASM "sync"
++#else
++# define BARRIER_ASM ""  /* compiler barrier only: asm volatile("" ::: "memory") */
++#endif
 +
-+struct m3000_console {
-+	struct timer_list poll_timer;
-+	struct mutex poll_mutex; /* Serialize open against synchronous close. */
-+	raw_spinlock_t buffer_lock;
-+	spinlock_t poll_lock; /* Protect active state and timer rearming. */
-+	int stdin;
-+	u8 buffer[256];
-+	bool ready;
-+	bool poll_active;
++__visible int plugin_is_GPL_compatible;
++
++static struct plugin_info barriers_plugin_info = {
++	.version = PLUGIN_VERSION,
++	.help = "Insert barriers after every load/store instruction\n"
 +};
-+
-+/* Keep the firmware buffer within the locked kernel image mappings. */
-+static struct m3000_console m3000_consoles[] = {
-+	{
-+		.buffer_lock = __RAW_SPIN_LOCK_UNLOCKED(m3000_consoles[0].buffer_lock),
-+		.poll_mutex = __MUTEX_INITIALIZER(m3000_consoles[0].poll_mutex),
-+		.poll_lock = __SPIN_LOCK_UNLOCKED(m3000_consoles[0].poll_lock),
-+	},
-+};
-+
-+static struct m3000_console *m3000_console(u32 termno)
-+{
-+	if (termno >= ARRAY_SIZE(m3000_consoles))
-+		return NULL;
-+	return &m3000_consoles[termno];
-+}
 +
 +/*
-+ * HVC's idle backoff can exceed the firmware input FIFO's capacity.
-+ * Wake its worker each tick while open; keep PROM calls out of the timer.
++ * Return true if this GIMPLE statement performs a non-stack memory access.
 + */
-+static void m3000_poll_tick(struct timer_list *timer)
++static bool is_mem_based(tree expr)
 +{
-+	struct m3000_console *con = timer_container_of(con, timer, poll_timer);
-+
-+	guard(spinlock_irqsave)(&con->poll_lock);
-+	if (con->poll_active) {
-+		hvc_kick();
-+		mod_timer(&con->poll_timer, jiffies + 1);
-+	}
-+}
-+
-+static int m3000_open(struct hvc_struct *hp, int data)
-+{
-+	struct m3000_console *con = m3000_console(hp->vtermno);
-+
-+	if (!con)
-+		return -ENODEV;
-+	guard(mutex)(&con->poll_mutex);
-+	guard(spinlock_irqsave)(&con->poll_lock);
-+	con->poll_active = true;
-+	mod_timer(&con->poll_timer, jiffies + 1);
-+	return 0;
-+}
-+
-+static void m3000_close(struct hvc_struct *hp, int data)
-+{
-+	struct m3000_console *con = m3000_console(hp->vtermno);
-+
-+	if (!con)
-+		return;
-+	guard(mutex)(&con->poll_mutex);
-+	scoped_guard(spinlock_irqsave, &con->poll_lock)
-+		con->poll_active = false;
-+	/* Block reopen until the callback has finished and cannot rearm. */
-+	timer_delete_sync(&con->poll_timer);
-+}
-+
-+static ssize_t m3000_io(struct m3000_console *con, u8 *in,
-+			const u8 *out, size_t count)
-+{
-+	unsigned long args[3 + M3000_PROM_IO_ARGS + M3000_PROM_IO_RETURNS];
-+	int ret;
-+
-+	if (!count)
-+		return 0;
-+	count = min(count, in ? 1 : sizeof(con->buffer));
-+	/* Console writes can run with interrupts disabled; this lock cannot sleep. */
-+	scoped_guard(raw_spinlock_irqsave, &con->buffer_lock) {
-+		if (!in)
-+			memcpy(con->buffer, out, count);
-+		args[0] = (unsigned long)(in ? "read" : "write");
-+		args[1] = M3000_PROM_IO_ARGS;
-+		args[2] = M3000_PROM_IO_RETURNS;
-+		args[3] = (unsigned int)(in ? con->stdin : prom_stdout);
-+		args[4] = (unsigned long)con->buffer;
-+		args[5] = count;
-+		args[6] = (unsigned long)M3000_PROM_ERROR;
-+		p1275_cmd_direct(args);
-+		ret = (int)args[6];
-+		if (ret > 0 && ret <= count && in)
-+			memcpy(in, con->buffer, ret);
-+	}
-+	if (ret == M3000_PROM_NO_DATA || ret == 0)
-+		return 0;
-+	if (ret < 0 || ret > count)
-+		return -EIO;
-+	return ret;
-+}
-+
-+static ssize_t m3000_get(u32 termno, u8 *buf, size_t count)
-+{
-+	struct m3000_console *con = m3000_console(termno);
-+
-+	return con ? m3000_io(con, buf, NULL, count) : -ENODEV;
-+}
-+
-+static ssize_t m3000_put(u32 termno, const u8 *buf, size_t count)
-+{
-+	struct m3000_console *con = m3000_console(termno);
-+
-+	/* HVC retries zero for TTY writes but drops stalled console output. */
-+	return con ? m3000_io(con, NULL, buf, count) : -ENODEV;
-+}
-+
-+static const struct hv_ops m3000_ops = {
-+	.get_chars = m3000_get,
-+	.put_chars = m3000_put,
-+	.notifier_add = m3000_open,
-+	.notifier_del = m3000_close,
-+	.notifier_hangup = m3000_close,
-+};
-+
-+static bool __init m3000_property_matches(phandle node, const char *prop,
-+					  const char *expected)
-+{
-+	char value[64];
-+	int len;
-+
-+	len = prom_getproperty(node, prop, value, sizeof(value) - 1);
-+	if (len <= 0)
++	switch (TREE_CODE(expr)) {
++	case MEM_REF:
++	case INDIRECT_REF:
++	case TARGET_MEM_REF:
++		return true;
++	case COMPONENT_REF:
++		return is_mem_based(TREE_OPERAND(expr, 0));
++	default:
 +		return false;
-+	value[len] = '\0';
-+	return !strcmp(value, expected);
++	}
 +}
 +
-+static int __init m3000_console_init(void)
++static bool gimple_has_mem_access(gimple stmt)
 +{
-+	struct m3000_console *con = &m3000_consoles[0];
-+	phandle node;
-+	int ret;
++	if (gimple_code(stmt) == GIMPLE_CALL)
++		return true;
 +
-+	if (tlb_type != sparc64_vii)
-+		return -ENODEV;
-+	if (!m3000_property_matches(prom_finddevice("/"), "model", "IKKAKU"))
-+		return -ENODEV;
-+	con->stdin = prom_getint(prom_chosen_node, "stdin");
-+	if (!con->stdin || con->stdin == -1 || !prom_stdout || prom_stdout == -1)
-+		return -ENODEV;
-+	node = prom_inst2pkg(prom_stdout);
-+	if (!m3000_property_matches(node, "name", "pseudo-console"))
-+		return -ENODEV;
-+	node = prom_inst2pkg(con->stdin);
-+	if (!m3000_property_matches(node, "name", "pseudo-console"))
-+		return -ENODEV;
-+	ret = hvc_instantiate(0, 0, &m3000_ops);
-+	if (ret < 0)
-+		return ret;
-+	con->ready = true;
++	if (gimple_code(stmt) != GIMPLE_ASSIGN)
++		return false;
++
++	if (is_mem_based(gimple_assign_lhs(stmt)))
++		return true;
++
++	if (is_mem_based(gimple_assign_rhs1(stmt)))
++		return true;
++
++	return false;
++}
++
++/*
++ * Build a GIMPLE statement for "asm volatile(<barrier_instn> ::: "memory");".
++ */
++static gasm *build_mb_asm(void)
++{
++	vec <tree, va_gc> *clobbers = NULL;
++	gasm *stmt;
++	tree clob = build_tree_list(NULL_TREE, build_const_char_string(7, "memory"));
++
++	vec_safe_push(clobbers, clob);
++	stmt = gimple_build_asm_vec(BARRIER_ASM, NULL, NULL, clobbers, NULL);
++	gimple_asm_set_volatile(stmt, true);
++	return stmt;
++}
++
++static unsigned int insert_barriers_execute(void)
++{
++	basic_block bb;
++	unsigned int i;
++	gimple_stmt_iterator *gsi_p;
++	gimple stmt;
++	gasm *barrier;
++
++	FOR_EACH_BB_FN(bb, cfun) {
++		/*
++		 * Collect the iterator positions of all memory-accessing
++		 * statements first, then insert. Inserting while iterating
++		 * would visit the newly-added asm statements on the next step.
++		 */
++		auto_vec <gimple_stmt_iterator> to_instrument;
++
++		for (gimple_stmt_iterator gsi = gsi_start_bb(bb);
++		     !gsi_end_p(gsi); gsi_next(&gsi)) {
++			stmt = gsi_stmt(gsi);
++			if (!is_gimple_debug(stmt) && gimple_has_mem_access(stmt))
++				to_instrument.safe_push(gsi);
++		}
++
++		FOR_EACH_VEC_ELT(to_instrument, i, gsi_p) {
++			barrier = build_mb_asm();
++			gsi_insert_after(gsi_p, barrier, GSI_CONTINUE_LINKING);
++			update_stmt(barrier);
++		}
++	}
 +	return 0;
 +}
-+console_initcall(m3000_console_init);
 +
-+static int __init m3000_tty_init(void)
++#define PASS_NAME insert_barriers
++#define NO_GATE
++#define PROPERTIES_REQUIRED  PROP_gimple_any
++
++#include "gcc-generate-gimple-pass.h"
++
++__visible int plugin_init(struct plugin_name_args *plugin_info,
++			  struct plugin_gcc_version *version)
 +{
-+	struct m3000_console *con = &m3000_consoles[0];
-+	struct hvc_struct *hp;
++	const char * const plugin_name = plugin_info->base_name;
++	const int argc = plugin_info->argc;
++	const struct plugin_argument * const argv = plugin_info->argv;
++	int i = 0;
 +
-+	if (!con->ready)
-+		return -ENODEV;
-+	timer_setup(&con->poll_timer, m3000_poll_tick, 0);
-+	hp = hvc_alloc(0, 0, &m3000_ops, sizeof(con->buffer));
-+	if (IS_ERR(hp))
-+		return PTR_ERR(hp);
-+	hp->ws.ws_row = 24;
-+	hp->ws.ws_col = 80;
++	/*
++	 * Run before "ssa", the entry to the main GIMPLE optimization pipeline.
++	 * At this point no memory-access reordering has occurred yet, so the
++	 * inserted barrier statements are seen by
++	 * all subsequent passes and act as both compiler and hardware barriers,
++	 * exactly like the kernel's smp_mb() macro.
++	 */
++	PASS_INFO(insert_barriers, "ssa", 1, PASS_POS_INSERT_BEFORE);
++
++	if (!plugin_default_version_check(version, &gcc_version)) {
++		error(G_("incompatible gcc/plugin versions"));
++		return 1;
++	}
++
++	/* Give the information about the plugin */
++	register_callback(plugin_name, PLUGIN_INFO, NULL,
++						&barriers_plugin_info);
++
++	register_callback(plugin_name, PLUGIN_PASS_MANAGER_SETUP, NULL,
++					&insert_barriers_pass_info);
++
 +	return 0;
 +}
-+device_initcall(m3000_tty_init);
+\ No newline at end of file
 -- 
-2.43.0
+2.55.0
 
 
