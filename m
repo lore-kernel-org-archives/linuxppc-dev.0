@@ -1,100 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-29701-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29702-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1DAACCF2D5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Oct 2026 10:57:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54178CCF2D6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Oct 2026 13:36:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j7XYg1LXNz2xqr;
-	Mon, 19 Oct 2026 21:57:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792407431;
-	cv=none; b=QPA0sHNrf2NPr37GoPNNTywNIbp/v6nXX/UsPdlf+AeHco/itL+0zMx5pB2NY2FL8tldYtDvff2iasEsaGr5Hc7jjREeRjEqruoI8mcMMlD0dwH/0LFj0HiwxpOIA4c1sc+cBpbndRVxx8NyKG733TPjB0g3fJg6VwKqQxv18FqVkUpqX8m38+iVb27VlW66P8yesmub+Kc8175TVqsazs2UbCFTiR2hkC6x5TUy/2smrER+nECGzQubgj42MSzhvY0JJlz7Fxk0txxQX6U380koMJT7uVQvz2StNIPGolyvpB2gT930CI0D2FhOjyZzcqvUHKm3fNwaCdSoQidNgg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j7c5J3TWqz2yb9;
+	Tue, 20 Oct 2026 00:36:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::336"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792416980;
+	cv=none; b=DA7ZDm4IG3S7aDJlhtLU4HjJiwQDOv59OkffsyhQ/T8qVnsFySa++N6Co61LsP4VFJlftDGjQv88k0rYdyhwXNx1bqgppxjvRhsWg5DkPwLsEysN2q290YdMWv2ZkRzLk4cntuwVjRkQ2UHtpEZsZTQUlD3Pi+NRp3rZwfNlVcySIQ4It5PiE02ghUlZ8U1K7IIYiOzNzlJ6TsG1CBwiNudjCI1VK7rmQWN+j41eXazHVKV/QekH4npDHZaSNY9/lh79izUhWFvdyEE3BaXpqXMpM+6BarUpXStwa3j87DZZWkgPF9oiZIQGdC3wReVSi0TH76WIkQ6a255TrgQDaw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792407431; c=relaxed/relaxed;
-	bh=HBoLQBnR2x2I9gF8Bsc1t9MrDCxYKDsvlVnMLW9MKsg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=nzrbRFdaydIJpnGLY0/eW8FQTdmCJTDLTBikpjVWSlv72Tjzn5+EOhdqu47E6HBUm522Abv1AXyyEAsdtqPFNubD3U/Hl7ebRZnXbUwRu782d++05/WYOaI5cyu62izeYiV9iw2qXzNWiMQLUhOPhbOjTRtJx6eLsde6kUN4GHLpaCc1Be2CciX0BGVYwoNNEMcW3eUe1WaSES88JW7YZzzwMowk6B7IZPx1w/GslGmY/EjDP32zMvmhf7Uup2/Y8K4FrAgtLRgzFul1bjhZawn4tCfH1SGKJHpK3u/ejmqkwjMF365FT7kLCM3YBKbKpJd1eKmui+KwAph54ui6Fg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=SbkJR+fC; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=trsT8hH/; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=MWBwni5M; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=4desH9I3; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1792416980; c=relaxed/relaxed;
+	bh=u7QI1RqFBazH73cHjUm3bJRQ468s8YNQSYzETjY7O2I=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ZmIcbwaFVa37fOIOa96rz6V25Y67Ap+0D+ECduV8sVyz232LHZJ7ME+hEcogyEcJanL4Ouw+IVhhxmK9ZDVVe7fFOOLBdy0ugrk3Th7GZsFQkrPQbO03z60Ve7CTlzCBDeu1k0yZ0vipHeypwgDUmnbkuQp4UE7DTWb+jCPAdchN8EIje6Vjaf00Gd0gKR01utvNr7RrxeFpwIQKkhl1J2ErDJJqmHj7GIwuqUnDAuSWg6FR4M2S3nHL7lbDmc+xmfF+Qd4syxvbvqW/ocZW40e1qNjEsaCPhjGXiS52YA911FPxMCc/JO1fd2KXXAW4wGaiH3SwQlRXCh4ApFIU8A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=tuxon.dev; dkim=pass (2048-bit key; secure) header.d=tuxon.dev header.i=@tuxon.dev header.a=rsa-sha256 header.s=google header.b=EZk8WDh4; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com; envelope-from=claudiu.beznea@tuxon.dev; receiver=lists.ozlabs.org) smtp.mailfrom=tuxon.dev
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=tuxon.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=SbkJR+fC;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=trsT8hH/;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=MWBwni5M;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=4desH9I3;
+	dkim=pass (2048-bit key; secure) header.d=tuxon.dev header.i=@tuxon.dev header.a=rsa-sha256 header.s=google header.b=EZk8WDh4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=tuxon.dev (client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com; envelope-from=claudiu.beznea@tuxon.dev; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j7XYd2snqz2xgv
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2026 21:57:09 +1100 (AEDT)
-Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 8C7C921C96;
-	Mon, 19 Oct 2026 10:57:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1792407426; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=HBoLQBnR2x2I9gF8Bsc1t9MrDCxYKDsvlVnMLW9MKsg=;
-	b=SbkJR+fCsBxBEvs2CEDuET0EMPfVlddVpr5wDMpd0yK6EGsXT0d74uG0jNK+XAQ3oI0ZdX
-	IxBL42BqXVjogxi2antYzRwseb7DOd0bv6pvDLX+bITHjfB40c7pe2otKl23Pjza0ouv3a
-	urwdskWD2DqeX7bPkPg1DbbWBiHjDAg=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1792407426;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=HBoLQBnR2x2I9gF8Bsc1t9MrDCxYKDsvlVnMLW9MKsg=;
-	b=trsT8hH/s7rOWEqSiO4V52ryJ932QZ+OpYW/KMmVg1lfSODvQpOV19Cyal6hNCwFZ6DuUJ
-	2tsdd3EDY7CdmVCQ==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=MWBwni5M;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=4desH9I3
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1792407424; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=HBoLQBnR2x2I9gF8Bsc1t9MrDCxYKDsvlVnMLW9MKsg=;
-	b=MWBwni5MFz43iAvEWU+bVeL33MPkYVQEoh7Wj3bJbypjGswq3ziGwyFayvKJcEwO21vTti
-	ALDpuPhhN0hpCDPR769lybiQSjn5+fMs8JQL2kmOVch7gmpjNgE/Xc0SmQ2uzUgSob7Wmd
-	2rGnYITCmgAdQsh4sMLY+BrU6jkAgIo=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1792407424;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=HBoLQBnR2x2I9gF8Bsc1t9MrDCxYKDsvlVnMLW9MKsg=;
-	b=4desH9I3xRvpv6asRs58vFO5OnHYl2ZrLSIUJFOwP/sEoL6hY8mFJ5I1bq5oH37+NTd/bQ
-	3puQ7U4tHScmV5BQ==
-Date: Mon, 19 Oct 2026 12:57:03 +0200
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Amit Machhiwal <amachhiw@linux.ibm.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Vincent Donnefort <vdonnefort@google.com>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Harsh Prateek Bora <harshpb@linux.ibm.com>,
-	linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-	kvm-ppc@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH v2] ring-buffer: Do not check si_mem_available() before
- deferred init completes
-Message-ID: <atX3fzEV_Pai4woV@kunlun.suse.cz>
-References: <20261009163557.88467-3-amachhiw@linux.ibm.com>
- <20261016134247.70722-1-amachhiw@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j7c5G2PXVz2yVd
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2026 00:36:16 +1100 (AEDT)
+Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-4a1698ea378so16024185e9.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2026 06:36:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=tuxon.dev; s=google; t=1792416968; x=1793021768; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=u7QI1RqFBazH73cHjUm3bJRQ468s8YNQSYzETjY7O2I=;
+        b=EZk8WDh46kmQF+6CKvVZMSPf4Mefsc+GtzScv1udI4+HAuXHxnRQ1hbgRt2sZsC3IW
+         dYgigUmeRqPqxnvI1+GJKLeE8GMivnYPFHdwnnqpKD74EvAy1R5YuAT3TStY2jYVTcIm
+         KHrVDBbAIL2xHf7HNn0TsBLUu2vxQYYBmaOprrIe3MtVo6+lHL4xYeRdyk7+foA6uuMq
+         o//CPS8utoJOZWCFVgD/q3CYG5TNzGRyTg1pjDPeZa2BnUJvL2B8SkJNHRXlF0MRE1uT
+         D2gEfSvyqg4bko3o/lqc1wN0k8BVg2fwjy+AhrmpJBXTGhWlGbpl47Xw0MrQXzD5ngZq
+         0wzQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792416968; x=1793021768;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=u7QI1RqFBazH73cHjUm3bJRQ468s8YNQSYzETjY7O2I=;
+        b=rRxLW13sSIJEjEBjeFLjYZF9dqLQ7sRwSumyoXUtv1vOjsRGb+gcVZkYgRuCNrooiX
+         Pzrtw4iPCBGtmkEoaflX9tPKh0HAHQ07USXeTbQr7Ju4lGSkattfi9O1CyWZQbgVRkuP
+         Qr7l7RKMXkaEW4OeOhltWjY4P7L2vuOgdqIhEoWXu3kZrBw5oAOAI3nj/ANUIlWh9Mkt
+         i4Fz1OKmEQg0aIsna7ta9QEzfA+Ke2G3+dTdsx72ZEkYQ9tQ5JuHpTcHTdvzuP8xY1+m
+         39tGK8rMPDUX/bWYDjqZJadErFbMlI0hHEu7zDb86nign4nt22o0XprtoZZk01pyf7Hm
+         /2WA==
+X-Forwarded-Encrypted: i=1; AKwUvByMq1Z51/clzint4TfNSWKwRE6Yhnpa5kBbJTxhHd9+/s38U9D3ln2M1J3WapICTXMx+CkN9SOY9XhBtYw=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYLX7HPYl6jR9s3+W4L735HuJlV7YgZq9l8mn3a9S9V7yvFRPxxT
+	hTrahVDKPUtoHXkabIvW5Giyp9hmL6dvI7dOnN6fIM4P9ZrQFRNQAq1nEbRWVtDK4Kg=
+X-Gm-Gg: AYBFou0n5M7QAn5RuSxPQghKmzBJ5aVCwMBBZm+SNboJ7131gmTjg8K7f+IpDqmH5Aw
+	7Ldkr4T7zll4eGRtB1KMs/5XHRTt4Da289hBLxOGZ7/hOriPtPYElb9SOAPzSBgux++Wj3BNxMT
+	ugIO2OXXAUzeMI0iAJnmVbpJIErpesvhe4XuMu4EXm4ENyuQGW471R687m4U0dfh03Z6BC0eC4G
+	LPMwV9ev35C53vWEEMLAhmBejjSTnwGpCQDAJoLpWYi6cPISwYxC1/kbUQZXUDB+aw5QRNH4g8F
+	wMClXyCubqvRby9gGFr3MpuN/s/Aq3qNxJ/8eFIVcloj2e99bk2mxW0wk/gYQwV8hBFDs0W1+SO
+	wOhAQAUvOjFWVH39+dADQTPsNgIIfbIQ4i8t1zVLX/Oc9xeY3R6tEN+AprspIASeHCW3SHbv7hB
+	CXOu99rgHqnGRZ+7v+5TQ8DiP0uMX8NffgZjqtNkfpCSD+QpgDKumv9RprEwbblksYmXiBG7+42
+	w9fh45l
+X-Received: by 2002:a05:600c:c168:b0:4a1:ed0c:f051 with SMTP id 5b1f17b1804b1-4a1ed0cf21dmr30497355e9.5.1792416967770;
+        Mon, 19 Oct 2026 06:36:07 -0700 (PDT)
+Received: from [192.168.50.4] ([82.78.167.221])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48dfd4f8cfesm20387473f8f.37.2026.10.19.06.36.00
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 19 Oct 2026 06:36:03 -0700 (PDT)
+Message-ID: <0cf7bef8-42fd-475d-b47a-9cb8629644ed@tuxon.dev>
+Date: Mon, 19 Oct 2026 16:35:59 +0300
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -108,142 +89,70 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20261016134247.70722-1-amachhiw@linux.ibm.com>
-X-Rspamd-Action: no action
-X-Spamd-Result: default: False [2.99 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
-	SUSPICIOUS_RECIPS(1.50)[];
-	ONCE_RECEIVED(1.20)[];
-	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
-	RDNS_NONE(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-0.998];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	RCPT_COUNT_TWELVE(0.00)[14];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b306:2000::2:from];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	FREEMAIL_CC(0.00)[goodmis.org,kernel.org,vger.kernel.org,lists.ozlabs.org,google.com,efficios.com,linux.ibm.com,gmail.com];
-	TO_DN_SOME(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_COUNT_ZERO(0.00)[0];
-	MISSING_XM_UA(0.00)[];
-	TAGGED_RCPT(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,suse.de:dkim,kunlun.suse.cz:helo]
-X-Spamd-Bar: ++
-X-Rspamd-Queue-Id: 8C7C921C96
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 09/11] ASoC: renesas: rz-ssi: Explain component open
+ return value handling
+To: phucduc.bui@gmail.com, Vijendar Mukunda <Vijendar.Mukunda@amd.com>,
+ Venkata Prasad Potturu <venkataprasad.potturu@amd.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ povik+lin@cutebit.org, Andrei Simion <andrei.simion@microchip.com>,
+ Nicolas Ferre <nicolas.ferre@microchip.com>,
+ Alexandre Belloni <alexandre.belloni@bootlin.com>,
+ David Rhodes <david.rhodes@cirrus.com>,
+ Richard Fitzgerald <rf@opensource.cirrus.com>,
+ Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Cezary Rojewski <cezary.rojewski@intel.com>,
+ Peter Ujfalusi <peter.ujfalusi@linux.intel.com>,
+ Bard Liao <yung-chuan.liao@linux.intel.com>,
+ Kai Vehmanen <kai.vehmanen@linux.intel.com>,
+ Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>,
+ Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+ Geert Uytterhoeven <geert+renesas@glider.be>,
+ Magnus Damm <magnus.damm@gmail.com>, Biju Das <biju.das.jz@bp.renesas.com>,
+ Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+ Heiko Stuebner <heiko@sntech.de>
+Cc: Kees Cook <kees@kernel.org>, Syed Saba Kareem <syed.sabakareem@amd.com>,
+ wangdicheng <wangdicheng@kylinos.cn>,
+ Chris Bainbridge <chris.bainbridge@gmail.com>,
+ Linus Walleij <linusw@kernel.org>,
+ Charles Keepax <ckeepax@opensource.cirrus.com>,
+ Neo Chang <YLCHANG2@nuvoton.com>,
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
+ u.kleine-koenig@baylibre.com, Pengpeng Hou <pengpeng@iscas.ac.cn>,
+ Cristian Ciocaltea <cristian.ciocaltea@collabora.com>,
+ Hemanth Selam <hemanth.selam@gmail.com>,
+ Md Shofiqul Islam <shofiqtest@gmail.com>, Bjorn Helgaas
+ <bhelgaas@google.com>, Zain Aboobacker <zainaboobacker33@gmail.com>,
+ Sang-Heon Jeon <ekffu200098@gmail.com>, Bo Shen <voice.shen@atmel.com>,
+ Vinod Koul <vkoul@kernel.org>, linux-sound@vger.kernel.org,
+ asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+ patches@opensource.cirrus.com, linuxppc-dev@lists.ozlabs.org,
+ imx@lists.linux.dev, linux-rockchip@lists.infradead.org,
+ linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20261016040946.521195-1-phucduc.bui@gmail.com>
+ <20261016040946.521195-10-phucduc.bui@gmail.com>
+Content-Language: en-US
+From: claudiu beznea <claudiu.beznea@tuxon.dev>
+In-Reply-To: <20261016040946.521195-10-phucduc.bui@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Fri, Oct 16, 2026 at 07:12:47PM +0530, Amit Machhiwal wrote:
-> During early boot (early_trace_init() called from start_kernel()),
-> tracing allocates initial ring buffers (temp_buffer, array_buffer, and
-> snapshot_buffer) for CPU 0.  Later, as secondary CPUs come online during
-> smp_init(), each CPU's ring buffer is allocated via trace_rb_cpu_prepare().
-> 
-> Before attempting page allocation, __rb_allocate_pages() performs a
-> heuristic check using si_mem_available() to return early with -ENOMEM if
-> memory appears insufficient.
-> 
-> However, on kernels built with CONFIG_DEFERRED_STRUCT_PAGE_INIT=y,
-> NR_FREE_PAGES only reflects the initial non-deferred pool across the entire
-> period from early_trace_init() through smp_init().  defer_init() leaves
-> only a single section per node (e.g.  16 MiB with 64 KB pages) initialized
-> up-front, and on kernels with large static binary footprints (debug
-> configurations enabling PAGE_OWNER, DEBUG_PAGEALLOC, KFENCE, or SLUB_DEBUG),
-> early core initialisations (SLUB caches, vmalloc, static ftrace records)
-> consume virtually all managed pages in this pool.
-> 
-> si_mem_available() therefore returns a false negative (often 0-1 pages)
-> across both SYSTEM_BOOTING (for the initial CPU 0 buffers) and
-> SYSTEM_SCHEDULING (for secondary CPU buffers via trace_rb_cpu_prepare()),
-> causing __rb_allocate_pages() to prematurely abort with -ENOMEM.
-> 
-> This failure is false: the buddy allocator is designed to replenish
-> ZONE_NORMAL on demand via deferred_grow_zone() when an actual allocation
-> is attempted.  Checking si_mem_available() before calling alloc_pages_node()
-> short-circuits this on-demand growth entirely.
-> 
-> deferred_grow_zone() is only permanently disabled after page_alloc_init_late()
-> completes (it spawns per-node kthreads and blocks until done), which happens
-> inside kernel_init_freeable() — before system_state is set to
-> SYSTEM_FREEING_INITMEM.  Skip the si_mem_available() check until
-> SYSTEM_FREEING_INITMEM, at which point all deferred pages are initialized
-> and si_mem_available() is accurate.
-> 
-> Wrap the guard in #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT so that on kernels
-> without deferred init the original check is preserved unchanged.
-> 
-> Fixes: 2a872fa4e9c8 ("ring-buffer: Check if memory is available before allocation")
-> Cc: stable@vger.kernel.org
-> Reported-by: Michal Suchánek <msuchanek@suse.de>
-> Closes: https://lore.kernel.org/all/arYskzbiaNzBR9MD@kunlun.suse.cz/
-> Link: https://lore.kernel.org/all/arYskzbiaNzBR9MD@kunlun.suse.cz/
-> Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
-> ---
-> Changes since v1:
->  - Extend the guard to cover SYSTEM_SCHEDULING as well: smp_init() calls
->    trace_rb_cpu_prepare() -> __rb_allocate_pages() before page_alloc_init_late()
->    completes, so the false negative window spans both SYSTEM_BOOTING and
->    SYSTEM_SCHEDULING. Use system_state >= SYSTEM_FREEING_INITMEM as the correct
->    boundary.  (Sashiko, Vincent Donnefort)
->  - Wrap in #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT to preserve the original
->    check unchanged on non-deferred kernels. (Vincent Donnefort)
->  - Drop Tested-by: guard condition changed, requesting fresh test.
-> 
->  kernel/trace/ring_buffer.c | 14 ++++++++++++++
->  1 file changed, 14 insertions(+)
-> 
-> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-> index 04bb94c29f58..aa877a272c89 100644
-> --- a/kernel/trace/ring_buffer.c
-> +++ b/kernel/trace/ring_buffer.c
-> @@ -2452,10 +2452,24 @@ static int __rb_allocate_pages(struct ring_buffer_per_cpu *cpu_buffer,
->  	 * memory. It may not be accurate. But we don't care, we just want
->  	 * to prevent doing any allocation when it is obvious that it is
->  	 * not going to succeed.
-> +	 *
-> +	 * With CONFIG_DEFERRED_STRUCT_PAGE_INIT, NR_FREE_PAGES only reflects
-> +	 * the initial non-deferred pool during early boot and throughout SMP
-> +	 * bring-up (smp_init() runs before page_alloc_init_late() completes
-> +	 * deferred initialization). si_mem_available() returns a false negative
-> +	 * across this entire window while actual allocations succeed by growing
-> +	 * the zone on demand via deferred_grow_zone(). Only re-enable the check
-> +	 * from SYSTEM_FREEING_INITMEM onward, after page_alloc_init_late() has
-> +	 * finished and si_mem_available() is accurate.
->  	 */
->  	i = si_mem_available();
-> +#ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
-> +	if (system_state >= SYSTEM_FREEING_INITMEM && i < nr_pages)
-> +		return -ENOMEM;
-> +#else
->  	if (i < nr_pages)
->  		return -ENOMEM;
-> +#endif
->  
->  	/*
->  	 * If a user thread allocates too much, and si_mem_available()
-> 
-> base-commit: 2f2f7eeef8b0a1a9b9ca998231419873ccae8d4e
 
-Hello,
 
-due to other conflicting changes this no longer applies.
+On 10/16/26 07:09, phucduc.bui@gmail.com wrote:
+> From: bui duc phuc<phucduc.bui@gmail.com>
+> 
+> Add a comment explaining why .open() must return 0 on success
+> to ensure the component is correctly marked as opened and
+> prevent future changes from reintroducing the issue.
+> 
+> Signed-off-by: bui duc phuc<phucduc.bui@gmail.com>
 
-Will you send a rebase?
+FTR:
 
-Thanks
-
-Michal
+Reviewed-by: Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>
 
