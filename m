@@ -1,61 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-29705-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29706-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89FDFCCF2DE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Oct 2026 13:57:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5DB59CCF2EA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Oct 2026 14:04:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j7cY91wZcz2yjw;
-	Tue, 20 Oct 2026 00:57:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j7cjY5zTTz2yfs;
+	Tue, 20 Oct 2026 01:04:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792418221;
-	cv=none; b=eXjhKdIxmO2cQLjz8uNmWRx/cQKKG/GFQ3mewzEV/iljJM1hFIbf6MxjAvgC6XoB+U9FaOozBY9nIeJJ1bzVmzP3cIMkpbNg3098vaw0Jd4VNM+L6PEVR8zkc7ASbrJ0F1PKZOTnC2NGGvUJpNPGex13bIVq6bAZilFG7jomdAgTHgRJHTx9F7qKWliFFa+qWS7PMmQZTaSmrxp0gee0mwG6zh4jGWt/WttvTxbPwsKIaw691qqlVHmJUaQN5g0Vd0n40aSokeCjWChoDHdxrAjVVonVYlO5OAoYwLm37NrIgB4Rjb8bcWxw51BDOV4hVxFk6kqYCJ5d+2K6CD5PxA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792418657;
+	cv=none; b=C+eO1KgZX9gJkOwunWqsbJWRCO6hBSA2PvAVZA+x+ohlQx+Rev5wB4aHqaUPmiDabbuZ6xajAHejEjn5ajEUAqW/1G3nPQDYONh50K1uqjpn0ajGZUhN18dz0d16K9Wnr5kRIPKMncMsoq9jkmLUUpulZs3rbz32BINiVbSm3+75454qhcJM1LiF4wzzoQMIRMyqyyGCSdhb1fp/ivNdkEOHadeITC3HCh6jOZozS8FRyzvIIVZ8ru9sXp17uYOZM66TVhgnvedQJ57tlHlnQ4OKuHO1cz/VwTasTZQIjFwDNznvQjuIcAFWxya2rKjEG36UmE4ho+2VKtAoFEMHIw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792418221; c=relaxed/relaxed;
-	bh=UENfQOyJqvDAsP8QZG4nzSyJ+1MdDILYTS/0lAglk+Q=;
+	t=1792418657; c=relaxed/relaxed;
+	bh=yMtq3J68VL+kcl1SdaOWIUMZYTtpupDYw937qffVKRE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=CVOT1geGhU8wcN0BiKUOCQwlpy8kfBmF1kbNA5WtVtzTKpuXYMgXiKWJaFYq9PEcyuRNyWoM6NSFpkXrMCIWbrIAF9QdlvnjOTgQNoOBsvNI52+vNePJMCbXV5XZfsDjfwkix1A26LchGz/I1WHERWI96GzqMwIBITy3mMQYsFb8V7fqYEkOgchR58te88733YFB1/ANKqnoIJyD8UPzhR4/Tt1yf5htlwQMbgZhN1zSn3anMlP2cC1x9gqUqKNTX5eIKHZJSMhRpy5Tk6J/ubWQqWcgI2V4Gtgmkr296+nmQ3GSnxfzEwjiUemtrtpT+JNkOQ4OUWA+4ovfkj5uMQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JmSrR8+/; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=XPZ/+95Q2jN3mPDnt/oZ3EuS300mobk+JHm/TwUonnqf3oFKBJFD0Y4jyqpm593U0P7UwozIT2AR/uFau6DEiztfEsCTYCgOu/N5IFnSsMXMCyMY8K3ShsexBO63U7bhs5lrNWj3CIIYoEAjZ1AghqQDLB+Qbf0jK9kYGBnQvHbFxnLuQm8XEYl0seVXu1hpJFrJYI/pd5A0jYHKeVIZ/7LNG8smWpWjxShyc/QAfF8GvI9n7ugrwrwo5CYJMojBhvjT0g+xC2cPzKDkXwbpJolwwxh2rtAqkmylwe+5KjonIfOBJgd3RXfP1aPJ+oCgDY5+zNqQxaNlwUzA9nO12w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dIIjvSe+; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JmSrR8+/;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dIIjvSe+;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j7cY81Fmlz2yfD
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2026 00:57:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j7cjX4pYJz2yfD
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2026 01:04:16 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2352360258;
-	Mon, 19 Oct 2026 13:56:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 08AFE1F000C6;
-	Mon, 19 Oct 2026 13:56:55 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 2D746602A8;
+	Mon, 19 Oct 2026 14:04:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF1431F000CA;
+	Mon, 19 Oct 2026 14:04:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792418216;
-	bh=UENfQOyJqvDAsP8QZG4nzSyJ+1MdDILYTS/0lAglk+Q=;
+	s=k20260515; t=1792418653;
+	bh=yMtq3J68VL+kcl1SdaOWIUMZYTtpupDYw937qffVKRE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=JmSrR8+/olP5KzoO/FFFOEt7pZLpBWyLkGFHT9kAEHgkD3ldOGxDHVDwH8ljANG6i
-	 IkkUs/olRJXnIp9b3PrQcV19w517QUZ5jEMRj0rcNYyKcKQsTht4LVyoaX5RMbya15
-	 PC+eh+YPhJWtg3Dle55tNYa4sE21T8XmKP5QchYE17j7plOItbSWAsv9HZ0KerYARq
-	 qINIPD7TPXyPDHWiR1OzrpQypeP/cfAJwsJXyA+8YcxS/XGDHPNs0PuvZe1Ah9O4fn
-	 +nkeD6yxgDuZgSajVPkbf/wQHzQpMoZEmYqVpkQ9RiSAob0z+aFUp7gJu9g9Dz1E5I
-	 W2GTgc0YpVinA==
+	b=dIIjvSe+zh5eqyHsWRUV5R9hRaol2oaf2vn2QxOHQ6n9z2v7cfoEk0rltJH45ZztL
+	 sDCvcpGV2wwIfbORZUXlgkA5DPb6R7fDMzbAPri3tZdVmxqLg2Q5PDGdenT8nouFPH
+	 5V4PF5XbcGsTUJbgJTBmAwU4teLGGa0ktLQ1Zf0UK5OZRnHXEJf6m1KWehtKCLOCKy
+	 LAWz/LrmzLRwb/2BXfVMYuSG4q64/oCNQY20hgyt4AXRCBAvpdqmzVKpX7wvbh7rhC
+	 xKdWioEbeGlYSO6bEt2jL5VWRCNzAhWsFbf/yaQFgiQugJE3Lsh9VWtuvcCHwgDEO7
+	 igmpYJ9Cpo3WA==
 From: Sasha Levin <sashal@kernel.org>
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
-Cc: Haoxiang Li <haoxiang_li2024@163.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
 	Sasha Levin <sashal@kernel.org>,
-	linux-usb@vger.kernel.org,
+	maddy@linux.ibm.com,
+	James.Bottomley@HansenPartnership.com,
+	mkp@kernel.org,
+	linux-scsi@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.18-5.10] usb: fsl_qe_udc: check qe_alloc_request() failure in ch9getstatus()
-Date: Mon, 19 Oct 2026 09:46:26 -0400
-Message-ID: <20261019135441.1420968-95-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.18-5.10] scsi: ibmvfc: free ibmvfc_target allocations with mempool_free
+Date: Mon, 19 Oct 2026 09:51:33 -0400
+Message-ID: <20261019135441.1420968-402-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20261019135441.1420968-1-sashal@kernel.org>
 References: <20261019135441.1420968-1-sashal@kernel.org>
@@ -78,353 +81,384 @@ X-stable-base: Linux 6.18.57
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Haoxiang Li <haoxiang_li2024@163.com>
+From: Tyrel Datwyler <tyreld@linux.ibm.com>
 
-[ Upstream commit 612551bf7cf7113b8bbd5e8c1eea86d9427c2f95 ]
+[ Upstream commit 99143433f7f14139ac373c553ec8e1317d0ae58a ]
 
-qe_alloc_request() may return NULL on allocation failure. ch9getstatus()
-passes the return value directly to container_of() and then immediately
-dereferences the resulting qe_req pointer. Check the allocation result
-before using it and stall the control request on failure.
+The ibmvfc_target *tgt structures for discovery are allocated using
+mempool_alloc but in turn free'd via kfree in ibmvfc_release_target
+breaking pool guarentees.
 
-Signed-off-by: Haoxiang Li <haoxiang_li2024@163.com>
-Link: https://patch.msgid.link/20260620120631.2894977-1-haoxiang_li2024@163.com
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Fixup ibmvfc_release_target to call mempool_free instead so that memory
+is properly returned to the mempool instead of the general allocator.
+
+Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
+Link: https://patch.msgid.link/20260723000149.969416-5-tyreld@linux.ibm.com
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
 
 LLM Generated explanations, may be completely bogus:
 
+I have enough to decide: this is a one-line mempool/kfree mismatch in
+ibmvfc that can drain the target pool and hang discovery. The local
+7.3-rc4 tree has the driver and the bug’s code path.
+
 ## Phase 1: Commit message forensics
 
-**Step 1.1: Subject line**
-Record: `[usb / fsl_qe_udc] [check] check qe_alloc_request() failure in
-ch9getstatus()` — USB gadget UDC driver; “check” here is a missing-NULL-
-check fix, not a feature.
+**Step 1.1: Subject**
+Record: `[scsi/ibmvfc] [free] free ibmvfc_target allocations with
+mempool_free` — claimed intent: stop freeing mempool-allocated target
+structs with `kfree`.
 
 **Step 1.2: Tags**
 Record:
-- `Signed-off-by: Haoxiang Li <haoxiang_li2024@163.com>` (author)
-- `Link: https://patch.msgid.link/20260620120631.2894977-1-
-  haoxiang_li2024@163.com`
-- `Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>` (USB
-  maintainer applied it)
+- `Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>` (author; IBM
+  ibmvfc maintainer)
+- `Link:
+  https://patch.msgid.link/20260723000149.969416-5-tyreld@linux.ibm.com`
+- `Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>` (SCSI
+  maintainer)
 - No `Fixes:`, `Reported-by:`, `Tested-by:`, `Reviewed-by:`, `Acked-
-  by:`, or `Cc: stable` (absence expected)
+  by:`, or `Cc: stable` (absence of the last two is expected for this
+  review)
 
 **Step 1.3: Body**
 Record:
-- **Bug:** `qe_alloc_request()` can return NULL; that pointer is passed
-  to `container_of()` and immediately dereferenced.
-- **Symptom:** kernel oops / NULL deref on `GET_STATUS` when allocation
-  fails.
-- **Version info:** none in the message.
-- **Root cause:** unchecked allocation result in `ch9getstatus()`.
-- **Fix:** test the pointer; stall EP0 on failure.
+- Bug: `ibmvfc_target` objects are allocated with `mempool_alloc()` but
+  released with `kfree()` in `ibmvfc_release_tgt` (message says
+  `ibmvfc_release_target`; the function is `ibmvfc_release_tgt`).
+- Symptom: “breaking pool guarantees” — reserved mempool elements never
+  return to the pool.
+- Root cause: allocator/free mismatch (`mempool_alloc` vs `kfree`).
+- No stack trace, reproducer, or version range. Failure mode is implied
+  (pool accounting), not a reported oops.
 
 **Step 1.4: Hidden bug fix?**
-Record: Not hidden. This is an explicit NULL-deref fix. The “stall on
-failure” path is the existing error path, not a new feature.
+Record: Not hidden. It is an explicit allocator-mismatch fix. The cover
+letter for the series later names it as one of four pre-existing bugs,
+not NVMe feature work.
 
 ## Phase 2: Diff analysis
 
 **Step 2.1: Inventory**
 Record:
-- File: `drivers/usb/gadget/udc/fsl_qe_udc.c` (+6 / −2)
-- Function: `ch9getstatus()`
-- Scope: single-file surgical fix
+- File at commit time: `drivers/scsi/ibmvscsi/ibmvfc.c` (`1 insertion, 1
+  deletion`)
+- Function: `ibmvfc_release_tgt`
+- Scope: single-file, one-line surgical fix
 
 **Step 2.2: Code flow**
-Record: Before, `container_of(qe_alloc_request(...), struct qe_req,
-req)` ran unconditionally, then `req->req.length = 2` and later
-`__qe_ep_queue()`. After, the result is stored in `usb_req`, NULL goes
-to the existing `stall:` label (`dev_err` + `qe_ep0_stall()`), and only
-a live request is converted with `container_of`.
+Record:
+- Before: last `kref_put` on a target calls `kfree(tgt)`.
+- After: same path calls `mempool_free(tgt, tgt->vhost->tgt_pool)`.
+- Path: target teardown / kref drain (discovery logout, rport delete,
+  sysfs starget accessors, host teardown), not an error-only path.
 
 **Step 2.3: Bug mechanism**
-Record: **NULL pointer dereference** (memory safety).
-`qe_alloc_request()` does `kzalloc_obj()` and returns NULL on failure.
-`struct qe_req` has `struct usb_request req` as the first member, so
-`container_of(NULL, ...)` is still NULL, then `req->req.length = 2`
-oopses.
+Record: `[resource / mempool accounting]` plus a possible `[hang]`
+- Alloc: `tgt = mempool_alloc(vhost->tgt_pool, GFP_NOIO)` in
+  `ibmvfc_alloc_target`.
+- Pool: `mempool_create_kmalloc_pool(IBMVFC_TGT_MEMPOOL_SZ,
+  sizeof(struct ibmvfc_target))` with `IBMVFC_TGT_MEMPOOL_SZ == 64`.
+- `kfree` of a reserved pool object returns that slab object to the page
+  allocator without incrementing `pool->curr_nr`. After 64 alloc/free
+  cycles the reserved pool is empty.
+- `mempool_alloc()` with `GFP_NOIO` (`__GFP_RECLAIM` /
+  `__GFP_DIRECT_RECLAIM`) first tries `kmalloc`; on failure it waits
+  uninterruptibly on `pool->wait` until `mempool_free` refills. If
+  nothing ever calls `mempool_free`, that wait never ends.
+- Commit `5c66d9393f583` (2017) removed the NULL check on this
+  `mempool_alloc` because “mempool_alloc() cannot fail when passed
+  GFP_NOIO”. That is only true if the pool is actually returned to.
 
 **Step 2.4: Fix quality**
-Record: Obviously correct; uses the existing `stall` path; no API/data-
-structure change. Regression risk is very low. Pre-existing issue not
-introduced here: if alloc succeeds and `__qe_ep_queue()` fails, the
-request is still not freed (leak on that older path). This patch does
-not make that worse.
+Record: Obviously correct matching free. Minimal. `tgt->vhost` is set
+before `kref_init`, so the pool pointer is valid on the free path.
+Regression risk is low. Theoretical extra requirement vs `kfree`: the
+pool must still exist; `ibmvfc_remove` does `fc_remove_host` /
+`scsi_remove_host` and target `kref_put`s before `ibmvfc_free_mem()` →
+`mempool_destroy()`. No later revert of this change.
 
 ## Phase 3: Git history
 
 **Step 3.1: Blame**
-Record: Unchecked `container_of(qe_alloc_request(...))` comes from
-`3948f0e0c999a6` (“usb: add Freescale QE/CPM USB peripheral controller
-driver”, 2008-09-02), first in `v2.6.28-rc1`. The bug is ancient, not
-new 7.3 code.
+Record: `kfree(tgt)` in `ibmvfc_release_tgt` comes from `b3c10489cb464b`
+/ original driver `072b91f9c6510` (“[SCSI] ibmvfc: IBM Power Virtual
+Fibre Channel Adapter Client Driver”, 2008-07-12, contained in
+v2.6.27-rc1). The mismatch is as old as the driver. `tgt_pool` was
+created in that same commit.
 
-**Step 3.2: Fixes: tag**
-Record: No `Fixes:` tag. The introducing commit is `3948f0e0c999a6`
-(above). That commit is an ancestor of this tree.
+**Step 3.2: Fixes tag**
+Record: None. Introducer is the original 2008 driver, present in this
+tree’s history.
 
 **Step 3.3: File history**
-Record: Related work on the same function: `ce9daa2efc087` (2023) added
-`pipe >= USB_MAX_ENDPOINTS` before indexing `udc->eps[]` — that patch
-was AUTOSEL’d into stable 5.15. Recent file churn is
-kmalloc→`kzalloc_obj` conversion, not a refactor of `ch9getstatus()`.
-Standalone, not `patch X/Y`.
+Record: This commit is `99143433f7f14`. Neighbors from the same
+submission:
+- `9c2aa65000f6f` 01/33 MAD send-failure deadlock
+- `7e35396ec8539` 02/33 rport_add_work_q teardown
+- `0122eab60b151` 03/33 NULL evt deref
+- **this** 04/33 mempool_free
+- `de7ac0f3f08b1` 05/33 move target list (NVMe prep, not required for
+  this line)
+
+Standalone relative to 05/33+. Later `848c70852e3fb` split `ibmvfc.c`
+into `ibmvfc-core.c`; current tree has the fixed `mempool_free` in
+`ibmvfc-core.c`.
 
 **Step 3.4: Author**
-Record: Haoxiang Li has several USB NULL/leak-style fixes (`mtu3`,
-`cdnsp`, `typec`, `renesas_usbhs`). Not the UDC maintainer. Greg Kroah-
-Hartman applied this one. Similar sibling: `4ab2b48c98f2e`
-(`fsl_udc_core` allocation check).
+Record: Tyrel Datwyler is the IBM ibmvfc maintainer (majority of recent
+`drivers/scsi/ibmvscsi/` commits). SCSI maintainer Martin K. Petersen
+applied the series.
 
 **Step 3.5: Dependencies**
-Record: None. Uses existing `qe_alloc_request()`, `stall:` /
-`qe_ep0_stall()`, and `container_of`. Applies standalone.
-`qe_alloc_request()` still returns NULL on failure after the
-`kzalloc_obj` conversion.
+Record: None for the one-line change. It does not need NVMe/FC patches.
+`mempool_free` / `tgt_pool` / `ibmvfc_release_tgt` all exist in this
+tree.
 
-## Phase 4: Mailing list / external
+## Phase 4: Mailing list
 
-**Step 4.1: Original discussion**
-Record: `b4 dig -c 612551bf7cf71` → https://patch.msgid.link/20260620120
-631.2894977-1-haoxiang_li2024@163.com
-`b4 dig -a`: **v1 only**, 2026-06-20, same subject. Mbox is the patch
-with **no replies**. LKML/Openwall mirrors match; no NAK, no v2, no `Cc:
-stable` in review (there was no public review thread).
+**Step 4.1: b4 dig**
+Record:
+- Lore:
+  https://patch.msgid.link/20260723000149.969416-5-tyreld@linux.ibm.com
+- Subject on list: `[PATCH v2 04/33] ibmvfc: free ibmvfc_target
+  allocations with mempool_free`
+- Series: `[PATCH v2 00/33] ibmvfc: NVMe/FC support over IBM Virtual FC`
+  (2026-07-22)
+- Cover letter (from saved mbox): “Patches 1-5: Bug fixes and
+  preparatory refactoring. Four pre-existing bugs are fixed before any
+  NVMe/FC work is introduced: … an allocator mismatch where mempool-
+  allocated ibmvfc_target structs are freed via kfree rather than
+  mempool_free.”
+- Martin K. Petersen: “Applied to 7.3/scsi-staging, thanks!”
+- No NAK on this patch. No reviewer asked for `Cc: stable` on this
+  specific patch.
 
 **Step 4.2: Recipients (`b4 dig -w`)**
-Record: To: `kees@kernel.org`, `gregkh@linuxfoundation.org`; Cc: `linux-
-usb`, `linuxppc-dev`, `linux-kernel`. USB maintainer was in To and
-committed it.
+Record: `james.bottomley@hansenpartnership.com`,
+`martin.petersen@oracle.com`, `linux-scsi@vger.kernel.org`, `linuxppc-
+dev@lists.ozlabs.org`, `brking@linux.ibm.com`, `davemarq@linux.ibm.com`.
+Right SCSI/PPC/IBM lists.
 
 **Step 4.3: Bug report**
-Record: No `Reported-by` / syzbot / bugzilla. Looks like static analysis
-(NULL after alloc), not a user crash report.
+Record: No `Reported-by` / Bugzilla / syzbot. Bug was found by the
+maintainer while preparing NVMe/FC.
 
 **Step 4.4: Series**
-Record: Standalone v1. Not part of a multi-patch series.
+Record: 33-patch NVMe/FC feature series. This patch is explicitly a pre-
+existing bugfix (phase 1, patches 1–4). Self-contained.
 
 **Step 4.5: Stable list**
-Record: Direct lore.kernel.org fetches returned 403. No stable-list
-discussion found via `b4` or web search. Precedent: the earlier
-`ch9getstatus` bounds check in this file **was** AUTOSEL’d to 5.15.
+Record: UNVERIFIED. lore.kernel.org search hit Anubis bot-protection
+(403). No stable discussion in the saved scsi thread mbox.
 
-## Phase 5: Semantic / call-graph
+## Phase 5: Semantic / call graph
 
 **Step 5.1: Functions**
-Record: `ch9getstatus()` only (uses `qe_alloc_request`, `container_of`,
-`__qe_ep_queue`, `qe_ep0_stall`).
+Record: `ibmvfc_release_tgt` only.
 
 **Step 5.2: Callers**
-Record: Only `setup_received_handle()` on `USB_REQ_GET_STATUS`.
+Record: Many `kref_put(&tgt->kref, ibmvfc_release_tgt)` sites in
+`ibmvfc-core.c` and `ibmvfc-nvme.c`: starget node/port name/id sysfs,
+implicit logout / delete, PLOGI/PRLI, rport add/delete, host work
+thread, module remove. Reachable from FC discovery, link events, and
+sysfs.
 
 **Step 5.3: Callees**
-Record: `qe_alloc_request` → `kzalloc_obj`; `__qe_ep_queue`;
-`qe_ep0_stall`; `ownercomplete` kfree’s the request on completion.
+Record: `container_of`, then `mempool_free`. No new locks or
+allocations.
 
-**Step 5.4: Call chain / reachability**
-Record:
-`qe_udc_irq` (hardirq, `spin_lock_irqsave(&udc->lock)`)
-→ `rx_irq` → `qe_ep0_rx` → `ep0_setup_handle` → `setup_received_handle`
-→ `ch9getstatus`
-
-Reachable from USB host `GET_STATUS` during gadget enumeration.
-Unprivileged **host** can send it; not a typical local-syscall path.
-GFP_KERNEL under a spinlock in IRQ is a pre-existing atomic-sleep smell
-and makes NULL more plausible under memory pressure.
+**Step 5.4: Reachability**
+Record: Yes, from normal IBM Power virtual FC use (target
+discovery/logout and host removal). Not an obscure debug path.
+`CONFIG_SCSI_IBMVFC` depends on `PPC_PSERIES`.
 
 **Step 5.5: Similar patterns**
-Record: `qe_alloc_request()` is only used here plus the
-`usb_ep_ops.alloc_request` hook. Sibling FSL UDC had the same class of
-alloc-check fix.
+Record: Only this kfree/mempool mismatch for targets. Event pools in the
+same driver already used mempool correctly. No follow-up fix after
+`99143433f7f14`.
 
-## Phase 6: This checkout
+semcode MCP: not available in this session; used `git grep` / file
+reads.
 
-**Step 6.1: Does the buggy code exist?**
-Record: Local tree is **7.3.0-rc4** (`v7.3-rc4-27-gf0100363d8c37`).
-Driver and `ch9getstatus()` are present. The unchecked alloc was
-introduced in v2.6.28 and lived until `612551bf7cf71` (`v7.2-rc1-40`,
-2026-07-10). HEAD already has the fixed form (`usb_req =
-qe_alloc_request...; if (!usb_req) goto stall`). That is the mainline
-source of the candidate, not a reason to treat the bug as absent from
-this driver.
+## Phase 6: This tree
+
+**Step 6.1: Local tree and buggy code**
+Record:
+- `git describe HEAD`: `v7.3-rc4-27-gf0100363d8c37`
+- `make kernelversion`: `7.3.0-rc4`
+- `git merge-base --is-ancestor 99143433f7f14 HEAD`: yes — the fix is
+  already in this checkout
+- Current code (`ibmvfc-core.c:1431-1434`) already has
+  `mempool_free(tgt, tgt->vhost->tgt_pool)`
+- The mismatch existed here from v2.6.27 until this commit; the driver
+  and `tgt_pool` still exist
 
 **Step 6.2: Backport difficulty**
-Record: Surrounding `ch9getstatus()` matches the patch; `git diff
-612551bf7cf71 HEAD -- drivers/usb/gadget/udc/fsl_qe_udc.c` is empty.
-Clean apply on this tree’s file; older stables still have the same
-`container_of(qe_alloc_request(...))` shape from 2008.
+Record: Clean one-liner against pre-split `ibmvfc.c`. This 7.3-rc4 tree
+already contains it; later split to `ibmvfc-core.c` does not change the
+correctness of the fix.
 
 **Step 6.3: Related fixes already here**
-Record: Endpoint-index check `ce9daa2efc087` is already in this file. No
-other fix covers the alloc NULL. This patch is the alloc-failure check,
-not a duplicate of that bounds check.
+Record: The fix itself is here. `5c66d9393f583` (NULL-check removal) is
+also here, which makes restoring pool refill more important.
 
-## Phase 7: Subsystem context
+## Phase 7: Subsystem
 
-**Step 7.1:** Record: USB gadget UDC (`drivers/usb/gadget/udc/`).
-**PERIPHERAL** — Freescale QE/CPM USB device controller.
-`CONFIG_USB_FSL_QE` depends on `FSL_SOC && (QUICC_ENGINE || CPM)` and
-`!64BIT || BROKEN` (32-bit PowerPC QE/CPM, e.g. MPC8360/MPC8272).
+**Step 7.1**
+Record: SCSI LLD `drivers/scsi/ibmvscsi/` — IBM Power Virtual FC.
+Criticality: IMPORTANT for `PPC_PSERIES` storage (enterprise PowerVM),
+PERIPHERAL for everyone else.
 
-**Step 7.2:** Record: Mature, low-churn driver (2008). Recent commits
-are conversions/typos plus this NULL check. Long-lived bug, not a new-
-subsystem issue.
+**Step 7.2**
+Record: Actively developed in 7.3 (large NVMe/FC series). The bug itself
+is old, not a new-subsystem issue.
 
 ## Phase 8: Impact and risk
 
 **Step 8.1: Who is affected**
-Record: Driver-specific / config-specific: USB gadget on 32-bit
-Freescale QE/CPM SoCs.
+Record: Users of `CONFIG_SCSI_IBMVFC` on IBM POWER (pSeries) with
+Virtual Fibre Channel. Not universal.
 
 **Step 8.2: Trigger**
-Record: Host sends standard `GET_STATUS`; `qe_alloc_request(GFP_KERNEL)`
-fails. Uncommon (memory pressure / atomic GFP_KERNEL), but the control
-request is a normal enumeration path. Host-triggered.
+Record: Target alloc/free churn (discovery, logout, rport delete, host
+reset). After 64 such cycles the reserved pool is empty. Hang requires
+subsequent `mempool_alloc(GFP_NOIO)` while `kmalloc` fails (memory
+pressure, no `__GFP_FS` reclaim). Unprivileged users do not call this
+directly; fabric events and scans do.
 
 **Step 8.3: Failure mode**
-Record: NULL deref → oops in hardirq UDC path. **Severity: HIGH** (crash
-of the gadget/UDC path; can take the machine down depending on
-panic_on_oops). Not silent corruption.
+Record: Permanent mempool drain; under memory pressure, uninterruptible
+hang in `mempool_alloc` during discovery (storage bring-up / recovery
+stuck). Severity: HIGH for that platform (hang / lost discovery), not a
+KASAN UAF from `kfree` of kmalloc-backed pool memory.
 
-**Step 8.4: Risk vs benefit**
-Record: **Benefit:** medium for those boards (prevents oops), low
-globally (niche HW). **Risk:** very low (6 net lines, existing stall
-path). Ratio favors taking it: same class of fix already AUTOSEL’d in
-this function.
+**Step 8.4: Risk-benefit**
+Record: Benefit HIGH for ibmvfc users (restore mempool guarantees; avoid
+discovery hang). Risk VERY LOW (1 line, matching alloc/free, maintainer-
+authored, SCSI maintainer applied). Ratio favors including the fix.
 
 ## Phase 9: Synthesis
 
 **Step 9.1: Evidence**
 
 For:
-- Real NULL deref on a live USB control path
-- `qe_alloc_request()` documented to return NULL
-- Tiny, obviously correct check + existing stall
-- Bug present since 2008 in this driver
-- USB maintainer merged it
-- Same function already had a stable AUTOSEL bounds fix
-- Call path is IRQ + spinlock, so GFP_KERNEL failure is not purely
-  theoretical
+- Real allocator mismatch present since 2008
+- One-line, obviously correct `mempool_free`
+- Can empty the 64-element pool and then hang `mempool_alloc(GFP_NOIO)`
+  under memory pressure
+- 2017 change already assumes mempool never fails on this path
+- Cover letter labels it a pre-existing bug, independent of NVMe/FC
+- IBM/SCSI maintainers; applied to 7.3 scsi-staging
+- Driver and bug exist in this 7.3-rc4 tree
 
 Against:
-- Niche 32-bit PowerPC QE/CPM gadget (`BROKEN` on 64-bit)
-- No user/syzbot report; static-analysis style v1 with no mailing-list
-  review
-- No `Tested-by`
-- Alloc-failure is uncommon
-- Pre-existing queue-failure leak left unfixed (not a regression)
+- No user/syzbot report in 18 years (may be rare or attributed to memory
+  pressure)
+- Sent as 04/33 of a feature series (the line itself does not depend on
+  the rest)
+- Platform-specific (PowerVM virtual FC only)
+- No `Fixes:` / `Cc: stable` (not a negative per the review rules)
 
-Unresolved: lore.kernel.org HTTP 403; no public review comments beyond
-the patch itself (confirmed via `b4` mbox).
+Unresolved:
+- Stable-list discussion (lore search blocked)
 
 **Step 9.2: Stable rules**
-1. Obviously correct and tested? **PASS** on correctness (code is
-   unambiguous). Testing is only “merged by Greg”; no hardware Tested-
-   by, but the change does not need runtime proof beyond reading
-   `qe_alloc_request()`.
-2. Real bug affecting users? **PASS** — oops if this UDC handles
-   `GET_STATUS` and alloc fails.
-3. Important (crash/security/corruption/deadlock)? **PASS** — kernel
-   oops. Not a new API.
-4. Small and contained? **PASS** — 8-line hunk, one function.
-5. No new features/APIs? **PASS**
-6. Can apply to this tree? **PASS** — file and function exist; context
-   matches.
+1. Obviously correct and tested? **PASS** — matching free; applied by
+   SCSI maintainer.
+2. Real bug that affects users? **PASS** — pool contract broken on every
+   target free; hang is a realistic stress case.
+3. Important (crash/security/corruption/deadlock)? **PASS** —
+   uninterruptible wait in discovery if the drained pool cannot be
+   refilled; storage recovery hang.
+4. Small and contained? **PASS** — 1 line, one function.
+5. No new features/APIs? **PASS** — not the NVMe work; just the free
+   path.
+6. Can apply to this tree? **PASS** — code exists; commit is already an
+   ancestor of HEAD; equivalent `mempool_free` is in `ibmvfc-core.c`.
 
 **Step 9.3: Exception category**
-Record: None (not an ID/quirk/DT/build/doc exception). It is a normal
-crash fix.
+Record: None needed (not a device ID/quirk/DT/build/doc exception). It
+is a normal bugfix.
 
 **Step 9.4: Decision**
-This is a textbook missing-NULL-check on a kmalloc-backed helper, in a
-path a USB host hits with `GET_STATUS`. It is small, applies to the
-driver in this tree, and prevents an oops. Niche hardware lowers
-population, not severity for the people who have it. It meets stable-
-kernel-rules.
-
-### What it solves for stable users
-Without the check, `ch9getstatus()` oopses when `qe_alloc_request()`
-returns NULL. With it, EP0 stalls and the gadget stays up. That matters
-on QE/CPM gadget devices under memory pressure, including in hardirq.
-
-### Risk vs benefit
-Very low risk, contained error-path change. Benefit is avoiding a real
-oops on existing hardware. Worth taking.
+This should be backported to this tree. It is a one-line correction of a
+long-standing mempool leak/drain in IBM virtual FC target discovery,
+with hang potential under memory pressure, and no meaningful regression
+risk.
 
 ---
 
+**What it solves for this tree:** `ibmvfc_target` objects come from
+`vhost->tgt_pool` but were `kfree`d, so reserved pool slots were
+permanently lost. After enough discovery/logout churn,
+`mempool_alloc(GFP_NOIO)` no longer has a reserved pool and can block
+forever if `kmalloc` fails. This 7.3-rc4 tree still has that driver; the
+one-line `mempool_free` restores the guarantee.
+
+**Stable rules:** Small, obviously correct, no new API, real
+hang/discovery-failure bug, applies here.
+
+**Risk vs benefit:** Very low risk, high benefit for PowerVM FC users.
+
+**Concerns:** No field crash report; bug is old. That does not make the
+mismatch or the hang path hypothetical. No extra commits are required.
+
 Verification:
-- [Phase 1] Parsed tags: author SOB, Greg KH SOB, msgid link; no
-  Fixes/Reported-by/Cc stable
-- [Phase 2] Diff: +6/−2 in `ch9getstatus()`; NULL check then existing
-  `stall:`
-- [Phase 2] `struct qe_req`: `req` is first member
-  (`fsl_qe_udc.h:252-259`); `container_of(NULL)` is NULL
-- [Phase 2] `qe_alloc_request()` returns NULL after `kzalloc_obj`
-  failure (lines 1669–1681)
-- [Phase 3] `git blame` / `git log -1 3948f0e0c999a6`: buggy pattern
-  from 2008, `v2.6.28-rc1`
-- [Phase 3] No Fixes tag; introducing commit is in this tree
-- [Phase 3] Related: `ce9daa2efc087` bounds check in same function;
-  AUTOSEL 5.15 (lkml archive)
-- [Phase 3] Author USB fixes listed via `git log --author="Haoxiang Li"`
-- [Phase 4] `b4 dig -c 612551bf7cf71`: lore msgid
-  20260620120631.2894977-1
-- [Phase 4] `b4 dig -a`: v1 only; `b4 dig -w`: gregkh + kees + linux-usb
-  + linuxppc-dev
-- [Phase 4] mbox: patch only, no replies
-- [Phase 4] lore WebFetch 403; LKML/Openwall mirrors used instead
-- [Phase 5] Callers: only `setup_received_handle` for
-  `USB_REQ_GET_STATUS`
-- [Phase 5] Call chain: `qe_udc_irq` → `rx_irq` → `qe_ep0_rx` →
-  `ep0_setup_handle` → `setup_received_handle` → `ch9getstatus`
-  (spinlock held)
-- [Phase 6] `git describe HEAD`: `v7.3-rc4-27-gf0100363d8c37`; `make
-  kernelversion`: 7.3.0-rc4
-- [Phase 6] `git merge-base --is-ancestor 612551bf7cf71 HEAD`: yes
-  (mainline already contains the candidate)
-- [Phase 6] File at HEAD matches the fixed version; reverse-apply of the
-  commit succeeds
-- [Phase 7] Kconfig `USB_FSL_QE`: FSL_SOC QE/CPM, `!64BIT || BROKEN`
-- [Phase 8] Failure mode: NULL deref oops in UDC IRQ, severity HIGH
-- UNVERIFIED: full lore thread beyond the mbox (HTTP 403); whether any
-  reviewer privately asked for Cc: stable
+- [Phase 1] Parsed tags: author Tyrel Datwyler, Link msgid
+  `...969416-5`, SOB Martin K. Petersen; no Fixes/Reported-by/Cc:stable
+- [Phase 2] Diff: 1 line in `ibmvfc_release_tgt`, `kfree(tgt)` →
+  `mempool_free(tgt, tgt->vhost->tgt_pool)`
+- [Phase 2] Confirmed alloc at `ibmvfc_alloc_target`:
+  `mempool_alloc(vhost->tgt_pool, GFP_NOIO)`; pool size 64; `GFP_NOIO`
+  is `__GFP_RECLAIM`
+- [Phase 2] `mm/mempool.c`: `mempool_alloc_noprof` retries and waits on
+  `pool->wait` when `__GFP_DIRECT_RECLAIM` is set; waiters woken from
+  `mempool_free`
+- [Phase 3] git blame: `kfree(tgt)` from original driver `072b91f9c6510`
+  (2008, v2.6.27-rc1)
+- [Phase 3] `git merge-base --is-ancestor 99143433f7f14 HEAD`: yes
+- [Phase 3] Related: `5c66d9393f583` (v4.12-rc1) removed mempool_alloc
+  NULL check
+- [Phase 4] `b4 dig -c 99143433f7f14`: `[PATCH v2 04/33]`; cover letter
+  lists this as a pre-existing bug; Martin: applied to 7.3/scsi-staging
+- [Phase 4] `b4 dig -w`: linux-scsi, linuxppc-dev, Bottomley, Petersen,
+  IBM
+- [Phase 4] `b4 dig -a`: v2 of 33-patch NVMe/FC series; this patch is in
+  the bugfix prefix
+- [Phase 4] UNVERIFIED: lore.kernel.org/stable search (Anubis 403)
+- [Phase 5] Callers: many `kref_put(..., ibmvfc_release_tgt)` in
+  discovery/teardown/sysfs
+- [Phase 6] `git describe HEAD`: v7.3-rc4-27-gf0100363d8c37;
+  kernelversion 7.3.0-rc4; current `ibmvfc-core.c` already uses
+  `mempool_free`
+- [Phase 7] `CONFIG_SCSI_IBMVFC` depends on `PPC_PSERIES`
+- [Phase 8] Failure mode: mempool drain → possible D-state hang in
+  target discovery under memory pressure; severity HIGH for that
+  platform
+- UNVERIFIED: whether a target kref can outlive `mempool_destroy` on
+  remove (no evidence it does; remove deletes rports first)
 
 **YES**
 
- drivers/usb/gadget/udc/fsl_qe_udc.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ drivers/scsi/ibmvscsi/ibmvfc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/usb/gadget/udc/fsl_qe_udc.c b/drivers/usb/gadget/udc/fsl_qe_udc.c
-index aacfde06387c0..7911dca2135cf 100644
---- a/drivers/usb/gadget/udc/fsl_qe_udc.c
-+++ b/drivers/usb/gadget/udc/fsl_qe_udc.c
-@@ -1945,6 +1945,7 @@ static void ch9getstatus(struct qe_udc *udc, u8 request_type, u16 value,
- 			u16 index, u16 length)
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+index 63cc569284ded..e3853e05aa27a 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -1366,7 +1366,7 @@ static void ibmvfc_set_rport_dev_loss_tmo(struct fc_rport *rport, u32 timeout)
+ static void ibmvfc_release_tgt(struct kref *kref)
  {
- 	u16 usb_status = 0;
-+	struct usb_request *usb_req;
- 	struct qe_req *req;
- 	struct qe_ep *ep;
- 	int status = 0;
-@@ -1983,8 +1984,11 @@ static void ch9getstatus(struct qe_udc *udc, u8 request_type, u16 value,
- 		}
- 	}
+ 	struct ibmvfc_target *tgt = container_of(kref, struct ibmvfc_target, kref);
+-	kfree(tgt);
++	mempool_free(tgt, tgt->vhost->tgt_pool);
+ }
  
--	req = container_of(qe_alloc_request(&ep->ep, GFP_KERNEL),
--					struct qe_req, req);
-+	usb_req = qe_alloc_request(&ep->ep, GFP_KERNEL);
-+	if (!usb_req)
-+		goto stall;
-+
-+	req = container_of(usb_req, struct qe_req, req);
- 	req->req.length = 2;
- 	req->req.buf = udc->statusbuf;
- 	*(u16 *)req->req.buf = cpu_to_le16(usb_status);
+ /**
 -- 
 2.53.0
 
