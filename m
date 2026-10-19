@@ -1,77 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-29685-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29686-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52A9DCCF2DA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Oct 2026 09:08:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6731CCF2D6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Oct 2026 09:09:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j7V8g0f0Tz2yjp;
-	Mon, 19 Oct 2026 20:08:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::634"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792400931;
-	cv=none; b=hBZclZr1d8RMZ3EZvU2JbeOFXzMnRnwoUT90A7UJb3+1+PoC8igD3iIaFPyCfENpYxSN75NEUmGaKf+Ip4uc0AcqxhcI9HBoLIQcAtPOgDKFQTxfG3rMWOPqimPhqkNzgjn7p9jGX4Q7yKdUEiarMJxV5RL70q0JN8uAYZdMJo5jUIt/2iaVlVlxRDhNEjprhznMvGAg9EReSBm5xHhnYktg9dGVLKhyCQsU8eV96gvom9ykHXkoZva6WcBebe9ssf7IBeI1TG2tZsb7qr8nqokfElAjNkOWUPkfnYxIPu46JLSvMeF4WXKfBSg3rB3e6tMpA6/pMrwj/WMDncrQsg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j7V8l4Przz2yhP;
+	Mon, 19 Oct 2026 20:08:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::635"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792400935;
+	cv=none; b=FePmX/MBZE0lqQs9raoEjm/cssvQl6wSahsnnZmVU9rW8+VUT0feCH/NYK3eZ3XWdgTR1YcE1cvq8YPCJPH+mjvQOiPofh8N6iLh6JiP5onA2h7faKw9SRyaHRfYgIp4NGQO49xeQcmJWLYi63j+HKWwq+B14LC6fpqwPKzWpk7ILL5pzAJ34j8bXICRwGW3uzsWJEyo2X4Pw+dTXS8LwYNvg4kjk9FombMXGgeJ8fMmyyjHurXrRJh7UlNWUpAYiVxKepTIwK5GJRA1OC0M1gF6DApd1e0w18Xy/ryYCKW+KIN+m7bKP7LgiS4ofJ6sqhUFCeblqkLj/NCLSTkLgQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792400931; c=relaxed/relaxed;
-	bh=wKvHy7y34UnvBEvhC3G16rSuhlzefUt6PxJ3Dpiy+6U=;
+	t=1792400935; c=relaxed/relaxed;
+	bh=PvZO54TWJTuQkZMeWHo+KL3t3yCuPUOF5hA+fz0b8nk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=CrxX4npLkOZeqM/IqgpNXCXMF/FDUfS6jCIqfGoOb21jmpXty649yFa8VeY8bCbV/VO+xRspdcMjKKYMqH6JkxhlGfMQJ7wT24XmXFfK4A4sgfS1rm6FSJoX1o6KvAuUUuJ/LFX7u+3aeuuqL27O8+EqTt3sq9tDlW+rg1besijg8xGlKcgLhd4H89IcYGrBJjV9lFil6vjq2+xpoy3tYs6wotgjmc/ULhgJnH/xuIO424i3OWp9IQmiNgXRRZRkG7bvO2Z6FZpcB8elF55ISdRKmtEFf1EQHxmIKX+n57lkI7okIuPUt/N8o4NN+r0g3HBU+5bmOMQ/ncugxXiA7w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=UCUuRope; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+	 MIME-Version; b=SgZAuFbP06dKfOaDqk4WXGJ0NNizONNXRHzEF9v0ErrOyurG1+Rr2C2nv57grqc6SKAdkfDpsj64q0/jDfEqTIXaftqrtQ31DwZdOJzdsPLuj5jhreQpXmgdeRf5cbqbPsuBVkNAE0VPEedwdtAzRxlky7zFTMaFDKLgtTwFimeMpjxXOnuIpRrLxM6sLbVg88drHbyxkGa/slo4JOXhb0PuaVn5p3t0TPNriW5WERAnnHSKscgdHgDPZTnxGvFj0+NxJ534m1L7QI7LTVr86YwxUV91TFv9aKsj3pwlPA4RA1xJ9zXj9A3WlPOnYrvAxdu3LTbTyhy9jw0F8DTGdA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=hxtDdGIv; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=UCUuRope;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=hxtDdGIv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com [IPv6:2607:f8b0:4864:20::635])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j7V8d4glQz2xfj
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2026 20:08:49 +1100 (AEDT)
-Received: by mail-pl1-x634.google.com with SMTP id d9443c01a7336-2e942864693so8336555ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2026 02:08:49 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j7V8k3Njdz2xfj
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2026 20:08:54 +1100 (AEDT)
+Received: by mail-pl1-x635.google.com with SMTP id d9443c01a7336-2e942864693so8337015ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2026 02:08:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1792400926; x=1793005726; darn=lists.ozlabs.org;
+        d=bytedance.com; s=google; t=1792400932; x=1793005732; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=wKvHy7y34UnvBEvhC3G16rSuhlzefUt6PxJ3Dpiy+6U=;
-        b=UCUuRopeQeRgT268SqNao4i0uKR77SWF1D6YWHVAk7Ob7tp1YWXh+Iioj+dm2fIETp
-         H5wFi+UDfc0ay45os4tMrBYTUnWRw9rS+XFATggWYEnGUE6w0c99joFronDCpcmPOPpS
-         ztIajxmJJZPF7rdsjvXEm1EX+FBTwo5m8BXUiwCJIhIYB8DjBhqCl+iHj5EEo8Yn1RjA
-         pVM0dPUAAGL/L2IHpAZtfutyx2DezK8w2E11MoeV/1JEKGNHvZWcuaxKrpk34+69l5zV
-         L9jrGYLx8P+1PVRi06iBTI0u3f3P/uXR72GpW5oczZYsXpxx6jHKiTFACMSHyALMsaU/
-         Jlgw==
+        bh=PvZO54TWJTuQkZMeWHo+KL3t3yCuPUOF5hA+fz0b8nk=;
+        b=hxtDdGIv8h1tpI2aDk/iZxnTjxk6fZYJJ8RkQsdXo95V98M9IjILsjiS+7/FxnDk+A
+         X7DKl7T/6a6cWlHGMl91/5H8z1xnhp0nW5Vr9kSA3ZPOkQGB+1LuiYzTGjG8i2nXr1gy
+         Al4WlM8vjBH82Bnop9iB1x7y64KHt8vqFLLtbkKQI3D87ttku8cM+o06BGjuUJG/oAcR
+         r8lNzZ2fDic1j/XQAtcVTU4XuYRcEwGhvw9exOZopmna0C3iSrzl/ztguRKvq0tpe4BY
+         EI50RakXWYcG05saHOF7wvjC3f5G8iz0stVzZVMyGSMIK1iY+/Vko+SjZRqh/OQstD8n
+         n1MQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792400926; x=1793005726;
+        d=1e100.net; s=20260707; t=1792400932; x=1793005732;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=wKvHy7y34UnvBEvhC3G16rSuhlzefUt6PxJ3Dpiy+6U=;
-        b=UPrXf8vVRTAztV3OTkDgjWQN2R+tNyOWQXRdnF9P/IPZhOhov8lO/UOiuStlRC6W7u
-         VP2uX1M2lsbw6wExEaCUctdzwrWgH0sPWFxwnEl7ocYIXJ8WJHXV/5gNPwitzKVI1QtK
-         IpGpUomozSfrJeAVup3Mp7SvPC0RbVf3OG4rYqzBd2x88v5ud6V+0vWzKb6P0MIjthW1
-         WzzopE/TT3v9+qrl6dILalO6UD6zVj0Q/CoNwscMkZj05jfLKtNJE+dlLahaqIAPAiEe
-         OX9UGFQKwULh4S9Udzf4okX2NaNGPyYLqYudLnKleNDXKaPXESrsIAUcykde87OIWAyg
-         wY1Q==
-X-Forwarded-Encrypted: i=1; AKwUvBx9diALut5n5MTO/+RV5eJq+jT29LUabQC34lgw6Sq5+DznsE/iksn87MLazKoQhILi/nF0dVxSsVZz2LY=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYKs5bmIrXOsteGdhXTN6sEMpZe2KiTaF1Z7NnuhzQ5cOYjeafge
-	6T6qUp5NUKfymWq/S9cituWZdWeB9LcCeNYcGAlM0DSoHvOEGZVItoYhy/xlmetSIEg=
-X-Gm-Gg: AYBFou3Sk+n9kClJ+8krmOLCRHyIiMAhmUxtWk2TgMfHuYwmNl5lyjAKdlMfuH5cQgC
-	V0Cw4V9UpL/iudJfB2x2StGkL6g1/JVGictt3cFbgdP3jECvlR7CeoBrI7iAKeFZIcpopOgZiNc
-	xGJkJVbUD8DPGwW3oHF94gbceU/tYOYsBch111rA2lh2v8C4gvFBwyX81Fx9IWqU6SEJ5VhgEm/
-	cotPeY0JM3iOa5AOih/zhMrFNgNbXpw4538qYBOGN7e2rmJXX7SSA0/2ATZeOos7dth8yPoOKkU
-	XP7egxhWuv/TQqovjCEMggvvibJfJo+LROFyX1Tk/W5CbHs7EYH0y3wUlk45rju11IWP83FPhYk
-	0ILBGgxDzKI8gtwP4pdvmkK6393SbkTpBkNpTifPloidyOW0qsYZBJkyOpB5qo3cVchEn9eGgaI
-	RcROFnmbthjAoGPJYhiZvEoy/N8kOa/AIbbMIT3+eFU6aLWdrwf5MJc+B8bn7WpR4o9PYePkmGl
-	wdN2UtmOpUO++bl800=
-X-Received: by 2002:a17:903:2c47:b0:2d9:383a:30f1 with SMTP id d9443c01a7336-2e9a6842eb5mr63237055ad.4.1792400926399;
-        Mon, 19 Oct 2026 02:08:46 -0700 (PDT)
+        bh=PvZO54TWJTuQkZMeWHo+KL3t3yCuPUOF5hA+fz0b8nk=;
+        b=S4Q2WUCWyh/hhEDU4bDxHjozNh56QM3/NkQVR7Xtd0C+8lojx9bmJsnbvn5FGKmHHe
+         evKajZ4jSb3JMpgkhFEWoqEDuzBKp+Vn81ihn5Gcl/FBiH6nyJz50xvLbQCliPw/mNMD
+         j1o8IEznGuxIywvqh6DsjYiDook72fvYMDT2bEOWa/9dXIMJxyLgb9N0XZTjRrpqXGwY
+         IOji8dR1CyqBr7Xqb5edFE60h+F2e7+ghMLAo16+jzjTX8KcqRX1Xg4vemaIz+52ysPT
+         gM/8Ent5FOhO9Pw1tAExadNVi+Ms+daBVYMq/96rrHjVPlDeYDsfvxTVg78WnR//R5x5
+         DIXg==
+X-Forwarded-Encrypted: i=1; AKwUvBxeMYrYQ7+B00Ta9kL2Dt2v/1BdyVXU2ps+izK23iLHNmeNbMMFYzBfK3z4knHVKb5FzHyBTOCYZfBeWVE=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYJ2LHmZ/yVrLxTTIqL7xYbVvwuTJT2V4hw6fltRrabMkge+kFij
+	YDMfODg4l4cluWFvECsjr2JjaVncFpjNyyejXHqv6LLjFzjPuUOfYfmvFi6k35kW7Do=
+X-Gm-Gg: AYBFou2ArgmqB4v8/YaAr3yqLI/nIHFuCZIFvPxat9cLNeVRlOrNK1+GbsM0TQ7Qo2J
+	peG3OUDGN4qxLGjs3ufz4EqbuW6Xmh+y5NYoVgfmLJeSlv5zj9czgGta+qqZo5g/mdcQ71xC3Ex
+	HYd5wbMgW8yJITJdXGHblAagzWMHE+qyQdUT5vQkss//4J16a5GWLiBWg7RHra4W+HqGRxTi64v
+	YmlQMFgwrRcqm53bUIVR41jEN+Gs58q0UQDl/kOGzb1wxqjCcq7f4tIWzbXzok0N8J3INW67ziC
+	tZW906aiCHNGHw/ZnkZ4Guo1j0TfCfrvvq/jObev+FhvV8bCXCTwEh7S/mj9rhrrCoJaHswBLdt
+	lMifRLP0xV5V/JDU4/pfLdIa9AfRzuVvxhL4tK1qO0glqTrEcmtEvyvTfn5nhwCjuAi/axFwMGF
+	s0gO9OHA5b/Yyoa14/levsm33lInqKUdtW7XSPUJS+nMn0iKFQLfMupfibNzvUuG/XvkqhOKRj6
+	StjJ7ArVrzlS+9oZdtt
+X-Received: by 2002:a17:902:e5cc:b0:2e9:4e83:1961 with SMTP id d9443c01a7336-2e9a6a0283dmr60030985ad.22.1792400932347;
+        Mon, 19 Oct 2026 02:08:52 -0700 (PDT)
 Received: from n232-176-004.byted.org ([36.110.163.97])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2e97e305f1dsm36707595ad.0.2026.10.19.02.08.40
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2e97e305f1dsm36707595ad.0.2026.10.19.02.08.46
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 19 Oct 2026 02:08:45 -0700 (PDT)
+        Mon, 19 Oct 2026 02:08:51 -0700 (PDT)
 From: Muchun Song <songmuchun@bytedance.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	David Hildenbrand <david@kernel.org>,
@@ -99,9 +99,9 @@ Cc: Muchun Song <muchun.song@linux.dev>,
 	linux-doc@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Muchun Song <songmuchun@bytedance.com>
-Subject: [PATCH 1/4] mm/sparse-vmemmap: map shared vmemmap tail pages as read-only
-Date: Mon, 19 Oct 2026 17:08:27 +0800
-Message-ID: <20261019090830.1917657-2-songmuchun@bytedance.com>
+Subject: [PATCH 2/4] powerpc/mm: map shared vmemmap tail pages as read-only
+Date: Mon, 19 Oct 2026 17:08:28 +0800
+Message-ID: <20261019090830.1917657-3-songmuchun@bytedance.com>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <20261019090830.1917657-1-songmuchun@bytedance.com>
 References: <20261019090830.1917657-1-songmuchun@bytedance.com>
@@ -120,46 +120,32 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Both early HugeTLB HVO and device DAX use the common vmemmap population
-path for shared tail mappings. Map these pages read-only so that illegal
-writes fault instead of corrupting metadata shared by multiple tail
-pages.
+PowerPC radix uses an architecture-specific vmemmap population path for
+shared tail mappings, so it does not inherit the read-only protection added
+to the common path.
 
-For early HugeTLB, this moves existing write protection into initial
-population without changing the final mapping. Device DAX gains the same
-protection.
+Protect these mappings as well so illegal writes fault instead of
+corrupting metadata shared by multiple tail pages.
 
 Signed-off-by: Muchun Song <songmuchun@bytedance.com>
 ---
- Documentation/mm/vmemmap_dedup.rst | 3 +--
- mm/sparse-vmemmap.c                | 3 +++
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ arch/powerpc/mm/book3s64/radix_pgtable.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/Documentation/mm/vmemmap_dedup.rst b/Documentation/mm/vmemmap_dedup.rst
-index 8c287ae3f86c..76f903975a40 100644
---- a/Documentation/mm/vmemmap_dedup.rst
-+++ b/Documentation/mm/vmemmap_dedup.rst
-@@ -193,5 +193,4 @@ There's no remapping of vmemmap given that device-dax memory is not part of
- System RAM ranges initialized at boot. Thus the tail page deduplication
- happens at a later stage when we populate the sections.
+diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
+index 44868b62b14e..ebac5f9058f6 100644
+--- a/arch/powerpc/mm/book3s64/radix_pgtable.c
++++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
+@@ -1059,6 +1059,9 @@ static pte_t * __meminit radix__vmemmap_pte_populate(pmd_t *pmdp, unsigned long
  
--Deduplicated tail pages are not mapped read-only. The mapping layout is the same
--as HugeTLB.
-+The mapping layout is the same as HugeTLB.
-diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
-index 40eba70c0048..ba0496daf4de 100644
---- a/mm/sparse-vmemmap.c
-+++ b/mm/sparse-vmemmap.c
-@@ -295,6 +295,9 @@ static pte_t * __meminit vmemmap_pte_populate(pmd_t *pmd, unsigned long addr, in
- 			return NULL;
- 
- 		entry = pfn_pte(PHYS_PFN(__pa(p)), PAGE_KERNEL);
+ 		VM_BUG_ON(!PAGE_ALIGNED(addr));
+ 		entry = pfn_pte(__pa(p) >> PAGE_SHIFT, PAGE_KERNEL);
 +		/* Map the shared tail page as read-only to catch illegal writes. */
-+		if (vmemmap_optimizable_pfn(pfn))
++		if (reuse)
 +			entry = pte_wrprotect(entry);
  		set_pte_at(&init_mm, addr, pte, entry);
- 	} else if (WARN_ON_ONCE(vmemmap_optimizable_pfn(pfn)))
- 		return NULL;
+ 		asm volatile("ptesync": : :"memory");
+ 	}
 -- 
 2.54.0
 
