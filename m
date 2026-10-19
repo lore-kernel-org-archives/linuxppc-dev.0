@@ -1,78 +1,82 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5D6C3606A329
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Oct 2026 20:54:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2B9060A262D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Oct 2026 22:15:56 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=bQ0FX6HN
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GSnGLLDw
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j7npW0PlBz2yQH;
-	Tue, 20 Oct 2026 07:54:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792443250;
-	cv=none; b=ie6oZy0DTrIrRUhkNhJ/OpGW60AmPSCsZPn+ahzugP58v+DOuux/h+N40iPVFxfmI1LuCntNrO8xvERyha2MnjHYOg1Q+R+/2wyPr458mKJ1NVk5xRZc0lAsPNBbG8uK2bfUwPs0XeqHAkFjmRClJRCH7P9q2Wb5MoOVWYT/wb6+jzrJVG4PuPH23atQmEDVOgf5j8sYtuyoisE2FS7oJouBjiZIMgGC7eRO2LduwDqBn5+fjkqweXRHMCOf/1P7bv2cKV3lQuEW/BMCa/R7QICE4jfEtjN3RBjmxYNKICoorrpdhIk5j002fq+pULZpTaQGr2WjqII4MqLsHtXLmg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792443250; c=relaxed/relaxed;
-	bh=ccM+tB35AWZe4vsxbl8ZkFdtD87yJwwquhmHcKeVI9Q=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=L0a56C28KdXcvm5NoyTjhIWR4Yb1ELbbfrHVACSdxYP32xHKeUg58dlzkLQJkQObVCoycvmsuTXk5D6wieXt6Nh7MiL5xoDHjzb5G0MgNLziyK7XoZrfe1BaFqV4MR/T86ABJ3MuRvRa5dtN/uHV2/DUXYzegcpRLpmYekW67xfYv3U3oNLsm8kQl5yMUTt/r31d7E1dTj7uVQMoeu3ge5yvNRjJ4GXh5rVAuMa0yJwXsg7lUHGgtzJm+4MeWUodsDfYe9WIAb2WgAWEqJw8vP6GkSYZPYWSZ2Z/6Dvf6+BeG13RCKoIiHBJ/qW+ooaTajrb+3I/ue1TyqZPW9V+pA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=bQ0FX6HN; dkim-atps=neutral; spf=pass (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j7qcp5JKCz2yVT;
+	Tue, 20 Oct 2026 09:15:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25" arc.chain=kernel.org
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792448154;
+	cv=pass; b=dq3+BX93D0qVpCyfJh4yT79eXsOMSPoVhcLEZtQ2nV6HDsMUodEhlzxbOnyYendEvPpb3gAug/GAUKCGinRGN0lrJ61/rh6+PWnOE4djRiFu5f7yUE8JfILsxk0JpFFtDCT7NCftN8NqCO86L/QqGoo76zHR43mc8XoUEOJj/23kLxv7juorx3CnsPzojVHlB+Gb2RgKbzPqQRzcAuP+7xbTSyn2iTuBadbjvYm9XsTzJ/3ckxePg6WPowzD6YPJh8RhnHa8Zd7ApVzIhjHiaEwFCSo0L/UiUeD6C7KFkM+zCEISjGIhwXbGcQUp95GQfBF0ukmyneTfMQFkWovKIA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792448154; c=relaxed/relaxed;
+	bh=6uMcoAQqwVWg4ZD2SLJD0mX50qt6CYwlXqXbX/bVuJM=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=GrdvJN7VtERP00e3wAMwTb7hOHKj1CoZDEgdA5wobivNTSzAPbLQcgabpEAFvFuDpOzRcvjGBol+jHTTMKTonHfkI3Fp5ZNpbRxda3TaxnQ1um0HHpbp/4wNHs6+JMo0+YtrheZJL8wsubeRitnWaEHUNRcdIk8k9TFHHXypwP4zOZb7K7gRyvPpMwRVlkwPBBqrBnzTMbdqLUIxhyCiEHvqYS1N95ZyaoEJFyag4xO+zbFamdW7NNlnyPAOpVNAEs1KP82Dx1/1lnSylbbg2g4lGJlrQJ28CtQ3SR+PIpA0INDCsWoH+BtlnicTkLZ/E52oecInwZarENAC/Op2Cw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GSnGLLDw; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=devnull+davemarq.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=bQ0FX6HN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GSnGLLDw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org)
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=devnull+davemarq.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j7npM2dp7z2xjv
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2026 07:54:01 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=ccM+tB35AWZe4vsxbl8ZkFdtD87yJwwquhmHcKeVI9Q=; b=bQ0FX6HNdwX6jQVJyiY2V8qoHk
-	qEKvQn56Rz+5qUg+/xuZ5c5AHOqLGgFPgYRkABo2a8WSA0LF32w8pgJeEhf5P7Jz61DsECOxY/MxF
-	m+hCkw9dp8jp2awnLdTlDFXwypE4jU3MuOmm/9LNoFA0ob6txwVFmC8m3BsUKsLxwCHuIiapFDMp1
-	XcKLe/CDAX4zBGQYBBKUAOWM+r7fza84Fn3dcCYlngrtRLEQBAawai8+8qzMJ8ud799ZBU4krm5eN
-	Qn6T5a240aAOGNuJ9FgPwruEv5DudjjPVlz2LeJxFgBQGdB2w+e9u5+wep7Oyt4Xt1uzRao0DjETO
-	WtIyCGvA==;
-Received: from willy by casper.infradead.org with local (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xIuMO-0000000B396-13ug;
-	Mon, 19 Oct 2026 20:53:32 +0000
-Date: Mon, 19 Oct 2026 21:53:32 +0100
-From: Matthew Wilcox <willy@infradead.org>
-To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Cc: Barry Song <baohua@kernel.org>, Hongru Zhang <zhanghongru06@gmail.com>,
-	akpm@linux-foundation.org, linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org, surenb@google.com, david@kernel.org,
-	liam@infradead.org, mhocko@suse.com, rppt@kernel.org,
-	shakeel.butt@linux.dev, vbabka@kernel.org, zhaonanzhe@xiaomi.com,
-	linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org,
-	mark.rutland@arm.com, linux-arm-kernel@lists.infradead.org,
-	chenhuacai@kernel.org, kernel@xen0n.name, loongarch@lists.linux.dev,
-	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-	chleroy@kernel.org, linuxppc-dev@lists.ozlabs.org, pjw@kernel.org,
-	palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr,
-	linux-riscv@lists.infradead.org, agordeev@linux.ibm.com,
-	gerald.schaefer@linux.ibm.com, hca@linux.ibm.com, gor@linux.ibm.com,
-	borntraeger@linux.ibm.com, svens@linux.ibm.com,
-	linux-s390@vger.kernel.org, dave.hansen@linux.intel.com,
-	luto@kernel.org, peterz@infradead.org, tglx@kernel.org,
-	mingo@redhat.com, bp@alien8.de, x86@kernel.org, hpa@zytor.com,
-	Hongru Zhang <zhanghongru@xiaomi.com>
-Subject: Re: [PATCH v6] mm: retry page faults once under the per-VMA lock
-Message-ID: <ataDTEZIKOYtwhUF@casper.infradead.org>
-References: <20260911025613.1220845-1-zhanghongru@xiaomi.com>
- <arFYRAa-i7CIwmHL@gremlin>
- <arF-E3Nsw9ZliH0t@casper.infradead.org>
- <arI_w2wTfA00Mgy9@gremlin>
- <armexcXDiG8ryZd6@casper.infradead.org>
- <CAGsJ_4xuFi7K+crAcFQ998SxXS0xPM6QeA34JV+6+Sy005rXLg@mail.gmail.com>
- <ar7MsOb6IJLt4eLo@casper.infradead.org>
- <ar-o1TrOMGrrcxLX@gremlin>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j7qcn3XN9z2xwd
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2026 09:15:53 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 3336B60211;
+	Mon, 19 Oct 2026 22:15:51 +0000 (UTC)
+Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
+ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
+	t=1792448150;
+	b=Ao+Ok/icZFn1UylAL+xqvHF3yolmErdBjLr/NoDmXVuA5YV5YlAyBSZR+av7u2p19kUI
+	 m929qr0jKh9Wq7gDmXWT9fiCwWa0mU2lTk6rfILNGrKYM6yu9Ct123JPQmq2M3KgE0g1e
+	 hqDRPBimgVIrJ9X6eZR6PoGv1APNHRQZdb0Hy7jMWQQaBbJHTs4GISNgfw9wNdvp/vzsV
+	 5/NbXmxLTeGLloj2GncY6rrKEMgbjAbRcTf1cbdODpinAAytAS+KeSc1xauApi52FXLR2
+	 AC6Ri7Vtxj7WdSawmWTxm1WOCxlKa+3N8Gu+uTuraKLdsTZsDyjzurUP5NDEp+l36Yg==
+ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
+	c=relaxed/relaxed; t=1792448150;
+	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:Message-Id:References:In-Reply-To:To:Cc:
+	 X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To;
+	bh=6uMcoAQqwVWg4ZD2SLJD0mX50qt6CYwlXqXbX/bVuJM=;
+	b=hOFMoUAbAdtY9oBqN7CzlYyGvAJtZvhVnffUvktkgxRaNt/s/sCmaGxE7U8UDqwCys8p
+	 bdOoWyH1sXtNQRnuoCovpAKSxJ/6llDwQI0u//h+q0aV7l/hXxvJ2jPsw0cFaitFt2LZX
+	 i5bv97Lk5QxIy/fCpvNtZErGsChzZZ/wp+bLCzbsW203y32VEiObFKKsVcfrayUsjShI9
+	 hDK+LCaGDOrBdSI3B1b2X0Skd1Rkp4/EbItd/ST5bbKqCXpCsJ0yHZaFRFZWrjuutGgOq
+	 Sfb6WEoqeIoq5pkXqyKHJDpM91cdjaoSoWUAFqPTvpbL6yzTN3wROMW4fRRE1rsryZA==
+ARC-Authentication-Results: i=1; smtp.kernel.org; 
+	arc=none smtp.remote-ip=100.80.115.77
+Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.kernel.org (Postfix) with ESMTPS id BCC371F000C6;
+	Mon, 19 Oct 2026 22:15:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1792448150;
+	bh=6uMcoAQqwVWg4ZD2SLJD0mX50qt6CYwlXqXbX/bVuJM=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
+	b=GSnGLLDwUph2o4XVsYEia1Eoo6LE8IUbIq5DujL7XrQPF1yqIUzf5vkn0jO2jFx1Q
+	 TVxLWqK+xDvK3uKWS1LXZ+StFMKQcZ+wvyyG+KVEjPgQITlekjqMW6rHaTCVG3JjxD
+	 dnCsnaIMDseGgMXXl66/Z1Kt4QGpq2PI6yK6TxJBU6TduF+QYhi3CPja4bxCOdxhNM
+	 kVTXfDNqODoA9GLzAaeBt+uVRpl9iLnNMjP4xSOlQsq3A/ZwspxcRVK+jic7GBvF0P
+	 GASLslKjrMfBv614OUvWgsVqrTM/pjx5xQwe0yYUrKSUNITJ0IvysBq9ZXavUf9UpA
+	 jx4ldiqqjZVUQ==
+Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
+	by lkml.kernel.org (Postfix) with ESMTP id 249D040655;
+	Mon, 19 Oct 2026 22:15:49 +0000 (UTC)
+From: Dave Marquardt via B4 Relay <devnull+davemarq.linux.ibm.com@kernel.org>
+Date: Mon, 19 Oct 2026 17:15:47 -0500
+Subject: [PATCH v15 02/11] scsi: ibmvfc: fix potential clobbering of rc
+ after failed irq setup
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,163 +90,78 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ar-o1TrOMGrrcxLX@gremlin>
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
-	autolearn_force=no version=4.0.1
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261019-ibmvfc-fpin-support-v15-2-a858726e178a@linux.ibm.com>
+References: <20261019-ibmvfc-fpin-support-v15-0-a858726e178a@linux.ibm.com>
+In-Reply-To: <20261019-ibmvfc-fpin-support-v15-0-a858726e178a@linux.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
+ "Martin K. Petersen" <mkp@kernel.org>, 
+ Tyrel Datwyler <tyreld@linux.ibm.com>
+Cc: linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ linux-kernel@vger.kernel.org, Dave Marquardt <davemarq@linux.ibm.com>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1792448148; l=1351;
+ i=davemarq@linux.ibm.com; s=20260216; h=from:subject:message-id;
+ bh=nvE9rGLbRD6+mhvHw9wBWLEiRdGSv55IfTVTSl/45g0=;
+ b=UXwllF4KNBbvbF1qYV1ZWDQsmIndMDHIp5NjLU1edJi2Qgu2LPJSjUc3VS5Q0k9umZ8cuW2HQ
+ D/XEIoWzj/dDIvjsuaB+8rLHdt/TH9XpSgfsoZNc2d+07NdV8hp7khC
+X-Developer-Key: i=davemarq@linux.ibm.com; a=ed25519;
+ pk=vy0/nfobrje6EqZxuyw6a3ZstytG8WK2vf5Y3xtGrEg=
+X-Endpoint-Received: by B4 Relay for davemarq@linux.ibm.com/20260216 with
+ auth_id=689
+X-Original-From: Dave Marquardt <davemarq@linux.ibm.com>
+Reply-To: davemarq@linux.ibm.com
+X-Spam-Status: No, score=-19.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Fri, Oct 02, 2026 at 02:12:35PM +0100, Lorenzo Stoakes (ARM) wrote:
-> On Thu, Oct 01, 2026 at 10:12:16PM +0100, Matthew Wilcox wrote:
-> > So what I didn't realise is that fork() waits for page faults to finish.
-> > I don't think that's necessary, so we can just stop doing that (whitespace
-> > damaged):
-> > I think this is safe.  I've booted a kernel with this change, and
-> 
-> I'm afraid it's not safe :)
-> 
-> We already actually did this (by mistake I think?) before. See commit
-> fb49c455323f ("fork: lock VMAs of the parent process when forking") - we shipped
-> that in 6.4.0 -> 6.4.2 and it corrupted memory all over the place.
-> 
-> Reports + a consistent reproducer:
-> 
-> https://bugzilla.kernel.org/show_bug.cgi?id=217624
-> https://lore.kernel.org/all/dbdef34c-3a07-5951-e1ae-e9c6e3cdf51b@kernel.org/
-> https://lore.kernel.org/all/b198d649-f4bf-b971-31d0-e8433ec2a34c@applied-asynchrony.com/
+From: Tyrel Datwyler <tyreld@linux.ibm.com>
 
-I wonder if we still need this.  The commit message says:
+Fix a variable-shadowing bug in ibmvfc_register_channel() where the
+irq_failed cleanup loop reused rc for the H_FREE_SUB_CRQ hcall result,
+clobbering the error code returned to the caller.
 
-    A concurrent page fault on a page newly marked read-only by the page
-    copy might trigger wp_page_copy() and a anon_vma_prepare(vma) on the
-    source vma, defeating the anon_vma_clone() that wasn't done because the
-    parent vma originally didn't have an anon_vma, but we now might end up
-    copying a pte entry for a page that has one.
+Introduce hcall_rc for the cleanup loop instead.
 
-But we're holding the mmap_lock for write here, and we need to hold the
-mmap_lock for read in order to change a vma->anon_vma (asserted in
-__anon_vma_prepare() with mmap_assert_locked()).
+Signed-off-by: Dave Marquardt <davemarq@linux.ibm.com>
+Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
+---
+ drivers/scsi/ibmvscsi/ibmvfc-core.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-At the time of this commit, lock_vma_under_rcu() contained:
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc-core.c b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+index 7818838669ae..145d559041f1 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc-core.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+@@ -6391,6 +6391,7 @@ static int ibmvfc_register_channel(struct ibmvfc_host *vhost,
+ 	struct vio_dev *vdev = to_vio_dev(dev);
+ 	struct ibmvfc_queue *scrq = &channels->scrqs[index];
+ 	int rc = -ENOMEM;
++	int hcall_rc;
+ 
+ 	ENTER;
+ 
+@@ -6446,8 +6447,8 @@ static int ibmvfc_register_channel(struct ibmvfc_host *vhost,
+ 
+ irq_failed:
+ 	do {
+-		rc = plpar_hcall_norets(H_FREE_SUB_CRQ, vdev->unit_address, scrq->cookie);
+-	} while (rc == H_BUSY || H_IS_LONG_BUSY(rc));
++		hcall_rc = plpar_hcall_norets(H_FREE_SUB_CRQ, vdev->unit_address, scrq->cookie);
++	} while (hcall_rc == H_BUSY || H_IS_LONG_BUSY(hcall_rc));
+ reg_failed:
+ 	LEAVE;
+ 	return rc;
 
-        /* find_mergeable_anon_vma uses adjacent vmas which are not locked */
-        if (!vma->anon_vma && !vma_is_tcp(vma))
-                goto inval;
+-- 
+2.56.0
 
-so we really did have to wait for read holders to finish the fault.
-But commit a373baed5a9d deferred the check for a NULL anon VMA until we
-actually needed it, so I think commit fb49c455323f's logic was invalidated
-by a373baed5a9d.
 
-Maybe I'm wrong.  This is all a bit out of my normal area.
-
-> Also we have asserts for this lock in copy_page_range() and
-> copy_hugetlb_page_range() which will now fail (and possibly more further down
-> the stack?)
-
-Possibly we have to adjust some assertions to check that either we have
-the VMA locked or we have the MM write locked.  That doesn't seem
-unreasonable.
-
-> > My argument for why it's safe is that a thread which takes a page
-> > fault during fork() might have taken the page fault either before or
-> > after fork().  The faults will definitely happen in the parent process.
-> > They may or may not have happened in the child process, which can't
-> > possibly care whether or not they've happened.
-> 
-> The problem isn't the child it's the parent - copy_page_range() _modifies_ the
-> _parent_'s page tables in-place, on assumption that nothing else can access
-> them (for CoW).
-
-I was perhaps unclear.  What I mean is that the child may or may not
-observe them as having happened.
-
-> And actually nowadays things are _even_ worse, you could also have concurrent
-> page faults, MADV_DONTNEED, MADV_FREE, MADV_GUARD_INSTALL/REMOVE, UFFDIO_COPY +
-> UFFDIO_MOVE (yikes) all of which might introduce new issues + would have to be
-> audited too.
-
-Yup.
-
-> So - it turns out a lot of stuff implicitly assumes VMA write lock now:
-> 
-> 1. CoW - deferred TLB flush race
-> 
-> (The issue above)
-> 
-> https://lore.kernel.org/all/20230705171213.2843068-2-surenb@google.com/
-> 
-> This happens because __copy_present_ptes() does wrprotect_ptes() on the parent
-> without a TLB flush (that's deferred until the end of the fork).
-> 
-> But unfortunately without a VMA write lock something can then replace the page
-> table entry in the meantime and you can end up with data loss as a result.
-
-Is it that fb49c455323f commit message is insufficient and we need to
-prevent simultaneous fork/page fault for other reasons, then?
-
-> Same issue exists with hugetlb wp too. And god only knows with uffd wp :)
-> 
-> 2. THP - can destroy parent THP mappings
-> 
-> copy_pmd_range() does:
-> 
-> 	if (pmd_is_huge(*src_pmd)) { copy_huge_pmd(); ... }
-> 	if (pmd_none_or_clear_bad(src_pmd))
-> 		continue;
-> 
-> Without the write lock, a concurrent fault can install a huge PMD via
-> do_huge_pmd_anonymous_page() or filemap_map_pmd()/do_set_pmd().
-> 
-> The issue is that pmd_bad() fires for leaf PMD (ugh) on at least x86 and arm64,
-> meaning that'll clear the page table entry.
-> 
-> I think Hugh left a comment alluding to this before:
-> 
-> 	 * copy_pmd_range()'s prior pmd_none_or_clear_bad(src_pmd), and the
-> 	 * error handling here, assume that exclusive mmap_lock on dst and src
-> 	 * protects anon from unexpected THP transitions; ...
-> 
-> It's like the mess around pmd_trans_unstable() :(
-
-... could we fix this by taking the ptlock during the copy operation?
-
-> 3. copy_pte_range() skips the required pmd_same() recheck assuming write lock
-> 
-> It uses pte_offset_map_rw_nolock() with a dummy pmdval and:
-> 
-> 	 * We already hold the exclusive mmap_lock, the copy_pte_range() and
-> 	 * retract_page_tables() are using vma->anon_vma to be exclusive, so
-> 	 * the PTE page is stable, and there is no need to get pmdval and do
-> 	 * pmd_same() check.
-> 
-> (Probably needs updating for VMA write lock...)
-> 
-> 4. The asserts
-> 
-> Mentioned above!
-> 
-> I suspect there's more as well.
-> 
-> Some of it could be changed, but it'd all be at the cost of behaving very
-> strangely (no VMA lock but mmap write lock) while manipulating things.
-> 
-> And I am not really happy with changing page table entries in the parent VMA
-> (for CoW) without a VMA write lock held.
-> 
-> I also wonder whether it would achieve all that much really - the issue is with
-> holding the VMA lock across I/O, anything else that tries to grab a write lock
-> is going to end up being the new thing that's blocked (mprotect, munmap, mremap,
-> mlock etc.)
-> 
-> I think doing something like this would need a very significant redesign and I'm
-> not convinced it's one that really achieves what we want given all the other
-> cases that'd get blocked by the VMA lock being held still.
-> 
-> --
-> Cheers, Lorenzo
 
