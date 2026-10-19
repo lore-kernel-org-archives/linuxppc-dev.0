@@ -1,62 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-29671-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-29672-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B327ECCF2C9
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Oct 2026 21:34:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AEB30CCA490
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Oct 2026 01:31:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j7Bl75FQRz2xjP;
-	Mon, 19 Oct 2026 08:34:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=130.136.161.50
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792336959;
-	cv=none; b=I0XNhYp/SP0qmbZOnK8r7fSfkIwu5PWRLCDVfV/D6rUvyjC2eV/CG7nfJsEOm5NbMdwWYpv4IMx/SmB36uYYwjdv8GAXW2pcjIJRGyr9OdrFTxgc1L9dP9r/EUnU+F5IJ2OHp+VtDWS596pZ04XUxRRbghlsXmjrOJCZgBZMjIeuEPvC66xCwW0F0YxDyvk+kukl+9ttaRcjfd/mv84CS+VYb1Y93oBIBeFErG/aJ/kLIQ6EZ4As++FIshlIjbqLjugRXEMyuPvtl8kJlhN0glOAPQWw70lQdNVxIr1PDMyLcHv0J/3hSTUtKv+ylTjIEQKONtJdaxjAq7yBEIT18Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j7J0x3jC2z2xjN;
+	Mon, 19 Oct 2026 12:31:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.11
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792372065;
+	cv=none; b=OMRFoA2gNUNMaqbYvBXx4XzRkUNh/FHu/ffAv3Tz6AXzgp2nVEYYOys8JcCoDvdp2WlAugnw6re38gyzFCP4aQn6oQCyTUE9uWzLCZ7wb+R9xD4Vhh1ko89bdS0Lb9cCd+bRuHeNsfD2DTv57WIKtmZ7MB19oQ8PQlY+HX/d2sb/yZGgt8Uxdr+ZAbY4R2qSCP804BgmfnK7A5PV6WQi49/IhAQ169UJ0/s9dATCxYUxirYW98HEdzD4pXHE0nJvIfzMdKfpHP0jUDW7gtXVB5vIzxz4ip8XcYO785dOR0sJgSIYnRaN9QHDFhrlDT7E+Z5vBtSrvGeiGyg9HdHZ2Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792336959; c=relaxed/relaxed;
-	bh=oWVkNLyxBpVR94z8Hp4DT7djOI+cUXbDcO0ARHoPGJo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=h9Ug08DfqJjIrFV91J2r09Md8/FOJYFZ8pZxxaQVqYEwF7MXnPKtrEanD2f7eI91aaQcHlldX/GISjw7sKM5KEwiIMijA6/DHRfytqebEmQApgvf0Umd8DukqsE9xTCUtp1wJiE+dq7sH9U30z4uI2VpPmVmgrszKdJOKBg+ChKPI6zjvexK1AJRM9nND5vBI7Kgy4/ldpXRJBagE/faVGrZKvhVfLC10gZqexfGbQhtg8KouJzMrjbfKCw1pNvEuK6obyPsTaDsqjsEFw0JvqrpTnXtx7sK+Stkowhg3YslNIso+IELjCekZGyO1McmI0buNm4umMdVJPhLPR07NA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=cs.unibo.it; dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=QRZr3vKy; dkim-atps=neutral; spf=pass (client-ip=130.136.161.50; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org) smtp.mailfrom=cs.unibo.it
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=cs.unibo.it
+	t=1792372065; c=relaxed/relaxed;
+	bh=KXa8VClVV3zTUm13w//5ENeNGANgXPJivcrzSLRe1dM=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=jWkMr1ofL8Uox2S5WIRokapkWBG4VwDr2tzXTUu8icStsw3/f1pbHqsmrfZQmVqu4VP0Y19aH7+egl+sbNayK3+GANOfhCHDeexSeMlAGqjlzajAooD1ql1w4jXD1xAxp7+EivnAC9mlL2wIDBEi5HcxhHzdDocFZjSuUQuHtJSL5x01Unz72lF5yZmMmGCfa1iNjMwZ7DUK2lTs0wR5j7Y3okJAf4BOUhNL+kek7ERyiqh516VMwbwfxXgJr7dh8dHD6qBA2dRU7trGOrt8H0MsKz+hxPo/w9ywxKno6bmRPlibTj16W4PGXNb6DEAKt1Suef7qZPg6TEhrZL/u3g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=EFVWzauE; dkim-atps=neutral; spf=pass (client-ip=192.198.163.11; helo=mgamail.intel.com; envelope-from=yi1.lai@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=QRZr3vKy;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=EFVWzauE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cs.unibo.it (client-ip=130.136.161.50; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org)
-X-Greylist: delayed 396 seconds by postgrey-1.37 at boromir; Mon, 19 Oct 2026 02:22:35 AEDT
-Received: from mail.virtlab.unibo.it (mail.virtlab.unibo.it [130.136.161.50])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j72VM5zRlz2xLh
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2026 02:22:35 +1100 (AEDT)
-Received: from eipi10.cs.unibo.it (unknown [94.32.99.206])
-	by mail.virtlab.unibo.it (Postfix) with ESMTPA id 23A301C007A;
-	Sun, 18 Oct 2026 17:15:52 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=cs.unibo.it;
-	s=virtlab; t=1792336553;
-	bh=P13TJoe00kc6udm3KCSaNvlrXfjrcNvar4DnoqMgWKs=;
-	h=From:To:Cc:Subject:Date:From;
-	b=QRZr3vKy+trCv6l5OJFuzXmy9KjgkCb/g2dhU2mUOi69UPm04Ge6W0xED+Cvoulp8
-	 LUPfGbKjKJaU//TOScNm72qH1AqHFcRyWEjNtcOOW4D8VH6d7uV0pdPTxMlv/PYHhv
-	 r7oB7qvVdlTx0gw82MNVEx3ZZ8EU1SwgqRX7Y04k=
-From: Renzo Davoli <renzo@cs.unibo.it>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>
-Cc: Davide Berardi <berardi.dav@gmail.com>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	=?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>,
-	Mukesh Kumar Chaurasiya <mkchauras@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Thomas Gleixner <tglx@kernel.org>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Renzo Davoli <renzo@cs.unibo.it>,
-	Oleg Nesterov <oleg@redhat.com>,
-	"Dmitry V . Levin" <ldv@strace.io>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] powerpc/syscall: Return the preset value of skipped syscalls
-Date: Sun, 18 Oct 2026 17:15:33 +0200
-Message-ID: <20261018151539.440213-1-renzo@cs.unibo.it>
-X-Mailer: git-send-email 2.55.0
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.11; helo=mgamail.intel.com; envelope-from=yi1.lai@intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 62 seconds by postgrey-1.37 at boromir; Mon, 19 Oct 2026 12:07:42 AEDT
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j7HTV6vsPz2xgv
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2026 12:07:42 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1792372064; x=1823908064;
+  h=date:from:to:cc:subject:message-id:mime-version:
+   in-reply-to;
+  bh=b9O3qjS3MEMdQZQ6wWAiJ6kHBkZeNvprfKQ5jOCCFJ0=;
+  b=EFVWzauEN1o4Cy+6C6bMF4FCIVcboNHVA01romCLN1ZKawTj+N2+6AN4
+   esG3WViown0xJvlUdvG49wXI1vAtmjeBxXplEhUr+0MR5nmzKpj74CQSo
+   Qcn2etP+JHi5a30Qn9TEhW6ftRQt/cPpPKYzM5Xi4EReGUfken69e1KXD
+   M5egsrBDEASB2yzkbfFKqgiYXLdCierTo7dAffOckgSCr2cAYihRi6tWZ
+   ruxypzy+GfFxberrFTlJoWAHG1AHHi9+uTOZdde/TtWwoH4QteEqOOFs5
+   t9rn02q2FB5CqECAgLi7vFuR3rxjVL2MdO0OCEwyoqZQBz2HT4wbiorvV
+   Q==;
+X-CSE-ConnectionGUID: OGbJQpPoTJSB0utRxyclyg==
+X-CSE-MsgGUID: geIB2eYJSjqtYEbqARLsOg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11939"; a="957252"
+X-IronPort-AV: E=Sophos;i="6.27,166,1787036400"; 
+   d="scan'208";a="957252"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Oct 2026 18:06:32 -0700
+X-CSE-ConnectionGUID: qUoc8xwyTraRW04hp7SJDQ==
+X-CSE-MsgGUID: RwW62x8nSeuqk1g+ycjMiA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,166,1787036400"; 
+   d="scan'208";a="2465662"
+Received: from ly-workstation.sh.intel.com (HELO ly-workstation) ([10.239.182.64])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Oct 2026 18:06:26 -0700
+Date: Mon, 19 Oct 2026 09:06:23 +0800
+From: kernel test robot <yi1.lai@intel.com>
+To: K Prateek Nayak <kprateek.nayak@amd.com>
+Cc: oe-lkp@lists.linux.dev, lkp@intel.com,
+	K Prateek Nayak <kprateek.nayak@amd.com>,
+	linux-kernel@vger.kernel.org, aubrey.li@linux.intel.com,
+	yu.c.chen@intel.com, Peter Zijlstra <peterz@infradead.org>,
+	Tim Chen <tim.c.chen@linux.intel.com>,
+	Ingo Molnar <mingo@redhat.com>, Juri Lelli <juri.lelli@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
+	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-mips@vger.kernel.org, loongarch@lists.linux.dev,
+	driver-core@lists.linux.dev,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>,
+	Valentin Schneider <vschneid@redhat.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>, yi1.lai@intel.com
+Subject: Re: [RFC PATCH v3 13/13] sched/fair: Switch nohz.idle_cpus to use sbm
+Message-ID: <202610190859.d3459a50-lkp@intel.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,143 +91,140 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261001192849.74788-14-kprateek.nayak@amd.com>
 
-From: Davide Berardi <berardi.dav@gmail.com>
 
-When ptrace or seccomp skip a system call, the return value they set in
-regs->gpr[3] gets lost or the tracer is affected, since two recent
-changes:
+Hello,
 
-1. Commit 05c033db7e9a ("entry, treewide: Make
-   syscall_enter_from_user_mode[_work]() indicate syscall execution")
-   made system_call_exception() return syscall_get_error() for a skipped
-   system call.  syscall_get_error() is 0 for any non-error value, so a
-   success value set by a tracer at a PTRACE_EVENT_SECCOMP stop (e.g.
-   with PTRACE_POKEUSER), or by a SECCOMP_RET_USER_NOTIF listener, is
-   replaced with 0.
+kernel test robot noticed "kernel_BUG_at_kernel/smpboot.c" on:
 
-2. Commit 69cb2be898be ("powerpc/syscall: Fix syscall skip handling for
-   seccomp and ptrace") made syscall_set_return_value() set
-   TIF_SYSCALL_RET with set_thread_flag(), i.e. on current rather than on
-   the task passed in.  When the caller is a tracer, as in
-   PTRACE_SET_SYSCALL_INFO with op == PTRACE_SYSCALL_INFO_EXIT, the flag
-   ends up on the tracer, and the next system call of the tracer is
-   silently not executed.  Setting it on the right task would not be
-   enough either: at a syscall-exit stop the flag would then skip the
-   next system call of the tracee.
+commit: d7dd59cf6a0f621f224947f960403a747b0836f0 ("[RFC PATCH v3 13/13] sched/fair: Switch nohz.idle_cpus to use sbm")
+url: https://github.com/intel-lab-lkp/linux/commits/K-Prateek-Nayak/lib-sbm-Introduce-helpers-for-architectures-to-configure-LLC-properties/20261001-192837
+patch link: https://lore.kernel.org/all/20261001192849.74788-14-kprateek.nayak@amd.com/
+patch subject: [RFC PATCH v3 13/13] sched/fair: Switch nohz.idle_cpus to use sbm
 
-TIF_SYSCALL_RET is not needed anymore: after the change described in 1.
-the generic entry code tells whether ptrace or seccomp skipped the
-system call, and every in-kernel caller of syscall_set_return_value() on
-the syscall entry path (SECCOMP_RET_ERRNO, SECCOMP_RET_TRACE without a
-tracer, SECCOMP_RET_USER_NOTIF) also makes it return false.  A user
-calling syscall(-1) without tracer or seccomp still gets -ENOSYS.
+in testcase: boot
 
-Remove the flag and return regs->gpr[3] for a skipped system call, as
-done before the conversion to GENERIC_ENTRY.  The syscall exit path
-already converts a negative error value to the "sc" ABI, and
-syscall_set_return_value() keeps CR0.SO in sync for positive error
-values.
+config: i386-randconfig-1006-20261010
+compiler: clang-22
+test machine: qemu-system-i386 -enable-kvm -cpu SandyBridge -smp 4 -m 4G
 
-Fixes: 69cb2be898be ("powerpc/syscall: Fix syscall skip handling for seccomp and ptrace")
-Fixes: 05c033db7e9a ("entry, treewide: Make syscall_enter_from_user_mode[_work]() indicate syscall execution")
-Cc: Michal Suchánek <msuchanek@suse.de>
-Cc: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-Cc: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: Thomas Gleixner <tglx@kernel.org>
-Assisted-by: claude-opus-5-5
-Signed-off-by: Renzo Davoli <renzo@cs.unibo.it>
----
-How this was found and tested: QEMU pseries (TCG, -cpu power9), ppc64le
-guest config, v7.3-rc6 (7b63ef2d55f2), with a small reproducer
-(ppc_skip_repro.c, available on request) which
+(please refer to attached dmesg/kmsg for entire log/backtrace)
 
- - sets the getpid() return value at a syscall-exit stop with
-   PTRACE_SET_SYSCALL_INFO, then makes a syscall in the tracer;
- - skips getpid() at a PTRACE_EVENT_SECCOMP stop with PTRACE_POKEUSER
-   (r0 = -1, r3/CR0.SO = return value), with both "sc" and "scv 0".
 
-                                             v7.3-rc6      with this patch
-  tracer syscall after SET_SYSCALL_INFO      returns 0     correct
-  skipped syscall, success value, sc/scv     returns 0     correct
-  skipped syscall, error value, sc/scv       correct       correct
-  selftests/ptrace set_syscall_info test    FAIL          pass
-  selftests/seccomp/seccomp_bpf              11 failures   all pass (*)
+If you fix the issue in a separate patch/commit (i.e. not just a new version of the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <yi1.lai@intel.com>
+| Closes: https://lore.kernel.org/oe-lkp/202610190859.d3459a50-lkp@intel.com
 
-  failing in v7.3-rc6: user_notification_{basic,child_pid_ns,
-  sibling_pid_ns,fault_recv,addfd,addfd_rlimit,sync,fifo,wait_killable},
-  TRACE_syscall.seccomp.syscall_faked, plus the timing-only one below.
 
-(*) user_notification_wait_killable_after_reply (100000 notifications
-    with a 1 ms itimer) can hit the 30 s harness timeout under emulation,
-    with and without this patch.
 
-Build-tested with W=1: ppc64le guest config, ppc64_defconfig (BE),
-pmac32_defconfig.
+[    2.426107][   T37] ------------[ cut here ]------------
+[    2.430168][   T37] kernel BUG at kernel/smpboot.c:133!
+[    2.433726][   T37] Oops: invalid opcode: 0000 [#1] SMP PTI
+[    2.436546][   T37] CPU: 3 UID: 0 PID: 37 Comm: ksoftirqd/3 Tainted: G                T   7.3.0-rc1+ #1 PREEMPTLAZY
+[    2.436546][   T37] Tainted: [T]=RANDSTRUCT
+[    2.436546][   T37] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+[    2.436546][   T37] EIP: smpboot_thread_fn (smpboot.c:117)
+[    2.436546][   T37] Code: 83 7e 04 00 74 13 8b 06 31 d2 0f a3 05 6c 07 59 84 0f 92 c2 e8 12 65 b7 01 89 f0 e8 4b e9 2e 00 31 c0 83 c4 08 5e 5f 5b 5d c3 <0f> 0b b8 08 52 f5 83 e8 75 85 e6 ff 0f 0b b8 f8 51 f5 83 e8 69 85
+All code
+========
+   0:	83 7e 04 00          	cmpl   $0x0,0x4(%rsi)
+   4:	74 13                	je     0x19
+   6:	8b 06                	mov    (%rsi),%eax
+   8:	31 d2                	xor    %edx,%edx
+   a:	0f a3 05 6c 07 59 84 	bt     %eax,-0x7ba6f894(%rip)        # 0xffffffff8459077d
+  11:	0f 92 c2             	setb   %dl
+  14:	e8 12 65 b7 01       	call   0x1b7652b
+  19:	89 f0                	mov    %esi,%eax
+  1b:	e8 4b e9 2e 00       	call   0x2ee96b
+  20:	31 c0                	xor    %eax,%eax
+  22:	83 c4 08             	add    $0x8,%esp
+  25:	5e                   	pop    %rsi
+  26:	5f                   	pop    %rdi
+  27:	5b                   	pop    %rbx
+  28:	5d                   	pop    %rbp
+  29:	c3                   	ret
+  2a:*	0f 0b                	ud2		<-- trapping instruction
+  2c:	b8 08 52 f5 83       	mov    $0x83f55208,%eax
+  31:	e8 75 85 e6 ff       	call   0xffffffffffe685ab
+  36:	0f 0b                	ud2
+  38:	b8 f8 51 f5 83       	mov    $0x83f551f8,%eax
+  3d:	e8                   	.byte 0xe8
+  3e:	69                   	.byte 0x69
+  3f:	85                   	.byte 0x85
 
- arch/powerpc/include/asm/syscall.h     |  6 ------
- arch/powerpc/include/asm/thread_info.h |  1 -
- arch/powerpc/kernel/syscall.c          | 15 ++++++++-------
- 3 files changed, 8 insertions(+), 14 deletions(-)
+Code starting with the faulting instruction ===========================================
+   0:	0f 0b                	ud2
+   2:	b8 08 52 f5 83       	mov    $0x83f55208,%eax
+   7:	e8 75 85 e6 ff       	call   0xffffffffffe68581
+   c:	0f 0b                	ud2
+   e:	b8 f8 51 f5 83       	mov    $0x83f551f8,%eax
+  13:	e8                   	.byte 0xe8
+  14:	69                   	.byte 0x69
+  15:	85                   	.byte 0x85
+[    2.436546][   T37] EAX: 00000003 EBX: 858ac510 ECX: 83e26f98 EDX: 83c50f80
+[    2.436546][   T37] ESI: 8500dfb0 EDI: 00000000 EBP: 858e1f68 ESP: 858e1f54
+[    2.436546][   T37] DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068 EFLAGS: 00010293
+[    2.436546][   T37] CR0: 80050033 CR2: 00000000 CR3: 047ae000 CR4: 000006b0
+[    2.436546][   T37] Call Trace:
+[    2.436546][   T37]  kthread (kthread.c:436)
+[    2.436546][   T37]  ? smpboot_unregister_percpu_thread (linux/list.h:261)
+[    2.436546][   T37]  ? __do_trace_sched_kthread_stop_ret (trace/events/sched.h:38 (discriminator 13))
+[    2.436546][   T37]  ret_from_fork (x86/kernel/process.c:158)
+[    2.436546][   T37]  ? __do_trace_sched_kthread_stop_ret (trace/events/sched.h:38 (discriminator 13))
+[    2.436546][   T37]  ret_from_fork_asm (x86/entry/entry_32.S:736)
+[    2.436546][   T37]  entry_INT80_32 (x86/entry/entry_32.S:940)
+[    2.436546][   T37] Modules linked in:
+[    2.493945][   T37] ---[ end trace 0000000000000000 ]---
+[    2.496265][   T37] EIP: smpboot_thread_fn (smpboot.c:117)
+[    2.498528][   T37] Code: 83 7e 04 00 74 13 8b 06 31 d2 0f a3 05 6c 07 59 84 0f 92 c2 e8 12 65 b7 01 89 f0 e8 4b e9 2e 00 31 c0 83 c4 08 5e 5f 5b 5d c3 <0f> 0b b8 08 52 f5 83 e8 75 85 e6 ff 0f 0b b8 f8 51 f5 83 e8 69 85
+All code
+========
+   0:	83 7e 04 00          	cmpl   $0x0,0x4(%rsi)
+   4:	74 13                	je     0x19
+   6:	8b 06                	mov    (%rsi),%eax
+   8:	31 d2                	xor    %edx,%edx
+   a:	0f a3 05 6c 07 59 84 	bt     %eax,-0x7ba6f894(%rip)        # 0xffffffff8459077d
+  11:	0f 92 c2             	setb   %dl
+  14:	e8 12 65 b7 01       	call   0x1b7652b
+  19:	89 f0                	mov    %esi,%eax
+  1b:	e8 4b e9 2e 00       	call   0x2ee96b
+  20:	31 c0                	xor    %eax,%eax
+  22:	83 c4 08             	add    $0x8,%esp
+  25:	5e                   	pop    %rsi
+  26:	5f                   	pop    %rdi
+  27:	5b                   	pop    %rbx
+  28:	5d                   	pop    %rbp
+  29:	c3                   	ret
+  2a:*	0f 0b                	ud2		<-- trapping instruction
+  2c:	b8 08 52 f5 83       	mov    $0x83f55208,%eax
+  31:	e8 75 85 e6 ff       	call   0xffffffffffe685ab
+  36:	0f 0b                	ud2
+  38:	b8 f8 51 f5 83       	mov    $0x83f551f8,%eax
+  3d:	e8                   	.byte 0xe8
+  3e:	69                   	.byte 0x69
+  3f:	85                   	.byte 0x85
 
-diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
-index 32be22b995cc..4b3c52ed6e9d 100644
---- a/arch/powerpc/include/asm/syscall.h
-+++ b/arch/powerpc/include/asm/syscall.h
-@@ -98,12 +98,6 @@ static inline void syscall_set_return_value(struct task_struct *task,
- 			regs->gpr[3] = val;
- 		}
- 	}
--	/*
--	 * Mark that a return value has been explicitly set by seccomp or
--	 * ptrace so that system_call_exception() can skip the syscall
--	 * unconditionally, even when the user requested syscall(-1).
--	 */
--	set_thread_flag(TIF_SYSCALL_RET);
- }
- 
- static inline void syscall_get_arguments(struct task_struct *task,
-diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index 1e069a2e7ce8..0487e94d3416 100644
---- a/arch/powerpc/include/asm/thread_info.h
-+++ b/arch/powerpc/include/asm/thread_info.h
-@@ -120,7 +120,6 @@ void arch_setup_new_exec(void);
- #endif
- #define TIF_POLLING_NRFLAG	19	/* true if poll_idle() is polling TIF_NEED_RESCHED */
- #define TIF_32BIT		20	/* 32 bit binary */
--#define TIF_SYSCALL_RET		21	/* syscall error value set */
- 
- /* as above, but as bit values */
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
-diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
-index fbefe1927b10..52ceff4ef41b 100644
---- a/arch/powerpc/kernel/syscall.c
-+++ b/arch/powerpc/kernel/syscall.c
-@@ -18,13 +18,14 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
- 	long ret;
- 	syscall_fn f;
- 
--	if (unlikely(!syscall_enter_from_user_mode_randomize_stack(regs, &r0))) {
--		clear_thread_flag(TIF_SYSCALL_RET);
--		return syscall_get_error(current, regs);
--	}
--
--	if (unlikely(test_and_clear_thread_flag(TIF_SYSCALL_RET)))
--		return syscall_get_error(current, regs);
-+	/*
-+	 * If ptrace or seccomp decided to skip the syscall, regs->gpr[3] holds
-+	 * the return value they set (or the unmodified first argument, e.g.
-+	 * for PTRACE_SYSEMU). Return it as is, the exit path takes care of
-+	 * the error encoding for the "sc" ABI.
-+	 */
-+	if (unlikely(!syscall_enter_from_user_mode_randomize_stack(regs, &r0)))
-+		return regs->gpr[3];
- 
- 	if (unlikely(r0 >= NR_syscalls)) {
- 		if (unlikely(trap_is_unsupported_scv(regs))) {
--- 
-2.55.0
+Code starting with the faulting instruction ===========================================
+   0:	0f 0b                	ud2
+   2:	b8 08 52 f5 83       	mov    $0x83f55208,%eax
+   7:	e8 75 85 e6 ff       	call   0xffffffffffe68581
+   c:	0f 0b                	ud2
+   e:	b8 f8 51 f5 83       	mov    $0x83f551f8,%eax
+  13:	e8                   	.byte 0xe8
+  14:	69                   	.byte 0x69
+  15:	85                   	.byte 0x85
+
+
+The kernel config and materials to reproduce are available at:
+https://download.01.org/0day-ci/archive/20261019/202610190859.d3459a50-lkp@intel.com
+
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
+
 
 
