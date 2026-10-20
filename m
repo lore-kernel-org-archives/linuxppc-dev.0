@@ -1,45 +1,45 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 480EC606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2026 05:22:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4391B606A319
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2026 05:47:07 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=nBgmagcy
+	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=dwfqJAs6
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j815952n8z2ynZ;
-	Tue, 20 Oct 2026 16:22:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j81dP6vN4z2ynZ;
+	Tue, 20 Oct 2026 16:47:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792473757;
-	cv=none; b=QfoncPrNtkgN28B0g7W38aVZhIXsnl9YvFLwQhEkCTp61Iu2Qu4q2iyCQddPi8O8RIUJcI+1vgu0eytn0I04Hkg9NCQ/TzhD+JwZe9zCGeC7kUL3Oe+33DTC8vOC5YbPW61wMJOWelviuLNEhQto824EYGaIlsblL5qXrwQk8PH3mvxo2PkiR7AnxLSs27jnd0GWVLAvUhP9PLRPmXO1X448Fd3Wz4Tz/KPHiOgPEP0D06mLgq+arlGXdQ3I0mFUhmbNMAzcyLun6Qa0pB9t4FcbEs39sL8TdDpc8yO1wj2VwGIHeqLzB2BZOOdl5x89xKku/2PbE2bArgW1KbJa6g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792475225;
+	cv=none; b=NDo71LpgNhU2mkMHrEDzb1QNjvW9MnW4n17opjy5BPLi2eokDanAda9ItKCUV4riy+Afvmn+k+0A7MaJWpMTTY6N0/xVzLBY/8EVhA0xCzakxgtawaVmTQcIYfRz7KUnYYnNIpgC2a0jG/5AR8pcRdASi19MAlkIutJ9OvkDY48BoW6Jcc6RAHUrGbyaC+ufEQcsI4ioqBeFO0Vkq7HmRIvCwrSG4PiDZodckjfQgrg6GG+cZ9O8NY0hAzFg85KSeY3hQlyZYLvLqdNPB78etQ0eG5WkbhYRY46EfbOlEG8WHpZfrI8KP6M9a1ysIRO0HTXUYbjnvNyi00LVF4MIEQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792473757; c=relaxed/relaxed;
-	bh=8MIsDqFQ3ihoPCDCZv6W7JkqazHoCN4iCAhc1qoiKLY=;
+	t=1792475225; c=relaxed/relaxed;
+	bh=y0chtX6tIwgn1dLWkWqccPdNlQoh26u5Xeo4JUKjcCQ=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Bz8qbpOIjGibA48ggPDfavWEiLB4+NXkb7RbIwO8AAalSzRG+FSmJLO8dDyVMob6sSkf8KgulsjyAmEQvbKSs+DbbXCgNY5LV5RLKkpj62uQCklaeDm8mD475M2ccOmKbyvnvABh/oYXi+Nsy9dIIPBgarizEpCc8RAUtRJRok7Suz7/j7VOzzmnltRxx4DiAwM2egMA2XLXn1uSosY6f/O1lNrHZAGB8uLG91QIXf4Gk3252bvg5qxsd1hHvI9x16bD/miN2Wsi5l9TVUAU+Jyu9PSmrQ+AutXZJ2acD4L1ddukV78pf3Yt4Q8LC7YAvum60V2PYmKCthmLlce97A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=nBgmagcy; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=dev.jain@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+	 In-Reply-To:Content-Type; b=KjyJ1GBQhxN4u5PkXsZYwIp+UR+Glg216yTETj7XGicAQNwLm6u5q6vrttVnEZ5IDI6QgiRC73vayFRAkm4/eBNBuJObgjiZQ+/dmbbiNw+Y/DMt6nRUalXPLQAJrn/jGwm01Y/vo2TyAKanNsua4ZZPr9I/xRRs/Pw03McbEm2itMPoWt2vj9WLeGOwCkZTUz/83W5rLVCNLe6wOpxpoMkLwmA+iOpcffSTwo5ERqCGkmh7wQG6jFuRIikbgV1yyjLK7HrflwL/5UpfcJl1CVz2D8VV6LD9aI3g2in1cEmxCm5rpRR0jzSWFeg/T2v7kD4A1x+mNTo+DwAW1lhDcg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=dwfqJAs6; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=dev.jain@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=nBgmagcy;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=dwfqJAs6;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=dev.jain@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j815427CJz2xLs
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2026 16:22:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j81dN4SNQz2yD3
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2026 16:47:03 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 52A6D1596;
-	Mon, 19 Oct 2026 22:21:54 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 991F41596;
+	Mon, 19 Oct 2026 22:46:29 -0700 (PDT)
 Received: from [10.164.19.55] (unknown [10.164.19.55])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3DAF03F7B4;
-	Mon, 19 Oct 2026 22:21:50 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7484A3F7B4;
+	Mon, 19 Oct 2026 22:46:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1792473717; bh=1o8mKDhc+h5Omef+qHo/0xtyFQGZ0v3bKBCuB7AmPEc=;
+	t=1792475192; bh=6MH14FQoqKoODm67ieo7VWOqi+pN1/b38AYnFNefCj8=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=nBgmagcy6gXNs2r1qVZzAn2A046/Ya8MlDRVZ4VZN5idWhICsLIq++TgG70EeFiNq
-	 ORlW0zUDtNd+geIAAi2Tc6ir6HXcZhsoT/NBksqLegc8kN9ihaCN/9C9MVxoDlOUtg
-	 hWmz/Zweg7lkaK0sv34MJs5RR55TwGm5mKk0sZn8=
-Message-ID: <bd7c7fd5-8543-429c-8618-4fb881723890@arm.com>
-Date: Tue, 20 Oct 2026 10:51:48 +0530
+	b=dwfqJAs6p8aW3p62AnWh7qhHl/tyGFnBgGdlRyOcqpHIL8nXNBDc1bmzf29sP/OA5
+	 A5HHdp54t+72+Es/lCd53fYgu2iOxl9gyjfx9KHlZ7NDtZ6aeFVopA8MB05grdand9
+	 10nRdNALxu7jmfVpE1YCx7pLskuRlgbE0Sf6sx9E=
+Message-ID: <dcad793e-8814-4bbf-8b31-3ec9d0bb9ede@arm.com>
+Date: Tue, 20 Oct 2026 11:16:24 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -54,8 +54,8 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/5] mm/kmsan: skip vunmap_range_noflush when KMSAN is
- disabled
+Subject: Re: [PATCH v2 3/5] mm/vmalloc: undo partial mappings inside the
+ mapping functions
 To: Hao Ge <hao.ge@linux.dev>, Suren Baghdasaryan <surenb@google.com>,
  Uladzislau Rezki <urezki@gmail.com>,
  Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -71,10 +71,10 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  kasan-dev@googlegroups.com, linux-mm@kvack.org,
  Sashiko <sashiko-bot@kernel.org>, stable@vger.kernel.org
 References: <20261019054531.87652-1-hao.ge@linux.dev>
- <20261019054531.87652-3-hao.ge@linux.dev>
+ <20261019054531.87652-4-hao.ge@linux.dev>
 Content-Language: en-US
 From: Dev Jain <dev.jain@arm.com>
-In-Reply-To: <20261019054531.87652-3-hao.ge@linux.dev>
+In-Reply-To: <20261019054531.87652-4-hao.ge@linux.dev>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
@@ -88,37 +88,123 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 
 On 19/10/26 11:15 am, Hao Ge wrote:
-> kmsan_vmap_pages_range_noflush() returns 0 when kmsan_enabled is
-> false.  The unmap side does not, so it still walks the shadow and
-> origin page tables even though KMSAN never installed any metadata
-> there.
+> __vmap_pages_range_noflush() and friends can install some PTEs before
+> failing and leave them mapped, and the kernel callers do not agree on
+> who cleans them up. pcpu_map_pages() and kmsan_ioremap_page_range()
+> roll back what they mapped before the failure, while
+> vm_module_tags_populate() and the __GFP_NOFAIL retry loop in
+> __vmalloc_area_node() rely on the mapping functions cleaning up and
+> do not call anything like vunmap_range() themselves. When the same
+> range is mapped again, the attempt hits the leftovers and fails, with
+> a BUG() in vmap_pte_range() for huge mappings and a warning on the
+> small-page path.
 > 
-> Add the matching early return.
+> After discussing with Suren and Ulad, we decided to put the rollback
+> into the entry points of the vmap API rather than into every low-level
+> helper. __vmap_pages_range_noflush() undoes the whole range it was
+> asked to map when it fails, and vmap_page_range() undoes its range
+> for the ioremap-style mappings.
+> 
+> The rollback is __vunmap_range_noflush(), it only clears the PTEs,
+> no TLB flush, nothing has touched these mappings.
+> vmap_pages_range_noflush() drops the KMSAN metadata when the data
+> mapping fails, and an empty range bails out with -EINVAL now, which
+> used to BUG_ON() on the small-page path and map nothing at all on
+> the huge-page one.
 > 
 > Reported-by: Sashiko <sashiko-bot@kernel.org>
+> Suggested-by: Uladyslau Rezki <urezki@gmail.com>
 > Cc: stable@vger.kernel.org
 > Signed-off-by: Hao Ge <hao.ge@linux.dev>
 > ---
-
-Reviewed-by: Dev Jain <dev.jain@arm.com>
-
-
->  mm/kmsan/hooks.c | 3 +++
->  1 file changed, 3 insertions(+)
+>  mm/vmalloc.c | 44 ++++++++++++++++++++++++++++++++------------
+>  1 file changed, 32 insertions(+), 12 deletions(-)
 > 
-> diff --git a/mm/kmsan/hooks.c b/mm/kmsan/hooks.c
-> index a706666db097..107f66841274 100644
-> --- a/mm/kmsan/hooks.c
-> +++ b/mm/kmsan/hooks.c
-> @@ -138,6 +138,9 @@ static unsigned long vmalloc_origin(unsigned long addr)
->  
->  void kmsan_vunmap_range_noflush(unsigned long start, unsigned long end)
->  {
-> +	if (!kmsan_enabled)
-> +		return;
+> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+> index 44e0eb32708f..75aa5acf5566 100644
+> --- a/mm/vmalloc.c
+> +++ b/mm/vmalloc.c
+> @@ -363,6 +363,9 @@ int vmap_page_range(unsigned long addr, unsigned long end,
+>  	if (!err)
+>  		err = kmsan_ioremap_page_range(addr, end, phys_addr, prot,
+>  					       ioremap_max_page_shift);
+> +	if (err)
+> +		__vunmap_range_noflush(addr, end);
 > +
->  	__vunmap_range_noflush(vmalloc_shadow(start), vmalloc_shadow(end));
->  	__vunmap_range_noflush(vmalloc_origin(start), vmalloc_origin(end));
->  	flush_cache_vmap(vmalloc_shadow(start), vmalloc_shadow(end));
+>  	return err;
+>  }
+>  
+> @@ -683,27 +686,35 @@ int __vmap_pages_range_noflush(unsigned long addr, unsigned long end,
+>  		pgprot_t prot, struct page **pages, unsigned int page_shift)
+>  {
+>  	unsigned int i, nr = (end - addr) >> PAGE_SHIFT;
+> +	unsigned long start = addr;
+> +	int err = 0;
+> +
+> +	if (WARN_ON_ONCE(addr >= end))
+> +		return -EINVAL;
+
+IIUC this is a general change independent of this patch? Caller could pass
+addr >= end and if we take the huge mapping path, we lose the sanity check.
+
+So this could become a separate patch.
+
+
+>  
+>  	if (WARN_ON_ONCE(page_shift < PAGE_SHIFT))
+>  		return -EINVAL;
+>  
+>  	if (!IS_ENABLED(CONFIG_HAVE_ARCH_HUGE_VMALLOC) ||
+> -			page_shift == PAGE_SHIFT)
+> -		return vmap_small_pages_range_noflush(addr, end, prot, pages);
+> -
+> -	for (i = 0; i < nr; i += 1U << (page_shift - PAGE_SHIFT)) {
+> -		int err;
+> -
+> -		err = vmap_range_noflush(addr, addr + (1UL << page_shift),
+> +			page_shift == PAGE_SHIFT) {
+> +		err = vmap_small_pages_range_noflush(addr, end, prot, pages);
+> +	} else {
+> +		for (i = 0; i < nr; i += 1U << (page_shift - PAGE_SHIFT)) {
+> +			err = vmap_range_noflush(addr, addr + (1UL << page_shift),
+>  					page_to_phys(pages[i]), prot,
+>  					page_shift);
+> -		if (err)
+> -			return err;
+> +			if (err)
+> +				break;
+>  
+> -		addr += 1UL << page_shift;
+> +			addr += 1UL << page_shift;
+> +		}
+>  	}
+>  
+> -	return 0;
+> +	/* Undo the PTEs installed before the failure. */
+> +	if (err)
+> +		__vunmap_range_noflush(start, end);
+> +
+> +	return err;
+>  }
+>  
+>  int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
+> @@ -715,7 +726,16 @@ int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
+>  
+>  	if (ret)
+>  		return ret;
+> -	return __vmap_pages_range_noflush(addr, end, prot, pages, page_shift);
+> +
+> +	ret = __vmap_pages_range_noflush(addr, end, prot, pages, page_shift);
+> +	/*
+> +	 * The page tables undo themselves on failure. Tear down the
+> +	 * metadata that was fully set up before the mapping failed.
+> +	 */
+> +	if (ret)
+> +		kmsan_vunmap_range_noflush(addr, end);
+> +
+> +	return ret;
+>  }
+>  
+>  static int __vmap_pages_range(unsigned long addr, unsigned long end,
 
 
