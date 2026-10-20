@@ -2,69 +2,101 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A95E606A324
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2026 06:57:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A468606A31D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2026 07:39:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=Op8UAR9b
+	dkim=pass (2048-bit key, unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=gB//N2k8
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j83BH6lQSz30PJ;
-	Tue, 20 Oct 2026 17:57:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=130.136.161.50
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792479431;
-	cv=none; b=JdqxPz3HY/F4mz2F5jZSRr7nmb06a41gxlsRRMXa8wKhqm4xxzXqjxO3yPCMH0BjfLEjLTs5PQgPrzJdj86WStui4sySWQ5cZ7RLYX0jvPKPszsb0cmXUoTrmSkGbt/486S0N2MCVyA1ai5kvbAI6GBTpc0Vs+4FA1Bh1DAwZWhcDpdL3hGhHUrl7lXCeTHFeAojTMmjdBRIPDQMbKvaRMQJe3m+AsQ9c9YbmX4loU2KUMJM/K6dcmhOonDbp8gPPnj77Wny3LaaHyD3rEl4UQD1qudRCxRzcMhlWPn3gh6+tEPzYsGtjDMd5ruwpzOPE8F0G5Iq7JEfNjUyX6e2xw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792479431; c=relaxed/relaxed;
-	bh=9xiLRq/FvSuxEQCUz2mtWUPSsNT9Rp2eWpRdkXKWi3U=;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j847K1qnbz2yqw;
+	Tue, 20 Oct 2026 18:39:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::3" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792481981;
+	cv=pass; b=YW/K8sL5VLpD2+PLkZW277ehFkF3eLiXzghiym4vzVhmG/6l/VcQpsxkfh7yjbtxp1SaMeGMDUfZGcKRGzplla8IonKdV9DkAm0ANn4s0ODp0vjLqTOVERhLcVVv+STvNLrgM+V4KG0FXIvjnubwMCP9t7xFzQOW7c+UUVUlOnJESlxYY1Ckku3AiZohQpkAZUZR7icnrk+WDI3SiSmubEtpPM/bmupE7NGWToSVereOnQQ/NoBAfbKFG+uS1SwolfWFq0Ds3HazeYMKfXOej8siyKs5OtaQGe3RGZsqgeugYcZcMDAzMcIpObEdXIpBYP7Z/pSTEahO9zg/7QSBRA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792481981; c=relaxed/relaxed;
+	bh=oo2WG/Jdeh7C6r6K5PQhTWaEpUQ5yHII5BdHjllc0rg=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=GxFBu8p919OYgGNotIiNpR+mLBl5ONmB8mYK0I0egp5Id3A4rcL/I8UyIm2MPnTG89krwGSAR6MkekhbVw5YJft64EKlhg8uJvOe0g+OO/q1jQe1OROgf18jvz5Sm03VCp5EFudn3tHotdV+d6kc2CbftY2jQKpKyN6Sh9gNWxFZHrhwTBnApCYVGGfXykXRU6M30yytTY6sAUrLytgN2c7NaJCtUzdvS3iEx5Js+m7q2SS48py2KeNpYWdBD4lDjCvsozNL53UAqj3pHu0o4f+bCCFjG/r0mtZJxKADcFIXKARxrtFneR3Ji78jUUHAmpPYe8OrF0y7YAjPSXh2Ew==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=cs.unibo.it; dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=Op8UAR9b; dkim-atps=neutral; spf=pass (client-ip=130.136.161.50; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org) smtp.mailfrom=cs.unibo.it
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=cs.unibo.it
+	 Content-Type:MIME-Version; b=SOtlMHNCXNgmfTGc7Wq19Fsmuo1qJK4K701BbTtzDnrxJ9cF9GMD9rdX88cftN3yLTy9waNOoicm8ZnorVRik2/LQkaNlQG+22Whp3SSqM3EwzsGqEaQtzAngkKmeJ5Yp3HwveiQelpk1/YAyQuAu1kzQ0VeXTJZw1cUfAWJ+eUK+BJSucFJvdb57rSarr0iKHbWJeq0SHCKFVSOh092+r3FbYgMpDghRh9FsdkIFzNwSgVxVUzIehJd6Fe8F3EoBBVa1u0v9ay7Xf7qJZ+UctKD4yRNL0pLqrARYK4GKQYXtd5f4jS+UCmQ5CEZZyq9bckR+AsA54AqeGEnnpPZxQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=gB//N2k8; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::3; helo=du2pr03cu002.outbound.protection.outlook.com; envelope-from=peng.fan@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=Op8UAR9b;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=gB//N2k8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cs.unibo.it (client-ip=130.136.161.50; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org)
-Received: from mail.virtlab.unibo.it (mail.virtlab.unibo.it [130.136.161.50])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j83B96xW6z2yps
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2026 17:57:04 +1100 (AEDT)
-Received: from eipi10.cs.unibo.it (unknown [94.32.99.206])
-	by mail.virtlab.unibo.it (Postfix) with ESMTPA id 7DFAA1C0264;
-	Tue, 20 Oct 2026 08:57:02 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=cs.unibo.it;
-	s=virtlab; t=1792479422;
-	bh=YLvM5kTZTUZxbiEqEfgYFqvCjYtkBwewpbGRd+sVL+0=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Op8UAR9bME1DQ3zcNOBnqPTt0xtvm9OYKJjNqRmJH4YSETpj4QGpCdnz4GJSCaa8U
-	 TcoDUFzi82p2LP20FhAhvXBEazemHCtxcOycrrt5oqKQ052RNwdy2mzCF/RbYNfjJN
-	 NpaKkz2ec7PaR1nOJdpb/5flyJ9Nv0R2lMi0g6zA=
-From: Renzo Davoli <renzo@cs.unibo.it>
-To: linux-kernel@vger.kernel.org
-Cc: Renzo Davoli <renzo@cs.unibo.it>,
-	Oleg Nesterov <oleg@redhat.com>,
-	=?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>,
-	Kees Cook <kees@kernel.org>,
-	Andy Lutomirski <luto@amacapital.net>,
-	Will Drewry <wad@chromium.org>,
-	Thomas Gleixner <tglx@kernel.org>,
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c200::3; helo=du2pr03cu002.outbound.protection.outlook.com; envelope-from=peng.fan@oss.nxp.com; receiver=lists.ozlabs.org)
+Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j847J0bl7z2yql
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2026 18:39:39 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=H57ckMrP5PpsX5U6Ftvt2Vm515heWRANQdZeWKnEJBQLqOa/Teg7t58yMHCXnO0aEoYoe6A0E+X5csuNUYeAHAsplnPLkB08uWblOIff5UnhqsWGukxy2yqRbwP7Ttxm+Ux6AbJGEcl0JUyFEGUtI6/bA+3ThEpyYtSugQvXHPIoMXkuhMKR0z+p6hcMoyKRw/KZuSO0BF9UrKCNp7nBpGi1Da8heSfidjiMK4C8ItLflbhpDoNlniGV8YGYhRqY7fuMtr47hJdAog6Fn8M88lEmXRJ0vl2BoCj3WuN4RQ+yiwviwVw6CLhvqPRujLyrEbD7l58TuiJ+6SO9LAgenQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=oo2WG/Jdeh7C6r6K5PQhTWaEpUQ5yHII5BdHjllc0rg=;
+ b=tpeZ2+otCYyGf7aEAuM/0xuPeLdSsHwHOjO5jOIFecOXRqNoBbUgXnxSRYgTqGWTERvpwN5ejXLtWARfrAxmWpX5qdcb7W5k0elwIqppgNbI4E7JDlGImO0FrCgf9xYK1a1iFyUuw8tM5TOBvzbIl1G7+rytltdEL8DPZRfjYnRCNU0m7zkYAUYnPvXyphvO0qSmCYb60CZR5AkoPr2iAbxnKFhsGhBxhiffOO1xI49+VBmrVrlCvn4qSfNBHM1WKAvVRbIzw9wO/iuBrZnceKnpeoUSeLVvK0dHVbmW2iJWx3EN8ePYcRRDFGBwQM/0oQkNEU3xXECXe8bwIGSs1g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=oo2WG/Jdeh7C6r6K5PQhTWaEpUQ5yHII5BdHjllc0rg=;
+ b=gB//N2k8dyHUTA5BsAh72ZLrxL2QUkZ7qMzmChEUWDMeZTl9Aholsfe9/GM0SeA20wCmbrUsSsVShF1mi2Nx1j4VpBg/jtkAlFZ2QJEorIypnow435Vse0AbUQed+K3/GmJAP2PUmSC0Dm834/PqjTXt3Co99rh20M3TpGU5DDM0sdqD3x0UYyxLrCCWefDqZ8Vl5qSpeHFWX7ulMNHam9OszHsqJp/QjpyTpEAiOREEaICBJ5YvNlvD1Eii1sOaPLjEEIWaZt3YEGiifSQO2WJVLzc7piF2hxy55yyQaoMEYXg1hfdi0uHmcYKDgjLOx+j7DIgSxWboch3MASjd7Q==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from AM8PR04MB7874.eurprd04.prod.outlook.com (2603:10a6:20b:24d::9)
+ by GV1PR04MB9516.eurprd04.prod.outlook.com (2603:10a6:150:29::12) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.522.19; Tue, 20 Oct
+ 2026 07:39:09 +0000
+Received: from AM8PR04MB7874.eurprd04.prod.outlook.com
+ ([fe80::ac38:1699:6f18:c5d9]) by AM8PR04MB7874.eurprd04.prod.outlook.com
+ ([fe80::ac38:1699:6f18:c5d9%6]) with mapi id 15.21.0546.012; Tue, 20 Oct 2026
+ 07:39:09 +0000
+From: "Peng Fan (OSS)" <peng.fan@oss.nxp.com>
+To: Jiale Yao <yaojiale02@163.com>
+Cc: Peng Fan <peng.fan@oss.nxp.com>,
+	Frank Li <Frank.Li@kernel.org>,
+	Zhang Wei <zw@zh-kernel.org>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Linus Walleij <linusw@kernel.org>,
+	H Hartley Sweeten <hsweeten@visionengravers.com>,
+	Ryan Mallon <rmallon@gmail.com>,
+	Mika Westerberg <mika.westerberg@iki.fi>,
+	Ebony Zhu <ebony.zhu@freescale.com>,
+	Kumar Gala <galak@gate.crashing.org>,
+	Dan Williams <djbw@kernel.org>,
 	Andrew Morton <akpm@linux-foundation.org>,
-	Shuah Khan <shuah@kernel.org>,
-	"Dmitry V . Levin" <ldv@strace.io>,
-	Alexey Gladkov <legion@kernel.org>,
-	Eugene Syromyatnikov <evgsyr@gmail.com>,
-	Davide Berardi <berardi.dav@gmail.com>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Zhangfei Gao <zhangfei.gao@marvell.com>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Qiao Zhou <zhouqiao@marvell.com>,
+	Leo Yan <leoy@marvell.com>,
+	Lennert Buytenhek <buytenh@marvell.com>,
+	Nicolas Pitre <nico@marvell.com>,
+	Saeed Bishara <saeed@marvell.com>,
+	Maciej Sosnowski <maciej.sosnowski@intel.com>,
+	Shawn Guo <shawn.guo@freescale.com>,
+	Srinidh Kasagar <srinidhi.kasagar@stericsson.com>,
+	dmaengine@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	linux-kselftest@vger.kernel.org,
-	strace-devel@lists.strace.io
-Subject: [PATCH v8 3/3] selftests/ptrace: add a test case for PTRACE_SET_SYSCALL_INFO syscall skipping
-Date: Tue, 20 Oct 2026 08:56:33 +0200
-Message-ID: <20261020065635.490528-4-renzo@cs.unibo.it>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20261020065635.490528-1-renzo@cs.unibo.it>
-References: <20261020065635.490528-1-renzo@cs.unibo.it>
+	imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 0/7] dmaengine: drain completion tasklets during teardown
+Date: Tue, 20 Oct 2026 15:36:19 +0800
+Message-ID: <20261020073620.224795-1-peng.fan@oss.nxp.com>
+X-Mailer: git-send-email 2.51.0
+In-Reply-To: <20261018040724.534641-1-yaojiale02@163.com>
+References:
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SI2PR01CA0011.apcprd01.prod.exchangelabs.com
+ (2603:1096:4:191::6) To AM8PR04MB7874.eurprd04.prod.outlook.com
+ (2603:10a6:20b:24d::9)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,294 +110,123 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM8PR04MB7874:EE_|GV1PR04MB9516:EE_
+X-MS-Office365-Filtering-Correlation-Id: cac5f685-d554-4b2a-a2c4-08df2e7d39e6
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|7416014|19092799006|1800799024|23010399003|366016|6133799003|22082099003|10067099003|18002099003|5023799004|11063799006|56012099006;
+X-Microsoft-Antispam-Message-Info:
+	+ossXf+Y2kiYD7mTLNYtM6fRbxeyVDT5/PuJWJZGraBQgFs1yGU8d//s9UbnCxm9G2pOpaQ1Yo4WfQHEdwpdWuT77XqFwjDmbAVTYrA+UhzquZkk2qcO/axUm+f4h8mhOsrX+Y4CDYgU/mtiu7rBD+S1QPHbkSh50jqi6xfI11TpvpIvwxxYvRFZJrvJu0yWBvHSECK0eJZRj6wlrFPwWdHawxnJJF/CpJlAbgPcBRcvlTf0zTrew2DwT5sWTHwTwuts4HKB/xsWgCeyiXoYK3cARauRkoJi1fkDLeEyvEfa5W9nSjlB83ew8RAiAF6/bSnA4vyJzrIIq9rmlM8rfBt/dpjabeJrw+gEneUhKvr7sD25R/e39FjJJkGRvqQBusGSNzA6dSmtIdsZ2o0BLOHFEyf9KPUJ8x2MaA1ijXGDv99tQDpeWdupMNy65U3B72MVsUiCCElfOq4mZzFM5kTYlcviHHZ+faBXXYJUH1lfeWoAyfvm81m4+igrUeReUWbKuoP4LIwTicunj+Okj49UGiUFILU0qsWpZEXrmMhnPDlXdlT3hj8qZKsQMSS1QrTnLd6NWRfkEOhnYIYH0H90KECicdjr8hE78nBrBfG3eY9AJssV+Y9765k6NO8AIS0s8RTppjVVxc63c/ijatuSpgsXFLxYxLtRFJ24YI4=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM8PR04MB7874.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(19092799006)(1800799024)(23010399003)(366016)(6133799003)(22082099003)(10067099003)(18002099003)(5023799004)(11063799006)(56012099006);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?P/Xj7xUNIS8uA5iGNdsfLkxIQLQcmVDliPDrntalfWgQ4hWe4X4WQ1r6ngkd?=
+ =?us-ascii?Q?SDmtqalT7KoWwaHLdMBwjNJAhgxrhdshPpwOEDIQfr2AA6FSOQNyrI9pokSO?=
+ =?us-ascii?Q?1H8MOBk+JogVFRI8Ddm5r4+di8+dhLj0/4dUYcZZqehpaZzqIOuWtEH4w05u?=
+ =?us-ascii?Q?3dZTrn+yUJpnWeKV8osrezm9G7S9qE+fybwo3fUsAMp6uAkDdRfGqRa/NKbV?=
+ =?us-ascii?Q?L6pf9k0yHLAh9pjyedOnQI/CgWmGiKIxeNv6A8MFUxPapOVW7TmwB4GXUse1?=
+ =?us-ascii?Q?mxbrJVk/Yr916S2sgygfhdxIkxH/Kv5agiFLkeFsT2WH4COhRRjIK5NMgMZW?=
+ =?us-ascii?Q?LtB/v6MaZ/VHuyb5cCrTn1EmB7sPKzIQPwKLWZGyq2W24Lz0ponIOQHb+F8q?=
+ =?us-ascii?Q?4b+/dCd43B8difGjMsen7s56eTlm+VW22xmJ5Zah9seklrPfteRt8QMCpykN?=
+ =?us-ascii?Q?o+Wd4RfQ5Ugkgyj57gaeU/VXb4FfPlYuODNolRou4HSLzb34bZFiOf2FZaea?=
+ =?us-ascii?Q?IxrWC7f4hA+yojSo4GYFbwYNIShQlfcIJx6TsKVG0Z0QdK+/ySDGJDlhox59?=
+ =?us-ascii?Q?NoUtX3sLvKDoBJ5zNoO7MUvdG5E9jCw17oLnQHxE93so92da9h3F3mHCYONa?=
+ =?us-ascii?Q?Z9DpAwupghGmnh2uV1c6nWLmqKzh8ooHjFfq54LzT0S40DPk1BHxytm1LxGC?=
+ =?us-ascii?Q?wuOwvjS39bVqahjaxVz5MOjmoRtAtpp7vcbZCdCzg+QHfg/VmtHoLdWAnehU?=
+ =?us-ascii?Q?Pg97jC6wa9UD4QTPs78hLjlQ9ZnfVoKePw6FGeoMhrYJZBSMY+gr6UHYKRE5?=
+ =?us-ascii?Q?0ywK6a+wMo1ToqJ0qavIfoE5mq/Cj/ZwfR10+ivXIICRY7ry1+i53T5+q47X?=
+ =?us-ascii?Q?cT7vJSAH1aoTv34rd7dvbY0HzZ2PO87NsuecB25SqFPxWOoSDoWELRz1XA5M?=
+ =?us-ascii?Q?hUfBHxJNlfGkHEZgejy5zVnW7PfyA/SHs/W3ssTuQbpumHGHP7PZUPKCykDX?=
+ =?us-ascii?Q?lsfd0R3hNyLiEIfBE3b5Uq5F5HwEGS/iRYN0VWFHZJfkSBxdTyxa68bDGD6Y?=
+ =?us-ascii?Q?H/CMKUlW/+4dadbqmSUVszXNPUSLF2dpx6lSz2Ro4HFFIXLYW9lRA8yShHhf?=
+ =?us-ascii?Q?qko8CCmxJmcf1BEtyFM3JR9K0k4ObljbuiUFuSNWKFMH78FzwPFHIeQd/9mp?=
+ =?us-ascii?Q?NWEtaS2AXYrcUKSch2bOwJINAoEiRWs5lKGQjTCXG5t43oeG6FwN3IUjHfrv?=
+ =?us-ascii?Q?iTN47tYjKh0cH9wle+vqtISeFqM5FNMbBWFL3jJUWV/lJ/nES22jf/3ZLizb?=
+ =?us-ascii?Q?2maKyKurstDBCLiIQrwQxZATu5dFU1Zai9OndtgB7Klu83OIW+Noae9Oa4gR?=
+ =?us-ascii?Q?/DAjur50rn3ZcX3SW034r/s2W8ohKsRP9gbMpTfw5usMvF2kcyzBPq/tzD8A?=
+ =?us-ascii?Q?/ym1BH7V2MnJC/q5V07YlQjqcybfBId/iewKEGjR2hW3ZGbg1mk9F+D+kJt6?=
+ =?us-ascii?Q?+Z5+jBQgJ8F95uvRarNz5wNvYbhbV64LfeYwm2DNbHuLcVxGyfxX5+ntJQTX?=
+ =?us-ascii?Q?QYQbRrY+gdj3b4pB63gWsskyMgU3NSBKZj+wCXQ2hepnfU+xCj6mACUIBuMY?=
+ =?us-ascii?Q?pvF7RZGwYjTjkcACnZootwB/NfSrYx+LHQ/+/KSHdDCcwAIj3F327psFtdHD?=
+ =?us-ascii?Q?euM9SD0NQj6FxrRjwnKtdnlrH1KoCufX47DqPDpWVJmn3uIxbc9aPxmECpla?=
+ =?us-ascii?Q?KORT122iSjKJk59ln1jPTOnKqoAx+Ddiz8wNo3qA7GDzVDG7QzPS?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: cac5f685-d554-4b2a-a2c4-08df2e7d39e6
+X-MS-Exchange-CrossTenant-AuthSource: AM8PR04MB7874.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Oct 2026 07:39:09.3088
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: DJI5KmrAZe7DUw0/YxATrEBniO+t33nlnw5wWPllNNJOA6SA3JSZoxtsCgVxJt/oOcNpyWmG2q59sBjLtbKyNET5lK6uACQZQlhZnm/TVNybZcvg5VdB5ivOpDY/mlC+
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: GV1PR04MB9516
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Check whether PTRACE_SET_SYSCALL_INFO syscall skipping semantics
-implemented in the kernel matches userspace expectations.
+On Sun, 18 Oct 2026 12:07:16 +0800 Jiale Yao <yaojiale02@163.com> wrote:
 
-Signed-off-by: Renzo Davoli <renzo@cs.unibo.it>
-[v8: also check an error return value, and that the syscall cannot be
- changed anymore once skipped while its return value still can;
- checkpatch fixes]
-Assisted-by: claude-opus-5-5
----
- .../selftests/ptrace/set_syscall_info.c       | 220 +++++++++++++++++-
- 1 file changed, 219 insertions(+), 1 deletion(-)
+> Several DMAengine drivers defer interrupt completion processing to
+> tasklets, but release channel resources without draining tasklets that
+> were already queued. Stopping or releasing an IRQ prevents new hard IRQ
+> handlers, but does not synchronize the deferred tasklet.
+> 
+> Depending on the driver, a late tasklet can access freed descriptor
+> storage or invoke a completion callback after its client data has been
+> released. Ensure each producer is stopped before killing the tasklet and
+> freeing the resources it can access.
+> 
+> Each patch is independent and keeps the synchronization local to one
+> driver's channel or device teardown path.
+> 
+> Jiale Yao (7):
+>   dmaengine: ep93xx: drain tasklet before freeing channel resources
+>   dmaengine: fsldma: drain channel tasklet during removal
+>   dmaengine: mmp_pdma: drain channel tasklets during removal
+>   dmaengine: mmp_tdma: synchronize tasklet when freeing a channel
+>   dmaengine: mv_xor: drain IRQ tasklet before freeing channel memory
+>   dmaengine: mxs-dma: synchronize tasklet when freeing a channel
+>   dmaengine: ste_dma40: synchronize tasklet when releasing a channel
+> 
+>  drivers/dma/ep93xx_dma.c | 4 +++-
+>  drivers/dma/fsldma.c     | 1 +
+>  drivers/dma/mmp_pdma.c   | 4 ++++
+>  drivers/dma/mmp_tdma.c   | 2 ++
+>  drivers/dma/mv_xor.c     | 6 ++++--
+>  drivers/dma/mxs-dma.c    | 1 +
+>  drivers/dma/ste_dma40.c  | 2 ++
 
-diff --git a/tools/testing/selftests/ptrace/set_syscall_info.c b/tools/testing/selftests/ptrace/set_syscall_info.c
-index 1cc411a41cd6..e8733c62177a 100644
---- a/tools/testing/selftests/ptrace/set_syscall_info.c
-+++ b/tools/testing/selftests/ptrace/set_syscall_info.c
-@@ -11,9 +11,15 @@
- #include <err.h>
- #include <fcntl.h>
- #include <signal.h>
-+#include <stdlib.h>
-+#include <stddef.h>
- #include <asm/unistd.h>
-+#include <sys/prctl.h>
- #include <linux/types.h>
- #include <linux/ptrace.h>
-+#include <linux/filter.h>
-+#include <linux/seccomp.h>
-+#include <linux/prctl.h>
- 
- #if defined(_MIPS_SIM) && _MIPS_SIM == _MIPS_SIM_NABI32
- /*
-@@ -36,6 +42,7 @@ struct si_exit {
- 
- static unsigned int ptrace_stop;
- static pid_t tracee_pid;
-+static pid_t tracer_pid;
- 
- static int
- kill_tracee(pid_t pid)
-@@ -64,6 +71,25 @@ sys_ptrace(int request, pid_t pid, unsigned long addr, unsigned long data)
- 		       ptrace_stop, ##__VA_ARGS__);		\
- 	} while (0)
- 
-+static int sys_seccomp(unsigned int operation, unsigned int flags, void *args)
-+{
-+	return syscall(__NR_seccomp, operation, flags, args);
-+}
-+
-+static struct sock_filter seccomp_filter[] = {
-+	BPF_STMT(BPF_LD+BPF_W+BPF_ABS, offsetof(struct seccomp_data, nr)),
-+
-+	BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, __NR_restart_syscall, 0, 1),
-+	BPF_STMT(BPF_RET+BPF_K, SECCOMP_RET_ALLOW),
-+
-+	BPF_STMT(BPF_RET+BPF_K, SECCOMP_RET_TRACE),
-+};
-+
-+static struct sock_fprog seccomp_prog = {
-+	.filter = seccomp_filter,
-+	.len = ARRAY_SIZE(seccomp_filter)
-+};
-+
- static void
- check_psi_entry(struct __test_metadata *_metadata,
- 		const struct ptrace_syscall_info *info,
-@@ -128,7 +154,6 @@ check_psi_exit(struct __test_metadata *_metadata,
- 
- TEST(set_syscall_info)
- {
--	const pid_t tracer_pid = getpid();
- 	const kernel_ulong_t dummy[] = {
- 		(kernel_ulong_t) 0xdad0bef0bad0fed0ULL,
- 		(kernel_ulong_t) 0xdad1bef1bad1fed1ULL,
-@@ -138,6 +163,7 @@ TEST(set_syscall_info)
- 		(kernel_ulong_t) 0xdad5bef5bad5fed5ULL,
- 	};
- 	int splice_in[2], splice_out[2];
-+	tracer_pid = getpid();
- 
- 	ASSERT_EQ(0, pipe(splice_in));
- 	ASSERT_EQ(0, pipe(splice_out));
-@@ -516,4 +542,196 @@ TEST(set_syscall_info)
- 	ASSERT_EQ(ptrace_stop, ARRAY_SIZE(si) * 2);
- }
- 
-+TEST(set_syscall_info_seccomp)
-+{
-+	tracer_pid = getpid();
-+	tracee_pid = fork();
-+
-+	ASSERT_LE(0, tracee_pid) {
-+		TH_LOG("fork: %m");
-+	}
-+
-+	/* tracee */
-+	if (tracee_pid == 0) {
-+		tracee_pid = getpid();
-+		ASSERT_EQ(0, sys_ptrace(PTRACE_TRACEME, 0, 0, 0)) {
-+			TH_LOG("PTRACE_TRACEME: %m");
-+		}
-+		ASSERT_EQ(0, kill(tracee_pid, SIGSTOP)) {
-+			/* cannot happen */
-+			TH_LOG("kill SIGSTOP: %m");
-+		}
-+
-+		ASSERT_EQ(0, prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)) {
-+			TH_LOG("prctl: %m");
-+		}
-+		ASSERT_EQ(0, sys_seccomp(SECCOMP_SET_MODE_FILTER, 0,
-+					(void *) &seccomp_prog)) {
-+			TH_LOG("seccomp: %m");
-+		}
-+
-+		/* run getpid unmodified */
-+		ASSERT_EQ(tracee_pid, getpid()) {
-+			_exit(1);
-+		}
-+
-+		/* run getppid instead of getpid */
-+		ASSERT_EQ(tracer_pid, getpid()) {
-+			_exit(1);
-+		}
-+
-+		/* skip getpid and return 42 */
-+		ASSERT_EQ(42, getpid()) {
-+			_exit(1);
-+		}
-+
-+		/* skip getpid and fail with ESRCH */
-+		errno = 0;
-+		ASSERT_EQ(-1, syscall(__NR_getpid)) {
-+			_exit(1);
-+		}
-+		ASSERT_EQ(ESRCH, errno) {
-+			_exit(1);
-+		}
-+		_exit(0);
-+	}
-+
-+	int status;
-+
-+	/* tracer */
-+	ASSERT_LE(0, waitpid(-1, &status, 0)) {
-+		LOG_KILL_TRACEE("waitpid: %m");
-+	}
-+
-+	ASSERT_EQ(0, sys_ptrace(PTRACE_SETOPTIONS, tracee_pid, 0,
-+			(PTRACE_O_TRACESECCOMP | PTRACE_O_TRACESYSGOOD)))
-+		LOG_KILL_TRACEE("PTRACE_SETOPTIONS: %m");
-+
-+	ASSERT_EQ(0, sys_ptrace(PTRACE_CONT, tracee_pid, 0, 0)) {
-+		LOG_KILL_TRACEE("PTRACE_CONT: %m");
-+	}
-+
-+	static const char * const testname[] = {
-+		"unknown error",
-+		"getpid seccomp unchanged",
-+		"getpid seccomp nr change: getppid",
-+		"getpid seccomp skip+set retvalue",
-+		"getpid seccomp skip+set error"
-+	};
-+
-+	static const unsigned int expected_nr[] = {
-+		__NR_getpid,
-+		__NR_getpid,
-+		__NR_getpid,
-+		__NR_getpid,
-+		__NR_exit_group
-+	};
-+
-+	for (ptrace_stop = 0; ; ++ptrace_stop) {
-+		ASSERT_EQ(tracee_pid, wait(&status)) {
-+			/* cannot happen */
-+			LOG_KILL_TRACEE("wait: %m");
-+		}
-+
-+		if (WIFEXITED(status)) {
-+			tracee_pid = 0; /* the tracee is no more */
-+			ASSERT_EQ(0, WEXITSTATUS(status)) {
-+				LOG_KILL_TRACEE("unexpected exit status %u",
-+						WEXITSTATUS(status));
-+			}
-+			break;
-+		}
-+		ASSERT_FALSE(WIFSIGNALED(status)) {
-+			tracee_pid = 0; /* the tracee is no more */
-+			LOG_KILL_TRACEE("unexpected signal %u",
-+					WTERMSIG(status));
-+		}
-+		ASSERT_TRUE(WIFSTOPPED(status)) {
-+			LOG_KILL_TRACEE("unexpected wait status %#x", status);
-+		}
-+
-+		ASSERT_EQ(status >> 8, SIGTRAP | (PTRACE_EVENT_SECCOMP << 8)) {
-+			LOG_KILL_TRACEE("unexpected stop, wait status %#x", status);
-+		}
-+
-+		struct ptrace_syscall_info info = {
-+			.op = 0xff  /* invalid PTRACE_SYSCALL_INFO_* op */
-+		};
-+		size_t info_size = sizeof(info);
-+
-+		ASSERT_LT(0, sys_ptrace(PTRACE_GET_SYSCALL_INFO, tracee_pid,
-+					info_size, (uintptr_t) &info)) {
-+			LOG_KILL_TRACEE("PTRACE_GET_SYSCALL_INFO: %m");
-+		}
-+		ASSERT_EQ(PTRACE_SYSCALL_INFO_SECCOMP, info.op) {
-+			LOG_KILL_TRACEE("entry op mismatch: %m");
-+		}
-+		ASSERT_TRUE(info.arch) {
-+			LOG_KILL_TRACEE("entry arch mismatch: %m");
-+		}
-+		ASSERT_TRUE(info.instruction_pointer) {
-+			LOG_KILL_TRACEE("entry instruction_pointer mismatch: %m");
-+		}
-+		ASSERT_TRUE(info.stack_pointer) {
-+			LOG_KILL_TRACEE("entry stack_pointer mismatch: %m");
-+		}
-+
-+		ASSERT_LT(ptrace_stop, ARRAY_SIZE(expected_nr)) {
-+			LOG_KILL_TRACEE("ptrace stop overflow");
-+		}
-+		ASSERT_FALSE(info.seccomp.nr == __NR_exit_group && info.seccomp.args[0] == 1) {
-+			LOG_KILL_TRACEE("tracee error: %s",
-+					testname[ptrace_stop]);
-+		}
-+		ASSERT_EQ(info.seccomp.nr, expected_nr[ptrace_stop]) {
-+			LOG_KILL_TRACEE("syscall nr mismatch");
-+		}
-+		const struct ptrace_syscall_info seccomp_info = info;
-+
-+		switch (ptrace_stop) {
-+		case 0:
-+		case 4:
-+			break;
-+		case 1:
-+			info.seccomp.nr = __NR_getppid;
-+			break;
-+		case 2:
-+			info.op = PTRACE_SYSCALL_INFO_EXIT;
-+			info.exit.rval = 41;
-+			info.exit.is_error = 0;
-+			ASSERT_EQ(0, sys_ptrace(PTRACE_SET_SYSCALL_INFO,
-+						tracee_pid, info_size,
-+						(uintptr_t) &info)) {
-+				LOG_KILL_TRACEE("PTRACE_SET_SYSCALL_INFO: %m");
-+			}
-+			/* the syscall cannot be changed anymore once skipped */
-+			ASSERT_EQ(-1, sys_ptrace(PTRACE_SET_SYSCALL_INFO,
-+						 tracee_pid, info_size,
-+						 (uintptr_t) &seccomp_info)) {
-+				LOG_KILL_TRACEE("PTRACE_SET_SYSCALL_INFO after skip succeeded");
-+			}
-+			ASSERT_EQ(EINVAL, errno) {
-+				LOG_KILL_TRACEE("PTRACE_SET_SYSCALL_INFO after skip: %m");
-+			}
-+			/* but its return value can */
-+			info.exit.rval = 42;
-+			break;
-+		case 3:
-+			info.op = PTRACE_SYSCALL_INFO_EXIT;
-+			info.exit.rval = -ESRCH;
-+			info.exit.is_error = 1;
-+			break;
-+		}
-+
-+		ASSERT_EQ(0, sys_ptrace(PTRACE_SET_SYSCALL_INFO, tracee_pid,
-+					info_size, (uintptr_t) &info)) {
-+			LOG_KILL_TRACEE("PTRACE_SET_SYSCALL_INFO: %m");
-+		}
-+
-+		ASSERT_EQ(0, sys_ptrace(PTRACE_CONT, tracee_pid, 0, 0)) {
-+			LOG_KILL_TRACEE("PTRACE_CONT: %m");
-+		}
-+	}
-+}
-+
- TEST_HARNESS_MAIN
--- 
-2.55.0
+You might need to add a bit more context on the issues.
 
+Taking mxs-dma for example, it is non-SMP processor.
+
+The normal completion path is:
+1. DMA hardirq fires -> mxs_dma_int_handler() -> tasklet_schedule() -> raises TASKLET_SOFTIRQ
+2. irq_exit() -> softirq processing -> tasklet_action() -> mxs_dma_tasklet() runs
+3. Return to process context
+
+The tasklet almost always completes before process context resumes.
+The only way to hit the race on UP is if softirq processing gets deferred
+to ksoftirqd, and then:
+In PREEMPT_RT case: Tasklets become threaded and can interleave.
+Is there a chance that in non-RT case, could we hit issues on UP processor?
+
+Or I may understand wrong?
+
+Regards
+Peng
+
+>  7 files changed, 17 insertions(+), 3 deletions(-)
+> 
+> -- 
+> 2.34.1
+
+Sent using hkml (https://github.com/sjp38/hackermail)
 
