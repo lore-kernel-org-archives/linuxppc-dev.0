@@ -2,43 +2,42 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ABC2560A263F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2026 15:30:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2561F60A2623
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2026 15:30:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=veAqQRvm
+	dkim=pass (1024-bit key, unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=kRHG9pcu
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j8GZ459DJz2ylj;
-	Wed, 21 Oct 2026 02:30:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=130.136.161.50
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792510204;
-	cv=none; b=gAO4g3nDxYxgYj4DQNRl/yPqcC5C6K/JzFtMypJsPFSA1s75iGvqmlhWDIdcDTXe8lr7CZE5MnIRfanu4gH85OSzCPZasYJCnfJU7LWFSxQtAdAmTYO/EyEBGyI99ypk3+4lXIRhXNT735wqDZf9+ICk5QWsSpmT0zq/lRIA9QCLdwptztcPW3X/sz+Ejdi+BVpUyzfc/eYS7VcBGf3Zb6kMusqoBW1Mca7e2NLNXyOu/B+j1J1TlwLgkHtNslBxxnoBMme7xhADqGj3MTm5fSyzskV/mAMwOiwSVnw1HTmZQhjoymYy23HI7e36+ffSInTlf+iDshb+YHUqltTH6g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j8GZ65nBsz30HB;
+	Wed, 21 Oct 2026 02:30:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:760:2e00:f0a1::32"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792510206;
+	cv=none; b=S0nGJv6PgItFAVg1bMgrlXvuvvy+GZsp4U2JcyjQq/oN/wSOA86HuVavmx+UMnY7tx2+9+YAxgi4rKRQJ7khIi9BkqaynSr+NXBTAFnMMawOKIAVt+zzlMrunulLZzk/q+d6YvhCeBrU+CRWPF8wFrVAR535KnHiF8RXutTTxzlwS/g4gGb9lT93zo06/6u5tUNZgxhlK+SMPu+RZkh/waspSy+Qk2p6j3dFsDKxLXz9WQ8uSr/aB9iijh75ID4+pB6wGNVrG6YRnTMJAZOdFeFPX6fNIqb/0dY39v2Lglum4wmHo3jC/o2swktsVbu60P5BD1U7PFaFS5NDoaOWRQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792510204; c=relaxed/relaxed;
-	bh=X7li7zppPfXAQDWIziNGfnEjMbFeJImmkhr9aLqumbs=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=NNTNDVg8YVuiIZyYTen6Hz4xPuC8PnVR8C8Z8DnLNYDl5bDXie+U8qezVJwDMvIU83eCjaog+cne2WWjjxd1NQ2ZAmmq9DKuD8nvMCmAxgg4jdOLrLlF9AhGeVBal85dEqEbu4qMs5DsvPgfra2l+yRo0CpftAEta8RrscguDP6DEUcvDFdJL2kzwBJzJWGzvUmlx0FQs0SdNFTeJ5zOJX6qVBcMUKta6NOz5fh6MG+mhV6VlOG5B8O3qMmLUQv2jdQqXzUOzqQbf6MdaY5MvcpJ+yqWFF0Blyc0zubrTm9By0o36TYdve+4rd/Tu41ELQ6/OtjuCtbKG7AAU4ZDWg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=cs.unibo.it; dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=veAqQRvm; dkim-atps=neutral; spf=pass (client-ip=130.136.161.50; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org) smtp.mailfrom=cs.unibo.it
+	t=1792510206; c=relaxed/relaxed;
+	bh=ofcykhfhNK12YLYENqutUEOmHnqlx6au/qEhAK44Ct0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=QCdfejF8nSk97uU8nS/EYidOGVyP4iFQTvVoC3HEf3YQ6mWbB2ldzZ9jvbDz5DOj9wbVcJQ2s98WInfbImMoexIXjRF06NktfFQXXZZobI1iTYUNL0SkgRRFUReCoo06B6UvXo4OpzS6cGcVfil/VYn/zrj5DL4JG3503rqYh0WzTPhK+Oz+C3TLR3y5BccAPh0MjNyGqlPZbGxVpP2xtZKN08JWHJigKWVEVlJSX/d0Gcgn8mdefmjFYY5ZDpk9LeQE5WC35ARSmReTnVvs4+TMcFy8cQypsV8m7lN5dTiXQ7Y5++AHWvRiyyOw4Z9ZGrbflK+rAoJLK2omZAOQew==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=cs.unibo.it; dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=kRHG9pcu; dkim-atps=neutral; spf=pass (client-ip=2001:760:2e00:f0a1::32; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org) smtp.mailfrom=cs.unibo.it
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=cs.unibo.it
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=veAqQRvm;
+	dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=kRHG9pcu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cs.unibo.it (client-ip=130.136.161.50; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org)
-Received: from mail.virtlab.unibo.it (mail.virtlab.unibo.it [130.136.161.50])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j8GZ170TVz2xwN
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2026 02:30:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cs.unibo.it (client-ip=2001:760:2e00:f0a1::32; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org)
+Received: from mail.virtlab.unibo.it (mail.virtlab.unibo.it [IPv6:2001:760:2e00:f0a1::32])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j8GZ31NFxz2yRn
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2026 02:30:02 +1100 (AEDT)
 Received: from eipi10.cs.unibo.it (unknown [94.32.99.206])
-	by mail.virtlab.unibo.it (Postfix) with ESMTPA id 9DA8B1C0251;
-	Tue, 20 Oct 2026 17:29:57 +0200 (CEST)
+	by mail.virtlab.unibo.it (Postfix) with ESMTPA id 3A0EC1C007A;
+	Tue, 20 Oct 2026 17:29:55 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=cs.unibo.it;
-	s=virtlab; t=1792510198;
-	bh=kecThFQauD5pORZjNAwNTrsBZzkWTRHw2R4hetODibc=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=veAqQRvmf/f/cYUdyAWyB4Uey00XfxCpUsln+jiOijpHEIBrVJuv+RtjR0x4kDt6w
-	 A3lZBmvae+xZhBiEc09i4SGQKNhlX6qNQnKOvja3s485mwJHbIPTRUE2i6450E8YSO
-	 hZDqpGJbM0+fIPAbmM/JLGL8n89otuV1JnruMC+E=
+	s=virtlab; t=1792510195;
+	bh=veBmBn3FP2ffZE8f3zwhKGlOWly7L1HMV7ZmK5ooywI=;
+	h=From:To:Cc:Subject:Date:From;
+	b=kRHG9pcuP0Y7DqcEuULu6cEu9AWpH1YZuefZ81VcPnI8bCJ6QDpCS7DTOVDFJPlzl
+	 w5Tr81XOinKSb1MUWHExSsZsgXT9fLnKEuurdq8P6EQpYV81AKQci9cPk+1nJQS3Xz
+	 HGTwke/ANaCIm92ino7itEzb1GnTlqMKQMnEfm/8=
 From: Renzo Davoli <renzo@cs.unibo.it>
 To: linux-kernel@vger.kernel.org
-Cc: Davide Berardi <berardi.dav@gmail.com>,
+Cc: Renzo Davoli <renzo@cs.unibo.it>,
 	Oleg Nesterov <oleg@redhat.com>,
 	=?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>,
 	Kees Cook <kees@kernel.org>,
@@ -50,6 +49,7 @@ Cc: Davide Berardi <berardi.dav@gmail.com>,
 	"Dmitry V . Levin" <ldv@strace.io>,
 	Alexey Gladkov <legion@kernel.org>,
 	Eugene Syromyatnikov <evgsyr@gmail.com>,
+	Davide Berardi <berardi.dav@gmail.com>,
 	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
 	Heiko Carstens <hca@linux.ibm.com>,
 	Vasily Gorbik <gor@linux.ibm.com>,
@@ -57,14 +57,11 @@ Cc: Davide Berardi <berardi.dav@gmail.com>,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-s390@vger.kernel.org,
 	linux-kselftest@vger.kernel.org,
-	strace-devel@lists.strace.io,
-	Renzo Davoli <renzo@cs.unibo.it>
-Subject: [PATCH v9 1/3] seccomp: let the tracer skip a syscall independently of its number
-Date: Tue, 20 Oct 2026 17:29:41 +0200
-Message-ID: <20261020152945.575664-2-renzo@cs.unibo.it>
+	strace-devel@lists.strace.io
+Subject: [PATCH v9 0/3] PTRACE_SET_SYSCALL_INFO: add support for seccomp syscall skipping
+Date: Tue, 20 Oct 2026 17:29:40 +0200
+Message-ID: <20261020152945.575664-1-renzo@cs.unibo.it>
 X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20261020152945.575664-1-renzo@cs.unibo.it>
-References: <20261020152945.575664-1-renzo@cs.unibo.it>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,153 +77,125 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: Davide Berardi <berardi.dav@gmail.com>
+PTRACE_SET_SYSCALL_INFO is a generic ptrace API that complements
+PTRACE_GET_SYSCALL_INFO by allowing a tracer to modify details of a
+system call in which the tracee is currently blocked.
 
-At a PTRACE_EVENT_SECCOMP stop the tracer can only skip the system call
-by setting its number to -1, which seccomp reads back with
-syscall_get_nr().  This depends on how each architecture lays out the
-syscall number and the return value in the registers:
+This patch set extends PTRACE_SET_SYSCALL_INFO with support for
+skipping a system call at a PTRACE_EVENT_SECCOMP stop and setting its
+return value.  To do this, the tracer changes 'op' from
+PTRACE_SYSCALL_INFO_SECCOMP to PTRACE_SYSCALL_INFO_EXIT and fills in the
+exit union fields (rval and is_error).
 
- - on some architectures the syscall number shares a register with the
-   return value (e.g. v0 on MIPS), so setting the return value after the
-   number would overwrite the skip request, and each of them needs its
-   own way to keep it (MIPS keeps a copy of the number in thread_info);
+Michal pointed out in the review of v7 [1] that the register state alone
+cannot tell whether a syscall has to be executed or skipped with a
+preset return value, since on some architectures the return value
+shares a register with the syscall number or the arguments, and that
+the "already dispatched" information should be architecture
+independent rather than an architecture-specific thread flag.
 
- - on s390 syscall_get_nr() returns the low 16 bits of int_code, so -1
-   is read back as 65535: seccomp does not skip the call but runs the
-   filters again on syscall 65535, which kills the task if the filter
-   denies unknown syscalls.
+v8 does exactly that: the tracer no longer sets the syscall number to -1
+and relies on syscall_get_nr() reading it back as negative.  Instead,
+patch 1 adds a per-task flag owned by seccomp, which the tracer sets
+while the tracee is stopped.  When the tracee resumes, seccomp skips the
+system call just like for SECCOMP_RET_ERRNO, a path every architecture
+already handles without touching the return value.  This also fixes
+skipping on s390, where -1 is read back as syscall 65535.
 
-Add a per-task flag which the tracer sets with
-seccomp_ptrace_skip_syscall() while the tracee is stopped at the
-PTRACE_EVENT_SECCOMP stop, after it has set the return value.  When the
-tracee resumes, seccomp skips the system call like for
-SECCOMP_RET_ERRNO, which every architecture already handles without
-touching the return value.
+On powerpc, this series depends on the fix posted separately [2]:
+syscall_set_return_value() currently sets TIF_SYSCALL_RET on the
+*caller*, i.e. on the tracer when called from PTRACE_SET_SYSCALL_INFO,
+and skipped system calls lose non-error return values.  Both problems
+are regressions in v7.3-rc and already break the existing
+set_syscall_info selftest and seccomp_bpf user_notification_basic on
+ppc64le.
 
-The flag is cleared by the tracee before the stop and written by the
-tracer only while the tracee is stopped, so it needs no locking: the
-wake-up of the tracee orders it like the registers written by the
-tracer.
+[1] https://lore.kernel.org/lkml/apWFHkZnCMfxQCEk@kunlun.suse.cz/
+[2] https://lore.kernel.org/lkml/20261018151539.440213-1-renzo@cs.unibo.it/
 
-The next patch uses this in PTRACE_SET_SYSCALL_INFO.
+Testing (QEMU, v7.3-rc6, tools/testing/selftests/ptrace/set_syscall_info
+and tools/testing/selftests/seccomp/seccomp_bpf):
 
-Suggested-by: Michal Suchánek <msuchanek@suse.de>
-Assisted-by: claude-opus-5-5
-Signed-off-by: Renzo Davoli <renzo@cs.unibo.it>
----
- include/linux/seccomp.h       | 33 +++++++++++++++++++++++++++++++++
- include/linux/seccomp_types.h |  4 ++++
- kernel/seccomp.c              | 11 ++++++++++-
- 3 files changed, 47 insertions(+), 1 deletion(-)
+                               x86_64 (KVM)   ppc64le (TCG)   s390x (TCG)
+  ptrace/set_syscall_info      2/2            2/2             2/2
+  seccomp/seccomp_bpf          111/111        111/111         110/111 (*)
 
-diff --git a/include/linux/seccomp.h b/include/linux/seccomp.h
-index fcb3eb9825e5..ee31857f3ba6 100644
---- a/include/linux/seccomp.h
-+++ b/include/linux/seccomp.h
-@@ -75,6 +75,32 @@ static inline int seccomp_mode(struct seccomp *s)
- #ifdef CONFIG_SECCOMP_FILTER
- extern void seccomp_filter_release(struct task_struct *tsk);
- extern void get_seccomp_filter(struct task_struct *tsk);
-+
-+/**
-+ * seccomp_ptrace_skip_syscall - make a tracee skip the current system call
-+ * @tsk: tracee stopped at a PTRACE_EVENT_SECCOMP stop
-+ *
-+ * Must only be called by the tracer of @tsk while @tsk is stopped at a
-+ * PTRACE_EVENT_SECCOMP stop, after it has set the return value of the system
-+ * call.  When the tracee resumes, the system call is skipped and the return
-+ * value is left untouched, like with SECCOMP_RET_ERRNO.
-+ */
-+static inline void seccomp_ptrace_skip_syscall(struct task_struct *tsk)
-+{
-+	tsk->seccomp.ptrace_skip = true;
-+}
-+
-+/**
-+ * seccomp_ptrace_syscall_skipped - check for seccomp_ptrace_skip_syscall()
-+ * @tsk: tracee stopped at a PTRACE_EVENT_SECCOMP stop
-+ *
-+ * Return: true if the tracer requested to skip the system call during the
-+ * current PTRACE_EVENT_SECCOMP stop of @tsk.
-+ */
-+static inline bool seccomp_ptrace_syscall_skipped(struct task_struct *tsk)
-+{
-+	return tsk->seccomp.ptrace_skip;
-+}
- #else  /* CONFIG_SECCOMP_FILTER */
- static inline void seccomp_filter_release(struct task_struct *tsk)
- {
-@@ -84,6 +110,13 @@ static inline void get_seccomp_filter(struct task_struct *tsk)
- {
- 	return;
- }
-+static inline void seccomp_ptrace_skip_syscall(struct task_struct *tsk)
-+{
-+}
-+static inline bool seccomp_ptrace_syscall_skipped(struct task_struct *tsk)
-+{
-+	return false;
-+}
- #endif /* CONFIG_SECCOMP_FILTER */
- 
- #if defined(CONFIG_SECCOMP_FILTER) && defined(CONFIG_CHECKPOINT_RESTORE)
-diff --git a/include/linux/seccomp_types.h b/include/linux/seccomp_types.h
-index cf0a0355024f..4bdb8424055b 100644
---- a/include/linux/seccomp_types.h
-+++ b/include/linux/seccomp_types.h
-@@ -18,11 +18,15 @@ struct seccomp_filter;
-  *
-  *          @filter must only be accessed from the context of current as there
-  *          is no read locking.
-+ * @ptrace_skip: set by the tracer while the task is stopped at a
-+ *               PTRACE_EVENT_SECCOMP stop to request that the system call is
-+ *               skipped, after it has set the return value.
-  */
- struct seccomp {
- 	int mode;
- 	atomic_t filter_count;
- 	struct seccomp_filter *filter;
-+	bool ptrace_skip;
- };
- 
- #else
-diff --git a/kernel/seccomp.c b/kernel/seccomp.c
-index 86cf4460d69e..edeb21fa3e23 100644
---- a/kernel/seccomp.c
-+++ b/kernel/seccomp.c
-@@ -1306,6 +1306,7 @@ static bool __seccomp_filter(int this_syscall, const bool recheck_after_trace)
- 		}
- 
- 		/* Allow the BPF to provide the event message */
-+		current->seccomp.ptrace_skip = false;
- 		ptrace_event(PTRACE_EVENT_SECCOMP, data);
- 		/*
- 		 * The delivery of a fatal signal during event
-@@ -1319,7 +1320,15 @@ static bool __seccomp_filter(int this_syscall, const bool recheck_after_trace)
- 		 */
- 		if (fatal_signal_pending(current))
- 			goto skip;
--		/* Check if the tracer forced the syscall to be skipped. */
-+		/*
-+		 * Check if the tracer forced the syscall to be skipped, either
-+		 * with seccomp_ptrace_skip_syscall(), which does not depend on
-+		 * how the architecture encodes the syscall number and the
-+		 * return value in the registers, or by setting the syscall
-+		 * number to -1.
-+		 */
-+		if (current->seccomp.ptrace_skip)
-+			goto skip;
- 		this_syscall = syscall_get_nr(current, current_pt_regs());
- 		if (this_syscall < 0)
- 			goto skip;
+  Skipping getpid() at a PTRACE_EVENT_SECCOMP stop, with a filter that
+  kills the process on unknown syscall numbers:
+
+  op=SECCOMP, nr=-1 (before)   error          r3 left as is   SIGSYS kill
+  op=SECCOMP->EXIT (this)      -ESRCH         -ESRCH          -ESRCH
+
+  (*) user_notification_wait_killable_after_reply timed out under TCG
+      while another VM was running; it passes 5/5 both with and without
+      this series on an idle x86_64 KVM guest.
+
+  Build-tested also with CONFIG_SECCOMP=n and CONFIG_SECCOMP_FILTER=n.
+  Not tested: MIPS, arm64, riscv, loongarch, real hardware.
+
+Changes in v9:
+* selftests/ptrace/set_syscall_info.c: check for seccomp filter support,
+  fix failure report
+* rebased to Linux 7.3
+
+Changes in v8:
+* skip the system call via a seccomp per-task flag instead of
+  syscall_set_nr(-1), as suggested by Michal Suchánek
+* new helper ptrace_set_syscall_info_seccomp_skip() instead of a bool
+  argument to ptrace_set_syscall_info_exit() (Michal Suchánek)
+* once the system call is skipped, reject further
+  PTRACE_SYSCALL_INFO_SECCOMP updates during the same stop
+* selftest: also test an error return value and the above
+* dropped the Reviewed-by tags of Oleg and Dmitry, as patch 2 changed
+  significantly
+
+Changes in v7:
+* rebased to Linux 7.3-rc1
+
+Changes in v6:
+* selftests/ptrace/set_syscall_info.c: improve messages in case of failure.
+
+Changes in v5:
+* reworded the explanation for not supporting PTRACE_SYSCALL_INFO_ENTRY yet.
+* selftests/ptrace: removed a redundant check.
+
+Changes in v4:
+* Reworded the commit messages for clarity.
+* Renamed the local variable child_op to op in ptrace_set_syscall_info()
+* Clean up and improve the coding style of selftests/ptrace/set_syscall_info.c
+  (suggested by Dmitry V. Levin)
+
+Changes in v3:
+* restrict the syscall skipping feature to PTRACE_SYSCALL_INFO_SECCOMP
+
+Changes in v2:
+bugfix: _NONE -> _EXIT transition was erroneously permitted
+
+Davide Berardi (1):
+  seccomp: let the tracer skip a syscall independently of its number
+
+Renzo Davoli (2):
+  ptrace: add PTRACE_SET_SYSCALL_INFO syscall skipping support
+  selftests/ptrace: add a test case for PTRACE_SET_SYSCALL_INFO syscall
+    skipping
+
+ include/linux/seccomp.h                       |  33 +++
+ include/linux/seccomp_types.h                 |   4 +
+ kernel/ptrace.c                               |  45 +++-
+ kernel/seccomp.c                              |  11 +-
+ .../selftests/ptrace/set_syscall_info.c       | 230 +++++++++++++++++-
+ 5 files changed, 319 insertions(+), 4 deletions(-)
+
+
+base-commit: f47d223627f80cb7a1eb14c585fe6cb35de5e984
+prerequisite-patch-id: abdd0fc0973bc3845ae7bfe84d855a7213ccd3d7
 -- 
 2.55.0
 
