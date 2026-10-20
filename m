@@ -1,64 +1,49 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1729F606A31F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2026 12:13:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C32FF606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2026 13:12:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=embeddedor.com header.i=@embeddedor.com header.a=rsa-sha256 header.s=default header.b=AbVyf0EC
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=gYFZnEMf
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j8BCX3mN5z2xwL;
-	Tue, 20 Oct 2026 23:13:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=35.89.44.35
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792498424;
-	cv=none; b=XBs57YuLXJLyq7Wi36wPzEAQy+R+Jsz/n7s8vd+MSLsmb3t4D3GLq7YNcJo2pgwBxou295cAuN2Jfg7YyWudCpEaol2S2r3n5ssiA05x8SmHlbC4JxE8cncEel81kJXctzVIrS5dQYqlm/MwVyYJhFUda6xQbC7p/Z63R6fbTaviNzw+H3dWWp7foB+Iy2G65IFa6n6Qsbq9yWW7sfUBk+XTHVXcd8UQFxwj32bBVKxjNiIcHBGLdNQjRdoiq86U6FX3HuU80fmCYMlKgx6mqeKgcFxbH/1UsosKB/o9pOHje8lHznjH4kV1x6BmWKDIyDiWeScYh3T6J5MU53AtMQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j8CWh2Cvvz2y2T;
+	Wed, 21 Oct 2026 00:12:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::b5"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792501968;
+	cv=none; b=briDU4bkwUq27jdbmlX/f8uKrrsli/9l1W6SJZPd8AYxnaPJnI2H4DedinhxVP7Fqm809jFSfRgcJw+XDd7dDs/GLG8/+w46VVBLn6H95gjOpy+5HjdwYUjBPzXCkPWleD4J8pgcexWkmKlgCAFGI1qmrV3XXaEm2LMTR51IGuRFJVE2bsJ0jKsrVmOUEMRSJp+z1YJox/PvdescYEAO00acJZBIgGmuXuWvGqDFrbagDUzCLia/7Ps1MqcOZYRARxsIgZ6J4aiYbSFP9PEaxAaBNlGmBMxH+YS+Xrd2VxtcZ/1msT/zBLRpSfsKMTglfzATCWhluN5Pr0F+G+PTwA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792498424; c=relaxed/relaxed;
-	bh=tW+jOFa0bAPRo5ob6iKpdpiylE+QgPpSwSf2SsyL4p0=;
+	t=1792501968; c=relaxed/relaxed;
+	bh=COtPdQGJK7jNWqfgDfzbpfDSMkuuE3aMgNhGPl3y5n0=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=KheXPk8UaUy50c5YfGwKzqAI7hUKEXiqNM3DR2przy0XTTuRKx9F1KbjWiczzHBtl3wJlty9uCxMET7csbBKykS5AZ7rAWSy/kVa4DYQcAdPssEz6EoIOjKbI0vqz/UzFdM5ZtXwkpd/v1OoWfhkhUEzxiTPaF9Ukwrg9ha8vCmAGUmBPZixb5FCqg8ZEslL4qBtZoWP44iWGjoJ8C/dEwgusfsVxtUT5tLJPlCHRi7ivNXX+2+2qNs0UqWMA4aKaVM3ElZiLO0LZB+spNrdpX1ricFGFJGWYFUzlPsfBHXR7LbzH1BO4LJoTr3XRXxqYKM/N3LEl72d6dPQIX2lMA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=embeddedor.com; dkim=pass (2048-bit key; unprotected) header.d=embeddedor.com header.i=@embeddedor.com header.a=rsa-sha256 header.s=default header.b=AbVyf0EC; dkim-atps=neutral; spf=pass (client-ip=35.89.44.35; helo=omta36.uswest2.a.cloudfilter.net; envelope-from=gustavo@embeddedor.com; receiver=lists.ozlabs.org) smtp.mailfrom=embeddedor.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=embeddedor.com
+	 In-Reply-To:Content-Type; b=cpz8AtN670A7t5J1YleCRDp5OUYlb+W84RK8nkeSqYM3+QkMkN+h1Xccxxj7nWJP1IODkDitYcq6gYFzyLLPLsHg4VNEuUYQwhwIEz3SFclGbMOZhK5eFifb3fnIjiafA+pwNGgFmpO9jXI0WOyLEOxMZWXcn2k1CffYk5vRFdEBWISe9ctF0z5FkZI91wTo2rwlgBm3zcRHLvovTYAq3vRCfNXQ6UYkns0KtcorR6Bu+ouILnSjKmo0BnHCXM2kQy/FRlx9ilTzucKoJHynlM2UknVeSy+MOiweoPji4zKFrWktWBqOFOiFRwtbe1ix4+ZQcZv9vAyj3OEBJ0mhPw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=gYFZnEMf; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::b5; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=embeddedor.com header.i=@embeddedor.com header.a=rsa-sha256 header.s=default header.b=AbVyf0EC;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=gYFZnEMf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=embeddedor.com (client-ip=35.89.44.35; helo=omta36.uswest2.a.cloudfilter.net; envelope-from=gustavo@embeddedor.com; receiver=lists.ozlabs.org)
-Received: from omta36.uswest2.a.cloudfilter.net (omta36.uswest2.a.cloudfilter.net [35.89.44.35])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::b5; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta1.migadu.com (out-181.mta1.migadu.com [IPv6:2001:41d0:203:375::b5])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j8BCS5j3Kz2xwN
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2026 23:13:38 +1100 (AEDT)
-Received: from eig-obgw-5003b.ext.cloudfilter.net ([10.0.29.155])
-	by cmsmtp with ESMTPS
-	id IxGuxHqlJusRSJ8hIx342x; Tue, 20 Oct 2026 12:12:04 +0000
-Received: from gator4166.hostgator.com ([108.167.190.91])
-	by cmsmtp with ESMTPS
-	id J8hGxPrFtFB8dJ8hHxZXnq; Tue, 20 Oct 2026 12:12:03 +0000
-X-Authority-Analysis: v=2.4 cv=HcoUTjE8 c=1 sm=1 tr=0 ts=6ad75a93
- a=vY9Mjuda9oMEc2E4Cx1x2A==:117 a=vY9Mjuda9oMEc2E4Cx1x2A==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=7T7KSl7uo7wA:10 a=9AdMxfjQAAAA:20
- a=FmNn6hfUth-HS78a2iwA:9 a=QEXdDO2ut3YA:10 a=2aFnImwKRvkU0tJ3nQRT:22
- a=bA3UWDv6hWIuX7UZL3qL:22
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=embeddedor.com; s=default; h=Content-Transfer-Encoding:Content-Type:
-	In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender
-	:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-	List-Unsubscribe:List-Unsubscribe-Post:List-Subscribe:List-Post:List-Owner:
-	List-Archive; bh=tW+jOFa0bAPRo5ob6iKpdpiylE+QgPpSwSf2SsyL4p0=; b=AbVyf0ECm4W7
-	tIKrNrtOl/QoYsbOfllsmecnIpcjx7XMr0JAxyB0D+8FDXSGxp9sUKHssuTqvu7XcoD4dB/n4VehD
-	/UUqQg+lcKsgGHanroZ2XiCNePZ8hhEwdk8luTpo1DS6wxPLrg4LXCRsnSb5WCP5/TFD8vQjXwC11
-	XWXs99OZmjcQwjkbqNOoDrylTUpO3h51NGLxYvVEiorCHen2gqpxsclFYkEz1d/dLC80Cj849335X
-	90/z1TZIUUo5BneulKzuw3La3huIen69cHvLQ+5Xwra8BE0RvlEV1scU8zv3JcG5bxGiNKNzbHYIn
-	3Ly49No4/31RKSSWVNooQA==;
-Received: from [1.234.115.197] (port=33036)
-	by gator4166.hostgator.com with esmtpsa  (TLS1.3) tls TLS_AES_128_GCM_SHA256
-	(Exim 4.100.1)
-	(envelope-from <gustavo@embeddedor.com>)
-	id 1xJ8hE-00000000wsV-45S0;
-	Tue, 20 Oct 2026 07:12:01 -0500
-Message-ID: <6cf42177-5c35-49b8-9e4b-36a4d28aa26e@embeddedor.com>
-Date: Tue, 20 Oct 2026 21:11:47 +0900
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j8CWc5vf5z2xwL
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2026 00:12:41 +1100 (AEDT)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=Wc1RWHwk8Xdv1pW2d6s7sF1ggFAVdoXSgDjlgBucV+Y=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1792501937; v=1; x=1793106737;
+ b=gYFZnEMfowCMjOFR93SUcUyQK/m2WGEFyHp+36K3Zf0iUSDDpUuEG32E604IF0tb+F8FHLXK
+ U7Wc1b3HIMr0AD0aNsmDCuqihhlYSk6WNb0OpBsCxJBBmFDNgiZhrw2bsw0S7xaD/g1cUFqHJqE
+ sjKpXCdajMdJGGTQramICtj8=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id 41652e7101a74390;
+	Tue, 20 Oct 2026 13:12:17 +0000
+X-Mizu-Trace-ID: 41652e7101a74390
+X-Migadu-Flow: FLOW_OUT
+Message-ID: <aabae9f2-ceed-4254-a778-aefaea4df257@linux.dev>
+Date: Tue, 20 Oct 2026 21:12:08 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,143 +58,178 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/kexec: Annotate umem_info members with
- __counted_by_ptr
-To: Thorsten Blum <blum@kernel.org>, Sourabh Jain <sourabhjain@linux.ibm.com>
-Cc: Thorsten Blum <thorsten.blum@linux.dev>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+Subject: Re: [PATCH v2 3/5] mm/vmalloc: undo partial mappings inside the
+ mapping functions
+To: Dev Jain <dev.jain@arm.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Uladzislau Rezki <urezki@gmail.com>, Suren Baghdasaryan <surenb@google.com>,
+ Christoph Lameter <cl@gentwo.org>, Tejun Heo <tj@kernel.org>,
+ Dennis Zhou <dennis@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Dmitry Vyukov <dvyukov@google.com>, Marco Elver <elver@google.com>,
+ Alexander Potapenko <glider@google.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
  "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Kees Cook <kees@kernel.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>,
- Aditya Gupta <adityag@linux.ibm.com>, Hari Bathini <hbathini@linux.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-hardening@vger.kernel.org
-References: <20260730130248.597249-2-thorsten.blum@linux.dev>
- <7d99725f-9c90-48ca-bee1-30e2e6c06617@linux.ibm.com>
- <asDClaRrHuKB44X-@kernel.org>
- <dbb4580d-7e20-4c38-9716-f39cf81a4942@linux.ibm.com>
- <asNfSSp-AckyeO7P@kernel.org>
+ kasan-dev@googlegroups.com, linux-mm@kvack.org,
+ Sashiko <sashiko-bot@kernel.org>, stable@vger.kernel.org
+References: <20261019054531.87652-1-hao.ge@linux.dev>
+ <20261019054531.87652-4-hao.ge@linux.dev>
+ <dcad793e-8814-4bbf-8b31-3ec9d0bb9ede@arm.com>
 Content-Language: en-US
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-In-Reply-To: <asNfSSp-AckyeO7P@kernel.org>
+From: Hao Ge <hao.ge@linux.dev>
+In-Reply-To: <dcad793e-8814-4bbf-8b31-3ec9d0bb9ede@arm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
-X-AntiAbuse: Original Domain - lists.ozlabs.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - embeddedor.com
-X-BWhitelist: no
-X-Source-IP: 1.234.115.197
-X-Source-L: No
-X-Exim-ID: 1xJ8hE-00000000wsV-45S0
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
-X-Source-Sender: ([1.234.115.197]) [1.234.115.197]:33036
-X-Source-Auth: gustavo@embeddedor.com
-X-Email-Count: 3
-X-Org: HG=hgshared;ORG=hostgator;
-X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
-X-Local-Domain: yes
-X-CMAE-Envelope: MS4xfIM6ietuiZfvD8bdfYbb/95/qJJDUYy8MdSj2v0LpHVFV3D0iZFz2qgeWtvt16NVwShMiHd8ZpreEq1h8mOnWRCMxRSDq0D/1yVv+sxHLqZ0tq3YD+9G
- 3Hr4C/yitGzyjRqx+/AoQMDAWSSOll1C7jsI8mxzmfmsFc88Q1IcY7lP/948SWi/atXjx1MJaLM3vsgLRfDiXU+geSw2a7zXKcd6Yy0SyOb7nqEmQtsfrqjI
-X-Spam-Status: No, score=-20.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
 	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+Hi Dev
 
 
-On 10/5/26 17:26, Thorsten Blum wrote:
-> On Mon, Oct 05, 2026 at 01:42:01PM +0530, Sourabh Jain wrote:
->> On 03/10/26 14:23, Thorsten Blum wrote:
->>> On Fri, Sep 25, 2026 at 11:49:04AM +0530, Sourabh Jain wrote:
->>>> On 30/07/26 18:32, Thorsten Blum wrote:
->>>>> Add __counted_by_ptr() to umem_info::buf and umem_info::ranges to
->>>>> improve access bounds checking via CONFIG_UBSAN_BOUNDS and
->>>>> CONFIG_FORTIFY_SOURCE.
->>>>>
->>>>> Set the count fields before assigning the corresponding pointers, return
->>>>> early on krealloc() failure, and use sizeof(*buf) when deriving
->>>>> max_entries from the allocation size.
->>>>>
->>>>> Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
->>>>> ---
->>>>>     arch/powerpc/kexec/file_load_64.c | 22 ++++++++++++----------
->>>>>     1 file changed, 12 insertions(+), 10 deletions(-)
->>>>>
->>>>> diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
->>>>> index 8c72e12ea44e..6424b668f0e9 100644
->>>>> --- a/arch/powerpc/kexec/file_load_64.c
->>>>> +++ b/arch/powerpc/kexec/file_load_64.c
->>>>> @@ -34,14 +34,15 @@
->>>>>     #include <asm/cputhreads.h>
->>>>>     struct umem_info {
->>>>> -	__be64 *buf;		/* data buffer for usable-memory property */
->>>>> +	/* data buffer for usable-memory property */
->>>>> +	__be64 *buf __counted_by_ptr(max_entries);
->>>>>     	u32 size;		/* size allocated for the data buffer */
->>>>>     	u32 max_entries;	/* maximum no. of entries */
->>>>>     	u32 idx;		/* index of current entry */
->>>>>     	/* usable memory ranges to look up */
->>>>>     	unsigned int nr_ranges;
->>>>> -	const struct range *ranges;
->>>>> +	const struct range *ranges __counted_by_ptr(nr_ranges);
->>>>>     };
->>>> [...]
->>>>>     const struct kexec_file_ops * const kexec_file_loaders[] = {
->>>>> @@ -83,11 +84,12 @@ static __be64 *check_realloc_usable_mem(struct umem_info *um_info, int cnt)
->>>>>     	new_size = um_info->size + MEM_RANGE_CHUNK_SZ;
->>>>>     	tbuf = krealloc(um_info->buf, new_size, GFP_KERNEL);
->>>>> -	if (tbuf) {
->>>>> -		um_info->buf = tbuf;
->>>>> -		um_info->size = new_size;
->>>>> -		um_info->max_entries = (um_info->size / sizeof(u64));
->>>>> -	}
->>>>> +	if (!tbuf)
->>>>> +		return NULL;
->>>>> +
->>>>> +	um_info->size = new_size;
->>>>> +	um_info->max_entries = um_info->size / sizeof(*um_info->buf);
->>>>> +	um_info->buf = tbuf;
->>>>
->>>> Could you please explain why size and max_entries are updated before the
->>>> buffer itself?
->>> __counted_by_ptr() requires the counter ->max_entries to be set before
->>> the ->buf pointer is assigned; otherwise you have an inconsistent state
->>> where the counter doesn't match the pointer.
+On 10/20/26 13:46, Dev Jain wrote:
+>
+> On 19/10/26 11:15 am, Hao Ge wrote:
+>> __vmap_pages_range_noflush() and friends can install some PTEs before
+>> failing and leave them mapped, and the kernel callers do not agree on
+>> who cleans them up. pcpu_map_pages() and kmsan_ioremap_page_range()
+>> roll back what they mapped before the failure, while
+>> vm_module_tags_populate() and the __GFP_NOFAIL retry loop in
+>> __vmalloc_area_node() rely on the mapping functions cleaning up and
+>> do not call anything like vunmap_range() themselves. When the same
+>> range is mapped again, the attempt hits the leftovers and fails, with
+>> a BUG() in vmap_pte_range() for huge mappings and a warning on the
+>> small-page path.
 >>
->> But isn't updating the counter holding the buffer size before the actual
->> buffer
->> can cause problems?
+>> After discussing with Suren and Ulad, we decided to put the rollback
+>> into the entry points of the vmap API rather than into every low-level
+>> helper. __vmap_pages_range_noflush() undoes the whole range it was
+>> asked to map when it fails, and vmap_page_range() undoes its range
+>> for the ioremap-style mappings.
 >>
->> Can you share the document link of __counted_by_ptr() which says that size
->> counter to be
->> updated before the buffer pointer.
+>> The rollback is __vunmap_range_noflush(), it only clears the PTEs,
+>> no TLB flush, nothing has touched these mappings.
+>> vmap_pages_range_noflush() drops the KMSAN metadata when the data
+>> mapping fails, and an empty range bails out with -EINVAL now, which
+>> used to BUG_ON() on the small-page path and map nothing at all on
+>> the huge-page one.
 >>
->> Here is an example in fs/coredump.c file where size counter is updated after
->> the buffer
->> with __counter_by_ptr():
+>> Reported-by: Sashiko <sashiko-bot@kernel.org>
+>> Suggested-by: Uladyslau Rezki <urezki@gmail.com>
+>> Cc: stable@vger.kernel.org
+>> Signed-off-by: Hao Ge <hao.ge@linux.dev>
+>> ---
+>>   mm/vmalloc.c | 44 ++++++++++++++++++++++++++++++++------------
+>>   1 file changed, 32 insertions(+), 12 deletions(-)
 >>
->> https://github.com/torvalds/linux/blob/a90ee4305c4a5df72c11b31dacfdc76e00fcf78a/fs/coredump.c#L98
->> https://github.com/torvalds/linux/blob/a90ee4305c4a5df72c11b31dacfdc76e00fcf78a/fs/coredump.c#L115
-> 
-> Maybe the order only matters for flexible arrays and __counted_by(), but
-> not for __counted_by_ptr(). I reordered it mostly out of habit from
-> __counted_by() annotations and assumed the same rules apply for
-> __counted_by_ptr(). Happy to restore the old order if it's not required.
-> 
-> Kees or Gustavo, what's your take on this?
+>> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+>> index 44e0eb32708f..75aa5acf5566 100644
+>> --- a/mm/vmalloc.c
+>> +++ b/mm/vmalloc.c
+>> @@ -363,6 +363,9 @@ int vmap_page_range(unsigned long addr, unsigned long end,
+>>   	if (!err)
+>>   		err = kmsan_ioremap_page_range(addr, end, phys_addr, prot,
+>>   					       ioremap_max_page_shift);
+>> +	if (err)
+>> +		__vunmap_range_noflush(addr, end);
+>> +
+>>   	return err;
+>>   }
+>>   
+>> @@ -683,27 +686,35 @@ int __vmap_pages_range_noflush(unsigned long addr, unsigned long end,
+>>   		pgprot_t prot, struct page **pages, unsigned int page_shift)
+>>   {
+>>   	unsigned int i, nr = (end - addr) >> PAGE_SHIFT;
+>> +	unsigned long start = addr;
+>> +	int err = 0;
+>> +
+>> +	if (WARN_ON_ONCE(addr >= end))
+>> +		return -EINVAL;
+> IIUC this is a general change independent of this patch? Caller could pass
+> addr >= end and if we take the huge mapping path, we lose the sanity check.
+>
+> So this could become a separate patch.
 
-The order matters when dereferencing the pointer. In this case, it's just
-an assignment.
+
+OK,  and Sashiko has flagged another case:
+
+when 0 < end - addr < PAGE_SIZE, nr = (end - addr) >> PAGE_SHIFT 
+evaluates to 0,
+
+so the huge-page path still maps nothing and returns 0.
+
+So this separate patch would cover this case as well.
+
 
 Thanks
--Gustavo
+
+Best Regards
+
+Hao
 
 
+>
+>
+>>   
+>>   	if (WARN_ON_ONCE(page_shift < PAGE_SHIFT))
+>>   		return -EINVAL;
+>>   
+>>   	if (!IS_ENABLED(CONFIG_HAVE_ARCH_HUGE_VMALLOC) ||
+>> -			page_shift == PAGE_SHIFT)
+>> -		return vmap_small_pages_range_noflush(addr, end, prot, pages);
+>> -
+>> -	for (i = 0; i < nr; i += 1U << (page_shift - PAGE_SHIFT)) {
+>> -		int err;
+>> -
+>> -		err = vmap_range_noflush(addr, addr + (1UL << page_shift),
+>> +			page_shift == PAGE_SHIFT) {
+>> +		err = vmap_small_pages_range_noflush(addr, end, prot, pages);
+>> +	} else {
+>> +		for (i = 0; i < nr; i += 1U << (page_shift - PAGE_SHIFT)) {
+>> +			err = vmap_range_noflush(addr, addr + (1UL << page_shift),
+>>   					page_to_phys(pages[i]), prot,
+>>   					page_shift);
+>> -		if (err)
+>> -			return err;
+>> +			if (err)
+>> +				break;
+>>   
+>> -		addr += 1UL << page_shift;
+>> +			addr += 1UL << page_shift;
+>> +		}
+>>   	}
+>>   
+>> -	return 0;
+>> +	/* Undo the PTEs installed before the failure. */
+>> +	if (err)
+>> +		__vunmap_range_noflush(start, end);
+>> +
+>> +	return err;
+>>   }
+>>   
+>>   int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
+>> @@ -715,7 +726,16 @@ int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
+>>   
+>>   	if (ret)
+>>   		return ret;
+>> -	return __vmap_pages_range_noflush(addr, end, prot, pages, page_shift);
+>> +
+>> +	ret = __vmap_pages_range_noflush(addr, end, prot, pages, page_shift);
+>> +	/*
+>> +	 * The page tables undo themselves on failure. Tear down the
+>> +	 * metadata that was fully set up before the mapping failed.
+>> +	 */
+>> +	if (ret)
+>> +		kmsan_vunmap_range_noflush(addr, end);
+>> +
+>> +	return ret;
+>>   }
+>>   
+>>   static int __vmap_pages_range(unsigned long addr, unsigned long end,
 
