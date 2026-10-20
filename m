@@ -2,69 +2,100 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 813C6606A32F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2026 15:30:26 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 38F33606A323
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2026 16:59:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=rg+DKVN7
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=PdtgPDvb
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j8GZ72Rc4z30PJ;
-	Wed, 21 Oct 2026 02:30:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:760:2e00:f0a1::32"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792510207;
-	cv=none; b=RbvXaa0csJWEAk1qte+yHwsyT4A0PT7rkwtKDAdwJQK2LwFGOdGZ7Wo2u53L4VF9JAdLaWN/JFoK0+SGLiSTJSRwW49GIuI0dgltaphqlYUzvUjsisuCbwUNEf0nSabOgBrw4VLSPlLHoq4Q4pCrYUk0Bp0i8dSTi2ppRBVp79BgtQq843ZssUPRQ/Rqh+RTbsMrhiDZVm+JUtpQmIdFXBUQDIZNIqlfHs0dKEPSOqe/As3lFkSPxmKq8Izt+o7J5SobGyA7IbkG+HdBsMAFzujiQl319pXqZ76u8K8aUzcmibG0cSDYGI16ebObPrtcMHD6zLECFcUlM4htxOzTQg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792510207; c=relaxed/relaxed;
-	bh=8lP419SPnk9bISnyNiCg+XhXZjrC6NfgXVYlaoCpSY8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=CdiTVleHBIMqkoYhebGsZgaZpnwZS/XDBYITe+cENetVFZTB1/t8x5SURyCDCN2HC2iME1ng+6GJhrNkpyIAQI/SfO38GXWySbgHAJafS0O+HI7/IZHcZP5DOp5LTjuxRIuEd3MZvYEfXot1LI8pbU0rZ0ZwbZfWkRZBL8eqyK0fHVFpMDwQNV21z8k0TmD+ecqNJbGRYqJ+PgX2Twb5/ZbIVrk6V+tQacFL6yTjCb2YNO8qQZagyFgN+LNwYivdjZjM27+uw8q3yWvI6DOjgnNdBZZB1AIwaw8qgbSO/5gQcgzLkirs/vMUrXb6q8MVuuJ/9he9xooXkB4bF4e48w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=cs.unibo.it; dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=rg+DKVN7; dkim-atps=neutral; spf=pass (client-ip=2001:760:2e00:f0a1::32; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org) smtp.mailfrom=cs.unibo.it
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=cs.unibo.it
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j8JXh3KjSz2xwd;
+	Wed, 21 Oct 2026 03:59:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::b12c" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792515540;
+	cv=pass; b=eTLzKiyr+adPguGF1s7lOhDy5+v2VEWrEPJ4D2GbHNi7CUWMTAB0CSeLjhgdTJv4HLP/nyoSphXvpxzFAHOlctdtJ9TJgwSzB7IfxNLgxXa+9jTgZt1AgPVPSVS+c/T0M+4jP4yT53xfslVK1L2ySYmFhwCzToai4siACKGuRlIuYByJURHZRbW3hN2wNNf0SfZeLkk7rTrGLvNwtj9qzEZOisvtBIYScB/bqY+ARF4dwxJ4L2e80FrVvmvk0+kbOMPdTanrl/Rz2Brj4JWC/5qhRLk0W/6HQI+G2biqBDOA6ghXUnI4EbE5ow1soI3S7vcbHbRk2ce9S7BbqrSeew==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792515540; c=relaxed/relaxed;
+	bh=W3UZs72ItN8BjuPnBCdirt6JsCzxyYkOlT58mDePWJs=;
+	h=From:In-Reply-To:References:MIME-Version:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=l6jpAVSE7ol/S7LPYlZFVWcwpmbKesD5NsagT3KRZZI9WKwowBufVRw9s1pe/0fktA/5TPUGf76GiH/qxx31+FF6q4/ryXcRkstiAry8R4b6Bw02znd566Lu2aLh4+R9I2z5+Tfj7PqqfpuW63DtN93Ta/078a1zzymgY71FxVTgOXDsL/vPQxPFjZyqHfUq53hwI6GKvBwC0BI5DIf339jyKsClCm8EQWVyZBCzd5Y4OU0iwYH/kR3X0e1OZtLqWJJTOL8ivNSDrgFowxAuJduiUUWxo80HpmCj48twNZZLFqjIKC9HQs6+GajQzy6rCvUku9TzsgCcDjCQI8EA5Q==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=PdtgPDvb; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b12c; helo=mail-yx1-xb12c.google.com; envelope-from=ryabinin.a.a@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=rg+DKVN7;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=PdtgPDvb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cs.unibo.it (client-ip=2001:760:2e00:f0a1::32; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org)
-Received: from mail.virtlab.unibo.it (mail.virtlab.unibo.it [IPv6:2001:760:2e00:f0a1::32])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j8GZ30HY7z2yD3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2026 02:30:02 +1100 (AEDT)
-Received: from eipi10.cs.unibo.it (unknown [94.32.99.206])
-	by mail.virtlab.unibo.it (Postfix) with ESMTPA id 79D9F1C0264;
-	Tue, 20 Oct 2026 17:30:00 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=cs.unibo.it;
-	s=virtlab; t=1792510201;
-	bh=uaxU0e0Lu4aUVtxqhdGDQ6/02ahHZX3ZrV5iXIX1lI4=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=rg+DKVN7Cje1waGmERK1XDHIa0X9eF3lfTFdA2RPd3frdunoQyv9FWNlUu5BUhefl
-	 xYf2LlWuigX0lftXV3kLBWOaB66gSgcuMmlAunAfc2dCYdqe7TfI0omA95BvFig79c
-	 JeWQ7ikgJ+pLL9LH2LmSgKHjTpotGyDNGXg9uk8U=
-From: Renzo Davoli <renzo@cs.unibo.it>
-To: linux-kernel@vger.kernel.org
-Cc: Renzo Davoli <renzo@cs.unibo.it>,
-	Oleg Nesterov <oleg@redhat.com>,
-	=?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>,
-	Kees Cook <kees@kernel.org>,
-	Andy Lutomirski <luto@amacapital.net>,
-	Will Drewry <wad@chromium.org>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Shuah Khan <shuah@kernel.org>,
-	"Dmitry V . Levin" <ldv@strace.io>,
-	Alexey Gladkov <legion@kernel.org>,
-	Eugene Syromyatnikov <evgsyr@gmail.com>,
-	Davide Berardi <berardi.dav@gmail.com>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	linux-kselftest@vger.kernel.org,
-	strace-devel@lists.strace.io
-Subject: [PATCH v9 3/3] selftests/ptrace: add a test case for PTRACE_SET_SYSCALL_INFO syscall skipping
-Date: Tue, 20 Oct 2026 17:29:43 +0200
-Message-ID: <20261020152945.575664-4-renzo@cs.unibo.it>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20261020152945.575664-1-renzo@cs.unibo.it>
-References: <20261020152945.575664-1-renzo@cs.unibo.it>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b12c; helo=mail-yx1-xb12c.google.com; envelope-from=ryabinin.a.a@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yx1-xb12c.google.com (mail-yx1-xb12c.google.com [IPv6:2607:f8b0:4864:20::b12c])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j8JXf4B66z2xwM
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2026 03:58:57 +1100 (AEDT)
+Received: by mail-yx1-xb12c.google.com with SMTP id 956f58d0204a3-66c54dc3a91so461438d50.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2026 09:58:57 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1792515535; cv=none;
+        d=google.com; s=arc-20260327;
+        b=s76dHgibR5jG1/wLF3HwfSlQFVG8ZX8icptMA565D0/gcnHKhnf5HDqX06NbmMBwa8
+         NZt4q6scjptgJOU1SFGmskvbD5+xvw1EouP3EYFc2tHeGq7h3KivaJR3GjBgSLpa8Ch1
+         WtSmbcaI49MVzIJweZHoS3Pe40PTXp44BI1SCvE11Am6fY/cLNgp4rWPnM0ZpyEYzRX+
+         3SsCSTy0MP+nKepA0YH29ifOM0BIU2blW+kHSK0puHs/uS7T2Hbdm+wsJZe3Bj5G/WCG
+         W5k85QBnZyNzHTvLtt/xkMzXG2Xpp//+FRL6y1uHdgNiAKnZa1VrTydzq4xi8yTM9Qcs
+         FqQg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:mime-version:references:in-reply-to
+         :from:dkim-signature;
+        bh=W3UZs72ItN8BjuPnBCdirt6JsCzxyYkOlT58mDePWJs=;
+        fh=SsB4JNcF2Zn3U1zT2d6vx+vnPE4mRGiMtNPl28Wmyu8=;
+        b=FPeIQlMEyTnSwRvzONrMK7SW/aREI0MXuwynyXyQdIaaUGIH7rMFg+Hbi8w5J+S2Yq
+         Oqv76hXCLd281MpWcNMZq4eravLsRFL5xZVVJveBJSTLE250NdplejdRtKBRxXV4NE1m
+         /ileE9ry+kkdzhYXvPnfggr5d1mpHRgc7HVvOXNUDzl+xzL2FCK4oYoTKrGEV6oCRHpS
+         BR2VVEb3xa6lx4ADJWEwqJrLV8EO/ChKqwhywTL/4mpvOQ5tkcwo9IX8y0uvt5XtZEGX
+         IQRntPmzyYoXzeQRMegL46XXKUuuSML0+hScHdxRMG+UwrNKkFLvfQoBxmsEiHWpjVnh
+         biUA==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1792515535; x=1793120335; darn=lists.ozlabs.org;
+        h=content-type:cc:to:subject:message-id:date:mime-version:references
+         :in-reply-to:from:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=W3UZs72ItN8BjuPnBCdirt6JsCzxyYkOlT58mDePWJs=;
+        b=PdtgPDvbLD1wxib2wuxTwnJb5//Ne+WBdF6mzDitLUYL7doD1suPXUvLYudO87zUu8
+         yYiIWlJHpYvqqXo9eHAbiYEP1w2KseS5cHNbXVunHnvslcPSQBi/wcmGzHxThYDowVfV
+         1MyT8yuDO5Qt8UxFgVvPopzz0vwRMIOICGOZD6gkDot+LZ/fJtwQxxzA75Sj42eackAZ
+         oI6Sx9/R/hxx1/daVJtou+Kc/WlpuWbFyftWxECfsz0O7TWAfGqe/BfAcOPdxxWXGp9m
+         NwGKP3YC6BYtMz5JJ1MZ+oZxrnVEN+kk6on5nOvD++EbeklNW1gb1DWYf9OxPEQp9GCZ
+         RkJQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792515535; x=1793120335;
+        h=content-type:cc:to:subject:message-id:date:mime-version:references
+         :in-reply-to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=W3UZs72ItN8BjuPnBCdirt6JsCzxyYkOlT58mDePWJs=;
+        b=vWFV52GhvRdAKxa6ZO9Nc1zFL37uw1p0C4e2G6j92Xz+dhabhQtjYc2Cooi3ns7OLG
+         Jv0tcGzwCfikr6mpFZ82J4PjdbGmTwb/fXFoNXtv2+FRX/YO5r6eVdUzgFwscwiBM/j8
+         ntpKoEPztkMUX3WYsyBgkRzrQFy535ublSa/HbRjubuiDNYoPotu5a8lp6bBbEG6pWoP
+         g+rlTl2m2skHJKWLQT2t9VmhfcPFkoulIsxVm/vTKzgX/FzqIJ6XLQaUhF52W3gpfWuk
+         faLxTafrz8rC3LlLn9DcU9NoOfRRWtIEtETfKwDWIZ+n+eIj7CjrMO2kjgNKoZGJs+Rw
+         U62g==
+X-Forwarded-Encrypted: i=1; AKwUvBwZxJeBesI6PQqXM7p+DWx5yhtZgxaabWetJXFTdmT3xkuOejKPkZoMXk6G9b35psNXV5ga40KgGjzDdBQ=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYJ6N49T7ZySFLvJJppMf8vdRqyI2sOgLDQK6Xp6lMbgUtzR9/xD
+	2uuwYUYofuB2FVORn9KwmcC0qwZDHxzqBxMhXHOjYP80/c052nAoT97NC2ooevpB9lotOUbJfAR
+	VQBQcqszEeyJZcXlVEJRa16hq5wORtwo=
+X-Gm-Gg: AYBFou2yS2sTzyxYJ4NVaagUMJL1hgW7cnP1a+JDT3S5D/zGiPfRP7FZO7CTF0BrfS/
+	Rk+W4U8O3hvzMqb7qjElSmR0vpEA5hCJjA4Bosg0y8wPtdRA+fJTHqTPsGllpAdGEmQZZ2QRA0F
+	ZDFBt23JGZd5XQaYJN2rlNUXi9sLJncTy2+UUCzOdxVFPW7yRT6pnK1sECz73fO59CN3Gr3rKse
+	2xiht6EN5CZKYETWcE6h8J66U/tELCA/oeX0yHvMZo25EkFsZ7ADjilDacOh6CCHybY+ScnY0Qf
+	6ZBudLiPxPBk6XJNUiaug+5QRdcPRoIWKoTq3QrUBZXc1Ft9GwyRgQ==
+X-Received: by 2002:a05:690e:138a:b0:679:b8df:29c with SMTP id
+ 956f58d0204a3-679ca54432bmr6769731d50.2.1792515534972; Tue, 20 Oct 2026
+ 09:58:54 -0700 (PDT)
+Received: from 95991385052 named unknown by gmailapi.google.com with HTTPREST;
+ Tue, 20 Oct 2026 12:58:54 -0400
+Received: from 95991385052 named unknown by gmailapi.google.com with HTTPREST;
+ Tue, 20 Oct 2026 12:58:54 -0400
+From: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+In-Reply-To: <20261019-bug-word-at-a-time-zeropad-kasan-v1-1-f21a3ed6a477@gmail.com>
+References: <20261019-bug-word-at-a-time-zeropad-kasan-v1-0-f21a3ed6a477@gmail.com>
+ <20261019-bug-word-at-a-time-zeropad-kasan-v1-1-f21a3ed6a477@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,304 +109,68 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+Date: Tue, 20 Oct 2026 12:58:54 -0400
+X-Gm-Features: AclHuK_J27k-o8Ui6g8e3q8L_DReW_3vhUszXOZ3Ua6MjDZ1MkwzX1wkuw839aA
+Message-ID: <CAPAsAGyrH1quaLuyui6Qm5sokid8=yjNbAM3cOunynfPNQtfgg@mail.gmail.com>
+Subject: Re: [PATCH 1/2] word-at-a-time: check the first byte in load_unaligned_zeropad()
+To: Qiliang Yuan <odys.yuan@gmail.com>, Russell King <linux@armlinux.org.uk>, 
+	Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
+	Mark Rutland <mark.rutland@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
+	Shrikanth Hegde <sshegde@linux.ibm.com>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Alexandre Ghiti <alex@ghiti.fr>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+	Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
+	Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
+	Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+	"H. Peter Anvin" <hpa@zytor.com>, Shuah Khan <shuah@kernel.org>, Marco Elver <elver@google.com>, 
+	Alexander Potapenko <glider@google.com>, Andrey Konovalov <andreyknvl@gmail.com>, 
+	Dmitry Vyukov <dvyukov@google.com>, Vincenzo Frascino <vincenzo.frascino@arm.com>, 
+	Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-arm-kernel@lists.infradead.org, Kees Cook <kees@kernel.org>, 
+	linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
+	linux-s390@vger.kernel.org, linux-kselftest@vger.kernel.org, 
+	kasan-dev@googlegroups.com, linux-mm@kvack.org, 
+	Peter Collingbourne <peter@pcc.me.uk>
+Content-Type: text/plain; charset="UTF-8"
+X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Check whether PTRACE_SET_SYSCALL_INFO syscall skipping semantics
-implemented in the kernel matches userspace expectations.
+Qiliang Yuan <odys.yuan@gmail.com> writes:
 
-Signed-off-by: Renzo Davoli <renzo@cs.unibo.it>
-[v8: also check an error return value, and that the syscall cannot be
- changed anymore once skipped while its return value still can;
- checkpatch fixes]
-Assisted-by: claude-opus-5-5
----
- .../selftests/ptrace/set_syscall_info.c       | 230 +++++++++++++++++-
- 1 file changed, 229 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/arm/include/asm/word-at-a-time.h b/arch/arm/include/asm/word-at-a-time.h
+> index 5023f98d8293d..f672aad2e30e6 100644
+> --- a/arch/arm/include/asm/word-at-a-time.h
+> +++ b/arch/arm/include/asm/word-at-a-time.h
+> @@ -56,6 +56,9 @@ static inline unsigned long find_zero(unsigned long mask)
+>  #include <asm-generic/word-at-a-time.h>
+>  #endif
+>
+> +#include <linux/kasan-checks.h>
+> +#include <linux/kcsan-checks.h>
+> +
+>  #ifdef CONFIG_DCACHE_WORD_ACCESS
+>
+>  /*
+> @@ -69,6 +72,10 @@ static inline unsigned long load_unaligned_zeropad(const void *addr)
+>  {
+>  	unsigned long ret, tmp;
+>
+> +	/* open-coded instrument_read(addr, 1), as in read_word_at_a_time() */
 
-diff --git a/tools/testing/selftests/ptrace/set_syscall_info.c b/tools/testing/selftests/ptrace/set_syscall_info.c
-index 1cc411a41cd6..e4fc2779ee5a 100644
---- a/tools/testing/selftests/ptrace/set_syscall_info.c
-+++ b/tools/testing/selftests/ptrace/set_syscall_info.c
-@@ -11,9 +11,15 @@
- #include <err.h>
- #include <fcntl.h>
- #include <signal.h>
-+#include <stdlib.h>
-+#include <stddef.h>
- #include <asm/unistd.h>
-+#include <sys/prctl.h>
- #include <linux/types.h>
- #include <linux/ptrace.h>
-+#include <linux/filter.h>
-+#include <linux/seccomp.h>
-+#include <linux/prctl.h>
- 
- #if defined(_MIPS_SIM) && _MIPS_SIM == _MIPS_SIM_NABI32
- /*
-@@ -36,6 +42,7 @@ struct si_exit {
- 
- static unsigned int ptrace_stop;
- static pid_t tracee_pid;
-+static pid_t tracer_pid;
- 
- static int
- kill_tracee(pid_t pid)
-@@ -64,6 +71,25 @@ sys_ptrace(int request, pid_t pid, unsigned long addr, unsigned long data)
- 		       ptrace_stop, ##__VA_ARGS__);		\
- 	} while (0)
- 
-+static int sys_seccomp(unsigned int operation, unsigned int flags, void *args)
-+{
-+	return syscall(__NR_seccomp, operation, flags, args);
-+}
-+
-+static struct sock_filter seccomp_filter[] = {
-+	BPF_STMT(BPF_LD+BPF_W+BPF_ABS, offsetof(struct seccomp_data, nr)),
-+
-+	BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, __NR_restart_syscall, 0, 1),
-+	BPF_STMT(BPF_RET+BPF_K, SECCOMP_RET_ALLOW),
-+
-+	BPF_STMT(BPF_RET+BPF_K, SECCOMP_RET_TRACE),
-+};
-+
-+static struct sock_fprog seccomp_prog = {
-+	.filter = seccomp_filter,
-+	.len = ARRAY_SIZE(seccomp_filter)
-+};
-+
- static void
- check_psi_entry(struct __test_metadata *_metadata,
- 		const struct ptrace_syscall_info *info,
-@@ -128,7 +154,6 @@ check_psi_exit(struct __test_metadata *_metadata,
- 
- TEST(set_syscall_info)
- {
--	const pid_t tracer_pid = getpid();
- 	const kernel_ulong_t dummy[] = {
- 		(kernel_ulong_t) 0xdad0bef0bad0fed0ULL,
- 		(kernel_ulong_t) 0xdad1bef1bad1fed1ULL,
-@@ -138,6 +163,7 @@ TEST(set_syscall_info)
- 		(kernel_ulong_t) 0xdad5bef5bad5fed5ULL,
- 	};
- 	int splice_in[2], splice_out[2];
-+	tracer_pid = getpid();
- 
- 	ASSERT_EQ(0, pipe(splice_in));
- 	ASSERT_EQ(0, pipe(splice_out));
-@@ -516,4 +542,206 @@ TEST(set_syscall_info)
- 	ASSERT_EQ(ptrace_stop, ARRAY_SIZE(si) * 2);
- }
- 
-+TEST(set_syscall_info_seccomp)
-+{
-+	/*
-+	 * Check for seccomp filter support without installing a filter:
-+	 * a NULL filter fails with EFAULT if SECCOMP_SET_MODE_FILTER is
-+	 * supported, and with EINVAL or ENOSYS otherwise.
-+	 */
-+	ASSERT_EQ(-1, sys_seccomp(SECCOMP_SET_MODE_FILTER, 0, NULL));
-+	if (errno != EFAULT)
-+		SKIP(return, "SECCOMP_SET_MODE_FILTER: %m");
-+
-+	tracer_pid = getpid();
-+	tracee_pid = fork();
-+
-+	ASSERT_LE(0, tracee_pid) {
-+		TH_LOG("fork: %m");
-+	}
-+
-+	/* tracee */
-+	if (tracee_pid == 0) {
-+		tracee_pid = getpid();
-+		ASSERT_EQ(0, sys_ptrace(PTRACE_TRACEME, 0, 0, 0)) {
-+			TH_LOG("PTRACE_TRACEME: %m");
-+		}
-+		ASSERT_EQ(0, kill(tracee_pid, SIGSTOP)) {
-+			/* cannot happen */
-+			TH_LOG("kill SIGSTOP: %m");
-+		}
-+
-+		ASSERT_EQ(0, prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)) {
-+			TH_LOG("prctl: %m");
-+		}
-+		ASSERT_EQ(0, sys_seccomp(SECCOMP_SET_MODE_FILTER, 0,
-+					(void *) &seccomp_prog)) {
-+			TH_LOG("seccomp: %m");
-+		}
-+
-+		/*
-+		 * From now on every syscall stops the tracee, so do not use
-+		 * ASSERT_*() here: it would write() its message before
-+		 * _exit(1) and the tracer would report a syscall nr mismatch
-+		 * instead of the test case that failed.
-+		 */
-+
-+		/* run getpid unmodified */
-+		if (getpid() != tracee_pid)
-+			_exit(1);
-+
-+		/* run getppid instead of getpid */
-+		if (getpid() != tracer_pid)
-+			_exit(1);
-+
-+		/* skip getpid and return 42 */
-+		if (getpid() != 42)
-+			_exit(1);
-+
-+		/* skip getpid and fail with ESRCH */
-+		errno = 0;
-+		if (syscall(__NR_getpid) != -1 || errno != ESRCH)
-+			_exit(1);
-+
-+		_exit(0);
-+	}
-+
-+	int status;
-+
-+	/* tracer */
-+	ASSERT_LE(0, waitpid(-1, &status, 0)) {
-+		LOG_KILL_TRACEE("waitpid: %m");
-+	}
-+
-+	ASSERT_EQ(0, sys_ptrace(PTRACE_SETOPTIONS, tracee_pid, 0,
-+			(PTRACE_O_TRACESECCOMP | PTRACE_O_TRACESYSGOOD)))
-+		LOG_KILL_TRACEE("PTRACE_SETOPTIONS: %m");
-+
-+	ASSERT_EQ(0, sys_ptrace(PTRACE_CONT, tracee_pid, 0, 0)) {
-+		LOG_KILL_TRACEE("PTRACE_CONT: %m");
-+	}
-+
-+	static const char * const testname[] = {
-+		"unknown error",
-+		"getpid seccomp unchanged",
-+		"getpid seccomp nr change: getppid",
-+		"getpid seccomp skip+set retvalue",
-+		"getpid seccomp skip+set error"
-+	};
-+
-+	static const unsigned int expected_nr[] = {
-+		__NR_getpid,
-+		__NR_getpid,
-+		__NR_getpid,
-+		__NR_getpid,
-+		__NR_exit_group
-+	};
-+
-+	for (ptrace_stop = 0; ; ++ptrace_stop) {
-+		ASSERT_EQ(tracee_pid, wait(&status)) {
-+			/* cannot happen */
-+			LOG_KILL_TRACEE("wait: %m");
-+		}
-+
-+		if (WIFEXITED(status)) {
-+			tracee_pid = 0; /* the tracee is no more */
-+			ASSERT_EQ(0, WEXITSTATUS(status)) {
-+				LOG_KILL_TRACEE("unexpected exit status %u",
-+						WEXITSTATUS(status));
-+			}
-+			break;
-+		}
-+		ASSERT_FALSE(WIFSIGNALED(status)) {
-+			tracee_pid = 0; /* the tracee is no more */
-+			LOG_KILL_TRACEE("unexpected signal %u",
-+					WTERMSIG(status));
-+		}
-+		ASSERT_TRUE(WIFSTOPPED(status)) {
-+			LOG_KILL_TRACEE("unexpected wait status %#x", status);
-+		}
-+
-+		ASSERT_EQ(status >> 8, SIGTRAP | (PTRACE_EVENT_SECCOMP << 8)) {
-+			LOG_KILL_TRACEE("unexpected stop, wait status %#x", status);
-+		}
-+
-+		struct ptrace_syscall_info info = {
-+			.op = 0xff  /* invalid PTRACE_SYSCALL_INFO_* op */
-+		};
-+		size_t info_size = sizeof(info);
-+
-+		ASSERT_LT(0, sys_ptrace(PTRACE_GET_SYSCALL_INFO, tracee_pid,
-+					info_size, (uintptr_t) &info)) {
-+			LOG_KILL_TRACEE("PTRACE_GET_SYSCALL_INFO: %m");
-+		}
-+		ASSERT_EQ(PTRACE_SYSCALL_INFO_SECCOMP, info.op) {
-+			LOG_KILL_TRACEE("entry op mismatch: %m");
-+		}
-+		ASSERT_TRUE(info.arch) {
-+			LOG_KILL_TRACEE("entry arch mismatch: %m");
-+		}
-+		ASSERT_TRUE(info.instruction_pointer) {
-+			LOG_KILL_TRACEE("entry instruction_pointer mismatch: %m");
-+		}
-+		ASSERT_TRUE(info.stack_pointer) {
-+			LOG_KILL_TRACEE("entry stack_pointer mismatch: %m");
-+		}
-+
-+		ASSERT_LT(ptrace_stop, ARRAY_SIZE(expected_nr)) {
-+			LOG_KILL_TRACEE("ptrace stop overflow");
-+		}
-+		ASSERT_FALSE(info.seccomp.nr == __NR_exit_group && info.seccomp.args[0] == 1) {
-+			LOG_KILL_TRACEE("tracee error: %s",
-+					testname[ptrace_stop]);
-+		}
-+		ASSERT_EQ(info.seccomp.nr, expected_nr[ptrace_stop]) {
-+			LOG_KILL_TRACEE("syscall nr mismatch");
-+		}
-+		const struct ptrace_syscall_info seccomp_info = info;
-+
-+		switch (ptrace_stop) {
-+		case 0:
-+		case 4:
-+			break;
-+		case 1:
-+			info.seccomp.nr = __NR_getppid;
-+			break;
-+		case 2:
-+			info.op = PTRACE_SYSCALL_INFO_EXIT;
-+			info.exit.rval = 41;
-+			info.exit.is_error = 0;
-+			ASSERT_EQ(0, sys_ptrace(PTRACE_SET_SYSCALL_INFO,
-+						tracee_pid, info_size,
-+						(uintptr_t) &info)) {
-+				LOG_KILL_TRACEE("PTRACE_SET_SYSCALL_INFO: %m");
-+			}
-+			/* the syscall cannot be changed anymore once skipped */
-+			ASSERT_EQ(-1, sys_ptrace(PTRACE_SET_SYSCALL_INFO,
-+						 tracee_pid, info_size,
-+						 (uintptr_t) &seccomp_info)) {
-+				LOG_KILL_TRACEE("PTRACE_SET_SYSCALL_INFO after skip succeeded");
-+			}
-+			ASSERT_EQ(EINVAL, errno) {
-+				LOG_KILL_TRACEE("PTRACE_SET_SYSCALL_INFO after skip: %m");
-+			}
-+			/* but its return value can */
-+			info.exit.rval = 42;
-+			break;
-+		case 3:
-+			info.op = PTRACE_SYSCALL_INFO_EXIT;
-+			info.exit.rval = -ESRCH;
-+			info.exit.is_error = 1;
-+			break;
-+		}
-+
-+		ASSERT_EQ(0, sys_ptrace(PTRACE_SET_SYSCALL_INFO, tracee_pid,
-+					info_size, (uintptr_t) &info)) {
-+			LOG_KILL_TRACEE("PTRACE_SET_SYSCALL_INFO: %m");
-+		}
-+
-+		ASSERT_EQ(0, sys_ptrace(PTRACE_CONT, tracee_pid, 0, 0)) {
-+			LOG_KILL_TRACEE("PTRACE_CONT: %m");
-+		}
-+	}
-+}
-+
- TEST_HARNESS_MAIN
--- 
-2.55.0
+Why it's open-coded ?
 
+> +	kasan_check_read(addr, 1);
+> +	kcsan_check_read(addr, 1);
+> +
+>  	/* Load word from unaligned pointer addr */
+>  	asm(
+>  	"1:	ldr	%0, [%2]\n"
 
