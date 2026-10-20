@@ -1,48 +1,94 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 91714606A329
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2026 01:38:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EACC1606A31E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2026 02:11:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=nabladev.com header.i=@nabladev.com header.a=rsa-sha256 header.s=dkim header.b=gkhjrsVg
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=pGQ8dyVy
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j7w6G0S4dz2y2J;
-	Tue, 20 Oct 2026 12:38:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:f820:417:0:178:251:229:89"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792460293;
-	cv=none; b=A5lYXAi74b1/uDHobC9evx3QCwFWJ+IH5pIESXecwWCyCPU5k8FYg3QuRLeINXg1XhQbCb9GOMrs1/snY84EEPdBoTPqeuHbHOFUZmx+5uVMvu7QtLkexVyehLrA9TiXdYBkFMurHtY2aHGR+ljPrVrs1D+rhV/dO738cS/b+vVTXL9ql/9d097/uZYFpRdhrUnqko7IokAff3UNwfrnk/NcFe0RXFME8oDASEuRj40jG36pvTFTe5bOXGSn+XYfRBQg9wKfIlK/FfvXmKzUzI0+LYX8C+XqgECKUs2wYKT14xFf8TsWAUgFhNKEO8bvXZQDHg3fkCQJCyCbcq263Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792460293; c=relaxed/relaxed;
-	bh=PbjFjYksln6X5VCuok/GYUEp4Jt2bFAm9SetP90rGcM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=MobUSw3HYwVcv7jxXIgc1NMsowsH6qCMQWTC/EKPftqErVBJUl1A+yvaR79yRu6kZq1XzA3sAip36E+rEhCbUEz6h29LiLiQWNHyhac9r8jYJesQNdyYb3W9YEsoXLICw0Jtk+9ddeb8/uzhJrAPXk//1do+vBwPt3W9EdL4mr0X76u5/KmpKMcR+MQ0MrYAo+xolqdgdEd24qYPToGxTNDNHMCxB6uZYz+WsKH9ChFp5yHhkgZldKhxBClZMNvFaYpYp73f1LCnKh26P78Q15sh6I8nsZYcF3iDCzV/eHI7U6cbkSVZ4Q+Fos8h0Z4q2EoFAzoD9W7c2Go61bciPw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nabladev.com; dkim=pass (2048-bit key; unprotected) header.d=nabladev.com header.i=@nabladev.com header.a=rsa-sha256 header.s=dkim header.b=gkhjrsVg; dkim-atps=neutral; spf=pass (client-ip=2a00:f820:417:0:178:251:229:89; helo=mx.nabladev.com; envelope-from=marex@nabladev.com; receiver=lists.ozlabs.org) smtp.mailfrom=nabladev.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nabladev.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j7wr61flgz2yjp;
+	Tue, 20 Oct 2026 13:11:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::635" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792462262;
+	cv=pass; b=NInKorbsAvdOZZmLE/gvmjN/MDQVg9IEtcHisVVAcAFxWYLq/98wrbCT12aLNgvDlG/xBubGqU1IJskgh2dE4aRholVf9RB9p1bDXu6/fPSw5bssFRce/p63XezXxS7hTDvqR+ZtdZo39MKy3RCegrJY5t/KPJxrLSsF5uuf8uKXLuMAOP6t5CyKab8pj1l9gNkkz4mwCrHiXg5mQnK86G4pf0VSZoxYX408odn0VSVgDjh3l+rYxmWNSDqdb0e25Kbu4s5djtCIsw+ifFKjx9FAgbh1j4bEuxL1tqampWT62jO9gVTwYyrJf21gnwK1Uvw2Pqhe43uBd633QhEp7w==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792462262; c=relaxed/relaxed;
+	bh=J2awcyyaXtld8u9NUvdPyChgRrjEUxgKgS4S5LDKLZg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Cq0z/HM+yyPpuUzBBakL7jqyNFCtXPEAz7Hq/Pk6okGWveL8P5sk8Xf62NPpus1/PZ7wNa+HKZ2VtFGXXW1CsK4a2cg/77YCbeJnMkUx3j3JD0iABmk55l4ZhNrv1+yilagRe5ZnBAzkc7umY+co7OSCgsf5YRIpM+oR0q1Bdxfn4wXbr6tLgKXyyJD4C2gMdALavg/PU8mAkSOgHQ8Lc/QqhXyc+n8/enidBwuUkba5InEFAki2aMWF4QS22z1Ezbriu/u7aFydw1qcmZk0/yp+0TfUU99aMfhTe4ZxATErobomUmL5w0m0zfdjXDM75BtsL4123RZlr6Fm0qHj5g==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=pGQ8dyVy; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nabladev.com header.i=@nabladev.com header.a=rsa-sha256 header.s=dkim header.b=gkhjrsVg;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=pGQ8dyVy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nabladev.com (client-ip=2a00:f820:417:0:178:251:229:89; helo=mx.nabladev.com; envelope-from=marex@nabladev.com; receiver=lists.ozlabs.org)
-Received: from mx.nabladev.com (mx.nabladev.com [IPv6:2a00:f820:417:0:178:251:229:89])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com [IPv6:2607:f8b0:4864:20::635])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bit raw public key) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j7w6C2TdCz2xln
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2026 12:38:10 +1100 (AEDT)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id E71FA108825;
-	Tue, 20 Oct 2026 03:37:56 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nabladev.com;
-	s=dkim; t=1792460281;
-	h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 content-transfer-encoding:content-language:in-reply-to:references;
-	bh=PbjFjYksln6X5VCuok/GYUEp4Jt2bFAm9SetP90rGcM=;
-	b=gkhjrsVg8YdzKJiWw+oBJJoGOWMSaX2plJh2ECGP6pobGez/hDtH0UV4Rc2GlxMKP/fXbF
-	mFRHOvJDQ5/kcprfkbErcvoAO2cidfW1VgzDUdVmsiwoKZq51M2pIyMSiB9+mFd5e2Y+XE
-	zIrWXd21uoO8qiwXwxlMoS1cEEkqb5V7RipLdtD1smpxlx42HVcI2xhjn7frxAydftEr9K
-	BRNUqGr0Hyai2/OODFby0KhwLg52WWQJ0Ndu4cZfDaERlK07618LcHO8wB2hrcFgrUvMa/
-	vQkCTJEDpb9ssDuGPZeYe/7oi7OrMmtFkutPvii2Ku6bc20iYPHtQno+K7cwGw==
-Message-ID: <fe920b05-6d89-4dc1-83d3-0664fbc2e00c@nabladev.com>
-Date: Mon, 19 Oct 2026 18:10:18 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j7wr42pxKz2yD3
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2026 13:10:59 +1100 (AEDT)
+Received: by mail-pl1-x635.google.com with SMTP id d9443c01a7336-2e831e86ebfso12819585ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2026 19:10:59 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1792462257; cv=none;
+        d=google.com; s=arc-20260327;
+        b=AtOshRpmeVhdM4uuWo7ch0Ea1WBambtUVFFaY8xeF+Ye2g6lnmZb5U4dam/SUjguAO
+         CfHewToy95GWn+vohTYi2R9eXjxBQb+sAKXt/TVsvvPHbowWCawa3++bmqh3A0YoCCpR
+         XGsrQQ22T+sIFTGUIegiVbE+EfYytmaWJkRtVEtYA/5SgTi6TIqH4km2lg6TeIB1aXFa
+         NmJB7uV6aDukUch7zq2Lo2WvZsrjZ9kE3vnsl3VupoxolTIwLgqF8FXlJIqfAXl7iqCg
+         iUT+QZ+IN/AHr1/+GDJRliqPUvHXq1Z48o48jo8HIOj1Iue14HuEOO7rcBZM2tocp6fo
+         XsMA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=J2awcyyaXtld8u9NUvdPyChgRrjEUxgKgS4S5LDKLZg=;
+        fh=l0RgT/7xWi/pD5TJFzWE3eMxWDxeKOL1TRFJsezGQnw=;
+        b=WG7323T/IfMrhBI8UtudrVnWoOsYQx8B+oUoRsr9nT6qPlG7c9QdYvP1vGSksbnuUM
+         x+1t1bUhiUFaLh1SoHan7HZyS5sOozb/iMzVGzvhK/QfqB4mB8ekxI4Lz/XAA5i9PwwW
+         lAL6d2sLGqGuXb3nJgyYINr5iiyTFZJj6GA0sb3eKC/qdnajXSKdWO+skcnuY9/m2MwQ
+         1hOkMu1LM9h0gfEjh4Zamraguk3XJwp2zW+2Ttuq1jHtm+4Aqxc/LlvNN3tNzXF8Mhad
+         4fjLXrAGafMUwrfIIYL8Khvd7j/n0svjMV7lv//+r1Z2Bj8W9U60kbTXHHl98cW3de19
+         7uOw==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1792462257; x=1793067057; darn=lists.ozlabs.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=J2awcyyaXtld8u9NUvdPyChgRrjEUxgKgS4S5LDKLZg=;
+        b=pGQ8dyVyxWgPFS5EoggAIwRLmE9QRwHE03uV/sIvzXdnZLLyLgp2QA1kKCcSCjbnow
+         cuatpic8dLOMGAMRLYR//v/4dtMFj/BzvC7WcWAQ8iHRosIH7xtaUJIQf4jsNxCqt9Is
+         AUTQnxJDWfMRZYtCq02OaULRcw93esFaeOpvfix7Te1iWP9P60T3OTUyaWvCtqmNDPqP
+         zJjA99pnhDZ+b8bCRcgIv3vjh/SqYgskX1DJ3PxFKkE2hVzV2sQ/1rzCoD/kKFnEwWpK
+         O7Bs+fRnnPlDq2K7XMfmXvR/lPZs2NM2Xv570EWV+Q1/F61wgkq8TyFIhcDy+/2bAcJG
+         o/4A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792462257; x=1793067057;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=J2awcyyaXtld8u9NUvdPyChgRrjEUxgKgS4S5LDKLZg=;
+        b=yVcYmQkqUlnzXEiq3svtj8VnoHUD2cSKn7lyvpa+pvFO4l2/bVfmZVNzvLuzj88WiU
+         4BgoKSaBcVPuJkvAlUttjaS89wKImrLEpo+MvBpzPGMqoxObnqPSUVq9KNj7BFf/hGU/
+         ZtlavMZpbBy/b69oIG4I+Lkucs7ZFv6EgwFnrkr9AGFlsexpd9pk9G3ZNAbV7Gl+Uzu9
+         rkpjXFNa9HzEjhUmt48COdocu1F1Sl0DM/u9MWvVhx9sqXhZeNMZj3n5MAyBxLO6gID2
+         2p+jBI8OY0rgfkinXQBp2tZX3Eb+D3OFgaHnxJDohQC/wF5iO/cjKOSfghsL2gVQ1zHf
+         de9Q==
+X-Forwarded-Encrypted: i=1; AKwUvBxrUadPiXecV+PJxvIuGnJAqmhPNSG0j6jr2KgkFFCJLgGSLB3d4RF55jPkv13Nb7pfb4PCJ4IlTuOkd1Y=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYKpRnOv+YxPZVEo/nBu2eXpdWheh9fUHfymkQzrKLGkGC7vMAFE
+	XNoWTQfP7mY6WE5QRWm/MD79M/oDHhN5WFbpaOaEoOLizidZt3qzyN0Sg8bECNsXLX/MgLln7e1
+	EfSLHQiASxwF3jZ5qvHRtEzHyQpiqcmY=
+X-Gm-Gg: AYBFou1vbbNW6qmTUtr1RJo6eWVoM4ilG/CDoo08eahwq5FUEPANhCcdIG0zVQIbmKF
+	G3Oe938M/S+RLuT/UTulw/+1r/2D5pCLWozrs3aZVvY3mzuL5eCloyiWNoUlMqLnKMu9M6xfAUM
+	1tSL+H3P2BPs1xtSnVcovlkM7e+kUD6c4pq4hcgv6ilbSeELRz0Z+EiLTX7cBh0ezV3hFxHBBT4
+	BhwTKf2GmB6uXIGkBIPexkuJsQg3w+L6uN3Wdj14yg1Th52nP5k0R2bpIoZlNHkmugTl2+uL78Z
+	6ZICeaGkOPA5u515BTCqvddrWsKNVifzcXcRrVMYxprU9OpXPzfnWuRAjdgkonO1PajLLxeyk2P
+	Q+dJqgviW0M3NK2ig9BQWPhnMYDlVK8STnO9rMV0NQhL4xcK5llzP5NoNH7ZwmUYC+5c=
+X-Received: by 2002:a17:902:e547:b0:2e8:93b5:c555 with SMTP id
+ d9443c01a7336-2e9a6e5296emr76192995ad.61.1792462257434; Mon, 19 Oct 2026
+ 19:10:57 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,93 +102,75 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [net-next,PATCH 2/2] enetc: Make eMDIO MDC rate configurable from
- DT
-To: Wei Fang <wei.fang@nxp.com>, "Frank Li (OSS)" <frank.li@oss.nxp.com>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Vladimir Oltean <vladimir.oltean@nxp.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- "David S. Miller" <davem@davemloft.net>, Andrew Lunn
- <andrew+netdev@lunn.ch>, Clark Wang <xiaoning.wang@nxp.com>,
- Claudiu Manoil <claudiu.manoil@nxp.com>, Conor Dooley <conor+dt@kernel.org>,
- Eric Dumazet <edumazet@kernel.org>, Frank Li <frank.li@nxp.com>,
- Jakub Kicinski <kuba@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Rob Herring <robh@kernel.org>,
- "UNGLinuxDriver@microchip.com" <UNGLinuxDriver@microchip.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "imx@lists.linux.dev" <imx@lists.linux.dev>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-References: <20261016193344.115518-1-marex@nabladev.com>
- <20261016193344.115518-2-marex@nabladev.com> <atKDNdxl0w65s8yQ@SMW015318>
- <DB9PR04MB933217F7ADCB6223A44DACA7889A2@DB9PR04MB9332.eurprd04.prod.outlook.com>
- <661412ff-3942-4d1c-be6f-1ef6c54620fd@nabladev.com>
- <AS4PR04MB933821150913BDCF35C4827F88982@AS4PR04MB9338.eurprd04.prod.outlook.com>
-Content-Language: en-US
-From: Marek Vasut <marex@nabladev.com>
-In-Reply-To: <AS4PR04MB933821150913BDCF35C4827F88982@AS4PR04MB9338.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Last-TLS-Session-Version: TLSv1.3
-X-Spam-Status: No, score=-5.7 required=3.0 tests=BAYES_00,DATE_IN_PAST_06_12,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=4.0.1
+References: <20261016040946.521195-1-phucduc.bui@gmail.com>
+ <20261016040946.521195-11-phucduc.bui@gmail.com> <14f60932-9a85-45ee-ad87-593c20cc116b@tuxon.dev>
+In-Reply-To: <14f60932-9a85-45ee-ad87-593c20cc116b@tuxon.dev>
+From: Bui Duc Phuc <phucduc.bui@gmail.com>
+Date: Tue, 20 Oct 2026 09:10:45 +0700
+X-Gm-Features: AclHuK-OxoOqEZe9QHO9PQT5BaN1GB4IUM0kwzQZDjYp5iThqBCJWYOaobvziFs
+Message-ID: <CAABR9nGOmx6zvost-Y9Zd2nzQa+ZMYxt2PtZ8xYPLZqZVGHegg@mail.gmail.com>
+Subject: Re: [PATCH 10/11] ASoC: renesas: rz-ssi: Remove redundant component
+ open callback
+To: claudiu beznea <claudiu.beznea@tuxon.dev>
+Cc: Vijendar Mukunda <Vijendar.Mukunda@amd.com>, 
+	Venkata Prasad Potturu <venkataprasad.potturu@amd.com>, Liam Girdwood <lgirdwood@gmail.com>, 
+	Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
+	povik+lin@cutebit.org, Andrei Simion <andrei.simion@microchip.com>, 
+	Nicolas Ferre <nicolas.ferre@microchip.com>, 
+	Alexandre Belloni <alexandre.belloni@bootlin.com>, David Rhodes <david.rhodes@cirrus.com>, 
+	Richard Fitzgerald <rf@opensource.cirrus.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, 
+	Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>, 
+	Nicolin Chen <nicoleotsuka@gmail.com>, Frank Li <Frank.Li@nxp.com>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Cezary Rojewski <cezary.rojewski@intel.com>, Peter Ujfalusi <peter.ujfalusi@linux.intel.com>, 
+	Bard Liao <yung-chuan.liao@linux.intel.com>, 
+	Kai Vehmanen <kai.vehmanen@linux.intel.com>, 
+	Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>, 
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, 
+	Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, 
+	Biju Das <biju.das.jz@bp.renesas.com>, 
+	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>, Heiko Stuebner <heiko@sntech.de>, 
+	Kees Cook <kees@kernel.org>, Syed Saba Kareem <syed.sabakareem@amd.com>, 
+	wangdicheng <wangdicheng@kylinos.cn>, Chris Bainbridge <chris.bainbridge@gmail.com>, 
+	Linus Walleij <linusw@kernel.org>, Charles Keepax <ckeepax@opensource.cirrus.com>, 
+	Neo Chang <YLCHANG2@nuvoton.com>, 
+	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, u.kleine-koenig@baylibre.com, 
+	Pengpeng Hou <pengpeng@iscas.ac.cn>, 
+	Cristian Ciocaltea <cristian.ciocaltea@collabora.com>, Hemanth Selam <hemanth.selam@gmail.com>, 
+	Md Shofiqul Islam <shofiqtest@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, 
+	Zain Aboobacker <zainaboobacker33@gmail.com>, Sang-Heon Jeon <ekffu200098@gmail.com>, 
+	Bo Shen <voice.shen@atmel.com>, Vinod Koul <vkoul@kernel.org>, linux-sound@vger.kernel.org, 
+	asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+	patches@opensource.cirrus.com, linuxppc-dev@lists.ozlabs.org, 
+	imx@lists.linux.dev, linux-rockchip@lists.infradead.org, 
+	linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 10/19/26 4:59 AM, Wei Fang wrote:
+Hi Claudiu,
 
-Hello Wei,
 
->>>>> +int enetc_mdio_update_mdc_div(struct mii_bus *bus) {
->>>>> +	struct enetc_mdio_priv *mdio_priv = bus->priv;
->>>>> +	struct device *dev = bus->parent;
->>>>> +	struct clk *enet_clk;
->>>>> +	u32 div, mdc_freq;
->>>>> +
->>>>> +	if (device_property_read_u32(dev, "clock-frequency", &mdc_freq))
->>>>> +		return 0;
->>>>> +
->>>>> +	enet_clk = devm_clk_get(dev, NULL);
->>>>> +	if (IS_ERR(enet_clk))
->>>>> +		return dev_err_probe(dev, PTR_ERR(enet_clk),
->>>>> +				     "Input clock unknown, not changing MDC
->>>> frequency\n");
->>>>
->>>> binding said clock is optional. If return failure here, it will block
->>>> existing dts, which have not clock property.
->>>>
->>>
->>> For EMDIO device, the clocks property is not added to
->>> fsl,enetc-mdio.yaml, I suppose this property should be added to the
->>> dt-binding doc if the clock is really needed here.
->>
->> Isn't this what 1/2 in this series does ? (maybe I misunderstood this
->> paragraph)
-> 
-> Sorry, my email filtered out the 1/2 patch, so I missed it.
+> > In DMA mode, the generic dmaengine PCM component already applies
+> > the integer PERIODS constraint in snd_dmaengine_pcm_open().
+> >
+> > Since rz_ssi_pcm_open_dma() only applies this constraint, remove
+> > the redundant component .open callback.
+> >
+> > Signed-off-by: bui duc phuc<phucduc.bui@gmail.com>
+>
+> FTR:
+>
+> Reviewed-by: Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>
+> Tested-by: Claudiu Beznea <claudiu.beznea.uj@bp.renesas.com>
+>
 
-No worries.
+Thanks for reviewing and testing!
 
->>> For ENETC device, we already have a 'ref' clock in the enetc node, so
->>> devm_clk_get(dev, NULL) may get the 'ref' clock rather than the system
->>> clock of NETC.
->> Shouldn't the clock be described in the MDIO DT node ?
-> 
-> The enetc_mdio_read_* and enetc_mdio_write_* interfaces are not only
-> used by EMDIO devices, the ENETCs and NETC switches also use them.
-> NETC switches and ENETCs can access external PHYs or internal PCS/Serdes
-> through their own port MDIO registers, instead of through EMDIO devices.
-> 
-> Your first patch only modified the EMDIO binding-doc, not the ENETC and
-> switch binding-doc.
-So I need to patch also 
-Documentation/devicetree/bindings/net/dsa/mscc,ocelot.yaml ? Any other 
-binding document ?
-
-Thank you for your help !
+Best regards,
+Phuc
 
