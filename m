@@ -1,78 +1,69 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C93C606A319
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2026 09:05:47 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 02A6F606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2026 11:41:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=RCnjv+vU
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gKRE898b
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j862d6KHXz2xg3;
-	Tue, 20 Oct 2026 20:05:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=117.135.210.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792484633;
-	cv=none; b=UA0W2e4hAl8iRn4SkDWDqL72ZUTd3NiWyy7tgYK7RXkbBBd054O1p/T2SM6lsd2AHxWKHvjGjtBnSdC6h63SZQh7OK5OH+VSwXHBf2n64bp/Bale7LpPD2FRarrs/MIennwoFrHmTZphjg4oSKiybrDxpiMRaaL8SB9JCozYYyWPgDIOtBmRsGnBaUIFJ/vTwMgcUNUbSpyfgQq+6779T2pvVG7kwaxwFLYgZKs2G5AtDz0TavrVxbijGfSr7VPR7fj/QufoCE99HJRVWzjgfR4NIaP4iaw1HZRMkq6H2yJ1LrBW5awtBDmWUkhCCpDpqdhCh7KtT2wb3tw8JGQHhQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j89Ty2d6Pz2xwL;
+	Tue, 20 Oct 2026 22:41:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792496470;
+	cv=none; b=Cbu/nuJYE2OPR+9gP97ZDaCOK1941JAGNCfJnmaTYHue7H96fIo3ZFoFQ43FSXRKvhYg1ngoXhhYe3QLqFDtNqqNT7F+PNXfsqFXI8E7kJMHYlEexUM+PhbmBe395UZIVQH1g7p/o9tVNCjq2elHhMID4ETBIoU22IQW97wFOKpjLELkX+RM8pKfj+rm1mAu1HcFXRDgMHqfDBA6T05wi6m3G/36NUDeOcUFlpfukjxLMBJT7SEqkqIk+cE2+KP5gapBU81WIgk33FH4/D5Chbtj9r3Vgl1TRuFlVuxfjeXowkScoWEYPM5ZPV3zhzVm4r7Ub/hALD+IL1H0egYpQA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792484633; c=relaxed/relaxed;
-	bh=aEsK9vnGIWgdQWg/4/gp+ERqdPLdZK75eQSfT/gO9Pk=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:Content-Type:
-	 MIME-Version:Message-ID; b=BtmcCw6tHn9d5hskGR0LhAU0Y7bF0XKBOpoqMDGuuMUsqQalHg0eu40XtJXzga44jBab1YVLv7eZzkfwKrTIyWLEu3NvcCch1wKJCtoYRcTANL7a13ZbaNhpeQOhpBGgGAREvElRc8g5cp/WVA7vb5J9SeraOHVN5zl9Cz/hMwIZkaX0aOIs4DQr4zijUXczoaIgy2xgBE6dE7YoK1gDOJJY6FOWo6IEpF8a2b2CH28BN+9PiGP61lPUDenC6MJqRzFZQBKAk3xLUCwU0FuyY77i0j7fJyYhNHX6rNQVJrmpbx05CtABLyHxub7kEwOzkjS9MkHSHjqcAJCqSdcI+A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=RCnjv+vU; dkim-atps=neutral; spf=pass (client-ip=117.135.210.5; helo=m16.mail.163.com; envelope-from=19888972804@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com
+	t=1792496470; c=relaxed/relaxed;
+	bh=eZ7l6S6Y5XERFk+DP+CPdXSj9bbGmqqxbTw6qag+4S0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=gIEQRwYmRByK5wuPA/ao3Dx9qm2V8w78A4DGJCPfD/S3QUCBPykhvyS7z913eCgHwL/mvI1a5pUuwApfrTGeXJB3iZKbGs/QdnUhAx+7UeFaAhhtzLfr+nTOPnzCJdHbZ6tcLpR2BnhFlJfu1OZdnpxmP0/FT3SRgQdA3J7jXH8x+WyJFcYMeE4i3OHkR5P+520xYX1KV6XidFjKvuosC0uGG257MIMw4GhfK7ERDR+S/rONuEGsDT/Uy7+G5Nf3kv5ZqdhinSjxux9MDG//9WAl15eNC5CqX7fnPND3rZjHFAJilCT3M7NekfCrtmt0Ya7OaPbXnzq1spxfBp54Kw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gKRE898b; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=blum@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=RCnjv+vU;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gKRE898b;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=117.135.210.5; helo=m16.mail.163.com; envelope-from=19888972804@163.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 661 seconds by postgrey-1.37 at boromir; Tue, 20 Oct 2026 19:23:49 AEDT
-Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=blum@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j856F0sTPz2y2T
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2026 19:23:46 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=Date:From:To:Subject:Content-Type:MIME-Version:
-	Message-ID; bh=aEsK9vnGIWgdQWg/4/gp+ERqdPLdZK75eQSfT/gO9Pk=; b=R
-	Cnjv+vUw17RM25HbbvPqMuGddLQAMNXJ0irypFTfWPLOd6+HOf3gwWx8a2uP2SmB
-	iDAziIByqccqzbaF9irRVvpqnnVhRrfSP0844asw+laXL975n8MmReJ8/wccS40t
-	dwd/tu0cxmXnt80jgfrZdR4QRYqABLnulyXy8r/pSc=
-Date: Tue, 20 Oct 2026 16:10:32 +0800 (CST)
-From: "jiale yao" <19888972804@163.com>
-To: "Peng Fan (OSS)" <peng.fan@oss.nxp.com>
-Cc: "Frank Li" <Frank.Li@kernel.org>, "Zhang Wei" <zw@zh-kernel.org>,
-	"Sascha Hauer" <s.hauer@pengutronix.de>,
-	"Pengutronix Kernel Team" <kernel@pengutronix.de>,
-	"Fabio Estevam" <festevam@gmail.com>,
-	"Linus Walleij" <linusw@kernel.org>,
-	"H Hartley Sweeten" <hsweeten@visionengravers.com>,
-	"Ryan Mallon" <rmallon@gmail.com>,
-	"Mika Westerberg" <mika.westerberg@iki.fi>,
-	"Ebony Zhu" <ebony.zhu@freescale.com>,
-	"Kumar Gala" <galak@gate.crashing.org>,
-	"Dan Williams" <djbw@kernel.org>,
-	"Andrew Morton" <akpm@linux-foundation.org>,
-	"Zhangfei Gao" <zhangfei.gao@marvell.com>,
-	"Arnd Bergmann" <arnd@arndb.de>, "Qiao Zhou" <zhouqiao@marvell.com>,
-	"Leo Yan" <leoy@marvell.com>,
-	"Lennert Buytenhek" <buytenh@marvell.com>,
-	"Nicolas Pitre" <nico@marvell.com>,
-	"Saeed Bishara" <saeed@marvell.com>,
-	"Maciej Sosnowski" <maciej.sosnowski@intel.com>,
-	"Shawn Guo" <shawn.guo@freescale.com>,
-	"Srinidh Kasagar" <srinidhi.kasagar@stericsson.com>,
-	dmaengine@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org
-Subject: Re:Re: [PATCH 0/7] dmaengine: drain completion tasklets during
- teardown
-X-Priority: 3
-X-Mailer: Coremail Webmail Server Version 2023.4-cmXT build
- 20260511(2e539873) Copyright (c) 2002-2026 www.mailtech.cn 163com
-In-Reply-To: <20261020073620.224795-1-peng.fan@oss.nxp.com>
-References: <20261020073620.224795-1-peng.fan@oss.nxp.com>
-X-NTES-SC: AL_Qu2SAPiTvEAo5CabY+kcn08ShO49XMOyvfoi2YFTc+MEpyPT/CwnXV1dJHjX9MKlLySpjjK2QjZX0MN8TZd4HI2VUqoFvXudLFbzFGVQoQ==
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset=GBK
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j89Tx33dcz2xmk
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2026 22:41:09 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 6F320605ED;
+	Tue, 20 Oct 2026 11:41:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BA7A21F000C4;
+	Tue, 20 Oct 2026 11:41:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1792496466;
+	bh=eZ7l6S6Y5XERFk+DP+CPdXSj9bbGmqqxbTw6qag+4S0=;
+	h=From:To:Cc:Subject:Date;
+	b=gKRE898bArSX8Etly/VakmhY8hCrxf+2CH1sK4V/HXH6YG4nCq16Ar98Rkvd1+k24
+	 Heundw7PkPXrInmF7lrJAw8lsz8Tmc+6ZWhO23NYyWZ6T7WQ9XiEGPu4Iz6Gdftqpc
+	 MV5z0D286Th91AT6lZJwuQh1u9+3lMnE8062qT+hgDA+n+6OH9/rWcxDn12/aA1bSK
+	 2Qov8dZbYwrnW/5AIYCXIbe/R/lGxLDTxw37iropVTF4yZPWD7L/GXdp2filFsprOI
+	 /c6UjYB1TR0HUD0GEMGSOVJmwT1kKJFgSijJ21nRV/nHJfDcMPt8xUSi3rcCzCNjJg
+	 viSm1m0cBTlzQ==
+From: Thorsten Blum <blum@kernel.org>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Kees Cook <kees@kernel.org>,
+	"Gustavo A. R. Silva" <gustavoars@kernel.org>,
+	Sourabh Jain <sourabhjain@linux.ibm.com>,
+	Thorsten Blum <blum@kernel.org>,
+	Hari Bathini <hbathini@linux.ibm.com>,
+	Aditya Gupta <adityag@linux.ibm.com>,
+	Jinjie Ruan <ruanjinjie@huawei.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	linux-hardening@vger.kernel.org
+Subject: [PATCH v2] powerpc/kexec: Annotate umem_info members with __counted_by_ptr()
+Date: Tue, 20 Oct 2026 13:40:28 +0200
+Message-ID: <20261020114029.200922-2-blum@kernel.org>
+X-Mailer: git-send-email 2.56.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,74 +77,85 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Message-ID: <3d4b1cde.711e.1a1585cb34c.Coremail.19888972804@163.com>
-X-Coremail-Locale: zh_CN
-X-CM-TRANSID:bCgvCgCnV_34IddqIc9cAA--.879W
-X-CM-SenderInfo: x1dryxhdohiji6rwjhhfrp/xtbCzhgXUWrXIfhxlAAA3R
-X-Coremail-Antispam: 1U5529EdanIXcx71UUUUU7vcSsGvfC2KfnxnUU==
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	FROM_LOCAL_DIGITS,FROM_LOCAL_HEX,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2467; i=blum@kernel.org; h=from:subject; bh=pzIMtJPYfw+P/r4Q1/Ce4+BOcaaNx/LjPyiQ5HFapz8=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFnXg3W/bsnb9axt65U0UbVUvc7MFu9vnpvCCxnurV5k2 3ua90VaRykLgxgXg6yYIsuDWT9m+JbWVG4yidgJM4eVCWQIAxenAEzEZC3D/6TzEyM3fd8vncoo aR7vEKa4afq3KeUNb482HWvoViv/ycLIsPpltc4Fju1/V+4+N/Hl3MdZZulc85wLDlYeOBvf57/ yKi8A
+X-Developer-Key: i=blum@kernel.org; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-19.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-SGkgUGVuZywKCkF0IDIwMjYtMTAtMjAgMTU6MzY6MTksICJQZW5nIEZhbiAoT1NTKSIgPHBlbmcu
-ZmFuQG9zcy5ueHAuY29tPiB3cm90ZToKPk9uIFN1biwgMTggT2N0IDIwMjYgMTI6MDc6MTYgKzA4
-MDAgSmlhbGUgWWFvIDx5YW9qaWFsZTAyQDE2My5jb20+IHdyb3RlOgo+Cj4+IFNldmVyYWwgRE1B
-ZW5naW5lIGRyaXZlcnMgZGVmZXIgaW50ZXJydXB0IGNvbXBsZXRpb24gcHJvY2Vzc2luZyB0bwo+
-PiB0YXNrbGV0cywgYnV0IHJlbGVhc2UgY2hhbm5lbCByZXNvdXJjZXMgd2l0aG91dCBkcmFpbmlu
-ZyB0YXNrbGV0cyB0aGF0Cj4+IHdlcmUgYWxyZWFkeSBxdWV1ZWQuIFN0b3BwaW5nIG9yIHJlbGVh
-c2luZyBhbiBJUlEgcHJldmVudHMgbmV3IGhhcmQgSVJRCj4+IGhhbmRsZXJzLCBidXQgZG9lcyBu
-b3Qgc3luY2hyb25pemUgdGhlIGRlZmVycmVkIHRhc2tsZXQuCj4+IAo+PiBEZXBlbmRpbmcgb24g
-dGhlIGRyaXZlciwgYSBsYXRlIHRhc2tsZXQgY2FuIGFjY2VzcyBmcmVlZCBkZXNjcmlwdG9yCj4+
-IHN0b3JhZ2Ugb3IgaW52b2tlIGEgY29tcGxldGlvbiBjYWxsYmFjayBhZnRlciBpdHMgY2xpZW50
-IGRhdGEgaGFzIGJlZW4KPj4gcmVsZWFzZWQuIEVuc3VyZSBlYWNoIHByb2R1Y2VyIGlzIHN0b3Bw
-ZWQgYmVmb3JlIGtpbGxpbmcgdGhlIHRhc2tsZXQgYW5kCj4+IGZyZWVpbmcgdGhlIHJlc291cmNl
-cyBpdCBjYW4gYWNjZXNzLgo+PiAKPj4gRWFjaCBwYXRjaCBpcyBpbmRlcGVuZGVudCBhbmQga2Vl
-cHMgdGhlIHN5bmNocm9uaXphdGlvbiBsb2NhbCB0byBvbmUKPj4gZHJpdmVyJ3MgY2hhbm5lbCBv
-ciBkZXZpY2UgdGVhcmRvd24gcGF0aC4KPj4gCj4+IEppYWxlIFlhbyAoNyk6Cj4+ICAgZG1hZW5n
-aW5lOiBlcDkzeHg6IGRyYWluIHRhc2tsZXQgYmVmb3JlIGZyZWVpbmcgY2hhbm5lbCByZXNvdXJj
-ZXMKPj4gICBkbWFlbmdpbmU6IGZzbGRtYTogZHJhaW4gY2hhbm5lbCB0YXNrbGV0IGR1cmluZyBy
-ZW1vdmFsCj4+ICAgZG1hZW5naW5lOiBtbXBfcGRtYTogZHJhaW4gY2hhbm5lbCB0YXNrbGV0cyBk
-dXJpbmcgcmVtb3ZhbAo+PiAgIGRtYWVuZ2luZTogbW1wX3RkbWE6IHN5bmNocm9uaXplIHRhc2ts
-ZXQgd2hlbiBmcmVlaW5nIGEgY2hhbm5lbAo+PiAgIGRtYWVuZ2luZTogbXZfeG9yOiBkcmFpbiBJ
-UlEgdGFza2xldCBiZWZvcmUgZnJlZWluZyBjaGFubmVsIG1lbW9yeQo+PiAgIGRtYWVuZ2luZTog
-bXhzLWRtYTogc3luY2hyb25pemUgdGFza2xldCB3aGVuIGZyZWVpbmcgYSBjaGFubmVsCj4+ICAg
-ZG1hZW5naW5lOiBzdGVfZG1hNDA6IHN5bmNocm9uaXplIHRhc2tsZXQgd2hlbiByZWxlYXNpbmcg
-YSBjaGFubmVsCj4+IAo+PiAgZHJpdmVycy9kbWEvZXA5M3h4X2RtYS5jIHwgNCArKystCj4+ICBk
-cml2ZXJzL2RtYS9mc2xkbWEuYyAgICAgfCAxICsKPj4gIGRyaXZlcnMvZG1hL21tcF9wZG1hLmMg
-ICB8IDQgKysrKwo+PiAgZHJpdmVycy9kbWEvbW1wX3RkbWEuYyAgIHwgMiArKwo+PiAgZHJpdmVy
-cy9kbWEvbXZfeG9yLmMgICAgIHwgNiArKysrLS0KPj4gIGRyaXZlcnMvZG1hL214cy1kbWEuYyAg
-ICB8IDEgKwo+PiAgZHJpdmVycy9kbWEvc3RlX2RtYTQwLmMgIHwgMiArKwo+Cj5Zb3UgbWlnaHQg
-bmVlZCB0byBhZGQgYSBiaXQgbW9yZSBjb250ZXh0IG9uIHRoZSBpc3N1ZXMuCj4KPlRha2luZyBt
-eHMtZG1hIGZvciBleGFtcGxlLCBpdCBpcyBub24tU01QIHByb2Nlc3Nvci4KPgo+VGhlIG5vcm1h
-bCBjb21wbGV0aW9uIHBhdGggaXM6Cj4xLiBETUEgaGFyZGlycSBmaXJlcyAtPiBteHNfZG1hX2lu
-dF9oYW5kbGVyKCkgLT4gdGFza2xldF9zY2hlZHVsZSgpIC0+IHJhaXNlcyBUQVNLTEVUX1NPRlRJ
-UlEKPjIuIGlycV9leGl0KCkgLT4gc29mdGlycSBwcm9jZXNzaW5nIC0+IHRhc2tsZXRfYWN0aW9u
-KCkgLT4gbXhzX2RtYV90YXNrbGV0KCkgcnVucwo+My4gUmV0dXJuIHRvIHByb2Nlc3MgY29udGV4
-dAo+Cj5UaGUgdGFza2xldCBhbG1vc3QgYWx3YXlzIGNvbXBsZXRlcyBiZWZvcmUgcHJvY2VzcyBj
-b250ZXh0IHJlc3VtZXMuCj5UaGUgb25seSB3YXkgdG8gaGl0IHRoZSByYWNlIG9uIFVQIGlzIGlm
-IHNvZnRpcnEgcHJvY2Vzc2luZyBnZXRzIGRlZmVycmVkCj50byBrc29mdGlycWQsIGFuZCB0aGVu
-Ogo+SW4gUFJFRU1QVF9SVCBjYXNlOiBUYXNrbGV0cyBiZWNvbWUgdGhyZWFkZWQgYW5kIGNhbiBp
-bnRlcmxlYXZlLgo+SXMgdGhlcmUgYSBjaGFuY2UgdGhhdCBpbiBub24tUlQgY2FzZSwgY291bGQg
-d2UgaGl0IGlzc3VlcyBvbiBVUCBwcm9jZXNzb3I/Cj4KPk9yIEkgbWF5IHVuZGVyc3RhbmQgd3Jv
-bmc/CgpUaGFua3MgZm9yIHRoZSBkZXRhaWxlZCBhbmFseXNpcy4KClRoZSBub3JtYWwgVVAvbm9u
-LVJUIHBhdGggdXN1YWxseSBydW5zIHRoZSB0YXNrbGV0IGZyb20gaXJxX2V4aXQoKSwgYXMKeW91
-IGRlc2NyaWJlZC4gSG93ZXZlciwgaWYgdGhlIERNQSBJUlEgcmFpc2VzIFRBU0tMRVRfU09GVElS
-USBhZnRlciB0aGF0CnZlY3RvciBoYXMgYWxyZWFkeSBiZWVuIHByb2Nlc3NlZCBpbiB0aGUgY3Vy
-cmVudCBzb2Z0aXJxIHBhc3MsCm5lZWRfcmVzY2hlZCgpIG9yIHRoZSBzb2Z0aXJxIHRpbWUvcmVz
-dGFydCBsaW1pdHMgY2FuIGRlZmVyIGl0IHRvCmtzb2Z0aXJxZC4gUHJvY2VzcyBjb250ZXh0IG1h
-eSB0aGVuIHJlbGVhc2UgdGhlIGNoYW5uZWwgYmVmb3JlIHRoZQp0YXNrbGV0IHJ1bnMuCgpBIHNp
-bWlsYXIgdGVhcmRvd24gaXNzdWUgd2FzIGZpeGVkIGJ5IGNvbW1pdCAwY2E3OTk3OTM4NGYKKCJS
-RE1BL2VyZG1hOiBGaXggQ0VRIHRhc2tsZXQgdXNlLWFmdGVyLWZyZWUgb24gcmVtb3ZhbCIpLiBm
-cmVlX2lycSgpCnN5bmNocm9uaXplcyB0aGUgaGFyZCBJUlEgaGFuZGxlciwgYnV0IGRvZXMgbm90
-IGRyYWluIGFuIGFscmVhZHkgcXVldWVkCnRhc2tsZXQuCgpGb3IgbXhzLWRtYSwgdGhlIGRlZmVy
-cmVkIHRhc2tsZXQgbWF5IGludm9rZSB0aGUgY29tcGxldGlvbiBjYWxsYmFjawphZnRlciBpdHMg
-Y2xpZW50IGRhdGEgaGFzIGJlZW4gcmVsZWFzZWQuIFRoZXJlZm9yZSB0aGlzIGNhbiBhbHNvIGhh
-cHBlbgpvbiBVUC9ub24tUlQsIGFsdGhvdWdoIHRoZSB3aW5kb3cgaXMgbmFycm93LgoKPgo+UmVn
-YXJkcwo+UGVuZwo+Cj4+ICA3IGZpbGVzIGNoYW5nZWQsIDE3IGluc2VydGlvbnMoKyksIDMgZGVs
-ZXRpb25zKC0pCj4+IAo+PiAtLSAKPj4gMi4zNC4xCj4KPlNlbnQgdXNpbmcgaGttbCAoaHR0cHM6
-Ly9naXRodWIuY29tL3NqcDM4L2hhY2tlcm1haWwpCgoKVGhhbmtzLApKaWFsZQo=
+Add __counted_by_ptr() to umem_info::buf and umem_info::ranges to
+improve access bounds checking via CONFIG_UBSAN_BOUNDS and
+CONFIG_FORTIFY_SOURCE.
+
+In check_realloc_usable_mem(), return early on krealloc() failure and
+use sizeof(*buf) when deriving max_entries from the allocation size.
+
+Signed-off-by: Thorsten Blum <blum@kernel.org>
+---
+Changes in v2:
+- Preserve the original pointer/count assignment order (Sourabh Jain)
+- v1: https://lore.kernel.org/r/20260730130248.597249-2-thorsten.blum@linux.dev/
+---
+ arch/powerpc/kexec/file_load_64.c | 21 +++++++++++----------
+ 1 file changed, 11 insertions(+), 10 deletions(-)
+
+diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
+index bd80c5fb1b1f..7f45493e7c7a 100644
+--- a/arch/powerpc/kexec/file_load_64.c
++++ b/arch/powerpc/kexec/file_load_64.c
+@@ -34,14 +34,14 @@
+ #include <asm/cputhreads.h>
+ 
+ struct umem_info {
+-	__be64 *buf;		/* data buffer for usable-memory property */
++	__be64 *buf __counted_by_ptr(max_entries); /* data buffer for usable-memory property */
+ 	u32 size;		/* size allocated for the data buffer */
+ 	u32 max_entries;	/* maximum no. of entries */
+ 	u32 idx;		/* index of current entry */
+ 
+ 	/* usable memory ranges to look up */
+ 	unsigned int nr_ranges;
+-	const struct range *ranges;
++	const struct range *ranges __counted_by_ptr(nr_ranges);
+ };
+ 
+ const struct kexec_file_ops * const kexec_file_loaders[] = {
+@@ -83,11 +83,12 @@ static __be64 *check_realloc_usable_mem(struct umem_info *um_info, int cnt)
+ 
+ 	new_size = um_info->size + MEM_RANGE_CHUNK_SZ;
+ 	tbuf = krealloc(um_info->buf, new_size, GFP_KERNEL);
+-	if (tbuf) {
+-		um_info->buf = tbuf;
+-		um_info->size = new_size;
+-		um_info->max_entries = (um_info->size / sizeof(u64));
+-	}
++	if (!tbuf)
++		return NULL;
++
++	um_info->buf = tbuf;
++	um_info->size = new_size;
++	um_info->max_entries = um_info->size / sizeof(*um_info->buf);
+ 
+ 	return tbuf;
+ }
+@@ -288,12 +289,12 @@ static int update_usable_mem_fdt(void *fdt, struct crash_mem *usable_mem)
+ 		return -EINVAL;
+ 	}
+ 
+-	um_info.buf  = NULL;
++	um_info.buf = NULL;
+ 	um_info.size = 0;
+ 	um_info.max_entries = 0;
+-	um_info.idx  = 0;
++	um_info.idx = 0;
+ 	/* Memory ranges to look up */
+-	um_info.ranges = &(usable_mem->ranges[0]);
++	um_info.ranges = usable_mem->ranges;
+ 	um_info.nr_ranges = usable_mem->nr_ranges;
+ 
+ 	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
 
