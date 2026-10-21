@@ -1,53 +1,51 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8318606A331
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Oct 2026 08:28:50 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 301B6606A339
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Oct 2026 08:37:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=UGdVZQGF
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=I+cKpbzK
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j8j9Y1jl5z2xS6;
-	Wed, 21 Oct 2026 19:28:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.221
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792571329;
-	cv=none; b=bgivSCuF/FEZsuXNHv8L+ioh67XjBS7RHRdlESZgSd+2C+2rFZjysKLppBh63AdzYsZlrnNkK+Z5FYcZJN4zS2VA110m64Qkx2sN57q6zvmwgXrdTA7gAGwjy89BhCAoX99eHP0lBmGnS2/Q5vYMzeco+hkAbY6V/OeV7hd09/Mg3ucxfdeGxhiWa1SYjED1Pu9hUIMBwFtIgkvSE4s9XadP09dyMJVVXTUb3fTq4D/K9F0qPZJOVJgoJitFYp20+75kisEgQqBMm1QQlY+WKBLeDAz16jwknkvWD83V80VPMbEgErDShMfbxUVgrh1r4mA8W5EgZS4Br2UI/t05Uw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j8jN33x5Sz2xS6;
+	Wed, 21 Oct 2026 19:37:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792571875;
+	cv=none; b=OgwOu1tMFaUYOFw1BV4H/pt/0yhj8LljW5V+SpkL1gl+8b1WmUFmIf1KZSekv0AuaCfE1SvwNiLPAIo3Co18jR6htQleNKXUSJAvHb9ggOwsgG4OA5sYXRQUwx8qcwD3bfViR0VK/cGsStH+tRveM0ZlKpJlRg8WXwV6BbD5bJUoDJN/gdARV0UsZD+mRJvUCv7zW18S902RzZYwqVQTEC3D7iLd+Wzx9bedPn2x7itnVYb7sPXHHC6bJ6nwjZfv9mGWp8RN6WmUWiDgHrVqbUwwHR8+bUEs3rA9AMsv7+QVzyRocwIi6boEpUICISVGo/gmZ4sBEk1p/h+0GQ2R3g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792571329; c=relaxed/relaxed;
-	bh=72fCXYnwXZJQ3k3U2Ed815XR/8CaxvvHXwHA6M9NPgM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=fbCLQHjO2rO1RyvU5juLmgX90zWGI2qOX6YPhrc3BhRAlu0vFO8HFipCnmamqc4UoVHnn5DP566qS1RYiqHFxaGOapiUmGacHlDa69E2c/Fb8laVnNPcLz5UBqNAJvoKkGcmhWdF3IjgFHyuUVfeBAfAsoXxHqcVaC7IVduyrFCpZ0R9m2aCAlK8IwUq6XWIN7zxvvnwab7abHUKPBM1MBOJ/J/YU6t12SjVeEFjHJKr8acdAMrns3pyRHfXJ63ghSMKHwyb7hCNYPYYqzGOIJ3rzdJUtLBlhxzbG+mmU8WmBlQYQ/32+O94Mo6p8WEdZpAcseA5bSUPUGFHw8VZ5w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=UGdVZQGF; dkim-atps=neutral; spf=pass (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+	t=1792571875; c=relaxed/relaxed;
+	bh=SZ3EviCYxMDcxcQqwdkGz4a9ADC55X4maOqxKmHiuIA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=BJeUcnBCzaCi+TzMiRpf7nfAaOP3TEwYu9vqLPH77MPM3t4K+eZSe8pTrI91aWj8AY9KhE17DIBl0pSMsUR5HfdLS2zcmdxQQq6R0OIdn6xdNXOfiVq9toBWviavCft2caGoP39WgOFwwByNFwEk0Qrgdid2f3uPYt9VsPtdbFyDPTjuQgDonnPyfpmRGK4cf8IHExWGzSGFfFNCVdniaUl2CMSUI61AG5JM9ObLeZBJvhVqpcsDnFa2S9kOnzr8w/xmdD35myE8+p4nj9b0H0FMJLkqEebLDDnSbozSPCfI5Rrzilq2i2x4q/fxFN1OufEVUhqC/wruq3OxBiA3uA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=I+cKpbzK; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=UGdVZQGF;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=I+cKpbzK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout06.his.huawei.com (canpmsgout06.his.huawei.com [113.46.200.221])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j8j9V3KX3z2xLs
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2026 19:28:43 +1100 (AEDT)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=72fCXYnwXZJQ3k3U2Ed815XR/8CaxvvHXwHA6M9NPgM=;
-	b=UGdVZQGF4bCI41N7zSwSS2YVkuJadnmqUUi6Jdq3mJ42sRZVsU1/2gUNwT6rK3ZXM+JpSIzPK
-	MUvNAK1AvPtX7Bd3DM7r49nubQkWJ5kUsbXxURyNHwjLgEAa8k8VKn+B4fWaTxUHBbQFiM/QgOq
-	IpV4Gv4HXs64YouQo7jyjaI=
-Received: from mail.maildlp.com (unknown [172.19.162.223])
-	by canpmsgout06.his.huawei.com (SkyGuard) with ESMTPS id 4j8j9B0QvSzRhTC;
-	Wed, 21 Oct 2026 16:28:30 +0800 (CST)
-Received: from kwepemk200008.china.huawei.com (unknown [7.202.194.74])
-	by mail.maildlp.com (Postfix) with ESMTPS id 56B1440561;
-	Wed, 21 Oct 2026 16:28:34 +0800 (CST)
-Received: from [10.67.110.68] (10.67.110.68) by kwepemk200008.china.huawei.com
- (7.202.194.74) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Wed, 21 Oct
- 2026 16:28:32 +0800
-Message-ID: <b729d819-39c9-42a1-8f9c-49019091b81f@huawei.com>
-Date: Wed, 21 Oct 2026 16:28:31 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j8jN23sV9z2xLt
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2026 19:37:54 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 58E4944464;
+	Wed, 21 Oct 2026 08:37:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 27A681F000CE;
+	Wed, 21 Oct 2026 08:37:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1792571872;
+	bh=SZ3EviCYxMDcxcQqwdkGz4a9ADC55X4maOqxKmHiuIA=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=I+cKpbzKX1NJJ+vV3Nf0xMc43gi4ozC2qu1m4Ircxn0vL1WBettiLwcFxk0f2Zk7m
+	 36hyR7/aePcxRJAnWMBei2+6ToqUej8aR+A7EAKCBm3fz1bLXzkpfI7BhoEbc+AJO3
+	 MrGhYQT/V2n2ViXB972cnyE8mcI7UoUCQ5QW6JrOzOs1XRwHDxzlJDGjFMXfY2GA2i
+	 q7o4gYrYg+OiQleCuWFTeREKMo3iuAk51O7BQ52KEfPtOzZf5CMRZbo1Wh9s/x5+7W
+	 ugnkO+geYfV8JQgNZKoYEx+5Bhy+TD7dXOH256AeeqslY0Y+BQITgPUjBMJv0B8C3F
+	 FcjEbATjabgLg==
+Message-ID: <973fd409-64b7-4c62-82e1-c75c784b80f7@kernel.org>
+Date: Wed, 21 Oct 2026 10:37:44 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,185 +60,215 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 09/14] x86/crash: Fix massive out-of-bounds write on
- 32-bit Highmem
-To: Mike Rapoport <rppt@kernel.org>
-CC: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
-	<chenhuacai@kernel.org>, <kernel@xen0n.name>, <maddy@linux.ibm.com>,
-	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <chleroy@kernel.org>,
-	<ritesh.list@gmail.com>, <sshegde@linux.ibm.com>, <tglx@kernel.org>,
-	<mingo@redhat.com>, <bp@alien8.de>, <dave.hansen@linux.intel.com>,
-	<hpa@zytor.com>, <gregkh@linuxfoundation.org>, <rafael@kernel.org>,
-	<dakr@kernel.org>, <akpm@linux-foundation.org>, <baoquan.he@linux.dev>,
-	<pasha.tatashin@soleen.com>, <pratyush@kernel.org>, <ruirui.yang@linux.dev>,
-	<leitao@debian.org>, <yeoreum.yun@arm.com>, <sourabhjain@linux.ibm.com>,
-	<robh@kernel.org>, <coxu@redhat.com>, <kees@kernel.org>,
-	<tangyouling@kylinos.cn>, <liukexin@kylinos.cn>, <zhangtianyang@loongson.cn>,
-	<guodongtai@kylinos.cn>, <maqianga@uniontech.com>, <chao.gao@intel.com>,
-	<kai.huang@intel.com>, <vishal.l.verma@intel.com>, <seanjc@google.com>,
-	<piliu@redhat.com>, <thuth@redhat.com>, <jbouron@amazon.com>,
-	<me@linux.beauty>, <mclapinski@google.com>, <graf@amazon.com>,
-	<bgwin@google.com>, <hbathini@linux.ibm.com>, <eric.devolder@oracle.com>,
-	<takahiro.akashi@linaro.org>, <james.morse@arm.com>, <palmer@rivosinc.com>,
-	<x86@kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-kernel@vger.kernel.org>, <loongarch@lists.linux.dev>,
-	<linuxppc-dev@lists.ozlabs.org>, <driver-core@lists.linux.dev>,
-	<kexec@lists.infradead.org>
-References: <20260921090450.807575-1-ruanjinjie@huawei.com>
- <20260921090450.807575-10-ruanjinjie@huawei.com>
- <179248377976.302547.17579416672238014424.b4-review@b4>
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-In-Reply-To: <179248377976.302547.17579416672238014424.b4-review@b4>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
- kwepemk200008.china.huawei.com (7.202.194.74)
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=4.0.1
+Subject: Re: [PATCH v3 1/2] mm/huge_memory: recheck a special PMD under the
+ lock in copy_huge_pmd()
+To: Konstantin Khorenko <khorenko@virtuozzo.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Zi Yan <ziy@nvidia.com>,
+ Baolin Wang <baolin.wang@linux.alibaba.com>,
+ "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>,
+ Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>,
+ Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>,
+ Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>,
+ Peter Xu <peterx@redhat.com>
+Cc: Alex Williamson <alex@shazbot.org>, kvm@vger.kernel.org,
+ =?UTF-8?Q?Lo=C3=AFc_Molinari?= <loic.molinari@collabora.com>,
+ dri-devel@lists.freedesktop.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>,
+ stable@vger.kernel.org
+References: <20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v3-0-85eaec8417f6@virtuozzo.com>
+ <20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v3-1-85eaec8417f6@virtuozzo.com>
+ <5800bc6e-7671-41eb-bb09-7fbc8f2d085c@kernel.org>
+ <03a10e8e-f14e-4612-9c23-70f94137a29e@virtuozzo.com>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=david@kernel.org; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <03a10e8e-f14e-4612-9c23-70f94137a29e@virtuozzo.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-
-
-在 2026/10/20 16:09, Mike Rapoport 写道:
-> Hi Jinjie,
-> 
->> On 32-bit x86 systems with HIGHMEM, kmap_local_page() only maps a single
->> 4KB page. However, the elfcorehdr segment can span several pages (up to
->> hundreds of kilobytes).
+On 10/16/26 15:05, Konstantin Khorenko wrote:
+> On 10/15/26 16:14, David Hildenbrand (Arm) wrote:
+>> I would have thought that unmap_mapping_pages() is only called in
+>> corner cases when we would have concurrent fork().
 >>
->> The original code blindly copies 'elfsz' bytes at once via
->> memcpy_flushcache(), overwriting adjacent fixmap entries or critical
->> virtual addresses.
+>> Like vfio_pci_zap_bars().
 >>
->> Fix this by copying the new elfcorehdr page by page.
+>> But yeah, likely there is a theoretical race.
 > 
-> This is independed of other fixes and can be sent as a separate x86b fix.
-
-Yes
-
+> Agreed, it needs a zap such as vfio_pci_zap_bars() racing with fork()
+> of the mapping owner. I only hit it with a delay injected into the
+> window.
 > 
->> Cc: Thomas Gleixner <tglx@kernel.org>
->> Cc: Ingo Molnar <mingo@redhat.com>
->> Cc: Borislav Petkov <bp@alien8.de>
->> Cc: Dave Hansen <dave.hansen@linux.intel.com>
->> Cc: "H. Peter Anvin" <hpa@zytor.com>
->> Cc: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
->> Cc: Vishal Verma <vishal.l.verma@intel.com>
->> Cc: Baoquan He <baoquan.he@linux.dev>
->> Cc: Chao Gao <chao.gao@intel.com>
->> Cc: Sean Christopherson <seanjc@google.com>
->> Cc: Eric DeVolder <eric.devolder@oracle.com>
->> Cc: Hari Bathini <hbathini@linux.ibm.com>
->> Cc: Andrew Morton <akpm@linux-foundation.org>
->> Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
->> Cc: stable@vger.kernel.org
->> Fixes: ea53ad9cf73b ("x86/crash: add x86 crash hotplug support")
->> Link: https://sashiko.dev/#/patchset/20260907125404.922123-1-ruanjinjie%40huawei.com
->> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
->> ---
->>  arch/x86/kernel/crash.c | 26 +++++++++++++-------------
->>  1 file changed, 13 insertions(+), 13 deletions(-)
+>> TBH, I think we can drop this comment entirely. That's just simply
+>> the right thing to do?
+> 
+> Will do. I kept the comment on the CoW warning below it, which is
+> about something else.
+> 
+>> But why do we do this early copy dance *at all*? I think I
+>> complained about this vma_is_anonymous handling in the past.
+>> vma_needs_copy() is the one deciding whether something should get
+>> copied or not.
 >>
->> diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
->> index e681ec9cf1dc8..3c9f4fbbe7ff0 100644
->> --- a/arch/x86/kernel/crash.c
->> +++ b/arch/x86/kernel/crash.c
->> @@ -447,9 +447,10 @@ unsigned int arch_crash_get_elfcorehdr_size(void)
->>   */
->>  void arch_crash_handle_hotplug_event(struct kimage *image, void *arg)
->>  {
->> -	void *elfbuf = NULL, *old_elfcorehdr;
->>  	unsigned long mem, memsz;
->>  	unsigned long elfsz = 0;
->> +	void *elfbuf = NULL;
->> +	unsigned long done;
->>  
->>  	/*
->>  	 * As crash_prepare_elf64_headers() has already described all
->> @@ -484,21 +485,20 @@ void arch_crash_handle_hotplug_event(struct kimage *image, void *arg)
->>  
->>  	/*
->>  	 * Copy new elfcorehdr over the old elfcorehdr at destination.
->> -	 */
->> -	old_elfcorehdr = kmap_local_page(pfn_to_page(mem >> PAGE_SHIFT));
->> -	if (!old_elfcorehdr) {
->> -		pr_err("mapping elfcorehdr segment failed\n");
->> -		goto out;
->> -	}
->> -
->> -	/*
->> -	 * Temporarily invalidate the crash image while the
->> -	 * elfcorehdr is updated.
->> +	 * The segment is physically contiguous but can span several pages.
->> +	 * On 32-bit Highmem architectures, kmap_local_page() maps only a
->> +	 * single page at a time, so copy page by page.
->>  	 */
->>  	xchg(&kexec_crash_image, NULL);
->> -	memcpy_flushcache(old_elfcorehdr, elfbuf, elfsz);
->> +	for (done = 0; done < elfsz; ) {
->> +		size_t chunk = min_t(size_t, PAGE_SIZE, elfsz - done);
->> +		void *dst = kmap_local_page(pfn_to_page((mem + done) >> PAGE_SHIFT));
->> +
->> +		memcpy_flushcache(dst, elfbuf + done, chunk);
->> +		kunmap_local(dst);
->> +		done += chunk;
->> +	}
+>> So, can't we just get rid of the vma_is_anonymous() handling and
+>> perform the weird special-pte check (that I hate entirely) when
+>> already holding the PTL?
 > 
-> HIGMEM is only enabled on 32-bit and there elfsz cannot be "massive"
-> because it is the size of the headers just built for the CPUs and RAM
-> ranges actually present, not the large memsz reserved for hotplug.
-> On x86_32 (NR_CPUS <= 64) that is a few KiB at most.
+> I tried exactly that first, see "try 1" below. The early
+> vma_is_anonymous() return is gone, the locks are taken for every huge
+> PMD, and both the special check and the skip of non-anonymous VMAs
+> run on the value read under the lock. The lockless read is gone, and
+> the race with it. The skip itself has to stay, as the anonymous path
+> cannot copy a file THP.
 > 
-> Also, crashkernel is capped at CRASH_ADDR_HIGH_MAX = SZ_512M on X86_32,
-> which is below the default lowmem limit. For lowmem pages,
-> kmap_local_page() returns the contiguous direct-map address, so the old
-
-Hi Mike,
-
-x86 32-bit doesn't support memory hotplug, and NR_CPUS is capped at 8.
-
-config NR_CPUS_RANGE_END
-    int
-    depends on X86_32
-    default    8 if  SMP
-    default    1 if !SMP
-
-According to the elf header size calculation in
-crash_prepare_elf64_headers():
-
-- nr_phdr = num_possible_cpus() + nr_mem_ranges + 2
-- sizeof(Elf64_Ehdr) = 64
-- sizeof(Elf64_Phdr) = 56
-
-so:
-    elf_sz = 64 + (num_possible_cpus() + nr_mem_ranges + 2) * 56
-
-To exceed 4K:
-
-    64 + (num_possible_cpus() + nr_ranges + 2) * 56 > 4096
-
-
-So we'd need at least 60+ RAM ranges, which seems unlikely on real
-hardware without memory hotplug. I think this problem can't actually be
-triggered in practice, so we can safely drop this patch.
-
-> code was already fine.
+> That makes fork slower when it walks a VMA full of huge PMDs that it
+> then skips. vma_needs_copy() sends such VMAs here, for example a
+> MAP_PRIVATE file mapping with an anon_vma. fork() of a process with
+> 4 GB of shmem THPs mapped MAP_PRIVATE and an anon_vma on the VMA
+> (2047 PMD-mapped THPs), median of 2000 forks, 4-vCPU KVM guest:
 > 
-> So the overflow needs the crash region to be in highmem, either through
-> crashkernel=size@offset above lowmem or through a large vmalloc=
-> setting, and an elfcorehdr larger than one page.
+>   v7.3-rc7     86-87 us
+>   try 1       131-148 us
+
+Perfectly fine.
+
 > 
-> It is still worth fixing, but please drop "massive" from the subject.
+> That is about 25 ns per huge PMD, spent taking and dropping the two
+> PMD locks only to skip it.
+
+We should likely do exactly what we do in the PTE path: copy PMDs that reference
+file folios. See copy_present_ptes().
+
+This THP/PMD handling inconsistency is annoying the crap out of me. We should
+just consistently do the same thing for PTE vs. PMD.
+
 > 
-> The changelog should also mention the conditions when this could happen.
+> So "try 2" keeps the early return, but decides it from the VMA flags
+> instead of a lockless read of the PMD: a non-anonymous VMA without
+> VM_PFNMAP or VM_MIXEDMAP cannot hold a special PMD other than the huge
+> zero one, as vmf_insert_pfn_pmd() requires one of the flags, and the
+> flags cannot change under the mmap write lock fork holds. Everything
+> else is decided under the PTL, as in try 1. fork() is back at
+> 86-87 us.
 > 
+> I also tried vma_is_special_huge() for that check, but its
+> vma_is_dax() test on every huge PMD made fork cost about 17% more
+> kernel instructions than v7.3-rc7 here, against about 1% for the
+> flags test.
+> 
+> Both diffs are against v7.3-rc7 and leave out the deposit fix from
+> patch 2, which goes on top as before. If try 2 looks right to you, v4
+> will be try 2 plus the deposit patch.
+> 
+> Try 1:
+> 
+> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+> --- a/mm/huge_memory.c
+> +++ b/mm/huge_memory.c
+> @@ -1958,39 +1958,36 @@ int copy_huge_pmd(struct mm_struct *dst_mm, struct mm_struct *src_mm,
+>         pgtable_t pgtable = NULL;
+>         int ret = -ENOMEM;
+> 
+> -       pmd = pmdp_get_lockless(src_pmd);
+> +       if (vma_is_anonymous(dst_vma)) {
+> +               pgtable = pte_alloc_one(dst_mm);
+> +               if (unlikely(!pgtable))
+> +                       goto out;
+> +       }
+> +
+> +       dst_ptl = pmd_lock(dst_mm, dst_pmd);
+> +       src_ptl = pmd_lockptr(src_mm, src_pmd);
+> +       spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
+> +
+> +       ret = -EAGAIN;
+> +       pmd = *src_pmd;
+> +
+>         if (unlikely(pmd_present(pmd) && pmd_special(pmd) &&
+>                      !is_huge_zero_pmd(pmd))) {
+
+
+There is a vm_normal_page_pmd(). It should be used instead of all of this
+open-coded crap people added over the years.
+
+Again, take a look at how the PTE scenario handles it in copy_present_ptes() etc.
+
+> -               dst_ptl = pmd_lock(dst_mm, dst_pmd);
+> -               src_ptl = pmd_lockptr(src_mm, src_pmd);
+> -               spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
+>                 /*
+> -                * No need to recheck the pmd, it can't change with write
+> -                * mmap lock held here.
+> -                *
+> -                * Meanwhile, making sure it's not a CoW VMA with writable
+> -                * mapping, otherwise it means either the anon page wrongly
+> -                * applied special bit, or we made the PRIVATE mapping be
+> -                * able to wrongly write to the backend MMIO.
+> +                * Make sure it's not a CoW VMA with writable mapping,
+> +                * otherwise it means either the anon page wrongly applied
+> +                * special bit, or we made the PRIVATE mapping be able to
+> +                * wrongly write to the backend MMIO.
+
+
+Nobody should be checking pmd_special() bits manually. Use vm_normal_page_pmd().
+
+Sorry that you'll have to clean up the mess people created over the years.
+
+But it's all just waiting for more bugs to be discovered or introduces when
+doing stuff completely different for PTE vs. PMD.
 
 -- 
-Best regards,
-Jinjie
+Cheers,
 
+David
 
