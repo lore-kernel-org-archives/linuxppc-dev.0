@@ -2,80 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25CAC606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Oct 2026 17:03:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4354A606A331
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Oct 2026 20:36:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XkZmtTC5
+	dkim=pass (2048-bit key, unprotected) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=relay header.b=ShpT2mht
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j8wZw2YvXz2xSD;
-	Thu, 22 Oct 2026 04:03:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792602184;
-	cv=none; b=GxStLe+Da1tI+AaZqmVjuUBJHFckjRlj2eiRMRhxOhTZIeACOd47L+ICWG6WkcakudBpHmbTT4yONQApE10UH0vTzwFZJdK/kbxNjJ8PxDAKpap5UgjZJtT9zAEofidH2P/NdeJodv88gtyKguTcHUMIRdmyFpU/3qmWOAw77PvP6RtrTMtrJ53MuPYvvbl29kn36nCsSuEBwD5bjLVXs4MEXJYFh7lf4TM72uCbd9iQX/rJ2TIRK3g+Oj+EC9m8ve/XdhMAZETkq77vJYQ4cEhvyf/lxaZ2DHNdgPR1vkuG4ocofwQhSFR3ZLe9CXS246prID9yxOWVcaete466IQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j91K82FyPz2xSD;
+	Thu, 22 Oct 2026 07:36:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=130.117.225.111
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792614988;
+	cv=none; b=PSpXZ8u8e1pr/dhWi9Xbqlb5n1Zo4AChxtxYZ2E9KxZcrBaTb9YUVt1jzz/9EREp6rSp/SfB3oxqT6aIvvTQbOczS4PwM3xGbxw64k0kJlBRuTkJE2R5dtcKNYTG82EhgVRwXHBc3zlfyz8pURuyn841MTyMyq5iRxDWsiEiEckDCKNoy/KdhILJdICVWBUNU0JfFQ+GDGt2rpOUz0WA8eajI4l8o93qqAVA1oPoxaqKqDlRwclr8OrICenPJKImfwX78XgkXUCzNCICCd+yUPc16wHXxwLemTGusym7EGzY8RPgnZpf6w9uc1nDKZEo88Yjulmxv4J85sklSXNTvw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792602184; c=relaxed/relaxed;
-	bh=G2Wb2r2zAu+yNNCY0UufSECh98Xmgt4eIzLuEewJe74=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XjsReJttLXIrbSi6A7k9YntCy4/bCTpjyTsXe4mXk/QCXzeVNoZII2wxrVK61GDMyXrJXi/5H1fhOj8dvKJ8FEuRFC1bN+ne5pkkVj38X3e5A4V8XGJvwfncgPZNxG2njItuscqiVFW0wI6kyOSwXMH2xhilkGDnI/1SnEkhbbhx2qLpnBHAiGNv29wU3ooMsVHd2G2pcEiywyDpIKSfqk67negGAG99D6XbYK/6fRY713riiUjJoJnDaBrKscRJn7BQ2kAZoE9I4VHS/DPL8Ec4uhbs5klKxcNanmQdDUEsTpwUH1IZU+3Oq9Pb8YMORfm/GF5U3JpUGZMTwQCasQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XkZmtTC5; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1792614988; c=relaxed/relaxed;
+	bh=tbceIaRF0sAuckuiO6cyxQdP9/vX0G/uVvpCY2YPfrc=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=ZLqFRuHCebpXM0tAp1BI5m+chBznx0kjP/YrX3JspNgsoNkHNMwgfWHTXfHYyvFb/NeElKO0QHJkWxMsKE+CceNC7URxZfhaS5hPd1jSIM4IjZ03nkltHUPGR4G3GVu125o+7XgiDvPwgsVgbLYjnMHxx0TGDoIawBslOJo6XkTHUz0Gg1S8/7Q94vwPdy8X5hg6jlu2ArGzTzjaJiO3fbb10mhmGW8BXCi6/D6GtHjVab4f761V3NGN8lYYqW7lEwiYOEl634DKF63wRwIdr6MMQovbmHqd9VIrrqi/Aw2kYtUEKlJmHTXrNBbkAhNYge8WriQerD14hC3n0OhfWA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=virtuozzo.com; dkim=pass (2048-bit key; secure) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=relay header.b=ShpT2mht; dkim-atps=neutral; spf=pass (client-ip=130.117.225.111; helo=relay.virtuozzo.com; envelope-from=khorenko@virtuozzo.com; receiver=lists.ozlabs.org) smtp.mailfrom=virtuozzo.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=virtuozzo.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XkZmtTC5;
+	dkim=pass (2048-bit key; secure) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=relay header.b=ShpT2mht;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=virtuozzo.com (client-ip=130.117.225.111; helo=relay.virtuozzo.com; envelope-from=khorenko@virtuozzo.com; receiver=lists.ozlabs.org)
+Received: from relay.virtuozzo.com (relay.virtuozzo.com [130.117.225.111])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j8wZv1W90z2xPW
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2026 04:03:03 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 95CC7601F6;
-	Wed, 21 Oct 2026 17:02:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 02E8A1F000C2;
-	Wed, 21 Oct 2026 17:02:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792602179;
-	bh=G2Wb2r2zAu+yNNCY0UufSECh98Xmgt4eIzLuEewJe74=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=XkZmtTC5S9VoCPJxFs4W6Nn32XI/9WoARvotlczkWiK/fgzgwYL9NUWAK7/UhnQEw
-	 a1MYNEG5gxgpbR2AQ8HOvf2u77T2OoEh+uQ+8KH8kkqu9M6qNPFMHb3odoRABgD7Ap
-	 NnodJhbm6ewhuPWrdg4aRCufKPtO6ImN+QeiSpm9UuwQ8G4sqwyM9cGunrUVZET1fe
-	 iB/Xx90Gq5wHuIal2BskYPHW7DSAIz5Ou5XSEYxbM7t+DIM43d3o92T/rvQYbv8iqc
-	 2gRzy6gh91csitC9FU1hYjhGrPDhvVMMsEaVVT2NkeBGm6hBefegTkk1IWRLAzmMa/
-	 iStvlOMozH3IQ==
-Date: Wed, 21 Oct 2026 20:02:39 +0300
-From: Mike Rapoport <rppt@kernel.org>
-To: Jinjie Ruan <ruanjinjie@huawei.com>
-Cc: catalin.marinas@arm.com, will@kernel.org, mark.rutland@arm.com,
-	chenhuacai@kernel.org, kernel@xen0n.name, maddy@linux.ibm.com,
-	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
-	ritesh.list@gmail.com, sshegde@linux.ibm.com, tglx@kernel.org,
-	mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com,
-	hpa@zytor.com, gregkh@linuxfoundation.org, rafael@kernel.org,
-	dakr@kernel.org, akpm@linux-foundation.org, baoquan.he@linux.dev,
-	pasha.tatashin@soleen.com, pratyush@kernel.org,
-	ruirui.yang@linux.dev, leitao@debian.org, yeoreum.yun@arm.com,
-	sourabhjain@linux.ibm.com, robh@kernel.org, coxu@redhat.com,
-	kees@kernel.org, tangyouling@kylinos.cn, liukexin@kylinos.cn,
-	zhangtianyang@loongson.cn, guodongtai@kylinos.cn,
-	maqianga@uniontech.com, chao.gao@intel.com, kai.huang@intel.com,
-	vishal.l.verma@intel.com, seanjc@google.com, piliu@redhat.com,
-	thuth@redhat.com, jbouron@amazon.com, me@linux.beauty,
-	mclapinski@google.com, graf@amazon.com, bgwin@google.com,
-	hbathini@linux.ibm.com, eric.devolder@oracle.com,
-	takahiro.akashi@linaro.org, james.morse@arm.com,
-	palmer@rivosinc.com, x86@kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
-	driver-core@lists.linux.dev, kexec@lists.infradead.org
-Subject: Re: [PATCH v6 09/14] x86/crash: Fix massive out-of-bounds write on
- 32-bit Highmem
-Message-ID: <atjwL407guk-76DK@kernel.org>
-References: <20260921090450.807575-1-ruanjinjie@huawei.com>
- <20260921090450.807575-10-ruanjinjie@huawei.com>
- <179248377976.302547.17579416672238014424.b4-review@b4>
- <b729d819-39c9-42a1-8f9c-49019091b81f@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j91K64Zjlz2xKQ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2026 07:36:24 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=virtuozzo.com; s=relay; h=Message-Id:Content-Type:MIME-Version:Subject:Date
+	:From; bh=tbceIaRF0sAuckuiO6cyxQdP9/vX0G/uVvpCY2YPfrc=; b=ShpT2mhtcIjao9HMfss
+	jXF7S4rKU1qxrdXq/oerjb+AA9xKx86xQW4rVJcpTdwN6GZi3Ko03fok6bTdeQmb9HLFJhC/LurPW
+	1vQvll05taTdW0NaVp8f8eYgYZe+1epvUyhyliWeJsPezDRk3ikw09d6PCLoOfsOIvbJnLtepWDc7
+	770hBdGBt5KnoFXUorGIvPN4bqx6So+zy2P1wOKtrmnLIHwIBZjXTG8O3dnlK/61VVFjzmJad2pU6
+	uuZzEx1oTR8I+jU8m2RTFniKH0ugGCrSddrm0qHfJ1vCBbLSvq8/mQ5Qr0H1zCbcujPoWNMgHY7+g
+	nBKgoTqn5gaSY7w==;
+Received: from ch-demo-asa.virtuozzo.com ([130.117.225.8] helo=f0.sw.ru)
+	by relay.virtuozzo.com with esmtp (Exim 4.96)
+	(envelope-from <khorenko@virtuozzo.com>)
+	id 1xJcz4-00D9zC-2y;
+	Wed, 21 Oct 2026 22:36:09 +0200
+From: Konstantin Khorenko <khorenko@virtuozzo.com>
+Date: Wed, 21 Oct 2026 22:36:00 +0200
+Subject: [PATCH v4 1/4] mm/rmap: duplicate a PMD mapping as one in
+ folio_dup_file_rmap_pmd()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,162 +59,90 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <b729d819-39c9-42a1-8f9c-49019091b81f@huawei.com>
-X-Spam-Status: No, score=-16.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261021-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v4-1-66f00b7a564c@virtuozzo.com>
+References: <20261021-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v4-0-66f00b7a564c@virtuozzo.com>
+In-Reply-To: <20261021-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v4-0-66f00b7a564c@virtuozzo.com>
+To: Andrew Morton <akpm@linux-foundation.org>, 
+ "David Hildenbrand (Arm)" <david@kernel.org>, Zi Yan <ziy@nvidia.com>, 
+ Baolin Wang <baolin.wang@linux.alibaba.com>, 
+ "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>, 
+ Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
+ Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
+ Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, 
+ Peter Xu <peterx@redhat.com>
+Cc: Alex Williamson <alex@shazbot.org>, kvm@vger.kernel.org, 
+ =?utf-8?q?Lo=C3=AFc_Molinari?= <loic.molinari@collabora.com>, 
+ Lorenzo Stoakes <ljs@kernel.org>, Shuah Khan <shuah@kernel.org>, 
+ linux-kselftest@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, 
+ linux-kernel@vger.kernel.org, Konstantin Khorenko <khorenko@virtuozzo.com>, 
+ Jason Gunthorpe <jgg@ziepe.ca>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1546;
+ i=khorenko@virtuozzo.com; h=from:subject:message-id;
+ bh=zhntYNSyNOhAa1ZPHwaiFUV3wOk6ing6WAMJ8CgrgUQ=;
+ b=owEBbQKS/ZANAwAKAVGWCkf5YVwqAcsmYgBq2SI3kTt0eGcvGYVZkf1nokMQHDfejBZY7fajV
+ 0TyI+y7YxiJAjMEAAEKAB0WIQRWD23IPcXT0GO9CCxRlgpH+WFcKgUCatkiNwAKCRBRlgpH+WFc
+ KgnAD/4ojtuF4NBnUvfl/Psk86uzqUN1kVtoLEKMaMThvlqW1s3hK5DewNJbbtEf8Kazy+pGsy7
+ 2MNBKYRUNiZDEhZn/2DHUE1gt+A1tVbizNXBa/MWAiM0mHN4ngFsKzIt8G4YzVFPRIiFTv47n4W
+ UzZ9V4zYqU+0s0nv2SkSdgabyHn+IOd37dsdB1FOWbqkMfFafvXpi338tn8jdGLrv9NurDGPBXa
+ JZN7A4rUTj1hDfc6KXc2+NthJvKbdfaeHECDDIrCgp96JMX4YtV1Oq6Vo4PNsA+spLXB6gm22vs
+ bt8zKJcN2+rdAim5R+CHKro0V0Fp0XAZp4Xj82XaDXiCzDfPcKc8FDuP9RDDvxj6RzW+X2RIO0E
+ 612Fj+ImIt3/D5SW82Dj9MLXESvv7BYtG4DMGFZ7XcgRqlHZpzwiWRnWvsGrxcJKt2wKFFMBlJH
+ cuLulc+7fr3I4ndV99zx4sbup7C77YzhIsIspwXhd6cDjs9nPaznCZrSIcs5vKegskyHFrqx+Db
+ rqe+t05922C0eCwL1UxqL2hupnKSl4lwMd1mwvKy9yhaHtuSKLRavqalIHyXq5zh+tUCFdTvAP+
+ kEDIzV2/fARqYVLPRiGeTeSch5+t8I9q8grSh7VIqydeFZPMIov/cihVtwGD8oOVUOK0w5eQsBw
+ F++lxfRANMnnNdQ==
+X-Developer-Key: i=khorenko@virtuozzo.com; a=openpgp;
+ fpr=560F6DC83DC5D3D063BD082C51960A47F9615C2A
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Wed, Oct 21, 2026 at 04:28:31PM +0800, Jinjie Ruan wrote:
-> 
-> 
-> 在 2026/10/20 16:09, Mike Rapoport 写道:
-> > Hi Jinjie,
-> > 
-> >> On 32-bit x86 systems with HIGHMEM, kmap_local_page() only maps a single
-> >> 4KB page. However, the elfcorehdr segment can span several pages (up to
-> >> hundreds of kilobytes).
-> >>
-> >> The original code blindly copies 'elfsz' bytes at once via
-> >> memcpy_flushcache(), overwriting adjacent fixmap entries or critical
-> >> virtual addresses.
-> >>
-> >> Fix this by copying the new elfcorehdr page by page.
-> > 
-> > This is independed of other fixes and can be sent as a separate x86b fix.
-> 
-> Yes
-> 
-> > 
-> >> Cc: Thomas Gleixner <tglx@kernel.org>
-> >> Cc: Ingo Molnar <mingo@redhat.com>
-> >> Cc: Borislav Petkov <bp@alien8.de>
-> >> Cc: Dave Hansen <dave.hansen@linux.intel.com>
-> >> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> >> Cc: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-> >> Cc: Vishal Verma <vishal.l.verma@intel.com>
-> >> Cc: Baoquan He <baoquan.he@linux.dev>
-> >> Cc: Chao Gao <chao.gao@intel.com>
-> >> Cc: Sean Christopherson <seanjc@google.com>
-> >> Cc: Eric DeVolder <eric.devolder@oracle.com>
-> >> Cc: Hari Bathini <hbathini@linux.ibm.com>
-> >> Cc: Andrew Morton <akpm@linux-foundation.org>
-> >> Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
-> >> Cc: stable@vger.kernel.org
-> >> Fixes: ea53ad9cf73b ("x86/crash: add x86 crash hotplug support")
-> >> Link: https://sashiko.dev/#/patchset/20260907125404.922123-1-ruanjinjie%40huawei.com
-> >> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
-> >> ---
-> >>  arch/x86/kernel/crash.c | 26 +++++++++++++-------------
-> >>  1 file changed, 13 insertions(+), 13 deletions(-)
-> >>
-> >> diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
-> >> index e681ec9cf1dc8..3c9f4fbbe7ff0 100644
-> >> --- a/arch/x86/kernel/crash.c
-> >> +++ b/arch/x86/kernel/crash.c
-> >> @@ -447,9 +447,10 @@ unsigned int arch_crash_get_elfcorehdr_size(void)
-> >>   */
-> >>  void arch_crash_handle_hotplug_event(struct kimage *image, void *arg)
-> >>  {
-> >> -	void *elfbuf = NULL, *old_elfcorehdr;
-> >>  	unsigned long mem, memsz;
-> >>  	unsigned long elfsz = 0;
-> >> +	void *elfbuf = NULL;
-> >> +	unsigned long done;
-> >>  
-> >>  	/*
-> >>  	 * As crash_prepare_elf64_headers() has already described all
-> >> @@ -484,21 +485,20 @@ void arch_crash_handle_hotplug_event(struct kimage *image, void *arg)
-> >>  
-> >>  	/*
-> >>  	 * Copy new elfcorehdr over the old elfcorehdr at destination.
-> >> -	 */
-> >> -	old_elfcorehdr = kmap_local_page(pfn_to_page(mem >> PAGE_SHIFT));
-> >> -	if (!old_elfcorehdr) {
-> >> -		pr_err("mapping elfcorehdr segment failed\n");
-> >> -		goto out;
-> >> -	}
-> >> -
-> >> -	/*
-> >> -	 * Temporarily invalidate the crash image while the
-> >> -	 * elfcorehdr is updated.
-> >> +	 * The segment is physically contiguous but can span several pages.
-> >> +	 * On 32-bit Highmem architectures, kmap_local_page() maps only a
-> >> +	 * single page at a time, so copy page by page.
-> >>  	 */
-> >>  	xchg(&kexec_crash_image, NULL);
-> >> -	memcpy_flushcache(old_elfcorehdr, elfbuf, elfsz);
-> >> +	for (done = 0; done < elfsz; ) {
-> >> +		size_t chunk = min_t(size_t, PAGE_SIZE, elfsz - done);
-> >> +		void *dst = kmap_local_page(pfn_to_page((mem + done) >> PAGE_SHIFT));
-> >> +
-> >> +		memcpy_flushcache(dst, elfbuf + done, chunk);
-> >> +		kunmap_local(dst);
-> >> +		done += chunk;
-> >> +	}
-> > 
-> > HIGMEM is only enabled on 32-bit and there elfsz cannot be "massive"
-> > because it is the size of the headers just built for the CPUs and RAM
-> > ranges actually present, not the large memsz reserved for hotplug.
-> > On x86_32 (NR_CPUS <= 64) that is a few KiB at most.
-> > 
-> > Also, crashkernel is capped at CRASH_ADDR_HIGH_MAX = SZ_512M on X86_32,
-> > which is below the default lowmem limit. For lowmem pages,
-> > kmap_local_page() returns the contiguous direct-map address, so the old
-> 
-> Hi Mike,
-> 
-> x86 32-bit doesn't support memory hotplug, and NR_CPUS is capped at 8.
-> 
-> config NR_CPUS_RANGE_END
->     int
->     depends on X86_32
->     default    8 if  SMP
->     default    1 if !SMP
-> 
-> According to the elf header size calculation in
-> crash_prepare_elf64_headers():
-> 
-> - nr_phdr = num_possible_cpus() + nr_mem_ranges + 2
-> - sizeof(Elf64_Ehdr) = 64
-> - sizeof(Elf64_Phdr) = 56
-> 
-> so:
->     elf_sz = 64 + (num_possible_cpus() + nr_mem_ranges + 2) * 56
-> 
-> To exceed 4K:
-> 
->     64 + (num_possible_cpus() + nr_ranges + 2) * 56 > 4096
-> 
-> 
-> So we'd need at least 60+ RAM ranges, which seems unlikely on real
-> hardware without memory hotplug. I think this problem can't actually be
-> triggered in practice, so we can safely drop this patch.
+folio_dup_file_rmap_pmd() passes PGTABLE_LEVEL_PTE to
+__folio_dup_file_rmap() for HPAGE_PMD_NR pages, so it adds HPAGE_PMD_NR
+PTE mappings to the folio instead of one PMD mapping. Each unmap of the
+PMD removes one PMD mapping:
 
-I think you are right and my LLM overestimated the amount of memory used :)
- 
-> > code was already fine.
-> > 
-> > So the overflow needs the crash region to be in highmem, either through
-> > crashkernel=size@offset above lowmem or through a large vmalloc=
-> > setting, and an elfcorehdr larger than one page.
-> > 
-> > It is still worth fixing, but please drop "massive" from the subject.
-> > 
-> > The changelog should also mention the conditions when this could happen.
-> > 
-> 
-> -- 
-> Best regards,
-> Jinjie
-> 
+- the folio's mapcount never returns to zero, and removing the folio
+  from the page cache reports "Bad page cache", or hits a VM_BUG_ON
+  with CONFIG_DEBUG_VM;
+- the first unmap already counts as the last one and drops the
+  PMD-mapped statistics while the other mm still maps the folio;
+- the second one drives the entire mapcount below zero and drops them
+  again.
+
+The helper has no caller yet, the next patch adds the first one. Pass
+PGTABLE_LEVEL_PMD, as folio_try_dup_anon_rmap_pmd() does.
+
+Fixes: d8ef5e311d7b ("mm/rmap: convert page_dup_file_rmap() to folio_dup_file_rmap_[pte|ptes|pmd]()")
+Signed-off-by: Konstantin Khorenko <khorenko@virtuozzo.com>
+---
+ include/linux/rmap.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/linux/rmap.h b/include/linux/rmap.h
+index 0b332770abeed..7562017416094 100644
+--- a/include/linux/rmap.h
++++ b/include/linux/rmap.h
+@@ -558,7 +558,7 @@ static inline void folio_dup_file_rmap_pmd(struct folio *folio,
+ 		struct page *page, struct vm_area_struct *dst_vma)
+ {
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+-	__folio_dup_file_rmap(folio, page, HPAGE_PMD_NR, dst_vma, PGTABLE_LEVEL_PTE);
++	__folio_dup_file_rmap(folio, page, HPAGE_PMD_NR, dst_vma, PGTABLE_LEVEL_PMD);
+ #else
+ 	WARN_ON_ONCE(true);
+ #endif
 
 -- 
-Sincerely yours,
-Mike.
+2.43.0
+
 
