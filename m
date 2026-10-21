@@ -1,96 +1,90 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F0B2606A31E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Oct 2026 14:45:35 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 363DF606A322
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Oct 2026 15:16:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=BwQTlps1
+	dkim=pass (2048-bit key, unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=TVTSRt29
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j8sXF4Mswz2xjv;
-	Thu, 22 Oct 2026 01:45:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1234"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792593933;
-	cv=none; b=eh07k7G9xL+PX378rDkySf5b26w+vIX9AX6/OBLPb9fPrzCvA+chhIZT2+A5eMYO03yvIpUswR3x1k8tu6u6Dnsn/CfnahgRRADG5gU/oZKHi+k1Dln8dooT1ZJDxr4ldA27EU65FdSgqPyA3IfssmVAQ2EpwvDYAGAHZQ8ici+2ubxJsv8S/zUYppwME8vZu3sq2W3DPYPhrTJW0TDFj0TnVub+B1ZI26jrhufemmxDvW31zU5f3XmkasZ5DGzyGas3E7kvQKG6x0ae9wPuHw3HVWSVa/iAyXRIzsyfkn3vAy/lEdDBigtrY6U7WdbmqHod0qSBK7kvp0I1F16sTQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792593933; c=relaxed/relaxed;
-	bh=GjBHhwWOEQdir2yWO0JK5yCpRCfdUmaiz711T6ehhgs=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version; b=BdEmyoWefsGEzZZoMIbIXkh/d/rrADoyRPPzYvrMGK/KslLS+EaUmK+M34qEdRDExMJB4Eo45A6T4OmQ6RK3inTuTcXpZiU99U0oKcO8Cn1YgIxoFrjMnW4tooQLKB0M+npVaMOAEyJKF6MzeC7+Eu2e5eNmvLbM+0kY3zqPMtyYnW2UPd4Qjqm+pbXzbTYfIepVFMJZr1BjjWJDvchTkR3fezmhxOWdrMjxqho2Zhke7/c5/qo8ZXQAh1HSKhLlOCIeO59p3QZzNUL/wXNY/1Oso0G7eZcAQPiO+Pb63AD5o+oubxy5D3Fmj1qcCpyCoe5p1U+ZKGHrm/9p3KvGXg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=BwQTlps1; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1234; helo=mail-dl1-x1234.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j8tCX3KJFz2xjv;
+	Thu, 22 Oct 2026 02:16:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20a::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792595768;
+	cv=pass; b=Lfhh5imAKLGMWOog9qqo7VWXHJsJwpXl0LzwyX96tzt0tmLvAKemFS+bzmgkhAmiGoX/iIkYLob0UiHcRqq3Esj2107penLGXZvzmxExlpcDFcMYtmiuaRroMrewrL5TnAWXidYxSphIGcM/LejcE1du2Z/oWW5M507+BPz7sCsetwmINhoUfDldJ6rqAzweW7n1Bjr+tB3C1L4Mi5IoogAlhlQKibx7BoQEFOiXzbHqLb8rZcS5NnB8CUMBH7I0QS78F2xsX0yMLJOilo3WHpQ5n2eZ8UST9XsxJ81d+CJh9Dj6r067i9dNP036k111UydaN37C6gnJVn590YvVzg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792595768; c=relaxed/relaxed;
+	bh=AjeERqTMtTFCemJF8aYOEDp+NdgQGo5LMi0YqasZ8DU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=gwTOAovTIR8EtBFEGLR2orvSO7VH8OJJTDKR/Qpkt55rtECWFzs3wRGz354F0epbMzuwpD6GV2gVy2x3twG5JoTuD96pTNheGhHoweq8jqAelvV5qdtGWZv4HY3sLYnMKiKwuoYsc6bogne0HdPnma8Nh5ORdWCsnUCYYoHEGl/dkqUvcURSbYMfEKh+So7UVEsTkttVsqiuD8PQA3LFlKnrw6KJ8I1vP7Kmv6cd/r78k9eg2f3fsvHKoFo2+q0RIE9X1+zq85H1UugAZYmDOr4sZMiC6wRMLeK5oGz86e7OOx0rCIhYbsPIFxfmEUQ6aOlDbZsIecFSCrsc/rZiTw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=TVTSRt29; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20a::7; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=vladimir.oltean@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=BwQTlps1;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=TVTSRt29;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1234; helo=mail-dl1-x1234.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x1234.google.com (mail-dl1-x1234.google.com [IPv6:2607:f8b0:4864:20::1234])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c20a::7; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=vladimir.oltean@nxp.com; receiver=lists.ozlabs.org)
+Received: from PA4PR04CU001.outbound.protection.outlook.com (mail-francecentralazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20a::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j8sXD2H3jz2xfj
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2026 01:45:31 +1100 (AEDT)
-Received: by mail-dl1-x1234.google.com with SMTP id a92af1059eb24-1846bc43c28so112593c88.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2026 07:45:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792593929; x=1793198729; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:to
-         :from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=GjBHhwWOEQdir2yWO0JK5yCpRCfdUmaiz711T6ehhgs=;
-        b=BwQTlps1hQ7qGDscDna2yenif9p91SCvDCDzsTFr/oiB/yoOqoaPER9X1trV4c/FL8
-         xUDR05+ZwpqwX1lwJy2JDBcvuRwuhLh04vrsCosV0RrG1J5DtRts3sjgAKoIZuXDzyps
-         bVw2ztZBIxNEgBUyLvw+w09Ii5NBLU5ZX9mqI4JqjIiuT+bCGhsf0NUVJOYg1LfXbmGM
-         EobVsmcQ0K35DFjJPXXXGdBxwrRlhpnOhadxyd78LHhreRulcUhf7ozT8pbk0fGQF95x
-         /PzinyUczywobxITdQtEmTl3eBfgQvdMhdjfQq2Mq9dLhuZDFNj1Gw9dOmJQAbOxs8ZH
-         bHmw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792593929; x=1793198729;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:to
-         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=GjBHhwWOEQdir2yWO0JK5yCpRCfdUmaiz711T6ehhgs=;
-        b=NhVZ4ECacU9g6RcyBVVBcKVvSMJJSa4ilaX4EzZ/KKskyJxOCUy3jk+EZZ4xRkeSNh
-         bscy4CheGW0g/qR0yIKfnc2wyW55C+4B1c9quLW/cHOMm6zcBeNYGBUKLzaWAXZk2/bm
-         KrFzyeL8Km+0aujI5bKtlfLw7D/6F5rrhSwhm/5MD/FBxA0eBz9NKZ3uUoJdUz6aQ1ji
-         6026OKtxsBR4LdbUjOw26T1XWtaSKuVqALDFUZAtk68eyoGZQD00MmQyb24yjasTsMFJ
-         s86HxIlXBaQ6K3ttUy0E3/Pixt/tbNoWK1YJqP5xGLAqxLQmsyHS3Xgi3/+9slUGOVcp
-         saNw==
-X-Forwarded-Encrypted: i=1; AKwUvBx6qbltGOMMLEWqxJ84QzKs79Ew+vEEYfz4yNQkggll8ZjURgG1nAE6aJzdIEL/WEADe7VAaJfZzZxZyh0=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYLQpgNNT6Hq+3aSdHfQtTwYQMlH0oADVMYjbSo7rd0gwU8W0Wsg
-	A8Ham2fgDlO0JcfjQ8Ln+6laSHoM+hcylO8/uIO6+1HLRoMf2+msM3Iw
-X-Gm-Gg: AYBFou2kHTSjkODvm/bUYFjPkF66pjCN8UVKSZTaHyoKVl0YuzvpiXFqGXn99lV+aOW
-	5IGSD9ilHLdkqb9TEk61JohwgWlrui8T7ZoLJqSD7bbkQ/sZ37aLgcvnRbDUyIJjVc4mZPzltVt
-	ZFV3irendouctqIlSj4M3Z+NP9XkoF9/cRTDZGoc6Inf/XwLpdK2jJd9/KjWOwy9jUzyBBUOyJO
-	pPn+W727SHluoa772gzKwQbVl7mAiI14Y+cSpwP9F+Dh/1Hungv4Vgvh1QoDl0XBRmyqruDPgGR
-	z7DMpcLDt89oM40wzSAD38yiZumBNh7IV4YZPZd7/DDzFcVv2+bJp/ndXbbr/0L9BBxSicrpx36
-	tbtYFGDMQ0sBkmW8vPIplNtS9Ubc8PoXwsEc940tcr082gYrRiHrDDvlWVBYYARcVQLgdQ7+IiB
-	f88C/fglcZjXxmDiZRVUbVhTFtT0OC9IDPmLO6a6T3wEE8vI95P8B5CoIhO7JS9/qifNYHctpxk
-	afKfj1od96FOCnmhYrUh2Jya0AVkMdfupH/9dbdVxK0Dz7hSIcqmuATHhSoUu451ktHQhwwfKun
-	DpmlR4jAigAPpuCpWwW+ht9FqQ==
-X-Received: by 2002:a05:701b:4550:10b0:150:1cea:31a8 with SMTP id a92af1059eb24-190a4ffa89dmr2992796c88.19.1792593928842;
-        Wed, 21 Oct 2026 07:45:28 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.165.23])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-19035c0c9a6sm6415308c88.3.2026.10.21.07.45.13
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 21 Oct 2026 07:45:20 -0700 (PDT)
-From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-To: maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	ritesh.list@gmail.com,
-	sshegde@linux.ibm.com,
-	mkchauras@gmail.com,
-	msuchanek@suse.de,
-	akpm@linux-foundation.org,
-	yeoreum.yun@arm.com,
-	agordeev@linux.ibm.com,
-	mchauras@linux.ibm.com,
-	bwiedemann@suse.de,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc: Support for generic tif bits
-Date: Wed, 21 Oct 2026 20:14:54 +0530
-Message-ID: <20261021144453.232372-2-mkchauras@gmail.com>
-X-Mailer: git-send-email 2.55.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j8tCV4VyNz2xfj
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2026 02:16:06 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=cpl/KOPak2Lfb8qG1C0YPTxqctMCVpOTtJlze4MwQ+dDOXsA7eNAv/0QBMjtIz9vfEKLt+UM/TvIEGn86Z6hAvO9RsyzPBqqZ9A6/jp+Yu1EAlsiohI9+AZKIy3JM04HzqMzEoFVPp8ayfvw3CM97x3Oj/XB90ygbfc9+KoMuLYDCFykb7n7a1YnOqqd+bB4iY324m4XY0ijhJvJmGfSeIVNeGhCT4Hy/TyFdutPRjqkkky6a0amMP4N7dtd309qWlijpzm0OuYP4Xp8ZD1sBrqtsQV0fjecF8HQuAkUwupx+7j6jrqqRm+SsHT0nkWpVdixWl0MZ9cDeDknp1E31w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=AjeERqTMtTFCemJF8aYOEDp+NdgQGo5LMi0YqasZ8DU=;
+ b=ZM++6YtnsDEjdj3PFb217JZvSp0u/i1brz34pdYXGem8r/hyTjgB4iR0phpPZyWVbhMJs/vF0bgU+LkZHlM+8ju2BAL4mNTB5t/UnBbYqRAF/vn2DdjuSqQtuaBzf4l68nbTQZ8higf8eygXuVjMHFStFWVcIaHorN6EGvrkwa8hc9CBdo3GvADxegEkeBDej4r5eEtWkWU80ZjN+FKn+BilaFCpZTeJ1o5Od3wKnDL/KUYy3qUuVPtQUm9/o3hwpxthnMuNKbkLzkZYhNvppxhDjLY0L2/ulPC2z470qzCsTgoh9sVxKHe3FXhYT4TQ9nsqZrQm+FZZ5WyXM5yyiw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=AjeERqTMtTFCemJF8aYOEDp+NdgQGo5LMi0YqasZ8DU=;
+ b=TVTSRt29lXiD0sHZTzy3QcpsDXnfmVd8eRg1XNz941N8k7s2fUg9COIIQ9nT0k4HvtuFt0DT/oDnAJzfMYoC5ky8stvWyAweXGFxyrHFmUUA+udB7glt7q+RkxsCiMFltZ0aYXhrIZLLJ57aV53wM3fH21ppFpJP4nlBs9hQ3eriVlHbVER28e5tB+/ChvjoUS1ym5mAXp3Xv47S03jvNx32HRDhUK3mo2ycmrG9PHx4IYeHnr5h6Ja3rv9jrguHwIb6C26kTd6Zyk0xE/0Bf2cPyno+TwV1VVo3uInfWKRk84oy5eHccsK+YSATWyXoe5Pr2sDPRIqw102ZDcD2MA==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from AM0PR04MB6900.eurprd04.prod.outlook.com (2603:10a6:208:17d::10)
+ by MA6PR04MB066831.eurprd04.prod.outlook.com (2603:10a6:250:56::5) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.522.19; Wed, 21 Oct
+ 2026 15:15:40 +0000
+Received: from AM0PR04MB6900.eurprd04.prod.outlook.com
+ ([fe80::7fda:8431:ca1b:b023]) by AM0PR04MB6900.eurprd04.prod.outlook.com
+ ([fe80::7fda:8431:ca1b:b023%4]) with mapi id 15.21.0546.012; Wed, 21 Oct 2026
+ 15:15:38 +0000
+Date: Wed, 21 Oct 2026 18:15:34 +0300
+From: Vladimir Oltean <vladimir.oltean@nxp.com>
+To: Wei Fang <wei.fang@nxp.com>
+Cc: Marek Vasut <marex@nabladev.com>, 
+	"Frank Li (OSS)" <frank.li@oss.nxp.com>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "David S. Miller" <davem@davemloft.net>, 
+	Andrew Lunn <andrew+netdev@lunn.ch>, Clark Wang <xiaoning.wang@nxp.com>, 
+	Claudiu Manoil <claudiu.manoil@nxp.com>, Conor Dooley <conor+dt@kernel.org>, 
+	Eric Dumazet <edumazet@kernel.org>, Frank Li <frank.li@nxp.com>, Jakub Kicinski <kuba@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Rob Herring <robh@kernel.org>, 
+	"UNGLinuxDriver@microchip.com" <UNGLinuxDriver@microchip.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, 
+	"imx@lists.linux.dev" <imx@lists.linux.dev>, 
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [net-next,PATCH 2/2] enetc: Make eMDIO MDC rate configurable
+ from DT
+Message-ID: <ucqfjqsvvnxp7csa53lsbtxxeti4n53wdrybzuemargqkt556y@amr6rfv5oq4f>
+References: <20261016193344.115518-1-marex@nabladev.com>
+ <20261016193344.115518-2-marex@nabladev.com>
+ <atKDNdxl0w65s8yQ@SMW015318>
+ <DB9PR04MB933217F7ADCB6223A44DACA7889A2@DB9PR04MB9332.eurprd04.prod.outlook.com>
+ <661412ff-3942-4d1c-be6f-1ef6c54620fd@nabladev.com>
+ <AS4PR04MB933821150913BDCF35C4827F88982@AS4PR04MB9338.eurprd04.prod.outlook.com>
+ <fe920b05-6d89-4dc1-83d3-0664fbc2e00c@nabladev.com>
+ <AS4PR04MB93389CB9849950CFD78411DE88672@AS4PR04MB9338.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <AS4PR04MB93389CB9849950CFD78411DE88672@AS4PR04MB9338.eurprd04.prod.outlook.com>
+X-ClientProxiedBy: AS4P190CA0017.EURP190.PROD.OUTLOOK.COM
+ (2603:10a6:20b:5d0::7) To AM0PR04MB6900.eurprd04.prod.outlook.com
+ (2603:10a6:208:17d::10)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,103 +98,101 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=4.0.1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM0PR04MB6900:EE_|MA6PR04MB066831:EE_
+X-MS-Office365-Filtering-Correlation-Id: 5dcd3e3c-7427-4f40-9a43-08df2f8629c3
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|7416014|23010399003|19092799006|376014|1800799024|366016|6133799003|18002099003|22082099003|4143699003|11063799006|261009223027099003|10067099003|56012099006;
+X-Microsoft-Antispam-Message-Info:
+	kd64XkLt2PjbuJF+EItCjaaD38obEnIsDl71xCKC+D4aAdUZBv5+v3HEfCMk5z7S/ySmGgsdODOjvQTzPWHN2fhjwe6VSLUCn30BYwImF1KjhEm3cOYIruj/fdkEVfHYZhl56xBJWz0uGkNFCw9jOLmWV8xbWp5KOKEfCksg3ad4ACclXzKU51isMOxsORcHW7s68WJ5j+oL1TweDEmJoENi5MI6KXQKu6VfVg4VUKp3afk2m68Th4q9EpbFncDPqL8ME9XHtwvVnoGnWcYWi7xxjOMEA1cy9Fze0aWpd15tkOCJTreKsNgVpWvyczwobwTcRquG/pqwRusS/ZKKcfQLtTtPTlAmDmbbKo4dBJ+Nh2fXusui0yN8BUVSGa+m/pWXRkeUAOeh413Y2LiJhT8nxB7uPuC/0R1Gy+C71s6/ysszaqo4hkEjZpnnML8llmemAVDng/xfIqJVOJFU1+jZoipaxyN7JAYoDG9POs+bI3oAgUSGOGaSDqW5UgyX4BnYeoOxfLwnUamwOiDKeEVSiZi037Idxba+0K9/TRQBBmwfqSvYbu+F9l/fS3n3eZX0xfKIuHN9RO4XXTdtJx09NzM9QAw/raHAXinqI4heOW88jdAps6fUEqul6SdBX1AhEsobs75VviFmOExJUk9GJ+CYOgJYtafZJ/t/V8E=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR04MB6900.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(23010399003)(19092799006)(376014)(1800799024)(366016)(6133799003)(18002099003)(22082099003)(4143699003)(11063799006)(261009223027099003)(10067099003)(56012099006);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?TfTo8mYBA4yFQ42LgJBL5heWBuMOO3t8zebKRbHSe2nw6LXMwsqir2xfiuHD?=
+ =?us-ascii?Q?b/OzflaZFw5GR8U7zXcarSF8+ON3DKdMMOexj6MEBP7jaP/7BqIWROKJa6j1?=
+ =?us-ascii?Q?P+xlxbLg6/UlD1Hb6FowdDTwEPQKUW7CoFHkXkCSRCPG06yrla4lAQOfUlVt?=
+ =?us-ascii?Q?U9olkEqE8Aks5bcAP9puH80wk9ZB6TJRPdNFTNm1NDkF7z++dsgIx8QChrE4?=
+ =?us-ascii?Q?NtoSKR85dLbapHQNxjEAgfIV7BZdk4YGJ8ifbbi+4EWT/ZvWdtscV2+7KI2N?=
+ =?us-ascii?Q?60wMQp4XXwyRvpQVQc1QchtbYCwqjZXb2ef/obUd/5HvkE/DxYt5rlvoxXKX?=
+ =?us-ascii?Q?ufO3uRl0MyQuW717/Z7dHCBtr2jk3vcwiOoW1tfwr761L8ErDcE22a3trdu3?=
+ =?us-ascii?Q?TuApmHQbFsIM5QBE5Hs1clst+WNttLF9QFuD5UHCLhmLw95qXRWZs/Ia8oUP?=
+ =?us-ascii?Q?dWNrpJrqbkVXrETIozSfA3u1DMQpy/zb1Pfi3eBuO3a2vxT92FdEQcsB1dZz?=
+ =?us-ascii?Q?mdNZP7Hsu3rH/5zAXEdgxDsHu/AiG5odnc4N1lsWeEjSGNZzpPDNCpEK3RDp?=
+ =?us-ascii?Q?12K82cNuBNiHwV5JovNHTxZjglF1WTBBYD1r/9YB/9U3SlvW94YbEUo0jTPK?=
+ =?us-ascii?Q?kSFT8NBk1ijeTfjhB0ndWISmAAZneaEgYSMtQRWAW/Fr5eK9vzOuDmKDF+Id?=
+ =?us-ascii?Q?Oa0PMLpeGXTANZ/cckHVYN6rGp2Vu4P6HWefM5NhnAJJHUe6JKyxhU7JvTrL?=
+ =?us-ascii?Q?mSiWbYRlLo0nbmpson03D0QgzzMpiyK1NOlWKUjgnuXtXmmZ+Jmm1o3A/cdA?=
+ =?us-ascii?Q?qs4OowUfXsqIel+0OD2Ia2ej18SCh6+NmEvCP87e/sj2bqb7C+Sy8ImnOIr4?=
+ =?us-ascii?Q?9GSajwUplRU0JmbRC4mUUBMn7gzEI24sBwjCDBIQ9i2y8gz5DRZ052X5tGAj?=
+ =?us-ascii?Q?4+Hh0Rp+9VOdY5LwiLr0xveHQmWhxP7SV6crCe/vKCGlD4RAWwk3wyXLPpSJ?=
+ =?us-ascii?Q?oVskEmmMVZY/FrBHGARjN1CXnHAoec8ZM4wmMXIp9AcHO0ka8anzzJWS7mPI?=
+ =?us-ascii?Q?ouSSkfyb1kZZknfqpx3IO0a7OrN4CzaQUEmZmNHKGt7ubjyw3ksNGVMbFyDu?=
+ =?us-ascii?Q?EaLxZNjJ53RuAP/bH+xYMgZVFqNw2Zfkglycx2s83HDXYOrVbewhX9Y0ByVC?=
+ =?us-ascii?Q?PKtngXnnoz8sGHJCDYYhOu6DWce/fFAQiKJhk9EqaR39/JUeTs/5UWxsYL6y?=
+ =?us-ascii?Q?pUS3RlurWpZK0MsoZShj+OO0ZOKLEjLeA73Jjk/4BVQf9hXXIPHp9wT+F8nm?=
+ =?us-ascii?Q?elLin/pRXsXRuNfan2SnuWMa/VIQ6ESlAUjS2TFoq0Rj5kyOFI5mqjxEpGYS?=
+ =?us-ascii?Q?8HIc3H6fQNzlsrP4Hsn1T8pV/2YvuJ13EG0eNnp0bZRSL41SLALK0ac6eHgq?=
+ =?us-ascii?Q?0dejtpUxAxjeTnYnwSguuMZ3Nsi8n7JRckWpNhrK6nEEA7hCwFMBjOenB6aw?=
+ =?us-ascii?Q?26G2fHjPlUHphSUgjmBuSTvvMExFvHd9ch4mvEZaRhyl46IgU6PDnhTWj0Od?=
+ =?us-ascii?Q?QXRuDtQDTx3mEZjWbxrj+6yakAwzuWNV12cE/QPeojcE4hNaa7n02j+z524q?=
+ =?us-ascii?Q?YUJIGEgaAk2H49xmyufzpcfV/M0UvmON/dcblUpN2AZ/51HBrMteOM2fURdK?=
+ =?us-ascii?Q?URcwq5MFpMfdw451TQ/JspCwmI0dxry+CUW3+MakXksVm0vNsH1uYEZKDGJy?=
+ =?us-ascii?Q?O4+El6Kp6Q=3D=3D?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 5dcd3e3c-7427-4f40-9a43-08df2f8629c3
+X-MS-Exchange-CrossTenant-AuthSource: AM0PR04MB6900.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Oct 2026 15:15:38.3740
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 5Mtpaz+q1ErxyGWgaFTKVLaUSKfgDRSVWtR5+KDoHkXJMzNgiiAthZ/dbE957LCckkl6kP5FFmmQYrX3BiwF3g==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MA6PR04MB066831
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-After the support of generic irq entry/exit. powerpc is now ready to
-use generic tif bits instead of arch specific ones.
+Hi Wei,
 
-Enable generic tif bits for powerpc arch.
+On Tue, Oct 20, 2026 at 10:43:12AM +0300, Wei Fang wrote:
+> > >>> For ENETC device, we already have a 'ref' clock in the enetc node, so
+> > >>> devm_clk_get(dev, NULL) may get the 'ref' clock rather than the system
+> > >>> clock of NETC.
+> > >> Shouldn't the clock be described in the MDIO DT node ?
+> > >
+> > > The enetc_mdio_read_* and enetc_mdio_write_* interfaces are not only
+> > > used by EMDIO devices, the ENETCs and NETC switches also use them.
+> > > NETC switches and ENETCs can access external PHYs or internal PCS/Serdes
+> > > through their own port MDIO registers, instead of through EMDIO devices.
+> > >
+> > > Your first patch only modified the EMDIO binding-doc, not the ENETC and
+> > > switch binding-doc.
+> > So I need to patch also
+> > Documentation/devicetree/bindings/net/dsa/mscc,ocelot.yaml ? Any other
+> > binding document ?
+> > 
+> 
+> fsl,enetc.yaml and nxp,netc-switch.yaml.
+> 
+> However, once again, I don't highly recommend adding a clocks property to
+> the DTS to obtain the MDC source clock frequency. My reasons are as follows:
+> 
+> 1. The MDC source clock is the NETC system clock, which is a fixed configuration
+> with a fixed frequency for each SoC, hardcode the rate in driver is simpler.
 
-Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
----
-This patch is applicabe over
-https://lore.kernel.org/all/961c058f3f3e03045552186c083a68a0fde3f43f.1791975972.git.msuchanek@suse.de/
+In the RCW project (https://github.com/nxp-qoriq/rcw), we have for LS1028A:
+- R_SQPP_0x85bb/rcw_800_sdboot.rcw and R_SQPP_0x85bb/rcw_800_emmcboot.rcw:
+  set CGA_PLL2_RAT=8, giving 800 / 3 = 266.67 MHz.
+- R_SQPP_0x85bb/rcw_1500_gpu700.rcw: sets CGA_PLL2_RAT=14, giving 1400 / 3 =
+  466.67 MHz.
 
- arch/powerpc/Kconfig                   |  1 +
- arch/powerpc/include/asm/thread_info.h | 36 +++++++++-----------------
- 2 files changed, 13 insertions(+), 24 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 7f7910f38a67..e5527b56159a 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -255,6 +255,7 @@ config PPC
- 	select HAVE_FUNCTION_GRAPH_TRACER
- 	select HAVE_FUNCTION_TRACER		if !COMPILE_TEST && (PPC64 || (PPC32 && CC_IS_GCC))
- 	select HAVE_GCC_PLUGINS
-+	select HAVE_GENERIC_TIF_BITS
- 	select HAVE_HARDLOCKUP_DETECTOR_ARCH	if PPC_BOOK3S_64 && SMP
- 	select HAVE_HARDLOCKUP_DETECTOR_PERF	if PERF_EVENTS && HAVE_PERF_EVENTS_NMI
- 	select HAVE_HW_BREAKPOINT		if PERF_EVENTS && (PPC_BOOK3S || PPC_8xx)
-diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index 4b7ec1db3034..4df3f4b5bd56 100644
---- a/arch/powerpc/include/asm/thread_info.h
-+++ b/arch/powerpc/include/asm/thread_info.h
-@@ -93,44 +93,32 @@ void arch_setup_new_exec(void);
- 
- #endif /* __ASSEMBLER__ */
- 
-+#define HAVE_TIF_NEED_RESCHED_LAZY
-+
-+#include <asm-generic/thread_info_tif.h>
- /*
-  * thread information flag bit numbers
-  */
--#define TIF_SIGPENDING		1	/* signal pending */
--#define TIF_NEED_RESCHED	2	/* rescheduling necessary */
--#define TIF_NOTIFY_SIGNAL	3	/* signal notifications exist */
--#define TIF_RESTORE_TM		5	/* need to restore TM FP/VEC/VSX */
--#define TIF_PATCH_PENDING	6	/* pending live patching update */
--#define TIF_SINGLESTEP		8	/* singlestepping active */
--#define TIF_NEED_RESCHED_LAZY	9       /* Scheduler driven lazy preemption */
--#define TIF_RESTOREALL		11	/* Restore all regs (implies NOERROR) */
--#define TIF_NOERROR		12	/* Force successful syscall return */
--#define TIF_NOTIFY_RESUME	13	/* callback before returning to user */
--#define TIF_UPROBE		14	/* breakpointed or single-stepping */
--#define TIF_EMULATE_STACK_STORE	16	/* Is an instruction emulation
-+#define TIF_RESTORE_TM		16	/* need to restore TM FP/VEC/VSX */
-+#define TIF_SINGLESTEP		17	/* singlestepping active */
-+#define TIF_RESTOREALL		18	/* Restore all regs (implies NOERROR) */
-+#define TIF_NOERROR		19	/* Force successful syscall return */
-+#define TIF_EMULATE_STACK_STORE	20	/* Is an instruction emulation
- 						for stack store? */
--#define TIF_MEMDIE		17	/* is terminating due to OOM killer */
- #if defined(CONFIG_PPC64)
--#define TIF_ELF2ABI		18	/* function descriptors must die! */
-+#define TIF_ELF2ABI		21	/* function descriptors must die! */
- #endif
--#define TIF_POLLING_NRFLAG	19	/* true if poll_idle() is polling TIF_NEED_RESCHED */
--#define TIF_32BIT		20	/* 32 bit binary */
--#define TIF_SYSCALL_RET		21	/* syscall error value set */
-+#define TIF_POLLING_NRFLAG	22	/* true if poll_idle() is polling TIF_NEED_RESCHED */
-+#define TIF_32BIT		23	/* 32 bit binary */
-+#define TIF_SYSCALL_RET		24	/* syscall error value set */
- 
- /* as above, but as bit values */
--#define _TIF_SIGPENDING		(1<<TIF_SIGPENDING)
--#define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
--#define _TIF_NEED_RESCHED_LAZY	(1<<TIF_NEED_RESCHED_LAZY)
--#define _TIF_NOTIFY_SIGNAL	(1<<TIF_NOTIFY_SIGNAL)
- #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
- #define _TIF_32BIT		(1<<TIF_32BIT)
- #define _TIF_RESTORE_TM		(1<<TIF_RESTORE_TM)
--#define _TIF_PATCH_PENDING	(1<<TIF_PATCH_PENDING)
- #define _TIF_SINGLESTEP		(1<<TIF_SINGLESTEP)
- #define _TIF_RESTOREALL		(1<<TIF_RESTOREALL)
- #define _TIF_NOERROR		(1<<TIF_NOERROR)
--#define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
--#define _TIF_UPROBE		(1<<TIF_UPROBE)
- #define _TIF_EMULATE_STACK_STORE	(1<<TIF_EMULATE_STACK_STORE)
- 
- #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
--- 
-2.55.0
-
+Apart from these, yes, the other RCWs do set CGA_PLL2_RAT=12, giving 400 MHz.
+But the statement in general is false.
 
