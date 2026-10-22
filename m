@@ -2,101 +2,102 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9AE8A606A31B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2026 14:24:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ACAD3606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2026 14:33:43 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=tGPqmIoU;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=lrzd8ZGd
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=LvEFJCMO
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j9T1g2BpBz2xwL;
-	Fri, 23 Oct 2026 01:24:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792679079;
-	cv=none; b=T7m1mobvnrHMD3AufTECJTf0RCW2PIKotnyTnAp8XZJ36r7kZhn+2yBvBy0qLEnFJA14/Qw8Knxa2LmA3ctLAubxJxy8mQlv1wJEp6MiOw3PuZgKI6soppWidHFhqCy0q4fiJbHZRn2UYaaNF/4j0J4DL/ajX4ISRfu42xpJuUnQzfHzL78kHvYSrpRe8dzkU6MGvdrtdKzBGkbsM/XH5mqcWvW+zAnDzY04wyB1/eRZIw862X6BF9w2/uJzaIVdHDRcrm/Nehy6py56c9YIvk6/x3lIGSM5l1+8Owj67nS+6hxyCkrCp17WcdM9jMQn8VtjG0X/NAdWZ/l1yZBwNw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792679079; c=relaxed/relaxed;
-	bh=ijcqFl4YNaIiVHZ0kMDDzDit0eQZX1zIOl9C/1G18QI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jV6q53WrNwLd2h46LV+fudZ7fDO7GlTM0SFXaYQ2TwXHTMiHwwa4Mx8CFjD1Zun8DzXJOgR2cYXRJqS+bOfxUj9DTL16FzBJjMwt2IakJYV5v3mqMVrNMxuonUQvCUTUcNVyMttVpAzRZpzwgHUPqFQGa+IuYX5q11NLP4XD/pn3z9ydBB9RGsABAnop4UjjAR7U2rNcY8OWs3zzUcsdyyHI8dCCpoiQ95/j0gj1/RgTG6t0gyD1GbDPC/rHpgi2ecViqguFMGT0lJzEX7KmNZCqe0XLCpKeggJ/ydQ0T6gdFd38EnImGGsSbVxu6UT2/8lHKmHkxhCoCSxDLf86XQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=tGPqmIoU; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=lrzd8ZGd; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j9TD634htz2xwL;
+	Fri, 23 Oct 2026 01:33:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::b129" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792679622;
+	cv=pass; b=O8pnITjEmThUBHkYHAatJz+vOu7hu1vSaQM6kFPtGqU3DnQfGvbYqG/reJHjcv4LoMAS5kd2o/cEFi28nhd3obHFXMSLcRQ60v6cgEVpydLsoapfI2LjP9vJsM+Xu27QUjN289t+4TbIHRUEuyAadEs0PH0w7CTx6rKpTdcFrP41ij56rDtz2fxfoIHvUUy3GDvoh8U1a7zwMdiqRyc/hndynXXdLe2oSHaOq2FJ/f3MUYi4u10nfQG3SfApCXa6d0NyNykwXd/QfiiVjEshnn5SD3+P9Td/CJFdlq0kFVhQJldOW03vd2QhRBq9gvL24qYCMoMVDKmwYWs+ZkRypQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792679622; c=relaxed/relaxed;
+	bh=y/nVz+Qmk+Tq2vmwCZBWANvE9dUy6Fp4Dxh9VLxLk90=;
+	h=From:In-Reply-To:References:MIME-Version:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=F4NPhgUN6QaqQHK3aQIa/tC4OqoxYrzVG7FenFY1MjR8tRnKBNdbTQYqoN7CwPnrdFtk7vTs5l47dhfgEaK7gPZVpMuNw9X0okO+hAE+Fpg1ffdihDLq/D+EML/02dITlOQ5U+RHYZqryS2AwwBBrVLFt2Grb/BuPM8BODnXV9vU2pMghBLhzO00lQtB+ruiz77I0BYeDtR/MMFTMOu914+qY+yTfCG/Rk+d1KOHDsMnBrA06nbSq5nGWF57BdVqt4wRDIjr/UhW69nLbO1b0tq69eToIl1TvvWvTOQvqCo4Ux25x6VLcNP9+J4ZJO4MOHdutFmdFFyZPOZjl5TBXA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=LvEFJCMO; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b129; helo=mail-yx1-xb129.google.com; envelope-from=ryabinin.a.a@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=tGPqmIoU;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=lrzd8ZGd;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=LvEFJCMO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b129; helo=mail-yx1-xb129.google.com; envelope-from=ryabinin.a.a@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yx1-xb129.google.com (mail-yx1-xb129.google.com [IPv6:2607:f8b0:4864:20::b129])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j9T1d5pttz2xjv
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2026 01:24:37 +1100 (AEDT)
-Date: Thu, 22 Oct 2026 16:24:25 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1792679067;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ijcqFl4YNaIiVHZ0kMDDzDit0eQZX1zIOl9C/1G18QI=;
-	b=tGPqmIoU7flznKuVvSgOzo2yd+DVKg7D73Wllg9sFRm9CC/iaoJaE55c3a0xpncefiwTWe
-	D0DcbKw7j7YI7N9iAD68KUbumDWDB4zuYjNIkgHfr2v+H6DCtaJTi+ZtcPVrTjX8s8nNNi
-	XYrPBSHr+CwiWmUAbayRxd1rMqP3P1fTDl5O65hszJdwi1iKQ6myUH0U2igUoTF8eZn+8r
-	G1OdblBxDgssdpqEoIOChx+/YLJ7ntbq+IsNh3ReV+JtcimJTFUP2numV2/sYLdIC+zwnD
-	aAZ46jrqFXnXLMoMGXtXmyYgRF8JauAVkMkAXxtjJDC2ZDnhWCO79rWsa0e06A==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1792679067;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ijcqFl4YNaIiVHZ0kMDDzDit0eQZX1zIOl9C/1G18QI=;
-	b=lrzd8ZGdzEWmJjZ9aZOFY32BVENA3ocTIaS/QQU0/Sv8YYe+ynbKZ/LG3OiCiXRqC6uBBI
-	wYJIr0JLNWZ7aTBw==
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To: Thomas Gleixner <tglx@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org, Kees Cook <kees@kernel.org>,
-	Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	linux-riscv@lists.infradead.org,
-	Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org,
-	x86@kernel.org, Mark Rutland <mark.rutland@arm.com>,
-	Jinjie Ruan <ruanjinjie@huawei.com>,
-	Andy Lutomirski <luto@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
-	Richard Henderson <richard.henderson@linaro.org>,
-	Russell King <linux@armlinux.org.uk>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Guo Ren <guoren@kernel.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Helge Deller <deller@gmx.de>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Richard Weinberger <richard@nod.at>,
-	Chris Zankel <chris@zankel.net>,
-	linux-arm-kernel@lists.infradead.org, linux-alpha@vger.kernel.org,
-	linux-csky@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
-	linux-sh@vger.kernel.org, linux-um@lists.infradead.org,
-	Arnd Bergmann <arnd@arndb.de>, Vineet Gupta <vgupta@kernel.org>,
-	Will Deacon <will@kernel.org>, Brian Cain <bcain@kernel.org>,
-	Michal Simek <monstr@monstr.eu>, Dinh Nguyen <dinguyen@kernel.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	Andreas Larsson <andreas@gaisler.com>,
-	linux-snps-arc@lists.infradead.org, linux-hexagon@vger.kernel.org,
-	linux-openrisc@vger.kernel.org, sparclinux@vger.kernel.org,
-	linux-arch@vger.kernel.org,
-	Michal =?utf-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>,
-	Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [patch 16/18] x86/entry: Get rid of the sys_ni_syscall()
- indirection
-Message-ID: <20261022142425.3Wx-RrU5@linutronix.de>
-References: <20260707181957.433213175@kernel.org>
- <20260707190254.493733289@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j9TD46J7Zz2xjv
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2026 01:33:40 +1100 (AEDT)
+Received: by mail-yx1-xb129.google.com with SMTP id 956f58d0204a3-6790c2eb033so279273d50.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2026 07:33:40 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1792679617; cv=none;
+        d=google.com; s=arc-20260327;
+        b=lpfcoVMkAuWYeIHjVKcrvqSr/HlMDeD470tG4EcbrAuyucAFmGw3t6FYzSS+ZeNGM0
+         /SXnik/xa92yQDfQh1/IopTJ2Ml5kItm40qe8jg7K0FGNdpn6IHeTCUsC6LEKo8FBMK1
+         vSIdq7g+/FxbWqJiH/Krm8x+xQ9gpr0ltUbKR6n4diTRcPrHMbCNmmcjvXi1g4FAFkrj
+         sGiMcqwQ//LHMmi+Nw09x+8+LuiLjnnLXgypt9sy2yj96s0+qMZGJElgCKrHWmXAI4Oe
+         MwPoxeB9cYmFPJ4hx2qP9MmHeIlI5ymRFaRgXQbaEMVCUbjanZuD4UTQgd4X1rRzho5V
+         3YoQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:mime-version:references:in-reply-to
+         :from:dkim-signature;
+        bh=y/nVz+Qmk+Tq2vmwCZBWANvE9dUy6Fp4Dxh9VLxLk90=;
+        fh=oMbl0x2fGeeLYZrG0O3p6J3mrs0lCIFARb1bxiqmj4k=;
+        b=dpwGn5sGIarAgXdQBC5nQhXFlFyKV9GNHLolisr6J/2k6xCtNLlGk7RILDTh/9WU/X
+         VP5BJpQSv3MX1UCJrZ+mVatCCFuhe66/X7QIPshBpfNKTGrdcSHSidqz4u151bU88q52
+         /XjUl6n4FOpHm2BMhLMBaM9iRrtyRGSWVPJ3zznmqsDnNdIciYvHPqztPDo+DdXhffSR
+         sq2C4VuACPuRAQqeU/dMMLbQgECWhD7h5p6Hg4H2VJp5M9PPUosjePhDNBbuhozGC5df
+         TnnOalhSo//w/ImfIQL6wbYWdQVaIy/9LnL9lt7/LcxwvkWNlBPvEpDHVrrVv4DhZHXK
+         J/Ig==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1792679617; x=1793284417; darn=lists.ozlabs.org;
+        h=content-type:cc:to:subject:message-id:date:mime-version:references
+         :in-reply-to:from:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=y/nVz+Qmk+Tq2vmwCZBWANvE9dUy6Fp4Dxh9VLxLk90=;
+        b=LvEFJCMOUIUbSNKitKsFRZqwUnMGZeAJlor2zkVLbEeOuzir6ZYmPPb29t0kaHpRO1
+         m4T+vv76J9QeYTVraSyizCBDijGdlWzUeSNk7WfAlkaU1UO/2K0H5O3tbtPhhP17g2wH
+         uZIiCmYO6Ts/N3IGOYHtkZEwo+5gbOd6QUPEeQMZ+X/qcUzcxn4o+JEIHr0+GLRYUYpE
+         xb4xWIfLp+EuKbBd9pcF7EMpfkEy14GivxkxkfP8gPBtDxdjkPjdz2pbAH4leVjGYJM0
+         IYbtM/F78TH76sVfVyP2Y2ng5UYU2wstZW3xN5JCOR9ACh6dIhqdHHUAoqEUR+606mHb
+         2Utg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792679617; x=1793284417;
+        h=content-type:cc:to:subject:message-id:date:mime-version:references
+         :in-reply-to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=y/nVz+Qmk+Tq2vmwCZBWANvE9dUy6Fp4Dxh9VLxLk90=;
+        b=Kh2rbyPdG7s2m68fAO8dwco6vtv8Tx1iGxZfhrlNv/nyFAqW3QP8lnvhasWL+qB7zm
+         XuolFInr7JkUpK9k5K76o5QjP65UvmB1mIb+5WzoDBXNprfGUTTRDy9P35fReCh+UWU8
+         2F4PIW2EVuTmWpPyM1MovmVuLGTCPGciHFjWEsmfW6DYUYW18JqBXxuGfB3zL/J0ikWX
+         vBWua6QEKDmjUbTJPlUwQMnCWoqJu692xbOXGe1pxbLHqiH3msnk6fnn3nKSH0hhvFEK
+         5Qb10ltBIKqUvHKuwMFkjhRwAbKKniYfVXpR7yIQUtnheTW8MMEbWZdEgX/LKaCRgLz5
+         BCrQ==
+X-Forwarded-Encrypted: i=1; AKwUvBxRMHYZidfneDdUwa0eLkIgortGob8gDEj5wRmj2vi+0/xCFrhw9EnHuL7dEr9Ursy1K8GJHcmU2of33Ok=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYKQsDxH6OxVtWmgEuOAAe/5bvY+OK6pggW82ScDqT1qYMGlUuaf
+	AwNL0wVTsjIPGItMMU1Jh/Fnxmq5AZ2pPNzduLIu2tLqcx4z4+h3rwcjAhGKWF4KBsI66iH3iwy
+	Td/yFHLyfmpy28DFVUE/+lJpIE/baEBM=
+X-Gm-Gg: AYBFou0Ag4EUCyj7Uhv2fSH28zT8q90IneJ6mYFtJVMbsDbTEXVT23cSkFTRRNy+wgH
+	DGy5M1IBOvnJQIwCg74FIsoBt4AHegN9aYpNGt7tZMDAvdHPO+LxxzHX/rFVlUd4jXv0xn9v6HG
+	ePQxotx57NaXNMp52lseAkVjwMCA/v6KLuxgsy0oX55ZGW606M2KOVsYJdceLrHbis8UWrWwP9B
+	yV3jUP1usiMDtebZrdsKp/f5mQpSOhpdgoWxU2xPRDsppft1a+DN5ECtO1mAAMX3OVPVPdD2rps
+	h+tfngZD2GoC1IdVM+i35eS4qHpAMcbSXoN+uEvFlsCYreXmSUYn8h01JxRV44B7imcWrt4l6cA
+	JqnrTCYqz8ORBvKeLWVQE/r88W3myrRGXSjk=
+X-Received: by 2002:a05:690e:4504:20b0:679:9e25:316c with SMTP id
+ 956f58d0204a3-67a0e4f7118mr3858513d50.5.1792679616649; Thu, 22 Oct 2026
+ 07:33:36 -0700 (PDT)
+Received: from 95991385052 named unknown by gmailapi.google.com with HTTPREST;
+ Thu, 22 Oct 2026 07:33:35 -0700
+Received: from 95991385052 named unknown by gmailapi.google.com with HTTPREST;
+ Thu, 22 Oct 2026 07:33:35 -0700
+From: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+In-Reply-To: <20261022021820.1789083-1-odys.yuan@gmail.com>
+References: <20261019-bug-word-at-a-time-zeropad-kasan-v1-0-f21a3ed6a477@gmail.com>
+ <20261019-bug-word-at-a-time-zeropad-kasan-v1-1-f21a3ed6a477@gmail.com>
+ <CAPAsAGyrH1quaLuyui6Qm5sokid8=yjNbAM3cOunynfPNQtfgg@mail.gmail.com> <20261022021820.1789083-1-odys.yuan@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -110,134 +111,56 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20260707190254.493733289@kernel.org>
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=4.0.1
+Date: Thu, 22 Oct 2026 07:33:35 -0700
+X-Gm-Features: AclHuK9KZnLcDmcb3UzjebEw_JXnOgl4qhgoWZHIOId6L7KU5VJDln5TqsxLBMU
+Message-ID: <CAPAsAGyA=WG=z6a==N3O6oan6WVmZS-VrxEA7SrxRQs5d+Dsfg@mail.gmail.com>
+Subject: Re: [PATCH 1/2] word-at-a-time: check the first byte in load_unaligned_zeropad()
+To: Qiliang Yuan <odys.yuan@gmail.com>
+Cc: Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, 
+	Will Deacon <will@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Alexandre Ghiti <alex@ghiti.fr>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+	Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
+	Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
+	Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+	"H. Peter Anvin" <hpa@zytor.com>, Shuah Khan <shuah@kernel.org>, Marco Elver <elver@google.com>, 
+	Alexander Potapenko <glider@google.com>, Andrey Konovalov <andreyknvl@gmail.com>, 
+	Dmitry Vyukov <dvyukov@google.com>, Vincenzo Frascino <vincenzo.frascino@arm.com>, 
+	Andrew Morton <akpm@linux-foundation.org>, linux-arm-kernel@lists.infradead.org, 
+	Kees Cook <kees@kernel.org>, linux-kernel@vger.kernel.org, 
+	linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
+	linux-kselftest@vger.kernel.org, kasan-dev@googlegroups.com, 
+	linux-mm@kvack.org, Peter Collingbourne <peter@pcc.me.uk>
+Content-Type: text/plain; charset="UTF-8"
+X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 2026-07-07 21:07:01 [+0200], Thomas Gleixner wrote:
-> Invoking sys_ni_syscall() from a code path, which already knows that the
-> syscall number is invalid just to assign -ENOSYS to regs->ax is a pointle=
-ss
-> exercise. It's even redundant as the low level entry code already has set
-> regs->ax to -ENOSYS on entry.
->=20
-> Remove the extra conditionals and the function calls.
+Qiliang Yuan <odys.yuan@gmail.com> writes:
 
-Since this patch, tools/testing/selftests/x86/syscall_numbering_64
-throws in this:
-|[RUN]   Running tests under ptrace: modifying the default return
-|[RUN]       Checking system calls with msb =3D 0 (0x0)
-|[RUN]           Checking some common syscalls as 64 bit
-|[OK]                x64 syscall 0:0 returned 0 as expected
-|[OK]                x64 syscall 0:1 returned 0 as expected
-|[RUN]           Checking some 64-bit only syscalls as 64 bit
-|[OK]                x64 syscall 0:19 returned 0 as expected
-|[OK]                x64 syscall 0:20 returned 0 as expected
-|[RUN]           Checking out of range system calls
-|[FAIL]                  x32 syscall 0:-64 returned -9999, but it should ha=
-ve returned -ENOSYS
-=E2=80=A6
-|[FAIL]                  x32 syscall 0:-2 returned -9999, but it should hav=
-e returned -ENOSYS
-|[FAIL]              x32 syscalls 0:-64..-2 had 63 failure
-|[OK]                x32 syscall 0:-1 returned MODIFIED_BY_PTRACE as expect=
-ed
-|[FAIL]                  x64 syscall 0:1073741760 returned -9999, but it sh=
-ould have returned -ENOSYS
-=E2=80=A6
-|[FAIL]                  x64 syscall 0:1073741823 returned -9999, but it sh=
-ould have returned -ENOSYS
-|[FAIL]              x64 syscalls 0:1073741760..1073741823 had 64 failure
-|[FAIL]                  x64 syscall 0:-64 returned -9999, but it should ha=
-ve returned -ENOSYS
-=E2=80=A6
-|[FAIL]                  x64 syscall 0:547 returned -9999, but it should ha=
-ve returned -ENOSYS
-|[FAIL]              x64 syscalls 0:512..547 had 36 failure
-|[RUN]           Checking some common syscalls as x32
-|[OK]                x32 syscall 0:0 returned 0 as expected
-=E2=80=A6
-|[RUN]           Checking out of range system calls
-|[FAIL]                  x32 syscall 1:-64 returned -9999, but it should ha=
-ve returned -ENOSYS
-|[FAIL]              x32 syscalls 1:-64..-2 had 63 failure
-|[OK]                x32 syscall 1:-1 returned MODIFIED_BY_PTRACE as expect=
-ed
-|[FAIL]                  x64 syscall 1:1073741760 returned -9999, but it sh=
-ould have returned -ENOSYS
-=E2=80=A6
+> On Tue, 20 Oct 2026 12:58:54 -0400, Andrey Ryabinin wrote:
+>>> +	/* open-coded instrument_read(addr, 1), as in read_word_at_a_time() */
+>>
+>> Why it's open-coded ?
+>
+> For the same reason as read_word_at_a_time(): commit ece69af2ede1
+> ("rwonce: handle KCSAN like KASAN in read_word_at_a_time()") open-coded
+> it "to avoid having to pull the entire instrumented.h header into
+> rwonce.h". I kept the six asm/word-at-a-time.h headers to the same two
+> small headers, kasan-checks.h and kcsan-checks.h, rather than pulling in
+> instrumented.h with linux/bug.h and kmsan-checks.h.
+>
 
-and so on=E2=80=A6 The test has
+That concern is specific to rwonce.h being included from very low-level header
+like compiler.h It doesn't cary over to word-at-a-time.h
 
-| #define MODIFIED_BY_PTRACE      -9999
-
-and the ptracer modifies the return code. However not always. Not sure
-if this was indeed a pointless exercise or not.
-
-The test could be updated via the hunk below in case the new behaviour
-is what is expected. hpa made the extension to the test in commit
-795e2a023b808 ("selftests/x86/syscall: Add tests under ptrace to
-syscall_numbering_64").
-
-diff --git a/tools/testing/selftests/x86/syscall_numbering.c b/tools/testin=
-g/selftests/x86/syscall_numbering.c
-index ca0eca7b9dced..1435394fba022 100644
---- a/tools/testing/selftests/x86/syscall_numbering.c
-+++ b/tools/testing/selftests/x86/syscall_numbering.c
-@@ -250,6 +250,7 @@ static bool test_x32(void)
- static void test_syscalls_common(int msb)
- {
- 	enum ptrace_pass pass =3D sh->ptrace_pass;
-+	int expected_ret =3D -ENOSYS;
-=20
- 	run("Checking some common syscalls as 64 bit\n");
- 	check_zero(msb, SYS_READ);
-@@ -260,18 +261,22 @@ static void test_syscalls_common(int msb)
- 	check_zero(msb, X64_WRITEV);
-=20
- 	run("Checking out of range system calls\n");
--	check_for(msb, -64, -2, -ENOSYS);
- 	if (pass >=3D PTP_FUZZRET)
--		check_for(msb, -1, -1, MODIFIED_BY_PTRACE);
--	else
--		check_for(msb, -1, -1, -ENOSYS);
--	check_for(msb, X32_BIT-64, X32_BIT-1, -ENOSYS);
--	check_for(msb, -64-X32_BIT, -1-X32_BIT, -ENOSYS);
--	check_for(msb, INT_MAX-64, INT_MAX-1, -ENOSYS);
-+		expected_ret =3D MODIFIED_BY_PTRACE;
-+	check_for(msb, -64, -2, expected_ret);
-+	check_for(msb, -1, -1, expected_ret);
-+	check_for(msb, X32_BIT-64, X32_BIT-1, expected_ret);
-+	check_for(msb, -64-X32_BIT, -1-X32_BIT, expected_ret);
-+	check_for(msb, INT_MAX-64, INT_MAX-1, expected_ret);
- }
-=20
- static void test_syscalls_with_x32(int msb)
- {
-+	enum ptrace_pass pass =3D sh->ptrace_pass;
-+	int expected_ret =3D -ENOSYS;
-+
-+	if (pass >=3D PTP_FUZZRET)
-+		expected_ret =3D MODIFIED_BY_PTRACE;
- 	/*
- 	 * Syscalls 512-547 are "x32" syscalls.  They are
- 	 * intended to be called with the x32 (0x40000000) bit
-@@ -279,7 +284,7 @@ static void test_syscalls_with_x32(int msb)
- 	 * nonsense and should not work.
- 	 */
- 	run("Checking x32 syscalls as 64 bit\n");
--	check_for(msb, 512, 547, -ENOSYS);
-+	check_for(msb, 512, 547, expected_ret);
-=20
- 	run("Checking some common syscalls as x32\n");
- 	check_zero(msb, SYS_READ   | X32_BIT);
-
-Sebastian
+> Thanks,
+> Qiliang
 
