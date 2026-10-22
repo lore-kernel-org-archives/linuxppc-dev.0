@@ -2,127 +2,72 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78ADE606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2026 02:18:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2F2F606A319
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2026 07:50:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Qepwijkb
+	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=P1yrbdX/
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j98w4716Wz2xKx;
-	Thu, 22 Oct 2026 13:18:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1333"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792635524;
-	cv=none; b=ezipRrawJP6JtGjDPmUY5IvlobzIr40WiZetPvtOn1y0PMsluQfMjEFe2xKLkgBd8DxvijpaciyTpUFzJXmB2y0jAgUwOjxqWEkZjgAOeAmHgNNL+3PvqgFv2jkwCfCFU5FlulZ6jf6WPJLMzWvfJWP21dzkQSMqxKyUTIELxPFouyx0ztXZrBeRTl1U3PNf/KHq8USJcM77K3eAtoQGQ0GvzzxbbGl73t3ZYm53MgfWIwk7cJyhe6+cBxRcK81jil435xfRFPobYKtqZ0T0XxvAqPwvVB+CR/4taMTaFgALW5nsbJJss3WWmtf5lOgQmUBXF4Q6rXUT1oD1WHpXZA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j9JGx10qbz2yK7;
+	Thu, 22 Oct 2026 18:50:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792655433;
+	cv=none; b=N/y8/UzQVHXcj0McfXs/j2dVBZiTqGLlvPPDGKelNTIYsPNbUHYpZDMPvXNOozQ8QNpLbwMTMnUTNYg7bI91rGETQVCljJcfyVESObVYEyXkY9XAwT+s1eTAbkWUZZQMK6TFnV5jUCyyBTbD2H3oUpEdO1jI42c1Cb+mVYMh3tewoOK3ttemQSzLvFzvVSr/sw79ZAA++fvMVFihdK02bK9WHGn6sA/0upHsszYW2Xwak3y2FPpZBz3uEzzg0lWEe2lTEhHSDmsuxPrUXzg7DiQaGyZqTzdG2zNvRv6oSt8nzbOqTsdgLHsw1WIc+Efvr+8HeNnYHYZfbz49g7DPhQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792635524; c=relaxed/relaxed;
-	bh=YVLKVn5aYrORuK3mJHdyAM2K05yQ1I4f1Gd2eeFrBFc=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=k5+0aZU+ukyCHJJi9RY0ZbWTY87hDsVBy5Gxm0YqwNgqGj1F2As2FRMSmVr9pI9ZJ5eL3KWiz/h+EvizMrgixzaxhT+7Hqj1UewrD6PuNAFC4M3DdPzUQusyOVSPMGoRI0bwpSK9XNSJDQMrQM/Qu+P6BHYe2AQ2ue1blHiEA422NsPPJJJkhr8VBS+x2p+ZdUrzepBR6iv3R1uCBrztDQEJdLGGvoJhJSYpOE28wyHVAy5VqQcOPUH7fTMUyZI5Dr+F32iQmsRw4AGoqR0Qtzg792t5DreN4fGUzVQi3hxuXVnmRzFFdBzUDAKdO9A4f12eCBpZu8sz+8GHMY0jMA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Qepwijkb; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1333; helo=mail-dy1-x1333.google.com; envelope-from=odys.yuan@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1792655433; c=relaxed/relaxed;
+	bh=hnFt9iEag0zElK56g7z5NYGPgIOEa2I6BK0OZbZRDls=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:Cc:From:
+	 In-Reply-To:Content-Type; b=ml+Gly011FWABJE9RXEOSHvDxZa8pd2/VeIocbqaYr3g/ZkzYEs5DmCtIJMkC32ImScAmv+77RjtijxhSrn0ejAs2AoAmyMNmOcNRYcbVvKMk38a8BpbTOk5SgwXHvC7h/1isy/OLsc+2jzYlsEKtkCGjU3ZxpguH12tt6dShthM4Jd/AeLmHPzS951DhQ7lCUj9AUEg0/zgoqEi5Mgbw3ZEIIwZso/8uCYDlVSThYo9IqCdYhmeiWYJWuIUjY/i4ilARSfoCwcZ86BrCBEzekOORywwYYlSlbxZwWcSfXpKPKOJSWl66q7ioSJ8rCST22ESQmm/LBG55cPCyOT35w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=P1yrbdX/; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Qepwijkb;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=P1yrbdX/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1333; helo=mail-dy1-x1333.google.com; envelope-from=odys.yuan@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x1333.google.com (mail-dy1-x1333.google.com [IPv6:2607:f8b0:4864:20::1333])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j98w2573Hz2xHP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2026 13:18:42 +1100 (AEDT)
-Received: by mail-dy1-x1333.google.com with SMTP id 5a478bee46e88-3535bf8b3e0so2607058eec.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2026 19:18:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792635519; x=1793240319; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=YVLKVn5aYrORuK3mJHdyAM2K05yQ1I4f1Gd2eeFrBFc=;
-        b=QepwijkbmjtA87Yx02ylR+uI2YMv6BYdNv0vBQGKu1Sk/iFpHzKdRjqmeODE6N25Xr
-         C2T1EI0rFO+IAeyl9n3xc9xdeT2SlPROozoLOhxRBvMNAxKpw33432rMFPyD11m4L4SG
-         c5rizrXStnn+jmz0roc84NrHEWbhkk73ocTARAB2gfIACJbFgJccXA4yb51D4bzXIV5T
-         Phjyl5nUuyIWnF8ahPdmWbzfzdmBjPfJKMmq9WlM7NRAD+j1xAX43oNZ4OanQmh0ebbH
-         jiXbXy12FRjBhw2V+VFYYgWfOOBkVrfCxaM78B5lrHkyZR2y4pMWWxhRv4fr/EaCcPVx
-         pX8A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792635519; x=1793240319;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=YVLKVn5aYrORuK3mJHdyAM2K05yQ1I4f1Gd2eeFrBFc=;
-        b=zH9bDJWL2AV3BRTuEGegU212REYvEMREspFnohbZnWMolJ0mlNX90HawKLn68xqn2r
-         acOP9hzydUynOJ1oJA68LTwO+8I8nvkl8qalXSMKkLNADjuUoj/v8cJeuujdhAysjBjp
-         grbVMw5mwqCmxDhLons6tCqTfmeyAxBYcW3CAFePMKBtj5ogrJJlgaikGYzSJ8Q1UeDv
-         xa5CyBQNY1Yj8c9T5eRFrHw1NcOoh7t5RE56TGS3Bx4gpY5vpyJdbTBKOh0LhHT6j7Sc
-         TmFQqDGTgdqv57GCnW9c/B/VQVlnhCExpl9MpjNll7k1bhov/9URSYZyDLRI7KRkdY0L
-         9W+A==
-X-Forwarded-Encrypted: i=1; AKwUvBzglOIaDaSxJbwNFt42uF3XwJbSpUawXg41ZmnlRZTy0/TTWQwl4GeWie2LE797QieBd6xmDjUaLQBURXc=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYK64Hhn1XytgVHJ/+Lo2AzxHOsqA3ZXwlg8f6K+ij5T9rGaNpT8
-	VLiHBH9kPJnfYb5ZbsuFgfaLJMwBbyK+MYjMionOtppBSRrJgEkLsiFv
-X-Gm-Gg: AYBFou3FH6FsqY8pXDHiv8XhEA7Smi492hLluWzbBxj7dSr5Krt+4hPJ+BNNedaV6zg
-	+2mAtVXZtCEUpJ6ReLLztFnHAX66n7VYNyk//fRZSUXBICsXoHPFxw2ltyT5lJYMNZ/cQkMRq3p
-	//UdMXNgJB/n47cCM9pe6ybiLaoC1RU4g3PGTYc0rR4clpQw7FiJKEz/fzqP6lm16oryiABsZBG
-	VnKzF1QnmDZrRhJMmLzU1dTnduxQDa8bcaID5u3tFCiGoWM58TJaws/oviBelVnEFHmPIA7crDh
-	ax+4x0qFD1ONEbNFjU7l9eg+Zwv+f1/stzWXrv6G/0DDAnk+onkjMmk++l0NqvwPNifdQ5gRHcq
-	7TXe7nucdMNUpXend0v+7URjp6Beu3x87mh0wN41uXAVCT7XI81h5YsugR5aZwWmnLWq3Zom5le
-	kc1wPtKXnKo4P956PtY0EjL2+JswYAbedOEJo5aWZmPVAGI5/zdffiYJYWnCdPH9RTQNgug990t
-	UR829kLTfFzD6VaqstJ11W8KdRNzcJRVFjtYA9UOEuk584=
-X-Received: by 2002:a05:7301:618e:20b0:35e:2c6:d46c with SMTP id 5a478bee46e88-3674c63d579mr5523810eec.10.1792635518735;
-        Wed, 21 Oct 2026 19:18:38 -0700 (PDT)
-Received: from ubuntu.. ([23.254.208.9])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-368b4b8e9c6sm3556805eec.1.2026.10.21.19.18.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 21 Oct 2026 19:18:38 -0700 (PDT)
-From: Qiliang Yuan <odys.yuan@gmail.com>
-To: Andrey Ryabinin <ryabinin.a.a@gmail.com>
-Cc: Russell King <linux@armlinux.org.uk>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>,
-	Mark Rutland <mark.rutland@arm.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Shuah Khan <shuah@kernel.org>,
-	Marco Elver <elver@google.com>,
-	Alexander Potapenko <glider@google.com>,
-	Andrey Konovalov <andreyknvl@gmail.com>,
-	Dmitry Vyukov <dvyukov@google.com>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-arm-kernel@lists.infradead.org,
-	Kees Cook <kees@kernel.org>,
-	linux-kernel@vger.kernel.org,
-	linux-hardening@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org,
-	linux-s390@vger.kernel.org,
-	linux-kselftest@vger.kernel.org,
-	kasan-dev@googlegroups.com,
-	linux-mm@kvack.org,
-	Peter Collingbourne <peter@pcc.me.uk>
-Subject: Re: [PATCH 1/2] word-at-a-time: check the first byte in load_unaligned_zeropad()
-Date: Thu, 22 Oct 2026 10:18:20 +0800
-Message-ID: <20261022021820.1789083-1-odys.yuan@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <CAPAsAGyrH1quaLuyui6Qm5sokid8=yjNbAM3cOunynfPNQtfgg@mail.gmail.com>
-References: <20261019-bug-word-at-a-time-zeropad-kasan-v1-0-f21a3ed6a477@gmail.com> <20261019-bug-word-at-a-time-zeropad-kasan-v1-1-f21a3ed6a477@gmail.com> <CAPAsAGyrH1quaLuyui6Qm5sokid8=yjNbAM3cOunynfPNQtfgg@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j9JGv5HYzz2xwN
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2026 18:50:30 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69M7EBRB3373307;
+	Thu, 22 Oct 2026 07:50:09 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=hnFt9i
+	Eag0zElK56g7z5NYGPgIOEa2I6BK0OZbZRDls=; b=P1yrbdX/fppwN/GQcigqde
+	WI3rEMOM8rvXqnBu7T7+urAzAe/tfNfX3LJ/jLkCGs906wqvj6jQy4oC8IzlJ1Ik
+	NcY7wWr1BGoJvVoyBhjgQx3U0wynhK2iiT3M2JRjd+DIQYVbkhx5YSK073/Drhij
+	GvCm24z3KZlOTS03TJScFbpe+3N5g8OuLACStqazbXE0k1ps7ZDn8Mv5wMtAbfZi
+	b+FuV8lmaTchGbqTRZNYlVV3hKfkRHMz0nnltKtvLJqoM82QAXHfa4/qStLsgaX+
+	62rBuZMwk1sJ1NvFqG1Z8t9nuqpLY9gp/HYq1yhIz1qV/vIvTFhQWWm/ELhREepg
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hdw5awf7q-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Thu, 22 Oct 2026 07:50:09 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69M75FYW3136156;
+	Thu, 22 Oct 2026 07:50:08 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4hefss6tg5-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 22 Oct 2026 07:50:08 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69M7o3Q034668978
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 22 Oct 2026 07:50:03 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 277C120040;
+	Thu, 22 Oct 2026 07:50:03 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 007AC2004B;
+	Thu, 22 Oct 2026 07:50:00 +0000 (GMT)
+Received: from [9.124.220.107] (unknown [9.124.220.107])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 22 Oct 2026 07:49:59 +0000 (GMT)
+Message-ID: <e69ee97e-a0b6-4c73-b28f-7d247a6eabd2@linux.ibm.com>
+Date: Thu, 22 Oct 2026 13:19:58 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -136,26 +81,69 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=4.0.1
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc: Support for generic tif bits
+To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+References: <20261021144453.232372-2-mkchauras@gmail.com>
+Content-Language: en-US
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        chleroy@kernel.org, ritesh.list@gmail.com, msuchanek@suse.de,
+        akpm@linux-foundation.org, yeoreum.yun@arm.com, agordeev@linux.ibm.com,
+        mchauras@linux.ibm.com, bwiedemann@suse.de,
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+In-Reply-To: <20261021144453.232372-2-mkchauras@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=X63Hu2Te c=1 sm=1 tr=0 ts=6ad9c031 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=7x8YdOtcnDH_QHYHCW8A:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: ul4_iAb4ksb5-4XZ1qkbvCYTTYApHxEi
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDIyMDAzMCBTYWx0ZWRfXwevUGnDUOVvh
+ 34scqUB9D+ZPEXTkxa+NY5sdqm7sZEtywIhXMP1yP0Yvd3KpgftAHvtJBMH0hZihUO2zibE9iTo
+ gGPadG4t8P9t9pIwAMGZU1VV14aJ+n2D9RQIO7jriyALatAUU+OOpnYGcF1Iw2gyg5BJifw6O91
+ Q4H6rJhp65F8zIabUs+OneOAxhv2PSZvZHUr3JIkiW0SGWVqyt4pv+OgaMJoQvJ9YXWRdisFbSK
+ Tooof0TiXqp6B2ZIubRd4Ua0Jh+me2KwV2gkC3OHdBZB6riYbGafcDFk9lN1OPTw/G0P6AdF8P+
+ YwSCxC5tXZ1o8KHSJLoIqC2pGD+jGt8imNu8vdeqdkRcrRKQhfnehkjxjLCBErLKYcOwA2KiKi3
+ +upAhBm2Oe3vNSNSL+Xp7zd9FgoExFaobc4sVbGjuy0MoIhYfBxY+sqVQGPaPh0b3evDEgB95DU
+ lPJXZ3VJCRYICg2DUzg==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDIyMDAzMCBTYWx0ZWRfX50fibVaAVqWZ
+ zpLoVB65cmU4qXDPcy1F6XkNVkB/9lwg7kHU3CFzP8u49YWEw36lmUwEB1vZXcx0Ov1jayDGwuB
+ Ad+3M+VBkpcBrBbMDUQVpJiaxGJZwVM=
+X-Proofpoint-GUID: sRhPS3eIACBexKGM2wsVKoPLR7NUfrsW
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-10-22_03,2026-10-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 phishscore=0 bulkscore=0 adultscore=0 malwarescore=0
+ clxscore=1011 spamscore=0 impostorscore=0 lowpriorityscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610220030
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, 20 Oct 2026 12:58:54 -0400, Andrey Ryabinin wrote:
->> +	/* open-coded instrument_read(addr, 1), as in read_word_at_a_time() */
->
-> Why it's open-coded ?
+Hi Mukesh.
 
-For the same reason as read_word_at_a_time(): commit ece69af2ede1
-("rwonce: handle KCSAN like KASAN in read_word_at_a_time()") open-coded
-it "to avoid having to pull the entire instrumented.h header into
-rwonce.h". I kept the six asm/word-at-a-time.h headers to the same two
-small headers, kasan-checks.h and kcsan-checks.h, rather than pulling in
-instrumented.h with linux/bug.h and kmsan-checks.h.
+On 10/21/26 8:14 PM, Mukesh Kumar Chaurasiya (IBM) wrote:
+> After the support of generic irq entry/exit. powerpc is now ready to
+> use generic tif bits instead of arch specific ones.
+> 
 
-Thanks,
-Qiliang
+This needs a better change log. The intent to enable the change is not
+written. There are features that could be enabled with this. Please list
+them. Also please try those features on powerpc to ensure it works as expected.
+
+I think we could rseq time slice extention selftests if there is one. etc.
+
++cc  thomas.
+
+PS: I am on parental leave for sometime. So expect delayed or no response at all.
 
