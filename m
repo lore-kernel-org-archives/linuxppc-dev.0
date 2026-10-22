@@ -2,62 +2,101 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B863606A319
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2026 14:22:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9AE8A606A31B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2026 14:24:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=dniXRB4Z
+	dkim=pass (2048-bit key, unprotected) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=tGPqmIoU;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=lrzd8ZGd
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j9Sz71L8jz2y7W;
-	Fri, 23 Oct 2026 01:22:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792678947;
-	cv=none; b=cBpnmdzc8cnGtFxHwyb9XMSBO8aOB2NB0C5oYE7XMj2OIkjrzRsstvFKQdtIb4R5WpVXq7K9LdaGDKwRAN79OeLU+9Zjr+McsVsUPaeHsbJz7sFG6jL3ERw33DfCCI6EawjIKDuQfyYJeCDO+jkUWKCtztVLyiZL8QfykUHTAIb5OIr6viFODCXJ07Ukt6mx67TGHB3R6995xuu636Ip+JVZJOocNVwaZES8FpeNEgkg4KUVTOZJVd6ZwiElsZReXtQzDNuI/ZT6hcH6WZcuR2i34spEf/iHTsaUSu/I0y+UbDDX4dwpmai+VI5+ZNJ28zllHxng7r+lMw55FnwlLg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j9T1g2BpBz2xwL;
+	Fri, 23 Oct 2026 01:24:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792679079;
+	cv=none; b=T7m1mobvnrHMD3AufTECJTf0RCW2PIKotnyTnAp8XZJ36r7kZhn+2yBvBy0qLEnFJA14/Qw8Knxa2LmA3ctLAubxJxy8mQlv1wJEp6MiOw3PuZgKI6soppWidHFhqCy0q4fiJbHZRn2UYaaNF/4j0J4DL/ajX4ISRfu42xpJuUnQzfHzL78kHvYSrpRe8dzkU6MGvdrtdKzBGkbsM/XH5mqcWvW+zAnDzY04wyB1/eRZIw862X6BF9w2/uJzaIVdHDRcrm/Nehy6py56c9YIvk6/x3lIGSM5l1+8Owj67nS+6hxyCkrCp17WcdM9jMQn8VtjG0X/NAdWZ/l1yZBwNw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792678947; c=relaxed/relaxed;
-	bh=UgVlXRgVv5/x1DXWmVGKmIRruqBZ1ifqROjMLIcwpQI=;
+	t=1792679079; c=relaxed/relaxed;
+	bh=ijcqFl4YNaIiVHZ0kMDDzDit0eQZX1zIOl9C/1G18QI=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=d5pWFW7lUnzPGZmAwaXQ+CVt0SnfpSMWbaHRqjLdriif8gFL56plD/BUhNuvEf0xPT8hN3I5k4LhgVGmT+IvTBN2ksknsa1l/5q9AkGjo6RaGUH4dUdcUN2hjlnbZtQrMFTHnXPbaw69U+3uyQsmyIQr9rSp636LxTF+F0XKtjm4k9yjJhaujkydkDUACN64I37tnTVafLpJ/aWs4zh+5fvWcfyCjdVhrxSetwSeMG83JayaonUSpDyUnzTErXKaz1bUcuwQVl4oBwMENOd8e31N8rcBR9jbtuVkd9yB9Su8fIbkVQF78gCVrMsKRjm6xu8CvQzpZsPEhING7XtcPw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=dniXRB4Z; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=catalin.marinas@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=jV6q53WrNwLd2h46LV+fudZ7fDO7GlTM0SFXaYQ2TwXHTMiHwwa4Mx8CFjD1Zun8DzXJOgR2cYXRJqS+bOfxUj9DTL16FzBJjMwt2IakJYV5v3mqMVrNMxuonUQvCUTUcNVyMttVpAzRZpzwgHUPqFQGa+IuYX5q11NLP4XD/pn3z9ydBB9RGsABAnop4UjjAR7U2rNcY8OWs3zzUcsdyyHI8dCCpoiQ95/j0gj1/RgTG6t0gyD1GbDPC/rHpgi2ecViqguFMGT0lJzEX7KmNZCqe0XLCpKeggJ/ydQ0T6gdFd38EnImGGsSbVxu6UT2/8lHKmHkxhCoCSxDLf86XQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=tGPqmIoU; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=lrzd8ZGd; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=dniXRB4Z;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=tGPqmIoU;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=lrzd8ZGd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=catalin.marinas@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j9Sz46S19z2xwL
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2026 01:22:23 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EBCFC2C34;
-	Thu, 22 Oct 2026 07:21:46 -0700 (PDT)
-Received: from arm.com (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E3BA83F7B4;
-	Thu, 22 Oct 2026 07:21:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1792678910; bh=AjDgKxtJPU0cDSM8jjetpkKUyPIl0mcA2sgghiP/fy8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=dniXRB4ZD77Kv5qxyizSr8v8KtL/ukXit7rt6xFRKUWRWqRwmE6iH72fHbbiOthgT
-	 t8pkLhHcMrKIjkL9hOIAKcTHcKAD8dALDouiCVdrInxKtCYCKPKtoN/P52CBgRrqBV
-	 0dUXbOk3kfv9WFL09chD0AKAzIdjKVCTHS+KjbMo=
-Date: Thu, 22 Oct 2026 15:21:42 +0100
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Roberto Sassu <roberto.sassu@huaweicloud.com>
-Cc: will@kernel.org, mark.rutland@arm.com, chenhuacai@kernel.org,
-	kernel@xen0n.name, maddy@linux.ibm.com, mpe@ellerman.id.au,
-	npiggin@gmail.com, chleroy@kernel.org, pjw@kernel.org,
-	palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr,
-	tglx@kernel.org, mingo@redhat.com, bp@alien8.de,
-	dave.hansen@linux.intel.com, hpa@zytor.com, robh@kernel.org,
-	saravanak@kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, devicetree@vger.kernel.org,
-	zohar@linux.ibm.com, noodles@fb.com,
-	linux-integrity@vger.kernel.org,
-	linux-security-module@vger.kernel.org,
-	Roberto Sassu <roberto.sassu@huawei.com>
-Subject: Re: [PATCH v2] kexec: Select ima_get/free_kexec_buffer() with
- CONFIG_HAVE_IMA_KEXEC(_OF)
-Message-ID: <atob9ulCwxZgyWyL@arm.com>
-References: <20261020083727.1906495-1-roberto.sassu@huaweicloud.com>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j9T1d5pttz2xjv
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2026 01:24:37 +1100 (AEDT)
+Date: Thu, 22 Oct 2026 16:24:25 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1792679067;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ijcqFl4YNaIiVHZ0kMDDzDit0eQZX1zIOl9C/1G18QI=;
+	b=tGPqmIoU7flznKuVvSgOzo2yd+DVKg7D73Wllg9sFRm9CC/iaoJaE55c3a0xpncefiwTWe
+	D0DcbKw7j7YI7N9iAD68KUbumDWDB4zuYjNIkgHfr2v+H6DCtaJTi+ZtcPVrTjX8s8nNNi
+	XYrPBSHr+CwiWmUAbayRxd1rMqP3P1fTDl5O65hszJdwi1iKQ6myUH0U2igUoTF8eZn+8r
+	G1OdblBxDgssdpqEoIOChx+/YLJ7ntbq+IsNh3ReV+JtcimJTFUP2numV2/sYLdIC+zwnD
+	aAZ46jrqFXnXLMoMGXtXmyYgRF8JauAVkMkAXxtjJDC2ZDnhWCO79rWsa0e06A==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1792679067;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ijcqFl4YNaIiVHZ0kMDDzDit0eQZX1zIOl9C/1G18QI=;
+	b=lrzd8ZGdzEWmJjZ9aZOFY32BVENA3ocTIaS/QQU0/Sv8YYe+ynbKZ/LG3OiCiXRqC6uBBI
+	wYJIr0JLNWZ7aTBw==
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+To: Thomas Gleixner <tglx@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org, Kees Cook <kees@kernel.org>,
+	Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	linux-riscv@lists.infradead.org,
+	Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org,
+	x86@kernel.org, Mark Rutland <mark.rutland@arm.com>,
+	Jinjie Ruan <ruanjinjie@huawei.com>,
+	Andy Lutomirski <luto@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+	Richard Henderson <richard.henderson@linaro.org>,
+	Russell King <linux@armlinux.org.uk>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Guo Ren <guoren@kernel.org>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Helge Deller <deller@gmx.de>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Richard Weinberger <richard@nod.at>,
+	Chris Zankel <chris@zankel.net>,
+	linux-arm-kernel@lists.infradead.org, linux-alpha@vger.kernel.org,
+	linux-csky@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
+	linux-sh@vger.kernel.org, linux-um@lists.infradead.org,
+	Arnd Bergmann <arnd@arndb.de>, Vineet Gupta <vgupta@kernel.org>,
+	Will Deacon <will@kernel.org>, Brian Cain <bcain@kernel.org>,
+	Michal Simek <monstr@monstr.eu>, Dinh Nguyen <dinguyen@kernel.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	Andreas Larsson <andreas@gaisler.com>,
+	linux-snps-arc@lists.infradead.org, linux-hexagon@vger.kernel.org,
+	linux-openrisc@vger.kernel.org, sparclinux@vger.kernel.org,
+	linux-arch@vger.kernel.org,
+	Michal =?utf-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>,
+	Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [patch 16/18] x86/entry: Get rid of the sys_ni_syscall()
+ indirection
+Message-ID: <20261022142425.3Wx-RrU5@linutronix.de>
+References: <20260707181957.433213175@kernel.org>
+ <20260707190254.493733289@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,42 +110,134 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20261020083727.1906495-1-roberto.sassu@huaweicloud.com>
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20260707190254.493733289@kernel.org>
 X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
-	autolearn=ham autolearn_force=no version=4.0.1
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, Oct 20, 2026 at 10:37:27AM +0200, Roberto Sassu wrote:
-> From: Roberto Sassu <roberto.sassu@huawei.com>
-> 
-> On x86, if CONFIG_OF_FLATTREE is enabled, the kernel uses the device tree
-> implementation of ima_get/free_kexec_buffer(). However, x86 passes the IMA
-> buffer location through setup_data, not through the device tree, so the
-> buffer is never found and the IMA measurement list is not carried over
-> across kexec.
-> 
-> Introduce CONFIG_HAVE_IMA_KEXEC_OF (which selects CONFIG_HAVE_IMA_KEXEC)
-> and select it for the architectures that pass the IMA buffer location
-> through the device tree, via of_kexec_alloc_and_setup_fdt() (arm64,
-> powerpc and riscv). Build the device tree implementation of
-> ima_get/free_kexec_buffer() only if the new option is enabled.
-> 
-> Select the new option also on LoongArch, to preserve the current behavior
-> and avoid a link failure. LoongArch does not pass the buffer location to
-> the next kernel yet; this will be addressed separately.
-> 
-> Finally, don't select it for x86, and use x86's own setup_data-based
-> implementation regardless of CONFIG_OF_FLATTREE.
-> 
-> Fixes: b69a2afd5afc ("x86/kexec: Carry forward IMA measurement log on kexec")
-> Signed-off-by: Roberto Sassu <roberto.sassu@huawei.com>
+On 2026-07-07 21:07:01 [+0200], Thomas Gleixner wrote:
+> Invoking sys_ni_syscall() from a code path, which already knows that the
+> syscall number is invalid just to assign -ENOSYS to regs->ax is a pointle=
+ss
+> exercise. It's even redundant as the low level entry code already has set
+> regs->ax to -ENOSYS on entry.
+>=20
+> Remove the extra conditionals and the function calls.
 
-For arm64:
+Since this patch, tools/testing/selftests/x86/syscall_numbering_64
+throws in this:
+|[RUN]   Running tests under ptrace: modifying the default return
+|[RUN]       Checking system calls with msb =3D 0 (0x0)
+|[RUN]           Checking some common syscalls as 64 bit
+|[OK]                x64 syscall 0:0 returned 0 as expected
+|[OK]                x64 syscall 0:1 returned 0 as expected
+|[RUN]           Checking some 64-bit only syscalls as 64 bit
+|[OK]                x64 syscall 0:19 returned 0 as expected
+|[OK]                x64 syscall 0:20 returned 0 as expected
+|[RUN]           Checking out of range system calls
+|[FAIL]                  x32 syscall 0:-64 returned -9999, but it should ha=
+ve returned -ENOSYS
+=E2=80=A6
+|[FAIL]                  x32 syscall 0:-2 returned -9999, but it should hav=
+e returned -ENOSYS
+|[FAIL]              x32 syscalls 0:-64..-2 had 63 failure
+|[OK]                x32 syscall 0:-1 returned MODIFIED_BY_PTRACE as expect=
+ed
+|[FAIL]                  x64 syscall 0:1073741760 returned -9999, but it sh=
+ould have returned -ENOSYS
+=E2=80=A6
+|[FAIL]                  x64 syscall 0:1073741823 returned -9999, but it sh=
+ould have returned -ENOSYS
+|[FAIL]              x64 syscalls 0:1073741760..1073741823 had 64 failure
+|[FAIL]                  x64 syscall 0:-64 returned -9999, but it should ha=
+ve returned -ENOSYS
+=E2=80=A6
+|[FAIL]                  x64 syscall 0:547 returned -9999, but it should ha=
+ve returned -ENOSYS
+|[FAIL]              x64 syscalls 0:512..547 had 36 failure
+|[RUN]           Checking some common syscalls as x32
+|[OK]                x32 syscall 0:0 returned 0 as expected
+=E2=80=A6
+|[RUN]           Checking out of range system calls
+|[FAIL]                  x32 syscall 1:-64 returned -9999, but it should ha=
+ve returned -ENOSYS
+|[FAIL]              x32 syscalls 1:-64..-2 had 63 failure
+|[OK]                x32 syscall 1:-1 returned MODIFIED_BY_PTRACE as expect=
+ed
+|[FAIL]                  x64 syscall 1:1073741760 returned -9999, but it sh=
+ould have returned -ENOSYS
+=E2=80=A6
 
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+and so on=E2=80=A6 The test has
+
+| #define MODIFIED_BY_PTRACE      -9999
+
+and the ptracer modifies the return code. However not always. Not sure
+if this was indeed a pointless exercise or not.
+
+The test could be updated via the hunk below in case the new behaviour
+is what is expected. hpa made the extension to the test in commit
+795e2a023b808 ("selftests/x86/syscall: Add tests under ptrace to
+syscall_numbering_64").
+
+diff --git a/tools/testing/selftests/x86/syscall_numbering.c b/tools/testin=
+g/selftests/x86/syscall_numbering.c
+index ca0eca7b9dced..1435394fba022 100644
+--- a/tools/testing/selftests/x86/syscall_numbering.c
++++ b/tools/testing/selftests/x86/syscall_numbering.c
+@@ -250,6 +250,7 @@ static bool test_x32(void)
+ static void test_syscalls_common(int msb)
+ {
+ 	enum ptrace_pass pass =3D sh->ptrace_pass;
++	int expected_ret =3D -ENOSYS;
+=20
+ 	run("Checking some common syscalls as 64 bit\n");
+ 	check_zero(msb, SYS_READ);
+@@ -260,18 +261,22 @@ static void test_syscalls_common(int msb)
+ 	check_zero(msb, X64_WRITEV);
+=20
+ 	run("Checking out of range system calls\n");
+-	check_for(msb, -64, -2, -ENOSYS);
+ 	if (pass >=3D PTP_FUZZRET)
+-		check_for(msb, -1, -1, MODIFIED_BY_PTRACE);
+-	else
+-		check_for(msb, -1, -1, -ENOSYS);
+-	check_for(msb, X32_BIT-64, X32_BIT-1, -ENOSYS);
+-	check_for(msb, -64-X32_BIT, -1-X32_BIT, -ENOSYS);
+-	check_for(msb, INT_MAX-64, INT_MAX-1, -ENOSYS);
++		expected_ret =3D MODIFIED_BY_PTRACE;
++	check_for(msb, -64, -2, expected_ret);
++	check_for(msb, -1, -1, expected_ret);
++	check_for(msb, X32_BIT-64, X32_BIT-1, expected_ret);
++	check_for(msb, -64-X32_BIT, -1-X32_BIT, expected_ret);
++	check_for(msb, INT_MAX-64, INT_MAX-1, expected_ret);
+ }
+=20
+ static void test_syscalls_with_x32(int msb)
+ {
++	enum ptrace_pass pass =3D sh->ptrace_pass;
++	int expected_ret =3D -ENOSYS;
++
++	if (pass >=3D PTP_FUZZRET)
++		expected_ret =3D MODIFIED_BY_PTRACE;
+ 	/*
+ 	 * Syscalls 512-547 are "x32" syscalls.  They are
+ 	 * intended to be called with the x32 (0x40000000) bit
+@@ -279,7 +284,7 @@ static void test_syscalls_with_x32(int msb)
+ 	 * nonsense and should not work.
+ 	 */
+ 	run("Checking x32 syscalls as 64 bit\n");
+-	check_for(msb, 512, 547, -ENOSYS);
++	check_for(msb, 512, 547, expected_ret);
+=20
+ 	run("Checking some common syscalls as x32\n");
+ 	check_zero(msb, SYS_READ   | X32_BIT);
+
+Sebastian
 
