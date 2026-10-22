@@ -2,72 +2,93 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB98E606A31D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2026 13:14:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0161A606A319
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2026 14:17:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=c7gYDkSV
+	dkim=pass (2048-bit key, unprotected) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=selector2 header.b=jKijMHLj
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j9RT04rQrz2xwL;
-	Fri, 23 Oct 2026 00:14:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792674884;
-	cv=none; b=mpy8N8hFIGuwgiRyRgjT3htdODKzdRVPLFtr7OcFXOtFYBaHmnf1yFQLPrggtlVb3sbIDmo1yYZHW5JYrhp6mucazJrXHPzBQ8OrEk72ApUM+Yw3VZ2VPZocxUYPTwwLFY4l+pWOQnwsEbZJsqJZZ44sS4MLWnW53kRFbO0N2SUCqGerc3jXvjTsYob+rdLyemaoCJMUuAErLXsVJ3EJTh0a3bFq3v6aIGPKN4f+DWqdh0GEALRcPUkzgH7D9KMyb4sadE8SKiZF3U3eMO27IxSQmdn+XsOG5zwEwkqLKGm6EpOt/UoVEFmug/ENh1tKwHyydRcdG4wT4sqySqK01g==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792674884; c=relaxed/relaxed;
-	bh=OsUk0flsYcD+qNd05ZYTAkmrzmHYWzvjASs2678dOU0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Hvm4uu3cbnlgNxo0Ce9+LSIWYfLWEMIr+ElHWtVNI6RaaoszPsZkN+jEAorolz+sCFnTIe71FdpHVzMdYZdDImwdz9OcZKdiFWNhaRHKzmdGTDFMRRBLKC4AmayBubldzNExt4oYyn1tA07VwnOqrT94+J7Lwddjlk4fCYUe4scUqqB+l/InOE0uAwKY36nfBWXb+cRbSPV49dpv167GxnWf/vHfTe5+P2JRleTdLwLfFAbKkKORqCfdR/eVRDUwifkq0fr4f/MQPRgUwb62N7UJZWTyaWt5ZfJJDVO7pmRezxwttRrI8nNXcpPl47Fd090qOizOy5PvZ0UUEl8/Kw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=c7gYDkSV; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j9Ss92gw4z2xwL;
+	Fri, 23 Oct 2026 01:17:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::5" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792678637;
+	cv=pass; b=Eo6PPmvSNKb26mbe5PkeCyHFQ4tNVMCFnLCoLGxkaAci8lKzM6ed19ygNYMIlovml27ymcqoydC59Q/XtWrstxg6MK//xcTqtUUlaSEUP/uIjj+XWHtGfOGNFnMS/YlHs59l+x2mjX3fwIsS9SUZPVIjwJZ/gmSv6jvfSuYLwCvq1lQ+Rc5/bhXu8dGJfynzyQ0sfEH+pPwNVpGiEucSAqH3mtBWB5HtB8dx8xoYouLsrwUgSQqJl2KMxXqj1W7XtGgQKdJP4+iX3h4yY7D6AWNYb3MurTfrIG754qjwUaa8BxTWbiU4AAnd+5RFSHkIu7xD5e+GqDJSIZalFj9PzA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792678637; c=relaxed/relaxed;
+	bh=bhjGZwZuqNHbuEfMk7HoJKJQFlKgzEXFXYXiuiGYym8=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=gzURDjkRH7VMth2jzSeRJCkRh+p2NDvDd0rQs5q4dHq/p27AtHptHenz5zDXrCX3rpCHbOY2AE2GkzBdtoNtyhO2XlQX3m+d5uVYxQBMLoUgLBKGl+nQeLAIgW1lhwNGuGPIyZfM3ln+fPOcDvXP3W8Cu1SImh7fulSw3wGvmQAmQEATmRdy5fmmf9bM/5azWZ4Y8fgVRRaqZb1LN2noaV4H/CqwWYmtRX4RV/nkXLvM+u2SvHl9i6IbHn8rldgmcakif9OLZM6gSH7C/bWfkZtHRRggzWFzRrb9lPoDIJHYbOLW1kvkY5UEj7YgsmgcuC+kCRN4dZTvjbWkLUA1Rg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=virtuozzo.com; dkim=pass (2048-bit key; unprotected) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=selector2 header.b=jKijMHLj; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=khorenko@virtuozzo.com; receiver=lists.ozlabs.org) smtp.mailfrom=virtuozzo.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=virtuozzo.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=c7gYDkSV;
+	dkim=pass (2048-bit key; unprotected) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=selector2 header.b=jKijMHLj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=virtuozzo.com (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=khorenko@virtuozzo.com; receiver=lists.ozlabs.org)
+Received: from DUZPR83CU001.outbound.protection.outlook.com (mail-northeuropeazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j9RSz1MHRz2xjh
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2026 00:14:42 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69MAE4kT2131556;
-	Thu, 22 Oct 2026 13:13:51 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=OsUk0f
-	lsYcD+qNd05ZYTAkmrzmHYWzvjASs2678dOU0=; b=c7gYDkSVyXsEQgbbVcueyi
-	AZpPvq/QtT7mfxvE51Opc2UDILlWORNKSYkmSvyFQzOckVGyJXQyefAJrCiIDlll
-	Zl1iig3xhKo8yeUGAIw1wO8aTpXikOp893oWDt+eVrf1cLfx1M1TaURfV/NvC8bC
-	r5lXonruh+SCVuqYkFW1duRvcQdFBpz62dcGLUfNm/WprfQBgJqtyhUzTMaB5wgM
-	bV4evacAdY8ZWX4/iAikrm4xqbg5A7L4KbW0te+LwSGMN0hEGEadJpFGl3aRAnuu
-	EFOcYC3l//CeWb/4EDQswKusxaIF0jpfjxFDfQT89WH1hkodY5kkSIihdiCyLFFg
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hdw5bq84f-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 22 Oct 2026 13:13:50 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69MA4r7M285462;
-	Thu, 22 Oct 2026 13:13:49 GMT
-Received: from smtprelay04.dal12v.mail.ibm.com ([172.16.1.6])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4he7bsa3gd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 22 Oct 2026 13:13:49 +0000 (GMT)
-Received: from smtpav05.wdc07v.mail.ibm.com (smtpav05.wdc07v.mail.ibm.com [10.39.53.232])
-	by smtprelay04.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69MDDl8r33424044
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 22 Oct 2026 13:13:48 GMT
-Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DA1765805F;
-	Thu, 22 Oct 2026 13:13:47 +0000 (GMT)
-Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B312A58043;
-	Thu, 22 Oct 2026 13:13:37 +0000 (GMT)
-Received: from [9.67.119.174] (unknown [9.67.119.174])
-	by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 22 Oct 2026 13:13:37 +0000 (GMT)
-Message-ID: <95deeda1-9ccd-4423-9041-18731a8209de@linux.ibm.com>
-Date: Thu, 22 Oct 2026 18:43:36 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j9Ss75Dzjz2xjv
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2026 01:17:14 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=UYbnKouFLMgY3049iJ9awyIWRe2lsAmbmnSFW+vSLXMSokCiSz1pL5Tfg2sxxE1NmKL+/GlVwEYBls9zbjwHWLxjgZv0XREIjqLZ0r+ry+jNMztxar3ywliUd2bXBjmHbN/vcHv94TQ/p8jfGjtFZMJCCa5W74Vgp6jj8rDXMx+cHTQ1S6BJvZjW6VO2A9E1z/zBOvQ33m3+KosBaaOdQ/fOT30Jv2L73QUNnXstTqV0go+MkbcGJvIweIiVvam1vfC+opXsbacZRTTGaTwggq2FDiG1JekYcHDN94rBmSk17FK/mnpWQE4Go3udZdtGoCnogqmLXCHrtCFrTkQwJw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=bhjGZwZuqNHbuEfMk7HoJKJQFlKgzEXFXYXiuiGYym8=;
+ b=J6hYHKDTSjpf1rC6kYcUv3gGfAVLMaggE1PVWdiZiq+eDCY2mD/0mhce/jiDqodnFMFZDkhlM2OoxfZxIxwEtu9If6bVmrGBLG/ATVVtO3qx5oxUfDCtsABLn2EfQSeycsAMCdRtGVXZWlljgmyxxaJOeqIdRxwG7sMxu19OUoW3CoUKbBaGMSV4L+l5tXwVLjUlO2A1PPq7DSns8bDOP2Cv96PnwMCjedrGpo8EHuGLA4rxymlr9GyJxp29yGokaBETHZT+X+rldtrwmWAfAYLpabJVfp2i3Q4qrNzimKFax1VfaOaR0UWv879s26Y/TuGBkArIhE74PwYtX049HA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=virtuozzo.com; dmarc=pass action=none
+ header.from=virtuozzo.com; dkim=pass header.d=virtuozzo.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=virtuozzo.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=bhjGZwZuqNHbuEfMk7HoJKJQFlKgzEXFXYXiuiGYym8=;
+ b=jKijMHLj8nQ5Al2x/o4SpuofMNHW+ju5pXgWf7WVn4Z6X1cjKbjOl+uKPxZSdCH97ZfXzrLCU9HDUe8bfm7TJ1SQoj6ffRVpa433B5yZ5TBC7qHFJHQ2r8hNZM8QOjmBe1R2HhV/ChIDPHTuNyuMVQbvCWioZ5YlprJbww+Kqg0aSwEyArn7bwNXmlntEYqTcc3HOAFSAxiP2LHoZdH+S1FVXavXxY/k+oKS9IhsdYJ9Sx9RvSY/On6VeuznOIU5oWEvvjI7/rAzYFzzWigWjbOKGW7Thw0pv6QjYS7Oo5MN98N9FC8h4VKAXn1NmUaiL+jnOk74D+duVPUjJ1dU0g==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=virtuozzo.com;
+Received: from PA6PR08MB10708.eurprd08.prod.outlook.com
+ (2603:10a6:102:3c7::20) by VI0PR08MB11667.eurprd08.prod.outlook.com
+ (2603:10a6:800:30b::8) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.546.15; Thu, 22 Oct
+ 2026 14:16:48 +0000
+Received: from PA6PR08MB10708.eurprd08.prod.outlook.com
+ ([fe80::1999:c6db:dc55:494a]) by PA6PR08MB10708.eurprd08.prod.outlook.com
+ ([fe80::1999:c6db:dc55:494a%5]) with mapi id 15.21.0546.012; Thu, 22 Oct 2026
+ 14:16:47 +0000
+Message-ID: <88924d54-40fb-45f3-a575-48ec7dc9bc2d@virtuozzo.com>
+Date: Thu, 22 Oct 2026 16:16:43 +0200
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 1/4] mm/rmap: duplicate a PMD mapping as one in
+ folio_dup_file_rmap_pmd()
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ "David Hildenbrand (Arm)" <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
+ Baolin Wang <baolin.wang@linux.alibaba.com>,
+ "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>,
+ Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>,
+ Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>,
+ Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>,
+ Peter Xu <peterx@redhat.com>, Alex Williamson <alex@shazbot.org>,
+ kvm@vger.kernel.org, =?UTF-8?Q?Lo=C3=AFc_Molinari?=
+ <loic.molinari@collabora.com>, Shuah Khan <shuah@kernel.org>,
+ linux-kselftest@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>
+References: <20261021-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v4-0-66f00b7a564c@virtuozzo.com>
+ <20261021-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v4-1-66f00b7a564c@virtuozzo.com>
+ <atnEFyGRYGGf9shA@gremlin>
+ <71101695-339d-4f8f-b9d8-dfadf7dbd0ed@virtuozzo.com>
+ <atn3SPG5MKpj2Unj@gremlin>
+Content-Language: en-US, ru, sr
+From: Konstantin Khorenko <khorenko@virtuozzo.com>
+In-Reply-To: <atn3SPG5MKpj2Unj@gremlin>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: VIVP296CA0064.AUTP296.PROD.OUTLOOK.COM
+ (2603:10a6:800:35a::13) To PA6PR08MB10708.eurprd08.prod.outlook.com
+ (2603:10a6:102:3c7::20)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,208 +102,102 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] kexec: Select ima_get/free_kexec_buffer() with
- CONFIG_HAVE_IMA_KEXEC(_OF)
-To: Roberto Sassu <roberto.sassu@huaweicloud.com>, catalin.marinas@arm.com,
-        will@kernel.org, mark.rutland@arm.com, chenhuacai@kernel.org,
-        kernel@xen0n.name, maddy@linux.ibm.com, mpe@ellerman.id.au,
-        npiggin@gmail.com, chleroy@kernel.org, pjw@kernel.org,
-        palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr,
-        tglx@kernel.org, mingo@redhat.com, bp@alien8.de,
-        dave.hansen@linux.intel.com, hpa@zytor.com, robh@kernel.org,
-        saravanak@kernel.org
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org, loongarch@lists.linux.dev,
-        linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
-        devicetree@vger.kernel.org, zohar@linux.ibm.com, noodles@fb.com,
-        linux-integrity@vger.kernel.org, linux-security-module@vger.kernel.org,
-        Roberto Sassu <roberto.sassu@huawei.com>
-References: <20261020083727.1906495-1-roberto.sassu@huaweicloud.com>
-Content-Language: en-US
-From: Srish Srinivasan <ssrish@linux.ibm.com>
-In-Reply-To: <20261020083727.1906495-1-roberto.sassu@huaweicloud.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: _3Ib_GBruwcesQrtvIa8ZW5ntGhzMhy5
-X-Proofpoint-ORIG-GUID: oxvRYIABcnG-nxVQjlWue4M7DI2aYYDj
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDIyMDA1MCBTYWx0ZWRfXzcOM8UL9gueO
- CY+UcxINUHYr0hjxrJs/KBXesiY3Sz7o0jwVkVShLTxJJ5ixuvqpKWLsOxZC6ezU5meyRXABaxs
- 58Dqwt83Q6uEuKIim2SS8kG/oY2bK90=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDIyMDA1MCBTYWx0ZWRfX+ms0pcRX9GQP
- tyaKnyTEc0ZDwcxQzvXzVdV5LQiyFMW5tMimQlSw2Is6088V7QEMcM93QtZHn5luNMX82YxSpKs
- Edik2brqJ//NwRdtVHjgL4F67JQBY4HtGsaDSotd/aGE5zsZ1HwC10JqC7ReR11ZscBVzdOIYyZ
- 8oKnGc6XYN+PR8kO8tjLnVMThufi2rlqivW/jh2X9tksdla+NwyzM8Nmud1YeRtPFng52PIfgWg
- D3Cu3GaHICsND3g8ToduGq7KEfFZlM6LloAFVfZel1VLYC80oadSRWegxg0iFusTRBxT6stDc0i
- FU2eTYyldeZR1D/oMTe30/ZWAK9dOMgpuzc1DLvBUNO6NkaEzduD+suOp4iycusUc4VZxIGfOqb
- U53ApYpaMZGkYi06Li3kpK771jp1pe/pVW1DiUQ28cvrkni8uiHgyWjf8pEZ8CghOMTaMneJAzU
- cKqCrWmr8kMmOmK72yA==
-X-Authority-Analysis: v=2.4 cv=Gb2CDgXL c=1 sm=1 tr=0 ts=6ada0c0f cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=i0EeH86SAAAA:8
- a=VnNF1IyMAAAA:8 a=xUTifld_T7Igq-SLGagA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-10-22_04,2026-10-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 adultscore=0 malwarescore=0 spamscore=0 phishscore=0
- clxscore=1011 bulkscore=0 impostorscore=0 lowpriorityscore=0
- priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610190000
- definitions=main-2610220050
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PA6PR08MB10708:EE_|VI0PR08MB11667:EE_
+X-MS-Office365-Filtering-Correlation-Id: 351a5001-3f27-4ced-3a87-08df30471b23
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|1800799024|376014|7416014|366016|6133799003|22082099003|18002099003|10067099003|261021121427099003|4143699003|5023799004|56012099006;
+X-Microsoft-Antispam-Message-Info:
+	831GGQZ/Itmj5reHTQZJTMgerDpBtawATZB9dMBYNM7/2+CBHpfa8Q0oQz4trlUGFOEjmnoxx1OsOjbL1kpikrBhkM8BCyXOAY6CuTUtnQSGcHgsWSDUyw91+coOzpVQt4dlfG0WdXjbtpa73OBkOtrji3a/RV76S+Ec4oHZqbvfleCnY0UjA76D1yiVUOotODcjrZ8rbdNrS12my8xe4+ijvVLxMl113iGbklQEYNky72u66H/VCB5H45S1F3jr8Aki4Q/nQsbJeKwK7/jOonodxlhJfKRCBF4xiw+RVfKmpL8qHhuYJccjYlEE1TPMPqM/f/iVDvqj2tJ1TJRHuL8yBsAoNPvjjVlFZlzFWgFqQOFSZtPwSQ5fIxBkK1fXrUII3zHP24MWuXjzyU06suR81yj6xYFs2L1bQOM3CUtoarvc/tAyOMkggL1hwCpMG7QOfWXlCDP0vqGNUfaZ5lhCnilEJl6gfnPZxBysj4ZPGcgspFOx97VY0Zvs3t6w8ebB8FP2pGEDYFo/QfzqRaBLwl6ye+J/ZWb9ZpVCR1KULMiTkJZmjRcjBZ83iAKCb8nqysY3gBxyNb5P5dfsyiUXlNjEUQnAWKolyPSoiDNkQ9aFEUceMcOFAZ/+bCvDcTvYlEDoPRZyn/3cNKqjSrj+ZmQ8bg/RQqLiQV9w1K8=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PA6PR08MB10708.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(1800799024)(376014)(7416014)(366016)(6133799003)(22082099003)(18002099003)(10067099003)(261021121427099003)(4143699003)(5023799004)(56012099006);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?akhYWGswSEdlRW8xSDd0SXJ1Z1RFOHZHZzBYaWF0OTZjMWJxSllvd2dweVRB?=
+ =?utf-8?B?ZkVKZlVMZFhSZUdtSVd1OUUyTDlXRWp4b0hGQzdqR1ZEdld5YVBjc0ZWN09O?=
+ =?utf-8?B?QVdwMzBncVBQVjBuZ3B6QVNFdTMyL0lBa00yZUxQWmZxVGFyS3RFeXV3OWgv?=
+ =?utf-8?B?SVpsd0JBclRJQlh0TVBiK0I5cElSWjh0UG5WRmIxcUZQOTZWZmFJYlNhd2NI?=
+ =?utf-8?B?QVJXbExKSFZ2eGt2emtWVnI0Y2tnckMwMGxQNk1oR2U2NUhkdjRZdDhOblBa?=
+ =?utf-8?B?Z2ViOXNGRnFvNUNnTkY2Ull3WG01N3RhYzVER1ZkdHR4Nys5dHdFV3F6NWwy?=
+ =?utf-8?B?RWJ6V1Fsc3hkT1VOMVdzckVqbkl6OVlHYndkM0RCMzgxRmVCMTJvejBqY2sz?=
+ =?utf-8?B?R1Npa0dZMTJydlhwcVJtUmgxcVBvT3FtcTM3S1BVMGZSUi9FSVJRSlN3UlB0?=
+ =?utf-8?B?TldianFqU0p0YWFEZXZ1clZjNXpqK2dSaXd2NXFER2wyT3VQaUZXRGR0d3pr?=
+ =?utf-8?B?YVhNbXRpNklxM29mRjIrbXg1NmRiczZ2MStpUzBJU3ZBZ0QxTW81M3FtcC9r?=
+ =?utf-8?B?bnRxZ1I2SEM2aDNjYVJMUHZ4RUNSM2lZSHVUVzZ5QnBnbWNCV1czbjFtaXRM?=
+ =?utf-8?B?TmFlb0J6TSs1S2F2bXNydFdZVkZzbXNxbkwzdmJUU1JrU1BKVFV6ZTh2SnA5?=
+ =?utf-8?B?dnBwRDdkL0VSWkpKNm9GL2RFVVg4TUtKSVpNVTBpaWVqdG1PSU01UDBYU3Vm?=
+ =?utf-8?B?Q0tMMVVlV3hUN0tETFdLTHptNFVoRnd5ZmJQNTJBK3Y1bU9Dcis5c1dJaG9m?=
+ =?utf-8?B?Q1RhZDJwaklTcE5LUitPcDQ4NzhrdHp4eHU0R284YUhPSXFyYUlSdFBQQ2ow?=
+ =?utf-8?B?Z3JYK1VGeWhPblFUOXVva2tBWkEzZEdBMTZuaEo0R2gwK1UvUTN6UmdmbHoy?=
+ =?utf-8?B?TVV4blV5bHRKa1Y2VzVDTGxZMjJ2dW8zYlJ1cEQ5K05iZUk5YU9Yc255TmNr?=
+ =?utf-8?B?Q1BwdGM0Uk0vclZORnZ5UnpkMTVxcWg5NTFKNS9pUnZ5eEd2dW94dnVhZ04w?=
+ =?utf-8?B?RlFmZm9pYkgxYWs2ZXJDUTZuTzNsRHZMMVNnUUJycnM3aVQ3ckg4QjBlSDAz?=
+ =?utf-8?B?UU1NOWhzZnZWUGhkOXMxVDFpSUdkVHVRSVp2TGsyeFRDUTg3VVRrRTNtQnhx?=
+ =?utf-8?B?Y1dyUTVFRHMvdStQNWNWaTNpTTBZL0VsZmprVUtrc28vSVo5amt1eXl6YXR1?=
+ =?utf-8?B?RFQySmpYVGJoTHBQd3R2MURqRWZ2R0IvRzFLRWpjbVBtWnJ2eVRGMU5NMTRt?=
+ =?utf-8?B?NnA1RzczcWMxdi9UMjBTWmtKVWg5eFA5cGk5OTNQUmFmcm9oZVh3SkhPTHlP?=
+ =?utf-8?B?Q25ZMlZid0ZpK29TbDBWQzE5SVlDeHZUWGVNdGx3Q1ZpV3owRnBSOUdGR3VT?=
+ =?utf-8?B?b3dVRUd3RGUrRjhHSXVlSnlRdW80YW1iL1VLNHFMd2JJZjdQa201dnRkcG9H?=
+ =?utf-8?B?MWNyUHJOL1NBN0lWYzJDK2pMcGtOWkRaRzg1c1oxMzBuNkNlSDFrYTlvUy9q?=
+ =?utf-8?B?dmdUTGpWOFVHSHBIVmIrbU1xTGUrRnBrblczMjNUREtMN0RLSDU4aDBMQU5T?=
+ =?utf-8?B?eXlBOExDUFU2UHRWU2hocXlMM0RiU1E1R0JhS0duMGpFaXI5VEVEY0ZHQlNT?=
+ =?utf-8?B?YlJtTU9PeU9GZmExZG9DOGcwSmFIT204eXVGazRPanJSbnk3eXV2ckRPelJy?=
+ =?utf-8?B?K1grNTZMaEtkbW9WUEhEazVQbHF3WEhyaFF4NVNHVzRsRjZxc0xNSXFSK2Vt?=
+ =?utf-8?B?RmhibmQ4eVlMakpVOUhtNzJ1YTRyeStjeVVSQXE4MmhJTzhqRERRV1o5Mjhn?=
+ =?utf-8?B?Ujh2bExpZk93Vzk1UzBjZDBab21jNEtQMjUzOVBUWldCVEl1NEpLK1U5V3I0?=
+ =?utf-8?B?VWdOelRhR2ZNUlpTMU5IaHYxZEJWdTFpdlo2aDFpdGhsRHFOSmw4Tkh1eWxZ?=
+ =?utf-8?B?RmUzNEpLVzFkZHRicm0rdDkxbVdIaTZXUlpnblBkdFpJQlpnVTFmY3diNlRM?=
+ =?utf-8?B?SnliSDkxYmo5UytTZTY1dkh0OWhKSGFoampmZzNVTFlhdXh6SzNvR2xsb1JS?=
+ =?utf-8?B?VzFhUDQ0U2xEaTVTWkxtUEk4bEFvUVFmRjVVM1JhZzIyMW1Cd3U1eTdiN2Y0?=
+ =?utf-8?B?Wi85TEJ3L2VVVDZycWpqbFVwYnlXVmhYOWU4K3pPNDkxMWtZajRvbVdFZ2tU?=
+ =?utf-8?B?NXJ0Mk9FZDJMWlQxVjR6cFZhNTdnbkxObnhuM2g1Yi9sRWlqMkU5MDd1bHRE?=
+ =?utf-8?B?cVdXUlZwOWVheVFIQnd6RlNxZG5HYnBXL1ptZVl0Y3FOVndhc2w1dz09?=
+X-OriginatorOrg: virtuozzo.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 351a5001-3f27-4ced-3a87-08df30471b23
+X-MS-Exchange-CrossTenant-AuthSource: PA6PR08MB10708.eurprd08.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Oct 2026 14:16:46.9454
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 0bc7f26d-0264-416e-a6fc-8352af79c58f
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: eyTPybURWI2u6GkiAwBuBxszj92zjjlqt9xM30qZHsIb1De5xS35FXdULJX/NcXhWNRxAgQIUlS+zQYYjYTXUA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR08MB11667
+X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+On 10/22/26 14:11, Lorenzo Stoakes (ARM) wrote:
+...
+>>
+>> Both functions were introduced in a single commit, i think it's a simple copy-paste issue.
+>>
+>> The helper never had a caller, so nobody could hit it. If you prefer, I
+>> can drop the Fixes tag and only mention d8ef5e311d7b in the changelog, as
+>> there is nothing to backport.
+> 
+> I mean, it seems like a bug to me? If there's no harm in backporting it I think you
+> should add Cc: stable@vger.kernel.org in that case actually.
 
-On 10/20/26 2:07 PM, Roberto Sassu wrote:
-> From: Roberto Sassu <roberto.sassu@huawei.com>
->
-> On x86, if CONFIG_OF_FLATTREE is enabled, the kernel uses the device tree
-> implementation of ima_get/free_kexec_buffer(). However, x86 passes the IMA
-> buffer location through setup_data, not through the device tree, so the
-> buffer is never found and the IMA measurement list is not carried over
-> across kexec.
->
-> Introduce CONFIG_HAVE_IMA_KEXEC_OF (which selects CONFIG_HAVE_IMA_KEXEC)
-> and select it for the architectures that pass the IMA buffer location
-> through the device tree, via of_kexec_alloc_and_setup_fdt() (arm64,
-> powerpc and riscv). Build the device tree implementation of
-> ima_get/free_kexec_buffer() only if the new option is enabled.
->
-> Select the new option also on LoongArch, to preserve the current behavior
-> and avoid a link failure. LoongArch does not pass the buffer location to
-> the next kernel yet; this will be addressed separately.
->
-> Finally, don't select it for x86, and use x86's own setup_data-based
-> implementation regardless of CONFIG_OF_FLATTREE.
->
-> Fixes: b69a2afd5afc ("x86/kexec: Carry forward IMA measurement log on kexec")
-> Signed-off-by: Roberto Sassu <roberto.sassu@huawei.com>
+Nobody ever called this helper till the patch
+   "mm/huge_memory: copy file THPs at fork like copy_present_ptes() does"
 
+in the current series, so there is no actual bug to fix in stables,
+so may be not to add extra work to stable trees maintainers?
 
-Tested-by: Srish Srinivasan <ssrish@linux.ibm.com> # PowerVM
+The other question is: what to do with the actual bug this series is addressed to.
+i don't think the significant rewrite of PMD handling is a good patch for stable,
+so may be we'll need to create a minimal fix like my 1st version to fix
+the existing problem - especially for stable trees.
+Or may be not to fix stables at all.
 
+But let's first finish with the proper fix/rewrite. One problem a time to solve.
 
-> ---
->
-> v2:
-> - Reworded the commit message (no code changes), suggested by Mimi
->
->   arch/arm64/Kconfig      | 2 +-
->   arch/loongarch/Kconfig  | 2 +-
->   arch/powerpc/Kconfig    | 2 +-
->   arch/riscv/Kconfig      | 2 +-
->   arch/x86/kernel/setup.c | 2 +-
->   drivers/of/kexec.c      | 4 ++--
->   kernel/Kconfig.kexec    | 4 ++++
->   7 files changed, 11 insertions(+), 7 deletions(-)
->
-> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-> index b5a51b0ef944..4b7e248b6c91 100644
-> --- a/arch/arm64/Kconfig
-> +++ b/arch/arm64/Kconfig
-> @@ -1697,7 +1697,7 @@ config ARCH_SUPPORTS_KEXEC_FILE
->   config ARCH_SELECTS_KEXEC_FILE
->   	def_bool y
->   	depends on KEXEC_FILE
-> -	select HAVE_IMA_KEXEC if IMA
-> +	select HAVE_IMA_KEXEC_OF if IMA
->   
->   config ARCH_SUPPORTS_KEXEC_SIG
->   	def_bool y
-> diff --git a/arch/loongarch/Kconfig b/arch/loongarch/Kconfig
-> index 2067d1f2ad7a..b5420d482da4 100644
-> --- a/arch/loongarch/Kconfig
-> +++ b/arch/loongarch/Kconfig
-> @@ -690,7 +690,7 @@ config ARCH_SELECTS_KEXEC_FILE
->   	depends on KEXEC_FILE
->   	select KEXEC_ELF
->   	select RELOCATABLE
-> -	select HAVE_IMA_KEXEC if IMA
-> +	select HAVE_IMA_KEXEC_OF if IMA
->   
->   config ARCH_SUPPORTS_CRASH_DUMP
->   	def_bool 64BIT
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 2580e27e4328..096c6061893b 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -643,7 +643,7 @@ config ARCH_SELECTS_KEXEC_FILE
->   	def_bool y
->   	depends on KEXEC_FILE
->   	select KEXEC_ELF
-> -	select HAVE_IMA_KEXEC if IMA
-> +	select HAVE_IMA_KEXEC_OF if IMA
->   
->   config PPC64_BIG_ENDIAN_ELF_ABI_V2
->   	# Option is available to BFD, but LLD does not support ELFv1 so this is
-> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-> index f8e26c4bed2b..161bf8a65beb 100644
-> --- a/arch/riscv/Kconfig
-> +++ b/arch/riscv/Kconfig
-> @@ -1118,7 +1118,7 @@ config ARCH_SUPPORTS_KEXEC_FILE
->   config ARCH_SELECTS_KEXEC_FILE
->   	def_bool y
->   	depends on KEXEC_FILE
-> -	select HAVE_IMA_KEXEC if IMA
-> +	select HAVE_IMA_KEXEC_OF if IMA
->   	select KEXEC_ELF
->   
->   config ARCH_SUPPORTS_KEXEC_PURGATORY
-> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-> index cda6adb9f69c..bc17e353c099 100644
-> --- a/arch/x86/kernel/setup.c
-> +++ b/arch/x86/kernel/setup.c
-> @@ -421,7 +421,7 @@ static void __init add_early_ima_buffer(u64 phys_addr)
->   #endif
->   }
->   
-> -#if defined(CONFIG_HAVE_IMA_KEXEC) && !defined(CONFIG_OF_FLATTREE)
-> +#ifdef CONFIG_HAVE_IMA_KEXEC
->   int __init ima_free_kexec_buffer(void)
->   {
->   	if (!ima_kexec_buffer_size)
-> diff --git a/drivers/of/kexec.c b/drivers/of/kexec.c
-> index 029903b986cb..724f29fef0c0 100644
-> --- a/drivers/of/kexec.c
-> +++ b/drivers/of/kexec.c
-> @@ -116,7 +116,7 @@ static int do_get_kexec_buffer(const void *prop, int len, unsigned long *addr,
->   	return 0;
->   }
->   
-> -#ifdef CONFIG_HAVE_IMA_KEXEC
-> +#ifdef CONFIG_HAVE_IMA_KEXEC_OF
->   /**
->    * ima_get_kexec_buffer - get IMA buffer from the previous kernel
->    * @addr:	On successful return, set to point to the buffer contents.
-> @@ -196,7 +196,7 @@ static void remove_ima_buffer(void *fdt, int chosen_node)
->   	size_t size;
->   	const void *prop;
->   
-> -	if (!IS_ENABLED(CONFIG_HAVE_IMA_KEXEC))
-> +	if (!IS_ENABLED(CONFIG_HAVE_IMA_KEXEC_OF))
->   		return;
->   
->   	prop = fdt_getprop(fdt, chosen_node, "linux,ima-kexec-buffer", &len);
-> diff --git a/kernel/Kconfig.kexec b/kernel/Kconfig.kexec
-> index 15632358bcf7..c6ed60f04ea4 100644
-> --- a/kernel/Kconfig.kexec
-> +++ b/kernel/Kconfig.kexec
-> @@ -17,6 +17,10 @@ config KEXEC_ELF
->   config HAVE_IMA_KEXEC
->   	bool
->   
-> +config HAVE_IMA_KEXEC_OF
-> +	bool
-> +	select HAVE_IMA_KEXEC
-> +
->   config KEXEC
->   	bool "Enable kexec system call"
->   	depends on ARCH_SUPPORTS_KEXEC
+--
+Cheers, Konstantin
 
