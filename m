@@ -1,61 +1,100 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD284606A319
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2026 16:31:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7628606A31D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2026 16:43:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=L6UX1lfY
+	dkim=pass (2048-bit key, unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=thgJdA7P;
+	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=HsyNE2Bh
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j9Wqx6n9gz2y7W;
-	Fri, 23 Oct 2026 03:31:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:760:2e00:f0a1::32"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792686685;
-	cv=none; b=oGgFfJbmCmH3p9QmAkoDYOzshRrjxSX9txb0YrESdSBiIzfuipYjx0149UzWwJzsFEa/2ywGjiGjMR+Q+xbvbLOZSrbJ82yCGWiwGbeNeIhydBUwfvYQ0wpA2uCI45NKf+WB7Wn0l2G62rVXfZ23fu6F/tbiDPmj7hIui30nfS605jt7+1KPAT3Oo7VKNawggMzW2Y+e7404nXplzkvb+KEe3E0+BkIpm8Zoib/c/asVfXUtR5g2Ym4nAOJU+Oph2mX5wCakEAD/A53TzcPiv3OqoC90O2o2ljXoQFmvyJmZwuBFLI/618BbHrgYatGAOYHTuVGqj9ebGSEXFFe+kA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792686685; c=relaxed/relaxed;
-	bh=dqBO/1DhScXJoH993IsuLEdQfKPtaBI5+DWNmPettbk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DzG/l82MnqbxYxYRvoja6a74h8zGC4yviI6qNwUMEDTkJV+n5BrGhNTp1352K178TsdEojmFV8RIj7oMEJy7iDyqmbr8P0FkWMXPYZJAgRamLvHIe9p+cpEwa7+03BTtZeUTZS/wAvO55j7HrEbw9E/kshQ5JG4y+drHht1YNFyEX9830aybmBiqL13OUHoCRkviFR38siK6mTmcLbGGSzzV15dBuJjUOW9WmUAt/40J9X0e2weDlDseotiEkGoYejcL6xLOdVH8b+mHB4CIsk0ESbqgGlmAYjldFCx3JpZ4ig7MPCcLj9ykhLZ/d2ZtBxggKjfue28cwGXv9IsqSw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=cs.unibo.it; dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=L6UX1lfY; dkim-atps=neutral; spf=pass (client-ip=2001:760:2e00:f0a1::32; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org) smtp.mailfrom=cs.unibo.it
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=cs.unibo.it
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j9X5c0fx8z2xKx;
+	Fri, 23 Oct 2026 03:43:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=85.215.255.80 arc.chain=strato.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792687396;
+	cv=pass; b=hBU2nKrkRu722/00HANIb1dRBpCHzhhZgIm31JVfpouaNt3pajfjkYdFDPf5yievxo0jAR60hpHtosl5XA+7T+Dvcb4VyG0LBdfi6wgQho3t3+5AIMpCODxo4IYdAqT+A8am7FUNl0pgCilYFQ5nxW0vm1mhqACPHGAT2tBJsDEx4JtOkGOln+l1J/6+TpOCPKGsV6rq/opI5sNATLurf0scs9W3xRB6GSrc2MrDRVjQy7vt+1gFctq9X5ZtVam6IoMX8P07KB0smPaVBAxI/yoYX0r9P2oyg4YHDH8aclxTkr4DvbTnUIug6wYCyQ/iq4uWXEyQ9uyVeDbne6iaFA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792687396; c=relaxed/relaxed;
+	bh=0YdO2+DcsvlJkeDUFu6+x7RRjGowhqUMvLmexnjMxzY=;
+	h=Subject:From:To:Cc:References:Message-ID:Date:MIME-Version:
+	 In-Reply-To:Content-Type; b=FsjxfhWGUuLyiLU84qNjrYjTYKY2fqI9oHGU9359Lf1McqnB8z67wVeqGIF/W64W4iytRRUmqwcZ44l3WSEv9Nec27as+KnKDdcRAddB7VeuRO/tJ0Kzlb2ymQdLAa+SOTYOcoYtcoGDJAd+9UOrJgFkQC2ZOHwEype42G9FPoL+AlvxbJ7II6FW/zq618SIl2q7xSElvf8DjexjZRboCeeVdNk7nNl3YeZxOSBWAauWnGgmEC5XMpJhbInAhUmNUAS2XaNLSOuMyd/Vyo1nasP7OxWRFlu1b0mCLAgGEXxlr9+T2Iv/pLSljtS6G9Rcs8wET9kXhNE5+NzZ/TciIQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=thgJdA7P; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=HsyNE2Bh; dkim-atps=neutral; spf=pass (client-ip=85.215.255.80; helo=mo4-p02-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p02-ob.smtp.rzone.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=L6UX1lfY;
+	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=thgJdA7P;
+	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=HsyNE2Bh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cs.unibo.it (client-ip=2001:760:2e00:f0a1::32; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org)
-Received: from mail.virtlab.unibo.it (mail.virtlab.unibo.it [IPv6:2001:760:2e00:f0a1::32])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j9Wqt4X77z2y1W
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2026 03:31:20 +1100 (AEDT)
-Received: from cs.unibo.it (unknown [94.32.99.206])
-	by mail.virtlab.unibo.it (Postfix) with ESMTPSA id 458301C006E;
-	Thu, 22 Oct 2026 18:31:12 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=cs.unibo.it;
-	s=virtlab; t=1792686672;
-	bh=fdZnlNUu/aR/LPydmbT6dOU/LEaViX/83I6GrIBSCF4=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=L6UX1lfY57HUSj+8GXZxBmjuuST2IC1mvYEsQe5689C4RG9qb9mBx5nOxsSZYCybd
-	 Lkk+JYywkjb69COHqqJJ+JkeXYQ2vVzXBgAaIBfIYYEUnQv6vkowR2/rfgAAzrhiJm
-	 sx0WjDPzcHAxHCV3tIue7at48Kipb/HpEvFn4+uA=
-Date: Thu, 22 Oct 2026 18:31:10 +0200
-From: Renzo Davoli <renzo@cs.unibo.it>
-To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Davide Berardi <berardi.dav@gmail.com>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Thomas Gleixner <tglx@kernel.org>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
-	"Dmitry V . Levin" <ldv@strace.io>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] powerpc/syscall: Return the preset value of skipped
- syscalls
-Message-ID: <ato6Tq0aKdqqdqyJ@cs.unibo.it>
-References: <20261018151539.440213-1-renzo@cs.unibo.it>
- <athm2nYVnq6vYBY3@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p02-ob.smtp.rzone.de (client-ip=85.215.255.80; helo=mo4-p02-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
+Received: from mo4-p02-ob.smtp.rzone.de (mo4-p02-ob.smtp.rzone.de [85.215.255.80])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j9X5V749Wz2xH9
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2026 03:43:08 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1792687381; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=rNn9W+t4pF0fXUdQfinXmwB+CtvRbe66suql2cqsBEo7QyNQb0U3CFyoW1RgnKN4/f
+    dqYy2Sy1BwniHI91xfvtLzGcFZ9KmtX3V9GQruTCxZpWeYkhwEzeduqnuy5YXciSIHTt
+    HxD2osYOIPM6FZCh8YQc4PxyRKsIhLC9isL8OMX6wQV6Xyl4rABzzNQuXtFCtMh4PcmW
+    /R2usl5CRWC9eNDAaPHZ7som6rDXvYP2x61J7TjlOAZPmRXqjZZ1v2zQHFv4iqR7GjqQ
+    DJdydOIZoBKG0kDJ3/8hFoRHYY4YdS9B0BGjJPCCaQ/Q8IwLJ+0y5pDN2FSVsAV+5sHR
+    sNNQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1792687381;
+    s=strato-dkim-0002; d=strato.com;
+    h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=0YdO2+DcsvlJkeDUFu6+x7RRjGowhqUMvLmexnjMxzY=;
+    b=lF5rJGRe1eH2aQTDWib4it0jbI64QymZdlseo7Fh2yLxuCqp2ZgmQ4QSqbrMbRVEsw
+    CeGl8aXtiyjYrzycC+WbXYjm/8XvCBtEoDTHDWj8Y2sg3mjgODDq7c3dX1JH/cNaThBR
+    3NBlegzAVWUGSQ/g/Nfvv1xOGDW9OHIIn0S5iOJXVBc4au4yXH3/86TiHr42KZeFNuQm
+    PT8RI5QsQN5ez0o4r567rb5hdKl8+cT+nAqbvAPlopmgShdqkT2qvns+CTUi6bBlE8pB
+    STUNWX/BzMyog8bA1rLiZ4f8jMRfWWQeq+ENIBF5AJr9cX/8pvOFwC0SYQwJlEf3M/hA
+    y9+w==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo02
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1792687381;
+    s=strato-dkim-0002; d=xenosoft.de;
+    h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=0YdO2+DcsvlJkeDUFu6+x7RRjGowhqUMvLmexnjMxzY=;
+    b=thgJdA7PZwvC9o6BMP6beSfNyYlHTdv98PyipcSb4/VZQTDaxon+7b5g2ZdVFYP2FM
+    MGbIXhQ8LUtVc4CLo6tLDqqei/tUZ5GcGlW45VP1IBwu3FPj4Y5g5MtaHnbXMEyVRRwu
+    bKiwVVlVEuYKwL2TJS9UKGuKAQKVPl2c/b0vH1vQX6AKZ6jt9Q7x/ht+CcK3GjRxcwvg
+    5kP+sjrwHCodfgjH+djRllSNviYPHunSBbydz/oU1Rb4l5A3Iue+l1t8KE3NUBiw36Ha
+    LLyf02+4GJsSWCLNm85TkGbTfW5frjVGGwsDghfDA/CvDG/tcTKwZvaELKhUYXagDjxI
+    HAUw==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1792687381;
+    s=strato-dkim-0003; d=xenosoft.de;
+    h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=0YdO2+DcsvlJkeDUFu6+x7RRjGowhqUMvLmexnjMxzY=;
+    b=HsyNE2BhoLKPDlVKI29Zv+Sm/0U80JF7QIu6g80w8cy0/maGXC+TkGtllNonZwHJrx
+    /KnZTC7UhRDjK6iKQ0Dw==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr4thIFiqT9BURIS+l7Bng"
+Received: from void-ppc.a-eon.tld
+    by smtp.strato.de (RZmta 55.6.3 DYNA|AUTH)
+    with ESMTPSA id e825d929MGh0XeP
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Thu, 22 Oct 2026 18:43:00 +0200 (CEST)
+Subject: Re: [PATCH 0/2] KVM: PPC: BookE: Fix boot hang on preemptible kernels
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+To: Shrikanth Hegde <sshegde@linux.ibm.com>, maddy@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
+ linux-kernel@vger.kernel.org, msuchanek@suse.de, ritesh.list@gmail.com,
+ harshpb@linux.ibm.com, gautam@linux.ibm.com, amachhiw@linux.ibm.com,
+ venkat88@linux.ibm.com, nnmlinux@linux.ibm.com,
+ "R.T.Dickinson" <rtd2@xtra.co.nz>, mad skateman <madskateman@gmail.com>,
+ Damien Stewart <hypexed@yahoo.com.au>, Christian Zigotzky <info@xenosoft.de>
+References: <20260928110411.844582-1-sshegde@linux.ibm.com>
+ <754bfea0-5f8f-ba20-cf48-9c6131f98b49@xenosoft.de>
+Organization: A-EON Open Source
+Message-ID: <9a77eaff-4c60-52a8-7e87-0d2f34099b92@xenosoft.de>
+Date: Thu, 22 Oct 2026 18:42:59 +0200
+X-Mailer: BrassMonkey/35.0.2
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,328 +108,74 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="3g9jXhBakJsc42lj"
-Content-Disposition: inline
-In-Reply-To: <athm2nYVnq6vYBY3@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+In-Reply-To: <754bfea0-5f8f-ba20-cf48-9c6131f98b49@xenosoft.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS autolearn=ham
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
---3g9jXhBakJsc42lj
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On 29/09/26 17:51, Christian Zigotzky wrote:
+> On 28/09/26 13:04, Shrikanth Hegde wrote:
+>> Christian Zigotzky had reported that preemptible kernels don't boot on
+>> his FSL Cyrus+ board. The board freezes on running either full/lazy
+>> preemption and has been an issue for a while now.
+>>
+>> https://lore.kernel.org/all/b897b0fd-90f2-4215-bcd4-3714e497d773@xenosoft.de/#t 
+>>
+>>
+>> After 7.0, there is only preempt=full/lazy which removed the
+>> preempt=none/voluntary workaround used to mask the issue. There was
+>> challenge is getting the console logs which made the fixes difficult 
+>> since
+>> one couldn't know where the issue is.
+>>
+>> Thanks to Michal for helping in getting the logs. That pointed at few
+>> places where the issue could be. This series is an attempt at fixing
+>> those.
+>>
+>> Christian, KVM team,
+>> Please *test* the patches.
+>>
+>> Shrikanth Hegde (2):
+>>    KVM: PPC: BookE: Disable preemption before loading guest FP and
+>>      Altivec
+>>    KVM: PPC: Replay pending interrupts before entering the guest
+>>
+>>   arch/powerpc/kvm/booke.c   |  9 ++++++++-
+>>   arch/powerpc/kvm/powerpc.c | 13 +++++++++++++
+>>   2 files changed, 21 insertions(+), 1 deletion(-)
+>>
+> Hi,
+>
+> I was able to compile the RC5 of kernel 7.3 with your patches today. 
+> :-) [1]
+>
+> After that I successfully tested it with KVM PR and KVM HV on my 
+> PowerPC machines.
+>
+> Tested-by: Christian Zigotzky <chzigotzky@xenosoft.de>
+>
+> Many thanks for your help,
+>
+> Christian
+>
+>
+> [1] https://github.com/chzigotzky/kernels/releases/tag/v7.3.0-rc5-2
+>
+>
+Hi,
 
-On Wed, Oct 21, 2026 at 12:47:36PM +0530, Mukesh Kumar Chaurasiya wrote:
-> > How this was found and tested: QEMU pseries (TCG, -cpu power9), ppc64le
-> > guest config, v7.3-rc6 (7b63ef2d55f2), with a small reproducer
-> > (ppc_skip_repro.c, available on request) which
-> > 
-> Hey,
-> Can you share the reproducer?
-> 
-> Regards,
-> Mukesh
+is it possible to add these patches to the kernel 7.4?
 
-sure, it is here attached.
+Thanks,
+Christian
 
-The output here follows.
+-- 
+Sent with BrassMonkey 35.0.2 (https://github.com/chzigotzky/Web-Browsers-and-Suites-for-Linux-PPC/releases/tag/BrassMonkey_35.0.2)
 
-before patch:
-tracer syscall after PTRACE_SET_SYSCALL_INFO(EXIT)         FAIL (got 0, want 1)
-tracee sees value set at syscall-exit stop                 PASS (got 0, want 0)
-    tracee got 0
-seccomp skip via regs, success value, sc                   FAIL (got 1, want 0)
-seccomp skip via regs, error value,   sc                   PASS (got 0, want 0)
-    tracee got 0
-seccomp skip via regs, success value, scv                  FAIL (got 1, want 0)
-seccomp skip via regs, error value,   scv                  PASS (got 0, want 0)
-FAIL: 3 failure(s)
-
-after patch:
-tracer syscall after PTRACE_SET_SYSCALL_INFO(EXIT)         PASS (got 1, want 1)
-tracee sees value set at syscall-exit stop                 PASS (got 0, want 0)
-seccomp skip via regs, success value, sc                   PASS (got 0, want 0)
-seccomp skip via regs, error value,   sc                   PASS (got 0, want 0)
-seccomp skip via regs, success value, scv                  PASS (got 0, want 0)
-seccomp skip via regs, error value,   scv                  PASS (got 0, want 0)
-OK: 0 failure(s)
-
-Thank you, Regards,
-	renzo
-
---3g9jXhBakJsc42lj
-Content-Type: text/x-csrc; charset=us-ascii
-Content-Disposition: attachment; filename=ppc_skip_repro.c
-
-// SPDX-License-Identifier: GPL-2.0
-/*
- * Reproducer for two powerpc syscall-skip problems introduced with
- * GENERIC_ENTRY / TIF_SYSCALL_RET (commit 69cb2be898be):
- *
- *  1. syscall_set_return_value() sets TIF_SYSCALL_RET on current, so when a
- *     tracer uses PTRACE_SET_SYSCALL_INFO (op == EXIT) the flag lands on the
- *     *tracer*, whose next system call is silently skipped.
- *
- *  2. When a syscall is skipped, system_call_exception() returns
- *     syscall_get_error(), so a non-error return value set by a tracer
- *     (or by SECCOMP_RET_USER_NOTIF) is replaced by 0.
- *
- * Test 2 is run with both the "sc" and the "scv 0" system call instructions
- * on powerpc.  On x86_64 the same tests are run with "syscall" as a control.
- *
- * Build: $CC -static -O2 -o ppc_skip_repro ppc_skip_repro.c
- */
-#define _GNU_SOURCE
-#include <errno.h>
-#include <signal.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/auxv.h>
-#include <sys/prctl.h>
-#include <sys/ptrace.h>
-#include <sys/syscall.h>
-#include <sys/wait.h>
-#include <linux/filter.h>
-#include <linux/seccomp.h>
-
-#ifndef PTRACE_GET_SYSCALL_INFO
-# define PTRACE_GET_SYSCALL_INFO 0x420e
-#endif
-#ifndef PTRACE_SET_SYSCALL_INFO
-# define PTRACE_SET_SYSCALL_INFO 0x4212
-#endif
-#define PSI_ENTRY	1
-#define PSI_EXIT	2
-
-struct psi {
-	unsigned char op, reserved;
-	unsigned short flags;
-	unsigned int arch;
-	unsigned long long ip, sp;
-	union {
-		struct { unsigned long long nr, args[6]; } entry;
-		struct { long long rval; unsigned char is_error; } exit;
-		struct { unsigned long long nr, args[6]; unsigned int ret_data, reserved2; } seccomp;
-	};
-};
-
-#define MAGIC 42
-
-#if defined(__powerpc64__)
-# define PT_R0		0
-# define PT_R3		3
-# define PT_CCR		38
-# define PT_TRAP	40
-# define CR0_SO		0x10000000UL
-# ifndef PPC_FEATURE2_SCV
-#  define PPC_FEATURE2_SCV 0x00100000
-# endif
-
-/* getpid via "sc": error is reported in CR0.SO with a positive errno */
-static long sys_getpid_sc(void)
-{
-	register long r0 __asm__("r0") = __NR_getpid;
-	register long r3 __asm__("r3");
-	unsigned long cr;
-
-	__asm__ volatile(".long 0x44000002\n\tmfcr %2"		/* sc */
-			 : "+r"(r0), "=r"(r3), "=r"(cr)
-			 :
-			 : "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
-			   "r12", "ctr", "xer", "cr0", "memory");
-	return (cr & CR0_SO) ? -r3 : r3;
-}
-
-/* getpid via "scv 0": error is reported as a negative value */
-static long sys_getpid_scv(void)
-{
-	register long r0 __asm__("r0") = __NR_getpid;
-	register long r3 __asm__("r3");
-
-	__asm__ volatile(".long 0x44000001"			/* scv 0 */
-			 : "+r"(r0), "=r"(r3)
-			 :
-			 : "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
-			   "r12", "lr", "ctr", "xer", "cr0", "cr1", "cr5",
-			   "cr6", "cr7", "memory");
-	return r3;
-}
-
-/* Skip the syscall the old-fashioned way: r0 = -1, r3/ccr = return value */
-static int poke_skip(pid_t pid, long val)
-{
-	long trap = ptrace(PTRACE_PEEKUSER, pid, PT_TRAP * 8, 0);
-	long ccr = ptrace(PTRACE_PEEKUSER, pid, PT_CCR * 8, 0);
-
-	if ((trap & 0xfff0) != 0x3000)	/* "sc": positive errno + CR0.SO */
-		ccr = val < 0 ? (ccr | CR0_SO) : (ccr & ~CR0_SO);
-	if ((trap & 0xfff0) != 0x3000 && val < 0)
-		val = -val;
-	return ptrace(PTRACE_POKEUSER, pid, PT_R0 * 8, -1L) ||
-	       ptrace(PTRACE_POKEUSER, pid, PT_R3 * 8, val) ||
-	       ptrace(PTRACE_POKEUSER, pid, PT_CCR * 8, ccr);
-}
-#elif defined(__x86_64__)
-static long sys_getpid_sc(void)
-{
-	long ret;
-
-	__asm__ volatile("syscall" : "=a"(ret) : "a"((long)__NR_getpid)
-			 : "rcx", "r11", "memory");
-	return ret;
-}
-
-static int poke_skip(pid_t pid, long val)
-{
-	return ptrace(PTRACE_POKEUSER, pid, 15 * 8 /* orig_rax */, -1L) ||
-	       ptrace(PTRACE_POKEUSER, pid, 10 * 8 /* rax */, val);
-}
-#else
-# error unsupported architecture
-#endif
-
-static int failures;
-
-static void report(const char *name, long got, long want)
-{
-	printf("%-58s %s (got %ld, want %ld)\n", name,
-	       got == want ? "PASS" : "FAIL", got, want);
-	if (got != want)
-		failures++;
-}
-
-static pid_t start_tracee(void)
-{
-	pid_t pid = fork();
-
-	if (pid == 0) {
-		if (ptrace(PTRACE_TRACEME, 0, 0, 0))
-			_exit(90);
-		raise(SIGSTOP);
-	}
-	return pid;
-}
-
-static int wait_stop(pid_t pid)
-{
-	int status;
-
-	if (waitpid(pid, &status, 0) != pid || !WIFSTOPPED(status))
-		return -1;
-	return status >> 8;
-}
-
-static long child_result(pid_t pid)
-{
-	int status;
-
-	if (waitpid(pid, &status, 0) != pid || !WIFEXITED(status))
-		return -1000;
-	return WEXITSTATUS(status);
-}
-
-/*
- * Test 1: the tracer sets the getpid() return value at the syscall-exit
- * stop with PTRACE_SET_SYSCALL_INFO, then makes a system call of its own.
- */
-static void test_tracer_flag(void)
-{
-	pid_t me = getpid(), pid = start_tracee();
-	struct psi info;
-	long mine;
-
-	if (pid == 0)
-		_exit(syscall(__NR_getpid) == MAGIC ? 0 : 1);
-
-	wait_stop(pid);
-	ptrace(PTRACE_SETOPTIONS, pid, 0, PTRACE_O_TRACESYSGOOD);
-	for (;;) {
-		ptrace(PTRACE_SYSCALL, pid, 0, 0);
-		if (wait_stop(pid) != (SIGTRAP | 0x80))
-			break;
-		memset(&info, 0, sizeof(info));
-		ptrace(PTRACE_GET_SYSCALL_INFO, pid, sizeof(info), &info);
-		if (info.op == PSI_EXIT)
-			break;
-	}
-	info.exit.rval = MAGIC;
-	info.exit.is_error = 0;
-	if (ptrace(PTRACE_SET_SYSCALL_INFO, pid, sizeof(info), &info))
-		perror("PTRACE_SET_SYSCALL_INFO");
-
-	/* The very next syscall of the tracer must not be affected. */
-	mine = sys_getpid_sc();
-	report("tracer syscall after PTRACE_SET_SYSCALL_INFO(EXIT)", mine, me);
-
-	ptrace(PTRACE_CONT, pid, 0, 0);
-	report("tracee sees value set at syscall-exit stop", child_result(pid), 0);
-}
-
-/*
- * Test 2: seccomp RET_TRACE on getpid; at the seccomp stop the tracer skips
- * the syscall by setting the number to -1 and the return value with
- * PTRACE_POKEUSER (what existing ptrace users do).
- */
-static void test_seccomp_skip(const char *name, long (*do_getpid)(void), long val)
-{
-	struct sock_filter filter[] = {
-		BPF_STMT(BPF_LD | BPF_W | BPF_ABS, offsetof(struct seccomp_data, nr)),
-		BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_getpid, 0, 1),
-		BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_TRACE),
-		BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
-	};
-	struct sock_fprog prog = { .len = 4, .filter = filter };
-	pid_t pid = start_tracee();
-
-	if (pid == 0) {
-		long ret;
-
-		if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) ||
-		    syscall(__NR_seccomp, SECCOMP_SET_MODE_FILTER, 0, &prog))
-			_exit(91);
-		ret = do_getpid();
-		/* exit status: 0 if correct, 1 otherwise; print what we got */
-		if (ret != val)
-			fprintf(stderr, "    tracee got %ld\n", ret);
-		_exit(ret == val ? 0 : 1);
-	}
-
-	wait_stop(pid);
-	ptrace(PTRACE_SETOPTIONS, pid, 0, PTRACE_O_TRACESECCOMP);
-	ptrace(PTRACE_CONT, pid, 0, 0);
-	if (wait_stop(pid) != (SIGTRAP | (PTRACE_EVENT_SECCOMP << 8))) {
-		report(name, -1, 0);
-		return;
-	}
-	if (poke_skip(pid, val))
-		perror("poke");
-	ptrace(PTRACE_CONT, pid, 0, 0);
-	report(name, child_result(pid), 0);
-}
-
-int main(void)
-{
-	setvbuf(stdout, NULL, _IONBF, 0);
-	test_tracer_flag();
-	test_seccomp_skip("seccomp skip via regs, success value, sc", sys_getpid_sc, MAGIC);
-	test_seccomp_skip("seccomp skip via regs, error value,   sc", sys_getpid_sc, -ENOENT);
-#ifdef __powerpc64__
-	if (getauxval(AT_HWCAP2) & PPC_FEATURE2_SCV) {
-		test_seccomp_skip("seccomp skip via regs, success value, scv", sys_getpid_scv, MAGIC);
-		test_seccomp_skip("seccomp skip via regs, error value,   scv", sys_getpid_scv, -ENOENT);
-	} else {
-		printf("scv not available, skipping scv tests\n");
-	}
-#endif
-	printf("%s: %d failure(s)\n", failures ? "FAIL" : "OK", failures);
-	return !!failures;
-}
-
---3g9jXhBakJsc42lj--
 
