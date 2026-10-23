@@ -2,95 +2,112 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CCFE760A2600
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Oct 2026 15:55:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B6786606A31D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Oct 2026 15:56:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=GGZO0XI4;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UUpUsyZN;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=GGZO0XI4
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=cpLQzYTb
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jB70R3v2xz2yDr;
-	Sat, 24 Oct 2026 02:55:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792770951;
-	cv=none; b=EllchMS/lAgBPXrj05RdlfzlMmEPW5Ejuj/54XlKIhM289BvxvHMfyLaGwkAx9KFQN8rfxgCUzP2tgrJkYnkmDnmNdak5VR8nQvP8fUUDLgXixRumTVDr/E2CBRWd24y7PHi0gFM8l8UXjuRW3TKp8Bvxi6OGykeBeXSh1HTpoWhdjPgpstXq3OU1BXs94LR/1qSRdIPE3c3EQP8cIjp5gqvLNvS0s/srVDdknfRuyxdw094THYh7zFn6lergTf14t8XPi7+LFIcigEi8Agy2nAW3wsCEOXmvMxuJUIISWkY6djk6Nh7Qa+hfcAy8TttdbLrDFwRGzMI6GUkRvcUgw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792770951; c=relaxed/relaxed;
-	bh=ynnFsRlov1ettI6tdNTmf0TbH0h7G/oa8q2L/bW+DQ8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:content-type; b=VWyOFFqGqMhNehvnVkFYfkwcate/juX1ZGOdZVROwnr6wqwA/x9mBe8n5lfkE82bpxWbUVEAWBnS6/Ic0iPBFryDhrFD9w+bwYYVI/Nqypfk/lbOO4FCQLhPajAPOvoP3y7XTxyR6TBTZIHIVTxA27rVw9d0k3bb0vn+01Nuz3X/blq8XO8nCUmUnssPzVgohtIvqi/WDuB+iDtbwIiy1W1mK9Yuiouhc2aYZVwxrugofR5A9HTiT8I9dWPd/8c9iYcMI3NzZ7DdXmxBdAH9ykfm32r7eWHVOzFFTk/6x8rfwCzg9MZdrPR7KMBHH8tqGb/Vd8NZrzFTuPA8ChCjCw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=GGZO0XI4; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UUpUsyZN; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=GGZO0XI4; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jmarchan@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jB71S6hMsz2yFQ;
+	Sat, 24 Oct 2026 02:56:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip=198.175.65.11
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792771004;
+	cv=fail; b=KtCStaVgdFUN0UTvufVyAGn770XBWf9Cz5FaKpDRdLRqU1gBUWL6Xdeh6jWskqzwaejwSHjgMb5kamoCYW259Wss+me142sgoKMrAXhkimy4Fp9y2heR6l1Mr7/7h9sVLeP2L15OdogRKKv81PMIaB2hsv2o5d1lStVLP+ChI2kpCdqDddbWs0NzJezBIpzBl+1LYbq0JAf0twSYnVkVB085NLLNp901OhhT3F4bVDVcPcXBJQ40lvlbBX3e2ilkbaDNrqQZdj+zJ9npJOiDHQ1O3ZPOoRnJjHVAVpo81BfOGTwapzsMItTBR4FRlH1OX292nwlh2XAzJ4NP5Z842w==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792771004; c=relaxed/relaxed;
+	bh=Io4JDRmv/7LAqfN2ndyYDaeCe7lZAtDjXoHXyixXjCA=;
+	h=Date:From:To:CC:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=lDZSYDNN3ejEkFwQYLIlMw5evWjkyBvZk0azPxyRMgX++YlF3VjYL6Dw2U8HE7Vmyq70paR0t5+Lo2Sczocksl73mlYLM/WgVvkIIrgbbHg0Td7etahdr+4SNNH0ONhiP0oeJvQrBge/NDtVkxQjOLWmI7x+ptr9q5ysPLGzliScGoGBSSwAknYDbPyASTAZ6jSGKkfkHTFxl/f0obj4S8aWpDKtaQWxuoP6B68lvp2lkU3mpHty9MXjcGQymXsi1O2P9DGYV1Zi42gMMHFqCBSqU5VQLoGXeh2+rvyYj0IFLRBiDQHwSf+R6lkFiR5NZtT8pmnA/jZDq+P+rf7rxQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=cpLQzYTb; dkim-atps=neutral; spf=pass (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=yu.c.chen@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=GGZO0XI4;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UUpUsyZN;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=GGZO0XI4;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=cpLQzYTb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jmarchan@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=yu.c.chen@intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 65 seconds by postgrey-1.37 at boromir; Sat, 24 Oct 2026 02:56:42 AEDT
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jB70Q1KqWz2yDc
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2026 02:55:47 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1792770943;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=ynnFsRlov1ettI6tdNTmf0TbH0h7G/oa8q2L/bW+DQ8=;
-	b=GGZO0XI4Z2e4a3vHHQ9kqvvC+kU0JbjR0z0bzezIH3wj2iXIS4ej2wDn30qJ+ig66gdyQa
-	dljqUtcri91gkuUuFFLiVs89bfVajn1alYD9Xf+TpSwv0EQrTVR4yVN4+90Zrv9VJmKjVq
-	isUVv8pJraPoOaLHV3TjFeS8ODE9UkM=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1792770944;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=ynnFsRlov1ettI6tdNTmf0TbH0h7G/oa8q2L/bW+DQ8=;
-	b=UUpUsyZNj4IY0L1nMcjcXSZkI1qUSJX4sAgb0Ro59P0VkpML7uktQxYv6wUtOSKRCROrnh
-	kU7zTFv8leKngXQFfJz6DoVhIB/YLGC3U2cxlUNsFAE5DQ9RxjXCrOQOpaLCe008zjnroh
-	iXJJ4lv3mNtym0lLzH3qjggAuEysEhw=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1792770943;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=ynnFsRlov1ettI6tdNTmf0TbH0h7G/oa8q2L/bW+DQ8=;
-	b=GGZO0XI4Z2e4a3vHHQ9kqvvC+kU0JbjR0z0bzezIH3wj2iXIS4ej2wDn30qJ+ig66gdyQa
-	dljqUtcri91gkuUuFFLiVs89bfVajn1alYD9Xf+TpSwv0EQrTVR4yVN4+90Zrv9VJmKjVq
-	isUVv8pJraPoOaLHV3TjFeS8ODE9UkM=
-Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-661-BgUftQijMgmoYf_ioMrlPQ-1; Fri,
- 23 Oct 2026 11:55:37 -0400
-X-MC-Unique: BgUftQijMgmoYf_ioMrlPQ-1
-X-Mimecast-MFC-AGG-ID: BgUftQijMgmoYf_ioMrlPQ_1792770936
-Received: from mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.17])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id F21A818005B1;
-	Fri, 23 Oct 2026 15:55:34 +0000 (UTC)
-Received: from jmarchan-thinkpadx1carbongen9.tpbc.csb (headnet04.pony-001.prod.iad2.dc.redhat.com [10.2.32.116])
-	by mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 632451956089;
-	Fri, 23 Oct 2026 15:55:31 +0000 (UTC)
-From: Jerome Marchand <jmarchan@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Ritesh Harjani <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Jerome Marchand <jmarchan@redhat.com>
-Subject: [PATCH] powerpc: Use raw_local_irq_pmu_save/restore() in local_t functions
-Date: Fri, 23 Oct 2026 17:55:29 +0200
-Message-ID: <20261023155529.3895393-1-jmarchan@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jB71Q0Lncz2yDr
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2026 02:56:41 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1792771002; x=1824307002;
+  h=date:from:to:cc:subject:message-id:references:
+   in-reply-to:mime-version;
+  bh=Jj9Zfha1o7UziFCyOhXw9gpJmygPmhKS/GAjs3eA6Nw=;
+  b=cpLQzYTbRRMUfz9uJbWzNLo9WtHCv8H8T1+pEvvGfgJLpGFh3OnmFZZa
+   S7P8c4stg1/fF0ODU9Vkd7AJAYpV/fIDUtgGMg+rC0ehFnfyZ1Ay/cC0I
+   72VLPZeGgbl1re0m4wIeh4N7QU1dHvS12DzyCgegX1vVf6pMHJ1IWTD6o
+   Rjs/aBfaHsLoxPMNVDn8m7cuc+1ay9KCa7LJ0ujfGBqhgYMGfQV7nX/rC
+   GjbfFAaMav9nqCF0c6nLNNd490CQNWEc3hbDgKbd9W2IA89B5m3PRGkGP
+   +u2HRYENyjMgGejzezMI42B8UHiU6J5GjNDlzH/SNMiukMHqXxPWV8gWp
+   g==;
+X-CSE-ConnectionGUID: 0BU45NJsRsefN3/dpIp/kQ==
+X-CSE-MsgGUID: /JQiC/N+SVS49IV7v+qscw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11944"; a="1420395"
+X-IronPort-AV: E=Sophos;i="6.27,174,1787036400"; 
+   d="scan'208";a="1420395"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Oct 2026 08:55:31 -0700
+X-CSE-ConnectionGUID: YDBE95lJROqKVcHKznGNpw==
+X-CSE-MsgGUID: cVbGn3lARoCrPNaAsJe5Cw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,174,1787036400"; 
+   d="scan'208";a="3556987"
+Received: from fmsmsx902.amr.corp.intel.com ([10.18.126.91])
+  by orviesa008.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Oct 2026 08:55:30 -0700
+Received: from FMSMSX901.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.49; Fri, 23 Oct 2026 08:55:29 -0700
+Received: from fmsedg901.ED.cps.intel.com (10.1.192.143) by
+ FMSMSX901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.49 via Frontend Transport; Fri, 23 Oct 2026 08:55:29 -0700
+Received: from PH7PR06CU001.outbound.protection.outlook.com (52.101.201.68) by
+ edgegateway.intel.com (192.55.55.81) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.49; Fri, 23 Oct 2026 08:55:28 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=qhcoID/M31grPjXXUpHOWQK5PkeCxtigZpLpUhTLxaP6HaDH0JOGI1mUhkmiWJzclZRI2wE+LHXAPHIXkYL87KXQow0dGq/u6HHka7ygaeRtPA2rAVhaKOGPVQbHYrtS9NsMVz5oATmN4nHldBWo1EJjlYS56qnOQGS+VI5u5E3VtvbwpVpZ6bhKe3EX/f3m56do49KTh4S3uOBA/VlaIVW64vgTnNSAzLvDFZ8uLLScpvrJdbTotakJk0UqloKJfQibDoaLM/YyG4OVcNNfByr12uYWn1+DM/CMJXWdGgPQ2n0CqiKW+jQoK3BNMSVrp14Ip/MfeIiEiHE95553Vg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Io4JDRmv/7LAqfN2ndyYDaeCe7lZAtDjXoHXyixXjCA=;
+ b=QPImRHye09wDoR+tOdx5k+q9iMQBdWpDPRMXd2Ls08hJNPsY9iti0/plGnUAnajny8jJ39FEcYFsHOqIuBd4Xg04nsOlgKOUE0+N44MOdjPrum8SCr18mhfk4mTC2YF2AEPcsS7uRjXUxsKXpcoCuOih/1ML/YIxmojhv/YMrjH0fBuGteNtyyyk73bNHEEmT1QJOYmj+5BnGUCWnM7f6XvOXjmAfA1AwcVCptqysmGt6UwI3VKhYFrF5xsuSy8nHH+bEXNVFPffWIk2AGsIymD/rnPe9hETyu/aplUO4A8QOmI4+DpqTQ6m4jlInYYzZGzApXw7lWthRtaD3qFFIA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from DM4PR11MB6020.namprd11.prod.outlook.com (2603:10b6:8:61::19) by
+ PH0PR11MB5206.namprd11.prod.outlook.com (2603:10b6:510:3f::18) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.546.17; Fri, 23 Oct 2026 15:55:26 +0000
+Received: from DM4PR11MB6020.namprd11.prod.outlook.com
+ ([fe80::3058:1480:e4ac:5765]) by DM4PR11MB6020.namprd11.prod.outlook.com
+ ([fe80::3058:1480:e4ac:5765%3]) with mapi id 15.21.0546.012; Fri, 23 Oct 2026
+ 15:55:26 +0000
+Date: Fri, 23 Oct 2026 23:42:32 +0800
+From: Chen Yu <yu.c.chen@intel.com>
+To: Shrikanth Hegde <sshegde@linux.ibm.com>
+CC: <maddy@linux.ibm.com>, <linuxppc-dev@lists.ozlabs.org>,
+	<peterz@infradead.org>, <tim.c.chen@linux.intel.com>,
+	<christophe.leroy@csgroup.eu>, <linux-kernel@vger.kernel.org>,
+	<ritesh.list@gmail.com>, <kprateek.nayak@amd.com>, <vineethr@linux.ibm.com>,
+	<vincent.guittot@linaro.org>, <srikar@linux.ibm.com>, <npiggin@gmail.com>,
+	<mpe@ellerman.id.au>
+Subject: Re: [PATCH v2 1/4] powerpc/topology: Introduce llc_override kernel
+ parameter
+Message-ID: <atuAaE4Y-_2CLA37@chenyu-dev>
+References: <20261023131646.2907938-1-sshegde@linux.ibm.com>
+ <20261023131646.2907938-2-sshegde@linux.ibm.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20261023131646.2907938-2-sshegde@linux.ibm.com>
+X-ClientProxiedBy: SI2P153CA0002.APCP153.PROD.OUTLOOK.COM
+ (2603:1096:4:140::16) To DM4PR11MB6020.namprd11.prod.outlook.com
+ (2603:10b6:8:61::19)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,115 +121,118 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.17
-X-Mimecast-MFC-PROC-ID: 8Dk3ihKvcAkM50ScDDJtdZkYYDYlGbXPWyCGbrY1AxY_1792770936
-X-Mimecast-Originator: redhat.com
-Content-Transfer-Encoding: 8bit
-content-type: text/plain; charset="US-ASCII"; x-default=true
-X-Spam-Status: No, score=-16.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DM4PR11MB6020:EE_|PH0PR11MB5206:EE_
+X-MS-Office365-Filtering-Correlation-Id: cca7823e-a78f-4a51-3ec3-08df311e0df1
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|23010399003|366016|376014|7416014|1800799024|261009223027099003|261021121427099003|56012099006|10067099003|3023799007|22082099003|18002099003|4143699003|11063799006|261022105027099003|261022075727099003;
+X-Microsoft-Antispam-Message-Info: zKplD5dS33M0i6GcOzV36/o4V+TIB+9Gejlwtr7K6blqO7l1pArJkuy7zHc6T7/ypQe6kt5UnpiHBn3Z9mZu7ZpDJY4N9X/bxmKNh4H8KIR0WAOoy/NY4sgBf27ciQSumW2rfVHoiWl4yuWZGzfz5lGsIidsl57tZw/o/90jsOq+Mvd8WdsaSBgXSkJMzJ2L9iht0VCskd/eaPbouGb6ph/3MSKjyG+lHZmPD569IgznXgfH3+HcOUIaqU68uLOw4JYQoG5effPKfqZHZe/pf+vdSjnUPvgwVjDU43Y/pzUL6veY3grhMwRtO73qNNfw0BuWvT7KfePVyqdS+7tScrWGHTnfNlTSnubDO+moayMCHN+5Ffj3cc/qqj8LRq6dX+6R8XmYew+6BybPDnjr4OIxC6k+U1mR5PFRd475c27z9kEMG4sAt//RwjhzTav5xpUnIaoFEK9dJ4vnbY0d3Gn3GKTRmnTfbV12J0+EOIgnmKdF3B1cFV73N87Lbo0zoWLpXUycTPSydGgKZY8cjNK5hbIk5UL9ipTjTY6WdtgXZZCLec7kMsCZqJ7YynfO6a4gPLwPt3HwixoX4FPPs9hpNRz3VpMh1vBvaGDDpsLUdJY0bNGunTTLJESj5Y0JUfUOiS7hYeSX/jtI3ii/Ey+FWIgGOWJKrTACBl+cNFM=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM4PR11MB6020.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(366016)(376014)(7416014)(1800799024)(261009223027099003)(261021121427099003)(56012099006)(10067099003)(3023799007)(22082099003)(18002099003)(4143699003)(11063799006)(261022105027099003)(261022075727099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?iiVVupJmShl6eUdrc5rMO3/lef6VKHOg/VxZq/LBKW822QV+n965KluwlUOQ?=
+ =?us-ascii?Q?mk3lC/DN721SsTE/g9wGRykHT8W99Xnwy+CZpokjx1PvmL0HkGA/h2ryL1G6?=
+ =?us-ascii?Q?K6qAlH9qIihbMaE48PD/YhFcgd4JZIPsM43aUNbLUN0q2N3KMzx4EsAF7imv?=
+ =?us-ascii?Q?cRGpgCMVRGibC+GfoMofZdWviY/8Ajy6xASxZmqrAoQHQjBXo2NOGy7UDWlA?=
+ =?us-ascii?Q?+GO3FIM3a0MR0IiXBDqtj6dexHfCx9gLFrQS7oOJoONgCbG/f3XCoq54uQip?=
+ =?us-ascii?Q?9G3MdPHGvdWhmfm61Cme4VKMTTc7eRGZBU4wfQpZ89o1u19ucpk/TwzueFfR?=
+ =?us-ascii?Q?+t85cbF6puLSaMw4r10EiHyirrw/TEpxhWzsovtImHeCuVtmf4pQ+68FEtZM?=
+ =?us-ascii?Q?u9zmmSXhL7Ywx/2NNylFJCdRKCaMyO+K0Kg+QzRKzZ5ZfLZQfGUhsKscmN93?=
+ =?us-ascii?Q?DtP2RL/Sdr3XUravZz7krRx5Roquu6sZvpxuyZp+62eds3cPqlFQzDn10Fdq?=
+ =?us-ascii?Q?LuBQnrZFErgQQJtJMj6hf9RwlDsVkmvQljVgoiyJxi0VAPQNXq/GbvHRdQ+x?=
+ =?us-ascii?Q?aB7vhVmAcwOpskjCAQXmc9rdCMdTX8SAlSHjA5cSSn5aLBw3IyUuF0swDlQk?=
+ =?us-ascii?Q?xzKQIon35RQYBbIdXfBbWyiR2eBBpNL7QYF7IcZyqjMPWZ9F/8EDw6y+d370?=
+ =?us-ascii?Q?3DUg3kdCdAs8qkopdIAloFQpnJ7jClIZf3/W4+HTxV3famCqRy+ECq3TsqUF?=
+ =?us-ascii?Q?jzxwqhJtRr5jiUeLQIMKOq0+P0m9haL/ZsMq2uuS2+xKbKzAHB2PyQ6OYWhe?=
+ =?us-ascii?Q?U52oi0kSIxLWQw3+r5Ic75jnk77maakDTRY2uTAkl/11AHZc5XLCKAn4PLF7?=
+ =?us-ascii?Q?M6wBaawX4XN6qpvqUe7TJvA9rHeowAbXgBHantWjYDwAzkBMUOEiyxUQJJx6?=
+ =?us-ascii?Q?qMwjYeocIcB0nO2YlG7jMJsw8R6SS0mr3zjS7goyofKDnTsIbYE75PauZWFe?=
+ =?us-ascii?Q?a+Y5vgc2GpUJXDaMV50/Mlm5TLKbmcbJJWih9tWnNN89IzDNUGjN1+PjrZak?=
+ =?us-ascii?Q?k/Cy2MiAEpWqBpKOVHCt8bC7ajXtEhWAMFHl3t6oSlV8Af9Jqbui6GIY60Gj?=
+ =?us-ascii?Q?wMMWM9F4UTJv5UZyssCmIGGmcRH+gij6Jvq1frQkfraJnksHPQk6+gFiKSaG?=
+ =?us-ascii?Q?PH7OgdG/2wS6TmbzxlqHKb6rO7qZLnzr31owStr4JLOIIBaLhB+N9PSykbZa?=
+ =?us-ascii?Q?hI6gxUbNccuudWLGAw4U0KT7V7eKP3b5FYrx3VAhO+v/r8T0205cW90MJDpr?=
+ =?us-ascii?Q?uGFmfJNzJUnQZEO90S859qRR4uqzevJiAGhCUopfLZ5LLMlqELWQlGxjJXDD?=
+ =?us-ascii?Q?ZajT4QXP+O2pvO9limtBx3fU8X3tPxfaI3NUNXT02Ht3nq+U+seawKHdy17C?=
+ =?us-ascii?Q?KvAIJ3YdXTBZuMsBN0tt6NNaxH1/rxTpGkMlLHCbYbupqmgwFTTq5Gk5rxWu?=
+ =?us-ascii?Q?bzsOtduzQfCnnyD6UG30J4e4Cs/Tk75QVK0lecK7qxmMohUXS+dK6OC8vDPJ?=
+ =?us-ascii?Q?agW3/hVQJ/CKWfrdLTAqvRQzHXs6vNy6//BEcYCrMbpFpKu3sceJd6Z12go/?=
+ =?us-ascii?Q?Zomw0DKAyoyzd1ynoMMLc3b+67+BgcQLWErV3sGKk4wLWN4kKbNms5md5GqV?=
+ =?us-ascii?Q?g5Iibt73BRuzZ30oBt9XIxsNvQyT+cdRF6huxh4TNysG4vhlM+ah/JGhigXl?=
+ =?us-ascii?Q?tBTgIF34rQ=3D=3D?=
+X-Exchange-RoutingPolicyChecked: 4lZ6IeSO+j0o3RCdrO8bS9TgznsH2iKsqJU54yApd7a0wKuOqfvtb1kKplIE/HTqKgqdqfyFm7jsZZryf36cG9xzpFRm8zrMOVajHGJRegg7/tOoe4mn8PMoPqKLa7GgJRRS2QdhlXPoKCqu7eALAUAKS9t3tjSaRJLBSJyKg5Ly2Xlq5voGE9y3DZYYVpOlarWK7UHp+bEioWXM83NDR9dfFGmmJoJGIt3uuK2nhjkbI2es/GkebSp0EJpvoAwPJgzw74wXMFxsZWOgN134a/orTX0aqKTp7uv6g1Yt2gGaLQ3o96JniXaMDpYHRLSTkOrtKvCeEwjzYa2LexQliQ==
+X-MS-Exchange-CrossTenant-Network-Message-Id: cca7823e-a78f-4a51-3ec3-08df311e0df1
+X-MS-Exchange-CrossTenant-AuthSource: DM4PR11MB6020.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Oct 2026 15:55:26.5967
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: bI9Eqkki/XmBpGHVmyRtJKwSMMtIgB+9Mr19nZd5XNH03lItphPShh0D6zJdHh5IO4HUTVAAjMJ/v672UMiohw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR11MB5206
+X-OriginatorOrg: intel.com
+X-Spam-Status: No, score=-11.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On ppc64 with CONFIG_TRACE_IRQFLAGS enabled, the ring buffer code can
-enter in an infinite recursion loop.
+Hi Shrikanth,
 
-The problem occurs because some PowerPC's local_t operations
-(local_inc/dec in particular) use powerpc_local_irq_pmu_save/restore()
-which call trace_hardirqs_on/off() to generate trace events. This
-creates a recursion loop:
+On Fri, Oct 23, 2026 at 06:46:43PM +0530, Shrikanth Hegde wrote:
 
-  ring_buffer_unlock_commit()
-    rb_commit()
-      local_inc(&cpu_buffer->entries)
-        powerpc_local_irq_pmu_save()
-          trace_hardirqs_off()
-            trace event => ring_buffer_unlock_commit()
-              [INFINITE RECURSION]
+[ ... ]
 
-Use raw_local_irq_pmu_save/restore() instead of their
-powerpc_local_* counterparts.
+> ---
+>  arch/powerpc/kernel/smp.c | 23 +++++++++++++++++++++++
+>  1 file changed, 23 insertions(+)
+> 
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index 6a5a5469aaae..6b1201ea3572 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -1059,6 +1059,29 @@ static bool has_coregroup_support(void)
+>  	return coregroup_enabled;
+>  }
+>  
+> +enum llc_override_values {
+> +	LLC_OVERRIDE_MC		= 1,
+> +	LLC_OVERRIDE_PKG	= 2,
+> +};
+> +
+> +static int llc_override;
+> +
+> +static int __init set_llc_override(char *str)
+> +{
+> +	if (!strcasecmp(str, "mc") && has_coregroup_support())
+> +		WRITE_ONCE(llc_override, LLC_OVERRIDE_MC);
 
-Fixes: 6cd74d2b61749 ("powerpc/64s: Implement local_t using irq soft masking")
-Signed-off-by: Jerome Marchand <jmarchan@redhat.com>
----
- arch/powerpc/include/asm/local.h | 22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+There is only 1 booting CPU at the moment, maybe WRITE_ONCE() is not needed.
 
-diff --git a/arch/powerpc/include/asm/local.h b/arch/powerpc/include/asm/local.h
-index ec6ced6d7cedf..4c033526bfb0d 100644
---- a/arch/powerpc/include/asm/local.h
-+++ b/arch/powerpc/include/asm/local.h
-@@ -32,9 +32,9 @@ static __inline__ void local_##op(long i, local_t *l)			\
- {									\
- 	unsigned long flags;						\
- 									\
--	powerpc_local_irq_pmu_save(flags);				\
--	l->v c_op i;						\
--	powerpc_local_irq_pmu_restore(flags);				\
-+	raw_local_irq_pmu_save(flags);					\
-+	l->v c_op i;							\
-+	raw_local_irq_pmu_restore(flags);				\
- }
- 
- #define LOCAL_OP_RETURN(op, c_op)					\
-@@ -43,9 +43,9 @@ static __inline__ long local_##op##_return(long a, local_t *l)		\
- 	long t;								\
- 	unsigned long flags;						\
- 									\
--	powerpc_local_irq_pmu_save(flags);				\
-+	raw_local_irq_pmu_save(flags);					\
- 	t = (l->v c_op a);						\
--	powerpc_local_irq_pmu_restore(flags);				\
-+	raw_local_irq_pmu_restore(flags);				\
- 									\
- 	return t;							\
- }
-@@ -81,11 +81,11 @@ static __inline__ long local_cmpxchg(local_t *l, long o, long n)
- 	long t;
- 	unsigned long flags;
- 
--	powerpc_local_irq_pmu_save(flags);
-+	raw_local_irq_pmu_save(flags);
- 	t = l->v;
- 	if (t == o)
- 		l->v = n;
--	powerpc_local_irq_pmu_restore(flags);
-+	raw_local_irq_pmu_restore(flags);
- 
- 	return t;
- }
-@@ -106,10 +106,10 @@ static __inline__ long local_xchg(local_t *l, long n)
- 	long t;
- 	unsigned long flags;
- 
--	powerpc_local_irq_pmu_save(flags);
-+	raw_local_irq_pmu_save(flags);
- 	t = l->v;
- 	l->v = n;
--	powerpc_local_irq_pmu_restore(flags);
-+	raw_local_irq_pmu_restore(flags);
- 
- 	return t;
- }
-@@ -128,12 +128,12 @@ static __inline__ bool local_add_unless(local_t *l, long a, long u)
- 	unsigned long flags;
- 	bool ret = false;
- 
--	powerpc_local_irq_pmu_save(flags);
-+	raw_local_irq_pmu_save(flags);
- 	if (l->v != u) {
- 		l->v += a;
- 		ret = true;
- 	}
--	powerpc_local_irq_pmu_restore(flags);
-+	raw_local_irq_pmu_restore(flags);
- 
- 	return ret;
- }
--- 
-2.56.0
+> +	else if (!strcasecmp(str, "pkg"))
+> +		WRITE_ONCE(llc_override, LLC_OVERRIDE_PKG);
+> +	else {
+> +		pr_warn("Unsupported llc_override=%s\n", str);
+> +		return 1;
+> +	}
+> +
+> +	pr_info("llc_override set at domain: %s\n", str);
+> +	return 1;
+> +}
+> +__setup("llc_override=", set_llc_override);
+> +
+>  static int __init init_big_cores(void)
+>  {
+>  	int cpu;
 
+On PowerPC, it seems that get_effective_llc_bytes() always returns 0,
+which makes exceed_llc_capacity() return true, so cache-aware scheduling
+is disabled on PowerPC. We might need to provide an arch_llc_bytes() that
+is adjusted based on llc_override - sometimes calculate the sum of L2 across
+several cores.
+
+thanks,
+Chenyu
 
