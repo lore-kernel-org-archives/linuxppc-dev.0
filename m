@@ -2,88 +2,96 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 93AE3606A325
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Oct 2026 07:38:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45ADE606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Oct 2026 08:18:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dfxDBgtI
+	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=BH8YLCDn
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j9vxn1qSXz2yVB;
-	Fri, 23 Oct 2026 18:37:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792741069;
-	cv=none; b=RGE4u7ejf1rzUiO7PXIkwxzdUGyrrkOw8M7RLsxVdy3sewp0ZlZOeZ0qkq+0dYYZ2XwRn81adUF3+AjOQfNqVuL9+x/Aox9ez6gU/EDAgJALvM91fl7XYUkRIJeG1JJkpy71+44ui1sEnDJxTH89v5N3LxEw0+nDQXiAQTqojfoiZSGiXDV/L4dqKJgYIgn5/rfVnK2h/VNFXgIl8bv4bnSXarqB3RHfHlsXK6ImkmLM1wr2OhqydFJ1KEcaIiAELd3kgudwqQ4lMI3TsNbwvCrP9f00nS/nuHw3XKR/VCLOnLsXxqSItNUi3MhMdfqEkg11SUJEGmX4zSYeYPAfow==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j9wrf62snz2ySl;
+	Fri, 23 Oct 2026 19:18:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792743506;
+	cv=none; b=cJsscTKcQCknBi4hpzmo6q4/LGYuVaHn4q2cp8eevgZ15F6u36kZG8vjJtaeT+B5yTilV6cGbV0TtbRMO1+tHVTpg5ska/QMjSW14Gsqs+CXXzkaw15pAKseBLv9jrMYydnUQBmZoWemaiQvaODKaf+ZAXXfpe0es3cmOKdMn1OtCD8G+EonoqnLSMyb0LOMVwTZ+IEEmoZVnk1eal0zLuYRBz6PlvisuBWft4oLRVwKiXTtHNpQUQytoaCeNy0jUW2FFSNYs5m1hmJ+ZyKEDKrzYcPoS22pTgVUN1+9/L3pl5KhEQtdTxu9VGd7QmRmfs0gLit5qDJR2Vex9D/OmQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792741069; c=relaxed/relaxed;
-	bh=8M/8L9Fspxh82Qlo49v8hfqRQF4M7+HVyHXIr/e50gU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=NMtO1iPt/w1zsHGaP/rWzLLfyWhZdDoJt9HtRZFsMBTKX8BAy2u2he9wJtGNHmlNU0X9SBYIBlwYL52pAqq+RSHBggEbxHfmwRfQWrKlWhxaRAcJHjLyMulNmniF3KZicdENZBdFAIgJLd2VcvDz/mtw+FITkBp4BceOydURwt0TCK7OEopCp4zW7vpE4sUAaSliZtvcxij/dHI3Tk6ZrO8ckiNyqmhPPdZ73QaRnz/JeXN/NE2maviB2xP6pnk9MDZj+CvBlFeSGt+ExljwO4RyC6/qguHH33IC7iPbSsT0q4La5cxzgRaAOJaAFGPBv6B8lVbOEMGmgDLLaRraoQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dfxDBgtI; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1792743506; c=relaxed/relaxed;
+	bh=5oVeJI18w0YWnW1MyEvLa+/8268RVOyYzuorpmt19/c=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=EExcyipa27plP4tzKZpHYyA2bAJVTPsnrahxlt36L5YMXKTyaUWg4YhIJw9bidGnd0NzxK8PJtwbFcQSCV+YT/lxmxbnQw7m40HWh+DiwoUfas3SimRATTtaxWLlkhHIsek8UaNsII8xjhX5lWb/ESSQPg08O1K+n2SSFird+/zToTbfZdmlwmdca0UCuEh2OXT+/QCRCl32bVJVymoYMQUJaBfMOxxis5ByMUQ0CxGDhr0234hV9x9i8QMrb9vA8k6GLpR6olfdfTHwyFNraauEwt0AkoXweU6Ta1Q66v1YW0fjsmXcDpbcg16xBnXZwzkM1tnxaSOgFXN6fBS7Dw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=BH8YLCDn; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32c; helo=mail-wm1-x32c.google.com; envelope-from=vdonnefort@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dfxDBgtI;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=BH8YLCDn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::32c; helo=mail-wm1-x32c.google.com; envelope-from=vdonnefort@google.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com [IPv6:2a00:1450:4864:20::32c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j9vxm3Rf0z2yLY
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2026 18:37:48 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69N7EQQX576917;
-	Fri, 23 Oct 2026 07:37:40 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=8M/8L9Fspxh82Qlo4
-	9v8hfqRQF4M7+HVyHXIr/e50gU=; b=dfxDBgtIdamLXWR7gSfXZCabHlRG4Rxzh
-	ysdMFG5S/Eo1ESv0afg3YbrSqYXMs1TAnz/Dd7KrxKW90D3yq3Jty+AiQTMyr7iV
-	vEQ5OA/ueGDLQI0VfXdWglhxS2ylGdmX7iPw7xwREUpZiJ5T27AKIGdGb+uMGq0T
-	vecQq+x8D+yyiUs9OgnA053MeS7Gkz7VMu22oWU4Q77W+wazAzi0HaWWig2pi2s3
-	vTsALhmSPpxxk+aXJqAU3kXZ7uP+TfFCgDDvmQc5GIhyXGjXzOad2zz2toHic/Iv
-	s7E56mZmiIf7dLURfG1++uVytqU+TvU0OxzBXRDwW0OEJLV7Qn9Mw==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hdw5buxd9-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 23 Oct 2026 07:37:40 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69N7Jx7x556207;
-	Fri, 23 Oct 2026 07:37:39 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4hefssbqd2-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 23 Oct 2026 07:37:39 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69N7bZKn40173840
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 23 Oct 2026 07:37:35 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9653720043;
-	Fri, 23 Oct 2026 07:37:35 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DBE6120040;
-	Fri, 23 Oct 2026 07:37:31 +0000 (GMT)
-Received: from Narayanas-MacBook-Pro.ibm.com (unknown [9.39.18.128])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 23 Oct 2026 07:37:31 +0000 (GMT)
-From: Narayana Murty N <nnmlinux@linux.ibm.com>
-To: Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        "Oliver O'Halloran" <oohall@gmail.com>,
-        Timothy Pearson <tpearson@raptorengineering.com>,
-        Alex Williamson <alex@shazbot.org>
-Cc: sourabhjain@linux.ibm.com, Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Christophe Leroy <chleroy@kernel.org>,
-        Ritesh Harjani <ritesh.list@gmail.com>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org, kvm@vger.kernel.org, sbhat@linux.ibm.com,
-        harshpb@linux.ibm.com
-Subject: [PATCH v6 5/5] powerpc/powernv/eeh: Map generic EEH error types to OPAL
-Date: Fri, 23 Oct 2026 13:06:42 +0530
-Message-ID: <20261023073642.59657-6-nnmlinux@linux.ibm.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20261023073642.59657-1-nnmlinux@linux.ibm.com>
-References: <20261023073642.59657-1-nnmlinux@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j9wrc3HWRz2xLs
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2026 19:18:24 +1100 (AEDT)
+Received: by mail-wm1-x32c.google.com with SMTP id 5b1f17b1804b1-4a20bdaf39cso6463555e9.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2026 01:18:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1792743496; x=1793348296; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=5oVeJI18w0YWnW1MyEvLa+/8268RVOyYzuorpmt19/c=;
+        b=BH8YLCDn5s5o9H6jE2kPgNpWl4SkcwyOZdfV5pHtm7mgWVB565xuXjRveKS6EyvYPa
+         kBBsffCQn2/QD5Ehiu62E4goV37qBN/1GsIo9oYBFFes/BlrzPAVCj6ICqMNtpWmbJjl
+         DWebJSCfmHyh1d60GN+vN5OOedhCkIWESROrjh2veBwfWf4Z8NNjjn/LUmxBPzkMs+x1
+         Q11bmqmVhlzn83giPZL6qbhPk6UuxyjHe0Ehh86iL63ij5lFwflyeOr2mYH8VEdS1snY
+         gu3GBmWO0/ZEfZsH9nXkBJ8mld6FaN6vfjnXtpAlnoKChNk68xzQMCaiR6olV8UYAFBi
+         KUIQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792743496; x=1793348296;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=5oVeJI18w0YWnW1MyEvLa+/8268RVOyYzuorpmt19/c=;
+        b=GuHm073A0bWCa+elvJ/GR/XR1N0km4zNbwyum+91eQEir3LSXptAbzoj9eD1XDJt9y
+         7X9qO8Qg6LXvGKa1mq1Si7TPy1aAlTMLAuVHSbvxVGTSgSjqQIyDg03lETEH54G7xgQC
+         P/bOrbqS+p7G6wg4zeLq7OhGDSRqzmYs8zEi0mt0R9Fs5JiH7yqpuI/3cKgoiDZEyEZY
+         4Smv2Uk0feA7gimUaaHJ0KBe+8EbNvlptI6QeeDHQMeP6BRNOYjosscEMzyeoz2LayJR
+         fE/S9qa9j8eUIv9GBNe8gFXRgj1H5XUTmFhCjm6JnFBXEiOxukjwFlceIYv84B90Bn2M
+         c9TA==
+X-Forwarded-Encrypted: i=1; AKwUvBwHr+7r+zBL/uhsK3one7MqkyR6A7CYpt0wxZ0zoq+J9ASLPuCJraXDnEC/jXxM7skQgrMYQyeYztL+4Pk=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYI2LS5i31mvocidz68XuCM7qfglzlqqRS7Vj9hFfOxq2b1jvHJM
+	N9bsaHrXNUXBeWvr1lcN6Opt/G4FAUuNKzvPUkL0LXIwEQ5r+KtBpZ48NwCvRYlJFQ==
+X-Gm-Gg: AYBFou1YrvIAB59iS3symZSFR3/GnXl3sESmebZ8BAOGVo02vov6/bipB39uqK38Y8h
+	VaTwwAfAK5qVAdyRa/QVgCU8Sm9Qxx4LtTHo1g9Fr6v9riKWttrycfUWKwSvEm4mX9LxTVd8kiA
+	VMvcRW3dA6fkDKAJF24WQ2UvipjRUCkZaOMGDL/Tya/OjV2uUqGTcTlUnBSqlldgG3QgDIeonbg
+	YzudoInB0tY57/5mr3C1n1wRKjs0QEeVEwcbd0LmIAa1JPSj/j5flTUUTLtLgVr6ND7EjdXJu7T
+	sZQXbhShrisCeNtnRoCKtG+lSoGuS3EKPc0nBRbH2BdvqB81/aeHpE5zDRiNnX66UwFJdgiB3fb
+	rB2G7tx/ibBGdUCrOmQa/xbahZUWXynIX1LqBUx5H2jWtAZuO2mtmH5dmf0TMsMz4XZL3FqMqdE
+	jCw7t/mk7bI5wa9fdmn4FhleO5Qat2TeZuwtSIVof0jHN2L9XdAD0uICSMwA5SE6yEYuC90o26G
+	f897eWwCerB45mWTT4fWP7ltpKB/winLrFWtJc3Ac4qePZrnA33+Z5BjFFyjgYc+noKaHX/UQ7z
+	JJ4lk9FJJu3kJnEL8RNjUWrH
+X-Received: by 2002:a05:600c:524b:b0:4a1:f720:74cd with SMTP id 5b1f17b1804b1-4a211ed3f5emr23048395e9.24.1792743494996;
+        Fri, 23 Oct 2026 01:18:14 -0700 (PDT)
+Received: from google.com (197.183.140.34.bc.googleusercontent.com. [34.140.183.197])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a21045df9dsm68556225e9.8.2026.10.23.01.18.14
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 23 Oct 2026 01:18:14 -0700 (PDT)
+Date: Fri, 23 Oct 2026 09:18:10 +0100
+From: Vincent Donnefort <vdonnefort@google.com>
+To: Amit Machhiwal <amachhiw@linux.ibm.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>,
+	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Harsh Prateek Bora <harshpb@linux.ibm.com>,
+	linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+	kvm-ppc@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: [PATCH v3] ring-buffer: Do not check si_mem_available() before
+ deferred init completes
+Message-ID: <atsYQtXHRH_cCQ5A@google.com>
+References: <20261016134247.70722-1-amachhiw@linux.ibm.com>
+ <20261022181817.49717-1-amachhiw@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,110 +105,135 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: _wuyea6pqXdsHrzAL3Pc0uDjexX7AKkG
-X-Proofpoint-ORIG-GUID: zWNl_DhJkbbiY5MV5x6Xkg6wb9ZByX5V
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDIzMDAyOCBTYWx0ZWRfX35WmNI9Bv+SG
- nvonsCgu3y1pwg+1ijN9KYUTPjaaNvzV/9AEeugMtOsMARRn2TJWnP4XyUzKBwxFF+b3ZBTs4BE
- 2sgAPcdWEj0evpTIqmH1OxMkLO1zkUw=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDIzMDAyOCBTYWx0ZWRfXxj+4lmt/CZYH
- TveDUjZBXO3rxMvTviSFWpilCivBBzAoAmQ4bW7RzycskaLfvm3qz3wPlUDnUvM2I6AwDrNSaTP
- Gyt0gMhQymDNOXS4qNzcgdwnKFW/qRIzMB+b2AHlSqpd4m6nbYIKsMqBxfD3Z1J6HCTRSRbIFYB
- iRWLbF3OJBm+uTbe+xS10IupSxcSolHlFX67xD1K2tXbaNfOnGfvtXERpI+G6xKOrH3xhTNytpx
- N19i27xthcTSIIeSEHX6CyMTtAFtgBUAIdFufkGgusKKY6fdv07/zb7HrTJhNzdq5mHQM4pT6ZP
- DCV5fN3LRii+NpmGUUtALcCRjSwWaefrFLRZYLR6ZnbwhvhGLWLfrbS1aXMkFYri9nk6fCzmDyH
- bRSvE/Gp5iatKvkwqO7K2LUSL7NY+ZPGZHr+VP81O/1qPb5lmAJPYexPtSkEjYPJnG/j95C3l+u
- Q7MR2HJf5KP7j6EVVzQ==
-X-Authority-Analysis: v=2.4 cv=Gb2CDgXL c=1 sm=1 tr=0 ts=6adb0ec4 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8 a=hwQQl9zN6LhoDLuWKpsA:9
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-10-23_02,2026-10-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 adultscore=0 malwarescore=0 spamscore=0 phishscore=0
- clxscore=1015 bulkscore=0 impostorscore=0 lowpriorityscore=0
- priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610190000
- definitions=main-2610230028
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+In-Reply-To: <20261022181817.49717-1-amachhiw@linux.ibm.com>
+X-Spam-Status: No, score=-23.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-eeh_pe_inject_err() is called with generic EEH error types defined in
-the VFIO/EEH userspace ABI (EEH_ERR_TYPE_32, EEH_ERR_TYPE_64).  The
-PowerNV backend previously compared these generic values directly against
-OPAL firmware constants (OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR and
-OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64).
+On Thu, Oct 22, 2026 at 11:48:17PM +0530, Amit Machhiwal wrote:
+> During early boot (early_trace_init() called from start_kernel()),
+> tracing allocates initial ring buffers (temp_buffer, array_buffer, and
+> snapshot_buffer) for CPU 0.  Later, as secondary CPUs come online during
+> smp_init(), each CPU's ring buffer is allocated via trace_rb_cpu_prepare().
+> 
+> Before attempting page allocation, __rb_allocate_pages() performs a
+> heuristic check using si_mem_available() to return early with -ENOMEM if
+> memory appears insufficient.
+> 
+> However, on kernels built with CONFIG_DEFERRED_STRUCT_PAGE_INIT=y,
+> NR_FREE_PAGES only reflects the initial non-deferred pool across the entire
+> period from early_trace_init() through smp_init().  defer_init() leaves
+> only a single section per node (e.g.  16 MiB with 64 KB pages) initialized
+> up-front, and on kernels with large static binary footprints (debug
+> configurations enabling PAGE_OWNER, DEBUG_PAGEALLOC, KFENCE, or SLUB_DEBUG),
+> early core initialisations (SLUB caches, vmalloc, static ftrace records)
+> consume virtually all managed pages in this pool.
+> 
+> si_mem_available() therefore returns a false negative (often 0-1 pages)
+> across both SYSTEM_BOOTING (for the initial CPU 0 buffers) and
+> SYSTEM_SCHEDULING (for secondary CPU buffers via trace_rb_cpu_prepare()),
+> causing __rb_allocate_pages() to prematurely abort with -ENOMEM.
+> 
+> This failure is false: the buddy allocator is designed to replenish
+> ZONE_NORMAL on demand via deferred_grow_zone() when an actual allocation
+> is attempted.  Checking si_mem_available() before calling alloc_pages_node()
+> short-circuits this on-demand growth entirely.
+> 
+> deferred_grow_zone() is only permanently disabled after page_alloc_init_late()
+> completes (it spawns per-node kthreads and blocks until done), which happens
+> inside kernel_init_freeable() — before system_state is set to
+> SYSTEM_FREEING_INITMEM.  Skip the si_mem_available() check until
+> SYSTEM_FREEING_INITMEM, at which point all deferred pages are initialized
+> and si_mem_available() is accurate.
+> 
+> Wrap the guard in #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT so that on kernels
+> without deferred init the original check is preserved unchanged.
+> 
+> Fixes: 2a872fa4e9c8 ("ring-buffer: Check if memory is available before allocation")
+> Cc: stable@vger.kernel.org
+> Reported-by: Michal Suchánek <msuchanek@suse.de>
+> Closes: https://lore.kernel.org/all/arYskzbiaNzBR9MD@kunlun.suse.cz/
+> Link: https://lore.kernel.org/all/arYskzbiaNzBR9MD@kunlun.suse.cz/
+> Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
 
-This is fragile: it relies on the generic EEH ABI values being
-numerically identical to OPAL-specific values, and would silently
-misbehave if they ever diverged.
+It is usually good practice to not use in-reply-to to link the series between
+each other.
 
-Add an explicit mapping in pnv_eeh_err_inject() that translates:
-  EEH_ERR_TYPE_32 -> OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR
-  EEH_ERR_TYPE_64 -> OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64
+> ---
+> Changes since v2:
+>  - Rebase on top of upstream ring_buffer.c changes from Vincent Donnefort;
+>    update threshold to i < (nr_pages << subbuf_order). (Michal Suchánek)
+> 
+> Changes since v1:
+>  - Extend the guard to cover SYSTEM_SCHEDULING as well: smp_init() calls
+>    trace_rb_cpu_prepare() -> __rb_allocate_pages() before page_alloc_init_late()
+>    completes, so the false negative window spans both SYSTEM_BOOTING and
+>    SYSTEM_SCHEDULING. Use system_state >= SYSTEM_FREEING_INITMEM as the correct
+>    boundary.  (Sashiko, Vincent Donnefort)
+>  - Wrap in #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT to preserve the original
+>    check unchanged on non-deferred kernels. (Vincent Donnefort)
+>  - Drop Tested-by: guard condition changed, requesting fresh test.
+> 
+>  kernel/trace/ring_buffer.c | 17 +++++++++++++++++
+>  1 file changed, 17 insertions(+)
+> 
+> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+> index 9c4e40847e43..8e5a59a7b69b 100644
+> --- a/kernel/trace/ring_buffer.c
+> +++ b/kernel/trace/ring_buffer.c
+> @@ -2463,10 +2463,27 @@ static int __rb_allocate_pages(struct ring_buffer_per_cpu *cpu_buffer,
+>  		 * memory. It may not be accurate. But we don't care, we just want
+>  		 * to prevent doing any allocation when it is obvious that it is
+>  		 * not going to succeed.
+> +		 *
+> +		 * With CONFIG_DEFERRED_STRUCT_PAGE_INIT, NR_FREE_PAGES only
+> +		 * reflects the initial non-deferred pool during early boot and
+> +		 * throughout SMP bring-up (smp_init() runs before
+> +		 * page_alloc_init_late() completes deferred initialization).
+> +		 * si_mem_available() returns a false negative across this
+> +		 * entire window while actual allocations succeed by growing the
+> +		 * zone on demand via deferred_grow_zone(). Only re-enable the
+> +		 * check from SYSTEM_FREEING_INITMEM onward, after
+> +		 * page_alloc_init_late() has finished and si_mem_available() is
+> +		 * accurate.
 
-Return -ERANGE for unsupported error types, preserving the behavior
-of the original code.  Decouples the VFIO/EEH interface from OPAL
-implementation details.
+This is quite a massive comment for something simple: When
+CONFIG_DEFERRED_STRUCT_PAGE_INIT, si_mem_available() will reflect the actual
+available memory only after SYSTEM_FREEING_INITMEM.
 
-No change to existing userspace ABI or PowerNV behavior.
+>  		 */
+>  		i = si_mem_available();
+> +#ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
+> +		if (system_state >= SYSTEM_FREEING_INITMEM &&
+> +		    i < (nr_pages << subbuf_order))
+> +			return -ENOMEM;
+> +#else
+>  		if (i < (nr_pages << subbuf_order))
+>  			return -ENOMEM;
+> +#endif
 
-Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
----
- arch/powerpc/platforms/powernv/eeh-powernv.c | 22 +++++++++++++++-----
- 1 file changed, 17 insertions(+), 5 deletions(-)
+Could we avoid the double i < (nr_pages << subbuf_order) with something like
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index db3370d1673c..01dae760cecb 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -1167,12 +1167,24 @@ static int pnv_eeh_err_inject(struct eeh_pe *pe, int type, int func,
- {
- 	struct pci_controller *hose = pe->phb;
- 	struct pnv_phb *phb = hose->private_data;
-+	int opal_err_type;
- 	s64 rc;
- 
--	if (type != OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR &&
--	    type != OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64) {
--		pr_warn("%s: Invalid error type %d\n",
--			__func__, type);
-+	/*
-+	 * eeh_pe_inject_err() receives generic EEH error types from the
-+	 * VFIO/EEH userspace ABI.  The PowerNV backend must not rely on
-+	 * these generic values being numerically identical to OPAL firmware
-+	 * values.  Translate to OPAL-specific types before calling firmware.
-+	 */
-+	switch (type) {
-+	case EEH_ERR_TYPE_32:
-+		opal_err_type = OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR;
-+		break;
-+	case EEH_ERR_TYPE_64:
-+		opal_err_type = OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64;
-+		break;
-+	default:
-+		pr_warn("%s: Invalid error type %d\n", __func__, type);
- 		return -ERANGE;
- 	}
- 
-@@ -1192,7 +1204,7 @@ static int pnv_eeh_err_inject(struct eeh_pe *pe, int type, int func,
- 
- 	/* Do error injection */
- 	rc = opal_pci_err_inject(phb->opal_id, pe->addr,
--				 type, func, addr, mask);
-+				 opal_err_type, func, addr, mask);
- 	if (rc != OPAL_SUCCESS) {
- 		pr_warn("%s: Failure %lld injecting error "
- 			"%d-%d to PHB#%x-PE#%x\n",
+if (IS_ENABLED(CONFIG_DEFERRED_STRUCT_PAGE_INIT) &&
+    system_state < SYSTEM_FREEING_INITMEM)
+       i = LONG_MAX;
+
+>  
+>  		user_thread = current->mm != NULL;
+>  	}
+> 
+> base-commit: 7be4bc52fd9e0e55dc9a2e0232b89427d2c4b614
+> -- 
+> 2.54.0 (Apple Git-157)
+> 
+
 -- 
-2.54.0
-
+Vincent
 
