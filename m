@@ -1,105 +1,83 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F097C606A31F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Oct 2026 21:44:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69451606A31B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Oct 2026 23:51:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=hwASE/IL;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=z943ERBm
+	dkim=pass (1024-bit key, unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=AgSsazjy
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jBGkG4cVjz2xfX;
-	Sat, 24 Oct 2026 08:44:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792791846;
-	cv=none; b=OcvU76zd7BQmSBI6i/edeUfLBYrggmo6SitiXtpsMJzZCA5h9IDUzb/szBkgFRNx+fXqXj0/zW5DuOloJhwBgdXPfCnnOHJnzuPDIy9pMgjXs0DahpchY7ZMNIZ4ITXXV5UiVeK+HmkooHL2Zb59sLSkffrqfF9n2kvzWcCxKcIbcF2Ki5rtngyKBU33o3BJDVo8st53yipC8eTmdKrvE+fDFWYgsa7gSnMG/Gsd8WkTvoKw2tKMOTkCteRT/cgonOjdfBOiKHC6gaS8WsxEFxi8Y0G0AsfSIeVe6TxcOoTeP/wwPQlLH+VnnhicjOELL3NZCK1/wPqd7MHf/A7vuw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jBKXh3l4rz2y8Z;
+	Sat, 24 Oct 2026 10:51:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::62a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792799460;
+	cv=none; b=P0rBvvtlJ4cU4XrYpxbsxlXoqIDWuRJmHz3yGSjBeGmce4ffk7Lgftrjh6J8i/aiQA+txTJOJfhP+M3eEAmvUIzwSd8olYbt61KLILHJrA2nZ9iL5qactJoQQfBexy/LZ810zZDANepGkkIblTMiIiGxEYdl9obPxKYZKXdpmzGYuNEMCBGSybWEK8qv7pWwB+x9zb9MiUlphnwje4UMnjQGkyJzialBKwMfaW0HVfVWUor9n08RAoTqcqSXSse5/JpcZ7miN9FqhEk9m3G0OueDSPhj6ioZ/YGujMWyzK7rqhz8jqwhiMifWRKrY/ZDET4z8cjFbRkiwGhy70DPRw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792791846; c=relaxed/relaxed;
-	bh=rBYqzhjRmnws8Rm/5IL7e+PRpdOctdJtXb4xboAMWSA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=JV/yXGegQjMFHVfWL2PyQFmAq+VNEw6nfI9/AUjcpxoiteANV1cmvatHla88pefz/aGWpbcM36j7bwteW4lEQIblsbz49Bm29T1rgAKurLrQJ5eo/3jNm41c1R0PzPiViLnz9WWgsjPjCWDmVzvvYECe4egN0BiAQKuozcFSXmC7QTdTqAELugdf+vbzTPMLCcvGBOCZNdH4H9o2DIGpHO5qy0MMTvdUAa7ZcYooIqt6eWDL2zNeZNY6tNp7/YofE3DCM+juJwunQJN/8NSdrzbtaustgYmcIo/9DHR5Nbf6x0OJOPjnZt0KhaKw8ozrbpcthlifRRJW93oT/luHnw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=hwASE/IL; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=z943ERBm; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+	t=1792799460; c=relaxed/relaxed;
+	bh=vlcBaig2eiYIC7Heg76adexHzQQLeESxJrW75j/rih4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=mtATA2kdfkz0PswnikLI6ab08/nX736d1XDkvCwykVU62xh1pS6/1dLvnHfxFunp1qBTbx5eDbTriV+HLwHJmcZNCKVMsZJ5kzl2JiiOoV1rCRzEn8C8N7uUHjB7rUKu8M5ZocafmZK5OiRYKbo9BtOnyau0SjocM3T9xKrVLOv+dFyGyGbF/SdCdd2YYBhzh+K8mtPkO3556HqnmP/mcjSut9DnAssO4KBxxUchZTmg7P1UWBKkmOoskTJIU1Fwjqnxi/MDXAMeWdHRUvo6lKTheS21o7gydwDI1nKkFcwAvT/1clfhN5e7Bv7vYOEJ5ZJhXwuiYTRGSsxNZMxzIg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=AgSsazjy; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::62a; helo=mail-ej1-x62a.google.com; envelope-from=torvalds@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=hwASE/IL;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=z943ERBm;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=AgSsazjy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::62a; helo=mail-ej1-x62a.google.com; envelope-from=torvalds@linuxfoundation.org; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x62a.google.com (mail-ej1-x62a.google.com [IPv6:2a00:1450:4864:20::62a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jBGkF2fyCz2xLd
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2026 08:44:05 +1100 (AEDT)
-Date: Fri, 23 Oct 2026 23:43:53 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1792791835;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=rBYqzhjRmnws8Rm/5IL7e+PRpdOctdJtXb4xboAMWSA=;
-	b=hwASE/ILIfvsagU4ja9zJyp6NCW7nhDXBrLgESHYvZc9OlC/GQdmV72Hfw8lCHeCcJDiIT
-	xFBb+eSpeLzJx+wG16eGrTDnCizzsAb6w+YXHutGNF3HFzHQkD8tsZ70QSbXCrE553aTtc
-	FyBITEp8ynQwIVKmsTH4edb2ELcKOcjRqPKGeu5zad/jr9HszyeKdSGpYIGAdGmjIg04RH
-	fcQJvL7izNOg661T28mb7TFw7IIiiiTlruIEDWxOW6votoei6lPtMgLjCAwFAfW1s9CXqg
-	i8k5N81Ek/SnmSCRgWHVGbIsWAsCZb3iRBPHtLu5gtarfP+kYufKyE0FptRrgw==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1792791835;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=rBYqzhjRmnws8Rm/5IL7e+PRpdOctdJtXb4xboAMWSA=;
-	b=z943ERBmz9863Xr+14sVUMFBonUecgHEkMzxOZxtguvVf4IgWnapYNfN7FD67wKQCXc4NS
-	csUXXgLT71khc6BQ==
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To: Thomas Gleixner <tglx@kernel.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org, Kees Cook <kees@kernel.org>,
-	Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	linux-riscv@lists.infradead.org,
-	Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org,
-	x86@kernel.org, Mark Rutland <mark.rutland@arm.com>,
-	Jinjie Ruan <ruanjinjie@huawei.com>,
-	Andy Lutomirski <luto@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
-	Richard Henderson <richard.henderson@linaro.org>,
-	Russell King <linux@armlinux.org.uk>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Guo Ren <guoren@kernel.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Helge Deller <deller@gmx.de>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Richard Weinberger <richard@nod.at>,
-	Chris Zankel <chris@zankel.net>,
-	linux-arm-kernel@lists.infradead.org, linux-alpha@vger.kernel.org,
-	linux-csky@vger.kernel.org, linux-m68k@vger.kernel.org,
-	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
-	linux-sh@vger.kernel.org, linux-um@lists.infradead.org,
-	Arnd Bergmann <arnd@arndb.de>, Vineet Gupta <vgupta@kernel.org>,
-	Will Deacon <will@kernel.org>, Brian Cain <bcain@kernel.org>,
-	Michal Simek <monstr@monstr.eu>, Dinh Nguyen <dinguyen@kernel.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	Andreas Larsson <andreas@gaisler.com>,
-	linux-snps-arc@lists.infradead.org, linux-hexagon@vger.kernel.org,
-	linux-openrisc@vger.kernel.org, sparclinux@vger.kernel.org,
-	linux-arch@vger.kernel.org,
-	Michal =?utf-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>,
-	Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org
-Subject: Re: [patch 16/18] x86/entry: Get rid of the sys_ni_syscall()
- indirection
-Message-ID: <20261023214353.Q3pZID23@linutronix.de>
-References: <20260707181957.433213175@kernel.org>
- <20260707190254.493733289@kernel.org>
- <20261022142425.3Wx-RrU5@linutronix.de>
- <87fqxx1r80.ffs@fw13>
- <87cxt11ktr.ffs@fw13>
- <1149A39E-BEBA-46EA-94F4-4DFFC4733EF5@zytor.com>
- <871p9g1s3w.ffs@fw13>
- <87y0boze95.ffs@fw13>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jBKXb3myPz2xTl
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2026 10:50:54 +1100 (AEDT)
+Received: by mail-ej1-x62a.google.com with SMTP id a640c23a62f3a-c2acc1e170cso200488366b.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2026 16:50:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linux-foundation.org; s=google; t=1792799449; x=1793404249; darn=lists.ozlabs.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=vlcBaig2eiYIC7Heg76adexHzQQLeESxJrW75j/rih4=;
+        b=AgSsazjy8JDFsf0fNYG1BdCw8to+FEJmDolBLldlvhRRJnSn2x39f84B8LMpLwZnfn
+         e1YpS9m+bZm9EkeFhcDOgRi+aEQMPuZsSVGmqOvtPQs6W5esBBAAfNkSUaZgYpkz1Aqt
+         mJsx/WfOP/j6QK2zqnFCLsDcimINSBW1KO4KY=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792799449; x=1793404249;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=vlcBaig2eiYIC7Heg76adexHzQQLeESxJrW75j/rih4=;
+        b=hFcS7HNMUBQYsc+ehvOXwlZXBzFmblZFv4YlYBKv0peArg1ZW0sBux8aA9t2yFd9wB
+         +a3Td6cP58OktvB/3z/S5A2UBrghmmkTQWBwSWa0GHtpQtnvCHUYUakMjIg3fdRhuMGm
+         5Q+OFWS8oqrMGjQlc1yU7lhDY2tTgRajNgQFFdfC0Y7fGvPGVujxPBLcDiRYQWthw3eJ
+         SSB61Ww/UwJtiIY8IGAKNGmbHjvtdsLHP5vQnILaM7u/1V/J1gcJF35A6dFLI33DisRw
+         DZ3Wbgj3/LfxD0TAHe7T8rMWFgRH/vADRxKt3CVVnk2NMAHmV5RGt5HHn70+QOeprYme
+         YPCg==
+X-Forwarded-Encrypted: i=1; AKwUvByr1sldV+Uyea/m/1KpMTKMQD1r0TNFYpc3iksgpNfAoRd6RJ3bta1H+HBRBg7RbT45T9LAXt8yLGrnEmE=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYIO0TvhjVbmRQVDZxitGu1F139D1LWs/PsXj7da8EPZDgN20xMA
+	W+0YcOdUhp6hsWyBe3pTiFzdqkTCG4JFYYzUDFBQp2dJxmM+Su5Zwe+vi5WbCWVfdlozLN3WWLF
+	jujjVVMc=
+X-Gm-Gg: AYBFou1wagmBhDQhdCy4ohw3JaoRFbfAmQK/4L9Ir5Ok6Fj0phGRVVs5+w0iUifKlta
+	FhRwT5rtDX9FyIE7EI6gCz+ZBEjG0Zyw0UJbi2Q6Eks5W1LLJ/1N5+A6lqs0Sgjozlifw3wu1kW
+	6+nEcq36t52FpWw+QuEyNDmBiSIPFsBqIJ6THnGI9pp9+3PYR3FIQQsEmlf6ncB0mgl79kbN0lm
+	mvVF9DBBfMuwl0eW3HDhgv3y8Xp1NK+NzAEtxQ6mYIICmRkZLZzbytIjDQggaUoO+o6owv2sr2i
+	PZDtwPsrPR2cVEDngbVK8GAUTDybCbyjiG/8TIjKpIkHORgX4lc/KFuqWEHUff4C36biXmmkywS
+	Cjvxlm8yhTqLqyYPo7rZkXJXbiIDB8nBXwHDtMiKeeute/fMEpx77MtkM9mbERAfdUOclyz1sRB
+	zYx2YADOW/xCnuHikE2ovU1zom6mjArgeO/3Mq/QVY186YqFZrVLCByb/TUT40F1nFaQf5GXISe
+	gHZ6MRdFHbe7ewB3zdtDIq/rl7qOmaCbw58PACyi3sOMkT2L3Y+JulGMK82YLF5MT4oDaUnLkkd
+	z2SSDWOKB5da6BxEPBF/Drm5YJKWKw==
+X-Received: by 2002:a17:907:6e88:b0:c29:4a1f:76be with SMTP id a640c23a62f3a-c46bdd971demr55031166b.20.1792799448980;
+        Fri, 23 Oct 2026 16:50:48 -0700 (PDT)
+Received: from mail-ej1-f47.google.com (mail-ej1-f47.google.com. [209.85.218.47])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c46bd34fa1asm21743266b.6.2026.10.23.16.50.48
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 23 Oct 2026 16:50:48 -0700 (PDT)
+Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-c4677aad67bso154907466b.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2026 16:50:48 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBzNioEvLO4/xkj0WhYSicqN9AbW6ZHeP2U3zSYWhHyJYr24clzpG6AmDtnr1D2H7hYqAxVqt0SkKH6ZDqQ=@lists.ozlabs.org
+X-Received: by 2002:a17:907:94ca:b0:c3e:34fa:611d with SMTP id
+ a640c23a62f3a-c46bde7eaf0mr60592766b.35.1792799448215; Fri, 23 Oct 2026
+ 16:50:48 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -113,9 +91,21 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <87y0boze95.ffs@fw13>
+References: <2331292e-1a40-44ef-8776-9155e8e41f03@linux.ibm.com> <20261023211503.3764302-1-sashal@kernel.org>
+In-Reply-To: <20261023211503.3764302-1-sashal@kernel.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Fri, 23 Oct 2026 13:50:31 -1000
+X-Gmail-Original-Message-ID: <CAHk-=wh7ZfsDA8Jh0+GSpLehCzfnyME_ztcpwebnvBMDnqjM6A@mail.gmail.com>
+X-Gm-Features: AclHuK-CIEJzNq1XJsklQg2H6GwGKSjs4ObZvBlYB4talL4LPjV721L19Rv5bZ0
+Message-ID: <CAHk-=wh7ZfsDA8Jh0+GSpLehCzfnyME_ztcpwebnvBMDnqjM6A@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/irq: Fix build with CONFIG_PROC_FS=n
+To: Sasha Levin <sashal@kernel.org>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	kernel test robot <lkp@intel.com>
+Content-Type: text/plain; charset="UTF-8"
 X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
@@ -123,29 +113,13 @@ X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 2026-10-23 16:24:22 [+0200], Thomas Gleixner wrote:
-> IOW, a tracer modification of regs->ax is not overwritten when the
-> syscall number is out of range.
-> 
-> Between 2.6.19-rc2 and -rc3 x86_64 was changed to _always_ overwrite
-> regs->ax when the syscall number is out of range.
-> 
-> In the 3.8 merge window seccomp introduced the -1 == skip bogosity which
-> got fixed up and made "consistent" in several changes afterwards. Just
-> that it never reached a state of consistency due to the overloading.
-> 
-> So are we stuck with this behavior or do we sit down and define what the
-> correct behavior should be?
+On Fri, 23 Oct 2026 at 11:15, Sasha Levin <sashal@kernel.org> wrote:
+>
+> arch_show_interrupts() is only called from irq_seq_show(), which is in
+> kernel/irq/proc.c as well, so build it only with CONFIG_PROC_FS, as x86
+> already does.
 
-I wouldn't say we are stuck. The test did reassemble the status we had
-at the moment. As you wrote yourself the behaviour changed a few times
-and not on purpose.
-I would say we define what correct behaviour should be and make sure it
-is consistent across all the architectures.
+Thanks, applied.
 
-> Thanks,
-> 
->         tglx
-
-Sebastian
+                    Linus
 
