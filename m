@@ -2,97 +2,72 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00841606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Oct 2026 08:20:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 947CC606A31B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Oct 2026 08:59:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=JFRjDIAk
+	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mlAdMQRs
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j9wvT2gCcz2xdX;
-	Fri, 23 Oct 2026 19:20:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792743653;
-	cv=none; b=fwoCNmGMujHvLKFJ7QAwGhkaSSHL9VSeCnwa5tyiB7AxBUHuCP9x0RpIhcAR4D9tKWG6EHjxpmYjq6B9f2cO8wMMAaQwwtXvjjcXEFS+rwrx218I5cGIK2JZ5AZkb2ybvs9V+sorkmTe1EB2SbSg8rYngaOhVAxbfi6ly3ESmsyLHoBipNd3LqhHLNT8cw3vn/N7/iYYu+b8lIXxrHt8SNpWpmzqzzQzX3TIHYsq3jULv54do261x8y3iwaYvjqwUrC0SeeOg53Y3e3U9yBnVZ+kNJroQ5gGty4jK3xxYroqNKwL8Qc60VSzChG20+bUcqG7fOTkApRfyhQA4W0Ijw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j9xmV10kLz2xjh;
+	Fri, 23 Oct 2026 19:59:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792745994;
+	cv=none; b=bgoHa63aX+pCxZdQhAGhW7nU2MO/hCPGKUaRCKj2TP+kCrej90ct21zHqjkGysuUQ2el7rfN3vxp9+DS4uEliwiUUdO1E3/fkkI6t0xncoPIpXgIkAB6tDWkem25bsR2Dxgkz6lnQapHWYVddE/8PQXigJy4Q4ia4BIik63XandT28dYZ9Vq+lRUX/Jti18Sfv8wOVbDQmB3bY6GAM7jiUl5bvF6ZRzB8wgm1YMR+8n+h79ZX1w6Tgm7S4lznZtQVJs+KSRt9Y0rIhS1Ou4gDU1f/Lk3DA/TVX3Rz6T/RdcP/0ZEFBemdhE7mO+QfWv/khKrbJAXOFRkjHy/GAJAkw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792743653; c=relaxed/relaxed;
-	bh=SXFzVxbt3rTWSbyQVYsDzyVGHc2RBqghX5A01kRz5f8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=HODEpcUcXJ7rhDIB1oXMQ01XpawggSGoHKG1LYmbuoJ0LmwadrLuYYleYlIl+qZOT2+Kq7zoMdaMy8Ids5T3WzFaBSl10YQD+vYmGOTmrqbbyqqqe9IRodHzXh61+XvfJWJE2qDmAUQR0faO5ZRPICW1J2/ZGGVVPZjgP/pf5kP6sqpVcuKPfGNyRaaawt5av095Om/wb+TGTFhqNnxk3U6nmZ4EOyVzzdkjtL5F+ccgiKXqjmrMXQ4nb6tWiHbAdhWn2lFr2Vm1lw/C9vdj1+Zh4jB3y6hoN9DDTPZRKfhAGhj5WWoVSlcgqpcpaRzIT+nKlDYOkeQS9YyfSt1DHg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=JFRjDIAk; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=vdonnefort@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1792745994; c=relaxed/relaxed;
+	bh=yCzLlhXTi1kXrYQJEEUdQmgNADRXaefQpeykOcaQ8U4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=WTUzR81eDAR6CGG6KMAaJqo+6RJHU02ACfEepb+KFum9uX25ZveDQaO+1AHubIdMtFsAxwdrXUx5t8WZ0p9ZftqoVZSw49ah7pRD1UDOWQK9+8Tl7NaaEzx040PaRE8MdcGvNg/KTpmcEp3COPtxoqtXngUrmVM/SH14rwMAEHToGkXiicdvSFpUwfnZ3dmtNoiJ3/Mp+4X9xDihu/9u3DL9mnXPem1FZwv4vadUED6pafsqAVq4E1g4knbdMOvU0rUc/V6UxPyTjBHLPji+gjTyNLo8aaq6lbFsMhTUBOcS7Rt8siqnL0zA9jNzHTW/4UVOoXx81gCMsE8XgFnfOw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mlAdMQRs; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=samir@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=JFRjDIAk;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mlAdMQRs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=vdonnefort@google.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=samir@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j9wvS28M4z2xSN
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2026 19:20:52 +1100 (AEDT)
-Received: by mail-wm1-x32e.google.com with SMTP id 5b1f17b1804b1-4a140e7405dso5773685e9.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2026 01:20:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1792743649; x=1793348449; darn=lists.ozlabs.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=SXFzVxbt3rTWSbyQVYsDzyVGHc2RBqghX5A01kRz5f8=;
-        b=JFRjDIAkF3iY6owct/Q/K+wYjBW9eGCRmiYhZ6/8oAI3FOLfwqtxEBnq6QoJA10Q6n
-         CXLazdoJpYM9XuYKlWTYOxl5mtyhFJoL0g4l//z8M73KzaJstJS3pkW51mDRbtfGc5ix
-         O3K4s6J++ebcgoWZQor3JWvKSd/thsFKVPj2AbeQYViGzTZt4Tu9La6gEdNAfr1WqflX
-         OUexVtUZOTNmlILVIbFJc4gyKaBpFwj1iQckrT1U8vYoRVamT82DvYk96zRUdka8n42+
-         8eZpocNssriPdwGu+Xo57kqmstgAfjTOe89ZVAE2jNJHLv63MXrfcmREPW/lA1E7dBKP
-         kVQA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792743649; x=1793348449;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=SXFzVxbt3rTWSbyQVYsDzyVGHc2RBqghX5A01kRz5f8=;
-        b=iqhOjhtBO/SJi9W6jcGC+r/usiSCTP6iSTwcPHG4xx5yNm0GH7Ig91DWIn9dE0JYLu
-         2z3ZTBeoNOIgwVOS6iyW4RZYGtJWxDy8JtfUJJ92D2AcetrCYcqFnAOUlG9nYBMzXLTe
-         g9AeVwSkgxmqm167rCOvURM+HXp28PbqMWGVcxX5LPQSdFtFe0MtGWHtBIVndBH9snRU
-         ER5S7+eXiWelVKSzk1G58C5sSKs55n9Vw3IkdpZFhcBayYxaFgiHeLs/yR6ojgGTjCOQ
-         BAylFVsR8SlFcQnHp84Zg9Y9INr8o4+VhEXxcbk2JbClyJnWwCUSoQ2zD2UVBc+Jj5Fo
-         8T0g==
-X-Forwarded-Encrypted: i=1; AKwUvBwDZ8aleX9nYegQEREV2XaAOdSLGN9idtrhTzEiHzZaGJgSe4yipqxSBdcjoEoKFQX4SNAPQlms3JNa8yc=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYIZYJ5dcKn0DxS7dJDIvd8ZCHQzF0WUAByO4tfRa1wsgBgzmrrw
-	eymM5ZYJlt0+6+th2WIYw8mt2+et+75goT5Aft7E0Ha59pz9+0ULplxRjhpjLklSoA==
-X-Gm-Gg: AYBFou3RL/ccQr/rHywZkdm7xPu+WlPv7CGEFXfsOiJ2ZKF5s5EN/BWQh9I5yQu/wM9
-	hJQHwCTUidPK/wSGq6yJpl5FlJM3txrYnpJ6TpZdyWPyNO8Y0t+Xqo8PTAvDD73qeBftRclyhrP
-	sOdweXECaASPa2L7N5TnxuuiBxSDJCgO4lQyvnKN3cv/hXeEvn6/P6y3IUQ2tyIaccdh5OyqGd1
-	KU830+e6z6gC835AOtm1bcdLkwGRWTWm0WIy41rbl45RSXfmqpILw4TMy7lVQWPmqG8tKzOtuUF
-	k8MxEVUxZEfoYYnCxSczn5u8B8TpkKXv+2TVVDvH6xfxNbvBH+mi6qyjgLGE/mdg+Par2DJL5EY
-	EWfqfitCdPfSbhlNvEdsvNUEfWG0JJAA/xmzJSrdYxXd12cwzcv9BuY1Es7zewUlLsPLeCmd0tv
-	RPQ2/6BXQ1HAhLt9WGH/siLLArVCOrN+GEM/ZB9HL4dU8Z8byjLjp0YScC3DFh6v8nfxNlldAa+
-	mGtIskVNak61OYzcVNU6UzWeuc3UXD2zGwmW7Yy5UCQWZCDPGEbmmp0DdIjB5/OWlGl0vPS5Aqm
-	ZRuERVvmCQCqG1qVWRTQEFGdeA==
-X-Received: by 2002:a05:600c:1c05:b0:4a1:83f0:7c8a with SMTP id 5b1f17b1804b1-4a211c45f89mr27907715e9.1.1792743648308;
-        Fri, 23 Oct 2026 01:20:48 -0700 (PDT)
-Received: from google.com (197.183.140.34.bc.googleusercontent.com. [34.140.183.197])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48e38031488sm3623513f8f.24.2026.10.23.01.20.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 23 Oct 2026 01:20:47 -0700 (PDT)
-Date: Fri, 23 Oct 2026 09:20:44 +0100
-From: Vincent Donnefort <vdonnefort@google.com>
-To: Amit Machhiwal <amachhiw@linux.ibm.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Harsh Prateek Bora <harshpb@linux.ibm.com>,
-	linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-	kvm-ppc@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH v3] ring-buffer: Do not check si_mem_available() before
- deferred init completes
-Message-ID: <atsY3MXXEUe2YopQ@google.com>
-References: <20261016134247.70722-1-amachhiw@linux.ibm.com>
- <20261022181817.49717-1-amachhiw@linux.ibm.com>
- <atsYQtXHRH_cCQ5A@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j9xmT0SBGz2xfX
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2026 19:59:52 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69N7EfPY2174860;
+	Fri, 23 Oct 2026 08:58:18 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=yCzLlh
+	XTi1kXrYQJEEUdQmgNADRXaefQpeykOcaQ8U4=; b=mlAdMQRsLSjWdhvRW9oGPW
+	/mUllwYVG/wsfJzEqj8LoZCyIJ94NFdOcgiqDirOGKwLF5dnJFMkZ1R8HDrJTJUG
+	jbTG6PUQOhq7T4aKrUE9YtVPXgVOqD/LS+v2PkmT546xaOsTpn90LET6SPpOxNZA
+	oCge7lEXF4poRhYTx8LgWXYiwHkFqfqwHEv1ZFaBEFfikiuAPX5LNnEYuPamfcjA
+	DHcs909gpEA8f/Dye9idxcZpkxgoE2oFxrjtdmd3gDfEPnbgQZ+tgL9kxU7rIFBs
+	la56P0rLkYPFHGuCmD6f9X7jq526OOcz0x/fjpTTiSB96S8JP6sFqE/UZODgpJIQ
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hdw5b3n7s-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Fri, 23 Oct 2026 08:58:17 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69N7JsTw1800643;
+	Fri, 23 Oct 2026 08:58:16 GMT
+Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4hfmpn3qs6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 23 Oct 2026 08:58:16 +0000 (GMT)
+Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
+	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69N8wGLe25559722
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 23 Oct 2026 08:58:16 GMT
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F06BE58065;
+	Fri, 23 Oct 2026 08:58:15 +0000 (GMT)
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3B4D25805D;
+	Fri, 23 Oct 2026 08:58:11 +0000 (GMT)
+Received: from [9.43.58.215] (unknown [9.43.58.215])
+	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 23 Oct 2026 08:58:10 +0000 (GMT)
+Message-ID: <49f43f66-f516-413a-9842-bf6d8cef5fb1@linux.ibm.com>
+Date: Fri, 23 Oct 2026 14:28:09 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,142 +81,221 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc/syscall: Return the preset value of skipped
+ syscalls
+To: Renzo Davoli <renzo@cs.unibo.it>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>
+Cc: Davide Berardi <berardi.dav@gmail.com>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Christophe Leroy <chleroy@kernel.org>,
+        =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>,
+        Mukesh Kumar Chaurasiya <mkchauras@gmail.com>,
+        Shrikanth Hegde <sshegde@linux.ibm.com>,
+        Thomas Gleixner <tglx@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
+        "Dmitry V . Levin" <ldv@strace.io>,
+        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+        Andrew Morton <akpm@linux-foundation.org>
+References: <20261018151539.440213-1-renzo@cs.unibo.it>
+Content-Language: en-US
+From: samir <samir@linux.ibm.com>
+In-Reply-To: <20261018151539.440213-1-renzo@cs.unibo.it>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <atsYQtXHRH_cCQ5A@google.com>
-X-Spam-Status: No, score=-23.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no
-	version=4.0.1
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=X63Hu2Te c=1 sm=1 tr=0 ts=6adb21aa cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=pGLkceISAAAA:8
+ a=VnNF1IyMAAAA:8 a=VwQbUJbxAAAA:8 a=eEX7pEfrkeBYrpkNWPQA:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10 a=O8hF6Hzn-FEA:10
+X-Proofpoint-ORIG-GUID: 7c_KEsfJRvV2RRbWgSUimDVVLGvDcsDV
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDIzMDAzNCBTYWx0ZWRfX82UqnYTX5H/L
+ deJHTQX2t/n0Y3LnF8Oq5Leo1pjTEmGBCCJunlf4q62yKuGb3louajZNq1ie0x9PDPbAFrdFGY5
+ fsYWAyCuM902kl5iDTdTwD6PQ/Q3JwIkQHVozByhhqLSZQF962URulOMrGxqsgtdLpIMFNm7+Ij
+ qDQWWCTmuwPKbvSvkuFjo5bGn9Sdg96gnODoczyggcR8t6C1EwsRES62zvmbV/BYhVgcOETQsBJ
+ R5kGaSfsXVgpvKjEeW215WFpquC31eSRz8aka/17drd1Zf+9jYssQcNl0TcpZJz6Tu2t5nB+go2
+ HoDR842sakrLUWKaKQYhZ5+24HzhShat8aPa/ncFJmcNV34GSwRYCFg+jwsEYbbzewpl8usKLdh
+ T07uCRNV3rpPqhzOD+t/go53FWCRgFOmqxlXZmW3WDWJHmgpNdriQqhLWMtQrtaZry87k8mrqou
+ psc2ujNrvy8JF/7impg==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDIzMDAzNCBTYWx0ZWRfX7M4ga6yqIN+m
+ TqzEpIJCrvrEFfl4K1EBY1hdM7w2v3Myif5lbGlbm/Q8FeDEOKjinkO2hJdlu/pdFAc866MgB0Y
+ fKPrmCDmnT91iKZ9dVX8LNIHV+lqo2I=
+X-Proofpoint-GUID: LXuJuGUpdlreGuneYA4noi_09wS9zyNg
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-10-23_02,2026-10-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 phishscore=0 bulkscore=0 adultscore=0 malwarescore=0
+ clxscore=1011 spamscore=0 impostorscore=0 lowpriorityscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610230034
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Fri, Oct 23, 2026 at 09:18:10AM +0100, Vincent Donnefort wrote:
-> On Thu, Oct 22, 2026 at 11:48:17PM +0530, Amit Machhiwal wrote:
-> > During early boot (early_trace_init() called from start_kernel()),
-> > tracing allocates initial ring buffers (temp_buffer, array_buffer, and
-> > snapshot_buffer) for CPU 0.  Later, as secondary CPUs come online during
-> > smp_init(), each CPU's ring buffer is allocated via trace_rb_cpu_prepare().
-> > 
-> > Before attempting page allocation, __rb_allocate_pages() performs a
-> > heuristic check using si_mem_available() to return early with -ENOMEM if
-> > memory appears insufficient.
-> > 
-> > However, on kernels built with CONFIG_DEFERRED_STRUCT_PAGE_INIT=y,
-> > NR_FREE_PAGES only reflects the initial non-deferred pool across the entire
-> > period from early_trace_init() through smp_init().  defer_init() leaves
-> > only a single section per node (e.g.  16 MiB with 64 KB pages) initialized
-> > up-front, and on kernels with large static binary footprints (debug
-> > configurations enabling PAGE_OWNER, DEBUG_PAGEALLOC, KFENCE, or SLUB_DEBUG),
-> > early core initialisations (SLUB caches, vmalloc, static ftrace records)
-> > consume virtually all managed pages in this pool.
-> > 
-> > si_mem_available() therefore returns a false negative (often 0-1 pages)
-> > across both SYSTEM_BOOTING (for the initial CPU 0 buffers) and
-> > SYSTEM_SCHEDULING (for secondary CPU buffers via trace_rb_cpu_prepare()),
-> > causing __rb_allocate_pages() to prematurely abort with -ENOMEM.
-> > 
-> > This failure is false: the buddy allocator is designed to replenish
-> > ZONE_NORMAL on demand via deferred_grow_zone() when an actual allocation
-> > is attempted.  Checking si_mem_available() before calling alloc_pages_node()
-> > short-circuits this on-demand growth entirely.
-> > 
-> > deferred_grow_zone() is only permanently disabled after page_alloc_init_late()
-> > completes (it spawns per-node kthreads and blocks until done), which happens
-> > inside kernel_init_freeable() — before system_state is set to
-> > SYSTEM_FREEING_INITMEM.  Skip the si_mem_available() check until
-> > SYSTEM_FREEING_INITMEM, at which point all deferred pages are initialized
-> > and si_mem_available() is accurate.
-> > 
-> > Wrap the guard in #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT so that on kernels
-> > without deferred init the original check is preserved unchanged.
-> > 
-> > Fixes: 2a872fa4e9c8 ("ring-buffer: Check if memory is available before allocation")
-> > Cc: stable@vger.kernel.org
-> > Reported-by: Michal Suchánek <msuchanek@suse.de>
-> > Closes: https://lore.kernel.org/all/arYskzbiaNzBR9MD@kunlun.suse.cz/
-> > Link: https://lore.kernel.org/all/arYskzbiaNzBR9MD@kunlun.suse.cz/
-> > Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
-> 
-> It is usually good practice to not use in-reply-to to link the series between
-> each other.
-> 
-> > ---
-> > Changes since v2:
-> >  - Rebase on top of upstream ring_buffer.c changes from Vincent Donnefort;
-> >    update threshold to i < (nr_pages << subbuf_order). (Michal Suchánek)
-> > 
-> > Changes since v1:
-> >  - Extend the guard to cover SYSTEM_SCHEDULING as well: smp_init() calls
-> >    trace_rb_cpu_prepare() -> __rb_allocate_pages() before page_alloc_init_late()
-> >    completes, so the false negative window spans both SYSTEM_BOOTING and
-> >    SYSTEM_SCHEDULING. Use system_state >= SYSTEM_FREEING_INITMEM as the correct
-> >    boundary.  (Sashiko, Vincent Donnefort)
-> >  - Wrap in #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT to preserve the original
-> >    check unchanged on non-deferred kernels. (Vincent Donnefort)
-> >  - Drop Tested-by: guard condition changed, requesting fresh test.
-> > 
-> >  kernel/trace/ring_buffer.c | 17 +++++++++++++++++
-> >  1 file changed, 17 insertions(+)
-> > 
-> > diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-> > index 9c4e40847e43..8e5a59a7b69b 100644
-> > --- a/kernel/trace/ring_buffer.c
-> > +++ b/kernel/trace/ring_buffer.c
-> > @@ -2463,10 +2463,27 @@ static int __rb_allocate_pages(struct ring_buffer_per_cpu *cpu_buffer,
-> >  		 * memory. It may not be accurate. But we don't care, we just want
-> >  		 * to prevent doing any allocation when it is obvious that it is
-> >  		 * not going to succeed.
-> > +		 *
-> > +		 * With CONFIG_DEFERRED_STRUCT_PAGE_INIT, NR_FREE_PAGES only
-> > +		 * reflects the initial non-deferred pool during early boot and
-> > +		 * throughout SMP bring-up (smp_init() runs before
-> > +		 * page_alloc_init_late() completes deferred initialization).
-> > +		 * si_mem_available() returns a false negative across this
-> > +		 * entire window while actual allocations succeed by growing the
-> > +		 * zone on demand via deferred_grow_zone(). Only re-enable the
-> > +		 * check from SYSTEM_FREEING_INITMEM onward, after
-> > +		 * page_alloc_init_late() has finished and si_mem_available() is
-> > +		 * accurate.
-> 
-> This is quite a massive comment for something simple: When
-> CONFIG_DEFERRED_STRUCT_PAGE_INIT, si_mem_available() will reflect the actual
-> available memory only after SYSTEM_FREEING_INITMEM.
-> 
-> >  		 */
-> >  		i = si_mem_available();
-> > +#ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
-> > +		if (system_state >= SYSTEM_FREEING_INITMEM &&
-> > +		    i < (nr_pages << subbuf_order))
-> > +			return -ENOMEM;
-> > +#else
-> >  		if (i < (nr_pages << subbuf_order))
-> >  			return -ENOMEM;
-> > +#endif
-> 
-> Could we avoid the double i < (nr_pages << subbuf_order) with something like
-> 
-> if (IS_ENABLED(CONFIG_DEFERRED_STRUCT_PAGE_INIT) &&
->     system_state < SYSTEM_FREEING_INITMEM)
->        i = LONG_MAX;
-> 
 
-or even i = totalram_pages()? 
+On 18/10/26 8:45 pm, Renzo Davoli wrote:
+> From: Davide Berardi <berardi.dav@gmail.com>
+>
+> When ptrace or seccomp skip a system call, the return value they set in
+> regs->gpr[3] gets lost or the tracer is affected, since two recent
+> changes:
+>
+> 1. Commit 05c033db7e9a ("entry, treewide: Make
+>     syscall_enter_from_user_mode[_work]() indicate syscall execution")
+>     made system_call_exception() return syscall_get_error() for a skipped
+>     system call.  syscall_get_error() is 0 for any non-error value, so a
+>     success value set by a tracer at a PTRACE_EVENT_SECCOMP stop (e.g.
+>     with PTRACE_POKEUSER), or by a SECCOMP_RET_USER_NOTIF listener, is
+>     replaced with 0.
+>
+> 2. Commit 69cb2be898be ("powerpc/syscall: Fix syscall skip handling for
+>     seccomp and ptrace") made syscall_set_return_value() set
+>     TIF_SYSCALL_RET with set_thread_flag(), i.e. on current rather than on
+>     the task passed in.  When the caller is a tracer, as in
+>     PTRACE_SET_SYSCALL_INFO with op == PTRACE_SYSCALL_INFO_EXIT, the flag
+>     ends up on the tracer, and the next system call of the tracer is
+>     silently not executed.  Setting it on the right task would not be
+>     enough either: at a syscall-exit stop the flag would then skip the
+>     next system call of the tracee.
+>
+> TIF_SYSCALL_RET is not needed anymore: after the change described in 1.
+> the generic entry code tells whether ptrace or seccomp skipped the
+> system call, and every in-kernel caller of syscall_set_return_value() on
+> the syscall entry path (SECCOMP_RET_ERRNO, SECCOMP_RET_TRACE without a
+> tracer, SECCOMP_RET_USER_NOTIF) also makes it return false.  A user
+> calling syscall(-1) without tracer or seccomp still gets -ENOSYS.
+>
+> Remove the flag and return regs->gpr[3] for a skipped system call, as
+> done before the conversion to GENERIC_ENTRY.  The syscall exit path
+> already converts a negative error value to the "sc" ABI, and
+> syscall_set_return_value() keeps CR0.SO in sync for positive error
+> values.
+>
+> Fixes: 69cb2be898be ("powerpc/syscall: Fix syscall skip handling for seccomp and ptrace")
+> Fixes: 05c033db7e9a ("entry, treewide: Make syscall_enter_from_user_mode[_work]() indicate syscall execution")
+> Cc: Michal Suchánek <msuchanek@suse.de>
+> Cc: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+> Cc: Shrikanth Hegde <sshegde@linux.ibm.com>
+> Cc: Thomas Gleixner <tglx@kernel.org>
+> Assisted-by: claude-opus-5-5
+> Signed-off-by: Renzo Davoli <renzo@cs.unibo.it>
+> ---
+> How this was found and tested: QEMU pseries (TCG, -cpu power9), ppc64le
+> guest config, v7.3-rc6 (7b63ef2d55f2), with a small reproducer
+> (ppc_skip_repro.c, available on request) which
+>
+>   - sets the getpid() return value at a syscall-exit stop with
+>     PTRACE_SET_SYSCALL_INFO, then makes a syscall in the tracer;
+>   - skips getpid() at a PTRACE_EVENT_SECCOMP stop with PTRACE_POKEUSER
+>     (r0 = -1, r3/CR0.SO = return value), with both "sc" and "scv 0".
+>
+>                                               v7.3-rc6      with this patch
+>    tracer syscall after SET_SYSCALL_INFO      returns 0     correct
+>    skipped syscall, success value, sc/scv     returns 0     correct
+>    skipped syscall, error value, sc/scv       correct       correct
+>    selftests/ptrace set_syscall_info test    FAIL          pass
+>    selftests/seccomp/seccomp_bpf              11 failures   all pass (*)
+>
+>    failing in v7.3-rc6: user_notification_{basic,child_pid_ns,
+>    sibling_pid_ns,fault_recv,addfd,addfd_rlimit,sync,fifo,wait_killable},
+>    TRACE_syscall.seccomp.syscall_faked, plus the timing-only one below.
+>
+> (*) user_notification_wait_killable_after_reply (100000 notifications
+>      with a 1 ms itimer) can hit the 30 s harness timeout under emulation,
+>      with and without this patch.
+>
+> Build-tested with W=1: ppc64le guest config, ppc64_defconfig (BE),
+> pmac32_defconfig.
+>
+>   arch/powerpc/include/asm/syscall.h     |  6 ------
+>   arch/powerpc/include/asm/thread_info.h |  1 -
+>   arch/powerpc/kernel/syscall.c          | 15 ++++++++-------
+>   3 files changed, 8 insertions(+), 14 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
+> index 32be22b995cc..4b3c52ed6e9d 100644
+> --- a/arch/powerpc/include/asm/syscall.h
+> +++ b/arch/powerpc/include/asm/syscall.h
+> @@ -98,12 +98,6 @@ static inline void syscall_set_return_value(struct task_struct *task,
+>   			regs->gpr[3] = val;
+>   		}
+>   	}
+> -	/*
+> -	 * Mark that a return value has been explicitly set by seccomp or
+> -	 * ptrace so that system_call_exception() can skip the syscall
+> -	 * unconditionally, even when the user requested syscall(-1).
+> -	 */
+> -	set_thread_flag(TIF_SYSCALL_RET);
+>   }
+>   
+>   static inline void syscall_get_arguments(struct task_struct *task,
+> diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+> index 1e069a2e7ce8..0487e94d3416 100644
+> --- a/arch/powerpc/include/asm/thread_info.h
+> +++ b/arch/powerpc/include/asm/thread_info.h
+> @@ -120,7 +120,6 @@ void arch_setup_new_exec(void);
+>   #endif
+>   #define TIF_POLLING_NRFLAG	19	/* true if poll_idle() is polling TIF_NEED_RESCHED */
+>   #define TIF_32BIT		20	/* 32 bit binary */
+> -#define TIF_SYSCALL_RET		21	/* syscall error value set */
+>   
+>   /* as above, but as bit values */
+>   #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+> diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
+> index fbefe1927b10..52ceff4ef41b 100644
+> --- a/arch/powerpc/kernel/syscall.c
+> +++ b/arch/powerpc/kernel/syscall.c
+> @@ -18,13 +18,14 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
+>   	long ret;
+>   	syscall_fn f;
+>   
+> -	if (unlikely(!syscall_enter_from_user_mode_randomize_stack(regs, &r0))) {
+> -		clear_thread_flag(TIF_SYSCALL_RET);
+> -		return syscall_get_error(current, regs);
+> -	}
+> -
+> -	if (unlikely(test_and_clear_thread_flag(TIF_SYSCALL_RET)))
+> -		return syscall_get_error(current, regs);
+> +	/*
+> +	 * If ptrace or seccomp decided to skip the syscall, regs->gpr[3] holds
+> +	 * the return value they set (or the unmodified first argument, e.g.
+> +	 * for PTRACE_SYSEMU). Return it as is, the exit path takes care of
+> +	 * the error encoding for the "sc" ABI.
+> +	 */
+> +	if (unlikely(!syscall_enter_from_user_mode_randomize_stack(regs, &r0)))
+> +		return regs->gpr[3];
+>   
+>   	if (unlikely(r0 >= NR_syscalls)) {
+>   		if (unlikely(trap_is_unsupported_scv(regs))) {
+Hi Renzo,
 
-> >  
-> >  		user_thread = current->mm != NULL;
-> >  	}
-> > 
-> > base-commit: 7be4bc52fd9e0e55dc9a2e0232b89427d2c4b614
-> > -- 
-> > 2.54.0 (Apple Git-157)
-> > 
-> 
-> -- 
-> Vincent
 
--- 
-Vincent
+I tried applying the patches to the latest upstream kernel (master 
+branch), but the patch fails to apply with the following errors:
+
+error: patch failed: arch/powerpc/include/asm/syscall.h:98
+error: arch/powerpc/include/asm/syscall.h: patch does not apply
+error: patch failed: arch/powerpc/kernel/syscall.c:18
+error: arch/powerpc/kernel/syscall.c: patch does not apply
+
+The latest commit on the master branch:
+commit 734bef548a96e8774d6eef5dfa2026c6edc4e80b
+(HEAD -> master, origin/master, origin/HEAD)
+
+
+Could you please take a look and suggest how to resolve these conflicts? 
+Does the patch need to be rebased against the latest upstream kernel?
+
+Thanks for your help.
+
+Best regards,
+Samir
 
