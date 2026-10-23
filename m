@@ -1,109 +1,54 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E7D64606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Oct 2026 16:55:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 36137606A321
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Oct 2026 17:09:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=UnEe6EVt
+	dkim=pass (1024-bit key, unprotected) header.d=goodmis.org header.i=@goodmis.org header.a=rsa-sha256 header.s=dkim1 header.b=zUOHQ6XH
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jB8Jg1Z9jz2yDc;
-	Sat, 24 Oct 2026 03:54:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792774499;
-	cv=none; b=SH7sTWmZwxe6vfO5aa9vIDjE2tpwtvKB7nnhIxyO5sBNnNo5Q+UeJYYHjrRWd4aZlING2IKOpoKKccQj7NRyTQhnZFTzKjSNmRa92fpDwh32C9GNuXEqq80D9XBvD/1MQ6eXD+dpyhD6T5yvzOo9eLHqrpuAZBT5BUVfHlDgrGBpc5UaSqPaVTkIgl5Wc1iZ3XyzH8EGdQ2+X8OPrUy1ibIcviCIFvElH+gixkM/p9nHpAoZHQ6br0yltC1yLIA0E0DE538fDGekyyJSm7WRMoMWDqDaScfZ1AL57C3tX9aV+FjTnM9uTQbZjWrTA+htWvFELudwC+C0cuiV84LBEA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jB8dx2YWQz2yDc;
+	Sat, 24 Oct 2026 04:09:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=216.40.44.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792775397;
+	cv=none; b=eaCljJ0LCdp3hguPtFjFp89AulbMWU8PRCkyBP+d95XLQ37zrzX1ymSZDlYN3/bycjaBwp4ejwqkK8PTEuthOhIZDLE3CVK0rUz+whI0N0+uTvDlmHZmu1mL9TEpreQFc8m7+ZbIzQE5h2/aFOH0cOcdz4briztsrMiQsWL/AWt3GZVQG/ZsYvACiPTzTKLeysWCZ4B2gvThO9Lsld0j2mokeS+crdsh2RNYUy5S3FixKE80/DN3FHeEC2Z+Goq1rvsxeunk7osFpBUueoSHmQa1I7Ee4r/Oj6JLCxh1qvwencV6jrf+UOGYSuqvebaybETokIdZdim9dv5QUsAOmQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792774499; c=relaxed/relaxed;
-	bh=pcT1nqswGvhjhJ6QI4zO5XNTRfIOEZo9dTuCxwHmQEQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=E7xyNh2J4SP/JFcL5unMa5KLfs/B6RBVC48qtLdJKLiWYIz9k/1KPJpo//PQL8TSXW9R84/nBcNuq6dkVp8GgGUIi/JS6kwplgMpKOWeuEDy4g1ptuW2noaMZZSMEGf7QnRHvxoka78nlP7FLgDap+hgE57CZKqK7wphwP/DhpaIX3yP5peAvTBXXhtAFBgtYe6o7yTa83bzT+tNGFN9LH+xulZKkZy7kze+YMhuszEC7LLHjTK3PXMJ1DiY4uL53TtgDLvvwc+3v8qJ1kxmTRmEzbydE1caaW950JUg/+BW5SSmuk5oUTYRoScSb1sxDUXld0KtWKW/oMGVAo4LnQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=UnEe6EVt; dkim-atps=neutral; spf=pass (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+	t=1792775397; c=relaxed/relaxed;
+	bh=8m4RKkMiiU8bh0E91081ZTnsfbzeWqjKyYPrm7qreTc=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=K8aHlRLU3rr2BHH4zfHHtTdLfsOMZdyn4EbnsFdH0o3rLZQa+aj6sO054/5ptiWLrKfnABVSbE4XQuE8N9p3jmA/jA0daBokmYg6e8EzD7wF3s/QeIzHNhcUY1l/ejKxtFTRuMNtTimOkrW5mwSBX84tQFtBh9/VgFOJxS9goVOTUrHGDwllG1im97VB+IjXUBfihcMQcry7PllqJsqN8EYlQ3VZqwCFrbFHKBsq4TJc1OmPnWH1hsT7JXfMv2cNH8+lbqLfu1cZHxnL1M3pTl5dn1Gfca9Jou3d8riN7Rv/eLfxpmEM4tv8mq/eafFO8AvmQh7XOhy9+/r4oOEXAw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=goodmis.org; dkim=pass (1024-bit key; unprotected) header.d=goodmis.org header.i=@goodmis.org header.a=rsa-sha256 header.s=dkim1 header.b=zUOHQ6XH; dkim-atps=neutral; spf=pass (client-ip=216.40.44.10; helo=relay.hostedemail.com; envelope-from=rostedt@goodmis.org; receiver=lists.ozlabs.org) smtp.mailfrom=goodmis.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=goodmis.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=UnEe6EVt;
+	dkim=pass (1024-bit key; unprotected) header.d=goodmis.org header.i=@goodmis.org header.a=rsa-sha256 header.s=dkim1 header.b=zUOHQ6XH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=goodmis.org (client-ip=216.40.44.10; helo=relay.hostedemail.com; envelope-from=rostedt@goodmis.org; receiver=lists.ozlabs.org)
+Received: from relay.hostedemail.com (smtprelay0010.hostedemail.com [216.40.44.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jB8JW6yWCz2xH9
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2026 03:54:48 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Transfer-Encoding:
-	Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
-	Sender:Reply-To:Content-ID:Content-Description;
-	bh=pcT1nqswGvhjhJ6QI4zO5XNTRfIOEZo9dTuCxwHmQEQ=; b=UnEe6EVtKxffwjLF3eLQvD/QRC
-	OYHwnUhoA9RikyKoyBO5MwHg3XpiNroyzCQJdB/spBGBilu3N+Adl6S/hZPWU6J3PfKjOhBk2bct0
-	s01jfhZ66XungAM18MXMRSM9WQZf6LF2a5pvPTL2iQ490BqfCfH7WORfLWLc/8YTuMvdBgDKSrRvK
-	d7ILi4kGsfbYrXIuZ2E8t1XAAGex7QEE9yXuVJ3P3CWFPrC71nqhqyv73WwzT1Y87Ca9oNsst114q
-	tLdpzcwZnREAABLBGjx8ed1rOygIB2WJaL6MRiZ0URMwTtZHSD6kUAXIWYjLVirLrAo631SAM75VA
-	LAXRk/dQ==;
-Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
-	by casper.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xKIXL-0000000Cz7M-3hud;
-	Fri, 23 Oct 2026 16:54:35 +0000
-Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-	id E4C55300720; Fri, 23 Oct 2026 18:54:34 +0200 (CEST)
-Date: Fri, 23 Oct 2026 18:54:34 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <frederic@kernel.org>
-Cc: Srikar Dronamraju <srikar@linux.ibm.com>,
-	Ingo Molnar <mingo@kernel.org>,
-	Russell King <linux@armlinux.org.uk>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, Guo Ren <guoren@kernel.org>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	Jiaxun Yang <jiaxun.yang@flygoat.com>,
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-	Helge Deller <deller@gmx.de>, Scott Wood <oss@buserror.net>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Rich Felker <dalias@libc.org>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	"David S. Miller" <davem@davemloft.net>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>, Chris Zankel <chris@zankel.net>,
-	Max Filippov <jcmvbkbc@gmail.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-	Dietmar Eggemann <dietmar.eggemann@arm.com>,
-	Kees Cook <kees@kernel.org>, Jinjie Ruan <ruanjinjie@huawei.com>,
-	mrigendrachaubey <mrigendra.chaubey@gmail.com>,
-	Marc Zyngier <maz@kernel.org>,
-	Pengjie Zhang <zhangpengjie2@huawei.com>,
-	Thierry Reding <treding@nvidia.com>, Xi Ruoyao <xry111@xry111.site>,
-	"Rafael J. Wysocki (Intel)" <rafael@kernel.org>,
-	Tiezhu Yang <yangtiezhu@loongson.cn>,
-	Rong Bao <rong.bao@csmantle.top>, Hui Wang <hui.wang@canonical.com>,
-	Thorsten Blum <thorsten.blum@linux.dev>,
-	Josh Poimboeuf <jpoimboe@kernel.org>,
-	linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
-	loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
-	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: [PATCH] sched/hotplug: Remove unused idle_task_exit
-Message-ID: <20261023165434.GX2823843@noisy.programming.kicks-ass.net>
-References: <20261016095711.1364609-1-srikar@linux.ibm.com>
- <attjv8zOftf9Hlqe@localhost.localdomain>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jB8dt2p3lz2y8m
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2026 04:09:53 +1100 (AEDT)
+Received: from omf14.hostedemail.com (lb01a-stub [10.200.18.249])
+	by unirelay10.hostedemail.com (Postfix) with ESMTP id A2E79C0180;
+	Fri, 23 Oct 2026 17:09:48 +0000 (UTC)
+Received: from [HIDDEN] (Authenticated sender: rostedt@goodmis.org) by omf14.hostedemail.com (Postfix) with ESMTPA id 45F2E30;
+	Fri, 23 Oct 2026 17:09:46 +0000 (UTC)
+Date: Fri, 23 Oct 2026 13:09:43 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Jerome Marchand <jmarchan@redhat.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
+ <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, Ritesh Harjani
+ <ritesh.list@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, Madhavan
+ Srinivasan <maddy@linux.vnet.ibm.com>, Masami Hiramatsu
+ <mhiramat@kernel.org>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc: Use raw_local_irq_pmu_save/restore() in
+ local_t functions
+Message-ID: <20261023130943.775b2b65@gandalf.local.home>
+In-Reply-To: <20261023155529.3895393-1-jmarchan@redhat.com>
+References: <20261023155529.3895393-1-jmarchan@redhat.com>
+X-Mailer: Claws Mail 3.20.0git84 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -117,33 +62,51 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <attjv8zOftf9Hlqe@localhost.localdomain>
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
-	autolearn=ham autolearn_force=no version=4.0.1
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,UNPARSEABLE_RELAY,
+	USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=4.0.1
+X-Rspamd-Server: rspamout06
+X-Stat-Signature: dkd49bp7ie9q1ukpuri763w5nzcejt5a
+X-Rspamd-Queue-Id: 45F2E30
+X-Session-Marker: 726F737465647440676F6F646D69732E6F7267
+X-Session-ID: U2FsdGVkX1/0wX9pO02ZWtXsM9Kya2cXD7k+9fbyk8Q=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=goodmis.org; h=date:from:to:cc:subject:message-id:in-reply-to:references:mime-version:content-type:content-transfer-encoding; s=dkim1; bh=8m4RKkMiiU8bh0E91081ZTnsfbzeWqjKyYPrm7qreTc=; b=zUOHQ6XHb8k5FmnnTjDdDC3cfTDXs9E6/Ow/oHOFpxNl40ZCyaAIvD9/OHZjWt99Kx13XgneXmdpyWmrYgdTjUHs7WZtaQkuCTpNi/RVnOwc4FsxqNcY8MsBG2NsCzVkzTY2n3KlyjMw9M4K0i+K5cqtZ6s1TbOyNfqfCuAA7NM=
+X-HE-Tag: 1792775386-597871
+X-HE-Meta: U2FsdGVkX1+KkNW6m+t9S1AvyAQdJ3NdBfSGduko+1ErfnQswKcHgIVurgl/PvL/JYZgmf8Laz9ai/H6APmL94CktNTyzCU4ziuSsE4AoJtKtJPT4o0JpbpQEStgwHWCrfyGHnarg8cpyisnWtMBAXRqYn3ZyHabCoTE6Rg836tC7TeBqxr0c01+lPEdvifHiZoAPB+Pf3gLBa6vsEP6ChfI3/V2TDMZj1k26tGTn+Eerebs0H1aZRWvGy5HjxkDOiFjHmSMkLPoRvR2PRFnJqRpxh0pnWcheDzpmwrgSyHxgD7W2N8g+GWJ+9hX8JzVYqfzayAVNDxQgBEYztu1Yex11WY9JnC1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Fri, Oct 23, 2026 at 03:40:15PM +0200, Frederic Weisbecker wrote:
-> Le Fri, Oct 16, 2026 at 03:26:40PM +0530, Srikar Dronamraju a écrit :
-> > Commit 21641bd9a7a7 ("lazy tlb: fix hotplug exit race with
-> > MMU_LAZY_TLB_SHOOTDOWN") moved the handling previously performed by
-> > idle_task_exit() into the scheduler CPU hotplug path using
-> > sched_force_init_mm().
-> > 
-> > As a result, idle_task_exit() is now an empty stub and the remaining
-> > architecture call sites have no effect.
-> > 
-> > Remove the calls to idle_task_exit() and the now unused stub.
-> > 
-> > Signed-off-by: Srikar Dronamraju <srikar@linux.ibm.com>
-> 
-> Reviewed-by: Frederic Weisbecker <frederic@kernel.org>
+On Fri, 23 Oct 2026 17:55:29 +0200
+Jerome Marchand <jmarchan@redhat.com> wrote:
 
-Excellent; less is more and all that. Shall I take this through the
-scheduler tree?
+> On ppc64 with CONFIG_TRACE_IRQFLAGS enabled, the ring buffer code can
+> enter in an infinite recursion loop.
+> 
+> The problem occurs because some PowerPC's local_t operations
+> (local_inc/dec in particular) use powerpc_local_irq_pmu_save/restore()
+> which call trace_hardirqs_on/off() to generate trace events. This
+> creates a recursion loop:
+> 
+>   ring_buffer_unlock_commit()
+>     rb_commit()
+>       local_inc(&cpu_buffer->entries)
+>         powerpc_local_irq_pmu_save()
+>           trace_hardirqs_off()
+>             trace event => ring_buffer_unlock_commit()
+>               [INFINITE RECURSION]
+
+Hmm, the ring buffer has recursion protection that should prevent this. My
+question is, why didn't that work? Yes, I agree with the patch to not have
+local_inc/dec() call anything that can be traced, but if this caused an
+infinite recursion, there's a bug in the ring buffer code I want fixed too.
+
+The ring buffer has a trace_recursive_lock() that will allow one level of
+recursion and then prevents new commits from happening. The
+trace_recursive_unlock() is called after the rb_commit(). Why did the
+rb_commit() allow an infinite recursion?
+
+-- Steve
 
