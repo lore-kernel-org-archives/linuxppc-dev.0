@@ -2,50 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C898C606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Oct 2026 15:36:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 424A3606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Oct 2026 15:39:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2026092801 header.b=bg3EdVPh
+	dkim=pass (2048-bit key, unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2026092801 header.b=O8Iixtg2
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jB6ZT6NQZz2yDr;
-	Sat, 24 Oct 2026 02:36:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jB6d3048jz2yDr;
+	Sat, 24 Oct 2026 02:39:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::136"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792769809;
-	cv=none; b=AZ1aTbVssKxJCeBl5e8AkMD6vbQRGxUMETned0IxKVvgrVRYZl9jeMTqach/gfK+kn3mqZH2Ie8XENMDQSXN6iDWYX2VEuUTL85UD9Rofc92GjZwsEDIaHmpw/bapL5FHHqj7f0XQwdEXpFFl9mvpTrRRhk4iiBejCSMGiV+2hSLZkctIHYTbuyT0Q0PFcJ1THGm/C7aqs1jGpuCmCMkqzFy1nMEi0T1LdhiH7biaQlmAYZgEKKrlFYtoTLIb0RhEE+7yVE7rGY451Jyg3yerX1Mc1AaKIQQkXtzxUXJY0Km5xHU/oF9r9JNPwv9Pqd/G1A/h5GnKhE8x1mKm7cYCA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792769942;
+	cv=none; b=XWwTgZ9FZ3t06lK3+gM96m1mREDf2oHir2gdVBovna0I7pFSA2o6srVK7imOspuG57/rqgABaFfKneuTOgMVH5mTOJNTOUEE0grfQbu1rdGPDliJc/rLDFmOsQzA01dX4IsBPfZVl6pqicG/UbqIWPrZuCXEfua5YpLb49DfkR38EjE7zf4a78k4KBSIX5b52xpOFg0modEX+NBPy/LqtqCIfjCj3WTPGh6qwzfkxFBukH7Xg7JELGgImyzK3lwM5YecBgHWHvShhEuWhnxdOvqWuz/Y+lJRYy05FWd+t64sAmL8dcn/1nS9T4BhSQyc9k51GgSI3o/Tkxl27Zn9Jw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792769809; c=relaxed/relaxed;
-	bh=HSZuOyG4pKU7vS7IAE1/JM7GV7AMLK9kKAml8a9XFjg=;
+	t=1792769942; c=relaxed/relaxed;
+	bh=z2qBUDb/HEVpnZ0AdLrT9xxIZXcyNTPm5i0euSKeI8A=;
 	h=Date:From:To:CC:Subject:In-Reply-To:References:Message-ID:
-	 MIME-Version:Content-Type; b=E/rHhK6O6E+d/IC2Rw3WDO1FvccY8WQMiHlbUaiJ6WXHBMboQV4cFZMTkvGnJ2A9qoMDkX5rVLROUpySNlz9xwTSZl8xbZtd3PT23Mei/lJ3I9zVvQ7QHZbSuzWKmCLegwcaxBZWMnF02exnXrYEyIBr21jZdtYK0KCTQYhgojnO2/ixdlP/1ObSVpgkeGQCBf9mO/3SS5TPLCnIRkoKL+1ivlcnEhn18VrXzR6w+doTOqpT5+dMuERqDxDf8Tuud8Fc8oTQo4AAoMrlNS7wSpnXUuLbmNd0cPht0VvaJHxpDVeJ/DaWvhsSOVPrGAtQX7XUoX8dT/nT9EilYTynQg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zytor.com; dkim=pass (2048-bit key; unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2026092801 header.b=bg3EdVPh; dkim-atps=neutral; spf=pass (client-ip=2607:7c80:54:3::136; helo=mail.zytor.com; envelope-from=hpa@zytor.com; receiver=lists.ozlabs.org) smtp.mailfrom=zytor.com
+	 MIME-Version:Content-Type; b=f/9EsCMoVGPJ7w+Dkkw+J2daF4Jeura0vD8njsxycBGfpvyogiBatIQlRFjq0Cy2bxgpxILLKWvJBghHYnTUUhFH1cT5vEFpHZS1xOIlMRSyzAT2duAfOZ4rA/N27hVxRbFwG3g9Dxy3hUAyjHNQJwzL6IYXSqpuHeX70U9ttTvA8yqwvv6PGZ6e8zUI/fs9dbAVZ/EDGBCibNTApLZgDwo34ava+yNbSOLAS/VTHbueEsj2oZOhIX0WSiCEdV8Rkxz9O9y5pC1DBTLzKm6DnNi00vlZSvuQvNw1DxBOvj9gGBhp3EkFV2hgvmms5z6qy25ZrWfo9ktgnL9/LWFLTg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zytor.com; dkim=pass (2048-bit key; unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2026092801 header.b=O8Iixtg2; dkim-atps=neutral; spf=pass (client-ip=2607:7c80:54:3::136; helo=mail.zytor.com; envelope-from=hpa@zytor.com; receiver=lists.ozlabs.org) smtp.mailfrom=zytor.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zytor.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2026092801 header.b=bg3EdVPh;
+	dkim=pass (2048-bit key; unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2026092801 header.b=O8Iixtg2;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zytor.com (client-ip=2607:7c80:54:3::136; helo=mail.zytor.com; envelope-from=hpa@zytor.com; receiver=lists.ozlabs.org)
 Received: from mail.zytor.com (terminus.zytor.com [IPv6:2607:7c80:54:3::136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jB6ZR4fRnz2xHG
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2026 02:36:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jB6d20Wfhz2xKN
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2026 02:39:01 +1100 (AEDT)
 Received: from ehlo.thunderbird.net (c-76-133-66-138.hsd1.ca.comcast.net [76.133.66.138])
 	(authenticated bits=0)
-	by mail.zytor.com (8.18.1/8.17.1) with ESMTPSA id 69NFZXZ03099269
+	by mail.zytor.com (8.18.1/8.17.1) with ESMTPSA id 69NFc9VP3102952
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NO);
-	Fri, 23 Oct 2026 08:35:34 -0700
-DKIM-Filter: OpenDKIM Filter v2.11.0 mail.zytor.com 69NFZXZ03099269
+	Fri, 23 Oct 2026 08:38:09 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 mail.zytor.com 69NFc9VP3102952
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zytor.com;
-	s=2026092801; t=1792769740;
-	bh=HSZuOyG4pKU7vS7IAE1/JM7GV7AMLK9kKAml8a9XFjg=;
+	s=2026092801; t=1792769891;
+	bh=z2qBUDb/HEVpnZ0AdLrT9xxIZXcyNTPm5i0euSKeI8A=;
 	h=Date:From:To:CC:Subject:In-Reply-To:References:From;
-	b=bg3EdVPhWbIzGb2nl9Fuu7ddKA32ap1IfMZqOW5ffhrypmSKfeUyH9oyqT8VD3Ffz
-	 xZsox0txpA5nJa7ukTQnYEsijMIDw9G5ZjUIZiWIb+27Pyu0RsP3R+zGiaKYe7BVy+
-	 iRxHHbQf4iwE7FhJHOTs1QJ5w9pUe7E5sHjmWhEmmReaob00Q9qPt+SYyK9PjSybeL
-	 +p7u2wZEoGsZue51CvFVoyMDBkPLzVTCMehBpRAesG0upThtigcmczDR9dlEcb9c41
-	 ORCX4s+3pvA5/OOHfkjvkVcTf9EC4bUg2TYV5h1Rs0daKiD/q8yN03OHv7o44uTkJq
-	 IP7H4102peo1g==
-Date: Fri, 23 Oct 2026 08:35:29 -0700
+	b=O8Iixtg27nerxz4pv3MPQ79Qbkly3Qzdhjb7iI4+o56x6i8BSeIR1xQGCwnY7KKaQ
+	 QA0Qg7pDBg5vVmC4UggSsNd6S8W3qav0zjBwEGselkJ0VJy5I7ZrNewKIutUb7AfVm
+	 MdkVett81Uf9k7w/9M6Vs9Qyoxeec92PLSHDc6Cl9fwDnysLHD8N+1Ef2Jj1dB1Bez
+	 Q/DmdOARJu1F614hVTT4HTy48AJ8iHcZSQvZDYXV0Cb5RUaF6zX8Iqu24NZ3rB/QHw
+	 a/FnYpSSLXQYPrCSxXHH5/8CUI5QKVmOH3JXCGBKbQtNNmTk/ivswwNpvRE42ECOtx
+	 l5XmL1xVvuk2g==
+Date: Fri, 23 Oct 2026 08:38:03 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 To: Thomas Gleixner <tglx@kernel.org>,
         Sebastian Andrzej Siewior <bigeasy@linutronix.de>
@@ -84,9 +84,9 @@ CC: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
 Subject: =?US-ASCII?Q?Re=3A_=5Bpatch_16/18=5D_x86/entry=3A_Get_rid?=
  =?US-ASCII?Q?_of_the_sys=5Fni=5Fsyscall=28=29_indirection?=
 User-Agent: K-9 Mail for Android
-In-Reply-To: <871p9g1s3w.ffs@fw13>
-References: <20260707181957.433213175@kernel.org> <20260707190254.493733289@kernel.org> <20261022142425.3Wx-RrU5@linutronix.de> <87fqxx1r80.ffs@fw13> <87cxt11ktr.ffs@fw13> <1149A39E-BEBA-46EA-94F4-4DFFC4733EF5@zytor.com> <871p9g1s3w.ffs@fw13>
-Message-ID: <F44B99C1-297F-406C-AEAC-3CC8F4F36AED@zytor.com>
+In-Reply-To: <87y0boze95.ffs@fw13>
+References: <20260707181957.433213175@kernel.org> <20260707190254.493733289@kernel.org> <20261022142425.3Wx-RrU5@linutronix.de> <87fqxx1r80.ffs@fw13> <87cxt11ktr.ffs@fw13> <1149A39E-BEBA-46EA-94F4-4DFFC4733EF5@zytor.com> <871p9g1s3w.ffs@fw13> <87y0boze95.ffs@fw13>
+Message-ID: <C6D7BF04-4CF7-48D1-93B5-E80D52C2617D@zytor.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -110,50 +110,65 @@ X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On October 23, 2026 6:09:07 AM PDT, Thomas Gleixner <tglx@kernel=2Eorg> wro=
+On October 23, 2026 7:24:22 AM PDT, Thomas Gleixner <tglx@kernel=2Eorg> wro=
 te:
->On Thu, Oct 22 2026 at 17:22, H=2E Peter Anvin wrote:
->> On October 22, 2026 2:34:08 PM PDT, Thomas Gleixner <tglx@kernel=2Eorg>=
- wrote:
->>>-static __always_inline void do_syscall_x32(struct pt_regs *regs, unsig=
-ned long nr)
->>>+static __always_inline bool do_syscall_x32(struct pt_regs *regs, unsig=
-ned long nr)
->>> {
->>>+	if (!IS_ENABLED(CONFIG_X86_X32_ABI))
->>>+		return false;
->>>+
->>>+	/* Preserve the historic insanity of treating -1 special on x32 */
->>>+	if (nr =3D=3D ULONG_MAX)
->>>+		return true;
+>On Fri, Oct 23 2026 at 15:09, Thomas Gleixner wrote:
+>> On Thu, Oct 22 2026 at 17:22, H=2E Peter Anvin wrote:
+>> Tired brain misread the test output:
 >>
->> It was never limited to x32=2E=2E=2E
+>> [RUN]   Running tests under ptrace: modifying the default return
+>> [RUN]       Checking system calls with msb =3D 0 (0x0)
+>> [OK]                x32 syscalls 0:-64=2E=2E-2 returned -ENOSYS as expe=
+cted
+>> [OK]                x32 syscall 0:-1 returned MODIFIED_BY_PTRACE as exp=
+ected
+>> [OK]                x64 syscalls 0:-64=2E=2E-1 returned -ENOSYS as expe=
+cted
+>>
+>> But that's because the "-1" on x32 is actually 0xFFFFFFFF while on x64
+>> it's 0x7FFFFFFF=2E
+>>
+>> The whole mess comes from using -1 as indicator for syscall abort which
+>> is undistinguishable from a syscall(nr=3D-1)=2E
+>>
+>> Bah=2E Let me restore this nonsense=2E
 >
->Tired brain misread the test output:
+>The real question is how we ended up there=2E By design or as an
+>implementation detail which got later set in stone and the selftest was
+>written to test the implementation instead of testing against a
+>specification=2E
 >
->[RUN]   Running tests under ptrace: modifying the default return
->[RUN]       Checking system calls with msb =3D 0 (0x0)
->[OK]                x32 syscalls 0:-64=2E=2E-2 returned -ENOSYS as expect=
-ed
->[OK]                x32 syscall 0:-1 returned MODIFIED_BY_PTRACE as expec=
-ted
->[OK]                x64 syscalls 0:-64=2E=2E-1 returned -ENOSYS as expect=
-ed
+>I went back in history and in 2=2E6=2E12 the behavior was for both i386 a=
+nd
+>x86_64:
 >
->But that's because the "-1" on x32 is actually 0xFFFFFFFF while on x64
->it's 0x7FFFFFFF=2E
+>  regs->ax =3D -ENOSYS;
+>  syscall_trace_enter();
+>  if (syscall_nr < MAX)
+>  	do_syscall();
+>  =2E=2E=2E=2E
 >
->The whole mess comes from using -1 as indicator for syscall abort which
->is undistinguishable from a syscall(nr=3D-1)=2E
+>IOW, a tracer modification of regs->ax is not overwritten when the
+>syscall number is out of range=2E
 >
->Bah=2E Let me restore this nonsense=2E
+>Between 2=2E6=2E19-rc2 and -rc3 x86_64 was changed to _always_ overwrite
+>regs->ax when the syscall number is out of range=2E
+>
+>In the 3=2E8 merge window seccomp introduced the -1 =3D=3D skip bogosity =
+which
+>got fixed up and made "consistent" in several changes afterwards=2E Just
+>that it never reached a state of consistency due to the overloading=2E
+>
+>So are we stuck with this behavior or do we sit down and define what the
+>correct behavior should be?
 >
 >Thanks,
 >
 >        tglx
 >
 >
->
 
-Yeah, that was always a WTF=2E
+Going back on something from 3=2E8 that is actively used seems unwise=2E I=
+ fear that that ship sailed a long time ago, even though I hate it just as =
+much as you do=2E
 
