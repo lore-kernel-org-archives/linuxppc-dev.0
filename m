@@ -2,53 +2,75 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 36137606A321
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Oct 2026 17:09:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7FE62606A31F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Oct 2026 17:58:43 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=goodmis.org header.i=@goodmis.org header.a=rsa-sha256 header.s=dkim1 header.b=zUOHQ6XH
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=RL18gJ+p
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jB8dx2YWQz2yDc;
-	Sat, 24 Oct 2026 04:09:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=216.40.44.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792775397;
-	cv=none; b=eaCljJ0LCdp3hguPtFjFp89AulbMWU8PRCkyBP+d95XLQ37zrzX1ymSZDlYN3/bycjaBwp4ejwqkK8PTEuthOhIZDLE3CVK0rUz+whI0N0+uTvDlmHZmu1mL9TEpreQFc8m7+ZbIzQE5h2/aFOH0cOcdz4briztsrMiQsWL/AWt3GZVQG/ZsYvACiPTzTKLeysWCZ4B2gvThO9Lsld0j2mokeS+crdsh2RNYUy5S3FixKE80/DN3FHeEC2Z+Goq1rvsxeunk7osFpBUueoSHmQa1I7Ee4r/Oj6JLCxh1qvwencV6jrf+UOGYSuqvebaybETokIdZdim9dv5QUsAOmQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jB9k96qGCz2y8m;
+	Sat, 24 Oct 2026 04:58:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.19
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792778321;
+	cv=none; b=dHZOZLiaPYw2aaXQxCIiB15SbqTBd5eOn/yo6VQb+TWK7uI6ZhCu0/wHSwEJXz3Kv0Pw1Mg7foGdnZrIwZ9b8Z9/l5iiBJbMz36HBzWgyif2dxksHdYIgEsyOYSJxGuGN9WGcffRCBsigfciNoktH0y0rFNlXgVTZu0LByXWD6q2LJq7Yf2kaUKo9tvhnTL6aowxfuf+kBUW89CesvogR+u7DoTg945lqxHj3ZnF30EBRmY7VymTej0Jfi/QXSbSW0UHye6/shc2f3QBhRe4M1T+ZKcQI+34eufkdGMeLx5K6qHUEHeyNksw/WURTYcxQ53mo7Q7YjZulbDBGhttgw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792775397; c=relaxed/relaxed;
-	bh=8m4RKkMiiU8bh0E91081ZTnsfbzeWqjKyYPrm7qreTc=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=K8aHlRLU3rr2BHH4zfHHtTdLfsOMZdyn4EbnsFdH0o3rLZQa+aj6sO054/5ptiWLrKfnABVSbE4XQuE8N9p3jmA/jA0daBokmYg6e8EzD7wF3s/QeIzHNhcUY1l/ejKxtFTRuMNtTimOkrW5mwSBX84tQFtBh9/VgFOJxS9goVOTUrHGDwllG1im97VB+IjXUBfihcMQcry7PllqJsqN8EYlQ3VZqwCFrbFHKBsq4TJc1OmPnWH1hsT7JXfMv2cNH8+lbqLfu1cZHxnL1M3pTl5dn1Gfca9Jou3d8riN7Rv/eLfxpmEM4tv8mq/eafFO8AvmQh7XOhy9+/r4oOEXAw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=goodmis.org; dkim=pass (1024-bit key; unprotected) header.d=goodmis.org header.i=@goodmis.org header.a=rsa-sha256 header.s=dkim1 header.b=zUOHQ6XH; dkim-atps=neutral; spf=pass (client-ip=216.40.44.10; helo=relay.hostedemail.com; envelope-from=rostedt@goodmis.org; receiver=lists.ozlabs.org) smtp.mailfrom=goodmis.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=goodmis.org
+	t=1792778321; c=relaxed/relaxed;
+	bh=1Dyo+5P9jqyyV0erlVw7mVKkjTRbY/LB2EHolQl7fOM=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=gIyVMdRrGiE5K3+AvBV9bUvTF8EaXe5A0fkipmr5+pLjEbb3cVi6ndHgj9v2Z+x0o6ES5JI6pmtYJJUPAeDJF8L2BHDlyrRaKQea4pIwz2gRrJDzi998/jhRWrsE2SA4bhWTqAkOeU8x/RKk/bj8oYkbgPaDZcpW6ldT8OAc+mGObFM99AOzz2ea2Gj7npMYKO0c1GV42ingShHUMqUhOGwLSa+QEwuI6HG3xuAVch2BjNZXZ3+KLEdBvwBlwOKeQUCCzY8kRiFAbOhb99EJR25RjAFVeuR2GByrhbqGmUqANXJu82/Yd9QjaX9vOqE/t1DHRjyCUbmvL/pG8yBouA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=RL18gJ+p; dkim-atps=neutral; spf=pass (client-ip=198.175.65.19; helo=mgamail.intel.com; envelope-from=tim.c.chen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=goodmis.org header.i=@goodmis.org header.a=rsa-sha256 header.s=dkim1 header.b=zUOHQ6XH;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=RL18gJ+p;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=goodmis.org (client-ip=216.40.44.10; helo=relay.hostedemail.com; envelope-from=rostedt@goodmis.org; receiver=lists.ozlabs.org)
-Received: from relay.hostedemail.com (smtprelay0010.hostedemail.com [216.40.44.10])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.19; helo=mgamail.intel.com; envelope-from=tim.c.chen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jB8dt2p3lz2y8m
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2026 04:09:53 +1100 (AEDT)
-Received: from omf14.hostedemail.com (lb01a-stub [10.200.18.249])
-	by unirelay10.hostedemail.com (Postfix) with ESMTP id A2E79C0180;
-	Fri, 23 Oct 2026 17:09:48 +0000 (UTC)
-Received: from [HIDDEN] (Authenticated sender: rostedt@goodmis.org) by omf14.hostedemail.com (Postfix) with ESMTPA id 45F2E30;
-	Fri, 23 Oct 2026 17:09:46 +0000 (UTC)
-Date: Fri, 23 Oct 2026 13:09:43 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Jerome Marchand <jmarchan@redhat.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
- <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, Ritesh Harjani
- <ritesh.list@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, Madhavan
- Srinivasan <maddy@linux.vnet.ibm.com>, Masami Hiramatsu
- <mhiramat@kernel.org>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc: Use raw_local_irq_pmu_save/restore() in
- local_t functions
-Message-ID: <20261023130943.775b2b65@gandalf.local.home>
-In-Reply-To: <20261023155529.3895393-1-jmarchan@redhat.com>
-References: <20261023155529.3895393-1-jmarchan@redhat.com>
-X-Mailer: Claws Mail 3.20.0git84 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jB9k72F3Lz2xNC
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2026 04:58:37 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1792778319; x=1824314319;
+  h=message-id:subject:from:to:cc:date:in-reply-to:
+   references:content-transfer-encoding:mime-version;
+  bh=3ZrsNEX2uX6PaXIi7xcmX121TOH6INDYHDj9zh11wrA=;
+  b=RL18gJ+pAGRCF1Qbq0AVyrVmsj1W5U4o30F7W3yVVxVN/6fEvT+xZAoQ
+   b9tr7GhELJHvHDoDHKlBw0aURk++E16Dm2tUble5obN0TV9ODlVhM9NRv
+   xkkWc5vjrTY1l4dyXeOWiL1IVeRgQUHWmU4PxE6ioSxIu8MpaMVg/S4Qz
+   WpNNNomRKisn/GIGwz4PnJslBtHU5+yL00fsFje8IceVVU+X/dJmI/PnL
+   XpHm+EPol7WBNxnnHd14ZecQRIAjvDIB+dvuOj2sjpQN6UM7Z7rstvNbw
+   2vpDL5EEaXv7cRCgGNrXnTcuwrg9S3cPuKNE03oCzmmZYrYb72TmttwGq
+   g==;
+X-CSE-ConnectionGUID: uel+eMZnT7SpLv/AaHxUJA==
+X-CSE-MsgGUID: cnVBqseJQ5+eqGkmUHSOtw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11944"; a="1571371"
+X-IronPort-AV: E=Sophos;i="6.27,174,1787036400"; 
+   d="scan'208";a="1571371"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Oct 2026 10:58:34 -0700
+X-CSE-ConnectionGUID: RWnG4AmLRcmQZ90DhOOfQw==
+X-CSE-MsgGUID: 3hMl4LsxSsCknPcPjIg2mw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,174,1787036400"; 
+   d="scan'208";a="3700573"
+Received: from schen9-mobl4.amr.corp.intel.com (HELO [10.125.108.32]) ([10.125.108.32])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Oct 2026 10:58:17 -0700
+Message-ID: <4a71f654cdc03973f309754a2f61810b4547a471.camel@linux.intel.com>
+Subject: Re: [PATCH v2 0/4] powerpc/topology: Introduce llc_override kernel
+ parameter
+From: Tim Chen <tim.c.chen@linux.intel.com>
+To: Shrikanth Hegde <sshegde@linux.ibm.com>, maddy@linux.ibm.com, 
+	linuxppc-dev@lists.ozlabs.org, peterz@infradead.org
+Cc: christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org, 
+	ritesh.list@gmail.com, kprateek.nayak@amd.com, yu.c.chen@intel.com, 
+	vineethr@linux.ibm.com, vincent.guittot@linaro.org, srikar@linux.ibm.com, 
+	npiggin@gmail.com, mpe@ellerman.id.au
+Date: Fri, 23 Oct 2026 10:58:16 -0700
+In-Reply-To: <20261023131646.2907938-1-sshegde@linux.ibm.com>
+References: <20261023131646.2907938-1-sshegde@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.58.1 (3.58.1-1.fc43) 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,51 +84,76 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,UNPARSEABLE_RELAY,
-	USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=4.0.1
-X-Rspamd-Server: rspamout06
-X-Stat-Signature: dkd49bp7ie9q1ukpuri763w5nzcejt5a
-X-Rspamd-Queue-Id: 45F2E30
-X-Session-Marker: 726F737465647440676F6F646D69732E6F7267
-X-Session-ID: U2FsdGVkX1/0wX9pO02ZWtXsM9Kya2cXD7k+9fbyk8Q=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=goodmis.org; h=date:from:to:cc:subject:message-id:in-reply-to:references:mime-version:content-type:content-transfer-encoding; s=dkim1; bh=8m4RKkMiiU8bh0E91081ZTnsfbzeWqjKyYPrm7qreTc=; b=zUOHQ6XHb8k5FmnnTjDdDC3cfTDXs9E6/Ow/oHOFpxNl40ZCyaAIvD9/OHZjWt99Kx13XgneXmdpyWmrYgdTjUHs7WZtaQkuCTpNi/RVnOwc4FsxqNcY8MsBG2NsCzVkzTY2n3KlyjMw9M4K0i+K5cqtZ6s1TbOyNfqfCuAA7NM=
-X-HE-Tag: 1792775386-597871
-X-HE-Meta: U2FsdGVkX1+KkNW6m+t9S1AvyAQdJ3NdBfSGduko+1ErfnQswKcHgIVurgl/PvL/JYZgmf8Laz9ai/H6APmL94CktNTyzCU4ziuSsE4AoJtKtJPT4o0JpbpQEStgwHWCrfyGHnarg8cpyisnWtMBAXRqYn3ZyHabCoTE6Rg836tC7TeBqxr0c01+lPEdvifHiZoAPB+Pf3gLBa6vsEP6ChfI3/V2TDMZj1k26tGTn+Eerebs0H1aZRWvGy5HjxkDOiFjHmSMkLPoRvR2PRFnJqRpxh0pnWcheDzpmwrgSyHxgD7W2N8g+GWJ+9hX8JzVYqfzayAVNDxQgBEYztu1Yex11WY9JnC1
+X-Spam-Status: No, score=-9.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Fri, 23 Oct 2026 17:55:29 +0200
-Jerome Marchand <jmarchan@redhat.com> wrote:
+On Fri, 2026-10-23 at 18:46 +0530, Shrikanth Hegde wrote:
+> Provide an option for users to enable cache aware scheduling on powerpc
+> via a command line parameter.
+>=20
+> More details of the problem and context is in cover-letter of v1.
+> v1: https://lore.kernel.org/all/20261012102037.2477378-1-sshegde@linux.ib=
+m.com/
+>=20
+> v1->v2:
+> - Move to kernel parameters from debugfs. This helps to keep
+>   llc_id consistent which doesn't change across sched domain
+>   rebuilds. (Tim Chen)
+> - Update arch_llc_mask to reflect the override (Tim Chen)
+> - Limit only to mc, pkg (Srikar Dronamraju)
+>=20
+> Notes:
+>=20
+> - A selftest for the functional validation of cache aware scheduling
+>   is a good idea as we discussed in v1. It is a significant change on
+>   its own and likely takes time. I am thinking it might be good idea to
+>   revisit selftests for scheduler in general. (We have very few).
+>   Maybe worth a discussion in coming OSPM.=20
+>=20
+> - I am on parental leave. This version is pretty much what I had last wee=
+k
+>   and I haven't gotten any chance to update since. just sending it out.
+>   Sorry if I have missed to address any comments.
+>   Please expect delays in my response.
 
-> On ppc64 with CONFIG_TRACE_IRQFLAGS enabled, the ring buffer code can
-> enter in an infinite recursion loop.
-> 
-> The problem occurs because some PowerPC's local_t operations
-> (local_inc/dec in particular) use powerpc_local_irq_pmu_save/restore()
-> which call trace_hardirqs_on/off() to generate trace events. This
-> creates a recursion loop:
-> 
->   ring_buffer_unlock_commit()
->     rb_commit()
->       local_inc(&cpu_buffer->entries)
->         powerpc_local_irq_pmu_save()
->           trace_hardirqs_off()
->             trace event => ring_buffer_unlock_commit()
->               [INFINITE RECURSION]
+Thanks for sending this while on leave, and congratulations!
 
-Hmm, the ring buffer has recursion protection that should prevent this. My
-question is, why didn't that work? Yes, I agree with the patch to not have
-local_inc/dec() call anything that can be traced, but if this caused an
-infinite recursion, there's a bug in the ring buffer code I want fixed too.
+The updated approach with boot parameters looks good to me.
+Some minor points:
 
-The ring buffer has a trace_recursive_lock() that will allow one level of
-recursion and then prevents new commits from happening. The
-trace_recursive_unlock() is called after the rb_commit(). Why did the
-rb_commit() allow an infinite recursion?
+1. llc_bytes. As Chen Yu noted, get_effective_llc_bytes() returns 0
+   on powerpc because the generic cacheinfo is not populated. With
+   NUMA balancing on and the default llc_aggr_tolerance, any process
+   with a footprint then fails exceed_llc_capacity(), so cache aware
+   scheduling still does not engage.=20
 
--- Steve
+2. Bisection. Patch 2 moves SD_SHARE_LLC to MC/PKG, but
+   arch_llc_mask() only follows in patch 3, so a kernel at patch 2
+   booted with llc_override=3Dmc has sd_llc at MC with per-L2 llc ids,
+   causing mismatch. It may be better to squash 2 and 3.
+
+3. llc_override is only written at boot. Making it
+  =20
+        static int llc_override __ro_after_init;
+
+   and then you don't have to worry about READ_ONCE and WRITE_ONCE
+   to it as Chen Yu pointed out.
+
+Tim
+
+>=20
+> Shrikanth Hegde (4):
+>   powerpc/topology: Introduce llc_override kernel parameter
+>   powerpc/topology: Update mc/pkg flags based on llc_override
+>   powerpc/topology: update arch_llc_mask based llc_override
+>   Documentation/powerpc: Add details about llc_override
+>=20
+>  .../admin-guide/kernel-parameters.txt         | 15 ++++
+>  arch/powerpc/include/asm/topology.h           |  8 +--
+>  arch/powerpc/kernel/smp.c                     | 69 +++++++++++++++++--
+>  3 files changed, 81 insertions(+), 11 deletions(-)
 
