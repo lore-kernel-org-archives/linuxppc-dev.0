@@ -2,96 +2,53 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 28A4B606A31E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2026 20:25:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 62B64606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2026 20:33:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=QbrYBrYm
+	dkim=pass (2048-bit key, unprotected) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=aHkfVa8e
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jD4qv5pGGz2yKn;
-	Tue, 27 Oct 2026 07:25:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::92b" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793046315;
-	cv=pass; b=UJQRwPspEYH5H/yBJalplJl54OHff6yG/W/CmuW2fSpXb0Yd/qM1WnKPppEZOeeFSqx/8Q4guDVulvSEUwkY25aM0at8rn4GvtqQ5eubKlD+Ls6Ba1VUsEM68mBcwqBzO1YJgv93OaSrpS7/UELtV/26RLF4/JWB3jG5cRVo8SD9hHSEwDKnOmvYwU3Tucn3hNyn0asvKWhNiobmlCoZNKJFqDvUsTDIa77ZiI74cQN7P2DgoyhsO4lWUHMcDC7CgTPKnYTGbktgpoyqesERRMUt0kdqf53HHe5zEGn8oTCG6Ai+V++ji0yfWqp60K/1Oz0o8I+ESKnEPN+buhcliA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793046315; c=relaxed/relaxed;
-	bh=pU0NwAlmN/1H5GxbKnpqpM7HbDpz94JrESY0WvDe6G0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Y7rsiXQ27jBQr1BKZVDb8l7wvxG6iefo6mqI5xwsy2/PrKS9+oSFLPxt0aM8tJvtNemAfr2kV2SRT7OWMHGt26W+HBH6nxkDN++uIaBogUcfbLwrJTNqlYMke1GO1b0ZJh4Vsi1JyOlUCobaYvOspvVcVWw5okeX5M0uGaB8yZ3Qa8BwFbZOXIHSMUbjxCnbFS6MsW87XAQfn4VHEEqK5zbFadoQ3ucIJfe+3Sm2nQdXb79sH2/aa2DGtqt2arGaI9yqBykzS19zVkYLofeGY4HfnAXZzaP0/4chU0OtuyjfXHmzSOX5gbzI4ThuldZwCzJ3mQeREzVd+3tEp93Prw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=QbrYBrYm; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::92b; helo=mail-ua1-x92b.google.com; envelope-from=james.hilliard1@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jD5150LpNz2yKn;
+	Tue, 27 Oct 2026 07:33:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.227.15.4
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793046792;
+	cv=none; b=P9BaUHX152E1+RY0vqb0oHs/2YEFYxvSGmn/S0Ln48v2f1Jo3JaUIa+/kwYV/j9g3qyZERp/2zZWNSxfaucJD8vZE82hZPJF1rsVmLGGV9pH76J+VZv2Noy2BMwdb7ilDYPyF+N8rega2Lwrb9wb2aWpXBPzaynbyGlcXlZu2zzUWRYHQ/JO+cdy1tObBAAwvPSabgYgL2VREDntuXKGk9mAt6p8OvZ/H/3Ji6LKk4Zsj+pkhD0WiDg5249Pt5E9n7Ha/zqeN9YZRNK4o0oh+a/WO5c+8zRwgRMcfoXpZTaNF4J+fkPTTOYW7T+7t8i2jEd+3lMpXLXG/3nI5xdhCw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793046792; c=relaxed/relaxed;
+	bh=0rFainJhqdviEgXERCkuAXMBJIMk47qPeO7jf0mjJHI=;
+	h=Message-ID:Date:MIME-Version:To:Cc:References:Subject:From:
+	 In-Reply-To:Content-Type; b=j2+8zowVNFK4B2dZkGhEult1nYsU1gcOYXsGjL47rOTaWbjRZ4zBlsFrSRDcKHGdndaVs7/1cJmJaA59q3yPLL4es5O3SIwT0AchBeYEuY8B7LyC2+d8PhFQxIp0BLE7GmSCIIGTxiSMw2PH/AJJGOsqGJXcBco1a424wYZ+H1tnVBPgZzJDSkZ26Sy6SnkQm56pEoQRv0jCVp0g2nbAyhN4q+J0Z3s7+VS0tS+Vo3lpY2Wp6aC0XTlwzl9POKy2u47L7C9/sdSLS/z4jTqCw5epegGQj8FDln+Fl9j5Zn/R9YbHdZKe9dv3LIvf7HpAeMfpIFSjQdu/ENvx6gGnsg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=aHkfVa8e; dkim-atps=neutral; spf=pass (client-ip=212.227.15.4; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org) smtp.mailfrom=web.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=QbrYBrYm;
+	dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=aHkfVa8e;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::92b; helo=mail-ua1-x92b.google.com; envelope-from=james.hilliard1@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ua1-x92b.google.com (mail-ua1-x92b.google.com [IPv6:2607:f8b0:4864:20::92b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=web.de (client-ip=212.227.15.4; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 326 seconds by postgrey-1.37 at boromir; Tue, 27 Oct 2026 07:33:08 AEDT
+Received: from mout.web.de (mout.web.de [212.227.15.4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jD4qt4hMMz2xm5
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2026 07:25:13 +1100 (AEDT)
-Received: by mail-ua1-x92b.google.com with SMTP id a1e0cc1a2514c-9905e692905so331511241.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2026 13:25:13 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1793046311; cv=none;
-        d=google.com; s=arc-20260327;
-        b=TOJhfaeWmm/mdmR8jAZUTb7vFCmo05m+jIU1ert2fGuJJ7HBTtXeVULsUbIewbvV35
-         iihSoYrg4aKinveAeKN7/uA3zy7Mz+TiWeyvY8fAFBRbQ1ArFnNiAinivtVdBmPUl67w
-         LzSNLSPwNx+FQqC/iuulV+43miuKIMG+7k7K4rZU7SyYLu1jAXxQOz6DxOtlCzkkZLcQ
-         zwMoySXj9PI4u4clMub6yQR0RZQ9/RLdNgO9JM92l2bxPh5UVvTY/m54+zPRUSgVdkGh
-         4umpM3YqAZDfR+xW71ofFF+BzEZCwt91HZ0ervBCU8x0N8hDgOB8UUbmSGBpYGQ8EPq5
-         +wvA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=pU0NwAlmN/1H5GxbKnpqpM7HbDpz94JrESY0WvDe6G0=;
-        fh=HlzRrvBEc9zCXjaVgEMNeEH3Lcdj/tvh70UdKBIc8Ls=;
-        b=gzQGWFKFxAp4Aqj/U7p2hGhqWNkqrhR2mn6K1v6A6qZiA17RG1rzqqkzXdO0Y7DEhW
-         LNj5AzFapaDOqdZUZhw2JQiDoJlZc8LCJq5gRjq2lKq6/l8r8JVMbue3GURMgISB9loe
-         Yj93576ugIJ41FOTgFX48c3he+WBXCnB02AeH6ocpU27zxZudZWUTjZqvMiruJGYswqA
-         z7Gi6jvOAEAdexCFi80MhcVvBXUxrteZfcz0pD5kJr/zPwNJNyZaZdk95A1LTn92TiXu
-         sPeDEmP3389fv33FhFmlmgXdiXbkQx5kMGp46PUJos+ORU/Ged2NdVU7o3UaDM1VAFQf
-         31qQ==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1793046311; x=1793651111; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=pU0NwAlmN/1H5GxbKnpqpM7HbDpz94JrESY0WvDe6G0=;
-        b=QbrYBrYmVOMWSLUEgv/L1fpfQ8y5Oe6YIKam7zYyqgHUEBpdkZAMZCFk7ngmWJgrXf
-         pyvl4vGP76RD5HFwcvaY2scsot9YoX8L+Z9GAn2ZjLWejnH1d1qhqh47cifm2zeJmcNy
-         66DnH04yYNlpyOUGPUDmXJTQQwBqaY+jzL3eP7QhOuGuQJ8ZuvI/iTzpGXAQwp0wBxK+
-         MUwyfEjsYhKvBHEIMsQckBpu2T7/xy3tBQVZ1iJY+lzjG4Yvt26vGVWR7fntrKvno0lj
-         K7FdWCJAraqt3vvvvNyvg0IlXUDQaez4U/l0d4VaOc5Y8B32zz+ZvDmgWOb/uDP3ZOcA
-         Yi2Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793046311; x=1793651111;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=pU0NwAlmN/1H5GxbKnpqpM7HbDpz94JrESY0WvDe6G0=;
-        b=Moh4b+cSdykHVLcoG5PP6X9GyfADTsyc8e0gxNeQBsGl/dq6OPTwZNGL3vkUbh8UV0
-         f72VpL++13YxIW6CZOFmpuaEJ5Kr/ewLejCbxHtU6CG3nAj/LE3cfXrP7/cpIT9oTK5B
-         Lpvf5eAqifiZO05esg++7VH1a1Vx65V6yYCTQbZ5U7AGAe6H620L9dVW0MnxVKfgfH2F
-         a8w9doGo2iZKB6yXPmUD6GUhClbzTNhNT/ysHHO+v8Ur4zXVwcTSr8ZZjlYPeVXvfUSK
-         PShLVVEsN+in5Ag2dxuBsiJntZWK3c2kV5eFvAy4AiedahatgRNIlOyVrdkAsDLF9m6R
-         /vvQ==
-X-Forwarded-Encrypted: i=1; AKwUvBzb7/4txCiP+mylPIGf7C9Mrs1Cn6f3Pokc5DPz6w2bk43P57ZV6gwyz/mCyxvntYRMi2SH7Kdpnxq5yVg=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYIVwLyncB0IdrpE+BzPWfx+G/lqGayg4cvS6Xfa01mWBktRxOVk
-	SruWTLHoJmXWVoBZA78/jLCSl3s4QBH3g9OhbYKTKMU8Uzj4+3GO6yakPV8UA1U7XHlpxruHZqD
-	WwSWrRizWtvfUcIHOZ7rJZ9pOH9/dJGY=
-X-Gm-Gg: AYBFou1wHhfWMViVeKgEUjAS7Jbgzu6s8j645Q+Fe3EdNcuU0srNYtkzJwv3Iu0zUZ+
-	1Z225O4e8gY9asX3aYHC1zr2XKV9hxM4/isZij34xEJwKUpih/6uV13Kfw1SoNm4hfR75gfKTX/
-	ZGaMrIJh6VL2b/LbzQ3NOCNeExVY7/wjI8ErKVoNMZtReCEE2kQj4BbInBMDhM2Hd8IQ3be68SP
-	lhm1M8cCGaK3ci+GgQQNJRJCic+N+f2RtP58fye9J8RTMJ7l0XN+TiyZgy9PI2Jed99efM8Ct43
-	HVHy6t7MxjryVIYvxuimvNii/Hd1JbRO6EPGpZa5XsoFpetHWSmsKt0M3AB69Fug8ia9IEx7C3f
-	UU1UBjK0P+s5uPX336e7eiaPv+c58aUx23rXOAeqP2KfqH4oa8cgllZCp3rYd2clAC1y0z0tbaz
-	dOskC+r5+wE34X740GjTWCUmxVCqSFBoe/8BNuG4w8w7KtRoKbJuUu8qpVhdFDO1LplL/6UrFbH
-	R/tXtgIO5H+Lq/8OCHKyYRmnNKcIQ==
-X-Received: by 2002:a05:6102:83cb:b0:7c1:6de4:9f67 with SMTP id
- ada2fe7eead31-7ce5ca62390mr2075068137.2.1793046310592; Mon, 26 Oct 2026
- 13:25:10 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jD5105sB2z2xm5
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2026 07:33:07 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
+	s=s29768273; t=1793046784; x=1793651584; i=markus.elfring@web.de;
+	bh=0rFainJhqdviEgXERCkuAXMBJIMk47qPeO7jf0mjJHI=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:References:
+	 Subject:From:In-Reply-To:Content-Type:Content-Transfer-Encoding:
+	 cc:content-transfer-encoding:content-type:date:from:message-id:
+	 mime-version:reply-to:subject:to;
+	b=aHkfVa8eLATW71l4uEEng2J2Ve8itkp/VeH8xgU5Kb8RpOkm6sNkLVWXC4lG0koz
+	 J8C421hDEZh1DQKifqaPbqfKxuMyKr8SB9IrqEkQNS6uy5sl0rQA97jaAW5CNFziZ
+	 /9KPXxi+Sc+5wtJjy8vz2TEUgYPZ3tnhwHtJ++BYMjwNlckolw0xNSZqR9hQG9Mm3
+	 guXOWceHXQ51Mk+SCqhCjQfo/HNSKGDXl4e5X+6D9QH78NJDjQpkNihpl+kklHOpZ
+	 0x6tuxa7m8rh4YTtW1oL+OK64ahu3PAhn0FDy8yq7re5+rOUNGEBM2f9JCVYFxtA/
+	 MuM8Ngco1HmqIDsTKA==
+X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
+Received: from client.hidden.invalid by smtp.web.de (mrweb006
+ [213.165.67.108]) with ESMTPSA (Nemesis) id 1MeUbo-1wl00I3yRY-00pJfE; Mon, 26
+ Oct 2026 21:27:11 +0100
+Message-ID: <ed315ff8-36fa-40ef-90f9-01ad197a9f94@web.de>
+Date: Mon, 26 Oct 2026 21:27:09 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,133 +62,155 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261024-submit-serial-8250-dma-cancel-v1-v5-2-9e52968928d2@gmail.com>
- <alpine.DEB.2.21.2610250459200.42255@angie.orcam.me.uk> <at4bw-G8czG-G7Wl@ashevche-desk.local>
- <CADvTj4psJcY2T1PG9H8_hJWjz62R7unj3PPgv3FrVquUMFVhGg@mail.gmail.com>
- <at5qKehogAjTa-fA@ashevche-desk.local> <CADvTj4qSgE6Rc--mWuqAcc8HTqN9EFOS_JM8Hp8e_=ka_ZLa6w@mail.gmail.com>
- <at8eDFj2WNaXDaot@ashevche-desk.local> <CADvTj4oNz-bnSZP+kfau-7wBSWLjLTP5jrr6nLfdCHNPo3pS6w@mail.gmail.com>
- <at-vyZ1sDhYPu0W5@ashevche-desk.local> <CADvTj4o_CENc3i92OQEZudOErSKPUptT4t2CCqDaGbseuK0QcQ@mail.gmail.com>
- <2026102631-stove-preview-b534@gregkh>
-In-Reply-To: <2026102631-stove-preview-b534@gregkh>
-From: James Hilliard <james.hilliard1@gmail.com>
-Date: Mon, 26 Oct 2026 14:24:58 -0600
-X-Gm-Features: AclHuK-jg_V963WeCj8dDZYyLMETxUQLvBlHikJJBrwQZYN579iKyQfuGLYZuh0
-Message-ID: <CADvTj4pCnnzx4B28H_1BuY4gm2fh_8HYL9jLpsAoJcWfiUXOHw@mail.gmail.com>
-Subject: Re: [PATCH v5 2/5] serial: serialize asynchronous write wakeups with
- the port lock
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
-	"Maciej W. Rozycki" <macro@orcam.me.uk>, Jiri Slaby <jirislaby@kernel.org>, 
-	Raul E Rangel <rrangel@chromium.org>, =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>, Tony Lindgren <tony@atomide.com>, 
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Richard Genoud <richard.genoud@bootlin.com>, 
-	Nicolas Ferre <nicolas.ferre@microchip.com>, 
-	Alexandre Belloni <alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, 
-	Jacky Huang <ychuang3@nuvoton.com>, Shan-Chun Hung <schung@nuvoton.com>, 
-	=?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
-	Fabio Estevam <festevam@gmail.com>, Timur Tabi <timur@kernel.org>, linux-kernel@vger.kernel.org, 
-	linux-serial@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	imx@lists.linux.dev, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+To: Bart Van Assche <bvanassche@acm.org>, linuxppc-dev@lists.ozlabs.org,
+ Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Christophe Leroy
+ <chleroy@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>, Ritesh Harjani <ritesh.list@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>
+References: <56f0c45723ee53149a21ceb599010e957457afd8.1793044370.git.bvanassche@acm.org>
+Subject: Re: [PATCH] powerpc/iommu: Fix an RCU read lock leak in
+ mm_iommu_is_devmem()
+Content-Language: en-GB, de-DE
+From: Markus Elfring <Markus.Elfring@web.de>
+In-Reply-To: <56f0c45723ee53149a21ceb599010e957457afd8.1793044370.git.bvanassche@acm.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Provags-ID: V03:K1:qTKgH57TOzyJ5nr5xKKTUtBr2l4rXHfZPZF2pcEZTRYDGjUdxlE
+ BXKBRZAupAc5mNFpzrNkQk4aPUteBJORH/mhRrE1xIfiCAtTd/t05frACCZSAvljB6j5gAX
+ zzYVZL75Ky5DJ5rH/xANUr2d0XackBiXZ6JjyibDi9pwI4JFSlZE4E04IRjGlWYqYIdCmXh
+ DdnCCfrCF5/8vFgeBWIjw==
+UI-OutboundReport: notjunk:1;M01:P0:X8FsTsFzyjE=;9xcWg+cyMcA989t7P86avkT3HMx
+ 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
+ YxPEnGhIMSa/VI5hRb9dEmJrExeg==
+X-Spam-Status: No, score=-9.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Mon, Oct 26, 2026 at 2:17=E2=80=AFPM Greg Kroah-Hartman
-<gregkh@linuxfoundation.org> wrote:
->
-> On Mon, Oct 26, 2026 at 01:59:06PM -0600, James Hilliard wrote:
-> > On Mon, Oct 26, 2026 at 1:53=E2=80=AFPM Andy Shevchenko
-> > <andriy.shevchenko@linux.intel.com> wrote:
-> > >
-> > > On Mon, Oct 26, 2026 at 10:45:54AM -0600, James Hilliard wrote:
-> > > > On Mon, Oct 26, 2026 at 3:33=E2=80=AFAM Andy Shevchenko
-> > > > <andriy.shevchenko@linux.intel.com> wrote:
-> > > > > On Sun, Oct 25, 2026 at 04:11:08PM -0600, James Hilliard wrote:
-> > > > > > On Sun, Oct 25, 2026 at 2:44=E2=80=AFPM Andy Shevchenko
-> > > > > > <andriy.shevchenko@linux.intel.com> wrote:
-> > > > > > > On Sun, Oct 25, 2026 at 02:25:46PM -0600, James Hilliard wrot=
-e:
-> > >
-> > > ...
-> > >
-> > > > > > > Some people might want to test the stuff. And sending too oft=
-en you actually
-> > > > > > > will get the opposite results, people will be tired to even s=
-tart reviewing
-> > > > > > > and/or testing your code as it's changed way too quickly.
-> > > > > >
-> > > > > > My thought process was that people wouldn't want to be testing =
-code that
-> > > > > > had known bugs flagged in Sashiko reviews.
-> > > > >
-> > > > > Sashiko reviews are not visible in my or any other mailbox. To se=
-e them I have
-> > > > > to go to some URL and so on, meaning to waste time to see why on =
-the earth the
-> > > > > new version has been sent.
-> > > >
-> > > > Maybe the Sashiko reviews are getting caught in spam filtering or s=
-omething?
-> > > > They are showing up for me and on the mailing list[0] so I'm a bit =
-confused why
-> > > > you aren't seeing them. You shouldn't have to go to the web interfa=
-ce[1] to look
-> > > > up the reviews.
-> > > >
-> > > > [0] https://lore.kernel.org/all/sashiko-outbox-183574@kernel.org/
-> > > >
-> > > > [1] https://sashiko.dev/
-> > > >
-> > > > > It's better before addressing Sashiko comments,
-> > > > > reply to all people involved and to Sashiko's original email, so =
-it will be
-> > > > > visible in the previous version why you issued (actually about to=
- issue) the
-> > > > > next version.
-> > > >
-> > > > Hmm, maybe it makes sense to enable recipients in the reply_to conf=
-ig[2]?
-> > >
-> > > It's up to the list owners / subsystem maintainers.
-> > >
-> > > > [2] https://github.com/sashiko-dev/sashiko/blob/v.0.6.3/projects/li=
-nux/mailing_lists.toml#L290
-> > > >
-> > > > > And before even issuing it, wait for a while, people might
-> > > > > disagree with Sashiko judgement or your replies on how to address=
- that.
-> > > >
-> > > > I was assuming everyone was seeing the Sashiko reviews getting post=
-ed to
-> > > > the mailing list already. The are ending up in lore so unless someo=
-ne isn't
-> > > > subscribed to the list I'm not sure why they wouldn't be seeing tho=
-se reviews
-> > > > already.
-> > >
-> > > I assume you already answered your Q. mailing list in this sense does=
-n't mean
-> > > recipients. I think it simply goes to the mailing list without forwar=
-ding.
-> >
-> > Do we want those reviews going to recipients as well as the mailing lis=
-t?
->
-> For serial patches, we decided to only have it go to the submitter and
-> the list.
+=E2=80=A6
+> +++ b/arch/powerpc/mm/book3s64/iommu_api.c
+> @@ -371,6 +371,7 @@ bool mm_iommu_is_devmem(struct mm_struct *mm, unsign=
+ed long hpa,
+>  			 * and the caller needs to distinguish this situation.
+>  			 */
+>  			*size =3D min(1UL << pageshift, end - hpa);
+> +			rcu_read_unlock();
+>  			return true;
+>  		}
+>  	}
 
-When it goes to the list is it supposed to go to list subscribers as
-well or only
-to lore?
+Under which circumstances would you become interested to apply a statement
+like =E2=80=9Cguard(rcu)();=E2=80=9D?
+https://elixir.bootlin.com/linux/v7.3/source/include/linux/rcupdate.h#L121=
+6
 
->
-> thanks,
->
-> greg k-h
+Regards,
+Markus
 
