@@ -2,72 +2,75 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 14E04606A31F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2026 04:26:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B50D60A2616
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2026 07:53:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iHgLqTPO
+	dkim=pass (1024-bit key, unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=KvWkDFkJ
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jCgYt2TpKz2yDs;
-	Mon, 26 Oct 2026 15:26:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792988802;
-	cv=none; b=N3wZEbwfVLAG44iOlQEjTT7GPvPc/0crIgS09OUL8Ece+mVzY0YDGs9SgEMgoqENHYTTT1MRluw+XBJdqUZ+Lw2aiESGcI6CtJvPPxvRyZwYTDJ75vwf0NgMsBzjKMy8wQSREYyO1aoa5hAjxa8TYZHh9CcUX8rRDc30mD4XCNCkEMv/bVrP8kGWzB6ZCpUGrVmAAxoL3TyfN4E2CFsfVXnKVRY4my/lYlTCznq2awGcay+EbPP/dHAVJO/l9CkGRDFzzD71TDbloJX+tDpxyC0PYG283T9k3X8Gjju+6Lb5Tlguee8YDGcGlq/cNLdgG1PWfIRO/aQFhzhD4lp7hw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jCm841CFGz2yPR;
+	Mon, 26 Oct 2026 18:53:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.216
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793001188;
+	cv=none; b=l4B8oyF6vVYvo7F8iZKZT1fWYz8C0IFO5ALRehK8ipvE4FQ+aOEIB2RxSOSoMSvTnaqRCB0V8b57P66lFITKABSnJYFdEPt3Z4fyNx3fZ1VZUrCisRhzfZR4+OD5h5hAQ2NFGJExtuQkfzZv32CqtLixuSZ3TQ9eyhfFCB4CrzaEHMkK+WJ7AzKa5dMIImyOIClRY1C8yxVSi4SfGXRbv5rw/sqku4hCe5P0vDkzptNQnURd7dfMQ+EdSOWWRiHydq1QXC/0afRkD6ooiy5KmQAa3ml+mfW9EmlAltyCEanmujwIN6J2OkaeZjYaE8/jzFedvjniNPDytr8OoIJL4Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792988802; c=relaxed/relaxed;
-	bh=4jxPmGPQHAD1Q6IoVK7PNqr4uQjZpTbBraFDOuc+3pw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=MzFkL32uh+cG92u7DRvqFeayRRlkyRJHQVwJ7m2HkFT4xY/8UvtZjQq09rr5QLlW7PASxAR7d9eF0XWfi6g4KqRHpjPNE09WyAgdJbGKygZQ1+5ymiARO3owhXLADR84m2+Y/nPCn9x7AtYYLEHZMzOb205PDiIhSDvbmx3/SwIiuTcuKXCDUvlDzHJWvXfrw8ZjFWvcodx9SgE9KEtMokMkyEFpNZy1JqaDIZiGVzDcQUXfdH8nOvTi5kAdGccrTY2womAIlarlEwESLIzn3DcE+gCQmBB4lNamBIg9L6CKjH+PfVrG+oxo2kXu1ra/v/wtn9pF1ntF64Ns4uk62Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iHgLqTPO; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1793001188; c=relaxed/relaxed;
+	bh=AqQFdK35R3PRDVunxYa3KuNeB3Jy3YGmbat9louWLxc=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=R7HDeelJjJKUfcklsiHF1Dsa2dAP8bFhv0BvZeqp/Yglb9iF2ObSetIoq1yiVpW8g/+b3+AEkPotjCI4YAMPe2FcOOMwJBAyJ3CQVCMQA97y5a832gOz06Tz82vQJUncTYuzroXNpS2kz5Kq2cxfN0vSkFgikzZgDSp5Rq0dXhT4AS6yTEjPQ4+2GdiLWLrOQG3R3kLcqkCbIsnsTa+t9eqOiudsOoKQZ7etC6oRBu+6J3Klf5OGIjyW79yhiGmaDtxxw+j8MIoST0Me9Jma6eJCpg2KxwuamFlk1LrNyAdK0YDe729pswCJPapA1Bfz79B+W2gi8wGy3/wlPtj4iA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=KvWkDFkJ; dkim-atps=neutral; spf=pass (client-ip=113.46.200.216; helo=canpmsgout01.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iHgLqTPO;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=KvWkDFkJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.216; helo=canpmsgout01.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout01.his.huawei.com (canpmsgout01.his.huawei.com [113.46.200.216])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jCgYs2sVKz2xcB
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2026 15:26:40 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69Q2i6tc833002;
-	Mon, 26 Oct 2026 04:26:16 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=4jxPmG
-	PQHAD1Q6IoVK7PNqr4uQjZpTbBraFDOuc+3pw=; b=iHgLqTPOCd3bZXsGq1XtYA
-	NNdOAo7i8o3y0RreBq1t6HGg2FknhiBmwE1Su/bo4F4uuv+GcZQW+YFBbjzyOKVW
-	tTz16ZYDzSzspLeP4E80IUYL4xnPsXxKuxssZIJQTgACP7oiXPvbbL5o0KbXbFXk
-	raT1MHrMi8TEsV7qr25imOWrYsPRtjGHIQLAnKNi3zCTheX8ekT+GnXvkajywfB5
-	oi21oWBXfiDnikdeGNOIBaUVP6GrUnP8A8kse9ZDImVXAP+oyN2mm5FEO1vAaXQc
-	NPciyGc6ab03hIenwgvuGAmbNfbrZ84q04IITamxvYgdDJCxE74zsHGh5iYG8QBQ
-	==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hgk3fquuy-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 26 Oct 2026 04:26:15 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69Q2KXtH1924565;
-	Mon, 26 Oct 2026 04:26:15 GMT
-Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4hh8ggv41a-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 26 Oct 2026 04:26:15 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
-	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69Q4QEFx31916602
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 26 Oct 2026 04:26:14 GMT
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 953145805D;
-	Mon, 26 Oct 2026 04:26:14 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3548B5805E;
-	Mon, 26 Oct 2026 04:26:11 +0000 (GMT)
-Received: from [9.123.8.83] (unknown [9.123.8.83])
-	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 26 Oct 2026 04:26:10 +0000 (GMT)
-Message-ID: <e3e7f96b-e23d-452a-a3fc-774d5b2e0ee7@linux.ibm.com>
-Date: Mon, 26 Oct 2026 09:56:09 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jCm7y0Fv7z2xN4
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2026 18:52:59 +1100 (AEDT)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=AqQFdK35R3PRDVunxYa3KuNeB3Jy3YGmbat9louWLxc=;
+	b=KvWkDFkJzXndGvncGFgO/hLjASWJRdQGUv7ZBx9Kd/Y4d/gjf2/tOQPoVj+es5AzzAYYw+fZL
+	wpZ+D42NaiYDjO0KhibMF2YG20SX/Jm8lwHyRYfnUO/XjCMujysMoKBsQuUTEMEVfZxGKQ0Cymh
+	ytpS/HzSSO+e3Fp8IxNlI6E=
+Received: from mail.maildlp.com (unknown [172.19.162.223])
+	by canpmsgout01.his.huawei.com (SkyGuard) with ESMTPS id 4jCm7d1PzKz1T4MW;
+	Mon, 26 Oct 2026 15:52:45 +0800 (CST)
+Received: from kwepemk200008.china.huawei.com (unknown [7.202.194.74])
+	by mail.maildlp.com (Postfix) with ESMTPS id CDF3A40577;
+	Mon, 26 Oct 2026 15:52:51 +0800 (CST)
+Received: from huawei.com (10.90.53.73) by kwepemk200008.china.huawei.com
+ (7.202.194.74) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Mon, 26 Oct
+ 2026 15:52:50 +0800
+From: Jinjie Ruan <ruanjinjie@huawei.com>
+To: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
+	<chenhuacai@kernel.org>, <kernel@xen0n.name>, <maddy@linux.ibm.com>,
+	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <chleroy@kernel.org>,
+	<ritesh.list@gmail.com>, <sshegde@linux.ibm.com>, <pjw@kernel.org>,
+	<palmer@dabbelt.com>, <aou@eecs.berkeley.edu>, <alex@ghiti.fr>,
+	<tglx@kernel.org>, <mingo@redhat.com>, <bp@alien8.de>,
+	<dave.hansen@linux.intel.com>, <hpa@zytor.com>, <akpm@linux-foundation.org>,
+	<baoquan.he@linux.dev>, <rppt@kernel.org>, <pasha.tatashin@soleen.com>,
+	<pratyush@kernel.org>, <thuth@redhat.com>, <ruanjinjie@huawei.com>,
+	<leitao@debian.org>, <yeoreum.yun@arm.com>, <robh@kernel.org>,
+	<sourabhjain@linux.ibm.com>, <kees@kernel.org>, <coiby.xu@gmail.com>,
+	<Yeking@Red54.com>, <tangyouling@kylinos.cn>, <maqianga@uniontech.com>,
+	<zhangtianyang@loongson.cn>, <guodongtai@kylinos.cn>, <blum@kernel.org>,
+	<adityag@linux.ibm.com>, <hui.wang@canonical.com>, <sohammetha01@gmail.com>,
+	<guoren@kernel.org>, <gaohan@iscas.ac.cn>, <kai.huang@intel.com>,
+	<kas@kernel.org>, <vishal.l.verma@intel.com>, <piliu@redhat.com>,
+	<jbouron@amazon.com>, <mclapinski@google.com>, <me@linux.beauty>,
+	<graf@amazon.com>, <bgwin@google.com>, <x86@kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
+	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-riscv@lists.infradead.org>, <kexec@lists.infradead.org>
+Subject: [PATCH v7 00/15] kexec: Fix CMA and elf header leaks and rework
+Date: Mon, 26 Oct 2026 15:51:46 +0800
+Message-ID: <20261026075201.699550-1-ruanjinjie@huawei.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,73 +84,101 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/irq: Fix build with CONFIG_PROC_FS=n
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-        Sasha Levin <sashal@kernel.org>
-Cc: Shrikanth Hegde <sshegde@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        kernel test robot <lkp@intel.com>
-References: <2331292e-1a40-44ef-8776-9155e8e41f03@linux.ibm.com>
- <20261023211503.3764302-1-sashal@kernel.org>
- <CAHk-=wh7ZfsDA8Jh0+GSpLehCzfnyME_ztcpwebnvBMDnqjM6A@mail.gmail.com>
-Content-Language: en-US
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-In-Reply-To: <CAHk-=wh7ZfsDA8Jh0+GSpLehCzfnyME_ztcpwebnvBMDnqjM6A@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=BOMmP1QG c=1 sm=1 tr=0 ts=6aded668 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
- a=0dio3GCuqh6ixl9tjnMA:9 a=QEXdDO2ut3YA:10 a=QYH75iMubAgA:10
-X-Proofpoint-ORIG-GUID: dMDfnuazhFj9l5PKGRHGNVCjDJs9AwUu
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDI2MDAxNiBTYWx0ZWRfXy2Syv13vaJ6Z
- X14s4k6llu6UtAzLbLtCHSzn02kKldluIHU34Ryj4ZHC730gFQeJZwxCtL01cweCZe5bcSE3msl
- Nr+zSlRafGzACdhqDEvr3k5+uWsq5EIy2ebhTlIHNuVvcUmgNDUT0P59WrIJVEvF9U59sLClmbn
- cbZ4RtvQEz0XOFDDTCq7K0DLdIkJfLFGxnyjKiK3ocYVGeDFktnEuZF4CqnNUhaW5dStZS1AGf8
- HB2pMYuOABf78maIhqleF3ACkwhzWmg0iH7Mg0aoQNkCEgs2qfTFLziRFrpBV/Y00lk3bqLz/Wk
- apEzV9ThOZzeet3RROELabTRXZzqj2u7+eCFAaCzIntm29xMryfBcaNVFX06oo2gQtmR8jsiIJ0
- VCKmtqDUo0foLI5FqoJjUo6cGleT8DbifMfIxdTGHIeZ2pVX1uLtApOqVKPG0bYxNV5ZL1L4E0U
- KKBV0PrzgeHL9aXlCEw==
-X-Proofpoint-GUID: WDkwEtVaTqWoioWUeySWVZghQzkWNy2H
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDI2MDAxNiBTYWx0ZWRfX9Olh8xrgo+vE
- GmwTlzIM+3BmXkqHRxAeJk21EBL1izrdQm+9VuqygmkqDDL2+6GdgX0GD6aTA0fnIIm9qdd1C1m
- A2DYi+e31fa/Cbz+qZw1eBWsU3Zoc+4=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-10-26_01,2026-10-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 bulkscore=0 malwarescore=0 clxscore=1011 spamscore=0
- phishscore=0 adultscore=0 impostorscore=0 priorityscore=1501
- lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610190000
- definitions=main-2610260016
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=4.0.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
+ kwepemk200008.china.huawei.com (7.202.194.74)
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+ARM64, LoongArch and RISC-V load the elf core header, initrd, DTB
+and cmdline parameters with almost identical code. This series fixes
+the bugs in that path. And as Mike suggested, rework the common part
+into a helper.
 
-On 10/24/26 5:20 AM, Linus Torvalds wrote:
-> On Fri, 23 Oct 2026 at 11:15, Sasha Levin <sashal@kernel.org> wrote:
->> arch_show_interrupts() is only called from irq_seq_show(), which is in
->> kernel/irq/proc.c as well, so build it only with CONFIG_PROC_FS, as x86
->> already does.
-> Thanks, applied.
->
->                      Linus
+Patch 1 stops using the Image text_offset for arm64, which breaks CMA
+segments in both the load and release paths, and rejects images with
+a non-zero value.
 
-Sorry missed this. My bad.
-Thanks Linus.
+Patches 2-7 fix the CMA page and elf core header leaks in the retry
+loops in arm64 and LoongArch, also fix a modified_cmdline leak
+in LoongArch.
 
-Maddy
+Patches 8-10 pass the kbuf fields to crash_prepare_headers() to
+simplfy code.
+
+Patch 11 frees the elf core header from the generic post-load cleanup.
+
+Patches 12-15 add kexec_load_other_segments() and convert the three
+architectures, and arch_kexec_setup_other_segments() builds
+the architecture specific boot parameters (a DTB or a command line).
+
+Tested with kexec_file_load() and kdump on arm64, RISC-V and LoongArch
+under QEMU, including the non-zero text_offset rejection.
+
+This series is also available at:
+        https://github.com/ruanjinjie-eng/linux/tree/kexec_cleanup_v7
+
+Changes in v7:
+- Rework the kexec_file load code to avoid code duplication
+  as Mike suggested.
+- Add Acked-by.
+- Drop the two non-zero text_offset fix patches
+  and deprecate .text_offset in arm64 as Mike suggested.
+- Drop the x86-32 fix patch.
+- Drop the TOCTOU race fix patches.
+- Link to v6: https://lore.kernel.org/all/20260921090450.807575-1-ruanjinjie@huawei.com/
+
+Previous Versions are as below:
+- v5: https://lore.kernel.org/all/20260918100442.3841135-1-ruanjinjie@huawei.com/
+- v4: https://lore.kernel.org/all/20260907125404.922123-1-ruanjinjie@huawei.com/
+- v3: https://lore.kernel.org/all/20260826092541.3905933-1-ruanjinjie@huawei.com/
+- v2: https://lore.kernel.org/all/20260729031235.2840255-1-ruanjinjie@huawei.com/
+- v1: https://lore.kernel.org/all/20260723131242.1537633-1-ruanjinjie@huawei.com/#t
+
+Jinjie Ruan (15):
+  arm64: kexec_file: Stop using the Image text_offset
+  kexec: Extract kexec_free_segment_cma() from kimage_free_cma()
+  arm64: kexec_file: Fix CMA page leaks in segment placement retry loops
+  arm64: kexec_file: Fix elf_headers memory leak in retry loop
+  LoongArch: kexec_file: Fix CMA page leaks in segment placement retry
+    loops
+  LoongArch: kexec_file: Fix elf_headers memory leak in retry loop
+  LoongArch: kexec_file: Fix a modified_cmdline leak
+  arm64: kexec_file: Simplify load_other_segments()
+  LoongArch: kexec_file: Simplify load_other_segments()
+  riscv: kexec_file: Simplify load_extra_segments()
+  kexec: Free the elf core header in kimage_file_post_load_cleanup()
+  kexec: Add kexec_load_other_segments() helper
+  arm64: kexec_file: Use kexec_load_other_segments() to simplify code
+  LoongArch: kexec_file: Use kexec_load_other_segments() to simplify
+    code
+  riscv: kexec_file: Use kexec_load_other_segments() to simplify code
+
+ arch/arm64/include/asm/kexec.h             |   5 -
+ arch/arm64/kernel/kexec_image.c            |  33 +++++--
+ arch/arm64/kernel/machine_kexec_file.c     | 103 ++++-----------------
+ arch/loongarch/include/asm/kexec.h         |   4 -
+ arch/loongarch/kernel/kexec_efi.c          |  20 +++-
+ arch/loongarch/kernel/kexec_elf.c          |  11 ++-
+ arch/loongarch/kernel/machine_kexec.c      |   2 +
+ arch/loongarch/kernel/machine_kexec_file.c |  96 +++----------------
+ arch/powerpc/kexec/file_load_64.c          |   4 -
+ arch/riscv/include/asm/kexec.h             |   4 -
+ arch/riscv/kernel/kexec_elf.c              |  11 ++-
+ arch/riscv/kernel/kexec_image.c            |  11 ++-
+ arch/riscv/kernel/machine_kexec_file.c     |  79 ++++------------
+ arch/x86/kernel/machine_kexec_64.c         |   4 -
+ include/linux/kexec.h                      |  17 ++++
+ kernel/kexec_core.c                        |  25 ++---
+ kernel/kexec_file.c                        |  99 ++++++++++++++++++++
+ 17 files changed, 248 insertions(+), 280 deletions(-)
+
+-- 
+2.34.1
+
 
