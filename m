@@ -2,96 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8895606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 25 Oct 2026 22:11:26 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 67DF2606A31D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2026 02:04:23 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Q7oM/TiK
+	dkim=pass (1024-bit key, unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=A4/DwLqj
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jCWDs16YXz2xmV;
-	Mon, 26 Oct 2026 09:11:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::936" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792966285;
-	cv=pass; b=bq4dUwHuFSe8qPXVcJ1wrWLmmPpm3olh52zpRe5i9pwEX01a4tTnYwfY2tRIdDtH6kFQnABdCZ62sdc8I2swRuCNaFexPUUsmehKP5jevCkPbwt0YkR0UrdDZ/Zw3WsUaymER2ecNuj1krbZgV5wJ7FMyMMBB7/emse9cc7PZN0kaFXfEsSSWFqhbF09Tf+N2lkyOJiqVpIxw0BDFAy8FhtyP7pqLqFKuLTJCxPgDIfbuVWOFDsTZFrCbqGvlnqAzNUlkzVODvOPVW29ZfyKgC4nnURaoqIg0eLOu53L/HZ45KmlfVt4cnkaPKKfXCvMadOeIkNE59UkRNOSRL3HMw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792966285; c=relaxed/relaxed;
-	bh=2OfqgWNLYUmZ1gnSmkRsn07TKyfZDdq4vI9UsfMbPGw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=F6BYERg4UfbhMGLIbKy65+ORJI0BVQj7oTvu89b70M9Ww9JT/jV8ghjUaso92F5G0rgPe5qIka/qBevlXsH2cvOGQu4aSXNxtl5dT7Rt4G+xVMp7MeDVcbMNBfBoCIME4Uf9fgvHBv1DlafCa/PXNc8fIo2HycOJyq/7G1u4ELP6yuJY/KVVUeQfwOn4ARBYV06KlPSAKzr5Grt69vuXdlEt3DKj9gyrpxeBKELzDYeyIjg+Jg2EiciHQkwKH98dxoNT+bTkg+B57KmURG8RD7/OedH3dZAWotrimK7NLBiKe9CTibRFpYzrGkNeosDCpn7j1VndybBA9L2ynwAF/A==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Q7oM/TiK; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::936; helo=mail-ua1-x936.google.com; envelope-from=james.hilliard1@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jCcPd4nNyz2yDs;
+	Mon, 26 Oct 2026 13:04:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792980261;
+	cv=none; b=kGxmFyb6D4JUqjIxTv0m+QRr2kPJMuYDJGYq07kGDi1itLp87iRic8qGZCJMLjn+iJweKIXDLMC3BV4GU8C5Xn+vHQqK81Jc8wOYrXNc06voXGyRkpwg76XQalVcGrDpHTHqQrRh3pN3wbZ7ZZvhW9Mmiii9dsrLyzhGrxpZX17l4r+t7cDjrOmPt/wz8HNqdAa/6uwiTpVIKDaiIi7gyOXyLLC/wV72bnS5sZ9NvfcCsfQZhsO0s6mTP8/wdj3U7mM2VoDYabT+nalfEuhjotQXoDPX2mH09h2/uW+YmeVLCPGcluYhFVJoqGe1NoxFBbRZqyiJ63O+fa53iyjwiA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792980261; c=relaxed/relaxed;
+	bh=zkV0DSYY1q2xiz5WJX/niGx/d7Lw7ICLtD+7Nzqc/EE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=W80nweqWSQtDYgZ/ZlBYAqN+ALkEz4p8Z1Xu77OTjCLZCTh9OhcycW0/Gigt46eJ4BDjKeEoAlI/UElzm50GexfKDg+TmV+uY9fR+lBbEl2NDqbqXfG+D+0rJxWZAkpJkVCH2mP0/PlH9+0n3dzCBvNIfWYZ9YHvDpqAaFhvE7LgOoy7V0MQlIft5+2JOHAZHoc80WJEYKVy9zwqstzckYIP+OexHo+cQwTngtMMI00AniyADoR1zR/JPn6jWvdNP9CxhesvPxv9aI5phM61ruRB1si2ugfupiwqi/q5eJQnK8O7BLN82q6Vk6fncBxD7jfbJirnw3qeRHgEBKzjEw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=A4/DwLqj; dkim-atps=neutral; spf=pass (client-ip=113.46.200.217; helo=canpmsgout02.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Q7oM/TiK;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=A4/DwLqj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::936; helo=mail-ua1-x936.google.com; envelope-from=james.hilliard1@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ua1-x936.google.com (mail-ua1-x936.google.com [IPv6:2607:f8b0:4864:20::936])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.217; helo=canpmsgout02.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout02.his.huawei.com (canpmsgout02.his.huawei.com [113.46.200.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jCWDq2g2Yz2xKx
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2026 09:11:23 +1100 (AEDT)
-Received: by mail-ua1-x936.google.com with SMTP id a1e0cc1a2514c-9906a5410f5so2631253241.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Oct 2026 15:11:22 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1792966279; cv=none;
-        d=google.com; s=arc-20260327;
-        b=rk6bEFClIr37X50GqPLl3V5KL08WQR7kDzakTvn7eGW6GXolSGTwVzTvKU3rH/z5xR
-         dUGgNfZ33gIcOa0SZb1On4l+LmyAJAFrnzjkshjNMy1Q0/Ely8OimP4PWXYNnQVKrayY
-         H6gDjWJG65G2Y6MdspTMhKTA86bvDD9n/JEQAYjp6mHlO0Y2KNkRqby3n+m1gyTK++qZ
-         crLa1952r4Nz9u3SWjXslo9ZTYxuilYmCZw2bgNfVvgOvn9r6TOAQV8PmqwJEnymOwVG
-         Rq/euPw3iW1OFeS7m3kiUJFJLfQBirZo+mVtsoqjxcOA1pdWIKGgieAJJbpvXC7GiLGc
-         UiAA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=2OfqgWNLYUmZ1gnSmkRsn07TKyfZDdq4vI9UsfMbPGw=;
-        fh=RbQZ97IdP0jPeJfQTHs+dloRjZJ0pVqM2ZffxaNvNgY=;
-        b=l6H6Fk/XUSlKy1nH0tuFLhm2q/ebSBUeqfjpsp+vrwZ/KK2ORnOBDSTibT1kvpuyOy
-         r7DLxMY9tASzk5AhXg7svctkFJroN0vryPDK2bmDl72RxUX9Bg4c6YuCVxRQoId3dXqq
-         5iRn22xtlMguPfiwoc3ciuPtTHsYvWia2aBGREE45lFPsjlH+Sr9s9OWiOjq0/ZHBuUw
-         Cw61fXkB8WmcmRNNQmAO1jo+M4kaNtK4pad90J/xpaBasqTWKDwisNrHF2cvUkQobnXt
-         4ThKJEOk0jtV7lWbwjEnpSUefIoPK4f4n6EIoTfDweweQAV9s678bb4DUKLDglEBP0qM
-         3RcQ==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792966279; x=1793571079; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=2OfqgWNLYUmZ1gnSmkRsn07TKyfZDdq4vI9UsfMbPGw=;
-        b=Q7oM/TiKy8naga75quonnFkBc0V++m6BY/oyxGYJ6ZoELu1jvJXjxaHUNEpQjPqNHc
-         bR0svN+5ZlPTChmA7FYcwDpKs6vt1UoGHTHceSal1p48iP6JwcGuCoBCWLfq5WkpayXF
-         +6//A9krxLaJqK5yinJF+1oYHip3Kqh8Bm1Na5khG7Fej3mBsA2LwztafQe52oVhYDQl
-         e5CRqu0BPbeRoXLFgFYA3grHgQzckgmQxZMZe6sEucEZJ8EFPXOSGhwfmFmVpEmCuYil
-         HXzvAKxlizM0oJV/sKGYMVEb+SEtkU2qYOGyUAyqQ/kHJ6wXeaj9ghHJeYk46T0k7v6s
-         +UWg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792966279; x=1793571079;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=2OfqgWNLYUmZ1gnSmkRsn07TKyfZDdq4vI9UsfMbPGw=;
-        b=Lz3f38lFkFgEkP3fgqp+BkYZNabNlcxJRd4wTVimFvHH01IVLAvQr4SrrVgXsoo3Ta
-         5fYP7uB1TaZz1NrwyX+2xkp8nA43V76P+i1WkOpBkmghI7H+rnkGA5B4Tbo7P8kFbMgw
-         RNYzOIOfOBidDSvbPvIia0Cw9VvOA8Mq3v1dhdXQxSisDjotTmyheNHSCoUz1zDa4eXM
-         olDBsHiLAyZfPwDq9XNCT4e8GV1Oy2avq5gai8m+63e/CuYKQXRXGqGZaeod+qEmn5hZ
-         S3IbzQA31r3sdFQAqhLXiCqRCGounQrJFI/EBI9LmgZzEI+x0mu7YyfoPljyoViviblD
-         RGZw==
-X-Forwarded-Encrypted: i=1; AKwUvBxVyp4o821PWhejMwaQUkMc04E0bxM+CaQruXHOK2vd/75VJyTYr9QYHkQa6wvIlqghu7eRfoEetkiVhhw=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYKkV5l85IBhLjpzedZp92Y5M+hq1AnqGBTH9zvdtR69HpuK81tt
-	yb5PYTM2mJHmAG2pvWd+cr5g4kyNcrnPhAWEhIIFfahih2ywmn5nrtylgcsTtXxszplslq2r+Gy
-	gOEeTE9xctJWrTfMb0BqbvO+XZVpydCw=
-X-Gm-Gg: AYBFou1EaLnQCXvm+U28vyZWS4d64KPJ26gXOMOUwdRO3kVUXfCftc1ULScf8Xupk6v
-	FoFCvPl7B7GC21sorAWTUf90SvQeSBAa+8W3ZSrBwMhSRIccYvu13busCold5lLXl4uOBF5jqQR
-	sRLtqWnHMUTdfGViajBb04t9+G8NmskKkP63PL2S6bgRN3tIJlGEBmNPkZ3LMFOCQyaipzUJ6kj
-	SoUx0daCj7byVkQcu6hX+A+6ICqZDB8BdIFvlfVuM3v2oSXduCXqEzq+N1OjwRwcgg24C8nMlgw
-	CQssyg92bYoxNnpK15s4PnqMtG1w32tt/PXPXrdYXxsl6KiwEZUhiD2Ii1OhkOD4xLfD19OJiH2
-	0LZ7Mft1vdSCEmvzleeFcbGhFsUwTCzOLIJ9hLWUtKzgSbMrpE8L4kQ2JKMuBG4zWypi7Oare8q
-	irBr9azxDkXfKGRn5QjykqOvwI2980QFzr73tALqgzf8TWAHpDZ3Nu5DvwCDRn6MfT1O38dQi7M
-	+0pULc7TjDp92cwCwTONWaT5QwJag==
-X-Received: by 2002:a05:6102:54a4:b0:7bf:8ec:4996 with SMTP id
- ada2fe7eead31-7ce5cd56791mr1192565137.20.1792966279613; Sun, 25 Oct 2026
- 15:11:19 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jCcPZ2NP8z2xsW
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2026 13:04:14 +1100 (AEDT)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=zkV0DSYY1q2xiz5WJX/niGx/d7Lw7ICLtD+7Nzqc/EE=;
+	b=A4/DwLqj9bOFxt5jV1aHRDIbIvOm+m2aGeOnwHabNmmuXnOs+Peabb0o1Z/UV2H6NIOnZJZp0
+	uXbSQ9bcLJqQ0YRCDlMkBLaeUL+Wopvmw/TrIt2Ji3woo7Dc27yvo9Z2//TZk/IpOQQwsvXJ81I
+	STqRtfEiiseBYGD+s3ZMQe0=
+Received: from mail.maildlp.com (unknown [172.19.162.223])
+	by canpmsgout02.his.huawei.com (SkyGuard) with ESMTPS id 4jCcP40pfSzcb3C;
+	Mon, 26 Oct 2026 10:03:52 +0800 (CST)
+Received: from kwepemk200008.china.huawei.com (unknown [7.202.194.74])
+	by mail.maildlp.com (Postfix) with ESMTPS id 993D340575;
+	Mon, 26 Oct 2026 10:04:01 +0800 (CST)
+Received: from [10.67.110.68] (10.67.110.68) by kwepemk200008.china.huawei.com
+ (7.202.194.74) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Mon, 26 Oct
+ 2026 10:03:59 +0800
+Message-ID: <02118069-9360-4055-bc61-2ee2dd3486c9@huawei.com>
+Date: Mon, 26 Oct 2026 10:03:58 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,177 +61,388 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261024-submit-serial-8250-dma-cancel-v1-v5-0-9e52968928d2@gmail.com>
- <20261024-submit-serial-8250-dma-cancel-v1-v5-2-9e52968928d2@gmail.com>
- <alpine.DEB.2.21.2610250459200.42255@angie.orcam.me.uk> <at4bw-G8czG-G7Wl@ashevche-desk.local>
- <CADvTj4psJcY2T1PG9H8_hJWjz62R7unj3PPgv3FrVquUMFVhGg@mail.gmail.com> <at5qKehogAjTa-fA@ashevche-desk.local>
-In-Reply-To: <at5qKehogAjTa-fA@ashevche-desk.local>
-From: James Hilliard <james.hilliard1@gmail.com>
-Date: Sun, 25 Oct 2026 16:11:08 -0600
-X-Gm-Features: AclHuK8uppf4mumWz9vBy2Gysgc_7CSgy4TY8S57y0TXESxCvcndlkgEpAI5NvA
-Message-ID: <CADvTj4qSgE6Rc--mWuqAcc8HTqN9EFOS_JM8Hp8e_=ka_ZLa6w@mail.gmail.com>
-Subject: Re: [PATCH v5 2/5] serial: serialize asynchronous write wakeups with
- the port lock
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: "Maciej W. Rozycki" <macro@orcam.me.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Jiri Slaby <jirislaby@kernel.org>, Raul E Rangel <rrangel@chromium.org>, 
-	=?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>, Tony Lindgren <tony@atomide.com>, 
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Richard Genoud <richard.genoud@bootlin.com>, 
-	Nicolas Ferre <nicolas.ferre@microchip.com>, 
-	Alexandre Belloni <alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, 
-	Jacky Huang <ychuang3@nuvoton.com>, Shan-Chun Hung <schung@nuvoton.com>, 
-	=?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
-	Fabio Estevam <festevam@gmail.com>, Timur Tabi <timur@kernel.org>, linux-kernel@vger.kernel.org, 
-	linux-serial@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	imx@lists.linux.dev, linuxppc-dev@lists.ozlabs.org
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] sched/hotplug: Remove unused idle_task_exit
+To: Srikar Dronamraju <srikar@linux.ibm.com>, Ingo Molnar <mingo@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>, Russell King <linux@armlinux.org.uk>,
+	Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Guo
+ Ren <guoren@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui
+	<kernel@xen0n.name>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Florian
+ Fainelli <florian.fainelli@broadcom.com>, Broadcom internal kernel review
+ list <bcm-kernel-feedback-list@broadcom.com>, Jiaxun Yang
+	<jiaxun.yang@flygoat.com>, "James E.J. Bottomley"
+	<James.Bottomley@HansenPartnership.com>, Helge Deller <deller@gmx.de>, Scott
+ Wood <oss@buserror.net>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael
+ Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Paul Walmsley
+	<pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou
+	<aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, Heiko Carstens
+	<hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, Alexander Gordeev
+	<agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, Yoshinori Sato
+	<ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, John Paul Adrian
+ Glaubitz <glaubitz@physik.fu-berlin.de>, "David S. Miller"
+	<davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Thomas Gleixner
+	<tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov
+	<bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, <x86@kernel.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, Chris Zankel <chris@zankel.net>, Max
+ Filippov <jcmvbkbc@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>, Srikar Dronamraju
+	<srikar@linux.vnet.ibm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Kees Cook <kees@kernel.org>, mrigendrachaubey <mrigendra.chaubey@gmail.com>,
+	Marc Zyngier <maz@kernel.org>, Pengjie Zhang <zhangpengjie2@huawei.com>,
+	Thierry Reding <treding@nvidia.com>, Xi Ruoyao <xry111@xry111.site>, "Rafael
+ J. Wysocki (Intel)" <rafael@kernel.org>, Tiezhu Yang
+	<yangtiezhu@loongson.cn>, Rong Bao <rong.bao@csmantle.top>, Hui Wang
+	<hui.wang@canonical.com>, Frederic Weisbecker <frederic@kernel.org>, Thorsten
+ Blum <thorsten.blum@linux.dev>, Josh Poimboeuf <jpoimboe@kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-csky@vger.kernel.org>,
+	<loongarch@lists.linux.dev>, <linux-mips@vger.kernel.org>,
+	<linux-parisc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-riscv@lists.infradead.org>, <linux-s390@vger.kernel.org>,
+	<linux-sh@vger.kernel.org>, <sparclinux@vger.kernel.org>
+References: <20261016095711.1364609-1-srikar@linux.ibm.com>
+From: Jinjie Ruan <ruanjinjie@huawei.com>
+In-Reply-To: <20261016095711.1364609-1-srikar@linux.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
+ kwepemk200008.china.huawei.com (7.202.194.74)
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Sun, Oct 25, 2026 at 2:44=E2=80=AFPM Andy Shevchenko
-<andriy.shevchenko@linux.intel.com> wrote:
->
-> On Sun, Oct 25, 2026 at 02:25:46PM -0600, James Hilliard wrote:
-> > On Sun, Oct 25, 2026 at 9:10=E2=80=AFAM Andy Shevchenko
-> > <andriy.shevchenko@linux.intel.com> wrote:
-> > > On Sun, Oct 25, 2026 at 05:10:03AM +0000, Maciej W. Rozycki wrote:
-> > > > On Sat, 24 Oct 2026, James Hilliard wrote:
-> > > >
-> > > > > uart_write_wakeup() expects the UART port lock to be held. Severa=
-l worker,
-> > > > > DMA completion and interrupt paths call it without that lock, inc=
-luding
-> > > > > indirect calls from uart_handle_cts_change() and the transmit hel=
-pers.
-> > > >
-> > > >  Fair enough, and thank you for the cleanup and spotting the issue =
-in the
-> > > > first place, however...
-> > >
-> > > He already issues a v6. I think the tactics against AI contributions =
-should be
-> > > to not answer for a week or so until there will be a quiescent week.
-> >
-> > At least with the workflow I've been using, a good signal for quiescenc=
-e is
-> > simply whether or not the Sashiko reviewer found issues.
-> >
-> > I am feeding the Sashiko prompts into my local agent but it seems to
-> > sometimes miss issues that get flagged by the public Sashiko reviewer
-> > still.
-> >
-> > I've been attempting to peel off independently reviewable fixes where
-> > feasible as well to minimize the amount of patches/code during respins
-> > as well.
-> >
-> > > At least that's what I learn from this patch storm.
-> >
-> > Whenever my local branch accumulates significant refactoring/changes
-> > due to Sashiko or manual reviews I generally try and send out the new
-> > revision fairly quickly in an attempt to avoid reviewers wasting time
-> > reviewing code that is obsoleted by the new fixes/changes in my local
-> > branch.
-> >
-> > Locally I actually have far more UART related patches in an integration
-> > tree that I've held off on sending for now since they are dependent upo=
-n
-> > the prerequisite fixes I have already sent. My unposted patches actuall=
-y
-> > have an even larger amount of code changes than all the UART related
-> > patches that I've posted so far, at least when measured in terms of tot=
-al
-> > lines of code changed.
-> >
-> > The large amount of patches I ended up with seems to have mostly come
-> > about due to the AI agent identifying most of these bugs while iteratin=
-g on
-> > and debugging new features(most of which are still largely unsent so fa=
-r).
-> >
-> > The strategy I've been using is to send small isolated fixes separately=
- and
-> > then reference them as needed in the larger series that depend on them.
-> > I figure this should make the changes easier to review than having them
-> > all in a larger series. I contributed the changes[0] to make this compa=
-tible
-> > with the Sashiko reviewer actually.
-> >
-> > I also use a custom AI agent controlled hardware in the loop test harne=
-ss
-> > which makes iterating/testing changes much faster since the AI agent ca=
-n
-> > autonomously test and iterate on changes far faster than is possible to=
- do
-> > manually. This test setup also allows much more thorough testing as a l=
-ot
-> > of error handling or uncommonly hit code paths can then be tested using
-> > AI generated fault injection tests on real hardware tailored to the spe=
-cific
-> > fix being validated. I manually review the final changes before sending=
- as
-> > well of course.
-> >
-> > I'm constantly refining these patch development/review workflows as wel=
-l
-> > so feel free to give me any suggestions for anything I should change to
-> > make review easier.
->
-> I already gave one: slow down. Better think than loop through AI and keep
-> Sashiko busy. Your patches are valuable, no questions, but they are way
-> too complicated to catch on withing an hours or a couple of days time fra=
-me.
 
-Yeah, I was already slowing down quite a bit. I probably should have starte=
-d
-sending some of these earlier but I wanted to see how my final integration =
-tree
-would look like first so that I could better peel out what was actually nee=
-ded
-as preparatory fixes in ways that would fit well with subsequent features.
 
-> Some people might want to test the stuff. And sending too often you actua=
-lly
-> will get the opposite results, people will be tired to even start reviewi=
-ng
-> and/or testing your code as it's changed way too quickly.
+在 2026/10/16 17:56, Srikar Dronamraju 写道:
+> Commit 21641bd9a7a7 ("lazy tlb: fix hotplug exit race with
+> MMU_LAZY_TLB_SHOOTDOWN") moved the handling previously performed by
+> idle_task_exit() into the scheduler CPU hotplug path using
+> sched_force_init_mm().
+> 
+> As a result, idle_task_exit() is now an empty stub and the remaining
+> architecture call sites have no effect.
 
-My thought process was that people wouldn't want to be testing code that
-had known bugs flagged in Sashiko reviews.
+Reviewed-by: Jinjie Ruan <ruanjinjie@huawei.com>
 
-> Settle down first
-> with something, put on the cover letter the answer why not all Sashiko's
-> comments are being addressed (for example, due to amount of patches or th=
-e
-> series being focused on a certain issue).
+> 
+> Remove the calls to idle_task_exit() and the now unused stub.
+> 
+> Signed-off-by: Srikar Dronamraju <srikar@linux.ibm.com>
+> ---
+>  arch/arm/kernel/smp.c                        | 2 --
+>  arch/arm64/kernel/smp.c                      | 2 --
+>  arch/csky/kernel/smp.c                       | 2 --
+>  arch/loongarch/kernel/smp.c                  | 2 --
+>  arch/mips/cavium-octeon/smp.c                | 1 -
+>  arch/mips/kernel/smp-bmips.c                 | 1 -
+>  arch/mips/kernel/smp-cps.c                   | 1 -
+>  arch/mips/loongson64/smp.c                   | 1 -
+>  arch/parisc/kernel/process.c                 | 2 --
+>  arch/powerpc/platforms/85xx/smp.c            | 2 --
+>  arch/powerpc/platforms/powermac/smp.c        | 2 --
+>  arch/powerpc/platforms/powernv/smp.c         | 1 -
+>  arch/powerpc/platforms/pseries/hotplug-cpu.c | 2 --
+>  arch/powerpc/platforms/pseries/pmem.c        | 1 -
+>  arch/riscv/kernel/cpu-hotplug.c              | 2 --
+>  arch/s390/kernel/smp.c                       | 1 -
+>  arch/sh/kernel/smp.c                         | 1 -
+>  arch/sparc/kernel/smp_64.c                   | 2 --
+>  arch/x86/kernel/smpboot.c                    | 2 --
+>  arch/xtensa/kernel/smp.c                     | 1 -
+>  include/linux/sched/hotplug.h                | 2 --
+>  21 files changed, 33 deletions(-)
+> 
+> diff --git a/arch/arm/kernel/smp.c b/arch/arm/kernel/smp.c
+> index b5fb4697bc3f..bbfbbe728b7a 100644
+> --- a/arch/arm/kernel/smp.c
+> +++ b/arch/arm/kernel/smp.c
+> @@ -319,8 +319,6 @@ void __noreturn arch_cpu_idle_dead(void)
+>  {
+>  	unsigned int cpu = smp_processor_id();
+>  
+> -	idle_task_exit();
+> -
+>  	local_irq_disable();
+>  
+>  	/*
+> diff --git a/arch/arm64/kernel/smp.c b/arch/arm64/kernel/smp.c
+> index a61dc3016a11..afb5aa65d737 100644
+> --- a/arch/arm64/kernel/smp.c
+> +++ b/arch/arm64/kernel/smp.c
+> @@ -370,8 +370,6 @@ void __noreturn cpu_die(void)
+>  	unsigned int cpu = smp_processor_id();
+>  	const struct cpu_operations *ops = get_cpu_ops(cpu);
+>  
+> -	idle_task_exit();
+> -
+>  	local_daif_mask();
+>  
+>  	/* Tell cpuhp_bp_sync_dead() that this CPU is now safe to dispose of */
+> diff --git a/arch/csky/kernel/smp.c b/arch/csky/kernel/smp.c
+> index 92dbbf3e0205..e6333ccc335a 100644
+> --- a/arch/csky/kernel/smp.c
+> +++ b/arch/csky/kernel/smp.c
+> @@ -294,8 +294,6 @@ void arch_cpuhp_cleanup_dead_cpu(unsigned int cpu)
+>  
+>  void __noreturn arch_cpu_idle_dead(void)
+>  {
+> -	idle_task_exit();
+> -
+>  	cpuhp_ap_report_dead();
+>  
+>  	while (!secondary_stack)
+> diff --git a/arch/loongarch/kernel/smp.c b/arch/loongarch/kernel/smp.c
+> index 11f54837f56c..6b21af1c25e0 100644
+> --- a/arch/loongarch/kernel/smp.c
+> +++ b/arch/loongarch/kernel/smp.c
+> @@ -478,7 +478,6 @@ static void __noreturn idle_play_dead(void)
+>  	register uint64_t addr;
+>  	register void (*init_fn)(void);
+>  
+> -	idle_task_exit();
+>  	local_irq_enable();
+>  	set_csr_ecfg(ECFGF_IPI);
+>  	__this_cpu_write(cpu_state, CPU_DEAD);
+> @@ -503,7 +502,6 @@ static void __noreturn poll_play_dead(void)
+>  	register uint64_t addr;
+>  	register void (*init_fn)(void);
+>  
+> -	idle_task_exit();
+>  	__this_cpu_write(cpu_state, CPU_DEAD);
+>  
+>  	__smp_mb();
+> diff --git a/arch/mips/cavium-octeon/smp.c b/arch/mips/cavium-octeon/smp.c
+> index 054e331b3202..0e557e76d616 100644
+> --- a/arch/mips/cavium-octeon/smp.c
+> +++ b/arch/mips/cavium-octeon/smp.c
+> @@ -344,7 +344,6 @@ void play_dead(void)
+>  {
+>  	int cpu = cpu_number_map(cvmx_get_core_num());
+>  
+> -	idle_task_exit();
+>  	cpuhp_ap_report_dead();
+>  	octeon_processor_boot = 0xff;
+>  	per_cpu(cpu_state, cpu) = CPU_DEAD;
+> diff --git a/arch/mips/kernel/smp-bmips.c b/arch/mips/kernel/smp-bmips.c
+> index 35b8d810833c..e4a523b7c988 100644
+> --- a/arch/mips/kernel/smp-bmips.c
+> +++ b/arch/mips/kernel/smp-bmips.c
+> @@ -391,7 +391,6 @@ static void bmips_cpu_die(unsigned int cpu)
+>  
+>  void __ref play_dead(void)
+>  {
+> -	idle_task_exit();
+>  	cpuhp_ap_report_dead();
+>  
+>  	/* flush data cache */
+> diff --git a/arch/mips/kernel/smp-cps.c b/arch/mips/kernel/smp-cps.c
+> index b01ebaace48e..51e68a42bcc8 100644
+> --- a/arch/mips/kernel/smp-cps.c
+> +++ b/arch/mips/kernel/smp-cps.c
+> @@ -804,7 +804,6 @@ void play_dead(void)
+>  	unsigned int cpu;
+>  
+>  	local_irq_disable();
+> -	idle_task_exit();
+>  	cpu = smp_processor_id();
+>  	cpu_death = CPU_DEATH_POWER;
+>  
+> diff --git a/arch/mips/loongson64/smp.c b/arch/mips/loongson64/smp.c
+> index e584299d0fde..73eca9c44b04 100644
+> --- a/arch/mips/loongson64/smp.c
+> +++ b/arch/mips/loongson64/smp.c
+> @@ -766,7 +766,6 @@ void play_dead(void)
+>  	unsigned int cpu = smp_processor_id();
+>  	void (*play_dead_at_ckseg1)(int *);
+>  
+> -	idle_task_exit();
+>  	cpuhp_ap_report_dead();
+>  
+>  	prid_imp = read_c0_prid() & PRID_IMP_MASK;
+> diff --git a/arch/parisc/kernel/process.c b/arch/parisc/kernel/process.c
+> index 703644e5bfc4..8606ecde4c30 100644
+> --- a/arch/parisc/kernel/process.c
+> +++ b/arch/parisc/kernel/process.c
+> @@ -164,8 +164,6 @@ EXPORT_SYMBOL(running_on_qemu);
+>  void __noreturn arch_cpu_idle_dead(void)
+>  {
+>  #ifdef CONFIG_HOTPLUG_CPU
+> -	idle_task_exit();
+> -
+>  	local_irq_disable();
+>  
+>  	/* Tell the core that this CPU is now safe to dispose of. */
+> diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+> index 32fa5fb557c0..9dc81e4226f0 100644
+> --- a/arch/powerpc/platforms/85xx/smp.c
+> +++ b/arch/powerpc/platforms/85xx/smp.c
+> @@ -121,8 +121,6 @@ static void smp_85xx_cpu_offline_self(void)
+>  	/* mask all irqs to prevent cpu wakeup */
+>  	qoriq_pm_ops->irq_mask(cpu);
+>  
+> -	idle_task_exit();
+> -
+>  	mtspr(SPRN_TCR, 0);
+>  	mtspr(SPRN_TSR, mfspr(SPRN_TSR));
+>  
+> diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
+> index 88e92af8acf9..f8e674cfcdd7 100644
+> --- a/arch/powerpc/platforms/powermac/smp.c
+> +++ b/arch/powerpc/platforms/powermac/smp.c
+> @@ -925,7 +925,6 @@ static void pmac_cpu_offline_self(void)
+>  	int cpu = smp_processor_id();
+>  
+>  	local_irq_disable();
+> -	idle_task_exit();
+>  	pr_debug("CPU%d offline\n", cpu);
+>  	generic_set_cpu_dead(cpu);
+>  	smp_wmb();
+> @@ -940,7 +939,6 @@ static void pmac_cpu_offline_self(void)
+>  	int cpu = smp_processor_id();
+>  
+>  	local_irq_disable();
+> -	idle_task_exit();
+>  
+>  	/*
+>  	 * turn off as much as possible, we'll be
+> diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+> index b1201dbafcaf..9a480c924020 100644
+> --- a/arch/powerpc/platforms/powernv/smp.c
+> +++ b/arch/powerpc/platforms/powernv/smp.c
+> @@ -172,7 +172,6 @@ static void pnv_cpu_offline_self(void)
+>  
+>  	/* Standard hot unplug procedure */
+>  
+> -	idle_task_exit();
+>  	cpu = smp_processor_id();
+>  	DBG("CPU%d offline\n", cpu);
+>  	generic_set_cpu_dead(cpu);
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> index bc6926dbf148..1ade9a811157 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> @@ -19,7 +19,6 @@
+>  #include <linux/kernel.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/delay.h>
+> -#include <linux/sched.h>	/* for idle_task_exit */
+>  #include <linux/sched/hotplug.h>
+>  #include <linux/cpu.h>
+>  #include <linux/of.h>
+> @@ -64,7 +63,6 @@ static void pseries_cpu_offline_self(void)
+>  	unsigned int hwcpu = hard_smp_processor_id();
+>  
+>  	local_irq_disable();
+> -	idle_task_exit();
+>  	if (xive_enabled())
+>  		xive_teardown_cpu();
+>  	else
+> diff --git a/arch/powerpc/platforms/pseries/pmem.c b/arch/powerpc/platforms/pseries/pmem.c
+> index 0f1d45f32e4a..af48dfebb640 100644
+> --- a/arch/powerpc/platforms/pseries/pmem.c
+> +++ b/arch/powerpc/platforms/pseries/pmem.c
+> @@ -9,7 +9,6 @@
+>  #include <linux/kernel.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/delay.h>
+> -#include <linux/sched.h>	/* for idle_task_exit */
+>  #include <linux/sched/hotplug.h>
+>  #include <linux/cpu.h>
+>  #include <linux/of.h>
+> diff --git a/arch/riscv/kernel/cpu-hotplug.c b/arch/riscv/kernel/cpu-hotplug.c
+> index 0bc56d8381b6..348043122593 100644
+> --- a/arch/riscv/kernel/cpu-hotplug.c
+> +++ b/arch/riscv/kernel/cpu-hotplug.c
+> @@ -66,8 +66,6 @@ void arch_cpuhp_cleanup_dead_cpu(unsigned int cpu)
+>   */
+>  void __noreturn arch_cpu_idle_dead(void)
+>  {
+> -	idle_task_exit();
+> -
+>  	cpuhp_ap_report_dead();
+>  
+>  	cpu_ops->cpu_stop();
+> diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
+> index 32499cad86f0..dd1d40ec5440 100644
+> --- a/arch/s390/kernel/smp.c
+> +++ b/arch/s390/kernel/smp.c
+> @@ -918,7 +918,6 @@ void __cpu_die(unsigned int cpu)
+>  
+>  void __noreturn cpu_die(void)
+>  {
+> -	idle_task_exit();
+>  	pcpu_sigp_retry(this_cpu_ptr(&pcpu_devices), SIGP_STOP, 0);
+>  	for (;;) ;
+>  }
+> diff --git a/arch/sh/kernel/smp.c b/arch/sh/kernel/smp.c
+> index 108d808767fa..afd57bdce04e 100644
+> --- a/arch/sh/kernel/smp.c
+> +++ b/arch/sh/kernel/smp.c
+> @@ -108,7 +108,6 @@ int native_cpu_disable(unsigned int cpu)
+>  
+>  void play_dead_common(void)
+>  {
+> -	idle_task_exit();
+>  	irq_ctx_exit(raw_smp_processor_id());
+>  	mb();
+>  
+> diff --git a/arch/sparc/kernel/smp_64.c b/arch/sparc/kernel/smp_64.c
+> index 371460e34484..e98b5ddebc9e 100644
+> --- a/arch/sparc/kernel/smp_64.c
+> +++ b/arch/sparc/kernel/smp_64.c
+> @@ -1290,8 +1290,6 @@ void cpu_play_dead(void)
+>  	int cpu = smp_processor_id();
+>  	unsigned long pstate;
+>  
+> -	idle_task_exit();
+> -
+>  	if (tlb_type == hypervisor) {
+>  		struct trap_per_cpu *tb = &trap_block[cpu];
+>  
+> diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+> index ba01a9e919b7..dcbaf3f27862 100644
+> --- a/arch/x86/kernel/smpboot.c
+> +++ b/arch/x86/kernel/smpboot.c
+> @@ -1407,8 +1407,6 @@ int native_cpu_disable(void)
+>  
+>  void play_dead_common(void)
+>  {
+> -	idle_task_exit();
+> -
+>  	cpuhp_ap_report_dead();
+>  
+>  	local_irq_disable();
+> diff --git a/arch/xtensa/kernel/smp.c b/arch/xtensa/kernel/smp.c
+> index e4c25d0c2158..094e1da933a6 100644
+> --- a/arch/xtensa/kernel/smp.c
+> +++ b/arch/xtensa/kernel/smp.c
+> @@ -336,7 +336,6 @@ void __noreturn arch_cpu_idle_dead(void)
+>   */
+>  void __ref cpu_die(void)
+>  {
+> -	idle_task_exit();
+>  	local_irq_disable();
+>  	__asm__ __volatile__(
+>  			"	movi	a2, cpu_restart\n"
+> diff --git a/include/linux/sched/hotplug.h b/include/linux/sched/hotplug.h
+> index 17e04859b9a4..18fa3e63123e 100644
+> --- a/include/linux/sched/hotplug.h
+> +++ b/include/linux/sched/hotplug.h
+> @@ -18,6 +18,4 @@ extern int sched_cpu_dying(unsigned int cpu);
+>  # define sched_cpu_dying	NULL
+>  #endif
+>  
+> -static inline void idle_task_exit(void) {}
+> -
+>  #endif /* _LINUX_SCHED_HOTPLUG_H */
 
-So, in general I've been always attempting to resolve known Sashiko issues
-in every subsequent re-spin, so that would be a bit tricky since I wouldn't=
- be
-aware of the Sashiko issues until after the series has already been sent.
+-- 
+Best regards,
+Jinjie
 
-Usually the subsequent issues that get flagged are new issues only discover=
-ed
-after each new re-spin.
-
-I do have a bunch of UART/DMA related patches that don't have flagged Sashi=
-ko
-issues so it probably makes sense to try and review those first while the l=
-arger
-series that have Sashiko flagged issues are still stabilizing.
-
->
-> > [0] https://github.com/sashiko-dev/sashiko/pull/389
->
-> --
-> With Best Regards,
-> Andy Shevchenko
->
->
 
