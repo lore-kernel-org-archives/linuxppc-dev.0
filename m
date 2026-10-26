@@ -2,50 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 665B4606A31B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2026 07:53:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 54724606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2026 07:54:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=JKmnPWeR
+	dkim=pass (1024-bit key, unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=03ar2c3F
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jCm8B42dJz2yLg;
-	Mon, 26 Oct 2026 18:53:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.224
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793001192;
-	cv=none; b=X7cCoqYL+bHPI+KWex7MZmW+T3qZAq0xtx4mwJnw7Ictv91CAcVyaJhi+qhuHeLP/DZ23b106c0OI5aCyPgZic6sFCFidjSuz+3RSu1l1E7rBKtx2IG69+RbxFDBha4y4vTDZX6FBCY65dN8mwQVbQMKn/gdYrUJSL8os1yqrco3fZox2VKDnRCmb7sY4ZaahhB2tSwpD6bmPXqfgECcixUFgut6/w4O/aLNi1aWTTq1QItp1NeqY6E9aRB7L6We+8tSYNDE8cv8yLZfARMjGpwS3lguvvpaxCadiYe++F2fbTV76fRbt3f+6tIL7q33sjAz6MI/GpGRusxPzQsuLw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jCm8F040cz2yPR;
+	Mon, 26 Oct 2026 18:53:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.221
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793001196;
+	cv=none; b=JMvgdHCAWveDR1EO8/nSRylZLlQAcYpRxYq03hmqq+oAlDjqwaJ9TpdaO7SwfvGevfqb5hzzqb+U5l7UloKk90YxtVDtgwKGn8BSHdML4DK/OFpg9gDRLwYv3fTlXF514FvVT64zQIOVeWtMBE1xnm0Mh9zhJDjKlp4PgeoZfDRrcaaRfTz3DyuzBnU//3Ix8OucoAUFEoVXQllo8wCzWzE3yLEIugV6tbyqn5N6sCqKBpt6kFtcEXlGXkzrRqD/su/RXGryD7JxlxlR/579+k/IXwh+Z1EUiXO4tfsL3qI9kVy8a4R2ZG/8Qk0RlBxozItocS3puhlQ49Opn4gqxw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793001192; c=relaxed/relaxed;
-	bh=yQLs+yp3gRop5DP5Y7vvOjMGkRT5bcGd1CGSYw6ScJU=;
+	t=1793001196; c=relaxed/relaxed;
+	bh=Rzgj0WOLXKB6VKhWoOY12UdlFXj+IGnJLCC3ycbQVqc=;
 	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=VYeg9c9b1padupHNbNTE+bV2EblnI5GCuh/s8st/VKd72J+nsP6GH+ttfNJUj/Yc/SOKb42QR0c9EUU3QLrKawhmY/tScc184FfQPBkYVRWzMxqDtHVg8JltjnEu07QdMoBMv2Oy9LOYL50p5emp2KTCxmtAYIgHr++ZzfHX3MBK3T7wynlVeinHxbdtppvCWSkr4Cy0M/QMRkIYR+xHOrdZgcLaxtsMxas7raYap2cXrh8VyWJ45g7dfc08sSZ5S0PgSowHayJw2jG0KHkz3j1TkjnRve7zPmssr2WwK61jwCR3AOhR6dcWw3O0LTLEVX3SlfZOgp5oadqci1Y/BA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=JKmnPWeR; dkim-atps=neutral; spf=pass (client-ip=113.46.200.224; helo=canpmsgout09.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	 MIME-Version:Content-Type; b=XC6TBHRMh4iVQE4gl9s7Saa9tOV4d2hOi1JyiVrRK1CLQm7CWAtFR1PYPy4ATZ0lyKBUcFDJg3GKCqFhh3T/4aglOXVLqYYqKKqF3CzElMpK+jNE4qiN7QNyfYdntfGwpMrT1c66UdKJfjd30jpkdGdRTqrVB7Xg1vhBo9Dgdn/S9xQaPFqGZ6GHNZv58HeSAARxqeqqa4NkkmLf4ySQRCO91kVZfDcCeBmb17OwjTwr1RKideCyxYGDDjmdZ/wRiGioWxoox7WTIsQvPh4vGG0VZskXdXEV4yRgdF/wHEfNgWQMpiac5L7L7Jl8Rzw0FLHfjio1ZmjJj4pPaCxr0w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=03ar2c3F; dkim-atps=neutral; spf=pass (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=JKmnPWeR;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=03ar2c3F;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.224; helo=canpmsgout09.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout09.his.huawei.com (canpmsgout09.his.huawei.com [113.46.200.224])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout06.his.huawei.com (canpmsgout06.his.huawei.com [113.46.200.221])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jCm811Wzqz2yLF
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2026 18:53:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jCm8C72Wlz2yLF
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2026 18:53:15 +1100 (AEDT)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=yQLs+yp3gRop5DP5Y7vvOjMGkRT5bcGd1CGSYw6ScJU=;
-	b=JKmnPWeR6XnK4GcjWm/7U1FtQ+2aRt8dOdfJlhfRPKsuG7FGH0KN71qcdld4bVPvNTjW8WC6v
-	od8UYcmdHDCR7h1qA6uwaNDAI9tBYzo9syyIwpWy+SVzHSlnS7hoBNTqkbkcM2WjB1suLrywt2L
-	CcO9GyoNl8ZS9rlu9e9Z13I=
-Received: from mail.maildlp.com (unknown [172.19.162.92])
-	by canpmsgout09.his.huawei.com (SkyGuard) with ESMTPS id 4jCm7n2yy1z1cyTb;
-	Mon, 26 Oct 2026 15:52:53 +0800 (CST)
+	bh=Rzgj0WOLXKB6VKhWoOY12UdlFXj+IGnJLCC3ycbQVqc=;
+	b=03ar2c3FhutEUxaafMIfjuK9f2ryOHen7GaqdGUEOYhquUoUKDfQqQKQu0ZFsQKKpgfiKyWu/
+	mN53uByKMufcuXcrY4KsgespDODRZAULR9yDAaUM2W2+BIvzUQg0r12PrTKP3lXVpBHvC6e4LXS
+	mYq1xxS88k6PyPduHQ1w6W4=
+Received: from mail.maildlp.com (unknown [172.19.162.144])
+	by canpmsgout06.his.huawei.com (SkyGuard) with ESMTPS id 4jCm8100JVzRhRs;
+	Mon, 26 Oct 2026 15:53:04 +0800 (CST)
 Received: from kwepemk200008.china.huawei.com (unknown [7.202.194.74])
-	by mail.maildlp.com (Postfix) with ESMTPS id CC84240586;
-	Mon, 26 Oct 2026 15:52:58 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 4BDEF4056D;
+	Mon, 26 Oct 2026 15:53:12 +0800 (CST)
 Received: from huawei.com (10.90.53.73) by kwepemk200008.china.huawei.com
  (7.202.194.74) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Mon, 26 Oct
- 2026 15:52:57 +0800
+ 2026 15:53:01 +0800
 From: Jinjie Ruan <ruanjinjie@huawei.com>
 To: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
 	<chenhuacai@kernel.org>, <kernel@xen0n.name>, <maddy@linux.ibm.com>,
@@ -68,9 +68,9 @@ To: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
 	<linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
 	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
 	<linux-riscv@lists.infradead.org>, <kexec@lists.infradead.org>
-Subject: [PATCH v7 05/15] LoongArch: kexec_file: Fix CMA page leaks in segment placement retry loops
-Date: Mon, 26 Oct 2026 15:51:51 +0800
-Message-ID: <20261026075201.699550-6-ruanjinjie@huawei.com>
+Subject: [PATCH v7 08/15] arm64: kexec_file: Simplify load_other_segments()
+Date: Mon, 26 Oct 2026 15:51:54 +0800
+Message-ID: <20261026075201.699550-9-ruanjinjie@huawei.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20261026075201.699550-1-ruanjinjie@huawei.com>
 References: <20261026075201.699550-1-ruanjinjie@huawei.com>
@@ -99,61 +99,86 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The retry loop drops nr_segments, leaking the CMA pages of the failed
-segments.  Release them first, and disable CMA for the retry: it
-ignores buf_min and would hand out the same region forever.
+Pass the kbuf fields to crash_prepare_headers() and set elf_headers
+before kexec_add_buffer(), so the error path needs no vfree()
+because arch_kimage_file_post_load_cleanup() will do it.
 
-Cc: Huacai Chen <chenhuacai@kernel.org>
-Cc: WANG Xuerui <kernel@xen0n.name>
-Cc: Youling Tang <tangyouling@kylinos.cn>
-Cc: Mike Rapoport (Microsoft) <rppt@kernel.org>
-Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
-Cc: Kees Cook <kees@kernel.org>
-Cc: stable@vger.kernel.org
-Link: https://sashiko.dev/#/patchset/20260729031235.2840255-1-ruanjinjie%40huawei.com
-Fixes: 55d990f0084c ("LoongArch: Add EFI binary support for kexec_file")
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Cc: Baoquan He <baoquan.he@linux.dev>
+Cc: Breno Leitao <leitao@debian.org>
 Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
 ---
- arch/loongarch/kernel/kexec_efi.c          | 8 ++++++++
- arch/loongarch/kernel/machine_kexec_file.c | 6 +++++-
- 2 files changed, 13 insertions(+), 1 deletion(-)
+ arch/arm64/kernel/machine_kexec_file.c | 35 +++++++++++---------------
+ 1 file changed, 15 insertions(+), 20 deletions(-)
 
-diff --git a/arch/loongarch/kernel/kexec_efi.c b/arch/loongarch/kernel/kexec_efi.c
-index 5ee78ebb1546..d42711b895a2 100644
---- a/arch/loongarch/kernel/kexec_efi.c
-+++ b/arch/loongarch/kernel/kexec_efi.c
-@@ -86,6 +86,14 @@ static void *efi_kexec_load(struct kimage *image,
- 		 * We couldn't find space for the other segments; erase the
- 		 * kernel segment and try the next available hole.
- 		 */
-+		/*
-+		 * kexec_alloc_contig() ignores buf_min, so disable CMA to
-+		 * let the retry make progress.
-+		 */
-+		if (image->segment_cma[kernel_segment_number])
-+			image->no_cma = true;
-+
-+		kexec_free_segment_cma(image, kernel_segment_number);
- 		image->nr_segments -= 1;
- 		kbuf.buf_min = kernel_segment->mem + kernel_segment->memsz;
- 		kbuf.mem = KEXEC_BUF_MEM_UNKNOWN;
-diff --git a/arch/loongarch/kernel/machine_kexec_file.c b/arch/loongarch/kernel/machine_kexec_file.c
-index 5412aa9f3568..62a5be102065 100644
---- a/arch/loongarch/kernel/machine_kexec_file.c
-+++ b/arch/loongarch/kernel/machine_kexec_file.c
-@@ -217,7 +217,11 @@ int load_other_segments(struct kimage *image,
- 	return 0;
+diff --git a/arch/arm64/kernel/machine_kexec_file.c b/arch/arm64/kernel/machine_kexec_file.c
+index 2f750e5f4fcc..d3d191a5ac89 100644
+--- a/arch/arm64/kernel/machine_kexec_file.c
++++ b/arch/arm64/kernel/machine_kexec_file.c
+@@ -78,47 +78,42 @@ int load_other_segments(struct kimage *image,
+ 			char *initrd, unsigned long initrd_len,
+ 			char *cmdline)
+ {
+-	struct kexec_buf kbuf = {};
++	struct kexec_buf kbuf = {
++		.image = image,
++		/* not allocate anything below the kernel */
++		.buf_min = kernel_load_addr + kernel_size,
++		.buf_max = ULONG_MAX,
++	};
+ 	void *dtb = NULL;
+ 	unsigned long initrd_load_addr = 0, dtb_len,
+ 		      orig_segments = image->nr_segments;
+ 	int ret = 0;
  
- out_err:
--	image->nr_segments = orig_segments;
-+	while (image->nr_segments > orig_segments) {
-+		kexec_free_segment_cma(image, image->nr_segments - 1);
-+		image->nr_segments--;
-+	}
+-	kbuf.image = image;
+-	/* not allocate anything below the kernel */
+-	kbuf.buf_min = kernel_load_addr + kernel_size;
+-
+ #ifdef CONFIG_CRASH_DUMP
+ 	/* load elf core header */
+-	void *headers;
+-	unsigned long headers_sz;
+ 	if (image->type == KEXEC_TYPE_CRASH) {
+-		ret = crash_prepare_headers(true, &headers, &headers_sz, NULL);
++		ret = crash_prepare_headers(true, &kbuf.buffer, &kbuf.bufsz, NULL);
+ 		if (ret) {
+ 			pr_err("Preparing elf core header failed\n");
+ 			goto out_err;
+ 		}
+ 
+-		kbuf.buffer = headers;
+-		kbuf.bufsz = headers_sz;
++		if (unlikely(image->elf_headers))
++			vfree(image->elf_headers);
 +
- 	kfree(modified_cmdline);
- 	return ret;
- }
++		image->elf_headers = kbuf.buffer;
++		image->elf_headers_sz = kbuf.bufsz;
++
+ 		kbuf.mem = KEXEC_BUF_MEM_UNKNOWN;
+-		kbuf.memsz = headers_sz;
++		kbuf.memsz = kbuf.bufsz;
+ 		kbuf.buf_align = SZ_64K; /* largest supported page size */
+-		kbuf.buf_max = ULONG_MAX;
+ 		kbuf.top_down = true;
+ 
+ 		ret = kexec_add_buffer(&kbuf);
+-		if (ret) {
+-			vfree(headers);
++		if (ret)
+ 			goto out_err;
+-		}
+-
+-		if (unlikely(image->elf_headers))
+-			vfree(image->elf_headers);
+ 
+-		image->elf_headers = headers;
+ 		image->elf_load_addr = kbuf.mem;
+-		image->elf_headers_sz = headers_sz;
+ 
+ 		kexec_dprintk("Loaded elf core header at 0x%lx bufsz=0x%lx memsz=0x%lx\n",
+ 			      image->elf_load_addr, kbuf.bufsz, kbuf.memsz);
 -- 
 2.34.1
 
