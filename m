@@ -2,50 +2,64 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 732FC606A31E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2026 20:17:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 85625606A32D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2026 20:19:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=WQIqj/SU
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=e7f7nv7i
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jD4gS0Tzxz2yKn;
-	Tue, 27 Oct 2026 07:17:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793045876;
-	cv=none; b=kgnryHB07bcabQJXukIRPNyo28pvnADVfDifrhPYG+eGeFWGrDEc7Wy4iVWZKDqu+e7+tSio9yRRZQpFdMslukoFPFVScH3LA7BaLtAIcMiWqWbeQKifoHc56EwrhtgU1nBN04QCWxlBP/ehglHaKKd0CiXllE2elAMkRwSCCu/Qpnf0SWnX56tscYWjFzhno0cMaPTbBxACc9z2R9bVb5fYvBbtaYNJ+g7txSVOlsmfS58uLJhlnBNcW87yqFGMyL0BajHXnK2ntXOPFSsa3mMnyctE21px74uCfDeyM6EEpLX3otqD+j/Gp1OGbGnYOkMo7Xm+hQRw+diRF7SByQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jD4hh0Tn6z2xm5;
+	Tue, 27 Oct 2026 07:19:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.17
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793045940;
+	cv=none; b=elPtcJSgcVf13m0IdeXhCiUwF0edbvjB/npl3JMzIFaoPHuFfmVrcQYi0/5oRoNfOQgO+WtEo09LP1+QmuycYeY3tD4BDzvdRzMTta/bxr6bKbFTEUwEuhiVDChW3tJr6w6qGbRwFyzGFQR2U8f/NRJ34q9lLVOVdUI0gcHaB7jvBau+Gs1mtW8XlRZnvyOLyIpxRXDmVrcfX4VOqqbH0bDVNQMAPvonvkH0m8NV63SoJDUpwLoqYlUnm95AQnFOciYYGgD9O6WbxFl/HBYpU+KMxYmmpyAD00oJeny9nqKMbvmqOV/37rUkl4ZFTIr8VfdoML73di7C2P7U+zCmcw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793045876; c=relaxed/relaxed;
-	bh=EXPccEg8PSk/FPbldfN5ElUkJbs3+4X/rrbmRLSFjcI=;
+	t=1793045940; c=relaxed/relaxed;
+	bh=krAfBfFlNHgNlSxlUe+LuQnLSnJioLdfsgot8iO3v1A=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=hPcTJb3fbVSSJbQ9k011HPa9GRhYWpMqlknAM0vi70baMc83KcXPNaO9+sQCLS02u8eskUVwkBt6XWGTo4Qe9yz6sg9Drkci8UnE7GfJGKs/9bTD3K3GU0FZkAj+zn2jb3mwTgRzIwue+3lOt1lbR4HhlLE2cbjWLtO379jRML13l9QrQ9vRSfAvY7TZYx8ljF2PrLTNB7/LsjGCSHr5kK5Km7A372P7lnn4FsQ8YVT+z729vlvkw86rFpfn86xbjgflBsRZWysbqR/NU2JlAdEg3ePhUY0gnn90MScrpKAx3mamMl6hKQAWbVpiqAvuxsD2ioTUlOw9dChjyGEX5Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=WQIqj/SU; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=Rz88HYqg8H//dXSjlbe0GPErWPWK7gBUcWUWmbum45ZXhs9JwFjmfghHuGXFmHID3W6IDKMdwy1ZHua2Ei0LZ0/f8Mi48xS2BYS/8/zZ7uKH/QoEDMSs/BI7vEFwF64XuCyVA2E1hc9qkfj9ZyaT12Ow/t7/ufiVgJBWgRwbtSevXSAc41jpNyH7SExbS9heC0rpnDoerrjoxsTsQzzbRWlpg+ZN+7a1iRuVE09IoBa2LlwsLoYmMgni8MVQN6NeO3Fu4N7uadNiHscR2qov0zTX44dQ/L/T4eP7n4D+q5FNcum8A5bNaGhhyIR0icMboNJI8/uDBivqz7QTV5NQJA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=e7f7nv7i; dkim-atps=neutral; spf=pass (client-ip=198.175.65.17; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=WQIqj/SU;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=e7f7nv7i;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.17; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jD4gQ62FYz2xm5
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2026 07:17:54 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id D08BC43DDC;
-	Mon, 26 Oct 2026 20:17:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 099921F01825;
-	Mon, 26 Oct 2026 20:17:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
-	s=korg; t=1793045870;
-	bh=EXPccEg8PSk/FPbldfN5ElUkJbs3+4X/rrbmRLSFjcI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=WQIqj/SUn/Ep8siMYxNqhk65QHI6lcikUCAau4WKhbMqOIl/8zBKdF6cqe1Q/4Yli
-	 k2wRhtdJL3Rf9DtT8MMm78k5j/NIi/pvfSUk7R8hMnm0uEVBHZhEuSI+qgfPAY4T/S
-	 5xgihK4Ioq2m0TrRcn0CNSyRgre/w+Wfrf+wP7oo=
-Date: Mon, 26 Oct 2026 21:17:50 +0100
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jD4hd304hz2xGr
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2026 07:18:55 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1793045938; x=1824581938;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=zUbmRDmK8gkD3yRwfjA9S4957SSqr5wODL3BCxfAj1I=;
+  b=e7f7nv7iEbn/kcRJwQlcGn+h7exfVcCFCtDInx7d2bnJt/bOJOwYDEob
+   urCrB9zZgBGySKaexeI0CtF4v2+OY5X6fNOYnIURdI8PlOEzEGrFbHqQK
+   tl1hKuDxTClDlK1kdMyJMJRWn6QOqPZ2u4RFFtlTooK3XELPVo9zL4riU
+   feH2Ne7w0Fw0c+sjrTPYqic/pTgsxDMe2y0rGYEexsPZOhmoEuPBNj5/D
+   oOhe5sDyPs2bFAvDoC9y07hrH4qdXQ9R9z0HTQwwyQxNIRHAxX0eSE717
+   HJ+kp+kUCyg1+4a88COoX5ZiSDCzEJlEmHnPcIxF5hJnsAW1e3HLk5xsu
+   Q==;
+X-CSE-ConnectionGUID: RWjM16kSSyiRyOngdVvb0g==
+X-CSE-MsgGUID: M+ubhR5HQQ+wXgz0tvBpTQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11947"; a="1745595"
+X-IronPort-AV: E=Sophos;i="6.27,180,1787036400"; 
+   d="scan'208";a="1745595"
+Received: from orviesa005.jf.intel.com ([10.64.159.145])
+  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Oct 2026 13:18:54 -0700
+X-CSE-ConnectionGUID: kT+5/UsFQh2DCAfQ8Ot76A==
+X-CSE-MsgGUID: CH2gncsbTPOGQRV4g+nYQw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,180,1787036400"; 
+   d="scan'208";a="4311398"
+Received: from pgcooper-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.245.93])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Oct 2026 13:18:47 -0700
+Date: Mon, 26 Oct 2026 22:18:45 +0200
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: James Hilliard <james.hilliard1@gmail.com>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	"Maciej W. Rozycki" <macro@orcam.me.uk>,
+Cc: "Maciej W. Rozycki" <macro@orcam.me.uk>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 	Jiri Slaby <jirislaby@kernel.org>,
 	Raul E Rangel <rrangel@chromium.org>,
 	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
@@ -67,7 +81,7 @@ Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
 	linuxppc-dev@lists.ozlabs.org
 Subject: Re: [PATCH v5 2/5] serial: serialize asynchronous write wakeups with
  the port lock
-Message-ID: <2026102631-stove-preview-b534@gregkh>
+Message-ID: <at-1pU9Fq-8bXZY4@ashevche-desk.local>
 References: <20261024-submit-serial-8250-dma-cancel-v1-v5-2-9e52968928d2@gmail.com>
  <alpine.DEB.2.21.2610250459200.42255@angie.orcam.me.uk>
  <at4bw-G8czG-G7Wl@ashevche-desk.local>
@@ -95,8 +109,10 @@ Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
 In-Reply-To: <CADvTj4o_CENc3i92OQEZudOErSKPUptT4t2CCqDaGbseuK0QcQ@mail.gmail.com>
-X-Spam-Status: No, score=-11.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
+X-Spam-Status: No, score=-9.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS
 	autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
@@ -105,7 +121,6 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 On Mon, Oct 26, 2026 at 01:59:06PM -0600, James Hilliard wrote:
 > On Mon, Oct 26, 2026 at 1:53 PM Andy Shevchenko
 > <andriy.shevchenko@linux.intel.com> wrote:
-> >
 > > On Mon, Oct 26, 2026 at 10:45:54AM -0600, James Hilliard wrote:
 > > > On Mon, Oct 26, 2026 at 3:33 AM Andy Shevchenko
 > > > <andriy.shevchenko@linux.intel.com> wrote:
@@ -113,9 +128,9 @@ On Mon, Oct 26, 2026 at 01:59:06PM -0600, James Hilliard wrote:
 > > > > > On Sun, Oct 25, 2026 at 2:44 PM Andy Shevchenko
 > > > > > <andriy.shevchenko@linux.intel.com> wrote:
 > > > > > > On Sun, Oct 25, 2026 at 02:25:46PM -0600, James Hilliard wrote:
-> >
-> > ...
-> >
+
+...
+
 > > > > > > Some people might want to test the stuff. And sending too often you actually
 > > > > > > will get the opposite results, people will be tired to even start reviewing
 > > > > > > and/or testing your code as it's changed way too quickly.
@@ -160,10 +175,37 @@ On Mon, Oct 26, 2026 at 01:59:06PM -0600, James Hilliard wrote:
 > 
 > Do we want those reviews going to recipients as well as the mailing list?
 
-For serial patches, we decided to only have it go to the submitter and
-the list.
+I am neither maintainer, nor an owner of the linux-serial@ mailing list.
+I can't answer to this.
 
-thanks,
+> > You can ask at helpdesk@ how this is configured on the kernel.org side.
+> >
+> > > > TL;DR: this mailing list is *not* a playground with you and Sashiko, the whole
+> > > > community is behind it.
+> >
+> > > > > > Settle down first
+> > > > > > with something, put on the cover letter the answer why not all Sashiko's
+> > > > > > comments are being addressed (for example, due to amount of patches or the
+> > > > > > series being focused on a certain issue).
+> > > > >
+> > > > > So, in general I've been always attempting to resolve known Sashiko issues
+> > > > > in every subsequent re-spin, so that would be a bit tricky since I wouldn't be
+> > > > > aware of the Sashiko issues until after the series has already been sent.
+> > > > >
+> > > > > Usually the subsequent issues that get flagged are new issues only discovered
+> > > > > after each new re-spin.
+> > > > >
+> > > > > I do have a bunch of UART/DMA related patches that don't have flagged Sashiko
+> > > > > issues so it probably makes sense to try and review those first while the larger
+> > > > > series that have Sashiko flagged issues are still stabilizing.
+> > > >
+> > > > Yes.
+> > > >
+> > > > > > > [0] https://github.com/sashiko-dev/sashiko/pull/389
 
-greg k-h
+-- 
+With Best Regards,
+Andy Shevchenko
+
+
 
