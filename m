@@ -2,112 +2,81 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 15CAD606A31D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2026 11:21:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC73560A2639
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2026 16:12:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=cvyf5N95;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=cvyf5N95;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=cvyf5N95
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kkf7UKe4
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jCrm05pNCz2yVB;
-	Mon, 26 Oct 2026 22:21:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793013664;
-	cv=none; b=LPnnrDgRNMCPUMz8yqIuz6i1IScShh7YDGdKif80gkv1/8Lre5p9F68D9p6akTwCLzVNQ/OjyOi4fpiQKOozcqtuLG14fM2S/jLpdD7le8jplWlSEtzfIU0dR2l8Wgzej525SfOwas64ags7MuvmqhA4fi0P33eEgtMT9oGZgiABafdEhP0d0TrQPh5H+8kTGa49IYjIGrmdWyyPX7okHRm6IUJyxf64IUE8xF/83Q6ueZ/RgSCGx6Tixp4X00ooIoNPja/eZxS5B42ZS2dsbAdvFu2LZmgg40w3zyTqh6bGRMJ2ANXwgbhiJAayue9Fl8y1ZmHEf+35Nlj+rz8iTA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793013664; c=relaxed/relaxed;
-	bh=Jsb8n2PnG62q8kRquOJFB0kDepBKTWthhPmFyD+4b2I=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:content-type; b=DKh8C7UjT3NqLlFXVn29oc/lBQYF1ylE8uE0aLrimSf5UDnO7uf+vg5aZb5bPhRMZDYVXuazopVU+7BRxK6Psaong7/yRIAFh5Pjim2w7oFKliluxdrjiyNZLRzuk+fur8/uXKRKZ41cT+Tb0NSuD8LpHMJ2A8jzKOJkIwA6RZwkdRt6EWJmp57vKACIl5QRmGFsQwNV/C3XpnBjHC0jMTJWvTWz9/sGlw8msjBiiWJAHSmyojMwYxViG+SjNnEM3CYATflAz49gfZr9yPNH66W+dJ0+EqF+9+Gt29LP6+IlqRyJKL4bowekaNjA9XQSou9AwZ3o2eeHULXCsENekg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=cvyf5N95; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=cvyf5N95; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=cvyf5N95; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jmarchan@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jCzDT05D8z2yS4;
+	Tue, 27 Oct 2026 03:12:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=172.234.252.31 arc.chain=kernel.org
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793031160;
+	cv=pass; b=ZsLqhVIpFdNrb+JXAhl3OMYxfSAgHqVf6KOOa9LYlQIuldI9FBcdSGYEQN5sHJTCu1fGc1CaY3qNdtCIPTmldEf2gZHhqpLxtCk3cWUol+pdpLVPybcc7icJ/g1MlfLplsdlu3cTbyrznrCth8co6UotJvuFp9ZxrjMWykk7aiFGl8drwRjEaTUVLpDwwR/s9u+vgpjGl1hRLYHS/YvcuR5wli1hE+a8NgW3oh1pBXvLzl7urXjqfmht3z90piQdwGcGbOoBo/KiECvPP9R5fKAgSDR8rO9IFnl1Uxdyjhy0IleXRZwpCnaUSLiIA94Gn9SyhKJ4QC/kxtdex4ZZKg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793031160; c=relaxed/relaxed;
+	bh=yIvHoAB3QiQTSr5VvmXbQfsjiNaMq0CJYAyB5/lpaDs=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=oCbw69Wo/52j31pFFJICbwjm/Y2ieHzPrt4rOZej6j78JColfDMfPhbwQ5jxhhmspSNU2Z3ePJqkAGuV8ALa0rKPPXCvs8lpnPPAN+ZU1rrQxkBAyxRQEeoT8vwl2/xOcFiNLJRus6Ogx/QoRTF3RPV9BaB7PjfYufskFEBskerip8ssUUdIqwzMtzHoc7wQdf7kR8zz9Ov19YFh+cZA/IqWgw8KSyJdol8e4cR0e92JwDqi2nXDBoDfl16dfBFcYGfrvhSvUJIz/H9F4Xm0qgGZlzNK9ZQtsj9cSSR5uSTG4cIl+ZNFvQhsIeqiIMQZf50YmRGr4UBDVV8DG37gkQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kkf7UKe4; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+davemarq.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=cvyf5N95;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=cvyf5N95;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=cvyf5N95;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kkf7UKe4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jmarchan@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+davemarq.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jCrlz6s7gz2yTK
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2026 22:21:03 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1793013661;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Jsb8n2PnG62q8kRquOJFB0kDepBKTWthhPmFyD+4b2I=;
-	b=cvyf5N95j15XApPDIF2QEMAgiBX9+Cx/OSMcRJJ2B7w9aD5YXoojH3d2Hmud4Tsf6ChgxT
-	0uxSHrBXo/6mpABr8zCESE5strVQJKwdCWgnnOZ1XnrS+NxqFXcEeA3NIp79K+0OGHAWKn
-	yziQX2cJXsz/XBFahKUiGII1AiO2Aw0=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1793013661;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Jsb8n2PnG62q8kRquOJFB0kDepBKTWthhPmFyD+4b2I=;
-	b=cvyf5N95j15XApPDIF2QEMAgiBX9+Cx/OSMcRJJ2B7w9aD5YXoojH3d2Hmud4Tsf6ChgxT
-	0uxSHrBXo/6mpABr8zCESE5strVQJKwdCWgnnOZ1XnrS+NxqFXcEeA3NIp79K+0OGHAWKn
-	yziQX2cJXsz/XBFahKUiGII1AiO2Aw0=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1793013661;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Jsb8n2PnG62q8kRquOJFB0kDepBKTWthhPmFyD+4b2I=;
-	b=cvyf5N95j15XApPDIF2QEMAgiBX9+Cx/OSMcRJJ2B7w9aD5YXoojH3d2Hmud4Tsf6ChgxT
-	0uxSHrBXo/6mpABr8zCESE5strVQJKwdCWgnnOZ1XnrS+NxqFXcEeA3NIp79K+0OGHAWKn
-	yziQX2cJXsz/XBFahKUiGII1AiO2Aw0=
-Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-664-Bu33x-t4PUy_yTIIX_4dyA-1; Mon,
- 26 Oct 2026 07:19:16 -0400
-X-MC-Unique: Bu33x-t4PUy_yTIIX_4dyA-1
-X-Mimecast-MFC-AGG-ID: Bu33x-t4PUy_yTIIX_4dyA_1793013553
-Received: from mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.17])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jCzDS0yRHz2xN4
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2026 03:12:39 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 81A6643EDA;
+	Mon, 26 Oct 2026 16:12:37 +0000 (UTC)
+Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
+ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
+	t=1793031157;
+	b=qsMvsBaXQxs3Ou2sR9Fu/mzpNy5mxVMR2H0Dk6dJOvoW9TWkX8liXvKS6B2Ny6Lqh+/q
+	 xkG7jSFbB7rHFcpkaKXCbAV1tU5M9VuMSaQ0vds0pEz9ajo6AUypmeCq+xHAu8MBfJb1f
+	 y3lSQC+11MTX/cRM53sb4EyUheT5z33KJudLK4R2bkbXPmPSPeKNxWr4F0AUftFGRMAhi
+	 eIAJ0ixEGnL8t5lCSPr5PnNcq5XhfDEV4rLS+4O3ikck/YSlmFOP9XnW9djKPzQnf2rVK
+	 3Fu4/4OXlAsF2Ybq451VJ1S4sruykSaAjKUgJTbUZN3yLeEDwjS/dDwNNr185MHVpqg==
+ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
+	c=relaxed/relaxed; t=1793031157;
+	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
+	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=yIvHoAB3QiQTSr5VvmXbQfsjiNaMq0CJYAyB5/lpaDs=;
+	b=k58cddvCm0lCTzEc2nu6V8D8q/LFjQS6t4HbGbQL2YQekyErdzUaRhlEDq6P0wI7U+Mt
+	 7dXN0wPFf+EfNbW1pSfUWtSO8yFxz1D4506kcgHYQjjAwTax8jTi2xkk+kewz8wjP3Jea
+	 x+up9vXhgWj1G28k9v1LFL3e3FyMahbNFom+PAcdtOw9CHBeOXoFwZ7vpeJ1Ru757S1W+
+	 ucbfhycuhjEG9SDNfv8g0FDvs/nO+68lgv7KpmEz1N0TP8E2pe68sS047efDDKVS+NAEE
+	 jycPN/N5Gmvdag9qh4VW+JQWR5i+rImVmkr+kyS0c5lktl14pl0ZJwVt0CDtC3A86Tw==
+ARC-Authentication-Results: i=1; smtp.kernel.org; 
+	arc=none smtp.remote-ip=100.80.115.77
+Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id D97671800632;
-	Mon, 26 Oct 2026 11:19:12 +0000 (UTC)
-Received: from jmarchan-thinkpadx1carbongen9.tpbc.csb (headnet04.pony-001.prod.iad2.dc.redhat.com [10.2.32.116])
-	by mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 9ABDE1956087;
-	Mon, 26 Oct 2026 11:19:07 +0000 (UTC)
-From: Jerome Marchand <jmarchan@redhat.com>
-To: Richard Henderson <richard.henderson@linaro.org>,
-	Matt Turner <mattst88@gmail.com>,
-	Magnus Lindholm <linmag7@gmail.com>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Ritesh Harjani <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>
-Cc: linux-alpha@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	loongarch@lists.linux.dev,
-	linux-mips@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-arch@vger.kernel.org,
-	Jerome Marchand <jmarchan@redhat.com>
-Subject: [PATCH 7/7] asm-generic: Remove the unused non-atomic local64_t functions
-Date: Mon, 26 Oct 2026 12:18:22 +0100
-Message-ID: <20261026111822.458404-8-jmarchan@redhat.com>
-In-Reply-To: <20261026111822.458404-1-jmarchan@redhat.com>
-References: <20261026111822.458404-1-jmarchan@redhat.com>
+	by smtp.kernel.org (Postfix) with ESMTPS id D5EF51F031E1;
+	Mon, 26 Oct 2026 16:12:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793031157;
+	bh=yIvHoAB3QiQTSr5VvmXbQfsjiNaMq0CJYAyB5/lpaDs=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
+	b=kkf7UKe4xq0KPj2ONxgS50xj5BHcvFVSjB09Cso6x+TdKY2Mu03c6fATz4oYGKpM1
+	 14PLWgXrZiySjEv9we4iXYoiSMxGya/ei3iJgR5La18/Drn1Jin4tPDVeNlN7AwtPo
+	 CW1J2pTq1SKVd5o5UyLqe9vkC1i5GZ95NLRULdgY/vMaPgKkEqa8VfB0GoAwOXrhFQ
+	 oP73ycXA/TmqIxRotbmhsLS5QsBEDt3GIpmdrrGz/RTq1rgI1orANBRIDP/2jbo1RV
+	 MnpoNArDERaxdcmkjByxTqJ6Tkv3Vns3dZRqIIVWywZsU7JGbfnsrKJTGobICbEQTT
+	 AcsDxvyq/B58w==
+Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
+	by lkml.kernel.org (Postfix) with ESMTP id 5CFDF44D91;
+	Mon, 26 Oct 2026 16:12:36 +0000 (UTC)
+From: Dave Marquardt via B4 Relay <devnull+davemarq.linux.ibm.com@kernel.org>
+Date: Mon, 26 Oct 2026 11:12:36 -0500
+Subject: [PATCH v16 04/12] scsi: ibmvfc: fix unguarded dma_unmap_single()
+ in ibmvfc_free_queue()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -121,66 +90,79 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.17
-X-Mimecast-MFC-PROC-ID: 6l7LIhJIBDodoYFvOgTUoMtzz07JAAVyxZyDQqs9N2o_1793013553
-X-Mimecast-Originator: redhat.com
-Content-Transfer-Encoding: 8bit
-content-type: text/plain; charset="US-ASCII"; x-default=true
-X-Spam-Status: No, score=-16.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <20261026-ibmvfc-fpin-support-v16-4-a900aa657ed5@linux.ibm.com>
+References: <20261026-ibmvfc-fpin-support-v16-0-a900aa657ed5@linux.ibm.com>
+In-Reply-To: <20261026-ibmvfc-fpin-support-v16-0-a900aa657ed5@linux.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
+ "Martin K. Petersen" <mkp@kernel.org>, 
+ Tyrel Datwyler <tyreld@linux.ibm.com>
+Cc: linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ linux-kernel@vger.kernel.org, Dave Marquardt <davemarq@linux.ibm.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1793031155; l=1500;
+ i=davemarq@linux.ibm.com; s=20260216; h=from:subject:message-id;
+ bh=K8OwCqpjIdXQs2e8AVALRObhwpPT1iTdETPfLazYtSc=;
+ b=Dexqw2leNcpZewS1JC4j/KbcXR0M45KWWZfi/aW99Wip/kOL7bdhSIpZO0Bf//5EsxgwI6RiP
+ 4hRHTXobUPcDVvH5YQXhoNaq9KIdsqcNMovr0KY0raEpYZi5KJ10o5A
+X-Developer-Key: i=davemarq@linux.ibm.com; a=ed25519;
+ pk=vy0/nfobrje6EqZxuyw6a3ZstytG8WK2vf5Y3xtGrEg=
+X-Endpoint-Received: by B4 Relay for davemarq@linux.ibm.com/20260216 with
+ auth_id=689
+X-Original-From: Dave Marquardt <davemarq@linux.ibm.com>
+Reply-To: davemarq@linux.ibm.com
+Content-Transfer-Encoding: 7bit
+X-Spam-Status: No, score=-19.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-While working on a fix for a tracing soft lockup, it came to my
-attention that __local_dec() was broken on ppc64 and other arches (it
-actually increment the value). My first instinct was to fix it but the
-fact that this function was utterly broken for so long, decades for
-some arches makes me thing that those functions have not been used for
-a long time, if ever.
+From: Dave Marquardt <davemarq@linux.ibm.com>
 
-The local64_t non-atomic functions aren't used either, so remove
-them too.
+ibmvfc_free_queue() unconditionally calls dma_unmap_single() before
+freeing the queue page, but only guards free_page() behind a
+queue->msgs.handle check. If ibmvfc_alloc_queue() fails before the
+DMA mapping is established (e.g. get_zeroed_page() fails or
+ibmvfc_init_event_pool() fails), msgs.handle and msg_token are both
+zero/NULL. Calling dma_unmap_single() with address 0 is unsafe on
+many architectures.
 
-Signed-off-by: Jerome Marchand <jmarchan@redhat.com>
+Guard dma_unmap_single() and free_page() together under the existing
+msgs.handle check so ibmvfc_free_queue() is safe to call on a
+partially or never-initialized queue.
+
+Signed-off-by: Dave Marquardt <davemarq@linux.ibm.com>
 ---
- include/asm-generic/local64.h | 14 --------------
- 1 file changed, 14 deletions(-)
+ drivers/scsi/ibmvscsi/ibmvfc-core.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/include/asm-generic/local64.h b/include/asm-generic/local64.h
-index 14963a7a62538..b30ae05f42b95 100644
---- a/include/asm-generic/local64.h
-+++ b/include/asm-generic/local64.h
-@@ -56,13 +56,6 @@ static inline bool local64_try_cmpxchg(local64_t *l, s64 *old, s64 new)
- #define local64_add_unless(l, _a, u) local_add_unless((&(l)->a), (_a), (u))
- #define local64_inc_not_zero(l)	local_inc_not_zero(&(l)->a)
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc-core.c b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+index f0502d748210..b63b341efb07 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc-core.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+@@ -913,9 +913,11 @@ static void ibmvfc_free_queue(struct ibmvfc_host *vhost,
+ {
+ 	struct device *dev = vhost->dev;
  
--/* Non-atomic variants, ie. preemption disabled and won't be touched
-- * in interrupt, etc.  Some archs can optimize this case well. */
--#define __local64_inc(l)	local64_set((l), local64_read(l) + 1)
--#define __local64_dec(l)	local64_set((l), local64_read(l) - 1)
--#define __local64_add(i,l)	local64_set((l), local64_read(l) + (i))
--#define __local64_sub(i,l)	local64_set((l), local64_read(l) - (i))
--
- #else /* BITS_PER_LONG != 64 */
+-	dma_unmap_single(dev, queue->msg_token, PAGE_SIZE, DMA_BIDIRECTIONAL);
+-	free_page((unsigned long)queue->msgs.handle);
+-	queue->msgs.handle = NULL;
++	if (queue->msgs.handle) {
++		dma_unmap_single(dev, queue->msg_token, PAGE_SIZE, DMA_BIDIRECTIONAL);
++		free_page((unsigned long)queue->msgs.handle);
++		queue->msgs.handle = NULL;
++	}
  
- #include <linux/atomic.h>
-@@ -95,13 +88,6 @@ typedef struct {
- #define local64_add_unless(l, _a, u) atomic64_add_unless((&(l)->a), (_a), (u))
- #define local64_inc_not_zero(l)	atomic64_inc_not_zero(&(l)->a)
- 
--/* Non-atomic variants, ie. preemption disabled and won't be touched
-- * in interrupt, etc.  Some archs can optimize this case well. */
--#define __local64_inc(l)	local64_set((l), local64_read(l) + 1)
--#define __local64_dec(l)	local64_set((l), local64_read(l) - 1)
--#define __local64_add(i,l)	local64_set((l), local64_read(l) + (i))
--#define __local64_sub(i,l)	local64_set((l), local64_read(l) - (i))
--
- #endif /* BITS_PER_LONG != 64 */
- 
- #endif /* _ASM_GENERIC_LOCAL64_H */
+ 	ibmvfc_free_event_pool(vhost, queue);
+ }
+
 -- 
 2.56.0
+
 
 
