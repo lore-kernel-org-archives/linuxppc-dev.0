@@ -2,45 +2,45 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34023606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2026 08:03:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EF4A5606A321
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2026 08:03:23 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=DfcaYETo
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=UQ28VxWH
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jCmMm6kMlz2xN4;
-	Mon, 26 Oct 2026 19:03:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::62"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793001796;
-	cv=none; b=it6acn7EMPFgMstF2pj8WLR2wubtrD4m5QvcP+1sXKjRGCFecV1LFUAU9es+GSTyQlcpYV4IBxrBDOLhuAvb+mAJf3LbH3RLR7nmIBgOZ2sarARwSL1vS1Ml5f7/tz1gt7+5GKV0pLQ20Id7Dx+KLV8X11ySnRhPSF7dRseZnBAxDiLVLCvXIeKSewvWI4OpQpJX47wDBejcuX4ACFZyWcgL7sH0vtSfF+C6d+sp9CcF1JqfBuCnBGGiwpVHL81455rixXAqYUEC0f9A1+ma6JpYpRchnIcm5EVXllHuT2h6lHXx+H0dur5tMrVc816v03mrsKjWnz+DlV9tst39jg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jCmMr4j49z2yTH;
+	Mon, 26 Oct 2026 19:03:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::75"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793001800;
+	cv=none; b=cTBpW0iOPesMP12LncoVMk5IonZQU/UBgUY6HFKJSJEMUjIIolJzobJkBmHv0/fBRHn4egiAww3pS6n0nV5tB9Ndu0gDtzBh8bYSKjs5CCNa1TEAi0TNkyWw488LQLa6n9ULZ3hYsX4UZiw/ZbWjw2uBEo1ApncuzZvUCBxSRNhaVsbabt5qIV5Erxmry7mdaOzS4kA+qgj1rKlSgqx9Rcyx7/mI7uG8mZ4E3VMK2JPNhBvPwxln4V5ZEH6SfjZlkpD2BXixUZiHLL0Mk3mK2fsYaZrODV4N3DfqpXVoT3FzCShPlRHbXgpWSPBWLEb4YHKY0YBoJDcOoiO177PaRw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793001796; c=relaxed/relaxed;
-	bh=zmy3LH0dL65AyxAOzx2otQGK/mLaqXxkxMSe8fA4quA=;
+	t=1793001800; c=relaxed/relaxed;
+	bh=F50Qplwui3CICEAhuivMriFrkJSXdydW0DAGmo57Xtw=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=gkuIvVM7CXVbURRrdlsAA7odPrhH0aIB0kwPk93K+6eWCD17s/81k6fYLY5Fxu+rdFFRTAie4IH7Beno1PbK9eoc3Yv8BHzK1rvIqAjHa7LumfdUicwR6Wgv9NpfjD9IrBwQtI541+ejkVxSpBgoE9iBpf6+FOuDom1JBFqxAP8iHs5JLrgpHopY1x+CUGOuymeCdAQY49sfbz6XfQ5lDJlPx1ikxf/Q0aQ7ForL3Jpq+HDBIicd+GXVHI2Xpq7zlRfdOYzjpgG0grizOiEhMObbcJ+jTZYat2AK7SDl5qWGXnfNovyfA1kpAhJ3sU0shRHXsc0mWZDCzMW4bPpVxA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=DfcaYETo; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::62; helo=mta0.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+	 MIME-Version; b=YuSgvLNPHx4wmvQXcw13ItUPahnE/buXvUL1bv6z160LNucf1MZLnFmwKNFJReKeqmk2cPrzGrqyQBHEEs9ws8XcEForB01vQS1BM4TC85BbVgvn5Y6v/KcdSgVnBttfY4zIrsi+scL3To1+v3MagERR52yoce76ahi+cx9V1eWVYIBvM//Y6OMBN5E5yx/drOy/1BXERAM5MO7A5wsfvgqwJHBOOhvKfC1U8OCdxCy2fl503rbh0mBIJ3Kk2dxdcPrxyNbSYns6TVJAFmgdP6v3Iaa0V4yvZaJHnXKQSjx6A1e3/BZz37amEYhn0JV6Q/FGsOwbX7Wk6Pv9koPQaA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=UQ28VxWH; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::75; helo=mta0.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=DfcaYETo;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=UQ28VxWH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::62; helo=mta0.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta0.migadu.com (out-98.mta0.migadu.com [IPv6:2001:41d0:1004:224b::62])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::75; helo=mta0.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta0.migadu.com (out-117.mta0.migadu.com [IPv6:2001:41d0:1004:224b::75])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jCmMg2YP9z2yDs
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2026 19:03:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jCmMq52YNz2yDs
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2026 19:03:19 +1100 (AEDT)
 X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=rcaYfxcJJLBaD/Nimy7cPxQcpSG7l5aC5JBRtkuZ3MU=;
+DKIM-Signature: a=rsa-sha256; bh=pTZFl8UM3ETvokuzfL6iKKBHKQY2m3Ez9MTwzEqi/1A=;
  c=simple/simple; d=linux.dev;
  h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1793001771; v=1; x=1793606571;
- b=DfcaYEToOO05oj5XAMAuaH+q8d6pgLJ6lXHw/QEd/bWVV9BNdC9VlOhrYPLyBfBVzZ02bIlK
- hO2vnwexCD5YN6nHcqqYKLkTQtXJsMqDUoPka3SnTX2wcJyLp31rrn+cqTqMePnv7jymh8xCMvp
- DykbHKCboQtxsdddbh9NhyO4=
+ t=1793001781; v=1; x=1793606581;
+ b=UQ28VxWHre72gDnSeRWu3nb1iQZNIm5O3U2D7Zzy8KTK+mN1s0L8AOB27+kZM9fI0+f8G8dY
+ NoxqcWBr+OpgCT72GqbU0zwZrZTbaAqWT/S/mizRTjwhFdd6OAQy9+xEfruf1UMlQGS1V5zpE9g
+ LukQmeLeovX/4+EjnXt24Xqc=
 X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id 5dcbb4fe83952587;
-	Mon, 26 Oct 2026 08:02:51 +0000
-X-Mizu-Trace-ID: 5dcbb4fe83952587
+Received: by smtp.migadu.com with ESMTPS id e2e51c17888acd15;
+	Mon, 26 Oct 2026 08:03:01 +0000
+X-Mizu-Trace-ID: e2e51c17888acd15
 X-Migadu-Flow: FLOW_OUT
 From: Hao Ge <hao.ge@linux.dev>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -65,9 +65,9 @@ Cc: linuxppc-dev@lists.ozlabs.org,
 	kasan-dev@googlegroups.com,
 	linux-mm@kvack.org,
 	Sashiko <sashiko-bot@kernel.org>
-Subject: [PATCH v3 03/10] mm/vmalloc: clamp an unaligned range in vunmap_pte_range()
-Date: Mon, 26 Oct 2026 16:03:22 +0800
-Message-Id: <20261026080329.140244-4-hao.ge@linux.dev>
+Subject: [PATCH v3 05/10] mm/vmalloc: reject an unaligned range in vmap_pages_pte_range()
+Date: Mon, 26 Oct 2026 16:03:24 +0800
+Message-Id: <20261026080329.140244-6-hao.ge@linux.dev>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20261026080329.140244-1-hao.ge@linux.dev>
 References: <20261026080329.140244-1-hao.ge@linux.dev>
@@ -95,42 +95,33 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 commit a739e6b557af ("mm: vmalloc: WARN_ON if mapping size is not
 PAGE_SIZE aligned") made vmap_pte_range() warn and bail out when the
-size is not a multiple of PAGE_SIZE. That loop steps in page
-multiples and stops only at addr == end; with an unaligned size addr
-never lands on end, so the loop cannot terminate and walks off the
-end of the page table.
+size is not a multiple of PAGE_SIZE. Its loop only stops at
+addr == end and otherwise steps over it and maps over whatever
+follows the page table. vmap_pages_pte_range() has the same kind of
+loop but was never given the check.
 
-vunmap_pte_range() has the same loop without any guard, so an
-unaligned range would clear PTEs past end without ever stopping,
-walking off the end of the page table.
-
-Add the check there too. The range is clamped down to the last full
-page rather than dropped, and the loop is skipped when nothing is
-left, so a buggy caller still gets its PTEs cleared as far as they
-go.
+Add it there as a backstop.
 
 Reported-by: Sashiko <sashiko-bot@kernel.org>
 Signed-off-by: Hao Ge <hao.ge@linux.dev>
 ---
- mm/vmalloc.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ mm/vmalloc.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
 diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index 44e0eb32708f..7131f60d1a8e 100644
+index d60b99b81ec9..c0f33392c6ad 100644
 --- a/mm/vmalloc.c
 +++ b/mm/vmalloc.c
-@@ -393,6 +393,11 @@ static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
- 	pte_t ptent;
- 	unsigned long size = PAGE_SIZE;
+@@ -557,6 +557,9 @@ static int vmap_pages_pte_range(pmd_t *pmd, unsigned long addr,
+ 	int err = 0;
+ 	pte_t *pte;
  
 +	if (WARN_ON_ONCE(!PAGE_ALIGNED(end - addr)))
-+		end = addr + PAGE_ALIGN_DOWN(end - addr);
-+	if (end == addr)
-+		return;
++		return -EINVAL;
 +
- 	pte = pte_offset_kernel(pmd, addr);
- 	lazy_mmu_mode_enable();
- 
+ 	/*
+ 	 * nr is a running index into the array which helps higher level
+ 	 * callers keep track of where we're up to.
 -- 
 2.25.1
 
