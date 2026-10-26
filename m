@@ -1,73 +1,73 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86A63606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2026 02:25:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 14E04606A31F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2026 04:26:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=B5ZvF3Fp
+	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iHgLqTPO
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jCcsX5yVwz2yDs;
-	Mon, 26 Oct 2026 13:25:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.9
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792981504;
-	cv=none; b=JocopweRseF5IGvM1rRGSzQEfImz72FbUtIy6a7L8GKPz0GTKK/eKP0USVd+MzlMx41o1qxqyjz+wjTWUsAp3fk10I3NtnakoF9/hFKzqOB7dJKyEa4+BK4/prUoBXQlODedPpTvQCB+kVNPP1uOI7wh7cxn4/sby2ezQdzqLzIMuku5L2b0I+StfLowrLRQqDzR+YW1JzFb50F3C9k3BXCycdWMmnfkgThMZEutjlJaopLlAXb2R3jwc1Y9gIkLGiDY2DzFzjX60/Wku5Pper3Bw4PucrPUkSZjKR3oUqACKOfOXAt3IOR98itHO5t0Z/IzEcXkiCRrZ2zukvfZ8Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jCgYt2TpKz2yDs;
+	Mon, 26 Oct 2026 15:26:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792988802;
+	cv=none; b=N3wZEbwfVLAG44iOlQEjTT7GPvPc/0crIgS09OUL8Ece+mVzY0YDGs9SgEMgoqENHYTTT1MRluw+XBJdqUZ+Lw2aiESGcI6CtJvPPxvRyZwYTDJ75vwf0NgMsBzjKMy8wQSREYyO1aoa5hAjxa8TYZHh9CcUX8rRDc30mD4XCNCkEMv/bVrP8kGWzB6ZCpUGrVmAAxoL3TyfN4E2CFsfVXnKVRY4my/lYlTCznq2awGcay+EbPP/dHAVJO/l9CkGRDFzzD71TDbloJX+tDpxyC0PYG283T9k3X8Gjju+6Lb5Tlguee8YDGcGlq/cNLdgG1PWfIRO/aQFhzhD4lp7hw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792981504; c=relaxed/relaxed;
-	bh=YxJ4VVeK9bnbWTaneSho9D6B/EMJ1w2pVfFv/idBt/A=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=WzHTmOlSuGVW/fxjYy+Y22piAecNFLxpJgp7jWFRYZdZG9bJ8O9qbl5i+y6pF9BzKuVKogmaQDqdhJgXsgMeCr5OBHhrGKWaqhTxLUA48xM+XGZfvEabWjMEYrkYkLFIoogWlhUcQXd1mcndWPjO7V4Ecl1q/OA6RwOAqO2HGeAud3+q0OgXJykjn5BMyT7xkeUfv7ibcRJ34acBKNOpCbwXRhXiWOw9Hu2TELZnPBk4JEa7uDSPpIRZ9biw7qLyVDSy2L9GAgEN/RTZDorM0kpj4w7jTbBNRMRwMPjntWiU982O+/z0fAST/NCmUFxqXpZJ22FKkmr21NyCuLIxtQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=B5ZvF3Fp; dkim-atps=neutral; spf=pass (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=yi1.lai@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1792988802; c=relaxed/relaxed;
+	bh=4jxPmGPQHAD1Q6IoVK7PNqr4uQjZpTbBraFDOuc+3pw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=MzFkL32uh+cG92u7DRvqFeayRRlkyRJHQVwJ7m2HkFT4xY/8UvtZjQq09rr5QLlW7PASxAR7d9eF0XWfi6g4KqRHpjPNE09WyAgdJbGKygZQ1+5ymiARO3owhXLADR84m2+Y/nPCn9x7AtYYLEHZMzOb205PDiIhSDvbmx3/SwIiuTcuKXCDUvlDzHJWvXfrw8ZjFWvcodx9SgE9KEtMokMkyEFpNZy1JqaDIZiGVzDcQUXfdH8nOvTi5kAdGccrTY2womAIlarlEwESLIzn3DcE+gCQmBB4lNamBIg9L6CKjH+PfVrG+oxo2kXu1ra/v/wtn9pF1ntF64Ns4uk62Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iHgLqTPO; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=B5ZvF3Fp;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iHgLqTPO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=yi1.lai@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jCcsT3Bx8z2xgv
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2026 13:24:58 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1792981502; x=1824517502;
-  h=date:from:to:cc:subject:message-id:mime-version;
-  bh=p5EF9DrvTI9TWr4SfD0pPKgmrR5yJPb+Hj8Ptw3CoUk=;
-  b=B5ZvF3Fp0a+4NG6zSuBrTw2RPPCoPk+0tCQSl9YwlHIotfWALsi3xmDN
-   OtegrXH3CdYyO+DEP4m7Ooa43JKbd6oxcv+gRCa7V9HXTpjn3PANaWXiS
-   OEeO5dmDju0NHVfrZBsAs5IV5w81lYP26IEHWd7Ua2+04pelrhJI0MwJ2
-   wPdiruID+/BYJm41WeNHX/iciSDG7JO6KUeT/QPwHePgYX74N50rpccCy
-   +Uhq1bm0FbCAJpkiLus2t+wEuKFfG5AC8IZkMtfxhKIgvLikyx3yQ0dIS
-   TolWKnfiiblh5QXbhR5u7IV6hMKa+xNs/D+SVfZ3vJCUakzrvttE/y3sE
-   Q==;
-X-CSE-ConnectionGUID: qzY3TFKpTNeHkf3/uC8Gfw==
-X-CSE-MsgGUID: dOks4ZAcTc+RFmGK5i2g4A==
-X-IronPort-AV: E=McAfee;i="6800,10657,11946"; a="1530204"
-X-IronPort-AV: E=Sophos;i="6.27,178,1787036400"; 
-   d="scan'208";a="1530204"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
-  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Oct 2026 19:24:57 -0700
-X-CSE-ConnectionGUID: YLFJw+i3QFKha+6X0nM5mA==
-X-CSE-MsgGUID: qhSJhwe5REiQ6PJiIR00FA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,178,1787036400"; 
-   d="scan'208";a="4122800"
-Received: from ly-workstation.sh.intel.com (HELO ly-workstation) ([10.239.182.64])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Oct 2026 19:24:54 -0700
-Date: Mon, 26 Oct 2026 10:24:50 +0800
-From: kernel test robot <yi1.lai@intel.com>
-To: Christian Brauner <brauner@kernel.org>
-Cc: oe-lkp@lists.linux.dev, lkp@intel.com, linux-kernel@vger.kernel.org,
-	Arnd Bergmann <arnd@arndb.de>, Jeff Layton <jlayton@kernel.org>,
-	linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
-	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
-	sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
-	yi1.lai@intel.com
-Subject: [linus:master] [arch]  b36d4b6aa8:
- WARNING:at_fs/nsfs.c:#is_current_namespace
-Message-ID: <202610260917.6248e316-lkp@intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jCgYs2sVKz2xcB
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2026 15:26:40 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69Q2i6tc833002;
+	Mon, 26 Oct 2026 04:26:16 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=4jxPmG
+	PQHAD1Q6IoVK7PNqr4uQjZpTbBraFDOuc+3pw=; b=iHgLqTPOCd3bZXsGq1XtYA
+	NNdOAo7i8o3y0RreBq1t6HGg2FknhiBmwE1Su/bo4F4uuv+GcZQW+YFBbjzyOKVW
+	tTz16ZYDzSzspLeP4E80IUYL4xnPsXxKuxssZIJQTgACP7oiXPvbbL5o0KbXbFXk
+	raT1MHrMi8TEsV7qr25imOWrYsPRtjGHIQLAnKNi3zCTheX8ekT+GnXvkajywfB5
+	oi21oWBXfiDnikdeGNOIBaUVP6GrUnP8A8kse9ZDImVXAP+oyN2mm5FEO1vAaXQc
+	NPciyGc6ab03hIenwgvuGAmbNfbrZ84q04IITamxvYgdDJCxE74zsHGh5iYG8QBQ
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hgk3fquuy-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Mon, 26 Oct 2026 04:26:15 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69Q2KXtH1924565;
+	Mon, 26 Oct 2026 04:26:15 GMT
+Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4hh8ggv41a-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 26 Oct 2026 04:26:15 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
+	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69Q4QEFx31916602
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 26 Oct 2026 04:26:14 GMT
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 953145805D;
+	Mon, 26 Oct 2026 04:26:14 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3548B5805E;
+	Mon, 26 Oct 2026 04:26:11 +0000 (GMT)
+Received: from [9.123.8.83] (unknown [9.123.8.83])
+	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 26 Oct 2026 04:26:10 +0000 (GMT)
+Message-ID: <e3e7f96b-e23d-452a-a3fc-774d5b2e0ee7@linux.ibm.com>
+Date: Mon, 26 Oct 2026 09:56:09 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,149 +81,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Spam-Status: No, score=-11.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS
-	autolearn=ham autolearn_force=no version=4.0.1
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc/irq: Fix build with CONFIG_PROC_FS=n
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+        Sasha Levin <sashal@kernel.org>
+Cc: Shrikanth Hegde <sshegde@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+        kernel test robot <lkp@intel.com>
+References: <2331292e-1a40-44ef-8776-9155e8e41f03@linux.ibm.com>
+ <20261023211503.3764302-1-sashal@kernel.org>
+ <CAHk-=wh7ZfsDA8Jh0+GSpLehCzfnyME_ztcpwebnvBMDnqjM6A@mail.gmail.com>
+Content-Language: en-US
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+In-Reply-To: <CAHk-=wh7ZfsDA8Jh0+GSpLehCzfnyME_ztcpwebnvBMDnqjM6A@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=BOMmP1QG c=1 sm=1 tr=0 ts=6aded668 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
+ a=0dio3GCuqh6ixl9tjnMA:9 a=QEXdDO2ut3YA:10 a=QYH75iMubAgA:10
+X-Proofpoint-ORIG-GUID: dMDfnuazhFj9l5PKGRHGNVCjDJs9AwUu
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDI2MDAxNiBTYWx0ZWRfXy2Syv13vaJ6Z
+ X14s4k6llu6UtAzLbLtCHSzn02kKldluIHU34Ryj4ZHC730gFQeJZwxCtL01cweCZe5bcSE3msl
+ Nr+zSlRafGzACdhqDEvr3k5+uWsq5EIy2ebhTlIHNuVvcUmgNDUT0P59WrIJVEvF9U59sLClmbn
+ cbZ4RtvQEz0XOFDDTCq7K0DLdIkJfLFGxnyjKiK3ocYVGeDFktnEuZF4CqnNUhaW5dStZS1AGf8
+ HB2pMYuOABf78maIhqleF3ACkwhzWmg0iH7Mg0aoQNkCEgs2qfTFLziRFrpBV/Y00lk3bqLz/Wk
+ apEzV9ThOZzeet3RROELabTRXZzqj2u7+eCFAaCzIntm29xMryfBcaNVFX06oo2gQtmR8jsiIJ0
+ VCKmtqDUo0foLI5FqoJjUo6cGleT8DbifMfIxdTGHIeZ2pVX1uLtApOqVKPG0bYxNV5ZL1L4E0U
+ KKBV0PrzgeHL9aXlCEw==
+X-Proofpoint-GUID: WDkwEtVaTqWoioWUeySWVZghQzkWNy2H
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDI2MDAxNiBTYWx0ZWRfX9Olh8xrgo+vE
+ GmwTlzIM+3BmXkqHRxAeJk21EBL1izrdQm+9VuqygmkqDDL2+6GdgX0GD6aTA0fnIIm9qdd1C1m
+ A2DYi+e31fa/Cbz+qZw1eBWsU3Zoc+4=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-10-26_01,2026-10-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 bulkscore=0 malwarescore=0 clxscore=1011 spamscore=0
+ phishscore=0 adultscore=0 impostorscore=0 priorityscore=1501
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610190000
+ definitions=main-2610260016
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 
+On 10/24/26 5:20 AM, Linus Torvalds wrote:
+> On Fri, 23 Oct 2026 at 11:15, Sasha Levin <sashal@kernel.org> wrote:
+>> arch_show_interrupts() is only called from irq_seq_show(), which is in
+>> kernel/irq/proc.c as well, so build it only with CONFIG_PROC_FS, as x86
+>> already does.
+> Thanks, applied.
+>
+>                      Linus
 
-Hello,
+Sorry missed this. My bad.
+Thanks Linus.
 
-kernel test robot noticed "WARNING:at_fs/nsfs.c:#is_current_namespace" on:
-
-commit: b36d4b6aa88ef039647228b98c59a875e92f8c8e ("arch: hookup listns() system call") https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git master
-
-[test failed on linux-next/master 20a33c6b6cbe7e4805dfb6cd68816937443aa148]
-
-Our bisection first flagged commit b36d4b6aa88e ("arch: hookup listns() system call") as the first bad commit, since that is the commit that registers the listns() syscall number, making the warning reachable from userspace/trinity.
-
-We also tested the parent commit, 76b6f5dfb3fd ("nstree: add listns()"), and found that it already reproduces a WARNING of its own (see "Regarding the PARENT" below, via setns() this time). This suggests the nstree/listns() code was already not fully robust before b36d4b6aa88e, and that commit's role may simply be exposing/making reachable an issue that predates it, rather than introducing a new one.
-
-in testcase: trinity
-version: trinity-x86_64-d4c26f234-1_20261018
-with following parameters:
-
-	runtime: 300s
-	group: group-04
-	nr_groups: 5
-
-
-config: x86_64-randconfig-015-20251114
-compiler: gcc-14
-test machine: qemu-system-x86_64 -enable-kvm -cpu Icelake-Server-noTSX,enforce -smp 4 -m 16G
-
-(please refer to attached dmesg/kmsg for entire log/backtrace)
-
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <yi1.lai@intel.com>
-| Closes: https://lore.kernel.org/oe-lkp/202610260917.6248e316-lkp@intel.com
-
-
-[   44.455278][  T526] ------------[ cut here ]------------
-[   44.456351][  T526] WARNING: CPU: 0 PID: 526 at fs/nsfs.c:508 is_current_namespace+0x12f/0x440
-[   44.458109][  T526] Modules linked in:
-[   44.459285][  T526] CPU: 0 UID: 65534 PID: 526 Comm: trinity-c2 Tainted: G                T   6.18.0-rc2-00023-gb36d4b6aa88e #1 VOLUNTARY  e2643480911518fe6c6e798d49763b0f8bc0c2cc
-[   44.464118][  T526] Tainted: [T]=RANDSTRUCT
-[   44.465362][  T526] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
-[   44.468577][  T526] RIP: 0010:is_current_namespace+0x12f/0x440
-[   44.470566][  T526] Code: 48 c1 e8 03 80 3c 10 00 0f 85 5f 02 00 00 48 8b 3d 7e 55 6c 08 48 83 eb 70 e8 9d 04 78 ff 48 39 c3 5b 41 5c 0f 94 c0 5d c3 90 <0f> 0b 90 31 c0 5b 41 5c 5d c3 e8 c2 b7 2a 06 48 c7 c0 18 10 a3 8a
-[   44.476790][  T526] RSP: 0018:ffa000000184fce0 EFLAGS: 00010206
-[   44.478622][  T526] RAX: 0000000040000000 RBX: ffffffff8e0d4bc0 RCX: 0000000000000015
-[   44.481098][  T526] RDX: 1ffffffff1c1a978 RSI: ffffffff8ab98ec0 RDI: ffffffff8e0d4bc0
-[   44.483561][  T526] RBP: ffa000000184fcf0 R08: 0000000000000001 R09: fff3fc0000309fa6
-[   44.485976][  T526] R10: 0000000000000003 R11: 0000000000000200 R12: ffffffff8e0d4c78
-[   44.488478][  T526] R13: 1ff4000000309fa2 R14: ffffffff8e0d4bdc R15: ffffffff8e0d4bc0
-[   44.490935][  T526] FS:  00007f9b05b17900(0000) GS:0000000000000000(0000) knlGS:0000000000000000
-[   44.493641][  T526] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[   44.495638][  T526] CR2: 00007f9b05742e10 CR3: 0000000134aca003 CR4: 0000000000771eb0
-[   44.498129][  T526] PKRU: 55555554
-[   44.499291][  T526] Call Trace:
-[   44.500271][  T526]  <TASK>
-[   44.501134][  T526]  legitimize_ns+0x25f/0x4c0
-[   44.502577][  T526]  ? lookup_ns_owner_at+0x400/0x400
-[   44.504165][  T526]  do_listns+0x185/0x5c0
-[   44.505452][  T526]  __do_sys_listns+0x13b/0x300
-[   44.506941][  T526]  ? do_listns_userns+0x580/0x580
-[   44.508435][  T526]  ? up_read+0x22/0x40
-[   44.509723][  T526]  __x64_sys_listns+0x97/0x100
-[   44.510619][  T526]  ? trace_hardirqs_on+0x21/0xc0
-[   44.511530][  T526]  x64_sys_call+0x21/0xa40
-[   44.512340][  T526]  do_syscall_64+0xb3/0x800
-[   44.513186][  T526]  entry_SYSCALL_64_after_hwframe+0x50/0x58
-[   44.514303][  T526] RIP: 0033:0x7f9b05c28779
-[   44.515114][  T526] Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 4f 86 0d 00 f7 d8 64 89 01 48
-[   44.518758][  T526] RSP: 002b:00007ffe8c345bb8 EFLAGS: 00000246 ORIG_RAX: 00000000000001d6
-[   44.520321][  T526] RAX: ffffffffffffffda RBX: 0000000000000002 RCX: 00007f9b05c28779
-[   44.521798][  T526] RDX: 0000000000000008 RSI: 00007f9b05740e10 RDI: 00007f9b05742e10
-[   44.523292][  T526] RBP: 00007f9b05912000 R08: 0000000000000000 R09: 0000000000000000
-[   44.524772][  T526] R10: 0000000000000000 R11: 0000000000000246 R12: 00007f9b05912000
-[   44.526247][  T526] R13: 00007f9b05b0f560 R14: 00007f9b05917050 R15: 00007f9b05b176c8
-[   44.527731][  T526]  </TASK>
-[   44.528282][  T526] irq event stamp: 54199
-[   44.529054][  T526] hardirqs last  enabled at (54211): [<ffffffff81bdc218>] __up_console_sem+0x58/0x80
-[   44.530820][  T526] hardirqs last disabled at (54224): [<ffffffff81bdc1fd>] __up_console_sem+0x3d/0x80
-[   44.532559][  T526] softirqs last  enabled at (54144): [<ffffffff81a83670>] handle_softirqs+0x470/0x900
-[   44.534358][  T526] softirqs last disabled at (54133): [<ffffffff81a846fe>] irq_exit_rcu+0xfe/0x140
-[   44.536055][  T526] ---[ end trace 0000000000000000 ]---
-
-Regarding the PARENT (76b6f5dfb3fd), which our bisection marked as the last known-good commit, we observed the following separate WARNING,
-indicating the nstree/listns() area already had an unrelated issue before b36d4b6aa88e landed:
-[   94.367090][  T535] ------------[ cut here ]------------
-[   94.370167][  T535] WARNING: CPU: 0 PID: 535 at include/linux/ns_common.h:311 nsproxy_ns_active_put+0x8cd/0x940
-[   94.375575][  T535] Modules linked in:
-[   94.377666][  T535] CPU: 0 UID: 65534 PID: 535 Comm: trinity-c3 Tainted: G                T   6.18.0-rc2-00022-g76b6f5dfb3fd #1 VOLUNTARY  cb1b9fe02910ecdede8a35f9462ebcf918b6f4e2
-[   94.384602][  T535] Tainted: [T]=RANDSTRUCT
-[   94.386182][  T535] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
-[   94.389939][  T535] RIP: 0010:nsproxy_ns_active_put+0x8cd/0x940
-[   94.392205][  T535] Code: e9 fc fd ff ff 90 0f 0b 90 e9 97 fe ff ff 90 0f 0b 90 e9 d6 f9 ff ff 90 0f 0b 90 e9 ad fa ff ff 90 0f 0b 90 e9 fa fa ff ff 90 <0f> 0b 90 e9 28 fe ff ff 90 0f 0b 90 e9 b2 f9 ff ff 90 0f 0b 90 e9
-[   94.399343][  T535] RSP: 0018:ffa000000188fda8 EFLAGS: 00010297
-[   94.401546][  T535] RAX: 0000000000000000 RBX: ff110001008d93a8 RCX: ffffffff8236dccb
-[   94.404421][  T535] RDX: 1ffffffff1657494 RSI: 0000000000000004 RDI: ffffffff8b2ba4a0
-[   94.407439][  T535] RBP: ffa000000188fdc0 R08: 0000000000000001 R09: fffffbfff16574a8
-[   94.410390][  T535] R10: ffffffff8b2ba543 R11: ffffffff810000ae R12: ffffffff8b2ba400
-[   94.413332][  T535] R13: ff1100013598c540 R14: ff11000122132440 R15: ff1100013598c540
-[   94.416277][  T535] FS:  00007fa7c6e86900(0000) GS:0000000000000000(0000) knlGS:0000000000000000
-[   94.419588][  T535] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[   94.422023][  T535] CR2: 00007fa7c6b5f020 CR3: 00000001337f8005 CR4: 0000000000771eb0
-[   94.425020][  T535] PKRU: 55555564
-[   94.426319][  T535] Call Trace:
-[   94.427494][  T535]  <TASK>
-[   94.428612][  T535]  free_nsproxy+0x16/0x380
-[   94.430265][  T535]  put_nsset+0xa9/0x1c0
-[   94.431822][  T535]  __do_sys_setns+0x2d0/0x700
-[   94.433519][  T535]  ? switch_task_namespaces+0x100/0x100
-[   94.435616][  T535]  __x64_sys_setns+0x53/0x80
-[   94.437263][  T535]  ? trace_hardirqs_on+0x21/0xc0
-[   94.439158][  T535]  x64_sys_call+0x227/0xa40
-[   94.440781][  T535]  do_syscall_64+0xb3/0x700
-[   94.442581][  T535]  entry_SYSCALL_64_after_hwframe+0x50/0x58
-[   94.445676][  T535] RIP: 0033:0x7fa7c6f97779
-[   94.447948][  T535] Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 4f 86 0d 00 f7 d8 64 89 01 48
-[   94.459415][  T535] RSP: 002b:00007ffc93f4e248 EFLAGS: 00000246 ORIG_RAX: 0000000000000134
-[   94.464265][  T535] RAX: ffffffffffffffda RBX: 0000000000000002 RCX: 00007fa7c6f97779
-[   94.469222][  T535] RDX: 0000000000000000 RSI: 0000000000000000 RDI: 00000000000001ac
-[   94.473612][  T535] RBP: 00007fa7c6c71000 R08: 0000000000000000 R09: 0000000000000000
-[   94.476937][  T535] R10: 0000000000000000 R11: 0000000000000246 R12: 00007fa7c6c71000
-[   94.479999][  T535] R13: 00007fa7c6e78440 R14: 00007fa7c6c76050 R15: 00007fa7c6e866c8
-[   94.483046][  T535]  </TASK>
-[   94.484138][  T535] irq event stamp: 47371
-[   94.485745][  T535] hardirqs last  enabled at (47395): [<ffffffff81bdc798>] __up_console_sem+0x58/0x80
-[   94.489275][  T535] hardirqs last disabled at (47408): [<ffffffff81bdc77d>] __up_console_sem+0x3d/0x80
-[   94.492766][  T535] softirqs last  enabled at (47392): [<ffffffff81a83570>] handle_softirqs+0x470/0x900
-
-
-The kernel config and materials to reproduce are available at:
-https://download.01.org/0day-ci/archive/20261026/202610260917.6248e316-lkp@intel.com
-
-
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
-
+Maddy
 
