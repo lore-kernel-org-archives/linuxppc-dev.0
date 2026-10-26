@@ -1,96 +1,87 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F887606A323
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2026 19:54:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B0A28606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2026 19:57:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SpDGmp1J
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=fRwCyAhZ
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jD47y4RdSz2yKn;
-	Tue, 27 Oct 2026 06:54:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.11
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793044446;
-	cv=none; b=Ycf2O3CVw9Wq/f3OmgVbt1ZMowA8mcckBzcrLmCR+iKUl545uI8tRBZNuk7TpVcE3D2LoPqB/m3QsvSV9FsFEOgZEV+a5Kt6X16/hJYNcs7PQ9R15iuL5WaZ6OTyg1p35yzzVZBdXjVOABJQx7TlxAVkP8SPlhuoUhHc1CGLP4DMLOZRX7DGqJjzwjDFnVo8t1Uby3u9mNN0TTcZ9Pksyxw/ZuV59XYFZLabH5k+r4jnq40SENxIFKKPIcojkK/uVuEPChbxcYLDFXVafEOcB40uYVkXXPH5hHLo+OD4mb/6HHj4Dj5C5V5pddZI4JJBL4EwRJcaVdFn1kkz02M4jQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jD4CH2Pw7z2yPR;
+	Tue, 27 Oct 2026 06:56:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793044619;
+	cv=none; b=ZcvTpZ+eU+awUZBfwyn85OMNd34XSe5or+avxvLPtSkj/MxQQ8bLkNgVKojam49jwjhrCE1/LKPIQkpPBk46TZPtQ816VSzXnsmN1Ly7KHtaAZGetyjSkRa4gsQL+ZbjD44s6QvuguQJ78iTHQNHF0YkrGuEg48d3N+SeF5PnkednkE2+48kw+/HayrZSLNR7vt9pRZSGITH3QNunzCp+SL7hwuLlUKfyLIsWz57/tmWzdB7rVMa4vu4IYq33PYZm/0lQi6am0/yVf1JEy6qJUzr2cE2I4xfV+++4IjIb/gCWx+JZFSJNbFwSYs9khdYBB/uikqo/5/ZuaFRX3JGjw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793044446; c=relaxed/relaxed;
-	bh=i+NDmw4lwf3hRzODAHlKBNdsDK4Mb0dC93HrLNynbZA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=i7jqdH2jdI8FGtJxCeD55hv2B6UbChs5xGs7URWjoIgP/H5vJOxYwHFlZg04Ylcq0uunonaF3Eij2Nvxm/efa0andzXh9L9h7kI1VMk00LJ7vVhCPmKdejHbGWM0rr+hNFcKWgZblZ85SMvW8FqmcvSBiC8xsc1BJYiFb1L9kw20cVUPzZ33RvesPLXqfldkQzGy75HcAfvLxTgIi/CH2JqGBBPx8tkqPugPjvjII8OJ55i49n9Gw4LsN2pmFN2FFjjytyEjQNVbxQ3jkXKIXKPXs80FutNL4YcCL1TzlTCRBvWAXDCA2zOVMl6bKNF5NCtzaNG67Wppe6W5iySz9Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SpDGmp1J; dkim-atps=neutral; spf=pass (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1793044619; c=relaxed/relaxed;
+	bh=FqCIdqPFMWya49nS37tTwwL89MpF/df8fJ6+BamATMQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Hr5CUAjW77pudmZA56DACpO3qZp4E7AptR39xDscQ1zV9G5AOyUN61M+TmZ5O4KDU0weKyUc0oYMZWfZapHGMhimi2sFvqxK6QEY0wORjXBowQKEiQH4E1DjaUGrsOvonvCUhKxhi2m6U2PxE9xavf3WOAARzbADQJw9+i/n4ILJ4CaPHHW9+MfS7A4OXfgjWHGMTnDRzCI2KXPXw+723usxysZ7B1zVVTXTTCGJP8zJoHqaO3FVu/2wlLSFG6m9l2hR//uPkPrTsrv/+96to3LEV9sq7gPIHlw8hI1BHjoIa1nFV3SsiBIcRLar2oihP7PPE3QdZJjtXfbAtyM2MA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=fRwCyAhZ; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42f; helo=mail-wr1-x42f.google.com; envelope-from=pepe.schlehofer@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SpDGmp1J;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=fRwCyAhZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42f; helo=mail-wr1-x42f.google.com; envelope-from=pepe.schlehofer@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jD47v2LJMz2xm5
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2026 06:54:00 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1793044444; x=1824580444;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=FV51n/PiZWx6bvBfOkBqCKkoCYD8qfwCN0puYCkV0os=;
-  b=SpDGmp1J2i9cJpf3J/3bt4Zjlbpp0mJogGkvzaX70r8yprnqFmxCsh5H
-   /5EPDHDkAFQIz2A7jZfYXvAolb126AKVWdncY2M00Yv9u1inK3m6DHLNi
-   Zz5bI0kmIKw/XhR1OeJSw18CzUn1oMb0ZsS107Wntws6J2mFWoZD1eeyJ
-   SO5313/NJr62MGXu2JiQXh8N8G17eMLQh8ro6of2DRzs9zTRb1gMTXwvM
-   7FouHboSAKtFTgfDjrJZVuliXQjf/pmor6F44l9VFFGytQcXZzFcV+v9b
-   Ig8VZlyQWnwFzc8gO3GtHMO5S++5vAySihczi5QkbpIWdqugOdfoB3wqC
-   A==;
-X-CSE-ConnectionGUID: UaGP1izuStKzpb/n1It3iA==
-X-CSE-MsgGUID: oj29Qh85S/W0Y63uos8gCg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11947"; a="1615447"
-X-IronPort-AV: E=Sophos;i="6.27,180,1787036400"; 
-   d="scan'208";a="1615447"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
-  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Oct 2026 12:53:55 -0700
-X-CSE-ConnectionGUID: Dj09to7/Sbe2r8g4P5Lwuw==
-X-CSE-MsgGUID: qCd0O6T5QDOWwhS++gg2Xg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,180,1787036400"; 
-   d="scan'208";a="4710651"
-Received: from pgcooper-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.245.93])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Oct 2026 12:53:48 -0700
-Date: Mon, 26 Oct 2026 21:53:45 +0200
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: James Hilliard <james.hilliard1@gmail.com>
-Cc: "Maciej W. Rozycki" <macro@orcam.me.uk>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Jiri Slaby <jirislaby@kernel.org>,
-	Raul E Rangel <rrangel@chromium.org>,
-	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
-	Tony Lindgren <tony@atomide.com>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	Richard Genoud <richard.genoud@bootlin.com>,
-	Nicolas Ferre <nicolas.ferre@microchip.com>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
-	Jacky Huang <ychuang3@nuvoton.com>,
-	Shan-Chun Hung <schung@nuvoton.com>,
-	Pali =?iso-8859-1?Q?Roh=E1r?= <pali@kernel.org>,
-	Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>, Timur Tabi <timur@kernel.org>,
-	linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev,
-	linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v5 2/5] serial: serialize asynchronous write wakeups with
- the port lock
-Message-ID: <at-vyZ1sDhYPu0W5@ashevche-desk.local>
-References: <20261024-submit-serial-8250-dma-cancel-v1-v5-0-9e52968928d2@gmail.com>
- <20261024-submit-serial-8250-dma-cancel-v1-v5-2-9e52968928d2@gmail.com>
- <alpine.DEB.2.21.2610250459200.42255@angie.orcam.me.uk>
- <at4bw-G8czG-G7Wl@ashevche-desk.local>
- <CADvTj4psJcY2T1PG9H8_hJWjz62R7unj3PPgv3FrVquUMFVhGg@mail.gmail.com>
- <at5qKehogAjTa-fA@ashevche-desk.local>
- <CADvTj4qSgE6Rc--mWuqAcc8HTqN9EFOS_JM8Hp8e_=ka_ZLa6w@mail.gmail.com>
- <at8eDFj2WNaXDaot@ashevche-desk.local>
- <CADvTj4oNz-bnSZP+kfau-7wBSWLjLTP5jrr6nLfdCHNPo3pS6w@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jD4CF6Q2Pz2yKn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2026 06:56:57 +1100 (AEDT)
+Received: by mail-wr1-x42f.google.com with SMTP id ffacd0b85a97d-48b001cd92bso1938407f8f.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2026 12:56:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1793044613; x=1793649413; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=FqCIdqPFMWya49nS37tTwwL89MpF/df8fJ6+BamATMQ=;
+        b=fRwCyAhZ089z9+INUkN8at3siCzLxA2OggjIQAYQozMbfKK/gdjp+FU6wz2DjHZRCj
+         okHEHBIpvAKWWA9Y94Ro4amCxHlZkZVvU9ZSvWJ6NbMTDq5JqsPY/KPpSFLP4/thS3/R
+         Z1/S2YNUgP9/y0M0UYvfJdc0N8EQI2GMKm+VDV5FAze27RbaHWVZjXVoEDXBHYR1XXMp
+         Z0qSGpv8GIRwxsAprPOvXiDV1QQAUBVD4QZ9G71OAekM8QcnZV8EaZ7bu1fQ9RrsSrSN
+         u8zOGVttO/AxcGO/8cZ3lJbRdBdJUT6/mwpeShlWLiDDjppeDF2Eq9HI9p/BFQanQZyk
+         YdNA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793044613; x=1793649413;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=FqCIdqPFMWya49nS37tTwwL89MpF/df8fJ6+BamATMQ=;
+        b=vLDQdJXFfvsHRfIMk9VIsuoTlwCf99NY5h40M3kxuADJNgl3D9qhxtDRSn/9XCQtdA
+         fBASNB0a46dyK6dkPPTLDPAUOJOFyo9xoAMbzoIgBBaun3Zc67pc+//JKUB7HugGXerm
+         ObX0dlifmGsdWsGOwbIhtDS/OWJte/xjNrKrgion1IBv3lWLKQH5y8QIbhWdSU+49A1T
+         sYKPiv8IosrVi1sDigzVkp8gLsZwieraifdBXiGOmPGR/raHF0FKzxJ/DSV8BXYctZ4D
+         2/A3aQVMu2UCIzYqT3b7Z/1GCdKWk93dnKJ2HcHD67GL5BNLZUyPwdh0r5p5UETNWxNi
+         Za2A==
+X-Gm-Message-State: AFq9FYLwAbJysd/0R3FoYIUUFZDoqhWIdKOLZcs/tquiUjnq64nzdunT
+	ONFFGyUsi5JF/Go9pxYBCHFL3kzaV3S3FG2Ctz8f6FELj5pwKl3EEpKpvXRVccqb
+X-Gm-Gg: AYBFou2rggxNYa4jgYbLaMqdbpJbPOyNgOXAxBj+6FaEW+BqkRnGvfvNIdCIdcKUwbE
+	/4X5UWIfCocTCtouJIMx2fbJKNlw8Aqx/fA8xeytgGN3LGzQKr8dVGNxU7xpVbdQ11vEtrvOYBF
+	9oCI/CzMyr2BDC74vgt+kt3N6SJckK57HA1XF770N/uGg7L1/zL07dhGwTPfHvJGSiL8gJ1mVSO
+	hSTHYUeZLTSlcaUiRdxgyGyhWPAjMLmezsP2M5qVhCCtRfTMwaBSnZ+hn3YELVCtUq3lmkCPuUe
+	3bQ3RAVOMqn3qHiIKzeRVKhdZOdMOudXmA1QrYWVfWp1W/niEiVnK7lQBMbgVsGQhXLFRgbT+Pz
+	XcB2uXPHM75s1/BUwunNGoaEZJlYuVSkFYW9TGHWSl79EuFfgz8n07pRnM+B+GH9aCprykGceGC
+	KPCwzDK9wrdUz0jcVA1Yrgprli79DtWVSV9/7AZeM0IkaPNwMJ6oDIcjkj42j7QkhOdH/1mTZ81
+	4HaU9cc/ylEJk/TaNiRbtujyAIsaBP6kdE59n38exaIbZKLRw3X6RSwMTYUlyyuAa99M7oM2uSb
+	zRWNRybiRtYVtkkxPyXem+5ayJwaCRnmpsizYjMsIxOFRpj0nNzelkgwq6CjYVAbsruIKmRvK6m
+	7iPzq49CSpOlo01MK1zmoe1ARpNkZboxVjEXj2uUnhx7AYreIsu3dS8LTqdnDgYjHG6cFN2fGCg
+	rF2ESioWcPICKYD58uW/zWWnQz8A==
+X-Received: by 2002:a5d:5f56:0:b0:48e:f10:ceb8 with SMTP id ffacd0b85a97d-48e3eb759fcmr14555792f8f.11.1793044612929;
+        Mon, 26 Oct 2026 12:56:52 -0700 (PDT)
+Received: from localhost.localdomain (dynamic-2a00-1028-8388-a84e-8ce1-bbf6-5949-b0f3.ipv6.o2.cz. [2a00:1028:8388:a84e:8ce1:bbf6:5949:b0f3])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48e3ecde7easm18592526f8f.52.2026.10.26.12.56.52
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Mon, 26 Oct 2026 12:56:52 -0700 (PDT)
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>
+Subject: [BUG] powerpc/code-patching: IPI with interrupts disabled on e500 SMP
+Date: Mon, 26 Oct 2026 20:56:44 +0100
+Message-ID: <20261026195644.16384-1-pepe.schlehofer@gmail.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,99 +95,54 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CADvTj4oNz-bnSZP+kfau-7wBSWLjLTP5jrr6nLfdCHNPo3pS6w@mail.gmail.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
-X-Spam-Status: No, score=-9.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-4.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FORGED_GMAIL_RCVD,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Mon, Oct 26, 2026 at 10:45:54AM -0600, James Hilliard wrote:
-> On Mon, Oct 26, 2026 at 3:33 AM Andy Shevchenko
-> <andriy.shevchenko@linux.intel.com> wrote:
-> > On Sun, Oct 25, 2026 at 04:11:08PM -0600, James Hilliard wrote:
-> > > On Sun, Oct 25, 2026 at 2:44 PM Andy Shevchenko
-> > > <andriy.shevchenko@linux.intel.com> wrote:
-> > > > On Sun, Oct 25, 2026 at 02:25:46PM -0600, James Hilliard wrote:
+Hi,
 
-...
+On a P2020 (e500v2, two CPUs) running 7.3-rc1 with
+CONFIG_PROVE_LOCKING and CONFIG_STRICT_KERNEL_RWX, the BPF JIT
+triggers this warning at boot:
 
-> > > > Some people might want to test the stuff. And sending too often you actually
-> > > > will get the opposite results, people will be tired to even start reviewing
-> > > > and/or testing your code as it's changed way too quickly.
-> > >
-> > > My thought process was that people wouldn't want to be testing code that
-> > > had known bugs flagged in Sashiko reviews.
-> >
-> > Sashiko reviews are not visible in my or any other mailbox. To see them I have
-> > to go to some URL and so on, meaning to waste time to see why on the earth the
-> > new version has been sent.
-> 
-> Maybe the Sashiko reviews are getting caught in spam filtering or something?
-> They are showing up for me and on the mailing list[0] so I'm a bit confused why
-> you aren't seeing them. You shouldn't have to go to the web interface[1] to look
-> up the reviews.
-> 
-> [0] https://lore.kernel.org/all/sashiko-outbox-183574@kernel.org/
-> 
-> [1] https://sashiko.dev/
-> 
-> > It's better before addressing Sashiko comments,
-> > reply to all people involved and to Sashiko's original email, so it will be
-> > visible in the previous version why you issued (actually about to issue) the
-> > next version.
-> 
-> Hmm, maybe it makes sense to enable recipients in the reply_to config[2]?
+  WARNING: kernel/smp.c:917 at smp_call_function_many_cond+0x430/0x818, CPU#1: swapper/0/1
+  CPU: 1 UID: 0 PID: 1 Comm: swapper/0 Not tainted 7.3.0-rc1-leds-v4 #1 PREEMPT
+  Hardware name: Turris 1.1 e500v2 0x80211051 Freescale P2020
+  Call Trace:
+  [c1915bc0] [c001be04] flush_tlb_kernel_range+0x2c/0x74
+  [c1915bd0] [c001ce2c] patch_instructions+0x1b0/0x318
+  [c1915c20] [c003113c] bpf_arch_text_copy+0x5c/0xb4
+  [c1915c40] [c01c3398] bpf_jit_binary_pack_finalize+0x28/0x8c
+  [c1915c60] [c0031770] bpf_int_jit_compile+0x5dc/0x758
+  ...
+  [c1915dd0] [c102e114] ptp_classifier_init+0x30/0x4c
+  [c1915df0] [c102d3a8] sock_init+0xc8/0xe4
+  ...
+  hardirqs last disabled at (3076): [<c001ceb4>] patch_instructions+0x238/0x318
 
-It's up to the list owners / subsystem maintainers.
+patch_mem() and patch_instructions() disable interrupts and then call
+flush_tlb_kernel_range(). On nohash SMP that is
+smp_call_function(do_flush_tlb_mm_ipi, NULL, 1), which waits for the
+other CPU with interrupts off. If the other CPU is doing the same, both
+wait for each other.
 
-> [2] https://github.com/sashiko-dev/sashiko/blob/v.0.6.3/projects/linux/mailing_lists.toml#L290
-> 
-> > And before even issuing it, wait for a while, people might
-> > disagree with Sashiko judgement or your replies on how to address that.
-> 
-> I was assuming everyone was seeing the Sashiko reviews getting posted to
-> the mailing list already. The are ending up in lore so unless someone isn't
-> subscribed to the list I'm not sure why they wouldn't be seeing those reviews
-> already.
+I think this is why the CZ.NIC Turris 1.1 hangs early in boot with
+CONFIG_JUMP_LABEL=y. On 6.18.44 it hung in 19 of 19 boots and booted
+fine 9 of 9 times with jump labels off. The hang comes while static
+keys are patched and modules are loaded, nothing is printed and the
+watchdog resets the board. OpenWrt keeps jump labels off on these
+boards for now.
 
-I assume you already answered your Q. mailing list in this sense doesn't mean
-recipients. I think it simply goes to the mailing list without forwarding.
+The same problem in change_page_attr() was fixed in 2017 by commit
+7c6a4f3b1641 ("powerpc/mm: Call flush_tlb_kernel_range with interrupts
+enabled").
 
-You can ask at helpdesk@ how this is configured on the kernel.org side.
+I can test patches on the board.
 
-> > TL;DR: this mailing list is *not* a playground with you and Sashiko, the whole
-> > community is behind it.
-
-> > > > Settle down first
-> > > > with something, put on the cover letter the answer why not all Sashiko's
-> > > > comments are being addressed (for example, due to amount of patches or the
-> > > > series being focused on a certain issue).
-> > >
-> > > So, in general I've been always attempting to resolve known Sashiko issues
-> > > in every subsequent re-spin, so that would be a bit tricky since I wouldn't be
-> > > aware of the Sashiko issues until after the series has already been sent.
-> > >
-> > > Usually the subsequent issues that get flagged are new issues only discovered
-> > > after each new re-spin.
-> > >
-> > > I do have a bunch of UART/DMA related patches that don't have flagged Sashiko
-> > > issues so it probably makes sense to try and review those first while the larger
-> > > series that have Sashiko flagged issues are still stabilizing.
-> >
-> > Yes.
-> >
-> > > > > [0] https://github.com/sashiko-dev/sashiko/pull/389
-
--- 
-With Best Regards,
-Andy Shevchenko
-
-
+Josef
 
