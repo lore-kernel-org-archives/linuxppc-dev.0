@@ -2,50 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17CD8606A322
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2026 14:06:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A5AD606A31E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2026 14:06:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nZUK+SXF
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mRvrOOSg
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jDXN91s45z2yPG;
-	Wed, 28 Oct 2026 01:06:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793109977;
-	cv=none; b=ZE7s4M74jONZBHUx4k2I2zmwWgDAAcuRbozed7DnvUWSn7umQx5DueFPebvnCJavWc06p1IA+L2L+oZfTOjmLxtyV/3jG/d3TMPLEe0dR3QK2Ay2nlIn+z9Jq4mgrf6eh7nlnyyCr7iShrWemEl9xzaRDI28Ann/jSHhbSy4m5Asy5jC8hpGpE+hvRPhHuvKWxdUjeQyhKHixoqrm+iRoDv9A5WkrGYFM13qU1PRb+yVBRHn+ShSjKzw25CQ1pgBo08UwZitL0VaTCUNksqRh6PCon3OPKhOsWI4TmRuYgnzJOM+v6hDpt/pU8gO2LVlGoGitNWXVWYheoUjZrPVIA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jDXNd1mmZz2yPG;
+	Wed, 28 Oct 2026 01:06:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793110001;
+	cv=none; b=YkT8CHquTGEBtBBR4lhBzUElByPUEvDjmll7m+fHCgllZWNsi+rcDBW9fnnM3SbRIKl3Jn9DzpY1OYnYK5fHFIMwZitSVQaYRaShC11t5g4snHGQC6mZaQ/nFs8Mn3z3hYnmcJMBRWfizC8wbty0dLRJuVIbXUTboPiGtRC/Huygfa4a/38Dy5zhMF9JK6sq6pIZ/J+y/DdbFG7asA7oxSezaAqyEaY+KLTJt2QwqkLXi0ZKDPptCkWSiO5oP0o/xE7VGKaR23EaHXcqKUM7yySjisEbjjh8qvrs7IJPWj1M+0Y0NMpP8fwIZ/FOjx1BIf1iMTaTry/QPWj61/aPDg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793109977; c=relaxed/relaxed;
-	bh=82GVQF/r/unWzQfzjss77Hz55a2gB/UcDEpj21YiSxk=;
+	t=1793110001; c=relaxed/relaxed;
+	bh=0u2sU8fv44IdbL2rqY0zsZ1MwMIHXr4E88UCvKAQ3oM=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ASNgi4npR5CkqZW8S0q7FYtxpBza6UaIbupNyKQkq1MyKQ7lCE7q+A01poAWVJFrmSSUS7v7pBtuT6VIVuwonQvaUh7NBwCqyW6qUpp/Ii00cU3cQMP1Tndpo/iyxkbKV0di3oco/S1fHEIxuqK2GcmefkUXRKFdpig89FvrNJPd8H3nOKzLrbShAph5vK1dqm1VqZAiMnbgqCx0LGY5KdlrwZII2THb+wlXzo7uMwzSc30uVuR6VHAGpuGFEChofTb/uCSAoXkOhLdbzmzTZHK+afE1t5dDN691RhV+uFUHQX38EE0VCRGHtrTMk75KplK39BDCO8sgVqXSBspiRg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nZUK+SXF; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=VARBZClqLQSifV8aLGHdhtgxBru/+9mnVQBJ0HcAMpCf8x4pLGmwRmYRm5Y1OVnjpjNkiprVvd5Txeb6Ez+7EV1gvo8ldF6KQwcuriNNMaf9wzysIVGGQkUhnZkth6jglqeyCHZRp9dhT8Sm3JsvayNo/rCeysqrUCJAt6KodnozHVguBUBMNKvYMFXQS946Q6W9j7NALTdTmLIJpxoZQfKEjEswUaeSmkXI1spWhwpiBMB64cvKX06UxpQUmUEXDFZdSgc5vSGhuhmsuQsM4/rYWAjJGx7fWP3gS3qmecooAIuYFcyOlDK1vai0bjI91xxPWx59s1/8tGLdPlQbqQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mRvrOOSg; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nZUK+SXF;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mRvrOOSg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jDXN82HQrz2yDc
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 01:06:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jDXNc1sbmz2yDc
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 01:06:40 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id E0169601FE;
-	Tue, 27 Oct 2026 14:06:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1D0201F01825;
-	Tue, 27 Oct 2026 14:06:06 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 8E7AD43AE8;
+	Tue, 27 Oct 2026 14:06:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 514D71F031E2;
+	Tue, 27 Oct 2026 14:06:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793109973;
-	bh=82GVQF/r/unWzQfzjss77Hz55a2gB/UcDEpj21YiSxk=;
+	s=k20260515; t=1793109997;
+	bh=0u2sU8fv44IdbL2rqY0zsZ1MwMIHXr4E88UCvKAQ3oM=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=nZUK+SXFsAgy++54w5IClDKo7g3++cFiM8TnqT2+LuG2HpPq1/K3HIQXOOIqc8mVi
-	 mimy9pQ3LiHr7Uv0RMQYlxatSPdssmML/JLJvYuIdW+skcb7OAscL1zKzvE/7KFjSi
-	 C5SfM2niQETkzsKlEAsLJjyhwPpgFj3h1BLvGqJKVglngLpLProiWkhE3sxhOwjds8
-	 Y9aYsuyyzfMODkxbCLDMI2MKNmGNxm1x3h2InAoU1pty5v5HJn/qrj2HC5Us/03zJT
-	 /pmxKM0bibEgfhWd8LG22BhwEnrdTBpRB7oS2UKU1CUeUtFxQc4UiWu8EfdKYfprbP
-	 4ptN8qpbOZvCg==
-Message-ID: <99117abf-29eb-420d-bf8e-740c2068a0ba@kernel.org>
-Date: Tue, 27 Oct 2026 15:06:04 +0100
+	b=mRvrOOSgjdCxSfV4CAfO4tcpSYh41Pg239SgUcuSZUYgDaOyxgFlV9PNmIOHYL3CY
+	 vYJpvkL2efCTKqHIF1P4wYdt6XqrEXQvriF8RDuiBsDmOaO34s4R1pOzoXPqgy5EFW
+	 oqr8aS1elll1K1kIDHAob5wlCH9DQSfr3ci3chP/VixwQWTJu2mOUpEaCUBqIrW3Ws
+	 5oBukZ1Sk3iKPkTBncIMPFXOXwlTOVC4yzKYDE1uQcvAXFGQgzTBFYMrc57XOMIjXk
+	 wMyjsU4YHDRuXRBP325OoyDoIIL6DWgVK7Wa9XeCxEOomeVBKfNeVQ9HyUQjDHkDTT
+	 ZEG0Tkbfp7qdg==
+Message-ID: <97aa3a39-3b39-4d8c-8e99-d58a059aca92@kernel.org>
+Date: Tue, 27 Oct 2026 15:06:27 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,17 +62,17 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v4 1/4] mm/rmap: duplicate a PMD mapping as one in
  folio_dup_file_rmap_pmd()
-To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
- Konstantin Khorenko <khorenko@virtuozzo.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Zi Yan <ziy@nvidia.com>,
+To: Konstantin Khorenko <khorenko@virtuozzo.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Zi Yan <ziy@nvidia.com>,
  Baolin Wang <baolin.wang@linux.alibaba.com>,
  "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>,
  Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>,
  Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>,
  Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>,
- Peter Xu <peterx@redhat.com>, Alex Williamson <alex@shazbot.org>,
- kvm@vger.kernel.org, =?UTF-8?Q?Lo=C3=AFc_Molinari?=
- <loic.molinari@collabora.com>, Shuah Khan <shuah@kernel.org>,
+ Peter Xu <peterx@redhat.com>
+Cc: Alex Williamson <alex@shazbot.org>, kvm@vger.kernel.org,
+ =?UTF-8?Q?Lo=C3=AFc_Molinari?= <loic.molinari@collabora.com>,
+ Lorenzo Stoakes <ljs@kernel.org>, Shuah Khan <shuah@kernel.org>,
  linux-kselftest@vger.kernel.org, dri-devel@lists.freedesktop.org,
  Madhavan Srinivasan <maddy@linux.ibm.com>,
  "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
@@ -80,9 +80,6 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Zi Yan <ziy@nvidia.com>,
  linux-kernel@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>
 References: <20261021-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v4-0-66f00b7a564c@virtuozzo.com>
  <20261021-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v4-1-66f00b7a564c@virtuozzo.com>
- <atnEFyGRYGGf9shA@gremlin>
- <71101695-339d-4f8f-b9d8-dfadf7dbd0ed@virtuozzo.com>
- <atn3SPG5MKpj2Unj@gremlin>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -129,60 +126,56 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <atn3SPG5MKpj2Unj@gremlin>
+In-Reply-To: <20261021-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v4-1-66f00b7a564c@virtuozzo.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-7.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-17.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 10/22/26 14:11, Lorenzo Stoakes (ARM) wrote:
-> On Thu, Oct 22, 2026 at 12:44:40PM +0200, Konstantin Khorenko wrote:
->> On 10/22/26 10:07, Lorenzo Stoakes (ARM) wrote:
->>
->>> Was this a mistake in d8ef5e311d7b, or actually intentional for whatever reason?
->>> If the latter this shouldn't be a fixes.
->>
->> commit d8ef5e311d7bfde54b60ab45026f206eff31b2d2
->>
->>     mm/rmap: convert page_dup_file_rmap() to folio_dup_file_rmap_[pte|ptes|pmd]()
->>
->> ...
->> +static inline void folio_dup_file_rmap_ptes(struct folio *folio,
->> +               struct page *page, int nr_pages)
->> +{
->> +       __folio_dup_file_rmap(folio, page, nr_pages, RMAP_LEVEL_PTE);
->> +}
->>
->> ...
->> +static inline void folio_dup_file_rmap_pmd(struct folio *folio,
->> +               struct page *page)
->> +{
->> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE
->> +       __folio_dup_file_rmap(folio, page, HPAGE_PMD_NR, RMAP_LEVEL_PTE);
->> +#else
->> +       WARN_ON_ONCE(true);
->> +#endif
->> +}
+On 10/21/26 22:36, Konstantin Khorenko wrote:
+> folio_dup_file_rmap_pmd() passes PGTABLE_LEVEL_PTE to
+> __folio_dup_file_rmap() for HPAGE_PMD_NR pages, so it adds HPAGE_PMD_NR
+> PTE mappings to the folio instead of one PMD mapping. Each unmap of the
+> PMD removes one PMD mapping:
 > 
-> OK so it was just wrong at the time :)
+> - the folio's mapcount never returns to zero, and removing the folio
+>   from the page cache reports "Bad page cache", or hits a VM_BUG_ON
+>   with CONFIG_DEBUG_VM;
+> - the first unmap already counts as the last one and drops the
+>   PMD-mapped statistics while the other mm still maps the folio;
+> - the second one drives the entire mapcount below zero and drops them
+>   again.
 > 
->>
->> Both functions were introduced in a single commit, i think it's a simple copy-paste issue.
->>
->> The helper never had a caller, so nobody could hit it. If you prefer, I
->> can drop the Fixes tag and only mention d8ef5e311d7b in the changelog, as
->> there is nothing to backport.
+> The helper has no caller yet, the next patch adds the first one. Pass
+> PGTABLE_LEVEL_PMD, as folio_try_dup_anon_rmap_pmd() does.
 > 
-> I mean, it seems like a bug to me? If there's no harm in backporting it I think you
-> should add Cc: stable@vger.kernel.org in that case actually.
+> Fixes: d8ef5e311d7b ("mm/rmap: convert page_dup_file_rmap() to folio_dup_file_rmap_[pte|ptes|pmd]()")
+> Signed-off-by: Konstantin Khorenko <khorenko@virtuozzo.com>
+> ---
+>  include/linux/rmap.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/include/linux/rmap.h b/include/linux/rmap.h
+> index 0b332770abeed..7562017416094 100644
+> --- a/include/linux/rmap.h
+> +++ b/include/linux/rmap.h
+> @@ -558,7 +558,7 @@ static inline void folio_dup_file_rmap_pmd(struct folio *folio,
+>  		struct page *page, struct vm_area_struct *dst_vma)
+>  {
+>  #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+> -	__folio_dup_file_rmap(folio, page, HPAGE_PMD_NR, dst_vma, PGTABLE_LEVEL_PTE);
+> +	__folio_dup_file_rmap(folio, page, HPAGE_PMD_NR, dst_vma, PGTABLE_LEVEL_PMD);
+>  #else
+>  	WARN_ON_ONCE(true);
+>  #endif
+> 
 
-It was never used, so it's by definition not even a bug. :)
-
-Cc: stable makes sense if we want to backport it along the other things.
+Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
 -- 
 Cheers,
