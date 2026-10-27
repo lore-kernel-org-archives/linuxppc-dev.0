@@ -2,42 +2,42 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A8AC606A31B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2026 12:31:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7124D606B24B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2026 12:32:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=Ql3fsKVv
+	dkim=pass (1024-bit key, unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=mgQH3SR7
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jDVGs3v10z30DY;
-	Tue, 27 Oct 2026 23:31:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=220.197.31.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793104293;
-	cv=none; b=QZX6lDt6o1mcDonWPYOfYCBd4IX6UxcFzeEXuB85sRDL3BefSEHSNfnCJeiu1m5vwZDiWfvLE7ekvbi58ZCRgU0vBnbVUYxEMTM0W9y4VfZxqLvgZhrdI2rhto27o596WtdegBYoUCxRArfmiHiKM+1JfwhPtsOm5p1qGw0kkY9/OmGrdydyLYLxIIh4WJGM7Pu9SzlecGIC0c8E3CpVRWUZaYdfk4YQ8EsuBb5TSGNow6e47eX9dCLS4ikaro9t6PoikevafYnF0CvoNcs8SVs7nF8qHEIdpvWga/OU3vAXLm48zy1DZi91rG73DZusgOqn4cSgIRzU9z+6VcCy7Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jDVGt49VNz2yYd;
+	Tue, 27 Oct 2026 23:31:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=117.135.210.3
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793104294;
+	cv=none; b=kJnMI+D69nK6H2JrNsZTrIK7ulj3GxOvJWrdXlkZKtr0b4sDaAyaQozbkY4IeMp4zk/kqG+PDaDThCBuIZOY0xE5uhpDyNH0HY1gz2RRhbhwhvJNkSBYw5gZyw8pa1k05DlnuxsY9GSJvjJw7x+1PnyO5T7twqUnkfwtzRnP3JuZ0PhKKvjtxVfXNDWnFzVYkCVinmUMA+5E4ztzy6F1TfYnHzwFdwolWZUd4njsBbcE8cJn3sYOIofftpRxiylw3q4XOYPZV9+DDMGgh1GABncNjvEFCFU//8uK3rAQSGaGI8An37j6a2vw+9qQ/l3wh2JMAG4NXuoMyEgewY1+tg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793104293; c=relaxed/relaxed;
-	bh=TdYceE7RRPUM62LOVxn/fHgK36xYRy4qKZfZkYwC3NA=;
+	t=1793104294; c=relaxed/relaxed;
+	bh=CHVlxFB+rkFY6mvk/w3InMw7zFlwCmfuUZnOgIf7lko=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=F+MkR+xkFx/9BZ6aUgSTStwWRtaZV4JZWCWRd0U30UogSlTtYDD84SvPjsRW+3gfwRVluDuu/OCtMzXo16Qd5aVKILdvW00CXXiq36ehJyTR+tKyqiAMkZW7tjcSTNaKt6Ws+WrtoNEfgYQnsMYMQXpoNXi8Z8WvNhOSs9kS+6l9IooVhq/eetSFp6b1+Xvx45kAzK2NLjarIL2LHlUVYx0o/POUMxFKMUuzEOBcmG3xkipyUXwKPOyk/mGlGpIdt17Z/O2Yf8iC3z2bv3ilmV0/41x7YnEDAQmoMZXyQ4j7jhpYK7ydXUsL2VNIx92TE7beAXLUpi5JBFjSMzmBMA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=Ql3fsKVv; dkim-atps=neutral; spf=pass (client-ip=220.197.31.5; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
+	 MIME-Version; b=Sg2pkjJkkyrXvh7qVFTBAMajHQsugE3ts3wXM6/yuNyQ/e1pJhfNftxPWc/74DTbh9OwffuYB+LuRHX9vAd0Wa2Rxwr2FVpGtxinuUbfuiSVBiG9PjYiloCLpea3diCq/1AFqHLsxFatqestGLBnAmJbFrIi1mcWx6qAmsT/IPvV9OWkipWsc6whwCjZLk9ateFB+kLyCXndOzF+nHFnGEhxk3qaYRF4f7S+BqESH/M2pRuqDe4gy9MUfDJYHJJVaCjDbSA4+ekiYSO4BwQlaITP1nrT/qEu/t2+pkN6oi55bmfoSDcX2dOScuHzii9Knt/aUuGnAdc+gHzR8UBx6g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=mgQH3SR7; dkim-atps=neutral; spf=pass (client-ip=117.135.210.3; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=Ql3fsKVv;
+	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=mgQH3SR7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=220.197.31.5; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org)
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=117.135.210.3; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org)
+Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jDVGq6Tbdz2ylm
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2026 23:31:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jDVGr5wlCz308H
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2026 23:31:32 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=Td
-	YceE7RRPUM62LOVxn/fHgK36xYRy4qKZfZkYwC3NA=; b=Ql3fsKVvhSIX7zUl8a
-	qzihG3hTfydNTdF9wLL01uUMT1FV8wHgK2mWad0l/ETDV9U0UQx/eW5/86NZHCQQ
-	1Eg3YQFEO91ulexQRqIUvmkBdlDFdJfrg7lFGqmkDXidKtizIFsgQ7mtGUSYxIQ8
-	nwvaR5/DeNw/y5Elc1plFAl7A=
+	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=CH
+	VlxFB+rkFY6mvk/w3InMw7zFlwCmfuUZnOgIf7lko=; b=mgQH3SR7Pljcvcia+b
+	Zq12DuefKgSJwhYoV1+DIOj7hhseAdpUN8WeKyTCdOvFNElFJDbzqwT1N5xQjYey
+	1QaU+PYpZCnt9dKq6geZHc6JV9P71qjgXjNSm/CbbM+smJF8wsvXpL98xw4Rtdqn
+	vGzqjjCi1fGu07iak2Yx49wWE=
 Received: from Precision-7960.. (unknown [])
-	by gzga-smtp-mtada-g1-2 (Coremail) with SMTP id _____wDnz2v5mOBqYaUSDA--.46182S6;
-	Tue, 27 Oct 2026 20:28:46 +0800 (CST)
+	by gzga-smtp-mtada-g1-2 (Coremail) with SMTP id _____wDnz2v5mOBqYaUSDA--.46182S4;
+	Tue, 27 Oct 2026 20:28:44 +0800 (CST)
 From: Hans Zhang <18255117159@163.com>
 To: bhelgaas@google.com,
 	lpieralisi@kernel.org,
@@ -56,9 +56,9 @@ Cc: imx@lists.linux.dev,
 	linux-pci@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Hans Zhang <18255117159@163.com>
-Subject: [PATCH v4 12/16] PCI: dwc: sophgo: Use cached PCIe capability offset
-Date: Tue, 27 Oct 2026 20:28:23 +0800
-Message-ID: <20261027122827.2725643-13-18255117159@163.com>
+Subject: [PATCH v4 10/16] PCI: dwc: qcom-ep: Use cached PCIe capability offset
+Date: Tue, 27 Oct 2026 20:28:21 +0800
+Message-ID: <20261027122827.2725643-11-18255117159@163.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20261027122827.2725643-1-18255117159@163.com>
 References: <20261027122827.2725643-1-18255117159@163.com>
@@ -76,12 +76,12 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wDnz2v5mOBqYaUSDA--.46182S6
-X-Coremail-Antispam: 1Uf129KBjvdXoWrtFW8tFy8Cry5CF1DZr4DXFb_yoWDWFgE9r
-	9rCFZ7ArWUury5G3ZFyw4fXryqva47ZF1j9ay8tF90vFn7Zw18tr9rZrZ8A3W8Gr1DJF97
-	Jr1qyF1rAry7JjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7sRNuWltUUUUU==
-X-CM-SenderInfo: rpryjkyvrrlimvzbiqqrwthudrp/xtbC7B8422rgmP8aZQAA3C
+X-CM-TRANSID:_____wDnz2v5mOBqYaUSDA--.46182S4
+X-Coremail-Antispam: 1Uf129KBjvJXoWxZryxZrWxGrWfGFWrKw1ftFb_yoW5XFy7pa
+	90qF4YyF18Jr48Wrs2ya1DXF13W3ZxAry7Ja97K34avF9F9wnrtayjyryftr1xGFZrKryU
+	Grs5t34xu3WYyFUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pESfYNUUUUU=
+X-CM-SenderInfo: rpryjkyvrrlimvzbiqqrwthudrp/xtbC7B0422rgmP0aEQAA32
 X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	FROM_LOCAL_DIGITS,FROM_LOCAL_HEX,HEADER_FROM_DIFFERENT_DOMAINS,
@@ -91,32 +91,73 @@ X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-sophgo_pcie_disable_l0s_l1() runs from the .init callback with the
-controller already enabled. Replace the capability search with
-dw_pcie_get_pcie_cap() and store the offset in a u8.
+Replace the three dw_pcie_find_capability(pci, PCI_CAP_ID_EXP) calls in
+the qcom-ep driver with dw_pcie_get_pcie_cap().
+
+qcom_pcie_perst_deassert() is the point where the controller resources
+have just been enabled and DBI becomes accessible, so the offset is
+looked up and cached there. Both the L0s and the L1 exit latency are
+then programmed using that same cached offset instead of walking the
+capability list again.
+
+qcom_pcie_ep_icc_update() may run from the global IRQ handler, which is
+requested before the PERST# IRQ. The helper performs its lookup at that
+point of use, i.e. exactly where the open coded search happened before,
+so this change neither adds nor moves a DBI access and does not
+introduce a new race with the PERST# handler.
 
 Signed-off-by: Hans Zhang <18255117159@163.com>
 ---
- drivers/pci/controller/dwc/pcie-sophgo.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/pci/controller/dwc/pcie-qcom-ep.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/pci/controller/dwc/pcie-sophgo.c b/drivers/pci/controller/dwc/pcie-sophgo.c
-index 044088898819..39703d2b7b5f 100644
---- a/drivers/pci/controller/dwc/pcie-sophgo.c
-+++ b/drivers/pci/controller/dwc/pcie-sophgo.c
-@@ -164,9 +164,10 @@ static void sophgo_pcie_msi_enable(struct dw_pcie_rp *pp)
- static void sophgo_pcie_disable_l0s_l1(struct dw_pcie_rp *pp)
+diff --git a/drivers/pci/controller/dwc/pcie-qcom-ep.c b/drivers/pci/controller/dwc/pcie-qcom-ep.c
+index 56184e6ca6e6..413a1582f300 100644
+--- a/drivers/pci/controller/dwc/pcie-qcom-ep.c
++++ b/drivers/pci/controller/dwc/pcie-qcom-ep.c
+@@ -307,14 +307,15 @@ static void qcom_pcie_dw_write_dbi2(struct dw_pcie *pci, void __iomem *base,
+ static void qcom_pcie_ep_icc_update(struct qcom_pcie_ep *pcie_ep)
  {
- 	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
--	u32 offset, val;
+ 	struct dw_pcie *pci = &pcie_ep->pci;
+-	u32 offset, status;
 +	u8 offset;
-+	u32 val;
++	u32 status;
+ 	int speed, width;
+ 	int ret;
+ 
+ 	if (!pcie_ep->icc_mem)
+ 		return;
  
 -	offset = dw_pcie_find_capability(pci, PCI_CAP_ID_EXP);
 +	offset = dw_pcie_get_pcie_cap(pci);
+ 	status = readw(pci->dbi_base + offset + PCI_EXP_LNKSTA);
  
+ 	speed = FIELD_GET(PCI_EXP_LNKSTA_CLS, status);
+@@ -397,7 +398,8 @@ static int qcom_pcie_perst_deassert(struct dw_pcie *pci)
+ {
+ 	struct qcom_pcie_ep *pcie_ep = to_pcie_ep(pci);
+ 	struct device *dev = pci->dev;
+-	u32 val, offset;
++	u32 val;
++	u8 offset;
+ 	int ret;
+ 
+ 	ret = pm_runtime_resume_and_get(dev);
+@@ -492,13 +494,12 @@ static int qcom_pcie_perst_deassert(struct dw_pcie *pci)
  	dw_pcie_dbi_ro_wr_en(pci);
  
+ 	/* Set the L0s Exit Latency to 2us-4us = 0x6 */
+-	offset = dw_pcie_find_capability(pci, PCI_CAP_ID_EXP);
++	offset = dw_pcie_get_pcie_cap(pci);
+ 	val = dw_pcie_readl_dbi(pci, offset + PCI_EXP_LNKCAP);
+ 	FIELD_MODIFY(PCI_EXP_LNKCAP_L0SEL, &val, 0x6);
+ 	dw_pcie_writel_dbi(pci, offset + PCI_EXP_LNKCAP, val);
+ 
+ 	/* Set the L1 Exit Latency to be 32us-64 us = 0x6 */
+-	offset = dw_pcie_find_capability(pci, PCI_CAP_ID_EXP);
+ 	val = dw_pcie_readl_dbi(pci, offset + PCI_EXP_LNKCAP);
+ 	FIELD_MODIFY(PCI_EXP_LNKCAP_L1EL, &val, 0x6);
+ 	dw_pcie_writel_dbi(pci, offset + PCI_EXP_LNKCAP, val);
 -- 
 2.43.0
 
