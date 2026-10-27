@@ -1,79 +1,68 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1CC7A606A324
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2026 16:29:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A89C4606A33D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2026 22:12:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Bbsz9qDk
+	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=aIMepb0I
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jDbYY2PBjz2y7p;
-	Wed, 28 Oct 2026 03:29:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793118577;
-	cv=none; b=h7GkKPQnmW6Osiltp13XwFhQDBR7OeaoYDeOROZBn0FwLbCeo1af9xJKNrXQNEwcTqX8pIeYMy3WX44QxumRIRm/59wrfiyOsNcfyG2D3GCnpGAAPsr1hfJGyvs0GehaKcXoxJc6j5dDnTCI115qSmvaZevorK/bY+g8dqossCKhpPYesJqi7xEHwIT3bjAg9Ng5Xetxx4h9r9ZOxTZFlupBtnoht7NZlj5nKDeGJVSPmBoDIwt3n+kevrTCqgsEJuzc77oQJ32M3n/EVWPc8cH9hQ4p+3/5FfA8oQr9uhplWQpYzFLUGqyVocB3mWWF+3CJK/rITI4y7Q41abjjRA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jDl8x2MStz2yDr;
+	Wed, 28 Oct 2026 09:12:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::546"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793139137;
+	cv=none; b=CSM0iR2RzGSYa34QZUJsBaZ5PmhKW0MCoD+VblMeGanfSq/1Z/1jP7cwvEy3XFr/sRiTO5RlEdbHoACjfmzl9EtwUDuUwbjvE/m8Hf47R7lTfZdL9obrZPX7/uHsUbo1EHFTOq8Fmhokrfh1f95p8z9yQxG/8XX/9zpX9VwEimrsNQR5PB9i9GGxodlgum8SmCCEnUEjujLjUP2bBw3x9DyV3SLM+yGq8rJqI0EGfpv3qQ8W08HajyBMyXdC3pcjIhk9TRDe3TrzTrKYAh1coX+FT1B30KDgqAq79nM33/iVyq4895X82X0vdDuozHeR23kJ2aQvrQVXSX8pIWKUuA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793118577; c=relaxed/relaxed;
-	bh=kAcnFFHoGCaLIkdfu6vQlgxivqnlgRGe6B2VS1ojrEM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=YiuOKrQRv8oYcma5oWLYQh0KmTPrHg4N0iCI6gFGMQprT3Uz+L0ffB/fx8tsMhM72ZhpJsnd0peDjgL8sdy63d88zYvof5gQlefrxnsNVY99k3IaxlXArrXUfOBRumNSoTHUYoo6KllsOEe0Lm4Xa/ZEKQvGI9pwE0/fTfzDerOFmc3wiGRtQEVxxJfv2V+z3GAQsbC/X2XQt/wcoOHT4MGZieUpQ/YDbbpvTz3l8jHK5K0zcbOKs2V5s/bXGiICJnCEBhKaoSXtsN5g+BjAPyUkAyJLTwxJiSWbQeOQ8N6MSLZFwUSmViaGlvpzn/AreE4ZwzumGFuFn5/aSsw/ug==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Bbsz9qDk; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1793139137; c=relaxed/relaxed;
+	bh=5Vq2l0nNlx4Jt5Br3FhBTT5y6+xzpkVfJlHDQEljzdw=;
+	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=O8YN3lQnNmyAW7Bfaqz066C4nOcn8ovt1sUwuBaPopiyeBe4oa7bBqOqSJcV1DFl+aCdLufAAx5CCHSh/nLomykR0GJwMg7QDIcC/4Og4qBxuVdDeYdHkMQt47rhrS9jb2vq7lMqFp1s2R289vJR+WuPzs4/sdBJEQWMyAmddim+zfT0UjQUECo/hckp4FUa4W4XYVL2pbr1hmD4eJHpzyRCn3hgRZOwhIgd/plTZ0Po5wCirw4PmC9iJqyxhUROoD7at39cjqbHExIueQOdXBYhXngQUvG9PPVwoSZoeb6k+iAI66yfMcsvvDzIIpo55MwWFbyXFO9l0xmu5+4BOw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=aIMepb0I; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::546; helo=mail-pg1-x546.google.com; envelope-from=3uihhagykdn8tfbokdhpphmf.dpnmjovyqqd-efwmjtut.pambct.psh@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Bbsz9qDk;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=aIMepb0I;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::546; helo=mail-pg1-x546.google.com; envelope-from=3uihhagykdn8tfbokdhpphmf.dpnmjovyqqd-efwmjtut.pambct.psh@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x546.google.com (mail-pg1-x546.google.com [IPv6:2607:f8b0:4864:20::546])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jDbYX3RG5z2xN4
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 03:29:36 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 0E6824183F;
-	Tue, 27 Oct 2026 16:29:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 98F061F01828;
-	Tue, 27 Oct 2026 16:29:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793118573;
-	bh=kAcnFFHoGCaLIkdfu6vQlgxivqnlgRGe6B2VS1ojrEM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=Bbsz9qDkyDs8H77dSEWFVVoSrMeEk+WXm5r3OPWiNyeYoBpxmsOCn5CmGtRqVetHo
-	 mcFkRLPNplY4m3ig1H1ERqm+PaSGY5Qy91L8YocM14s/zdxHBU39CJJs+LR0NjqRUy
-	 HYaZ+qVnsrkUB90AOxXitaTHRIDzbW2nZQKAt2axcvSGr90/Ecy4aiZxxfFFZPczPN
-	 a6bkSOpR33GdMYXlejOZDAznosukKn1HJsw8fzq1fezE3Gnm3ptrKyXX0qKJZIsYvz
-	 +AJX6Eljxg3TrZYEEkkyIT2+mZGLlRxnvv9SjcB2Q0e4+EvEqvROnMfyR4IutR6Tvb
-	 hVXHbkO+pwc3A==
-Date: Tue, 27 Oct 2026 16:29:21 +0000
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: Matthew Wilcox <willy@infradead.org>
-Cc: Barry Song <baohua@kernel.org>, Hongru Zhang <zhanghongru06@gmail.com>, 
-	akpm@linux-foundation.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org, 
-	surenb@google.com, david@kernel.org, liam@infradead.org, mhocko@suse.com, 
-	rppt@kernel.org, shakeel.butt@linux.dev, vbabka@kernel.org, zhaonanzhe@xiaomi.com, 
-	linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org, mark.rutland@arm.com, 
-	linux-arm-kernel@lists.infradead.org, chenhuacai@kernel.org, kernel@xen0n.name, 
-	loongarch@lists.linux.dev, maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, linuxppc-dev@lists.ozlabs.org, pjw@kernel.org, 
-	palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr, 
-	linux-riscv@lists.infradead.org, agordeev@linux.ibm.com, gerald.schaefer@linux.ibm.com, 
-	hca@linux.ibm.com, gor@linux.ibm.com, borntraeger@linux.ibm.com, 
-	svens@linux.ibm.com, linux-s390@vger.kernel.org, dave.hansen@linux.intel.com, 
-	luto@kernel.org, peterz@infradead.org, tglx@kernel.org, mingo@redhat.com, 
-	bp@alien8.de, x86@kernel.org, hpa@zytor.com, 
-	Hongru Zhang <zhanghongru@xiaomi.com>
-Subject: Re: [PATCH v6] mm: retry page faults once under the per-VMA lock
-Message-ID: <auDRAEofBdqZy36y@gremlin>
-References: <20260911025613.1220845-1-zhanghongru@xiaomi.com>
- <arFYRAa-i7CIwmHL@gremlin>
- <arF-E3Nsw9ZliH0t@casper.infradead.org>
- <arI_w2wTfA00Mgy9@gremlin>
- <armexcXDiG8ryZd6@casper.infradead.org>
- <CAGsJ_4xuFi7K+crAcFQ998SxXS0xPM6QeA34JV+6+Sy005rXLg@mail.gmail.com>
- <ar7MsOb6IJLt4eLo@casper.infradead.org>
- <ar-o1TrOMGrrcxLX@gremlin>
- <ataDTEZIKOYtwhUF@casper.infradead.org>
- <auDGPs8jzC-90-_y@gremlin>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jDl8v35w6z2y7p
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 09:12:14 +1100 (AEDT)
+Received: by mail-pg1-x546.google.com with SMTP id 41be03b00d2f7-cd60a365440so248994a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2026 15:12:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20260707; t=1793139131; x=1793743931; darn=lists.ozlabs.org;
+        h=content-type:cc:to:from:subject:message-id:mime-version:date
+         :reply-to:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=5Vq2l0nNlx4Jt5Br3FhBTT5y6+xzpkVfJlHDQEljzdw=;
+        b=aIMepb0INdCGLcjWIr0JttOT5/0HYIDM2hxKG7GbtLypkjyNyeLJSHY3oE19x5Ro+c
+         PDFaMFAtXqDwRFa8VLrDEhPWkYbNNyZoFfzZZeM4u4OzIsl+G3lfp3VqSYTYt0KXW6NP
+         o4TGo3DxIJ5kBSX09pt821kXZ/B84hJBuMHVTrDBeeDwYxcaCXPsg7vSTDtvOFjeOYxE
+         0UzbUrsE8EI8GhrEww1W1ySSYQlzQ21XRLk2yll0heqb4ifGqWkNNu7ff73nlpn1qncU
+         0WvObnnqnS94U5hiLzvx3NhxyGd4eSTpilHEEXafA01GPqzvQ0/aRn+1QLNC256Ghx48
+         qE0Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793139131; x=1793743931;
+        h=content-type:cc:to:from:subject:message-id:mime-version:date
+         :reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=5Vq2l0nNlx4Jt5Br3FhBTT5y6+xzpkVfJlHDQEljzdw=;
+        b=USZw81hD5Axy5RNx6CO3XVQPZhJQABXVumPyxCfWDHdZWBNFszqYWxp0RC6ROVN/tF
+         gP5smqMGXXlus0gNh2vrzRFzbLaqcyoWxQ9oBjsbeRZKtBaFHBoJOQomBA1nZhhnlKPF
+         s0200xAm1mciwdHuaGc7TS6jJtV9uGDFs/UAGgVSVTJNoDahMkQ863kpiOlAPXHMU7ZA
+         0cVhv0KyGnQ9gbox7tCZO55Zb+zDooLJfv2eFK5uXeaJ3FLgxT/Txjv7BdBd4uG7dcQv
+         xH+Qv/YJJyg+4yrCYt2e6iM7Mkdtj1u/8o74UnTNVwRfzVLZS0HFekQ4emXUrmQqTD/u
+         ODfw==
+X-Forwarded-Encrypted: i=1; AKwUvBwAjAgD9wrjj9MIHytHpjNqft/gckniissdagZUUvE3o0MkAUgAyd5sdkXi20TP/q66BnA1IJyY1AFLH8c=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYKbXW2Kx5ERhn5HWe7h1Jvpds+FzMeL5nizo6+/9dHksCbhR61I
+	EDu84Nar3e7cMRjPtmuTw+97CNMJyChjJkAgs/W3i3wn8LRq+bzndTRTyT6VaKwzo8e8ZF+1/30
+	VidaHsg==
+X-Received: from pfbig23.prod.google.com ([2002:a05:6a00:8b97:b0:89e:af6f:f0c7])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a20:6a0c:b0:3e0:d2ba:5b37
+ with SMTP id adf61e73a8af0-3e902462639mr382770637.75.1793139130927; Tue, 27
+ Oct 2026 15:12:10 -0700 (PDT)
+Reply-To: Sean Christopherson <seanjc@google.com>
+Date: Tue, 27 Oct 2026 15:11:53 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,51 +75,119 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <auDGPs8jzC-90-_y@gremlin>
-X-Spam-Status: No, score=-6.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.56.0.307.g5fe7bd680c-goog
+Message-ID: <20261027221209.1560865-1-seanjc@google.com>
+Subject: [PATCH v3 00/15] KVM: Fix+harden against bad uaccess using dying VM
+From: Sean Christopherson <seanjc@google.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, Sean Christopherson <seanjc@google.com>, 
+	Paolo Bonzini <pbonzini@redhat.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Jim Mattson <jmattson@google.com>, 
+	James Houghton <jthoughton@google.com>, Chris Mason <mason@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+X-Spam-Status: No, score=-21.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
-	autolearn_force=no version=4.0.1
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, Oct 27, 2026 at 04:26:39PM +0000, Lorenzo Stoakes (ARM) wrote:
->
-> Thread A (Parent)          | Thread B (Parent)       | Thread C (Parent)
-> ---------------------------|-------------------------|----------------------
-> < Fork >                   |                         | < has TLB entry >
-> copy_present_ptes()        | < no TLB entry >        |
->   wrprotect parent page X  |                         |
->   -> 2 mappings, refs      | *ptr = x                |
->                            | < Page fault >          |
->                            | do_wp_page()            |
->                            |   < shared, so CoW >    |
->                            |   wp_page_copy()        |
->                            |     copy X -> new pg N  |
->                            |                         | *ptr = x;
->                            |                         | [ OOPS! stale TLB,
->                            |                         |   lands in X not N ]
->                            |     ptep_clear_flush()  |
->                            |       < TLB flush >     |
->                            |     parent PTE -> N     |
->                            |     [ X now child-only ]|
->                            |                         | ASSERT(*ptr == x);
-> flush_tlb_mm(oldmm)        |                         | // fails! N lacks x
->   < far too late >         |                         |
->
+Fix a class of bugs (limited to nested VMX, as far as we know) where KVM can
+corrupt an unrelated process' memory if KVM (attempts to) write to guest memory
+during VM destruction.  Because current->mm usually isn't kvm->mm when a VM is
+dying, e.g. because the associated kvm->mm process has already exited, writing
+to what KVM thinks is guest memory will corrupt the current address space if
+the associated userspace address happens to be writable in the victim.
 
-Sigh, I drew this entirely manually, then had the LLM overlords 'correct' it,
-but it also made it less clear :).
+Patch 1 is a blanket fix for the uaccess paths.  AFAIK, x86's nVMX is the only
+path in KVM that screws up, but auditing kvm_arch_destroy_vm() proved to be
+infeasible for a human (I didn't throw AI at it, yet...), and I can't think of
+any downsides to going straight to a broader fix.
 
-Thread C ends up writing to what-becomes-the-child-page X, whereas the parent
-ends up with page N after CoW.
+Patch 2 fixes the underlyihng nVMX bug where KVM absuses the architectural
+nested VM-Exit flow when tearing down a vCPU, which has a truly absurd number
+of problems.
 
-So a thread in the parent writes to a page of ordinary memory and then it
-disappears under them, and the child ends up with corruption in their page.
+Patch 3 fixes what I assume is a blatant PPC bug.  KVM PPC completely ignores
+kvm_arch_flush_shadow_all(), i.e. AFAICT, doesn't tear down its page tables
+when the owning process exits.  I don't have much confidence in the "fix", in
+part because it seems impossible that such a blatant bug could have gone
+unnoticed, but also because I went with a very naive approach of invoking
+kvm_arch_flush_shadow_memslot() for each memslot.  The changelog is pretty
+sparse, because I didn't know how to describe the issue byeond "this is
+completely broken".
 
---
-Cheers, Lorenzo
+Patches 4-6 implement more agressive hardening to nuke the memslots before
+calling kvm_arch_destroy_vm(), e.g. to guard against writing to guest memory
+during kvm_arch_destroy_vm() without going through uaccess.  Setting dummy
+memslots feels a little hacky, but kvm_arch_flush_shadow_all() should have
+purged everything that effectively caches memslots, so it seems like the right
+approach?
+
+Patches 7-9 add more hardening to detect KVM bugs (though the uaccess+memslot
+changes earlier in the series should render any bugs benign).
+
+The remaining patches double down on open coding nVMX's vCPU teardown by
+tearing down the vCPU "as-is", instead of forcing a switch to L1 and then
+doing teardown.  The forced switch is quite heinous, as it requires KVM to
+*load* the vCPU when it's dying due to architectural constraints for active
+VMCSes.  Not only is that gross, it was also papering over a bug (hopefully
+just the one) where KVM was relying on the vCPU load for nested VMX to take
+vCPUs off the posted interrupts wakeup list.
+
+v3:
+ - Give up, and open code nVMX teardown. [Sashiko, syzbot, Chris]
+ - Drop the nVMX hacks that were trying to fudge around the mass of nVMX
+   teardown issues.
+ - Free the VMA only for the non-SMM internal memslot. [Sashiko]
+ - Use @len, not hardcoded PAGE_SIZE, in kvm_is_guest_access_ok(). [Sashiko]
+ - Rip out the awful vCPU load code from nested_vmx_free_vcpu().
+ - Collect James' reviews.
+
+v2: https://lore.kernel.org/all/20261001202234.3794060-1-seanjc@google.com
+
+v1: https://lore.kernel.org/all/20260908132838.2116068-1-jmattson@google.com
+
+Sean Christopherson (15):
+  KVM: Reject user accesses to guest memory if current->mm != kvm->mm
+  KVM: nVMX: Don't force a full nested VM-Exit when destroying a vCPU
+  KVM: PPC: Flush/zap all memslots on kvm_arch_flush_shadow_all()
+  KVM: x86: Unmap VMAs for KVM-internal memslots when the memslot is
+    freed
+  KVM: Disallow setting memslots when the VM is being destroyed
+  KVM: Destroy memslots immediately after mmu_notifiers are unregistered
+  KVM: WARN if KVM attempts to do guest-related uaccess with "wrong"
+    process
+  KVM: WARN and reject guest-based uaccess if VM is dying
+  KVM: Pre-check uaccesses in KVM's APIs to read/write guest memory
+  KVM: VMX: Explicility free vmcs01, not the current VMCS, in vCPU free
+    paths
+  KVM: nVMX: Don't explicitly VMCLEAR+free() vmcs01's shadow VMCS when
+    freeing vCPU
+  KVM: nVMX: Cancel the nested VMX Preemption Timer's hrtimer in
+    free_nested()
+  KVM: VMX: Explicitly remove dying vCPUs from the PI wakeup list
+  KVM: nVMX: Don't switch to vmcs01 when freeing a vCPU
+  KVM: nVMX: Don't load+put the vCPU when freeing nested state for a
+    dying vCPU
+
+ arch/powerpc/include/asm/kvm_host.h |  1 -
+ arch/powerpc/kvm/powerpc.c          | 11 ++++
+ arch/x86/kvm/vmx/nested.c           | 69 ++++++++++++-----------
+ arch/x86/kvm/vmx/posted_intr.c      | 68 +++++++++++++---------
+ arch/x86/kvm/vmx/posted_intr.h      |  1 +
+ arch/x86/kvm/vmx/sgx.c              |  2 +-
+ arch/x86/kvm/vmx/vmx.c              | 19 ++++---
+ arch/x86/kvm/x86.c                  | 38 ++++++-------
+ include/linux/kvm_host.h            | 26 ++++++++-
+ virt/kvm/kvm_main.c                 | 87 +++++++++++++++++++----------
+ 10 files changed, 199 insertions(+), 123 deletions(-)
+
+
+base-commit: 7e60162b16f9da0d2fa83da5c1723b6853a0ac1d
+-- 
+2.56.0.307.g5fe7bd680c-goog
+
 
