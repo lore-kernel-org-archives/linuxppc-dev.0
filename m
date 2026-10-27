@@ -1,68 +1,71 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A89C4606A33D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2026 22:12:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9CF4B60A382B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2026 22:12:23 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=aIMepb0I
+	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=O4Ui0tiA
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jDl8x2MStz2yDr;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jDl8x6Ly4z2yVT;
 	Wed, 28 Oct 2026 09:12:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::546"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1048"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793139137;
-	cv=none; b=CSM0iR2RzGSYa34QZUJsBaZ5PmhKW0MCoD+VblMeGanfSq/1Z/1jP7cwvEy3XFr/sRiTO5RlEdbHoACjfmzl9EtwUDuUwbjvE/m8Hf47R7lTfZdL9obrZPX7/uHsUbo1EHFTOq8Fmhokrfh1f95p8z9yQxG/8XX/9zpX9VwEimrsNQR5PB9i9GGxodlgum8SmCCEnUEjujLjUP2bBw3x9DyV3SLM+yGq8rJqI0EGfpv3qQ8W08HajyBMyXdC3pcjIhk9TRDe3TrzTrKYAh1coX+FT1B30KDgqAq79nM33/iVyq4895X82X0vdDuozHeR23kJ2aQvrQVXSX8pIWKUuA==
+	cv=none; b=A3CxPfPxKqYXvDv2i8HxPKYWbGjabPFMnYg5Uhkp+OyuG2Hh/b2haiJz9oA/NCKH4UMpNKgiz6Z3cTT6alKtsZayqb04TASKSFWB3IcMoBix7iCPpMwwBdTWuvCF/RfKV/1OyPO2hc5kzW1dSVR6KFao06z79ak2Fekk8o+lFz3UlKm88cDHzUo6GPE4JHLGFWO65RiDANHNFLXPSFgp2T2V7puZ7gbL2PX9a3WoV3TDLl/j3Hi/CSrvpUoWdFLMMLcYoatBunWe7Ek80dTmXRq/uVBtuClHYErOXqxBVS1kUeF1vjXfsqk1y1KFi8Rv1AGE3+knmBtgw4IIkyHaiA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1793139137; c=relaxed/relaxed;
-	bh=5Vq2l0nNlx4Jt5Br3FhBTT5y6+xzpkVfJlHDQEljzdw=;
-	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=O8YN3lQnNmyAW7Bfaqz066C4nOcn8ovt1sUwuBaPopiyeBe4oa7bBqOqSJcV1DFl+aCdLufAAx5CCHSh/nLomykR0GJwMg7QDIcC/4Og4qBxuVdDeYdHkMQt47rhrS9jb2vq7lMqFp1s2R289vJR+WuPzs4/sdBJEQWMyAmddim+zfT0UjQUECo/hckp4FUa4W4XYVL2pbr1hmD4eJHpzyRCn3hgRZOwhIgd/plTZ0Po5wCirw4PmC9iJqyxhUROoD7at39cjqbHExIueQOdXBYhXngQUvG9PPVwoSZoeb6k+iAI66yfMcsvvDzIIpo55MwWFbyXFO9l0xmu5+4BOw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=aIMepb0I; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::546; helo=mail-pg1-x546.google.com; envelope-from=3uihhagykdn8tfbokdhpphmf.dpnmjovyqqd-efwmjtut.pambct.psh@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+	bh=nKF3dpmlsBgYSC/r7UIqCghDOx/QSKnEmK6wC3/VkCk=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=K564U9yGC5kOeOpG3Xe/MPtbWpBLuZqGgJOC93KbX5YdjhTnVdOQHX3znmBo+6xJgsEIpqO9vkU9c5ElRTaSHRZA2GzVJcSLXkXDT6PDgD0G0WwcabNfWifP/go7olzUDuLUjWGPEnB8IjZcNoDGoEQoynXMZjn7JKchKEEnr4ZWA6b2yNEPcotfXsrME1AEt3u38Aoz8sTNxfNLhGnwNADMiVMKOiq8k0OUAKsc8Y9Wy/UBPStTPIAZGPzZwN4ihHlUx4qey/ixRPpUXiyIoyXfK6qreBH88Kr8bAQRF/sKYomUHMewe+yW2uXs31WY/3l7nHGeaQ3lc3lgNOTCNQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=O4Ui0tiA; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1048; helo=mail-pj1-x1048.google.com; envelope-from=3vchhagykdoevhdqmfjrrjoh.frpolqxassf-ghyolvwv.rcodev.ruj@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=aIMepb0I;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=O4Ui0tiA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::546; helo=mail-pg1-x546.google.com; envelope-from=3uihhagykdn8tfbokdhpphmf.dpnmjovyqqd-efwmjtut.pambct.psh@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x546.google.com (mail-pg1-x546.google.com [IPv6:2607:f8b0:4864:20::546])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::1048; helo=mail-pj1-x1048.google.com; envelope-from=3vchhagykdoevhdqmfjrrjoh.frpolqxassf-ghyolvwv.rcodev.ruj@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1048.google.com (mail-pj1-x1048.google.com [IPv6:2607:f8b0:4864:20::1048])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jDl8v35w6z2y7p
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 09:12:14 +1100 (AEDT)
-Received: by mail-pg1-x546.google.com with SMTP id 41be03b00d2f7-cd60a365440so248994a12.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2026 15:12:14 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jDl8v39GWz2y7r
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 09:12:15 +1100 (AEDT)
+Received: by mail-pj1-x1048.google.com with SMTP id 98e67ed59e1d1-3abb4c24125so283017a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2026 15:12:15 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1793139131; x=1793743931; darn=lists.ozlabs.org;
-        h=content-type:cc:to:from:subject:message-id:mime-version:date
-         :reply-to:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=5Vq2l0nNlx4Jt5Br3FhBTT5y6+xzpkVfJlHDQEljzdw=;
-        b=aIMepb0INdCGLcjWIr0JttOT5/0HYIDM2hxKG7GbtLypkjyNyeLJSHY3oE19x5Ro+c
-         PDFaMFAtXqDwRFa8VLrDEhPWkYbNNyZoFfzZZeM4u4OzIsl+G3lfp3VqSYTYt0KXW6NP
-         o4TGo3DxIJ5kBSX09pt821kXZ/B84hJBuMHVTrDBeeDwYxcaCXPsg7vSTDtvOFjeOYxE
-         0UzbUrsE8EI8GhrEww1W1ySSYQlzQ21XRLk2yll0heqb4ifGqWkNNu7ff73nlpn1qncU
-         0WvObnnqnS94U5hiLzvx3NhxyGd4eSTpilHEEXafA01GPqzvQ0/aRn+1QLNC256Ghx48
-         qE0Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793139131; x=1793743931;
-        h=content-type:cc:to:from:subject:message-id:mime-version:date
-         :reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=google.com; s=20260707; t=1793139133; x=1793743933; darn=lists.ozlabs.org;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:reply-to:from:to:cc:subject:date:message-id
          :reply-to:content-type;
-        bh=5Vq2l0nNlx4Jt5Br3FhBTT5y6+xzpkVfJlHDQEljzdw=;
-        b=USZw81hD5Axy5RNx6CO3XVQPZhJQABXVumPyxCfWDHdZWBNFszqYWxp0RC6ROVN/tF
-         gP5smqMGXXlus0gNh2vrzRFzbLaqcyoWxQ9oBjsbeRZKtBaFHBoJOQomBA1nZhhnlKPF
-         s0200xAm1mciwdHuaGc7TS6jJtV9uGDFs/UAGgVSVTJNoDahMkQ863kpiOlAPXHMU7ZA
-         0cVhv0KyGnQ9gbox7tCZO55Zb+zDooLJfv2eFK5uXeaJ3FLgxT/Txjv7BdBd4uG7dcQv
-         xH+Qv/YJJyg+4yrCYt2e6iM7Mkdtj1u/8o74UnTNVwRfzVLZS0HFekQ4emXUrmQqTD/u
-         ODfw==
-X-Forwarded-Encrypted: i=1; AKwUvBwAjAgD9wrjj9MIHytHpjNqft/gckniissdagZUUvE3o0MkAUgAyd5sdkXi20TP/q66BnA1IJyY1AFLH8c=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYKbXW2Kx5ERhn5HWe7h1Jvpds+FzMeL5nizo6+/9dHksCbhR61I
-	EDu84Nar3e7cMRjPtmuTw+97CNMJyChjJkAgs/W3i3wn8LRq+bzndTRTyT6VaKwzo8e8ZF+1/30
-	VidaHsg==
-X-Received: from pfbig23.prod.google.com ([2002:a05:6a00:8b97:b0:89e:af6f:f0c7])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a20:6a0c:b0:3e0:d2ba:5b37
- with SMTP id adf61e73a8af0-3e902462639mr382770637.75.1793139130927; Tue, 27
- Oct 2026 15:12:10 -0700 (PDT)
+        bh=nKF3dpmlsBgYSC/r7UIqCghDOx/QSKnEmK6wC3/VkCk=;
+        b=O4Ui0tiAC+lzzGrAAFaz40gVaY1B3LgzMmlzDC5j6Ki5TAquGjO4ohz3s0csgm8zmZ
+         6zySFmDWbdayvOoA4xxwHd4OqXEPny7TskDVsFRvGWKYanVQ13rdaS+2bFuSTanrHmf2
+         8vb/r0HUOxxHDaYjL1otshXZgtrqAKDXt0ALijxhJuyLpziA9hWbhLW39tUsOj5yCSTr
+         jIxi2Zc3YxPe+aGY5PhlSj0JjyAM0attLzNsIYqVKBmq+/sUE/h92hFNTPog+orQgncv
+         pR5NmqHtMCJhhgQMc6AMORp/XcU+N9227M9eco6J2H6yqUoq/SSaMJCejCo8ro0sfTkX
+         dRFA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793139133; x=1793743933;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:reply-to:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=nKF3dpmlsBgYSC/r7UIqCghDOx/QSKnEmK6wC3/VkCk=;
+        b=HfX9wibIna+p8QC98ug+F+DXnAyq1cUpIgACPYGeafq58Bw9BgapJJKlHd7Novp3i6
+         ZqaW+uFfouoDjQA0dwFDN2oMidj+H7LyfUWcKYEaoK3dNyvDh1+E5+mkd4jw4HdGjrp/
+         LJgOGQARIX1PuS5yRgyQbLur6dVhDIgofF+Qx/+Y6JEKlDcQbxHMSmIn7mps4q/YBi4T
+         stq07OYAgYkMy44slBcV1Fsz0DKGfyky2Grnb0ZeIkatVs5A2Qb6dsLNKsSLw4PDLbyb
+         BTwwVzOOoym8cOVVYY63QF8ZYUcMIqmoRs8wCr2Pku6443l3QXhxyih/tZwSdU+Sy6vp
+         rWtw==
+X-Forwarded-Encrypted: i=1; AKwUvBzpI3cDESjKVMi440yVQQ05ne2ER5F1UV6+uZhg/YJV0HfjuKasBWiIvG4aI5+vcoXti6yPTCf/nTx+3TI=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYLJuGB6kLEqX0z1Mc9TdXv16vDNCC1192qbU5/XE7pMlxzSooTJ
+	ka+UCJ7p5W7Qd6B6aO356B7t22+mXM6hCBVd0k2efSjdKgVvgWM0c86xCgYNxcbZB3jIwq+I3Te
+	GivasSw==
+X-Received: from pjbmm15.prod.google.com ([2002:a17:90b:358f:b0:3ac:7545:d82e])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:2887:b0:3a8:6045:5a24
+ with SMTP id 98e67ed59e1d1-3ae581555dcmr269132a91.38.1793139132656; Tue, 27
+ Oct 2026 15:12:12 -0700 (PDT)
 Reply-To: Sean Christopherson <seanjc@google.com>
-Date: Tue, 27 Oct 2026 15:11:53 -0700
+Date: Tue, 27 Oct 2026 15:11:54 -0700
+In-Reply-To: <20261027221209.1560865-1-seanjc@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,9 +79,11 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 Mime-Version: 1.0
+References: <20261027221209.1560865-1-seanjc@google.com>
 X-Mailer: git-send-email 2.56.0.307.g5fe7bd680c-goog
-Message-ID: <20261027221209.1560865-1-seanjc@google.com>
-Subject: [PATCH v3 00/15] KVM: Fix+harden against bad uaccess using dying VM
+Message-ID: <20261027221209.1560865-2-seanjc@google.com>
+Subject: [PATCH v3 01/15] KVM: Reject user accesses to guest memory if
+ current->mm != kvm->mm
 From: Sean Christopherson <seanjc@google.com>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>, Sean Christopherson <seanjc@google.com>, 
 	Paolo Bonzini <pbonzini@redhat.com>
@@ -86,107 +91,251 @@ Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org, kvm@vger
 	linux-kernel@vger.kernel.org, Jim Mattson <jmattson@google.com>, 
 	James Houghton <jthoughton@google.com>, Chris Mason <mason@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-X-Spam-Status: No, score=-21.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+X-Spam-Status: No, score=-26.2 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no
-	version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,
+	T_SPF_HELO_TEMPERROR,USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Fix a class of bugs (limited to nested VMX, as far as we know) where KVM can
-corrupt an unrelated process' memory if KVM (attempts to) write to guest memory
-during VM destruction.  Because current->mm usually isn't kvm->mm when a VM is
-dying, e.g. because the associated kvm->mm process has already exited, writing
-to what KVM thinks is guest memory will corrupt the current address space if
-the associated userspace address happens to be writable in the victim.
+Reject user accesses to guest memory, which are supposed to be done only
+in the context of KVM_RUN or similar operations, if the current address
+space is not the VM's (host userspace) address space.  If KVM writes to
+guest memory after the owning host process has exited, or if the VM is
+being destroyed in the context of a different process, then writing using
+the wrong address space will corrupt a different process' memory.
 
-Patch 1 is a blanket fix for the uaccess paths.  AFAIK, x86's nVMX is the only
-path in KVM that screws up, but auditing kvm_arch_destroy_vm() proved to be
-infeasible for a human (I didn't throw AI at it, yet...), and I can't think of
-any downsides to going straight to a broader fix.
+Reject the access but don't WARN() or KVM_BUG_ON() event though attempting
+to access guest memory with a mismatched address space is a blatant KVM
+bug, because unfortunately KVM is buggy.  On KVM VMX, when a vCPU is
+destroyed while L2 is active, KVM synthesizes a nested VM-Exit to force the
+vCPU out of L2 in order to free the nested VMX assets, and a side effect of
+a nested VM-Exit is that it flushes the cached shadow VMCS12 back to guest
+memory:
 
-Patch 2 fixes the underlyihng nVMX bug where KVM absuses the architectural
-nested VM-Exit flow when tearing down a vCPU, which has a truly absurd number
-of problems.
+  vmx_vcpu_free()
+  |-> nested_vmx_free_vcpu()
+      |-> vmx_leave_nested()
+          |-> nested_vmx_vmexit(vcpu, -1, 0, 0)
+              |-> nested_flush_cached_shadow_vmcs12()
+                  |-> kvm_write_guest_cached()
+                      |-> __copy_to_user(ghc->hva, ...)
 
-Patch 3 fixes what I assume is a blatant PPC bug.  KVM PPC completely ignores
-kvm_arch_flush_shadow_all(), i.e. AFAICT, doesn't tear down its page tables
-when the owning process exits.  I don't have much confidence in the "fix", in
-part because it seems impossible that such a blatant bug could have gone
-unnoticed, but also because I went with a very naive approach of invoking
-kvm_arch_flush_shadow_memslot() for each memslot.  The changelog is pretty
-sparse, because I didn't know how to describe the issue byeond "this is
-completely broken".
+Fix the bug broadly even though the "real" bug is that KVM abuses the
+nested VM-Exit flow for non-architectural purposes, as there may be other
+such violations lurking.  For now, punt on fixing individual bugs and
+hardening the common flows, e.g. with WARNs.
 
-Patches 4-6 implement more agressive hardening to nuke the memslots before
-calling kvm_arch_destroy_vm(), e.g. to guard against writing to guest memory
-during kvm_arch_destroy_vm() without going through uaccess.  Setting dummy
-memslots feels a little hacky, but kvm_arch_flush_shadow_all() should have
-purged everything that effectively caches memslots, so it seems like the right
-approach?
+Opportunistically provide wrappers in anticipation of adding more checks
+and hardening, i.e. growing the logic beyond checking current->mm.
 
-Patches 7-9 add more hardening to detect KVM bugs (though the uaccess+memslot
-changes earlier in the series should render any bugs benign).
+Fixes: 61ada7488ffd ("KVM: nVMX: Cache shadow vmcs12 on VMEntry and flush to memory on VMExit")
+Cc: stable@vger.kernel.org
+Reported-by: Jim Mattson <jmattson@google.com>
+Closes: https://lore.kernel.org/all/20260908132838.2116068-1-jmattson@google.com
+Reviewed-by: James Houghton <jthoughton@google.com>
+Signed-off-by: Sean Christopherson <seanjc@google.com>
+---
+ arch/x86/kvm/vmx/sgx.c   |  2 +-
+ arch/x86/kvm/vmx/vmx.c   |  8 ++++----
+ include/linux/kvm_host.h | 25 +++++++++++++++++++++++--
+ virt/kvm/kvm_main.c      | 24 ++++++++++++------------
+ 4 files changed, 40 insertions(+), 19 deletions(-)
 
-The remaining patches double down on open coding nVMX's vCPU teardown by
-tearing down the vCPU "as-is", instead of forcing a switch to L1 and then
-doing teardown.  The forced switch is quite heinous, as it requires KVM to
-*load* the vCPU when it's dying due to architectural constraints for active
-VMCSes.  Not only is that gross, it was also papering over a bug (hopefully
-just the one) where KVM was relying on the vCPU load for nested VMX to take
-vCPUs off the posted interrupts wakeup list.
-
-v3:
- - Give up, and open code nVMX teardown. [Sashiko, syzbot, Chris]
- - Drop the nVMX hacks that were trying to fudge around the mass of nVMX
-   teardown issues.
- - Free the VMA only for the non-SMM internal memslot. [Sashiko]
- - Use @len, not hardcoded PAGE_SIZE, in kvm_is_guest_access_ok(). [Sashiko]
- - Rip out the awful vCPU load code from nested_vmx_free_vcpu().
- - Collect James' reviews.
-
-v2: https://lore.kernel.org/all/20261001202234.3794060-1-seanjc@google.com
-
-v1: https://lore.kernel.org/all/20260908132838.2116068-1-jmattson@google.com
-
-Sean Christopherson (15):
-  KVM: Reject user accesses to guest memory if current->mm != kvm->mm
-  KVM: nVMX: Don't force a full nested VM-Exit when destroying a vCPU
-  KVM: PPC: Flush/zap all memslots on kvm_arch_flush_shadow_all()
-  KVM: x86: Unmap VMAs for KVM-internal memslots when the memslot is
-    freed
-  KVM: Disallow setting memslots when the VM is being destroyed
-  KVM: Destroy memslots immediately after mmu_notifiers are unregistered
-  KVM: WARN if KVM attempts to do guest-related uaccess with "wrong"
-    process
-  KVM: WARN and reject guest-based uaccess if VM is dying
-  KVM: Pre-check uaccesses in KVM's APIs to read/write guest memory
-  KVM: VMX: Explicility free vmcs01, not the current VMCS, in vCPU free
-    paths
-  KVM: nVMX: Don't explicitly VMCLEAR+free() vmcs01's shadow VMCS when
-    freeing vCPU
-  KVM: nVMX: Cancel the nested VMX Preemption Timer's hrtimer in
-    free_nested()
-  KVM: VMX: Explicitly remove dying vCPUs from the PI wakeup list
-  KVM: nVMX: Don't switch to vmcs01 when freeing a vCPU
-  KVM: nVMX: Don't load+put the vCPU when freeing nested state for a
-    dying vCPU
-
- arch/powerpc/include/asm/kvm_host.h |  1 -
- arch/powerpc/kvm/powerpc.c          | 11 ++++
- arch/x86/kvm/vmx/nested.c           | 69 ++++++++++++-----------
- arch/x86/kvm/vmx/posted_intr.c      | 68 +++++++++++++---------
- arch/x86/kvm/vmx/posted_intr.h      |  1 +
- arch/x86/kvm/vmx/sgx.c              |  2 +-
- arch/x86/kvm/vmx/vmx.c              | 19 ++++---
- arch/x86/kvm/x86.c                  | 38 ++++++-------
- include/linux/kvm_host.h            | 26 ++++++++-
- virt/kvm/kvm_main.c                 | 87 +++++++++++++++++++----------
- 10 files changed, 199 insertions(+), 123 deletions(-)
-
-
-base-commit: 7e60162b16f9da0d2fa83da5c1723b6853a0ac1d
+diff --git a/arch/x86/kvm/vmx/sgx.c b/arch/x86/kvm/vmx/sgx.c
+index 771c75a58343..52a6d0f8bb9e 100644
+--- a/arch/x86/kvm/vmx/sgx.c
++++ b/arch/x86/kvm/vmx/sgx.c
+@@ -64,7 +64,7 @@ static void sgx_handle_emulation_failure(struct kvm_vcpu *vcpu, u64 addr,
+ static int sgx_read_hva(struct kvm_vcpu *vcpu, unsigned long hva, void *data,
+ 			unsigned int size)
+ {
+-	if (__copy_from_user(data, (void __user *)hva, size)) {
++	if (kvm_copy_from_user(vcpu->kvm, data, (void __user *)hva, size)) {
+ 		sgx_handle_emulation_failure(vcpu, hva, size);
+ 		return -EFAULT;
+ 	}
+diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+index b341af4c6057..d433cd846ac4 100644
+--- a/arch/x86/kvm/vmx/vmx.c
++++ b/arch/x86/kvm/vmx/vmx.c
+@@ -4021,16 +4021,16 @@ static int init_rmode_tss(struct kvm *kvm, void __user *ua)
+ 	int i;
+ 
+ 	for (i = 0; i < 3; i++) {
+-		if (__copy_to_user(ua + PAGE_SIZE * i, zero_page, PAGE_SIZE))
++		if (kvm_copy_to_user(kvm, ua + PAGE_SIZE * i, zero_page, PAGE_SIZE))
+ 			return -EFAULT;
+ 	}
+ 
+ 	data = TSS_BASE_SIZE + TSS_REDIRECTION_SIZE;
+-	if (__copy_to_user(ua + TSS_IOPB_BASE_OFFSET, &data, sizeof(u16)))
++	if (kvm_copy_to_user(kvm, ua + TSS_IOPB_BASE_OFFSET, &data, sizeof(u16)))
+ 		return -EFAULT;
+ 
+ 	data = ~0;
+-	if (__copy_to_user(ua + RMODE_TSS_SIZE - 1, &data, sizeof(u8)))
++	if (kvm_copy_to_user(kvm, ua + RMODE_TSS_SIZE - 1, &data, sizeof(u8)))
+ 		return -EFAULT;
+ 
+ 	return 0;
+@@ -4065,7 +4065,7 @@ static int init_rmode_identity_map(struct kvm *kvm)
+ 	for (i = 0; i < (PAGE_SIZE / sizeof(tmp)); i++) {
+ 		tmp = (i << 22) + (_PAGE_PRESENT | _PAGE_RW | _PAGE_USER |
+ 			_PAGE_ACCESSED | _PAGE_DIRTY | _PAGE_PSE);
+-		if (__copy_to_user(uaddr + i * sizeof(tmp), &tmp, sizeof(tmp))) {
++		if (kvm_copy_to_user(kvm, uaddr + i * sizeof(tmp), &tmp, sizeof(tmp))) {
+ 			r = -EFAULT;
+ 			goto out;
+ 		}
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index e7fc94e2910a..be27b4e8f12d 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -1353,13 +1353,34 @@ int kvm_write_guest_offset_cached(struct kvm *kvm, struct gfn_to_hva_cache *ghc,
+ int kvm_gfn_to_hva_cache_init(struct kvm *kvm, struct gfn_to_hva_cache *ghc,
+ 			      gpa_t gpa, unsigned long len);
+ 
++static __always_inline __must_check bool kvm_can_do_uaccess(struct kvm *kvm)
++{
++	return current->mm == kvm->mm;
++}
++
++#define BUILD_KVM_COPY_USER_WRAPPER(fn, to_user, from_user)				\
++static __always_inline __must_check unsigned long kvm_##fn(struct kvm *kvm,		\
++							   void to_user *to,		\
++							   const void from_user *from,	\
++							   unsigned long n)		\
++{											\
++	if (!kvm_can_do_uaccess(kvm))							\
++		return n;								\
++											\
++	return __##fn(to, from, n);							\
++}
++BUILD_KVM_COPY_USER_WRAPPER(copy_from_user, , __user)
++BUILD_KVM_COPY_USER_WRAPPER(copy_from_user_inatomic, , __user)
++BUILD_KVM_COPY_USER_WRAPPER(copy_to_user, __user, )
++BUILD_KVM_COPY_USER_WRAPPER(copy_to_user_inatomic, __user, )
++
+ #define __kvm_get_guest(kvm, gfn, offset, v)				\
+ ({									\
+ 	unsigned long __addr = gfn_to_hva(kvm, gfn);			\
+ 	typeof(v) __user *__uaddr = (typeof(__uaddr))(__addr + offset);	\
+ 	int __ret = -EFAULT;						\
+ 									\
+-	if (!kvm_is_error_hva(__addr))					\
++	if (!kvm_is_error_hva(__addr) && kvm_can_do_uaccess(kvm))	\
+ 		__ret = get_user(v, __uaddr);				\
+ 	__ret;								\
+ })
+@@ -1379,7 +1400,7 @@ int kvm_gfn_to_hva_cache_init(struct kvm *kvm, struct gfn_to_hva_cache *ghc,
+ 	typeof(v) __user *__uaddr = (typeof(__uaddr))(__addr + offset);	\
+ 	int __ret = -EFAULT;						\
+ 									\
+-	if (!kvm_is_error_hva(__addr))					\
++	if (!kvm_is_error_hva(__addr) && kvm_can_do_uaccess(kvm))	\
+ 		__ret = put_user(v, __uaddr);				\
+ 	if (!__ret)							\
+ 		mark_page_dirty(kvm, gfn);				\
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index cf4cb586f140..218456372b11 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -3279,8 +3279,8 @@ static int next_segment(unsigned long len, int offset)
+ }
+ 
+ /* Copy @len bytes from guest memory at '(@gfn * PAGE_SIZE) + @offset' to @data */
+-static int __kvm_read_guest_page(struct kvm_memory_slot *slot, gfn_t gfn,
+-				 void *data, int offset, int len)
++static int __kvm_read_guest_page(struct kvm *kvm, struct kvm_memory_slot *slot,
++				 gfn_t gfn, void *data, int offset, int len)
+ {
+ 	int r;
+ 	unsigned long addr;
+@@ -3291,7 +3291,7 @@ static int __kvm_read_guest_page(struct kvm_memory_slot *slot, gfn_t gfn,
+ 	addr = gfn_to_hva_memslot_prot(slot, gfn, NULL);
+ 	if (kvm_is_error_hva(addr))
+ 		return -EFAULT;
+-	r = __copy_from_user(data, (void __user *)addr + offset, len);
++	r = kvm_copy_from_user(kvm, data, (void __user *)addr + offset, len);
+ 	if (r)
+ 		return -EFAULT;
+ 	return 0;
+@@ -3302,7 +3302,7 @@ int kvm_read_guest_page(struct kvm *kvm, gfn_t gfn, void *data, int offset,
+ {
+ 	struct kvm_memory_slot *slot = gfn_to_memslot(kvm, gfn);
+ 
+-	return __kvm_read_guest_page(slot, gfn, data, offset, len);
++	return __kvm_read_guest_page(kvm, slot, gfn, data, offset, len);
+ }
+ EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_read_guest_page);
+ 
+@@ -3311,7 +3311,7 @@ int kvm_vcpu_read_guest_page(struct kvm_vcpu *vcpu, gfn_t gfn, void *data,
+ {
+ 	struct kvm_memory_slot *slot = kvm_vcpu_gfn_to_memslot(vcpu, gfn);
+ 
+-	return __kvm_read_guest_page(slot, gfn, data, offset, len);
++	return __kvm_read_guest_page(vcpu->kvm, slot, gfn, data, offset, len);
+ }
+ EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_vcpu_read_guest_page);
+ 
+@@ -3355,8 +3355,8 @@ int kvm_vcpu_read_guest(struct kvm_vcpu *vcpu, gpa_t gpa, void *data, unsigned l
+ }
+ EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_vcpu_read_guest);
+ 
+-static int __kvm_read_guest_atomic(struct kvm_memory_slot *slot, gfn_t gfn,
+-			           void *data, int offset, unsigned long len)
++static int __kvm_read_guest_atomic(struct kvm *kvm, struct kvm_memory_slot *slot,
++				   gfn_t gfn, void *data, int offset, unsigned long len)
+ {
+ 	int r;
+ 	unsigned long addr;
+@@ -3368,7 +3368,7 @@ static int __kvm_read_guest_atomic(struct kvm_memory_slot *slot, gfn_t gfn,
+ 	if (kvm_is_error_hva(addr))
+ 		return -EFAULT;
+ 	pagefault_disable();
+-	r = __copy_from_user_inatomic(data, (void __user *)addr + offset, len);
++	r = kvm_copy_from_user_inatomic(kvm, data, (void __user *)addr + offset, len);
+ 	pagefault_enable();
+ 	if (r)
+ 		return -EFAULT;
+@@ -3382,7 +3382,7 @@ int kvm_vcpu_read_guest_atomic(struct kvm_vcpu *vcpu, gpa_t gpa,
+ 	struct kvm_memory_slot *slot = kvm_vcpu_gfn_to_memslot(vcpu, gfn);
+ 	int offset = offset_in_page(gpa);
+ 
+-	return __kvm_read_guest_atomic(slot, gfn, data, offset, len);
++	return __kvm_read_guest_atomic(vcpu->kvm, slot, gfn, data, offset, len);
+ }
+ EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_vcpu_read_guest_atomic);
+ 
+@@ -3400,7 +3400,7 @@ static int __kvm_write_guest_page(struct kvm *kvm,
+ 	addr = gfn_to_hva_memslot(memslot, gfn);
+ 	if (kvm_is_error_hva(addr))
+ 		return -EFAULT;
+-	r = __copy_to_user((void __user *)addr + offset, data, len);
++	r = kvm_copy_to_user(kvm, (void __user *)addr + offset, data, len);
+ 	if (r)
+ 		return -EFAULT;
+ 	mark_page_dirty_in_slot(kvm, memslot, gfn);
+@@ -3538,7 +3538,7 @@ int kvm_write_guest_offset_cached(struct kvm *kvm, struct gfn_to_hva_cache *ghc,
+ 	if (unlikely(!ghc->memslot))
+ 		return kvm_write_guest(kvm, gpa, data, len);
+ 
+-	r = __copy_to_user((void __user *)ghc->hva + offset, data, len);
++	r = kvm_copy_to_user(kvm, (void __user *)ghc->hva + offset, data, len);
+ 	if (r)
+ 		return -EFAULT;
+ 	mark_page_dirty_in_slot(kvm, ghc->memslot, gpa >> PAGE_SHIFT);
+@@ -3576,7 +3576,7 @@ int kvm_read_guest_offset_cached(struct kvm *kvm, struct gfn_to_hva_cache *ghc,
+ 	if (unlikely(!ghc->memslot))
+ 		return kvm_read_guest(kvm, gpa, data, len);
+ 
+-	r = __copy_from_user(data, (void __user *)ghc->hva + offset, len);
++	r = kvm_copy_from_user(kvm, data, (void __user *)ghc->hva + offset, len);
+ 	if (r)
+ 		return -EFAULT;
+ 
 -- 
 2.56.0.307.g5fe7bd680c-goog
 
