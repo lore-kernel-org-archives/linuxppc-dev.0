@@ -2,50 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 05B5F606A31B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2026 14:39:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 54927606A324
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2026 14:42:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mhtq+G06
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nCibtCOv
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jDY6X54v5z2ySl;
-	Wed, 28 Oct 2026 01:39:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jDYBP05fBz2ySl;
+	Wed, 28 Oct 2026 01:42:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793111972;
-	cv=none; b=PbgBx3ASg709Z9hApuoagPqtstOY5BbL5HO4Jl9mQDEQAhG98wJdzyq55iGX2JizWmkd4NftLPAa/ZtfthhFgYoGwxKk45BUidAy8tZhJ0p8Pc2dvHAXGt39JmldW9L81IBOIPFIh0GvnYoECsQSbhZU110Ocl4CZ2c1iREdc35bTKkbHoTVAc3Ejht0GbkW7SSp9Kf7CcIOfdubskaFafWZ5p6iPPkMq1aMGKquqK8+5k7ViWgbeQNdovUxR6zOqefH64zIvsgnAINigDvTHecgdoxjOrt2yCgWeEVUar81RNeT6GMnJCB8DQP222bodPPnvl++e/NDcPh9etUBpQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793112172;
+	cv=none; b=Tb2Ul0kSfl4lONhHGj8zebGklbaKyF68eaN96Zz7roupFvXQ9eRWwviIou9xmo7vPAQSWVNPbY44Tn8kI/LW7hEE0pyYbk7fF4TTU1AkmDx6Ia6gVO155tZcpA8xNfw5UR69MDoPt828EYB2pSiWz5gzc8VhMMDbUe48cp7RonBKabrMf+W40nP/oxSNOrDtPSxXT+S0QTlgL8pZzBhufqtVmvfLaR4Zp9+GE5CKQGAxoNBvTh+S7dnWbfbBciZzYtjn31VfW/ZyTT6CDe5IFR/CG5/W93ijjNAvpm7JRKLJs0fWBq3uytb9lPNUBMFongDuegLczoWwtlITw90oBQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793111972; c=relaxed/relaxed;
-	bh=zWKNZJvS98TaYn91gneC8TBH6IkytbETY3YYVo94WFg=;
+	t=1793112172; c=relaxed/relaxed;
+	bh=xoLSuofN7cQ2tWXwUvc/DSgwxulevn9ENLUaotbNxMY=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=eUfEwSE7cnqYNRYt2+ru5N5OJ2wjZTC/Kt8fa50pRWh8CkP2PT3Kr6YF1USyBggUr3VtM6cYKfLRqocHE9h3rnm3/0+qDFAg18AnfTWTU0lLk+GBA6bVZuaBioT+BrcXX9CbbuZn9cv7jdUf3ICn0P1lN4Xmwk2SU9cvmcnUqspWe5dCBU1qoBuMAlPc21Owf7/gkAU1ycOoRF64bbN6JniRUj3Cxr0pNJ0ZY7aZq862eb8Ek2f0TrfVBftS1pq6xyt+OAP+69GqGdETveafil3LYvJMlNV3tMz4XS1aRDfmHjASaOxJEBUR1UTGlN2Y6F9JHzg1x11M2Y0HEUH8BA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mhtq+G06; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=BmNkvF+YEbL437wAD7gs2t1mxnp4oGi5RTvOTKdJRHLdWyIu/KGlOI5Gu1/y8xa2KBczluXD9UpTPaqnAWog+YHaDyUMGpkFxk87q9C4TCK6SqoE79/3RezGMsRjrO6hGPCPSCa7apDpttnkBAOMJet8ajIw8vw6KHAkZ5TpxZtU4RCtWvI+ABapP9MM9O5d0/jk36TC3dpK1Boyh8F8sOW4gSelR0zAXIgrk283Xc9dqNm5iXebGa6zv0qYfDiT+tF5b4YMvWZstLRonMYzpiPW6kIb2n8Ap3N1NAteBg6fBIygWSOKtBfVP8sTOFN5QPcwoD5x57IiXefef2niCA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nCibtCOv; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mhtq+G06;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nCibtCOv;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jDY6W5dyvz2xLg
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 01:39:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jDYBM6dNgz2xN4
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 01:42:51 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id DAD446021A;
-	Tue, 27 Oct 2026 14:39:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A2A1C1F01828;
-	Tue, 27 Oct 2026 14:39:22 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id D8842602BE;
+	Tue, 27 Oct 2026 14:42:49 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0F6B11F031E2;
+	Tue, 27 Oct 2026 14:42:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793111968;
-	bh=zWKNZJvS98TaYn91gneC8TBH6IkytbETY3YYVo94WFg=;
+	s=k20260515; t=1793112169;
+	bh=xoLSuofN7cQ2tWXwUvc/DSgwxulevn9ENLUaotbNxMY=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=mhtq+G06kqC3xeB4k1jE+dmZEllYWsCyHRkDYVcdsaBoV8aW199hq1GaHjzFYOz0p
-	 vuNdJJUHYSi/oKO4hOgIQ3k/DhuVPlx0CBSsPodt2GfXNCg7s9rnCI9x6Mo3k5rJNx
-	 3pbyLKia5J4YIOawICwO5EcvkwibwoPe39YF4zpytydfEtNzz1POphpsG/gvK95orM
-	 v25QLAFQvhgys9n5rsJWOHakEo+VPMg7kbTE2WMa3hJ4FIPb4m9GY1TSA9t5Z8EviY
-	 k0HqoCHaAfyCbhzNVUM2rosDzTzE+etBEveMz1+Silpow9WeNMVmUBMK6f8Q6m7mt+
-	 M6g8TfrvFDmrQ==
-Message-ID: <8c164738-8025-482f-828a-3f919150a930@kernel.org>
-Date: Tue, 27 Oct 2026 15:39:20 +0100
+	b=nCibtCOvcqjhtwxq9rIemKZCtHNwaNf0BlFYC+FouftiBZosSYpxUL0mYyiauWLpd
+	 T2Y6UhXpbH0x1mHHjwNPbem/AT56EcTY0wEs4ibeYgTQGRswuJDpCv2LXbJ+CxbD6X
+	 a3MNJHAVtaQVmSxaDIlgWzSKkR19zx+tcBS53yPUPCaggBn1R319Y+LeTJTjoPQdt4
+	 U9EtvqFBnxhwsG3bg1rjQB+ZU2EMtiGPYNKf8ulZoxR+zqhKLcr7A3W4el3jE2UZme
+	 ESkSApBkTcsYRn2/FolhS5eGkQDuIExsSFIm+G8gM1QCufx8s3kvrSwfMUkqaeUqZg
+	 7DbTbx3UW5nSA==
+Message-ID: <829f5a0f-4d9a-4c65-9703-fbf6e49d2b02@kernel.org>
+Date: Tue, 27 Oct 2026 15:42:40 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,8 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 2/4] mm/huge_memory: copy file THPs at fork like
- copy_present_ptes() does
+Subject: Re: [PATCH v4 3/4] mm/huge_memory: read a special PMD under the lock
+ in copy_huge_pmd()
 To: Konstantin Khorenko <khorenko@virtuozzo.com>,
  Andrew Morton <akpm@linux-foundation.org>, Zi Yan <ziy@nvidia.com>,
  Baolin Wang <baolin.wang@linux.alibaba.com>,
@@ -77,9 +77,10 @@ Cc: Alex Williamson <alex@shazbot.org>, kvm@vger.kernel.org,
  Madhavan Srinivasan <maddy@linux.ibm.com>,
  "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
  linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>
+ linux-kernel@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>,
+ Sashiko <sashiko-bot@kernel.org>
 References: <20261021-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v4-0-66f00b7a564c@virtuozzo.com>
- <20261021-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v4-2-66f00b7a564c@virtuozzo.com>
+ <20261021-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v4-3-66f00b7a564c@virtuozzo.com>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -126,7 +127,7 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20261021-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v4-2-66f00b7a564c@virtuozzo.com>
+In-Reply-To: <20261021-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v4-3-66f00b7a564c@virtuozzo.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 X-Spam-Status: No, score=-17.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -138,118 +139,107 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 On 10/21/26 22:36, Konstantin Khorenko wrote:
-> This fixes no bug: it makes fork copy a PMD the way copy_present_ptes()
-> copies a PTE. Until now copy_huge_pmd() skipped every folio PMD of a
-> non-anonymous VMA and left the child to fault them in again, while the
-> PTEs of the same VMA are copied.
+> copy_huge_pmd() reads a special PMD without the page table lock and
+> copies that value to the child. The mmap write lock held by fork does
+> not stop unmap_mapping_range(): it zaps under i_mmap_rwsem and the PMD
+> lock.
 > 
-> Treat file folios as the PTE path does: take a reference, duplicate the
-> rmap and account them. fork then pays a reference and an rmap update
-> per PMD, and saves the child a fault per PMD it touches. The next patch
-> sends PFN mappings through the same tail.
+> The zap visits the parent VMA before the child's, as dup_mmap() links
+> the child right after the parent in i_mmap. If it clears the parent PMD
+> after fork has read it, and passes the child before fork copies it, the
+> child keeps a mapping the driver has revoked, for example:
 > 
-> That covers the VMAs vma_needs_copy() sends here:
+> - vfio-pci: the child reaches the BAR after the device memory was
+>   disabled or the device was reset, instead of getting SIGBUS;
+> - panthor: the child maps the pages of an evicted buffer object after
+>   the driver has released them.
 > 
-> - private file mappings with an anon_vma;
-> - VM_COPY_ON_FORK ones: uffd-wp and uffd-rwp, VM_MIXEDMAP (fuse DAX),
->   and VM_MAYBE_GUARD, which shared shmem, file and DAX mappings get
->   from a guard region.
+> The same branch deposits no page table under the copy. ppc64 in hash
+> mode keeps the hash slot array of every huge PMD in that table, so the
+> child dereferences a NULL table on the first hash fault, in
+> __hash_page_thp(), and on the zap, in hash__pmdp_huge_get_and_clear().
 > 
-> The DAX huge zero PMD is copied too, with a reference taken by
-> mm_get_huge_zero_folio() as for anonymous VMAs. A migration entry of a
-> file folio is copied and accounted like copy_nonpresent_pte() does, and
-> made read-only in both processes only in a CoW mapping.
+> Take the locks first and let vm_normal_page_pmd() tell a PFN mapping
+> from a folio under them, as copy_present_ptes() does with
+> vm_normal_page(). The zap clears the parent PMD under the same lock, so
+> either fork finds it none and skips it, or the copy is in place before
+> the zap reaches the child.
 > 
-> The copy then gets the same tail as __copy_present_ptes(): write
-> protect both sides in a CoW mapping, mark the child's copy clean in a
-> shared one, and drop the uffd-wp bit where the child is not armed. An
-> anonymous THP is now write protected only when its PMD is writable, as
-> a PTE is.
+> The copy of a PFN mapping then goes through the same tail as a folio:
 > 
-> A page table is deposited under the copy where the fault paths deposit
-> one: in anonymous VMAs, and wherever the architecture needs one.
+> - it gets a page table where the architecture needs one;
+> - in a shared mapping it is marked clean in the child, as a PTE is;
+> - in a CoW mapping, which only VM_MIXEDMAP allows, both sides are write
+>   protected instead of a warning being printed.
 > 
+> Fixes: bc02afbd4d73 ("mm/fork: accept huge pfnmap entries")
+> Fixes: d1503aa9ab80 ("powerpc/64s: Add support for huge pfnmaps")
+> Reported-by: Sashiko <sashiko-bot@kernel.org>
+> Closes: https://sashiko.dev/#/patchset/20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v1-1-d225c60bc316@virtuozzo.com?part=1
 > Suggested-by: David Hildenbrand <david@kernel.org>
 > Signed-off-by: Konstantin Khorenko <khorenko@virtuozzo.com>
 > ---
->  mm/huge_memory.c | 60 ++++++++++++++++++++++++++++++++++----------------------
->  1 file changed, 37 insertions(+), 23 deletions(-)
+>  mm/huge_memory.c | 24 +++---------------------
+>  1 file changed, 3 insertions(+), 21 deletions(-)
 > 
 > diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-> index 1e5d68acf62a5..13e3674fb6115 100644
+> index 13e3674fb6115..da5918a0ade87 100644
 > --- a/mm/huge_memory.c
 > +++ b/mm/huge_memory.c
-> @@ -1898,12 +1898,13 @@ static void copy_huge_non_present_pmd(
->  		pmd_t pmd, pgtable_t pgtable)
->  {
->  	softleaf_t entry = softleaf_from_pmd(pmd);
-> -	struct folio *src_folio;
-> +	struct folio *src_folio = softleaf_to_folio(entry);
->  
->  	VM_WARN_ON_ONCE(!pmd_is_valid_softleaf(pmd));
->  
-> -	if (softleaf_is_migration_write(entry) ||
-> -	    softleaf_is_migration_read_exclusive(entry)) {
-> +	if ((softleaf_is_migration_write(entry) ||
-> +	     softleaf_is_migration_read_exclusive(entry)) &&
-> +	    vma_is_cow_mapping(src_vma)) {
->  		entry = make_readable_migration_entry(swp_offset(entry));
->  		pmd = softleaf_to_pmd(entry);
->  		if (pmd_swp_soft_dirty(*src_pmd))
-
-
-Any reason we're not adding the vma_is_cow_mapping() check on the
-softleaf_is_device_private_write() path as well?
-
-(I think they are all anonymous ... just for consistency)
-
-
-Is the fallthrough:
-
-	add_mm_counter(dst_mm, MM_ANONPAGES, HPAGE_PMD_NR)
-
-really expected?
-
-
-> @@ -1927,7 +1928,6 @@ static void copy_huge_non_present_pmd(
->  			set_pmd_at(src_mm, addr, src_pmd, pmd);
->  		}
->  
-> -		src_folio = softleaf_to_folio(entry);
->  		VM_WARN_ON(!folio_test_large(src_folio));
->  
->  		folio_get(src_folio);
-> @@ -1939,9 +1939,11 @@ static void copy_huge_non_present_pmd(
->  					    dst_vma, src_vma);
->  	}
->  
-> -	add_mm_counter(dst_mm, MM_ANONPAGES, HPAGE_PMD_NR);
-> -	mm_inc_nr_ptes(dst_mm);
-> -	pgtable_trans_huge_deposit(dst_mm, dst_pmd, pgtable);
-> +	add_mm_counter(dst_mm, mm_counter(src_folio), HPAGE_PMD_NR);
-> +	if (pgtable) {
-> +		mm_inc_nr_ptes(dst_mm);
-> +		pgtable_trans_huge_deposit(dst_mm, dst_pmd, pgtable);
-> +	}
->  	if (!userfaultfd_protected(dst_vma))
->  		pmd = pmd_swp_clear_uffd(pmd);
->  	set_pmd_at(dst_mm, addr, dst_pmd, pmd);
-> @@ -1957,6 +1959,7 @@ int copy_huge_pmd(struct mm_struct *dst_mm, struct mm_struct *src_mm,
->  	pmd_t pmd;
->  	pgtable_t pgtable = NULL;
+> @@ -1961,25 +1961,6 @@ int copy_huge_pmd(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 >  	int ret = -ENOMEM;
-> +	bool writable;
-
-Why do we need this variable?
-
-[...]
-
-> +		goto copy_pmd;
+>  	bool writable;
+>  
+> -	pmd = pmdp_get_lockless(src_pmd);
+> -	if (unlikely(pmd_present(pmd) && pmd_special(pmd) &&
+> -		     !is_huge_zero_pmd(pmd))) {
+> -		dst_ptl = pmd_lock(dst_mm, dst_pmd);
+> -		src_ptl = pmd_lockptr(src_mm, src_pmd);
+> -		spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
+> -		/*
+> -		 * No need to recheck the pmd, it can't change with write
+> -		 * mmap lock held here.
+> -		 *
+> -		 * Meanwhile, making sure it's not a CoW VMA with writable
+> -		 * mapping, otherwise it means either the anon page wrongly
+> -		 * applied special bit, or we made the PRIVATE mapping be
+> -		 * able to wrongly write to the backend MMIO.
+> -		 */
+> -		VM_WARN_ON_ONCE(vma_is_cow_mapping(src_vma) && pmd_write(pmd));
+> -		goto set_pmd;
+> -	}
+> -
+>  	if (vma_is_anonymous(dst_vma) || arch_needs_pgtable_deposit()) {
+>  		pgtable = pte_alloc_one(dst_mm);
+>  		if (unlikely(!pgtable))
+> @@ -2021,7 +2002,9 @@ int copy_huge_pmd(struct mm_struct *dst_mm, struct mm_struct *src_mm,
+>  		goto copy_pmd;
 >  	}
+>  
+> -	src_page = pmd_page(pmd);
+> +	src_page = vm_normal_page_pmd(src_vma, addr, pmd);
+> +	if (!src_page)
+> +		goto copy_pmd;
+>  	VM_BUG_ON_PAGE(!PageHead(src_page), src_page);
+>  	src_folio = page_folio(src_page);
+>  
+> @@ -2061,7 +2044,6 @@ int copy_huge_pmd(struct mm_struct *dst_mm, struct mm_struct *src_mm,
+>  	}
+>  	if (src_vma->vm_flags & VM_SHARED)
+>  		pmd = pmd_mkclean(pmd);
+> -set_pmd:
+>  	pmd = pmd_mkold(pmd);
+>  	set_pmd_at(dst_mm, addr, dst_pmd, pmd);
+>  
+> 
 
-Likely we should clean this up later to avoid the gotos.
+Looks correct. Reading the above, I wonder about Cc: stable. It would affect
+v6.12, so not too crazy to backport.
 
+We'd have to backport patch #2 as well in that case (or have a simpler fix, but
+I am not sure that's really worth it).
 
+Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
 -- 
 Cheers,
