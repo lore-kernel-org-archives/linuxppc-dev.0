@@ -1,40 +1,95 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CAFCF606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2026 13:18:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3BC25606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2026 13:53:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=rock-chips.com header.i=@rock-chips.com header.a=rsa-sha256 header.s=default header.b=if1OE+s+
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mF8zRUbq
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jDWJk3R8Bz2x99;
-	Wed, 28 Oct 2026 00:18:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.224.81.136
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793107094;
-	cv=none; b=jPb/wzcEfIFZ/6gWsr/tJTDOOMwS7qkVZ7Hw9IryeGIe06m3dYz2mwbzSqYK/BAvV1ubetdwSMDbve5jbW2vuj7JnpPNwmusdgXhAEZy/NDvHQmtlNCbnWz4fA3M4rz6qwKaeoRxMHG6+d+Muu2HAy2eLc8ha54KaGkR0jixYQpikXs9D2ksBblrshO4mGzaVvGqlEZdX1nrs5ho5X7ialHaxfMFzf0ifC6zXlbVlPQ4KvQ5xOcMWTRoDjs4LdvtcjfcvBYYScuK+om3EByVcKuWzXf8lzlt9SJT5nGD3j8WjxyR+WoEqxUYg4oucVeV22sa51APkvzP+B5ERoUmzg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jDX5H3PFKz2yPG;
+	Wed, 28 Oct 2026 00:53:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793109203;
+	cv=none; b=DU9GAe+z9bxfyET99+ZVt+u1lBVRYLmnIb3LvSD36S3Yv3G4jVIsWtl7Q/buAAH+kugrpK3kMDBhb7ojfzLHbdwA0kKLsunmMNvtp6BKDKAP9nnoj8D0yVlzKgNG9VnYeLJvcWlF6Po9/mtKFS/To1CxHiIQ/tyUNq5F5dop8PhqI4xB9pPQ3O6Wzo97WWFI9OlFjUSFGNPoG5wVqHjtQzFezX/mnWER5x5HP47fHt/EvLU9a6GnLKCki/74BAhAS3hAyzh43aRfXbH9j4oQTxZm67e1qblUzU2S4q6ZJd+5rUQp9AoCERGJAs2XibmyLuY6rt2U8K6vB899y1mIaA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793107094; c=relaxed/relaxed;
-	bh=g7rGr35rsfUat/aHvoe/Mi5rDCRRMxT0NcwnokuEoLQ=;
-	h=Message-ID:Date:MIME-Version:Cc:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=HTUVYrpSx8IU75xNCVd41jHxEtpmM7UNmhapM4kCOvT/EWNNqLsZPySbZ+EROIrS77wcfTmSH0nAHWaSMkSxD2GPhgBXosBMis29QJGRQeIJZIPXEV96Zpd5GcmYxACH8nGroTEIWFDmzTNFeT1c6SZ3W38TsAf/BQJYKtEDti0KSKmDSQhIAeLNFLYbbcwWg+Pxghk+OPI7n3zYG2L09QTDmqPYnlSPEKhhgbYypPmhKW2D2XJ9IYJl+qUndBAjrFGwneXfEgSfRe7O5kfp+/W19ziBGNKpCmaHv1hh8GV7lbAKBUUpKnBjj4/TVbwHkH97+uWVra9UqUGZB7h2Fw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; dkim=pass (1024-bit key; unprotected) header.d=rock-chips.com header.i=@rock-chips.com header.a=rsa-sha256 header.s=default header.b=if1OE+s+; dkim-atps=neutral; spf=pass (client-ip=156.224.81.136; helo=mail-m81136.xmail.ntesmail.com; envelope-from=shawn.lin@rock-chips.com; receiver=lists.ozlabs.org) smtp.mailfrom=rock-chips.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
+	t=1793109203; c=relaxed/relaxed;
+	bh=wGwT1JNbkqmcP8fUAnZimf+aufAiCIdNGNB+5b8MPdA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=iq82t1DZRC/vt9Tw2tN0GfxWtC2O7mySvsHS6RrnS8Jtj3mAEw4bUVZvvUq8m4GcbCu63j3/o6sRKB1gIi4pZ+GBrOO+6qYGb2C7v5rR2D/BMJrbMtPLZ6l/lS4KaPwkPRRYJgMxMry7eHNbWb8V9/ihjtcsOTo451JmQUVNLssea1EMGfIdhk+3UgtVqPBOJ7qkokmtyxu2z7zsbCjfBRPzGEghCuKVvWChVF971cTf1M/5dagxmC72P5PE2nx8baAVDnfgT1zfI79DZ+PQa1zh0PVFufy5ofUQ8KKbH84MT3jLbkmHwKs6fNAiXiAfxGqv/AZNJGEs7o9WHbNMCA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mF8zRUbq; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=rock-chips.com header.i=@rock-chips.com header.a=rsa-sha256 header.s=default header.b=if1OE+s+;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mF8zRUbq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=rock-chips.com (client-ip=156.224.81.136; helo=mail-m81136.xmail.ntesmail.com; envelope-from=shawn.lin@rock-chips.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 304 seconds by postgrey-1.37 at boromir; Wed, 28 Oct 2026 00:18:11 AEDT
-Received: from mail-m81136.xmail.ntesmail.com (mail-m81136.xmail.ntesmail.com [156.224.81.136])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kas@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jDWJg09blz2xjh
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 00:18:10 +1100 (AEDT)
-Received: from [172.16.12.48] (unknown [61.154.14.86])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 528713ae7;
-	Tue, 27 Oct 2026 21:12:59 +0800 (GMT+08:00)
-Message-ID: <80f85ae9-7162-4940-8dec-690bc00098b4@rock-chips.com>
-Date: Tue, 27 Oct 2026 21:12:57 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jDX5G1ZbSz2yDc
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 00:53:22 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id C518E6021C;
+	Tue, 27 Oct 2026 13:53:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0A56A1F01828;
+	Tue, 27 Oct 2026 13:53:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793109198;
+	bh=wGwT1JNbkqmcP8fUAnZimf+aufAiCIdNGNB+5b8MPdA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=mF8zRUbq653nfj1B5K+Z45VMISn5YnE0sHMQhzG2zkRwMerN1u0TrRYVWk97hvTNM
+	 uZ0lbteq6tg7KdZ6atcsSTAtfYTmzLqgtX1K28V52vEd6MnMqTJRJtXXcFmIky/8m4
+	 WR+SVC3nI3mJmtmiGZw0lBVh9c3YytpGhMYIKmLAbMuSK8tZKjeP376mr2B1DsolpT
+	 npnhhnwphjkK431NhDvezTuq5Ni+Vq5zhl/CRuPB0GylScV7NWGxBzcj26Q0m9qpXO
+	 ybIZxQd/9nNRMeX/DedkmjK8u6shpdQBEcP8ZqLjIeFW1ucPz08OQzMa15z+dB6HJS
+	 6/qy3HLH+nbKA==
+Received: from phl-compute-03.internal (phl-compute-03.internal [10.202.2.43])
+	by mailfauth.ams.internal (Postfix) with ESMTP id 85CC7198004A;
+	Tue, 27 Oct 2026 09:53:11 -0400 (EDT)
+Received: from phl-frontend-03 ([10.202.2.162])
+  by phl-compute-03.internal (MEProxy); Tue, 27 Oct 2026 09:53:15 -0400
+X-ME-Sender: <xms:xqzgal-vr3ZeqbXQYJBliutUwh-BPoCNU76xbXs7mx_Ps-IdSmK23A>
+    <xme:xqzgaoksYXGkYGnJF43sYID0Tus98V08BBjG64swDvpdheaZW5VbBJyVOc7DQ6Frl
+    aoZ3R23YOrTA4h2thSa7n_eENBiVLh_oK4jdwW4aOnapsUIANjaAKZd>
+X-ME-Received: <xmr:xqzgajaYJVYfdqtgodH29574WA_vexf-pM5sNeV3dSMQBjrPqxVqpVsiMiw>
+X-ME-Proxy-Cause: dmFkZTEZ/rZ8QL4tKdVH13M4isFoJoqE6mmyk1+ybcvlxgqSp6W0ayLRKd0L7SfTmxuGb5
+    U6+Pfm114T++Wp3SC2FV78EqIZ6zQGqKV5XyNS0Q8g8zeea3kGWywXyvNgIRW79CajYQHr
+    2jF/D3zyUpa8mENlQ2k9kDlrLHG9vuqIwsGPeExjecTgPLyR3BG4mU+4iFcKzGjlB8O7dl
+    rHahXQtAt7H4ct4Hi0ph4caUm45qDhARWvo+NXS6RvFk5in2esxS1VkNF3/wtGoX2gxkDU
+    HYhd+ifyLHB/lQg4TvDcO1vty+4TgdFGCdUfD6xIrm+RnS//HTrIeeMZCfQmeBD5mTfrrt
+    28F2SJuazbG4sdilPjnUK5Xk2C/b77Urnpd+yJpFkxf0srCyBWlhL6vR0USCQldwnnbiLW
+    9q+grn+3rpVTZTV5aFHrdKvOYqBL1I68cy6Ts9EvEo2mG6eqSnlWVGArQuLZTDmYpXGIvS
+    wXLvRFTOpi4viZ4HzYk4qCerKNTdy3232MaWMRw4+fGiHl1k0822eLObmoSxbGhZG/SB+U
+    RY6eT6x1Fr7R33DiHsTIEPGR6+Uf+O9CEjZE+sUhhEJff/MTsubZ9LmOVI85mrAWUqqbJx
+    XWv9aGmJ+yJbAfbRPaNRNIocYryGvdsYvD8pPJi4F3KUYMPNesYsAvQV4dWg
+X-ME-Proxy: <xmx:xqzgaudbz8X2mj1TmcVhbSB5pj192_SKV8vP7t-J3qUs-AsDGR5erQ>
+    <xmx:x6zgar5lbie9c9vsEIGyR4WR5HHpSCBz3DCSwhV-Wl76bl2cm_9stA>
+    <xmx:x6zgaqkT5H7khckA_fD9bSj4bobce4cCO515thNp8GAx2LHLg5LD3g>
+    <xmx:x6zgapYUC1r3US7DHJV2QXJyRoI41UHODbj8ZuE46i0U3Qjz7C1IHw>
+    <xmx:x6zgagOltv2MpGmQj-wyDgIG_3JLhCWmQzbtOVj1MoCubVlHQLT8Bbj6>
+Feedback-ID: i10464835:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Tue,
+ 27 Oct 2026 09:53:10 -0400 (EDT)
+Date: Tue, 27 Oct 2026 13:53:09 +0000
+From: Kiryl Shutsemau <kas@kernel.org>
+To: Konstantin Khorenko <khorenko@virtuozzo.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, 
+	"David Hildenbrand (Arm)" <david@kernel.org>, Zi Yan <ziy@nvidia.com>, 
+	Baolin Wang <baolin.wang@linux.alibaba.com>, "Liam R. Howlett" <liam@infradead.org>, 
+	Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
+	Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
+	Usama Arif <usama.arif@linux.dev>, Peter Xu <peterx@redhat.com>, Alex Williamson <alex@shazbot.org>, 
+	kvm@vger.kernel.org, =?utf-8?B?TG/Dr2M=?= Molinari <loic.molinari@collabora.com>, 
+	Lorenzo Stoakes <ljs@kernel.org>, Shuah Khan <shuah@kernel.org>, linux-kselftest@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, 
+	linux-kernel@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>
+Subject: Re: [PATCH v4 1/4] mm/rmap: duplicate a PMD mapping as one in
+ folio_dup_file_rmap_pmd()
+Message-ID: <auCsphluu2gwzEPo@thinkstation>
+References: <20261021-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v4-0-66f00b7a564c@virtuozzo.com>
+ <20261021-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v4-1-66f00b7a564c@virtuozzo.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -48,144 +103,38 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Cc: shawn.lin@rock-chips.com, imx@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org, linux-amlogic@lists.infradead.org,
- linux-rockchip@lists.infradead.org, linux-arm-msm@vger.kernel.org,
- sophgo@lists.linux.dev, linux-riscv@lists.infradead.org,
- spacemit@lists.linux.dev, linux-tegra@vger.kernel.org,
- linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 01/16] PCI: dwc: Add pcie_cap field and caching helper
-To: Hans Zhang <18255117159@163.com>, bhelgaas@google.com,
- lpieralisi@kernel.org, kwilczynski@kernel.org, mani@kernel.org,
- jingoohan1@gmail.com
-References: <20261027122827.2725643-1-18255117159@163.com>
- <20261027122827.2725643-2-18255117159@163.com>
-From: Shawn Lin <shawn.lin@rock-chips.com>
-In-Reply-To: <20261027122827.2725643-2-18255117159@163.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-HM-Tid: 0aa17d7e1c8c03a4kunmbc22d35997dd
-X-HM-MType: 1
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVkaTkxPVksdSUpMGR9OGhlMTVYVFA
-	kWGhdVEwETFhoSFyQUDg9ZV1kYEgtZQVlNSlVKTk9VSk9VQ01ZV1kWGg8SFR0UWUFZT0tIVUpLSU
-	9PT0hVSktLVUpCS0tZBg++
-DKIM-Signature: a=rsa-sha256;
-	b=if1OE+s+0vJEWd3Li6qhSK+6BnN+GRMpiXbxk3rZd8OP+gZRRJTgOPkxvlHVvkfTSHfgfCHrlQaCwDegrXIGqsg5RiwE8+kwUi0A9fecpSt8Hux3Z2shlMceNBl4RxxWxv/AwzexIk4Q9bjOpYyaV2XS7lJ5MiQP1V21+XMyr64=; s=default; c=relaxed/relaxed; d=rock-chips.com; v=1;
-	bh=g7rGr35rsfUat/aHvoe/Mi5rDCRRMxT0NcwnokuEoLQ=;
-	h=date:mime-version:subject:message-id:from;
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=4.0.1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261021-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v4-1-66f00b7a564c@virtuozzo.com>
+X-Spam-Status: No, score=-11.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Hans,
-
-在 2026/10/27 星期二 20:28, Hans Zhang 写道:
-> The DWC PCIe core and its platform drivers repeatedly call
-> dw_pcie_find_capability(pci, PCI_CAP_ID_EXP) to obtain the offset of the
-> PCI Express Capability structure. Besides being verbose, that performs a
-> DBI read every time, including in paths that run repeatedly such as link
-> up polling, suspend/resume and interrupt handlers.
+On Wed, Oct 21, 2026 at 10:36:00PM +0200, Konstantin Khorenko wrote:
+> folio_dup_file_rmap_pmd() passes PGTABLE_LEVEL_PTE to
+> __folio_dup_file_rmap() for HPAGE_PMD_NR pages, so it adds HPAGE_PMD_NR
+> PTE mappings to the folio instead of one PMD mapping. Each unmap of the
+> PMD removes one PMD mapping:
 > 
-> Add a pcie_cap field to struct dw_pcie and a helper
-> dw_pcie_get_pcie_cap() that performs the lookup on first use and caches
-> the result for the subsequent calls.
+> - the folio's mapcount never returns to zero, and removing the folio
+>   from the page cache reports "Bad page cache", or hits a VM_BUG_ON
+>   with CONFIG_DEBUG_VM;
+> - the first unmap already counts as the last one and drops the
+>   PMD-mapped statistics while the other mm still maps the folio;
+> - the second one drives the entire mapcount below zero and drops them
+>   again.
 > 
-> The lookup is deliberately done lazily, at the first place that needs the
-> offset, instead of at a fixed point during controller initialization.
-> This guarantees that the DBI read happens exactly when the open coded
-> dw_pcie_find_capability() call it replaces used to happen, so no DBI
-> access can be made before the controller clocks, resets and power are
-
-
-With the controller inaccessible (clocks/power gated), what a DBI
-read returns is platform dependent, most integrations just hang the
-accessing CPU, like Rockchip's SoCs, others might return zero or
-garbage. Zero self-heals as the commit message describes, but a garbage 
-non-zero lookup would now be cached indefinitely, so every later caller
-would use a bogus offset?
-
-Perhaps the "TX Interface Progression Detection Features" of dwc IP
-could help return a dedicated value? I don't know, so I need to check
-it internally. I will get back to you later.
-
-
-> enabled. This matters for endpoint controllers such as qcom-ep and
-> tegra194, where DBI is only accessible after PERST# is deasserted, and it
-> also means platform drivers do not have to call the helper from a
-> specific callback at the right time.
+> The helper has no caller yet, the next patch adds the first one. Pass
+> PGTABLE_LEVEL_PMD, as folio_try_dup_anon_rmap_pmd() does.
 > 
-> The cached value is accessed with READ_ONCE()/WRITE_ONCE(), because the
-> first lookup may be triggered from different contexts, for example the
-> qcom-ep global IRQ and PERST# IRQ handlers. A concurrent lookup stores
-> the same value, so this race is benign.
-> 
-> A return value of 0 means that the capability is not present. This
-> cannot happen on real DWC hardware, where the PCI Express Capability is
-> mandatory, so a negative result is not cached separately: it only causes
-> the search to be repeated, which does not affect correctness.
-> 
-> Signed-off-by: Hans Zhang <18255117159@163.com>
-> ---
->   drivers/pci/controller/dwc/pcie-designware.h | 34 ++++++++++++++++++++
->   1 file changed, 34 insertions(+)
-> 
-> diff --git a/drivers/pci/controller/dwc/pcie-designware.h b/drivers/pci/controller/dwc/pcie-designware.h
-> index 0735ae940924..fa31e8b763bc 100644
-> --- a/drivers/pci/controller/dwc/pcie-designware.h
-> +++ b/drivers/pci/controller/dwc/pcie-designware.h
-> @@ -592,6 +592,8 @@ struct dw_pcie {
->   	 * use_parent_dt_ranges to true to avoid this warning.
->   	 */
->   	bool			use_parent_dt_ranges;
-> +
-> +	u8			pcie_cap;	/* Offset of PCI_CAP_ID_EXP */
->   };
->   
->   #define to_dw_pcie_from_pp(port) container_of((port), struct dw_pcie, pp)
-> @@ -830,6 +832,38 @@ static inline void dw_pcie_dbi_ro_wr_dis(struct dw_pcie *pci)
->   	dw_pcie_writel_dbi(pci, reg, val);
->   }
->   
-> +/**
-> + * dw_pcie_get_pcie_cap() - Return the PCIe Capability offset
-> + * @pci: DWC instance
-> + *
-> + * The offset of the PCI Express Capability structure is read once from
-> + * the DBI configuration space on the first call and cached in
-> + * @pci->pcie_cap for the subsequent ones.
-> + *
-> + * The lookup is done lazily at the first place that actually needs the
-> + * offset, so the DBI read happens exactly when it used to happen before
-> + * caching was introduced, i.e. never before the controller's clocks,
-> + * resets and power are enabled.
-> + *
-> + * DWC PCIe controllers always implement the PCI Express Capability, so a
-> + * return value of 0 means that the hardware is not usable. Callers that
-> + * check the returned offset keep working, and the (never expected)
-> + * lookup is simply repeated on the next call.
-> + *
-> + * Return: the cached offset, or 0 if the capability is not present.
-> + */
-> +static inline u8 dw_pcie_get_pcie_cap(struct dw_pcie *pci)
-> +{
-> +	u8 cap = READ_ONCE(pci->pcie_cap);
-> +
-> +	if (!cap) {
-> +		cap = dw_pcie_find_capability(pci, PCI_CAP_ID_EXP);
-> +		WRITE_ONCE(pci->pcie_cap, cap);
-> +	}
-> +
-> +	return cap;
-> +}
-> +
->   static inline int dw_pcie_start_link(struct dw_pcie *pci)
->   {
->   	if (pci->ops && pci->ops->start_link)
+> Fixes: d8ef5e311d7b ("mm/rmap: convert page_dup_file_rmap() to folio_dup_file_rmap_[pte|ptes|pmd]()")
+> Signed-off-by: Konstantin Khorenko <khorenko@virtuozzo.com>
 
+Reviewed-by: Kiryl Shutsemau (Meta) <kas@kernel.org>
+
+-- 
+  Kiryl Shutsemau / Kirill A. Shutemov
 
