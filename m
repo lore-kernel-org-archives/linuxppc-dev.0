@@ -1,95 +1,49 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 13603606A32D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2026 02:58:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6AA4A606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2026 03:40:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=ETQkAzhp
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=AFKYEaz0
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jDFY44wGMz2y8Z;
-	Tue, 27 Oct 2026 13:58:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::832" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793069880;
-	cv=pass; b=oaBiOErw3QBtOJHRAUZFmZBHHjhSbpNfXYrBD9rVe7ZzwlP6cN4Jz6uGMzQ8F1YUWoevJUw6ssELLjChVIJ48/TzpxVSkwxBs4J/wQdYt2XQv1FCTTw4zc4aSw6F8HA2GxIHMyEwJtOhbIoNp0ODxvMVF+EObNRZciEwthdS0ingps35WLpQ17tD/+kZiferjJPW3rUbku27gE7i8PJZ1V6PV4QePa3Cx0l/jz/oeCBuNuBjm6hQYLuFZ3y+P3DZaLwefz6Sh01EQXIGsX1Pg4xZMmRdSxEnRQ+vXHXo6kWSsSk8MLIzdBv74odylhD4JyaPGXoWlASuo93yd9eNOw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793069880; c=relaxed/relaxed;
-	bh=veWNjOyx0q2aoHvEbX2sAz0cuq6dhXLamwz9eTavWpQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=XMe5n57RCvtljO9lPMl8lgRzlWmzCl6/tZTPyEtGpXkFkswlSjg6I1AhdrbsQDEsIDXf7m24Vp/6GE4Ryv7S3m/e3LWJoi+vnEm3+xGZ5flI876FLFaAmsjjqxkR7idY/VbyhzjNFkrC1qZQx2Uhk9Ho5S0C0y3eLrdA7uVLWBZ33cpLlT2LjPFPUZMPrbqDBL6+CprBvu0sMvQi+qkUErPf8ihEaOSSgFSC/2DJx7Fj0svoFil7GQIUS5VOc2XwU3lK2b+IluZV7g0PuTSuF0T105z+qPpG3J0rw0/a97toM67ZvDZpCsH6EcWcJb7mclIKLxW9iz8ueufs1Yicdg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=ETQkAzhp; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::832; helo=mail-qt1-x832.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jDGV22Dqrz2y2B;
+	Tue, 27 Oct 2026 14:40:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::13"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793072426;
+	cv=none; b=RdchxPv7Hw+FNNstJXrGsSlH3tO62Xtg1oF+HGfMhJfNheZ2Xsw3nFHG6NrkHHn40ZrmuBLT/9ujQyf9NNwD9IKq6jaMGGAGODcG19jdP8cJoc4fiilxUaXywTsg+JinwBn36LT7Eu3dBAmt1qdFFy4fGszOtmL2dJCg6QLKLPhiissQevFuXP2sJQ775HQCVBjeBjaxmHHe7ZSYynnV/cZvhqGBMRznCirCbf0SZO3Fg5KN1rlHst2GjwMNeeXrz/RstCSx9HaFkt9JAVkHFihLIz3tTjUynQt2YzNGH5O8L5WAoAddRaGYX4SDk/+ChfH+2x6q+/C/k4yFoiOZuw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793072426; c=relaxed/relaxed;
+	bh=oEi5yv/OaTlB+//ZKfqhrPpGN262I+SDBjf+a0Db1PI=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=mLIiKcOwImr+qf7CA/NI36BmuS9t9cXGjDE1kk02u/I2amSFN3Ux6DE1X7pUyA0uJEq1w3G+r2B47g2/mn4mlr755OeRMoyIwBC0nlbHb6GslYjUqfRxO4PpL95aXFP1+vku6y26n10ytOO8eSloQLLAt5f2k3Nc+LM7BBrmnA1xMDE9yO1Cv3s0nD/bkzRpUr09AYdalL3FcyDAvVhmR1F1z09mCgEt9zPCUnVpZtqE0l61CyDps0ltSu68/iSjnZaUfSNlM1q0Wmw4w3TH0CpGv2NmG8zQ9g5/wf9+ttsTIVyVBwUyqaSf+RyzTWyuIhV8CQkM91vNM75SqNm2Tw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=AFKYEaz0; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::13; helo=mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=ETQkAzhp;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=AFKYEaz0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::832; helo=mail-qt1-x832.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x832.google.com (mail-qt1-x832.google.com [IPv6:2607:f8b0:4864:20::832])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::13; helo=mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta0.migadu.com (out-19.mta0.migadu.com [IPv6:2001:41d0:1004:224b::13])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jDFY26t8rz2xQs
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2026 13:57:58 +1100 (AEDT)
-Received: by mail-qt1-x832.google.com with SMTP id d75a77b69052e-535f598d126so86061cf.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2026 19:57:58 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1793069875; cv=none;
-        d=google.com; s=arc-20260327;
-        b=c5EalL1lUSNuzStcl3lxtg2ZX5gAlDfuweFzjAS+/Zba73GGi/lKNH4Vxyh1TOkrqL
-         SA2NcqGLvYdLMWz3ruzi9+RM5xsOWMt5dRW4hNQsWMGYHHXBQnUEExwWzi3/u0l84eTT
-         os4Dw1tBHmEzMhyW0+DYRK+yujIcauuZItnG62RGeSh6YNu/+SWSHUVspoGqMf8e94YX
-         u+zNtii7FsZiFXB73t19aENfQ6+vBeQ/x/yTqepZPTz6meXi7c54AEYLgOp1jzqcYXi2
-         rwCL8f55L+FsnY5J6DDTCWBb8bdFtIHORXJEu0lQ0ncImJiGMboVfl/DZeaR2cCMiwOO
-         dRhA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=veWNjOyx0q2aoHvEbX2sAz0cuq6dhXLamwz9eTavWpQ=;
-        fh=q9S6HdRaYTM91oNBRsaM2XDIPr7vSsuqn1HvywxD7Cc=;
-        b=Zn0CkAiw8oebIxjlUO08KeYRAkU7F0VL+Dd9b1fkxWTVNMVoAtmitAgScbeZKCqzyk
-         81CAnH0WaATNrUjcY1IOWRSCsOip35qrfoI/VJPEA7MlT7h1c3Hm90hB82NPlEh44FY6
-         4wbMzwd0K7Y7skcBC6v2i9d74hXsNQQ4R1IsZLW+pIWVC4hH43T96tmaZ8YecNps2mMz
-         siGtlHyYSK6NsoAzyL0REeC/yumsKuRebYHh+i8ScX+1uzUW4aj1zAXk3aDdMyuuQ53V
-         aq9LrC+z/Yn3DiJeA2wY3tKtRk0SmdCbO01cGallvkW1dAJ+CwsmRwg8QQZQxGl/C4bR
-         EK0Q==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1793069875; x=1793674675; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=veWNjOyx0q2aoHvEbX2sAz0cuq6dhXLamwz9eTavWpQ=;
-        b=ETQkAzhpOxS18RbXN4f2sVE1bexUBqnGP7XTivVANYqBz4c1FZpfOP2E1VAdyWgDu7
-         6WBuzGu28w4nwPYPNSFX0V5UYupgd+yW4ZEhR1rR3r0QKhRpyOCKbF6tqQ1z2SQi9uHg
-         gHrnnnyR27n8EG3x7eW8LFxQXb8rbOkzCn2uYZn2/9G5kTP0Arnt/HMUDX4iZW1S2fgD
-         diWgnfPbCNTmATLvAWFM6I14/rtbLMQG05OrIG+uac9f43mvpnzUFtd5qVWxf2FYT6YM
-         ISGqk/EHq06xDaPB3XRLxiv/QFTbz3ka7Sp7KX3F8DLaDpRgINVGhjtHX7sMq0U0FqnK
-         JGjg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793069875; x=1793674675;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=veWNjOyx0q2aoHvEbX2sAz0cuq6dhXLamwz9eTavWpQ=;
-        b=d9Six+nbCJdB+F8B8SxjIGBD+v6B03SI6zwIWAbdrlKKM6SNLQFgMNjyXL//6bLmOi
-         yNUjJsInleDXvX5ASbNet9ERIoyCvjwi/LoIdES28RJ1DwY3uAbmKY8ZrUEFprWQ70tW
-         Xkkydpbk1QdyLRkqEw7BZ7MZLjtVcz5SR03VzxF34BUVtxZnHKaroIQnsrnpcmuprHfi
-         Xb0G1fiKTmdwcoX8Koe6MqmdQZCSD1+fD/Bc2nJP0MyRelKOmcNVpJXj3jcRenqJUxti
-         WfodfVsy3JafTTfU044a9fimcp2+UOLmafUGC/xkFPLUr6+cdbnvxixJp2C0Rn8c2Vm9
-         IkyQ==
-X-Forwarded-Encrypted: i=1; AKwUvByMJZSrR0aOad3iPYjT5ebEBcy11UjSDmpTa8waDR4U/P6hXb+ZEVmUEEp4uHGcXY2OvKGN/5u8AhnTMS8=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYKabN7Speo3Rve+4iC24bBFkGJoBtIoIr3WkPUhAIpyhNNPPXhc
-	BqqhHxgWkLxMm1/e4yRqz7iy9zNUe0rF0S9DHGpEWih1iUMICAn9t9bq6QvmeJyH6cpxz2v8JCa
-	NyjBuovg8C5FnupujYG7nzRPoanPvS42wy+AyVA2f
-X-Gm-Gg: AYBFou1tmAAh8HnI0IDtlIZ63wul8vW/2Zt0yps6PYa945sYRtm/+SHT6dqgVDtvig8
-	Cfpuh2TmItdKsMIwq5enJEf01Tfo4NwA9IVLfkp1YKwnRgiXnuUfOJPidZAG6VPRbsdinYV/r/U
-	pmymnsNxWdjmNBgFlL2NkP36ayvxnrkzOjjExxxGyEyoB5LKNFYuLl/CcXJCPf70mUzDs1J1/LE
-	jg1hq9KmoNkI1jetB+xe31JhFo8oq8w4QzbTfkdDl2Q4vO2D2Cv3/T7tIJRv6CTktuBnbnvkC5K
-	Ib7RBnhegeTu+mSx4h8JxLEYvKiUYYBDqaWAQDOJ2A7IKVGKjGW7moxD4TdIW+yA+BvlISSbQaK
-	nWwJyWLye5geQeOS7Gcojq0mfMZNU6jEooS/A
-X-Received: by 2002:ac8:5cd0:0:b0:534:b7b2:634f with SMTP id
- d75a77b69052e-53e74f18ea0mr8347351cf.8.1793069874720; Mon, 26 Oct 2026
- 19:57:54 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jDGTx6Qhtz2xjQ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2026 14:40:19 +1100 (AEDT)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=4hMaGBX4YiC1c0Vq4PKRA8fH7YfB6cD9vZ6lrLQREzM=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1793072400; v=1; x=1793677200;
+ b=AFKYEaz0+SZhZfexOjEH3jV6iz08BG28K6F6imYpOcoyfGsUIxnWJmwVYDR7fKu+WrTb0YyD
+ KDTDxZSKpy5OOj4RCgcIlqkUmG2y4i7tTyjCii4FAVtOaC8HiBsT93GoNoqbvrLniVJk2FWD3vd
+ sssammMEarM54Ue7N4lAJwKU=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by mta11.migadu.com with ESMTPS id c26ab69f7955a4aa;
+	Tue, 27 Oct 2026 03:40:00 +0000
+X-Mizu-Trace-ID: c26ab69f7955a4aa
+X-Migadu-Flow: FLOW_OUT
+Content-Type: text/plain;
+	charset=us-ascii
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,372 +56,216 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-References: <20260911025613.1220845-1-zhanghongru@xiaomi.com>
- <arFYRAa-i7CIwmHL@gremlin> <arF-E3Nsw9ZliH0t@casper.infradead.org>
- <arI_w2wTfA00Mgy9@gremlin> <armexcXDiG8ryZd6@casper.infradead.org>
- <CAGsJ_4xuFi7K+crAcFQ998SxXS0xPM6QeA34JV+6+Sy005rXLg@mail.gmail.com>
- <ar7MsOb6IJLt4eLo@casper.infradead.org> <ar-o1TrOMGrrcxLX@gremlin>
- <ataDTEZIKOYtwhUF@casper.infradead.org> <CAJuCfpH88HGXyLzBr6YGxzTrOq18HaPcRvhN9RwEBxG_ptv7KQ@mail.gmail.com>
-In-Reply-To: <CAJuCfpH88HGXyLzBr6YGxzTrOq18HaPcRvhN9RwEBxG_ptv7KQ@mail.gmail.com>
-From: Suren Baghdasaryan <surenb@google.com>
-Date: Mon, 26 Oct 2026 19:57:43 -0700
-X-Gm-Features: AclHuK_KCyZzsUIRPigLpRqw3YeQAHnl6JHTenlWoPcunSyUcxCZShOICs2gDrI
-Message-ID: <CAJuCfpH6o1NAN_4W6VY6o3unxr9V+YCNFiLS8oCg7giWRLz8_g@mail.gmail.com>
-Subject: Re: [PATCH v6] mm: retry page faults once under the per-VMA lock
-To: Matthew Wilcox <willy@infradead.org>
-Cc: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, Barry Song <baohua@kernel.org>, 
-	Hongru Zhang <zhanghongru06@gmail.com>, akpm@linux-foundation.org, linux-mm@kvack.org, 
-	linux-kernel@vger.kernel.org, david@kernel.org, liam@infradead.org, 
-	mhocko@suse.com, rppt@kernel.org, shakeel.butt@linux.dev, vbabka@kernel.org, 
-	zhaonanzhe@xiaomi.com, linux@armlinux.org.uk, catalin.marinas@arm.com, 
-	will@kernel.org, mark.rutland@arm.com, linux-arm-kernel@lists.infradead.org, 
-	chenhuacai@kernel.org, kernel@xen0n.name, loongarch@lists.linux.dev, 
-	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, linuxppc-dev@lists.ozlabs.org, pjw@kernel.org, 
-	palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr, 
-	linux-riscv@lists.infradead.org, agordeev@linux.ibm.com, 
-	gerald.schaefer@linux.ibm.com, hca@linux.ibm.com, gor@linux.ibm.com, 
-	borntraeger@linux.ibm.com, svens@linux.ibm.com, linux-s390@vger.kernel.org, 
-	dave.hansen@linux.intel.com, luto@kernel.org, peterz@infradead.org, 
-	tglx@kernel.org, mingo@redhat.com, bp@alien8.de, x86@kernel.org, 
-	hpa@zytor.com, Hongru Zhang <zhanghongru@xiaomi.com>
-Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3901.100.1.1.12\))
+Subject: Re: [PATCH 1/2] powerpc/64s/radix: don't dedup vmemmap covered by an
+ existing PMD leaf
+From: Muchun Song <muchun.song@linux.dev>
+In-Reply-To: <97f85592bb78a273be8519e6897e7f9b9bd31469.1793070429.git.ritesh.list@gmail.com>
+Date: Tue, 27 Oct 2026 11:39:45 +0800
+Cc: linux-mm@kvack.org,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Christophe Leroy <chleroy@kernel.org>,
+ Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>,
+ linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
+ David Hildenbrand <david@kernel.org>,
+ Pavithra <pavrampu@linux.ibm.com>
 Content-Transfer-Encoding: quoted-printable
-X-Spam-Status: No, score=-13.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_IN_DEF_DKIM_WL
-	autolearn=no autolearn_force=no version=4.0.1
+Message-Id: <2C88EF3C-1E7D-4395-99C5-711FFB01469A@linux.dev>
+References: <97f85592bb78a273be8519e6897e7f9b9bd31469.1793070429.git.ritesh.list@gmail.com>
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+X-Mailer: Apple Mail (2.3901.100.1.1.12)
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Mon, Oct 26, 2026 at 7:39=E2=80=AFPM Suren Baghdasaryan <surenb@google.c=
-om> wrote:
->
-> On Mon, Oct 19, 2026 at 1:53=E2=80=AFPM Matthew Wilcox <willy@infradead.o=
-rg> wrote:
-> >
-> > On Fri, Oct 02, 2026 at 02:12:35PM +0100, Lorenzo Stoakes (ARM) wrote:
-> > > On Thu, Oct 01, 2026 at 10:12:16PM +0100, Matthew Wilcox wrote:
-> > > > So what I didn't realise is that fork() waits for page faults to fi=
-nish.
-> > > > I don't think that's necessary, so we can just stop doing that (whi=
-tespace
-> > > > damaged):
-> > > > I think this is safe.  I've booted a kernel with this change, and
-> > >
-> > > I'm afraid it's not safe :)
-> > >
-> > > We already actually did this (by mistake I think?) before. See commit
-> > > fb49c455323f ("fork: lock VMAs of the parent process when forking") -=
- we shipped
-> > > that in 6.4.0 -> 6.4.2 and it corrupted memory all over the place.
-> > >
-> > > Reports + a consistent reproducer:
-> > >
-> > > https://bugzilla.kernel.org/show_bug.cgi?id=3D217624
-> > > https://lore.kernel.org/all/dbdef34c-3a07-5951-e1ae-e9c6e3cdf51b@kern=
-el.org/
-> > > https://lore.kernel.org/all/b198d649-f4bf-b971-31d0-e8433ec2a34c@appl=
-ied-asynchrony.com/
-> >
-> > I wonder if we still need this.  The commit message says:
-> >
-> >     A concurrent page fault on a page newly marked read-only by the pag=
-e
-> >     copy might trigger wp_page_copy() and a anon_vma_prepare(vma) on th=
-e
-> >     source vma, defeating the anon_vma_clone() that wasn't done because=
- the
-> >     parent vma originally didn't have an anon_vma, but we now might end=
- up
-> >     copying a pte entry for a page that has one.
-> >
-> > But we're holding the mmap_lock for write here, and we need to hold the
-> > mmap_lock for read in order to change a vma->anon_vma (asserted in
-> > __anon_vma_prepare() with mmap_assert_locked()).
-> >
-> > At the time of this commit, lock_vma_under_rcu() contained:
-> >
-> >         /* find_mergeable_anon_vma uses adjacent vmas which are not loc=
-ked */
-> >         if (!vma->anon_vma && !vma_is_tcp(vma))
-> >                 goto inval;
-> >
-> > so we really did have to wait for read holders to finish the fault.
-> > But commit a373baed5a9d deferred the check for a NULL anon VMA until we
-> > actually needed it, so I think commit fb49c455323f's logic was invalida=
-ted
-> > by a373baed5a9d.
-> >
-> > Maybe I'm wrong.  This is all a bit out of my normal area.
-> >
-> > > Also we have asserts for this lock in copy_page_range() and
-> > > copy_hugetlb_page_range() which will now fail (and possibly more furt=
-her down
-> > > the stack?)
-> >
-> > Possibly we have to adjust some assertions to check that either we have
-> > the VMA locked or we have the MM write locked.  That doesn't seem
-> > unreasonable.
-> >
-> > > > My argument for why it's safe is that a thread which takes a page
-> > > > fault during fork() might have taken the page fault either before o=
-r
-> > > > after fork().  The faults will definitely happen in the parent proc=
-ess.
-> > > > They may or may not have happened in the child process, which can't
-> > > > possibly care whether or not they've happened.
-> > >
-> > > The problem isn't the child it's the parent - copy_page_range() _modi=
-fies_ the
-> > > _parent_'s page tables in-place, on assumption that nothing else can =
-access
-> > > them (for CoW).
-> >
-> > I was perhaps unclear.  What I mean is that the child may or may not
-> > observe them as having happened.
-> >
-> > > And actually nowadays things are _even_ worse, you could also have co=
-ncurrent
-> > > page faults, MADV_DONTNEED, MADV_FREE, MADV_GUARD_INSTALL/REMOVE, UFF=
-DIO_COPY +
-> > > UFFDIO_MOVE (yikes) all of which might introduce new issues + would h=
-ave to be
-> > > audited too.
-> >
-> > Yup.
-> >
-> > > So - it turns out a lot of stuff implicitly assumes VMA write lock no=
-w:
-> > >
-> > > 1. CoW - deferred TLB flush race
-> > >
-> > > (The issue above)
-> > >
-> > > https://lore.kernel.org/all/20230705171213.2843068-2-surenb@google.co=
-m/
-> > >
-> > > This happens because __copy_present_ptes() does wrprotect_ptes() on t=
-he parent
-> > > without a TLB flush (that's deferred until the end of the fork).
-> > >
-> > > But unfortunately without a VMA write lock something can then replace=
- the page
-> > > table entry in the meantime and you can end up with data loss as a re=
-sult.
-> >
-> > Is it that fb49c455323f commit message is insufficient and we need to
-> > prevent simultaneous fork/page fault for other reasons, then?
->
-> Yes, I think so. It refers to one of the reasons VMA lock is needed
-> during fork, but as Lorenzo points out, there are a number of other
-> reasons that require fork to protect VMAs. Note that some of those
-> reasons, like MADV_GUARD_INSTALL and UFFDIO_MOVE did not exist at the
-> time fb49c455323f was written.
+Hi Ritesh,
 
-I also have to agree with Lorenzo that allowing fork to run
-concurrently with page faults might only shift the mmap_lock
-contention from fork to some other operation (mmap/mprotect/etc.), so
-even if we fix all these cases we might end up with contention
-somewhere else.
+> On Oct 27, 2026, at 11:22, Ritesh Harjani (IBM) =
+<ritesh.list@gmail.com> wrote:
+>=20
+> radix__vmemmap_populate() is asked for one 16MB section, which is 16KB =
+of
+> struct pages. With no altmap it rounds the request down to a PMD leaf.
+> That leaf describes 2GB of PFNs with 64KB pages (128MB with 4KB =
+pages),
+> so it also covers sections that are not present yet. It cannot be =
+freed
+> while any of those sections are still in use.
+>=20
+> A devdax namespace that lands in the same window is marked for vmemmap =
+dedup.
+> vmemmap_populate_compound_pages() treated the leaf as an existing huge =
+mapping
+> and skipped it. The core then initializes only the head vmemmap page =
+and assumes
+> the rest is the shared tail. Those remaining tail slots are real =
+struct pages
+> still holding the page_init_poison() pattern and are not the shared =
+tail pages.
 
->
-> Below is the list that AI pointed out, and I think Lorenzo covered
-> most if not all of them:
->
-> Without vma_start_write_killable(mpnt):
->       1. In-flight VMA readers that locked mpnt before
-> mmap_write_lock_killable(oldmm) continue running concurrently with
-> dup_mmap().
->       2. New VMA readers (page faults via lock_vma_under_rcu(),
-> madvise under MADVISE_VMA_READ_LOCK, userfaultfd via uffd_lock_vma() /
-> uffd_move_lock(), vma_start_read_unlocked(), etc.) continue to succeed
-> on mpnt while dup_mmap() duplicates its VMA metadata and page tables.
->
->   (Note: When this lock was originally added in fb49c455323f, one
-> prominent trigger was a concurrent fault calling anon_vma_prepare() on
-> a VMA with mpnt->anon_vma =3D=3D NULL while anon_vma_fork() /
-> vma_needs_copy() ran. Although __vmf_anon_prepare() now requires
-> mmap_read_trylock()
->   when !vma->anon_vma, removing vma_start_write_killable(mpnt) today
-> still breaks several critical invariants.)
->   =E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80
->   ### What would happen if we removed it
->
->   1. **Destruction of live 2MB THP mappings ("bad pmd" -> pmd_clear())
-> in copy_pmd_range()**
->   As noted in the comment in copy_pte_range(), copy_pmd_range()
-> assumes no concurrent THP transitions on src_pmd:
->     if (pmd_is_huge(*src_pmd)) { ... }
->     if (pmd_none_or_clear_bad(src_pmd))
->         continue;
->   On an anonymous VMA that already has mpnt->anon_vma !=3D NULL, a
-> concurrent per-VMA-locked THP fault (do_huge_pmd_anonymous_page()) or
-> UFFDIO_MOVE can install a transparent huge PMD into *src_pmd right
-> after pmd_is_huge(*src_pmd) observed pmd_none.
-> pmd_none_or_clear_bad(src_pmd)
->   then sees pmd_bad(*src_pmd) =3D=3D true (a THP leaf PMD satisfies
-> pmd_bad()), prints "bad pmd ...", and calls pmd_clear_bad(src_pmd) =E2=80=
-=94
-> wiping out the parent's live 2MB PMD without PTL, TLB flush, or
-> rmap/refcount/deposited-pgtable/RSS cleanup (corrupting parent memory
-> and
->   triggering Bad rss-counter / nr_ptes bugs on exit).
->       =E2=80=A2 The same race exists for huge PUDs in copy_pud_range()
-> (pud_none_or_clear_bad(src_pud)).
->       =E2=80=A2 Similarly, copy_huge_pmd() reads special huge PMDs
-> (VM_PFNMAP/VM_MIXEDMAP) locklessly and skips rechecking *src_pmd under
-> src_ptl assuming it cannot change, so a concurrent MADV_DONTNEED under
-> MADVISE_VMA_READ_LOCK could leave the child mapping a stale/zapped PFN
-> PMD.
->   2. **Silent CoW data corruption / lost parent writes due to deferred
-> flush_tlb_mm(oldmm)**
->   __copy_present_ptes(), copy_huge_pmd(), and
-> copy_hugetlb_page_range() write-protect parent PTEs/PMDs without
-> flushing TLBs; dup_mmap() defers the flush to flush_tlb_mm(oldmm)
-> after all VMAs are copied. Normally, because each copied VMA remains
-> VMA-write-locked until
->   mmap_write_unlock(oldmm), no parent thread can handle a CoW write
-> fault before flush_tlb_mm(oldmm) finishes.
->   Without the VMA write lock, while CPU 0 is still in dup_mmap()
-> copying later VMAs:
->       =E2=80=A2 CPU 1 (parent thread A) still holds a stale writable TLB =
-entry
-> to old_folio (now CoW-shared with the child).
->       =E2=80=A2 CPU 2 (parent thread B, no cached TLB entry) writes to th=
-e
-> same page, faults on the R/O PTE under per-VMA read lock, enters
-> wp_page_copy(), and copies old_folio into new_folio
-> (__wp_page_copy_user()) before taking PTL and calling
-> ptep_clear_flush().
->       =E2=80=A2 Any store by CPU 1 through its stale writable TLB entry a=
-fter
-> __wp_page_copy_user() and before ptep_clear_flush() lands directly in
-> old_folio while pte_same() still succeeds =E2=80=94 losing thread A's wri=
-te in
-> the parent (new_folio) and leaking it into the child (old_folio).
->   3. Broken guard-page (MADV_GUARD_INSTALL) state and KCSAN race on vm_fl=
-ags
->   madvise(MADV_GUARD_INSTALL) runs under MADVISE_VMA_READ_LOCK and
-> atomically sets VMA_MAYBE_GUARD_BIT on mpnt via vma_set_atomic_flag()
-> before installing PTE_MARKER_GUARD entries:
->       =E2=80=A2 vm_area_dup(mpnt) asserts
-> ASSERT_EXCLUSIVE_WRITER(orig->vm_flags), which would trip under KCSAN.
->       =E2=80=A2 If vm_area_dup(mpnt) copies mpnt->vm_flags just before
-> MADV_GUARD_INSTALL sets VMA_MAYBE_GUARD_BIT and installs
-> PTE_MARKER_GUARD PTEs:
->           =E2=80=A2 On a file-backed VMA without anon_vma, tmp misses
-> VM_MAYBE_GUARD (part of VM_COPY_ON_FORK), so vma_needs_copy() returns
-> false and drops the guard regions in the child.
->           =E2=80=A2 On a VMA with anon_vma !=3D NULL, copy_page_range() c=
-opies
-> the PTE_MARKER_GUARD entries into tmp, leaving the child VMA with
-> guard PTE markers without VM_MAYBE_GUARD set (breaking collapse checks
-> such as file_backed_vma_is_retractable() and future merges/forks).
->
->   4. Inconsistent address-space snapshots against UFFDIO_MOVE and
-> tcp_zerocopy_receive()
->       =E2=80=A2 When UFFD_FEATURE_EVENT_FORK is not enabled, dup_userfaul=
-tfd()
-> never increments octx->mmap_changing. Because move_pages()
-> (UFFDIO_MOVE) only takes per-VMA read locks (uffd_move_lock()), it
-> could move an exclusive folio from a not-yet-copied src address/VMA
-> into an
->       already-copied dst address/VMA (losing the page at both
-> addresses in the child), or move a zero page from an already-copied
-> src to a not-yet-copied dst (duplicating it at both). Even with
-> UFFD_FEATURE_EVENT_FORK, octx->mmap_changing is only incremented once
-> dup_mmap()
->       reaches the first VMA using octx, so earlier non-uffd VMAs rely
-> on VMA write-locking to prevent cross-VMA moves.
->       =E2=80=A2 tcp_mmap() sets VM_MIXEDMAP (in VM_COPY_ON_FORK, without
-> VM_DONTCOPY), so copy_page_range() would race with
-> tcp_zerocopy_receive() zapping and inserting pages under
-> vma_start_read_unlocked().
->   5. Immediate debug assertions (CONFIG_DEBUG_VM)
->   Both copy_page_range() and copy_hugetlb_page_range() call
-> vma_assert_write_locked(src_vma) on every CoW VMA, which immediately
-> fires VM_WARN_ON_ONCE_VMA(!__is_vma_write_locked(vma), vma) because
-> oldmm->mm_lock_seq was bumped by mmap_write_lock_killable(oldmm) while
-> mpnt-
->   =EF=BF=BA>vm_lock_seq was never updated.
->
-> >
-> > > Same issue exists with hugetlb wp too. And god only knows with uffd w=
-p :)
-> > >
-> > > 2. THP - can destroy parent THP mappings
-> > >
-> > > copy_pmd_range() does:
-> > >
-> > >       if (pmd_is_huge(*src_pmd)) { copy_huge_pmd(); ... }
-> > >       if (pmd_none_or_clear_bad(src_pmd))
-> > >               continue;
-> > >
-> > > Without the write lock, a concurrent fault can install a huge PMD via
-> > > do_huge_pmd_anonymous_page() or filemap_map_pmd()/do_set_pmd().
-> > >
-> > > The issue is that pmd_bad() fires for leaf PMD (ugh) on at least x86 =
-and arm64,
-> > > meaning that'll clear the page table entry.
-> > >
-> > > I think Hugh left a comment alluding to this before:
-> > >
-> > >        * copy_pmd_range()'s prior pmd_none_or_clear_bad(src_pmd), and=
- the
-> > >        * error handling here, assume that exclusive mmap_lock on dst =
-and src
-> > >        * protects anon from unexpected THP transitions; ...
-> > >
-> > > It's like the mess around pmd_trans_unstable() :(
-> >
-> > ... could we fix this by taking the ptlock during the copy operation?
-> >
-> > > 3. copy_pte_range() skips the required pmd_same() recheck assuming wr=
-ite lock
-> > >
-> > > It uses pte_offset_map_rw_nolock() with a dummy pmdval and:
-> > >
-> > >        * We already hold the exclusive mmap_lock, the copy_pte_range(=
-) and
-> > >        * retract_page_tables() are using vma->anon_vma to be exclusiv=
-e, so
-> > >        * the PTE page is stable, and there is no need to get pmdval a=
-nd do
-> > >        * pmd_same() check.
-> > >
-> > > (Probably needs updating for VMA write lock...)
-> > >
-> > > 4. The asserts
-> > >
-> > > Mentioned above!
-> > >
-> > > I suspect there's more as well.
-> > >
-> > > Some of it could be changed, but it'd all be at the cost of behaving =
-very
-> > > strangely (no VMA lock but mmap write lock) while manipulating things=
-.
-> > >
-> > > And I am not really happy with changing page table entries in the par=
-ent VMA
-> > > (for CoW) without a VMA write lock held.
-> > >
-> > > I also wonder whether it would achieve all that much really - the iss=
-ue is with
-> > > holding the VMA lock across I/O, anything else that tries to grab a w=
-rite lock
-> > > is going to end up being the new thing that's blocked (mprotect, munm=
-ap, mremap,
-> > > mlock etc.)
-> > >
-> > > I think doing something like this would need a very significant redes=
-ign and I'm
-> > > not convinced it's one that really achieves what we want given all th=
-e other
-> > > cases that'd get blocked by the VMA lock being held still.
-> > >
-> > > --
-> > > Cheers, Lorenzo
+Right.
+
+> __init_single_page() warns on the zone mismatch and the following =
+pageblock init
+> faults in __set_pfnblock_flags_mask().
+
+Yeah, the new adding warning is useful.
+
+>=20
+> If the section's vmemmap is already a PMD leaf, clear its compound =
+order
+
+I think it's enough to fix this issue.
+
+> and reuse the leaf, so every struct page in the section is =
+initialized.
+> The shared-tail layout needs base-page PTEs, so it cannot be built on =
+top of
+> this leaf and dropping the leaf is not an option while the =
+neighbouring range
+> is still using it. So, fail the compound populate if a leaf is still =
+seen there.
+>=20
+> <Call Trace>
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> [    3.467060][    T1] WARNING: mm/mm_init.c:600 at =
+__init_single_page+0xd0/0xf4, CPU#0: swapper/0/1
+> <...>
+> [    3.477419][    T1] NIP [c000000000576b30] =
+__init_single_page+0xd0/0xf4
+> [    3.477827][    T1] LR [c0000000005778b0] =
+__init_zone_device_page+0x30/0xb8
+> [    3.478444][    T1] Call Trace:
+> [    3.478764][    T1]  0x10000 (unreliable)
+> [    3.479874][    T1]  memmap_init_zone_device+0x164/0x430
+> [    3.480392][    T1]  memremap_pages+0x43c/0x93c
+> [    3.480836][    T1]  devm_memremap_pages+0x3c/0xa4
+> [    3.481328][    T1]  dev_dax_probe+0x264/0x3d0
+> [    3.481817][    T1]  dax_bus_probe+0x140/0x1c8
+> [    3.482237][    T1]  really_probe+0x108/0x580
+> [    3.482681][    T1]  __driver_probe_device+0xcc/0x284
+> [    3.483186][    T1]  driver_probe_device+0x5c/0x108
+> [    3.483656][    T1]  __device_attach_driver+0x10c/0x1e8
+> [    3.484134][    T1]  bus_for_each_drv+0xc0/0x13c
+> <...>
+> [    3.499972][    T1] BUG: Kernel NULL pointer dereference on read at =
+0x00001400
+> [    3.500417][    T1] Faulting instruction address: =
+0xc0000000005f4ecc
+> [    3.500417][    T1] Faulting instruction address: =
+0xc0000000005f4ecc
+> cpu 0x0: Vector: 300 (Data Access) at [c000000006756b50]
+>    pc: c0000000005f4ecc: =
+__set_pfnblock_flags_mask.constprop.0+0x34/0x160
+>    lr: c000000000577f38: memmap_init_zone_device+0x358/0x430
+>    pid   =3D 1, comm =3D swapper/0
+> enter ? for help
+>  memmap_init_zone_device+0x358/0x430
+>  memmap_init_zone_device+0x220/0x430 (unreliable)
+>  memremap_pages+0x43c/0x93c
+>  devm_memremap_pages+0x3c/0xa4
+>  dev_dax_probe+0x264/0x3d0
+>  dax_bus_probe+0x140/0x1c8
+>  really_probe+0x108/0x580
+> <...>
+>=20
+> Fixes: bd0862382adb ("mm/sparse-vmemmap: drop Device DAX-specific =
+population path")
+
+Actually, the right Fixes is:
+
+Fixes: f2b79c0d7968 ("powerpc/book3s64/radix: add support for vmemmap =
+optimization for radix")
+
+On older kernels, these errors are silent. They trigger a kernel panic =
+when the user
+actually uses Device DAX, rather than during the initialization phase.=20=
+
+
+So, for older kernels, we should guide them to backport the patch.
+
+> Reported-by: Pavithra <pavrampu@linux.ibm.com>
+> Assisted-by: LLM
+> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+> ---
+> Fixes tag here is added since the fix is dependent upon the change =
+mentioned in
+> "Fixes" tag. The Fixes commit-id is from mm-new branch. Although this =
+could be
+> an older pre-existing issue, but got exposed after this patch series.
+
+I knew this issue, so I have a local commit to fix it as well. I'd like =
+to share
+it with you, because it looks a little simple, does it work for you?
+
+powerpc/mm: fix uninitialized ZONE_DEVICE struct pages with PMDs
+
+PowerPC radix vmemmap population can reuse an existing PMD mapping while
+populating a device DAX range whose section is marked as HVO-enabled. =
+The
+reused mapping is an ordinary vmemmap mapping: the redundant tail struct
+pages are not remapped to the shared tail page.
+
+Leaving the section marked as HVO-enabled makes later ZONE_DEVICE
+initialization treat the range as optimized and initialize only the =
+struct
+pages that would be backed by a real HVO mapping. The remaining tail =
+struct
+pages can then be left uninitialized even though they are still used as
+metadata for the device DAX compound page.
+
+The Fixes target predates the section-based vmemmap optimization
+infrastructure, so older kernels do not have section state that can be
+marked non-HVO. Backports to such kernels need to handle the PMD-reuse
+case in powerpc radix code directly, for example by initializing the =
+tail
+struct pages that core ZONE_DEVICE initialization would otherwise skip.
+
+Mark the section as non-HVO when reusing an existing PMD mapping, so the
+section's HVO state matches the actual vmemmap layout and all required
+struct pages are initialized.
+
+Fixes: f2b79c0d7968 ("powerpc/book3s64/radix: add support for vmemmap =
+optimization for radix")
+Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+---
+ arch/powerpc/mm/book3s64/radix_pgtable.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c =
+b/arch/powerpc/mm/book3s64/radix_pgtable.c
+index 72793ace1fb6..fc3a2d4b422d 100644
+--- a/arch/powerpc/mm/book3s64/radix_pgtable.c
++++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
+@@ -1200,7 +1200,16 @@ static int __meminit =
+vmemmap_populate_compound_pages(unsigned long start_pfn,
+ 			return -ENOMEM;
+
+ 		if (pmd_leaf(READ_ONCE(*pmd))) {
+-			/* existing huge mapping. Skip the range */
++			unsigned long addr_pfn =3D page_to_pfn((struct =
+page *)addr);
++			struct mem_section *ms =3D =
+__pfn_to_section(addr_pfn);
++
++			/*
++			 * Existing PMD mappings can cover the edges of =
+a valid
++			 * HVO populate range.  They are ordinary =
+vmemmap mappings,
++			 * so the current section must not be treated as =
+HVO-backed
++			 * when its struct pages are initialized later.
++			 */
++			section_set_order(ms, 0);
+ 			next =3D pmd_addr_end(addr, end);
+ 			continue;
+ 		}=
 
