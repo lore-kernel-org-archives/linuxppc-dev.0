@@ -1,97 +1,42 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 51976606A31E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2026 00:33:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 56CD8606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2026 02:11:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=dqAaW705
+	dkim=pass (1024-bit key, unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=qYpt+RJw
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jDpJM0Hjvz2yTQ;
-	Wed, 28 Oct 2026 11:33:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::c33" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793147634;
-	cv=pass; b=ge0mRVyxZAkPH1/JzSd17pfPZaosAUG8rypVgnqQQaKQ9gAA6dzWyi1uA4WBrkvetjmV7mCN5aP2ObdmSjk8ZhC+sD1etSVhLTGbt/JYL6FHLjC69v7SlK0HfgXC3mSlwvA+jRDqtmgz1NUS4zpCHV9XpBmtIbQtmhLHZRBgcg29H0/xVYJml00AKoFXUGI9ntkaf9K8//p7v+kqILUb8bU2+vcZoDW37bOmU3DjuiOrshXYmo0CYPjgjfG7pY+9HV5Nd6NFA2Tk2FrKjMne6OeB2lRQSaFCCxrfuHnP5OuGBh+fGdRQtbV/V7oRU6PfKoSksqt/IkmQFNr+rrpUmA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793147634; c=relaxed/relaxed;
-	bh=a/g709wCzxTBAV5yLrw3H5BO2UbCvR/yueVUmZTiqJQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=PGPUiNDkUaQt2UOq2Cplu8R5CMU9dx4KEuok5gY8D74ig+nG77mKb2gS8AzMNXS41mv6fWPLO+7cUhDZ1wYxa+ldxG6k2AHs+n/yfAE2Bu+OaOgDVBX9+HoFI86wBwj1yvmHv9AqlfrTmGB2jvy39KlwOytLpKrDhWZ5cdX7BsNfWjRtpksan5UAo46FLDb5cAZjsX6/tIgKEMJrjbbrQQWzfKQCgr8C7Rj5U18f1xXM2hxuNJX0aapimSi08esGWM45G/OOl9AvbBfO00tEfF8Qf41jhMSgzsJ/l89lAwIQHMmxu7a/fumEhtY7xbZZzFRP2nur5UPzsmSNG4vPCg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=dqAaW705; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::c33; helo=mail-oo1-xc33.google.com; envelope-from=jthoughton@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jDrT84BT4z2xg9;
+	Wed, 28 Oct 2026 13:11:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=117.135.210.3
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793153500;
+	cv=none; b=HWGnljlJocxlonsta0J7TsEcV9Wld4gZynetJGTVq/uBrSKagfSH/4IbRSO7mzf+vFTbtsRsTbM2hG2FkUiIBwpjRp4v1U1biis5ct3BM9RWI9HOOEvi+pubrIFbgdItclu/6nDPAIOi7Vn1UJyTOTlo5+L7nCmen+daaeCujC9H8LqNHcvOvaBf9hIUIBef2+PzUbM/tu+p+GR8pEroU2O1ZTsiXVGtF+aKZJDfXaeDUsU56cO/y+RxX7fomMmFG1wPCDBZjXoWbI8A4gI5ijXC/eWsD/Wez0RJI31C1y/RF2nxrVscC6/Lx4oMEw8I4D2EgaiDVAIx7CFHDpzW+g==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793153500; c=relaxed/relaxed;
+	bh=dRf6oI9OjFWY1cb4Veae1z+HSgCdbz4ogw7DjgHpwGM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=F9nUECrOMJ22fc40fEGUeGouXWLfjmDjgzzFVOK9yvTPJ9IYduvrrkJRpyQXYSz8EVLQYffYDinO5EjE0IeN/S9CZmBie7/OXSyF4/1CpViSlCsMy/FmYUh5oNBc+73lCIlJsVaXYMePvN8ys70tX1py4IuoC+fKcDKQxrqS1/aei5a8vQRqGw1YIVoarBZxBvtMQVY5G6ka5nLFrL7QRHWtZCl+cYAwHDdDna0gLrspSijQq1fVAN/qyQ32kT20XoylaiGt6rlOP0vocg64Sh0Dq8dkybalHfjYG/G5+8cIFPTd3jDJl9/u+FCfotfolK2ZUvTHNBEzxaOaM7tIag==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=qYpt+RJw; dkim-atps=neutral; spf=pass (client-ip=117.135.210.3; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=dqAaW705;
+	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=qYpt+RJw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::c33; helo=mail-oo1-xc33.google.com; envelope-from=jthoughton@google.com; receiver=lists.ozlabs.org)
-Received: from mail-oo1-xc33.google.com (mail-oo1-xc33.google.com [IPv6:2607:f8b0:4864:20::c33])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=117.135.210.3; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org)
+Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jDpJK5HNSz2y7r
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 11:33:53 +1100 (AEDT)
-Received: by mail-oo1-xc33.google.com with SMTP id 006d021491bc7-6aa9606ddadso425976eaf.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2026 17:33:52 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1793147630; cv=none;
-        d=google.com; s=arc-20260327;
-        b=QQl47KlcVFDczq1l3t+Ye38J7ADbRGYYqN3J1zBbcpPcSvmHBBrcki0cpGVMcI30+S
-         hEi6ab/SAnD1rg99sxw2ogKPexl3btLUJ2URCIL3zIFoU56AEXWgSIN04nPZ6B9BPBK2
-         ix1MvDXamRrmAQTTdRpQ32AXZRetteF024UlBFOvVKxmf23TfEnWLdf/BUE2Yckw0mqi
-         EPUEPzWvR93h5o+MXb8Phiuw/dElmibkxfwZzr3hyTkr7rI7lmP9k7fMiuHvsbiM5ov8
-         rVjGRCVbcvA+/zoGVtwiTwwhNUBqMgOBuafVy7nu/oRucrwBgc8vq98v/Q4wAOGXS4Bc
-         YxXQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=a/g709wCzxTBAV5yLrw3H5BO2UbCvR/yueVUmZTiqJQ=;
-        fh=qzjDrxdpyWYqnSesFtZgWqF3BPvHcuHykwClffg2pbs=;
-        b=lyHP2Y+IJ3dgP/eGb86fewCcqpiW6Zsdo6wJt8ypH2BQDLatnx8oZITziDdyIKEB4T
-         uFPDzex9/4zhATBqFAjDflk+8H5UcmJ6rGaK+DjRiLseu5FgC0XKSytE9iQTwZOfcxdm
-         ERQeTvLvAA5aXfiuHEyhgvPAYyO9Kc2V2UGs4TKOJO8ZOAOH/iFR4da61ahG5kex7JUj
-         0KhpIVhjGXcHCuEs9l5R85gVh0cgxoWq3GZ6rozXXa6oBastuWTqOaonyYZG1mYYbIt8
-         mA1yTYtpDtV2j6LB6hEP+Sx0+0+1dw9JvoVRYJcFXP7EpF+ZK1VUhmce8MZ3qVlYRhIY
-         HYTA==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1793147630; x=1793752430; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=a/g709wCzxTBAV5yLrw3H5BO2UbCvR/yueVUmZTiqJQ=;
-        b=dqAaW705Yp6IcgbLLwLGKIjTRVwGGrhQF1xKVdZuKJf/Ov5Lzpn3yf0XYLIBUs9SJY
-         d/sfIuInBFEZVzMpyalIZQkQGF5u7aywsmx/AtFEug+hbhesz2YKIHPdKBHJJ6OeVXdq
-         EsH3gupwvA5zdUmQ6nNathghDuTJMkcZAMJGHmu+BweL1FhJMXZsyOL/zuG1pw9UCGrw
-         Ge1RjAYagnSZsiDhx/qZND2qqs6AoyFQA4krLhAirKqCsE/QEZQDtCtogFiD5YML+f+p
-         R+V78EhhjlfEF0TwbFZSSRFBWlths2WY7EsRSOpqvL5PHURs68KUCF7qMtTAIg0GX+Re
-         3NhA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793147630; x=1793752430;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=a/g709wCzxTBAV5yLrw3H5BO2UbCvR/yueVUmZTiqJQ=;
-        b=danJZSpQ67TG4FAmlM/fiPBdL7tQdS16FT+S1sGcwJacEDdfP0zdsL1hasKdEdmhdB
-         wo6Vo8nvnLG64TZ7ZNANYsK3lv5WBboY3T4+6JX+1yN9zh1c/oRdutfXhGSW8FiJ1v60
-         KVRmPTTAJfux8sfsMfmKiLQQgM6MfOX4tNA4NNQfmSPu9q+AEM3Pm21tFJYPlfSlQEYS
-         vmXdOIVXur2SiutS0NJ1pmm1KUJ+eXb3Li9XL2Bgx4bxOrLOoPMnpGUYwpMc80r1rcUJ
-         SkOMmafS1PBbLNd2Auy46QUp3hpu+SW3eqRklBRauQVhTtUxJ0+dqXj7vL2vfYYRncSh
-         jPnA==
-X-Forwarded-Encrypted: i=1; AKwUvBy0yjsYTbjZgce5OfdwpuiOKb4DwLWwOoLbJH5mosmuzYssmO+2CXfT7Rxq8dltNmxEo230dbZt0sqyC8g=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYJABzMpdSNfCJkIEE946hl92nigVkL499S4shXHRUaRjGoJxVmw
-	iKsjiUSGIQqE0FTNXaOpkNMiU3UPOjF2lIExjUHNp6F6v50ida/QripD73B/5AmQzhsbMNZKhvc
-	a4O/rU40mW7drplplE657EiyIBloSe4Cf/mJZrVpP
-X-Gm-Gg: AYBFou3tKJvDvhBl3z5FrlXzOAW+Qw2hlTJDaoiB0Auv2J9ngZpUdkzVEJYyZJt89ap
-	dL1az4V415itlnynybj6CyHt/WW0MwZEq3TB8iKReo5KPSIo7k5pCqbqvVdg96z8qO+ol1MaDUi
-	tR1UN6m9GA/zNa//JM1SWRySGjNCPgC0UMIsETlvGmXNikpzoT7njz+HxItYTVe1sG74PJM6xaP
-	T/M6wSmR6UyeNNb+Xu3vhGqUjEFAmhbKeqQwYRIRdyOp0nOVjYaysKkmB/2FG5h+A3MAdvFVbPW
-	jZmFiMmJThuIFpWfphBfs3r4Fi+1MmThEYCVj7pNFrEuTjBCM2vFYbMwaRzv+bOxrjD12YaV/LT
-	bCCwipcAB1hF0GSsS5GgB9984nlvx/Keaj0o+oafz+RxiO+IAPfBnb62c6Xo02uUuXEKzMRxuYB
-	qgNN7b576TdsHUCtey7T+bmUf+K0UC5XeTwNYoa61dJEeug1dBGcJOKmW2olUbHj/Zbu1MeCPLf
-	nTQWKVd
-X-Received: by 2002:a05:6820:2207:b0:70a:4053:52ec with SMTP id
- 006d021491bc7-713eb0544damr493322eaf.4.1793147629845; Tue, 27 Oct 2026
- 17:33:49 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jDrT46vpxz2xYw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 13:11:33 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=Message-ID:Date:MIME-Version:Subject:To:From:
+	Content-Type; bh=dRf6oI9OjFWY1cb4Veae1z+HSgCdbz4ogw7DjgHpwGM=;
+	b=qYpt+RJwRCF0KX/+Je23SE2RJtdg8sWfRlTJBYkgQjazqIosKZrPy7BmiKqm9R
+	lMeSBT6H/smy5N567aYskw3soxO2lZEjFu6+3moV22mJgNt2lfVoA1/U+RSmdIP+
+	eNPBKt+kFxH/QXb7xPiQMm1mkDGc1IgvPyHBAIFAj2h4o=
+Message-ID: <9a761c42-9edd-48f4-b3a4-c275b603cc3e@163.com>
+Date: Wed, 28 Oct 2026 10:10:33 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,77 +50,75 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261027221209.1560865-1-seanjc@google.com> <20261027221209.1560865-11-seanjc@google.com>
-In-Reply-To: <20261027221209.1560865-11-seanjc@google.com>
-From: James Houghton <jthoughton@google.com>
-Date: Tue, 27 Oct 2026 17:33:10 -0700
-X-Gm-Features: AclHuK-F0YzeAsS0pikjvH3kUnFLPGjUCM-xAT7i-6P6IT1kD4-v_r0V8PDPxPE
-Message-ID: <CADrL8HXMT8zBoB8ec2LP1UQWf1qn8qx8rqixvVpcsuO+Sb4p3g@mail.gmail.com>
-Subject: Re: [PATCH v3 10/15] KVM: VMX: Explicility free vmcs01, not the
- current VMCS, in vCPU free paths
-To: Sean Christopherson <seanjc@google.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, Paolo Bonzini <pbonzini@redhat.com>, 
-	Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Jim Mattson <jmattson@google.com>, 
-	Chris Mason <mason@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Spam-Status: No, score=-23.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no
-	version=4.0.1
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 00/16] PCI: dwc: Cache PCIe capability offset
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: bhelgaas@google.com, lpieralisi@kernel.org, kwilczynski@kernel.org,
+ mani@kernel.org, jingoohan1@gmail.com, imx@lists.linux.dev,
+ linuxppc-dev@lists.ozlabs.org, linux-amlogic@lists.infradead.org,
+ linux-rockchip@lists.infradead.org, linux-arm-msm@vger.kernel.org,
+ sophgo@lists.linux.dev, linux-riscv@lists.infradead.org,
+ spacemit@lists.linux.dev, linux-tegra@vger.kernel.org,
+ linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20261027231534.GA520774@bhelgaas>
+Content-Language: en-US
+From: Hans Zhang <18255117159@163.com>
+In-Reply-To: <20261027231534.GA520774@bhelgaas>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-CM-TRANSID:_____wD33x2jWeFqyfNqDQ--.48494S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW7Ar4DJr17Xr4kCw1xZw47urg_yoW8Xr4kpF
+	Wjgrs2yF4kXrn2vanF93Wj93W7AF9Iy3y3CanxG34avr90vF4IgF40vrW3GF9Fyrs29r4a
+	yFWjq3s8Gas8AFDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07U4UDXUUUUU=
+X-CM-SenderInfo: rpryjkyvrrlimvzbiqqrwthudrp/xtbC7ASSNmrhWaRq6QAA35
+X-Spam-Status: No, score=-9.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	FROM_LOCAL_DIGITS,FROM_LOCAL_HEX,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, Oct 27, 2026 at 3:12=E2=80=AFPM Sean Christopherson <seanjc@google.=
-com> wrote:
->
-> Explicitly free vmcs01 instead of the currently loaded VMCS when freeing =
-a
-> vCPU, as relying on loaded_vmcs to point at vmcb01 is unnecessarily risky
-> and confusing.  E.g. during vCPU creation, the error path relies on setti=
-ng
-> loaded_vmcs and obfuscates that it should be impossible for vmcb02 to be
-> allocated, let alone active.  Similarly, if KVM were buggy and left vmcb0=
-2
-> as the current vCPU when freeing a vCPU, operating on loaded_vmcs would h=
-it
-> a use-after-free *and* leak vmcs01.
->
-> Because KVM isn't buggy, no functional change intended.
->
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
 
-Reviewed-by: James Houghton <jthoughton@google.com>
 
-> ---
->  arch/x86/kvm/vmx/vmx.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-> index d433cd846ac4..2ef1f634e7ec 100644
-> --- a/arch/x86/kvm/vmx/vmx.c
-> +++ b/arch/x86/kvm/vmx/vmx.c
-> @@ -7515,7 +7515,7 @@ void vmx_vcpu_free(struct kvm_vcpu *vcpu)
->                 vmx_destroy_pml_buffer(vcpu);
->         free_vpid(vmx->vpid);
->         nested_vmx_free_vcpu(vcpu);
-> -       free_loaded_vmcs(vmx->loaded_vmcs);
-> +       free_loaded_vmcs(&vmx->vmcs01);
->         free_page((unsigned long)vmx->ve_info);
->
->         if (vmx_can_use_ipiv(vcpu))
-> @@ -7614,7 +7614,7 @@ int vmx_vcpu_create(struct kvm_vcpu *vcpu)
->         return 0;
->
->  free_vmcs:
-> -       free_loaded_vmcs(vmx->loaded_vmcs);
-> +       free_loaded_vmcs(&vmx->vmcs01);
->  free_pml:
->         vmx_destroy_pml_buffer(vcpu);
->  free_vpid:
-> --
-> 2.56.0.307.g5fe7bd680c-goog
->
+On 10/28/26 07:15, Bjorn Helgaas wrote:
+> On Tue, Oct 27, 2026 at 08:28:11PM +0800, Hans Zhang wrote:
+>> Hi,
+>>
+>> The DWC PCIe core and its platform drivers repeatedly call
+>> dw_pcie_find_capability(pci, PCI_CAP_ID_EXP) to obtain the offset of the
+>> PCI Express Capability structure, including in paths that run more than
+>> once such as link polling, suspend/resume and interrupt handlers.
+>>
+>> Add a cached pcie_cap field to struct dw_pcie and a
+>> dw_pcie_get_pcie_cap() helper that performs the lookup on first use and
+>> caches the result, then convert the core and the 14 platform drivers
+>> that use PCI_CAP_ID_EXP.
+>>
+>> After this series, dw_pcie_find_capability(..., PCI_CAP_ID_EXP) no
+>> longer appears in drivers/pci/controller/dwc/ outside of the helper
+>> itself.
+>> ...
+> 
+>> base-commit: 4352b8aee98005853aa63f57d6377282de17a33f
+> 
+> This does indeed apply cleanly on 4352b8aee980 ("Merge tag
+> 'i3c/for-7.3' of git://git.kernel.org/pub/scm/linux/kernel/git/i3c/linux"),
+> but that's pretty old and not really useful any more.
+> 
+> PCI topic branches are typically based on -rc1, but of course v7.4-rc1
+> hasn't been tagged.  Until it is, you can use pci/main as a good base.
+> It's currently 17bb0e2f6c80 ("Merge tag 'pci-v7.4-changes' of
+> git://git.kernel.org/pub/scm/linux/kernel/git/pci/pci"), so
+> drivers/pci/ in v7.4-rc1 will be pretty close to that.
+
+Hello Bjorn,
+
+Will rebase on pci/main.
+
+Best regards,
+Hans
+
+
 
