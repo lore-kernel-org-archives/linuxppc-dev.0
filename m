@@ -1,80 +1,42 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BE739606A31D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2026 02:56:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B0C9606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2026 03:04:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=DOPpoXK+
+	dkim=pass (1024-bit key, unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=QQ1aOpqD
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jDsSl5BCsz2xg9;
-	Wed, 28 Oct 2026 13:56:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793156183;
-	cv=pass; b=AH1kzuqEmQVbzkYfYmML6k8f1GZRoktTXG9eyeguk9Lc4HcgKrr8st3C2Ku0GcfMERGtBO1kOsSj4Bkn/eoKNZCBbI/pq+IynIOqtdTlu//BHASAne1uqmCGD3anHtmyGR6mlljPPoFTeN/PznzqYcm9ur8o9+zUhlDo2yfGCU3qSGAdlsREE5tr4p16muni4xRoqsdTNRewi8aU6+5ImmMDzoNrOTHdjVdLIDHG4b8Y8uMQSc+YIYlgZ6G5kiJL+pmpy1aG84cEeFrlKg27YuTB7NiEvvPTz0v3dFoCqK6W2zTK2AHxwrngK8GpCjKi5jTcpFs7vL3Iuw7EQalOjg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793156183; c=relaxed/relaxed;
-	bh=CvcuC/o04UNCHXAS+1OoReklOXJrJAAy130KN43tMa8=;
-	h=From:To:Subject:Date:Message-Id:Content-Type:MIME-Version; b=kpDiRLmfezFb/S427BnPE0Rkzl/gD05DOk/wtWDCSjs7LaVZuYjvxEJUVY5/lyeTPau12TL7bhLqQ5yrNg1KVH99B8iZJt38ffvH7D20NnKILgELM+wWPuDMU+b/pShJvce4JDmuW/VBYPB3kHlwdQO97bNMqXOLb/vECsUnwcKg8Be/X6k8T1vDS2RlFzXt75KO6ZTDn+7upcCfF+5acvPrjsWXFOH387Wau/nYgHHsd5Wl6AaHvOtfqNAlIYlXckXW567N9UR/VSLRcs4xzQXX86AV2S2PiZ7I0FeIvHeB8TdiugEtRZ8uP9HHs1IMnBYQ5/wYlDhVyscThufRvg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=DOPpoXK+; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=shengjiu.wang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jDsfZ2DDsz2xlZ;
+	Wed, 28 Oct 2026 14:04:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=117.135.210.4
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793156694;
+	cv=none; b=XHW8f7ujPZcFxAN0binSh8Ydya7y138cF6SielJa7KyVnNDX0RvJuqXY51bxE7rw7VjVqqoiJEHp2KFNN5BNCQ/MZuQ5549bn9DCYjlGLewEAhVQV27a4+/zerWDBYkT5JFA+ZSj94Ll/OX75EKMfAYmDx8iqFooP0kqfIgnD0aL5JC/85vJpwszz8Dy4hafx9wM8cDDsdapb0EmzyjxfnxtABaWI4LbZp/Svqyrl3kySuBvNLA3noOlzPyQIEwIPWPFdQ4fTBIcWp2V7oT2hmSrV+EYt2urWett77aH9UuzCKjWilM8GiFHjAdfQOQqvedx6cpSEGM0nWK4n/MI3g==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793156694; c=relaxed/relaxed;
+	bh=QmKBIsPj275zjC+RHeRaYLF2SPXRKuXi+F+O6Y1Ma/A=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=HjTb4qpqyrus8hHpy+HDvd8I58fhXd12SL6aaYsQ8V1yEj0S183aYtv7n7BC9sL/qQ/6WAXHV0wJidGRlDnCPUxVwD9AjSMuFm3EgEDVijhpuSYSDXkz9mZEIeRR2aAkGuFiX6S7LmENKMy7gUE1DXvxlLNRoqjPNeZ0OWT4lo/7FFJHuCqTd7i7wPqrTqNPH+6ZmVwvBNM16NbgnpKWVsd7iEMcHzImL30R2U9T2bukUleWxxPqmlTC7h4UX2jKoB9VJ/b+Sox80cwj4vgz3hM6HFN8IGJBOk1gvEkIQTBmKSiXsI4aX1HkGLzoSNyqOQ1ZMz1IzIWKz9M5579R0w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=QQ1aOpqD; dkim-atps=neutral; spf=pass (client-ip=117.135.210.4; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=DOPpoXK+;
+	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=QQ1aOpqD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=shengjiu.wang@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from AS8PR04CU009.outbound.protection.outlook.com (mail-westeuropeazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=117.135.210.4; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org)
+Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jDsSk4224z2xSR
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 13:56:22 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=kGN2WTftOZu6NhtjZzJiywqKnCeLulYc8xJ5ZmR0E6AJre/9c94/wDYh5u7yV1JPz3DLDRPGL0ordD6fLbts8wYdM3ruxwjSrBn7YmfHKCFM/eNbSU/XHJGy3Vlc9NTnDL9SMVlzz14SSz5Jx2+b+UG5kdQuognpw7PbGxJTr/9RBjEAGadPt1dxgEUZ6cIawejeJdjtv3huo7i7Ebz7ENicVZXUPo933nqzGBIVh3+6HxcwyNJ1/Rv7MnXsfCB86bL4yKgegNOJMcKdsnSFfWgwxF3GqaJxNo2NB3d/nzZvrU3G0/ANTdz/DHH/c8jS/k2Qss82ZC9HiT8uXhhAVg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=CvcuC/o04UNCHXAS+1OoReklOXJrJAAy130KN43tMa8=;
- b=o8rbbV7Oe5alBvKk3t6sZJe9nl86vwDgzU+BQtaTfmGhsv+4j6XX6Y5CtPhAYGmoDk7u18k46sbGFiwDmijiBXl1xJsZwfqgpB6Uzp6/3W369Gvdn9pYua8TTaVYCXsX/OJ/0XS3Bxm8FeA0qdFY9iLKn9Gu0xZzHbgIdphCfgIBkANSOciFp9dO/PJdxzulWLnkYf5erDOb2pTmtyPuzHQ2DceE8ky8bvtz2+t5CEp4qMSidPThI5tUpvt8evkekc5tQLyho6jI5jkIvTsHMnOqElI8T/OkTssoZ0qODpCNufK99OjVwcclbgvHa1nYUamHMDVJdtHyKN8sHFxoKA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=CvcuC/o04UNCHXAS+1OoReklOXJrJAAy130KN43tMa8=;
- b=DOPpoXK+DxC9RHnAZqt3UGzyAInzoNsr6v8319VSjbdJO51Uvxtw4xsl13xG1WVYJfm6I1SYKl8pI1V5QknMRAtzozazfpNKa08OqfY0WfP84NPWBqK+12VybSAOsvXoua6l4gyMYOfgiI6IElEfs13UceipfTd/jd4e6H/eRazvOtcxptPnkDoYsdo7L1MROM+kXcteu26uJ73+HfGVA1uhlFpoRvXDYmjwki7CEsG4tZhLuQV7PeyEw7pmUa0pRJEBsJhU/L2Dwf4ZoAqrX9mJPEMzb53KMTB6Ya7n9jz8nTgtoCymX7qWtspdyvejjJmlp2KD2YT3P7uz1uapAQ==
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from PAXPR04MB9351.eurprd04.prod.outlook.com (2603:10a6:102:2b6::17)
- by AS8PR04MB8849.eurprd04.prod.outlook.com (2603:10a6:20b:42c::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.546.22; Wed, 28 Oct
- 2026 02:55:57 +0000
-Received: from PAXPR04MB9351.eurprd04.prod.outlook.com
- ([fe80::1058:a430:52c1:5aa]) by PAXPR04MB9351.eurprd04.prod.outlook.com
- ([fe80::1058:a430:52c1:5aa%6]) with mapi id 15.21.0546.021; Wed, 28 Oct 2026
- 02:55:57 +0000
-From: shengjiu.wang@oss.nxp.com
-To: shengjiu.wang@gmail.com,
-	Xiubo.Lee@gmail.com,
-	festevam@gmail.com,
-	nicoleotsuka@gmail.com,
-	lgirdwood@gmail.com,
-	broonie@kernel.org,
-	perex@perex.cz,
-	tiwai@suse.com,
-	linux-sound@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] ASoC: fsl_asrc_dma: fix error handling for DMA channel retrieval
-Date: Wed, 28 Oct 2026 10:59:21 +0800
-Message-Id: <20261028025921.4155551-1-shengjiu.wang@oss.nxp.com>
-X-Mailer: git-send-email 2.34.1
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: MA5PR01CA0099.INDPRD01.PROD.OUTLOOK.COM
- (2603:1096:a01:1d1::11) To PAXPR04MB9351.eurprd04.prod.outlook.com
- (2603:10a6:102:2b6::17)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jDsfV4JhPz2xg9
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 14:04:47 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=Message-ID:Date:MIME-Version:Subject:To:From:
+	Content-Type; bh=QmKBIsPj275zjC+RHeRaYLF2SPXRKuXi+F+O6Y1Ma/A=;
+	b=QQ1aOpqDWE8FU3TPOhW+MfG6j6+N0eoK3n+xE4A/cpC2NORjs2103GBylGScI5
+	q8c0cxRwAm6kYho2xTHspJS4gAcZRiDhhuVMJ/CBYYkW7Kvn3hy/IMDIL5HpB68D
+	/SsVO2fsRmuU7tlU/QFtZKHwEc8PRZPRLuLQieOhufzIw=
+Message-ID: <e89439cb-b4cc-44ca-99bd-977e4d659e47@163.com>
+Date: Wed, 28 Oct 2026 11:04:11 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,94 +50,182 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PAXPR04MB9351:EE_|AS8PR04MB8849:EE_
-X-MS-Office365-Filtering-Correlation-Id: dd1171ec-b282-4030-9d24-08df349efd42
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|19092799006|1800799024|366016|376014|7416014|23010399003|18002099003|261026140227099003|921020|261021121427099003|56012099006|11063799006|261021123027099003|10067099003|261022105027099003|261009223027099003;
-X-Microsoft-Antispam-Message-Info:
-	QID6owi4DHyjkP+xRzKIwYKJANbrVVeM/pC+zh95nYQiLEaDbRwD1Fxs0uIvA3ZAIItutj/Mbf51CZXHmvvdcrRivZqnVQgRY2jS2tAoPLMeWUm1fCZ5S9hPYJMVpoxj6Z7MgPaJ0UO+ejCkzwK6zxZy0H6MiDroQ+RaHr2SRdWJy/a/g2axWcL6u2GAfO7liD9jHBLyPiJwZfulED1IM2BLox6rrKPeJHLD6CU21el0SLZ58WV8IQLKZ9KufzfPxuDjtEzJu0tWxgbOc2jIVaLTHMZB+z+3PvFgzzYdEngcmDbd/3gkxO0Kfp9xdVORyrTB+xCuud6jfdkny6f3DUie6ctbfnr0zoZbA0vSDkQ+l8wdZk8IfaIu0sYnqRa/Rsiep0UbOC/HPLaTXThkkvhzfrZAWKH9z5RDuvA+UJbJUlul3h6CSpF8Ib15rYanNspnPUj/WwpjeHGlZTeYA6QMYOcJYR4sTe86Bazhe2rhGbR2nCraYqNkroQoAFF6TIOg/cc4+/tA3UaOQ5F1ww6LiztqBBvEAXCbfgggZbe039L0/VBhd3/NE8Kq/fQuFhKi0OThPF9jMi7e/ZUJ77B4xnkiptZfQhlVv5vCr/b7f5eM8kiuyit7T7/XGzc5kROaEnnhvdNfbIyyEAtZjB9GHDTAfeb1lK9WIFXkMhJAr5bWhN9HbY5WIG86lwKWvahscvTp8STF0AFUmcmZOQ==
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB9351.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(1800799024)(366016)(376014)(7416014)(23010399003)(18002099003)(261026140227099003)(921020)(261021121427099003)(56012099006)(11063799006)(261021123027099003)(10067099003)(261022105027099003)(261009223027099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?E0+hJpuJEgvZm92nxJ3JGY0+X7gezmhs9ij9cfK9vmu8NQkvbSiHOPGh4myT?=
- =?us-ascii?Q?m+jOJWpUVTqwvAl8EeanO00T6lTKdQVD1HDuUMziGmTWS/40YBsLP3im6G0E?=
- =?us-ascii?Q?JH/dNfri8Zj44F6kemqLlOc/kKd/8Ij8Ugo7ZSMotZdmHNIdj/8NeyVpvjU4?=
- =?us-ascii?Q?0fhf8dDcYZB4m8L1JQxhc7Om+nrJhEaJMaOU2iw0O/KUJPI6f0IeCuonBYR7?=
- =?us-ascii?Q?keGdFduVkBu5WZu8pSqhNKW6ubTrRIx5spjlK6Z8MxSl6CJ0WZLFdE9+udDH?=
- =?us-ascii?Q?q3loWIGL1vgCNKDRq3zbyGqyxVJ7UnIB+GrrnbM0KIBIBuZy1dxl7U5ZKKWA?=
- =?us-ascii?Q?OzSaD4ok/thNMpqcyrmOSgJ+ODTW4Pl6oZddFm+wL1xjBraw6BHXw3ok7nHO?=
- =?us-ascii?Q?/r8NrMuVlrdBblb9zcmMD72qLUHLdOM6iT0FTD1toisJF4l+kRuyG0ww78IJ?=
- =?us-ascii?Q?yUP1S1HP06x0vwicmKcM6ix+w0FcRhpTbkuzarFkTqF1ndGqCMCpFKOQ90P3?=
- =?us-ascii?Q?uxHEBIUfSfDAVfSZFA3M5EthqanN0z0GJi1w7Ui8Fo65Y2KlWhF/XisH5D2j?=
- =?us-ascii?Q?SL3sDrX2mmke+hQA7WPdhSRCFBSBVzWe/jXWrOnlpzLxPQvMsU/rGkNS3dLd?=
- =?us-ascii?Q?t1jU2XY4lUcx1IU0/9pHkGSzYmi4zAl8+lcDMAN9B01MD+HjpuXeLlZ5AbXn?=
- =?us-ascii?Q?Lib+dUI/e9tayfCOItvdrMceV9R9VOzHC0hhrPw8PahJtd0EeXD/+Misua8u?=
- =?us-ascii?Q?527r151lHD/IwjN6w0pG48lYtwxRAAaEHF47poyqMXmXHDYrl7v8aSBk5/3N?=
- =?us-ascii?Q?rOMdxPpz+wUoBRPs6asQv/rP/M9WephT+ydPr/sqQzdofe6qWqXwXFdPCoQd?=
- =?us-ascii?Q?Hslp77baj9la+xHMM597gt+r8SqBi91LJkpnq3VKnfL6jOFFzbuAqzVA37u5?=
- =?us-ascii?Q?xUNA2nloUhvtioYBpVRD2SxncFmt5wsnv2rcd/aLjw+Qj1IRyDNTVVxI6Pjr?=
- =?us-ascii?Q?TOZQDuMZQd80WjZ0canI83h1buDQdCaZM42gi2KFkjGxBJu1XnUILcQTqaFI?=
- =?us-ascii?Q?bpeC/qALnpFHrnpjE7sMqQG986XWlvFuhbNrfnrvfUYD4zNTpVjzZ1/CAd6o?=
- =?us-ascii?Q?Ka/OgFUe1ZB/te1IgBjkq+6kYjOOyXzz+Dg25i/LDeB5ZGHB7CU+d+JMaRu5?=
- =?us-ascii?Q?ZJer4w7QiD9WjdZo5PdsPpZ+TSfqioGaEICvaC2LCIamTLU38H/fHNkjE1IG?=
- =?us-ascii?Q?Lk3sFGglaeD8O0aQGIIDSnLFFy/djDH4OJNGmWWAqduttoWk6QMAbhcEuxgE?=
- =?us-ascii?Q?FUgcHqgoaHuVAY/ytXNRlIqxPIzGs35sOq4KWZrz8blyVKTJmfcYIkrX+qIR?=
- =?us-ascii?Q?6aKFHdpRR8ECKTVMC6V0Uve+bIqNVcWn7Sq3TxLljhuYYoarazoXj7nYgil1?=
- =?us-ascii?Q?kXyA4jAZ2IxClTaXsJEfTU5u2S+J3R4P7tNeNBfN67wnInYqtc/Di1P08Lay?=
- =?us-ascii?Q?3Lw6BZNMfIrplUJAj2/yr2ozgBz3X2XTrWioSCu0NBRfhDPsHdt5g4Y84kiz?=
- =?us-ascii?Q?gCDXt3yVnz1DAiMSefS44eIwekw3s9wEXZdP0R0AQVUfcTcDn8GCOU983ofz?=
- =?us-ascii?Q?pdtxVelBETdq8n9/n43XJn6d9HI/KORjFha9ISaSjWPbKrUEE7s3juohDQXp?=
- =?us-ascii?Q?3/R1o4TZOU4XbayYgKLPm+LuGd7XuCTBRAr3+ZlcnuOjntr7AQ3c/RDh+4kp?=
- =?us-ascii?Q?VpcV2GM+J9ygRa4p2nF7v7HXBzyigrsjJ1VXTd8ggj2VbqRfAr3A?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: dd1171ec-b282-4030-9d24-08df349efd42
-X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB9351.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Oct 2026 02:55:57.0443
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 8b8esbZHLs7B0GWurUETs0b3VJ1mv27beuuzHc2TdTlY9fju56lG3ngCbeT4gT3ieKH9OJdnGXFMc8ktDXUVaEhZKvsal107fxzTmy0XDN3zytXdaiOVtQ8Kq0hBk1My
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR04MB8849
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 01/16] PCI: dwc: Add pcie_cap field and caching helper
+To: Shawn Lin <shawn.lin@rock-chips.com>, bhelgaas@google.com,
+ lpieralisi@kernel.org, kwilczynski@kernel.org, mani@kernel.org,
+ jingoohan1@gmail.com
+Cc: imx@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+ linux-amlogic@lists.infradead.org, linux-rockchip@lists.infradead.org,
+ linux-arm-msm@vger.kernel.org, sophgo@lists.linux.dev,
+ linux-riscv@lists.infradead.org, spacemit@lists.linux.dev,
+ linux-tegra@vger.kernel.org, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20261027122827.2725643-1-18255117159@163.com>
+ <20261027122827.2725643-2-18255117159@163.com>
+ <80f85ae9-7162-4940-8dec-690bc00098b4@rock-chips.com>
+Content-Language: en-US
+From: Hans Zhang <18255117159@163.com>
+In-Reply-To: <80f85ae9-7162-4940-8dec-690bc00098b4@rock-chips.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:PCgvCgDnL4srZuFqgH73CA--.31342S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW3WF1rtF48GFWUGF4rAF4kXrb_yoW7Kw15p3
+	yUtF1akFs8JrWav3W2v3W3JF1a9as3JFW7Jwn3Gw13Zr9xur1xKFy0yrWYkF17Crs2gw1j
+	9r4jqa4xCrs8AFJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07UuwZcUUUUU=
+X-CM-SenderInfo: rpryjkyvrrlimvzbiqqrwthudrp/xtbC7A23W2rhZi2d5QAA31
+X-Spam-Status: No, score=-14.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	FROM_LOCAL_DIGITS,FROM_LOCAL_HEX,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
 
-The original check used `if (!tmp_chan)`, which only catches NULL pointers.
-However `asrc->get_dma_channel()` returns an error pointer. The NULL check
-will always succeed, so replace it with `IS_ERR(tmp_chan)` to correctly
-detect errors.
 
-Fixes: b4136c0d69ea ("ASoC: fsl_asrc: check the second front-end DMA channel")
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
----
- sound/soc/fsl/fsl_asrc_dma.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On 10/27/26 21:12, Shawn Lin wrote:
+> Hi Hans,
+> 
+> 在 2026/10/27 星期二 20:28, Hans Zhang 写道:
+>> The DWC PCIe core and its platform drivers repeatedly call
+>> dw_pcie_find_capability(pci, PCI_CAP_ID_EXP) to obtain the offset of the
+>> PCI Express Capability structure. Besides being verbose, that performs a
+>> DBI read every time, including in paths that run repeatedly such as link
+>> up polling, suspend/resume and interrupt handlers.
+>>
+>> Add a pcie_cap field to struct dw_pcie and a helper
+>> dw_pcie_get_pcie_cap() that performs the lookup on first use and caches
+>> the result for the subsequent calls.
+>>
+>> The lookup is deliberately done lazily, at the first place that needs the
+>> offset, instead of at a fixed point during controller initialization.
+>> This guarantees that the DBI read happens exactly when the open coded
+>> dw_pcie_find_capability() call it replaces used to happen, so no DBI
+>> access can be made before the controller clocks, resets and power are
+> 
+> 
+> With the controller inaccessible (clocks/power gated), what a DBI
+> read returns is platform dependent, most integrations just hang the
+> accessing CPU, like Rockchip's SoCs, others might return zero or
+> garbage. Zero self-heals as the commit message describes, but a garbage 
+> non-zero lookup would now be cached indefinitely, so every later caller
+> would use a bogus offset?
+> 
+> Perhaps the "TX Interface Progression Detection Features" of dwc IP
+> could help return a dedicated value? I don't know, so I need to check
+> it internally. I will get back to you later.
 
-diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
-index b417de6abebe..b39d3d76d26a 100644
---- a/sound/soc/fsl/fsl_asrc_dma.c
-+++ b/sound/soc/fsl/fsl_asrc_dma.c
-@@ -251,7 +251,7 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
- 
- 		/* Get DMA request of Front-End */
- 		tmp_chan = asrc->get_dma_channel(pair, dir);
--		if (!tmp_chan) {
-+		if (IS_ERR(tmp_chan)) {
- 			dma_release_channel(pair->dma_chan[!dir]);
- 			pair->dma_chan[!dir] = NULL;
- 			return -EINVAL;
--- 
-2.34.1
+Hi,
+
+Thanks for the review.
+
+
+You are right that the cache must not turn a bogus value into a permanent
+one. Some details and one change in v5:
+
+- dw_pcie_get_pcie_cap() is only called at the sites that previously
+   called dw_pcie_find_capability() directly, so this series does not add
+   or move a DBI access. It does not try to fix the "DBI accessed while
+   the controller is inaccessible" problem; that behavior is platform
+   specific and pre-existing.
+- dw_pcie_find_capability() already rejects offsets below the standard
+   header, unaligned offsets, and entries whose capability ID is not
+   PCI_CAP_ID_EXP, so a bogus value has to look like a valid capability
+   entry to be returned at all.
+- To make sure that a transient bogus read cannot stick anyway, v5 only
+   caches the offset after the capability ID has been read back at that
+   offset. If the read-back does not confirm PCI_CAP_ID_EXP, the offset is
+   still used for the current access (same as the open coded search
+   before), but it is not cached, and the next call searches again - the
+   same self-healing behavior as the zero/not-found case.
+
+If the DWC IP has a reliable way to tell whether the core is accessible
+(the "TX Interface Progression Detection" feature you mentioned), that
+would be even better than validating the value. I would be glad to use it
+if you can share the details; it probably deserves a separate patch so
+that all DBI accesses can be guarded, not only this lookup.
+
+Best regards,
+Hans
+
+> 
+> 
+>> enabled. This matters for endpoint controllers such as qcom-ep and
+>> tegra194, where DBI is only accessible after PERST# is deasserted, and it
+>> also means platform drivers do not have to call the helper from a
+>> specific callback at the right time.
+>>
+>> The cached value is accessed with READ_ONCE()/WRITE_ONCE(), because the
+>> first lookup may be triggered from different contexts, for example the
+>> qcom-ep global IRQ and PERST# IRQ handlers. A concurrent lookup stores
+>> the same value, so this race is benign.
+>>
+>> A return value of 0 means that the capability is not present. This
+>> cannot happen on real DWC hardware, where the PCI Express Capability is
+>> mandatory, so a negative result is not cached separately: it only causes
+>> the search to be repeated, which does not affect correctness.
+>>
+>> Signed-off-by: Hans Zhang <18255117159@163.com>
+>> ---
+>>   drivers/pci/controller/dwc/pcie-designware.h | 34 ++++++++++++++++++++
+>>   1 file changed, 34 insertions(+)
+>>
+>> diff --git a/drivers/pci/controller/dwc/pcie-designware.h b/drivers/ 
+>> pci/controller/dwc/pcie-designware.h
+>> index 0735ae940924..fa31e8b763bc 100644
+>> --- a/drivers/pci/controller/dwc/pcie-designware.h
+>> +++ b/drivers/pci/controller/dwc/pcie-designware.h
+>> @@ -592,6 +592,8 @@ struct dw_pcie {
+>>        * use_parent_dt_ranges to true to avoid this warning.
+>>        */
+>>       bool            use_parent_dt_ranges;
+>> +
+>> +    u8            pcie_cap;    /* Offset of PCI_CAP_ID_EXP */
+>>   };
+>>   #define to_dw_pcie_from_pp(port) container_of((port), struct 
+>> dw_pcie, pp)
+>> @@ -830,6 +832,38 @@ static inline void dw_pcie_dbi_ro_wr_dis(struct 
+>> dw_pcie *pci)
+>>       dw_pcie_writel_dbi(pci, reg, val);
+>>   }
+>> +/**
+>> + * dw_pcie_get_pcie_cap() - Return the PCIe Capability offset
+>> + * @pci: DWC instance
+>> + *
+>> + * The offset of the PCI Express Capability structure is read once from
+>> + * the DBI configuration space on the first call and cached in
+>> + * @pci->pcie_cap for the subsequent ones.
+>> + *
+>> + * The lookup is done lazily at the first place that actually needs the
+>> + * offset, so the DBI read happens exactly when it used to happen before
+>> + * caching was introduced, i.e. never before the controller's clocks,
+>> + * resets and power are enabled.
+>> + *
+>> + * DWC PCIe controllers always implement the PCI Express Capability, 
+>> so a
+>> + * return value of 0 means that the hardware is not usable. Callers that
+>> + * check the returned offset keep working, and the (never expected)
+>> + * lookup is simply repeated on the next call.
+>> + *
+>> + * Return: the cached offset, or 0 if the capability is not present.
+>> + */
+>> +static inline u8 dw_pcie_get_pcie_cap(struct dw_pcie *pci)
+>> +{
+>> +    u8 cap = READ_ONCE(pci->pcie_cap);
+>> +
+>> +    if (!cap) {
+>> +        cap = dw_pcie_find_capability(pci, PCI_CAP_ID_EXP);
+>> +        WRITE_ONCE(pci->pcie_cap, cap);
+>> +    }
+>> +
+>> +    return cap;
+>> +}
+>> +
+>>   static inline int dw_pcie_start_link(struct dw_pcie *pci)
+>>   {
+>>       if (pci->ops && pci->ops->start_link)
 
 
