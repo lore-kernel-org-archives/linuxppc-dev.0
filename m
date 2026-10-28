@@ -1,47 +1,58 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27EA0606A31F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2026 09:34:42 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8BF5606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2026 11:39:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=V3aBNqqF
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jF2JJ2L8kz2xwL;
-	Wed, 28 Oct 2026 20:34:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.160.70
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793179117;
-	cv=none; b=Ns8j3uVqvuW73m/JiZRCtpyfkWzoxvleV2jmM5UTTw27ZznTiTGi+npLEw+7EwriH1cojHGWWQ9Ngfof85SrrsQpydnvQCSneXPBI7NqrWWMfcUStwj9XmmUWw84kNVG30MnBUB+IQMAYItj8wgVp5dU0SDYARVIQ5E9aK1nlo0IYGRcBeNYSVJs51s9A+h2xKzjmTGT1eMEFIkzJ7KrU0jNG5JK7sjJKcKKrtNlSTaYe3l+GPVCKpjsoU7Fu9PZ2pm69gWGT2dVObUr/Ag8f7ngeE9Vt1rpuP282iKYf6KujbN//VcMWyEl3FE0yWVtYxgyj9Hw7fCD980+5qTxtw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jF5431p8yz2y8p;
+	Wed, 28 Oct 2026 22:39:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793187555;
+	cv=none; b=Vnlt/sf3wpXepkUBRbkbUfGEwf1i+5tfOSJx2raQQaKC2/NNmJd2p+xKmSqlb0ShHowGtToLrPRIKVC4/SqkdQ1D7yQt0NlvMp7cx8O19tm0665irI/ZMSVd79UjqwZJRADHay6ZDSFtxCO4RPqvjx79QmHCad8J7g3UEmATNJ/pBE3rqZHkmyIavtGLw0LueogpkUIG1781qFYpFxA0ijiTO2I3VXPq88K9RNDHLOiIMbQkYNmrEFMCBMSpwzBZCJ7rOwRHbFFgCebi0cTp1jzNJZZjPUv7KDMLyXeHj8qLz7daXVKM74tlsawS00ZobNStjtfq6OJabQi6uuxwbA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793179117; c=relaxed/relaxed;
-	bh=l7lrYcEGz7yh1S6DURIldpkH4Iej6k+y8xqTeXsmih8=;
-	h=MIME-Version:Date:In-Reply-To:Message-ID:Subject:From:To:Cc:
-	 Content-Type; b=JWmWRbZZEDlCFTQEhL2/bn3M+B5Cj+9NpIo5TCLLs3J9gRgVRTC7+QDFHNTCzkYqWGQJWLP8WcnqRAMwwieXBe7h0deIOnCQo/wzii3YeI6Itbha5wHmAT22rtMQzF5+9OWXupNnlUVE8Qp1HUGSP5tLOwp4urlTmkwS6UQzvVYc0itm1ff0ob3OCEzKOiwSzB7FqEkplI7Awnmrm2RCVTBRagDOCq5mR2jCLE5hY+kbi4NoPf7v2goqTK6Nz68QdSV+g9FlhxZIkuerI3XUhIzm3/rNSwEouByKlbtYnYCo0mZZqg7iqGpFeWJZKxsZAXUAArMxVrHsxv4s/6sBXQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass (client-ip=209.85.160.70; helo=mail-oa1-f70.google.com; envelope-from=36l3hagkbaek39avlwwp2l00to.rzzrwp53p2nzy4py4.nzx@m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com (client-ip=209.85.160.70; helo=mail-oa1-f70.google.com; envelope-from=36l3hagkbaek39avlwwp2l00to.rzzrwp53p2nzy4py4.nzx@m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-oa1-f70.google.com (mail-oa1-f70.google.com [209.85.160.70])
+	t=1793187555; c=relaxed/relaxed;
+	bh=sOScShlNJOoFQgumDsqaC2sVgmpV4+y6Yzg+EW5P6X4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Vu/gMK3bI5rYIF4DCtoZKLvgzdopOokpbukYeaMWOTZzuvwGpuqDOM5fd+3KvG2mZeRqzUduKpIMupLyvBEOaifJuP3G1XtA7eHRxFl+IslvUs5YaItASxK/FFTj/AaGMtF/XAphP16QQJ8Fme9Az66wcEdyazgPzlZptjoEvAKpgGCE/QaNqdkeOxXOIv0os70mtrTnxfiC1ZLaadCZlbbDIv1dlWmjnInpmQLvp+6sWfMWKOQdUGiPvGGx3CChRvjKiK1lfpB/5irfsKQ2M0H9/tnTQf1Ib8U01Mz1h9nEOOns4cnOb4ancGFa96NTQhl3CwoVWCaIXVEAD7cfjg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=V3aBNqqF; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rafael@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=V3aBNqqF;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rafael@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jF1xl5Kr7z2xB1
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 20:18:34 +1100 (AEDT)
-Received: by mail-oa1-f70.google.com with SMTP id 586e51a60fabf-49e379ab077so901136fac.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 02:18:34 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793179112; x=1793783912;
-        h=content-type:cc:to:from:subject:message-id:in-reply-to:date
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=l7lrYcEGz7yh1S6DURIldpkH4Iej6k+y8xqTeXsmih8=;
-        b=UZNdx6jG8BY9ILWACOwaHdrCHpj3JDLkAxO1p+pcUp0X9worZ4A7ph9koeLbK0DW96
-         grzi11yVII/2Vsb6fUV0iGhowprkUM6TGvEudzyOBjUFWkh2ESFHRGEGsEEuHZgE5jgu
-         iupo+uwalCwJVSuCjlmUysk9WSpFm1Yef7bFCeSG1xanDzph+2m4n8d0HNAQPSxPRe2K
-         bz0MN57a2NiNxAp7Qu8001pYHIPnlq+SZ6UXqMP9DRTwamE4dj0/DvRHZuUlBr46Xwmw
-         g9CguuPRW7+PYYw+HrH6Rdlw1gK2IZQMn5pOnoRN5/HPsSrfGNsjbHFF03TTFWMHhWn1
-         OctA==
-X-Forwarded-Encrypted: i=1; AKwUvByQPSiyZTYSXn4GNiBBW/UV3KOY8GMOhfFCsLOIrgcwM0CUsJCqt5u0+wfFO+3q7Y2B9iUcPd5yfiT3hws=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYIoHWNfAu1DXjBYgRKx567vGiJGOStTQK2YHeeSeO/5alRJa8cN
-	DJOyKhTTnsQpUuBzFSYrmxC+pwMlaIfuwzJQF1Sl0krHf0qdXhnlpBUfTut52p07NJJigyokYW4
-	jL4BTbsk0Q+r0b2V9kXwxVAkPfWpuJY4DEc8z8ANMh3ZEbZlSWIUhYYvrzBc=
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jF5420JV2z2xB1
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 22:39:13 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id E82C260120
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 11:39:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9ED3E1F031E2
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 11:39:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793187550;
+	bh=sOScShlNJOoFQgumDsqaC2sVgmpV4+y6Yzg+EW5P6X4=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=V3aBNqqFFHK8/iCpvfjUC4nqv71d4gzLapwxCef4YXC24PEvK5vHB+xdOeL7szLll
+	 P+FI7kOVX15iyVgW6L5BqB5j66cUsU58EFNBVc4ed1gRumoqiCbC4e+4/fMtoPPsBi
+	 389uKh3znOcDxhFOO4xeIVuJHUWRavRXaxLHJn2UManYPCHBMECjV9wAGJYHfg7uRm
+	 oE9BZ712DtB2yvqohWmRmnKolH9LeojudIZ3GAkE5g2bjpf6/E/ujmhxw0Acr5Ue7J
+	 /SryS8fSPLV7LahdfJR0nny8tZNZQ0l6lyXB4kclXqeLy9UOpL1SeAi4UciWGJrnY9
+	 J8Z5+YeM8O4VQ==
+Received: by mail-lf1-f46.google.com with SMTP id 2adb3069b0e04-5be4c78e8caso903747e87.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 04:39:10 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBxlgTJQbfUTBz2gS7wFlqG0BIp6mjS3pzXJhLaDM3zYhIvdNjKBu3YGdEWUmFReAunZ1inBouvhqWcRG1Q=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYIKC3Bc99gAD4TP7QkWFQ9vewx96TjQ+Ndb5uit5tm5oSVmEt6Z
+	BK8NXj2QPw6EIuCl7INMH8trcUUfWJhpr5PiczLLsi3sHIAuq0luBpAzP+fS2Doc+ndHc9d71oG
+	KU180LePAfGz1k/kJZseEPSiyOMbONP8=
+X-Received: by 2002:a05:6512:1111:b0:5b9:6603:d451 with SMTP id
+ 2adb3069b0e04-5bfcad31c8emr697328e87.3.1793187548999; Wed, 28 Oct 2026
+ 04:39:08 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -55,123 +66,148 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-Received: by 2002:a05:6808:c133:b0:55b:fcf7:61f8 with SMTP id
- 5614622812f47-56383598cfamr956832b6e.40.1793179112073; Wed, 28 Oct 2026
- 02:18:32 -0700 (PDT)
-Date: Wed, 28 Oct 2026 02:18:32 -0700
-In-Reply-To: <20261027221209.1560865-1-seanjc@google.com>
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <6ae1bde8.f0fe5aea.79aa1.00a0.GAE@google.com>
-Subject: [syzbot ci] Re: KVM: Fix+harden against bad uaccess using dying VM
-From: syzbot ci <syzbot+ci372bc25d95b65291@syzkaller.appspotmail.com>
-To: jmattson@google.com, jthoughton@google.com, kvm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	maddy@linux.ibm.com, mason@kernel.org, npiggin@gmail.com, pbonzini@redhat.com, 
-	seanjc@google.com
-Cc: syzbot@lists.linux.dev, syzkaller-bugs@googlegroups.com
+References: <20261027223847.652884-1-irogers@google.com> <20261027223847.652884-5-irogers@google.com>
+In-Reply-To: <20261027223847.652884-5-irogers@google.com>
+From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
+Date: Wed, 28 Oct 2026 12:38:56 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0juvZ2ZVRBkY6FxBM=NhPt9vMA3+yRugXc5u=U1jO9AXg@mail.gmail.com>
+X-Gm-Features: AclHuK-NXF3tWCMDzaNjIN417c7ZMuQGYjVHoQ_x6BSITeW_KdKoI_jbnClXt6k
+Message-ID: <CAJZ5v0juvZ2ZVRBkY6FxBM=NhPt9vMA3+yRugXc5u=U1jO9AXg@mail.gmail.com>
+Subject: Re: [PATCH v2 4/9] cpufreq: governor: Initialize kobj_type release
+ callback statically
+To: Ian Rogers <irogers@google.com>
+Cc: Kees Cook <kees@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Miguel Ojeda <ojeda@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>, 
+	Nathan Chancellor <nathan@kernel.org>, Nick Desaulniers <ndesaulniers@google.com>, 
+	Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>, 
+	=?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, 
+	Zhihao Cheng <chengzhihao1@huawei.com>, Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, 
+	Sumanth Korikkar <sumanthk@linux.ibm.com>, Bill Wendling <morbo@google.com>, 
+	Justin Stitt <justinstitt@google.com>, driver-core@lists.linux.dev, llvm@lists.linux.dev, 
+	linux-hardening@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
+	linux-doc@vger.kernel.org, linux-acpi@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-sh@vger.kernel.org, linux-s390@vger.kernel.org, gfs2@lists.linux.dev, 
+	xen-devel@lists.xenproject.org, linux-mtd@lists.infradead.org, 
+	amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org, 
+	linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 Content-Type: text/plain; charset="UTF-8"
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,FROM_LOCAL_HEX,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_PASS,SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
+Content-Transfer-Encoding: quoted-printable
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-syzbot ci has tested the following series
+On Tue, Oct 27, 2026 at 11:39=E2=80=AFPM Ian Rogers <irogers@google.com> wr=
+ote:
+>
+> Export cpufreq_dbs_data_release() and set .kobj_type.release statically
+> in the ondemand and conservative governors so their gov_attr_set
+> kobjects have a valid release callback statically initialized, matching
+> cpufreq_governor_dbs. Remove the redundant runtime assignment in
+> cpufreq_dbs_governor_init().
+>
+> This prepares for annotating struct kobj_type::release with
+> __must_init.
+>
+> Signed-off-by: Ian Rogers <irogers@google.com>
 
-[v3] KVM: Fix+harden against bad uaccess using dying VM
-https://lore.kernel.org/all/20261027221209.1560865-1-seanjc@google.com
-* [PATCH v3 01/15] KVM: Reject user accesses to guest memory if current->mm != kvm->mm
-* [PATCH v3 02/15] KVM: nVMX: Don't force a full nested VM-Exit when destroying a vCPU
-* [PATCH v3 03/15] KVM: PPC: Flush/zap all memslots on kvm_arch_flush_shadow_all()
-* [PATCH v3 04/15] KVM: x86: Unmap VMAs for KVM-internal memslots when the memslot is freed
-* [PATCH v3 05/15] KVM: Disallow setting memslots when the VM is being destroyed
-* [PATCH v3 06/15] KVM: Destroy memslots immediately after mmu_notifiers are unregistered
-* [PATCH v3 07/15] KVM: WARN if KVM attempts to do guest-related uaccess with "wrong" process
-* [PATCH v3 08/15] KVM: WARN and reject guest-based uaccess if VM is dying
-* [PATCH v3 09/15] KVM: Pre-check uaccesses in KVM's APIs to read/write guest memory
-* [PATCH v3 10/15] KVM: VMX: Explicility free vmcs01, not the current VMCS, in vCPU free paths
-* [PATCH v3 11/15] KVM: nVMX: Don't explicitly VMCLEAR+free() vmcs01's shadow VMCS when freeing vCPU
-* [PATCH v3 12/15] KVM: nVMX: Cancel the nested VMX Preemption Timer's hrtimer in free_nested()
-* [PATCH v3 13/15] KVM: VMX: Explicitly remove dying vCPUs from the PI wakeup list
-* [PATCH v3 14/15] KVM: nVMX: Don't switch to vmcs01 when freeing a vCPU
-* [PATCH v3 15/15] KVM: nVMX: Don't load+put the vCPU when freeing nested state for a dying vCPU
+Do you want stuff to be picked up by maintainers, or do you want to
+route it yourself?
 
-and found the following issue:
-WARNING in vt_vcpu_pi_remove_from_wakeup_list
-
-Full report is available here:
-https://ci.syzbot.org/series/c648fc23-f4c2-4346-93cd-b717ef38b27c
-
-***
-
-WARNING in vt_vcpu_pi_remove_from_wakeup_list
-
-tree:      kvm-next
-URL:       https://kernel.googlesource.com/pub/scm/virt/kvm/kvm/
-base:      7e60162b16f9da0d2fa83da5c1723b6853a0ac1d
-arch:      amd64
-compiler:  Debian clang version 22.1.8 (1~deb13u4), Debian LLD 22.1.8
-config:    https://ci.syzbot.org/builds/e4ed6c4f-9b58-4549-9ac6-525add47e472/config
-syz repro: https://ci.syzbot.org/findings/320f356a-c5e9-41ff-b8f5-3f0866e300b7/syz_repro
-
-------------[ cut here ]------------
-refcount_read(&vcpu->kvm->users_count)
-WARNING: arch/x86/kvm/vmx/posted_intr.c:154 at vt_vcpu_pi_remove_from_wakeup_list+0x142/0x1f0 arch/x86/kvm/vmx/posted_intr.c:154, CPU#1: syz.2.19/5870
-Modules linked in:
-CPU: 1 UID: 0 PID: 5870 Comm: syz.2.19 Not tainted syzkaller #0 PREEMPT(full) 
-Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.2-debian-1.16.2-1 04/01/2014
-RIP: 0010:vt_vcpu_pi_remove_from_wakeup_list+0x142/0x1f0 arch/x86/kvm/vmx/posted_intr.c:154
-Code: 48 85 db 74 2d e8 ee 1b 64 00 eb 0c e8 e7 1b 64 00 eb 05 e8 e0 1b 64 00 5b 41 5e 41 5f 5d e9 c5 b5 87 0a cc e8 cf 1b 64 00 90 <0f> 0b 90 e9 2b ff ff ff e8 c1 1b 64 00 e8 ac 60 cf ff eb da 44 89
-RSP: 0018:ffffc900037cf8c8 EFLAGS: 00010293
-RAX: ffffffff816404a1 RBX: ffff88816ada8000 RCX: ffff888110eb0000
-RDX: 0000000000000000 RSI: 0000000000000003 RDI: 0000000000000000
-RBP: 0000000000000003 R08: ffff88810fb01f83 R09: 1ffff11021f603f0
-R10: dffffc0000000000 R11: ffffed1021f603f1 R12: dffffc0000000000
-R13: 00000000fffffff8 R14: ffff88810fb01f80 R15: dffffc0000000000
-FS:  00007f9e487ab6c0(0000) GS:ffff8882a7cbf000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 00007f07a7ed4870 CR3: 000000010eea9000 CR4: 0000000000352ef0
-Call Trace:
- <TASK>
- vmx_vcpu_free+0x28/0x400 arch/x86/kvm/vmx/vmx.c:7517
- kvm_arch_vcpu_destroy+0x154/0x380 arch/x86/kvm/x86.c:9556
- kvm_vm_ioctl_create_vcpu+0x76f/0x9f0 virt/kvm/kvm_main.c:4384
- kvm_vm_ioctl+0x442/0xcb0 virt/kvm/kvm_main.c:5294
- vfs_ioctl fs/ioctl.c:51 [inline]
- __do_sys_ioctl fs/ioctl.c:597 [inline]
- __se_sys_ioctl+0xfc/0x170 fs/ioctl.c:583
- do_syscall_x64 arch/x86/entry/syscall_64.c:61 [inline]
- do_syscall_64+0x166/0x520 arch/x86/entry/syscall_64.c:84
- entry_SYSCALL_64_after_hwframe+0x77/0x7f
-RIP: 0033:0x7f9e4799f1eb
-Code: 00 48 89 44 24 18 31 c0 48 8d 44 24 60 c7 04 24 10 00 00 00 48 89 44 24 08 48 8d 44 24 20 48 89 44 24 10 b8 10 00 00 00 0f 05 <89> c2 3d 00 f0 ff ff 77 1c 48 8b 44 24 18 64 48 2b 04 25 28 00 00
-RSP: 002b:00007f9e487aaed0 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
-RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 00007f9e4799f1eb
-RDX: 0000000000000003 RSI: 000000000000ae41 RDI: 0000000000000085
-RBP: 00007f9e47a36b20 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000200000c00000 R11: 0000000000000246 R12: 00000000000004ce
-R13: 0000200000c00000 R14: 0000200000001040 R15: 00007ffeb7342be8
- </TASK>
-
-
-***
-
-If these findings have caused you to resend the series or submit a
-separate fix, please add the following tag to your commit message:
-  Tested-by: syzbot@syzkaller.appspotmail.com
-
----
-This report is generated by a bot. It may contain errors.
-syzbot ci engineers can be reached at syzkaller@googlegroups.com.
-
-To test a fix for this bug, please reply with `#syz test`
-(on a separate line) and attach the patch to the email.
-
-Notes:
-- The patch will be applied on top of the tested series (as an
-  incremental fix).
-- To test a new version of the whole series, please send it directly
-  to syzbot@lists.linux.dev.
-- Arguments like custom git repos and branches are not supported.
+> ---
+>  drivers/cpufreq/cpufreq_conservative.c | 5 ++++-
+>  drivers/cpufreq/cpufreq_governor.c     | 4 ++--
+>  drivers/cpufreq/cpufreq_governor.h     | 1 +
+>  drivers/cpufreq/cpufreq_ondemand.c     | 5 ++++-
+>  4 files changed, 11 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpu=
+freq_conservative.c
+> index 02bfd46543e9..146a2353b1a2 100644
+> --- a/drivers/cpufreq/cpufreq_conservative.c
+> +++ b/drivers/cpufreq/cpufreq_conservative.c
+> @@ -318,7 +318,10 @@ static void cs_limits(struct cpufreq_policy *policy)
+>
+>  static struct dbs_governor cs_governor =3D {
+>         .gov =3D CPUFREQ_DBS_GOVERNOR_INITIALIZER("conservative"),
+> -       .kobj_type =3D { .default_groups =3D cs_groups },
+> +       .kobj_type =3D {
+> +               .release =3D cpufreq_dbs_data_release,
+> +               .default_groups =3D cs_groups,
+> +       },
+>         .gov_dbs_update =3D cs_dbs_update,
+>         .alloc =3D cs_alloc,
+>         .free =3D cs_free,
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq=
+_governor.c
+> index f3bd3dbe7c41..f8b5aca09b6b 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -419,7 +419,7 @@ static void free_policy_dbs_info(struct policy_dbs_in=
+fo *policy_dbs,
+>         gov->free(policy_dbs);
+>  }
+>
+> -static void cpufreq_dbs_data_release(struct kobject *kobj)
+> +void cpufreq_dbs_data_release(struct kobject *kobj)
+>  {
+>         struct dbs_data *dbs_data =3D to_dbs_data(to_gov_attr_set(kobj));
+>         struct dbs_governor *gov =3D dbs_data->gov;
+> @@ -427,6 +427,7 @@ static void cpufreq_dbs_data_release(struct kobject *=
+kobj)
+>         gov->exit(dbs_data);
+>         kfree(dbs_data);
+>  }
+> +EXPORT_SYMBOL_GPL(cpufreq_dbs_data_release);
+>
+>  int cpufreq_dbs_governor_init(struct cpufreq_policy *policy)
+>  {
+> @@ -488,7 +489,6 @@ int cpufreq_dbs_governor_init(struct cpufreq_policy *=
+policy)
+>         policy->governor_data =3D policy_dbs;
+>
+>         gov->kobj_type.sysfs_ops =3D &governor_sysfs_ops;
+> -       gov->kobj_type.release =3D cpufreq_dbs_data_release;
+>         ret =3D kobject_init_and_add(&dbs_data->attr_set.kobj, &gov->kobj=
+_type,
+>                                    get_governor_parent_kobj(policy),
+>                                    "%s", gov->gov.name);
+> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq=
+_governor.h
+> index 806d8fb4dff1..1026712bb79b 100644
+> --- a/drivers/cpufreq/cpufreq_governor.h
+> +++ b/drivers/cpufreq/cpufreq_governor.h
+> @@ -150,6 +150,7 @@ static inline struct dbs_governor *dbs_governor_of(st=
+ruct cpufreq_policy *policy
+>  }
+>
+>  /* Governor callback routines */
+> +void cpufreq_dbs_data_release(struct kobject *kobj);
+>  int cpufreq_dbs_governor_init(struct cpufreq_policy *policy);
+>  void cpufreq_dbs_governor_exit(struct cpufreq_policy *policy);
+>  int cpufreq_dbs_governor_start(struct cpufreq_policy *policy);
+> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq=
+_ondemand.c
+> index 9942dbb38dae..7386d043c665 100644
+> --- a/drivers/cpufreq/cpufreq_ondemand.c
+> +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> @@ -374,7 +374,10 @@ static struct od_ops od_ops =3D {
+>
+>  static struct dbs_governor od_dbs_gov =3D {
+>         .gov =3D CPUFREQ_DBS_GOVERNOR_INITIALIZER("ondemand"),
+> -       .kobj_type =3D { .default_groups =3D od_groups },
+> +       .kobj_type =3D {
+> +               .release =3D cpufreq_dbs_data_release,
+> +               .default_groups =3D od_groups,
+> +       },
+>         .gov_dbs_update =3D od_dbs_update,
+>         .alloc =3D od_alloc,
+>         .free =3D od_free,
+> --
+> 2.56.0.313.g2479322e68-goog
+>
+>
 
