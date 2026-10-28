@@ -2,76 +2,76 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B56F0606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2026 21:05:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 48BFA606A323
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2026 21:05:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=oAzzQFfH
+	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=UbVBrSt3
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jFKdS6Pv5z2xPb;
-	Thu, 29 Oct 2026 08:05:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::230"
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jFKdj077zz2xPb;
+	Thu, 29 Oct 2026 08:05:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::233"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793220536;
-	cv=none; b=ZDMPEyMQEqiQq9EafeQiLkdwHigiXhW+BJgDUmlX2FrPEatYW/RGcRpLhck4fD2sWWnTWfVuczS3Q7St3zfuPzQBsBYbLygMkyZ4I2ANStD0GZjh9+eqju4XFfROh36u0SEjvdB6egYAsNHwQpdPHD35tiBJILOVq6uYvb98MxIZw8WKR3C3ERQY206d04+y3VpdQ0sll5aXS1jshP3ctL5o1slFJLeGxzgKenfSBtM0VnuoKlO9h+SfoXtWMPIYqCdpBPKzB78agby70Aq0JxsRSrnx/YIZ0dHkL71R+XSqKsAEnj37a6fGR+AH6ofIfMIVGeoMSqC6xaqGvFBfVA==
+	cv=none; b=MLDBtdUeawdOaWUlwtoWDxcn/gDoyIlA4nDTdEPGxvTQnBMA6tGdqKlQd+ytFVlQd6/IetnJ52aDAiuiVEmXDuKp07mID5KrjVaO9FeTeFzzZStg2De/iotkxsScccvP9ztGoQzteOK0B+PxvOYJWlGHxTc8N01V6xk4SkadzxGlSCLWSs2TeRHyTWTlFlKK51G6ZypUEO9rFjbEzUkevbfzXRyyqpCItfqfY9kGbw3hdr6IVW3zraLMSQyv3Kh5fi2R6CfOH6qaliF0QHNdA0dZWHO97hntqajpLMZA73l78ug7tcGw4EtHsRGnpQuQgGAd3031Rv7BBrkUaqtw+Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1793220536; c=relaxed/relaxed;
-	bh=BH2WnjXWwsl9S26zTcVnDiXysm6ntQCEcJClsDwXCEM=;
+	bh=KlFs5O5F58aRmAuOBc20ZN5pSWMjbwV9elx9B8mpSCE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=G49DOc76udCDojnLePlWWjAqOJmRadMv+zeTXCxPXaXS26hMBUJFtahJ1/EEACDWh9nY1eAE3ldOn7LBUHJ7pq9DdcrELBb9UcKpfyDt+hbLYazgXHjhasOgfct57qCmynrJWeU99ZZRan9Ek/+C6cLWBHj+oGx5c1TKueFLMtMr45ZuDXQzF/UYOLxLNMH+N96bvXmd4wZ5Lcmm0ntxImsDWOmIBfiK8HAQQtX164Erb0PPdc9xSCLiUxnlsvdrPVVCIwRuIrbk/tPp/PREQqKRHD3hShimDmkuWKIndP+kyIM6kB5jDFaA/XcPtNaRkgcAHNXDraskZrXOqFbVOg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org; dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=oAzzQFfH; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::230; helo=mail-oi1-x230.google.com; envelope-from=rrangel@chromium.org; receiver=lists.ozlabs.org) smtp.mailfrom=chromium.org
+	 MIME-Version:Content-Type; b=YlXf8eMgFGeG0BTBAqYoROoroshNgQ4Ubu7pCRSTgVq6PWkI+/MjAO7P8E09rtX8FN/XwGQcQWCKQ+ufRwRb2+HKIrtNKGcuDA1cQZNXQekmpFPRpEjRGw/P/1p7Omyrmy9E12YYDMSQtrKIiOxxA7FAgnlMpg2JqydvTYs+O3KXES8+L8nLAGqhDczS7Vmn2Gg8BdlsdKZns4hBYUr2giOwXgdaMiol9P3YRSuD8qh9TJIjQgLvMomxCTZyMgU074e7xgFQiQkKJQalUeQ7zz1wrpydkwMTvah0tPpoY83K53oCCZQqvJZqWwk7jlTR/Xl8B8cHM2sLMa8MxiVYUw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org; dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=UbVBrSt3; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::233; helo=mail-oi1-x233.google.com; envelope-from=rrangel@chromium.org; receiver=lists.ozlabs.org) smtp.mailfrom=chromium.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=oAzzQFfH;
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=UbVBrSt3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::230; helo=mail-oi1-x230.google.com; envelope-from=rrangel@chromium.org; receiver=lists.ozlabs.org)
-Received: from mail-oi1-x230.google.com (mail-oi1-x230.google.com [IPv6:2607:f8b0:4864:20::230])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::233; helo=mail-oi1-x233.google.com; envelope-from=rrangel@chromium.org; receiver=lists.ozlabs.org)
+Received: from mail-oi1-x233.google.com (mail-oi1-x233.google.com [IPv6:2607:f8b0:4864:20::233])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jFKGG51tKz2xQs
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2026 07:48:54 +1100 (AEDT)
-Received: by mail-oi1-x230.google.com with SMTP id 5614622812f47-4b28d9537bcso61297b6e.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 13:48:54 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jFKGH4YGxz2y8m
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2026 07:48:55 +1100 (AEDT)
+Received: by mail-oi1-x233.google.com with SMTP id 5614622812f47-4d7034a99a9so864920b6e.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 13:48:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1793220531; x=1793825331; darn=lists.ozlabs.org;
+        d=chromium.org; s=google; t=1793220533; x=1793825333; darn=lists.ozlabs.org;
         h=content-transfer-encoding:content-type:mime-version:references
          :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=BH2WnjXWwsl9S26zTcVnDiXysm6ntQCEcJClsDwXCEM=;
-        b=oAzzQFfHStDJzQR86IDQbzwWg1/b7HQEFe747RyAWtmCRZ7/mK8vW8qCy8P4+FMxH4
-         lZKAebnuL9NV2DRGDkEpaIy6CXazp1mMjNJqrxRCWvNWLUqdYMNGGe6ZILYNXWWLrnIr
-         HIE1VgMWwSA2tXXyAXkKWiV8kaIQu2gda2HCc=
+        bh=KlFs5O5F58aRmAuOBc20ZN5pSWMjbwV9elx9B8mpSCE=;
+        b=UbVBrSt3IRLk2FsVsy0v9CBiBS+FplvGIicYXPIIggC8wfz1oTTxqyv3Hhs/5fHyMz
+         0CH2GO8Dc2dj++4jLHOoxYClBgbTdhZ9lS4JYc7LxZ+wvqSNMiDkX+AlM5fwP6ajBQBH
+         zmgAL7sLyQvF5NYXKZDUB+wIO+1exiVI7WI1Q=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793220531; x=1793825331;
+        d=1e100.net; s=20260707; t=1793220533; x=1793825333;
         h=content-transfer-encoding:content-type:mime-version:references
          :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=BH2WnjXWwsl9S26zTcVnDiXysm6ntQCEcJClsDwXCEM=;
-        b=UB04f+X1VY17Cvd4GJ/fgHrrP2kCdKDbsJk5Ruvm+y+2r31lC6AkoazjDWXzZ4Uwr9
-         UH/o44NmcK6U9NXDuMZudHt8JObjT8EnCDMjCK8cE1j9HkWo5hmKB8IoCQ1zWz/4fKaJ
-         zmVUZUidmQcsFLVX9NsBNrGix8E+ASs2lTkKk9Uruc2d03aJNpsm29ubRG6oPGwH/OT7
-         f5mliVJ/IA7tP36N5N+cU+212JHV/3ekxaKali33l29wDwFoAfdKJw8BbgacckK+Izj6
-         KoydX5or0H8tbUNOZvHPh8gauguYcd/6cs7fYgGUWtanT3SbwGpn7+oEhFY+C1PtoIuz
-         f8Ug==
-X-Forwarded-Encrypted: i=1; AKwUvBzTzyM9aVG43l9Iz6SihuHsADBfJoxVU7ry6gW7KV0u0FYvFTl2yqJruUr4U4Ib7zPPdrisW6pWlNH5vDk=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYIZ5w4iL+M2BzTN6bqzcclNRrtLtyxYTB0b+GJn4WxPKk8ZGNgC
-	TfhfsuCf9dElTOsed698rgjrsD2pNr4EYPE6LMTUYd6+5TzQktFs8krOCJHNEthEHg==
-X-Gm-Gg: AYBFou0Jt+ZCDzqQdPe/X6g3bQmi87G1XL9fZykcxRf0yIuR6WNvr0YxEj9IDtO+pQn
-	zyd3khIQFAUNJFyCTrIDbKuLbtNtrBN6AzyAYTPLCjSKgeCZavmJTEFZKDrSHaauNnmcvzlZU/J
-	slFUyWF6rCSdTaD2Xu7l37kNu/pYcBgpX3+GoZGLE/Ry4NOdlqR4lqIKdcHxG51oR9NECwzMqnp
-	vE7ZyTMJJu0IrqWFZO0YdBITzOyisu/8FPSIw5NmkuoLsJAgeNFN9P3T40oNnY7evUERnNop29Z
-	ZKM+JbWPzccZw0uk8qATCsz32KOdLYBJeLdqg68gr/LOvhA4W9uIZZwsMyS2blxuRRjOsOOxb3G
-	MjMa1xMuRaNPAmE2SDaojnZU2o4r/IBfOymmpIf7cI8U2FOgFg8Pgy0rXAs7+VAP1CGrVC4tAS6
-	xYwgkZpsyosCgM6YbkbK0a9BQWrBGnkxi52g3rKlcVYqO4n+BddTg789TXmJl/jb6jMYPDKfhFp
-	93mMmV2kAuCxZ/Yf1gLYPYCAy+czQ+fI5EHxUph4/zXe+kcimxjYAMdR2WM+GADYz394DfONzps
-	xHAD1fPNJ/n3K7o6mlrqRWRfVp6vbGi4hqS3CDfmK5GWgBJLW52mVx6i3PuCg8xkUJpqzNrBAiI
-	k4bpHRkKISwILc04aazrcMWFOdgUVy+IsZxaEQnA=
-X-Received: by 2002:a05:6808:bca:b0:4b8:4703:db97 with SMTP id 5614622812f47-563efb4d666mr411105b6e.32.1793220530793;
-        Wed, 28 Oct 2026 13:48:50 -0700 (PDT)
+        bh=KlFs5O5F58aRmAuOBc20ZN5pSWMjbwV9elx9B8mpSCE=;
+        b=AppMCL9GmrnbAiBXdJrFWsRadwUs5Qh5Y5+egk5iiH2tQhcAUqPib18p8f6JwpFZ7H
+         yBsF2/9rkgdZ3BgsErE9e833VACIouJehVIOKx/Otswr5xHs7Pd04E8+Q7EOOHSE1C6s
+         e+qj2AEK1p1iM9qzEUtvJbkR8xy8QtLzddMov87Jxse2GHAZ/ESqZx6Q/ANtp9IHaRQD
+         lB6DpjTsxMvPMdtBJjkyL2pUK9iRKmZPF5rPMbhYiegvplwpqo5FeHt8oRSYQgSzk3g5
+         7GHVRQH3vMdsgbUVk0gjh+do5X61FdLIc2GR56SpjErgwItFEzKtLyArFmOn4SYDdzuI
+         cs8w==
+X-Forwarded-Encrypted: i=1; AKwUvBzcJV/lsWF9W/9JR+2RfhPlyxKrhHaUy2JB0pY1sK7x2udx9mt5Bn4c/4Qn3bhAueJZENrU3u6gd3AHSjg=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYJ908IgvnQj3y+eIio2BuY0R+cpcUbaiFHhbuhbm16VSA7MUdkG
+	QQLorHD2SE5eG0P1N48dzw2l8ZIaT62goPit16+i+79jnZZ8BdPaya/nEHgv7trZhA==
+X-Gm-Gg: AYBFou1V/0MHy5cReo4LfuvIZum0v2vuleJqIhocqv21jMzCdFB/PNuQuKaFFvrqtm9
+	kKSQ0rQ08zscG05JEAfrOI2sk0VaNxuNE7ruAwuQY29AGcAY3d/wQnLfhN0GQXhgMmZg/zPO/Y1
+	4QRouboJ8Xa1ugnJEVPqlTQJZzJkO/MmFH964t6O0/LZuQBBUrehcDq7eeLL15Of07tIPtJWIvF
+	aw19+a5hhcfK3RDbjATWMvWfkXoZ+VfgLqcUVVS6aAAgAa/QRzgil6QxPdJAylDC4juS83iOUG8
+	rIb16k5pBwzYVwkubIm0XFfTeBoV+az4fO8RJxBdgKNilhgN411HP3vatBGUK0XKhi8WE74nDYO
+	tY/0ryR3v2AMnokCSpl5fkPRiKm8BSJqlnvKrmxop+8aoDGdo7jPBp5B+P8BWNG3LvBj7YzkTgS
+	qThlue8YfDkI3oQxRfuMWC9Qm9bYJir5hMfxfNGEci/fZyylutD7B0Henrj8h7dq5DWP8WgpVwn
+	Jl6Uy0OjYjOv6f9hC9ot1qX5iy5uucil0kXt097sbQtHcrJVUWtCY5FjckluMUmryHCSrmPhL39
+	3bmdQMoPjXm28EC+7Ct6Doxl6lIkrO+qO1l3IeXEYTw/M0f2PUBI2MGYjv3inSRLfcabX80iOhw
+	Nri+QwYw2a16PscvRZw==
+X-Received: by 2002:a05:6808:4fe6:b0:4d6:90d3:e18b with SMTP id 5614622812f47-56383e93e14mr3396274b6e.52.1793220532771;
+        Wed, 28 Oct 2026 13:48:52 -0700 (PDT)
 Received: from rrangel.c.googlers.com.com (202.168.136.34.bc.googleusercontent.com. [34.136.168.202])
-        by smtp.gmail.com with ESMTPSA id 5614622812f47-563c363902esm2281137b6e.2.2026.10.28.13.48.49
+        by smtp.gmail.com with ESMTPSA id 5614622812f47-563c363902esm2281137b6e.2.2026.10.28.13.48.50
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Oct 2026 13:48:50 -0700 (PDT)
+        Wed, 28 Oct 2026 13:48:52 -0700 (PDT)
 From: Raul E Rangel <rrangel@chromium.org>
 To: James Hilliard <james.hilliard1@gmail.com>
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -99,12 +99,12 @@ Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 	linux-arm-kernel@lists.infradead.org,
 	imx@lists.linux.dev,
 	linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v7 2/5] serial: serialize asynchronous write wakeups with the port lock
-Date: Wed, 28 Oct 2026 14:48:45 -0600
-Message-ID: <20261028204847.3471382-1-rrangel@chromium.org>
+Subject: Re: [PATCH v7 4/5] serial: 8250: drain canceled TX DMA before reusing its buffer
+Date: Wed, 28 Oct 2026 14:48:46 -0600
+Message-ID: <20261028204847.3471382-2-rrangel@chromium.org>
 X-Mailer: git-send-email 2.56.0.212.g129ede20d9-goog
-In-Reply-To: <20261027-submit-serial-8250-dma-cancel-v1-v7-2-985a023ba4b4@gmail.com>
-References: <20261027-submit-serial-8250-dma-cancel-v1-v7-0-985a023ba4b4@gmail.com> <20261027-submit-serial-8250-dma-cancel-v1-v7-2-985a023ba4b4@gmail.com>
+In-Reply-To: <20261027-submit-serial-8250-dma-cancel-v1-v7-4-985a023ba4b4@gmail.com>
+References: <20261027-submit-serial-8250-dma-cancel-v1-v7-0-985a023ba4b4@gmail.com> <20261027-submit-serial-8250-dma-cancel-v1-v7-4-985a023ba4b4@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -120,70 +120,69 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=4.0.1
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 Hi James,
 
-A few issues in this patch across the serial drivers:
-
-1. Recursive self-deadlock on ltq_port->lock in drivers/tty/serial/lantiq.c:
-
-> @@ -239,7 +239,8 @@ lqasc_tx_int(int irq, void *_port)
->  	spin_lock_irqsave(&ltq_port->lock, flags);
->  	__raw_writel(ASC_IRNCR_TIR, port->membase + LTQ_ASC_IRNCR);
->  	spin_unlock_irqrestore(&ltq_port->lock, flags);
-> -	lqasc_start_tx(port);
-> +	scoped_guard(uart_port_lock_irqsave, port)
-> +		lqasc_start_tx(port);
->  	return IRQ_HANDLED;
+> @@ -37,26 +40,35 @@ static void __dma_tx_complete(void *param)
+>  	struct uart_8250_port *p = param;
+>  	struct uart_8250_dma *dma = p->dma;
+>  
+>  	guard(uart_port_lock_irqsave)(&p->port);
+>  
+> -	if (dma->shutting_down)
+> +	if (serial8250_tx_dma_blocked(dma))
+>  		return;
+> -
+> -	if (!dma->tx_running)
+> -		return;
+> -
+>  	serial8250_tx_dma_complete(p);
 >  }
 
-Inside lqasc_start_tx():
+Removing `if (!dma->tx_running) return;` and relying solely on
+dmaengine_synchronize(dma->txchan) to drain completion callbacks breaks on
+DMAengine drivers used with 8250 UARTs that do not implement
+.device_synchronize (where dmaengine_synchronize() is a no-op), including:
+- drivers/dma/sun6i-dma.c (Allwinner H616, cited in the commit message)
+- drivers/dma/dw/core.c (dw_dmac)
+- drivers/dma/pl330.c
+- drivers/dma/mediatek/mtk-uart-apdma.c
 
-	spin_lock_irqsave(&ltq_port->lock, flags);
-	uart_port_tx(port, ch,
-		lqasc_tx_ready(port),
-		writeb(ch, port->membase + LTQ_ASC_TBUF));
-	spin_unlock_irqrestore(&ltq_port->lock, flags);
+On those controllers, if Transfer #1's completion tasklet (vchan_complete,
+dw_dma_tasklet, or pl330_tasklet) has already dequeued the completed descriptor
+on another CPU, dropped the channel lock, and is waiting on port->lock at the
+start of __dma_tx_complete() when uart_flush_buffer() ->
+serial8250_tx_dma_flush() runs:
+1. serial8250_tx_dma_flush_work() calls dmaengine_synchronize() (which returns
+   immediately because .device_synchronize is NULL), acquires port->lock,
+   clears dma->tx_terminating = false, and calls serial8250_tx_dma_complete(p)
+   -> uart_xmit_unblock(&p->port).
+2. If no new transfer has started yet (dma->tx_running == 0), Transfer #1's
+   in-flight callback acquires port->lock, sees !serial8250_tx_dma_blocked(dma),
+   and runs serial8250_tx_dma_complete(p) a second time even though
+   dma->tx_running is 0.
+3. If a writer has already started Transfer #2 (dma->tx_running == 1,
+   dma->tx_flushed == false), Transfer #1's stale callback runs
+   serial8250_tx_dma_complete(p) while Transfer #2 is still active in hardware,
+   syncing tx_addr for CPU, advancing xmit_fifo by Transfer #2's tx_size, and
+   submitting Transfer #3 concurrently with Transfer #2.
 
-uart_port_tx() invokes uart_write_wakeup(port) while ltq_port->lock is still
-held (nested inside port->lock). If anything in the wakeup path or printk()
-invokes lqasc_console_write() (which takes spin_lock_irqsave(&ltq_port->lock,
-flags) at line 612), the CPU will immediately self-deadlock on ltq_port->lock.
-ltq_port->lock should not be held across uart_write_wakeup(port).
+In addition to implementing .device_synchronize in the affected DMAengine
+drivers, __dma_tx_complete() (and omap_8250_dma_tx_complete() for symmetry)
+should keep `if (!dma->tx_running) return;` and check
+`dmaengine_tx_status(dma->txchan, dma->tx_cookie, NULL) == DMA_COMPLETE`
+(matching dma_rx_complete()).
 
-2. Missed unlocked callers in drivers/tty/serial/dz.c, drivers/tty/serial/zs.c,
-and drivers/tty/serial/jsm/jsm_cls.c:
-
-The commit description states:
-"Ensure every driver caller of uart_write_wakeup(), directly or through
-uart_port_tx*() and uart_handle_cts_change(), holds the port lock first."
-
-However:
-- In drivers/tty/serial/dz.c: dz_transmit_chars() (lines 266-288) only locks
-  &dport->port around dz_stop_tx(), calling uart_fifo_get(&dport->port, &tmp)
-  at line 267 and uart_write_wakeup(&dport->port) at line 281 without holding
-  dport->port.lock.
-- In drivers/tty/serial/zs.c: zs_transmit_chars() (line 641) only acquires
-  &scc->zlock, so zs_raw_transmit_chars() calls uart_fifo_get(&zport->port, &ch)
-  (line 621) and uart_write_wakeup(&zport->port) (line 630) without holding
-  zport->port.lock. In addition, zs_status_handle() (lines 673-680) drops
-  &scc->zlock and calls uart_handle_cts_change(uport, ...) and
-  uart_handle_dcd_change(uport, ...) with no lock held at all, which triggers
-  lockdep_assert_held_once(&uport->lock) in serial_core.c.
-- In drivers/tty/serial/jsm/jsm_cls.c: while jsm_neo.c wrapped
-  neo_parse_modem() in scoped_guard(uart_port_lock_irqsave, &ch->uart_port),
-  cls_parse_isr() in jsm_cls.c (line 585) still calls cls_parse_modem() ->
-  uart_handle_dcd_change(&ch->uart_port, ...) without holding ch->uart_port.lock.
-
-Also, in Patch 3/5, adding lockdep_assert_held_once(&port->lock); to
-uart_write_wakeup() alongside uart_xmit_block() / uart_xmit_unblock() would
-help catch any unlocked callers automatically.
+We modeled the v7 TX and RX DMA cancellation state machines in TLA+ to verify
+both the counterexample traces above and the fix:
+https://github.com/ismell/linux-8250-dma-tla
 
 Thanks,
 Raul
