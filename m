@@ -2,76 +2,76 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 12C2B606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2026 14:13:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B3CC3606A31D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2026 14:18:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=0U9DKcU0
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=s8J3x7nU
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jF8Tx5k7Rz2yLY;
-	Thu, 29 Oct 2026 01:13:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793196805;
-	cv=none; b=UAIsciDqRJt/Cq/ZL7ngsRQRQN1q97Az4sYyABo8VHJAzGcVXRTVaTba4bKvi5s6FDsuSk6geUdIXngqJ+LzffBylaDULJ4EBo9wevpF3Hk7ifwmpxg8XoXKbmC2igWaNn1Hl8Y19Sn3Fbz8njA156k1biurrBUuqR7kDcold6oMLfXLGvi/dv1RrchZtCQ1Elsmnp1dTdxCIC0fiEXsMdTKsjHyDKiXLsmuNPfYbzXUNv/VzLKegmt76UATHJC+QFnR4teT1mz71xjcBu6Hxl1kUjnLCchJ6hoFoPiyLmeo3OkByZhvr85t5NEnjPIZ4X0XXbDyHbxL2RyhYcQLRQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jF8bs2LSXz2y2Q;
+	Thu, 29 Oct 2026 01:18:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793197113;
+	cv=none; b=aB8HOwBwqLWm5k1ATE14pXBYDhrYojFveQGPxOasFWPymCN29bNZRSINUt7Kcb/GJ3RbOoBrcpnA8d8hMWMuTh+SMjBXhRTFEgKuLIafYYvSt8f+sHPhoy37o7Z9Etc8+u87ZetX0UrfrJ7ivfrFWIHFE4qV4xdq1LJhZMALdLL9WCve7NuRw48x5EHjwOINGnUmwc6fwockSypg7W2pT7WdN+zeMt784QUDZPkWkwc0n04danK9fmrAgzn2lZ8weRZrwKlBBNjAyjfR+KXd/BA8tf4onqlc5qAlAK/OVOO5OMdCz4Zd/Fa9k7WQAZV/GU1EbArXppHj8WftsCQicg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793196805; c=relaxed/relaxed;
+	t=1793197113; c=relaxed/relaxed;
 	bh=1oInV8X/kpsTReR0GbICzmQIbB4dJNZpXCGXqUrcWEM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=hyUo3p3TlIY7NmmAATIgayxXJbG1tpV9lN17iwRxki154SVIf0MmlsEg0P5dCPQBpJP4Jadb3E8Nm119zdPOBA3VFzIiC5rh7wRH4izuhmB8sHqy49EKoXQREe6x94JKxK7x1QP42klVg6I4VGHrlEW8Pj/aVwiokhEFYYjkkfYYnXTI024D+O0vGX4wODBzG/sBEyxBOXe0r+5hkxPS2xRnVlv2urqWSug8dR79itOwf3QYaMGMsxHFuuBqO6XJuTtRjWgZ3n7+QdvidSyIr/JXAVObOJrJUYphzAh7MiiM9wZxL2ZiOSXEKnDnYzPN6Rb7M2VYmNgfLnXunLFIbQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=0U9DKcU0; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=lefteris.koutrakis@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ZclgobSCi5vCQSLebsSfohTA2OSDwSIku5eqHbLqEfAqigLuJU9t38wi6EQ2c+5LyR8dYhsuF9zwsyJQ85PFekCzDLVYNDUxtjnG7ulVAQPpKyT459EfqkP7eLh3KQ2lUYs+yBEzgzDM7y6rKK+9Hwimy+Eu3sPMKSqtOwABVAW9Hk+sXoq2HPuFKSxDE7NWWTb/Q6goIw58D0NQZwb6/Bl9Yh6Abgp0D/632bWSmHP5bHiQixRxN2OOmDtATWDofLHAC3CTvT013GjjDSS37HWm7fx6zvSiO/3o3edEhwefFK0uWWF8lO3qMdEWQQrnGIm8RsSCcRrx3qWlwidhCw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=s8J3x7nU; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42b; helo=mail-wr1-x42b.google.com; envelope-from=lefteris.koutrakis@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=0U9DKcU0;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=s8J3x7nU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=lefteris.koutrakis@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42b; helo=mail-wr1-x42b.google.com; envelope-from=lefteris.koutrakis@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x42b.google.com (mail-wr1-x42b.google.com [IPv6:2a00:1450:4864:20::42b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jF8Tn6k0wz2y8p
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2026 01:13:17 +1100 (AEDT)
-Received: by mail-wm1-x32e.google.com with SMTP id 5b1f17b1804b1-4a1fbd52ab6so8232445e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 07:13:17 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jF8bq62GGz2xlZ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2026 01:18:31 +1100 (AEDT)
+Received: by mail-wr1-x42b.google.com with SMTP id ffacd0b85a97d-48c5358fc28so852670f8f.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 07:18:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793196795; x=1793801595; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1793197108; x=1793801908; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
         bh=1oInV8X/kpsTReR0GbICzmQIbB4dJNZpXCGXqUrcWEM=;
-        b=0U9DKcU09EEShCLv1ohm7apTn6UOWnrQYAZrJYXL9VSTwMK/hCCikG97m9QlfOQTzI
-         rExeE1YB5ViCFU0V0F/ZDAzCE10fR1Qf0I8WQphKmGmDHbOCq1M44ZKS62sHWjATTHe7
-         Jf2ghy+p29Ycdgl1EgGUG4Tndx/fATFBcWNuwKDrYesw52m8dIPOHJ7hn3eMLB0jpUP+
-         0dPcn0Bxf5ElpGBPtMIsfqMV5zxcGM22RYoblX5/ZXUEHXGTmMP4VJ5LP4o5A7hiChEv
-         vWXIP09VZzzbC2YOeCMyJJqt6uiSHklABQNAvG4yc+83hQOlU8yeVYTrFSSS+dZ4xKAI
-         67Pg==
+        b=s8J3x7nUOznAU+znpLVHCb22DOqo7btg03DgMXxGR8pSaokTp3YyldMWQXGxLkAqqt
+         LOYzR7LF++jxWsFsaSUvgJfkY5LENW8l3eGyKTVZagkLsNiGWlLb3x6SkIY/P9V9CKos
+         OPdLyz77O1bsWBAn06yt2MBSjqQihcydIDRfLPwsMPyr5pZPzfldN7cnGwjghH8cZCgY
+         NOpqMQd0jW63iZBLt0Bozf3yNFIXDkpmVUX1XzzJ0U1Jf8NmM6025DSwrxLMPiRWQUj1
+         Oc8sM7krleFMWxmIuK2MwWgBR+oVG/FAUnnuKQfTJieju/2AoNoX1yj4LJGI+iIkxBjx
+         2/cQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793196795; x=1793801595;
+        d=1e100.net; s=20260707; t=1793197108; x=1793801908;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
         bh=1oInV8X/kpsTReR0GbICzmQIbB4dJNZpXCGXqUrcWEM=;
-        b=hp0Tfazq9wc9k9p3YfJeACWYGEKPQKzT33W0AWApkqhzGi9qZMe5yPfxifPFwmdB5L
-         0pU8MHyi7QdnXE0ekHAkm0xDjrAd4exq4eR9YqliG3otW36uUvKDJ8N3TWUYpT76Dw/0
-         8+4K5xgfjJiqrMTQAVVAHvgl0c0jbiXuc7IimV6mXNVdCuPP+yEGzIgla7r975yVp1/c
-         J9n8rrFXh9B5eaRzCaZ3Iz9cDaX0BkgdHAguk6SGAbo93RGPC4CdCJLfm2Qlu+hvTt41
-         VmkEV/IjDyZQsBfLHVWSq6slAj3FTCtlaGJN8/Ugl7j5YqlDdyuaHCn54pRo2+Valdcc
-         SDsw==
-X-Gm-Message-State: AFq9FYIF33np+nAUlGvA0iW1k3l7vGIcYpfYa+DdhzbLi2kDOfISlQuq
-	UiUzZRKCTYP9Mpd5yWGnzUrgR4pqN1kXe0eMwX81/pdsVyT5q3hzffblfQMAYPh0g38liQ==
-X-Gm-Gg: AYBFou2ZmgHr0sLqs3C6+glndHt/lKfLyRKnXW/GxnHRbNQWOwd+TREf84aU+3xqxLD
-	yZkhi65Vn4rrth0cyiZM8r+wPqHC3fECmeizy7ycGuR7j+MJCdl82kwvRvSKGQAbhqE6zPsoXu2
-	eFlCYG4XX7in78Iy/GaB9SswQhSAbSfOJxpbEvbiNI4Lj8/7iSN2CIyYSQJm281vn35PQGKohtd
-	L26Bv46wRIuBP2o19KR9SYQ+PeJ8cOjgsZ/d/noEjkoFR00T4Bu0yzVcpWfWpc+OO1JatPq6rI4
-	ULMpT1z98hwomR7uFYjEB4RUEUz1IK0cRyKMotbQjfywlzeiEKNgTE7Ixz0cnQS7OEahs40rZO+
-	AQbU/QyPESfFG/IiFn3SUu0P0rwa6h9xkLVNbTcHsiWCnaHoBiOC4TC7n0r0UM3Vn7ipXFnwxwk
-	tN+rI4vUJSUI8yDSG+g3c6b9VG+s+Y5FrzkhxtUcxitYbeZFe4tmebtaAuC3P0tXvkuJf4PzSd2
-	7wrHp1ynQ4K2aFJGwAOG3zt1Kzojl+DTPOFcKKkIcG3BmL5vKR4tFP4+QM6JePw7iW0qr7gJWHT
-	rCi2xCGXS230HTKNhNKghFc5epoBbtOo6cwGLz08I/NZo7bg6HEdANn2VYivxUNYe+ZrxjDEhSp
-	vUJ8nqfvE6Zow+iaQshOcawRFeKBrerhugl7WdpDWA9Q2dFOxZ8XTKUwfS/FaTLW56pYvDR8Eys
-	hyICaPoIcwUhopj3BGgVom48y600BkT3NDqwOf
-X-Received: by 2002:a05:600c:46cd:b0:4a1:ddaa:571e with SMTP id 5b1f17b1804b1-4a96695ec9cmr47593595e9.15.1793196794362;
-        Wed, 28 Oct 2026 07:13:14 -0700 (PDT)
+        b=v1nd1HfaME75B6fq5VKNrzNYn17Jbxz47fP/tbDoflGPg08DVS5cUGzRObYH3i6L/c
+         IbNNQuLT7LeYvltEGU3IXSA77Q1MjGn31GvfLDw83ibAxTUxCsXFOG50lFnin6lie1zC
+         dXH5DTpRzGFwh1g/xAZpqzQVbO8NUFHwYgVXBXFSKER07GRkcZFfJBHs71TE7F/I3Hr5
+         L9GuN98vMWngi5p8c4sKIKDjYWGL+ZXvGZV/NzRDTiD5S4IiEgSO2poTNf0D+z2TDVUK
+         XgV5QYU/L/dZmRHn5ejk3TaqKCi8VwG1yHLdBY7SXVBLcwgCNrfr3wIH1SB+n9P0Bs3X
+         Ds0g==
+X-Gm-Message-State: AFq9FYLBLsaM5B4oPAGM349wPqYTOtyMl1fF5rvBHABlczkNmhxJPXJc
+	+pt/uAnfpcSx0+4F3Bt1IMYXdE8bZJNjK3IM8R/658WufeBcisP9OFQKDrGA5F8X+rawQg==
+X-Gm-Gg: AYBFou0jFpGKoGAdOU3YyPgTGGD9uKIDfNPr4od9R2Fp+ZAgDXuoZYn+y8Ip6I5iqv3
+	Yr1TQlGNH/Y/5JsAoCuD16TJNYStBv7I3S8eX8SwaZ2BSDlDE7kMrqvkX7q/inoyjypbzp/C/tg
+	6UUCmpaFFBG49ki++K5vepZU+Te3kCqT1MlCt2vi4P46oqOjYYr+x57A1oK+nyaCmnDuiUf+pz9
+	4wTEs2409SOdOo8AzK/cG7O+KKGgImw0eDF+wkKHikGQ4B7capuoZh0LYT/tZ6nYEn4RkDPIdpK
+	jwvKPMlscaJt4h1kJLRDluXDq7vbFRhCTUdJNNSTRc0vp0ZrAEqW5Rfxv2zOABXbXdXOK/swcKi
+	XYr0NB/XzMlWs54m0FPGZ4gxfojdt7Uvf+in1h7Lddb/tDD8b36+nW/eCLbyv8ipe5F8cNPY0Qv
+	gTbFlpxXJ3/SZNVkShlo9DLxCpeHCBBmocr9IDtgAwtwqt0zUoo4tYrXVwMzmY989n9VBw7C3L/
+	yiivpV/yWgPzjKo9CMfIqL8KV4BMPYBjgVfx6hZ+xPFVBwd8RHI6/RB+4XoswkVsM4MyM+6GBxB
+	jBcFh9SSMk19NymmMC7lZGpp5SRVB37yB3P6/r826nfnFgJoYBdkLBa9Bk9/8khr80r4oblHemL
+	G2ss6KuHxOjD315Q775VnRwYLdWqWI6ApNRrKbGFoU+J6imdgHnsfqTpd9j7I6aS2w7rJ3NlBDR
+	X0FYwkFMma2NyCz59fg5JLA+w7Pntfwt+ZZwH7
+X-Received: by 2002:a5d:5611:0:b0:48e:f10:ceb8 with SMTP id ffacd0b85a97d-48e5d5909d7mr4371586f8f.11.1793197107788;
+        Wed, 28 Oct 2026 07:18:27 -0700 (PDT)
 Received: from kali (adsl-101.109.242.200.tellas.gr. [109.242.200.101])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48e3ecd3555sm28345768f8f.42.2026.10.28.07.13.12
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48e3ebcb90dsm27122688f8f.22.2026.10.28.07.18.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Oct 2026 07:13:13 -0700 (PDT)
+        Wed, 28 Oct 2026 07:18:27 -0700 (PDT)
 From: Lefteris Koutrakis <lefteris.koutrakis@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org,
 	devicetree@vger.kernel.org
@@ -88,8 +88,8 @@ Cc: linux-kernel@vger.kernel.org,
 	sashiko-bot@kernel.org,
 	Lefteris Koutrakis <lefteris.koutrakis@gmail.com>
 Subject: [PATCH v2] powerpc/dts: Add Device Tree for WatchGuard Firebox T30
-Date: Wed, 28 Oct 2026 10:13:09 -0400
-Message-ID: <20261028141309.134256-1-lefteris.koutrakis@gmail.com>
+Date: Wed, 28 Oct 2026 10:18:22 -0400
+Message-ID: <20261028141822.136982-1-lefteris.koutrakis@gmail.com>
 X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -105,11 +105,11 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=4.0.1
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FORGED_GMAIL_RCVD,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
