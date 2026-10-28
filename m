@@ -2,50 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A0B5606A32C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2026 14:18:58 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23152606A32D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2026 14:19:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Aa+S8nAm
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KB0Zm0TA
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jF8cK0BjVz2y2Q;
-	Thu, 29 Oct 2026 01:18:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793197136;
-	cv=none; b=Ee6o+9F1LUUadMd7+MLwgB5kUJNC0uDvigEttxLNd0y2Rqb0HtdLJDYRmLzXG4G8fX+PSYzbS1EN90/n53En70WTEQLHWps1N3vlaE8jnk+YOWJhsdd43U0XqyYX0MA0uSbpRuwn1COxIgbLpvWTZp07rl7CA5bSczEufekQ643CFGNlhruiNFVtI622DzSOxfeRvV8hWEm0DcYI3ryLpoUkwnsGRnkwCkN6I0NHS6dBycexuWEi9r2zQNVG3MOzG7fT2qC2rT6Ig4KoV1EerqLToLdAaFdmVFpW8kCkUietIGbY+TnpN8Zsj1HBse9G/riIDB5KypBQayX10XmWeA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jF8dB2r4rz2y2Q;
+	Thu, 29 Oct 2026 01:19:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793197182;
+	cv=none; b=Xy5SQQS2OVUYf2Qzxl61KFA4ZLIhwuMsl3nJ1uXIRL+CsWpvdA9hrpQX1AUnqgN975zHpTXk8Tbmzv4PERnp1V4dF0sq8w/ou2HUkh9GGAcpd5iqpU09KhWq6TuU7xMEwHOaEXrOC+Jd41SxdatjlMGjhDZMf3swnHCNVYtDggdfKBRZbtC3ZhDYSBTM0yCrQR1+SP0Wd6TvTwFP1XqyaYD3XkyqN1jGFv8UES51avf6dY8YbxJKR9uQ88APkPcUWV1QbLlXDEqJ6TRghVkrYItJGYN+zBToHm8VonGGysQzGDdBhetrxUeLP7jiVKiwEabhVFDf9kP6zolfo802Tg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793197136; c=relaxed/relaxed;
-	bh=7zT6r2/0HYw2IYnOZSrhi4CsyKbR6spU4l7qokveRvw=;
+	t=1793197182; c=relaxed/relaxed;
+	bh=uWR5yf0kmBZpNPUmleUCAEsXCaFGC757CJmaduMrwkU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=TPG9OAeWZ/CvZ6Y3sFO/VPNop+agkxkf51Z3+eYT5w1GHeYuy4IISwBbXPu5Gua6EDbiIqb05PptQbPdynRKS8quDzRn3Bm8jlZIitJBifhSy2hhQ85kkTpLffmQL9ZFXqxP9VqpTH4HYMoQfTWQeSQ9g+/JtDBjw1iNnKWFISCptrucNarC8KhsUdtAQMUfDjWVAT3wuBRfJlYFneQbzBeTyJjl6gfBP9BQCdG9XSdSydbfamYZHE4o2KAGrkN/g1QTQh3wWzyiD9wTFmfMJIrQX/YrNAwuo0/JLBMdaY3qWH+PrtYpOJrpWiU89zGxImzyeur3JGONUsAdKssYQA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Aa+S8nAm; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=iUZOx/O0ss5/C5MIYVG/RzGUjKAu8tcXM4Gv8vUu+sS/yCN9uX6t1f9bmt0kcdjc7KiCnrv2c+4BdsETLFvl9Cxc4ziPEXMxdIaAAoOCnHAX/7Brdv1BopH2PSGPknbjXkMLpU5rbtnj2/e5fMmp5KFvBkcsd6MLNTZRItEuGCzU/4FNyWXHs5ACAH+wb5GbFDBuGo6DZH20Gj0PwdHG5QVoa4ov1IFKAd78Fp8cBTl+EBf/+LCI3XDAWLHsJMX54EWx/jueg7nUC/YDFSiJ5um1soI9Uky224w3M/sZetdE3URI02o1kZ7y/Wknk8BucpOpHCj5HWjEyMf35G6mFQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KB0Zm0TA; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Aa+S8nAm;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KB0Zm0TA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jF8cH6qtdz2xlZ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2026 01:18:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jF8d94PB5z2xlZ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2026 01:19:41 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id CA6F4600C8;
-	Wed, 28 Oct 2026 14:18:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 664341F031E3;
-	Wed, 28 Oct 2026 14:18:47 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id ED6EC40C25;
+	Wed, 28 Oct 2026 14:19:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2DB1B1F031E1;
+	Wed, 28 Oct 2026 14:19:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793197132;
-	bh=7zT6r2/0HYw2IYnOZSrhi4CsyKbR6spU4l7qokveRvw=;
+	s=k20260515; t=1793197162;
+	bh=uWR5yf0kmBZpNPUmleUCAEsXCaFGC757CJmaduMrwkU=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=Aa+S8nAmF6cp8cavrrgCbo21gFzv0UVHPltSxr6+6hXj+WM5yGotkbYMtsRGU4lEQ
-	 yJ8ECcaCEe8jMFn6xaiFy/42//6sVxf9mQXAYgOKJzzS7NROJtdeyF8pe72zj6+LeF
-	 E7d6DKhrLJWkOYUvDQFBYPdHfKKMFFABz9oCtpeZXX3v6pu/RyLbiRLO05h+ZqRISI
-	 4xJXtesI+3ItC68/+2DGEDSlXhC5JlO6Frmcicv7tblewnmRqxJKZpQrexlsckl8Rw
-	 NkVocWiBw+gzGd3WeAKWW+zNZl4vY1SIoBy35wOT12rGvH/mNVQogrxTN0pY/InwMq
-	 P1j0TnQ5jZeIA==
-Message-ID: <e562bc1a-4ca3-4f90-a95a-3f228abc28b5@kernel.org>
-Date: Wed, 28 Oct 2026 15:18:44 +0100
+	b=KB0Zm0TA4eti+wq98f13NCZMXClhnrJyGyFkNdOUiShldzYoHTpnpU5xhr4T2Jy8Z
+	 hc/ORlscok4upl26HqKUiA7GLvwei8IUezub7F60X3wzysUZVlrr1CARNIqghE73Dm
+	 3isUFZn0n+rFHpyCu+epMoZnphPFeE5GdkwNkVrCoEQm3kyMT/doA/oatlZA2S4M6s
+	 8zohH+A3+li5ijYX9q745SWEECHTiJQC0rQfjss6xfiZoc/tSECj1u6QP7R5q+ctN/
+	 FtkZ+jLy7rmWgTHy5YRaurRfrp7HzTRePiuhwwwe17XFTgpdoQgdS+cChMuvE/VeXi
+	 iQORtJ9ckyxSw==
+Message-ID: <c26c7e8d-f8bc-472f-bdd0-676fa33cfb04@kernel.org>
+Date: Wed, 28 Oct 2026 15:19:15 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -68,7 +68,8 @@ Cc: linux-kernel@vger.kernel.org, maddy@linux.ibm.com, robh@kernel.org,
  krzk+dt@kernel.org, conor+dt@kernel.org, mpe@ellerman.id.au,
  npiggin@gmail.com, chleroy@kernel.org, ritesh.list@gmail.com,
  sshegde@linux.ibm.com, sashiko-bot@kernel.org
-References: <20261028141309.134256-1-lefteris.koutrakis@gmail.com>
+References: <20261028110951.101614-1-lefteris.koutrakis@gmail.com>
+ <20261028140556.130612-1-lefteris.koutrakis@gmail.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -114,7 +115,7 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
  n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
  qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
-In-Reply-To: <20261028141309.134256-1-lefteris.koutrakis@gmail.com>
+In-Reply-To: <20261028140556.130612-1-lefteris.koutrakis@gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -124,18 +125,13 @@ X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 28/10/2026 15:13, Lefteris Koutrakis wrote:
-
-Please write commit messages.
-
+On 28/10/2026 15:05, Lefteris Koutrakis wrote:
 > ---
-
-And changelogs.
-
 >  arch/powerpc/boot/dts/fsl/Makefile        |  1 +
 >  arch/powerpc/boot/dts/fsl/firebox-t30.dts | 23 ++++-------------------
+>  2 files changed, 5 insertions(+), 19 deletions(-)
 
-You did not add any DTS here.
+Can you stop please? 5 pointless, duplicated emails.
 
 Best regards,
 Krzysztof
