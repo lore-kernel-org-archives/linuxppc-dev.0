@@ -2,95 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B3CC3606A31D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2026 14:18:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A0B5606A32C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2026 14:18:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=s8J3x7nU
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Aa+S8nAm
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jF8bs2LSXz2y2Q;
-	Thu, 29 Oct 2026 01:18:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793197113;
-	cv=none; b=aB8HOwBwqLWm5k1ATE14pXBYDhrYojFveQGPxOasFWPymCN29bNZRSINUt7Kcb/GJ3RbOoBrcpnA8d8hMWMuTh+SMjBXhRTFEgKuLIafYYvSt8f+sHPhoy37o7Z9Etc8+u87ZetX0UrfrJ7ivfrFWIHFE4qV4xdq1LJhZMALdLL9WCve7NuRw48x5EHjwOINGnUmwc6fwockSypg7W2pT7WdN+zeMt784QUDZPkWkwc0n04danK9fmrAgzn2lZ8weRZrwKlBBNjAyjfR+KXd/BA8tf4onqlc5qAlAK/OVOO5OMdCz4Zd/Fa9k7WQAZV/GU1EbArXppHj8WftsCQicg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jF8cK0BjVz2y2Q;
+	Thu, 29 Oct 2026 01:18:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793197136;
+	cv=none; b=Ee6o+9F1LUUadMd7+MLwgB5kUJNC0uDvigEttxLNd0y2Rqb0HtdLJDYRmLzXG4G8fX+PSYzbS1EN90/n53En70WTEQLHWps1N3vlaE8jnk+YOWJhsdd43U0XqyYX0MA0uSbpRuwn1COxIgbLpvWTZp07rl7CA5bSczEufekQ643CFGNlhruiNFVtI622DzSOxfeRvV8hWEm0DcYI3ryLpoUkwnsGRnkwCkN6I0NHS6dBycexuWEi9r2zQNVG3MOzG7fT2qC2rT6Ig4KoV1EerqLToLdAaFdmVFpW8kCkUietIGbY+TnpN8Zsj1HBse9G/riIDB5KypBQayX10XmWeA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793197113; c=relaxed/relaxed;
-	bh=1oInV8X/kpsTReR0GbICzmQIbB4dJNZpXCGXqUrcWEM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ZclgobSCi5vCQSLebsSfohTA2OSDwSIku5eqHbLqEfAqigLuJU9t38wi6EQ2c+5LyR8dYhsuF9zwsyJQ85PFekCzDLVYNDUxtjnG7ulVAQPpKyT459EfqkP7eLh3KQ2lUYs+yBEzgzDM7y6rKK+9Hwimy+Eu3sPMKSqtOwABVAW9Hk+sXoq2HPuFKSxDE7NWWTb/Q6goIw58D0NQZwb6/Bl9Yh6Abgp0D/632bWSmHP5bHiQixRxN2OOmDtATWDofLHAC3CTvT013GjjDSS37HWm7fx6zvSiO/3o3edEhwefFK0uWWF8lO3qMdEWQQrnGIm8RsSCcRrx3qWlwidhCw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=s8J3x7nU; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42b; helo=mail-wr1-x42b.google.com; envelope-from=lefteris.koutrakis@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1793197136; c=relaxed/relaxed;
+	bh=7zT6r2/0HYw2IYnOZSrhi4CsyKbR6spU4l7qokveRvw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=TPG9OAeWZ/CvZ6Y3sFO/VPNop+agkxkf51Z3+eYT5w1GHeYuy4IISwBbXPu5Gua6EDbiIqb05PptQbPdynRKS8quDzRn3Bm8jlZIitJBifhSy2hhQ85kkTpLffmQL9ZFXqxP9VqpTH4HYMoQfTWQeSQ9g+/JtDBjw1iNnKWFISCptrucNarC8KhsUdtAQMUfDjWVAT3wuBRfJlYFneQbzBeTyJjl6gfBP9BQCdG9XSdSydbfamYZHE4o2KAGrkN/g1QTQh3wWzyiD9wTFmfMJIrQX/YrNAwuo0/JLBMdaY3qWH+PrtYpOJrpWiU89zGxImzyeur3JGONUsAdKssYQA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Aa+S8nAm; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=s8J3x7nU;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Aa+S8nAm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42b; helo=mail-wr1-x42b.google.com; envelope-from=lefteris.koutrakis@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x42b.google.com (mail-wr1-x42b.google.com [IPv6:2a00:1450:4864:20::42b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jF8bq62GGz2xlZ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2026 01:18:31 +1100 (AEDT)
-Received: by mail-wr1-x42b.google.com with SMTP id ffacd0b85a97d-48c5358fc28so852670f8f.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 07:18:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793197108; x=1793801908; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=1oInV8X/kpsTReR0GbICzmQIbB4dJNZpXCGXqUrcWEM=;
-        b=s8J3x7nUOznAU+znpLVHCb22DOqo7btg03DgMXxGR8pSaokTp3YyldMWQXGxLkAqqt
-         LOYzR7LF++jxWsFsaSUvgJfkY5LENW8l3eGyKTVZagkLsNiGWlLb3x6SkIY/P9V9CKos
-         OPdLyz77O1bsWBAn06yt2MBSjqQihcydIDRfLPwsMPyr5pZPzfldN7cnGwjghH8cZCgY
-         NOpqMQd0jW63iZBLt0Bozf3yNFIXDkpmVUX1XzzJ0U1Jf8NmM6025DSwrxLMPiRWQUj1
-         Oc8sM7krleFMWxmIuK2MwWgBR+oVG/FAUnnuKQfTJieju/2AoNoX1yj4LJGI+iIkxBjx
-         2/cQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793197108; x=1793801908;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=1oInV8X/kpsTReR0GbICzmQIbB4dJNZpXCGXqUrcWEM=;
-        b=v1nd1HfaME75B6fq5VKNrzNYn17Jbxz47fP/tbDoflGPg08DVS5cUGzRObYH3i6L/c
-         IbNNQuLT7LeYvltEGU3IXSA77Q1MjGn31GvfLDw83ibAxTUxCsXFOG50lFnin6lie1zC
-         dXH5DTpRzGFwh1g/xAZpqzQVbO8NUFHwYgVXBXFSKER07GRkcZFfJBHs71TE7F/I3Hr5
-         L9GuN98vMWngi5p8c4sKIKDjYWGL+ZXvGZV/NzRDTiD5S4IiEgSO2poTNf0D+z2TDVUK
-         XgV5QYU/L/dZmRHn5ejk3TaqKCi8VwG1yHLdBY7SXVBLcwgCNrfr3wIH1SB+n9P0Bs3X
-         Ds0g==
-X-Gm-Message-State: AFq9FYLBLsaM5B4oPAGM349wPqYTOtyMl1fF5rvBHABlczkNmhxJPXJc
-	+pt/uAnfpcSx0+4F3Bt1IMYXdE8bZJNjK3IM8R/658WufeBcisP9OFQKDrGA5F8X+rawQg==
-X-Gm-Gg: AYBFou0jFpGKoGAdOU3YyPgTGGD9uKIDfNPr4od9R2Fp+ZAgDXuoZYn+y8Ip6I5iqv3
-	Yr1TQlGNH/Y/5JsAoCuD16TJNYStBv7I3S8eX8SwaZ2BSDlDE7kMrqvkX7q/inoyjypbzp/C/tg
-	6UUCmpaFFBG49ki++K5vepZU+Te3kCqT1MlCt2vi4P46oqOjYYr+x57A1oK+nyaCmnDuiUf+pz9
-	4wTEs2409SOdOo8AzK/cG7O+KKGgImw0eDF+wkKHikGQ4B7capuoZh0LYT/tZ6nYEn4RkDPIdpK
-	jwvKPMlscaJt4h1kJLRDluXDq7vbFRhCTUdJNNSTRc0vp0ZrAEqW5Rfxv2zOABXbXdXOK/swcKi
-	XYr0NB/XzMlWs54m0FPGZ4gxfojdt7Uvf+in1h7Lddb/tDD8b36+nW/eCLbyv8ipe5F8cNPY0Qv
-	gTbFlpxXJ3/SZNVkShlo9DLxCpeHCBBmocr9IDtgAwtwqt0zUoo4tYrXVwMzmY989n9VBw7C3L/
-	yiivpV/yWgPzjKo9CMfIqL8KV4BMPYBjgVfx6hZ+xPFVBwd8RHI6/RB+4XoswkVsM4MyM+6GBxB
-	jBcFh9SSMk19NymmMC7lZGpp5SRVB37yB3P6/r826nfnFgJoYBdkLBa9Bk9/8khr80r4oblHemL
-	G2ss6KuHxOjD315Q775VnRwYLdWqWI6ApNRrKbGFoU+J6imdgHnsfqTpd9j7I6aS2w7rJ3NlBDR
-	X0FYwkFMma2NyCz59fg5JLA+w7Pntfwt+ZZwH7
-X-Received: by 2002:a5d:5611:0:b0:48e:f10:ceb8 with SMTP id ffacd0b85a97d-48e5d5909d7mr4371586f8f.11.1793197107788;
-        Wed, 28 Oct 2026 07:18:27 -0700 (PDT)
-Received: from kali (adsl-101.109.242.200.tellas.gr. [109.242.200.101])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48e3ebcb90dsm27122688f8f.22.2026.10.28.07.18.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Oct 2026 07:18:27 -0700 (PDT)
-From: Lefteris Koutrakis <lefteris.koutrakis@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org,
-	devicetree@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
-	maddy@linux.ibm.com,
-	robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	ritesh.list@gmail.com,
-	sshegde@linux.ibm.com,
-	sashiko-bot@kernel.org,
-	Lefteris Koutrakis <lefteris.koutrakis@gmail.com>
-Subject: [PATCH v2] powerpc/dts: Add Device Tree for WatchGuard Firebox T30
-Date: Wed, 28 Oct 2026 10:18:22 -0400
-Message-ID: <20261028141822.136982-1-lefteris.koutrakis@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jF8cH6qtdz2xlZ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2026 01:18:55 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id CA6F4600C8;
+	Wed, 28 Oct 2026 14:18:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 664341F031E3;
+	Wed, 28 Oct 2026 14:18:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793197132;
+	bh=7zT6r2/0HYw2IYnOZSrhi4CsyKbR6spU4l7qokveRvw=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=Aa+S8nAmF6cp8cavrrgCbo21gFzv0UVHPltSxr6+6hXj+WM5yGotkbYMtsRGU4lEQ
+	 yJ8ECcaCEe8jMFn6xaiFy/42//6sVxf9mQXAYgOKJzzS7NROJtdeyF8pe72zj6+LeF
+	 E7d6DKhrLJWkOYUvDQFBYPdHfKKMFFABz9oCtpeZXX3v6pu/RyLbiRLO05h+ZqRISI
+	 4xJXtesI+3ItC68/+2DGEDSlXhC5JlO6Frmcicv7tblewnmRqxJKZpQrexlsckl8Rw
+	 NkVocWiBw+gzGd3WeAKWW+zNZl4vY1SIoBy35wOT12rGvH/mNVQogrxTN0pY/InwMq
+	 P1j0TnQ5jZeIA==
+Message-ID: <e562bc1a-4ca3-4f90-a95a-3f228abc28b5@kernel.org>
+Date: Wed, 28 Oct 2026 15:18:44 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,84 +59,84 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FORGED_GMAIL_RCVD,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=4.0.1
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] powerpc/dts: Add Device Tree for WatchGuard Firebox
+ T30
+To: Lefteris Koutrakis <lefteris.koutrakis@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, maddy@linux.ibm.com, robh@kernel.org,
+ krzk+dt@kernel.org, conor+dt@kernel.org, mpe@ellerman.id.au,
+ npiggin@gmail.com, chleroy@kernel.org, ritesh.list@gmail.com,
+ sshegde@linux.ibm.com, sashiko-bot@kernel.org
+References: <20261028141309.134256-1-lefteris.koutrakis@gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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
+In-Reply-To: <20261028141309.134256-1-lefteris.koutrakis@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
----
- arch/powerpc/boot/dts/fsl/Makefile        |  1 +
- arch/powerpc/boot/dts/fsl/firebox-t30.dts | 23 ++++-------------------
- 2 files changed, 5 insertions(+), 19 deletions(-)
+On 28/10/2026 15:13, Lefteris Koutrakis wrote:
 
-diff --git a/arch/powerpc/boot/dts/fsl/Makefile b/arch/powerpc/boot/dts/fsl/Makefile
-index ebbf301e1..0a5c8b596 100644
---- a/arch/powerpc/boot/dts/fsl/Makefile
-+++ b/arch/powerpc/boot/dts/fsl/Makefile
-@@ -45,3 +45,4 @@ dtb-$(CONFIG_GEF_SBC310) += gef_sbc310.dtb
- dtb-$(CONFIG_GEF_SBC610) += gef_sbc610.dtb
- dtb-$(CONFIG_GEF_PPC9A) += gef_ppc9a.dtb
- dtb-$(CONFIG_MVME7100) += mvme7100.dtb
-+dtb-$(CONFIG_MPC85xx_RDB) += firebox-t30.dtb
-diff --git a/arch/powerpc/boot/dts/fsl/firebox-t30.dts b/arch/powerpc/boot/dts/fsl/firebox-t30.dts
-index 546e98938..6e9ec7f90 100644
---- a/arch/powerpc/boot/dts/fsl/firebox-t30.dts
-+++ b/arch/powerpc/boot/dts/fsl/firebox-t30.dts
-@@ -4,30 +4,18 @@
- #include <dt-bindings/input/input.h>
- #include <dt-bindings/leds/common.h>
- 
--/include/ "fsl/p1020si-pre.dtsi"
-+/include/ "p1020si-pre.dtsi"
- 
- / {
- 	model = "Watchguard Firebox T30";
--	compatible = "watchguard,firebox-t30";
--
--	chosen {
--		bootargs-override = "console=ttyS0,115200 rw root=/dev/mmcblk0p2 rootfstype=squashfs rootwait";
--	};
--
--	aliases {
--		label-mac-device = &enet0;
--		led-boot = &led0;
--		led-failsafe = &led1;
--		led-running = &led0;
--		led-upgrade = &led1;
--	};
-+	compatible = "watchguard,firebox-t30", "fsl,P1020RDB";
- 
- 	memory {
- 		device_type = "memory";
- 	};
- 
- 	cpus {
--		/delete-property/ PowerPC,P1020@1;
-+		/delete-node/ PowerPC,P1020@1;
- 	};
- 
- 	lbc: localbus@ffe05000 {
-@@ -158,9 +146,6 @@ sdhc@2e000 {
- 			reg = <0x2e000 0x1000>;
- 			interrupts = <0x48 0x2 0x0 0x0>;
- 			interrupt-parent = <&mpic>;
--			fsl,sdhci-dma-broken;
--			fsl,sdhci-ahb2mag-irq-bypass;
--			fsl,sdhci-adjust-timeout;
- 			clock-frequency = <0>;
- 		};
- 
-@@ -410,4 +395,4 @@ ath10k: wifi@0,0 {
- 	};
- };
- 
--/include/ "fsl/p1020si-post.dtsi"
-+/include/ "p1020si-post.dtsi"
--- 
-2.53.0
+Please write commit messages.
 
+> ---
+
+And changelogs.
+
+>  arch/powerpc/boot/dts/fsl/Makefile        |  1 +
+>  arch/powerpc/boot/dts/fsl/firebox-t30.dts | 23 ++++-------------------
+
+You did not add any DTS here.
+
+Best regards,
+Krzysztof
 
