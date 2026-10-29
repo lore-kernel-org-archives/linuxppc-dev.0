@@ -1,52 +1,63 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72C89606A31F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2026 17:38:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 270AA606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2026 20:13:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=X2BGeVUp
+	dkim=pass (2048-bit key, unprotected) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=GxxHcrkl
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jFs0B5YRnz30Sv;
-	Fri, 30 Oct 2026 04:38:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793295514;
-	cv=none; b=oCreRM9l11j7UAt8QhuiiA4lg2FuiGgDRsbkprnFW1CTsUwUKmxFoZ6vtX8FgfMmdZ2f8wrVvnTyOvIFjwo5sazhDz34s6DpxHf3a03ZvFQPUT+MGDNUWfZphffBJ1yG5zdwktyU9JrDSRQi/y6RpQ6XWwvhEOcWbkVQLzictISWxr+Rl1qdWYuqm5Paemf9ApE1+0D8/TO9RPaPGG4AZ89YFdZ/UgiKN9nHbfjaDdq4irQhMB9G/TgfxIWQFZTSAZlp1e00/lHCeLdndeUDPvcjNIxTQMjgiAhh4Zf6hcg5kFe/8TMOk/YY2JRXF/zS52hb6TYs2pSZHcuJ6S14nw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jFwR6720cz3048;
+	Fri, 30 Oct 2026 07:13:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::133"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793304818;
+	cv=none; b=Zx0W4QJA6GFapDSl5Qpf+oWvyIgiKLaHJPgbeEQG3JLolykxT/j/6I9JIxGVU+KzzxUBh87Mq9MBwWF9er+zYSF4S6nTnGuvQ730XEjajok8NrJ1lWddH9Gv19uauxzaDteQh0xOJYzv0kfBAgGWoBbbN2mxCokhTjDCUnqms2bK0nLEXW4IVgo7sFrSaGIkRIiQwe50od0RguEQmMfGL/4d7x0F1yYChe1D3vX1Euq/u6UrB80mPYdn5f+1oWqekzK01N3Z1sTiGImJ1MHLbKnLY1Qa8cxQTALScgoTej3sa7LTX3Bj/Svitay1uG5chnWSGwc4yc6zOxqbDXVmOw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793295514; c=relaxed/relaxed;
-	bh=/KEC84hmoiSqAMPb0/WNJj6+/aU+u2mLmnNoCNNmZpY=;
-	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
-	 Message-Id:Subject; b=dm2Ah4Sq6/0V2aowQTXaENlDvHcQ3CGXlieQMTwWj5Fm46hde/LWLrW5Jpv1z3XcsSjtmhCCoSWHAQImM1ecGvhhb5puzCsIBG4nBt3Q3reeSmh086F2jZ5SRcu2QbHrYHR2OtlT/cJh5cc8OXc9gH2tdcT5at2F0KTns/bzNynB2XbxYw6Ftbla3w/bkwACGpy0UeBIiSQ6ba+tF1oJwPY1VBtC/3G7Yv9D6optRR4bfoTLhahmsQKwrgQshz/7cCtBGL2aJb6QX2SKF2v7z1mMkHmxAR33A6n5bp34irsKWhITnQEiXl2QaSGSVfgB5jYsD6olDmahmtqk9sEQaw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=X2BGeVUp; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1793304818; c=relaxed/relaxed;
+	bh=/URtJhh5qYgdD+SvrO47CWxV2uFOw6FeCWrobwxfu1o=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Inv9Z23qI7A2LbsSMW5jKQbvlVJ37ka5aIAJsMoQoprtgZD24hj7e7IkTuW4kpkGjKQhQsGj1jeIrjweQUr+FvA2BPjEFvdW+u0gC1ghsaUyluYw39AyqTxbJcHSWqhcp5PQ6QK7s2VCrqc/uO408e22t4MCvcg+OlT8fseYNU9ht3Jx0mXPZqTGsVtKltzaevJpXz3G/BCGWqUPs/lmuArOO2PezD0TPwQHkIgZ9CaI7NkZVu2w5MAf111rlAj1KE0Ecs3ZUTjQaK5KWnXCHeYqlWRbKFdmC6EbBz4geGwQkpY1ltbNwMwahtrZy0Dg6RMd1onbgA7Op2vjxIYA3w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=GxxHcrkl; dkim-atps=neutral; spf=pass (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=X2BGeVUp;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=GxxHcrkl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org)
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jFs095CYFz2yql
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 04:38:33 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id D119A40485;
-	Thu, 29 Oct 2026 17:38:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7706E1F01826;
-	Thu, 29 Oct 2026 17:38:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793295510;
-	bh=/KEC84hmoiSqAMPb0/WNJj6+/aU+u2mLmnNoCNNmZpY=;
-	h=Date:From:Cc:To:In-Reply-To:References:Subject;
-	b=X2BGeVUpZHoGajAQeQzH20EQSs95tIj1nCOEkAxuv3bdZFkgBT3F1oQphYaKbfZc9
-	 rR9pXZmm8yihu6ppjvGoZ2oXEG+uTJuki8pvFHhRtEq1gF1uC5dwE25wPV2jKntI37
-	 rGBjCVVYHu8X3PNlL0/xPxB58Lu2LDaL9VtOrGy4KbEvEvullSTPX05EUmsqlhhYnk
-	 caxq/vugvm3w6bPfXGUtkGVvXpSEbDtCk10AEBGgbp0KrIUlCzJ1M7hvqCUJpgHMPn
-	 wLV1Zy5fVR+JnKDVJQxrsMHtFTIQK0vR1rIWSxWI1BTnav0A1lYH5Q32uFV8a5dlWO
-	 +hHWjhnsOTcbA==
-Date: Thu, 29 Oct 2026 12:38:29 -0500
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jFwR16LTtz30Tf
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 07:13:32 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender
+	:Reply-To:Content-Type:Content-ID:Content-Description;
+	bh=/URtJhh5qYgdD+SvrO47CWxV2uFOw6FeCWrobwxfu1o=; b=GxxHcrklq9Y2GPUYtQO0sbXcvw
+	jXtRpo6+w8rV2Vo9X7uOD0aMFHWZy34poWtVGD1XKsj/CqZ9zYfroDl1pvyDfdSRYKrlmwtNESeDO
+	IcpP0IaxSPXwFvfAAmTcDw/SoNSoa3fJhxNE6bemYHuQ67ij3PaHzRDyZ3nT3z/d+B1SVgv3OoRl+
+	IpU30Re5Nejtg3A7ARl6gY+lLejExhZl2sszXy/BoMrOWPHwjH7Bp/FE1lt8DHvcFVYD18iqN6dGa
+	8A8qVeg0QhxqCD6guqrbLNRJzq7Kfhz5O8mPRkgheluwYk7EySV53HZ5Fj3c/GVkHXWb7PfpkQZ0Y
+	pd1zy9FA==;
+Received: from [50.53.43.113] (helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
+	id 1xMWV5-0000000AJR2-2yDU;
+	Thu, 29 Oct 2026 20:13:27 +0000
+From: Randy Dunlap <rdunlap@infradead.org>
+To: patches@lists.linux.dev
+Cc: Randy Dunlap <rdunlap@infradead.org>,
+	Geoff Levand <geoff@infradead.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/4] powerpc/ps3: platform.h: fix enum ps3_spu_resource_type kernel-doc
+Date: Thu, 29 Oct 2026 13:13:23 -0700
+Message-ID: <20261029201326.2672284-2-rdunlap@infradead.org>
+X-Mailer: git-send-email 2.56.0
+In-Reply-To: <20261029201326.2672284-1-rdunlap@infradead.org>
+References: <20261029201326.2672284-1-rdunlap@infradead.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,69 +71,59 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-From: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: krzk@kernel.org, linuxppc-dev@lists.ozlabs.org, chleroy@kernel.org, 
- npiggin@gmail.com, linux-kernel@vger.kernel.org, sashiko-bot@kernel.org, 
- ritesh.list@gmail.com, conor+dt@kernel.org, mpe@ellerman.id.au, 
- devicetree@vger.kernel.org, sshegde@linux.ibm.com, maddy@linux.ibm.com
-To: Lefteris Koutrakis <lefteris.koutrakis@gmail.com>
-In-Reply-To: <20261029112742.10238-1-lefteris.koutrakis@gmail.com>
-References: <20261029112742.10238-1-lefteris.koutrakis@gmail.com>
-Message-Id: <179329529616.3541731.13593434719099067546.robh@kernel.org>
-Subject: Re: [PATCH v2] powerpc: dts: Add support for WatchGuard Firebox
- T30
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+Use the correct enum name and member names to eliminate kernel-doc
+warnings:
 
-On Thu, 29 Oct 2026 07:27:41 -0400, Lefteris Koutrakis wrote:
-> Add initial device tree support for the WatchGuard Firebox T30 board.
-> Enable building firebox-t30.dtb under CONFIG_MPC85xx_RDB in the
-> arch/powerpc/boot/dts/fsl/Makefile. Document the watchguard vendor
-> prefix in vendor-prefixes.yaml.
-> 
-> Signed-off-by: Lefteris Koutrakis <lefteris.koutrakis@gmail.com>
-> ---
->  .../devicetree/bindings/vendor-prefixes.yaml  |   2 +
->  arch/powerpc/boot/dts/fsl/Makefile            |   1 +
->  arch/powerpc/boot/dts/fsl/firebox-t30.dts     | 386 ++++++++++++++++++
->  3 files changed, 389 insertions(+)
->  create mode 100644 arch/powerpc/boot/dts/fsl/firebox-t30.dts
-> 
+Warning: arch/powerpc/platforms/ps3/platform.h:240 expecting prototype for
+ enum spu_resource_type. Prototype was for enum ps3_spu_resource_type
+ instead
+Warning: arch/powerpc/platforms/ps3/platform.h:240 Enum value
+ 'PS3_SPU_RESOURCE_TYPE_SHARED' not described in enum
+ 'ps3_spu_resource_type'
+Warning: arch/powerpc/platforms/ps3/platform.h:240 Enum value
+ 'PS3_SPU_RESOURCE_TYPE_EXCLUSIVE' not described in enum
+ 'ps3_spu_resource_type'
+Warning: arch/powerpc/platforms/ps3/platform.h:240 Excess enum value
+ '@spu_resource_type_shared' description in 'ps3_spu_resource_type'
+Warning: arch/powerpc/platforms/ps3/platform.h:240 Excess enum value
+ '@spu_resource_type_exclusive' description in 'ps3_spu_resource_type'
 
-My bot found errors running 'make dt_binding_check' on your patch:
+Also fix misspellings of "partitions."
 
-yamllint warnings/errors:
-./Documentation/devicetree/bindings/vendor-prefixes.yaml:2022:1: [error] missing document start "---" (document-start)
-./Documentation/devicetree/bindings/vendor-prefixes.yaml:2022:3: [error] syntax error: expected '<document start>', but found '<block mapping start>' (syntax)
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+---
+Cc: Geoff Levand <geoff@infradead.org>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 
-dtschema/dtc warnings/errors:
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/vendor-prefixes.yaml: ignoring, error parsing file
-./Documentation/devicetree/bindings/vendor-prefixes.yaml: error loading YAML: expected a single document in the stream
-  in "./Documentation/devicetree/bindings/vendor-prefixes.yaml", line 4, column 1
-but found another document
-  in "./Documentation/devicetree/bindings/vendor-prefixes.yaml", line 2022, column 3
-./Documentation/devicetree/bindings/vendor-prefixes.yaml:2022:3: but found another document
+ arch/powerpc/platforms/ps3/platform.h |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-doc reference errors (make refcheckdocs):
-
-See https://patchwork.kernel.org/project/devicetree/patch/20261029112742.10238-1-lefteris.koutrakis@gmail.com
-
-The base for the series is generally the latest rc1. A different dependency
-should be noted in *this* patch.
-
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit after running the above command yourself. Note
-that DT_SCHEMA_FILES can be set to your schema file to speed up checking
-your schema. However, it must be unset to test all examples with your schema.
-
+--- linux-next-20260828.orig/arch/powerpc/platforms/ps3/platform.h
++++ linux-next-20260828/arch/powerpc/platforms/ps3/platform.h
+@@ -228,9 +228,10 @@ int ps3_repository_read_boot_dat_info(u6
+ /* repository spu info */
+ 
+ /**
+- * enum spu_resource_type - Type of spu resource.
+- * @spu_resource_type_shared: Logical spu is shared with other partions.
+- * @spu_resource_type_exclusive: Logical spu is not shared with other partions.
++ * enum ps3_spu_resource_type - Type of spu resource.
++ * @PS3_SPU_RESOURCE_TYPE_SHARED: Logical spu is shared with other partitions.
++ * @PS3_SPU_RESOURCE_TYPE_EXCLUSIVE: Logical spu is not shared with other
++ * partitions.
+  *
+  * Returned by ps3_repository_read_spu_resource_id().
+  */
 
