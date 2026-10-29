@@ -2,50 +2,98 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73BC9606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2026 05:32:03 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1B6AD606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2026 06:36:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=hAWswFu+
+	dkim=pass (2048-bit key, unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=I18o4Ghf
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jFXst1BzLz30NF;
-	Thu, 29 Oct 2026 16:32:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::a5"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793251922;
-	cv=none; b=P6IpnAuDCOQHFV5EQ39slZQlqgUpkGp7MW36ck1N+ahF6QH7c9N8Be3erfhpF7VLBOMP5qYETyiHkrjC9LbTxf+pr4Sfl4Wfk1bcvWhylqDbUvP1y8x6Wa/ivP82RsfSmpjlwlpmR+6ZxMhsRMXXjqA2VaxOURMz2lpFuOq1MxvXnHCrmvO88zXsEpYRGAb7jASIgJHrsobqIVmXGdYWOpMzydJ2gq2e3biM+3sxl2jz8KCTS+2lQW1GQdDiLnqNqLpa1txD6oCz9sPKzbXEJnk9F9RP/pOuc2+g1L7Z9GkCg2P727aLGRfN/kI8i+X1/EUVeMMabBAnYYIgEkYLGw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jFZJ82vrLz30Ng;
+	Thu, 29 Oct 2026 17:36:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793255784;
+	cv=none; b=C8XO3EENJsTN/wqRQu8KcaaDhTMo30qCzooRbZs3uR9h2rYIzGWo+a/50h16gJA7AivPdnogTs5Kr4GQ13f+K2Rug++NSJxL2BzVBGrfwEhTnnMAznfSUOjX+w0VtdmnNDftxR7JchwvQv6cQZycDdGcTxMrt/EUTtWXHkn/ZQHz5vWkrSg8g7uXSYTALgOfnO9QrcX2Td2kHmIzAXTg3TzRQnpNpB/e9kd2YtYlNibzDvqtk9Db3rRW11XzLy4SSiP4U3BrsUXarWOpG5JjeVG4hn7TYiwfOUl1T9Hdq1mS7dUodq8sERKBbrjfuDhU3PpyLdAkGpxE5CDCt+093g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793251922; c=relaxed/relaxed;
-	bh=+tbgBF2W836fRB/7YzfDNJKz5e9sNw+Vz2JnqiTb3oY=;
-	h=From:Message-Id:Content-Type:Mime-Version:Subject:Date:
-	 In-Reply-To:Cc:To:References; b=LdKkHkMqkcK8D/IdsNpPYcz/EK60mSur1vUr9n8/JKZyw0ISyKqxw1Qw1evEVGWJyt6k+JUdwrR8U7ZqMSVI3AKjZcmJrCUIo33zFPKxFWXA3tEFQXgFOwhwMfDKjhDdQhRu+VcBEcpDeeel/9k00AfP/jDOCCluwGWfTTOrPKyGCyNz1M+nNxiRlxhtqwObcnP9FTzkvrIMJY+0WP3wjDAqXIN71ZppFDiAYrDcJ1XaIGcMJAL+hffwWfFmKpfPnbx6nfzej9O6CaXxvpxJkBxG6iLYRnQZA8LikHnREZBaMztoZsL3gmQQ+ynFyR6nZaAgElYdUSxaWJgd6atCFg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=hAWswFu+; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::a5; helo=mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1793255784; c=relaxed/relaxed;
+	bh=BTXYfxfVOBhpvhPnAVq2lfmYKNgysPKxlm4ckRVwZ/U=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=aZmwiJCKzBUhPO34wpOPSNmXH+O+M1hBIX/WGzk6qNSjUzgHDcP8cPvLz1pre/K23+2ATJFw1bHxFrdCLitk2WBjgS8NTyn0KiaS0QDsSSH2lxBxi0rCdJgiUS6lmbZhyQx6s25zSPHyJt+9I68gE2NlJDMqNJ+Q8fy2Ag3ggyUOPmRfZV42r5TpbKOemLmn2fyfmlCNfg1N1LNBW0dxIPr68AvxsBTIjeHKyfeIU2sFH07wO55O1sE7G13ZZAijtJz/KMfH7zx+4rRQDtMZUVDFPzhVHUMnq8AVLFHQiklj2mx7Tj/lPtqwv+uKJ5AUbkshYqSUfBALYAY24NK00w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=I18o4Ghf; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=hAWswFu+;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=I18o4Ghf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::a5; helo=mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta0.migadu.com (out-165.mta0.migadu.com [IPv6:2001:41d0:1004:224b::a5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jFXsn55c6z30MZ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2026 16:31:56 +1100 (AEDT)
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=1eQbS6jy9kfUwiggkZ0ltjPq9T+Kn4keWIoG2Nn0X+8=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1793251896; v=1; x=1793856696;
- b=hAWswFu+Ce41nCFxaWasktczYjBq/ePADb+lXdknywW/5FlOJ/0s3qbKAOeuPsK7y8559ewt
- YqMHFRUf/aJQdEGuUzAD8chqVqn7liN0JSlw+UrfJjsBZzSB6kps2gvDijA6FGwH2fFzX+Q6mHS
- IpFxnVQn/ZEDg9lGMMNDUrnc=
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by mta11.migadu.com with ESMTPS id 90d9593f77c07bc5;
-	Thu, 29 Oct 2026 05:31:36 +0000
-X-Mizu-Trace-ID: 90d9593f77c07bc5
-X-Migadu-Flow: FLOW_OUT
-From: Muchun Song <muchun.song@linux.dev>
-Message-Id: <ED2AFFDD-AB2C-4585-A2D9-4FECD65F9BA6@linux.dev>
-Content-Type: multipart/alternative;
-	boundary="Apple-Mail=_159BC117-16BC-4700-9733-15883B67FDDC"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jFZJ53dmgz30NF
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2026 17:36:19 +1100 (AEDT)
+Received: by mail-pj1-x102b.google.com with SMTP id 98e67ed59e1d1-3ae7626d14aso79633a91.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2026 23:36:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bytedance.com; s=google; t=1793255777; x=1793860577; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=BTXYfxfVOBhpvhPnAVq2lfmYKNgysPKxlm4ckRVwZ/U=;
+        b=I18o4Ghfi4qwxoV/bLRSXZfLe3Yva3wicGGVjsyzNlwe3V9dJgi1jolX7/sfLL51U8
+         oviyahWaPec/tMy0quqbKR+GOd3/utT8FinRphetKEoU5Ev0xbl5QQxrvWBEWwM6TGfp
+         x2rvpAu3VILmABxvdEf3A3zaa4xmhPJ3MlCeTgAzq3MGeE6aQVlhH4i+IdkDHkuVfXYG
+         up4KcW80qOara4qzvUC8t/xdd1z2ekTBPBrdqsAFFAm/IHm4R+6Vop95HbNMzCp62eaY
+         PuZKNK8AWo+idPGNq0yLm0bd3f3HVyz0kNSMxfLGp4yBXbxR0lzS9oI+K7xVzvXS3dqZ
+         HDfA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793255777; x=1793860577;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=BTXYfxfVOBhpvhPnAVq2lfmYKNgysPKxlm4ckRVwZ/U=;
+        b=JTijfqia65IWiGP+aZfO/voirHuj5RpQjqo1yK5Tgryt+o4BcqBTodHPTFWa6RQHHB
+         OGcir85DjgC1vG62I5jEYonOtC4HpSb00NI41LW+urNnn1t/iM/U4vLJn6q3qjvWO92M
+         oTFznOwJeM8QLulJCREj+ZmVn9x0XL21YRTIiNn0OWHiq5SnyLngBv+syK+sLdUvHGWn
+         1JHgIxxQhR9sLEO8WzLHKOXNIsj8DAuFgz7xUl71kYIP/mpz77FxSsFZ+GKMGfLBmuhz
+         F1880o8+kG71JyjLKlvzQ34qRxDUFzuso30DlS7nNGQQXBGSmlcIdM2X9CXIDUtITtIR
+         ZwMA==
+X-Forwarded-Encrypted: i=1; AKwUvBw0TNT/6Yjc8zHctcCjw1irMGuMddKwR/bwHUdQ2XbAH7mygb/68RcV6IC+t5bJOz7xlGpjoS/Bx8ZkxHg=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYKgL3pcnyB9e9ulNuK/CeKdlWWXfVRwPwYku0pecHyCvNsoIzMm
+	rfgUSsd2EPLgRKA/lvfLSXaKtefnvCw0FfQ0DCbpGDA5Bl05qnU63Aq9o3czhVowTt4=
+X-Gm-Gg: AYBFou3jO/xcCMx6tONRWOAN2/6ocXyTOtBZX9Ubt0litwxPxIu/S+lSMD/XO479eRC
+	ivcTExzhscuC71+otMEDfneWhYEhIcdJFDPbqbdkVffEjVZAY3SF+NX00nM2K5KrBFz1JVh0lnl
+	YHHUdxOcgsakWrKugqKdF3rBy6oaeSaAVlthZ65uyn/Ter1ljD9Ycjef0r5dyS9YctGSPjRKACs
+	Iq/SEK5fZO89rHRQMs4d/UBDXVZngMR2cTgricOm7+3oKJlQ1+YAPqNJbV/oYPmoMzSYzyDa8br
+	0gKDnSVpUePL3B2m9DWHZRT8XbeUbnHV2JYuI7KpnjReD3ZJJxujM+6p2UkfAPTlPnRbeqcRmc6
+	5sND8zg/ZA9hoNab3FW68otjKWoqXsONNzjC0jy6NNja3wQm9QI6uK5FCxWrBNt4ejHGNY7ruu2
+	6h9uK1yIFy1c9wOgO94kmig/KAnKe6LYb0XFnVT9DQ0UQrS3ibiuDkHrF1dj9Zk5XZP22jCX5yj
+	Sv2Aivir7SEsWmUnvl7Sc+HLGpAMYO7zfs4lMbEpeWrj9uxu1wJGqwjfWBSc/dXmKO1C2twjRyQ
+	K6Vx0X/FVOLE9vTkknXqfvOZTAA5ZdiUmeuIDekl0Wf9ii6Lkg==
+X-Received: by 2002:a17:90b:4d10:b0:3ab:e588:c275 with SMTP id 98e67ed59e1d1-3ae57f9ae1emr3026634a91.20.1793255777049;
+        Wed, 28 Oct 2026 23:36:17 -0700 (PDT)
+Received: from n232-176-004.byted.org ([36.110.163.98])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ae6e2a703esm2734757a91.0.2026.10.28.23.36.11
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 28 Oct 2026 23:36:16 -0700 (PDT)
+From: Muchun Song <songmuchun@bytedance.com>
+To: Ritesh Harjani <ritesh.list@gmail.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Mike Rapoport <rppt@kernel.org>,
+	David Hildenbrand <david@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Pavithra <pavrampu@linux.ibm.com>,
+	"Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+	Muchun Song <muchun.song@linux.dev>,
+	linux-mm@kvack.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org,
+	Muchun Song <songmuchun@bytedance.com>
+Subject: [PATCH] powerpc/mm: fix uninitialized ZONE_DEVICE struct pages with PMDs
+Date: Thu, 29 Oct 2026 14:36:01 +0800
+Message-ID: <20261029063601.1961415-1-songmuchun@bytedance.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,797 +106,92 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3901.100.1.1.12\))
-Subject: Re: [PATCH 1/2] powerpc/64s/radix: don't dedup vmemmap covered by an
- existing PMD leaf
-Date: Thu, 29 Oct 2026 13:31:17 +0800
-In-Reply-To: <ik2lw4gc.ritesh.list@gmail.com>
-Cc: linux-mm@kvack.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Christophe Leroy <chleroy@kernel.org>,
- Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
- Shrikanth Hegde <sshegde@linux.ibm.com>,
- linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
- David Hildenbrand <david@kernel.org>,
- Pavithra <pavrampu@linux.ibm.com>
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-References: <97f85592bb78a273be8519e6897e7f9b9bd31469.1793070429.git.ritesh.list@gmail.com>
- <2C88EF3C-1E7D-4395-99C5-711FFB01469A@linux.dev>
- <ik2lw4gc.ritesh.list@gmail.com>
-X-Mailer: Apple Mail (2.3901.100.1.1.12)
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+PowerPC radix vmemmap population can reuse an existing PMD mapping while
+populating a device DAX range whose section is marked as HVO-enabled. The
+reused mapping is an ordinary vmemmap mapping: the redundant tail struct
+pages are not remapped to the shared tail page.
 
---Apple-Mail=_159BC117-16BC-4700-9733-15883B67FDDC
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain;
-	charset=us-ascii
+Leaving the section marked as HVO-enabled makes later ZONE_DEVICE
+initialization treat the range as optimized and initialize only the struct
+pages that would be backed by a real HVO mapping. The remaining tail struct
+pages can then be left uninitialized even though they are still used as
+metadata for the device DAX compound page.
 
+This first triggers a zone mismatch warning in __init_single_page(), then
+faults while initializing the pageblock flags:
 
+  WARNING: mm/mm_init.c:600 at __init_single_page+0xd0/0xf4
+  Call Trace:
+    memmap_init_zone_device+0x164/0x430
+    memremap_pages+0x43c/0x93c
+    devm_memremap_pages+0x3c/0xa4
+    dev_dax_probe+0x264/0x3d0
+    dax_bus_probe+0x140/0x1c8
 
-> On Oct 29, 2026, at 11:50, Ritesh Harjani (IBM) =
-<ritesh.list@gmail.com> wrote:
->=20
-> Muchun Song <muchun.song@linux.dev <mailto:muchun.song@linux.dev>> =
-writes:
->=20
->> Hi Ritesh,
->>=20
->>> On Oct 27, 2026, at 11:22, Ritesh Harjani (IBM) =
-<ritesh.list@gmail.com> wrote:
->>>=20
->>> radix__vmemmap_populate() is asked for one 16MB section, which is =
-16KB of
->>> struct pages. With no altmap it rounds the request down to a PMD =
-leaf.
->>> That leaf describes 2GB of PFNs with 64KB pages (128MB with 4KB =
-pages),
->>> so it also covers sections that are not present yet. It cannot be =
-freed
->>> while any of those sections are still in use.
->>>=20
->>> A devdax namespace that lands in the same window is marked for =
-vmemmap dedup.
->>> vmemmap_populate_compound_pages() treated the leaf as an existing =
-huge mapping
->>> and skipped it. The core then initializes only the head vmemmap page =
-and assumes
->>> the rest is the shared tail. Those remaining tail slots are real =
-struct pages
->>> still holding the page_init_poison() pattern and are not the shared =
-tail pages.
->>=20
->> Right.
->>=20
->>> __init_single_page() warns on the zone mismatch and the following =
-pageblock init
->>> faults in __set_pfnblock_flags_mask().
->>=20
->> Yeah, the new adding warning is useful.
->>=20
->>>=20
->>> If the section's vmemmap is already a PMD leaf, clear its compound =
-order
->>=20
->> I think it's enough to fix this issue.
->>=20
->=20
-> Oh yes, right! since the page init is done later and the optimizable
-> order can be read from mem_section.
->=20
->>> and reuse the leaf, so every struct page in the section is =
-initialized.
->>> The shared-tail layout needs base-page PTEs, so it cannot be built =
-on top of
->>> this leaf and dropping the leaf is not an option while the =
-neighbouring range
->>> is still using it. So, fail the compound populate if a leaf is still =
-seen there.
->>>=20
->>> <Call Trace>
->>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->>> [    3.467060][    T1] WARNING: mm/mm_init.c:600 at =
-__init_single_page+0xd0/0xf4, CPU#0: swapper/0/1
->>> <...>
->>> [    3.477419][    T1] NIP [c000000000576b30] =
-__init_single_page+0xd0/0xf4
->>> [    3.477827][    T1] LR [c0000000005778b0] =
-__init_zone_device_page+0x30/0xb8
->>> [    3.478444][    T1] Call Trace:
->>> [    3.478764][    T1]  0x10000 (unreliable)
->>> [    3.479874][    T1]  memmap_init_zone_device+0x164/0x430
->>> [    3.480392][    T1]  memremap_pages+0x43c/0x93c
->>> [    3.480836][    T1]  devm_memremap_pages+0x3c/0xa4
->>> [    3.481328][    T1]  dev_dax_probe+0x264/0x3d0
->>> [    3.481817][    T1]  dax_bus_probe+0x140/0x1c8
->>> [    3.482237][    T1]  really_probe+0x108/0x580
->>> [    3.482681][    T1]  __driver_probe_device+0xcc/0x284
->>> [    3.483186][    T1]  driver_probe_device+0x5c/0x108
->>> [    3.483656][    T1]  __device_attach_driver+0x10c/0x1e8
->>> [    3.484134][    T1]  bus_for_each_drv+0xc0/0x13c
->>> <...>
->>> [    3.499972][    T1] BUG: Kernel NULL pointer dereference on read =
-at 0x00001400
->>> [    3.500417][    T1] Faulting instruction address: =
-0xc0000000005f4ecc
->>> [    3.500417][    T1] Faulting instruction address: =
-0xc0000000005f4ecc
->>> cpu 0x0: Vector: 300 (Data Access) at [c000000006756b50]
->>>   pc: c0000000005f4ecc: =
-__set_pfnblock_flags_mask.constprop.0+0x34/0x160
->>>   lr: c000000000577f38: memmap_init_zone_device+0x358/0x430
->>>   pid   =3D 1, comm =3D swapper/0
->>> enter ? for help
->>> memmap_init_zone_device+0x358/0x430
->>> memmap_init_zone_device+0x220/0x430 (unreliable)
->>> memremap_pages+0x43c/0x93c
->>> devm_memremap_pages+0x3c/0xa4
->>> dev_dax_probe+0x264/0x3d0
->>> dax_bus_probe+0x140/0x1c8
->>> really_probe+0x108/0x580
->>> <...>
->>>=20
->>> Fixes: bd0862382adb ("mm/sparse-vmemmap: drop Device DAX-specific =
-population path")
->>=20
->> Actually, the right Fixes is:
->>=20
->> Fixes: f2b79c0d7968 ("powerpc/book3s64/radix: add support for vmemmap =
-optimization for radix")
->>=20
->> On older kernels, these errors are silent. They trigger a kernel =
-panic when the user
->> actually uses Device DAX, rather than during the initialization =
-phase.=20
->>=20
->> So, for older kernels, we should guide them to backport the patch.
->>=20
->>> Reported-by: Pavithra <pavrampu@linux.ibm.com>
->>> Assisted-by: LLM
->>> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
->>> ---
->>> Fixes tag here is added since the fix is dependent upon the change =
-mentioned in
->>> "Fixes" tag. The Fixes commit-id is from mm-new branch. Although =
-this could be
->>> an older pre-existing issue, but got exposed after this patch =
-series.
->>=20
->> I knew this issue, so I have a local commit to fix it as well. I'd =
-like to share
->> it with you, because it looks a little simple, does it work for you?
->>=20
->> powerpc/mm: fix uninitialized ZONE_DEVICE struct pages with PMDs
->>=20
->> PowerPC radix vmemmap population can reuse an existing PMD mapping =
-while
->> populating a device DAX range whose section is marked as HVO-enabled. =
-The
->> reused mapping is an ordinary vmemmap mapping: the redundant tail =
-struct
->> pages are not remapped to the shared tail page.
->>=20
->> Leaving the section marked as HVO-enabled makes later ZONE_DEVICE
->> initialization treat the range as optimized and initialize only the =
-struct
->> pages that would be backed by a real HVO mapping. The remaining tail =
-struct
->> pages can then be left uninitialized even though they are still used =
-as
->> metadata for the device DAX compound page.
->>=20
->=20
-> Here, feel free to use the call trace from my commit msg to show what =
-goes
-> wrong w/o this fix.
+  BUG: Kernel NULL pointer dereference on read at 0x00001400
+    __set_pfnblock_flags_mask.constprop.0+0x34/0x160
+    memmap_init_zone_device+0x358/0x430
 
-No problem. Thanks for your detailed msg.
+On kernels without these initialization-time diagnostics, the
+uninitialized metadata remains latent. When userspace later maps and
+accesses the affected device DAX range, the kernel operates on those struct
+pages and panics at that point instead of during device initialization.
 
->=20
->> The Fixes target predates the section-based vmemmap optimization
->> infrastructure, so older kernels do not have section state that can =
-be
->> marked non-HVO. Backports to such kernels need to handle the =
-PMD-reuse
->> case in powerpc radix code directly, for example by initializing the =
-tail
->> struct pages that core ZONE_DEVICE initialization would otherwise =
-skip.
->>=20
->> Mark the section as non-HVO when reusing an existing PMD mapping, so =
-the
->> section's HVO state matches the actual vmemmap layout and all =
-required
->> struct pages are initialized.
->>=20
->> Fixes: f2b79c0d7968 ("powerpc/book3s64/radix: add support for vmemmap =
-optimization for radix")
->> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
->> ---
->> arch/powerpc/mm/book3s64/radix_pgtable.c | 11 ++++++++++-
->> 1 file changed, 10 insertions(+), 1 deletion(-)
->=20
-> yes, love this approach. Thanks for sharing the fix.
->=20
->>=20
->> diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c =
-b/arch/powerpc/mm/book3s64/radix_pgtable.c
->> index 72793ace1fb6..fc3a2d4b422d 100644
->> --- a/arch/powerpc/mm/book3s64/radix_pgtable.c
->> +++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
->> @@ -1200,7 +1200,16 @@ static int __meminit =
-vmemmap_populate_compound_pages(unsigned long start_pfn,
->> 			return -ENOMEM;
->>=20
->> 		if (pmd_leaf(READ_ONCE(*pmd))) {
->> -			/* existing huge mapping. Skip the range */
->> +			unsigned long addr_pfn =3D page_to_pfn((struct =
-page *)addr);
->> +			struct mem_section *ms =3D =
-__pfn_to_section(addr_pfn);
->> +
->> +			/*
->> +			 * Existing PMD mappings can cover the edges of =
-a valid
->> +			 * HVO populate range.  They are ordinary =
-vmemmap mappings,
->> +			 * so the current section must not be treated as =
-HVO-backed
->> +			 * when its struct pages are initialized later.
->> +			 */
->> +			section_set_order(ms, 0);
->=20
-> I think you meant "section_set_compound_order(ms, 0);"
+The Fixes target predates the section-based vmemmap optimization
+infrastructure, so older kernels do not have section state that can be
+marked non-HVO. Backports to such kernels need to handle the PMD-reuse case
+in powerpc radix code directly, for example by initializing the tail struct
+pages that core ZONE_DEVICE initialization would otherwise skip.
 
-Yes, because it's been sitting on my disk for a while, and I forgot that
-this part needed to be adapted.
+Mark the section as non-HVO when reusing an existing PMD mapping, so the
+section's HVO state matches the actual vmemmap layout and all required
+struct pages are initialized.
 
->=20
-> yes, otherwise the patch looks good to me. Can you please post this
-> patch separately then? Feel free to add:
->=20
-> Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com =
-<mailto:ritesh.list@gmail.com>>
+Fixes: f2b79c0d7968 ("powerpc/book3s64/radix: add support for vmemmap optimization for radix")
+Cc: stable@vger.kernel.org
+Reported-by: Pavithra <pavrampu@linux.ibm.com>
+Closes: https://lore.kernel.org/r/97f85592bb78a273be8519e6897e7f9b9bd31469.1793070429.git.ritesh.list@gmail.com
+Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+---
+ arch/powerpc/mm/book3s64/radix_pgtable.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-Thanks for your review. I'll send it ASAP.
+diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
+index 44868b62b14e..4f75f10ed68f 100644
+--- a/arch/powerpc/mm/book3s64/radix_pgtable.c
++++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
+@@ -1261,7 +1261,16 @@ int __meminit vmemmap_populate_compound_pages(unsigned long start_pfn,
+ 			return -ENOMEM;
+ 
+ 		if (pmd_leaf(READ_ONCE(*pmd))) {
+-			/* existing huge mapping. Skip the range */
++			unsigned long addr_pfn = page_to_pfn((struct page *)addr);
++			struct mem_section *ms = __pfn_to_section(addr_pfn);
++
++			/*
++			 * Existing PMD mappings can cover the edges of a valid
++			 * HVO populate range. They are ordinary vmemmap mappings,
++			 * so the current section must not be treated as HVO-backed
++			 * when its struct pages are initialized later.
++			 */
++			section_set_compound_order(ms, 0);
+ 			next = pmd_addr_end(addr, end);
+ 			continue;
+ 		}
 
->=20
-> I have validated the fix with my custom reproducer and I see the issue
-> is fixed with this. Meanwhile, Pavithra (cc'd) is testing this and few
-> other patches of your series. Once her testing is finished, she can =
-help
-> provide her Tested-by/feedback if any.
+base-commit: d865f2677c44cb2171b833d6775cf692756fa8be
+-- 
+2.54.0
 
-Thanks a lot to both of you for testing this.
-
-Thanks,
-Muchun
-
->=20
->> 			next =3D pmd_addr_end(addr, end);
->> 			continue;
->> 		}
->=20
-> -ritesh
-
-
---Apple-Mail=_159BC117-16BC-4700-9733-15883B67FDDC
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/html;
-	charset=us-ascii
-
-<html aria-label=3D"message body"><head><meta http-equiv=3D"content-type" =
-content=3D"text/html; charset=3Dus-ascii"></head><body =
-style=3D"overflow-wrap: break-word; -webkit-nbsp-mode: space; =
-line-break: after-white-space;"><br =
-id=3D"lineBreakAtBeginningOfMessage"><div><br><blockquote =
-type=3D"cite"><div>On Oct 29, 2026, at 11:50, Ritesh Harjani (IBM) =
-&lt;ritesh.list@gmail.com&gt; wrote:</div><br =
-class=3D"Apple-interchange-newline"><div><meta charset=3D"UTF-8"><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;">Muchun Song &lt;</span><a =
-href=3D"mailto:muchun.song@linux.dev" style=3D"font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px;">muchun.song@linux.dev</a><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;">&gt; writes:</span><br style=3D"caret-color: =
-rgb(0, 0, 0); font-family: JetBrainsMonoNL-Regular; font-size: 13px; =
-font-style: normal; font-variant-caps: normal; font-weight: 400; =
-letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><blockquote =
-type=3D"cite" style=3D"font-family: JetBrainsMonoNL-Regular; font-size: =
-13px; font-style: normal; font-variant-caps: normal; font-weight: 400; =
-letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;">Hi =
-Ritesh,<br><br><blockquote type=3D"cite">On Oct 27, 2026, at 11:22, =
-Ritesh Harjani (IBM) &lt;ritesh.list@gmail.com&gt; =
-wrote:<br><br>radix__vmemmap_populate() is asked for one 16MB section, =
-which is 16KB of<br>struct pages. With no altmap it rounds the request =
-down to a PMD leaf.<br>That leaf describes 2GB of PFNs with 64KB pages =
-(128MB with 4KB pages),<br>so it also covers sections that are not =
-present yet. It cannot be freed<br>while any of those sections are still =
-in use.<br><br>A devdax namespace that lands in the same window is =
-marked for vmemmap dedup.<br>vmemmap_populate_compound_pages() treated =
-the leaf as an existing huge mapping<br>and skipped it. The core then =
-initializes only the head vmemmap page and assumes<br>the rest is the =
-shared tail. Those remaining tail slots are real struct pages<br>still =
-holding the page_init_poison() pattern and are not the shared tail =
-pages.<br></blockquote><br>Right.<br><br><blockquote =
-type=3D"cite">__init_single_page() warns on the zone mismatch and the =
-following pageblock init<br>faults in =
-__set_pfnblock_flags_mask().<br></blockquote><br>Yeah, the new adding =
-warning is useful.<br><br><blockquote type=3D"cite"><br>If the section's =
-vmemmap is already a PMD leaf, clear its compound =
-order<br></blockquote><br>I think it's enough to fix this =
-issue.<br><br></blockquote><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: JetBrainsMonoNL-Regular; font-size: 13px; font-style: =
-normal; font-variant-caps: normal; font-weight: 400; letter-spacing: =
-normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: =
-none; white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;">Oh yes, right! since the page init is done =
-later and the optimizable</span><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: JetBrainsMonoNL-Regular; font-size: 13px; font-style: =
-normal; font-variant-caps: normal; font-weight: 400; letter-spacing: =
-normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: =
-none; white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;">order can be read from =
-mem_section.</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><blockquote =
-type=3D"cite" style=3D"font-family: JetBrainsMonoNL-Regular; font-size: =
-13px; font-style: normal; font-variant-caps: normal; font-weight: 400; =
-letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><blockquote =
-type=3D"cite">and reuse the leaf, so every struct page in the section is =
-initialized.<br>The shared-tail layout needs base-page PTEs, so it =
-cannot be built on top of<br>this leaf and dropping the leaf is not an =
-option while the neighbouring range<br>is still using it. So, fail the =
-compound populate if a leaf is still seen there.<br><br>&lt;Call =
-Trace&gt;<br>=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D<br>[ =
-&nbsp;&nbsp;&nbsp;3.467060][ &nbsp;&nbsp;&nbsp;T1] WARNING: =
-mm/mm_init.c:600 at __init_single_page+0xd0/0xf4, CPU#0: =
-swapper/0/1<br>&lt;...&gt;<br>[ &nbsp;&nbsp;&nbsp;3.477419][ =
-&nbsp;&nbsp;&nbsp;T1] NIP [c000000000576b30] =
-__init_single_page+0xd0/0xf4<br>[ &nbsp;&nbsp;&nbsp;3.477827][ =
-&nbsp;&nbsp;&nbsp;T1] LR [c0000000005778b0] =
-__init_zone_device_page+0x30/0xb8<br>[ &nbsp;&nbsp;&nbsp;3.478444][ =
-&nbsp;&nbsp;&nbsp;T1] Call Trace:<br>[ &nbsp;&nbsp;&nbsp;3.478764][ =
-&nbsp;&nbsp;&nbsp;T1] &nbsp;0x10000 (unreliable)<br>[ =
-&nbsp;&nbsp;&nbsp;3.479874][ &nbsp;&nbsp;&nbsp;T1] =
-&nbsp;memmap_init_zone_device+0x164/0x430<br>[ =
-&nbsp;&nbsp;&nbsp;3.480392][ &nbsp;&nbsp;&nbsp;T1] =
-&nbsp;memremap_pages+0x43c/0x93c<br>[ &nbsp;&nbsp;&nbsp;3.480836][ =
-&nbsp;&nbsp;&nbsp;T1] &nbsp;devm_memremap_pages+0x3c/0xa4<br>[ =
-&nbsp;&nbsp;&nbsp;3.481328][ &nbsp;&nbsp;&nbsp;T1] =
-&nbsp;dev_dax_probe+0x264/0x3d0<br>[ &nbsp;&nbsp;&nbsp;3.481817][ =
-&nbsp;&nbsp;&nbsp;T1] &nbsp;dax_bus_probe+0x140/0x1c8<br>[ =
-&nbsp;&nbsp;&nbsp;3.482237][ &nbsp;&nbsp;&nbsp;T1] =
-&nbsp;really_probe+0x108/0x580<br>[ &nbsp;&nbsp;&nbsp;3.482681][ =
-&nbsp;&nbsp;&nbsp;T1] &nbsp;__driver_probe_device+0xcc/0x284<br>[ =
-&nbsp;&nbsp;&nbsp;3.483186][ &nbsp;&nbsp;&nbsp;T1] =
-&nbsp;driver_probe_device+0x5c/0x108<br>[ &nbsp;&nbsp;&nbsp;3.483656][ =
-&nbsp;&nbsp;&nbsp;T1] &nbsp;__device_attach_driver+0x10c/0x1e8<br>[ =
-&nbsp;&nbsp;&nbsp;3.484134][ &nbsp;&nbsp;&nbsp;T1] =
-&nbsp;bus_for_each_drv+0xc0/0x13c<br>&lt;...&gt;<br>[ =
-&nbsp;&nbsp;&nbsp;3.499972][ &nbsp;&nbsp;&nbsp;T1] BUG: Kernel NULL =
-pointer dereference on read at 0x00001400<br>[ =
-&nbsp;&nbsp;&nbsp;3.500417][ &nbsp;&nbsp;&nbsp;T1] Faulting instruction =
-address: 0xc0000000005f4ecc<br>[ &nbsp;&nbsp;&nbsp;3.500417][ =
-&nbsp;&nbsp;&nbsp;T1] Faulting instruction address: =
-0xc0000000005f4ecc<br>cpu 0x0: Vector: 300 (Data Access) at =
-[c000000006756b50]<br>&nbsp;&nbsp;pc: c0000000005f4ecc: =
-__set_pfnblock_flags_mask.constprop.0+0x34/0x160<br>&nbsp;&nbsp;lr: =
-c000000000577f38: memmap_init_zone_device+0x358/0x430<br>&nbsp;&nbsp;pid =
-&nbsp;&nbsp;=3D 1, comm =3D swapper/0<br>enter ? for =
-help<br>memmap_init_zone_device+0x358/0x430<br>memmap_init_zone_device+0x2=
-20/0x430 =
-(unreliable)<br>memremap_pages+0x43c/0x93c<br>devm_memremap_pages+0x3c/0xa=
-4<br>dev_dax_probe+0x264/0x3d0<br>dax_bus_probe+0x140/0x1c8<br>really_prob=
-e+0x108/0x580<br>&lt;...&gt;<br><br>Fixes: bd0862382adb =
-("mm/sparse-vmemmap: drop Device DAX-specific population =
-path")<br></blockquote><br>Actually, the right Fixes is:<br><br>Fixes: =
-f2b79c0d7968 ("powerpc/book3s64/radix: add support for vmemmap =
-optimization for radix")<br><br>On older kernels, these errors are =
-silent. They trigger a kernel panic when the user<br>actually uses =
-Device DAX, rather than during the initialization phase.<span =
-class=3D"Apple-converted-space">&nbsp;</span><br><br>So, for older =
-kernels, we should guide them to backport the patch.<br><br><blockquote =
-type=3D"cite">Reported-by: Pavithra =
-&lt;pavrampu@linux.ibm.com&gt;<br>Assisted-by: LLM<br>Signed-off-by: =
-Ritesh Harjani (IBM) &lt;ritesh.list@gmail.com&gt;<br>---<br>Fixes tag =
-here is added since the fix is dependent upon the change mentioned =
-in<br>"Fixes" tag. The Fixes commit-id is from mm-new branch. Although =
-this could be<br>an older pre-existing issue, but got exposed after this =
-patch series.<br></blockquote><br>I knew this issue, so I have a local =
-commit to fix it as well. I'd like to share<br>it with you, because it =
-looks a little simple, does it work for you?<br><br>powerpc/mm: fix =
-uninitialized ZONE_DEVICE struct pages with PMDs<br><br>PowerPC radix =
-vmemmap population can reuse an existing PMD mapping while<br>populating =
-a device DAX range whose section is marked as HVO-enabled. The<br>reused =
-mapping is an ordinary vmemmap mapping: the redundant tail =
-struct<br>pages are not remapped to the shared tail page.<br><br>Leaving =
-the section marked as HVO-enabled makes later =
-ZONE_DEVICE<br>initialization treat the range as optimized and =
-initialize only the struct<br>pages that would be backed by a real HVO =
-mapping. The remaining tail struct<br>pages can then be left =
-uninitialized even though they are still used as<br>metadata for the =
-device DAX compound page.<br><br></blockquote><br style=3D"caret-color: =
-rgb(0, 0, 0); font-family: JetBrainsMonoNL-Regular; font-size: 13px; =
-font-style: normal; font-variant-caps: normal; font-weight: 400; =
-letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;">Here, feel free to use the call trace from =
-my commit msg to show what goes</span><br style=3D"caret-color: rgb(0, =
-0, 0); font-family: JetBrainsMonoNL-Regular; font-size: 13px; =
-font-style: normal; font-variant-caps: normal; font-weight: 400; =
-letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;">wrong w/o this fix.</span><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: =
-none;"></div></blockquote><div><br></div><div>No problem. Thanks for =
-your detailed msg.</div><br><blockquote type=3D"cite"><div><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><blockquote =
-type=3D"cite" style=3D"font-family: JetBrainsMonoNL-Regular; font-size: =
-13px; font-style: normal; font-variant-caps: normal; font-weight: 400; =
-letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;">The Fixes target =
-predates the section-based vmemmap optimization<br>infrastructure, so =
-older kernels do not have section state that can be<br>marked non-HVO. =
-Backports to such kernels need to handle the PMD-reuse<br>case in =
-powerpc radix code directly, for example by initializing the =
-tail<br>struct pages that core ZONE_DEVICE initialization would =
-otherwise skip.<br><br>Mark the section as non-HVO when reusing an =
-existing PMD mapping, so the<br>section's HVO state matches the actual =
-vmemmap layout and all required<br>struct pages are =
-initialized.<br><br>Fixes: f2b79c0d7968 ("powerpc/book3s64/radix: add =
-support for vmemmap optimization for radix")<br>Signed-off-by: Muchun =
-Song =
-&lt;songmuchun@bytedance.com&gt;<br>---<br>arch/powerpc/mm/book3s64/radix_=
-pgtable.c | 11 ++++++++++-<br>1 file changed, 10 insertions(+), 1 =
-deletion(-)<br></blockquote><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: JetBrainsMonoNL-Regular; font-size: 13px; font-style: =
-normal; font-variant-caps: normal; font-weight: 400; letter-spacing: =
-normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: =
-none; white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;">yes, love this approach. Thanks for sharing =
-the fix.</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><blockquote =
-type=3D"cite" style=3D"font-family: JetBrainsMonoNL-Regular; font-size: =
-13px; font-style: normal; font-variant-caps: normal; font-weight: 400; =
-letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><br>diff --git =
-a/arch/powerpc/mm/book3s64/radix_pgtable.c =
-b/arch/powerpc/mm/book3s64/radix_pgtable.c<br>index =
-72793ace1fb6..fc3a2d4b422d 100644<br>--- =
-a/arch/powerpc/mm/book3s64/radix_pgtable.c<br>+++ =
-b/arch/powerpc/mm/book3s64/radix_pgtable.c<br>@@ -1200,7 +1200,16 @@ =
-static int __meminit vmemmap_populate_compound_pages(unsigned long =
-start_pfn,<br><span class=3D"Apple-tab-span" style=3D"white-space: =
-pre;">	</span><span class=3D"Apple-tab-span" style=3D"white-space: =
-pre;">	</span><span class=3D"Apple-tab-span" style=3D"white-space: =
-pre;">	</span>return -ENOMEM;<br><br><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>if (pmd_leaf(READ_ONCE(*pmd))) =
-{<br>-<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>/* existing huge mapping. Skip the range */<br>+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>unsigned =
-long addr_pfn =3D page_to_pfn((struct page *)addr);<br>+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>struct =
-mem_section *ms =3D __pfn_to_section(addr_pfn);<br>+<br>+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>/*<br>+<span class=3D"Apple-tab-span" style=3D"white-space: =
-pre;">	</span><span class=3D"Apple-tab-span" style=3D"white-space: =
-pre;">	</span><span class=3D"Apple-tab-span" style=3D"white-space: =
-pre;">	</span><span class=3D"Apple-converted-space">&nbsp;</span>* =
-Existing PMD mappings can cover the edges of a valid<br>+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-converted-space">&nbsp;</span>* HVO populate range. =
-&nbsp;They are ordinary vmemmap mappings,<br>+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-converted-space">&nbsp;</span>* so the current section =
-must not be treated as HVO-backed<br>+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-converted-space">&nbsp;</span>* when its struct pages are =
-initialized later.<br>+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-converted-space">&nbsp;</span>*/<br>+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>section_set_order(ms, 0);<br></blockquote><br style=3D"caret-color:=
- rgb(0, 0, 0); font-family: JetBrainsMonoNL-Regular; font-size: 13px; =
-font-style: normal; font-variant-caps: normal; font-weight: 400; =
-letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;">I think you meant =
-"section_set_compound_order(ms, 0);"</span><br style=3D"caret-color: =
-rgb(0, 0, 0); font-family: JetBrainsMonoNL-Regular; font-size: 13px; =
-font-style: normal; font-variant-caps: normal; font-weight: 400; =
-letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: =
-none;"></div></blockquote><div><br></div><div>Yes, because it's been =
-sitting on my disk for a while, and I forgot that</div><div>this part =
-needed to be adapted.</div><br><blockquote type=3D"cite"><div><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;">yes, otherwise the patch looks good to me. =
-Can you please post this</span><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: JetBrainsMonoNL-Regular; font-size: 13px; font-style: =
-normal; font-variant-caps: normal; font-weight: 400; letter-spacing: =
-normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: =
-none; white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;">patch separately then? Feel free to =
-add:</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;">Reviewed-by: Ritesh Harjani (IBM) =
-&lt;</span><a href=3D"mailto:ritesh.list@gmail.com" style=3D"font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px;">ritesh.list@gmail.com</a><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;">&gt;</span><br style=3D"caret-color: rgb(0, =
-0, 0); font-family: JetBrainsMonoNL-Regular; font-size: 13px; =
-font-style: normal; font-variant-caps: normal; font-weight: 400; =
-letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: =
-none;"></div></blockquote><div><br></div><div>Thanks for your review. =
-I'll send it ASAP.</div><br><blockquote type=3D"cite"><div><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;">I have validated the fix with my custom =
-reproducer and I see the issue</span><br style=3D"caret-color: rgb(0, 0, =
-0); font-family: JetBrainsMonoNL-Regular; font-size: 13px; font-style: =
-normal; font-variant-caps: normal; font-weight: 400; letter-spacing: =
-normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: =
-none; white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;">is fixed with this. Meanwhile, Pavithra =
-(cc'd) is testing this and few</span><br style=3D"caret-color: rgb(0, 0, =
-0); font-family: JetBrainsMonoNL-Regular; font-size: 13px; font-style: =
-normal; font-variant-caps: normal; font-weight: 400; letter-spacing: =
-normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: =
-none; white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;">other patches of your series. Once her =
-testing is finished, she can help</span><br style=3D"caret-color: rgb(0, =
-0, 0); font-family: JetBrainsMonoNL-Regular; font-size: 13px; =
-font-style: normal; font-variant-caps: normal; font-weight: 400; =
-letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;">provide her Tested-by/feedback if =
-any.</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: =
-none;"></div></blockquote><div><br></div><div>Thanks a lot to both of =
-you for testing =
-this.</div><div><br></div><div>Thanks,</div><div>Muchun</div><br><blockquo=
-te type=3D"cite"><div><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: JetBrainsMonoNL-Regular; font-size: 13px; font-style: =
-normal; font-variant-caps: normal; font-weight: 400; letter-spacing: =
-normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: =
-none; white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><blockquote =
-type=3D"cite" style=3D"font-family: JetBrainsMonoNL-Regular; font-size: =
-13px; font-style: normal; font-variant-caps: normal; font-weight: 400; =
-letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>next =3D =
-pmd_addr_end(addr, end);<br><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>continue;<br><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>}<br></blockquote><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: JetBrainsMonoNL-Regular; font-size: 13px; font-style: =
-normal; font-variant-caps: normal; font-weight: 400; letter-spacing: =
-normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: =
-none; white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;"><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: =
-JetBrainsMonoNL-Regular; font-size: 13px; font-style: normal; =
-font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
-orphans: 2; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; widows: 2; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline =
-!important;">-ritesh</span></div></blockquote></div><br></body></html>=
-
---Apple-Mail=_159BC117-16BC-4700-9733-15883B67FDDC--
 
