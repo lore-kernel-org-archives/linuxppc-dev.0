@@ -1,65 +1,51 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AEBDD606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2026 06:37:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C183C606A326
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2026 07:17:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lUbOVPPW
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fvkpZmH1
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jFZJq2y0Bz30P3;
-	Thu, 29 Oct 2026 17:36:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jFbCw0Kcxz30Ng;
+	Thu, 29 Oct 2026 18:17:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793255819;
-	cv=none; b=HX8qWFvSaee3Vjg4uDM6KM8gj+1rx1hHk8IXgVOz2EAl0NFSvSSI8FIjMa/JJV2Dm1bV6JlUxNoh8DvDvEhqq5rPbuaMkOyOCA1viNCNewn55z4dXfLawEw4vdSo3b+ixmMPbOhIXoHJLZav8N4xLVVchenbHU+zaYRlTYj0wuSEoN6brYRNYHuqqox4shPpDj3WpSa6GrBdaeUrO55sFS5TVgUhmLQkvTg7Fs/PlU9pa0d7POjRJ72XqBd1hGOvpfUinzjH4BXhyAhm7PUI38MAFmc6p33coPk41bsxpf97WS5AE2LCRyQLtt69mH4/jglGE5FejuxAPwq0+6rC/A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793258267;
+	cv=none; b=Zl8DobkyNO1+kiuL3FufVIZGyCJKeUdaRjempY35OGoFDn1ZsMMrR3BHMe9AfLg4kB+nM8EQD9GbFzPLtJi8lEU/OcCOjzgCu6VpTe0pTjgZNP9usUKpZ8fbosayko32B+EUA1CintaG2UQXO+w/td5oqtEeJ6dhFD9kZVhk3F6DIs7xqQhhkFXuzZhKWZhUlLrQqzbcKB1F8prJmPIX0SS9NTQbCp6uo3AKviHx4STFkDi+T9+3pVIXFTfhnjZoG9AauZEakPh5kZnm4dbSns64qCeWNrAiflI4Zpb/zpwvRvsgJj4j73Jg8p/7hYTPnOXNZ5+/bKSG7lxo58SiJw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793255819; c=relaxed/relaxed;
-	bh=YvAiAnRop/bJ6tc4Xi5KoZ9rGCNbK8gsFLad2/w98eQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=gbIcVuXCDdWfwi+M6KqnH5pyiztq1l44LddLYP0KSNdLLgKJGjEPcW4yK9j03DoDb3wKsjIi9zzuy53W3nU0TnK0QkQ2szm/hl//8L10eKVGmVovNfE1YM6vh9bxla04U89B+2g0H+1yFFOPBXscORBrcn5yvxsw6D1yQ1C/RaU80997eDio8kOSoneahz8C4EwxrOhjtjW7elgbTPj6vf47mmmlqZ+nkQD2Mz8lSBaSRazGaxd7pyCy8ZpxGeMGhCyp6hGNlgScOuYcc61nOALd/F1YYL0gfIAFUw8tXRewu4Fu8GEKhqaD1raBy90d75hcVN1kyMf/9QP+KIrRiw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lUbOVPPW; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1793258267; c=relaxed/relaxed;
+	bh=OJBSYAu1agTSLj9Xv6QbA109yx+UKkcrUeXFkEu6p4Q=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=deJF+Sw90coQkFSVLM9t6MJ95YNND0s/PKAKPqmwtuOSaqHEz+qXd97yHrYdo84afeKwwHIfEIlg6ex2ft/u+Pxn4eQbeXW9U8YjsSVX/xT036368NTw33zh/EOfJmvmPK/bShwmkMoXcrEWs93Rg4EC8vTwXREnopuKx9WlysXUduO95Ke7Ilcb2Fi8SFhQbNR07pI2qxJYg6YsOxouX6PuPkryZVl3BriI5r6W5ixMbEaqvlkxRB67VajSs2hK/gWltn6myQhWDyVMFikk9ghpg6sTp0Zq09ua6TZIk2pHr6hz2yU8hN70d7brhW/ONPCo3UFpYxNs3Ss1Isyjew==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fvkpZmH1; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lUbOVPPW;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fvkpZmH1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jFZJn4Thqz30Ng
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2026 17:36:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jFbCt1SCTz30NF
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2026 18:17:46 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id ACD33600DA;
-	Thu, 29 Oct 2026 06:36:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 076F81F01825;
-	Thu, 29 Oct 2026 06:36:54 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 9E42460202;
+	Thu, 29 Oct 2026 07:17:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EC8BF1F01825;
+	Thu, 29 Oct 2026 07:17:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793255814;
-	bh=YvAiAnRop/bJ6tc4Xi5KoZ9rGCNbK8gsFLad2/w98eQ=;
-	h=From:To:Cc:Subject:Date;
-	b=lUbOVPPWPPmOH0+zia2PygkB17e2hyRX+PEnXM2IT3nI4MPZ7ODi9Fdc0Nc5oJbDX
-	 6E+j4FQT+FhEwa6tJivWlWZPjFH0VA5IS3uKg6lJJI3PMYKRWkabSy38cbIIB6ckl8
-	 kIRqQxjrY3n1TEtB/zLKouHwsy82LBJHKkT1e3JccZ+MjucgFtXctLi78UhaKUtTXR
-	 riGpNzw/5EGzFH0kmgJN1bON9y3lJUVCeBaAYJBOrvTs1CoocSxlsRgTbdht0jcloA
-	 WYDe4RVf5tZVj54+cM5zdG9A9n04Bc1AkGIXiPAowVYCUMGSVFYqYbidpRb6NbK5HE
-	 +NJTY7lNBEIXw==
-From: Eric Biggers <ebiggers@kernel.org>
-To: linux-crypto@vger.kernel.org
-Cc: Ard Biesheuvel <ardb@kernel.org>,
-	"Jason A . Donenfeld" <Jason@zx2c4.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Ritesh Harjani <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH] lib/crypto: powerpc/poly1305: Remove BROKEN implementation
-Date: Wed, 28 Oct 2026 23:35:21 -0700
-Message-ID: <20261029063522.124421-1-ebiggers@kernel.org>
-X-Mailer: git-send-email 2.56.0
+	s=k20260515; t=1793258263;
+	bh=OJBSYAu1agTSLj9Xv6QbA109yx+UKkcrUeXFkEu6p4Q=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=fvkpZmH13wXzma5Q9R+hksrE/M98khDyfXTWpfEf/D8C4UxN6gSstkl0EsLaMZx5s
+	 +NRQvEJi1OD4H9h56Jfe5kNwZDv17533gBw+hfZFEKbKnpmfuflLZS6OgJ9p/t/zMI
+	 P8mVnqVbSuyRZ/sZUhgGhkLvQMVWRRy5W3j4mBLvhdxzYI5GrvIQQXcsm//spR8MqF
+	 9QjCeI+autY5C/bJYGUdZzYbls0EglCvlldPsGT623WQjuoPplO7w3wZQktNYJ6Dgv
+	 tYnMz6gE4mhtxr8WeF8JqUm4q5k/ZS9zraBleMh1RiwZRRDx5hMTad2ht2KYMYVTPs
+	 8tOlF8HnCEIDQ==
+Message-ID: <3f909a67-ffbd-49ff-a51c-e08cc15a5ec0@kernel.org>
+Date: Thu, 29 Oct 2026 08:17:36 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,1247 +59,124 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6] powerpc/dts: Add Device Tree for WatchGuard Firebox
+ T30 (v6)
+To: Lefteris Koutrakis <lefteris.koutrakis@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, maddy@linux.ibm.com, robh@kernel.org,
+ krzk+dt@kernel.org, conor+dt@kernel.org, mpe@ellerman.id.au,
+ npiggin@gmail.com, chleroy@kernel.org, ritesh.list@gmail.com,
+ sshegde@linux.ibm.com, sashiko-bot@kernel.org
+References: <20261028194046.49784-1-lefteris.koutrakis@gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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
+In-Reply-To: <20261028194046.49784-1-lefteris.koutrakis@gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+Content-Transfer-Encoding: 7bit
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The PowerPC implementation of Poly1305 has been marked as BROKEN for
-well over a year, since commit bc8169003b41 ("crypto: powerpc/poly1305 -
-add depends on BROKEN for now").  So, it's not being built or used.
+On 28/10/2026 20:40, Lefteris Koutrakis wrote:
+> This commit adds initial device tree support for the WatchGuard Firebox T30
 
-The justification for marking it BROKEN was that it didn't work in
-softirq context.  That still fully applies.
+Please do not use "This commit/patch/change", but imperative mood. See
+longer explanation here:
+https://elixir.bootlin.com/linux/v6.16/source/Documentation/process/submitting-patches.rst#L94
 
-However, it turns out the assembly file actually also contains logic
-bugs that make it compute incorrect Poly1305 values in some cases.  This
-is shown by it failing the test case test_poly1305_split_update_carry
-(if "depends on BROKEN" is removed).  The cause of that appears to be a
-lost carry bit in Carry_reduction.  However, there also appears to be a
-bug in do_final_update where it incorrectly assumes v6 is fully reduced.
+Please wrap commit message according to Linux coding style / submission
+process (neither too early nor over the limit):
+https://elixir.bootlin.com/linux/v6.4-rc1/source/Documentation/process/submitting-patches.rst#L597
 
-In addition, poly1305_emit_64 contains a secret-dependent branch.
+Please run scripts/checkpatch.pl on the patches and fix reported
+warnings. After that, run also 'scripts/checkpatch.pl --strict' on the
+patches and (probably) fix more warnings. Some warnings can be ignored,
+especially from --strict run, but the code here looks like it needs a
+fix. Feel free to get in touch if the warning is not clear.
 
-Let's just drop this code.  A fixed version can be reconsidered later.
+> board and enables building firebox-t30.dtb under CONFIG_MPC85xx_RDB in
+> arch/powerpc/boot/dts/fsl/Makefile. It also documents the watchguard vendor
+> prefix in vendor-prefixes.yaml.
+> 
+> Signed-off-by: Lefteris Koutrakis <lefteris.koutrakis@gmail.com>
+> ---
+>  .../devicetree/bindings/vendor-prefixes.yaml  |   2 +
+>  arch/powerpc/boot/dts/fsl/Makefile            |   1 +
+>  arch/powerpc/boot/dts/fsl/firebox-t30.dts     | 386 ++++++++++++++++++
+>  .../arch/powerpc/boot/dts/firebox-t30.dts     | 386 ++++++++++++++++++
+>  4 files changed, 775 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/vendor-prefixes.yaml
+>  create mode 100644 arch/powerpc/boot/dts/fsl/Makefile
+>  create mode 100644 arch/powerpc/boot/dts/fsl/firebox-t30.dts
+>  create mode 100644 target/linux/mpc85xx/files/arch/powerpc/boot/dts/firebox-t30.dts
+> 
+> diff --git a/Documentation/devicetree/bindings/vendor-prefixes.yaml b/Documentation/devicetree/bindings/vendor-prefixes.yaml
+> new file mode 100644
+> index 0000000..c78a53f
+> --- /dev/null
 
-Signed-off-by: Eric Biggers <ebiggers@kernel.org>
----
- lib/crypto/Kconfig                     |    6 +-
- lib/crypto/Makefile                    |    2 -
- lib/crypto/powerpc/poly1305-p10le_64.S | 1076 ------------------------
- lib/crypto/powerpc/poly1305.h          |   76 --
- 4 files changed, 1 insertion(+), 1159 deletions(-)
- delete mode 100644 lib/crypto/powerpc/poly1305-p10le_64.S
- delete mode 100644 lib/crypto/powerpc/poly1305.h
+Not existing? You are sending some random changes to us. Please slow
+down, read the docs how to use Git and how to generate patches.
+Documentation/process (including submitting patches) will be helpful.
 
-diff --git a/lib/crypto/Kconfig b/lib/crypto/Kconfig
-index 56f308dd02731..778a8b5f0c922 100644
---- a/lib/crypto/Kconfig
-+++ b/lib/crypto/Kconfig
-@@ -197,8 +197,6 @@ config CRYPTO_LIB_POLY1305_ARCH
- 	default y if ARM
- 	default y if ARM64
- 	default y if MIPS
--	# The PPC64 code needs to be fixed to work in softirq context.
--	default y if PPC64 && CPU_LITTLE_ENDIAN && VSX && BROKEN
- 	default y if RISCV
- 	default y if X86_64
- 
-@@ -209,9 +207,7 @@ config CRYPTO_LIB_POLY1305_ARCH
- config CRYPTO_LIB_POLY1305_GENERIC
- 	bool
- 	depends on CRYPTO_LIB_POLY1305
--	# Enable if there's no arch impl or the arch impl requires the generic
--	# impl as a fallback.  (Or if selected explicitly.)
--	default y if !CRYPTO_LIB_POLY1305_ARCH || PPC64
-+	default y if !CRYPTO_LIB_POLY1305_ARCH
- 
- config CRYPTO_LIB_POLY1305_RSIZE
- 	int
-diff --git a/lib/crypto/Makefile b/lib/crypto/Makefile
-index 832d170cab941..126e72419ebbf 100644
---- a/lib/crypto/Makefile
-+++ b/lib/crypto/Makefile
-@@ -256,8 +256,6 @@ $(obj)/mips/poly1305-core.S: $(src)/mips/poly1305-mips.pl FORCE
- targets += mips/poly1305-core.S
- endif
- 
--libpoly1305-$(CONFIG_PPC) += powerpc/poly1305-p10le_64.o
--
- ifeq ($(CONFIG_RISCV),y)
- libpoly1305-y += riscv/poly1305-core.o
- poly1305-perlasm-flavour-$(CONFIG_32BIT) := 32
-diff --git a/lib/crypto/powerpc/poly1305-p10le_64.S b/lib/crypto/powerpc/poly1305-p10le_64.S
-deleted file mode 100644
-index ffd5b4aa0a5b9..0000000000000
---- a/lib/crypto/powerpc/poly1305-p10le_64.S
-+++ /dev/null
-@@ -1,1076 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-or-later */
--#
--# Accelerated poly1305 implementation for ppc64le.
--#
--# Copyright 2023- IBM Corp. All rights reserved
--#
--#===================================================================================
--# Written by Danny Tsen <dtsen@us.ibm.com>
--#
--# Poly1305 - this version mainly using vector/VSX/Scalar
--#  - 26 bits limbs
--#  - Handle multiple 64 byte blcok.
--#
--# Block size 16 bytes
--# key = (r, s)
--# clamp r &= 0x0FFFFFFC0FFFFFFC 0x0FFFFFFC0FFFFFFF
--# p = 2^130 - 5
--# a += m
--# a = (r + a) % p
--# a += s
--#
--# Improve performance by breaking down polynominal to the sum of products with
--#     h4 = m1 * r⁴ + m2 * r³ + m3 * r² + m4 * r
--#
--#  07/22/21 - this revison based on the above sum of products.  Setup r^4, r^3, r^2, r and s3, s2, s1, s0
--#             to 9 vectors for multiplications.
--#
--# setup r^4, r^3, r^2, r vectors
--#    vs    [r^1, r^3, r^2, r^4]
--#    vs0 = [r0,.....]
--#    vs1 = [r1,.....]
--#    vs2 = [r2,.....]
--#    vs3 = [r3,.....]
--#    vs4 = [r4,.....]
--#    vs5 = [r1*5,...]
--#    vs6 = [r2*5,...]
--#    vs7 = [r2*5,...]
--#    vs8 = [r4*5,...]
--#
--#  Each word in a vector consists a member of a "r/s" in [a * r/s].
--#
--# r0, r4*5, r3*5, r2*5, r1*5;
--# r1, r0,   r4*5, r3*5, r2*5;
--# r2, r1,   r0,   r4*5, r3*5;
--# r3, r2,   r1,   r0,   r4*5;
--# r4, r3,   r2,   r1,   r0  ;
--#
--#
--# void poly1305_p10le_4blocks(struct poly1305_block_state *state, const u8 *m,
--#			      size_t mlen);
--#  r3 = state
--#  r4 = m
--#  r5 = mlen
--#
--#include <asm/ppc_asm.h>
--#include <asm/asm-offsets.h>
--#include <asm/asm-compat.h>
--#include <linux/linkage.h>
--
--.machine "any"
--
--.text
--
--.macro	SAVE_GPR GPR OFFSET FRAME
--	std	\GPR,\OFFSET(\FRAME)
--.endm
--
--.macro	SAVE_VRS VRS OFFSET FRAME
--	li	16, \OFFSET
--	stvx	\VRS, 16, \FRAME
--.endm
--
--.macro	SAVE_VSX VSX OFFSET FRAME
--	li	16, \OFFSET
--	stxvx	\VSX, 16, \FRAME
--.endm
--
--.macro	RESTORE_GPR GPR OFFSET FRAME
--	ld	\GPR,\OFFSET(\FRAME)
--.endm
--
--.macro	RESTORE_VRS VRS OFFSET FRAME
--	li	16, \OFFSET
--	lvx	\VRS, 16, \FRAME
--.endm
--
--.macro	RESTORE_VSX VSX OFFSET FRAME
--	li	16, \OFFSET
--	lxvx	\VSX, 16, \FRAME
--.endm
--
--.macro SAVE_REGS
--	mflr 0
--	std 0, 16(1)
--	stdu 1,-752(1)
--
--	SAVE_GPR 14, 112, 1
--	SAVE_GPR 15, 120, 1
--	SAVE_GPR 16, 128, 1
--	SAVE_GPR 17, 136, 1
--	SAVE_GPR 18, 144, 1
--	SAVE_GPR 19, 152, 1
--	SAVE_GPR 20, 160, 1
--	SAVE_GPR 21, 168, 1
--	SAVE_GPR 22, 176, 1
--	SAVE_GPR 23, 184, 1
--	SAVE_GPR 24, 192, 1
--	SAVE_GPR 25, 200, 1
--	SAVE_GPR 26, 208, 1
--	SAVE_GPR 27, 216, 1
--	SAVE_GPR 28, 224, 1
--	SAVE_GPR 29, 232, 1
--	SAVE_GPR 30, 240, 1
--	SAVE_GPR 31, 248, 1
--
--	addi	9, 1, 256
--	SAVE_VRS 20, 0, 9
--	SAVE_VRS 21, 16, 9
--	SAVE_VRS 22, 32, 9
--	SAVE_VRS 23, 48, 9
--	SAVE_VRS 24, 64, 9
--	SAVE_VRS 25, 80, 9
--	SAVE_VRS 26, 96, 9
--	SAVE_VRS 27, 112, 9
--	SAVE_VRS 28, 128, 9
--	SAVE_VRS 29, 144, 9
--	SAVE_VRS 30, 160, 9
--	SAVE_VRS 31, 176, 9
--
--	SAVE_VSX 14, 192, 9
--	SAVE_VSX 15, 208, 9
--	SAVE_VSX 16, 224, 9
--	SAVE_VSX 17, 240, 9
--	SAVE_VSX 18, 256, 9
--	SAVE_VSX 19, 272, 9
--	SAVE_VSX 20, 288, 9
--	SAVE_VSX 21, 304, 9
--	SAVE_VSX 22, 320, 9
--	SAVE_VSX 23, 336, 9
--	SAVE_VSX 24, 352, 9
--	SAVE_VSX 25, 368, 9
--	SAVE_VSX 26, 384, 9
--	SAVE_VSX 27, 400, 9
--	SAVE_VSX 28, 416, 9
--	SAVE_VSX 29, 432, 9
--	SAVE_VSX 30, 448, 9
--	SAVE_VSX 31, 464, 9
--.endm # SAVE_REGS
--
--.macro RESTORE_REGS
--	addi	9, 1, 256
--	RESTORE_VRS 20, 0, 9
--	RESTORE_VRS 21, 16, 9
--	RESTORE_VRS 22, 32, 9
--	RESTORE_VRS 23, 48, 9
--	RESTORE_VRS 24, 64, 9
--	RESTORE_VRS 25, 80, 9
--	RESTORE_VRS 26, 96, 9
--	RESTORE_VRS 27, 112, 9
--	RESTORE_VRS 28, 128, 9
--	RESTORE_VRS 29, 144, 9
--	RESTORE_VRS 30, 160, 9
--	RESTORE_VRS 31, 176, 9
--
--	RESTORE_VSX 14, 192, 9
--	RESTORE_VSX 15, 208, 9
--	RESTORE_VSX 16, 224, 9
--	RESTORE_VSX 17, 240, 9
--	RESTORE_VSX 18, 256, 9
--	RESTORE_VSX 19, 272, 9
--	RESTORE_VSX 20, 288, 9
--	RESTORE_VSX 21, 304, 9
--	RESTORE_VSX 22, 320, 9
--	RESTORE_VSX 23, 336, 9
--	RESTORE_VSX 24, 352, 9
--	RESTORE_VSX 25, 368, 9
--	RESTORE_VSX 26, 384, 9
--	RESTORE_VSX 27, 400, 9
--	RESTORE_VSX 28, 416, 9
--	RESTORE_VSX 29, 432, 9
--	RESTORE_VSX 30, 448, 9
--	RESTORE_VSX 31, 464, 9
--
--	RESTORE_GPR 14, 112, 1
--	RESTORE_GPR 15, 120, 1
--	RESTORE_GPR 16, 128, 1
--	RESTORE_GPR 17, 136, 1
--	RESTORE_GPR 18, 144, 1
--	RESTORE_GPR 19, 152, 1
--	RESTORE_GPR 20, 160, 1
--	RESTORE_GPR 21, 168, 1
--	RESTORE_GPR 22, 176, 1
--	RESTORE_GPR 23, 184, 1
--	RESTORE_GPR 24, 192, 1
--	RESTORE_GPR 25, 200, 1
--	RESTORE_GPR 26, 208, 1
--	RESTORE_GPR 27, 216, 1
--	RESTORE_GPR 28, 224, 1
--	RESTORE_GPR 29, 232, 1
--	RESTORE_GPR 30, 240, 1
--	RESTORE_GPR 31, 248, 1
--
--	addi    1, 1, 752
--	ld 0, 16(1)
--	mtlr 0
--.endm # RESTORE_REGS
--
--#
--# p[0] = a0*r0 + a1*r4*5 + a2*r3*5 + a3*r2*5 + a4*r1*5;
--# p[1] = a0*r1 + a1*r0   + a2*r4*5 + a3*r3*5 + a4*r2*5;
--# p[2] = a0*r2 + a1*r1   + a2*r0   + a3*r4*5 + a4*r3*5;
--# p[3] = a0*r3 + a1*r2   + a2*r1   + a3*r0   + a4*r4*5;
--# p[4] = a0*r4 + a1*r3   + a2*r2   + a3*r1   + a4*r0  ;
--#
--#    [r^2, r^3, r^1, r^4]
--#    [m3,  m2,  m4,  m1]
--#
--# multiply odd and even words
--.macro mul_odd
--	vmulouw	14, 4, 26
--	vmulouw	10, 5, 3
--	vmulouw	11, 6, 2
--	vmulouw	12, 7, 1
--	vmulouw	13, 8, 0
--	vmulouw	15, 4, 27
--	vaddudm	14, 14, 10
--	vaddudm	14, 14, 11
--	vmulouw	10, 5, 26
--	vmulouw	11, 6, 3
--	vaddudm	14, 14, 12
--	vaddudm	14, 14, 13	# x0
--	vaddudm	15, 15, 10
--	vaddudm	15, 15, 11
--	vmulouw	12, 7, 2
--	vmulouw	13, 8, 1
--	vaddudm	15, 15, 12
--	vaddudm	15, 15, 13	# x1
--	vmulouw	16, 4, 28
--	vmulouw	10, 5, 27
--	vmulouw	11, 6, 26
--	vaddudm	16, 16, 10
--	vaddudm	16, 16, 11
--	vmulouw	12, 7, 3
--	vmulouw	13, 8, 2
--	vaddudm	16, 16, 12
--	vaddudm	16, 16, 13	# x2
--	vmulouw	17, 4, 29
--	vmulouw	10, 5, 28
--	vmulouw	11, 6, 27
--	vaddudm	17, 17, 10
--	vaddudm	17, 17, 11
--	vmulouw	12, 7, 26
--	vmulouw	13, 8, 3
--	vaddudm	17, 17, 12
--	vaddudm	17, 17, 13	# x3
--	vmulouw	18, 4, 30
--	vmulouw	10, 5, 29
--	vmulouw	11, 6, 28
--	vaddudm	18, 18, 10
--	vaddudm	18, 18, 11
--	vmulouw	12, 7, 27
--	vmulouw	13, 8, 26
--	vaddudm	18, 18, 12
--	vaddudm	18, 18, 13	# x4
--.endm
--
--.macro mul_even
--	vmuleuw	9, 4, 26
--	vmuleuw	10, 5, 3
--	vmuleuw	11, 6, 2
--	vmuleuw	12, 7, 1
--	vmuleuw	13, 8, 0
--	vaddudm	14, 14, 9
--	vaddudm	14, 14, 10
--	vaddudm	14, 14, 11
--	vaddudm	14, 14, 12
--	vaddudm	14, 14, 13	# x0
--
--	vmuleuw	9, 4, 27
--	vmuleuw	10, 5, 26
--	vmuleuw	11, 6, 3
--	vmuleuw	12, 7, 2
--	vmuleuw	13, 8, 1
--	vaddudm	15, 15, 9
--	vaddudm	15, 15, 10
--	vaddudm	15, 15, 11
--	vaddudm	15, 15, 12
--	vaddudm	15, 15, 13	# x1
--
--	vmuleuw	9, 4, 28
--	vmuleuw	10, 5, 27
--	vmuleuw	11, 6, 26
--	vmuleuw	12, 7, 3
--	vmuleuw	13, 8, 2
--	vaddudm	16, 16, 9
--	vaddudm	16, 16, 10
--	vaddudm	16, 16, 11
--	vaddudm	16, 16, 12
--	vaddudm	16, 16, 13	# x2
--
--	vmuleuw	9, 4, 29
--	vmuleuw	10, 5, 28
--	vmuleuw	11, 6, 27
--	vmuleuw	12, 7, 26
--	vmuleuw	13, 8, 3
--	vaddudm	17, 17, 9
--	vaddudm	17, 17, 10
--	vaddudm	17, 17, 11
--	vaddudm	17, 17, 12
--	vaddudm	17, 17, 13	# x3
--
--	vmuleuw	9, 4, 30
--	vmuleuw	10, 5, 29
--	vmuleuw	11, 6, 28
--	vmuleuw	12, 7, 27
--	vmuleuw	13, 8, 26
--	vaddudm	18, 18, 9
--	vaddudm	18, 18, 10
--	vaddudm	18, 18, 11
--	vaddudm	18, 18, 12
--	vaddudm	18, 18, 13	# x4
--.endm
--
--#
--# poly1305_setup_r
--#
--# setup r^4, r^3, r^2, r vectors
--#    [r, r^3, r^2, r^4]
--#    vs0 = [r0,...]
--#    vs1 = [r1,...]
--#    vs2 = [r2,...]
--#    vs3 = [r3,...]
--#    vs4 = [r4,...]
--#    vs5 = [r4*5,...]
--#    vs6 = [r3*5,...]
--#    vs7 = [r2*5,...]
--#    vs8 = [r1*5,...]
--#
--# r0, r4*5, r3*5, r2*5, r1*5;
--# r1, r0,   r4*5, r3*5, r2*5;
--# r2, r1,   r0,   r4*5, r3*5;
--# r3, r2,   r1,   r0,   r4*5;
--# r4, r3,   r2,   r1,   r0  ;
--#
--.macro poly1305_setup_r
--
--	# save r
--	xxlor	26, 58, 58
--	xxlor	27, 59, 59
--	xxlor	28, 60, 60
--	xxlor	29, 61, 61
--	xxlor	30, 62, 62
--
--	xxlxor	31, 31, 31
--
--#    [r, r^3, r^2, r^4]
--	# compute r^2
--	vmr	4, 26
--	vmr	5, 27
--	vmr	6, 28
--	vmr	7, 29
--	vmr	8, 30
--	bl	do_mul		# r^2 r^1
--	xxpermdi 58, 58, 36, 0x3		# r0
--	xxpermdi 59, 59, 37, 0x3		# r1
--	xxpermdi 60, 60, 38, 0x3		# r2
--	xxpermdi 61, 61, 39, 0x3		# r3
--	xxpermdi 62, 62, 40, 0x3		# r4
--	xxpermdi 36, 36, 36, 0x3
--	xxpermdi 37, 37, 37, 0x3
--	xxpermdi 38, 38, 38, 0x3
--	xxpermdi 39, 39, 39, 0x3
--	xxpermdi 40, 40, 40, 0x3
--	vspltisb 13, 2
--	vsld	9, 27, 13
--	vsld	10, 28, 13
--	vsld	11, 29, 13
--	vsld	12, 30, 13
--	vaddudm	0, 9, 27
--	vaddudm	1, 10, 28
--	vaddudm	2, 11, 29
--	vaddudm	3, 12, 30
--
--	bl	do_mul		# r^4 r^3
--	vmrgow	26, 26, 4
--	vmrgow	27, 27, 5
--	vmrgow	28, 28, 6
--	vmrgow	29, 29, 7
--	vmrgow	30, 30, 8
--	vspltisb 13, 2
--	vsld	9, 27, 13
--	vsld	10, 28, 13
--	vsld	11, 29, 13
--	vsld	12, 30, 13
--	vaddudm	0, 9, 27
--	vaddudm	1, 10, 28
--	vaddudm	2, 11, 29
--	vaddudm	3, 12, 30
--
--	# r^2 r^4
--	xxlor	0, 58, 58
--	xxlor	1, 59, 59
--	xxlor	2, 60, 60
--	xxlor	3, 61, 61
--	xxlor	4, 62, 62
--	xxlor	5, 32, 32
--	xxlor	6, 33, 33
--	xxlor	7, 34, 34
--	xxlor	8, 35, 35
--
--	vspltw	9, 26, 3
--	vspltw	10, 26, 2
--	vmrgow	26, 10, 9
--	vspltw	9, 27, 3
--	vspltw	10, 27, 2
--	vmrgow	27, 10, 9
--	vspltw	9, 28, 3
--	vspltw	10, 28, 2
--	vmrgow	28, 10, 9
--	vspltw	9, 29, 3
--	vspltw	10, 29, 2
--	vmrgow	29, 10, 9
--	vspltw	9, 30, 3
--	vspltw	10, 30, 2
--	vmrgow	30, 10, 9
--
--	vsld	9, 27, 13
--	vsld	10, 28, 13
--	vsld	11, 29, 13
--	vsld	12, 30, 13
--	vaddudm	0, 9, 27
--	vaddudm	1, 10, 28
--	vaddudm	2, 11, 29
--	vaddudm	3, 12, 30
--.endm
--
--SYM_FUNC_START_LOCAL(do_mul)
--	mul_odd
--
--	# do reduction ( h %= p )
--	# carry reduction
--	vspltisb 9, 2
--	vsrd	10, 14, 31
--	vsrd	11, 17, 31
--	vand	7, 17, 25
--	vand	4, 14, 25
--	vaddudm	18, 18, 11
--	vsrd	12, 18, 31
--	vaddudm	15, 15, 10
--
--	vsrd	11, 15, 31
--	vand	8, 18, 25
--	vand	5, 15, 25
--	vaddudm	4, 4, 12
--	vsld	10, 12, 9
--	vaddudm	6, 16, 11
--
--	vsrd	13, 6, 31
--	vand	6, 6, 25
--	vaddudm	4, 4, 10
--	vsrd	10, 4, 31
--	vaddudm	7, 7, 13
--
--	vsrd	11, 7, 31
--	vand	7, 7, 25
--	vand	4, 4, 25
--	vaddudm	5, 5, 10
--	vaddudm	8, 8, 11
--	blr
--SYM_FUNC_END(do_mul)
--
--#
--# init key
--#
--.macro do_poly1305_init
--	addis	10, 2, rmask@toc@ha
--	addi	10, 10, rmask@toc@l
--
--	ld	11, 0(10)
--	ld	12, 8(10)
--
--	li	14, 16
--	li	15, 32
--	addis	10, 2, cnum@toc@ha
--	addi	10, 10, cnum@toc@l
--	lvx	25, 0, 10	# v25 - mask
--	lvx	31, 14, 10	# v31 = 1a
--	lvx	19, 15, 10	# v19 = 1 << 24
--	lxv	24, 48(10)	# vs24
--	lxv	25, 64(10)	# vs25
--
--	# initialize
--	# load key from r3 to vectors
--	ld	9, 24(3)
--	ld	10, 32(3)
--	and.	9, 9, 11
--	and.	10, 10, 12
--
--	# break 26 bits
--	extrdi	14, 9, 26, 38
--	extrdi	15, 9, 26, 12
--	extrdi	16, 9, 12, 0
--	mtvsrdd	58, 0, 14
--	insrdi	16, 10, 14, 38
--	mtvsrdd	59, 0, 15
--	extrdi	17, 10, 26, 24
--	mtvsrdd	60, 0, 16
--	extrdi	18, 10, 24, 0
--	mtvsrdd	61, 0, 17
--	mtvsrdd	62, 0, 18
--
--	# r1 = r1 * 5, r2 = r2 * 5, r3 = r3 * 5, r4 = r4 * 5
--	li	9, 5
--	mtvsrdd	36, 0, 9
--	vmulouw	0, 27, 4		# v0 = rr0
--	vmulouw	1, 28, 4		# v1 = rr1
--	vmulouw	2, 29, 4		# v2 = rr2
--	vmulouw	3, 30, 4		# v3 = rr3
--.endm
--
--#
--# void poly1305_p10le_4blocks(struct poly1305_block_state *state, const u8 *m,
--#			      size_t mlen);
--#  r3 = state
--#  r4 = m
--#  r5 = mlen
--#
--SYM_FUNC_START(poly1305_p10le_4blocks)
--.align 5
--	cmpdi	5, 64
--	blt	Out_no_poly1305
--
--	SAVE_REGS
--
--	do_poly1305_init
--
--	li	21, 0	# counter to message
--
--	poly1305_setup_r
--
--	# load previous H state
--	# break/convert r6 to 26 bits
--	ld	9, 0(3)
--	ld	10, 8(3)
--	ld	19, 16(3)
--	sldi	19, 19, 24
--	mtvsrdd	41, 0, 19
--	extrdi	14, 9, 26, 38
--	extrdi	15, 9, 26, 12
--	extrdi	16, 9, 12, 0
--	mtvsrdd	36, 0, 14
--	insrdi	16, 10, 14, 38
--	mtvsrdd	37, 0, 15
--	extrdi	17, 10, 26, 24
--	mtvsrdd	38, 0, 16
--	extrdi	18, 10, 24, 0
--	mtvsrdd	39, 0, 17
--	mtvsrdd	40, 0, 18
--	vor	8, 8, 9
--
--	# input m1 m2
--	add	20, 4, 21
--	xxlor	49, 24, 24
--	xxlor	50, 25, 25
--	lxvw4x	43, 0, 20
--	addi	17, 20, 16
--	lxvw4x	44, 0, 17
--	vperm	14, 11, 12, 17
--	vperm	15, 11, 12, 18
--	vand	9, 14, 25	# a0
--	vsrd	10, 14, 31	# >> 26
--	vsrd	11, 10, 31	# 12 bits left
--	vand	10, 10, 25	# a1
--	vspltisb 13, 12
--	vand	16, 15, 25
--	vsld	12, 16, 13
--	vor	11, 11, 12
--	vand	11, 11, 25	# a2
--	vspltisb 13, 14
--	vsrd	12, 15, 13	# >> 14
--	vsrd	13, 12, 31	# >> 26, a4
--	vand	12, 12, 25	# a3
--
--	vaddudm	20, 4, 9
--	vaddudm	21, 5, 10
--	vaddudm	22, 6, 11
--	vaddudm	23, 7, 12
--	vaddudm	24, 8, 13
--
--	# m3 m4
--	addi	17, 17, 16
--	lxvw4x	43, 0, 17
--	addi	17, 17, 16
--	lxvw4x	44, 0, 17
--	vperm	14, 11, 12, 17
--	vperm	15, 11, 12, 18
--	vand	9, 14, 25	# a0
--	vsrd	10, 14, 31	# >> 26
--	vsrd	11, 10, 31	# 12 bits left
--	vand	10, 10, 25	# a1
--	vspltisb 13, 12
--	vand	16, 15, 25
--	vsld	12, 16, 13
--	vspltisb 13, 14
--	vor	11, 11, 12
--	vand	11, 11, 25	# a2
--	vsrd	12, 15, 13	# >> 14
--	vsrd	13, 12, 31	# >> 26, a4
--	vand	12, 12, 25	# a3
--
--	# Smash 4 message blocks into 5 vectors of [m4,  m2,  m3,  m1]
--	vmrgow	4, 9, 20
--	vmrgow	5, 10, 21
--	vmrgow	6, 11, 22
--	vmrgow	7, 12, 23
--	vmrgow	8, 13, 24
--	vaddudm	8, 8, 19
--
--	addi	5, 5, -64	# len -= 64
--	addi	21, 21, 64	# offset += 64
--
--	li      9, 64
--	divdu   31, 5, 9
--
--	cmpdi	31, 0
--	ble	Skip_block_loop
--
--	mtctr	31
--
--# h4 =   m1 * r⁴ + m2 * r³ + m3 * r² + m4 * r
--# Rewrite the polynominal sum of product as follows,
--# h1 = (h0 + m1) * r^2,	h2 = (h0 + m2) * r^2
--# h3 = (h1 + m3) * r^2,	h4 = (h2 + m4) * r^2  --> (h0 + m1) r*4 + (h3 + m3) r^2, (h0 + m2) r^4 + (h0 + m4) r^2
--#  .... Repeat
--# h5 = (h3 + m5) * r^2,	h6 = (h4 + m6) * r^2  -->
--# h7 = (h5 + m7) * r^2,	h8 = (h6 + m8) * r^1  --> m5 * r^4 + m6 * r^3 + m7 * r^2 + m8 * r
--#
--loop_4blocks:
--
--	# Multiply odd words and even words
--	mul_odd
--	mul_even
--	# carry reduction
--	vspltisb 9, 2
--	vsrd	10, 14, 31
--	vsrd	11, 17, 31
--	vand	7, 17, 25
--	vand	4, 14, 25
--	vaddudm	18, 18, 11
--	vsrd	12, 18, 31
--	vaddudm	15, 15, 10
--
--	vsrd	11, 15, 31
--	vand	8, 18, 25
--	vand	5, 15, 25
--	vaddudm	4, 4, 12
--	vsld	10, 12, 9
--	vaddudm	6, 16, 11
--
--	vsrd	13, 6, 31
--	vand	6, 6, 25
--	vaddudm	4, 4, 10
--	vsrd	10, 4, 31
--	vaddudm	7, 7, 13
--
--	vsrd	11, 7, 31
--	vand	7, 7, 25
--	vand	4, 4, 25
--	vaddudm	5, 5, 10
--	vaddudm	8, 8, 11
--
--	# input m1  m2  m3  m4
--	add	20, 4, 21
--	xxlor	49, 24, 24
--	xxlor	50, 25, 25
--	lxvw4x	43, 0, 20
--	addi	17, 20, 16
--	lxvw4x	44, 0, 17
--	vperm	14, 11, 12, 17
--	vperm	15, 11, 12, 18
--	addi	17, 17, 16
--	lxvw4x	43, 0, 17
--	addi	17, 17, 16
--	lxvw4x	44, 0, 17
--	vperm	17, 11, 12, 17
--	vperm	18, 11, 12, 18
--
--	vand	20, 14, 25	# a0
--	vand	9, 17, 25	# a0
--	vsrd	21, 14, 31	# >> 26
--	vsrd	22, 21, 31	# 12 bits left
--	vsrd	10, 17, 31	# >> 26
--	vsrd	11, 10, 31	# 12 bits left
--
--	vand	21, 21, 25	# a1
--	vand	10, 10, 25	# a1
--
--	vspltisb 13, 12
--	vand	16, 15, 25
--	vsld	23, 16, 13
--	vor	22, 22, 23
--	vand	22, 22, 25	# a2
--	vand	16, 18, 25
--	vsld	12, 16, 13
--	vor	11, 11, 12
--	vand	11, 11, 25	# a2
--	vspltisb 13, 14
--	vsrd	23, 15, 13	# >> 14
--	vsrd	24, 23, 31	# >> 26, a4
--	vand	23, 23, 25	# a3
--	vsrd	12, 18, 13	# >> 14
--	vsrd	13, 12, 31	# >> 26, a4
--	vand	12, 12, 25	# a3
--
--	vaddudm	4, 4, 20
--	vaddudm	5, 5, 21
--	vaddudm	6, 6, 22
--	vaddudm	7, 7, 23
--	vaddudm	8, 8, 24
--
--	# Smash 4 message blocks into 5 vectors of [m4,  m2,  m3,  m1]
--	vmrgow	4, 9, 4
--	vmrgow	5, 10, 5
--	vmrgow	6, 11, 6
--	vmrgow	7, 12, 7
--	vmrgow	8, 13, 8
--	vaddudm	8, 8, 19
--
--	addi	5, 5, -64	# len -= 64
--	addi	21, 21, 64	# offset += 64
--
--	bdnz	loop_4blocks
--
--Skip_block_loop:
--	xxlor	58, 0, 0
--	xxlor	59, 1, 1
--	xxlor	60, 2, 2
--	xxlor	61, 3, 3
--	xxlor	62, 4, 4
--	xxlor	32, 5, 5
--	xxlor	33, 6, 6
--	xxlor	34, 7, 7
--	xxlor	35, 8, 8
--
--	# Multiply odd words and even words
--	mul_odd
--	mul_even
--
--	# Sum the products.
--	xxpermdi 41, 31, 46, 0
--	xxpermdi 42, 31, 47, 0
--	vaddudm	4, 14, 9
--	xxpermdi 36, 31, 36, 3
--	vaddudm	5, 15, 10
--	xxpermdi 37, 31, 37, 3
--	xxpermdi 43, 31, 48, 0
--	vaddudm	6, 16, 11
--	xxpermdi 38, 31, 38, 3
--	xxpermdi 44, 31, 49, 0
--	vaddudm	7, 17, 12
--	xxpermdi 39, 31, 39, 3
--	xxpermdi 45, 31, 50, 0
--	vaddudm	8, 18, 13
--	xxpermdi 40, 31, 40, 3
--
--	# carry reduction
--	vspltisb 9, 2
--	vsrd	10, 4, 31
--	vsrd	11, 7, 31
--	vand	7, 7, 25
--	vand	4, 4, 25
--	vaddudm	8, 8, 11
--	vsrd	12, 8, 31
--	vaddudm	5, 5, 10
--
--	vsrd	11, 5, 31
--	vand	8, 8, 25
--	vand	5, 5, 25
--	vaddudm	4, 4, 12
--	vsld	10, 12, 9
--	vaddudm	6, 6, 11
--
--	vsrd	13, 6, 31
--	vand	6, 6, 25
--	vaddudm	4, 4, 10
--	vsrd	10, 4, 31
--	vaddudm	7, 7, 13
--
--	vsrd	11, 7, 31
--	vand	7, 7, 25
--	vand	4, 4, 25
--	vaddudm	5, 5, 10
--	vsrd	10, 5, 31
--	vand	5, 5, 25
--	vaddudm	6, 6, 10
--	vaddudm	8, 8, 11
--
--	b	do_final_update
--
--do_final_update:
--	# combine 26 bit limbs
--	# v4, v5, v6, v7 and v8 are 26 bit vectors
--	vsld	5, 5, 31
--	vor	20, 4, 5
--	vspltisb 11, 12
--	vsrd	12, 6, 11
--	vsld	6, 6, 31
--	vsld	6, 6, 31
--	vor	20, 20, 6
--	vspltisb 11, 14
--	vsld	7, 7, 11
--	vor	21, 7, 12
--	mfvsrld	16, 40		# save last 2 bytes
--	vsld	8, 8, 11
--	vsld	8, 8, 31
--	vor	21, 21, 8
--	mfvsrld	17, 52
--	mfvsrld	19, 53
--	srdi	16, 16, 24
--
--	std	17, 0(3)
--	std	19, 8(3)
--	stw	16, 16(3)
--
--Out_loop:
--	li	3, 0
--
--	RESTORE_REGS
--
--	blr
--
--Out_no_poly1305:
--	li	3, 0
--	blr
--SYM_FUNC_END(poly1305_p10le_4blocks)
--
--#
--# =======================================================================
--# The following functions implement 64 x 64 bits multiplication poly1305.
--#
--SYM_FUNC_START_LOCAL(Poly1305_init_64)
--	#  mask 0x0FFFFFFC0FFFFFFC
--	#  mask 0x0FFFFFFC0FFFFFFF
--	addis	10, 2, rmask@toc@ha
--	addi	10, 10, rmask@toc@l
--	ld	11, 0(10)
--	ld	12, 8(10)
--
--	# initialize
--	# load key from r3
--	ld	9, 24(3)
--	ld	10, 32(3)
--	and.	9, 9, 11	# cramp mask r0
--	and.	10, 10, 12	# cramp mask r1
--
--        srdi    21, 10, 2
--        add     19, 21, 10      # s1: r19 - (r1 >> 2) *5
--
--        # setup r and s
--        li      25, 0
--	mtvsrdd 32+0, 9, 19	# r0, s1
--	mtvsrdd 32+1, 10, 9	# r1, r0
--	mtvsrdd 32+2, 19, 25	# s1
--	mtvsrdd 32+3, 9, 25	# r0
--
--	blr
--SYM_FUNC_END(Poly1305_init_64)
--
--# Poly1305_mult
--# v6 = (h0, h1), v8 = h2
--# v0 = (r0, s1), v1 = (r1, r0), v2 = s1, v3 = r0
--#
--# Output: v7, v10, v11
--#
--SYM_FUNC_START_LOCAL(Poly1305_mult)
--	#
--	#	d0 = h0 * r0 + h1 * s1
--	vmsumudm	7, 6, 0, 9		# h0 * r0, h1 * s1
--
--	#	d1 = h0 * r1 + h1 * r0 + h2 * s1
--	vmsumudm	11, 6, 1, 9		# h0 * r1, h1 * r0
--	vmsumudm	10, 8, 2, 11		# d1 += h2 * s1
--
--	#       d2 = r0
--	vmsumudm	11, 8, 3, 9		# d2 = h2 * r0
--	blr
--SYM_FUNC_END(Poly1305_mult)
--
--#
--# carry reduction
--# h %=p
--#
--# Input: v7, v10, v11
--# Output: r27, r28, r29
--#
--SYM_FUNC_START_LOCAL(Carry_reduction)
--	mfvsrld	27, 32+7
--	mfvsrld	28, 32+10
--	mfvsrld	29, 32+11
--	mfvsrd	20, 32+7	# h0.h
--	mfvsrd	21, 32+10	# h1.h
--
--	addc	28, 28, 20
--	adde	29, 29, 21
--	srdi	22, 29, 0x2
--	sldi	23, 22, 0x2
--	add	23, 23, 22	# (h2 & 3) * 5
--	addc	27, 27, 23	# h0
--	addze	28, 28		# h1
--	andi.	29, 29, 0x3	# h2
--	blr
--SYM_FUNC_END(Carry_reduction)
--
--#
--# poly1305 multiplication
--# h *= r, h %= p
--#	d0 = h0 * r0 + h1 * s1
--#	d1 = h0 * r1 + h1 * r0 + h2 * s1
--#       d2 = h0 * r0
--#
--#
--# void poly1305_64s(struct poly1305_block_state *state, const u8 *m,
--#		    size_t mlen, int highbit);
--#   - no highbit if final leftover block (highbit = 0)
--#
--SYM_FUNC_START(poly1305_64s)
--	cmpdi	5, 0
--	ble	Out_no_poly1305_64
--
--	mflr 0
--	std 0, 16(1)
--	stdu 1,-400(1)
--
--	SAVE_GPR 14, 112, 1
--	SAVE_GPR 15, 120, 1
--	SAVE_GPR 16, 128, 1
--	SAVE_GPR 17, 136, 1
--	SAVE_GPR 18, 144, 1
--	SAVE_GPR 19, 152, 1
--	SAVE_GPR 20, 160, 1
--	SAVE_GPR 21, 168, 1
--	SAVE_GPR 22, 176, 1
--	SAVE_GPR 23, 184, 1
--	SAVE_GPR 24, 192, 1
--	SAVE_GPR 25, 200, 1
--	SAVE_GPR 26, 208, 1
--	SAVE_GPR 27, 216, 1
--	SAVE_GPR 28, 224, 1
--	SAVE_GPR 29, 232, 1
--	SAVE_GPR 30, 240, 1
--	SAVE_GPR 31, 248, 1
--
--	# Init poly1305
--	bl Poly1305_init_64
--
--	li 25, 0			# offset to inp and outp
--
--	add 11, 25, 4
--
--	# load h
--	# h0, h1, h2?
--        ld	27, 0(3)
--        ld	28, 8(3)
--        lwz	29, 16(3)
--
--        li      30, 16
--        divdu   31, 5, 30
--
--        mtctr   31
--
--        mr      24, 6		# highbit
--
--Loop_block_64:
--	vxor	9, 9, 9
--
--	ld	20, 0(11)
--	ld	21, 8(11)
--	addi	11, 11, 16
--
--	addc	27, 27, 20
--	adde	28, 28, 21
--	adde	29, 29, 24
--
--	li	22, 0
--	mtvsrdd	32+6, 27, 28	# h0, h1
--	mtvsrdd	32+8, 29, 22	# h2
--
--	bl	Poly1305_mult
--
--	bl	Carry_reduction
--
--	bdnz	Loop_block_64
--
--	std	27, 0(3)
--	std	28, 8(3)
--	stw	29, 16(3)
--
--	li	3, 0
--
--	RESTORE_GPR 14, 112, 1
--	RESTORE_GPR 15, 120, 1
--	RESTORE_GPR 16, 128, 1
--	RESTORE_GPR 17, 136, 1
--	RESTORE_GPR 18, 144, 1
--	RESTORE_GPR 19, 152, 1
--	RESTORE_GPR 20, 160, 1
--	RESTORE_GPR 21, 168, 1
--	RESTORE_GPR 22, 176, 1
--	RESTORE_GPR 23, 184, 1
--	RESTORE_GPR 24, 192, 1
--	RESTORE_GPR 25, 200, 1
--	RESTORE_GPR 26, 208, 1
--	RESTORE_GPR 27, 216, 1
--	RESTORE_GPR 28, 224, 1
--	RESTORE_GPR 29, 232, 1
--	RESTORE_GPR 30, 240, 1
--	RESTORE_GPR 31, 248, 1
--
--	addi    1, 1, 400
--	ld 0, 16(1)
--	mtlr 0
--
--	blr
--
--Out_no_poly1305_64:
--	li	3, 0
--	blr
--SYM_FUNC_END(poly1305_64s)
--
--#
--# Input: r3 = h, r4 = s, r5 = mac
--# mac = h + s
--#
--SYM_FUNC_START(poly1305_emit_64)
--	ld	10, 0(3)
--	ld	11, 8(3)
--	ld	12, 16(3)
--
--	# compare modulus
--	# h + 5 + (-p)
--	mr	6, 10
--	mr	7, 11
--	mr	8, 12
--	addic.	6, 6, 5
--	addze	7, 7
--	addze	8, 8
--	srdi	9, 8, 2		# overflow?
--	cmpdi	9, 0
--	beq	Skip_h64
--	mr	10, 6
--	mr	11, 7
--	mr	12, 8
--
--Skip_h64:
--	ld	6, 0(4)
--	ld	7, 8(4)
--	addc	10, 10, 6
--	adde	11, 11, 7
--	addze	12, 12
--
--	std	10, 0(5)
--	std	11, 8(5)
--	blr
--SYM_FUNC_END(poly1305_emit_64)
--
--SYM_DATA_START_LOCAL(RMASK)
--.align 5
--rmask:
--.byte	0xff, 0xff, 0xff, 0x0f, 0xfc, 0xff, 0xff, 0x0f, 0xfc, 0xff, 0xff, 0x0f, 0xfc, 0xff, 0xff, 0x0f
--cnum:
--.long	0x03ffffff, 0x00000000, 0x03ffffff, 0x00000000
--.long	0x1a, 0x00, 0x1a, 0x00
--.long	0x01000000, 0x01000000, 0x01000000, 0x01000000
--.long	0x00010203, 0x04050607, 0x10111213, 0x14151617
--.long	0x08090a0b, 0x0c0d0e0f, 0x18191a1b, 0x1c1d1e1f
--SYM_DATA_END(RMASK)
-diff --git a/lib/crypto/powerpc/poly1305.h b/lib/crypto/powerpc/poly1305.h
-deleted file mode 100644
-index f758c24b31294..0000000000000
---- a/lib/crypto/powerpc/poly1305.h
-+++ /dev/null
-@@ -1,76 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 */
--/*
-- * Poly1305 authenticator algorithm, RFC7539.
-- *
-- * Copyright 2023- IBM Corp. All rights reserved.
-- */
--#include <asm/switch_to.h>
--#include <linux/cpufeature.h>
--#include <linux/jump_label.h>
--#include <linux/kernel.h>
--#include <linux/unaligned.h>
--
--asmlinkage void poly1305_p10le_4blocks(struct poly1305_block_state *state,
--				       const u8 *m, size_t mlen);
--asmlinkage void poly1305_64s(struct poly1305_block_state *state, const u8 *m,
--			     size_t mlen, int highbit);
--asmlinkage void poly1305_emit_64(const struct poly1305_state *state, const u32 nonce[4], u8 digest[POLY1305_DIGEST_SIZE]);
--
--static __ro_after_init DEFINE_STATIC_KEY_FALSE(have_p10);
--
--static void vsx_begin(void)
--{
--	preempt_disable();
--	enable_kernel_vsx();
--}
--
--static void vsx_end(void)
--{
--	disable_kernel_vsx();
--	preempt_enable();
--}
--
--static void poly1305_block_init(struct poly1305_block_state *dctx,
--				const u8 raw_key[POLY1305_BLOCK_SIZE])
--{
--	if (!static_key_enabled(&have_p10))
--		return poly1305_block_init_generic(dctx, raw_key);
--
--	dctx->h = (struct poly1305_state){};
--	dctx->core_r.key.r64[0] = get_unaligned_le64(raw_key + 0);
--	dctx->core_r.key.r64[1] = get_unaligned_le64(raw_key + 8);
--}
--
--static void poly1305_blocks(struct poly1305_block_state *state, const u8 *src,
--			    size_t len, u32 padbit)
--{
--	if (!static_key_enabled(&have_p10))
--		return poly1305_blocks_generic(state, src, len, padbit);
--	vsx_begin();
--	if (len >= POLY1305_BLOCK_SIZE * 4) {
--		poly1305_p10le_4blocks(state, src, len);
--		src += len - (len % (POLY1305_BLOCK_SIZE * 4));
--		len %= POLY1305_BLOCK_SIZE * 4;
--	}
--	while (len >= POLY1305_BLOCK_SIZE) {
--		poly1305_64s(state, src, POLY1305_BLOCK_SIZE, padbit);
--		len -= POLY1305_BLOCK_SIZE;
--		src += POLY1305_BLOCK_SIZE;
--	}
--	vsx_end();
--}
--
--static void poly1305_emit(const struct poly1305_state *state,
--			  u8 digest[POLY1305_DIGEST_SIZE], const u32 nonce[4])
--{
--	if (!static_key_enabled(&have_p10))
--		return poly1305_emit_generic(state, digest, nonce);
--	poly1305_emit_64(state, nonce, digest);
--}
--
--#define poly1305_mod_init_arch poly1305_mod_init_arch
--static void poly1305_mod_init_arch(void)
--{
--	if (cpu_has_feature(CPU_FTR_ARCH_31))
--		static_branch_enable(&have_p10);
--}
+> +++ b/Documentation/devicetree/bindings/vendor-prefixes.yaml
+> @@ -0,0 +1,2 @@
+> +  "watchguard,":
+> +    description: WatchGuard Technologies, Inc.
+> diff --git a/arch/powerpc/boot/dts/fsl/Makefile b/arch/powerpc/boot/dts/fsl/Makefile
+> new file mode 100644
+> index 0000000..60caf36
 
-base-commit: c339f4010dea8b0d754f84ace70cd1b089878ef8
--- 
-2.56.0
 
+
+Best regards,
+Krzysztof
 
