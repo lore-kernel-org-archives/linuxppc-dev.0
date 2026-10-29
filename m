@@ -1,51 +1,89 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BDD6B606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2026 11:44:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7103A606A32D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2026 14:18:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=L7CGHQB4
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=JPsPhQ+i
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jFj7z3D7rz30RN;
-	Thu, 29 Oct 2026 22:44:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793274287;
-	cv=none; b=UfDrancCSUwb49yuM2RjZ95RDmWx4pdlkNgiccL8XKGFUP4PnVx96YIZ3phAJ4R+V/OHQx/ZbAmlKg1T9OMbu1+Hm+mqciRdQgWd4UDHX0C+pmb91o8LPCYIgI8wJ1hSzZa59kxuRdgWgUwZRjjg5dmayFMDyEqXUvjoO5kR4+Rlsz8bUIAEPiHI8/7xodOyD8zu+Q+d9pQnPlZSEsQlCLb+kAg/oarQRe5aoqwpvN9Rg2QU/UdwB0U/FdrOWfJ+IBC5xnMQIeAWW/B3e4jOv9oBjZgLcpV7RH5Ja3fsxDzBzZ4d63c8iRkqZC6ZCBwZ0JD4BgDCTwRzwVO8lRWcug==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jFmXz1HpQz30RN;
+	Fri, 30 Oct 2026 01:18:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.8
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793283491;
+	cv=none; b=Nd4w4l0CsFrJBYRsAtmxDFyaaV4kC5g1rDJMFi8kE+ZyWkUycoInwwkn/uhazSFj+hCw/xj8kt/AXvYvu+QOhfYU0xPEVS1hZurhG35ccKOwGasij7zlyb0G4Bu+7O9rbJ3e5iZueqDKzk/134S+uIPYrL71EyK0fOSeqvK1MKypt+vAtJ0qHVjHcuhtBxxESiHHbLJtKjAshOqdB5fQR+PBOiuIvxP5+O6orwgW78weoKqILWUJ38WaBOkRYAKzINQlrcB2e6U7OUAmxO9pmlk7Sj6tC2SflJjvnJr8a9bBVE31Cm9plko/DRaXJlQNcjA1JvLvuL7TY0TRTqgJzQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793274287; c=relaxed/relaxed;
-	bh=1olh1yaYuceUzaPW/siuAgly8uR+9SdKb+iCWXFA720=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=oKPjOU/uQ9UB4wmRXCYqi728WUol01s57jVEDSsPFOLZ4LeBZbW/PM+NALUFoxV6SZJ6xCShSAwiVXgXrap5fH7vOpEBeoPw9ao9ISlK6HVJ4yyN/ZmjxwHka73Rjc4j2QMOua7TePdwXuJsw+zLVYnSfDgXZ+oNzpZPtaMqHv+8BykyOWsOEMtgFJm6DE0r4nznzmYvo0eyURFoBPKUhN9fvLEosiqk1X4PPcab5h+4sf+R9b6YXzj/KRpmc4AqEvh3NAAymolCDVsMKYD2KbFFrqCUmU60/0jIOaci/nOAD04FypVfVDa2PcSH0OK8wRboOOdUtxzKUhNig+1o9A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=L7CGHQB4; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1793283491; c=relaxed/relaxed;
+	bh=sIAQApOwnlBHdqOEDUSf5m4YrfU7jMgmgx2VS57GmCE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=gKPBK9YqRo+cDwubM1Rd0G4P8nCc8VeeL3qxtHUCxVQusd56tpEupYCJsLSOiegHOwy4QDa6w3a4Cn27+bYDnppRWw+7+PMzvG/XcQzLwGya4N1WiDwDz+LgJ+Jv5o2bIHzn0OxAJULJC+08+UtE/LETW6pbNrf+Y6Z3i1vYbEmxed/raBGkgF4Cbh9tKZZ9rHenqp+2/tK701xiQPzt1sINvLgeiSwd4b9TpOpX97EcHj7Bsn0Hb+UKrez/auM5A+9xHBuXa6zT6PWNWiSOfzTytPY7FSmI+I3WaV0MTPhq2XxyjW56ftQ8dboEKAy+dwxHiDLfGDX/Peo4xW73XA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=JPsPhQ+i; dkim-atps=neutral; spf=pass (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=L7CGHQB4;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=JPsPhQ+i;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jFj7y1Xkqz30FB
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2026 22:44:46 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 789C1600D1;
-	Thu, 29 Oct 2026 11:44:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8AB991F01825;
-	Thu, 29 Oct 2026 11:44:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793274283;
-	bh=1olh1yaYuceUzaPW/siuAgly8uR+9SdKb+iCWXFA720=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=L7CGHQB4JZmofADxWOMliaIc6ThxHm11/fgV+M1P5QJGmfj0/9dtndktTu+W6l7y5
-	 qJweaULviPZxLdJoklAPo2WymTE8HD/MVf3LEuy7MZ3jPkRQ5lt/b0ghCIIkR+kbCD
-	 jp62hdv4Skuvt0sMvNZHrfRM1wGYcHtp248vky/JStR/f39eDVXGMVXpWjhCtmpk4u
-	 QSm5672u5Aej2InelJ4OC55KzM6ozGRN41pmtnDvwM2badRqi8bS0bVceeBFdO10If
-	 DKeM4BJzWJ2rvyt4HgkX0CHC6lkoFJOtxcRPNqGjxm8h5tDdl1UK/NMqAbFqpzdvgg
-	 HFsPnC6WWPa5Q==
-Message-ID: <d92115f1-92fd-4c2e-8a8c-1c4f3779b4f6@kernel.org>
-Date: Thu, 29 Oct 2026 12:44:36 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jFmXw2NdTz2yh4
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 01:18:06 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1793283489; x=1824819489;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=iUgkTmbEVGLMzWydqtXX3ASQZZhoDtXfz4hj/j8HhZA=;
+  b=JPsPhQ+iqmhcmfei8hPyg8PsqQZhbEMqgtk+DGxqarO5dyYEiuX/euUD
+   h/z71GBe7tRoYOCfXO1don0h3nkPQt4M3G1cwJakPFOGKH1SOokbucfTD
+   HPwjQOM7wdWw8GSMOmNHCuPHjrMSKlfBD5hQ7dTJxPCClZoK+c8grFc4z
+   lB4jcJfa98iFZEM4t+IQrkitkeWooUGvyup+r7Vn7Ra2G9Pq14207DopM
+   +5tYzxpf6QTYy4Mv2/bxjLsM4Jc9sGEjypI5pmVr+3TfHkQ87n9QRXjpY
+   ltS8M8EbW9TEOTNmEJZnojgpLcFns6bEjyx2iZk9hgsVGbeV0eqGLGmcR
+   w==;
+X-CSE-ConnectionGUID: UnMJhK3pQCKoBMbbK1/sUQ==
+X-CSE-MsgGUID: XgkyHEKtSjWSnGJj3smrAA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11949"; a="1920063"
+X-IronPort-AV: E=Sophos;i="6.27,184,1787036400"; 
+   d="scan'208";a="1920063"
+Received: from orviesa004.jf.intel.com ([10.64.159.144])
+  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Oct 2026 07:18:04 -0700
+X-CSE-ConnectionGUID: T8QAYLthTXiOO95NU/4lBA==
+X-CSE-MsgGUID: hFAuv5gvS4KywM5Cg6kQPw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,184,1787036400"; 
+   d="scan'208";a="5148330"
+Received: from ncintean-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.129])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Oct 2026 07:17:57 -0700
+Date: Thu, 29 Oct 2026 16:17:55 +0200
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: James Hilliard <james.hilliard1@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>,
+	Raul E Rangel <rrangel@chromium.org>,
+	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
+	Tony Lindgren <tony@atomide.com>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	Richard Genoud <richard.genoud@bootlin.com>,
+	Nicolas Ferre <nicolas.ferre@microchip.com>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
+	Jacky Huang <ychuang3@nuvoton.com>,
+	Shan-Chun Hung <schung@nuvoton.com>,
+	Pali =?iso-8859-1?Q?Roh=E1r?= <pali@kernel.org>,
+	Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	"Maciej W. Rozycki" <macro@orcam.me.uk>,
+	Timur Tabi <timur@kernel.org>, linux-kernel@vger.kernel.org,
+	linux-serial@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	imx@lists.linux.dev, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v8 2/6] serial: serialize asynchronous write wakeups with
+ the port lock
+Message-ID: <auNVk_Y8iiAXyFa3@ashevche-desk.local>
+References: <20261029-submit-serial-8250-dma-cancel-v1-v8-0-3fd56ba352ed@gmail.com>
+ <20261029-submit-serial-8250-dma-cancel-v1-v8-2-3fd56ba352ed@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,105 +97,91 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] powerpc: dts: Add support for WatchGuard Firebox T30
-To: Lefteris Koutrakis <lefteris.koutrakis@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, maddy@linux.ibm.com, robh@kernel.org,
- conor+dt@kernel.org, mpe@ellerman.id.au, npiggin@gmail.com,
- chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com,
- sashiko-bot@kernel.org
-References: <20261029112742.10238-1-lefteris.koutrakis@gmail.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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
-In-Reply-To: <20261029112742.10238-1-lefteris.koutrakis@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=4.0.1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261029-submit-serial-8250-dma-cancel-v1-v8-2-3fd56ba352ed@gmail.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 29/10/2026 12:27, Lefteris Koutrakis wrote:
-> Add initial device tree support for the WatchGuard Firebox T30 board.
-> Enable building firebox-t30.dtb under CONFIG_MPC85xx_RDB in the
-> arch/powerpc/boot/dts/fsl/Makefile. Document the watchguard vendor
-> prefix in vendor-prefixes.yaml.
+On Thu, Oct 29, 2026 at 01:36:58AM -0600, James Hilliard wrote:
+> uart_write_wakeup() expects the UART port lock to be held. Several worker,
+> DMA completion and interrupt paths call it without that lock, including
+> indirect calls from uart_handle_cts_change() and the transmit helpers.
 > 
-> Signed-off-by: Lefteris Koutrakis <lefteris.koutrakis@gmail.com>
-> ---
->  .../devicetree/bindings/vendor-prefixes.yaml  |   2 +
->  arch/powerpc/boot/dts/fsl/Makefile            |   1 +
->  arch/powerpc/boot/dts/fsl/firebox-t30.dts     | 386 ++++++++++++++++++
->  3 files changed, 389 insertions(+)
->  create mode 100644 arch/powerpc/boot/dts/fsl/firebox-t30.dts
-
-Why are you sending v2 after you sent v7 already?
-
+> Take the port lock around these notifications or their transmit helper.
+> Keep sleeping SPI and regmap accesses outside the locked region, and keep
+> the FSL LPUART completion lock held through its wakeup. Acquire the port
+> lock after releasing private channel locks to preserve the ordering used
+> by UART callbacks. In the MUX timer, publish available FIFO space under
+> the port lock and keep the hardware FIFO-drain wait outside it.
 > 
-> diff --git a/Documentation/devicetree/bindings/vendor-prefixes.yaml b/Documentation/devicetree/bindings/vendor-prefixes.yaml
-> index 5471a06f93f1..75fe4bcbe5f9 100644
-> --- a/Documentation/devicetree/bindings/vendor-prefixes.yaml
-> +++ b/Documentation/devicetree/bindings/vendor-prefixes.yaml
-> @@ -2017,3 +2017,5 @@ patternProperties:
->  additionalProperties: false
+> Use IRQ-safe locking in the Atmel RX and TX tasklets and SB1250 termios
+> path, since their interrupt handlers now acquire the same port lock.
+> Preserve the caller's interrupt state when releasing those locks.
+> 
+> On SB1250, lock modem-state updates after reading and filtering the change
+> status, and wake modem-status waiters after unlocking. Take the TX lock
+> inside its service routine so RX-only interrupts need no acquisition.
+> Keep that lock across x_char handling, FIFO consumption and the decision
+> to mask TX interrupts: a writer must not enqueue data and enable TX between
+> the empty-FIFO check and the interrupt-mask write. Each TX invocation sends
+> at most one character.
+> 
+> Serialize CLPS711x TX servicing and its interrupt-enable state with the
+> port lock. Disable TX interrupts without waiting in stop_tx(), since a
+> threaded handler may need that same lock. Have an already queued handler
+> leave stopped output untouched, and drain it outside the lock during
+> shutdown before the transmit FIFO can be released.
+> 
+> SCCNXP handles interrupts under a controller lock which its UART callbacks
+> acquire with the port lock already held. Collect the ports needing wakeups
+> in an unsigned long bitmap while servicing the controller, then release
+> that lock before visiting the set bits, taking each port lock and
+> rechecking the wakeup threshold. Removal drains the IRQ or timer before
+> unregistering the ports.
+> 
+> This serializes write notifications with port-locked serial-core state
+> changes, allowing readiness and transmit-storage reservations to gate the
+> notification without a check-versus-shutdown race.
+> 
+> Cover DZ TX servicing and JSM Classic modem notifications as well. On
+> DECstation ZS, acquire the port lock before the SCC lock and notify writers
+> after releasing the SCC lock. Defer normal TX restart after console output
+> to a worker, since console output can already run under the port lock.
+> Check transmitter readiness before consuming another character and drain
+> the restart worker during shutdown and removal. Release Lantiq's hardware
+> lock through the transmit helper's completion hook before notifying the
+> line discipline.
+
+...
+
+> static irqreturn_t serial21285_tx_chars(int irq, void *dev_id)
+
+>  	struct uart_port *port = dev_id;
+>  	u8 ch;
 >  
->  ...
-> +  "watchguard,":
-> +    description: WatchGuard Technologies, Inc.
+> +	guard(uart_port_lock_irqsave)(port);
 
-I think you are making random changes. You sent it now, but v7 sent
-yesterday was quite different. This makes no sense.
+Why _irqsave?
 
-I propose to slow down and learn to interact with Git, before you send
-anything to the mailing lists.
+>  	uart_port_tx_limited(port, ch, 256,
+>  		!(*CSR_UARTFLG & 0x20),
+>  		*CSR_UARTDR = ch,
 
-Best regards,
-Krzysztof
+...
+
+Same Q everywhere (it might be legit in some cases,
+it might be too strong in others).
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
+
 
