@@ -2,86 +2,96 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D20D606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 16:28:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6EAC1606A32F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 17:10:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Y0OGAehq
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=qDbuwhzd
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jGRNy4JP2z2yK7;
-	Sat, 31 Oct 2026 03:28:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4860:4864:20::2a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793377714;
-	cv=none; b=eDcUwU8X0A3/8s0RYfnHLOXZlRd7aPJ5n3t0Y90wAV1jd9cZufLXRGoVL0iez4seIp5wEyRZ134sUanoXdOZ6f45W3wf/pkU1VYfUoyGKMtjSnsYH56bfcl0hCEvTWhuel+YBrc25fIaZQLTooC1wAIsOVfwPS5ono3/aAzTynh9RRmROJdVeWuGmYWT/M1ZG6LicxIXuwziKZA+dPMpS6nm/4f6wBZRvBAzZ2ZPweUQTino9WnEluAS5Jz4PaXVzVKLC4OS8MQ43gqXO9e83xHkZp6ZTVoUk1SiNt5h4o0qFJksbIcVMiHUgI/r7IORqZTGwZLBT0V98rY0HenoDA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793377714; c=relaxed/relaxed;
-	bh=zK67Y4b2DOq0P3AA25tQ78azoXocIOXbPIU+g9MOBt8=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
-	 MIME-version:Content-type; b=oVzLp9eLWZjj83m+U0mZuyXxF/chhpgJIwY8A/aVI5GfnjL+D2Kz/Vj/2tTdYOb7Rhk/AI+XvxZiZJa04U8raJs0iVG8w0R/WQ0Jrc5dWo8JpLYKwVVYTDvaYlkJmFKZBmLdlUAxwPNEZ+5PTTrTGeL6a89+L5z8Cmzr6iNQOXdffOjQMNUPHOB2A+QJ4NTmXYKZD5q4XopVMk5umqhaijnZ8vpAsWvxlw+hd+8QLXD+9cwcspPqwXOI2gR9bYYXz6/Rp3++i7Zbra8n9Y1tCNYdXROGEG5sX208xcs2YnjCZIrmAILA4MVu9//ywCCD4soKGSuVsTaajT+J8XCwXQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Y0OGAehq; dkim-atps=neutral; spf=pass (client-ip=2001:4860:4864:20::2a; helo=mail-oa1-x2a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jGSJz0JHMz30Tf;
+	Sat, 31 Oct 2026 04:10:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::e2a" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793380210;
+	cv=pass; b=aYjRLn2m+afeY/XGfWsBFymjb+AEetfLSPCKTCAuoxlV69guk/pzfTp+IVBc649ZJgYPKtEnoFV4eLS8hJZnkfL/nc3Op1LG9dTb9HW2sp529bhHhGsMXO16kpvNGDjgc9BuTww66SjDE0fZXtZU+axYjhJRv3JWi9Q1Z6j5WuULpEg7h+7lINHiH6ZxrzXbIfgNl85yii8uXdTShCMHn9j13CkItcCrWp+ZEXsbcPff1o3gEXTkFcfPGZwvJHZElmYZxFrw8kSBPKGIXShHttELE2LE0KEkLZ7NOp7kCz/6hber1cVQvSMpztRRhw5NS1+oxD+gKT6sQVLJmCKAlQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793380210; c=relaxed/relaxed;
+	bh=upOYi42AukgDUPkY3CbfHszXdyIJTLIGDSDpKiK4vxs=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=JI35gxNmgUHhvITq5wec6/JFwLPLYPdLF8VU+DjAH1ZL3XUJc7yGfvLe4uHBCUKcfJ+x/NcVKC4a/dS+Q7qMWGVDUh1ebywwigtLRtMOVKLx9d0gM8g3SggxT+ab7ftT3ITCJpJcptFLTc1MNUkpCnCOkIghnGbCKuByn3s4f3nf6yOxRbtYHsEEuukZ8pFCR2nhg+FiJtVt+U417mBY1FkyIlsFl0J0nGUDYv14h9y76m5VfT55y4esiv4YAXNNPRpV+VEGucv5Rvoqyk5zAt1wltmgK3Z4RXmF68zyKSYKQlBBvwtaf7qH/unhiNLTrNECbp/EGAzxUnfbLuiUrQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=qDbuwhzd; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::e2a; helo=mail-vs1-xe2a.google.com; envelope-from=james.hilliard1@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Y0OGAehq;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=qDbuwhzd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2001:4860:4864:20::2a; helo=mail-oa1-x2a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-oa1-x2a.google.com (mail-oa1-x2a.google.com [IPv6:2001:4860:4864:20::2a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::e2a; helo=mail-vs1-xe2a.google.com; envelope-from=james.hilliard1@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-vs1-xe2a.google.com (mail-vs1-xe2a.google.com [IPv6:2607:f8b0:4864:20::e2a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGRNw5SrHz2xwM
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 03:28:32 +1100 (AEDT)
-Received: by mail-oa1-x2a.google.com with SMTP id 586e51a60fabf-48eee44b908so553427fac.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 09:28:31 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGSJx527Yz2yGT
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 04:10:09 +1100 (AEDT)
+Received: by mail-vs1-xe2a.google.com with SMTP id ada2fe7eead31-7ccae9f1a9eso512400137.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 10:10:09 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1793380205; cv=none;
+        d=google.com; s=arc-20260327;
+        b=TL8pQpb9lcN8eCpf6mGzzeW9yXUdBACyPmrvucy8M4tM8ihMtA/Rc2fp4Ytui0mort
+         0NrLZuQAdvUlnbcsT2cTS4R7qEHDzVCXnO72wbQmneAxW6QxsP2ZLC3lLnNgyYabATAR
+         v46sutPZNB/ZrPHPgU7Rbl/bamGGFgOOp+C0RyJUd75PPXthkVQ0vn1a8XR9WzA96KA4
+         1T6OBzJeo5BI8+QUlZPECng2pZB4v4h8lNQ5GEdKY4wfSPkR26Qruu8xR8cjLZGeM7Ll
+         CBmr0nYbNzm8TwOH/GIX7oQyLABtm00RQE1ADxl4tJImIwXsdu0DENYCgdLneGb1zhq5
+         2PPw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=upOYi42AukgDUPkY3CbfHszXdyIJTLIGDSDpKiK4vxs=;
+        fh=ZWKceQ6AZUEl39CyyJuBcyj2Wcsz9Qo6wt+6Kr0VCuw=;
+        b=F32kPyV/M3yoq7q18PgvXHCMd4qpbvT+ZFvUMWzFHP7XysN/flkI4WrZ0WAPRV0rxY
+         9TpXwi2IEEsyrMfpVZREe2lBa79qfkxPduSfILr0MvXq7VTTKChJNV0FzLdpV18ES5Rs
+         aZrKfYPiKWhr92v4XxhiW5gkKC9QZaMj72koAUXujnInXqruBgwdspdiVlezE57EGfz/
+         g64RN/0q5FBcBU4tXZ1EXh43B//At388qa4I/VtHNDXjRd7j/8asVfGqiaea1wVm+s0r
+         EAWUQbi0YmXfXiAfPCbgc+Vmg0RDcphRCuCglSgqqaf5mL7hvcBYBBnCj3jMWU4wy7Rl
+         hQ2Q==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793377704; x=1793982504; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :message-id:date:in-reply-to:subject:cc:to:from:from:to:cc:subject
+        d=gmail.com; s=20260707; t=1793380205; x=1793985005; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=zK67Y4b2DOq0P3AA25tQ78azoXocIOXbPIU+g9MOBt8=;
-        b=Y0OGAehqX+JJCfqhY30TmUW7wIACHIofxYmQGFpu0GmrUgIateskPY8jjKZkJt9wDR
-         33ULxcwk4ZS8IEp3PoT4FSEUEKGFcAFz3rrpG0uca3T3kUK1l+TG/pdWf/1+DpfNNm61
-         MkGk+tfwjOrWERAXI+7GwGh5FI9LFvBaSe/l1VvLNyizznAmkwLqKl8oXsGmsse/KRav
-         +aAkqv5ib/cAlyznzW5nw6xVqE2wZ9B/nwqrXPkUOCfgFIuDXwqxDcM+sHTO4n077flm
-         43rz41Xek7sVPUwlvFnt9st08plzswO3vdZVEIC0aSzj15D25utrNtInP+LpmlgKFnD0
-         fvgA==
+        bh=upOYi42AukgDUPkY3CbfHszXdyIJTLIGDSDpKiK4vxs=;
+        b=qDbuwhzdAPTK/8bbNQY3IIRTN/YyRhV0HGuoWnfcfAzpOWgAOuTjX+EzQ+mj27Hp1t
+         yoPat648/++XycW4abwIsXO+xWks8kkNBT8Gg9qH6pOowd8Q5qu+3KNWQolpUYcL9vsl
+         2l98z2cbBwOBY1h4S5E+oIU2NDJY0CpSgk2O0TddTjkQsQxc4UtRQ6nqAISYk49nfz+f
+         iYgcNreXrwPUkE6Qq3aERkZTXLy+hk0t8g9NCxCyzHXx+bgLc3rfAlSbiFMYNrrFWBns
+         +n+Hs/2YmZ7exsfFsvMck2Pb2khEZhOd46NOFIh+UhuREHwU880ffIXlHiWD39OpeqZd
+         lTig==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793377704; x=1793982504;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+        d=1e100.net; s=20260707; t=1793380205; x=1793985005;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=zK67Y4b2DOq0P3AA25tQ78azoXocIOXbPIU+g9MOBt8=;
-        b=N98nhTfVlJG1IR2MVSs1RjnOCmcFITrElw2mGJJrHZCS2+rW8z453whPQe2LV9PwW9
-         hnQAGFgfXUhAZRZtGvZU3wr924g/1ExFfLqfwD3nWZWVyF+FfsFTChgsROgVzgVbg+f/
-         bx2+bvlbc5BjRI/O4ko62ASjFKkC20qUB3/R87ZFZHC+H78boar0vUI2r5W5BLmaXRHw
-         MKJHb2aEmcqja8kGyJnQR1SCICOXmiH/uOb+BwgKcuVyxRP/xju7XGkgsxF5Me0HnUj2
-         d8SB2CRE+DxGn02rZXTM6VR8vdr3pKB2LROEj451d+1UibBdmPpKW/eBLlB65ed0B17P
-         /fag==
-X-Forwarded-Encrypted: i=1; AKwUvBzrjINX+fm9Oj2XDdNg/ulQ5kdxoGPMCU5UG89fRkaRBwAz7Oafg5OqyB+3wiQ7sb/1HqtDbJBsSE1eF74=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYIVT7m4pKLEg3uwR+jFhdruUJjVo1N6JYqt5U8YTj0Hp32+afJB
-	dcAFFgiwX+lA8Aa0InHUWbLWQGBXTR6qiaNoCKg+xJCtZXfcfxsrCZyI
-X-Gm-Gg: AYBFou2Meh9zGubzNEJYXVmlymc/xjsmMsoeTs74SMV44W2P/dg5tsUPmQ0P6kmJrZI
-	Ri3HkSqNveZCCNKIc5cipXpuJu+5RW8vlRr45NBAkzzLkX2I8wX8AUJ1zJ+GPg/5p2oHQSeMDJk
-	hfijiJKeAEQEbGhHfNtp3xb1otDLqOZcueLRhyLKuPZzjpsH1HYAnBkmyNhY3Y/42ahnYZPMg9h
-	BjLK2zGGlevJQX1LUZ3M70W8YGO5dsivxiBmlQovOAVK7UMwG7GLlJwiAvqCLvROg+fPhDiaCX/
-	gj/5RqgOUIR6tol2vKrZo4036y/hf0D/HAOr/wa8PbuJV+DJDCCKXmcp9dzNIwYKBwiyr1OYFra
-	ho2BB92TDn451+jloNwcK1Fox405g/qmiQ9iNI663jZWZJExp5rjoBUjNPXvR2OBZFWpY2FiJwY
-	qftC9GLACcyBgw/dnZ0GJPONOfMNPX8ScPJUSLmtiP9+2s/MzBjYMRRV1dPYypl8ZO6tk5gboiQ
-	N7rqA7N3voydHw4uDwraTLV2RZ3Wp58S/S4lul8B/yQBhYgEvv7h7zPXLvQtx4MxXw/jv9exnoQ
-	p9Y1G/vXDwCrlMHiH9MXyPLl2qT5A60URBt/2a4880yb5z12Zw==
-X-Received: by 2002:a05:6808:f13:b0:4f4:813c:6a21 with SMTP id 5614622812f47-5640dcb87admr1936746b6e.20.1793377704392;
-        Fri, 30 Oct 2026 09:28:24 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5614622812f47-5640fe0d46dsm1916622b6e.11.2026.10.30.09.28.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 30 Oct 2026 09:28:23 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Shrikanth Hegde <sshegde@linux.ibm.com>, Narayana Murty N <nnmlinux@linux.ibm.com>, maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, chzigotzky@xenosoft.de
-Cc: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org, msuchanek@suse.de, harshpb@linux.ibm.com, gautam@linux.ibm.com, amachhiw@linux.ibm.com, venkat88@linux.ibm.com
-Subject: Re: [PATCH 1/2] KVM: PPC: BookE: Disable preemption before loading guest FP and Altivec
-In-Reply-To: <2a75097f-6b49-456a-bfef-d5e559ce719a@linux.ibm.com>
-Date: Fri, 30 Oct 2026 21:51:41 +0530
-Message-ID: <33tnw44q.ritesh.list@gmail.com>
-References: <20260928110411.844582-1-sshegde@linux.ibm.com> <20260928110411.844582-2-sshegde@linux.ibm.com> <9d83e196-4d6b-4be1-811c-eb72527d3cdd@linux.ibm.com> <2a75097f-6b49-456a-bfef-d5e559ce719a@linux.ibm.com>
+        bh=upOYi42AukgDUPkY3CbfHszXdyIJTLIGDSDpKiK4vxs=;
+        b=rNIWd87+ZVqpxfNPipAJ8aV9P+YS8eNGhjf1TY+0oNaVv0JghdF1EmbeheTbM2vvYb
+         SxR9kj+xwNN9XMuRbsCMRXDsZmxBmgZtJIOvfqvPmT5wVPiCoRy4X+9Z01B5Diuv4cUo
+         zToIu1tiu6uBLywLnyKkFXAfgiTGxapQV7fFrz4C3AkhuamTa/GGubsqx8VNl/SHuMIC
+         tCcZW9UOMFdSk4aA9CGxvAv0CawD47R9TRLcwLkWIT89uaa3i4omn2/AAUmimPmV1A8Q
+         J+X/yzIkKghcpPYL+t04CSUUH6e/yh2sBTYL89EDvi2PqgEN6xdU2wPw3rKUEWW/onEN
+         jE8w==
+X-Forwarded-Encrypted: i=1; AKwUvBw000y927eXkQFkmyDveFAjAHh2xKOIzGxaiwi3KjN9EBJJh7fQHWqMUpo0mQBwHsG1zdiEsZNfVziHATI=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYLzj1t/U196vRD2QUXSU+7wwnfBBAnnZt0Hys45h2n36zJhuMVY
+	fOQKyMJadP0GaniTer9OWT+NZZM1IxZRcTdaD2cMxBwHVNMcumexTP1AKCxDhiXx2nHz4jxK3vI
+	o+ZJAW0eGaYnSPDyOkRLVAHyD6SGypSc=
+X-Gm-Gg: AYBFou05Mfl2QoR2Ztg5BnrAE4rD7mBolNrGp/hJzSd70/zkWeItx9RwxcO+1NAXmj/
+	gqWTmmFvCQ5IvLfK9PjvnXu2V24Se/HG9P+wmpO3toNH8GXgJ1Ao2USTGM583tzcMmqDEmU3Lhk
+	z8aqucIH47IOMhlY4MIOzGfuCPQjEV7EVI/9MGxrFUTQs19sxvdbh6rlmD5fdyg9NZ/l7HIMCPn
+	7YDfBRedPaILV+0Soim4CwVtFfh0oJDBJCKtz99c4Ump9ti6msCNXuY9Oi2KVLjCQNz/jgcFkd+
+	1WIiIEjCMEQEKoQxkWvGLmwvIUcGddhOSYb9HjN3hzlg/nwiXOqsimH9i9fp7WtZCjmODzje343
+	UzZl4aWd8VI8PGSQgWP5GbtC4w61xnBbJsSbU9VcStvzLeTjeAt98lVDZahcXTjaR60degXq8C3
+	/wBKTZAtq6snUdC17FEIGA5Bom45zObP0sWfr4mnZvgAqCRgH/dVgDnG8JDY8eoA0iBvdTY4Ngv
+	58E+4y+gWJMtFqXkZq/lV3WNh27Juw=
+X-Received: by 2002:a67:e10d:0:b0:7cc:1a41:20fe with SMTP id
+ ada2fe7eead31-7d072cae2c9mr1521484137.25.1793380205451; Fri, 30 Oct 2026
+ 10:10:05 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,96 +104,129 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+MIME-Version: 1.0
+References: <20261029-submit-serial-8250-dma-cancel-v1-v8-0-3fd56ba352ed@gmail.com>
+ <20261029-submit-serial-8250-dma-cancel-v1-v8-6-3fd56ba352ed@gmail.com>
+ <auNW_Oc-Ao5Iw-Gw@ashevche-desk.local> <CADvTj4pOg4w5LpFW_E3qzP7FZDnDgpB8LyR9xxhT_mZre21vFw@mail.gmail.com>
+ <auRl9ztbav4nHi7U@ashevche-desk.local>
+In-Reply-To: <auRl9ztbav4nHi7U@ashevche-desk.local>
+From: James Hilliard <james.hilliard1@gmail.com>
+Date: Fri, 30 Oct 2026 11:09:53 -0600
+X-Gm-Features: AclHuK8FtznzJujmH4YHgrWNDCpi98ee8eK0vX_qbau-y3ULhcsZAztidkT31Us
+Message-ID: <CADvTj4p8tjwdftg+H11ob0iaBZKxXrTdkSmhfZHjOYunm5tr9w@mail.gmail.com>
+Subject: Re: [PATCH v8 6/6] serial: 8250: retain DMA resources when
+ termination fails
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
+	Raul E Rangel <rrangel@chromium.org>, =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>, Tony Lindgren <tony@atomide.com>, 
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Richard Genoud <richard.genoud@bootlin.com>, 
+	Nicolas Ferre <nicolas.ferre@microchip.com>, 
+	Alexandre Belloni <alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, 
+	Jacky Huang <ychuang3@nuvoton.com>, Shan-Chun Hung <schung@nuvoton.com>, 
+	=?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Fabio Estevam <festevam@gmail.com>, "Maciej W. Rozycki" <macro@orcam.me.uk>, Timur Tabi <timur@kernel.org>, 
+	linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev, 
+	linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Shrikanth Hegde <sshegde@linux.ibm.com> writes:
-
-> Hi Narayana.
+On Fri, Oct 30, 2026 at 3:40=E2=80=AFAM Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> wrote:
 >
-> On 10/1/26 4:56 PM, Narayana Murty N wrote:
->> Hi Shrikanth,
->> Thanks for the fixes. I had one question on patch 1.
+> On Thu, Oct 29, 2026 at 11:19:59AM -0600, James Hilliard wrote:
+> > On Thu, Oct 29, 2026 at 8:24=E2=80=AFAM Andy Shevchenko
+> > <andriy.shevchenko@linux.intel.com> wrote:
+> > > On Thu, Oct 29, 2026 at 01:37:02AM -0600, James Hilliard wrote:
 >
-> See response below.
+> ...
 >
->> 
->>> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
->>> index 13ad4cf5fa71..5b9118eefe1d 100644
->>> --- a/arch/powerpc/kvm/booke.c
->>> +++ b/arch/powerpc/kvm/booke.c
->>> @@ -1404,10 +1404,17 @@ int kvmppc_handle_exit(struct kvm_vcpu *vcpu, unsigned int exit_nr)
->>>           if (s <= 0)
->>>               r = (s << 2) | RESUME_HOST | (r & RESUME_FLAG_NV);
->>>           else {
->>> -            /* interrupts now hard-disabled */
->>> +            /*
->>> +             * kvmppc_fix_ee_before_entry() marks the software
->>> +             * IRQ state enabled while interrupts are still
->>> +             * hard-disabled. So disable preemption while loading
->>> +             * guest FP and Altivec.
->>> +             */
->>>               kvmppc_fix_ee_before_entry();
->>> +            preempt_disable();
->>>               kvmppc_load_guest_fp(vcpu);
->>>               kvmppc_load_guest_altivec(vcpu);
->>> +            preempt_enable_no_resched();
->> Would it be simpler to move kvmppc_fix_ee_before_entry() after the
->> FP/Altivec loads instead?
->> 
->> The normal kvmppc_vcpu_run() entry path already loads the guest
->> FP/Altivec state while interrupts are still disabled and calls
->> kvmppc_fix_ee_before_entry() immediately before entering the guest.
->> 
->> So could this path follow the same ordering:
->> 
->> kvmppc_load_guest_fp(vcpu);
->> kvmppc_load_guest_altivec(vcpu);
->> kvmppc_fix_ee_before_entry();
->> 
-
-Thanks Narayana, that actually make more sense to me.
-
-
->> That would avoid making the software IRQ state enabled before loading
->> the guest FP/Altivec state, and also avoid the additional
->> preempt_disable()/preempt_enable_no_resched() pair.
->> 
->> Thanks,
->> Narayana Murty.
->>>           }
->>>       }
->> 
+> > > > +     while (rx_ret || tx_ret) {
+> > > > +             dev_err_ratelimited(p->port.dev,
+> > > > +                                 "DMA termination failed: RX %d, T=
+X %d; retrying\n",
+> > > > +                                 rx_ret, tx_ret);
+> > >
+> > > > +             msleep(100);
+> > >
+> > > Huh?!
+> > >
+> > > > +             if (rx_ret)
+> > > > +                     rx_ret =3D dmaengine_terminate_sync(dma->rxch=
+an);
+> > > > +             if (tx_ret)
+> > > > +                     tx_ret =3D dmaengine_terminate_sync(dma->txch=
+an);
+> > > > +     }
+> > >
+> > > This is unacceptable. Sleeping is okay, but value should really match=
+ the
+> > > baudspeed and other parameters of the transfer.
+> >
+> > This sleep is backoff after dmaengine_terminate_sync() has returned
+> > an error, rather than an estimate of UART transmission time. Each
+> > retry asks the provider to stop the channel again; elapsed time is
+> > never treated as evidence that the resources are safe to free.
+> >
+> > The particular 100 ms interval has no hardware-derived justification.
+> > However, I don't yet see a sound way to derive the retry cadence from
+> > baud rate either. RX can be waiting for input, TX can be held by flow
+> > control, and callback retirement is a separate requirement from
+> > moving bytes through the UART.
+> >
+> > Do you have a particular provider failure mode in mind where retrying
+> > termination should follow the serial transfer timing? I'd like to
+> > base the interval on the condition that can make termination succeed,
+> > rather than substitute a wire-time estimate for an arbitrary delay.
 >
-> I thought I had put that for discussion after ---, but looks like I forgot.
+> Termination of DMA sometimes require to clean up internal FIFOs and other=
+ state
+> machines. That's what happens on HW side. In the software waiting for too=
+ much
+> may lead to the very big undesired latencies. The value of 100ms sounds i=
+nsane
+> to me for the HSUART cases (megabaud range of speed). Also note, not ever=
+y PCB
+> design uses HW flow control, so this may be even worse for them.
+
+The 100 ms interval can add unnecessary teardown latency if a failed
+termination becomes retryable much sooner. There is no hardware-derived
+justification for that particular value.
+
+The FIFO/state-machine draining is part of the provider's stop sequence.
+For example, DW performs its FIFO-empty polling inside
+dwc_terminate_all(). If termination succeeds, this patch proceeds without
+the retry sleep, regardless of baud rate. The sleep is only reached
+after an error during DMA release, not during normal RX delivery.
+
+Baud rate can influence how quickly a transmit FIFO drains, even without
+flow control. However, the termination error does not tell 8250 whether
+that drain is still progressing, how much remains, or whether the
+controller needs a different recovery operation. That distinction matters
+when choosing a retry interval: a shorter interval reduces the added
+latency, but does not establish that retrying can recover the channel.
+
+There is also a specific API detail here: dmaengine_terminate_sync()
+returns immediately if device_terminate_all() fails, without reaching
+dmaengine_synchronize(). Consequently, an error leaves callback draining
+unconfirmed as well. The retry cadence can change, but resource release
+still requires successful termination and synchronization.
+
 >
-> I don't mind the above too.  but I didn't have a way to test it.
-
-Actually I agree with Narayan's reasoning here. 
-
-Sorry for being so late to the game. As you know we have been occupied
-with other things internally.
-
-> So kept it as is based on what Christian said works for him.
-> If you have a way to test the patches, please let me know.
-> We can try that too.
-
-Let's ask Christian directly :)
-@Christian - Once we have v2, would you kindly help us test that
-please?
-
-We think the other approach which Narayana suggested might be a better
-fix for this and it can avoid preempt_enable/disable() dance. However,
-looks like we may not have the board where we can reproduce this.
-
-
--ritesh
-
+> > Regardless of the retry interval, shutdown cannot release the buffers
+> > until the provider establishes that DMA and its callbacks have stopped.
+>
+> --
+> With Best Regards,
+> Andy Shevchenko
+>
+>
 
