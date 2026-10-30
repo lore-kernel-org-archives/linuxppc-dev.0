@@ -2,48 +2,108 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EACA1606A329
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 08:29:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 809CE606A31E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 08:38:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=fqKiRN/U
+	dkim=pass (2048-bit key, unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=VGlc6efj
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jGDmb4rSFz30V6;
-	Fri, 30 Oct 2026 19:29:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::59"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793348991;
-	cv=none; b=SjQBdUXhulGbBdvtsxLf8Qd0fSLo0EEei9/RmGLSwX53QLMdKesxJK/Zc4Dks2myi6Ak09KmkNoHeXfoWn0k1ec4Nil9eTc6lCpxzy4HFQu/FndH/IrR4zlKqFKbx444voEajAhZvD7w3YZrM+M5hGoA/zopYTKt5nrnXD/prGNwoiXJ0i7pKGsTJ1dI/NV8m9jktrbVkJaF6c3HD/4v+99dNnuuI6NendaG2fdxnFLirdO4S85c/J1eKuhOZB4SkB4n/R/7x4vPs0c2Of5xLveu1zKYLPAMosCb/CerbY8QH51LC30DeLfGUbX1IiDoi8F/X4zfy8aBBI79fzOHbQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jGDyK1HTJz2xHG;
+	Fri, 30 Oct 2026 19:38:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::533"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793349497;
+	cv=none; b=ZDbdxAsShfUojMnYbKE6387Sw+VaRIGXnTBI27H9m8MapRhmiGZ6i5MCMECXJg7sWrgzErOX1y8KYhH+z1nli3mEmd8vcHIlouuQev/tHpp7+4/dqyJ+6VE/aTOi7S6437ydkSqDDfO0XDl/KtJV6p/KPgAUcnlgKl5mCpRJiI5ZuVUz6wFg1bEFeRs8PlBCYPY26vY+nK3sm7wQISU4MmXMLhU16eIhxJZ6YiZeqRcwTroCCw+gnbRc5xxW5lt6ftTBd0rCIxJMR/W5DAwfatPVsbPVbW7nQJCA5sNUFmRHvQ+zsIsW7fCo0e9ASyhZYYxEeHEMRLyjq6qLa5WrRA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793348991; c=relaxed/relaxed;
-	bh=NUOdiWftstkdjD3ldYV9jARRTLumRPJOziIdFVy1jPA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=HgbVeT8Asc58YgpL7pJqFTpX+xx1L6H/8u+JCcDyXtLOBt/tizrbu5DuQeLoJPvwYNm2EpNBhdj6IowNBfT3ZQYIpjR5np6nY7MDPytOWj2bn6xp/FQ2Kja76hGnhBVh2YNdoIpLnVY46zaZ/S4tGnO5SfeIM12b5Zmq5V7Ynm2L/njM5e1xNW8LdfPcAoQk2i5kbjUD0eVXz18izOS56eD60tABTxwNhZtJUOuU0yth0rEufh2FDY5RActQdcya3wOXYjqO7vPRoB5qjjd8chX0Aa3MxlIuDQOTS3Wb3+nTapAVOQqpWqowunQT1mn1qg4fX5Ct8dHtF4+5/5JEpA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=fqKiRN/U; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::59; helo=mta0.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1793349497; c=relaxed/relaxed;
+	bh=ml5g8GJyiKqZW7cPKgtShDnwVwZ+S7TeGUyvRqBFqBI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=k8x7r0+taK70sENqLPm5fgJDDn7X6k9DrVkrv9NHNsgC3q1H3okH2s6fPkFYac3EgdaPZGeGJW8eAkjydkCTKOyxgx6WMp49VbA7JYCpqMjwTyZ2YejuRgNamxlNqfD+vEkUhpiPMgIR9hS3kbnqepAWPcJB5xUsloa1EmnquwiRuS5gwMgrL63yir2oELcsBfZkWuQnz1DWZL3ygWW28DBfJoIx5mFIG3IeZ2Nik2owB1GSfUmmtQPO3Y5xrUNf0CtLhS0lVkX7OuXtyDIyGM5sFhir2tjKgmKRXypFTBb1NFy7AD+5alosy59uP3/JtZcKYEEd+CBcjiqFWlVsBg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=VGlc6efj; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::533; helo=mail-pg1-x533.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=fqKiRN/U;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=VGlc6efj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::59; helo=mta0.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta0.migadu.com (out-89.mta0.migadu.com [IPv6:2001:41d0:1004:224b::59])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::533; helo=mail-pg1-x533.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x533.google.com (mail-pg1-x533.google.com [IPv6:2607:f8b0:4864:20::533])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGDmX2fBkz30RN
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 19:29:46 +1100 (AEDT)
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=VKj6jsUT5uPNz0z5oNidKhqpMpX0J7TlgAePRZwWgdE=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1793348967; v=1; x=1793953767;
- b=fqKiRN/UWK5/JcParJ41wz4YZ4Fe+A1Je8557uA4EXUOJ9X7fXcFcxGNnqjDKz8dWO8TPU7x
- veqV0xxp5FUsHNvLMgtE3+Lgy89WpZ8ofP2bdREG1OuTvGTOw+JOfvnqcXOAijgEgnDXIgzhsRo
- fKaokF2/fJvBs+rd0TujjgWI=
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id f6353d09bda43725;
-	Fri, 30 Oct 2026 08:29:27 +0000
-X-Mizu-Trace-ID: f6353d09bda43725
-X-Migadu-Flow: FLOW_OUT
-Message-ID: <5452d555-82f9-45a6-b443-ee732b1874ba@linux.dev>
-Date: Fri, 30 Oct 2026 16:30:39 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGDyG2sGQz30V6
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 19:38:14 +1100 (AEDT)
+Received: by mail-pg1-x533.google.com with SMTP id 41be03b00d2f7-cc1bc88a20eso273545a12.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 01:38:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bytedance.com; s=google; t=1793349492; x=1793954292; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=ml5g8GJyiKqZW7cPKgtShDnwVwZ+S7TeGUyvRqBFqBI=;
+        b=VGlc6efjK4nNM7D93lDWD9WRZizHkPQUyGpNl5rRg67AUAvE2KxIqWHT3/THOq/3P+
+         1PSXYEGh/zCmen6jgXf2YhdvabJg0f6pZF1cruyzGmGbg4uhmi38gUfgazXCCN/QqiXn
+         jX66aQ8V9GTfG8sbPX1UsFpXxnTocgpAnCgMZ1DW1a7AmY6xS6HoL7fnmMxn2xgz9D/F
+         xbOzTGrNhL+Y2mtHywZWqpPKJFNyjzPo/SI66+rnOSaeIupJmb2ttT6xGn2BJYax4ypo
+         4QEtqFxTU3qBYCGq3w8qOrFxdbFO31/R3ouE6i8rDprLxiS93bWAc1AjIPyOkTRw93fG
+         yc7g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793349492; x=1793954292;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=ml5g8GJyiKqZW7cPKgtShDnwVwZ+S7TeGUyvRqBFqBI=;
+        b=unEmQHOzJsEsyol/Z9F1p/s96o6H5ztjj3xX9tj2PlL0z91nC9njTqVcL4Qtduvz3S
+         20U1x1cHurIMbKZCX41MVgWLzBEa+YT+Uk43TWJgiaxYXDgwfpxDigjhHZ1Q+4sEOQOI
+         QhOxsFJR9xFcrt3EIuvGiN4UnNuYLtkRof4elFQDOfry8y22GUoJGos5879D/vpvWg+9
+         obzjW1UNURld9olmPCxovg20aOM0qvJQGPl8FBaXWBcp+eT8OTu3s/eJe756ArGpo3AL
+         4OpsywAHSLRMvl5Dd9InLQgfqXNqyp8MDmmkgPhmH7tjbK6sjldRc7uO4/nTvP+wr4rl
+         pDMg==
+X-Forwarded-Encrypted: i=1; AKwUvByT+4imgQ124CTKP5LFfdnEJzUw0ISYhNTMl7YPc8yv4Id1Fx5Zn2chyUlL6pZ/aVcnyfTHEc+xte5F7i0=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYJYoV5/WKJXF5HoTxsu8yPvhP9XDnFFySVXqkYu1N8K5ky5W+kk
+	3wJPq1ZIq6Xlv08SeMv74dEGLQXo5jwPyFb+c5mAstWb5oODNl0fxHw968dbed9P3JA=
+X-Gm-Gg: AYBFou0ohpOxvHJp8VvsNYD2hsuzWueBaTVVqtsStZlbfs4ucPZoZeCIYBq7D6c5kQB
+	T4D74TXD3MvOgpz9yC3Tiu8tvaQBTQ4ccxRO6YljfEI0Yf5VpVXErj+Cjs7XTzUJB95Y9F9n66g
+	UjaBaGz5gdo3eK0WJ1vNVW6oAfDsLDZjQC3pSEWOdcS6jWCHLl6TZfydqXO3FTy4tZ5hK4RXcpn
+	0NcbKLvWoXj8ayw+0vEx7S68k4dskUGLqa1UNpowyj90Ayx9L8+yONMvyJKHIyno+MHwlUflX/q
+	cS2IxavHtmOBNhjWM9GVQuRjG3M2mbk4vH6QEimZ1JimOUTKxY9dKLCZmA3D+JZ32wJEin3OM/l
+	mte875Iml9QtmtcUC7Md1Go+65LoLM7bgSnLR1nk4diWIGgKriBQGjXWhfdx0uWwuUP3T+w795K
+	IKkedLseKLqWP+2enhIBC0T6QTW0xI8XK4aAlBIBkHpiceNQN/O973jQg/kHUJpcl4iByVAVmQa
+	Iakk7vEAMd33Ro+dPhTWI+qumyYevQgWTmuLFMJnvxyXi/yGk4LWXfX9ykjqbWGO0pkodkbqeF6
+	e2Y9UMmvz96z+/2Wi2Dq3Bpzn+3v89wr9/4lBZ/H5l1Xy4Yndc0=
+X-Received: by 2002:a17:90b:5147:b0:3ac:97bc:4c7b with SMTP id 98e67ed59e1d1-3ae897c7c28mr1424866a91.14.1793349491405;
+        Fri, 30 Oct 2026 01:38:11 -0700 (PDT)
+Received: from n232-176-004.byted.org ([36.110.163.100])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ae6e9b1506sm7542122a91.15.2026.10.30.01.38.04
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 30 Oct 2026 01:38:10 -0700 (PDT)
+From: Muchun Song <songmuchun@bytedance.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Hildenbrand <david@kernel.org>,
+	Oscar Salvador <osalvador@suse.de>,
+	Alistair Popple <apopple@nvidia.com>,
+	Will Deacon <will@kernel.org>,
+	"Aneesh Kumar K . V" <aneesh.kumar@kernel.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Rich Felker <dalias@libc.org>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	"David S . Miller" <davem@davemloft.net>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	x86@kernel.org,
+	linux-m68k@lists.linux-m68k.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	linux-sh@vger.kernel.org,
+	sparclinux@vger.kernel.org,
+	linux-arch@vger.kernel.org,
+	linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org,
+	Muchun Song <songmuchun@bytedance.com>,
+	Muchun Song <muchun.song@linux.dev>
+Subject: [PATCH 0/2] mm: Remove pagetable_dtor_free()
+Date: Fri, 30 Oct 2026 16:37:58 +0800
+Message-ID: <20261030083800.599152-1-songmuchun@bytedance.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,116 +117,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 03/10] mm/vmalloc: clamp an unaligned range in
- vunmap_pte_range()
-To: Dev Jain <dev.jain@arm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kasan-dev@googlegroups.com, linux-mm@kvack.org,
- Sashiko <sashiko-bot@kernel.org>,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- Shrikanth Hegde <sshegde@linux.ibm.com>,
- Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
- Dmitry Vyukov <dvyukov@google.com>, Andrew Morton
- <akpm@linux-foundation.org>, Dennis Zhou <dennis@kernel.org>,
- Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@gentwo.org>,
- Uladzislau Rezki <urezki@gmail.com>, Suren Baghdasaryan <surenb@google.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-References: <20261026080329.140244-1-hao.ge@linux.dev>
- <20261026080329.140244-4-hao.ge@linux.dev>
- <99f529e8-06f7-4a20-a60b-0330c5d3d91c@arm.com>
-Content-Language: en-US
-From: Hao Ge <hao.ge@linux.dev>
-In-Reply-To: <99f529e8-06f7-4a20-a60b-0330c5d3d91c@arm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=4.0.1
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Dev
+This is a follow-up cleanup to the page-table teardown fixes [1].
 
-Thanks for your review.
+pagetable_free() now invokes pagetable_dtor() for constructed page tables.
+This makes pagetable_dtor_free() redundant and leaves explicit destructor
+calls immediately before pagetable_free() duplicating lifecycle handling.
 
-On 2026/10/30 15:14, Dev Jain wrote:
-> 
-> 
-> On 26/10/26 1:33 pm, Hao Ge wrote:
->> commit a739e6b557af ("mm: vmalloc: WARN_ON if mapping size is not
->> PAGE_SIZE aligned") made vmap_pte_range() warn and bail out when the
->> size is not a multiple of PAGE_SIZE. That loop steps in page
-> 
-> Why are we checking the alignment so late into vmap_pte_range? Why not
-> simply do
-> 
-> if (!IS_ALIGNED(addr, PAGE_SIZE) || !IS_ALIGNED(end, PAGE_SIZE))
-> 	return; (or return -EINVAL);
-> 
-> at the start of vmap_range_noflush and vunmap_range_noflush?
+Remove pagetable_dtor_free() and convert its callers to pagetable_free(),
+then remove the remaining redundant pagetable_dtor() calls. This keeps the
+destructor decision in the common free path. No functional change is
+intended.
 
-I think adding that check at the entry of vunmap_range_noflush()
-goes against its design intent. Its job is to tear down the mappings
-of the given VA range, so even when the caller passes a size that is
-not page-aligned, we still have to unmap whatever is mapped within
-that range.
+[1] https://lore.kernel.org/r/20261023063428.3658761-1-songmuchun@bytedance.com
 
-So the patch clamps end down to the last full page and keeps
-clearing. A buggy caller still gets its mapping torn down as far as
-it goes, and nothing is left behind. The check here is just for
-protection. 
+Muchun Song (2):
+  mm: remove pagetable_dtor_free()
+  mm: remove redundant pagetable_dtor() calls
 
-This is just my preliminary understanding; I may be mistaken.
-
-Thanks
-Best Regards
-Hao
+ arch/m68k/include/asm/mcf_pgalloc.h    |  5 ++---
+ arch/m68k/mm/motorola.c                |  2 +-
+ arch/powerpc/mm/book3s64/mmu_context.c |  1 -
+ arch/powerpc/mm/book3s64/pgtable.c     |  1 -
+ arch/powerpc/mm/pgtable-frag.c         |  2 --
+ arch/s390/include/asm/pgalloc.h        |  4 ----
+ arch/s390/mm/pgalloc.c                 |  4 ++--
+ arch/sh/mm/pgtable.c                   |  2 +-
+ arch/sparc/mm/init_64.c                |  1 -
+ arch/x86/mm/pat/set_memory.c           | 10 +---------
+ arch/x86/mm/pgtable.c                  |  5 ++---
+ include/asm-generic/pgalloc.h          | 12 ++++++------
+ include/asm-generic/tlb.h              |  2 +-
+ include/linux/mm.h                     |  6 ------
+ 14 files changed, 16 insertions(+), 41 deletions(-)
 
 
-But that's just my understanding, happy to be corrected.
+base-commit: 9c449f885765cf8d80b2c60b1971e774bba51a3f
+-- 
+2.54.0
 
-
-> 
-> 
->> multiples and stops only at addr == end; with an unaligned size addr
->> never lands on end, so the loop cannot terminate and walks off the
->> end of the page table.
->>
->> vunmap_pte_range() has the same loop without any guard, so an
->> unaligned range would clear PTEs past end without ever stopping,
->> walking off the end of the page table.
->>
->> Add the check there too. The range is clamped down to the last full
->> page rather than dropped, and the loop is skipped when nothing is
->> left, so a buggy caller still gets its PTEs cleared as far as they
->> go.
->>
->> Reported-by: Sashiko <sashiko-bot@kernel.org>
->> Signed-off-by: Hao Ge <hao.ge@linux.dev>
->> ---
->>  mm/vmalloc.c | 5 +++++
->>  1 file changed, 5 insertions(+)
->>
->> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
->> index 44e0eb32708f..7131f60d1a8e 100644
->> --- a/mm/vmalloc.c
->> +++ b/mm/vmalloc.c
->> @@ -393,6 +393,11 @@ static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
->>  	pte_t ptent;
->>  	unsigned long size = PAGE_SIZE;
->>  
->> +	if (WARN_ON_ONCE(!PAGE_ALIGNED(end - addr)))
->> +		end = addr + PAGE_ALIGN_DOWN(end - addr);
->> +	if (end == addr)
->> +		return;
->> +
->>  	pte = pte_offset_kernel(pmd, addr);
->>  	lazy_mmu_mode_enable();
->>  
-> 
 
