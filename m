@@ -1,70 +1,90 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B89F8606A322
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 18:57:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA658606A32E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 19:11:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=GPdy5LXJ
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cJGl/G/2
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jGVhY6pZMz30VX;
-	Sat, 31 Oct 2026 05:57:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1047"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793386637;
-	cv=none; b=UAj7tW1Vn3r2VfvCcu852DC4Bd07WiMKFk6RV04zZu2Sl706FEYleimfFe9VcjYR9o1XYb4eXzZGgkca1/hAG3DThX2n3EZJMsMDgNV395+2iT5lKEImprmdM2a2ifvFl5hRfXJrYVWP4c7S3mMZP0O99afVpbf3hYFpMZydINNG8zcncbVghYwH/6otmYZYixOJ2Yi7jUHA4caHKe65xqhEH7sdIJbY10iIpwolom5T5ex2uD1SF8zd2O0quNmDjR7CW2eaMKFI/2i86HnzCW7d393Qh+aZWGC+hCLd/CpqpiL2PXD24uQUxBr6YRZvXOp5oG+uGmuDd/VYiOHFJA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jGW1G3BZsz30VX;
+	Sat, 31 Oct 2026 06:11:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793387506;
+	cv=none; b=BqaumQ1RT+Yq6z0/V4vWtJAu+YlaZlQpaJUP0JBl3Ea7BT+iTjUOmieQbjnB4WPHbIirZiVwafLdGBv4FaTH0w3qu1ApS7ZR+KkgPyQyeHXAwye6FC54zNuWdVL/YQjCnXaXEiVO5ArOkMUJhfZnUHJo6JeTVsXx8YgXRSvjayR53J4ToP0AJ9WeVGv1X6Rdc31T6MolMHj3Y0379vBShuRpW1YuS2CXGrT6OGDb/Bm+TlBtXVGM3FFjzHGXU5WWXXJfC+LdHsXLf6qh2gLIXJO3WcKr0jhAkK/eeVeVLUB0cd5auOkQqjF5RPq+IOoVDKwuihZJdfcVpSeIeHUvDQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793386637; c=relaxed/relaxed;
-	bh=AqsM43MOtFOSSZV0EEwrjw089w0rw12SYsGwf7bUH9w=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=IaSvsK0zoWRMOZxruZJ4L4QVEu+ixIY45XdmwQGN7SZCYem9GEm5Jf6VBsPdV9bhESWsAGHV3S5QBWaHwJ6mCNW7+A505/6Y8TBxMJd0voM0HyuPV+IxZTEwfs/woaeFPUl9J1TNE7IHd1dxl0QP/cRjJLJ9dt454BKffNP+sZRo6Ib/rFVRduHj502SdCcArax17H8hopQd6RaRMI0dduNNm4dgRqq9YrZ+llDApzEmsCf7aSDb21eMdJyT+0Dgjup3/ij32WJ7L2xwzCrauwM8FlUJSe1LednumMCWTNjpIMNSA1UsqEKL6o02fN/Pnr1BNUa0DmmuwG2R6CZ8Pw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=GPdy5LXJ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1047; helo=mail-pj1-x1047.google.com; envelope-from=3hujkagykdek3plyunrzzrwp.nzxwty5800n-op6wt343.zawlm3.z2r@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1793387506; c=relaxed/relaxed;
+	bh=T4hFvVxLfjnAJg8k+NzczjZdpae4mRcTksCIzgxfA9U=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=QAshVhtQU7y7vV+M72nU9iit5rMwGeY1hLMOBDuplpUTEJPGejiHihgf22rHbYyRwuCPqKzqpm1fOQPqiM8GaKPvOdYbcl0UXv+2PcA4P4MsTJWP3r+RScBH3t1YSQI3JJaDgmf0BRVf/qHL5v8YHxOOiQDX0Ue/xvFJxcPboCX4SgKqHMLOV1qyh2vKgXknVrg01JbdXM0mJyJfDZB78QJPvHxUawrdJWwAGf55McLqiE3fgKrd6ZsFoAsFJxA4PboegLGNvSov0rz8vgHiTqXwoVGxWs6gv7aaCqcKL34xZGdhV2zEh8PjBx0pec7Pea8C7k0qGqdWhADhnS9Fcg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cJGl/G/2; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=GPdy5LXJ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cJGl/G/2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::1047; helo=mail-pj1-x1047.google.com; envelope-from=3hujkagykdek3plyunrzzrwp.nzxwty5800n-op6wt343.zawlm3.z2r@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1047.google.com (mail-pj1-x1047.google.com [IPv6:2607:f8b0:4864:20::1047])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGVhX1RKmz2yGT
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 05:57:15 +1100 (AEDT)
-Received: by mail-pj1-x1047.google.com with SMTP id 98e67ed59e1d1-3ade5b3ae97so866781a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 11:57:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1793386631; x=1793991431; darn=lists.ozlabs.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=AqsM43MOtFOSSZV0EEwrjw089w0rw12SYsGwf7bUH9w=;
-        b=GPdy5LXJFpQuL3y3FvP/2QDdcRnA/E3RGaUyyLhip+n6xWKjByRq1MlFJIXzhBtfxT
-         wYtSQmU9f1QrpfbjqLzquMJm6r0kf9BHpNkV7B08vytqJ271G7UfY3OqUAihSU5fNYx0
-         eZHtP3su1uGcmxCaV41Zps29bWyfK3aMPXmMYqPg2a3aW0YhmNd+hIuCtMO0qfZNtIvS
-         zlezgB5dRhpvnORR2H6RV6te/FVjvAP6z4O48mBLfmdX0iNmV+WMG2ycZWPOU2ia1omd
-         i43TRVjqDfUGKtAv70yBkHp4rNpXMxbycFIploAlUUDBi6lTrr8A8KHWMn5RY5GnnI9r
-         8k3Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793386631; x=1793991431;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=AqsM43MOtFOSSZV0EEwrjw089w0rw12SYsGwf7bUH9w=;
-        b=Enc+R0cJv1A4PPWZTU4OyR3RhwlqYJpcBWjECwRYGqoFXzlZkMEWJHLgZttMzmqU8N
-         RBSHE6L1WBMF1TbLO1w7FwGaH7aLYbnARZEPga8+WemYYu4JKJboxAr+qzuOOeIG2ORy
-         3WL+J6lLDW4fHxKCwBdQSzr4bVZORUTp51fE9kt0wYC5SGG8wn3UJ1ScnyVMzrpo4ACZ
-         JHiPqtpGmdhaUsU18zC6SvwN7Aj6t3mNWGyTWYRx70dcCEc2r4x+ktA4GdN235pGEZdf
-         t6vaN0g5E5DPClS8XbiiKeYr6AWc/YZjab6CYQ+qr089SbzS/mVTGXmi8MdrT5O65Lxe
-         Y0Gw==
-X-Forwarded-Encrypted: i=1; AKwUvBwPC3XdMuX8JfIC88efEqxf9ppfGn6fCl4/PilG2L1g7vqCh9y5cxipldq3jFITQdk822zHbioWbtfdL50=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYKhKYINpkmoheS8IfeiZV+nXrXyCt9SJaMxNGXEf/7LIZuaJvBX
-	oqmZkfong9PCgqKeKYn4zmoY9WO7BJFDSzBt8CgIz+TfhgiOzrx8aCLFm/FtPCz+JV4CSr/aLj+
-	HP6BgCw==
-X-Received: from pjbbo5.prod.google.com ([2002:a17:90b:905:b0:3ac:24b3:3484])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90a:c2c6:b0:3ac:b3c7:de04
- with SMTP id 98e67ed59e1d1-3ae897aa752mr1800362a91.34.1793386630946; Fri, 30
- Oct 2026 11:57:10 -0700 (PDT)
-Date: Fri, 30 Oct 2026 11:57:10 -0700
-In-Reply-To: <auStM0rbFol79h5o@li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGW1F1NlFz2xfX
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 06:11:45 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 9390060202;
+	Fri, 30 Oct 2026 19:11:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 856D71F000C1;
+	Fri, 30 Oct 2026 19:11:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793387501;
+	bh=T4hFvVxLfjnAJg8k+NzczjZdpae4mRcTksCIzgxfA9U=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date;
+	b=cJGl/G/2fQF1yJWHTie2xk6HB608xeSGry+Y/uMzkiv7mSAAvI/rgcFa2ycf1BTVh
+	 d35A0kNRaV1SESzGWirJvsignzKFJjZo7LJ49bkaLS5abOu8oYwNJDowAY4LXAaFk3
+	 1qvBtDFkFqlDjn51/ADmcGHjG88Z10ZTRm9cloeKGen2Fvgbp7EvWKP7Fs/k+w7w7I
+	 N+Bpq3UQzRBk81FGdRpPvr/G8hUKlkAznQ9epCS9WohqPLXX6ImGQB2IoLMbeTEcsI
+	 X7PFkJetPPJchwZrSKjuCFkEbuOgCvp7lXiZPRZWxHOpx5mbgnJHdFUTifU5ObrOgF
+	 1vyrUAqP9m8pA==
+From: Thomas Gleixner <tglx@kernel.org>
+To: "H. Peter Anvin" <hpa@zytor.com>, Sebastian Andrzej Siewior
+ <bigeasy@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra
+ <peterz@infradead.org>, Michael Ellerman <mpe@ellerman.id.au>, Shrikanth
+ Hegde <sshegde@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Kees Cook
+ <kees@kernel.org>, Huacai Chen <chenhuacai@kernel.org>,
+ loongarch@lists.linux.dev, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt
+ <palmer@dabbelt.com>, linux-riscv@lists.infradead.org, Sven Schnelle
+ <svens@linux.ibm.com>, linux-s390@vger.kernel.org, x86@kernel.org, Mark
+ Rutland <mark.rutland@arm.com>, Jinjie Ruan <ruanjinjie@huawei.com>, Andy
+ Lutomirski <luto@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Richard
+ Henderson <richard.henderson@linaro.org>, Russell King
+ <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Guo
+ Ren <guoren@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Thomas
+ Bogendoerfer <tsbogend@alpha.franken.de>, Helge Deller <deller@gmx.de>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Richard Weinberger
+ <richard@nod.at>, Chris Zankel <chris@zankel.net>,
+ linux-arm-kernel@lists.infradead.org, linux-alpha@vger.kernel.org,
+ linux-csky@vger.kernel.org, linux-m68k@vger.kernel.org,
+ linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux-um@lists.infradead.org, Arnd Bergmann
+ <arnd@arndb.de>, Vineet Gupta <vgupta@kernel.org>, Will Deacon
+ <will@kernel.org>, Brian Cain <bcain@kernel.org>, Michal Simek
+ <monstr@monstr.eu>, Dinh Nguyen <dinguyen@kernel.org>, "David S. Miller"
+ <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>,
+ linux-snps-arc@lists.infradead.org, linux-hexagon@vger.kernel.org,
+ linux-openrisc@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, Michal =?utf-8?Q?Such=C3=A1nek?=
+ <msuchanek@suse.de>, Jonathan
+ Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org
+Subject: [PATCH] x86/entry: Fix ptrace regression
+In-Reply-To: <87se1wyvs8.ffs@fw13>
+References: <20260707181957.433213175@kernel.org>
+ <20260707190254.493733289@kernel.org>
+ <20261022142425.3Wx-RrU5@linutronix.de> <87fqxx1r80.ffs@fw13>
+ <87cxt11ktr.ffs@fw13> <1149A39E-BEBA-46EA-94F4-4DFFC4733EF5@zytor.com>
+ <871p9g1s3w.ffs@fw13> <87y0boze95.ffs@fw13>
+ <C6D7BF04-4CF7-48D1-93B5-E80D52C2617D@zytor.com> <87se1wyvs8.ffs@fw13>
+Date: Fri, 30 Oct 2026 20:11:37 +0100
+Message-ID: <87mrrvxaty.ffs@fw13>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,91 +97,91 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-Mime-Version: 1.0
-References: <20261028190259.1819571-1-seanjc@google.com> <20261028190259.1819571-4-seanjc@google.com>
- <auStM0rbFol79h5o@li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com>
-Message-ID: <auTohixp3V5-vNsB@google.com>
-Subject: Re: [PATCH 3/7] KVM: PPC: Explicitly force IPIs when directly kicking vCPUs
-From: Sean Christopherson <seanjc@google.com>
-To: Gautam Menghani <gautam@linux.ibm.com>
-Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, 
-	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
-	Huacai Chen <chenhuacai@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Paolo Bonzini <pbonzini@redhat.com>, Fuad Tabba <fuad.tabba@linux.dev>, 
-	Joey Gouly <joey.gouly@arm.com>, Steffen Eiden <seiden@linux.ibm.com>, 
-	Suzuki K Poulose <suzuki.poulose@arm.com>, Zenghui Yu <yuzenghui@huawei.com>, 
-	Nicholas Piggin <npiggin@gmail.com>, Atish Patra <atish.patra@linux.dev>, 
-	Alexandre Ghiti <alex@ghiti.fr>, linux-arm-kernel@lists.infradead.org, 
-	kvmarm@lists.linux.dev, kvm@vger.kernel.org, loongarch@lists.linux.dev, 
-	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, Stefan Teodorescu <fane@google.com>
-Content-Type: text/plain; charset="us-ascii"
-X-Spam-Status: No, score=-23.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+MIME-Version: 1.0
+Content-Type: text/plain
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no
-	version=4.0.1
+	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Fri, Oct 30, 2026, Gautam Menghani wrote:
-> On Wed, Oct 28, 2026 at 12:02:55PM -0700, Sean Christopherson wrote:
-> > Explicitly force an IPI when invoking kvm_vcpu_kick() directly instead of
-> > relying on kvm_arch_vcpu_should_kick() to unconditionally return 1/true.
-> > This will allow dropping kvm_arch_vcpu_should_kick() in favor of
-> > kvm_request_needs_ipi().
-> > 
-> > No functional change intended (1 || 1 == true).
-> > 
-> > Signed-off-by: Sean Christopherson <seanjc@google.com>
-> > ---
-> >  arch/powerpc/include/asm/kvm_ppc.h | 13 ++++++++++++-
-> >  arch/powerpc/kvm/book3s.c          |  4 ++--
-> >  arch/powerpc/kvm/book3s_pr.c       |  2 +-
-> >  arch/powerpc/kvm/booke.c           |  6 +++---
-> >  arch/powerpc/kvm/e500_emulate.c    |  2 +-
-> >  arch/powerpc/kvm/powerpc.c         |  2 +-
-> >  6 files changed, 20 insertions(+), 9 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-> > index 169ea6a7fbad..bbe7378ad0ef 100644
-> > --- a/arch/powerpc/include/asm/kvm_ppc.h
-> > +++ b/arch/powerpc/include/asm/kvm_ppc.h
-> > @@ -30,6 +30,17 @@
-> >  #endif
-> >  #include <asm/inst.h>
-> >  
-> > +/*
-> > + * TODO: For unknown reasons, KVM PPC has historically ignored vcpu->mode when
-> > + *       determining if kicking a vCPU needs an IPI.  Either document why that
-> > + *       behavior is necessary, or drop this helper and the @force param from
-> > + *       __kvm_vcpu_kick().
-> > + */
-> > +static inline void kvmppc_vcpu_kick(struct kvm_vcpu *vcpu)
-> > +{
-> > +	__kvm_vcpu_kick(vcpu, false, true);
-> > +}
-> > +
-> 
-> AFAICS, there is no reason for PPC to always return 1. I was looking at
-> the old patches on mailing list and found this - https://lore.kernel.org/kvm/0FEE585F-5E21-47F2-A3F0-AD0DE05EBB43@suse.de
-> 
-> ```
-> How about we return 1 for kvm_arch_vcpu_in_guest_mode() on !x86 always, just
-> like it's done today basically? Then we can worry about needless IPIs later
-> and don't regress from the respective current kick implementations.
-> ```
+The recent rework of the syscall entry code missed the historical detail of
+the abuse of syscall number -1L to abort a syscall and keep modifications
+by tracers to the return value, while a rewrite of the syscall number to an
+invalid value undoes eventual tracer modification to the return value and
+overwrites it with -ENOSYS.
 
-FWIW, I found that as well, but there are a metric ton of kvm_vcpu_kick() calls
-that have been added since then, and they scared me.
+Restore the original behaviour.
 
-> However, I'll do some testing and get back by mid next week to make sure
-> there are no suprises.
+Fixes: 1b1f3b3e1b39 ("x86/entry: Get rid of the sys_ni_syscall() indirection")
+Reported-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Signed-off-by: Thomas Gleixner <tglx@kernel.org>
+Cc: stable@vger.kernel.org
+Closes: https://lore.kernel.org/all/20261022142425.3Wx-RrU5@linutronix.de
+---
+ arch/x86/entry/syscall_32.c |    2 ++
+ arch/x86/entry/syscall_64.c |   26 ++++++++++++++++++++++----
+ 2 files changed, 24 insertions(+), 4 deletions(-)
 
-Thanks!  If we can drop the PPC behavior, that would be wonderful!  Though if
-we do that, it should be for 7.5 in a follow-up (this series really should go
-into 7.4 due to the SNP issue).
+--- a/arch/x86/entry/syscall_32.c
++++ b/arch/x86/entry/syscall_32.c
+@@ -77,6 +77,8 @@ static __always_inline void do_syscall_3
+ 	if (likely(nr < IA32_NR_syscalls)) {
+ 		nr = array_index_nospec(nr, IA32_NR_syscalls);
+ 		regs->ax = ia32_sys_call(regs, (unsigned int)nr);
++	} else {
++		regs->ax = -ENOSYS;
+ 	}
+ }
+ 
+--- a/arch/x86/entry/syscall_64.c
++++ b/arch/x86/entry/syscall_64.c
+@@ -64,15 +64,20 @@ static __always_inline bool do_syscall_x
+ 	return false;
+ }
+ 
+-static __always_inline void do_syscall_x32(struct pt_regs *regs, unsigned long nr)
++static __always_inline bool do_syscall_x32(struct pt_regs *regs, unsigned long nr)
+ {
++	if (!IS_ENABLED(CONFIG_X86_X32_ABI))
++		return false;
++
+ 	/* Adjust the starting offset of the table */
+ 	nr -= __X32_SYSCALL_BIT;
+ 
+-	if (IS_ENABLED(CONFIG_X86_X32_ABI) && likely(nr < X32_NR_syscalls)) {
++	if (likely(nr < X32_NR_syscalls)) {
+ 		nr = array_index_nospec(nr, X32_NR_syscalls);
+ 		regs->ax = x32_sys_call(regs, (unsigned int)nr);
++		return true;
+ 	}
++	return false;
+ }
+ 
+ /* Returns true to return using SYSRET, or false to use IRET */
+@@ -81,8 +86,21 @@ static __always_inline void do_syscall_x
+ 	if (likely(syscall_enter_from_user_mode_randomize_stack(regs, &nr))) {
+ 		instrumentation_begin();
+ 
+-		if (!do_syscall_x64(regs, nr))
+-			do_syscall_x32(regs, nr);
++		if (unlikely(!do_syscall_x64(regs, nr))) {
++			/*
++			 * The special treatment of syscall number -1 is a
++			 * historical bogosity as the original code used -1 to
++			 * indicate syscall abort, which is not distinguishable
++			 * from a syscall which is invoked with syscall number
++			 * -1. The historic behavior is to keep the return value
++			 * in regs->ax unmodified in that case, which means it's
++			 * either the preset value -ENOSYS or a value which was
++			 * written by a tracer. If the syscall number is invalid
++			 * but not -1 then overwrite any tracer modification.
++			 */
++			if (!do_syscall_x32(regs, nr) && nr != -1L)
++				regs->ax = -ENOSYS;
++		}
+ 
+ 		instrumentation_end();
+ 	}
 
