@@ -1,94 +1,90 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CE3E606A31D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 14:49:20 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CE43606A325
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 15:27:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ExggUzQ4
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=V3eSK8ix
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jGPBR0CJDz30Vv;
-	Sat, 31 Oct 2026 01:49:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793371758;
-	cv=none; b=UbLn6ZlycKbdxloGz9GNqIqv/IlrJquofpeVGWmWeztAVj7KUvpl5mmMhSfAsd7LBsMapha8SD3msg+JSoAuLYSwrpWivTcvb0VLLjj6VJV3Na/lvEzpJtZuzb76HjWSvRDyDB27Wkzh/AG3aHf4m7OtQhTO/IMzPBpe6qAJzqWj4z0DCVLoqtGV6ViBnwqL/78KUaN3uGhLViWWRg/RaID2rUXgdj1EuMRQ2vAczKDEjbeKw4lQtXHSSFnGST4GmjAvhAOpWhfCsPymKSv0T26AbfZMUxcxBLwzK6O2AqsSjA7NHRc0rEnXFuKkLmazwpsAP0ydTmwWQmX7JUeSyA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jGQ2M3nsbz30Vv;
+	Sat, 31 Oct 2026 02:27:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1235"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793374043;
+	cv=none; b=aGGkwYSoB1ol8YNXDnsJIPdp6Mswghmuv/W09JB8MlcbCvWVKKVOCkEkaDhih2aPC8E8NmKyhw80iPixw8iNpHiQm9BryJnH5u1UHCY7p68spjh3xGKAP+UUdb4OaGB/+NLQz9iWXNziqMM51WJNryoEHIHTfgDdYAPijHyN+/CJa+X/UWmcCcUIDEM/xIQd4Bc49l6swhbA3cfga33GmnfufTR17fHsASdDRCUJujm0jipeB3jFGbuz1vlhwenVv9RxblNggYJ6YUl3Bx+w0ml66JBZryyE53MKAZsEhEwIcpaN/9uSNcIckvpRlCaC0N9fmLGrwjWN1/vCJW4RFg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793371758; c=relaxed/relaxed;
-	bh=HEHKW4LBT6GpwoTEpcbAbsyC2GPR8DDtx+QfBPo6gbI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=FAbsgGj4jtQS3pkyTeJ6HrS32lczYi3Boshrn3ukSyHfVknTuZtuuRi4y0qCLQSBG00S4rzrs3Ocip2O/B4OM4TtmstrmwmPbkwwkfhqOxitgeqn3dTrnj0bF40M3JEvT1K8HCltRDS96hk1l1fe6HbBwVF6s1ebqaxdwgsfJRFDO0yb+yKqkHWobr/iTbvF4vEZkkxmfg8Wo1ATW/bdWNwoQ79HUTmETqzxzsQJU7h0GqzYLAWHvoh+tIOME+QNQS9Nf005ziHZCVVg3xKvkR9dy52gX1x1e3od3FtVPvHuDLQfnVlQ2PEmsCdBKG8vfzgzUEzCD0cTDy+EzeNRcQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ExggUzQ4; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1793374043; c=relaxed/relaxed;
+	bh=e+m5QU2XeT3uQPTC6GC01opeM6s+W2OonF16GBipID8=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=i6UgyVTLXIZPaznRDl+1L3pkX7G11Ct7NF5ZdGzT3AJI1NUSAmNQyQq8nfh1CIYxYt2MLA6WzC5JxwZ4JShe03sejeN04p1LbUIMO4imct98ObKZ/Cgm5SD2t7uANrq7be8LWEuYHnc8qnXLscBMxFDsJOQNWgL4k8gjxWQE/nzxeTzzWO50FNvHSSuJ3zsWZcWYIOwSf6wkMjWXMqIzkB93NLs7WDaWrWp6PlNeZKCOzeJSRn6/T9VMbhVB6m36Dv2nNeeJLkVUNTsHqA7AXJ3uACRpOx3nOu5KD2ypvagfPLGZGFA1nzMWcfgCFg+GRIhpkeKZ/TBL/z6j5Twr/w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=V3eSK8ix; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1235; helo=mail-dl1-x1235.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ExggUzQ4;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=V3eSK8ix;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1235; helo=mail-dl1-x1235.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dl1-x1235.google.com (mail-dl1-x1235.google.com [IPv6:2607:f8b0:4864:20::1235])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGPBP1yg0z2yPR
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 01:49:16 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69UEiNBi3396324;
-	Fri, 30 Oct 2026 14:48:50 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=HEHKW4LBT6GpwoTEpcbAbsyC2GPR8D
-	Dtx+QfBPo6gbI=; b=ExggUzQ455ydNTjuXERdQK9pJ5iTVLioyncMYKtaMrybI6
-	krGz53pMUesedVdfoSwrjfyPFN6oKtLJ9ZGSc6iL6qdxumYmBDC53vPEnudKaHv7
-	ymcnCFyMC7J+0pWxlYcBqIeK0xL5Z/9YzRGeSHdJ6yt7M3KM5utOvyLsWcKlRXcF
-	yEHSvxiNs8gr20+K59YSPCoH6Bsi/Qm8mTA/OrqwXkpguyWfsWkKRySnaBj+fjZY
-	gasiwKpQjKQZBIjrcRsE6shxU/5OSa3YS9rziGJQij26td/8OPz7JnoUzaAZC1iQ
-	8CB0BpLwyIXpKLthffDo9so7x8Bqsy+nL7Fptlrw==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hmeay399t-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 30 Oct 2026 14:48:50 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69UEZ5nw649967;
-	Fri, 30 Oct 2026 14:48:49 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4hm69e50qj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 30 Oct 2026 14:48:49 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69UEmjGw30737002
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 30 Oct 2026 14:48:45 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0E9BE2004B;
-	Fri, 30 Oct 2026 14:48:45 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 69B4D20040;
-	Fri, 30 Oct 2026 14:48:38 +0000 (GMT)
-Received: from li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com (unknown [9.124.208.227])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Fri, 30 Oct 2026 14:48:38 +0000 (GMT)
-Date: Fri, 30 Oct 2026 20:18:35 +0530
-From: Gautam Menghani <gautam@linux.ibm.com>
-To: Sean Christopherson <seanjc@google.com>
-Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>,
-        Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
-        Huacai Chen <chenhuacai@kernel.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>,
-        Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
-        Paolo Bonzini <pbonzini@redhat.com>, Fuad Tabba <fuad.tabba@linux.dev>,
-        Joey Gouly <joey.gouly@arm.com>, Steffen Eiden <seiden@linux.ibm.com>,
-        Suzuki K Poulose <suzuki.poulose@arm.com>,
-        Zenghui Yu <yuzenghui@huawei.com>, Nicholas Piggin <npiggin@gmail.com>,
-        Atish Patra <atish.patra@linux.dev>, Alexandre Ghiti <alex@ghiti.fr>,
-        linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
-        kvm@vger.kernel.org, loongarch@lists.linux.dev,
-        linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
-        linux-kernel@vger.kernel.org, Stefan Teodorescu <fane@google.com>
-Subject: Re: [PATCH 3/7] KVM: PPC: Explicitly force IPIs when directly
- kicking vCPUs
-Message-ID: <auStM0rbFol79h5o@li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com>
-References: <20261028190259.1819571-1-seanjc@google.com>
- <20261028190259.1819571-4-seanjc@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGQ2K5mp0z30VV
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 02:27:20 +1100 (AEDT)
+Received: by mail-dl1-x1235.google.com with SMTP id a92af1059eb24-15ea896ddc8so1375591c88.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 08:27:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1793374038; x=1793978838; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=e+m5QU2XeT3uQPTC6GC01opeM6s+W2OonF16GBipID8=;
+        b=V3eSK8ixjwr4hdVp3Wb30SqveqzZMoA0ZAv4OUcu7RRMHkZ8/TbiEeHiuGB+MNSm/m
+         w3G2IyxZblyyUV/07l2i2BVC9NdYIak3mCSj8P0iwkQY4JWimCbwW64QKd+rGK/hTT8R
+         Rpo0iX1eUJBg5DHqGK1qwnt9LoiDz47nrhv39dP3zSnzwl3kgx1ZkvkwE944q0PV7jce
+         SvFJr0PQ6T1zVUhw8eIxkcTQg2TQ4E21qgIUPr3BjmCTg+lJIPSA7SSg5TL6MrOhllmc
+         NeiOV2CRIPiUfh7Ydw8oSXytYSIBNoFfRtRWYts7g8aQoTKQPjoh57fMauCFp1f2PKPo
+         2dQw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793374038; x=1793978838;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=e+m5QU2XeT3uQPTC6GC01opeM6s+W2OonF16GBipID8=;
+        b=DSwI/b4wLh9pxsk/ISyPT1RwosKlFLlnM7nLcglXVbFpPx7Kow1ll41VblgaiwuDKW
+         r2maN4io+CUdj3qyaBs0GFHOhIjZppBVPlwly4p/ie6H5HNGT9QUYyq/hOsTH7MvMLxY
+         PDXvZpOS8QHAKGmXsoUG9swTPhl0egPWbvoL013324ijJtAUCaGiq+53WISLfkcJPW/M
+         sca8YbhV5/WZodmjzhfxmH0oUAjlAtTB69bfb5i9eY+Uxvq7xnxkFW5QGAZ5qtA38cZx
+         o0AHP6aF2P+zmPp0Q1sMLU/n+RMUDwnuqn0mGD+XE3ZGSiptTkXbRdOyYl1BHjLFxHHF
+         hTdA==
+X-Gm-Message-State: AFq9FYJHKrV91UkAQ78paBky4t2+evaLLj8gLIF0iVA0I2hrJ4urOwRB
+	PyZINMMUhNVr7afOuwwXPkFFl5pEuO7BBxz3cRkfttXgW4R2zL9qX80S
+X-Gm-Gg: AYBFou1pTpsU0KwsQCLxZiRBZBuwSmyFuMiszxRU+kLvKE9LKBME4kB9o9YU6Gq4sA0
+	JRKqR3k1Q+fqRpJG8jbWFU9XyDVh5zWCzBov8ilQWao2CFWJpkx1N2EmCxp2jC3wpY30hH4E9Fk
+	kcM4eI3iM3m4KE9DGjLziuwAo2M90JIBQPJ6HkUko348uEzUZBI6vsQqzg4WBVrS8WX9suOTyvs
+	7GEAYHVoOSqimaf5euibbCghlfbmGG8giJNnZxtir8NSjj9O1sXuEXoS3NsGdPQsNiE+4UusJK4
+	2X5oqVfVu2UR2bYhV9Ci9DXsQQOWJdgq9T9bJoHzjeYcicX8i2IbNLECO6deb3OucW0ZdhVvtIq
+	BfVrzK9eMD0583TMuE35wt38Pp7tDesc7FPZvtW0n/2mCaz0co/DWp2rZ7W3QRfZOUT5BGbqYGH
+	H4z/qmXWF/xU9FXFcusOCGnKiW0So+7o1pTZW+MjNsw3qac6u32OMIRSInaB4+dZCPclwK4t0CX
+	W0giPqwGfh8r/HfWWet64r9M8ENKqLYKUOOAFTfEgIntaypu0fc8ZBU8eEEq+uptNoO/1/WQDLn
+	R69kvs6YvoGXk2DLDbo0sM40ShY=
+X-Received: by 2002:a05:7022:7f0b:b0:13b:3132:6e99 with SMTP id a92af1059eb24-1ac5af2da84mr3344929c88.20.1793374036049;
+        Fri, 30 Oct 2026 08:27:16 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36a42aa8999sm9261448eec.29.2026.10.30.08.27.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 30 Oct 2026 08:27:15 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Gautam Menghani <gautam@linux.ibm.com>, maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org, sshegde@linux.ibm.com, nnmlinux@linux.ibm.com, amachhiw@linux.ibm.com, harshpb@linux.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Timothy Pearson <tpearson@raptorengineering.com>
+Subject: Re: [PATCH v4] KVM: PPC: Book3S HV: Avoid spurious interrupts caused by LPCR_MER bit
+In-Reply-To: <20261005084534.1588611-1-gautam@linux.ibm.com>
+Date: Fri, 30 Oct 2026 20:48:15 +0530
+Message-ID: <4ie3w72g.ritesh.list@gmail.com>
+References: <20261005084534.1588611-1-gautam@linux.ibm.com>
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
+	autolearn_force=no version=4.0.1
+X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
+	aws-us-west-2-korg-listserv-alma10-1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,95 +97,107 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261028190259.1819571-4-seanjc@google.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDMwMDA1OCBTYWx0ZWRfX231ITCmOe99R
- dfESFyd3RUHjMlk75/eFc/1OXzNu84c9omPa7EIxtAYWLGJA9eAO3zzjK7VTQa9llnkJXi4gWU8
- r/unyeMYxDjuR+cWiyOnVdmS7GG+HF21UyJwsDX2Xub75Vlm2pm0bctwtvWSinYL1jvetutMT9u
- syV9gMRp2C27a9ai2jX5gVTbQI0zWTEnKBPJsAESqMw35ihGvBQsvADDXhk3kK6RJKPFkGzUu/R
- 8hbWWaTe5yOXFUonP/DisFXU6OHDNrpGGIOnidy7knS9ossfiCuv+PjkyxIdfgZNrxB3ogLWnb/
- wIJApNH46JPjtF8WaAFMzRRJRq4ipRnblJwCI0gUhomM9spjDCQUvGpKUJceKZB8VwfgH+dzVOz
- eTTsRDooCRzKNdGwyScusI3QLV5OU6ngYDGXyI76iB5Vyotd+IKq7x3NvGErCC7qtLRge/dkbPg
- 7yc+RWco6LUsGg+cWpw==
-X-Authority-Analysis: v=2.4 cv=WJHqzXsR c=1 sm=1 tr=0 ts=6ae4ae52 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=kj9zAlcOel0A:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
- a=1XWaLZrsAAAA:8 a=1goJhm9fjgf-yEZC_jsA:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-ORIG-GUID: Zln3Uvbt51spdXgJNma7nXq9r9SgUHNe
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDMwMDA1OCBTYWx0ZWRfX7S7KOd9POaV1
- Em+dt+hSOwRtH43TAR/rRI11q7Tee1s+P5cCU6Nfy9sKiFGQWrAn7ONzOJvQd/a2ydad09/AQ7n
- DooPLMaRQuyB21j0hWOf5aPFwNJGtms=
-X-Proofpoint-GUID: OIZDK0-t9uUR5jTdFJ0BXTWF-ze0VlkH
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-10-30_05,2026-10-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1011 spamscore=0 lowpriorityscore=0 adultscore=0 priorityscore=1501
- bulkscore=0 impostorscore=0 malwarescore=0 suspectscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610300058
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=4.0.1
-X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
-	aws-us-west-2-korg-listserv-alma10-1
 
-On Wed, Oct 28, 2026 at 12:02:55PM -0700, Sean Christopherson wrote:
-> Explicitly force an IPI when invoking kvm_vcpu_kick() directly instead of
-> relying on kvm_arch_vcpu_should_kick() to unconditionally return 1/true.
-> This will allow dropping kvm_arch_vcpu_should_kick() in favor of
-> kvm_request_needs_ipi().
-> 
-> No functional change intended (1 || 1 == true).
-> 
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
+Gautam Menghani <gautam@linux.ibm.com> writes:
+
+> A huge number of spurious interrupts can be seen immediately after a KVM
+> on PowerNV guest boots up in XIVE mode.
+>
+> $ cat /proc/interrupts  | grep SPU
+> SPU:     223705     192439     273526     147623   Spurious interrupts
+>
+> This bug was introduced by commit ecd10702baae5 ("KVM: PPC: Book3S HV:
+> Handle pending exceptions on guest entry with MSR_EE"). The root cause
+> is that once LPCR_MER bit is set, it is supposed to be reset by
+> software. But when a vCPU starts running with LPCR_MER set, the vCPU does
+> not exit back to the host until the decrementer expires or there is an
+> hcall, etc. This is because KVM on PowerNV guests have support for
+> native XIVE, so they are not dependent on host for interrupt emulation.
+> Due to this behaviour, a huge number of spurious interrupts are seen
+> since LPCR_MER continues to be set and LPCR_MER cannot be reset until the
+> vCPU exits to the host.
+>
+> Fix this behaviour by not using the LPCR_MER bit whenever native XIVE is
+> available (currently in case of KVM on PowerNV only), as the XIVE hardware
+> can present interrupts to the KVM guest vCPU directly. So the LPCR_MER
+> functionality is not required. This reduces the number of spurious
+> interrupts drastically.
+>
+
+Make sense. 
+
+> Fixes: ecd10702baae5 ("KVM: PPC: Book3S HV: Handle pending exceptions on guest entry with MSR_EE")
+> Cc: stable@vger.kernel.org # 6.8+
+> Reported-by: Timothy Pearson <tpearson@raptorengineering.com>
+> Closes: https://lore.kernel.org/linuxppc-dev/582904882.11159.1786719390349.JavaMail.zimbra@raptorengineeringinc.com
+> Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
+
+
 > ---
->  arch/powerpc/include/asm/kvm_ppc.h | 13 ++++++++++++-
->  arch/powerpc/kvm/book3s.c          |  4 ++--
->  arch/powerpc/kvm/book3s_pr.c       |  2 +-
->  arch/powerpc/kvm/booke.c           |  6 +++---
->  arch/powerpc/kvm/e500_emulate.c    |  2 +-
->  arch/powerpc/kvm/powerpc.c         |  2 +-
->  6 files changed, 20 insertions(+), 9 deletions(-)
-> 
+> v4:
+> 1. If interrupt mode is changed to XICS during guest reboot, MER should
+> be used. (Amit)
+>
+> v3:
+> 1. Continue the use of LPCR_MER when kernel-irqchip=off (Sashiko)
+>
+> v2:
+> 1. Handle the case where xive_interrupt_pending() is true and also the
+> external exception bit is set. (Narayana)
+>
+>  arch/powerpc/include/asm/kvm_ppc.h | 7 +++++++
+>  arch/powerpc/kvm/book3s_hv.c       | 2 +-
+>  2 files changed, 8 insertions(+), 1 deletion(-)
+>
 > diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-> index 169ea6a7fbad..bbe7378ad0ef 100644
+> index 169ea6a7fbad..9178406dc365 100644
 > --- a/arch/powerpc/include/asm/kvm_ppc.h
 > +++ b/arch/powerpc/include/asm/kvm_ppc.h
-> @@ -30,6 +30,17 @@
->  #endif
->  #include <asm/inst.h>
+> @@ -747,6 +747,11 @@ static inline int kvmppc_xive_enabled(struct kvm_vcpu *vcpu)
+>  	return vcpu->arch.irq_type == KVMPPC_IRQ_XIVE;
+>  }
 >  
-> +/*
-> + * TODO: For unknown reasons, KVM PPC has historically ignored vcpu->mode when
-> + *       determining if kicking a vCPU needs an IPI.  Either document why that
-> + *       behavior is necessary, or drop this helper and the @force param from
-> + *       __kvm_vcpu_kick().
-> + */
-> +static inline void kvmppc_vcpu_kick(struct kvm_vcpu *vcpu)
+> +static inline bool kvmppc_xive_native_enabled(struct kvm_vcpu *vcpu)
 > +{
-> +	__kvm_vcpu_kick(vcpu, false, true);
+> +	return kvmppc_xive_enabled(vcpu) && vcpu->kvm->arch.xive_devices.native;
+
+I was checking the code and I am not sure whether we need to also check
+for "vcpu->kvm->arch.xive_devices.native"?
+
+Can you explain why do we need to check for xive_devices.native pointer
+to be non-NULL? Because if we don't need this then it simplifies the
+code as we can directly use kvmppc_xive_enabled(vcpu) helper.
+
+-ritesh
+
+
 > +}
 > +
-
-AFAICS, there is no reason for PPC to always return 1. I was looking at
-the old patches on mailing list and found this - https://lore.kernel.org/kvm/0FEE585F-5E21-47F2-A3F0-AD0DE05EBB43@suse.de
-
-```
-How about we return 1 for kvm_arch_vcpu_in_guest_mode() on !x86 always, just like it's done today basically? Then we can
-worry about needless IPIs later and don't regress from the respective current kick implementations.
-```
-
-However, I'll do some testing and get back by mid next week to make sure
-there are no suprises.
-
-
-Thanks,
-Gautam
+>  extern int kvmppc_xive_native_connect_vcpu(struct kvm_device *dev,
+>  					   struct kvm_vcpu *vcpu, u32 cpu);
+>  extern void kvmppc_xive_native_cleanup_vcpu(struct kvm_vcpu *vcpu);
+> @@ -782,6 +787,8 @@ static inline bool kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu) { return
+>  
+>  static inline int kvmppc_xive_enabled(struct kvm_vcpu *vcpu)
+>  	{ return 0; }
+> +static inline bool kvmppc_xive_native_enabled(struct kvm_vcpu *vcpu) { return false; }
+> +
+>  static inline int kvmppc_xive_native_connect_vcpu(struct kvm_device *dev,
+>  			  struct kvm_vcpu *vcpu, u32 cpu) { return -EBUSY; }
+>  static inline void kvmppc_xive_native_cleanup_vcpu(struct kvm_vcpu *vcpu) { }
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index dbac3573b2c8..dec89c014c52 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -4980,7 +4980,7 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
+>  			if (!kvmhv_on_pseries() && (__kvmppc_get_msr_hv(vcpu) & MSR_EE))
+>  				kvmppc_inject_interrupt_hv(vcpu,
+>  							   BOOK3S_INTERRUPT_EXTERNAL, 0);
+> -			else
+> +			else if (!kvmppc_xive_native_enabled(vcpu))
+>  				lpcr |= LPCR_MER;
+>  		} else {
+>  			/*
+> -- 
+> 2.52.0
 
