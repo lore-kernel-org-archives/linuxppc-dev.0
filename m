@@ -2,69 +2,69 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB403606A9AF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 21:21:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 169DD606D970
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 21:21:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=l42G7nQk
+	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=D7nyASfj
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jGYtl6Z9Zz30Wh;
-	Sat, 31 Oct 2026 08:21:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::646"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793395279;
-	cv=none; b=UpZjSI40TBa7WIGSlslmosldnYfllUPxI6BtSFWM7e/FGsqfwADAP539DXlCnC2raJFxVyEqqYbG56vu1yplBEUtEBStfAhWQ1wquzI/R55zhYU6n4ygyUWP5WPASlkzinp1y4cIsBfwu5VZIo8nzprlnrCPy7qccCwRuuLRHX1rzZhSp+BP2NgsKBNRQ9WpnsoTkJoJa3/vce74OeGZ+3cFsNtdN4ABfWIUFUjju4BWDDV25RpJF/xzFXlXx3C94o45u/23L4Y0nwY2YUbBKt4sY/3INFQ5qU9zPYoqfW3rDUrasDrZkTTXdQZ6bK+1ldCF/DUoQkj38Yy2/yDfjQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jGYtn0CZQz2yPR;
+	Sat, 31 Oct 2026 08:21:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::447"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793395280;
+	cv=none; b=moD47XOVNCVhOMiRH1jcZnpVnc1MLFElLcwZZHvbJnMql4WwIGo3GwiqSBiSnte3aUx75ZXzQxcH+MwUaBazqIRNLx65/rdOzc/UTKbyJMBMMJ2B/VevtoZARqmf0u6oUHGO9P0BS540UbGvnJ2qfZ4EoWrIhIicryn80ioncotihuq2EKpWXIdfPKhnNkTYUMlPs+y/usV1vn6xigNjMWieuSLGFELI5Ay6jlJUVquShSzIRxas28ePnhWdcSFnr09RtnpU/Vsos8aaRpL3U56kbia25q0b6cvtp03eXJqG45fhMzLDWRtExC5tkfhDc0r8dPrKUJPI1cxusX5g3g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793395279; c=relaxed/relaxed;
-	bh=GVfrMv/JwLPpbAn4FrjFqU3DE6u8ipaxUY48dYc7+h0=;
+	t=1793395280; c=relaxed/relaxed;
+	bh=xVLOuB5izvjqY2+yn+X5wA6bkjFEaB6u1KjQAeAFkZo=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=c3JQFLTdErMKYiCuZkPdoMaY9G4Gb1cn5g2oH3zo8c4eTqb/yGw7tlf8Nbo5SH8ZmLnYAq1J15oosXnZ52LecHUGpuCtRkWP7zTAa5TUnKsP+uJ6+9HPokDQes3jUAqcr36Oj6/Jr94gzrBPu1j8L/OP6vB8ehSVxRjPV60I0nakLY21t82nYjY7OoaZyNf6FrMtnfz6ygLPZ+kljYiqWs7ecLzP1DLoCN0vqIktGwTsigK5NtD01X4R3M2482CJxfoGG+oVieNiUL36YxyLxw4b2QRVpK+bK1ufgoHkvzdiBsYbQ1SOdbvmd+KzhHuy4DTB+MD4nCoyq+yFt8SEIA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=l42G7nQk; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::646; helo=mail-pl1-x646.google.com; envelope-from=3swrlagykdficyu73w08805y.w86527eh99w-xyf52cdc.8j5uvc.8b0@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+	 To:Cc:Content-Type; b=dR8h9lZ+jfY24Wc95uG8W2leVhGFgs9GqZWSALWCMZRMlgX305mu0SRz8lkBdEL589hLfx9m/c5V6kmyeR+Xc29zzHlY357oA82jSBRx9TQY7CFKzWiubPYsEqEsl1Gly4K2NQhAwfDAo1uPVk+Sf4PgIiLTA/vZrwlU0D2TUj5nvb6SSdNeeZpeGOO+2xQUexwoIrAm/JX+5HOn+iaqpC7ev05+pJTgjcZy6IpRZIf4KDvrygIN6+aT/1UaKbddLzsSohxeT+P6PC2y4J3utmEhWBdxOelSrafpRz0pYV8wiL7pLNcwzCncAZYGOTwMom3YCXIwkGTg5srEY6Oo4A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=D7nyASfj; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::447; helo=mail-pf1-x447.google.com; envelope-from=3tarlagykdfmdzv84x19916z.x97638fiaax-yzg63ded.9k6vwd.9c1@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=l42G7nQk;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=D7nyASfj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::646; helo=mail-pl1-x646.google.com; envelope-from=3swrlagykdficyu73w08805y.w86527eh99w-xyf52cdc.8j5uvc.8b0@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x646.google.com (mail-pl1-x646.google.com [IPv6:2607:f8b0:4864:20::646])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::447; helo=mail-pf1-x447.google.com; envelope-from=3tarlagykdfmdzv84x19916z.x97638fiaax-yzg63ded.9k6vwd.9c1@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x447.google.com (mail-pf1-x447.google.com [IPv6:2607:f8b0:4864:20::447])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGYtk2XX1z2yZf
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 08:21:18 +1100 (AEDT)
-Received: by mail-pl1-x646.google.com with SMTP id d9443c01a7336-2e9d52f684fso11707735ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 14:21:18 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGYtl6F14z30Wg
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 08:21:19 +1100 (AEDT)
+Received: by mail-pf1-x447.google.com with SMTP id d2e1a72fcca58-89e05d31e54so788391b3a.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 14:21:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1793395276; x=1794000076; darn=lists.ozlabs.org;
+        d=google.com; s=20260707; t=1793395277; x=1794000077; darn=lists.ozlabs.org;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:reply-to:from:to:cc:subject:date:message-id
          :reply-to:content-type;
-        bh=GVfrMv/JwLPpbAn4FrjFqU3DE6u8ipaxUY48dYc7+h0=;
-        b=l42G7nQkK/GWjo1vAlfVvQnHMvaIESSWnkRuiL6tWzSzk+zWnucvcYW9datOnNnxyN
-         +uJwwnPQMPG8e+jCBrnE3u7J6Cksc3+2EX0/nFTsFjqRvZhd+dNHE5qvESkI/GTC+IuV
-         G/GqiPbvjxFlGKF6Ys/x3q5EFVNOWEMnTX+kn/2dNJwO332YYl56e4FoFN6AETvxXdrk
-         P3DlX2qDT1aBKs8fYKgDCNLv6t3OyKm3V3qtDI06uAqotaIfvto2BtZLVLhBPF8x/8du
-         vZbHQoYE33xyRAt1JzQv4L2iwLolnDLi4G/E59+zr+nQo5RkkQ0kRP3LM4NUUUmGnyNm
-         Y4Wg==
+        bh=xVLOuB5izvjqY2+yn+X5wA6bkjFEaB6u1KjQAeAFkZo=;
+        b=D7nyASfj1gj14cUlx2Ku6Df+APdYAyJOa6zgqMwh6gdUfXOngRJ8sS/tnYMnCta/u4
+         HXJhhKpJ7y7Kw+yLYBv0ZGN/p4+dWgbCuzPJ0TmuQkT1S5tWMYwRRAcNt0mGD9MHazQ3
+         DgQi4hj29sVRReS9/KPi/Qykse/f7w/lks8BbioO8Wu4W4f1X/XC0ozsxt6o2Ypi17F7
+         RpMNxGD3y9h/u0a2CGFz9vqkFeGx5RBtCYry3BFye7LuCBADMsnvl3cmur/EK4ghJq3S
+         XMlENBS44deqx8g/YZbzlrfwBomNeZJorBcimduoUnqgKXlurrSU4ISdgarGkRaFRyvP
+         igfg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793395276; x=1794000076;
+        d=1e100.net; s=20260707; t=1793395277; x=1794000077;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:reply-to:x-gm-message-state:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=GVfrMv/JwLPpbAn4FrjFqU3DE6u8ipaxUY48dYc7+h0=;
-        b=MlSgX0PWuwdhufpkYTsAktouOQGlvZTgm/0RlDEchdDr88bb/NfZSGEtZzPJlEG+b4
-         5U40o/Mh4lf3hYUpMihCaeUp5JimMkCI/PSzZ7p9HnFmt1Jx9tjuYkCIdsYkdoD/VLbS
-         jxA1NjNhUD+ZElfyk8u45vp9MNnnkl/Q9lYPfRUVmPTLuR4Uzqcy+rpaPEvatn/Lm+X4
-         GxJdoVQHGSRhr3EhrOC3PDwmTl44IHPhjBY4NPEiLLtbGw2kouDfYOzbgbADKmAiFWGf
-         fDlAjlQoMfKwKKUnWyl/CnpCTdb6jH4r20IXotbfth5nLOmPUMq0+twx0OXij2mflkQ1
-         YXHA==
-X-Forwarded-Encrypted: i=1; AKwUvBzzYvY48bRrM5XJy7Fa68VNRY/AtvvGUV9a131ig3xl4j02qH51p7+u/Jk/DrrQWN4msEP3KO8EtlqN2q8=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYLXjKBrPz4T2/ns2t8p7YTla5Ko5snDXM+n6nnOAQbPGxUugiH1
-	oh15wWo2TDFYMmfjmGsYiAzXlJCLIErv9Tk7FoJWRONQbLGPzKJ+CCBexic0gipJV4R78Taka41
-	qK/lvGQ==
-X-Received: from plbme3.prod.google.com ([2002:a17:902:fc43:b0:2ea:884b:e7df])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:902:cec4:b0:2e9:851a:7188
- with SMTP id d9443c01a7336-2eb3649c631mr36367485ad.23.1793395275725; Fri, 30
- Oct 2026 14:21:15 -0700 (PDT)
+        bh=xVLOuB5izvjqY2+yn+X5wA6bkjFEaB6u1KjQAeAFkZo=;
+        b=uugyhFRnOzchYHhHSg8H5u8kTC82PEQybHaTBYg1gbNEGNSAQR7d5XW9iK0zjK9v1S
+         uhskaosNCofdpE/p40IJo/JV9/IXa1tTHCLlY72miCycsXro0ukuF7EhZzNhz5VDiwuS
+         lYG98P3sTMVHeGhv2AFcaXSlQV02jDejarGbmz/yeQKgIyWvKsJng/TRS8fPT5EqccoT
+         MMrK6qvLw4R7IXlTugWkc13WEI3nIj3ngpy1eMPajdEp3L5KR1QKkdVBDGS1MX6dtp4O
+         +Vj5OwrQ+xUFcxdQFCaTaACDA7G4Ig5kB5z2EtuHQFoQ2EnuF0W+i99K8UncXuMqpDDy
+         vVrw==
+X-Forwarded-Encrypted: i=1; AKwUvBwp+RJV0jamvEAsxgEnUm84Lv0JLT/b2y8tSES5Q0ITZWxv4btwBKwvt4DcMaAlmI/JiJm+yQjt4WZR8mA=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYIXwc4jetgqwpsQovhVxZI0ulnUH/mzrgEhgxTr0VeqO6e5OokU
+	nEpltXiOgwq6KLMvm5O6XIw0tv37QyZVuiukkTaRZtPhV3EoS/pU3a7lum0i5ncMnVfE0JneJqA
+	BXBD4AQ==
+X-Received: from pfwy10.prod.google.com ([2002:a05:6a00:1c8a:b0:89f:5522:3f42])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:a118:b0:89f:c441:580a
+ with SMTP id d2e1a72fcca58-8a9bf339441mr2641764b3a.36.1793395276884; Fri, 30
+ Oct 2026 14:21:16 -0700 (PDT)
 Reply-To: Sean Christopherson <seanjc@google.com>
-Date: Fri, 30 Oct 2026 14:20:50 -0700
+Date: Fri, 30 Oct 2026 14:20:51 -0700
 In-Reply-To: <20261030212112.2598640-1-seanjc@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -81,9 +81,8 @@ X-Archived-By: <archiver.kernel.org>
 Mime-Version: 1.0
 References: <20261030212112.2598640-1-seanjc@google.com>
 X-Mailer: git-send-email 2.56.0.385.gac671c819a-goog
-Message-ID: <20261030212112.2598640-3-seanjc@google.com>
-Subject: [PATCH v4 02/23] KVM: nVMX: Don't force a full nested VM-Exit when
- destroying a vCPU
+Message-ID: <20261030212112.2598640-4-seanjc@google.com>
+Subject: [PATCH v4 03/23] KVM: PPC: Flush/zap all memslots on kvm_arch_flush_shadow_all()
 From: Sean Christopherson <seanjc@google.com>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>, Sean Christopherson <seanjc@google.com>, 
 	Paolo Bonzini <pbonzini@redhat.com>
@@ -99,103 +98,51 @@ X-Spam-Status: No, score=-26.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-For all intents and purposes, revert commit b4b65b5642d6 ("KVM: x86: cleanup
-freeing of nested state") and go back to manually tearing down nested state
-when freeing a vCPU.
+Flush/zap every memslot in kvm_arch_flush_shadow_all(), i.e. when the
+owning userspace process is exiting, as KVM must ensure all associated
+memory is unmapped from the guest.
 
-When a vCPU is destroyed while L2 is active, KVM synthesizes a nested
-VM-Exit, which flushes the cached shadow VMCS12 back to guest memory:
-
-  vmx_vcpu_free()
-  |-> nested_vmx_free_vcpu()
-      |-> vmx_leave_nested()
-          |-> nested_vmx_vmexit(vcpu, -1, 0, 0)
-              |-> nested_flush_cached_shadow_vmcs12()
-                  |-> kvm_write_guest_cached()
-                      |-> __copy_to_user(ghc->hva, ...)
-
-Accessing user memory via a memslot during VM destruction is broken, as
-there are no guarantees that current->mm == kvm->mm when the VM is dying,
-because the last reference to the VM can be put from a different process
-than the original creating processes.
-
-And even if the original process does put the final reference, during
-process exit, do_exit() calls exit_mm() before closing file descriptors, so
-vCPU destruction runs with current->mm == NULL on a borrowed lazy TLB
-active_mm.  If the borrowed address space has a writable mapping at the
-to-be-written userspace address, KVM will corrupt an unrelated task's
-memory since uaccess APIs, including __copy_to_user(), don't sanity check
-current->mm (and *can't* sanity perform KVM's current->mm == kvm->mm check
-since that is firmly a KVM-only concept).
-
-Furthermore, the shadow VMCS flaw is only the tip of the iceberg, as the
-MSR load/store lists mean that emulating a nested VM-Exit can read or write
-an arbitrary set of MSRs, e.g. if MSR_KVM_SYSTEM_TIME_NEW is in L1's MSR
-load list:
-
-      kvm_arch_vcpu_destroy()
-        kvmclock_reset() - takes pv_time off kvm->gpc_list
-        vmx_vcpu_free()
-          nested_vmx_free_vcpu()
-            vmx_leave_nested()
-              nested_vmx_vmexit()
-                __nested_vmx_vmexit()
-                  load_vmcs12_host_state()
-                    nested_vmx_load_msr() - writes the MSRs that L1 listed
-                  kvm_cpu_has_injectable_intr() - reads Xen's vcpu_info
-        kvm_xen_destroy_vcpu() - deactivates the vcpu_info cache
-
-processing the MSR write puts the "pv_time" cache back on kvm->gpc_list,
-and the next list_del() writes into the freed vCPU.  And as effectively
-pointed out by syzbot[*], attempting to fix each case individually is a
-losing game of whack-a-mole.
-
-Deliberately leave "nested_run_pending" as-is, because even though doing so
-creates potentitally inconsistent state, KVM should *never* consume said
-state while freeing a vCPU.  I.e. if leaving nested_run_pending set trips a
-sanity check or bug, then that just means there's more fixing to be done.
-
-Open code only the "free vCPU" path, i.e. keep emulating a nested VM-Exit
-when forcing a vCPU out of L2 via vmx_leave_nested(), as there are a number
-of updates buried in the nested VM-Exit flow that are needed if the vCPU is
-going to run in L1, e.g. clearing pending exceptions and MTF traps, setting
-the TSC offset+scale information back to L1, and so on and so forth.  Note,
-this means svm_leave_nested() is all but guaranteed to be buggy, but that's
-basically an open secret at this point and at least any bugs "only" break
-L1, i.e. don't corrupt host state as is the case for abusing nested VM-Exit
-when freeing a vCPU.
-
-Link: https://lore.kernel.org/all/6ac0145f.34119e79.2f92f3.0003.GAE@google.com [*]
-Fixes: b4b65b5642d6 ("KVM: x86: cleanup freeing of nested state")
 Cc: stable@vger.kernel.org
-Co-developed-by: Chris Mason <mason@kernel.org>
-Signed-off-by: Chris Mason <mason@kernel.org>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/vmx/nested.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/kvm_host.h |  1 -
+ arch/powerpc/kvm/powerpc.c          | 11 +++++++++++
+ 2 files changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/kvm/vmx/nested.c b/arch/x86/kvm/vmx/nested.c
-index 9b0bfa2f854c..49c4529901c5 100644
---- a/arch/x86/kvm/vmx/nested.c
-+++ b/arch/x86/kvm/vmx/nested.c
-@@ -385,8 +385,15 @@ static void free_nested(struct kvm_vcpu *vcpu)
-  */
- void nested_vmx_free_vcpu(struct kvm_vcpu *vcpu)
- {
-+	struct vcpu_vmx *vmx = to_vmx(vcpu);
-+
- 	vcpu_load(vcpu);
--	vmx_leave_nested(vcpu);
-+	if (is_guest_mode(vcpu)) {
-+		hrtimer_cancel(&vmx->nested.preemption_timer);
-+		leave_guest_mode(vcpu);
-+		vmx_switch_vmcs(vcpu, &vmx->vmcs01);
-+	}
-+	free_nested(vcpu);
- 	vcpu_put(vcpu);
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 708a32f89776..50a42f80e5f1 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -910,7 +910,6 @@ struct kvm_vcpu_arch {
+ #define __KVM_HAVE_CREATE_DEVICE
+ 
+ static inline void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen) {}
+-static inline void kvm_arch_flush_shadow_all(struct kvm *kvm) {}
+ static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu) {}
+ static inline void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu) {}
+ 
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 9194cf492d1c..9e9d0865c2f6 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -764,6 +764,17 @@ void kvm_arch_commit_memory_region(struct kvm *kvm,
+ 	kvmppc_core_commit_memory_region(kvm, old, new, change);
  }
  
++void kvm_arch_flush_shadow_all(struct kvm *kvm)
++{
++	struct kvm_memory_slot *slot;
++	struct kvm_memslots *slots;
++	int bkt;
++
++	slots = kvm_memslots(kvm);
++	kvm_for_each_memslot(slot, bkt, slots)
++		kvmppc_core_flush_memslot(kvm, slot);
++}
++
+ void kvm_arch_flush_shadow_memslot(struct kvm *kvm,
+ 				   struct kvm_memory_slot *slot)
+ {
 -- 
 2.56.0.385.gac671c819a-goog
 
