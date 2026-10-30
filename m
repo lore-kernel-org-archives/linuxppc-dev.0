@@ -2,49 +2,92 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 88BC8606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2026 22:51:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 467FD606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 00:07:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=QQ/YEWWV
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=mHFC5fHX
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jFzxd4q7Tz2yYK;
-	Fri, 30 Oct 2026 09:51:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::133"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793314309;
-	cv=none; b=EBHI+RJdVRRGBaCsMgim+3j5LbR5NA1nYphvpPSGP9OVb9OWEcHKwRS9ESLnwRuZUhMsSY0e0WiM98+uQBqU3yW2KkOHtr2A8/D/+Klh2vlrvhaLXejaHw775oc40hT3L9GU7M97SiZNdpqG2y+e9O+rMLVE6F3SjO+51rslDaZcEZCZiU42Fy1LX7TOU2Tmopyne36NQ2aSXJ3/KANUYFsHFjYAuBh2payLHl/T8YUB0fbFfkoUS7XtZSmA2SpxMtMlOo0nngT6ysLqc38AW3vVd3xXW6zXvHUFa+jYtVCRRmUb0YDfIYl6PSF0DCN0a53QKh9bwkcKRIvsAISyXQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jG1dN6d3Pz308H;
+	Fri, 30 Oct 2026 11:07:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1329"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793318872;
+	cv=none; b=KPn7ZNaYZFYV1tdv4Fai8H3MsDKD1/pwADu2DaPVPWvlV+jPXXnrIC8XVJOM0ZFuVv8kyBYCspwp9j8V6McuK+oXWSTYqwy9/PPCdCzRKTNsD61N1gc0PUdiPPXi7m5Nzv1b+1SRvck90ZMOtXq3Q32eNjJwys6IQ6hfspwlifTmKJQgoTJg7cc4KkO2CqkXKdS6mreK+uvdJxWa8e1lmELNt29lz7YJ643JYrmzgYpXx++5WTAJoR+YxTFqsB8hJCysj8cfafpKrLZsTVBp6yyjbHTwg9RTiVCnH8VakEmZuK/bbleSu/BXnKnVSTyHPvTz6axehatAI8dUFtocvw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793314309; c=relaxed/relaxed;
-	bh=8klQKhRThQNppUw+KcbxhoOsS/2ZZK1Ciz6dr6p1ntU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=B69QDTze8xUINrot0kOLWlTMACENaoFjSaVo+gqUFtqKRZnwhzBXCvmGl3p9sKXT2lvYJ/IHw35JuycbTA0RvuODQ53nsbeEfWf7viz9bvgj1KnAVLXOycHrDRfqcowmro7cVT6Pdno6zZCd16U24QYdh8j475RptQy1qjH76EEeMPN7MxN7PG0fSvBe+mvpITLpvELzdak1EJ9kMbpKwisLv2Cd6TLpFFdzzVLs21B4uugroR93iNWJS4K+gk6X1lYxsGo4UVzekfodpJAf+3yGd0k53WoR1mFhLaf4N6gqTFVCjgVBE71ORWvGEUbrSmiya3NgqfP1K8X8LftA8A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=QQ/YEWWV; dkim-atps=neutral; spf=pass (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+	t=1793318872; c=relaxed/relaxed;
+	bh=jVUIageg/XI3VA6PRbnnsPlVRr/N3qezw2iOOgJuil4=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=EUIEDERRvPtqB0Q7NSO0gOifzCQ5lSvFMn2OV1IeoB4K760yWyzPBE0GRcEJP2IHKZXtb6feWte0l/beFxgi4kmTFGY+lpRpF1rji6h1vOwZS0eOQ3DABNt/O5MGSgYj/EPdkk2KTggZBfcrUxWJS/KvPJieoR5/P0LheyrCnIyijZsdXa5pymEgdBtGGWldgqBCMRg2gq3s1y3Xe+iv4FXBds51STX2WiCE4kmlsLdrwcBT4BMqE3aKCC36HKe7Szumyyf4L/cBO3gHU5GrdkuWJIATMmQi1Y+6U6I0IJ4EaqHafhT2aefN9l8Flr8zp4aTC9SDl6QqzYL1eYYbBg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=mHFC5fHX; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1329; helo=mail-dy1-x1329.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=QQ/YEWWV;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=mHFC5fHX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org)
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1329; helo=mail-dy1-x1329.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x1329.google.com (mail-dy1-x1329.google.com [IPv6:2607:f8b0:4864:20::1329])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jFzxc01rSz2yQH
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 09:51:46 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-	bh=8klQKhRThQNppUw+KcbxhoOsS/2ZZK1Ciz6dr6p1ntU=; b=QQ/YEWWVWGkexK71Z1Vv4C8qip
-	eXrah04WIy38xEnmrJViH1kekXz9n1Kpi7ZgJAiDSB107I2RFnuzdRcxY/KQ8m/nHclvlER057/+R
-	Vt0xAsucJF5ljF1Y/4K/nrNpg3PYCJM8rH7WAxC7g3uK5heXKNQiAnAZ0b/KahUSgY7/acmrlAcux
-	cLggaEgQP1anT3pXl1a2K5nRcEZbrmb15wC5nki40sc4glJD4hyaCo7F0CCIA4xDT3Jf/fL8rZz2F
-	Bq/IaHgZQRTudWAIAby7GF+Py6ZBCayPp8seZsi6nyPIA0UKNfc5B/zqVIqDZBgzhroP0Zf1zj112
-	90wdJkhQ==;
-Received: from [50.53.43.113] (helo=[192.168.254.34])
-	by bombadil.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xMYyF-0000000AVGi-1qwq;
-	Thu, 29 Oct 2026 22:51:43 +0000
-Message-ID: <90d34011-24ec-4fdb-9b71-f4c3d0f316d2@infradead.org>
-Date: Thu, 29 Oct 2026 15:51:41 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jG1dM6RKzz2yYK
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 11:07:51 +1100 (AEDT)
+Received: by mail-dy1-x1329.google.com with SMTP id 5a478bee46e88-369f33df08eso414518eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2026 17:07:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1793318869; x=1793923669; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=jVUIageg/XI3VA6PRbnnsPlVRr/N3qezw2iOOgJuil4=;
+        b=mHFC5fHXBfEX9UdP6/sReZ3ON1Fs9rm1QksPNkKSzcTwrJKoPZzN2TqkT/Wq6HfgOc
+         vf0lY1J+fsHw70HtCURXpX6cSNS1u/hj6xjCUgR51lOCYZtXw+2P4DvuJmkRLriNiy3F
+         VdltHow3oxpq4+8qQv94X4ruG2Fy9y25VsKJdIx9Z+0BI/MExad5aCJ0EtP9Ic9fSj3V
+         Nlt6dDtpahIPCap5uljhbQK8fbZ/6yZqkcxU3bmjK5+kydlUyAXer9HCD1H4RCeoRp4h
+         axQhmJ96WLTmF4ggmn2N5GmDHihUno/2eKUXEnODzsCQpDS8+yC0nZTHc3WxLEQpAo7g
+         nrrw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793318869; x=1793923669;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=jVUIageg/XI3VA6PRbnnsPlVRr/N3qezw2iOOgJuil4=;
+        b=PbZBS0ZDejtHVwMz7ul9JLC0VP6xZW+jeugSgOktC+apounnFQqCGuQeyMuEFbgGdt
+         12MDobmqIu4ob4whhS2krfk4pFDUjB9b8dSy3BmH8XOotAYVY0PFvh/aqqYltioe9VRa
+         Xi9Fvb0b+/N3bHyVEbwCQhoIHIbpuVqfTeoSv1ZJ/hzwyZqsbS7YDtFQXVpX40zyS3dx
+         36NHKD+i9bz1eCm4PBa4nmIi14yqxFFnrvtvLzFt3ebNbNqOARCqXcPnixgGVfMXpOwC
+         KqTcrSSqXyw2g0+JEIS1CSfeqZYF1og/8RPrW8I9Ml6faK7bH3YoekVc78OSpA8STTWR
+         4PDg==
+X-Forwarded-Encrypted: i=1; AKwUvBwPC8jKLcImb5SvIZmF9tkf5pIYKE0FZySFSslgz1OxCnXZrGaY8+CJvhQLXM+4C1O/MdRJyuTnTPbHukQ=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYKVkbE2WFMLMmBJ115rnrNjPOdo0Ce1evZQyuVJ053Lf8COAFJk
+	CmG0BZVS4hp7dw4E3lhX73hSXx+OBaAhJfJrrdCKQsprlIq3JVARWiHQ
+X-Gm-Gg: AYBFou3plQOrsrhcZo/W6kw9x27gUzE5tgKvI66c8tD25G0umgrNysQwDK55Q+aztgk
+	f0634h78FJ0x5dBDRg8LVZ2Y3g0nDWba8J1s8NtTq0AsGf0wCMate1P+z9SPWQjN8mq4bwaB2Ym
+	UMq1h4IVR83IJm4qEAevR1QFXb07SgQJiO9hQ8Cp8SPyjMXfzJLgSm104N3V8+tA39ImT9kFDNc
+	h8VYjflyvoJqiKfBK375EU30G7BGcdfkYgSHxIsDXiPrZkdMXTgw6+XcirVtO/285Qdm2hh1nBC
+	nTQUnuTyjqa9fm6astxaZSMm2x/8ac2zB7x+WZJCJ7Z626uhB6LETPODN8IBh+Nb4N1eiV5VrrH
+	Ulf7gOokSGDLubOIuJZozAYktHOZDYta4WJnriPakoAetW65YbdEoVYanJqVfV4MMKr3fCdeJ67
+	v/JyqzpN7NWaKHLnHg+GocTKTvqsIpZiWPy8uEhX4Fu9N6DLG2KZbCM6nrI1j7d76vkpdTXnzs0
+	uXkdLxy125cyr4nisZkxp3yiVlPJkL8cGfnPXtDPO4OyFnejyqwtWuqO6PvC0XRvBxeX+wGwX/B
+	RwNRMFblmU4OpmlYRGBBGx+URg+43VPsAg==
+X-Received: by 2002:a05:693c:880d:10b0:34e:9923:e372 with SMTP id 5a478bee46e88-36a4241a810mr1410914eec.29.1793318868940;
+        Thu, 29 Oct 2026 17:07:48 -0700 (PDT)
+Received: from pve-server.rlab ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36a42669128sm2111682eec.3.2026.10.29.17.07.44
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 29 Oct 2026 17:07:48 -0700 (PDT)
+From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+To: linux-mm@kvack.org,
+	Andrew Morton <akpm@linux-foundation.org>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	David Hildenbrand <david@kernel.org>,
+	Muchun Song <muchun.song@linux.dev>,
+	Zi Yan <ziy@nvidia.com>,
+	Baolin Wang <baolin.wang@linux.alibaba.com>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Pavithra <pavrampu@linux.ibm.com>
+Subject: [PATCHv2] mm/huge_memory: set the mmu_gather page size in zap_huge_pud()
+Date: Fri, 30 Oct 2026 05:37:36 +0530
+Message-Id: <8b853e5f9f16145859407b28af654b0f79e12642.1793318297.git.ritesh.list@gmail.com>
+X-Mailer: git-send-email 2.39.5
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,59 +101,78 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/4] powerpc/ps3: repair some kernel-doc comments
-To: patches@lists.linux.dev
-Cc: Geoff Levand <geoff@infradead.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- linuxppc-dev@lists.ozlabs.org
-References: <20261029201326.2672284-1-rdunlap@infradead.org>
-Content-Language: en-US
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20261029201326.2672284-1-rdunlap@infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=4.0.1
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi,
+Unmapping a device-dax mapping with 1G alignment on powerpc radix kernel
+built with CONFIG_DEBUG_VM triggers this warning on every munmap:
 
-On 10/29/26 1:13 PM, Randy Dunlap wrote:
-> Patches 1 and 2 eliminate all kernel-doc warnings in their
-> respective files.
-> Patches 3 and 4 target certain classes of kernel-doc warnings
-> but don't eliminate all kernel-doc warnings in those files.
-> 
-> 
->  [PATCH 1/4] powerpc/ps3: platform.h: fix enum ps3_spu_resource_type kernel-doc
->  [PATCH 2/4] powerpc/ps3: htab.c: fix enum ps3_lpar_vas_id kernel-doc
->  [PATCH 3/4] powerpc/ps3: mm.c: clean up kernel-doc issues
->  [PATCH 4/4] powerpc/ps3: os-area.c: fix some kernel-doc warnings
-> 
->  arch/powerpc/platforms/ps3/htab.c     |    4 ++--
->  arch/powerpc/platforms/ps3/mm.c       |   10 +++++-----
->  arch/powerpc/platforms/ps3/os-area.c  |    5 +++--
->  arch/powerpc/platforms/ps3/platform.h |    7 ++++---
->  4 files changed, 14 insertions(+), 12 deletions(-)
-> 
-> 
-> Cc: Geoff Levand <geoff@infradead.org>
-> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Nicholas Piggin <npiggin@gmail.com>
-> Cc: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
+    WARNING: mm/mmu_gather.c:176 at __tlb_remove_folio_pages_size+0x38/0x230
+    NIP [c00000000063d508] __tlb_remove_folio_pages_size+0x38/0x230
+    LR [c0000000006fb688] zap_huge_pud+0x1b8/0x2d0
+    Call Trace:
+     zap_huge_pud+0x170/0x2d0 (unreliable)
+     __zap_vma_range+0x1604/0x1e20
+     unmap_vmas+0xa0/0x1f0
+     unmap_region+0xb0/0x130
+     vms_complete_munmap_vmas+0x120/0x310
+     do_vmi_align_munmap+0x1ec/0x240
+     __vm_munmap+0x148/0x220
+     sys_munmap+0x28/0x40
 
-This should have been labeled with "RESEND" since I also sent this
-patch series on 2026-08-31.
+To trigger this - it is enough to mmap() /dev/dax0.0, touch the first
+byte so that the whole 1G is mapped by a single PUD and then munmap()
+it.
 
--- 
-~Randy
+PowerPC needs MMU_GATHER_PAGE_SIZE in which mmu_gather needs to record
+the page size for which tlb flush is needed. zap_huge_pmd(),
+zap_pte_range(), change_huge_pud() etc all do this already. However,
+since commit:
+  dbe54153296d ("mm/huge_memory: add vmf_insert_folio_pud()")
+
+a device-dax PUD maps a real folio and zap_huge_pud() now hands it to
+tlb_remove_page_size(tlb, page, HPAGE_PUD_SIZE). At that point
+tlb->page_size is still whatever the previous user left behind, which is
+0 for the fresh gather set up by munmap() and so the check fires.
+
+Fix this in the same way like how other similar paths do.
+
+Fixes: dbe54153296d0 ("mm/huge_memory: add vmf_insert_folio_pud()")
+Reported-by: Pavithra <pavrampu@linux.ibm.com>
+Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+---
+[v1]->v2:
+=========
+- Split the 2 part patch series. Patch-1 is now superseded by a different patch
+  from Muchun which he already posted [2].
+- No difference in this patch from v1.
+
+[v1]: https://lore.kernel.org/all/97f85592bb78a273be8519e6897e7f9b9bd31469.1793070429.git.ritesh.list@gmail.com/
+[2]: https://lore.kernel.org/all/20261029063601.1961415-1-songmuchun@bytedance.com/
+
+ mm/huge_memory.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index bd44d58e8684..7e589a2fb02d 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -3040,6 +3040,8 @@ int zap_huge_pud(struct mmu_gather *tlb, struct vm_area_struct *vma,
+ 	spinlock_t *ptl;
+ 	pud_t orig_pud;
+
++	tlb_change_page_size(tlb, HPAGE_PUD_SIZE);
++
+ 	ptl = __pud_trans_huge_lock(pud, vma);
+ 	if (!ptl)
+ 		return 0;
+--
+2.39.5
 
 
