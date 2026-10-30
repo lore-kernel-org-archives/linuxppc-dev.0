@@ -2,70 +2,44 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA6B4606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 06:46:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6EA8E606A31E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 07:15:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gTyrKRnm
+	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=P+jtgdTX
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jGBTZ18WDz30RN;
-	Fri, 30 Oct 2026 17:46:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793342802;
-	cv=none; b=PKM2rbGFzaGr6ON4QWBB1Q8vEusoQF7+zj4CRvFaTVhVnYeQA/MWcufo69ETjWOh0+PoEP2AABuRdrd5TLDlHdI6jAbJSGen/3I+djglcwrxsg3J0Wczl5vP/6s+o3JLPY+NnmYdRtOSjU7bD28ZarINI1mGP+gcWbQL8XTHD9Fkfj9ownq8k/w77DNpgOW5xxSIN+Fs0T5SV+Iinb8MR4nx8sRuYgYJrRKutRkeju8sw3vnjVDg45sVsT/J9Az5twLlPJIuEBV+FJqpWj8eNUpn6Ru+VvhUfoW1cLMsSA4kFwgTHuFt8YUkGxeaeu9cTTnygazSdFmKUPuFpm7Q5g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jGC6V5VPjz30RN;
+	Fri, 30 Oct 2026 18:15:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793344514;
+	cv=none; b=h0Sd+Zr7+k0sXvfPVcQK+KGb50DOUZ03qdT1eegUjM5s+K4dczbrNKovCjdyjglnNWmBZRq9a7w3XhEosERtCFYT72R5oYq5qwG7MVVpPRSRhchnRbmqSRV2XZxEbuAd/36o03L3D4hu9GBdtBQUIVTp5jtWzbv84vN4h4dAjZmLUs38Aiznn0LA/jjSCFK0YHBEuG8PE/ysqzHpygZ6R4L/p/AXJ3gy3hUrCdjwsY6lNz+BpgbD34ZJTScqfpwTjUBROCl+DZ8n8GWPJWp5/B1WvqepbQRqYt8I7DFYBafDUHftyJiuBEz+XERXnRBW2weHpHlnWUheiLLeHY8C8A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793342802; c=relaxed/relaxed;
-	bh=Id8QGQONeVdgPpx5xV+Lr+vBDN9+KhzWpQXCGhMj0Vs=;
-	h=MIME-Version:Date:From:To:Cc:Subject:In-Reply-To:References:
-	 Message-ID:Content-Type; b=EQd8vqueauCfD+I7NDnluvBNz9wpZRIy/1xy5ckEs+NCbuO4Te7tRZAKQohiyEXRFEA3MDjc7dI/KrSQeXumEjXY8KypONGUGyL3LAU+MolidJamYGd+55ZB0LrZkUNHagl5uEfmkjpcUzKyZY372nxPcA+3+DwqTBTG5YRxZkJ/ZLgvCebWO93fyY0LzkYd4+ExRU17hZULT2Ue7lSN17q9GI5Ft1MWuSPTovtrIA5uRrErv1X/zuxWETNEHgTkWRdJ39/4CwLRJNDX5KsBZpM5oUtrQe2A5Liqm2AoXB7rLqGQo33pDgUSu6nCTbceWzwozL+DkcIxuZ/WjcGV4g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gTyrKRnm; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=pavrampu@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1793344514; c=relaxed/relaxed;
+	bh=X2nwqEX6uVZ+D8u1+rxu1eIxt49K0H72sg6V9JucXvs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=YnOKIHU1HAnmkLSOyhYYOKg5m8A76f8oA95hYl/ZUxx9AOZahljq1/1Ox3G52BcLGkEr2oGge5K2Wn4UdbmbWm/kJShhVIoEdvdDSwD1q5/0GjMf3ekGCvqH8L90UmgyVcn+zDM/pYW5oKzdYjMrDSCyfFt/nWJJuG+vGkrz1Qr0z3ABJX7TI7Ynnklr3D41hsODmRVVQWgBRQlIGNbR3FXQgosxbwTD4MmRp9PC/wHcAV7GzFEH7HhORWDwe9SC53eOEufSStSgcVGX7egv4/vLjfF9HhU5m/Vpo+va3Ue850UpWs7AYgAw5s5zC1HV8k0enFEQraGy12a4VU00EQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=P+jtgdTX; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=dev.jain@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gTyrKRnm;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=P+jtgdTX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=pavrampu@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGBTY1fqrz2yK7
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 17:46:40 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69U5EOhF865528;
-	Fri, 30 Oct 2026 06:46:27 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=Id8QGQ
-	ONeVdgPpx5xV+Lr+vBDN9+KhzWpQXCGhMj0Vs=; b=gTyrKRnmpTiLND7XEfHqOo
-	TyTRYgZkDeKdKW7lXz7o/p0qDHu5pM67VvggXUAAJrj2abE/yxHM2++l5jqR5Zjo
-	jYI9wt4g6YUBQDKPUJXbFSiJD/bYnIhjoSS42d5t2tPiKsFYgfhqQLgTmimUgQ/M
-	admhuQY6/I1iH1ak1paNmhbrMyuVl2PPS49K257r+3dMnHs3ques1xCS+x/3SAxV
-	NYMcdVhjRjqQ+WQBnkTG5TWXATqyUoHizXTnvct4Kl5JiAVhCSMXnZKJAbt+w3qa
-	R0ZEsjrCvP7MUTD6vd/GRU8BoYu74nr1TJVmzJPCfMhiR+dcUFi4eA8oU6+HhDyA
-	==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hmeaysea6-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 30 Oct 2026 06:46:27 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 69U5YuEt070120;
-	Fri, 30 Oct 2026 06:46:26 GMT
-Received: from smtprelay04.wdc07v.mail.ibm.com ([172.16.1.71])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4hk55pja9y-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 30 Oct 2026 06:46:26 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
-	by smtprelay04.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 69U6kPfY64881096
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 30 Oct 2026 06:46:25 GMT
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4DB2058059;
-	Fri, 30 Oct 2026 06:46:25 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4A48658066;
-	Fri, 30 Oct 2026 06:46:24 +0000 (GMT)
-Received: from ltc.linux.ibm.com (unknown [9.5.196.140])
-	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 30 Oct 2026 06:46:24 +0000 (GMT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=dev.jain@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jGC6R4qcBz30C6
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 18:15:09 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1101615A1;
+	Fri, 30 Oct 2026 00:14:33 -0700 (PDT)
+Received: from [10.163.152.232] (unknown [10.163.152.232])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 8D0273F7B4;
+	Fri, 30 Oct 2026 00:14:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1793344476; bh=Jp/eodRxYkJLNGQk8olzS9xG6qObIMTBg1q6BMVZmBI=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=P+jtgdTX69sEy90NVnhYUwff1Df/OdYgDe+/Oll2oU0iv4SgMtAerOkfvpkn4fqBX
+	 bHrTkw2g7dShto71IFHPDpjzFhRFcDPHxQhkGP7LbYYciMVEjNypabXr9lGoDG0b9P
+	 Dl6AC3L9oAHxYeXPdZCnniBAcCySVpa1QB2Dy4po=
+Message-ID: <99f529e8-06f7-4a20-a60b-0330c5d3d91c@arm.com>
+Date: Fri, 30 Oct 2026 12:44:26 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,139 +53,87 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Date: Fri, 30 Oct 2026 12:16:23 +0530
-From: pavrampu <pavrampu@linux.ibm.com>
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
-        Madhavan
- Srinivasan <maddy@linux.ibm.com>,
-        Venkat Rao Bagalkote
- <venkat88@linux.ibm.com>,
-        linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        David Hildenbrand <david@kernel.org>,
-        Muchun
- Song <muchun.song@linux.dev>, Zi Yan <ziy@nvidia.com>,
-        Baolin Wang
- <baolin.wang@linux.alibaba.com>
-Subject: Re: [PATCHv2] mm/huge_memory: set the mmu_gather page size in
- zap_huge_pud()
-In-Reply-To: <8b853e5f9f16145859407b28af654b0f79e12642.1793318297.git.ritesh.list@gmail.com>
-References: <8b853e5f9f16145859407b28af654b0f79e12642.1793318297.git.ritesh.list@gmail.com>
-Message-ID: <7628b0e9814084298ae09abad0b5ac6f@linux.ibm.com>
-X-Sender: pavrampu@linux.ibm.com
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 03/10] mm/vmalloc: clamp an unaligned range in
+ vunmap_pte_range()
+To: Hao Ge <hao.ge@linux.dev>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>,
+ Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
+ Dmitry Vyukov <dvyukov@google.com>, Andrew Morton
+ <akpm@linux-foundation.org>, Dennis Zhou <dennis@kernel.org>,
+ Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@gentwo.org>,
+ Uladzislau Rezki <urezki@gmail.com>, Suren Baghdasaryan <surenb@google.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kasan-dev@googlegroups.com, linux-mm@kvack.org,
+ Sashiko <sashiko-bot@kernel.org>
+References: <20261026080329.140244-1-hao.ge@linux.dev>
+ <20261026080329.140244-4-hao.ge@linux.dev>
+Content-Language: en-US
+From: Dev Jain <dev.jain@arm.com>
+In-Reply-To: <20261026080329.140244-4-hao.ge@linux.dev>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: gGY-rwakIoXDooIUogKTtF0LgTnN6YSW
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDMwMDAyNiBTYWx0ZWRfX+v3beX+bO7UL
- mShVCHmwjlOQIjARv+1JbU3Q8Y1xvq0pMQT05BUwMWkXdzdlJKXsCY/AOhpKmPFObyv0M6c1ses
- 0oVfTAzc2+iz0u++74zLyDwkr2SKLb7D7MaTQtbXsgbGeDCJ5/7CfbacZu3gn+JUNfWddwTP4fg
- PMw5VXqfuBg8NZJB/7xq5CTSz+oTUY4jP3o5UCiCoZVSX6NIc/efmWWApyMV0zRSK9dN/553MXE
- 9vsHKG9ukEeV37Byi6GpmQgzxy3Ta7PZCYokQlkbUomoPKeVwc4pLl+48Ya5usoqvVdj4g40s0w
- mhuxmBo1fnwqD5Sz3oXUT9F90sFd5xGMmznYwWrX0X1dRNSKFhq5A6JZouiBqUSGFiiutFb2oLH
- ljWjOZjti+EkPQqITh2hmqnTBWK7hXcPLD4aJEdUsKayn5IHYg85CCxpq7PvHiJZ6effWCo0xmz
- tGz2bimsFA+/vBpsv7w==
-X-Authority-Analysis: v=2.4 cv=Ms3HeGae c=1 sm=1 tr=0 ts=6ae43d43 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=kj9zAlcOel0A:10 a=660iZSQnnn4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
- a=pGLkceISAAAA:8 a=968KyxNXAAAA:8 a=VnNF1IyMAAAA:8 a=T-xRWpmrxNWT4oxTfLkA:9
- a=CjuIK1q_8ugA:10
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMDMwMDAyNiBTYWx0ZWRfXxTRjLDtP7dbK
- BzDxsU5s4ReIcrhMajyytxMyJd4MMBJUQfrS2urnaeXd4zDxCZ6BDzFTcjsaLlwUpP16WtN05iw
- HG5FsK3w2dhcX4LOwYLqoDC5endnV/Q=
-X-Proofpoint-ORIG-GUID: nuh1h1ZEP6xnxA7x_sHTi-kj9tjJC_4t
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-10-30_02,2026-10-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 impostorscore=0 priorityscore=1501 phishscore=0 suspectscore=0
- spamscore=0 adultscore=0 clxscore=1011 lowpriorityscore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610190000 definitions=main-2610300026
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 2026-10-30 05:37, Ritesh Harjani (IBM) wrote:
-> Unmapping a device-dax mapping with 1G alignment on powerpc radix 
-> kernel
-> built with CONFIG_DEBUG_VM triggers this warning on every munmap:
+
+
+On 26/10/26 1:33 pm, Hao Ge wrote:
+> commit a739e6b557af ("mm: vmalloc: WARN_ON if mapping size is not
+> PAGE_SIZE aligned") made vmap_pte_range() warn and bail out when the
+> size is not a multiple of PAGE_SIZE. That loop steps in page
+
+Why are we checking the alignment so late into vmap_pte_range? Why not
+simply do
+
+if (!IS_ALIGNED(addr, PAGE_SIZE) || !IS_ALIGNED(end, PAGE_SIZE))
+	return; (or return -EINVAL);
+
+at the start of vmap_range_noflush and vunmap_range_noflush?
+
+
+> multiples and stops only at addr == end; with an unaligned size addr
+> never lands on end, so the loop cannot terminate and walks off the
+> end of the page table.
 > 
->     WARNING: mm/mmu_gather.c:176 at 
-> __tlb_remove_folio_pages_size+0x38/0x230
->     NIP [c00000000063d508] __tlb_remove_folio_pages_size+0x38/0x230
->     LR [c0000000006fb688] zap_huge_pud+0x1b8/0x2d0
->     Call Trace:
->      zap_huge_pud+0x170/0x2d0 (unreliable)
->      __zap_vma_range+0x1604/0x1e20
->      unmap_vmas+0xa0/0x1f0
->      unmap_region+0xb0/0x130
->      vms_complete_munmap_vmas+0x120/0x310
->      do_vmi_align_munmap+0x1ec/0x240
->      __vm_munmap+0x148/0x220
->      sys_munmap+0x28/0x40
+> vunmap_pte_range() has the same loop without any guard, so an
+> unaligned range would clear PTEs past end without ever stopping,
+> walking off the end of the page table.
 > 
-> To trigger this - it is enough to mmap() /dev/dax0.0, touch the first
-> byte so that the whole 1G is mapped by a single PUD and then munmap()
-> it.
+> Add the check there too. The range is clamped down to the last full
+> page rather than dropped, and the loop is skipped when nothing is
+> left, so a buggy caller still gets its PTEs cleared as far as they
+> go.
 > 
-> PowerPC needs MMU_GATHER_PAGE_SIZE in which mmu_gather needs to record
-> the page size for which tlb flush is needed. zap_huge_pmd(),
-> zap_pte_range(), change_huge_pud() etc all do this already. However,
-> since commit:
->   dbe54153296d ("mm/huge_memory: add vmf_insert_folio_pud()")
-> 
-> a device-dax PUD maps a real folio and zap_huge_pud() now hands it to
-> tlb_remove_page_size(tlb, page, HPAGE_PUD_SIZE). At that point
-> tlb->page_size is still whatever the previous user left behind, which 
-> is
-> 0 for the fresh gather set up by munmap() and so the check fires.
-> 
-> Fix this in the same way like how other similar paths do.
-> 
-> Fixes: dbe54153296d0 ("mm/huge_memory: add vmf_insert_folio_pud()")
-> Reported-by: Pavithra <pavrampu@linux.ibm.com>
-> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+> Reported-by: Sashiko <sashiko-bot@kernel.org>
+> Signed-off-by: Hao Ge <hao.ge@linux.dev>
 > ---
-> [v1]->v2:
-> =========
-> - Split the 2 part patch series. Patch-1 is now superseded by a 
-> different patch
->   from Muchun which he already posted [2].
-> - No difference in this patch from v1.
+>  mm/vmalloc.c | 5 +++++
+>  1 file changed, 5 insertions(+)
 > 
-> [v1]:
-> https://lore.kernel.org/all/97f85592bb78a273be8519e6897e7f9b9bd31469.1793070429.git.ritesh.list@gmail.com/
-> [2]:
-> https://lore.kernel.org/all/20261029063601.1961415-1-songmuchun@bytedance.com/
-> 
->  mm/huge_memory.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-> index bd44d58e8684..7e589a2fb02d 100644
-> --- a/mm/huge_memory.c
-> +++ b/mm/huge_memory.c
-> @@ -3040,6 +3040,8 @@ int zap_huge_pud(struct mmu_gather *tlb, struct
-> vm_area_struct *vma,
->  	spinlock_t *ptl;
->  	pud_t orig_pud;
-> 
-> +	tlb_change_page_size(tlb, HPAGE_PUD_SIZE);
+> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+> index 44e0eb32708f..7131f60d1a8e 100644
+> --- a/mm/vmalloc.c
+> +++ b/mm/vmalloc.c
+> @@ -393,6 +393,11 @@ static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+>  	pte_t ptent;
+>  	unsigned long size = PAGE_SIZE;
+>  
+> +	if (WARN_ON_ONCE(!PAGE_ALIGNED(end - addr)))
+> +		end = addr + PAGE_ALIGN_DOWN(end - addr);
+> +	if (end == addr)
+> +		return;
 > +
->  	ptl = __pud_trans_huge_lock(pud, vma);
->  	if (!ptl)
->  		return 0;
-> --
-> 2.39.5
+>  	pte = pte_offset_kernel(pmd, addr);
+>  	lazy_mmu_mode_enable();
+>  
 
-Tested on Power10 (ppc64le), kernel v7.3
-
-Tested-by: Pavithra Prakash <pavrampu@linux.ibm.com>
 
