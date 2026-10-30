@@ -1,97 +1,97 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20BD8606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 00:32:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A8D07606A31D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 00:35:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=0CwH3GQ2
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=pRx8LRQX
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jG29r3L1Vz308H;
-	Fri, 30 Oct 2026 11:32:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::92f" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793320352;
-	cv=pass; b=n0ByhedBiPLoqJy8sEm4tE08Hl4JXdXFpLLEcJXCsCNFe0J2q/FalBl/yWYV/gLU8BhM+DtlpS4UxX0xbcGNh7R8vXHiTCEP4wfU95Md5axuT6g7nTtdZVMIaSfWRZDOM3HHcxHevj2lgdyTZSuObgoFHh6Wzf54CR59ke430p6Nk4tKZWQX3PmeEAN4iRv9x6tW7CUDntaXyfYx2Ri/hIMz4os/0PM/Nqo0jcCRfnPh75GmuS6AzEYTnBoh96reMaTaZ28vKwwy4hWzZy/kIzX/XDAne7VUWOtZdb/OInMpefpMFykUiCFj+8dk6Ho2m56pxONxdnMtPHr+pChFZQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jG2FL6rVNz308H;
+	Fri, 30 Oct 2026 11:35:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::e32" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793320534;
+	cv=pass; b=jPaUngCMpfcgQwr/E076vlq4t6s51sv+vVOl9KaMmGJ32pUdHgpKs+LhnocWf4FO4uyyaOAFaXHujJEjwGM9sX/GVIPoZKPeoHXv05DcIXyiDK4lrODK/WPxCJrhWk6s14n4+1eoHK/v/f3Qcx1LsLR3uF2qKWOjIvF49yW6U3pmZcZ4vZfD0dCOqF5NvN+gir+Q10LsiFAH+fwuqTIuwti2gvgeB1RpDUjsyUkiyYW/KUtd6DRBZQdKDAWEfRgBUVpRVizw7OIu4YHwwIgQEjQUEnKTiZCxDggRQWPH3JGUCGCnsIs/ZYjfOoy+yIG+C3w/rbTG5A+sPnX1YVSqAQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793320352; c=relaxed/relaxed;
-	bh=eL/J2+RjMW7d7peZHUwlj8fhC1xc2jm5N4kIcoYsMvg=;
+	t=1793320534; c=relaxed/relaxed;
+	bh=vCXebNkndm9LBXsG81Q2mOpTPDq3UCuJ8oTq7IQkTYU=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=iebnoLyV8pZIeZipE9kj8zRGzHOQatAbqSiHlYAy6czrkH21i61ia2XDYW5zYLeZkBNJIZcOT6FfNSIxUl3vmPGEgeCnES/zGT3lal1B1At3me0a3WzbJvR+QK2svP7JWsDeIne2AcugFZlvClg6WB2SCR+DWiD7kx5ru/V7/+gPtS3IxJ0dT8+DA55f0XMXtcYhfprBegylgbJOxHpSxE8uz78o6EJvuXJeRsEk+jQ4SKOAxl+osujIAyQYl8rWitPDOfiOdCKApeIC3tuzuQyfQqlokSuF8Nosl8V7j0dTpOQecTY01WSR1f0KxeGMkoUHmm9U8yERHpPou7QG6A==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=0CwH3GQ2; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::92f; helo=mail-ua1-x92f.google.com; envelope-from=james.hilliard1@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 To:Cc:Content-Type; b=a8sAwgFxlijNvj6TkNgmdGMAWDx8OF9XzPHq+cKhwAqdLLKbkDXXOj2M4HEFDlSKEB9S5IZmBDp4xFEQMzfXVNF9XgxkfxmvWXJ90OJAoUeF7wNuHzDvji9efqOQVhvTsEBXVb97u4K0XVdXWfBnT1o68K11oqz9EEHKFDexmtH83cjQn7Y5i86ju6thi3rEX8AeazNOaWrogMHeTMuGwMnH3zf+rLskmQWui9zQe1T3hFiLLx8lm2o+91gfGcDMWy6wqft0o9wdY6IToEVpIcaI5NXtHh4pVSNvxkGToGBG9tGyAQtbTA2cgJB05rIgf7KwJFrKccP4Z0KVjn1cjg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=pRx8LRQX; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::e32; helo=mail-vs1-xe32.google.com; envelope-from=james.hilliard1@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=0CwH3GQ2;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=pRx8LRQX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::92f; helo=mail-ua1-x92f.google.com; envelope-from=james.hilliard1@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ua1-x92f.google.com (mail-ua1-x92f.google.com [IPv6:2607:f8b0:4864:20::92f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::e32; helo=mail-vs1-xe32.google.com; envelope-from=james.hilliard1@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-vs1-xe32.google.com (mail-vs1-xe32.google.com [IPv6:2607:f8b0:4864:20::e32])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jG29q3DRPz2yYK
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 11:32:31 +1100 (AEDT)
-Received: by mail-ua1-x92f.google.com with SMTP id a1e0cc1a2514c-9907fa1d2d1so37240241.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2026 17:32:31 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1793320347; cv=none;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jG2FL0fWtz2yYK
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 11:35:33 +1100 (AEDT)
+Received: by mail-vs1-xe32.google.com with SMTP id ada2fe7eead31-7ce78f9d6baso164799137.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2026 17:35:33 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1793320531; cv=none;
         d=google.com; s=arc-20260327;
-        b=nCsi9PDO1zP3nhKq4TIn/UfoZB4sg+6guJ5hztKiOcFz1L3lQ1d9uBDD8TLayvHTQa
-         JZwg0ikLHfHdJPlfAz4kSffPtkT4BALpkxZpy6x7Ba2ffa1QbHOc974icrlFBpNrJjex
-         Lx2vqDPedWOVShKzZLXzTs2awv/ZWDCCTQKqMUwfOFkVg+91qlKOEOcQ3cHGHM69sMh1
-         6NSg6oIi5o/qpxUgTvmOJGWX8B4WE8UqgAanbKFnkXu+94W10Wptcx/FJLVWdUDLeLRq
-         FQSWJEhGvMfkc7oKw5EufuM8IAV/Gjvqh249CvSu5+7I6gLlLVOL8TFc5pGN+vtq8psv
-         9sPw==
+        b=bAd3I+ydAlIyVQrueGTwmPRFfI1+59oLDq+HxYQXjsjGYYtq6UhpCXauOI7VUDXEt4
+         R/+/J4n8jSaJ1rqKtJESxsmEvLaUmeIILTSgamcCW0CQfvvFHjL/NDGeQ2H4CMfrF27q
+         ESeB/Ka/sdKLGl7Hh1FBP8WEGiN0Mhjss7fQiNygIJqN/VnkoDSZHaozgLLk/Iq4Ys3r
+         2tb/6uKvlCmM2VFuokQkjzwMLBhp5E7xQoBlLwQVgaGXNJ5w6Hr97BZn5oHttrE+uSbW
+         CRAUnvZinYlAY76kRqEY5m8fOYAcqKbhICxlb7bJPxXq6gwPWr6Ka1ZaaGIz9jJf5q1j
+         lD+w==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=eL/J2+RjMW7d7peZHUwlj8fhC1xc2jm5N4kIcoYsMvg=;
-        fh=9Xm3ybALkQ7TiMuyquWOKJMixYPqrtDs4devaAj+oR8=;
-        b=cpMFtxQk7cPD4hKrTsJ3oEH1J0cgpMiIL+34QpM3Rdj3eBDsEdY9ZWzc7eCb2EQ9+U
-         N4hb2tbmyUTwOeXyYB17pBbbABE8aAkewSuSkL0xJ0WDagVXai+nwXZS7/b/wyHkIsPT
-         J+HgPTgVUQJc0lEoZCwXphnpCdFetAbbt5rg+Hn1p8GLW8THO602ak6LD1ChLvqYqC4n
-         vgwdzhtgQ7XEpE/5/i9tBodS6DHDCIERToMtH22FuGXo6e0+Dr9QE/AcuMQWXMQRIraS
-         fnNbs8VepmFo235yZLMZEDeaUAiKGngDAClEm/pIBOBq+e3+e7lejlWHjWHcY8l7u+Eu
-         aqog==;
+        bh=vCXebNkndm9LBXsG81Q2mOpTPDq3UCuJ8oTq7IQkTYU=;
+        fh=VQxA00wC5IF6z/eI0Jkq9IbAP973FjgQZ8Qm28IqB94=;
+        b=a7wVfenPHGzwcTFRfGoQEMuEytTNiT/VL7nsc7Jzbyvb02cc5cKxtfiykbBulWV1Pu
+         OldZPkt3nQEHfRKDPnOAgq1yPQL9qgUNmynagDuRyZ33slxuror2caqEAOAmS+Caq9UD
+         ESpBrO0Gd33QmEiAErhpK/PJYUjfZs1Oi0B0ZiEGnUZ73fwu6kl1p7ovpy2BPewEFIAa
+         wrx8qbz1fOSgULLijWiaoZdRGy1Fjtfiz5auHL4ojByuTOVteahBnfnqjNy5p6nW9FK/
+         Vj4Wi7nFSG56BD5eYUfR2nekGe/MZVU9o4ViJYTroEjiJLacVPegVHIaAxD7h2AXP+O3
+         rBUQ==;
         darn=lists.ozlabs.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793320347; x=1793925147; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1793320531; x=1793925331; darn=lists.ozlabs.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=eL/J2+RjMW7d7peZHUwlj8fhC1xc2jm5N4kIcoYsMvg=;
-        b=0CwH3GQ2IlMdWiNP4Wqt70g1NrkvBT5pwf/wbG2Q+tpAx3+YTlVlD2EGEaWaSvpC3/
-         7AZWJuKn20ok76aDE0je+O9/FaMoUFAPRxFeoOp6WP4fqFpYh8t6DaDhGrgwVWMpIM4a
-         p4uVqQLaE1XNnI4KyeKbJ6iKdpwYpGhZBkbZiB9FojddVBaCNyF07WoWG7190o2IUGZM
-         ywaoOFeOccJ8dIHTsMYmHpLUzcG2O5x+E4keCjOqkFwkGqc3yyiRigqvsazuiOlKb+wv
-         ZtOiE4LnsyMBx1SXbTs3ofc3cWloeaGOLudcWJHGAOB5C5FluXJBblCb+RHHSVyI7z6d
-         bwFw==
+        bh=vCXebNkndm9LBXsG81Q2mOpTPDq3UCuJ8oTq7IQkTYU=;
+        b=pRx8LRQXjpfNJiBQO0XngwToE3bexAIaAO+1WY76O60o+sp2QHm8pkr9FEqS67TCCu
+         LvdOpt+tEBhy2j7RvlfSN7v0R0VfFtSRNggIfVHg20K5ov9Ug3AdVwcTUsWA5HIKsKSf
+         RYd7Sf4CtFwJy45yHu7QfeUOwtb4ODVVflX97eQ7OLbKwqBG0Ssy3axVi+P/MM1qotTM
+         HsS9yItupeIjq5B1J8yNAQDXtt4DnRhuGDrsLbCKPgle5VB1xlRQdKvSCQz4PW74aWzt
+         3ypKAxo9aV7id2jzPTT+hZi8eYKZc7O3DVxdlrs2zji7cIWDy3jls9Uhp4E91rDcUBMy
+         skKA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793320347; x=1793925147;
+        d=1e100.net; s=20260707; t=1793320531; x=1793925331;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=eL/J2+RjMW7d7peZHUwlj8fhC1xc2jm5N4kIcoYsMvg=;
-        b=02SINFkO/bsxwWUKFMI8bxs2zDKEoUMsyiuPOdA+tWcDn2Iv69F1gq1KWGEJtQwYH4
-         lEmHS0zSRbHx7iaXSaLKaBBtyQ6RGD+ei+D+qzw+r3eyqDhYYHXUbThzn6wcq4qQL6rw
-         9bvJgde1sO8iBtCRPHlM75rMlMapHWRzEpunnG+VMduOz6wJjP5Jw/BX2Ur7xK7v0z/3
-         EPeT/M5FhzqEE6I0r9adc9IwWc9gxStK3c3hn+lUYXn27sJ1TA9CIFcZd27jSBoDBwNR
-         c4G4aUcECt6HELjrIQxQqxz1Y3y71CoUITr449Jq3Mcz5D/h0JNdOP+cDnXAlheE+TE1
-         56Lw==
-X-Forwarded-Encrypted: i=1; AKwUvByOUjn9m25jomWMU+RiPPWAMjcEZF8cf30uGLpiwx0g16smlCiee8E7+zj31jPaxQlspeOU7vrSsk2rHQ0=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYLk3Cqmhigu9jhibMghK6CBt2cyfCQa5va7qrEkTe+BNsnnvgDn
-	vUvp3J8oB4Ir8WGbBHi3f35qbkXuU8mDLvJodTGKVvvmHExDukw3RC4n8rUBYKQ0woJ5Bqcmh2H
-	wDsArGW6+2T8VGTEWXVI0LPlWxnX4BkI=
-X-Gm-Gg: AYBFou1N5jJ9jvmer73iCrInDh1lKifAAwJq18WpBZnduFVaXHdcAqgFzAXbR/YGREf
-	ySszARm7vpZBKOt4w4A6/IUHXDlW9MOttBAJdQSydmdyf2r34HeNg3Uvkr12G988ss1Ql4SHDkk
-	6D1U6T5uKw4U2A9Y5uBj35URPala5PLyFxvNxjdD8RQuSjEJQxR1nqBPe+c//lQXHUUYvzVsMRS
-	PmL8p4C+Qt18KORanucpWYIFNHJ4Q3XqI06JmnWuQna4QNl7fLvBZU0fI0idQUI2Feabw4PbQNY
-	TtpKR+uhEkXvUcTIgqDh2KTxnQV3XKTsXEKRXvOy4q+OCqsPRcyLueH3HuuHvT6AEGdzDpMpXWW
-	2T5qfvWLNVMDL3sejjjW6VCIR2eibrQPqmZ1qX+aPvr8xOYV71ynlvj2FIBxsVd6PWZVOgtevuw
-	Yq8IPrTS0nEnuxyHcrVGZncZSZIbaESz3IHNRd0C37C1UhW0fmBk+vPv2HkKzHvfS946TLFihz1
-	0eCiUTtpC+ZfvO5bcrLQ3r5Lr9qyxg=
-X-Received: by 2002:a05:6102:290c:b0:779:5049:87b2 with SMTP id
- ada2fe7eead31-7d0723d710bmr492388137.0.1793320347401; Thu, 29 Oct 2026
- 17:32:27 -0700 (PDT)
+        bh=vCXebNkndm9LBXsG81Q2mOpTPDq3UCuJ8oTq7IQkTYU=;
+        b=kLjgSxCVLWtmYzx+cNbJRScaQtx3WP37CRyISrFuSblh6THWf+uiJjQ2Fhbu3TPuwz
+         n9qjPwDiBpYm4mmQ7cuYZznLRZGOo5gF9DGc5yn1J2bPE3kxHHJnCq94DhqI0nDK8HtT
+         JbtyCXz5SzM+u4Q74bv8ZkHpDOup0moRpGyBh2K+qhxVALXgVT7cctHLogaY+fFM31HJ
+         KUDchMMq+cUZZewBCYdovdmoTS2w/vT08uNqpBq/bbv5wZi50Kx/oCQVWo8SifVmZxCk
+         hCTb73JUXh3tp6IK1wPX3SUnLj/5paqvCOoyA+VqJy09Hs5cO2umik6TuovVBoU5Dwjh
+         3Bqw==
+X-Forwarded-Encrypted: i=1; AKwUvBySL4NXsSORQ0JAszd/d9PhqJRSpB9nu4p0vjRvpZ8Hc/KD9KX2NkhxGE39YcVHhC+YJRm1iQUO7cLQtyg=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYJ21nceJ28LZCFxPoofAze/LOI7huppIwvtUBRdrw6VCjJCwdE6
+	xVSfIHtwtvjrFT/OxlXKSOSngC7fBvzq2i4vdS8m5D+oVXflpR1H4cwnds87PlFobJxWsGb6bd7
+	ARshzxzs5b9Csx8OC3upF0uqrtSAQ23M=
+X-Gm-Gg: AYBFou0/vCMiH44UJT72pZeUAoA2hjUp7UIU136JY7AVnMsO7xCuzvTPDY5wJP1bGrF
+	2uR5RfRtg+/5urEzSsNSqQ+oGn5xowTIRvBThu564RRbXeHuDUjWPagwKjETGb0g4hwroov17oF
+	/HI47COxhYwFUzrthTBZRLEBVlPFHntNqq3kibpUZAUeldPro/S5WaUocCVV8fbNnvAZbqqcVJv
+	iw7JzN4SCF1LVmJAvDC9epZOym9kyLQMyMKmPZlMabbq5WpQqsB4w3uucTg/8CtvgF0LfAK0/wn
+	s/WgEEOel0tFVy89cOIvWxxhpmi5Q3+/3I9kANfCfRQg9Rksdxdhp6FlQAsJH4zrW3pkWKcPGlM
+	brDb2F3wdmq/rBgokFJP8kyxxdHxhWg57Q7ZCytNzIF5cYz8yPbKYkVOXqMxw8iRJo8pmv7Yady
+	SqBJCNnPNtilY8Y7IlpC34vATkc4s0jRCLICoJVV30R2LV58sKHfr9JK0qhBpwcargYm04RjERe
+	K+nzhYi0qiyXOWhC7DWb48ntO24Dg==
+X-Received: by 2002:a05:6102:50a5:b0:7bb:64cc:1362 with SMTP id
+ ada2fe7eead31-7d072c2b96amr253188137.6.1793320531134; Thu, 29 Oct 2026
+ 17:35:31 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,18 +106,20 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 References: <20261029-submit-serial-8250-dma-cancel-v1-v8-0-3fd56ba352ed@gmail.com>
- <20261029-submit-serial-8250-dma-cancel-v1-v8-5-3fd56ba352ed@gmail.com> <20261029222734.3086943-1-rrangel@chromium.org>
-In-Reply-To: <20261029222734.3086943-1-rrangel@chromium.org>
+ <20261029-submit-serial-8250-dma-cancel-v1-v8-6-3fd56ba352ed@gmail.com>
+ <auNW_Oc-Ao5Iw-Gw@ashevche-desk.local> <CADvTj4pOg4w5LpFW_E3qzP7FZDnDgpB8LyR9xxhT_mZre21vFw@mail.gmail.com>
+ <20261029222734.3086943-2-rrangel@chromium.org>
+In-Reply-To: <20261029222734.3086943-2-rrangel@chromium.org>
 From: James Hilliard <james.hilliard1@gmail.com>
-Date: Thu, 29 Oct 2026 18:32:16 -0600
-X-Gm-Features: AclHuK-iYJ6lzjlFUVN3seH1Gc5KBaAl343rbNN_d-8c384kErq2Nw5ubYUVG3Q
-Message-ID: <CADvTj4qK-1SX_+YZW1jdW-e5JOZ2iz3vAK_8UvkyZWb0rAeyiQ@mail.gmail.com>
-Subject: Re: [PATCH v8 5/6] serial: 8250: retire canceled RX DMA before
- reusing the receive buffer
+Date: Thu, 29 Oct 2026 18:35:19 -0600
+X-Gm-Features: AclHuK9fwQEf1FE2SE005DWVvtH9Aa6gi9TWL3-I0d1O0Zk2jQvC0qB4u35B3dg
+Message-ID: <CADvTj4rRtKyq_7yhpfwGQrbOA=k_jxQymTpZSvdVBB0A-xR-Rw@mail.gmail.com>
+Subject: Re: [PATCH v8 6/6] serial: 8250: retain DMA resources when
+ termination fails
 To: Raul E Rangel <rrangel@chromium.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
 	=?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
 	Heikki Krogerus <heikki.krogerus@linux.intel.com>, Tony Lindgren <tony@atomide.com>, 
 	Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Richard Genoud <richard.genoud@bootlin.com>, 
 	Nicolas Ferre <nicolas.ferre@microchip.com>, 
@@ -131,147 +133,131 @@ Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kerne
 	linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 On Thu, Oct 29, 2026 at 4:27=E2=80=AFPM Raul E Rangel <rrangel@chromium.org=
 > wrote:
 >
-> Hi James,
+> On Thu, Oct 29, 2026 at 11:19 AM James Hilliard <james.hilliard1@gmail.co=
+m> wrote:
+> > On Thu, Oct 29, 2026 at 8:24 AM Andy Shevchenko
+> > <andriy.shevchenko@linux.intel.com> wrote:
+> > > > + while (rx_ret || tx_ret) {
+> > > > +         dev_err_ratelimited(p->port.dev,
+> > > > > +                                   "DMA termination failed: RX %=
+d, TX %d; retrying\n",
+> > > > > +                                   rx_ret, tx_ret);
+> > > > > +               msleep(100);
+> > > > > +               if (rx_ret)
+> > > > > +                       rx_ret =3D dmaengine_terminate_sync(dma->=
+rxchan);
+> > > > > +               if (tx_ret)
+> > > > > +                       tx_ret =3D dmaengine_terminate_sync(dma->=
+txchan);
+> > > > > +       }
+> > > >
+> > > > Huh?!
+> > > >
+> > > > This is unacceptable. Sleeping is okay, but value should really mat=
+ch the
+> > > > baudspeed and other parameters of the transfer.
+> > ...
+> > Regardless of the retry interval, shutdown cannot release the buffers
+> > until the provider establishes that DMA and its callbacks have stopped.
 >
-> Thanks for the v8 updates and for opening PR #1 on the TLA+ repo! Confirm=
-ing
-> that the v7 issues in Patch 2/6 (lantiq, dz, zs, jsm_cls), Patch 4/6
-> (__dma_tx_complete tx_running check), and 8250_omap.c shutdown locking al=
-l
-> look resolved in v8.
+> Agreed that if dmaengine_terminate_sync() fails, shutdown must not free
+> dma->rx_buf, unmap dma->tx_addr, or kfree(port->xmit_buf) while hardware
+> or a detached callback may still touch them.
 >
-> On Patch 5/6, we updated our TLA+ model for the new rx_pause_pending work=
-er
-> retry loop:
->
-> > +     ret =3D dmaengine_pause(dma->rxchan);
-> > +     status =3D dmaengine_tx_status(dma->rxchan, dma->rx_cookie, &stat=
-e);
-> > +     if (status =3D=3D DMA_ERROR) {
-> > +             ret =3D -EIO;
-> > +             goto recover;
-> > +     }
-> > +     if (ret && status !=3D DMA_COMPLETE) {
-> > +             dma->rx_pause_pending =3D true;
-> > +             serial8250_out_IER(p, p->ier);
-> > +             return ret;
-> > +     }
-> ...
-> > +     for (;;) {
-> > +             scoped_guard(uart_port_lock_irqsave, &p->port) {
-> > +                     if (dma->shutting_down)
-> > +                             return;
-> > +                     if (dma->rx_pause_pending && !dma->rx_terminating=
-)
-> > +                             serial8250_rx_dma_try_flush(p);
-> > +                     retry =3D dma->rx_pause_pending && !dma->rx_termi=
-nating;
-> > +                     recover =3D dma->rx_err;
-> > +             }
-> > +             if (!retry)
-> > +                     break;
-> > +             usleep_range(1000, 2000);
-> > +     }
->
-> This cleanly resolves the race where a full 4 KB transfer completed in
-> hardware just before dmaengine_pause() ran while its DMA completion hardi=
-rq
-> was still pending (once serial8250_rx_dma_flush_work() drops port->lock a=
-nd
-> sleeps, the pending DMA hardirq runs and marks rx_cookie as DMA_COMPLETE)=
-.
->
-> However, what happens if dmaengine_pause() fails on a *partial* RX transf=
-er
-> (0 < count < 4096 bytes) during a normal UART_IIR_RX_TIMEOUT where the re=
-mote
-> peer stopped sending and is waiting for a reply?
+> However, because serial8250_release_dma() runs under port->mutex in
+> uart_shutdown(), uart_tty_port_shutdown(), and uart_suspend_port(), an
+> unbounded `while (rx_ret || tx_ret) { msleep(100); ... }` loop means that
+> if a DMA provider returns a persistent error from dmaengine_terminate_syn=
+c()
+> (-ENOSYS, -EINVAL, -ENODEV, -ENXIO, -ETIMEDOUT, or a wedged controller),
+> close(), hangup(), and system suspend will hang forever in
+> TASK_UNINTERRUPTIBLE while holding port->mutex (triggering hung_task_pani=
+c
+> after 120 seconds).
 
-With a persistent pause failure and an incomplete transfer, the
-worker keeps retrying. RX remains masked and the runtime PM reference
-is held until the condition resolves or shutdown takes over. There
-is no receive-progress guarantee if the peer remains idle and pause
-continues to fail.
-
-> (In PR #1's Serial8250RxLifetime.tla, Spec puts WF_vars(ProviderProgress)=
- on
-> Receive at lines 67-70, which forces the remote peer to always keep
-> transmitting until count =3D=3D Capacity and CompleteInHw fires.)
-
-That fairness assumption cannot establish progress for an idle peer.
-The broader local RX lifecycle model includes permanent partial-
-transfer pause failure, but checks ownership safety and close
-progress, not eventual reception. Passing those checks does not
-establish recovery from a permanently failing pause operation.
+That is the current behavior. Returning from shutdown allows serial
+core to free the TX buffer and removal to release the callback
+context. The retry loop prevents those releases, but a permanent
+termination failure blocks teardown indefinitely
 
 >
-> When the peer is idle after sending a partial burst (< 4096 bytes):
-> 1. Hardware never reaches 4096 bytes, so status remains DMA_IN_PROGRESS
->    (neither DMA_COMPLETE nor DMA_ERROR).
-> 2. If dmaengine_pause(dma->rxchan) persistently returns an error (-ENXIO,
->    -EBUSY, -EAGAIN, -EINVAL, etc.) on that partial transfer,
->    serial8250_rx_dma_flush_work() loops forever in `for (;;)` calling
->    usleep_range(1000, 2000):
->    - It holds a runtime PM reference (`guard(serial8250_rpm)(p)`) and wak=
-es a
->      system_percpu_wq worker 500-1000 times per second until the port is =
-closed.
->    - RX interrupts remain masked in hardware (`rx_pause_pending =3D=3D tr=
-ue`), the
->      partial bytes are never flushed, and the port never falls back to PI=
-O.
->    - On 8250_dw, dw8250_idle_enter() gets -EAGAIN from serial8250_rx_dma_=
-flush()
->      while rx_pause_pending is true, causing dw8250_set_divisor() and
->      dw8250_check_lcr() to silently abort baud-rate and LCR updates.
+> Would it make sense to satisfy both constraints (no UAF on buffers/callba=
+cks,
+> and no infinite sleep in close()/suspend()) by quarantining/leaking only =
+the
+> failed channel's resources instead of looping forever?
+
+Retaining the buffers and channels does not preserve the complete
+callback context.
+
+The callbacks carry a uart_8250_port pointer. For DW, the DMA state is
+embedded in devm-managed private data, which can be freed after
+unbind. The registered 8250 port slot can also be reused. Retaining
+the DMA channel does not prevent either operation.
+
+> Specifically:
+> 1. Bound the retry loop in serial8250_terminate_dma() (or do not loop on
+>    non-transient errors, checking `if (dma->rxchan)` / `if (dma->txchan)`=
+).
+> 2. If rx_ret or tx_ret is still non-zero, warn once (`dev_err` / `WARN_ON=
+_ONCE`)
+>    and intentionally quarantine/leak only the failed channel's resources:
+>    - If rx_ret !=3D 0, leave dma->rxchan non-NULL, keep dma->shutting_dow=
+n =3D true,
+>      and skip dma_free_coherent() / dma_release_channel(dma->rxchan).
+>    - If tx_ret !=3D 0, leave dma->txchan non-NULL, keep dma->shutting_dow=
+n =3D true
+>      and state->xmit_blocked =3D true, skip dma_unmap_single() /
+>      uart_xmit_unblock() / dma_release_channel(dma->txchan), and in
+>      serial_core.c:uart_free_xmit_buf(), skip `kfree(xmit_buf)` if
+>      `state->xmit_blocked` is still set.
+> 3. For a subsequent port reopen after a quarantined failure:
+>    - Remove the redundant `up->dma->shutting_down =3D false;` in
+>      serial8250_do_startup() before serial8250_request_dma(up) (which alr=
+eady
+>      clears shutting_down under port->lock), and have serial8250_request_=
+dma()
+>      return -EBUSY if `dma->rxchan || dma->txchan` is still non-NULL so
+>      reopen falls back cleanly to PIO (`up->dma =3D NULL`).
+
+Clearing up->dma does not stop hardware accesses. After unsuccessful
+termination, the channel may still access the UART FIFO, so reopening
+with PIO can introduce concurrent FIFO access.
+
+A hardware-specific stop/reset sequence could establish quiescence,
+but its implementation and effects on other channels depend on the
+controller. If the channel cannot be stopped, quarantine also needs
+to preserve callback-context lifetimes and prevent unsafe port reuse.
+
+>    - Guard the DMA completion callbacks (`__dma_tx_complete`, `dma_rx_com=
+plete`,
+>      `omap_8250_dma_tx_complete`, `__dma_rx_complete`) with `if (!dma || =
+...)`
+>      so a late callback after `up->dma =3D NULL` is ignored safely.
+
+The current callbacks fetch p->dma before acquiring the port lock.
+A callback can therefore retain the old non-NULL pointer across the
+assignment of NULL. Checking that cached pointer does not protect
+its backing allocation from being freed.
+
+When termination returns an error, dmaengine_terminate_sync() also
+returns without calling dmaengine_synchronize(), so callback draining
+has not been established.
+
 >
-> Since the only reason to retry pause/status is to let an already-pending =
-DMA
-> completion hardirq run after port->lock (and local IRQs) are released, co=
-uld
-> we bound the retry loop in serial8250_rx_dma_flush_work() to a small numb=
-er of
-> iterations (e.g. 5 retries)?
-
-A failed pause with an incomplete cookie does not distinguish a
-persistent hardware fault from completion that has not yet been
-published. A fixed retry limit does not resolve that ambiguity.
-
-Terminating after the limit may discard received data, including a
-completed buffer whose completion is still unpublished. Successful
-termination would make subsequent buffer reuse safe, but would not
-recover those bytes. This would therefore be a potentially lossy
-error-recovery policy rather than a lossless timeout flush.
-
-> If rx_pause_pending is still unresolved after the
-> retry budget expires, calling serial8250_rx_dma_recover(p) under port->lo=
-ck
-> will set `dma->rx_err =3D true` and `dma->rx_terminating =3D true`, letti=
-ng the
-> worker exit the retry loop, run dmaengine_terminate_sync(dma->rxchan), an=
-d
-> switch cleanly to PIO.
-
-That requires termination to succeed and callbacks to be drained.
-If termination fails, the channel may still access the FIFO, so PIO
-must remain excluded.
-
-The recovery requirements depend on why the provider cannot pause.
-
->
-> We pushed the updated v8 TLA+ models (`Serial8250RxDmaV8.tla`,
-> `Serial8250TxDmaV8.tla`, and `./run_v8.sh`) to:
-> https://github.com/ismell/linux-8250-dma-tla
+> That way, neither hardware nor a detached callback can ever UAF rx_buf or
+> xmit_buf, while close(), system suspend, and subsequent PIO reopen all
+> complete cleanly without an unbounded msleep() loop.
 >
 > Thanks,
 > Raul
