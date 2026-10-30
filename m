@@ -1,113 +1,68 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 669AD606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 21:18:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A00CE60A5BCC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 21:21:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=fritz.com header.i=@fritz.com header.a=rsa-sha256 header.s=mail header.b=AmiP1sdZ
+	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=nvhPObru
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jGYq44q1Pz2yPR;
-	Sat, 31 Oct 2026 08:18:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.42.244.94
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793367326;
-	cv=none; b=OKllRj2zHozOcbwqjIAmEeBLKTtPbNM2iARNTfI7Je6ynq5ZbYFiCFCMKEHW0oN3a/5+pKXeoPHkxul+3frdR6p4FVjda8X+7CNzKiEREzBnKgbrZ8Njl5o4cQ5xsOkd45Ysy4u1hFbYA6J554sKVPRCXJ5tpMJg7Vi5WU9yirXAdcfVCnDr+ImbiGwFx9DVwfZaAHN4aiknj5XDigv9LKd4xAN2eYfoevBURmBHY3YS7AtQlLZ0T8UXp5ddVdcfiwBtxgMmAHIgzwc57knioA0lQtO9KpBjQh4Vo7n5l949jk3TZRZ8wjuRXgLwaNgw8/4syJN7CJ6zuOtHltisuQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jGYtk60ZFz2ygg;
+	Sat, 31 Oct 2026 08:21:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1046"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793395278;
+	cv=none; b=g4vggaF0Zkh1YS8oyf63EoCaRd8G/SEWFW/+NXY/dfliXb7/McnOQq0lZJQbIRH9TsF4dUa+SqIfPyG1yi3KdWAwjIJFibBOQX6iqgufbFLDHFTrpjzj9CW57dMdLZl02r+BFvfS1l0WBjE8MA2Rrjb0SDDCeAOYVEXDbxwD8EylanT2kfErlpinWPL2+RK+iaZrpQyg6kk3UMuFAjpnWhs/2fyHfiw5yFSTMx3/bHhGZfXEFR5hXDvpIOCd+PW2Rzki+G/HLN6lqbIBdd4/xyKlaLqMxyF3vv7YzG8rLxHdwKIlqRYS5HStD3xGsNYfVpA4j+FQGcqJH+T31+/bbA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793367326; c=relaxed/relaxed;
-	bh=QpUKaSoVRoEgdKmoyk8G7l81p1qWRtQXTZ0eVa1XsI0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dq6+NyRd1b4WgPtZdHxfr/czDXUkoZBElIUsnIsSb/zGj2x9um1c92x7GnKoEeN9/UHrgqLP/bN3OTihuZLTil3QTSeL03r1zhzlF0Ggc1VhscgSb7INJf2fxwObT8KD/yTc/Tmlk3HSULsVnv3ur9Sz1Cp6Dkk/GfB5G2CItv21np2LL2VrXeuBPqesQy/d7b+RhFi7FpyFzIRUMcrQScB9XGnkMHz586A18XxEtzLbFWBz9jVDcyHaPY3HIfR72BsHqsNRvzXW5K/myY5epnKCJKdQ+gRr0HG1q+p9pghCl90DduY+yjjJXpTma5B5EBdnlQypSD0HBlCe6/ZMtg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=fritz.com; dkim=pass (2048-bit key; unprotected) header.d=fritz.com header.i=@fritz.com header.a=rsa-sha256 header.s=mail header.b=AmiP1sdZ; dkim-atps=neutral; spf=pass (client-ip=212.42.244.94; helo=mail.avm.de; envelope-from=n.schier@fritz.com; receiver=lists.ozlabs.org) smtp.mailfrom=fritz.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=fritz.com
+	t=1793395278; c=relaxed/relaxed;
+	bh=9Z3EYYcj7DPzn99/aDJihGAHrZCLthA2ifb7uE3O3Dg=;
+	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=mUhs0HXUqqOHgdRGGCWtnyMQmgZ3+CF0TFHQAQ2zCl4uDFOj2/vLgQZyR/t3DZW+GGv/apYnk+6qbHMbjEc80hiGUIeNeA7lIy9CxPNQb4xiQrsXGeYy164a28m22NPrWIJmiEMw18HBXaN7QcQUeMVDv0VhbKieiKkQ8mGgmHgLmHtrCAsKo/LVyVTpnvUuupEUJdp+IQ4AbKpocLlqshaL239Wd2SqGlmYC4QairiqumDYN3lFHyisXtBu/pi2lCMnL96O5GZoGmrBph2Oi9u0t+O4ITwKDEG6jIo6qDaIZgxLbIQVpEIx/vgKmwTHILuFn0Wxo/TOepw17yJRcw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=nvhPObru; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1046; helo=mail-pj1-x1046.google.com; envelope-from=3sqrlagykdfaaws51uy66y3w.u64305cf77u-vwd30aba.6h3sta.69y@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=fritz.com header.i=@fritz.com header.a=rsa-sha256 header.s=mail header.b=AmiP1sdZ;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=nvhPObru;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=fritz.com (client-ip=212.42.244.94; helo=mail.avm.de; envelope-from=n.schier@fritz.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 333 seconds by postgrey-1.37 at boromir; Sat, 31 Oct 2026 00:35:22 AEDT
-Received: from mail.avm.de (mail.avm.de [212.42.244.94])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::1046; helo=mail-pj1-x1046.google.com; envelope-from=3sqrlagykdfaaws51uy66y3w.u64305cf77u-vwd30aba.6h3sta.69y@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1046.google.com (mail-pj1-x1046.google.com [IPv6:2607:f8b0:4864:20::1046])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGMY62fjpz30VV
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 00:35:22 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=fritz.com; s=mail;
-	t=1793366980; bh=a/fEt90n+2smzc8tULN5m3m/hMMA3WQXHcvWhcoynLc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=AmiP1sdZKE4ipmV9XkFzIAg6sDdTc8piKssit8JG5M7jVm+wWoA9HNBcL6nnioxmf
-	 UtVWmWL8HC8cipXhGGKFKn344d7QBy4BigwXDhd9cibHOOYqfnPwcm+wl7S8LyH40H
-	 PIcRpdlbp12mkcZ/qVoxVXxHxdsVB4yBgm4K8e8Gb7j8o5MGT6HVOS52CCT1ImUgYM
-	 rC8fGm5esO5fYtQK82TXSmpyrCUdX6hUkhNuydSuiEjRPAEuIkSRJ3Vr5CzOMuVEiE
-	 +YmeA56zTDNX6G2v3XBcddEQclfpxGdALH3GP+htSNoKgdV3GvyPoPiSSRu1+yw2Ux
-	 Cmo8WDvejZ5Lw==
-Received: from [212.42.244.78] (helo=mail.avm.de)
-	by mail.avm.de with ESMTP (eXpurgate 4.57.1)
-	(envelope-from <n.schier@fritz.com>)
-	id 6ae49bc4-23c8-7f0000032729-7f0000019972-1
-	for <multiple-recipients>; Fri, 30 Oct 2026 14:29:40 +0100
-Received: from mail-auth.fritz.com (unknown [212.42.244.78])
-	by mail.avm.de (Postfix) with ESMTPS;
-	Fri, 30 Oct 2026 14:29:40 +0100 (CET)
-Date: Fri, 30 Oct 2026 14:29:39 +0100
-From: Nicolas Schier <n.schier@fritz.com>
-To: Thomas Huth <thuth@redhat.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Nathan Chancellor <nathan@kernel.org>,
-	Richard Henderson <richard.henderson@linaro.org>,
-	Matt Turner <mattst88@gmail.com>,
-	Magnus Lindholm <linmag7@gmail.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, Huacai Chen <chenhuacai@kernel.org>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
-	Ard Biesheuvel <ardb@kernel.org>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@kernel.org>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	Luis Augenstein <luis.augenstein@tngtech.com>,
-	Maximilian Huber <maximilian.huber@tngtech.com>,
-	Anup Patel <anup@brainfault.org>,
-	Paolo Bonzini <pbonzini@redhat.com>, Shuah Khan <shuah@kernel.org>,
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Andy Lutomirski <luto@kernel.org>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>, soc@lists.linux.dev,
-	linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-	Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>,
-	Mark Rutland <mark.rutland@arm.com>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Ilias Apalodimas <ilias.apalodimas@linaro.org>,
-	Atish Patra <atish.patra@linux.dev>,
-	Sean Christopherson <seanjc@google.com>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Nick Desaulniers <ndesaulniers@google.com>,
-	Bill Wendling <morbo@google.com>,
-	Justin Stitt <justinstitt@google.com>, linux-alpha@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
-	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org, linux-efi@vger.kernel.org,
-	netdev@vger.kernel.org, kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
-	linux-kselftest@vger.kernel.org, llvm@lists.linux.dev
-Subject: Re: [PATCH v5 13/13] treewide: Stop defining __ASSEMBLY__ for
- assembler files
-Message-ID: <20261030-dexterous-manatee-of-honor-eac4eb@l-nschier-z2>
-References: <20261023064908.66707-1-thuth@redhat.com>
- <20261023064908.66707-14-thuth@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGYth5TpNz2yPR
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 08:21:16 +1100 (AEDT)
+Received: by mail-pj1-x1046.google.com with SMTP id 98e67ed59e1d1-3ad53f538d2so1011771a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 14:21:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20260707; t=1793395273; x=1794000073; darn=lists.ozlabs.org;
+        h=content-type:cc:to:from:subject:message-id:mime-version:date
+         :reply-to:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=9Z3EYYcj7DPzn99/aDJihGAHrZCLthA2ifb7uE3O3Dg=;
+        b=nvhPObruyyZ/LWBFn/90XtAL/mTJZ0YxhvprN2AGQ8pzveNjB1mgqzGdll/bXG4TIS
+         IogmJNx2A350cXQx1UpFuadyQqBT+yY+LFS2lPdHDu8n70mUa8+tkoWvHh7Unn1qcPnT
+         84lbsE/bfXbzVfsjHgNpTGVDAa6KrEsRC52jd9n/z9YK3wVMyZKQ2cInLs2H/4sjQpO8
+         upfbRiPrVHfIqfiWKD10wIlpbOIcGbqQu4XX1wqHMeJ1sPR+pC8MDBREw9yqPuv65q0v
+         aBClncfjYvf9hAVoOz3Ab0V0g6zH96bMauagVw/5o/cecNbKbeLdWhdXoTbhuuzvlgZX
+         hNRw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793395273; x=1794000073;
+        h=content-type:cc:to:from:subject:message-id:mime-version:date
+         :reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=9Z3EYYcj7DPzn99/aDJihGAHrZCLthA2ifb7uE3O3Dg=;
+        b=T1BjdHn8zmATDOEOT0i97DSUSrImJGymij+WAt4dIqxpUlX+7qWFpoFKGkjaO053AL
+         TsuiBxSkLx4GCYeASXjFcKpuZceoRq4Ngs6VJwS2QZJyoYJ3bKgeIsENQ2Dk/askScJa
+         20aSsVYB5lMW0cKWdVdMdKP2Sm3er7D/xDkgyQDmBGt5VM1lOrvGCLD7qmmZQGJLzziU
+         ZJEB324jQKuBs4NW/CWm5Qjfgfr4rPvWDZIUA4kgtOqK8OizAWMsqvlMonopOS1AezOX
+         ARAeY1yjRritIDXlXTjfQCPuFm1EjZRkLEWX0DzuHo0xtTIY/R1viH4u0lK2CZUpbYqz
+         J2yw==
+X-Forwarded-Encrypted: i=1; AKwUvBy3XoWkliwOOhRCxb8KZlo4VdI/z/R24uzNXsnHdFSzgVPndsF4hfES86x2M7N61wSy353+1AW4+MDDTX4=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYJgdMiOLHEc3hLmoCOXfWBwQFyFReVnQCqK+URZ7/b3xSwG0ivI
+	uRQggE2vGLuZABYnItP+6vTdfr/8+tixXVKuFmbNrK0dBeY109XSGx43K5v5Fl/myp+zvMU2NQh
+	PVFQtaA==
+X-Received: from plgx6.prod.google.com ([2002:a17:902:ec86:b0:2eb:4a7:306e])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:57cb:b0:3a8:c0cd:57f9
+ with SMTP id 98e67ed59e1d1-3ae89744ca2mr2979645a91.25.1793395273224; Fri, 30
+ Oct 2026 14:21:13 -0700 (PDT)
+Reply-To: Sean Christopherson <seanjc@google.com>
+Date: Fri, 30 Oct 2026 14:20:48 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -120,85 +75,152 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="FhzCQO4A3K0b968D"
-Content-Disposition: inline
-In-Reply-To: <20261023064908.66707-14-thuth@redhat.com>
-Organization: FRITZ! Technology GmbH
-x-ms-reactions: disallow
-X-purgate-ID: 149429::1793366980-1E7C8EE4-1E744FE6/0/0
-X-purgate-type: clean
-X-purgate-size: 2843
-X-Notice: Whitelisted
-X-purgate: This mail is considered clean (visit https://www.eleven.de for further information)
-X-purgate: clean
-X-pfmilter: host: postfix-mx-03  mail-id: E6A11A07A2  external: no
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.56.0.385.gac671c819a-goog
+Message-ID: <20261030212112.2598640-1-seanjc@google.com>
+Subject: [PATCH v4 00/23] KVM: Fix+harden against bad uaccess using dying VM
+From: Sean Christopherson <seanjc@google.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, Sean Christopherson <seanjc@google.com>, 
+	Paolo Bonzini <pbonzini@redhat.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Jim Mattson <jmattson@google.com>, 
+	James Houghton <jthoughton@google.com>, Chris Mason <mason@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+X-Spam-Status: No, score=-21.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
---FhzCQO4A3K0b968D
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Stupid SMM.  Patches 1-3 need to go to 7.4, everything else can and should wait.
 
-On Fri, Oct 23, 2026 at 08:48:50AM +0200, Thomas Huth wrote:
-> All spots have been changed to __ASSEMBLER__ (i.e. the macro that
-> gets defined by the compiler), so we don't have to manually define
-> __ASSEMBLY__ anymore.
->=20
-> Signed-off-by: Thomas Huth <thuth@redhat.com>
-> ---
->  Makefile                                             | 2 +-
->  arch/alpha/boot/compressed/Makefile                  | 2 +-
->  arch/arm64/kernel/vdso32/Makefile                    | 1 -
->  arch/loongarch/vdso/Makefile                         | 2 +-
->  arch/mips/boot/compressed/Makefile                   | 2 +-
->  arch/mips/vdso/Makefile                              | 2 +-
->  arch/powerpc/boot/Makefile                           | 2 +-
->  arch/powerpc/platforms/cell/spufs/Makefile           | 2 +-
->  arch/s390/Makefile                                   | 2 +-
->  arch/x86/boot/Makefile                               | 2 +-
->  arch/x86/boot/compressed/Makefile                    | 2 +-
->  arch/x86/realmode/rm/Makefile                        | 2 +-
->  arch/xtensa/kernel/Makefile                          | 2 +-
->  drivers/firmware/efi/libstub/Makefile                | 2 +-
->  drivers/net/wan/Makefile                             | 2 +-
->  scripts/Makefile.build                               | 2 +-
->  scripts/gfp-translate                                | 2 +-
->  scripts/headers_install.sh                           | 1 -
->  scripts/sbom/tests/cmd_graph/test_savedcmd_parser.py | 2 +-
->  tools/testing/selftests/kvm/lib/riscv/handlers.S     | 4 ----
->  tools/testing/selftests/vDSO/vgetrandom-chacha.S     | 2 --
->  21 files changed, 17 insertions(+), 25 deletions(-)
->=20
+Fix a class of bugs (limited to nested VMX, as far as we know) where KVM can
+corrupt an unrelated process' memory if KVM (attempts to) write to guest memory
+during VM destruction.  Because current->mm usually isn't kvm->mm when a VM is
+dying, e.g. because the associated kvm->mm process has already exited, writing
+to what KVM thinks is guest memory will corrupt the current address space if
+the associated userspace address happens to be writable in the victim.
 
-Reviewed-by: Nicolas Schier <n.schier@fritz.com>
+Patch 1 is a blanket fix for the uaccess paths.  AFAIK, x86's nVMX is the only
+path in KVM that screws up, but auditing kvm_arch_destroy_vm() proved to be
+infeasible for a human (I didn't throw AI at it, yet...), and I can't think of
+any downsides to going straight to a broader fix.
+
+Patch 2 fixes the underlyihng nVMX bug where KVM absuses the architectural
+nested VM-Exit flow when tearing down a vCPU, which has a truly absurd number
+of problems.
+
+Patch 3 fixes what I assume is a blatant PPC bug.  KVM PPC completely ignores
+kvm_arch_flush_shadow_all(), i.e. AFAICT, doesn't tear down its page tables
+when the owning process exits.  I don't have much confidence in the "fix", in
+part because it seems impossible that such a blatant bug could have gone
+unnoticed, but also because I went with a very naive approach of invoking
+kvm_arch_flush_shadow_memslot() for each memslot.  The changelog is pretty
+sparse, because I didn't know how to describe the issue byeond "this is
+completely broken".
+
+Patches 4-(I lost track and stopped caring) implement more agressive hardening
+to nuke the memslots before calling kvm_arch_destroy_vm(), e.g. to guard
+against writing to guest memory during kvm_arch_destroy_vm() without going
+through uaccess.  The big pain in the ass is x86's SMM, or more specifically
+x86's internal memslots colliding with SMM, where each internal memslot is
+actual *two* internal memslots.  KVM currently uses a single VMA for both,
+which means KVM can't automatically unmap the VMA when the memslot is freed
+without relying on arbitrary ordering.  And there are several other bugs in
+the related code.
+
+Setting dummy memslots feels a little hacky, but kvm_arch_flush_shadow_all()
+should have purged everything that effectively caches memslots, so it seems
+like the right approach?
+
+Patches after that add more hardening to detect KVM bugs (though the
+uaccess+memslot changes earlier in the series should render any bugs benign).
+
+The remaining patches double down on open coding nVMX's vCPU teardown by
+tearing down the vCPU "as-is", instead of forcing a switch to L1 and then
+doing teardown.  The forced switch is quite heinous, as it requires KVM to
+*load* the vCPU when it's dying due to architectural constraints for active
+VMCSes.  Not only is that gross, it was also papering over a bug (hopefully
+just the one) where KVM was relying on the vCPU load for nested VMX to take
+vCPUs off the posted interrupts wakeup list.
+
+v4:
+ - Fix the SMM+internal memslots issues. [Sashiko]
+ - Massage the vt_vcpu_pi_remove_from_wakeup_list() WARN so that it isn't
+   triggered if creating a vCPU fails. [Sashiko]
+ - Use "unsigned long" instead of "int" for kvm_is_guest_access_ok() params.
+   [James]
+ - Collect reviews. [James]
+
+v3:
+ - Give up, and open code nVMX teardown. [Sashiko, syzbot, Chris]
+ - Drop the nVMX hacks that were trying to fudge around the mass of nVMX
+   teardown issues.
+ - Free the VMA only for the non-SMM internal memslot. [Sashiko]
+ - Use @len, not hardcoded PAGE_SIZE, in kvm_is_guest_access_ok(). [Sashiko]
+ - Rip out the awful vCPU load code from nested_vmx_free_vcpu().
+ - Collect James' reviews.
+
+v2: https://lore.kernel.org/all/20261001202234.3794060-1-seanjc@google.com
+
+v1: https://lore.kernel.org/all/20260908132838.2116068-1-jmattson@google.com
+
+Sean Christopherson (23):
+  KVM: Reject user accesses to guest memory if current->mm != kvm->mm
+  KVM: nVMX: Don't force a full nested VM-Exit when destroying a vCPU
+  KVM: PPC: Flush/zap all memslots on kvm_arch_flush_shadow_all()
+  KVM: x86: Drop dead check on an existing memslot not having any pages
+  KVM: WARN and error out if memslot update encounters existing slot
+    with no pages
+  KVM: x86: Unmap VMAs for KVM-internal memslots when the memslot is
+    freed
+  KVM: x86: Delete non-SMM internal memslot if creating SMM memslot
+    fails
+  KVM: x86: Process all address spaces when deleting internal memslot
+  KVM: x86: Re-queue APICv update request if inhibiting APIC access page
+    fails
+  KVM: x86: Map a separate VMA for each address space for internal
+    memslots
+  KVM: Disallow setting memslots when the VM is being destroyed
+  KVM: Destroy memslots immediately after mmu_notifiers are unregistered
+  KVM: WARN if KVM attempts to do guest-related uaccess with "wrong"
+    process
+  KVM: WARN and reject guest-based uaccess if VM is dying
+  KVM: Pre-check uaccesses in KVM's APIs to read/write guest memory
+  KVM: VMX: Explicility free vmcs01, not the current VMCS, in vCPU free
+    paths
+  KVM: nVMX: Don't explicitly VMCLEAR+free() vmcs01's shadow VMCS when
+    freeing vCPU
+  KVM: nVMX: Cancel the nested VMX Preemption Timer's hrtimer in
+    free_nested()
+  KVM: Add lockdep-only APIs to query and assert that a vCPU is
+    unreachable
+  KVM: VMX: Explicitly remove dying vCPUs from the PI wakeup list
+  KVM: nVMX: Don't switch to vmcs01 when freeing a vCPU
+  KVM: nVMX: Don't load+put the vCPU when freeing nested state for a
+    dying vCPU
+  KVM: x86: Rename __x86_set_memory_region() =>
+    x86_set_internal_memslot()
+
+ arch/powerpc/include/asm/kvm_host.h |   1 -
+ arch/powerpc/kvm/powerpc.c          |  11 +++
+ arch/x86/kvm/lapic.c                |  42 ++++++-----
+ arch/x86/kvm/vmx/nested.c           |  69 ++++++++---------
+ arch/x86/kvm/vmx/posted_intr.c      |  68 ++++++++++-------
+ arch/x86/kvm/vmx/posted_intr.h      |   1 +
+ arch/x86/kvm/vmx/sgx.c              |   2 +-
+ arch/x86/kvm/vmx/vmx.c              |  31 ++++----
+ arch/x86/kvm/x86.c                  | 110 +++++++++++++++-------------
+ arch/x86/kvm/x86.h                  |   4 +-
+ include/linux/kvm_host.h            |  45 +++++++++++-
+ virt/kvm/kvm_main.c                 |  94 +++++++++++++++---------
+ 12 files changed, 298 insertions(+), 180 deletions(-)
 
 
---FhzCQO4A3K0b968D
-Content-Type: application/pgp-signature; name=signature.asc
+base-commit: 7e60162b16f9da0d2fa83da5c1723b6853a0ac1d
+-- 
+2.56.0.385.gac671c819a-goog
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEDv+Fiet06YHnC6RpiMa8nIiabbgFAmrkm8MACgkQiMa8nIia
-bbgYnhAAoBtAI6CuFq9HQy+0LMEBBrZiObTja20n/nhSog1KoLUqfiUozqhmkZ/q
-CT6UauaVVL+guGjUkQd4MU9Y4sF+qy0kKmfzavbo/MIofHFX6fypq5WinV83BS4k
-PfHvku6pkGUFMvVkCliG3iiJVbANl4MGycOY5VxIXI9veRse6+SRuWaP5fqRD0dv
-XZHNc+ZmLOMmkijTKgYUq7fUIdBhxmeq4Px5Q0aq0cESHCORoGOcUcdASB8KRxr/
-S2whk42NUvuQxJF/S68XDQ9N3LdkhPBY2Y0GHdcJ+esswGxGJVb7rfY38dRXkz8R
-a/X59L/D+n6k/1v/xfmmj36rd/INoushZOa+gNXEg5KPwORqTYICzhwVlfZz5mdv
-0XgTKePC+FBeKnCHfJjMK1P6SAnag5q59vu8MXmzNGH9HIhm2PzyPhRrPYA4lwBl
-N1Hh9kQBBwy4oEdLX69syKiLtIA3mDxbo80VqRIUm6MpUjxkTbkAgLQgfXDRz2M0
-Wa9/fDB/O1tJKj8IR8V+jbjPqz5/6/fNkpD9/6fpqvBgeD2vkjOk3q/IvTq5gvHK
-ApKpaLY5DYJBXdX80Rm5ofEmFac0/p9C+eX3ovHAHFIG7JPR5kTF3fwDtbSbP7z6
-ghTZsJCcqEgyM22oqOSpskYbUmxnPEnUkGMg6K1a7KZPgUJQ9zA=
-=Pwya
------END PGP SIGNATURE-----
-
---FhzCQO4A3K0b968D--
 
