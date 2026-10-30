@@ -2,69 +2,69 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 56450606A985
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 21:23:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2CD82606A990
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 21:23:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=Cn6thVqp
+	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=X8h/WbDf
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jGYv555Ftz3c9M;
-	Sat, 31 Oct 2026 08:21:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.210.197
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793395297;
-	cv=none; b=OBocghRbfpCwhWpVkjbTTvCpVGjnbrvkCQHRXtQi+3O6cBSYsePXPHR1oMVd1T/jn+h7ctzNnmbJznaY3+nHVuX2BQDpYLf+MSoPDk6w56eYCm/rHFz4Tjr03FInXRXriBMLS1nW0fcmsAaGMm/mqJDCResiCIRG8zeCYs4CPcSqmv4/TJPHaoCLJMg0dJpCzjozHhJUAdU9jL9UwmMY40ytK7rU5Gh7mtGjG9/J1WAtwaAmF58mOTCcWUQeysE8Sj16yCDpQC7FzO0zLqUTeBknucYI/ObaxCGtfLRtGJljtgPPtMH1aPyFD9omWzWu3N4SBRim3UrmTTdGfsRMGQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jGYv71qKwz30Tm;
+	Sat, 31 Oct 2026 08:21:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.210.198
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793395299;
+	cv=none; b=YSZ+4EyrzDfsJijdKmjUrrGJkG7kiinzgGXLVpaJ1auUSQ6E9wooXuPL6Pjg+My24Rb5LwKm/CoW7pjWJ2/2IFgQMHJBTIpeZFLtc9r4NPk/nkavERqUQYfciUAWSPf8xfx/xAjuO+zBP9UWd3Musm6LtlQULtFJuf4uA34WfoC880nhk9K3Kl6TnQ8x2V288feR1aFAyums01LPuzsu4zxmitiSImoQF3sr0y//ceI9RH2XWC7TJHxwPAbI8wWPNyIFslXnwNRSAt2GSecZzxbw6g4FVf4a66Xw+0g6rPH2d7+rFzQhpnMkFSxN5tZRIidjc5DxG+oA4Qx9CaskMA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793395297; c=relaxed/relaxed;
-	bh=zWm75tGn/A4widimTFSWHM28mEbNlDa0wqwtIGGfQ94=;
+	t=1793395299; c=relaxed/relaxed;
+	bh=5bp4E318lJOU9KTeZ4/sgGBHaMDL7s7CdLDZqDaaPsA=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=BkUz4jhPuIYDjnL7tz6I/Z+1MQQXf6RbRUH8eUTIiXdGU7kxJE+w7cE8N+ua2/NUdo5EYsoXULErB/Sr/xr90/0G1J+oyPRIdq74W5KS6VkNG4+l1i26ZobgsY9B4D3lKLpgxwdjaWVeVPn7AhWLH+jj6jv3crbwQV85W2uwTScUX0YGvbT3olJ+iaMahbCsQcK/rXk1SU3iZcr3M9uItpHocBOHVS6iPb6AQkkem4l8wGAY6gW8cWBurezH631g2dKiE+2ikVh5bsengpTd+6Ro4DQ4S1CxdjMDp7ti373pLZ0ecyNenJ+/bXc7D1hzxLUyvCfwcJUajLKDcv1D6w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=Cn6thVqp; dkim-atps=neutral; spf=pass (client-ip=209.85.210.197; helo=mail-pf1-f197.google.com; envelope-from=3xgrlagykdguvhdqmfjrrjoh.frpolqxassf-ghyolvwv.rcodev.ruj@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+	 To:Cc:Content-Type; b=a+Blvgn2vL39T1DypAgkWTNS6BBXIz42zrBuX0aDUEe+AesFq/ERh/TVxModvmF6SppuuN/SkgXKYgXlRa8xpZm6lesMfgjeA4IhuIFZomhHWtqoOAbE3GdSAb0C0V+jsmXl+m8VwNxs1QP5DcMRM6hSXrl+D+RrepUHKPZjshEJzee3/snBeftc/31GOJCNgfpOfs/fiN+OtAa9TilxJelrN3hydvpGetOGxAWLbFNsDzp5m8V4pmjGaPoHlpQRoO/hLL+WrelnUFNJk2NFgxlBRIHUfdb/AsKhW/w/p8WzPamhdyOSuSvOFqMbyukEcl7dkpKZeRPM/QY+//fMYw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=X8h/WbDf; dkim-atps=neutral; spf=pass (client-ip=209.85.210.198; helo=mail-pf1-f198.google.com; envelope-from=3xwrlagykdgywierngksskpi.gsqpmrybttg-hizpmwxw.sdpefw.svk@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=Cn6thVqp;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=X8h/WbDf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=209.85.210.197; helo=mail-pf1-f197.google.com; envelope-from=3xgrlagykdguvhdqmfjrrjoh.frpolqxassf-ghyolvwv.rcodev.ruj@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-f197.google.com (mail-pf1-f197.google.com [209.85.210.197])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=209.85.210.198; helo=mail-pf1-f198.google.com; envelope-from=3xwrlagykdgywierngksskpi.gsqpmrybttg-hizpmwxw.sdpefw.svk@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-f198.google.com (mail-pf1-f198.google.com [209.85.210.198])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGYv46frDz3c2k
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 08:21:36 +1100 (AEDT)
-Received: by mail-pf1-f197.google.com with SMTP id d2e1a72fcca58-89fb6a45c48so1266984b3a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 14:21:36 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGYv63Jsdz3cD1
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 08:21:38 +1100 (AEDT)
+Received: by mail-pf1-f198.google.com with SMTP id d2e1a72fcca58-8a0688a43d3so833784b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 14:21:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1793395294; x=1794000094; darn=lists.ozlabs.org;
+        d=google.com; s=20260707; t=1793395296; x=1794000096; darn=lists.ozlabs.org;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:reply-to:from:to:cc:subject:date:message-id
          :reply-to:content-type;
-        bh=zWm75tGn/A4widimTFSWHM28mEbNlDa0wqwtIGGfQ94=;
-        b=Cn6thVqp/a+hqn5kZWCEjkDWWUFBOy0qqY74RNfjEQ/D+zcJpdtdrQWiwWv60UUVjv
-         ZSLv51t/yz6EYPpVKDRggjdiU8qF8Hl0y1o+JjDAZZD5X9hQb28+R2efHR1lwN8h0lpZ
-         sfOvopKslia1Vwu+VXbHOy/NwcfJDS4xs3ftdBeLvdrUcPZy6+hpbkyNteYol15CJO/n
-         0LUqGrSSPE/lm4+1Jwff3CUHzadGB5UhlkB+pWFla3xdugJcR9RR/fcZkBwDtl67T7Yr
-         dDQ0sJDLM99Oj/gkl0HWPKl2q0cgRqVbsdCtcvIqR1bcsUASQoGzjoYa1karK5cKOj5O
-         l5LQ==
+        bh=5bp4E318lJOU9KTeZ4/sgGBHaMDL7s7CdLDZqDaaPsA=;
+        b=X8h/WbDf5KULHJFg1smRxVNpLyO94tjIOKszb1qcXLn2bsS3VkUckUMSIn/2l9oZ/d
+         0L01L92SmcRZ4psBqPtWOVwHHaQ0zNsqgMqVt2unBP9tMiwoWOfcVtiLKiokOYwlGAEO
+         d/GqB/bJG4VBQRIC1d3+vEAMdrG9aP4LkgEBEXpGVFKOMDWjTdkHIJu5/SAHMV/VNA6D
+         Dqq8gGsqBf8kbQv1yORHhlzxSUv5TZlKGOt9oNeGbA6XNCp+bXLfKFIrVdppeH8mufWH
+         vewC4Gk1z2Y0lR7gaTFwNUHFsn7oU5vit62eWaxEvqMCZaIUei38y24DzzAGlN3sZoSp
+         LhQA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793395294; x=1794000094;
+        d=1e100.net; s=20260707; t=1793395296; x=1794000096;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:reply-to:x-gm-message-state:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=zWm75tGn/A4widimTFSWHM28mEbNlDa0wqwtIGGfQ94=;
-        b=Y+cDeLi3HjpIWDgGiFBGROo0tz9ofFiGNfrRNA3ou2HUkM+PJ1WaK0PWbAv7vQWxL3
-         9vkVhIklYxHKsra51mDn3uovluaWCn9uPmg3WZLppaULieENQqiXx8Z/WTlqCVQXTATs
-         Z0twtmnwj7BSxjtMgM9yMS+SRn5Egd18IxLZK64R6QHn5BIY6PRjSBopKNcyxXurObHN
-         rx74aLvtXAwT7GfX3AO/y4etpfUg3iDM9+rJ5tkTBqKJ65vlMOgKzU9ffJ+nkV/0wGjF
-         42K70yJif56V3j8cUzvx47OEbLVjSnuOxKZgvczCN76SAHWEup4xY4+BlI8pjcFh5MqE
-         mJaw==
-X-Forwarded-Encrypted: i=1; AKwUvBxXsy1FMof2xnbjMFepk/p2Do1xRUafBCcJWP7bpTpvXS0w6BDEIg6sLbXWWODCPOuhQS8DpnWobVgaQKY=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYKvq5LTVRmAZD9GeS+sFslpKKbldTMoJfcsNArUxB5Pw6hysxOc
-	fmrcRNLjJ3iTOo9pwggV6zWTNClYNGDz/jdRofaHLeiYCXuG0NeKgBnKDyQ15K+EZcLpaNv/shB
-	eEK6sHA==
-X-Received: from pgkz28.prod.google.com ([2002:a63:a5c:0:b0:cda:c74c:ca8])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a21:3b49:b0:3e1:e757:205e
- with SMTP id adf61e73a8af0-3e9290077e1mr2778969637.42.1793395294419; Fri, 30
- Oct 2026 14:21:34 -0700 (PDT)
+        bh=5bp4E318lJOU9KTeZ4/sgGBHaMDL7s7CdLDZqDaaPsA=;
+        b=dDhaUw7kIPALwas4n2e2m0gOV4kUHPYHCQok/DBwqXsFrCsZro/RZgsjL1ehcFe/HO
+         oKygstmWK68IwfMMLmnsX8T3osEE+tjgR2H4mtfQ+7KVJhNhPYvq52RjcS28MNqS+bxz
+         FbjJ+v+i0TpLnr9Xngd17W/m9OFomeaNxRrcu/dSeejQ/+teFN0c9vp5TmQaimTdmGba
+         icbOopkxk16Tdle6746JrJTJYD/zelEwou0f7xBZ1sWV26fEp+vSC1znB9eWtuc+FwX2
+         7UWOA8cf9mMXV5bsDPmIClrmPxLI4WMDyJmLDF573Sme22Onw+UIcYBHUa2BJ011t4Wi
+         vKkQ==
+X-Forwarded-Encrypted: i=1; AKwUvBzf+eVzYhQyuv5TwXKEUlAflZVv+REmdRLJQX+0+/sgaXZX37GgOvEGH29pWSvF6dr7PTN5rR2uF2hhuiI=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYKiSwhOO7U8vSdSHy1wlVefabfwq7jxJHA1dlxc/7gs5eRfYjYL
+	wdqdcHJHsHxHKctdz3MpBBJToNLS9dznql6IFRPgMtzemGTaNhRK2v8/X3XF3zgZrnjaq/xxe2m
+	iIMBesw==
+X-Received: from pgdo11-n1.prod.google.com ([2002:a05:6a02:620b:10b0:cda:ea8c:c389])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a21:8201:b0:3e2:7643:30b2
+ with SMTP id adf61e73a8af0-3e928a7a901mr3766488637.3.1793395295633; Fri, 30
+ Oct 2026 14:21:35 -0700 (PDT)
 Reply-To: Sean Christopherson <seanjc@google.com>
-Date: Fri, 30 Oct 2026 14:21:05 -0700
+Date: Fri, 30 Oct 2026 14:21:06 -0700
 In-Reply-To: <20261030212112.2598640-1-seanjc@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -81,9 +81,9 @@ X-Archived-By: <archiver.kernel.org>
 Mime-Version: 1.0
 References: <20261030212112.2598640-1-seanjc@google.com>
 X-Mailer: git-send-email 2.56.0.385.gac671c819a-goog
-Message-ID: <20261030212112.2598640-18-seanjc@google.com>
-Subject: [PATCH v4 17/23] KVM: nVMX: Don't explicitly VMCLEAR+free() vmcs01's
- shadow VMCS when freeing vCPU
+Message-ID: <20261030212112.2598640-19-seanjc@google.com>
+Subject: [PATCH v4 18/23] KVM: nVMX: Cancel the nested VMX Preemption Timer's
+ hrtimer in free_nested()
 From: Sean Christopherson <seanjc@google.com>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>, Sean Christopherson <seanjc@google.com>, 
 	Paolo Bonzini <pbonzini@redhat.com>
@@ -99,144 +99,42 @@ X-Spam-Status: No, score=-26.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Explicitly VMCLEAR and free() vmcs01's shadow VMCS only when doing VMXOFF
-or forcing the vCPU out of L2, not when freeing the vCPU.  Instead, free
-the shadow VMCS as part of free_loaded_vmcs(), i.e. when freeing vmcs01 via
-vmx_vcpu_free().  This will allow leaving vmcs02 as the loaded/current VMCS
-when freeing a vCPU, i.e. will allow dropping the vmx_switch_vmcs() call as
-well as the vcpu_{load,put}() calls, all of which do far too much work when
-freeing a vCPU.  E.g. "just" switching to vmcs01 means potentially doing an
-extra VCLEAR shootdown, potentially multiple VMPTRLDs (to first load vmcs02
-and then vmcs01) and VMWRITEs, and so on and so forth.
+Cancel the hrtimer used to emulate a VMX Preemption Timer for L2 when
+freeing nested state instead of precisely canceling the timer if and only
+if the vCPU is/was in L2.  hrtimer_cancel() bails early if the timer isn't
+running, and KVM initializes the timer when allocating nested state, i.e.
+canceling the timer even if it's not fully in-use is a glorified nop.
 
-Note, shadow VMCSes are rather odd.  They're only ever used when nested
-virtualization is live, but a shadow VMCS is provided to L1, not L2, and
-more importantly is made "active" (in VMX parlance) when vmcs01 is run (the
-shadow VMCS is referenced by a pointer in vmcs01).  Because KVM dynamically
-allocates and frees nested state, shadow VMCSes are loosely coupled to the
-VMXON/VMXOFF lifecycle, but in practice are more concretely tied to vmcs01,
-e.g. a shadow VMCS needs to be VMCLEAR'd if and only if its associated
-vmcs01 was launched.
+Canceling the timer even if L1 is active will allow KVM to leave the vCPU
+in L2 without having to retain an "is_guest_mode()" check just to cancel
+timer.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/vmx/nested.c | 54 ++++++++++++++++++++++++---------------
- arch/x86/kvm/vmx/vmx.c    |  5 +++-
- 2 files changed, 37 insertions(+), 22 deletions(-)
+ arch/x86/kvm/vmx/nested.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/arch/x86/kvm/vmx/nested.c b/arch/x86/kvm/vmx/nested.c
-index 49c4529901c5..1b30ad7731ee 100644
+index 1b30ad7731ee..553915015a75 100644
 --- a/arch/x86/kvm/vmx/nested.c
 +++ b/arch/x86/kvm/vmx/nested.c
-@@ -330,17 +330,9 @@ static void nested_put_vmcs12_pages(struct kvm_vcpu *vcpu)
- 	vmx->nested.pi_desc = NULL;
- }
+@@ -339,6 +339,8 @@ static void free_nested(struct kvm_vcpu *vcpu)
  
--/*
-- * Free whatever needs to be freed from vmx->nested when L1 goes down, or
-- * just stops using VMX.
-- */
- static void free_nested(struct kvm_vcpu *vcpu)
- {
- 	struct vcpu_vmx *vmx = to_vmx(vcpu);
--	struct vmcs *shadow_vmcs;
--
--	if (WARN_ON_ONCE(vmx->loaded_vmcs != &vmx->vmcs01))
--		vmx_switch_vmcs(vcpu, &vmx->vmcs01);
+ 	kvm_clear_request(KVM_REQ_GET_NESTED_STATE_PAGES, vcpu);
  
- 	if (!vmx->nested.vmxon && !vmx->nested.smm.vmxon)
- 		return;
-@@ -353,6 +345,36 @@ static void free_nested(struct kvm_vcpu *vcpu)
- 	free_vpid(vmx->nested.vpid02);
- 	vmx->nested.posted_intr_nv = -1;
- 	vmx->nested.current_vmptr = INVALID_GPA;
++	hrtimer_cancel(&vmx->nested.preemption_timer);
 +
-+	kfree(vmx->nested.cached_vmcs12);
-+	vmx->nested.cached_vmcs12 = NULL;
-+	kfree(vmx->nested.cached_shadow_vmcs12);
-+	vmx->nested.cached_shadow_vmcs12 = NULL;
-+
-+	nested_put_vmcs12_pages(vcpu);
-+
-+	kvm_mmu_free_roots(vcpu->kvm, &vcpu->arch.guest_mmu, KVM_MMU_ROOTS_ALL);
-+
-+	nested_release_evmcs(vcpu);
-+
-+	free_loaded_vmcs(&vmx->nested.vmcs02);
-+}
-+
-+/*
-+ * Free whatever needs to be freed from vmx->nested when L1 goes down, or
-+ * just stops using VMX.
-+ */
-+static void nested_vmx_do_vmxoff(struct kvm_vcpu *vcpu)
-+{
-+	struct vcpu_vmx *vmx = to_vmx(vcpu);
-+	struct vmcs *shadow_vmcs;
-+
-+	if (WARN_ON_ONCE(vmx->loaded_vmcs != &vmx->vmcs01))
-+		vmx_switch_vmcs(vcpu, &vmx->vmcs01);
-+
-+	if (!vmx->nested.vmxon && !vmx->nested.smm.vmxon)
-+		return;
-+
- 	if (enable_shadow_vmcs) {
- 		vmx_disable_shadow_vmcs(vmx);
+ 	vmx->nested.vmxon = false;
+ 	vmx->nested.smm.vmxon = false;
+ 	vmx->nested.vmxon_ptr = INVALID_GPA;
+@@ -401,7 +403,6 @@ void nested_vmx_free_vcpu(struct kvm_vcpu *vcpu)
  
-@@ -365,18 +387,8 @@ static void free_nested(struct kvm_vcpu *vcpu)
- 		vmx->vmcs01.shadow_vmcs = NULL;
- 		free_vmcs(shadow_vmcs);
+ 	vcpu_load(vcpu);
+ 	if (is_guest_mode(vcpu)) {
+-		hrtimer_cancel(&vmx->nested.preemption_timer);
+ 		leave_guest_mode(vcpu);
+ 		vmx_switch_vmcs(vcpu, &vmx->vmcs01);
  	}
--	kfree(vmx->nested.cached_vmcs12);
--	vmx->nested.cached_vmcs12 = NULL;
--	kfree(vmx->nested.cached_shadow_vmcs12);
--	vmx->nested.cached_shadow_vmcs12 = NULL;
- 
--	nested_put_vmcs12_pages(vcpu);
--
--	kvm_mmu_free_roots(vcpu->kvm, &vcpu->arch.guest_mmu, KVM_MMU_ROOTS_ALL);
--
--	nested_release_evmcs(vcpu);
--
--	free_loaded_vmcs(&vmx->nested.vmcs02);
-+	free_nested(vcpu);
- }
- 
- /*
-@@ -5606,7 +5618,7 @@ static int handle_vmxoff(struct kvm_vcpu *vcpu)
- 	if (!nested_vmx_check_permission(vcpu))
- 		return 1;
- 
--	free_nested(vcpu);
-+	nested_vmx_do_vmxoff(vcpu);
- 
- 	if (kvm_apic_has_pending_init_or_sipi(vcpu))
- 		kvm_make_request(KVM_REQ_EVENT, vcpu);
-@@ -6898,7 +6910,7 @@ void vmx_leave_nested(struct kvm_vcpu *vcpu)
- 		vcpu->arch.nested_run_pending = 0;
- 		nested_vmx_vmexit(vcpu, -1, 0, 0);
- 	}
--	free_nested(vcpu);
-+	nested_vmx_do_vmxoff(vcpu);
- }
- 
- int nested_vmx_check_restored_vmcs12(struct kvm_vcpu *vcpu)
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index 2ef1f634e7ec..292001bbcbff 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -3089,7 +3089,10 @@ void free_loaded_vmcs(struct loaded_vmcs *loaded_vmcs)
- 	loaded_vmcs->vmcs = NULL;
- 	if (loaded_vmcs->msr_bitmap)
- 		free_page((unsigned long)loaded_vmcs->msr_bitmap);
--	WARN_ON(loaded_vmcs->shadow_vmcs != NULL);
-+	if (loaded_vmcs->shadow_vmcs) {
-+		free_vmcs(loaded_vmcs->shadow_vmcs);
-+		loaded_vmcs->shadow_vmcs = NULL;
-+	}
- }
- 
- int alloc_loaded_vmcs(struct loaded_vmcs *loaded_vmcs)
 -- 
 2.56.0.385.gac671c819a-goog
 
