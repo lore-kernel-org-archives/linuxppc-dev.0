@@ -2,69 +2,69 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1B3E7606A9AD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 21:23:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DF3B5606A9B4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 21:23:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=eiaYVlU+
+	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=fBVqW782
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jGYvB4l2Cz3cH4;
-	Sat, 31 Oct 2026 08:21:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.215.197
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793395302;
-	cv=none; b=i22c+JZUMAFMbdvh/xVG+J5xTPOxBrjufSXs2jeErBZAThO6HWmoJlRQPqc0JxQu8mKVOqcVNhgOf51p99pYMKhByp2IaRMLuXwGtvw7rgsCP/c0MIjIxWljKM2KNJJDaXXEfVCxYfrk5zdbYPebGnXdQKoHrURSTw5AHO811zw8VpNI3V9sVJPqzTlMmh2RQw6vNERSWyRG7AmR0vQyiojVdI+/aS5BC9TNlADXVu7QsQLD94Dc0096lMQBCRDve2KggB77bdWfp92fQHWzKil/ytI9KH3PzWoqh9jTKOe0Voq0kIVYu91qXu8gT/X8U0pO+IQWItYPZmAOws21rQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jGYvC6DFFz3cML;
+	Sat, 31 Oct 2026 08:21:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.216.70
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793395303;
+	cv=none; b=GxVGDL5w7VAVviFdFfonth6Ey84Wx8aD6kOchp6LqXoEpACMcJJuhpMMI/VC52LqA9oMgad1Xm3byhY6fD2WTqMPSgdyKV9DOBtYI+QKYHwzgcd8CwPJlmF0BaLfmD9t7bjkFnVeBNL8eZKKGOz7JMnXCJhctdA4vhi7crcnMg55ivd3xQRhoN2DBjNBmRjHuN79TAzu/5bWcp0mmJgU/eBSZQCO4EBkGG5zbWm5NOjxWXhcelIZ9GnlJUwTAZi/Y+tQ5gYgGLlddyf1G6ktBNTFIPIf/vGw8CJtdI0oX0XHTiOXZfBkImiPEfBaHMLIYsrRfilj9TGTvHZfFDnb7A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793395302; c=relaxed/relaxed;
-	bh=ceuCOM2fbzBxVJGWrb7TFjcOc/THvEWLPHPqQKuhuMg=;
+	t=1793395303; c=relaxed/relaxed;
+	bh=5FKhrgmuBOI6zmiBkedaxKopKidBxwZmFCvEG3c53fo=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=hY5fzvH0GJhOHixIz0BJenHUdNu3DfoYsDmhbWC+yjC8kxtqfd31yv2d8qrnAldqnnX7uybsevRZSlDb1LrVQsy6ifkLZevwsWgIygdTywa+yDMrRGNNuFHBpRwqG88dv3kv4JWS/k12W6LM5Y0Y6AAuEs/7vMnu7mICJ7jRaS7MG7aOyRgFqnVaN9e41p02xfCs0XCNCkySV1KOUyaEq41f6Ih79fdORsn10Go+AyesN7y6CCj39UFlaHHcedGyddcr0hxoAJlJjsmOYNMGHUwT+j5uyLlwFbODA+MD6D/JhHJvhrsg4BFpbP+eCuIC+FPrdh5FPdCXuy6Wy8k2cw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=eiaYVlU+; dkim-atps=neutral; spf=pass (client-ip=209.85.215.197; helo=mail-pg1-f197.google.com; envelope-from=3ywrlagykdgoamivrkowwotm.kwutqvcfxxk-lmdtqaba.whtija.wzo@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+	 To:Cc:Content-Type; b=G4+huUXQlt4AfFAXdXaM63XtQw1gxkfj4hv7x/Zi2jkOfVnH2rkkBuvnOjZU8efC/o+Q2fTTfNfkz0vbkEYZkegCb/jCeEKm4Ha05xsEkigzbXS+8WJU7sq4QsOQUIhYgFQshfBlYjBzPgcIqO5c2vVTVxVqAjQWZlAlHXJUeA+8dIM87gy4WrwAx+kwlCJfmWGfecfSYxUPWvMkmkbTZkHfr1hg4P78dXxWnc/AzjkdEmFSooCuMN47mCOtvcZbBmvmA7JhbwdMR3hSZArIDs5P08hHDBEcXg7W0t7h53jV4ROGytDr0+gcHAsXOwBF/Jy0EZoqO8uYYLD/tzpxtQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=fBVqW782; dkim-atps=neutral; spf=pass (client-ip=209.85.216.70; helo=mail-pj1-f70.google.com; envelope-from=3zarlagykdgsbnjwslpxxpun.lxvurwdgyyl-mneurbcb.xiujkb.xap@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=eiaYVlU+;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=fBVqW782;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=209.85.215.197; helo=mail-pg1-f197.google.com; envelope-from=3ywrlagykdgoamivrkowwotm.kwutqvcfxxk-lmdtqaba.whtija.wzo@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-f197.google.com (mail-pg1-f197.google.com [209.85.215.197])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=209.85.216.70; helo=mail-pj1-f70.google.com; envelope-from=3zarlagykdgsbnjwslpxxpun.lxvurwdgyyl-mneurbcb.xiujkb.xap@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-f70.google.com (mail-pj1-f70.google.com [209.85.216.70])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGYv96pxSz3cKb
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 08:21:41 +1100 (AEDT)
-Received: by mail-pg1-f197.google.com with SMTP id 41be03b00d2f7-cdacb64970bso584680a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 14:21:41 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGYvC0yDQz3cM2
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 08:21:43 +1100 (AEDT)
+Received: by mail-pj1-f70.google.com with SMTP id 98e67ed59e1d1-3ad30487d55so1693070a91.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 14:21:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1793395299; x=1794000099; darn=lists.ozlabs.org;
+        d=google.com; s=20260707; t=1793395301; x=1794000101; darn=lists.ozlabs.org;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:reply-to:from:to:cc:subject:date:message-id
          :reply-to:content-type;
-        bh=ceuCOM2fbzBxVJGWrb7TFjcOc/THvEWLPHPqQKuhuMg=;
-        b=eiaYVlU+V4Fh+zJ3i8dTUo70mmwwXSZXGWZXPoo3s5HcPyVFWRyqwQdBB+BBanExrY
-         LzjpsMcRc0RILmlMRJsMOCjCUn/FbW7jIZVbTLwSoZV/7A14QtT7KsORN1uwD5Ll5R1P
-         pq0YNMmcu0kNGvitBG4CHdg3t9TFLBiIgxvvNoZ35cTX7tPoWfSMtYq3s5EMvk3f0uYV
-         pc9n2IEtzWzWP4QcVi8RgfRFCL+UGUNDMBXx7APuC27kVpqHrlHFbPIwUEJMS+zUaL3S
-         Hy/ZnQoCRH8T/xACSt6iYnB/Mc6qGQegi05Q1tZstiZH9rj02U5GY6moVlbuHyFnqe5Y
-         JoLA==
+        bh=5FKhrgmuBOI6zmiBkedaxKopKidBxwZmFCvEG3c53fo=;
+        b=fBVqW7822uDyt7mvlTGpVRd2D8Yv4rdP+UnqhGZ6hj8oJr0vMzh6e0FZ0DPHtMuFa1
+         5Q2kUXaO24imK2svDRrpyqnomQl0m3UZflWZiufuCQE6dnWL1lHSVTzljZkhSkmvYkPC
+         MtBqV1Sdn1En1k/FR6dP0Q4pzqawTHzFYokb75AdY25FFJkIGwhQTKIV+2O0EiVJ4SNa
+         3zg0J5Uzv9zqYNp3YG193RFUA/uLtdVA15JSZlPsw7PtW/Poj1rvxJDX6O2HsZtQDSgg
+         CFPpANY4WLsJ5N2eoV8AU0d57IkyRdQgZ5d4QLmH2z1WmAlDHxE+gaYHUmrVT+5gckK3
+         O1dw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793395299; x=1794000099;
+        d=1e100.net; s=20260707; t=1793395301; x=1794000101;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:reply-to:x-gm-message-state:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=ceuCOM2fbzBxVJGWrb7TFjcOc/THvEWLPHPqQKuhuMg=;
-        b=W726Ip15kjR/38xFM188rwnHThoZH+px2eS2/+YNp2+T/gXAR3Tm6RJ0hO9GWMBO2/
-         327ohX18w/jz9AK3V/ZKi0/Nig7ygZvRTP2Kks2cZpurkH/9xP2xgoASKroxIxm4h+J5
-         TDEISP4wwKH0kPZcQxbjAnLWOI/Xi5QVk2X8iB6+tCf+Ldf+sHfuUbFM3h/x5saW+6eE
-         paCDMHqgSA7QqqtKH/XQG9DTUtdxcGXcuhbL21g+jAL2SdNG/kv2nz+tgTLo44RskafA
-         PwGpVOom0/y54E3EgxzGyirEjMqIOBNn8A5XoKjdkXPKqYLniK5CDDxZB70fNipYMbc7
-         ePQQ==
-X-Forwarded-Encrypted: i=1; AKwUvBwQGERTZnaC6m1TOY2R6dFKFxSnf4h764iF0SwLet+SspAqyakGpNBcSbZJz2vFofYJgteaT4muv9VGs9o=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYI7vzrBGMZ0fNLBOqKl0ihDikcngkD80yZtJ2ElOafHs3pqZ6p7
-	7VpQAnpeI/rxREhfkDhutePHaEHeSVtU+zIzYgIjSgbEofNUtC9teQtVEpUq9vpXlMxQNzD/Aef
-	VrcSK7w==
-X-Received: from pjbgj14.prod.google.com ([2002:a17:90b:108e:b0:3a4:fb9f:4a65])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:1c07:b0:3ad:a17d:f46c
- with SMTP id 98e67ed59e1d1-3ae8982bcf3mr2740137a91.62.1793395299370; Fri, 30
- Oct 2026 14:21:39 -0700 (PDT)
+        bh=5FKhrgmuBOI6zmiBkedaxKopKidBxwZmFCvEG3c53fo=;
+        b=G4tgfKlEZjTZUvLcLzpYTVk3vaZegCXtbbLClHwB/1TFsrCNd5UHvbFcgVWEjtWeMo
+         tCuaCa2UbkFiYvN5jbrlxwCNcxK0oKSseGLwmDzbiy7gSefLkOO8ISEr0rdF3MVGB0fx
+         eZwZy/KvEnaZKqrpVxnmySJ7dHqQw7uqYPb/HdKBHTUpJgwD1Sy/CcLm68o2Q7Kxcs4p
+         RcyjrGt17UnYOpvUPICZGdC5hazvGGaS2PvusjvdxFUsiFEE7wlN4D0Iu5D4Hm1F6AV8
+         2Vr1xjZNmS7wBFuce1KVjGzD1bB6HOe4bQPmWsinNjwzuFB5cU7ORkB2mor/P8QRnmvk
+         NCIg==
+X-Forwarded-Encrypted: i=1; AKwUvBz37R1gyzas97hsQ/C+R4Hr0SxH83GXJ3QY+4WD/FkNWO1VAkuwfV1r7uaV/kZ9iHCI25hGU2kA9E1vFLM=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYIHMtmW17GKJdHlQ0qjZ+CW5OvZl9P3JRjgeUESP0kHkTJmMxlE
+	VunORTf+1lf3yQtLsRvbmuodpJkru+ZzFd+oG32eLiUCCpIFl8F94RAWhwmhbuOkCof+Rhw2kkq
+	jjPzczA==
+X-Received: from pjbpj10.prod.google.com ([2002:a17:90b:4f4a:b0:3ad:6c5f:feb0])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90a:e70c:b0:3ab:2737:3393
+ with SMTP id 98e67ed59e1d1-3ae89835d94mr2921939a91.40.1793395300614; Fri, 30
+ Oct 2026 14:21:40 -0700 (PDT)
 Reply-To: Sean Christopherson <seanjc@google.com>
-Date: Fri, 30 Oct 2026 14:21:09 -0700
+Date: Fri, 30 Oct 2026 14:21:10 -0700
 In-Reply-To: <20261030212112.2598640-1-seanjc@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -81,8 +81,9 @@ X-Archived-By: <archiver.kernel.org>
 Mime-Version: 1.0
 References: <20261030212112.2598640-1-seanjc@google.com>
 X-Mailer: git-send-email 2.56.0.385.gac671c819a-goog
-Message-ID: <20261030212112.2598640-22-seanjc@google.com>
-Subject: [PATCH v4 21/23] KVM: nVMX: Don't switch to vmcs01 when freeing a vCPU
+Message-ID: <20261030212112.2598640-23-seanjc@google.com>
+Subject: [PATCH v4 22/23] KVM: nVMX: Don't load+put the vCPU when freeing
+ nested state for a dying vCPU
 From: Sean Christopherson <seanjc@google.com>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>, Sean Christopherson <seanjc@google.com>, 
 	Paolo Bonzini <pbonzini@redhat.com>
@@ -98,46 +99,55 @@ X-Spam-Status: No, score=-26.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Now that neither free_nested() nor vmx_vcpu_free() relies on vmcs01 being
-the active VMCS, don't bother switching to L1 and thus vmcs01 when freeing
-nested state.
+Drop the vcpu_{load,put}() pair when freeing nested state for a dying vCPU,
+as nothing in what was free_nested() requires the vCPU to be loaded, common
+x86 doesn't require the vCPU to be loaded when it's dying (because SVM
+never loads the vCPU), KVM now explicitly handles taking the vCPU off the
+PI wakeup list (was subtly being handled by vt_vcpu_pi_load()), and the
+rest of vmx_vcpu_load() has no effects outside of loading/modifying the
+VMCS or vCPU-specific metadata.
 
-Temporarily keep the vcpu_{load,put}() pair even though the only reason the
-vCPU needed to be loaded was to be able to do vmx_switch_vmcs(), as there
-was at least one *known* side effect of doing vcpu_load() that KVM was
-subtly relying on (taking the vCPU off the PI wakeup list).  I.e. defer
-dropping the superfluous load+put to a separate patch so that there's a
-dedicated bisection point if there are more lurking dependencies.
+As for put(), because the vCPU obviously can't be loaded at the start of
+nested_vmx_free_vcpu(), "guest_state_loaded" can't be true and thus
+vmx_prepare_switch_to_host() must be a nop.  Similarly, the vCPU can't be
+blocking when it's dying, and so vt_vcpu_pi_put() is also a nop (and if
+it's not, that would be a fatal bug as it means the vCPU would be left on
+the PI wakeup list after being freed).
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/vmx/nested.c | 10 ----------
- 1 file changed, 10 deletions(-)
+ arch/x86/kvm/vmx/nested.c | 11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
 
 diff --git a/arch/x86/kvm/vmx/nested.c b/arch/x86/kvm/vmx/nested.c
-index 553915015a75..4a8f57eb3277 100644
+index 4a8f57eb3277..51183520f64a 100644
 --- a/arch/x86/kvm/vmx/nested.c
 +++ b/arch/x86/kvm/vmx/nested.c
-@@ -393,19 +393,9 @@ static void nested_vmx_do_vmxoff(struct kvm_vcpu *vcpu)
- 	free_nested(vcpu);
+@@ -330,7 +330,7 @@ static void nested_put_vmcs12_pages(struct kvm_vcpu *vcpu)
+ 	vmx->nested.pi_desc = NULL;
  }
  
--/*
-- * Ensure that the current vmcs of the logical processor is the
-- * vmcs01 of the vcpu before calling free_nested().
-- */
- void nested_vmx_free_vcpu(struct kvm_vcpu *vcpu)
+-static void free_nested(struct kvm_vcpu *vcpu)
++void nested_vmx_free_vcpu(struct kvm_vcpu *vcpu)
  {
--	struct vcpu_vmx *vmx = to_vmx(vcpu);
+ 	struct vcpu_vmx *vmx = to_vmx(vcpu);
+ 
+@@ -390,14 +390,7 @@ static void nested_vmx_do_vmxoff(struct kvm_vcpu *vcpu)
+ 		free_vmcs(shadow_vmcs);
+ 	}
+ 
+-	free_nested(vcpu);
+-}
 -
- 	vcpu_load(vcpu);
--	if (is_guest_mode(vcpu)) {
--		leave_guest_mode(vcpu);
--		vmx_switch_vmcs(vcpu, &vmx->vmcs01);
--	}
- 	free_nested(vcpu);
- 	vcpu_put(vcpu);
+-void nested_vmx_free_vcpu(struct kvm_vcpu *vcpu)
+-{
+-	vcpu_load(vcpu);
+-	free_nested(vcpu);
+-	vcpu_put(vcpu);
++	nested_vmx_free_vcpu(vcpu);
  }
+ 
+ #define EPTP_PA_MASK   GENMASK_ULL(51, 12)
 -- 
 2.56.0.385.gac671c819a-goog
 
