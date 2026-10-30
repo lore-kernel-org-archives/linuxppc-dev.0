@@ -1,71 +1,82 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95433606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 21:23:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A2BB606A323
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 22:34:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=BfIFetxW
+	dkim=pass (1024-bit key, unprotected) header.d=0x0f.com header.i=@0x0f.com header.a=rsa-sha256 header.s=google header.b=F6K1PpZl
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jGYvF1cFMz30Wh;
-	Sat, 31 Oct 2026 08:21:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.210.197
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793395305;
-	cv=none; b=OGvMIPvBzdU2NB7BjvDBjtQvaA+M5Rpt6BnXcfRy3Jqg8Xa/+ug+OV3D4ipYEPEbZDhC36jxxk3AsI0Yvfs5dWv0ZprF5dY3BUWKJ0qv4QbAWDCxu4Rmc1kE0vxlzHESFxTPpGIkpGcWi/tY3bf2BwaX9YitX9xlRx6k89bYIaNMeL2c03YlDVUHRFFWOhtTXjJ08kIGE65DxdJpn4kIY+eXeOiJ+g+JQ7Xq4RHTvmNGAuGD0tYmGyvI6Eqm02ujn0uvobqzCb0buw35WOpbQqUMZQY7SLld+1z3ITQU8L/rKAGxgoJghTvgFCwiEUJ/+ZpaoNNkRxTw+rZNx2tf7A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jGbVq0Yvlz30Tp;
+	Sat, 31 Oct 2026 09:34:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793399650;
+	cv=none; b=OX2xsH2awomgYzJgp28U9uGOltZn50L7Y3ewQTUxSIOC55uaxSPjxoUIVvWgFexWss5Co8Ir11MPXUcc7v1wkcfoIkl6afhLugXpVhmtBcNReFsEGCko0eldNHMjNxZa6JtCFXu7hXKixUgu1iZLT3glDdMKYblQZpxj5rFjxr9d3EhIvKcFvD/zPJE9B6pZU4Y5B8g2mwV/pA69cOorh5zzU6JXhx4rO8ScEIvhVZwuRu32tlwiPARhmd9LevMzf3fbT0l47PsGJzsxxlUgdzSnWw/vnpuY00Ec6jZqezDEfUzbVcqz7NNeoJ1TkCKh/VwoVK4sOcpUPHIWBLGz7g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793395305; c=relaxed/relaxed;
-	bh=QOulOknncDj+wvkIw4OOGY1O6DdQV3bVqwj3fNEp63M=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=JJmkd7Mhc8eTHEk3qn0JrtYHtIDL1SYfbV1HxrMU4AhiG4Vu1TPHEM1O8ofXE/IyJFHdOTbxCefbFdEcV6PKrtM39EYllaTPJL1WFqT8z7pC/Ymm/7wJaWVr+W5rtNM5hGHZ3+dhQ0iyuvV5VVFFZgzjbcdP+chkRLnZlmXcp1CY1dyTWnNCZTGOk6QBjf0pv1ipsCsgVBTyL+QONkBFF0IWnT5uaQQh13xW/jGT5OvYRdemU2eLLH1kgMy/Ag821y0h5qDWqZp3Ja17K3tyaK/003Y6vX4Z2xCaDslwF7RJRvPBe+WwAxmlHBRkL38HmVw1/Jv1WzFvOPul8QZQMw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=BfIFetxW; dkim-atps=neutral; spf=pass (client-ip=209.85.210.197; helo=mail-pf1-f197.google.com; envelope-from=3zqrlagykdgwcokxtmqyyqvo.mywvsxehzzm-nofvscdc.yjvklc.ybq@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1793399650; c=relaxed/relaxed;
+	bh=lY0pxtvUJ1KUjGauum4/uEvThtLNCFkzMFjgO1TNNk8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=au7VQ1ZxF8nIkmCsJcwCZaC4Q1xI2Y9TDuCOsqyWFDjPXduAfjMfOEnEwGKFhS4YMQNUOX4aEZoe7qMKrZFrMAFYgiGQhJVqjTAHzkj4ql9sotrk0WiiBo+P5uijJ5wNuJym4AzHTV5FY0ztzurO2WJLI3zY7qdSfR/diCInM6SS+cqoU7mRGbhMi6KE8uYKK2r2S1o4EQVkJRgs8PtySxwLj+TKPR21Xw9jvrhMS2PCgOpABa3ZntHQTT9naN2OluU1oaL83mjveMDvh8okaqlLX4rf8f1gmzSGFJsAR1KmQLSGXY1QxE4Z1k7AkBDrWgPQc2HuIyeFcIrwnMdWLw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=0x0f.com; dkim=pass (1024-bit key; unprotected) header.d=0x0f.com header.i=@0x0f.com header.a=rsa-sha256 header.s=google header.b=F6K1PpZl; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122d; helo=mail-dl1-x122d.google.com; envelope-from=daniel@0x0f.com; receiver=lists.ozlabs.org) smtp.mailfrom=0x0f.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=0x0f.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=BfIFetxW;
+	dkim=pass (1024-bit key; unprotected) header.d=0x0f.com header.i=@0x0f.com header.a=rsa-sha256 header.s=google header.b=F6K1PpZl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=209.85.210.197; helo=mail-pf1-f197.google.com; envelope-from=3zqrlagykdgwcokxtmqyyqvo.mywvsxehzzm-nofvscdc.yjvklc.ybq@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-f197.google.com (mail-pf1-f197.google.com [209.85.210.197])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=0x0f.com (client-ip=2607:f8b0:4864:20::122d; helo=mail-dl1-x122d.google.com; envelope-from=daniel@0x0f.com; receiver=lists.ozlabs.org)
+Received: from mail-dl1-x122d.google.com (mail-dl1-x122d.google.com [IPv6:2607:f8b0:4864:20::122d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGYvD3X4rz3cNP
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 08:21:44 +1100 (AEDT)
-Received: by mail-pf1-f197.google.com with SMTP id d2e1a72fcca58-8a0688a43d3so833833b3a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 14:21:44 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGbVm0722z2yZf
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 09:34:06 +1100 (AEDT)
+Received: by mail-dl1-x122d.google.com with SMTP id a92af1059eb24-1ae18eb9ad0so834999c88.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 15:34:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1793395302; x=1794000102; darn=lists.ozlabs.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:reply-to:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=QOulOknncDj+wvkIw4OOGY1O6DdQV3bVqwj3fNEp63M=;
-        b=BfIFetxW+Ipx9ozSjpH9cqVn727NdOcqbh8ICZv6FPVHbZ7kHS9J9NmeDNGJC4D6z9
-         cU3BVKeLcxlJpxU91K78xD1hV+zoyblRZsQBdaqFhX8/mBeoXJ5RRnUg3VYqC+/oPXVT
-         VzoM+7XL2UukfTwtoYaNIvy2nRBnr8tS5Ty/qxb/sAR5M6k9fGSZJAB9qtQzqmkEoeeb
-         m/FiiOOwJqktuXf1fz5FwpiC6nlIoLQcGGX8MgRcwnmweunLbOOsj3UHnlV2Tawwf0Im
-         RknxocwLr9wVTyEmwycoC82bKQsIRNwgm0Hqm+cQ8i5XbQT1YmVJa8ckYLU1EV7rrEMs
-         +6rw==
+        d=0x0f.com; s=google; t=1793399642; x=1794004442; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=lY0pxtvUJ1KUjGauum4/uEvThtLNCFkzMFjgO1TNNk8=;
+        b=F6K1PpZl7xolm8EQ0g7+pG0R4mYBTir/D4esIaalWPt892HdCUzOiZrt1FGA6Eobr/
+         ULY5dxkLjhQ8QwJAlq1mUWwoOXfSezf41+kzQjQK6w1R0WLlpyPoSzPm03dI42gsSDqC
+         8266lrFeocFV5GcIybvIAEEgQMBGFs2PDwTO8=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793395302; x=1794000102;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:reply-to:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=QOulOknncDj+wvkIw4OOGY1O6DdQV3bVqwj3fNEp63M=;
-        b=2vg4Go1Q6gMrHYkuE4RMp+OTA6FBeOLqInmxompT/tAJNQCZHWKdpbrISIlX1+6KQ2
-         GEH+uSaPi02JFeD7aM1gjoI9cjNYA5Z5UJviqwfUSQbPcCqo5pYJMV8DgfTsT9So3lYE
-         jOmXy3iYUxwyh90RN5Ikys0fCeR7AigGVxi39oB6dx/Uu+ov/payFm47V1KDywj6X8zi
-         EmX4egH7FTsFTkKJzxXtzKS+OJmsJh02Krf2YR7TtiIunEGxjr9b5MaWrlT83cro5Szt
-         DGhdRn72LDENYoHqqF8l44DvZYxydEUAL973IW0ZM9h3kFhetnbAQj5vanqZlE2+3TMu
-         fG6A==
-X-Forwarded-Encrypted: i=1; AKwUvBziy9dqnGIuQJ2TUjDoy1epS+uz+mMnB1bZMnypCjk7r72vUBXscjPFpUzjGwNioqWlyNmA6/LX9A3xPl0=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYLm1HC8gg1MgEAeQN+O7ElvQF+u88wQFWayEP1/au4F/zEwbnBM
-	HyljVHgvG3Au0+Q+5prM+x/S7MyRSVX+v/CKFlMbLgTDfKFbNjUZ6Fui9GniNOhQ0a9iSxPbwZU
-	fZRDzew==
-X-Received: from pfbay8.prod.google.com ([2002:a05:6a00:3008:b0:89f:6242:b2d2])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a21:3e01:b0:3e2:5d77:4bf3
- with SMTP id adf61e73a8af0-3e92884d686mr2608559637.0.1793395301941; Fri, 30
- Oct 2026 14:21:41 -0700 (PDT)
-Reply-To: Sean Christopherson <seanjc@google.com>
-Date: Fri, 30 Oct 2026 14:21:11 -0700
-In-Reply-To: <20261030212112.2598640-1-seanjc@google.com>
+        d=1e100.net; s=20260707; t=1793399642; x=1794004442;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=lY0pxtvUJ1KUjGauum4/uEvThtLNCFkzMFjgO1TNNk8=;
+        b=Uaf53UhON3igyKJjYB1L03Gq4GGFHCLJ5xBHdA6ph1G1cKzVsPnF7pOQEKBpm/wYK5
+         ODCT3umdQ/ONq1wPVmoeMJLgdJ6V6J2CJDQRqcQWESH91L/1iSb45sH8Upl5ET+VmPGR
+         Y9ySY/JG+JjzxOufNv4DlcathRgF1ORLGR9rrdy3RHVAol6MBa/lR5oOBIB2b4aGMZnm
+         d6FU9GjqbYBCPGsObYe3AbV82cFX9Vkv0JxAnq7r4ZaghkIEtleG43UqMWr3N9920USl
+         dg3Qrqat9imhTLIFZmtXE/e0U5stIm0cBpgWEzBp/f/sz2S7dW2ZyZqcZUr6cL6weenk
+         /mQA==
+X-Gm-Message-State: AFq9FYICPD/mKuNm6gRq30uXYeJwgb0ShSG8NvijLY7noMeQ83bRhTNi
+	G4gW5jozoA8Fi1ePaugBnDOZexcHKP4fvR6OJqtWcxUjyWmSXQ9siNueiHDbuhYpzqU=
+X-Gm-Gg: AYBFou1OjGXcJ4VCoLxWHOe8epayUA56XXxFAyV/SNAx3pvQox8Uqw3prKIOaEu1LOp
+	PIxGOpuK5uGlO6fAM5U0ImiqYyq3tTEa/eAwAhH7v6S5iXWsMBNzfGhCKvwuZgdYHYp0r26nsyG
+	G9fk1xeVzh3/9RToFQ/HE3izbpiGi4eKs+3xTyrm6k1jAfYCD4D7e7IqGJp1sOwy04tnFxmIaLo
+	ZsUBCPgEIx4SztjRnM1UYLdVBcAF8Vm5wovoiXeHSWciTbN60VjkbK9rPxlrNgjxBNDtYKJqYv2
+	LWGQXqWMF6B6DNMCVVk7Qh/OZQg2C9CaxV3UKC/l74tZMfAkfgrevHItgDfNxNvtO1GxGVSzS7J
+	Nx066pIP5eLmdIB5NLVqnIehPKlZZl+rUPjSamb+joblg4WuyqAX6ZsbkdYTOe0zlu4R16qsSLE
+	HBF07eKE3E+EDucgGtDiAqt3r24Z3FAU8EaIRLWzCaqyh3oqS8a8PyjcV4L0/FUwXi64LJjvzOO
+	JRPI8PkS0RukC6Ji5W+rK/RWBocj3mSahrO5xdUEDOx06CfZPtYBywB+PGeiP/i3r/gxc2PPMTD
+	JnsoPHIjeuLuB6ZUqpy5WHmXk4HL38+UGK4t+pEvbNdCD5hF1eMyOfARnZTJX8F4NVzTKcPY/vE
+	pgeZACEhbn6+1CHIa
+X-Received: by 2002:a05:701b:2816:b0:182:94d7:f76a with SMTP id a92af1059eb24-1ac6088a34bmr4779354c88.43.1793399642429;
+        Fri, 30 Oct 2026 15:34:02 -0700 (PDT)
+Received: from shiro (p1795186-ipxg00e01sizuokaden.shizuoka.ocn.ne.jp. [153.207.151.186])
+        by smtp.googlemail.com with ESMTPSA id a92af1059eb24-1ac192c2e9dsm12324147c88.9.2026.10.30.15.34.01
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 30 Oct 2026 15:34:01 -0700 (PDT)
+From: Daniel Palmer <daniel@0x0f.com>
+To: andi.shyti@kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Daniel Palmer <daniel@0x0f.com>
+Subject: [PATCH] i2c-powermac: Silence modalias failure message on G5 powermacs
+Date: Sat, 31 Oct 2026 07:33:18 +0900
+Message-ID: <20261030223318.1140883-1-daniel@0x0f.com>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,167 +89,58 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-Mime-Version: 1.0
-References: <20261030212112.2598640-1-seanjc@google.com>
-X-Mailer: git-send-email 2.56.0.385.gac671c819a-goog
-Message-ID: <20261030212112.2598640-24-seanjc@google.com>
-Subject: [PATCH v4 23/23] KVM: x86: Rename __x86_set_memory_region() => x86_set_internal_memslot()
-From: Sean Christopherson <seanjc@google.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>, Sean Christopherson <seanjc@google.com>, 
-	Paolo Bonzini <pbonzini@redhat.com>
-Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Jim Mattson <jmattson@google.com>, 
-	James Houghton <jthoughton@google.com>, Chris Mason <mason@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Spam-Status: No, score=-26.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=ham
-	autolearn_force=no version=4.0.1
+	SPF_PASS,URI_HEX,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Rename __x86_set_memory_region() to x86_set_internal_memslot() and add
-double-underscores to the existing x86_set_internal_memslot(), so that the
-x86 APIs better align common KVM's kvm_set_internal_memslot().
+G5 powermacs, and maybe others, have i2c nodes that have no compatible
+and cause i2c_powermac_get_type() to print a warning like:
 
-No functional change intended.
+i2c i2c-3: i2c-powermac: modalias failure on /u3@0,f8000000/i2c@f8001000/cereal@1c0
 
-Signed-off-by: Sean Christopherson <seanjc@google.com>
+The point of i2c_powermac_get_type() seems to be to override the modalias
+that comes from the compatible so that normal i2c device drivers do not
+bind to devices that are managed by other mac specific drivers (like the fan
+control ones).
+
+Since a device with no compatible shouldn't bind to any normal device the
+warning doesn't need to be printed.
+
+Signed-off-by: Daniel Palmer <daniel@0x0f.com>
 ---
- arch/x86/kvm/lapic.c   |  6 +++---
- arch/x86/kvm/vmx/vmx.c | 12 ++++++------
- arch/x86/kvm/x86.c     | 14 +++++++-------
- arch/x86/kvm/x86.h     |  4 ++--
- 4 files changed, 18 insertions(+), 18 deletions(-)
+ drivers/i2c/busses/i2c-powermac.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
-index c20e2a25834f..b4a7f02f5c48 100644
---- a/arch/x86/kvm/lapic.c
-+++ b/arch/x86/kvm/lapic.c
-@@ -2917,8 +2917,8 @@ int kvm_alloc_apic_access_page(struct kvm *kvm)
- 	    kvm->arch.apic_access_memslot_inhibited)
- 		return 0;
- 
--	hva = __x86_set_memory_region(kvm, APIC_ACCESS_PAGE_PRIVATE_MEMSLOT,
--				      APIC_DEFAULT_PHYS_BASE, PAGE_SIZE);
-+	hva = x86_set_internal_memslot(kvm, APIC_ACCESS_PAGE_PRIVATE_MEMSLOT,
-+				       APIC_DEFAULT_PHYS_BASE, PAGE_SIZE);
- 	if (IS_ERR(hva))
- 		return PTR_ERR(hva);
- 
-@@ -2943,7 +2943,7 @@ void kvm_inhibit_apic_access_page(struct kvm_vcpu *vcpu)
- 	if (!kvm->arch.apic_access_memslot_enabled)
- 		goto out;
- 
--	p = __x86_set_memory_region(kvm, APIC_ACCESS_PAGE_PRIVATE_MEMSLOT, 0, 0);
-+	p = x86_set_internal_memslot(kvm, APIC_ACCESS_PAGE_PRIVATE_MEMSLOT, 0, 0);
- 	if (IS_ERR(p)) {
- 		kvm_make_request(KVM_REQ_APICV_UPDATE, vcpu);
- 		goto out;
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index 1f9e43c5b4c4..00fb9459de59 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -4055,10 +4055,10 @@ static int init_rmode_identity_map(struct kvm *kvm)
- 	if (!kvm_vmx->ept_identity_map_addr)
- 		kvm_vmx->ept_identity_map_addr = VMX_EPT_IDENTITY_PAGETABLE_ADDR;
- 
--	uaddr = __x86_set_memory_region(kvm,
--					IDENTITY_PAGETABLE_PRIVATE_MEMSLOT,
--					kvm_vmx->ept_identity_map_addr,
--					PAGE_SIZE);
-+	uaddr = x86_set_internal_memslot(kvm,
-+					 IDENTITY_PAGETABLE_PRIVATE_MEMSLOT,
-+					 kvm_vmx->ept_identity_map_addr,
-+					 PAGE_SIZE);
- 	if (IS_ERR(uaddr)) {
- 		r = PTR_ERR(uaddr);
- 		goto out;
-@@ -5295,8 +5295,8 @@ int vmx_set_tss_addr(struct kvm *kvm, unsigned int addr)
- 		return 0;
- 
- 	mutex_lock(&kvm->slots_lock);
--	ret = __x86_set_memory_region(kvm, TSS_PRIVATE_MEMSLOT, addr,
--				      PAGE_SIZE * 3);
-+	ret = x86_set_internal_memslot(kvm, TSS_PRIVATE_MEMSLOT, addr,
-+				       PAGE_SIZE * 3);
- 	mutex_unlock(&kvm->slots_lock);
- 
- 	if (IS_ERR(ret))
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 8cb58040dd81..85dd52c6beca 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -10007,8 +10007,8 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
- 	return ret;
- }
- 
--static int x86_set_internal_memslot(struct kvm *kvm, int id, int as_id,
--				    gpa_t gpa, struct file *f, u32 size)
-+static int __x86_set_internal_memslot(struct kvm *kvm, int id, int as_id,
-+				      gpa_t gpa, struct file *f, u32 size)
- {
- 	struct kvm_userspace_memory_region2 m;
- 	unsigned long hva;
-@@ -10038,7 +10038,7 @@ static int x86_set_internal_memslot(struct kvm *kvm, int id, int as_id,
- }
- 
- /**
-- * __x86_set_memory_region: Setup KVM internal memory slot
-+ * x86_set_internal_memslot: Setup KVM internal memory slot
-  *
-  * @kvm: the kvm pointer to the VM.
-  * @id: the slot ID to setup.
-@@ -10059,7 +10059,7 @@ static int x86_set_internal_memslot(struct kvm *kvm, int id, int as_id,
-  * address, i.e. its accessibility is not guaranteed, and must be
-  * accessed via __copy_{to,from}_user().
-  */
--void __user * __x86_set_memory_region(struct kvm *kvm, int id, gpa_t gpa,
-+void __user *x86_set_internal_memslot(struct kvm *kvm, int id, gpa_t gpa,
- 				      u32 size)
- {
- 	struct file *f __free(fput) = NULL;
-@@ -10081,12 +10081,12 @@ void __user * __x86_set_memory_region(struct kvm *kvm, int id, gpa_t gpa,
+diff --git a/drivers/i2c/busses/i2c-powermac.c b/drivers/i2c/busses/i2c-powermac.c
+index f99a2cc721a8..b37cf5b4ab10 100644
+--- a/drivers/i2c/busses/i2c-powermac.c
++++ b/drivers/i2c/busses/i2c-powermac.c
+@@ -299,6 +299,18 @@ static bool i2c_powermac_get_type(struct i2c_adapter *adap,
+ 		}
  	}
  
- 	for (i = 0; i < kvm_arch_nr_memslot_as_ids(kvm); i++) {
--		r = x86_set_internal_memslot(kvm, id, i, gpa, f, size);
-+		r = __x86_set_internal_memslot(kvm, id, i, gpa, f, size);
- 		if (!r)
- 			continue;
- 
- 		for (i--; i >= 0 && size; i--)
--			x86_set_internal_memslot(kvm, id, i, gpa, NULL, 0);
-+			__x86_set_internal_memslot(kvm, id, i, gpa, NULL, 0);
- 
- 		return ERR_PTR_USR(r);
- 	}
-@@ -10097,7 +10097,7 @@ void __user * __x86_set_memory_region(struct kvm *kvm, int id, gpa_t gpa,
- 
- 	return (void __user *)(slot ? slot->userspace_addr : 0);
++	/*
++	 * Some Apple device trees have i2c nodes with no compatible that can be
++	 * ignored. Without this the cereal node on G5 macs prints the modalias
++	 * warning below on every boot.
++	 */
++	if (!of_property_present(node, "compatible")) {
++		dev_dbg(&adap->dev,
++			"i2c-powermac: no compatible property on %pOF, skipping\n",
++			node);
++		return false;
++	}
++
+ 	dev_err(&adap->dev, "i2c-powermac: modalias failure on %pOF\n", node);
+ 	return false;
  }
--EXPORT_SYMBOL_FOR_KVM_INTERNAL(__x86_set_memory_region);
-+EXPORT_SYMBOL_FOR_KVM_INTERNAL(x86_set_internal_memslot);
- 
- void kvm_arch_pre_destroy_vm(struct kvm *kvm)
- {
-diff --git a/arch/x86/kvm/x86.h b/arch/x86/kvm/x86.h
-index cfe96962a4e4..c467d7347145 100644
---- a/arch/x86/kvm/x86.h
-+++ b/arch/x86/kvm/x86.h
-@@ -529,8 +529,8 @@ static inline void kvm_inject_gp(struct kvm_vcpu *vcpu, u32 error_code)
- void kvm_inject_nmi(struct kvm_vcpu *vcpu);
- int kvm_get_nr_pending_nmis(struct kvm_vcpu *vcpu);
- 
--void __user *__x86_set_memory_region(struct kvm *kvm, int id, gpa_t gpa,
--				     u32 size);
-+void __user *x86_set_internal_memslot(struct kvm *kvm, int id, gpa_t gpa,
-+				      u32 size);
- int memslot_rmap_alloc(struct kvm_memory_slot *slot, unsigned long npages);
- 
- bool kvm_vcpu_is_reset_bsp(struct kvm_vcpu *vcpu);
 -- 
-2.56.0.385.gac671c819a-goog
+2.55.0
 
 
