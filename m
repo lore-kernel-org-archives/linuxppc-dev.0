@@ -2,90 +2,109 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E2DC60A2601
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 17:10:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8135E606A324
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 17:36:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Gpq5lk6h
+	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Qx4FOf3d
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jGSKG5tdmz30Vd;
-	Sat, 31 Oct 2026 04:10:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1236"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793380226;
-	cv=none; b=OLkACXuxb47x5bq7hoI5fb65PYWkt2m/29FSl/LGT/lrkWhnUerPevgYxJeNK/ABmtoXXBYcBx0V9NbkTOoKqG+8po7b4bXVCDHr9dlcahmDZ8aCIkMTavLxfbeQlEl7X4aH7Whs7U8Xtsc1FKeWqQ5N3iriShmdUAcxcuYc/n+Iw44pK6TOw4c3x6skzdRgJ/0jXZ985Yygwd4WIOtFcPeb3KVdm8ntmRxSTDUnRRsNiB31q9VaEkevKv4d4RqFFbHB+VZnTZtooy2SGsHSuwbKtH84s5LBq9rid8EwLihCAKdBdLd6GG5ljUhu7QIiWbWwgFyjiIBTAqb2CQrWRg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jGSvd0TZQz30Vv;
+	Sat, 31 Oct 2026 04:36:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::32c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793381804;
+	cv=none; b=VYFjvHxH00xwtmTB8o25Aq3gMaConwWZPFgyr7xv3UdiQpK4p33Dl77FUP9H8msxHYyBBTUD2WaGnk6ASrEzNgWsUdumWtY8zzFrhOuMotRDisBVIPlNkYr9Z/kPiTpfydrYL+mkkqv9OpLzGGzaQ2RhM/KnOa3VJvOuYvpSUB14NJscqvyOuj2fQylmUreTc3jLgJjH9Vub55t9bVo23ZWYIpmrAhk05LLEpwVn5dUZQ60D7wUtZrL3lvn79dHgOJiOFW5vqzAKqM3Pd9qHwe62Fb80Fbp9dGM3LfkJwH3jHD27vmLbRIkACwpjAxUl4NUKT2Hfne+Uburv3irnGA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793380226; c=relaxed/relaxed;
-	bh=RVLcv6zKH1BoTG3sQqbFYNoEzC22RlRRF312R8k02Ag=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=AE369IqFFWiElqiOr3osymGXMJJovzelvSv7s3127Q/fauX0PdiHDOF95ptfmL2GFLi1E9u6TNrsZ+awezCstDGPldmO+mDEzWL1D7RmWrmCHLBalrxLUcSw2yiXYGSbgLsjSY7pE5FVQCevF+dpWQNDHH9aNXl+NlfpFKmSlrLvh9cTEHMq3AHvij5S9203hCGGjzMglH5rYoG3BuYVn/bLJsdfL2K14MiZVhrfk9JYMxiErDAzKfNP3moNbVGpkm6e3WFTVOaxc5nwe8bSC/M+ji/yAr5mGuHbw8CUWx4nALF1CzQNDJVjmykOMcSf8SwMzlRvLbUgtYz8xR2luw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Gpq5lk6h; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1236; helo=mail-dl1-x1236.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1793381804; c=relaxed/relaxed;
+	bh=r5fedtBZtI4w1DXYYWOd9TkcAOuj87FP9VlEYhTELuQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=L4kTnX5RTLsoOxp3VfdpFGc28e9D4dbMCJZ4eI5COr+IAoHneOWAj8R4H10Hy3UvcLP8v5y9PKcvEYBtiuaYHdaLUuT/knaWjK//ihpgC3RYmXiz3sDDBfqla4Ovy8KXkNvg4SJeXMVVRHqBvM8KensSOkpDW8QKPm8va+1kyfdWoZnfktbuJ1+70F2UzdrFsVx36qwU2BmV90qJhBI44wslmnCH5QHWb5L8H+bpSO33vNXflQWvECBr265r/qXIMOuKnbqjlpY5/j8hhvqqGM2tugL56M2aXpfdTxYfkd3iffpTJEaHclt166a9YYemtKenfZQwyT7svcMd98m1DA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org; dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Qx4FOf3d; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::32c; helo=mail-ot1-x32c.google.com; envelope-from=rrangel@chromium.org; receiver=lists.ozlabs.org) smtp.mailfrom=chromium.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Gpq5lk6h;
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Qx4FOf3d;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1236; helo=mail-dl1-x1236.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x1236.google.com (mail-dl1-x1236.google.com [IPv6:2607:f8b0:4864:20::1236])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::32c; helo=mail-ot1-x32c.google.com; envelope-from=rrangel@chromium.org; receiver=lists.ozlabs.org)
+Received: from mail-ot1-x32c.google.com (mail-ot1-x32c.google.com [IPv6:2607:f8b0:4864:20::32c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGSK95zsHz2xLf
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 04:10:21 +1100 (AEDT)
-Received: by mail-dl1-x1236.google.com with SMTP id a92af1059eb24-1a3c08d6928so1208019c88.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 10:10:21 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGSvb03ZDz2xqr
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 04:36:41 +1100 (AEDT)
+Received: by mail-ot1-x32c.google.com with SMTP id 46e09a7af769-8479f46ecd8so450468a34.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 10:36:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793380219; x=1793985019; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=RVLcv6zKH1BoTG3sQqbFYNoEzC22RlRRF312R8k02Ag=;
-        b=Gpq5lk6hlpTAtmtolBPpBydmZHV7dx3eSj8lKgrav+wBpD+vxh5RLJSX97S5CORY6e
-         oJcbrnFWmNBTvvwofnhY6Hi3Q4r1sP+REuUQUMpWAKuTnPD7HvtjFUt4YOm28YDlqCBx
-         8kP1Vc1kvNyFVwJ5hxkm46FeikZKTEVMqwp3xDJ0xoJJIMZeRddXRTYIAlbkTMoCEge7
-         1z7ugTRDSmoiZSBMV9Qe0EbiAyLYJlmYBFd1I967xmSrj/fn4WseP+3qV42pr5c+lQCA
-         EG1YfD90SDYUiInzgx5Y/mqvvEPmWm8z3Ph4D4yuK5Dwwd3i4cV10V2EE4nr7zpRNtUb
-         oXmA==
+        d=chromium.org; s=google; t=1793381799; x=1793986599; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=r5fedtBZtI4w1DXYYWOd9TkcAOuj87FP9VlEYhTELuQ=;
+        b=Qx4FOf3d9Taul13zQgVXsFa2HFQxpNMpsON4tuxrlFnyrnkJeI67Rzoz9NFiZcPimZ
+         TVShler7CqYLo36H2sHbVmGJsJ6Mtqn6kMScjwv0BpJDaratgfoA8hHAsPsEKpcxvyg2
+         Dp0NETnMZEJQ6TkYCl+MP1GJOlO5/NiI9xccw=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793380219; x=1793985019;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+        d=1e100.net; s=20260707; t=1793381799; x=1793986599;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=RVLcv6zKH1BoTG3sQqbFYNoEzC22RlRRF312R8k02Ag=;
-        b=e/oZnFJ/DSjAgkSn0dJTvHnjiYzM79vsyIxlKw/Gv43jzM1JZzN8qbXr5Vw+GsNADB
-         U41dx7YCJlTrO+se18yyM4YB5w+6xB0BM7x+MjsfX8wFROVr5xZX33E/Aqj0no4vtuGh
-         s8xVnq/G7jBQBudgTE9o8jSMHIKYNhEVeS+EO6YTReR1VUE4U1Sa6geLu7iYQhVo6oQ6
-         ZqokPIMRTPomaH274yfVci/845cnENoxCbkCPn1oClKMtIXJF//h3drg0b8R9qNtS45s
-         lZykehKs+33efS/ct49zENQjgu2lqEE8kZDW+Q7wsKFdC5ygGA/4yG2G6E+ZaXESGZyh
-         /OQg==
-X-Forwarded-Encrypted: i=1; AKwUvBx9jrING/BTPO8hRUI82mceCi7gcXFHr9qAm/1wv7SfaPeqZ8t+3UpNMDQQ4Lzljy3mQpcII4XIApYdtdU=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYLK7eYkwyC50QpEJvd6OaUPl7ehP12gYjt+I5D2EKpAZXouZl4/
-	FhOQ9I5HQKfKM1EPzp0HH1o1TbS87D7SGNbuqzilFcVJXs3MVHnXkUQJ
-X-Gm-Gg: AYBFou3UWEAwlykYXBLSWPZdMUzIq7owcCS0HrZwkFWKCGAtHvcTBo4yaArfuzhVSMz
-	BP5neBFlMaEUMxhUmSbPC4Rofye//mAO7+I+oXxV0Y07a353ws//RljvpWygwjBL8clXc75EluF
-	0nRFrIdi/1h6BlfW8fdUK32CJq6vOEtcZy1XVOVH5Xi+iibwRWBPk3ol29LsYfz2iLYxy8arneT
-	ZwXUUC0xluacJcfp1j3Ob3DHENdGzh/DlJFbI0VORDsOOhjtbUvn+7QGv96EhaMh6IqGHnwi4fJ
-	B48aYU93F/A6u0td9UGBfHwDWcaY5yRO5RawNlhUycX1n07+4ZhAQWBJMW39t2jKR0hDcmVGdRV
-	I7IhWCB+62T0AgWMk1qtff5Ieb+ISz61ISXuwINH0AtyV8O8YK21bVlIEjkG0PKZWZq2ECab22F
-	0TzYZoiZ1QZZgASXSdK6z5tl1w5g9+4z2IsCipl+glcyo7tx0imlZPNbjOOV4AjQIJVpkHGuolM
-	jt8tly5jNRK2rQ0BeNWICrLWhmxtnAnKrQe00n/oicsv6iLBbmuyR61JawZGGL3hK2dONQV5AsW
-	/FYbt3owI6omoslupJU1neLrv3Y=
-X-Received: by 2002:a05:7023:d0b:b0:144:e535:3ef6 with SMTP id a92af1059eb24-1ac5de53bbdmr4084875c88.41.1793380219122;
-        Fri, 30 Oct 2026 10:10:19 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1ac192c2e9dsm10616964c88.9.2026.10.30.10.10.13
+        bh=r5fedtBZtI4w1DXYYWOd9TkcAOuj87FP9VlEYhTELuQ=;
+        b=jViHWuD+Hi/zO8zyH90KBtsmff9tp9qE0hKZP1+6pVu6ULpkTDsN9SHdzCSuSK45gT
+         X69fgHFYmDQ/XNTkfjT4PVSRr4EL9BHZDgCtquUD63sz4wXGEnrE9eJxuJ0UVWhC0us7
+         i1t5vda7gp7DHClkPfjCKr4gDfZlPpTDO+CyJWTPvdlWHeipAFEsxzG42QlvOju4lIlg
+         yAAxKTF03cA7YvjmPFTsJMU+ktEXwzj3w1SvzZ/tvvqjpuq7K5t2mUk6BeYZKbXl8caG
+         2kswRrXqGpaqsVrcMNRAcOK18qNo7Tpu1RbMuMJvCrjEmmu9gFxly7YiurGjtlnr9cL2
+         eZ9Q==
+X-Forwarded-Encrypted: i=1; AKwUvByYbiXRzp9OX7bdqSvIds00uxfvFsjeITgYgqupVyRmhBLBD/nCIyiFqvFzdOPpJzv34Hi5Z0VDzJIt/uA=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYLvBtEsGNRAb3dhq2dPV+8dwzkzp/KX6ndJGYfquC9Ml+EqXc4I
+	iSv18GKmIkfvr6dbY5L6vaUxA+NagoZRTyhlJO+1YgC+VsM137sZMTSox+EwQM+e7Q==
+X-Gm-Gg: AYBFou3+jQoI8H/wlxzVVvUSq29zkWlbsa5kDIreyZJUniL2qdqYVep3zpvrCJ6w+U1
+	uNJ8tRv2oiJ+o2zXHNdpyHAcNrP5NZTThgtuvy5dCad/PhPEaTD2WG8bTNHiw+FkwNKH+SciAgn
+	bCd5ST1GI4FGPji72f+RFhF32uFlAo/+XrOdBo0Y2Otpo7S2teC/wIDkMUbBMZ+ZqCi81sjwXgX
+	0uWfAdEAEA8jVHjnyYzHPK0akb8UTwaq+O2h72dHexcSmO0ORgR/cA9Wf3lACt2Jvno4kVacAXA
+	MG9o2cCi2r5gTyrMUD5Kn8djg/Yu4hm+2rWnIQRztiiEITJ8C5cDVq2tYQtnuSkxrdzPH25Ura6
+	jQGHL22D0Bs6HpVUHo52Zcnkct9/2sZIXJgQm9pEQJA0WP1sCo5g9jEeUvD43HsaNlYlkbRDSEo
+	F+xTe9pom3i2OuZcwqpBW+Atyn2OXVa9/IDVw4AxKd2cCikR4WCGq1Z3QgfQWklC3F/wyj8cv56
+	yamI0oLXnRl+ciSGn9F5lIB063/dSQjyPNB1CF6H257OKlWd68PFmwkBg63bs91i2KYFTIHnglU
+	efuUKCCrGDXnehPqDah7oEv7Xqq8y7Z+K1IzJaxJbQOS9jTZQc2QpyGcBSWQYcLdcgDdDdn445w
+	wck83elaYiV/EAZU=
+X-Received: by 2002:a05:6820:625:b0:709:529a:4775 with SMTP id 006d021491bc7-714f6e7ffc6mr1212713eaf.50.1793381798577;
+        Fri, 30 Oct 2026 10:36:38 -0700 (PDT)
+Received: from rrangel.c.googlers.com.com (194.246.27.34.bc.googleusercontent.com. [34.27.246.194])
+        by smtp.gmail.com with ESMTPSA id 46e09a7af769-85d354efebesm2497044a34.19.2026.10.30.10.36.37
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 30 Oct 2026 10:10:18 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Shrikanth Hegde <sshegde@linux.ibm.com>, maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, chzigotzky@xenosoft.de, Vishal Chourasia <vishalc@linux.ibm.com>
-Cc: sshegde@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org, msuchanek@suse.de, harshpb@linux.ibm.com, gautam@linux.ibm.com, amachhiw@linux.ibm.com, venkat88@linux.ibm.com, nnmlinux@linux.ibm.com
-Subject: Re: [PATCH 2/2] KVM: PPC: Replay pending interrupts before entering the guest
-In-Reply-To: <20260928110411.844582-3-sshegde@linux.ibm.com>
-Date: Fri, 30 Oct 2026 22:00:50 +0530
-Message-ID: <zevvup51.ritesh.list@gmail.com>
-References: <20260928110411.844582-1-sshegde@linux.ibm.com> <20260928110411.844582-3-sshegde@linux.ibm.com>
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
-	autolearn_force=no version=4.0.1
-X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
-	aws-us-west-2-korg-listserv-alma10-1
+        Fri, 30 Oct 2026 10:36:37 -0700 (PDT)
+From: Raul E Rangel <rrangel@chromium.org>
+To: James Hilliard <james.hilliard1@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>,
+	Ilpo =?UTF-8?Q?J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
+	Tony Lindgren <tony@atomide.com>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	Richard Genoud <richard.genoud@bootlin.com>,
+	Nicolas Ferre <nicolas.ferre@microchip.com>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
+	Jacky Huang <ychuang3@nuvoton.com>,
+	Shan-Chun Hung <schung@nuvoton.com>,
+	Pali =?UTF-8?Q?Roh=C3=A1r?= <pali@kernel.org>,
+	Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	"Maciej W. Rozycki" <macro@orcam.me.uk>,
+	Timur Tabi <timur@kernel.org>,
+	linux-kernel@vger.kernel.org,
+	linux-serial@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	imx@lists.linux.dev,
+	linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v8 5/6] serial: 8250: retire canceled RX DMA before reusing the receive buffer
+Date: Fri, 30 Oct 2026 11:36:34 -0600
+Message-ID: <20261030173635.2186490-1-rrangel@chromium.org>
+X-Mailer: git-send-email 2.56.0.212.g129ede20d9-goog
+In-Reply-To: <CADvTj4qK-1SX_+YZW1jdW-e5JOZ2iz3vAK_8UvkyZWb0rAeyiQ@mail.gmail.com>
+References: <20261029-submit-serial-8250-dma-cancel-v1-v8-0-3fd56ba352ed@gmail.com> <20261029-submit-serial-8250-dma-cancel-v1-v8-5-3fd56ba352ed@gmail.com> <20261029222734.3086943-1-rrangel@chromium.org> <CADvTj4qK-1SX_+YZW1jdW-e5JOZ2iz3vAK_8UvkyZWb0rAeyiQ@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,112 +117,102 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=4.0.1
+X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
+	aws-us-west-2-korg-listserv-alma10-1
 
-
-Hi Shrikanth,
-
-Shrikanth Hegde <sshegde@linux.ibm.com> writes:
-
-> After applying preempt disable patch, i.e PATCH 1/2, Christian reported
-> a subsequent warning stopping his board to boot properly.
+On Thu, Oct 29, 2026 at 6:32 PM James Hilliard <james.hilliard1@gmail.com> wrote:
+> With a persistent pause failure and an incomplete transfer, the
+> worker keeps retrying. RX remains masked and the runtime PM reference
+> is held until the condition resolves or shutdown takes over. There
+> is no receive-progress guarantee if the peer remains idle and pause
+> continues to fail.
+...
+> A failed pause with an incomplete cookie does not distinguish a
+> persistent hardware fault from completion that has not yet been
+> published. A fixed retry limit does not resolve that ambiguity.
 >
-> WARNING: at .kvmppc_fix_ee_before_entry+0x10/0x28, CPU#0: qemu-system-ppc/4667
-> CPU: 0 UID: 1000 PID: 4667 Comm: qemu-system-ppc Tainted: G        W           7.3.0-rc4-2-powerpc64-smp #1 PREEMPT
-> Tainted: [W]=WARN
-> Hardware name: varisys,CYRUS5040 e5500 0x80240012 CoreNet Generic
-> NIP [c00000000005dc3c] .kvmppc_fix_ee_before_entry+0x10/0x28
-> LR [c00000000005f298] .kvmppc_handle_exit+0x5b4/0x5e8
-> Call Trace:
-> [c000000086587780] [c00000000005ee10] .kvmppc_handle_exit+0x12c/0x5e8 (unreliable)
-> [c000000086587830] [c000000000062068] .kvmppc_resume_host+0xb8/0x10c
+> Terminating after the limit may discard received data, including a
+> completed buffer whose completion is still unpublished. Successful
+> termination would make subsequent buffer reuse safe, but would not
+> recover those bytes. This would therefore be a potentially lossy
+> error-recovery policy rather than a lossless timeout flush.
+
+Checking the in-tree dmaengine providers shows why bounding the retry loop
+and escalating to recovery is necessary in practice:
+
+1. `serial8250_request_dma()` (`8250_dma.c:428`) checks `caps.cmd_pause`,
+   which `dma_get_slave_caps()` (`drivers/dma/dmaengine.c:614`) sets purely
+   from `!!device->device_pause`. However, `drivers/dma/tegra186-gpc-dma.c`
+   (lines 422-423, 1351, 1521) unconditionally assigns
+   `tdma->dma_dev.device_pause = tegra_dma_device_pause` (so
+   `caps.cmd_pause == true`), and then returns `-ENOSYS` at runtime on
+   Tegra186 where `tdc->tdma->chip_data->hw_support_pause` is false. And on
+   Tegra194/234/264 (`tegra186-gpc-dma.c:399-413`) and Tegra210
+   (`tegra210-adma.c:574-579`), `.device_pause()` polls a hardware busy bit
+   with an atomic timeout and returns `-ETIMEDOUT` or `-EBUSY` if an active
+   burst does not pause in time.
+
+2. In the in-tree providers where `.device_pause()` returns an error because
+   a transfer already completed—such as `drivers/dma/ti/edma.c:870, 1468-1469`
+   (returning `-EINVAL` when `!echan->edesc`) and
+   `drivers/dma/stm32/stm32-dma.c:751-753, 836, 1432` (returning `-EPERM`
+   when `chan->status != DMA_IN_PROGRESS`)—the DMA hardirq handler calls
+   `vchan_cookie_complete()` *before* clearing the active descriptor, so
+   `dmaengine_tx_status()` already reports `DMA_COMPLETE` on the very first
+   check in `serial8250_rx_dma_try_flush()`.
+
+   Even on a controller where hardware rejects `pause` the instant the 4096th
+   byte finishes while its completion hardirq is still masked by `port->lock`,
+   the only thing delaying `completed_cookie` publication is local IRQ masking
+   under `port->lock`. Once `serial8250_rx_dma_flush_work()` drops `port->lock`
+   (enabling local IRQs) and sleeps `usleep_range(1000, 2000)` in process
+   context, any pending DMA completion hardirq runs in microseconds. Across
+   5 retries (5-10 ms with `port->lock` released on each sleep), a completed
+   4 KB transfer will have published `DMA_COMPLETE`.
+
+   By contrast, leaving the `for (;;)` loop unbounded turns any persistent
+   `dmaengine_pause()` error (`-ENOSYS`, `-EINVAL`, `-EBUSY`, `-ETIMEDOUT`) on
+   a partial transfer into a guaranteed 100% loss of all current and future RX
+   data until `close()`, a 500-1000 Hz `system_percpu_wq` spin, a permanent
+   runtime-PM leak, and silently aborted `dw8250_set_divisor()` /
+   `dw8250_check_lcr()` calls (`-EAGAIN`). Escalating to recovery after a
+   bounded retry budget is strictly better than wedging the receiver forever.
+
+> That requires termination to succeed and callbacks to be drained.
+> If termination fails, the channel may still access the FIFO, so PIO
+> must remain excluded.
 >
-> It triggers below warning...
->
-> static inline void kvmppc_fix_ee_before_entry(void)
-> {
->         trace_hardirqs_on();
->
->         /*
->          * To avoid races, the caller must have gone directly from having
->          * interrupts fully-enabled to hard-disabled.
->          */
->         WARN_ON(local_paca->irq_happened != PACA_IRQ_HARD_DIS);
->
-> This happens since kvmppc_prepare_to_enter does first local_irq_disable
-> followed by hard_irq_disable. This leaves a small window where interrupt
-> may occur and it could set the irq pending bit in PACA. When that
-> happens replay that interrupt before entering the guest.
->
-> Fixes: 12013e3d4695 ("KVM: powerpc: Use generic xfer to guest work function")
-> Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
-> Closes: https://lore.kernel.org/all/b8f82519-9ae5-c247-e020-e79c627e57df@xenosoft.de/
-> Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
-> ---
->  arch/powerpc/kvm/powerpc.c | 13 +++++++++++++
->  1 file changed, 13 insertions(+)
->
-> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> index 9194cf492d1c..847ff07c364b 100644
-> --- a/arch/powerpc/kvm/powerpc.c
-> +++ b/arch/powerpc/kvm/powerpc.c
-> @@ -147,6 +147,19 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
->  			continue;
->  		}
->  
-> +#ifdef CONFIG_PPC64
-> +		/*
-> +		 * Interrupt arrived between the soft and hard
-> +		 * disable. Replay it and retry guest entry.
-> +		 */
-> +		if (unlikely(local_paca->irq_happened != PACA_IRQ_HARD_DIS)) {
-> +			local_irq_enable();
-> +			local_irq_disable();
-> +			hard_irq_disable();
-> +			continue;
-> +		}
-> +#endif
-> +
+> The recovery requirements depend on why the provider cannot pause.
 
-I looked at the commit which causes this regression, I see there are few
-more call sites which can hit the same WARN in kvmppc_fix_ee_before_entry().
+Agreed—and `serial8250_rx_dma_flush_work()` in Patch 5/6 already enforces
+that when `serial8250_rx_dma_recover(p)` is called (`8250_dma.c:210-216`):
 
-So what I was thinking was - while we are at it - do you think we could
-use the following helper instead of {local|hard}_irq_{disable|enable}()
-pair and ...
+	if (recover) {
+		ret = dmaengine_terminate_sync(dma->rxchan);
+		if (ret) {
+			/* Retain ownership and keep RX masked if DMA cannot be stopped. */
+			dev_err(p->port.dev, "failed to stop RX DMA: %d\n", ret);
+			return;
+		}
+	}
 
+When `serial8250_rx_dma_recover(p)` sets `dma->rx_err = true` and
+`dma->rx_terminating = true`, the worker exits the retry loop and calls
+`dmaengine_terminate_sync(dma->rxchan)`. If `dmaengine_terminate_sync()`
+returns non-zero, the worker returns early at line 215 with
+`dma->rx_terminating == true` and `dma->rx_running == 1`, keeping RX
+interrupts masked in `IER` and keeping PIO excluded (`serial8250_rx_dma_flush()`
+continues returning `-EIO`). It only clears `dma->rx_running = 0` and unmasks
+`IER` for PIO fallback after `dmaengine_terminate_sync(dma->rxchan)` succeeds
+(`ret == 0`).
 
-/*
- * Hard disable interrupts before entering the guest.
- *
- * On 64-bit don't use local_irq_disable() here. It only soft-masks, so
- * an interrupt can still come in before we hard disable. That interrupt
- * gets marked pending in irq_happened and kvmppc_fix_ee_before_entry()
- * then throws it away. hard_irq_disable() clears MSR[EE] first and does
- * the irq tracing itself, so there's no such window.
- *
- * On 32-bit there is no soft mask and hard_irq_disable() doesn't do the
- * irq tracing, so use local_irq_disable().
- */
-static inline void kvmppc_irq_disable_for_entry(void)
-{
-#ifdef CONFIG_PPC64
-        hard_irq_disable();
-#else
-        local_irq_disable();
-#endif
-}
-
-... and then update the other call sites too which the following commit
-added - which can cause the WARN.
-   Fixes: 12013e3d4695 ("KVM: powerpc: Use generic xfer to guest work function")
-
-Thoughts?
-
--ritesh
-
->  		guest_enter_irqoff();
->  		return 1;
->  	}
-> -- 
-> 2.52.0
+Thanks,
+Raul
 
