@@ -2,64 +2,62 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B743A606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 08:49:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CCDB5606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 08:52:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=dQidhxzT
+	dkim=pass (1024-bit key, unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=iihKc7CS
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jGFCS1PGjz30WS;
-	Fri, 30 Oct 2026 19:49:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:760:2e00:f0a1::32"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793350180;
-	cv=none; b=dmk1w6VwJxun0qfCol+BM4jC/WBsFNPjo3ISKHx5z2iXdm7vuJCXEflW8UcJMwiWZxq1mbXZtMR5M0DHiGNMRh0KeG4/lsrLW/2UstAxF7lOd2BtEEf/2BUnWQPhYJLHexc00p1spuUGkCpWwjLT4nF6M2WzCuQmLnUtaDO3emcIR++xO9ctG7dBdkLzGK++H2yFdoQMnlKrXeGeTTZFt2FrlAevJzp5dQ87fPpIN6yTbMWt4AYcjHcImxNzlG1CdyVPE2gg0v+jlpkNF52o7jhm1bw65/qdp8WTUo/u2XbR79x8LrpDj0VvKufWbH1HQTp0RfQBnSuzs4n30Vn1mQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jGFHF3mSCz2xwL;
+	Fri, 30 Oct 2026 19:52:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=130.136.161.50
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793350377;
+	cv=none; b=W+6xlSujyLJpfLlqqOIPqpXRrg9ccM10zsa36VUnOyi1pH36BGNN+YuvBOdh5mTd5xL26DQk0/ohZy6I08oJkYagrxEKk/qCxBn+6do6oia0+C50hAaNYMG1iKUaYUkFb9Ipn1aClsPeqpjBQO6dHPE/4k2G6vdu83FIfmkmLEz00hDwZdwosLHAcizQ6MK3kbeQh8tWCP2gDZa2oQwchvorGU/6nLNWBhiEegMJT4ZMS3LQRATyme4zl/efE6/WC+4Mqo6fy4VhiMcx6bfAOyKCrl6ma4i0KWjzueuayXo7OgRJ2iVEP3lj4Mzo/hRrTjt0gwIKHRJ8CO8XomCKpQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793350180; c=relaxed/relaxed;
-	bh=yjMdRQDa0BKiCjyBLxfnEtlG7A95NJovK+UaME+7Qrk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Th0fM0+GuYSNSWrM4y3/SrnmZKT9GDgfUAQEbZ/ucW5a/vmwC+LDeEbtTIwjTtGn+0bV0cB9AZpgMs9t0lWqNftoaAaE+kYCuUy2rGTJCou124GFSr9EQJrs72dRToM4yNOa9+i9XxC/tPwf29eTxgwzkcQNXdBJBL8CJja19RLoTBfuU70VYbie2h+Ce13xMAuOXZrOsrTiIIdp+JEHM7M0SoMH+8nunPRjkg2Otb0e4CWSxaL6aXuQ2vRsC0XNbnMh4ybR8Z42b2MiHx+1E1PfQWMASMETn1ZrVtZaePD9gMqS0I8iSIiTMMzX/rdHldm2hq4JJwO8FB/c/pG0mg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=cs.unibo.it; dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=dQidhxzT; dkim-atps=neutral; spf=pass (client-ip=2001:760:2e00:f0a1::32; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org) smtp.mailfrom=cs.unibo.it
+	t=1793350377; c=relaxed/relaxed;
+	bh=FYw+R4tThY9ijxrPMeJ6bkKz9WbQem7Wim2y25tODDo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Y++2h2DJhzM9rEinON63GlanUECYlApDTR835p019KP014DrV0Z/vyEmvKc8hLehjn/t+Bj8/Hy9RLq1n6vT3oDKGVtNYmdV6rtFZRMQ5MTxbFaRz9Rv7StVxdGzHlu8g+GPcIMKboOxLXVwCJXpl3BPJyjNgr3IwLnvvrefvbudvKun79ZuGG4e5dNnXxiZ/mzzkpkzhSSAiIaU4+ghqw4A8JB16AOcvROIgRbkPqIxsZ+fPXcmXHVudAMZpST6bKNQMMjBAXXhFonxkw/Y/P2dNS4cRexhUZSVegQB/CmwX4/PJyre9PpkqcmSvYNmabIaNBrAC/eCLkyBVTqZ3g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=cs.unibo.it; dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=iihKc7CS; dkim-atps=neutral; spf=pass (client-ip=130.136.161.50; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org) smtp.mailfrom=cs.unibo.it
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=cs.unibo.it
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=dQidhxzT;
+	dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=iihKc7CS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cs.unibo.it (client-ip=2001:760:2e00:f0a1::32; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org)
-Received: from mail.virtlab.unibo.it (mail.virtlab.unibo.it [IPv6:2001:760:2e00:f0a1::32])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jGFCR2kfHz30gC
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 19:49:39 +1100 (AEDT)
-Received: from eipi10.cs.unibo.it (unknown [94.32.99.206])
-	by mail.virtlab.unibo.it (Postfix) with ESMTPA id 2D96A1C025D;
-	Fri, 30 Oct 2026 09:49:37 +0100 (CET)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cs.unibo.it (client-ip=130.136.161.50; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org)
+Received: from mail.virtlab.unibo.it (mail.virtlab.unibo.it [130.136.161.50])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jGFHD4WjJz2xqh
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 19:52:56 +1100 (AEDT)
+Received: from cs.unibo.it (unknown [94.32.99.206])
+	by mail.virtlab.unibo.it (Postfix) with ESMTPSA id A0A651C0043;
+	Fri, 30 Oct 2026 09:52:52 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=cs.unibo.it;
-	s=virtlab; t=1793350177;
-	bh=nAKASWeLvsdxgMY7KJmCSMlmE5AQrN3mfo3HXClaYIM=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=dQidhxzTAJZ2Z8XUUUbgPOCm9zpmY7boSUY9h9rxbTpGWRum+I27qOoWJsEa5NJhu
-	 hZvPmcCZ2ilUKxhjOrp3sbKnmYiSsz0A3Tsm3IuRyOYTkBmsFXYg/10hFn9McXNTAp
-	 vmFhWdetaz6QgEXdyKZXJbYm6Y3QeBpZHX26ZDfA=
+	s=virtlab; t=1793350373;
+	bh=q6juWM5f7jikhcMl2i3ywbPNpOJBMHXqoBewrCHl84A=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=iihKc7CSYD8TVRUP8Uhtr8sZX7SdlWSRlQOevVC+Mm3tmKF/xYwKffgrKG6tvTmgm
+	 u9khgsUeHwN+rB5poSBzmqpI2iF2yG6pwXbM18msSILhIOAc8AWl/knEapyijB0XPR
+	 o72K1nUEJtO+Og3bI6IoxGZ8Ft/DZTHHQirNKbJI=
+Date: Fri, 30 Oct 2026 09:52:51 +0100
 From: Renzo Davoli <renzo@cs.unibo.it>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>
-Cc: Renzo Davoli <renzo@cs.unibo.it>,
+To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+Cc: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	Christophe Leroy <chleroy@kernel.org>,
 	Ritesh Harjani <ritesh.list@gmail.com>,
-	=?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>,
-	Mukesh Kumar Chaurasiya <mkchauras@gmail.com>,
 	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Oleg Nesterov <oleg@redhat.com>,
+	Thomas Gleixner <tglx@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
 	"Dmitry V . Levin" <ldv@strace.io>,
 	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH v3 2/2] powerpc/syscall: Return the preset value of skipped syscalls
-Date: Fri, 30 Oct 2026 09:49:25 +0100
-Message-ID: <20261030084926.1068384-3-renzo@cs.unibo.it>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20261030084926.1068384-1-renzo@cs.unibo.it>
-References: <20261030084926.1068384-1-renzo@cs.unibo.it>
+	Andrew Morton <akpm@linux-foundation.org>, stable@vger.kernel.org
+Subject: Re: [PATCH v2 1/1] powerpc/syscall: Return the preset value of
+ skipped syscalls
+Message-ID: <auRa4xcZpLSQD78V@cs.unibo.it>
+References: <20261023180735.853655-1-renzo@cs.unibo.it>
+ <auB6vjNg3w5LPVwb@kunlun.suse.cz>
+ <auLyYd9-6WwwzPgz@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+ <auNZiOi_tj6ssGZr@cs.unibo.it>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,63 +71,25 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <auNZiOi_tj6ssGZr@cs.unibo.it>
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-When ptrace or seccomp skip a system call, r3 (and CR0.SO for "sc")
-already hold its return value, set either through
-syscall_set_return_value() or directly by a tracer, e.g. with
-PTRACE_POKEUSER at a PTRACE_EVENT_SECCOMP stop.
+On Thu, Oct 29, 2026 at 03:34:48PM +0100, Renzo Davoli wrote:
+> I will send a v3 rebased on current mainline, split in two:
+>  1/2 remove TIF_SYSCALL_RET (Fixes: 69cb2be898be), as suggested by
+>      Michal
+>  2/2 return the preset value of a skipped syscall (Fixes: 05c033db7e9a)
+>      using your expression.
 
-Since commit 05c033db7e9a ("entry, treewide: Make
-syscall_enter_from_user_mode[_work]() indicate syscall execution"),
-system_call_exception() returns syscall_get_error() for a skipped system
-call.  syscall_get_error() is 0 for any non-error value, so a success
-value is replaced with 0: the value set by a tracer, or the val of a
-SECCOMP_RET_USER_NOTIF response.  Among others, the seccomp_bpf
-user_notification_* and TRACE_syscall.seccomp.syscall_faked selftests
-fail.
+v3 here:
+https://lore.kernel.org/lkml/20261030084926.1068384-1-renzo@cs.unibo.it/
 
-Return the error from syscall_get_error() if there is one, and the value
-in r3 otherwise.  The error path is unchanged, and a success value is
-returned as it was before the conversion to GENERIC_ENTRY, when
-system_call_exception() returned regs->gpr[3] for a skipped system call.
-
-Fixes: 05c033db7e9a ("entry, treewide: Make syscall_enter_from_user_mode[_work]() indicate syscall execution")
-Cc: stable@vger.kernel.org # v7.3
-Suggested-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-Assisted-by: claude-opus-5-5
-Signed-off-by: Renzo Davoli <renzo@cs.unibo.it>
----
- arch/powerpc/kernel/syscall.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
-index f7412556a9e8..7b35b895b70c 100644
---- a/arch/powerpc/kernel/syscall.c
-+++ b/arch/powerpc/kernel/syscall.c
-@@ -19,7 +19,14 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
- 	syscall_fn f;
- 
- 	if (unlikely(!syscall_enter_from_user_mode_randomize_stack(regs, &r0))) {
--		return syscall_get_error(current, regs);
-+		/*
-+		 * The syscall was skipped by seccomp or ptrace. r3 (and CR0.SO
-+		 * for "sc") already hold the return value, set either through
-+		 * syscall_set_return_value() or directly by the tracer. Hand
-+		 * it back in the form syscall_exit_prepare() expects: -errno
-+		 * on failure, else the value in r3.
-+		 */
-+		return syscall_get_error(current, regs) ?: regs->gpr[3];
- 	}
- 
- 	if (unlikely(r0 >= NR_syscalls)) {
--- 
-2.55.0
-
+renzo
 
