@@ -2,89 +2,86 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CE43606A325
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 15:27:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D20D606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 16:28:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=V3eSK8ix
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Y0OGAehq
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jGQ2M3nsbz30Vv;
-	Sat, 31 Oct 2026 02:27:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1235"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793374043;
-	cv=none; b=aGGkwYSoB1ol8YNXDnsJIPdp6Mswghmuv/W09JB8MlcbCvWVKKVOCkEkaDhih2aPC8E8NmKyhw80iPixw8iNpHiQm9BryJnH5u1UHCY7p68spjh3xGKAP+UUdb4OaGB/+NLQz9iWXNziqMM51WJNryoEHIHTfgDdYAPijHyN+/CJa+X/UWmcCcUIDEM/xIQd4Bc49l6swhbA3cfga33GmnfufTR17fHsASdDRCUJujm0jipeB3jFGbuz1vlhwenVv9RxblNggYJ6YUl3Bx+w0ml66JBZryyE53MKAZsEhEwIcpaN/9uSNcIckvpRlCaC0N9fmLGrwjWN1/vCJW4RFg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jGRNy4JP2z2yK7;
+	Sat, 31 Oct 2026 03:28:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4860:4864:20::2a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793377714;
+	cv=none; b=eDcUwU8X0A3/8s0RYfnHLOXZlRd7aPJ5n3t0Y90wAV1jd9cZufLXRGoVL0iez4seIp5wEyRZ134sUanoXdOZ6f45W3wf/pkU1VYfUoyGKMtjSnsYH56bfcl0hCEvTWhuel+YBrc25fIaZQLTooC1wAIsOVfwPS5ono3/aAzTynh9RRmROJdVeWuGmYWT/M1ZG6LicxIXuwziKZA+dPMpS6nm/4f6wBZRvBAzZ2ZPweUQTino9WnEluAS5Jz4PaXVzVKLC4OS8MQ43gqXO9e83xHkZp6ZTVoUk1SiNt5h4o0qFJksbIcVMiHUgI/r7IORqZTGwZLBT0V98rY0HenoDA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793374043; c=relaxed/relaxed;
-	bh=e+m5QU2XeT3uQPTC6GC01opeM6s+W2OonF16GBipID8=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=i6UgyVTLXIZPaznRDl+1L3pkX7G11Ct7NF5ZdGzT3AJI1NUSAmNQyQq8nfh1CIYxYt2MLA6WzC5JxwZ4JShe03sejeN04p1LbUIMO4imct98ObKZ/Cgm5SD2t7uANrq7be8LWEuYHnc8qnXLscBMxFDsJOQNWgL4k8gjxWQE/nzxeTzzWO50FNvHSSuJ3zsWZcWYIOwSf6wkMjWXMqIzkB93NLs7WDaWrWp6PlNeZKCOzeJSRn6/T9VMbhVB6m36Dv2nNeeJLkVUNTsHqA7AXJ3uACRpOx3nOu5KD2ypvagfPLGZGFA1nzMWcfgCFg+GRIhpkeKZ/TBL/z6j5Twr/w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=V3eSK8ix; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1235; helo=mail-dl1-x1235.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1793377714; c=relaxed/relaxed;
+	bh=zK67Y4b2DOq0P3AA25tQ78azoXocIOXbPIU+g9MOBt8=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
+	 MIME-version:Content-type; b=oVzLp9eLWZjj83m+U0mZuyXxF/chhpgJIwY8A/aVI5GfnjL+D2Kz/Vj/2tTdYOb7Rhk/AI+XvxZiZJa04U8raJs0iVG8w0R/WQ0Jrc5dWo8JpLYKwVVYTDvaYlkJmFKZBmLdlUAxwPNEZ+5PTTrTGeL6a89+L5z8Cmzr6iNQOXdffOjQMNUPHOB2A+QJ4NTmXYKZD5q4XopVMk5umqhaijnZ8vpAsWvxlw+hd+8QLXD+9cwcspPqwXOI2gR9bYYXz6/Rp3++i7Zbra8n9Y1tCNYdXROGEG5sX208xcs2YnjCZIrmAILA4MVu9//ywCCD4soKGSuVsTaajT+J8XCwXQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Y0OGAehq; dkim-atps=neutral; spf=pass (client-ip=2001:4860:4864:20::2a; helo=mail-oa1-x2a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=V3eSK8ix;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Y0OGAehq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1235; helo=mail-dl1-x1235.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x1235.google.com (mail-dl1-x1235.google.com [IPv6:2607:f8b0:4864:20::1235])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2001:4860:4864:20::2a; helo=mail-oa1-x2a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-oa1-x2a.google.com (mail-oa1-x2a.google.com [IPv6:2001:4860:4864:20::2a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGQ2K5mp0z30VV
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 02:27:20 +1100 (AEDT)
-Received: by mail-dl1-x1235.google.com with SMTP id a92af1059eb24-15ea896ddc8so1375591c88.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 08:27:20 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGRNw5SrHz2xwM
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 03:28:32 +1100 (AEDT)
+Received: by mail-oa1-x2a.google.com with SMTP id 586e51a60fabf-48eee44b908so553427fac.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 09:28:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793374038; x=1793978838; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=e+m5QU2XeT3uQPTC6GC01opeM6s+W2OonF16GBipID8=;
-        b=V3eSK8ixjwr4hdVp3Wb30SqveqzZMoA0ZAv4OUcu7RRMHkZ8/TbiEeHiuGB+MNSm/m
-         w3G2IyxZblyyUV/07l2i2BVC9NdYIak3mCSj8P0iwkQY4JWimCbwW64QKd+rGK/hTT8R
-         Rpo0iX1eUJBg5DHqGK1qwnt9LoiDz47nrhv39dP3zSnzwl3kgx1ZkvkwE944q0PV7jce
-         SvFJr0PQ6T1zVUhw8eIxkcTQg2TQ4E21qgIUPr3BjmCTg+lJIPSA7SSg5TL6MrOhllmc
-         NeiOV2CRIPiUfh7Ydw8oSXytYSIBNoFfRtRWYts7g8aQoTKQPjoh57fMauCFp1f2PKPo
-         2dQw==
+        d=gmail.com; s=20260707; t=1793377704; x=1793982504; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :message-id:date:in-reply-to:subject:cc:to:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=zK67Y4b2DOq0P3AA25tQ78azoXocIOXbPIU+g9MOBt8=;
+        b=Y0OGAehqX+JJCfqhY30TmUW7wIACHIofxYmQGFpu0GmrUgIateskPY8jjKZkJt9wDR
+         33ULxcwk4ZS8IEp3PoT4FSEUEKGFcAFz3rrpG0uca3T3kUK1l+TG/pdWf/1+DpfNNm61
+         MkGk+tfwjOrWERAXI+7GwGh5FI9LFvBaSe/l1VvLNyizznAmkwLqKl8oXsGmsse/KRav
+         +aAkqv5ib/cAlyznzW5nw6xVqE2wZ9B/nwqrXPkUOCfgFIuDXwqxDcM+sHTO4n077flm
+         43rz41Xek7sVPUwlvFnt9st08plzswO3vdZVEIC0aSzj15D25utrNtInP+LpmlgKFnD0
+         fvgA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793374038; x=1793978838;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+        d=1e100.net; s=20260707; t=1793377704; x=1793982504;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=e+m5QU2XeT3uQPTC6GC01opeM6s+W2OonF16GBipID8=;
-        b=DSwI/b4wLh9pxsk/ISyPT1RwosKlFLlnM7nLcglXVbFpPx7Kow1ll41VblgaiwuDKW
-         r2maN4io+CUdj3qyaBs0GFHOhIjZppBVPlwly4p/ie6H5HNGT9QUYyq/hOsTH7MvMLxY
-         PDXvZpOS8QHAKGmXsoUG9swTPhl0egPWbvoL013324ijJtAUCaGiq+53WISLfkcJPW/M
-         sca8YbhV5/WZodmjzhfxmH0oUAjlAtTB69bfb5i9eY+Uxvq7xnxkFW5QGAZ5qtA38cZx
-         o0AHP6aF2P+zmPp0Q1sMLU/n+RMUDwnuqn0mGD+XE3ZGSiptTkXbRdOyYl1BHjLFxHHF
-         hTdA==
-X-Gm-Message-State: AFq9FYJHKrV91UkAQ78paBky4t2+evaLLj8gLIF0iVA0I2hrJ4urOwRB
-	PyZINMMUhNVr7afOuwwXPkFFl5pEuO7BBxz3cRkfttXgW4R2zL9qX80S
-X-Gm-Gg: AYBFou1pTpsU0KwsQCLxZiRBZBuwSmyFuMiszxRU+kLvKE9LKBME4kB9o9YU6Gq4sA0
-	JRKqR3k1Q+fqRpJG8jbWFU9XyDVh5zWCzBov8ilQWao2CFWJpkx1N2EmCxp2jC3wpY30hH4E9Fk
-	kcM4eI3iM3m4KE9DGjLziuwAo2M90JIBQPJ6HkUko348uEzUZBI6vsQqzg4WBVrS8WX9suOTyvs
-	7GEAYHVoOSqimaf5euibbCghlfbmGG8giJNnZxtir8NSjj9O1sXuEXoS3NsGdPQsNiE+4UusJK4
-	2X5oqVfVu2UR2bYhV9Ci9DXsQQOWJdgq9T9bJoHzjeYcicX8i2IbNLECO6deb3OucW0ZdhVvtIq
-	BfVrzK9eMD0583TMuE35wt38Pp7tDesc7FPZvtW0n/2mCaz0co/DWp2rZ7W3QRfZOUT5BGbqYGH
-	H4z/qmXWF/xU9FXFcusOCGnKiW0So+7o1pTZW+MjNsw3qac6u32OMIRSInaB4+dZCPclwK4t0CX
-	W0giPqwGfh8r/HfWWet64r9M8ENKqLYKUOOAFTfEgIntaypu0fc8ZBU8eEEq+uptNoO/1/WQDLn
-	R69kvs6YvoGXk2DLDbo0sM40ShY=
-X-Received: by 2002:a05:7022:7f0b:b0:13b:3132:6e99 with SMTP id a92af1059eb24-1ac5af2da84mr3344929c88.20.1793374036049;
-        Fri, 30 Oct 2026 08:27:16 -0700 (PDT)
+        bh=zK67Y4b2DOq0P3AA25tQ78azoXocIOXbPIU+g9MOBt8=;
+        b=N98nhTfVlJG1IR2MVSs1RjnOCmcFITrElw2mGJJrHZCS2+rW8z453whPQe2LV9PwW9
+         hnQAGFgfXUhAZRZtGvZU3wr924g/1ExFfLqfwD3nWZWVyF+FfsFTChgsROgVzgVbg+f/
+         bx2+bvlbc5BjRI/O4ko62ASjFKkC20qUB3/R87ZFZHC+H78boar0vUI2r5W5BLmaXRHw
+         MKJHb2aEmcqja8kGyJnQR1SCICOXmiH/uOb+BwgKcuVyxRP/xju7XGkgsxF5Me0HnUj2
+         d8SB2CRE+DxGn02rZXTM6VR8vdr3pKB2LROEj451d+1UibBdmPpKW/eBLlB65ed0B17P
+         /fag==
+X-Forwarded-Encrypted: i=1; AKwUvBzrjINX+fm9Oj2XDdNg/ulQ5kdxoGPMCU5UG89fRkaRBwAz7Oafg5OqyB+3wiQ7sb/1HqtDbJBsSE1eF74=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYIVT7m4pKLEg3uwR+jFhdruUJjVo1N6JYqt5U8YTj0Hp32+afJB
+	dcAFFgiwX+lA8Aa0InHUWbLWQGBXTR6qiaNoCKg+xJCtZXfcfxsrCZyI
+X-Gm-Gg: AYBFou2Meh9zGubzNEJYXVmlymc/xjsmMsoeTs74SMV44W2P/dg5tsUPmQ0P6kmJrZI
+	Ri3HkSqNveZCCNKIc5cipXpuJu+5RW8vlRr45NBAkzzLkX2I8wX8AUJ1zJ+GPg/5p2oHQSeMDJk
+	hfijiJKeAEQEbGhHfNtp3xb1otDLqOZcueLRhyLKuPZzjpsH1HYAnBkmyNhY3Y/42ahnYZPMg9h
+	BjLK2zGGlevJQX1LUZ3M70W8YGO5dsivxiBmlQovOAVK7UMwG7GLlJwiAvqCLvROg+fPhDiaCX/
+	gj/5RqgOUIR6tol2vKrZo4036y/hf0D/HAOr/wa8PbuJV+DJDCCKXmcp9dzNIwYKBwiyr1OYFra
+	ho2BB92TDn451+jloNwcK1Fox405g/qmiQ9iNI663jZWZJExp5rjoBUjNPXvR2OBZFWpY2FiJwY
+	qftC9GLACcyBgw/dnZ0GJPONOfMNPX8ScPJUSLmtiP9+2s/MzBjYMRRV1dPYypl8ZO6tk5gboiQ
+	N7rqA7N3voydHw4uDwraTLV2RZ3Wp58S/S4lul8B/yQBhYgEvv7h7zPXLvQtx4MxXw/jv9exnoQ
+	p9Y1G/vXDwCrlMHiH9MXyPLl2qT5A60URBt/2a4880yb5z12Zw==
+X-Received: by 2002:a05:6808:f13:b0:4f4:813c:6a21 with SMTP id 5614622812f47-5640dcb87admr1936746b6e.20.1793377704392;
+        Fri, 30 Oct 2026 09:28:24 -0700 (PDT)
 Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36a42aa8999sm9261448eec.29.2026.10.30.08.27.10
+        by smtp.gmail.com with ESMTPSA id 5614622812f47-5640fe0d46dsm1916622b6e.11.2026.10.30.09.28.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 30 Oct 2026 08:27:15 -0700 (PDT)
+        Fri, 30 Oct 2026 09:28:23 -0700 (PDT)
 From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Gautam Menghani <gautam@linux.ibm.com>, maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org, sshegde@linux.ibm.com, nnmlinux@linux.ibm.com, amachhiw@linux.ibm.com, harshpb@linux.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Timothy Pearson <tpearson@raptorengineering.com>
-Subject: Re: [PATCH v4] KVM: PPC: Book3S HV: Avoid spurious interrupts caused by LPCR_MER bit
-In-Reply-To: <20261005084534.1588611-1-gautam@linux.ibm.com>
-Date: Fri, 30 Oct 2026 20:48:15 +0530
-Message-ID: <4ie3w72g.ritesh.list@gmail.com>
-References: <20261005084534.1588611-1-gautam@linux.ibm.com>
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
-	autolearn_force=no version=4.0.1
-X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
-	aws-us-west-2-korg-listserv-alma10-1
+To: Shrikanth Hegde <sshegde@linux.ibm.com>, Narayana Murty N <nnmlinux@linux.ibm.com>, maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, chzigotzky@xenosoft.de
+Cc: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org, msuchanek@suse.de, harshpb@linux.ibm.com, gautam@linux.ibm.com, amachhiw@linux.ibm.com, venkat88@linux.ibm.com
+Subject: Re: [PATCH 1/2] KVM: PPC: BookE: Disable preemption before loading guest FP and Altivec
+In-Reply-To: <2a75097f-6b49-456a-bfef-d5e559ce719a@linux.ibm.com>
+Date: Fri, 30 Oct 2026 21:51:41 +0530
+Message-ID: <33tnw44q.ritesh.list@gmail.com>
+References: <20260928110411.844582-1-sshegde@linux.ibm.com> <20260928110411.844582-2-sshegde@linux.ibm.com> <9d83e196-4d6b-4be1-811c-eb72527d3cdd@linux.ibm.com> <2a75097f-6b49-456a-bfef-d5e559ce719a@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,107 +94,96 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
+	aws-us-west-2-korg-listserv-alma10-1
 
-Gautam Menghani <gautam@linux.ibm.com> writes:
+Shrikanth Hegde <sshegde@linux.ibm.com> writes:
 
-> A huge number of spurious interrupts can be seen immediately after a KVM
-> on PowerNV guest boots up in XIVE mode.
+> Hi Narayana.
 >
-> $ cat /proc/interrupts  | grep SPU
-> SPU:     223705     192439     273526     147623   Spurious interrupts
+> On 10/1/26 4:56 PM, Narayana Murty N wrote:
+>> Hi Shrikanth,
+>> Thanks for the fixes. I had one question on patch 1.
 >
-> This bug was introduced by commit ecd10702baae5 ("KVM: PPC: Book3S HV:
-> Handle pending exceptions on guest entry with MSR_EE"). The root cause
-> is that once LPCR_MER bit is set, it is supposed to be reset by
-> software. But when a vCPU starts running with LPCR_MER set, the vCPU does
-> not exit back to the host until the decrementer expires or there is an
-> hcall, etc. This is because KVM on PowerNV guests have support for
-> native XIVE, so they are not dependent on host for interrupt emulation.
-> Due to this behaviour, a huge number of spurious interrupts are seen
-> since LPCR_MER continues to be set and LPCR_MER cannot be reset until the
-> vCPU exits to the host.
+> See response below.
 >
-> Fix this behaviour by not using the LPCR_MER bit whenever native XIVE is
-> available (currently in case of KVM on PowerNV only), as the XIVE hardware
-> can present interrupts to the KVM guest vCPU directly. So the LPCR_MER
-> functionality is not required. This reduces the number of spurious
-> interrupts drastically.
->
+>> 
+>>> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+>>> index 13ad4cf5fa71..5b9118eefe1d 100644
+>>> --- a/arch/powerpc/kvm/booke.c
+>>> +++ b/arch/powerpc/kvm/booke.c
+>>> @@ -1404,10 +1404,17 @@ int kvmppc_handle_exit(struct kvm_vcpu *vcpu, unsigned int exit_nr)
+>>>           if (s <= 0)
+>>>               r = (s << 2) | RESUME_HOST | (r & RESUME_FLAG_NV);
+>>>           else {
+>>> -            /* interrupts now hard-disabled */
+>>> +            /*
+>>> +             * kvmppc_fix_ee_before_entry() marks the software
+>>> +             * IRQ state enabled while interrupts are still
+>>> +             * hard-disabled. So disable preemption while loading
+>>> +             * guest FP and Altivec.
+>>> +             */
+>>>               kvmppc_fix_ee_before_entry();
+>>> +            preempt_disable();
+>>>               kvmppc_load_guest_fp(vcpu);
+>>>               kvmppc_load_guest_altivec(vcpu);
+>>> +            preempt_enable_no_resched();
+>> Would it be simpler to move kvmppc_fix_ee_before_entry() after the
+>> FP/Altivec loads instead?
+>> 
+>> The normal kvmppc_vcpu_run() entry path already loads the guest
+>> FP/Altivec state while interrupts are still disabled and calls
+>> kvmppc_fix_ee_before_entry() immediately before entering the guest.
+>> 
+>> So could this path follow the same ordering:
+>> 
+>> kvmppc_load_guest_fp(vcpu);
+>> kvmppc_load_guest_altivec(vcpu);
+>> kvmppc_fix_ee_before_entry();
+>> 
 
-Make sense. 
-
-> Fixes: ecd10702baae5 ("KVM: PPC: Book3S HV: Handle pending exceptions on guest entry with MSR_EE")
-> Cc: stable@vger.kernel.org # 6.8+
-> Reported-by: Timothy Pearson <tpearson@raptorengineering.com>
-> Closes: https://lore.kernel.org/linuxppc-dev/582904882.11159.1786719390349.JavaMail.zimbra@raptorengineeringinc.com
-> Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
+Thanks Narayana, that actually make more sense to me.
 
 
-> ---
-> v4:
-> 1. If interrupt mode is changed to XICS during guest reboot, MER should
-> be used. (Amit)
+>> That would avoid making the software IRQ state enabled before loading
+>> the guest FP/Altivec state, and also avoid the additional
+>> preempt_disable()/preempt_enable_no_resched() pair.
+>> 
+>> Thanks,
+>> Narayana Murty.
+>>>           }
+>>>       }
+>> 
 >
-> v3:
-> 1. Continue the use of LPCR_MER when kernel-irqchip=off (Sashiko)
+> I thought I had put that for discussion after ---, but looks like I forgot.
 >
-> v2:
-> 1. Handle the case where xive_interrupt_pending() is true and also the
-> external exception bit is set. (Narayana)
->
->  arch/powerpc/include/asm/kvm_ppc.h | 7 +++++++
->  arch/powerpc/kvm/book3s_hv.c       | 2 +-
->  2 files changed, 8 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-> index 169ea6a7fbad..9178406dc365 100644
-> --- a/arch/powerpc/include/asm/kvm_ppc.h
-> +++ b/arch/powerpc/include/asm/kvm_ppc.h
-> @@ -747,6 +747,11 @@ static inline int kvmppc_xive_enabled(struct kvm_vcpu *vcpu)
->  	return vcpu->arch.irq_type == KVMPPC_IRQ_XIVE;
->  }
->  
-> +static inline bool kvmppc_xive_native_enabled(struct kvm_vcpu *vcpu)
-> +{
-> +	return kvmppc_xive_enabled(vcpu) && vcpu->kvm->arch.xive_devices.native;
+> I don't mind the above too.  but I didn't have a way to test it.
 
-I was checking the code and I am not sure whether we need to also check
-for "vcpu->kvm->arch.xive_devices.native"?
+Actually I agree with Narayan's reasoning here. 
 
-Can you explain why do we need to check for xive_devices.native pointer
-to be non-NULL? Because if we don't need this then it simplifies the
-code as we can directly use kvmppc_xive_enabled(vcpu) helper.
+Sorry for being so late to the game. As you know we have been occupied
+with other things internally.
+
+> So kept it as is based on what Christian said works for him.
+> If you have a way to test the patches, please let me know.
+> We can try that too.
+
+Let's ask Christian directly :)
+@Christian - Once we have v2, would you kindly help us test that
+please?
+
+We think the other approach which Narayana suggested might be a better
+fix for this and it can avoid preempt_enable/disable() dance. However,
+looks like we may not have the board where we can reproduce this.
+
 
 -ritesh
 
-
-> +}
-> +
->  extern int kvmppc_xive_native_connect_vcpu(struct kvm_device *dev,
->  					   struct kvm_vcpu *vcpu, u32 cpu);
->  extern void kvmppc_xive_native_cleanup_vcpu(struct kvm_vcpu *vcpu);
-> @@ -782,6 +787,8 @@ static inline bool kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu) { return
->  
->  static inline int kvmppc_xive_enabled(struct kvm_vcpu *vcpu)
->  	{ return 0; }
-> +static inline bool kvmppc_xive_native_enabled(struct kvm_vcpu *vcpu) { return false; }
-> +
->  static inline int kvmppc_xive_native_connect_vcpu(struct kvm_device *dev,
->  			  struct kvm_vcpu *vcpu, u32 cpu) { return -EBUSY; }
->  static inline void kvmppc_xive_native_cleanup_vcpu(struct kvm_vcpu *vcpu) { }
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index dbac3573b2c8..dec89c014c52 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -4980,7 +4980,7 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
->  			if (!kvmhv_on_pseries() && (__kvmppc_get_msr_hv(vcpu) & MSR_EE))
->  				kvmppc_inject_interrupt_hv(vcpu,
->  							   BOOK3S_INTERRUPT_EXTERNAL, 0);
-> -			else
-> +			else if (!kvmppc_xive_native_enabled(vcpu))
->  				lpcr |= LPCR_MER;
->  		} else {
->  			/*
-> -- 
-> 2.52.0
 
