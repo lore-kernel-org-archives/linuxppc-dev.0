@@ -2,44 +2,44 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6EA8E606A31E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 07:15:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BBD33606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 07:30:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=P+jtgdTX
+	dkim=pass (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=YcTvULNQ
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jGC6V5VPjz30RN;
-	Fri, 30 Oct 2026 18:15:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jGCS970kQz30RN;
+	Fri, 30 Oct 2026 18:30:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793344514;
-	cv=none; b=h0Sd+Zr7+k0sXvfPVcQK+KGb50DOUZ03qdT1eegUjM5s+K4dczbrNKovCjdyjglnNWmBZRq9a7w3XhEosERtCFYT72R5oYq5qwG7MVVpPRSRhchnRbmqSRV2XZxEbuAd/36o03L3D4hu9GBdtBQUIVTp5jtWzbv84vN4h4dAjZmLUs38Aiznn0LA/jjSCFK0YHBEuG8PE/ysqzHpygZ6R4L/p/AXJ3gy3hUrCdjwsY6lNz+BpgbD34ZJTScqfpwTjUBROCl+DZ8n8GWPJWp5/B1WvqepbQRqYt8I7DFYBafDUHftyJiuBEz+XERXnRBW2weHpHlnWUheiLLeHY8C8A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793345433;
+	cv=none; b=hZHsxXsGuZaK9GPLn9HDL6HE/E17vPCN3F8gSbTngNO9fkLeChUOT9L8fRd+dTlIAPRCkJBDhGncKItUr1x3yS8wLgwkNdAkJOBEQZ/D/1jxwzFaZZy41DHWdpPDrjtUAJirQkIylNqeKJ0s1lzKYooYHLMUaVGV5mYmp+D2q6fxM8ABLl3DKYAB2BapqkEKw0rmBbhHzSNMillwyYBYBupzxRbhDGWHp7nEA0otaSHG9M39cqdI9OQBh0sTOtMyqGmrFb/cejnzTlvpZ/z58QUOuZQVUD5cQA+hvcYtHCxuZvjGYehAlrcqZ2dFMX3vc9dRO0ZqIVLZczXoEDBwig==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793344514; c=relaxed/relaxed;
-	bh=X2nwqEX6uVZ+D8u1+rxu1eIxt49K0H72sg6V9JucXvs=;
+	t=1793345433; c=relaxed/relaxed;
+	bh=oyfKDjJKfboeY0ufdBsjhuOQtM906D+prVVlHL4BJww=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=YnOKIHU1HAnmkLSOyhYYOKg5m8A76f8oA95hYl/ZUxx9AOZahljq1/1Ox3G52BcLGkEr2oGge5K2Wn4UdbmbWm/kJShhVIoEdvdDSwD1q5/0GjMf3ekGCvqH8L90UmgyVcn+zDM/pYW5oKzdYjMrDSCyfFt/nWJJuG+vGkrz1Qr0z3ABJX7TI7Ynnklr3D41hsODmRVVQWgBRQlIGNbR3FXQgosxbwTD4MmRp9PC/wHcAV7GzFEH7HhORWDwe9SC53eOEufSStSgcVGX7egv4/vLjfF9HhU5m/Vpo+va3Ue850UpWs7AYgAw5s5zC1HV8k0enFEQraGy12a4VU00EQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=P+jtgdTX; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=dev.jain@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+	 In-Reply-To:Content-Type; b=XqVp3nFNXqppJFXTMnZKE4zsix9mR73TaywukF86gPYUeXMEX4NTTyfVn3V16SjXfsZTOQa0vNY7ZDc7L9MLz0iZFa/VHZ6fMRhK5Ij6x3xyN4Z2RSa3kMzdQnU27FKS1XrrDkANRGcw50yizRm8y0bFADXgMHmeW0fVLKW8dMUuHtFd8e3D7ZqjkiTtFaHibT+7OTiUqBXutXvWcbv0QMZ78PuiRIXmVYoAFg0ZzJ1MXz7jkIAwF0r+PyctBX6hchZuDKAlOSqmg+uRsX5F5dn05MgPUNsiZUjcnLiLKArzosDQ2jPtT+dIIE+KMtvSxKdr/dFjBzu0JU/qakBbow==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=YcTvULNQ; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=dev.jain@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=P+jtgdTX;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=YcTvULNQ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=dev.jain@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jGC6R4qcBz30C6
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 18:15:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jGCS85ykwz30C6
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 18:30:31 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1101615A1;
-	Fri, 30 Oct 2026 00:14:33 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4E19F1682;
+	Fri, 30 Oct 2026 00:29:57 -0700 (PDT)
 Received: from [10.163.152.232] (unknown [10.163.152.232])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 8D0273F7B4;
-	Fri, 30 Oct 2026 00:14:29 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id DA59D3F7B4;
+	Fri, 30 Oct 2026 00:29:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1793344476; bh=Jp/eodRxYkJLNGQk8olzS9xG6qObIMTBg1q6BMVZmBI=;
+	t=1793345400; bh=C0mcHAl4LVJ8G9Pi84zcG+F9QdADyGft2/o2o+f0aCs=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=P+jtgdTX69sEy90NVnhYUwff1Df/OdYgDe+/Oll2oU0iv4SgMtAerOkfvpkn4fqBX
-	 bHrTkw2g7dShto71IFHPDpjzFhRFcDPHxQhkGP7LbYYciMVEjNypabXr9lGoDG0b9P
-	 Dl6AC3L9oAHxYeXPdZCnniBAcCySVpa1QB2Dy4po=
-Message-ID: <99f529e8-06f7-4a20-a60b-0330c5d3d91c@arm.com>
-Date: Fri, 30 Oct 2026 12:44:26 +0530
+	b=YcTvULNQBDbtCwZfjjgbZnJd9x9ynp64awrXns5yOXqR8Z+sGJVfTapd6gvVsFgUJ
+	 57bMm++PQke8e3TIZX02+sOLDz+2oCiQuvUscLQCxTQAkheHl0XTz1g21phraKC/Qz
+	 /l8zfyfjg1A8PATkbHb82RqGtQKE9AHDFttxKiWo=
+Message-ID: <e1cfd568-8fdf-4aa1-a8c5-961bb8d7efba@arm.com>
+Date: Fri, 30 Oct 2026 12:59:50 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -54,8 +54,8 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 03/10] mm/vmalloc: clamp an unaligned range in
- vunmap_pte_range()
+Subject: Re: [PATCH v3 04/10] mm/vmalloc: propagate errors in
+ vmap_pages_p*d_range()
 To: Hao Ge <hao.ge@linux.dev>, Madhavan Srinivasan <maddy@linux.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
  "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
@@ -67,13 +67,12 @@ To: Hao Ge <hao.ge@linux.dev>, Madhavan Srinivasan <maddy@linux.ibm.com>,
  Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@gentwo.org>,
  Uladzislau Rezki <urezki@gmail.com>, Suren Baghdasaryan <surenb@google.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kasan-dev@googlegroups.com, linux-mm@kvack.org,
- Sashiko <sashiko-bot@kernel.org>
+ kasan-dev@googlegroups.com, linux-mm@kvack.org
 References: <20261026080329.140244-1-hao.ge@linux.dev>
- <20261026080329.140244-4-hao.ge@linux.dev>
+ <20261026080329.140244-5-hao.ge@linux.dev>
 Content-Language: en-US
 From: Dev Jain <dev.jain@arm.com>
-In-Reply-To: <20261026080329.140244-4-hao.ge@linux.dev>
+In-Reply-To: <20261026080329.140244-5-hao.ge@linux.dev>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
@@ -87,53 +86,93 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 
 On 26/10/26 1:33 pm, Hao Ge wrote:
-> commit a739e6b557af ("mm: vmalloc: WARN_ON if mapping size is not
-> PAGE_SIZE aligned") made vmap_pte_range() warn and bail out when the
-> size is not a multiple of PAGE_SIZE. That loop steps in page
-
-Why are we checking the alignment so late into vmap_pte_range? Why not
-simply do
-
-if (!IS_ALIGNED(addr, PAGE_SIZE) || !IS_ALIGNED(end, PAGE_SIZE))
-	return; (or return -EINVAL);
-
-at the start of vmap_range_noflush and vunmap_range_noflush?
-
-
-> multiples and stops only at addr == end; with an unaligned size addr
-> never lands on end, so the loop cannot terminate and walks off the
-> end of the page table.
+> vmap_pages_pmd_range(), vmap_pages_pud_range() and
+> vmap_pages_p4d_range() return -ENOMEM whenever the level below them
+> fails.  But vmap_pages_pte_range() can also return -EINVAL for a
+> page without a valid pfn and -EBUSY for a pte that is already
+> mapped.  Pass the error up as-is instead, like the vmap_p*d_range()
+> helpers for vmap_page_range() do.
 > 
-> vunmap_pte_range() has the same loop without any guard, so an
-> unaligned range would clear PTEs past end without ever stopping,
-> walking off the end of the page table.
-> 
-> Add the check there too. The range is clamped down to the last full
-> page rather than dropped, and the loop is skipped when nothing is
-> left, so a buggy caller still gets its PTEs cleared as far as they
-> go.
-> 
-> Reported-by: Sashiko <sashiko-bot@kernel.org>
 > Signed-off-by: Hao Ge <hao.ge@linux.dev>
 > ---
->  mm/vmalloc.c | 5 +++++
->  1 file changed, 5 insertions(+)
+
+Fixes?
+
+Reviewed-by: Dev Jain <dev.jain@arm.com>
+
+
+>  mm/vmalloc.c | 24 +++++++++++++++---------
+>  1 file changed, 15 insertions(+), 9 deletions(-)
 > 
 > diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-> index 44e0eb32708f..7131f60d1a8e 100644
+> index 7131f60d1a8e..d60b99b81ec9 100644
 > --- a/mm/vmalloc.c
 > +++ b/mm/vmalloc.c
-> @@ -393,6 +393,11 @@ static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
->  	pte_t ptent;
->  	unsigned long size = PAGE_SIZE;
+> @@ -600,16 +600,18 @@ static int vmap_pages_pmd_range(pud_t *pud, unsigned long addr,
+>  {
+>  	pmd_t *pmd;
+>  	unsigned long next;
+> +	int err = 0;
 >  
-> +	if (WARN_ON_ONCE(!PAGE_ALIGNED(end - addr)))
-> +		end = addr + PAGE_ALIGN_DOWN(end - addr);
-> +	if (end == addr)
-> +		return;
-> +
->  	pte = pte_offset_kernel(pmd, addr);
->  	lazy_mmu_mode_enable();
+>  	pmd = pmd_alloc_track(&init_mm, pud, addr, mask);
+>  	if (!pmd)
+>  		return -ENOMEM;
+>  	do {
+>  		next = pmd_addr_end(addr, end);
+> -		if (vmap_pages_pte_range(pmd, addr, next, prot, pages, nr, mask))
+> -			return -ENOMEM;
+> +		err = vmap_pages_pte_range(pmd, addr, next, prot, pages, nr, mask);
+> +		if (err)
+> +			break;
+>  	} while (pmd++, addr = next, addr != end);
+> -	return 0;
+> +	return err;
+>  }
 >  
+>  static int vmap_pages_pud_range(p4d_t *p4d, unsigned long addr,
+> @@ -618,16 +620,18 @@ static int vmap_pages_pud_range(p4d_t *p4d, unsigned long addr,
+>  {
+>  	pud_t *pud;
+>  	unsigned long next;
+> +	int err = 0;
+>  
+>  	pud = pud_alloc_track(&init_mm, p4d, addr, mask);
+>  	if (!pud)
+>  		return -ENOMEM;
+>  	do {
+>  		next = pud_addr_end(addr, end);
+> -		if (vmap_pages_pmd_range(pud, addr, next, prot, pages, nr, mask))
+> -			return -ENOMEM;
+> +		err = vmap_pages_pmd_range(pud, addr, next, prot, pages, nr, mask);
+> +		if (err)
+> +			break;
+>  	} while (pud++, addr = next, addr != end);
+> -	return 0;
+> +	return err;
+>  }
+>  
+>  static int vmap_pages_p4d_range(pgd_t *pgd, unsigned long addr,
+> @@ -636,16 +640,18 @@ static int vmap_pages_p4d_range(pgd_t *pgd, unsigned long addr,
+>  {
+>  	p4d_t *p4d;
+>  	unsigned long next;
+> +	int err = 0;
+>  
+>  	p4d = p4d_alloc_track(&init_mm, pgd, addr, mask);
+>  	if (!p4d)
+>  		return -ENOMEM;
+>  	do {
+>  		next = p4d_addr_end(addr, end);
+> -		if (vmap_pages_pud_range(p4d, addr, next, prot, pages, nr, mask))
+> -			return -ENOMEM;
+> +		err = vmap_pages_pud_range(p4d, addr, next, prot, pages, nr, mask);
+> +		if (err)
+> +			break;
+>  	} while (p4d++, addr = next, addr != end);
+> -	return 0;
+> +	return err;
+>  }
+>  
+>  static int vmap_small_pages_range_noflush(unsigned long addr, unsigned long end,
 
 
