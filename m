@@ -2,90 +2,67 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC390606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 09:33:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=hwwsqr+3
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DB6B2606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 09:39:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jGGBC2y02z30C6;
-	Fri, 30 Oct 2026 20:33:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.9
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793352819;
-	cv=none; b=kr9LV+wpUu8Za1Fwl8Xsjs4/zOw7grjJ6sv9c2lGDThmSILCqXHAvWHiyDTVGq2Ptdd0spfty0SWlYvGGDj2C01b2VaTNoGPrwXWxIi2TI4K8kToU1Fq/0AMQfZZpbWQ1n/vSIMnRDURtUFNw0mNeVXVc3HNT0alVGDicCj2cp9TeNwG8ASe6de37qtJDgwrZu0sXgXbFrEAUwNDdaVXO0XxWoQbzVLDZml0PFeWuw7Ub70hRFpkzPshC9SpMbBacIgFJgYFlx8RLayjZCxQUeWE1xZt3ng19QdmaktKZbVRTIVCMj/zasNIxV+lOceacaAckzJTAhnVFtPwEAX1Yg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jGGJy4MHdz30Vm;
+	Fri, 30 Oct 2026 20:39:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.222.45
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793353170;
+	cv=none; b=dd1gdaH1rmZ7381Ka75nWs7q/GZhwatXfNa+WRIwsutJzBkdVsXUXrQ+sAQ5sf22z4XgqaZB7EdFLYa0nl8FEyEzMjN6NkXufoN/2aLs2TzaBzsOjqhlgyCrwYp2qxCQxmLUqO5gcsAOKOYl/IntX9ldEo5rwP4qOvzc3hL0A8P/7aqe76PZDUBVu9GiuGBwojyO01/59FwR1BPp8eSt7pN0tJrj5+XXv6beFcjb7xBB69sSAJt6W7ANnum5AWQBmcP8if2jVkNKI2qpoKwsJ4pydOF/CDUkCK6Qe14hv0uhIdbvadLWSDwu5IQTqn0oON24ufaGOayZTQoRPUr+bg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793352819; c=relaxed/relaxed;
-	bh=PCRyiewkbGG036lTwBa+174OovhhVRwZfC2vW3ZeNTQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=VFPbZzgQCrTSOPkSPx6dkrqvUCymcYL/pGj1cj0AyP5SvGAWodY7/Wn7rqcCdJKRnE+VuhF07olfvNz8nUbUOjyWGl+j1Vohr+WRu+lI6i5hhfNNA35VK948nQimlHR57d1CXAgWWdWU+GCrTG0fQkdI5AXcg0ZV8/vGtIA/Lmca++I1h1Hxdq3iP0TSidmSByCYy7nL48GvybCvbaVK/gnlbGPC8AvSlBj7l0A5wImIgMoYZTMBM8Cc7HEYdQmDFB8OJF39zp01+lSyAsNd5+7Suasmy1nMrDxvZVRggT4zErtFvt3eMegCfJ0sxaGgSOh2z+YghAisbY29nsOIcA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=hwwsqr+3; dkim-atps=neutral; spf=pass (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=hwwsqr+3;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1793353170; c=relaxed/relaxed;
+	bh=q8Bp4lvQqYUsZT0k0dArzQOZC6e3m0dIfgAJwvcDsr4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=WEvWcb9YYUbPifI4s+8vxpHy0padHlD52/rMCL3xpx9TftYdORUiuFw9llWUdec7zGQs/r3FDarRjnBq3fDY+jChj/rokpehH0lurckZnBA6UzX+TOvagvDyEa8s7JBclCpY7A8pQ1DeKo2Dv/LYpG5DNVS6pg1iVxWClVUjNFrUO95BOKdZgu/mlko4nT20MJL0Jdiv0fUT3+QoSVT6snV2pzCWz12mqccjejFQBFz0IqQkD+DU5BD1NrbyHye354V02L6N1/Md7LOoD+lhsvwuVFf/cbTOPMjC0eAGtAE2NBpSYavxxEWJURpzVDyXShqkQsrWw705CQC2DK+l5w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.222.45; helo=mail-ua1-f45.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.222.45; helo=mail-ua1-f45.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ua1-f45.google.com (mail-ua1-f45.google.com [209.85.222.45])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGGB84QM8z2yFj
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 20:33:34 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1793352818; x=1824888818;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=qrpI44bWZaGg8MfD8DnU+yqorhMutYP7dQKRrMv1F3w=;
-  b=hwwsqr+3RyeMOnrkG8/WdVOPxiF3efd+pYn1JslQe7PnuN/yTbfNzTVc
-   Civnx/Zt2zFMjGs/n1ebasjiSdhgNdJqEOd0/tqIZ+UwBZ/jwQHL5fb8l
-   99hMQUhNJjGlDMSLC1vi/sFbKBE4fotXT4avKhW+Tr27Mv7EB6nD3yG5E
-   TH5OTtm8gfQ5JNZ31VyQd7xaiL7Ua2Femg9IiDChmBVcqbLaIYWZZ/Y/P
-   +r+xlBvXDCF/FsXbbBlKBnCH1ac+/2KWSDH08yvo14+xDGtT9TKWwxpBL
-   LqOVFEwzAIH93MDX/K5sixoYLS1RvJTuZ/rJcv1elq+BqNaL/zMIRDXcz
-   g==;
-X-CSE-ConnectionGUID: PzLYmIG4SLWeh2YFIC7obw==
-X-CSE-MsgGUID: z7Mr3kYbTr28ANCNnUVfjw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11950"; a="1999330"
-X-IronPort-AV: E=Sophos;i="6.27,186,1787036400"; 
-   d="scan'208";a="1999330"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
-  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Oct 2026 02:33:31 -0700
-X-CSE-ConnectionGUID: qDHB30c7T6+C24I5cmm90w==
-X-CSE-MsgGUID: v4Xg4+SIQQa629rjFUEQMA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,186,1787036400"; 
-   d="scan'208";a="5926976"
-Received: from ettammin-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.245.247])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Oct 2026 02:33:25 -0700
-Date: Fri, 30 Oct 2026 11:33:23 +0200
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: James Hilliard <james.hilliard1@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Jiri Slaby <jirislaby@kernel.org>,
-	Raul E Rangel <rrangel@chromium.org>,
-	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
-	Tony Lindgren <tony@atomide.com>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	Richard Genoud <richard.genoud@bootlin.com>,
-	Nicolas Ferre <nicolas.ferre@microchip.com>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
-	Jacky Huang <ychuang3@nuvoton.com>,
-	Shan-Chun Hung <schung@nuvoton.com>,
-	Pali =?iso-8859-1?Q?Roh=E1r?= <pali@kernel.org>,
-	Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	"Maciej W. Rozycki" <macro@orcam.me.uk>,
-	Timur Tabi <timur@kernel.org>, linux-kernel@vger.kernel.org,
-	linux-serial@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	imx@lists.linux.dev, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v8 4/6] serial: 8250: drain canceled TX DMA before
- reusing its buffer
-Message-ID: <auRkY2h-NJvFszQE@ashevche-desk.local>
-References: <20261029-submit-serial-8250-dma-cancel-v1-v8-0-3fd56ba352ed@gmail.com>
- <20261029-submit-serial-8250-dma-cancel-v1-v8-4-3fd56ba352ed@gmail.com>
- <auNV7Vco5O3vVwRH@ashevche-desk.local>
- <CADvTj4oi6dFzWkjFXie1U49A70Y7Mb=4exga-=2SmG7fN2pLrA@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGGJx0kR2z30VV
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 20:39:28 +1100 (AEDT)
+Received: by mail-ua1-f45.google.com with SMTP id a1e0cc1a2514c-9906a5410f5so1506145241.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 02:39:28 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793353165; x=1793957965;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=q8Bp4lvQqYUsZT0k0dArzQOZC6e3m0dIfgAJwvcDsr4=;
+        b=VRY4Smd0/7Qu4MCP12OHwf4sdm1SSlaeFOlCW4i+4vydcry5I7GhCmEFzPiixLtAL4
+         MkoeEd2YreacKGVFE9kkszylVVJRv5trqG6afH5aHf14W+zboRGslBEWkcFnCGlfJ7+f
+         wDwPlKtWX8F8DNyOYm3znac6a73NzPjNnOetLHpvfnE4JXsVfY+Se+QdQD2n5Z1eB9Tr
+         3R7cChozif/Mc7v1nLmf4W2kmD/+ZUgVJ+50tm0FbaHkub/AuBd5OMAiIJAugdtIZl/P
+         /TC2OPYasCG9ouuddxSimEqB04Ychkq0l2qfG/528bsE0iPRGzAQwiWSYG+NKZuRN6Ij
+         ZXZg==
+X-Forwarded-Encrypted: i=1; AKwUvBymDpt/m4gZdqS/rH2P7vXf/j5suOiBOZDW1YblFQDGmTeRG8562LZjxyly62Wz1uhzbxcdGKOnYiRxEms=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYL+2l10/VQOaOxMQ2uX0law9owcbK2jtHvb1FHR6gFe7Qwhg9RI
+	T2D6Bq2bw+5L7vIqBx6imWPGhdEWx9CYEp1rnhcBXgWn4kotOqqtvlNNjrFjTHa5
+X-Gm-Gg: AYBFou06bvkJ57Bx1wKsRLC0frwdhmf89wB3Ljb+BbVcpTauLu2Ic8BAzmWz6FcAmMu
+	g5dUhwaqBj/mV4/UZFr0fDqZ408q6ekIBRmwdRsgDlVWe93T7mpKN3D+mp84EMnCOkFNuExbX2Z
+	E+2dGgp2vZYIFtZS3tGS1mhrLPj8L9px7YBWL7l9DDym+kV46QvOe7qCDnUyFAM7lKDwB8fouQ3
+	zSR3s0w6ISG1hHlgR4EChmYV3/KbUiONW2heTu6A8LyzNNmsGBAZoGHfC1WBO8YUMQlEhvHZXE5
+	yPGkaWzOlYHM5gOYjJvN5tmogzGqjoh5lJ/TEhVGk2YSw0Clok2EXmVTD2GPg4REJ582GmdsnBg
+	widWuk6iubemo68Q2de0ajX4Sn10EvFO/bMAIQZItLb5LNHVz9JoEEc5NjowIHUlx4YGrqs0Jp6
+	SQHmEFlF5/9dIUtGonLgFWh8F+2tVezjm8lpGy42leyKrcYGdmQlPaJbwzP7gdJwsmi7NSs7W00
+	MFkiJP47+lPs+fFM9WwYQURSauzmCJV0MKZUMvMVRziuytJQgIHLLn7rY4WdhMMO2VL+SUYzGAG
+	ujwidOeoCWDO+hB+CAdpzvxAq5fX/bFdUbEk1pLSTb4XRR5V5A0Z3nBGQcohCgxdZT8=
+X-Received: by 2002:a05:6102:5cc8:b0:7c3:874d:60bb with SMTP id ada2fe7eead31-7d072bc027emr578816137.5.1793353164923;
+        Fri, 30 Oct 2026 02:39:24 -0700 (PDT)
+Received: from mail-ua1-f41.google.com (mail-ua1-f41.google.com. [209.85.222.41])
+        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-7d0776039e9sm1515346137.7.2026.10.30.02.39.23
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 30 Oct 2026 02:39:24 -0700 (PDT)
+Received: by mail-ua1-f41.google.com with SMTP id a1e0cc1a2514c-9909e82513fso417829241.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 02:39:23 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBweToG9M7JSZ4RU3upetLShPsmdjbuJIoSqAKE+84dYtmItHBAUtsNW+SBtr3Ey/J5ebW2PZHUcqqpKv6g=@lists.ozlabs.org
+X-Received: by 2002:a05:6102:605a:b0:7ca:8f2d:5c29 with SMTP id
+ ada2fe7eead31-7d0542ccab3mr1591386137.27.1793353163338; Fri, 30 Oct 2026
+ 02:39:23 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,61 +76,60 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CADvTj4oi6dFzWkjFXie1U49A70Y7Mb=4exga-=2SmG7fN2pLrA@mail.gmail.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
+References: <20261030083800.599152-1-songmuchun@bytedance.com> <20261030083800.599152-2-songmuchun@bytedance.com>
+In-Reply-To: <20261030083800.599152-2-songmuchun@bytedance.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 30 Oct 2026 10:39:10 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdVjr+-4GA=jBNpL3nig6QfQ0Fm8ob+c-OkLADPUJSaNqw@mail.gmail.com>
+X-Gm-Features: AclHuK-5feC2ixWlfC3xXKJ1XowEcUrdLUZ-UGAaez_2WzCy_48TVc-7hVrg-7U
+Message-ID: <CAMuHMdVjr+-4GA=jBNpL3nig6QfQ0Fm8ob+c-OkLADPUJSaNqw@mail.gmail.com>
+Subject: Re: [PATCH 1/2] mm: remove pagetable_dtor_free()
+To: Muchun Song <songmuchun@bytedance.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, David Hildenbrand <david@kernel.org>, 
+	Oscar Salvador <osalvador@suse.de>, Alistair Popple <apopple@nvidia.com>, Will Deacon <will@kernel.org>, 
+	"Aneesh Kumar K . V" <aneesh.kumar@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, 
+	Rich Felker <dalias@libc.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
+	"David S . Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+	linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, 
+	sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, linux-mm@kvack.org, 
+	linux-kernel@vger.kernel.org, Muchun Song <muchun.song@linux.dev>
+Content-Type: text/plain; charset="UTF-8"
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Thu, Oct 29, 2026 at 11:15:23AM -0600, James Hilliard wrote:
-> On Thu, Oct 29, 2026 at 8:19 AM Andy Shevchenko
-> <andriy.shevchenko@linux.intel.com> wrote:
-> > On Thu, Oct 29, 2026 at 01:37:00AM -0600, James Hilliard wrote:
+On Fri, 30 Oct 2026 at 09:38, Muchun Song <songmuchun@bytedance.com> wrote:
+> pagetable_free() now runs pagetable_dtor() for pages that have gone
+> through a page-table constructor, so pagetable_dtor_free() no longer
+> provides distinct behavior.
+>
+> Use pagetable_free() directly at the remaining call sites and remove
+> the redundant helper. This keeps the decision to run the destructor in
+> the common free path.
+>
+> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+> ---
+>  arch/m68k/include/asm/mcf_pgalloc.h |  4 ++--
+>  arch/m68k/mm/motorola.c             |  2 +-
 
-...
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org> # m68k
 
-> > > -     bool                    shutting_down;
-> > > +     bool                    shutting_down:1;
-> > > +     bool                    tx_terminating:1;
-> > > +     bool                    tx_flushed:1;
-> >
-> > What is the meaning of bool XXX:1? Have you checked with `pahole` the result?
-> 
-> These are one-bit boolean fields, intended to pack the state flags
-> into one byte.
-> 
-> I've now compared layout probes using the kernel type definitions and
-> saved build flags, changing only those bitfields to ordinary bools.
-> For the complete v8 structure, including the RX flags, pahole reports:
-> 
->                             Bitfields   Plain bool
->     ARM32 / Clang               212         220
->     ARM64 / GCC                 368         376
->     ARM64 / GCC / PREEMPT_RT     368         376
-> 
-> The sizes are in bytes. All six flags share one byte in the packed
-> version. This saves eight bytes in each checked configuration.
+Gr{oetje,eeting}s,
 
-Thanks for checking!
-
-> The packing is a layout choice, not an atomicity mechanism; updates
-> still require the UART port lock. Given the measured saving, I'd keep
-> it unless there is another concern with using bool bitfields here.
-
-I'm just worrying that bool bitfields are implementation defined and
-might have some side-effects. But I see elsewhere in the kernel similar
-approach, so I guess so far it didn't trigger any suspicious behaviour.
-
--- 
-With Best Regards,
-Andy Shevchenko
+                        Geert
 
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
 
