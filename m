@@ -2,40 +2,40 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79123606A32F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 08:49:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B743A606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 08:49:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=vD350/tD
+	dkim=pass (1024-bit key, unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=dQidhxzT
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jGFCQ5WyZz2xqh;
-	Fri, 30 Oct 2026 19:49:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jGFCS1PGjz30WS;
+	Fri, 30 Oct 2026 19:49:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:760:2e00:f0a1::32"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793350178;
-	cv=none; b=d61BYO+giXC55eMiulE68d3IAoxqJIO0s9zPOGOFk1zcUVpePkzMtbt13ad7Ns4exk/510QvGsvGWgq+1q0euA/w1Q8oaZpANhRRm5F1l2bWitr1YYQjmEZgJfuax1SDSHbJEUwt+y1DW60RXH6bpmpn4D7gX97gJYOui2MjghAblAaS3ewaK0r2GYLdO0+Bgh7phhyga47dEyH/vDcuOtPixpHiaIRoFnhmB0yOq73U1a8rW1/ALcWqbB3e5wQMeg/6C1a33KyKhpDfzFg18wSV7Xl5OLe1xGnBc61XWn8PL9kKUvnvXP5gBnpaZW+vzsxXKBQxjmQ4CPxof3fdFQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793350180;
+	cv=none; b=dmk1w6VwJxun0qfCol+BM4jC/WBsFNPjo3ISKHx5z2iXdm7vuJCXEflW8UcJMwiWZxq1mbXZtMR5M0DHiGNMRh0KeG4/lsrLW/2UstAxF7lOd2BtEEf/2BUnWQPhYJLHexc00p1spuUGkCpWwjLT4nF6M2WzCuQmLnUtaDO3emcIR++xO9ctG7dBdkLzGK++H2yFdoQMnlKrXeGeTTZFt2FrlAevJzp5dQ87fPpIN6yTbMWt4AYcjHcImxNzlG1CdyVPE2gg0v+jlpkNF52o7jhm1bw65/qdp8WTUo/u2XbR79x8LrpDj0VvKufWbH1HQTp0RfQBnSuzs4n30Vn1mQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793350178; c=relaxed/relaxed;
-	bh=8PFBa0453peGS7/Cs9P1PeciAx/a1xuZsr6ALPAf46o=;
+	t=1793350180; c=relaxed/relaxed;
+	bh=yjMdRQDa0BKiCjyBLxfnEtlG7A95NJovK+UaME+7Qrk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=YfvEHg9K6xIxMPS26XgaQZIZ5XchevlyOhlEB60gZ/RvrxkXwT559Lvd5Wj0+gk+8SYrlBTo7f31RHKXT2f4540jaSZxCE71S4+CFvQ0YsoD0xkdKfBw9FCT71pkzInLCB9TS6scfhXWauDV3QJVyeohmllHujz1jH4ANZRVaPlwVAujNKvIrgQh8mul2K7GZFlUQzRpznbdibdnTYELwDKUjn6+M7Eh2SwQAMbkXrneqf2PWiWpaaAe+QacpfYvg/Z+QulqW+BCRk1rzVwYquFgRMZ2/EGDusQcc//5PNR04vVE+7rjN05LiOs0jLypz0lWytLTXWUj2Rg1bje4cQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=cs.unibo.it; dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=vD350/tD; dkim-atps=neutral; spf=pass (client-ip=2001:760:2e00:f0a1::32; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org) smtp.mailfrom=cs.unibo.it
+	 MIME-Version; b=Th0fM0+GuYSNSWrM4y3/SrnmZKT9GDgfUAQEbZ/ucW5a/vmwC+LDeEbtTIwjTtGn+0bV0cB9AZpgMs9t0lWqNftoaAaE+kYCuUy2rGTJCou124GFSr9EQJrs72dRToM4yNOa9+i9XxC/tPwf29eTxgwzkcQNXdBJBL8CJja19RLoTBfuU70VYbie2h+Ce13xMAuOXZrOsrTiIIdp+JEHM7M0SoMH+8nunPRjkg2Otb0e4CWSxaL6aXuQ2vRsC0XNbnMh4ybR8Z42b2MiHx+1E1PfQWMASMETn1ZrVtZaePD9gMqS0I8iSIiTMMzX/rdHldm2hq4JJwO8FB/c/pG0mg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=cs.unibo.it; dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=dQidhxzT; dkim-atps=neutral; spf=pass (client-ip=2001:760:2e00:f0a1::32; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org) smtp.mailfrom=cs.unibo.it
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=cs.unibo.it
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=vD350/tD;
+	dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=dQidhxzT;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cs.unibo.it (client-ip=2001:760:2e00:f0a1::32; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org)
 Received: from mail.virtlab.unibo.it (mail.virtlab.unibo.it [IPv6:2001:760:2e00:f0a1::32])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jGFCP6SSKz30WS
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 19:49:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jGFCR2kfHz30gC
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 19:49:39 +1100 (AEDT)
 Received: from eipi10.cs.unibo.it (unknown [94.32.99.206])
-	by mail.virtlab.unibo.it (Postfix) with ESMTPA id 21EB41C025B;
-	Fri, 30 Oct 2026 09:49:36 +0100 (CET)
+	by mail.virtlab.unibo.it (Postfix) with ESMTPA id 2D96A1C025D;
+	Fri, 30 Oct 2026 09:49:37 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=cs.unibo.it;
-	s=virtlab; t=1793350176;
-	bh=ZygyKgWUKW+0GU3E/KOJede2S8o2FlDkM5rxc9dDDbk=;
+	s=virtlab; t=1793350177;
+	bh=nAKASWeLvsdxgMY7KJmCSMlmE5AQrN3mfo3HXClaYIM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=vD350/tDv92mYDYd3+MLAlQomWxgmhaj4OM8wOUOzShU0ha1u3SUwM2LTDWHQXs6y
-	 K7LZrZeK/RVrJUU9R+h1BWgyT9NwQlfb92un0rwSeG+OG5BHfhjC87IqEMyB5PlZip
-	 QBkHyJ5EeIGV+B7Z2myq2lqEuyxtGWbrE+UikHtM=
+	b=dQidhxzTAJZ2Z8XUUUbgPOCm9zpmY7boSUY9h9rxbTpGWRum+I27qOoWJsEa5NJhu
+	 hZvPmcCZ2ilUKxhjOrp3sbKnmYiSsz0A3Tsm3IuRyOYTkBmsFXYg/10hFn9McXNTAp
+	 vmFhWdetaz6QgEXdyKZXJbYm6Y3QeBpZHX26ZDfA=
 From: Renzo Davoli <renzo@cs.unibo.it>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>
@@ -54,9 +54,9 @@ Cc: Renzo Davoli <renzo@cs.unibo.it>,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH v3 1/2] powerpc/syscall: Remove TIF_SYSCALL_RET
-Date: Fri, 30 Oct 2026 09:49:24 +0100
-Message-ID: <20261030084926.1068384-2-renzo@cs.unibo.it>
+Subject: [PATCH v3 2/2] powerpc/syscall: Return the preset value of skipped syscalls
+Date: Fri, 30 Oct 2026 09:49:25 +0100
+Message-ID: <20261030084926.1068384-3-renzo@cs.unibo.it>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20261030084926.1068384-1-renzo@cs.unibo.it>
 References: <20261030084926.1068384-1-renzo@cs.unibo.it>
@@ -73,7 +73,6 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
@@ -82,85 +81,54 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Commit 69cb2be898be ("powerpc/syscall: Fix syscall skip handling for
-seccomp and ptrace") added TIF_SYSCALL_RET, set by
-syscall_set_return_value(), so that system_call_exception() skips a
-system call whose return value has already been set.
+When ptrace or seccomp skip a system call, r3 (and CR0.SO for "sc")
+already hold its return value, set either through
+syscall_set_return_value() or directly by a tracer, e.g. with
+PTRACE_POKEUSER at a PTRACE_EVENT_SECCOMP stop.
 
-The flag is set with set_thread_flag(), i.e. on current rather than on
-the task passed to syscall_set_return_value().  When the caller is a
-tracer, as with PTRACE_SET_SYSCALL_INFO and op ==
-PTRACE_SYSCALL_INFO_EXIT, the flag ends up on the tracer, and the next
-system call of the tracer is silently not executed.  Setting it on the
-right task would not be enough either: at a syscall-exit stop the flag
-would then skip the next system call of the tracee.
+Since commit 05c033db7e9a ("entry, treewide: Make
+syscall_enter_from_user_mode[_work]() indicate syscall execution"),
+system_call_exception() returns syscall_get_error() for a skipped system
+call.  syscall_get_error() is 0 for any non-error value, so a success
+value is replaced with 0: the value set by a tracer, or the val of a
+SECCOMP_RET_USER_NOTIF response.  Among others, the seccomp_bpf
+user_notification_* and TRACE_syscall.seccomp.syscall_faked selftests
+fail.
 
-The flag is not needed anymore.  Commit 05c033db7e9a ("entry, treewide:
-Make syscall_enter_from_user_mode[_work]() indicate syscall execution")
-made syscall_enter_from_user_mode_randomize_stack() return false when
-ptrace or seccomp skip the system call, and every in-kernel caller of
-syscall_set_return_value() on the syscall entry path (SECCOMP_RET_ERRNO,
-SECCOMP_RET_TRACE without a tracer, SECCOMP_RET_USER_NOTIF) also makes
-it return false.  A system call with an invalid number, including
-syscall(-1), still gets -ENOSYS.
+Return the error from syscall_get_error() if there is one, and the value
+in r3 otherwise.  The error path is unchanged, and a success value is
+returned as it was before the conversion to GENERIC_ENTRY, when
+system_call_exception() returned regs->gpr[3] for a skipped system call.
 
-Remove the flag.
-
-Fixes: 69cb2be898be ("powerpc/syscall: Fix syscall skip handling for seccomp and ptrace")
+Fixes: 05c033db7e9a ("entry, treewide: Make syscall_enter_from_user_mode[_work]() indicate syscall execution")
 Cc: stable@vger.kernel.org # v7.3
-Suggested-by: Michal Suchánek <msuchanek@suse.de>
+Suggested-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
 Assisted-by: claude-opus-5-5
 Signed-off-by: Renzo Davoli <renzo@cs.unibo.it>
 ---
- arch/powerpc/include/asm/syscall.h     | 6 ------
- arch/powerpc/include/asm/thread_info.h | 1 -
- arch/powerpc/kernel/syscall.c          | 4 +---
- 3 files changed, 1 insertion(+), 10 deletions(-)
+ arch/powerpc/kernel/syscall.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
-index 32be22b995cc..4b3c52ed6e9d 100644
---- a/arch/powerpc/include/asm/syscall.h
-+++ b/arch/powerpc/include/asm/syscall.h
-@@ -98,12 +98,6 @@ static inline void syscall_set_return_value(struct task_struct *task,
- 			regs->gpr[3] = val;
- 		}
- 	}
--	/*
--	 * Mark that a return value has been explicitly set by seccomp or
--	 * ptrace so that system_call_exception() can skip the syscall
--	 * unconditionally, even when the user requested syscall(-1).
--	 */
--	set_thread_flag(TIF_SYSCALL_RET);
- }
- 
- static inline void syscall_get_arguments(struct task_struct *task,
-diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index 1e069a2e7ce8..0487e94d3416 100644
---- a/arch/powerpc/include/asm/thread_info.h
-+++ b/arch/powerpc/include/asm/thread_info.h
-@@ -120,7 +120,6 @@ void arch_setup_new_exec(void);
- #endif
- #define TIF_POLLING_NRFLAG	19	/* true if poll_idle() is polling TIF_NEED_RESCHED */
- #define TIF_32BIT		20	/* 32 bit binary */
--#define TIF_SYSCALL_RET		21	/* syscall error value set */
- 
- /* as above, but as bit values */
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
 diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
-index 8529827d697f..f7412556a9e8 100644
+index f7412556a9e8..7b35b895b70c 100644
 --- a/arch/powerpc/kernel/syscall.c
 +++ b/arch/powerpc/kernel/syscall.c
-@@ -18,9 +18,7 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
- 	long ret;
+@@ -19,7 +19,14 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
  	syscall_fn f;
  
--	if (unlikely(!syscall_enter_from_user_mode_randomize_stack(regs, &r0) ||
--			test_thread_flag(TIF_SYSCALL_RET))) {
--		clear_thread_flag(TIF_SYSCALL_RET);
-+	if (unlikely(!syscall_enter_from_user_mode_randomize_stack(regs, &r0))) {
- 		return syscall_get_error(current, regs);
+ 	if (unlikely(!syscall_enter_from_user_mode_randomize_stack(regs, &r0))) {
+-		return syscall_get_error(current, regs);
++		/*
++		 * The syscall was skipped by seccomp or ptrace. r3 (and CR0.SO
++		 * for "sc") already hold the return value, set either through
++		 * syscall_set_return_value() or directly by the tracer. Hand
++		 * it back in the form syscall_exit_prepare() expects: -errno
++		 * on failure, else the value in r3.
++		 */
++		return syscall_get_error(current, regs) ?: regs->gpr[3];
  	}
  
+ 	if (unlikely(r0 >= NR_syscalls)) {
 -- 
 2.55.0
 
