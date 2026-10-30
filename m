@@ -2,69 +2,69 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29542606A323
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 21:22:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3139E606B79B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2026 21:22:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=RfAOCVlr
+	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=SMOYOVSk
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jGYtv2GTYz3bkd;
-	Sat, 31 Oct 2026 08:21:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1047"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793395287;
-	cv=none; b=T5Xg90RQlxtE6PkHHvoSN+Cd0p3I3ZLtmYmsoOCIEHwf471DOrVh7HRR2AcC9nwZqmutImg6SOPHtINuekpE9OskRzOU6r82v/uEj4dkxfE697MgvT/T0OuZzG2rdrejxc7spOZgbn3Lp5MmYzdL60KzrE3x89s2IhrXp+4uK+5BmKR5+uqmorImtz6kPfj/ojMeOZTQwGAmIK5oQ3x4EjnC87SuZeMiJsAeYfTv3nkvz1tlBPlQBs4Li3l9caZxZqlSscRae/Ojht9PLJMjRqf7d+AaTzWeWcJCYsJ9/Khqok2NQNlSavTgomihLxWZH7KLCP9doIChmiKzGgzMwQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jGYtx0T3Lz3bn8;
+	Sat, 31 Oct 2026 08:21:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.215.198
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793395289;
+	cv=none; b=ih/58zjg2cPnHlbTFIgg5pJ6Pxii95DhoWJNMLA+ixVdxCVksI4x07SyvXQ8O8e+24YIVhKkErH5XW8DIS8lfV5MpbnCBrWNWbmPA1sIK1zm+75300iDpZpb7P3vXopbJmgUWfLoRQaCOnHKn12l/diq0MzTxzf9acwJQgZDl6lRCniA6A13KpR3YLKNFXVZVS2zzbLvyzniddxVrcgsa0HHoRi3APHyP3wuxpzbcvqXY5tvPV7on9KwTXUxTXqqHJZOQ8gkg/+Q/GtK8Rb2RuKwOiXAAoUel+DeeeL6yIQs3vM6axMX1X8qZ8yH/qdSbYIeorTZXIBh2E1nHRk+qQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793395287; c=relaxed/relaxed;
-	bh=4FBcwwQefjg5U9pbFhBbpj/PcCf2fiNl2oUBEHVQucg=;
+	t=1793395289; c=relaxed/relaxed;
+	bh=tBGgI/GpDCr73Zv/DH70VbcIjXcJZddwPYNf2j30K9E=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=Z9DxnRty5Oxxx/1L4FyaEfm8/ZXc+aJ9zgMYeXaEpODrRWdsGKH/3JtoWKQpB+UXToTw0GdjshyU3Bg93wYTWP97uccxMDaMWbNjg7IGgfPfkxvr5zQZHdUqTmzPm8pIc9owgEoLK+DGZR1s3e6U2P04i9MTGPhJa5ok3znZrOaVw6zDVKrWItbsdBoc+BLeNpzVPu2185zC5ZHdUFRT2+l3v4p/ORZTGNFS4JcGxxjivXjS6DmygQvUiXVuDfsAG6z+f6phj/ggrQQhvkEaJ773SKknZUd/K+0IKReT2gJRjzTxVWgmqFXx6gmMSXF0j+tKBs56u+gYgbXvoocjmQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=RfAOCVlr; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1047; helo=mail-pj1-x1047.google.com; envelope-from=3varlagykdfsl73gc59hh9e7.5hfebgnqii5-67oeblml.hse34l.hk9@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+	 To:Cc:Content-Type; b=SXo1qFowtcwSeBwXPWf5Xuc2JH409+l8f7YNZ9osUOvYsvKe2tgbZvjbIH83t6kuFtYRGAwyyfWep8br1zdFSFkxtjh8osP5bxbveHa1Phg9gqmgwrBLagZYloVQHBeZVsrwq/6kiGesMeTWmq1n0QDICZlvT5XpmqzRj/gb+72Dji6ulaCJnej+m0LDw0dG4Edl9pvjeVTUmFJPp842GFit5oQi/BJ+DbgcP16THeCTCh3q7VlvyIp1MN5A/aeFfIn5WXgwX5KGxWvU6Sy48QWh5SUTebSQXeDjlmjDnMLOiuANqDq2NhJ741Kn/yVX37ZvAhGTvkPbCP3ReNf4yw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=SMOYOVSk; dkim-atps=neutral; spf=pass (client-ip=209.85.215.198; helo=mail-pg1-f198.google.com; envelope-from=3vqrlagykdfwm84hd6aiiaf8.6igfchorjj6-78pfcmnm.itf45m.ila@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=RfAOCVlr;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=SMOYOVSk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::1047; helo=mail-pj1-x1047.google.com; envelope-from=3varlagykdfsl73gc59hh9e7.5hfebgnqii5-67oeblml.hse34l.hk9@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1047.google.com (mail-pj1-x1047.google.com [IPv6:2607:f8b0:4864:20::1047])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=209.85.215.198; helo=mail-pg1-f198.google.com; envelope-from=3vqrlagykdfwm84hd6aiiaf8.6igfchorjj6-78pfcmnm.itf45m.ila@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-f198.google.com (mail-pg1-f198.google.com [209.85.215.198])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGYtt4YbZz3blr
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 08:21:26 +1100 (AEDT)
-Received: by mail-pj1-x1047.google.com with SMTP id 98e67ed59e1d1-3adad90c894so1232192a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 14:21:26 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGYtw2cZKz3blr
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 08:21:28 +1100 (AEDT)
+Received: by mail-pg1-f198.google.com with SMTP id 41be03b00d2f7-cd8b299b05fso928697a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2026 14:21:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1793395285; x=1794000085; darn=lists.ozlabs.org;
+        d=google.com; s=20260707; t=1793395286; x=1794000086; darn=lists.ozlabs.org;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:reply-to:from:to:cc:subject:date:message-id
          :reply-to:content-type;
-        bh=4FBcwwQefjg5U9pbFhBbpj/PcCf2fiNl2oUBEHVQucg=;
-        b=RfAOCVlrVtjsY8W10z/E8i4sdofCg7bDAiBz3BdE/A+hC6qFOvENXzkUfR8bd0jqF5
-         8/z+9RKDNx27R4UU+CjgFjAy3Iobx/wClCNfHZbRCf6b9FAkVb7wGwCz8e/T+VkfzSzz
-         sG50iPfmq2hxWhLNDe3fZdAVMQwfohKsyDVCT8CscBRHNycK6LMpY++fqb/inHTrPheg
-         VPTd5Y8YNl6OnDcQw4cSlCUenZs0UFTEBekx9cLDv3Qato8dhqaHUiUTUNUnslllyQ6c
-         3ar+t7W77h/B2oi9Ta0YldCCvC3/NASS5+iCRJ/MGGNZ+3q3nmWYOuNv9OfCYrGuoZKS
-         5QdQ==
+        bh=tBGgI/GpDCr73Zv/DH70VbcIjXcJZddwPYNf2j30K9E=;
+        b=SMOYOVSkb0JGJQiQWCa8cf7N84Cxn3R3ldW9eQvx5nnGK7NNdaw6WcJYvoAdCo3CfH
+         wy5VCC6/NWCVfEgKW1w6ciJBMkz+wp/CCCA53l/BsRMq1yt8lPdG3Kehp5GCKHL1lQeX
+         sWgWFw53C9G59/DNRVfLWNI88VdGMQfxdmb3Pv54JSgCGY3fG4VXyddHKgJ9cS6nqhdH
+         C/AjoXl62bWL6WSBd82IAoPmgfQwTE+rwjYKjKCfGWchjYrJMFNC4cYRPThOrKRBk+CR
+         oCAXEvns4latN8AxnErLPcq7T+QanBey7i15dQhgodrqc0vWccf88dOPi7pxwprxqTen
+         /6Qw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793395285; x=1794000085;
+        d=1e100.net; s=20260707; t=1793395286; x=1794000086;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:reply-to:x-gm-message-state:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=4FBcwwQefjg5U9pbFhBbpj/PcCf2fiNl2oUBEHVQucg=;
-        b=qIBIUmGstBNrwNi6egXQ+/R+jzCQaH+pWfaRmvfFXtnwWlUwv+ieeUAF7MOu1Z7GZ6
-         J/j+/R6KqIR5kFxg7NqIGoPzGildPoiZa+yEZSi4IpcFT5C4BcOOyBpmJx9zrUk2Lypg
-         Ewtuw2TOOzDkNFb1mo+eyma1sostd+joJORUM1tk7hMztPmZO5rA4oBBkMbmq86RYWXT
-         dEOvMEgDlODHgzmt089UJl0kybsxKrnlPlZQTrcF/1lsLz9r6sG7l2cTHpgTTSgOF45U
-         Lxlwm/V9961Vs4+rhMSeO1JqJjvATBY8f2HIQ5214/yCbOA/agy1uK9lHA5xOPr2vR5S
-         dj4g==
-X-Forwarded-Encrypted: i=1; AKwUvBy2TbTGRPeANmYmVNDZsmMKel1Z5zImSrk4t9ZSM7f3FUJG4B2YcRsgHxFBDi7+DRQ8WJ+8+HP9oKXAOg4=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYKif5LH/ev4LclLLx0DCzADGgrYBqWgdAelEqbQKRLNVSZcqohW
-	vWTMx4RXYOXnRV2aIrAGwdFupQzKc7iSDLdQBvVuAtCv9KRq3Gxx7U/zZ0PTcysst511pVsl5jA
-	cgHYopQ==
-X-Received: from pjry9.prod.google.com ([2002:a17:90a:bd09:b0:3ab:d09d:a37a])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:3b44:b0:3ac:74b3:a8f3
- with SMTP id 98e67ed59e1d1-3ae8983b590mr3022604a91.44.1793395284519; Fri, 30
- Oct 2026 14:21:24 -0700 (PDT)
+        bh=tBGgI/GpDCr73Zv/DH70VbcIjXcJZddwPYNf2j30K9E=;
+        b=UI8Rqdqx9fEXv2r5tPDPKRh8kWXj0/TTVPy70mndhHAt1N0v0SKKtQGwMo3kq6e386
+         0paOUAgcpKV1gelrjXaKI6G3Qf0x4VfvjGuyzgD6kJNNtkGxrNmlLITrN/6arV9k+gHf
+         d4y1c0lNNyn5k6g9jZlOOK6GQtaF4COdf39LhVnrFqiV9GxADa2kXMqflBJdRLl52RV2
+         sAq3qVXs9okETShsBG1siGydYLlk+0VJWoUhg0BVXTMhHq006X+Nw9dwOEFiffyGQndg
+         08w1rRIOJ+lUFI8RACcy1PkDmpHA1kzE9q8sijHR9u2zKHEjY7FCWKC2BwHdUOzU88si
+         1Rgg==
+X-Forwarded-Encrypted: i=1; AKwUvBzufw9HAaGS8mHi6NfVsaqse4Coq4DhMOtpEIvYUF7xqGdBedGYob4+oQHex+VbIsp25K68O0yUVno5TWs=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYJFOCz8lB5w/ciWtXy+WNIxASUcf3FySygKVV/TZm03ALAJTCs3
+	stICvZdGTbuGyjg7K+dsZappQ3Tjj1QIv7tyH1419l6HzK6acMUk+uxdotsHVjKrfnsz54P8oyJ
+	JfbtHyg==
+X-Received: from pglv12.prod.google.com ([2002:a63:150c:0:b0:cd8:bb6a:e38])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a21:1bc1:b0:3e2:1a3e:395c
+ with SMTP id adf61e73a8af0-3e928a51d5dmr3526269637.59.1793395285754; Fri, 30
+ Oct 2026 14:21:25 -0700 (PDT)
 Reply-To: Sean Christopherson <seanjc@google.com>
-Date: Fri, 30 Oct 2026 14:20:57 -0700
+Date: Fri, 30 Oct 2026 14:20:58 -0700
 In-Reply-To: <20261030212112.2598640-1-seanjc@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -81,9 +81,9 @@ X-Archived-By: <archiver.kernel.org>
 Mime-Version: 1.0
 References: <20261030212112.2598640-1-seanjc@google.com>
 X-Mailer: git-send-email 2.56.0.385.gac671c819a-goog
-Message-ID: <20261030212112.2598640-10-seanjc@google.com>
-Subject: [PATCH v4 09/23] KVM: x86: Re-queue APICv update request if
- inhibiting APIC access page fails
+Message-ID: <20261030212112.2598640-11-seanjc@google.com>
+Subject: [PATCH v4 10/23] KVM: x86: Map a separate VMA for each address space
+ for internal memslots
 From: Sean Christopherson <seanjc@google.com>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>, Sean Christopherson <seanjc@google.com>, 
 	Paolo Bonzini <pbonzini@redhat.com>
@@ -94,81 +94,152 @@ Content-Type: text/plain; charset="UTF-8"
 X-Spam-Status: No, score=-26.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,TVD_PH_SUBJ_META1,USER_AGENT_GIT,USER_IN_DEF_DKIM_WL
-	autolearn=ham autolearn_force=no version=4.0.1
+	SPF_PASS,USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Re-queue an APICv update request if deleting the APIC access page memslot
-fails when trying to (permanently) inhibit the APIC access page.  Sadly,
-memslot deletion requires a memory allocation and so can fail even if KVM
-does everything right.
+Use a separate VMA for each address space when installing internal memslots,
+i.e. mmap() a separate VMA for the SMM memslot, and delete the TODO along
+with the hack to only unmap() the SMM memslot when freeing memslots.  Use
+an explicit shmem file (as opposed to the implicit shmem file created for
+an anonymous MAP_SHARED mapping) so that both memslots' VMAs point at the
+same backing page.
 
-Fixes: 2008fab34530 ("KVM: x86: Inhibit APIC memslot if x2APIC and AVIC are enabled")
+Note, using shmem_kernel_file_setup() directly is more or less equivalent
+to shmem_zero_setup(), which is used for "MAP_SHARED | MAP_ANONYMOUS"
+mappings; the only practical difference is the dentry name.
+
+Return the virtual address of the non-SMM memslot mapping, as that memslot
+is guaranteed to exist.
+
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/lapic.c | 38 ++++++++++++++++++++++----------------
- 1 file changed, 22 insertions(+), 16 deletions(-)
+ arch/x86/kvm/x86.c | 62 +++++++++++++++++++++++++---------------------
+ 1 file changed, 34 insertions(+), 28 deletions(-)
 
-diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
-index ecf611845fb1..c20e2a25834f 100644
---- a/arch/x86/kvm/lapic.c
-+++ b/arch/x86/kvm/lapic.c
-@@ -2931,6 +2931,7 @@ EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_alloc_apic_access_page);
- void kvm_inhibit_apic_access_page(struct kvm_vcpu *vcpu)
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 0b94f981a2e1..8cb58040dd81 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -59,6 +59,7 @@
+ #include <linux/irqbypass.h>
+ #include <linux/sched/stat.h>
+ #include <linux/sched/isolation.h>
++#include <linux/shmem_fs.h>
+ #include <linux/mem_encrypt.h>
+ #include <linux/suspend.h>
+ #include <linux/smp.h>
+@@ -10007,9 +10008,19 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
+ }
+ 
+ static int x86_set_internal_memslot(struct kvm *kvm, int id, int as_id,
+-				    gpa_t gpa, unsigned long hva, u32 size)
++				    gpa_t gpa, struct file *f, u32 size)
  {
- 	struct kvm *kvm = vcpu->kvm;
-+	void __user *p;
+ 	struct kvm_userspace_memory_region2 m;
++	unsigned long hva;
++	int r;
++
++	if (f) {
++		hva = vm_mmap(f, 0, size, PROT_READ | PROT_WRITE, MAP_SHARED, 0);
++		if (IS_ERR_VALUE(hva))
++			return (long)hva;
++	} else {
++		hva = 0;
++	}
  
- 	if (!kvm->arch.apic_access_memslot_enabled)
- 		return;
-@@ -2939,25 +2940,30 @@ void kvm_inhibit_apic_access_page(struct kvm_vcpu *vcpu)
+ 	if (!size && !id_to_memslot(__kvm_memslots(kvm, as_id), id))
+ 		return 0;
+@@ -10019,7 +10030,11 @@ static int x86_set_internal_memslot(struct kvm *kvm, int id, int as_id,
+ 	m.guest_phys_addr = gpa;
+ 	m.userspace_addr = hva;
+ 	m.memory_size = size;
+-	return kvm_set_internal_memslot(kvm, &m);
++
++	r = kvm_set_internal_memslot(kvm, &m);
++	if (r && f)
++		vm_munmap(hva, size);
++	return r;
+ }
  
- 	mutex_lock(&kvm->slots_lock);
+ /**
+@@ -10047,7 +10062,8 @@ static int x86_set_internal_memslot(struct kvm *kvm, int id, int as_id,
+ void __user * __x86_set_memory_region(struct kvm *kvm, int id, gpa_t gpa,
+ 				      u32 size)
+ {
+-	unsigned long hva;
++	struct file *f __free(fput) = NULL;
++	struct kvm_memory_slot *slot;
+ 	int i, r;
  
--	if (kvm->arch.apic_access_memslot_enabled) {
--		__x86_set_memory_region(kvm, APIC_ACCESS_PAGE_PRIVATE_MEMSLOT, 0, 0);
+ 	lockdep_assert_held(&kvm->slots_lock);
+@@ -10055,37 +10071,31 @@ void __user * __x86_set_memory_region(struct kvm *kvm, int id, gpa_t gpa,
+ 	if (WARN_ON(id >= KVM_MEM_SLOTS_NUM))
+ 		return ERR_PTR_USR(-EINVAL);
+ 
+-	if (size && id_to_memslot(kvm_memslots(kvm), id))
+-		return ERR_PTR_USR(-EEXIST);
+-
+ 	if (size) {
 -		/*
--		 * Clear "enabled" after the memslot is deleted so that a
--		 * different vCPU doesn't get a false negative when checking
--		 * the flag out of slots_lock.  No additional memory barrier is
--		 * needed as modifying memslots requires waiting other vCPUs to
--		 * drop SRCU (see above), and false positives are ok as the
--		 * flag is rechecked after acquiring slots_lock.
+-		 * MAP_SHARED to prevent internal slot pages from being moved
+-		 * by fork()/COW.
 -		 */
--		kvm->arch.apic_access_memslot_enabled = false;
-+	if (!kvm->arch.apic_access_memslot_enabled)
-+		goto out;
- 
--		/*
--		 * Mark the memslot as inhibited to prevent reallocating the
--		 * memslot during vCPU creation, e.g. if a vCPU is hotplugged.
--		 */
--		kvm->arch.apic_access_memslot_inhibited = true;
-+	p = __x86_set_memory_region(kvm, APIC_ACCESS_PAGE_PRIVATE_MEMSLOT, 0, 0);
-+	if (IS_ERR(p)) {
-+		kvm_make_request(KVM_REQ_APICV_UPDATE, vcpu);
-+		goto out;
+-		hva = vm_mmap(NULL, 0, size, PROT_READ | PROT_WRITE,
+-			      MAP_SHARED | MAP_ANONYMOUS, 0);
+-		if (IS_ERR_VALUE(hva))
+-			return (void __user *)hva;
+-	} else {
+-		hva = 0;
++		if (id_to_memslot(kvm_memslots(kvm), id))
++			return ERR_PTR_USR(-EEXIST);
++
++		f = shmem_kernel_file_setup("kvm_memslot", size, EMPTY_VMA_FLAGS);
++		if (IS_ERR(f))
++			return (void __user *)f;
  	}
  
-+	/*
-+	 * Clear "enabled" after the memslot is deleted so that a different vCPU
-+	 * doesn't get a false negative when checking the flag out of slots_lock.
-+	 * No additional memory barrier is needed as modifying memslots requires
-+	 * waiting other vCPUs to drop SRCU (see above), and false positives are
-+	 * ok as the flag is rechecked after acquiring slots_lock.
-+	 */
-+	kvm->arch.apic_access_memslot_enabled = false;
-+
-+	/*
-+	 * Mark the memslot as inhibited to prevent reallocating the memslot
-+	 * during vCPU creation, e.g. if a vCPU is hotplugged.
-+	 */
-+	kvm->arch.apic_access_memslot_inhibited = true;
-+out:
- 	mutex_unlock(&kvm->slots_lock);
+ 	for (i = 0; i < kvm_arch_nr_memslot_as_ids(kvm); i++) {
+-		r = x86_set_internal_memslot(kvm, id, i, gpa, hva, size);
++		r = x86_set_internal_memslot(kvm, id, i, gpa, f, size);
+ 		if (!r)
+ 			continue;
  
- 	kvm_vcpu_srcu_read_lock(vcpu);
+-		if (size) {
+-			for (i--; i >= 0; i--)
+-				x86_set_internal_memslot(kvm, id, i, gpa, 0, 0);
++		for (i--; i >= 0 && size; i--)
++			x86_set_internal_memslot(kvm, id, i, gpa, NULL, 0);
+ 
+-			vm_munmap(hva, size);
+-		}
+ 		return ERR_PTR_USR(r);
+ 	}
+ 
+-	return (void __user *)hva;
++	slot = id_to_memslot(kvm_memslots(kvm), id);
++	if (WARN_ON_ONCE(!!size != !!slot))
++		return ERR_PTR_USR(-EIO);
++
++	return (void __user *)(slot ? slot->userspace_addr : 0);
+ }
+ EXPORT_SYMBOL_FOR_KVM_INTERNAL(__x86_set_memory_region);
+ 
+@@ -10158,12 +10168,8 @@ void kvm_arch_free_memslot(struct kvm *kvm, struct kvm_memory_slot *slot)
+ 	 * unless the memory map has changed due to process exit or fd copying.
+ 	 * Leak the mapping on failure, e.g. if the task is killed.  Worst case
+ 	 * scenario, the page(s) will be reclaimed when the process exits.
+-	 *
+-	 * TODO: Allocate VMAs for each address space and drop the check on the
+-	 *       as_id, which depends on freeing memslots from 0=>N-1.
+ 	 */
+-	if (current->mm == kvm->mm && slot->id >= KVM_USER_MEM_SLOTS &&
+-	    slot->as_id == (kvm_arch_nr_memslot_as_ids(kvm) - 1))
++	if (current->mm == kvm->mm && slot->id >= KVM_USER_MEM_SLOTS)
+ 		vm_munmap(slot->userspace_addr, slot->npages * PAGE_SIZE);
+ }
+ 
 -- 
 2.56.0.385.gac671c819a-goog
 
