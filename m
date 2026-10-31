@@ -2,63 +2,86 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 313A1606A31F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Oct 2026 10:55:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2069606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Oct 2026 12:11:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LX0RjJQJ
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=zmd4w7mM
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jGvyQ3c4qz2xpt;
-	Sat, 31 Oct 2026 21:55:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793444142;
-	cv=none; b=LgMo4Z5wd/VEC/S2wbRVGEG0Jb857aQgaxFO0kpc+ljV66mc2l9knxvvshPVdoPEmc7Dp0LrNaTKuOKqfHs38bbWkbGCwXTzkehqFX+U76rgtTaqOCm8KaziK1qAwNrSl+qqmoNaLaf+GA9QYXEGi7xt6HbDdu+BwIEB8PYhCbplOPP15CK9uX3SVm398ZwaovD8BnqhrMJAyqF/tk24qEzcscblkayeJ5+hA6xFmwXUacYDqIkFZiM7ajG819VvOkIPIa5yobwRwqWMLO3TrnTuQX4hkiNys9QyOfNjtArYC3Rz/aTfZUfMG2fWMdVWL2FErdlX0ZMa7OtL5ExT0w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jGxfH5rkzz2xJF;
+	Sat, 31 Oct 2026 23:11:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793448711;
+	cv=none; b=d3r++yMnwPsFkQ7aGWO84JxW4UpyW5zD2WeTlE2HUwN96mo6qaRZ3NQB0itDtWDWmhZoSG2m9NX/BE1m2uL8HrZCfWsTESWw1pDw+BAvhHpRg0HEtXI/8CJ1XgaqOh3Nl+F8Sjw+9jv4xeix4LMroYT3F60wy27AWdxFiL8D4tAI5yZdrmpbkxrPBfEH/K3FD8VlgS+Kh3UQB0mzJRRnJ98Wl2KriHKIAaCwGZnObM/z/UHFSvfzE7zWQxAkV9Jd8tiUHLfV3r4OMoJlPNLHmDxImQHmHe8kCTE7eWRyX7S4lRpHmgCy6odwkfdiArn3Y3yPMzwX649CzKFRKZGnSA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793444142; c=relaxed/relaxed;
-	bh=7b46y4s0/zi9X4zHo11yWW6Vbp88X1A148hn2dA9HOA=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=acwvB+VjCc0qwtO5E8xPCanAHOlfNN53q3msOEWtEd50p2qWHbkETz8NIJM50FsboyH/Wr7R0szLAn56CV8WCwa0TkL/OvJknA7knSfIKMh3mdXzdG/SyfNvSiPdkOz4p4vdsaRhf9GBj3YkUjPYAzMPhZQJtrTJ+lEYgrocTckA1BuUsg86nvig/Q1OcLARCZfKd9EvFrfYjilGOcBVBeBhunHoHYJo29cg4O7Ph1WEzP/f0w3OYbcsOjxQhktAj7+WqiMj7Ahw1PnbkoUNzIxA8GK3E6YCHSA9L+upxiKp7ZMMTmqfhpN/xP2RQkcJjVpItBVlTSa60Pt6blU0iw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LX0RjJQJ; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1793448711; c=relaxed/relaxed;
+	bh=BT6J6/b48vPr/t0dhtJHyqHkA9y0z58dhZE+8yeOg4k=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=aUcNgwiohXjFm7RgnWU01afxo+rRrfGtqqG6dUSqLnFgGTcyp4L+8JMZv4TREud2TDAmx7ldVAFB9woho9NBbGepjvmf/UH47qlv0jIVhiLKYGebKzc5qzCBK+ANZGtpei1YmynaaZ+fAYr0UBqA/MEqkvrBgNQ9am774bhBjspBHI9W7mmxvs6BhhqX+dKkh4Xack9Hi4pbnCmqmU9X0CQt8PGUd1qix5St/ieJu5KVeyz0ztasWZnjwJjIfTigwAm+Joln/0qMLAfptNGa3b/96OGpili2SPJbBMgZ6uACic2X2SfNl2b4TsIaFvP2of/+sbQK40n47edZTebQpw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=zmd4w7mM; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122c; helo=mail-dl1-x122c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LX0RjJQJ;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=zmd4w7mM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122c; helo=mail-dl1-x122c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dl1-x122c.google.com (mail-dl1-x122c.google.com [IPv6:2607:f8b0:4864:20::122c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGvyN3ftVz2xnn
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 21:55:40 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 766CB600C8;
-	Sat, 31 Oct 2026 10:55:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 210BC1F00919;
-	Sat, 31 Oct 2026 10:55:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793444137;
-	bh=7b46y4s0/zi9X4zHo11yWW6Vbp88X1A148hn2dA9HOA=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=LX0RjJQJpWdppLt42SNRn7EQV2Ff5N7jMe3itfLCjplO/MRkUZIp3jFNWvcrwA1mQ
-	 UcCj6Mk2yZ8lLHHTQDlrfQDnCXDNASSI3GyG08p720TBjS7E7BDx/hdhXgrHg1QsO3
-	 LbeRvsMZBc5KtLwSi7wWODzYoqe6aeCx8rzl2jQQSBqaCz+nLmFTtRvNi8zQ4mcSLK
-	 IWFp1W844QfHer5jTZdGQvH25z2biHGD6EeJx++6y7oK/Hf2tF4RjSoEn4R3z8Xtnk
-	 8m+5hfjRvvOela8b76hyVYCr8+w5vrvKSzquGangM6VzaPOpzRyecLva2TLMDrvoyV
-	 b8B8LK0WZHFHg==
-From: David Hildenbrand <david@kernel.org>
-To: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>, 
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Venkat Rao Bagalkote <venkat88@linux.ibm.com>, linux-kernel@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, David Hildenbrand <david@kernel.org>, 
- Muchun Song <muchun.song@linux.dev>, Zi Yan <ziy@nvidia.com>, 
- Baolin Wang <baolin.wang@linux.alibaba.com>, 
- Pavithra <pavrampu@linux.ibm.com>
-In-Reply-To: <8b853e5f9f16145859407b28af654b0f79e12642.1793318297.git.ritesh.list@gmail.com>
-References: <8b853e5f9f16145859407b28af654b0f79e12642.1793318297.git.ritesh.list@gmail.com>
-Subject: Re: [PATCHv2] mm/huge_memory: set the mmu_gather page size in
- zap_huge_pud()
-Message-Id: <179344413383.15514.17004105179365165951.b4-ty@b4>
-Date: Sat, 31 Oct 2026 11:55:33 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jGxfG03bDz2xGY
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 23:11:49 +1100 (AEDT)
+Received: by mail-dl1-x122c.google.com with SMTP id a92af1059eb24-15ea896ddc8so2717536c88.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 05:11:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1793448707; x=1794053507; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=BT6J6/b48vPr/t0dhtJHyqHkA9y0z58dhZE+8yeOg4k=;
+        b=zmd4w7mMDGrliSnt/jdWyBrYDma3JQEM6PLo4rrKriNuN8EHd+qn7d31tPTai+dPrq
+         Q7ANK7TfaXMgPKSib3bFzaQxyL6tpp89CEqMyeLWjy+GFly0fPJkZmEgeoWWdE3qoejr
+         QtfmKoHbmT++pofw+1TMAAzBKG0HP7lDZRC8Aecxow6R4wMk+sRMiZS0HTw4tVXZrUgo
+         ba79+PUk+fBEF+1KORaDnV4xQ0tVSeY/XngzGwTOyfEYU5vn201YdV+Rnyqiwu7WTu0p
+         tGzjWpdF0AS2jE3eE20i2trZW6X/1lLM3+9x6b9r+6hjSBv9k4+uj8E/MV6fsLoQl1vQ
+         EmEw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793448707; x=1794053507;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=BT6J6/b48vPr/t0dhtJHyqHkA9y0z58dhZE+8yeOg4k=;
+        b=fsWqL8JVxTFUZeRDu3DeqLjCGo31ZSwz0W+ecTGFmdD8mHDpavhsR85ND4n2gTOuho
+         G7xYuayEs5ySpZpcqm6k2lPTLR/l+d2C4Z299kczAiVt6O6RuV9UOPs67HF/QFJHUZlh
+         u+qMMTKhMc3GiN5dAemchlTXimcOyaPMac4RWQYtST73x+dLMpWQ91tWEqIYYmRLl4St
+         ex+DWRf6fDbPAIyVOI/Vr3ETh735SRaTMViTVFu7xC3dG/faFCFUUSLf/q7HOOq/WSmc
+         yLQtkCX/fpyT01BKHcrcTyASnCY0MmryfyIEOIU93InFvmfOVd7bNvMkeaCuYT4Eb2PQ
+         gSgw==
+X-Gm-Message-State: AFq9FYLoOnljqxnH99AD6KcNVa1VK1l4k8uGkqO/lVJd+wP1doLztP98
+	11EgK0rHLwklNK4/tEd7ITQZypbzOalVxmi5CzIETybGR/y2Q6OgwF1Vc9WnBA==
+X-Gm-Gg: AYBFou0F7DpJ8xjKdhV0p9sxRjo+1UkTBR1Eqk/aTV+eOon9uRoDPcERD+iFxIemXxE
+	YVZ69xnJq7ko/+GCQI2GGVE+ucKDBqlVbdAM1J4ghkChk7vYaOzbNkjQ0MWwM51A6FtNZLbSBuX
+	c8cpexSDrsrUJvJU69BtZTVf1VjxfHa5ZgnjaAtCvsG7lDPhj7nFMBTG+cXrAtFQv6ZcalrGMiC
+	fJ7ZpvyZGSmL20VycT8npCCAeyACEwA6A//XLOUMMEsmrRpHXsLYSNwP1ldQKSeN5zpAPI0/s5u
+	g6Nh7gAqbHOzYQO7slR8XBmF9Dw7w77MzIVwTvYWncNMCbCohETcQtFt1jM6CRcLnXzGhMCRo8Q
+	0KJ+ZF9MG6gHk29eXqKW8wqUvBEkCaPHkbzfs5u26mIgDBBuM3C9pQXhUsnFS4TOz5XFvKqzabF
+	qS46G0DnoneOStDyPAid58cCmPRB+8m+QT4ixWPPNL6f4m0F4SYW+HenmozQbt4dNGmOaoSKg+3
+	JGY0OZT9OYHV3Kep7Qj4nzD6LFHnsv9mQRdvQ0vhsyi936PKoEbkJ3hi8YCxwxRa2czeHMxzain
+	rkrbCVFWKJAAeNIHNmociHgtC7Sx629Zwqs=
+X-Received: by 2002:a05:7022:3a02:b0:169:bef5:f445 with SMTP id a92af1059eb24-1ac55774bf9mr7170978c88.4.1793448706406;
+        Sat, 31 Oct 2026 05:11:46 -0700 (PDT)
+Received: from pve-server.rlab ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1ac192c27cdsm26762301c88.10.2026.10.31.05.11.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 31 Oct 2026 05:11:45 -0700 (PDT)
+From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+	linux-kernel@vger.kernel.org,
+	Mukesh Kumar Chaurasiya <mkchauras@gmail.com>,
+	chleroy@kernel.org,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Subject: [PATCH] powerpc/entry: Trace the IRQ disable before irqentry_exit() on 32-bit
+Date: Sat, 31 Oct 2026 17:41:37 +0530
+Message-Id: <a14571be1897955f43d9994f0e093de3ada6ecde.1793447880.git.ritesh.list@gmail.com>
+X-Mailer: git-send-email 2.39.5
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,59 +95,80 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.16.0
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=4.0.1
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Fri, 30 Oct 2026 05:37:36 +0530, Ritesh Harjani (IBM) wrote:
-> Unmapping a device-dax mapping with 1G alignment on powerpc radix kernel
-> built with CONFIG_DEBUG_VM triggers this warning on every munmap:
-> 
->     WARNING: mm/mmu_gather.c:176 at __tlb_remove_folio_pages_size+0x38/0x230
->     NIP [c00000000063d508] __tlb_remove_folio_pages_size+0x38/0x230
->     LR [c0000000006fb688] zap_huge_pud+0x1b8/0x2d0
->     Call Trace:
->      zap_huge_pud+0x170/0x2d0 (unreliable)
->      __zap_vma_range+0x1604/0x1e20
->      unmap_vmas+0xa0/0x1f0
->      unmap_region+0xb0/0x130
->      vms_complete_munmap_vmas+0x120/0x310
->      do_vmi_align_munmap+0x1ec/0x240
->      __vm_munmap+0x148/0x220
->      sys_munmap+0x28/0x40
-> 
-> [...]
+Commit 63a7531ca31f ("powerpc/entry: Fix irq_soft_mask corruption on
+replayed interrupt exit") changed arch_interrupt_exit_prepare() to
+disable interrupts with hard_irq_disable() instead of
+local_irq_disable().
+This is correct for 64-bit (since it takes care of everything there)
+however, it breaks lockdep on 32-bit.
 
-Applied, thanks!
+exceptions such has page fault handling (do_page_fault()), re-enables
+interrupts since handling a page fault can sleep. Then generic irq exit
+expects the arch to disable the interrupts back before returning to the
+user/kernel in their arch_interrupt_exit_prepare() function, before
+irqentry_exit() is called. irqentry_exit() then checks for lockdep's irq
+tracing state and expects the interrupts to be off.
 
-tree: mm/core.git
-branch: for-next-fixes
+Note that on 32-bit we don't have any soft mask and hard_irq_disable()
+just clears the MSR[EE] state and does not update the irq tracing state
+unlikes local_irq_disable(). This causes the lockdep to warn like:
 
-Applied patches will appear soon in mm-next, followed by linux-next.
+    WARNING: include/linux/irq-entry-common.h:540 at irqentry_exit+0x398/0xd1c, CPU#1: init/1
+    NIP  irqentry_exit+0x398/0xd1c
+    LR   do_page_fault+0x390/0x7b4
+    Call Trace:
+     do_page_fault+0x218/0x7b4
+     DataStorage+0x15c/0x180
+    --- interrupt: 300 at __arch_clear_user+0x10/0xcc
 
-Please report any outstanding bugs that were missed during review, so we
-can either drop the patch series or decide how to fix it up.
+    WARNING: include/linux/irq-entry-common.h:312 at irqentry_exit+0x224/0xd1c, CPU#1: init/1
+    NIP  irqentry_exit+0x224/0xd1c
+    LR   do_page_fault+0x390/0x7b4
+    Call Trace:
+     __per_cpu_offset+0x0/0x60 (unreliable)
+     do_page_fault+0x390/0x7b4
+     InstructionStorage+0x150/0x160
+    ---- interrupt: 400 at 0xb77b059c
 
-It is encouraged to provide Acked-bys, Reviewed-bys, and Tested-bys even
-though the patches have already been applied. If possible, patch trailers
-will be updated.
+So, use local_irq_disable() on 32-bit which clears MSR[EE] and also
+records the transition for lockdep. For 64-bit we keep hard_irq_disable().
 
-Note that commit hashes shown below are subject to change due to rebase,
-trailer updates or similar. Further, this is not a guarantee that the
-patches will go upstream. If in doubt, please check the listed branch.
+Fixes: 63a7531ca31f ("powerpc/entry: Fix irq_soft_mask corruption on replayed interrupt exit")
+Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+---
+This was caught during debugging some other issue on 32-bit platform.
+When lockdep is enabled there, this warning can be easily seen during bootup
+itself.
 
-[1/1] mm/huge_memory: set the mmu_gather page size in zap_huge_pud()
-      https://git.kernel.org/mm/core/c/0ba86a16
+ arch/powerpc/include/asm/entry-common.h | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
--- 
-Cheers,
+diff --git a/arch/powerpc/include/asm/entry-common.h b/arch/powerpc/include/asm/entry-common.h
+index 8e91489fdf2b..c944a267532d 100644
+--- a/arch/powerpc/include/asm/entry-common.h
++++ b/arch/powerpc/include/asm/entry-common.h
+@@ -268,7 +268,10 @@ static inline void arch_interrupt_exit_prepare(struct pt_regs *regs)
+ 	}
 
-David
+ 	/* irqentry_exit expects to be called with interrupts disabled */
+-	hard_irq_disable();
++	if (IS_ENABLED(CONFIG_PPC64))
++		hard_irq_disable();
++	else
++		local_irq_disable();
+ }
+
+ static inline void arch_interrupt_async_enter_prepare(struct pt_regs *regs)
+--
+2.39.5
 
 
