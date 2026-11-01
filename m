@@ -1,91 +1,53 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 14A7C606A327
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Nov 2026 17:58:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A096606A327
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Nov 2026 22:15:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FkpyzqH8
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YLtzwK85
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jHjHX3Dsnz2xnn;
-	Mon, 02 Nov 2026 04:58:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793555896;
-	cv=none; b=d7PKK6gNx9upKn1XSab2gZwpQcgRUuc4si5Ttlw5L9y/Xkc2tEYBJr7te/fJedUrUYz6g0Ju04HbLRPeGJ2OJVz3vUq4aVIDM548/0HHWps1MSXnkXrwQ4SG6aYKJKki3cW12Dmpo+DDPmee5FOyEgL9hTHHVE6vRndzs1kmT8el6so+XXtqTPmGuf3YBr//Z08+2M/BAo89IU9JTm0qdvZc2rx2FRtD/r+E81dyT6WKF4lHRK/pEwSTHRcBqXwkiqDnmDVL1cK8tHZJ3wxKGhIqZYfagPlsU7MyzRBBgUMHhE2Q9m/XS38GatER2g8aVFkvijxuwfnEEk0eRC1Elg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jHq0n3brJz2yMP;
+	Mon, 02 Nov 2026 09:15:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793571353;
+	cv=none; b=ZHEO9j21Q3qe3L71zkUxY/EmdWTCX0/o/Db3Y3QfEUJH9Qp9K+ripY0/Aga2BnlxgxzX8kFR83O1fiqq3DNWJb9Jad46ACI0lO16N/XtpjIW4XQbgMUXKthBPuiG8Ilc7osSkh2jjywjAjwrkfjH3CsrI8nrK4jHnI+rCzCGHafPhNULP81ff6OZdIAzW3NoQaeIkHWUf/YRaTA8B1SxKuAt+a14rDNE3iiWupXf3Fnno+xKyrZmhP6/OvFdyaGOg3PjL0GvplE55xI7eENu/f4FD+iggmfjg/FGEsJvSaNHWXvGepFWMANTkDZym1wJh0j7zSxej4JPB/qhMTgV2w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793555896; c=relaxed/relaxed;
-	bh=+7HwRXGWtYS3xmU+Z46/w0lVl31Dl0sZcMyXjmUDfIs=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=UXXMHpGUTyZ4GXcGW9s9RKXMlCV409ePiz6+41UdVs6WM1RHwNUhifbpS0GJ2l1DkdgmYq43yHCz0KfxxYo75sA6i2hsDOQzlafVP2oa0CDEpHtIJv5nAKA5wR68oKbvTRoPw7nA67c6hygfOeKY5LkK2sFUvw7wDJal1G2vBCtnSEWvKPwj0bEB/M644jIX/uq1AKReqdsVWYnwpc9H++LGKOk/t2IL/lPyTuwTRuP5xfWzG1VQobJkLF4fJ3kA4J3l3ng49uCQvrm1yVNj7rJN4Py9pwQSHz+/wT3QDoIoNyzYD4dAqfUCT3fNYlBYFMzaaAuV5de7u2pyFUyyvw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FkpyzqH8; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1793571353; c=relaxed/relaxed;
+	bh=zWjchA1R3k2PWinfdPa1bmSSkYcmsFonhHSsoHtMyf0=;
+	h=Content-Type:MIME-Version:Subject:From:Message-Id:Date:References:
+	 In-Reply-To:To:Cc; b=MWnbe9Gbdk8+5gvAWbyXtcvsKZDy5RKji6WeIt7G75VtoNe7xP2vxyfyjtRoXGprMSLwbn8pZjX7O9MZ38X7pqTIMfsUXlVhoRapdFz8hrtsmkl2Hav5IJ4AVJBRRSiUxyS+tn2GxSknXk/70OD1lY2xOrs+OAsGK6VB+hE2zWSS6T9dLIRU4cDSv3749ONrLoRwR1PRkAZMxUvr8YwcEuhGK+HD/lk7wg1T46xK4Dn4NWlT5eVmh3Rqmm5hfoBJ3L4ueJzyAHL9SmQ7YjAMmx3IrgyLdnOtSBPgTz7tiyPImaBTnD4ZO6BZelargZ6yrwUMZ2SGqw/6wPDKv5BfPA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YLtzwK85; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FkpyzqH8;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YLtzwK85;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jHjHV6rFHz2xWt
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 04:58:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jHq0m3j9Hz2xdb
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 09:15:52 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 0EC39402BE;
-	Sun,  1 Nov 2026 17:58:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 388A21F00A17;
-	Sun,  1 Nov 2026 17:58:11 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id C2CE043EBB;
+	Sun,  1 Nov 2026 22:15:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8672C1F000C1;
+	Sun,  1 Nov 2026 22:15:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793555891;
-	bh=+7HwRXGWtYS3xmU+Z46/w0lVl31Dl0sZcMyXjmUDfIs=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date;
-	b=FkpyzqH892Y24Bf4MzJaxg0GENU+W3h1HrKoje37+gLiStKVwoHULfobDtcxPd97k
-	 O7yDPvc5mWSjJBu8vqqdIiJljIIY/6Z6d8PFXXCg74LTEn4DannL5V6rcy3NiVl7Cu
-	 DnutKq7d2bLfY2EkKJcg1fiS7Qvebb0UQQu9SHDSugPX5Tba1NEXcVGdUEzB6sw+y5
-	 V2z/p2t+EDUDEUhm+YjJeNELsgmzPgXTja1HpGoACFV2HxgapWeRjmaKUW4P/rTSol
-	 vGE0a3SiPbMJFefI/JNfVFZ/R4iCFJ+Rd4uFfOaqAIzWd7mtslcqNYqP4841tBmpOx
-	 x3REifKbTPuGQ==
-From: Thomas Gleixner <tglx@kernel.org>
-To: "H. Peter Anvin" <hpa@zytor.com>, Sebastian Andrzej Siewior
- <bigeasy@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra
- <peterz@infradead.org>, Michael Ellerman <mpe@ellerman.id.au>, Shrikanth
- Hegde <sshegde@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Kees Cook
- <kees@kernel.org>, Huacai Chen <chenhuacai@kernel.org>,
- loongarch@lists.linux.dev, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt
- <palmer@dabbelt.com>, linux-riscv@lists.infradead.org, Sven Schnelle
- <svens@linux.ibm.com>, linux-s390@vger.kernel.org, x86@kernel.org, Mark
- Rutland <mark.rutland@arm.com>, Jinjie Ruan <ruanjinjie@huawei.com>, Andy
- Lutomirski <luto@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Richard
- Henderson <richard.henderson@linaro.org>, Russell King
- <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Guo
- Ren <guoren@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Thomas
- Bogendoerfer <tsbogend@alpha.franken.de>, Helge Deller <deller@gmx.de>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Richard Weinberger
- <richard@nod.at>, Chris Zankel <chris@zankel.net>,
- linux-arm-kernel@lists.infradead.org, linux-alpha@vger.kernel.org,
- linux-csky@vger.kernel.org, linux-m68k@vger.kernel.org,
- linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-um@lists.infradead.org, Arnd Bergmann
- <arnd@arndb.de>, Vineet Gupta <vgupta@kernel.org>, Will Deacon
- <will@kernel.org>, Brian Cain <bcain@kernel.org>, Michal Simek
- <monstr@monstr.eu>, Dinh Nguyen <dinguyen@kernel.org>, "David S. Miller"
- <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>,
- linux-snps-arc@lists.infradead.org, linux-hexagon@vger.kernel.org,
- linux-openrisc@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, Michal =?utf-8?Q?Such=C3=A1nek?=
- <msuchanek@suse.de>, Jonathan
- Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org
-Subject: [PATCH V2] x86/entry: Fix ptrace regression
-In-Reply-To: <87mrrvxaty.ffs@fw13>
-References: <20260707181957.433213175@kernel.org>
- <20260707190254.493733289@kernel.org>
- <20261022142425.3Wx-RrU5@linutronix.de> <87fqxx1r80.ffs@fw13>
- <87cxt11ktr.ffs@fw13> <1149A39E-BEBA-46EA-94F4-4DFFC4733EF5@zytor.com>
- <871p9g1s3w.ffs@fw13> <87y0boze95.ffs@fw13>
- <C6D7BF04-4CF7-48D1-93B5-E80D52C2617D@zytor.com> <87se1wyvs8.ffs@fw13>
- <87mrrvxaty.ffs@fw13>
-Date: Sun, 01 Nov 2026 18:58:08 +0100
-Message-ID: <87ecd4xwlr.ffs@fw13>
+	s=k20260515; t=1793571348;
+	bh=zWjchA1R3k2PWinfdPa1bmSSkYcmsFonhHSsoHtMyf0=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc;
+	b=YLtzwK85l4hGxLyA70UvP4j1W3M7aK0AnO65y/AzsiFBwFu+o+am4lM03VbtHtJ5K
+	 SS29sY8vrSYrA6jdvWzfwe5K90LxJtzoHxZZu0mTSUAvpZkN1PYLCGRsEs6UgYx0aB
+	 97oKuIhcSNLzzTU7IsY2JDbPwHgALU8UUMTUIacoZU37AQpC6KtulGbzQ30fh/1Pj7
+	 439Gr0UJypJlNRfMtvA0ZTTdkqVe4hPq7HarsqK8Usmvu9Wk0QYv2Bnam4S5juFWnH
+	 d/jArMh+zoyROvtkvZe5ytr6PBXG3TqNVsxhJFaqiJVBj+Botefdp40TKRHbDajTSy
+	 ztyxsj6TJTA0w==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 7D5C738003B8;
+	Sun,  1 Nov 2026 22:15:48 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,94 +61,82 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH 00/15] vdso: Clean up the vsyscall.h headers
+From: patchwork-bot+linux-riscv@kernel.org
+Message-Id: 
+ <179357134704.2624073.7289302544673229273.git-patchwork-notify@kernel.org>
+Date: Sun, 01 Nov 2026 22:15:47 +0000
+References: 
+ <20260909-vdso-asm-generic-vsyscall-h-v1-0-63ae856cc659@linutronix.de>
+In-Reply-To: 
+ <20260909-vdso-asm-generic-vsyscall-h-v1-0-63ae856cc659@linutronix.de>
+To: =?utf-8?q?Thomas_Wei=C3=9Fschuh_=3Cthomas=2Eweissschuh=40linutronix=2Ede=3E?=@aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org
+Cc: linux-riscv@lists.infradead.org, luto@kernel.org, tglx@kernel.org,
+ vincenzo.frascino@arm.com, linux-kernel@vger.kernel.org,
+ linux-s390@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
+ linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS
+	autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The recent rework of the syscall entry code missed the historical detail of
-the abuse of syscall number -1L to abort a syscall and keep modifications
-by tracers to the return value, while a rewrite of the syscall number to an
-invalid value undoes eventual tracer modification to the return value and
-overwrite it with -ENOSYS.
+Hello:
 
-Restore the original behaviour.
+This series was applied to riscv/linux.git (fixes)
+by Thomas Gleixner <tglx@kernel.org>:
 
-Fixes: 1b1f3b3e1b39 ("x86/entry: Get rid of the sys_ni_syscall() indirection")
-Reported-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-Cc: stable@vger.kernel.org
-Closes: https://lore.kernel.org/all/20261022142425.3Wx-RrU5@linutronix.de
----
-V2: Add the missing -1 check in the 32bit path - sashiko
----
- arch/x86/entry/syscall_32.c |    4 ++++
- arch/x86/entry/syscall_64.c |   26 ++++++++++++++++++++++----
- 2 files changed, 26 insertions(+), 4 deletions(-)
+On Wed, 09 Sep 2026 10:51:13 +0200 you wrote:
+> The vsyscall.h headers are a mess. Some of that was necessary back when
+> some architectures where not using the generic vDSO infrastructure.
+> Now that this is not necessary anymore, the headers can be cleaned up
+> and many of the can be deleted altogether.
+> 
+> The recipient list is trimmed to only the vDSO maintainers and the
+> architecture lists.
+> 
+> [...]
 
---- a/arch/x86/entry/syscall_32.c
-+++ b/arch/x86/entry/syscall_32.c
-@@ -77,6 +77,10 @@ static __always_inline void do_syscall_3
- 	if (likely(nr < IA32_NR_syscalls)) {
- 		nr = array_index_nospec(nr, IA32_NR_syscalls);
- 		regs->ax = ia32_sys_call(regs, (unsigned int)nr);
-+	} else {
-+		/* See comment in do_syscall_64() */
-+		if (nr != -1UL) {
-+			regs->ax = -ENOSYS;
- 	}
- }
- 
---- a/arch/x86/entry/syscall_64.c
-+++ b/arch/x86/entry/syscall_64.c
-@@ -64,15 +64,20 @@ static __always_inline bool do_syscall_x
- 	return false;
- }
- 
--static __always_inline void do_syscall_x32(struct pt_regs *regs, unsigned long nr)
-+static __always_inline bool do_syscall_x32(struct pt_regs *regs, unsigned long nr)
- {
-+	if (!IS_ENABLED(CONFIG_X86_X32_ABI))
-+		return false;
-+
- 	/* Adjust the starting offset of the table */
- 	nr -= __X32_SYSCALL_BIT;
- 
--	if (IS_ENABLED(CONFIG_X86_X32_ABI) && likely(nr < X32_NR_syscalls)) {
-+	if (likely(nr < X32_NR_syscalls)) {
- 		nr = array_index_nospec(nr, X32_NR_syscalls);
- 		regs->ax = x32_sys_call(regs, (unsigned int)nr);
-+		return true;
- 	}
-+	return false;
- }
- 
- /* Returns true to return using SYSRET, or false to use IRET */
-@@ -81,8 +86,21 @@ static __always_inline void do_syscall_x
- 	if (likely(syscall_enter_from_user_mode_randomize_stack(regs, &nr))) {
- 		instrumentation_begin();
- 
--		if (!do_syscall_x64(regs, nr))
--			do_syscall_x32(regs, nr);
-+		if (unlikely(!do_syscall_x64(regs, nr))) {
-+			/*
-+			 * The special treatment of syscall number -1 is a
-+			 * historical bogosity as the original code used -1 to
-+			 * indicate syscall abort, which is not distinguishable
-+			 * from a syscall which is invoked with syscall number
-+			 * -1. The historic behavior is to keep the return value
-+			 * in regs->ax unmodified in that case, which means it's
-+			 * either the preset value -ENOSYS or a value which was
-+			 * written by a tracer. If the syscall number is invalid
-+			 * but not -1 then overwrite any tracer modification.
-+			 */
-+			if (!do_syscall_x32(regs, nr) && nr != -1L)
-+				regs->ax = -ENOSYS;
-+		}
- 
- 		instrumentation_end();
- 	}
+Here is the summary with links:
+  - [01/15] vdso: Move the kernel-side time update helpers to a new header
+    https://git.kernel.org/riscv/c/35f0a96848a7
+  - [02/15] vdso/gettimeofday: Define fallback __arch_get_vdso_u_time_data() in gettimeofday.c
+    https://git.kernel.org/riscv/c/4fba7bb3e73a
+  - [03/15] vdso/getrandom: Define fallback __arch_get_vdso_u_rng_data() in getrandom.c
+    https://git.kernel.org/riscv/c/ca0da001d3cf
+  - [04/15] vdso/vsyscall: Define fallback time synchronization functions in vsyscall.c
+    https://git.kernel.org/riscv/c/e4eeeaa14d8d
+  - [05/15] vdso: Delete asm-generic/vdso/vsyscall.h
+    https://git.kernel.org/riscv/c/8579b901d150
+  - [06/15] x86/vdso: Move vDSO page definitions to asm/vdso.h
+    https://git.kernel.org/riscv/c/8051a0f482e6
+  - [07/15] sparc/vdso: Move __VDSO_PAGES to asm/vdso.h
+    https://git.kernel.org/riscv/c/782478555fc6
+  - [08/15] s390/vdso: Delete asm/vdso/vsyscall.h inclusions
+    https://git.kernel.org/riscv/c/d5b1dadd2ef0
+  - [09/15] sparc/vdso: Delete asm/vdso/vsyscall.h inclusion
+    https://git.kernel.org/riscv/c/cc729f844815
+  - [10/15] x86/vdso: Delete asm/vdso/vsyscall.h inclusions
+    https://git.kernel.org/riscv/c/3086b69ee00f
+  - [11/15] arm64/vdso: Delete asm/vdso/vsyscall.h inclusions
+    https://git.kernel.org/riscv/c/128b1c7d3ac8
+  - [12/15] riscv/hwprobe: Include vdso/datapage.h
+    https://git.kernel.org/riscv/c/0d10af5db481
+  - [13/15] vdso: Remove unnecessary vdso/vsyscall.h includes
+    https://git.kernel.org/riscv/c/d6df494a0135
+  - [14/15] vdso: Add asm-generic/vdso/vsyscall.h
+    https://git.kernel.org/riscv/c/996b01393e93
+  - [15/15] vdso: Remove __ASSEMBLER__ guards from vsyscall.h
+    https://git.kernel.org/riscv/c/9e61cabcce2b
+
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
+
 
