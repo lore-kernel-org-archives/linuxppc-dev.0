@@ -2,113 +2,90 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 21065606A324
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Nov 2026 15:26:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1BDBB606A324
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Nov 2026 15:28:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=yY5UnKxX;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=jslx2/5K;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=i/aA+Yda;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=KjiDr2qL
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=fxKNpHEL
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jHdwn49XBz2xWt;
-	Mon, 02 Nov 2026 02:26:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793546809;
-	cv=none; b=WKrrH1wDJxsVYR49zV5pPu1ifHqO6iSGueqNCEAgXaTP5FASSebgV5Pr8FMFwNt+jDUzhGaLYK0IWRpNseGWtdKqPoVmhnIJOr9ISLdkX/5LBN+zDoAxlKxfC6FxQMlHOqeOHRLHP1U6lERbvrH1KM5WLpc/k2aiMUia5PiBYEqERVCpaHFGXxxJnE/ARjkjuXRMwrFNMAYEru+EMMtRg8smTRd/VUhmEHzbkxRS9eoAzlMm/U70Hizmtkp6dtrZ+38L69FNrOvcokkbolbYERFE7WyAr6PLyUb2R0KjB6Gt/q6EqljuryJbf9flC+SX1OeBwtsT9EsihPmC0tEtJQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jHdyc4b8Cz2yZf;
+	Mon, 02 Nov 2026 02:28:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793546904;
+	cv=none; b=T5vqo4UA8AMlvb4Pt/qjbrh9vAfyCM0OvZUISjuLomHTA3xbKaHWmcBG+i/Bm6O8R/cI8kjrL1AycMGSEpL8mGjjBnE2GxbqkRkGhdaLDRQGQN84PBd/hcFqnJa1BjLBj2ulZwnBwv6KjDCqfoHfTZG8hKwBVoKd2im4p/T7OhH9jvE4BaqmUOKA6YXE0Wf4g+iuS7auw9G6eNflyFjJY89BoxxYaxfbHEk/DCS5+9T3kKS8JmlJtwU3yo018DmSXWZtpnriNi9IOzNPbTdOXxg5Xgalg0aAVGzUHG5PjVm84PVNkHn1kMeeCzYKiisxi6PvL6vlSWLYbxhoFuEwag==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793546809; c=relaxed/relaxed;
-	bh=52jKgimrTd84xrYvjSddWThDrxhhsE9FTwPIYU9rfvE=;
-	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=JJCMqQE09yK8ndsVjlzyhIX4CzZYLWBqfXAEi1yVs40kQjeCzwYLjgsPsD+epBJV64/BkzHlm1PD7iozCB9Rg9ZMJK20XrG38RPMr9fDOFyuQ/38xDCQ10JjNPJueHJklUifWaT4Du4p5id6P8dnfKwGJ/ulH6ZvbFMvraSJTppN5J9ZMzsPHGKOBI5XC0vOaKx3teYZNgQG9YnXQx0oImseA69ySVu8gyixVuD6PzeZtqu9PG+76wKN4rJ0VZppSrtDw6V+Emcg+2BuKWswn8SeqO0unEjRRkVm5xsULlbj9ru2zOsJvuPceODpVGqx4qTYLPs/L60btIIQHn2ptA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=yY5UnKxX; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=jslx2/5K; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=i/aA+Yda; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=KjiDr2qL; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1793546904; c=relaxed/relaxed;
+	bh=BWV1IinUG0DTVwsnY8AqH4VfOLB1w3rql3cUkwGyNXA=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=gg957vm3hO3RQSvu0cVK66vR1FBQuaj1skltOWMSvfCutT1/Uyj/U1AYh4Ku4lYYKs0/5oT1ZNoEEqUbTL+hNaYfBfJTBuQuP4pQGB4Jye1k/4lIgENGVN5b6gkap/+O2hkvEXicFiYG70ZKlczGOLvj4rW8IE87pwNir1GqMZ5Y1fWNgbuhZwlsuDt5rlQ3IELKOrk3Zv8zQFNS84yn0MMzcIZ9hu9TXEaYZuCVtMIyfUA86iWA0fsk97LhysviT7rT5i68Sp6tSeFDHxIhfvgvQIy13FRBTV6rkWjFhsSp9uec9cBAQ8jFdA7Bx/bpSC3vtyUckYq6+sfzhpFYrw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=fxKNpHEL; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122f; helo=mail-dl1-x122f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=yY5UnKxX;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=jslx2/5K;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=i/aA+Yda;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=KjiDr2qL;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=fxKNpHEL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122f; helo=mail-dl1-x122f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dl1-x122f.google.com (mail-dl1-x122f.google.com [IPv6:2607:f8b0:4864:20::122f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jHdwh3Cq4z2x9c
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 02:26:44 +1100 (AEDT)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id ED8161F7B0;
-	Sun,  1 Nov 2026 15:26:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1793546799; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=52jKgimrTd84xrYvjSddWThDrxhhsE9FTwPIYU9rfvE=;
-	b=yY5UnKxX91NPGrYZXcJIJIXlE2YVJhDf9mEKWjtGe2tt1v9bUDUB15xagFVP29ljvkO5Gf
-	wDiE27tw0W0wvYebqJdSeziEpDASNjf/pnlpKYv3FMBU7GJSOeRdxytporEPdOz4WL32f4
-	B9wU0DAalfHbgcY918QTI7L2cAQi3WE=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1793546799;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=52jKgimrTd84xrYvjSddWThDrxhhsE9FTwPIYU9rfvE=;
-	b=jslx2/5Kq51FsKVXid6+Sb7v3YqH1RgnaBqTzxZAo3gRwU73+tpz7/TTMXEiuNPu1aYc77
-	52cKpcdy8849itCw==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b="i/aA+Yda";
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=KjiDr2qL
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1793546798; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=52jKgimrTd84xrYvjSddWThDrxhhsE9FTwPIYU9rfvE=;
-	b=i/aA+YdawaYD9yCnazbbQaseQ5M/WIoi0t/adzbs3RkFMqCPZmpDq1I/NVEKj5Tq5NHrF9
-	qoiMEj6T0pBu0q42AsSZ7Ins9I9yexnEFGJWeME4H3WZYdLmGMXYYbfyd5vuUFTpjEd2yl
-	neVnXdd3Rqq8zyQTKlihPdN84n1Ee2g=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1793546798;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=52jKgimrTd84xrYvjSddWThDrxhhsE9FTwPIYU9rfvE=;
-	b=KjiDr2qLJbR7mqEGBmkGlEJbH/nS69sA72F9Jxm6KhHB+M5WtRmBYnTFCUmjYSB5KJ9JiA
-	DCVQy9cjduXMB6BA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 589C7134B3;
-	Sun,  1 Nov 2026 15:26:37 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id H366Ci1a52qrKAAAD6G6ig
-	(envelope-from <tiwai@suse.de>); Sun, 01 Nov 2026 15:26:37 +0000
-Date: Sun, 01 Nov 2026 16:26:36 +0100
-Message-ID: <87mrrspo7n.wl-tiwai@suse.de>
-From: Takashi Iwai <tiwai@suse.de>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Cc: zzzccc427@gmail.com,
-	tiwai@suse.de,
-	perex@perex.cz,
-	linux-sound@vger.kernel.org,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	"R.T.Dickinson"
- <rtd2@xtra.co.nz>,
-	mad skateman <madskateman@gmail.com>,
-	Damien Stewart <hypexed@yahoo.com.au>,
-	Christian Zigotzky <info@xenosoft.de>
-Subject: Re: Void PPC: PulseAudio issue with sound updates 7.4-rc1
-In-Reply-To: <3452eb30-44be-cdd1-72e9-c15e145a6444@xenosoft.de>
-References: <41a2e39a-5637-8afa-f84f-f79e63b3b56e@xenosoft.de>
-	<3452eb30-44be-cdd1-72e9-c15e145a6444@xenosoft.de>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/30.2 Mule/6.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jHdyb3yNzz2yST
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 02:28:23 +1100 (AEDT)
+Received: by mail-dl1-x122f.google.com with SMTP id a92af1059eb24-1a3c08d6928so2543658c88.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Nov 2026 07:28:23 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1793546901; x=1794151701; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=BWV1IinUG0DTVwsnY8AqH4VfOLB1w3rql3cUkwGyNXA=;
+        b=fxKNpHELcOMu8abQ25kEA9dsxldUhJrG75kqFgzx/O8G9m0y9cf3sCD2Zrxj0wmyVx
+         1no7eWP5DPx3i9mWjKRkazu9gnesOJIDOsfdsGifa4mx33GmPUMJdWT0zsLvBzMIUG2z
+         tR6p/LKJbY769swG/svsJqm6mlc/LV3FULRSeGsUCZkjd5frqpbWz0/2xZl5ANjuFpuL
+         JNKbxAfM2E6+jgZdJEX58DW7eqK6EDlpKpivGVqinnn1c82O/MmuDMJ49ZsczQtkHEWm
+         et77eg2BYr3MbZv+X0jo+MyeI4yq+Z5d1gZ10PfEy3jBG/IttjdAqgofh/EzUPXjHia6
+         IVpg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793546901; x=1794151701;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=BWV1IinUG0DTVwsnY8AqH4VfOLB1w3rql3cUkwGyNXA=;
+        b=SBxQskSuUTowD0/+CLMV1vP0jkYhAD6Gjr/YiKbrN9FJxHRJuT2yaIqyhzBiVtHDft
+         dtvgMlldHdccI6HcOYCGZmIQePiw0I+cAleBm8mznMuys+iZyaYnpnauqWdqf3/3CKEn
+         WH2WXaP1FUF0e2N4Djpmtx0q5QdGQ4n3KSNaW3yGZ+yxH2hjOzjSe0YlchEy2C4lJ4aN
+         5Ka6EHKU0hbHTjWUwZzvtgflDhnQXEhzFYuUTuhuhicGcwm8ANEgHkyBQSxuusmASKk2
+         D4OWPHpGg1ZJH8OrfedIiM88j3BJ7uDPdKS/vZe+M3NIJKQmkjuwfH9im9aksIbFohbh
+         u+Tw==
+X-Gm-Message-State: AFq9FYLPJzTl5nyS2G/1QFP1MV/fb+sfLJYzhtWcdC73FCSByMI+1HNJ
+	zcz77lNeoZ9eiYo36bPYq2onaEh6fymZi40j7GVWC7xtxsGJ3aRpDEXfBPkHew==
+X-Gm-Gg: AYBFou0EPcM2OGEMKoLPSaG8BRvLK6EAFdrbWnAgeCdpV75eQTUzU1MHxGsst6LG7Ty
+	fF0z5CIXsRmuRAMpfqqPDiMzVfNfEOyEckiIMiyGmAojeL8eYNocmP1Bxq4HmNH6w9ggSsm9PG/
+	btgfRSfr3i9NyWz2kOU5AnHa+d3AqLoXjNMGHFkf8CC9ff8jhhs1ZWwF40NDzyVpSxmZx/UqXYm
+	z9bO7I08p6u7MpJZLZrn+30lkE0EmWzPxTD1pTT97zp84wt0TVFC2h0a4ykbIWC+ILYVJ5gCCh9
+	+QHB/Dr7ge9nDo3o7DqsG6f4YC2BVVFAn8rxZ7KJdUCBshk0AH7jBpXbkOihQODLBN1O3pSr1X5
+	N1TVqFEXAGWiz2ahgB9ZY8U+3FRpjTv1JsGP6XUu+uNVCyJyjyyUWbuCfznRRic5pQNGj0md5qx
+	HZ9PCGHPnGtRs/I2RgeWLYjmJL2sN6cFC06rzMZFscwaVREtf4unfZrxjN3xZGownwNEYbnK5Tf
+	fkx58eTe7TwbGyhpWLREJY3XY31FozsYtDrWfoGyr9pDbixjgGOZgqPQONEH/HYyl8Gj8dAi2jR
+	GdXiSuq9D5cL1SBXDK1RzkskcJYy3FJMBQ==
+X-Received: by 2002:a05:701b:4248:20b0:191:3c:aae7 with SMTP id a92af1059eb24-1ac5c64cb0emr12048606c88.26.1793546901052;
+        Sun, 01 Nov 2026 07:28:21 -0800 (PST)
+Received: from pve-server.rlab ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1ac18458e07sm24862665c88.8.2026.11.01.07.28.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 01 Nov 2026 07:28:20 -0800 (PST)
+From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+	linux-kernel@vger.kernel.org,
+	chleroy@kernel.org,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	kvm@vger.kernel.org,
+	Anushree Mathur <anushree.mathur@linux.ibm.com>,
+	Harsh Prateek Bora <harshpb@linux.ibm.com>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Subject: [PATCHv3 0/7] KVM: PPC: Misc fixes and nestedv2 vCPU limit fixes
+Date: Sun,  1 Nov 2026 20:58:05 +0530
+Message-Id: <cover.1793546707.git.ritesh.list@gmail.com>
+X-Mailer: git-send-email 2.39.5
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -121,155 +98,58 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
-Content-Type: text/plain; charset=ISO-8859-1
+MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-13.51 / 50.00];
-	SUSE_INTERNAL_BYPASS(-9.00)[];
-	BAYES_HAM(-3.00)[100.00%];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	DWL_DNSWL_LOW(-1.00)[suse.de:dkim];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	ARC_NA(0.00)[];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,xtra.co.nz,yahoo.com.au];
-	RCVD_TLS_ALL(0.00)[];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[gmail.com,suse.de,perex.cz,vger.kernel.org,lists.ozlabs.org,xtra.co.nz,yahoo.com.au,xenosoft.de];
-	RCPT_COUNT_SEVEN(0.00)[10];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	DKIM_TRACE(0.00)[suse.de:+];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.de:dkim,ibb.co:url]
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Rspamd-Action: no action
-X-Spam-Score: -13.51
-X-Spam-Level: 
-X-Rspamd-Queue-Id: ED8161F7B0
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS
-	autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Sun, 01 Nov 2026 15:53:07 +0100,
-Christian Zigotzky wrote:
-> 
-> On 01/11/26 10:15, Christian Zigotzky wrote:
-> > Hi,
-> > 
-> > Although PulseAudio recognises the sound cards, it is unable to
-> > successfully initialise the corresponding output profiles on Void
-> > PPC since the sound updates 7.4-rc1 [1]. The output via ALSA works.
-> > 
-> > Tested with the onboard HDA ATI SB sound device, Soundblaster LIVE
-> > Player 1024 PCI card, AMD HDMI audio and with USB audio. Strangely
-> > enough Pulseaudio can enable the sound devices on MintPPC32. I think
-> > the latest sound updates are responsible for the issue on Void PPC.
-> > 
-> > I bisected last week [2] and
-> > ad28d2f607d1792c04531f2c5fd9ac0bf5bdcc9c (ALSA: pcm: Serialize and
-> > check HW_REFINE ioctls) is the first bad commit.
-> > 
-> > I was able to revert the first bad commit and this solved the issue. [2]
-> > 
-> > Then I created a patch for reverting the bad commit. [3]
-> > 
-> > Could you please check the sound updates 7.4-rc1? [1]
-> > 
-> > Thanks,
-> > Christian
-> > 
-> > [1]
-> > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=75c1cb8178fe84403fd95236ddf21754f0a4156c
-> > [2] https://github.com/chzigotzky/kernels/issues/21
-> > [3]
-> > https://github.com/chzigotzky/kernels/commit/644ec7c1f2f812d5eb89741e643f742596a49b2d
-> > [4] Screenshots:
-> >      - With the sound updates:
-> > https://i.ibb.co/675Yjxvd/Kernel-7-4-0-with-sound-updates.png
-> >      - With the patched kernel:
-> > https://i.ibb.co/9HDrnnm1/Kernel-7-4-0-alpha8-Power-PC-1.png and
-> > https://i.ibb.co/vx77FdHV/Kernel-7-4-0-alpha8-Power-PC-2.png
-> > 
-> 
-> The sound-fixes-7.4-rc1 [1] don't solve the issue with PulseAudio on
-> Void PPC. We still need the sound patch [2] for reverting the bad
-> commit.
+v2 -> v3:
+=========
+- Fixed logic bug in patch-2 & patch-6.
+  (realized after sending + sashiko caught this as well).
 
-Hm, could you verify whether the below oneliner recovers from your
-problem or not?
+RFC -> v2:
+=========
+- Addressed sashiko review comments
+  - added patch-3 to address similar __ffs(0) problem on booke
+  - fixed build issues in patch-4
+  - added patch-5 to reject vcpu ids beyond the PAPR limit
+- Few more patches were added. Few of them were reported by Sashiko and few
+  others were caught while doing vcpu create path code walkthrough
 
--- 8< --
---- a/sound/core/pcm_native.c
-+++ b/sound/core/pcm_native.c
-@@ -965,7 +965,8 @@ static int snd_pcm_hw_refine_user(struct snd_pcm_substream *substream,
- 	if (IS_ERR(params))
- 		return PTR_ERR(params);
- 
--	err = snd_pcm_hw_refine_with_lock(substream, params);
-+	//err = snd_pcm_hw_refine_with_lock(substream, params);
-+	err = snd_pcm_hw_refine(substream, params);
- 	if (err < 0)
- 		return err;
- 
--- 8< --
+Most of these issues were identified while adding kvm powerpc selftests
+infrastructure support [1] (which is now merged upstream). Patch-1 and Patch-2
+were identified while running the selftests on Qemu+TCG+powernv+BE, while
+Patch-4 can also be reproduced on a real pseries LPAR with nestedv2
+capabilities.
 
-If this works, clear this change again, and figure out which check in
-snd_pcm_hw_refine_with_lock() gives the error.  The function has three
-preliminary checks: PCM_RUNTIME_CHECK(), snd_pcm_buffer_access_lock()
-(& unlock()), and hw_parms_state_check.  The first one must be
-harmless, and the real problem must be either
-snd_pcm_buffer_access_lock() or hw_params_state_check().
-
-```
-static int snd_pcm_hw_refine_with_lock(struct snd_pcm_substream *substream,
-				       struct snd_pcm_hw_params *params)
-{
-	struct snd_pcm_runtime *runtime;
-	int err;
-
-	if (PCM_RUNTIME_CHECK(substream))
-		return -ENXIO;
-	runtime = substream->runtime;
-	err = snd_pcm_buffer_access_lock(runtime);
-	if (err < 0)
-		return err;
-	err = hw_params_state_check(substream);
-	if (err)
-		goto unlock;
-
-	err = snd_pcm_hw_refine(substream, params);
-
- unlock:
-	snd_pcm_buffer_access_unlock(runtime);
-	return err;
-}
-```
-
-OTOH, if the oneliner above doesn't change the behavior, something
-else overlooked obviously.
-
-Oh wait, it might be the 32bit compat path?  If so, the call at
-snd_pcm_ioctl_hw_params_compat() needs to be tested, instead.
+[1]: https://lore.kernel.org/linuxppc-dev/179211526968.809012.4905747914183363587.b4-ty@b4/
+[RFC]: https://lore.kernel.org/linuxppc-dev/cover.1789099725.git.ritesh.list@gmail.com/
 
 
-thanks,
+Ritesh Harjani (IBM) (7):
+  KVM: PPC: Book3S HV: Read EX_DSISR as a 32-bit field on guest exit
+  KVM: PPC: Book3S: Don't call __ffs() on an empty pending_exceptions bitmap
+  KVM: PPC: BookE: Don't call __ffs() on an empty pending_exceptions bitmap
+  KVM: PPC: Book3S HV nestedv2: cap max vcpus to PAPR limit
+  KVM: PPC: Book3S HV nestedv2: reject vCPU ids beyond the PAPR limit
+  KVM: PPC: Book3S HV: Fix error handling during vcore create
+  KVM: PPC: Book3s: nestedv2: Free the guest state buffers if vcpu create fails
 
-Takashi
+ arch/powerpc/include/asm/kvm_host.h   |  1 +
+ arch/powerpc/kvm/book3s.c             |  2 +-
+ arch/powerpc/kvm/book3s_hv.c          | 15 ++++++++++-----
+ arch/powerpc/kvm/book3s_hv_p9_entry.c | 13 +++++++++++--
+ arch/powerpc/kvm/booke.c              |  2 +-
+ arch/powerpc/kvm/powerpc.c            |  9 +++++++++
+ 6 files changed, 33 insertions(+), 9 deletions(-)
 
-
+--
+2.39.5
 
 
