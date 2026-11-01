@@ -2,89 +2,103 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EEA47606A324
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Nov 2026 09:16:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 56A48606A324
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Nov 2026 11:35:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=sgkkj1uq;
-	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=auce2M9l
+	dkim=pass (2048-bit key, unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=KEbBjcyD;
+	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=PNDAkENG
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jHTjC2qz8z2yRn;
-	Sun, 01 Nov 2026 20:16:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=81.169.146.170 arc.chain=strato.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793524575;
-	cv=pass; b=AlKOoYntsfBALxPPSijYfnjN+BA+2LSDKzCJNnOH1TcLnKequy6BEFHQWvYsszam61SSbVAJBp2HqT1+4QiMZEdPdDslmzGxBnMNGeTujJPmiZWGWxzOxipLr/8wXbRdtxHJ/2+CuOYPmnZCORJy/jcQAGzBzD7XQJ11uX304sV/38NDduhLuP0isdDhyAP7ghmduayY36yg8YoAwDSmqT+d/GtbwWv4S7uyOOfzvEeXtNhgt2BQG6x+p+y5oysbojVBY7e5drdBke6N2j65PT+28ECA7xmubYpH2ci52V0YWLm+F9oxqnwq7oURACGQjnmDfXfO0T71vJ8xL/enVg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jHXpM67dTz2y7r;
+	Sun, 01 Nov 2026 22:35:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=85.215.255.51 arc.chain=strato.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793532955;
+	cv=pass; b=Pg0U8P02ge5afima9J+EWw3p0Hdzc/cGdcJiI3/2qs/2j5Jo3YCBXiOcgYRI4tkHgPIZKnu3YbhblEjySp8VehweMHJ+jdxWoF30YQVSJxX0JPphNcJFt+0XvexGZfFacQvdRVPTv36X/Kdmmu4nBfMRvFHWtDiaC2tpHb4HNDE0kjAQyrRpfY5CGT23in6DCNCwkT9vlIRPBOqxSmiaXCnoI9Co6sBRybtDYr0Jwhp5ljCSkWhdr9VN1lLPqgp8r3s/0cOlWhy+nzZJuZqORtTyxzqRZ7nWeaBVuwE7l2ok1wJUd+PwUcKBkuR+lkNvAMozsak0ckWso7uXfLdhVg==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793524575; c=relaxed/relaxed;
-	bh=8g2RT8ZOSnoGGAR+ArF59vBen9DTimqtAvKPyxShy9M=;
-	h=To:Cc:From:Subject:Message-ID:Date:MIME-Version:Content-Type; b=gtdcL4uOw2qAHBXzUE7+z3l2xgP83cKd4oXayQ8FHFCb8u1NZgu9IgVAFxeg9p61EGMJuXGI1f+9NQ+vQzQTUOCIkSml9EJtw9961KwySlNse9qyWxILAN3xTETs4JPHMn9WZGUMAYfD/nCOyvciXFKQ4+Shv8NQgCFOClO9mXrEAJ72dTPBZnONBfWU9xoryZnhvHPS7N0Lm0TgReHm0RB/qD1iY1uZARGEU09tK4pDk6P6jtVAvHGk8odzFQPW5N8+VRSux//nfAbgB10UuSC3/2LjqKE3I2f9TyrPdr18zBRfC/Y2BTZJr1KOPHA81tEaPNfR8G46p7O1zOCXig==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=sgkkj1uq; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=auce2M9l; dkim-atps=neutral; spf=pass (client-ip=81.169.146.170; helo=mo4-p02-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p02-ob.smtp.rzone.de
+	t=1793532955; c=relaxed/relaxed;
+	bh=e2074Najjr40eJjq29H8HmdCXIfITYYaEJGmkIK26yw=;
+	h=Subject:To:Cc:References:From:Message-ID:Date:MIME-Version:
+	 In-Reply-To:Content-Type; b=mJOXIAdDpAOYiq8AL7aoSmVa3QxvVMftmjQ/Ze+T/3DBPas9wXljoFvGMFg6tjyJSETBhtoMSFwpZmaEB7KHzCDAfcO4ySXd5SU6FKlH80xQSEvpsD7XItOaa6sI2CV/onBLih6B9ADpG5pUn0qlQYpI2g4ab/tibQdTMbvgKMlGteZBcblilwrooKHqvOHDpOjZsb7JvRhlvnYrGPcbYv/+Q/6RP22vuy/iTUkhdv1xKXzOdU1AIA7De8jBPcMHDmhIu6pJXuS8ovyO8lkdNlEizWo4pD/fDmkUTd2SuYwhpRqYOXodOTdmKAI0/UqFHqcf3viHTZdBVr3TJJinnA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=KEbBjcyD; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=PNDAkENG; dkim-atps=neutral; spf=pass (client-ip=85.215.255.51; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p01-ob.smtp.rzone.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=sgkkj1uq;
-	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=auce2M9l;
+	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=KEbBjcyD;
+	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=PNDAkENG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p02-ob.smtp.rzone.de (client-ip=81.169.146.170; helo=mo4-p02-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
-Received: from mo4-p02-ob.smtp.rzone.de (mo4-p02-ob.smtp.rzone.de [81.169.146.170])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=85.215.255.51; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [85.215.255.51])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jHTj70p2sz2xjN
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Nov 2026 20:16:09 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1793524547; cv=none;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jHXpH039Yz2xyj
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Nov 2026 22:35:48 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1793532943; cv=none;
     d=strato.com; s=strato-dkim-0002;
-    b=oboHnIFHx2tvpTFzzKDHEVxesOd9NhN6nWBlYcuh7nEiqshui4OcKC/fsh73xitV7B
-    kkuxUp6hqg2zzHepp+NRyonqE1r3YHaHWYLP1WDkOYFbcFMWoIzYGl1F3Tbhkyb5avpo
-    re5rCW32MrxLoDY0850r04X1FOhqhw1RtjnVvuTJmp4SWzngVxraU205HFE/JbJcCoh/
-    cvvy5qBhuDKHz2irbcnNSYek2OQHHrKyXK5H0BDKep59yJZ0/KNOY1KOlsZX2YJRf1nV
-    3XqBuAa3m86+0C4Uyb7Nrb5wXKaeaixS+5I3S0E9CNpQqSTAYqI76W9fUVV/FHQI/Mvp
-    0iVw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1793524547;
+    b=MvHWs6uUGz4sokDNLAnqKxqDP5NQmEpadvtiGWm58YaDpzkmcmRhZcrUJBGcdT89xV
+    79DbKt4+2ZhKaLab25sivqy/By2Q1FY7m1LwlJHDLKZ3W+oO9e1ftD0QMVFH29LMMRz+
+    9t+tTsAls/vAZF2j2fnV6xZJYjmaj7uj56NSOWcpoNvirvxCJXHY9h0PGV/CjPAYjnuS
+    Y3FXfOmnGxJi6741x0C9L5spTf4b96SRRgLDGMNEYlFFcAYKM/7lf88aWZk0F2NY5MRw
+    B1YqSkRQECEpb+6W7l93T2IyV73lkXAuF3MXWtu10kFhSm08N2Ql7bItL0653RUBKMIf
+    /S+g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1793532943;
     s=strato-dkim-0002; d=strato.com;
-    h=Date:Message-ID:Subject:From:Cc:To:Cc:Date:From:Subject:Sender;
-    bh=8g2RT8ZOSnoGGAR+ArF59vBen9DTimqtAvKPyxShy9M=;
-    b=jjxzRQ5pLHqSO+Q3B0hAb444XnTQceEkWqfPntc6n1mmym0HkD4x216taNEYtURQ+q
-    9B1FLF/6CVVh5G21oG+Cot1pL4IsbP+OyA8bwBtrchDg5k5JSPtU0Ad7izfcnpwpA6pk
-    GIhyNJ8FkD5xt0j9PzeefGRAsvWdtQAQ9+9pcIS6JaAr5Kd0qnT3DmjgGz2+ww3uvpr9
-    n6IySoHIFn1mHAbOb7TeONQKTh8ngc7sHG76oNm90kwtXNb6hx2Q57M8w6J4dKerBogz
-    8UrF47oMR4NMqkukkRs9Np2xANCGl+x/ZDRRykUVQIUlDOFT/Rt0p174kstKHHvNyfBU
-    cTuA==
+    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=e2074Najjr40eJjq29H8HmdCXIfITYYaEJGmkIK26yw=;
+    b=TYa7RsAfV3CmiQNjfW+L6S3Tl/RHCRW1GWXsDJ72XBRC/fDio6KhPCKTdQzUJCwq36
+    0EWeIDEDxCjJkYFOOG735welSONLCnFSelX850BylYA4RrlvZlNrRoex1/qLVjR3aUDr
+    Ajcevdrjtsaz+sm1/O1slVPsadM6WzgA/iOygbHGd143jxgQd3F2TodE96Qhdz02jBAk
+    FRE5gQwuVjNmdC4oOZNV8ceTGz1KTKMIc5cFHP5HvfhmCRhFGNZg/mGmaP7T2yX9ed3u
+    /FWYwhVGi1J+I/186E3n1atVSrIU83Bx+Zna+K5DmkQOYXWQNVEfcEp+WiwlrLAyzffz
+    wW9A==
 ARC-Authentication-Results: i=1; strato.com;
     arc=none;
     dkim=none
-X-RZG-CLASS-ID: mo02
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1793524547;
+X-RZG-CLASS-ID: mo01
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1793532943;
     s=strato-dkim-0002; d=xenosoft.de;
-    h=Date:Message-ID:Subject:From:Cc:To:Cc:Date:From:Subject:Sender;
-    bh=8g2RT8ZOSnoGGAR+ArF59vBen9DTimqtAvKPyxShy9M=;
-    b=sgkkj1uqxuJiszBPuzH+GvKLnXgEc6TKyM6M+zjRSotE8JfG9WOYO3wo88MG6cgst4
-    VxmvL8OCWYBr7ls4AwhElZibQ51yDmPOw0eoxDYaWcT662/nEGASthJ+NwKG6KI0n2mg
-    jYactX9LaqzwQUSph/CMleKx64nn9NiicWY8BR/DzN6rsCAdf4XbfYYXk+O3B313W7VH
-    +o2amtR8inPEEaM4WeJz3r/49sJ69+v/WHDiSRRMDwUdRl7myqzyHoR4g6KqqgZbRrjV
-    sCdicwG3c7T5M9DZIQlw0aan7vtXRPri+vHvpWt6Q0DJSfpEGIJuN7r/k+VNKJgAL+dQ
-    inHQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1793524547;
+    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=e2074Najjr40eJjq29H8HmdCXIfITYYaEJGmkIK26yw=;
+    b=KEbBjcyDZ57FlO0eps0VF47jJTpv9lDVMjf4a0R9RhUvZT7Ig3+/Z/wVk1zHLoNcP8
+    0/eDKD/vSVNTvK3u/6wDweHdWAb6nv4NWdeG5XhxCcPA/EEIU517FYmlsm68Pmw2Jd8W
+    sKTaeow4kZkeHyWGhTSZhBLQ0YRDoQ1DxrefaHznTZNLChzMv8QoXEcvmR+Z2XcSFxRQ
+    pLAD8LurK5gO6MbT9b2YICBElKNsIvP71me6xjac+crAvx1seJjWQaIojWntpPpKvf63
+    xDdDbx2hNZlbNK2QrKpXCn3HvAC4voMk6XnZ4FA/uVlweQdkCmp29Bky7xpCEy9mKi5+
+    MOgA==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1793532943;
     s=strato-dkim-0003; d=xenosoft.de;
-    h=Date:Message-ID:Subject:From:Cc:To:Cc:Date:From:Subject:Sender;
-    bh=8g2RT8ZOSnoGGAR+ArF59vBen9DTimqtAvKPyxShy9M=;
-    b=auce2M9l/v+iXqGMmvYu1N0kHsUqZZL27upCyE0m9nB2o3Z6gkdA2dImIDmQm5JY1S
-    /Lkj9Lmo5zdFQazf1UAw==
+    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=e2074Najjr40eJjq29H8HmdCXIfITYYaEJGmkIK26yw=;
+    b=PNDAkENGFyPCp/YKfD9D8JtQ2Fl6OavCRQAlvZCVPHKi0SBzYLzlFvalBuw+lGvOGE
+    FIYWCs7w32Hcc48xD0Dw==
 X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr4thIFiqT9BURIi+m7xzg"
 Received: from void-ppc.a-eon.tld
     by smtp.strato.de (RZmta 55.6.3 DYNA|AUTH)
-    with ESMTPSA id e825d92A19Fl53U
+    with ESMTPSA id e825d92A1BZg5TE
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
 	(Client did not present a certificate);
-    Sun, 1 Nov 2026 10:15:47 +0100 (CET)
-To: zzzccc427@gmail.com
-Cc: tiwai@suse.de, perex@perex.cz, linux-sound@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "R.T.Dickinson"
- <rtd2@xtra.co.nz>, mad skateman <madskateman@gmail.com>,
- Damien Stewart <hypexed@yahoo.com.au>
+    Sun, 1 Nov 2026 12:35:42 +0100 (CET)
+Subject: [PATCH] powerpc/pasemi: Defer Nemo IRQ initialization
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>,
+ Narayana Murty N <nnmlinux@linux.ibm.com>, maddy@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
+ linux-kernel@vger.kernel.org, msuchanek@suse.de, harshpb@linux.ibm.com,
+ gautam@linux.ibm.com, amachhiw@linux.ibm.com, venkat88@linux.ibm.com,
+ "R.T.Dickinson" <rtd2@xtra.co.nz>, mad skateman <madskateman@gmail.com>,
+ Damien Stewart <hypexed@yahoo.com.au>, Christian Zigotzky
+ <info@xenosoft.de>, Darren Stevens <darren@stevens-zone.net>
+References: <20260928110411.844582-1-sshegde@linux.ibm.com>
+ <20260928110411.844582-2-sshegde@linux.ibm.com>
+ <9d83e196-4d6b-4be1-811c-eb72527d3cdd@linux.ibm.com>
+ <2a75097f-6b49-456a-bfef-d5e559ce719a@linux.ibm.com>
+ <33tnw44q.ritesh.list@gmail.com>
 From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Subject: Void PPC: PulseAudio issue with sound updates 7.4-rc1
 Organization: A-EON Open Source
-Message-ID: <41a2e39a-5637-8afa-f84f-f79e63b3b56e@xenosoft.de>
-Date: Sun, 1 Nov 2026 10:15:47 +0100
+Message-ID: <8353fe7a-2313-8669-9603-c534f9b9bf9d@xenosoft.de>
+Date: Sun, 1 Nov 2026 12:35:41 +0100
 X-Mailer: BrassMonkey/35.0.2
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -99,8 +113,9 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
+In-Reply-To: <33tnw44q.ritesh.list@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS
@@ -108,40 +123,31 @@ X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi,
+On 10/30/2026 05:21 PM, Ritesh Harjani (IBM) wrote:
+ > Let's ask Christian directly :)
+ > @Christian - Once we have v2, would you kindly help us test that
+ > please?
+ >
+ > We think the other approach which Narayana suggested might be a better
+ > fix for this and it can avoid preempt_enable/disable() dance. However,
+ > looks like we may not have the board where we can reproduce this.
+ >
+ >
+ > -ritesh
+ >
 
-Although PulseAudio recognises the sound cards, it is unable to 
-successfully initialise the corresponding output profiles on Void PPC 
-since the sound updates 7.4-rc1 [1]. The output via ALSA works.
+Hi all,
 
-Tested with the onboard HDA ATI SB sound device, Soundblaster LIVE 
-Player 1024 PCI card, AMD HDMI audio and with USB audio. Strangely 
-enough Pulseaudio can enable the sound devices on MintPPC32. I think the 
-latest sound updates are responsible for the issue on Void PPC.
+Is it possible to add the following patch to the kernel?
 
-I bisected last week [2] and ad28d2f607d1792c04531f2c5fd9ac0bf5bdcc9c 
-(ALSA: pcm: Serialize and check HW_REFINE ioctls) is the first bad commit.
+Link: 
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2026-October/305189.html
 
-I was able to revert the first bad commit and this solved the issue. [2]
-
-Then I created a patch for reverting the bad commit. [3]
-
-Could you please check the sound updates 7.4-rc1? [1]
+It is more important for us because the Nemo board can't boot without 
+this patch.
 
 Thanks,
 Christian
-
-[1] 
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=75c1cb8178fe84403fd95236ddf21754f0a4156c
-[2] https://github.com/chzigotzky/kernels/issues/21
-[3] 
-https://github.com/chzigotzky/kernels/commit/644ec7c1f2f812d5eb89741e643f742596a49b2d
-[4] Screenshots:
-      - With the sound updates: 
-https://i.ibb.co/675Yjxvd/Kernel-7-4-0-with-sound-updates.png
-      - With the patched kernel: 
-https://i.ibb.co/9HDrnnm1/Kernel-7-4-0-alpha8-Power-PC-1.png and 
-https://i.ibb.co/vx77FdHV/Kernel-7-4-0-alpha8-Power-PC-2.png
 
 -- 
 Sent with BrassMonkey 35.0.2 (https://github.com/chzigotzky/Web-Browsers-and-Suites-for-Linux-PPC/releases/tag/BrassMonkey_35.0.2)
