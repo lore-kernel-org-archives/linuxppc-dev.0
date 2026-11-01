@@ -2,51 +2,51 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDBE36072158
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Nov 2026 22:16:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CD5E6075744
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Nov 2026 22:17:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PCRw8XNL
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VlnlOoUU
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jHq1v0mhMz2yTH;
-	Mon, 02 Nov 2026 09:16:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793571411;
-	cv=none; b=TrSNyWtqeOrNzYYjplMpjZeWy9UBrrk6Y3UIqeyC42MwmHIgdYs7ZXj0KVxIjdTOiy4fCZcDfA/kJZ4P/TvrHmN4P48WpRgL7LQhj4G71Y0gSzEBraPK7luxskReJPgftWI/z3PSSufoPjTmKHAx8ocb0yW82UbNNjHY1uk/zuNRWpkZ0PZiT22926qOqij114gc5JW0t8lZBQw5h+6//OSPqNuVE2rcK1dhJPZ6mJlT9OknBc667y0fbua31WNd2zfgYQwHNXyyOQ6kjjXpdhobt7QrsfGRFM701vPdy0I2rxa0yLgalJpwCwJu/qxyDhBuKWnglWSDTDLbkhw82g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jHq2J0fb7z30WT;
+	Mon, 02 Nov 2026 09:17:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793571432;
+	cv=none; b=RhxSptyJYXnGmyz+1SNcx6DjrIWeIm8XSWbAFn31RXA67ZziqO23bd8b2qjbuir3OrfSdiFgOkOsgeBRIWsNVxMqhFHzEdOeDm3cmOUWmMkXnIgXPAjl5LLf0HQJcFjiRvV8aTgK8K+U7Z1yvPJUlzQSJ/4+TgP87XajfjlbK9+2qIqf86wg/e12nGJ8dj2V55IllbrVxy3k2sLsYNre5ri5jzgy8wJlpFuwtCoDdOK6D8+g4uSCiukVjsulK/m9QWUl//MaEfGW2acbLgayig8oRaDYXJ1rd4cgMx3hlA6iP+EffEN2YiXMKPsMtocJfba0CrGwB3TgsSDgCtaJAQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793571411; c=relaxed/relaxed;
-	bh=9SjWrhc7XGpfrZLDGv5e/UGJ5LKzUlRr1ymU5F3rbK4=;
+	t=1793571432; c=relaxed/relaxed;
+	bh=Fv8sMlP8O3GHUSoY8MBfh8MY+kr37FDNK89rZQzSXdU=;
 	h=Content-Type:MIME-Version:Subject:From:Message-Id:Date:References:
-	 In-Reply-To:To:Cc; b=SjOVrucBC0wRJGdj0jLJRnEHAfW2+KYY99eo/eOvGZIWPEWNeoOzJ35NgqXlYTNna44uAiNn3iSKhqE+CHUIGp9NzYxTFXTHbrtnCXNCgAN37+MrO+L1pvHqkyTNkL3A6ZnVw2CwJe6Itt6A5gaZIrxPAZu/KQ4ZskH4hJZ2uu5tSwJEN1+1Cc1L2SKDxzZIb32IZeiPyCSc/C36+3gDKXlhHj1qlJi8hUew+Pjf8veB5EdS26oZT3on5pro/xCKbVMF8IlZ9NfVi4rWHop+Wn9OIZ4Z0mw+pLmtobopEIcd39ctaPYe17xWm3ZwyA+o0AkAM5s4EtvvBmBhNhoGhQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PCRw8XNL; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=NPHDCCLV8eh0og7/t6wEV3LumR3xvxfqJ7egZ/Cz4527xettxCmmV/oWToZg2TENeu9dGpAWK+KEAd4yxFkDdHLe7soDZ8gfUrkEi81OInOwshbA1oDgwxPm7DEbr+pm1LPL4l56TNUvBY5GNGuex0zj9BuFV96SlK4u3akA4d7jJ2LhtOw58yWc+R91d9WMOPwJgkmtcuGAhqAgb+gsJA3XoL9uvDegZeecYuGuBrBeWLpWnw6KA71rf10y7mTyAR4MBkwzvESClcf/dtts7Bq153fOrr2JVZ2aLu0+FCUQ07f+N2WleFFBtGvtOoVyaGmr76YEbpQu/ojVasWNBA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VlnlOoUU; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PCRw8XNL;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VlnlOoUU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jHq1t3V1jz2xdb
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 09:16:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jHq2H3vBSz2xdb
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 09:17:11 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 32AD660618;
-	Sun,  1 Nov 2026 22:16:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C43571F00A1C;
-	Sun,  1 Nov 2026 22:16:46 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id E3C8F400B8;
+	Sun,  1 Nov 2026 22:17:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C2A0F1F00A15;
+	Sun,  1 Nov 2026 22:17:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793571406;
-	bh=9SjWrhc7XGpfrZLDGv5e/UGJ5LKzUlRr1ymU5F3rbK4=;
+	s=k20260515; t=1793571429;
+	bh=Fv8sMlP8O3GHUSoY8MBfh8MY+kr37FDNK89rZQzSXdU=;
 	h=Subject:From:Date:References:In-Reply-To:To:Cc;
-	b=PCRw8XNLxhwpgQY+VNJEgyemCH7WcIUexDDLxDQtKsJZyKUtdTMN3MNlZltJ6M0iy
-	 0sNvBS5zOI3cOGvEHXCS4FDiiBRJt4YTWvt0Z5W2pEwwNWqyPsD/jW7sJeFMWEVfwu
-	 32f/8TpLwxDIfiPxqr6f6Sc8JtU205KYvtKUxdXIsWKDgfMrSec039M8wUBLONKqKV
-	 C8h60HgiPJV6UBIQ+RJCyhEArenvuts1IeS5Ti1EIWkF9gSpCYTJmdYsxaCB3+MhvH
-	 cKC00fZeAT+3Xb1OaF1XeCb/NrEIVbK+ayJvZHgHKBP7c9ZLF51en7iMywKamnPnBz
-	 Vky2U/YXxjHxw==
+	b=VlnlOoUUEu9V0plLi4Kke52P9Sf7LmnCXI3/r9nD/EkLF8dgcbn/b70x7s8xOpjzM
+	 vBDpICruAngiVNvxs7IVSzf2GH3D+B5AcFg6C/1RMLmTfGWgGqs0LmJd92jQOeIJaF
+	 wsK9MssC5+2tsvQklkL07S8F2Zzqk3PTJHN1zfusMqgsbvhB+jUERHRUHHZskloFPo
+	 yl/WabE6HiCKHMwoMCYwf1B+T0vXDZWAeuYQt311a5PVRX3ugUcvRN0wyZzbvYibPV
+	 2TlmBTOm6MSHm2nJI9gJKa3Redvt//yKNi/XBo/uFCvCdVwIZi6hXO14jaV0sdhUS0
+	 kunSJJwhwyeCQ==
 Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id BA1E838003B8;
-	Sun,  1 Nov 2026 22:16:46 +0000 (UTC)
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id BA5B438003B8;
+	Sun,  1 Nov 2026 22:17:09 +0000 (UTC)
 Content-Type: text/plain; charset="utf-8"
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -62,51 +62,47 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH v2] arch, mm: promote DEBUG_WX to CHECK_WX
+Subject: Re: [PATCH 0/2] lib/crypto: Use size_t lengths for Poly1305 and
+ ChaCha
 From: patchwork-bot+linux-riscv@kernel.org
 Message-Id: 
- <179357140534.2624073.9989407542230376185.git-patchwork-notify@kernel.org>
-Date: Sun, 01 Nov 2026 22:16:45 +0000
-References: <20260926-direct-map-verify-wx-v2-1-efcd64a6b74a@kernel.org>
-In-Reply-To: <20260926-direct-map-verify-wx-v2-1-efcd64a6b74a@kernel.org>
-To: Mike Rapoport <rppt@kernel.org>
-Cc: linux-riscv@lists.infradead.org, akpm@linux-foundation.org,
- aou@eecs.berkeley.edu, agordeev@linux.ibm.com, alex@ghiti.fr, bp@alien8.de,
- catalin.marinas@arm.com, chleroy@kernel.org, borntraeger@linux.ibm.com,
- dave.hansen@linux.intel.com, david@kernel.org, gerald.schaefer@linux.ibm.com,
- hca@linux.ibm.com, mingo@redhat.com, liam@infradead.org, ljs@kernel.org,
- maddy@linux.ibm.com, mark.rutland@arm.com, mpe@ellerman.id.au,
- mhocko@suse.com, npiggin@gmail.com, palmer@dabbelt.com, pjw@kernel.org,
- hpa@zytor.com, ritesh.list@gmail.com, linux@armlinux.org.uk,
- sshegde@linux.ibm.com, surenb@google.com, svens@linux.ibm.com,
- tglx@kernel.org, gor@linux.ibm.com, vbabka@kernel.org, will@kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org
+ <179357142829.2624073.2124484665042168888.git-patchwork-notify@kernel.org>
+Date: Sun, 01 Nov 2026 22:17:08 +0000
+References: <20261014152604.323310-1-ebiggers@kernel.org>
+In-Reply-To: <20261014152604.323310-1-ebiggers@kernel.org>
+To: Eric Biggers <ebiggers@kernel.org>
+Cc: linux-riscv@lists.infradead.org, linux-crypto@vger.kernel.org,
+ ardb@kernel.org, Jason@zx2c4.com, herbert@gondor.apana.org.au,
+ linux-arm-kernel@lists.infradead.org, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org,
+ vladimir@genproof.com
 X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=4.0.1
+	autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 Hello:
 
-This patch was applied to riscv/linux.git (fixes)
-by Andrew Morton <akpm@linux-foundation.org>:
+This series was applied to riscv/linux.git (fixes)
+by Eric Biggers <ebiggers@kernel.org>:
 
-On Sat, 26 Sep 2026 12:29:29 +0300 you wrote:
-> Verification that the kernel does not have writable + executable
-> mappings is about detecting security risks rather than a pure debug
-> feature.
+On Wed, 14 Oct 2026 17:26:02 +0200 you wrote:
+> This series upgrades the Poly1305 and ChaCha functions to use size_t
+> lengths, matching the rest of the crypto library.
 > 
-> Major distribution configurations enable it in their kernels as well as
-> defconfigs of most architectures that have ARCH_HAS_DEBUG_WX.
+> It also fixes the (not currently reached) handling of lengths above
+> S32_MAX bytes, and (not currently known to matter in practice) the
+> assembly functions depending on unspecified high register bits.
 > 
 > [...]
 
 Here is the summary with links:
-  - [v2] arch, mm: promote DEBUG_WX to CHECK_WX
-    https://git.kernel.org/riscv/c/2e83e2ce34ff
+  - [1/2] lib/crypto: poly1305: Use size_t length
+    https://git.kernel.org/riscv/c/0b58c136c2f9
+  - [2/2] lib/crypto: chacha: Use size_t length
+    https://git.kernel.org/riscv/c/e42003dba6dd
 
 You are awesome, thank you!
 -- 
