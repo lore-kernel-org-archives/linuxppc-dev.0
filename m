@@ -2,96 +2,67 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 83825606A31D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Oct 2026 18:01:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8D92160A2601
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Nov 2026 04:17:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=RuYMTYLN
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Szc8bvtd
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jH5PL5FhBz2y2R;
-	Sun, 01 Nov 2026 05:01:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::e29" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793469670;
-	cv=pass; b=IkwT4WFlhhTq6NFnKxlv5FQJ0Yp17zpj2Tl3CVVmrzv7ScuewIL7XlmtE2P4/kFNnKPjXTplIiE2w6JjVUflbyg/CY+3oKzjUH3RxmbKetWKv/MeAKe3URhyjA2c1eOCuKeVuDqYyUwtDLHuBD1z540qE6/VScrqKwqvSdLv0xDjgO4bvgRvMY9nBvF2WhzfUCYsxzTsN9WY88Z2kTe45hfWalqXVFRkjVBnbS7W2gB1ROZbVV3ETybNgz+eERPFcFsFjb8EqwgbShXU/dmbysjff/b+p7EKsGV5ic4OCcC1KPi9iz4sV9oHs9ecG/mSuKiwYJLl0kSgt5wlVrzbSw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793469670; c=relaxed/relaxed;
-	bh=ztiV5c0DfuFx8uDKCLiUp5o+ivOB8cWRN0pJNXnNfZU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=XsLuxRhNGuRzMZF2l9kIOmM8iiW+VdYbPErp7agfLmovgSFDMqpYGy2pqNb3FDGiz/2cTQsGQSnd4jjcAgrNQRHEfwBpDT8sfu4K4pK9kA8vd3ayJ7RlFDCkXvRtW4qKnIR7w8nNKy/ofRvGG69B9XlQWwndFEGgGfYJkJvUlZFsWaqGPE05/ZenMFZStJaNE1i8eOLYM+M8IyDVDF7DTyXK00OnxkZLAhSbY142D/9t7Zpu3pordosk0Y+rp9hb1qLpxUjtLKHzbt1+5LjgdpocGlyXmbM1jyvD+iD+5e2tYWUcGnx7r6EalLnIdQRQNIFs+rFrZI5dmScsA8u2dw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=RuYMTYLN; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::e29; helo=mail-vs1-xe29.google.com; envelope-from=james.hilliard1@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jHM4D6KJYz2y2B;
+	Sun, 01 Nov 2026 15:17:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793506636;
+	cv=none; b=EEOVB9TIC/uuZ5ZNH0uH+NEGCMP6z8TwEXuUFsbS9NRGYJMi8W0t03X6rFE7E/KRSoRfj0CwFuxXTF5+PE0R/p4ixw/BI/bSRV3L9jbqUEIZDv+AdxoQF3yEZIpEP4w9pXPXBMB5uneV1ZhSrBRcpsB10TNEtLwdHnGYB6p6nLQRbQc6NZzmGchttneqy8amTugQ9GoZ3eK5fzX/GrZTRH7Jfl6A37Z1WZUHwdRRN07YV/9iSF7dSmbh3gtt0lei7yopi1GqgXWNGON8AvpAxdVnd+bYntgoDXHyaj6AlFyBXdhUJls1rZ69GCUYrS8lnaGJpOwE3N1JrEVT15ATKA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793506636; c=relaxed/relaxed;
+	bh=mUqu+6HsBuPxnZ0xvfhrdFnRGtvir4qjhgMAVr4T9Ko=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=oeyPlzFywUQSSLPfrD+7VELf8vyWLEAdXQFHcfpeS/lIGzSsVd0/nohqHZY+JbWmV50RrXwapLki10wSa2ZCQT+/1KVACNaTJwALdt4fHNnpIXsGCWvzze8FJSffcwXIVUFgACys7gyNxJVqh9sJHXfn88lsSNF/i9m5hE9VMNCXsenWuXJo/2Y3UzhbIrnBbZsG5P6R+L4TqPSCLSJtcfNairfQLmv/EcQv41528MBQF1vHa97OXOzhenb5z1LfwGat0pe/uJWdrq1s6FK+uxCz07lbJoQZHloiegwaVW0MPoXhPPFNNry8kHe2pD3bsdG+qGfOwaK8nSAmeugKyQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Szc8bvtd; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=RuYMTYLN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Szc8bvtd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::e29; helo=mail-vs1-xe29.google.com; envelope-from=james.hilliard1@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-vs1-xe29.google.com (mail-vs1-xe29.google.com [IPv6:2607:f8b0:4864:20::e29])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jH5PJ4SqTz2xln
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Nov 2026 05:01:07 +1100 (AEDT)
-Received: by mail-vs1-xe29.google.com with SMTP id ada2fe7eead31-7ccae9f1a9eso973804137.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2026 11:01:07 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1793469664; cv=none;
-        d=google.com; s=arc-20260327;
-        b=DQEChZgRCf501Jab9VudNL+2RJ/ePGCw9akaxweCinGFRsVP7nmC2X5scNcvlmZE5m
-         o9R+Olqeqzjv4n9MbnqHP16f0XWuigxsIjfm3/zJgjoMNKAUJbJicCr9EF4a0mbMNOF/
-         iTeQ9XtYncAFfu5Ts/dZZkic4FCDlMF0J8rxb01y8i++xq7pdIvDEHdKBNTL3uU4Ap3Z
-         4YcnN4WJiwFkeySvHq6cABzQ7wnB4BVCM+QdRI4dXSaedw+yUn3MkIWFxXz+plTnU1U+
-         Rw+xp8ndH4w3l1fFwlX7Hx9dK5OgIRoxSlXuQ8pO/FlDASPc3b/Qz/9+UXLQDdmggGfv
-         mVyg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=ztiV5c0DfuFx8uDKCLiUp5o+ivOB8cWRN0pJNXnNfZU=;
-        fh=9vytwhclP6VW0o97ZWXNUyJM4ERYndFuplx9QRDLVm0=;
-        b=VAG/VD8Cgvms287Rloe6M5CW8Rbphx2q92FB5T/HXomYZwCNCaKeXGkgQdCjETcyxv
-         DxShRu/t5G0L2hjLjnntwBhP23yUqos/QpTKbHPLGNM1M+4jhm1e1DPx4qZJb59y5tG8
-         OkATTdc+B3N/H9t8F/FxJBAnJPeKMt2c3IswDWHb/VA+gF1AsCP/4FfV6QcCEN3bxEkn
-         0zxvau8BVrqF+kxhG3Ak5Rh0O+p0/+UGcQmb7dVAx+PUEpGd4rDfEpksUBJhK3+IXMwg
-         LDrdVAzAHn6R3NgbMkyKE0SOPO7hkWRaHPoOq6bB7DYjGbq4vxilYOaePxhdfRQEo2YG
-         ITLg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793469664; x=1794074464; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=ztiV5c0DfuFx8uDKCLiUp5o+ivOB8cWRN0pJNXnNfZU=;
-        b=RuYMTYLN7ZKP0h7SstsCpG0XddD+gFKosJTFeSuz6TFlOPm2MrC0lIjXEkm5C/lJ5Z
-         zMTXqsFdq7WGj3k/7e2c0kXBx3fH91zSXXOYF5vu+5nu1VFsNz8BvxDxGkJmH72ShP/v
-         GaPHmlgQthg0EoVNRyXsICubjFHcawWFSm7Xyx7qWhyRdFcdyAQLp855AsjIFcA/U07j
-         Y+aWM/Z+0d13FgeB/VqAGKIB0CGFyKz/gUvuvyzrELzLHWWj/cE+X5EZf/EtFde86uBP
-         pt5kRCw3xFemhJGTyvY7G0Tjkr6cNn+vn+ovRAEzuDn5xwHfiUIUbxr2OnKXUTMPEJFf
-         mmmw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793469664; x=1794074464;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=ztiV5c0DfuFx8uDKCLiUp5o+ivOB8cWRN0pJNXnNfZU=;
-        b=utCkCqU1OCztWVQqHeyFO1QKq5ver6XoGqs/HPCXPbbMJ3V7mnrTcYjck7sr6W9Y8d
-         n/nSHOIBg3T+cvqKdSmr1uaSsi5+cJ1BAK3Eckf7UZZw8Y/qhXQtR2fSUh8qRAjx8kP8
-         Xb4XKSb+5uDnU3ZR9ILug3/h3OeD1KJjGNvfJwjKCsxKNA6fGtVMBflN2kDkxVd7Aom0
-         vrRt7uEeZ5+nlfT8TXFfhoQCPDKZW7P2cvwg8yzGC7aMrHirCYKlKHNPgiPbK8Yrtqhl
-         3jSrPJhN8kAIrFju0nDUknUhpy4QHV+K47Xft4emVtlA6ANo0KR0bJR6Pp2rVGzOhK0o
-         KcYQ==
-X-Forwarded-Encrypted: i=1; AKwUvBxmVQMzfS2G04bzwQl8OXfvT4p6RxsMdTS8ZxLpy+iYbvYx984YonN6Z8bRPM3y7y9dEKNU+Lt+2F97bII=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYL6nD9lHIVQCd92JhC928i6Y51HU+E8D7tRccOm/Cek5zXxe/A6
-	gPkoZC1yhaLK2j9/uD38KH+kXiRm8uff155XxOs1HhdBK40HRNm/8vYOq5yMYkwZPZlKRJAwFdd
-	TM0+tdUjwUiObyYMp55a6RMu2UcEnRBg=
-X-Gm-Gg: AYBFou0F07pW93FQLSe7YKT9M2mGAUpPaTyKGnnG7XIGOhto92rgI/HFUUkvxtb6UkD
-	cub8C3ZNtNK7ev9xwrWPrTHMkurzlhpTL/rE4SiO5hLn2d4jQ3zZuK8mtRAru/cInw48wyIyxim
-	5Cq1zkGzv2ls0Rqkm5YepidioueMvAJPdSCZCsNzOfal7aBUJYx+m7QjfqB5AgA72sN7/hu4wCW
-	w2s+AXohzhjDee1v8nj72EfU4KSFdzXkwF9uoWXDQBwVvDgKi3LUHhCYC7PjHmeh/tCOINFL+c+
-	/NpYisb3WPSIf+Z9tfniIBmb1khMNLO9AGn31akPeAX1bWiteMsa4JigyxS3QVu9FzbLak3fFRl
-	RveWQQqXjGS37MWaBpWAfXrIPcQmAnF+7lkwqE5AYHKzo8/1SnXN7v5jfs/e4e9N26wbAjqzsSO
-	SzUuw+9qV0c8c6cPWz01uLd2tzlg8A0uBxvcN5jNaqI9hO1FlExyfDUeNbSw4MIcNACsB0NW8Fi
-	JQC9Ne+80CQyvbyUPjeKrMXmK+jWQ==
-X-Received: by 2002:a05:6102:c4f:b0:7cc:3eb0:6ece with SMTP id
- ada2fe7eead31-7d072d53fa3mr3076240137.33.1793469664332; Sat, 31 Oct 2026
- 11:01:04 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jHM4C6x1nz2xQs
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Nov 2026 15:17:15 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id B672A4095F;
+	Sun,  1 Nov 2026 04:17:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9B3681F000C1;
+	Sun,  1 Nov 2026 04:17:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793506633;
+	bh=mUqu+6HsBuPxnZ0xvfhrdFnRGtvir4qjhgMAVr4T9Ko=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date;
+	b=Szc8bvtdgyfePD3Lcy+welmLY8PIM/MtSN+SWIMLPjyxSAUjFYbtzX/kg/Gk5W6ob
+	 AYPG16F5BppYWK28ekq6B4oHkbVsa+lhdlIX9kk2K7luf1zP8bvyIiQlN7cxKLefnz
+	 AoI6Ac242CTEeqI3aifav4i4kabOUAzpWrpQTkliA8ZqivaSs5YfaonNvidpfoWMJa
+	 6jPJ8xnrDXxGgY7hl5m0qHxKAk5XJempL3eDIBY50vaX+CFknAYUnPM1R+RrTcypkl
+	 ukEcKPlOK+p0kKrGynfvdOLrmP1tOsJWpENln+kYeylBrjzAxWzp/+bUv9vsW/XkIc
+	 9w+/Glq+JuypQ==
+X-Mailer: emacs 31.1 (via feedmail 11-beta-1 I)
+From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
+To: Kohei Enju <enju.kohei@fujitsu.com>
+Cc: iommu@lists.linux.dev, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
+	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+	x86@kernel.org
+Subject: Re: [PATCH v6 6/8] dma: swiotlb: Centralize memory-encryption pool
+ sizing
+In-Reply-To: <auR0fT1yrKQ9wbm8@FCCLS0092175.localdomain>
+References: <20260924060756.1325156-1-aneesh.kumar@kernel.org>
+ <20260924060756.1325156-7-aneesh.kumar@kernel.org>
+ <asVs3doaJ4WrT3M2@willie-the-truck> <asYZFXGyafRjjBS0@arm.com>
+ <asYiOgskwi8JYLe_@willie-the-truck> <yq5awlrt3dwo.fsf@kernel.org>
+ <yq5av77c92oo.fsf@kernel.org> <aseRzPshcoys7AJS@arm.com>
+ <yq5ao6d48dqr.fsf@kernel.org> <auR0fT1yrKQ9wbm8@FCCLS0092175.localdomain>
+Date: Sun, 01 Nov 2026 09:47:05 +0530
+Message-ID: <yq5a8q3d9oe6.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,190 +76,156 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261029-submit-serial-8250-dma-cancel-v1-v8-0-3fd56ba352ed@gmail.com>
- <20261029-submit-serial-8250-dma-cancel-v1-v8-6-3fd56ba352ed@gmail.com>
- <auNW_Oc-Ao5Iw-Gw@ashevche-desk.local> <CADvTj4pOg4w5LpFW_E3qzP7FZDnDgpB8LyR9xxhT_mZre21vFw@mail.gmail.com>
- <auRl9ztbav4nHi7U@ashevche-desk.local> <CADvTj4p8tjwdftg+H11ob0iaBZKxXrTdkSmhfZHjOYunm5tr9w@mail.gmail.com>
- <auTZtteCFnuoMD3p@ashevche-desk.local> <CADvTj4rXXAEnTyu_AzpF41a2YSHHG1ANozCUSePBoH3QZYbBQg@mail.gmail.com>
- <auWqUIBUs0_7bnGU@ashevche-desk.local>
-In-Reply-To: <auWqUIBUs0_7bnGU@ashevche-desk.local>
-From: James Hilliard <james.hilliard1@gmail.com>
-Date: Sat, 31 Oct 2026 12:00:51 -0600
-X-Gm-Features: AclHuK8CrIpMhatn91Js9Zu09dawz3gtrtGWd_ctbAp5jI12V9IMTbfHBekYVDc
-Message-ID: <CADvTj4rej-zOtwwN8CtchQ8A9L-fdG0dL_XwBb0zTFv5m=+j4Q@mail.gmail.com>
-Subject: Re: [PATCH v8 6/6] serial: 8250: retain DMA resources when
- termination fails
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
-	Raul E Rangel <rrangel@chromium.org>, =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>, Tony Lindgren <tony@atomide.com>, 
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Richard Genoud <richard.genoud@bootlin.com>, 
-	Nicolas Ferre <nicolas.ferre@microchip.com>, 
-	Alexandre Belloni <alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, 
-	Jacky Huang <ychuang3@nuvoton.com>, Shan-Chun Hung <schung@nuvoton.com>, 
-	=?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
-	Fabio Estevam <festevam@gmail.com>, "Maciej W. Rozycki" <macro@orcam.me.uk>, Timur Tabi <timur@kernel.org>, 
-	linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev, 
-	linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+Content-Type: text/plain
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Sat, Oct 31, 2026 at 2:44=E2=80=AFAM Andy Shevchenko
-<andriy.shevchenko@linux.intel.com> wrote:
->
-> On Fri, Oct 30, 2026 at 12:08:52PM -0600, James Hilliard wrote:
-> > On Fri, Oct 30, 2026 at 11:54=E2=80=AFAM Andy Shevchenko
-> > <andriy.shevchenko@linux.intel.com> wrote:
-> > > On Fri, Oct 30, 2026 at 11:09:53AM -0600, James Hilliard wrote:
-> > > > On Fri, Oct 30, 2026 at 3:40=E2=80=AFAM Andy Shevchenko
-> > > > <andriy.shevchenko@linux.intel.com> wrote:
-> > > > > On Thu, Oct 29, 2026 at 11:19:59AM -0600, James Hilliard wrote:
-> > > > > > On Thu, Oct 29, 2026 at 8:24=E2=80=AFAM Andy Shevchenko
-> > > > > > <andriy.shevchenko@linux.intel.com> wrote:
-> > > > > > > On Thu, Oct 29, 2026 at 01:37:02AM -0600, James Hilliard wrot=
-e:
->
-> ...
->
-> > > > > > > > +     while (rx_ret || tx_ret) {
-> > > > > > > > +             dev_err_ratelimited(p->port.dev,
-> > > > > > > > +                                 "DMA termination failed: =
-RX %d, TX %d; retrying\n",
-> > > > > > > > +                                 rx_ret, tx_ret);
-> > > > > > >
-> > > > > > > > +             msleep(100);
-> > > > > > >
-> > > > > > > Huh?!
-> > > > > > >
-> > > > > > > > +             if (rx_ret)
-> > > > > > > > +                     rx_ret =3D dmaengine_terminate_sync(d=
-ma->rxchan);
-> > > > > > > > +             if (tx_ret)
-> > > > > > > > +                     tx_ret =3D dmaengine_terminate_sync(d=
-ma->txchan);
-> > > > > > > > +     }
-> > > > > > >
-> > > > > > > This is unacceptable. Sleeping is okay, but value should real=
-ly match the
-> > > > > > > baudspeed and other parameters of the transfer.
-> > > > > >
-> > > > > > This sleep is backoff after dmaengine_terminate_sync() has retu=
-rned
-> > > > > > an error, rather than an estimate of UART transmission time. Ea=
-ch
-> > > > > > retry asks the provider to stop the channel again; elapsed time=
- is
-> > > > > > never treated as evidence that the resources are safe to free.
-> > > > > >
-> > > > > > The particular 100 ms interval has no hardware-derived justific=
-ation.
-> > > > > > However, I don't yet see a sound way to derive the retry cadenc=
-e from
-> > > > > > baud rate either. RX can be waiting for input, TX can be held b=
-y flow
-> > > > > > control, and callback retirement is a separate requirement from
-> > > > > > moving bytes through the UART.
-> > > > > >
-> > > > > > Do you have a particular provider failure mode in mind where re=
-trying
-> > > > > > termination should follow the serial transfer timing? I'd like =
-to
-> > > > > > base the interval on the condition that can make termination su=
-cceed,
-> > > > > > rather than substitute a wire-time estimate for an arbitrary de=
-lay.
-> > > > >
-> > > > > Termination of DMA sometimes require to clean up internal FIFOs a=
-nd other state
-> > > > > machines. That's what happens on HW side. In the software waiting=
- for too much
-> > > > > may lead to the very big undesired latencies. The value of 100ms =
-sounds insane
-> > > > > to me for the HSUART cases (megabaud range of speed). Also note, =
-not every PCB
-> > > > > design uses HW flow control, so this may be even worse for them.
-> > > >
-> > > > The 100 ms interval can add unnecessary teardown latency if a faile=
-d
-> > > > termination becomes retryable much sooner. There is no hardware-der=
-ived
-> > > > justification for that particular value.
-> > > >
-> > > > The FIFO/state-machine draining is part of the provider's stop sequ=
-ence.
-> > > > For example, DW performs its FIFO-empty polling inside
-> > > > dwc_terminate_all(). If termination succeeds, this patch proceeds w=
-ithout
-> > > > the retry sleep, regardless of baud rate. The sleep is only reached
-> > > > after an error during DMA release, not during normal RX delivery.
-> > > >
-> > > > Baud rate can influence how quickly a transmit FIFO drains, even wi=
-thout
-> > > > flow control. However, the termination error does not tell 8250 whe=
-ther
-> > > > that drain is still progressing, how much remains, or whether the
-> > > > controller needs a different recovery operation. That distinction m=
-atters
-> > > > when choosing a retry interval: a shorter interval reduces the adde=
-d
-> > > > latency, but does not establish that retrying can recover the chann=
-el.
-> > > >
-> > > > There is also a specific API detail here: dmaengine_terminate_sync(=
-)
-> > > > returns immediately if device_terminate_all() fails, without reachi=
-ng
-> > > > dmaengine_synchronize(). Consequently, an error leaves callback dra=
-ining
-> > > > unconfirmed as well. The retry cadence can change, but resource rel=
-ease
-> > > > still requires successful termination and synchronization.
-> > >
-> > > Most likely this is AI slop. I can't see the justification for 100ms.
-> > > Can you explain that?
-> >
-> > 100 ms was an arbitrary backoff to avoid a tight retry loop if
-> > termination keeps failing. It was not derived from the baud rate,
-> > FIFO depth, or a DMA provider's recovery timing.
-> >
-> > That motivation explains sleeping between retries, but not choosing
-> > 100 ms. I don't have evidence supporting that particular interval.
->
-> Yep. And that's what my point is about. Any big sleeps has to be explaine=
-d
-> and justified.
+Kohei Enju <enju.kohei@fujitsu.com> writes:
 
-100 ms was an arbitrary backoff for what I expected to be a rarely
-exercised termination-error path. It avoids a tight retry loop, but
-neither that nor the expected rarity justifies the particular value.
-Successful termination on the first attempt adds no retry delay.
+> On 10/08 20:02, Aneesh Kumar K.V wrote:
+>> Catalin Marinas <catalin.marinas@arm.com> writes:
+>> 
+>> > On Thu, Oct 08, 2026 at 11:03:27AM +0530, Aneesh Kumar K.V wrote:
+>> >> Aneesh Kumar K.V <aneesh.kumar@kernel.org> writes:
+>> >> > Will Deacon <will@kernel.org> writes:
+>> >> >> On Wed, Oct 07, 2026 at 11:04:05AM +0100, Catalin Marinas wrote:
+>> >> >>> On Tue, Oct 06, 2026 at 10:49:17PM +0100, Will Deacon wrote:
+>> >> >>> > On Thu, Sep 24, 2026 at 11:37:54AM +0530, Aneesh Kumar K.V (Arm) wrote:
+>> >> >>> > > @@ -496,7 +516,8 @@ swiotlb_select_pool_policy(unsigned int flags)
+>> >> >>> > >  	if (swiotlb_force_disable)
+>> >> >>> > >  		return SWIOTLB_POOL_NONE;
+>> >> >>> > >  
+>> >> >>> > > -	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
+>> >> >>> > > +	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT) &&
+>> >> >>> > > +	    !restricted_dma_pool_present)
+>> >> >>> > >  		return SWIOTLB_POOL_CC_GUEST;
+>> >> >>> > 
+>> >> >>> > I think this check on the restricted DMA pool is too general -- the pool
+>> >> >>> > could be tied to a specific DMA-capable peripheral and so treating its
+>> >> >>> > presence as a global property isn't right.
+>> >> >>> 
+>> >> >>> I agree it's a hack but that was the simplest way to avoid the pVMs
+>> >> >>> getting a bounce buffer after this patch. More than happy to leave it
+>> >> >>> out and reduce the buffer on cmdline or we come up with some better
+>> >> >>> heuristics.
+>> >> >>
+>> >> >> Hrm, that does mean that reverting just this part will regress pVMs
+>> >> >> because they'll suddenly be allocating a tonne more memory for an
+>> >> >> entirely unused swiotlb buffer. So I think I'd prefer to drop the entire
+>> >> >> series until this has been worked out properly.
+>> >> >>
+>> >> >>> Another option could be the arch code passing another flag that it
+>> >> >>> doesn't want an encrypted pool (e.g. when running in a pKVM guest) but I
+>> >> >>> don't particularly this either. The arch code doesn't know whether
+>> >> >>> there's an alternative pool.
+>> >> >>
+>> >> >> At that point, the default size may as well be driven by the
+>> >> >> drivers/virt/coco driver.
+>> >> >>
+>> >> >>> That said, such heuristics should have been a separate patch to make it
+>> >> >>> easier to review/drop.
+>> >> >>
+>> >> >> I think the only right way to get a semi-accurate heuristic is to take
+>> >> >> into account the set of dma-capable devices that will use the swiotlb
+>> >> >> pool, but that's fiddly and should probably be tackled as a separate
+>> >> >> series. Maybe a simpler hack in that direction would be to take the
+>> >> >> SWIOTLB_POOL_CC_GUEST if _any_ device is going to use swiotlb? You'll
+>> >> >> run into the usual problem of not being able to tell if a device is
+>> >> >> DMA-capable or not, but you could probably look for a global restricted
+>> >> >> DMA pool and, if that doesn't exist, check for per-device restricted pools
+>> >> >> on dma-coherent devices (since restricted DMA isn't supported by ACPI) as
+>> >> >> a reasonable approximation.
+>> >> >
+>> >> > So, something like this?
+>> >> >
+>> >> > 	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT) &&
+>> >> > 	    swiotlb_cc_guest_needs_default_pool())
+>> >> > 		return SWIOTLB_POOL_CC_GUEST;
+>> >> >
+>> >> 
+>> >> Detecting a DMA-capable device is not straightforward, and if we get it
+>> >> wrong, we will enable SWIOTLB_POOL_CC_GUEST unnecessarily. Would the
+>> >> code below be a reasonable approximation of what you suggested?
+>> >> 
+>> >> Another option would be to make swiotlb_cc_guest_needs_default_pool() a
+>> >> weak function that architectures can override. arm64 pKVM could then use
+>> >> a different scheme (for this patch series default to false). Would that
+>> >> be preferable?
+>> >
+>> > Even the rmem check for each device is still a hack that may bite us in
+>> > the future (private devices for example would not need swiotlb). I'm
+>> > thinking more and more of leaving the sizing an arch-specific decision,
+>> > don't bother generalising it at all.
+>> >
+>> > On pKVM vs CCA guests, there's really nothing specific here to pKVM
+>> > guests. The only difference is that confidential guests that so far have
+>> > run without a swiotlb buffer will regress if their memory is tight. For
+>> > confidential guests without dedicated rmem (either CCA or pKVM), I think
+>> > our options are either command line swiotlb sizing or dynamic swiotlb.
+>> >
+>> > Could you respin your series while leaving out the generic sizing? IOW,
+>> > no x86 code generalisation. We can discuss the best strategy on sizing
+>> > later (I haven't checked how much of this series still makes sense
+>> > without the generic sizing).
+>> >
+>> 
+>> It would mostly consist of the first three cleanup patches, followed by
+>> three patches that replace the addressing_limit argument with flags.
+>> 
+>> #define SWIOTLB_VERBOSE	(1 << 0) /* verbose initialization */
+>> /* Initialize a pool for devices with limited DMA addressing. */
+>> #define SWIOTLB_INIT_ADDRESSING_LIMIT	(1 << 1)
+>> /* Initialize a pool that requires architecture remapping. */
+>> #define SWIOTLB_INIT_REMAP		(1 << 2)
+>> /* Initialize a pool for DMA to memory-encrypted host or guest memory. */
+>> #define SWIOTLB_INIT_MEM_ENCRYPT		(1 << 3)
+>> /* Initialize a pool for unaligned kmalloc bouncing. */
+>> #define SWIOTLB_INIT_KMALLOC		(1 << 4)
+>> /* Do not initialize a pool unless SWIOTLB is explicitly required. */
+>> #define SWIOTLB_INIT_DEFAULT_OFF		(1 << 5)
+>> 
+>> This results in the large change below. I'm not sure we want to do this
+>> for no real benefit other than making swiotlb_should_init() slightly
+>> easier to follow.
+>> 
+>> static bool __init swiotlb_should_init(unsigned int flags)
+>> {
+>> 	if (swiotlb_force_disable)
+>> 		return false;
+>> 
+>> 	if (swiotlb_force_bounce)
+>> 		return true;
+>> 
+>> 	if (flags & (SWIOTLB_INIT_REMAP | SWIOTLB_INIT_MEM_ENCRYPT)))
+>> 		return true;
+>> 
+>> 	/* Explicit requirements override an architecture's default opt-out. */
+>> 	if (flags & SWIOTLB_INIT_DEFAULT_OFF)
+>> 		return false;
+>> 
+>> 	return flags & (SWIOTLB_INIT_ADDRESSING_LIMIT | SWIOTLB_INIT_KMALLOC);
+>> }
+>>  [...]
+>
+> Hi Aneesh,
+>
+> I can reproduce the CCA regression discussed in this thread:
+>   https://lore.kernel.org/all/yq5azeyxyfol.fsf@kernel.org/#t
+>
+> The guest runs out of SWIOTLB slots, causing disk I/O to fail and
+> preventing the guest from booting.
+>
+> I would like to test the fix on real CCA hardware. Could you please Cc
+> me when you respin the series? I follow LKML, but I may still miss the
+> posting by chance.
+>
 
-The constraint is that failed termination does not establish that DMA
-and its callbacks have stopped. Returning from the current shutdown path
-would let the serial core free the TX buffer while DMA might still own
-it. Retrying preserves that ownership, but a permanently failing provider
-can block shutdown indefinitely.
+The conclusion was to either use CONFIG_SWIOTLB_DYNAMIC or swiotlb kernel command line
+option
 
-Would you suggest a different approach to handling termination failure
-here, or a better basis for choosing the retry interval?
-
->
-> > > > > > Regardless of the retry interval, shutdown cannot release the b=
-uffers
-> > > > > > until the provider establishes that DMA and its callbacks have =
-stopped.
->
-> --
-> With Best Regards,
-> Andy Shevchenko
->
->
+-aneesh
 
