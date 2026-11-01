@@ -2,76 +2,76 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 602CF606A334
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Nov 2026 14:47:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 388CC606A324
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Nov 2026 14:47:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=JC/ynEwV
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=bFGJRFeM
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jHd2w4VStz3bQq;
-	Mon, 02 Nov 2026 01:47:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1329"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793544424;
-	cv=none; b=Go1nfWj94wj4EWMbLYfgPt2wHvHzMvCQ+YYc99x6sh2jId+dtNdnfgBX0xMQfzumIzxNRxl7hqs/nrX57+fvzfuNzZp2knsOLM5m0AQ1O4H/VbMeQHG2rA7pDDaVBgC12vfPuFYsDbFyXp2kVkfYdlBaYy2eqk8l5yEAK9JzJV4jy/0os0KclPsmSpGCn92KUq6FQgRJoxuszch3/Htykfnukwr8ambxmTW01IcgcE6/d6QyayVtzX7EXMPcfAdiPaPQhSeBj9hAWsgLxpnkwEY1mE5h8dZh3sjtyQGNXDARWmBUNhIHd8RZc6Eq/m/+/obvg4isd6euveVsHRIkAw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jHd316NQfz2yST;
+	Mon, 02 Nov 2026 01:47:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793544429;
+	cv=none; b=Lh+zqF7kWeh5OsrSmahJgOxNm0F99ox3XJX5A2FXQZqlQsr3jh4sIlxqjD5eBnTuP4/96HlvC52QnDp3zPrnne1ZNNuTJ+7l8tWN2ZCLcGcm3OFNn9c3DBtOmvmmdLx/A/1n6C+XkkyLPGV2hDVn4O6LddgrJdD1lgS4/1P7SeeVs8Ax7mKR5FCUNWepe617Ilbfmh4ejdLWotHFQTgZ+Z64h89TCAJrB0A/LUsAO69SCebiT+BIYHhstK/5Yo2b3gUXuikDmpBUfCe5E4/Nk9EWF+Ce1nfkgHgzmTgXNsAFPWGZygZSb3LnNFFf2qbZ2Nkle6cc2J+sJh4opVNTtQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793544424; c=relaxed/relaxed;
-	bh=C5gRU5GAL270mGkO9O483YONp/GPCEfficmu0iainJg=;
+	t=1793544429; c=relaxed/relaxed;
+	bh=FazxrWHX2Tn7PurYTqREXzQh0pHc6RTMEU3g/b7/CQI=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=a3PatVBf+RueHQpp1eIjpI16ABbAGLIvRAZuvnrcll2Lm6Vo0T5TMV6Jw5rBw7rCwHGm1UazvdlHMSBOUTZGd/E6O91tSa0eRDo239GRTg8Rzff2PUn/02M9KKfZz0ThmpgMenUOpJ/GQNG2pe118DF9H6x0tPGp+EWmsjFpxvu+tOkVrxowcU9WKmBPV9q/8OA+lAdiE+WFUBnxrkIU0S2N4jgcGSRAPG5ByeSaRady2C5rmwYGbwkVD4c/vUSUQDXUlIGHUrKPDTOB5lmdeikQ8wHCwbWzqepc8j8aZCkZy45lHsvNGC7nqisAKj6cfzYDNI9DU+38iSmA27bEHw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=JC/ynEwV; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1329; helo=mail-dy1-x1329.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=hIalbRSPlN9+V29TYv9ze4q5fVZk91hLrW7RZtXSiS/UL82UR/9UNX6F+NxqlINIe3HlXJkOfI/1DG31aIEXdZKvNryU10rE9cf0BKu/ynwwqjkS6lFSDfpACN+GolE1B0yozYnECPNF1zirz3f8JLxvc7H47cMUJ9KT8lRHV5f2Qn2dBZlvr8VKfkEFZ8VfhTtHyJ7tQ6i8hZ8fzLo0hnFhfVApHRsCHu3mo4rsXEBtbGPF9eeYmFl0fuM6NzcoaRdoFjuh81GSYgLQXH7Y00aVK6wZ29tw3qUAFbzc1+aCWzu9mTcsumCA2WXPw+7c/ksfRqH1pALfSXPfw2bhPQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=bFGJRFeM; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132c; helo=mail-dy1-x132c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=JC/ynEwV;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=bFGJRFeM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1329; helo=mail-dy1-x1329.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x1329.google.com (mail-dy1-x1329.google.com [IPv6:2607:f8b0:4864:20::1329])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132c; helo=mail-dy1-x132c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x132c.google.com (mail-dy1-x132c.google.com [IPv6:2607:f8b0:4864:20::132c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jHd2v6c73z2xgv
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 01:47:03 +1100 (AEDT)
-Received: by mail-dy1-x1329.google.com with SMTP id 5a478bee46e88-3535bf8b3e0so3182468eec.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Nov 2026 06:47:03 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jHd311Bd6z2xgv
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 01:47:09 +1100 (AEDT)
+Received: by mail-dy1-x132c.google.com with SMTP id 5a478bee46e88-36a17a332ecso3643051eec.1
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Nov 2026 06:47:08 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793544422; x=1794149222; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1793544427; x=1794149227; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=C5gRU5GAL270mGkO9O483YONp/GPCEfficmu0iainJg=;
-        b=JC/ynEwVP2fVBUZKs8OrZgSGjTJ/IQCIGuPTqQTGx4KUMfvlcou11x6K59n6H52GHq
-         T8cV+3kni2Y6vjF/Iis34Qzz+z4YyyyiKlfs/L6nBGUGcSnY61g1fxpVEWWayrkMpAiR
-         xKOsG7uHKNXcEjOB1uoQwx+KAjcuaM1bR+VCV6JyGc9uX3VnlFUn5J0d+UswAnTo6mQT
-         OIoPnv31YcogpSB+p97DGJLrS58Um2E/odUSq/l/mRIJAUv8/fnBzVH+5cdRXatiCeuT
-         wKxGJ+OBeYKTFPdCmAvZBsWTio1TQpsXHBzmGriQJx3V3/smCH24Kl+ltaoM7mHebVA5
-         P4Dg==
+        bh=FazxrWHX2Tn7PurYTqREXzQh0pHc6RTMEU3g/b7/CQI=;
+        b=bFGJRFeMcWXwJUedrpWmti+zSQ8EwhzX1OAz09Yy3vcyygsB1ZsnLhj9Ye6IhTdf3M
+         Q6jlRrZbqooyZBltsh9qFct5H6qd/PGxOst2HUMJ0mPOa0ckI7i45ka54VjKT932DCvf
+         Z3wi+4GRafV8ZHnq33kjSNIXAj1EHGS6Ba/te2gOYdgtczraJvME9pfdm5Mx12SFF5Pj
+         qtDYWfvXDwkibRmPLc/jM2u2dmXcj456G750wXaT9jfXajOktkPmFEKD/Ff8BxVW7RRU
+         VHmHr5MyxWMjEfsC6WDbJKLeby3vmckbAuT9ntGqUgpp14CFpnOcSQhXYekWOrOfsZ12
+         3a5w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793544422; x=1794149222;
+        d=1e100.net; s=20260707; t=1793544427; x=1794149227;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=C5gRU5GAL270mGkO9O483YONp/GPCEfficmu0iainJg=;
-        b=luNdr1Kezfm8hwM4S1kJIkIoWhyXJVO2TKqMv0cyWUDpnuMeIAaz7qjjxxAf+vroEJ
-         ///xtyBj32eShBI0w0oJAX4lI1o13elJuB/mVFh1QhnZe8CPFhGUnoBPwJ5n6FWvmhGH
-         RLP51v0YZMZRvbsi8c0sOhLEnY8JKJxO+9xokc4cDItb+tT/DttiiUZRgFTZEDJaRZQ8
-         hP6/r2Yk/yKntbEE+ZXNwdmeZg4vnr9cmngFeJr3A1h8x3g7qF27ympJT+J+rC7Bhk4h
-         J5BZiS3+Tj6HkhV0ByhjRFdkm+wBAd+SuQ3KyBgpDDFABZjnRrxKTWXfFbLazovjMLtd
-         QfsA==
-X-Gm-Message-State: APuU4Z9K0vfiiOA4K329abtRcy3cB3wIkZTk8GBWkGyKTLl72kQUy0yG
-	aNVZcpc3x1iVEdBhUUFA4XHvEc8VxmUUWFvwaGg898P6mFWoHFpt50srBzNjqg==
-X-Gm-Gg: AYBFou3zR/dgjkaoOaL0uZm6F85ty6puwFskEVSle7F7I5M99/+zF/0vTgGYBytr/iM
-	jMFPnV7+gL/52/TT5zIxB/nRheF1TCdVtQrz7OS8hkZhdHbVPZ4XU6AVqzC9IXFmYhpkVaJwp6G
-	7ly6sDnNVBbusgtbVWM19uDEyUuHJsiVnMKUgMk3KijHYqdjx2QHlA9pjFrLuYQZFt3EPCSBM3c
-	DGATrYzA7oHKlsA88DahKigUeH4RcUUtdljcR3yHvAb6YtteNqSH8eb0Q1vHtLN5PEWyvAW19E5
-	1yGbgRIWsgb7E49s76iqoYoiidBeWw070OPgUQmKlanrXmM25gfhg/ZnEhts/1Cb+Pw4bbUJ3E0
-	bZocSPRdvvUo5Z9jzkZH7qyw41UGGRrWx7A736M9Z2qER88+tbwm/sMD8yOvo5+Cj5d8Okuqu3C
-	NrSvTOIS41gfC1RoA1wDFtcaBQ8U0pIQRAn1sRbFvlsllrjVcgtKY7AjY97DP6o8c+oZ4ImurIQ
-	Q6jGjVL7pbpbceUroboVst+UIGhTIC6RVF04l1+WZUKwMlTK+rdfopd2xElGMpEiclWVG0kN1W/
-	UHCgtJdqjw/ky9Li3/zaW4O3ReZGNNR4eBHOC/5UIEuhGTJnXACVKrI=
-X-Received: by 2002:a05:693c:88cb:20b0:36a:1e50:e45 with SMTP id 5a478bee46e88-36a423624d5mr10929945eec.9.1793544421715;
-        Sun, 01 Nov 2026 06:47:01 -0800 (PST)
+        bh=FazxrWHX2Tn7PurYTqREXzQh0pHc6RTMEU3g/b7/CQI=;
+        b=XOCw1z+aQyN5UO4dR2bSakaCgXT5nzMCjIhxeh7ZxnMhsKLEMM+etY35RTK3YFS4wp
+         Trc2voobuTSisH+h9SHYY2HZsrNU0Y7ZSbFDAPaNLJ/C7xBOgHatbd6apViQo25jOjOh
+         eu+8GowP9JzM/Zg0J3aRIVtCN16Ujz2bSs82JhIgd8jGWZk7XQIFcwLYJtd5UWZlHdhT
+         KjdBsd57Dh9+wbbwDvfWIqFsUkogS2xEPolJG+67V4qtZQnsaku1JNYk/qTg2kuxHVQH
+         8ELHVgmfpouaTbS6uvocIrpzC4BietiquCjKR7NthcqqDPOLuLAkbs+jvtbmvHb1+c9R
+         NEsQ==
+X-Gm-Message-State: APuU4Z/1OOfvv8UzraxM7B6C7En+9zb0WC66mkdXr2FZxc1YE4QyiGb4
+	jUdnLG+TVw6yF1ciF4ESc667TxMzDEYl/LxIVl4OYcvgMSiom7icK80D3kI0PA==
+X-Gm-Gg: AYBFou0ryqwts6xv/zWrhbCdis3H1YqlARXcMk5xcLY6MRyMVvysCFrlQcue1HJr6iW
+	0jWHPXNa0b8f3j4nU3vVwZUazrrvbUTx+wvgpkwcTgkJ0m7X74xW/DBSp2xXXb+NkNrssMHyLy1
+	DV5xKYFdHbLGJBNuuKWFSGBAYFjBM7QJwYoM0J9/MUtZ7gfU+4fA9vzwxiceGkY7V7XMsXGahzL
+	07KvulETIJUlkQsqEXxtLHlqTEMYljhb37JtHvW2wD+aUXkofhPpapH4cZz7g0aG5VeCLj10RQh
+	PrKZZ/4JgWMIRg8NOq4zAy5yy00Cq3LFbTnZm+u9wpedsAO9xdqJcrW6do+VgnI5mh9dcBS1Hcu
+	X4nfzyvlm46WFAAqgJucUkzoqlLvwTLzWF69Z/K/F/GNKcHwUVQsOOuE4wOde4tDiguv/isEFod
+	xjYB84flqm7z+IomiwPoHXsgJ6OCXbYIrGbULP0lrJ+PbKWw+lRBFrFB6sWY1BE+g8CyZ4Wo4BF
+	kGJ6nvo7wpBJXekkdUaU0mxwxek4w/yywdkJ1+eWtzbvkHxQhAOSDhyQIpNLntY4cTZ0qJtDyBe
+	ricm6AKnzBBDOvY/qsqFWOQqn3isFAVPeWc9Ptzh283LelDjBLEC/kg=
+X-Received: by 2002:a05:7301:4b10:b0:35c:85fa:5a61 with SMTP id 5a478bee46e88-36a424940d9mr12002995eec.38.1793544426610;
+        Sun, 01 Nov 2026 06:47:06 -0800 (PST)
 Received: from pve-server.rlab ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36a42a6f7f9sm32747545eec.25.2026.11.01.06.46.57
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36a42a6f7f9sm32747545eec.25.2026.11.01.06.47.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 01 Nov 2026 06:47:01 -0800 (PST)
+        Sun, 01 Nov 2026 06:47:05 -0800 (PST)
 From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -84,9 +84,9 @@ Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Anushree Mathur <anushree.mathur@linux.ibm.com>,
 	Harsh Prateek Bora <harshpb@linux.ibm.com>,
 	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [PATCHv2 3/7] KVM: PPC: BookE: Don't call __ffs() on an empty pending_exceptions bitmap
-Date: Sun,  1 Nov 2026 20:16:28 +0530
-Message-Id: <50c8d501783acd86f7b4a25257c70505b96ff7c5.1793543627.git.ritesh.list@gmail.com>
+Subject: [PATCHv2 4/7] KVM: PPC: Book3S HV nestedv2: cap max vcpus to PAPR limit
+Date: Sun,  1 Nov 2026 20:16:29 +0530
+Message-Id: <07e2642826613998b6b1ecd7acd239fbdbaba110.1793543627.git.ritesh.list@gmail.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <cover.1793543627.git.ritesh.list@gmail.com>
 References: <cover.1793543627.git.ritesh.list@gmail.com>
@@ -112,33 +112,86 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-kvmppc_core_check_exceptions() has the same pattern as the Book3S code:
-it starts the scan of the pending exception bitmap with
-__ffs(*pending) and is called from kvmppc_core_prepare_to_enter() on
-every guest entry, so it routinely passes 0 to __ffs(), which is
-undefined.
+PAPR spec for H_GUEST_CREATE_VCPU says:
 
-To be safe here, let's use find_first_bit(), which returns the bitmap
-size when no bit is set.
+ "Only 2048 VCPUs can be created, and the specified ID must be in the range of 0
+  to 2047"
+
+However, KVM reports KVM_CAP_MAX_VCPUS as NR_CPUS and KVM_CAP_MAX_VCPU_ID as
+8 * NR_CPUS. It also passes the userspace vCPU id through to the hcall unchanged.
+On a nestedv2 host (KVM on PowerVM / pseries nested PAPR) built with
+NR_CPUS > 2048, kvm selftest e.g. kvm_create_max_vcpus will create vCPU
+2048 and fail with EINVAL when the hypervisor returns H_P3.
+
+Following error gets reported (with a debug print added to selftest to
+print failed vcpu_id number):
+    ./kvm_create_max_vcpus
+    Random seed: 0x6ec3f539
+    KVM_CAP_MAX_VCPU_ID: 65536
+    KVM_CAP_MAX_VCPUS: 8192
+    Testing creating 8192 vCPUs, with IDs 0...8191.
+    [   62.655458][  T302] KVM: Create Guest vcpu hcall failed, rc=-56
+    [   62.655458][  T302] KVM: Create Guest vcpu hcall failed, rc=-56
+    Failed KVM_CREATE_VCPU for vcpu_id 2048 with errno 22
+
+    ==== Test Assertion Failure ====
+      lib/kvm_util.c:1395: vcpu->fd >= 0
+      pid=302 tid=302 errno=22 - Invalid argument
+         1  0x00000000100061d3: __vm_vcpu_add at kvm_util.c:1395 (discriminator 6)
+         2  0x0000000010001a6b: test_vcpu_creation at kvm_create_max_vcpus.c:32 (discriminator 3)
+         3  0x000000001000160b: main at kvm_create_max_vcpus.c:59
+         4  0x000000001001b713: __libc_start_call_main at libc-start.o:?
+         5  0x000000001001bb47: __libc_start_main_impl at ??:?
+      KVM_CREATE_VCPU failed, rc: -1 errno: 22 (Invalid argument)
+    [   65.316986][  T302] KVM: TLB LPID invalidation hcall failed, rc=-2
+    [   65.316986][  T302] KVM: TLB LPID invalidation hcall failed, rc=-2
+
+Cap both extensions at 2048 when kvmhv_is_nestedv2() is set, so
+userspace never requests an id the L0 cannot create. PowerNV and
+nestedv1 are unchanged. The issue is only seen with nestedv2.
+While at it, this also fixes the limit for KVM_CAP_NR_VCPUS.
 
 Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 ---
- arch/powerpc/kvm/booke.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/kvm_host.h | 1 +
+ arch/powerpc/kvm/powerpc.c          | 6 ++++++
+ 2 files changed, 7 insertions(+)
 
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index 13ad4cf5fa71..9794ee6f7204 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -692,7 +692,7 @@ static void kvmppc_core_check_exceptions(struct kvm_vcpu *vcpu)
- 	unsigned long *pending = &vcpu->arch.pending_exceptions;
- 	unsigned int priority;
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 708a32f89776..c068cc1dd51f 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -35,6 +35,7 @@
  
--	priority = __ffs(*pending);
-+	priority = find_first_bit(pending, BITS_PER_BYTE * sizeof(*pending));
- 	while (priority < BOOKE_IRQPRIO_MAX) {
- 		if (kvmppc_booke_irqprio_deliver(vcpu, priority))
- 			break;
+ #define KVM_MAX_VCPUS		NR_CPUS
+ #define KVM_MAX_VCORES		NR_CPUS
++#define KVM_MAX_VCPU_IDS_NESTEDv2	2048	/* PAPR H_GUEST_CREATE_VCPU vcpuId */
+ 
+ #include <asm/cputhreads.h>
+ 
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 9194cf492d1c..cf620b6534de 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -663,12 +663,18 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ 			r = min(num_present_cpus(), KVM_MAX_VCPUS);
+ 		else
+ 			r = min(num_online_cpus(), KVM_MAX_VCPUS);
++		if (kvmhv_is_nestedv2())
++			r = min(r, KVM_MAX_VCPU_IDS_NESTEDv2);
+ 		break;
+ 	case KVM_CAP_MAX_VCPUS:
+ 		r = KVM_MAX_VCPUS;
++		if (kvmhv_is_nestedv2())
++			r = min(r, KVM_MAX_VCPU_IDS_NESTEDv2);
+ 		break;
+ 	case KVM_CAP_MAX_VCPU_ID:
+ 		r = KVM_MAX_VCPU_IDS;
++		if (kvmhv_is_nestedv2())
++			r = min(r, KVM_MAX_VCPU_IDS_NESTEDv2);
+ 		break;
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	case KVM_CAP_PPC_GET_SMMU_INFO:
 -- 
 2.39.5
 
