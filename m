@@ -2,76 +2,76 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 62D18606A326
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Nov 2026 14:47:45 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 51DD8606A325
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Nov 2026 14:47:52 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=VczBXSB+
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=yQu6uf/S
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jHd3C0Czwz3bbf;
-	Mon, 02 Nov 2026 01:47:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793544438;
-	cv=none; b=Q/+rG9yNMERKt3sX3nzrxwhKnenwmjI7Nd3NPrAlQqxbwcjpcbGBt67WS9uxmw2zqQmiCOQQG1DkXG4IVZJpV2hDRDhfNKRtTVjLK9nGkoBxcI5VV7YLlv/vtqhpeawsEr/jz4TafSs5PVMuFIlLCR1d+Lvqohk8VOGKUJnJUEmJePPF8ux8pQAK4pPqE1no5y4xnMROFnQxbVZDodERdqGP1tsrGhqDUHcxodQgepqb8VNosLujtJxxpmAnTTNaR52aS/okRUklyhoVIFLZH+QyWDT7mBWrvN4DCNbVsWhcVJ+XngmakwqJX/HWf2Xpc8VwxfZAoZTEZ32ihF8TEw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jHd3H40Nhz2yqs;
+	Mon, 02 Nov 2026 01:47:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1333"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793544443;
+	cv=none; b=H63I6gmCyl1TBiLAotV5RLK2a4GbQn5lvu1nEGNlRHHw2UzRNCqQ1XqUE0QBmgsFk/EnrpPK1X2fqMq4wdArjQnNOekM33/BueXdlKpplb6AjQRJJone07+ZyLDrWHeyln4Mfvirc40ITZekD/q473PDN8NtFnL8ZVjqU7iEr/Yzf/6Iq4mkfbhrZkEOEGsa4gGh0WEU/TGL9uiB1JZB6gTkiSLKOGaMkRsKE15nWSoHvgjH595VgnNAy9gS5gSGY2ivzsTQi8OrmsaKm4EPVCz7tv8sLcjKGaQI2Z7E1D+VxUmzVhKbN4x+JD+UEUElkHC9W3T3Ibww2UgdpeKk/Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793544438; c=relaxed/relaxed;
-	bh=V2lcCV5azjsGrWatUG1LtEdItX9x2QFl+QgQazoBrAk=;
+	t=1793544443; c=relaxed/relaxed;
+	bh=UGcwHzUCP4ZDgaGEqf3mJTvGTZTE+h3JfZ8GLOdbBG0=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=PoZybDWB5PR9Gd2tAaX7u3J+RJQJ5KGhCQYTAgIsO73MYhddLlPq0aXQYVhUCEcXlXxeoshHRwKr/ciSFpX0zrk3ERcjjWtPt9HwPIxnsZgASbiX+qyV01p6jVdusBLAKwYn0z6Oj5pVSpNpk5PN8r/jloRKNq/RIst3EpnR106/IVr9aa75foKHfRKyY5PrFfqjJnaZAtM4OdYFlB7RuAsh0EhVp68Kh61m4lUgmgJoOgi9JxPYGjtHFR6kFMi9biTWBHCCLIp1I9f17ixNvEnBYKthigk8EO+XdQbkdo1bOkwzuo9r75PWMrGCH0XFjgnNZ/DXDXjbrQptsdrELA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=VczBXSB+; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132c; helo=mail-dy1-x132c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=fhjsIrVK0ZRKJUuhm5MY07v5yVPvyFtHIRYnsqGJ6ZLc64/2K+rsYQ//VtPD1yjqlngF3+C/3hARuUjsCJl/dK9Tiqlr2XgRf0UBLEJwN3Gz1pNXr1w6ruz5SKytopKCeZUYI8nFp8PRzsq9A7wS42sNuZJ5EUTXoD58tiE5N18qnL1vA6gdblogS149oGBVaaWOPnYQz2MyxJiFBKF9YgJdlCwP/OCVlLffWmy4gSsRPupeH0tIYqLqE8pHPhtqIFegy6S8vidWn+VH2NUq6HzjwlNJOGbql/K5WZRhs4ksyuunvD2eyltq2RmzWy0CYuqvRDpEFxBn9/2MZCQ7Jw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=yQu6uf/S; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1333; helo=mail-dy1-x1333.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=VczBXSB+;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=yQu6uf/S;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132c; helo=mail-dy1-x132c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x132c.google.com (mail-dy1-x132c.google.com [IPv6:2607:f8b0:4864:20::132c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1333; helo=mail-dy1-x1333.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x1333.google.com (mail-dy1-x1333.google.com [IPv6:2607:f8b0:4864:20::1333])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jHd3B2HJ4z2yZf
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 01:47:18 +1100 (AEDT)
-Received: by mail-dy1-x132c.google.com with SMTP id 5a478bee46e88-35c76e9614aso3134411eec.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Nov 2026 06:47:18 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jHd3G6mTVz2yZf
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 01:47:22 +1100 (AEDT)
+Received: by mail-dy1-x1333.google.com with SMTP id 5a478bee46e88-36a2551d7b5so4208393eec.1
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Nov 2026 06:47:22 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793544436; x=1794149236; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1793544441; x=1794149241; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=V2lcCV5azjsGrWatUG1LtEdItX9x2QFl+QgQazoBrAk=;
-        b=VczBXSB+ExArK4OhPAHoVL8CktTTPr5I0r3Ho+Nv1oWI/hBqgZAEvDXK9akCJgyLHu
-         uyYN2ZBu7eBIJEuu6ajIznKTEcbMEC+9J23XgKDZ+1UMTCtKQ3jERlbVkcliuHOSVVlp
-         pHh188A2udzwU4R0boK0uj/ajZJ9Ry4TQTj6DQfjBfhMhlUsTyUQKt0Lfy1kwRija+Gv
-         e78OI5elZKxAxQurcnTtAb6zi202rvjd3LkvDzUB6pCmO40ZLXrs3AqT46SjCKBQf9Zz
-         oXjva9rUG6mp9At4uzS+kocrZOo/w4+Yx4VK2nF3S8DdjaE0K5PDVzgjj+ZksqL8f4M1
-         x3LA==
+        bh=UGcwHzUCP4ZDgaGEqf3mJTvGTZTE+h3JfZ8GLOdbBG0=;
+        b=yQu6uf/SvJ/y5uiIuE53RRnv/oG9DifFoxl/c818y0+KHx0J6I9sOyUrwir0D983U+
+         eh2NwPZtK4ozsbOy4GFJjfelFh8ASlUTsDvnN13sFIdazvqW/9lfSwrTU/qO6NMhaSUs
+         tTizvomSb2I2jSbn8tnA89iFSWUR0OVz5uw/8t0gOa1UnKBVgA6PzXwMm4KsQ9yjtJfn
+         4w3iXLMIyUohs17TAyh4JRnHw1X2Jus61GQTWl2J5KA/epPVrxImUXBw5gKXe+6EJCAU
+         93oz43gPfnjNhqFx/AuGzU5kZ3NoY4A5aQLZFJI2hvxuJzCKq7VQAJAbCiywuhIVGxdH
+         Wx7w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793544436; x=1794149236;
+        d=1e100.net; s=20260707; t=1793544441; x=1794149241;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=V2lcCV5azjsGrWatUG1LtEdItX9x2QFl+QgQazoBrAk=;
-        b=uRNd3z2QA3qNEuNrlHCwid1RGt2gQha7FJtsJ1KdZ91QqquQSLEx67l83ohCOmz1xJ
-         ilUCRRjK2L0A75p7RKyOjxRZZTz+wH5hvM45r5kEc/FL72dEzZKnCExFeOn/BlpmchhS
-         AwfQItjW796S2G+r6woVB1s7cDA4xH2LW7AoPqAh7fAgR9K2fcgrTK0xPxkibnyajm00
-         NIMOsUEzQ/NQVAJ/3uPxR0EWn2lhn52NVNbQFnhqPzJgLRh4Q+tqj89yYMR4zSAZWFSr
-         IAnA1smcn9nGQRdx23gdaRhYdtcP79eJWf1stXS2ok37dgnB/nHC+b8issHaaNRpJACQ
-         ATpQ==
-X-Gm-Message-State: AFq9FYJWeMqKWY0JLwrj5PacQ6uBQl0NgpG2/FWtDWMIotSKaPHHTIQn
-	NmMWgVrFWacmASfe8f8373lQ+kFMFEwTf14K91lzgXQKFqAQ4uXoK81okD3MuQ==
-X-Gm-Gg: AYBFou2pSBX2wnj0rksbWPCNP/ahzyq6bIrrA1mSyY6/QWe88PN7W9Xx6AJAjuXN9zI
-	l0WbPh4nOd6uFO/zpEJWFYB8cCgkOkKW94G5Ma1xHyebFTqD9IiAv6FvC4LBZ+h8ml4TB62LL4K
-	2i/uY0WLfMfCOcu09gptGnf7z+dNav7hB1sm4LokFM9/n0sH57CLuVgv+6Rx56oh7MvtJmZWeX3
-	sqwWqjYSheZdkTTClpl7YSKAByY6BsWJU/nY1ev9avg1kc/2Gn5rXuM3ub1IOfTaIQGcMnaPRqc
-	EwrNhiEEOLDz6d6KXMHgU2scyudWVCi2oblQXC5ZBzAIGPXDAYt/2v7a3WqiljbbJhwE1Mut4TU
-	DkEkScJbz/K21ZcXXNn/A4hh5oZTdnVKwKH2zflQ0jx+T0cnU9kYST36cg6FAHx1D9les3wOlA+
-	90yDIQdg/8/O4t+2h38dvJeJxfTAKHLku+VrYu6MA9yBC7t9RSIfZOe3pSGh96XcnGqvmtePxn7
-	sPSedQrH0Zmb1cQBlDu6l3wmLwPGqC+jVeVX+5tym2y4qz5NGg5SpJ8IH0WjTXBsXaTpG2pZU+W
-	EKNIVAwsT1JHOaku58Q/VbGbH86lH195GQ==
-X-Received: by 2002:a05:693c:639a:20b0:359:1b05:ed30 with SMTP id 5a478bee46e88-36a42203bc1mr11532986eec.4.1793544436256;
-        Sun, 01 Nov 2026 06:47:16 -0800 (PST)
+        bh=UGcwHzUCP4ZDgaGEqf3mJTvGTZTE+h3JfZ8GLOdbBG0=;
+        b=cU43yS0B2wJbhqj/J8Hm5h9ztm2FlCg1ppRb1AQy80Lv7GLzel+3/6R3o8UnQbtsHA
+         doO0qsfPii2Vpcnp7lsgY4KG288MSEX1bGwQJwN9EhPkBH6g7D4wyss1o+B9PhaXVl2k
+         xqMtaEkRqvL8Oyv8uHPaK22sIJx+N7gK/vDdT+Tc6v+Ay3Av/6GjKqwgwo6RVkPXYskI
+         dnkwHzbKU41o5d8vAYFaIdYtmDdizSrnh+icO6QVajkjWEyffNoKPc+jGrFsUpZjULhc
+         HsiFqWrVbW6E9npS0ImGS7Z41urhay77l+jOI5EdMN1hHKHfBuOzQe7qf0SRbh1ynRgZ
+         +otg==
+X-Gm-Message-State: AFq9FYKIXrxXOciFzg8RuTQzJz4v5T4LQv08zXUgqrR1fp/ERSMbxCet
+	gB1rCIB840GkP38Plu1ptGFpSWq7H1niC0nI8c47lfMgeDf3pvBqAymopxWiMw==
+X-Gm-Gg: AYBFou2/TakkEQr5IEtnULJFofyJ0GRlR7jspwsoVOhnHb5XDemt/ynY6Q1nxk86F7i
+	+QhgFVcXiepfy9Q4DdyrdOgPfL4o6sOyNdkTm2Hf3zxqmVb6L40657uIKMNBigOeh0ampu2U6vP
+	Zf86g8/d0VncTsqEcXIQ7Hy4b3UJ5NbQlvXBD9RHByMAp5HiT0RTmlLmpiCzsQarU5U3FnTvsj1
+	AtFn1t93UNoh8XNdqFmy5LbbTJp+bGhit3VY5cZ7UKTpKektMTWIMojasp+ynm5/w+/ChxqOlxR
+	Vl+jYOul2y62xwKNwedLGGWBQxTuqT4Sz5Ofa3GwW7qm2+3F4Cx1J+apAUjdhU0XKHqHrUFujR3
+	2zzZ5/6idmpODI9qJSlk2+4kFvuFxg3vb4FhEFo7XT351Er0Bxra0MIn5EVb8wfBTb2lJgPnxTD
+	d9XfgaNYDS4X7+iMjcdHJIsSNfbP1SAb7Pg8khI+V5NEq6xEVxDcg/f59pHd4fx+SVUkbd3rd6y
+	eDOyzUO6gqV45fkidbe4JIa8RfmF/JWAtWsAmBJCi0NR1x9G7eveWkG2rUknVRuo/OjtumID1Ik
+	koxRfKi0kfRVqJ+UnAvm9FyR17YD94qB3g==
+X-Received: by 2002:a05:693c:8211:b0:369:f3a3:fad6 with SMTP id 5a478bee46e88-36a42340d04mr11570265eec.4.1793544440908;
+        Sun, 01 Nov 2026 06:47:20 -0800 (PST)
 Received: from pve-server.rlab ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36a42a6f7f9sm32747545eec.25.2026.11.01.06.47.11
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36a42a6f7f9sm32747545eec.25.2026.11.01.06.47.16
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 01 Nov 2026 06:47:15 -0800 (PST)
+        Sun, 01 Nov 2026 06:47:20 -0800 (PST)
 From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -84,9 +84,9 @@ Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Anushree Mathur <anushree.mathur@linux.ibm.com>,
 	Harsh Prateek Bora <harshpb@linux.ibm.com>,
 	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [PATCHv2 6/7] KVM: PPC: Book3S HV: Fix error handling during vcore create
-Date: Sun,  1 Nov 2026 20:16:31 +0530
-Message-Id: <ca419693358e3af49b1dfa7887b34b8ef91a5daf.1793543627.git.ritesh.list@gmail.com>
+Subject: [PATCHv2 7/7] KVM: PPC: Book3s: nestedv2: Free the guest state buffers if vcpu create fails
+Date: Sun,  1 Nov 2026 20:16:32 +0530
+Message-Id: <2c9913c7051ddc867439d2b6d2d485d3df83a31f.1793543627.git.ritesh.list@gmail.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <cover.1793543627.git.ritesh.list@gmail.com>
 References: <cover.1793543627.git.ritesh.list@gmail.com>
@@ -112,38 +112,36 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-kvmppc_vcore_create() can fail and return NULL, this patch fixes the
-error handling when this happens.
+On a nestedv2 host, kvmppc_core_vcpu_create_hv() first creates the vCPU
+in the L0 with kvmhv_nestedv2_vcpu_create(), which also allocates the
+guest state messages and the run input/output buffers. Only after that
+it picks a vcore for the vCPU - which can actually fail.
 
-vcore and online_vcores count should only be updated when vcore was
-actually created, otherwise it's state gets messed up for the VM run.
+This patch therefore takes care of freeing the GSM abd GSB for nestedv2
+if an error occurs later as part of the cleanup routine.
 
 Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 ---
- arch/powerpc/kvm/book3s_hv.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ arch/powerpc/kvm/book3s_hv.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 22283d46e8fe..7975e5de89d0 100644
+index 7975e5de89d0..a242abaea357 100644
 --- a/arch/powerpc/kvm/book3s_hv.c
 +++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -3090,10 +3090,12 @@ static int kvmppc_core_vcpu_create_hv(struct kvm_vcpu *vcpu)
- 			err = -ENOMEM;
- 			vcore = kvmppc_vcore_create(kvm,
- 					id & ~(kvm->arch.smt_mode - 1));
--			mutex_lock(&kvm->arch.mmu_setup_lock);
--			kvm->arch.vcores[core] = vcore;
--			kvm->arch.online_vcores++;
--			mutex_unlock(&kvm->arch.mmu_setup_lock);
-+			if (!vcore) {
-+				mutex_lock(&kvm->arch.mmu_setup_lock);
-+				kvm->arch.vcores[core] = vcore;
-+				kvm->arch.online_vcores++;
-+				mutex_unlock(&kvm->arch.mmu_setup_lock);
-+			}
+@@ -3099,8 +3099,11 @@ static int kvmppc_core_vcpu_create_hv(struct kvm_vcpu *vcpu)
  		}
  	}
  
+-	if (!vcore)
++	if (!vcore) {
++		if (kvmhv_is_nestedv2())
++			kvmhv_nestedv2_vcpu_free(vcpu, &vcpu->arch.nestedv2_io);
+ 		return err;
++	}
+ 
+ 	spin_lock(&vcore->lock);
+ 	++vcore->num_threads;
 -- 
 2.39.5
 
