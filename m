@@ -2,52 +2,95 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D438160716D1
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 14:30:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0FF9606A58C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 14:39:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=N/zg5Ona
+	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jrsDzUSF
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJDd54LGhz3blF;
-	Tue, 03 Nov 2026 01:30:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793629817;
-	cv=none; b=nf2LP2u7V6lZ+5vJvNJHCGdflIZa9iqfZpjUVAth6FtJGsFNoE3N2TpzfGm7xAoHiTEaVgYf2VB56l9ANnD6Y4C/2rkC+fAcjg734Y+VCGTxyNQN14X+KB4upqxtV0HRa9paJgOskszn/ebPebhImKVQjAMIfhr2XR5mTEoKztOqaXoZmyAEtmHDXfXbNVFhKVXxiR829PWqZkuvJqiw+juxhmKY7oIueeNeIf/RB0k79Xp8CcaGOa0htIlsXp2tWtutXgdWBO6JjBRl26ChDLk8BKvXTre/JBrrjYItk6LbNn6+LLtafOTOXDlqggrB/TvDaJ7m2ewFr+cw3NWI5Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJDqK5442z2xlY;
+	Tue, 03 Nov 2026 01:39:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793630349;
+	cv=none; b=NQN56bGxG2wkaNPCsFTAWoib3y8e99Iebp4UI32soityXsx0t/KMiR1GCAm5o7ENu2r5UTm6jo7fPR5KSusljwNcE7ND6gd5Hus/l2h0DhWdqLnvFpPwSagYqx/A8ogkGZYRSpaDUNBxJ2caOA11PC8A0751zLMQ+HRTiHgpczS6F/yXl7D39/z+By6kuU+xPkPc9Hsb5+K6XBFojcrc3wSbR1qRbBYbimJ7xe+mYdtUtALra/pOqDoL6vd1cJMNEOf45Rvd0VxwFnQBWruFFBAfUoM+D6Pwfuk126j5nI9lWkXWo9qnsZKto4hkTqtfZB6BHq6mtbQu+gEcL/4wqQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793629817; c=relaxed/relaxed;
-	bh=3411hkdZbwQNMzi0U+XOI7Na8s43TyvUoc5wijeirGE=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=CmjEmAzK0q6zIYu+VNAo7NFhlBGDFDqojqL2LIqL7KkT2GszNMCWcS0AGpVhPZs4AO+lndo5wgiCJcPvApFK0U0M4yMateXdAM1l6vSQaIF9/00/xkGy59JeBY5JJNLovtj1vHXkCdjsK/Xm9fxsjuZF4zEO4g+xmPmZR9S8ySCXBTCAwXE7kPKZC9XfzbsGvO5acI3MBoWgx3NSRhYiT8IdDaV+G+zwsBTre1JR7e+ZCxCxAYYnyNn5ynt1AOY04rb4YG9mHn7SHBmeboZ3ksKAfzffmLGgz9ETnSdBUJVFopH5Dm+wBprXNzJEH7Buc3xpKdE1UA7G00+/8wPskA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=N/zg5Ona; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1793630349; c=relaxed/relaxed;
+	bh=t3uMzKFF0fpXKNPzeuZqcP8SHbCjBILits3drrR5UAs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=iu1D6oWlD7Wm9L0FGsRhgVcIIHRuknJgDHMj2v77E8kzOBT9x6mZssKsLq0h2pEM7cIrCMeynYet1uivBEwhGHQtaumtxqZKIKFHGntVUReBo+q4FpzJabQtyj8ffDIlyCr3ZUbv3LLxcIL/EWAzdnMuJ3sue/vqc68KqAY5CutGfhiIS8kyx6b7JJC9RNi9u+60FAKh7hkIHo8so53LpEpeR/ZbrltZgU7IIGRwIt+SBiJkeYUPg//J6UwUJmSKMEvUI2wFpiEyeEbHnm8jnIPYP1kJ6gTbkc1Ni7IYiz8+RfAjzw+4rEnnRv8tLGZTxDpao0IKHNtuBcmn5Jj94g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jrsDzUSF; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=N/zg5Ona;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jrsDzUSF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJDd42nyxz30W5
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 01:30:16 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 4BA2360610;
-	Mon,  2 Nov 2026 14:30:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 798041F00A16;
-	Mon,  2 Nov 2026 14:29:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793629814;
-	bh=3411hkdZbwQNMzi0U+XOI7Na8s43TyvUoc5wijeirGE=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=N/zg5OnaHcMDjHdzYbR6QvnFai7hOwNAnTt2NkY9jA2RApvWKfwTn6mchyUme/onF
-	 ieOMSfn7EOjxy9D5u0vGcVfX6ixkzrWuP14BEk8Dqq6sJoYrNLzk3E0OYlhnVId4pr
-	 18pXAmt3n5kLL/zuxe0A97wY4IR5i4aoPTqrBac5O7Y9xuTkc8NN4MFD1wYjeoqM6/
-	 c2p7xPOe1nl/kZjzUE3FLMYkSrfUbtJT2EygAmFEqgAW+X5RFTbYC1NWxTMeQ+fkhv
-	 Bb1GsbVLMeUTFDG1989JYHy8ooD6KHyoYwdBzXmxmZUmpttNpFOQ3+lzmxFMxqRZuZ
-	 /erP9IfNldJYw==
-From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 15:21:50 +0100
-Subject: [PATCH RFC 35/38] proc: sysctl: don't hold the tables while
- readdir copies to userspace
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJDqJ36fFz2xjQ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 01:39:08 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A2EEEvg3103442;
+	Mon, 2 Nov 2026 14:38:35 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=t3uMzKFF0fpXKNPzeuZqcP8SHbCjBI
+	Lits3drrR5UAs=; b=jrsDzUSF/OggKdN81wWhb4EQ3nK8LML9mgaSnR8qAY70jz
+	0DbJXtS4PJuv8PQiLy7abs+fG7sndfj6ShOJulStFvMaB4jzVmChtTE0sAet0Vm3
+	A1+30vWOdajDQi0XubC1JRA8+Z0IFqBUkwIt3tZHqrS7135+dwCfgEZ9oFFGPewC
+	l25ok0YfFnDEr9VN3wS8SYboK6sKCmQ6lfAwbRcX9ljp4AV5DyeSlhrCxiJoEWty
+	Y1DzMBTvPDR+g06pwD9FhYxvyUDi1W8x+t9hc8THVHlowf7A2mNVTcdtd7GnSpo3
+	aFq1FAonyVk3KK0s0pDgB8L2nMIRTSxdOjGsR3jA==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hn826h1td-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Mon, 02 Nov 2026 14:38:33 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6A2E5w6Q1034496;
+	Mon, 2 Nov 2026 14:38:32 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4hnu1vebv3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 02 Nov 2026 14:38:32 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6A2EcS5845613524
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 2 Nov 2026 14:38:28 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A89912004D;
+	Mon,  2 Nov 2026 14:38:28 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0A5D02004E;
+	Mon,  2 Nov 2026 14:38:22 +0000 (GMT)
+Received: from li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com (unknown [9.39.25.78])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Mon,  2 Nov 2026 14:38:21 +0000 (GMT)
+Date: Mon, 2 Nov 2026 20:08:19 +0530
+From: Gautam Menghani <gautam@linux.ibm.com>
+To: Sean Christopherson <seanjc@google.com>
+Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>,
+        Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
+        Huacai Chen <chenhuacai@kernel.org>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>,
+        Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+        Paolo Bonzini <pbonzini@redhat.com>, Fuad Tabba <fuad.tabba@linux.dev>,
+        Joey Gouly <joey.gouly@arm.com>, Steffen Eiden <seiden@linux.ibm.com>,
+        Suzuki K Poulose <suzuki.poulose@arm.com>,
+        Zenghui Yu <yuzenghui@huawei.com>, Nicholas Piggin <npiggin@gmail.com>,
+        Atish Patra <atish.patra@linux.dev>, Alexandre Ghiti <alex@ghiti.fr>,
+        linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
+        kvm@vger.kernel.org, loongarch@lists.linux.dev,
+        linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+        linux-kernel@vger.kernel.org, Stefan Teodorescu <fane@google.com>
+Subject: Re: [PATCH 3/7] KVM: PPC: Explicitly force IPIs when directly
+ kicking vCPUs
+Message-ID: <auiZYdVzhFbnj0iy@li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com>
+References: <20261028190259.1819571-1-seanjc@google.com>
+ <20261028190259.1819571-4-seanjc@google.com>
+ <auStM0rbFol79h5o@li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com>
+ <auTohixp3V5-vNsB@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,516 +104,109 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-bugfixes-v1-35-59422ed3e465@kernel.org>
-References: <20261102-work-procfs-bugfixes-v1-0-59422ed3e465@kernel.org>
-In-Reply-To: <20261102-work-procfs-bugfixes-v1-0-59422ed3e465@kernel.org>
-To: linux-fsdevel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, 
- Jann Horn <jannh@google.com>, Josef Bacik <josef@toxicpanda.com>, 
- Chris Mason <mason@kernel.org>, Jeff Layton <jlayton@kernel.org>, 
- NeilBrown <neil@brown.name>, Eric Dumazet <edumazet@kernel.org>, 
- Thomas Gleixner <tglx@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>, 
- Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@lst.de>, 
- Greg Kroah-Hartman <gregkh@suse.de>, 
- Joel Granados <joel.granados@kernel.org>, Kees Cook <kees@kernel.org>, 
- Jan Kara <jack@suse.cz>, Jan Kara <jack@suse.com>, 
- linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org, 
- linux-acpi@vger.kernel.org, linux-kselftest@vger.kernel.org, 
- linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, 
- linux-um@lists.infradead.org, linux-wireless@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, 
- ntfs3@lists.linux.dev, platform-driver-x86@vger.kernel.org, 
- coreteam@netfilter.org, kexec@lists.infradead.org, 
- linux-pci@vger.kernel.org, linux-sound@vger.kernel.org, 
- netfilter-devel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
- ibm-acpi-devel@lists.sourceforge.net, jfs-discussion@lists.sourceforge.net, 
- linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-cifs@vger.kernel.org, linux-fbdev@vger.kernel.org, 
- linux-hwmon@vger.kernel.org, linux-mm@kvack.org, linux-sh@vger.kernel.org, 
- linux-usb@vger.kernel.org, samba-technical@lists.samba.org, 
- sparclinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
- linux-doc@vger.kernel.org, linux-serial@vger.kernel.org, 
- linux-atm-general@lists.sourceforge.net, Takashi Iwai <tiwai@suse.de>, 
- linux-input@vger.kernel.org, linux-raid@vger.kernel.org, 
- linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org, 
- linux-debuggers@vger.kernel.org, 
- "Christian Brauner (Amutable)" <brauner@kernel.org>, 
- Chuck Lever <cel@kernel.org>, stable@vger.kernel.org
-X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=15345; i=brauner@kernel.org;
- h=from:subject:message-id; bh=awE7OtuLocwwLuG73C7KoqdSIZd97jAzgPGBLfGeaBs=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9mJOT3hscVVlXMb28cnGS9POEl1M5Z225d2zCpfU2r
- VExHzkWd5SyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAEzkaCTDf5dUdg1T519xexnC
- NONPiIm2inxrCY2e4v2AQUfiaOWF+YwMD1qNZt6cez3sz76H+Vwh+/ekzE3YYKvrHnRy7vT5ERO
- +sgAA
-X-Developer-Key: i=brauner@kernel.org; a=openpgp;
- fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=4.0.1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <auTohixp3V5-vNsB@google.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: MVuzkhZ7vtCvo0_kidGaNnCzUH4z2Q5t
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTAyMDA1NiBTYWx0ZWRfX9NPC/owi16S7
+ 9yPcxDuxCXAVRis8gROnpHUQtX1lgGRd8hAKUnleFK3QWlX1SdAjhFR8oEvK54MRQDdismPxh+K
+ SQ8loUK3UQRzfSLpS9uRj+aWjubkYTlbIquMNg8PhpfWVJkZ76O3xxEXr80qfN6IOD19XJfjKtr
+ 634hKk5awadYPmt24Ux7BsSNM3cqVRZujAolWeljDDPrwops7bov/t92bCk4p83QwKy6YXStSnl
+ 0VsEIPP7bIE5T7r4zJSL0tKzTIgSYx+WFY3Qwo3DYgWTx5sTM9UVeBsh0rxrl31K1IM0pQFj1A7
+ gw+VtvRxiUYjK/87Jg4SStypE42sXR/2o22pNseu+/r/yDHR8uGSsjBtiHv4st3RTmohj8hx7JP
+ UCE4D1U1IEi/wr/eFIXPrL9wTCpxRXnB0VIgaijskvnY1QOUMWWKwaAo3sk8IykSUxckF0V1iQL
+ y3XMeya+tQcv90pkeiQ==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTAyMDA1NiBTYWx0ZWRfX/Jv0f66eb8FC
+ gBsCZTcz1I/pV05gMEXUAwMes48ABsD2pbDotd5Qxpz6XqvBunVHHDSaqleBJACDat+c8lSkusL
+ mmZ2c5c7i5Q1tgycd0AKgoXZ+Q680vQ=
+X-Proofpoint-GUID: 3_YY6ZYXsy9uBgG-NjaOA9L9V7gYRG4x
+X-Authority-Analysis: v=2.4 cv=EsJHPicA c=1 sm=1 tr=0 ts=6ae8a06a cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=kj9zAlcOel0A:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
+ a=1XWaLZrsAAAA:8 a=VnNF1IyMAAAA:8 a=duh_M4KPJp97uAtK-N0A:9 a=CjuIK1q_8ugA:10
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-02_04,2026-11-02_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 clxscore=1015 lowpriorityscore=0 malwarescore=0
+ priorityscore=1501 adultscore=0 impostorscore=0 phishscore=0 spamscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610300000
+ definitions=main-2611020056
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-proc_sys_readdir() holds the directory's table for the whole readdir
-and the table of each entry while dir_emit() copies its name to
-userspace. Unregistering a table waits until nobody uses it anymore. So
-a getdents64() whose buffer faults for as long as it wants keeps
-unregister_sysctl_table() waiting, just like a stalled read() does.
-Listing /proc/sys/net/ipv6/conf/<dev>/ that way holds up the removal of
-the device under RTNL.
+On Fri, Oct 30, 2026 at 11:57:10AM -0700, Sean Christopherson wrote:
+> On Fri, Oct 30, 2026, Gautam Menghani wrote:
+> > On Wed, Oct 28, 2026 at 12:02:55PM -0700, Sean Christopherson wrote:
+> > > Explicitly force an IPI when invoking kvm_vcpu_kick() directly instead of
+> > > relying on kvm_arch_vcpu_should_kick() to unconditionally return 1/true.
+> > > This will allow dropping kvm_arch_vcpu_should_kick() in favor of
+> > > kvm_request_needs_ipi().
+> > > 
+> > > No functional change intended (1 || 1 == true).
+> > > 
+> > > Signed-off-by: Sean Christopherson <seanjc@google.com>
+> > > ---
+> > >  arch/powerpc/include/asm/kvm_ppc.h | 13 ++++++++++++-
+> > >  arch/powerpc/kvm/book3s.c          |  4 ++--
+> > >  arch/powerpc/kvm/book3s_pr.c       |  2 +-
+> > >  arch/powerpc/kvm/booke.c           |  6 +++---
+> > >  arch/powerpc/kvm/e500_emulate.c    |  2 +-
+> > >  arch/powerpc/kvm/powerpc.c         |  2 +-
+> > >  6 files changed, 20 insertions(+), 9 deletions(-)
+> > > 
+> > > diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+> > > index 169ea6a7fbad..bbe7378ad0ef 100644
+> > > --- a/arch/powerpc/include/asm/kvm_ppc.h
+> > > +++ b/arch/powerpc/include/asm/kvm_ppc.h
+> > > @@ -30,6 +30,17 @@
+> > >  #endif
+> > >  #include <asm/inst.h>
+> > >  
+> > > +/*
+> > > + * TODO: For unknown reasons, KVM PPC has historically ignored vcpu->mode when
+> > > + *       determining if kicking a vCPU needs an IPI.  Either document why that
+> > > + *       behavior is necessary, or drop this helper and the @force param from
+> > > + *       __kvm_vcpu_kick().
+> > > + */
+> > > +static inline void kvmppc_vcpu_kick(struct kvm_vcpu *vcpu)
+> > > +{
+> > > +	__kvm_vcpu_kick(vcpu, false, true);
+> > > +}
+> > > +
+> > 
+> > AFAICS, there is no reason for PPC to always return 1. I was looking at
+> > the old patches on mailing list and found this - https://lore.kernel.org/kvm/0FEE585F-5E21-47F2-A3F0-AD0DE05EBB43@suse.de
+> > 
+> > ```
+> > How about we return 1 for kvm_arch_vcpu_in_guest_mode() on !x86 always, just
+> > like it's done today basically? Then we can worry about needless IPIs later
+> > and don't regress from the respective current kick implementations.
+> > ```
+> 
+> FWIW, I found that as well, but there are a metric ton of kvm_vcpu_kick() calls
+> that have been added since then, and they scared me.
+> 
+> > However, I'll do some testing and get back by mid next week to make sure
+> > there are no suprises.
+> 
+> Thanks!  If we can drop the PPC behavior, that would be wonderful!  Though if
+> we do that, it should be for 7.5 in a follow-up (this series really should go
+> into 7.4 due to the SNP issue).
 
-So don't take any table into use for a listing. A header counts what
-refers to its memory, the inodes made for it, and unregistering doesn't
-wait for those. readdir takes one of those references on the entry it
-is at instead, which keeps the header around and nothing else. Under
-sysctl_lock, where unregistering erases an entry, it finds the entry,
-copies its name and mode, follows a link to the entry it stands for and
-pins that. Then it looks the dentry up, creates the inode if there is
-none, which checks for itself under sysctl_lock that the table is still
-registered, and emits the entry with nothing held at all. The next
-entry is the first live one after that name, which is where a listing
-resumes between calls since "proc: sysctl: resume readdir after the
-last name it returned" anyway. kernfs_fop_readdir() and
-proc_readdir_de() work the same way, a reference on the entry and the
-lock only to find the next one.
 
-While the entry is still registered its node is still in the tree and
-the next one is right behind it, like kernfs_dir_next_pos() continues
-from the node it holds. Only once it went away, and to resume, is the
-next entry found by name. That's one trip through sysctl_lock per entry
-like before, and the link entries of /proc/sys/net no longer take two
-more. The directory isn't
-taken into use either, an entry keeps its directory registered while
-it is used and readdir looks at the directory under the lock. So the
-dots don't wait for anything, a directory that went away lists them and
-then fails with -ENOENT. A seek to an arbitrary position counts the
-entries from the start like before, one trip per entry.
+Yeah I looked into it and realized that the newer variants of KVM on PPC
+are not even using vcpu->mode at all. So that has to be fixed from our
+end.
 
-Fixes: 77b14db502cb ("[PATCH] sysctl: reimplement the sysctl proc support")
-Cc: stable@vger.kernel.org
-Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
----
- fs/proc/proc_sysctl.c | 307 +++++++++++++++++++++++++++-----------------------
- 1 file changed, 166 insertions(+), 141 deletions(-)
-
-diff --git a/fs/proc/proc_sysctl.c b/fs/proc/proc_sysctl.c
-index a1242247f492..0b7a1e487ed6 100644
---- a/fs/proc/proc_sysctl.c
-+++ b/fs/proc/proc_sysctl.c
-@@ -91,6 +91,8 @@ static void drop_sysctl_table(struct ctl_table_header *header);
- static int sysctl_follow_link(struct ctl_table_header **phead,
- 	const struct ctl_table **pentry);
- static int insert_links(struct ctl_table_header *head);
-+static struct ctl_table_set *lookup_header_set(struct ctl_table_root *root);
-+static struct ctl_dir *xlate_dir(struct ctl_table_set *set, struct ctl_dir *dir);
- static void put_links(struct ctl_table_header *header);
- 
- static void sysctl_print_dir(struct ctl_dir *dir)
-@@ -367,86 +369,97 @@ static const struct ctl_table *lookup_entry(struct ctl_table_header **phead,
- 	return entry;
- }
- 
--static struct ctl_node *first_usable_entry(struct rb_node *node)
--{
--	struct ctl_node *ctl_node;
-+/*
-+ * What readdir takes along for an entry between the trips through
-+ * sysctl_lock: the header pinned, which keeps its memory and nothing else,
-+ * the entry, its name and mode. For a link the header and entry are the
-+ * ones it stands for in the caller's set.
-+ */
-+struct sysctl_dirent {
-+	struct ctl_table_header *head;
-+	const struct ctl_table *table;
-+	struct ctl_node *node;		/* the entry's node in the directory, NULL for a link */
-+	ino_t ino;
-+	unsigned int type;
-+	umode_t mode;
-+	bool skip;
-+	int len;
-+	char name[NAME_MAX + 1];
-+};
- 
--	for (;node; node = rb_next(node)) {
--		ctl_node = rb_entry(node, struct ctl_node, node);
--		if (use_table(ctl_node->header))
--			return ctl_node;
--	}
--	return NULL;
-+/* A reference on the memory of @head, like an inode made for it holds. */
-+static void sysctl_pin(struct ctl_table_header *head)
-+{
-+	lockdep_assert_held(&sysctl_lock);
-+	head->count++;
- }
- 
--static void first_entry(struct ctl_dir *dir,
--	struct ctl_table_header **phead, const struct ctl_table **pentry)
-+static void sysctl_unpin(struct ctl_table_header *head)
- {
--	struct ctl_table_header *head = NULL;
--	const struct ctl_table *entry = NULL;
--	struct ctl_node *ctl_node;
--
--	spin_lock(&sysctl_lock);
--	ctl_node = first_usable_entry(rb_first(&dir->root));
--	spin_unlock(&sysctl_lock);
--	if (ctl_node) {
--		head = ctl_node->header;
--		entry = &head->ctl_table[ctl_node - head->node];
--	}
--	*phead = head;
--	*pentry = entry;
-+	lockdep_assert_held(&sysctl_lock);
-+	if (!--head->count)
-+		kfree_rcu(head, rcu);
- }
- 
--static void next_entry(struct ctl_table_header **phead, const struct ctl_table **pentry)
-+/* the first entry from @node on whose table isn't being unregistered */
-+static struct ctl_node *first_live_entry(struct rb_node *node)
- {
--	struct ctl_table_header *head = *phead;
--	const struct ctl_table *entry = *pentry;
--	struct ctl_node *ctl_node = &head->node[entry - head->ctl_table];
--
--	spin_lock(&sysctl_lock);
--	unuse_table(head);
-+	struct ctl_node *ctl_node;
- 
--	ctl_node = first_usable_entry(rb_next(&ctl_node->node));
--	spin_unlock(&sysctl_lock);
--	head = NULL;
--	if (ctl_node) {
--		head = ctl_node->header;
--		entry = &head->ctl_table[ctl_node - head->node];
-+	lockdep_assert_held(&sysctl_lock);
-+	for (; node; node = rb_next(node)) {
-+		ctl_node = rb_entry(node, struct ctl_node, node);
-+		if (!ctl_node->header->unregistering)
-+			return ctl_node;
- 	}
--	*phead = head;
--	*pentry = entry;
-+	return NULL;
- }
- 
- /*
-- * The first usable entry of @dir after @name, or the first one at all for a
-- * NULL @name. The entries are sorted by name, so that is where a listing
-- * resumes when entries in front of it came or went in between. -ENOENT if
-- * the directory is being unregistered.
-+ * Fill @d with the entry of @dir behind the one it holds, letting go of that
-+ * one, or with the first live entry after @name, or the first one at all for
-+ * a NULL @name. While the entry @d holds is still registered its node is
-+ * still in the tree and the next one is right behind it. Once it is gone the
-+ * entries are found by name, they are sorted by it, so that is also where a
-+ * listing resumes when entries in front of it came or went in between.
-+ * 1 with the next entry pinned in @d, 0 at the end of the directory and
-+ * -ENOENT once @dir itself is being unregistered.
-+ *
-+ * Everything that reads the tables happens under sysctl_lock, where an entry
-+ * is erased when it is unregistered, since nothing holds the tables in use.
-  */
--static int entry_after(struct ctl_dir *dir, const char *name, int namelen,
--		       struct ctl_table_header **phead,
--		       const struct ctl_table **pentry)
-+static int sysctl_dir_next(struct ctl_dir *dir, struct sysctl_dirent *d,
-+			   const char *name, int namelen)
- {
--	struct ctl_table_header *head = NULL;
--	const struct ctl_table *entry = NULL;
- 	struct rb_node *node, *after = NULL;
-+	struct ctl_table_header *head;
-+	const struct ctl_table *entry;
- 	struct ctl_node *ctl_node;
-+	bool by_name = true;
-+	int ret = 0;
- 
- 	spin_lock(&sysctl_lock);
-+	if (d->head) {
-+		if (d->node && !d->head->unregistering) {
-+			after = rb_next(&d->node->node);
-+			by_name = false;
-+		}
-+		sysctl_unpin(d->head);
-+		d->head = NULL;
-+	}
- 	if (unlikely(dir->header.unregistering)) {
--		spin_unlock(&sysctl_lock);
--		return -ENOENT;
-+		ret = -ENOENT;
-+		goto out;
- 	}
--	if (!name) {
-+	if (!by_name) {
-+		/* behind the entry @d held */
-+	} else if (!name) {
- 		after = rb_first(&dir->root);
- 	} else for (node = dir->root.rb_node; node;) {
--		const struct ctl_table *table;
--		struct ctl_table_header *h;
--
- 		ctl_node = rb_entry(node, struct ctl_node, node);
--		h = ctl_node->header;
--		table = &h->ctl_table[ctl_node - h->node];
--		if (namecmp(table->procname, strlen(table->procname),
-+		head = ctl_node->header;
-+		entry = &head->ctl_table[ctl_node - head->node];
-+		if (namecmp(entry->procname, strlen(entry->procname),
- 			    name, namelen) > 0) {
- 			after = node;
- 			node = node->rb_left;
-@@ -454,15 +467,56 @@ static int entry_after(struct ctl_dir *dir, const char *name, int namelen,
- 			node = node->rb_right;
- 		}
- 	}
--	ctl_node = first_usable_entry(after);
--	spin_unlock(&sysctl_lock);
--	if (ctl_node) {
--		head = ctl_node->header;
--		entry = &head->ctl_table[ctl_node - head->node];
-+	ctl_node = first_live_entry(after);
-+	if (!ctl_node)
-+		goto out;
-+	head = ctl_node->header;
-+	entry = &head->ctl_table[ctl_node - head->node];
-+
-+	d->len = strlen(entry->procname);
-+	if (d->len > NAME_MAX) {
-+		ret = -ENAMETOOLONG;
-+		goto out;
- 	}
--	*phead = head;
--	*pentry = entry;
--	return 0;
-+	memcpy(d->name, entry->procname, d->len);
-+	d->mode = entry->mode;
-+	d->skip = false;
-+	d->node = ctl_node;
-+	if (unlikely(S_ISLNK(entry->mode))) {
-+		/* the entry it stands for in the caller's set, or nothing */
-+		struct ctl_table_root *root = entry->data;
-+		struct ctl_table_set *set = lookup_header_set(root);
-+		struct ctl_dir *xdir = xlate_dir(set, head->parent);
-+		struct ctl_table_header *xhead = NULL;
-+		const struct ctl_table *xentry = NULL;
-+
-+		if (!IS_ERR(xdir))
-+			xentry = find_entry(&xhead, xdir, d->name, d->len);
-+		if (!xentry || xhead->unregistering) {
-+			d->skip = true;
-+		} else {
-+			head = xhead;
-+			entry = xentry;
-+		}
-+		d->node = NULL;
-+	}
-+	sysctl_pin(head);
-+	d->head = head;
-+	d->table = entry;
-+	ret = 1;
-+out:
-+	spin_unlock(&sysctl_lock);
-+	return ret;
-+}
-+
-+static void sysctl_dir_done(struct sysctl_dirent *d)
-+{
-+	if (!d->head)
-+		return;
-+	spin_lock(&sysctl_lock);
-+	sysctl_unpin(d->head);
-+	spin_unlock(&sysctl_lock);
-+	d->head = NULL;
- }
- 
- /*
-@@ -765,29 +819,29 @@ static void sysctl_cursor_set(struct file *file, const char *name, int len,
- 	memcpy(cursor->name, name, len);
- }
- 
--static bool proc_sys_fill_cache(struct file *file,
--				struct dir_context *ctx,
--				struct ctl_table_header *head,
--				const struct ctl_table *table)
-+/*
-+ * The inode number and type of the entry @d holds, instantiating its dentry
-+ * if there is none. Needs the header pinned, proc_sys_make_inode() checks
-+ * for itself that the table is still registered.
-+ */
-+static int proc_sys_fill_dirent(struct file *file, struct sysctl_dirent *d)
- {
- 	struct dentry *child, *dir = file->f_path.dentry;
- 	struct inode *inode;
- 	struct qstr qname;
--	ino_t ino = 0;
--	unsigned type = DT_UNKNOWN;
- 
--	qname.name = table->procname;
--	qname.len  = strlen(table->procname);
-+	qname.name = d->name;
-+	qname.len  = d->len;
- 	qname.hash = full_name_hash(dir, qname.name, qname.len);
- 
- 	child = d_lookup(dir, &qname);
- 	if (!child) {
- 		child = d_alloc_parallel(dir, &qname);
- 		if (IS_ERR(child))
--			return false;
-+			return PTR_ERR(child);
- 		if (d_in_lookup(child)) {
- 			struct dentry *res;
--			inode = proc_sys_make_inode(dir->d_sb, head, table);
-+			inode = proc_sys_make_inode(dir->d_sb, d->head, d->table);
- 			res = d_splice_alias_ops(inode, child,
- 						 &proc_sys_dentry_operations);
- 			d_lookup_done(child);
-@@ -795,79 +849,41 @@ static bool proc_sys_fill_cache(struct file *file,
- 				dput(child);
- 
- 				if (IS_ERR(res))
--					return false;
-+					return PTR_ERR(res);
- 
- 				child = res;
- 			}
- 		}
- 	}
- 	inode = d_inode(child);
--	ino  = inode->i_ino;
--	type = inode->i_mode >> 12;
-+	d->ino = inode->i_ino;
-+	d->type = inode->i_mode >> 12;
- 	dput(child);
--	return dir_emit(ctx, qname.name, qname.len, ino, type);
--}
--
--static bool proc_sys_link_fill_cache(struct file *file,
--				    struct dir_context *ctx,
--				    struct ctl_table_header *head,
--				    const struct ctl_table *table)
--{
--	bool ret = true;
--
--	head = sysctl_head_grab(head);
--	if (IS_ERR(head))
--		return false;
--
--	/* It is not an error if we can not follow the link ignore it */
--	if (sysctl_follow_link(&head, &table))
--		goto out;
--
--	ret = proc_sys_fill_cache(file, ctx, head, table);
--out:
--	sysctl_head_finish(head);
--	return ret;
--}
--
--static int scan(struct ctl_table_header *head, const struct ctl_table *table,
--		unsigned long *pos, struct file *file,
--		struct dir_context *ctx)
--{
--	bool res;
--
--	if ((*pos)++ < ctx->pos)
--		return true;
--
--	if (unlikely(S_ISLNK(table->mode)))
--		res = proc_sys_link_fill_cache(file, ctx, head, table);
--	else
--		res = proc_sys_fill_cache(file, ctx, head, table);
--
--	if (res) {
--		ctx->pos = *pos;
--		sysctl_cursor_set(file, table->procname, strlen(table->procname),
--				  ctx->pos);
--	}
--
--	return res;
-+	return 0;
- }
- 
-+/*
-+ * Unregistering a table waits until nobody uses it anymore and a copy to
-+ * userspace can take as long as userspace wants. So a listing doesn't take
-+ * any table into use. It pins the memory of the entry it is at, finds the
-+ * next one under sysctl_lock and emits with nothing held, like
-+ * kernfs_fop_readdir() and proc_readdir_de() do. Between calls a listing
-+ * resumes after the name of the last entry it emitted.
-+ */
- static int proc_sys_readdir(struct file *file, struct dir_context *ctx)
- {
--	struct ctl_table_header *head = grab_header(file_inode(file));
-+	struct ctl_table_header *head = PROC_I(file_inode(file))->sysctl;
- 	struct sysctl_cursor *cursor = file->private_data;
--	struct ctl_table_header *h = NULL;
--	const struct ctl_table *entry;
-+	struct sysctl_dirent d = {};
- 	struct ctl_dir *ctl_dir;
--	unsigned long pos;
--
--	if (IS_ERR(head))
--		return PTR_ERR(head);
-+	int err;
- 
-+	if (!head)
-+		head = &sysctl_table_root.default_set.dir.header;
- 	ctl_dir = container_of(head, struct ctl_dir, header);
- 
- 	if (!dir_emit_dots(file, ctx))
--		goto out;
-+		return 0;
- 
- 	/*
- 	 * Resume after the last entry the previous call emitted. Only a seek
-@@ -875,21 +891,30 @@ static int proc_sys_readdir(struct file *file, struct dir_context *ctx)
- 	 * seeking to an arbitrary position always did.
- 	 */
- 	if (cursor && cursor->pos == ctx->pos) {
--		entry_after(ctl_dir, cursor->name, cursor->len, &h, &entry);
--		pos = ctx->pos;
-+		err = sysctl_dir_next(ctl_dir, &d, cursor->name, cursor->len);
- 	} else {
--		first_entry(ctl_dir, &h, &entry);
--		pos = 2;
-+		loff_t pos = 2;
-+
-+		err = sysctl_dir_next(ctl_dir, &d, NULL, 0);
-+		while (err > 0 && pos++ < ctx->pos)
-+			err = sysctl_dir_next(ctl_dir, &d, d.name, d.len);
- 	}
-+	if (err < 0)
-+		return err;
- 
--	for (; h; next_entry(&h, &entry)) {
--		if (!scan(h, entry, &pos, file, ctx)) {
--			sysctl_head_finish(h);
--			break;
-+	while (err > 0) {
-+		if (!d.skip) {
-+			err = proc_sys_fill_dirent(file, &d);
-+			if (err)
-+				break;
-+			if (!dir_emit(ctx, d.name, d.len, d.ino, d.type))
-+				break;
- 		}
-+		ctx->pos++;
-+		sysctl_cursor_set(file, d.name, d.len, ctx->pos);
-+		err = sysctl_dir_next(ctl_dir, &d, d.name, d.len);
- 	}
--out:
--	sysctl_head_finish(head);
-+	sysctl_dir_done(&d);
- 	return 0;
- }
- 
-
--- 
-2.53.0
-
+For this series,
+Reviewed-by: Gautam Menghani <gautam@linux.ibm.com> # PPC
 
