@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CFF8F6070384
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 14:29:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1285060703AB
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 14:29:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eW6R0uhw
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cpiq3IqJ
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJDc949snz3bRp;
-	Tue, 03 Nov 2026 01:29:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793629769;
-	cv=none; b=D3RxY3icB7DjpgCTJuqNrRMKpQrLd6ZpGpDCSDzlKtMdZZDogpLRuXQHZF/Iu4c0ag36jnhv20T71O/WxJCYIYifUu2mkN0jvVLrvdq8c4WS6orKsohLABhxtqMFrfxlaMaCkLDzo4MzQBVSq8ftLU23wJ3qN/O81vbfWMJycOGBgYVOI+gT+1UEWxtxSb5m4zEEDmieVUZAMYyW1DMPLHg7PLyoL32Iug0Wr//ugZoacp8qfllMERSSfFQhuIQblNwZl6iJ8Kj00OJsPHBktNgRbtKON7KKEE8I0nuZcSp1dR3jtlnIqjyHCL76ThtpnCHIbiQTdjdmEHbLek2OZw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJDcS5kzLz3bkd;
+	Tue, 03 Nov 2026 01:29:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793629784;
+	cv=none; b=TmhTZkqu7iFbRQA5ELszA8ODKKgH5R4I1N5t3QCpCaDIcZe05miG1ELJKR7eoPYEcbYNJjqGaUAR10apUxIjcCmE8OsP4IWy8lhBh68OuvDq9tdQiIsQKqIJSe08cqanizV6Omm/1eV580hv6zwYQf9ZlVnuhdRntBp9oa6rpc0EzmA9vQbXjKoRe6D+IzVjNwEFIzgx8TXqRKfDbBZH9dPv0fndz9nFA1lfG11GUWwEiJksK8RpAtk0tm5zdK6LLVxiepfSXR6EGRwBK/SXILBKbpz59kPVurXq1NHe+7w2n3TmT6nrCo9TqegLNzWsGTia6+aM/Qv3vUlttjOPLg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793629769; c=relaxed/relaxed;
-	bh=/Wx/9hEycnxG6QqWT58rgPjCjctkpbUJ1BsGJ+UfGVA=;
+	t=1793629784; c=relaxed/relaxed;
+	bh=ic+85LCmRwOCXD9XrptIkWWgbAusIpJ/j/j/KpoPCSM=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=HL9ruAREQXPHSUUWR2JoHDzaD1MQcml7q9qsh1sKtdSFFyHa536/cIndCvIqISNksW+qaQs31KgMzWQOMJPCbO7/DszZbhpPfhp7Ak0ZD+y1ku7cjIJyQojqSeIQK33pJbtarSkzRb7aP5TGrHSDCikGK75KbUi/XnOyZqmxNZqJt2PvkhNG3ypiClgu6GRy2XUlKeV99PtLtYtsRZXH5sEPmHW0VJNhETeKdbKxW8aro9wwVTI0dkzmyo0lPjHhLAQs7CRZcErBEbvlGYw2l/mFbSbDQvXFgTJbNUTCIg5JB+3i3tkUK7DJA/PKLwDwdFpm1ehdW3AcrNTANrIabw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eW6R0uhw; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=F+J130YL04exZUI+s7fi80+Gop4riFzxpqzkfBhv78s1OS1eAbDEkqgRh1dl950/h06gHXkcDoWcA+hlRjCSgWDOW3rbvBd0HuKsFNBwZtTsfNt2a5gTWGkDFB97UI1rvWYocJdgh/2/eDV9GY7CGdiU2euoSjbXjo8y6PE6ZvURT6wVf3CD5hoJDhjmnq0U/0ijABY8UOu8sLMs3pKz2izTiTcK4XPdkNprjWWu/GiRMzmD3uu1ZWJ2Gb09+pwxG2+GUuIYFinvP6ZlBCg4kmooZBT+xXy3wASnZ4JZ2DgNmrZddHkBAKtfrUQwTYOxmR7+0oU9lAwdRVVy3YPKvQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cpiq3IqJ; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eW6R0uhw;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cpiq3IqJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJDc73kwvz30VX
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 01:29:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJDcR6y7mz3bkb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 01:29:43 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id D0CE642DA5;
-	Mon,  2 Nov 2026 14:29:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E4F5B1F00A18;
-	Mon,  2 Nov 2026 14:28:56 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 1E91B60EF2;
+	Mon,  2 Nov 2026 14:29:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3A15B1F00A16;
+	Mon,  2 Nov 2026 14:29:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793629765;
-	bh=/Wx/9hEycnxG6QqWT58rgPjCjctkpbUJ1BsGJ+UfGVA=;
+	s=k20260515; t=1793629781;
+	bh=ic+85LCmRwOCXD9XrptIkWWgbAusIpJ/j/j/KpoPCSM=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=eW6R0uhwxmp1LxYPzZlSqP55jX3R1bLXeaGtF+FDg3DWqKEMDO9KauKhOwQ8ubsCQ
-	 fBe4h39HrP7xRV61MSsKKfiOFZzvbU/OzY7VZU0Fq3CrSBnMDq0rZXzZfnCu/uF48O
-	 HPf9NbOeuXPLNHRGdye5RY6G3G+n0wc9qdGZeOuvgwbw2lDj9zICBQVS7t2oEbXlMn
-	 8S5mBzFa4thYSzcTzqy+1xJdsRKmYjB8C1Ihqi+VpoXlrdWAMX5nyktL+fKIUpcZet
-	 5atlLoyOrwbZo+AWJ0BsA/ElUz6LoJgm1k0YxqIK/Lt/7rH1YT0aokmyMdLB5DliLp
-	 f+qLHZu8+PEYw==
+	b=cpiq3IqJzE0jLDTsXK0hhQpT+1tSBJ0m7UHl7jwVgF1Fv4mj9x0h0BFZHMrAfCVa5
+	 iewk6s7JCm0+gwRTm/kjqgkW4YiueXz1TIntYMKngDzC+ACNgbHQBWvInviI1KRtgv
+	 oJz0vOiQG4c8Pbk4iFmvmDh2ZQ6QwxvGwZS6AAmLbVz1ZAlyFcC8D8rCv7m/yTSEu4
+	 1vD4TCJ+dg9PvxhYYplMdQDJY8+AFuovGaLfiL4La8TbkUrkcL9SeYhMCfsPHBpZLk
+	 c+TBML64gtkfFA/ZyGQfZtD060MB4GYjnWd84w2qELeu1iAHFSJ2lpD4cFIe3OBakQ
+	 pRII2n9i/Aq1w==
 From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 15:21:47 +0100
-Subject: [PATCH RFC 32/38] selftests/proc: check a sysctl listing while
- entries come and go
+Date: Mon, 02 Nov 2026 15:21:48 +0100
+Subject: [PATCH RFC 33/38] proc: sysctl: copy to and from userspace without
+ holding the table
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-bugfixes-v1-32-59422ed3e465@kernel.org>
+Message-Id: <20261102-work-procfs-bugfixes-v1-33-59422ed3e465@kernel.org>
 References: <20261102-work-procfs-bugfixes-v1-0-59422ed3e465@kernel.org>
 In-Reply-To: <20261102-work-procfs-bugfixes-v1-0-59422ed3e465@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -97,14 +97,14 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
  linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org, 
  linux-debuggers@vger.kernel.org, 
  "Christian Brauner (Amutable)" <brauner@kernel.org>, 
- Chuck Lever <cel@kernel.org>
+ Chuck Lever <cel@kernel.org>, stable@vger.kernel.org
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5795; i=brauner@kernel.org;
- h=from:subject:message-id; bh=PoVb2K3h8KM7KPudC9ie8mT7qnQN29SNHExdevOrgr4=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9mJOz8euhrPDD6keYJt57ESafo71NyvTKB4XSe0vV/
- d2L0jmrOkpZGMS4GGTFFFkc2k3C5ZbzVGw2ytSAmcPKBDKEgYtTACbyPp6R4T1v/gO3yVq1bLFa
- 9xR+MagsYBDe1Wu1ffOZjP07lprMfsDI8GKVk+DOKW/3SgRckbmd9SEtUYQ39/Vpg2IN4d83DE5
- OYgMA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3702; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=OKHYY6G5p6tdI3fThR8iqjZq4Cu2ed8jbKwsRQr4+FI=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9mJOjqsfwdP26aUFGgi5C6r2yG2bHan4r+X3s7GyXV
+ WxXvQoDOkpZGMS4GGTFFFkc2k3C5ZbzVGw2ytSAmcPKBDKEgYtTACYy4TIjw7uI6fuc5flCf+Zm
+ 5zW+q5zWPcdB1K3g9IT5Dob+Sj9nMTD8M73HuT7LtvqMxe4/c10XFfduOPPAQlnpxaaCg3+5lgu
+ KcwAA
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -115,199 +115,117 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-List /proc/sys/net/ipv4/conf of a new network namespace in two pieces:
+proc_sys_call_handler() grabs the table, copies in what is written,
+calls the handler and copies what it produced out to userspace before
+it lets go of the table again. Unregistering a table waits until nobody
+uses it anymore. So a reader or writer whose copy faults for as long as
+it wants, with userfaultfd or a stalled FUSE mapping, keeps
+unregister_sysctl_table() waiting, and its callers like to hold locks
+while they do that. addrconf unregisters the ipv6 sysctls of a device
+with RTNL held, so a stalled read of /proc/sys/net/ipv6/conf/<dev>/mtu
+holds up every RTNL user until the reader gives up.
 
-- with a buffer that holds the dots and "all", register a tun device
-  whose name sorts first, finish the listing: "all" is listed once
+Copy in before grabbing the table and copy out after letting go of it,
+like procfs and kernfs do for their files. The buffer is ours, nothing
+needs the table for the copies.
 
-- with that device registered and a buffer that holds the dots and it,
-  unregister it, finish the listing: "all" is still listed
+That moves the allocation and the copy in before the permission check.
+A write that can't be copied in, or a request that is too large, now
+fails with -EFAULT or -ENOMEM where it used to fail with -EPERM.
 
-Both fail without the fix, the first lists "all" twice, the second not
-at all.
-
+Fixes: 330d57fb98a9 ("[PATCH] Fix sysctl unregistration oops (CVE-2005-2709)")
+Cc: stable@vger.kernel.org
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- tools/testing/selftests/proc/.gitignore            |   1 +
- tools/testing/selftests/proc/Makefile              |   1 +
- .../selftests/proc/proc-sysctl-readdir-churn.c     | 147 +++++++++++++++++++++
- 3 files changed, 149 insertions(+)
+ fs/proc/proc_sysctl.c | 50 ++++++++++++++++++++++++++++----------------------
+ 1 file changed, 28 insertions(+), 22 deletions(-)
 
-diff --git a/tools/testing/selftests/proc/.gitignore b/tools/testing/selftests/proc/.gitignore
-index 8520c7878ea2..5b5e24e39cbd 100644
---- a/tools/testing/selftests/proc/.gitignore
-+++ b/tools/testing/selftests/proc/.gitignore
-@@ -25,4 +25,5 @@
- /self
- /setns-dcache
- /setns-sysvipc
-+/proc-sysctl-readdir-churn
- /thread-self
-diff --git a/tools/testing/selftests/proc/Makefile b/tools/testing/selftests/proc/Makefile
-index e0c0d313f4d0..dae09f333455 100644
---- a/tools/testing/selftests/proc/Makefile
-+++ b/tools/testing/selftests/proc/Makefile
-@@ -30,6 +30,7 @@ TEST_GEN_PROGS += setns-sysvipc
- TEST_GEN_PROGS += thread-self
- TEST_GEN_PROGS += proc-multiple-procfs
- TEST_GEN_PROGS += proc-fsconfig-hidepid
-+TEST_GEN_PROGS += proc-sysctl-readdir-churn
- TEST_GEN_PROGS += proc-pidns
+diff --git a/fs/proc/proc_sysctl.c b/fs/proc/proc_sysctl.c
+index 38b61887b59c..2150cf842919 100644
+--- a/fs/proc/proc_sysctl.c
++++ b/fs/proc/proc_sysctl.c
+@@ -602,14 +602,36 @@ static ssize_t proc_sys_call_handler(struct kiocb *iocb, struct iov_iter *iter,
+ 		int write)
+ {
+ 	struct inode *inode = file_inode(iocb->ki_filp);
+-	struct ctl_table_header *head = grab_header(inode);
+ 	const struct ctl_table *table = PROC_I(inode)->sysctl_entry;
++	struct ctl_table_header *head;
+ 	size_t count = iov_iter_count(iter);
+ 	char *kbuf;
+ 	ssize_t error;
  
- include ../lib.mk
-diff --git a/tools/testing/selftests/proc/proc-sysctl-readdir-churn.c b/tools/testing/selftests/proc/proc-sysctl-readdir-churn.c
-new file mode 100644
-index 000000000000..0e067a3619c4
---- /dev/null
-+++ b/tools/testing/selftests/proc/proc-sysctl-readdir-churn.c
-@@ -0,0 +1,147 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * A listing of a /proc/sys directory that takes more than one getdents64()
-+ * must not show an entry twice or skip one when an entry is registered or
-+ * unregistered in between. /proc/sys/net/ipv4/conf/<dev> of a tun device
-+ * comes and goes with the device.
-+ */
-+#define _GNU_SOURCE
-+#include <dirent.h>
-+#include <errno.h>
-+#include <fcntl.h>
-+#include <limits.h>
-+#include <linux/if.h>
-+#include <linux/if_tun.h>
-+#include <sched.h>
-+#include <string.h>
-+#include <sys/ioctl.h>
-+#include <sys/syscall.h>
-+#include <unistd.h>
+-	if (IS_ERR(head))
+-		return PTR_ERR(head);
++	/* don't even try if the size is too large */
++	if (count >= KMALLOC_MAX_SIZE)
++		return -ENOMEM;
++	kbuf = kvzalloc(count + 1, GFP_KERNEL);
++	if (!kbuf)
++		return -ENOMEM;
 +
-+#include "../kselftest_harness.h"
-+
-+#define CONF_DIR	"/proc/sys/net/ipv4/conf"
-+#define TUN_NAME	"a0"		/* sorts before "all" */
-+#define TUN_PATH	CONF_DIR "/" TUN_NAME
-+#define SMALL_BUF	80		/* ".", ".." and one short name */
-+#define NAMES		64
-+
-+static int tun_open(const char *name)
-+{
-+	struct ifreq ifr = {};
-+	int fd;
-+
-+	fd = open("/dev/net/tun", O_RDWR | O_CLOEXEC);
-+	if (fd < 0)
-+		return -1;
-+	strncpy(ifr.ifr_name, name, IFNAMSIZ - 1);
-+	ifr.ifr_flags = IFF_TUN | IFF_NO_PI;
-+	if (ioctl(fd, TUNSETIFF, &ifr)) {
-+		close(fd);
-+		return -1;
++	/*
++	 * Copy in before grabbing the table and copy out after letting go of
++	 * it. Unregistering the table waits for us and a copy that faults can
++	 * take as long as userspace wants.
++	 */
++	if (write) {
++		error = -EFAULT;
++		if (!copy_from_iter_full(kbuf, count, iter))
++			goto out_free_buf;
++		kbuf[count] = '\0';
 +	}
-+	return fd;
-+}
 +
-+/* one getdents64() into @buf, the names appended to @names */
-+static int list(int fd, char *buf, size_t size, char names[][NAME_MAX + 1],
-+		int *n)
-+{
-+	long ret, off;
-+	int got = 0;
-+
-+	ret = syscall(__NR_getdents64, fd, buf, size);
-+	if (ret < 0)
-+		return -errno;
-+	for (off = 0; off < ret;) {
-+		struct dirent64 *d = (void *)(buf + off);
-+
-+		if (*n < NAMES)
-+			strcpy(names[(*n)++], d->d_name);
-+		got++;
-+		off += d->d_reclen;
++	head = grab_header(inode);
++	if (IS_ERR(head)) {
++		error = PTR_ERR(head);
++		goto out_free_buf;
 +	}
-+	return got;
-+}
-+
-+static int count(char names[][NAME_MAX + 1], int n, const char *name)
-+{
-+	int i, c = 0;
-+
-+	for (i = 0; i < n; i++)
-+		if (!strcmp(names[i], name))
-+			c++;
-+	return c;
-+}
-+
-+FIXTURE(sysctl_readdir) {
-+	int dir;
-+	int n;
-+	char names[NAMES][NAME_MAX + 1];
-+	char buf[65536];
-+};
-+
-+FIXTURE_SETUP(sysctl_readdir)
-+{
-+	if (unshare(CLONE_NEWNET))
-+		SKIP(return, "unshare(CLONE_NEWNET): %s", strerror(errno));
-+	if (access("/dev/net/tun", F_OK))
-+		SKIP(return, "/dev/net/tun: %s", strerror(errno));
-+	self->dir = open(CONF_DIR, O_RDONLY | O_DIRECTORY | O_CLOEXEC);
-+	ASSERT_GE(self->dir, 0);
-+	self->n = 0;
-+}
-+
-+FIXTURE_TEARDOWN(sysctl_readdir)
-+{
-+	close(self->dir);
-+}
-+
-+/* a device registered in front of the position doesn't repeat an entry */
-+TEST_F(sysctl_readdir, register_in_front)
-+{
-+	int tun;
-+
-+	/* ".", ".." and "all", "default" doesn't fit */
-+	ASSERT_EQ(list(self->dir, self->buf, SMALL_BUF, self->names, &self->n), 3);
-+	ASSERT_EQ(count(self->names, self->n, "all"), 1);
-+
-+	tun = tun_open(TUN_NAME);
-+	ASSERT_GE(tun, 0);
-+	ASSERT_EQ(access(TUN_PATH, F_OK), 0);
-+
-+	while (list(self->dir, self->buf, sizeof(self->buf), self->names,
-+		    &self->n) > 0)
-+		;
-+	EXPECT_EQ(count(self->names, self->n, "all"), 1);
-+	EXPECT_EQ(count(self->names, self->n, "default"), 1);
-+	EXPECT_EQ(count(self->names, self->n, "lo"), 1);
-+	close(tun);
-+}
-+
-+/* a device unregistered in front of the position doesn't skip an entry */
-+TEST_F(sysctl_readdir, unregister_in_front)
-+{
-+	int tun;
-+
-+	tun = tun_open(TUN_NAME);
-+	ASSERT_GE(tun, 0);
-+	ASSERT_EQ(access(TUN_PATH, F_OK), 0);
-+
-+	/* ".", ".." and the device, "all" doesn't fit */
-+	ASSERT_EQ(list(self->dir, self->buf, SMALL_BUF, self->names, &self->n), 3);
-+	ASSERT_EQ(count(self->names, self->n, TUN_NAME), 1);
-+
-+	/* closing the device unregisters its sysctls under RTNL */
-+	close(tun);
-+	ASSERT_EQ(access(TUN_PATH, F_OK), -1);
-+
-+	while (list(self->dir, self->buf, sizeof(self->buf), self->names,
-+		    &self->n) > 0)
-+		;
-+	EXPECT_EQ(count(self->names, self->n, "all"), 1);
-+	EXPECT_EQ(count(self->names, self->n, "default"), 1);
-+	EXPECT_EQ(count(self->names, self->n, "lo"), 1);
-+}
-+
-+TEST_HARNESS_MAIN
+ 
+ 	/*
+ 	 * At this point we know that the sysctl was not unregistered
+@@ -624,28 +646,15 @@ static ssize_t proc_sys_call_handler(struct kiocb *iocb, struct iov_iter *iter,
+ 	if (!table->proc_handler)
+ 		goto out;
+ 
+-	/* don't even try if the size is too large */
+-	error = -ENOMEM;
+-	if (count >= KMALLOC_MAX_SIZE)
+-		goto out;
+-	kbuf = kvzalloc(count + 1, GFP_KERNEL);
+-	if (!kbuf)
+-		goto out;
+-
+-	if (write) {
+-		error = -EFAULT;
+-		if (!copy_from_iter_full(kbuf, count, iter))
+-			goto out_free_buf;
+-		kbuf[count] = '\0';
+-	}
+-
+ 	error = BPF_CGROUP_RUN_PROG_SYSCTL(head, table, write, &kbuf, &count,
+ 					   &iocb->ki_pos);
+ 	if (error)
+-		goto out_free_buf;
++		goto out;
+ 
+ 	/* careful: calling conventions are nasty here */
+ 	error = table->proc_handler(table, write, kbuf, &count, &iocb->ki_pos);
++out:
++	sysctl_head_finish(head);
+ 	if (error)
+ 		goto out_free_buf;
+ 
+@@ -658,9 +667,6 @@ static ssize_t proc_sys_call_handler(struct kiocb *iocb, struct iov_iter *iter,
+ 	error = count;
+ out_free_buf:
+ 	kvfree(kbuf);
+-out:
+-	sysctl_head_finish(head);
+-
+ 	return error;
+ }
+ 
 
 -- 
 2.53.0
