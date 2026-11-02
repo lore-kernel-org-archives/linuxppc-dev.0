@@ -2,107 +2,88 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8CE560A5BC0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 10:57:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE80D606A324
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 11:13:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=Pn78X4My
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=C399qxrP
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJ7vc4Rkcz2yTQ;
-	Mon, 02 Nov 2026 21:57:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::430"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793617052;
-	cv=none; b=RTG200RjWVcDRYoojZnWSJDYDHlwsCDkU3zc/sKuaBS6vZSP5dNVoP5QR3DkFBC2wPmvzLf9zVO6L9q3ZBldcu8xWOGfiowoVymQOcC2VCPlSmO028FLAT8NzWMDNbUQmstE12V/MDMgi0S0d2vcrQ47KnsKsJM3iUiL7plvwQ8qNz2bl1r6fHT3vS6ee1kWdrfaje/+m0hQsQb+w3gLcOwCljOa13THnMhJYTZe0DOTlRNwC7r0+Up4e2uO4Pa1nGVun03lWxefPxcT1y+zcB3V1ZB9eKoSplylQ7lKf1nF4HafHlw7S4uyvDyBfzXQHdENtieM4rIo/HIIY8CcJg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJ8GD1v6Dz2xHX;
+	Mon, 02 Nov 2026 22:13:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793618020;
+	cv=none; b=EVhbUd9LEFUnPloIXJN7yCBBmP85yJhsH88OZp+g7IV6cQ/OgZh0IGR5qY7wXHeDCfpS+OlVaDO+A7bplaCOesY0VzGK1Re9UOP75WzVdMT7/3BANSxcjs6tLym1cAr2CgB3FYbtx8+9CwVaTgfVBoRNUkXj9p3kBJ/VbcaRegFbnzn6nqbToAoKTzlHDu4uMIv7Zkbj6Fk8CfoxJKjCpPF0DkaCPkMF7ov/vX3wHYsEn2xi82vYbWMh/T8DOsIiypZxafmO5xucvPBtBm4js/hrWJ+ZnyRWQ/vqamqDcO1CsNsD/CC04KE1jYJABBkXU7BFxesC2ZN4cA0aSW8KoA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793617052; c=relaxed/relaxed;
-	bh=FVUrfemyNnwloOlUvhimVc5x8NpDNzjKpz5CjJJeqrQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=UhV3HLEsnvWp4Fo82MSPJgQWXAlMQldm99sDVJTuDJ4it42aV8kbKDZuSO7PdpwSL4Dm9UBfBFUCfkyhBkfl3p+L38JSMN/jTwSV91UiA2DWg68jss5tHeLT1UQgkjBum9NJ3gZHqyj26ntOEMt7btejsV+pf2/GdSOvQcsmiOamelC6tRxgz7N14864gtn4Gc/n8isv4cdJU0AiGLJmwRYPMBqRPir+I6T1b91ZqKCPXEvuq1sS91cVWZcCXhYdeVHzm78/Q/BLWHvHz4BGNJn5ZwQiVggqa9ioMiyzUB1f1BB4gRvrY+XBIUTjY8PlbRzjEYp4encFJP11VQk9dg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=Pn78X4My; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::430; helo=mail-wr1-x430.google.com; envelope-from=marco.crivellari@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+	t=1793618020; c=relaxed/relaxed;
+	bh=a8Rvs+APlES4o/Y+QNKx+Wsj0zsjMwsSLTHZLYdVhZI=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=B+AG2lp/t3RvzUctnaVG1e+sYiGapLVrj0RuMRMAK7lPyA1b3wfz6V8iRhAW0HtLZ3UrOza9WLgBJ9F7UBtAL/s4fjEkMskXV+xLs9trVYZ+P8hbmiuRFN+MrpviTrTXmaWJYfPTDVd2rCEO7SqE4Cmb3AlRfUTChEV6sf1Gjm4rhEkM+6ZLt4KugZfeeehWZaNYP7ceSwPuinnSBW409re2wwp6mUyzAq5o3VGVVzsRKdh6or2ZlmJApE1CTl7K1RdEwCOCpCDy4m6Gt2nz8wTZ2iA3CrwBSjrcvsxFSDW2dRcI+uU9mZB6g/4f1bpFj9Io3r9MQWhtXodOE0j/Nw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=C399qxrP; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132e; helo=mail-dy1-x132e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=Pn78X4My;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=C399qxrP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::430; helo=mail-wr1-x430.google.com; envelope-from=marco.crivellari@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132e; helo=mail-dy1-x132e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x132e.google.com (mail-dy1-x132e.google.com [IPv6:2607:f8b0:4864:20::132e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJ7vZ2LWjz2yST
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 21:57:29 +1100 (AEDT)
-Received: by mail-wr1-x430.google.com with SMTP id ffacd0b85a97d-48b060ec084so1619803f8f.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 02:57:29 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJ8GB5p3pz2xLh
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 22:13:38 +1100 (AEDT)
+Received: by mail-dy1-x132e.google.com with SMTP id 5a478bee46e88-36a1947498bso1070853eec.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 03:13:38 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1793617041; x=1794221841; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=FVUrfemyNnwloOlUvhimVc5x8NpDNzjKpz5CjJJeqrQ=;
-        b=Pn78X4My407D8567mLQQPACbbbUoEKWQqi2Azz3yUJEf5n5u3PSbfh2iOfM9gw+b9S
-         EOJAXhnQwfxIqz1jXemX9ZHNwqbqI0dc/Flm7h7/eCPwF4Zu/ybGhBGlwEP2uufnLiRq
-         q5kknet8CCmOc0nZf8lRToHXhrnS0KHAXMo7NiR7VeWVmUNIoVVswruv381CY61Zm851
-         +CYQiIaU6yN+qYeuM7oJY42Qn4ZK+VTyNpeQJv4NlnVqB6f7ziuSHHsnBHdxhcKDC+iX
-         md+ogHRRSTkEXFHYj6oPwZrvOYcLcWQm8QZeXa2zobmQ/EMM0gbKbZ2OWqSauzKegl2a
-         hi9A==
+        d=gmail.com; s=20260707; t=1793618016; x=1794222816; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=a8Rvs+APlES4o/Y+QNKx+Wsj0zsjMwsSLTHZLYdVhZI=;
+        b=C399qxrP730TFcKMex/Cytaaf44CEcVnUbOevNctpxcFJcLDTr8z6Or58bT32K3KCK
+         a8NltkSvBiUJqBAEh2oanD8bBNzvzTAFsVkw6SHvTzRIIUfaiPlMHLzgS1bgSA2LLycq
+         tJp0Bf/xEFwE+GV3ilHlep+dfoZHoHCZn28HrjibZZbNVEV7sD6wDGSHmzOoqYjZaEV8
+         E8k2elwEZFueej+cmEPN/aM18fjfY1xlMpONwnvj+LaMnw+wMpYems1SxwmfQrp/osfu
+         vyqoPV6o6dTAjIwWdEUteAsTBh9zcdAt+necLeQfscQsnOtTJ7BBKkrcoyoMQohykW1S
+         I1EA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793617041; x=1794221841;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
+        d=1e100.net; s=20260707; t=1793618016; x=1794222816;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=FVUrfemyNnwloOlUvhimVc5x8NpDNzjKpz5CjJJeqrQ=;
-        b=ZcLaE2wAyLV+B6jZjXDR7g/bDOG6s2wDQRRIwRn6zVWqMDpahdf7Hg+utGt7owoFj2
-         5GANrQOS+dkQwyBKOsJwMK/c4romiYt5GwC+O5Ou38Ydoum+YrZ4WUGviz3PWrv2vycX
-         Sru4gQHo/j8jHY7E43dgAHC2HBR25ng6oywjR+Sx34juAvxLEBua0ZSd/EvVG6gOaje3
-         wkWp2NUz3MjJHGhlIgq7VBHSwMkaz/i4eEJARb4xyPW00WzxLxnyTWWYWEr2MfHb6kME
-         saypDFyxCFwH4P2EsAYc/29ihHCG5CpfMpcd6L77+MqYFFC4ozML1iKiCbL5EldSa5jO
-         sIUg==
-X-Forwarded-Encrypted: i=1; AKwUvBw/f4tgOaCdHvSj5z7jmcvHgtNhzN3Wxfdr3UEwJO/NF6Tb2Q+AaxcF7VILLn+a5CGGK7E0BHCo3TBksOg=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYLUYBADWhSKIOdq3H3W5gOmVd7TXo80/Fj8MVelU9BPVqXL8yME
-	qBbH5N+90CZ57WRyQ8qumOTPnF176il6UBMMKbo8aJQx3N/38XrKTIYgvxIbbirLT/o=
-X-Gm-Gg: AYBFou3WW7/G31+rQQK/I8LrZ2lqMuG5+S30HiFDG9kk+cQYuMfjxASAWOHavWMepdv
-	JCkbgWeswWswE5iA1nGL1WYHiK0C/ml76MH5vMUN0lrPl5fk4A6NNqxq6BlxvC5Pij76W5Yl1lI
-	qVA1+3qxDDt54x+AsysCt1KHDWFLeKqzkKgdUosTGzGsW6TSeOGK6bgLz9bf1Dceo4xC6+sEiz8
-	wGlJM66UaafERmIG6R0+KYC2k16/lZwgVl3deEdDCJG4Saztkv/ddL10kYof16b0n7l1VaovSCr
-	cPuzZipbUiJLaK7HiSaqPf4oeK+Uu/CQua/uwbXJPnGtLA80yGyjNc+GFccLPjoMZrxt/56tjTE
-	MZjFMm0yxoCocDbbw5pmPAvrDFrErFvCXlyhTKTCDImSb9YyIIjXAEjLvnnr3JRiJdI3tTOq1jN
-	N1iE5d5atysI/rxncMWSHDagasS2c6aZdNPuk1ndoVgM7C0lgh7EHMH+kpmQOT+w7DdtFAKOF1t
-	1sNjS9rZQL7AvdZ/vlBpZ9mMmWXdHaDBL3V9LL9AkZJabOuw5DZgKsEWbi9EBiz3WjEhuf4J0gn
-	xULCaPzHAzh2uhXoT0zqXZvWwpcSS46v7iiImOuZ7CYN+dLVPQck
-X-Received: by 2002:a05:600c:628d:b0:4a2:397:73e9 with SMTP id 5b1f17b1804b1-4ac17d1995amr224936715e9.18.1793617041562;
-        Mon, 02 Nov 2026 02:57:21 -0800 (PST)
-Received: from localhost.localdomain ([2a00:6d43:105:c401:e307:1a37:2e76:ce91])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4abeb77af8csm363171175e9.1.2026.11.02.02.57.19
+        bh=a8Rvs+APlES4o/Y+QNKx+Wsj0zsjMwsSLTHZLYdVhZI=;
+        b=RSnxj06bRt0rqXTYFqhiXmxgeZMyL2bGrPlHMAmOhK4DQtow0Vgf3GGpomhTJ+6zqp
+         VSKFgENxUaIoHQae9AsckzPBv0xuDEG6LHst5wjz0iyANJLNB5i8TLCZhFEiNLIJuSCa
+         PjMs4OF+C/JPx9hFy3sBbmwfJ88VU1BUpM3e24DF30pfcT/UhMWVzBU0CBHyC7DUAXWb
+         NwcOlVkQqBoAIvSvnVuUBSrQgOY9dN5FU92K6hjJmgS9goxQ2FiVoqnOPIB7GVkKI0hP
+         7l08jm5rHpUCqPWOnYjDyrq16Am2Na/iveSaxlJvC7lVDhrlXjLvb+8+4p6EirKbcm9e
+         xSDg==
+X-Gm-Message-State: APuU4Z+OBJUr8B09IZzH8QnMIveYTMeXnjtX9cuMC5NLkYyZfQRSpfo8
+	pxsKYa7rAoqSyx5Y/rGDFyxtvI8oO0d306dZ7Evr7KP28b1p2J2FacjN
+X-Gm-Gg: AYBFou1o7SY04gDf00NilXsWX4/qYngr3KERUGvzW5P70GLV9uVz8cdIrJ1brNj/2C9
+	1/MuKB1whpmm4TqwhUL6rec9cNEPiYb3b7FpjaeKkJeJEYpiyCbilIGBfTbRLkKiHWNAyzmYazv
+	2z3hYg8pRXcxqodu+Y2MiyTw2MsxX9+ASESOE/6wuTOwmwHlD32F4PA8MPeL/48BiZ/3imbUAJH
+	4OHNPHa5UCyv8awxkoBKah6JE+CbYarlLeE7nfiJmU6R67Gm5dzSjlQH+hTU4kTY2aLg5kRHAq5
+	zoGy1UEv8K14gm4bJjSDztPTixBXCnm+Tn19SMSWDB2vFqeqv3OdLd3trzdEBUW/fuGompMebmf
+	osB4NZa3a4Y5vb+ylw7fQ9xUSwkvTVokv2cRQv2dBYPcZZaflr3gm5i6Q8beNn93dxZR1P7t0G8
+	/Der7reRyLaV/uqjklivSMpebJw+2XXTorjHyzlesZq+u7M3NZMMMo4t+XktDLIQ9IKhrt8CUfT
+	SH2YsVWLE2IyHnfmv/gq+tfLCdlrwASLJS33B/vKPr3QREMVcTtwkc9qNKO/XTcUzno1Sg90PMC
+	f0q7ZEfWwF8iCl+DedEhN8RjKfk=
+X-Received: by 2002:a05:7300:3b1a:b0:351:52ec:60ee with SMTP id 5a478bee46e88-36a423f04b7mr23743030eec.28.1793618015928;
+        Mon, 02 Nov 2026 03:13:35 -0800 (PST)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36a42902649sm42099651eec.11.2026.11.02.03.13.31
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 02 Nov 2026 02:57:21 -0800 (PST)
-From: Marco Crivellari <marco.crivellari@suse.com>
-To: linux-kernel@vger.kernel.org,
-	netdev@vger.kernel.org
-Cc: Tejun Heo <tj@kernel.org>,
-	Lai Jiangshan <jiangshanlai@gmail.com>,
-	Frederic Weisbecker <frederic@kernel.org>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	Marco Crivellari <marco.crivellari@suse.com>,
-	Michal Hocko <mhocko@suse.com>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S . Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Haren Myneni <haren@linux.ibm.com>,
-	Rick Lindsley <ricklind@linux.ibm.com>,
-	Nick Child <nnac123@linux.ibm.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	linuxppc-dev@lists.ozlabs.org,
-	Mingming Cao <mmc@linux.ibm.com>
-Subject: [PATCH net-next v5 1/6] ibmvnic: Change system_long_wq with system_dfl_long_wq
-Date: Mon,  2 Nov 2026 11:56:51 +0100
-Message-ID: <20261102105703.111844-2-marco.crivellari@suse.com>
-X-Mailer: git-send-email 2.56.0
-In-Reply-To: <20261102105703.111844-1-marco.crivellari@suse.com>
-References: <20261102105703.111844-1-marco.crivellari@suse.com>
+        Mon, 02 Nov 2026 03:13:35 -0800 (PST)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Gautam Menghani <gautam@linux.ibm.com>, maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org, sshegde@linux.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Timothy Pearson <tpearson@raptorengineering.com>
+Subject: Re: [PATCH v5] KVM: PPC: Book3S HV: Avoid spurious interrupts caused by LPCR_MER bit
+In-Reply-To: <20261102091700.253381-1-gautam@linux.ibm.com>
+Date: Mon, 02 Nov 2026 16:42:12 +0530
+Message-ID: <y0bb5vxv.ritesh.list@gmail.com>
+References: <20261102091700.253381-1-gautam@linux.ibm.com>
+X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
+	aws-us-west-2-korg-listserv-alma10-1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -115,91 +96,46 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
-X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
-	aws-us-west-2-korg-listserv-alma10-1
 
-Currently the code enqueues the reset work items on system_long_wq: the
-ibmvnic_delayed_reset delayed work using queue_delayed_work(), and the
-ibmvnic_reset work using queue_work(). This workqueue should be used when
-long works are expected and it is a per-cpu workqueue.
+Gautam Menghani <gautam@linux.ibm.com> writes:
 
-queue_delayed_work() ends up calling __queue_delayed_work(), which, since
-IBMVNIC_RESET_DELAY is non-zero, sets a global timer that could fire
-anywhere, enqueuing the work where the timer fired. queue_work(), instead,
-enqueues the work on the local CPU, i.e. the CPU that requested the reset.
+> A huge number of spurious interrupts can be seen immediately after a KVM
+> on PowerNV guest boots up in XIVE mode.
+>
+> $ cat /proc/interrupts  | grep SPU
+> SPU:     223705     192439     273526     147623   Spurious interrupts
+>
+> This bug was introduced by commit ecd10702baae5 ("KVM: PPC: Book3S HV:
+> Handle pending exceptions on guest entry with MSR_EE"). The root cause
+> is that once LPCR_MER bit is set, it is supposed to be reset by
+> software. But when a vCPU starts running with LPCR_MER set, the vCPU does
+> not exit back to the host until the decrementer expires or there is an
+> hcall, etc. This is because KVM on PowerNV guests have support for
+> native XIVE, so they are not dependent on host for interrupt emulation.
+> Due to this behaviour, a huge number of spurious interrupts are seen
+> since LPCR_MER continues to be set and LPCR_MER cannot be reset until the
+> vCPU exits to the host.
+>
+> Fix this behaviour by not using the LPCR_MER bit whenever native XIVE is
+> available (currently in case of KVM on PowerNV only), as the XIVE hardware
+> can present interrupts to the KVM guest vCPU directly. So the LPCR_MER
+> functionality is not required. This reduces the number of spurious
+> interrupts drastically.
+>
+> Fixes: ecd10702baae5 ("KVM: PPC: Book3S HV: Handle pending exceptions on guest entry with MSR_EE")
+> Cc: stable@vger.kernel.org # 6.8+
+> Reported-by: Timothy Pearson <tpearson@raptorengineering.com>
+> Closes: https://lore.kernel.org/linuxppc-dev/582904882.11159.1786719390349.JavaMail.zimbra@raptorengineeringinc.com
+> Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
+> ---
+> v5:
+> 1. Drop the redundant check for the presence of the native XIVE
+> device. (Ritesh)
+>
 
-Unbound works could benefit from scheduler task placement, to optimize
-performance and power consumption. Long work shouldn't stick to a single
-CPU.
+Thanks Gautam for confirming that.
 
-Recently, a new unbound workqueue specific for long running work has
-been added:
-
-    c116737e972e ("workqueue: Add system_dfl_long_wq for long unbound works")
-
-Since the reset work doesn't rely on per-cpu variables, there is no
-obvious reason that justify the use of a per-cpu workqueue. So change
-system_long_wq with system_dfl_long_wq so that the work may benefit from
-scheduler task placement.
-
-Both work items run the same handler, __ibmvnic_reset(), and every reset
-request is scheduled through the queue_work() call in ibmvnic_reset().
-So convert this call site too, so that all the reset work runs on an
-unbound workqueue instead of the CPU that submitted the request.
-
-Cc: Haren Myneni <haren@linux.ibm.com>
-Cc: Rick Lindsley <ricklind@linux.ibm.com>
-Cc: Nick Child <nnac123@linux.ibm.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Marco Crivellari <marco.crivellari@suse.com>
-Acked-by: Mingming Cao <mmc@linux.ibm.com>
----
- drivers/net/ethernet/ibm/ibmvnic.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index 5a510eed335e..d4c284c8ef43 100644
---- a/drivers/net/ethernet/ibm/ibmvnic.c
-+++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -3229,7 +3229,7 @@ static void __ibmvnic_reset(struct work_struct *work)
- 	if (adapter->state == VNIC_PROBING &&
- 	    !wait_for_completion_timeout(&adapter->probe_done, timeout)) {
- 		dev_err(dev, "Reset thread timed out on probe");
--		queue_delayed_work(system_long_wq,
-+		queue_delayed_work(system_dfl_long_wq,
- 				   &adapter->ibmvnic_delayed_reset,
- 				   IBMVNIC_RESET_DELAY);
- 		return;
-@@ -3267,7 +3267,7 @@ static void __ibmvnic_reset(struct work_struct *work)
- 	spin_lock(&adapter->rwi_lock);
- 	if (!list_empty(&adapter->rwi_list)) {
- 		if (test_and_set_bit_lock(0, &adapter->resetting)) {
--			queue_delayed_work(system_long_wq,
-+			queue_delayed_work(system_dfl_long_wq,
- 					   &adapter->ibmvnic_delayed_reset,
- 					   IBMVNIC_RESET_DELAY);
- 		} else {
-@@ -3454,7 +3454,7 @@ static int ibmvnic_reset(struct ibmvnic_adapter *adapter,
- 	list_add_tail(&rwi->list, &adapter->rwi_list);
- 	netdev_dbg(adapter->netdev, "Scheduling reset (reason %s)\n",
- 		   reset_reason_to_string(reason));
--	queue_work(system_long_wq, &adapter->ibmvnic_reset);
-+	queue_work(system_dfl_long_wq, &adapter->ibmvnic_reset);
- 
- 	ret = 0;
- err:
--- 
-2.56.0
+The patch looks good to me. Feel free to add:
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 
 
