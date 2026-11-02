@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 950C960A381D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 14:22:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24E4060A3813
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 14:23:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=l/9K700W
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kvHRMzqf
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJDSR2Lynz2ySc;
-	Tue, 03 Nov 2026 01:22:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793629367;
-	cv=none; b=UWfTXwbAqzSYt0dmRTxPK5W9gY0xVxTaWIkZhAei/q4nuPR1RI+ouyG0JSFkVzWJm8HSH1/st5J41N9WZSF1/+gqTuTY48wwzwAGbcTF9l62nbXwssa18VYImLs1pd8Q4GaM4aBIfv2ipavCiGFzfqiDT7Y+HHoyHMOJjkEhE2dNTkwWNL9Vf4Mfc6xRF0W/688baT0q5qUMWm7enMyu0LQHo0B+6cS6/N4LOznD4IMF84KmuXCcW/0QA2Iih+3AYiag8gPT4kjBE5k+Zfhrb+jrt1p+HQ3DuEvxQhwDfoh87gwCOlsp0jaRRscN8LUpVjnLtRFvitUnmO3559RODA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJDSk4vXrz2y32;
+	Tue, 03 Nov 2026 01:23:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793629382;
+	cv=none; b=I9t59LN/Cwm4JNJj7BfrtYlNY8CBv4zmhXud2YyRFQIFVJ+Z2+a94vrw+N0H1GU+VH1K1texlfYI4u6exu16I3MI0zoN7dhm7HSuRPKPIWBvEIViOJkW+DVuwSAzbOOVqGAWKWX0nzHv/mcdLyPO9DZrTbifMxyXVGVfgpUubPY336nTe15/jjXlCkFShp20P3KEcvueuKstZAvbRKv46FjS3LCrJIPnhQqbt5eNqOuteVCnLsaV0EzwoQMk/f21moB3F06ycsxFPYqxLga1Krj4J9H6JvhyI/CNRRJCdDQ9SIePidpjFPD0+E3MkWMZPE7sXxvpUkiEtRBcVxPnHw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793629367; c=relaxed/relaxed;
-	bh=bDYBcNUn+VWuCpTwTZF6KvGO9475Dcj2RU9o+tvUNt0=;
+	t=1793629382; c=relaxed/relaxed;
+	bh=WXeWRtHDTvlcvQqGcGXKpHSOkC75TIYAS6cttW7V/+A=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=MK3Er/noV5m1jsygiLhOF6OA70LP8zktuKMf2QW9UAPvOFzYAhuM8tIRyw+VdhYSiIafGymgHRd82cJvL9IzPBvj8EnkgDulOuGkKzadyaGL9dYneeOAa/Ano3NGcsaYTosTjK9u/cZMq68/3HBX6OS0Zz067vypbQfG63MO/ZdIz2SaVQ0E+oukPhhMAzWqaB4EYe6L0koICcFx4wkeSPUrOdIbx/YZMSTIZFB8YMZZWjQkGMHyobxOZtMy/QaqNs5j+XNHypzYwLlKz3kccnJPypAbUrOrI0SBJEJE5QCmprL7dsjwp2Dv/11FSXD/+0uULbTt8/yf6IcgrTOJvQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=l/9K700W; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=XcCJfHLYIJ+ZjH0rijDqvexoC2zDFEkhFWxjOaTCbrWUyRIIH1MLNewrdXbh4cMR4jJX/Mwg8ZRATLtoC/0Hg9Zo9E9/Mpi0C3BdYbQqyzNmHmgHjkNQlBJsdH4gF8VvFi27+ZQ/dxPyFnF4oUtgODybZzi9UVD9EVGxQghEe2sfA8GLqZ2QgHkkJ8lbWRFDWUBqYQCI+16Z0xBdddx5n0WghlHRYarN4e/WrQIGs5hf1tJkVWQ+V/5yRHLRDo1GV+gt7g3ls6SEONld0WoEcl9N+U9pskHHxGjYZurgRvRHj9VJiDvavYWGNR2JUAeEfiiTmTb/upbFgxtxeGZLGg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kvHRMzqf; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=l/9K700W;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kvHRMzqf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJDSQ41NBz2y8m
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 01:22:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJDSj3bJ5z2xwP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 01:23:01 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 08FF1401FF;
+	by tor.source.kernel.org (Postfix) with ESMTP id 09D3C602C4;
+	Mon,  2 Nov 2026 14:22:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 66AA61F00A17;
 	Mon,  2 Nov 2026 14:22:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AC5661F00A18;
-	Mon,  2 Nov 2026 14:22:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793629364;
-	bh=bDYBcNUn+VWuCpTwTZF6KvGO9475Dcj2RU9o+tvUNt0=;
+	s=k20260515; t=1793629378;
+	bh=WXeWRtHDTvlcvQqGcGXKpHSOkC75TIYAS6cttW7V/+A=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=l/9K700WtETbZbiehxECDLdPCEeiiVRA3kxFDmgS/2nKE79+mMwEbcSj3UAdFTEXx
-	 6DvGrmpdgDVXnGX30oyGp8h1wecxAk4jKzxRW9aGPBdJy0OisIoFIZFTfdpRhDfBXZ
-	 KAYYL329Lr/1W5cMHSII0yRN2tcUg68lTIkupTY2K2vtTItr3nAhe86PuUrEx8QrzH
-	 ZRKhA68sEbKxiE5OFQB7qDtLFMKmYizYX4WKQpNV8RKMwbhLf5julp7cLNgPDZarPP
-	 /qEweKu2GyB/uW3f9G490N5UiUnYW1jY6yf/ITOz6Ini0L9UMQPzrnkmfsWQJTfyzK
-	 rW/DJSvgmGkgg==
+	b=kvHRMzqfiFxfaykdXJncqNCKytFOYdWEA6z2XKwrpx1cXAUWC/1f6IelPxZz69lt3
+	 bZzGsPY7tAF+nhMSErY6rPc/3QL/4TA7hlVU8tM89mYfPX9Z6KS6p4IW1PsDrhG0OQ
+	 bkcIKIyEY1GGRPu5UaBXvghHdY/CIfOPJbzAJZHTg7fVeaIOTOcs6v9yzyjdbAXIjO
+	 eLo1eYZ4IN84HHP6CrAMeFl9oPgWiHXBV4hrBwe2eZenA/caTo8Hx2CSrazCqEHP19
+	 DS3uVg+WucdQObp90U98MCzPe1bAhdyoN7eZZYLpOUglkgctnTto/e3gh/m1uyI5m1
+	 KND/LIH3rUy8Q==
 From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 15:21:19 +0100
-Subject: [PATCH RFC 04/38] s390/dasd: don't look in front of the buffer on
- an empty write
+Date: Mon, 02 Nov 2026 15:21:20 +0100
+Subject: [PATCH RFC 05/38] platform/x86: toshiba_acpi: reject malformed
+ brightness and fan writes
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-bugfixes-v1-4-59422ed3e465@kernel.org>
+Message-Id: <20261102-work-procfs-bugfixes-v1-5-59422ed3e465@kernel.org>
 References: <20261102-work-procfs-bugfixes-v1-0-59422ed3e465@kernel.org>
 In-Reply-To: <20261102-work-procfs-bugfixes-v1-0-59422ed3e465@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -99,12 +99,12 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
  "Christian Brauner (Amutable)" <brauner@kernel.org>, 
  Chuck Lever <cel@kernel.org>, stable@vger.kernel.org
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=952; i=brauner@kernel.org;
- h=from:subject:message-id; bh=vNxDJDpmoyfXJahneUuQ9vEH9eL70g/8w71rNTJgUxc=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9mJM1jeXQ3NW7/xZeaxDpdlGIUkjat+D7tG9pahOcr
- AOsJk6611HKwiDGxSArpsji0G4SLrecp2KzUaYGzBxWJpAhDFycAnCRCYwMn44HG9tefO3daCl/
- zObZjudV2/8stZoz4eUdbl4NjbdfLRkZLu1okv36OdkxUVB7scSNP4VzvOQn7V+ZlPZqvbKOm44
- /IwA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1850; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=dBPyRrfA4AE5uU+SDwP01KQAXBYhly7L9ZsRpXHhzrM=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9mJP1X33fLpsJXpWBaifTEsT2SLto6RSE/d33f+fli
+ mfvjj3d3lHKwiDGxSArpsji0G4SLrecp2KzUaYGzBxWJpAhDFycAjCRafMYGSYH7L886UKoRuDq
+ G9c+FRp4acs2loQbL5Kbz/ZCoj25bhYjw/4HhzpE/VP23N4kdd2x9P4SBZmAjRbxpyfu2bkqlD9
+ 1GTMA
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -115,30 +115,49 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-dasd_get_user_string() strips a trailing newline by looking at the last
-byte that was written. For an empty write that's the byte in front of
-the buffer it just allocated. Only look if something was written.
+When lcd_proc_write() and fan_proc_write() were refactored their checks
+were inverted but the && stayed. They only fail if sscanf() didn't
+parse anything and the value is out of range at the same time, and for
+the brightness value < 0 && value > levels can't be true at all. So an
+out of range brightness or fan setting is passed on to the hardware,
+and so is the uninitialized value if nothing could be parsed.
 
-Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+Restore the checks as they were before the refactoring.
+
+Fixes: e1a949c1b988 ("toshiba_acpi: Refactor *{get, set} functions return value")
+Fixes: 3e07e5baa2af ("toshiba_acpi: Add set_fan_status function")
 Cc: stable@vger.kernel.org
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- drivers/s390/block/dasd.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/platform/x86/toshiba_acpi.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/s390/block/dasd.c b/drivers/s390/block/dasd.c
-index 2ffe404b890f..e97891e58957 100644
---- a/drivers/s390/block/dasd.c
-+++ b/drivers/s390/block/dasd.c
-@@ -933,7 +933,7 @@ char *dasd_get_user_string(const char __user *user_buf, size_t user_len)
- 		return ERR_PTR(-EFAULT);
- 	}
- 	/* got the string, now strip linefeed. */
--	if (buffer[user_len - 1] == '\n')
-+	if (user_len && buffer[user_len - 1] == '\n')
- 		buffer[user_len - 1] = 0;
- 	else
- 		buffer[user_len] = 0;
+diff --git a/drivers/platform/x86/toshiba_acpi.c b/drivers/platform/x86/toshiba_acpi.c
+index a0b8060836d0..9eb8f1e5aeda 100644
+--- a/drivers/platform/x86/toshiba_acpi.c
++++ b/drivers/platform/x86/toshiba_acpi.c
+@@ -1498,8 +1498,8 @@ static ssize_t lcd_proc_write(struct file *file, const char __user *buf,
+ 	cmd[len] = '\0';
+ 
+ 	levels = dev->backlight_dev->props.max_brightness + 1;
+-	if (sscanf(cmd, " brightness : %i", &value) != 1 &&
+-	    value < 0 && value > levels)
++	if (sscanf(cmd, " brightness : %i", &value) != 1 ||
++	    value < 0 || value >= levels)
+ 		return -EINVAL;
+ 
+ 	if (set_lcd_brightness(dev, value))
+@@ -1678,8 +1678,8 @@ static ssize_t fan_proc_write(struct file *file, const char __user *buf,
+ 		return -EFAULT;
+ 	cmd[len] = '\0';
+ 
+-	if (sscanf(cmd, " force_on : %i", &value) != 1 &&
+-	    value != 0 && value != 1)
++	if (sscanf(cmd, " force_on : %i", &value) != 1 ||
++	    value < 0 || value > 1)
+ 		return -EINVAL;
+ 
+ 	if (set_fan_status(dev, value))
 
 -- 
 2.53.0
