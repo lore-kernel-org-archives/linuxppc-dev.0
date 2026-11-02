@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98E85608360E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:26:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52773608362F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:26:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LPntUaej
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nYBs0GAF
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFt32dN1z3dWl;
-	Tue, 03 Nov 2026 02:26:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFtS0WX9z3bcj;
+	Tue, 03 Nov 2026 02:26:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793633195;
-	cv=none; b=jv5Avx19oHBwIyNcnVWPC4tUTfiAY+kS9nEA5nO3+jMNDIZCAyLsiUpQaKAkWhBQ402xx8mdJUWAu4GtnaRgKMFroeA4al7hDsgED0mk3EUf+O2N0DdHYHgyXa4wPby9QDwzfDhC7Q8wkRYRCgYEDQxNeM5y2g+YTxd3vb/N44eixIidTTdnAe2bRI8D0FJKhEa8Vd3rlRL8SI96QXjt+upWDzDcSqhINVcnExjg2pORuAGct+KAOCRqhHRkc45g2nfFIHjixEYuDuZtLcnU20kFlQbc33xRfyFByyxJJhMcS93j5HpW79j+GXjSWBCiTdSZoTE2CTJHuzCzuJmAbA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793633216;
+	cv=none; b=BKSc5UDC8M6oUvQivOH8Z56/OpGVka3ifFrkhn/+XTBpyUYA1HzkcvwKbc9pNNvRL4HgoPk49XYCTszoWhJeSzw0y7tgbgWBge6ACj6siyM3OnYX6nTFJWulkSgHNvwS4vd/kIaXJ2M7d9wq8dQZcap5tuPIkiRou7x3grataJwpH5f2LZn+wBnksN9cQFkT9hTLHG38juLqPYk7plYGXEvUlaG5OGaP3wG/1zc/2T45J8bvrek/m1nhmOVt5O5iL3N96dRu1nv3jc+CKFo/9vD8kB4x/Bhf4aQc9wenLJt4gNkV3M9zyitQkc7aO+bbDAGgx2qoExvF3myETH0TMg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793633195; c=relaxed/relaxed;
-	bh=R1VqjUGL5+J0t5hj5seZeRe1Maiv3S9hp7Jj5OG0/0s=;
+	t=1793633216; c=relaxed/relaxed;
+	bh=5GRAUZH2kX1HsIdPeFBozE83iEr60/LUxZUEqoYcqBA=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=oNS2pPCoU8UhFrU2SwedZCPUFtsvTGJNNJmSwoLlWFIxG3QRvzObgiDT45lxLEul/ftx0M3SIW5Q94szixk+l9Qv+rWlTl0uwIULcDlEf/aeM0S6Jgx7jtyQwLxAO+Y7kwk+c0DeP0/acoAEOwtMNTwcJCfvLOlPq6+AdY4wS/E4p90a98Tpeqi5g+GjILbxPFnga1MXbmTx3FcPa0Jdh4hdWy9voGiCvLw0i/Sx743WdfEWFBW1/vo3g4HCfm5JJT8AYGbRHTGgFpV7ii6v0WRwFdF+aQ5xJa5bA8HuvPW2DvceNWlxeBiidfuU/WlvrGggy6uLRejwG4r734mmqg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LPntUaej; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=LFX911waTMm1Z1AuDzAnFZppwoCt5r8Xm2SOU1dwzvBcqMyHMprwRQojHSdde7hMWgFNzmPUg9RXeTw16DO/dAdn0+XqBdJYQVuEw8Q1TNpMHYuU04S0KuZkJXq9mjKnpDo6OSVZSw4laEdNNj88UZ8IkbnCkU6LmE2pZUNq2t4bNaeHUkqh33vQdgkNrHbHF/mc+t+LupK4nr1Ek+eT//r/V/KeVsvUlYcbP1TAFrg0cG1r1CM8Fyc+6Fp0EJjBZdUydE0JVPuspHH1J8O2sP8f4Q8BuYh4SrUd3MYDisFz/zMtStUHBkpED3JPg5Awz27E+0WNyXyDSvXNbmiFXw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nYBs0GAF; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LPntUaej;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nYBs0GAF;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFt243MCz3dWH
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:26:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFtR27Fmz3bSw
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:26:55 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 0F5CF419A5;
-	Mon,  2 Nov 2026 15:26:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3D7DB1F00A16;
-	Mon,  2 Nov 2026 15:26:16 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id C642B404E4;
+	Mon,  2 Nov 2026 15:26:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 96FDA1F00A16;
+	Mon,  2 Nov 2026 15:26:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793633192;
-	bh=R1VqjUGL5+J0t5hj5seZeRe1Maiv3S9hp7Jj5OG0/0s=;
+	s=k20260515; t=1793633213;
+	bh=5GRAUZH2kX1HsIdPeFBozE83iEr60/LUxZUEqoYcqBA=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=LPntUaejzzAUOTRvUNS0Y1GMbnPApCWQqcTwI13UUCKXze90UPLxxpRnGW90okaRN
-	 /SIo51jvsTdg8UsLHm4uePjBeYyLPk3KVJ4wuqLBYJhjSGrlhysCaMmn5I/CkJ1pd9
-	 ZHTI/3+dLOQ6JzTqFxt6SjCj+4pjEdhhbPGoo6W+bAjQGlPVV4SQHQDv7/I/vWQIJ6
-	 /fi/xyM0dOZwYg9ycwAhjjdk4lSHA97j+wFr9FXI3WUCvPAnDgHJoyNjjrjgyn1Ef4
-	 i8wvejafrNc0aiVo0X6lBeVv6XILV8EgxhSfBWL+BkF8M9XALmyKKUOR1IJtwGwMO0
-	 zz5ZY6ZT8QG2Q==
+	b=nYBs0GAF8b3S0eatIZoAhddTaBQQ/i0CrcM92EglgsZZbWpy731ExatrOh40qewLF
+	 Lp8S7Rrut+eO6q6LdIfOUD8IT/maYnyF1DBExnOFJG7mwcNuHGN5jv9pNZ9AuWREId
+	 lnOMTthrQoRObRBolVjhYcHCSAlAi4r+kE39L/TCDTKs5S84hkUHNI6KoriDtYwBpI
+	 U0fE3C6vht9Hwk8FIpEHBtzNae5orDp4ap1DfxmedQEVe2FH237hpiNUepRwcWVPa9
+	 eKW1KUqWkYD6wrjns7QIlZcwyB9vCaN2c35pIVU6Iu87SgiaL5+rLK2WDEDvulHZL8
+	 tBantGPOqqkGQ==
 From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 16:07:29 +0100
-Subject: [PATCH RFC 19/27] kallsyms: let procfs own the seq_file of
- /proc/kallsyms
+Date: Mon, 02 Nov 2026 16:07:30 +0100
+Subject: [PATCH RFC 20/27] module: procfs: let procfs own the seq_file of
+ /proc/modules
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-fs-v1-19-d09a996317b3@kernel.org>
+Message-Id: <20261102-work-procfs-fs-v1-20-d09a996317b3@kernel.org>
 References: <20261102-work-procfs-fs-v1-0-d09a996317b3@kernel.org>
 In-Reply-To: <20261102-work-procfs-fs-v1-0-d09a996317b3@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -99,12 +99,12 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
  "Christian Brauner (Amutable)" <brauner@kernel.org>, 
  Chuck Lever <cel@kernel.org>
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1331; i=brauner@kernel.org;
- h=from:subject:message-id; bh=X1hXUo+P6dAEkQI4HVxBka/iuP3neD063cymPGxvXEU=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9WG7E86Wn6bItX8PRGc932QRueyvG/7r7fdz1LQabT
- jt31lYxdZSyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAEwkdQkjQ2/ojiqupX4S/zNi
- eAuad2pzvL4hu4l32d2bRa7rPvysnMjIcOC061HJ9ce7zeXr+fWZln6azCZ4Zf56HXH9smbnqy8
- vsQMA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1665; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=flwsY9W3AwD1el1fvMS4MRjAzw7empBDyCTwiYsv/MA=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9WG50+lPbWr8TO3/XJX642z+55KDeRh0pIW9bi1VZ/
+ MvKft0s7ChlYRDjYpAVU2RxaDcJl1vOU7HZKFMDZg4rE8gQBi5OAZiIpwUjwwyex5oMWjNmXVW1
+ TDi5fH3+9vUsj5XnVPa/nJM/5XDQTDNGhsPvYp7dK/9aPKFSfO5H07Jd/XPz+O2FRZWOr7PQyLs
+ rzAIA
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -115,46 +115,56 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Declare the seq_operations and the size of the iterator and let procfs
-open and free the seq_file. ->proc_open() only initializes the iterator
-now.
+Declare the seq_operations and let procfs open and free the seq_file.
+->proc_open() only decides whether to hide the addresses now.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- kernel/kallsyms.c | 12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
+ kernel/module/procfs.c | 19 ++++++-------------
+ 1 file changed, 6 insertions(+), 13 deletions(-)
 
-diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
-index aec2f06858af..2d309fcee730 100644
---- a/kernel/kallsyms.c
-+++ b/kernel/kallsyms.c
-@@ -888,10 +888,9 @@ static int kallsyms_open(struct inode *inode, struct file *file)
- 	 * s_start from where we left off, so we avoid doing
- 	 * using get_symbol_offset for every symbol.
- 	 */
--	struct kallsym_iter *iter;
--	iter = __seq_open_private(file, &kallsyms_op, sizeof(*iter));
--	if (!iter)
--		return -ENOMEM;
-+	struct seq_file *m = file->private_data;
-+	struct kallsym_iter *iter = m->private;
-+
- 	reset_iter(iter, 0);
- 
- 	/*
-@@ -923,10 +922,9 @@ const char *kdb_walk_kallsyms(loff_t *pos)
- #endif	/* CONFIG_KGDB_KDB */
- 
- static const struct proc_ops kallsyms_proc_ops = {
-+	.proc_seq_ops	= &kallsyms_op,
-+	.proc_state_size = sizeof(struct kallsym_iter),
- 	.proc_open	= kallsyms_open,
--	.proc_read	= seq_read,
--	.proc_lseek	= seq_lseek,
--	.proc_release	= seq_release_private,
+diff --git a/kernel/module/procfs.c b/kernel/module/procfs.c
+index 90712aa9dd13..a759bd916df7 100644
+--- a/kernel/module/procfs.c
++++ b/kernel/module/procfs.c
+@@ -117,31 +117,24 @@ static const struct seq_operations modules_op = {
  };
  
- static int __init kallsyms_init(void)
+ /*
+- * This also sets the "private" pointer to non-NULL if the
+- * kernel pointers should be hidden (so you can just test
++ * procfs opens the seq_file. This sets the "private" pointer to non-NULL
++ * if the kernel pointers should be hidden (so you can just test
+  * "m->private" to see if you should keep the values private).
+  *
+  * We use the same logic as for /proc/kallsyms.
+  */
+ static int modules_open(struct inode *inode, struct file *file)
+ {
+-	int err = seq_open(file, &modules_op);
++	struct seq_file *m = file->private_data;
+ 
+-	if (!err) {
+-		struct seq_file *m = file->private_data;
+-
+-		m->private = kallsyms_show_value(file->f_cred) ? NULL : (void *)8ul;
+-	}
+-
+-	return err;
++	m->private = kallsyms_show_value(file->f_cred) ? NULL : (void *)8ul;
++	return 0;
+ }
+ 
+ static const struct proc_ops modules_proc_ops = {
+ 	.proc_flags	= PROC_ENTRY_PERMANENT,
++	.proc_seq_ops	= &modules_op,
+ 	.proc_open	= modules_open,
+-	.proc_read	= seq_read,
+-	.proc_lseek	= seq_lseek,
+-	.proc_release	= seq_release,
+ };
+ 
+ static int __init proc_modules_init(void)
 
 -- 
 2.53.0
