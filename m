@@ -2,52 +2,69 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 91AD3606B0D7
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:34:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 706DF608B068
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:34:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=I3018NSM
+	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=R2n+Hqqi
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJG312FMkz3f5q;
-	Tue, 03 Nov 2026 02:34:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793633661;
-	cv=none; b=bhEABK5LtL/YBayhfMSJlUw//2FgALWD/DDKgqFDP27OgvgHOLT8/YC56xo7nOk+YPUuSlZXg9rXgvbCeA57S25WH3GwH+Cd6GetR0ZJ4Jo2vJNRHp9va9lMmx1OReAag1r3y8OcPCAuYyagDVZ8hJPZX6/MziFOaeQ3lG4KzUX9D3GZeFhhjZMwh+ojGFwnSF9A4O4+nfD+pxe3c1xRJmULGFYl5EdStni68MLolaavTy9VAcqHQPPSKyqP+vF+uexqDVcLXdiyI+AV3U/SJ4aQtosfhXDex+vvkL44ysyc6mEiSNBdI29tH2RQPutUqv7q++220EvHyi0W9TWGaA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJG3J1PLlz3f6s;
+	Tue, 03 Nov 2026 02:34:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1045"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793633676;
+	cv=none; b=AwyR6hWQTibaBRDnFWW1lqrgbEjkr5dfdd98yO+UuKg02DOuYlo1tHXivAhJ9g2KIpngyliLWZUp/oXkESr3UuwAbgFz972R7CB3UWkPv9DtF1t7U0OPlfuS2EjuvznLbPSRd0JHN0nOb5JIdMzyKcbCsdML8ujwBmaW1iQD3W5qpTHZjHoNM1E0sfamLGm/fYgdAz9IEbBeISqMbf2TU2LtWNpUHLBwbPPBMEEMQWWlcr+1/F2DWw2jidEiaWY4kEipIbeoaP8JEaWze5+i6Rh/9mkH0O5FsfFULX3Kz5mcRkzb/eHqRMm/nvOjCkQZtDa1O2s9Gy1yIJONpad/fw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793633661; c=relaxed/relaxed;
-	bh=qehvQbejNsYpKxVFyBI5cuXL4HJf/COjdUqE20q/KJk=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=fUyvbPxalLWMxGwlRXPCSOwcBhCg5utP05/eTwLWni+HplwsG0T3d7pkW+NE81BDlxo2P5n3bzuIxkRhE0VmOGbJmBSiwcWfyBg9CkNkt+m82IYtd5umlNMDSU9xhj5JNmgJEAYpkY5ejIoC4vPnxHbjfFqMG4pAhBDrinxM3Ky0PM9twATc2xbGFneXKo+3cgG0OopXkO79PdFJS9wPxUXqA5GidHj/GLhMJGLtV+YIDO5hCXQEuzFH1I2v3je/IEYV2ef9UGI55Iwc87YAXPE4+ObnYn+3IqyyodclZT/9RcbFgG9ccHuydZWlOPX04Nv3oYPDt1HVUzRTUj8nBg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=I3018NSM; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1793633676; c=relaxed/relaxed;
+	bh=s4vRCplgEoCQN3eUv6q9zSWbIbV1TXU7YJjG5+iZQYY=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=B1NTi2YY5wWwx4d3zDibC7g99GFAUw6k528jJAOi64l+F3hYQGNP5lg5HdN5mnNsyyXOJxS/JbbzUAMwfhAw4oZqwautcuBXSt4c/jOmE7MctgB/Dbu+8MQ481+Y4z722aEWurz7dQPXecdZUmH0uUlpdS6PVYRdnmTGLklx8dTIV8UyvhQfIDbC6Vkhb9GzZd3EV8kDJHxufzNyiEENpXUjXLMfhNNWhY3UFRkO6FxbrB0N/fpxPYMe5DE/7dZ2zYHCd1EQztgLAIbc+YqeQYUeapkR1anfOyd3ZU9/Trx0QK6Kz1fTgm1gUPZhfkr3Ty/Sf1V0UMok22ZX359BTg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=R2n+Hqqi; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1045; helo=mail-pj1-x1045.google.com; envelope-from=3ia3oagykdoqykgtpimuumrk.iusrotadvvi-jkbroyzy.ufrghy.uxm@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=I3018NSM;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=R2n+Hqqi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::1045; helo=mail-pj1-x1045.google.com; envelope-from=3ia3oagykdoqykgtpimuumrk.iusrotadvvi-jkbroyzy.ufrghy.uxm@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1045.google.com (mail-pj1-x1045.google.com [IPv6:2607:f8b0:4864:20::1045])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJG30327Hz3f5m
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:34:20 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 85AB76060E;
-	Mon,  2 Nov 2026 15:34:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 145791F00A18;
-	Mon,  2 Nov 2026 15:33:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793633658;
-	bh=qehvQbejNsYpKxVFyBI5cuXL4HJf/COjdUqE20q/KJk=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=I3018NSMJ3JeeEZNHYpZOzTSTVjGE8V8mC3rxWyFrnFm/O6e0BQPqvYOSnqdWvMzS
-	 FhRSnHG1Pz7M0jO3MB5OdMthxumcYZHGwgiesNL3clkwgcHDbIz9ja6O+6lu5gGJLA
-	 PzRRVogMLoBdbC/vCygybRlSjZMHZHAZaGNWRN3uCoSd+5c4+7VtRVNL7l73qL+q+I
-	 R83v2alIXJL0sOz6U1nmnu9cdG/yNEzCQaZx+lsQYDDUzsXFMYUp8cWRAgyEt0tsOr
-	 4L2nbLK8eTjSuQksbl4N5zsJeumCILIO4kqk140gii9/aZ6MFm+VMeLb271ZSnrk1N
-	 d4I4WeWG/J0hg==
-From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 16:07:23 +0100
-Subject: [PATCH RFC 09/11] SUNRPC: drop the ioctl of the procfs channel
- files
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJG3H3FdJz3dPs
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:34:35 +1100 (AEDT)
+Received: by mail-pj1-x1045.google.com with SMTP id 98e67ed59e1d1-3ac8f449d1bso2537074a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 07:34:35 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20260707; t=1793633673; x=1794238473; darn=lists.ozlabs.org;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=s4vRCplgEoCQN3eUv6q9zSWbIbV1TXU7YJjG5+iZQYY=;
+        b=R2n+HqqiCqTM7X37a1PgE/+wAgUjBeKHsHTmaSkXBA5nKRTqjrlNyiX9ERBto6Ka+3
+         yG1bLKNx3Rw2SjHb+ZTCftWcrxJuT/p24RbBsLCG82PMcPnPeJO+0oRf0dGNQMGtCyws
+         abT+DdxLKQjUpAzcPn3+YUOjEIsHUDYEiYgZqMEm3pTcsEahiFr67xa3F72KnUSdeSWE
+         W+tYjRzQNLZqfGWugnoDWV/VueR0QzVOW+xTg6GXXQIBiQqHmrI8I3HcZucDQuPZutA5
+         uWxAnLXJ1243yKGEli3yk0Kjwq2rNSn9PNaTJUHN8m2Jx+g1KObMD2AJi6Uv6V0qQwT2
+         tbdA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793633673; x=1794238473;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=s4vRCplgEoCQN3eUv6q9zSWbIbV1TXU7YJjG5+iZQYY=;
+        b=cb1oBzfSurlSC74GyctoUVH0TqNklQ+XFMGe2a72JLd1AGhzuoOS6HA6bmPN2Ycezg
+         BYu5oYVEc9P9ReZEeab6PK1fjqEdIhshPH4NL5R0oMkAlb6ibvuB3mWr743n9/xIgvCC
+         5vk5SfMHaWmoNSoWNTwosjSdDOTL0fco2StCcXIVIlnPXPvNfe4DgGOIXoe2iYUmEZEo
+         OBHvNho5+s3hniZHZamcaFrVnQ8+sCwcuMv+vSFWE42wpuiUXVTdJ1VFgWZes5L1IwJD
+         9AG8I9/Bs33EDnnzf3Y4yFj+3E+UbrvKmV3v0XASLa5PuthM8moWhh28N7NbC3t8UMJL
+         czmA==
+X-Forwarded-Encrypted: i=1; AKwUvByB/MT1yGoBeJjex/CedZIpH7UH9OnJKYv+cC9O3McqW+1r+mfCm1hfljXVPn8Ans8XcuOBFHnM7esDeqs=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z8kMR7nyLqo82M3rXXg3cp5e1mSQC7ZkaRyGHJEO4vlxx3pX9gm
+	MklPnP23esBe/TZwv75neVj+rdO5Wdh2Qb1yehoOWEOTSevom2Yhglmx5sTQCINV8sJOYH/Rllr
+	t1IRepA==
+X-Received: from pjso1.prod.google.com ([2002:a17:90a:c081:b0:3a8:211b:6c8b])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:2749:b0:3ad:43c1:7d41
+ with SMTP id 98e67ed59e1d1-3ae897429b9mr7590262a91.33.1793633673063; Mon, 02
+ Nov 2026 07:34:33 -0800 (PST)
+Date: Mon, 2 Nov 2026 07:34:32 -0800
+In-Reply-To: <20261102153228.240804-H-seiden@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,104 +77,46 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-net-v1-9-982104a4f592@kernel.org>
-References: <20261102-work-procfs-net-v1-0-982104a4f592@kernel.org>
-In-Reply-To: <20261102-work-procfs-net-v1-0-982104a4f592@kernel.org>
-To: linux-fsdevel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, 
- Jann Horn <jannh@google.com>, Josef Bacik <josef@toxicpanda.com>, 
- Chris Mason <mason@kernel.org>, Jeff Layton <jlayton@kernel.org>, 
- NeilBrown <neil@brown.name>, Eric Dumazet <edumazet@kernel.org>, 
- Thomas Gleixner <tglx@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>, 
- Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@lst.de>, 
- Greg Kroah-Hartman <gregkh@suse.de>, 
- Joel Granados <joel.granados@kernel.org>, Kees Cook <kees@kernel.org>, 
- Jan Kara <jack@suse.cz>, Jan Kara <jack@suse.com>, 
- linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org, 
- linux-acpi@vger.kernel.org, linux-kselftest@vger.kernel.org, 
- linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, 
- linux-um@lists.infradead.org, linux-wireless@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, 
- ntfs3@lists.linux.dev, platform-driver-x86@vger.kernel.org, 
- coreteam@netfilter.org, kexec@lists.infradead.org, 
- linux-pci@vger.kernel.org, linux-sound@vger.kernel.org, 
- netfilter-devel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
- ibm-acpi-devel@lists.sourceforge.net, jfs-discussion@lists.sourceforge.net, 
- linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-cifs@vger.kernel.org, linux-fbdev@vger.kernel.org, 
- linux-hwmon@vger.kernel.org, linux-mm@kvack.org, linux-sh@vger.kernel.org, 
- linux-usb@vger.kernel.org, samba-technical@lists.samba.org, 
- sparclinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
- linux-doc@vger.kernel.org, linux-serial@vger.kernel.org, 
- linux-atm-general@lists.sourceforge.net, Takashi Iwai <tiwai@suse.de>, 
- linux-input@vger.kernel.org, linux-raid@vger.kernel.org, 
- linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org, 
- linux-debuggers@vger.kernel.org, 
- "Christian Brauner (Amutable)" <brauner@kernel.org>, 
- Chuck Lever <cel@kernel.org>
-X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1522; i=brauner@kernel.org;
- h=from:subject:message-id; bh=Ud9Y4QQyL+X4JWta5uPxcGegk5a98S++PodDMQ4oF1M=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9WG7S/nf10r1xa3IYtmm0TBAouXddfcmhZUb+it52U
- 20nX9pxoKOUhUGMi0FWTJHFod0kXG45T8Vmo0wNmDmsTCBDGLg4BWAi4WcYGXpLayZN/hhya+/z
- ysCf6/y1yhbKurD+W7OU58ipKVLTDMUYGc6eCmt4GKApJHKg5Ubmioa6i3H1f+olLqZ4VW318Nh
- xigUA
-X-Developer-Key: i=brauner@kernel.org; a=openpgp;
- fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+Mime-Version: 1.0
+References: <20261028190259.1819571-1-seanjc@google.com> <20261028190259.1819571-2-seanjc@google.com>
+ <20261102153228.240804-H-seiden@linux.ibm.com>
+Message-ID: <auitiPKnFueBJzPA@google.com>
+Subject: Re: [PATCH 1/7] KVM: s390: Drop unused and unreachable kvm_arch_vcpu_should_kick()
+From: Sean Christopherson <seanjc@google.com>
+To: Steffen Eiden <seiden@linux.ibm.com>
+Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, 
+	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
+	Huacai Chen <chenhuacai@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Paolo Bonzini <pbonzini@redhat.com>, Fuad Tabba <fuad.tabba@linux.dev>, 
+	Joey Gouly <joey.gouly@arm.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, 
+	Zenghui Yu <yuzenghui@huawei.com>, Nicholas Piggin <npiggin@gmail.com>, 
+	Atish Patra <atish.patra@linux.dev>, Alexandre Ghiti <alex@ghiti.fr>, 
+	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, 
+	kvm@vger.kernel.org, loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org, 
+	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	Stefan Teodorescu <fane@google.com>
+Content-Type: text/plain; charset="us-ascii"
+X-Spam-Status: No, score=-13.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=4.0.1
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_IN_DEF_DKIM_WL
+	autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-do_vfs_ioctl() answers FIONREAD for regular files with i_size - f_pos
-before it gets to the file's ->unlocked_ioctl(). The channel files are
-regular files, so cache_ioctl_procfs() has never seen FIONREAD and only
-ever failed other commands with -EINVAL. Drop it. Other commands fail
-with -ENOTTY now.
+On Mon, Nov 02, 2026, Steffen Eiden wrote:
+> On Wed, Oct 28, 2026 at 12:02:53PM -0700, Sean Christopherson wrote:
+> > Drop s390's kvm_arch_vcpu_should_kick() stub as the one and only call site
+> > is wrapped with "#ifndef CONFIG_S390".
+> 
+> In the somehow near future I'll remove those #ifdefs and use the kick
+> stuff for kvm_arm64. The native s390 KVM then must at least keep an
+> (unused) symbol at hand. It seems that the compiler could not optimize
+> those calls away. So let's keep it there so I do not have to re-add it
+> soon.
 
-The rpc_pipefs channel files are regular files as well.
-
-Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
----
- net/sunrpc/cache.c | 10 ----------
- 1 file changed, 10 deletions(-)
-
-diff --git a/net/sunrpc/cache.c b/net/sunrpc/cache.c
-index 81a3f0068f36..d242b6f33cbc 100644
---- a/net/sunrpc/cache.c
-+++ b/net/sunrpc/cache.c
-@@ -1596,15 +1596,6 @@ static __poll_t cache_poll_procfs(struct file *filp, poll_table *wait)
- 	return cache_poll(filp, wait, cd);
- }
- 
--static long cache_ioctl_procfs(struct file *filp,
--			       unsigned int cmd, unsigned long arg)
--{
--	struct inode *inode = file_inode(filp);
--	struct cache_detail *cd = pde_data(inode);
--
--	return cache_ioctl(inode, filp, cmd, arg, cd);
--}
--
- static int cache_open_procfs(struct inode *inode, struct file *filp)
- {
- 	struct cache_detail *cd = pde_data(inode);
-@@ -1624,7 +1615,6 @@ static const struct proc_ops cache_channel_proc_ops = {
- 	.proc_write_buf	= cache_write_procfs,
- 	.proc_write_size = CACHE_DOWNCALL_MAX,
- 	.proc_poll	= cache_poll_procfs,
--	.proc_ioctl	= cache_ioctl_procfs, /* for FIONREAD */
- 	.proc_open	= cache_open_procfs,
- 	.proc_release	= cache_release_procfs,
- };
-
--- 
-2.53.0
-
+Please read the rest of the series.  kvm_arch_vcpu_should_kick() goes away
+entirely.
 
