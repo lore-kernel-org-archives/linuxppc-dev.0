@@ -2,78 +2,72 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 366E4606A327
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 09:17:23 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F006606A329
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 10:54:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nXhyDQkC
+	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rtGdzWjE
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJ5h14GMQz2yKn;
-	Mon, 02 Nov 2026 20:17:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793611041;
-	cv=none; b=jXbjjGRbLTg/13WCiymvvw4xGbaejNXSlz8M5ZT3mGOf5Bp20yhnTk3QsTOt1B27/gUbpSa0G+4H7G5NUKwfjzyIxUKgZVCeDHb1AyBZyujfSoxSvoBVV3hgYhRX5luTkeZXfjekzJHtgbV6daECeeJxvRdNmTa/r7yHJDxYzN3qIKyEI1FneDlCTU+NmsCiGZj1qR/II1LCfvz+JA1a4MxTdJ/t4LwkxWrLV8HTEiTMSSrPZaRQ4NdZ4uy04RBbUOE7Et6VqvepyPNd3lOh+X/O80hrtzR0Rc+a7a+BmJ8dw8XFTgQ7KjiwOfsCV7eWNNsXTD/FORk1RkmeucTsIg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJ7qm4rt3z2yTQ;
+	Mon, 02 Nov 2026 21:54:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793616852;
+	cv=none; b=ZoH77j80mobwHB64PY0t/yU08fJmcqnrZk6hUVGF9Ov6z66wEg6jx5QWiDb8Gd6UTkGC55b19q52rC/RXIXf4xEl7X7N9cPgiOP1ZLO2WX6okxXTTCs8BmIEDPFQjGhd1zMzQ+9Cs9xDMN4RdYtNWHqafCp700rNL8bXIKc9EO2FaXbHROV+4y+/pm4CDk6McB2FlW51bM6jpQ4yekla76a9IV6TTQ21ccGYN2Ew4An6hSfAkOB2FHntL5euHzfrgUv8/QWL002yZMdG5SfP+28w5MTyp8ZQANn8prE8KQY5whWPFTsqhmNrMfEswIZtOjyuET5hFA4gTmHWtI0zGQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793611041; c=relaxed/relaxed;
-	bh=3MV7QetbXCaQFOkeg/BYUNGDOFmcDgX3YW4BjUb3FHs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=nRbYsWACmPVThLGjDFBBM13pL+U7Z3zxtyAw85l10nim6lKzIx9Bku3hwLgo0iidRD9xWBvfBKEc5nfgm2RJPr6RKOVvEs68zGGqJXPGuY82+q2ki9R0h+dI1gooMQrx6MALg2GM5qFI2s3gQlHCAQnnuA6r6iQj9+WQ2Pu3qmpz9N5VF1hUK4qhrjE86sFIpVQFiOE8InJDAC4ueeErTGKpS0Y6CA0rPeWRyJXLCTr4Go+DCcalHDC5pvz5QM/AyrFbaoF+YCsxgx11JsxjOQZHzoxhEVsHUPvkGGLTu9n+C7iLduLUxoiZIev8S0uDfQOw45HV6Qs6H6OAsfRSZA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nXhyDQkC; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1793616852; c=relaxed/relaxed;
+	bh=QDgDwZRpPcgIl1VpXeHffTamZF8y2bE2/UZPlXLTFj8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=QfW0yYWYQxWl1ldRs5AadzUaHqed1MtanwoeHEhWE37gGyIaPaU1R3JVphN8VrgqWGVGGZLV5tZrJBNLDAMR00OE9rXYBQQVp4yc9swajEqW1XnqXUE5x83X7Gxya3B1blC3hOSqAtRusRR4JMuJOjI+KRm8DdN243GwWh4ijmCkx2XFrwXRnpqM2Z9AbSywTZ7XG4h28VkerVmYzgJiV3xhcPr0uSrM3k0fe/TIt+fC5xXnwyxjdcePzb6hBe/UT3lpcc4naTn9oAKgE1fe8Z4pbVM5rgpt23HOrOKQRZAVrKTfhmwmPKYimkxN7veWaKn30q6/3ttQ1cbY4grP6A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rtGdzWjE; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=samir@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nXhyDQkC;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rtGdzWjE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=samir@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJ5h04BNGz2xH9
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 20:17:19 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A29EVjq2489759;
-	Mon, 2 Nov 2026 09:17:10 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJ7ql0gB7z2xgv
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 21:54:10 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A29F2cO2432668;
+	Mon, 2 Nov 2026 10:53:50 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=3MV7QetbXCaQFOkeg/BYUNGDOFmcDgX3YW4BjUb3F
-	Hs=; b=nXhyDQkC5j8rhoDM1+n27nMJryHYPUMAl9CVF3mfXwG1lbSBRBcvOAdRi
-	imN01ytMhteTmOlj+9rCjXLyBnpqz1ux3aTTx/CZ1COh0b7BkxijTeWom5Ejn+/k
-	A8RjIo740+PywwHeHe0k+QagMHU5axo3ym8K5e0pbRBkRJpvZi0MVYHD0b0AcDqZ
-	r6mNSHlYyLZYhdB48fPJ0kM6uXBdsTEToKEP+Ji9L4G75jJ9IQtJs9r8gcMpgnDH
-	2Znmv5cVExvKtQuEFJVXtsq/1J6L1ANkjmQdx/8Qd3njuc/6ZCZcjLxsQkW1ct2m
-	3iQusm1SKbcUbP4u7zJEA2XW/do0g==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hn826fnmq-1
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=QDgDwZ
+	RpPcgIl1VpXeHffTamZF8y2bE2/UZPlXLTFj8=; b=rtGdzWjErVSk4VnDqTHEAg
+	K5s0f2Bq3vejt8ZxfS5QhxZuCurrSqgdnQjyayCE4V77V2/0ll2M8MaYZdJBjBgb
+	/JwVTRjRqX1/97AdlISxxn6CrqvWJRN5fcemDUMA1kMOZyf9xFPfcP2/CcmAqyO1
+	9PbK8O+Cmzs7XsPiv735sTySqFewxXDE2bLctXSBn5baifnpSYb9lp4mT7MUVjmM
+	FSqhKYk4iZcik9WTqzsJGzwBLE3JiHn1TmK17DHKrM8MgZtfdpugF57qXH5t5L4f
+	RnnxFvGZVp+lGlYB70dVqjrwSidUtaJ0rMFvRV4qU88o372IPIoWZ1crm4xX49iQ
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hn5rhg73w-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 02 Nov 2026 09:17:09 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6A28Wi3m394411;
-	Mon, 2 Nov 2026 09:17:09 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4hnwbxvuku-1
+	Mon, 02 Nov 2026 10:53:49 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6A29JxFB762308;
+	Mon, 2 Nov 2026 10:53:49 GMT
+Received: from smtprelay04.dal12v.mail.ibm.com ([172.16.1.6])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4hnv5gnape-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 02 Nov 2026 09:17:08 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6A29H53A43647278
+	Mon, 02 Nov 2026 10:53:49 +0000 (GMT)
+Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
+	by smtprelay04.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6A2Arl0C29295296
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 2 Nov 2026 09:17:05 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 37E3820043;
-	Mon,  2 Nov 2026 09:17:05 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 95F1F20040;
-	Mon,  2 Nov 2026 09:17:02 +0000 (GMT)
-Received: from li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibmuc.com (unknown [9.39.25.78])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  2 Nov 2026 09:17:02 +0000 (GMT)
-From: Gautam Menghani <gautam@linux.ibm.com>
-To: maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au,
-        chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, stable@vger.kernel.org,
-        Timothy Pearson <tpearson@raptorengineering.com>
-Subject: [PATCH v5] KVM: PPC: Book3S HV: Avoid spurious interrupts caused by LPCR_MER bit
-Date: Mon,  2 Nov 2026 14:46:59 +0530
-Message-ID: <20261102091700.253381-1-gautam@linux.ibm.com>
-X-Mailer: git-send-email 2.56.0
+	Mon, 2 Nov 2026 10:53:48 GMT
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D903858060;
+	Mon,  2 Nov 2026 10:53:47 +0000 (GMT)
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 58C9258058;
+	Mon,  2 Nov 2026 10:53:42 +0000 (GMT)
+Received: from [9.43.102.230] (unknown [9.43.102.230])
+	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Mon,  2 Nov 2026 10:53:42 +0000 (GMT)
+Message-ID: <a9d9d5d1-35c0-45e4-afe7-58af3c5789fa@linux.ibm.com>
+Date: Mon, 2 Nov 2026 16:23:40 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,105 +81,288 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/2] powerpc: Restore all registers after a traced
+ syscall again
+To: Michal Suchanek <msuchanek@suse.de>, linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Shrikanth Hegde <sshegde@linux.ibm.com>, Kees Cook <kees@kernel.org>,
+        Andy Lutomirski <luto@amacapital.net>, Will Drewry <wad@chromium.org>,
+        "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
+        Alexander Gordeev <agordeev@linux.ibm.com>,
+        Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>,
+        "Bernhard M. Wiedemann" <bwiedemann@suse.de>,
+        linux-kernel@vger.kernel.org, stable@vger.kernel.org
+References: <961c058f3f3e03045552186c083a68a0fde3f43f.1791975972.git.msuchanek@suse.de>
+Content-Language: en-US
+From: samir <samir@linux.ibm.com>
+In-Reply-To: <961c058f3f3e03045552186c083a68a0fde3f43f.1791975972.git.msuchanek@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: 1xCTqIO-R6O4I7UknL9LItpBB8SQ9GdA
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTAyMDAzNiBTYWx0ZWRfX+e9PO0TL10Qz
- hjS+vaFzr07I4waGgYsF0T62LrURQ23/hWlf1e+Entqw2NlPHpU/UyqUBwWf5PoMghNwbq23uXI
- YqE6bTHgUon4ekUsn9Qvoa7fGXgAKfo+zryPGxL+XAYqqqNPBK+RBA5axp7NJT9qmjoY+EfN1OX
- PNLyjhUhf0lg0yIEOoa4Df81yxLi7FSSN6K7k5j9sMsvKIlfw3htCq2vHPrzgKKArgHBUnGXOni
- q7jE6sOYPXjpxzg0pK7Bq9NG20ad6xKyH6fiICKiQ8GN+qesP1KYHZvpMuR4aGenwZISi5iUjbN
- 5md5E9TliAgbKuiFe1UiJ4CgZhENTytoHnWrIIzLTQ72XeXbzrYilu9TMozDlVQbhBNEDCfzJwu
- EDa8jtVPpubCa7upn9fKjLSjTmPrmn/Gh/7IsbO4vT+DDV4isCsHYZ08281YpvNhimW0pBDZZZa
- kqt3/hlwFEHr/QcouuA==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTAyMDAzNiBTYWx0ZWRfX1DGZSkJsc4A/
- /WKJQqnyTmCenyBToPYHCAoBM5Fb33J012nTyqMEHkHuXrpWSPk5AQuI0W/VSGDjdDnFVwnbzUx
- gt6fTYnZbfxswNOObOe6ud7SyARv5/k=
-X-Proofpoint-GUID: sODIPSMf0RgplZhJwFRSOSvwSs2E-GtE
-X-Authority-Analysis: v=2.4 cv=EsJHPicA c=1 sm=1 tr=0 ts=6ae85516 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8 a=yKAn6K1XAAAA:8 a=_AprYWD3AAAA:8
- a=VnNF1IyMAAAA:8 a=r95I5fjiukzm4VaaYucA:9 a=6M1ixcW_PCWoKiWyFx5v:22
- a=fKH2wJO7VO9AkD4yHysb:22
+X-Proofpoint-ORIG-GUID: iavYIBXUShm_Sxf5jcQ9QxUuIQlXkw5A
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTAyMDA0MiBTYWx0ZWRfXzL6giz5W5ILH
+ aP1knsrmRIQKiyJR1eWuuK6fMPL8WyCsVHL5Q9mWC1KAGggnCUcQlSZUGUO0LlVLTocGkCKgjia
+ RtMkUDAk9EDsH8ekPs/e5Q1ASVWD9Qg=
+X-Authority-Analysis: v=2.4 cv=LokHWXdc c=1 sm=1 tr=0 ts=6ae86bbe cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
+ a=49ibadiY4wVRzWEyoZAA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=O8hF6Hzn-FEA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTAyMDA0MiBTYWx0ZWRfX8BoJQTwukymP
+ NpqpnZ4FBkMQt47VlM+0u+lwBq0KC2VN+sPq9eeAaEp+pn2usHV2BoCBUQ8IrAzUPLyTeOe8d0f
+ zdUGb+D7hEND5nIKd67S2Klbi9UK7fcZjbZI3oKg9aUyW517HXzuW3h93C9sT+mH9F73FKpCIv4
+ TJ6S2TRMHF+zfEmQ6wNTGQ7fxV8AB/QAjm3cuR++KKHGqjt1wI9S9/nfLig06evvizxIf4ytFzW
+ f/ADyl2lJowcPw/aQMDHzRHeitEH63baxkdpTLCWYNTEF1kbGZ1MprvTJfi07p2fDNCylXwm25+
+ 0SEWINXR3GQodYFsBhIa7mCxP1szWu6sL5ftjyUKO6iohfuLvChzU0kL2LU5+/t+FrCe670KlAW
+ u98/ZhADCxPNCRynJXFy0ylD73N6j4+vAfRW0q/sOEykVH//j+rR/9OFicOkGYJTbVR/843o1+u
+ 0aRJ5Zsu4LobQezdQiw==
+X-Proofpoint-GUID: 0h9FKnfKeJqgqpYCyDdI2iSJrtbHlH1K
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
  definitions=2026-11-02_03,2026-10-21_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 clxscore=1015 lowpriorityscore=0 malwarescore=0
- priorityscore=1501 adultscore=0 impostorscore=0 phishscore=0 spamscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ spamscore=0 lowpriorityscore=0 clxscore=1011 impostorscore=0
+ priorityscore=1501 suspectscore=0 phishscore=0 malwarescore=0 bulkscore=0
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
  route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610300000
- definitions=main-2611020036
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+ definitions=main-2611020042
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-A huge number of spurious interrupts can be seen immediately after a KVM
-on PowerNV guest boots up in XIVE mode.
+Hi Michal,
 
-$ cat /proc/interrupts  | grep SPU
-SPU:     223705     192439     273526     147623   Spurious interrupts
+On 14/10/26 4:36 pm, Michal Suchanek wrote:
+> From: Bernhard M. Wiedemann <bwiedemann@suse.de>
+>
+> syscall_exit_prepare() asks the exit assembly to reload all GPRs, CTR
+> and XER from pt_regs only if the thread flags contain any of the flags
+> in _TIF_SYSCALL_DOTRACE. With the new entry code based GENERIC_ENTRY the
+> flags are no longer set.
+>
+> This breaks tracers that modify a stopped syscall, for example ones that
+> re-execute the syscall instruction by moving the NIP back by 4 at the
+> syscall-exit stop with the syscall number put back into r0: the sc then
+> runs with r0 = 0, which is __NR_restart_syscall. dettrace fails like
+> this with "No filter rule for system call: restart_syscall". A tracer
+> that writes r4 at the syscall-exit stop of an sc sees the tracee
+> continue with r4 = 0 instead; with a 7.1 kernel both work.
+>
+> Check the equivalent syscall_work bits instead, and drop the now unused
+> _TIF_SYSCALL_DOTRACE.
+>
+> Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
+> Cc: stable@vger.kernel.org # 7.2.x: c7585b8e99ad: powerpc: Don't drop _TIF_RESTOREALL on syscall restart
+> Cc: stable@vger.kernel.org # 7.2.x
+> Assisted-by: LLM
+> Signed-off-by: Bernhard M. Wiedemann <bwiedemann@suse.de>
+> [ms: reword commit message]
+> Signed-off-by: Michal Suchánek <msuchanek@suse.de>
+> ---
+> A backport also needs commit c7585b8e99ad ("powerpc: Don't drop
+> _TIF_RESTOREALL on syscall restart"), without which the flag can still
+> be lost.
+>
+> v2: rename PPC_SYSCALL_WORK_RESTOREALL to SYSCALL_WORK_RESTOREALL and
+> move it from interrupt.c to thread_info.h
+>
+> v1: https://lore.kernel.org/linuxppc-dev/4c1da7f31a6603455ec452960af529e4d77f5334.1791826411.git.msuchanek@suse.de/
+>
+> Testing: a small tracer (pokes r4 at the syscall-exit stop of an sc,
+> and replays a syscall by moving NIP back with a new r0) shows both
+> writes lost on a ppc64le and both working on 7.1.8.
+> ------------[ cut here ]------------
+> // SPDX-License-Identifier: GPL-2.0
+> /*
+>   * Does a register a tracer writes at the syscall-exit stop of an "sc"
+>   * reach the tracee? Checks r4, and a replay: NIP moved back onto the sc
+>   * with r0 set to another syscall number.
+>   * Build: gcc -O2 -o ppc-exitregs ppc-exitregs.c (powerpc64 only)
+>   */
+>
+> /* word offsets in struct pt_regs, arch/powerpc/include/uapi/asm/ptrace.h */
+>
+> static long do_sc(long nr, long *r4io)
+> {
+> 	register long r0 __asm__("r0") = nr;
+> 	register long r3 __asm__("r3") = 0;
+> 	register long r4 __asm__("r4") = *r4io;
+>
+> 	__asm__ volatile("sc"
+> 			 : "+r"(r0), "+r"(r3), "+r"(r4)
+> 			 :
+> 			 : "r5", "r6", "r7", "r8", "r9", "r10", "r11", "r12",
+> 			   "cr0", "ctr", "xer", "memory");
+> 	*r4io = r4;
+> 	return r3;
+> }
+>
+> static long peek(pid_t pid, int w)
+> {
+> 	errno = 0;
+> 	long v = ptrace(PTRACE_PEEKUSER, pid, (void *)(w * sizeof(long)), 0);
+> 	if (errno) {
+> 		perror("PEEKUSER");
+> 		exit(2);
+> 	}
+> 	return v;
+> }
+>
+> static void poke(pid_t pid, int w, long v)
+> {
+> 	if (ptrace(PTRACE_POKEUSER, pid, (void *)(w * sizeof(long)), (void *)v)) {
+> 		perror("POKEUSER");
+> 		exit(2);
+> 	}
+> }
+>
+> /* Resume to the next syscall stop, which must be one. */
+> static void next_stop(pid_t pid)
+> {
+> 	int st;
+>
+> 	ptrace(PTRACE_SYSCALL, pid, 0, 0);
+> 	if (waitpid(pid, &st, 0) != pid || !WIFSTOPPED(st) ||
+> 	    WSTOPSIG(st) != (SIGTRAP | 0x80)) {
+> 		fprintf(stderr, "unexpected wait status %#x\n", st);
+> 		exit(2);
+> 	}
+> }
+>
+> int main(void)
+> {
+> 	pid_t pid = fork();
+> 	int st, fail = 0;
+>
+> 	if (pid == 0) {
+> 		long r4 = 0x1111, r4a, ret;
+>
+> 		ptrace(PTRACE_TRACEME, 0, 0, 0);
+> 		raise(SIGSTOP);
+> 		do_sc(__NR_getpid, &r4);
+> 		r4a = r4;
+> 		ret = do_sc(__NR_getpid, &r4);
+> 		/* bit 0: the tracer's r4 was lost; bit 1: the replay of
+> 		 * the second getpid as getppid returned something else */
+> 		_exit((r4a != 0x2222) | (ret != getppid()) << 1);
+> 	}
+>
+> 	waitpid(pid, &st, 0);
+> 	ptrace(PTRACE_SETOPTIONS, pid, 0, (void *)PTRACE_O_TRACESYSGOOD);
+>
+> 	/* 1: write r4 at the exit stop of getpid */
+> 	next_stop(pid);				/* entry */
+> 	next_stop(pid);				/* exit */
+> 	poke(pid, W_R4, 0x2222);
+> 	next_stop(pid);				/* entry of the second getpid */
+>
+> 	/* 2: replay the second getpid as getppid */
+> 	next_stop(pid);				/* exit */
+> 	poke(pid, W_NIP, peek(pid, W_NIP) - 4);
+> 	poke(pid, W_R0, __NR_getppid);
+> 	next_stop(pid);				/* entry of the replay */
+> 	long nr = peek(pid, W_R0);
+> 	printf("replayed syscall arrives as nr %ld (%s)\n", nr,
+> 	       nr == __NR_getppid ? "getppid, OK" :
+> 	       nr == __NR_restart_syscall ? "restart_syscall, BUG" : "?");
+> 	if (nr != __NR_getppid) {
+> 		fail = 1;
+> 		poke(pid, W_R0, __NR_getppid);	/* entry writes do work */
+> 	}
+> 	next_stop(pid);				/* exit */
+> 	ptrace(PTRACE_CONT, pid, 0, 0);
+> 	waitpid(pid, &st, 0);
+> 	if (!WIFEXITED(st)) {
+> 		printf("child did not exit normally: %#x\n", st);
+> 		return 2;
+> 	}
+> 	printf("r4 written at the exit stop: %s\n",
+> 	       WEXITSTATUS(st) & 1 ? "lost, BUG" : "kept, OK");
+> 	printf("replay result: %s\n",
+> 	       WEXITSTATUS(st) & 2 ? "wrong" : "getppid(), OK");
+> 	return fail || WEXITSTATUS(st);
+> }
+> ---
+>   arch/powerpc/include/asm/thread_info.h | 15 ++++++++++++---
+>   arch/powerpc/kernel/interrupt.c        |  3 +--
+>   2 files changed, 13 insertions(+), 5 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+> index 1e069a2e7ce87..31a7a157bc902 100644
+> --- a/arch/powerpc/include/asm/thread_info.h
+> +++ b/arch/powerpc/include/asm/thread_info.h
+> @@ -142,9 +142,6 @@ void arch_setup_new_exec(void);
+>   #define _TIF_SYSCALL_TRACEPOINT	(1<<TIF_SYSCALL_TRACEPOINT)
+>   #define _TIF_EMULATE_STACK_STORE	(1<<TIF_EMULATE_STACK_STORE)
+>   #define _TIF_SYSCALL_EMU	(1<<TIF_SYSCALL_EMU)
+> -#define _TIF_SYSCALL_DOTRACE	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
+> -				 _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT | \
+> -				 _TIF_SYSCALL_EMU)
+>   
+>   #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
+>   				 _TIF_NEED_RESCHED_LAZY | _TIF_NOTIFY_RESUME | \
+> @@ -153,6 +150,18 @@ void arch_setup_new_exec(void);
+>   
+>   #define _TIF_PERSYSCALL_MASK	(_TIF_RESTOREALL|_TIF_NOERROR)
+>   
+> +/*
+> + * Syscall work after which the exit must reload all registers from
+> + * pt_regs: a tracer may have changed any of them at a syscall or seccomp
+> + * stop, or under PTRACE_SYSEMU. Audit and the tracepoint are included to
+> + * keep the pre-GENERIC_ENTRY behaviour.
+> + */
+> +#define SYSCALL_WORK_RESTOREALL (SYSCALL_WORK_SECCOMP |			\
+> +				 SYSCALL_WORK_SYSCALL_TRACEPOINT |	\
+> +				 SYSCALL_WORK_SYSCALL_TRACE |		\
+> +				 SYSCALL_WORK_SYSCALL_EMU |		\
+> +				 SYSCALL_WORK_SYSCALL_AUDIT)
+> +
+>   /* Bits in local_flags */
+>   /* Don't move TLF_NAPPING without adjusting the code in entry_32.S */
+>   #define TLF_NAPPING		0	/* idle thread enabled NAP mode */
+> diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
+> index 55f9c0c9922ac..d6a7b6d2b4bd2 100644
+> --- a/arch/powerpc/kernel/interrupt.c
+> +++ b/arch/powerpc/kernel/interrupt.c
+> @@ -117,9 +117,8 @@ notrace unsigned long syscall_exit_prepare(unsigned long r3,
+>   		regs->gpr[3] = r3;
+>   	}
+>   
+> -	if (unlikely(ti_flags & _TIF_SYSCALL_DOTRACE)) {
+> +	if (unlikely(READ_ONCE(current_thread_info()->syscall_work) & SYSCALL_WORK_RESTOREALL))
+>   		ret |= _TIF_RESTOREALL;
+> -	}
+>   
+>   	syscall_exit_to_user_mode(regs);
+>   
 
-This bug was introduced by commit ecd10702baae5 ("KVM: PPC: Book3S HV:
-Handle pending exceptions on guest entry with MSR_EE"). The root cause
-is that once LPCR_MER bit is set, it is supposed to be reset by
-software. But when a vCPU starts running with LPCR_MER set, the vCPU does
-not exit back to the host until the decrementer expires or there is an
-hcall, etc. This is because KVM on PowerNV guests have support for
-native XIVE, so they are not dependent on host for interrupt emulation.
-Due to this behaviour, a huge number of spurious interrupts are seen
-since LPCR_MER continues to be set and LPCR_MER cannot be reset until the
-vCPU exits to the host.
+I have verified these patches along with the following patch on a 
+ppc64le system and observed no issues during testing.
+Patch: 
+https://lore.kernel.org/lkml/20261023180735.853655-1-renzo@cs.unibo.it/
 
-Fix this behaviour by not using the LPCR_MER bit whenever native XIVE is
-available (currently in case of KVM on PowerNV only), as the XIVE hardware
-can present interrupts to the KVM guest vCPU directly. So the LPCR_MER
-functionality is not required. This reduces the number of spurious
-interrupts drastically.
+Test Environment:
+Architecture: ppc64le
+CPU: 10 cores (80 logical CPUs)
+LPAR Mode: Dedicated
+Memory: 100 GB
 
-Fixes: ecd10702baae5 ("KVM: PPC: Book3S HV: Handle pending exceptions on guest entry with MSR_EE")
-Cc: stable@vger.kernel.org # 6.8+
-Reported-by: Timothy Pearson <tpearson@raptorengineering.com>
-Closes: https://lore.kernel.org/linuxppc-dev/582904882.11159.1786719390349.JavaMail.zimbra@raptorengineeringinc.com
-Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
----
-v5:
-1. Drop the redundant check for the presence of the native XIVE
-device. (Ritesh)
 
-v4:
-1. If interrupt mode is changed to XICS during guest reboot, MER should
-be used. (Amit)
+As part of the verification, I ran the LTP syscall tests and Linux 
+kernel selftests, particularly the ptrace and seccomp tests.
+Tests passed successfully, and no kernel call traces or system crashes 
+were observed during testing.
 
-v3:
-1. Continue the use of LPCR_MER when kernel-irqchip=off (Sashiko)
-
-v2:
-1. Handle the case where xive_interrupt_pending() is true and also the
-external exception bit is set. (Narayana)
-
- arch/powerpc/kvm/book3s_hv.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 22283d46e8fe..41012b0accf4 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -4984,7 +4984,7 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
- 			if (!kvmhv_on_pseries() && (__kvmppc_get_msr_hv(vcpu) & MSR_EE))
- 				kvmppc_inject_interrupt_hv(vcpu,
- 							   BOOK3S_INTERRUPT_EXTERNAL, 0);
--			else
-+			else if (!kvmppc_xive_enabled(vcpu))
- 				lpcr |= LPCR_MER;
- 		} else {
- 			/*
--- 
-2.55.0
-
+Thanks,
+Samir
 
