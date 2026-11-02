@@ -2,51 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04D9D606A903
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:05:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8492D606A91E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:05:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GwaRh4oG
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gPYohCzD
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFPV1b2jz3bl6;
-	Tue, 03 Nov 2026 02:05:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFPt1vCzz3bWn;
+	Tue, 03 Nov 2026 02:05:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793631918;
-	cv=none; b=AJI0zc0NdWiInhUsMwbGiJdtb5PTJf4P2doznyo0SCKfO/5Ij+VDkEnRCpz/rbNK92riopNADJFhWESgdsXbV4Qs4kl9DfoAwV8C3m0HLdYT5Ia9HEnXZgkwrjYF/YpnYPlHwtxW+e6rHi/zSgh27EdCcwfI8M2l3i16HxQi7dRPBR/tyjC+lGl0NiQimrv4wQSfTHe2pwttkIv1BSXfqNZAjQneIF9GLF7RTPTCcY7Fnb4Ud5s78GKhuJebJBO84pdkVkjJKXmee9qj3eMnu/HYF7bG3hQLOnjh8/+7fyVH3KdUtcXOFiGlRb7QXgWiIDLGA//usauSlBK8avLr2A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793631938;
+	cv=none; b=DSlkCoWYMUV8JGu+8hy3TWVvsLJFR126lunra+ZfoXOv7rNA0v/rJCxsDE0yLpDdgNvfjAJYcK4aPoukQajkhJt88QkRK2HB6dqHFoObBlXnqjHSjsxWAMSKDk3nc7HsFvl9MJoCe2khuXOGiy1XThf+0GQbSIIzPZAyPZMWEFnOQhSKCPT8aB93gGqpr9Z4n+TlcmDZrjOKqNVZlJrPn/yurtKRkIgsMHVxX3K97cIVRUUJ+eJ6rtCYL4PllO8sLmtPaOf64xQIwRUAS48ZZBjiV/nNjU3GxW0M33E1Cf4j8xuOsKrExEzpL6R5suPfaaaiDABi2bRi0iI8E+XidA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793631918; c=relaxed/relaxed;
-	bh=/usm8OdHJAbA2hfj2koEwGvMkvG3A+8dTBDDaCx7vxs=;
+	t=1793631938; c=relaxed/relaxed;
+	bh=2GaZul5nsAkiA2gFzaNhtmiz6cl7FK3FoYt1S3NMwg0=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=HZhfq6ZBrbOKLel8+4iMZlmaVDhsyPJlQc4AEiaLxWtrqqERUGFlg4HUq57cgp6biYteA7bkNo5SIUf5Wqqy6FlVho5CZNpDOrjRPqJbWCH08KZMNjsX0LJLsAxTOTEg4x+oX0s38H62VGWJq+M+4J7+3cuzf/JgrSmDKEQ+TU9E2Cf1aMSjjuL/eRaVmbHRR5h+kGEsz+Xq4jI++Fn8TvFN1Bk1nar47Z85StlweGwbMcU48wfWTesFVneanVjzlPAIeIvx+UWge7eTUUMvc09ks0sQlsuNmINCP/PYQuRSpGMooYY0H5h+2UUdJgu8HGL/CXPYYYGARM2gWPlBgw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GwaRh4oG; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=mVjQizG6NFip+yVEln3mCHduQcipl3LLURph3cDHPehA249oFLSD05v8+lAKplwYwu/sz0BcK+5ThHNB1N9MHuKRu9hqBM6aOkz2Uv/TQ4v8QN5IZ7hC9h0eKM4YfDfUxEZqg/jstc8leEHdKtJmJ342aTEveo4TSVlsAhqIcgXMEM0lwtmyfxhOvLhcE8HeLhebbPyb0kRykjoI7ozmwnp+db08wt8nchk/PLrZ1RRoTZvmr6+kyEacYO7O1Iwwv0Kxolggc91FUkO1d8gOMiQMuOfHSQvhHUAX6QkEQGekEZuNN8lnsUGEZ1FSimZObZmAoy0WQNz0X1Hm0zpi5A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gPYohCzD; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GwaRh4oG;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gPYohCzD;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFPT2X9Qz3bWn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:05:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFPs3H1Kz30WT
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:05:37 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 6C414605C8;
-	Mon,  2 Nov 2026 15:05:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5E1171F00A1B;
-	Mon,  2 Nov 2026 15:05:00 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 6749160617;
+	Mon,  2 Nov 2026 15:05:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BFC891F00A16;
+	Mon,  2 Nov 2026 15:05:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793631915;
-	bh=/usm8OdHJAbA2hfj2koEwGvMkvG3A+8dTBDDaCx7vxs=;
+	s=k20260515; t=1793631935;
+	bh=2GaZul5nsAkiA2gFzaNhtmiz6cl7FK3FoYt1S3NMwg0=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=GwaRh4oGylUX6g6CEqPXd69Ibpr3KQmakI0Nld+n+JLGApofu8ygx4WwNRI60EvYf
-	 DSOWIV++3VospwIjrvRsrg0mfaY7gRgUeihp43Au6D6HgV7Xv8KolBhRU7xFnfQdC1
-	 T7WNrsjJHzUGFZHB3CY8jnJ95TWdIrLVspjluFdHIKRvTNa2WFPvdVn+u5eXib/14W
-	 9Mf7AL8v6CpiYBfwScgPVzymR7ApEayesBtx54t9q1NbuhjbVtR1b4mKqnuDg4Wxmn
-	 KCXgiDmRsG7or4q0U1UicO9HEaUHCZVEQAI8u1qAq9b4HgJ4PMYdAOqXF8iMKD4/CK
-	 FsxoDOM8JDDag==
+	b=gPYohCzDqrsQn8T7TOjQzO9kH78swG2borvDZMC6jw8GKugG2jigIBNCmf3EfbRog
+	 yxvhj7CSRV/sJqfNt6IzZWz7NbW/xuPFzaZzRxL8W9WId9cYqsYqwOpJnSNHd9Zx00
+	 cVCWJlmHSPUqmOWftRxlfoYvxfeTa2bvDLbr+SmQTCQMClvPyfEa80ucz/9F7McAts
+	 lpUGT6YWauh99d+fYUOnejKSIPRBXooAdLcFwky+UxQUTCrbGWHl0wHARoO6g8KLF4
+	 jS4r3/hO+n7We6evEMM+LHhfwrC3xfWwpo3o7tQV451heeAi+52LI3LZMXaeoL+eQ8
+	 lXFrvyo0JPSLQ==
 From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 16:01:38 +0100
-Subject: [PATCH RFC 11/22] um: let procfs copy in writes
+Date: Mon, 02 Nov 2026 16:01:39 +0100
+Subject: [PATCH RFC 12/22] x86/mtrr: let procfs own the seq_file of
+ /proc/mtrr
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-arch-v1-11-c9492ab08480@kernel.org>
+Message-Id: <20261102-work-procfs-arch-v1-12-c9492ab08480@kernel.org>
 References: <20261102-work-procfs-arch-v1-0-c9492ab08480@kernel.org>
 In-Reply-To: <20261102-work-procfs-arch-v1-0-c9492ab08480@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -106,82 +107,44 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Implement ->proc_write_buf() for the mconsole and exitcode files so
-procfs copies in what is written before it pins the entry. Writes larger
-than PAGE_SIZE - 1 bytes fail with -EINVAL now.
-
-exitcode parses procfs' copy as is, so it no longer stops at the first
-six bytes of what is written.
+Declare the show function and let procfs open and free the seq_file.
+->proc_open() only does the checks now and ->proc_release() only drops
+the MTRRs the file added.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- arch/um/drivers/mconsole_kern.c | 11 ++---------
- arch/um/kernel/exitcode.c       | 14 ++++----------
- 2 files changed, 6 insertions(+), 19 deletions(-)
+ arch/x86/kernel/cpu/mtrr/if.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/arch/um/drivers/mconsole_kern.c b/arch/um/drivers/mconsole_kern.c
-index f01b7d8a07bc..a4370470286f 100644
---- a/arch/um/drivers/mconsole_kern.c
-+++ b/arch/um/drivers/mconsole_kern.c
-@@ -769,21 +769,14 @@ static int __init mconsole_init(void)
- __initcall(mconsole_init);
- 
- static ssize_t mconsole_proc_write(struct file *file,
--		const char __user *buffer, size_t count, loff_t *pos)
-+		char *buf, size_t count, loff_t *pos)
- {
--	char *buf;
--
--	buf = memdup_user_nul(buffer, count);
--	if (IS_ERR(buf))
--		return PTR_ERR(buf);
--
- 	mconsole_notify(notify_socket, MCONSOLE_USER_NOTIFY, buf, count);
--	kfree(buf);
- 	return count;
+diff --git a/arch/x86/kernel/cpu/mtrr/if.c b/arch/x86/kernel/cpu/mtrr/if.c
+index 4049235b1bfe..9510e01d5103 100644
+--- a/arch/x86/kernel/cpu/mtrr/if.c
++++ b/arch/x86/kernel/cpu/mtrr/if.c
+@@ -349,7 +349,7 @@ static int mtrr_close(struct inode *ino, struct file *file)
+ 		kfree(fcount);
+ 		FILE_FCOUNT(file) = NULL;
+ 	}
+-	return single_release(ino, file);
++	return 0;
  }
  
- static const struct proc_ops mconsole_proc_ops = {
--	.proc_write	= mconsole_proc_write,
-+	.proc_write_buf	= mconsole_proc_write,
- 	.proc_lseek	= noop_llseek,
- };
- 
-diff --git a/arch/um/kernel/exitcode.c b/arch/um/kernel/exitcode.c
-index c71657df38f5..8f76e3b20c18 100644
---- a/arch/um/kernel/exitcode.c
-+++ b/arch/um/kernel/exitcode.c
-@@ -32,18 +32,12 @@ static int exitcode_proc_show(struct seq_file *m, void *v)
+ static int mtrr_seq_show(struct seq_file *seq, void *offset)
+@@ -391,13 +391,12 @@ static int mtrr_open(struct inode *inode, struct file *file)
+ 		return -ENXIO;
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+-	return single_open(file, mtrr_seq_show, NULL);
++	return 0;
  }
  
- static ssize_t exitcode_proc_write(struct file *file,
--		const char __user *buffer, size_t count, loff_t *pos)
-+		char *buffer, size_t count, loff_t *pos)
- {
--	char *end, buf[sizeof("nnnnn\0")];
--	size_t size;
-+	char *end;
- 	int tmp;
- 
--	size = min(count, sizeof(buf) - 1);
--	if (copy_from_user(buf, buffer, size))
--		return -EFAULT;
--	buf[size] = '\0';
--
--	tmp = simple_strtol(buf, &end, 0);
-+	tmp = simple_strtol(buffer, &end, 0);
- 	if ((*end != '\0') && !isspace(*end))
- 		return -EINVAL;
- 
-@@ -53,7 +47,7 @@ static ssize_t exitcode_proc_write(struct file *file,
- 
- static const struct proc_ops exitcode_proc_ops = {
- 	.proc_show	= exitcode_proc_show,
--	.proc_write	= exitcode_proc_write,
-+	.proc_write_buf	= exitcode_proc_write,
- };
- 
- static int make_proc_exitcode(void)
+ static const struct proc_ops mtrr_proc_ops = {
++	.proc_show		= mtrr_seq_show,
+ 	.proc_open		= mtrr_open,
+-	.proc_read		= seq_read,
+-	.proc_lseek		= seq_lseek,
+ 	.proc_write		= mtrr_write,
+ 	.proc_ioctl		= mtrr_ioctl,
+ #ifdef CONFIG_COMPAT
 
 -- 
 2.53.0
