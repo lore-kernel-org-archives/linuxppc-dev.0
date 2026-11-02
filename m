@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 13AEC606B0D5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:07:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 495A5606B0E1
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:07:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=htIvLzE5
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kIoUwWZI
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFS75rGrz3bSF;
-	Tue, 03 Nov 2026 02:07:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFSS0Dwtz3btn;
+	Tue, 03 Nov 2026 02:07:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632055;
-	cv=none; b=Ea8PVnRb5BMk2fbbuFkybvZkwu+xK+Wf1+Mu58JyQRTqmaypV2gjKbkdUInOxZ7bS5auEhMNKmzHmizNLKjYHedeBpIY+8v+TdXP6G4RAlFT0Kom3Mg2W/bfcpHCfAEAmijCuhxB9vr8I7coXvJuQmS4R11/NA8LDroyzbj0/l4TRF7bILGX9iC6KfDUgZlBgegpzAWausTWcO5D5vX5IyswH/7IZyBTno3fEgTHdUK01riedMl4HQiPJkbPUG/DVLWElHvFUNHNYcsBVckeDl9FdGhfPQwUP0dOTlxryCWcVsDCmCEZs7dH2BZ3xIqo5NOc7CnH5DBtiBriOGxG+A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632071;
+	cv=none; b=WqEB/URTKUbn0/Pl916duSm3mmZpdzoLd+nk3auQDg6bqyJJKlzizTNgQeZrB2GF38pspyXoe+wbLv9Ey2tJK1BC1MpkfDkTUDO/zkIL/ZVSk4mXZJPAidJsHesaCP1MLGuswsoHHgL3IrCrteYcezo3rl2YbdvTDTq8LTnNVGxQu3PIkv097PoByL//brtJfHSmkEZ3+MUrKFE7SzljHqkhKrruNq90jERNpzexXnRgCHbUWtkeUu2/u6EE+i2l770cgw4IDGeFtinPphg7kNC2my2xE/gb5kPrR8VggvC3sI7iuVkoHuCf//PySyGqQZwKAMGxmGhOcd2v1nQyNw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793632055; c=relaxed/relaxed;
-	bh=Jqve5dom8G0YagWg0DUi21Qt2CUJnz11dMCfHhOCDkM=;
+	t=1793632071; c=relaxed/relaxed;
+	bh=lzi0v2Iw6r5Nf2GLOsMSQBwdPNX93e2TzGzGfD3oQvk=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=S9xXunRubLrTqb60rQNWbBdBRYz2Pv0DFdJEBRyriMwERg5i96kAfzu25Wsz8NzO+xRb/25072a3hwNluaPGSYCiHPYf+RKyMXc+c1YsWYgGCa0JGIm7Ak6LsKh4ZppLEV79nLKmbK6edY0hNEbfTJJcqMctT/XNZAil1qt+moJpflAqlubvCe/np69EKSlJl5G/Di7IHQfXstYYPVMa8E+YKlbulxQINMHrXY9XTQJkvAEj9rbeBAOKi3Fl3uPumF05mYneIVK5BqshuOOF4kIAssgCFNyBFR+E0r91E5pTl3/zbygRhNQv6tcXK6LoCF/VaiBCpQt/M1O9/DwxCw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=htIvLzE5; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=cBqN9EPcxatrrzd3mRMjzTtO/TUj8CVN++gKPOtO6fnkT/et4B9nWljzf+2smWQfaIzaqZeE4SEsIo4mzrKG2U8ldEMWcw45yLaUrazF2ei+PS0u6myg4ynxVRVq+NS0Tm0vdA9yfoT9yQ2VYOA86vxGlj4FWgazRhtT85GGxxoG4yHezxZ9VVmd7pr33ym+pHDewVF5mgujZdv/sh+7SwcjTab6W5DmqyxtF2O8rjx2NBojCRBwN5UVrPF89RGLuPrRdkcn8VSDvAlcUx8ynfBlPLA4dS28Mi7ai8uJhtpeWJwTe18XYi1uwqAdokIJt1pYMrG2djdBaeG7GB2Kmw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kIoUwWZI; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=htIvLzE5;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kIoUwWZI;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFS70C4Jz3bQm
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:07:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFSR1csMz3bj7
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:07:51 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 44AD541132;
-	Mon,  2 Nov 2026 15:07:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AEC3F1F00A16;
-	Mon,  2 Nov 2026 15:07:19 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id B1FD84378E;
+	Mon,  2 Nov 2026 15:07:49 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9C6921F00A18;
+	Mon,  2 Nov 2026 15:07:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793632053;
-	bh=Jqve5dom8G0YagWg0DUi21Qt2CUJnz11dMCfHhOCDkM=;
+	s=k20260515; t=1793632069;
+	bh=lzi0v2Iw6r5Nf2GLOsMSQBwdPNX93e2TzGzGfD3oQvk=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=htIvLzE5mRDE3y0tqv1kyv8W5k1g/Ii7ANwuWhratSAOFS7tbxL3BToIPDpZE85DE
-	 FNEsXXzLmfR4qQugMxmA9eyhIHm6Q6dJAmTZKLeIUK1bHgaHB6rg72WkRZftlCgoe6
-	 E2QfeUCqIA0Nboam57Dh1SlJUtOEamqW0FpuXdYHq09VCiD2DRiKvdUgmVI6MwZESI
-	 HWhsjmhK16tI0mtjDz6fsLrdm37sQrZUo7icVQ6YX0Qr2rzi5YjsmWINl56IQd0nMx
-	 zqjv85Bp1EemyFNq5w6kuaSNgOUZ321NOGqFqL1mOki6ZfyR8nruUh1khBiylH7rMN
-	 bCkpWmWU3eNXw==
+	b=kIoUwWZIZJmPIDGcbCqUMn+ysgkkYH4B9KIOKwQcxHvHBenqGMDwfSExIyruQhbFw
+	 GSvSuGXqLlsS/+2bX4zY15r68FSJdvY7PhgxxV9bnP9Q3PrAcl12NmKthDnezkWdzA
+	 YQcdsHreaTBVFGkt5/ixU0O685iwRTrAmT2xH295OHXHJaGkHJFEIXEMqGqXCeqbKp
+	 nkpHGaPfZ7GY12qU7tMKJN88syBFW289W+duXDc1qru1IIyFkTan4orRc22NIVl3pP
+	 G9JHqYUFv0jVxFqVlQXSQgnsHBo0FeNBeFWC+sINyeJMsGIfziINB34GYCGOVyuJWO
+	 tkxpbHP0pDc6g==
 From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 16:01:44 +0100
-Subject: [PATCH RFC 17/22] ACPI: proc: let procfs copy in writes to
- /proc/acpi/wakeup
+Date: Mon, 02 Nov 2026 16:01:45 +0100
+Subject: [PATCH RFC 18/22] macintosh/via-pmu: let procfs copy in writes to
+ the options file
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-arch-v1-17-c9492ab08480@kernel.org>
+Message-Id: <20261102-work-procfs-arch-v1-18-c9492ab08480@kernel.org>
 References: <20261102-work-procfs-arch-v1-0-c9492ab08480@kernel.org>
 In-Reply-To: <20261102-work-procfs-arch-v1-0-c9492ab08480@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -108,46 +108,46 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 Implement ->proc_write_buf() so procfs copies in what is written before
-it pins the entry, and take the device name from that copy. Writes
-larger than PAGE_SIZE - 1 bytes fail with -EINVAL now.
+it pins the entry, and parse the option from that copy. Writes larger
+than PAGE_SIZE - 1 bytes fail with -EINVAL now.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- drivers/acpi/proc.c | 7 +++----
+ drivers/macintosh/via-pmu.c | 7 +++----
  1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/acpi/proc.c b/drivers/acpi/proc.c
-index b8a0bd4580e0..feb8283fd855 100644
---- a/drivers/acpi/proc.c
-+++ b/drivers/acpi/proc.c
-@@ -86,7 +86,7 @@ static void physical_device_enable_wakeup(struct acpi_device *adev)
+diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
+index 49f929ae10e4..079c085be5d2 100644
+--- a/drivers/macintosh/via-pmu.c
++++ b/drivers/macintosh/via-pmu.c
+@@ -913,7 +913,7 @@ static int pmu_options_proc_show(struct seq_file *m, void *v)
+ }
  
- static ssize_t
- acpi_system_write_wakeup_device(struct file *file,
--				const char __user * buffer,
-+				char *buffer,
- 				size_t count, loff_t * ppos)
+ static ssize_t pmu_options_proc_write(struct file *file,
+-		const char __user *buffer, size_t count, loff_t *pos)
++		char *buffer, size_t count, loff_t *pos)
  {
- 	struct acpi_device *dev, *tmp;
-@@ -96,8 +96,7 @@ acpi_system_write_wakeup_device(struct file *file,
- 	if (count > 4)
- 		count = 4;
- 
--	if (copy_from_user(strbuf, buffer, count))
+ 	char tmp[33];
+ 	char *label, *val;
+@@ -923,8 +923,7 @@ static ssize_t pmu_options_proc_write(struct file *file,
+ 		return -EINVAL;
+ 	if (count > 32)
+ 		count = 32;
+-	if (copy_from_user(tmp, buffer, count))
 -		return -EFAULT;
-+	memcpy(strbuf, buffer, count);
- 	strbuf[count] = '\0';
- 	sscanf(strbuf, "%s", str);
++	memcpy(tmp, buffer, count);
+ 	tmp[count] = 0;
  
-@@ -123,7 +122,7 @@ acpi_system_write_wakeup_device(struct file *file,
+ 	label = tmp;
+@@ -958,7 +957,7 @@ static ssize_t pmu_options_proc_write(struct file *file,
  
- static const struct proc_ops acpi_system_wakeup_device_proc_ops = {
- 	.proc_show	= acpi_system_wakeup_device_seq_show,
--	.proc_write	= acpi_system_write_wakeup_device,
-+	.proc_write_buf	= acpi_system_write_wakeup_device,
+ static const struct proc_ops pmu_options_proc_ops = {
+ 	.proc_show	= pmu_options_proc_show,
+-	.proc_write	= pmu_options_proc_write,
++	.proc_write_buf	= pmu_options_proc_write,
  };
+ #endif
  
- void __init acpi_sleep_proc_init(void)
 
 -- 
 2.53.0
