@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3404E6091CA7
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:14:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB57F6079920
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:14:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F7Ox97aH
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aoFGcx0p
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFbX6n9jz3c0H;
-	Tue, 03 Nov 2026 02:14:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632440;
-	cv=none; b=c5i3NpNGfWkjT97lsNoKCSs+X+YYdA6wO4c+MBVQQwurzEM1mUhaZeolVAMNqViH9+SqoGnhFbxzHNxUeCyFnnXl5y3d6/hRJ7R+0UGoCETbxCF/L6q7OVWkOa41OalNLP3kchUszi1l4VUFCDhTkIZodcZI5Y4Zopuu/vi1nscQ9kNJ2wh+X//33u2g3Q5E1nTx53xG5N7ZUrulS4+Mff3he4dIrhu9bj01IodKduk7VleijPwrvFUDnvAYMDGTvoPyNmsdaGRiMgtLjMa7CkA5dAZ2x4fe4Pp+3wkdGoppll9gw8cdsbgmCGpVY4MbBkdYPnwN9A15wdrkQmyyHA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFbx3Z0bz3bkP;
+	Tue, 03 Nov 2026 02:14:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632461;
+	cv=none; b=GfaHJfyC4nw1EsWSiA4si+wh8s2ilvF59pYXJH26FJRd6hEeS7SpjuhgcHznwDQobUXGykkWJQrWuKUfKMXa2npoiWdKGhwa0ZB30bvDWEAoCpCCzsN0OqMst3gbTkMleaErnC7O09xNUgu0NXSWr+6Ps8tMZiMdd+WkJFrgsEX4D7UDCQwGQEMaXyl8fj1kl5An4I2gbUNSoXHOzOBnKRzaSefPZs8ex/MhKdn9PR6g25x2J0JMayxoXqE8fJlDOU8DfLX+ga33XqUuO+FbAypFggyr3gUAdUDytJ6F9bGbuv99hjCPWW7nsjhk3iStrXJUyz38OrNZDDmsGgTtng==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793632440; c=relaxed/relaxed;
-	bh=S+W+g44aCaL43FGK45odLf2WH3NZSIh4HEIsQNMUIAQ=;
+	t=1793632461; c=relaxed/relaxed;
+	bh=CTj8vGUhriHCrFXvGM0jGNx3xl9ERozaQgV9GXGsY38=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=mcMo7R5V4rpDDlxsOjIncj2XjbXxScgxNlC0FMWBpgYu5xSHsq7pVBzb6vWJlC3ZHeZlLisOneX7xuo6LWrlYQBajAbR9+bUlEzeO8U2BG4Cjt5H5tK8hoU4IBDjOGjabqJZp0Nc4hBcCFzTHbGYAJUQJffM73ZtXMpSHAoM6YJ6db2RfTxZEC1sJ7Zj+YKoKtSJI+evtMzSQ4ONGRHJeXZ5w//qA45TUCIi2372fDRDVi+Av5Usi31TZlXZuPFJwhd5cGhKmmtp8izYLH4zybe+7YQwXY6i4mrMyIbto9FPML+H+J4iF2tHTE4mkCAzb7VS6RgcS3+g2s/WaqWdZQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F7Ox97aH; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=GJmj1B8YCpu2fHM01P/oT10Bw67ZpgPDrEJ39Fbu74yH8kzmaumq3IR/y8xOlfNLy8dM76ecZKtFJc2nVA79qRkhmNlns6H8QIAQ09tG2x9kRNqpkV8JtKffSZCDlcK5myzUO+AUUCa/KnxgPHHrG3H00OvN5JKR1D0RRvpajaNgLZHKytoUKfLYSEn2xL02+9JXbauQ0oPcq2a0SEeRaJppeLoTtcp4pRb9Wx2qKKiB4K7bNzaYi2twJmtuAxNLZ/Cnso2niD/TZNK4fAyGZB8A6ZbN8/RJxybRMb86G6OTYdo4ghJbMSVG9l7gjqOIF3BEPeJbMT0VpxB4RRiZZw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aoFGcx0p; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F7Ox97aH;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aoFGcx0p;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFbW4J78z3c05
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:13:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFbw4lm9z3bkG
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:14:20 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 1C3E343CEA;
-	Mon,  2 Nov 2026 15:13:58 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E6A051F00A17;
-	Mon,  2 Nov 2026 15:13:44 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 89AA960230;
+	Mon,  2 Nov 2026 15:14:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8441C1F00A1D;
+	Mon,  2 Nov 2026 15:14:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793632438;
-	bh=S+W+g44aCaL43FGK45odLf2WH3NZSIh4HEIsQNMUIAQ=;
+	s=k20260515; t=1793632458;
+	bh=CTj8vGUhriHCrFXvGM0jGNx3xl9ERozaQgV9GXGsY38=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=F7Ox97aHb5v/69dEjCfSG3zYZyDUWGBbQmgwQbZqpHayfaTm2G57txgqdUeZo3I1H
-	 tTuLLwDngX1C0kdrF8+z5iHcLOLMVPlNHU7Ek70BsEwCNAgxWcFwACFn8dRM9vXuNi
-	 fR/HuBwWCNGkBIHly+3JqFmxpEpN+D+9f46wasKzYOnOtzNu5VuibzVNrASnI3ElKf
-	 98h5jEevjX95199qLf7TWhYAItcY3sascPk/jhcInRBKh/iRe1KPIclCVzGPEmbyX3
-	 JHM1Cp1LfYRKc0S2TNo/H269vvS4ZY0/H1hFOPI9a3WaLrf1PSJB04nf+i5VJqta6B
-	 C97Z41nHrVXzg==
+	b=aoFGcx0pELaJ5RYWtke+xC5t7aNB65DB/8p1Zyd+Mct0qYV4hXDTpFdt2jN92OjLm
+	 cm9P26FLH82HHv9uw3dBZcgwAFDEPF2a3BUk5VP4UipyUvYMQBZsfzU8GWvk6Denxt
+	 E+8h+vKxlfMsymem4bXtYNAdw6PVC20yhamxn7bhY3LAKScGG+UHFtjCsk/SsEKeLw
+	 mKt9GtlF0fXNneJBDl1wbvMAkvsv60mfPqz6Wg5a7kgDUDRlelGwablxe1YjuJDu/A
+	 zVy69YNLIhqAiQvfFY8ZlaEu8v/NK9WoKplt79CxDhcQu2uFCnSjhECk0F4Ds7DT4j
+	 Xm4j29KusNR9Q==
 From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 16:07:18 +0100
-Subject: [PATCH RFC 11/23] selftests/proc: check that a faulting writer
- doesn't hold up removal
+Date: Mon, 02 Nov 2026 16:07:19 +0100
+Subject: [PATCH RFC 12/23] scsi: sg: let procfs own the seq_file of
+ allow_dio and def_reserved_size
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-drivers-v1-11-a994bd4d3b1a@kernel.org>
+Message-Id: <20261102-work-procfs-drivers-v1-12-a994bd4d3b1a@kernel.org>
 References: <20261102-work-procfs-drivers-v1-0-a994bd4d3b1a@kernel.org>
 In-Reply-To: <20261102-work-procfs-drivers-v1-0-a994bd4d3b1a@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -99,12 +99,12 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
  "Christian Brauner (Amutable)" <brauner@kernel.org>, 
  Chuck Lever <cel@kernel.org>
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=7699; i=brauner@kernel.org;
- h=from:subject:message-id; bh=E/Aoc9uQW8LTsep+BLiQcemfYl1Vwa4LIRzF+EstznY=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9WG7Q9XihutiU620/TOp4nTfpGEvuYL3x8mh9fPS6m
- l0cd9YYdpSyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAEykYy0jw80klv9bnE6761yY
- H2ijFaLOd2/76W8uCq84DzG1i6+RmM7I0Gm2vy378801RpOnHzpQy/rRzmj9jUkqNSHZgglMcT1
- TWAA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3098; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=i7XPA6oQ9lTisv2fJhwkVTww2SSinfY9aqbIviKN0Rk=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9WG6Qf8grL/vRBPOFfc2hW3RiHI9mZiQELndpn9khL
+ RHPWBrfUcrCIMbFICumyOLQbhIut5ynYrNRpgbMHFYmkCEMXJwCMBH+LIZ/Znxfdj0svxz/x0KW
+ cdfJXz/uVP2z5WL92Rx27MvazyK/WhgZXtf0pV+c73nSVO8zu/lFWSMbjbVtv7ecN4xQ/S9ns82
+ bDwA=
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -115,267 +115,86 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Write to /proc/scsi/scsi_debug/<host> from a buffer whose page is backed
-by userfaultfd and remove the host while procfs copies in what is
-written:
-
-- removing the entry doesn't wait for the writer
-
-- the write fails with -EIO once the fault is resolved
-
-The test loads scsi_debug if it isn't there and skips without it.
+Pass the integer they show as the data of the entry and declare the
+show function, procfs then opens and frees the seq_file. That makes the
+open functions unnecessary.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- tools/testing/selftests/proc/.gitignore            |   1 +
- tools/testing/selftests/proc/Makefile              |   1 +
- tools/testing/selftests/proc/config                |   3 +
- .../selftests/proc/proc-remove-slow-writer.c       | 203 +++++++++++++++++++++
- 4 files changed, 208 insertions(+)
+ drivers/scsi/sg.c | 28 ++++++----------------------
+ 1 file changed, 6 insertions(+), 22 deletions(-)
 
-diff --git a/tools/testing/selftests/proc/.gitignore b/tools/testing/selftests/proc/.gitignore
-index e2566cc0ae07..51969f81afc5 100644
---- a/tools/testing/selftests/proc/.gitignore
-+++ b/tools/testing/selftests/proc/.gitignore
-@@ -24,6 +24,7 @@
- /proc-remove-slow-sysctl
- /proc-remove-slow-reader
- /proc-remove-slow-readlink
-+/proc-remove-slow-writer
- /read
- /self
- /setns-dcache
-diff --git a/tools/testing/selftests/proc/Makefile b/tools/testing/selftests/proc/Makefile
-index 6a9bdc999f54..aecec6b93173 100644
---- a/tools/testing/selftests/proc/Makefile
-+++ b/tools/testing/selftests/proc/Makefile
-@@ -35,5 +35,6 @@ TEST_GEN_PROGS += proc-pidns
- TEST_GEN_PROGS += proc-remove-slow-sysctl
- TEST_GEN_PROGS += proc-remove-slow-reader
- TEST_GEN_PROGS += proc-remove-slow-readlink
-+TEST_GEN_PROGS += proc-remove-slow-writer
+diff --git a/drivers/scsi/sg.c b/drivers/scsi/sg.c
+index 3f9e08725602..c7386fbe5580 100644
+--- a/drivers/scsi/sg.c
++++ b/drivers/scsi/sg.c
+@@ -2287,26 +2287,18 @@ sg_get_dev(int dev)
+ #ifdef CONFIG_SCSI_PROC_FS
+ static int sg_proc_seq_show_int(struct seq_file *s, void *v);
  
- include ../lib.mk
-diff --git a/tools/testing/selftests/proc/config b/tools/testing/selftests/proc/config
-index 7b0e1d9be1a2..c7c61a2d7927 100644
---- a/tools/testing/selftests/proc/config
-+++ b/tools/testing/selftests/proc/config
-@@ -5,3 +5,6 @@ CONFIG_USERFAULTFD=y
- CONFIG_SOUND=y
- CONFIG_SND=y
- CONFIG_SND_DUMMY=m
-+CONFIG_SCSI=y
-+CONFIG_SCSI_PROC_FS=y
-+CONFIG_SCSI_DEBUG=m
-diff --git a/tools/testing/selftests/proc/proc-remove-slow-writer.c b/tools/testing/selftests/proc/proc-remove-slow-writer.c
-new file mode 100644
-index 000000000000..f69ca75ba87c
---- /dev/null
-+++ b/tools/testing/selftests/proc/proc-remove-slow-writer.c
-@@ -0,0 +1,203 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * A write that faults while procfs copies it in must not hold up removal of
-+ * the /proc entry. Removing a scsi_debug host removes its
-+ * /proc/scsi/scsi_debug/<host> file.
-+ */
-+#define _GNU_SOURCE
-+#include <dirent.h>
-+#include <errno.h>
-+#include <fcntl.h>
-+#include <limits.h>
-+#include <linux/userfaultfd.h>
-+#include <poll.h>
-+#include <pthread.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <sys/ioctl.h>
-+#include <sys/mman.h>
-+#include <sys/syscall.h>
-+#include <unistd.h>
-+
-+#include "../kselftest_harness.h"
-+
-+#define ADD_HOST	"/sys/bus/pseudo/drivers/scsi_debug/add_host"
-+#define HOST_DIR	"/proc/scsi/scsi_debug"
-+#define TIMEOUT_MS	5000
-+#define MAX_HOSTS	4096
-+#define HOST_BITS	(8 * sizeof(unsigned long))
-+
-+struct writer {
-+	int fd;
-+	char *buf;
-+	ssize_t ret;
-+	int err;
-+};
-+
-+struct remover {
-+	int done;
-+	int ret;
-+};
-+
-+/* a positive @nr adds hosts, a negative one removes the last ones added */
-+static int add_host(int nr)
-+{
-+	char s[16];
-+	int fd, len, ret;
-+
-+	fd = open(ADD_HOST, O_WRONLY | O_CLOEXEC);
-+	if (fd < 0)
-+		return -errno;
-+	len = snprintf(s, sizeof(s), "%d", nr);
-+	ret = write(fd, s, len) == len ? 0 : -errno;
-+	close(fd);
-+	return ret;
-+}
-+
-+/* the numbers of the hosts in /proc/scsi/scsi_debug as a bitmap */
-+static int list_hosts(unsigned long *hosts)
-+{
-+	struct dirent *d;
-+	DIR *dir;
-+
-+	memset(hosts, 0, MAX_HOSTS / 8);
-+	dir = opendir(HOST_DIR);
-+	if (!dir)
-+		/* the directory comes with the first host and goes with the last */
-+		return errno == ENOENT ? 0 : -errno;
-+	while ((d = readdir(dir))) {
-+		char *end;
-+		long nr = strtol(d->d_name, &end, 10);
-+
-+		if (end != d->d_name && !*end && nr >= 0 && nr < MAX_HOSTS)
-+			hosts[nr / HOST_BITS] |= 1UL << (nr % HOST_BITS);
-+	}
-+	closedir(dir);
-+	return 0;
-+}
-+
-+/* the host that is in @after but wasn't in @before */
-+static int new_host(const unsigned long *before, const unsigned long *after)
-+{
-+	for (int i = 0; i < MAX_HOSTS / HOST_BITS; i++) {
-+		unsigned long new = after[i] & ~before[i];
-+
-+		if (new)
-+			return i * HOST_BITS + __builtin_ctzl(new);
-+	}
-+	return -1;
-+}
-+
-+static void *write_thread(void *arg)
-+{
-+	struct writer *w = arg;
-+
-+	w->ret = write(w->fd, w->buf, 2);
-+	w->err = errno;
-+	return NULL;
-+}
-+
-+static void *remove_thread(void *arg)
-+{
-+	struct remover *r = arg;
-+	ssize_t ret;
-+
-+	r->ret = add_host(-1);
-+	ret = write(r->done, "x", 1);
-+	return (void *)ret;
-+}
-+
-+FIXTURE(host) {
-+	char path[PATH_MAX];
-+	int host;
-+};
-+
-+FIXTURE_SETUP(host)
-+{
-+	unsigned long before[MAX_HOSTS / HOST_BITS];
-+	unsigned long after[MAX_HOSTS / HOST_BITS];
-+
-+	self->host = -1;
-+	if (access(ADD_HOST, W_OK) && system("modprobe -q scsi_debug add_host=0"))
-+		SKIP(return, "no scsi_debug");
-+	if (access(ADD_HOST, W_OK))
-+		SKIP(return, ADD_HOST ": %s", strerror(errno));
-+
-+	/* host numbers are reused, so look for the one that's new */
-+	ASSERT_EQ(list_hosts(before), 0);
-+	ASSERT_EQ(add_host(1), 0);
-+	ASSERT_EQ(list_hosts(after), 0);
-+	self->host = new_host(before, after);
-+	ASSERT_GE(self->host, 0);
-+	snprintf(self->path, sizeof(self->path), HOST_DIR "/%d", self->host);
-+}
-+
-+FIXTURE_TEARDOWN(host)
-+{
-+	if (self->host >= 0 && !access(self->path, F_OK))
-+		add_host(-1);
-+}
-+
-+TEST_F(host, remove_while_writer_faults)
-+{
-+	struct uffdio_api api = { .api = UFFD_API };
-+	struct uffdio_register reg = {};
-+	struct uffdio_zeropage zero = {};
-+	long psz = sysconf(_SC_PAGESIZE);
-+	struct writer w = {};
-+	struct remover r = {};
-+	struct uffd_msg msg;
-+	struct pollfd pfd;
-+	pthread_t wt, rt;
-+	int uffd, done[2];
-+	char *buf;
-+
-+	w.fd = open(self->path, O_WRONLY | O_CLOEXEC);
-+	if (w.fd < 0)
-+		SKIP(return, "%s: %s", self->path, strerror(errno));
-+
-+	uffd = syscall(__NR_userfaultfd, O_CLOEXEC | O_NONBLOCK);
-+	if (uffd < 0)
-+		SKIP(return, "userfaultfd: %s", strerror(errno));
-+	ASSERT_EQ(ioctl(uffd, UFFDIO_API, &api), 0);
-+
-+	buf = mmap(NULL, psz, PROT_READ | PROT_WRITE,
-+		   MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-+	ASSERT_NE(buf, MAP_FAILED);
-+	reg.range.start = (unsigned long)buf;
-+	reg.range.len = psz;
-+	reg.mode = UFFDIO_REGISTER_MODE_MISSING;
-+	ASSERT_EQ(ioctl(uffd, UFFDIO_REGISTER, &reg), 0);
-+
-+	w.buf = buf;
-+	ASSERT_EQ(pthread_create(&wt, NULL, write_thread, &w), 0);
-+
-+	/* The writer now sleeps while what it writes is copied in. */
-+	pfd = (struct pollfd){ .fd = uffd, .events = POLLIN };
-+	ASSERT_EQ(poll(&pfd, 1, TIMEOUT_MS), 1);
-+	ASSERT_EQ(read(uffd, &msg, sizeof(msg)), sizeof(msg));
-+	ASSERT_EQ(msg.event, UFFD_EVENT_PAGEFAULT);
-+
-+	/* Removing the host removes the file that is being written. */
-+	ASSERT_EQ(pipe2(done, O_CLOEXEC), 0);
-+	r.done = done[1];
-+	ASSERT_EQ(pthread_create(&rt, NULL, remove_thread, &r), 0);
-+	pfd = (struct pollfd){ .fd = done[0], .events = POLLIN };
-+	EXPECT_EQ(poll(&pfd, 1, TIMEOUT_MS), 1) {
-+		TH_LOG("removing %s waited for the writer", self->path);
-+	}
-+
-+	zero.range.start = (unsigned long)buf;
-+	zero.range.len = psz;
-+	ASSERT_EQ(ioctl(uffd, UFFDIO_ZEROPAGE, &zero), 0);
-+	ASSERT_EQ(pthread_join(wt, NULL), 0);
-+	ASSERT_EQ(pthread_join(rt, NULL), 0);
-+	EXPECT_EQ(r.ret, 0);
-+
-+	/* The entry was gone by the time the write got to it. */
-+	EXPECT_EQ(w.ret, -1);
-+	EXPECT_EQ(w.err, EIO);
-+}
-+
-+TEST_HARNESS_MAIN
+-static int sg_proc_single_open_adio(struct inode *inode, struct file *file);
+ static ssize_t sg_proc_write_adio(struct file *filp, const char __user *buffer,
+ 			          size_t count, loff_t *off);
+ static const struct proc_ops adio_proc_ops = {
+-	.proc_open	= sg_proc_single_open_adio,
+-	.proc_read	= seq_read,
+-	.proc_lseek	= seq_lseek,
++	.proc_show	= sg_proc_seq_show_int,
+ 	.proc_write	= sg_proc_write_adio,
+-	.proc_release	= single_release,
+ };
+ 
+-static int sg_proc_single_open_dressz(struct inode *inode, struct file *file);
+ static ssize_t sg_proc_write_dressz(struct file *filp, 
+ 		const char __user *buffer, size_t count, loff_t *off);
+ static const struct proc_ops dressz_proc_ops = {
+-	.proc_open	= sg_proc_single_open_dressz,
+-	.proc_read	= seq_read,
+-	.proc_lseek	= seq_lseek,
++	.proc_show	= sg_proc_seq_show_int,
+ 	.proc_write	= sg_proc_write_dressz,
+-	.proc_release	= single_release,
+ };
+ 
+ static int sg_proc_seq_show_version(struct seq_file *s, void *v);
+@@ -2347,9 +2339,11 @@ sg_proc_init(void)
+ 	if (!p)
+ 		return 1;
+ 
+-	proc_create("allow_dio", S_IRUGO | S_IWUSR, p, &adio_proc_ops);
++	proc_create_data("allow_dio", S_IRUGO | S_IWUSR, p, &adio_proc_ops,
++			 &sg_allow_dio);
+ 	proc_create_seq("debug", S_IRUGO, p, &debug_seq_ops);
+-	proc_create("def_reserved_size", S_IRUGO | S_IWUSR, p, &dressz_proc_ops);
++	proc_create_data("def_reserved_size", S_IRUGO | S_IWUSR, p,
++			 &dressz_proc_ops, &def_reserved_size);
+ 	proc_create_single("device_hdr", S_IRUGO, p, sg_proc_seq_show_devhdr);
+ 	proc_create_seq("devices", S_IRUGO, p, &dev_seq_ops);
+ 	proc_create_seq("device_strs", S_IRUGO, p, &devstrs_seq_ops);
+@@ -2364,11 +2358,6 @@ static int sg_proc_seq_show_int(struct seq_file *s, void *v)
+ 	return 0;
+ }
+ 
+-static int sg_proc_single_open_adio(struct inode *inode, struct file *file)
+-{
+-	return single_open(file, sg_proc_seq_show_int, &sg_allow_dio);
+-}
+-
+ static ssize_t 
+ sg_proc_write_adio(struct file *filp, const char __user *buffer,
+ 		   size_t count, loff_t *off)
+@@ -2385,11 +2374,6 @@ sg_proc_write_adio(struct file *filp, const char __user *buffer,
+ 	return count;
+ }
+ 
+-static int sg_proc_single_open_dressz(struct inode *inode, struct file *file)
+-{
+-	return single_open(file, sg_proc_seq_show_int, &def_reserved_size);
+-}
+-
+ static ssize_t 
+ sg_proc_write_dressz(struct file *filp, const char __user *buffer,
+ 		     size_t count, loff_t *off)
 
 -- 
 2.53.0
