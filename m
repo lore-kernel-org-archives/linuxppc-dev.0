@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52773608362F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:26:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 58A34608361F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:27:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nYBs0GAF
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kxAPIiB8
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFtS0WX9z3bcj;
-	Tue, 03 Nov 2026 02:26:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793633216;
-	cv=none; b=BKSc5UDC8M6oUvQivOH8Z56/OpGVka3ifFrkhn/+XTBpyUYA1HzkcvwKbc9pNNvRL4HgoPk49XYCTszoWhJeSzw0y7tgbgWBge6ACj6siyM3OnYX6nTFJWulkSgHNvwS4vd/kIaXJ2M7d9wq8dQZcap5tuPIkiRou7x3grataJwpH5f2LZn+wBnksN9cQFkT9hTLHG38juLqPYk7plYGXEvUlaG5OGaP3wG/1zc/2T45J8bvrek/m1nhmOVt5O5iL3N96dRu1nv3jc+CKFo/9vD8kB4x/Bhf4aQc9wenLJt4gNkV3M9zyitQkc7aO+bbDAGgx2qoExvF3myETH0TMg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFtt0YrJz3bkd;
+	Tue, 03 Nov 2026 02:27:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793633238;
+	cv=none; b=Zll81QXmgyrNI5ngKMh0Fnnv/n7naGiKMBqSXozV+0JRe/hGOuuuKxwIJ4CpH65TNfAzTAFmzpenMQMHVfWTze+P/7SiFdi5Imj7EcUNVTspXTxK1+CGSL7NPEzC3eqPC5//vy/QE3f7uhIm5kJ6MewDzFA6JOluFjqZ0vX2XW5OFXiLONPOIN8UjuYuDYshLPI7soEhlghRoXLcu/OzrBjz9MaiB19eO6hTac0ItJZvNa3ilU3CWgbt7qQVfW47gMH89kyiq0g4VaE+AFIhoq3orV4Ux8mwK4+tGaIXPrTb+256RvsqMpyPYTYdnO6GqoUQVxCJNuDOv2kjhHLy5A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793633216; c=relaxed/relaxed;
-	bh=5GRAUZH2kX1HsIdPeFBozE83iEr60/LUxZUEqoYcqBA=;
+	t=1793633238; c=relaxed/relaxed;
+	bh=XTKgYPXjwGtd+Y2GluPCJ0QXSAilsjtjyt0vuaHdwds=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=LFX911waTMm1Z1AuDzAnFZppwoCt5r8Xm2SOU1dwzvBcqMyHMprwRQojHSdde7hMWgFNzmPUg9RXeTw16DO/dAdn0+XqBdJYQVuEw8Q1TNpMHYuU04S0KuZkJXq9mjKnpDo6OSVZSw4laEdNNj88UZ8IkbnCkU6LmE2pZUNq2t4bNaeHUkqh33vQdgkNrHbHF/mc+t+LupK4nr1Ek+eT//r/V/KeVsvUlYcbP1TAFrg0cG1r1CM8Fyc+6Fp0EJjBZdUydE0JVPuspHH1J8O2sP8f4Q8BuYh4SrUd3MYDisFz/zMtStUHBkpED3JPg5Awz27E+0WNyXyDSvXNbmiFXw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nYBs0GAF; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=TPQKQGAa6189IzpJK/+kzSnBn58xkgJMJwXG+ytOi3fUXr/vb3KQTHo6AUVMIyPgWtNH3Oc0GL4dNs8df0HD09Q/qB5EsH9TmiB7EjonE3Mt8AHxAlaLgAjpI2BE4kwmI1COO1nIdIywfHeMOo4ybpHUJFZxAJQ3Ilkj96xrsFRi5YwqxXS8g82J/qSHHzQJhCwxehR7HvyyCNL5EMyuc/i1n09V/3AOBkxPt2Uld0Dog11WzPewtPiwREoTW3L968KwfyzYU4NQ3/nsr9hIjSqlH0S+qr50sLMEqRALVCCaH1grEl3uyLFz57dGEI17laXLnZNi7aV38sq02ZdC0w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kxAPIiB8; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nYBs0GAF;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kxAPIiB8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFtR27Fmz3bSw
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:26:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFts1sJzz3bgd
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:27:17 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id C642B404E4;
-	Mon,  2 Nov 2026 15:26:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 96FDA1F00A16;
-	Mon,  2 Nov 2026 15:26:36 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 2DF5A605CA;
+	Mon,  2 Nov 2026 15:27:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 497371F00A16;
+	Mon,  2 Nov 2026 15:26:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793633213;
-	bh=5GRAUZH2kX1HsIdPeFBozE83iEr60/LUxZUEqoYcqBA=;
+	s=k20260515; t=1793633234;
+	bh=XTKgYPXjwGtd+Y2GluPCJ0QXSAilsjtjyt0vuaHdwds=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=nYBs0GAF8b3S0eatIZoAhddTaBQQ/i0CrcM92EglgsZZbWpy731ExatrOh40qewLF
-	 Lp8S7Rrut+eO6q6LdIfOUD8IT/maYnyF1DBExnOFJG7mwcNuHGN5jv9pNZ9AuWREId
-	 lnOMTthrQoRObRBolVjhYcHCSAlAi4r+kE39L/TCDTKs5S84hkUHNI6KoriDtYwBpI
-	 U0fE3C6vht9Hwk8FIpEHBtzNae5orDp4ap1DfxmedQEVe2FH237hpiNUepRwcWVPa9
-	 eKW1KUqWkYD6wrjns7QIlZcwyB9vCaN2c35pIVU6Iu87SgiaL5+rLK2WDEDvulHZL8
-	 tBantGPOqqkGQ==
+	b=kxAPIiB8bZX2oCCzHcBO+Z+9M3+BVX1rvIx7nyXXRvMDmlNh8VaOR2aKmZd2R34hH
+	 Gw7+HXTv7VzusgWsZ9GsA33MUpaeH7qM1+3/U0mI5dpdOtBvO7SVe8UgtTS9zRl74w
+	 zVpSeL4wIOUBkjK4em3j/1wqw6UAi3uG8FIvW3rat4+P86CWAWdzAlWUQvV7vMVEpa
+	 S38kzwkwiuMhgYyorFO1fD6ITanbo/Z9kHp1r8cLKvafivXAqupn5zK/psHYFqdIdf
+	 /8feMEEXHbH1Vr1KKZJEdv5qVbaXwV5kRtN7tZQOORDjsgRAwj5Ih1oUQUGUkibHAd
+	 /P9IyT6izArUA==
 From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 16:07:30 +0100
-Subject: [PATCH RFC 20/27] module: procfs: let procfs own the seq_file of
- /proc/modules
+Date: Mon, 02 Nov 2026 16:07:31 +0100
+Subject: [PATCH RFC 21/27] dyndbg: let procfs copy in writes to
+ /proc/dynamic_debug/control
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-fs-v1-20-d09a996317b3@kernel.org>
+Message-Id: <20261102-work-procfs-fs-v1-21-d09a996317b3@kernel.org>
 References: <20261102-work-procfs-fs-v1-0-d09a996317b3@kernel.org>
 In-Reply-To: <20261102-work-procfs-fs-v1-0-d09a996317b3@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -99,12 +99,12 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
  "Christian Brauner (Amutable)" <brauner@kernel.org>, 
  Chuck Lever <cel@kernel.org>
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1665; i=brauner@kernel.org;
- h=from:subject:message-id; bh=flwsY9W3AwD1el1fvMS4MRjAzw7empBDyCTwiYsv/MA=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9WG50+lPbWr8TO3/XJX642z+55KDeRh0pIW9bi1VZ/
- MvKft0s7ChlYRDjYpAVU2RxaDcJl1vOU7HZKFMDZg4rE8gQBi5OAZiIpwUjwwyex5oMWjNmXVW1
- TDi5fH3+9vUsj5XnVPa/nJM/5XDQTDNGhsPvYp7dK/9aPKFSfO5H07Jd/XPz+O2FRZWOr7PQyLs
- rzAIA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2226; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=DMKbMmltc6KGAMcxoyJUHD9hv4JrUkNBMnfQsx/+9Q8=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9WG7ceqHmw/8zQZt7jtfybdlxWv7H8x3cq8MvN69Km
+ /uTde1Zq45SFgYxLgZZMUUWh3aTcLnlPBWbjTI1YOawMoEMYeDiFICJONky/M//M+f6NIdFl39X
+ +W2ZGKtX/Hnx0w8TwmWPzuNxWv/xS38Hw1/hO5kJ4eWe3065F7wIPZknI/zsrm6z8qW9zQ0q7Vs
+ 0K5gA
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -115,56 +115,79 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Declare the seq_operations and let procfs open and free the seq_file.
-->proc_open() only decides whether to hide the addresses now.
+Move the parsing into ddebug_proc_write_buf() and implement
+->proc_write_buf() with it so procfs copies in what is written before
+it pins the entry. The debugfs file keeps copying in itself. Writes
+larger than USER_BUF_PAGE - 1 bytes to the procfs file now fail with
+-EINVAL from procfs instead of -E2BIG.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- kernel/module/procfs.c | 19 ++++++-------------
- 1 file changed, 6 insertions(+), 13 deletions(-)
+ lib/dynamic_debug.c | 34 ++++++++++++++++++++++------------
+ 1 file changed, 22 insertions(+), 12 deletions(-)
 
-diff --git a/kernel/module/procfs.c b/kernel/module/procfs.c
-index 90712aa9dd13..a759bd916df7 100644
---- a/kernel/module/procfs.c
-+++ b/kernel/module/procfs.c
-@@ -117,31 +117,24 @@ static const struct seq_operations modules_op = {
- };
- 
- /*
-- * This also sets the "private" pointer to non-NULL if the
-- * kernel pointers should be hidden (so you can just test
-+ * procfs opens the seq_file. This sets the "private" pointer to non-NULL
-+ * if the kernel pointers should be hidden (so you can just test
-  * "m->private" to see if you should keep the values private).
-  *
-  * We use the same logic as for /proc/kallsyms.
+diff --git a/lib/dynamic_debug.c b/lib/dynamic_debug.c
+index 64a211290872..1d6012c9eb41 100644
+--- a/lib/dynamic_debug.c
++++ b/lib/dynamic_debug.c
+@@ -1002,11 +1002,28 @@ __setup("dyndbg=", dyndbg_setup);
+  * command text from userspace, parses and executes it.
   */
- static int modules_open(struct inode *inode, struct file *file)
+ #define USER_BUF_PAGE 4096
++
++static ssize_t ddebug_proc_write_buf(struct file *file, char *buf, size_t len,
++				     loff_t *offp)
++{
++	int ret;
++
++	if (len == 0)
++		return 0;
++	v2pr_info("read %zu bytes from userspace\n", len);
++
++	ret = ddebug_exec_queries(buf, NULL);
++	if (ret < 0)
++		return ret;
++
++	*offp += len;
++	return len;
++}
++
+ static ssize_t ddebug_proc_write(struct file *file, const char __user *ubuf,
+ 				  size_t len, loff_t *offp)
  {
--	int err = seq_open(file, &modules_op);
-+	struct seq_file *m = file->private_data;
+-	char *tmpbuf;
+-	int ret;
++	char *tmpbuf __free(kfree) = NULL;
  
--	if (!err) {
--		struct seq_file *m = file->private_data;
+ 	if (len == 0)
+ 		return 0;
+@@ -1017,15 +1034,7 @@ static ssize_t ddebug_proc_write(struct file *file, const char __user *ubuf,
+ 	tmpbuf = memdup_user_nul(ubuf, len);
+ 	if (IS_ERR(tmpbuf))
+ 		return PTR_ERR(tmpbuf);
+-	v2pr_info("read %zu bytes from userspace\n", len);
 -
--		m->private = kallsyms_show_value(file->f_cred) ? NULL : (void *)8ul;
--	}
+-	ret = ddebug_exec_queries(tmpbuf, NULL);
+-	kfree(tmpbuf);
+-	if (ret < 0)
+-		return ret;
 -
--	return err;
-+	m->private = kallsyms_show_value(file->f_cred) ? NULL : (void *)8ul;
-+	return 0;
+-	*offp += len;
+-	return len;
++	return ddebug_proc_write_buf(file, tmpbuf, len, offp);
  }
  
- static const struct proc_ops modules_proc_ops = {
- 	.proc_flags	= PROC_ENTRY_PERMANENT,
-+	.proc_seq_ops	= &modules_op,
- 	.proc_open	= modules_open,
--	.proc_read	= seq_read,
--	.proc_lseek	= seq_lseek,
--	.proc_release	= seq_release,
+ /*
+@@ -1196,7 +1205,8 @@ static const struct file_operations ddebug_proc_fops = {
+ static const struct proc_ops proc_fops = {
+ 	.proc_seq_ops = &ddebug_proc_seqops,
+ 	.proc_state_size = sizeof(struct ddebug_iter),
+-	.proc_write = ddebug_proc_write
++	.proc_write_buf = ddebug_proc_write_buf,
++	.proc_write_size = USER_BUF_PAGE - 1,
  };
  
- static int __init proc_modules_init(void)
+ static void ddebug_attach_module_classes(struct ddebug_table *dt,
 
 -- 
 2.53.0
