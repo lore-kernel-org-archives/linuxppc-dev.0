@@ -2,51 +2,51 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45446606BA5A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:08:49 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A08B6608B7F9
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:09:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kEGAtuEw
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JpmBPtZO
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFTX06TKz3blB;
-	Tue, 03 Nov 2026 02:08:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632127;
-	cv=none; b=eowX6VqOqG3j/E+D+NvC5lVb2HEoOjsIRNTzsPbuzi7wzVtAPUo2YuzhDVUNb4Yq3cOMMWIra9umUywGYTSy1PX+aMFaKI1fYhxuqVOWZ9HukOj3jSvE15s3PbqJkPKve1XOD9vWT83dmpnnrQhFrbTGpn2FS6pbld/rgsie+sDnSVRyzqOdwjKCIfBXoHs7aQYQ4Z3lbSq3rsGpG7WCo+qUJKwu9IKuMqOmA3oGLofAYiDBbJltT5aBhiRokUmDyVbM+NKYxu4nS7n74C/t/6T6RL/+eNi3DqcuStjpUJhO4CtawkLWPYKLdNrHY938pZcqFSnGmNNIkwACpZjtSw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFTr2mW5z3cFG;
+	Tue, 03 Nov 2026 02:09:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632144;
+	cv=none; b=UxakCOJrj2htVHFZYt1m59JQ6WVFEAjw3ioWmevlfZ901aaVULK1DLIIEjIpI1QTyuzk5PN4zeOTQxnAMYe4kooPYI51f5/3NttjM/Xu23Gn51x5QME2L+m7RWrURK1f5ZfA2toydvNpbes8rhMnTJmFTEOlYi8LZCF1gj2IrYZ3zPxfb72hN8AIV4edoRQqundCfxSYFOH4Knku4BHcA+QFOFPBlssOurC2RSNMaPV4WysI5Fo+MiPAbsmku1338kaVa6FBbYsusiGgQY5KAM8wADnyUn24vkNPMLMu86dfVcF5qvBj5XTQ4HoK8B8BV7Kc/UiFJfhuBv15QaPibw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793632127; c=relaxed/relaxed;
-	bh=zr7obOUiLNzJ4M2rJicyi/Ze6HCzMDPfBdGpZnrgFfM=;
+	t=1793632144; c=relaxed/relaxed;
+	bh=YGofg29spfHBU5j0sEupYlWEu86pUC9IfXeVVL8qINU=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=cKW5Nq2fKWupfXM8d9otOSPhdzw5YTSkC4hP4J+wiQGUkN+IjuKACmxH3uPAxkVV0PioBVoUqNaOnuQ2Kw3vk2BFLlP1iFQtF135/M4nPGMQTZF59YOo7A0eKxlxLGLfuECifC2gtt18QnDpFKQ5LXxFnAw3LcwAKm9f67ApE7aeP6ebHG3hUY7wZr41BAazEBkbqqB8no81t2ZhEs6kkkZLdurbg2g8xy0uwe4Pe/+PKNa1F8oXRqV3PZnsZlT6SJ8qHsE9lvEVUUEtHSRqX4fAPrzt4+ipYbEIGmt1vPo4dyb2jD29ikP9LzKYrNkyPbsgBor0J69a9ZdKxLyo6g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kEGAtuEw; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=NkNC1CYYG6idLrhb8BDi7YeEWtFFX1il3vRMfaSZuQfuYXeM4/sGFV32DHY7WGQV2UZ3qvw8Ai97z3ZyRNNa+++fUjXhZgppo9N6iorLYYzsdKCs0EVegmjw8cBWyTHIa68xrQqQM6s/xbeObKxfj8wHftzS2KZCnGWnVWli5U2e/QBQoIdgcNtb/ztBfsnOwzzn9gymxqLAe6UiJ6y1d+oAEw4brGhNWXWMJpoS7qV1d8dU/RvVG+yv+j5AeL7hosc7ASz5IvDP41RQXDG5+m7zLxV0UnS1Pv0wF9u/jK16KM/USdpXzji1FXEP0brTCMyEp7P+6e9WotV7gKw3pg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JpmBPtZO; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kEGAtuEw;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JpmBPtZO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFTW0myZz3bX3
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:08:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFTq4Ykcz3bYG
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:09:03 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 28A32600DB;
-	Mon,  2 Nov 2026 15:08:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B133F1F00A1A;
-	Mon,  2 Nov 2026 15:08:29 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 056B14197D;
+	Mon,  2 Nov 2026 15:09:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5BB991F00A18;
+	Mon,  2 Nov 2026 15:08:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793632124;
-	bh=zr7obOUiLNzJ4M2rJicyi/Ze6HCzMDPfBdGpZnrgFfM=;
+	s=k20260515; t=1793632141;
+	bh=YGofg29spfHBU5j0sEupYlWEu86pUC9IfXeVVL8qINU=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=kEGAtuEwvTMgDuPbyzJeFLVaUSWvZkCX/wUBabr5CM+BjM76qvrrMDRwKN+aUpp0M
-	 LwULw5zP7H3bcIRxCu2+BVsEU4zGp6OX1M94GYtTzJYZ1Sv0pAvkktXo+Zb0As3XcC
-	 7Tm5eTy1em1aicRexVm3TwZLua7XOaqJGZGjekvzyZG3iJISitPVfI4Rb1C6HoqO15
-	 zds1p1eADnGHiS7upjctx8NMqWH7A7NsO/n5J+MjqWiNif9k5AGi+lAXG6mfYJREeh
-	 /tq8fM2qbOInntFHxnk7n1aXVsuVbuc+aacS++TfSOw8xPUMY5Re+hh0DhYh68pv/r
-	 SxGHP8KpJ8aAQ==
+	b=JpmBPtZO6G/UqVUziPY4iWq6sxFWqxjtkt4mByDfSmQn4JPupogU0bEEb3whcdZpv
+	 bxJjhl9riucbcDZJP757/It4YGJC5UnRtX978pao8OmQBnQl2aSFvJGabRNROHyvpQ
+	 bZzdyysVF3U57cA3Ja1OK9TBd8Tsli7X4hjtxAFP6BIZk3DMCdCyX58cnbypS2jX2/
+	 rkwz1SxlnDr9giKtJvEtvZB1xm8ozK/+QHDHx5w/XweZen0aQhQjbqjSvObAObvY2I
+	 HxCcEBImWMheaGFA39+r4mxQ3C4umA03aHVfQBgmMCsinQB7bWR44TPgh7+0yTz50I
+	 jxnkq4gmT3FLQ==
 From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 16:01:48 +0100
-Subject: [PATCH RFC 21/22] PNP: pnpbios: let procfs copy in writes
+Date: Mon, 02 Nov 2026 16:01:49 +0100
+Subject: [PATCH RFC 22/22] PNP: isapnp: let procfs copy out reads
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,7 +62,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-arch-v1-21-c9492ab08480@kernel.org>
+Message-Id: <20261102-work-procfs-arch-v1-22-c9492ab08480@kernel.org>
 References: <20261102-work-procfs-arch-v1-0-c9492ab08480@kernel.org>
 In-Reply-To: <20261102-work-procfs-arch-v1-0-c9492ab08480@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -106,50 +106,63 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Implement ->proc_write_buf() so procfs copies in what is written to
-/proc/bus/pnp/<node> before it pins the entry, and take the node data
-from that copy. A node with more than PAGE_SIZE - 1 bytes of data can't
-be written anymore. I don't think there are any.
+Implement ->proc_read_buf() so procfs copies what is read from
+/proc/bus/isapnp/<card>/<dev> to userspace after it unpinned the entry.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- drivers/pnp/pnpbios/proc.c | 9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
+ drivers/pnp/isapnp/proc.c | 20 +++++++-------------
+ 1 file changed, 7 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/pnp/pnpbios/proc.c b/drivers/pnp/pnpbios/proc.c
-index 14632a8d0da0..00163aedd738 100644
---- a/drivers/pnp/pnpbios/proc.c
-+++ b/drivers/pnp/pnpbios/proc.c
-@@ -171,7 +171,7 @@ static int pnpbios_proc_show(struct seq_file *m, void *v)
- 	return 0;
+diff --git a/drivers/pnp/isapnp/proc.c b/drivers/pnp/isapnp/proc.c
+index 8197c7f29743..152fd5bfbc06 100644
+--- a/drivers/pnp/isapnp/proc.c
++++ b/drivers/pnp/isapnp/proc.c
+@@ -19,37 +19,31 @@ static loff_t isapnp_proc_bus_lseek(struct file *file, loff_t off, int whence)
+ 	return fixed_size_llseek(file, off, whence, 256);
  }
  
--static ssize_t pnpbios_proc_write(struct file *file, const char __user *buf,
-+static ssize_t pnpbios_proc_write(struct file *file, char *buf,
- 				  size_t count, loff_t *pos)
+-static ssize_t isapnp_proc_bus_read(struct file *file, char __user * buf,
++static ssize_t isapnp_proc_bus_read(struct file *file, char *buf,
+ 				    size_t nbytes, loff_t * ppos)
  {
- 	void *data = pde_data(file_inode(file));
-@@ -191,10 +191,7 @@ static ssize_t pnpbios_proc_write(struct file *file, const char __user *buf,
- 		ret = -EINVAL;
- 		goto out;
- 	}
--	if (copy_from_user(node->data, buf, count)) {
--		ret = -EFAULT;
--		goto out;
--	}
-+	memcpy(node->data, buf, count);
- 	if (pnp_bios_set_dev_node(node->handle, boot, node) != 0) {
- 		ret = -EINVAL;
- 		goto out;
-@@ -207,7 +204,7 @@ out:
+ 	struct pnp_dev *dev = pde_data(file_inode(file));
+ 	loff_t pos = *ppos;
+-	int cnt, size = 256;
++	int size = 256;
++	size_t cnt;
  
- static const struct proc_ops pnpbios_proc_ops = {
- 	.proc_show	= pnpbios_proc_show,
--	.proc_write	= pnpbios_proc_write,
-+	.proc_write_buf	= pnpbios_proc_write,
+ 	if (pos >= size)
+ 		return 0;
+ 	if (nbytes > size - pos)
+ 		nbytes = size - pos;
+-	cnt = nbytes;
+-
+-	if (!access_ok(buf, cnt))
+-		return -EINVAL;
+ 
+ 	isapnp_cfg_begin(dev->card->number, dev->number);
+-	for (; pos < 256 && cnt > 0; pos++, buf++, cnt--) {
+-		unsigned char val;
+-		val = isapnp_read_byte(pos);
+-		put_user(val, buf);
+-	}
++	for (cnt = 0; cnt < nbytes; cnt++)
++		buf[cnt] = isapnp_read_byte(pos + cnt);
+ 	isapnp_cfg_end();
+ 
+-	*ppos = pos;
++	*ppos = pos + nbytes;
+ 	return nbytes;
+ }
+ 
+ static const struct proc_ops isapnp_proc_bus_proc_ops = {
+ 	.proc_lseek	= isapnp_proc_bus_lseek,
+-	.proc_read	= isapnp_proc_bus_read,
++	.proc_read_buf	= isapnp_proc_bus_read,
  };
  
- int pnpbios_interface_attach_device(struct pnp_bios_node *node)
+ static int isapnp_proc_attach_device(struct pnp_dev *dev)
 
 -- 
 2.53.0
