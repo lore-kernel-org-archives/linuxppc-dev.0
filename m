@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 03C166088B3D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 14:46:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F02FF6070D9C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 14:46:56 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XWvDNXOE
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k68ttWG6
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJDzv4rZNz2xXB;
-	Tue, 03 Nov 2026 01:46:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793630795;
-	cv=none; b=T/aItJj+FGgw3C1MwG1OS75aUXUEhbhKiN+JRjxHUitBgRbiKdwhYnY6dOdiaQhA0Rs/Si6dae9kGaaZNl7WzNGjTnZb0UzLP/xsYmFKRnHm0Oqa2TFA2yjmj7Dd3nYTffBc5UYN9K5lIE8aGnMuA6b+BsB2HVaoGOUTf57PGWdTmNBOsrIVA0Bu4zgQZP+eZuAIcuRXcVXuI3nqjHeuJ5MzX+lb+Ui6XccLprV+Z+Qrq851uBgyszFw57qnZxXUXFF4mI4uq0MxKVwnDh081PN6y1BwWLxXYA9XxLTK5ljuw37OdXEFO+euX6fCfpncPO9qA3yzX6erUVhvZT4SvQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJF0H57QLz2xXB;
+	Tue, 03 Nov 2026 01:46:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793630815;
+	cv=none; b=AA2Dfz5W9tafy4Da2/FmJJBH0Fh9P07PakNIMs9dO3ejI/9wrODLN6mbPPv3bqPcYb+fpNnzuuYKBLzsFMNoS0sACYQd9ckCoYGdsPTjWQHC3ldXHya2eSEAx8iJRXsQxc0zGzFVB8UTuGy4TIzyePCVXchhTwyDIniRoYivejdxJGK9726bRa/Es0GmUCaLivlWTaNtnYBqOMEVX4jKG0NtitQDuQWs88sAQLiH0NsoUpmcQdkfrveX8+G6ClUsVxNVyLx2NW+0kaTuqJmMpoM01wTnK5bqKi9ko164IVuoVDVg3JvFA6njF8muWyPMbtjekTBsKPFc/ge7cnq60A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793630795; c=relaxed/relaxed;
-	bh=8OUC3OpgPcYXff2v4b0WbdSVZE7XWpoJGNZRHA3e5A4=;
+	t=1793630815; c=relaxed/relaxed;
+	bh=gGh9qQAToZE5wrWgcgjg72Buy8fnK2LgswQGjbfg87A=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=O4LMVNT0/mC+rz4wjoNbI1rCUWOoa5iDICBHaOXrYxFXkUdU2IJMIVogxsNEsCy4WHGEen67BiTYxWGpCgVy/0RlvNJdsoQcTCnAWCtpxcXUUwugHitoGSL0s8d/kLNCwUnYn9lC/1+CQ5dBrWbh6mLJQ5M8NGZuW31Ujh/nYndc5wP4QUGZFAmclAX6f28mErY7XZvqgfniAeb1jDYS+SoDo7R2DwN8agDlUZylOELKAYsBg4x3wqGpPApVPszvsI1eewUWvIgpZ8OtHu+5vx96e1nzaMYfzd9r3QqqfE4pYFj4KCPIjdX6Tdpjt8GZspHQTiJBv2AyXhgvSC3kcQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XWvDNXOE; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=U7s8CwTFF4+tk3Jib516MUEcvPREFnVOlisv6YcNAwycMAciS5EIQfPYSMkM5b5wniEYcZ7WrQDVEI2OYHcN0TAJ4PslhYbxNCGkoijJTDE63fTXsv+4Y+MxukssikFFzk40jBhwOg7gmt8CFSsAqCRjxzM9iGybZOTFXfV5XJEMHuFZGrwxVEwmQdt+uF98tQA9jKuEUwo+kHgynZpJgYQh2ncMcZrkDNAimuopuGbAlghApSAaMMrB0ZOOTifBj911tFtfbQs1Tz+APk1Zq+IqMWOGkKJhQpflQavnsYtdZ/wAchW894SklJ7a/ynvppUtHhAO8wxavaxFKuVIhA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k68ttWG6; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XWvDNXOE;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k68ttWG6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJDzt0Z5vz2xLm
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 01:46:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJF0G5s2zz2xN4
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 01:46:54 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 5947B41AB5;
-	Mon,  2 Nov 2026 14:46:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5ACC31F00A1C;
-	Mon,  2 Nov 2026 14:46:14 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id B3FC46020C;
+	Mon,  2 Nov 2026 14:46:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C3FD21F00A1B;
+	Mon,  2 Nov 2026 14:46:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793630792;
-	bh=8OUC3OpgPcYXff2v4b0WbdSVZE7XWpoJGNZRHA3e5A4=;
+	s=k20260515; t=1793630812;
+	bh=gGh9qQAToZE5wrWgcgjg72Buy8fnK2LgswQGjbfg87A=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=XWvDNXOEbgzkyZSZLEEf/fLDGQTJKwF0ltSxY/EL3lo82Mkr/aDxZgyoDMPnEDdLr
-	 5p9X0oQCHCkY63MlXypffIH/FgWzMKVYCEo4i3pEbfJuBXE7iGAORsSWwgE8jxQhAy
-	 4NKKegcYQITsSSiB9ubx16WR7JIBFMAtYwmdkdE/Zzf6jzzLfZ7rDbpHNZ3omVKKWs
-	 5YTo9uoKH3WQgJg5iglu6NkXshnM4oNeVvav8v5ihPYSLjDC/W/Dnb3rFkAiPkdkb/
-	 knAVm1KzmCTPRmBb4tIwPxCsIua2TX2REoD5qySaeeWkURDqxkkuEp88D6dK5T0/43
-	 GCmlt6X8Ltfhw==
+	b=k68ttWG6wR2uYUNWQI+ECVf+fO/XJ0eqvyJRIGqlTdn3SeSK5FwYTdTBaVjsoBsYJ
+	 kJXwecLDVVqkc0QtPna5nnmOaGhEH6lV2p3+n4SMeLLTjqLfMHRMfS6+IdU5FeP6Ex
+	 EEbVMiiZNLXMTNclGmw6p8mC8yLNPYuUSTnCtn6ZR27qjgY9RaX2RJuHLWLPx9jmMt
+	 9JJmAL/6SUvZypF7nop8NC5qp7LgJYP8eJFNNtNBvtdk7y2N5+2qF+LGhO9FlXYxla
+	 LSU+v/oAHtst3btNP9gxZgyUrKBFNLcCwNm+jD4+mesxl+NmeCWqzBEWi80sNRNQ/1
+	 Y+2ZOSQK06ITw==
 From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 15:43:27 +0100
-Subject: [PATCH RFC 36/38] selftests/proc: check that faulting sysctl
- accesses don't hold up removal
+Date: Mon, 02 Nov 2026 15:43:28 +0100
+Subject: [PATCH RFC 37/38] proc: don't pin a symlink's entry while
+ readlink() copies it out
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-bugfixes-v1-36-59422ed3e465@kernel.org>
+Message-Id: <20261102-work-procfs-bugfixes-v1-37-59422ed3e465@kernel.org>
 References: <20261102-work-procfs-bugfixes-v1-0-59422ed3e465@kernel.org>
 In-Reply-To: <20261102-work-procfs-bugfixes-v1-0-59422ed3e465@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -97,7 +97,7 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
  linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org, 
  linux-debuggers@vger.kernel.org, 
  "Christian Brauner (Amutable)" <brauner@kernel.org>, 
- Chuck Lever <cel@kernel.org>
+ Chuck Lever <cel@kernel.org>, stable@vger.kernel.org
 X-Mailer: b4 0.17-dev
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
@@ -107,283 +107,58 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Read, write and list /proc/sys/net/ipv6/conf/<dev>/ of a tun device
-with a buffer whose first page is backed by userfaultfd and remove the
-device while the task sleeps in its copy from or to userspace:
+proc_get_link() pins the entry with use_pde() and the delayed call
+unpins it. vfs_readlink() copies the link to userspace in between. So a
+page fault in that copy holds up remove_proc_entry() just like the
+copies of reads and writes do, and the callers hold locks while they
+wait. /proc/asound/<id> is removed with snd_card_mutex and info_mutex
+held when a card changes its id.
 
-- unregistering the table doesn't wait for a faulting read(), write()
-  or getdents64()
+The pin doesn't keep anything alive. proc_symlink() copies the target
+and pde_free() frees it with the entry, and the inode holds a reference
+to the entry. What the pin does is keep a removed symlink from being
+followed. So check ->in_use instead and drop the delayed call. That
+also takes an atomic pair off every traversal of /proc/net and
+/proc/mounts.
 
-- the read still gets the value that was produced before the removal
-  and the next read fails with -ENOENT
-
-- the write is copied in after the removal and fails with -ENOENT
-
-- getdents64() still lists what it looked up before the removal and
-  fails with -ENOENT afterwards
-
-The tables are unregistered under RTNL, so a regression stalls each
-test for five seconds before it fails.
-
+Fixes: 7e0e953bb0cf ("procfs: fix race between symlink removals and traversals")
+Cc: stable@vger.kernel.org
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- tools/testing/selftests/proc/.gitignore            |   1 +
- tools/testing/selftests/proc/Makefile              |   1 +
- tools/testing/selftests/proc/config                |   3 +
- .../selftests/proc/proc-remove-slow-sysctl.c       | 213 +++++++++++++++++++++
- 4 files changed, 218 insertions(+)
+ fs/proc/inode.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/tools/testing/selftests/proc/.gitignore b/tools/testing/selftests/proc/.gitignore
-index 5b5e24e39cbd..7b8133492782 100644
---- a/tools/testing/selftests/proc/.gitignore
-+++ b/tools/testing/selftests/proc/.gitignore
-@@ -21,6 +21,7 @@
- /proc-uptime-001
- /proc-uptime-002
- /proc-pidns
-+/proc-remove-slow-sysctl
- /read
- /self
- /setns-dcache
-diff --git a/tools/testing/selftests/proc/Makefile b/tools/testing/selftests/proc/Makefile
-index dae09f333455..bce6beca7274 100644
---- a/tools/testing/selftests/proc/Makefile
-+++ b/tools/testing/selftests/proc/Makefile
-@@ -32,5 +32,6 @@ TEST_GEN_PROGS += proc-multiple-procfs
- TEST_GEN_PROGS += proc-fsconfig-hidepid
- TEST_GEN_PROGS += proc-sysctl-readdir-churn
- TEST_GEN_PROGS += proc-pidns
-+TEST_GEN_PROGS += proc-remove-slow-sysctl
+diff --git a/fs/proc/inode.c b/fs/proc/inode.c
+index 9933f03ab9fb..2d65f3c8ec03 100644
+--- a/fs/proc/inode.c
++++ b/fs/proc/inode.c
+@@ -629,19 +629,19 @@ static const struct file_operations proc_iter_file_ops_compat = {
+ };
+ #endif
  
- include ../lib.mk
-diff --git a/tools/testing/selftests/proc/config b/tools/testing/selftests/proc/config
-index 68fbd2b35884..3edd3c437fe4 100644
---- a/tools/testing/selftests/proc/config
-+++ b/tools/testing/selftests/proc/config
-@@ -1 +1,4 @@
- CONFIG_PROC_FS=y
-+CONFIG_IPV6=y
-+CONFIG_TUN=y
-+CONFIG_USERFAULTFD=y
-diff --git a/tools/testing/selftests/proc/proc-remove-slow-sysctl.c b/tools/testing/selftests/proc/proc-remove-slow-sysctl.c
-new file mode 100644
-index 000000000000..e1b1fd19a07a
---- /dev/null
-+++ b/tools/testing/selftests/proc/proc-remove-slow-sysctl.c
-@@ -0,0 +1,213 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * A read(), write() or getdents64() of /proc/sys that faults while copying
-+ * from or to userspace must not hold up unregistering the sysctl table.
-+ * /proc/sys/net/ipv6/conf/<dev>/ of a tun device is unregistered under RTNL
-+ * when the device's file is closed.
-+ */
-+#define _GNU_SOURCE
-+#include <errno.h>
-+#include <fcntl.h>
-+#include <linux/if.h>
-+#include <linux/if_tun.h>
-+#include <linux/userfaultfd.h>
-+#include <poll.h>
-+#include <pthread.h>
-+#include <sched.h>
-+#include <string.h>
-+#include <sys/ioctl.h>
-+#include <sys/mman.h>
-+#include <sys/syscall.h>
-+#include <unistd.h>
+-static void proc_put_link(void *p)
+-{
+-	unuse_pde(p);
+-}
+-
+ static const char *proc_get_link(struct dentry *dentry,
+ 				 struct inode *inode,
+ 				 struct delayed_call *done)
+ {
+ 	struct proc_dir_entry *pde = PDE(inode);
+-	if (!use_pde(pde))
 +
-+#include "../kselftest_harness.h"
-+
-+#define TUN_NAME	"procslow0"
-+#define CONF_PATH	"/proc/sys/net/ipv6/conf/" TUN_NAME
-+#define MTU_PATH	CONF_PATH "/mtu"
-+#define BUF_PAGES	16
-+#define TIMEOUT_MS	5000
-+
-+enum sysctl_op {
-+	SYSCTL_READ,
-+	SYSCTL_WRITE,
-+	SYSCTL_GETDENTS,
-+};
-+
-+struct worker {
-+	enum sysctl_op op;
-+	int fd;
-+	char *buf;
-+	size_t len;
-+	ssize_t ret;
-+	int err;
-+};
-+
-+struct closer {
-+	int tun;
-+	int done;
-+};
-+
-+static void *work_thread(void *arg)
-+{
-+	struct worker *w = arg;
-+
-+	switch (w->op) {
-+	case SYSCTL_READ:
-+		w->ret = read(w->fd, w->buf, w->len);
-+		break;
-+	case SYSCTL_WRITE:
-+		w->ret = write(w->fd, w->buf, w->len);
-+		break;
-+	case SYSCTL_GETDENTS:
-+		w->ret = syscall(__NR_getdents64, w->fd, w->buf, w->len);
-+		break;
-+	}
-+	w->err = errno;
-+	return NULL;
-+}
-+
-+static void *close_thread(void *arg)
-+{
-+	struct closer *c = arg;
-+	ssize_t ret;
-+
-+	close(c->tun);
-+	ret = write(c->done, "x", 1);
-+	return (void *)ret;
-+}
-+
-+FIXTURE(proc_sys_slow) {
-+	int tun;
-+	int uffd;
-+	char *buf;
-+	long psz;
-+};
-+
-+FIXTURE_SETUP(proc_sys_slow)
-+{
-+	struct uffdio_api api = { .api = UFFD_API };
-+	struct uffdio_register reg = {};
-+	struct ifreq ifr = {};
-+
-+	if (unshare(CLONE_NEWNET))
-+		SKIP(return, "unshare(CLONE_NEWNET): %s", strerror(errno));
-+
-+	self->tun = open("/dev/net/tun", O_RDWR | O_CLOEXEC);
-+	if (self->tun < 0)
-+		SKIP(return, "/dev/net/tun: %s", strerror(errno));
-+	strncpy(ifr.ifr_name, TUN_NAME, IFNAMSIZ - 1);
-+	ifr.ifr_flags = IFF_TUN | IFF_NO_PI;
-+	ASSERT_EQ(ioctl(self->tun, TUNSETIFF, &ifr), 0);
-+	if (access(CONF_PATH, F_OK))
-+		SKIP(return, CONF_PATH ": %s", strerror(errno));
-+
-+	self->uffd = syscall(__NR_userfaultfd, O_CLOEXEC | O_NONBLOCK);
-+	if (self->uffd < 0)
-+		SKIP(return, "userfaultfd: %s", strerror(errno));
-+	ASSERT_EQ(ioctl(self->uffd, UFFDIO_API, &api), 0);
-+
-+	/* Only the first page of the buffer goes through userfaultfd. */
-+	self->psz = sysconf(_SC_PAGESIZE);
-+	self->buf = mmap(NULL, BUF_PAGES * self->psz, PROT_READ | PROT_WRITE,
-+			 MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-+	ASSERT_NE(self->buf, MAP_FAILED);
-+	reg.range.start = (unsigned long)self->buf;
-+	reg.range.len = self->psz;
-+	reg.mode = UFFDIO_REGISTER_MODE_MISSING;
-+	ASSERT_EQ(ioctl(self->uffd, UFFDIO_REGISTER, &reg), 0);
-+}
-+
-+FIXTURE_TEARDOWN(proc_sys_slow)
-+{
-+}
-+
-+/*
-+ * Let @w sleep in its copy from or to the first page of the buffer, then
-+ * close the device. Unregistering the table must not wait for @w.
-+ */
-+static void stall_and_remove(struct __test_metadata *_metadata,
-+			     FIXTURE_DATA(proc_sys_slow) *self,
-+			     struct worker *w)
-+{
-+	struct closer c = { .tun = self->tun };
-+	struct uffdio_zeropage zero = {};
-+	struct uffd_msg msg;
-+	struct pollfd pfd;
-+	pthread_t wt, ct;
-+	int done[2];
-+
-+	w->buf = self->buf;
-+	ASSERT_EQ(pthread_create(&wt, NULL, work_thread, w), 0);
-+
-+	pfd = (struct pollfd){ .fd = self->uffd, .events = POLLIN };
-+	ASSERT_EQ(poll(&pfd, 1, TIMEOUT_MS), 1);
-+	ASSERT_EQ(read(self->uffd, &msg, sizeof(msg)), sizeof(msg));
-+	ASSERT_EQ(msg.event, UFFD_EVENT_PAGEFAULT);
-+
-+	ASSERT_EQ(pipe2(done, O_CLOEXEC), 0);
-+	c.done = done[1];
-+	ASSERT_EQ(pthread_create(&ct, NULL, close_thread, &c), 0);
-+	pfd = (struct pollfd){ .fd = done[0], .events = POLLIN };
-+	EXPECT_EQ(poll(&pfd, 1, TIMEOUT_MS), 1) {
-+		TH_LOG("unregistering " CONF_PATH " waited for the faulting task");
-+	}
-+
-+	zero.range.start = (unsigned long)self->buf;
-+	zero.range.len = self->psz;
-+	ASSERT_EQ(ioctl(self->uffd, UFFDIO_ZEROPAGE, &zero), 0);
-+	ASSERT_EQ(pthread_join(wt, NULL), 0);
-+	ASSERT_EQ(pthread_join(ct, NULL), 0);
-+}
-+
-+TEST_F(proc_sys_slow, read)
-+{
-+	struct worker w = {
-+		.op	= SYSCTL_READ,
-+		.len	= BUF_PAGES * self->psz,
-+	};
-+
-+	w.fd = open(MTU_PATH, O_RDONLY | O_CLOEXEC);
-+	ASSERT_GE(w.fd, 0);
-+	stall_and_remove(_metadata, self, &w);
-+
-+	/* The value was produced before the table went away, then nothing. */
-+	EXPECT_GT(w.ret, 0);
-+	EXPECT_EQ(read(w.fd, self->buf, self->psz), -1);
-+	EXPECT_EQ(errno, ENOENT);
-+}
-+
-+TEST_F(proc_sys_slow, write)
-+{
-+	struct worker w = {
-+		.op	= SYSCTL_WRITE,
-+		.len	= 5,
-+	};
-+
-+	w.fd = open(MTU_PATH, O_WRONLY | O_CLOEXEC);
-+	ASSERT_GE(w.fd, 0);
-+	stall_and_remove(_metadata, self, &w);
-+
-+	/* The table went away while the value was copied in. */
-+	EXPECT_EQ(w.ret, -1);
-+	EXPECT_EQ(w.err, ENOENT);
-+}
-+
-+TEST_F(proc_sys_slow, getdents)
-+{
-+	struct worker w = {
-+		.op	= SYSCTL_GETDENTS,
-+		.len	= BUF_PAGES * self->psz,
-+	};
-+
-+	w.fd = open(CONF_PATH, O_RDONLY | O_DIRECTORY | O_CLOEXEC);
-+	ASSERT_GE(w.fd, 0);
-+	stall_and_remove(_metadata, self, &w);
-+
-+	/* What was looked up before the removal still arrives, then nothing. */
-+	EXPECT_GT(w.ret, 0);
-+	EXPECT_EQ(syscall(__NR_getdents64, w.fd, self->buf, self->psz), -1);
-+	EXPECT_EQ(errno, ENOENT);
-+}
-+
-+TEST_HARNESS_MAIN
++	/*
++	 * No pin. The link lives with the entry, which the inode holds, and a
++	 * reader could fault while vfs_readlink() copies it out. Just don't
++	 * follow a removed one.
++	 */
++	if (unlikely(atomic_read(&pde->in_use) < 0))
+ 		return ERR_PTR(-EINVAL);
+-	set_delayed_call(done, proc_put_link, pde);
+ 	return pde->data;
+ }
+ 
 
 -- 
 2.53.0
