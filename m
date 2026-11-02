@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E0C460A6EE8
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:23:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 752F160824C6
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:23:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gtwKUokO
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YJCSbelw
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFpB2DcGz3dPs;
-	Tue, 03 Nov 2026 02:23:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632994;
-	cv=none; b=ZqXDSVqdfrXxoPtG1vm5ngkOQQE+zaAc+PNYXSatxhu/FJi5CINQPJKhpyJf9DQyFfUgOHJVQytAVBIRys5FRMZP9rGC1m3Faknia0X8D9PngFACWiG+1RlS99ePN8S0ein8ORZrg4/uXoFyBJ2joxxouaOchxZ9E7RNJFU93984j+LDi+Ecs/GBB7WDKBLDohGlNKdc1Vpr3rlSQ9iHkZYrTPFqL8xwr9yWZcBJ4JnPvi9BMlkOwZUCUom3Y18gq7uk1oQFu5c4Qq2OC4BMAIV4p9GqYkQapvDJgym6OtWIBvW5rNpSUrgR16kRUYuucp/bEfnQ5ohLox0zeEwuHw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFpZ1XZyz3dRt;
+	Tue, 03 Nov 2026 02:23:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793633014;
+	cv=none; b=inL6Kyi/XHmMG7cgLJVVvf6b3Jmj8ArWbHjyzZUTkNQD16hrpYaDZpCeQOIrCzPt+dS9O1jdJ7DcFqUnH3dUH9Tqq8CjvXbQtf/eGuNPiwM8EZ5lY7vMrPjlkg/II/u/LGvTQ6+FaX+kYELnzVMcrjYOJxYftBwvS9woCbO8DS5JGAaQ/becU3MvhgDJR+CDYKeHSoG9AR+uJU640J5cPHk7Il4v7HoAXDnpHvn5bIO0B7+x4sD4AOW/s5jAZomjptv6baMpFmLIsiLBly+Sz5mNK0EE7wF6/cbWkh5dxIJG0cY2ncHfOGtsaS7sEvwd7CQ05TTkhQ7wVx/eLCRuVQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793632994; c=relaxed/relaxed;
-	bh=cbUv3n1tBnI1k6VxTZ3ZcHd/CVUe8/cnvkVP6mlO6Yc=;
+	t=1793633014; c=relaxed/relaxed;
+	bh=yr3akMspnIWFpqWJkjrAgv6glOgJhJX8fSAifemHFwA=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=DdUxQBMHYUoeeoi8dXpFocITNu92Plq8apKsn5Cn9H9R+rz+Q39kwam/dWsJCn945jHK7v49qq+U0i87ppL8iOI8fQmkjiLZEtYzjOJQjuqMrAqQfTGoDTcXW4e9L+Yyba82Zr7L4795NLyqSPyt0TteaWHJAne7uq+rogRC0smQE9nwRyPtO4OFiT1plQ9i3KoMuwZvPw9x6ERNwQsd++WU1m9+qUg7se1DoF/n8rNUW93bJNq8XbKbJzJ0ZdHkX5PlDABHSfNp+ImTQnFe78mVdcLzDY8s+iAsn3G7jCxsjZlkqeDPyUHg5sn1p/mIXBnEyCIxWPb0dHQ4zD3hvw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gtwKUokO; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=NGco8Vhhv8saAqIpp1wzunYZdLW97+yeQqo7U/NjSrCbbN89yoeezvq6bR4V6yg9KNJIiFACE4X5HkkbgSnYiDGyJMO4HHvZLsMF1w8+uMXAMaV48fR7IcahIjMQsnZkt325W2gNiCWCXV1q4j1Kj4zQurmzRyAqBeDLKAuVCAIIjnC/95drdqzjWgOPcpWEa3D4cAg+gBQqyQewV/jmCJQmGHE42CJKx4BeowXTqUDobWA4pgeX5IuGi8laCKzf7tDLRFYeOIdd8BbH8RP6Q7Yw7FepVQ+j/K+a1gJfcf+P3nga9pszu2We61CyZMD27qNnTv4Gi/paVHRkkRN2Dw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YJCSbelw; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gtwKUokO;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YJCSbelw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFp933Wxz3c9D
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:23:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFpY3KPXz3dRp
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:23:33 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id E368343BCF;
-	Mon,  2 Nov 2026 15:23:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8CB961F00A16;
-	Mon,  2 Nov 2026 15:22:55 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id C4B3F437DD;
+	Mon,  2 Nov 2026 15:23:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9111F1F00A1B;
+	Mon,  2 Nov 2026 15:23:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793632991;
-	bh=cbUv3n1tBnI1k6VxTZ3ZcHd/CVUe8/cnvkVP6mlO6Yc=;
+	s=k20260515; t=1793633011;
+	bh=yr3akMspnIWFpqWJkjrAgv6glOgJhJX8fSAifemHFwA=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=gtwKUokOODP26lfp4y7mSUu6DYdG/zt2FxgYuDS+oho+JQ5cga5uqjc8YY6VgrcQs
-	 VTaytOyGE9Q36HAhmeQO/tpkWrmaem5nfcs9DoO11v1we3+YYyPqsUjQ0RtzlSJ/r7
-	 PjD7PtqydOyrhI0RMb58/TQgdn/JW1bEao0zBiP6y+8iVzXby6r+qrPSMfF1VCtR3o
-	 f+fxAzOWnAKXVVQlIcMAzpg04hv/Asv4XFoEe0YrkCVsCJLh0AlwObscrypUo3bOUD
-	 I88qZEPZKE9AXxN0jtQQ7Cv/rHCklqSSX1h/8YUYGnUDPn7pa9hj9iyObikXEB/IoK
-	 IjWpl3b9MOeCg==
+	b=YJCSbelwTMu+lkg0XhQdoj8LyLuu8oZ2pe/iy53Q06xxAeDwqlvsnJcfvKWPrL8nO
+	 1LPsdJ6f92UxNgYIH2elZX5cKB2Bn/cwnYbrr5FGX2EiostBzZYZDEJohQQBKlZ100
+	 p7HUnoW1j6UUmYnSxVo38pqZI9irmD68pXikF1kIKMo2LkpHXgXPDrrJi4p7Z6BTEm
+	 Ho/gXdwOiakESPZcb3mkuegm2OWR2/e5jdgZUaERpTqlL7W8/AYhca74N335/39sZi
+	 ng2uaNbyx5FiMaSAp2/TUfphsXmLg87fQ3ClWdiErCTiRsq4P0nmjoEgLpLSQ0erqr
+	 l9l+F4V475wRA==
 From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 16:07:20 +0100
-Subject: [PATCH RFC 10/27] genirq/proc: let procfs copy in the affinity
- masks
+Date: Mon, 02 Nov 2026 16:07:21 +0100
+Subject: [PATCH RFC 11/27] latencytop: let procfs copy in writes to
+ /proc/latency_stats
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-fs-v1-10-d09a996317b3@kernel.org>
+Message-Id: <20261102-work-procfs-fs-v1-11-d09a996317b3@kernel.org>
 References: <20261102-work-procfs-fs-v1-0-d09a996317b3@kernel.org>
 In-Reply-To: <20261102-work-procfs-fs-v1-0-d09a996317b3@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -99,12 +99,12 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
  "Christian Brauner (Amutable)" <brauner@kernel.org>, 
  Chuck Lever <cel@kernel.org>
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3770; i=brauner@kernel.org;
- h=from:subject:message-id; bh=WZPzG5+ElQbjbcTuZJJKbql/hLS5VpybW+Y2WsbSVy8=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9WG6Uyh8z/eu1hrs32SIFLvZ8+rqj2fax/9rr51N3L
- TzROveFV0cpC4MYF4OsmCKLQ7tJuNxynorNRpkaMHNYmUCGMHBxCsBE5soyMtz79dy2qTFnUlGi
- 7Rv7nTPlZCfr1j9uiJscE3tp0bIdbPYM/10MrwvWc26+27EhfVkc7w0pUx3fZeee9Fxveua24pn
- WK1YA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1161; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=9/PXHkkWFBWwJpiw0GjnsftfBxXIsWStv0RQuWJfsao=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9WG6Uxf1FUCLiA19Y3u9pcme5JklFv7e+/n/G+vrUZ
+ 5GZL6Y4dJSyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAEwkpIORYdf3e/NXsH6/4133
+ rv1C3AUbjW+79J6LeEzq8giUbOXbd4uRYa5Xn0HazZ7z2x9NiNU/Zf+6XrKpZKKX2K/DOgyTKn0
+ MWQE=
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -115,115 +115,39 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Implement ->proc_write_buf() for smp_affinity, smp_affinity_list and
-default_smp_affinity so procfs copies in what is written before it pins
-the entry, and parse the masks from that copy. A list of CPUs can be
-longer than a page on large machines, so the files take as much as
-memdup_user_nul() could copy in before. Anything larger fails with
--EINVAL instead of -ENOMEM.
+Implement ->proc_write_buf() so procfs copies in what is written before
+it pins the entry. The write only clears the statistics and doesn't look
+at what was written anyway. Writes larger than PAGE_SIZE - 1 bytes fail
+with -EINVAL now.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- kernel/irq/proc.c | 27 +++++++++++++++++----------
- 1 file changed, 17 insertions(+), 10 deletions(-)
+ kernel/latencytop.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/irq/proc.c b/kernel/irq/proc.c
-index aa3d5544cfc1..fe683457a088 100644
---- a/kernel/irq/proc.c
-+++ b/kernel/irq/proc.c
-@@ -9,6 +9,7 @@
- #include <linux/gfp.h>
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
-+#include <linux/slab.h>
- #include <linux/interrupt.h>
- #include <linux/kernel.h>
- #include <linux/kernel_stat.h>
-@@ -134,8 +135,11 @@ static inline int irq_select_affinity_usr(unsigned int irq)
+diff --git a/kernel/latencytop.c b/kernel/latencytop.c
+index b764f47606d3..35f73ca07656 100644
+--- a/kernel/latencytop.c
++++ b/kernel/latencytop.c
+@@ -267,8 +267,7 @@ static int lstats_show(struct seq_file *m, void *v)
  }
- #endif
  
-+/* lists of CPUs can outgrow a page, take what memdup_user_nul() took */
-+#define IRQ_AFFINITY_WRITE_SIZE	(KMALLOC_MAX_SIZE - 1)
-+
- static ssize_t write_irq_affinity(int type, struct file *file,
--		const char __user *buffer, size_t count, loff_t *pos)
-+		char *buffer, size_t count, loff_t *pos)
+ static ssize_t
+-lstats_write(struct file *file, const char __user *buf, size_t count,
+-	     loff_t *offs)
++lstats_write(struct file *file, char *buf, size_t count, loff_t *offs)
  {
- 	unsigned int irq = (int)(long)pde_data(file_inode(file));
- 	cpumask_var_t new_value;
-@@ -148,9 +152,9 @@ static ssize_t write_irq_affinity(int type, struct file *file,
- 		return -ENOMEM;
+ 	clear_global_latency_tracing();
  
- 	if (type)
--		err = cpumask_parselist_user(buffer, count, new_value);
-+		err = cpulist_parse(buffer, new_value);
- 	else
--		err = cpumask_parse_user(buffer, count, new_value);
-+		err = cpumask_parse(buffer, new_value);
- 	if (err)
- 		goto free_cpumask;
+@@ -277,7 +276,7 @@ lstats_write(struct file *file, const char __user *buf, size_t count,
  
-@@ -177,25 +181,27 @@ free_cpumask:
- }
- 
- static ssize_t irq_affinity_proc_write(struct file *file,
--		const char __user *buffer, size_t count, loff_t *pos)
-+		char *buffer, size_t count, loff_t *pos)
- {
- 	return write_irq_affinity(0, file, buffer, count, pos);
- }
- 
- static ssize_t irq_affinity_list_proc_write(struct file *file,
--		const char __user *buffer, size_t count, loff_t *pos)
-+		char *buffer, size_t count, loff_t *pos)
- {
- 	return write_irq_affinity(1, file, buffer, count, pos);
- }
- 
- static const struct proc_ops irq_affinity_proc_ops = {
- 	.proc_show	= irq_affinity_proc_show,
--	.proc_write	= irq_affinity_proc_write,
-+	.proc_write_buf	= irq_affinity_proc_write,
-+	.proc_write_size = IRQ_AFFINITY_WRITE_SIZE,
+ static const struct proc_ops lstats_proc_ops = {
+ 	.proc_show	= lstats_show,
+-	.proc_write	= lstats_write,
++	.proc_write_buf	= lstats_write,
  };
  
- static const struct proc_ops irq_affinity_list_proc_ops = {
- 	.proc_show	= irq_affinity_list_proc_show,
--	.proc_write	= irq_affinity_list_proc_write,
-+	.proc_write_buf	= irq_affinity_list_proc_write,
-+	.proc_write_size = IRQ_AFFINITY_WRITE_SIZE,
- };
- 
- #ifdef CONFIG_GENERIC_IRQ_EFFECTIVE_AFF_MASK
-@@ -217,7 +223,7 @@ static int default_affinity_show(struct seq_file *m, void *v)
- }
- 
- static ssize_t default_affinity_write(struct file *file,
--		const char __user *buffer, size_t count, loff_t *ppos)
-+		char *buffer, size_t count, loff_t *ppos)
- {
- 	cpumask_var_t new_value;
- 	int err;
-@@ -225,7 +231,7 @@ static ssize_t default_affinity_write(struct file *file,
- 	if (!zalloc_cpumask_var(&new_value, GFP_KERNEL))
- 		return -ENOMEM;
- 
--	err = cpumask_parse_user(buffer, count, new_value);
-+	err = cpumask_parse(buffer, new_value);
- 	if (err)
- 		goto out;
- 
-@@ -249,7 +255,8 @@ out:
- 
- static const struct proc_ops default_affinity_proc_ops = {
- 	.proc_show	= default_affinity_show,
--	.proc_write	= default_affinity_write,
-+	.proc_write_buf	= default_affinity_write,
-+	.proc_write_size = IRQ_AFFINITY_WRITE_SIZE,
- };
- 
- static int irq_node_proc_show(struct seq_file *m, void *v)
+ static int __init init_lstats_procfs(void)
 
 -- 
 2.53.0
