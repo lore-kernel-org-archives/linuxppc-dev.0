@@ -1,98 +1,49 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D960606A324
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 05:20:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 22182606A324
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 06:06:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=KVPQ8Da9;
-	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=pP4kaxkf
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=opLyUe7j
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJ0RF3SVcz2yTQ;
-	Mon, 02 Nov 2026 16:20:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=85.215.255.53 arc.chain=strato.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793596857;
-	cv=pass; b=InGQbcEt/K/GLN+BwD5JuKZjecEaNVCAuy256MVaL5BdhQFxrNF+Lv8CWoGJCY4ONY3HzOTOcKjXZqEJgRSOKEG+6/F/oCSAA6No91fSlXUFLHoCZOhRtGRvNTd52E0U3aCaxGwv8fxaiV4j6nTxTeMoEsRMwEiGKKlfE1XEmv0UYaLAEM79jueZtNnLQvrY+Ea0WoBJ/hIyCTRylNqmZZQTyIwQCB72drSsdRY4yQBV7j4x8u9etAmvssWBLMbCykMjSgSGdJvQU+0Z9CXIveWfiH4/Br09Ix4gbaRpb/bsR9m2soKPSEhTeBDaq4x07NVTQ1R3k11vWOlMgUwwDA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793596857; c=relaxed/relaxed;
-	bh=GX/7Qy5oyjcT57M0CFfoxm0UI98pxhpQ+pqMh7EeW3Y=;
-	h=Subject:To:Cc:References:From:Message-ID:Date:MIME-Version:
-	 In-Reply-To:Content-Type; b=nL0MdU/9l254dBmHzYQpmvP802h6xOwL7PGU5UU9ykV1pyNPBecI4cbQ0+8XQrJ3cGJu5YDCL/gaG0B/gU0L9O1Wo1V8jQw1BEZOdhSPMG07799aKV1fB90UYsez4lT+MuznLRjQelgebg3QixkhNBS0miiL4tV8V9Vmq7y7ybMHzxDBAXE1rYbmz42lUBBKqyco33wdV0FYasKowxLgqRXy3lbjschf8AdGihfH84RQUJaFnU0L9YEC23EO9cXeJ3zO514XImEVVFFmjGv2YfdHH5OdMWjn+FQpU3mqZTw4bc6xYOvv1nvVHpkfx+nkELLy3LVzxl2neJT2Q+mcKw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=KVPQ8Da9; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=pP4kaxkf; dkim-atps=neutral; spf=pass (client-ip=85.215.255.53; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p01-ob.smtp.rzone.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJ1Rp1r5rz2y7p;
+	Mon, 02 Nov 2026 17:06:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::2f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793599590;
+	cv=none; b=bLyo6dgELHgC3C2vKc7z2Tybipxsb7PBueaXFI8arN9Taf6CLRIAKE/sA5lSloeuHLCQMkrbLWd/rCn2t+tkkm0Baz7A+Am6W5zUdFsq4d96LrDnST34ZDSurNFjTZsQPChX9wL/F7YGVedzm6RlLP5dQZhjDG0MpJ/fHZM1/DqFSAhrFZM1rTfT2+vqPlZ/sokLeLLjH0o/RubycoFS9NfZii3kJE+ysQVgLPavMizWwzCKjWHC2SLk5uNqgynr7PTr2hiJw6/VBEsr9Gm+/sD+QFkYa1pbxCgoh/dcshu2o0ZMjzVD0VxMOCi5KL6epax1tv0KdgKeM8k55Xu1OA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793599590; c=relaxed/relaxed;
+	bh=h1VSrMby2SX5eM2E4NxQctXhVt0Tc6AaUP5veYJ4paM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=MUHiA6mUp90mwV7dkE0srmw2nFAdk2uOpx93pd3aH/hIleKL6kvslwj17HeNscfsVqmmhQfod2OEwt1aGrKt+1SL2Q8f+ZBkJaMUI5qP8Yf7avsiIkwu5Fp1oGfU/x1XaupHKjxjfCXCErYKLWJMOaCfjuyDD3ydfqk3YmrlCpG2MrHrznNNQ+PPt8GUaXCGaI4EUrDWZoUJRPfXDZAG/8B+R6guhQB96RHaCQRQKuNXMlZ99augdo/I/rTPucykMuLMNZqavn7668DV2eKAjVUsWH/uDCSUP9SSs0azrLGf8JZER/7eZ6qyWUyIcIiAbLwum63lM6g/JO5ZuecAcA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=opLyUe7j; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::2f; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=KVPQ8Da9;
-	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=pP4kaxkf;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=opLyUe7j;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=85.215.255.53; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
-Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [85.215.255.53])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::2f; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta1.migadu.com (out-47.mta1.migadu.com [IPv6:2001:41d0:203:375::2f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJ0R62Blcz2xqh
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 16:20:47 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1793596824; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=sHjwFNN5AXwtIASS9Zh6wK8LhX40Zzb+N1UrnFTHbtWnfHMr8NfpsV6qAe8Hk+VELy
-    hJpR+nyEymPugz0pX2rg48tciTf9VRX3IHFXrdIkkj57VJ/I8lTWCFTUvtQVeZfpulaf
-    rpxwx+OXkSUQWz+JjVWYaKFvTSpldvJ033YeRftkSPZzFdE6noODbnSYinoTSJnU4BLP
-    JPiLkTguCRH9HKkGRu08WD+xZQDvSNDeMsbozDeOwk5HIEMgDvzZKM119oX+crPyKSjL
-    Kj7zLFYexuE69CZrxmr368uyDGQJk4ugo2oUyfus60aIfRsHOdPYPOsyBqVxf1JAE1+d
-    Ixkw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1793596824;
-    s=strato-dkim-0002; d=strato.com;
-    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=GX/7Qy5oyjcT57M0CFfoxm0UI98pxhpQ+pqMh7EeW3Y=;
-    b=U4J82InD3ogW8wExiV59D0BvoupHY2fyugpHxYdMJ/lBPvSdUrYr1ZFy/LJ728D0bX
-    4+TmeTQ53OkryeJN60tmu85Ifx9YPeJOuWdmaPPFAP8CmBImxUmvvpOtgIDWDw3geS8G
-    UQMfe4Kksd5x6aeclzg4i0ZvWsYI+PDn/cMN2JG148t3kkv84y8YggeWq9R1FqbWkGTz
-    B9RgaUiGQF2o+x7OuY1BSwCB9WKQNT8ZOr+BPbfogQR68gtkntAXLvXFHebwz3JdAlRx
-    arb3qTbPaJHW6TVVYL5WToIx6H9gZ7B93vhsWHQd7PG5bvPRt7CwJreDLne9Bo0JBqcX
-    MrGg==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo01
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1793596824;
-    s=strato-dkim-0002; d=xenosoft.de;
-    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=GX/7Qy5oyjcT57M0CFfoxm0UI98pxhpQ+pqMh7EeW3Y=;
-    b=KVPQ8Da9re2V9w5r+srslIWwt+0063BF7TBK6INsDoeXM0+4tbn1Q1FH3V9P+JyCTt
-    biyqpv60Q59vwMCeEyyuoOZkZeRs+WShynVQU2mMyQidr3IIz31gZ12RQ9UOpcVD0ssL
-    VI5NiDAx+BU8TEcPE6iTd21OqWXEA//6njWzHeeNZfvTs0wXusnBPUfqmkFltldLAOJv
-    mDvLRWaP8Jexbam2T/PuBHJpox+uo0BLKc0aBZNSyyQZXOy+6LHWvqseJVpf0Co2Yrzk
-    nmphXEwjQjeKDwgI9IcLZsDsljd36Qn1ewxJCL9+em9EB9JZM+MQKAV+4Y2G5uMV5FHw
-    pfbw==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1793596824;
-    s=strato-dkim-0003; d=xenosoft.de;
-    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=GX/7Qy5oyjcT57M0CFfoxm0UI98pxhpQ+pqMh7EeW3Y=;
-    b=pP4kaxkfDJOeo5xHE9ORcqg1jAnU1cLEBlO6YggjZCF2iDMH9ld3uTOtwhvRXUaj51
-    TqjjpV3dSLESwxvf15AA==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr4thIFiqT9BURIy+g7Hc="
-Received: from void-ppc.a-eon.tld
-    by smtp.strato.de (RZmta 55.6.3 DYNA|AUTH)
-    with ESMTPSA id e825d92A25KNAF6
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-	(Client did not present a certificate);
-    Mon, 2 Nov 2026 06:20:23 +0100 (CET)
-Subject: Re: [PATCH] powerpc/pasemi: Defer Nemo IRQ initialization
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, maddy@linux.ibm.com,
- mpe@ellerman.id.au
-Cc: npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org,
- Christian Zigotzky A-EON Open Source <info@xenosoft.de>,
- Darren Stevens <darren@stevens-zone.net>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
- Damien Stewart <hypexed@yahoo.com.au>, mad skateman <madskateman@gmail.com>
-References: <20261024075519.18877-1-chzigotzky@xenosoft.de>
- <zevr6h46.ritesh.list@gmail.com>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Organization: A-EON Open Source
-Message-ID: <1f7cd06f-9364-e5da-b65d-7282fc9af03e@xenosoft.de>
-Date: Mon, 2 Nov 2026 06:20:23 +0100
-X-Mailer: BrassMonkey/35.0.2
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJ1Rj5GWpz2xb9
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 17:06:21 +1100 (AEDT)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=m9NFSN0c8k/rqWtXM6UCsQER/s2DqAk40a8du6haVV4=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1793599558; v=1; x=1794204358;
+ b=opLyUe7jGCNX/Ks2Wfw0GvCvGymVCVFY2l4AjF+DjnJkuDGtnq5w8qUxEBVGRbjNMihUgh2p
+ N2WbiyMNueHHPSHUSGE/VxojS8kqzm1uSC+IpGtAVRaUN87GTq88H0oOGL1Su97yAdfj0UCXL5R
+ lWXN8dhDPTy0Vq7auiEh+2BU=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id b978153f13cb2e16;
+	Mon, 02 Nov 2026 06:05:58 +0000
+X-Mizu-Trace-ID: b978153f13cb2e16
+X-Migadu-Flow: FLOW_OUT
+Message-ID: <72d1b1d7-2fb6-402f-a557-0eaa767d6f86@linux.dev>
+Date: Mon, 2 Nov 2026 14:07:18 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,140 +57,170 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <zevr6h46.ritesh.list@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 03/10] mm/vmalloc: clamp an unaligned range in
+ vunmap_pte_range()
+To: Dev Jain <dev.jain@arm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kasan-dev@googlegroups.com, linux-mm@kvack.org,
+ Sashiko <sashiko-bot@kernel.org>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>,
+ Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
+ Dmitry Vyukov <dvyukov@google.com>, Andrew Morton
+ <akpm@linux-foundation.org>, Dennis Zhou <dennis@kernel.org>,
+ Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@gentwo.org>,
+ Uladzislau Rezki <urezki@gmail.com>, Suren Baghdasaryan <surenb@google.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+References: <20261026080329.140244-1-hao.ge@linux.dev>
+ <20261026080329.140244-4-hao.ge@linux.dev>
+ <99f529e8-06f7-4a20-a60b-0330c5d3d91c@arm.com>
+ <5452d555-82f9-45a6-b443-ee732b1874ba@linux.dev>
+ <e8a2a42d-e424-4366-8a68-e39167f62276@arm.com>
+Content-Language: en-US
+From: Hao Ge <hao.ge@linux.dev>
+In-Reply-To: <e8a2a42d-e424-4366-8a68-e39167f62276@arm.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS autolearn=ham
-	autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 11/02/2026 04:34 AM, Ritesh Harjani (IBM) wrote:
-> chzigotzky@xenosoft.de writes:
->
->> From: Christian Zigotzky A-EON Open Source <info@xenosoft.de>
+
+
+On 2026/10/30 22:20, Dev Jain wrote:
+> 
+> 
+> On 30/10/26 2:00 pm, Hao Ge wrote:
+>> Hi Dev
 >>
->> Since pas_pci_init() is now called later during boot, the i8259
->> initialization in pas_init_IRQ() happens too early and accesses
->> registers that are not yet mapped, preventing the board from booting.
+>> Thanks for your review.
 >>
->> Move the Nemo-specific i8259 initialization to pas_add_bridge(),
->> after the ISA bridge has been discovered.
->
-> That make sense to me. The patch looks good. However, shouldn't we also
-> add Fixes tag and Cc: stable tag - so that this gets backported to older
-> stable kernels.
->
->
-> Fixes: c144bc719234 ("powerpc/pasemi: Move PHB discovery")
-> Cc: stable@vger.kernel.org
->
-> I think the fixes tag should be above - but feel free to correct that.
->
-> Otherwise looks good to me. Feel free to add:
-> Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
->
-Great! Just for info. I don't need this patch for the stable long-term 
-kernel 5.10 but it is at least necessary for the stable long-term 
-kernels 6.12 [1] and 6.18.
-
-- Christian
-
-[1] 
-https://raw.githubusercontent.com/chzigotzky/kernels/refs/heads/6_12/patches/X1000/pas_pci_init_v6.patch
->> Suggested-by: Darren Stevens <darren@stevens-zone.net>
->> Tested-by: Christian Zigotzky <chzigotzky@xenosoft.de>
->> Signed-off-by: Christian Zigotzky A-EON Open Source <info@xenosoft.de>
->> ---
->>   arch/powerpc/platforms/pasemi/pasemi.h |  6 ++++++
->>   arch/powerpc/platforms/pasemi/pci.c    |  5 +++++
->>   arch/powerpc/platforms/pasemi/setup.c  | 12 ++++--------
->>   3 files changed, 15 insertions(+), 8 deletions(-)
+>> On 2026/10/30 15:14, Dev Jain wrote:
+>>>
+>>>
+>>> On 26/10/26 1:33 pm, Hao Ge wrote:
+>>>> commit a739e6b557af ("mm: vmalloc: WARN_ON if mapping size is not
+>>>> PAGE_SIZE aligned") made vmap_pte_range() warn and bail out when the
+>>>> size is not a multiple of PAGE_SIZE. That loop steps in page
+>>>
+>>> Why are we checking the alignment so late into vmap_pte_range? Why not
+>>> simply do
+>>>
+>>> if (!IS_ALIGNED(addr, PAGE_SIZE) || !IS_ALIGNED(end, PAGE_SIZE))
+>>> 	return; (or return -EINVAL);
+>>>
+>>> at the start of vmap_range_noflush and vunmap_range_noflush?
 >>
->> diff --git a/arch/powerpc/platforms/pasemi/pasemi.h b/arch/powerpc/platforms/pasemi/pasemi.h
->> index 6f6743b8e48d..01bcfa258625 100644
->> --- a/arch/powerpc/platforms/pasemi/pasemi.h
->> +++ b/arch/powerpc/platforms/pasemi/pasemi.h
->> @@ -7,6 +7,12 @@ extern void pas_pci_init(void);
->>   struct pci_dev;
->>   extern void pas_pci_dma_dev_setup(struct pci_dev *dev);
->>   
->> +#ifdef CONFIG_PPC_PASEMI_NEMO
->> +void __init nemo_init_IRQ(void);
->> +#else
->> +static inline void __init nemo_init_IRQ(void) { }
->> +#endif
->> +
->>   void __iomem *__init pasemi_pci_getcfgaddr(struct pci_dev *dev, int offset);
->>   
->>   extern void __init pasemi_map_registers(void);
->> diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
->> index 2df955274652..fb53782da7ec 100644
->> --- a/arch/powerpc/platforms/pasemi/pci.c
->> +++ b/arch/powerpc/platforms/pasemi/pci.c
->> @@ -265,6 +265,11 @@ static int __init pas_add_bridge(struct device_node *dev)
->>   	 */
->>   	isa_bridge_find_early(hose);
->>   
->> +	/*
->> +	 * ISA bridge is now active, add the i8259 cascade (if needed)
->> +	 */
->> +	nemo_init_IRQ();
->> +
->>   	return 0;
->>   }
->>   
->> diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
->> index 45792ecd5dfd..7a961f2a228f 100644
->> --- a/arch/powerpc/platforms/pasemi/setup.c
->> +++ b/arch/powerpc/platforms/pasemi/setup.c
->> @@ -216,10 +216,12 @@ static void sb600_8259_cascade(struct irq_desc *desc)
->>   	chip->irq_eoi(&desc->irq_data);
->>   }
->>   
->> -static void __init nemo_init_IRQ(struct mpic *mpic)
->> +void __init nemo_init_IRQ(void)
->>   {
->>   	struct device_node *np;
->>   	int gpio_virq;
->> +	struct mpic *mpic;
->> +
->>   	/* Connect the SB600's legacy i8259 controller */
->>   	np = of_find_node_by_path("/pxp@0,e0000000");
->>   	i8259_init(np, 0);
->> @@ -230,14 +232,10 @@ static void __init nemo_init_IRQ(struct mpic *mpic)
->>   	irq_set_chained_handler(gpio_virq, sb600_8259_cascade);
->>   	mpic_unmask_irq(irq_get_irq_data(gpio_virq));
->>   
->> +	mpic = irq_get_chip_data(gpio_virq);
->>   	irq_set_default_domain(mpic->irqhost);
->>   }
->>   
->> -#else
->> -
->> -static inline void nemo_init_IRQ(struct mpic *mpic)
->> -{
->> -}
->>   #endif
->>   
->>   static __init void pas_init_IRQ(void)
->> @@ -300,8 +298,6 @@ static __init void pas_init_IRQ(void)
->>   		mpic_unmask_irq(irq_get_irq_data(nmi_virq));
->>   	}
->>   
->> -	nemo_init_IRQ(mpic);
->> -
->>   	of_node_put(mpic_node);
->>   	of_node_put(root);
->>   }
->> -- 
->> 2.43.0
+>> I think adding that check at the entry of vunmap_range_noflush()
+>> goes against its design intent. Its job is to tear down the mappings
+>> of the given VA range, so even when the caller passes a size that is
+>> not page-aligned, we still have to unmap whatever is mapped within
+>> that range.
+>>
+>> So the patch clamps end down to the last full page and keeps
+>> clearing. A buggy caller still gets its mapping torn down as far as
+>> it goes, and nothing is left behind. The check here is just for
+>> protection. 
+>>
+>> This is just my preliminary understanding; I may be mistaken.
+> 
+> Hmm I get you, but this is very ugly. We are trying to tolerate
+> a blatant bug in the caller with not-so-nice code. But see below.
+>>
+>> Thanks
+>> Best Regards
+>> Hao
+>>
+>>
+>> But that's just my understanding, happy to be corrected.
+>>
+>>
+>>>
+>>>
+>>>> multiples and stops only at addr == end; with an unaligned size addr
+>>>> never lands on end, so the loop cannot terminate and walks off the
+>>>> end of the page table.
+>>>>
+>>>> vunmap_pte_range() has the same loop without any guard, so an
+>>>> unaligned range would clear PTEs past end without ever stopping,
+>>>> walking off the end of the page table.
+>>>>
+>>>> Add the check there too. The range is clamped down to the last full
+>>>> page rather than dropped, and the loop is skipped when nothing is
+>>>> left, so a buggy caller still gets its PTEs cleared as far as they
+>>>> go.
+>>>>
+>>>> Reported-by: Sashiko <sashiko-bot@kernel.org>
+>>>> Signed-off-by: Hao Ge <hao.ge@linux.dev>
+>>>> ---
+>>>>  mm/vmalloc.c | 5 +++++
+>>>>  1 file changed, 5 insertions(+)
+>>>>
+>>>> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+>>>> index 44e0eb32708f..7131f60d1a8e 100644
+>>>> --- a/mm/vmalloc.c
+>>>> +++ b/mm/vmalloc.c
+>>>> @@ -393,6 +393,11 @@ static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+>>>>  	pte_t ptent;
+>>>>  	unsigned long size = PAGE_SIZE;
+>>>>  
+>>>> +	if (WARN_ON_ONCE(!PAGE_ALIGNED(end - addr)))
+>>>> +		end = addr + PAGE_ALIGN_DOWN(end - addr);
+> 
+> For simplicity assume PAGE_SIZE is 4, start is 3, end is 10.
+> With your code we will get
+> 
+> addr = 3, end = 3 + ALIGN_DOWN(10 - 3) = 3 + 4 = 7.
+> So the range becomes [3, 7) clearing only two ptes, the one covering
+> [0, 3], the second covering [4, 7]. I feel we should rather make
+> the range from [3, 10] to [0, 11], clearing three ptes.
+>
 
+Thanks for the example. Looks like I nearly introduced a new bug while
+guarding against the old one, good thing you caught it.
 
--- 
-Sent with BrassMonkey 35.0.2 (https://github.com/chzigotzky/Web-Browsers-and-Suites-for-Linux-PPC/releases/tag/BrassMonkey_35.0.2)
+> So, at the start of vunmap_range_noflush we could basically
+> WARN_ON on non-alignment, and then clamp the start down, and clamp
+> the end up to PAGE_SIZE.
 
+I'm wondering whether we should simply BUG_ON for non-aligned ranges here.
+Because the unmap could silently clear mappings at adjacent addresses, which
+may not even belong to the caller, and this kind of problem is really hard to
+track down afterwards. Say [0, 3) is in use by someone else, with PAGE_SIZE=4
+an unmap starting at 3 still begins with the pte covering [0, 4), since the loop
+clears page by page, so that owner loses his mapping without doing anything wrong,
+and only sees the damage much later when he touches it again.
+
+WDYT?
+
+> 
+> And with this also throw in a patch to bring the -EINVAL bailout
+> in vmap_pte_range to the top, in vmap_range_noflush and check
+> both start and end alignment.
+
+For the vmap_range_noflush() check, fully agreed.  The current check
+is indeed too late, the range is only found to be bad after part of
+it has already been mapped. 
+
+Looking forward to your valuable comments.
+
+Thanks
+Best Regards
+Hao
+> 
+>>>> +	if (end == addr)
+>>>> +		return;
+>>>> +
+>>>>  	pte = pte_offset_kernel(pmd, addr);
+>>>>  	lazy_mmu_mode_enable();
+>>>>  
+>>>
+> 
 
