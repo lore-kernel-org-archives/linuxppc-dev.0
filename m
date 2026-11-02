@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0799F606C54B
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:19:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A437606A902
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:19:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HiivqBNd
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FISzkgiD
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFjs5KGTz3bV5;
-	Tue, 03 Nov 2026 02:19:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632769;
-	cv=none; b=kmbUExDSLhEuf5tMceJziECyeEiOD+TXLZu823DuSLr8HRTrwt5eVC31HH1AlFYg2jh/q9YL1Wur/FadDYpqFDC5H3RCAXVQkRCxfQcJpbjMwpBD8D4v0Uhh+FEVy8Ttvvy90t3MZ0FAsg0hRI87EBX71uG3GbeiWW0dqu6OykrpzDTSjOvpIzO/t+PgXNd+wI87fQWMXJAsO4H8r6KpmHqU7Sj4ImcjYVRX4cfTunwQLkB6xGC0cyxXiI/obpzVwSrlKNSkP/keoi/uCurf7THo5SdzY4SjQ2rwl9DDOYSMe8P+CUlBdBoKOfA+JA1aRfKROGsKRFwXiMHYLZxGYw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFkJ0jnSz3cdy;
+	Tue, 03 Nov 2026 02:19:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632792;
+	cv=none; b=YSfjCOEQbeA9G49xPIpmjcDuE/4/gZ9V+IiipA1aHIFOIYR+tkjSsjLtfBYAdx3dKiA8/65fckTJMQ7gtYdrlY1xpPJHM9MQaHhmfZI9itJL8o6C3wjNOfx7KV4+J09br0c7UBoKIzc5NYDoCUeqax4EnStW2kHtJeJKCCY7/3rglNfKMTEzNrpY2WksVYmrZhiH7GBqN+tRfRVQgl0QL1ZErDjcYkmRvYwfY223PxJC2JcU/I0Iuy/mgW9Vm4OR4F4MKDwMqlnU5eO2+WsU9X0fp+pMqwGNaR9EvndxRjvUydh4Dj2vGwftZktgAR2sCPtLgWlyjB8uGHfSl4Qw2Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793632769; c=relaxed/relaxed;
-	bh=Oc8DmgxGioqkR/9qk3a4pltP7ArAEGeuKF7qww97tvM=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:
-	 In-Reply-To:References:To:Cc; b=QswpPC1xY8ZJ4PzYQFhv3LbTDB4kZiJi5Jq8IjhD2psM0k+1mJKGGCnZQ/Nnu/56PpN6fIqHlt/VHEkZHk7Dgrbrz385J+vb4QDHZjPnQBCYbuA+Y3IPX1HrME00Qc3nwo1heK88dmMzXxuZXDzQCQ3yM0/vshRC96eH9mDeRYMMigfbSmHhrEIq2VR89TD/w9qlJOHCpjuQWVHHL6TaouySIdxzESKpXE/ufnljaW9+04z2FGHy9r3hxDybB7HliBN1E0gSjbuHZrR0pQaFA8MONKm0/9VSw8sigCvCZrQLjsc6AE3DIBi6PYQt+daUKtwImgRSsL4Yk7VgStqkUw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HiivqBNd; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1793632792; c=relaxed/relaxed;
+	bh=o8L0vvGY5Km24xgHgPbylEP8c5DuS625RCEauDmBOHw=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=Xr3ajHDZeQ5fvTjBEjtauTo1DzJVyrcgZ4JRaYjZkEj/nvzs/4NySrafxHZXlRiK5+lkJXcN8rwQl4XW6dMU7WsTnm08D6zZXWhDv+KNXl1ulF+6nyn6ogde9gywYFh+Rue69pAYEdhQqOeiVqXBkGbQOkZI5nVoIX4ZC79eTptWMc4OyDUO037NQVzrFXKZhuACc50Dvz4o5pjF6Z5QqqU9y3CclCHUX8bhQYsNB/tg1Kezl+wzy3gEu+hUb0osd4Xdo/sp0mAHuNOsdzP7IaKFEzJZCO6uzmoehdOqHZ08q8YVR9mOqLcYym7i+S1sn5rd4s1OPDPuIFXGCPUFdg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FISzkgiD; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HiivqBNd;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FISzkgiD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFjs043Mz2yjN
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:19:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFkH1nYgz3cdq
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:19:51 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 1B6DA40700;
-	Mon,  2 Nov 2026 15:19:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C54621F00A16;
-	Mon,  2 Nov 2026 15:19:07 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 3FCFA60A4F;
+	Mon,  2 Nov 2026 15:19:49 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AC6A21F00A1C;
+	Mon,  2 Nov 2026 15:19:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793632767;
-	bh=Oc8DmgxGioqkR/9qk3a4pltP7ArAEGeuKF7qww97tvM=;
-	h=From:Subject:Date:In-Reply-To:References:To:Cc;
-	b=HiivqBNdbktMB3jIR2AZpFD8s6Tn7iHfe8kJ0WslNzaoAQW5kc7o0gRDBArnpxDsS
-	 CtfL51KKLRBSwt+j3D7V1//ejI98V61eo5T0NlexRsUi5c8pC1GbUMNrvk4YIwh8E5
-	 2lhDypmE88DBG1tieFL1FjjkiAc9DS68lntunq5HpGVUJiZJWOvuGdSub19BrAbLty
-	 mrA/DenKQtkX+TIPLm37CWzKJ4S67BQQ5VCO1dvBtJzcV1DDF470qP/7oLpQMpdRK1
-	 T/4sZq0Faz7QcfBjhDQAlwLqisGwJC3D3nAo8pdpGdJQsFprczR6CHYKoPi6OQI8eX
-	 km5AalwrjwlXw==
+	s=k20260515; t=1793632788;
+	bh=o8L0vvGY5Km24xgHgPbylEP8c5DuS625RCEauDmBOHw=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc;
+	b=FISzkgiD/yGuvR5vmXFKZeW9WfMgEMNzsKuSLgjo5EcXuoWsQeOK9E+zoYez94iwP
+	 kd6gyDs+JBsqALh51n9A8+QTvp0EtTnI1VuAQVToT3JauFOAYWcitc4Ij8VOStoQHW
+	 HHtZ3oepjBq45VLaZrj+hF2sTz5wHN/lLPiI7eNqaF7rYYCqUQ/+mzk+bSyv7sw/P2
+	 0Gtuci3mXrlYHF3T4dLdAjX8+3RrsfMa0Ybz3rc2hywNaARmKsDWWKsP2DPHejgwhY
+	 CSyzQiOBTaMPhT4NH/NFnIcCftSoSwRNaEqIAiartqZhauq2wH7uX/8R0Gi2xJOmu4
+	 rQ5tXNgRbeYdA==
 From: Christian Brauner <brauner@kernel.org>
-Subject: [PATCH RFC 00/27] proc: convert the fs, kernel and mm entries
-Date: Mon, 02 Nov 2026 16:07:10 +0100
-Message-Id: <20261102-work-procfs-fs-v1-0-d09a996317b3@kernel.org>
+Date: Mon, 02 Nov 2026 16:07:11 +0100
+Subject: [PATCH RFC 01/27] jbd2: let procfs own the seq_file of the info
+ file
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,14 +63,9 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/22OwU7DMAyGX6XymUxNmnVpr0g8AFe0Q+LYLKA1w
- +kK0rR3J2XTTki+/L/sz98FCkmiAmNzAaEllZSnGvRTA3jw0zupFGsG05pe61ar7yyf6iQZuag
- 6VvPAEa0bMEA9Oglx+vkDvsHryzPsb2U5hw/CeUWta8EXUkH8hIe1WqGbG3QTJS0k5Q4T+jpXq
- flOfDiNzb9GmIWUY2+9ZasN8rjoxz/Mx2Oax6bfBu+4s4TO9YQ7Ewy2uxjRIXfR6S12xvVDhP3
- 1+gsC/z1/IQEAAA==
-X-Change-ID: 20261101-work-procfs-fs-41f9fdc489cb
-In-Reply-To: <20261102-defizit-jobaussicht-kurios-7016c6e67442@brauner>
-References: <20261102-defizit-jobaussicht-kurios-7016c6e67442@brauner>
+Message-Id: <20261102-work-procfs-fs-v1-1-d09a996317b3@kernel.org>
+References: <20261102-work-procfs-fs-v1-0-d09a996317b3@kernel.org>
+In-Reply-To: <20261102-work-procfs-fs-v1-0-d09a996317b3@kernel.org>
 To: linux-fsdevel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>, 
  Jann Horn <jannh@google.com>, Josef Bacik <josef@toxicpanda.com>, 
@@ -104,12 +99,12 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
  "Christian Brauner (Amutable)" <brauner@kernel.org>, 
  Chuck Lever <cel@kernel.org>
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=8569; i=brauner@kernel.org;
- h=from:subject:message-id; bh=6lMrJQN91rnuCiXg2l4F0Y5JeubSe/EgzAgxv51kRnM=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9WG7I7/625f3h7Cqd5DNl2xf/OvlHY0/nxX2OC1eoq
- c38/udvX0cpC4MYF4OsmCKLQ7tJuNxynorNRpkaMHNYmUCGMHBxCsBECo0Z/goyKdd8SMi1Y43f
- /3aj6Iub5itcN6opMgkcrnwpe3DK1hMM//Q+yfyds/PFlb03GAyP//g85/4Pr0O5e65Xx839JOd
- xK5QZAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2318; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=4wXeP/X63evRQ0XlRmaO+RfgvVw7qBYaC3PXgCgMk/I=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9WG74e18U46btbmdaLFZySH/a4bJqy6EXrWETf+nEX
+ czabLYjsqOEhUGMi0FWTJHFod0kXG45T8Vmo0wNmDmsTCBDGLg4BWAiiRcZfvz/JWB5uf7z1qfa
+ eR5bDib8Y7/02ydhzb6jJ8MZJrVNc2VkmBYey/3mL2tK5+xlRYFcaYV+5zS/m7WkLC2MPxt0YDU
+ PKwA=
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -120,146 +115,84 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-This converts the proc entries of jbd2, jfs, lockd, nfsd, ntfs3 and
-cifs, the irq affinity files, latencytop, lockdep, /proc/profile,
-/proc/pressure, kallsyms, /proc/modules, dynamic_debug, sysvipc,
-allocinfo, /proc/swaps and /proc/config.gz to what "proc: let procfs
-own the data path" set up: procfs owns the seq_file, copies in writes,
-copies out reads and copies ioctl arguments in and out, so the entries'
-code only ever runs with the entry pinned and never touches userspace
-memory.
-
-One patch per subsystem and method, in the order seq_file, write, read,
-ioctl. Where a write that is larger than anything the entry parses now
-fails with -EINVAL from procfs I've called that out in the commit.
-/proc/profile and /proc/pressure/* are never removed and are marked
-permanent, procfs calls into them without pinning. readprofile reads
-all of /proc/profile in one go, so it keeps reading straight into
-userspace. /proc/config.gz asks for PROC_ENTRY_FULL_READS so that
-reading all of it at once keeps working.
-
-The selftest unloads configs.ko while a reader of /proc/config.gz
-faults in procfs' copy to userspace. On a KASAN and lockdep kernel it
-fails without the series and passes with it. Build tested per commit on
-x86_64 and with W=1 on the touched objects. The proc and allocinfo
-selftests behave the same with and without the series and so do the
-entries I could get at in a VM.
-
-This is on top of "proc: let procfs own the data path". The other three
-conversion series don't depend on it and it doesn't depend on them.
+Declare the seq_operations and the size of the session state and let
+procfs open and free the seq_file of /proc/fs/jbd2/<dev>/info.
+->proc_open() only takes the snapshot of the statistics now and
+->proc_release() frees it. Reading the file then no longer holds up its
+removal when the journal goes away.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
-Christian Brauner (27):
-      jbd2: let procfs own the seq_file of the info file
-      jfs: let procfs copy in writes to the loglevel file
-      lockd: let procfs copy in writes to nlm_end_grace
-      lockd: let procfs copy out reads of nlm_end_grace
-      nfsd: factor out setting up the exports seq_file
-      nfsd: let procfs own the seq_file of /proc/fs/nfs/exports
-      ntfs3: let procfs copy in writes to the label file
-      smb: client: let procfs own the seq_file of the smbdirect files
-      smb: client: let procfs copy in writes
-      genirq/proc: let procfs copy in the affinity masks
-      latencytop: let procfs copy in writes to /proc/latency_stats
-      locking/lockdep: let procfs own the seq_file of /proc/lock_stat
-      locking/lockdep: let procfs copy in writes to /proc/lock_stat
-      profiling: let procfs copy in writes to /proc/profile
-      profiling: mark /proc/profile permanent
-      sched/psi: let procfs own the seq_file of the pressure files
-      sched/psi: let procfs copy in trigger writes
-      sched/psi: mark the pressure files permanent
-      kallsyms: let procfs own the seq_file of /proc/kallsyms
-      module: procfs: let procfs own the seq_file of /proc/modules
-      dyndbg: let procfs copy in writes to /proc/dynamic_debug/control
-      ipc: let procfs own the seq_file of the sysvipc files
-      alloc_tag: let procfs own the seq_file of /proc/allocinfo
-      alloc_tag: let procfs copy the ioctl arguments of /proc/allocinfo
-      mm/swapfile: let procfs own the seq_file of /proc/swaps
-      kernel/configs: let procfs copy out reads of /proc/config.gz
-      selftests/proc: check that unloading configs doesn't wait for a reader
+ fs/jbd2/journal.c | 33 +++++++++------------------------
+ 1 file changed, 9 insertions(+), 24 deletions(-)
 
- fs/jbd2/journal.c                                  |  33 ++---
- fs/jfs/jfs_debug.c                                 |  11 +-
- fs/lockd/procfs.c                                  |  19 +--
- fs/nfsd/nfsctl.c                                   |  41 ++++--
- fs/ntfs3/super.c                                   |  27 ++--
- fs/smb/client/cifs_debug.c                         |  71 ++++------
- fs/smb/client/dfs_cache.c                          |  13 +-
- ipc/util.c                                         |  14 +-
- kernel/configs.c                                   |   7 +-
- kernel/irq/proc.c                                  |  27 ++--
- kernel/kallsyms.c                                  |  12 +-
- kernel/latencytop.c                                |   5 +-
- kernel/locking/lockdep_proc.c                      |  60 ++++----
- kernel/module/procfs.c                             |  19 +--
- kernel/profile.c                                   |  11 +-
- kernel/sched/psi.c                                 |  82 ++++-------
- lib/dynamic_debug.c                                |  34 +++--
- mm/alloc_tag.c                                     |  75 ++++------
- mm/swapfile.c                                      |  13 +-
- tools/testing/selftests/proc/.gitignore            |   1 +
- tools/testing/selftests/proc/Makefile              |   1 +
- tools/testing/selftests/proc/config                |   4 +
- .../proc/proc-remove-slow-config-reader.c          | 157 +++++++++++++++++++++
- 23 files changed, 400 insertions(+), 337 deletions(-)
----
-base-commit: 65ba8f34ec886ec72b2c07ddc8cf3d815c32869d
-change-id: 20261101-work-procfs-fs-41f9fdc489cb
-prerequisite-change-id: 20261101-work-procfs-core-8fa4a4f412cf:v1
-prerequisite-patch-id: 0474af12959624910718795bf86684383664c685
-prerequisite-patch-id: 540aa9ea28adcbc54d8264f66314e29e3b8c9d49
-prerequisite-patch-id: 2f7139d1c972c4439dccca610caa5f1288987a3d
-prerequisite-patch-id: b0031a7c4855b7ec38259c59f30f65101a8fc4b5
-prerequisite-patch-id: 0b7f226abf2b9ff41873a1aa55cf97747647d56b
-prerequisite-patch-id: f63e345f897619af54813958046617c655fb7daf
-prerequisite-patch-id: c0e21e762a2960e3324c5ab04634a7035e515fa6
-prerequisite-patch-id: fd59c71eadd8f39c58b3baea93567bc093bc9b0e
-prerequisite-patch-id: 5d52cc8a5c73e4c5ba16b8e24f51408c17583bf9
-prerequisite-patch-id: 1f9179284e2f3314d4b46ac5e989089a21c7576c
-prerequisite-patch-id: 10397bbf696bee16dc71eb79fff6c5e73842bcbc
-prerequisite-patch-id: 9b44279dcf08912238d2f6438a3328a778a79a0c
-prerequisite-patch-id: 16854b621a3a71dfc365aaf7abaa7f65adfe9f7e
-prerequisite-patch-id: ca42eea21fae1fd1cd3518ab057c74b61ffd68fe
-prerequisite-patch-id: 23255dc2be76b0479c083dbd4c897bfbb533aed5
-prerequisite-patch-id: 82129c687ebf0a41b369893b92f2c038420ab801
-prerequisite-patch-id: 56ad57a99a5bda075a9f4e844368974296744934
-prerequisite-patch-id: 288b3cbaa11e01a778cc3d7beb6c0549aacf59f2
-prerequisite-patch-id: a163b1549608652bfa5bd9ff93efa55b541010c4
-prerequisite-patch-id: 78f067c343177e52d49ddfe9ee2992e602549869
-prerequisite-patch-id: 19c12bc6e3fbed35acc1f657196b1a997f48cdfe
-prerequisite-patch-id: 5800c3076694bad719954b2ad4d7448c6e013bfd
-prerequisite-patch-id: 2a2f63d8843b159594b9eee6ddea028ce76a6270
-prerequisite-patch-id: 40a1951d57906c4a1b98a4bd96a814b80339b9c5
-prerequisite-patch-id: e2141077e69f20a2b27fab69c8d61d0686682f53
-prerequisite-patch-id: c4d6018c26c40dc549d88330d23ce48f872c2b7f
-prerequisite-patch-id: 6de8ec17746031bc6d1d9ac262c5be0f905fcd79
-prerequisite-patch-id: b87bcb167884605bff1fd0f2ed8a88942d07efd5
-prerequisite-patch-id: cfa9a8b4c67e20cfd22d77035bfd21ee96ab3298
-prerequisite-patch-id: abf3482ed2399b7b2e1ee72e937af05bb9200667
-prerequisite-patch-id: 02c175b2dee565a85b3308ecf2ec8e3c9a029e0f
-prerequisite-patch-id: 4ed6b3d3d45de49d4967e88ba4e7f03372775f55
-prerequisite-patch-id: dbe02fe3f784776fda5e7ae99f077bef0cd4b48d
-prerequisite-patch-id: 53edc9a95afff57c4acba40095a8054924261ea2
-prerequisite-patch-id: cf9ce0099005fd3bc31a1e15131d48e315ac3bee
-prerequisite-patch-id: 16a657a5d0046068dbace29e7ea046ac1441f46f
-prerequisite-patch-id: efeb2d6f7df71d5dede2c1d12fe999a28e38aab9
-prerequisite-patch-id: e6ffe2a5c3ee5645f56c8366b568fbc9f140848c
-prerequisite-patch-id: 117db27dcdef433de7c6be5e95973cac1e373927
-prerequisite-patch-id: a0844aa26ffb65ccb362b88ef6c2f4758e15edbf
-prerequisite-patch-id: 143fb91bddf33068b6ee11e205818c4c2815e23d
-prerequisite-patch-id: 6490e4da1cb2f543683bd164bc9a5a1c943057e7
-prerequisite-patch-id: cdefca57d3c552fb6f6b928699edd85f33be25fd
-prerequisite-patch-id: 2f0fdb970ddd760d85ff5d2caad0b96348270182
-prerequisite-patch-id: f2aa468ff5cbb1cabab3f70e1b8eeee0286cfb4a
-prerequisite-patch-id: 037030d95eeb7c49b1e43f638ec954f2cebbcfb1
-prerequisite-patch-id: 487141c49e2548310bfb6c2a0964a78f08b285a9
-prerequisite-patch-id: c3d3008819fa5629a18142ec9ba6d7024ade7fdb
-prerequisite-patch-id: ba15e7c86b60ccc2f0f7ee4c9bc99073068757bc
-prerequisite-patch-id: 9423f410b99853693db06c29f12f1c08278b050d
-prerequisite-patch-id: 4e7966978e4b11c4d843831f312cdcd5b848f00c
-prerequisite-patch-id: 3d24be1897a624d519ef144801f76d152c7528a9
-prerequisite-patch-id: 3b4d9fe7b26f6b7b9b3f7725ea333df357107c44
-prerequisite-patch-id: 7d9dd345428baeb88c862ef902612f7160dc1d8c
+diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
+index 3a4f3f613ead..1e4f4e95a00e 100644
+--- a/fs/jbd2/journal.c
++++ b/fs/jbd2/journal.c
+@@ -1173,51 +1173,36 @@ static const struct seq_operations jbd2_seq_info_ops = {
+ 	.show   = jbd2_seq_info_show,
+ };
+ 
++/* procfs opened the seq_file and allocated @s */
+ static int jbd2_seq_info_open(struct inode *inode, struct file *file)
+ {
+ 	journal_t *journal = pde_data(inode);
+-	struct jbd2_stats_proc_session *s;
+-	int rc, size;
++	struct jbd2_stats_proc_session *s = ((struct seq_file *)file->private_data)->private;
++	int size = sizeof(struct transaction_stats_s);
+ 
+-	s = kmalloc_obj(*s);
+-	if (s == NULL)
+-		return -ENOMEM;
+-	size = sizeof(struct transaction_stats_s);
+ 	s->stats = kmalloc(size, GFP_KERNEL);
+-	if (s->stats == NULL) {
+-		kfree(s);
++	if (s->stats == NULL)
+ 		return -ENOMEM;
+-	}
+ 	spin_lock(&journal->j_history_lock);
+ 	memcpy(s->stats, &journal->j_stats, size);
+ 	s->journal = journal;
+ 	spin_unlock(&journal->j_history_lock);
+-
+-	rc = seq_open(file, &jbd2_seq_info_ops);
+-	if (rc == 0) {
+-		struct seq_file *m = file->private_data;
+-		m->private = s;
+-	} else {
+-		kfree(s->stats);
+-		kfree(s);
+-	}
+-	return rc;
+-
++	return 0;
+ }
+ 
+ static int jbd2_seq_info_release(struct inode *inode, struct file *file)
+ {
+ 	struct seq_file *seq = file->private_data;
+ 	struct jbd2_stats_proc_session *s = seq->private;
++
+ 	kfree(s->stats);
+-	kfree(s);
+-	return seq_release(inode, file);
++	return 0;
+ }
+ 
+ static const struct proc_ops jbd2_info_proc_ops = {
++	.proc_seq_ops	= &jbd2_seq_info_ops,
++	.proc_state_size = sizeof(struct jbd2_stats_proc_session),
+ 	.proc_open	= jbd2_seq_info_open,
+-	.proc_read	= seq_read,
+-	.proc_lseek	= seq_lseek,
+ 	.proc_release	= jbd2_seq_info_release,
+ };
+ 
+
+-- 
+2.53.0
 
 
