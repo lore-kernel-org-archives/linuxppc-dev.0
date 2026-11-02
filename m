@@ -2,51 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C5E66072ED6
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:07:20 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 13AEC606B0D5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:07:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IzlZDjTa
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=htIvLzE5
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFRq2BSQz2xlY;
-	Tue, 03 Nov 2026 02:07:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632039;
-	cv=none; b=EYeGMLiCVJHpyLXvrj1aZ1Z1zQ9ADjPcU/1Uk2uofzHuFYpOwnxwP0ws78+wm3Cms5B4cT7zW+82nflJdWLuJIjfIdVQmHqoqGXt78Og+9RnXsOLoAsXbGyuHjJXuw9D6uGyHca6gT97fXHj9MDaHe4MVb1LUqxIaU+ukKw2pa8sovhSiG66p0WRjT884M0udYYEBkdvQGV8b1EbaYZaehgt09MyZARB1ZdM9nWplZasUweUr3vGFVbftoWRd0OEX18UYDvV/rc12ly0JItFVWyz7GNkcaUQK8eBLCohuaTpW3LOhD8WRM8Tfe0S98wnq/jQbOV8xP4bIgeMOMalLg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFS75rGrz3bSF;
+	Tue, 03 Nov 2026 02:07:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632055;
+	cv=none; b=Ea8PVnRb5BMk2fbbuFkybvZkwu+xK+Wf1+Mu58JyQRTqmaypV2gjKbkdUInOxZ7bS5auEhMNKmzHmizNLKjYHedeBpIY+8v+TdXP6G4RAlFT0Kom3Mg2W/bfcpHCfAEAmijCuhxB9vr8I7coXvJuQmS4R11/NA8LDroyzbj0/l4TRF7bILGX9iC6KfDUgZlBgegpzAWausTWcO5D5vX5IyswH/7IZyBTno3fEgTHdUK01riedMl4HQiPJkbPUG/DVLWElHvFUNHNYcsBVckeDl9FdGhfPQwUP0dOTlxryCWcVsDCmCEZs7dH2BZ3xIqo5NOc7CnH5DBtiBriOGxG+A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793632039; c=relaxed/relaxed;
-	bh=mGdLlGj/NJAJr68kXbSPslaJvhomImSQvB5hgldkHFg=;
+	t=1793632055; c=relaxed/relaxed;
+	bh=Jqve5dom8G0YagWg0DUi21Qt2CUJnz11dMCfHhOCDkM=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=fmHvLwdMlYC7RRcEa3g56ntdQ34ZynsOG8hawFJYDe+n8FeMoiwZI2CE/tqtW5wOKHgyFASs6sDFplU4SGmzLwun9nUFw2Npw1IV3PESaDT+x164CjD0gS3U9fFQtihw+e0dtxr9xTD5EJbZD5hlFxyTPcg/xQ0whZhEjec0LrdFYBQ78yGTkx43Sr3SWM4J2BNw4NVtaeigHkuLjGPw/kGROW4heQP93SKeqW77eKYqOAva6TS0ke2QzzwEME45Nz/VdsLAAfi3Plh9g0mXJLhAcQUaRjCNpnPGzWwMpnbMq6U5dhuOSBwfEy8D2+fexYWds5C1QVGtgOrrDf05dw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IzlZDjTa; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=S9xXunRubLrTqb60rQNWbBdBRYz2Pv0DFdJEBRyriMwERg5i96kAfzu25Wsz8NzO+xRb/25072a3hwNluaPGSYCiHPYf+RKyMXc+c1YsWYgGCa0JGIm7Ak6LsKh4ZppLEV79nLKmbK6edY0hNEbfTJJcqMctT/XNZAil1qt+moJpflAqlubvCe/np69EKSlJl5G/Di7IHQfXstYYPVMa8E+YKlbulxQINMHrXY9XTQJkvAEj9rbeBAOKi3Fl3uPumF05mYneIVK5BqshuOOF4kIAssgCFNyBFR+E0r91E5pTl3/zbygRhNQv6tcXK6LoCF/VaiBCpQt/M1O9/DwxCw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=htIvLzE5; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IzlZDjTa;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=htIvLzE5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFRp2PVRz2xHX
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:07:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFS70C4Jz3bQm
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:07:35 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 6FF48605C9;
-	Mon,  2 Nov 2026 15:07:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B26C51F00A16;
-	Mon,  2 Nov 2026 15:07:01 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 44AD541132;
+	Mon,  2 Nov 2026 15:07:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AEC3F1F00A16;
+	Mon,  2 Nov 2026 15:07:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793632036;
-	bh=mGdLlGj/NJAJr68kXbSPslaJvhomImSQvB5hgldkHFg=;
+	s=k20260515; t=1793632053;
+	bh=Jqve5dom8G0YagWg0DUi21Qt2CUJnz11dMCfHhOCDkM=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=IzlZDjTao7VjuIjRRsnw52RX/0AjF/WBmgT4NSpXmtjt4TJbN8zegt24j5DOlUa3Z
-	 44pMabJRvDCRlnweMnKPhfJPYcWc+E6OtpWq1y0Ac43VD4FbMRQP9qey5otxK1q5PL
-	 oT9zsk1HsUa3Ue3zXl6S6BVtFghJKXFiWTJwHmxl0PE/8ztq9iyqz6BcdrpCZDdpYi
-	 3XtzkYqJlHCU6ToIaLkgAjRlsjmuFBtw97UNIAceQYdi00vVfKPn4AuQDU9qRHk19M
-	 URA4zqhN0uKI8rAUpyUb++ZQsVmLXvF7KAChG6Fit1JA/MDvvneOl/7dLgJJZyJ32o
-	 yDuj9+i1oCVEA==
+	b=htIvLzE5mRDE3y0tqv1kyv8W5k1g/Ii7ANwuWhratSAOFS7tbxL3BToIPDpZE85DE
+	 FNEsXXzLmfR4qQugMxmA9eyhIHm6Q6dJAmTZKLeIUK1bHgaHB6rg72WkRZftlCgoe6
+	 E2QfeUCqIA0Nboam57Dh1SlJUtOEamqW0FpuXdYHq09VCiD2DRiKvdUgmVI6MwZESI
+	 HWhsjmhK16tI0mtjDz6fsLrdm37sQrZUo7icVQ6YX0Qr2rzi5YjsmWINl56IQd0nMx
+	 zqjv85Bp1EemyFNq5w6kuaSNgOUZ321NOGqFqL1mOki6ZfyR8nruUh1khBiylH7rMN
+	 bCkpWmWU3eNXw==
 From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 16:01:43 +0100
-Subject: [PATCH RFC 16/22] xtensa: simdisk: let procfs copy out reads
+Date: Mon, 02 Nov 2026 16:01:44 +0100
+Subject: [PATCH RFC 17/22] ACPI: proc: let procfs copy in writes to
+ /proc/acpi/wakeup
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-arch-v1-16-c9492ab08480@kernel.org>
+Message-Id: <20261102-work-procfs-arch-v1-17-c9492ab08480@kernel.org>
 References: <20261102-work-procfs-arch-v1-0-c9492ab08480@kernel.org>
 In-Reply-To: <20261102-work-procfs-arch-v1-0-c9492ab08480@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -106,45 +107,47 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Implement ->proc_read_buf() so procfs copies what is read to userspace
-after it unpinned the entry.
+Implement ->proc_write_buf() so procfs copies in what is written before
+it pins the entry, and take the device name from that copy. Writes
+larger than PAGE_SIZE - 1 bytes fail with -EINVAL now.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- arch/xtensa/platforms/iss/simdisk.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/acpi/proc.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/arch/xtensa/platforms/iss/simdisk.c b/arch/xtensa/platforms/iss/simdisk.c
-index b2f9e7f3ade3..b597d8642e8a 100644
---- a/arch/xtensa/platforms/iss/simdisk.c
-+++ b/arch/xtensa/platforms/iss/simdisk.c
-@@ -234,7 +234,7 @@ static int simdisk_detach(struct simdisk *dev)
- 	return err;
- }
+diff --git a/drivers/acpi/proc.c b/drivers/acpi/proc.c
+index b8a0bd4580e0..feb8283fd855 100644
+--- a/drivers/acpi/proc.c
++++ b/drivers/acpi/proc.c
+@@ -86,7 +86,7 @@ static void physical_device_enable_wakeup(struct acpi_device *adev)
  
--static ssize_t proc_read_simdisk(struct file *file, char __user *buf,
-+static ssize_t proc_read_simdisk(struct file *file, char *buf,
- 			size_t size, loff_t *ppos)
+ static ssize_t
+ acpi_system_write_wakeup_device(struct file *file,
+-				const char __user * buffer,
++				char *buffer,
+ 				size_t count, loff_t * ppos)
  {
- 	struct simdisk *dev = pde_data(file_inode(file));
-@@ -250,7 +250,7 @@ static ssize_t proc_read_simdisk(struct file *file, char __user *buf,
- 	len = scnprintf(temp, PAGE_SIZE + 2, "%s\n", dev->filename ?: "");
- 	spin_unlock(&dev->lock);
+ 	struct acpi_device *dev, *tmp;
+@@ -96,8 +96,7 @@ acpi_system_write_wakeup_device(struct file *file,
+ 	if (count > 4)
+ 		count = 4;
  
--	len = simple_read_from_buffer(buf, size, ppos, temp, len);
-+	len = memory_read_from_buffer(buf, size, ppos, temp, len);
- 	kfree(temp);
- 	return len;
- }
-@@ -280,7 +280,7 @@ static ssize_t proc_write_simdisk(struct file *file, char *buf,
- }
+-	if (copy_from_user(strbuf, buffer, count))
+-		return -EFAULT;
++	memcpy(strbuf, buffer, count);
+ 	strbuf[count] = '\0';
+ 	sscanf(strbuf, "%s", str);
  
- static const struct proc_ops simdisk_proc_ops = {
--	.proc_read	= proc_read_simdisk,
-+	.proc_read_buf	= proc_read_simdisk,
- 	.proc_write_buf	= proc_write_simdisk,
- 	.proc_write_size = PAGE_SIZE,
- 	.proc_lseek	= default_llseek,
+@@ -123,7 +122,7 @@ acpi_system_write_wakeup_device(struct file *file,
+ 
+ static const struct proc_ops acpi_system_wakeup_device_proc_ops = {
+ 	.proc_show	= acpi_system_wakeup_device_seq_show,
+-	.proc_write	= acpi_system_write_wakeup_device,
++	.proc_write_buf	= acpi_system_write_wakeup_device,
+ };
+ 
+ void __init acpi_sleep_proc_init(void)
 
 -- 
 2.53.0
