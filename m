@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C008A607BD23
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:16:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1B5860BC02A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:16:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ej70vPT/
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lwKeAIr5
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFf93XYJz3bmN;
-	Tue, 03 Nov 2026 02:16:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632577;
-	cv=none; b=I5vUvoivghjxx9v00myma0ws3ZMhJZvwE15jXL31QUVxyMq09kd34/QIpP//XGqUhUce53bPVy+dDa2CP8cqkdSZlDVhtWMYPeIyrt+Qd1LrNRHIwUXQCNP/qSFZ/M2s9lCCMEe9gLnC3hPKjXaVz28BHpdvKO8aP6HnilQw9UhQcBsRrdnJSjC+ycpvRVBIu26A//viaZszP5rF5UZuRfeB6vvzfQTcfU3C11g5qgPxCMTaUESy0T2Cg5j0pRW60bWbvEOqxwbxmCICl43wMU8CMJxM4vg1/uPNNUZOqGeXUcYFS7mAUZJiovBiLwc4KXDB/Uo/r+J5erDXFfLkxg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFfX4cVgz3dWY;
+	Tue, 03 Nov 2026 02:16:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632596;
+	cv=none; b=JFA/bZUaELR/d9Md3crYAN08gqf75lt5aBZjxRJRJh0wumBtBKN2q7NxYZMH0eGFWRCyR+OcjFi4u/UruNsI9ebsToqHFWloIKi3HbjduikjwKSVJHlRL2Jy95daoA7QBLDI/48tq1XcRHEyLiIO6mm/aGmoVh7Jhhe5F9fjps2Rn0k4vsps5yhQUUWPWZV2YnDSrPYvRDvZ2WZRv6bHpxMaAzDccXD3yXuDY0WyrDrvLxE5LcWTMeHMJqxHIPLDqCtnpqjSyrlxJOYDZFAkgLUIzGUfS8AVmS9PQovb6RPXWGamXB9Bwnc41Gp89EvvlRddnbKRM8P/GZvRF0intA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793632577; c=relaxed/relaxed;
-	bh=goLGxFor5aDHmq+/63YZ7VsFVk0WPo8/IlwPxf0/q/E=;
+	t=1793632596; c=relaxed/relaxed;
+	bh=zft31zEOyoxpoaQra2tyBUnsx6CBcNbPccBHjIcKUVg=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=bsZ0m7RlzqtwrFrsdePyo+1l0exZHNzdeX/Vpz+rT5NTEOVQbhc+/0P0fFkNMUpx6CZIwrSgaTjgIk/7gIMPh3ayWPFkVqVGduAjyOs7RZyM0kUZV4Ozg3M+6NogNRuo7wiEjW5rl5DjtEhgYFBcLeID5x1vRW8wkriebtRw54bMxohbYtNV45YIwC2P04HaJ4XbE5RfpXd66GslVWEQPsJCeuPJfobYiZIQnrzq5q7F3sabFzxYxrgOAuAR/t9RL/QEyR0RhL3muGSqek0NBtKdnxIeTCgjlv1RxEWFjwUWxGFdzXgYFso+c3nO8L4fRODOfATWMGqZYTAjf78YQQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ej70vPT/; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=HP6t4hPJ0OGElM31kD9vyc1sKe9o5lcMKXir+gSPUsp6kmAK8mBx978ByYU5Wt4VM2ApZnRa5EMBKDcrDuYp5q4mNrEr3aA3DM+GmtibojJkZdtf3KI/F5wjih7GrpbhpdPHMpAwbsfJJct0jqZ42EUsOnsg4BOuTkc5w0eBmy8hkrIhzH9I8f5nXFJizyAc9MSgZob+B+bwAi72J7GbC4V9qSHkinTDFdNfREG+MLF/7EDix0TrzUDD6v/xFqVuMxkhsDC2VsUuiwyO0aK49zJZCTfCRp588QhizgT3D+FTEBN+UTaSGig8Q03JyiEI16hnk+j4Egm1DUprAU0Zmg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lwKeAIr5; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ej70vPT/;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lwKeAIr5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFf84ZwGz3bmM
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:16:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFfW5p9kz3cKj
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:16:35 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id F0CD442A88;
-	Mon,  2 Nov 2026 15:16:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B757A1F00A16;
-	Mon,  2 Nov 2026 15:15:56 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id CAECA60218;
+	Mon,  2 Nov 2026 15:16:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 700B71F00A17;
+	Mon,  2 Nov 2026 15:16:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793632574;
-	bh=goLGxFor5aDHmq+/63YZ7VsFVk0WPo8/IlwPxf0/q/E=;
+	s=k20260515; t=1793632593;
+	bh=zft31zEOyoxpoaQra2tyBUnsx6CBcNbPccBHjIcKUVg=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=ej70vPT/y7NrhBgRnVeJZJCWCJCY4Ir+tDI0qb3+EynguB83LrhQsFn2l3M5OZtXE
-	 2VH+S87/JA3tEOQ5oF6NbafdeM5dvCGs7k+Pl66iGGY0VzHGdvfeTuOHMGET++saO9
-	 8CMGsO+isRtfapDtsUOvJJ1+uTuGk8RHjvFSx0T6P4hnrtLPTR2SSKodt/mLQIBmk2
-	 SzbEgwffy1kv1xXhMujkkGK8afuda14vw1NrfhyqY3qJhPF7pdO3kkpnpsfKhmpNYh
-	 jxGaC2jmsD4TftiMbXuIK38lcVEqXr7YxWPTdZiDHhvMHLfLf4/cExgZfn7c5HC9H0
-	 J+psMOIMcn0fQ==
+	b=lwKeAIr5gfFdOVWI9d9xeAawLRX/+XVqTfNIZzgNtLrSPX6u/1CsXECEJL5tNDzMA
+	 81vHXmP4nFBhwRmc/4DERMlJX3QJMwM96cPu9uFbIdibRRS+aHrZI2E5D8a9x1Uv1l
+	 y72FYfS6k5k1GClENyne0V+By+vwxAzdEjY9MbyHJUJx3+nI4+K7kwwgkmi1p0ISO4
+	 9ghnaezbHX5aMMMApF32QawdIaGRPpRDQgJtdD1vqFI5zB7VZbE3n4IduXje7eWoWa
+	 uAZM2qTjPRKpyLwg4MYMHyPaKwvk2dOe0ToVz3+E2luGZiMaQunD5RVbSRamL0hSZ+
+	 ETwAKz10Wwghg==
 From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 16:07:24 +0100
-Subject: [PATCH RFC 17/23] usb: gadget: function: rndis: let procfs copy in
- writes
+Date: Mon, 02 Nov 2026 16:07:25 +0100
+Subject: [PATCH RFC 18/23] wifi: ipw2x00: let procfs copy in writes to the
+ debug level
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-drivers-v1-17-a994bd4d3b1a@kernel.org>
+Message-Id: <20261102-work-procfs-drivers-v1-18-a994bd4d3b1a@kernel.org>
 References: <20261102-work-procfs-drivers-v1-0-a994bd4d3b1a@kernel.org>
 In-Reply-To: <20261102-work-procfs-drivers-v1-0-a994bd4d3b1a@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -99,12 +99,12 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
  "Christian Brauner (Amutable)" <brauner@kernel.org>, 
  Chuck Lever <cel@kernel.org>
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1569; i=brauner@kernel.org;
- h=from:subject:message-id; bh=saz4p5rW2UOPmCRi+6zEslqjX7E5721ehvji7/y2TLU=;
- b=kA0DAAoWkcYbwGV43KIByyZiAGropzGhaJWnu9+4zvQgXLhUThJNad18i/diIL3NsOXTHFLIm
- Yh1BAAWCgAdFiEEQIc0Vx6nDHizMmkokcYbwGV43KIFAmropzEACgkQkcYbwGV43KIUZwD+IHp+
- nA7hxed0nI3IkqLBHaX8l90Mx69iUsGXRMOlkboA/3KH9SLJ/MMw6rQ8ujZlKhQxzG1q+lU/vjC
- oZkDuYDUH
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1605; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=SZl2laNUZYNGFN2sYGUP5fs3tBGCqMuq/D28k7CZWwo=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9WG64euvV9Mi0G6e/pc2cvZ5tAkOWU9ijuqL1VrnM1
+ 97MmMJxqaOUhUGMi0FWTJHFod0kXG45T8Vmo0wNmDmsTCBDGLg4BWAiBnMY/pddjIrb5bFlB/vq
+ T/1p1gs8F8lNfdO6cLPPKu/tLFWSX2UZ/mk7OAg3F8ZXtHXzM/o7ck37wd4VdH5/R8b9gzV2lT9
+ NGAA=
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -115,50 +115,46 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Implement ->proc_write_buf() so procfs copies in what is written to
-/proc/driver/rndis-<n> before it pins the entry, and handle the
-commands from that copy. Writes larger than PAGE_SIZE - 1 bytes fail
-with -EINVAL now.
+Implement ->proc_write_buf() so procfs copies in what is written before
+it pins the entry, and parse the level from that copy. Writes larger
+than PAGE_SIZE - 1 bytes fail with -EINVAL now, and a buffer that can't
+be read fails with -EFAULT instead of looking like it was written.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- drivers/usb/gadget/function/rndis.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+ drivers/net/wireless/intel/ipw2x00/libipw_module.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/usb/gadget/function/rndis.c b/drivers/usb/gadget/function/rndis.c
-index 3c7bd30b8a3a..e05e0c6ae8fb 100644
---- a/drivers/usb/gadget/function/rndis.c
-+++ b/drivers/usb/gadget/function/rndis.c
-@@ -1138,7 +1138,7 @@ static int rndis_proc_show(struct seq_file *m, void *v)
- 	return 0;
+diff --git a/drivers/net/wireless/intel/ipw2x00/libipw_module.c b/drivers/net/wireless/intel/ipw2x00/libipw_module.c
+index 15d9a5efb581..08cc0d7f57c1 100644
+--- a/drivers/net/wireless/intel/ipw2x00/libipw_module.c
++++ b/drivers/net/wireless/intel/ipw2x00/libipw_module.c
+@@ -216,14 +216,13 @@ static int debug_level_proc_show(struct seq_file *m, void *v)
  }
  
--static ssize_t rndis_proc_write(struct file *file, const char __user *buffer,
-+static ssize_t rndis_proc_write(struct file *file, char *buffer,
- 				size_t count, loff_t *ppos)
+ static ssize_t debug_level_proc_write(struct file *file,
+-		const char __user *buffer, size_t count, loff_t *pos)
++		char *buffer, size_t count, loff_t *pos)
  {
- 	rndis_params *p = pde_data(file_inode(file));
-@@ -1146,9 +1146,8 @@ static ssize_t rndis_proc_write(struct file *file, const char __user *buffer,
- 	int i, fl_speed = 0;
+ 	char buf[] = "0x00000000\n";
+ 	size_t len = min(sizeof(buf) - 1, count);
+ 	unsigned long val;
  
- 	for (i = 0; i < count; i++) {
--		char c;
--		if (get_user(c, buffer))
--			return -EFAULT;
-+		char c = *buffer;
-+
- 		switch (c) {
- 		case '0':
- 		case '1':
-@@ -1185,7 +1184,7 @@ static ssize_t rndis_proc_write(struct file *file, const char __user *buffer,
+-	if (copy_from_user(buf, buffer, len))
+-		return count;
++	memcpy(buf, buffer, len);
+ 	buf[len] = 0;
+ 	if (sscanf(buf, "%li", &val) != 1)
+ 		printk(KERN_INFO DRV_NAME
+@@ -236,7 +235,7 @@ static ssize_t debug_level_proc_write(struct file *file,
  
- static const struct proc_ops rndis_proc_ops = {
- 	.proc_show	= rndis_proc_show,
--	.proc_write	= rndis_proc_write,
-+	.proc_write_buf	= rndis_proc_write,
+ static const struct proc_ops debug_level_proc_ops = {
+ 	.proc_show	= debug_level_proc_show,
+-	.proc_write	= debug_level_proc_write,
++	.proc_write_buf	= debug_level_proc_write,
  };
+ #endif				/* CONFIG_LIBIPW_DEBUG */
  
- #define	NAME_TEMPLATE "driver/rndis-%03d"
 
 -- 
 2.53.0
