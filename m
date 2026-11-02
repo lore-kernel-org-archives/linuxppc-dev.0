@@ -2,51 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4771D6070D92
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:21:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 194D260A261B
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:21:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DbhUJFDn
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lzeuR62X
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFlv09p1z3d0w;
-	Tue, 03 Nov 2026 02:21:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632874;
-	cv=none; b=GPkqqHaiGzW4vHiPhhToYff2y6rzZl0Ro9ZJcoYhquMDeDotE8WoFuKbIV3h2j3VkCpEu0eUBdhmUxmqA5XRUeqNWJdv5FZ2Jd82QN9A1RaKFSa1Ph/iSCQE+Kt6U+ZOneWnJM6HA+guk1DaCfBUH71/zK1uavRkeHWqh2KNftlwqXUIefQgN/NX5a98IcS7YNGiG13Tma+OGSx8LVuvlNdtKMbRmT/h0eQq1J/MbbB1jPHiZIm9Tg8hRlQRA1PUGkqAz4K4gPTsDL4Le+1OUAmnqAblGi6UiNmt1s7oDtv6OtqO9li7lSYi2VIluhT+fFUqjbkTsC9cdJaT7xxuhg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFmK620gz3d0p;
+	Tue, 03 Nov 2026 02:21:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632897;
+	cv=none; b=AmpPJSx8MpIeeVosgUh8DhQa/3dIFUrdOfj6YynIpXp9XNb6KO5Zn60L+dxY9PueTcvqaRXhc8GhiPPhPj6/y0qMIKFdhlAORBr9v2CSmTWdQY08IU/EGhYvhACX9VMN0w9Qtjt+bji6gaN3jzIr4y6V4EntG6H7BmBpwTesHW+S6OWc+pdz9NxCSLF+72pgMQANHKLY+2cltF3V4kJYge+cMMjt1tQXPvqVL4n1QawkYZMhT6X/u/JoeGneHTf6tyWcpG08B9dZbzwydbXZiNvZVesxotLv2ZNipgnrxUrKr4kW7gLuL/nCtzUJNgO6l6PdUJ3JhKrvCAcegXrlGA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793632874; c=relaxed/relaxed;
-	bh=Qv+c+5TDu4Q/teEIdzSpkmAL+eEuuwslAw9ahtaZFXA=;
+	t=1793632897; c=relaxed/relaxed;
+	bh=u/RXCBD8nlX7BDzbpngWHwWfgPDQj7BVrPXrBF7wCv8=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=oiQjRpBSJWovBE3G3CvwmEw2Q0hZHgtFPa9Kg/m2u/d++/Qr8WCk+wV4IA7LsC+6leTAJe2xCTuitnItd1/5RszfTNBvr2OoPVyGoUOn3xWB2BpKZ9AbNB/+cj2mwb+H3BiL4umRCf9jFdgfYJXeumAM0bdRgqP5DpTlIORIvWUzvCI84qFKpwPpqxtObo5740d/Y+TQp/55ZD7b4G/eWOQ1pqC40OYQBYVfj82QiXtNNHxDxckKHBcVpGlr2GZa+yXE/j9aaweJfUjXL9Jkz3yBfj/AmM12FTdtFMqmF2B6KHnlwSVcsPSsnqwZbB8ud4gIz1czOVMbizMUbJXr/w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DbhUJFDn; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=ReQ7Sem2suphfhKNqoFByQ0Ji/bMLa+YFw+FfV+YVD2thzp7ae7crm1jVFAs9lC75KjygOmMAll8x1Q8WgTOfpecoTWgMGvAeWbPRR/nGJnW9FWpi6n8Z3jUmtcFxvD1jptPRjhYSnPCIChTTwQRKMWpTPgx3I796BRt6AE7bMiZKWbL2pyVyAQM0UdgOdQZdP2fa5h9bDyQZqutRgbaCytZO1pgu/vkMVc+vLjGMxCViOdGhW8LAF1IQ60QuLZcYkmXaegkjcLMs6fn+Cp54nb0nq/dbxdg4WiIL5Y5HT7h+4+NZ9ZZCJ/QRovvvYXmowndoDSxfjH9m2DKJ1VWpA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lzeuR62X; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DbhUJFDn;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lzeuR62X;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFlt13F6z3clw
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:21:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFmJ4vCcz3bjN
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:21:36 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 8D6D94132F;
-	Mon,  2 Nov 2026 15:21:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D31E81F00A1A;
-	Mon,  2 Nov 2026 15:20:53 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 0575160620;
+	Mon,  2 Nov 2026 15:21:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E9FC41F00A16;
+	Mon,  2 Nov 2026 15:21:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793632872;
-	bh=Qv+c+5TDu4Q/teEIdzSpkmAL+eEuuwslAw9ahtaZFXA=;
+	s=k20260515; t=1793632892;
+	bh=u/RXCBD8nlX7BDzbpngWHwWfgPDQj7BVrPXrBF7wCv8=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=DbhUJFDnO++WjegqV6sjnyS3otcl2/2sebZdDMTR095f4hFRZkMTGJyBlkuj94zIa
-	 oSP3D1Ac7j4cfaoTs/YOZ/3HD4OntLtKpa0LwpNCh1+JLKi4UfYnGiwu0CoVUtic+M
-	 /EOwTs/jPaQwpILuGPGbb/lTH5xfB3ImCVRAHdrO8lvkKmi+OSz4QkxvnUntYfmDLy
-	 qsb4GyhuZqoOiqLcQKRlgK+Q8Z7rBL8ybky3VU6Bckc3xoq03qdnURR13NFJolGiGN
-	 NMeI9G1ZGK8/Pa0iYX2UzAKoC/oKZ8aXViZ1ZRVWwt4iYelFx979KqrM1W3LPfQRZF
-	 /OPD4WdSZcZVw==
+	b=lzeuR62XFqOGUep6G0u/OgAm/OWRPnnvn8erL4ZU4coYsOJSODUSp+a+2jQzM89Na
+	 wls04y7KzCTFwf5dsKwoGQq4HsQJB+8Q/tyIUmNqi21phOIu62KpYImTlB0ls6aGae
+	 miRfVbxr3JZPL8lWk8CynKdRTAwmaRBTeg+t7O77J1JsURjyW/dH2I6mYOgaUrqxwj
+	 7KTrFfx3AkzJndWmhJ/H+my8YK+kelSQ4n+wOAuAD5nl7vHyDdtVgll57DDfY53FmE
+	 lZ2Bqq8ccnEcF5eVt6EqwlmszCQGg+ZSpjDAYPYr+Ujd6ANt6wT/4OLvqxEhsJ83lT
+	 c5mbm06d3Q7qw==
 From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 16:07:15 +0100
-Subject: [PATCH RFC 05/27] nfsd: factor out setting up the exports seq_file
+Date: Mon, 02 Nov 2026 16:07:16 +0100
+Subject: [PATCH RFC 06/27] nfsd: let procfs own the seq_file of
+ /proc/fs/nfs/exports
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-fs-v1-5-d09a996317b3@kernel.org>
+Message-Id: <20261102-work-procfs-fs-v1-6-d09a996317b3@kernel.org>
 References: <20261102-work-procfs-fs-v1-0-d09a996317b3@kernel.org>
 In-Reply-To: <20261102-work-procfs-fs-v1-0-d09a996317b3@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -98,12 +99,12 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
  "Christian Brauner (Amutable)" <brauner@kernel.org>, 
  Chuck Lever <cel@kernel.org>
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1686; i=brauner@kernel.org;
- h=from:subject:message-id; bh=YYADF9o+HT3otr/TqTwRIyIlVsvmHiIwO/9qKSxr7WM=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9WG74im2vw/SLgkcF9xwvCrAujmja3vZs6iUted4PB
- lv0d6u4dJSyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAEyk8jPDP8N52YHHueeITrga
- lFLZpu2/1M/v9c0uN21dk5DSny1CfowMx1f09ARf2fUkLZKFdYNHzvT2UqEvnn+41f65szhZbrL
- iBAA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1348; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=Og6i2j2RItYkKcPNuUOPBq0fveLG9Ax2TG7f5E6VSxk=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9WG7kVLY5MLm6OZ2xjUVJp9EoIqQs8Har0dvS4Du/G
+ zkXh5h3lLIwiHExyIopsji0m4TLLeep2GyUqQEzh5UJZAgDF6cATCTOhZFh8mS2HN0Vqp439x5e
+ 2xeUd91V5e/Pzuqia7+Lj7wzdlPPYWTYZ8Q7MynkzsRjgb7VR/ifa84RfBwlO7dAjOFb++Stxc7
+ 8AA==
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -114,68 +115,48 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Move setting up ->private and taking the reference to the network
-namespace into exports_net_init() and dropping it into
-exports_net_put(). The procfs file needs them without the seq_open()
-and seq_release() around them.
-
-No functional changes.
+Declare the seq_operations and let procfs open and free the seq_file.
+->proc_open() and ->proc_release() only set up ->private and take and
+drop the reference to the network namespace now. Reading the file then
+no longer holds up its removal.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- fs/nfsd/nfsctl.c | 26 +++++++++++++++++---------
- 1 file changed, 17 insertions(+), 9 deletions(-)
+ fs/nfsd/nfsctl.c | 15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
 diff --git a/fs/nfsd/nfsctl.c b/fs/nfsd/nfsctl.c
-index f32311f2d7cf..f8ce3c0fb077 100644
+index f8ce3c0fb077..5b2782f9dbbd 100644
 --- a/fs/nfsd/nfsctl.c
 +++ b/fs/nfsd/nfsctl.c
-@@ -143,28 +143,36 @@ static const struct file_operations transaction_ops = {
- 	.llseek		= default_llseek,
+@@ -1407,16 +1407,23 @@ MODULE_ALIAS_FS("nfsd");
+ 
+ #ifdef CONFIG_PROC_FS
+ 
++/* procfs opens the seq_file */
+ static int exports_proc_open(struct inode *inode, struct file *file)
+ {
+-	return exports_net_open(current->nsproxy->net_ns, file);
++	exports_net_init(current->nsproxy->net_ns, file->private_data);
++	return 0;
++}
++
++static int exports_proc_release(struct inode *inode, struct file *file)
++{
++	exports_net_put(file->private_data);
++	return 0;
+ }
+ 
+ static const struct proc_ops exports_proc_ops = {
++	.proc_seq_ops	= &nfs_exports_op,
+ 	.proc_open	= exports_proc_open,
+-	.proc_read	= seq_read,
+-	.proc_lseek	= seq_lseek,
+-	.proc_release	= exports_release,
++	.proc_release	= exports_proc_release,
  };
  
-+static void exports_net_init(struct net *net, struct seq_file *seq)
-+{
-+	struct nfsd_net *nn = net_generic(net, nfsd_net_id);
-+
-+	seq->private = nn->svc_export_cache;
-+	get_net(net);
-+}
-+
-+static void exports_net_put(struct seq_file *seq)
-+{
-+	struct cache_detail *cd = seq->private;
-+
-+	put_net(cd->net);
-+}
-+
- static int exports_net_open(struct net *net, struct file *file)
- {
- 	int err;
--	struct seq_file *seq;
--	struct nfsd_net *nn = net_generic(net, nfsd_net_id);
- 
- 	err = seq_open(file, &nfs_exports_op);
- 	if (err)
- 		return err;
- 
--	seq = file->private_data;
--	seq->private = nn->svc_export_cache;
--	get_net(net);
-+	exports_net_init(net, file->private_data);
- 	return 0;
- }
- 
- static int exports_release(struct inode *inode, struct file *file)
- {
--	struct seq_file *seq = file->private_data;
--	struct cache_detail *cd = seq->private;
--
--	put_net(cd->net);
-+	exports_net_put(file->private_data);
- 	return seq_release(inode, file);
- }
- 
+ static int create_proc_exports_entry(void)
 
 -- 
 2.53.0
