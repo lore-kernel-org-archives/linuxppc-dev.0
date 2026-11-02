@@ -2,95 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0FF9606A58C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 14:39:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 03C166088B3D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 14:46:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jrsDzUSF
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XWvDNXOE
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJDqK5442z2xlY;
-	Tue, 03 Nov 2026 01:39:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793630349;
-	cv=none; b=NQN56bGxG2wkaNPCsFTAWoib3y8e99Iebp4UI32soityXsx0t/KMiR1GCAm5o7ENu2r5UTm6jo7fPR5KSusljwNcE7ND6gd5Hus/l2h0DhWdqLnvFpPwSagYqx/A8ogkGZYRSpaDUNBxJ2caOA11PC8A0751zLMQ+HRTiHgpczS6F/yXl7D39/z+By6kuU+xPkPc9Hsb5+K6XBFojcrc3wSbR1qRbBYbimJ7xe+mYdtUtALra/pOqDoL6vd1cJMNEOf45Rvd0VxwFnQBWruFFBAfUoM+D6Pwfuk126j5nI9lWkXWo9qnsZKto4hkTqtfZB6BHq6mtbQu+gEcL/4wqQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJDzv4rZNz2xXB;
+	Tue, 03 Nov 2026 01:46:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793630795;
+	cv=none; b=T/aItJj+FGgw3C1MwG1OS75aUXUEhbhKiN+JRjxHUitBgRbiKdwhYnY6dOdiaQhA0Rs/Si6dae9kGaaZNl7WzNGjTnZb0UzLP/xsYmFKRnHm0Oqa2TFA2yjmj7Dd3nYTffBc5UYN9K5lIE8aGnMuA6b+BsB2HVaoGOUTf57PGWdTmNBOsrIVA0Bu4zgQZP+eZuAIcuRXcVXuI3nqjHeuJ5MzX+lb+Ui6XccLprV+Z+Qrq851uBgyszFw57qnZxXUXFF4mI4uq0MxKVwnDh081PN6y1BwWLxXYA9XxLTK5ljuw37OdXEFO+euX6fCfpncPO9qA3yzX6erUVhvZT4SvQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793630349; c=relaxed/relaxed;
-	bh=t3uMzKFF0fpXKNPzeuZqcP8SHbCjBILits3drrR5UAs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=iu1D6oWlD7Wm9L0FGsRhgVcIIHRuknJgDHMj2v77E8kzOBT9x6mZssKsLq0h2pEM7cIrCMeynYet1uivBEwhGHQtaumtxqZKIKFHGntVUReBo+q4FpzJabQtyj8ffDIlyCr3ZUbv3LLxcIL/EWAzdnMuJ3sue/vqc68KqAY5CutGfhiIS8kyx6b7JJC9RNi9u+60FAKh7hkIHo8so53LpEpeR/ZbrltZgU7IIGRwIt+SBiJkeYUPg//J6UwUJmSKMEvUI2wFpiEyeEbHnm8jnIPYP1kJ6gTbkc1Ni7IYiz8+RfAjzw+4rEnnRv8tLGZTxDpao0IKHNtuBcmn5Jj94g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jrsDzUSF; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1793630795; c=relaxed/relaxed;
+	bh=8OUC3OpgPcYXff2v4b0WbdSVZE7XWpoJGNZRHA3e5A4=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=O4LMVNT0/mC+rz4wjoNbI1rCUWOoa5iDICBHaOXrYxFXkUdU2IJMIVogxsNEsCy4WHGEen67BiTYxWGpCgVy/0RlvNJdsoQcTCnAWCtpxcXUUwugHitoGSL0s8d/kLNCwUnYn9lC/1+CQ5dBrWbh6mLJQ5M8NGZuW31Ujh/nYndc5wP4QUGZFAmclAX6f28mErY7XZvqgfniAeb1jDYS+SoDo7R2DwN8agDlUZylOELKAYsBg4x3wqGpPApVPszvsI1eewUWvIgpZ8OtHu+5vx96e1nzaMYfzd9r3QqqfE4pYFj4KCPIjdX6Tdpjt8GZspHQTiJBv2AyXhgvSC3kcQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XWvDNXOE; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jrsDzUSF;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XWvDNXOE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJDqJ36fFz2xjQ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 01:39:08 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A2EEEvg3103442;
-	Mon, 2 Nov 2026 14:38:35 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=t3uMzKFF0fpXKNPzeuZqcP8SHbCjBI
-	Lits3drrR5UAs=; b=jrsDzUSF/OggKdN81wWhb4EQ3nK8LML9mgaSnR8qAY70jz
-	0DbJXtS4PJuv8PQiLy7abs+fG7sndfj6ShOJulStFvMaB4jzVmChtTE0sAet0Vm3
-	A1+30vWOdajDQi0XubC1JRA8+Z0IFqBUkwIt3tZHqrS7135+dwCfgEZ9oFFGPewC
-	l25ok0YfFnDEr9VN3wS8SYboK6sKCmQ6lfAwbRcX9ljp4AV5DyeSlhrCxiJoEWty
-	Y1DzMBTvPDR+g06pwD9FhYxvyUDi1W8x+t9hc8THVHlowf7A2mNVTcdtd7GnSpo3
-	aFq1FAonyVk3KK0s0pDgB8L2nMIRTSxdOjGsR3jA==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hn826h1td-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 02 Nov 2026 14:38:33 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6A2E5w6Q1034496;
-	Mon, 2 Nov 2026 14:38:32 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4hnu1vebv3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 02 Nov 2026 14:38:32 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6A2EcS5845613524
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 2 Nov 2026 14:38:28 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A89912004D;
-	Mon,  2 Nov 2026 14:38:28 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0A5D02004E;
-	Mon,  2 Nov 2026 14:38:22 +0000 (GMT)
-Received: from li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com (unknown [9.39.25.78])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Mon,  2 Nov 2026 14:38:21 +0000 (GMT)
-Date: Mon, 2 Nov 2026 20:08:19 +0530
-From: Gautam Menghani <gautam@linux.ibm.com>
-To: Sean Christopherson <seanjc@google.com>
-Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>,
-        Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
-        Huacai Chen <chenhuacai@kernel.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>,
-        Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
-        Paolo Bonzini <pbonzini@redhat.com>, Fuad Tabba <fuad.tabba@linux.dev>,
-        Joey Gouly <joey.gouly@arm.com>, Steffen Eiden <seiden@linux.ibm.com>,
-        Suzuki K Poulose <suzuki.poulose@arm.com>,
-        Zenghui Yu <yuzenghui@huawei.com>, Nicholas Piggin <npiggin@gmail.com>,
-        Atish Patra <atish.patra@linux.dev>, Alexandre Ghiti <alex@ghiti.fr>,
-        linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
-        kvm@vger.kernel.org, loongarch@lists.linux.dev,
-        linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
-        linux-kernel@vger.kernel.org, Stefan Teodorescu <fane@google.com>
-Subject: Re: [PATCH 3/7] KVM: PPC: Explicitly force IPIs when directly
- kicking vCPUs
-Message-ID: <auiZYdVzhFbnj0iy@li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com>
-References: <20261028190259.1819571-1-seanjc@google.com>
- <20261028190259.1819571-4-seanjc@google.com>
- <auStM0rbFol79h5o@li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com>
- <auTohixp3V5-vNsB@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJDzt0Z5vz2xLm
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 01:46:33 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 5947B41AB5;
+	Mon,  2 Nov 2026 14:46:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5ACC31F00A1C;
+	Mon,  2 Nov 2026 14:46:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793630792;
+	bh=8OUC3OpgPcYXff2v4b0WbdSVZE7XWpoJGNZRHA3e5A4=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc;
+	b=XWvDNXOEbgzkyZSZLEEf/fLDGQTJKwF0ltSxY/EL3lo82Mkr/aDxZgyoDMPnEDdLr
+	 5p9X0oQCHCkY63MlXypffIH/FgWzMKVYCEo4i3pEbfJuBXE7iGAORsSWwgE8jxQhAy
+	 4NKKegcYQITsSSiB9ubx16WR7JIBFMAtYwmdkdE/Zzf6jzzLfZ7rDbpHNZ3omVKKWs
+	 5YTo9uoKH3WQgJg5iglu6NkXshnM4oNeVvav8v5ihPYSLjDC/W/Dnb3rFkAiPkdkb/
+	 knAVm1KzmCTPRmBb4tIwPxCsIua2TX2REoD5qySaeeWkURDqxkkuEp88D6dK5T0/43
+	 GCmlt6X8Ltfhw==
+From: Christian Brauner <brauner@kernel.org>
+Date: Mon, 02 Nov 2026 15:43:27 +0100
+Subject: [PATCH RFC 36/38] selftests/proc: check that faulting sysctl
+ accesses don't hold up removal
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,109 +61,331 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <auTohixp3V5-vNsB@google.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: MVuzkhZ7vtCvo0_kidGaNnCzUH4z2Q5t
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTAyMDA1NiBTYWx0ZWRfX9NPC/owi16S7
- 9yPcxDuxCXAVRis8gROnpHUQtX1lgGRd8hAKUnleFK3QWlX1SdAjhFR8oEvK54MRQDdismPxh+K
- SQ8loUK3UQRzfSLpS9uRj+aWjubkYTlbIquMNg8PhpfWVJkZ76O3xxEXr80qfN6IOD19XJfjKtr
- 634hKk5awadYPmt24Ux7BsSNM3cqVRZujAolWeljDDPrwops7bov/t92bCk4p83QwKy6YXStSnl
- 0VsEIPP7bIE5T7r4zJSL0tKzTIgSYx+WFY3Qwo3DYgWTx5sTM9UVeBsh0rxrl31K1IM0pQFj1A7
- gw+VtvRxiUYjK/87Jg4SStypE42sXR/2o22pNseu+/r/yDHR8uGSsjBtiHv4st3RTmohj8hx7JP
- UCE4D1U1IEi/wr/eFIXPrL9wTCpxRXnB0VIgaijskvnY1QOUMWWKwaAo3sk8IykSUxckF0V1iQL
- y3XMeya+tQcv90pkeiQ==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTAyMDA1NiBTYWx0ZWRfX/Jv0f66eb8FC
- gBsCZTcz1I/pV05gMEXUAwMes48ABsD2pbDotd5Qxpz6XqvBunVHHDSaqleBJACDat+c8lSkusL
- mmZ2c5c7i5Q1tgycd0AKgoXZ+Q680vQ=
-X-Proofpoint-GUID: 3_YY6ZYXsy9uBgG-NjaOA9L9V7gYRG4x
-X-Authority-Analysis: v=2.4 cv=EsJHPicA c=1 sm=1 tr=0 ts=6ae8a06a cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=kj9zAlcOel0A:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
- a=1XWaLZrsAAAA:8 a=VnNF1IyMAAAA:8 a=duh_M4KPJp97uAtK-N0A:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-02_04,2026-11-02_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 clxscore=1015 lowpriorityscore=0 malwarescore=0
- priorityscore=1501 adultscore=0 impostorscore=0 phishscore=0 spamscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610300000
- definitions=main-2611020056
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
-	autolearn_force=no version=4.0.1
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261102-work-procfs-bugfixes-v1-36-59422ed3e465@kernel.org>
+References: <20261102-work-procfs-bugfixes-v1-0-59422ed3e465@kernel.org>
+In-Reply-To: <20261102-work-procfs-bugfixes-v1-0-59422ed3e465@kernel.org>
+To: linux-fsdevel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, 
+ Jann Horn <jannh@google.com>, Josef Bacik <josef@toxicpanda.com>, 
+ Chris Mason <mason@kernel.org>, Jeff Layton <jlayton@kernel.org>, 
+ NeilBrown <neil@brown.name>, Eric Dumazet <edumazet@kernel.org>, 
+ Thomas Gleixner <tglx@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>, 
+ Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@lst.de>, 
+ Greg Kroah-Hartman <gregkh@suse.de>, 
+ Joel Granados <joel.granados@kernel.org>, Kees Cook <kees@kernel.org>, 
+ Jan Kara <jack@suse.cz>, Jan Kara <jack@suse.com>, 
+ linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org, 
+ linux-acpi@vger.kernel.org, linux-kselftest@vger.kernel.org, 
+ linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, 
+ linux-um@lists.infradead.org, linux-wireless@vger.kernel.org, 
+ linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, 
+ ntfs3@lists.linux.dev, platform-driver-x86@vger.kernel.org, 
+ coreteam@netfilter.org, kexec@lists.infradead.org, 
+ linux-pci@vger.kernel.org, linux-sound@vger.kernel.org, 
+ netfilter-devel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ ibm-acpi-devel@lists.sourceforge.net, jfs-discussion@lists.sourceforge.net, 
+ linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-cifs@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+ linux-hwmon@vger.kernel.org, linux-mm@kvack.org, linux-sh@vger.kernel.org, 
+ linux-usb@vger.kernel.org, samba-technical@lists.samba.org, 
+ sparclinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
+ linux-doc@vger.kernel.org, linux-serial@vger.kernel.org, 
+ linux-atm-general@lists.sourceforge.net, Takashi Iwai <tiwai@suse.de>, 
+ linux-input@vger.kernel.org, linux-raid@vger.kernel.org, 
+ linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org, 
+ linux-debuggers@vger.kernel.org, 
+ "Christian Brauner (Amutable)" <brauner@kernel.org>, 
+ Chuck Lever <cel@kernel.org>
+X-Mailer: b4 0.17-dev
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Fri, Oct 30, 2026 at 11:57:10AM -0700, Sean Christopherson wrote:
-> On Fri, Oct 30, 2026, Gautam Menghani wrote:
-> > On Wed, Oct 28, 2026 at 12:02:55PM -0700, Sean Christopherson wrote:
-> > > Explicitly force an IPI when invoking kvm_vcpu_kick() directly instead of
-> > > relying on kvm_arch_vcpu_should_kick() to unconditionally return 1/true.
-> > > This will allow dropping kvm_arch_vcpu_should_kick() in favor of
-> > > kvm_request_needs_ipi().
-> > > 
-> > > No functional change intended (1 || 1 == true).
-> > > 
-> > > Signed-off-by: Sean Christopherson <seanjc@google.com>
-> > > ---
-> > >  arch/powerpc/include/asm/kvm_ppc.h | 13 ++++++++++++-
-> > >  arch/powerpc/kvm/book3s.c          |  4 ++--
-> > >  arch/powerpc/kvm/book3s_pr.c       |  2 +-
-> > >  arch/powerpc/kvm/booke.c           |  6 +++---
-> > >  arch/powerpc/kvm/e500_emulate.c    |  2 +-
-> > >  arch/powerpc/kvm/powerpc.c         |  2 +-
-> > >  6 files changed, 20 insertions(+), 9 deletions(-)
-> > > 
-> > > diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-> > > index 169ea6a7fbad..bbe7378ad0ef 100644
-> > > --- a/arch/powerpc/include/asm/kvm_ppc.h
-> > > +++ b/arch/powerpc/include/asm/kvm_ppc.h
-> > > @@ -30,6 +30,17 @@
-> > >  #endif
-> > >  #include <asm/inst.h>
-> > >  
-> > > +/*
-> > > + * TODO: For unknown reasons, KVM PPC has historically ignored vcpu->mode when
-> > > + *       determining if kicking a vCPU needs an IPI.  Either document why that
-> > > + *       behavior is necessary, or drop this helper and the @force param from
-> > > + *       __kvm_vcpu_kick().
-> > > + */
-> > > +static inline void kvmppc_vcpu_kick(struct kvm_vcpu *vcpu)
-> > > +{
-> > > +	__kvm_vcpu_kick(vcpu, false, true);
-> > > +}
-> > > +
-> > 
-> > AFAICS, there is no reason for PPC to always return 1. I was looking at
-> > the old patches on mailing list and found this - https://lore.kernel.org/kvm/0FEE585F-5E21-47F2-A3F0-AD0DE05EBB43@suse.de
-> > 
-> > ```
-> > How about we return 1 for kvm_arch_vcpu_in_guest_mode() on !x86 always, just
-> > like it's done today basically? Then we can worry about needless IPIs later
-> > and don't regress from the respective current kick implementations.
-> > ```
-> 
-> FWIW, I found that as well, but there are a metric ton of kvm_vcpu_kick() calls
-> that have been added since then, and they scared me.
-> 
-> > However, I'll do some testing and get back by mid next week to make sure
-> > there are no suprises.
-> 
-> Thanks!  If we can drop the PPC behavior, that would be wonderful!  Though if
-> we do that, it should be for 7.5 in a follow-up (this series really should go
-> into 7.4 due to the SNP issue).
+Read, write and list /proc/sys/net/ipv6/conf/<dev>/ of a tun device
+with a buffer whose first page is backed by userfaultfd and remove the
+device while the task sleeps in its copy from or to userspace:
 
+- unregistering the table doesn't wait for a faulting read(), write()
+  or getdents64()
 
-Yeah I looked into it and realized that the newer variants of KVM on PPC
-are not even using vcpu->mode at all. So that has to be fixed from our
-end.
+- the read still gets the value that was produced before the removal
+  and the next read fails with -ENOENT
 
-For this series,
-Reviewed-by: Gautam Menghani <gautam@linux.ibm.com> # PPC
+- the write is copied in after the removal and fails with -ENOENT
+
+- getdents64() still lists what it looked up before the removal and
+  fails with -ENOENT afterwards
+
+The tables are unregistered under RTNL, so a regression stalls each
+test for five seconds before it fails.
+
+Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
+---
+ tools/testing/selftests/proc/.gitignore            |   1 +
+ tools/testing/selftests/proc/Makefile              |   1 +
+ tools/testing/selftests/proc/config                |   3 +
+ .../selftests/proc/proc-remove-slow-sysctl.c       | 213 +++++++++++++++++++++
+ 4 files changed, 218 insertions(+)
+
+diff --git a/tools/testing/selftests/proc/.gitignore b/tools/testing/selftests/proc/.gitignore
+index 5b5e24e39cbd..7b8133492782 100644
+--- a/tools/testing/selftests/proc/.gitignore
++++ b/tools/testing/selftests/proc/.gitignore
+@@ -21,6 +21,7 @@
+ /proc-uptime-001
+ /proc-uptime-002
+ /proc-pidns
++/proc-remove-slow-sysctl
+ /read
+ /self
+ /setns-dcache
+diff --git a/tools/testing/selftests/proc/Makefile b/tools/testing/selftests/proc/Makefile
+index dae09f333455..bce6beca7274 100644
+--- a/tools/testing/selftests/proc/Makefile
++++ b/tools/testing/selftests/proc/Makefile
+@@ -32,5 +32,6 @@ TEST_GEN_PROGS += proc-multiple-procfs
+ TEST_GEN_PROGS += proc-fsconfig-hidepid
+ TEST_GEN_PROGS += proc-sysctl-readdir-churn
+ TEST_GEN_PROGS += proc-pidns
++TEST_GEN_PROGS += proc-remove-slow-sysctl
+ 
+ include ../lib.mk
+diff --git a/tools/testing/selftests/proc/config b/tools/testing/selftests/proc/config
+index 68fbd2b35884..3edd3c437fe4 100644
+--- a/tools/testing/selftests/proc/config
++++ b/tools/testing/selftests/proc/config
+@@ -1 +1,4 @@
+ CONFIG_PROC_FS=y
++CONFIG_IPV6=y
++CONFIG_TUN=y
++CONFIG_USERFAULTFD=y
+diff --git a/tools/testing/selftests/proc/proc-remove-slow-sysctl.c b/tools/testing/selftests/proc/proc-remove-slow-sysctl.c
+new file mode 100644
+index 000000000000..e1b1fd19a07a
+--- /dev/null
++++ b/tools/testing/selftests/proc/proc-remove-slow-sysctl.c
+@@ -0,0 +1,213 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * A read(), write() or getdents64() of /proc/sys that faults while copying
++ * from or to userspace must not hold up unregistering the sysctl table.
++ * /proc/sys/net/ipv6/conf/<dev>/ of a tun device is unregistered under RTNL
++ * when the device's file is closed.
++ */
++#define _GNU_SOURCE
++#include <errno.h>
++#include <fcntl.h>
++#include <linux/if.h>
++#include <linux/if_tun.h>
++#include <linux/userfaultfd.h>
++#include <poll.h>
++#include <pthread.h>
++#include <sched.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <sys/mman.h>
++#include <sys/syscall.h>
++#include <unistd.h>
++
++#include "../kselftest_harness.h"
++
++#define TUN_NAME	"procslow0"
++#define CONF_PATH	"/proc/sys/net/ipv6/conf/" TUN_NAME
++#define MTU_PATH	CONF_PATH "/mtu"
++#define BUF_PAGES	16
++#define TIMEOUT_MS	5000
++
++enum sysctl_op {
++	SYSCTL_READ,
++	SYSCTL_WRITE,
++	SYSCTL_GETDENTS,
++};
++
++struct worker {
++	enum sysctl_op op;
++	int fd;
++	char *buf;
++	size_t len;
++	ssize_t ret;
++	int err;
++};
++
++struct closer {
++	int tun;
++	int done;
++};
++
++static void *work_thread(void *arg)
++{
++	struct worker *w = arg;
++
++	switch (w->op) {
++	case SYSCTL_READ:
++		w->ret = read(w->fd, w->buf, w->len);
++		break;
++	case SYSCTL_WRITE:
++		w->ret = write(w->fd, w->buf, w->len);
++		break;
++	case SYSCTL_GETDENTS:
++		w->ret = syscall(__NR_getdents64, w->fd, w->buf, w->len);
++		break;
++	}
++	w->err = errno;
++	return NULL;
++}
++
++static void *close_thread(void *arg)
++{
++	struct closer *c = arg;
++	ssize_t ret;
++
++	close(c->tun);
++	ret = write(c->done, "x", 1);
++	return (void *)ret;
++}
++
++FIXTURE(proc_sys_slow) {
++	int tun;
++	int uffd;
++	char *buf;
++	long psz;
++};
++
++FIXTURE_SETUP(proc_sys_slow)
++{
++	struct uffdio_api api = { .api = UFFD_API };
++	struct uffdio_register reg = {};
++	struct ifreq ifr = {};
++
++	if (unshare(CLONE_NEWNET))
++		SKIP(return, "unshare(CLONE_NEWNET): %s", strerror(errno));
++
++	self->tun = open("/dev/net/tun", O_RDWR | O_CLOEXEC);
++	if (self->tun < 0)
++		SKIP(return, "/dev/net/tun: %s", strerror(errno));
++	strncpy(ifr.ifr_name, TUN_NAME, IFNAMSIZ - 1);
++	ifr.ifr_flags = IFF_TUN | IFF_NO_PI;
++	ASSERT_EQ(ioctl(self->tun, TUNSETIFF, &ifr), 0);
++	if (access(CONF_PATH, F_OK))
++		SKIP(return, CONF_PATH ": %s", strerror(errno));
++
++	self->uffd = syscall(__NR_userfaultfd, O_CLOEXEC | O_NONBLOCK);
++	if (self->uffd < 0)
++		SKIP(return, "userfaultfd: %s", strerror(errno));
++	ASSERT_EQ(ioctl(self->uffd, UFFDIO_API, &api), 0);
++
++	/* Only the first page of the buffer goes through userfaultfd. */
++	self->psz = sysconf(_SC_PAGESIZE);
++	self->buf = mmap(NULL, BUF_PAGES * self->psz, PROT_READ | PROT_WRITE,
++			 MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
++	ASSERT_NE(self->buf, MAP_FAILED);
++	reg.range.start = (unsigned long)self->buf;
++	reg.range.len = self->psz;
++	reg.mode = UFFDIO_REGISTER_MODE_MISSING;
++	ASSERT_EQ(ioctl(self->uffd, UFFDIO_REGISTER, &reg), 0);
++}
++
++FIXTURE_TEARDOWN(proc_sys_slow)
++{
++}
++
++/*
++ * Let @w sleep in its copy from or to the first page of the buffer, then
++ * close the device. Unregistering the table must not wait for @w.
++ */
++static void stall_and_remove(struct __test_metadata *_metadata,
++			     FIXTURE_DATA(proc_sys_slow) *self,
++			     struct worker *w)
++{
++	struct closer c = { .tun = self->tun };
++	struct uffdio_zeropage zero = {};
++	struct uffd_msg msg;
++	struct pollfd pfd;
++	pthread_t wt, ct;
++	int done[2];
++
++	w->buf = self->buf;
++	ASSERT_EQ(pthread_create(&wt, NULL, work_thread, w), 0);
++
++	pfd = (struct pollfd){ .fd = self->uffd, .events = POLLIN };
++	ASSERT_EQ(poll(&pfd, 1, TIMEOUT_MS), 1);
++	ASSERT_EQ(read(self->uffd, &msg, sizeof(msg)), sizeof(msg));
++	ASSERT_EQ(msg.event, UFFD_EVENT_PAGEFAULT);
++
++	ASSERT_EQ(pipe2(done, O_CLOEXEC), 0);
++	c.done = done[1];
++	ASSERT_EQ(pthread_create(&ct, NULL, close_thread, &c), 0);
++	pfd = (struct pollfd){ .fd = done[0], .events = POLLIN };
++	EXPECT_EQ(poll(&pfd, 1, TIMEOUT_MS), 1) {
++		TH_LOG("unregistering " CONF_PATH " waited for the faulting task");
++	}
++
++	zero.range.start = (unsigned long)self->buf;
++	zero.range.len = self->psz;
++	ASSERT_EQ(ioctl(self->uffd, UFFDIO_ZEROPAGE, &zero), 0);
++	ASSERT_EQ(pthread_join(wt, NULL), 0);
++	ASSERT_EQ(pthread_join(ct, NULL), 0);
++}
++
++TEST_F(proc_sys_slow, read)
++{
++	struct worker w = {
++		.op	= SYSCTL_READ,
++		.len	= BUF_PAGES * self->psz,
++	};
++
++	w.fd = open(MTU_PATH, O_RDONLY | O_CLOEXEC);
++	ASSERT_GE(w.fd, 0);
++	stall_and_remove(_metadata, self, &w);
++
++	/* The value was produced before the table went away, then nothing. */
++	EXPECT_GT(w.ret, 0);
++	EXPECT_EQ(read(w.fd, self->buf, self->psz), -1);
++	EXPECT_EQ(errno, ENOENT);
++}
++
++TEST_F(proc_sys_slow, write)
++{
++	struct worker w = {
++		.op	= SYSCTL_WRITE,
++		.len	= 5,
++	};
++
++	w.fd = open(MTU_PATH, O_WRONLY | O_CLOEXEC);
++	ASSERT_GE(w.fd, 0);
++	stall_and_remove(_metadata, self, &w);
++
++	/* The table went away while the value was copied in. */
++	EXPECT_EQ(w.ret, -1);
++	EXPECT_EQ(w.err, ENOENT);
++}
++
++TEST_F(proc_sys_slow, getdents)
++{
++	struct worker w = {
++		.op	= SYSCTL_GETDENTS,
++		.len	= BUF_PAGES * self->psz,
++	};
++
++	w.fd = open(CONF_PATH, O_RDONLY | O_DIRECTORY | O_CLOEXEC);
++	ASSERT_GE(w.fd, 0);
++	stall_and_remove(_metadata, self, &w);
++
++	/* What was looked up before the removal still arrives, then nothing. */
++	EXPECT_GT(w.ret, 0);
++	EXPECT_EQ(syscall(__NR_getdents64, w.fd, self->buf, self->psz), -1);
++	EXPECT_EQ(errno, ENOENT);
++}
++
++TEST_HARNESS_MAIN
+
+-- 
+2.53.0
+
 
