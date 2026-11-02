@@ -1,64 +1,59 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72CD26072EFD
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 16:32:32 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5F37606B93A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 17:44:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Gz4AbbDz;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=ZoskNSoX
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=apVTG27u
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJHL63w7cz2xK7;
-	Tue, 03 Nov 2026 03:32:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793637150;
-	cv=none; b=K5/zQ67AdQ5P/aBo5VVEQ3H759ibU7MnzAS8Z4uVL6mxOMv4yP8MTS7ZhS+sid4VmkAcp8TBU068e0yCxoGqMzjVlP+lYkgSAuSTXVajiC4LjTKU2EJM8IWLl1lEmRcRdHkxqaEJfBz5Bp9Omr+Xwi75BNMIncH5FTqP+nNtLFbGUamCNVzEf29hUhmfDATIbnXKVVu0IVXLXsq84aieI6ab7+eO5Zs66upiuTD/EsWg30wTYA2c0x9RfAxXuKsUImAALtyWStOichSp8mN29wzL14f4LQH4zCNAtEmAwIpLaeOcaOWuGz84u6FgeLFeidsK83B7GZmygzxQb0F9wg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJJxT59FPz2xdX;
+	Tue, 03 Nov 2026 04:44:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793641485;
+	cv=none; b=BXYiPMDwmjXNKVM8vqTpZuQ+yBwD03tJdR2t+TSZIQGDKw89iM51OCMr9nos2KgV642YDqWLxH9/JkTmjSEjk1X8YbKWlr46pD/1yGq7RFtR1ffIgkM6e+THnKujTO4kxZ+Z/sRhoP7iyVwZcuTPe8G8YjSZeRNZRDVdx5ebS5g9fXw7QN0VZZYsffp6I0PZWiF16X83rINTAMAQJDTZH5X0Oh+rFD3zKLGxb8YsWkq6MQ/gCnBeKtQGSYLIjF5U/KueZysoimgZ4ALGGxWFqaDQMsBexT5aetnn/E/qv8eMn+UI1HAk3HLPWqVy9Pxh1Bl/7etIOS5rsSO6rM3zdg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793637150; c=relaxed/relaxed;
-	bh=nPU/b/fRrGFWjTF7wyffZ8NB+VPLw6oTBV3Tou13Kjk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dBmvU2CHb25r1aIdVR7IOiNOZCX3V9rm1X6mE0q0FtTvDQwBADwBY+5iORwg3FKbcm6TsC3Bjqa6lyZxEpilH3GAYQ9eHoxePEgJon+Hj1VoVDfGnhVzkZEN9UDHJ3ZcVmX5LRobEgUgwD8WG79J+Su3MmuMgvuceXt18s+shl7LHQ0D09LTFkD8Un7iln8LWBblBCB0Ld4GWeUGrgKUAlt2oZOZuUeZFv7H+UFEvSWUy+Ih8C+nBGbnM4e2qu8QQ4qwxP+Tz6+XYFqXzqopt63oPRsge28S7rLNz5bp5YrlnGPZeFE9Cu+HX6huky7fbJu+yvjYK00rlEHjuQHy2g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Gz4AbbDz; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=ZoskNSoX; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+	t=1793641485; c=relaxed/relaxed;
+	bh=k7UZvy0vvY5D+HhvfYF+E9EdpF9huO3k00rhqXCPC6I=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=MZ8m5i/Lm6Oii/UdFFrZMu37DHRWEtqWSlIgQ1feVG/Up/r2aRnN8vtMD2qgMwWlRKNV7UfHx2X7Xp1TsQfP4+crrDSQV0FF2WQUlxbx9bHQN1xSUP70hq8NPN+tooN1DQxYZ0RemsyLs0+krPNofJQhdwo8tqUaKB1fz9oq+L7859hvPUkFM9FaUX/3qs0tpIFaX3Ca54M67diEi8Tg8lmVGKMl2qvd87zKeJvNl+6MFb5eTOrPrMP20oeKuzH0S6ENcC3r6BHj3ExocLjgvf6lxu0wOECdxOrWwQzLZWzNg9mznayWpcbKjEU5i8TPfJkfOjKwIt6pYQyjTET+DQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=apVTG27u; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Gz4AbbDz;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=ZoskNSoX;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=apVTG27u;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJHL546WQz2xJF
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 03:32:29 +1100 (AEDT)
-Date: Mon, 2 Nov 2026 17:32:23 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1793637145;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=nPU/b/fRrGFWjTF7wyffZ8NB+VPLw6oTBV3Tou13Kjk=;
-	b=Gz4AbbDzmFTUeKb+PI/scrv/zERqv9qLJs7cTD7S3OIgnXufwqmdnN3iKi4PcM4SBUgGX8
-	UtoedaI7ms+aqqgeGgaOwkuaM9oZPK1lAyLZ6lQGZWiTwYQuUTyyoDbbxPWcdUvwlimDMM
-	nKuLkgIQwbjOv/HntyT94oCvnYfjMGyG9hyAxFU3pvoE33erUhjWen46AI+gKZglTluvqH
-	l07HR2MsG1L1qGp2HisKbq+oqi0sKfcBaQwe8Jxb4y4/WHCaY0Klpv1L8NEWSXNo9pIF6d
-	xZfu3WkS+hZ1OGza0VfSell/3biHiXfUPyIrULIq7Zxfr0YpHfhlvCFO8bG3XA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1793637145;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=nPU/b/fRrGFWjTF7wyffZ8NB+VPLw6oTBV3Tou13Kjk=;
-	b=ZoskNSoX7Zkzpqco8O3SZSFK670KaNvvzb/nguzZGQ/JTzhhn+43jzf2QQUP5q9Kddgtra
-	/dFG6WtLnwEglODA==
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To: Daniel Palmer <daniel@0x0f.com>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-	chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/powermac: Always close the timebase-sync i2c bus
-Message-ID: <20261102163223.qV85cD1R@linutronix.de>
-References: <20261030232418.1145779-1-daniel@0x0f.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJJxR6wtDz2xSS
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 04:44:43 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 8721960A66;
+	Mon,  2 Nov 2026 17:44:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 051721F00A16;
+	Mon,  2 Nov 2026 17:44:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793641480;
+	bh=k7UZvy0vvY5D+HhvfYF+E9EdpF9huO3k00rhqXCPC6I=;
+	h=Date:From:To:Cc:Subject;
+	b=apVTG27uMskhhbZTrmLmAV9eRr9HrS1HUR5qbi9zfTEALUM2OekHVl6dM07zMhU9I
+	 2IDsL3D3Oqs9Yv2+o+lKAP1ZE6sPozEY9TDuJIWdBHoVTH3ZqF8pVhQDU2pq3pBlZy
+	 cso0jW6KHw63Itn0ESPx72NSLUQ5ql6Zran0/05c+3YC3O3tmvJ92NdfhlMmhxq+XS
+	 rHGaMzx+AOvEqqAFoJnwodS2ALIQnpyNqN2E3u3gtmkKIkOYkg81oTsY71i6CVU176
+	 WBSw2QyqukddCaWlN2qrGfIb42MZwr4tef8qcZogYwLm2+uiVsF/JNscjJKHUomu0U
+	 +Kdm741227oMQ==
+Date: Mon, 2 Nov 2026 09:44:28 -0800
+From: Eric Biggers <ebiggers@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Ard Biesheuvel <ardb@kernel.org>,
+	"Jason A. Donenfeld" <Jason@zx2c4.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>
+Subject: [GIT PULL] Crypto library fixes for v7.4-rc2
+Message-ID: <20261102174428.GA1935@sol>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,81 +67,55 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20261030232418.1145779-1-daniel@0x0f.com>
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 2026-10-31 08:24:18 [+0900], Daniel Palmer wrote:
-> smp_core99_cpu_prepare() opens an i2c bus for "tb sync" and that is
-> closed again in smp_core99_cpu_online().
-> 
-> If a processor module is dysfunctional, not seated correctly or
-> otherwise fails to come online smp_core99_cpu_online() is not called
-> and the bus stays open.
-> 
-> On some G5s (tested PowerMac7,3) this i2c bus also has the CPU
-> temperature sensor and fan controller connected to it so not closing
-> the bus stops the kernel from making sure the working CPU doesn't
-> roast itself to death.
-> 
-> Rename smp_core99_cpu_online() to smp_core99_cpu_online_prepare_down()
-> and wire it up to get called when onlining fails as well so the
-> bus is closed and the working CPU stays working.
+The following changes since commit 5b0764a53235d3c77e1ed674e836e1b3fe1a4b1f:
 
-"and the I2C bus remains accessible by the i2c-driver."
+  Merge tag 'drm-next-2026-10-21' of https://gitlab.freedesktop.org/drm/kernel (2026-10-23 18:29:02 -1000)
 
-The `smp_core99_host_open' makes sure it does not get closed twice so
-that works.
+are available in the Git repository at:
 
-> Fixes: 68e694dcef24 ("powerpc/powermac: Convert to hotplug state machine")
+  https://git.kernel.org/pub/scm/linux/kernel/git/ebiggers/linux.git tags/libcrypto-for-linus
 
-So the old CPU_UP_CANCELED case would have close it and I forgot to copy
-that part.
+for you to fetch changes up to 01ad209f122b7c173477bd60c7997564f9c65961:
 
-> Signed-off-by: Daniel Palmer <daniel@0x0f.com>
-> ---
->  arch/powerpc/platforms/powermac/smp.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
-> index 88e92af8acf9..e310b6fbbede 100644
-> --- a/arch/powerpc/platforms/powermac/smp.c
-> +++ b/arch/powerpc/platforms/powermac/smp.c
-> @@ -865,7 +865,7 @@ static int smp_core99_cpu_prepare(unsigned int cpu)
->  	return 0;
->  }
->  
-> -static int smp_core99_cpu_online(unsigned int cpu)
-> +static int smp_core99_cpu_online_prepare_down(unsigned int cpu)
->  {
->  	/* Close i2c bus if it was used for tb sync */
->  	if (pmac_tb_clock_chip_host && smp_core99_host_open) {
-> @@ -893,9 +893,9 @@ static void __init smp_core99_bringup_done(void)
->  #ifdef CONFIG_HOTPLUG_CPU
->  	cpuhp_setup_state_nocalls(CPUHP_POWERPC_PMAC_PREPARE,
->  				  "powerpc/pmac:prepare", smp_core99_cpu_prepare,
-> -				  NULL);
-> +				  smp_core99_cpu_online_prepare_down);
->  	cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN, "powerpc/pmac:online",
-> -				  smp_core99_cpu_online, NULL);
-> +				  smp_core99_cpu_online_prepare_down, NULL);
+  lib/crypto: mldsa: Add __must_check to mldsa_verify() (2026-10-29 10:12:11 -0700)
 
-I don't think it is needed to rename the function as such.  OpenBUS/
-CloseBUS would be more matching than to the sate it runs in me think.
-But it is not my call. For the "adding the function to the prepare
-notifier" part:
+----------------------------------------------------------------
 
-Reviewed-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+- Disable the MIPS64 Octeon optimized SHA-1, SHA-256, and SHA-512 code
+  on little-endian kernels, since it doesn't work correctly on them
 
->  #endif
->  
->  	if (ppc_md.progress)
+- Remove the PowerPC optimized Poly1305 code. It's already been marked
+  as BROKEN for over a year due to not working in softirq context, but
+  it turns out some of the Poly1305 math is incorrect too
 
-Sebastian
+- A few robustness improvements for the ML-DSA code
+
+----------------------------------------------------------------
+Eric Biggers (5):
+      lib/crypto: mips: Disable Octeon SHA code on little-endian kernels
+      lib/crypto: powerpc/poly1305: Remove BROKEN implementation
+      lib/crypto: mldsa: Check pk_len before doing pointer arithmetic
+      lib/crypto: mldsa: Explicitly check that 'alg' is a valid value
+      lib/crypto: mldsa: Add __must_check to mldsa_verify()
+
+ include/crypto/mldsa.h                 |    6 +-
+ lib/crypto/Kconfig                     |   12 +-
+ lib/crypto/Makefile                    |    2 -
+ lib/crypto/mldsa.c                     |   15 +-
+ lib/crypto/powerpc/poly1305-p10le_64.S | 1076 --------------------------------
+ lib/crypto/powerpc/poly1305.h          |   76 ---
+ lib/crypto/tests/mldsa_kunit.c         |    9 +
+ 7 files changed, 28 insertions(+), 1168 deletions(-)
+ delete mode 100644 lib/crypto/powerpc/poly1305-p10le_64.S
+ delete mode 100644 lib/crypto/powerpc/poly1305.h
 
