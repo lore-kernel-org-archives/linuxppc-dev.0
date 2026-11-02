@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 495A5606B0E1
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:07:53 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BFE6460A44DE
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:08:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kIoUwWZI
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IJsS4rxO
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFSS0Dwtz3btn;
-	Tue, 03 Nov 2026 02:07:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632071;
-	cv=none; b=WqEB/URTKUbn0/Pl916duSm3mmZpdzoLd+nk3auQDg6bqyJJKlzizTNgQeZrB2GF38pspyXoe+wbLv9Ey2tJK1BC1MpkfDkTUDO/zkIL/ZVSk4mXZJPAidJsHesaCP1MLGuswsoHHgL3IrCrteYcezo3rl2YbdvTDTq8LTnNVGxQu3PIkv097PoByL//brtJfHSmkEZ3+MUrKFE7SzljHqkhKrruNq90jERNpzexXnRgCHbUWtkeUu2/u6EE+i2l770cgw4IDGeFtinPphg7kNC2my2xE/gb5kPrR8VggvC3sI7iuVkoHuCf//PySyGqQZwKAMGxmGhOcd2v1nQyNw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFSn3m7Rz3bjN;
+	Tue, 03 Nov 2026 02:08:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632089;
+	cv=none; b=OftjukK7i034XY/OZV4/1nYukkmLs/tNKCkxg5aP6ffTNaiESgdmp/ppaA9QdMFYNaqWNNeA7asaEb9h2y862DmxKbdoeC/P8LTET9nJcFS5GB5VUdxXyDGJC+3DY1DOezwb0MwTnu+zy8IVXK1TdyOjq+I+Sqw6lvIm5pnac6g8lz8xWBRqHRcCHa43QFJh0DS/tHrzZSdpHq2Oi/O4tD+cBxGFjvcs4zCxKNABxZubdVrE/hmycf6BmWSOEjAjNh+Tsjr5d5eDmWrWZGoMO3yCWU2IkgU1c1FO84FH30pRueFLNAPo/sG6M5rEZn3uLV/DZZKQwP+Rl4xRl0Samg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793632071; c=relaxed/relaxed;
-	bh=lzi0v2Iw6r5Nf2GLOsMSQBwdPNX93e2TzGzGfD3oQvk=;
+	t=1793632089; c=relaxed/relaxed;
+	bh=6VXp+nvPq44Iibfd7M3dnZqyMxw2lTQeTkLffGnpGI8=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=cBqN9EPcxatrrzd3mRMjzTtO/TUj8CVN++gKPOtO6fnkT/et4B9nWljzf+2smWQfaIzaqZeE4SEsIo4mzrKG2U8ldEMWcw45yLaUrazF2ei+PS0u6myg4ynxVRVq+NS0Tm0vdA9yfoT9yQ2VYOA86vxGlj4FWgazRhtT85GGxxoG4yHezxZ9VVmd7pr33ym+pHDewVF5mgujZdv/sh+7SwcjTab6W5DmqyxtF2O8rjx2NBojCRBwN5UVrPF89RGLuPrRdkcn8VSDvAlcUx8ynfBlPLA4dS28Mi7ai8uJhtpeWJwTe18XYi1uwqAdokIJt1pYMrG2djdBaeG7GB2Kmw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kIoUwWZI; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=jUBCKO66jNZgJLzu+SlchiPKPo5NuativcJ16URrFBRnMgNYwH96da8OaQlU10/UpwnzVXsduK/5qV+VAWZXYFJ4+SxyZ8CfbiAzLovBCwUlougfdDLTkm+avJjSw9DwR5a6jX06Nq1lBIE27DoL9F33Zi3yFO3KcV1TB6+v4pG/SOG5z9nl6GaDSy3bxy5hWn6yWhMJHlpZ0/UAb5GT6KOuid7HLWLqLkdxnGjfSAkxDHNVF/P6ehLX4lWNaH+pObXQM+GWDkPP112QG/uKigcjAfBQxc+ehD4jOlbO+9mUzoMVuQxacn+l6RMqcT+5n5cAhTDPJj03uvRKsM8Z7g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IJsS4rxO; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kIoUwWZI;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IJsS4rxO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFSR1csMz3bj7
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:07:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFSm4FH0z2ySc
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:08:08 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id B1FD84378E;
-	Mon,  2 Nov 2026 15:07:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9C6921F00A18;
-	Mon,  2 Nov 2026 15:07:36 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 18A8C43267;
+	Mon,  2 Nov 2026 15:08:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2E8D31F00A1B;
+	Mon,  2 Nov 2026 15:07:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793632069;
-	bh=lzi0v2Iw6r5Nf2GLOsMSQBwdPNX93e2TzGzGfD3oQvk=;
+	s=k20260515; t=1793632087;
+	bh=6VXp+nvPq44Iibfd7M3dnZqyMxw2lTQeTkLffGnpGI8=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=kIoUwWZIZJmPIDGcbCqUMn+ysgkkYH4B9KIOKwQcxHvHBenqGMDwfSExIyruQhbFw
-	 GSvSuGXqLlsS/+2bX4zY15r68FSJdvY7PhgxxV9bnP9Q3PrAcl12NmKthDnezkWdzA
-	 YQcdsHreaTBVFGkt5/ixU0O685iwRTrAmT2xH295OHXHJaGkHJFEIXEMqGqXCeqbKp
-	 nkpHGaPfZ7GY12qU7tMKJN88syBFW289W+duXDc1qru1IIyFkTan4orRc22NIVl3pP
-	 G9JHqYUFv0jVxFqVlQXSQgnsHBo0FeNBeFWC+sINyeJMsGIfziINB34GYCGOVyuJWO
-	 tkxpbHP0pDc6g==
+	b=IJsS4rxOrw0evPnx89c/k4QBxYWHpvmf5bC5nkZvS9heIkdiPMQ9+UGLYAqwXCeRo
+	 01xMhphWRq3Aq5SpmzQFwBYXFYqXKEaXV7aEPiCoGMFOQNxw7pWWisGb5yaQPmI5Sh
+	 tp1LULK9tthAvY5/hntPoT0wfDOVWswz1/lwzqVDgSpYEcKIVZ8JMYeE0wU54k61kO
+	 ToCwYStQ9aor3WEDfPrJ5VAU7p1igwmg/9f/J70vTmuPCQCbfb4H8bgp2jfpfxr9Bw
+	 Lja5YKZ94jQYHKXWFN6sFWb+EV8QZMwi+q9qWB4+h7zvBC2rh/ZxyN51W+VcpcOFR+
+	 oDn8HTPgDHHnA==
 From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 16:01:45 +0100
-Subject: [PATCH RFC 18/22] macintosh/via-pmu: let procfs copy in writes to
- the options file
+Date: Mon, 02 Nov 2026 16:01:46 +0100
+Subject: [PATCH RFC 19/22] platform/x86: thinkpad_acpi: let procfs copy in
+ writes
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-arch-v1-18-c9492ab08480@kernel.org>
+Message-Id: <20261102-work-procfs-arch-v1-19-c9492ab08480@kernel.org>
 References: <20261102-work-procfs-arch-v1-0-c9492ab08480@kernel.org>
 In-Reply-To: <20261102-work-procfs-arch-v1-0-c9492ab08480@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -107,47 +107,57 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Implement ->proc_write_buf() so procfs copies in what is written before
-it pins the entry, and parse the option from that copy. Writes larger
-than PAGE_SIZE - 1 bytes fail with -EINVAL now.
+Implement ->proc_write_buf() so procfs copies in what is written to
+/proc/acpi/ibm/* before it pins the entry, and hand that copy to
+->write(). procfs already rejects writes larger than PAGE_SIZE - 1
+bytes.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- drivers/macintosh/via-pmu.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ drivers/platform/x86/lenovo/thinkpad_acpi.c | 14 +++-----------
+ 1 file changed, 3 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
-index 49f929ae10e4..079c085be5d2 100644
---- a/drivers/macintosh/via-pmu.c
-+++ b/drivers/macintosh/via-pmu.c
-@@ -913,7 +913,7 @@ static int pmu_options_proc_show(struct seq_file *m, void *v)
+diff --git a/drivers/platform/x86/lenovo/thinkpad_acpi.c b/drivers/platform/x86/lenovo/thinkpad_acpi.c
+index 01e4c980fad6..b4f253da9536 100644
+--- a/drivers/platform/x86/lenovo/thinkpad_acpi.c
++++ b/drivers/platform/x86/lenovo/thinkpad_acpi.c
+@@ -881,33 +881,25 @@ static int dispatch_proc_show(struct seq_file *m, void *v)
  }
  
- static ssize_t pmu_options_proc_write(struct file *file,
--		const char __user *buffer, size_t count, loff_t *pos)
-+		char *buffer, size_t count, loff_t *pos)
+ static ssize_t dispatch_proc_write(struct file *file,
+-			const char __user *userbuf,
++			char *buf,
+ 			size_t count, loff_t *pos)
  {
- 	char tmp[33];
- 	char *label, *val;
-@@ -923,8 +923,7 @@ static ssize_t pmu_options_proc_write(struct file *file,
+ 	struct ibm_struct *ibm = pde_data(file_inode(file));
+-	char *kernbuf;
+ 	int ret;
+ 
+ 	if (!ibm || !ibm->write)
  		return -EINVAL;
- 	if (count > 32)
- 		count = 32;
--	if (copy_from_user(tmp, buffer, count))
--		return -EFAULT;
-+	memcpy(tmp, buffer, count);
- 	tmp[count] = 0;
+-	if (count > PAGE_SIZE - 1)
+-		return -EINVAL;
  
- 	label = tmp;
-@@ -958,7 +957,7 @@ static ssize_t pmu_options_proc_write(struct file *file,
+-	kernbuf = memdup_user_nul(userbuf, count);
+-	if (IS_ERR(kernbuf))
+-		return PTR_ERR(kernbuf);
+-	ret = ibm->write(kernbuf);
++	ret = ibm->write(buf);
+ 	if (ret == 0)
+ 		ret = count;
  
- static const struct proc_ops pmu_options_proc_ops = {
- 	.proc_show	= pmu_options_proc_show,
--	.proc_write	= pmu_options_proc_write,
-+	.proc_write_buf	= pmu_options_proc_write,
+-	kfree(kernbuf);
+-
+ 	return ret;
+ }
+ 
+ static const struct proc_ops dispatch_proc_ops = {
+ 	.proc_show	= dispatch_proc_show,
+-	.proc_write	= dispatch_proc_write,
++	.proc_write_buf	= dispatch_proc_write,
  };
- #endif
  
+ /****************************************************************************
 
 -- 
 2.53.0
