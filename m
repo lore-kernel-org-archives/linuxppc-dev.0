@@ -2,51 +2,70 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A7E946072EC2
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:33:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 22E9F6072ED2
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:33:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lY4jcv6k
+	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=gbisa96b
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJG1p32jgz3c2k;
-	Tue, 03 Nov 2026 02:33:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793633598;
-	cv=none; b=I61LC9X/EXyUBTMgPIQnJSoRpqrjmJQwuffA1DQ+vcGJICYqPqmkdfjXcJ1U4eUhJhQ+XQr7wtSULPSqs7/+mR6ZJ15RPFBPMLyeQLnEiu0P8SZRsK93UiwNpFUnT1xe7d67H355D6LW0s0n1iadNlD8UdldDn7v6q93VtdFH5bP5bX2YOrIvzQGgFMysGjYIE2VbMykBRIrdkdTFW8uUjv/DncbLGDdTG8XFJ3owPD/qjEzX+xVM3ssxG9Bo8qfwj+xGfHL1XKH+UBMKa9gKYMT6LBYq5K1llNP9oind9sDsho3NDBLWJiqYvEgZIGNtcVsvH7izMkDIsrTd37BiA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJG2R6Fk3z3dHj;
+	Tue, 03 Nov 2026 02:33:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::647"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793633631;
+	cv=none; b=WGfm38utQxC8resu1Wf7IzI5S6sSsxT6SZHa2ObyojdbymEnJPnaEMAwSzpTOVi9V0KdnjQmGjHJVJUwjGj8xzKMr/HEXZDaxFpn2eVgQpddfbn92dRzuonI4LByfokepKHSkWj6wDphJ4xmpCpeULf6PySeItdQg/0aeVc50mazy+xL16jEg8yM4qySIIYWmZB8kIBDSsbt6Fzbv40TA1cRmD/jcjkctzPeDIxq5mhyVWP492g4YmLKoJ30Pq5oQUfMYtAB0L4waTLW+qU+5+jjkOWYYf2jx0+pM2iBUiKplC5DMiJX4rGZY2hHY1oV++4Xj+YVocDGGH5uBeMZhg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793633598; c=relaxed/relaxed;
-	bh=I87aXd9DKn5INMWxVGI3L3LJev8psccpA6qjKtl7++0=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=BVfNTLaqx4Y1aPwg99XgINzbl7U61rsszoDdKdEjvfJbYHpNq09HME0KExXmvFyYuuF3rAhRNkDoLMGRKJivaXbqcfsMZzTW9hmTHQ90bieWZP/NduaozNSoBXrfux8j8ZznN7HS655myGV1cZsXMCwvqvwwLLoirY2g4wD/t7eNwMojxUeoHYeALLNQLrfBOFtuUPrxzZ8p75f4jlc4ty26/lb7sXH8nL1RWTxB2vNMS7WQ4RQCRHNLIvqlZ4F9QCL+IfNYW/Bp7QYdWt5KEEZ+ldov3HLn6JwiZTn3muWyEJnh7j1ZX4iIZqssmiPdX76wUB7gvSUX43hjhmn2mw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lY4jcv6k; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1793633631; c=relaxed/relaxed;
+	bh=TUC01fxFkyGA6yFwHL7rirhUUtJ+C7CbbSnK6VkA0MA=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=KdNsgCanDA/w3sHjxD+HJPnTVao8zpNW30vTY60VaniRsrjSpBvs80FBJylNGs+/lM9dvy0hAenyE9BYWn6FhfSxPmf8MS5QvtDQaSPkxe483y8Qdyn9i8d3Jm35XzyH/SIsQ3Av6d8wsjOG753BB3e4IlsLGOzOBWDUlMdWPTyKrFHzf7wf6nOGM0iHWMvhp7Ii6tNz3ePRaQ9fxpeFYTiwvZuXWLEwDsMrhr7n6bZ0Z0Ep+7eCvBNFdCmljNxRsWCqIuHaGfhZISLCxJ7O5QhSv/jxtE9wQ/CjV6txkMagCO75MRhZ+w9n8iRjAkv++XTuvPujBjyztIJGyY60Fg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=gbisa96b; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::647; helo=mail-pl1-x647.google.com; envelope-from=3wa3oagykdlqmyuhdwaiiafy.wigfchorjjw-xypfcmnm.itfuvm.ila@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lY4jcv6k;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=gbisa96b;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::647; helo=mail-pl1-x647.google.com; envelope-from=3wa3oagykdlqmyuhdwaiiafy.wigfchorjjw-xypfcmnm.itfuvm.ila@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x647.google.com (mail-pl1-x647.google.com [IPv6:2607:f8b0:4864:20::647])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJG1n4YXyz3blk
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:33:17 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id C093E60612;
-	Mon,  2 Nov 2026 15:33:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A99BA1F00A17;
-	Mon,  2 Nov 2026 15:32:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793633595;
-	bh=I87aXd9DKn5INMWxVGI3L3LJev8psccpA6qjKtl7++0=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=lY4jcv6krIB7tSgezJZ0V+JS72cdUlJSNkPro3CnXcMDEMbA71z5fLxOwnxG5iNkC
-	 rp3t+Brf19zrcUHbxB4mEw/GXvOdm1oi2xkw2hpPnVuKqF63DhYCdo+P7KrF0k9ySw
-	 q3WnWWnNPvOQjnIIlISDoS4h+NGj1NrV2Jh1P/jEmiGYv49kocMRPrjiUdBmefuqET
-	 1ShVqFtZ3SJTeboI3TL14lRgICjngxPE349v7hPpsjveDK6gezuIAK+69D9q6LdAv9
-	 73twS08QrRhGo6PjTHEfdslbb4r0jzOEE8UMiaU6s9+19ZD/+9Ub+CAZVV3kngpDqS
-	 WLDxb1Y0Pf41w==
-From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 16:07:21 +0100
-Subject: [PATCH RFC 07/11] SUNRPC: let procfs copy in writes
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJG2Q3SKvz3bkP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:33:49 +1100 (AEDT)
+Received: by mail-pl1-x647.google.com with SMTP id d9443c01a7336-2e832c03576so48250645ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 07:33:49 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20260707; t=1793633627; x=1794238427; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:from:subject
+         :message-id:references:mime-version:in-reply-to:date:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=TUC01fxFkyGA6yFwHL7rirhUUtJ+C7CbbSnK6VkA0MA=;
+        b=gbisa96bXDtZMI4NbptyHlw+wJWQrKFslEUlzTOL9OwBZ3ScLXG16PZpk948msh9JE
+         WagIBp+nnqD3bBbi688D40Vfv9SQnmMYQTOoIXiaU/On/3R7p0sh5e/fnYjBflN2kY5H
+         mLZqzUixI/03jHe602AJ6gAXDhoDbtSUGLTghV7d6Q71wriitjzTTSduWQcY0tKwk94l
+         SkBSonJImtyVtcH+Qpil+ln8Hd9BlqI60xDEpKtYND7/IlqMDJNrfa6dXMc5TG0IYUZ8
+         akdfcIl//TsOl+yMHdI6FVMST681NrkFV9WS5wI02cMk1gYP1yMGbZQLQpUXc+TJYgWn
+         eOZg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793633627; x=1794238427;
+        h=content-transfer-encoding:content-type:cc:to:from:subject
+         :message-id:references:mime-version:in-reply-to:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=TUC01fxFkyGA6yFwHL7rirhUUtJ+C7CbbSnK6VkA0MA=;
+        b=vqKdi/tItgZ9a4fqJ6cuYaORPzzAeRz/HyCqIbq46vRqpfqDgV9oyGKhMpSsb2NxM5
+         db6UjCuN6KWhqV5mLG57aq0dyMO5iwiT+2lniXRfdWf6yq9rxtaxeoYa5q6n01Ph33bw
+         bqQXYU4uQHZfhK1WGvc5ZPEiJC0MNSeL64Y/e9DJmHtzWIwaI0SpYGymeUJ8blWYIrtZ
+         KkWasEfwvny7SOW99HFRhepBKSKU1sEvF8xe3cMoA13AsrpORYSGi0QNRxQazW5wHozd
+         O22SVZ4ezR2Fb3SbSeCOtXrQtraHZgcrFvsACZmEnXdNxqnKVFigTONCnIPaQz0h2yjz
+         jBFw==
+X-Forwarded-Encrypted: i=1; AKwUvBxk2bbJ0IDSC7XiToScnyRXAuv0BwmgwwXjMedem1gml/57wAclDnGur2V4AUlVz1uWXZgfPO2zNe/C7OY=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z9Gqu61HEy0cnJZwOPF78pJuY+S/y3cs6s8OBIC3SqDmIAdVSGx
+	RyUAW6PzdU84kLVMxUChbR9CjFbl6N/OA6Yqg94tNpVU3BBHV8TkMXFuqHh6sznMPzF0q6AAcsQ
+	N6Zg01w==
+X-Received: from plgv20.prod.google.com ([2002:a17:902:e8d4:b0:2ea:3bc:770d])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:903:24b:b0:2e9:776f:66b4
+ with SMTP id d9443c01a7336-2eb364f6eafmr93325065ad.44.1793633625745; Mon, 02
+ Nov 2026 07:33:45 -0800 (PST)
+Date: Mon, 2 Nov 2026 07:33:45 -0800
+In-Reply-To: <sashiko-outbox-191627@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,246 +78,160 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
+Mime-Version: 1.0
+References: <20261030212112.2598640-1-seanjc@google.com> <20261030212112.2598640-13-seanjc@google.com>
+ <sashiko-outbox-191627@kernel.org>
+Message-ID: <auitWWkOopYYbBH3@google.com>
+Subject: Re: [PATCH v4 12/23] KVM: Destroy memslots immediately after
+ mmu_notifiers are unregistered
+From: Sean Christopherson <seanjc@google.com>
+To: sashiko-reviews@lists.linux.dev
+Cc: kvm@vger.kernel.org, Gautam Menghani <gautam@linux.ibm.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-net-v1-7-982104a4f592@kernel.org>
-References: <20261102-work-procfs-net-v1-0-982104a4f592@kernel.org>
-In-Reply-To: <20261102-work-procfs-net-v1-0-982104a4f592@kernel.org>
-To: linux-fsdevel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, 
- Jann Horn <jannh@google.com>, Josef Bacik <josef@toxicpanda.com>, 
- Chris Mason <mason@kernel.org>, Jeff Layton <jlayton@kernel.org>, 
- NeilBrown <neil@brown.name>, Eric Dumazet <edumazet@kernel.org>, 
- Thomas Gleixner <tglx@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>, 
- Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@lst.de>, 
- Greg Kroah-Hartman <gregkh@suse.de>, 
- Joel Granados <joel.granados@kernel.org>, Kees Cook <kees@kernel.org>, 
- Jan Kara <jack@suse.cz>, Jan Kara <jack@suse.com>, 
- linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org, 
- linux-acpi@vger.kernel.org, linux-kselftest@vger.kernel.org, 
- linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, 
- linux-um@lists.infradead.org, linux-wireless@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, 
- ntfs3@lists.linux.dev, platform-driver-x86@vger.kernel.org, 
- coreteam@netfilter.org, kexec@lists.infradead.org, 
- linux-pci@vger.kernel.org, linux-sound@vger.kernel.org, 
- netfilter-devel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
- ibm-acpi-devel@lists.sourceforge.net, jfs-discussion@lists.sourceforge.net, 
- linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-cifs@vger.kernel.org, linux-fbdev@vger.kernel.org, 
- linux-hwmon@vger.kernel.org, linux-mm@kvack.org, linux-sh@vger.kernel.org, 
- linux-usb@vger.kernel.org, samba-technical@lists.samba.org, 
- sparclinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
- linux-doc@vger.kernel.org, linux-serial@vger.kernel.org, 
- linux-atm-general@lists.sourceforge.net, Takashi Iwai <tiwai@suse.de>, 
- linux-input@vger.kernel.org, linux-raid@vger.kernel.org, 
- linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org, 
- linux-debuggers@vger.kernel.org, 
- "Christian Brauner (Amutable)" <brauner@kernel.org>, 
- Chuck Lever <cel@kernel.org>
-X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6349; i=brauner@kernel.org;
- h=from:subject:message-id; bh=qIHvvtDF4hd5tLnMryapPJOuLcFfYH/7YZBGB4Dja6Y=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9WG7CdjuxYNKH1PsxikWnjN8tZPqx7Tq7i8/lCrHdJ
- 97HOtSLdZSyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAExE8xXD/9jUmsqIIw9en38y
- Z8Vu48gvWjue7r2yq9U2dybrZ1vjReyMDFdXTv0uWTl90SWl4+aLZwnG1ttwHbg+V1jiwIy/pZo
- V97kA
-X-Developer-Key: i=brauner@kernel.org; a=openpgp;
- fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+Content-Transfer-Encoding: quoted-printable
+X-Spam-Status: No, score=-18.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=4.0.1
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Implement ->proc_write_buf() for the procfs channel, flush and
-use-gss-proxy files so procfs copies in what is written before it pins
-the entry. The channel file parses the downcall from that copy and the
-flush files share the parsing with rpc_pipefs in do_write_flush(). The
-rpc_pipefs files keep copying in themselves.
++Gautam and PPC lists/maintainers
 
-CACHE_DOWNCALL_MAX and CACHE_FLUSH_MAX name the limits both sides
-enforce, procfs through ->proc_write_size. The procfs files are removed
-when the network namespace goes away and that no longer waits for a
-writer that faults on its buffer.
+On Fri, Oct 30, 2026, sashiko-bot@kernel.org wrote:
+> Thank you for your contribution! Sashiko AI review found 1 potential issu=
+e(s) to consider:
+> - [Medium] KVM: PPC: Book3S HV: rmap_nested memory leak in kvmhv_release_=
+all_nested()
+> --
+>=20
+> commit 9c25a1b4a76e8526eb8a2b11e1b9e63893b0de80
+> Author: Sean Christopherson <seanjc@google.com>
+>=20
+> KVM: Destroy memslots immediately after mmu_notifiers are unregistered
+>=20
+> This commit replaces active memslots with an empty memslot set and frees =
+all
+> memslots immediately after unregistering the MMU notifier in kvm_destroy_=
+vm(),
+> prior to calling kvm_arch_destroy_vm().
+>=20
+> > diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> > index fa548b12228ff..2eda12a52bf4b 100644
+> > --- a/virt/kvm/kvm_main.c
+> > +++ b/virt/kvm/kvm_main.c
+>=20
+> [ ... ]
+>=20
+> > @@ -1310,12 +1329,10 @@ static void kvm_destroy_vm(struct kvm *kvm)
+> >  		kvm->mn_active_invalidate_count =3D 0;
+> >  	else
+> >  		WARN_ON(kvm->mmu_invalidate_in_progress);
+> > +	kvm_destroy_memslots(kvm);
+> > +
+> >  	kvm_arch_destroy_vm(kvm);
+> >  	kvm_destroy_devices(kvm);
+> > -	for (i =3D 0; i < kvm_arch_nr_memslot_as_ids(kvm); i++) {
+> > -		kvm_free_memslots(kvm, &kvm->__memslots[i][0]);
+> > -		kvm_free_memslots(kvm, &kvm->__memslots[i][1]);
+> > -	}
+>=20
+> [Severity: Medium]
+> Does hoisting kvm_destroy_memslots() above kvm_arch_destroy_vm() leak
+> struct rmap_nested allocations in slot->arch.rmap on PowerPC Book3S HV wh=
+en
+> destroying a VM with nested virtualization enabled?
 
-Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
----
- net/sunrpc/auth_gss/svcauth_gss.c | 10 +++----
- net/sunrpc/cache.c                | 63 +++++++++++++++++++++++++++------------
- 2 files changed, 48 insertions(+), 25 deletions(-)
+I don't think so?  Patch 3[*], "KVM: PPC: Flush/zap all memslots on kvm_arc=
+h_flush_shadow_all()",
+should free the rmaps in response to kvm_arch_flush_shadow_all().   From wh=
+at I
+can tell, the page tables have to be in radix mode, and so the rmaps are fr=
+eed via:
 
-diff --git a/net/sunrpc/auth_gss/svcauth_gss.c b/net/sunrpc/auth_gss/svcauth_gss.c
-index 43839e805531..8d105cd900d4 100644
---- a/net/sunrpc/auth_gss/svcauth_gss.c
-+++ b/net/sunrpc/auth_gss/svcauth_gss.c
-@@ -1408,8 +1408,8 @@ svcauth_gss_proc_init(struct svc_rqst *rqstp, struct rpc_gss_wire_cred *gc)
- 
- #ifdef CONFIG_PROC_FS
- 
--static ssize_t write_gssp(struct file *file, const char __user *buf,
--			 size_t count, loff_t *ppos)
-+static ssize_t write_gssp(struct file *file, char *buf, size_t count,
-+			  loff_t *ppos)
- {
- 	struct net *net = pde_data(file_inode(file));
- 	char tbuf[20];
-@@ -1418,9 +1418,7 @@ static ssize_t write_gssp(struct file *file, const char __user *buf,
- 
- 	if (*ppos || count > sizeof(tbuf)-1)
- 		return -EINVAL;
--	if (copy_from_user(tbuf, buf, count))
--		return -EFAULT;
--
-+	memcpy(tbuf, buf, count);
- 	tbuf[count] = 0;
- 	res = kstrtoul(tbuf, 0, &i);
- 	if (res)
-@@ -1468,7 +1466,7 @@ static ssize_t read_gssp(struct file *file, char __user *buf,
- 
- static const struct proc_ops use_gss_proxy_proc_ops = {
- 	.proc_open	= nonseekable_open,
--	.proc_write	= write_gssp,
-+	.proc_write_buf	= write_gssp,
- 	.proc_read	= read_gssp,
- };
- 
-diff --git a/net/sunrpc/cache.c b/net/sunrpc/cache.c
-index 007521e8a57f..a257598768fa 100644
---- a/net/sunrpc/cache.c
-+++ b/net/sunrpc/cache.c
-@@ -924,6 +924,9 @@ static ssize_t cache_do_downcall(char *kaddr, const char __user *buf,
- 	return ret;
- }
- 
-+/* 32k is max userland buffer, lets check anyway */
-+#define CACHE_DOWNCALL_MAX	(32768 - 1)
-+
- static ssize_t cache_downcall(struct address_space *mapping,
- 			      const char __user *buf,
- 			      size_t count, struct cache_detail *cd)
-@@ -931,7 +934,7 @@ static ssize_t cache_downcall(struct address_space *mapping,
- 	char *write_buf;
- 	ssize_t ret = -ENOMEM;
- 
--	if (count >= 32768) { /* 32k is max userland buffer, lets check anyway */
-+	if (count > CACHE_DOWNCALL_MAX) {
- 		ret = -EINVAL;
- 		goto out;
+  kvmppc_radix_flush_memslot()
+  |
+  -> kvmppc_unmap_pte()
+     |
+     -> kvmhv_remove_nest_rmap_range()
+        |
+        -> kvmhv_remove_nest_rmap_list()
+
+And if that doesn't work, it means memslot deletion on an active VM is comp=
+letely
+broken.
+
+However, it means the memslot code in kvmhv_release_all_nested() is dead co=
+de, so
+this as follow-up to patch 3?  Or maybe folded in?
+
+diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_=
+hv_nested.c
+index a6ff42d7666c..27985210f972 100644
+--- a/arch/powerpc/kvm/book3s_hv_nested.c
++++ b/arch/powerpc/kvm/book3s_hv_nested.c
+@@ -802,8 +802,6 @@ void kvmhv_release_all_nested(struct kvm *kvm)
+ 	int lpid;
+ 	struct kvm_nested_guest *gp;
+ 	struct kvm_nested_guest *freelist =3D NULL;
+-	struct kvm_memory_slot *memslot;
+-	int srcu_idx, bkt;
+=20
+ 	spin_lock(&kvm->mmu_lock);
+ 	idr_for_each_entry(&kvm->arch.kvm_nested_guest_idr, gp, lpid) {
+@@ -820,11 +818,6 @@ void kvmhv_release_all_nested(struct kvm *kvm)
+ 		freelist =3D gp->next;
+ 		kvmhv_release_nested(gp);
  	}
-@@ -1508,19 +1511,15 @@ static ssize_t read_flush(struct file *file, char __user *buf,
- 	return simple_read_from_buffer(buf, count, ppos, tbuf, len);
+-
+-	srcu_idx =3D srcu_read_lock(&kvm->srcu);
+-	kvm_for_each_memslot(memslot, bkt, kvm_memslots(kvm))
+-		kvmhv_free_memslot_nest_rmap(memslot);
+-	srcu_read_unlock(&kvm->srcu, srcu_idx);
  }
- 
--static ssize_t write_flush(struct file *file, const char __user *buf,
--			   size_t count, loff_t *ppos,
--			   struct cache_detail *cd)
-+/* longest number the flush files take */
-+#define CACHE_FLUSH_MAX		19
-+
-+static ssize_t do_write_flush(char *tbuf, size_t count, loff_t *ppos,
-+			      struct cache_detail *cd)
- {
--	char tbuf[20];
- 	char *ep;
- 	time64_t now;
- 
--	if (*ppos || count > sizeof(tbuf)-1)
--		return -EINVAL;
--	if (copy_from_user(tbuf, buf, count))
--		return -EFAULT;
--	tbuf[count] = 0;
- 	simple_strtoul(tbuf, &ep, 0);
- 	if (*ep && *ep != '\n')
- 		return -EINVAL;
-@@ -1551,6 +1550,20 @@ static ssize_t write_flush(struct file *file, const char __user *buf,
- 	return count;
- }
- 
-+static ssize_t write_flush(struct file *file, const char __user *buf,
-+			   size_t count, loff_t *ppos,
-+			   struct cache_detail *cd)
-+{
-+	char tbuf[CACHE_FLUSH_MAX + 1];
-+
-+	if (*ppos || count > CACHE_FLUSH_MAX)
-+		return -EINVAL;
-+	if (copy_from_user(tbuf, buf, count))
-+		return -EFAULT;
-+	tbuf[count] = 0;
-+	return do_write_flush(tbuf, count, ppos, cd);
-+}
-+
- static ssize_t cache_read_procfs(struct file *filp, char __user *buf,
- 				 size_t count, loff_t *ppos)
- {
-@@ -1559,12 +1572,21 @@ static ssize_t cache_read_procfs(struct file *filp, char __user *buf,
- 	return cache_read(filp, buf, count, ppos, cd);
- }
- 
--static ssize_t cache_write_procfs(struct file *filp, const char __user *buf,
--				  size_t count, loff_t *ppos)
-+/* procfs copied in what was written */
-+static ssize_t cache_write_procfs(struct file *filp, char *buf, size_t count,
-+				  loff_t *ppos)
- {
- 	struct cache_detail *cd = pde_data(file_inode(filp));
-+	struct inode *inode = file_inode(filp);
-+	ssize_t ret;
- 
--	return cache_write(filp, buf, count, ppos, cd);
-+	if (!cd->cache_parse || !count)
-+		return -EINVAL;
-+
-+	inode_lock(inode);
-+	ret = cd->cache_parse(cd, buf, count);
-+	inode_unlock(inode);
-+	return ret ? ret : count;
- }
- 
- static __poll_t cache_poll_procfs(struct file *filp, poll_table *wait)
-@@ -1599,7 +1621,8 @@ static int cache_release_procfs(struct inode *inode, struct file *filp)
- 
- static const struct proc_ops cache_channel_proc_ops = {
- 	.proc_read	= cache_read_procfs,
--	.proc_write	= cache_write_procfs,
-+	.proc_write_buf	= cache_write_procfs,
-+	.proc_write_size = CACHE_DOWNCALL_MAX,
- 	.proc_poll	= cache_poll_procfs,
- 	.proc_ioctl	= cache_ioctl_procfs, /* for FIONREAD */
- 	.proc_open	= cache_open_procfs,
-@@ -1653,19 +1676,21 @@ static ssize_t read_flush_procfs(struct file *filp, char __user *buf,
- 	return read_flush(filp, buf, count, ppos, cd);
- }
- 
--static ssize_t write_flush_procfs(struct file *filp,
--				  const char __user *buf,
--				  size_t count, loff_t *ppos)
-+static ssize_t write_flush_procfs(struct file *filp, char *buf, size_t count,
-+				  loff_t *ppos)
- {
- 	struct cache_detail *cd = pde_data(file_inode(filp));
- 
--	return write_flush(filp, buf, count, ppos, cd);
-+	if (*ppos)
-+		return -EINVAL;
-+	return do_write_flush(buf, count, ppos, cd);
- }
- 
- static const struct proc_ops cache_flush_proc_ops = {
- 	.proc_open	= open_flush_procfs,
- 	.proc_read	= read_flush_procfs,
--	.proc_write	= write_flush_procfs,
-+	.proc_write_buf	= write_flush_procfs,
-+	.proc_write_size = CACHE_FLUSH_MAX,
- 	.proc_release	= release_flush_procfs,
- };
- 
+=20
+ /* caller must hold gp->tlb_lock */
+		=09
 
--- 
-2.53.0
+[*] https://lore.kernel.org/all/20261030212112.2598640-4-seanjc@google.com
 
+> In virt/kvm/kvm_main.c, kvm_destroy_memslots() replaces kvm->memslots[i]
+> with kvm_empty_memslots and frees each memslot via
+> kvm_free_memslot() -> kvm_arch_free_memslot() -> kvmppc_core_free_memslot=
+_hv()
+> in arch/powerpc/kvm/book3s_hv.c:
+>=20
+>     static void kvmppc_core_free_memslot_hv(struct kvm_memory_slot *slot)
+>     {
+>             vfree(slot->arch.rmap);
+>             slot->arch.rmap =3D NULL;
+>     }
+>=20
+> which frees the slot->arch.rmap array without freeing the linked
+> struct rmap_nested entries.
+>=20
+> Previously, those entries were freed before memslot destruction via
+> kvm_arch_destroy_vm() -> kvmppc_core_destroy_vm_hv() ->
+> kvmhv_release_all_nested() in arch/powerpc/kvm/book3s_hv_nested.c:
+>=20
+>     srcu_idx =3D srcu_read_lock(&kvm->srcu);
+>     kvm_for_each_memslot(memslot, bkt, kvm_memslots(kvm))
+>             kvmhv_free_memslot_nest_rmap(memslot);
+>     srcu_read_unlock(&kvm->srcu, srcu_idx);
+>=20
+> With kvm_destroy_memslots() running before kvm_arch_destroy_vm(),
+> kvm_memslots(kvm) now returns kvm_empty_memslots and the memslots have
+> already been freed when kvmhv_release_all_nested() runs, so
+> kvmhv_free_memslot_nest_rmap() is never called. Any struct rmap_nested
+> entries remaining in slot->arch.rmap at teardown (for example, when
+> KVMPPC_SECURE_INIT_DONE causes kvmppc_radix_flush_memslot() to return ear=
+ly,
+> or when 4KB PTEs were replaced by a huge page in kvmppc_unmap_free_pte())
+> will be leaked.
+>=20
+> --=20
+> Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261030212112.25=
+98640-1-seanjc@google.com?part=3D12
+>=20
 
