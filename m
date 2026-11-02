@@ -1,91 +1,98 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18074606A324
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 03:39:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D960606A324
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 05:20:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ha3W1NZf
+	dkim=pass (2048-bit key, unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=KVPQ8Da9;
+	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=pP4kaxkf
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jHyBC3ZFkz2y8Z;
-	Mon, 02 Nov 2026 14:39:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793590771;
-	cv=none; b=oUJ18yvtOPCLaPcAWDmHgOBrLwNQkWglWGscBXCPFEqrTFN9bdqJAq7yBEJwXyNUdSUyx1BsthunzHhTCE/XWVevzYpdIk8pjGG5j5P25lb8NgA+16ZLNSt5MOvRcqzfrl1FdH4pg9+9raBXJzXijoY0/faP+paSYaqS3GOG0FqyyNHkc6zVfYb90n/5i0CrxdDgyUbxsUOSPk5rfI78UGL6EOqveOaXJI2EPAM6blYaFC+NVOKI0eEF2Mgwebf0VPpxx27qvUAGM+s0oMmRjl76db3gW/N0AIPfOiZem+8J4/DEYPa9/vPZTlvIupn073lSEa3/wbe9NJM0nnaiCQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793590771; c=relaxed/relaxed;
-	bh=ip0P9/T6/Rg8PD1u8QGcPkjDOKojP0U7oGZdcSPG1BA=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=C+7h/1dv1fqo5ZRB7nX/2AZjEp7tgkR+SFQBBB+Bhc+zqmZmWL/dWgjG4uuhSXhKv5fQHpHsfzQWhSEXBA5RXZlIS5wmvlAAfHci2+PWctG5YjUzrHY482KzSuLiqVhg9714btJySf5V6XyMxeTg9Rakm7imOmeC1wqVHavxj99UZ1dulAIokKZwQwA3WlJ1SvQLJO3HqZH8xgPh9hMD88JkNWB9bicuus0VFO64X+45bm4gM6ZrjdPWQ6IktM9mssHIBgVGeiBk4fpZiwL9d4ap28kUVaw9zG+OmU96Ph999G36wS3UKN73p+I2HHjEd3jjafjY/95mf8omLL3BkA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ha3W1NZf; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122a; helo=mail-dl1-x122a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJ0RF3SVcz2yTQ;
+	Mon, 02 Nov 2026 16:20:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=85.215.255.53 arc.chain=strato.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793596857;
+	cv=pass; b=InGQbcEt/K/GLN+BwD5JuKZjecEaNVCAuy256MVaL5BdhQFxrNF+Lv8CWoGJCY4ONY3HzOTOcKjXZqEJgRSOKEG+6/F/oCSAA6No91fSlXUFLHoCZOhRtGRvNTd52E0U3aCaxGwv8fxaiV4j6nTxTeMoEsRMwEiGKKlfE1XEmv0UYaLAEM79jueZtNnLQvrY+Ea0WoBJ/hIyCTRylNqmZZQTyIwQCB72drSsdRY4yQBV7j4x8u9etAmvssWBLMbCykMjSgSGdJvQU+0Z9CXIveWfiH4/Br09Ix4gbaRpb/bsR9m2soKPSEhTeBDaq4x07NVTQ1R3k11vWOlMgUwwDA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793596857; c=relaxed/relaxed;
+	bh=GX/7Qy5oyjcT57M0CFfoxm0UI98pxhpQ+pqMh7EeW3Y=;
+	h=Subject:To:Cc:References:From:Message-ID:Date:MIME-Version:
+	 In-Reply-To:Content-Type; b=nL0MdU/9l254dBmHzYQpmvP802h6xOwL7PGU5UU9ykV1pyNPBecI4cbQ0+8XQrJ3cGJu5YDCL/gaG0B/gU0L9O1Wo1V8jQw1BEZOdhSPMG07799aKV1fB90UYsez4lT+MuznLRjQelgebg3QixkhNBS0miiL4tV8V9Vmq7y7ybMHzxDBAXE1rYbmz42lUBBKqyco33wdV0FYasKowxLgqRXy3lbjschf8AdGihfH84RQUJaFnU0L9YEC23EO9cXeJ3zO514XImEVVFFmjGv2YfdHH5OdMWjn+FQpU3mqZTw4bc6xYOvv1nvVHpkfx+nkELLy3LVzxl2neJT2Q+mcKw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=KVPQ8Da9; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=pP4kaxkf; dkim-atps=neutral; spf=pass (client-ip=85.215.255.53; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p01-ob.smtp.rzone.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ha3W1NZf;
+	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=KVPQ8Da9;
+	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=pP4kaxkf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122a; helo=mail-dl1-x122a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x122a.google.com (mail-dl1-x122a.google.com [IPv6:2607:f8b0:4864:20::122a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=85.215.255.53; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [85.215.255.53])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jHyBB0jNjz2xlZ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 14:39:29 +1100 (AEDT)
-Received: by mail-dl1-x122a.google.com with SMTP id a92af1059eb24-14fc585291cso1944838c88.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Nov 2026 19:39:29 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793590767; x=1794195567; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=ip0P9/T6/Rg8PD1u8QGcPkjDOKojP0U7oGZdcSPG1BA=;
-        b=ha3W1NZfedN4YIdYZvNZwJ7k/ycoTQwHK7+71nkQYn7dhv30A8xSF9NtVfKjpNjBlZ
-         oJL1SKMaLo7BFs8SXolYTJmQubv+VOO0Sk0s8wnQ9qvg0ZxlHuRHgSwMhpS2Z514fvWy
-         MpWPqYcN3EXaiIg/eXvC0w8NBpNIm2/uIGElHorye89oC+Jvg2wgHJ669lBuluetVMZz
-         cHQHmhl48sPxQQcl+lKcdEqb8lJ5h+lNCJSx/ZU32HyAJTmum27BVapKWUzXpuZifLeA
-         XpN+E0xGbpNVDP4YYdopFX0mLdmC3F5sLQ+gMkNsRMj5KTsROGz3CStnZkP8yJD/tjFj
-         sEPw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793590767; x=1794195567;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=ip0P9/T6/Rg8PD1u8QGcPkjDOKojP0U7oGZdcSPG1BA=;
-        b=FwA5/AWK7oSal5w9O+QK3pi+T0r37tUEikh+ZM9LGj02+DBiNORI9LFVUXVvzJDNsY
-         aFn0heb9n3tZY02TXjBreCbLEbgQeSUiElre6M8KYbtJRInvj74UcvUpSftEzp/IfuIc
-         YcAb5jRP4cZ3NzDP50dN3IJUheUbnN9vw1nU5EdMLO7yxO4YoYPSrRwTpBZKBMocBmdN
-         zwrMc/EBBS1/F45ZbRfdm2No4bdUkBNbfxoEc4G5au+FazEFZGUGgjNgQuXr+fxA8SgB
-         MP0MSI5SZpavUo75Y+ihGkz5VBO5bnJ8kMQUxz2CobIn5tmvdqZIZYtS+W6Wrcai2CGw
-         MisQ==
-X-Forwarded-Encrypted: i=1; AKwUvBwyLdRgnyJo/bI8S5sn+BbmphAB1cSouNnNksyrrqJVXUZ4V1oMYefA2zBrkJqa04S5X+4cXvXLdZcfnvw=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYIINh/cHBjuwbNfzvOXrfb/wBgTlSBdjiR8KzEQT0szkPgFQLID
-	/Q1bj4hn4eOpTZEXbNT7QEZJp8/da7/+YBNQb5F/HHv14i+YrbBmt1qF
-X-Gm-Gg: AYBFou10qjjYkMcn0/0Lmua6SfyQEUWsPe2jb9uJXCCarovS+JSaHmbCjSF+HAnZeMI
-	GAIDDtEFHyJiZeJvt+cM0NsQc4OWaFtizNWzan3XM2v/5yqj3PGyxlcCS4CcBRoT59pANag9Wvv
-	/DoxIFFO4gsQGJwGWeIvGEeMRXoaxE+bR3xg4eAPA0D/UljAvB8kkvExbvW0tV86UPj9OBBDOmb
-	WlGIms4nFq9VmsCRdB+qkt/rQ7ScjztiXZBdkNYQ3N6yWauMcfk3ssMN0Pd1LYM7MrrpnwQidBA
-	9XeB59/vG0FyY/ohOmRjjSuD+hh0J0grhwiSFQg1FHaeHq0BebPhOCZSE7/RarczJEYxs/lDED6
-	VwApkMqGygWKrST02kmTHoekQ/Ig0uqOS4PvSY/LntvrtWbaLdk/lsPbrX2kaDxgr1EK6jrk/YX
-	qansGXDh0Blq3mcM9LtxZyWkIKSOtP6Pi6VPrjktkFJb/SvLWwoKDZQh9c2h4ikcYfAOLBvRoQz
-	PbaC3lfbW3CisXj5NEpOLl51RXR52RurhPnkqS/5Dtppwbo3zsgh7dRZ7O92NzglpCo1RZ3B3U9
-	vVHA53HRKstfkTN9m2RjIpBFapg=
-X-Received: by 2002:a05:7022:38b:b0:1aa:47e7:97e3 with SMTP id a92af1059eb24-1ac5c45fd1dmr16055742c88.15.1793590767425;
-        Sun, 01 Nov 2026 19:39:27 -0800 (PST)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1ac192c27cdsm50365621c88.10.2026.11.01.19.39.23
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 01 Nov 2026 19:39:26 -0800 (PST)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: chzigotzky@xenosoft.de, maddy@linux.ibm.com, mpe@ellerman.id.au
-Cc: npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org, Christian Zigotzky A-EON Open Source <info@xenosoft.de>, Darren Stevens <darren@stevens-zone.net>, Christian Zigotzky <chzigotzky@xenosoft.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJ0R62Blcz2xqh
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 16:20:47 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1793596824; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=sHjwFNN5AXwtIASS9Zh6wK8LhX40Zzb+N1UrnFTHbtWnfHMr8NfpsV6qAe8Hk+VELy
+    hJpR+nyEymPugz0pX2rg48tciTf9VRX3IHFXrdIkkj57VJ/I8lTWCFTUvtQVeZfpulaf
+    rpxwx+OXkSUQWz+JjVWYaKFvTSpldvJ033YeRftkSPZzFdE6noODbnSYinoTSJnU4BLP
+    JPiLkTguCRH9HKkGRu08WD+xZQDvSNDeMsbozDeOwk5HIEMgDvzZKM119oX+crPyKSjL
+    Kj7zLFYexuE69CZrxmr368uyDGQJk4ugo2oUyfus60aIfRsHOdPYPOsyBqVxf1JAE1+d
+    Ixkw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1793596824;
+    s=strato-dkim-0002; d=strato.com;
+    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=GX/7Qy5oyjcT57M0CFfoxm0UI98pxhpQ+pqMh7EeW3Y=;
+    b=U4J82InD3ogW8wExiV59D0BvoupHY2fyugpHxYdMJ/lBPvSdUrYr1ZFy/LJ728D0bX
+    4+TmeTQ53OkryeJN60tmu85Ifx9YPeJOuWdmaPPFAP8CmBImxUmvvpOtgIDWDw3geS8G
+    UQMfe4Kksd5x6aeclzg4i0ZvWsYI+PDn/cMN2JG148t3kkv84y8YggeWq9R1FqbWkGTz
+    B9RgaUiGQF2o+x7OuY1BSwCB9WKQNT8ZOr+BPbfogQR68gtkntAXLvXFHebwz3JdAlRx
+    arb3qTbPaJHW6TVVYL5WToIx6H9gZ7B93vhsWHQd7PG5bvPRt7CwJreDLne9Bo0JBqcX
+    MrGg==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo01
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1793596824;
+    s=strato-dkim-0002; d=xenosoft.de;
+    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=GX/7Qy5oyjcT57M0CFfoxm0UI98pxhpQ+pqMh7EeW3Y=;
+    b=KVPQ8Da9re2V9w5r+srslIWwt+0063BF7TBK6INsDoeXM0+4tbn1Q1FH3V9P+JyCTt
+    biyqpv60Q59vwMCeEyyuoOZkZeRs+WShynVQU2mMyQidr3IIz31gZ12RQ9UOpcVD0ssL
+    VI5NiDAx+BU8TEcPE6iTd21OqWXEA//6njWzHeeNZfvTs0wXusnBPUfqmkFltldLAOJv
+    mDvLRWaP8Jexbam2T/PuBHJpox+uo0BLKc0aBZNSyyQZXOy+6LHWvqseJVpf0Co2Yrzk
+    nmphXEwjQjeKDwgI9IcLZsDsljd36Qn1ewxJCL9+em9EB9JZM+MQKAV+4Y2G5uMV5FHw
+    pfbw==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1793596824;
+    s=strato-dkim-0003; d=xenosoft.de;
+    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=GX/7Qy5oyjcT57M0CFfoxm0UI98pxhpQ+pqMh7EeW3Y=;
+    b=pP4kaxkfDJOeo5xHE9ORcqg1jAnU1cLEBlO6YggjZCF2iDMH9ld3uTOtwhvRXUaj51
+    TqjjpV3dSLESwxvf15AA==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr4thIFiqT9BURIy+g7Hc="
+Received: from void-ppc.a-eon.tld
+    by smtp.strato.de (RZmta 55.6.3 DYNA|AUTH)
+    with ESMTPSA id e825d92A25KNAF6
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Mon, 2 Nov 2026 06:20:23 +0100 (CET)
 Subject: Re: [PATCH] powerpc/pasemi: Defer Nemo IRQ initialization
-In-Reply-To: <20261024075519.18877-1-chzigotzky@xenosoft.de>
-Date: Mon, 02 Nov 2026 09:04:49 +0530
-Message-ID: <zevr6h46.ritesh.list@gmail.com>
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, maddy@linux.ibm.com,
+ mpe@ellerman.id.au
+Cc: npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org,
+ Christian Zigotzky A-EON Open Source <info@xenosoft.de>,
+ Darren Stevens <darren@stevens-zone.net>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ Damien Stewart <hypexed@yahoo.com.au>, mad skateman <madskateman@gmail.com>
 References: <20261024075519.18877-1-chzigotzky@xenosoft.de>
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
-	autolearn_force=no version=4.0.1
-X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
-	aws-us-west-2-korg-listserv-alma10-1
+ <zevr6h46.ritesh.list@gmail.com>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Organization: A-EON Open Source
+Message-ID: <1f7cd06f-9364-e5da-b65d-7282fc9af03e@xenosoft.de>
+Date: Mon, 2 Nov 2026 06:20:23 +0100
+X-Mailer: BrassMonkey/35.0.2
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,119 +105,141 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
+MIME-Version: 1.0
+In-Reply-To: <zevr6h46.ritesh.list@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS autolearn=ham
+	autolearn_force=no version=4.0.1
+X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
+	aws-us-west-2-korg-listserv-alma10-1
 
-chzigotzky@xenosoft.de writes:
-
-> From: Christian Zigotzky A-EON Open Source <info@xenosoft.de>
+On 11/02/2026 04:34 AM, Ritesh Harjani (IBM) wrote:
+> chzigotzky@xenosoft.de writes:
 >
-> Since pas_pci_init() is now called later during boot, the i8259
-> initialization in pas_init_IRQ() happens too early and accesses
-> registers that are not yet mapped, preventing the board from booting.
+>> From: Christian Zigotzky A-EON Open Source <info@xenosoft.de>
+>>
+>> Since pas_pci_init() is now called later during boot, the i8259
+>> initialization in pas_init_IRQ() happens too early and accesses
+>> registers that are not yet mapped, preventing the board from booting.
+>>
+>> Move the Nemo-specific i8259 initialization to pas_add_bridge(),
+>> after the ISA bridge has been discovered.
 >
-> Move the Nemo-specific i8259 initialization to pas_add_bridge(),
-> after the ISA bridge has been discovered.
-
-
-That make sense to me. The patch looks good. However, shouldn't we also
-add Fixes tag and Cc: stable tag - so that this gets backported to older
-stable kernels.
-
-
-Fixes: c144bc719234 ("powerpc/pasemi: Move PHB discovery")
-Cc: stable@vger.kernel.org
-
-I think the fixes tag should be above - but feel free to correct that.
-
-Otherwise looks good to me. Feel free to add:
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-
-
+> That make sense to me. The patch looks good. However, shouldn't we also
+> add Fixes tag and Cc: stable tag - so that this gets backported to older
+> stable kernels.
 >
-> Suggested-by: Darren Stevens <darren@stevens-zone.net>
-> Tested-by: Christian Zigotzky <chzigotzky@xenosoft.de>
-> Signed-off-by: Christian Zigotzky A-EON Open Source <info@xenosoft.de>
-> ---
->  arch/powerpc/platforms/pasemi/pasemi.h |  6 ++++++
->  arch/powerpc/platforms/pasemi/pci.c    |  5 +++++
->  arch/powerpc/platforms/pasemi/setup.c  | 12 ++++--------
->  3 files changed, 15 insertions(+), 8 deletions(-)
 >
-> diff --git a/arch/powerpc/platforms/pasemi/pasemi.h b/arch/powerpc/platforms/pasemi/pasemi.h
-> index 6f6743b8e48d..01bcfa258625 100644
-> --- a/arch/powerpc/platforms/pasemi/pasemi.h
-> +++ b/arch/powerpc/platforms/pasemi/pasemi.h
-> @@ -7,6 +7,12 @@ extern void pas_pci_init(void);
->  struct pci_dev;
->  extern void pas_pci_dma_dev_setup(struct pci_dev *dev);
->  
-> +#ifdef CONFIG_PPC_PASEMI_NEMO
-> +void __init nemo_init_IRQ(void);
-> +#else
-> +static inline void __init nemo_init_IRQ(void) { }
-> +#endif
-> +
->  void __iomem *__init pasemi_pci_getcfgaddr(struct pci_dev *dev, int offset);
->  
->  extern void __init pasemi_map_registers(void);
-> diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
-> index 2df955274652..fb53782da7ec 100644
-> --- a/arch/powerpc/platforms/pasemi/pci.c
-> +++ b/arch/powerpc/platforms/pasemi/pci.c
-> @@ -265,6 +265,11 @@ static int __init pas_add_bridge(struct device_node *dev)
->  	 */
->  	isa_bridge_find_early(hose);
->  
-> +	/*
-> +	 * ISA bridge is now active, add the i8259 cascade (if needed)
-> +	 */
-> +	nemo_init_IRQ();
-> +
->  	return 0;
->  }
->  
-> diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
-> index 45792ecd5dfd..7a961f2a228f 100644
-> --- a/arch/powerpc/platforms/pasemi/setup.c
-> +++ b/arch/powerpc/platforms/pasemi/setup.c
-> @@ -216,10 +216,12 @@ static void sb600_8259_cascade(struct irq_desc *desc)
->  	chip->irq_eoi(&desc->irq_data);
->  }
->  
-> -static void __init nemo_init_IRQ(struct mpic *mpic)
-> +void __init nemo_init_IRQ(void)
->  {
->  	struct device_node *np;
->  	int gpio_virq;
-> +	struct mpic *mpic;
-> +
->  	/* Connect the SB600's legacy i8259 controller */
->  	np = of_find_node_by_path("/pxp@0,e0000000");
->  	i8259_init(np, 0);
-> @@ -230,14 +232,10 @@ static void __init nemo_init_IRQ(struct mpic *mpic)
->  	irq_set_chained_handler(gpio_virq, sb600_8259_cascade);
->  	mpic_unmask_irq(irq_get_irq_data(gpio_virq));
->  
-> +	mpic = irq_get_chip_data(gpio_virq);
->  	irq_set_default_domain(mpic->irqhost);
->  }
->  
-> -#else
-> -
-> -static inline void nemo_init_IRQ(struct mpic *mpic)
-> -{
-> -}
->  #endif
->  
->  static __init void pas_init_IRQ(void)
-> @@ -300,8 +298,6 @@ static __init void pas_init_IRQ(void)
->  		mpic_unmask_irq(irq_get_irq_data(nmi_virq));
->  	}
->  
-> -	nemo_init_IRQ(mpic);
-> -
->  	of_node_put(mpic_node);
->  	of_node_put(root);
->  }
-> -- 
-> 2.43.0
+> Fixes: c144bc719234 ("powerpc/pasemi: Move PHB discovery")
+> Cc: stable@vger.kernel.org
+>
+> I think the fixes tag should be above - but feel free to correct that.
+>
+> Otherwise looks good to me. Feel free to add:
+> Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+>
+Great! Just for info. I don't need this patch for the stable long-term 
+kernel 5.10 but it is at least necessary for the stable long-term 
+kernels 6.12 [1] and 6.18.
+
+- Christian
+
+[1] 
+https://raw.githubusercontent.com/chzigotzky/kernels/refs/heads/6_12/patches/X1000/pas_pci_init_v6.patch
+>> Suggested-by: Darren Stevens <darren@stevens-zone.net>
+>> Tested-by: Christian Zigotzky <chzigotzky@xenosoft.de>
+>> Signed-off-by: Christian Zigotzky A-EON Open Source <info@xenosoft.de>
+>> ---
+>>   arch/powerpc/platforms/pasemi/pasemi.h |  6 ++++++
+>>   arch/powerpc/platforms/pasemi/pci.c    |  5 +++++
+>>   arch/powerpc/platforms/pasemi/setup.c  | 12 ++++--------
+>>   3 files changed, 15 insertions(+), 8 deletions(-)
+>>
+>> diff --git a/arch/powerpc/platforms/pasemi/pasemi.h b/arch/powerpc/platforms/pasemi/pasemi.h
+>> index 6f6743b8e48d..01bcfa258625 100644
+>> --- a/arch/powerpc/platforms/pasemi/pasemi.h
+>> +++ b/arch/powerpc/platforms/pasemi/pasemi.h
+>> @@ -7,6 +7,12 @@ extern void pas_pci_init(void);
+>>   struct pci_dev;
+>>   extern void pas_pci_dma_dev_setup(struct pci_dev *dev);
+>>   
+>> +#ifdef CONFIG_PPC_PASEMI_NEMO
+>> +void __init nemo_init_IRQ(void);
+>> +#else
+>> +static inline void __init nemo_init_IRQ(void) { }
+>> +#endif
+>> +
+>>   void __iomem *__init pasemi_pci_getcfgaddr(struct pci_dev *dev, int offset);
+>>   
+>>   extern void __init pasemi_map_registers(void);
+>> diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
+>> index 2df955274652..fb53782da7ec 100644
+>> --- a/arch/powerpc/platforms/pasemi/pci.c
+>> +++ b/arch/powerpc/platforms/pasemi/pci.c
+>> @@ -265,6 +265,11 @@ static int __init pas_add_bridge(struct device_node *dev)
+>>   	 */
+>>   	isa_bridge_find_early(hose);
+>>   
+>> +	/*
+>> +	 * ISA bridge is now active, add the i8259 cascade (if needed)
+>> +	 */
+>> +	nemo_init_IRQ();
+>> +
+>>   	return 0;
+>>   }
+>>   
+>> diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
+>> index 45792ecd5dfd..7a961f2a228f 100644
+>> --- a/arch/powerpc/platforms/pasemi/setup.c
+>> +++ b/arch/powerpc/platforms/pasemi/setup.c
+>> @@ -216,10 +216,12 @@ static void sb600_8259_cascade(struct irq_desc *desc)
+>>   	chip->irq_eoi(&desc->irq_data);
+>>   }
+>>   
+>> -static void __init nemo_init_IRQ(struct mpic *mpic)
+>> +void __init nemo_init_IRQ(void)
+>>   {
+>>   	struct device_node *np;
+>>   	int gpio_virq;
+>> +	struct mpic *mpic;
+>> +
+>>   	/* Connect the SB600's legacy i8259 controller */
+>>   	np = of_find_node_by_path("/pxp@0,e0000000");
+>>   	i8259_init(np, 0);
+>> @@ -230,14 +232,10 @@ static void __init nemo_init_IRQ(struct mpic *mpic)
+>>   	irq_set_chained_handler(gpio_virq, sb600_8259_cascade);
+>>   	mpic_unmask_irq(irq_get_irq_data(gpio_virq));
+>>   
+>> +	mpic = irq_get_chip_data(gpio_virq);
+>>   	irq_set_default_domain(mpic->irqhost);
+>>   }
+>>   
+>> -#else
+>> -
+>> -static inline void nemo_init_IRQ(struct mpic *mpic)
+>> -{
+>> -}
+>>   #endif
+>>   
+>>   static __init void pas_init_IRQ(void)
+>> @@ -300,8 +298,6 @@ static __init void pas_init_IRQ(void)
+>>   		mpic_unmask_irq(irq_get_irq_data(nmi_virq));
+>>   	}
+>>   
+>> -	nemo_init_IRQ(mpic);
+>> -
+>>   	of_node_put(mpic_node);
+>>   	of_node_put(root);
+>>   }
+>> -- 
+>> 2.43.0
+
+
+-- 
+Sent with BrassMonkey 35.0.2 (https://github.com/chzigotzky/Web-Browsers-and-Suites-for-Linux-PPC/releases/tag/BrassMonkey_35.0.2)
+
 
