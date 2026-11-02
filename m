@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8703D6080584
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:21:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DAFC96070C96
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:22:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BaGFkmgd
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jam/DikG
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFmg22Dgz3blk;
-	Tue, 03 Nov 2026 02:21:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFnR4RJ8z3bkP;
+	Tue, 03 Nov 2026 02:22:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632915;
-	cv=none; b=QLJz9dx3CQl7OLdKsTMBzDNPyf0AADnhq0GAhOhqCU7IY86MJat8b/6NYF/57U0mW/WMOBFD4N5I2BB8WfNpEzAiKyblwuJaWHVN4OLWrwQoMWN50V/ohRg7FHF3ceI1R/wYg5DlvGizaAAcDcHuAlvpWbfM+Sa9dcDRXEW3XlWpgkwvxfB0jnaa7yQFyqWBIUGOg6cwMPoKLL5zALSH1HZErAaW+9iCF2QBXfsxTMzo2nbOTQhn97H4/redBbVdIzrV35JWgDGMAusL3jLyINvJ6Wzie/5S607nHYcpspscPx7dZevweTCPg9eootxYE54511kecE/k2RqNI0CDXg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632955;
+	cv=none; b=OqP3k1opX5gW3dhyBN078VBOaEaaS6aAoKdhkR7+AzeKdZ7u0l8f+3USgBS7u+GYxuUB3L5IfdkJ3qEHuViP6+8KEtN9aHk91OhMp9cKQda3mVrz75MuQdMOQDnpLtUk0Pd2d0NzphLHngQgP+Pc35mNwkv85n9e2DMqB3sRr/84igtaX4OC8gdHpWuRdHmDQpQB+dDhYFI0TWKvPkJse+3oB1ScTquru8qDnFLehlT50d9h2WGLGwBQwCD4mmeF0NGq5i/fvyXSNupdAkZ1NKEQHoS4wEJ9+Va5SpP+s6+oBv9ZQ4i5USHWu7TSA1uwtGc1Th9vRv6+bVfREllklg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793632915; c=relaxed/relaxed;
-	bh=+Br5BKTNsV9SKJ+VKUXfa+LuXFyw/MNJN1rBJWSG1Dk=;
+	t=1793632955; c=relaxed/relaxed;
+	bh=lzw2p1lwQVTXGjOVK+O2fRllw6EWFGiyVpP4wwnyOh0=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=RAo1+TTosRLZzuu6O+7z7BklCTDHJS49Y21ShRE7PLbc7Cj8IeXqhDuKfFYckyzZXa9YgM106RqsmY8PaS65T3O/uKfiwuiSg+7M500dKi5h6lQDIL5pJzNRFb5RoYhvaOYcoMj0urJh08I9Frl3afl8rmvWzqCwMDCs1Zx9tYzowzRd1Z9/uNxJN3eoy9edWhhWBKfRpLPYKCJm4mbiJAsxDuGA9tUusUXt+j42G+a2NZsiC+TkOTGCeFfyP8e+bcoLU8+f1bFxL+erdFCYNiEan3J6yG8WaVoscbdEtfTI75z0ujeQvOWJQWJnKH+pvWBRbsCHElHT4Ir2TKSKRg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BaGFkmgd; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=cbsIhxn+Mx34OR8l9ds0Ifesva2CyIU7Vr8iwBy8qVt8clHJmnMR9nge5TdueqJBYwH7mYQp/J4rfbmKp/A9wyXdw4V+QlpybuaoGmzukEjSCBJIgRDwocFhoXqjsWGOsPwKHrVYSWmskIl0APqsE1K5L3atw+2i95pjJva1OjDtpsTLZW66KsnnLaGcWB164Hof3xfa8kMLojq5S1hvO46IKoKwcWxa0L6bw07O0obsUQS3rzNVSnDx/BtamNsE27dq+FGmzsRZrLIfFUHFsz9NG9x0X4IO7Fx7bAcTYepZJOK83T+4CyXuj+YWmT19nYyPvq23f1Fbb8YN9JTf5A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jam/DikG; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BaGFkmgd;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jam/DikG;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFmf3vfMz3bkb
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:21:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFnQ5v7Dz3dJn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:22:34 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id BE21343AA4;
-	Mon,  2 Nov 2026 15:21:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 51A5D1F00A16;
-	Mon,  2 Nov 2026 15:21:36 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 50CAB40839;
+	Mon,  2 Nov 2026 15:22:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AE0491F00A17;
+	Mon,  2 Nov 2026 15:22:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793632912;
-	bh=+Br5BKTNsV9SKJ+VKUXfa+LuXFyw/MNJN1rBJWSG1Dk=;
+	s=k20260515; t=1793632953;
+	bh=lzw2p1lwQVTXGjOVK+O2fRllw6EWFGiyVpP4wwnyOh0=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=BaGFkmgddplAg+7kWtOO3Xs2bTNw6C/l7s/H+s/ARAFWAG8PiIzq4DHKs1pIJtkZF
-	 MLQLlN2WfsWYgrHwMGc+LaYjthSVIYcPsAQ4ZVs0x8SWftIxeVXIb74Yi6DeQgLPv3
-	 MnvwnjVA4w76GNzJNNroqO1Ub2Of7dy2AD2kO3QhN5NULX8sENf6yS60Ffvc4YDPhz
-	 AVUwEuacSjAOwoVTTIoFEsTOOa+8af3coYqbYIzhqzqGrILTs/bIDcsXX7gywt7ryQ
-	 fcrmpnyg6ue+WCi9ocPVHrRqPbxVSWScBXs/eHykFP/KwB1QkPorU1BSb4GtLYc/Ew
-	 +SFzyKl+Rjtbg==
+	b=jam/DikGbP3IcdUEgRo2CFdrSnYZ/3MSMU4LaHUHhtBAwB6d0wN4GG1MyQdeaC9Ok
+	 wdJM+b/3RRtjlCv8z3tItr1QxtSmH9BkYdSP+SP67oPniRC+yl3OGovJKbnl6vggYQ
+	 Xw6S0FI/uqQMcc4B28EcQ0DDMaWkGXvvD/9rG4J+o8qpnbTPjubCx61OEoREYP+wT+
+	 n2SYcDkpCjIpsbDnXuLn3gvGvJMSkTaaQcGsDZNp5Sixc2gl8PYMoWuRLivBfr0Eti
+	 JYdHka5rVsIFLmn3fwhKKgzdpuCwWerAtbnpQ53n/tpOZi1eZbO6XiCI8qo1rd8OmY
+	 S9C/ymTqVEc8Q==
 From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 16:07:17 +0100
-Subject: [PATCH RFC 07/27] ntfs3: let procfs copy in writes to the label
- file
+Date: Mon, 02 Nov 2026 16:07:18 +0100
+Subject: [PATCH RFC 08/27] smb: client: let procfs own the seq_file of the
+ smbdirect files
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-fs-v1-7-d09a996317b3@kernel.org>
+Message-Id: <20261102-work-procfs-fs-v1-8-d09a996317b3@kernel.org>
 References: <20261102-work-procfs-fs-v1-0-d09a996317b3@kernel.org>
 In-Reply-To: <20261102-work-procfs-fs-v1-0-d09a996317b3@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -99,12 +99,12 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
  "Christian Brauner (Amutable)" <brauner@kernel.org>, 
  Chuck Lever <cel@kernel.org>
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2130; i=brauner@kernel.org;
- h=from:subject:message-id; bh=1xpKZw46Wve9Gi/wwfJco67jsfuLoZVG6n9ZzMkX5cA=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9WG70gMfQcsmsxZVZlz3llvU6P9Q+FGFvnWXM+sG1i
- OvlzHMNHaUsDGJcDLJiiiwO7Sbhcst5KjYbZWrAzGFlAhnCwMUpABPZtYzhr8TWhVUbp6lu+ajh
- slFF/whfzqNX3hf5107YP/PoQl9+338M/32S/bhdbNlEs9ZN/nX/VOfslLOLVi/+18m6pJt1w+5
- V8TwA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1034; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=RIZYcDqYt7NhFvt2L4C6pTMn3DylkXBLCyRwuGHjm7I=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9WG6U8n4ug8YGx1uVNoYGj8zfPCt5xX+/1GRB/J/oU
+ N4J1w72dZSyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAExk8ylGhs/Tfi77dN1/hsfq
+ 9zYVab+vKc/ddURfvDWri+u34qLfrzQY/tm3hDFcuBC2pbSmPpAxdem3TZc/mgiqPk5x3Kp2npv
+ flwsA
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -115,77 +115,36 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Implement ->proc_write_buf() so procfs copies in what is written before
-it pins the entry, and set the label from that copy. Writes larger than
-PAGE_SIZE - 1 bytes fail with -EINVAL from procfs now. A write that
-large only ever worked when most of it was trailing newlines or came
-after a NUL, ntfs_set_label() refused a label that long with
--ENAMETOOLONG or -EFBIG.
+Declare the show function in PROC_FILE_DEFINE() and let procfs open and
+free the seq_file. That makes the open functions unnecessary.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- fs/ntfs3/super.c | 27 +++++++++------------------
- 1 file changed, 9 insertions(+), 18 deletions(-)
+ fs/smb/client/cifs_debug.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
-diff --git a/fs/ntfs3/super.c b/fs/ntfs3/super.c
-index 3d669e957ea4..fca73d2766c0 100644
---- a/fs/ntfs3/super.c
-+++ b/fs/ntfs3/super.c
-@@ -536,37 +536,28 @@ static int ntfs3_label_show(struct seq_file *m, void *o)
+diff --git a/fs/smb/client/cifs_debug.c b/fs/smb/client/cifs_debug.c
+index dfcd2cdbb2a8..664072ab3342 100644
+--- a/fs/smb/client/cifs_debug.c
++++ b/fs/smb/client/cifs_debug.c
+@@ -873,16 +873,9 @@ static int name##_proc_show(struct seq_file *m, void *v) \
+ 	seq_printf(m, "%d\n", name); \
+ 	return 0; \
+ } \
+-static int name##_open(struct inode *inode, struct file *file) \
+-{ \
+-	return single_open(file, name##_proc_show, NULL); \
+-} \
+ \
+ static const struct proc_ops cifs_##name##_proc_fops = { \
+-	.proc_open	= name##_open, \
+-	.proc_read	= seq_read, \
+-	.proc_lseek	= seq_lseek, \
+-	.proc_release	= single_release, \
++	.proc_show	= name##_proc_show, \
+ 	.proc_write	= name##_write, \
  }
  
- /* write /proc/fs/ntfs3/<dev>/label */
--static ssize_t ntfs3_label_write(struct file *file, const char __user *buffer,
--				 size_t count, loff_t *ppos)
-+static ssize_t ntfs3_label_write(struct file *file, char *buf, size_t count,
-+				 loff_t *ppos)
- {
- 	int err;
- 	struct super_block *sb = pde_data(file_inode(file));
--	ssize_t ret = count;
--	u8 *label;
-+	size_t len = count;
- 
- 	if (sb_rdonly(sb))
- 		return -EROFS;
- 
--	label = memdup_user(buffer, count);
--	if (IS_ERR(label))
--		return PTR_ERR(label);
-+	while (len > 0 && buf[len - 1] == '\n')
-+		len -= 1;
- 
--	while (ret > 0 && label[ret - 1] == '\n')
--		ret -= 1;
--
--	err = ntfs_set_label(sb->s_fs_info, label, ret);
-+	err = ntfs_set_label(sb->s_fs_info, (u8 *)buf, len);
- 
- 	if (err < 0) {
- 		ntfs_err(sb, "failed (%d) to write label", err);
--		ret = err;
--		goto out;
-+		return err;
- 	}
- 
- 	*ppos += count;
--	ret = count;
--out:
--	kfree(label);
--	return ret;
-+	return count;
- }
- 
- static const struct proc_ops ntfs3_volinfo_fops = {
-@@ -575,7 +566,7 @@ static const struct proc_ops ntfs3_volinfo_fops = {
- 
- static const struct proc_ops ntfs3_label_fops = {
- 	.proc_show = ntfs3_label_show,
--	.proc_write = ntfs3_label_write,
-+	.proc_write_buf = ntfs3_label_write,
- };
- 
- static void ntfs_create_procdir(struct super_block *sb)
 
 -- 
 2.53.0
