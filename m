@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E70F60810E7
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:20:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 912756096237
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:20:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gMV7oMe2
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BN1DryDe
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFkh1q03z3cgy;
-	Tue, 03 Nov 2026 02:20:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632812;
-	cv=none; b=FOS4b7KrJnnsV5NsszxhooND+pj/D10EcKG1yzSQYeOZQK31YaiKu/m3ikDZ6rA+arUdFAMrrw4VsKXc/GYrU8kQ/KQ/gvXY5mn3ZNspuVC1vvMPuYJ5VtHCv1CmMONmVNaS4t46r1TmKJQx22PIlGkxAvnF2tlPWX5Cc2HGfWxo1Z4TeMBYM4ow1+2gbs5bDxzB/hEyzNVkWGOnwWFqtGyvvOD6yTKFKL1m/7E20uqdy4r7v3yhLA7ueeEuFxRfnYPyq26A1CIfCntBVsxjNT1deFtPyYJ/wPVRl4+HPW3ne/9TBdGQ1Cnma7YYhrfU5BXJjefsuNOTs+YaikCnNA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFl42Mc1z3btX;
+	Tue, 03 Nov 2026 02:20:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632832;
+	cv=none; b=jyaVcI75kp4qLsLNMPkEscDNSrGogl9SN6hmtbMxufBD9CMw98m4dgSnEsVYsHBpetwu1nyV8g7ZIZBp6o16M226ehTb6BeZd4w5mi4EUPWGeYruWQIv47DN6Dsq6/tIvqU6q/m+qpj1kmpJXfWs/9Mxg3S+ZLcFzZhcFCw1l/bh+lyEQeVOFB5T7NY0bUcHEc1lLzZFLkBTEpHk9o8EeUv2PazynEopFl/qBhwcgXKohSBrYg4dZo3Rec9iUbfmIn+UWTM/UNaY9/IQR6GpoqL8ixXmxq86IWLSFXiEqVTmkIZMmD/ZTef2gxsWZy6WxR9yKFqPmgkgoniqGMGWgg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793632812; c=relaxed/relaxed;
-	bh=gDybWaXH0yVqSHGh6cSao1kY+huQ+XTPXQ1Vld4D+UM=;
+	t=1793632832; c=relaxed/relaxed;
+	bh=yfb68sR2lkv/WstwrNi2kV1cVJpZCk5/QcENUoLv//k=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Brez3pID2JUnZY48ky9fs6C27dxnQ53FB97ZllYC9heHpyEbt8TBjjpDDnMEt6BUwwUB7Upvae2u31BB8BNFTjGnI0Az8HpaRvOEaT4ReSiQlQ0ghXzZwwwp58PKHS1HlSYlLdgXOwwKD2yrVDvxxg61LG6GFSx1PKUiCJEJA9S/k7gLrNEB4mltqexS4Plc1xxmpi+kZafI/BBKvHVKNZ3GV4AOuQGXYpKA9G2n8XawZSBiYA7foyYQVg7JpaDpIXpd3zg1d+wDIXiJ2U8o+JX9vPofMvdI3EO4/HB5tVJmb4lkFRbtHIwWro2tNQUfdgaijaBj+FG475Cora4yTg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gMV7oMe2; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=VBnLNJ3ak/sZjW29z7OPq34Lj4PvDcPCzoKP8GiifyaUR/TXp8OA0uIWlHww5hIUydarJOkRoCgupVPC5IlxIu+cTBd2hq3Aorai6UiWKcKA0odDA23DcyTDlDaZVGdflm4SQl6/mZdcFNU2ljA5w3oXN7OJjHMw4skMlZvvu7TjOzRFwslFPgTGlOKbh/h+LZdOd4GJRQAzAiFmChqaISuxq9uF1RzGLejaaEo2HxyL2Z6auLvs000JD8sgaiivdXPwcmnHG2balo2R9sI/n336/k++bcyjNGuNzCrbR44UxVHollr0sKY5+u8laKJZsl0+iJdWQP0FUQm78zELKw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BN1DryDe; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gMV7oMe2;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BN1DryDe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFkg2s56z3cgx
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:20:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFl32pGDz3btP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:20:31 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 81FDB6061F;
-	Mon,  2 Nov 2026 15:20:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 976621F00A1D;
-	Mon,  2 Nov 2026 15:19:52 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id B99B842462;
+	Mon,  2 Nov 2026 15:20:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D70991F00A18;
+	Mon,  2 Nov 2026 15:20:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793632809;
-	bh=gDybWaXH0yVqSHGh6cSao1kY+huQ+XTPXQ1Vld4D+UM=;
+	s=k20260515; t=1793632829;
+	bh=yfb68sR2lkv/WstwrNi2kV1cVJpZCk5/QcENUoLv//k=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=gMV7oMe2qdf0+aS9olfnOBAqn/OBe6DasxdwT9LImBIs7Pj7CDa/oA2a6B/8kY9pd
-	 QfSD+01vRhmQIdCiXlwTDyOpKHr/+vYVKI1GFm8wQR5ZwmzCN80Jrz/IWpqVDIWfYl
-	 3Bzlzk4aLDYzHqqx14bF+dEvwX8XoOta/BsfktGPBtManOh4//zemOTXkilWggqbhn
-	 W/RtVoTwiEMKAtL6JeSwBY8eTWp9GpOtjwbXtxAZExlQVzQlk62v23yj30uR9SnWUe
-	 jbKIL4QwYWDm+Xox3mBmfSoPFHGyBgWuJOAs5l7OErmCDLr8xRUVWg57VzoW07Bk1H
-	 D+JLNSysS0GGw==
+	b=BN1DryDe3qV+C4aWHJuIRcQk7/grenL2yY2/u1V9RuZ76eccMjBgLsEcUTNnhaGbx
+	 eXhhwX7Vgu+zR+JmG/2wvin1dOiYZvsWSYg6kfl1F4CTtJJewyZhllNVl1QPSHankI
+	 Y/8n3DCOX6o11uevej4+0kaVGNpGzwrrLFwkHxO8Xf20op7zpFONM4MND0dOsyrGS9
+	 lt+VjVHm27V5kG1yhzDMUWKDR0YRqKdDimg5wHtncjttH7DdkNFA88vxAFcS8nd5HC
+	 WE2enuopE0QMfUuIQi9FBTnJNj/5vBq/jOfhCbxPWlMeXV21MywGi2MtjhSPk+gxJF
+	 /V1HSYuIItaBw==
 From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 16:07:12 +0100
-Subject: [PATCH RFC 02/27] jfs: let procfs copy in writes to the loglevel
- file
+Date: Mon, 02 Nov 2026 16:07:13 +0100
+Subject: [PATCH RFC 03/27] lockd: let procfs copy in writes to
+ nlm_end_grace
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-fs-v1-2-d09a996317b3@kernel.org>
+Message-Id: <20261102-work-procfs-fs-v1-3-d09a996317b3@kernel.org>
 References: <20261102-work-procfs-fs-v1-0-d09a996317b3@kernel.org>
 In-Reply-To: <20261102-work-procfs-fs-v1-0-d09a996317b3@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -99,62 +99,74 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
  "Christian Brauner (Amutable)" <brauner@kernel.org>, 
  Chuck Lever <cel@kernel.org>
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1370; i=brauner@kernel.org;
- h=from:subject:message-id; bh=izEZyN2ciF2azWBwOiarD7rxdH5SrLb74RUgxhmuQ3M=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9WG7IJf+71NVUmNfmjuySXN5GYdHLr8WmWM125JvlY
- 84Qs/VxRykLgxgXg6yYIotDu0m43HKeis1GmRowc1iZQIYwcHEKwES0PBgZHvWw/qhbNX2Pi9i5
- F4F+xcfDMxt+ZB+X21+0fPH/f32bHBkZLj5bwyh982HI2kgp1W2/Husu5Fmlc+PU8aMTrX5F3I/
- u5gEA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1756; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=yoBjzpwXPCFL2mmsMcO6fDyZh19yBZX5M0Ko6zu/SW0=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9WG4otvP03RvTPvA6+q/2CHm77dh8jlWRxmva3p208
+ Ze+9//u4Y5SFgYxLgZZMUUWh3aTcLnlPBWbjTI1YOawMoEMYeDiFICJzFzD8JNRYNGmuUuv5fXJ
+ SixnOtLlrT9xxidJDp7+ycnCGRxRXQ8Z/qlce21cuoK5yfPMxbQIy6ar6sn9zobuoRNUY3eHqBs
+ eYwQA
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=4.0.1
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 Implement ->proc_write_buf() so procfs copies in what is written before
-it pins the entry, and take the level from that copy. Writes larger than
-PAGE_SIZE - 1 bytes fail with -EINVAL now and so do empty writes, which
-looked at a byte that wasn't written before.
+it pins the entry. simple_transaction_get() was only used to get a copy
+of what was written, so look at procfs' copy instead and drop the
+transaction. A second write to the same file doesn't fail with -EBUSY
+anymore. Writes larger than PAGE_SIZE - 1 bytes fail with -EINVAL from
+procfs instead of -EFBIG from simple_transaction_get(), which refused a
+few bytes less.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- fs/jfs/jfs_debug.c | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
+ fs/lockd/procfs.c | 13 +++----------
+ 1 file changed, 3 insertions(+), 10 deletions(-)
 
-diff --git a/fs/jfs/jfs_debug.c b/fs/jfs/jfs_debug.c
-index 5eb35b0d420f..e1c0211a6a32 100644
---- a/fs/jfs/jfs_debug.c
-+++ b/fs/jfs/jfs_debug.c
-@@ -23,13 +23,10 @@ static int jfs_loglevel_proc_show(struct seq_file *m, void *v)
- 	return 0;
+diff --git a/fs/lockd/procfs.c b/fs/lockd/procfs.c
+index a01f08c8c2f3..47949bec7a09 100644
+--- a/fs/lockd/procfs.c
++++ b/fs/lockd/procfs.c
+@@ -18,21 +18,15 @@
+  * We only allow strings that start with 'Y', 'y', or '1'.
+  */
+ static ssize_t
+-nlm_end_grace_write(struct file *file, const char __user *buf, size_t size,
+-		    loff_t *pos)
++nlm_end_grace_write(struct file *file, char *buf, size_t size, loff_t *pos)
+ {
+-	char *data;
+ 	struct lockd_net *ln = net_generic(current->nsproxy->net_ns,
+ 					   lockd_net_id);
+ 
+ 	if (size < 1)
+ 		return -EINVAL;
+ 
+-	data = simple_transaction_get(file, buf, size);
+-	if (IS_ERR(data))
+-		return PTR_ERR(data);
+-
+-	switch(data[0]) {
++	switch(buf[0]) {
+ 	case 'Y':
+ 	case 'y':
+ 	case '1':
+@@ -61,10 +55,9 @@ nlm_end_grace_read(struct file *file, char __user *buf, size_t size,
  }
  
--static ssize_t jfs_loglevel_proc_write(struct file *file,
--		const char __user *buffer, size_t count, loff_t *ppos)
-+static ssize_t jfs_loglevel_proc_write(struct file *file, char *buffer,
-+		size_t count, loff_t *ppos)
- {
--	char c;
--
--	if (get_user(c, buffer))
--		return -EFAULT;
-+	char c = buffer[0];
- 
- 	/* yes, I know this is an ASCIIism.  --hch */
- 	if (c < '0' || c > '9')
-@@ -40,7 +37,7 @@ static ssize_t jfs_loglevel_proc_write(struct file *file,
- 
- static const struct proc_ops jfs_loglevel_proc_ops = {
- 	.proc_show	= jfs_loglevel_proc_show,
--	.proc_write	= jfs_loglevel_proc_write,
-+	.proc_write_buf	= jfs_loglevel_proc_write,
+ static const struct proc_ops lockd_end_grace_proc_ops = {
+-	.proc_write	= nlm_end_grace_write,
++	.proc_write_buf	= nlm_end_grace_write,
+ 	.proc_read	= nlm_end_grace_read,
+ 	.proc_lseek	= default_llseek,
+-	.proc_release	= simple_transaction_release,
  };
- #endif
  
+ int __init
 
 -- 
 2.53.0
