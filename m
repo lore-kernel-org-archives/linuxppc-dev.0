@@ -2,51 +2,51 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1DB9360AB1BF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:11:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CAFCB60771CC
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:12:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eoCb1xon
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SkwsCH5N
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFY265jbz2yNj;
-	Tue, 03 Nov 2026 02:11:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFYM44cvz3brx;
+	Tue, 03 Nov 2026 02:12:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632310;
-	cv=none; b=EA6kML1bwvm3dlBFmH9pkTpf7jXx0vHUV2LaBIBpr0nKqPSWiJzXyNObgnrgKu6/YHK6jyEtD62pzpu6gbnDLcobOMHJQ+ulPsguZ6Oh8wN4KSuhJ6PCIUitgd8sEN53ftVP+mWKHDWGcDfDB8vq1gWJ/LVl+pQeTdNkBVZ2EOo0IZgIHYAVQVyLD4JzysoLDIsHrufedR9CKICLUD4VuP7Oz6kKd5p7wYIPnFbq7zr9wsM3ba9TyJLVcfiJTHZoP/aQafrwqLXRRPMkLqRKODslNWFjpifNyQLrOXDpjaBIfFx8W+trgvQ0bTDG1Mi9+A7B/tY/2fdmvdespCNIGA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793632327;
+	cv=none; b=nIe8r23JfzyZ2zZPnjhMwfQiBwuRwu9nb5JrXExuFV18Obo1adSA/KTu5jT9EA40dzTanAagUtLEZ8cqFJqhweL/+zMp45/Vr7a8yTqNCJDZRDZXf1xfiPsjyL+C4ZMxu0Lo7QZES5jec3lTn38dnX5TJ5McK9yanjsAEdww+4indgfH7mCAzvrk6LUN7qJ6Sxjr3VWA98COY1KgKPMxFibxx41d7VJz3YmjXAwvaXjwAaiZdBrfFsiYmQcs+tBC52aTe2u+Xa3IewGhTNRLBIJZUHO2tgXfS2hoyiL8fjojZi7dHzEshPS93tpvzLjh/Xx40CjgZxA5e+wavYdriQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793632310; c=relaxed/relaxed;
-	bh=Q/r9Fhg2Z0/w3CqoKnG0DKCxv08Z9PpiFGMKT+radK4=;
+	t=1793632327; c=relaxed/relaxed;
+	bh=ymYBzOXC+1qnPq3+H1dG+MOV1EJ0vnAFrYigKbllIFM=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=JpJOE5igMuWkgMZkyNi40sH2oU27f7B4Wbwaf4HSDqmUqWnQdhP4buihCKfzU6e+YXDc4lkkOoVGrHorA+Bl1mWNSQ/PrgoCMhR1oUCZ9LsH351g4rJ6rCY4hopzIvrifg0bqdWy2T662IOm7eDlZQJrBvB7PjYApSbCraVbPDKnYAo3C9qUkIYrUxwCOAlCbzogvfbUkNx3428WE0W/9ymtvRjUbOZOEORZJYp8RP5qM+LXq+SCU1KhDbc14if36xDzZs20vlm2rgnFU6TvOezjFPF4qd6oqAlN8+YKdbaE9fkIIB05u4PQxzJg0QrQKpFSc70KiGqrmcZTB3Yj8Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eoCb1xon; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=Ye9CvDvOE4P2l6L5sfpzxGtP2QeRUen8IlXTtcGotI5iPOsuBlXbaZoafOrc1xplJ5mqrwmvyj6PhKiaVcAL0lIDfiuarVy0MU5TFxqg2N5J6F5r5Qj+YleXqLuRicqD/r4Z3Imna3aHxaxDRnU8FfLOKga1r0+axz932oKXo3AnypFZS0AF521DNWIuddQ/xrRr2/4UYsBRSQo2lrz2Qtk2xFjwn91Q52Lvl1yTwh75XuhOQE8Ma2oqXaDvuYHrv2wRhvG/0zhtsro/uoJMjBPD7dnnutLQoT1KNYqWFBjX6xZns93hNbc66015UAWy+WEd0+qWfP8oN3rcQG17oQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SkwsCH5N; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eoCb1xon;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SkwsCH5N;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFY20s4Fz2yDr
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:11:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFYL5dxTz3brv
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:12:06 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 905ED4396E;
-	Mon,  2 Nov 2026 15:11:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 834C51F00A1A;
-	Mon,  2 Nov 2026 15:11:34 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 489F743DCB;
+	Mon,  2 Nov 2026 15:12:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EA7A31F00A1A;
+	Mon,  2 Nov 2026 15:11:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793632308;
-	bh=Q/r9Fhg2Z0/w3CqoKnG0DKCxv08Z9PpiFGMKT+radK4=;
+	s=k20260515; t=1793632325;
+	bh=ymYBzOXC+1qnPq3+H1dG+MOV1EJ0vnAFrYigKbllIFM=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=eoCb1xonaSPckn24MdF4TgpzPnhB0gLnhwB3+q7VZZ4/VwLP7qSPXNuTMQ/2dNldh
-	 eVFE9vGUSsn5YYaxGqoLLphvtZLuTJd+KylQIE7mCxvO73SPam6GZq8mc3b9CVyDie
-	 3exBK5rK2UuFrqmUvsRYmGiv0WPcd+dv1jT5VIdTEL0j46lSeijrTe4sxEh10rR5bK
-	 zOsOn6lvifS4MnTOAh0Y2SzLal5mx1R7DipSgL85s9IzFy3jc8hi6gaFxlmb2VYUgw
-	 Yg+IrbZgj5ldjUEp69Bi1JJ+66r8wybqWUuSMQZmJ6kfSVqJ9+zpEm7bXhkzV6eqzB
-	 WMso6y2HpsKNQ==
+	b=SkwsCH5NX6Vwuc8YrkplsbXUYGZlDfQ9CBIwHzcNKyVojyOkIh1miTD756wE+V94K
+	 qbWnPBCFoEsk5Vnl3IISVP4GtRJh7t/+O5UXryDxT4dLTsrhtBDQtWOzMD+XlPQhS1
+	 5THCVq9/EcREtyMc1/N5VSwvG3Q1CrUodeGrQPLGHFNfVpmv58FNgX24+XU26JY7OW
+	 sUsvQbz2VbjL7MwP3kVNJQ4yIC+/SktiBLhGC+6TRx0O6yviVfRR7mxZOD/Hx4nWfU
+	 5GaDkAcE0fW19SSj+Gk/9Y8llQ2bd+zIEgssZ8CrEgkZbej1DhvNKvROVGhxK2nbP0
+	 DIw+cl37jf3tQ==
 From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 16:07:12 +0100
-Subject: [PATCH RFC 05/23] PCI/proc: let procfs handle the ioctls
+Date: Mon, 02 Nov 2026 16:07:13 +0100
+Subject: [PATCH RFC 06/23] md: let procfs own the seq_file of /proc/mdstat
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,7 +62,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-drivers-v1-5-a994bd4d3b1a@kernel.org>
+Message-Id: <20261102-work-procfs-drivers-v1-6-a994bd4d3b1a@kernel.org>
 References: <20261102-work-procfs-drivers-v1-0-a994bd4d3b1a@kernel.org>
 In-Reply-To: <20261102-work-procfs-drivers-v1-0-a994bd4d3b1a@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -98,12 +98,12 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
  "Christian Brauner (Amutable)" <brauner@kernel.org>, 
  Chuck Lever <cel@kernel.org>
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2106; i=brauner@kernel.org;
- h=from:subject:message-id; bh=2F6i7ISm6IP0WfraLShTjEfHw8rrOdRgm90gAFJMkQE=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9WG6wz+y23KkZj6QTN7spL27IM+Bm2tTyUNrgV7+Tr
- M+uN3Y9HaUsDGJcDLJiiiwO7Sbhcst5KjYbZWrAzGFlAhnCwMUpABMJymT477j82eGua2tPP5/u
- /iU1KyGvJs8tjK3vYeGHHaWzRJ14ZzH8U7obxHZv93mOC8mXehiflUxYs0bd3NzPJcDnTdn/mMJ
- 9vAA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1303; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=98AwGD4IED7vI5/KgxxfmkGNQYsM7jyTpJ1BeJQdwqI=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9WG5wa9eb9mvKGcqFdjwLmF1n7FyoUu4/zTbeKoP9V
+ 5jBq1ePOkpZGMS4GGTFFFkc2k3C5ZbzVGw2ytSAmcPKBDKEgYtTACbyaQLD//zX1pfyeqN/TEhI
+ Ob3+1Rm/J2p79l/hyunq2m7Kda/Ix4uRoXfzjTPHbDmCeqqTG/in+s5mk9vmK2YguPrLjge1T+z
+ 2swMA
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -114,60 +114,52 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The PCIIOC_* commands take and return plain values and don't touch
-userspace memory. Implement ->proc_ioctl_buf() and list them with
-nothing to copy. 32-bit tasks go through the same table, so the compat
-hook goes away. Unknown commands fail with -ENOTTY from procfs now
-instead of -EINVAL, and instead of -EPERM under lockdown, since they
-never reach the handler.
+Declare the seq_operations and let procfs open and free the seq_file.
+->proc_open() only records the event count for ->proc_poll() now.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- drivers/pci/proc.c | 18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
+ drivers/md/md.c | 15 ++++-----------
+ 1 file changed, 4 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/pci/proc.c b/drivers/pci/proc.c
-index a8d7469f222b..6b0cb5bcbea3 100644
---- a/drivers/pci/proc.c
-+++ b/drivers/pci/proc.c
-@@ -192,8 +192,7 @@ struct pci_filp_private {
+diff --git a/drivers/md/md.c b/drivers/md/md.c
+index 680b34a63cb3..e642b763ebc2 100644
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -9141,18 +9141,13 @@ static const struct seq_operations md_seq_ops = {
+ 	.show   = md_seq_show,
  };
- #endif /* HAVE_PCI_MMAP */
  
--static long proc_bus_pci_ioctl(struct file *file, unsigned int cmd,
--			       unsigned long arg)
-+static long proc_bus_pci_ioctl(struct file *file, unsigned int cmd, void *arg)
++/* procfs opens the seq_file */
+ static int md_seq_open(struct inode *inode, struct file *file)
  {
- 	struct pci_dev *dev = pde_data(file_inode(file));
- #ifdef HAVE_PCI_MMAP
-@@ -321,16 +320,23 @@ static int proc_bus_pci_release(struct inode *inode, struct file *file)
- }
- #endif /* HAVE_PCI_MMAP */
+-	struct seq_file *seq;
+-	int error;
+-
+-	error = seq_open(file, &md_seq_ops);
+-	if (error)
+-		return error;
++	struct seq_file *seq = file->private_data;
  
-+/* The commands take and return plain values. */
-+static const struct proc_ioctl_arg proc_bus_pci_ioctl_args[] = {
-+	PROC_IOCTL_ARG(PCIIOC_CONTROLLER, 0, 0),
-+	PROC_IOCTL_ARG(PCIIOC_MMAP_IS_IO, 0, 0),
-+	PROC_IOCTL_ARG(PCIIOC_MMAP_IS_MEM, 0, 0),
-+	PROC_IOCTL_ARG(PCIIOC_WRITE_COMBINE, 0, 0),
-+};
-+
- static const struct proc_ops proc_bus_pci_ops = {
- 	.proc_flags	= PROC_ENTRY_SHORT_WRITES,
- 	.proc_lseek	= proc_bus_pci_lseek,
- 	.proc_read_buf	= proc_bus_pci_read,
- 	.proc_write_buf	= proc_bus_pci_write,
- 	.proc_write_size = PCI_CFG_SPACE_EXP_SIZE,
--	.proc_ioctl	= proc_bus_pci_ioctl,
--#ifdef CONFIG_COMPAT
--	.proc_compat_ioctl = proc_bus_pci_ioctl,
--#endif
-+	.proc_ioctl_buf	= proc_bus_pci_ioctl,
-+	.proc_ioctl_args = proc_bus_pci_ioctl_args,
-+	.proc_nr_ioctl_args = ARRAY_SIZE(proc_bus_pci_ioctl_args),
- #ifdef HAVE_PCI_MMAP
- 	.proc_open	= proc_bus_pci_open,
- 	.proc_release	= proc_bus_pci_release,
+-	seq = file->private_data;
+ 	seq->poll_event = atomic_read(&md_event_count);
+-	return error;
++	return 0;
+ }
+ 
+ static int md_unloading;
+@@ -9174,10 +9169,8 @@ static __poll_t mdstat_poll(struct file *filp, poll_table *wait)
+ }
+ 
+ static const struct proc_ops mdstat_proc_ops = {
++	.proc_seq_ops	= &md_seq_ops,
+ 	.proc_open	= md_seq_open,
+-	.proc_read	= seq_read,
+-	.proc_lseek	= seq_lseek,
+-	.proc_release	= seq_release,
+ 	.proc_poll	= mdstat_poll,
+ };
+ 
 
 -- 
 2.53.0
