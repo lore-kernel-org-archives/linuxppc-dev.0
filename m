@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 111F1606F23B
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 14:28:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16281606C3C7
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 14:28:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EUO4pFKl
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XqeV2NQm
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJDZn5g3Nz3bgl;
-	Tue, 03 Nov 2026 01:28:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJDb25sJhz3bQl;
+	Tue, 03 Nov 2026 01:28:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793629697;
-	cv=none; b=DHskYZm/JEZ39YIxnHakMkFz5YK9w6AbirmlLFc8EVsEWyOWmm9dfY13DqkSF9IUTD1CDkzChp/c2o3nvfbol8bd/1WQ6kfTlQ01/QJ2HMX0S7AUsROx3dAfzFnsqgYhhZT1qsBXK0LDHvk2yUe552GTihB53A9EpkETJKDddeVT+DLCnA+HyaFN0nLkF1Brw/A93iAF4ZuCT2zuYWDkUvM1tlZysrc7KCivJDIUcj6Ru0XAQdRLcHHGOnNBs35S4QsrxGFEFlOm4lWk4WHq7aeHYWCyKZfeWJKaTz10uIBoB+hgx0PEJL/kqgEUQe5LzkO/Pd7lGOXBLfZLqSgYrw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793629710;
+	cv=none; b=QNo/+HTyazQHpWz6ewgyGsXaJeukVBCSz8fCHJdSUZXhTIYHJWEC677W1fwvwB0CkTKjCRqWdg/VQTw/wp+WfrGvu8Tr2Tx+tAdVca2CToUznLBCVvrAe+lHKAjKb/NtHPtAiP0R0vG4vGQvtYpW0YjtnKcHJ16NbdFR8rJc5qK8GRdtmiXgBuym24mgaxqcZ9UY1jqLwI5eBlvpr2sLheG1JODiPLtljhB6/FL7znFL2pTN7qcEKpGr+LpnILcj1xzJ7bVDS1o6PdzHB/1uDh0GYN4Gogd30QnthNEeL3uPuCyDEYplT/dXj+WFd7LAJrXAalYfmnbCOukFb/neZQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793629697; c=relaxed/relaxed;
-	bh=1ZOes0sCXeNJHkx8XbBRI4Lha74UqRf0e01UMCXW7Bw=;
+	t=1793629710; c=relaxed/relaxed;
+	bh=VsGmMsU5ViaEXrFm2/HEk+OSOttZ2XCHXLgyJx8eD0g=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=jj2LgpH5AdB++mcMIUrFk0mCh763qWdnzjshKOvlrs7wpaelGISaVGwNr4EfqygESTyNhMKnljJPZkpmeyVgow1qIAy5Y9OHkRug/wmWh4iEaE51z/5vgR/9K1Q8m0EmsJX0OAYj2v5vpJWiVWKmiKHZi45G42s9J5FHNbWs7FPzlpZ3kLaKXKXttLR0z1jo5SOcPELftyPBGVJLpmNpAeZKbFVRmmHaoeThnG/sKu8PX1lovcc2tLwOOl9Qx6fhP6Sf7TEJ7K2DdjwJV+yLC5PE8R4EwsE/yvsI+c14Smo20Zq7FEZuYfk7Nxz0gB0JlkkjoaH8jmeiotTi/qK2YA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EUO4pFKl; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=jfpmgaP+1SB+PdL0t6IFdcBD1nFYzPfbrH1tm6lCR2brJPmdXa/2+9UpMYz5YWZpiyc0uzf3TlacgD3jt+YNXzBQjzMhp0xwz4qxUMnDBxq4Lquw3/Me4msWP8OMHcamB6RgfhKvEj2z4kmSxYN1Qr1VS0JNkBiOB1uqfLseeU1BPFFKTzAbYfWivhC2eGdesqvY7v0TVoY/8yJpnDavUvJoLl3Buj72HZrvGV/JftjF4fEtTMVmVTODK8cD6P8rn4QXsNLEdJxpM+0l5KcamP1Qxyk2PmMc9ZVzbArB65MpwimL2P6W8IdtTQzmLWNdSw77vvwr8TvU24dFRfQ7Wg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XqeV2NQm; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EUO4pFKl;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XqeV2NQm;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJDZn0QW2z3bgh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 01:28:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJDb20Tlgz3bNw
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 01:28:30 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id A831D40F85;
+	by sea.source.kernel.org (Postfix) with ESMTP id 8BDA5437D6;
+	Mon,  2 Nov 2026 14:28:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 13A371F00A17;
 	Mon,  2 Nov 2026 14:28:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E1D0D1F00A16;
-	Mon,  2 Nov 2026 14:28:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793629694;
-	bh=1ZOes0sCXeNJHkx8XbBRI4Lha74UqRf0e01UMCXW7Bw=;
+	s=k20260515; t=1793629708;
+	bh=VsGmMsU5ViaEXrFm2/HEk+OSOttZ2XCHXLgyJx8eD0g=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=EUO4pFKlhnL5pvQEUCCWvi+78+6q6ZDjIsg25RLdmrCR7DaMvvK7VU6IyXjatgNdA
-	 v6HEQdINaxmfpwL2YFS2jHE5mgZGSzD0u2zuKU1c9+C8L4IeSjDRJMsuWNe0QCLWYE
-	 HgyuHlkfOpyx10+G5lbOHU8K9XY1lWRM1PLPhSPcCmeOf5pWcbxWRZzIqvBtaEEgcu
-	 pLUrAxK6nHoCIsss5clQs1KkJnkGgrrsihUVIBffccQLmDOjMDkbkev4FX0WQJfpGn
-	 FiQqi51nTBd2t+6sn7+AKsB+sOUb1ObmcEa84GBOKFz/ycMk49a3RHfimrV1ontC6D
-	 8uUxFKZ7AJNfQ==
+	b=XqeV2NQmybmcQpQCfl29ZjQwKCUGyTxg3Lk86HZD3i6fKefYdRhi6Czqkj/uY0gbw
+	 WIMDP6xlkx2+VEkRPOdds7rQS/Uyu9UXSkxhmRXEhC5evtJOy9tI/yOL5szCJhbeLc
+	 0E5d3uMaycB0bt6F9SqARsY6HZ9K2Zfxz47uxakdila20hiMIqVwKfumClrZvot30Z
+	 0TzxA0nOHiKy1ykKqAGRyBaWolaL8pxg29oFyVMB6WnCop+8tSXpiWoJYlA9GSs8di
+	 n96TiYbYdDvUjg9bfLf9swi1GEQWlrFWmIElw3Xf/XFNUaLj2StS2zAyQW67MjajXk
+	 tc+uqwcEoZ88g==
 From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 15:21:43 +0100
-Subject: [PATCH RFC 28/38] scsi: esas2r: bound the lengths of the HBA, SMP
- and firmware ioctls
+Date: Mon, 02 Nov 2026 15:21:44 +0100
+Subject: [PATCH RFC 29/38] powerpc/pseries: bound the lengths in the ofdt
+ property parser
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-bugfixes-v1-28-59422ed3e465@kernel.org>
+Message-Id: <20261102-work-procfs-bugfixes-v1-29-59422ed3e465@kernel.org>
 References: <20261102-work-procfs-bugfixes-v1-0-59422ed3e465@kernel.org>
 In-Reply-To: <20261102-work-procfs-bugfixes-v1-0-59422ed3e465@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -99,12 +99,12 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
  "Christian Brauner (Amutable)" <brauner@kernel.org>, 
  Chuck Lever <cel@kernel.org>, stable@vger.kernel.org
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6672; i=brauner@kernel.org;
- h=from:subject:message-id; bh=gYkKA8sDklmz8nTf0EqD2RrY/Q3IBTgyykjWiVDWZYA=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9mJPz+N2NHXK/t+en+35gneV78ubBxkVGR/jbO/9sW
- Dbb9di/yx2lLAxiXAyyYoosDu0m4XLLeSo2G2VqwMxhZQIZwsDFKQATkRNhZNimE16dqx5cOOOB
- 1nyumpBTfd/0T3+YWsenvUg5fd6+L/wM//N26dx8v26+6gL+G0t3cCusnP/gdPiKe/7rxHbVSdf
- F5fECAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4036; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=8Hd2AVI62ImOZ5MsmuM9jPXUwAC7qJ+A0OqSTVpNjVY=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9mJOjt7/StVJ92/OGaG62tVk7lptsnry1XOeEU0MEt
+ 6WRwtT+jlIWBjEuBlkxRRaHdpNwueU8FZuNMjVg5rAygQxh4OIUgImICTH89xVRKXt8brGes8gD
+ hbehWc6VDwOeTlTd5HNl61HeI6E7HzD8D7LS778lssD/iJNbEMt1XRWVzwwGj4q5Nv1edEZE+NV
+ ibgA=
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -115,177 +115,107 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-esas2r_ioctl_handler() copies in a struct atto_express_ioctl, a bit over
-512k, and hands the union member for the command to the handlers. For
-EXPRESS_IOCTL_HBA and EXPRESS_IOCTL_SMP the length of the buffered ioctl
-is the size of the member plus lengths that come straight from
-userspace:
+The commands for /proc/powerpc/ofdt that carry properties, "add_node",
+"add_property" and "update_property", can make the parser read past the
+buffer they were copied into:
 
-  bi.length = sizeof(struct atto_ioctl) + ioctl_hba->data_length;
+(1) do_update_property() computes the end of the buffer after
+    parse_node() moved buf past the phandle. So the end is off by the
+    length of the phandle string, which can be padded with zeroes, and
+    parse_next_property() accepts a value that reaches that far past
+    the command. new_property() then copies those bytes into the
+    property, which everyone can read in /proc/device-tree.
 
-  bi.length = sizeof(struct atto_ioctl_smp)
-	    + le32_to_cpu(si->req_length)
-	    + le32_to_cpu(si->rsp_length);
+(2) parse_next_property() parses the length with simple_strtoul() into
+    an int and only rejects -1. A length above INT_MAX turns negative,
+    tmp += *length moves backwards and passes the check against the
+    end, so *tmp is read up to 2G in front of the buffer.
 
-handle_buffered_ioctl() copies bi.length bytes from the member into a
-DMA buffer and, once the adapter is done, copies the DMA buffer back
-over the member. Nothing checks that the lengths fit into the struct
-that was copied in. So a large data_length makes it read past the
-struct and then write the DMA buffer back over the memory behind it.
+(3) Updating "slb-size" or "ibm,slb-size" reads an int from the value
+    whatever its length.
 
-The firmware commands pass sizeof(struct atto_express_ioctl) to
-esas2r_{read,write}_{fw,fs}() as the length of data.fwrw.image, which
-starts 28 bytes into the struct. So they can read and write 28 bytes
-past it as well.
-
-The handler is reachable through /proc/scsi/esas2r/ATTONode. It is
-created with mode 0, which procfs turns into 0444, and esas2r doesn't
-check for a capability anywhere. So any local user can do this on a
-machine with such an adapter.
-
-Bound all of these by the room from the member to the end of the
-struct. read_hw() passes handle_hba_ioctl() a single struct atto_ioctl
-and only ever returns that, so there the data length has to be zero.
+Compute the end before parsing the phandle, reject lengths that don't
+fit into an int or into what is left of the buffer, and only take the
+slb size from a value that holds one. The file is root-only and
+refused under lockdown but the parser still shouldn't read past its
+input.
 
 Reported-by: Chris Mason <mason@kernel.org>
-Fixes: 26780d9e12ed ("[SCSI] esas2r: ATTO Technology ExpressSAS 6G SAS/SATA RAID Adapter Driver")
+Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+Fixes: 610d91511f99 ("[PATCH] powerpc: Add support for changing properties from userspace")
+Fixes: 46db2f86a3b2 ("powerpc/pseries: Fix to handle slb resize across migration")
 Cc: stable@vger.kernel.org
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- drivers/scsi/esas2r/esas2r.h       |  2 +-
- drivers/scsi/esas2r/esas2r_ioctl.c | 41 ++++++++++++++++++++++++--------------
- drivers/scsi/esas2r/esas2r_main.c  |  3 ++-
- 3 files changed, 29 insertions(+), 17 deletions(-)
+ arch/powerpc/platforms/pseries/reconfig.c | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/scsi/esas2r/esas2r.h b/drivers/scsi/esas2r/esas2r.h
-index a763edd05fe4..10101f50b282 100644
---- a/drivers/scsi/esas2r/esas2r.h
-+++ b/drivers/scsi/esas2r/esas2r.h
-@@ -967,7 +967,7 @@ int esas2r_write_params(struct esas2r_adapter *a, struct esas2r_request *rq,
- int esas2r_ioctl_handler(void *hostdata, unsigned int cmd, void __user *arg);
- int esas2r_ioctl(struct scsi_device *dev, unsigned int cmd, void __user *arg);
- u8 handle_hba_ioctl(struct esas2r_adapter *a,
--		    struct atto_ioctl *ioctl_hba);
-+		    struct atto_ioctl *ioctl_hba, size_t room);
- enum scsi_qc_status esas2r_queuecommand(struct Scsi_Host *host,
- 					struct scsi_cmnd *cmd);
- int esas2r_show_info(struct seq_file *m, struct Scsi_Host *sh);
-diff --git a/drivers/scsi/esas2r/esas2r_ioctl.c b/drivers/scsi/esas2r/esas2r_ioctl.c
-index 3f7c1d131ec3..f99318f61c93 100644
---- a/drivers/scsi/esas2r/esas2r_ioctl.c
-+++ b/drivers/scsi/esas2r/esas2r_ioctl.c
-@@ -311,17 +311,27 @@ static int smp_ioctl_callback(struct esas2r_adapter *a,
- 	return true;
- }
- 
-+/* The room from @member to the end of a struct atto_express_ioctl. */
-+#define EXPRESS_IOCTL_ROOM(member)				\
-+	(sizeof(struct atto_express_ioctl) -			\
-+	 offsetof(struct atto_express_ioctl, member))
-+
- static u8 handle_smp_ioctl(struct esas2r_adapter *a, struct atto_ioctl_smp *si)
+diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
+index 18e3f1a036e3..b41c5db726c9 100644
+--- a/arch/powerpc/platforms/pseries/reconfig.c
++++ b/arch/powerpc/platforms/pseries/reconfig.c
+@@ -114,6 +114,7 @@ static void release_prop_list(const struct property *prop)
+ static char * parse_next_property(char *buf, char *end, char **name, int *length,
+ 				  unsigned char **value)
  {
- 	struct esas2r_buffered_ioctl bi;
-+	u64 length = (u64)sizeof(struct atto_ioctl_smp) +
-+		     le32_to_cpu(si->req_length) +
-+		     le32_to_cpu(si->rsp_length);
-+
-+	/* The request and the response follow @si in the same buffer. */
-+	if (length > EXPRESS_IOCTL_ROOM(data.ioctl_smp))
-+		return IOCTL_INVALID_PARAM;
++	unsigned long len;
+ 	char *tmp;
  
- 	memset(&bi, 0, sizeof(bi));
- 
- 	bi.a = a;
- 	bi.ioctl = si;
--	bi.length = sizeof(struct atto_ioctl_smp)
--		    + le32_to_cpu(si->req_length)
--		    + le32_to_cpu(si->rsp_length);
-+	bi.length = length;
- 	bi.offset = 0;
- 	bi.callback = smp_ioctl_callback;
- 	return handle_buffered_ioctl(&bi);
-@@ -1221,11 +1231,16 @@ static void hba_ioctl_done_callback(struct esas2r_adapter *a,
+ 	*name = buf;
+@@ -133,13 +134,13 @@ static char * parse_next_property(char *buf, char *end, char **name, int *length
  	}
- }
  
-+/* @room is the size of the buffer that starts with @ioctl_hba. */
- u8 handle_hba_ioctl(struct esas2r_adapter *a,
--		    struct atto_ioctl *ioctl_hba)
-+		    struct atto_ioctl *ioctl_hba, size_t room)
- {
- 	struct esas2r_buffered_ioctl bi;
+ 	/* now we're on the length */
+-	*length = -1;
+-	*length = simple_strtoul(tmp, &tmp, 10);
+-	if (*length == -1) {
++	len = simple_strtoul(tmp, &tmp, 10);
++	if (len > INT_MAX) {
+ 		printk(KERN_ERR "property parse failed in %s at line %d\n",
+ 		       __func__, __LINE__);
+ 		return NULL;
+ 	}
++	*length = len;
+ 	if (*tmp != ' ' || ++tmp >= end) {
+ 		printk(KERN_ERR "property parse failed in %s at line %d\n",
+ 		       __func__, __LINE__);
+@@ -148,13 +149,13 @@ static char * parse_next_property(char *buf, char *end, char **name, int *length
  
-+	/* The data follows @ioctl_hba in the same buffer. */
-+	if (ioctl_hba->data_length > room - sizeof(struct atto_ioctl))
-+		return IOCTL_INVALID_PARAM;
-+
- 	memset(&bi, 0, sizeof(bi));
+ 	/* now we're on the value */
+ 	*value = tmp;
+-	tmp += *length;
+-	if (tmp > end) {
++	if (len > end - tmp) {
+ 		printk(KERN_ERR "property parse failed in %s at line %d\n",
+ 		       __func__, __LINE__);
+ 		return NULL;
+ 	}
+-	else if (tmp < end && *tmp != ' ' && *tmp != '\0') {
++	tmp += len;
++	if (tmp < end && *tmp != ' ' && *tmp != '\0') {
+ 		printk(KERN_ERR "property parse failed in %s at line %d\n",
+ 		       __func__, __LINE__);
+ 		return NULL;
+@@ -320,8 +321,8 @@ static int do_update_property(char *buf, size_t bufsize)
+ 	char *name, *end, *next_prop;
+ 	int length;
+ 	struct property *newprop;
+-	buf = parse_node(buf, bufsize, &np);
+ 	end = buf + bufsize;
++	buf = parse_node(buf, bufsize, &np);
  
- 	bi.a = a;
-@@ -1349,31 +1364,27 @@ int esas2r_ioctl_handler(void *hostdata, unsigned int cmd, void __user *arg)
- 			err = esas2r_write_fw(a,
- 					      (char *)ioctl->data.fwrw.image,
- 					      0,
--					      sizeof(struct
--						     atto_express_ioctl));
-+					      EXPRESS_IOCTL_ROOM(data.fwrw.image));
- 
- 			if (err >= 0) {
- 				err = esas2r_read_fw(a,
- 						     (char *)ioctl->data.fwrw.
- 						     image,
- 						     0,
--						     sizeof(struct
--							    atto_express_ioctl));
-+						     EXPRESS_IOCTL_ROOM(data.fwrw.image));
- 			}
- 		} else if (ioctl->data.fwrw.img_type == FW_IMG_FS_API) {
- 			err = esas2r_write_fs(a,
- 					      (char *)ioctl->data.fwrw.image,
- 					      0,
--					      sizeof(struct
--						     atto_express_ioctl));
-+					      EXPRESS_IOCTL_ROOM(data.fwrw.image));
- 
- 			if (err >= 0) {
- 				err = esas2r_read_fs(a,
- 						     (char *)ioctl->data.fwrw.
- 						     image,
- 						     0,
--						     sizeof(struct
--							    atto_express_ioctl));
-+						     EXPRESS_IOCTL_ROOM(data.fwrw.image));
- 			}
- 		} else {
- 			ioctl->header.return_code = IOCTL_BAD_FLASH_IMGTYPE;
-@@ -1441,9 +1452,9 @@ int esas2r_ioctl_handler(void *hostdata, unsigned int cmd, void __user *arg)
- 		break;
- 
- 	case EXPRESS_IOCTL_HBA:
--		ioctl->header.return_code = handle_hba_ioctl(a,
--							     &ioctl->data.
--							     ioctl_hba);
-+		ioctl->header.return_code =
-+			handle_hba_ioctl(a, &ioctl->data.ioctl_hba,
-+					 EXPRESS_IOCTL_ROOM(data.ioctl_hba));
- 		break;
- 
- 	case EXPRESS_IOCTL_VDA:
-diff --git a/drivers/scsi/esas2r/esas2r_main.c b/drivers/scsi/esas2r/esas2r_main.c
-index ada278c24c51..75a70ae9441b 100644
---- a/drivers/scsi/esas2r/esas2r_main.c
-+++ b/drivers/scsi/esas2r/esas2r_main.c
-@@ -178,7 +178,8 @@ static ssize_t read_hw(struct file *file, struct kobject *kobj,
- 	if (!a->local_atto_ioctl)
+ 	if (!np)
+ 		return -ENODEV;
+@@ -337,7 +338,8 @@ static int do_update_property(char *buf, size_t bufsize)
+ 	if (!newprop)
  		return -ENOMEM;
  
--	if (handle_hba_ioctl(a, a->local_atto_ioctl) != IOCTL_SUCCESS)
-+	if (handle_hba_ioctl(a, a->local_atto_ioctl,
-+			     sizeof(struct atto_ioctl)) != IOCTL_SUCCESS)
- 		return -ENOMEM;
+-	if (!strcmp(name, "slb-size") || !strcmp(name, "ibm,slb-size"))
++	if ((!strcmp(name, "slb-size") || !strcmp(name, "ibm,slb-size")) &&
++	    length >= (int)sizeof(int))
+ 		slb_set_size(*(int *)value);
  
- 	memcpy(buf, a->local_atto_ioctl, length);
+ 	return of_update_property(np, newprop);
 
 -- 
 2.53.0
