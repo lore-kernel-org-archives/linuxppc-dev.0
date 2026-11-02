@@ -2,51 +2,51 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6CC4C6070DB0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:02:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BBE5560A5BE0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:02:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=g7GASIyP
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=d/TU5Bzo
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFKw19G4z2y8r;
-	Tue, 03 Nov 2026 02:02:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793631732;
-	cv=none; b=LuqXu7F9S79d9TvPfxF3qwrRo3FT3eQqftIUJ80XyPh7hyQV4lMu1JDv3uvqTd2ESpLx3uFN4W1xl/1D6anMMKSdDpH16OdbuyEpbcmru0hvmUeBitB8HQb8F6E3TAv6sa0VQ4fsKMbjSUvXO/qr27HQzFSevcqjMHDl87VDSEzNS1hf5jRQSlsur3uNHJXHlbJwtauhjJ2d6LZvybkbDam4caqSvYPjJtcyS3Vlyl/Ze8s5bcA5gXdifGn1mle3SNKuBI5G0GyHlhlTMkbW/zNF+xuiWnQ2vrxXh5eH1nKdg046D46BsDVT6bfw4u2NEKf8GNwv07lALdISB2j8tg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJFLF3Wwcz2xLh;
+	Tue, 03 Nov 2026 02:02:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793631749;
+	cv=none; b=DQaWXo3Fl1lw/7lURW866+JGtz9ehflx9kUJaqf8+u0zcTd0BBGz6zkPigRfSr9CHuKA8WVtNC2h2x4nDdS0dxKaTwXJZQj+1oijDCDpYpsqbsbHnrha546yH16eqAYyTvu/3/Zb8D5dsQi/qvjq1zGLAXNzOtaWQ+70iKGaWzzHMOGb5GKn5J22MRQmQw3ywzcjkW/MdlmUeF+bk05xtokN6+egoaQ5oEgLUf2kGuo+Q/syrg+/WfJQS8oIQpyLQ40BVJ4GsMlrPmlznDbjP5b/68ZwofZKo7uPkrzox/YeEr0HgOGJLazUc8UUZOq8MFJgezp3YhZVZuaFfj82cg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793631732; c=relaxed/relaxed;
-	bh=RCWYzTdROaZ//Ublq96X/PsjFPNs26aKqDomYMjplOg=;
+	t=1793631749; c=relaxed/relaxed;
+	bh=qVgyj+FYQ9g7uHqmkN/6kOivRqdCDmjAyQM7m79vY9A=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=YVhdRIggZj7Jh2JSZgbISnMNoBoLw7qWsgc+HxM0Nc7nr2qC5PfQU+e1pW7YrhJQ1kOYYHw55e6qH097ua71y5dBc3Tf76yoknz5JqxIykNSBkwv/u9Uxs1rCXFF5NrcvTrrX1OCxHIvE9o7IDh7gbosrGKZ57ic4D0l9Kr21MZMVY4sgxtQy7dy+ZM9jMRZ4v5KarEEqqB+IhFOPuDlJsWaQfjjoFG1ki/hCQxH2d58MIXt5e5poaSt57J/xznjI3xgUNrIe8DW55zW1+9U1TqGpXQ77Go2YD0pPczNWahlNx4vn9QmxYBLadB/iwu5H3+NWuJMKU9fofLvjEZKHA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=g7GASIyP; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=nBcNwilYcqte/2ppMnRplcxFXfT04mP1H/WvB4iPx643075KXLRQ+R9KtkfLXIkBNfolnpL9k0IltUqpMuL91hC5MNGWRDsuovlxiVurkswKSDJeoIOWGRpU44P1y99WIdPU6N4QZBlCLI2uQ30qvADZiWEtcxy//G3akHLO215Xm3Z9Nicdk/7D/kAEi3kYCg+iaBMV9Q/19JEUdfBEMtLcgp91sSHBnekG3JCQQlpqSV/N/sliYhAn7h1YrAECk0/yGZeQll+UdDj/RGuC8jRrzZw4gWVdmA28KsV+WMTlgwxX0zvCf+VZuPQubXPnGVxpkmFwBQk4ZbCtiYc1WQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=d/TU5Bzo; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=g7GASIyP;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=d/TU5Bzo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFKv1TCsz2yNj
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:02:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJFLD4lLLz2xLg
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:02:28 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id ACB6443EE2;
-	Mon,  2 Nov 2026 15:02:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CAB381F00A1C;
-	Mon,  2 Nov 2026 15:01:55 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 29E534085D;
+	Mon,  2 Nov 2026 15:02:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 174411F00A17;
+	Mon,  2 Nov 2026 15:02:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793631729;
-	bh=RCWYzTdROaZ//Ublq96X/PsjFPNs26aKqDomYMjplOg=;
+	s=k20260515; t=1793631747;
+	bh=qVgyj+FYQ9g7uHqmkN/6kOivRqdCDmjAyQM7m79vY9A=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=g7GASIyP66iaHneT0IXLyxGE3Gv8uk+u36p3s2m270MYuKSf/lxqLAMSRJOW/mN5b
-	 cqw43daYhwXjGaH+bT+uzWlv1RtJgVmK1pKNWgKadSoQ4YP7xysJZZNazw538Ya2w8
-	 aQyWb7PBw6LuxEkCbQCuHEsb1KvYSgmQDTGlChVmndzt2sLknpmWaqisu0NyUvlM/y
-	 hG208gvk6GSsXAzvoi3yhFcxnrvr/4f9iVDAGppDZvhr/8T+2kNPcVMo4GJLXJAgLG
-	 J6pV+INZeS4SdtLtP2ZjONMRNNmVsgjQI6Fx9jjazJ3kAgIbreGUlE2x6BQYTDKlDz
-	 uF54rLOl1jq1A==
+	b=d/TU5BzoI0BtvHfYzajrrcPl1GXVCryRY1Ut48y/GJIvjjd3K9tAkOPoaubnTH8Cj
+	 sK1647iQobp60ZY24tDMaAx9NsKxFNjymF5IY5h/cKkK9nGKkyHoV7CZDZf8JNbRww
+	 IRIPJfTF97vUVSY7NrIvF3mdu1MbBY5I5i7z+xiQlEEZ26yJHEdd7bH89Gqlbow2Ks
+	 Vg0J9epC20U9E4NUHIBDGai+NMTOFT3rd71sgkTUJULyeOxAVxvB4aiLpCaS0sj7+K
+	 C1HjOmzglPQcf1LCUAmDC0bN3L5TxoShuNDSEnm0bhASQBWbCYoW6wiUfo3S3aSY11
+	 bUEfQJ+ZWGIIw==
 From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 16:01:28 +0100
-Subject: [PATCH RFC 01/22] alpha: srm_env: let procfs copy in writes
+Date: Mon, 02 Nov 2026 16:01:29 +0100
+Subject: [PATCH RFC 02/22] ARM: alignment: let procfs copy in writes
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,7 +62,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-arch-v1-1-c9492ab08480@kernel.org>
+Message-Id: <20261102-work-procfs-arch-v1-2-c9492ab08480@kernel.org>
 References: <20261102-work-procfs-arch-v1-0-c9492ab08480@kernel.org>
 In-Reply-To: <20261102-work-procfs-arch-v1-0-c9492ab08480@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -107,58 +107,44 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 Implement ->proc_write_buf() so procfs copies in what is written to
-/proc/srm_environment/* before it pins the entry, and hand that copy to
-the console callback through the page it used before.
+/proc/cpu/alignment before it pins the entry, and take the mode from
+that copy. Writes larger than PAGE_SIZE - 1 bytes fail with -EINVAL now.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- arch/alpha/kernel/srm_env.c | 12 +++---------
- 1 file changed, 3 insertions(+), 9 deletions(-)
+ arch/arm/mm/alignment.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/arch/alpha/kernel/srm_env.c b/arch/alpha/kernel/srm_env.c
-index faafc2df7886..6a1742b09a82 100644
---- a/arch/alpha/kernel/srm_env.c
-+++ b/arch/alpha/kernel/srm_env.c
-@@ -81,7 +81,7 @@ static int srm_env_proc_show(struct seq_file *m, void *v)
- 	return ret;
+diff --git a/arch/arm/mm/alignment.c b/arch/arm/mm/alignment.c
+index 3e5e30968634..11ceefdfa388 100644
+--- a/arch/arm/mm/alignment.c
++++ b/arch/arm/mm/alignment.c
+@@ -144,14 +144,13 @@ static int alignment_proc_show(struct seq_file *m, void *v)
+ 	return 0;
  }
  
--static ssize_t srm_env_proc_write(struct file *file, const char __user *buffer,
-+static ssize_t srm_env_proc_write(struct file *file, char *buffer,
- 				  size_t count, loff_t *pos)
+-static ssize_t alignment_proc_write(struct file *file, const char __user *buffer,
++static ssize_t alignment_proc_write(struct file *file, char *buffer,
+ 				    size_t count, loff_t *pos)
  {
- 	int res;
-@@ -92,13 +92,8 @@ static ssize_t srm_env_proc_write(struct file *file, const char __user *buffer,
- 	if (!buf)
- 		return -ENOMEM;
+ 	char mode;
  
--	res = -EINVAL;
--	if (count >= PAGE_SIZE)
--		goto out;
--
- 	res = -EFAULT;
--	if (copy_from_user(buf, buffer, count))
--		goto out;
-+	memcpy(buf, buffer, count);
- 	buf[count] = '\0';
- 
- 	ret1 = callback_setenv(id, buf, count);
-@@ -109,14 +104,13 @@ static ssize_t srm_env_proc_write(struct file *file, const char __user *buffer,
- 		res = (int) ret1;
+ 	if (count > 0) {
+-		if (get_user(mode, buffer))
+-			return -EFAULT;
++		mode = buffer[0];
+ 		if (mode >= '0' && mode <= '5')
+ 			ai_usermode = safe_usermode(mode - '0', true);
  	}
+@@ -160,7 +159,7 @@ static ssize_t alignment_proc_write(struct file *file, const char __user *buffer
  
-- out:
- 	free_page((unsigned long)buf);
- 	return res;
- }
- 
- static const struct proc_ops srm_env_proc_ops = {
- 	.proc_show	= srm_env_proc_show,
--	.proc_write	= srm_env_proc_write,
-+	.proc_write_buf	= srm_env_proc_write,
+ static const struct proc_ops alignment_proc_ops = {
+ 	.proc_show	= alignment_proc_show,
+-	.proc_write	= alignment_proc_write,
++	.proc_write_buf	= alignment_proc_write,
  };
+ #endif /* CONFIG_PROC_FS */
  
- static int __init
 
 -- 
 2.53.0
