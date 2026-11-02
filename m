@@ -2,69 +2,51 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 706DF608B068
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:34:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D0D8C60A0CA6
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 15:34:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=R2n+Hqqi
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=d9QGwQro
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJG3J1PLlz3f6s;
-	Tue, 03 Nov 2026 02:34:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1045"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793633676;
-	cv=none; b=AwyR6hWQTibaBRDnFWW1lqrgbEjkr5dfdd98yO+UuKg02DOuYlo1tHXivAhJ9g2KIpngyliLWZUp/oXkESr3UuwAbgFz972R7CB3UWkPv9DtF1t7U0OPlfuS2EjuvznLbPSRd0JHN0nOb5JIdMzyKcbCsdML8ujwBmaW1iQD3W5qpTHZjHoNM1E0sfamLGm/fYgdAz9IEbBeISqMbf2TU2LtWNpUHLBwbPPBMEEMQWWlcr+1/F2DWw2jidEiaWY4kEipIbeoaP8JEaWze5+i6Rh/9mkH0O5FsfFULX3Kz5mcRkzb/eHqRMm/nvOjCkQZtDa1O2s9Gy1yIJONpad/fw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJG3P4692z3fV5;
+	Tue, 03 Nov 2026 02:34:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793633681;
+	cv=none; b=nr9xjFwRyJrbdvCom8nOOqeNSEEeuiOwRAKbxkrtJuCP43iOzlMRFbqkLi6O8WkpsVUbgJm8Z8LexWEnzK25U7ea8rB7AMmuCS0Xf7pVJ9P3V8ThanJ+NQMnFh62LDqpyW8/GBp6adPK11gOEcqj5q0Ly8hDy/i/1KBng1wjdBmzZraXjpnqrRPckEPwHcxkspxqotbU9iehL6iVZoABfumutPYw7bzHp09/wa45ITgzIA0QJG/++FmaUCS+7CNabJCxdNt9dCLV8/SEraCqy9Ei800w3J8//TBJ8J9zDbzQcb3Bch0JBeoOOZVG5ULifPceFaMtm4dD/jzhLVpPiw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793633676; c=relaxed/relaxed;
-	bh=s4vRCplgEoCQN3eUv6q9zSWbIbV1TXU7YJjG5+iZQYY=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=B1NTi2YY5wWwx4d3zDibC7g99GFAUw6k528jJAOi64l+F3hYQGNP5lg5HdN5mnNsyyXOJxS/JbbzUAMwfhAw4oZqwautcuBXSt4c/jOmE7MctgB/Dbu+8MQ481+Y4z722aEWurz7dQPXecdZUmH0uUlpdS6PVYRdnmTGLklx8dTIV8UyvhQfIDbC6Vkhb9GzZd3EV8kDJHxufzNyiEENpXUjXLMfhNNWhY3UFRkO6FxbrB0N/fpxPYMe5DE/7dZ2zYHCd1EQztgLAIbc+YqeQYUeapkR1anfOyd3ZU9/Trx0QK6Kz1fTgm1gUPZhfkr3Ty/Sf1V0UMok22ZX359BTg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=R2n+Hqqi; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1045; helo=mail-pj1-x1045.google.com; envelope-from=3ia3oagykdoqykgtpimuumrk.iusrotadvvi-jkbroyzy.ufrghy.uxm@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1793633681; c=relaxed/relaxed;
+	bh=pmnFGMOE2v1+F0PJGOHw4Gdli7q7gPuktrXwX9LNfoQ=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=MQJC5yxjxBgzIM8DIu2Do2BvHtTtuN57zgjgChDF7yYvqLKeNFI/lcrOGp70UgQG/fv0Oj7DZf3OWK4A/giH+r3RW7MkcT8t5/mS+7FTFBLsnQIkkyWE7Y3g9GKQ0hpSBgtubh0fgu9Og9lD8g5fLj3u2Uj9RfJvamZgM5qooMPhdhNw6WA/NWYi+j4O6IQcGP3aQuTWlHjBSz1qFGFxebNbquOpb89np8qTxpVfgfYFnivceAqLgQOaefVczEy+RmBk2EQRWRyVy5tq3ffJSXk22ZiT3S/nLlA3Ntm77CKE3dA3bHpV+zXgQHBxsctO3twv5/FBvKXGxhruvAOeeA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=d9QGwQro; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=R2n+Hqqi;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=d9QGwQro;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::1045; helo=mail-pj1-x1045.google.com; envelope-from=3ia3oagykdoqykgtpimuumrk.iusrotadvvi-jkbroyzy.ufrghy.uxm@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1045.google.com (mail-pj1-x1045.google.com [IPv6:2607:f8b0:4864:20::1045])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJG3H3FdJz3dPs
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:34:35 +1100 (AEDT)
-Received: by mail-pj1-x1045.google.com with SMTP id 98e67ed59e1d1-3ac8f449d1bso2537074a91.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Nov 2026 07:34:35 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1793633673; x=1794238473; darn=lists.ozlabs.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=s4vRCplgEoCQN3eUv6q9zSWbIbV1TXU7YJjG5+iZQYY=;
-        b=R2n+HqqiCqTM7X37a1PgE/+wAgUjBeKHsHTmaSkXBA5nKRTqjrlNyiX9ERBto6Ka+3
-         yG1bLKNx3Rw2SjHb+ZTCftWcrxJuT/p24RbBsLCG82PMcPnPeJO+0oRf0dGNQMGtCyws
-         abT+DdxLKQjUpAzcPn3+YUOjEIsHUDYEiYgZqMEm3pTcsEahiFr67xa3F72KnUSdeSWE
-         W+tYjRzQNLZqfGWugnoDWV/VueR0QzVOW+xTg6GXXQIBiQqHmrI8I3HcZucDQuPZutA5
-         uWxAnLXJ1243yKGEli3yk0Kjwq2rNSn9PNaTJUHN8m2Jx+g1KObMD2AJi6Uv6V0qQwT2
-         tbdA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793633673; x=1794238473;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=s4vRCplgEoCQN3eUv6q9zSWbIbV1TXU7YJjG5+iZQYY=;
-        b=cb1oBzfSurlSC74GyctoUVH0TqNklQ+XFMGe2a72JLd1AGhzuoOS6HA6bmPN2Ycezg
-         BYu5oYVEc9P9ReZEeab6PK1fjqEdIhshPH4NL5R0oMkAlb6ibvuB3mWr743n9/xIgvCC
-         5vk5SfMHaWmoNSoWNTwosjSdDOTL0fco2StCcXIVIlnPXPvNfe4DgGOIXoe2iYUmEZEo
-         OBHvNho5+s3hniZHZamcaFrVnQ8+sCwcuMv+vSFWE42wpuiUXVTdJ1VFgWZes5L1IwJD
-         9AG8I9/Bs33EDnnzf3Y4yFj+3E+UbrvKmV3v0XASLa5PuthM8moWhh28N7NbC3t8UMJL
-         czmA==
-X-Forwarded-Encrypted: i=1; AKwUvByB/MT1yGoBeJjex/CedZIpH7UH9OnJKYv+cC9O3McqW+1r+mfCm1hfljXVPn8Ans8XcuOBFHnM7esDeqs=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z8kMR7nyLqo82M3rXXg3cp5e1mSQC7ZkaRyGHJEO4vlxx3pX9gm
-	MklPnP23esBe/TZwv75neVj+rdO5Wdh2Qb1yehoOWEOTSevom2Yhglmx5sTQCINV8sJOYH/Rllr
-	t1IRepA==
-X-Received: from pjso1.prod.google.com ([2002:a17:90a:c081:b0:3a8:211b:6c8b])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:2749:b0:3ad:43c1:7d41
- with SMTP id 98e67ed59e1d1-3ae897429b9mr7590262a91.33.1793633673063; Mon, 02
- Nov 2026 07:34:33 -0800 (PST)
-Date: Mon, 2 Nov 2026 07:34:32 -0800
-In-Reply-To: <20261102153228.240804-H-seiden@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJG3N5WMvz3f7V
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 02:34:40 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id DB41B609D2;
+	Mon,  2 Nov 2026 15:34:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DCFFB1F00A17;
+	Mon,  2 Nov 2026 15:34:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793633678;
+	bh=pmnFGMOE2v1+F0PJGOHw4Gdli7q7gPuktrXwX9LNfoQ=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc;
+	b=d9QGwQrotLscF4xo8DU9S109UjfAgcN4a46hjwVSf3SjqQgEaO4Rv1AEyP5dT4O5y
+	 xhGnDHnb/jFSk8D7qKuO+39L5VOpMdQp+GEPoALOWTv2sAj3bbh7bn9Ca6T4Zctpcj
+	 fNImnpjl37D5rGo6ytZAGYcvcU7Hs6e2nTEg5V2aQ/mC4G0yjxmcpG1Hu5e0aBYP77
+	 YqqQjJjSh1N4cnNNEz/pCqHHyFFMtbDFf9uvFYMyEZgjLi1JBmongPZBS4PXj3B4fR
+	 cGUqecnhkpX6QHjYWkx5oNKUT3XrFn+eoX8EGZYKiM0ZGpeR++e3aBl28Ylp4YaymR
+	 Z4/Or8kbU/uIg==
+From: Christian Brauner <brauner@kernel.org>
+Date: Mon, 02 Nov 2026 16:07:24 +0100
+Subject: [PATCH RFC 10/11] samples/kfifo: let procfs copy in writes
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,46 +59,190 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-Mime-Version: 1.0
-References: <20261028190259.1819571-1-seanjc@google.com> <20261028190259.1819571-2-seanjc@google.com>
- <20261102153228.240804-H-seiden@linux.ibm.com>
-Message-ID: <auitiPKnFueBJzPA@google.com>
-Subject: Re: [PATCH 1/7] KVM: s390: Drop unused and unreachable kvm_arch_vcpu_should_kick()
-From: Sean Christopherson <seanjc@google.com>
-To: Steffen Eiden <seiden@linux.ibm.com>
-Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, 
-	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
-	Huacai Chen <chenhuacai@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Paolo Bonzini <pbonzini@redhat.com>, Fuad Tabba <fuad.tabba@linux.dev>, 
-	Joey Gouly <joey.gouly@arm.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, 
-	Zenghui Yu <yuzenghui@huawei.com>, Nicholas Piggin <npiggin@gmail.com>, 
-	Atish Patra <atish.patra@linux.dev>, Alexandre Ghiti <alex@ghiti.fr>, 
-	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, 
-	kvm@vger.kernel.org, loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org, 
-	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	Stefan Teodorescu <fane@google.com>
-Content-Type: text/plain; charset="us-ascii"
-X-Spam-Status: No, score=-13.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261102-work-procfs-net-v1-10-982104a4f592@kernel.org>
+References: <20261102-work-procfs-net-v1-0-982104a4f592@kernel.org>
+In-Reply-To: <20261102-work-procfs-net-v1-0-982104a4f592@kernel.org>
+To: linux-fsdevel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, 
+ Jann Horn <jannh@google.com>, Josef Bacik <josef@toxicpanda.com>, 
+ Chris Mason <mason@kernel.org>, Jeff Layton <jlayton@kernel.org>, 
+ NeilBrown <neil@brown.name>, Eric Dumazet <edumazet@kernel.org>, 
+ Thomas Gleixner <tglx@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>, 
+ Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@lst.de>, 
+ Greg Kroah-Hartman <gregkh@suse.de>, 
+ Joel Granados <joel.granados@kernel.org>, Kees Cook <kees@kernel.org>, 
+ Jan Kara <jack@suse.cz>, Jan Kara <jack@suse.com>, 
+ linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org, 
+ linux-acpi@vger.kernel.org, linux-kselftest@vger.kernel.org, 
+ linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, 
+ linux-um@lists.infradead.org, linux-wireless@vger.kernel.org, 
+ linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, 
+ ntfs3@lists.linux.dev, platform-driver-x86@vger.kernel.org, 
+ coreteam@netfilter.org, kexec@lists.infradead.org, 
+ linux-pci@vger.kernel.org, linux-sound@vger.kernel.org, 
+ netfilter-devel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ ibm-acpi-devel@lists.sourceforge.net, jfs-discussion@lists.sourceforge.net, 
+ linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-cifs@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+ linux-hwmon@vger.kernel.org, linux-mm@kvack.org, linux-sh@vger.kernel.org, 
+ linux-usb@vger.kernel.org, samba-technical@lists.samba.org, 
+ sparclinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
+ linux-doc@vger.kernel.org, linux-serial@vger.kernel.org, 
+ linux-atm-general@lists.sourceforge.net, Takashi Iwai <tiwai@suse.de>, 
+ linux-input@vger.kernel.org, linux-raid@vger.kernel.org, 
+ linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org, 
+ linux-debuggers@vger.kernel.org, 
+ "Christian Brauner (Amutable)" <brauner@kernel.org>, 
+ Chuck Lever <cel@kernel.org>
+X-Mailer: b4 0.17-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3950; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=wqPh89nrehb8eXTwTved41pSSj+cx0NGgazKeJSdQJg=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9WG5SKeDGcNhJw++9Z7LY3JTfuwQ+VK2efenXodN77
+ 51lStK62FHKwiDGxSArpsji0G4SLrecp2KzUaYGzBxWJpAhDFycAjCRuBCG/z6xtYb3b823yGzs
+ EFIryW+ZU83Lc9Vb497sqedPcyic+MvwP/CknED65Xe3rd5zTJCoDZgg+Puey5sJtRciovqzWZV
+ mcQMA
+X-Developer-Key: i=brauner@kernel.org; a=openpgp;
+ fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_IN_DEF_DKIM_WL
-	autolearn=no autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Mon, Nov 02, 2026, Steffen Eiden wrote:
-> On Wed, Oct 28, 2026 at 12:02:53PM -0700, Sean Christopherson wrote:
-> > Drop s390's kvm_arch_vcpu_should_kick() stub as the one and only call site
-> > is wrapped with "#ifndef CONFIG_S390".
-> 
-> In the somehow near future I'll remove those #ifdefs and use the kick
-> stuff for kvm_arm64. The native s390 KVM then must at least keep an
-> (unused) symbol at hand. It seems that the compiler could not optimize
-> those calls away. So let's keep it there so I do not have to re-add it
-> soon.
+Implement ->proc_write_buf() so procfs copies in what is written before
+it pins the entry, and put that copy into the fifo with kfifo_in()
+instead of kfifo_from_user(). Writes larger than PAGE_SIZE - 1 bytes
+fail with -EINVAL now. kfifo_from_user() cut a record to 255 bytes,
+what the one byte that holds its length can say, so the record sample
+keeps doing that with PROC_ENTRY_SHORT_WRITES.
 
-Please read the rest of the series.  kvm_arch_vcpu_should_kick() goes away
-entirely.
+Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
+---
+ samples/kfifo/bytestream-example.c |  9 +++------
+ samples/kfifo/inttype-example.c    | 10 ++++------
+ samples/kfifo/record-example.c     | 12 ++++++------
+ 3 files changed, 13 insertions(+), 18 deletions(-)
+
+diff --git a/samples/kfifo/bytestream-example.c b/samples/kfifo/bytestream-example.c
+index 4ae29a12cc8a..8c58fb46a2bf 100644
+--- a/samples/kfifo/bytestream-example.c
++++ b/samples/kfifo/bytestream-example.c
+@@ -110,20 +110,17 @@ static int __init testfunc(void)
+ 	return 0;
+ }
+ 
+-static ssize_t fifo_write(struct file *file, const char __user *buf,
++static ssize_t fifo_write(struct file *file, char *buf,
+ 						size_t count, loff_t *ppos)
+ {
+-	int ret;
+ 	unsigned int copied;
+ 
+ 	if (mutex_lock_interruptible(&write_access))
+ 		return -ERESTARTSYS;
+ 
+-	ret = kfifo_from_user(&test, buf, count, &copied);
++	copied = kfifo_in(&test, buf, count);
+ 
+ 	mutex_unlock(&write_access);
+-	if (ret)
+-		return ret;
+ 
+ 	return copied;
+ }
+@@ -148,7 +145,7 @@ static ssize_t fifo_read(struct file *file, char __user *buf,
+ 
+ static const struct proc_ops fifo_proc_ops = {
+ 	.proc_read	= fifo_read,
+-	.proc_write	= fifo_write,
++	.proc_write_buf	= fifo_write,
+ 	.proc_lseek	= noop_llseek,
+ };
+ 
+diff --git a/samples/kfifo/inttype-example.c b/samples/kfifo/inttype-example.c
+index e4f93317c5d0..c5d16b815e73 100644
+--- a/samples/kfifo/inttype-example.c
++++ b/samples/kfifo/inttype-example.c
+@@ -103,20 +103,18 @@ static int __init testfunc(void)
+ 	return 0;
+ }
+ 
+-static ssize_t fifo_write(struct file *file, const char __user *buf,
++static ssize_t fifo_write(struct file *file, char *buf,
+ 						size_t count, loff_t *ppos)
+ {
+-	int ret;
+ 	unsigned int copied;
+ 
+ 	if (mutex_lock_interruptible(&write_access))
+ 		return -ERESTARTSYS;
+ 
+-	ret = kfifo_from_user(&test, buf, count, &copied);
++	copied = kfifo_in(&test, (const int *)buf, count / sizeof(int)) *
++		 sizeof(int);
+ 
+ 	mutex_unlock(&write_access);
+-	if (ret)
+-		return ret;
+ 
+ 	return copied;
+ }
+@@ -141,7 +139,7 @@ static ssize_t fifo_read(struct file *file, char __user *buf,
+ 
+ static const struct proc_ops fifo_proc_ops = {
+ 	.proc_read	= fifo_read,
+-	.proc_write	= fifo_write,
++	.proc_write_buf	= fifo_write,
+ 	.proc_lseek	= noop_llseek,
+ };
+ 
+diff --git a/samples/kfifo/record-example.c b/samples/kfifo/record-example.c
+index e4d1a2d7983c..dcc749247c64 100644
+--- a/samples/kfifo/record-example.c
++++ b/samples/kfifo/record-example.c
+@@ -117,20 +117,17 @@ static int __init testfunc(void)
+ 	return 0;
+ }
+ 
+-static ssize_t fifo_write(struct file *file, const char __user *buf,
++static ssize_t fifo_write(struct file *file, char *buf,
+ 						size_t count, loff_t *ppos)
+ {
+-	int ret;
+ 	unsigned int copied;
+ 
+ 	if (mutex_lock_interruptible(&write_access))
+ 		return -ERESTARTSYS;
+ 
+-	ret = kfifo_from_user(&test, buf, count, &copied);
++	copied = kfifo_in(&test, buf, count);
+ 
+ 	mutex_unlock(&write_access);
+-	if (ret)
+-		return ret;
+ 
+ 	return copied;
+ }
+@@ -155,8 +152,11 @@ static ssize_t fifo_read(struct file *file, char __user *buf,
+ 
+ static const struct proc_ops fifo_proc_ops = {
+ 	.proc_read	= fifo_read,
+-	.proc_write	= fifo_write,
++	.proc_write_buf	= fifo_write,
+ 	.proc_lseek	= noop_llseek,
++	/* kfifo_from_user() cut a record to what its length byte holds */
++	.proc_flags	= PROC_ENTRY_SHORT_WRITES,
++	.proc_write_size = U8_MAX,
+ };
+ 
+ static int __init example_init(void)
+
+-- 
+2.53.0
+
 
