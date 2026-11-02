@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1175B606A59E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 14:27:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DB868607E0F8
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2026 14:27:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hvt3N63R
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RVwyyj26
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJDZ05lLXz30dn;
-	Tue, 03 Nov 2026 01:27:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJDZF4YCFz3bfF;
+	Tue, 03 Nov 2026 01:27:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793629656;
-	cv=none; b=YhOg2rNHZkTfLp/DEyntacV9zNSk8GCcWRMAJwqoXYCmszN2yIsQpZPAX+CcpWtK9kEFTQIwOO+VjsnF4vJg1j4PLDxP1YOAOQxdGDTCRplIP5fIOrZ/bpjDFms8mc2XNkg90lK1EpNa0wVgQmOrLd5mquYawUFIRc8a+HDnX1pKQ2Esoo1tQomY9FZFlphczSAInvO8Wo88LNV2nQ+/wDnhVxt/NDMfDMhOUBdBYoOIRts/Wqfk4seQQTsnCyycl2MdeSr9SvQJv5p/gnDshOFaH1MEmP20rB3GEUDFBXmc0owq541fm7Es7m1FEEWYV/tiP21FsbhrTXRTM+c+TA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793629669;
+	cv=none; b=Fdez7Ndi8NBzDDFD7kJ3PQhHJ2iOjZRaiqi070PmvhE1p6WAoaPJjrzCqzIy42o+7of5z9umjxYPxaZykYX7TY90XrfipTuX3Q8gqBC/9o8ocHxVv4LZtqxRPrJHQwu9ELWHbli1TILPKCO2WimCghs51SNiduxJRyN0+3nh36BizHvZ/eVsma8IARL5RUarM1TYjOgXG2GQtuDxeFOcvjBYP3RaUhAeOaliGKqwKi3gpvFNNBVTBiFXWXMMKhEV6qJM+rL18IMX8a6YwQrPDm1M/OKARyPKOiCGQyvMILzj1p5nLU8YHjZu0e71bNz+V/6vmYqY+hpYwz3F6OkXXA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793629656; c=relaxed/relaxed;
-	bh=v5t8qKNo68SCWoforDimF8hL2ZYL+p0Okj8bWoZ1JT0=;
+	t=1793629669; c=relaxed/relaxed;
+	bh=a3x3EcOd04d3k5+O3dMfsGmWB77s9fU2q2h860UaVdk=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=l8PF9OZpC0Vc9F+MZMmsLp5pv5WElENMuAat/oYXBK2NaVIJV19I+Dd/1EGwD1sZQb8szwno8NHgNzs9tD7Bj6+uIVCtp/9mdxJmJSesBKRZqr9z2jATCK2xHJV+dEBjT+Dn956QmTsRywXfBp/sqOsbS4YJixz+mTpIUIMBRX935rTviN0qQCRoXuz8/2wBNFmH07E2B3a7l6TkxBPkRgOgozTGtST7uzvb83ne8JUsQI9JoLhJ+xFLIeR/+zmsGLdSrGDCFNLy3JCEzz4qunYpr+hoqbNzaq7cCnPk/z6368I0KUmwBkMVlzrg/oSGIH7iZKmn72JHuJaXDJwKqw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hvt3N63R; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=GK0F0G+3q64/pdkfHwqkFEPDmtR/JzomQWu/MjmZW3DwqjLI0BxeeDIxhhJ9n4sZqTusXWRs50Gw2BBSzFMzxOd35f5ouehh0hIc+KalpY7b5Qg2S9sw83bj0Z0ytSQJOeHmnhSSADDltcSkG2Q5swEsBTWp9YLcMe2unsTTODp6c/bHpO53ivdipz9ussPVgYgx5zBy1hXASabt/Yqr8r8pquX7GdyUZrasLZ2o/59vHKafOf8r2p9wgFhEjUca4jsb3GGznGBLw8AAPFbBczlwMJxoSFmPTqJ72cYxBm/ZpZoq4XYsSDEGbGqsr30KX/mxZoaUbxckmAaHERXReQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RVwyyj26; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hvt3N63R;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RVwyyj26;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJDYz6NZjz30dj
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 01:27:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJDZD5nWWz3bf8
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 01:27:48 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id D7D6A60238;
+	by tor.source.kernel.org (Postfix) with ESMTP id E2296601F1;
+	Mon,  2 Nov 2026 14:27:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1D5CA1F00A16;
 	Mon,  2 Nov 2026 14:27:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DFFDE1F00A1A;
-	Mon,  2 Nov 2026 14:27:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793629653;
-	bh=v5t8qKNo68SCWoforDimF8hL2ZYL+p0Okj8bWoZ1JT0=;
+	s=k20260515; t=1793629666;
+	bh=a3x3EcOd04d3k5+O3dMfsGmWB77s9fU2q2h860UaVdk=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=hvt3N63R16p2fDZtChXjcMwdKVbvtxfkoL2k4OxbkJ9NXiN3sUvoI90Anz8tghLzV
-	 tw7TRLB1mJI+ndKzKgYA8EusdDfCEFHDNDNB81AIW3QjjgCwg/TU6I079wNwJuekME
-	 GgYfwUhSITW0rfvdsRQDJf8rj9zB05fpKjF8xVxdybjPcer/CH1qH37gxEgqe+026Q
-	 OuFUuk+WcD3uSGWDc90qsgO7GgFfaxkgSrLrqyeXVxjbcarjoj5jc97EhboLO3/3O0
-	 KcAvyFsBb08Hf5sOjHYp74WBf8FtRIs604ayotkQgHKNOSX4SCmldQ2ODja09nMv8N
-	 2p+DzdlRSt69w==
+	b=RVwyyj26nRGz0YAa3qJjLMbMcY59GFv7k2/Yo4WgpVWb59sfMb8Zl9naRaGYP0rou
+	 MMpo/iaTuwZ+wi6sRL6CWH+xBh8p8Hh0LzLpasPr6e/4udRG/oCcZ29xKchnIx3/p+
+	 B3Jo+wFAlApWU/ThwP5etPS2jmB2GKh3nFbyeKDeBWGAaYO2fqeijfiRa42kJVjmo5
+	 eE8+TH9zCGeavvC5T8ODN/DYi8pcd4vmfSKYG4AUNTrxGouYTZAQo3PNclBsTunvuS
+	 i1W58HX+mcpImcnTaTchfOLoReuEjUSRmdexvU8N4yNjatMl7C5uOyxR6YUyGiu2Qj
+	 eJ8cshD06UL+w==
 From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 02 Nov 2026 15:21:40 +0100
-Subject: [PATCH RFC 25/38] powerpc/crash_dump: check ioremap_cache() in
- copy_oldmem_page()
+Date: Mon, 02 Nov 2026 15:21:41 +0100
+Subject: [PATCH RFC 26/38] powerpc/crash_dump: recover from a machine check
+ in copy_oldmem_page()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-work-procfs-bugfixes-v1-25-59422ed3e465@kernel.org>
+Message-Id: <20261102-work-procfs-bugfixes-v1-26-59422ed3e465@kernel.org>
 References: <20261102-work-procfs-bugfixes-v1-0-59422ed3e465@kernel.org>
 In-Reply-To: <20261102-work-procfs-bugfixes-v1-0-59422ed3e465@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -99,12 +99,12 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
  "Christian Brauner (Amutable)" <brauner@kernel.org>, 
  Chuck Lever <cel@kernel.org>, stable@vger.kernel.org
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1312; i=brauner@kernel.org;
- h=from:subject:message-id; bh=2dbZnDPFapx3dAW5qeN54CL6hHWBvjsrs28L3h6tsIk=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9mJOT3t4mUyCor3Li661vsa/yObLOB7XeUji6boXCC
- secScIdHaUsDGJcDLJiiiwO7Sbhcst5KjYbZWrAzGFlAhnCwMUpABPh7WFkeC/LwqiVxiMX6PN4
- IXM3/4WNlnf/rlkw4SVrp5CBfEGgISND+4Gm4KSDXU7MDmLZHq5y5z4dYP+8p+ODD1PYa4mTduu
- YAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2160; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=46QTFCl18GYq9rYmjhc3/nfnECuPknUgrDKXTEluZq8=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9mJNjfd/SLtTaSr/hcs8Or+rV/z323q+aevR7v4GS5
+ AXFwhMXOkpZGMS4GGTFFFkc2k3C5ZbzVGw2ytSAmcPKBDKEgYtTACYyv5Xhf9Ujn1e//n02s36h
+ 97fg8AGx5+WqXD/VJ1+ZtszhE6fMyz2MDAuiVhYyzznyU29ZeOz86L3bl/VWxVxten6I87kdz7q
+ Q9ZwA
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -115,36 +115,53 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-copy_oldmem_page() maps a page of the old kernel that isn't in the
-linear mapping with ioremap_cache() and copies from it without checking
-whether the mapping worked. If it didn't, the copy reads from an offset
-into the NULL page. That oopses unless the copy happens to be a user
-copy, whose exception table entries turn the fault into a short copy.
+A capture kernel reads the memory of the crashed kernel, and that memory
+may well have uncorrectable errors. On powerpc a machine check in the
+kernel is only recovered from if the instruction that took it has an
+exception table entry (cf. mce_common_process_ue()). copy_oldmem_page()
+copies with copy_to_iter(). For a read() of /proc/vmcore that is a user
+copy, all of whose loads have exception table entries, so the machine
+check turns into a short copy and read_from_oldmem() returns -EFAULT.
 
-Return -ENOMEM like the other architectures do. read_from_oldmem()
-turns that into -EFAULT like any other short copy.
+But since commit 4a22fd20379c ("vmcore: convert __read_vmcore to use an
+iov_iter") /proc/vmcore can be spliced too, and splice(), sendfile()
+and copy_file_range() copy into kernel pages with memcpy(), which has
+no exception table entries. A machine check there panics the capture
+kernel. The same goes for the reads of the ELF headers and notes that
+vmcore does itself.
+
+Copy with _copy_mc_to_iter() instead. PPC64 selects ARCH_HAS_COPY_MC
+and there it uses copy_mc_generic() for kernel and user destinations
+alike, which has the exception table entries. Everywhere else it is
+_copy_to_iter().
 
 Reported-by: Chris Mason <mason@kernel.org>
-Fixes: 54c32021eb6f ("[PATCH] powerpc: Add arch-dependent copy_oldmem_page")
+Fixes: 4a22fd20379c ("vmcore: convert __read_vmcore to use an iov_iter")
 Cc: stable@vger.kernel.org
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- arch/powerpc/kernel/crash_dump.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/kernel/crash_dump.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/kernel/crash_dump.c b/arch/powerpc/kernel/crash_dump.c
-index 103b6605dd68..1543917bd3e1 100644
+index 1543917bd3e1..ca7e019ae3e9 100644
 --- a/arch/powerpc/kernel/crash_dump.c
 +++ b/arch/powerpc/kernel/crash_dump.c
-@@ -86,6 +86,8 @@ ssize_t copy_oldmem_page(struct iov_iter *iter, unsigned long pfn,
- 		csize = copy_to_iter(vaddr + offset, csize, iter);
+@@ -83,12 +83,12 @@ ssize_t copy_oldmem_page(struct iov_iter *iter, unsigned long pfn,
+ 
+ 	if (memblock_is_region_memory(paddr, csize)) {
+ 		vaddr = __va(paddr);
+-		csize = copy_to_iter(vaddr + offset, csize, iter);
++		csize = _copy_mc_to_iter(vaddr + offset, csize, iter);
  	} else {
  		vaddr = ioremap_cache(paddr, PAGE_SIZE);
-+		if (!vaddr)
-+			return -ENOMEM;
- 		csize = copy_to_iter(vaddr + offset, csize, iter);
+ 		if (!vaddr)
+ 			return -ENOMEM;
+-		csize = copy_to_iter(vaddr + offset, csize, iter);
++		csize = _copy_mc_to_iter(vaddr + offset, csize, iter);
  		iounmap(vaddr);
  	}
+ 
 
 -- 
 2.53.0
