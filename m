@@ -2,86 +2,74 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 92C2E606A326
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 12:00:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1919C606A32D
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 12:40:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=f1CWSzzD;
-	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=ficQJRWs
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Fx7qOHpR
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJnGF2SQFz2xH9;
-	Tue, 03 Nov 2026 23:00:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=81.169.146.166 arc.chain=strato.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793707253;
-	cv=pass; b=n4IFWRXUentTwh1OfGb9N153841e9IKDrb6EdF+mP8MCHgChELKFYecGI36G2RmIm28FNs+QY6Nn/jS6g83lzhBrrGL0lM3wj/KCeena93M8mhf/MWeJkGBx8SoSVqwVUiCl5Cy0SPdml/pTB/uSqwBDU4EQQ2m/ereKXxFwpirCbFi6OVrCxLB2YJWlmZgIHH2vsEyoP3ZfO75nbi1yBIYpTBm/boZGBoJXMwS56nC+ibb40mugNGnrfmZsvOBiNMKGIpDx6I8oRYZ+tfj2ELEJbopJSdm3f/LSDKi1z4hNVcThakph+kRK3M2ZJvQkv38vCq6VTVHCb9Qam2a6XA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793707253; c=relaxed/relaxed;
-	bh=VCfhyFhtjRWlSALaNGPIzNS7a7BQ/PmFXkQDuImDC3M=;
-	h=Content-Type:From:Mime-Version:Subject:Date:Message-Id:References:
-	 Cc:In-Reply-To:To; b=lDVJ39EhqPOm1RT7gH9ia1nOwSQpcKPqAp3OyNMT+xGpCACUyI5B5EF/6NWVXxelY8l40HKFVraCVZwe3Io175+RgUMyhkV7PfBzeFP7NCZdQh5g+Jm4YDbj/aAm70AGe1o24ugeYwW54zc7e+KutttQVUdIHGGDq7vb71+F1ODzGoBs43UbEb/AnXzVIk2i+QpLilY9s4uQsYUcMC8X4H6HGeJ/87fEYqyFoGxCDxCHRWaDNMLkG0Nlz0zvsj9jctIysepdZ8gtxuBgrxp6/GODfxEgmb4mVODlaniB6uJvG+bVGopAkFG/DgFL8UKMCjFwoTwM2aFP61e8rkPOZg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=f1CWSzzD; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=ficQJRWs; dkim-atps=neutral; spf=pass (client-ip=81.169.146.166; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p01-ob.smtp.rzone.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJp7b5zyvz2xK7;
+	Tue, 03 Nov 2026 23:40:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.11
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793709611;
+	cv=none; b=I25VMQqw3be5tHdwUbwdJZScnWZyETSZTAq9R6RUydv9NH13GAjyMOJsUUEDawJRxtvX6JHvgxFo0r+j1tedTHGqMrsYcOM+oSfNJD8inh845PWtPOdownb6jhq9738C1FbfM/VA/59PSKKZpaCmyk2IS+aK/PMSr1HHeBjCa/dXp07hmSJB2mO9gvK4L3x4uYxlun08scuCwaA73yrfpn/pFj5euknilHmPG0qO1mwlMl+UEafEcomXr07kfxPvzBGsUmezBtVyIBSyO2K5F3mNxjCneBFIxauuqx2O/f1rcv/zp/OVY4qwnFk7cGJWssLcKgNfXYJSl/bsUCfMog==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793709611; c=relaxed/relaxed;
+	bh=kNMbnPFcyJK77TPDd1xGOQdAATjK7eqRZWunEZL/ni0=;
+	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=CZlljtvKjb/GBfyvIH7quk2ioYqq0Bdr7Q66WlhFB5I9E/EbcKFDTcum6YzkXgcohYN664CHVR6RrmSK27Tg4KiN6WNnN3TODxRjpJ48zL4gre0B14P7gooWsZq4Gbm43Rqg4JOeaFL9apsDVPhSdOs9AoDjOR2oJNka7t1ZrNyWCX+MX/hw/gaKgPjT6ODT3I5TzXQnsla3Ad2wRNsla9VDAlWP8ikWun9Cpsj8Tx6+hzWp5Jrrr/9tQkPsLSImv/TUTDqujVfgExSgaTSyqQHvuM0cqKiWocEe1KOh54g1A0UFLI6RBGdPbDFGNFhaUbALlqyXfj3bWJFdjtjUbg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Fx7qOHpR; dkim-atps=neutral; spf=pass (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=f1CWSzzD;
-	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=ficQJRWs;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Fx7qOHpR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=81.169.146.166; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
-Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [81.169.146.166])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJnG85kv3z2xGg
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 23:00:46 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1793707236; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=Hb822UotgDoHgAwd+YHuUT7dWmhIMdC2Rhzny8IEs41+qCl/ynV1StASFVv6lhUqrn
-    R1ccrq2Kz+VhI6QlSsFtF44sZvh0oyaJvR8C5wwDlZYAl/WL/ZPjJmabInhnc93Z/f0w
-    GuVelhmzOrN+TyAArnTtD5ICNXJHsCPJscW1moCN423IndRJW1suGOpsRHVS+7MQ13el
-    tTK3mH2crDxfLRw5qni5RcDuNqQPA08R3MBkhwV9YI8hOAIvBdeotZB3Q5UqaYOpacDi
-    ZZQGxrD3Bt+AmcVbxwkINcw1jNYLpjlcXyoQvu0VA60dlrcleXof1uQSPddLyagz4r8x
-    Zbgg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1793707236;
-    s=strato-dkim-0002; d=strato.com;
-    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
-    From:Subject:Sender;
-    bh=VCfhyFhtjRWlSALaNGPIzNS7a7BQ/PmFXkQDuImDC3M=;
-    b=lPM1uRPBc+P1rvLO0V+QTTLX0eEEBGTBg+H9Cj4JEMvYC4m2xBpp3rH6r+OficfWE+
-    q6Y/w6ZnuzO2AtytZpaZ7uFsi2LgYL4ikSPbykrY/gMuIjmUX5yvZSPSybKsE58hRLMe
-    /zEgeUGQ/BoC9XzIDZ9YZhvf5wGeZDlga32j+reUrr69HekBsbynBasZ67eft68hHDnH
-    p3ZzL0vbzrDaNJNt7xNNEEfPM1hPWPIQDQNcPbMqcZchoU8ChdhwYVmn6/1zDVObQ6Te
-    OWvHR+bOiFNCVvMWW3utw7hyM1eWNFEZ8OIgUC/U6kq6MDPs47N0ty8Pncp5AOy4+KMG
-    BubA==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo01
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1793707236;
-    s=strato-dkim-0002; d=xenosoft.de;
-    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
-    From:Subject:Sender;
-    bh=VCfhyFhtjRWlSALaNGPIzNS7a7BQ/PmFXkQDuImDC3M=;
-    b=f1CWSzzD8mIIBROl646y2/jW/lHG3ZqPzVllpm5Ol+xZG1MhSeH/3FceMBPVnPhv1K
-    bTxdJnDlZ76rp+Jz2DUAqtN5C1WDbAXszjTpvG12aVugBeif9dvGcrzGn06wjpbd7Tas
-    vLvw4lRk0FJE7bHKEJVrmnMEbUhqmyW+BERr0LtnQeOjnHMrV9IFgbqOKbUsUw6gx2CF
-    YhkgFK3dlGIVnharK7TDN1lTc4Vr5bV3aX/ONRfwLEEp61YebddDAUu6HJRcxfIaLf3D
-    rRTmq16c5Vd4UtT6tOfAZq8wdb+7nflVRihMlVYWrzHgXBLhB3aD3K4ZmxdGyBKUmaTl
-    MQuA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1793707236;
-    s=strato-dkim-0003; d=xenosoft.de;
-    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
-    From:Subject:Sender;
-    bh=VCfhyFhtjRWlSALaNGPIzNS7a7BQ/PmFXkQDuImDC3M=;
-    b=ficQJRWspo9wFofzQl77fjjSscHWH9UNkl97Y7YgWBtS5h50icl0fOgNpF9kaKPEhc
-    ZBUdO9vPVQ0tglTiZaDQ==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6KxrfO5Oh7V7X5jis3jDAXtDOW2DIUk1jJESq0dCA/mrin4I+No="
-Received: from smtpclient.apple
-    by smtp.strato.de (RZmta 55.6.3 AUTH)
-    with ESMTPSA id e825d92A3C0ZH6G
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-	(Client did not present a certificate);
-    Tue, 3 Nov 2026 13:00:35 +0100 (CET)
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJp7X2qQyz2xH9
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 23:40:06 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1793709608; x=1825245608;
+  h=from:date:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=XCiKLwinV99WNnDVV2Sect+DLYC+kykjSYXDYWEmi0s=;
+  b=Fx7qOHpRN8B0l5j7zu5nIEj/339sx87DVD2dKfN/XBc9Gfaf5tAQaDNS
+   ocX3+ZvzzLRR66sGVEYbBA2gz58VFRLoR3LIHRzoGFYvu2uio8pUAM2mo
+   Ff+zwB7O8SbvTHNnytSs5E5epqHRhOWOkj4w5PKQ4zI1kTyeETTDsTcws
+   pE9MC+Wozihilg5MkZQuWX30TI3uL8/FKj1J015pNDh2lySqhr3ilaEOn
+   HFSIUW3P5mzX59hSxiJ26eQ1Vl48hG46u1WG2IrG7og91O0eizyJUJ6qy
+   ZH7roUoWtdu4cFQ/ZlJxbX9+d/UDP0hrLXE/sA/cUdaIlXYSj+n+fcrZr
+   Q==;
+X-CSE-ConnectionGUID: PouGuzoNQ0+g5qJLnBFXEA==
+X-CSE-MsgGUID: dbF/h3x4Q9ab2hK9mL2t4g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11954"; a="2311453"
+X-IronPort-AV: E=Sophos;i="6.27,193,1787036400"; 
+   d="scan'208";a="2311453"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Nov 2026 04:40:03 -0800
+X-CSE-ConnectionGUID: cyacEPFhQBuDb0dqgLmxcg==
+X-CSE-MsgGUID: X3JjSi4fToyNNKZdyldFTA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,193,1787036400"; 
+   d="scan'208";a="6742790"
+Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.179])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Nov 2026 04:40:00 -0800
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Date: Tue, 3 Nov 2026 14:39:55 +0200 (EET)
+To: Lukas Wunner <lukas@wunner.de>
+cc: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org, 
+    Sourabh Jain <sourabhjain@linux.ibm.com>, 
+    Oliver OHalloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org, 
+    Alex Deucher <alexander.deucher@amd.com>, 
+    Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>, 
+    Keith Busch <kbusch@kernel.org>, 
+    Maciej Grochowski <Maciej.Grochowski@sony.com>
+Subject: Re: [PATCH 1/2] PCI/AER: Avoid NULL pointer deref on search for
+ Error Source
+In-Reply-To: <6de42407246d270c75126baa338761e6f21ab067.1793697480.git.lukas@wunner.de>
+Message-ID: <cb623055-e0fd-1d3f-7944-ed20971f6b7b@linux.intel.com>
+References: <cover.1793697480.git.lukas@wunner.de> <6de42407246d270c75126baa338761e6f21ab067.1793697480.git.lukas@wunner.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,105 +82,56 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-Mime-Version: 1.0 (1.0)
-Subject: Re: Void PPC: PulseAudio issue with sound updates 7.4-rc1
-Date: Tue, 3 Nov 2026 13:00:24 +0100
-Message-Id: <BD226162-844C-449D-A486-8888184DEBF0@xenosoft.de>
-References: <874idy2wbe.wl-tiwai@suse.de>
-Cc: Takashi Iwai <tiwai@suse.de>, zzzccc427@gmail.com, perex@perex.cz,
- linux-sound@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "R.T.Dickinson" <rtd2@xtra.co.nz>, mad skateman <madskateman@gmail.com>,
- Damien Stewart <hypexed@yahoo.com.au>,
- Christian Zigotzky <info@xenosoft.de>
-In-Reply-To: <874idy2wbe.wl-tiwai@suse.de>
-To: Takashi Iwai <tiwai@suse.de>
-X-Mailer: iPhone Mail (24B119)
-X-Spam-Status: No, score=-8.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,UNWANTED_DEVICE_2
-	autolearn=ham autolearn_force=no version=4.0.1
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="8323328-699220464-1793709595=:1105"
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 03 November 2026 at 08:44 am, Takashi Iwai <tiwai@suse.de> wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Have you tried changing the call of snd_pcm_hw_refine_with_lock() in
-snd_pcm_ioctl_hw_params_compat(), too?  Or check the call in
-snd_pcm_hw_refine_old_user(), too.
+--8323328-699220464-1793709595=:1105
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-If it doesn't change even if you replace all callers of
-snd_pcm_hw_refine_with_lock() with snd_pcm_hw_refine(), something
-wrong in the test itself.
+On Tue, 3 Nov 2026, Lukas Wunner wrote:
 
+> A Root Port's subordinate bus may be NULL if the PCI core runs out of bus
+> numbers on enumeration.  Yet when the AER driver searches for the source
+> of an Error Message, it dereferences the subordinate pointer without
+> checking for NULL.  Fix it.
+>=20
+> Fixes: 28eb27cf0839 ("PCI AER: support invalid error source IDs")
+> Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> Cc: stable@vger.kernel.org # v2.6.31+
+> ---
+>  drivers/pci/pcie/aer.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+> index db4f607f889c..d492c7ce01e1 100644
+> --- a/drivers/pci/pcie/aer.c
+> +++ b/drivers/pci/pcie/aer.c
+> @@ -1251,7 +1251,7 @@ static bool find_source_device(struct pci_dev *pare=
+nt,
+> =20
+>  =09if (pci_pcie_type(parent) =3D=3D PCI_EXP_TYPE_RC_EC)
+>  =09=09pcie_walk_rcec(parent, find_device_iter, e_info);
+> -=09else
+> +=09else if (parent->subordinate)
+>  =09=09pci_walk_bus(parent->subordinate, find_device_iter, e_info);
+> =20
+>  =09if (!e_info->error_dev_num)
+>=20
 
-Takashi
+Reviewed-by: Ilpo J=E4rvinen <ilpo.jarvinen@linux.intel.com>
 
-- - -
+--=20
+ i.
 
-I have tried it and sound works again.
-
-My modifications:
-
-diff -rupN a/sound/core/pcm_compat.c b/sound/core/pcm_compat.c
---- a/sound/core/pcm_compat.c	2026-11-01 22:26:31.000000000 +0100
-+++ b/sound/core/pcm_compat.c	2026-11-03 10:01:54.228010513 +0100
-@@ -252,7 +252,7 @@ static int snd_pcm_ioctl_hw_params_compa
- 		return -EFAULT;
- 
- 	if (refine) {
--		err = snd_pcm_hw_refine_with_lock(substream, data);
-+		err = snd_pcm_hw_refine(substream, data);
- 		if (err < 0)
- 			return err;
- 		err = fixup_unreferenced_params(substream, data);
-diff -rupN a/sound/core/pcm_native.c b/sound/core/pcm_native.c
---- a/sound/core/pcm_native.c	2026-11-01 22:26:31.000000000 +0100
-+++ b/sound/core/pcm_native.c	2026-11-03 10:02:24.836343549 +0100
-@@ -932,29 +932,6 @@ static int snd_pcm_hw_params_user(struct
-  * this one should be used for ioctls and other external paths instead of
-  * direct call of snd_pcm_hw_refine()
-  */
--static int snd_pcm_hw_refine_with_lock(struct snd_pcm_substream *substream,
--				       struct snd_pcm_hw_params *params)
--{
--	struct snd_pcm_runtime *runtime;
--	int err;
--
--	if (PCM_RUNTIME_CHECK(substream))
--		return -ENXIO;
--	runtime = substream->runtime;
--	err = snd_pcm_buffer_access_lock(runtime);
--	if (err < 0)
--		return err;
--	err = hw_params_state_check(substream);
--	if (err)
--		goto unlock;
--
--	err = snd_pcm_hw_refine(substream, params);
--
-- unlock:
--	snd_pcm_buffer_access_unlock(runtime);
--	return err;
--}
--
- static int snd_pcm_hw_refine_user(struct snd_pcm_substream *substream,
- 				  struct snd_pcm_hw_params __user * _params)
- {
-@@ -965,7 +942,7 @@ static int snd_pcm_hw_refine_user(struct
- 	if (IS_ERR(params))
- 		return PTR_ERR(params);
- 
--	err = snd_pcm_hw_refine_with_lock(substream, params);
-+	err = snd_pcm_hw_refine(substream, params);
- 	if (err < 0)
- 		return err;
- 
-@@ -4247,7 +4224,7 @@ static int snd_pcm_hw_refine_old_user(st
- 	if (IS_ERR(oparams))
- 		return PTR_ERR(oparams);
- 	snd_pcm_hw_convert_from_old_params(params, oparams);
--	err = snd_pcm_hw_refine_with_lock(substream, params);
-+	err = snd_pcm_hw_refine(substream, params);
- 	if (err < 0)
- 		return err;
+--8323328-699220464-1793709595=:1105--
 
