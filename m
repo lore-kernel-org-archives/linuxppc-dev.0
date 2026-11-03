@@ -2,112 +2,61 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C05C9606D832
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 16:12:09 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 472C7606D808
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 16:15:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=gZZQX2Bo
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=leM5q10K
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJtqM5L1fz3byl;
-	Wed, 04 Nov 2026 03:11:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::22f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793722287;
-	cv=none; b=o1ACILF37cNDX2WeesmXU7nMgCl9tVaA23sSY372vm6gTzZiJvBK1gBlv7n3pZ7MAMIbwa6p2XqTS7TAId4buXFPtALvb8psK1C+PU7g/MGRfxOAPcNIpxM+dk7P9GfzF20ZV35JryVO0nlScOzLCbPXPwq5hmK5x5r9hprNARyLUt076DLa1N6fV4lsI6LvIaWWEouMRh9fLQ2/TTHd9HcvUS8kTRfUxIyqFwUyBrnTivozrXxdovpVYGB6pD0zIVszU6GVWmH1kdMHzEqMRkGI09VYHPuYrHQ2+1Cdalq3Gcy6kpRfU1B7hPRQONAdouI2TTB48IBPVCL2akY4vg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJtvw6QFmz2xSZ;
+	Wed, 04 Nov 2026 03:15:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.16
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793722524;
+	cv=none; b=atw3YuIb5rhSQI0C2oHj/x3panF4o5VrcnS32Azagg0jATfrdvDq5nLKD8fnAdG1y2K+wqsvHRQ2ELYIp7f4tBma3IlUkESOiiV1vYGeMfytHSuy8FXiDzYyrs+fpu3biN8a2VB3tnOV24guk2bJQqhvTzqlbA/KNLx4UjdOE6XPRaJRVA0D8RsyQT+QVsT90UGbE1zPIK94lNNQVfi3msPDJnmNwUnSaDhh4/5YjRrx9PivYvfE02JMePTSTMj3d3kKZoeVZVQ+EJwAmF6+qNr0dXV43nLmxbAqSq1EdHdc7SGOQ7s8vKQAeDtEvUR0hNJ6LDV11LQvKCdJeDpmzg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793722287; c=relaxed/relaxed;
-	bh=rNwvKOCdTYC9J02wHQU8L2xZ+KavqPuMAcm6uI6YuYg=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=obDTV9deMWnVhWgHvYmAcIDciRu3v8gEn4nOor3zQ+43Oswjlp0/DRrKdpzDXjM9iC5ExvUuAF+wkty47Ivmm1SPhzigUT7/tKc5ZAwL57girG0Q+PBKQr1N5OlJKj0wNa+j6CRxO21ABLeg0r/oirDmiwO0oFSFZ+lRctP/CZsxehF2cA94l/GeNMQjp0rElvxruiyMJ217g9IIErIuSEoqD2350GVi/7zmQf/xieFzG0nHQn2Aw2yzdHXUYrkTg/m8aEanX/iX4gxi5LZm6gzTkeDfCvl7Sc5o7ze/JFEQyqhWdBV00uJobzmCIwqm7LlGk08Nfacu/6S0zjG4/Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org; dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=gZZQX2Bo; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::22f; helo=mail-oi1-x22f.google.com; envelope-from=rrangel@chromium.org; receiver=lists.ozlabs.org) smtp.mailfrom=chromium.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+	t=1793722524; c=relaxed/relaxed;
+	bh=DEgAB1NzBQkrZ+rOiK6BEb5rYv2OCkqEnUDIxFNDzdI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=IeLekWV/m4zrOOZqTBGTpJWp1+KiRvMLShLEXJMrp1GYz4DnHy2ZmKHIwjS70yIyjLKBSzDbg7tY+5m492cRbqqDO5MJrBTSm7ekuWcdAapc0s8TNr1rsA909L5xjyoAR0ToaihEsg4WDxuw1rO905Og1ul9oIYbLIsC8F0pUbaPoKjBZne7kFgQicsBsCP/wzDxBVIr1O3awHFKHvmIb9KoaarYGNnUc599TSEEGTYmnf9qm+lRbvIdvDyT9eA8ACfqXDTnR0gl5CVVTdjaMA7onL7I4w7Q+u1UAMykSvY5zzp10+c/f7YhXgxlUB39AgiCGIK5GTxVJTUwobY3Cg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=leM5q10K; dkim-atps=neutral; spf=pass (client-ip=198.175.65.16; helo=mgamail.intel.com; envelope-from=sathyanarayanan.kuppuswamy@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=gZZQX2Bo;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=leM5q10K;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::22f; helo=mail-oi1-x22f.google.com; envelope-from=rrangel@chromium.org; receiver=lists.ozlabs.org)
-Received: from mail-oi1-x22f.google.com (mail-oi1-x22f.google.com [IPv6:2607:f8b0:4864:20::22f])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.16; helo=mgamail.intel.com; envelope-from=sathyanarayanan.kuppuswamy@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJtqM0MPrz30P3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2026 03:11:26 +1100 (AEDT)
-Received: by mail-oi1-x22f.google.com with SMTP id 5614622812f47-53ec9237600so2447671b6e.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 08:11:26 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1793722284; x=1794327084; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=rNwvKOCdTYC9J02wHQU8L2xZ+KavqPuMAcm6uI6YuYg=;
-        b=gZZQX2Boc5GYlUYVNiiF1fNHx5oj39aFngAXOi43ILpb6/5l1g5AIzPRqFUdER08ex
-         ZOBl9QFTMWsDkNUHHSAQSYP2NIz92kCZcSBDXeo7heNJYR2miC2X5BVPGdNq+TT/tG4i
-         /ef+l1Eds8/1BfNvSTviKSquHeFFB3RF1npgg=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793722284; x=1794327084;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=rNwvKOCdTYC9J02wHQU8L2xZ+KavqPuMAcm6uI6YuYg=;
-        b=oTnKdJDCWUR+hJxmfO6+gVP3MOqPi2YcvqN5caZHGNhLUkQULBd2Ywq6/plrYs/HBE
-         17YAYuZ+t5/3QBzqSQp4hKlv6ZMl0xNGQsib57UVRvYpcEqI7dyjzO5FpqetX5AFU8Pw
-         Tm0Xj379EixzspifTGKvhX96L6P37URzUKMOjkWCwmhQwa6O5BK/8N25O218lJtSOmcm
-         UX8pZm2N+Zsne3xwLDmRLO0rQAs+eYs+2o3hPfFtWV5RyTJls0lvGAX6bFD7pZiS/g90
-         u4xBG6RVOX24CODNUlSyQk/2TcLB9t/+1CyxINhYHfhykeEIHqD/amgHk4W8huOyP67c
-         zteA==
-X-Forwarded-Encrypted: i=1; AKwUvBxjrFyRsXPa6w4qUPcFT1rCdEZ1AjGTHCN/xF9pB/L3QkVFuUlgleOsFXfplLzR0H7jOIywKTRGZFKVxFw=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z8g85t5Uwbl+Scm8iSwrzUiOeFR+gJ2aKIhJ1SuBOFbal7y24t1
-	dzp/OqFkZZUFY/MXams99M467U79aryl2mw4jKdDNnHZckCLM/4wZ1iXQOwzVVs8Pg==
-X-Gm-Gg: AYBFou0eusBR7xYM5eg/N2LOsEFrPV5Zjl9gZUClWz9G4PneUEbCIOnZpXhoO6QqOr7
-	UWklXPoKV/lwHWAnDraDQnhXYxiBgPbbCL3nkovftwkdtnfS621UK0pwm3SC+zOGqZxNVKBzczE
-	yNJebcCrBnR97PY8y72LIuQBC4hUXUdXKiWg5l0xpZFXvxiDMWOz+J3M5CtVFEuBdHjSrlHX0co
-	2yOxDMPUTRi7iVIUPxd6aM61UhYMqfrtE/TBhByh2m+kerx7sarHiX7dQtuIbOC16jN5gKzPc0h
-	r2nyGx8FRqq+hoERkIoWvl/IMnrRk7aIpJjsN1LSSVwOoVstdX0Fs/Kb1rG7a1SUzCUQvSkarbz
-	N0UIF+8zmDqmSibaNtedod3xQ3DwecO0Pi1T5Es8JLHy0TJptyMkQbjansQT5ETG7f9poWraaqR
-	bNM8VoUsmID3rlMEAyiJUI4iZE+cLfEwI838+Um6r1rxD5SbMwf8OqyHtwOJGWVbohNz0K5IxLs
-	Dr8SFIDYTITFWqYVrxx+hb27SGXTy/o9xiWTBBQl5wArvSF9f3mc6VbeMWbsCIpEvt7dOupW4Mz
-	I+y3iIUYZxRZh3JnftTclqyxbb33L6quG/D2QYmfxjZrSALu61TCCPwmJVVX8EyCwIWqw4ACcl+
-	esSP73EjAC94Pjpg=
-X-Received: by 2002:a05:6808:2218:b0:52b:7641:33a6 with SMTP id 5614622812f47-5640deea502mr9137854b6e.14.1793722284423;
-        Tue, 03 Nov 2026 08:11:24 -0800 (PST)
-Received: from rrangel.c.googlers.com.com (194.246.27.34.bc.googleusercontent.com. [34.27.246.194])
-        by smtp.gmail.com with ESMTPSA id 5614622812f47-5640fd95dc0sm11688383b6e.6.2026.11.03.08.11.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 03 Nov 2026 08:11:22 -0800 (PST)
-From: Raul E Rangel <rrangel@chromium.org>
-To: James Hilliard <james.hilliard1@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Jiri Slaby <jirislaby@kernel.org>,
-	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
-	Tony Lindgren <tony@atomide.com>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	Richard Genoud <richard.genoud@bootlin.com>,
-	Nicolas Ferre <nicolas.ferre@microchip.com>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
-	Jacky Huang <ychuang3@nuvoton.com>,
-	Shan-Chun Hung <schung@nuvoton.com>,
-	=?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>,
-	Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	"Maciej W. Rozycki" <macro@orcam.me.uk>,
-	Timur Tabi <timur@kernel.org>,
-	Peter Ujfalusi <peter.ujfalusi@ti.com>,
-	Vignesh Raghavendra <vigneshr@ti.com>,
-	Patrice Chotard <patrice.chotard@foss.st.com>,
-	linux-kernel@vger.kernel.org,
-	linux-serial@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	imx@lists.linux.dev,
-	linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v9 8/8] serial: 8250: retain DMA resources when termination fails
-Date: Tue,  3 Nov 2026 09:11:04 -0700
-Message-ID: <20261103161104.2449407-8-rrangel@chromium.org>
-X-Mailer: git-send-email 2.56.0.212.g129ede20d9-goog
-In-Reply-To: <20261102-submit-serial-8250-dma-cancel-v1-v9-8-9159caade148@gmail.com>
-References: <20261102-submit-serial-8250-dma-cancel-v1-v9-0-9159caade148@gmail.com> <20261102-submit-serial-8250-dma-cancel-v1-v9-8-9159caade148@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJtvv4Hvqz2xSS
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2026 03:15:22 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1793722524; x=1825258524;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=o4O4Ks4uYsLqgXXzPfeRNGEZQxA0LUp+7bdtqiyqVHo=;
+  b=leM5q10Kilqr1gVuQ56kH1B7AA5oyr9IOXSj7QWcPTo5OOemrhQGwD+m
+   cdtp9nGvlns1CX9jMO232ZOpmIqEEvka5g9end5XUQ3aJvPvJJ64xHYCI
+   mdCsghxFAwghlf5g2UWIf6tZu54SwjEz7U1zs4ovAomQtkavvo5JGrzAE
+   tJE3yX16ed9M75Ou31v/WqGUT14oExUkF+IO1hHJT/NZvYOQzoBYJ0iSh
+   9k0Ua2/cH/CSMhgPa7BzZaDjhbfPFVOooSGUyxO4hzbsYD70Rrc/eoXsL
+   Cly0K9xo0vRjrUqCxjXQa4Mi+kdCrAm5mtQZiLdF0AnB36NJN4ZYLui29
+   Q==;
+X-CSE-ConnectionGUID: Z0G4er4TSEeM9sasF9NksQ==
+X-CSE-MsgGUID: ntTPnZK4TTiMcVQwy4DlQw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11955"; a="2446988"
+X-IronPort-AV: E=Sophos;i="6.27,193,1787036400"; 
+   d="scan'208";a="2446988"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Nov 2026 08:15:09 -0800
+X-CSE-ConnectionGUID: gLojHqxCRcW1rnClKrSqDg==
+X-CSE-MsgGUID: 51yT1/HlQT6IbRMLFX8ziw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,193,1787036400"; 
+   d="scan'208";a="6574537"
+Received: from soc-pf446t5c.clients.intel.com (HELO [10.24.80.90]) ([10.24.80.90])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Nov 2026 08:15:08 -0800
+Message-ID: <5fe32a78-4048-4624-8c1a-b50e3ecbb093@linux.intel.com>
+Date: Tue, 3 Nov 2026 08:15:07 -0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -121,92 +70,204 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/2] PCI/AER: Check validity of Error Source ID register
+To: Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <helgaas@kernel.org>,
+ linux-pci@vger.kernel.org
+Cc: Sourabh Jain <sourabhjain@linux.ibm.com>,
+ Oliver OHalloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Alex Deucher <alexander.deucher@amd.com>, Keith Busch <kbusch@kernel.org>,
+ Maciej Grochowski <Maciej.Grochowski@sony.com>
+References: <cover.1793697480.git.lukas@wunner.de>
+ <27a3876874161204e7a37ab63e7b27ee9783261f.1793697480.git.lukas@wunner.de>
+Content-Language: en-US
+From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+In-Reply-To: <27a3876874161204e7a37ab63e7b27ee9783261f.1793697480.git.lukas@wunner.de>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=4.0.1
+Content-Transfer-Encoding: 7bit
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi James,
 
-Thanks for replacing the fixed 100 ms sleep with exponential backoff
-(1 ms -> 1 s) and adding the initial/ongoing/recovery diagnostics in v9.
 
-Following up on our v8 discussion regarding blocking in
-serial8250_terminate_dma() versus non-blocking resource quarantine:
+On 11/3/2026 1:45 AM, Lukas Wunner wrote:
+> Certain Intel and AMD Root Ports are known to populate the Error Source ID
+> register with an invalid value.  The AER driver seeks to recognize such
+> buggy silicon by assuming invalidity if the bus number is zero.  It then
+> searches for the error-signaling device in the hierarchy below the Root
+> Port.  This was introduced by commit 28eb27cf0839 ("PCI AER: support
+> invalid error source IDs").
+> 
+> Alex has provided dmesg output which shows an invalid Error Source ID with
+> a non-zero bus number.  The AER driver's heuristic fails to recognize its
+> invalidity:
+> 
+>   pcieport 0000:00:07.1: AER: Correctable Error message received from 0000:01:00.0 (no details found)
+> 
+> The Root Port at 0000:00:07.1 has subordinate bus 04, so an error source
+> on bus 01 is obviously invalid.  The range of subordinate buses is cached
+> and checking against it is cheap.
+> 
+> Do that instead of relying on a heuristic.  Emit a message when an invalid
+> Error Source ID is detected to alert silicon validation engineers.
+> 
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=222095
+> Tested-by: Alex Deucher <alexander.deucher@amd.com>
+> Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> ---
+>  drivers/pci/pci.h       |  7 ++++++-
+>  drivers/pci/pcie/aer.c  | 33 +++++++++++++++++++++++++--------
+>  drivers/pci/pcie/rcec.c | 14 ++++++++++++++
+>  3 files changed, 45 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+> index 77efa4c5c960..aa392bb6a482 100644
+> --- a/drivers/pci/pci.h
+> +++ b/drivers/pci/pci.h
+> @@ -871,6 +871,9 @@ static inline bool pci_dev_binding_disallowed(struct pci_dev *dev)
+>   * @id: Value from register PCI_ERR_ROOT_ERR_SRC
+>   * @severity: AER severity, 0-UNCOR Non-fatal, 1-UNCOR fatal, 2-COR
+>   * @root_ratelimit_print: Flag to log or not log the root's error. 0=NotLog/1=Log
+> + * @id_valid: Whether @id is a valid value.  Some Root Ports report an invalid
+> + *	Error Source ID, necessitating a search for the error-signaling device
+> + *	in the hierarchy below the Root Port.
+>   * @multi_error_valid: If multiple errors are reported
+>   * @first_error: First reported error
+>   * @__pad2: Padding for alignment
+> @@ -893,7 +896,8 @@ struct aer_err_info {
+>  
+>  	unsigned int severity:2;
+>  	unsigned int root_ratelimit_print:1;
+> -	unsigned int __pad1:4;
+> +	unsigned int __pad1:3;
+> +	unsigned int id_valid:1;
+>  	unsigned int multi_error_valid:1;
+>  
+>  	unsigned int first_error:5;
+> @@ -955,6 +959,7 @@ void pcie_link_rcec(struct pci_dev *rcec);
+>  void pcie_walk_rcec(struct pci_dev *rcec,
+>  		    int (*cb)(struct pci_dev *, void *),
+>  		    void *userdata);
+> +bool pci_rcec_associated(struct pci_dev *rcec, u16 id);
+>  #else
+>  static inline void pci_rcec_init(struct pci_dev *dev) { }
+>  static inline void pci_rcec_exit(struct pci_dev *dev) { }
+> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+> index d492c7ce01e1..9957c36bf215 100644
+> --- a/drivers/pci/pcie/aer.c
+> +++ b/drivers/pci/pcie/aer.c
+> @@ -951,12 +951,13 @@ static void aer_print_source(struct pci_dev *dev, struct aer_err_info *info,
+>  {
+>  	u16 source = info->id;
+>  
+> -	pci_info(dev, "%s%s Error message%s from %04x:%02x:%02x.%d%s\n",
+> +	pci_info(dev, "%s%s Error message%s from %04x:%02x:%02x.%d%s%s\n",
+>  		 info->multi_error_valid ? "Multiple " : "",
+>  		 aer_error_severity_string[info->severity],
+>  		 info->multi_error_valid ? "s received, first one" : " received",
+>  		 pci_domain_nr(dev->bus), PCI_BUS_NUM(source),
+>  		 PCI_SLOT(source), PCI_FUNC(source),
+> +		 info->id_valid ? "" : " (invalid source)",
+>  		 found ? "" : " (no details found)");
+>  }
+>  
+> @@ -1146,6 +1147,24 @@ static int add_error_device(struct aer_err_info *e_info, struct pci_dev *dev)
+>  	return 0;
+>  }
+>  
+> +static bool source_id_valid(struct pci_dev *root, u16 id)
+> +{
+> +	/* The Root Port or RCEC can itself be a valid Error Source */
+> +	if (pci_dev_id(root) == id)
+> +		return true;
+> +
+> +	/* For RCECs, @id shall be in range of its associated buses/devices */
+> +	if (pci_pcie_type(root) == PCI_EXP_TYPE_RC_EC)
+> +		return pci_rcec_associated(root, id);
+> +
+> +	/* For Root Ports, @id shall be in range of its subordinate buses */
+> +	if (!root->subordinate)
+> +		return false;
+> +
+> +	return root->subordinate->busn_res.start <= PCI_BUS_NUM(id) &&
+> +	       root->subordinate->busn_res.end   >= PCI_BUS_NUM(id);
+> +}
+> +
+>  /**
+>   * is_error_source - check whether the device is source of reported error
+>   * @dev: pointer to pci_dev to be checked
+> @@ -1157,11 +1176,8 @@ static bool is_error_source(struct pci_dev *dev, struct aer_err_info *e_info)
+>  	u32 status, mask;
+>  	u16 reg16;
+>  
+> -	/*
+> -	 * When bus ID is equal to 0, it might be a bad ID
+> -	 * reported by Root Port.
+> -	 */
+> -	if ((PCI_BUS_NUM(e_info->id) != 0) &&
+> +	/* Some Root Ports report an invalid Error Source ID */
+> +	if (e_info->id_valid &&
+>  	    !(dev->bus->bus_flags & PCI_BUS_FLAGS_NO_AERSID)) {
+>  		/* Device ID match? */
+>  		if (e_info->id == pci_dev_id(dev))
+> @@ -1174,8 +1190,7 @@ static bool is_error_source(struct pci_dev *dev, struct aer_err_info *e_info)
+>  
+>  	/*
+>  	 * When either
+> -	 *      1) bus ID is equal to 0. Some ports might lose the bus
+> -	 *              ID of error source id;
+> +	 *      1) Error Source ID register is invalid;
+>  	 *      2) bus flag PCI_BUS_FLAGS_NO_AERSID is set
+>  	 *      3) There are multiple errors and prior ID comparing fails;
+>  	 * We check AER status registers to find possible reporter.
+> @@ -1566,6 +1581,8 @@ static void aer_isr_one_error_type(struct pci_dev *root,
+>  {
+>  	bool found;
+>  
+> +	info->id_valid = source_id_valid(root, info->id);
+> +
+>  	found = find_source_device(root, info);
 
-1. Why non-blocking quarantine cannot be done purely inside 8250_dma:
-   I agree with your v8 reply and the updated commit message here that
-   serial8250_release_dma() cannot simply return early while leaving
-   serial_core to proceed with normal teardown:
+nit: Updated the kernel-doc help of find_source_device() to include id_valid.
 
-   a) Immediately after serial8250_release_dma(up) returns in
-      serial8250_do_shutdown() (8250_port.c:2474-2511, and similarly in
-      omap_8250_shutdown() at 8250_omap.c:794-803), the 8250 driver itself
-      clears the hardware FIFOs (serial8250_clear_fifos()), reads UART_RX,
-      frees the IRQ (up->ops->release_irq(up)), and drops runtime PM
-      (serial8250_rpm_put_tx(up) / serial8250_rpm_put(up)).
-   b) In uart_tty_port_shutdown() (serial_core.c:1841-1853), immediately
-      after uart_port_shutdown(port) returns, serial_core unconditionally
-      calls uart_free_xmit_buf(port) (line 1850) — freeing the page that
-      dma->tx_addr is still DMA-mapped to — and powers down the UART via
-      uart_change_pm(state, UART_PM_STATE_OFF) (line 1852). Likewise,
-      uart_suspend_port() (serial_core.c:2502-2514) calls ops->shutdown(uport)
-      (line 2502) and unconditionally sets UART_PM_STATE_OFF (line 2512).
-   c) Even if startup() returns -EIO on reopen when DMA is still active,
-      uart_port_startup() (serial_core.c:422-423) has:
-        if (retval && capable(CAP_SYS_ADMIN))
-                return 1;
-      which causes uart_port_activate() (serial_core.c:2060-2062) to set
-      tty_port_set_active(port, true) with tty_port_initialized(port) == false
-      and allows root open() (serial_core.c:2040-2042) to succeed (0). From
-      that state, ioctl(TIOCSSERIAL) -> uart_set_info() (serial_core.c:1068)
-      -> uart_shutdown() (serial_core.c:466-511, which calls
-      uart_free_xmit_buf() at line 510 outside if (tty_port_initialized))
-      or uart_hangup() (serial_core.c:1942-1950) or uart_change_port() ->
-      release_port() (serial_core.c:932-933, 1072) can free the TX buffer,
-      power down the UART, and release MMIO mappings while DMA is active.
+>  
+>  	/*
+> diff --git a/drivers/pci/pcie/rcec.c b/drivers/pci/pcie/rcec.c
+> index 2bf6d9d549ba..609d656300fa 100644
+> --- a/drivers/pci/pcie/rcec.c
+> +++ b/drivers/pci/pcie/rcec.c
+> @@ -21,6 +21,20 @@ struct walk_rcec_data {
+>  	void *user_data;
+>  };
+>  
+> +bool pci_rcec_associated(struct pci_dev *rcec, u16 id)
+> +{
+> +	if (!rcec->rcec_ea)
+> +		return false;
+> +
+> +	if (rcec->bus->number == PCI_BUS_NUM(id)) {
+> +		unsigned long bitmap = rcec->rcec_ea->bitmap;
+> +		return test_bit(PCI_SLOT(id), &bitmap);
+> +	}
+> +
+> +	return rcec->rcec_ea->nextbusn <= PCI_BUS_NUM(id) &&
+> +	       rcec->rcec_ea->lastbusn >= PCI_BUS_NUM(id);
+> +}
+> +
+>  static bool rcec_assoc_rciep(struct pci_dev *rcec, struct pci_dev *rciep)
+>  {
+>  	unsigned long bitmap = rcec->rcec_ea->bitmap;
 
-   We modeled these cross-layer paths in Serial8250TxDmaV8.tla
-   (QuarantineGuardsShutdown, QuarantineGuardsAdminOpen, and
-   NoDmaOnPoweredOffUart in Serial8250TxDmaV8_UnguardedQuarantineHazard.cfg
-   and Serial8250TxDmaV8_AdminReopenQuarantineHazard.cfg vs.
-   Serial8250TxDmaV8_TerminateRetryHang_Fixed.cfg, alongside
-   Serial8250TxDmaV8_QuarantinePioReopenHazard.cfg at
-   https://github.com/ismell/linux-8250-dma-tla), and TLC confirms that
-   quarantine without those serial_core and PM guards violates
-   NoDmaOnPoweredOffUart / NoConcurrentFifoAccess (in 6 states) and
-   NoUsersAtFree (in 7 states). Given that enforcing non-blocking quarantine
-   requires coordinated changes across serial_core.c, runtime PM, and 8250
-   shutdown, addressing non-blocking quarantine in a separate follow-up
-   series and documenting the limitation here makes sense.
+Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
 
-2. What in-tree DMAengine providers actually return from terminate_all:
-   For context on when the retry loop in serial8250_terminate_dma() can
-   trigger, I audited all 78 .device_terminate_all implementations in
-   drivers/dma/:
-   - 64 out of 78 unconditionally return 0.
-   - Among DMA controllers used with 8250 UARTs, synchronous FIFO-draining
-     drivers (drivers/dma/dw/core.c dwc_chan_pause ~40 us,
-     drivers/dma/idma64.c idma64_chan_deactivate ~100 us) already poll in
-     microseconds inside terminate_all and return 0.
-   - The only 8250-paired DMA controllers that can return non-zero are:
-     * drivers/dma/tegra186-gpc-dma.c (tegra_dma_terminate_all, lines
-       714-743), which already polls readl_relaxed_poll_timeout_atomic()
-       for up to 5000 us (5 ms) in tegra_dma_stop_client() / tegra_dma_pause()
-       / tegra_dma_pause_noerr() (lines 389-414, 676-712) before returning
-       -ETIMEDOUT; and
-     * drivers/dma/at_xdmac.c (at_xdmac_device_terminate_all, lines
-       1999-2039), which only returns < 0 if pm_runtime_resume_and_get()
-       fails.
-     (Even across all 14 non-zero .device_terminate_all implementations in
-     drivers/dma/, the only one designed around a caller retry loop is
-     cppi41_stop_chan() -> cppi41_tear_down_chan() in drivers/dma/ti/cppi41.c:
-     652-770, which is a USB MUSB controller used only by musb_cppi41.c.)
 
-Thanks,
-Raul
+-- 
+Sathyanarayanan Kuppuswamy
+Linux Kernel Developer
+
 
