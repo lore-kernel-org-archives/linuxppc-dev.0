@@ -2,90 +2,86 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77697606A32E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 11:55:42 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 92C2E606A326
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 12:00:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=PtgZ+U9a
+	dkim=pass (2048-bit key, unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=f1CWSzzD;
+	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=ficQJRWs
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJn8F1hYXz2xSS;
-	Tue, 03 Nov 2026 22:55:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.18
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793706941;
-	cv=none; b=AHzqAKbU8mIfbng+hOSf853V54v7+ChdBPJfKG7h+y9QiYBZtfReiAqGkfR8LghOxNd5c/hvWD6HTHW7sN405mBfzCV0+dLaF0azPJNJe73EJWroOo0Tq/qbARpGPcwQyNpGI8g0ua5f+W6oS20wkra92fyTOrcdikKw151K9SEY/OjawMbTBl4i2m+uk4UKEA7OydkMVSgI34PBfBUKDtc4vfqmsHBdHCyxKEe9zGQXsmQHcbmX/oPgouHTJb9l484wVWm3flAGdLUnnF/g9DcoO4gnUIwQqRLYPsibVqD8LzUvHO52Wk6mfloHRFsJdA12XssRUKP2jpdVP08sdw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793706941; c=relaxed/relaxed;
-	bh=HCorhxQxJT3W15/Ol75aTGcFGkkBMt7oxlNw+Tltp1E=;
-	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=XkLx8kvyrbVfQo2MI0k6KqUourmnd/YALL+i+6XVGbHZR7O3IcFd/hKlCcXHGmHnAVsxdFd9yLWL3Jl1SaolTmXN1S5M85ObWLkWe9fZ2Ht9AK9qrLQzh9T9E3I5C500IoNxpajhsW+lpupQ1xUdoGR8ALqx+eVe104OEHmOW3XsRG0usH8VO/1K/hpPP/VJd1lu21eKOMGhPYJGZO9uK+KkfevdPD75qNlhnen8kn8HVYiDILX30gxRXgz529uNsZ6qzlkzsDrH8bF+1Rowa2bTPykq+SFJoibNaDJj1VlQozvnUfqJKj9v7TDGOaUaozhAEAr7ZMvU0qgE82vSbg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=PtgZ+U9a; dkim-atps=neutral; spf=pass (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJnGF2SQFz2xH9;
+	Tue, 03 Nov 2026 23:00:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=81.169.146.166 arc.chain=strato.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793707253;
+	cv=pass; b=n4IFWRXUentTwh1OfGb9N153841e9IKDrb6EdF+mP8MCHgChELKFYecGI36G2RmIm28FNs+QY6Nn/jS6g83lzhBrrGL0lM3wj/KCeena93M8mhf/MWeJkGBx8SoSVqwVUiCl5Cy0SPdml/pTB/uSqwBDU4EQQ2m/ereKXxFwpirCbFi6OVrCxLB2YJWlmZgIHH2vsEyoP3ZfO75nbi1yBIYpTBm/boZGBoJXMwS56nC+ibb40mugNGnrfmZsvOBiNMKGIpDx6I8oRYZ+tfj2ELEJbopJSdm3f/LSDKi1z4hNVcThakph+kRK3M2ZJvQkv38vCq6VTVHCb9Qam2a6XA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793707253; c=relaxed/relaxed;
+	bh=VCfhyFhtjRWlSALaNGPIzNS7a7BQ/PmFXkQDuImDC3M=;
+	h=Content-Type:From:Mime-Version:Subject:Date:Message-Id:References:
+	 Cc:In-Reply-To:To; b=lDVJ39EhqPOm1RT7gH9ia1nOwSQpcKPqAp3OyNMT+xGpCACUyI5B5EF/6NWVXxelY8l40HKFVraCVZwe3Io175+RgUMyhkV7PfBzeFP7NCZdQh5g+Jm4YDbj/aAm70AGe1o24ugeYwW54zc7e+KutttQVUdIHGGDq7vb71+F1ODzGoBs43UbEb/AnXzVIk2i+QpLilY9s4uQsYUcMC8X4H6HGeJ/87fEYqyFoGxCDxCHRWaDNMLkG0Nlz0zvsj9jctIysepdZ8gtxuBgrxp6/GODfxEgmb4mVODlaniB6uJvG+bVGopAkFG/DgFL8UKMCjFwoTwM2aFP61e8rkPOZg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=f1CWSzzD; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=ficQJRWs; dkim-atps=neutral; spf=pass (client-ip=81.169.146.166; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p01-ob.smtp.rzone.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=PtgZ+U9a;
+	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=f1CWSzzD;
+	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=ficQJRWs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=81.169.146.166; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [81.169.146.166])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJn8B2xcrz2xGg
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 22:55:37 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1793706938; x=1825242938;
-  h=from:date:to:cc:subject:in-reply-to:message-id:
-   references:mime-version;
-  bh=NRlGTsFdID6TOhr7uHXdva//9pjtlPak/4evBt26tjw=;
-  b=PtgZ+U9afL5wT+CCBuBR78Gpo2s7jkmZ9SKg4B2mg5xAuv+Xm8N25u8i
-   fVYZ3u4fjQ8G3QX9EmvpdO6qmktU9O4urJkKv8zekgvrthDf9KHCiuJkh
-   QZMhg2j2Qg3hKIgLQvDHLs2Gjkiuhxlg5HimjuBoE05sro4lMpPdnK3aA
-   iy5QpZ4Sv4v9EyhcXI+g+EAOyD5MpWhQ7rwZFn+0C2NeuUCenwEKyZFj9
-   wzLHJmcGNGV2QH7KawSD58rwDz3y1q+L4AGRQptaI3rjHtYhiiLN7oxuL
-   C5PX4Qy8B3iBxFPOBv0AE8q03P/DQesa99mgzgKLI6OZXecMA6qbNydk6
-   w==;
-X-CSE-ConnectionGUID: L/0YgxdCSyqoT8mKk5/mLg==
-X-CSE-MsgGUID: Oz9IJwwUSEGAyiMhGce2yg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11954"; a="2454754"
-X-IronPort-AV: E=Sophos;i="6.27,193,1787036400"; 
-   d="scan'208";a="2454754"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
-  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Nov 2026 03:55:34 -0800
-X-CSE-ConnectionGUID: UXG0LlmJSGON8WP14xs+zg==
-X-CSE-MsgGUID: /usHt9haTsq5iys1QJ0A4g==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,193,1787036400"; 
-   d="scan'208";a="6265075"
-Received: from ijarvine-desk1.ger.corp.intel.com (HELO localhost) ([10.245.245.179])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Nov 2026 03:55:25 -0800
-From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Date: Tue, 3 Nov 2026 13:55:20 +0200 (EET)
-To: James Hilliard <james.hilliard1@gmail.com>
-cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-    Jiri Slaby <jirislaby@kernel.org>, Raul E Rangel <rrangel@chromium.org>, 
-    Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
-    Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
-    Tony Lindgren <tony@atomide.com>, 
-    Sebastian Andrzej Siewior <bigeasy@linutronix.de>, 
-    Richard Genoud <richard.genoud@bootlin.com>, 
-    Nicolas Ferre <nicolas.ferre@microchip.com>, 
-    Alexandre Belloni <alexandre.belloni@bootlin.com>, 
-    Claudiu Beznea <claudiu.beznea@tuxon.dev>, 
-    Jacky Huang <ychuang3@nuvoton.com>, Shan-Chun Hung <schung@nuvoton.com>, 
-    =?ISO-8859-15?Q?Pali_Roh=E1r?= <pali@kernel.org>, 
-    Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>, 
-    Pengutronix Kernel Team <kernel@pengutronix.de>, 
-    Fabio Estevam <festevam@gmail.com>, 
-    "Maciej W. Rozycki" <macro@orcam.me.uk>, Timur Tabi <timur@kernel.org>, 
-    Peter Ujfalusi <peter.ujfalusi@ti.com>, 
-    Vignesh Raghavendra <vigneshr@ti.com>, 
-    Patrice Chotard <patrice.chotard@foss.st.com>, 
-    LKML <linux-kernel@vger.kernel.org>, 
-    linux-serial <linux-serial@vger.kernel.org>, 
-    linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev, 
-    linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v9 3/8] serial: 8250_omap: serialize RX DMA completion
- and flushing
-In-Reply-To: <20261102-submit-serial-8250-dma-cancel-v1-v9-3-9159caade148@gmail.com>
-Message-ID: <a95c92c6-afe3-52e3-c320-6d7ccd357965@linux.intel.com>
-References: <20261102-submit-serial-8250-dma-cancel-v1-v9-0-9159caade148@gmail.com> <20261102-submit-serial-8250-dma-cancel-v1-v9-3-9159caade148@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJnG85kv3z2xGg
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 23:00:46 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1793707236; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=Hb822UotgDoHgAwd+YHuUT7dWmhIMdC2Rhzny8IEs41+qCl/ynV1StASFVv6lhUqrn
+    R1ccrq2Kz+VhI6QlSsFtF44sZvh0oyaJvR8C5wwDlZYAl/WL/ZPjJmabInhnc93Z/f0w
+    GuVelhmzOrN+TyAArnTtD5ICNXJHsCPJscW1moCN423IndRJW1suGOpsRHVS+7MQ13el
+    tTK3mH2crDxfLRw5qni5RcDuNqQPA08R3MBkhwV9YI8hOAIvBdeotZB3Q5UqaYOpacDi
+    ZZQGxrD3Bt+AmcVbxwkINcw1jNYLpjlcXyoQvu0VA60dlrcleXof1uQSPddLyagz4r8x
+    Zbgg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1793707236;
+    s=strato-dkim-0002; d=strato.com;
+    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+    From:Subject:Sender;
+    bh=VCfhyFhtjRWlSALaNGPIzNS7a7BQ/PmFXkQDuImDC3M=;
+    b=lPM1uRPBc+P1rvLO0V+QTTLX0eEEBGTBg+H9Cj4JEMvYC4m2xBpp3rH6r+OficfWE+
+    q6Y/w6ZnuzO2AtytZpaZ7uFsi2LgYL4ikSPbykrY/gMuIjmUX5yvZSPSybKsE58hRLMe
+    /zEgeUGQ/BoC9XzIDZ9YZhvf5wGeZDlga32j+reUrr69HekBsbynBasZ67eft68hHDnH
+    p3ZzL0vbzrDaNJNt7xNNEEfPM1hPWPIQDQNcPbMqcZchoU8ChdhwYVmn6/1zDVObQ6Te
+    OWvHR+bOiFNCVvMWW3utw7hyM1eWNFEZ8OIgUC/U6kq6MDPs47N0ty8Pncp5AOy4+KMG
+    BubA==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo01
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1793707236;
+    s=strato-dkim-0002; d=xenosoft.de;
+    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+    From:Subject:Sender;
+    bh=VCfhyFhtjRWlSALaNGPIzNS7a7BQ/PmFXkQDuImDC3M=;
+    b=f1CWSzzD8mIIBROl646y2/jW/lHG3ZqPzVllpm5Ol+xZG1MhSeH/3FceMBPVnPhv1K
+    bTxdJnDlZ76rp+Jz2DUAqtN5C1WDbAXszjTpvG12aVugBeif9dvGcrzGn06wjpbd7Tas
+    vLvw4lRk0FJE7bHKEJVrmnMEbUhqmyW+BERr0LtnQeOjnHMrV9IFgbqOKbUsUw6gx2CF
+    YhkgFK3dlGIVnharK7TDN1lTc4Vr5bV3aX/ONRfwLEEp61YebddDAUu6HJRcxfIaLf3D
+    rRTmq16c5Vd4UtT6tOfAZq8wdb+7nflVRihMlVYWrzHgXBLhB3aD3K4ZmxdGyBKUmaTl
+    MQuA==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1793707236;
+    s=strato-dkim-0003; d=xenosoft.de;
+    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+    From:Subject:Sender;
+    bh=VCfhyFhtjRWlSALaNGPIzNS7a7BQ/PmFXkQDuImDC3M=;
+    b=ficQJRWspo9wFofzQl77fjjSscHWH9UNkl97Y7YgWBtS5h50icl0fOgNpF9kaKPEhc
+    ZBUdO9vPVQ0tglTiZaDQ==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6KxrfO5Oh7V7X5jis3jDAXtDOW2DIUk1jJESq0dCA/mrin4I+No="
+Received: from smtpclient.apple
+    by smtp.strato.de (RZmta 55.6.3 AUTH)
+    with ESMTPSA id e825d92A3C0ZH6G
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Tue, 3 Nov 2026 13:00:35 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,110 +94,105 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
+Mime-Version: 1.0 (1.0)
+Subject: Re: Void PPC: PulseAudio issue with sound updates 7.4-rc1
+Date: Tue, 3 Nov 2026 13:00:24 +0100
+Message-Id: <BD226162-844C-449D-A486-8888184DEBF0@xenosoft.de>
+References: <874idy2wbe.wl-tiwai@suse.de>
+Cc: Takashi Iwai <tiwai@suse.de>, zzzccc427@gmail.com, perex@perex.cz,
+ linux-sound@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "R.T.Dickinson" <rtd2@xtra.co.nz>, mad skateman <madskateman@gmail.com>,
+ Damien Stewart <hypexed@yahoo.com.au>,
+ Christian Zigotzky <info@xenosoft.de>
+In-Reply-To: <874idy2wbe.wl-tiwai@suse.de>
+To: Takashi Iwai <tiwai@suse.de>
+X-Mailer: iPhone Mail (24B119)
+X-Spam-Status: No, score=-8.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,UNWANTED_DEVICE_2
+	autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Mon, 2 Nov 2026, James Hilliard wrote:
+On 03 November 2026 at 08:44 am, Takashi Iwai <tiwai@suse.de> wrote:
 
-> Moving RX DMA locking out of __dma_rx_do_complete() left the DMA
-> completion callback calling it without rx_dma_lock. Shutdown and runtime
-> suspend flush RX under rx_dma_lock but without the port lock, allowing
-> these paths to overlap the callback's buffer accounting and flip-buffer
-> insertion. RX submission and UART interrupt handling also require the
-> port lock.
-> 
-> Take rx_dma_lock inside the port lock in the completion callback. Hold
-> the port lock around the shutdown and runtime-suspend flushes, matching
-> the existing interrupt-path lock order. Assert both locks in the common
-> completion helper and the port lock at the flush entry point.
-> 
-> Fixes: 789898416749 ("serial: 8250: 8250_omap: Move locking out from __dma_rx_do_complete()")
-> Signed-off-by: James Hilliard <james.hilliard1@gmail.com>
-> ---
->  drivers/tty/serial/8250/8250_omap.c | 18 ++++++++++++++----
->  1 file changed, 14 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/tty/serial/8250/8250_omap.c b/drivers/tty/serial/8250/8250_omap.c
-> index b6f108d34854..322403cec2de 100644
-> --- a/drivers/tty/serial/8250/8250_omap.c
-> +++ b/drivers/tty/serial/8250/8250_omap.c
-> @@ -771,8 +771,10 @@ static void omap_8250_shutdown(struct uart_port *port)
->  	guard(serial8250_rpm)(up);
->  
->  	flush_work(&priv->qos_work);
-> -	if (up->dma)
-> +	if (up->dma) {
-> +		guard(uart_port_lock_irq)(port);
->  		omap_8250_rx_dma_flush(up);
-> +	}
->  
->  	serial_out(up, UART_OMAP_WER, 0);
->  	if (priv->habit & UART_HAS_EFR2)
-> @@ -898,7 +900,7 @@ static int omap8250_rs485_config(struct uart_port *port,
->  #ifdef CONFIG_SERIAL_8250_DMA
->  static int omap_8250_rx_dma(struct uart_8250_port *p);
->  
-> -/* Must be called while priv->rx_dma_lock is held */
-> +/* Must be called with the port lock and priv->rx_dma_lock held. */
+Have you tried changing the call of snd_pcm_hw_refine_with_lock() in
+snd_pcm_ioctl_hw_params_compat(), too?  Or check the call in
+snd_pcm_hw_refine_old_user(), too.
 
-Nit, following kerneldoc's style, this would start with Context: (you 
-don't need to make it full kerneldoc but it is useful to follow the kernel 
-doc style where possible).
+If it doesn't change even if you replace all callers of
+snd_pcm_hw_refine_with_lock() with snd_pcm_hw_refine(), something
+wrong in the test itself.
 
->  static void __dma_rx_do_complete(struct uart_8250_port *p)
->  {
->  	struct uart_8250_dma    *dma = p->dma;
-> @@ -911,6 +913,9 @@ static void __dma_rx_do_complete(struct uart_8250_port *p)
->  	int			ret;
->  	u32			reg;
->  
-> +	lockdep_assert_held_once(&p->port.lock);
-> +	lockdep_assert_held_once(&priv->rx_dma_lock);
-> +
->  	if (!dma->rx_running)
->  		goto out;
->  
-> @@ -977,7 +982,8 @@ static void __dma_rx_complete(void *param)
->  	if (dmaengine_tx_status(dma->rxchan, dma->rx_cookie, &state) != DMA_COMPLETE)
->  		return;
->  
-> -	__dma_rx_do_complete(p);
-> +	scoped_guard(spinlock, &priv->rx_dma_lock)
-> +		__dma_rx_do_complete(p);
->  	if (priv->throttled)
->  		return;
->  
-> @@ -995,6 +1001,8 @@ static void omap_8250_rx_dma_flush(struct uart_8250_port *p)
->  	unsigned long		flags;
->  	int ret;
->  
-> +	lockdep_assert_held_once(&p->port.lock);
-> +
->  	spin_lock_irqsave(&priv->rx_dma_lock, flags);
->  
->  	if (!dma->rx_running) {
-> @@ -1811,8 +1819,10 @@ static int omap8250_runtime_suspend(struct device *dev)
->  		}
->  	}
->  
-> -	if (up && up->dma && up->dma->rxchan)
-> +	if (up && up->dma && up->dma->rxchan) {
-> +		guard(uart_port_lock_irqsave)(&up->port);
->  		omap_8250_rx_dma_flush(up);
-> +	}
->  
->  	priv->latency = PM_QOS_CPU_LATENCY_DEFAULT_VALUE;
->  	schedule_work(&priv->qos_work);
-> 
-> 
 
--- 
- i.
+Takashi
 
+- - -
+
+I have tried it and sound works again.
+
+My modifications:
+
+diff -rupN a/sound/core/pcm_compat.c b/sound/core/pcm_compat.c
+--- a/sound/core/pcm_compat.c	2026-11-01 22:26:31.000000000 +0100
++++ b/sound/core/pcm_compat.c	2026-11-03 10:01:54.228010513 +0100
+@@ -252,7 +252,7 @@ static int snd_pcm_ioctl_hw_params_compa
+ 		return -EFAULT;
+ 
+ 	if (refine) {
+-		err = snd_pcm_hw_refine_with_lock(substream, data);
++		err = snd_pcm_hw_refine(substream, data);
+ 		if (err < 0)
+ 			return err;
+ 		err = fixup_unreferenced_params(substream, data);
+diff -rupN a/sound/core/pcm_native.c b/sound/core/pcm_native.c
+--- a/sound/core/pcm_native.c	2026-11-01 22:26:31.000000000 +0100
++++ b/sound/core/pcm_native.c	2026-11-03 10:02:24.836343549 +0100
+@@ -932,29 +932,6 @@ static int snd_pcm_hw_params_user(struct
+  * this one should be used for ioctls and other external paths instead of
+  * direct call of snd_pcm_hw_refine()
+  */
+-static int snd_pcm_hw_refine_with_lock(struct snd_pcm_substream *substream,
+-				       struct snd_pcm_hw_params *params)
+-{
+-	struct snd_pcm_runtime *runtime;
+-	int err;
+-
+-	if (PCM_RUNTIME_CHECK(substream))
+-		return -ENXIO;
+-	runtime = substream->runtime;
+-	err = snd_pcm_buffer_access_lock(runtime);
+-	if (err < 0)
+-		return err;
+-	err = hw_params_state_check(substream);
+-	if (err)
+-		goto unlock;
+-
+-	err = snd_pcm_hw_refine(substream, params);
+-
+- unlock:
+-	snd_pcm_buffer_access_unlock(runtime);
+-	return err;
+-}
+-
+ static int snd_pcm_hw_refine_user(struct snd_pcm_substream *substream,
+ 				  struct snd_pcm_hw_params __user * _params)
+ {
+@@ -965,7 +942,7 @@ static int snd_pcm_hw_refine_user(struct
+ 	if (IS_ERR(params))
+ 		return PTR_ERR(params);
+ 
+-	err = snd_pcm_hw_refine_with_lock(substream, params);
++	err = snd_pcm_hw_refine(substream, params);
+ 	if (err < 0)
+ 		return err;
+ 
+@@ -4247,7 +4224,7 @@ static int snd_pcm_hw_refine_old_user(st
+ 	if (IS_ERR(oparams))
+ 		return PTR_ERR(oparams);
+ 	snd_pcm_hw_convert_from_old_params(params, oparams);
+-	err = snd_pcm_hw_refine_with_lock(substream, params);
++	err = snd_pcm_hw_refine(substream, params);
+ 	if (err < 0)
+ 		return err;
 
