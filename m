@@ -2,81 +2,96 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 32C96606A31B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 18:13:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BE87C606A31B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 18:17:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WF+r9vaK
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=RCUPSDpJ
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJxWh1Ptgz309w;
-	Wed, 04 Nov 2026 05:13:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25" arc.chain=kernel.org
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793729584;
-	cv=pass; b=ISsEdAzaw5p/5PEj02v1DzYkoDOlvyhF6Fosg8UtuTz/LrGn7gEDvzddLo1DoV66GIPplDCBSqxQJmUSPr5HemY7snZi2C2nDUnEATTyKzLKyfoejEBU0GB+9GSaCtLwRzad5b84PyguDfw8vhIDVUqv3FM8n31dtd+ctgLTEdT8YBRw6rBCXZM5/d1KMHz8UOzHizBklF01wI2F86hViEiRsGDQSw1usZFy4yhWv2Jip4t3REBr8Bius43MdLf7oN9fD3ezQCdt0ib4y/f+6a/b9UGEkA+3+ngybhO57HZ4Q2nNfLYkLLRYcjaZN7PKW1kOHnoMMWxrEX+FmZ/0UA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJxcF3h7rz2xdX;
+	Wed, 04 Nov 2026 05:17:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::a35" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793729821;
+	cv=pass; b=ZYBeIPVxLT1/Of83d9zu1CL5osVntsmvga99hzpPapZKf2zuWFdKcCgrN8UUuVHKiTO6XwszXEiXXJgoXESznblbXOxc3wdy/dvLK3RGHcwZMecuVJ/59s10obs0v7Kr8FihXkglIevGpWjpsEuSrdw0dLQARPzewViinDuTn3KAvULn3EgaD4nswLW6x3CTtgR0tZYbUKHxTeX380eAYoGme7NGCrflULNQHi7Z8Q8iw9zSeovwp9IQGBEoG5aUQ8GJA0dwwJ6wx9gJ9jOC1/B6UxGpKBo4AEXlXOwyLWXS48vgHZpKavb18zX+cKAsoLf9pVXDxedUQA7mFh+poA==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793729584; c=relaxed/relaxed;
-	bh=2Rjk1OJO5Aj+he8nLnF01U7gZlB1bfdmBrf/5i2ju0o=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=FuOSVQCa/vj0ZQ2Ru4446vJNB8VSha0T1Q/xxK72Oujgpj/8EoRCiFsjg0fsh4UGkXmF3a5Y/We8viqnrP53v6HTA27x/6DqqolrndphnypCnjpZmKGO7TTnDNmJsEaDpFxNSE/WY6OjXAMytPjdvD3+2xq8+6d8DX8pcNhAS1RIjpCCaRkwki98p8jpqLXOgOBczr69gRrLrkMvc50h8NyMyWevBWVT4j6Maz+BdILvRHgsgjdkYzPiBPJ5JP67Xn90UVsZUv/EjIPgddG62EcIppZbbUKY/LRjLE8hEywpsQtYTOXZRlvvG38VQqun8W5GOk9lAr3Ixl3Rxu8SeA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WF+r9vaK; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+vjardin.free.fr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1793729821; c=relaxed/relaxed;
+	bh=bbvyH8U6X8W+XhLMtftlLqtY3X/eIGXG9T4SZ8xrjfM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=fbrzml4bkjqXk4WFitzP5EamMaXqkZ17z7noXzYyMUDdR21rkH7vYK1iC0WAMnZ/jeE5JqYMkuwX46qJNpY1gTvs/PRZ9wvRjBjIRg/2SVvNPl8Kh+XsnCI/XqGqLrdKadZcC2fM9n4wjWhecb728f4fJQRcz1/3ZHoD0vvOGKGkdya7E2Yqf7Pyy0BC1LNBh0RoMeLjH7D+GEokOANCqQeJbPgqmDc0S5j/kl93ZCoHbHJe35BBJeaJG/rm+ZJ+96qwnCZ/gOXdmnNnrouVcA/+XWrwLoVWzFUv1uiOCcijR2XLjrXKxmR9pHS8FjKS61KQSVoGMID8NJeDKQ7T3w==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=RCUPSDpJ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::a35; helo=mail-vk1-xa35.google.com; envelope-from=james.hilliard1@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WF+r9vaK;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=RCUPSDpJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+vjardin.free.fr@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::a35; helo=mail-vk1-xa35.google.com; envelope-from=james.hilliard1@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-vk1-xa35.google.com (mail-vk1-xa35.google.com [IPv6:2607:f8b0:4864:20::a35])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJxWb0Gg0z2xlj
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2026 05:12:58 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 8FC2940B0E;
-	Tue,  3 Nov 2026 18:12:56 +0000 (UTC)
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1793729576;
-	b=yucgMSLpaRn8iscZ5H7JPtt2ByZQabWHR7JqFEY1YQq6PSAx0XIGBt2DRGz6XvaCGzll
-	 h4qwwG4CA9WuY5xUI6U9MTGhtnhBIPTFL40OsKc+fBeVpZU/lSSqUt8XYtmt0Cq7fTZa7
-	 vRRHppi/8jWlBDm2FNCmT4XnEClDdUF6qlpoUsis5zDVg3ge4LQPNsDcLcvLYVP7Wqzz1
-	 2BTJfMMboBLbQXJ2cAOxyamJmBjM2xxM1RXxATIgjtCjhsJvNRdN4HfyqFtvl7LBUFEsR
-	 ijvnEBr+Ofd5DgBFxb+3ERablHL4oMz+te68HmZyzWQxXrr8DmjJNF8gMisRta+gT/g==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793729576;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=2Rjk1OJO5Aj+he8nLnF01U7gZlB1bfdmBrf/5i2ju0o=;
-	b=dA8HHIAvTdRRRaSpreBAD23S6bTVaVEXnfCJWGK/gIZBZbZ7BB4u7vFOPxvZkeYPNm+F
-	 mOzkYVV/QQY+g+lJrEIQtHvSjx6ygYsLITMC0nkxfOl+6vPkPof0TkUm22Exhd9217vD6
-	 aiGf4WGZza5zV25d7z0VpbIl8m7ymKJAq3os+3Mmqhn/+Lje83cPzVCtWHNCtlfQnATRt
-	 jN2QzpGpmGNi9IckqW47SULxNeNcgjfLr5lT2TSCRYfhN8zDy4RyP+egs60xtNmwBSD9V
-	 KTHsaDynTa0K+UIbtMN4e1Aob9gDzI5Vg8hi+EyyVzrRC6kCxSD23G+RqnoxKmL5tcw==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id A9F731F00A1D;
-	Tue,  3 Nov 2026 18:12:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793729576;
-	bh=2Rjk1OJO5Aj+he8nLnF01U7gZlB1bfdmBrf/5i2ju0o=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=WF+r9vaKf7Efe10BzNolpzUMRRhRgBSReVZ3wtbPGyH/tQ6QvfRc4XEr6NWNmnfZ9
-	 LoH6xK4WaIxe9we0ihqx+cD1N0Tc1VGg2uclQCdKFPVWIjuAVHqecTgOgeujECAIGr
-	 hwRUr+043OFrPpDHW/CCd55ubcF5wmrDBSQjGrzJss2P6u+wKcA62z/KAUfMUngOly
-	 iYKZT2uSzQLut4BCroKHD6yt4SYz1dUZYTzSA9LMYko6MFLzfQoiSbwC92hUfOPZpu
-	 bWsHpk1GdMRC1/QZ60SAW6KPfGqFg5ao14fwYnPpHUCiDArOpj+MMk1JGKRN89iLpp
-	 OLOme7+iVKxsQ==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 396E246A7D;
-	Tue,  3 Nov 2026 18:12:54 +0000 (UTC)
-From: Vincent Jardin via B4 Relay <devnull+vjardin.free.fr@kernel.org>
-Date: Tue, 03 Nov 2026 19:12:12 +0100
-Subject: [PATCH v2 4/5] pinctrl: freescale: add the LX2160A RCW pad-mux
- driver
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJxcD3c3Nz2xSZ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2026 05:17:00 +1100 (AEDT)
+Received: by mail-vk1-xa35.google.com with SMTP id 71dfb90a1353d-5eaabf28c06so3547609e0c.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 10:17:00 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1793729817; cv=none;
+        d=google.com; s=arc-20260327;
+        b=Ax8sbREOnwCgLvBhFjX+dT0msmszSyN8MLHaEZ2DzgXUDysWc01ONJqn4/sFE3C0Kn
+         8TDHLGZq7c8Ux9IkPGXoYFqfvki0dyuXzEC36BpMT9jFPNglzQ5vMrujbozWWt4sj1AL
+         6/USHABIhdKtmdboNbidevTRK1umqd6i/8u2WD1QMbzRWN7C3mkQ5ePzNdGa5RtWLBnL
+         HBhsrM77DQmMOE3SiisOD8GMQoBt8onUVbXpTvgWeHus0Pbt+KFX/VD8mVYpWa8xZumL
+         c5WTEEuWElvaNyp/I/ERLYCeEuR0oEBuclb6PxlQHynpzFZ63a2XvXsj1kHhpsVcu/Tc
+         XKow==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=bbvyH8U6X8W+XhLMtftlLqtY3X/eIGXG9T4SZ8xrjfM=;
+        fh=IxQMKP7wEuNBbZTGLwfg6BUN3WzGT3ff4LAWOH+0R/I=;
+        b=d1h/CMTL9nEodVf/hrKB9wdC5gbU3g2CzsGmJ84b7YPueWQj21Nz/Pyi/YUkFgpuuS
+         ncI5McpJbxTi8BsvS0gC+ubsFBOq9JWkAeo7ugkWD/P6KwpVeifu8USsTxi//3LPzvY2
+         L3iCsFsScXWM2vlf4R+EOajn7nL/1vL1NkqWp9qrxBKir3RXc2LQdMXTIJ7TxmPTz/61
+         +HiWcipo7BO9oJUT9P9YRarO+6fpHf+YX3LsIzgwM/190OudfVtiJ/O30Tr4ItxpV8fl
+         HtsL9JEU+ntB0Wzkjdo7XRDNshABOXzfdS27BtW2bBL20BdZ1MX+O5n+2/oqmLbo53ew
+         pFtQ==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1793729817; x=1794334617; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=bbvyH8U6X8W+XhLMtftlLqtY3X/eIGXG9T4SZ8xrjfM=;
+        b=RCUPSDpJNsAcKTDmPchpEFRZ1ojqLLtdJ66TrP0qvXXsRpZ7It3mFNrfxL3XF/VDER
+         ExKKEkirPmUCTGpuuETlO4Hsz29iSJBIMd2g+DicPtO4fTo2MkLeMRn0G5/WdcrPOzf9
+         hDq/CzpRv8IAzuI5GM4V7LsLjYyPBnrcMiuj0sJvzB9rQ8+I/4MKrdpNdxDdGMBy5r3U
+         iEwkGeQnJWVOjmZ4UjtR60PrpevQTUPggL3z98Zu6jcNmBmJEB1V9eqVM1utW/NISMHP
+         +F29R3e5XurK7hKZCORrcjEHQQcTMr3xG1JQT5wxQm3qcXQrze6PczfaurVn7lDCdMtA
+         6kvQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793729817; x=1794334617;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=bbvyH8U6X8W+XhLMtftlLqtY3X/eIGXG9T4SZ8xrjfM=;
+        b=Hrkqh/1p9652hadHIkwvXfPXlKo8KlZyef09V5OS4btnZ3sGnKG+Wva4yDF6C9W2OB
+         xpq8wV3JZ/kSl6pYlYdHDgNiOyZZBJ06SLw/sIAaTgd13UI0gaS5RgZEonFkLkyXZVN0
+         spXG7lfft8YzYbaxjwULoAogloc1Y04PHqWiHbSUNF65iGFw5knWRsqPwKm3HSoDlHOe
+         9jbJdiLnONV1/wJbcXCmCq+90pT6iYh6fI3fQyVDqI/ZnlhqeyV9e5Q8GZmjTSTL1TJ3
+         6ILvffdxn8xpFBGHHUCaBD6IfihHeJbdAsVSret2V8je//dDgr3laBrNWE0qJyOLJF9b
+         iMXA==
+X-Forwarded-Encrypted: i=1; AKwUvBzleAW25AdkDdhrLJ+tY8hJAD88o1COzzdQ1t7c9s3a1KzzuJ+sZJLc0ozED4Jpa/S5JANZ4cw/NM19cYU=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z+1Rw42KsMTKwkBj1jdq5zkS5tt2DkaLvCQesecJhF5Xwth1LGK
+	Ezg8eETtiWUYyLCR3cBbW9Z/s7RW7rJVuH0rcWk8DzpPjBRYe4iPXao05m3bw4ALzEtSKVVVlo1
+	S0KVvKzTU0itnijSkz6/MaO5p11h2+Qg=
+X-Gm-Gg: AYBFou1iHPvKwk8WeucE+kmTTxTsP/MtFj9KZUokfraQJu3ynoBEauQfOo+wY/Um2sJ
+	TRBIxdv2Vq2Fpq0Dp70aP8pqmgXutnAXu6aYrw/trcsSrBnLgxVmOYRrBx7q0RbtoGY70TggGM4
+	r/9MaTFzDmOGdaGkVMbydH+TibtT/o5IbJElAYdJLBidulTsYgzjHJ2nmUObUP/F2D1trZZHAbD
+	kjYbo8332elbYEd19Rp9DZtMVyX5nLEhq92/AiqoqBPjtxAmHq0qpynnOYQuxZl2SpIplhrXtnC
+	e8AHUqWR2UeZxAowe+Lm2mElpT86817ZUptHBfn8WcO6T7or3Gb8xlmIX4nzjTUSGj++mpvgJhz
+	8LqnlN6NUl2riGU8xiv6LYhjRJvyQnvIIxG99VYzD0+r4YbYTUqfPMyhaosWDwFXMwbCIUa46GX
+	/13F0pzTwNH9i4s4oODyuDUFgQ09Q1qnMng7VBWiewreU97ql5wuZ4ZDNQ1JD7ZfAvdCEq3DK8q
+	8gueWb0H1WbzNBIxIYKo3pPJr1GqJgGfeYbCKykA0IQdmvyWcw=
+X-Received: by 2002:a05:6122:180a:b0:5ec:5f1b:f725 with SMTP id
+ 71dfb90a1353d-5ec689c4d7fmr6770861e0c.23.1793729817534; Tue, 03 Nov 2026
+ 10:16:57 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,485 +105,183 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261103-for-upstream-lx2160a-rcw-pinmux-v1-v2-4-3aad0860b984@free.fr>
-References: <20261103-for-upstream-lx2160a-rcw-pinmux-v1-v2-0-3aad0860b984@free.fr>
-In-Reply-To: <20261103-for-upstream-lx2160a-rcw-pinmux-v1-v2-0-3aad0860b984@free.fr>
-To: Dong Aisheng <aisheng.dong@nxp.com>, Fabio Estevam <festevam@gmail.com>, 
- Frank Li <Frank.Li@nxp.com>, Jacky Bai <ping.bai@nxp.com>, 
- Pengutronix Kernel Team <kernel@pengutronix.de>, 
- NXP S32 Linux Team <s32@nxp.com>, Linus Walleij <linusw@kernel.org>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
- Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev, 
- Vladimir Oltean <vladimir.oltean@nxp.com>, Vincent Jardin <vjardin@free.fr>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1793729572; l=14211;
- i=vjardin@free.fr; s=20260525; h=from:subject:message-id;
- bh=mgJWUp01N8MKAH+Eg4XUymjim1QvmmPHCrTSnou8fE8=;
- b=uY0p8PrdoT0E25wFT1C78yeF6Ql2FQXy8C92zYGqqLZjysaeEiL4FBp6O44nEbdfEQ1vWNNsl
- rZ+3nNdFnbNDDFjlzs9OcffHmi5Kt85ZtYBJraoUYi6yw7QkD/cNqco
-X-Developer-Key: i=vjardin@free.fr; a=ed25519;
- pk=hppgLeFpGpKOi7LNwGEZ4jOYofJCoGd4Jf1ltAabiLw=
-X-Endpoint-Received: by B4 Relay for vjardin@free.fr/20260525 with
- auth_id=871
-X-Original-From: Vincent Jardin <vjardin@free.fr>
-Reply-To: vjardin@free.fr
-Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=4.0.1
+References: <20261102-submit-serial-8250-dma-cancel-v1-v9-0-9159caade148@gmail.com>
+ <20261102-submit-serial-8250-dma-cancel-v1-v9-7-9159caade148@gmail.com>
+ <auoa8OWBxqaQuKRq@ashevche-desk.local> <CADvTj4rL23q6eO8vjVe9vL1g6B8aoZqsbnThi2QJqkj=9e59sw@mail.gmail.com>
+ <auoit0AkmVeCvXqk@ashevche-desk.local>
+In-Reply-To: <auoit0AkmVeCvXqk@ashevche-desk.local>
+From: James Hilliard <james.hilliard1@gmail.com>
+Date: Tue, 3 Nov 2026 11:16:46 -0700
+X-Gm-Features: AclHuK8HW-CEs65d3UAbPyCnbzk3fKPiCpsZ9iT1lPWFV_I6MxwKEkb2VsX1bZo
+Message-ID: <CADvTj4rwm5BH8veX9i5_4trvzQFRPbDrAby7sXuEth6H6zJH2A@mail.gmail.com>
+Subject: Re: [PATCH v9 7/8] serial: 8250: retire canceled RX DMA before
+ reusing the receive buffer
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
+	Raul E Rangel <rrangel@chromium.org>, =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>, Tony Lindgren <tony@atomide.com>, 
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Richard Genoud <richard.genoud@bootlin.com>, 
+	Nicolas Ferre <nicolas.ferre@microchip.com>, 
+	Alexandre Belloni <alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, 
+	Jacky Huang <ychuang3@nuvoton.com>, Shan-Chun Hung <schung@nuvoton.com>, 
+	=?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Fabio Estevam <festevam@gmail.com>, "Maciej W. Rozycki" <macro@orcam.me.uk>, Timur Tabi <timur@kernel.org>, 
+	Peter Ujfalusi <peter.ujfalusi@ti.com>, Vignesh Raghavendra <vigneshr@ti.com>, 
+	Patrice Chotard <patrice.chotard@foss.st.com>, linux-kernel@vger.kernel.org, 
+	linux-serial@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	imx@lists.linux.dev, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: Vincent Jardin <vjardin@free.fr>
+On Tue, Nov 3, 2026 at 11:06=E2=80=AFAM Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> wrote:
+>
+> On Tue, Nov 03, 2026 at 10:54:38AM -0700, James Hilliard wrote:
+> > On Tue, Nov 3, 2026 at 10:34=E2=80=AFAM Andy Shevchenko
+> > <andriy.shevchenko@linux.intel.com> wrote:
+> > > On Mon, Nov 02, 2026 at 04:14:34PM -0700, James Hilliard wrote:
+>
+> ...
+>
+> > > > +static void serial8250_rx_dma_flush_work(struct work_struct *work)
+> > > > +{
+> > > > +     struct uart_8250_dma *dma =3D container_of(work, struct uart_=
+8250_dma, rx_flush_work);
+> > > > +     struct uart_8250_port *p =3D dma->port;
+> > > > +     unsigned int delay_us =3D USEC_PER_MSEC;
+> > > > +     ktime_t start =3D ktime_get();
+> > > > +     bool recover, retry, restore_rx;
+> > > > +     bool warned =3D false;
+> > > > +     int ret;
+> > > > +
+> > > > +     guard(serial8250_rpm)(p);
+> > > > +
+> > > > +     for (;;) {
+> > > > +             scoped_guard(uart_port_lock_irqsave, &p->port) {
+> > > > +                     /* Shutdown cancels this work and drains both=
+ DMA channels. */
+> > > > +                     if (dma->shutting_down)
+> > > > +                             return;
+> > > > +                     /* Serialize reset with completion and shutdo=
+wn notifications. */
+> > > > +                     WRITE_ONCE(dma->rx_pause_wakeup, false);
+> > > > +                     retry =3D dma->rx_pause_pending && !dma->rx_t=
+erminating;
+> > > > +                     if (retry) {
+> > > > +                             ret =3D serial8250_rx_dma_try_flush(p=
+);
+> > > > +                             retry =3D dma->rx_pause_pending && !d=
+ma->rx_terminating;
+> > > > +                     }
+> > > > +                     recover =3D dma->rx_err;
+> > > > +             }
+> > > > +             if (!retry)
+> > > > +                     break;
+> > > > +             if (!warned && ktime_ms_delta(ktime_get(), start) >=
+=3D MSEC_PER_SEC) {
+> > > > +                     dev_warn_ratelimited(p->port.dev,
+> > > > +                                          "RX DMA pause stalled: %=
+d; retaining transfer and retrying\n",
+> > > > +                                          ret);
+> > >
+> > > _ratelimited() is a slop of AI without understanding the code. It mak=
+es nonsense
+> > > in combination with warned.
+> >
+> > The two controls have different scopes. warned is local to one invocati=
+on
+> > of the flush worker and prevents repeated warning attempts while that
+> > flush remains stalled. A later flush starts with warned cleared again.
+> >
+> > The rate limit applies across worker invocations and UART ports. It lim=
+its
+> > messages from separate stalls, rather than repeated retries of the same
+> > stall.
+>
+> How? The whole _ratelimited() is nonsense here.
 
-The LX2160A muxes its IIC, XSPI, SDHC, UART, IRQ and EVT pads from
-fields of the RCW, read-only in RCWSR12..14 of DCFG and changed at
-runtime through the same fields of the override registers in its DCSR
-view, which read 0 until written.
+dev_warn_ratelimited() uses a static ratelimit_state at the call site,
+shared by all ports. The intent was to limit warning bursts across ports
+and separate flushes, while warned only covers one flush.
 
-Since commit 8a1365c7bbc1 ("arm64: dts: lx2160a: add pinmux and i2c
-gpio to support bus recovery") Linux drives them with pinctrl-single on
-the override registers, so its first pin state clears every other field
-of the word: a board whose RCW programs a non-zero pad mux loses those
-pads at the first I2C probe.
+>
+> > > > +                     warned =3D true;
+> > >
+> > > Altogether NIH _once().
+> >
+> > dev_warn_once() uses a static flag at the call site, shared by all port=
+s.
+> > After the first warning, subsequent stalls would remain silent even aft=
+er
+> > recovery or reopening the port, including stalls on another UART.
+> >
+> > The intended behavior here is at most one warning attempt per prolonged
+> > stall, while keeping later incidents diagnosable and limiting their
+> > aggregate logging rate.
+>
+> Yes, so what the point to use _ratelimited()?
 
-Add a driver for the pad mux as a child of the DCFG node: the fields
-of RCWSR12..14 and their encoding.
-Then pin states select them with the generic function and groups
-properties, and every change goes through the RCW override
-of fsl-guts, which reads the status register, writes the override and
-waits for the status register to follow.
+It was intended to limit warning bursts across multiple ports and
+separate stalls, while warned prevented repeated messages for one
+stalled flush.
 
-Signed-off-by: Vincent Jardin <vjardin@free.fr>
----
- MAINTAINERS                                 |   7 +
- drivers/pinctrl/freescale/Kconfig           |  15 ++
- drivers/pinctrl/freescale/Makefile          |   1 +
- drivers/pinctrl/freescale/pinctrl-lx2160a.c | 355 ++++++++++++++++++++++++++++
- 4 files changed, 378 insertions(+)
+I'll use dev_warn() with the per-flush warned flag and one-second
+threshold instead. That keeps one warning per prolonged stall and lets
+each port report its own failure independently.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 93abbb315065..6c488605f5da 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -20207,6 +20207,13 @@ F:	Documentation/devicetree/bindings/clock/*imx*
- F:	drivers/clk/imx/
- F:	include/dt-bindings/clock/*imx*
- 
-+NXP LX2160A RCW PAD-MUX DRIVER
-+M:	Vincent Jardin <vjardin@free.fr>
-+L:	linux-gpio@vger.kernel.org
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/pinctrl/fsl,lx2160a-rcw-pinmux.yaml
-+F:	drivers/pinctrl/freescale/pinctrl-lx2160a.c
-+
- NXP NETC ETHERNET SWITCH DRIVER
- M:	Wei Fang <wei.fang@nxp.com>
- R:	Clark Wang <xiaoning.wang@nxp.com>
-diff --git a/drivers/pinctrl/freescale/Kconfig b/drivers/pinctrl/freescale/Kconfig
-index fd53cf5bb843..a3222714c970 100644
---- a/drivers/pinctrl/freescale/Kconfig
-+++ b/drivers/pinctrl/freescale/Kconfig
-@@ -283,3 +283,18 @@ config PINCTRL_IMXRT1170
- 	select PINCTRL_IMX
- 	help
- 	  Say Y here to enable the imxrt1170 pinctrl driver
-+
-+config PINCTRL_LX2160A
-+	bool "NXP LX2160A RCW pad-mux driver"
-+	depends on OF
-+	depends on ARCH_LAYERSCAPE || COMPILE_TEST
-+	default ARCH_LAYERSCAPE
-+	select FSL_GUTS
-+	select GENERIC_PINCTRL_GROUPS
-+	select GENERIC_PINMUX_FUNCTIONS
-+	select GENERIC_PINCONF
-+	help
-+	  Say Y here to mux the IIC, XSPI, SDHC, UART, IRQ and EVT pads of the
-+	  LX2160A at runtime. The pads are muxed by fields of the RCW:
-+	  the driver changes it in the DCSR view of the DCFG that fsl-guts
-+	  drives, and is what the I2C bus recovery of the LX2160A needs.
-diff --git a/drivers/pinctrl/freescale/Makefile b/drivers/pinctrl/freescale/Makefile
-index d27085c2b4c4..5ec0d1710ad5 100644
---- a/drivers/pinctrl/freescale/Makefile
-+++ b/drivers/pinctrl/freescale/Makefile
-@@ -35,3 +35,4 @@ obj-$(CONFIG_PINCTRL_IMX25)	+= pinctrl-imx25.o
- obj-$(CONFIG_PINCTRL_IMX28)	+= pinctrl-imx28.o
- obj-$(CONFIG_PINCTRL_IMXRT1050)	+= pinctrl-imxrt1050.o
- obj-$(CONFIG_PINCTRL_IMXRT1170)	+= pinctrl-imxrt1170.o
-+obj-$(CONFIG_PINCTRL_LX2160A)	+= pinctrl-lx2160a.o
-diff --git a/drivers/pinctrl/freescale/pinctrl-lx2160a.c b/drivers/pinctrl/freescale/pinctrl-lx2160a.c
-new file mode 100644
-index 000000000000..ba5bbcfab9fd
---- /dev/null
-+++ b/drivers/pinctrl/freescale/pinctrl-lx2160a.c
-@@ -0,0 +1,355 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * LX2160A pad muxes: fields of the RCW, changed at
-+ * runtime.
-+ *
-+ * Copyright 2026 Free Mobile - Vincent Jardin
-+ */
-+
-+#include <linux/bits.h>
-+#include <linux/fsl/guts.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/pinctrl/pinconf-generic.h>
-+#include <linux/pinctrl/pinctrl.h>
-+#include <linux/pinctrl/pinmux.h>
-+#include <linux/platform_device.h>
-+#include <linux/seq_file.h>
-+
-+#include "../core.h"
-+#include "../pinmux.h"
-+
-+struct lx2160a_pmux_func {
-+	const char *name;
-+	u8 val;
-+};
-+
-+struct lx2160a_pmux_group {
-+	const char *name;
-+	u8 rcwsr; /* 12..14 */
-+	u8 shift;
-+	u8 width;
-+	const struct lx2160a_pmux_func *funcs;
-+	u8 nfuncs;
-+};
-+
-+#define FUNC(_name, _val)	{ .name = _name, .val = _val }
-+#define GROUP(_name, _rcwsr, _shift, _width, _funcs)			\
-+	{								\
-+		.name = _name, .rcwsr = _rcwsr,				\
-+		.shift = _shift, .width = _width,			\
-+		.funcs = _funcs, .nfuncs = ARRAY_SIZE(_funcs),		\
-+	}
-+
-+static const struct lx2160a_pmux_func iic2_funcs[] = {
-+	FUNC("i2c", 0), FUNC("gpio", 1), FUNC("flextimer", 2), FUNC("sdhc", 6),
-+};
-+
-+static const struct lx2160a_pmux_func iic3_funcs[] = {
-+	FUNC("i2c", 0), FUNC("gpio", 1), FUNC("can", 2), FUNC("evt", 6),
-+};
-+
-+static const struct lx2160a_pmux_func iic5_funcs[] = {
-+	FUNC("i2c", 0), FUNC("gpio", 1), FUNC("sdhc-clk", 2), FUNC("spi", 3),
-+};
-+
-+static const struct lx2160a_pmux_func iic6_funcs[] = {
-+	FUNC("i2c", 0), FUNC("gpio", 1), FUNC("sdhc-clk", 2),
-+};
-+
-+static const struct lx2160a_pmux_func xspi1_funcs[] = {
-+	FUNC("flexspi", 0), FUNC("gpio", 1),
-+};
-+
-+static const struct lx2160a_pmux_func sdhc1_base_funcs[] = {
-+	FUNC("sdhc", 0), FUNC("gpio", 1), FUNC("spi", 2), FUNC("sdhc-spi", 3),
-+	FUNC("sdhc-data4", 4),
-+};
-+
-+static const struct lx2160a_pmux_func sdhc1_dir_funcs[] = {
-+	FUNC("sdhc", 0), FUNC("gpio", 1), FUNC("spi", 3), FUNC("sdhc-data", 4),
-+};
-+
-+static const struct lx2160a_pmux_func sdhc2_data74_funcs[] = {
-+	FUNC("sdhc", 0), FUNC("gpio", 1), FUNC("i2c", 2), FUNC("flexspi", 6),
-+};
-+
-+static const struct lx2160a_pmux_func sdhc2_base_funcs[] = {
-+	FUNC("sdhc", 0), FUNC("gpio", 1), FUNC("spi", 2), FUNC("flexspi", 6),
-+};
-+
-+static const struct lx2160a_pmux_func uart_funcs[] = {
-+	FUNC("uart", 0), FUNC("gpio", 1),
-+};
-+
-+static const struct lx2160a_pmux_func uart1_rtscts_funcs[] = {
-+	FUNC("uart", 0), FUNC("gpio", 1), FUNC("uart3", 2),
-+};
-+
-+static const struct lx2160a_pmux_func uart2_rtscts_funcs[] = {
-+	FUNC("uart", 0), FUNC("gpio", 1), FUNC("uart4", 2),
-+};
-+
-+static const struct lx2160a_pmux_func irq_funcs[] = {
-+	FUNC("irq", 0), FUNC("gpio", 1),
-+};
-+
-+static const struct lx2160a_pmux_func irq_flextimer_funcs[] = {
-+	FUNC("irq", 0), FUNC("gpio", 1), FUNC("flextimer", 2),
-+};
-+
-+static const struct lx2160a_pmux_func evt_funcs[] = {
-+	FUNC("evt", 0), FUNC("gpio", 1), FUNC("flextimer", 2),
-+};
-+
-+static const struct lx2160a_pmux_func clk_out_funcs[] = {
-+	FUNC("gpio", 1), FUNC("flextimer", 2),
-+};
-+
-+static const struct lx2160a_pmux_func asleep_funcs[] = {
-+	FUNC("asleep", 0), FUNC("gpio", 1), FUNC("evt", 2),
-+};
-+
-+static const struct lx2160a_pmux_func reset_req_funcs[] = {
-+	FUNC("reset-req", 0), FUNC("gpio", 1),
-+};
-+
-+static const struct lx2160a_pmux_func iic1_funcs[] = {
-+	FUNC("i2c", 0), FUNC("gpio", 1),
-+};
-+
-+static const struct lx2160a_pmux_group lx2160a_pmux_groups[] = {
-+	/* RCWSR12 */
-+	GROUP("iic2", 12, 0, 3, iic2_funcs),
-+	GROUP("iic3", 12, 3, 3, iic3_funcs),
-+	GROUP("iic4", 12, 6, 3, iic3_funcs),
-+	GROUP("iic5", 12, 9, 3, iic5_funcs),
-+	GROUP("iic6", 12, 12, 3, iic6_funcs),
-+	GROUP("xspi1-data74", 12, 15, 3, xspi1_funcs),
-+	GROUP("xspi1-data30", 12, 18, 3, xspi1_funcs),
-+	GROUP("xspi1-base", 12, 21, 3, xspi1_funcs),
-+	GROUP("sdhc1-base", 12, 24, 3, sdhc1_base_funcs),
-+	GROUP("sdhc1-dir", 12, 27, 3, sdhc1_dir_funcs),
-+	/* RCWSR13 */
-+	GROUP("sdhc2-data74", 13, 0, 3, sdhc2_data74_funcs),
-+	GROUP("sdhc2-base", 13, 3, 3, sdhc2_base_funcs),
-+	GROUP("uart1-soutsin", 13, 6, 3, uart_funcs),
-+	GROUP("uart1-rtscts", 13, 9, 3, uart1_rtscts_funcs),
-+	GROUP("uart2-soutsin", 13, 12, 3, uart_funcs),
-+	GROUP("uart2-rtscts", 13, 15, 3, uart2_rtscts_funcs),
-+	GROUP("irq11-8", 13, 18, 3, irq_funcs),
-+	GROUP("irq7-4", 13, 21, 3, irq_flextimer_funcs),
-+	GROUP("irq3-0", 13, 24, 3, irq_flextimer_funcs),
-+	GROUP("evt4-3", 13, 27, 3, evt_funcs),
-+	/* RCWSR14 */
-+	GROUP("evt2-0", 14, 0, 3, evt_funcs),
-+	GROUP("clk-out", 14, 3, 3, clk_out_funcs),
-+	GROUP("asleep", 14, 6, 3, asleep_funcs),
-+	GROUP("reset-req", 14, 9, 1, reset_req_funcs),
-+	GROUP("iic1", 14, 10, 1, iic1_funcs),
-+};
-+
-+struct lx2160a_pmux {
-+	struct device *dev;
-+	struct pinctrl_dev *pctl;
-+	struct pinctrl_desc desc;
-+	struct pinctrl_pin_desc pins[ARRAY_SIZE(lx2160a_pmux_groups)];
-+};
-+
-+static u32 lx2160a_pmux_group_mask(const struct lx2160a_pmux_group *group)
-+{
-+	return GENMASK(group->shift + group->width - 1, group->shift);
-+}
-+
-+static void lx2160a_pmux_pin_dbg_show(struct pinctrl_dev *pctldev,
-+				      struct seq_file *s, unsigned int pin)
-+{
-+	const struct lx2160a_pmux_group *group = &lx2160a_pmux_groups[pin];
-+	unsigned int i;
-+	u32 val;
-+
-+	if (fsl_guts_rcw_read(group->rcwsr, &val))
-+		return;
-+
-+	val = (val & lx2160a_pmux_group_mask(group)) >> group->shift;
-+	for (i = 0; i < group->nfuncs; i++) {
-+		if (group->funcs[i].val == val) {
-+			seq_puts(s, group->funcs[i].name);
-+			return;
-+		}
-+	}
-+	seq_printf(s, "0x%x", val);
-+}
-+
-+static const struct pinctrl_ops lx2160a_pmux_pctlops = {
-+	.get_groups_count = pinctrl_generic_get_group_count,
-+	.get_group_name = pinctrl_generic_get_group_name,
-+	.get_group_pins = pinctrl_generic_get_group_pins,
-+	.pin_dbg_show = lx2160a_pmux_pin_dbg_show,
-+	.dt_node_to_map = pinconf_generic_dt_node_to_map_group,
-+	.dt_free_map = pinconf_generic_dt_free_map,
-+};
-+
-+static int lx2160a_pmux_set_mux(struct pinctrl_dev *pctldev,
-+				unsigned int fsel, unsigned int gsel)
-+{
-+	struct lx2160a_pmux *pmux = pinctrl_dev_get_drvdata(pctldev);
-+	const struct function_desc *func;
-+	const struct lx2160a_pmux_group *group;
-+	const struct group_desc *grp;
-+	unsigned int i;
-+
-+	func = pinmux_generic_get_function(pctldev, fsel);
-+	grp = pinctrl_generic_get_group(pctldev, gsel);
-+	if (!func || !grp)
-+		return -EINVAL;
-+	group = grp->data;
-+
-+	for (i = 0; i < group->nfuncs; i++) {
-+		if (!strcmp(group->funcs[i].name, func->func->name))
-+			break;
-+	}
-+	if (i == group->nfuncs) {
-+		dev_err(pmux->dev, "%s has no %s function\n",
-+			group->name, func->func->name);
-+		return -EINVAL;
-+	}
-+
-+	return fsl_guts_rcw_override(group->rcwsr,
-+				     group->funcs[i].val << group->shift,
-+				     lx2160a_pmux_group_mask(group));
-+}
-+
-+static const struct pinmux_ops lx2160a_pmux_pmxops = {
-+	.get_functions_count = pinmux_generic_get_function_count,
-+	.get_function_name = pinmux_generic_get_function_name,
-+	.get_function_groups = pinmux_generic_get_function_groups,
-+	.set_mux = lx2160a_pmux_set_mux,
-+	.strict = true,
-+};
-+
-+static int lx2160a_pmux_add_functions(struct lx2160a_pmux *pmux)
-+{
-+	const struct lx2160a_pmux_group *group;
-+	const char **groups;
-+	unsigned int i, j, k, n;
-+	int ret;
-+
-+	for (i = 0; i < ARRAY_SIZE(lx2160a_pmux_groups); i++) {
-+		group = &lx2160a_pmux_groups[i];
-+		for (j = 0; j < group->nfuncs; j++) {
-+			const char *name = group->funcs[j].name;
-+			bool seen = false;
-+
-+			/* already added from an earlier group? */
-+			for (k = 0; k < i && !seen; k++) {
-+				const struct lx2160a_pmux_group *g =
-+					&lx2160a_pmux_groups[k];
-+				unsigned int l;
-+
-+				for (l = 0; l < g->nfuncs; l++)
-+					if (!strcmp(g->funcs[l].name, name))
-+						seen = true;
-+			}
-+			if (seen)
-+				continue;
-+
-+			groups = devm_kcalloc(pmux->dev,
-+					      ARRAY_SIZE(lx2160a_pmux_groups),
-+					      sizeof(*groups), GFP_KERNEL);
-+			if (!groups)
-+				return -ENOMEM;
-+			n = 0;
-+			for (k = i; k < ARRAY_SIZE(lx2160a_pmux_groups); k++) {
-+				const struct lx2160a_pmux_group *g =
-+					&lx2160a_pmux_groups[k];
-+				unsigned int l;
-+
-+				for (l = 0; l < g->nfuncs; l++)
-+					if (!strcmp(g->funcs[l].name, name))
-+						groups[n++] = g->name;
-+			}
-+			ret = pinmux_generic_add_function(pmux->pctl, name,
-+							  groups, n, NULL);
-+			if (ret < 0)
-+				return ret;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int lx2160a_pmux_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct lx2160a_pmux *pmux;
-+	unsigned int i;
-+	u32 val;
-+	int ret;
-+
-+	/* The override needs the DCSR view of DCFG, mapped by fsl-guts */
-+	if (!fsl_guts_rcw_override_supported())
-+		return dev_err_probe(dev, -ENODEV,
-+				     "no RCW override through fsl-guts: the dcfg node needs its DCSR reg\n");
-+
-+	pmux = devm_kzalloc(dev, sizeof(*pmux), GFP_KERNEL);
-+	if (!pmux)
-+		return -ENOMEM;
-+	pmux->dev = dev;
-+
-+	for (i = 0; i < ARRAY_SIZE(lx2160a_pmux_groups); i++) {
-+		pmux->pins[i].number = i;
-+		pmux->pins[i].name = lx2160a_pmux_groups[i].name;
-+	}
-+	pmux->desc.name = dev_name(dev);
-+	pmux->desc.pins = pmux->pins;
-+	pmux->desc.npins = ARRAY_SIZE(pmux->pins);
-+	pmux->desc.pctlops = &lx2160a_pmux_pctlops;
-+	pmux->desc.pmxops = &lx2160a_pmux_pmxops;
-+	pmux->desc.owner = THIS_MODULE;
-+
-+	ret = devm_pinctrl_register_and_init(dev, &pmux->desc, pmux,
-+					     &pmux->pctl);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "pinctrl registration failed\n");
-+
-+	for (i = 0; i < ARRAY_SIZE(lx2160a_pmux_groups); i++) {
-+		ret = pinctrl_generic_add_group(pmux->pctl,
-+						lx2160a_pmux_groups[i].name,
-+						&pmux->pins[i].number, 1,
-+						(void *)&lx2160a_pmux_groups[i]);
-+		if (ret < 0)
-+			return ret;
-+	}
-+
-+	ret = lx2160a_pmux_add_functions(pmux);
-+	if (ret)
-+		return ret;
-+
-+	for (i = 12; i <= 14; i++) {
-+		fsl_guts_rcw_read(i, &val);
-+		dev_dbg(dev, "RCWSR%u = 0x%08x\n", i, val);
-+	}
-+
-+	return pinctrl_enable(pmux->pctl);
-+}
-+
-+static const struct of_device_id lx2160a_pmux_of_match[] = {
-+	{ .compatible = "fsl,lx2160a-rcw-pinmux" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, lx2160a_pmux_of_match);
-+
-+static struct platform_driver lx2160a_pmux_driver = {
-+	.driver = {
-+		.name = "lx2160a-rcw-pinmux",
-+		.of_match_table = lx2160a_pmux_of_match,
-+	},
-+	.probe = lx2160a_pmux_probe,
-+};
-+module_platform_driver(lx2160a_pmux_driver);
-+
-+MODULE_AUTHOR("Vincent Jardin <vjardin@free.fr>");
-+MODULE_DESCRIPTION("NXP LX2160A RCW pad-mux driver");
-+MODULE_LICENSE("GPL");
-+MODULE_IMPORT_NS("FSL_GUTS");
-
--- 
-2.43.0
-
-
+>
+> > > > +             }
+> > > > +             /* Notifications also cover completion or shutdown be=
+fore sleeping. */
+> > > > +             wait_event_hrtimeout(dma->rx_pause_wait, READ_ONCE(dm=
+a->rx_pause_wakeup),
+> > > > +                                  ns_to_ktime(delay_us * NSEC_PER_=
+USEC));
+> > > > +             delay_us =3D min(delay_us * 2, USEC_PER_SEC);
+> > > > +     }
+> > > > +
+> > > > +     if (recover) {
+> > > > +             ret =3D dmaengine_terminate_sync(dma->rxchan);
+> > > > +             if (ret) {
+> > > > +                     /* Retain ownership and keep RX masked if DMA=
+ cannot be stopped. */
+> > > > +                     dev_err(p->port.dev, "failed to stop RX DMA: =
+%d\n", ret);
+> > > > +                     return;
+> > > > +             }
+> > > > +     } else {
+> > > > +             dmaengine_synchronize(dma->rxchan);
+> > > > +     }
+> > > > +
+> > > > +     scoped_guard(uart_port_lock_irqsave, &p->port) {
+> > > > +             restore_rx =3D recover || dma->rx_pause_pending;
+> > > > +             dma->rx_pause_pending =3D false;
+> > > > +             dma->rx_terminating =3D false;
+> > > > +             dma->rx_running =3D 0;
+> > > > +             if (dma->shutting_down)
+> > > > +                     return;
+> > > > +
+> > > > +             if (!restore_rx)
+> > > > +                     return;
+> > > > +
+> > > > +             /* Apply the current enables, including any interveni=
+ng stop_rx(). */
+> > > > +             serial8250_out_IER(p, p->ier);
+> > > > +     }
+> > > > +     if (recover)
+> > > > +             dev_warn(p->port.dev, "RX DMA failed, using PIO\n");
+> > > >  }
+>
+> --
+> With Best Regards,
+> Andy Shevchenko
+>
+>
 
