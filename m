@@ -2,93 +2,79 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C8DA6606A332
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 08:36:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F8E9606A329
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 08:53:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=yv0ia8QR
+	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=O+eNprhO
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJhk71XFwz2xKQ;
-	Tue, 03 Nov 2026 19:36:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::535" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793694975;
-	cv=pass; b=NqAeoQ+X7uFTUbweg0TnXWBm+yEZPUg9MePKhA8lHGPVtHydm1x9E/8YiRc1LwaymHzTJjR+8FT3IghhJqfWGl8reAzvErIH7R9QkvYTvMnsB2Nb+b6P5QgB3ocXJiCYVix6EqEZrO3gblP4JGgro0i6iyJgD9S4J+BZd63wvjnQnJz2QJ0Q5j6yfZmIUFT3g7D/FetQa+eZcTmvO9gO9ra2Y519NCzKe+RSG2XTq2qzLCWpT26Cd7wWkY9XOlHZtjDsXQ1qnfE81v26QqeXlkxyGo89zuIqlJV/GP25nqpOOvjXEWtHCyzwGaZZq5VWiIjsysSjh8sqCeFP7JIY5g==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793694975; c=relaxed/relaxed;
-	bh=Yv23yaMyqpRiF4P9WlsztaedGDeR3XhsI7PBr228qS8=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Content-Type; b=Yniqr0rxwd9RLcQ7QKpzeAOpVncz4LCzQKxz9b+AkwR0kaE7lsezulqmiih4PLW/Xn0BRI3XDnU9IM/Fn9ux25EuTQwJcbERRTNnpjep2Oz7dwR5yJfziVgs+yHougw2TgQDmB+Q7zNOVfLKOSIvra+JmfEOQAD2fNejQzjysMJL9rEhRfw4QKZVTsAPUZmn6Nogribv9CNjEktfnoQ3oR15+vB4Iv0jGEMmE+4ix09W17XTgeHopl6hcaMe7ymwxQnZT7VjB3Ue76dEOR3YZXTQtRiLOpsGOvndErlKDqs9GHJBZC7Qw8NPowTOyJR2P5rkhWXYl7TUqrz4g152Ig==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=yv0ia8QR; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::535; helo=mail-ed1-x535.google.com; envelope-from=kaylovefoss@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJj6Z0TKSz2xKQ;
+	Tue, 03 Nov 2026 19:53:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793696037;
+	cv=none; b=EG8X3C6epz1+/s9JBE1qEXpt6D3tubXPCt/xNFPev3N6CHfeCUYSsRCbuhw56Yv+jkjbNLmEW8Uqg4H2en/4JzNmFRopqDmCFUZgr6be+JbBqE8PHtA7tXY12Tp2We7zczd+/0xgAxf4W/QjLTR2PZFN78UBZtO4xMcinSbjh/tYmF/gMZZcQO9nQWIsInrEqyHBgJSbPKVlFhdf3XoZhLyjqU6yRulijvDrzsR4awJ9f6ISrQMBD0SVuD/FtswzJEW+7MYUuDY8D5LgUpZpJE3V0AeFsilhMYEHBR6184KZwg12YJinyxlWBpon4ovNaNDo3VMU66M38viBbuL2Fw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793696037; c=relaxed/relaxed;
+	bh=itZKsf6vDdL64wd7jcD7s+h3ERv0zNg9SrhhaMX8rgQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=RVXGRPKA9gVouzx+RDRgrKOxEl9Y8nN4urO9WfuD4MCCf42h4Etw8DR5yc3aIjSE9PkluZQFQfyBLAnX0CLv9jqF3G4O5xCk0lqGWfesAoy8bI79pNeEZ6X7Tj7k8whKED2kRXyvNyaiDrObG1ukEUGcFuLJsw1aeO2ORC0uwEGQLOQawxKCkYuR7K+dWlr4mpL7u4Q2fMiFIyWG/akKLE3kwG1hgxUzPMLzCe9SkI67Kp2+3Dxa43VK1y+bYhUiltG+eMp+oNx4pDVf1RkfeqQv/fJS58kBWTf1nh0mQzP4Lf+Mgu+CZbyvbehVxiL0sRboTQ2EJxhQSaZ5sZv3XQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=O+eNprhO; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=yv0ia8QR;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=O+eNprhO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::535; helo=mail-ed1-x535.google.com; envelope-from=kaylovefoss@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com [IPv6:2a00:1450:4864:20::535])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJhk50PPzz2xHP
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 19:36:12 +1100 (AEDT)
-Received: by mail-ed1-x535.google.com with SMTP id 4fb4d7f45d1cf-6b1b13e09ffso5289837a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 00:36:12 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1793694967; cv=none;
-        d=google.com; s=arc-20260327;
-        b=OLQT05vXLSjkKIROEyE0G6wWk4cLyf0aQH73yZRgxsylMqmETqcTuAcLMNZ2mrBazE
-         jXePg/ZHEc97jjzgyIM3O7D9R5x0QW6vh0LZTlVAWpzy7DuPcH9n/ddD1ctlefU4V90x
-         9xmCnPOtPbf5ErjKxOqu5tjxIpRMbIU+OfoWBE5COPpANtZkLw3/mrrueRy0LNmg1+XT
-         WicJfaDaOc6p4lQxw0zEKlBosl94/07GzsfZnBpeAVYDlbED4gVz0b55excy0mVqF+KY
-         ybNLUurh7PLPAEld1vUv7MT+dCSCZ7UFRpK5SOX2nF0j/Nd0nwk3uRGUccHNfDP3D/to
-         iIrg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
-         :dkim-signature;
-        bh=Yv23yaMyqpRiF4P9WlsztaedGDeR3XhsI7PBr228qS8=;
-        fh=1yUgcW/WJkBKu7j68UptqTJxr17CwW+Jd/xTap6TLsU=;
-        b=LxuuoGCKWAYR/3NfEWPszs7fRiTOHUCYwEjHtTBB2Al1xgRVYJ5lgrYkIF6EjxYkDl
-         E1nzQ8hhmG4VNAKpGv7meyvFFi6RmE7F5larhpVZKXKJSLBk0G6LSmn53wh1pMKAfPAB
-         uxDVmgz7IyIPc2nmn3K5psRSB2LVRBVK2vgAqCxkLpCwi2aIPm3e6VBBKlBnaWn6ApEl
-         gZwD0e4uLudMF2wznaznNJDXtaTUWe4A5llIrkRS/XqsgJtR1iyOXj9DbkI2QuuACwu4
-         ZqLCEpBHDrGbw3eV0c7w7hKypTUE/iFO1tbgGBoC8SMQ/B0YdVSiZjLVhHtEiLlXLdjc
-         GfHg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793694967; x=1794299767; darn=lists.ozlabs.org;
-        h=content-type:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Yv23yaMyqpRiF4P9WlsztaedGDeR3XhsI7PBr228qS8=;
-        b=yv0ia8QRWTL7IRH57D5Ugd+cB/NxseG3UP6Udnw0b9v5rDS4+VhwnaMv8b5k0NeDMl
-         nzHsBHiaprS4mgeh26X5FQNZZXNQK2ahkEv3z8eNzlLm5XV2Ev1c5KFJ+USM0bRgnVQw
-         2ZqJ7gtT9wrg3iRQEhBL4nc7HS5bP7kGaDH/4dpaSgR6YFTi3bgjCKM1A8wCsS0BEIZG
-         Aq72SRJGiUi11Ogm2sO1jN0Q4ESleH8gpmrf8RQ1IrVakiGo9+v6bHHkmCt5Kej1UgRp
-         5Jw6G5Ur67HqRZ53KKMknbCwRawoIQlJKyl0L2YfKl7lV51CxLNDtRzgWCO4Rm6JhuEx
-         9V/Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793694967; x=1794299767;
-        h=content-type:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=Yv23yaMyqpRiF4P9WlsztaedGDeR3XhsI7PBr228qS8=;
-        b=KGmPxVkBZhTCW3ZFRcvptdLWmA0zsaXxk+21PzmGifxc8ABPoers+X1At6Y54HxgVV
-         j8auDkx3xphwN34Wenqc1xD2XTCzYMcX+1g+EWdrRBbBD4kBumo2ciFd2+NE+KG8QDar
-         GFQ3Yk65m4MUi4hcXXR7EWpOAmmVl77wKy9Qhg5AUpCcJvqYgdiGPXBAjcruE8/S54fh
-         2nlRoqWCIjeg5bTczYQCKNZDVYg9txS4Jpst+kahQTHoCJXo31fjw4Y4sghz4CBJFZXH
-         mSFYLNcXfVHSq5PQy5jscZO+LuSOPLGt+DeKa1/3WRFILCqk20YaeX38AVBfsfSNm7X4
-         gCZQ==
-X-Gm-Message-State: APuU4Z90U0StQFEllcI2cs650rWS6rKp18GJml9SUzP6zim0cDj+m9s0
-	zaiyC9fyct7ZUiDwNdQK6uaJUvzpb5CYqV4WxjtDIbNktaFWJ/BypBH+8fpVImBCzpW8vfSUffB
-	BQYglhSSGucp2Sb3v0FGg8JvR1WsN9l99WZAwXom8Ag==
-X-Gm-Gg: AYBFou1ZCdtWp0vmqk0NH/vnT0zuZXcfs0YwLk6CyUCeeMGBmgIZj1Wpu4WUrGCYNDv
-	E5Vc9AjGqWDQ3ZhD6GQ2VqOVn+uCXJalllMmxmKnhpXxsbxTJnGP3eqonpqRjlc8RengVOpMeF1
-	4Yo/SBpBfwSkW7mdgJCQdNhgN3lBV8RgCHG/hQTuDWih2eu5mXL2+FdVJA4oLwbk9rOKOb8Q8qs
-	od9eqipMgLZNRUG2TlVelOSQf+EUWuI9QfA126ONVrJkHBz+7cdJ5T/1w1FukGyBBJb0Y9OxdNk
-	iQkCV7o+XFXm/d2SiGRImDKLQxy/IHokcdz8iQfIVlcVy9SmTzMka/g9a5y+ER/aNOPY1VRLo79
-	rO93PeSQyc4/YV56Gl376bmLXY8j080wPojUdjsJcczrUjd6TGLAaGtCqeYlXSktJMEoR3j/xHv
-	Dtr2RCNz4ugB+V1Eo2PjtjEcRuRUZ7KNj2Zq0S6c8=
-X-Received: by 2002:a05:6402:2042:b0:6b1:82e4:b2df with SMTP id
- 4fb4d7f45d1cf-6b4d4d6f5demr5950124a12.29.1793694967210; Tue, 03 Nov 2026
- 00:36:07 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJj6X3tNjz2xHP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 19:53:56 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A31isKC306162;
+	Tue, 3 Nov 2026 08:53:30 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=itZKsf6vDdL64wd7jcD7s+h3ERv0zNg9SrhhaMX8r
+	gQ=; b=O+eNprhOXuYW0WOQvEw4YhHUixTkJi1AcvhvMuHTcCZcsAYm8kwgdf/Qv
+	GRvGYiFphAfIhxX8J+Mw9EDpJgIuhGMh3RMzQJDFML5X4hULOxSlIa7mL3HutFL5
+	yBBruJTN1OXBwNA86v8g8JeOX1BzmIQlfdi61Hx4tFTzPkwYDqax0uqDYGEJBNFH
+	eAskRVfLC/KS23GH3vvYbrVEXsLUEkHTcRc011FkCObJ8LMTjEuq8eKh4FaCWgD2
+	rwSysa2Elhi81OQeI5jPvl7A2KiLAKPEB03UD5jkqrMxA6AAsxrJAVV1Sv0FWlIh
+	FP3t8mdaXDZZlaDZ8PpwtGiyGVstQ==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hn7yrvet8-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Tue, 03 Nov 2026 08:53:29 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6A37aSYZ623512;
+	Tue, 3 Nov 2026 08:53:29 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4hnvvfscjc-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 03 Nov 2026 08:53:29 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6A38rPYY16449920
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 3 Nov 2026 08:53:25 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 39CB820043;
+	Tue,  3 Nov 2026 08:53:25 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 287E020040;
+	Tue,  3 Nov 2026 08:53:22 +0000 (GMT)
+Received: from shivang.bl1-in.ibm.com (unknown [9.123.12.247])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue,  3 Nov 2026 08:53:21 +0000 (GMT)
+From: Shivang Upadhyay <shivangu@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com,
+        sourabhjain@linux.ibm.com, rppt@kernel.org, ruanjinjie@huawei.com,
+        baoquan.he@linux.dev, Shivang Upadhyay <shivangu@linux.ibm.com>,
+        Anushree Mathur <anushree.mathur@linux.ibm.com>
+Subject: [PATCH] powerpc/crash: update fdt on cpu hotplug remove
+Date: Tue,  3 Nov 2026 14:23:19 +0530
+Message-ID: <20261103085319.51480-1-shivangu@linux.ibm.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,63 +88,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261101144716.119289-1-kaylovefoss@gmail.com>
-In-Reply-To: <20261101144716.119289-1-kaylovefoss@gmail.com>
-From: Kay <kaylovefoss@gmail.com>
-Date: Tue, 3 Nov 2026 08:35:54 +0000
-X-Gm-Features: AclHuK-3Fl-Npzmqjdn94YO2ZE-Dy5ImthzJxz01de9c8ISOFkA4OlMMEZJDFn8
-Message-ID: <CADb9fe66VWdLCsB1c7FL=AuQmA3yvrppLjimSW0w8drPxmmuTw@mail.gmail.com>
-Subject: Re: [QUESTION] Does PowerVM populate the rtas-sensors device-tree property?
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
-X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=Mcr5KJ/f c=1 sm=1 tr=0 ts=6ae9a10a cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=S-6rMyIPvGFi4FMeT0EA:9
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTAzMDAzNCBTYWx0ZWRfX0rxcaEh/2Kz5
+ ZLGga6GYB7VlZs2Z6kNOdda082/rfEMKGGDXHyFM6y3NA6fP11xMn3ea7/rYV7zl3Op0cduAJ0Y
+ CsdAgVRKgRkoDgFFPC2ZeMjCWit41TY=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTAzMDAzNCBTYWx0ZWRfX76o3wtPlmDLu
+ w68FFedjwKrL4IWwd8dLZdb8DVKYG4DnC8dF400W2siSx9cO6D+Fekcv5D8QC/xmKn1914DNTRl
+ HcysI2SA15OyWp+O7tnFCTDighhrQw5SQggMFJFYRE+J0TEbzqwx91dRuwS7pm7ClDnlSxWGdRt
+ u8LwjGJQELpp7awcjS5AMoa0ONbYya+ZULk9aOOYXvy4ZfzqFPyAz3LV2Ynxh7xidietxnIyruw
+ OAA5H9nixmWauk+DIMfFi81WbJEh/37iv8ZNnnyclptY//5h5+1JQEjWO1o8f0a63GPSgLeaZ9S
+ Tv7Di4te11W+etZA0P9R4oshrHQzVgMq9SeI/zGSpojoyRW/5bFHCTDfNyzYHgQPBCEyiiFNZAt
+ aDZEmtRXCz+Cr3Xeyz90k8tQradovcx1cYPszT1IbXM5ugSM8xRKfomU1ZzNOomxHSJQ9awDWNF
+ ng5bBCc426qW7/Ks7Kg==
+X-Proofpoint-GUID: kyGgd7sLQHA9gL5cdsTSwh2-a3auW3vL
+X-Proofpoint-ORIG-GUID: cdzfwjm90R_Fs9ILAKWt3brLtMRv2zZM
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-03_01,2026-11-02_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 priorityscore=1501
+ clxscore=1011 impostorscore=0 adultscore=0 spamscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610300000 definitions=main-2611030034
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi,
+Currently fdt for crash kernel is not updated on cpu hotplug remove,
+which can lead to the following XIVE warnings on the crash kernel
+bringup.
 
-I asked a while back whether PowerVM populates rtas-sensors. The
-answer is yes. Michael Bringmann posted a live pHyp device-tree dump
-in June 2017 that contains:
+[    0.630795][    T1] xive: H_INT_GET_QUEUE_INFO cpu=16 prio=6 failed -55
+[    0.630912][    T1] xive: Error -55 getting queue info CPU 16 prio 6
+[    0.680899][    T1] xive: H_INT_GET_QUEUE_INFO cpu=17 prio=6 failed -55
+[    0.681000][    T1] xive: Error -55 getting queue info CPU 17 prio 6
 
-    rtas-sensors     00000001 00000000 00000005 00000000
-                     00000009 00000000 0000232d 00000000
+Fixing this by updating crash fdt on cpu hotplug remove path also.
 
-That's four (token, maxindex) pairs, 32 bytes on an IBM 8408-E8E running pHyp.
+Reported-by: Anushree Mathur <anushree.mathur@linux.ibm.com>
+Suggested-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+Signed-off-by: Shivang Upadhyay <shivangu@linux.ibm.com>
+---
+ arch/powerpc/kexec/crash.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-I looked at LoPAPR 1.1 section 7.2.6.1.2 and couldn't find a stated
-maximum. Linux uses MAX_SENSORS = 17 with the comment "I only know of
-17 sensors", which reads to me like an implementation choice rather
-than a documented firmware limit. Bringmann's dump has 4. Can PowerVM
-ever emit more than 17?
+diff --git a/arch/powerpc/kexec/crash.c b/arch/powerpc/kexec/crash.c
+index 775895f31037..0ef10e39ae49 100644
+--- a/arch/powerpc/kexec/crash.c
++++ b/arch/powerpc/kexec/crash.c
+@@ -639,8 +639,6 @@ void arch_crash_handle_hotplug_event(struct kimage *image, void *arg)
+ 
+ 	switch (image->hp_action) {
+ 	case KEXEC_CRASH_HP_REMOVE_CPU:
+-		return;
+-
+ 	case KEXEC_CRASH_HP_ADD_CPU:
+ 		update_crash_fdt(image);
+ 		break;
+-- 
+2.54.0
 
-In case you might wonder why I ask: ppc_rtas_find_all_sensors()
-computes sensors.quant = len / 8 and copies that many entries into
-sensors.sensor[17] without checking. I reproduced this in QEMU with an
-18-descriptor (144-byte) property against unmodified upstream
-cbbddb6b08cc with CONFIG_KASAN=y. Reading /proc/powerpc/rtas/sensors
-as uid 65534 gives me:
-
-    BUG: KASAN: global-out-of-bounds in ppc_rtas_sensors_show
-    Write of size 4 at ... by task cat/66
-    ... sensors+0x8c/0xc0
-
-I then applied Pengpeng Hou's April bounds check
-(<20260401160317.88585-1-pengpeng@iscas.ac.cn>, never merged,
-https://lore.kernel.org/linuxppc-dev/20260401160317.88585-1-pengpeng@iscas.ac.cn/)
-on the same kernel and property:
-
-    too many sensors reported: 18
-    No sensors are available
-
-No KASAN report at all. So the overrun is demonstrable from an
-unprivileged read once a >17-descriptor property exists. What I can't
-determine is reachability: does any shipped firmware emit one? If 17
-is a firmware cap, the fix is defensive only, if not, I think
-Pengpeng's check is worth reviving.
-
-Thanks.
 
