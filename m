@@ -1,51 +1,51 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6E4AB606A335
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 06:54:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D9C9606A32E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 07:33:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HVwwGpgK
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YrhGEKA+
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJfSt5RvRz2xKQ;
-	Tue, 03 Nov 2026 17:54:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793688878;
-	cv=none; b=lu9O5EtqfoPpAq+mZkIjvDW77qOpw3mnta6yCLeY7x45mG9WxeKmAdjvwsJwCLtIIu0Beq14h9e4LIByfrjuCSl5Wr6+i1n02zx/yRkIFjNBRdJ78N8L/lFJX8/LHDLEMk0nu2hSNlXtfhg4CXCuRvDMvDxKtBzwcF2KzZQwAENeq6GQFmMm//fJ6W+NtXoR6L09alsI81FMlxX5qgTNfRjp0ZWB6QvOX8fle0MZBcZPYoEroNk8pAvvCGXfH8I8+m52Rfahuvrve4KF2PvetqqT2JM+G0V/0GAWZbG7bYfMcoCSTZpze7yS/Kw2OZzfzJg0nUcJRpko5KH/enZRKQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJgKb2h0kz2xKQ;
+	Tue, 03 Nov 2026 18:33:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793691203;
+	cv=none; b=fPSlj3p3c1wVX/Xy1zz+aurULCY6sytgSGhLkFeipX/RtAEHpot0DhMAjRVHOb+1avY7SwCVDONb02DWGMDorSaeRGPltu6f6iV9Yn9pv1XDUeyLVykqGQKqd7nDjka/Pqee8/GK4sIx3NF4z3bKGpRuLLSjfU38ADytc3sLPbWcRr/Lsn1FXyor2GYDkFoFLMftRJzmwU7URPtk69zgsL4Ax5qhYypTEPz+SAYlVai3J0SKEDV+iYS/iJYvytNaMgeNyFD++BhqMFjAwKM81SMbRYkFdeaC71m+fo3IW7wgM4TYRzL1G3Nt2GoWVN0R1q2u9t5etN1wkW71q2Do9g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793688878; c=relaxed/relaxed;
-	bh=pI+R0vssS3+rBEwGlEmrhAJtAWwC+K6R2fL7Q2wxluc=;
+	t=1793691203; c=relaxed/relaxed;
+	bh=Oa8y5a8fdB3n8SvDHO+NQ5moFBEj62kNByaWKZDpVOs=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Z78Lhc7TeigTuAy9W68RvJvNJnKABI8SKmZLKGnIu0Fbawr4ayDv2/lVxAmMnxQnBgazG+hju3WyCQAdgFwVBn7z5kAxU4eL5VInuXeUmnQb4cIbx7XOqLrCJKtIZrl9pmDEcTOX7w7yMf2hWxc7h4xvrTPuZ4KvTEkZISpzx9DbdNWmcPf8KxI2qa9F1rPAvCY8Nnh+Oh3YHYqImUfHbTn9XwdzQ10dVsM15G15F/Vq4JXREG4N5LR0sbzMDbGqWHu2SUUdD4VxFDPN8XMrw6GdFEQ/b2njxqvCyPDUjf8g6GJPWQaW2TP2Ze6CRfVyBBKLX67MYZ8ztbTsyDiNXg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HVwwGpgK; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jirislaby@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=jQKYA2sdtJ/niq1TGXkij6IsuQxncqZDlxkNbvqR8tS1ZZ0lQiAjvLj+BuE8YGF/dDhQI2ajA4KUfsz4W1eYnYlMy1+gfiAhSYOZ5qRxmX1NKpSW8X5MUjtYdXOT+eWFNKKjFrt5gMLPZifyKJeJVonYGQkREhxlSK74UkRe5i0uNnx1d+Ks5oZ3MEZfPYgKpXQ0b2yQuzZUMpzXe+JKDbUFOIxP5F6kh3TBwld8CHnw4wGuXFVeMKZdsLT3QdzN3jnuk9e6yWN+GvEf2YIx/kA1XrS/qFq+sRXME/JGRyQUbZic/ShqSD/VrUlvtfDACDzauOylAJ+l7fmkbdn48g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YrhGEKA+; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HVwwGpgK;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YrhGEKA+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jirislaby@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJfSs4b0jz2xH9
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 17:54:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJgKZ23BCz2xK7
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 18:33:22 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id A5ABB43E92;
-	Tue,  3 Nov 2026 06:54:35 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 57D471F000C1;
-	Tue,  3 Nov 2026 06:54:24 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id C168D43DA2;
+	Tue,  3 Nov 2026 07:33:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 73ABC1F00A17;
+	Tue,  3 Nov 2026 07:33:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793688875;
-	bh=pI+R0vssS3+rBEwGlEmrhAJtAWwC+K6R2fL7Q2wxluc=;
+	s=k20260515; t=1793691199;
+	bh=Oa8y5a8fdB3n8SvDHO+NQ5moFBEj62kNByaWKZDpVOs=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=HVwwGpgKph2PTCR3kNBpzgeJl9Fiv96ILTSVlqr7otzEN5KOe+3Oq36TZyy3FWiTn
-	 B5JC9rU3ADl82tq64bDRGFlV2NLyjhAO9fPnLejhbwzeG1Z9dc6ee0GVq9fDWJMr9G
-	 uEn9b1MhNhFVniqfmxfA0bqOs/QBhcC6kPjZ8hJFtdA34IHlyTNGGcCj68Y62ICtjk
-	 Ouq+kpEpWGx9PHR9MkFKZswgqiZXimSJHDR7+eldSuTYGotHgFLXgZCx0dKYEpIAcw
-	 6pYXyTE/pVVs21IvMkWqyQ4k+6ZNZ7Rqbrs3FA5NB7/Klj97W0Huza14rR1CDkHC3E
-	 tLDaFtIRr3wRA==
-Message-ID: <a0736b1b-707e-4f24-8249-c7363c673a43@kernel.org>
-Date: Tue, 3 Nov 2026 07:54:21 +0100
+	b=YrhGEKA+PeuuW/jRrCPDbubJ+8MeiOB7ohkDvdn7B1hNwFrYwqw5e3Qb5ZWGhLrwJ
+	 kfg6oclT46j62LrUrac0EafiAZ3+KI2zgxLX5rzfs29w8ZhNe31bRrAEPomMsmjjBa
+	 lKUJd1HyqFQwUmT5p3kfctFU2ScH+pGwppSgx39XmmP6D/0uRAotq1b5O+LOfmGom1
+	 npjQBjmNXeU5ErsRhK7ZIzZGG4Ba6sTrnVQmthz8YmAFn5hZtEAQhOl8e7HBB1jep1
+	 vvxmOJxSyeRo0cZERgguHtmnpI1bqtkUqgEHza0pOmtVnQWvdgMcM23IuK2WJnCdcJ
+	 Ge9DkpaqeAdvQ==
+Message-ID: <44406eef-0035-4d6f-a2b0-3647d7c1ea2e@kernel.org>
+Date: Tue, 3 Nov 2026 08:33:13 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,147 +60,149 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RFC 19/23] tty: sysrq: let procfs copy in writes to
- /proc/sysrq-trigger
-To: Christian Brauner <brauner@kernel.org>, linux-fsdevel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
- Jann Horn <jannh@google.com>, Josef Bacik <josef@toxicpanda.com>,
- Chris Mason <mason@kernel.org>, Jeff Layton <jlayton@kernel.org>,
- NeilBrown <neil@brown.name>, Eric Dumazet <edumazet@kernel.org>,
- Thomas Gleixner <tglx@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
- Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@lst.de>,
- Greg Kroah-Hartman <gregkh@suse.de>, Joel Granados
- <joel.granados@kernel.org>, Kees Cook <kees@kernel.org>,
- Jan Kara <jack@suse.cz>, Jan Kara <jack@suse.com>,
- linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
- linux-acpi@vger.kernel.org, linux-kselftest@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
- linux-um@lists.infradead.org, linux-wireless@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
- ntfs3@lists.linux.dev, platform-driver-x86@vger.kernel.org,
- coreteam@netfilter.org, kexec@lists.infradead.org,
- linux-pci@vger.kernel.org, linux-sound@vger.kernel.org,
- netfilter-devel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- ibm-acpi-devel@lists.sourceforge.net, jfs-discussion@lists.sourceforge.net,
- linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-cifs@vger.kernel.org, linux-fbdev@vger.kernel.org,
- linux-hwmon@vger.kernel.org, linux-mm@kvack.org, linux-sh@vger.kernel.org,
- linux-usb@vger.kernel.org, samba-technical@lists.samba.org,
- sparclinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- linux-doc@vger.kernel.org, linux-serial@vger.kernel.org,
- linux-atm-general@lists.sourceforge.net, Takashi Iwai <tiwai@suse.de>,
- linux-input@vger.kernel.org, linux-raid@vger.kernel.org,
- linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org,
- linux-debuggers@vger.kernel.org, Chuck Lever <cel@kernel.org>
-References: <20261102-work-procfs-drivers-v1-0-a994bd4d3b1a@kernel.org>
- <20261102-work-procfs-drivers-v1-19-a994bd4d3b1a@kernel.org>
-Content-Language: en-US
-From: Jiri Slaby <jirislaby@kernel.org>
-Autocrypt: addr=jirislaby@kernel.org; keydata=
- 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
-In-Reply-To: <20261102-work-procfs-drivers-v1-19-a994bd4d3b1a@kernel.org>
+Subject: Re: [PATCH] powerpc/code-patching: Flush the patch area TLB entry
+ locally
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Venkat Rao Bagalkote <venkat88@linux.ibm.com>, linux-kernel@vger.kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Hari Bathini <hbathini@linux.ibm.com>, stable@vger.kernel.org,
+ Josef Schlehofer <pepe.schlehofer@gmail.com>
+References: <b7916dadd8ef56d417d0cbf69fa9ef2a447a5a3e.1793674111.git.ritesh.list@gmail.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <b7916dadd8ef56d417d0cbf69fa9ef2a447a5a3e.1793674111.git.ritesh.list@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
 	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 02. 11. 26, 16:07, Christian Brauner wrote:
-> Implement ->proc_write_buf() so procfs copies in what is written before
-> it pins the entry, and handle the keys from that copy. Writes larger
-> than PAGE_SIZE - 1 bytes fail with -EINVAL now. They used to trigger the
-> first key, or all of them in bulk mode. procfs allocates the copy, which
-> is as small as the write, opening the file allocated as much already.
+
+
+Le 03/11/2026 à 03:54, Ritesh Harjani (IBM) a écrit :
+> patching functions like patch_mem() and patch_instructions(), maps the
+> target page at the per-cpu text_poke_area, write it, clear the PTE and
+> then flushes the tlb using flush_tlb_kernel_range(), with interrupts
+> disabled. flush_tlb_kernel_range() on SMP nohash (e500) does an IPI
+> based TLB invalidation i.e -
 > 
-> Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
+> 	smp_call_function(do_flush_tlb_mm_ipi, NULL, 1);
+> 
+> ...which will wait for other CPUs but with interrupts off. This can be
+> caught by lockdep with the following warning:
+> 
+>    WARNING: kernel/smp.c:917 at smp_call_function_many_cond+0x430/0x818, CPU#1: swapper/0/1
+>    CPU: 1 UID: 0 PID: 1 Comm: swapper/0 Not tainted 7.3.0-rc1-leds-v4 #1 PREEMPT
+>    Hardware name: Turris 1.1 e500v2 0x80211051 Freescale P2020
+>    Call Trace:
+>    [c1915bc0] [c001be04] flush_tlb_kernel_range+0x2c/0x74
+>    [c1915bd0] [c001ce2c] patch_instructions+0x1b0/0x318
+>    [c1915c20] [c003113c] bpf_arch_text_copy+0x5c/0xb4
+>    [c1915c40] [c01c3398] bpf_jit_binary_pack_finalize+0x28/0x8c
+>    [c1915c60] [c0031770] bpf_int_jit_compile+0x5dc/0x758
+>    ...
+>    [c1915dd0] [c102e114] ptp_classifier_init+0x30/0x4c
+>    [c1915df0] [c102d3a8] sock_init+0xc8/0xe4
+>    ...
+>    hardirqs last disabled at (3076): [<c001ceb4>] patch_instructions+0x238/0x318
+> 
+> Josef confirmed that this was causing a hang (deadlock):
+>      I think this is why the CZ.NIC Turris 1.1 hangs early in boot with
+>      CONFIG_JUMP_LABEL=y. On 6.18.44 it hung in 19 of 19 boots and booted
+>      fine 9 of 9 times with jump labels off. The hang comes while static
+>      keys are patched and modules are loaded, nothing is printed and the
+>      watchdog resets the board. OpenWrt keeps jump labels off on these
+>      boards for now.
+> 
+> ...which is possible if both cpus are doing similar operations with interrupts
+> off and doing TLB invalidation using IPI.
+> 
+> Broadcast TLB invalidation is not needed here since text_poke_area is
+> a per-cpu area. It is mapped and unmapped with interrupts disabled by
+> it's own cpu. The only reason I think, if we would need a broadcast tlb
+> invalidate is, when we want to prevent a stray or malicious write to
+> this cpu text_poke_area by another CPU. This generally gets solved with
+> temporary-mm path like how Radix and even x86 implements. However, booke
+> doesn't implement that, so for now let's ensure we use local tlb
+> flushing for correctness.
 
-Reviewed-by: Jiri Slaby <jirislaby@kernel.org>
+This problem was already discussed one year ago, see 
+https://lore.kernel.org/all/PA3P192MB2865C07D634E3B775D003C7F8CD7A@PA3P192MB2865.EURP192.PROD.OUTLOOK.COM/
 
+See response from Arnd, a stop_machine() should be done for completeness.
+
+
+> 
+> Fixes: 49e3d8ea6248 ("powerpc/fsl_booke: Enable STRICT_KERNEL_RWX")
+> Cc: stable@vger.kernel.org
+> Reported-by: Josef Schlehofer <pepe.schlehofer@gmail.com>
+> Closes: https://lore.kernel.org/all/20261026195644.16384-1-pepe.schlehofer@gmail.com/
+> Tested-by: Josef Schlehofer <pepe.schlehofer@gmail.com>
+> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 > ---
->   drivers/tty/sysrq.c | 9 +++------
->   1 file changed, 3 insertions(+), 6 deletions(-)
+>   arch/powerpc/lib/code-patching.c | 21 +++++++++++++++++++--
+>   1 file changed, 19 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/tty/sysrq.c b/drivers/tty/sysrq.c
-> index f4571d05b496..99363e1b59ed 100644
-> --- a/drivers/tty/sysrq.c
-> +++ b/drivers/tty/sysrq.c
-> @@ -1200,17 +1200,14 @@ EXPORT_SYMBOL(unregister_sysrq_key);
->    * However, if the first character is an underscore,
->    * all characters are processed.
->    */
-> -static ssize_t write_sysrq_trigger(struct file *file, const char __user *buf,
-> +static ssize_t write_sysrq_trigger(struct file *file, char *buf,
->   				   size_t count, loff_t *ppos)
->   {
->   	bool bulk = false;
->   	size_t i;
->   
->   	for (i = 0; i < count; i++) {
-> -		char c;
-> -
-> -		if (get_user(c, buf + i))
-> -			return -EFAULT;
-> +		char c = buf[i];
->   
->   		if (c == '_')
->   			bulk = true;
-> @@ -1225,7 +1222,7 @@ static ssize_t write_sysrq_trigger(struct file *file, const char __user *buf,
+> diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+> index 44ff9f684bef..6351342fa5c3 100644
+> --- a/arch/powerpc/lib/code-patching.c
+> +++ b/arch/powerpc/lib/code-patching.c
+> @@ -276,6 +276,23 @@ static int __do_patch_mem_mm(void *addr, unsigned long val, bool is_dword)
+>   	return err;
 >   }
->   
->   static const struct proc_ops sysrq_trigger_proc_ops = {
-> -	.proc_write	= write_sysrq_trigger,
-> +	.proc_write_buf	= write_sysrq_trigger,
->   	.proc_lseek	= noop_llseek,
->   };
->   
+> 
+> +/*
+> + * The patch area is per-CPU and only used by its own CPU, with IRQs
+> + * disabled, so only the local TLB can hold an entry for it.
+> + *
+> + * On nohash SMP, flush_tlb_kernel_range() IPIs the other CPUs and waits, which
+> + * must not be done with IRQs disabled (see smp_call_function_many_cond()), so
+> + * flush just the local kernel (PID 0) entry.
+> + * Book3S keeps flush_tlb_kernel_range() which doesn't IPI here.
+> + */
+> +static void flush_patch_area(unsigned long addr)
+> +{
+> +	if (IS_ENABLED(CONFIG_PPC_BOOK3S))
+
+CONFIG_PPC_BOOK3S not consistant with commit message. Are you adressing 
+a problem on e500 only ? on all not book3s ? What about book3s/32 ? What 
+about 8xx ? Even for book3s/64, is it correct at all when 
+mm_patch_enabled() returns false ?
+
+> +		flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
+> +	else
+> +		local_flush_tlb_page(NULL, addr);
+> +}
+> +
+>   static int __do_patch_mem(void *addr, unsigned long val, bool is_dword)
+>   {
+>   	int err;
+> @@ -296,7 +313,7 @@ static int __do_patch_mem(void *addr, unsigned long val, bool is_dword)
+>   	err = __patch_mem(addr, val, patch_addr, is_dword);
+> 
+>   	pte_clear(&init_mm, text_poke_addr, pte);
+> -	flush_tlb_kernel_range(text_poke_addr, text_poke_addr + PAGE_SIZE);
+> +	flush_patch_area(text_poke_addr);
+> 
+>   	return err;
+>   }
+> @@ -488,7 +505,7 @@ static int __do_patch_instructions(u32 *addr, u32 *code, size_t len, bool repeat
+>   	err = __patch_instructions(patch_addr, code, len, repeat_instr);
+> 
+>   	pte_clear(&init_mm, text_poke_addr, pte);
+> -	flush_tlb_kernel_range(text_poke_addr, text_poke_addr + PAGE_SIZE);
+> +	flush_patch_area(text_poke_addr);
+> 
+>   	return err;
+>   }
+> --
+> 2.39.5
 > 
 
-
--- 
-js
-suse labs
 
