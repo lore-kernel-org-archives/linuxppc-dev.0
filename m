@@ -1,60 +1,64 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 615C6606C571
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 11:10:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 03CB3606D818
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 11:45:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mdlyZ/Y6
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Vx5KxwKh
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJm7y6Nq8z2xMQ;
-	Tue, 03 Nov 2026 22:10:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793704222;
-	cv=none; b=ZbJpcFyEweAVGwN1AiuAKcZHckXvDk0msAsLok8/ZycG+5q33CRsTQ/ywp/COmiuUzE/vzvmtVO8AFS4H21HOi8Ri+ug+yncgpu2Kv2FpHK/t7piHeYLPSLAjXsCCFMr9U6co2bg05h3mtxINRC95bZT83HBR3oaaEkozb8hmzSgm6NkmNBAeZWKyCdrkBLJuTpLsChooqsPWgmxtehaspaZGGP3pD/lXyVPM+f0QEMEl3vVjpzbNn3PxiH2iJpQgbuDFFpRXtRK6n/Q3Jm/jn4WC/0bBL5lfVZFI1djXO0oYdUFvqvWGNs4wOjW7DebpbffJeFHPgdZ8/syPXFudA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJmwB27GYz2xN4;
+	Tue, 03 Nov 2026 22:45:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793702990;
+	cv=none; b=ghJjMoXeapGcsFz0ZDsvdrujfsi/IQkWO6W3qLB6eeF43lZDIrLP/sDggy3vH5b2PUmiZ4VwkBovfwc/FCOKQhiB93cGhMDb0rTrXFFlSMk7hMagOrOUeSwjJU8vwkT1K9lBhSnNgbQjJp/JRN5jhskZjeCS8PfJ20QHjZHxRum2RiZNvlB4/r2ZxtFzWN0whG6vERCXJBVgc0Gb9L9siUU+gNkiEMTahso699V5+32VeqDPt/HSEAwN6WaYnki1UzKcrEVschn9h+LTsblKrY1TVEOcVXXpRK+vQEYRTXhloe/vFsqZ3Mi3Z0G6nTJDScpKN6uNSxfY8C26t0KBYg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793704222; c=relaxed/relaxed;
-	bh=NcMf+ZVLmz04u/HN3Wxip9DQ9rG8PD3kxPva+jU7U8U=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=g2SiGIhpKvsij1Kt9Lt6VcwktNhTu8JnPotXn6yf7l/2eeg/Iv3dULo4ClUZ3iJHoc5ucG4j3V5CupPZzlGGpFR/xUBl+IJSqVw3USfJjbgok6+T3UqEFcawElauFqFssZ5t7njWH4JWeHImojlHDok+dzy8IjlbIplJoNMguBZwynLV810k3dNdAbEvYrzok+pplDmUmWsBhUbB9v44noJbqriJc80xHIf01hcx5r9auJaFtXczEV+2p0J49hgWisH3WDCMH4LxjfrT8Kj09O/7OmCfZrlHAt9hhjgTl4Am+rvY80FugPdzZ4cNDuzIfVtyhi6ntVVBfBga6RkYPQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mdlyZ/Y6; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1793702990; c=relaxed/relaxed;
+	bh=Z9zRtXHe/J1k/4/9wAeq1n+PwAt+ioXmV3zyjSNrjDw=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=aLNbo2khWLozj8zMK3uU5XcKo3MJJR381MMCzt7oFxdETJpmg9uNpWTpv0twNzhPaociYR8j9v34Yd9FD2eA2z21TIE/O+3AriE70rMQRRKz3E3bh+waGpV58wAPGm5W2l3PseO0BymolKVWLHL74hqcHpw5AkKYMTlDm+yWe3L1TR/XEMCIU2wPQMlGMkJDZKTLlC9DWmgTEco73+GBPL1FXkqlplNxlfepcaZvDsw/jQ0jLkMnWRGHRR6/uNSvCNeEhZoo+BJ4ZOB1VttgcWEuqj6Sy9NA5LKSVPfk/1tfnHEcQ4AsEnVOErZllQK4sICjhbisr28CI/3rHy+1Pw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Vx5KxwKh; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=netdev-bot+sinfo@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mdlyZ/Y6;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Vx5KxwKh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=netdev-bot+sinfo@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJm7x58l5z2xK7
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 22:10:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJlhD5cdzz2xH9
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 21:49:48 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id C18176022B;
-	Tue,  3 Nov 2026 11:10:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B348E1F000C1;
-	Tue,  3 Nov 2026 11:10:17 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 1AC6842DD7;
+	Tue,  3 Nov 2026 10:49:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 62CC31F000C1;
+	Tue,  3 Nov 2026 10:49:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793704218;
-	bh=NcMf+ZVLmz04u/HN3Wxip9DQ9rG8PD3kxPva+jU7U8U=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=mdlyZ/Y6k0sbdKbPikMDKXgsUtOAz5HrJRPAoVFXjshi76nsuMvVkkNHl84B39eLt
-	 mylrl8mWmKM2EClq6buoqHPVskn/HH+gGTbb4zYZkydPBBaG4OhhTvpUVrSChfZPQw
-	 wc0nYOhZbdHjk5953sL3BwLrcZzaeN1Tzir+BqaLaTNmwvl3Y9FqA5jyIbdpZvU4z8
-	 cyacM2376J6s3vZMEcviRg5GpWEPOQKC93qLHBlorrwsozfkQl/m00ZSnL4rzhAxjZ
-	 dRxtNnkk/4oSqbMt4iEGK0fK9XmmAXGlgKl/iEQTZsK6oPvi2WIZzF4EMTBXD7JF6O
-	 vK+JeO3lmMKKw==
-Date: Tue, 3 Nov 2026 12:10:16 +0100
-From: Krzysztof Kozlowski <krzk@kernel.org>
+	s=k20260515; t=1793702987;
+	bh=Z9zRtXHe/J1k/4/9wAeq1n+PwAt+ioXmV3zyjSNrjDw=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=Vx5KxwKh2n86yrd4SJOATo27TrL2RNNSe2jMDBKUQ1ldwm0tojhu+AqM48yRijjoG
+	 /GTOYQLCgM0gQfLiZxW/3LZ0g7aeIltCuSYln7c773oyM1nzj3alyCSXIkjwBObwqV
+	 kvAwwnohGpYGLaaolElrYpSu2oZO37WThxptmycO/iubNt4H3HrJTIm3265Pru9DJR
+	 BDkJ1w8/4SMi802eqo3DFNp+BIi2gfGuT7DFvqs3rAsYBGbugHNgrVPhXbpZ0cz/zq
+	 XlrVmFfl86S+MTkJJRzyk3naP6ja265j4c6EDm+fXviToYTbNNeXGIHfRneJV5uWe/
+	 FjLmaoZhxXQOA==
+From: netdev-bot+sinfo@kernel.org
 To: Wentao Liang <vulab@iscas.ac.cn>
-Cc: Eric Dumazet <edumazet@kernel.org>, netdev@vger.kernel.org, 
-	Paolo Abeni <pabeni@redhat.com>, Andrew Lunn <andrew+netdev@lunn.ch>, 
-	linuxppc-dev@lists.ozlabs.org, Jakub Kicinski <kuba@kernel.org>, 
-	"David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org, stable@vger.kernel.org, 
-	Zhao Qiang <qiang.zhao@nxp.com>
+Cc: Zhao Qiang <qiang.zhao@nxp.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Subject: Re: [PATCH] net: wan: fsl_ucc_hdlc: release the net device on remove
-Message-ID: <20261103-psychedelic-malamute-of-health-ce7f30@quoll>
+Date: Tue, 03 Nov 2026 10:49:45 +0000
+Message-ID: <179370298589.488859.8331776188055179026@kernel.org>
+In-Reply-To: <20261103104237.1373675-1-vulab@iscas.ac.cn>
 References: <20261103104237.1373675-1-vulab@iscas.ac.cn>
+Auto-Submitted: auto-generated
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -68,76 +72,32 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20261103104237.1373675-1-vulab@iscas.ac.cn>
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+Hi!
 
-On Tue, 03 Nov 2026 10:42:37 +0000, Wentao Liang wrote:
-> ucc_hdlc_probe() allocates the net device with alloc_hdlcdev() and
-> registers it with register_hdlc_device(), but ucc_hdlc_remove() only
-> tears down the QE resources and frees the private data.  The net device
-> is never unregistered or freed, so after the platform device is removed
-> or the module is unloaded it stays registered, keeps its reference to
-> the module and is left pointing at the freed private data.
-> 
-> Unregister and free the net device in ucc_hdlc_remove(), before the
-> private data is released, as fsl_qmc_hdlc does.
-> 
-> Fixes: c19b6d246a35 ("drivers/net: support hdlc function for QE-UCC")
-> Cc: stable@vger.kernel.org
-> Assisted-by: DeepSeek-V4.1-Flash and OpenAI Codex
-> Signed-off-by: Wentao Liang <vulab@iscas.ac.cn>
-> ---
->  drivers/net/wan/fsl_ucc_hdlc.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
+This is an automated message. This series looks like a fix, but its
+commit messages seem to be missing some information:
 
-Multiple things here:
-1. Your team ignored completely previous feedback. Multiple times.
+ - How the issue was discovered, e.g. hit in production, hit during
+   development, syzbot report, manual code inspection, LLM or static
+   analysis tool scan.
 
-2. You use multiple identities with this email address, thus I doubt that we
-   speak with an actual person.
+ - Whether the issue was actually triggered, or is only theoretical
+   (e.g. found by code inspection). If it was triggered please include
+   the symptoms, like the stack trace or error messages.
 
-3. Your bot does not even bother running checkpatch, right?
+Please do not repost the series just to address the above. Instead,
+reply to this email with the missing information, so that reviewers
+can take it into account. If the series needs another revision for
+other reasons, please include the information in the commit messages
+then.
 
-4. Nothing of this was reproduced nor tested.
-
-5. Finally, the same feedback:
-You sent multiple independent patches, to multiple independent
-subsystems. The amount of these patches clearly suggest this was
-AI generated and most likely not tested.
-
-More importantly, you sent all this work without properly organizing
-relevant patches into patchsets. This makes reviewing difficult
-and might cause multiple reviewers to address the same issue.
-Replying to the entire set is impossible and requires handling each
-patch independently, instead of applying or discarding the set.
-Maintainers also won't see the bigger picture of your work. Quite
-worrying.
-
-This is on the verge of hostile patch: bomb us with so many
-contributions, we won't be able to handle them in efficient manner,
-like responding ONCE to ask you to slow down.  Considering all this
-is untested and LLM generated, I have even more doubts whether this
-should be considered for review.
-
-Please read kernel documentation BEFORE posting more work. It will
-explain you how to identify subsystems, how to organize your work per
-subsystem (so a patchset grouping multiple patches with a short cover
-letter), how to document the issue discovery method and what was
-or was not tested.
-
-Best regards,
-Krzysztof
-
-
-
-
+The evaluation is done by an LLM so it may be wrong, if you think
+that is the case please reply and explain.
 
