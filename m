@@ -2,68 +2,71 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 288D76082BDC
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 16:41:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A3061606A333
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 16:52:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=MqjfaUek
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EupygsBD
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJvTS5hcNz2xSZ;
-	Wed, 04 Nov 2026 03:41:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.27.42.6
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793724060;
-	cv=none; b=ADUfSbpuRJGu5Q8L7F/fSQLY6Ltn9Ihn/CShfRsmYShKf3aJO/48AkFQeV7/ufwuPBVIaUzzbsx8u16LFH4v0Kc26hkDvlBzViWChFCCVpSaGinX573deCoNYgnYJTV85K14uizUIQWeafpcA1DGzbNv//Ayj7aBuG+SSUTd7Jpc/3kXgjuQlh+RHhWZXabxhC8zkcWbEGFBvhXraiibff3lKaCpWv3HoRJmoPu/Z5r8u3A+ZlKecFIiUL5RX4El7iOMS0IdNOn56cfmrIckRNaNsd5Vy3Me+lDYXJc2WkWUFQVeeybc1GhKpkXpBgIV5Q3s1Vsh9GQdfgw5u+6wBw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJvkw1zCwz2xSZ;
+	Wed, 04 Nov 2026 03:52:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793724760;
+	cv=none; b=R//W/OWhk5MP9L1QxtvLT4PowAD7VT2HzVrKjgDKu4vAWhSXq8Q0i/YkOtAw4/TzC/TgT1lQrNCuXA/06aC2W1mWtOw6jZBE4E3jsNpdfcPjQ9WVYjfnFQRCC3Ck1fEQ8Zcx01pVXCI8fm+FnbZPEQf5IPTh6W4E/Yphyzx3/LBBErLdhJeT3rJoGvj0m5AbFOI/oztb+NC8JPW0bOI/8QIpzCNcUUs6GHBXkbve3oguiTUgXsqp0JTQ0JE47JTj/IvWTl7t/eXbZ1h85s7IEhyT9/vlY5XNFT1i/moKvgt3hXwnOGg4K5dJqeIrSEjKvQbrvM222EtzL8m0YXz4JA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793724060; c=relaxed/relaxed;
-	bh=Shr2teq63V8P7ushHBYXKFTTJfhpOja4aluMgZ/Uw+A=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=VGb13La694XCVg0gL6gFVNLlRtly8opobomVwUoOXfJYBXOmDhPoMnAyzn2CGrAxuw1cgS1KM+cmUvZCCQd7weW4FqLdmP19yMuSoga9zlXtNjCtrWVD6QOWzCaUl2UFUahAYBIY82ePfqFlhQzMl1DXr0nVwVsLlE4iQouI90Mc1lm1AVhQ4aEqtwS0q2P/j+gKAxr3K/S+X3drVWza3Q2PdZTdsiUowhOWAeW9tmQgJ6Y9QgRjpBs3LQJzaBKkSHDmG2SKtqPHeACqGeVl4rKPHKKwNTaGJCKDWhkeH2z5HiDCII9+d/ED3g50tJXnNERaP9g7k2LWpOdWk5MqoA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=free.fr; dkim=pass (2048-bit key; unprotected) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=MqjfaUek; dkim-atps=neutral; spf=pass (client-ip=212.27.42.6; helo=smtp6-g21.free.fr; envelope-from=vjardin@free.fr; receiver=lists.ozlabs.org) smtp.mailfrom=free.fr
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=free.fr
+	t=1793724760; c=relaxed/relaxed;
+	bh=lNlcpPLo7FBrO/QJvjnMbL90+K6TUMGiPf3gYVpjyjI=;
+	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=eC5qhd806vgReukg7aoRY1P1kbqCbvuJpyr1p5dchsRhtWCI+Tzubx3jIQJQRsXEBlrdfnrOVw3AcQFak0WQ2wYeuDGwKjb5GZW832NQhMa8ap5F+ryiSalHJKS8hDjX5zPv1VdZAba93Z/JOPBsQeZ7gLmowkB0A6xJjClfN/dkNDQYtyAka3H0xMszzFeJfOFv7xlEd2XrAtwIMp+ryYIGwl95JRmZm1rckAUHFlckEJftARAjX969eUD/70A1zgC1Osij2NkpCaP3pjtU239YUn8w9DMXG9K9ZcS4LCLDu/KBcaMBXnFa7T83oe1pw+VjhUhTr/fz+Djf4JaUag==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EupygsBD; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=MqjfaUek;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EupygsBD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=free.fr (client-ip=212.27.42.6; helo=smtp6-g21.free.fr; envelope-from=vjardin@free.fr; receiver=lists.ozlabs.org)
-Received: from smtp6-g21.free.fr (smtp6-g21.free.fr [212.27.42.6])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJvTQ20zZz2xSS
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2026 03:40:57 +1100 (AEDT)
-Received: from L30177.local (unknown [213.36.7.12])
-	(Authenticated sender: vjardin@free.fr)
-	by smtp6-g21.free.fr (Postfix) with ESMTPSA id 4F8F4780395;
-	Tue,  3 Nov 2026 17:40:28 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=free.fr;
-	s=smtp-20201208; t=1793724051;
-	bh=hIo5wKJPZnjho62FTKebqDa+KdYP3W8K2TKY9Ek4sYI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=MqjfaUekQFvuCKTt/CUf1BBopp/kcg5M3iZ87uBtd/nRtKnBJfAp02aoxBl7fM2h3
-	 S9tspLtn+2miYvL3O33DMvrKkdk3IixH/NZrAhZFJkJa9lEUDrc3klMlJ2Tu8fPrqP
-	 hyG0EmOouYs6CWYUmATZ1eGbbTdIieM0rWBoegQDVorc8DPHVETgHgH1D832uj7jLv
-	 4+JPhBMpxsfYp2j/i51/WozlNaSJVSJ3drk3wC3RGqqle3g35vXJCr+ux9j8XjEqzJ
-	 eYK24F0ZHgsKICSoFTbPEbbj0DYsIkfrxmMu5K8DKbZ5z3NUcNUkluqP83Epb/BPzS
-	 kEIgfY7oOzMvw==
-Date: Tue, 3 Nov 2026 17:40:27 +0100
-From: Vincent Jardin <vjardin@free.fr>
-To: Frank Li <Frank.li@oss.nxp.com>
-Cc: Dong Aisheng <aisheng.dong@nxp.com>, Fabio Estevam <festevam@gmail.com>,
-	Frank Li <Frank.Li@nxp.com>, Jacky Bai <ping.bai@nxp.com>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	NXP S32 Linux Team <s32@nxp.com>, Linus Walleij <linusw@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Sascha Hauer <s.hauer@pengutronix.de>, linux-gpio@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	imx@lists.linux.dev, Vladimir Oltean <vladimir.oltean@nxp.com>
-Subject: Re: [PATCH 1/5] dt-bindings: pinctrl: add the NXP LX2160A RCW pad mux
-Message-ID: <auoOe2-9wZhAad87@L30177.local>
-References: <20261103-for-upstream-lx2160a-rcw-pinmux-v1-v1-0-0a61a9837744@free.fr>
- <20261103-for-upstream-lx2160a-rcw-pinmux-v1-v1-1-0a61a9837744@free.fr>
- <aun5TzN6kWdkr5x-@SMW015318>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJvkv3vr1z2xSS
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2026 03:52:39 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id A598A43E4F;
+	Tue,  3 Nov 2026 16:52:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 878361F000C1;
+	Tue,  3 Nov 2026 16:52:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793724756;
+	bh=lNlcpPLo7FBrO/QJvjnMbL90+K6TUMGiPf3gYVpjyjI=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc;
+	b=EupygsBD3uzXVUovJisqhgzt+LGoP/Rpk+flj07K63weXGyyPWRChJxAJhJeH2LG0
+	 0siQzFJGtwXDHa5+9zIcY6Gh/vC4NOYw3n1OBwHBozIqlSHAbTZ+4XkgmKSd+zSqxG
+	 UX96tkXQoHElBiI17QAIKIfNa3m1alT7qQB37WMva/U2q6xBAYfsSHIVT4et6+ymko
+	 uAsx+pno2MOOCpopFvigrq3vkaoaPDoFzHwqxsrtOxZnrGKZJkW/zTcZxHK5RIDuAX
+	 2GGoJwU63nzuloquRD2j0WgDIPAFLQaer1MiqPb3CDAAAuW7xKQx3bcEZOry9m6xdr
+	 VpaaY8V92GWBw==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 7D37E391AFFF;
+	Tue,  3 Nov 2026 16:52:36 +0000 (UTC)
+Subject: Re: [GIT PULL] Crypto library fixes for v7.4-rc2
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <20261102174428.GA1935@sol>
+References: <20261102174428.GA1935@sol>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <20261102174428.GA1935@sol>
+X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/ebiggers/linux.git tags/libcrypto-for-linus
+X-PR-Tracked-Commit-Id: 01ad209f122b7c173477bd60c7997564f9c65961
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: b2e7a7bbc127534b73936a505237f08758552252
+Message-Id: <179372475516.1755341.2580594496121383266.pr-tracker-bot@kernel.org>
+Date: Tue, 03 Nov 2026 16:52:35 +0000
+To: Eric Biggers <ebiggers@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, Ard Biesheuvel <ardb@kernel.org>, "Jason A. Donenfeld" <Jason@zx2c4.com>, Herbert Xu <herbert@gondor.apana.org.au>
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS
+	autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
+	aws-us-west-2-korg-listserv-alma10-1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,47 +79,17 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <aun5TzN6kWdkr5x-@SMW015318>
-X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
-X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
-	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Frank,
+The pull request you sent on Mon, 2 Nov 2026 09:44:28 -0800:
 
-> > +      groups:
-> > +        items:
-> > +          enum: [ iic1, iic2, iic3, iic4, iic5, iic6, xspi1-data74,
-> > +                  xspi1-data30, xspi1-base, sdhc1-base, sdhc1-dir,
-> > +                  sdhc2-data74, sdhc2-base, uart1-soutsin, uart1-rtscts,
-> > +                  uart2-soutsin, uart2-rtscts, irq11-8, irq7-4, irq3-0,
-> > +                  evt4-3, evt2-0, clk-out, asleep, reset-req ]
-> 
-> how to know which function belong to which group?
+> https://git.kernel.org/pub/scm/linux/kernel/git/ebiggers/linux.git tags/libcrypto-for-linus
 
-ok, I get the point, I'll spread those into their respective groups
-per the CPU documentation.
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/b2e7a7bbc127534b73936a505237f08758552252
 
-For this v2, I'll try to be inspired by the
-mediatek,mt7622-pinctrl.yaml and the airoha/ralink bindings:
+Thank you!
 
-    allOf:
-      - if:
-          properties:
-            function:
-              const: can
-        then:
-          properties:
-            groups:
-              items:
-                enum: [ iic3, iic4 ]
-      ...
-
-best regards,
-  Vincent
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
 
