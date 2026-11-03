@@ -1,115 +1,47 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C526606A812
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 10:41:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 284636077D98
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 10:42:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJlVW2k3Rz2xK7;
-	Tue, 03 Nov 2026 21:41:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793702483;
-	cv=none; b=UjhRIdaLJSlDUTUpg+auwC6vZcH6+QgOxuwLzCOEZlYMaAd5AbZKLnWhEBDo+mY594uiHoj6tJC05TmdrCFQ+BObXL2WEx3zfkZ/mkVcu1t4dRv24I0TyP/lXVVdFsXeANrCu/pIQTiQHSsjNsdPPk/ra2JfGCTak2uU3zZEIZT7utgdQPUvShonlsLDz/ZK1OWgDUtS5szrIFXdlCorREaX7tH0DVLP6INhwPkn1tQCJYTK/KRadlYhaD9Y6U00KfUgNt6AwXHYhza05EO67+ZAVMn6UV3350rSjrsQWj6Dw1N26znRxz6vL3H0KfnrxvwTHQ89spJwN3KE67cUwQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJlWt5pPHz2xMQ;
+	Tue, 03 Nov 2026 21:42:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.81
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793702554;
+	cv=none; b=DowIVSxpDfnJzLcHxWIuZTkNg3XzsJxDkKSZpOujLj+sjINagSD5vWfUpZcX1dR5Akj+I0c9c4ThtdFvObsTxrW5eABmEm9lTL77EEM02jgj1QLfAqRM/U7EGempXBShu2P+lqIQ6flI5pmFfID+QWoodF2TSdXsrVMjv/Rhepyb/O0rRYWdCApQTcMGm6dgRmvUc/Ie1HoB/mKINWUiSI3bsniWAWkERl/ET5Mr7mRyYVPxso6Yz9Yz4jGoJi6dBrIqJyPSt7EhWShjnWpXl5zFVhLq1p8ZBO4uohazHtV473w61z1JfEwYBqfLfeKeIpnGnz/xbqxGe6vmLWFv9g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793702483; c=relaxed/relaxed;
-	bh=n3928gBIWqHxVcE0Q0TQTSHKUQ5+JmJrD1oVco54lEw=;
-	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=XDB5mVRCagay/jkSiYjl309OLs8KwbgA5S4NtnldIIZo1IMs/3DacyqUrciXnZYqClhQZR2Fv/w4daCWHrESn2E65dSS20pnNcJV7pOGIap0b0TreH4FEP7FBTVV6dX7dgl6tpSCpaWcKaZ1pZSZfFLz2GbyslrD3rySx9eLoHNPhYZVwkkKAjsbrxjbGf+10FehtJpgraLN22ppYFwOluNIDLSoXXPP36mMdAYfbLZ02aw+Z+LFTIZj+go8g5daN7Czu2a9TDl5/DxjW6ItS/fb5U30yV9fq49CwI+6UsdyIRIhwCMfI3eyBPpeLmkLwrEruWHYHvgEeL6A0Xrj5g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	t=1793702554; c=relaxed/relaxed;
+	bh=tV6ejL3rU0JA4o/fxXSrCXYJNzFJ4reb1/Lg1zThkwQ=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=oOt0Nsas0YvXXr+14igAeIm3FOkRPIsAFgOSu9x0FTq3SizsIMsdgPoSAHtAtQcvv8r0+FvIzlVWr2LO5RVQ1urvtAEu+ZmybW0KWL30IBcP5AYnVlN4kJxNBtoUAlFv4A0G3qVV1rJlMfWrqkrOHfjx25AMb8EFKG8jNNGPDU1WvWYYoWIRtQFouCsrqjAfis5Mm7HGIiHP7hT6OCh4DbBobNcqONVHGmb+xI86WhJCCKuF4JlvEgbV6IAP5GfH8qsnYE2seMC/jV7TA4HMS9wdOQUSYIXtas12FEKlXRFOG4TX2Zpt3bEoTitqQAK2BWfbmmC6uIIkOlcMN+2U9g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass (client-ip=159.226.251.81; helo=cstnet.cn; envelope-from=vulab@iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=iscas.ac.cn
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.81; helo=cstnet.cn; envelope-from=vulab@iscas.ac.cn; receiver=lists.ozlabs.org)
+Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJlVV3cktz2xH9
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 21:41:22 +1100 (AEDT)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 8017122D12;
-	Tue,  3 Nov 2026 10:41:18 +0000 (UTC)
-Authentication-Results: smtp-out1.suse.de;
-	none
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id A98D41350A;
-	Tue,  3 Nov 2026 10:41:17 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id fPJkIE266WqxEgAAD6G6ig
-	(envelope-from <tiwai@suse.de>); Tue, 03 Nov 2026 10:41:17 +0000
-Date: Tue, 03 Nov 2026 11:41:09 +0100
-Message-ID: <87ik2exkmy.wl-tiwai@suse.de>
-From: Takashi Iwai <tiwai@suse.de>
-To: Christian Brauner <brauner@kernel.org>
-Cc: linux-fsdevel@vger.kernel.org,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Jann Horn <jannh@google.com>,
-	Josef Bacik <josef@toxicpanda.com>,
-	Chris Mason <mason@kernel.org>,
-	Jeff Layton <jlayton@kernel.org>,
-	NeilBrown <neil@brown.name>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJlWs4FPGz2xK7
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 21:42:32 +1100 (AEDT)
+Received: from dfae2b116770.home.arpa (unknown [36.110.52.2])
+	by APP-03 (Coremail) with SMTP id rQCowADH0JGUuulqhcg7AA--.6656S2;
+	Tue, 03 Nov 2026 18:42:28 +0800 (CST)
+From: Wentao Liang <vulab@iscas.ac.cn>
+To: Zhao Qiang <qiang.zhao@nxp.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S. Miller" <davem@davemloft.net>,
 	Eric Dumazet <edumazet@kernel.org>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Al Viro <viro@zeniv.linux.org.uk>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Christoph Hellwig <hch@lst.de>,
-	Greg Kroah-Hartman <gregkh@suse.de>,
-	Joel Granados <joel.granados@kernel.org>,
-	Kees Cook <kees@kernel.org>,
-	Jan Kara <jack@suse.cz>,
-	Jan Kara <jack@suse.com>,
-	linux-kernel@vger.kernel.org,
-	linux-nfs@vger.kernel.org,
-	linux-acpi@vger.kernel.org,
-	linux-kselftest@vger.kernel.org,
-	linux-s390@vger.kernel.org,
-	linux-scsi@vger.kernel.org,
-	linux-um@lists.infradead.org,
-	linux-wireless@vger.kernel.org,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>
+Cc: netdev@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
-	netdev@vger.kernel.org,
-	ntfs3@lists.linux.dev,
-	platform-driver-x86@vger.kernel.org,
-	coreteam@netfilter.org,
-	kexec@lists.infradead.org,
-	linux-pci@vger.kernel.org,
-	linux-sound@vger.kernel.org,
-	netfilter-devel@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	ibm-acpi-devel@lists.sourceforge.net,
-	jfs-discussion@lists.sourceforge.net,
-	linux-alpha@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-cifs@vger.kernel.org,
-	linux-fbdev@vger.kernel.org,
-	linux-hwmon@vger.kernel.org,
-	linux-mm@kvack.org,
-	linux-sh@vger.kernel.org,
-	linux-usb@vger.kernel.org,
-	samba-technical@lists.samba.org,
-	sparclinux@vger.kernel.org,
-	linux-m68k@lists.linux-m68k.org,
-	linux-doc@vger.kernel.org,
-	linux-serial@vger.kernel.org,
-	linux-atm-general@lists.sourceforge.net,
-	Takashi Iwai <tiwai@suse.de>,
-	linux-input@vger.kernel.org,
-	linux-raid@vger.kernel.org,
-	linux-ext4@vger.kernel.org,
-	linux-modules@vger.kernel.org,
-	linux-debuggers@vger.kernel.org,
-	Chuck Lever <cel@kernel.org>,
+	linux-kernel@vger.kernel.org,
+	Wentao Liang <vulab@iscas.ac.cn>,
 	stable@vger.kernel.org
-Subject: Re: [PATCH RFC 09/38] ALSA: info: don't write past the end of a data entry
-In-Reply-To: <20261102-work-procfs-bugfixes-v1-9-59422ed3e465@kernel.org>
-References: <20261102-work-procfs-bugfixes-v1-0-59422ed3e465@kernel.org>
-	<20261102-work-procfs-bugfixes-v1-9-59422ed3e465@kernel.org>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/30.2 Mule/6.0
+Subject: [PATCH] net: wan: fsl_ucc_hdlc: release the net device on remove
+Date: Tue,  3 Nov 2026 10:42:37 +0000
+Message-Id: <20261103104237.1373675-1-vulab@iscas.ac.cn>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -122,70 +54,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
-Content-Type: text/plain; charset=US-ASCII
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spamd-Result: default: False [-4.00 / 50.00];
-	REPLY(-4.00)[]
-X-Spam-Score: -4.00
-X-Spam-Level: 
-X-Rspamd-Queue-Id: 8017122D12
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Action: no action
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:rQCowADH0JGUuulqhcg7AA--.6656S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7uw1rZF48CF4UJr1fKw45Wrg_yoW8Wr1rp3
+	y5Ga40kF95Kr17ta1kGr1UuFyUWa18ta4Fka45Zr4furn8AFyUZ3yjgFy8CFW5AFW0gF4Y
+	qr97Ka1xWFs8ArJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUBEb7Iv0xC_Kw4lb4IE77IF4wAFF20E14v26r4j6ryUM7CY07I2
+	0VC2zVCF04k26cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rw
+	A2F7IY1VAKz4vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Ar0_tr1l84ACjcxK6xII
+	jxv20xvEc7CjxVAFwI0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwV
+	C2z280aVCY1x0267AKxVW0oVCq3wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC
+	0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWrXVW3AwAv7VC2z280aVAFwI0_Cr1j6r
+	xdMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwACjI8F5VAI37AI020EjII2
+	zVCS5cI20VAGYxC7M4IIrI8v6xkF7I0E8cxan2IY04v7MxkF7I0En4kS14v26r1q6r43Mx
+	AIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_
+	Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWUtVW8ZwCIc40Y0x0EwI
+	xGrwCI42IY6xIIjxv20xvE14v26ryj6F1UMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8Jr0_
+	Cr1UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVW8Jr0_Cr1UMI
+	IF0xvEx4A2jsIEc7CjxVAFwI0_Cr1j6rxdYxBIdaVFxhVjvjDU0xZFpf9x07bOAw3UUUUU
+	=
+X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiBwAAA2rpnO54wAABsM
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=unavailable
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Mon, 02 Nov 2026 15:21:24 +0100,
-Christian Brauner wrote:
-> 
-> snd_info_entry_write() clamps the count to what is left of the entry
-> by computing entry->size - pos as a size_t. For a position past the end
-> that wraps and the write goes to the driver unclamped, for opl4 into
-> sample memory outside of what the entry covers. At the end of the entry
-> the driver gets a count of 0 and vmalloc(0) warns. Before the clamp
-> moved into the common code the driver ignored such writes. Fail them
-> with -ENOSPC instead, like a block device does at the end of the
-> device. Returning 0 would make writers that use stdio retry forever.
-> 
-> Fixes: d97e1b78239c ("ALSA: info - Check file position validity in common layer")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
+ucc_hdlc_probe() allocates the net device with alloc_hdlcdev() and
+registers it with register_hdlc_device(), but ucc_hdlc_remove() only
+tears down the QE resources and frees the private data.  The net device
+is never unregistered or freed, so after the platform device is removed
+or the module is unloaded it stays registered, keeps its reference to
+the module and is left pointing at the freed private data.
 
-Reviewed-by: Takashi Iwai <tiwai@suse.de>
+Unregister and free the net device in ucc_hdlc_remove(), before the
+private data is released, as fsl_qmc_hdlc does.
 
+Fixes: c19b6d246a35 ("drivers/net: support hdlc function for QE-UCC")
+Cc: stable@vger.kernel.org
+Assisted-by: DeepSeek-V4.1-Flash and OpenAI Codex
+Signed-off-by: Wentao Liang <vulab@iscas.ac.cn>
+---
+ drivers/net/wan/fsl_ucc_hdlc.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-thanks,
+diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
+index 809f21fb93f5..f815cac82518 100644
+--- a/drivers/net/wan/fsl_ucc_hdlc.c
++++ b/drivers/net/wan/fsl_ucc_hdlc.c
+@@ -1255,6 +1255,7 @@ static void ucc_hdlc_remove(struct platform_device *pdev)
+ {
+ 	struct ucc_hdlc_private *priv = dev_get_drvdata(&pdev->dev);
+ 
++	unregister_hdlc_device(priv->ndev);
+ 	uhdlc_memclean(priv);
+ 
+ 	if (priv->utdm && priv->utdm->si_regs) {
+@@ -1266,6 +1267,7 @@ static void ucc_hdlc_remove(struct platform_device *pdev)
+ 		iounmap(priv->utdm->siram);
+ 		priv->utdm->siram = NULL;
+ 	}
++	free_netdev(priv->ndev);
+ 	kfree(priv);
+ 
+ 	dev_info(&pdev->dev, "UCC based hdlc module removed\n");
+-- 
+2.34.1
 
-Takashi
-
-> ---
->  sound/core/info.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/sound/core/info.c b/sound/core/info.c
-> index c4d57d0809ad..982087bc8575 100644
-> --- a/sound/core/info.c
-> +++ b/sound/core/info.c
-> @@ -171,6 +171,8 @@ static ssize_t snd_info_entry_write(struct file *file, const char __user *buffer
->  	pos = *offset;
->  	if (!valid_pos(pos, count))
->  		return -EIO;
-> +	if (pos >= entry->size)
-> +		return count ? -ENOSPC : 0;
->  	if (count > 0) {
->  		size_t maxsize = entry->size - pos;
->  		count = min(count, maxsize);
-> 
-> -- 
-> 2.53.0
-> 
 
