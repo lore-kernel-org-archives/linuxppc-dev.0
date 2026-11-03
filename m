@@ -2,81 +2,51 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 85079606A33C
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 09:52:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MlUi0l5u
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61CCD606D823
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 09:53:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJkPp3GJhz30CZ;
-	Tue, 03 Nov 2026 20:52:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25" arc.chain=kernel.org
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793699534;
-	cv=pass; b=j//N7cmnle6bX1FcR8GRKmEb/uxVO9Fbexs06MRlbd6YhQdN3e+GMKENhZNc/IFqCO6xMIJcuHWM0is98bFrDAdxKOxk70XdExmyo4vrLLc7DTZpVOCKq2Fdr3VeWgtPfItxWh22baZK6nF3gptPetOYlqfABSl0cNTehO8CwiQnC0jshopqrm2rkQzojDL7ymHPKBAq8TF6CuZLa21EFpouxwfPYyls1j6lxfW68AgsSHMX2VZUsIUHlLdPBeLpqZhfOxf/eYua/IJM5sZm/M8rmRj1VsFpfIPJhxHcAeUni+16pDMpyNRi1vZgBnuJU7zFtmQMSe3+MIfjkA+ggg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793699534; c=relaxed/relaxed;
-	bh=gJSO7bESatwNvEVwEFLXH2A9xw/llnEfNdlYdEnJwmQ=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=a38x5cq2i+o7OwpOIHF+hfgVajj3V0uVoPDYLhXyNKJ3RLtSaqSBQE969StYkWOT4NMy40vNhv6Hvif1NokTG69C4dH3vmlkSLyebiKQ/AKonkEujpzzUQKLkqvs1RY+DgPJbj359vovprt/8wInWTHo1QoemJoAnIlbqWTtC19c3wd/6u7pM3wE+pKg2NfWYUBpiNsavnBz1eSExCuhF/DFGghDVTzdqBEO+04G0Q/j7Z0zDSz+8l7ooJKLv+Cw1T7W32jb+qs9C5Z4JoUXLLIL2N9qkrpKUx5JlY2Htj4hQCu29jtjCtGi06sOvXFjgUAm67cgzWk9HFiTRrRoag==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MlUi0l5u; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+vjardin.free.fr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MlUi0l5u;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+vjardin.free.fr@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJkRC11TRz2xcB;
+	Tue, 03 Nov 2026 20:53:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:37:3000::53df:4ee9:0"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793699607;
+	cv=none; b=AKbS5egSLldUDu9gVGqiYWpTvbXDaiiHFfs9TKvae42MCFiaB54aZSvLNdyfpd9Qvi/9NiGl2IodaiYoBgHIU+mjK7sD/tty3fUh1miujNwUNRa2cBbipwny1LQ7iLn+LjGwtJtOr1eb7XAxP3mfOaJEOETwvEG7PoOtRbUs2+/EjNy19oFn/Ia1I3IKNWCKwveOzYrYtagVOcmgbC53rB5EwEBzyn+0esGYfe0rxEPdJYddaWBvbU+NhT+1gzeTrHI7ZOhlRbpM7AsTipy7HPzV/mQWOXpCctEjJJVFRwZLUQs4M+fc2yIUzTluY1tn6DilW8+w5Hg7G4HN6K+YVg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793699607; c=relaxed/relaxed;
+	bh=GywX1JTW5G9RS3NFM0rTXOVteHN0YTo8GojaiyI3LGU=;
+	h=Message-ID:In-Reply-To:References:From:Date:Subject:To:Cc; b=FrBosjCYiaKRlk+RtyihsJGxtjD24UkbpAzEzbaPHJbwOE96vYwwXpUk3JaqRBeUyRayH4zs3jG+8tq7fHaIxcD9n1vXBBQClbLX5ixeYuxWrInN7gdkPNY1jPzocyeVjBaEX2sRpz5WGwZ1TPHX5YsfcIWyghIYxjjdjq3Yoq+iEQVPbBzHErXJas89YUZNaoZgFIf5yRXOwOK8dMSXRIu9KZ9n/OufBw1W0rFaHrlW6u3tkaDMKIash8uaIWHnjjip3aNyKZKq3nm03fBOWT0kxktD0qzLrxFrPaScL/1k5bKv2ZxOiB8k7AvRVexWA1rWbqVzqopE0XzCJNPz0Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=2a01:37:3000::53df:4ee9:0; helo=mailout2.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org) smtp.mailfrom=wunner.de
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wunner.de (client-ip=2a01:37:3000::53df:4ee9:0; helo=mailout2.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 255 seconds by postgrey-1.37 at boromir; Tue, 03 Nov 2026 20:53:25 AEDT
+Received: from mailout2.hostsharing.net (mailout2.hostsharing.net [IPv6:2a01:37:3000::53df:4ee9:0])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJkPm0HG0z2xN4
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 20:52:12 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 6279843D7B;
-	Tue,  3 Nov 2026 09:52:08 +0000 (UTC)
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1793699528;
-	b=yjyvI73IQ95EkOeX0OVf0cJ53jD1wDGhgxDu32Z2jonmEwwLGlFlLgAEYnZO+/quB2P1
-	 hJR34CQihjxw2kz6DLONkTyHRic8xz5PsLBQAS8oyftq1wF8E6zvl2gs88K2/aOZjIxuu
-	 PfP9mFVuaV+RqHCGnvgmK8gH0k2ExbETYrNConsI7JD2W35sCuM7vxxssM2O/7ZD/O+Ad
-	 JfDKynERlKA/vNpKGQ//mx3KHlwbuijLb8zikni6RHhob4jVTBYCVKqF83pnMNehrRf9B
-	 ZiXr/EfA27Jy4Coq8hJi3Uoq3PVK+76p4lz7g7mFU/Ug9us69+9KoQgTHNRORbqvmDA==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793699528;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=gJSO7bESatwNvEVwEFLXH2A9xw/llnEfNdlYdEnJwmQ=;
-	b=FN3HP8hjCZqir9hs1bnFSkjLbCGsCyIK+rD+kqWjL6J0TMUXoFph9JBlENTv7PvnJczQ
-	 yK1H7xsOxY5gM4C5T+jrjgZ2Y0GmdVKIP8QLdaGSzhxtU7TVjY9Fup/MU6qEvhoJbhz9w
-	 xvWKo92yXvnYHGgREzCrk4V25lti3+Qt6MDHBN+3Xz7kb3HWp0H5mixI5WLjo+JB1iHDu
-	 Y9q5JFDvZc4kytdZDfOK7ejQg7Lkl1Cw3vPVRIniZIFxEuciCSSCiYCFA+bsDv5+fPz/7
-	 OmNA33KH2JO5C62BR8DnrvlFIHPZul7omZFkTjQfS7fTOKxLKEf3vUz+xDKiIOPYN/Q==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJkR95glbz2xK7
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 20:53:25 +1100 (AEDT)
+Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id E13981F000C1;
-	Tue,  3 Nov 2026 09:52:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793699528;
-	bh=gJSO7bESatwNvEVwEFLXH2A9xw/llnEfNdlYdEnJwmQ=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=MlUi0l5uBKk/1Q0LDouoEOAAFLSfYfB/d0ioWlHR1STuvBEr8Bsf06SUGXKab5W+n
-	 rn4CGMWkREc8UIpwyIJkg+J9N1ERaMtMayWefvsyGNjdoZ/pJgcPoo5cKrfR2B3JXA
-	 AZYirRYaLjV/91L/C/SCaDMhXxeSz8O9e40eFgTQQ0mmmlJds6TlAnSZxx8T6RQyN3
-	 5/wGZvsY/GfQFoBoVCyxgET+JsKpViBP+HdOAKL67IugsHNvAUvZpRKPQLKwyIZRP5
-	 20ww0J1eQBct5RuufpGWw6X1XP10TTqmxyOKcjir6KJazHHzNKRC7cEiy6Ro15QAE8
-	 N0vq7tjTBCn0w==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 811C346886;
-	Tue,  3 Nov 2026 09:52:05 +0000 (UTC)
-From: Vincent Jardin via B4 Relay <devnull+vjardin.free.fr@kernel.org>
-Date: Tue, 03 Nov 2026 10:51:58 +0100
-Subject: [PATCH 5/5] arm64: dts: lx2160a: describe the pad muxes as the
- DCFG RCW override
+	 key-exchange x25519 server-signature ECDSA (secp384r1) server-digest SHA384
+	 client-signature ECDSA (secp384r1) client-digest SHA384)
+	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
+	by mailout2.hostsharing.net (Postfix) with ESMTPS id 60E7F78F1;
+	Tue, 03 Nov 2026 10:53:22 +0100 (CET)
+Received: by h08.hostsharing.net (Postfix, from userid 100393)
+	id 582C1600CEE0; Tue,  3 Nov 2026 10:53:22 +0100 (CET)
+Message-ID: <27a3876874161204e7a37ab63e7b27ee9783261f.1793697480.git.lukas@wunner.de>
+In-Reply-To: <cover.1793697480.git.lukas@wunner.de>
+References: <cover.1793697480.git.lukas@wunner.de>
+From: Lukas Wunner <lukas@wunner.de>
+Date: Tue, 3 Nov 2026 10:45:02 +0100
+Subject: [PATCH 2/2] PCI/AER: Check validity of Error Source ID register
+To: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org
+Cc: Sourabh Jain <sourabhjain@linux.ibm.com>, Oliver OHalloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org, Alex Deucher <alexander.deucher@amd.com>, Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>, Keith Busch <kbusch@kernel.org>, Maciej Grochowski <Maciej.Grochowski@sony.com>
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
+	autolearn_force=no version=4.0.1
+X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
+	aws-us-west-2-korg-listserv-alma10-1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,460 +59,171 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261103-for-upstream-lx2160a-rcw-pinmux-v1-v1-5-0a61a9837744@free.fr>
-References: <20261103-for-upstream-lx2160a-rcw-pinmux-v1-v1-0-0a61a9837744@free.fr>
-In-Reply-To: <20261103-for-upstream-lx2160a-rcw-pinmux-v1-v1-0-0a61a9837744@free.fr>
-To: Dong Aisheng <aisheng.dong@nxp.com>, Fabio Estevam <festevam@gmail.com>, 
- Frank Li <Frank.Li@nxp.com>, Jacky Bai <ping.bai@nxp.com>, 
- Pengutronix Kernel Team <kernel@pengutronix.de>, 
- NXP S32 Linux Team <s32@nxp.com>, Linus Walleij <linusw@kernel.org>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
- Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev, 
- Vladimir Oltean <vladimir.oltean@nxp.com>, Vincent Jardin <vjardin@free.fr>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1793699524; l=10746;
- i=vjardin@free.fr; s=20260525; h=from:subject:message-id;
- bh=NOOa3FebNGjF/sIGYc7u4fvY37gwclbuRKMsfu8H+k4=;
- b=pKaV0/MqcXq8O2duD+TmFFqsvjDbB1OUXh6sbhzz0zSkpnvrwgl9yTVGLkeoM7+HcYP3E5jzG
- 5xizCgbua5LAfFvS0CiKPs3O8JfVTA/39Sd19mfNMqw3tj4GUoE/wgB
-X-Developer-Key: i=vjardin@free.fr; a=ed25519;
- pk=hppgLeFpGpKOi7LNwGEZ4jOYofJCoGd4Jf1ltAabiLw=
-X-Endpoint-Received: by B4 Relay for vjardin@free.fr/20260525 with
- auth_id=871
-X-Original-From: Vincent Jardin <vjardin@free.fr>
-Reply-To: vjardin@free.fr
-Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
-X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
-	aws-us-west-2-korg-listserv-alma10-1
 
-From: Vincent Jardin <vjardin@free.fr>
+Certain Intel and AMD Root Ports are known to populate the Error Source ID
+register with an invalid value.  The AER driver seeks to recognize such
+buggy silicon by assuming invalidity if the bus number is zero.  It then
+searches for the error-signaling device in the hierarchy below the Root
+Port.  This was introduced by commit 28eb27cf0839 ("PCI AER: support
+invalid error source IDs").
 
-The pad muxes are fields of the RCW: read-only in RCWSR12..14, changed
-at runtime through the override registers in the DCSR view of DCFG,
-which read 0 until written.
+Alex has provided dmesg output which shows an invalid Error Source ID with
+a non-zero bus number.  The AER driver's heuristic fails to recognize its
+invalidity:
 
-pinctrl-single on those registers, since commit 8a1365c7bbc1
-("arm64: dts: lx2160a: add pinmux and i2c gpio to support bus recovery"),
-clears every other field of the word with its first pin state:
-a board whose RCW programs a non-zero pad mux loses those pads at the
-first I2C probe.
+  pcieport 0000:00:07.1: AER: Correctable Error message received from 0000:01:00.0 (no details found)
 
-Describe the pad mux as a child of the dcfg node, which gains its DCSR
-view: one group per RCW field, one function per encoding, driven by
-fsl,lx2160a-rcw-pinmux through fsl-guts. Labels and node names stay,
-so no consumer changes. The pinctrl-single node goes.
+The Root Port at 0000:00:07.1 has subordinate bus 04, so an error source
+on bus 01 is obviously invalid.  The range of subordinate buses is cached
+and checking against it is cheap.
 
-Signed-off-by: Vincent Jardin <vjardin@free.fr>
+Do that instead of relying on a heuristic.  Emit a message when an invalid
+Error Source ID is detected to alert silicon validation engineers.
+
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=222095
+Tested-by: Alex Deucher <alexander.deucher@amd.com>
+Signed-off-by: Lukas Wunner <lukas@wunner.de>
 ---
- arch/arm64/boot/dts/freescale/fsl-lx216x.dtsi | 373 ++++++++++++++------------
- 1 file changed, 198 insertions(+), 175 deletions(-)
+ drivers/pci/pci.h       |  7 ++++++-
+ drivers/pci/pcie/aer.c  | 33 +++++++++++++++++++++++++--------
+ drivers/pci/pcie/rcec.c | 14 ++++++++++++++
+ 3 files changed, 45 insertions(+), 9 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/freescale/fsl-lx216x.dtsi b/arch/arm64/boot/dts/freescale/fsl-lx216x.dtsi
-index 2085362ab0ea..23e662d235a4 100644
---- a/arch/arm64/boot/dts/freescale/fsl-lx216x.dtsi
-+++ b/arch/arm64/boot/dts/freescale/fsl-lx216x.dtsi
-@@ -669,9 +669,205 @@ clockgen: clock-controller@1300000 {
- 		};
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index 77efa4c5c960..aa392bb6a482 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -871,6 +871,9 @@ static inline bool pci_dev_binding_disallowed(struct pci_dev *dev)
+  * @id: Value from register PCI_ERR_ROOT_ERR_SRC
+  * @severity: AER severity, 0-UNCOR Non-fatal, 1-UNCOR fatal, 2-COR
+  * @root_ratelimit_print: Flag to log or not log the root's error. 0=NotLog/1=Log
++ * @id_valid: Whether @id is a valid value.  Some Root Ports report an invalid
++ *	Error Source ID, necessitating a search for the error-signaling device
++ *	in the hierarchy below the Root Port.
+  * @multi_error_valid: If multiple errors are reported
+  * @first_error: First reported error
+  * @__pad2: Padding for alignment
+@@ -893,7 +896,8 @@ struct aer_err_info {
  
- 		dcfg: syscon@1e00000 {
--			compatible = "fsl,lx2160a-dcfg", "syscon";
--			reg = <0x0 0x1e00000 0x0 0x10000>;
-+			compatible = "fsl,lx2160a-dcfg", "syscon", "simple-mfd";
-+			reg = <0x0 0x1e00000 0x0 0x10000>,
-+			      <0x7 0x00100000 0x0 0x10000>;
-+			reg-names = "dcfg_ccsr", "dcfg_dcsr";
- 			little-endian;
-+
-+			pinmux_i2crv: pinctrl {
-+				compatible = "fsl,lx2160a-rcw-pinmux";
-+
-+				i2c1_pins: iic2-i2c-pins {
-+					function = "i2c";
-+					groups = "iic2";
-+				};
-+
-+				gpio0_31_30_pins: iic2-gpio-pins {
-+					function = "gpio";
-+					groups = "iic2";
-+				};
-+
-+				ftm0_ch10_pins: iic2-ftm-pins {
-+					function = "flextimer";
-+					groups = "iic2";
-+				};
-+
-+				esdhc0_cd_wp_pins: iic2-sdhc-pins {
-+					function = "sdhc";
-+					groups = "iic2";
-+				};
-+
-+				i2c2_pins: iic3-i2c-pins {
-+					function = "i2c";
-+					groups = "iic3";
-+				};
-+
-+				gpio0_29_28_pins: iic3-gpio-pins {
-+					function = "gpio";
-+					groups = "iic3";
-+				};
-+
-+				can0_pins: iic3-can-pins {
-+					function = "can";
-+					groups = "iic3";
-+				};
-+
-+				event65_pins: iic3-event-pins {
-+					function = "evt";
-+					groups = "iic3";
-+				};
-+
-+				i2c3_pins: iic4-i2c-pins {
-+					function = "i2c";
-+					groups = "iic4";
-+				};
-+
-+				gpio0_27_26_pins: iic4-gpio-pins {
-+					function = "gpio";
-+					groups = "iic4";
-+				};
-+
-+				can1_pins: iic4-can-pins {
-+					function = "can";
-+					groups = "iic4";
-+				};
-+
-+				event87_pins: iic4-event-pins {
-+					function = "evt";
-+					groups = "iic4";
-+				};
-+
-+				i2c4_pins: iic5-i2c-pins {
-+					function = "i2c";
-+					groups = "iic5";
-+				};
-+
-+				gpio0_25_24_pins: iic5-gpio-pins {
-+					function = "gpio";
-+					groups = "iic5";
-+				};
-+
-+				esdhc0_clksync_pins: iic5-sdhc-clk-pins {
-+					function = "sdhc-clk";
-+					groups = "iic5";
-+				};
-+
-+				dspi2_miso_mosi_pins: iic5-spi3-pins {
-+					function = "spi";
-+					groups = "iic5";
-+				};
-+
-+				i2c5_pins: iic6-i2c-pins {
-+					function = "i2c";
-+					groups = "iic6";
-+				};
-+
-+				gpio0_23_22_pins: iic6-gpio-pins {
-+					function = "gpio";
-+					groups = "iic6";
-+				};
-+
-+				esdhc1_clksync_pins: iic6-sdhc-clk-pins {
-+					function = "sdhc-clk";
-+					groups = "iic6";
-+				};
-+
-+				fspi_data74_pins: xspi1-data74-pins {
-+					function = "flexspi";
-+					groups = "xspi1-data74";
-+				};
-+
-+				gpio1_31_28_pins: xspi1-data74-gpio-pins {
-+					function = "gpio";
-+					groups = "xspi1-data74";
-+				};
-+
-+				fspi_data30_pins: xspi1-data30-pins {
-+					function = "flexspi";
-+					groups = "xspi1-data30";
-+				};
-+
-+				gpio1_27_24_pins: xspi1-data30-gpio-pins {
-+					function = "gpio";
-+					groups = "xspi1-data30";
-+				};
-+
-+				fspi_dqs_sck_cs10_pins: xspi1-base-pins {
-+					function = "flexspi";
-+					groups = "xspi1-base";
-+				};
-+
-+				gpio1_23_20_pins: xspi1-base-gpio-pins {
-+					function = "gpio";
-+					groups = "xspi1-base";
-+				};
-+
-+				esdhc0_cmd_data30_clk_vsel_pins: sdhc1-base-sdhc-vsel-pins {
-+					function = "sdhc";
-+					groups = "sdhc1-base";
-+				};
-+
-+				gpio0_21_15_pins: sdhc1-base-gpio-pins {
-+					function = "gpio";
-+					groups = "sdhc1-base";
-+				};
-+
-+				dspi0_pins: sdhc1-base-spi1-pins {
-+					function = "spi";
-+					groups = "sdhc1-base";
-+				};
-+
-+				esdhc0_cmd_data30_clk_dspi2_cs0_pins: sdhc1-base-sdhc-spi3-pins {
-+					function = "sdhc-spi";
-+					groups = "sdhc1-base";
-+				};
-+
-+				esdhc0_cmd_data30_clk_data4_pins: sdhc1-base-sdhc-data4-pins {
-+					function = "sdhc-data4";
-+					groups = "sdhc1-base";
-+				};
-+
-+				esdhc0_dir_pins: sdhc1-dir-pins {
-+					function = "sdhc";
-+					groups = "sdhc1-dir";
-+				};
-+
-+				gpio0_14_12_pins: sdhc1-dir-gpio-pins {
-+					function = "gpio";
-+					groups = "sdhc1-dir";
-+				};
-+
-+				dspi2_cs31_pins: sdhc1-dir-spi3-pins {
-+					function = "spi";
-+					groups = "sdhc1-dir";
-+				};
-+
-+				esdhc0_data75_pins: sdhc1-dir-sdhc-pins {
-+					function = "sdhc-data";
-+					groups = "sdhc1-dir";
-+				};
-+
-+				gpio1_18_15_pins: iic8-iic7-gpio-pins {
-+					function = "gpio";
-+					groups = "sdhc2-data74";
-+				};
-+
-+				i2c6_i2c7_pins: iic8-iic7-i2c-pins {
-+					function = "i2c";
-+					groups = "sdhc2-data74";
-+				};
-+
-+				i2c0_pins: iic1-i2c-pins {
-+					function = "i2c";
-+					groups = "iic1";
-+				};
-+
-+				gpio0_3_2_pins: iic1-gpio-pins {
-+					function = "gpio";
-+					groups = "iic1";
-+				};
-+			};
- 		};
+ 	unsigned int severity:2;
+ 	unsigned int root_ratelimit_print:1;
+-	unsigned int __pad1:4;
++	unsigned int __pad1:3;
++	unsigned int id_valid:1;
+ 	unsigned int multi_error_valid:1;
  
- 		sfp: efuse@1e80000 {
-@@ -1531,179 +1727,6 @@ pcs18: ethernet-phy@0 {
- 			};
- 		};
+ 	unsigned int first_error:5;
+@@ -955,6 +959,7 @@ void pcie_link_rcec(struct pci_dev *rcec);
+ void pcie_walk_rcec(struct pci_dev *rcec,
+ 		    int (*cb)(struct pci_dev *, void *),
+ 		    void *userdata);
++bool pci_rcec_associated(struct pci_dev *rcec, u16 id);
+ #else
+ static inline void pci_rcec_init(struct pci_dev *dev) { }
+ static inline void pci_rcec_exit(struct pci_dev *dev) { }
+diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+index d492c7ce01e1..9957c36bf215 100644
+--- a/drivers/pci/pcie/aer.c
++++ b/drivers/pci/pcie/aer.c
+@@ -951,12 +951,13 @@ static void aer_print_source(struct pci_dev *dev, struct aer_err_info *info,
+ {
+ 	u16 source = info->id;
  
--		pinmux_i2crv: pinmux@70010012c {
--			compatible = "pinctrl-single";
--			reg = <0x00000007 0x0010012c 0x0 0xc>;
--			#address-cells = <1>;
--			#size-cells = <0>;
--			#pinctrl-cells = <2>;
--			pinctrl-single,bit-per-mux;
--			pinctrl-single,register-width = <32>;
--			pinctrl-single,function-mask = <0x7>;
--
--			/* RCWSR12 */
--			i2c1_pins: iic2-i2c-pins {
--				pinctrl-single,bits = <0x0 0x0 0x7>;
--			};
--
--			gpio0_31_30_pins: iic2-gpio-pins {
--				pinctrl-single,bits = <0x0 0x1 0x7>;
--			};
--
--			ftm0_ch10_pins: iic2-ftm-pins {
--				pinctrl-single,bits = <0x0 0x2 0x7>;
--			};
--
--			esdhc0_cd_wp_pins: iic2-sdhc-pins {
--				pinctrl-single,bits = <0x0 0x6 0x7>;
--			};
--
--			i2c2_pins: iic3-i2c-pins {
--				pinctrl-single,bits = <0x0 0x0 (0x7 << 3)>;
--			};
--
--			gpio0_29_28_pins: iic3-gpio-pins {
--				pinctrl-single,bits = <0x0 (0x1 << 3) (0x7 << 3)>;
--			};
--
--			can0_pins: iic3-can-pins {
--				pinctrl-single,bits = <0x0 (0x2 << 3) (0x7 << 3)>;
--			};
--
--			event65_pins: iic3-event-pins {
--				pinctrl-single,bits = <0x0 (0x6 << 3) (0x7 << 3)>;
--			};
--
--			i2c3_pins: iic4-i2c-pins {
--				pinctrl-single,bits = <0x0 0x0 (0x7 << 6)>;
--			};
--
--			gpio0_27_26_pins: iic4-gpio-pins {
--				pinctrl-single,bits = <0x0 (0x1 << 6) (0x7 << 6)>;
--			};
--
--			can1_pins: iic4-can-pins {
--				pinctrl-single,bits = <0x0 (0x2 << 6) (0x7 << 6)>;
--			};
--
--			event87_pins: iic4-event-pins {
--				pinctrl-single,bits = <0x0 (0x6 << 6) (0x7 << 6)>;
--			};
--
--			i2c4_pins: iic5-i2c-pins {
--				pinctrl-single,bits = <0x0 0x0 (0x7 << 9)>;
--			};
--
--			gpio0_25_24_pins: iic5-gpio-pins {
--				pinctrl-single,bits = <0x0 (0x1 << 9) (0x7 << 9)>;
--			};
--
--			esdhc0_clksync_pins: iic5-sdhc-clk-pins {
--				pinctrl-single,bits = <0x0 (0x2 << 9) (0x7 << 9)>;
--			};
--
--			dspi2_miso_mosi_pins: iic5-spi3-pins {
--				pinctrl-single,bits = <0x0 (0x3 << 9) (0x7 << 9)>;
--			};
--
--			i2c5_pins: iic6-i2c-pins {
--				pinctrl-single,bits = <0x0 0x0 (0x7 << 12)>;
--			};
--
--			gpio0_23_22_pins: iic6-gpio-pins {
--				pinctrl-single,bits = <0x0 (0x1 << 12) (0x7 << 12)>;
--			};
--
--			esdhc1_clksync_pins: iic6-sdhc-clk-pins {
--				pinctrl-single,bits = <0x0 (0x2 << 12) (0x7 << 12)>;
--			};
--
--			fspi_data74_pins: xspi1-data74-pins {
--				pinctrl-single,bits = <0x0 0x0 (0x7 << 15)>;
--			};
--
--			gpio1_31_28_pins: xspi1-data74-gpio-pins {
--				pinctrl-single,bits = <0x0 (0x1 << 15) (0x7 << 15)>;
--			};
--
--			fspi_data30_pins: xspi1-data30-pins {
--				pinctrl-single,bits = <0x0 0x0 (0x7 << 18)>;
--			};
--
--			gpio1_27_24_pins: xspi1-data30-gpio-pins {
--				pinctrl-single,bits = <0x0 (0x1 << 18) (0x7 << 18)>;
--			};
--
--			fspi_dqs_sck_cs10_pins: xspi1-base-pins {
--				pinctrl-single,bits = <0x0 0x0 (0x7 << 21)>;
--			};
--
--			gpio1_23_20_pins: xspi1-base-gpio-pins {
--				pinctrl-single,bits = <0x0 (0x1 << 21) (0x7 << 21)>;
--			};
--
--			esdhc0_cmd_data30_clk_vsel_pins: sdhc1-base-sdhc-vsel-pins {
--				pinctrl-single,bits = <0x0 0x0 (0x7 << 24)>;
--			};
--
--			gpio0_21_15_pins: sdhc1-base-gpio-pins {
--				pinctrl-single,bits = <0x0 (0x1 << 24) (0x7 << 24)>;
--			};
--
--			dspi0_pins: sdhc1-base-spi1-pins {
--				pinctrl-single,bits = <0x0 (0x2 << 24) (0x7 << 24)>;
--			};
--
--			esdhc0_cmd_data30_clk_dspi2_cs0_pins: sdhc1-base-sdhc-spi3-pins {
--				pinctrl-single,bits = <0x0 (0x3 << 24) (0x7 << 24)>;
--			};
--
--			esdhc0_cmd_data30_clk_data4_pins: sdhc1-base-sdhc-data4-pins {
--				pinctrl-single,bits = <0x0 (0x4 << 24) (0x7 << 24)>;
--			};
--
--			esdhc0_dir_pins: sdhc1-dir-pins {
--				pinctrl-single,bits = <0x0 0x0 (0x7 << 27)>;
--			};
--
--			gpio0_14_12_pins: sdhc1-dir-gpio-pins {
--				pinctrl-single,bits = <0x0 (0x1 << 27) (0x7 << 27)>;
--			};
--
--			dspi2_cs31_pins: sdhc1-dir-spi3-pins {
--				pinctrl-single,bits = <0x0 (0x3 << 27) (0x7 << 27)>;
--			};
--
--			esdhc0_data75_pins: sdhc1-dir-sdhc-pins {
--				pinctrl-single,bits = <0x0 (0x4 << 27) (0x7 << 27)>;
--			};
--
--			/* RCWSR13 */
--			gpio1_18_15_pins: iic8-iic7-gpio-pins {
--				pinctrl-single,bits = <0x4 0x1 0x7>;
--			};
--
--			i2c6_i2c7_pins: iic8-iic7-i2c-pins {
--				pinctrl-single,bits = <0x4 0x2 0x7>;
--			};
--
--			/* RCWSR14 */
--			/*
--			 * IIC1_PMUX is a single bit at RCWSR14[10], but bit-per-mux
--			 * uses the mask for the field to clear before applying the
--			 * value.
--			 * So bits 11 and 12, which are reserved, are written as 0
--			 * on every mux switch, it is harmless.
--			 */
--			i2c0_pins: iic1-i2c-pins {
--				pinctrl-single,bits = <0x8 0x0 (0x7 << 10)>;
--			};
--
--			gpio0_3_2_pins: iic1-gpio-pins {
--				pinctrl-single,bits = <0x8 (0x1 << 10) (0x7 << 10)>;
--			};
--		};
--
- 		fsl_mc: fsl-mc@80c000000 {
- 			compatible = "fsl,qoriq-mc";
- 			reg = <0x00000008 0x0c000000 0 0x40>,
-
+-	pci_info(dev, "%s%s Error message%s from %04x:%02x:%02x.%d%s\n",
++	pci_info(dev, "%s%s Error message%s from %04x:%02x:%02x.%d%s%s\n",
+ 		 info->multi_error_valid ? "Multiple " : "",
+ 		 aer_error_severity_string[info->severity],
+ 		 info->multi_error_valid ? "s received, first one" : " received",
+ 		 pci_domain_nr(dev->bus), PCI_BUS_NUM(source),
+ 		 PCI_SLOT(source), PCI_FUNC(source),
++		 info->id_valid ? "" : " (invalid source)",
+ 		 found ? "" : " (no details found)");
+ }
+ 
+@@ -1146,6 +1147,24 @@ static int add_error_device(struct aer_err_info *e_info, struct pci_dev *dev)
+ 	return 0;
+ }
+ 
++static bool source_id_valid(struct pci_dev *root, u16 id)
++{
++	/* The Root Port or RCEC can itself be a valid Error Source */
++	if (pci_dev_id(root) == id)
++		return true;
++
++	/* For RCECs, @id shall be in range of its associated buses/devices */
++	if (pci_pcie_type(root) == PCI_EXP_TYPE_RC_EC)
++		return pci_rcec_associated(root, id);
++
++	/* For Root Ports, @id shall be in range of its subordinate buses */
++	if (!root->subordinate)
++		return false;
++
++	return root->subordinate->busn_res.start <= PCI_BUS_NUM(id) &&
++	       root->subordinate->busn_res.end   >= PCI_BUS_NUM(id);
++}
++
+ /**
+  * is_error_source - check whether the device is source of reported error
+  * @dev: pointer to pci_dev to be checked
+@@ -1157,11 +1176,8 @@ static bool is_error_source(struct pci_dev *dev, struct aer_err_info *e_info)
+ 	u32 status, mask;
+ 	u16 reg16;
+ 
+-	/*
+-	 * When bus ID is equal to 0, it might be a bad ID
+-	 * reported by Root Port.
+-	 */
+-	if ((PCI_BUS_NUM(e_info->id) != 0) &&
++	/* Some Root Ports report an invalid Error Source ID */
++	if (e_info->id_valid &&
+ 	    !(dev->bus->bus_flags & PCI_BUS_FLAGS_NO_AERSID)) {
+ 		/* Device ID match? */
+ 		if (e_info->id == pci_dev_id(dev))
+@@ -1174,8 +1190,7 @@ static bool is_error_source(struct pci_dev *dev, struct aer_err_info *e_info)
+ 
+ 	/*
+ 	 * When either
+-	 *      1) bus ID is equal to 0. Some ports might lose the bus
+-	 *              ID of error source id;
++	 *      1) Error Source ID register is invalid;
+ 	 *      2) bus flag PCI_BUS_FLAGS_NO_AERSID is set
+ 	 *      3) There are multiple errors and prior ID comparing fails;
+ 	 * We check AER status registers to find possible reporter.
+@@ -1566,6 +1581,8 @@ static void aer_isr_one_error_type(struct pci_dev *root,
+ {
+ 	bool found;
+ 
++	info->id_valid = source_id_valid(root, info->id);
++
+ 	found = find_source_device(root, info);
+ 
+ 	/*
+diff --git a/drivers/pci/pcie/rcec.c b/drivers/pci/pcie/rcec.c
+index 2bf6d9d549ba..609d656300fa 100644
+--- a/drivers/pci/pcie/rcec.c
++++ b/drivers/pci/pcie/rcec.c
+@@ -21,6 +21,20 @@ struct walk_rcec_data {
+ 	void *user_data;
+ };
+ 
++bool pci_rcec_associated(struct pci_dev *rcec, u16 id)
++{
++	if (!rcec->rcec_ea)
++		return false;
++
++	if (rcec->bus->number == PCI_BUS_NUM(id)) {
++		unsigned long bitmap = rcec->rcec_ea->bitmap;
++		return test_bit(PCI_SLOT(id), &bitmap);
++	}
++
++	return rcec->rcec_ea->nextbusn <= PCI_BUS_NUM(id) &&
++	       rcec->rcec_ea->lastbusn >= PCI_BUS_NUM(id);
++}
++
+ static bool rcec_assoc_rciep(struct pci_dev *rcec, struct pci_dev *rciep)
+ {
+ 	unsigned long bitmap = rcec->rcec_ea->bitmap;
 -- 
-2.43.0
-
+2.53.0
 
 
