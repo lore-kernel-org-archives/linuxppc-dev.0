@@ -2,80 +2,81 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73366606A33E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 18:13:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 83376606A329
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 18:13:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=g7FkLUHQ
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OJi0zXMv
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJxWb37nlz2xwL;
-	Wed, 04 Nov 2026 05:12:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=172.234.252.31 arc.chain=kernel.org
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793729579;
-	cv=pass; b=B/JwIYPS8GwCjCwqyfKnD1Kprf/NUJB3n88iSbV08iCntW9ODUB/MfgOEWt5igSiaWgrz957kkE3qzLF82sAWrarUsbDX23KIZP2vyL+W646oe3I9OhDi+KpBWpqmvKOtFMEhn4+VgmfEcghKoME6a92Q1Lw4GxpnFrk98+NP7znCyNQJnRwZIok94bRv1eb57gyhfQRT7cYcDoaDh8ov6TglfvAtp1ZQfr/afEEA0oaNEDTJTdxuqRBWSPup+1/PHDSNqfUQxS5XAp1mOa55N0fZnBDFWFC0Utt3UcHgCe2d+ySuC38MDL2T4EKjGwaJyVHZkWdf8nBLiXwtCqWQA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJxWf15Csz2xjM;
+	Wed, 04 Nov 2026 05:13:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25" arc.chain=kernel.org
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793729582;
+	cv=pass; b=QU5i9+UYLy50ncyWwplq+uo9cwh+D+E3629JYd7DGkPuuULqaNVZxiCdlxLEWR9u/ApoRpXiMrmN6QbTiGtAAzwetLte7+MW7WUcII4BoLV4DiiEfG4S8iB7Sxyg6zj1lqfCMfiT5KEUbOzBZ3ZQ6bd941I+9mMUdz7VZaON2NTlgku2V1fOLfLwk3v5KqAic1MsrP8mRN801GtCUxBE1YEk73LbvjVRbWl6HyLj9zK6YLDgc2Dbjd5xWmnaab+bxvJCVvNxqAGyP3EAzx/3x2jh0qosUbTHxPZutGmPmGkoZxWr/XOO0m3mh97q2nIiEZe1pacnGtCXuBaPY9sRTg==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793729579; c=relaxed/relaxed;
-	bh=g1GO0N9RZa7XxF5IhvFVAct0JfNThmJRb5rQhjdL3DU=;
+	t=1793729582; c=relaxed/relaxed;
+	bh=Ja/5Mv/Gop/oCSkbd+7+q5gBCpKe4wRAQI2mzWh3K/A=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=OQEWmlpPg+pBWmIeSY4o+yjKPOiy41rSGvQ1ajbWoJwuCc2o8VhGfHxcuWAudYH8sDPLvqb3j/MLd3x0xjKlOAtuVFz6Rp3prah8XvX70+ecy7PHUPSbtePjGqMHngI+32cX8P6X9oTLg7UhO1TPofixUWsbglQl3ujMtMp2GjEWfozU2Y6zFgdR/kKGrFwZyt0jUHYyekGZ3xXsGpX2G8+sSEE13YGxPtkUJwAvVT9NdH8yyA1DLxmqYSXuOthoLZgKHyST6SpwBzEbj3XbqpZ98FMf9v2YxhRmgSCIA2Ss/jQUztp8s/OJhUfF9y7Uv9X/tQRx4G707NSrE4+LLg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=g7FkLUHQ; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+vjardin.free.fr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=UzvvRpJgJRaf4jo0J3zroqqnQbcRvj8zaq4gWNA+tFiabT3j4Hc0KTmId1q3zdz9k0V40HNS8HVH97HYYCoB7rzGWAUy+AkG918jdBp1iuoHVHFdRKnP4om/gHG+mLfW1ODit6WyEM4WcIpugfAgX8dtg7y+dkVsFjGwkd/69Q75J8Efg94BS2lqp0jQzio+o0/YZcOC8bjx5Y1u4j0rmQbi6OYCIvIhVZ+TbyQGbf86aJ5qooVOYPLAIlZ/BcnScIZgDDPvotiqHoY5bJB9XlDlFwe+YvIk9muKOGYZw1N/hbwPlpXvGS5T3KF/+eTHKKPe9qXYSQDwjUEotODeLw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OJi0zXMv; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=devnull+vjardin.free.fr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=g7FkLUHQ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OJi0zXMv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+vjardin.free.fr@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=devnull+vjardin.free.fr@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJxWY5w63z2xjM
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2026 05:12:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJxWZ6142z2xlY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2026 05:12:58 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id E574A435AF;
+	by tor.source.kernel.org (Postfix) with ESMTP id D15EA6022B;
 	Tue,  3 Nov 2026 18:12:55 +0000 (UTC)
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
 	t=1793729575;
-	b=KzS87br2cjp6oFUGnSjRAMwgEy7539ZTBomT0cw2Qni/sSe8oKGZVr2P7RGixNzFFgwZ
-	 LbpKx6V3ZdWrwofGGN08pol54sER3xi4SRrsfSuZ1Si7FQL6Wxh0p6ZY6gqapr/ViPdu0
-	 Haq+ucPiwf9VEyY9ES2wrt4yKecETC13EPsJjoOTMiCUeCPQKO3S+N7HA7K0cGSuZHf+8
-	 jmHwUS2T1t5N3da98ZRF1YA3IULXh8aiZ5JQa3b9hYF47Lj7EiKbrZ32j0ONRlYM9+QZv
-	 SgxOG/bfhPzrA/8dfwoZDWRfIbCVg3H9uUmLV+e0bbVhIwqr4zsq4Iv1a0dDLj8ifnw==
+	b=Kcab7kIHKWSY5OR2wy+5jn+DT5z0hkvp/hqb1mZkfThZGaOVnDqJw0r8f6vmzOKJd5tD
+	 warCxGkxHNldeWFGslyNDarukCSLv5+9GpoIPWYksyL2AJoB6AwUHW5Nc0u6A6dK2ZYdi
+	 bXGavUZbQetXYpWEm4mIcL5vZr8tDOR+8Bii9Z/De0uBSNmGUYa3N/o7kzD/QuRFdcDpG
+	 y7LRRCG0GM9XHGP8D7bfTIaQFCWwALQKALW7Nw17hCooAtXuwvIp8KpdUwk3RKrm58Kmb
+	 e9WiIJIahqfuNTz6Apjj8N4Z7tbyq8gFeFl4T7IrMKvgRfyBn6fIwFxQSyF31Q5+Oyg==
 ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
 	c=relaxed/relaxed; t=1793729575;
 	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
 	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
 	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=g1GO0N9RZa7XxF5IhvFVAct0JfNThmJRb5rQhjdL3DU=;
-	b=06WLQpIQv5uDjfYgtqQgafaT6fk1TPl+6oR+TwWZpgnO7Y7OkycQ7Y0PlI9MFv9CnBi5
-	 UdUNCpKeg6SZuSPmBfFV/GRAXg9qM7Jd3zBmlZ4J6H2KbwsUOQWaM/X4bXlfc6wDbnlCX
-	 CSlPlxYM1jCAses6CCq7twTYkY0MuaoSE7x7bgomDhmjh0QfcwxoQALs8b32r1ljX0vih
-	 UtQ/Q1yyxrehiCxUpGN8tfRS2HFrBrt5hqYxwg6McOmxDnDgH5aZHmGnwymP6dLrxK0nO
-	 kui5iCf3f7fwbWC/OElj/oXn3USPfgI70fBfYumAZD5CjSDHXuCimOVRdWNeV6aP6eg==
+	bh=Ja/5Mv/Gop/oCSkbd+7+q5gBCpKe4wRAQI2mzWh3K/A=;
+	b=HgCuoLB6IQdRvscUKvVX776/IVk7H/d7FXS6DmoWQxJoeoBsm8p34sLfTnMirhnY+HQ4
+	 BoM1txCjrlbWbFR0jHN98Ahuia3cxp01+ZsxIP6TiitJvWeKdGqpbd7PBzdUZN7dVyzsX
+	 VZFaShvhG35kGKLk3wIt5dUQodQULzGXoBDUxW/V93yNbei0lQQ0ajeVRZrvTrAGsOlKF
+	 WQWNdoRbE3US2IQB+70owdgKkZ7YSQKnMMORYTkCYd4On/gy8dxN6pE+VTsMFil4lkGRT
+	 UNYs4rBqF8YbPE0W5JpySu/81xcgQHvvK26xbkK6dj2bpfkJwi7IxtdlmsBx915skhw==
 ARC-Authentication-Results: i=1; smtp.kernel.org; 
 	arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 9A6961F00A1B;
+	by smtp.kernel.org (Postfix) with ESMTPS id 8DDDD1F00A1C;
 	Tue,  3 Nov 2026 18:12:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
 	s=k20260515; t=1793729575;
-	bh=g1GO0N9RZa7XxF5IhvFVAct0JfNThmJRb5rQhjdL3DU=;
+	bh=Ja/5Mv/Gop/oCSkbd+7+q5gBCpKe4wRAQI2mzWh3K/A=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=g7FkLUHQ9X6944DLOPOvZ618phj/qg2lFdtJSEaWoOPF1O0vS00DjUn5EPfwB8ZB5
-	 WOj2n3/jXvNF43Od1yxflOHDebZERtausJ30UKXKL7zNngjF8wXCq0avGI3kg1NgQD
-	 3KqFdAAonF+HN+7w02vpGAPnHNNBxwbKopbquOuTrO1YljBpUG3GYsV6N/3qbPUWhb
-	 umc19e5RC9+7kTsrT22vA/YYen27f0JdXqQ7Bf++x+LqDwParxJANoJqQ0bTM2S9Ff
-	 3kEcs4wKvP/c9C8Yao4y7rqjgeWqk9ehXeWZC6lhisHHbJoxu+5ltEymtDoWJTDXF2
-	 ZxNE0bIdgznHw==
+	b=OJi0zXMvZEbFNQR744kZZclXuAaOdLgDzcnRoyCWuQEGbddkvJjoW0kdfjcTaNL8k
+	 kyzc5WVPyHPLHpnLRpykJlH7NNk2Jg6YM20hl15YGSivge/Wb6BrGh4Tlmi3YwGzQR
+	 /MpU8u53wEXOBqIyA3UG8AX5JXPlOVsA5Mtz6FmAVKk4AzHP7IdcSdA3l06EwRxsTJ
+	 EdfKqm89Cc7UuSi3IuE66zhhmE/wghdkbSGnIViZZSkwrxpTGmosW15pYU+4Ao/YNK
+	 rh/g0SmwcC+TPM7NlII58Jj054tQq0IDJXoFr75c3/+WG7nHpIRiQs4pYniC6IhPVL
+	 bsI5BLAIlE9Bg==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 2B21746A79;
+	by lkml.kernel.org (Postfix) with ESMTP id 1E91046A75;
 	Tue,  3 Nov 2026 18:12:54 +0000 (UTC)
 From: Vincent Jardin via B4 Relay <devnull+vjardin.free.fr@kernel.org>
-Date: Tue, 03 Nov 2026 19:12:11 +0100
-Subject: [PATCH v2 3/5] soc: fsl: guts: add the RCW override of any RCWSR
+Date: Tue, 03 Nov 2026 19:12:10 +0100
+Subject: [PATCH v2 2/5] dt-bindings: soc: fsl: layerscape-dcfg: add the
+ LX2160A pad-mux child
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,7 +91,7 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261103-for-upstream-lx2160a-rcw-pinmux-v1-v2-3-3aad0860b984@free.fr>
+Message-Id: <20261103-for-upstream-lx2160a-rcw-pinmux-v1-v2-2-3aad0860b984@free.fr>
 References: <20261103-for-upstream-lx2160a-rcw-pinmux-v1-v2-0-3aad0860b984@free.fr>
 In-Reply-To: <20261103-for-upstream-lx2160a-rcw-pinmux-v1-v2-0-3aad0860b984@free.fr>
 To: Dong Aisheng <aisheng.dong@nxp.com>, Fabio Estevam <festevam@gmail.com>, 
@@ -106,11 +107,11 @@ Cc: linux-gpio@vger.kernel.org, devicetree@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev, 
  Vladimir Oltean <vladimir.oltean@nxp.com>, Vincent Jardin <vjardin@free.fr>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1793729572; l=4011;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1793729572; l=1598;
  i=vjardin@free.fr; s=20260525; h=from:subject:message-id;
- bh=zMby9g9Gw8IHCSfvPJh/Ob7NvLFrXegdSthe00uEpLg=;
- b=3zKcpMNbwXD0ISVjbADl5wy7QKJn3/g1eTQwLbcHdryMN/kYlLl7hEV4ccFx1Ntotq7J62tdr
- VS7KdOx4y0TCnL4xBkGi2IuRdxbBtMaZLr4Ev4Nbg8/gpiUJztQVnpj
+ bh=YA2Jv1p1SkYZyf+rDzE5uX5RrqHER8WNy18Uw1BptA0=;
+ b=BuYXFKVa7bzqfQNlLlL/JpWV4nMUvbYRC0qmNKHkyzhAszW8PB0bokvLsaF+vQSiSGNzvmZlg
+ 89PcYFMXPqgAHrg/pg8G5LGavtJrFyt3QTheTm3eXX5Oq0SPWpZKSH2
 X-Developer-Key: i=vjardin@free.fr; a=ed25519;
  pk=hppgLeFpGpKOi7LNwGEZ4jOYofJCoGd4Jf1ltAabiLw=
 X-Endpoint-Received: by B4 Relay for vjardin@free.fr/20260525 with
@@ -121,124 +122,65 @@ Content-Transfer-Encoding: 7bit
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 From: Vincent Jardin <vjardin@free.fr>
 
-fsl_guts_rcw_rmw() only serves the SerDes lane modes. Export it for
-other fields of the RCW:
- - fsl_guts_rcw_read() reads a status register
- - fsl_guts_rcw_override() changes fields of one under rcwcr_lock and
-   waits for the status register to follow
- - fsl_guts_rcw_override_supported() tells whether the DCSR view of DCFG,
-   which holds the override registers, is mapped
+On the LX2160A the DCFG node holds the pad mux, overridden through its
+DCSR view. Allow fsl,lx2160a-dcfg with simple-mfd, so that the child is
+populated, and the pinctrl child, on the LX2160A only.
 
 Signed-off-by: Vincent Jardin <vjardin@free.fr>
 ---
- drivers/soc/fsl/guts.c   | 73 ++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/fsl/guts.h |  3 ++
- 2 files changed, 76 insertions(+)
+ .../bindings/soc/fsl/fsl,layerscape-dcfg.yaml          | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
-index 28361c63e26c..d2e3f66d0da4 100644
---- a/drivers/soc/fsl/guts.c
-+++ b/drivers/soc/fsl/guts.c
-@@ -369,6 +369,79 @@ int fsl_guts_lane_set_mode(int serdes_idx, int lane, enum lynx_lane_mode lane_mo
- }
- EXPORT_SYMBOL_NS_GPL(fsl_guts_lane_set_mode, "FSL_GUTS");
+diff --git a/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-dcfg.yaml b/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-dcfg.yaml
+index fc14fd0bf84b..dd6a00ba04eb 100644
+--- a/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-dcfg.yaml
++++ b/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-dcfg.yaml
+@@ -32,6 +32,7 @@ properties:
+       - items:
+           - enum:
+               - fsl,ls1028a-dcfg
++              - fsl,lx2160a-dcfg
+           - const: syscon
+           - const: simple-mfd
  
-+/**
-+ * fsl_guts_rcw_read() - read a RCW status register
-+ * @index: one-based index, RCWSR1 to RCWSR32
-+ * @val: the value read
-+ *
-+ * Return: 0 on success, -ENODEV before the DCFG block is mapped,
-+ * -EINVAL when @index is not 1 to 32
-+ */
-+int fsl_guts_rcw_read(unsigned int index, u32 *val)
-+{
-+	if (!soc.dcfg_ccsr)
-+		return -ENODEV;
-+	if (index < 1 || index > ARRAY_SIZE(soc.dcfg_ccsr->rcwsr))
-+		return -EINVAL;
-+
-+	*val = fsl_guts_read(&soc.dcfg_ccsr->rcwsr[index - 1]);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_NS_GPL(fsl_guts_rcw_read, "FSL_GUTS");
-+
-+/**
-+ * fsl_guts_rcw_override() - override fields of a RCW
-+ * @index: one-based index of the RCWSR and RCWCR pair
-+ * @val: the new value of the fields, in place
-+ * @mask: the fields to change
-+ *
-+ * The fields outside @mask keep the value the status register shows. The
-+ * override register is written and the status register polled until it
-+ * shows the result, as fsl_guts_lane_set_mode() does for a SerDes lane.
-+ *
-+ * Context: takes rcwcr_lock, shared with fsl_guts_lane_set_mode(), and
-+ * busy-polls the status register for up to RCW_TIMEOUT_US. Does not
-+ * sleep; must not be called from interrupt context.
-+ *
-+ * Return: 0 on success, -EOPNOTSUPP without a DCSR mapping of DCFG,
-+ * negative error otherwise
-+ */
-+int fsl_guts_rcw_override(unsigned int index, u32 val, u32 mask)
-+{
-+	int err;
-+
-+	if (!soc.dcfg_ccsr)
-+		return -ENODEV;
-+	if (!soc.dcfg_dcsr)
-+		return -EOPNOTSUPP;
-+	if (index < 1 || index > ARRAY_SIZE(soc.dcfg_ccsr->rcwsr))
-+		return -EINVAL;
-+
-+	spin_lock(&soc.rcwcr_lock);
-+	err = fsl_guts_rcw_rmw(index - 1, val & mask, mask);
-+	spin_unlock(&soc.rcwcr_lock);
-+	if (err)
-+		pr_err("RCW override of RCWSR%u failed: %pe\n", index,
-+		       ERR_PTR(err));
-+
-+	return err;
-+}
-+EXPORT_SYMBOL_NS_GPL(fsl_guts_rcw_override, "FSL_GUTS");
-+
-+/**
-+ * fsl_guts_rcw_override_supported() - can a Reset Configuration Word be
-+ *				       overridden?
-+ *
-+ * Return: true when the DCFG block is mapped with its DCSR view, the
-+ * second reg of the dcfg node, which holds the override registers
-+ */
-+bool fsl_guts_rcw_override_supported(void)
-+{
-+	return soc.dcfg_ccsr && soc.dcfg_dcsr;
-+}
-+EXPORT_SYMBOL_NS_GPL(fsl_guts_rcw_override_supported, "FSL_GUTS");
-+
- static u64 fsl_guts_get_soc_uid(const char *compat, unsigned int offset)
- {
- 	struct device_node *np;
-diff --git a/include/linux/fsl/guts.h b/include/linux/fsl/guts.h
-index 8d5ffb985fee..7127de897c23 100644
---- a/include/linux/fsl/guts.h
-+++ b/include/linux/fsl/guts.h
-@@ -142,6 +142,9 @@ int fsl_guts_lane_validate(int serdes_idx, int lane,
- 			   enum lynx_lane_mode lane_mode);
- int fsl_guts_lane_set_mode(int serdes_idx, int lane,
- 			   enum lynx_lane_mode lane_mode);
-+int fsl_guts_rcw_read(unsigned int index, u32 *val);
-+int fsl_guts_rcw_override(unsigned int index, u32 val, u32 mask);
-+bool fsl_guts_rcw_override_supported(void);
+@@ -62,6 +63,12 @@ properties:
  
- /* Alternate function signal multiplex control */
- #define MPC85xx_PMUXCR_QE(x) (0x8000 >> (x))
+   ranges: true
+ 
++  pinctrl:
++    $ref: /schemas/pinctrl/fsl,lx2160a-rcw-pinmux.yaml#
++    description:
++      The pad muxes of the RCW on the LX2160A, overridden through the DCSR
++      view of this block.
++
+ patternProperties:
+   "^clock-controller@[0-9a-f]+$":
+     $ref: /schemas/clock/fsl,flexspi-clock.yaml#
+@@ -70,6 +77,17 @@ required:
+   - compatible
+   - reg
+ 
++allOf:
++  - if:
++      not:
++        properties:
++          compatible:
++            contains:
++              const: fsl,lx2160a-dcfg
++    then:
++      properties:
++        pinctrl: false
++
+ additionalProperties: false
+ 
+ examples:
 
 -- 
 2.43.0
