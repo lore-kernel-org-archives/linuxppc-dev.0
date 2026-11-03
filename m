@@ -1,48 +1,87 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8495A606A32C
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 09:45:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 15FF7606D810
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2026 09:47:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=VMrL9h9c
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jJkFn22VBz2xMQ;
-	Tue, 03 Nov 2026 20:45:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=83.223.78.233
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793699117;
-	cv=none; b=HTiQtNMlCekLtm9WRU26W7eSb08zU37BWK4rBMa6q/2V0rpLCNGe9vT2EqmYEHD5GA39J6QvpVDiccu+VJ/3olKkc5NDV9mUAaqo1P+QgRtrimk7UI8xcM7lorjbB5/DeUxxvFcSa4htqlqGNS76KfzEkTwTNtPyOr5Fufmp+Jb9o3vQakbhlaQnTWuwDvvd1J8DEoj5XnHiwEfnJruvcNiVDs99DUMhDayCwJVkphebCoNNOuL/rhedk7yeLlciL6UQmg1PIl4i0OftQgSbBQ/d5qRT0SvkNp9lZITj6p/xDoGS/dCCZuPoNX61ZEva/LBnZ+hTS9cmwa8+L4K0ig==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jJkHw2z9cz2xMQ;
+	Tue, 03 Nov 2026 20:47:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793699228;
+	cv=none; b=Fb+kGHJlCQWI833JshnPeWf5xYDn2HHkTlTD2qicG47BkPilp4199M7WCbIlog7BnNggNlQlPnT85Vi5BXWrgpckk5psqHUMi5wO25/1K+JLuJtLjOlmT7aVlM9jrVDTCmngFaEF1K9T9gEIRIltjY2t+492BJVJ3SjzlA6rd6mlT16b5UTU7rvWUwrcyTbKAgs79vgt0zyF564870vsDcCqTuFTa/H+/buuBfMVO/Z1UonxGccWkwjve/7VtAV+ntytJ+djV8FRTEqv0lCXSZZ1nAFqlLsKwExl/5AUwE6KVPZgJBFodkASfRrIqthduY4bm4LuqcA3w3thlYpl3g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793699117; c=relaxed/relaxed;
-	bh=DFR/PANMtbsevfEku4Z3pizYVHHbGGcn40b739MWAyg=;
-	h=Message-ID:From:Date:Subject:To:Cc; b=ohY79F72VQCLOa40+9MdXL3YIj+1nG4Elz3KgxlcNg4sOmRxVLnabaTZdOHsRx+fx+KhVH2ohPR7x1jkT4+xEBC7718Zz4AtkdMiEEcqwXerQH3OtxGk7gn5OkpsfsTuuHDatgDtIRNWjJO3T55U3Uz4HqvcGlT6YGMTo909Ug7ObykzLnwLs3GwfkOW3feYGk4SfZX3grhPRv7oJBynlkzBdXuDEPmNVefegC4AanOu7uVGtHYDZ9atOvO5E1czReOcePTfiCJ4FZOxCm9oZzJsmlHkbj2cE7NtuQ0GTFs0ym2vuwYEOKUvLByo69lRyUFBhncwg54qWx4hGn0YLA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=83.223.78.233; helo=mailout2.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org) smtp.mailfrom=wunner.de
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wunner.de (client-ip=83.223.78.233; helo=mailout2.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org)
-Received: from mailout2.hostsharing.net (mailout2.hostsharing.net [83.223.78.233])
+	t=1793699228; c=relaxed/relaxed;
+	bh=0JBGFPPLquwWwHmBGhL2h+y4hpkquMXF6f4Dd0IfIRA=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
+	 MIME-version:Content-type; b=OtNHad3P9nMBG5bARcXSb/I1sQyKM6Nl1UvWwNFND18f9mlLuB85xB9s117Rhj+fXyZUaORCHqytfRGHqtpkFdTuOf7bJHUudhf/Im1dHCQ9TTtjw+0mutqmnLfrGwqQ7U8ECaI1nztOjHOgGlPdM2yD5wDDQ0qkG/KAP7hlDsVpZwplCg8op3nyjwIiBag2mjAwSvnSJeUF+cRNSLCAhRDK+XAVbHjPfTt2pfSasg1+wVmNUyMFkNAnoFFRek6MIK21JrrTPkrReK8Mnv4N9XTVxn8RTuTWgjCms7As63r0D8Kt3+nB7yxj9cvv73V3fq2ne56H0KhPSxJFcoCstw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=VMrL9h9c; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132e; helo=mail-dy1-x132e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=VMrL9h9c;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132e; helo=mail-dy1-x132e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x132e.google.com (mail-dy1-x132e.google.com [IPv6:2607:f8b0:4864:20::132e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJkFl66pQz2xK7
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 20:45:12 +1100 (AEDT)
-Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature ECDSA (secp384r1) server-digest SHA384
-	 client-signature ECDSA (secp384r1) client-digest SHA384)
-	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
-	by mailout2.hostsharing.net (Postfix) with ESMTPS id 7CB471EC8;
-	Tue, 03 Nov 2026 10:45:06 +0100 (CET)
-Received: by h08.hostsharing.net (Postfix, from userid 100393)
-	id 6DFA661C2345; Tue,  3 Nov 2026 10:45:06 +0100 (CET)
-Message-ID: <cover.1793697480.git.lukas@wunner.de>
-From: Lukas Wunner <lukas@wunner.de>
-Date: Tue, 3 Nov 2026 10:45:00 +0100
-Subject: [PATCH 0/2] PCI/AER: Improve Error Source handling
-To: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org
-Cc: Sourabh Jain <sourabhjain@linux.ibm.com>, Oliver OHalloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org, Alex Deucher <alexander.deucher@amd.com>, Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>, Keith Busch <kbusch@kernel.org>, Maciej Grochowski <Maciej.Grochowski@sony.com>
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_PASS,SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
-X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
-	aws-us-west-2-korg-listserv-alma10-1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJkHt4gNcz2xK7
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 20:47:06 +1100 (AEDT)
+Received: by mail-dy1-x132e.google.com with SMTP id 5a478bee46e88-3645f0f3fcdso6650912eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 01:47:06 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1793699224; x=1794304024; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :message-id:date:in-reply-to:subject:cc:to:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=0JBGFPPLquwWwHmBGhL2h+y4hpkquMXF6f4Dd0IfIRA=;
+        b=VMrL9h9cKpR4TfYq7prjdSZAjXMqs+CdTQSqQI6N2i3DmRv3YQsCFd61g7tkK+Xz2V
+         QiOqCIBY2JZ11a8SsHAgp9T00v5p1Osz1XGYOHfF4IBJxUaZuhn+RpX7bZOY7db4boT8
+         JLTkwSarxFKNCBBQO49OB/4OCUn/wYLlkA9uQAmYrOyXKrhiIY7M6WNlbCGTFNreW/WK
+         hCoqrg4nBM8tthWfycKHvnBFx5xpzCyg9Q9NgCwaGvodVSAyYAn9Gw2Co3CRLFW6RyWf
+         JOT4c7AoxNkIhZ5jg7SFG8viUKRwCCcN7MlznUTXTWvwBBUsZQvdnmckdeeDAVtXfFUX
+         kr3Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793699224; x=1794304024;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=0JBGFPPLquwWwHmBGhL2h+y4hpkquMXF6f4Dd0IfIRA=;
+        b=tec0SfzW4UriTu5cQVp7XlIqXfVsURmsZ2PF7HzOwiFKV0Nmh2sFdoxQS/LK0cbbHx
+         3HdIzjyXqCfU/TCW9xViHhB3nnSkcVfw+gMssK0nT7E0riCQNDt87/gFbDQk09E7oCE5
+         TkTHDRr1ImfsMiRebRjs9gKfz8vhNnm+4UD52N8N2SoYEeJe3sJKiGAq7Imh/uwq7NCb
+         lPPA+Rq9T7BxpNKJxDswhQUeV381EIVq3sK9q+ba5efcTFKmcu8O/LBgrsxDIqqx3vMM
+         iEa64jYOkU7svv+20fW62SVJoatiMArnaYfa96n6nFVimP1PD5gKhRL1dgcP5DSyiR8m
+         UZ5w==
+X-Forwarded-Encrypted: i=1; AKwUvBwZtObfgW2zD8Z9W6yk2q2n6T7CSGJIZEzjQZi/ZN6ILUhvgGIh4sau2FFZS1J6hDytjC68fi3UIUw7KL0=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z8IJkQruDy4WIeqNX5F3Ylf2ci4AfoHhfNDf1WOZAikG+46USFB
+	qHpriLGAqUlvCjbhCdKPb7Zmm2h9m7OSxVPKbmQmT26FNmLjA4wEyGmr
+X-Gm-Gg: AYBFou22VJcTrWaqYrdlRRPpyS4+kHyq67UVm6d29QCVMNSLskeh9tbKJku6pH2HRza
+	ez6qS0p25UGqzhmSayVPSX8MzVhul0ICo5LJ8/oWGi9BdpzbS1FFlkVuqCmvw71F20goVzqwqpB
+	K792scXrDadgIqEGMqyEo3FMGq8eupY+3W+XuJY2XPjSzC/ysFLH/2WB6/DcFClE4GBdvrT83tv
+	/tytH1UVBAgEykFQatftjAveuWx2x5amw1WyZ1/A5XTXATimq3y1V97l4UFMWI66UFLt5LuNEjd
+	xdlbyORn/OcwUahX8NII7XTfi8KIRVI3jLf+YGBiJWY6jfP63pVRBkHXsVYH25pxRXTwcQNgyrn
+	eMWJxufyoRUQZkXdmcYr8afkMZBj1akU3ns3dqaUmWpiz9bTVp7pLKZv6umpTYHQPh/NivlsmjM
+	GUkNXTiavNg3TchWAdpoN3RI6m3m3sPomy/g5eD4emm5i5DgX4NIL127+TVCzha+6UXf+0cF7fO
+	ulVixNVfmsKglqFyAws48/Qxn4FLTsAQIq1csuHXCtphZIAbzW+1E4i8/O38mivr26ul5RiLLkZ
+	gn9JghEsUkPZIOCplD4LjceSOF0=
+X-Received: by 2002:a05:7301:6405:b0:366:83dd:4704 with SMTP id 5a478bee46e88-36a423dc7f8mr19544762eec.17.1793699223769;
+        Tue, 03 Nov 2026 01:47:03 -0800 (PST)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36a428af4e6sm38668145eec.4.2026.11.03.01.46.59
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 03 Nov 2026 01:47:02 -0800 (PST)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Hari Bathini <hbathini@linux.ibm.com>, stable@vger.kernel.org, Josef Schlehofer <pepe.schlehofer@gmail.com>
+Subject: Re: [PATCH] powerpc/code-patching: Flush the patch area TLB entry locally
+In-Reply-To: <44406eef-0035-4d6f-a2b0-3647d7c1ea2e@kernel.org>
+Date: Tue, 03 Nov 2026 14:42:04 +0530
+Message-ID: <wlqu5lej.ritesh.list@gmail.com>
+References: <b7916dadd8ef56d417d0cbf69fa9ef2a447a5a3e.1793674111.git.ritesh.list@gmail.com> <44406eef-0035-4d6f-a2b0-3647d7c1ea2e@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -55,25 +94,156 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
+	autolearn_force=no version=4.0.1
+X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
+	aws-us-west-2-korg-listserv-alma10-1
 
-While analyzing log output provided by Alex, I noticed that the AER driver
-fails to find the error-signaling device if the Error Source ID register
-contains an invalid, non-zero value.  Patch [2/2] fixes that.
+"Christophe Leroy (CS GROUP)" <chleroy@kernel.org> writes:
 
-Also, a potential NULL pointer deref caught my eye in that portion of the
-code which is fixed by patch [1/2].  I believe this is hard to trigger,
-but the kernel should still handle it gracefully.
+> Le 03/11/2026 à 03:54, Ritesh Harjani (IBM) a écrit :
+>> patching functions like patch_mem() and patch_instructions(), maps the
+>> target page at the per-cpu text_poke_area, write it, clear the PTE and
+>> then flushes the tlb using flush_tlb_kernel_range(), with interrupts
+>> disabled. flush_tlb_kernel_range() on SMP nohash (e500) does an IPI
+>> based TLB invalidation i.e -
+>> 
+>> 	smp_call_function(do_flush_tlb_mm_ipi, NULL, 1);
+>> 
+>> ...which will wait for other CPUs but with interrupts off. This can be
+>> caught by lockdep with the following warning:
+>> 
+>>    WARNING: kernel/smp.c:917 at smp_call_function_many_cond+0x430/0x818, CPU#1: swapper/0/1
+>>    CPU: 1 UID: 0 PID: 1 Comm: swapper/0 Not tainted 7.3.0-rc1-leds-v4 #1 PREEMPT
+>>    Hardware name: Turris 1.1 e500v2 0x80211051 Freescale P2020
+>>    Call Trace:
+>>    [c1915bc0] [c001be04] flush_tlb_kernel_range+0x2c/0x74
+>>    [c1915bd0] [c001ce2c] patch_instructions+0x1b0/0x318
+>>    [c1915c20] [c003113c] bpf_arch_text_copy+0x5c/0xb4
+>>    [c1915c40] [c01c3398] bpf_jit_binary_pack_finalize+0x28/0x8c
+>>    [c1915c60] [c0031770] bpf_int_jit_compile+0x5dc/0x758
+>>    ...
+>>    [c1915dd0] [c102e114] ptp_classifier_init+0x30/0x4c
+>>    [c1915df0] [c102d3a8] sock_init+0xc8/0xe4
+>>    ...
+>>    hardirqs last disabled at (3076): [<c001ceb4>] patch_instructions+0x238/0x318
+>> 
+>> Josef confirmed that this was causing a hang (deadlock):
+>>      I think this is why the CZ.NIC Turris 1.1 hangs early in boot with
+>>      CONFIG_JUMP_LABEL=y. On 6.18.44 it hung in 19 of 19 boots and booted
+>>      fine 9 of 9 times with jump labels off. The hang comes while static
+>>      keys are patched and modules are loaded, nothing is printed and the
+>>      watchdog resets the board. OpenWrt keeps jump labels off on these
+>>      boards for now.
+>> 
+>> ...which is possible if both cpus are doing similar operations with interrupts
+>> off and doing TLB invalidation using IPI.
+>> 
+>> Broadcast TLB invalidation is not needed here since text_poke_area is
+>> a per-cpu area. It is mapped and unmapped with interrupts disabled by
+>> it's own cpu. The only reason I think, if we would need a broadcast tlb
+>> invalidate is, when we want to prevent a stray or malicious write to
+>> this cpu text_poke_area by another CPU. This generally gets solved with
+>> temporary-mm path like how Radix and even x86 implements. However, booke
+>> doesn't implement that, so for now let's ensure we use local tlb
+>> flushing for correctness.
+>
+> This problem was already discussed one year ago, see 
+> https://lore.kernel.org/all/PA3P192MB2865C07D634E3B775D003C7F8CD7A@PA3P192MB2865.EURP192.PROD.OUTLOOK.COM/
+>
+> See response from Arnd, a stop_machine() should be done for completeness.
+>
 
-Lukas Wunner (2):
-  PCI/AER: Avoid NULL pointer deref on search for Error Source
-  PCI/AER: Check validity of Error Source ID register
+I will have to take sometime to go over what ARM does here with
+stop_machine(). However, either ways I think, we still need this fix,
+since otherwise P2020 boards gets hung during boot. Thoughts?
 
- drivers/pci/pci.h       |  7 ++++++-
- drivers/pci/pcie/aer.c  | 35 ++++++++++++++++++++++++++---------
- drivers/pci/pcie/rcec.c | 14 ++++++++++++++
- 3 files changed, 46 insertions(+), 10 deletions(-)
 
--- 
-2.53.0
+>> 
+>> Fixes: 49e3d8ea6248 ("powerpc/fsl_booke: Enable STRICT_KERNEL_RWX")
+>> Cc: stable@vger.kernel.org
+>> Reported-by: Josef Schlehofer <pepe.schlehofer@gmail.com>
+>> Closes: https://lore.kernel.org/all/20261026195644.16384-1-pepe.schlehofer@gmail.com/
+>> Tested-by: Josef Schlehofer <pepe.schlehofer@gmail.com>
+>> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+>> ---
+>>   arch/powerpc/lib/code-patching.c | 21 +++++++++++++++++++--
+>>   1 file changed, 19 insertions(+), 2 deletions(-)
+>> 
+>> diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+>> index 44ff9f684bef..6351342fa5c3 100644
+>> --- a/arch/powerpc/lib/code-patching.c
+>> +++ b/arch/powerpc/lib/code-patching.c
+>> @@ -276,6 +276,23 @@ static int __do_patch_mem_mm(void *addr, unsigned long val, bool is_dword)
+>>   	return err;
+>>   }
+>> 
+>> +/*
+>> + * The patch area is per-CPU and only used by its own CPU, with IRQs
+>> + * disabled, so only the local TLB can hold an entry for it.
+>> + *
+>> + * On nohash SMP, flush_tlb_kernel_range() IPIs the other CPUs and waits, which
+>> + * must not be done with IRQs disabled (see smp_call_function_many_cond()), so
+>> + * flush just the local kernel (PID 0) entry.
+>> + * Book3S keeps flush_tlb_kernel_range() which doesn't IPI here.
+>> + */
+>> +static void flush_patch_area(unsigned long addr)
+>> +{
+>> +	if (IS_ENABLED(CONFIG_PPC_BOOK3S))
+>
+> CONFIG_PPC_BOOK3S not consistant with commit message. Are you adressing 
+> a problem on e500 only ? on all not book3s ? What about book3s/32 ? What 
+> about 8xx ? Even for book3s/64, is it correct at all when 
+> mm_patch_enabled() returns false ?
+>
 
+No we are addressing the problem on all NOHASH platforms. IIUC, all
+!BOOK3S are "nohash". Although some of them maybe UP, so it doesn't
+matter whether a flush_tlb_kernel_range() is called or
+local_flush_tlb_page() - it wouldn't matter. And on others which are SMP
+but do not have STRICT_KERNEL_RWX enabled, they will anyway not go
+through this path - but if they ever do - then we should ensure they too
+do a local_flush_tlb_range() to avoid the same deadlock.
+
+However, I think, maybe we could use CONFIG_PPC_MMU_NOHASH instead of using
+CONFIG_PPC_BOOK3S, thoughts?
+
+
+-ritesh
+
+>> +		flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
+>> +	else
+>> +		local_flush_tlb_page(NULL, addr);
+>> +}
+>> +
+>>   static int __do_patch_mem(void *addr, unsigned long val, bool is_dword)
+>>   {
+>>   	int err;
+>> @@ -296,7 +313,7 @@ static int __do_patch_mem(void *addr, unsigned long val, bool is_dword)
+>>   	err = __patch_mem(addr, val, patch_addr, is_dword);
+>> 
+>>   	pte_clear(&init_mm, text_poke_addr, pte);
+>> -	flush_tlb_kernel_range(text_poke_addr, text_poke_addr + PAGE_SIZE);
+>> +	flush_patch_area(text_poke_addr);
+>> 
+>>   	return err;
+>>   }
+>> @@ -488,7 +505,7 @@ static int __do_patch_instructions(u32 *addr, u32 *code, size_t len, bool repeat
+>>   	err = __patch_instructions(patch_addr, code, len, repeat_instr);
+>> 
+>>   	pte_clear(&init_mm, text_poke_addr, pte);
+>> -	flush_tlb_kernel_range(text_poke_addr, text_poke_addr + PAGE_SIZE);
+>> +	flush_patch_area(text_poke_addr);
+>> 
+>>   	return err;
+>>   }
+>> --
+>> 2.39.5
+>> 
 
