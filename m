@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3EAE9606A334
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 17:28:58 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19ED9606A336
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 17:29:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WlF7tGad
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MEOj2YVa
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKXVJ3CqDz2xfX;
-	Thu, 05 Nov 2026 04:28:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKXVY5y8Mz2xnQ;
+	Thu, 05 Nov 2026 04:29:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793813336;
-	cv=none; b=cMxJcUB4eNh40X2iJExLHFPcZA3PwwWmgd5EX/N7A158SFCsIeAiFzJki74V2ZkZei7fq4KeBN3FwnYJYocNabqW+56NrIWz+seT2Uygfzvpf7npp/e9a+4rLYc01Oirl4BKpPM22aYwa0KfACBPqRMPyOyIquCRoFawJ7hRp3eAkGxpPTNpqStO/rHz5JI27Dfn/ROnuZGHHNUJY3G/Fevjwsa9z7M0XhcpzebSAbupVqBKotoVSK3RTlnL/m4eCAvpG66whCIHmXJPDLpMrVWNgXlYy9TlCYZMR2zIVDs01EoTvV4ju0L8dj67LWV4jCZ+JqOBMMx9HgwvCGvvLQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793813349;
+	cv=none; b=cWvcwzvSurUZSQH764IzmsJritgWZ5Qwqe2AcUf4XgVYMnIy9c1nM3a6/qxYGyR4JCo3pN3h/bcUKpo8TxBcBgkA4OvbdSFup9ZP4W9WcbBEnEnqVDz/WIVK+a178wm+qNQYuvLekwPfDBI1MSkTAgMZGrFXrPwzzMKlAEFWDOJWKbJLSg2Baedx7oTChKUyY83qXyW7gp8hvdu/9bGbu2mGMVGnu35qGjh48vgR+1cr2KXY3lQhIQugguVBL5ycStMB+3oujaVhhS9fMobBvz6c3sP2WOUDmxUByorUzjYnDYZ41KI8aaRQRcN/1PTb0IBTnqxDBbb8Dpgg47EIpg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793813336; c=relaxed/relaxed;
-	bh=Em8mdDwLTSxa5ZBRNu+oIoQ2F8Zgf6ZNSHVwHsLTxqQ=;
+	t=1793813349; c=relaxed/relaxed;
+	bh=iSk3nsArFOOtW91DExIIvIg+E3fTnIkI1uYFn4dT7G8=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=gpYAcyfogMnC/qUSqNfEeNLsAFEnYj0C8DngBbp8oE3o8rCG9eQbFrHLpvHrKgdcP/dcukwctyZKVExy/8+TulLqaX7RmnbvX5yB+jFih1wNgJXWtVaU34rwI9ry7E1LOd4idHNEVDT7TGRWzl3pvSsN8Hote6BgEO0cFORCn/vnOqN1lgDjWroUN7f5yfFVyyzf4ILewu0ZMxG4vyZfKA3TrlMoYZ41AHLQJNzxf/ctVV8+9e1JiReVlCbTZXCzDrln49WLiMOnggTkrCGKAGv9bwL/ccLUx1D3fwJZFvE2EvlrixPger51Aj9uBacJ54jJytukBhGZw0ozVk8fjQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WlF7tGad; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=B81tTzgrAXzthbb3eA3r9pDvLIcUlUVtq5jxPnsbEihul5CwHxS7gsDdd5/lvM234Rr7F0+nziexFMzZ+vdO30ljjxBKcv4dZymXV2XbxLIj7Qi7knpHoGiJ6w9wUPcxd3OTB1HQs3jWQxfOFVrXIwJR3ILA3EBWP/MJ69oaBuMNLGCi4KVdr7IwDIBRFJx2prni+vOWbkGr5OG0Wi3AxRUJW97Ngu2trz4SR5yywC5yJMRstm61zXDb77o+8GvQVwze9QqiOY8TgD4NnOBCF73FsmbCP3CF+h9AD9hUUGztQmM1692Ep9le4hTMoQIkn5O6XWzY7ZIR0ruLL8+R3g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MEOj2YVa; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WlF7tGad;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MEOj2YVa;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKXVH5JNSz2xSF
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 04:28:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKXVY0SlKz2xf8
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 04:29:09 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id A11AB43E87;
+	by sea.source.kernel.org (Postfix) with ESMTP id 8C80C43EF4;
+	Wed,  4 Nov 2026 17:29:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0A14F1F00A17;
 	Wed,  4 Nov 2026 17:28:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 35F761F00919;
-	Wed,  4 Nov 2026 17:28:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793813333;
-	bh=Em8mdDwLTSxa5ZBRNu+oIoQ2F8Zgf6ZNSHVwHsLTxqQ=;
+	s=k20260515; t=1793813347;
+	bh=iSk3nsArFOOtW91DExIIvIg+E3fTnIkI1uYFn4dT7G8=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=WlF7tGadWEgcoZaI1uK4E88iTTgepprrifasds75i7VthYlwDtZlbOT38njQBleEb
-	 UPbfRvu/3NbdJdmajozNFYEjQ7CLKo3CQ2J3GJ8KprOwgxaPeKR/tPjmsa1SVubVZc
-	 1en2pZ6ZJTtEVyIRxb8Akk8hz+i5vksUw5t9jkHwoekjj/VsrPO/9oQMYE5lUZ/Gmm
-	 GUjsDpi349fDqaFLbiGR7qDbPwtf9QbhpGmf9fVBlF6p4pM0JpJvP1ofrRorpGAY+w
-	 2xFkMHZ1ZzA18zc8/hnvV/Wnix3shLePBWHi7TeHk0dW6WQ7yqtTL3j1rmlfaIJEkz
-	 qVzdX/epmct3g==
+	b=MEOj2YVa2iIdpw5z2/NDh/nS5/9YiUTydJpsuXgkbKBwIG8vtJQvRf2LpeGPo4QZ5
+	 w29MCiVMYZK7VIp0BshBq/zfoff8EDzOUsrS5HBn5xxq3ltk0oB2hX5ygXPEZjrVf1
+	 854j45f/iRAVKq/djckCLygA7FB8p1Zjx7psO38vVVq4bUsY5bxXVg/eXgiknxxWqI
+	 hhIFdc2uOWPB7MwA+0cdYVBWRsQi/CpTqM6ZnNZzgzc1bKeu5HnQD/VzYrhxCaOFwx
+	 QQbgQRnwMpXNmlsB9GdCiLATFPIHwQAd48vJlnM6Cja1L8MMtttR8X5ndAXXSShUjS
+	 FxpuymjfsN7fg==
 From: Christian Brauner <brauner@kernel.org>
-Date: Wed, 04 Nov 2026 18:27:18 +0100
-Subject: [PATCH v2 01/51] alloc_tag: don't remove /proc/allocinfo under the
- codetag module lock
+Date: Wed, 04 Nov 2026 18:27:19 +0100
+Subject: [PATCH v2 02/51] scsi: esas2r: don't copy kernel pointers out in
+ EXPRESS_IOCTL_GET_MOD_INFO
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261104-work-procfs-bugfixes-v2-1-bbf7d5546809@kernel.org>
+Message-Id: <20261104-work-procfs-bugfixes-v2-2-bbf7d5546809@kernel.org>
 References: <20261104-work-procfs-bugfixes-v2-0-bbf7d5546809@kernel.org>
 In-Reply-To: <20261104-work-procfs-bugfixes-v2-0-bbf7d5546809@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -99,12 +99,12 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
  "Christian Brauner (Amutable)" <brauner@kernel.org>, 
  Chuck Lever <cel@kernel.org>, stable@vger.kernel.org
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3465; i=brauner@kernel.org;
- h=from:subject:message-id; bh=C5Mw1tWGzCvAVdyOdBCkcSqd8MeBZuRbzsUttoDJMVc=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9zvplOalNaKKt8vuu2b8lsnQOcTE/KzbYPv1ll+Xp5
- mmPQhjTO0pZGMS4GGTFFFkc2k3C5ZbzVGw2ytSAmcPKBDKEgYtTACaSn8/wm81Zr+lISs2Ek/OM
- L7KdEcq5v/O1XVLdtyWXdiY8F0/he8vwV96O52JXaCnv3ctHP3V8+3Zga6R61CzWK7HM88uSHpZ
- tYwQA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1380; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=dmwAod4+27NCncmw2oz8APM07k66EUOhHcJdusbTjjg=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9zvot03G954L932VP36TuXeTVkvctkvdOUEqnB1ulu
+ qr1gnT9jlIWBjEuBlkxRRaHdpNwueU8FZuNMjVg5rAygQxh4OIUgIlsecPwz3hDeHERzzPPdYxN
+ RjfC3XXUD1tofTqbtTjgpUSw4qvK64wM82LMu/+u3bKn+1TBxf0qvr9PTk2YlzJFZyPv1Nw/lcX
+ L+AE=
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -115,94 +115,37 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-codetag_alloc_module_section() takes the codetag type's mod_lock for
-writing and calls reserve_module_tags() with it held. When that can't
-reserve the tags, because the section's alignment doesn't fit, because
-there are too many tags for the page flag bits or because the memory
-for them can't be allocated, it shuts memory allocation profiling down
-and removes /proc/allocinfo, still with mod_lock held.
+EXPRESS_IOCTL_GET_MOD_INFO fills in the addresses of the adapter, its
+pci_dev and its Scsi_Host and copies the whole struct back to userspace.
+Nothing in userspace can do anything with those addresses, and the
+ioctl is reachable through /proc/scsi/esas2r/ATTONode, which is created
+with mode 0444. Only pass the host number.
 
-remove_proc_entry() waits until every reader of the entry has let go of
-it, and a reader of /proc/allocinfo takes mod_lock for reading in
-allocinfo_start() while it holds the entry. So a module load that hits
-one of those paths while /proc/allocinfo is being read waits for the
-reader and the reader waits for the module load, for good.
-
-Let a work item remove the entry in that case. The profiling is shut
-down right away like before, the file just goes a moment later.
-
-Fixes: 4835f747d3ed ("alloc_tag: support for page allocation tag compression")
+Fixes: 26780d9e12ed ("[SCSI] esas2r: ATTO Technology ExpressSAS 6G SAS/SATA RAID Adapter Driver")
 Cc: stable@vger.kernel.org
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- mm/alloc_tag.c | 27 ++++++++++++++++++++++++---
- 1 file changed, 24 insertions(+), 3 deletions(-)
+ drivers/scsi/esas2r/esas2r_ioctl.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/mm/alloc_tag.c b/mm/alloc_tag.c
-index 82e2c3448dcf..7d7ad6704953 100644
---- a/mm/alloc_tag.c
-+++ b/mm/alloc_tag.c
-@@ -15,6 +15,7 @@
- #include <linux/seq_file.h>
- #include <linux/string_choices.h>
- #include <linux/vmalloc.h>
-+#include <linux/workqueue.h>
- #include <linux/kmemleak.h>
- #include <uapi/linux/alloc_tag.h>
+diff --git a/drivers/scsi/esas2r/esas2r_ioctl.c b/drivers/scsi/esas2r/esas2r_ioctl.c
+index 3f7c1d131ec3..c93d9265e100 100644
+--- a/drivers/scsi/esas2r/esas2r_ioctl.c
++++ b/drivers/scsi/esas2r/esas2r_ioctl.c
+@@ -1468,9 +1468,10 @@ int esas2r_ioctl_handler(void *hostdata, unsigned int cmd, void __user *arg)
  
-@@ -604,6 +605,26 @@ static void shutdown_mem_profiling(bool remove_file)
- 	mem_profiling_support = false;
- }
+ 	case EXPRESS_IOCTL_GET_MOD_INFO:
  
-+static void remove_allocinfo_file(struct work_struct *work)
-+{
-+	remove_proc_entry(ALLOCINFO_FILE_NAME, NULL);
-+}
-+static DECLARE_WORK(remove_allocinfo_work, remove_allocinfo_file);
-+
-+/*
-+ * A module's tags are reserved with the codetag module lock held for
-+ * writing, and a reader of /proc/allocinfo takes that lock with the entry
-+ * pinned. Removing the entry there would wait for that reader for good, so
-+ * let a work item do it.
-+ */
-+static void shutdown_mem_profiling_async(void)
-+{
-+	if (!mem_profiling_support)
-+		return;
-+	shutdown_mem_profiling(false);
-+	schedule_work(&remove_allocinfo_work);
-+}
-+
- void __init alloc_tag_sec_init(void)
- {
- 	struct alloc_tag *last_codetag;
-@@ -855,7 +876,7 @@ static void *reserve_module_tags(struct module *mod, unsigned long size,
- 		align = 1;
+-		ioctl->data.modinfo.adapter = a;
+-		ioctl->data.modinfo.pci_dev = a->pcid;
+-		ioctl->data.modinfo.scsi_host = a->host;
++		/* these are kernel pointers, userspace has no use for them */
++		ioctl->data.modinfo.adapter = NULL;
++		ioctl->data.modinfo.pci_dev = NULL;
++		ioctl->data.modinfo.scsi_host = NULL;
+ 		ioctl->data.modinfo.host_no = a->host->host_no;
  
- 	if (!ensure_alignment(align, &prepend)) {
--		shutdown_mem_profiling(true);
-+		shutdown_mem_profiling_async();
- 		pr_err("%s: alignment %lu is incompatible with allocation tag indexing. Memory allocation profiling is disabled!\n",
- 			mod->name, align);
- 		return ERR_PTR(-EINVAL);
-@@ -905,14 +926,14 @@ unlock:
- 
- 		module_tags.size = offset + size;
- 		if (mem_alloc_profiling_enabled() && !tags_addressable()) {
--			shutdown_mem_profiling(true);
-+			shutdown_mem_profiling_async();
- 			pr_warn("With module %s there are too many tags to fit in %d page flag bits. Memory allocation profiling is disabled!\n",
- 				mod->name, NR_UNUSED_PAGEFLAG_BITS);
- 		}
- 
- 		grow_res = vm_module_tags_populate();
- 		if (grow_res) {
--			shutdown_mem_profiling(true);
-+			shutdown_mem_profiling_async();
- 			pr_err("Failed to allocate memory for allocation tags in the module %s. Memory allocation profiling is disabled!\n",
- 			       mod->name);
- 			return ERR_PTR(grow_res);
+ 		break;
 
 -- 
 2.53.0
