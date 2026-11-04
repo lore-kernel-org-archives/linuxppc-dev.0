@@ -1,94 +1,66 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 753BC606A326
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 15:46:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD80E606D820
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 16:17:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=IpACE688
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CvaDYaS6
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKVD15fbrz2xSF;
-	Thu, 05 Nov 2026 02:46:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1236"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793807185;
-	cv=none; b=ZFJka5YLJGNAH8oAK4lutnAZZIFjVuXmNS8ViIaRPCtxm57RcQycd6GpaLEIuB/1g8pCnOZcLzG/ssq/L9a3Hi/mRRpRHUv73U8mFcJSZxfy4Cco97B80Pl8VLZdOOXrb4OggUDyQDmD7kBir4EANEJ4fQMBiDd6JkhoYqa1iuBIVlcZpK/X35ln0KViuRtNXbFVa9aJ36SEUGYjuz9/ZuiDl9l22prqanhZaNbbhLJkmQn1R/HZkVxpofKShMkzHLl4I8DukpDRJXgzCkCSBUVqStmdqo/lD9//GFkxcJJXH0cP07Un9hXcnyGLTqmpvP7jFYV+1xoC0NVI5p/btw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKVvV5Sntz2xcB;
+	Thu, 05 Nov 2026 03:17:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793809030;
+	cv=none; b=NzTXnNaYcy3svMnQww46C+G7DmLsUxXwXATmgjMhZZtWkzP5mSlwVg7zys4D7F9Em6GnQfzB8Yku7co1CqYYrfMKV/VOMb7c6hNPjcGfDB/CR1tQ9ZY6WA7uNNeez457d9MuRUze8wT/Oae64MUcetgaHPwJqrfgeHIF52e8cC9e7AJORHw4XWjPsoPvk2PfrNz8kZbskx2m4RPuppwyX54iIUj+lq6EweWTL+8VFQTU0L9mpKQm/2doB+CKciS8fmN7bDA2yK77j+rg6O0ytB0iy+s/7IvnYiQBH5rAvTLXjs3gb+SREp4AaBdDtywCUErYKST3pmXqtutsM0nxfA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793807185; c=relaxed/relaxed;
-	bh=xyHstetzZu4XQvPCwnk3jp13Xb8802ZUHS/kaqfC9G0=;
+	t=1793809030; c=relaxed/relaxed;
+	bh=A3AytZ7ZaNVSp18p5DGuHQpWKC9sgEycNzeYgQtV80w=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LJCH3PuXRJe8D2vweEK9ruAgNpkbjnE/EAzRVoHrJrJNiptnD2qzp8gGHwM2Owq3RwCCb/VsF7YTfqh/kxsGeWrB6IoFyxvGYJSYRJ1LmBst40ubtSVQZ/Z/06MmZ608YM/ixNvs9Cck6Kgwm2Jzo0DrVTIkPYrHAE8BA8vTvRFq/BtpmBHXo0dFO8aFv+ch/VqHCmbKJ85y5/3ZEEA+4vJEObxNubYcPT/vWCeD80TBnlvQoFrz8Zg1idjHO57uPP9zsiLKSoY6vF14I38svZBDCL9+wbkGm2hs2SqbcfCv++7/hUMfcJpX4wLWCXNYGEbqNJZE7Lb3f+Az45Kmmg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=IpACE688; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1236; helo=mail-dl1-x1236.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=nHiLvWpo+/FMM8f/xZmCx8bblHY4dheEw6PugBfwhVsSQ5+trbIgjsO5Xo57fhXpmhlHMJC/gyjCRYAIYbB9sg45FwnkNDVT/BcfvB/lXTzIEIl57dK3pZfrMmSB0tRGuHs3cYDygyDYuWeonGuSMPdBnf2V/nwJ/47YQzfX41+Ar4UUmiCWXmdjx794Cn54tzn0GfrlM/W+h25+0xgkun6G02Ex1ktPm3Nga/DTNdoHBJnWEwO0rHCWwtDUtNtzPE97HabVIl/S5OlTQlk3D2ijBlsKrHZHWwmdaBDxuJmgcsNCxSg7FwVyZ0gStqB6I/dOQaGb1/ADjl59fC7YTQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CvaDYaS6; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=blum@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=IpACE688;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CvaDYaS6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1236; helo=mail-dl1-x1236.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x1236.google.com (mail-dl1-x1236.google.com [IPv6:2607:f8b0:4864:20::1236])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=blum@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKVD03Ywtz2xK7
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 02:46:23 +1100 (AEDT)
-Received: by mail-dl1-x1236.google.com with SMTP id a92af1059eb24-1438d9363fbso645416c88.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2026 07:46:23 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793807180; x=1794411980; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=xyHstetzZu4XQvPCwnk3jp13Xb8802ZUHS/kaqfC9G0=;
-        b=IpACE688Rdqz8HBOspKRQ0E9Jhkyfvzuqxe7Q1bVsoKHu4GaCrEIIpHA0MwEszK4tG
-         WM6YHM/GDhGM+xn6tOSsDhX8ZG8gRC8gDE6kvV3JQp8aPinh0QkY0AbEe65lH5SmYbrY
-         L+SZo74VHcUX03Sq3ZjQ9OKsmeceulreQTNkaYMZmxzGJPw09IcM3hAySu3CKgilvqpz
-         BHyqOOWL2ItTJvJJ6uKpkdYgxEaiCQ1NpFQl0m8lgzcBcNcLdy+we9T24eme7Gh+gGSh
-         FI8T7CokOV/8P4chVG8ogzFlciAYeJd6AioDt9Q4kPK3QqqKvc8eiHd8uAIPIDsMG5ME
-         2p4w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793807180; x=1794411980;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=xyHstetzZu4XQvPCwnk3jp13Xb8802ZUHS/kaqfC9G0=;
-        b=wEYrgrIAB+WZw5wO0L2t15fQKPOtIcq1wKab/uUZstfQaWyhVHf3bmAOAJQBH8pIOo
-         aM9eJ6vM9oI17zJVjyXB6Wq2ltleNFkFMNgBUFXP4Z/J90t569MNM7shBPHd4MGFeNLD
-         9iPweuahJ8a9dbKtgAnmMLi6GEetSOIAPg9T3lAWxecvpB+8NSLtzJ78HWbMzHQL8zfm
-         7bteaTmW7d9bN83diBzhRWDs2kb87YhXP3scGv1P+TKsqt8dqVaZ4VDdC+ScfqKF2VVI
-         WBoMjhp9LlHji01RZfu4j+lz1Igcw3uUF/gNJvA4Wpoh6iauoB7zSdHn5+tGbyENgFbe
-         8/CA==
-X-Forwarded-Encrypted: i=1; AKwUvBxDRDTSEqvwTbTvX83LuUWF22SWMawrLEfFphKPxwKhhZFveBlStGIr36ABvuMLYI4k7zSNcWyJH4t5des=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z+gTX2/1dQMyfl1U/QNpcENjF2SVJ7yuv3QIsY+S23HuvA6GgG0
-	Bdy4nNE6qy0GCBf8jJNWCHGzRTjW3fs0go00rwXq++NZSWhufe2KW0+a
-X-Gm-Gg: AYBFou0s5kh2L5Mx0d9iURoex6w04HkTLWY6KBghUtIj5EVSzD9qvOFH5keK8wAasU3
-	ppbsKEzby3ySuflJKRNilFQq1zSnY0EL3aJqv6245HzzmElr+ld8mejJSlptj1PN4Jim8IRbVQu
-	phFIFj5ygLfpmNjchgXwQ6vezKW0heLA+nq64MEyRYmBGOc8KEXckHvX4kYIKuwlIO94h0uHu3n
-	R/J44uHJhJ+Tfs02opng1+Lvv9KpG/CXo3/43Z3GCGp77UvXIlLn4KdYNtNrxua6AuW95JMafZT
-	IV3af25baMwBQnK9Vhb2H0vGmd4MO/EhgqOg23lMePBGodvOqmwURbD/XH6ysZbb8gTRSbQ5pmu
-	dTV5Kl3P8oMu4xaQs/y0JXd+Skc+BeH/z+pL3I1j+N8tYUSHKoI4cJhxZszrNfutNLO2sUxZoTA
-	PoNXnPAYwdb9r0Df9FmECKYGwLv677HQrLfi57maT2yIwFjCCcbWR6YBs/xhTJvHzUFL1S32nXK
-	9g9sh+dIroaj0uDRtPWSjwsp43e7oILJwOn8jdd6V1xMPpwzrzvMkwWLX4BJ/VX7xKVeO4E0Aq7
-	yqFIKC+BsQ47BHKJrT6mprmjH9FdwYsI7TDly2/5cHP0dC3zoR/Y7KxyA7cDsgy9iTf3pylL/md
-	QZzk4REiyKZqG7s9rIpQ=
-X-Received: by 2002:a05:7022:c85:b0:14e:d0ba:75af with SMTP id a92af1059eb24-1ac599f5132mr23755659c88.6.1793807180104;
-        Wed, 04 Nov 2026 07:46:20 -0800 (PST)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.165.23])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b245c4f83fsm12682332c88.17.2026.11.04.07.46.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Nov 2026 07:46:19 -0800 (PST)
-Date: Wed, 4 Nov 2026 21:16:11 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Ritesh Harjani <ritesh.list@gmail.com>
-Cc: Shrikanth Hegde <sshegde@linux.ibm.com>, maddy@linux.ibm.com, 
-	linuxppc-dev@lists.ozlabs.org, chzigotzky@xenosoft.de, Vishal Chourasia <vishalc@linux.ibm.com>, 
-	mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, 
-	linux-kernel@vger.kernel.org, msuchanek@suse.de, harshpb@linux.ibm.com, gautam@linux.ibm.com, 
-	amachhiw@linux.ibm.com, venkat88@linux.ibm.com, nnmlinux@linux.ibm.com
-Subject: Re: [PATCH 2/2] KVM: PPC: Replay pending interrupts before entering
- the guest
-Message-ID: <autQn0FHsAql9W8l@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <20260928110411.844582-1-sshegde@linux.ibm.com>
- <20260928110411.844582-3-sshegde@linux.ibm.com>
- <zevvup51.ritesh.list@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKVvV07PQz2xb9
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 03:17:09 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id C79CB60609;
+	Wed,  4 Nov 2026 16:17:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4B43B1F00A02;
+	Wed,  4 Nov 2026 16:17:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793809026;
+	bh=A3AytZ7ZaNVSp18p5DGuHQpWKC9sgEycNzeYgQtV80w=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=CvaDYaS6roz6OuWmaTO4onmX3U9yYr0BE8m5rm0DCkpyatubDOhAxYPtRn8l204bG
+	 U3kHiBPuv+/WcQaO7+eJAyO0KuE+X8tNbiikTvL/KviFjtVr/4+j+rUTd7hJORtLNc
+	 rnpzVjLPAgVbBA8fHg730iXxEMVWnkhaPBnhAaespFP1EUjZRjVRNfSqJCfQi6ghMj
+	 McPc2w4flIF1Z7hrZ4u9iezPCJpD7wA3fMisMeQ20ctjfkRbuPRG4Me5epuSJAv+3B
+	 AhlnJUvRTh4bD6hwEnQK1Dn8gOsrcqKN0mw7ol6g368nL2/G67E2fBK921faviYcE4
+	 EOVzF6E9k4egA==
+Date: Wed, 4 Nov 2026 17:17:00 +0100
+From: Thorsten Blum <blum@kernel.org>
+To: Randy Dunlap <rdunlap@infradead.org>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
+	"Rob Herring (Arm)" <robh@kernel.org>,
+	Jonathan Cameron <jic23@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/wii: Remove redundant 0x prefixes
+Message-ID: <autafPSMB2SdfUvz@kernel.org>
+References: <20261103170305.455444-3-blum@kernel.org>
+ <124acf19-a676-46bb-a414-08d957d9cc7b@infradead.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,130 +76,36 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <zevvup51.ritesh.list@gmail.com>
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
-	autolearn_force=no version=4.0.1
+In-Reply-To: <124acf19-a676-46bb-a414-08d957d9cc7b@infradead.org>
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
+	autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Fri, Oct 30, 2026 at 10:00:50PM +0530, Ritesh Harjani wrote:
+On Tue, Nov 03, 2026 at 12:22:18PM -0800, Randy Dunlap wrote:
+> On 11/3/26 9:03 AM, Thorsten Blum wrote:
+> > The %pa format specifier already includes the 0x prefix. Remove the
+> > redundant prefixes to avoid printing 0x0x.
+> > 
+> > Fixes: 7b69600d4da0 ("powerpc/wii: fix resource printk format warnings")
+> > Signed-off-by: Thorsten Blum <blum@kernel.org>
 > 
-> Hi Shrikanth,
+> Acked-by: Randy Dunlap <rdunlap@infradead.org>
 > 
-> Shrikanth Hegde <sshegde@linux.ibm.com> writes:
-> 
-> > After applying preempt disable patch, i.e PATCH 1/2, Christian reported
-> > a subsequent warning stopping his board to boot properly.
-> >
-> > WARNING: at .kvmppc_fix_ee_before_entry+0x10/0x28, CPU#0: qemu-system-ppc/4667
-> > CPU: 0 UID: 1000 PID: 4667 Comm: qemu-system-ppc Tainted: G        W           7.3.0-rc4-2-powerpc64-smp #1 PREEMPT
-> > Tainted: [W]=WARN
-> > Hardware name: varisys,CYRUS5040 e5500 0x80240012 CoreNet Generic
-> > NIP [c00000000005dc3c] .kvmppc_fix_ee_before_entry+0x10/0x28
-> > LR [c00000000005f298] .kvmppc_handle_exit+0x5b4/0x5e8
-> > Call Trace:
-> > [c000000086587780] [c00000000005ee10] .kvmppc_handle_exit+0x12c/0x5e8 (unreliable)
-> > [c000000086587830] [c000000000062068] .kvmppc_resume_host+0xb8/0x10c
-> >
-> > It triggers below warning...
-> >
-> > static inline void kvmppc_fix_ee_before_entry(void)
-> > {
-> >         trace_hardirqs_on();
-> >
-> >         /*
-> >          * To avoid races, the caller must have gone directly from having
-> >          * interrupts fully-enabled to hard-disabled.
-> >          */
-> >         WARN_ON(local_paca->irq_happened != PACA_IRQ_HARD_DIS);
-> >
-> > This happens since kvmppc_prepare_to_enter does first local_irq_disable
-> > followed by hard_irq_disable. This leaves a small window where interrupt
-> > may occur and it could set the irq pending bit in PACA. When that
-> > happens replay that interrupt before entering the guest.
-> >
-> > Fixes: 12013e3d4695 ("KVM: powerpc: Use generic xfer to guest work function")
-> > Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
-> > Closes: https://lore.kernel.org/all/b8f82519-9ae5-c247-e020-e79c627e57df@xenosoft.de/
-> > Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
-> > ---
-> >  arch/powerpc/kvm/powerpc.c | 13 +++++++++++++
-> >  1 file changed, 13 insertions(+)
-> >
-> > diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> > index 9194cf492d1c..847ff07c364b 100644
-> > --- a/arch/powerpc/kvm/powerpc.c
-> > +++ b/arch/powerpc/kvm/powerpc.c
-> > @@ -147,6 +147,19 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
-> >  			continue;
-> >  		}
-> >  
-> > +#ifdef CONFIG_PPC64
-> > +		/*
-> > +		 * Interrupt arrived between the soft and hard
-> > +		 * disable. Replay it and retry guest entry.
-> > +		 */
-> > +		if (unlikely(local_paca->irq_happened != PACA_IRQ_HARD_DIS)) {
-> > +			local_irq_enable();
-> > +			local_irq_disable();
-> > +			hard_irq_disable();
-> > +			continue;
-> > +		}
-> > +#endif
-> > +
-> 
-> I looked at the commit which causes this regression, I see there are few
-> more call sites which can hit the same WARN in kvmppc_fix_ee_before_entry().
-> 
-> So what I was thinking was - while we are at it - do you think we could
-> use the following helper instead of {local|hard}_irq_{disable|enable}()
-> pair and ...
-> 
-> 
-> /*
->  * Hard disable interrupts before entering the guest.
->  *
->  * On 64-bit don't use local_irq_disable() here. It only soft-masks, so
->  * an interrupt can still come in before we hard disable. That interrupt
->  * gets marked pending in irq_happened and kvmppc_fix_ee_before_entry()
->  * then throws it away. hard_irq_disable() clears MSR[EE] first and does
->  * the irq tracing itself, so there's no such window.
->  *
->  * On 32-bit there is no soft mask and hard_irq_disable() doesn't do the
->  * irq tracing, so use local_irq_disable().
->  */
-> static inline void kvmppc_irq_disable_for_entry(void)
-> {
-> #ifdef CONFIG_PPC64
->         hard_irq_disable();
-> #else
->         local_irq_disable();
-> #endif
-> }
-> 
-> ... and then update the other call sites too which the following commit
-> added - which can cause the WARN.
->    Fixes: 12013e3d4695 ("KVM: powerpc: Use generic xfer to guest work function")
-> 
-> Thoughts?
-> 
-Yeah, i also feel this is better to have.
-Personally i don't want this ifdef all around the code, It's better to
-have it in one place.
-There's one more case like this here[1].
+> There are other cases of this elsewhere in the kernel sources.
+> Are you addressing those also?
 
-[1]https://lore.kernel.org/all/a14571be1897955f43d9994f0e093de3ada6ecde.1793447880.git.ritesh.list@gmail.com/
+Some yes:
 
-Regards,
-Mukesh
-> -ritesh
-> 
-> >  		guest_enter_irqoff();
-> >  		return 1;
-> >  	}
-> > -- 
-> > 2.52.0
+https://lore.kernel.org/lkml/20261103213242.480649-2-blum@kernel.org/
+https://lore.kernel.org/lkml/20261104155414.126812-3-blum@kernel.org/
+https://lore.kernel.org/lkml/20261104160931.137174-3-blum@kernel.org/
+
+I probably won't be touching any of the remaining ones in drivers/
+anytime soon.
+
+Thanks,
+Thorsten
 
