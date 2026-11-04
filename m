@@ -2,48 +2,48 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 93493606B2C2
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:21:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A4FFC606B2CB
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:21:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NV/pCHTx
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NDNbfQiY
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKb0L2ScRz2yb9;
-	Thu, 05 Nov 2026 06:21:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKb0d2xDDz30P3;
+	Thu, 05 Nov 2026 06:21:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793820098;
-	cv=none; b=XpcPgQMElFzmEXwgEFRi99kDHGjsYmqoglVT0uP4avi66WDsmxypSheGQ0GEDDyvlSaloyjKwF8F0oAsG91yZr4l64JG4Z7P5n0kiKvgeB6axmfuq0ABre81ghqakKgt6CrSRI2Y219JBislEdCNhtgl6UvAi0xMGYmLDlct837fXLzJrXhJOeqDtOU3VZgDM2AWvnh3MgYay3gol2h+DMpnLrHj/yfyAFe3LQdsXCVXMkS0Wan4b1IwsBwhgQQ6buOBzEpg6g25jtaDRoIjnqiR+XxHVApVU1+vapp+bZc9xXutyA03dj6mTaJQyDtsoho/T2YtmI2cUG8YB7U6Ag==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793820113;
+	cv=none; b=HyOFl0yPQ3dBXJUmJo+VL2tJL7YjVe0zlQ/I8ClB0RB0luMTA5OwKX30S3Q+FNzchAa+aXmk9UztSB3/ftsinyXlh4XgwiI3Yush+CQjWntsUJ/bQHydLUdjVsG6M25a7+4/cTDPsjYRW1yAY6oim5PebejtTZq9a0tIh+YWcz3h1bJ4Xlf8cwwTLLYdW/MgZteOjwDUiMeX6ryVYYF1LneLH4nZEPEQ5HjEZ7zRoGrGzp1HPaxchIwY+7zkromtQSUKhGm1PZsmffkjCNqB+cwou+rSkEesdQ/hsKLZ/7A3TuK2Pz3F7VoWOMZEqbUB2/7okrox3uAD/Qeh4JASxw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793820098; c=relaxed/relaxed;
-	bh=ih8EKkL3fEFrmnOibnSg6zuDA24U9CpFmMUb1+ThTQI=;
+	t=1793820113; c=relaxed/relaxed;
+	bh=bRUY7zR2xEebSKJvbp7QJxGSJz7lwz+abCfF6bzfIu4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=ki966EUgQaY8iVc5EcqlCTy8d1t6KtseHv7+IlL68xHiqoSm43dNGpdDc4wJ/WvX4XVR8yYy0Tp4KiepgXo3tGy6uqic8cJov7eOkBt5ARr8PUTTLyBI5vyPF/4eB8yX3dXNW+CwBstDBKjPc2raLFwVSCDyp/CxlPWba5yBPRohKSJ1rh8IdnficM59quryrUjRe1dsUFXj4TLntHBpGWjLuLVOKODb/9hZUyRvEpuYhOn0FSH1qIlNCAoPTi/LIquc1PLwFckP7KWAcuDP7gcXFRCmcolYIfsvakN3kLx5ECrKPvdr/MCet/Qwm/qXHxYBde6pWIdw3ZNWhRyc6w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NV/pCHTx; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=UCj+XV2LfvSKeLKVOHJ7xkV/CiEHeouM7E4S19d0g1gQeKgxmkEqzfoBIj7tz0MeT7dHUIeJlgCAb80TGLcOMjpo8l22ABgMYh9i3tMTTXZiUcQZ1NZ7+QFHZSXwPbG+LwFuA7wUTd59lJ/LiMwsqOQR3X36ftDSsz+ERCIy3ZB2R0uC8WzNnx+6+0sF4ioRUKK41bOWY6remko97xBs0r//xTXmhtjOUscY6h8O+9dzsD4ap/s8T34DMJibjlg5bCKQb8IH/flY11NkaVm/qVdup8QyVf87q3Zy6rEpJTza/cHM7KDM9pV5isDegCBGSZVcHXx6aTRQh8S9QIpaMw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NDNbfQiY; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NV/pCHTx;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NDNbfQiY;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKb0K3RKNz2xrC
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:21:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKb0c31pTz30Ng
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:21:52 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 7D98760609;
-	Wed,  4 Nov 2026 19:21:35 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EEDE71F0093A;
-	Wed,  4 Nov 2026 19:21:22 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 81533609F0;
+	Wed,  4 Nov 2026 19:21:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E171E1F0093A;
+	Wed,  4 Nov 2026 19:21:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793820095;
-	bh=ih8EKkL3fEFrmnOibnSg6zuDA24U9CpFmMUb1+ThTQI=;
+	s=k20260515; t=1793820110;
+	bh=bRUY7zR2xEebSKJvbp7QJxGSJz7lwz+abCfF6bzfIu4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=NV/pCHTxChzVH1ioWmq+QeUT+SBXucwSnRPJOdBi/Q2y75DGHw15YBMqYjqgrtt2O
-	 VyFPPs8v7zjoqFDFOJ5oAl9YXifHpXNyabEPReJZQwa8XXH4iQGv2Qty9h/jandirD
-	 aUMSk23okxfo9KtkbC4/nzn1Iw09lddant5cO9hakE0csEjqm8lPvF90MPEOYpmUAd
-	 IMkDVpUwfqgAQLlAK9nXdyRgIdGxWTHDKSyuqOT48xWUvA/iAJk+qPbBXnzRbF0y+d
-	 wn/gLZpI4BHKSDGznFL2I2ZF9zF+c1mxFQKqQBN2chjmpu2miV52eKF6iZL2Z2lRgn
-	 AL7Cg1xDOYz2Q==
+	b=NDNbfQiYTs8QxoUaV5XJChR2qHa8xOxHYJocDlHmgzzJSqms9PhEZLUwt+ANrSmDj
+	 kEnl6QN4BfZZeT44wGIKe0Ixtr1WXbuqCS+Gm8dZ1ubzgeNz5DCniH6FQ1eMnuGVya
+	 K3FKmWhtDu4MeA/UnhfA3jbh1Uk2LEoIKcy3gsX0Lc9JtNW5MghWVftz4tHUP/Sp6I
+	 pgjw5FHUrME1RTE8Z0LLnlJw9xm3sbv7a2SltWV0Lzh5QBwPcbr1XUZ/ihWdqFLxYk
+	 cmed9ZYlW4eyWeUqshn66+fHBXUJ79jWAfcuK17k8f/Cw6JoctibeULlljIfW2t0nb
+	 YnhLFoFESlk2Q==
 From: Christian Brauner <brauner@kernel.org>
 To: linux-fsdevel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -103,11 +103,10 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
 	linux-modules@vger.kernel.org,
 	linux-debuggers@vger.kernel.org,
 	"Christian Brauner (Amutable)" <brauner@kernel.org>,
-	Chuck Lever <cel@kernel.org>,
-	stable@vger.kernel.org
-Subject: [PATCH RESEND v2 22/51] ALSA: info: don't write past the end of a data entry
-Date: Wed,  4 Nov 2026 20:21:20 +0100
-Message-ID: <20261104-work-procfs-bugfixes-v2-22-021c84d852e0@kernel.org>
+	Chuck Lever <cel@kernel.org>
+Subject: [PATCH RESEND v2 23/51] scsi: BusLogic: don't return 0 from writes to the proc file
+Date: Wed,  4 Nov 2026 20:21:35 +0100
+Message-ID: <20261104-work-procfs-bugfixes-v2-23-021c84d852e0@kernel.org>
 In-Reply-To: <20261104-work-procfs-bugfixes-v2-0-021c84d852e0@kernel.org>
 References: <20261104-work-procfs-bugfixes-v2-0-021c84d852e0@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -125,7 +124,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1329; i=brauner@kernel.org; h=from:subject:message-id; bh=/wIh+WZXKaFyyFYwMjXKmLvFs42DoCHjOzS3J0v96D0=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9bny2zMufh/VIknXNykPasit38Tx6t1dcVkb8Us6vt wpbDDY/7ihlYRDjYpAVU2RxaDcJl1vOU7HZKFMDZg4rE8gQBi5OAZjI8+UM/3Qne19pyPzkZ7uK 4+ps9RZDLa75iTtP5zvl3PvzK0/j/yuGf5bm066vnniBYWL95HgLE52AGfqMMk4eWldmv104x1K Fmw8A
+X-Developer-Signature: v=1; a=openpgp-sha256; l=938; i=brauner@kernel.org; h=from:subject:message-id; bh=7Bhyn2ehZ0sKrsH+Wp9jL6/kN1Jv4nVldfkK6knOcds=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9bnx+qEer98CSA4p/dlzo/8F3vWvRwRxVzfXMGkIdb bJrIsumdZSyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAExkJSMjw5TaW9evl63Y5C0n mRnrGr7/ql2e7uxE7dKugO0X7TR/vWL47+CvtmlOQmAN85PS20YHZ06yX2SRZalWbxay2Sgy4bQ nKwA=
 X-Developer-Key: i=brauner@kernel.org; a=openpgp; fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 Content-Transfer-Encoding: 8bit
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -136,36 +135,29 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-snd_info_entry_write() clamps the count to what is left of the entry
-by computing entry->size - pos as a size_t. For a position past the end
-that wraps and the write goes to the driver unclamped, for opl4 into
-sample memory outside of what the entry covers. At the end of the entry
-the driver gets a count of 0 and vmalloc(0) warns. Before the clamp
-moved into the common code the driver ignored such writes. Fail them
-with -ENOSPC instead, like a block device does at the end of the
-device. Returning 0 would make writers that use stdio retry forever.
+A write to /proc/scsi/BusLogic/<n> resets the statistics and returns 0.
+Writers that use stdio, echo for example, take that as no progress and
+retry forever. Return the number of bytes that were written.
 
-Fixes: d97e1b78239c ("ALSA: info - Check file position validity in common layer")
-Reviewed-by: Takashi Iwai <tiwai@suse.de>
-Cc: stable@vger.kernel.org
+Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- sound/core/info.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/scsi/BusLogic.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/sound/core/info.c b/sound/core/info.c
-index 023b4736aa6d..f608d335b6c9 100644
---- a/sound/core/info.c
-+++ b/sound/core/info.c
-@@ -171,6 +171,8 @@ static ssize_t snd_info_entry_write(struct file *file, const char __user *buffer
- 	pos = *offset;
- 	if (!valid_pos(pos, count))
- 		return -EIO;
-+	if (pos >= entry->size)
-+		return count ? -ENOSPC : 0;
- 	if (count > 0) {
- 		size_t maxsize = entry->size - pos;
- 		count = min(count, maxsize);
+diff --git a/drivers/scsi/BusLogic.c b/drivers/scsi/BusLogic.c
+index 27b446c0c5d0..7ad814f549ae 100644
+--- a/drivers/scsi/BusLogic.c
++++ b/drivers/scsi/BusLogic.c
+@@ -3328,7 +3328,7 @@ static int blogic_write_info(struct Scsi_Host *shost, char *procbuf,
+ 	adapter->ext_resets = 0;
+ 	adapter->adapter_intern_errors = 0;
+ 	memset(tgt_stats, 0, BLOGIC_MAXDEV * sizeof(struct blogic_tgt_stats));
+-	return 0;
++	return bytes_avail;
+ }
+ 
+ static int blogic_show_info(struct seq_file *m, struct Scsi_Host *shost)
 
 -- 
 2.53.0
