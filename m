@@ -2,50 +2,113 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC89A606B2EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 20:41:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB29A6071AE4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 21:13:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=relay header.b=buaiu/vK
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=V7uflGoo
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKcmZ496kz30Vb;
-	Thu, 05 Nov 2026 07:41:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=130.117.225.111
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793824894;
-	cv=none; b=molyMg2Ik+gk7NT/X6RgB/dZCpfKu31+kvZR5YWCac7KkSG0c4hxaBX/P5kYisj7QcLL/L0eLflKJDPSOFzJraeVeWZcaAIJmVQuGTvbvg4CRhvzm+yKO+1ueoisrHL3ebRfScpcorkHjau7xRyAh63r3+/xzLYMBzZ2ofMShak++WMoHyrSjg/N7wlfHKgSF5eWRoA+eQOCo6G25vVTg/pFE3NM311YpbgmJGjINo+Mu3kJSh8+Ew0ZOOzSnHYz0hUAtnP0Pf+g7Eth69wNxZzpXYq/MH1+WtM+Nr5G4w3xFNk6O3T95AbEGLOVm9/rRF9EwUGFesb022iwjVBFSg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKdTd3Xmhz2xWt;
+	Thu, 05 Nov 2026 08:13:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793826821;
+	cv=none; b=Roa/d5VoC1OKA6boErZALK2EEHDxW23rWfRTFAvlQUfCjytNvyEEbtXwBdIFZ/9/wwXkBxl0xQNYz4CUoumYt5jtDrwkBgCRigMBePKXBF8wiJz/HX0Nx5333MGlVd3aqeOC0RLunvN99sNNek8RCc9HocXvIdur2UpJDNpDsut9BNxgrhiBzFjQT+j1BSxMu1eJdpJbAerpnBGuCO5+H/vrd4Qy+90cuxwUYsaTWP5XWgSSqRacKvD6ctLdN9iJQZYTiF4IJZifvlWfY1pfH2hqWFnmF6rd3tDP/RRIONF3HKdNeCBkFjzBPS4PjyL38+PKfQilOKFOig3EfgzqPg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793824894; c=relaxed/relaxed;
-	bh=mr1CHNQdynOh/clGXQzcqQnn+FUze5zqCJPbOyzTWS8=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=k0zsqc8g2msHUPlVhr9FIYc/Q302X9IRJ/NLjDvlEjAAdPWztB+nZ+rB/e1YzhluzmMdhxs5YH93b7hD6SwnpEymG5IoBkjqTQdOSeMUGU/QF1HvkD6fpFx8CYBUuqNBGXJYmoVKUKEi69UMiUw+dyTLycCs2tj7o7RAwkZh1/+i8H0Hf8UJ+BxF7IKlWB6s19ivKdMayHQTPdwB3liSjscM2fKGGmEJ7OGR7emX7QWmpNo6mRCmCVano635eWNXNZDZDAyMVvRzDkF8B3pXSLfBghvZMgA3L5Ws1mhWPqRGTjEI9K4zH+/5CNrBCNrf+kBdpvmwQbLdbgS/p9YPHg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=virtuozzo.com; dkim=pass (2048-bit key; secure) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=relay header.b=buaiu/vK; dkim-atps=neutral; spf=pass (client-ip=130.117.225.111; helo=relay.virtuozzo.com; envelope-from=khorenko@virtuozzo.com; receiver=lists.ozlabs.org) smtp.mailfrom=virtuozzo.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=virtuozzo.com
+	t=1793826821; c=relaxed/relaxed;
+	bh=jcn7jVvcEygiBPhKNySOIoE9F539N91xJ4TgqDQUCP0=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=hVszWqAXk9ePiV8V/vdHpk5kUSV50o/A9jmYeLERPCSXR4inuCPBjKTMF9oZeKsW36ptgv6w91s1zx5EajU6jt6beP6RtWSgZNAeKZcjo8xxDEVdViokLSMnQBnJBGgaAIJEF4gFPv1JcMvyst7jmdRBWfhph3kNOVpBaMbnN5Qq433sSHKdduM8l1NIrmc9dJ4vn2c56WD0u4rA3lW5k929YJx7mxHMgyAnHhmHgwqZ2/Cul/jGxYcMa8qxGb8aAFgcA2lTlqT26QNhGZUvAplNHmLKdY96APwhqj+uFBN9tpfi/2a1cqgfhK3ZdphYRu0VTl+5jxbYbsD6Rdv0vA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=V7uflGoo; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=relay header.b=buaiu/vK;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=V7uflGoo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=virtuozzo.com (client-ip=130.117.225.111; helo=relay.virtuozzo.com; envelope-from=khorenko@virtuozzo.com; receiver=lists.ozlabs.org)
-Received: from relay.virtuozzo.com (relay.virtuozzo.com [130.117.225.111])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKcmS3RxFz2yWK
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 07:41:28 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=virtuozzo.com; s=relay; h=Content-Type:MIME-Version:Message-Id:Date:Subject
-	:From; bh=mr1CHNQdynOh/clGXQzcqQnn+FUze5zqCJPbOyzTWS8=; b=buaiu/vK+dFds1bTGKU
-	bB2d11N3qZvZGQ+xDKWhrOR0LfaADtzCth3IQS3+p6A/29/ED9LK5O7xlP34E5iwXp8kx5Le9Ccgp
-	obteDSzyV4STd5EaPUnb+IZ8QX9pqjUPtLjbqmMYj9rIlbE8HWizoiSr9hBzrhdvnCBxb79gyL5EC
-	g25cmt/8aM5wQ306qP9EO/shR9v0E8ftEYEgHIgpgpspPg3gIkkfCUn5zw9nNrk0zLkqEndmHu1WH
-	msdO+VWULRa0SvQU1VBeKoODt4qv8F2l97K9j5jwOlIjXhrRpk0MFxyfzrIv3BCyFXziQ9Ta3qr+m
-	iRHXS3AVqjPpoog==;
-Received: from ch-demo-asa.virtuozzo.com ([130.117.225.8] helo=f0.sw.ru)
-	by relay.virtuozzo.com with esmtp (Exim 4.96)
-	(envelope-from <khorenko@virtuozzo.com>)
-	id 1xOhj8-0018X2-0l;
-	Wed, 04 Nov 2026 21:41:02 +0100
-From: Konstantin Khorenko <khorenko@virtuozzo.com>
-Subject: [PATCH v5 0/4] mm/huge_memory: copy PMDs at fork like the PTE path
- does
-Date: Wed, 04 Nov 2026 21:40:54 +0100
-Message-Id: <20261104-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v5-0-c56d0d26f970@virtuozzo.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKdTc2r9lz2xSl
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 08:13:40 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 783E2601F6;
+	Wed,  4 Nov 2026 21:13:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 890731F000C1;
+	Wed,  4 Nov 2026 21:13:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793826817;
+	bh=jcn7jVvcEygiBPhKNySOIoE9F539N91xJ4TgqDQUCP0=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=V7uflGoo2J6W0Pkam2p2NQ2ygDWILS85YrEGrtDhRX9LSpjax7FTdN9yNxg/1nr/F
+	 V+6mFIzh3/JJOAXY6DVlJDG4EpV1IqKbiDMaZqe2+mP/VD4uYvDHSHZdC+YPnvDk4p
+	 B+fx/mBspdALJuO5S6++QQQg+yaKZfyhFe96p7DkhDOmjrSDCUkzL7D2l6jIRx9hog
+	 t02UJbdl2o8LcfstRp/uZbtHAIBJlVxjfK6tVrDPho366mZ6VCIHILqfMZVkkl7EFn
+	 VcPqHyjXoZJ1/HnO4R2TW6BDouO7Vr2s8cHixo92YGxXCqi5rLrqQLQrblFCpmhTUC
+	 1HY2L3LLxnrag==
+From: Christian Brauner <brauner@kernel.org>
+To: linux-fsdevel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	Jann Horn <jannh@google.com>,
+	Josef Bacik <josef@toxicpanda.com>,
+	Chris Mason <mason@kernel.org>,
+	Jeff Layton <jlayton@kernel.org>,
+	NeilBrown <neil@brown.name>,
+	Eric Dumazet <edumazet@kernel.org>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Al Viro <viro@zeniv.linux.org.uk>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Christoph Hellwig <hch@lst.de>,
+	Greg Kroah-Hartman <gregkh@suse.de>,
+	Joel Granados <joel.granados@kernel.org>,
+	Kees Cook <kees@kernel.org>,
+	Jan Kara <jack@suse.cz>,
+	Jan Kara <jack@suse.com>,
+	linux-kernel@vger.kernel.org,
+	linux-nfs@vger.kernel.org,
+	linux-acpi@vger.kernel.org,
+	linux-kselftest@vger.kernel.org,
+	linux-s390@vger.kernel.org,
+	linux-scsi@vger.kernel.org,
+	linux-um@lists.infradead.org,
+	linux-wireless@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	netdev@vger.kernel.org,
+	ntfs3@lists.linux.dev,
+	platform-driver-x86@vger.kernel.org,
+	coreteam@netfilter.org,
+	kexec@lists.infradead.org,
+	linux-pci@vger.kernel.org,
+	linux-sound@vger.kernel.org,
+	netfilter-devel@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	ibm-acpi-devel@lists.sourceforge.net,
+	jfs-discussion@lists.sourceforge.net,
+	linux-alpha@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-cifs@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	linux-hwmon@vger.kernel.org,
+	linux-mm@kvack.org,
+	linux-sh@vger.kernel.org,
+	linux-usb@vger.kernel.org,
+	samba-technical@lists.samba.org,
+	sparclinux@vger.kernel.org,
+	linux-m68k@lists.linux-m68k.org,
+	linux-doc@vger.kernel.org,
+	linux-serial@vger.kernel.org,
+	linux-atm-general@lists.sourceforge.net,
+	Takashi Iwai <tiwai@suse.de>,
+	linux-input@vger.kernel.org,
+	linux-raid@vger.kernel.org,
+	linux-ext4@vger.kernel.org,
+	linux-modules@vger.kernel.org,
+	linux-debuggers@vger.kernel.org,
+	"Christian Brauner (Amutable)" <brauner@kernel.org>,
+	Chuck Lever <cel@kernel.org>
+Subject: [PATCH RESEND v2 09/13] SUNRPC: drop the ioctl of the procfs channel files
+Date: Wed,  4 Nov 2026 22:13:23 +0100
+Message-ID: <20261104-work-procfs-net-v2-9-221e2437fed1@kernel.org>
+In-Reply-To: <20261104-work-procfs-net-v2-0-221e2437fed1@kernel.org>
+References: <20261104-work-procfs-net-v2-0-221e2437fed1@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,468 +123,62 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAFaY62oC/63PwU7DMAwG4FeZcsYoSdM0cOI9EJoa11kD21Ilb
- cQ29d1JxgWhnWDH37L8/b6wRNFTYs+bC4uUffLhWEL7sGE49scdgR9KZpJLLbhQYBVMkSbIaQ4
- RhHoyqgMM02k7LjvaTocBIuFI+AFpIvT9HurMDq4jZ7WQKFk5Xm44/3mFX9++c1rsO+Fctbox+
- iqcrs2yqHv/LpEFCBikbFFzi43QL9nHeQnnc3jEcGC1SJb3oSRwINEqo4xxvTa3qOY+VFMo01J
- PaJTo3M2v1A9Kij9TqlBaO85t17da4W9qXdcvyVRuh1MCAAA=
-X-Change-ID: 20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-bdf7efb612c2
-To: Andrew Morton <akpm@linux-foundation.org>, 
- "David Hildenbrand (Arm)" <david@kernel.org>, Zi Yan <ziy@nvidia.com>, 
- Baolin Wang <baolin.wang@linux.alibaba.com>, 
- "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>, 
- Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
- Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
- Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, 
- Peter Xu <peterx@redhat.com>
-Cc: Alex Williamson <alex@shazbot.org>, kvm@vger.kernel.org, 
- =?utf-8?q?Lo=C3=AFc_Molinari?= <loic.molinari@collabora.com>, 
- Lorenzo Stoakes <ljs@kernel.org>, Shuah Khan <shuah@kernel.org>, 
- linux-kselftest@vger.kernel.org, dri-devel@lists.freedesktop.org, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, 
- linux-kernel@vger.kernel.org, Konstantin Khorenko <khorenko@virtuozzo.com>, 
- Jason Gunthorpe <jgg@ziepe.ca>, stable@vger.kernel.org, 
- Sashiko <sashiko-bot@kernel.org>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=16230;
- i=khorenko@virtuozzo.com; h=from:subject:message-id;
- bh=KxQgf9r44/A7LomRw575hiJX8vjTUUUmaea/E1q6SqU=;
- b=owEBbQKS/ZANAwAKAVGWCkf5YVwqAcsmYgBq65hc7nGhHKyXWsKHf4ANmdwyVTzxxJLgbQYRw
- 0lqUb8jn/OJAjMEAAEKAB0WIQRWD23IPcXT0GO9CCxRlgpH+WFcKgUCauuYXAAKCRBRlgpH+WFc
- KmDnD/46jSmmMgBefYuYytKhxT/J1AgLUW+SmJFJwtMKwls5EaGLe46Mrp3aAljM4QAiOWHPXi6
- aDuj4MoC2zPfWGv80Frn10SrNtxjLG6RI8cH7ml/Mnli1WTs195Ttfu7olgCYM6/gyEXzmuHWW3
- 8UVfVqgu6itDafaIymjbDTa4CLh6VTrCyTDnksfDQFzgFzVRt2dtlpqHfSYx/k7z0M0SX51KnPI
- IdyH7PbXghYAlWjHlDioYgwAth1IYu9UhEgMU9bRLOSvE5VdiTJzqOMcuEzHyjF3QaYfQLarWgQ
- mgEMNKzNgOEY94FwU8FupnykUbcn1u8NiyqZH1+J2PmnA3uReAtTSFZef8j0VEyRiWcdQu+pQdn
- etntU+QnRku0eg1ftfUF6OI/EFUNaKkEDzMaXoMByNaXetyMSVExrhKxGO7D/TYJ/NKiTdzVzx2
- nbaiNnDgvI1g+vW7+KfF+o8yU9vZL6/jlx7Qn5dFqL4E39BVLGt5r1ktNJFhHfCJeksZeHDOmPE
- hyXudBYI4b5h14s1KJedRBdlQuNXWauiAups/pPj6w6aBVqMGEV4CUPfUmvWOCQ36YVQ3rR368o
- NODxK04r+cjq5HNaLyafKdRMDgtCUBzg0s7DdorMj6PC/dngfzPwksyvg2jbxa0wLutqxdgvYjV
- +0W+5qd87MJ0Urg==
-X-Developer-Key: i=khorenko@virtuozzo.com; a=openpgp;
- fpr=560F6DC83DC5D3D063BD082C51960A47F9615C2A
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+X-Mailer: b4 0.17-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1562; i=brauner@kernel.org; h=from:subject:message-id; bh=I+ev37oI2qOnQB50E4hs4C0vKquyHn0mn+uzhhuE9es=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS97tO7MzO6bl7rnYiJS+98LnRI2rB8SW+2zhcm6VmdL mnzZE2COkpZGMS4GGTFFFkc2k3C5ZbzVGw2ytSAmcPKBDKEgYtTACaimsHIsCL/pkeQ2tMV86Sm GCnwci6xzri2a8OqYh1BgwP67+/djmP4Z6MoeGKi/4+z3/fFeyZzP/p6Min5j4995fEbyvr+l0+ ZMwEA
+X-Developer-Key: i=brauner@kernel.org; a=openpgp; fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
 	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-copy_huge_pmd() decides what to copy at fork by its own rules, apart
-from copy_present_ptes(): a lockless check for special PMDs, and a skip
-of every file THP. Following David's review of v3, this series makes it
-decide the way the PTE path does, under the page table lock, with
-vm_normal_page_pmd(). That fixes the two bugs v1-v3 were about. The
-patches:
+do_vfs_ioctl() answers FIONREAD for regular files with i_size - f_pos
+before it gets to the file's ->unlocked_ioctl(). The channel files are
+regular files, so cache_ioctl_procfs() has never seen FIONREAD and only
+ever failed other commands with -EINVAL. Drop it. Other commands fail
+with -ENOTTY now.
 
-1. folio_dup_file_rmap_pmd() duplicated a PMD mapping as HPAGE_PMD_NR
-   PTE mappings. It had no caller until patch 2.
-2. File THPs are copied at fork instead of being refaulted by the
-   child, as their PTEs would be.
-3. The special-PMD read moves under the lock. That closes the race with
-   a driver zap (vfio-pci, panthor) and the missing page table deposit
-   on ppc64 hash that Sashiko found in v1.
-4. A selftest for 1 and 2.
+The rpc_pipefs channel files are regular files as well.
 
-Stable
-======
-
-The race (since v6.12) and the ppc64 hash NULL deref (since v7.1) are
-fixed in patch 3, which only works on top of the copy rework in patch
-2, and patch 2 is the first caller of the helper patch 1 fixes. So
-patches 1-3 carry Cc: stable, as David suggested on v4. They will not
-apply to 6.12 as they are, I will do the backports.
-
-A related refcount bug in copy_huge_pud() for device DAX is fixed in
-a separate series, as it does not depend on this one:
-https://patch.msgid.link/20261021-vstor-150143-copy_huge_pud-folio-refcount-v1-0-8bd88551f9be@virtuozzo.com
-
-Testing
-=======
-
-v5 on v7.4-rc1, x86_64 with 4 NUMA nodes, the series with
-CONFIG_DEBUG_VM, KASAN and lockdep:
-
-- fork_file_thp (patch 4) skips on v7.4-rc1, where fork leaves file
-  THPs to a refault, and fails in both cases without patch 1, where
-  ShmemPmdMapped drops when the child exits and the kernel reports
-  "Bad page cache";
-- with the series it passes, also under migrate_pages() of the parent
-  and under reclaim in a small memcg, where some runs skip; with other
-  processes churning PMD-mapped shmem it passes or skips, never fails;
-- cow, guard-regions, uffd-unit-tests, uffd-wp-mremap,
-  split_huge_page_test, mremap_test, soft-dirty, pagemap_ioctl,
-  migration, madv_populate, transhuge-stress and khugepaged pass as on
-  v7.4-rc1.
-
-The runs below are from v4, on v7.3-rc7 in a KVM guest with 4 vCPUs,
-x86_64. Patches 1-3 changed since only by the device private CoW check.
-
-Race with a driver zap. The guest's QXL device is bound to vfio-pci in
-no-IOMMU mode, BAR0 of 64 MB mapped with PMDs. The reproducer below
-forks while a second thread clears PCI_COMMAND_MEMORY through the vfio
-config region after a random delay of up to 1 ms; the child waits for
-the write to finish and reads one byte of each 2 MB of the BAR. A child
-that reads anything without SIGBUS kept a stale mapping. I have not hit
-it without help, so a test-only debugfs knob adds an mdelay(2) between
-copy_pmd_range()'s lockless pmd_is_huge() and the PMD locks:
-
-  +-----------------------+-------+-------+----------------+
-  | kernel                | delay | forks | stale children |
-  +-----------------------+-------+-------+----------------+
-  | 7.3-rc7               | none  | 20900 | 0              |
-  | 7.3-rc7               | 2 ms  | 150   | 128            |
-  | 7.3-rc7 + this series | none  | 3000  | 0              |
-  | 7.3-rc7 + this series | 2 ms  | 400   | 0              |
-  +-----------------------+-------+-------+----------------+
-
-ppc64 hash is not tested on hardware. On x86 a test-only hack makes
-arch_needs_pgtable_deposit() true and mremap move the table, as on
-ppc64 hash. Without the series the first child of the reproducer oopses
-at exit in pgtable_trans_huge_withdraw(); with it the reproducer and
-the mm selftests pass.
-
-Cost
-====
-
-fork() now copies file THPs instead of leaving them to a refault, which
-costs fork() a reference, an rmap update and a counter per huge PMD and
-saves the child a fault per huge PMD it touches. fork() of a process
-with 4 GB of shmem THPs mapped MAP_PRIVATE and an anon_vma on the VMA,
-medians of 2000 forks:
-
-  +-----------------------+------------+-------------------------+
-  | kernel                | fork()     | fork(), child reads all |
-  +-----------------------+------------+-------------------------+
-  | 7.3-rc7               | 86-129 us  | 2380-2620 us            |
-  | 7.3-rc7 + this series | 230-355 us | 820-930 us              |
-  +-----------------------+------------+-------------------------+
-
-Notes
-=====
-
-- drm_gem_shmem and mshv_vtl map special PMDs with
-  vmf_insert_pfn_pmd() as well.
-- copy_huge_pud() still differs from the PMD tail in that it does not
-  mark a shared PUD clean in the child or handle uffd bits.
-
-Reproducer. It writes the BAR as a control and reads it with the
-memory disabled, which is harmless for QXL VRAM in a guest; do not
-point it at a BAR that holds device registers. Build with
-  gcc -O2 -pthread -o fork_revoke fork_revoke.c
-
-run as root with the device bound to vfio-pci; arguments: BDF,
-iterations, BAR index, max revoke delay in microseconds, e.g.
-  ./fork_revoke 0000:00:02.0 100 0 3000
-
-    // SPDX-License-Identifier: GPL-2.0
-    /*
-     * Fork while vfio-pci revokes a BAR mapped with huge PMDs.
-     *
-     * The parent maps a BAR of a vfio-pci device and faults it in. A second
-     * thread disables the device memory through the command register, which
-     * makes vfio-pci zap all BAR mappings, while the main thread forks. Once
-     * the memory is disabled, every access to the BAR must raise SIGBUS. A
-     * child that can still read a BAR chunk kept a mapping the zap removed.
-     *
-     * usage: fork_revoke <domain:bus:dev.fn> [iterations [bar [max_delay_us]]]
-     *
-     * The revoke starts after a random delay of up to max_delay_us, so that it
-     * lands at different points of fork.
-     */
-    #define _GNU_SOURCE
-    #include <errno.h>
-    #include <fcntl.h>
-    #include <limits.h>
-    #include <pthread.h>
-    #include <sched.h>
-    #include <setjmp.h>
-    #include <signal.h>
-    #include <stdint.h>
-    #include <stdio.h>
-    #include <stdlib.h>
-    #include <string.h>
-    #include <unistd.h>
-    #include <sys/ioctl.h>
-    #include <sys/mman.h>
-    #include <sys/wait.h>
-    #include <linux/pci_regs.h>
-    #include <linux/vfio.h>
-
-    #define SZ_2M	(2UL << 20)
-
-    static int dev;
-    static off_t cfg_off;
-    static int go_pipe[2], done_pipe[2];
-    static volatile uint32_t *shared;	/* [0]: iteration whose revoke finished */
-    static unsigned long iter;
-    static unsigned int max_delay_us;
-    static sigjmp_buf jb;
-
-    static void die(const char *what)
-    {
-    	fprintf(stderr, "%s: %s\n", what, strerror(errno));
-    	exit(2);
-    }
-
-    static int device_fd(const char *bdf)
-    {
-    	char path[PATH_MAX], link[PATH_MAX], *group_id;
-    	int container, group, noiommu;
-    	ssize_t len;
-
-    	snprintf(path, sizeof(path), "/sys/bus/pci/devices/%s/iommu_group", bdf);
-    	len = readlink(path, link, sizeof(link) - 1);
-    	if (len < 0)
-    		die("iommu_group");
-    	link[len] = 0;
-    	group_id = strrchr(link, '/') + 1;
-    	snprintf(path, sizeof(path), "/dev/vfio/%s", group_id);
-    	noiommu = access(path, F_OK);
-    	if (noiommu)
-    		snprintf(path, sizeof(path), "/dev/vfio/noiommu-%s", group_id);
-    	container = open("/dev/vfio/vfio", O_RDWR);
-    	group = open(path, O_RDWR);
-    	if (container < 0 || group < 0)
-    		die(path);
-    	if (ioctl(group, VFIO_GROUP_SET_CONTAINER, &container) ||
-    	    ioctl(container, VFIO_SET_IOMMU,
-    		  noiommu ? VFIO_NOIOMMU_IOMMU : VFIO_TYPE1v2_IOMMU))
-    		die("vfio container");
-    	return ioctl(group, VFIO_GROUP_GET_DEVICE_FD, bdf);
-    }
-
-    static void set_memory(int on)
-    {
-    	uint16_t cmd;
-
-    	if (pread(dev, &cmd, 2, cfg_off + PCI_COMMAND) != 2)
-    		die("read PCI_COMMAND");
-    	cmd = on ? cmd | PCI_COMMAND_MEMORY : cmd & ~PCI_COMMAND_MEMORY;
-    	if (pwrite(dev, &cmd, 2, cfg_off + PCI_COMMAND) != 2)
-    		die("write PCI_COMMAND");
-    }
-
-    static void *revoker(void *arg)
-    {
-    	unsigned long i;
-
-    	while (read(go_pipe[0], &i, sizeof(i)) == sizeof(i)) {
-    		if (max_delay_us)
-    			usleep(random() % max_delay_us);
-    		set_memory(0);
-    		shared[0] = i;
-    		if (write(done_pipe[1], &i, sizeof(i)) != sizeof(i))
-    			die("done pipe");
-    	}
-    	return NULL;
-    }
-
-    static void sigbus(int sig)
-    {
-    	siglongjmp(jb, 1);
-    }
-
-    /* Number of 2MB chunks of the BAR that can be read without SIGBUS. */
-    static unsigned long readable(volatile uint8_t *bar, size_t size)
-    {
-    	volatile unsigned long n = 0;
-    	volatile size_t off;
-
-    	for (off = 0; off < size; off += SZ_2M) {
-    		if (sigsetjmp(jb, 1))
-    			continue;
-    		(void)bar[off];
-    		n++;
-    	}
-    	return n;
-    }
-
-    int main(int argc, char **argv)
-    {
-    	unsigned long iterations = argc > 2 ? strtoul(argv[2], NULL, 0) : 1000;
-    	unsigned int index = argc > 3 ? atoi(argv[3]) : 0;
-    	struct vfio_region_info cfg = { .argsz = sizeof(cfg),
-    					.index = VFIO_PCI_CONFIG_REGION_INDEX };
-    	struct vfio_region_info bar = { .argsz = sizeof(bar), .index = index };
-    	unsigned long stale_children = 0, stale_chunks = 0, n;
-    	volatile uint8_t *map;
-    	pthread_t thread;
-    	size_t size, off;
-    	uint8_t *resv;
-    	int status;
-    	pid_t pid;
-
-    	if (argc < 2) {
-    		fprintf(stderr, "usage: %s <bdf> [iterations [bar [max_delay_us]]]\n",
-    			argv[0]);
-    		return 2;
-    	}
-    	max_delay_us = argc > 4 ? atoi(argv[4]) : 0;
-    	signal(SIGBUS, sigbus);
-    	dev = device_fd(argv[1]);
-    	if (dev < 0)
-    		die("device fd");
-    	if (ioctl(dev, VFIO_DEVICE_GET_REGION_INFO, &cfg) ||
-    	    ioctl(dev, VFIO_DEVICE_GET_REGION_INFO, &bar))
-    		die("region info");
-    	if (!(bar.flags & VFIO_REGION_INFO_FLAG_MMAP) || bar.size < SZ_2M) {
-    		fprintf(stderr, "BAR %u: no mmap or smaller than 2MB\n", index);
-    		return 2;
-    	}
-    	cfg_off = cfg.offset;
-    	size = bar.size & ~(SZ_2M - 1);
-
-    	/* A 2MB aligned address lets vfio-pci map the BAR with huge PMDs. */
-    	resv = mmap(NULL, size + SZ_2M, PROT_NONE,
-    		    MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, -1, 0);
-    	if (resv == MAP_FAILED)
-    		die("reserve");
-    	resv = (uint8_t *)(((uintptr_t)resv + SZ_2M - 1) & ~(SZ_2M - 1));
-    	map = mmap(resv, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED,
-    		   dev, bar.offset);
-    	if (map == MAP_FAILED)
-    		die("mmap BAR");
-    	shared = mmap(NULL, 4096, PROT_READ | PROT_WRITE,
-    		      MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-    	if (shared == MAP_FAILED)
-    		die("shared page");
-
-    	/* Control: without a revoke the child reads what the parent wrote. */
-    	set_memory(1);
-    	for (off = 0; off < size; off += SZ_2M)
-    		map[off] = (uint8_t)(off / SZ_2M) ^ 0x5a;
-    	pid = fork();
-    	if (!pid) {
-    		for (off = 0; off < size; off += SZ_2M)
-    			if (map[off] != ((uint8_t)(off / SZ_2M) ^ 0x5a))
-    				_exit(1);
-    		_exit(0);
-    	}
-    	if (pid < 0 || waitpid(pid, &status, 0) != pid ||
-    	    !WIFEXITED(status) || WEXITSTATUS(status)) {
-    		fprintf(stderr, "control: child does not see the parent's BAR\n");
-    		return 2;
-    	}
-    	printf("BAR %u: %zu MB, %lu iterations, revoke delay < %u us\n",
-    	       index, size >> 20, iterations, max_delay_us);
-
-    	/* Premise: with the memory disabled the BAR cannot be read. */
-    	set_memory(0);
-    	n = readable(map, size);
-    	set_memory(1);
-    	if (n) {
-    		fprintf(stderr, "memory disabled, parent still reads %lu chunks\n", n);
-    		return 2;
-    	}
-
-    	if (pipe(go_pipe) || pipe(done_pipe))
-    		die("pipe");
-    	if (pthread_create(&thread, NULL, revoker, NULL))
-    		die("thread");
-
-    	for (iter = 1; iter <= iterations; iter++) {
-    		set_memory(1);
-    		for (off = 0; off < size; off += SZ_2M)
-    			(void)map[off];
-    		if (write(go_pipe[1], &iter, sizeof(iter)) != sizeof(iter))
-    			die("go pipe");
-    		pid = fork();
-    		if (pid < 0)
-    			die("fork");
-    		if (!pid) {
-    			while (shared[0] != iter)
-    				sched_yield();
-    			n = readable(map, size);
-    			_exit(n > 255 ? 255 : n);
-    		}
-    		if (read(done_pipe[0], &n, sizeof(n)) != sizeof(n))
-    			die("done pipe");
-    		if (waitpid(pid, &status, 0) != pid || !WIFEXITED(status))
-    			die("child");
-    		if (WEXITSTATUS(status)) {
-    			stale_children++;
-    			stale_chunks += WEXITSTATUS(status);
-    		}
-    	}
-    	set_memory(1);
-    	printf("children with a stale BAR mapping: %lu of %lu (%lu 2MB chunks)\n",
-    	       stale_children, iterations, stale_chunks);
-    	return stale_children ? 1 : 0;
-    }
-
-Assisted-by: LLM
-Signed-off-by: Konstantin Khorenko <khorenko@virtuozzo.com>
+Acked-by: Chuck Lever <cel@kernel.org>
+Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
-Changes in v5:
-- Rebase onto v7.4-rc1.
-- Patches 1-3: Cc: stable (David, Lorenzo).
-- Patch 1: drop the list of consequences, the helper had no caller
-  (Zi Yan).
-- Patch 2: the device private write path gets the CoW check of
-  copy_nonpresent_pte() (David). Drop fuse DAX as the example of
-  VM_MIXEDMAP, it no longer sets the flag. Say on the Cc: stable line
-  that the next patch needs it.
-- Patch 4: up to three attempts, each on a fresh file. Fail only if
-  every attempt sees ShmemPmdMapped drop by exactly the parent's share,
-  pass on the first clean one, skip if none is clean: other processes
-  change the counter and reclaim or migration take PMDs from the parent
-  (Kiryl). Keep every mapping until exit: after the bug, an unmap
-  drops the counter once more, which hid the bug from the second case.
-  Use check_huge_file(), check_huge_shmem() is gone.
-- Cover: v5 test results, box tables.
-- Link to v4: https://patch.msgid.link/20261021-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v4-0-66f00b7a564c@virtuozzo.com
+ net/sunrpc/cache.c | 10 ----------
+ 1 file changed, 10 deletions(-)
 
-Changes in v4:
-- Rework after David's review: copy_huge_pmd() decides under the PTL
-  with vm_normal_page_pmd(), like copy_present_ptes(), and copies file
-  THPs (patches 2, 3). The pmd_none() recheck and the separate deposit
-  patch are gone.
-- New patch 1: fix folio_dup_file_rmap_pmd(), whose first caller is
-  patch 2.
-- New selftest, patch 4.
-- Move Assisted-by from the patches to the cover letter, after commit
-  1e035297ffdad ("docs: remove Assisted-by references").
-- Link to v3: https://patch.msgid.link/20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v3-0-85eaec8417f6@virtuozzo.com
+diff --git a/net/sunrpc/cache.c b/net/sunrpc/cache.c
+index 81a3f0068f36..d242b6f33cbc 100644
+--- a/net/sunrpc/cache.c
++++ b/net/sunrpc/cache.c
+@@ -1596,15 +1596,6 @@ static __poll_t cache_poll_procfs(struct file *filp, poll_table *wait)
+ 	return cache_poll(filp, wait, cd);
+ }
+ 
+-static long cache_ioctl_procfs(struct file *filp,
+-			       unsigned int cmd, unsigned long arg)
+-{
+-	struct inode *inode = file_inode(filp);
+-	struct cache_detail *cd = pde_data(inode);
+-
+-	return cache_ioctl(inode, filp, cmd, arg, cd);
+-}
+-
+ static int cache_open_procfs(struct inode *inode, struct file *filp)
+ {
+ 	struct cache_detail *cd = pde_data(inode);
+@@ -1624,7 +1615,6 @@ static const struct proc_ops cache_channel_proc_ops = {
+ 	.proc_write_buf	= cache_write_procfs,
+ 	.proc_write_size = CACHE_DOWNCALL_MAX,
+ 	.proc_poll	= cache_poll_procfs,
+-	.proc_ioctl	= cache_ioctl_procfs, /* for FIONREAD */
+ 	.proc_open	= cache_open_procfs,
+ 	.proc_release	= cache_release_procfs,
+ };
 
-Changes in v3:
-- Patch 1: recheck the PMD with pmd_none(), as only a zap can change
-  it and a zap leaves it none (Lance Yang).
-- Link to v2: https://patch.msgid.link/20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v2-0-e1548488fa68@virtuozzo.com
-
-Changes in v2:
-- Add patch 2, the page table deposit for ppc64 hash, reported by
-  Sashiko.
-- Patch 1: name panthor instead of drm_gem_shmem as the driver whose
-  stale child mapping reaches freed pages: drm_gem_shmem keeps the
-  pages of a purged object until the last mapping goes away.
-- Link to v1: https://patch.msgid.link/20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v1-1-d225c60bc316@virtuozzo.com
-
----
-Konstantin Khorenko (4):
-      mm/rmap: duplicate a PMD mapping as one in folio_dup_file_rmap_pmd()
-      mm/huge_memory: copy file THPs at fork like copy_present_ptes() does
-      mm/huge_memory: read a special PMD under the lock in copy_huge_pmd()
-      selftests/mm: test fork of PMD-mapped shmem THPs
-
- MAINTAINERS                                |   1 +
- include/linux/rmap.h                       |   2 +-
- mm/huge_memory.c                           |  85 +++++-----
- tools/testing/selftests/mm/Makefile        |   1 +
- tools/testing/selftests/mm/fork_file_thp.c | 256 +++++++++++++++++++++++++++++
- tools/testing/selftests/mm/run_vmtests.sh  |   1 +
- 6 files changed, 301 insertions(+), 45 deletions(-)
----
-base-commit: 05441d697f7f9a927264f4058cbbc6a03dfcac9d
-change-id: 20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-bdf7efb612c2
-
-Best regards,
---  
-Konstantin Khorenko,
-Virtuozzo Linux Kernel Team
+-- 
+2.53.0
 
 
