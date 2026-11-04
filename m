@@ -2,88 +2,61 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24946606A31B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 05:40:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C853606A329
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 05:55:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rDUUlGB6
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=o85c61oA
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKDml5J0Nz2xDD;
-	Wed, 04 Nov 2026 16:40:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793727825;
-	cv=none; b=QeYOppB5iRbXpjG3y8x1W8OvJOI0noAWTopZbieGkpTiFp4gSbTkdD6vhGfrgf4XWlOzdY4khTv1WGEfSzUhs6NN/fwMDrPNcITHzD1gP3Wqb2+8RAed1BagW8mbART/f/19+xoh0CkSnaTEltEv7lCdRY9WxFZbD84rkEgE0pP4E6lZEIYfBmEbFwavAfXNyR/8hJX98bzewRicWPBddragu4jiqgNKLqMhNKDynYID+lIUcYXQ+zSrIsTZG28t2iDbFJBhLQWdoNQaEYT151TKBNXBdLpoPoupEubMTMiP8ruwN2V/BBca11EH7YICrAT9QvShr7D1kaJcKzxnyQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKF5b6BFKz2xGg;
+	Wed, 04 Nov 2026 16:54:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::82"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793763748;
+	cv=none; b=H9D723sRT+dh3dovhHqNDPeya1xmACMgRSdpl/n8GJZKge8bib/8NePACVWZJqi0XRRITUL0FAG3D84h1LVNorSETVns4duoV4hGBPRv71eXocexutdRjhHO02DFWjt+9EHKg8sPq/o720gnszMdDQiMR9FRNR8smx7NVr4Qlw4ZnEPKyTPrByL1KjttdxSBOahE+jmcR+zoEgOWUMMYPEEWB6oFasgctwh6q7HHl1/amqf/0y7AGgJ1eh4W4ppg88KPCfevwL9HIV0aXCUey6ZZGMkgVBd5kiomEDOinX/lME7VMNDChTxq6Z0DC6l56n6XZl7FaNITgHU5Ypqn2g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793727825; c=relaxed/relaxed;
-	bh=uJ2wtG0TbwKE5OUp6DvJO2lAnPSHDHBXyR6Yjzaf8Mo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=iaMED640DA8yAnH+VlXM4Gw5EBJD/U4XxY/QMyjhB88+k/ZAbOBxN25ar3KKlavRN2oAa6saPULPONioZ0hAjVdlu+A4ie59v7zANLaqfTLH0fxENv7GKKe3OA1FBJdwicAZ2K//WBgv2BJF9W/CeYxhR9SHQ5YPQDF1yJ4TVZV50NJKUUWsii1FA82J47j9JBVFvHcJaxLSUY+bJo/mXWCdEjb8J+sDoL5MvkdTdJkVq6uk22iNcKsW0zzDrcOWLl6vkoqfNT5AT5PVK3qMpcHP4LXCSI+wVt2dI51zgpwkPfCh9tpOptmTvrysax3Zr9bKF+41oof4WoFX2neiWw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rDUUlGB6; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132c; helo=mail-dy1-x132c.google.com; envelope-from=yigejiang86@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1793763748; c=relaxed/relaxed;
+	bh=KMGUUx+abGZBetvPn2ZZRhu/i7K4XgWYOdWg5RHIoQ4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=iPBXU07ffFTYGlvPwkr6F3vxh46qlWrX3VNJCYP/vlvQR/aSJuhInnjxYuKPS6aDTEa3FiaMbPZVc0+mq3ueIPmsOC3Ye5ZkHhaDhLDXPN0uEloUss4p6ZZdl3ET7e1dVXcAnK2MJ6aHeBXtMlM4c0RcN8kP+FyFG+Zv1rOYa5ud7n+Vdenit13SGWEh+FEw+3GW94mnEETqRj7vl+n22gzW7VsZPf0p9s+jzHBhafxkzXi9UKglV7juSYikxdSGAyeuBSBs2Hf+74tUCNK/wRwzUPAA4HfFiRxdnKEGdgWQzEAHmYIODVMB8fxR2PMtCWqJG/dswpbWuRk4MDNXLg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=o85c61oA; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::82; helo=mta0.migadu.com; envelope-from=luiz.capitulino@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rDUUlGB6;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=o85c61oA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132c; helo=mail-dy1-x132c.google.com; envelope-from=yigejiang86@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x132c.google.com (mail-dy1-x132c.google.com [IPv6:2607:f8b0:4864:20::132c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::82; helo=mta0.migadu.com; envelope-from=luiz.capitulino@linux.dev; receiver=lists.ozlabs.org)
+X-Greylist: delayed 79 seconds by postgrey-1.37 at boromir; Wed, 04 Nov 2026 14:42:23 AEDT
+Received: from mta0.migadu.com (out-130.mta0.migadu.com [IPv6:2001:41d0:1004:224b::82])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jJwsr61M1z2xSS
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2026 04:43:44 +1100 (AEDT)
-Received: by mail-dy1-x132c.google.com with SMTP id 5a478bee46e88-36a2551d7b5so1033526eec.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2026 09:43:44 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793727822; x=1794332622; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=uJ2wtG0TbwKE5OUp6DvJO2lAnPSHDHBXyR6Yjzaf8Mo=;
-        b=rDUUlGB6rH9r94J1tTnuJijgpyDPEdcHTJ5e7EOoOoMObYGkywtsIZeJyc2FmLVSJV
-         vR1YKwly5rhfGUfwhZ3pO1Ubtwu98rFr6wE6SKRNuQv5I/AVZH1bD6GVl7g2JVh5ZgQj
-         fOq45YkmpVQQK9cMO4Mc8yip7mCnglG1+lCBgdm9DYYkXI6NXf8l+qTK241lIotWJiTt
-         z+re1Nt95JkMGeAwyn2dB4p8iYbmdNDaxvvrH9c+rvf/I5seCCC/nDNmAdoC0uO/xA18
-         rZm2vnzslvP6prujKmoYBKM8/Qsb03nkWp0WhSNvJYEtJPX3ozGKHM/2To2hZ0j4Epc3
-         OtUQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793727822; x=1794332622;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=uJ2wtG0TbwKE5OUp6DvJO2lAnPSHDHBXyR6Yjzaf8Mo=;
-        b=vvj9D1JUk5ofmEoPoEvowdNO8e14Pb793sxrZdvW0iUO6G/lu+LlBGcWyS7lPgwZUy
-         IqX25boHIcu5dNIuuUZ6+2vyICsRfjLchPe+NkmZxEOuDiltGgxNaZgX+etNNrvOo9tP
-         OLL8l18bu1G60Z6s+qZcS2ehEESIJ03o7dPrfoDvmovyfUC8cefrpoQJmAC8cDB2VOG0
-         aYwNsOUwbU7OVRXivNgCVMOFFzpF6BEaK7RQb1quYGa3ANnjeUmOp/yqQZBUuUfSD72b
-         JHfv+p9rQWpeF0CqyLVJPYDVIDok1i971Tn+IbQ+s90hDTNnQmxA9zb35lJgBA/ErpbU
-         Cl5Q==
-X-Forwarded-Encrypted: i=1; AKwUvBxi66EPaMl5GFkOfWSRuYfQBwjEpN4P87fni/N0rAdYNJfIKZToaK3xryTm0xbJNFH+V1tBndGyvxMtiQ4=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z+6wRad915XVDGwOkTiKEZVK4N0FEwNov/OO228fAg2XpT+s2QE
-	deMlF7no7iqE+g9of0HdqXO/0oodV69W+YI0MBYetZltueWwgbA4RXU=
-X-Gm-Gg: AYBFou0yN+ks79loSMYQ+4EyHmIlRCb1YOgjl5cG9SHn0fs4+V1cbLzG5IE+uMAKiVl
-	GcGHdzzZJw+o6HdgCl4JYJTCxaHdx6qgt7NwpJxQ3JOkTZlg3b9Y20cBtmrvgSVaco5So6HlnRH
-	4FArKcA3Az8s44wNlOdaN1DfSBSUXLOn7nCrCKDSlzFKsvSqfYMmceQj491fgOPhdYeLgMBLD73
-	BMr8lrmMzHakIF9diFtgDKpvv4dQHDAHtRFMJa6TO6p6ATXUm9wMfu1ueQgxPRRfinnsqAQqkms
-	+7v28TB2dR5VeyjxwlVfeONgfZRvFWlhvRnEfs7JSGKVljcIBss1asj985wBXbT3/WIDi/1Slq7
-	fKktyesqXSkwS4XGbnJTWBDJiCh7/RNIHdmkzoK6bZx7mC81+xUTlHvyGM4CQnwgug0Qigxzz0a
-	2ySBWZiQ8Ylnpy8Fe+DRzCe+OKXSL3gnb3QbDyAa3fehMV9nDeJawNgdoMgDyNPlAU+g2sXXY96
-	f4p6duGWjdY9pvqOFx41cSUChL8fF/oyC6jB5bPP9pgIraV0ZxH/1KX2Ux5mQSXJH9aOQfKe7LR
-	eoUZJSn27V4AoNmhmfXlxU9cG3Y8DsnTyUfatYIYilH3B5sZijnFg0PBNv/EAIa/F67a
-X-Received: by 2002:a05:701b:230f:b0:1ab:9742:e860 with SMTP id a92af1059eb24-1ab9742e8e8mr19731281c88.20.1793727821880;
-        Tue, 03 Nov 2026 09:43:41 -0800 (PST)
-Received: from localhost.localdomain ([2406:3003:2002:639c:a995:4c32:db66:d000])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b245c1bcedsm420380c88.7.2026.11.03.09.43.38
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Tue, 03 Nov 2026 09:43:40 -0800 (PST)
-From: Yige Jiang <yigejiang86@gmail.com>
-To: linux-sound@vger.kernel.org
-Cc: Yige Jiang <yigejiang86@gmail.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>,
-	linux-kernel@vger.kernel.org,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKB8b5lLMz2xDD
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2026 14:42:23 +1100 (AEDT)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=d8q17nt4gg/LWrH+2wR20CZaKMdkDabFkr/xqhI7JQs=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1793763725; v=1; x=1794368525;
+ b=o85c61oAb7Qf1Mo4yQNlw0C/7fpr68ldUEbqwbjXzbIDWMXK8EQCv5MlYeazag9Gm8TbNCcf
+ nNhGUvq/gF7eUuKaacbvMMTvGBlDXvf3ckoyIfY9PZpt1TmoE4V/nY884PSX3AJFLzBDOZb3ADN
+ Nv9rt+49i/4RCQr3ph89VxGE=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id 04e1281942ca9720;
+	Wed, 04 Nov 2026 03:40:35 +0000
+X-Mizu-Trace-ID: 04e1281942ca9720
+X-Migadu-Flow: FLOW_OUT
+From: "Luiz Capitulino (Red Hat)" <luiz.capitulino@linux.dev>
+To: maddy@linux.ibm.com,
+	npiggin@gmail.com,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] ASoC: fsl: pcm030: release the platform node reference
-Date: Wed,  4 Nov 2026 01:43:33 +0800
-Message-ID: <rc-review-20261103-07-1337c123a4ea@gmail.com>
-X-Mailer: git-send-email 2.50.1
+Cc: mpe@ellerman.id.au,
+	chleroy@kernel.org,
+	ritesh.list@gmail.com,
+	sshegde@linux.ibm.com,
+	akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH] powerpc/watchdog: disable watchdog when watchdog_thresh=0
+Date: Tue,  3 Nov 2026 22:40:18 -0500
+Message-ID: <20261104034018.2676750-1-luiz.capitulino@linux.dev>
+X-Mailer: git-send-email 2.56.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,66 +71,99 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-pcm030_fabric_probe() gets a platform node reference and shares it
-between two DAI links. Neither probe failures nor card removal
-release this reference. The links borrow the node; assigning the
-pointer twice does not acquire another reference.
+On powerpc, trying to disable the hardlockup detector with:
 
-Register a managed put action after acquiring the node. This covers
-later probe failures and releases the reference after the card and
-codec are unregistered on unbind. If registering the action fails,
-the reset variant releases the reference immediately.
+ # echo 0 > /proc/sys/kernel/watchdog_thresh
 
-Fixes: 084011615c1c ("ASoC: fsl: pcm030-audio-fabric use snd_soc_register_card")
-Assisted-by: LLM
-Signed-off-by: Yige Jiang <yigejiang86@gmail.com>
+causes an immediate and endless hardlockup detection, eventually leading
+to an unusable system (splat example below). This happens because
+watchdog_calc_timeouts() sets wd_timer_period_ms, wd_panic_timeout_tb
+and wd_smp_panic_timeout_tb to zero, but start_watchdog() still starts
+the timer (with expiry=0) in this code path:
+
+proc_watchdog_thresh()
+  proc_watchdog_update()
+    __lockup_detector_reconfigure()
+      watchdog_hardlockup_start()
+        start_watchdog_on_cpu()
+          start_watchdog()
+            hrtimer_start() /* wd_timer_period_ms=0 */
+
+However, according to Documentation/admin-guide/sysctl/kernel.rst,
+setting watchdog_thresh=0 should disable both the soft and hard lockup
+detectors.
+
+This condition is already checked in __lockup_detector_reconfigure() for
+the soft lockup detector and the arch-independent hardlockup detector,
+what's missing is powerpc performing the same check in start_watchdog().
+
+[  278.110085] watchdog: CPU 0 detected hard LOCKUP on other CPUs 1
+[  278.110086] watchdog: CPU 1 became unstuck TB:33050716089564575
+[  278.110097] CPU: 1 UID: 0 PID: 0 Comm: swapper/1 Kdump: loaded Tainted: G            E       7.4.0-rc1 #1 PREEMPT(full)
+[  278.110103] watchdog: CPU 0 TB:33050716089564185, last SMP heartbeat TB:33050716089563885 (0ms ago)
+[  278.110109] Tainted: [E]=UNSIGNED_MODULE
+[  278.110126] Hardware name: IBM,8375-42A POWER9 (architected) 0x4e0202 0xf000005 of:IBM,FW940.00 (VL940_027) hv:phyp pSeries
+[  278.110136] NIP:  c0000000001bd518 LR: c0000000014dedf8 CTR: 0000000000000000
+[  278.110145] REGS: c000000004b17a80 TRAP: 0900   Tainted: G            E        (7.4.0-rc1)
+[  278.110155] MSR:  800000000280b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>  CR: 22000224  XER: 20040004
+[  278.110189] CFAR: 0000000000000000 IRQMASK: 0
+GPR00: 0000000000000000 c000000004b17d20 c000000001c38100 0000000000000000
+GPR04: 000000000000ffff 0000000000000000 0000000000000000 0000000000000000
+GPR08: 0000000000000000 0000000000000080 0000000000000080 ffffffffffffffff
+GPR12: 0000000000000000 c000000017fff300 0000000000000000 000000002ef3d820
+GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000001
+GPR24: 0000000000000001 00000040c0a6075e 0000000000000000 0000000000000001
+GPR28: c0000001fdb5b140 0000000000000001 c000000002291968 c000000002291970
+[  278.110306] NIP [c0000000001bd518] plpar_hcall_norets_notrace+0x18/0x2c
+[  278.110319] LR [c0000000014dedf8] check_and_cede_processor+0x48/0x60
+[  278.110333] Call Trace:
+[  278.110338] [c000000004b17d20] [c000000004b17dd0] 0xc000000004b17dd0 (unreliable)
+[  278.110354] [c000000004b17d80] [c0000000014df020] shared_cede_loop+0x70/0x170
+[  278.110367] [c000000004b17dc0] [c0000000014de460] cpuidle_enter_state+0x2f0/0x748
+[  278.110381] [c000000004b17e70] [c000000000fe43b8] cpuidle_enter+0x48/0x70
+[  278.110397] [c000000004b17eb0] [c0000000002cdcf8] call_cpuidle+0x48/0x90
+[  278.110409] [c000000004b17ed0] [c0000000002d6300] cpuidle_idle_call+0x160/0x2d0
+[  278.110422] [c000000004b17f20] [c0000000002d6578] do_idle+0x108/0x1f0
+[  278.110434] [c000000004b17f60] [c0000000002d6938] cpu_startup_entry+0x48/0x50
+[  278.110446] [c000000004b17f90] [c0000000000615c0] start_secondary+0x290/0x2a0
+[  278.110459] [c000000004b17fe0] [c00000000000e258] start_secondary_prolog+0x10/0x14
+
+Fixes: 2104180a5369 ("powerpc/64s: implement arch-specific hardlockup watchdog")
+Cc: stable@vger.kernel.org
+Signed-off-by: Luiz Capitulino (Red Hat) <luiz.capitulino@linux.dev>
 ---
-Based on linux-next next-20261102 (2637bdec0535).
-Compile-tested: powerpc, GCC 14.2.0, W=1, CONFIG_OF_DYNAMIC=y.
-CONFIG_SND_MPC52xx_SOC_PCM030=m.
-Baseline and patched target objects built from this exact base.
-No full kernel/module-link, hardware or runtime test was performed.
-AI assistance: Codex (LLM) for ownership analysis, code and changelog.
+Notes:
+- This issue was not discovered by AI. We have a new test-case in our CI that
+  sets watchdog_thresh=0, when running on powerpc we get the described issue
+- This issue was initially reproduced on Power10, but I developed the fix
+  on Power9 (which is what I have access now)
 
- sound/soc/fsl/pcm030-audio-fabric.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ arch/powerpc/kernel/watchdog.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/sound/soc/fsl/pcm030-audio-fabric.c b/sound/soc/fsl/pcm030-audio-fabric.c
-index a7a5dba83a2f..64d9f7e34611 100644
---- a/sound/soc/fsl/pcm030-audio-fabric.c
-+++ b/sound/soc/fsl/pcm030-audio-fabric.c
-@@ -50,6 +50,11 @@ static struct snd_soc_card pcm030_card = {
- 	.num_links = ARRAY_SIZE(pcm030_fabric_dai),
- };
+diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
+index 582ee3fd71c1..44f178e07531 100644
+--- a/arch/powerpc/kernel/watchdog.c
++++ b/arch/powerpc/kernel/watchdog.c
+@@ -487,6 +487,9 @@ static void start_watchdog(void *arg)
+ 	if (!(watchdog_enabled & WATCHDOG_HARDLOCKUP_ENABLED))
+ 		return;
  
-+static void pcm030_put_platform_node(void *data)
-+{
-+	of_node_put(data);
-+}
++	if (!watchdog_thresh)
++		return;
 +
- static int pcm030_fabric_probe(struct platform_device *op)
- {
- 	struct device_node *np = op->dev.of_node;
-@@ -78,6 +83,11 @@ static int pcm030_fabric_probe(struct platform_device *op)
- 		return -ENODEV;
- 	}
+ 	if (!cpumask_test_cpu(cpu, &watchdog_cpumask))
+ 		return;
  
-+	ret = devm_add_action_or_reset(&op->dev, pcm030_put_platform_node,
-+				       platform_np);
-+	if (ret)
-+		return ret;
-+
- 	for_each_card_prelinks(card, i, dai_link)
- 		dai_link->platforms->of_node = platform_np;
- 
+-- 
+2.56.0
 
-base-commit: 2637bdec0535a2044cd830eba9a79363651d9043
 
