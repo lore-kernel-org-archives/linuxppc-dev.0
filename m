@@ -2,48 +2,48 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B0B3606D816
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 17:56:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9372260703DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 17:56:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WdWrZpQZ
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dr8wSvAV
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKY621C60z2xsW;
-	Thu, 05 Nov 2026 04:56:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793814986;
-	cv=none; b=DmbyV+W42sd8fUFig5leOHoOE0ZoEFY8y4ol4U1dYEeUfKjJAe5v12sH1cqwP2z+JitIyhGNXWmDjkf+dQ8k19RGa69mn0QHxWPn4b8G30+jGcN1sVk8xbQxfAZF1jTbUvCk6lZAU9P2+/edEpFFNvqeWdR83YAvVrYYLKTmoOd5aBEeGP8ezxwEhbYfj+8j2xTu+j+vcLHHnOqAZ6p+6YmJBKb/ZEAhVaoUlWwdpMnBqztbPOzFxD/rs29Gktl1hmrxWSXgWUOX4z07NCWOTavM7C/pLuhB0PHngLdRAZf118JPijAOkRT+Ec4v6OONUPGhAs7Ycp9KPe1jzx93hw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKY6Q2Mm1z2xwL;
+	Thu, 05 Nov 2026 04:56:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793815006;
+	cv=none; b=lB/9SJ4RwXRK/zmLqDhWm3QCgLUUziYRCctbtO8dyQfPounfwEr9A35ovIttFIzLILf7sScZsRHNg33RnFDtFAdxgeFlpG+j8tCQHTvlQh7qmq50Um9BqxDJ9LANN5DWUVSKBqd2guk3oOkdlY5kFHCva+Deeb40p8sa6Hi3V+4krlO2PstJMwoF7XLbvZWDqAnNpp/o5VLViuh1X+fGZAQ8Stro/Iv6/FMnbQwH1aHVB8LZlVl2bGjGcrbEHKZ0AX2wTtWZHn+PjKJuHbex9VwNOB7mgN24CHOoxUE7ql727qzmZ0XQFHtIwX7YOJoCrMkfK2bCL1yai1lr8tzI7g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793814986; c=relaxed/relaxed;
-	bh=xlRe6ByN3zpYNOlJQq83OVbC6fU3d9RayIfuGISBpLE=;
+	t=1793815006; c=relaxed/relaxed;
+	bh=v5t8qKNo68SCWoforDimF8hL2ZYL+p0Okj8bWoZ1JT0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=gMxhtnt9KgAkzj/XO+z53utLDhF1ffng4dPxM6IacffKmuRJ8JHmmjJTICz91qEnF1yBYSIrS9P258n01+AnmAuUdOn+DWIknKRGFh7cF0TIXPA6/BFUGbdpUl9JzJFGUNSH53IkRUWEvh18O9N46/swotBnueUN0mWxlyQblCSoRSyq0BmJ6nnhvW+dJcGykI/V52O6GoPiIqYrr3Z5Zh7IvvHrD3teUmL9h54DGwsNBreXi6xzTjE5eZUkjdWjatMu+1Qhx/SFejblQU1jQFRObjccVW6k1crFGeMYMmp8s6o+53M3EH5OGk1LbZpCCkRwrp7x0HvPT6umUXG3vg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WdWrZpQZ; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=LEOyJ6HAxyIU99YULMGXYL1Gep+e+gBz8hc4GZKzYYDWrXuLsrDHedTalbzie1bcCMcfApmjiYAjTHoCDnXddjtO4bAmTvFEawtaBt8138lTMaosY1dZRsszsCOiQ38ESMEKcZY929zoMg/j3Jq3PAJhUOREMWxkkxfahT9IzgXbR4g1BqyCmv2ZUPy8zV6KNWsBkctXaEa1hNJXbXsWlCxmjeI714mUEwa5yVlrEn38tC2DB+tHUmnGbcyKiQVPAfrdSb0jWiLKB0PcjdTxkiLekuVU3t87h1jzy/8JdaVhNhUPBt5SFI/IGDsLVnAoryBpUs8Bl9Jc6mIrsAac1g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dr8wSvAV; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WdWrZpQZ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dr8wSvAV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKY612dccz2xr2
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 04:56:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKY6P3QMzz2xr2
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 04:56:45 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 72DB96021C;
+	by sea.source.kernel.org (Postfix) with ESMTP id 688A343313;
+	Wed,  4 Nov 2026 17:56:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F33CA1F00919;
 	Wed,  4 Nov 2026 17:56:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 89B8A1F00919;
-	Wed,  4 Nov 2026 17:56:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793814983;
-	bh=xlRe6ByN3zpYNOlJQq83OVbC6fU3d9RayIfuGISBpLE=;
+	s=k20260515; t=1793815003;
+	bh=v5t8qKNo68SCWoforDimF8hL2ZYL+p0Okj8bWoZ1JT0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=WdWrZpQZG3jkjCCQpsfQrBfgI1HDfynUYNY6vSK8rFGYC+yFDlqVfIlEyf4lUkT0P
-	 47Qva0HSuMAdzfViLwsaTOh+Gv11NHerf7rOfu6InrqZM/g/ogcoP2D8FesuH1O8lI
-	 hy7orIASJbsGEcOppEShVEs3qXLaqbCm2X1l58C/mLO7S3SSho647wFT/6dMID+10o
-	 OEsRp/bw90rGUnntzwTIKbrSuRSgPWrqC9DAx8itOX9VTQCmMsQmbO+kpoEevaaznU
-	 jpanOJfr9ANyVI0+/ZlgBo3nJ2sRa69PFXETlEYKduVxU+xF7MZ1giUdKYjN5C4/6X
-	 bQ/q4gyj9YA2A==
+	b=dr8wSvAVbxP/ZcIFTBwPH9dzXvhuBn9mA9nVh+Xgz7CJcVvdC39CZkNme4AyXP6YJ
+	 FWGyi7uuOUICVXiiTT/mIG9BdyZemGP4/ngMXLnrprJvuOVJflcC9gK/hPD0oGCWag
+	 aT5p1c3BKTvIpwJq4lWpELTuhZe/zgt3mUlYbqxRoekrxsz67uxzSSFqG5FXwM9E/o
+	 G1ugeyanFn0rXRDRijLJnbwzKap1acFDZxxJu4ignABfVoZxvW4pCLBHKwBhqj5cvl
+	 DjsJARsAA6SkUoD00o6dTzmSQNCeteiSTEpImZSPqwk0YU1IwQ0d1qUYo0SM+byxVD
+	 zCyAfk3cQXcsg==
 From: Christian Brauner <brauner@kernel.org>
 To: linux-fsdevel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -105,9 +105,9 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
 	"Christian Brauner (Amutable)" <brauner@kernel.org>,
 	Chuck Lever <cel@kernel.org>,
 	stable@vger.kernel.org
-Subject: [PATCH v2 37/51] proc/vmcore: don't let vmcore_cleanup() run twice at once
-Date: Wed,  4 Nov 2026 18:47:23 +0100
-Message-ID: <20261104-work-procfs-bugfixes-v2-37-bbf7d5546809@kernel.org>
+Subject: [PATCH v2 38/51] powerpc/crash_dump: check ioremap_cache() in copy_oldmem_page()
+Date: Wed,  4 Nov 2026 18:47:24 +0100
+Message-ID: <20261104-work-procfs-bugfixes-v2-38-bbf7d5546809@kernel.org>
 In-Reply-To: <20261104-work-procfs-bugfixes-v2-0-bbf7d5546809@kernel.org>
 References: <20261104-work-procfs-bugfixes-v2-0-bbf7d5546809@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -125,7 +125,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1758; i=brauner@kernel.org; h=from:subject:message-id; bh=gmON/Vwu30bm66aR7FLjt15bWl4pslPspuVjwp92LoI=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9zntzeuekQwxr7P0OOe39UCH++f+GeYsr8k/NVg0Tb VTs/Xvpc0cpC4MYF4OsmCKLQ7tJuNxynorNRpkaMHNYmUCGMHBxCsBEwtsZGWZcnzuvlVNJw+uO fOP1dOFrwRJ3O9wSfjxvbSqZ8obd7yEjw9/p+SJB0Us0z7YI1mVedF7t1tNceCBK08xCfvPP1Pt LeAA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1312; i=brauner@kernel.org; h=from:subject:message-id; bh=2dbZnDPFapx3dAW5qeN54CL6hHWBvjsrs28L3h6tsIk=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9znt7V9L6ks/CitImMTaFT/P3tq0qmfiJVas86t5hC 6GvD3+pdJSyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAEwkXpbhf8Xs/zMjY/xX/2qd /0Cs7fedC69yp7xLetqeaik/5Q+3dQEjw6/vcxdp8XXWMTbHvTmdmR79flXw2aaoGkbuF4vOPfZ YwQ0A
 X-Developer-Key: i=brauner@kernel.org; a=openpgp; fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 Content-Transfer-Encoding: 8bit
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -136,47 +136,36 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-vmcore_cleanup() has a single caller, fadump's release_mem_store() on
-powerpc. That checks fw_dump.dump_active without a lock and calls
-vmcore_cleanup() without one, and kernfs only serializes the writers of
-one open file. So two tasks that write to
-/sys/kernel/fadump/release_mem through different files run
-vmcore_cleanup() at the same time.
+copy_oldmem_page() maps a page of the old kernel that isn't in the
+linear mapping with ioremap_cache() and copies from it without checking
+whether the mapping worked. If it didn't, the copy reads from an offset
+into the NULL page. That oopses unless the copy happens to be a user
+copy, whose exception table entries turn the fault into a short copy.
 
-The first one removes /proc/vmcore and waits for its readers in
-proc_remove(). The second one finds the entry already unlinked, returns
-from proc_remove() right away and frees vmcore_list, the ELF headers
-and the device dumps while those readers still walk them. Or both of
-them free the same lists at once.
-
-Serialize vmcore_cleanup() with a mutex of its own. It can't be
-vmcore_mutex, removing /proc/vmcore calls release_vmcore() which takes
-it. The second caller then finds nothing left to free.
+Return -ENOMEM like the other architectures do. read_from_oldmem()
+turns that into -EFAULT like any other short copy.
 
 Reported-by: Chris Mason <mason@kernel.org>
-Fixes: b500afff11f6 ("fadump: Invalidate registration and release reserved memory for general use.")
+Fixes: 54c32021eb6f ("[PATCH] powerpc: Add arch-dependent copy_oldmem_page")
 Cc: stable@vger.kernel.org
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- fs/proc/vmcore.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/powerpc/kernel/crash_dump.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/fs/proc/vmcore.c b/fs/proc/vmcore.c
-index 1fe70c4ecc54..ccb795b85509 100644
---- a/fs/proc/vmcore.c
-+++ b/fs/proc/vmcore.c
-@@ -1764,6 +1764,11 @@ fs_initcall(vmcore_init);
- /* Cleanup function for vmcore module. */
- void vmcore_cleanup(void)
- {
-+	/* Not vmcore_mutex, removing /proc/vmcore calls release_vmcore(). */
-+	static DEFINE_MUTEX(vmcore_cleanup_mutex);
-+
-+	/* Two writers of fadump's release_mem can get here at once. */
-+	guard(mutex)(&vmcore_cleanup_mutex);
- 	if (proc_vmcore) {
- 		proc_remove(proc_vmcore);
- 		proc_vmcore = NULL;
+diff --git a/arch/powerpc/kernel/crash_dump.c b/arch/powerpc/kernel/crash_dump.c
+index 103b6605dd68..1543917bd3e1 100644
+--- a/arch/powerpc/kernel/crash_dump.c
++++ b/arch/powerpc/kernel/crash_dump.c
+@@ -86,6 +86,8 @@ ssize_t copy_oldmem_page(struct iov_iter *iter, unsigned long pfn,
+ 		csize = copy_to_iter(vaddr + offset, csize, iter);
+ 	} else {
+ 		vaddr = ioremap_cache(paddr, PAGE_SIZE);
++		if (!vaddr)
++			return -ENOMEM;
+ 		csize = copy_to_iter(vaddr + offset, csize, iter);
+ 		iounmap(vaddr);
+ 	}
 
 -- 
 2.53.0
