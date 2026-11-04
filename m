@@ -2,18 +2,18 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B49E606A32C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 02:40:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EBA08606A33D
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 02:40:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jK8nP5d65z2yDD;
-	Wed, 04 Nov 2026 13:40:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jK8nR2dlrz2xM9;
+	Wed, 04 Nov 2026 13:40:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.21
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793760041;
-	cv=none; b=Gba/CQ7+diKWuICVWhbjC92FTjF9Yqpcg8aP4JnfArWDrIw0ONZF+P+m7ivVS9jz5slqV6Hh9CYGmAQ958IvgzPQM7ev6QWSowHPE4zeO5rKZFEV5YX3/qLUP2iKG3YIdRlQp5u3Xe1UScHsoy05AsuXY4hUe6ZtPCVTMWjdwFCzunBa1RCk1r1nGyZuT9PjdHy9DjndLZ9vqJMbmAin0FUZhEP8uOux3M0nN2izPDV2Wg7Lkna3qVNx/wIexzBBshjvWQkj1lwxc35mt9u57b1wA03aNMIfvd5YcIu1HEV7+JMRG0rQz8GBLZP2V/ms87Cg59X1NEHch4T0l8zXAQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793760043;
+	cv=none; b=B2rDVwiLCmwgGLCN8rN35v18N5miBlsa/PwOlEYot0J6KA9/Civ3fFJGK78vDQ01CHhzXbp0GvSxhriGyE52iTu8zES8uBfAD6xBlpW3ZtcMFMLnLqujy+vB3ElNUMlmAggBHbAbjB96FoemcihUPgxaY+3xc1IpGU3e/yjdnGiEHXKdlBMWj5wI2f7JfueuqpbOCRDiH+vDS3i3lFFoXzpJtKPB3NTmbWLorNxvj38f6Qu8ed/6OjoJAUFY1WKR0yUSdu4JIaSdb/JhccQUadgQiFuDL26kAGYiJdwszXcnhP2aDsrJbA/ZH+2YnjzUmuTHRhyUV8OzAPsj9JOSAw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793760041; c=relaxed/relaxed;
-	bh=mSFLW4vQystCHrRI4U2kQ/9vGU1vHtRsLrLCF6xYFj0=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=nG9bpimMIkrE50gUbI0vLZlUXa4UuAawEgjt67WSbPQrNRU7M60uJTRYu3Vat3jRf9JZxOaLswYq3RdYHPfX8MiMr5TfqiNiaKQ4U+dyqFVV1TvMsHCC2IssV25mEGelWe3cyboSoQO1FJsfiFiiBgq0/MW2fCrHo5BuM+krDCw8SKaEpsDzovPOhdfDBvWf9T7Z8wIamj8zBTfwCgYTKf0Syx3rdfKy+VWa04CKQbgxLVsOYMJnI1iJDrpfXnxqrSNawnYeB6C/lnHx46POONs+a342VidwKO6yyYq1gh2E1KmZImLnrXi1bX6IdSgrVlKbMC/Xuixc3CKzgCn0UA==
+	t=1793760043; c=relaxed/relaxed;
+	bh=4su+3Bl8vVam/9rCmV8G+HuWhRUmzj07h5fXyjgVyto=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=PMPkZ2Yk+cYfB36lsZDgvPqCqnqMS8Fx1M/h1nzWOYPfgjKA7EkkZPqNgA2B7xqA2Hw7DJLcpQ3Zngu8GLDy979BbGVywxaP2qo7C/Uy8oL1AYjSzsIEqAMKLzIPC1GhiXtOM4ojhbl20DAW0rqzU5Zz5GtwvxC08hp12Qoj9+LjAbnAln9rsVk+m7apQrgCf9kDA21cublhHeJo68QpF/d1SIi/tHwdlBf1oZY33or1anY9ukc6ew4XSBTeQZzBtjdJIkJmrvkfI/Sbz3h+QUOQo5OH1+SRK5Xh+6bUoF1rDG6CM5MH6pHZWuo+OdmBxJTM+xB1OAIxzEY53SRsNQ==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass (client-ip=159.226.251.21; helo=cstnet.cn; envelope-from=vulab@iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=iscas.ac.cn
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.21; helo=cstnet.cn; envelope-from=vulab@iscas.ac.cn; receiver=lists.ozlabs.org)
@@ -21,11 +21,11 @@ Received: from cstnet.cn (smtp21.cstnet.cn [159.226.251.21])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jK8nN4wbYz2xM9
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2026 13:40:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jK8nQ3pcfz2yQn
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2026 13:40:42 +1100 (AEDT)
 Received: from dfae2b116770.home.arpa (unknown [36.110.52.2])
-	by APP-01 (Coremail) with SMTP id qwCowABXhP4mm+pqQ7k+AA--.4864S2;
-	Wed, 04 Nov 2026 10:40:38 +0800 (CST)
+	by APP-01 (Coremail) with SMTP id qwCowADXxf8km+pqJ7k+AA--.9867S2;
+	Wed, 04 Nov 2026 10:40:36 +0800 (CST)
 From: Wentao Liang <vulab@iscas.ac.cn>
 To: Shengjiu Wang <shengjiu.wang@gmail.com>,
 	Xiubo Li <Xiubo.Lee@gmail.com>,
@@ -34,12 +34,17 @@ To: Shengjiu Wang <shengjiu.wang@gmail.com>,
 	Liam Girdwood <lgirdwood@gmail.com>,
 	Mark Brown <broonie@kernel.org>,
 	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>
+	Takashi Iwai <tiwai@suse.com>,
+	Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>
 Cc: linux-sound@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] ASoC: fsl-asoc-card: drop the ASRC device reference on probe exit
-Date: Wed,  4 Nov 2026 02:40:47 +0000
-Message-Id: <20261104024047.1508601-1-vulab@iscas.ac.cn>
+	linuxppc-dev@lists.ozlabs.org,
+	imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org
+Subject: [PATCH] ASoC: fsl: imx-audio-rpmsg: unregister platform devices on probe failure
+Date: Wed,  4 Nov 2026 02:40:45 +0000
+Message-Id: <20261104024045.1508542-1-vulab@iscas.ac.cn>
 X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -55,24 +60,24 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:qwCowABXhP4mm+pqQ7k+AA--.4864S2
-X-Coremail-Antispam: 1UD129KBjvdXoW7XF47KF1ktrWkXr4UZrW8Zwb_yoWkJrb_K3
-	48u3s5ZFy8Grn7CFW5Wr42kF4kXFnrWF47GwsrKF48J34YvFWfAa9Iyr93uF90qws7Jw1D
-	Jw1DXrWYvrW2vjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUIcSsGvfJTRUUUbf8YjsxI4VWkKwAYFVCjjxCrM7CY07I20VC2zVCF04k26cxKx2IY
-	s7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4
-	kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Ar0_tr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_
-	Gr1j6F4UJwA2z4x0Y4vEx4A2jsIE14v26F4UJVW0owA2z4x0Y4vEx4A2jsIEc7CjxVAFwI
-	0_GcCE3s1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2Wl
-	Yx0E2Ix0cI8IcVAFwI0_Jw0_WrylYx0Ex4A2jsIE14v26r4UJVWxJr1lOx8S6xCaFVCjc4
-	AY6r1j6r4UM4x0Y48IcxkI7VAKI48JM4IIrI8v6xkF7I0E8cxan2IY04v7MxkF7I0En4kS
-	14v26r1q6r43MxAIw28IcxkI7VAKI48JMxAIw28IcVCjz48v1sIEY20_Gr43Wr1UJr1l4I
-	8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AK
-	xVWUGVWUWwC2zVAF1VAY17CE14v26r1q6r43MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcV
-	AFwI0_Xr0_Ar1lIxAIcVC0I7IYx2IY6xkF7I0E14v26r4UJVWxJr1lIxAIcVCF04k26cxK
-	x2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26F4j6r4UJwCI42IY6I8E87Iv6xkF7I0E14
-	v26r4UJVWxJrUvcSsGvfC2KfnxnUUI43ZEXa7IU5SXd5UUUUU==
-X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiDAABA2rqY+TXGwAEsB
+X-CM-TRANSID:qwCowADXxf8km+pqJ7k+AA--.9867S2
+X-Coremail-Antispam: 1UD129KBjvJXoWxJr18Zw47GF1rArW3KF1Utrb_yoW8Zr4xpw
+	4DGa95Wry5K39FkF4UXr1xAas8Ca4xuw4rZw48Aw17Ka90gryku3yrXa4UJFW7trW8Ga15
+	tr4UWrW5Cr4ayr7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUBjb7Iv0xC_Kw4lb4IE77IF4wAFc2x0x2IEx4CE42xK8VAvwI8I
+	cIk0rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2
+	AK021l84ACjcxK6xIIjxv20xvE14v26F1j6w1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v2
+	6r4UJVWxJr1l84ACjcxK6I8E87Iv67AKxVWxJr0_GcWl84ACjcxK6I8E87Iv6xkF7I0E14
+	v26rxl6s0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xf
+	McIj6xIIjxv20xvE14v26r1q6rW5McIj6I8E87Iv67AKxVW8Jr0_Cr1UMcvjeVCFs4IE7x
+	kEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwACI402YVCY1x02628vn2kIc2xKxwCY1x0262kK
+	e7AKxVWUtVW8ZwCF04k20xvY0x0EwIxGrwCF04k20xvE74AGY7Cv6cx26r48ZrWUJr1UMx
+	C20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAF
+	wI0_JrI_JrWlx4CE17CEb7AF67AKxVWUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20x
+	vE14v26r4j6ryUMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8Jr0_Cr1UMIIF0xvE42xK8VAv
+	wI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWxJVW8Jr1lIxAIcVC2z280aVCY1x0267
+	AKxVW8Jr0_Cr1UYxBIdaVFxhVjvjDU0xZFpf9x07befHbUUUUU=
+X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiDAABA2rqY+TXGwABsE
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
@@ -80,34 +85,53 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-of_find_device_by_node() takes a reference to the embedded struct device,
-but fsl_asoc_card_probe() never drops it. The reference is leaked on the
-successful path as well as on every error path taken after the lookup.
+imx_audio_rpmsg_probe() registers the rpmsg platform device and the card
+platform device, but when a registration fails it only records the error
+code and continues to the next step. The rpmsg core does not call remove
+for a probe that failed, so a card device registered after the rpmsg
+device registration failed stays registered forever. The reverse case is
+just as bad: if the card registration fails, the already registered
+rpmsg device is never unregistered.
 
-Release the reference at the asrc_fail label, which is reached on both
-success and failure.
+Return immediately when the rpmsg device cannot be registered, and
+unregister that device before returning when the card device cannot be
+registered.
 
-Fixes: 708b4351f08c ("ASoC: fsl: Add Freescale Generic ASoC Sound Card with ASRC support")
+Fixes: c73524768e9e ("ASoC: fsl: Let imx-audio-rpmsg register platform device for card")
 Cc: stable@vger.kernel.org
 Assisted-by: DeepSeek-V4.1-Flash and OpenAI Codex
 Signed-off-by: Wentao Liang <vulab@iscas.ac.cn>
 ---
- sound/soc/fsl/fsl-asoc-card.c | 2 ++
- 1 file changed, 2 insertions(+)
+ sound/soc/fsl/imx-audio-rpmsg.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
-index 310ee4c282a1..d361bb58fdb1 100644
---- a/sound/soc/fsl/fsl-asoc-card.c
-+++ b/sound/soc/fsl/fsl-asoc-card.c
-@@ -1378,6 +1378,8 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+diff --git a/sound/soc/fsl/imx-audio-rpmsg.c b/sound/soc/fsl/imx-audio-rpmsg.c
+index b55dfbdb4502..950bf9e5b648 100644
+--- a/sound/soc/fsl/imx-audio-rpmsg.c
++++ b/sound/soc/fsl/imx-audio-rpmsg.c
+@@ -92,7 +92,7 @@ static int imx_audio_rpmsg_probe(struct rpmsg_device *rpdev)
+ 							 NULL, 0);
+ 	if (IS_ERR(data->rpmsg_pdev)) {
+ 		dev_err(&rpdev->dev, "failed to register rpmsg platform.\n");
+-		ret = PTR_ERR(data->rpmsg_pdev);
++		return PTR_ERR(data->rpmsg_pdev);
  	}
  
- asrc_fail:
-+	if (asrc_pdev)
-+		put_device(&asrc_pdev->dev);
- 	of_node_put(asrc_np);
- 	of_node_put(codec_np[0]);
- 	of_node_put(codec_np[1]);
+ 	data->card_pdev = platform_device_register_data(&rpdev->dev,
+@@ -103,9 +103,12 @@ static int imx_audio_rpmsg_probe(struct rpmsg_device *rpdev)
+ 	if (IS_ERR(data->card_pdev)) {
+ 		dev_err(&rpdev->dev, "failed to register rpmsg card.\n");
+ 		ret = PTR_ERR(data->card_pdev);
++		platform_device_unregister(data->rpmsg_pdev);
++		data->rpmsg_pdev = NULL;
++		return ret;
+ 	}
+ 
+-	return ret;
++	return 0;
+ }
+ 
+ static void imx_audio_rpmsg_remove(struct rpmsg_device *rpdev)
 -- 
 2.34.1
 
