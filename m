@@ -1,81 +1,92 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3B4D1606A31B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 11:36:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7C0F6606A328
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 11:40:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=QsZf/4i/
+	dkim=pass (2048-bit key, unprotected) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=selector2 header.b=VZpptrcm
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKNgp6wXqz2xf8;
-	Wed, 04 Nov 2026 22:36:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::333"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793789331;
-	cv=none; b=oE0jAup4FbtpUl4KubMqtgkocRwy25UZYIokO15f3ZwHXHRiubDPAQnB/FT+tD+JiKaCPIYxQ73n+NjLgEy8EoOBzpn0K9SP6me4Oype1JYVqGt7rBrkMUiJjS+erakHiTuEv55mowv7o999G48AwPXvsiy2URwQyrShrXfxJN8mLRD9kgZkx7G8bzFb95IWPrDS8s4uGe7bRPW7m2NifdMsmxLM963HriFr5b1fZ9TcaSw2sJCzPffjmM1JaWIsoDP2tarFeU96Xpk6/h7Gl2v2Zza8WFUHdGNcV/lEPlc6qF4IA8MT2Es/qwPAib0nwMLeWq62kew0XGhWO7Hhug==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793789331; c=relaxed/relaxed;
-	bh=QtbqG07ZqasrjsOtWvFMIUfN1oH5l3jO6rDIKIN7V9s=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=Q8Qoh3t2WMbG9ETbKoSeqArwIQlJPpe8nIuhIkNZicOuNXgL6fe5UZ9W5jCGyfdrZsn4vXSdZNxVTiNJumb/NEa8cgYPXlXhFXLhcyQLyZuf6XIrManIJaIQN7rEj1QS7LT1rVZ4us1swgh4/wkrlBYVGLH8UiGNGndxPUVmmazinSNSR2eOCKGveCDnQPzkkMRt78P4TlGtiLXNz5LZmQr8soJjazhww0iYMYlk8noil3hhWwSZX/h5FL5FY+vlqetBow0xRLpvPjQx/UP3mjSwfFquJhiC0ePVHJRQ5ZAZQb2pI64USEJOOGa7lLsIMYpw7/KQHo53rbiMByt/BA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=baylibre.com; dkim=pass (2048-bit key; secure) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=QsZf/4i/; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=vsetti@baylibre.com; receiver=lists.ozlabs.org) smtp.mailfrom=baylibre.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKNmW1Wl7z2x9c;
+	Wed, 04 Nov 2026 22:40:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::5" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793792443;
+	cv=pass; b=IHWvaWj4o/8qJFG4INEbEL8SSrGEMuRry7pTRF6tYwOXCO0jI2NqlBWPEBXsqFhQ03SkSSk+mkAJawbV6RIFYKF5HnUKIuJXt46rrGqQFj15PubU/ZO2XsQNZcFM4H1EPh9Lwx59UV7OQgCeuGKpn0Lzfk/u9XIyxjK09q1M4owOrxEPVHVrPKpmiAb76VAd0eRvQbq2fhwDUJ0Zt4f5v58tmAYxEeOF7JLZ4WC2WhvJcPw0f1OmInRDTqCdp2f76sL2wK3G5c/6elCOxt+LzWoJJrhqBKBlGN/zt6hOTC3xrslsxA038YjabqsOah8uEgEltQBdL/0X8hJqWHmQuw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793792443; c=relaxed/relaxed;
+	bh=tEpyqlnZnD5VvYTqFQOq2w5jDINj/Ab94LVMAq5qpNk=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=j3nVnDlZR8QTY+nvZFcrn4lb68+OopfOJSPd/H1lzSYc7AOzVL7nsGkjWt4vpKoRuQhwshbl+sp+o8KypE5ZAyW7PQGdv18gJT+npXhGMI0oJG60b/qVZ4d1KmOVJAah+dkT1Hoh11GCb894eHNEcclWKlwyj5MGKfvMYlMUY4ffumDnbSYpf10cmMaLFL/0wDDRkiCnIVt/mcVBcPJxtAfvmTFHaJzA6w3Whpjn+x7yWc783Ol7Wyr/LbN/ITu1cqU9aLwxzAH15bp4thYLOfgVFth0Zwnk6zNft5xq6CTqdmtMwK3U6+47x5qjEGIlM4goRh2TaoipCCwc/H8w+w==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=virtuozzo.com; dkim=pass (2048-bit key; unprotected) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=selector2 header.b=VZpptrcm; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=khorenko@virtuozzo.com; receiver=lists.ozlabs.org) smtp.mailfrom=virtuozzo.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=virtuozzo.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=QsZf/4i/;
+	dkim=pass (2048-bit key; unprotected) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=selector2 header.b=VZpptrcm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=baylibre.com (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=vsetti@baylibre.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=virtuozzo.com (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=khorenko@virtuozzo.com; receiver=lists.ozlabs.org)
+Received: from DUZPR83CU001.outbound.protection.outlook.com (mail-northeuropeazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKMcd5FDNz2xGg
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2026 21:48:48 +1100 (AEDT)
-Received: by mail-wm1-x333.google.com with SMTP id 5b1f17b1804b1-4a2d6cf958bso2189615e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2026 02:48:48 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1793789326; x=1794394126; darn=lists.ozlabs.org;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=QtbqG07ZqasrjsOtWvFMIUfN1oH5l3jO6rDIKIN7V9s=;
-        b=QsZf/4i/KU3sGiHhaieuYAzDecmOpdB9l5lj1VXElG6+n/CHS6F2pNpzF0bjCvvVoZ
-         E2Ku8vX3BCuvIXEJlmKcRu1pRpaZND81Ye/LpHhc6uAxFQEHreE/xc7BSQIhTNfE/G78
-         Rso3Gh4IlA11K5WjP1nrvOc7RkzH/RxCBGw3IU8UwO0euNxBnUw2BVA5JBpPBOe7E/yg
-         ERs6bq8xJHEHvwelRXFhlLR6X+TiM1QUYYCZYKrLI9+JJ5C36hAJFhn4PKlvrJeb86on
-         6dQ1oFXRF31vQmPFBxk0SX6ujmbLfO6RAVaju4bBxKqwvtCvd4Hn/A+EgGQ+m2IgEhTE
-         puBA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793789326; x=1794394126;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=QtbqG07ZqasrjsOtWvFMIUfN1oH5l3jO6rDIKIN7V9s=;
-        b=IF2N7FXhuOc4f3s4Dd1E/NFX5BYKQJMKJkgsTCVECgyJ1bULE6ZuDqBPMBs/6pN668
-         vJIqLgBVCMMhYlAi9/ruK+2KfXse3e+vwsAhqGPoW4jrBsC2OTPlY/5XkDFCRb0DV46g
-         uR2doaSwgeHKnH1JeKe66WN4Xo4LzE7m37ly6n+eMk9ECM9F5lneFRSkoVNDXKeEIfMg
-         1I6bEPtPyiZrHKtzNNSqN1/UAEJNplLzqEHYhrZe3pG9UCVg+IyLnbz+WaYQRTCktEOA
-         tYqqIQrFUYHEuxf8eXyt0xK4Pa7aRSAnezzbLFfX0B4R/fGKtovUV7MH4YgGn5zSyYpq
-         9m2A==
-X-Forwarded-Encrypted: i=1; AKwUvBxooQQro3RWJj1YzBH8Ka/sXusybYSqBZmby1lW52UJIivnO5TA0tOpjBh9J4v40JoRQw0mYZiTGXm4wXk=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z8/tEtfLqqF9zP024az1vv6OvQUCs7PlF9GYSLYPvH+D4b2CUf/
-	7pABgBrkSxIpAz4detLYoKA4QAlzmLU0ZHGWzaDDjTQO/3ByTR/Ky1fOXSAzwoed/+4=
-X-Gm-Gg: AYBFou0ydIR9eQJiSY0zisZJsX5+4N5S2jqrBjM1uCzbD0cIQ/3UhKW6r7bV8maFDgl
-	eYNOsPlc2W0GX1ewQmOp1yVZXZXKZxM1LB935C3RFCd9v2OLzHgQB1KpHHUvRL5udOWFyS1hcDZ
-	EUIKc6yyfLoMLHU9eTgqjqbrBexo/FlCSRVTcLzL36JAPnh94N4kGhO8aml6AF0Ar/nml9PF2X+
-	xXjMG/fN4EwDyIDwzhAcx5hQnmALatGF2p76j5yamNUFdtHkJzrMX9HYLV9JV1+RAfDBxNtQiJn
-	fJPrkk8gFrckq0YyKiP+x2KAF5V3OklfJTQw5gT6MMzGih1n4VKMoRCKOKzj3K8why7TPGMc1Kq
-	5EId7au39keopUJlF56odcGX4dqCspp2Y4Pu4MdMQWLjSm2pKnRZAD6CVQI5wWPlx3ZWJXqsS3r
-	VgQg2vmItQ8yAetrgIyVgeuE1m+Y4lpIxJ5svfZfvetNTkXmQ0wz8lR1uwLRip8lL4EmJDJFOjq
-	RmB/6j3eIrFm2jv63bgDLYANDu4kWxZDhnx19BlEW0qFDs9DkWnLTGJQ/+lmRijB/91arbnwsaw
-	E36Zk8bqiBsGbQSAptMgZRAg1I3tDSTsRyB+RytjIM9+9RJx
-X-Received: by 2002:a05:600c:1c23:b0:4a2:47:b79c with SMTP id 5b1f17b1804b1-4ac180f2addmr415568325e9.32.1793789325659;
-        Wed, 04 Nov 2026 02:48:45 -0800 (PST)
-Received: from [127.0.1.1] ([151.61.248.197])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4b2a80e184esm136455625e9.2.2026.11.04.02.48.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Nov 2026 02:48:43 -0800 (PST)
-From: Valerio Setti <vsetti@baylibre.com>
-Date: Wed, 04 Nov 2026 11:48:35 +0100
-Subject: [PATCH] ASoC: fsl: imx-sgtl5000: release codec clock right after
- reading its rate
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKNmT2Bkvz2x9N
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2026 22:40:40 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=AhoMmdRUJj5P+qSS5cR9UvmWtU5iYiwbeXLlEYOX55c9hiZCNh8cOSflqf1Ywj5+0PzRFKAoQLEthJQwYVPXm7YYu8uxwYzTQpFLhGzUpigjwc6Vi7xE+VJdbtHTGWngGt3nv4u9VoXkw3qCJAQUDqTGfLNA6Omo8ax/2fhM0t++CJgz2LL1dh8oO3vV59+HoqOZ/My61xSWZqyLTIv4EDChg2E2J+rqC+vhZLwxkyprY1LmNKGguTr2xZw1cnBZQoBg7uK4FoSwQAVbNIYRTWcUbuSRILQKCWzuG5PDnRpGTOLVcpPRuL3hamtzHDGbR3qwhIRF3LPcSxfIK7LEug==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=tEpyqlnZnD5VvYTqFQOq2w5jDINj/Ab94LVMAq5qpNk=;
+ b=IC9x1mzEFdcqMo0KwWvxRHxj5kOIiOIFrMI+Wg3o3Fu2r31wakKFHckSrB3JOLkqrtUBJokogxT6sZCcRhhPeBkvdppJyWFlmVDTnM1DkZa49CvrQoMwjKdeRZ39uYBm93EQ9VfkNRgwN3WHNxsn05HJ+WZyombsK9Fz2LKw25fir1II4XCGoJbEmug2ec7X95YZf3VQs9iML/wGlIl1LE0nEY7m7GjzL2rwtYsknbU1EaZNjvMJBLezmvN67/EqpwXjIDbdgAkgxMnW6DZ4Zw17Ik9Z+VsSeoLfCM8omB9WGZuUGUiN75L6sn7or4vv5s0Ijfx8UDxdXd3kSgeKnw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=virtuozzo.com; dmarc=pass action=none
+ header.from=virtuozzo.com; dkim=pass header.d=virtuozzo.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=virtuozzo.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=tEpyqlnZnD5VvYTqFQOq2w5jDINj/Ab94LVMAq5qpNk=;
+ b=VZpptrcmUdbrmRO2IagexqilVSYUFvzNYNK0TFUwk3+8HOtV5sdPwr9TANwpxj3j3nl+KQVxO9OGRZh5ZSp/Eo/n8FXhZXxMfMZ0WZF/1U7WFRI7ajbj6Ut/ISg0zd6xbg5vzL8Rw0rxUtc6r8ov04vHBuF6360nwPegpBT7p4Ibq58ZZaUgwoHQ+hFKMnAOm3L10PsW2nFgmzqvHCkCFrxrJogQuO75V6bB30eP9MO55VLO2XHaow47y3VHx+sPx1yjvvRK7pV3ZCCa17l0h+bEw6wPyjVzYPJmqjDMvPlv+npAPaEthMb6P/1fOCViDQfGaXBpBI8KAXatQ6jBFA==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=virtuozzo.com;
+Received: from AS2PR08MB9075.eurprd08.prod.outlook.com (2603:10a6:20b:5ff::9)
+ by AM8PR08MB5698.eurprd08.prod.outlook.com (2603:10a6:20b:1c6::24) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.569.9; Wed, 4 Nov 2026
+ 11:40:23 +0000
+Received: from AS2PR08MB9075.eurprd08.prod.outlook.com
+ ([fe80::3f57:9ced:7a37:1bd8]) by AS2PR08MB9075.eurprd08.prod.outlook.com
+ ([fe80::3f57:9ced:7a37:1bd8%4]) with mapi id 15.21.0592.007; Wed, 4 Nov 2026
+ 11:40:23 +0000
+Message-ID: <dd966816-a83d-47ea-8faf-bf80d3b2642e@virtuozzo.com>
+Date: Wed, 4 Nov 2026 12:40:21 +0100
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 2/4] mm/huge_memory: copy file THPs at fork like
+ copy_present_ptes() does
+To: "David Hildenbrand (Arm)" <david@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Zi Yan <ziy@nvidia.com>,
+ Baolin Wang <baolin.wang@linux.alibaba.com>,
+ "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>,
+ Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>,
+ Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>,
+ Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>,
+ Peter Xu <peterx@redhat.com>
+Cc: Alex Williamson <alex@shazbot.org>, kvm@vger.kernel.org,
+ =?UTF-8?Q?Lo=C3=AFc_Molinari?= <loic.molinari@collabora.com>,
+ Lorenzo Stoakes <ljs@kernel.org>, Shuah Khan <shuah@kernel.org>,
+ linux-kselftest@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>
+References: <20261021-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v4-0-66f00b7a564c@virtuozzo.com>
+ <20261021-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v4-2-66f00b7a564c@virtuozzo.com>
+ <8c164738-8025-482f-828a-3f919150a930@kernel.org>
+Content-Language: en-US, ru, sr
+From: Konstantin Khorenko <khorenko@virtuozzo.com>
+In-Reply-To: <8c164738-8025-482f-828a-3f919150a930@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: AS4P251CA0020.EURP251.PROD.OUTLOOK.COM
+ (2603:10a6:20b:5d3::9) To AS2PR08MB9075.eurprd08.prod.outlook.com
+ (2603:10a6:20b:5ff::9)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,143 +100,126 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261104-imx-sgtl5000-cleanup-v1-1-62739fbb4a25@baylibre.com>
-X-B4-Tracking: v=1; b=H4sIAIIN62oC/yXMSwqDQBBF0a1IjS2oNn7ArQQHpn0xFbQjXRoEc
- e/pJMMzuPcgQ1QYtdlBEW81fYUEl2fkH30YwTokUyFF7ZyUrPPONq5TJSLsJ/RhW/jSODRSohp
- QU0qXiLvuv+21+9u22xN+/b7oPD8+32steAAAAA==
-X-Change-ID: 20261104-imx-sgtl5000-cleanup-371e704e5de6
-To: Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
- Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
- Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>, 
- Pengutronix Kernel Team <kernel@pengutronix.de>
-Cc: linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
- linux-kernel@vger.kernel.org, Valerio Setti <vsetti@baylibre.com>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3504; i=vsetti@baylibre.com;
- h=from:subject:message-id; bh=ioLvTLPQ9whgkMJcbvVWkeDAXZlfFZobCdzIe0dI7xo=;
- b=owGbwMvMwCV2z3ty7kUrRgbG02pJDFmvedtyLG/E7rQ9UKBp77CEsZNvw7oJec4JDyW+H73J6
- 9v/OHBPRykLgxgXg6yYIgvL9Hu/C0rVHhonnCyAmcPKBDKEgYtTACZyXoLhD7fllU59pXtZbBOD
- lT4ud685XSI5347ReNq5A1fjTNf+usfwT2NDfkjp8+tNc9Z93pHCG8nwgMk66xf/V4fK3NnJUcw
- P+AE=
-X-Developer-Key: i=vsetti@baylibre.com; a=openpgp;
- fpr=0497DEFB707526E13360C970DE4B936DD13A0100
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AS2PR08MB9075:EE_|AM8PR08MB5698:EE_
+X-MS-Office365-Filtering-Correlation-Id: 2c75a77a-1e0c-41b7-7d78-08df3a6869b2
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|7416014|23010399003|1800799024|366016|921020|261028144727099003|261022075727099003|261026121527099003|261009223027099003|4143699003|56012099006|261022105027099003|261026140227099003|10067099003|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	du0WDII6tD1QtRG4Es493qUpdO0KTSKmDc83kboGkEgcTaXsuDczK5pjicAldwOk8vOIxDHCyeHcHbrQCl0LS8urebhLUuO8L5qu8+GCPmy0TMPJ4jOZZfR6ywf/7aQLofJ2OZSxqe8rg10UIeCAIoyvHhsFRZhT103KHHtYfDKK/yRl11xLpMNQIvwfdxeYBTaEfjCIpO+ksVoXUNteIuLXSIsAQ0gcA3VAx33HX7Rl4IR6mNOwbKZJ2h1LE7owuAQOR0LPMCZUUqs10of8RvQWTdOc/wsMEMCbpfZFcTaafeJzZLr7vzF4N7+pVOgPjBJwgig+9FguzuaHPX72/M+exZbswMIu2Rh4S72TXnwaGnMB8l/jLBgoL/44hxBzx3dRYjW3AZ9UdoyUYihutvwpyU6rYVMUYXpAA3x6F1OoCiwXXLnfaoL2kTV5tEnhZyjIF+WDx5WUE2eAiBwXwONzcieXOR8UquqGll0cOqB52op09OqO46JNmzSKYb6rB5RO+se4KzRkeI0nZEWXgFFA68ngaIZB7sZfjZUeBXc1C56UOl2cPHyDJmEmt+yMvxnK4jW79nQyFYlav9sZDuvPPsexKoq2KYNqRksrlbOPliDXatu3WDaCysvdiphDD+hpsjMeu6qG91s3+bk5zlJ2fXiVbkyobnjiLwMjYlSqVd0pR+khBi8dxik9TiT8t+dSAKIsyERwMlRap3RuYQ==
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS2PR08MB9075.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(23010399003)(1800799024)(366016)(921020)(261028144727099003)(261022075727099003)(261026121527099003)(261009223027099003)(4143699003)(56012099006)(261022105027099003)(261026140227099003)(10067099003)(18002099003)(22082099003);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?Smw5V1RNTnVUa0sxTkQ1VytJQkdtaFBpemZVOGNaemZhMEl6RjZZdTlnV1Yv?=
+ =?utf-8?B?aUZyWFpYcEFqOUxtb3ZjcTc3Vkt1dHF1UENTM3JJSTNoaEg4akU0VDVpZGhY?=
+ =?utf-8?B?QmxQVm5yY1ByNzkyOFNFaCtBV3Y5RytTaER1Q3VhMUhMcFV2R0ZKTjI5ZEh3?=
+ =?utf-8?B?S1FLdjBxR000Z2p3NU5xd3h2cEpPUXgvc2ZWMlhRUjdEZndpU0w2Z2pRa3hn?=
+ =?utf-8?B?NFYzOXF0YzRRU2VoaEZrNkFRSzVMN3JRZ1V3Z0gxdGx6dU1KKzJSYitwWmI2?=
+ =?utf-8?B?eUU5SzFTcm9UbE1iOTFzODhEZThOVTBGb0hybUE4cWh4UEYzTVZlNTRiNzYr?=
+ =?utf-8?B?ZGVsbGdyS2t0a1M5TjVZSHVobGRmcXFMUFBkaGJSaU1JZ3pEK3FMQnRTVnEv?=
+ =?utf-8?B?RjQ4djEvRUtNZVJ2blFuUlZxVDZ6WGoxdXM4LzhVakp5RVU0MlZvaUVPbUN3?=
+ =?utf-8?B?b1VYZE9BQ3RRVEZvMWlyNDYrSXIzTTA4WWxGN3hSb2p3RmZhQWZ2WkxMSlJW?=
+ =?utf-8?B?SUp5NklYOXJhY0lNMVRTcUM3MXFLcVZyOGdaZzdsbFNDOVRxdkt3c0dydmlP?=
+ =?utf-8?B?S3l1QVRTZW1BQnIxUENBYXA4SGsycHZpY2RBcS9WclRhcDhlbkIwS0tKVjAy?=
+ =?utf-8?B?dEk5SEtxWkpScVdKanJ0V3FvWU1MNkNFenVCdzM3MUhUQThpQmZra21xQjNQ?=
+ =?utf-8?B?NkRHS20wZHhuODJWZTQvaFIySDhCaWs4enQwL1U4dUdtbVpqcjNSdDdZKzVz?=
+ =?utf-8?B?NmFSeEZhbHAvTTV2bER4eWgxYTVBckpyQ2xRRjBFRDh2aEREVTFQTEZkd2VT?=
+ =?utf-8?B?UkhKWDRNQlFLbDU5cDRXVjg3TS9Lc2lHR0MwcVJHR3puQmlvVGQ2Q1ZKOEUv?=
+ =?utf-8?B?S0l3NGZpcEh0Z1J4UlN4L0NaWGpFeGdjOUhqSUxIdlBtR1BQS1FYU1AyekdW?=
+ =?utf-8?B?UWprcDRLbmYxYjhjNXlnUUEyTXMrMHlPMHgrcHkrT2lKbDhaaHc2RmNvUlFY?=
+ =?utf-8?B?bVk4OG81ZTdqcFBRNytpYVUvc25ReUdOY3htMm9pTSs5SUE4RHVTMTFsNndV?=
+ =?utf-8?B?TFZUdXlWTUdlWjFJQnNsSWVOZ1NPOTArOHluMndYODQrdTdZNFFzcmZtdmdR?=
+ =?utf-8?B?SjlRekpCRnZOT2tucUdMMDlCYlYwV1Z3SDlYRTZHYkZtZkZyNUhZZ1RMSjEx?=
+ =?utf-8?B?eXBUOEluU25YNlpVS2I5WTYxcDdORzBrWFpmZ3ZxSStpOERIOEozb29WclhN?=
+ =?utf-8?B?MGg5U1VjV0lzbTk0Y3p1THNGSHMwd1hMQk9YeC91YXltd2JGaEJocXBCTFRn?=
+ =?utf-8?B?RnhPaCtpMEN1WDZSUzFKSmJVdUxTOVhaNUtuWXZXUWdpYTVZVk1aYitMdW1m?=
+ =?utf-8?B?c0lXQ0FuNzlzYXBpNUhuSEtJWFBObUJzNFVCU3VtRitLOXpDUTFCMzJ5Zllh?=
+ =?utf-8?B?bmxNWDZxQ3pNRlo2SExKTTRkWTZJRXhlaXd3NW5WZVBsRXljMHpYVVJENlo2?=
+ =?utf-8?B?OEp6M0lRak1Va2Q0dkFuTTFhMU5paUZSM2pPd09hNlFwdDFjOElpNTl0RmFq?=
+ =?utf-8?B?Wm1iWjhFbkxERENTSmVRTFVxVFNFdjdwVXBSNy9TMHBkQ2szNFkyZytDNnlU?=
+ =?utf-8?B?Z2xBTVhBYlIrRzZqYlIyZmhOZXRicnl6VXpXbkU5V1I1L1lFWnNaeURCQ3pv?=
+ =?utf-8?B?eXhwdmk0T2gydk1PaUU4OEsydzJuY210eDBIOTdURHRCd00xaFJsMnczaFcv?=
+ =?utf-8?B?eGhlcnFyQXlRWUMzVURubW94V2xDVkFNWXIwT1I5eVhRQXJJbnl0azRrNVFE?=
+ =?utf-8?B?eFBNc2JkaHFaUXVPa3N1T3oyMUVKSmMxNlV4bnZwUG9WZUNDMHRvK3BMQ0ZR?=
+ =?utf-8?B?Wjl1dFNzVXRiL2M1dGlVWmxJUnNxR2ZFcVdQYmM2RElJdndhZGlnTWpjLzNr?=
+ =?utf-8?B?SU5zZEVOYnFmOWQ5bm1vVXMzOENSNEdYVlA0WWVBZVRzazh6SzFUWnY5Ylo3?=
+ =?utf-8?B?S0Z0UW51cEs2bEx5alZuQnpDUGR0U1RiTzgxMUJtQ2JSTG1aVmtQMk9EeVF2?=
+ =?utf-8?B?ZlFacXY2cDFvM2U5eTdPRkNmeHRBa09jaGpoK1lWK0taUVJyeVR2WVhvRVp0?=
+ =?utf-8?B?RzJQSXpGU1RDeEsyRng1YUhRR0kvTm5rdldxbU55S3NndEp2NzlFYzA2a0ZN?=
+ =?utf-8?B?RndLOHlTZUlYL3BURWhLYVJQMnBKMGNtR1p4V2I2ZlZqcWNoZ3ZoUVdSQmRJ?=
+ =?utf-8?B?cXl6SzRJbmh4dTdXei8xRENnYjlmeEc0aGxTQjJNQkhyRnFOSlhoK2lhbWx0?=
+ =?utf-8?B?VkFjQkh5bVpNRTVwMVpxZUhHOGdMbEtOZWVFenhMOGhhRGZHUzhxZz09?=
+X-OriginatorOrg: virtuozzo.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2c75a77a-1e0c-41b7-7d78-08df3a6869b2
+X-MS-Exchange-CrossTenant-AuthSource: AS2PR08MB9075.eurprd08.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Nov 2026 11:40:23.5671
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 0bc7f26d-0264-416e-a6fc-8352af79c58f
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: P3eSZaW3NPD/Cs6l241/n5QE/ciGrsPY7UyL0q7Y7hd+U4YcOmwUhdzmRxXvq+3EqPEfjCb6Wcstp1mYUw5ziQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM8PR08MB5698
+X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=4.0.1
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The 'codec_clk' is only used in 'probe' to read its rate, which is then
-cached in clk_frequency and used by 'imx_sgtl5000_dai_init()'. Holding the
-clk until 'remove()' serves no purpose.
+On 10/27/26 15:39, David Hildenbrand (Arm) wrote:
+> Any reason we're not adding the vma_is_cow_mapping() check on the
+> softleaf_is_device_private_write() path as well?
+>
+> (I think they are all anonymous ... just for consistency)
 
-Release the clock right after reading its rate. This allows turning
-'codec_clk' into a local variable, simplifying the probe error path and
-dropping the 'remove()' callback, which has nothing left to do.
+No reason, copy_nonpresent_pte() has it there too. Will add in v5.
 
-Signed-off-by: Valerio Setti <vsetti@baylibre.com>
----
-While reviewing [1] I realized that the driver could be simplified a bit.
-'codec_clk' is only used in the 'probe()' function with 'clk_get_rate()',
-so it can be a local variable there. Also it must be put when no more
-used, still in the 'probe()' function.
-This allows to remove 'imx_sgtl5000_remove()'.
+> Is the fallthrough:
+>
+>       add_mm_counter(dst_mm, MM_ANONPAGES, HPAGE_PMD_NR)
+>
+> really expected?
 
-This patch does not depend on [1] and they are addressing different things.
-The two should apply cleanly on 7.4-rc1.
+Yes: copy_nonpresent_pte() counts migration and device private entries
+in the child's RSS as well. File folios reach it now, so the hunk below
+switches it to mm_counter(src_folio), as the PTE path does.
+zap_huge_pmd_folio() subtracts a file folio from mm_counter_file(), so
+MM_ANONPAGES there would leave the child's counters unbalanced.
 
-[1] https://lore.kernel.org/all/20261104022815.1484320-1-vulab@iscas.ac.cn/
----
- sound/soc/fsl/imx-sgtl5000.c | 24 +++++++-----------------
- 1 file changed, 7 insertions(+), 17 deletions(-)
+>> +    bool writable;
+>
+> Why do we need this variable?
 
-diff --git a/sound/soc/fsl/imx-sgtl5000.c b/sound/soc/fsl/imx-sgtl5000.c
-index 8bcf54ef709e..032ea3e066bd 100644
---- a/sound/soc/fsl/imx-sgtl5000.c
-+++ b/sound/soc/fsl/imx-sgtl5000.c
-@@ -20,7 +20,6 @@ struct imx_sgtl5000_data {
- 	struct snd_soc_card card;
- 	char codec_dai_name[DAI_NAME_SIZE];
- 	char platform_name[DAI_NAME_SIZE];
--	struct clk *codec_clk;
- 	unsigned int clk_frequency;
- };
- 
-@@ -54,8 +53,9 @@ static int imx_sgtl5000_probe(struct platform_device *pdev)
- 	struct device_node *ssi_np, *codec_np;
- 	struct platform_device *ssi_pdev;
- 	struct i2c_client *codec_dev;
--	struct imx_sgtl5000_data *data = NULL;
-+	struct imx_sgtl5000_data *data;
- 	struct snd_soc_dai_link_component *comp;
-+	struct clk *codec_clk;
- 	int int_port, ext_port;
- 	int ret;
- 
-@@ -129,13 +129,14 @@ static int imx_sgtl5000_probe(struct platform_device *pdev)
- 		goto put_device;
- 	}
- 
--	data->codec_clk = clk_get(&codec_dev->dev, NULL);
--	if (IS_ERR(data->codec_clk)) {
--		ret = PTR_ERR(data->codec_clk);
-+	codec_clk = clk_get(&codec_dev->dev, NULL);
-+	if (IS_ERR(codec_clk)) {
-+		ret = PTR_ERR(codec_clk);
- 		goto put_device;
- 	}
- 
--	data->clk_frequency = clk_get_rate(data->codec_clk);
-+	data->clk_frequency = clk_get_rate(codec_clk);
-+	clk_put(codec_clk);
- 
- 	data->dai.cpus		= &comp[0];
- 	data->dai.codecs	= &comp[1];
-@@ -185,22 +186,12 @@ static int imx_sgtl5000_probe(struct platform_device *pdev)
- put_device:
- 	put_device(&codec_dev->dev);
- fail:
--	if (data && !IS_ERR(data->codec_clk))
--		clk_put(data->codec_clk);
- 	of_node_put(ssi_np);
- 	of_node_put(codec_np);
- 
- 	return ret;
- }
- 
--static void imx_sgtl5000_remove(struct platform_device *pdev)
--{
--	struct snd_soc_card *card = platform_get_drvdata(pdev);
--	struct imx_sgtl5000_data *data = snd_soc_card_get_drvdata(card);
--
--	clk_put(data->codec_clk);
--}
--
- static const struct of_device_id imx_sgtl5000_dt_ids[] = {
- 	{ .compatible = "fsl,imx-audio-sgtl5000", },
- 	{ /* sentinel */ }
-@@ -214,7 +205,6 @@ static struct platform_driver imx_sgtl5000_driver = {
- 		.of_match_table = imx_sgtl5000_dt_ids,
- 	},
- 	.probe = imx_sgtl5000_probe,
--	.remove = imx_sgtl5000_remove,
- };
- module_platform_driver(imx_sgtl5000_driver);
- 
+It copies __copy_present_ptes(), which snapshots pte_write() before
+the uffd-rwp branch. Looking at it again, that branch only rewrites an
+RWP marker, which is PAGE_NONE and never writable, and vm_page_prot of
+a CoW mapping has no write bit either. So the snapshot looks redundant
+both here and in __copy_present_ptes().
 
----
-base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
-change-id: 20261104-imx-sgtl5000-cleanup-371e704e5de6
+I'd keep it in this series so the PMD path matches the PTE one, and
+drop it from both in the cleanup together with the gotos.
 
-Best regards,
---  
-Valerio Setti <vsetti@baylibre.com>
+Kiryl, does that match your understanding of the PTE path?
 
+>> +            goto copy_pmd;
+>>      }
+>
+> Likely we should clean this up later to avoid the gotos.
+
+No problem, but let's do it later, on top of this series.
+
+And on your stable question in 3/4: v5 will carry Cc: stable on patches
+1-3.
+The backport to 6.12 won't apply as is, so I'll do the backports once we
+get a failure mail on stable re-apply attempt.
+(or I need to do backports in advance? Need an advice here.)
+
+Thanks for the review!
+
+--
+Konstantin Khorenko
 
