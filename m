@@ -2,48 +2,48 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 227066072FAE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:42:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7DDF96070422
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:43:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CY3vhRi4
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=L+v8MGUB
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKbSh6F8kz3cZM;
-	Thu, 05 Nov 2026 06:42:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKbSz1dXlz2yWy;
+	Thu, 05 Nov 2026 06:42:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793821364;
-	cv=none; b=KC13QPnmMEvDTbyefps3862ms+HbrIlM/YiThTl05J9EVXjvhYcZVhPNZeZvndcZvYJwmuG1MDxydft7XkuT5cZxfd4/mrXJF/7QXB0H2+KV52BgrnPMVR8Hw4QFSTRiTkwXz/Ico5HoFqSKrVjF48h0RIzfQfB+uQicsycijihlV6NOMBIU3iuYiMzjgB/lH0DYwpIYJy2HPpuDmkdIiQxVB4Dl+kGCC8lyfdFpLLPSFwIieR3VbYNGif/pYNJ/g19lQMczpAcW31R2nG1JnkXSML0Bi9ZOGM8+jOltFTWW6Q90PKWbfJJakEDNxwxt4u0I2jE+GavdVnnbBtnndw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793821379;
+	cv=none; b=HHuIECnwUeATr2ouJMVkMuk8R16LPX64aTpptlGXcg15k3vQFqFpFTFopQakaFfV2ccjCnkjnwXrqXNP5AVS1JN+Fkl4MqN1Fwu/ReTWfzdS9fafgdslmfVTgjcg8fWNQZ096yEdqrpXmOBmA8suiHsNxf/a3uLQGC52WTW6cR2dpNaIanuN0AOaLJft4weR9mRhyxsr3noupNJ/UDtp5MYZ65wPAePjLNtvW+kxOQ84lkFP0n5G9iJA/W60kBXQJ0CG5JrROlS9Dh7wXpRCZuu93vwx7rW4SPpz5BWWbMH9Rjc+h9YDs3ZZuTmEdXx/wTPGbZdCJQ6OKQLCAA4lcA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793821364; c=relaxed/relaxed;
-	bh=uhE82sMafPzxvfPBNz7KCycPN06o3nm9WBF7ozqhvvQ=;
+	t=1793821379; c=relaxed/relaxed;
+	bh=rahx1hspTnUUAQKpjFRic8Zz7t4Brzv8z/TuH1t1gO8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=S+lIAOtbpHhs4H1TNfaZgk3KZ/ArfVIVWQV4DsUD/niWuRFwzJuYIxeEj1n2oI3J3q+ytn8b4wXVNhQaN0rkZmhPmnop9o7E6NweBZr0yz5UnuxSHDSJ51AFwR+pSyUkUy7OB0BnBl9RMmH+PocbCfl7vZJ4hsQ7yPq4hjK3Kh4xKjg4HTNOtD1o+AWQ2BHhnjUs6CXT/DRQ1CjCJCUmTSS1RVRozIpwXC2oJb59p9Gs/xw20m6gR0a/Cq9RPDaYqcg69NJPLKc+GIZD5J/saigdasNTM+CgFOgPcEzTtVSpIHCs3CUUBdMOeSKCsRpHsizP2rg5z7+NlPbvNoV1rg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CY3vhRi4; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=KuLEhUu7jZJeMRLeD+hBvoXW3NDjwBAW3M5i5ws9jwkjzBvYWei/Hi6Bgtm7WdbvLGh4lYG5QGkFlITt4set3OWTGpu1Iji3ujcJufb05M2W7NoKxmYjPaBJPc0iOjjUAMtB2QkAoOWjTaIJfz0dEcTCy289492ThRkOFIMPjdTdXYOnZjXWjrbbasLqf/r5D6x2GWCvTEHIrH+6eaiDNh+sZbkjEPXkj7E0CLDKM13R4jCyZGBY+k2lutJhVVuioo1RuJuEEODEeh/pYZw7ZtgtLDQ1NV+xDaA/OwUiDv58coH2H+FVORjPwQu1A1ZVFmkzz9/48YKpBsNg2lKTSg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=L+v8MGUB; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CY3vhRi4;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=L+v8MGUB;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKbSg5dH4z3cZH
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:42:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKbSy2QSmz2yWK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:42:58 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id A9CCE60F10;
-	Wed,  4 Nov 2026 19:42:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 43B831F000C1;
-	Wed,  4 Nov 2026 19:42:29 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 686CC60F07;
+	Wed,  4 Nov 2026 19:42:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EDECB1F00A1C;
+	Wed,  4 Nov 2026 19:42:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793821361;
-	bh=uhE82sMafPzxvfPBNz7KCycPN06o3nm9WBF7ozqhvvQ=;
+	s=k20260515; t=1793821376;
+	bh=rahx1hspTnUUAQKpjFRic8Zz7t4Brzv8z/TuH1t1gO8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=CY3vhRi4hQxkqcpQ1Mm/O3l6e+OzedeN/4+37SeNZjOvlqXmy34qriVvD3TH67ywH
-	 DQzl6FzuyIa5uiOv7Dc7vMjmQMkxqYHlBr0eMd+Xera9VB0QWJPHsXDK0rpkNzXBBK
-	 tX9Y7Jq5/fQhLGsvIaKNSEhYv51qK+oUfD0NCrdQZjRmHE0FizjDeNxZM3dzQpWJZy
-	 HRwBQTyj5k9AawVsBYNGBCFZHPpK+UsKw3yqcCB9jomRWBq8KMKMHMiOAFjbyWU1JH
-	 JbXTNMiiUjnz72MrV0u90yAZ2M59tRnRkIXF5dI/J/zo2XxESLkUQl4Q5E9EaHZPuO
-	 H5e07M+u+h5bw==
+	b=L+v8MGUBoH1X/DvXSD0FceOQi/7/9SNVN/Ty1A0Db3pP2tRHNvduiU+oluwXEpYIv
+	 vBloEcY3uuuLcYM/xkh9Q3Ii2iBnjyZbDio64xuo+SFrAPccC7M1STU5AfhNZaWOa5
+	 +nP2mu+sMxiVgQETEU4GnEEdQBOVRnqy1LIn5OIvtUx8y3NHNRNYHmSudIvZhlAsk3
+	 OeFfLyoqwVLhzDi55Du9gghVSwsVXKB+q9IGj4gdTIup4tw4O6Yjot81gM8SBfXGlP
+	 DerjiZ0JrNRX2zN8YxL3cqjnpijuu2TiisPtmqNQmMQzMS3akxk6dzKVcJZYEqbHRC
+	 UCnxPV/KjlSKw==
 From: Christian Brauner <brauner@kernel.org>
 To: linux-fsdevel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -104,9 +104,9 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
 	linux-debuggers@vger.kernel.org,
 	"Christian Brauner (Amutable)" <brauner@kernel.org>,
 	Chuck Lever <cel@kernel.org>
-Subject: [PATCH RESEND v2 01/26] nubus: let procfs own the seq_file of the resource files
-Date: Wed,  4 Nov 2026 20:42:27 +0100
-Message-ID: <20261104-work-procfs-drivers-v2-1-245e54e87116@kernel.org>
+Subject: [PATCH RESEND v2 02/26] zorro: let procfs copy out reads
+Date: Wed,  4 Nov 2026 20:42:41 +0100
+Message-ID: <20261104-work-procfs-drivers-v2-2-245e54e87116@kernel.org>
 In-Reply-To: <20261104-work-procfs-drivers-v2-0-245e54e87116@kernel.org>
 References: <20261104-work-procfs-drivers-v2-0-245e54e87116@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -124,7 +124,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1301; i=brauner@kernel.org; h=from:subject:message-id; bh=x7z4QEHcj9RNvDtDgoKANKctl9Sfloc7qmQpa+Y73Ns=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS97ioOOa68o/Kq2fmOY5NWuTU8iP3ZEGF+bqWx4z+Wl OQWlcZPHaUsDGJcDLJiiiwO7Sbhcst5KjYbZWrAzGFlAhnCwMUpABP5yMrIcHHmjxMtv47deeBR f8hmwmHx04XBoiyTn7ROi1p5ovDEfjGGf0pS7v/tJ675tu3LE5ZOszvfVmhY9L9Rd7yQdf+7rII THxsA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1540; i=brauner@kernel.org; h=from:subject:message-id; bh=dTcni+P8tIxBcivisIxgfSpNG7N2UBKEyjWqJewPrL0=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS97iqNXrF3deYLX61HjldsFnR/fLzW4ucS7htqmRfnb lp9iV3QsKOUhUGMi0FWTJHFod0kXG45T8Vmo0wNmDmsTCBDGLg4BWAiHkkMfziO9O96MiXH7oKe 3ttd/GcsTDguvkv8x6Mk19PlFNXPtoiRYf6v1T5HznUdqLi4/U2FCv/VOxZvpb9rrKvZvX3xnf1 XX/ICAA==
 X-Developer-Key: i=brauner@kernel.org; a=openpgp; fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 Content-Transfer-Encoding: 8bit
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -135,45 +135,46 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Get the inode from the file instead of ->private, declare the show
-function and let procfs open and free the seq_file.
+Implement ->proc_read_buf() so procfs copies what is read from
+/proc/bus/zorro/<slot> to userspace after it unpinned the entry.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- drivers/nubus/proc.c | 12 ++----------
- 1 file changed, 2 insertions(+), 10 deletions(-)
+ drivers/zorro/proc.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/nubus/proc.c b/drivers/nubus/proc.c
-index 3ea3d1738eae..cb21ad1d9964 100644
---- a/drivers/nubus/proc.c
-+++ b/drivers/nubus/proc.c
-@@ -107,7 +107,7 @@ nubus_proc_alloc_pde_data(unsigned char *ptr, unsigned int size)
- 
- static int nubus_proc_rsrc_show(struct seq_file *m, void *v)
- {
--	struct inode *inode = m->private;
-+	struct inode *inode = file_inode(m->file);
- 	struct nubus_proc_pde_data *pded;
- 
- 	pded = pde_data(inode);
-@@ -138,16 +138,8 @@ static int nubus_proc_rsrc_show(struct seq_file *m, void *v)
- 	return 0;
+diff --git a/drivers/zorro/proc.c b/drivers/zorro/proc.c
+index 4c6f8f1c4d71..99a8b478192d 100644
+--- a/drivers/zorro/proc.c
++++ b/drivers/zorro/proc.c
+@@ -28,7 +28,7 @@ proc_bus_zorro_lseek(struct file *file, loff_t off, int whence)
  }
  
--static int nubus_rsrc_proc_open(struct inode *inode, struct file *file)
--{
--	return single_open(file, nubus_proc_rsrc_show, inode);
--}
--
- static const struct proc_ops nubus_rsrc_proc_ops = {
--	.proc_open	= nubus_rsrc_proc_open,
--	.proc_read	= seq_read,
--	.proc_lseek	= seq_lseek,
--	.proc_release	= single_release,
-+	.proc_show	= nubus_proc_rsrc_show,
+ static ssize_t
+-proc_bus_zorro_read(struct file *file, char __user *buf, size_t nbytes, loff_t *ppos)
++proc_bus_zorro_read(struct file *file, char *buf, size_t nbytes, loff_t *ppos)
+ {
+ 	struct zorro_dev *z = pde_data(file_inode(file));
+ 	struct ConfigDev cd;
+@@ -49,8 +49,7 @@ proc_bus_zorro_read(struct file *file, char __user *buf, size_t nbytes, loff_t *
+ 	cd.cd_BoardAddr = cpu_to_be32(zorro_resource_start(z));
+ 	cd.cd_BoardSize = cpu_to_be32(zorro_resource_len(z));
+ 
+-	if (copy_to_user(buf, (void *)&cd + pos, nbytes))
+-		return -EFAULT;
++	memcpy(buf, (void *)&cd + pos, nbytes);
+ 	*ppos += nbytes;
+ 
+ 	return nbytes;
+@@ -58,7 +57,7 @@ proc_bus_zorro_read(struct file *file, char __user *buf, size_t nbytes, loff_t *
+ 
+ static const struct proc_ops bus_zorro_proc_ops = {
+ 	.proc_lseek	= proc_bus_zorro_lseek,
+-	.proc_read	= proc_bus_zorro_read,
++	.proc_read_buf	= proc_bus_zorro_read,
  };
  
- void nubus_proc_add_rsrc_mem(struct proc_dir_entry *procdir,
+ static void * zorro_seq_start(struct seq_file *m, loff_t *pos)
 
 -- 
 2.53.0
