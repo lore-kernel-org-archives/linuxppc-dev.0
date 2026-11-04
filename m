@@ -1,51 +1,73 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81035606A32D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 07:04:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45DA3606A326
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 08:57:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bbApma9Y
+	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=acu/8cdQ
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKGdb5vYrz2xGg;
-	Wed, 04 Nov 2026 18:04:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793775859;
-	cv=none; b=Y3Eu9Zp6gmUuRy3LZ+Ip/4E6/8x9StQpG/gYSrwsaO7DGKC17XWrVp/gE3eso/HNa4Dk9S6n2ud8IBgA+5ozsxBJMRn04xcI+l9bDLLvxHVsHhGaqOiX+Rc/OibCt9Cnc/Yq25jfZI7hL0wF5PJLnxbDwmp0YCAlz1x9FdFNS3/igulDVgXb35IixsUY2BXqd7AfPOYcpZIIyoSWCWcZQ1/ejCiwC/UH9beOFWCsDDnIzoC4nNRFd80MjkCcihhe60sHumSnj6ghQ2OVBpDZSB9BSyfZWU97p2+MnsGCU5djQYn+xwEXadMD9NCuBS0yKBONTpc+d7XLy5pv+TDoDA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKK7p5wFJz2xHG;
+	Wed, 04 Nov 2026 19:57:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793782630;
+	cv=none; b=VIMwFLp6XhbW4nxHfEgtkEGk+GwNaZMTDlhimeGMwJ2ABYsh6mUrj0+cbWp7lseIZNBLJrZy6AVG3IRnrByIfDTV7Eh4/n9CRZ4jHCj9C3H0Igqmg6rTG64uCKX5Xmi22GA2GiGDmeKS0Rmnp5abyKwD3vBd2z0E6ZaCfLm4wfS+yGVWtvX7O9BfK0FTIUf8eXGUVqstBjJvPHuZ/Q7iOxOQcm67WFfwqC+aF9G4dQgMpT3UFOx+g/Lf63DimhZa4or4S24C8/VA+jZOip5KgVZt8SuZ8aiKtINoxJPpf0mxHaTaOBzne1HNzeioQc5OZXlswjup+wowS/PFbjgjwA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793775859; c=relaxed/relaxed;
-	bh=zgYAfbdg4gkU+laTuhVm1gWIbI8SOd67gBl+57GmbVk=;
+	t=1793782630; c=relaxed/relaxed;
+	bh=gYu4safrZFRZxRz3PMkEnVIGx9pn9PlCpDYcYD2NAIg=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=XW4tBgV1hHlKn776QW/7pogx2nJha670xtwUtRitWzh3moJ45wDF1d4p6e2/2qsaK487JJYDuTjTjQcZWyKiZ5msd7iBT3pn0r2SVdKL18iM8SRetGquyipn14JyYlJcC0Mo9OdLO8S+g9o/RCFa7V2xQbvfTj++DrCY9DOs7P7J2DiG7dkMpHhvBRmnQP/2i2HVAfaqKIXzgnCPm3We3bw96NT4810GCzYIaW2x95Lws3Zv5yKu5rKacz2Lz2DmTNNCyaRBoPNft+W7IPTbwjbTfqni3GE3iNeVQp1TS3q8d5g5bb/p+bJ+Lv0ZYYmv7CSuurjnjmnxYouYH6A+Gw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bbApma9Y; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 In-Reply-To:Content-Type; b=VToY6XfUuNh/a28cQIdy03tSMvDl+lfCBtDnGJprn6/wI2CU+f9M0v7bAzSrmuBkT+FCo0qBUkQb4cCjOxTYb59J7K4YmvdyvuwSsIw9HAL2ef4ZzGClzl9ZcZ4azdnX8eQtMYtsEKZzJJY8S89TuGqERjCHZBb7mGi3AwAlAIwFPH0isZGMo3v6ycnc3RxMBIStFcf4wG9x9I+++5NG2RlZtpP2NJ6K0G2x0l6Tj2D7Dt4H5RK7xdWRGTNjwbjzbagnEMwHsKnbydrCt5OjEHGRvh1kUMfYxec/4oOYDvRjvVd4Hmzc/zzu2w1hVX0kqRtFmW/A+Dhx0LO2Azep9A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=acu/8cdQ; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bbApma9Y;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=acu/8cdQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKGdZ4s8Rz2xBb
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2026 18:04:18 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 9593E602D3;
-	Wed,  4 Nov 2026 07:04:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F1A4F1F000C1;
-	Wed,  4 Nov 2026 07:04:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793775855;
-	bh=zgYAfbdg4gkU+laTuhVm1gWIbI8SOd67gBl+57GmbVk=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=bbApma9YpJHwV5I/a2M4mbwCUN66LE1RDMiX6oB+kfNrxDoDV/Ga621XVPmA/lIAM
-	 7j+4lNL1LpDqQQ+L+c4T38oRBflcc4lh+Z/pmsS8n92Ap894r8FLNU6sjEKS6tNE1t
-	 1hlWOrYY/W73iRq2ymwt57inL7I/DA2IEl6FYRhl1d8BMULWoGvGhRYYsYMN8cRAFg
-	 aSg96HdQvvGuzLyukQcAh6hfXMRAqDAzb7xe3emSHYmQiF6tN4fF7TsTU3epROUxKZ
-	 uI27AKE2ecn8kyoz7rRgb13myYoYy5F3pztmAHQas80mDOvGXj9Wc9GB1G7fOq+vVg
-	 cismcWWMfXT6A==
-Message-ID: <bf838fa6-a175-4514-a496-c6ec9b03ac7c@kernel.org>
-Date: Wed, 4 Nov 2026 08:04:10 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKK7n53vRz2xGg
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2026 19:57:09 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A48iZvq018674;
+	Wed, 4 Nov 2026 08:56:59 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=gYu4sa
+	frZFRZxRz3PMkEnVIGx9pn9PlCpDYcYD2NAIg=; b=acu/8cdQTElSAXHjKK3Kmi
+	J8oR+9CUek+J0EBJ3HjStbc7GCefEs+glquVxZ4iGZaS5IFughXOq5edyiwXXaTY
+	8ovS/FB46i7KjaT1HOAwce3OcY0F3r5IIhi7kKMCXSp9YWUNUy6gcG7y8kqWHOmZ
+	lwR5YzZUK5jhcL8ZNYtXN4ldDz/CwIiMDvSyH+1sjQAVCFmUtrOBu3/Kwo+GT64o
+	zWIy2Ub5kyhOoR+YMtpWDYIKBJpu9LwwhbAdqm4vbhGm1GH1f1ZcXXFAL+2QR98O
+	RO7BPNrFiv0hZ/GmMGsDarg/juQRZp0yyo89IoVE3C45h257gZYG2PD6l4n3/TWg
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hn5rhtqvn-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Wed, 04 Nov 2026 08:56:59 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6A48K3Un2676482;
+	Wed, 4 Nov 2026 08:56:58 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4hqsf59qkr-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 04 Nov 2026 08:56:58 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6A48uu0w50921730
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 4 Nov 2026 08:56:56 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7AF9C20040;
+	Wed,  4 Nov 2026 08:56:56 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A970D2005A;
+	Wed,  4 Nov 2026 08:56:54 +0000 (GMT)
+Received: from [9.123.5.65] (unknown [9.123.5.65])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  4 Nov 2026 08:56:54 +0000 (GMT)
+Message-ID: <5bd7e8e9-3614-4006-a3d7-a51416ba5507@linux.ibm.com>
+Date: Wed, 4 Nov 2026 14:26:53 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,190 +82,140 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/code-patching: Flush the patch area TLB entry
- locally
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
- Venkat Rao Bagalkote <venkat88@linux.ibm.com>, linux-kernel@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Hari Bathini <hbathini@linux.ibm.com>, stable@vger.kernel.org,
- Josef Schlehofer <pepe.schlehofer@gmail.com>
-References: <b7916dadd8ef56d417d0cbf69fa9ef2a447a5a3e.1793674111.git.ritesh.list@gmail.com>
- <44406eef-0035-4d6f-a2b0-3647d7c1ea2e@kernel.org>
- <wlqu5lej.ritesh.list@gmail.com>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <wlqu5lej.ritesh.list@gmail.com>
+Subject: Re: [PATCH v4 03/23] KVM: PPC: Flush/zap all memslots on
+ kvm_arch_flush_shadow_all()
+To: Sean Christopherson <seanjc@google.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Paolo Bonzini <pbonzini@redhat.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+        kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Jim Mattson <jmattson@google.com>,
+        James Houghton <jthoughton@google.com>, Chris Mason <mason@kernel.org>
+References: <20261030212112.2598640-1-seanjc@google.com>
+ <20261030212112.2598640-4-seanjc@google.com>
+Content-Language: en-US
+From: Narayana Murty N <nnmlinux@linux.ibm.com>
+In-Reply-To: <20261030212112.2598640-4-seanjc@google.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=4.0.1
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: D3HtbIrHYhFBVkH1Qk3wWusLux_I87WB
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTA0MDAzNCBTYWx0ZWRfX+75I8chF9UB1
+ cZ5RrnTSgZK+fW7yAb1FBW2kbxEDnxzKKm7KoFykscUKCm96SAL2vDM8XvDhAJsxzUTSFaYQ4uh
+ RkruX2BfqtdJJfB503dMEyI5HDd/QU4=
+X-Authority-Analysis: v=2.4 cv=LokHWXdc c=1 sm=1 tr=0 ts=6aeaf35b cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
+ a=1XWaLZrsAAAA:8 a=1QS-1g0Vr6wPOSXTiQ0A:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTA0MDAzNCBTYWx0ZWRfX4eN8xeQe6Zf3
+ ywbSZRXK9eMRl41agjGOMGmBmcZMIuf1c/GWQqDLHoTCm5GKkwFkjM2+aViHgMBVIGDMXyBt94u
+ /5z4DAc3/evePjhod1tLEDxdchMzSy6epOlo+4dKGjO8g88sDgslDYx7lNKts5jO4ZlNdvuaQZP
+ waBEWWwaFU8yswTLM4sEdY2DrBobeCJ/fjcIMNT1gjU4BmcRKYrcVlaY8OIg1z2aUfjydnA82AU
+ nFIi/RCq4xt6rIPr62l0wWE+NgkO5HyU6aHYIMGwc1oQ1qqKUZQAem7Ugv8ZffPGihxRDTDqdDD
+ 89b8ZEX9HB4TDUc3uhY1e+uTIxt13vMvmsAj4JyF+c1gFG9CCCJADpFmxTXkvKvC0rlkodc47BF
+ 6c1b/b65727gRzZfde/SwMKxPPDqlfR8uO4R2RTaC+ZtDLPnQmSeZCZ68q5cDy+3mvLGBVv5kqC
+ umz9a3kyq1vcMPzuUjg==
+X-Proofpoint-GUID: Ay8acS_dMbzIo1IyKYWuxL5J_zhW18KV
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-04_02,2026-11-03_04,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 lowpriorityscore=0 clxscore=1011 impostorscore=0
+ priorityscore=1501 suspectscore=0 phishscore=0 malwarescore=0 bulkscore=0
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610300000
+ definitions=main-2611040034
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+Hi Sean,
 
-
-Le 03/11/2026 à 10:12, Ritesh Harjani a écrit :
-> "Christophe Leroy (CS GROUP)" <chleroy@kernel.org> writes:
+On 31/10/26 2:50 AM, Sean Christopherson wrote:
+> Flush/zap every memslot in kvm_arch_flush_shadow_all(), i.e. when the
+> owning userspace process is exiting, as KVM must ensure all associated
+> memory is unmapped from the guest.
 > 
->> Le 03/11/2026 à 03:54, Ritesh Harjani (IBM) a écrit :
->>> patching functions like patch_mem() and patch_instructions(), maps the
->>> target page at the per-cpu text_poke_area, write it, clear the PTE and
->>> then flushes the tlb using flush_tlb_kernel_range(), with interrupts
->>> disabled. flush_tlb_kernel_range() on SMP nohash (e500) does an IPI
->>> based TLB invalidation i.e -
->>>
->>> 	smp_call_function(do_flush_tlb_mm_ipi, NULL, 1);
->>>
->>> ...which will wait for other CPUs but with interrupts off. This can be
->>> caught by lockdep with the following warning:
->>>
->>>     WARNING: kernel/smp.c:917 at smp_call_function_many_cond+0x430/0x818, CPU#1: swapper/0/1
->>>     CPU: 1 UID: 0 PID: 1 Comm: swapper/0 Not tainted 7.3.0-rc1-leds-v4 #1 PREEMPT
->>>     Hardware name: Turris 1.1 e500v2 0x80211051 Freescale P2020
->>>     Call Trace:
->>>     [c1915bc0] [c001be04] flush_tlb_kernel_range+0x2c/0x74
->>>     [c1915bd0] [c001ce2c] patch_instructions+0x1b0/0x318
->>>     [c1915c20] [c003113c] bpf_arch_text_copy+0x5c/0xb4
->>>     [c1915c40] [c01c3398] bpf_jit_binary_pack_finalize+0x28/0x8c
->>>     [c1915c60] [c0031770] bpf_int_jit_compile+0x5dc/0x758
->>>     ...
->>>     [c1915dd0] [c102e114] ptp_classifier_init+0x30/0x4c
->>>     [c1915df0] [c102d3a8] sock_init+0xc8/0xe4
->>>     ...
->>>     hardirqs last disabled at (3076): [<c001ceb4>] patch_instructions+0x238/0x318
->>>
->>> Josef confirmed that this was causing a hang (deadlock):
->>>       I think this is why the CZ.NIC Turris 1.1 hangs early in boot with
->>>       CONFIG_JUMP_LABEL=y. On 6.18.44 it hung in 19 of 19 boots and booted
->>>       fine 9 of 9 times with jump labels off. The hang comes while static
->>>       keys are patched and modules are loaded, nothing is printed and the
->>>       watchdog resets the board. OpenWrt keeps jump labels off on these
->>>       boards for now.
->>>
->>> ...which is possible if both cpus are doing similar operations with interrupts
->>> off and doing TLB invalidation using IPI.
->>>
->>> Broadcast TLB invalidation is not needed here since text_poke_area is
->>> a per-cpu area. It is mapped and unmapped with interrupts disabled by
->>> it's own cpu. The only reason I think, if we would need a broadcast tlb
->>> invalidate is, when we want to prevent a stray or malicious write to
->>> this cpu text_poke_area by another CPU. This generally gets solved with
->>> temporary-mm path like how Radix and even x86 implements. However, booke
->>> doesn't implement that, so for now let's ensure we use local tlb
->>> flushing for correctness.
->>
->> This problem was already discussed one year ago, see
->> https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Fall%2FPA3P192MB2865C07D634E3B775D003C7F8CD7A%40PA3P192MB2865.EURP192.PROD.OUTLOOK.COM%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C94ba9bffb5d647f9790208df398f6ccb%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639292960305489629%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=RgVxRJOlFSWgNsFSKwLDRinx3kaF4LpSiCaTey8xtic%3D&reserved=0
->>
->> See response from Arnd, a stop_machine() should be done for completeness.
->>
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>   arch/powerpc/include/asm/kvm_host.h |  1 -
+>   arch/powerpc/kvm/powerpc.c          | 11 +++++++++++
+>   2 files changed, 11 insertions(+), 1 deletion(-)
 > 
-> I will have to take sometime to go over what ARM does here with
-> stop_machine(). However, either ways I think, we still need this fix,
-> since otherwise P2020 boards gets hung during boot. Thoughts?
+> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+> index 708a32f89776..50a42f80e5f1 100644
+> --- a/arch/powerpc/include/asm/kvm_host.h
+> +++ b/arch/powerpc/include/asm/kvm_host.h
+> @@ -910,7 +910,6 @@ struct kvm_vcpu_arch {
+>   #define __KVM_HAVE_CREATE_DEVICE
+>   
+>   static inline void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen) {}
+> -static inline void kvm_arch_flush_shadow_all(struct kvm *kvm) {}
+>   static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu) {}
+>   static inline void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu) {}
+>   
+> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+> index 9194cf492d1c..9e9d0865c2f6 100644
+> --- a/arch/powerpc/kvm/powerpc.c
+> +++ b/arch/powerpc/kvm/powerpc.c
+> @@ -764,6 +764,17 @@ void kvm_arch_commit_memory_region(struct kvm *kvm,
+>   	kvmppc_core_commit_memory_region(kvm, old, new, change);
+>   }
+>   
+> +void kvm_arch_flush_shadow_all(struct kvm *kvm)
+> +{
+> +	struct kvm_memory_slot *slot;
+> +	struct kvm_memslots *slots;
+> +	int bkt;
+> +
+> +	slots = kvm_memslots(kvm);
+> +	kvm_for_each_memslot(slot, bkt, slots)
+> +		kvmppc_core_flush_memslot(kvm, slot);
 
-That's right, it must be fixed. The global TLB flush must likely be 
-changed to a local TLB flush, but that's not enough to get a safe system.
+For Book3S HV/hash, I am not sure the existing flush_memslot helper can
+be used on an active memslot like this.
 
-> 
-> 
->>>
->>> Fixes: 49e3d8ea6248 ("powerpc/fsl_booke: Enable STRICT_KERNEL_RWX")
->>> Cc: stable@vger.kernel.org
->>> Reported-by: Josef Schlehofer <pepe.schlehofer@gmail.com>
->>> Closes: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Fall%2F20261026195644.16384-1-pepe.schlehofer%40gmail.com%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C94ba9bffb5d647f9790208df398f6ccb%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639292960305519321%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=A50lEHBZBaX70jGTu38GylmnQvlxVzLalMVXYj2kti0%3D&reserved=0
->>> Tested-by: Josef Schlehofer <pepe.schlehofer@gmail.com>
->>> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
->>> ---
->>>    arch/powerpc/lib/code-patching.c | 21 +++++++++++++++++++--
->>>    1 file changed, 19 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
->>> index 44ff9f684bef..6351342fa5c3 100644
->>> --- a/arch/powerpc/lib/code-patching.c
->>> +++ b/arch/powerpc/lib/code-patching.c
->>> @@ -276,6 +276,23 @@ static int __do_patch_mem_mm(void *addr, unsigned long val, bool is_dword)
->>>    	return err;
->>>    }
->>>
->>> +/*
->>> + * The patch area is per-CPU and only used by its own CPU, with IRQs
->>> + * disabled, so only the local TLB can hold an entry for it.
->>> + *
->>> + * On nohash SMP, flush_tlb_kernel_range() IPIs the other CPUs and waits, which
->>> + * must not be done with IRQs disabled (see smp_call_function_many_cond()), so
->>> + * flush just the local kernel (PID 0) entry.
->>> + * Book3S keeps flush_tlb_kernel_range() which doesn't IPI here.
->>> + */
->>> +static void flush_patch_area(unsigned long addr)
->>> +{
->>> +	if (IS_ENABLED(CONFIG_PPC_BOOK3S))
->>
->> CONFIG_PPC_BOOK3S not consistant with commit message. Are you adressing
->> a problem on e500 only ? on all not book3s ? What about book3s/32 ? What
->> about 8xx ? Even for book3s/64, is it correct at all when
->> mm_patch_enabled() returns false ?
->>
-> 
-> No we are addressing the problem on all NOHASH platforms. IIUC, all
-> !BOOK3S are "nohash". Although some of them maybe UP, so it doesn't
-> matter whether a flush_tlb_kernel_range() is called or
-> local_flush_tlb_page() - it wouldn't matter. And on others which are SMP
-> but do not have STRICT_KERNEL_RWX enabled, they will anyway not go
-> through this path - but if they ever do - then we should ensure they too
-> do a local_flush_tlb_range() to avoid the same deadlock.
-> 
-> However, I think, maybe we could use CONFIG_PPC_MMU_NOHASH instead of using
-> CONFIG_PPC_BOOK3S, thoughts?
+The normal memslot invalidation path seems to deliberately establish
+the opposite ordering.  kvm_invalidate_memslot() first installs an
+INVALID slot and makes it active:
 
-Well they are equivalent, so it doesn't solve the issue I think:
+	invalid_slot->flags |= KVM_MEMSLOT_INVALID;
+	kvm_replace_memslot(kvm, old, invalid_slot);
+	kvm_swap_active_memslots(kvm, old->as_id);
+and only then does kvm_arch_flush_shadow_memslot(kvm, old);.
 
-config PPC_MMU_NOHASH
-	def_bool y
-	depends on !PPC_BOOK3S
+The comment there explicitly states:
+/*
+  * From this point no new shadow pages pointing to a deleted,
+  * or moved, memslot will be created.
+  */
 
-What about book3s/64 in hash mode ? What about book3s/32 ? None of them 
-implement temporary_mm, so are they covered ?
+Similarly, kvmppc_core_flush_memslot_hv() in
+arch/powerpc/kvm/book3s_64_mmu_hv.c relies on the memslot already being 
+invalid when testing KVMPPC_RMAP_PRESENT without locking, as no new 
+HPTEs can be created.
 
-Christophe
+However, kvm_arch_flush_shadow_all() in arch/powerpc/kvm/powerpc.c now 
+invokes the same helper while walking active memslots.
 
-> 
-> 
-> -ritesh
-> 
->>> +		flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
->>> +	else
->>> +		local_flush_tlb_page(NULL, addr);
->>> +}
->>> +
->>>    static int __do_patch_mem(void *addr, unsigned long val, bool is_dword)
->>>    {
->>>    	int err;
->>> @@ -296,7 +313,7 @@ static int __do_patch_mem(void *addr, unsigned long val, bool is_dword)
->>>    	err = __patch_mem(addr, val, patch_addr, is_dword);
->>>
->>>    	pte_clear(&init_mm, text_poke_addr, pte);
->>> -	flush_tlb_kernel_range(text_poke_addr, text_poke_addr + PAGE_SIZE);
->>> +	flush_patch_area(text_poke_addr);
->>>
->>>    	return err;
->>>    }
->>> @@ -488,7 +505,7 @@ static int __do_patch_instructions(u32 *addr, u32 *code, size_t len, bool repeat
->>>    	err = __patch_instructions(patch_addr, code, len, repeat_instr);
->>>
->>>    	pte_clear(&init_mm, text_poke_addr, pte);
->>> -	flush_tlb_kernel_range(text_poke_addr, text_poke_addr + PAGE_SIZE);
->>> +	flush_patch_area(text_poke_addr);
->>>
->>>    	return err;
->>>    }
->>> --
->>> 2.39.5
->>>
+Is there any serialization in the mmu_notifier.release() path that 
+provides the same guarantee against new HPTE creation?
 
+Otherwise, couldn't an H_ENTER or fault path create a new HPTE while the 
+rmap is being scanned, or after it has already been examined?
+
+> +}
+> +
+>   void kvm_arch_flush_shadow_memslot(struct kvm *kvm,
+>   				   struct kvm_memory_slot *slot)
+>   {
+
+Thanks,
+Narayana Murty.
 
