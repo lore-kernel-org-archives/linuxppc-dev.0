@@ -2,48 +2,48 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34EEF607A7C5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:23:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B539606E81A
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:23:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ijd6v8za
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=P31HtERM
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKb2c6lFWz2ynZ;
-	Thu, 05 Nov 2026 06:23:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKb2w0Hz8z2yTQ;
+	Thu, 05 Nov 2026 06:23:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793820216;
-	cv=none; b=gmsdFbsqYykmz6WH9G9xngNmicIwolj9mXO+t3XEJlD4VSJuyv0ryUVh5ahTF/M3LT1rAlsq4fVuTfItj6vRWE9QhE/Bln/f4bKCHvxsrcNeOBsnpe5JZjKbTvFusPBfMSVXCvxLlJziKiwAtBF9X9bDgyuYMdthd4KdG+CQu231pOND+d266OX3x8nIT8hk97vsEJSCgqA91s4/5uu6q20PGWmijBzNPN2SM2QtBGr0/EzSZ+4wIVk9p303yGp/bA1VogKv3JzS9t/VME95IkwqWqKbdSZOvOVD+PIAiZz82tTf9W0JLQ6KrCxaD0PExIWBnUn/4UIyCpILEoRqkw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793820232;
+	cv=none; b=d+g7V0eu26J27JSnebf5fph1Swurl1iJGS7T/vI977k0Cv5GXP6jTTNGmO1Q6bIY5BQkjQSF+DNxRFNbZUnlAIxiwPy76gpHSmfs6RG75Km75cqTi6z9tuSj+jn8+SugYoF5ocTmCN24kZgQoCE+PAmLIhpcwTJhuHbUrEQmZIlf8z6S+maI0SXdIO453hTM9hFKNhV4UmIy+4o7UGdkvR7yEHTLKrDKVm2DdQLUCxhZ/bNeFzqPQxBy3HO2PD9d+8/GCq9fCDuI1XaDw3coD56w0sMeJk8vzJQX6rKawkDHWI5QH9tCnuFHiD/5xJ0vzm+AKrI3GSVBvOG0LRVWJA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793820216; c=relaxed/relaxed;
-	bh=QKQgab6F/A3kQED3xQkQ3++bbO+NbqHo8+XrgOES7ts=;
+	t=1793820232; c=relaxed/relaxed;
+	bh=bxrLiMapbfHc1EZ+4ADuNXD+VcOTR1takrrVPNDTeA0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=jJ0GTURlW9XFIlLDATsqvE2cSgeMFQJ6eX7LR1MbYX6c/q5O9dA1Gw/Zc65DBf3zSVLbrukqBPLlRimKDUOwceetPQP8TdoJqbmPOH9yD7aLC0r3MRuCuMXlCyM2P3zDNPxXd+VxUGGWnB+Z0PiKziq6UGkGXgNDB1UdxjAjzG6/89oIq0TmNb6VatnxFBT+yPLmhDYKm2BUHRuKe5rAMygjZSy0vm6N3UiovmfPpPgsE1Bpt51kXYS/33GgTJusnTyBqWuU0PXOHnBqmbe8dt9nk7P85ABkUWG0igtTRnuitN5md0kKzqhRzVIE6omqTXpB4Wdy4/EG5VD9DSxIig==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ijd6v8za; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=KCpngeUSvlL2A8i5Ud3l9nl45BGGxc66HDcvsDlMSMGwzHLb+5B7EkX+Lb3vw0rtSG91PoVQx5jCZisLUewP/TqoFCTHPSlp0cH8HTBb7S1ZQQmmYY/Uu02aqjEmJ9uAi0fNWve/HHweD7yBQ9oPwbg9TAF1Whom0rNMnYEAdl+45mBVFUbVX/KZ+K+VNieCcF7WUCFRFVgr5hxJ517V+uGkQMhX0luWFtQZEzSuK8Vove0LO5nuGRtbSa7evGGvBs5ngd1+WpLgq+K+sMwDTQshRhfx/1NJg6pPA63JqgoJnLcndpShxDZwOk2VuogOX7Cb2nPA3gByLAFa91mxTw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=P31HtERM; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ijd6v8za;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=P31HtERM;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKb2c188Xz2yln
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:23:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKb2v18rXz2y89
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:23:51 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 436EC60D82;
-	Wed,  4 Nov 2026 19:23:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D48D21F000C1;
-	Wed,  4 Nov 2026 19:23:21 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 477EF60AAB;
+	Wed,  4 Nov 2026 19:23:49 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C06D31F000C1;
+	Wed,  4 Nov 2026 19:23:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793820214;
-	bh=QKQgab6F/A3kQED3xQkQ3++bbO+NbqHo8+XrgOES7ts=;
+	s=k20260515; t=1793820229;
+	bh=bxrLiMapbfHc1EZ+4ADuNXD+VcOTR1takrrVPNDTeA0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=ijd6v8zaNqCLmRZYja1X4maFJ83wlAF/2YPzGzhX/4NJzDk8gpRvHBDtpnvW2kzrE
-	 pKuK7II1mOaBx0Gj+L1vraczZZkB7OeRZ9ZoB7qpwQKM+pSqrDe3QY2fA7KCW/Fq2E
-	 oXyjbE6QtyNjJgArz+0tadzVnc7sFgUV5Zt+ED3IG+SNM2u1iqpNqo6J7AwifNHxzv
-	 2i3LIYQcM2epUeP/ADp5fAb3awZdnh30Pv8kl3Wbf1o49zKnVC71mI5vqn+a8eOGO2
-	 saOpPzNjuia2w4fAF7Rtkl4Ucl9o3AVDThJjpyzmxHF+vZXftQlfa3DzlUUjytBfdL
-	 q0wb/VbaGQJDg==
+	b=P31HtERMFSNol745g3BnGZcUyftsO75M5cryrOhg6uEEbTLO6qd91z1whz/V2YoHZ
+	 ZlzF0+NzxGOlzGJPmN3xtmGCNUFfLbt3joPtIH3f++AsuKwEwzdZWf6PdSPxU7A5yK
+	 hFlsOXtLhO48r6ueNfnwp0RlYnnSBnRpoiWgq0lskwVIqMMuSuxexcIO+FClliWYpS
+	 hoTGOlDLQflfOhdnS0Q3JIK9G3p3uFTRqKXWRJMZ3R4KfowrbaGqQRi07M1QXljwV7
+	 th41CQpzl4loprGAQ2TnAnPwUAVWszzRtKlAOT9RVmKV+lhjT8YsGn0BrHVgoiFo6f
+	 9SqeE0/BUHJiw==
 From: Christian Brauner <brauner@kernel.org>
 To: linux-fsdevel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -105,9 +105,9 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
 	"Christian Brauner (Amutable)" <brauner@kernel.org>,
 	Chuck Lever <cel@kernel.org>,
 	stable@vger.kernel.org
-Subject: [PATCH RESEND v2 30/51] net: pktgen: reject device names with a '/'
-Date: Wed,  4 Nov 2026 20:23:19 +0100
-Message-ID: <20261104-work-procfs-bugfixes-v2-30-021c84d852e0@kernel.org>
+Subject: [PATCH RESEND v2 31/51] proc: don't WARN about a name that is already registered
+Date: Wed,  4 Nov 2026 20:23:34 +0100
+Message-ID: <20261104-work-procfs-bugfixes-v2-31-021c84d852e0@kernel.org>
 In-Reply-To: <20261104-work-procfs-bugfixes-v2-0-021c84d852e0@kernel.org>
 References: <20261104-work-procfs-bugfixes-v2-0-021c84d852e0@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -125,7 +125,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1684; i=brauner@kernel.org; h=from:subject:message-id; bh=F9CLtO30/n/hY0YqeSuPpMfy319PBmjhBXOfLkB61UI=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9bvywqoXlbXOlS3uySJpukM32T6snilzOFXlqcfhEv dGWr1sudJSyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAEzE9TTD/4KNy/KDs66oZjvq T7CTumjecrWj1yL2eO6RGRVGM7v/WjIynJutWGeWKrqa/8u9wz/unp7yJ4GpNbJ15Zfil4dMVgm eYwEA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2415; i=brauner@kernel.org; h=from:subject:message-id; bh=zKPnydEa7A3MJSKUBbljFnXGgiSfil9PV1OK0LsDT40=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9bvz0UbupS+ReqKmx550QBcPIx+fCyiSlZmydoTxvS U2b4Fm+jlIWBjEuBlkxRRaHdpNwueU8FZuNMjVg5rAygQxh4OIUgIlcZGT4n20a3HVie8QyAeOH +n67d9j9VH0TdtVtZvPnw4Ent+xues3wh797msrH+LVBAu8/HVj4xtelPai56DjDmvc933d/ZL7 3hAsA
 X-Developer-Key: i=brauner@kernel.org; a=openpgp; fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 Content-Transfer-Encoding: 8bit
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -136,50 +136,63 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-"add_device" takes a name like eth0@1. Only the part in front of the
-'@' has to name a network device. The rest is free text and all of it
-becomes the name of a file in /proc/net/pktgen, where procfs takes a
-'/' as a directory separator. So "add_device lo@a/b" makes procfs look
-for a directory "lo@a" that doesn't exist and warn about it. Any user
-can do that in a network namespace of its own:
+proc_register() WARNs when the directory already has an entry of the
+same name and fails the registration. Callers that pick their names
+themselves should never get there but some take names from userspace.
+pktgen creates a file for each device a writer of "add_device" adds,
+named after the device. A device can have any name, including "pgctrl"
+or "kpktgend_0", the names of pktgen's own files:
 
-  name 'lo@a/b'
-  WARNING: fs/proc/generic.c:174 at __xlate_proc_name+0xb1/0xf0, CPU#3: bash/241
+  ip link set lo name pgctrl
+  ip link set pgctrl up
+  echo "add_device pgctrl" > /proc/net/pktgen/kpktgend_0
+
+  proc_dir_entry 'pktgen/pgctrl' already registered
+  WARNING: fs/proc/generic.c:404 at proc_register+0x555/0x8b0, CPU#0: bash/241
   Call Trace:
-   __proc_create+0xd0/0x9b0
-   proc_create_reg+0x45/0xf0
-   proc_create_data+0x77/0xf0
-   pktgen_thread_write+0xd8d/0x1750
+   proc_create_data+0x9f/0xf0
+   pktgen_thread_write+0xd9b/0x1780
+   proc_reg_write+0x1c2/0x3c0
+   vfs_write+0x1cd/0xfa0
 
-With panic_on_warn that takes the machine down. And if "lo@a" exists
-because somebody added a device of that name, procfs used to register
-the new entry below that regular file, and removing "lo@a" freed both.
+The files of a network namespace belong to the root of its user
+namespace and none of this requires a capability. So once pktgen is
+loaded an unprivileged user can taint the kernel, or crash it with
+panic_on_warn, from namespaces of its own. pktgen itself copes with
+the failed registration just fine.
 
-Reject names with a '/'.
+So go back to what proc_register() did before commit 6c2f91e077f1
+("proc: use WARN() rather than printk+backtrace") and what
+sysfs_warn_dup() does for sysfs: report the name with pr_warn() and
+dump the stack. While at it, do that after dropping proc_subdir_lock
+instead of printing a backtrace while holding the lock that every
+lookup and readdir in procfs needs.
 
 Reported-by: Chris Mason <mason@kernel.org>
-Fixes: e6fce5b916cd ("pktgen: multiqueue etc.")
+Fixes: 6c2f91e077f1 ("proc: use WARN() rather than printk+backtrace")
 Cc: stable@vger.kernel.org
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- net/core/pktgen.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ fs/proc/generic.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/net/core/pktgen.c b/net/core/pktgen.c
-index d63eeadddfcc..02af70d360bc 100644
---- a/net/core/pktgen.c
-+++ b/net/core/pktgen.c
-@@ -3831,6 +3831,10 @@ static int pktgen_add_device(struct pktgen_thread *t, const char *ifname)
- 	int err;
- 	int node = cpu_to_node(t->cpu);
- 
-+	/* The name becomes the name of a file in /proc/net/pktgen. */
-+	if (strchr(ifname, '/'))
-+		return -EINVAL;
-+
- 	/* We don't allow a device to be on several threads */
- 
- 	if (__pktgen_NN_threads(t->net, ifname, FIND)) {
+diff --git a/fs/proc/generic.c b/fs/proc/generic.c
+index 6ac9c4c13897..9e59796349e1 100644
+--- a/fs/proc/generic.c
++++ b/fs/proc/generic.c
+@@ -402,9 +402,10 @@ struct proc_dir_entry *proc_register(struct proc_dir_entry *dir,
+ 	write_lock(&proc_subdir_lock);
+ 	dp->parent = dir;
+ 	if (pde_subdir_insert(dir, dp) == false) {
+-		WARN(1, "proc_dir_entry '%s/%s' already registered\n",
+-		     dir->name, dp->name);
+ 		write_unlock(&proc_subdir_lock);
++		pr_warn("proc_dir_entry '%s/%s' already registered\n",
++			dir->name, dp->name);
++		dump_stack();
+ 		goto out_free_inum;
+ 	}
+ 	write_unlock(&proc_subdir_lock);
 
 -- 
 2.53.0
