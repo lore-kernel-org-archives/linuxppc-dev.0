@@ -2,48 +2,48 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4C1706083635
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:18:45 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D4A2E606C91F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:18:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JIdLOXp6
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GmEE1dbl
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKZx00JLpz2yVT;
-	Thu, 05 Nov 2026 06:18:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793819924;
-	cv=none; b=BNb3z95G5sSysfqsceYwOxlPYbVNc3TysLB7vduVUsyFxfx23B+Xb4x7OfF2TgcJOnQuaGSzcd2o/QQzDjXsbGP62vy3QuqHQrQBsVBXLAtoSpNzrxXXJOo523g1eI0CdneS5f97JeRrf3NNCVlktAXIwN/PNct17YWVOqgMx1w57CVoIYm8AR2S6nP1liDe3OLp5vAmyE1cxzQcUTKOrsqiqVsrv+53pOFwa59KJOX/T2n5gGYd53OFqmJies9DUQDe2H6sUKKj0zLJ79Wm0DWCEyOCP4gU+vE42rZVWKO+wZ1fmtmK7DuuV0ySWfDLtK5dhUWbzyJsC7DR+mZ5ZA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKZxF4CWTz2yDr;
+	Thu, 05 Nov 2026 06:18:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793819937;
+	cv=none; b=iAZqpp3Ke5UD7PsaGNjU9s7IPMoMmtKQRWTQZSFYS6sbxht/MLIdsjiPVe0CPR72/3GKN2lrq4oWVN4iUEPLpyqPGKDOAkIdPLOQbZ0LCzDxkEhN4CbKkE1Vs7n8mcNeAsFDBQSQSphOS5fhHEYzc5zG5kC/BYxUTcydijZujLoC9AVflm8tlFaxp6T59sEGz1Y5/BcOUahIvIksEVppXzdQ/bpQWD0AKK6Io45pqnQ7mB6KLZ/9k6py5cSxzrNBXm6gMh74oMMRkrz2dCuBX5kOE4TM7763lgmEE9ycBI9MTqFfRk41wV7fPJWDmkHTA+YhUymwdRR1AcaQA2fNDw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793819924; c=relaxed/relaxed;
-	bh=Di83VHF6QbwHOpQhBimI2/C2To6SvYozNijzJKB62VA=;
+	t=1793819937; c=relaxed/relaxed;
+	bh=88D9snc5Fvfzc1+bIGylCXCzBagXIGxBtzK0BL7vNTc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=jq1gwSrraqNi7gNCgr5GlTpUhwd2JF6vaID12Kr5fhq4989jV121vmUw/VJyHXhZGf+BTFwl0tJjXKrESASkfn8ZqyCsXopKCMFuFzyyNdvy7Aj3HKuxETyIV48mDqwYAdS536X1nbJkMCArfrDim6qwiYHategIVdvVuBr61PBCzY4EciHOqa/aiz04YMNh6jmtt/ujyfsN4DwjnhV24JaufJg2t//Nsxc5tcc/qD0PLWp/3di4nh3zUNjaA+nuZ3FdrUKrfS3DVm5wSI6QA/KOUR+53rLfsb+4IKsc0u1gTkACotYRHIGro1mKOp7g3cA8u4a8PUjSBjOeyqbYmA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JIdLOXp6; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=S4fTq+5Jd1EiHnFmCoa1wzbWiyha9fjI2jkqqvCcVu7NQ3SjoxP9tAdQVkoSygmjErAsJDA32QsAhQ8f6PoyJEXXboiIx3Dky6cUA8CKjAhQpSW/m9WU2x5sz4pqeKb0Z9eDqwzdAk9czMRjvezr5GeDb0h4n7bwubcNZP2chWN2xV99SCk8J4XS+KZnSjDXAPj7orsBhx2POqqaZYS2Ooc8IBw1081ZrnixV3lF/pI2cG0OQU3oprcsFY9ESOZtFhIa6SDD7By7GXyy2NolKCqJTjh1ALTBpk16W01QLQhFnrUj5+oeEpgmSO6O5x3J2ssXbJxnte8PQL7iQl9bMg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GmEE1dbl; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JIdLOXp6;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GmEE1dbl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKZwz12c7z2yVM
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:18:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKZxD5zCPz2xlj
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:18:56 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 437B460D7A;
-	Wed,  4 Nov 2026 19:18:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EEFA51F00A16;
-	Wed,  4 Nov 2026 19:18:28 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 540EC43AE6;
+	Wed,  4 Nov 2026 19:18:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8BB631F000C1;
+	Wed,  4 Nov 2026 19:18:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793819921;
-	bh=Di83VHF6QbwHOpQhBimI2/C2To6SvYozNijzJKB62VA=;
+	s=k20260515; t=1793819935;
+	bh=88D9snc5Fvfzc1+bIGylCXCzBagXIGxBtzK0BL7vNTc=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=JIdLOXp6sxEmZBJpMlxDZmERDwf9C8sLM/z2dbJBoBY9UBXkGBGAj7Yxhgr3YbwIo
-	 WLzNZhjCHsHdhaQxnTFFO0VEGKxMv1vINJffnyQzpOIw9IevG2oqGRabpoxY4U5ohN
-	 dsW1/Ep2BQuneanTV1J2VPfld0/EzmI9Txpbh/m9xuzYl3I8AGELsVFoKVbyxoHr4k
-	 3c7remBwAQpRVBw2eStXkccOoVSUONc3WQN6TCMP9ZphCN52UWu0ZYRKWjmfYAQkhn
-	 K0VZsnobCWkJjfjb7T3ZWzf5xxANP/HeKYAhnhy6yvKDBY5FqItsSBFDLO5ybI5gH0
-	 NwA1fy8O+LCSQ==
+	b=GmEE1dblrL6P3slUDpoeGQBfKRlZceqbttyL3CdBYJ2HAmZ9lajl7o6aomohjTG+O
+	 JTa2xT0UeQwIgbWO0as8ILC2qonsH/MA+HbfcPcLDu6enbEF3xp9x5MarktZI1cLNN
+	 p49gpXsJRwhljLb1NoANyo0ZebStjoK1MQAOZ8SsuOmEWt9/Va7qy18DmNx/CKuVDD
+	 F61rqLrBCLbspjHBFEQrO4v5WSYQC3TxQQVgqakQ7sCvVAsMm5tshbmCStW23Fb73C
+	 HKw2C65QpNc+TsBCBKm/WrFquDZj8ghfTEOupR23/RjXQvAJZnpFNNP1XldO5G4qvo
+	 qTnFbXsGFvmcw==
 From: Christian Brauner <brauner@kernel.org>
 To: linux-fsdevel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -104,9 +104,9 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
 	linux-debuggers@vger.kernel.org,
 	"Christian Brauner (Amutable)" <brauner@kernel.org>,
 	Chuck Lever <cel@kernel.org>
-Subject: [PATCH RESEND v2 10/51] zorro: size the proc files like what they serve
-Date: Wed,  4 Nov 2026 20:18:26 +0100
-Message-ID: <20261104-work-procfs-bugfixes-v2-10-021c84d852e0@kernel.org>
+Subject: [PATCH RESEND v2 11/51] sparc: led: consume the whole write
+Date: Wed,  4 Nov 2026 20:18:41 +0100
+Message-ID: <20261104-work-procfs-bugfixes-v2-11-021c84d852e0@kernel.org>
 In-Reply-To: <20261104-work-procfs-bugfixes-v2-0-021c84d852e0@kernel.org>
 References: <20261104-work-procfs-bugfixes-v2-0-021c84d852e0@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -124,7 +124,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=796; i=brauner@kernel.org; h=from:subject:message-id; bh=l/jVDuzMOjj8ie0SJoZ9zbu/qnGtbORxwaULd7yJNic=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9bryu4qPpOT1kc4isZaDhv1/bXwk9vbD2UmCm1l1v/ 29zJLs2dpSyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAEyk6jwjw6sm06P+wcoHVfTf +okVXHjMEBzWYri1p826+M+MhiW+0owMC9vz1pp/V1r0kenzR652vZM5y5jOqWdbe18R57A5vkq ZEwA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1161; i=brauner@kernel.org; h=from:subject:message-id; bh=5p0zMz40BbKdivFQo1NNbyIz4tkvEi3yC5tXL4aXaeU=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9bryxTr/f46JN2aT7fqoMIobterOLr517VZK2/eVbF pMTq1cadJSyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAExk6Q5GhpeRX3yP6jdm/nBn TDpmVrDk42u3AsOCWcVRi54YHnqrX8zIcGmRdthP9Rql7VIfc5K5Jlq/vCTExLioUWxJ93Lnjfk ujAA=
 X-Developer-Key: i=brauner@kernel.org; a=openpgp; fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 Content-Transfer-Encoding: 8bit
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -135,29 +135,38 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The files under /proc/bus/zorro hand out a struct ConfigDev and seek
-within that, but their size says sizeof(struct zorro_dev). Say
-sizeof(struct ConfigDev).
+led_proc_write() looks at the first eight bytes of a write and returns
+that many, so a writer that loops until everything is written, stdio
+does, sends the rest as a second command. That one is unknown and
+switches the LED off. Return the whole count, the rest is ignored.
 
-Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+Fixes: ee1858d3122d ("[SPARC]: Add sun4m LED driver.")
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- drivers/zorro/proc.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/sparc/kernel/led.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/zorro/proc.c b/drivers/zorro/proc.c
-index f916bf60b312..4c6f8f1c4d71 100644
---- a/drivers/zorro/proc.c
-+++ b/drivers/zorro/proc.c
-@@ -108,7 +108,7 @@ static int __init zorro_proc_attach_device(unsigned int slot)
- 				 &zorro_autocon[slot]);
- 	if (!entry)
- 		return -ENOMEM;
--	proc_set_size(entry, sizeof(struct zorro_dev));
-+	proc_set_size(entry, sizeof(struct ConfigDev));
- 	return 0;
+diff --git a/arch/sparc/kernel/led.c b/arch/sparc/kernel/led.c
+index 9b53ac1fe533..a1478de9fe5d 100644
+--- a/arch/sparc/kernel/led.c
++++ b/arch/sparc/kernel/led.c
+@@ -68,6 +68,7 @@ static int led_proc_open(struct inode *inode, struct file *file)
+ static ssize_t led_proc_write(struct file *file, const char __user *buffer,
+ 			      size_t count, loff_t *ppos)
+ {
++	size_t len = count;
+ 	char *buf = NULL;
+ 
+ 	if (count > LED_MAX_LENGTH)
+@@ -102,7 +103,7 @@ static ssize_t led_proc_write(struct file *file, const char __user *buffer,
+ 
+ 	kfree(buf);
+ 
+-	return count;
++	return len;
  }
  
+ static const struct proc_ops led_proc_ops = {
 
 -- 
 2.53.0
