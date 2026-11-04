@@ -2,48 +2,48 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20119608D419
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:46:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C869606A85E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:46:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WGVy0U4Z
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Vu3QmSG8
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKbXx6D64z3d32;
-	Thu, 05 Nov 2026 06:46:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793821585;
-	cv=none; b=eDLyUpYvptG3kevB+An095KI1ACCcrwcvSc/xo5nxnmhhKw8/nnAH6pSzr5GALcuitf7dLCpR8A78DyqYV5Aeh//ECIEZRMioHKcKtIQb8/IEgSk8S8TMbzK41YlPFfOMWTo+pzI/vZyEwc+vblDZ3BaeHACUn6v/gTqu9j6XfS7JcQImYJroo0klZf3gSjDdFvVuYr8fA2cuBrjibVucRpr3JxOySnLT3slBy9igjTbheCtNiBnIfXCPLezY2kW/xDvyjKRnftzKyPKek6uqtF36g/TVRpQ6kw6SC67IquDZ0M/Uwg1XaLFNPtpuFrTt3UFKg6+RabxGyk1Qzk+gw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKbYF2l4Pz3c1S;
+	Thu, 05 Nov 2026 06:46:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793821601;
+	cv=none; b=L/60+vcj6JZyJ4+NSKi4TeRB59wWclU0xALI7eENglEfNYT5e3eaeskXGYixd5lLnSjMDI5Fe7yVxaqptKXLH+nOp89DdzVKs5VLpYEy+m8YsHMlvh2OFNjyoVmoGT2uaW2I+EsPzdRBPrbDUCiU6VExd78iz6JtMOulFZIn8obcZPJrU2E+dU4SJrJnOn/VGHFUxJbYZz4c++rief4Npw1vO/Kgt040qT/RIhCimO6hWdjY2ErkFqsz3R3MFV/O5hEwTkvTqWsGUvXWVnd8uv94IAE82qCb1sikrvbP3uFrvQifY5SlTQ7UEZCehGxPcmIQFoovVMgYgemaok0Gfg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793821585; c=relaxed/relaxed;
-	bh=bLxRwCxtJ/P3YNIr6jvbkvrLQvoA3ATHIuHzWzBn2J4=;
+	t=1793821601; c=relaxed/relaxed;
+	bh=/po/gL747wOLzB9LODGeMVhVpt9eaPUzZYdg1qfmMOQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=ldufxjzhvOAaizWb3RA2gPIPsitYWDQEds28dd4ga9Lvr9zqDnQW2/g/hC0YwCG7fxZbCqv6GLXy51LQm8tf3v5xC4o+hfmwis0p5UioOoXq3MIer5cS2Urstj3lyHZMxFdV+3VtyrzoYB5LAC2OmOV0VAPyhqVwfnA1X34BDa47TaUPuZU+/Rbw1DiLv7KJWn+EDHN/XjcLPewaPE8hy5ICbX/4iluwbJbn2PLcjgAjh39WGdfqt2i2MPKfQLQ7cdixI7fBcrEjyghJpyqou/ri0ra8S23AsqZcKZKPoZkICKmAEbC3QZFSaAwVFtfyKzSxX8jPpJ3l3Gzd6mJ2Tg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WGVy0U4Z; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=fGh6COnCVcqzcp4MsK0cQa+J5UOVSz3UG1rQoE8xls0OxpPMAsv/gsNZhQLX9cnf0tuSupHVbVbJgp9pQoJ3flTJwgwm60jI29joDE6mFaICyTWCR3/ZCoZTRFY4hlZrZPJRxjmTwbS3ZGn5yWcVsjZIk624t3eUUQNxh/gbf17i3GQx/uzODgM8jZhMl+/5nmQDUKfRJtdsZFJfcas4IBbwQfNowqCrLgxJ56zmOdOEKgh24696zJ7lp0tY3ywGi8KtKysr9NpSSF2Yah9b67sNbMXv41bfEN4BZjFPeBXS1DnmVzg6qKo5ks1E+kFtnOD7SuLBy6E56Ouu4KZwoA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Vu3QmSG8; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WGVy0U4Z;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Vu3QmSG8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKbXx1RzLz30DH
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:46:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKbYD3tt7z30DH
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:46:40 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id ADDAE4158F;
-	Wed,  4 Nov 2026 19:46:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 64A131F00919;
-	Wed,  4 Nov 2026 19:46:11 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 95B854054A;
+	Wed,  4 Nov 2026 19:46:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4EED91F00A02;
+	Wed,  4 Nov 2026 19:46:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793821583;
-	bh=bLxRwCxtJ/P3YNIr6jvbkvrLQvoA3ATHIuHzWzBn2J4=;
+	s=k20260515; t=1793821598;
+	bh=/po/gL747wOLzB9LODGeMVhVpt9eaPUzZYdg1qfmMOQ=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=WGVy0U4ZGU9MGVkN5s11MIXd6L4ZW80HabYvpXJKD2FbPo/xhXTihbhJIMMm5yjgp
-	 g4YoG2gYjBvHEd55qb/8eKrNcGJy1t5KQ1dMFb+unC9akGOcKREFdMTo+rMdiE6MjK
-	 Qwst++hGuwNHrO6Pz5Ks38sCNLj6UOvHgHDN9vlcHkhT4XUB9TDAQIPtYVe0zpxjMO
-	 fYYp180+QK9mYvyWZuTSecCl9SsUr4g9V4K9vcGIrma64ubmtN9f0W6WY/GJ07Agnn
-	 WhsV+QgTvy+81YnNiXhZ06V2DcHYqbpniOh2Uv9igjKmY8z2zlPURD68B8addMVZFO
-	 hlNvylhXD/36g==
+	b=Vu3QmSG8t+JAK9mZsZDej94V+u1yCAbvT5TbhGyZYKF4VG+tdMVlWRbHgcrC/9smt
+	 e1lmGvByLoZHLn4MRCoRqzNGL3oHKyd+755yRoujbXsxDrMJ8wTF3nq37hG84ihvIS
+	 pswAt86CUFS4xrridMDShCJi27N9VmQKynKDla/s/sQPGTk6EmYDIuo2oOz3v52WH/
+	 UsgxfKUYcEFsCIlwWXpy4/fUmvqdc7qYDBOiLL9QvZsdr5zl6DNvaVl8bOQvx4ed76
+	 V7L2KsiP6wcIAqtM7ubPlqpQeYHT2fj69s3bJLJI+BHdJxMvrKXJaZ5VqnaTDNIXRQ
+	 MdTfX8VBMSjNg==
 From: Christian Brauner <brauner@kernel.org>
 To: linux-fsdevel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -104,9 +104,9 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
 	linux-debuggers@vger.kernel.org,
 	"Christian Brauner (Amutable)" <brauner@kernel.org>,
 	Chuck Lever <cel@kernel.org>
-Subject: [PATCH RESEND v2 16/26] hwmon: (dell-smm) let procfs copy the i8k ioctl arguments
-Date: Wed,  4 Nov 2026 20:46:09 +0100
-Message-ID: <20261104-work-procfs-drivers-v2-16-245e54e87116@kernel.org>
+Subject: [PATCH RESEND v2 17/26] fbdev: viafb: let procfs copy in writes
+Date: Wed,  4 Nov 2026 20:46:24 +0100
+Message-ID: <20261104-work-procfs-drivers-v2-17-245e54e87116@kernel.org>
 In-Reply-To: <20261104-work-procfs-drivers-v2-0-245e54e87116@kernel.org>
 References: <20261104-work-procfs-drivers-v2-0-245e54e87116@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -124,7 +124,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4573; i=brauner@kernel.org; h=from:subject:message-id; bh=negOiIwbpBXFbC2+4UQ2qelUCL0pz2XjdZael8czB8w=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS97mqLC7v46Tq/2OM60YXF/IwJT7t91n/WXTRlC8/Kr INzkoqfdJSyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAEykz53hf4aK+JOF56xXan+K c/qQJNoTJsxh93zLrnNOQlZHxI5n5TIyNMhMV5L+1b3683u1mdyPpT5ct+p2sVs5/2nS//WVvHM S+QE=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=7373; i=brauner@kernel.org; h=from:subject:message-id; bh=IvpcER7zxYNfDUB5gfp3pz3pT+0GSZCEEAhc7Zgpx0U=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS97mp/PeXhAuObU3aJOMp8Y7hT+qDSb6aubgz36f4Fn O4bL86x7ihlYRDjYpAVU2RxaDcJl1vOU7HZKFMDZg4rE8gQBi5OAZjIHzZGhm+b+RVrA02YJQrk FxYoR6zRVdu/O6JP8Bv3q6vmsWf+PWP4n7Xp98KNVmu2PuyuZD9zy+jdAqW5+zumO7b3fjne+G5 uBCsA
 X-Developer-Key: i=brauner@kernel.org; a=openpgp; fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 Content-Transfer-Encoding: 8bit
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -135,140 +135,207 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Implement ->proc_ioctl_buf() so procfs copies the arguments in before
-it pins the entry and back out after unpinning it. The command numbers
-in <uapi/linux/i8k.h> encode the wrong sizes, so the table lists what
-is really copied: an int or the 16 bytes of the machine id out, and one
-or two ints in.
-
-A NULL argument fails with -EFAULT now instead of -EINVAL, and so does
-a bad pointer to SET_FAN from an unprivileged task, which got -EPERM
-before, since procfs copies the argument in before the entry's own
-checks run. 32-bit tasks can use the commands whose numbers don't
-depend on the size of size_t.
+Implement ->proc_write_buf() for the files in /proc/viafb so procfs
+copies in what is written before it pins the entry, and parse what was
+written from that copy. Writes larger than PAGE_SIZE - 1 bytes fail with
+-EINVAL now, the output device files refused anything over 63 bytes
+already. kstrtou8_from_user() looked at the first 10 bytes of what was
+written to dfph and dfpl, now the whole write is parsed.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- drivers/hwmon/dell-smm-hwmon.c | 48 +++++++++++++++++++++---------------------
- 1 file changed, 24 insertions(+), 24 deletions(-)
+ drivers/video/fbdev/via/viafbdev.c | 46 +++++++++++++++++---------------------
+ 1 file changed, 21 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/hwmon/dell-smm-hwmon.c b/drivers/hwmon/dell-smm-hwmon.c
-index 492b2b6c6d7e..67b8c6e5752f 100644
---- a/drivers/hwmon/dell-smm-hwmon.c
-+++ b/drivers/hwmon/dell-smm-hwmon.c
-@@ -549,16 +549,13 @@ static int i8k_get_power_status(const struct dell_smm_data *data)
-  * Procfs interface
-  */
+diff --git a/drivers/video/fbdev/via/viafbdev.c b/drivers/video/fbdev/via/viafbdev.c
+index 4b617e80a77c..94b303006915 100644
+--- a/drivers/video/fbdev/via/viafbdev.c
++++ b/drivers/video/fbdev/via/viafbdev.c
+@@ -1121,7 +1121,7 @@ static int viafb_dvp0_proc_show(struct seq_file *m, void *v)
+ }
  
--static long i8k_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
-+static long i8k_ioctl(struct file *fp, unsigned int cmd, void *arg)
+ static ssize_t viafb_dvp0_proc_write(struct file *file,
+-	const char __user *buffer, size_t count, loff_t *pos)
++	char *buffer, size_t count, loff_t *pos)
  {
- 	struct dell_smm_data *data = pde_data(file_inode(fp));
--	int __user *argp = (int __user *)arg;
-+	int *argp = arg;
- 	int speed, err;
- 	int val = 0;
- 
--	if (!argp)
--		return -EINVAL;
--
- 	switch (cmd) {
- 	case I8K_BIOS_VERSION:
- 		if (!isdigit(data->bios_version[0]) || !isdigit(data->bios_version[1]) ||
-@@ -568,17 +565,13 @@ static long i8k_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
- 		val = (data->bios_version[0] << 16) |
- 				(data->bios_version[1] << 8) | data->bios_version[2];
- 
--		if (copy_to_user(argp, &val, sizeof(val)))
--			return -EFAULT;
--
-+		*argp = val;
- 		return 0;
- 	case I8K_MACHINE_ID:
- 		if (restricted && !capable(CAP_SYS_ADMIN))
- 			return -EPERM;
- 
--		if (copy_to_user(argp, data->bios_machineid, sizeof(data->bios_machineid)))
--			return -EFAULT;
--
-+		memcpy(argp, data->bios_machineid, sizeof(data->bios_machineid));
- 		return 0;
- 	case I8K_FN_STATUS:
- 		val = i8k_get_fn_status(data);
-@@ -593,8 +586,7 @@ static long i8k_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
- 		break;
- 
- 	case I8K_GET_SPEED:
--		if (copy_from_user(&val, argp, sizeof(int)))
--			return -EFAULT;
-+		val = *argp;
- 
- 		if (val > U8_MAX || val < 0)
- 			return -EINVAL;
-@@ -603,8 +595,7 @@ static long i8k_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
- 		break;
- 
- 	case I8K_GET_FAN:
--		if (copy_from_user(&val, argp, sizeof(int)))
--			return -EFAULT;
-+		val = *argp;
- 
- 		if (val > U8_MAX || val < 0)
- 			return -EINVAL;
-@@ -616,14 +607,11 @@ static long i8k_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
- 		if (restricted && !capable(CAP_SYS_ADMIN))
- 			return -EPERM;
- 
--		if (copy_from_user(&val, argp, sizeof(int)))
--			return -EFAULT;
--
-+		val = argp[0];
- 		if (val > U8_MAX || val < 0)
- 			return -EINVAL;
- 
--		if (copy_from_user(&speed, argp + 1, sizeof(int)))
--			return -EFAULT;
-+		speed = argp[1];
- 
- 		speed = clamp_val(speed, 0, data->i8k_fan_max);
- 
-@@ -643,12 +631,22 @@ static long i8k_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
- 	if (val < 0)
- 		return val;
- 
--	if (copy_to_user(argp, &val, sizeof(int)))
+ 	char buf[20], *value, *pbuf;
+ 	u8 reg_val = 0;
+@@ -1129,8 +1129,7 @@ static ssize_t viafb_dvp0_proc_write(struct file *file,
+ 	if (count < 1)
+ 		return -EINVAL;
+ 	length = count > 20 ? 20 : count;
+-	if (copy_from_user(&buf[0], buffer, length))
 -		return -EFAULT;
--
-+	*argp = val;
++	memcpy(&buf[0], buffer, length);
+ 	buf[length - 1] = '\0';	/*Ensure end string */
+ 	pbuf = &buf[0];
+ 	for (i = 0; i < 3; i++) {
+@@ -1169,7 +1168,7 @@ static ssize_t viafb_dvp0_proc_write(struct file *file,
+ 
+ static const struct proc_ops viafb_dvp0_proc_ops = {
+ 	.proc_show	= viafb_dvp0_proc_show,
+-	.proc_write	= viafb_dvp0_proc_write,
++	.proc_write_buf	= viafb_dvp0_proc_write,
+ };
+ 
+ static int viafb_dvp1_proc_show(struct seq_file *m, void *v)
+@@ -1183,7 +1182,7 @@ static int viafb_dvp1_proc_show(struct seq_file *m, void *v)
+ }
+ 
+ static ssize_t viafb_dvp1_proc_write(struct file *file,
+-	const char __user *buffer, size_t count, loff_t *pos)
++	char *buffer, size_t count, loff_t *pos)
+ {
+ 	char buf[20], *value, *pbuf;
+ 	u8 reg_val = 0;
+@@ -1191,8 +1190,7 @@ static ssize_t viafb_dvp1_proc_write(struct file *file,
+ 	if (count < 1)
+ 		return -EINVAL;
+ 	length = count > 20 ? 20 : count;
+-	if (copy_from_user(&buf[0], buffer, length))
+-		return -EFAULT;
++	memcpy(&buf[0], buffer, length);
+ 	buf[length - 1] = '\0';	/*Ensure end string */
+ 	pbuf = &buf[0];
+ 	for (i = 0; i < 3; i++) {
+@@ -1225,7 +1223,7 @@ static ssize_t viafb_dvp1_proc_write(struct file *file,
+ 
+ static const struct proc_ops viafb_dvp1_proc_ops = {
+ 	.proc_show	= viafb_dvp1_proc_show,
+-	.proc_write	= viafb_dvp1_proc_write,
++	.proc_write_buf	= viafb_dvp1_proc_write,
+ };
+ 
+ static int viafb_dfph_proc_show(struct seq_file *m, void *v)
+@@ -1237,11 +1235,11 @@ static int viafb_dfph_proc_show(struct seq_file *m, void *v)
+ }
+ 
+ static ssize_t viafb_dfph_proc_write(struct file *file,
+-	const char __user *buffer, size_t count, loff_t *pos)
++	char *buffer, size_t count, loff_t *pos)
+ {
+ 	int err;
+ 	u8 reg_val;
+-	err = kstrtou8_from_user(buffer, count, 0, &reg_val);
++	err = kstrtou8(buffer, 0, &reg_val);
+ 	if (err)
+ 		return err;
+ 
+@@ -1251,7 +1249,7 @@ static ssize_t viafb_dfph_proc_write(struct file *file,
+ 
+ static const struct proc_ops viafb_dfph_proc_ops = {
+ 	.proc_show	= viafb_dfph_proc_show,
+-	.proc_write	= viafb_dfph_proc_write,
++	.proc_write_buf	= viafb_dfph_proc_write,
+ };
+ 
+ static int viafb_dfpl_proc_show(struct seq_file *m, void *v)
+@@ -1263,11 +1261,11 @@ static int viafb_dfpl_proc_show(struct seq_file *m, void *v)
+ }
+ 
+ static ssize_t viafb_dfpl_proc_write(struct file *file,
+-	const char __user *buffer, size_t count, loff_t *pos)
++	char *buffer, size_t count, loff_t *pos)
+ {
+ 	int err;
+ 	u8 reg_val;
+-	err = kstrtou8_from_user(buffer, count, 0, &reg_val);
++	err = kstrtou8(buffer, 0, &reg_val);
+ 	if (err)
+ 		return err;
+ 
+@@ -1277,7 +1275,7 @@ static ssize_t viafb_dfpl_proc_write(struct file *file,
+ 
+ static const struct proc_ops viafb_dfpl_proc_ops = {
+ 	.proc_show	= viafb_dfpl_proc_show,
+-	.proc_write	= viafb_dfpl_proc_write,
++	.proc_write_buf	= viafb_dfpl_proc_write,
+ };
+ 
+ static int viafb_vt1636_proc_show(struct seq_file *m, void *v)
+@@ -1313,7 +1311,7 @@ static int viafb_vt1636_proc_show(struct seq_file *m, void *v)
+ }
+ 
+ static ssize_t viafb_vt1636_proc_write(struct file *file,
+-	const char __user *buffer, size_t count, loff_t *pos)
++	char *buffer, size_t count, loff_t *pos)
+ {
+ 	char buf[30], *value, *pbuf;
+ 	struct IODATA reg_val;
+@@ -1321,8 +1319,7 @@ static ssize_t viafb_vt1636_proc_write(struct file *file,
+ 	if (count < 1)
+ 		return -EINVAL;
+ 	length = count > 30 ? 30 : count;
+-	if (copy_from_user(&buf[0], buffer, length))
+-		return -EFAULT;
++	memcpy(&buf[0], buffer, length);
+ 	buf[length - 1] = '\0';	/*Ensure end string */
+ 	pbuf = &buf[0];
+ 	switch (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name) {
+@@ -1404,7 +1401,7 @@ static ssize_t viafb_vt1636_proc_write(struct file *file,
+ 
+ static const struct proc_ops viafb_vt1636_proc_ops = {
+ 	.proc_show	= viafb_vt1636_proc_show,
+-	.proc_write	= viafb_vt1636_proc_write,
++	.proc_write_buf	= viafb_vt1636_proc_write,
+ };
+ 
+ #endif /* CONFIG_FB_VIA_DIRECT_PROCFS */
+@@ -1416,7 +1413,7 @@ static int __maybe_unused viafb_sup_odev_proc_show(struct seq_file *m, void *v)
  	return 0;
  }
  
-+/* The command numbers don't encode what is copied, see <uapi/linux/i8k.h>. */
-+static const struct proc_ioctl_arg i8k_ioctl_args[] = {
-+	PROC_IOCTL_ARG(I8K_BIOS_VERSION, 0, sizeof(int)),
-+	PROC_IOCTL_ARG(I8K_MACHINE_ID, 0, sizeof_field(struct dell_smm_data, bios_machineid)),
-+	PROC_IOCTL_ARG(I8K_FN_STATUS, 0, sizeof(int)),
-+	PROC_IOCTL_ARG(I8K_POWER_STATUS, 0, sizeof(int)),
-+	PROC_IOCTL_ARG(I8K_GET_TEMP, 0, sizeof(int)),
-+	PROC_IOCTL_ARG(I8K_GET_SPEED, sizeof(int), sizeof(int)),
-+	PROC_IOCTL_ARG(I8K_GET_FAN, sizeof(int), sizeof(int)),
-+	PROC_IOCTL_ARG(I8K_SET_FAN, 2 * sizeof(int), sizeof(int)),
-+};
-+
- /*
-  * Print the information for /proc/i8k.
-  */
-@@ -696,7 +694,9 @@ static int i8k_proc_show(struct seq_file *seq, void *offset)
+-static ssize_t odev_update(const char __user *buffer, size_t count, u32 *odev)
++static ssize_t odev_update(const char *buffer, size_t count, u32 *odev)
+ {
+ 	char buf[64], *ptr = buf;
+ 	u32 devices;
+@@ -1424,8 +1421,7 @@ static ssize_t odev_update(const char __user *buffer, size_t count, u32 *odev)
  
- static const struct proc_ops i8k_proc_ops = {
- 	.proc_show	= i8k_proc_show,
--	.proc_ioctl	= i8k_ioctl,
-+	.proc_ioctl_buf	= i8k_ioctl,
-+	.proc_ioctl_args = i8k_ioctl_args,
-+	.proc_nr_ioctl_args = ARRAY_SIZE(i8k_ioctl_args),
+ 	if (count < 1 || count > 63)
+ 		return -EINVAL;
+-	if (copy_from_user(&buf[0], buffer, count))
+-		return -EFAULT;
++	memcpy(&buf[0], buffer, count);
+ 	buf[count] = '\0';
+ 	add = buf[0] == '+';
+ 	sub = buf[0] == '-';
+@@ -1452,7 +1448,7 @@ static int viafb_iga1_odev_proc_show(struct seq_file *m, void *v)
+ }
+ 
+ static ssize_t viafb_iga1_odev_proc_write(struct file *file,
+-	const char __user *buffer, size_t count, loff_t *pos)
++	char *buffer, size_t count, loff_t *pos)
+ {
+ 	u32 dev_on, dev_off, dev_old, dev_new;
+ 	ssize_t res;
+@@ -1473,7 +1469,7 @@ static ssize_t viafb_iga1_odev_proc_write(struct file *file,
+ 
+ static const struct proc_ops viafb_iga1_odev_proc_ops = {
+ 	.proc_show	= viafb_iga1_odev_proc_show,
+-	.proc_write	= viafb_iga1_odev_proc_write,
++	.proc_write_buf	= viafb_iga1_odev_proc_write,
  };
  
- static void i8k_exit_procfs(void *param)
+ static int viafb_iga2_odev_proc_show(struct seq_file *m, void *v)
+@@ -1483,7 +1479,7 @@ static int viafb_iga2_odev_proc_show(struct seq_file *m, void *v)
+ }
+ 
+ static ssize_t viafb_iga2_odev_proc_write(struct file *file,
+-	const char __user *buffer, size_t count, loff_t *pos)
++	char *buffer, size_t count, loff_t *pos)
+ {
+ 	u32 dev_on, dev_off, dev_old, dev_new;
+ 	ssize_t res;
+@@ -1504,7 +1500,7 @@ static ssize_t viafb_iga2_odev_proc_write(struct file *file,
+ 
+ static const struct proc_ops viafb_iga2_odev_proc_ops = {
+ 	.proc_show	= viafb_iga2_odev_proc_show,
+-	.proc_write	= viafb_iga2_odev_proc_write,
++	.proc_write_buf	= viafb_iga2_odev_proc_write,
+ };
+ 
+ #define IS_VT1636(lvds_chip)	((lvds_chip).lvds_chip_name == VT1636_LVDS)
 
 -- 
 2.53.0
