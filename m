@@ -2,79 +2,81 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 082EC606D804
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 22:46:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F196E606D81D
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 02:00:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Y+guEyix
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ZhtkiaTu
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKgXP1bzRz2xSR;
-	Thu, 05 Nov 2026 09:46:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793832373;
-	cv=none; b=IJ+LLsI081flpiK+M05zUJNBsHfCQH04VpPySfALzD/f9aUpnOWcIjH8JQkKq3kPGl2BaTlncbxgt444UVtOvkrAX9GTyrUfT2VEFfp5+sfqULgMiRcR7YCsbwlzTeclgypJKuVbW18r4gznFOIDotf+dzyodHJjUtQLKEnHp70//o/BbgDIGG1NZG8hXfMg2R5pu3f1ogUI7eaaph4EePm2q5FudxWoLCg8ruPkvZlc6s1FS5y8DZLPJc02Dvwhg7Glx/Uj3LOG7UGHdTZsegFGzgMAVbf94xXJd+z1syfgijNByNj0pCmE815KaxVWghh56stOnpf9UBiOhFj5mQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKlqy6jSPz2xNC;
+	Thu, 05 Nov 2026 12:59:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::332"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793833077;
+	cv=none; b=gDIQavHKQLuHcBjNsecQfiIF36gUokPR7lICqGuoluiKO/xQNv50230082Dyoe2bp2FaoxxzO2Htk7b0s+jEI6d69GcWL1gcEk207qpqVekmq6ZcE7wLvSdd1ZG/tCWrxR2OmIQ6dmGnmNwyPebLJolGEvhbBFZtOZ/kCj3oY3pSJ+8YFA4Ia2fyGIwqOAG6wvqX2c7Xs+pmnlUdLOzabg22vtgDYbhRgxMj1r8Y6NmJmwo6d31NW59SpHRBO4Ptd950ICfqw9gr2zLuvcg3sWDkoapHccemXb1NuEyvxJWQTRZUPG6SnTW1EyNIGRXZt27xpjAh3gsrxPiXvoBAvQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793832373; c=relaxed/relaxed;
-	bh=XBOw8umZc0PSygGL6ZhSsNEhyMPfzoczgqWFX+5YDNY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=JqVnupfMEHDGwQ9fj9k6WdL36isKbNhHGZVbIwZpBvXisMY3jV23jvvmMZd8hy0dO3uu6nmdelMPAGCoe/M9k6VwzfxP4sel6GznFNHP8bUmZb5VF323zv5i0i9NMj1TPvS5o18YI8kGuYA24h1aq3YFWvR02eHxs2mU3B0x9HHKIE/QiaWVDAUgsigKkdcPYQBAA8cbpQudo/gmCmv+P3DHdzguSD9l9PEc9hDy2EToG+DKbDP99+vr/tE7wP3WNuQeyzE4G91pDPT3H3iRFAcYcLGKTXdA/aar1bS0SuuVQOn3yD8bvNmEJAfAgpulJTaQPBe/7or3tqbQmEVqhg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Y+guEyix; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1793833077; c=relaxed/relaxed;
+	bh=bZmm/fjciQHFDsHygF6gqzElYGHv0HpumcgfM0NGUjo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=AHr+IWFVxFmW2poKlEgh8Mk7eRC/cv2F9TPBUZBKmW1HcQfs7LiMwJp45e4YnuqYo4RVXtLuGOiFeaZXP7f2BlTFPOrMuDJR5H41NgeaCFkuBrekftESQvKEOhwEMoZ8lp+0RdVAdh1BBMA7ra7cluTfQLuHBaBms5gmdU7V/fjIOX0aEZKFJTWJPfkhG9UFCYAOSlD0Yuu+gfWZJwTkF9LT6bx5pg2uAFghDyLFskNO81ktGHDfmQ+C8Dg97id8zckY+9EuMnpzd95iG7k5poquLTj9a6r8a6EiEZcTZN1j4yBblXvLzp3PsfgBlteuBBWqucAEOfnTvc/LCXQ7vw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ZhtkiaTu; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::332; helo=mail-wm1-x332.google.com; envelope-from=azpijr@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Y+guEyix;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ZhtkiaTu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::332; helo=mail-wm1-x332.google.com; envelope-from=azpijr@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKgXN3f65z2x9N
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 09:46:12 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 8E931605D5;
-	Wed,  4 Nov 2026 22:46:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C6C1B1F000C1;
-	Wed,  4 Nov 2026 22:45:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793832369;
-	bh=XBOw8umZc0PSygGL6ZhSsNEhyMPfzoczgqWFX+5YDNY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=Y+guEyixDVYqpS8g3d4FmlRYq/qp1tQeGL16K2BSxNthPOaRsDL0VFTK+tjHByNf5
-	 UG3G3TR4IbDk5BaZwlgwVySr0HiRvL1WeYdDEujyS+zzG35LMJqu1Pm8BzfQ5Z+w4F
-	 3DGZwBGiTOYlKSVRIgaBstWj6LtjUlnMrGUfTY6AgB7LPx3pVl/0nxTfWzl1eRWVeu
-	 9SzZPPQ7yLUIbBzvzOD5olkzaVc7Od6fJQ93jvoDvEvbyLIezG28vK5PJuGqQJ/Zu+
-	 C/TFnkMniWMHftytXgdebgJiyvQu099dnGFvQXlwnwRKY6VGKt0bkFzVDUexAPr+Sm
-	 GvRbuyQmKti0Q==
-Date: Wed, 4 Nov 2026 23:45:55 +0100
-From: Christian Brauner <brauner@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-fsdevel@vger.kernel.org, Jann Horn <jannh@google.com>, 
-	Josef Bacik <josef@toxicpanda.com>, Chris Mason <mason@kernel.org>, Jeff Layton <jlayton@kernel.org>, 
-	NeilBrown <neil@brown.name>, Eric Dumazet <edumazet@kernel.org>, 
-	Thomas Gleixner <tglx@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>, 
-	Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@lst.de>, 
-	Greg Kroah-Hartman <gregkh@suse.de>, Joel Granados <joel.granados@kernel.org>, 
-	Kees Cook <kees@kernel.org>, Jan Kara <jack@suse.cz>, Jan Kara <jack@suse.com>, 
-	linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org, linux-acpi@vger.kernel.org, 
-	linux-kselftest@vger.kernel.org, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, 
-	linux-um@lists.infradead.org, linux-wireless@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	netdev@vger.kernel.org, ntfs3@lists.linux.dev, platform-driver-x86@vger.kernel.org, 
-	coreteam@netfilter.org, kexec@lists.infradead.org, linux-pci@vger.kernel.org, 
-	linux-sound@vger.kernel.org, netfilter-devel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	ibm-acpi-devel@lists.sourceforge.net, jfs-discussion@lists.sourceforge.net, 
-	linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-cifs@vger.kernel.org, 
-	linux-fbdev@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-mm@kvack.org, 
-	linux-sh@vger.kernel.org, linux-usb@vger.kernel.org, samba-technical@lists.samba.org, 
-	sparclinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-doc@vger.kernel.org, 
-	linux-serial@vger.kernel.org, linux-atm-general@lists.sourceforge.net, 
-	Takashi Iwai <tiwai@suse.de>, linux-input@vger.kernel.org, linux-raid@vger.kernel.org, 
-	linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org, linux-debuggers@vger.kernel.org, 
-	Chuck Lever <cel@kernel.org>
-Subject: Re: [PATCH RESEND v2 00/30] proc: convert the fs, kernel and mm
- entries (Part 5/7)
-Message-ID: <20261104-allein-bepacken-hitzig-5e517d3c129f@brauner>
-References: <20261104-work-procfs-v2-0-b45cd5789ac5@brauner>
- <20261104-work-procfs-fs-v2-0-319e0f9a8aae@kernel.org>
- <CAHk-=wj9Y9NcOesBBm+jhPjYa7qO00fD7g7uwX+H-k0-R2difA@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKgnv2jTPz2x9N
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 09:57:54 +1100 (AEDT)
+Received: by mail-wm1-x332.google.com with SMTP id 5b1f17b1804b1-4a214af2076so8994415e9.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2026 14:57:54 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1793833070; x=1794437870; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=bZmm/fjciQHFDsHygF6gqzElYGHv0HpumcgfM0NGUjo=;
+        b=ZhtkiaTu/W9DdtytpRzEx4W/mgoOkDVmLEgW/y/5HZ8ZpVlLHteJpaeGFIphvDV4sR
+         3dDcGdVgoDofHNmJ3mZHgwltZtJ+NvBArn3pgoaLT739TaI+Q5XgCWn0ST6p5cobNc+p
+         xVuWGMqeakUqJxk9jfjb/mo0ksy1a5N8fzJJjacp9LbYXN3hvKwYPpXZTwnv93+NcYgM
+         SbxdYdorN+Bd1tdLEtwPX3Q1wRb0gu8PJGGTp6e5xSP8+VVE4myk/kNZBZUh0lJFXrm/
+         5zzOPdYQeq7p3phSya0geH1T+U/9x44p1uuqZVrjKyuB+KSZUdWmt9qEbvm8f1SKPit8
+         LQFg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793833070; x=1794437870;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=bZmm/fjciQHFDsHygF6gqzElYGHv0HpumcgfM0NGUjo=;
+        b=j9VYFz6Dx7nI+rF5fOYCwSouF7ioHEGNy4D1utrGPE11xEKXdaRjEg0Io4+dP+zHQc
+         WYEUqbmosLUx4BB07uikXwMDe0/TDxlN0iaClamk0M7Tcr5wEltoAZynGSScfLL2S8RF
+         3PNaB5NEQ36DEuWkmsKvxaozsFadPuqCJVJQtlLYmVxR9Ch9LkFKNHc5K5DaxfxMpZmd
+         8WPZgOkS8F4hsiT6+71HKskQ6QWZilVD+4gMihNLbrjc6DzVZMF1KjUvjRoHzE27mQGv
+         +Q3WOW1aDxiQr2zeEIgZCAXb/1/PGptULusygXwOQ8+knjNxYzC8OKAn3Yc3OQ60M1oP
+         AHIA==
+X-Forwarded-Encrypted: i=1; AKwUvByvpX/dWT4HIfHqciqpqO+p7EyN9itCLxdLcuhOwi87KDy8SCTnC0qf9+dM/LCP2vrStzmMoPf5d2poB9k=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z9fmtD/9ReMOgNKTEY5t/F4Y2P+98zCjY5up+xgejqXLMxXGM0X
+	ihHeJZaxilwpibJxxxfinfzZZrR/8BEQokgcyvU6CXTK/EXsExVa+Lug
+X-Gm-Gg: AYBFou3Vx+IcUlQggKIuRBzaUX+DhuOGGbJv8DrGxFH1Ks4ndTQ8lnpRj0wly8du0Gg
+	dWRfxkQP8hEJnBOVA3DFzDN9ZvthQoOJvrZLKT1SZOg6BKNb8i57ffWzlpfvm7gJ3IEILC9g6eh
+	x4YX8GmWVYnmUSwivOgwByDHKDapMo/ipWVJlU/uXsIjRHqwpmzHimRw3zaG6YiQZZ948+x4My8
+	6X9L+V0bENMRKsAfAzUo+Gm4OhPWhtXGxsCGAAFFnOKdsRK968bOf+vKmlJEIa1sp77Lam4PLkC
+	mcfmELnsLJX0DLytNNtDX6kpCiot69Lv2Id3z/E8OKnC4Rf7XSxkh6TO5jPf0tU7kCF6zD5Pgy3
+	fq2qkNQ5tltcebj7RKBP5MLt3k8BVyXtItsVWuUbKoAD96L/aQis/G/LeY+/1ikA5iZPC0rJIkz
+	4lVcdx0TRAu9Lf8I3WRX/d/QCt0QKS+l5ckUpTtc6XDXxMhQxXw8sIgfAmwE7wI0zfS9h/kqHua
+	V5+GtIJtJKJHG8NQkFB3h/9kZ/iO18JIMNeeWqfm7HZR8UBevgOeAlSfES/tT0UVvnfyDt2MPkR
+	FOQcrji2DJsLMfHm2y998bI=
+X-Received: by 2002:a05:600c:6212:b0:4b0:a7aa:843 with SMTP id 5b1f17b1804b1-4b0a7aa0a54mr222825565e9.25.1793833070285;
+        Wed, 04 Nov 2026 14:57:50 -0800 (PST)
+Received: from [192.168.1.22] ([83.231.69.9])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4b5725061e1sm17756545e9.7.2026.11.04.14.57.48
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 04 Nov 2026 14:57:49 -0800 (PST)
+Message-ID: <93d13781-0c37-4a3c-8fca-6f8108eff35a@gmail.com>
+Date: Wed, 4 Nov 2026 23:57:47 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,27 +90,62 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <CAHk-=wj9Y9NcOesBBm+jhPjYa7qO00fD7g7uwX+H-k0-R2difA@mail.gmail.com>
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 1/4] mm/rmap: duplicate a PMD mapping as one in
+ folio_dup_file_rmap_pmd()
+To: Konstantin Khorenko <khorenko@virtuozzo.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "David Hildenbrand (Arm)" <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
+ Baolin Wang <baolin.wang@linux.alibaba.com>,
+ "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>,
+ Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>,
+ Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>,
+ Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>,
+ Peter Xu <peterx@redhat.com>
+Cc: Alex Williamson <alex@shazbot.org>, kvm@vger.kernel.org,
+ =?UTF-8?Q?Lo=C3=AFc_Molinari?= <loic.molinari@collabora.com>,
+ Lorenzo Stoakes <ljs@kernel.org>, Shuah Khan <shuah@kernel.org>,
+ linux-kselftest@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>,
+ stable@vger.kernel.org
+References: <20261104-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v5-0-c56d0d26f970@virtuozzo.com>
+ <20261104-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v5-1-c56d0d26f970@virtuozzo.com>
+Content-Language: en-US
+From: "Jose A. Perez de Azpillaga" <azpijr@gmail.com>
+In-Reply-To: <20261104-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v5-1-c56d0d26f970@virtuozzo.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Spam-Status: No, score=-9.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Wed, Nov 04, 2026 at 12:05:08PM -0800, Linus Torvalds wrote:
-> On Wed, 4 Nov 2026 at 11:49, Christian Brauner <brauner@kernel.org> wrote:
-> >
-> > Part 5/7 of "proc: move procfs to what kernfs does", on top of part 2
+On 11/4/26 9:40 PM, Konstantin Khorenko wrote:
+> folio_dup_file_rmap_pmd() passes PGTABLE_LEVEL_PTE to
+> __folio_dup_file_rmap() for HPAGE_PMD_NR pages, so it adds HPAGE_PMD_NR
+> PTE mappings to the folio instead of one PMD mapping.
 > 
-> Christian - way too many patches, re-sent much too often, cc'd to way
-> too many people.
+> The helper has no caller yet, the next patch adds the first one. Pass
+> PGTABLE_LEVEL_PMD, as folio_try_dup_anon_rmap_pmd() does.
 > 
-> Nobody is going to read these repeated resends, and all you are doing
-> is clogging up peoples mailboxes.
+> Fixes: d8ef5e311d7b ("mm/rmap: convert page_dup_file_rmap() to folio_dup_file_rmap_[pte|ptes|pmd]()")
+> Cc: stable@vger.kernel.org
+> Reviewed-by: Zi Yan <ziy@nvidia.com>
+> Reviewed-by: Kiryl Shutsemau (Meta) <kas@kernel.org>
+> Acked-by: David Hildenbrand (Arm) <david@kernel.org>
+> Signed-off-by: Konstantin Khorenko <khorenko@virtuozzo.com>
 
-I resent once after I cleaned things up post RFC and I don't plan on
-resending (one failed attempt due to my network dropping).
+LGTM:
+
+Reviewed-by: Jose A. Perez de Azpillaga <azpijr@gmail.com>
+
+-- 
+cheers,
+jose a. p-a
 
