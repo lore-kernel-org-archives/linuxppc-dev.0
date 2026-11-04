@@ -2,53 +2,63 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E0A1606A32E
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 17:28:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3FDAD606A33E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 17:28:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cVdCjCL1
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SK7izhno
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKXV255Klz2xSF;
-	Thu, 05 Nov 2026 04:28:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKXVJ5qPKz2yDs;
+	Thu, 05 Nov 2026 04:28:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793813322;
-	cv=none; b=fqgInjxOI7JLlJBBSW+IFRTyCWSNkVaHcoDtZQGc7TG5ZkWZabh+unpSwnjPlEka8hEGyVAz61pP/VwVrNFrLLSqLYll16wZFGuT5JELi3nxygODXZbL3m6WRspOucgr7uXQyWnheWBiQg0v/C8FJdd+xr6EuOneb/1s/QTtnADB2NyVgOqaO+TSP8D0H5liQXDYTDcd150Kj58SxV4JNyRdo3R1lf+R8lfyh3ACyBn+0DkSJvW0p3MbpgqtcbnmmEy4+AoYAhfh1zGNeuGQRuoEwejBOJk6KS5nZkNpvV/Dgan/TEBmq894nC9y7RItwEbbwsTicB7eE23/fk689Q==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793813336;
+	cv=none; b=TqlE+lJ01rJSkD0cDbP9EnwPpC76lLCIfw1rokv1j42Mil+sx1MvIHeokNRYTafU9HApiw0NWaHE2Lm93WO9Xl0G1PtimCRtE8UCLJng5txHk/VS966hMFjke0jr2SiE7UMQvmH03eyt7Y0HebyRUVpYtKDD62PJzp6VhnskZ1etsWu4egN4zks7w7WmQWwQBFT+DfbEYrS2khuqoSihWTkeQhx+vhPh1XzI3j6wiYeavia/rcfW+SE3qTZ16tKw05AECNih9nKbG83pOIxeLXqHr3HA8b1muaJT3BhOFfad7QErXzHikMk7fK/qOJpauLi3ikwKMVZJ0LkGZ8Mi+Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793813322; c=relaxed/relaxed;
-	bh=gjEH2piUuhMtwxK5i7yIAEc83f1M2MXkP9ZzaCRnQBU=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:
-	 In-Reply-To:References:To:Cc; b=ZO460dJAijgur6WQ8IAlwQW2YqQUqta1y/3/lGQZZs850c0BDSJj60RaM7b9htW2BK+klfRaQEOA+QruJfKs4Lf07ecfa3jJpXlzvaqekrphs+QRM5UGlAgp4rDclIE//EwN10aHK/mu6L30cEdp1vhfgzntAE+vCszEdYDtc0uNKjolxqa5yESQObvw1Oz6V2vgvRQ5V3f6Z0iEO5tHamTir94BRMipcwuQ/wLJYrUrdXgiuDmdcTPGUvkk+YXPsjmv7LsglCXhdim1FnwyFDrunbbDZyBWV0UwIHC0SoQ/y2uwsZLr2/7qTlv3fDER2PqUiQmXNeYea8fRhCY6KQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cVdCjCL1; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1793813336; c=relaxed/relaxed;
+	bh=/2uDJDXzHicGsxbsYEgaBGi/Fbf89CthmN/itDPv2fE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=l/sbFj1u73dnCsV6yjfm6oaiupUrI3g+3aJyeUHKIZMXoapd6MC7V2vmwlAVcZ8vdnylS4d8g7JIAigN5H6Ah34onmCu6yhgVHaObaCm5m1QrShZntBzbv5mfTrcW+zNfPrXfUON1daPAOx+HL1NdGC8Alj/BKoGdG935sVw/g1adNsuG4WEFhYIbgXmgHbvpGKD30jZMohi23Wt9z+zGWMOG3sv++u+zl3zJNWuK2lLEym0KUsNNMUt0KHJNEeu2hOJfMhaodVF8W2X0BNMVoYLjHlwBBa81XlvLBQDgpTOC9M8Ys6RIGjSUvHbsdR6K6k+NwpKx/YXL4WaektQXg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SK7izhno; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=blum@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cVdCjCL1;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SK7izhno;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=blum@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKXV14RqGz2xf8
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 04:28:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKXVJ138zz2xf8
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 04:28:56 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 0512B60546;
-	Wed,  4 Nov 2026 17:28:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 159391F000C1;
-	Wed,  4 Nov 2026 17:28:23 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 46EDA60A7C;
+	Wed,  4 Nov 2026 17:28:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 89C891F000C1;
+	Wed,  4 Nov 2026 17:28:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793813318;
-	bh=gjEH2piUuhMtwxK5i7yIAEc83f1M2MXkP9ZzaCRnQBU=;
-	h=From:Subject:Date:In-Reply-To:References:To:Cc;
-	b=cVdCjCL1e/r71WdMYR37Zt/JfRlrKHW7hYZIgKlb+Kfq5/0Yh0QHjoclvPtLk+fin
-	 YvLgjvxb1o8KGGlc0ouDFGIVy7l/F0u8+/o2IaiADydVB3cYg+8utWuIWlMJBZdzLc
-	 /53Gg0Gbq8hzAJ7pJy8kC4ywtg8GeAqY7L8q2t05Q3VVA/15mpyDJc0JlDsOPjtKm0
-	 ICfDugN5L9H7CTh57OX9YNroaBA4oZMjjvn+zt/+ujI0IUGwntNelJKez+5cVCDp/1
-	 /Fk9OLdyb5lc9b0NV9me5V0xQ66Awmj2F7LFQ7pJUpFi9Q1b19Eol8hEhwveYWX8Y+
-	 j2RAv7ggEn+OA==
-From: Christian Brauner <brauner@kernel.org>
-Subject: [PATCH v2 00/51] proc: fix a few old bugs in /proc handlers (Part
- 1/7)
-Date: Wed, 04 Nov 2026 18:27:17 +0100
-Message-Id: <20261104-work-procfs-bugfixes-v2-0-bbf7d5546809@kernel.org>
+	s=k20260515; t=1793813334;
+	bh=/2uDJDXzHicGsxbsYEgaBGi/Fbf89CthmN/itDPv2fE=;
+	h=From:To:Cc:Subject:Date;
+	b=SK7izhnoe3mmurLolplKYHMvxuZJblKrGR1JL6yCVSRiW3casRTlCR/nX99F7RRR4
+	 xCx/nMtQS8ZRyLJHDsA9ioaVoBmtkouKdLpsI3WJQI4y1+VqsY7Jc2fbSDk/wKuZQz
+	 RG80y08RzwLUmU6699b9rum7MzzOu5RPqMUq6wIZe8MJ3QRiXaSConDF0WevG4rAiI
+	 IzjlaPOadmFKvNv426Ph7YwytWPR11VYIPm2ShrfzBpuf2C/lLQM3KH0geEi3tbrYS
+	 MpkSpo6D5xTRG7XXQLyy/yBX4275tvfrA8amqJjvB7M6cQW9Dh/x27LpXoHcFgKgOI
+	 kNRlZRkBNbzPQ==
+From: Thorsten Blum <blum@kernel.org>
+To: Anatolij Gustschin <agust@denx.de>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Randy Dunlap <rdunlap@infradead.org>
+Cc: Thorsten Blum <blum@kernel.org>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/mpc52xx: Remove redundant 0x prefix in mpc52xx_pci_setup()
+Date: Wed,  4 Nov 2026 18:28:28 +0100
+Message-ID: <20261104172829.231857-2-blum@kernel.org>
+X-Mailer: git-send-email 2.56.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,286 +72,36 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/22OTQ6CMBCFr0K6tqSthYgr72FY0DJAxVAyA6gh3
- N0W4s7l+/vyVkaADohdk5UhLI6cH4JQp4TZrhpa4K4OmimhcimF5C+PPR/R24a4mdvGvYG4yHQ
- thFAXXUgWpiPCHoTlvTw0zeYBdoqs2DAVATdYDbaLVqSmBzWNUax0jiaPn/3aIiPq90L9f7FIL
- nhWaKWgPoPOs1sPOMAz9diyctu2L6vwdQzuAAAA
-X-Change-ID: 20261101-work-procfs-bugfixes-054d00028491
-In-Reply-To: <20261104-work-procfs-v2-0-288f0ce32927@kernel.org>
-References: <20261104-work-procfs-v2-0-288f0ce32927@kernel.org>
-To: linux-fsdevel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, 
- Jann Horn <jannh@google.com>, Josef Bacik <josef@toxicpanda.com>, 
- Chris Mason <mason@kernel.org>, Jeff Layton <jlayton@kernel.org>, 
- NeilBrown <neil@brown.name>, Eric Dumazet <edumazet@kernel.org>, 
- Thomas Gleixner <tglx@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>, 
- Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@lst.de>, 
- Greg Kroah-Hartman <gregkh@suse.de>, 
- Joel Granados <joel.granados@kernel.org>, Kees Cook <kees@kernel.org>, 
- Jan Kara <jack@suse.cz>, Jan Kara <jack@suse.com>, 
- linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org, 
- linux-acpi@vger.kernel.org, linux-kselftest@vger.kernel.org, 
- linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, 
- linux-um@lists.infradead.org, linux-wireless@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, 
- ntfs3@lists.linux.dev, platform-driver-x86@vger.kernel.org, 
- coreteam@netfilter.org, kexec@lists.infradead.org, 
- linux-pci@vger.kernel.org, linux-sound@vger.kernel.org, 
- netfilter-devel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
- ibm-acpi-devel@lists.sourceforge.net, jfs-discussion@lists.sourceforge.net, 
- linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-cifs@vger.kernel.org, linux-fbdev@vger.kernel.org, 
- linux-hwmon@vger.kernel.org, linux-mm@kvack.org, linux-sh@vger.kernel.org, 
- linux-usb@vger.kernel.org, samba-technical@lists.samba.org, 
- sparclinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
- linux-doc@vger.kernel.org, linux-serial@vger.kernel.org, 
- linux-atm-general@lists.sourceforge.net, Takashi Iwai <tiwai@suse.de>, 
- linux-input@vger.kernel.org, linux-raid@vger.kernel.org, 
- linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org, 
- linux-debuggers@vger.kernel.org, 
- "Christian Brauner (Amutable)" <brauner@kernel.org>, 
- Chuck Lever <cel@kernel.org>, stable@vger.kernel.org, 
- "Rafael J. Wysocki (Intel)" <rafael@kernel.org>, 
- Chuck Lever <cel@kernel.org>
-X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=12755; i=brauner@kernel.org;
- h=from:subject:message-id; bh=gmyRMdG+KcFIxcDC/b/LbsSvPn/1UP4r7z8EeefJTHI=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9zvoZ/Lbi45HAjXEZngICNzO2r77RGG7annMue//5S
- vPIRFafjlIWBjEuBlkxRRaHdpNwueU8FZuNMjVg5rAygQxh4OIUgImsqWZkmB8ls//fK/m2uq02
- e6ZP5GLmOXZuurw00/Er33PDn7le7WdkWM43v1iERV9nimmWQJvcnN3yDPFFyhtVY/feyotVPvm
- NFQA=
-X-Developer-Key: i=brauner@kernel.org; a=openpgp;
- fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
+X-Developer-Signature: v=1; a=openpgp-sha256; l=962; i=blum@kernel.org; h=from:subject; bh=i2d7EHLyCvvfJEHd6m6HmC1jX0Sr9JHbihHcAYB3m5E=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFmvs23D+kONOSq1v6ydlRg9YdIbV77NqW9YKzh4HFleZ Py2SOzsKGVhEONikBVTZHkw68cM39Kayk0mETth5rAygQxh4OIUgIkY3GJk2Ptzfp7HLJuktCin k08SOjNsYxxsn036f0t+Wq7iRu+9tgz/Uz/I3jxioCScVcMtfq5h/eGmHe/X7W5cHqN0XuRmi8M 9JgA=
+X-Developer-Key: i=blum@kernel.org; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
+Content-Transfer-Encoding: 8bit
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=4.0.1
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Part 1/7 of "proc: move procfs to what kernfs does", the base of the
-other six parts:
+The %pa format specifier already includes the 0x prefix. Remove the
+redundant prefix to avoid printing 0x0x.
 
-  https://patch.msgid.link/20261104-work-procfs-v2-0-288f0ce32927@kernel.org
-
-Moving procfs to what kernfs does touches just about every
-->proc_read(), ->proc_write() and ->proc_ioctl() in the tree. Reviewing
-that turned up bugs that have nothing to do with the conversion and are
-a lot older. They go first so they can go to stable on their own. Four
-selftests come with them.
-
-In procfs itself:
-
-- readdir resumed a listing at a counted position, so an entry that came
-  or went in between repeated or skipped one, and it ended a listing
-  early when the entry it was emitting went away. It resumes after the
-  last name now, like kernfs. /proc/sys had the same bug.
-- /proc/sys readdir ended a listing early at an entry that was being
-  unregistered, so getdents64() reported EOF with entries left.
-- /proc/sys copied to and from userspace with the table held, so a read,
-  write or getdents64() that faults for as long as userspace wants kept
-  unregister_sysctl_table() waiting, which addrconf calls under RTNL.
-- proc_sys_make_inode() read the table after it had dropped sysctl_lock.
-- a symlink's entry stayed pinned while readlink() copied it out, so a
-  faulting readlink() held up remove_proc_entry(). ALSA removes its card
-  links with snd_card_mutex held.
-- name resolution walked through regular files, and pktgen lets
-  userspace pick names, so an unprivileged user could hang an entry
-  below another file and get it freed. pktgen refuses a '/' now.
-- proc_register() WARNed on a duplicate name, which pktgen's names can
-  provoke.
-- proc_remove() removed by name, so removing an entry that was already
-  gone could take out a different one.
-- the parent of entries a dying network namespace left in /proc/net was
-  freed silently. procfs warns now.
-- on NOMMU every /proc file could be mapped privately, which reads it
-  with nommu_region_sem held, and /proc/maps takes that lock. Any user
-  could hang the machine.
-- sunrpc queued the pollers of its channel files on a wait queue in the
-  per-namespace cache_detail, which is freed with the namespace. Back to
-  one static queue here, the conversion makes procfs own the queues.
-- vmcore_cleanup() could run twice at once.
-
-In the handlers:
-
-- PCI/proc and isapnp truncated the position to an int, so a pwrite()
-  or pread() at a huge offset went negative and accessed config space
-  far outside the file.
-- dasd looked in front of its buffer on an empty write.
-- toshiba_acpi's brightness and fan write checks could never fail.
-- simdisk read the file name without the lock that protects it, so a
-  reader could copy out memory a concurrent detach had freed.
-- rtas_flash read past its validate message, and rtasd handed out what
-  vmalloc() left in its log buffer.
-- ALSA's info layer let a write past the end of a data entry through
-  unclamped.
-- BusLogic, ips and libipw returned 0 from writes, so stdio writers
-  retry forever.
-- the scsi host files and um's /proc/exitcode parsed writes without
-  NUL-terminating them.
-- ntfs3 tripped the page allocator's warning on a huge label write.
-- esas2r took the lengths of its HBA, SMP and firmware ioctls from
-  userspace unchecked, through a file everyone can open.
-- powerpc's copy_oldmem_page() didn't check ioremap_cache() and only
-  recovered from a machine check for read(), the pseries ofdt parser
-  read past its input, and lparcfg reported a failed hcall as a huge
-  write.
-- alloc_tag removed /proc/allocinfo with the codetag module lock held
-  when a module's tags couldn't be reserved, and a reader of the file
-  takes that lock with the entry pinned, so the module load and the
-  reader waited for each other for good.
-- esas2r copied the kernel addresses of the adapter, its pci_dev and its
-  Scsi_Host out through the 0444 ATTONode.
-- cs46xx stored the chip in the private data of its region files and
-  read it back as the region.
-- isapnp went on talking to whatever device the card had selected, and
-  unlocked a mutex it never took, when isapnp_cfg_begin() refused a
-  logical device number.
-- simdisk freed the gendisk before it removed the entry, so a write in
-  between set the capacity of a freed disk.
-- the pseries ofdt commands leaked a node reference per property
-  command, and lockd handed out the NUL behind "Y\n".
-- lparcfg and psi overwrote the last byte of a write to terminate it,
-  so a write without a trailing newline lost a character.
-- the sparc LED and rtas progress files consumed only the start of a
-  write, so a looping writer sent the rest as a second command.
-- profiling reported success when /proc/profile couldn't be created,
-  and zorro sized its files like a zorro_dev instead of the ConfigDev
-  they serve.
-
-The xt_recent deadlock v1 fixed here goes in through netfilter instead.
-
-The procfs, sysctl, readlink, pktgen, sunrpc, PCI and duplicate name
-bugs reproduce on a KASAN and lockdep kernel in a VM and are gone with
-the series. The rest is build tested.
-
-Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
+Fixes: 59510820fff7 ("powerpc/mpc52xx: Fix some pr_debug() issues")
+Signed-off-by: Thorsten Blum <blum@kernel.org>
 ---
-Changes in v2:
-- thirteen more fixes that the review of v1 turned up: alloc_tag,
-  esas2r, cs46xx, isapnp, simdisk, pseries ofdt, lockd, lparcfg, psi,
-  the sparc LED, rtas progress, profiling and zorro
-- the NOMMU, crash_dump and lparcfg patches say more about the bug
-- new patch: sysctl readdir ended a listing early when an entry was
-  being unregistered, pre-existing
-- the xt_recent patch is dropped, Cen Zhang's fix for the same lock is
-  on its way through netfilter
-- the readdir churn selftests skip instead of failing without
-  /dev/net/tun, the sysctl removal selftest seeks past the dots first so
-  its fault lands in an entry, the selftests' Makefile, .gitignore and
-  config lines sit in the series that adds each test
-- struct sysctl_dirent loses its unused mode
-- Reviewed-by and Acked-by from Rafael, Takashi and Chuck
-- rebased onto v7.4-rc1
-- Link to v1: https://patch.msgid.link/20261102-work-procfs-bugfixes-v1-0-59422ed3e465@kernel.org
+ arch/powerpc/platforms/52xx/mpc52xx_pci.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
----
-Christian Brauner (51):
-      alloc_tag: don't remove /proc/allocinfo under the codetag module lock
-      scsi: esas2r: don't copy kernel pointers out in EXPRESS_IOCTL_GET_MOD_INFO
-      ALSA: cs46xx: hand the region to the region proc files
-      PNP: isapnp: don't go on when isapnp_cfg_begin() fails
-      xtensa: simdisk: remove the proc entry before the disk
-      powerpc/pseries: put the node that the ofdt property commands look up
-      lockd: don't hand out the terminator of nlm_end_grace
-      powerpc/pseries/lparcfg: don't drop the last byte of a write
-      profiling: report it when /proc/profile can't be created
-      zorro: size the proc files like what they serve
-      sparc: led: consume the whole write
-      powerpc/rtas: consume the whole write to /proc/powerpc/rtas/progress
-      sched/psi: don't drop the last byte of a trigger write
-      proc: sysctl: don't stop readdir at an entry that is being unregistered
-      PCI/proc: don't truncate the position of config space accesses
-      PNP: isapnp: don't read past the end of the buffer on a large pread()
-      s390/dasd: don't look in front of the buffer on an empty write
-      platform/x86: toshiba_acpi: reject malformed brightness and fan writes
-      xtensa: simdisk: don't read the file name without the lock
-      powerpc/rtas_flash: don't read past the validate message
-      powerpc/rtasd: zero the error log buffer
-      ALSA: info: don't write past the end of a data entry
-      scsi: BusLogic: don't return 0 from writes to the proc file
-      scsi: ips: don't return 0 from writes to the proc file
-      wifi: libipw: don't return 0 from writes to debug_level
-      scsi: core: NUL-terminate what is written to the host proc files
-      um: NUL-terminate what is written to /proc/exitcode
-      ntfs3: don't warn when a huge label is written
-      proc: don't walk through a non-directory when resolving a name
-      net: pktgen: reject device names with a '/'
-      proc: don't WARN about a name that is already registered
-      proc: resume readdir after the last name it returned
-      selftests/proc: check a /proc listing while entries come and go
-      proc: let proc_remove() remove the entry it was given
-      proc: warn about entries left in /proc/net of a dying namespace
-      proc: don't let NOMMU map procfs files
-      proc/vmcore: don't let vmcore_cleanup() run twice at once
-      powerpc/crash_dump: check ioremap_cache() in copy_oldmem_page()
-      powerpc/crash_dump: recover from a machine check in copy_oldmem_page()
-      sunrpc: make queue_wait a global wait queue again
-      scsi: esas2r: bound the lengths of the HBA, SMP and firmware ioctls
-      powerpc/pseries: bound the lengths in the ofdt property parser
-      powerpc/pseries/lparcfg: return h_get_ppp()'s status as a long
-      proc: sysctl: resume readdir after the last name it returned
-      selftests/proc: check a sysctl listing while entries come and go
-      proc: sysctl: copy to and from userspace without holding the table
-      proc: sysctl: look at the table under sysctl_lock when creating an inode
-      proc: sysctl: don't hold the tables while readdir copies to userspace
-      selftests/proc: check that faulting sysctl accesses don't hold up removal
-      proc: don't pin a symlink's entry while readlink() copies it out
-      selftests/proc: check that a faulting readlink() doesn't hold up removal
-
- arch/powerpc/kernel/crash_dump.c                   |   6 +-
- arch/powerpc/kernel/rtas-proc.c                    |   3 +-
- arch/powerpc/kernel/rtas_flash.c                   |   2 +-
- arch/powerpc/kernel/rtasd.c                        |   2 +-
- arch/powerpc/platforms/pseries/lparcfg.c           |   7 +-
- arch/powerpc/platforms/pseries/reconfig.c          |  24 +-
- arch/sparc/kernel/led.c                            |   3 +-
- arch/um/kernel/exitcode.c                          |   3 +-
- arch/xtensa/platforms/iss/simdisk.c                |  28 +-
- drivers/net/wireless/intel/ipw2x00/libipw_module.c |   2 +-
- drivers/pci/proc.c                                 |  15 +-
- drivers/platform/x86/toshiba_acpi.c                |   8 +-
- drivers/pnp/isapnp/core.c                          |  16 +-
- drivers/pnp/isapnp/proc.c                          |  11 +-
- drivers/s390/block/dasd.c                          |   2 +-
- drivers/scsi/BusLogic.c                            |   2 +-
- drivers/scsi/esas2r/esas2r.h                       |   2 +-
- drivers/scsi/esas2r/esas2r_ioctl.c                 |  48 ++-
- drivers/scsi/esas2r/esas2r_main.c                  |   3 +-
- drivers/scsi/ips.c                                 |   2 +-
- drivers/scsi/scsi_proc.c                           |   1 +
- drivers/zorro/proc.c                               |   2 +-
- fs/lockd/procfs.c                                  |   2 +-
- fs/ntfs3/super.c                                   |  11 +-
- fs/proc/generic.c                                  | 174 ++++++---
- fs/proc/inode.c                                    |  38 +-
- fs/proc/internal.h                                 |   1 +
- fs/proc/proc_net.c                                 |   7 +
- fs/proc/proc_sysctl.c                              | 388 ++++++++++++++-------
- fs/proc/root.c                                     |   1 +
- fs/proc/vmcore.c                                   |   5 +
- include/linux/sunrpc/cache.h                       |   1 -
- kernel/profile.c                                   |   8 +-
- kernel/sched/psi.c                                 |   4 +-
- mm/alloc_tag.c                                     |  27 +-
- net/core/pktgen.c                                  |   4 +
- net/sunrpc/cache.c                                 |  12 +-
- sound/core/info.c                                  |   2 +
- sound/isa/es18xx.c                                 |   6 +-
- sound/pci/cs46xx/cs46xx_lib.c                      |   2 +-
- tools/testing/selftests/proc/.gitignore            |   4 +
- tools/testing/selftests/proc/Makefile              |   4 +
- tools/testing/selftests/proc/config                |   9 +
- tools/testing/selftests/proc/proc-readdir-churn.c  | 240 +++++++++++++
- .../selftests/proc/proc-remove-slow-readlink.c     | 191 ++++++++++
- .../selftests/proc/proc-remove-slow-sysctl.c       | 215 ++++++++++++
- .../selftests/proc/proc-sysctl-readdir-churn.c     | 152 ++++++++
- 47 files changed, 1420 insertions(+), 280 deletions(-)
----
-base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
-change-id: 20261101-work-procfs-bugfixes-054d00028491
-
+diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pci.c b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
+index 0ca4401ba781..a2e53cacd15b 100644
+--- a/arch/powerpc/platforms/52xx/mpc52xx_pci.c
++++ b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
+@@ -288,7 +288,7 @@ mpc52xx_pci_setup(struct pci_controller *hose,
+ 		printk(KERN_ERR "%s: Didn't find IO resources\n", __FILE__);
+ 		return;
+ 	}
+-	pr_debug(".io_resource = %pr .io_base_phys=0x%pa\n",
++	pr_debug(".io_resource = %pr .io_base_phys=%pa\n",
+ 		 res, &hose->io_base_phys);
+ 	out_be32(&pci_regs->iw2btar,
+ 	         MPC52xx_PCI_IWBTAR_TRANSLATION(hose->io_base_phys,
 
