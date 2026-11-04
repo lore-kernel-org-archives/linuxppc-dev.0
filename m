@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 70482606A939
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 17:30:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7673606B028
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 17:30:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gfbswzaD
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=g5u712B9
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKXWf1BBkz2xlk;
-	Thu, 05 Nov 2026 04:30:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKXWv2wgBz2xnQ;
+	Thu, 05 Nov 2026 04:30:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793813406;
-	cv=none; b=QiukrVlIVZBysSTZol6wzAuLN6nT+L7rh6lSjV9aZGZI+lBh4IlG88E2jaly1B9Gd9xPrU4QQvoXIYDRgXFGfXEzhXoK3KPSja31fvikSCPT5Lg2YoKuRjqpIVYZ/Hr8j3pz/wI71SpebBzdU/+v5dPdT3I6w6AvfWhliDSaotEeCFBzsup2vLSdwIYo6DugeDpn0+94zYhaQ7XmCkmmJSHqKUfPzKF5ki10ytP1K5EDXeQTwiQJhimtEv3PbGBzW4/39U9xX9kwdvc9MqTnKdkKAV2/OHECpksaKInwXoeA29DZtkrs/YT5PdKFRSTN1XSJUpTXzfL4+9sXDLYcIQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793813419;
+	cv=none; b=VBGO2c2WNmDG3BWq5sJLxLN674fd6s6/yJ/biqCKZE/St8q8VbRHzsYJ+DyXMdg5AyLQ1dfQMFxFprxV3DOKjDIbkuMCpCSMQe+GLydd+pd/kpBCVVyo9FzEWYc8ClPcXlpMRlPdt5EYzk3pzXOOtJjgJrm9v2n3AzlgEZ7dmHAHT2rLwSNdPWW3ybcwuxgpr5aToDnGcn1AIpJTZR8z2zGBQpPZeVbd1yksgvoJYHlGxUAbRp51XKHHKOytjfTJ+nFfY8UJVIUtjZUMRj9Ztc+STbAUSAhHrYQWE2P3aHgWJsC4elT14WYsTUfjxxIowVeFBJJhyR0jlmxPOIU2dg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793813406; c=relaxed/relaxed;
-	bh=7dKsu59FtDy8aNyG4WRUkN7aPYhsNBybpSNJpPGyZ1Y=;
+	t=1793813419; c=relaxed/relaxed;
+	bh=Bp2DPgSMAVNPpocNHMMHSMxcgQhQwNKqaFQNAmEUdgU=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=PruEykFvJ5Dd9Ge5EutPlEKVD9uFmEWKX72UyIugXGgIuqxUJb1i8Q9+QH6wtAFRjifs/nT3OJxbZqB2BCeb66Idpp+XZuKFTdaUFXSj1hhJyFaoTKa4bpej6BB7mZ+JNkWx5CZVCSVkknocGQpHNownoa8nucHt8QzUi/i4wMx7XFFhwSqB+rjVgRp1bkQfRpD2oUTJbj2P0cqKzxcgVweT6fAgTCs1GaQeSGVt3GQtWHyzguvofysaRpPkbUUHV8CSrH3gMgBSaaLR5kicWzy0dCbPvm1TxZO44bMsTG/FpdzGxepasU8ySFpF6xoWizEEmDjh5fSY/9phlIjpQw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gfbswzaD; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=Mznz5vJl0Csijzv4wzUY+WhgmXA6kTHABUuTghRSemVvRFD34dZjdHBKRWEQ5C1Ccl1Fef1RmObpAxfPQCeGLlcnssxP25yE92vXMbqRD0cEBZFclRv+ww7qbsUbbYsk3fCdR6EGZIqWn5U72cnXRK5BJBphhQE5t9Cgwx1rpygVoBhjqf13rq1tSjDNID1D52uJ3jGvaOQlfnpSksMfCMOBwTAGxOm9KzW1l2PR/sY7eJykhteDTPgu5lZkqprC847B8coEf1OlLzkaggoc6ZqnFmnuOlRS77vEL2OnD35UPm2+vjCfQd6fkxGxqxo0r/VSia72Xe49R3jKvYGcFw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=g5u712B9; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gfbswzaD;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=g5u712B9;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKXWd1ht8z2xSF
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 04:30:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKXWt3rZ9z2xm5
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 04:30:18 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 3BE0D60A95;
+	by tor.source.kernel.org (Postfix) with ESMTP id 9DB7E601F0;
+	Wed,  4 Nov 2026 17:30:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 70FBE1F000C1;
 	Wed,  4 Nov 2026 17:30:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E7E771F00919;
-	Wed,  4 Nov 2026 17:29:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793813402;
-	bh=7dKsu59FtDy8aNyG4WRUkN7aPYhsNBybpSNJpPGyZ1Y=;
+	s=k20260515; t=1793813416;
+	bh=Bp2DPgSMAVNPpocNHMMHSMxcgQhQwNKqaFQNAmEUdgU=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=gfbswzaDVBU7GKHdo96TauMKv1ceaJJyNilcKhGi1iENsVgvyZyYNALew+6JI6AWe
-	 pnCrSRXKJFZI76CSsVO2k0ZfaudiGPDz4H6nanxp+IyJlIS7zpWq7WbGYIpqXvffaY
-	 YPXkZIViE9ginAIsagyAOsm2dADTElAlSFhpb7mW7+aUif42uY6NuovJjFCkr22t+o
-	 8YZgU+wGhNeEvlg8uYowdA2V5/tkllZe4obLrFZwBz6wKkhavF4aJ1MAwudrDBYgmg
-	 iqyQouJN+3c3V4Q9h3e+svUJCBV88Hc0/UG53sSExSaEIpQZoLXQ7yhOlSnC5s6p6e
-	 /vqOf39HCSJtQ==
+	b=g5u712B9uyY/EHBMvMcIJjwX1Q9oNafVwZZdSTe+wWNmne5PBjIRnbjMdNBKEaIP4
+	 4sN1akBTM0upEXPMnrPesATu9t0mv+J9tGR4BfcCUQnJpzUcbcj+IvUqAQlpKvEFAP
+	 maIQiS285xRthBs8kUjqLULi7ZlP9EZaMs6jvYgyfDdyykDtrKuOIUKXiUE5xq8j0K
+	 rnPkE+GVlVCE8ozm0404SgO7RYqyMkzZKzwWo1p+WxGQXY8MTkERhkp4+WNxvZiOYe
+	 CguRECqkxpVtUS2A9kODUDoxnBc90vENA1/MJjeZ4tQ9xNPhj1ug3QG1Rnyknyga3s
+	 5rdxM+QnpKA9g==
 From: Christian Brauner <brauner@kernel.org>
-Date: Wed, 04 Nov 2026 18:27:23 +0100
-Subject: [PATCH v2 06/51] powerpc/pseries: put the node that the ofdt
- property commands look up
+Date: Wed, 04 Nov 2026 18:27:24 +0100
+Subject: [PATCH v2 07/51] lockd: don't hand out the terminator of
+ nlm_end_grace
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261104-work-procfs-bugfixes-v2-6-bbf7d5546809@kernel.org>
+Message-Id: <20261104-work-procfs-bugfixes-v2-7-bbf7d5546809@kernel.org>
 References: <20261104-work-procfs-bugfixes-v2-0-bbf7d5546809@kernel.org>
 In-Reply-To: <20261104-work-procfs-bugfixes-v2-0-bbf7d5546809@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -99,12 +99,12 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
  "Christian Brauner (Amutable)" <brauner@kernel.org>, 
  Chuck Lever <cel@kernel.org>
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1735; i=brauner@kernel.org;
- h=from:subject:message-id; bh=9GgvRCMv4/Dc1Z942cy3A7/ul6cTW5I084eAKnASIT8=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9zmZ4quyyZkXDnPt7l06dpyFV4qG0w25zxJ4t0hO4d
- EKlP1YEd5SyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAEykTo6R4ULmC811i1exrd39
- SCDIqSZw/sIzLju3fTqjXqriV5H7NIjhf6qrTt6RLRKL95YYMKbV3Ltr0FNg0RZ8ear5gYvqs+r
- mMQEA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=879; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=tKzHzMLxBoW/zY681xcBM67Jqe2y1s4JEAk9OycZ8F8=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9zma88mPSwzMZES8ZvfsaK7K5NIr2+azZ3b+Xc1Xpm
+ 7Wz/9nbdJSyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAExkbT3DP623G/ymh8nr95bL
+ Sj1ZqVz5I/v5xTDO2LLF07okt9w1Ws/wP0bKWD8yk0Xj8wP2OJmbXq1N7z9lRV6ZFj3BvzE/x+E
+ BNwA=
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -115,50 +115,29 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-parse_node() looks the node up with of_find_node_by_phandle(), which
-returns it with a reference, and do_add_property(),
-do_remove_property() and do_update_property() never put that
-reference. Every property command written to /proc/powerpc/ofdt leaks
-one. Put it when the command is done.
+nlm_end_grace_read() answers with "Y\n" or "N\n" from a three byte
+buffer and hands out all three bytes, the terminating NUL included.
+Leave the NUL out.
 
-Fixes: 610d91511f99 ("[PATCH] powerpc: Add support for changing properties from userspace")
+Fixes: d68e3c4aa416 ("lockd: add a /proc/fs/lockd/nlm_end_grace file")
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- arch/powerpc/platforms/pseries/reconfig.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ fs/lockd/procfs.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
-index 18e3f1a036e3..5a0c9c0b6253 100644
---- a/arch/powerpc/platforms/pseries/reconfig.c
-+++ b/arch/powerpc/platforms/pseries/reconfig.c
-@@ -271,8 +271,8 @@ static char *parse_node(char *buf, size_t bufsize, struct device_node **npp)
+diff --git a/fs/lockd/procfs.c b/fs/lockd/procfs.c
+index a01f08c8c2f3..74f7ab77535a 100644
+--- a/fs/lockd/procfs.c
++++ b/fs/lockd/procfs.c
+@@ -57,7 +57,7 @@ nlm_end_grace_read(struct file *file, char __user *buf, size_t size,
+ 	resp[1] = '\n';
+ 	resp[2] = '\0';
  
- static int do_add_property(char *buf, size_t bufsize)
- {
-+	struct device_node *np __free(device_node) = NULL;
- 	struct property *prop = NULL;
--	struct device_node *np;
- 	unsigned char *value;
- 	char *name, *end;
- 	int length;
-@@ -296,7 +296,7 @@ static int do_add_property(char *buf, size_t bufsize)
+-	return simple_read_from_buffer(buf, size, pos, resp, sizeof(resp));
++	return simple_read_from_buffer(buf, size, pos, resp, sizeof(resp) - 1);
+ }
  
- static int do_remove_property(char *buf, size_t bufsize)
- {
--	struct device_node *np;
-+	struct device_node *np __free(device_node) = NULL;
- 	char *tmp;
- 	buf = parse_node(buf, bufsize, &np);
- 
-@@ -315,7 +315,7 @@ static int do_remove_property(char *buf, size_t bufsize)
- 
- static int do_update_property(char *buf, size_t bufsize)
- {
--	struct device_node *np;
-+	struct device_node *np __free(device_node) = NULL;
- 	unsigned char *value;
- 	char *name, *end, *next_prop;
- 	int length;
+ static const struct proc_ops lockd_end_grace_proc_ops = {
 
 -- 
 2.53.0
