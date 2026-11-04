@@ -2,48 +2,48 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1EA5607816B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:55:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6DDEE606C928
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:56:07 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Q32w5rFD
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=n6uNIEN8
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKblp4jdzz3dWH;
-	Thu, 05 Nov 2026 06:55:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793822150;
-	cv=none; b=jN4oNyHO9mTbMLvEpaJeth5/8bwy19Xu7VzMZo5FwAOuWAA+lBRySXWU5YUvmNqFjUmXVY83rK9rgip5eyVLIQil1swNXYQcaSPr9JGfQyplUHBay4+26qMyPgcvW1dCQfyXfRBTu1OcJMOlaV6PmuMTg5Byy4jFbgvvpzz9R6YCSSmSFt8Rzbu0DaMKeFo6CROsla5zGpJbgy1qDsY2fv3OSiaNAE3oyRQuKhVaBt7RVmkCW362lNLAwM+G66ixZLp/XpheCpBdlykZc9iMK7+GDgyuZbYNovNyjwS9TpSBoQ6VqBUTsgNrG20mKAge7uK1Q1WlB2+D6VckPkhTrw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKbm61PYCz30VL;
+	Thu, 05 Nov 2026 06:56:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793822166;
+	cv=none; b=cnW86CP7wVz7nj+s9n/CCjq8FgtFW2SrqcZ6odY2coMXr4wwUOnYMQXCijCFiDVIK4dXBDtv/6ItqLU13EFxoUo48m6YbyfzAzmaLyIb7LpasNXmkzMLDeI69fsrIVCl4MgTQy3lWLTYGneT2/hgTf71svoEYw+ZOL2eMzmkrUVUAesn9ruprzlcRJ2Gbbh6YTMFcD+IJ0ZYkoo55y5kzyhbrOzi4gDG8oYSmDK6e0jE15Kt8Lo35CRKyIUyHXnRag5J2MX17WOo1c0plsPRauM5tUMKEkVwOZNr9qgmRPDBCCPszKEdJJbgrUVqoX+qgwvHYp3iOWzGy1aiXnJyYg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793822150; c=relaxed/relaxed;
-	bh=fVQTaeb1oaPXPKdbaoAayfOvKvQGNQ+1mlgyJVhAprY=;
+	t=1793822166; c=relaxed/relaxed;
+	bh=bCEpJCXGgk21zgMyVrJnsb9d3IAiyaFEBDru2XgYb4M=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Gzm9e203dzgVZ+ypgNIvGcI/fx1CtaCUxvUsrirhdIrNvaFzQpjmOruOk0cppnbHTYQPn/MpL8SNg+GG/AZ5i0lHWOzYbrX/5gZtJ2VdqgONGhknA/C04W4jxIHaftXuWlNnDnzwvNuNCPGiqvWK9SBmC0XPlk0AW/nwSzupjH4TBzSBcyq4++Tr4tOn4lyZAqFhkvjE/8uwCd7gIqfjbjxQ4xxoIWFbiCDQsBiv0bDsYlQjAQdnTjwAvPkaHw/PPEfpIRzHDssbRJ4JkVw5cnmJvSX1gn8q7EbDtv9FWfxoTe8weHoU8eUAwSTnoxINtQUZkd/VzVtf6vWbduUlWw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Q32w5rFD; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=ZG27wYIPwhnWamGtfeRCiA0ig4zKAiDyz2RoRF1crGdIpc302EN/cw/bDn9GSmxzlam1IfoW41/Ez+RdGOxXRPqrbYqDPE5HorVLX/+/x6L1dWKKcQd7xbzhVu/pEFuA7WskEHopU2Y/M0YPfNDVIQ97lSuOxnLPpBb6Gb7CW9ICOpEtQiLh2AzgBPLMzLL2koo310/WjABOGDUD4aBooUYmxoG4RXTetrxpm7ZF4xqyqEhHYnrqnFlnnGguDDq7nkBJVi40Py0FYL+r2pgCvxkpcP+9FxpIM2q+4j5duG0LpPmt8ReTcq3MxJhebhmV5nLlWJ+USzMgW2CExN92/g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=n6uNIEN8; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Q32w5rFD;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=n6uNIEN8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKbln6f77z3dWJ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:55:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKbm52mzQz30VF
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:56:05 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 3E94D411B8;
-	Wed,  4 Nov 2026 19:55:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1D2F21F000C1;
-	Wed,  4 Nov 2026 19:55:35 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 1015F40196;
+	Wed,  4 Nov 2026 19:56:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB9F61F00919;
+	Wed,  4 Nov 2026 19:55:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793822148;
-	bh=fVQTaeb1oaPXPKdbaoAayfOvKvQGNQ+1mlgyJVhAprY=;
+	s=k20260515; t=1793822162;
+	bh=bCEpJCXGgk21zgMyVrJnsb9d3IAiyaFEBDru2XgYb4M=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=Q32w5rFDw7m4TPU///ekwITsZbRvjQsHLd+6HFlNz2/NJu79jBf1XLpN0vUw391T2
-	 uw96M48YWvTVTZOd/quiW9tkip+To4fCWmrYtjAqEca7mU3cvv7TLSkJ2I5flbMddx
-	 tnPejpzcW7k6dl9zEzi4pAyQEWKRu7sTsR/gjlQf9B6G5OOj4qWhqpT4XCaI3CnMh/
-	 hxKIIlGSI2qxyvUVW6X5ewWtQ1YzM/tMkeLctqfK5X9ilrcEsCf6wf/+VMmbGZTiDJ
-	 imQFLXZ9BYFgkxP3LT/ycmK7E4KCrG3osBwTZ7XN2hZPdxLRGjjZgnJNCE/fKk2Vgg
-	 56mAj3Jb003tQ==
+	b=n6uNIEN8UtFFIaiDpvbvTTBdWrfLopeDookEM+XOfGJBmQaBLBud7PW4ZywRa4UqY
+	 sj9lKf00u87t0rYyILLdTAzUShhG08ZdGf/Lzb6uT5y+NXjXXOrpjMTCCufRj/+vUf
+	 qn2Hm5dCkKTQ/5xyNTYylulY92AYSZ+tzxPbaFXkvFnu/q327E+8W9jss69XVk/qWl
+	 RFW6EwVAfNKvgEJ3eedNnGhh4txPJEwh75Q839TLwgEzuVUSv49ucfVtBinxI3hk3b
+	 fb0M7feqk7mkAAGLRXxYscDizmCBmFG4sFYYV3OBo/qiimcnQoXdcT6kySNh1lRNIF
+	 bhwX+vUqpJ/hg==
 From: Christian Brauner <brauner@kernel.org>
 To: linux-fsdevel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -104,9 +104,9 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
 	linux-debuggers@vger.kernel.org,
 	"Christian Brauner (Amutable)" <brauner@kernel.org>,
 	Chuck Lever <cel@kernel.org>
-Subject: [PATCH RESEND v2 24/30] ipc: let procfs own the seq_file of the sysvipc files
-Date: Wed,  4 Nov 2026 20:55:33 +0100
-Message-ID: <20261104-work-procfs-fs-v2-24-319e0f9a8aae@kernel.org>
+Subject: [PATCH RESEND v2 25/30] alloc_tag: let procfs own the seq_file of /proc/allocinfo
+Date: Wed,  4 Nov 2026 20:55:48 +0100
+Message-ID: <20261104-work-procfs-fs-v2-25-319e0f9a8aae@kernel.org>
 In-Reply-To: <20261104-work-procfs-fs-v2-0-319e0f9a8aae@kernel.org>
 References: <20261104-work-procfs-fs-v2-0-319e0f9a8aae@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -124,7 +124,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1686; i=brauner@kernel.org; h=from:subject:message-id; bh=X6b7xxVI9/mXpsMyNcc27ZCzqI3OxIvLBKPC0zeU++I=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS97vFwli/OP28gcU6x0u9Lr20hZ/OW/Ux3Hlh8PSj+1 evPFOuKjlIWBjEuBlkxRRaHdpNwueU8FZuNMjVg5rAygQxh4OIUgIn4qjIyLNJbG8P2lu3B9+35 Hbo2fLdXVFnr727TUf79truJg3VZOyPDvTu51vy7Xnq5Jd/Q1ROI0K0O+HE2ZInIk8iog5PXrYn lAQA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2428; i=brauner@kernel.org; h=from:subject:message-id; bh=w2e219TOPzYhqaNEYdOja/Iy2kqKR7KfDC/oRUWRjFA=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS97vFcddfCmyOAVbf9SsDD2QKqjkaTBOc97Z200n3GL K1V/52WdJSyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAExEm5mR4fL8sPeSEVKLCxs1 t6daZRx/N59v9c2uBvbciVVGFpzdXxj+itqIaCekhc3YHW/sfpNlJ0++MIP1I9HZqYuF7+sHn5n NCgA=
 X-Developer-Key: i=brauner@kernel.org; a=openpgp; fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 Content-Transfer-Encoding: 8bit
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -135,54 +135,76 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Declare the seq_operations and the size of the iterator and let procfs
-open and free the seq_file of /proc/sysvipc/*. ->proc_open() only fills
-in the iterator now and ->proc_release() drops the references it holds.
+Declare the seq_operations and the size of the private state and let
+procfs open and free the seq_file. ->proc_open() and ->proc_release()
+only set up and destroy the ioctl lock now.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- ipc/util.c | 14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
+ mm/alloc_tag.c | 28 +++++++++++-----------------
+ 1 file changed, 11 insertions(+), 17 deletions(-)
 
-diff --git a/ipc/util.c b/ipc/util.c
-index 1737d776bc08..8ec3bc328657 100644
---- a/ipc/util.c
-+++ b/ipc/util.c
-@@ -894,13 +894,11 @@ static const struct seq_operations sysvipc_proc_seqops = {
- 	.show  = sysvipc_proc_show,
+diff --git a/mm/alloc_tag.c b/mm/alloc_tag.c
+index 7d7ad6704953..697e44468ebc 100644
+--- a/mm/alloc_tag.c
++++ b/mm/alloc_tag.c
+@@ -152,27 +152,21 @@ static const struct seq_operations allocinfo_seq_op = {
  };
  
-+/* procfs opened the seq_file and allocated @iter */
- static int sysvipc_proc_open(struct inode *inode, struct file *file)
+ /*
+- * Initializes seq_file operations and allocates private state when opening
+- * the /proc/allocinfo procfs entry.
++ * Initializes the private state when opening the /proc/allocinfo procfs
++ * entry. procfs opened the seq_file and allocated the state.
+  */
+ static int allocinfo_open(struct inode *inode, struct file *file)
  {
--	struct ipc_proc_iter *iter;
+-	int ret;
 -
--	iter = __seq_open_private(file, &sysvipc_proc_seqops, sizeof(*iter));
--	if (!iter)
--		return -ENOMEM;
+-	ret = seq_open_private(file, &allocinfo_seq_op,
+-			       sizeof(struct allocinfo_private));
+-	if (!ret) {
+-		struct seq_file *m = file->private_data;
+-		struct allocinfo_private *priv = m->private;
 +	struct seq_file *m = file->private_data;
-+	struct ipc_proc_iter *iter = m->private;
++	struct allocinfo_private *priv = m->private;
  
- 	iter->iface = pde_data(inode);
- 	iter->ns    = get_ipc_ns(current->nsproxy->ipc_ns);
-@@ -915,14 +913,14 @@ static int sysvipc_proc_release(struct inode *inode, struct file *file)
- 	struct ipc_proc_iter *iter = seq->private;
- 	put_ipc_ns(iter->ns);
- 	put_pid_ns(iter->pid_ns);
+-		mutex_init(&priv->ioctl_lock);
+-	}
+-	return ret;
++	mutex_init(&priv->ioctl_lock);
++	return 0;
+ }
+ 
+ /*
+- * Cleans up the seq_file state and frees up the private state allocated in
+- * allocinfo_open() when closing the /proc/allocinfo file descriptor.
++ * Undoes allocinfo_open() when closing the /proc/allocinfo file descriptor.
++ * procfs frees the seq_file and the private state.
+  */
+ static int allocinfo_release(struct inode *inode, struct file *file)
+ {
+@@ -180,7 +174,7 @@ static int allocinfo_release(struct inode *inode, struct file *file)
+ 	struct allocinfo_private *priv = m->private;
+ 
+ 	mutex_destroy(&priv->ioctl_lock);
 -	return seq_release_private(inode, file);
 +	return 0;
  }
  
- static const struct proc_ops sysvipc_proc_ops = {
- 	.proc_flags	= PROC_ENTRY_PERMANENT,
-+	.proc_seq_ops	= &sysvipc_proc_seqops,
-+	.proc_state_size = sizeof(struct ipc_proc_iter),
- 	.proc_open	= sysvipc_proc_open,
--	.proc_read	= seq_read,
--	.proc_lseek	= seq_lseek,
- 	.proc_release	= sysvipc_proc_release,
- };
- #endif /* CONFIG_PROC_FS */
+ /*
+@@ -475,9 +469,9 @@ static long allocinfo_compat_ioctl(struct file *file, unsigned int cmd,
+ #endif
+ 
+ static const struct proc_ops allocinfo_proc_ops = {
++	.proc_seq_ops		= &allocinfo_seq_op,
++	.proc_state_size	= sizeof(struct allocinfo_private),
+ 	.proc_open		= allocinfo_open,
+-	.proc_read_iter		= seq_read_iter,
+-	.proc_lseek		= seq_lseek,
+ 	.proc_release		= allocinfo_release,
+ 	.proc_ioctl		= allocinfo_ioctl,
+ #ifdef CONFIG_COMPAT
 
 -- 
 2.53.0
