@@ -2,48 +2,48 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0AED8606A844
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:21:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 93493606B2C2
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:21:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Da9qhDAh
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NV/pCHTx
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKb035fBdz30DK;
-	Thu, 05 Nov 2026 06:21:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793820083;
-	cv=none; b=dRrTWJANzgY3pb9Cx8e9HhBMOz8UrAJosnDeLevNJc7ekEYTEawd4Dr0i5xYU1cLXT+uws6BSfDoXgf7/b1/G1rm6/zkrMegH8eVslMNdNA6yIUrkX+h1PVb1LYIdzgzbDXUndgm5siSEyKCoMADvdgWi9RAEPTL+1V6YH8c7we4wd8iZTX5EKBm38FPS0m2yUbuNIdXAHKAU2k5cZ8lE0HqFpjeB3PJossyWT9i7MWJtGXnxb4W1tlbu9D04H8uNSwtrf+MLLD1jZ/oZa/mre4Vg4q4XcDNno+lkw2fv+9y8/vPfQ7GETemp1AlJNUIQ8a76uMaTIpWS6Ue8HiMkA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKb0L2ScRz2yb9;
+	Thu, 05 Nov 2026 06:21:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793820098;
+	cv=none; b=XpcPgQMElFzmEXwgEFRi99kDHGjsYmqoglVT0uP4avi66WDsmxypSheGQ0GEDDyvlSaloyjKwF8F0oAsG91yZr4l64JG4Z7P5n0kiKvgeB6axmfuq0ABre81ghqakKgt6CrSRI2Y219JBislEdCNhtgl6UvAi0xMGYmLDlct837fXLzJrXhJOeqDtOU3VZgDM2AWvnh3MgYay3gol2h+DMpnLrHj/yfyAFe3LQdsXCVXMkS0Wan4b1IwsBwhgQQ6buOBzEpg6g25jtaDRoIjnqiR+XxHVApVU1+vapp+bZc9xXutyA03dj6mTaJQyDtsoho/T2YtmI2cUG8YB7U6Ag==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793820083; c=relaxed/relaxed;
-	bh=p9+kMzHwjVYuWJQ2+obB/IGMwn7xV7y09JcSQ7GHv6w=;
+	t=1793820098; c=relaxed/relaxed;
+	bh=ih8EKkL3fEFrmnOibnSg6zuDA24U9CpFmMUb1+ThTQI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=lP2GCSo+lKlS8+2gLrFG0AfoR+IjV3Zq4H2ErMrSdtRnt3Qa5RHJKkkHATV9iJ8v0bBRQ1sBxM6dijw71EebjO1YrybxpbPD/R2sdRFESGe71TUvIjXtZ+5hOsHn05iyfeGwWXvsJaNXRdjq00pyYYDxDfIQi+LJQvfyevcdoOWsvSEH29QuWXc5K/GLVkoFiI7EU0MkzXTiObs676LCgdEVcH3eat/zDpkgFkPtnuBIA7KMljFmgdT/BmTH/sI/oCLrJHVSzkAsVHPMk91CrFTR4Oh/xAM6H7kcSOuMkq4D5MFPVa1TvrSVL8iduW86eC6KatET8yNsRUAUqzuZCQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Da9qhDAh; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=ki966EUgQaY8iVc5EcqlCTy8d1t6KtseHv7+IlL68xHiqoSm43dNGpdDc4wJ/WvX4XVR8yYy0Tp4KiepgXo3tGy6uqic8cJov7eOkBt5ARr8PUTTLyBI5vyPF/4eB8yX3dXNW+CwBstDBKjPc2raLFwVSCDyp/CxlPWba5yBPRohKSJ1rh8IdnficM59quryrUjRe1dsUFXj4TLntHBpGWjLuLVOKODb/9hZUyRvEpuYhOn0FSH1qIlNCAoPTi/LIquc1PLwFckP7KWAcuDP7gcXFRCmcolYIfsvakN3kLx5ECrKPvdr/MCet/Qwm/qXHxYBde6pWIdw3ZNWhRyc6w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NV/pCHTx; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Da9qhDAh;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NV/pCHTx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKb023PjBz2yb9
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:21:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKb0K3RKNz2xrC
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:21:37 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 76713404C4;
-	Wed,  4 Nov 2026 19:21:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4AB7D1F000C1;
-	Wed,  4 Nov 2026 19:21:08 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 7D98760609;
+	Wed,  4 Nov 2026 19:21:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EEDE71F0093A;
+	Wed,  4 Nov 2026 19:21:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793820080;
-	bh=p9+kMzHwjVYuWJQ2+obB/IGMwn7xV7y09JcSQ7GHv6w=;
+	s=k20260515; t=1793820095;
+	bh=ih8EKkL3fEFrmnOibnSg6zuDA24U9CpFmMUb1+ThTQI=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=Da9qhDAhe1gMlC4H3sEx9s8bGAWOfqOAYoq5Ueb9q8Ynl2389Maztmcp2QYHP5RUa
-	 OZi38NVuKARinV0XCKJY4csd2ZWdhTyFIQtFYAj0HTzWZSV2i1vKEm7P7/Pts5FZCn
-	 QcJTzEeOU9QU1jpuc0CN9kj/jSPx/znq777Ooa0/kAzqFdLCFoQLN31MunMZ6V42ul
-	 zYUXtsChACfm6Z+hTrPGrAKTMgQ5FfXYR+IE5qTYw8gsFIqpDD7UrTt1lKIhy24azZ
-	 jz8zin7Ffk74C14OK7JkiGN0Jj9FrbP13tt/L09oeijZ2cBW9SHXjgz22CRX5WoLnO
-	 SiIObxm9KtSIA==
+	b=NV/pCHTxChzVH1ioWmq+QeUT+SBXucwSnRPJOdBi/Q2y75DGHw15YBMqYjqgrtt2O
+	 VyFPPs8v7zjoqFDFOJ5oAl9YXifHpXNyabEPReJZQwa8XXH4iQGv2Qty9h/jandirD
+	 aUMSk23okxfo9KtkbC4/nzn1Iw09lddant5cO9hakE0csEjqm8lPvF90MPEOYpmUAd
+	 IMkDVpUwfqgAQLlAK9nXdyRgIdGxWTHDKSyuqOT48xWUvA/iAJk+qPbBXnzRbF0y+d
+	 wn/gLZpI4BHKSDGznFL2I2ZF9zF+c1mxFQKqQBN2chjmpu2miV52eKF6iZL2Z2lRgn
+	 AL7Cg1xDOYz2Q==
 From: Christian Brauner <brauner@kernel.org>
 To: linux-fsdevel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -105,9 +105,9 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
 	"Christian Brauner (Amutable)" <brauner@kernel.org>,
 	Chuck Lever <cel@kernel.org>,
 	stable@vger.kernel.org
-Subject: [PATCH RESEND v2 21/51] powerpc/rtasd: zero the error log buffer
-Date: Wed,  4 Nov 2026 20:21:06 +0100
-Message-ID: <20261104-work-procfs-bugfixes-v2-21-021c84d852e0@kernel.org>
+Subject: [PATCH RESEND v2 22/51] ALSA: info: don't write past the end of a data entry
+Date: Wed,  4 Nov 2026 20:21:20 +0100
+Message-ID: <20261104-work-procfs-bugfixes-v2-22-021c84d852e0@kernel.org>
 In-Reply-To: <20261104-work-procfs-bugfixes-v2-0-021c84d852e0@kernel.org>
 References: <20261104-work-procfs-bugfixes-v2-0-021c84d852e0@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -125,7 +125,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1050; i=brauner@kernel.org; h=from:subject:message-id; bh=mkSbMC6ZDV5f4P2v+qDezcMlza9tkw/MXVPMWZSeje8=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9bnx60+3VpD19ZT+7SySmfPjO+TBTt49lvc0+93eF3 4WPq6Z96ChlYRDjYpAVU2RxaDcJl1vOU7HZKFMDZg4rE8gQBi5OAZjIlBCGv0LG0fo2q8pr72Sl RxoY7Psg/0D2YuivaZvXryurm/TnzyVGhuV3JU9sXMk96YvRxJhvUz9Ozgtes07tY8uDXTNaVxx jf8kGAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1329; i=brauner@kernel.org; h=from:subject:message-id; bh=/wIh+WZXKaFyyFYwMjXKmLvFs42DoCHjOzS3J0v96D0=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9bny2zMufh/VIknXNykPasit38Tx6t1dcVkb8Us6vt wpbDDY/7ihlYRDjYpAVU2RxaDcJl1vOU7HZKFMDZg4rE8gQBi5OAZjI8+UM/3Qne19pyPzkZ7uK 4+ps9RZDLa75iTtP5zvl3PvzK0/j/yuGf5bm066vnniBYWL95HgLE52AGfqMMk4eWldmv104x1K Fmw8A
 X-Developer-Key: i=brauner@kernel.org; a=openpgp; fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 Content-Transfer-Encoding: 8bit
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -136,31 +136,36 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-rtas_log_read() hands out a whole slot of the error log but
-pSeries_log_error() only fills in the sequence number and the event,
-which is usually a lot shorter. The rest of the slot is whatever
-vmalloc() left there. Use vzalloc().
+snd_info_entry_write() clamps the count to what is left of the entry
+by computing entry->size - pos as a size_t. For a position past the end
+that wraps and the write goes to the driver unclamped, for opl4 into
+sample memory outside of what the entry covers. At the end of the entry
+the driver gets a count of 0 and vmalloc(0) warns. Before the clamp
+moved into the common code the driver ignored such writes. Fail them
+with -ENOSPC instead, like a block device does at the end of the
+device. Returning 0 would make writers that use stdio retry forever.
 
-Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+Fixes: d97e1b78239c ("ALSA: info - Check file position validity in common layer")
+Reviewed-by: Takashi Iwai <tiwai@suse.de>
 Cc: stable@vger.kernel.org
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- arch/powerpc/kernel/rtasd.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ sound/core/info.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
-index fd40864bdb70..dd0df5e164a3 100644
---- a/arch/powerpc/kernel/rtasd.c
-+++ b/arch/powerpc/kernel/rtasd.c
-@@ -523,7 +523,7 @@ static int __init rtas_event_scan_init(void)
- 	rtas_error_log_max = rtas_get_error_log_max();
- 	rtas_error_log_buffer_max = rtas_error_log_max + sizeof(int);
- 
--	rtas_log_buf = vmalloc(array_size(LOG_NUMBER,
-+	rtas_log_buf = vzalloc(array_size(LOG_NUMBER,
- 					  rtas_error_log_buffer_max));
- 	if (!rtas_log_buf) {
- 		printk(KERN_ERR "rtasd: no memory\n");
+diff --git a/sound/core/info.c b/sound/core/info.c
+index 023b4736aa6d..f608d335b6c9 100644
+--- a/sound/core/info.c
++++ b/sound/core/info.c
+@@ -171,6 +171,8 @@ static ssize_t snd_info_entry_write(struct file *file, const char __user *buffer
+ 	pos = *offset;
+ 	if (!valid_pos(pos, count))
+ 		return -EIO;
++	if (pos >= entry->size)
++		return count ? -ENOSPC : 0;
+ 	if (count > 0) {
+ 		size_t maxsize = entry->size - pos;
+ 		count = min(count, maxsize);
 
 -- 
 2.53.0
