@@ -2,48 +2,48 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF3C16096924
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:53:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C785D60DD367
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:53:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SRuzWbzB
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gqnu7WCa
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKbhj35nbz3dSM;
-	Thu, 05 Nov 2026 06:53:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793821989;
-	cv=none; b=oTczgP+U/dp7TGFZeGZM6pku3M7b9NCuJzkwP0MuzV9/YmjhX4X3tUTgL5pNpEY0+rvv0TAAimQrAj2HnW/ZtvfVrhXtLS4Fw19KT/6CcZuR4jiMgPLFswPDlKGj+4RYd7HcSU5GSFeEP4pDZUptQjsvTr0V4z+CJZ+4LjjTkJl3twDVcPqGIJIDsGIj57jF/zWvpS5lSMyYeEuy6Fi8BibeLIaQjEe3hKRPM045Mz+5d1EXhG2/cpxpd08riwtxKNVwTahig2vIKrCO3HAu6H/454Hj4aVMwuDSTJGr31sECjEaOYhOzNf+ZJFB3RhIEpRaeqiakWcixFg3VdQiCw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKbj041NCz3cPN;
+	Thu, 05 Nov 2026 06:53:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793822004;
+	cv=none; b=LiDdGS6IyqOjGVI3MmJHw1+yGmgoFpPypMND8q+TZRu1RASM0YArC66NPn+aAlkkfPhG5iKLrGad4qtoqBxSaXpR+3bHqoSrosuaJb6xoZNs9WcWasTiKDJo0EibVk2QBBpA2MLvJRRiqyRceeoeUNkX85EvZPUerA+bh/HaeThhzO8NWSTv+AkVLITlzgDoqSl+GbauiRpUDDhy7MW4NaA5PQSrRT1pCEq6YZwv4nhOCRWm2P1CK5qCZnf+L3tEvirZGyCiiYwVIFym3cKDJpoVr6Brit0Hvc2bnsIRmWPOQeo1k3ox/76rR1B2qHP8n2jSNA2jMDHjWWwi/U7vXw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793821989; c=relaxed/relaxed;
-	bh=0DA6RuBvRtTkFqswtNQb2uYlEiZpU59l9tIHU1Ga2j8=;
+	t=1793822004; c=relaxed/relaxed;
+	bh=4FMH8RRbXwyOGE4j1ACekL014/FVLGRJa3NjwiBwv4k=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=IY+Q6nhJLcr2kONKafjcbTapC5wQJq81iHGFNzXQCf2JYaQ8yrWd/6rH2/h8XExQsUFo/GdbIbGb/XCQGypc8pz57K/w6FcnZ1fDlZFpztDZoq4J0wr0MWCPfCaxctA3t+5YZ5WYWQt25aCsgEsdBnb7NFc63WbWJ959e8L0BQ/uNOCuBm5vw3faXU2BqMmp6rTpeVa2dAhAHyTiANNK8ewa4AIn4PuYFmxVV0Et18VeY4cxzjLp0oOFquXxhdV2Zv5FSw4XQYzddMhACTeybUAIAxl9MtaVy4jtU9d88pXnCjsOh7YEZpDpT7RKOtE4Vq5PROmnKMn7dWytSPjiKA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SRuzWbzB; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=S0sBb7WDFuJ2V2fQttzZBoOCkniFhuFiM2t2G9xs7uWgqe+WHt+HOP1CC2Q/lDFZxPfhrtfkRGXtFg2L/s1I6y9ln/xpDgkxpcNdKXX00wvqSPcWOxJZcDj4+aoGCAQhEHyHTSDQRM5dfwyp3gCfqYCjS25S99EejZxs+nt3Oneu3AoTOZ9o/I1JbMKpvWGL7+PSPDFCc0OIr2CgShwbev9JlcRUuHMg3COFvbM7M+uauy+28tzBwMrRMT1iOTk+CoQiMjOfC0iwn6b9Fql2UG23xhej1QvN94nBepv3kWcHepahWr5hb6+miYt5I8g6Xi/sBBQcTXamreisQVMw5A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gqnu7WCa; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SRuzWbzB;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gqnu7WCa;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKbhh4KBjz3dSK
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:53:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKbhz4wLmz3cPM
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:53:23 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id B3A9060F18;
-	Wed,  4 Nov 2026 19:53:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 630E91F000C1;
-	Wed,  4 Nov 2026 19:52:54 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id ACE0C407B2;
+	Wed,  4 Nov 2026 19:53:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1749F1F00919;
+	Wed,  4 Nov 2026 19:53:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793821986;
-	bh=0DA6RuBvRtTkFqswtNQb2uYlEiZpU59l9tIHU1Ga2j8=;
+	s=k20260515; t=1793822001;
+	bh=4FMH8RRbXwyOGE4j1ACekL014/FVLGRJa3NjwiBwv4k=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=SRuzWbzBA/Ayk18PSyfBxT/OLXbTcYla80E66c/JAUTNKWwvu8J+iV96HiiS6uEcH
-	 QHS7YxPFtx6Ioglu8rsGqiQzEoeQ8bEbGSKEx4XN8omB6KX5mlTYTqW0Wk6eUgmEQB
-	 B+z770ZN0h6sM7vDGdXR9zfXGIS1XJndXGgje4DTMOIYeLURXu2T1GmuCPMzPMxK7S
-	 nurIEXlnG0ZIr4a8/L+heetwhEB8F1E5hs5NCWlfyBW+GWY4C/S4AmxGoDaGeMs9Vs
-	 f5F7cAhX60Ts55MnyTtdNSbrqHrZaPAO/QFQ6TbKEkPr3xHro9JRcDthamnh6QpgBO
-	 gt08JD3Kfhntg==
+	b=gqnu7WCank0HPKzxIIuR0c+Y7qFDIfOx4OhXQRsH+bwXeorJsZ7tfbWZNyh3GbhMt
+	 NxTOPufkaHrp11YLfNa93/yXQ6n5h0z6fpBeg6Ly2XOx7LhglEYilynsq/HFu5e5m3
+	 ATdWLZ7uW1x0Y8xMKxBVUpJaU7+YU0ZruYzah//QhnYRcr/O7neJgjfCiw3cbGeL0f
+	 /scHMQ7wD59wgQWjLWITDYTvE8W4dpcfUNiJQWmwj5fEXCsq8JXV17jYeqe34cF0gX
+	 jLq6ATZZOpXLQz2og6LqAuxsn4M17sNhw8oW2RQKUyiL2Rz59/u2T2Au+Zeqcz04DQ
+	 gpufF/LrdsChg==
 From: Christian Brauner <brauner@kernel.org>
 To: linux-fsdevel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -104,9 +104,9 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
 	linux-debuggers@vger.kernel.org,
 	"Christian Brauner (Amutable)" <brauner@kernel.org>,
 	Chuck Lever <cel@kernel.org>
-Subject: [PATCH RESEND v2 13/30] locking/lockdep: let procfs copy in writes to /proc/lock_stat
-Date: Wed,  4 Nov 2026 20:52:51 +0100
-Message-ID: <20261104-work-procfs-fs-v2-13-319e0f9a8aae@kernel.org>
+Subject: [PATCH RESEND v2 14/30] profiling: let procfs copy in writes to /proc/profile
+Date: Wed,  4 Nov 2026 20:53:06 +0100
+Message-ID: <20261104-work-procfs-fs-v2-14-319e0f9a8aae@kernel.org>
 In-Reply-To: <20261104-work-procfs-fs-v2-0-319e0f9a8aae@kernel.org>
 References: <20261104-work-procfs-fs-v2-0-319e0f9a8aae@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -124,7 +124,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1505; i=brauner@kernel.org; h=from:subject:message-id; bh=8vcSfGoyDeqLJaquRqiN2D+SQsNeRK8HAS3H3FbecE8=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS97rEyKlv/n0U+Ncf4zZ0z/k8rXxQFN5xqvbLjdI24b /iyrX7bOkpZGMS4GGTFFFkc2k3C5ZbzVGw2ytSAmcPKBDKEgYtTACZSJsLIsDDpMX+EXH+FfOlz /4uiJpUibR6mKrvnlKufSe+7ojVxOyPDsftVl+Qu1LCnTp70o3zhxgUrJCWyJ/n6XbbhU5x210y eCQA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1504; i=brauner@kernel.org; h=from:subject:message-id; bh=acPYXqQQVYOg2sB+M+GQAGt+iBO20XAT2Sfl3M0drAc=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS97rHOf25YKDbxbO9Bg6IFQW80Jrk2dVu9Wx+89J/Uj +nLeu/rdpSyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAEykIZiRYcq1Of62b8t3Tr08 3yy0w/fMvbrULi7+T2u03cst/b77X2BkOMOyo3gzb8Wco9XFOhk9DzgWqprLqslOEzaU3DZxl4A KIwA=
 X-Developer-Key: i=brauner@kernel.org; a=openpgp; fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 Content-Transfer-Encoding: 8bit
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -136,49 +136,47 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 Implement ->proc_write_buf() so procfs copies in what is written before
-it pins the entry, and look at the first character of that copy. Writes
+it pins the entry, and take the multiplier from that copy. Writes
 larger than PAGE_SIZE - 1 bytes fail with -EINVAL now.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- kernel/locking/lockdep_proc.c | 12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+ kernel/profile.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/kernel/locking/lockdep_proc.c b/kernel/locking/lockdep_proc.c
-index 9b034b5b94bd..2a66ea09c2aa 100644
---- a/kernel/locking/lockdep_proc.c
-+++ b/kernel/locking/lockdep_proc.c
-@@ -669,18 +669,14 @@ static int lock_stat_open(struct inode *inode, struct file *file)
- 	return 0;
- }
- 
--static ssize_t lock_stat_write(struct file *file, const char __user *buf,
--			       size_t count, loff_t *ppos)
-+static ssize_t lock_stat_write(struct file *file, char *buf, size_t count,
-+			       loff_t *ppos)
+diff --git a/kernel/profile.c b/kernel/profile.c
+index 820d5ec909d4..dc2db66a77d2 100644
+--- a/kernel/profile.c
++++ b/kernel/profile.c
+@@ -189,16 +189,14 @@ int __weak setup_profiling_timer(unsigned mult)
+  * Writing a 'profiling multiplier' value into it also re-sets the profiling
+  * interrupt frequency, on architectures that support this.
+  */
+-static ssize_t write_profile(struct file *file, const char __user *buf,
+-			     size_t count, loff_t *ppos)
++static ssize_t write_profile(struct file *file, char *buf, size_t count,
++			     loff_t *ppos)
  {
- 	struct lock_class *class;
- 	unsigned long idx;
--	char c;
+ #ifdef CONFIG_SMP
+ 	if (count == sizeof(int)) {
+ 		unsigned int multiplier;
  
- 	if (count) {
--		if (get_user(c, buf))
+-		if (copy_from_user(&multiplier, buf, sizeof(int)))
 -			return -EFAULT;
 -
--		if (c != '0')
-+		if (buf[0] != '0')
- 			return count;
++		memcpy(&multiplier, buf, sizeof(int));
+ 		if (setup_profiling_timer(multiplier))
+ 			return -EINVAL;
+ 	}
+@@ -209,7 +207,7 @@ static ssize_t write_profile(struct file *file, const char __user *buf,
  
- 		iterate_lock_classes(idx, class) {
-@@ -703,7 +699,7 @@ static int lock_stat_release(struct inode *inode, struct file *file)
- static const struct proc_ops lock_stat_proc_ops = {
- 	.proc_seq_ops	= &lockstat_ops,
- 	.proc_open	= lock_stat_open,
--	.proc_write	= lock_stat_write,
-+	.proc_write_buf	= lock_stat_write,
- 	.proc_release	= lock_stat_release,
+ static const struct proc_ops profile_proc_ops = {
+ 	.proc_read	= read_profile,
+-	.proc_write	= write_profile,
++	.proc_write_buf	= write_profile,
+ 	.proc_lseek	= default_llseek,
  };
- #endif /* CONFIG_LOCK_STAT */
+ 
 
 -- 
 2.53.0
