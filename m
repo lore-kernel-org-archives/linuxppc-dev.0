@@ -2,48 +2,48 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 28AE960820B1
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:39:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7DD9A6071A04
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:39:52 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BGoQWKYK
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mId0rHTF
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKbP46RkPz2ygp;
-	Thu, 05 Nov 2026 06:39:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793821176;
-	cv=none; b=M7ZZAe5EiAuW/TJpgektHHvtCMEpnToxSbYEDGGYDOJvl5PdJ8IwKS0jDi68cT80WchxFub3u9FoQrEAsUMrpFZEzRQJN6Gp2SBrnHFeOsdPt0zAHN5fs4hi4DkcCX4IE+DbwPnygEC7VPI8lrv+IntwVdqOrTJ/i75RYMRcjIngicJ3Bsbgto1qeQx13XGi4xlsSEKuxdm0U3T8MVTKh4f3/vMucwe5eczXLW4O9GXRuQmsMrwoa52YmcoF/tO2JX7r24MTxOGuroz/O+wUsd8mJLqBsmVjss0Pbj6QkMoW8Ky8JTHcv6hDzLv2tDp4Yhy/y+Ro2z0wiO7S2t+VWg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKbPM1q3jz2ygg;
+	Thu, 05 Nov 2026 06:39:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793821191;
+	cv=none; b=UO8hTPKNuXXPNQXk5yRF7HBNE0pPKV67nD8PgzWLn2G9yy3qAPVOuace1oEgB3kafmCvviuhpG9fRUAU5wgnPIV4L6X8a8J51BZ2Ywn0NR0Spxo52GVZ3rgcStIft8DXC4arFJF61YDY4/dNQygaQGiblefPo10pGsAQcJL3EXO+zsCFRitWzEznnNuzkhEg40dlr6c682q4eRqNzVFKNwGuTGZglSMkKx+m4BG27f9R5yycV90zUcvLoelgHn4p3H+OoHR11dmY8KjO0eIC6cTynaARWAebCxXF1OUdAjgYUNJKnv7GtVpnIIgUhiXuraywmJAwof5yfohOeBeSFg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793821176; c=relaxed/relaxed;
-	bh=OLir7M9bUqyYwhZJ8zktlBEIF8q4TgFqxNnhzWbUGpI=;
+	t=1793821191; c=relaxed/relaxed;
+	bh=+6/VvbPNlgz2+gPXC5ytRZfMVcR9V1MzQDpcWQsb8Y0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=AIFOKgai/DGu6gOdBHvrlfoCMi04TNcFMn3spxeDHAeHrEOmxq1A/vBAmzgfwDy1chMchRGRoZxFqLnOGWlX+oQAqCJoPq26DUG4UsstDWov4hVmfX+Q1w7MRINh/2wFLPSDtLw+NlqRIIsdGtyHYtOu9IKRY4RO/boJt6O6LJ4tSUQzqZfaQBCM7hlT+4vWVhfQ+valT4kQwsd7G0FhaGyU46yKlQfP88TPHz7GFwoxMyEgQQvIX3DkH2OhVUExeU8zY8chjWUiqz4xXiKIXJlPzXMxgVmLesx0iWcQp3GFFLvWXIS6YXBYsHYIi0LyJ5B0rKqmWyTPRZZTwBS7pg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BGoQWKYK; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=VvBBBalkHX4h0nEyFZ/BBOIbbZXMuvPwz2LzuIdjJRAXSalwxATlHHFucvoacAdIdYunp06F8VQrgcaNQTOL9f81xQAURzB2D6FT0NVwAtY4zS5XCT6HgES2v5xw+orQnZN/+uxxGojtYLT0+zwitGdpL8Qjs2KW6XlBNoYt9T7vNApbsv+of5WesIomiX5LKntXUlnFUxPtPRpB3KfVN2IytNJjQ38kT+gnNGjENuZ2ZACSvWq/AgCFKQT3BNzo4SW1ukwxHvh6rCbXl3Cy3fG5v0aHLav1qU+7l9aYH9v5kCXldqlg2S06euBlLil1jyVCVB7QhXNOypYdSpVfKA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mId0rHTF; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BGoQWKYK;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mId0rHTF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKbP371v8z2yRn
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:39:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKbPL3Xvpz2yVT
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:39:50 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 169BF60F16;
-	Wed,  4 Nov 2026 19:39:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8A1E51F000C1;
-	Wed,  4 Nov 2026 19:39:21 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 9CDD241E5C;
+	Wed,  4 Nov 2026 19:39:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7D6B01F000C1;
+	Wed,  4 Nov 2026 19:39:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793821173;
-	bh=OLir7M9bUqyYwhZJ8zktlBEIF8q4TgFqxNnhzWbUGpI=;
+	s=k20260515; t=1793821188;
+	bh=+6/VvbPNlgz2+gPXC5ytRZfMVcR9V1MzQDpcWQsb8Y0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=BGoQWKYKlGRHqH707lt8XPTrvhILrDN2CTBKW6sy4z5pHja4DdtN3raBG+NHLj92g
-	 lT3j0AXWk+7UPpWWF1UqKr0teEMq0y/evuKx3wT6DI1igbFRETKr9nHjbLI1nR+NjU
-	 nEQrgLu5V7p8Qbs7lNxg7pYdY0OS3AJ/InKacvNpa8Yy6bqqt2ucHdsOEUVuRjnglA
-	 2neUJAv7gx7ca66gWQEIWKVKaKhIVOkX6ditAtUOyn0NGQtQzqUmcl3a3hd5YUr0He
-	 y/DG+4nLiOv9JHOQGcWwzY6YiJ6Wsg6U5djleaHL/yx5FfWJcZpIQT5B9uaN3JkFIL
-	 szVI5opji+ZoQ==
+	b=mId0rHTFGhaCS3sdYfAY6UrikABSq9514uoQ7GPPNOveDld4OAIzV+AP1cZ5+Ixn8
+	 u7k6fo+fYf2fRgma3+s5wUNjWW3+eAUKQT5zf9pbgI2+BwxF5bFCL2tWyNW8KXBYBW
+	 v4NzHbeNk5FZUX1OHygbkhxJYXzZJn+Y2YoHEOPW7SRj+yqGiqHwRElrmDCDAL/nhs
+	 z7wZyWQuOB07rCVv/pujZRKQ5+vDxcpmumnJK/6BxNgfLAnpurmgFd/xiClBXHam+S
+	 gz17fzUUfOxo8DS399IsxAuyLQ8HZywLsxKD4Yl0ICqZpYgzoxVKhiN/rxJyP/QGLA
+	 jH2iDe3ufVuWg==
 From: Christian Brauner <brauner@kernel.org>
 To: linux-fsdevel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -104,9 +104,9 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
 	linux-debuggers@vger.kernel.org,
 	"Christian Brauner (Amutable)" <brauner@kernel.org>,
 	Chuck Lever <cel@kernel.org>
-Subject: [PATCH RESEND v2 15/23] x86/mtrr: let procfs copy the ioctl arguments of /proc/mtrr
-Date: Wed,  4 Nov 2026 20:39:19 +0100
-Message-ID: <20261104-work-procfs-arch-v2-15-2aeb952c9597@kernel.org>
+Subject: [PATCH RESEND v2 16/23] xtensa: simdisk: let procfs copy in writes
+Date: Wed,  4 Nov 2026 20:39:34 +0100
+Message-ID: <20261104-work-procfs-arch-v2-16-2aeb952c9597@kernel.org>
 In-Reply-To: <20261104-work-procfs-arch-v2-0-2aeb952c9597@kernel.org>
 References: <20261104-work-procfs-arch-v2-0-2aeb952c9597@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -124,7 +124,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5220; i=brauner@kernel.org; h=from:subject:message-id; bh=t9lK4yPSWnjPiNqpcmr+36rhqvijTQ7A+lZHV62u0/o=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS97vj/uHT//LsHnab9aFnoUuZU1fZb4kuq29bvwVZqM xnei7cs7yhlYRDjYpAVU2RxaDcJl1vOU7HZKFMDZg4rE8gQBi5OAZjIbxlGhonnGEILvndsKS85 4PR6CvPGms8/XAXntzvM/P7oi4Bb8TJGhpu+z1R/eV2YMPmXmkv3oae5PxjPCl3dUPM/5vMn56O LV3IAAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2191; i=brauner@kernel.org; h=from:subject:message-id; bh=CYWbl/ymSaa+aNKLZWQVP3B9Tfxpb2fN2gwcMDszgw8=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS97mSwsF81Q+qzYrn2x3DTybM9wi12nvJmmnVCNNLjr 5Ey5wrnjlIWBjEuBlkxRRaHdpNwueU8FZuNMjVg5rAygQxh4OIUgInse8nwP2drV3zO58/CxU67 rsubrYlJFcywLT3Csis1qG7hVNUP7Ax/xdm4jyrvPTzj5uuV2l3KAnG7rqWt63zAqn9rS3mOyGx 7fgA=
 X-Developer-Key: i=brauner@kernel.org; a=openpgp; fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 Content-Transfer-Encoding: 8bit
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -135,157 +135,77 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Implement ->proc_ioctl_buf() so procfs copies the arguments in before
-it pins the entry and back out after unpinning it. The native and the
-32-bit commands encode their arguments and share one table.
-mtrr_ioctl() reads and fills procfs' copy, also in the 32-bit layouts.
+Implement ->proc_write_buf() so procfs copies in what is written to the
+simdisk files before it pins the entry, and take the file name from
+that copy. The files took up to PAGE_SIZE bytes and keep doing that
+through ->proc_write_size.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- arch/x86/kernel/cpu/mtrr/if.c | 79 +++++++++++++++++++++++++------------------
- 1 file changed, 46 insertions(+), 33 deletions(-)
+ arch/xtensa/platforms/iss/simdisk.c | 26 ++++++++++----------------
+ 1 file changed, 10 insertions(+), 16 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/mtrr/if.c b/arch/x86/kernel/cpu/mtrr/if.c
-index 038e2dc38797..9c33c0428dfe 100644
---- a/arch/x86/kernel/cpu/mtrr/if.c
-+++ b/arch/x86/kernel/cpu/mtrr/if.c
-@@ -149,7 +149,7 @@ mtrr_write(struct file *file, char *buf, size_t len, loff_t * ppos)
+diff --git a/arch/xtensa/platforms/iss/simdisk.c b/arch/xtensa/platforms/iss/simdisk.c
+index 1248d960e5d3..26c2fa39a66e 100644
+--- a/arch/xtensa/platforms/iss/simdisk.c
++++ b/arch/xtensa/platforms/iss/simdisk.c
+@@ -241,7 +241,7 @@ static ssize_t proc_read_simdisk(struct file *file, char __user *buf,
+ 	ssize_t len;
+ 	char *temp;
+ 
+-	/* a write sets at most a page, see proc_write_simdisk() */
++	/* a write sets at most a page, see simdisk_proc_ops */
+ 	temp = kmalloc(PAGE_SIZE + 2, GFP_KERNEL);
+ 	if (!temp)
+ 		return -ENOMEM;
+@@ -255,40 +255,34 @@ static ssize_t proc_read_simdisk(struct file *file, char __user *buf,
+ 	return len;
  }
  
- static long
--mtrr_ioctl(struct file *file, unsigned int cmd, unsigned long __arg)
-+mtrr_ioctl(struct file *file, unsigned int cmd, void *arg)
+-static ssize_t proc_write_simdisk(struct file *file, const char __user *buf,
++static ssize_t proc_write_simdisk(struct file *file, char *buf,
+ 			size_t count, loff_t *ppos)
  {
- 	int err = 0;
- 	mtrr_type type;
-@@ -157,7 +157,6 @@ mtrr_ioctl(struct file *file, unsigned int cmd, unsigned long __arg)
- 	unsigned long size;
- 	struct mtrr_sentry sentry;
- 	struct mtrr_gentry gentry;
--	void __user *arg = (void __user *) __arg;
+-	char *tmp;
+ 	struct simdisk *dev = pde_data(file_inode(file));
+ 	int err;
  
- 	memset(&gentry, 0, sizeof(gentry));
+-	if (count == 0 || count > PAGE_SIZE)
++	if (count == 0)
+ 		return -EINVAL;
  
-@@ -170,13 +169,11 @@ mtrr_ioctl(struct file *file, unsigned int cmd, unsigned long __arg)
- 	case MTRRIOC_SET_PAGE_ENTRY:
- 	case MTRRIOC_DEL_PAGE_ENTRY:
- 	case MTRRIOC_KILL_PAGE_ENTRY:
--		if (copy_from_user(&sentry, arg, sizeof(sentry)))
--			return -EFAULT;
-+		memcpy(&sentry, arg, sizeof(sentry));
- 		break;
- 	case MTRRIOC_GET_ENTRY:
- 	case MTRRIOC_GET_PAGE_ENTRY:
--		if (copy_from_user(&gentry, arg, sizeof(gentry)))
--			return -EFAULT;
-+		memcpy(&gentry, arg, sizeof(gentry));
- 		break;
- #ifdef CONFIG_COMPAT
- 	case MTRRIOC32_ADD_ENTRY:
-@@ -187,27 +184,21 @@ mtrr_ioctl(struct file *file, unsigned int cmd, unsigned long __arg)
- 	case MTRRIOC32_SET_PAGE_ENTRY:
- 	case MTRRIOC32_DEL_PAGE_ENTRY:
- 	case MTRRIOC32_KILL_PAGE_ENTRY: {
--		struct mtrr_sentry32 __user *s32;
-+		struct mtrr_sentry32 *s32 = arg;
+-	tmp = memdup_user_nul(buf, count);
+-	if (IS_ERR(tmp))
+-		return PTR_ERR(tmp);
+-
+ 	err = simdisk_detach(dev);
+ 	if (err != 0)
+-		goto out_free;
++		return err;
  
--		s32 = (struct mtrr_sentry32 __user *)__arg;
--		err = get_user(sentry.base, &s32->base);
--		err |= get_user(sentry.size, &s32->size);
--		err |= get_user(sentry.type, &s32->type);
--		if (err)
--			return err;
-+		sentry.base = s32->base;
-+		sentry.size = s32->size;
-+		sentry.type = s32->type;
- 		break;
- 	}
- 	case MTRRIOC32_GET_ENTRY:
- 	case MTRRIOC32_GET_PAGE_ENTRY: {
--		struct mtrr_gentry32 __user *g32;
-+		struct mtrr_gentry32 *g32 = arg;
+-	if (count > 0 && tmp[count - 1] == '\n')
+-		tmp[count - 1] = 0;
++	if (count > 0 && buf[count - 1] == '\n')
++		buf[count - 1] = 0;
  
--		g32 = (struct mtrr_gentry32 __user *)__arg;
--		err = get_user(gentry.regnum, &g32->regnum);
--		err |= get_user(gentry.base, &g32->base);
--		err |= get_user(gentry.size, &g32->size);
--		err |= get_user(gentry.type, &g32->type);
--		if (err)
--			return err;
-+		gentry.regnum = g32->regnum;
-+		gentry.base = g32->base;
-+		gentry.size = g32->size;
-+		gentry.type = g32->type;
- 		break;
- 	}
- #endif
-@@ -312,19 +303,17 @@ mtrr_ioctl(struct file *file, unsigned int cmd, unsigned long __arg)
- 	switch (cmd) {
- 	case MTRRIOC_GET_ENTRY:
- 	case MTRRIOC_GET_PAGE_ENTRY:
--		if (copy_to_user(arg, &gentry, sizeof(gentry)))
--			err = -EFAULT;
-+		memcpy(arg, &gentry, sizeof(gentry));
- 		break;
- #ifdef CONFIG_COMPAT
- 	case MTRRIOC32_GET_ENTRY:
- 	case MTRRIOC32_GET_PAGE_ENTRY: {
--		struct mtrr_gentry32 __user *g32;
-+		struct mtrr_gentry32 *g32 = arg;
+-	if (tmp[0])
+-		err = simdisk_attach(dev, tmp);
++	if (buf[0])
++		err = simdisk_attach(dev, buf);
  
--		g32 = (struct mtrr_gentry32 __user *)__arg;
--		err = put_user(gentry.base, &g32->base);
--		err |= put_user(gentry.size, &g32->size);
--		err |= put_user(gentry.regnum, &g32->regnum);
--		err |= put_user(gentry.type, &g32->type);
-+		g32->base = gentry.base;
-+		g32->size = gentry.size;
-+		g32->regnum = gentry.regnum;
-+		g32->type = gentry.type;
- 		break;
- 	}
- #endif
-@@ -393,14 +382,38 @@ static int mtrr_open(struct inode *inode, struct file *file)
- 	return 0;
+ 	if (err == 0)
+ 		err = count;
+-out_free:
+-	kfree(tmp);
+ 	return err;
  }
  
-+static const struct proc_ioctl_arg mtrr_ioctl_args[] = {
-+	PROC_IOCTL_IOC(MTRRIOC_ADD_ENTRY),
-+	PROC_IOCTL_IOC(MTRRIOC_SET_ENTRY),
-+	PROC_IOCTL_IOC(MTRRIOC_DEL_ENTRY),
-+	PROC_IOCTL_IOC(MTRRIOC_GET_ENTRY),
-+	PROC_IOCTL_IOC(MTRRIOC_KILL_ENTRY),
-+	PROC_IOCTL_IOC(MTRRIOC_ADD_PAGE_ENTRY),
-+	PROC_IOCTL_IOC(MTRRIOC_SET_PAGE_ENTRY),
-+	PROC_IOCTL_IOC(MTRRIOC_DEL_PAGE_ENTRY),
-+	PROC_IOCTL_IOC(MTRRIOC_GET_PAGE_ENTRY),
-+	PROC_IOCTL_IOC(MTRRIOC_KILL_PAGE_ENTRY),
-+#ifdef CONFIG_COMPAT
-+	PROC_IOCTL_IOC(MTRRIOC32_ADD_ENTRY),
-+	PROC_IOCTL_IOC(MTRRIOC32_SET_ENTRY),
-+	PROC_IOCTL_IOC(MTRRIOC32_DEL_ENTRY),
-+	PROC_IOCTL_IOC(MTRRIOC32_GET_ENTRY),
-+	PROC_IOCTL_IOC(MTRRIOC32_KILL_ENTRY),
-+	PROC_IOCTL_IOC(MTRRIOC32_ADD_PAGE_ENTRY),
-+	PROC_IOCTL_IOC(MTRRIOC32_SET_PAGE_ENTRY),
-+	PROC_IOCTL_IOC(MTRRIOC32_DEL_PAGE_ENTRY),
-+	PROC_IOCTL_IOC(MTRRIOC32_GET_PAGE_ENTRY),
-+	PROC_IOCTL_IOC(MTRRIOC32_KILL_PAGE_ENTRY),
-+#endif
-+};
-+
- static const struct proc_ops mtrr_proc_ops = {
- 	.proc_show		= mtrr_seq_show,
- 	.proc_open		= mtrr_open,
- 	.proc_write_buf		= mtrr_write,
--	.proc_ioctl		= mtrr_ioctl,
--#ifdef CONFIG_COMPAT
--	.proc_compat_ioctl	= mtrr_ioctl,
--#endif
-+	.proc_ioctl_buf		= mtrr_ioctl,
-+	.proc_ioctl_args	= mtrr_ioctl_args,
-+	.proc_nr_ioctl_args	= ARRAY_SIZE(mtrr_ioctl_args),
- 	.proc_release		= mtrr_close,
+ static const struct proc_ops simdisk_proc_ops = {
+ 	.proc_read	= proc_read_simdisk,
+-	.proc_write	= proc_write_simdisk,
++	.proc_write_buf	= proc_write_simdisk,
++	.proc_write_size = PAGE_SIZE,
+ 	.proc_lseek	= default_llseek,
  };
  
 
