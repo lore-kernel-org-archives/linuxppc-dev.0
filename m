@@ -2,57 +2,72 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D985606B016
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 17:34:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5E792606D825
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 17:35:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TuIdEGHN
+	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DjXlxgd5
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKXcj0M4hz2xnQ;
-	Thu, 05 Nov 2026 04:34:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793813668;
-	cv=none; b=a4VsdUbcu/3xL65Z0R/9FIUZ9k/b+PO6qwLF6K7XiOS0mK7xuRX4ofcgQ2J/8jIwfbsfxUlnvyL2DwWbnk5tb535WEC5sb4Y1fiKGG6dLa4YXGuRu7QhIdwp1ogj7Qy+9TEqnlcHy+V11XzjSdZUojrOXcWr4pEp8lS5MzkXChl+Coj7uGVcYR5IA20+W1Bg1R4uuwAXcXpyWafQvmmW0pOborECgQNWbovk9Vrn60ESVCyDTWY2LaLot8tpeQOIQE28vZloPf1BkhmaTewsLPH10kuAsPNyihSdn70n9AJE6c86wmGiDmdDCvA+5NKFyoatHu3SyS7VWMAOs8enzw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKXf70wM2z2xnQ;
+	Thu, 05 Nov 2026 04:35:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793813743;
+	cv=none; b=bATQ0RXR/+XwUIerQSlTGMRvi+upDn2I45miHN2VVx0S+F0Slg9O93wWbTV8iPMH0obxQJApEDbn62vfk/pSf9ggzfyDWM5I2/cc7vOFaM/VCMjiiMbfeD2JBWPhM2MQD14o1INMQiAiqixhZskGc7vSHLKpKSzsMDrhVv3VPiW+niSuBtRUA/MEtryyVzFh79ROKzGgAZ91qeuxjH54KZuFHW3dLYvmJfanEOJ8l+EInDewRW9DdRF7/Y9B4NOdBuxiF+d5HXn8HxGcSC3da2ktD/FuUq8ZN2aiV0ngyI/82pdl1o5n3iAhYIUghnObn7Wah6qhm1/8omFTdivBUA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793813668; c=relaxed/relaxed;
-	bh=AMOD33XmGyHm36xJWMnYgDFAfU9OylqTMFKngAIWEtA=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=oSvjzL3rD+2a5Skk97dG03JiscZUybKaGHAK95JkoYQvyWmC6TZKHuQGiN89xkCVj9L9C3QAzFMN9Kbb95Wo1slaw3pzuQ9h55CA1nHNrzrjVG4Ylch7C5jKdqOAP9lwHNFoMvtK+rUDi78iksRZj9H7d47jo17wuraLO+3Pgmxplw0lrxC/TPfKGrhby0/lGlrFfvY2dK/IL9GTxkjwqY6qpsxSSWFmmSIkLa4cQJpID/N19cHwC4Z+O6DDm0Qs3fYT++/nyPrcrONJN7svTcAg08T2kW5qAwMCP3vlDb3vJm0kwtexPbCBNY+LoqYY00C+nPzwgLyPo5+y3bJQfw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TuIdEGHN; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rafael@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1793813743; c=relaxed/relaxed;
+	bh=m06/Z+wSj59Lj3STeXezEGxBP0eygnMgmS4pExrvRFg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=SmUzj414f+Q0+4g+p2AICc/OuCtkKI1lQWjcQNlNUXFBt6wPw2s0T1STCEtxY7gh33iEhxDHejY/LSld8MYUFogAAxAHYBIyIzFIFs5lSZW9n2ui9weGx2e2LqtmlFU/KO4nZ2Uuy1t+A//9CLiTGykMIZ5hYbagLON/49uTewLu2VkSCVP/GoDtrMTLp82LfeXdlPICI4SPEBdeUvHJuNGnd9zaV8KK7rKZkJHE45ea9/tVcdk3emzzdhC2r3jHO8Gy6gOcyfItUf+WXqW8KCRsbwEmcECNSlZSM4/7K1Ph1rLts7btYd7sl7l/ltTilOBddUvryJ3M7qQ+u4wGcQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DjXlxgd5; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TuIdEGHN;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DjXlxgd5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rafael@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKXch1cXyz2xlk
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 04:34:28 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 5573043EDA
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2026 17:34:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3D7121F000C1
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2026 17:34:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793813666;
-	bh=AMOD33XmGyHm36xJWMnYgDFAfU9OylqTMFKngAIWEtA=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=TuIdEGHN+tlSpGP2tguvWW7kLlUQWLPYjJKJSOdpszP2pLOR7WrjdSkZZ/grMbqbK
-	 +lTr56mLL+WOdircBkePq+AP1VJ8IkK1jD+a+/cNVkOM5lTrA3ra2sVKICfCT0wVFa
-	 G7aUxkwbEYQTgmz4D8gML0l5sd+AeXfF/B+yunRHPHSfp3DhyhKMZ2MO8cmr1H2mgR
-	 d2oAbezChMlOpKySp6bD7YhtrL6rY8cs9aS9v0EePA62cXO8uXedgf6WJ2JQI3RfVB
-	 sVx/vx3dq4DLpiMPLoF4zMVjw7jCtMETWhYAirt1guo5pK4CX4JT893wQit46xG65K
-	 Y99CMV8/O64SQ==
-Received: by mail-vk1-f173.google.com with SMTP id 71dfb90a1353d-5eafb65e169so599081e0c.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2026 09:34:26 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AKwUvBwHa8BzuJEYaa6tvqhoaWV8oQ0VqXE/a/tZ3dQQv+6fc8Ntl1WrsSj2W9jl7u3/OWvZ/FJFDvIzvph0HgE=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z9ghydgRoPiFPIIk63Fl+8HfF1/+DV7JFOUW9fVabcXy2w6/I7d
-	1/2DeQMb2asH672fkv1obvaiVQR0cmZI68LeC9NrHD4I+buNb4omonFgRZzbAnuXylXnjxGUoJS
-	EnF3ONyaTs5kQ3w+hinHHtQ0cSlfigPk=
-X-Received: by 2002:a05:6122:180a:b0:5ec:5f1b:f725 with SMTP id
- 71dfb90a1353d-5ec689c4d7fmr8231097e0c.23.1793813664918; Wed, 04 Nov 2026
- 09:34:24 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKXf62M1Gz2xlk
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 04:35:42 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A4FiAJD966810;
+	Wed, 4 Nov 2026 17:35:37 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=m06/Z+
+	wSj59Lj3STeXezEGxBP0eygnMgmS4pExrvRFg=; b=DjXlxgd5MWc41a4+sgXoZu
+	8todMlWfwXpkdM30W1AmcMbcIhlJc0MAgdISIE7vh2Mlf7rBM+7QePhUzJaolCIy
+	2lCJiaCGz/sht0YqGR4voYiVJTQUJqK7Vo26tjJfzcj3eQJblZFOInADce2O6XoN
+	cTSzb50Dj8/pjd79lmZoSz8OFnbcl5zjsyT9EVbqEQGrxKNM2o4V7caIMbzGt3ny
+	egxPiZ947dWQ6bHOVI925c8f+grOsfqaZkSRampTf6UfwxVUE0iTLgzpabGCjhCJ
+	TafzDNhqUBlu/+Hmvw+sclQFUWzj6tsTxWSTJ9DN1awcNbmDHYf1CoJMAo0n312g
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hn7ys4yvp-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Wed, 04 Nov 2026 17:35:37 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6A4Fnxva204445;
+	Wed, 4 Nov 2026 17:35:36 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4hqf0geskx-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 04 Nov 2026 17:35:36 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6A4HZY9W52560158
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 4 Nov 2026 17:35:34 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1E8802004D;
+	Wed,  4 Nov 2026 17:35:34 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C8FCA20040;
+	Wed,  4 Nov 2026 17:35:31 +0000 (GMT)
+Received: from [9.39.27.115] (unknown [9.39.27.115])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  4 Nov 2026 17:35:31 +0000 (GMT)
+Message-ID: <54afe357-b6f0-4d72-a2eb-474087aa880c@linux.ibm.com>
+Date: Wed, 4 Nov 2026 23:05:30 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,169 +81,160 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261104-work-procfs-bugfixes-v2-0-bbf7d5546809@kernel.org> <20261104-work-procfs-bugfixes-v2-4-bbf7d5546809@kernel.org>
-In-Reply-To: <20261104-work-procfs-bugfixes-v2-4-bbf7d5546809@kernel.org>
-From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Wed, 4 Nov 2026 18:34:10 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0gnefKDcBnLzxxXPLJkYRHN9pbYH9WVFAoUGuCSOPcW1A@mail.gmail.com>
-X-Gm-Features: AclHuK8WGpfSf3TpV-YfKcvDlenGAnmL4yQTyeV9z6QpHJtyVq4G8L84EjJ5Q2g
-Message-ID: <CAJZ5v0gnefKDcBnLzxxXPLJkYRHN9pbYH9WVFAoUGuCSOPcW1A@mail.gmail.com>
-Subject: Re: [PATCH v2 04/51] PNP: isapnp: don't go on when isapnp_cfg_begin() fails
-To: Christian Brauner <brauner@kernel.org>
-Cc: linux-fsdevel@vger.kernel.org, 
-	Linus Torvalds <torvalds@linux-foundation.org>, Jann Horn <jannh@google.com>, 
-	Josef Bacik <josef@toxicpanda.com>, Chris Mason <mason@kernel.org>, 
-	Jeff Layton <jlayton@kernel.org>, NeilBrown <neil@brown.name>, Eric Dumazet <edumazet@kernel.org>, 
-	Thomas Gleixner <tglx@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>, 
-	Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@lst.de>, Greg Kroah-Hartman <gregkh@suse.de>, 
-	Joel Granados <joel.granados@kernel.org>, Kees Cook <kees@kernel.org>, Jan Kara <jack@suse.cz>, 
-	Jan Kara <jack@suse.com>, linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org, 
-	linux-acpi@vger.kernel.org, linux-kselftest@vger.kernel.org, 
-	linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, 
-	linux-um@lists.infradead.org, linux-wireless@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, ntfs3@lists.linux.dev, 
-	platform-driver-x86@vger.kernel.org, coreteam@netfilter.org, 
-	kexec@lists.infradead.org, linux-pci@vger.kernel.org, 
-	linux-sound@vger.kernel.org, netfilter-devel@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, ibm-acpi-devel@lists.sourceforge.net, 
-	jfs-discussion@lists.sourceforge.net, linux-alpha@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-cifs@vger.kernel.org, 
-	linux-fbdev@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-mm@kvack.org, 
-	linux-sh@vger.kernel.org, linux-usb@vger.kernel.org, 
-	samba-technical@lists.samba.org, sparclinux@vger.kernel.org, 
-	linux-m68k@lists.linux-m68k.org, linux-doc@vger.kernel.org, 
-	linux-serial@vger.kernel.org, linux-atm-general@lists.sourceforge.net, 
-	Takashi Iwai <tiwai@suse.de>, linux-input@vger.kernel.org, linux-raid@vger.kernel.org, 
-	linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org, 
-	linux-debuggers@vger.kernel.org, Chuck Lever <cel@kernel.org>, stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 03/23] KVM: PPC: Flush/zap all memslots on
+ kvm_arch_flush_shadow_all()
+To: Sean Christopherson <seanjc@google.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Paolo Bonzini <pbonzini@redhat.com>,
+        Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+        kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Jim Mattson <jmattson@google.com>,
+        James Houghton <jthoughton@google.com>, Chris Mason <mason@kernel.org>
+References: <20261030212112.2598640-1-seanjc@google.com>
+ <20261030212112.2598640-4-seanjc@google.com>
+ <5bd7e8e9-3614-4006-a3d7-a51416ba5507@linux.ibm.com>
+ <ausz4VZWa_4Vr03v@google.com>
+Content-Language: en-US
+From: Narayana Murty N <nnmlinux@linux.ibm.com>
+In-Reply-To: <ausz4VZWa_4Vr03v@google.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=Mcr5KJ/f c=1 sm=1 tr=0 ts=6aeb6ce9 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
+ a=1XWaLZrsAAAA:8 a=6Y2wuOs38zrcC-dcLCAA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTA0MDA2OCBTYWx0ZWRfX6zr4fUBHmFzo
+ xy+p4saVE8hRJAQb0i89tY29WU0L7JKvwsHhtRfT/ReA/vC8wvXYN+z3T/b7EZw+FkAduyVF9FI
+ 15ZYGrzyDLVkU+IIlAG7ofbdzBbxEl4=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTA0MDA2OCBTYWx0ZWRfX2oXXojsH1RnK
+ DJlJ1/FLSJwZicC1aLKjh1HDAayBinpqsb+pXCc3B0eotXovHOjGKjrYrxaZuqaHmuKBvsj/HYC
+ btwqXGZ7x6V02Yb8vThO2rHX5tzmQpqAiqPi+ZjZsyXMMy5UPqRMjxKaVrYzjS5UVc4vcbz3Xix
+ iRLXpFpGURIqtFaZZYV7TQgED+HEjFQXAkqFt3hd9JFwFjs9zUdpszo83T6BcZRr9QvehjaNmlf
+ NyI35HrHmqqd37dk3aGXGC4SleZN+BFbHYy1EYtlRRzuReRvNvuz2VxRDKegruQnWUHS4YkOZoa
+ XS8/BxNMLZ0uLZQbsQNLNEygsaV6r7AKiCDzxW0QV8m08IU5BxTIQnwzRg333CYeCS+E/OAc4Fx
+ RBjWFppagwUyLMHqEXt3P0Cr4YrytOu+qZ+ZjIJx3q3tyPres1mFz/ftuANsz4uQZDa1sG0LCqW
+ dw2JPcagYbnG+fZBNQA==
+X-Proofpoint-GUID: la8gAgS5o34WXMxf9_vSgnP6iEte2qja
+X-Proofpoint-ORIG-GUID: udZeEeBj7KLIqpRh3DUf2gkqGXZD_-8L
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-04_05,2026-11-04_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 priorityscore=1501
+ clxscore=1015 impostorscore=0 adultscore=0 spamscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610300000 definitions=main-2611040068
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Wed, Nov 4, 2026 at 6:30=E2=80=AFPM Christian Brauner <brauner@kernel.or=
-g> wrote:
->
-> isapnp_cfg_begin() refuses a logical device number above 10 and a bad
-> card number with -EINVAL before it takes isapnp_cfg_mutex. The callers
-> that read and write the device's configuration, the proc file included,
-> don't look at that: they go on talking to whatever device the card
-> currently has selected and then unlock a mutex they never took in
-> isapnp_cfg_end(). isapnp_create_device() hands out logical device
-> numbers without a bound, so a card with twelve or more logical devices
-> gets there. Return the error instead.
->
-> Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
+Thanks Sean,
 
-Acked-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
+On 04/11/26 7:02 PM, Sean Christopherson wrote:
+> On Wed, Nov 04, 2026, Narayana Murty N wrote:
+>> Hi Sean,
+>>
+>> On 31/10/26 2:50 AM, Sean Christopherson wrote:
+>>> Flush/zap every memslot in kvm_arch_flush_shadow_all(), i.e. when the
+>>> owning userspace process is exiting, as KVM must ensure all associated
+>>> memory is unmapped from the guest.
+>>>
+>>> Cc: stable@vger.kernel.org
+>>> Signed-off-by: Sean Christopherson <seanjc@google.com>
+>>> ---
+>>>    arch/powerpc/include/asm/kvm_host.h |  1 -
+>>>    arch/powerpc/kvm/powerpc.c          | 11 +++++++++++
+>>>    2 files changed, 11 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+>>> index 708a32f89776..50a42f80e5f1 100644
+>>> --- a/arch/powerpc/include/asm/kvm_host.h
+>>> +++ b/arch/powerpc/include/asm/kvm_host.h
+>>> @@ -910,7 +910,6 @@ struct kvm_vcpu_arch {
+>>>    #define __KVM_HAVE_CREATE_DEVICE
+>>>    static inline void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen) {}
+>>> -static inline void kvm_arch_flush_shadow_all(struct kvm *kvm) {}
+>>>    static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu) {}
+>>>    static inline void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu) {}
+>>> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+>>> index 9194cf492d1c..9e9d0865c2f6 100644
+>>> --- a/arch/powerpc/kvm/powerpc.c
+>>> +++ b/arch/powerpc/kvm/powerpc.c
+>>> @@ -764,6 +764,17 @@ void kvm_arch_commit_memory_region(struct kvm *kvm,
+>>>    	kvmppc_core_commit_memory_region(kvm, old, new, change);
+>>>    }
+>>> +void kvm_arch_flush_shadow_all(struct kvm *kvm)
+>>> +{
+>>> +	struct kvm_memory_slot *slot;
+>>> +	struct kvm_memslots *slots;
+>>> +	int bkt;
+>>> +
+>>> +	slots = kvm_memslots(kvm);
+>>> +	kvm_for_each_memslot(slot, bkt, slots)
+>>> +		kvmppc_core_flush_memslot(kvm, slot);
+>>
+>> For Book3S HV/hash, I am not sure the existing flush_memslot helper can
+>> be used on an active memslot like this.
+>>
+>> The normal memslot invalidation path seems to deliberately establish
+>> the opposite ordering.  kvm_invalidate_memslot() first installs an
+>> INVALID slot and makes it active:
+>>
+>> 	invalid_slot->flags |= KVM_MEMSLOT_INVALID;
+>> 	kvm_replace_memslot(kvm, old, invalid_slot);
+>> 	kvm_swap_active_memslots(kvm, old->as_id);
+>> and only then does kvm_arch_flush_shadow_memslot(kvm, old);.
+>>
+>> The comment there explicitly states:
+>> /*
+>>   * From this point no new shadow pages pointing to a deleted,
+>>   * or moved, memslot will be created.
+>>   */
+>>
+>> Similarly, kvmppc_core_flush_memslot_hv() in
+>> arch/powerpc/kvm/book3s_64_mmu_hv.c relies on the memslot already being
+>> invalid when testing KVMPPC_RMAP_PRESENT without locking, as no new HPTEs
+>> can be created.
+>>
+>> However, kvm_arch_flush_shadow_all() in arch/powerpc/kvm/powerpc.c now
+>> invokes the same helper while walking active memslots.
+>>
+>> Is there any serialization in the mmu_notifier.release() path that provides
+>> the same guarantee against new HPTE creation?
+> 
+> There can't be any outstanding *usable* references to vCPUs at this point.
+> mmu_notifier.release() is only invoked if the process is exiting or the VM is
+> dying (which requires the associated file to have been released).
+> 
+> If the process is existing, KVM_RUN (and most ioctls) are unreachable due to the
+> "dev->kvm->mm != current->mm" checks.  Not to mention that if the process is
+> exiting, doing anything with a memslot is completely broken because it means
+> things like hva_to_pfn() are somehow operating on the wrong mm.
+> 
+> If the VM is dying, there can't be any references to vCPU FDs, because each vCPU
+> holds a reference to the VM.
+That makes sense.
 
-> ---
->  drivers/pnp/isapnp/core.c | 16 ++++++++++++----
->  drivers/pnp/isapnp/proc.c |  5 ++++-
->  sound/isa/es18xx.c        |  6 +++++-
->  3 files changed, 21 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/pnp/isapnp/core.c b/drivers/pnp/isapnp/core.c
-> index 219f96f2aaaf..3591a2791c1a 100644
-> --- a/drivers/pnp/isapnp/core.c
-> +++ b/drivers/pnp/isapnp/core.c
-> @@ -853,7 +853,9 @@ static int isapnp_get_resources(struct pnp_dev *dev)
->
->         pnp_dbg(&dev->dev, "get resources\n");
->         pnp_init_resources(dev);
-> -       isapnp_cfg_begin(dev->card->number, dev->number);
-> +       ret =3D isapnp_cfg_begin(dev->card->number, dev->number);
-> +       if (ret)
-> +               return ret;
->         dev->active =3D isapnp_read_byte(ISAPNP_CFG_ACTIVATE);
->         if (!dev->active)
->                 goto __end;
-> @@ -887,10 +889,12 @@ __end:
->  static int isapnp_set_resources(struct pnp_dev *dev)
->  {
->         struct resource *res;
-> -       int tmp;
-> +       int tmp, ret;
->
->         pnp_dbg(&dev->dev, "set resources\n");
-> -       isapnp_cfg_begin(dev->card->number, dev->number);
-> +       ret =3D isapnp_cfg_begin(dev->card->number, dev->number);
-> +       if (ret)
-> +               return ret;
->         dev->active =3D 1;
->         for (tmp =3D 0; tmp < ISAPNP_MAX_PORT; tmp++) {
->                 res =3D pnp_get_resource(dev, IORESOURCE_IO, tmp);
-> @@ -936,9 +940,13 @@ static int isapnp_set_resources(struct pnp_dev *dev)
->
->  static int isapnp_disable_resources(struct pnp_dev *dev)
->  {
-> +       int ret;
-> +
->         if (!dev->active)
->                 return -EINVAL;
-> -       isapnp_cfg_begin(dev->card->number, dev->number);
-> +       ret =3D isapnp_cfg_begin(dev->card->number, dev->number);
-> +       if (ret)
-> +               return ret;
->         isapnp_deactivate(dev->number);
->         dev->active =3D 0;
->         isapnp_cfg_end();
-> diff --git a/drivers/pnp/isapnp/proc.c b/drivers/pnp/isapnp/proc.c
-> index c1f6e6bd0eb2..b3abab24050b 100644
-> --- a/drivers/pnp/isapnp/proc.c
-> +++ b/drivers/pnp/isapnp/proc.c
-> @@ -25,6 +25,7 @@ static ssize_t isapnp_proc_bus_read(struct file *file, =
-char __user * buf,
->         struct pnp_dev *dev =3D pde_data(file_inode(file));
->         int pos =3D *ppos;
->         int cnt, size =3D 256;
-> +       int ret;
->
->         if (pos >=3D size)
->                 return 0;
-> @@ -37,7 +38,9 @@ static ssize_t isapnp_proc_bus_read(struct file *file, =
-char __user * buf,
->         if (!access_ok(buf, cnt))
->                 return -EINVAL;
->
-> -       isapnp_cfg_begin(dev->card->number, dev->number);
-> +       ret =3D isapnp_cfg_begin(dev->card->number, dev->number);
-> +       if (ret)
-> +               return ret;
->         for (; pos < 256 && cnt > 0; pos++, buf++, cnt--) {
->                 unsigned char val;
->                 val =3D isapnp_read_byte(pos);
-> diff --git a/sound/isa/es18xx.c b/sound/isa/es18xx.c
-> index 3cadbf7cf238..de1eda5a0656 100644
-> --- a/sound/isa/es18xx.c
-> +++ b/sound/isa/es18xx.c
-> @@ -1950,7 +1950,11 @@ static int snd_audiodrive_pnp_init_main(int dev, s=
-truct pnp_dev *pdev)
->         /* ok. hack using Vendor-Defined Card-Level registers */
->         /* skip csn and logdev initialization - already done in isapnp_co=
-nfigure */
->         if (pnp_device_is_isapnp(pdev)) {
-> -               isapnp_cfg_begin(isapnp_card_number(pdev), isapnp_csn_num=
-ber(pdev));
-> +               int ret =3D isapnp_cfg_begin(isapnp_card_number(pdev),
-> +                                          isapnp_csn_number(pdev));
-> +
-> +               if (ret)
-> +                       return ret;
->                 isapnp_write_byte(0x27, pnp_irq(pdev, 0));      /* Hardwa=
-re Volume IRQ Number */
->                 if (mpu_port[dev] !=3D SNDRV_AUTO_PORT)
->                         isapnp_write_byte(0x28, pnp_irq(pdev, 0)); /* MPU=
--401 IRQ Number */
->
-> --
-> 2.53.0
->
->
+I was considering the normal memslot invalidation path, where vCPUs
+can still be running, and overlooked the lifecycle guarantees of
+mmu_notifier.release().
+
+Given that KVM_RUN cannot be invoked once the owning mm is gone, and
+that VM destruction requires all vCPU references to be dropped, there
+should be no path to create new HPTEs while the flush is in progress.
+
+That addresses my concern about the unlocked rmap check.
+
+Thanks,
+Narayana.>
+>> Otherwise, couldn't an H_ENTER or fault path create a new HPTE while the
+>> rmap is being scanned, or after it has already been examined?
+
 
