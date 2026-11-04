@@ -2,48 +2,48 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1F075606A333
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:17:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D0A7A606EE98
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:17:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=M+37idsG
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KpHzZpnF
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKZvJ65CSz2xpt;
-	Thu, 05 Nov 2026 06:17:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793819836;
-	cv=none; b=EOLfY+J5c1jplF3Be6b71SMPNQZvYMTqGQxDQnZHQjpWqKBbOm3BtM6o6QuDznMxg0suWmr95E1DqA2g8u4WPjkWgLqHNXx5yVh7e5Dptal0MWgEKiXru+z6D8xJfytRdQ1RwzfBGaoO/g+DbD5qsrZVP/WSqIYo8KutfKADeVtH3n88q/Vc5pZDQyXGiLYBXp+A2xD6AGZwnJNbV7csCoVR4b3nnRX4npz9AHMf91tJo2iQ9MZoOocWa71tCUQMIq56f1443qJ9s9xu+EbYYheZOrrG6YyrHlS+zNGzutJfG7Rg931vM8Us+nhJN3FBMf3k6R3CgPc4Fzm/sL4EPQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKZvb4Ftwz2xjQ;
+	Thu, 05 Nov 2026 06:17:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793819851;
+	cv=none; b=MNS6tyyjXP/CDXub5/nPZ9+dlPZcPSom1d1fLX47iN7w15LWHcnXM77tScWRvDhuvFGxs5dgfBvcCiceZoDQ1xZa/NFuKKjxGaExAMlOvM+nFnHFA+Su7ab2bSWPdfEt5Yqk6y3ilS9PgjXdAYmpW43r0D1RKWMh/9wdZ5SQNcgng2/+GR11X1/FlWmK5+GDi3v38oEjke+bwy/GnPi1cMLoEh123RVVXko3rXsviH9C3j+11wQAxL2NBrTDuLxaCl0Xc/c5qwK5DD094f5A3W9uDr0OPINc110Gv9q7f/yNnF3PMYBcdvgQ4dZnwbDna4BNLg30p8HT9+C5z+o8Sw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793819836; c=relaxed/relaxed;
-	bh=9+yARzdOpzdllKXUJ7Oz/hxaICj5Mm35ej5JnL7jd2E=;
+	t=1793819851; c=relaxed/relaxed;
+	bh=jP/hayhlpAKZdjJKk3r9BHeVVOYyvJcLU3d1z3kH9u8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=k960/D1oAixLoHCgpvL7ridY3pOnwZmpOfXAX12d64r4ZZ1CGXBk3auO7+Yb/YEBA6M7X1xLAU97zLgCyMiJcbh9qH6zMlscAhrkdiKTMZIpSbdwbuMt/T+zkp1LxwTsCtwrYfB6NcD/tGYh6VaoKuKOCZ0IGtyHxoTBtoDz20g5TlLnwdQiv/19k1D4Ke4d6OAMwgyeJKN8L1m6IZvEh0UsL8+yn/HO6oz5F5sFbFWwfQu+f9niVlML1MWnQ8BT8t9rqzDvbWzB0IAIBjopcwYDCIBLQkZ/HTARKmg5Q1DuYsMma1Yo7lzKDHzFm7u11nEFEx6TzsH2sAJYhHMR7Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=M+37idsG; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=H5NwOW8Cwl1S1hpewl57AK2XwrQZDLdWeDa2Uw5SQWzP+nGkj2Tfu62H+WD7vVikRkr2LPLxm+cnz4UGeJeRSl77m0//Oh6KF8Y5UgNkKLoq045eE3cCRhQfhjYrXtqmHs2d1wQi1bkCJC2BZJeETNco0GKJbBlbb4W6TTfIkBN6gLqjHqe6y/XkN5jsoxttqwTb3nR4Ygo7qvnxXr7WKo4/mx+6YRJoUk2Y3yxvjw7L1lAJBvEkepmN37jjzjiivb1k6uOYVEWaslVcJK01XoxhhLsnnI0+UjpBrCqjJofaKjI5JCZ15S9b+GGx1QVCzIQzbsD9qsoDhNJ5+CVz7A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KpHzZpnF; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=M+37idsG;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KpHzZpnF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKZvJ0TPnz2xf8
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:17:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKZvZ4TgWz2xfX
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:17:30 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 3281260D79;
-	Wed,  4 Nov 2026 19:17:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E1CC31F00A02;
-	Wed,  4 Nov 2026 19:17:01 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 5A72041388;
+	Wed,  4 Nov 2026 19:17:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 79C9F1F00A24;
+	Wed,  4 Nov 2026 19:17:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793819833;
-	bh=9+yARzdOpzdllKXUJ7Oz/hxaICj5Mm35ej5JnL7jd2E=;
+	s=k20260515; t=1793819848;
+	bh=jP/hayhlpAKZdjJKk3r9BHeVVOYyvJcLU3d1z3kH9u8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=M+37idsGrLxfFvku7zl/pBSwEmNcKERej4x0tosO6grxOviHHdjWIUdhmF1vqg/33
-	 ePdxdVUOrxZAd03o21+XtRZheQyVUQvUyzG6bID6wcddrxq3hFrluAQ9lLCdxqRzfp
-	 kt/0B12iz71I2xcJyQXTn4hjtTXM1xta/DcZkdyqFcRIjvNQqhjLQ7+o4RQS7ld9uJ
-	 RxppQtsQpkcAJfI1T2eabtz3JiLt/pD+Ac5EuC64kC1SX9FzH8iROGnJpsFF7HprX/
-	 digopjDGEPs9QYh/4IRuwVyogSNhJ6h7LRJdrzEAtQ40rWwZdXm33gXiB304dOVRmc
-	 6xBzDofOt/82g==
+	b=KpHzZpnFwT6+C0q0yRCi5k/OA66tRS7eBzT8lt1HaWQE8e8svE3VZCRBnfRHdCzx7
+	 71y/CPv6HCeTe9zbap2gT5FJuzj5hekBtO1a4cjxKuetzIxGjHALxdRgkDffBvgqoN
+	 /aj76OWmFdznND17QWfa+CPtL2LoFKokFbuci0W4IBDDUUsoZwEUSEMsIoP5ROVtaD
+	 UYsfpJY8su6lg+vsurlkAT18SVCFHIc8HLWY3wDZz/GvQ7lhgYrpLIwR5WyV8knPdX
+	 rwvwNGe1ypF9HhdxdQGkkPDxlpkOU61C82qjywHhkl5yTgB9ONziIAgGKfFuFYu0iv
+	 y/71Zwy9XejIg==
 From: Christian Brauner <brauner@kernel.org>
 To: linux-fsdevel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -105,9 +105,9 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
 	"Christian Brauner (Amutable)" <brauner@kernel.org>,
 	Chuck Lever <cel@kernel.org>,
 	stable@vger.kernel.org
-Subject: [PATCH RESEND v2 04/51] PNP: isapnp: don't go on when isapnp_cfg_begin() fails
-Date: Wed,  4 Nov 2026 20:16:59 +0100
-Message-ID: <20261104-work-procfs-bugfixes-v2-4-021c84d852e0@kernel.org>
+Subject: [PATCH RESEND v2 05/51] xtensa: simdisk: remove the proc entry before the disk
+Date: Wed,  4 Nov 2026 20:17:14 +0100
+Message-ID: <20261104-work-procfs-bugfixes-v2-5-021c84d852e0@kernel.org>
 In-Reply-To: <20261104-work-procfs-bugfixes-v2-0-021c84d852e0@kernel.org>
 References: <20261104-work-procfs-bugfixes-v2-0-021c84d852e0@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -125,7 +125,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3910; i=brauner@kernel.org; h=from:subject:message-id; bh=zJWqbpFP7Eog9HhLBr1/8hQ7kUfFg3Bc340XkbmHZ+k=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9bjwfy6albiRae1/wtUrq+c387TdzlueZHTlof0l6C 9s2jaXJHaUsDGJcDLJiiiwO7Sbhcst5KjYbZWrAzGFlAhnCwMUpABOxOMDwP/P/rHn3hBMn3dDV dmaavka+U/6WztZHr9XU+ayeBLut+8/wz/yq9VK/Qs8AXxn5YxmeOze0nVnNEjjjZ9J8gXrmcL1 FPAA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1246; i=brauner@kernel.org; h=from:subject:message-id; bh=f7Qg/00vnZM3tuJ138yAFxD6JPv6/GBN+HDx2x0z8gg=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9brxQmmA/984KHvt9Xz1eFefxl8hqpieb9fosObahV 1Ne5l9gRwkLgxgXg6yYIotDu0m43HKeis1GmRowc1iZQIYwcHEKwERykxj+u2j/eB40M+7p2v17 /GMmXT/na+Ctz77txmH9Sb+NLH5yrWH4HpzAeT45SPnv5UMnF7jMebDmtMJKXyf/NT8uPWe+O7+ RBwA=
 X-Developer-Key: i=brauner@kernel.org; a=openpgp; fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 Content-Transfer-Encoding: 8bit
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -136,109 +136,38 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-isapnp_cfg_begin() refuses a logical device number above 10 and a bad
-card number with -EINVAL before it takes isapnp_cfg_mutex. The callers
-that read and write the device's configuration, the proc file included,
-don't look at that: they go on talking to whatever device the card
-currently has selected and then unlock a mutex they never took in
-isapnp_cfg_end(). isapnp_create_device() hands out logical device
-numbers without a bound, so a card with twelve or more logical devices
-gets there. Return the error instead.
+simdisk_teardown() frees the gendisk and only then removes
+/proc/simdisk/<n>. A write to that entry in between attaches the file
+that was written to the disk, and simdisk_attach() sets the capacity of
+the gendisk that is gone. Remove the entry first, remove_proc_entry()
+waits for a writer that is in the middle of that.
 
-Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+Fixes: b6c7e873daf7 ("xtensa: ISS: add host file-based simulated disk")
 Cc: stable@vger.kernel.org
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- drivers/pnp/isapnp/core.c | 16 ++++++++++++----
- drivers/pnp/isapnp/proc.c |  5 ++++-
- sound/isa/es18xx.c        |  6 +++++-
- 3 files changed, 21 insertions(+), 6 deletions(-)
+ arch/xtensa/platforms/iss/simdisk.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/pnp/isapnp/core.c b/drivers/pnp/isapnp/core.c
-index 219f96f2aaaf..3591a2791c1a 100644
---- a/drivers/pnp/isapnp/core.c
-+++ b/drivers/pnp/isapnp/core.c
-@@ -853,7 +853,9 @@ static int isapnp_get_resources(struct pnp_dev *dev)
- 
- 	pnp_dbg(&dev->dev, "get resources\n");
- 	pnp_init_resources(dev);
--	isapnp_cfg_begin(dev->card->number, dev->number);
-+	ret = isapnp_cfg_begin(dev->card->number, dev->number);
-+	if (ret)
-+		return ret;
- 	dev->active = isapnp_read_byte(ISAPNP_CFG_ACTIVATE);
- 	if (!dev->active)
- 		goto __end;
-@@ -887,10 +889,12 @@ __end:
- static int isapnp_set_resources(struct pnp_dev *dev)
+diff --git a/arch/xtensa/platforms/iss/simdisk.c b/arch/xtensa/platforms/iss/simdisk.c
+index a2ddb49c269d..e51edb8cf872 100644
+--- a/arch/xtensa/platforms/iss/simdisk.c
++++ b/arch/xtensa/platforms/iss/simdisk.c
+@@ -379,12 +379,13 @@ static void simdisk_teardown(struct simdisk *dev, int which,
  {
- 	struct resource *res;
--	int tmp;
-+	int tmp, ret;
+ 	char tmp[2] = { '0' + which, 0 };
  
- 	pnp_dbg(&dev->dev, "set resources\n");
--	isapnp_cfg_begin(dev->card->number, dev->number);
-+	ret = isapnp_cfg_begin(dev->card->number, dev->number);
-+	if (ret)
-+		return ret;
- 	dev->active = 1;
- 	for (tmp = 0; tmp < ISAPNP_MAX_PORT; tmp++) {
- 		res = pnp_get_resource(dev, IORESOURCE_IO, tmp);
-@@ -936,9 +940,13 @@ static int isapnp_set_resources(struct pnp_dev *dev)
++	/* a write to the entry attaches a file to the disk, so it goes first */
++	remove_proc_entry(tmp, procdir);
+ 	simdisk_detach(dev);
+ 	if (dev->gd) {
+ 		del_gendisk(dev->gd);
+ 		put_disk(dev->gd);
+ 	}
+-	remove_proc_entry(tmp, procdir);
+ }
  
- static int isapnp_disable_resources(struct pnp_dev *dev)
- {
-+	int ret;
-+
- 	if (!dev->active)
- 		return -EINVAL;
--	isapnp_cfg_begin(dev->card->number, dev->number);
-+	ret = isapnp_cfg_begin(dev->card->number, dev->number);
-+	if (ret)
-+		return ret;
- 	isapnp_deactivate(dev->number);
- 	dev->active = 0;
- 	isapnp_cfg_end();
-diff --git a/drivers/pnp/isapnp/proc.c b/drivers/pnp/isapnp/proc.c
-index c1f6e6bd0eb2..b3abab24050b 100644
---- a/drivers/pnp/isapnp/proc.c
-+++ b/drivers/pnp/isapnp/proc.c
-@@ -25,6 +25,7 @@ static ssize_t isapnp_proc_bus_read(struct file *file, char __user * buf,
- 	struct pnp_dev *dev = pde_data(file_inode(file));
- 	int pos = *ppos;
- 	int cnt, size = 256;
-+	int ret;
- 
- 	if (pos >= size)
- 		return 0;
-@@ -37,7 +38,9 @@ static ssize_t isapnp_proc_bus_read(struct file *file, char __user * buf,
- 	if (!access_ok(buf, cnt))
- 		return -EINVAL;
- 
--	isapnp_cfg_begin(dev->card->number, dev->number);
-+	ret = isapnp_cfg_begin(dev->card->number, dev->number);
-+	if (ret)
-+		return ret;
- 	for (; pos < 256 && cnt > 0; pos++, buf++, cnt--) {
- 		unsigned char val;
- 		val = isapnp_read_byte(pos);
-diff --git a/sound/isa/es18xx.c b/sound/isa/es18xx.c
-index 3cadbf7cf238..de1eda5a0656 100644
---- a/sound/isa/es18xx.c
-+++ b/sound/isa/es18xx.c
-@@ -1950,7 +1950,11 @@ static int snd_audiodrive_pnp_init_main(int dev, struct pnp_dev *pdev)
- 	/* ok. hack using Vendor-Defined Card-Level registers */
- 	/* skip csn and logdev initialization - already done in isapnp_configure */
- 	if (pnp_device_is_isapnp(pdev)) {
--		isapnp_cfg_begin(isapnp_card_number(pdev), isapnp_csn_number(pdev));
-+		int ret = isapnp_cfg_begin(isapnp_card_number(pdev),
-+					   isapnp_csn_number(pdev));
-+
-+		if (ret)
-+			return ret;
- 		isapnp_write_byte(0x27, pnp_irq(pdev, 0));	/* Hardware Volume IRQ Number */
- 		if (mpu_port[dev] != SNDRV_AUTO_PORT)
- 			isapnp_write_byte(0x28, pnp_irq(pdev, 0)); /* MPU-401 IRQ Number */
+ static void __exit simdisk_exit(void)
 
 -- 
 2.53.0
