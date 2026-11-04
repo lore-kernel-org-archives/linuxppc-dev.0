@@ -2,48 +2,48 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2607B606AC3C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:50:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB56A606AC3A
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:51:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iqFhZDQ3
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PNR1RL0M
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKbf569zcz3cJW;
-	Thu, 05 Nov 2026 06:50:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKbfN450Nz30Pn;
+	Thu, 05 Nov 2026 06:51:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793821853;
-	cv=none; b=ay1wNoldLujPWoB7+ooYxXqYRD/6p1xGg1ZeT2+IVyuro23k7ooFsXV8yECjPP3BoivVxEeJmNUk8YSeUskeN2omvNWuW5/l6RdlQrJ4mGlpT/oihVF+U5UdqlI1vTGXMfbmmbGymLOeguC3hbJXygbJ2TmPRm3UCpxFLqJ+yfgPsNSOiDf+kFFI/pyIkI+wr7p5TX/GKJJlLUujCs8KC/k/pqE0Xxh0DOX2PMW62LMxgAvN24h1ObboRNj/0Wui5MJGkWmZFmt1N74Kw4+lUvDazlx2Z2lzw/bdwmJk7cGttT1vhez4KatYri3focm5MR17XGMlCNbD4r8ELqVY4w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793821868;
+	cv=none; b=OcqO0VmHI6JKjSTuIjEE+mQ4uRhmwKaxHmhdDEzbQ3xGgt+/rywDZbSlWNZMP1QPNacp4EmXq1gzCjgUbDcIsi5IRrZ0z3sHuocUx10BDM0j6FodBeM7f8UD4jYdNWUV1XafP0KhXqNCdyQ96qqYGXdVE5X/nMYyYjj6SkcSoVj/FPBQt1nQ2w8M7d1R6yBBl9lxU0Fzv9BmjxlEq2ER2qJbP1hcQYwK1zZAEvqQpllKNBYnEtCFhVSa5rSoQdEHwDKaq5Llyfw2NAaGf1/kxBOb+0bH/FCE373mvribVnvNY2sd+v+/rhFAaVpF9xjoad5M+OU7f284tIiFF5P8zw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793821853; c=relaxed/relaxed;
-	bh=PUZ4tW9HsyUaK/ejkkNMI5ANy0GmRkIlRIJ6yNjac0o=;
+	t=1793821868; c=relaxed/relaxed;
+	bh=nEQe0uyLMhpY0v6D+NYVpfdWFgM7DE6SumWpafCq12g=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=dXy3SGJO2Js+K8J7gm/nljYrwyStVAs8SG8H3tVs9VXyu3qmlecFoPnUHwZgxXcAIwUEZA9xiYZmfzq6j2GQgoPMlrzDle3xWJnnfJYeZ+TpxAupB/dJMkuNaxyG+e0GQ1PTDFUuZ9VGWZZw1QWPnh4HvaKCGGdpCpifYlwwdkaeyF42eKsVsABpx68ImqttXHVmaaCFBAZ+zNw6ublmFXNoPGuRVbiLKnoXrwBCR6SNWJX//lqDc3t3AFB7mBr/QbQnfwz7ZkfcTZT+R2aELi6mU8Rpufk9/fgxp8xlL0KvQ1YUeWogbGD1rKaG5nCxvxx0HtBt7AIpXRNxvae3Eg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iqFhZDQ3; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=LpIL44SzR84GaFrRQ0SNh09hNRAQffxVR9tcNbiOY0AtqQI3gg/l/ia6B1IOEQQUSaZvsRdIUUAgcFJyZlMl9EEUNXqg3YHgXYcpfa37PWyNQztMiyS6X8/FFTxXnamgAKQRqs8boRXv7mAH+tFZJgF/76kpFV7bXp4JKpaxF/VZ/8AlmfWn3yMJvKik4v9rh8ByJaJpzB4xow2iUwrjr/Lw6F1OxxZTHPGF1uTnzVPsCMfY4dxWjPsAyO0wLJeNKRJo+jIb8BfXJU7liGpyUsh/xo2+nkxKXeray8IpRAfp2zcNcS8B9tnhj5LJrqbG8T7YLpzA3VVIUF10OJqoog==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PNR1RL0M; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iqFhZDQ3;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PNR1RL0M;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKbf46st3z2xH7
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:50:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKbfM5QDZz2ygW
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:51:07 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 0987F40E0C;
-	Wed,  4 Nov 2026 19:50:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AFEC31F00919;
-	Wed,  4 Nov 2026 19:50:38 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id CA4A34047F;
+	Wed,  4 Nov 2026 19:51:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7FE711F000C1;
+	Wed,  4 Nov 2026 19:50:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793821850;
-	bh=PUZ4tW9HsyUaK/ejkkNMI5ANy0GmRkIlRIJ6yNjac0o=;
+	s=k20260515; t=1793821865;
+	bh=nEQe0uyLMhpY0v6D+NYVpfdWFgM7DE6SumWpafCq12g=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=iqFhZDQ35GfK/vsXy+ylTu3Eh9YrS9nTSq27+28SnBC9XKvW7PfMWDO9W5Ft0iDiC
-	 2su6MPY9k2TxuW2AnVg2vkBoLPH5Ce+Yj7iPgWE1OMfQXuAjt+wKv9ns1AIE6Zh8f2
-	 36rTQxsqFfC8trxeiSZnRnFYf6vYHW9H/wwq7q3bPyDytQtzWderj9LRXTMixQp4Qn
-	 iDLkoWDCDGU0TpyQelcs1HXFXKLJrD35LCYzeMiq0HAZIegNRaAkkGVKs79qb+wzhh
-	 UnoLohKjRfX7+w2z/A62dlh5PLszggZKXcxYK/t9f4zySuslTWVXxeONmWQtVIKX7q
-	 3JuDh2CyL543w==
+	b=PNR1RL0MdGjcQerL1pRweO0sDyx5srKRXEN8HDA+Rakv7ORmxGv0M2c4pYe9RS1TQ
+	 0hEIzB+5FOF0UCUZDy2W4t4c7HuYIzaQJTIIdmOzZYD7DdxjyO4UPMNhgtsSPIcilP
+	 VKQkCD781my0Xdy0OOhH6pW79rQPVmEqRIUUxd2NdY92712CXUTz6e3VpbB0hBPCek
+	 OuNQy8Ti5KEKBVAOmNI7xjQ/es+OJejnGIOCcQv3TLP2VhuvJQoptNjkpFmMJ9AFiD
+	 0pSOj7vYCxBvgAkRaIbFsX+qFB2wBAEL9TsIawHW/SCRe0fGQn34mw49XBQgFh27d6
+	 NX3UXBJy8hndg==
 From: Christian Brauner <brauner@kernel.org>
 To: linux-fsdevel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -104,9 +104,9 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
 	linux-debuggers@vger.kernel.org,
 	"Christian Brauner (Amutable)" <brauner@kernel.org>,
 	Chuck Lever <cel@kernel.org>
-Subject: [PATCH RESEND v2 04/30] lockd: let procfs copy out reads of nlm_end_grace
-Date: Wed,  4 Nov 2026 20:50:36 +0100
-Message-ID: <20261104-work-procfs-fs-v2-4-319e0f9a8aae@kernel.org>
+Subject: [PATCH RESEND v2 05/30] nfsd: factor out setting up the exports seq_file
+Date: Wed,  4 Nov 2026 20:50:51 +0100
+Message-ID: <20261104-work-procfs-fs-v2-5-319e0f9a8aae@kernel.org>
 In-Reply-To: <20261104-work-procfs-fs-v2-0-319e0f9a8aae@kernel.org>
 References: <20261104-work-procfs-fs-v2-0-319e0f9a8aae@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -124,7 +124,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1305; i=brauner@kernel.org; h=from:subject:message-id; bh=yC83pog7S4Eh2+psAQ8qDYZ/OTNKlefl3tGbza44dqI=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS97tFPEq3Pk861Kea+tknP5Pec7S2X9JWOzJkzvcjg8 eGGlXfdOkpZGMS4GGTFFFkc2k3C5ZbzVGw2ytSAmcPKBDKEgYtTACZS/43hr/CRtGIJZ4n01d4b H1v+y1f677Dj1MpcFgcZT/+6tVNuRDEynBQ9vcEl403OpO9xU4NMHs3nFGp3Oh6vtE0lecu7jQH v+AE=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1726; i=brauner@kernel.org; h=from:subject:message-id; bh=vD80ghFjEqER+DW0z2Tx247oQHe2lrzCvRX/1X8RBv4=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS97jE4HGMmWSWebTGtb+f+qbf6t/93PO9leHL1HTEbl YAwmQUfO0pZGMS4GGTFFFkc2k3C5ZbzVGw2ytSAmcPKBDKEgYtTACayJpThr5Txruw7h8z+75d5 n1L9ZprSX0ON4zl3v9jMV5lvl7Zx8waG/4W80ze0KR4rWpY6/3hi66zKk8tmbsxvP1RSWORQnvT 3OCsA
 X-Developer-Key: i=brauner@kernel.org; a=openpgp; fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 Content-Transfer-Encoding: 8bit
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -135,42 +135,68 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Implement ->proc_read_buf() so procfs copies what is read to userspace
-after it unpinned the entry.
+Move setting up ->private and taking the reference to the network
+namespace into exports_net_init() and dropping it into
+exports_net_put(). The procfs file needs them without the seq_open()
+and seq_release() around them.
+
+No functional changes.
 
 Acked-by: Chuck Lever <cel@kernel.org>
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- fs/lockd/procfs.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ fs/nfsd/nfsctl.c | 26 +++++++++++++++++---------
+ 1 file changed, 17 insertions(+), 9 deletions(-)
 
-diff --git a/fs/lockd/procfs.c b/fs/lockd/procfs.c
-index 852cca8c3588..64195c564cd3 100644
---- a/fs/lockd/procfs.c
-+++ b/fs/lockd/procfs.c
-@@ -40,7 +40,7 @@ nlm_end_grace_write(struct file *file, char *buf, size_t size, loff_t *pos)
- }
- 
- static ssize_t
--nlm_end_grace_read(struct file *file, char __user *buf, size_t size,
-+nlm_end_grace_read(struct file *file, char *buf, size_t size,
- 		   loff_t *pos)
- {
- 	struct lockd_net *ln = net_generic(current->nsproxy->net_ns,
-@@ -51,12 +51,12 @@ nlm_end_grace_read(struct file *file, char __user *buf, size_t size,
- 	resp[1] = '\n';
- 	resp[2] = '\0';
- 
--	return simple_read_from_buffer(buf, size, pos, resp, sizeof(resp) - 1);
-+	return memory_read_from_buffer(buf, size, pos, resp, sizeof(resp) - 1);
- }
- 
- static const struct proc_ops lockd_end_grace_proc_ops = {
- 	.proc_write_buf	= nlm_end_grace_write,
--	.proc_read	= nlm_end_grace_read,
-+	.proc_read_buf	= nlm_end_grace_read,
- 	.proc_lseek	= default_llseek,
+diff --git a/fs/nfsd/nfsctl.c b/fs/nfsd/nfsctl.c
+index f32311f2d7cf..f8ce3c0fb077 100644
+--- a/fs/nfsd/nfsctl.c
++++ b/fs/nfsd/nfsctl.c
+@@ -143,28 +143,36 @@ static const struct file_operations transaction_ops = {
+ 	.llseek		= default_llseek,
  };
+ 
++static void exports_net_init(struct net *net, struct seq_file *seq)
++{
++	struct nfsd_net *nn = net_generic(net, nfsd_net_id);
++
++	seq->private = nn->svc_export_cache;
++	get_net(net);
++}
++
++static void exports_net_put(struct seq_file *seq)
++{
++	struct cache_detail *cd = seq->private;
++
++	put_net(cd->net);
++}
++
+ static int exports_net_open(struct net *net, struct file *file)
+ {
+ 	int err;
+-	struct seq_file *seq;
+-	struct nfsd_net *nn = net_generic(net, nfsd_net_id);
+ 
+ 	err = seq_open(file, &nfs_exports_op);
+ 	if (err)
+ 		return err;
+ 
+-	seq = file->private_data;
+-	seq->private = nn->svc_export_cache;
+-	get_net(net);
++	exports_net_init(net, file->private_data);
+ 	return 0;
+ }
+ 
+ static int exports_release(struct inode *inode, struct file *file)
+ {
+-	struct seq_file *seq = file->private_data;
+-	struct cache_detail *cd = seq->private;
+-
+-	put_net(cd->net);
++	exports_net_put(file->private_data);
+ 	return seq_release(inode, file);
+ }
  
 
 -- 
