@@ -2,48 +2,48 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7E6E60A03E4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:32:42 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D4EF160A3409
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2026 19:32:56 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=W+i8aZei
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=I5QLB5cP
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKbF53qwFz3c13;
-	Thu, 05 Nov 2026 06:32:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793820761;
-	cv=none; b=UPSPF8/82NqVufoY57QIPeRBc6eRQCWsLqkZVSgZwVt37vl+O0eIqu9eesN0WMYhu4Ew8+QGxV0r28kT2eJ8VvyP9vOP6K1lwsYY+VYuRbBP+7nx2ZTdrksJkEUS56VhyvT8nRyc+Nhnkr1Tc9kZ9/5tzgQNwu8uQsHu7dVkb9nyQqEv+tb1L5/SgPcxOnrvAbFkUS8eQnVTo4PXTcv4WXFlSrzRvYEsyDRpHAs4IZ8xwYIj9F21jC/+ihzqV+p5lrj3kt0swCsgLOsu5Ia2yA3uw49aXi7PSGDwu9jq1Jf0Xf6l8Qt4quZikNCxJTYs6jh3F5tgqyKDWB/uHX/dKw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKbFM4PPQz2yLg;
+	Thu, 05 Nov 2026 06:32:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793820775;
+	cv=none; b=d+OY52Jk7N+ZpfbpdLlDXtb4jDYt2QU80k1uWOJMhUtAE8ckVa1IeOznyORuwXP/fieZb2ccYmxTyeSG/8l/V91e0hcPXJ+h0JJ1yFMerYfsLSueP7UxzbdDpn6pGQJDgQqQjH87qW2cb8we+cedWVeybAjKpldESgL5HJ+I8CcDNeCdA7kkYYf3iHQzus4vKC6jOE7rMJJ2OBAq6AXVFJYizvC+UgUJ9/J1t8DOPywjvkTAn4hVnED0y0PBhFSI6nN2REGp5du4Z6tqEoqGhLMqw3X3WsvAc2oXnAjTF6lEVfJqD3yP5niYQiMsbcxPSSab/JjbKRE7Agp2t3QjuQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793820761; c=relaxed/relaxed;
-	bh=z15Uq40RTWsSdyyx7OaN0bxQRP62XbWMWxAG8tgRqsc=;
+	t=1793820775; c=relaxed/relaxed;
+	bh=TEHVy98izX4fxXB98UXZRCAsXp7Vv98/GN00gGR5FH0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=XjdDuqz/ELNf2kbghs40XyPTbOV04f1yEo8rOkwNXlCaz5rYSO/Di360FVqJMqF656Q/hPAT+Dcyg8UOmGaqBtqsoAG9+dkc3clis25u5PM5aZ+d9myhTzQdEESrtpvyQUnzxxr1d+LY99b8BGUsXNXRHeDswqkzdIVnrwI/cIfIT3fDCdHZXIOjKENC2q7nVcdN4PxkHmSKrKq3/S65ZN0y6D0/Eyo29AS6ecEIUmmVGDhY95F2B07kNZRsc9CuDHbFjqewZzpExmbn0W5Xij8aFGM9jANVJfp9WMY2SBfJKANBLDTq6oeWOepEZagEKpUaDyzDjRxsI7DQTvOBkQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=W+i8aZei; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=OW65SuedY0mvri5XRSOFeIQDx7haBrAYHwn9Y7qnzSDnAemtXUe2hNRJAjDBYxRVKQN+2K0ATvo/5edHQqQ/QYXhQHi+fvBWPa+LQJ6MjaknVLUNYgneGnZWzHIIrc1bOiLY/E4K4nFV4eiTXMxJLNOHIF7hY10/OATPPgvD5BVow89tYD91CwPppZzx5aL5K1idZ0jAgxgmImYpZg9f9ZRZ1t3xPQLBEJ0ug9708OdQ8DyV7VK9ppBrGBxN7juwhxy1j6WsMSrtULjyVto+VjUYkpVzJMYuUtRpHW8rAwFjRGdla9DFTse8ptTKR/pJFkJCDnwxyk0LIYjFFec2Sw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=I5QLB5cP; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=W+i8aZei;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=I5QLB5cP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKbF44lwsz3c0n
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:32:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKbFL61gzz2yHD
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 06:32:54 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 93D3843E49;
-	Wed,  4 Nov 2026 19:32:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB97E1F000C1;
-	Wed,  4 Nov 2026 19:32:26 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id EA56A60DC5;
+	Wed,  4 Nov 2026 19:32:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0BC9D1F00919;
+	Wed,  4 Nov 2026 19:32:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793820758;
-	bh=z15Uq40RTWsSdyyx7OaN0bxQRP62XbWMWxAG8tgRqsc=;
+	s=k20260515; t=1793820772;
+	bh=TEHVy98izX4fxXB98UXZRCAsXp7Vv98/GN00gGR5FH0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=W+i8aZeilfkPThwp9sk+IDIrcNh/6E37rCi1GakLs5JMOFkVQhVKQXkXobs0GsnmC
-	 X2w5aY+fCUKPZgFiwl4dmxwEoCZielH7nKgovpr50c7pO3XfdcFrRdLPMYF2xlbAAt
-	 3UVMhfNaYBzloJyCglOGvkLp5sCBawqPIDZAtKLm0WKyQE4f6l0yJYPeQY/+q8lTkM
-	 ipCjS3tQRCG9VrAfpWvyxyu8TaSRCmQX1N+d54QbhsbTYJppG6u0WLdqkpyWUbQBdD
-	 EiU0Hqho5zULw8Z0FWgM9tiZsyw3bd5Ek++cBXgLUuSj9WX3ZVj0Iu1pCDoiiFv0xG
-	 RmpMBy6S0lbGg==
+	b=I5QLB5cPRnqisNuC7Gqo3F5XkxxQOdtVGXAFMUWMhX2Z7BYWw49ADkpvPU7MqNxI+
+	 j48ixtJJYVGr31znu8c/7Be9nnUewJ72aON0xf/R4isMFiSrAYisnnndH+E4ED8VQQ
+	 XcfgL+2d4gDdQBsrsE6enNmVb2q9GlukpVqvYJqVvErrOeF7xxKhbqDxo8qTklwVA5
+	 Y30cOxhhLbdaCZP3DnUVtJZjx6p43P/fTZQgcWsWTuUtDrOyubqKAr0fQ8lDQzcJg3
+	 4R05YEMlvwuvN8sRYtajj3sC3E3jrB8F1lxhZNUzV+Nt7eI5ePNgQkrGR4Ab/7mBVU
+	 5ngUzPN2tzJhg==
 From: Christian Brauner <brauner@kernel.org>
 To: linux-fsdevel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -104,9 +104,9 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
 	linux-debuggers@vger.kernel.org,
 	"Christian Brauner (Amutable)" <brauner@kernel.org>,
 	Chuck Lever <cel@kernel.org>
-Subject: [PATCH RESEND v2 13/23] proc: let procfs own the seq_file of /proc/stat
-Date: Wed,  4 Nov 2026 20:32:24 +0100
-Message-ID: <20261104-work-procfs-core-v2-13-76ace653a773@kernel.org>
+Subject: [PATCH RESEND v2 14/23] proc: let procfs copy in writes before pinning the entry
+Date: Wed,  4 Nov 2026 20:32:38 +0100
+Message-ID: <20261104-work-procfs-core-v2-14-76ace653a773@kernel.org>
 In-Reply-To: <20261104-work-procfs-core-v2-0-76ace653a773@kernel.org>
 References: <20261104-work-procfs-core-v2-0-76ace653a773@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -124,7 +124,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1008; i=brauner@kernel.org; h=from:subject:message-id; bh=OV3IfsSeb+nM09t9wfnVIL5mmMQS24c4QneBQIUHStE=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9bm/Yo/Iod11QkuzuqU/SJ8a+PuXR6Rpmd3y9hLIR4 8bV+aILOkpZGMS4GGTFFFkc2k3C5ZbzVGw2ytSAmcPKBDKEgYtTACbiX8Lwh1uSjYHhJmd0rWVU E3PmDt25Vz5sTr9TsyfTrMdnXtVlWYa/4uuOXOpitsm4b1jxZ7NayJqeC7x8cvdK/pfvPcEslFf KDwA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=6007; i=brauner@kernel.org; h=from:subject:message-id; bh=XY7ojw2MJH5q6cdYnSISI9dPPhcEOijXA7taVvYOt3o=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9bm/kTxWWFrr4tjFsg/6s4/3d3zQzvzzb8u92uexKQ aWHfpMOd5SyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAExk+06GP1wi7B7/1rWYZy25 JqbSIlC9+W/y8g03z9R8S54pVjXRwpiRYZGPccC8jU98amU92Ti0XJqD2prb62ev/Sv9RV1n1mc JZgA=
 X-Developer-Key: i=brauner@kernel.org; a=openpgp; fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 Content-Transfer-Encoding: 8bit
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -135,36 +135,178 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Declare the show function and let procfs open and free the seq_file.
-->proc_open() only preallocates the buffer now.
+proc_reg_write() pins the entry and calls ->proc_write() which copies
+from userspace itself. A page fault in that copy can take as long as
+the writer wants, just like the copy to userspace of a read, and
+remove_proc_entry() waits for it.
+
+So do what kernfs does for writes as well. An entry that implements
+->proc_write_buf() gets a NUL-terminated kernel copy of what was
+written. procfs makes that copy before it pins the entry. The copy is
+capped at ->proc_write_size bytes, or at PAGE_SIZE - 1 like
+proc_simple_write() if the entry doesn't care. Larger writes fail with
+-EINVAL. The proc_ops go away with the entry, so procfs remembers the
+limit in the entry when it is registered, like the size of the seq_file
+state, instead of pinning the entry just to look up a number.
+
+Entries that take binary data in pieces, like the PCI config space,
+ALSA's data entries or a firmware image, can ask for
+PROC_ENTRY_SHORT_WRITES instead. procfs then copies in the first
+->proc_write_size bytes and the write comes up short.
+
+->proc_write_buf() gets the position like ->proc_write() so entries
+that write at an offset keep working.
+
+Note that procfs copies in the whole write before the entry looks at any
+of it. So a write that is too large or whose buffer can't be read fails
+before the entry's own checks run, permission checks included, even
+where the entry only ever looked at the first few bytes.
+
+An entry that implements ->proc_write_buf() and still has a
+->proc_write() fails to register.
+
+No users yet.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- fs/proc/stat.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ fs/proc/generic.c       |  8 ++++++++
+ fs/proc/inode.c         | 33 +++++++++++++++++++++++++++++++++
+ fs/proc/internal.h      | 11 +++++++++++
+ include/linux/proc_fs.h | 17 +++++++++++++++++
+ 4 files changed, 69 insertions(+)
 
-diff --git a/fs/proc/stat.c b/fs/proc/stat.c
-index 79b42f2bfd00..3bfb79edc0f6 100644
---- a/fs/proc/stat.c
-+++ b/fs/proc/stat.c
-@@ -161,15 +161,13 @@ static int stat_open(struct inode *inode, struct file *file)
- 
- 	/* minimum size to display an interrupt count : 2 bytes */
- 	size += 2 * irq_get_nr_irqs();
--	return single_open_size(file, show_stat, NULL, size);
-+	return seq_preallocate(file->private_data, size);
+diff --git a/fs/proc/generic.c b/fs/proc/generic.c
+index 959bf9e33245..4f1f83e9f288 100644
+--- a/fs/proc/generic.c
++++ b/fs/proc/generic.c
+@@ -466,6 +466,14 @@ static int pde_set_flags(struct proc_dir_entry *pde)
+ 		if (proc_ops->proc_lseek)
+ 			pde->flags |= PROC_ENTRY_proc_lseek;
+ 	}
++	if (proc_ops->proc_write_buf) {
++		if (WARN_ON_ONCE(proc_ops->proc_write))
++			return -EINVAL;
++		pde->flags |= PROC_ENTRY_proc_write_buf;
++		pde->write_size = proc_ops->proc_write_size ?: PAGE_SIZE - 1;
++		if (proc_ops->proc_flags & PROC_ENTRY_SHORT_WRITES)
++			pde->flags |= PROC_ENTRY_SHORT_WRITES;
++	}
+ 	return 0;
  }
  
- static const struct proc_ops stat_proc_ops = {
- 	.proc_flags	= PROC_ENTRY_PERMANENT,
-+	.proc_show	= show_stat,
- 	.proc_open	= stat_open,
--	.proc_read_iter	= seq_read_iter,
--	.proc_lseek	= seq_lseek,
--	.proc_release	= single_release,
+diff --git a/fs/proc/inode.c b/fs/proc/inode.c
+index d51ab7548b11..df1caa0f238d 100644
+--- a/fs/proc/inode.c
++++ b/fs/proc/inode.c
+@@ -417,11 +417,44 @@ static ssize_t pde_write(struct proc_dir_entry *pde, struct file *file, const ch
+ 	return -EIO;
+ }
+ 
++/*
++ * procfs copies in what is written before it pins the entry. A writer that
++ * faults on its buffer then doesn't hold up remove_proc_entry().
++ */
++static ssize_t pde_write_buf(struct proc_dir_entry *pde, struct file *file,
++			     const char __user *ubuf, size_t count, loff_t *ppos)
++{
++	char *buf __free(kvfree) = NULL;
++	size_t size;
++	ssize_t rv;
++
++	size = pde->write_size;
++	if (count > size) {
++		if (!pde_has_short_writes(pde))
++			return -EINVAL;
++		count = size;
++	}
++	buf = kvmalloc(count + 1, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
++	if (copy_from_user(buf, ubuf, count))
++		return -EFAULT;
++	buf[count] = '\0';
++
++	if (!pde_pin(pde))
++		return -EIO;
++	rv = pde->proc_ops->proc_write_buf(file, buf, count, ppos);
++	pde_unpin(pde);
++	return rv;
++}
++
+ static ssize_t proc_reg_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
+ {
+ 	struct proc_dir_entry *pde = PDE(file_inode(file));
+ 	ssize_t rv;
+ 
++	if (pde_has_proc_write_buf(pde))
++		return pde_write_buf(pde, file, buf, count, ppos);
+ 	if (!pde_pin(pde))
+ 		return -EIO;
+ 	rv = pde_write(pde, file, buf, count, ppos);
+diff --git a/fs/proc/internal.h b/fs/proc/internal.h
+index 674e6b4ed21e..da246c5ed4bf 100644
+--- a/fs/proc/internal.h
++++ b/fs/proc/internal.h
+@@ -51,6 +51,7 @@ struct proc_dir_entry {
+ 	proc_write_t write;
+ 	void *data;
+ 	unsigned int state_size;
++	unsigned int write_size;
+ 	unsigned int low_ino;
+ 	nlink_t nlink;
+ 	kuid_t uid;
+@@ -109,6 +110,16 @@ static inline bool pde_has_proc_show(const struct proc_dir_entry *pde)
+ 	return pde->flags & PROC_ENTRY_proc_show;
+ }
+ 
++static inline bool pde_has_proc_write_buf(const struct proc_dir_entry *pde)
++{
++	return pde->flags & PROC_ENTRY_proc_write_buf;
++}
++
++static inline bool pde_has_short_writes(const struct proc_dir_entry *pde)
++{
++	return pde->flags & PROC_ENTRY_SHORT_WRITES;
++}
++
+ /* procfs owns the seq_file, see pde_seq_start() */
+ static inline bool pde_is_seq_file(const struct proc_dir_entry *pde)
+ {
+diff --git a/include/linux/proc_fs.h b/include/linux/proc_fs.h
+index ea55ed85a2d6..c81c93325044 100644
+--- a/include/linux/proc_fs.h
++++ b/include/linux/proc_fs.h
+@@ -31,6 +31,13 @@ enum {
+ 	PROC_ENTRY_proc_show		= 1U << 5,
+ 
+ 	PROC_ENTRY_FORCE_LOOKUP		= 1U << 7,
++	PROC_ENTRY_proc_write_buf	= 1U << 8,
++
++	/*
++	 * Writes larger than ->proc_write_size come up short instead of
++	 * failing with -EINVAL.
++	 */
++	PROC_ENTRY_SHORT_WRITES		= 1U << 9,
  };
  
- static int __init proc_stat_init(void)
+ struct proc_ops {
+@@ -67,6 +74,16 @@ struct proc_ops {
+ 	const struct seq_operations *proc_seq_ops;
+ 	int	(*proc_show)(struct seq_file *, void *);
+ 	unsigned int proc_state_size;
++	/*
++	 * procfs copies what is written into a kernel buffer and calls
++	 * ->proc_write_buf() with it. The buffer is NUL-terminated and holds
++	 * at most ->proc_write_size bytes, PAGE_SIZE - 1 if that's 0. Larger
++	 * writes fail with -EINVAL unless the entry asks for
++	 * PROC_ENTRY_SHORT_WRITES. The position is NULL for a stream, like
++	 * for ->write().
++	 */
++	ssize_t	(*proc_write_buf)(struct file *, char *, size_t, loff_t *);
++	unsigned int proc_write_size;
+ } __randomize_layout;
+ 
+ /* definitions for hide_pid field */
 
 -- 
 2.53.0
