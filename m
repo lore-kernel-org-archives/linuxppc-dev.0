@@ -2,69 +2,69 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E2E92606A337
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 14:44:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 93C80606A32D
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 14:44:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hAhFZBnZ
+	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HtSwR+v7
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jL4p94QHVz2y7W;
-	Fri, 06 Nov 2026 01:44:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793889873;
-	cv=none; b=BNew7/sdFTKmy0AGhjihYSnL94dZSqfU9JwBlCy8oEgTwqDI9s3mYhBZTPvAwARfh1sAulU4gf7OxO+kNJ/fGWe4bq4GLplwpZO37QxeKrypsQv+syqG8P0kzWVeIMhTGLrbirC4BsD4EfwGS6e4RHwgz3A64JdOPelBurY0NF+wEiFEmjAeYOfbOYHVYqIShDoS9UXz2fRf7+HaWHXOUKgfsPf9Eh/g2A27j9SMR35LnKMYIp/Zz1BjGG4jZuKgJPtCWY9oiLQSLYzHVmwDT8R0/lfqlfd6FVZBEz25Vqx3GZIymUxwlr7Lo00zQEjoPDkouwoLoXcr1A7wBG2kBw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jL4pH55Vqz2y71;
+	Fri, 06 Nov 2026 01:44:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793889879;
+	cv=none; b=KzPrf0iAzKaWWOOqaTMp1+3vrVU/NrkEIu7g4NW+aBmEiMsL/iFZsRDvSLNV4XLAtRDDdBKOE7emeUVyX9rCc8b1alO6S8tVPSa/HloA9+Y3tVNomnlAwOXGWW50lY+Msfjl6tmyOZJbZZ7JAhOwasi/6ae1mnJR3k/rcoGHK7xxIDnZIA45Hxhki5uytMkCuEqv+xjTlbcUrK4VECB0jLWeazUeJArzfFhtNLStvU5RW3C8eEO+5uoAE/Fw5Q1h399j4vcm7vSF4P+BoPXb2Y1KapRP5Z8n2EcoeqGeqMMu8kldDbehyvroFhaP0diajky/g9UTFJtX86mBehP+Yw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793889873; c=relaxed/relaxed;
-	bh=S2mY3fzlFrSjrdoKMp+IDYQG02ytYNJmLbcWwcNkJ6U=;
+	t=1793889879; c=relaxed/relaxed;
+	bh=XlISgmGbH4GSY9/zf5L4adWYA03gtg65JNpjQqN6h9s=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=hErsGy5FMj/BudAmOMdVqNXN+CqK8JIevsPoNADKSSF5T0B38PWOh+Eacrb4ydC2sZHR1w+7rmLIYbr3LZnXhlCR5cRGxHyNv0WtrnlvK/K9YZhlMSkAJzBzru9ShXqyO7hufT8U02uasTGWVNwk0jAxMMK3Uaei7WNxtQ3M9TBJdbs3M9ujY9KZm2Fu4IORF9n9C93hgjH2qp/PkGxHdGJCCL43gq9hydBZnKidmaIpxZWMsq8MSqCHdtHEzXWohl/JsLhoPNTk/jf4fRvjCsIVaSxczZQQL5AUwV55HuGncjyu06r4NN+9gx01a4e/g/bky7oALBUDY4mQmjDKxQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hAhFZBnZ; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=MZlaIiLkwrCv5IZ8lKcvBORkPOOLxWVsv7rLPlbzSKXMm/7jODCnPtiPfNTpcYspwP25YOjOFnWjOOOIYmXU0/NfYbdPWnIxUCRzAa8SnC9d9RTYqfPpbByW8xYGOaIW/OqsDcW1L7UnmZPzV0FvqJwvYfPYtlDQAIDN66PEERyhkUnbqsE20rUwmGDZ+VFJ8DNAXwToTBYh32gFbmcftVTOOYNGSZLJj3i0VAc4ZjQr3pUU9XSjttz30QgTXekWkQjYsqjy5/zkLqw7uW2eDqB0nK9W3CwjYX84z1q8SCckzwIW9OxqHZUC3mWIxIrPuXUJxfvFwOPGtlEmGURksA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HtSwR+v7; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hAhFZBnZ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HtSwR+v7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jL4p85mhbz2xqh
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 01:44:32 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A5EiFr42627275;
-	Thu, 5 Nov 2026 14:44:18 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jL4pH09Szz2xN4
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 01:44:38 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A5EiKHM4018508;
+	Thu, 5 Nov 2026 14:44:26 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=S2mY3fzlFrSjrdoKM
-	p+IDYQG02ytYNJmLbcWwcNkJ6U=; b=hAhFZBnZHohsZ9TUw9kXqfSr72BW9eryp
-	Cy+1D621np4vIaOFhrqptiy/toZWARHgC1LiJaEAswwBbe3CuQQfhRgkNY/LkzVU
-	oMnCbdciO7FxnjzwTN9L5A8oeaaS1aNpb3sObimjIM0JfHko51C6y8mIWOwqwbSg
-	ESpPuWbRe3SPfG6/PU1ROh4/+C2QC3yNtSvyvcDwNnM0zFVlCuTSvKbDq47xyKtU
-	DPM8Fu5kZPwpOsPkNSlMntNjSEfSRluDCXyG4hNZOJudWylJxgPEghu7ecjUIZRP
-	oE3zmhWKWEmKD2+HCmkm2qX3x2DaSesELiE+4ce9TL6w/Jg8jGjzw==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hn6rdjfc5-1
+	:mime-version:references:subject:to; s=pp1; bh=XlISgmGbH4GSY9/zf
+	5L4adWYA03gtg65JNpjQqN6h9s=; b=HtSwR+v7CAombAOi8vpmg8z5ZLTgvwt2U
+	sUXe+knk+crVxzB+fqeKY1B0xtx+ns8NKelOmoa4g+2BjEAqIbTyA3yB3pqmlq3Q
+	9ooEiQ/Doox7WeNCB0hK2Dw6fB6dzhLLDfwt/NU5wmd3lZOeLYJTRyY52MbJeGqV
+	zz2h1K0H5UTqiSd4h4IHLE0X+1loJ+RcsYYTcntYOqzAvkZ4vnWb6wvE9xPNmvwk
+	A+KDyL6h6hJcZID1yvo8KK36TXz0SmMImDj6h401v1iSldguu84tPvEmDKukFL+T
+	0ILHrQ/+cIpCGkh3bZaHYFhmOYMweTI8YOHvaOS4p+rkm55bPPEew==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hn7u3txm6-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 05 Nov 2026 14:44:17 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6A5EZ3bU1796732;
-	Thu, 5 Nov 2026 14:44:16 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4hrka6teec-1
+	Thu, 05 Nov 2026 14:44:26 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6A5EYvop1685696;
+	Thu, 5 Nov 2026 14:44:25 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4hrmrej3qm-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 05 Nov 2026 14:44:16 +0000 (GMT)
+	Thu, 05 Nov 2026 14:44:25 +0000 (GMT)
 Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6A5EiCEq31785484
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6A5EiLgR43254164
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 5 Nov 2026 14:44:12 GMT
+	Thu, 5 Nov 2026 14:44:21 GMT
 Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A99822005A;
-	Thu,  5 Nov 2026 14:44:12 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 2E9832005A;
+	Thu,  5 Nov 2026 14:44:21 +0000 (GMT)
 Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B45ED2004B;
-	Thu,  5 Nov 2026 14:44:05 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 819E62004B;
+	Thu,  5 Nov 2026 14:44:14 +0000 (GMT)
 Received: from li-fc74f8cc-3279-11b2-a85c-ef5828687581.ibm.com (unknown [9.67.70.234])
 	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  5 Nov 2026 14:44:05 +0000 (GMT)
+	Thu,  5 Nov 2026 14:44:14 +0000 (GMT)
 From: Srish Srinivasan <ssrish@linux.ibm.com>
 To: linux-integrity@vger.kernel.org, keyrings@vger.kernel.org,
         linuxppc-dev@lists.ozlabs.org
@@ -74,9 +74,9 @@ Cc: maddy@linux.ibm.com, ritesh.list@gmail.com, sshegde@linux.ibm.com,
         zohar@linux.ibm.com, linux-kernel@vger.kernel.org,
         linux-security-module@vger.kernel.org, nayna@linux.ibm.com,
         rnsastry@linux.ibm.com, ssrish@linux.ibm.com, stable@vger.kernel.org
-Subject: [PATCH v6 5/9] pseries/plpks: fix double conversion of wrapping key flush errors
-Date: Thu,  5 Nov 2026 20:13:16 +0530
-Message-ID: <20261105144320.357260-6-ssrish@linux.ibm.com>
+Subject: [PATCH v6 6/9] pseries/plpks: fix length types for wrapping operations
+Date: Thu,  5 Nov 2026 20:13:17 +0530
+Message-ID: <20261105144320.357260-7-ssrish@linux.ibm.com>
 X-Mailer: git-send-email 2.56.0
 In-Reply-To: <20261105144320.357260-1-ssrish@linux.ibm.com>
 References: <20261105144320.357260-1-ssrish@linux.ibm.com>
@@ -96,33 +96,32 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: 4iNfgPRtw_HeEea_glZe2ZSrmq7SqFrg
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTA1MDA1OCBTYWx0ZWRfX/VjGjFqt2UtG
- 2jW8UoYGUel6R98QZ732DqgkXZrJAF0tT5bd+/9Sdcmbm9wO6L117O06rDTs7C17I2Z++Fbz8Kc
- TFmqNKj+ua4qCvHZ9vkVAAxmwuuqm9plignuJTc0f8ol9g5dVc3GVlMHFXzIwpwH5eDeSW76V5O
- VWmCz2qjSfWkwWjuWF/onSO4lLcQRi4eGB4kBbQjg6mFShRFdriMtVICA2cNF/fibsrJPBqvqZD
- Hq0QkykNT1VDglSXn7fPlBcuz1dbdmhnWOEDiC6dKleNa9dw3h8x8J2h35eEAfrFsnkNTmrgpK8
- 6l2y8kOLevvBjp5bVtwaaEye36Q7HsVVSx42W5Whx59qeR/sQYC8hiAYjuFkRJmrnGsHY+ayiLB
- j7Y2A4wtWr74q424cwAm4IMYtmPyLTMMCQ3+AdbIBKpV1fDA2JvNCdkIiQzDbZT1G9NyaQJ90hH
- VO73kDZO1R8Y2NXFFTA==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTA1MDA1OCBTYWx0ZWRfX71hVxA5JAXpB
- WTNW9Qj2A4KOuqkNQ3Ta5aFBIE3MxSSTEF1ysFEc1XgshZCuEBkm3SB58wv0wCxRLlHuqFGro8e
- kOWyVk2FFr8y09FizoTTJbKBu7w72h0=
-X-Authority-Analysis: v=2.4 cv=QK391QLL c=1 sm=1 tr=0 ts=6aec9641 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+X-Authority-Analysis: v=2.4 cv=Zsp4uN7G c=1 sm=1 tr=0 ts=6aec964a cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
  a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=vpVMPqmk0RDRli2XWrYA:9
-X-Proofpoint-ORIG-GUID: cFGEeR14gMPVDJkaJKLJhUibc-yWkPhq
+ a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=9fGkF-8gFJ1lMNA_rXYA:9
+X-Proofpoint-ORIG-GUID: BdrmebKB_k7P-eebXYVT9tTOSSxCFsz1
+X-Proofpoint-GUID: vnSFPbJxaz64XW2HziOQg8Kyjs5KHHNr
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTA1MDA1OCBTYWx0ZWRfXxn4uuCDvbBlq
+ LT9uGjg1OEPveXXUyPsgBUJTcf385Cp21lo3rmurOPYDIKHWkcIqfk4Z/X5/S93mrR5Ho5t6w8o
+ 8SpCnxZmLZ3CFXVy0bAZ/Fad5kiHYwGnogqmFcNTV439N+O6FlRL8MlBRmjfZwa1Rk7wkfstfnC
+ FnJJSxCt7Y7oAcldcylpHxAzSfRnkGvO3QbDAbYu4GiboxM+etjnSEu8oWA1GHicqBeTr5eMwCU
+ 4QqYE6JszAuWy7FpzFofkGo1LgCLi8xRfPZ2x6/AXdSgqWmgEVsjCLP4fyTxZvoCKGDD6i33Hqg
+ TrJeL6k/rtDIlEO3wb9tE1/YLqR3lLXfmVIj6sZwc4s4wiJMXgoEpifcMryduZoXpYm+E+de5Ta
+ riixiuKQKsoP9CAkendI/Vk94uLE1viuIjageeRTObXAdD7Qsh0POexjRq3JJgqiA80jRhxcbPU
+ hDMz3xq555VWYcGajhg==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTA1MDA1OCBTYWx0ZWRfXxP4fj+ASe5yl
+ 7quFbUdRrb7hxaTotCI+JHwjw1fQyp3i7eSIJ8lGtXlUwMkwmR4AWUk8KmFeNFZnjGXmtfNwxBU
+ l2A2pYIYcyPLTOsc/pNxroYqqc1FxTo=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
  definitions=2026-11-05_04,2026-11-04_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0
- impostorscore=0 clxscore=1015 lowpriorityscore=0 adultscore=0
- priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610300000
- definitions=main-2611050058
+ lowpriorityscore=0 adultscore=0 priorityscore=1501 bulkscore=0 clxscore=1015
+ impostorscore=0 spamscore=0 malwarescore=0 suspectscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610300000 definitions=main-2611050058
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
@@ -130,70 +129,142 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-plpks_confirm_object_flushed() returns zero or a negative Linux errno.
-However, plpks_gen_wrapping_key() passes this return value through
-pseries_status_to_err(), which treats it as a raw hypervisor status and
-converts it again.
+The object wrapping and unwrapping HCALLs use 64-bit length values, but
+plpks_wrap_object() and plpks_unwrap_object() currently use u32 for the
+input and output length parameters.
 
-Convert only errors returned by H_PKS_GEN_KEY, and propagate errors from
-plpks_confirm_object_flushed() unchanged.
+Use u64 for the length parameters to match the underlying HCALL interfaces,
+and update the PKWM consumer accordingly. Validate input lengths against
+the HCALL-defined limits before calculating output buffer sizes.
 
 Fixes: 133aa79e211d ("pseries/plpks: add HCALLs for PowerVM Key Wrapping Module")
-Cc: stable@vger.kernel.org # 7.0: a2df535d9dd9: pseries/plpks: rename the default wrapping key macro
+Fixes: c99fcb0d735b ("keys/trusted_keys: establish PKWM as a trusted source")
 Cc: stable@vger.kernel.org # 7.0
 Signed-off-by: Srish Srinivasan <ssrish@linux.ibm.com>
 ---
- arch/powerpc/platforms/pseries/plpks.c | 21 +++++++++++----------
- 1 file changed, 11 insertions(+), 10 deletions(-)
+ arch/powerpc/include/asm/plpks.h          |  8 ++++----
+ arch/powerpc/platforms/pseries/plpks.c    | 23 +++++++++++++++++------
+ security/keys/trusted-keys/trusted_pkwm.c |  4 ++--
+ 3 files changed, 23 insertions(+), 12 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/plpks.h b/arch/powerpc/include/asm/plpks.h
+index e87f90e40d4e..8b2ffb27db5a 100644
+--- a/arch/powerpc/include/asm/plpks.h
++++ b/arch/powerpc/include/asm/plpks.h
+@@ -118,11 +118,11 @@ bool plpks_wrapping_is_supported(void);
+ 
+ int plpks_gen_wrapping_key(void);
+ 
+-int plpks_wrap_object(u8 **input_buf, u32 input_len, u16 wrap_flags,
+-		      u8 **output_buf, u32 *output_len);
++int plpks_wrap_object(u8 **input_buf, u64 input_len, u16 wrap_flags,
++		      u8 **output_buf, u64 *output_len);
+ 
+-int plpks_unwrap_object(u8 **input_buf, u32 input_len,
+-			u8 **output_buf, u32 *output_len);
++int plpks_unwrap_object(u8 **input_buf, u64 input_len,
++			u8 **output_buf, u64 *output_len);
+ #else // CONFIG_PSERIES_PLPKS
+ static inline bool plpks_is_available(void) { return false; }
+ static inline u16 plpks_get_passwordlen(void) { BUILD_BUG(); }
 diff --git a/arch/powerpc/platforms/pseries/plpks.c b/arch/powerpc/platforms/pseries/plpks.c
-index 110251914b51..376c50d459fc 100644
+index 376c50d459fc..d5adc563f71f 100644
 --- a/arch/powerpc/platforms/pseries/plpks.c
 +++ b/arch/powerpc/platforms/pseries/plpks.c
-@@ -932,6 +932,7 @@ EXPORT_SYMBOL_GPL(plpks_wrapping_is_supported);
-  * -ENOMEM	if there is inadequate memory to perform this operation
-  * -EBUSY	if unable to handle the request
-  * -EEXIST	if the object label already exists
-+ * -ETIMEDOUT	if the object was not flushed to storage in time
+@@ -22,6 +22,9 @@
+  * than the input buffer's length during the WRAP H_CALL
+  */
+ #define PLPKS_WRAPPING_BUF_DIFF	1024
++#define PLPKS_MAX_WRAPPING_INPUT_SIZE	(32 * 1024)
++#define PLPKS_MAX_WRAPPED_OBJECT_SIZE	\
++	(PLPKS_MAX_WRAPPING_INPUT_SIZE + PLPKS_WRAPPING_BUF_DIFF)
+ 
+ #define PLPKS_WRAP_INTERFACE_BIT	3
+ #define PLPKS_WRAPPING_KEY_LENGTH	32
+@@ -989,7 +992,7 @@ EXPORT_SYMBOL_GPL(plpks_gen_wrapping_key);
+  * plpks_wrap_object() - Wrap an object using the default wrapping key stored in
+  * the PLPKS.
+  * @input_buf: buffer containing the data to be wrapped
+- * @input_len: length of the input buffer
++ * @input_len: length of the input buffer (non-zero, at most 32KB)
+  * @wrap_flags: object wrapping flags
+  * @output_buf: buffer to store the wrapped data
+  * @output_len: length of the output buffer
+@@ -1026,8 +1029,8 @@ EXPORT_SYMBOL_GPL(plpks_gen_wrapping_key);
   *
   * Returns: On success 0 is returned, a negative errno if not.
   */
-@@ -940,7 +941,7 @@ int plpks_gen_wrapping_key(void)
- 	unsigned long retbuf[PLPAR_HCALL_BUFSIZE] = { 0 };
+-int plpks_wrap_object(u8 **input_buf, u32 input_len, u16 wrap_flags,
+-		      u8 **output_buf, u32 *output_len)
++int plpks_wrap_object(u8 **input_buf, u64 input_len, u16 wrap_flags,
++		      u8 **output_buf, u64 *output_len)
+ {
+ 	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE] = { 0 };
  	struct plpks_auth *auth;
- 	struct label *label;
--	int rc = 0, pseries_status = 0;
-+	int rc, pseries_status;
- 	struct plpks_var var = {
- 		.name = PLPKS_DEFAULT_WRAPKEY_LABEL,
- 		.namelen = sizeof(PLPKS_DEFAULT_WRAPKEY_LABEL) - 1,
-@@ -964,17 +965,17 @@ int plpks_gen_wrapping_key(void)
- 			 label->size, var.policy,
- 			 NULL, PLPKS_WRAPPING_KEY_LENGTH);
+@@ -1044,6 +1047,9 @@ int plpks_wrap_object(u8 **input_buf, u32 input_len, u16 wrap_flags,
+ 		.component = PLPKS_WRAPKEY_COMPONENT
+ 	};
  
--	if (!rc)
-+	if (!rc) {
- 		rc = plpks_confirm_object_flushed(label, auth);
--
--	pseries_status = rc;
--	rc = pseries_status_to_err(rc);
--
--	if (rc && rc != -EEXIST) {
--		pr_err("H_PKS_GEN_KEY failed. pseries_status=%d, rc=%d",
--		       pseries_status, rc);
- 	} else {
--		rc = 0;
-+		pseries_status = rc;
-+		rc = pseries_status_to_err(rc);
++	if (!input_len || input_len > PLPKS_MAX_WRAPPING_INPUT_SIZE)
++		return -EINVAL;
 +
-+		if (rc != -EEXIST)
-+			pr_err("H_PKS_GEN_KEY failed. pseries_status=%d, rc=%d",
-+			       pseries_status, rc);
-+		else
-+			rc = 0;
- 	}
+ 	auth = construct_auth(PLPKS_OS_OWNER);
+ 	if (IS_ERR(auth))
+ 		return PTR_ERR(auth);
+@@ -1114,7 +1120,7 @@ EXPORT_SYMBOL_GPL(plpks_wrap_object);
+  * plpks_unwrap_object() - Unwrap an object using the default wrapping key
+  * stored in the PLPKS.
+  * @input_buf: buffer containing the data to be unwrapped
+- * @input_len: length of the input buffer
++ * @input_len: length of the input buffer (more than 1KB, at most 33KB)
+  * @output_buf: buffer to store the unwrapped data
+  * @output_len: length of the output buffer
+  *
+@@ -1145,8 +1151,8 @@ EXPORT_SYMBOL_GPL(plpks_wrap_object);
+  *
+  * Returns: On success 0 is returned, a negative errno if not.
+  */
+-int plpks_unwrap_object(u8 **input_buf, u32 input_len, u8 **output_buf,
+-			u32 *output_len)
++int plpks_unwrap_object(u8 **input_buf, u64 input_len, u8 **output_buf,
++			u64 *output_len)
+ {
+ 	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE] = { 0 };
+ 	struct plpks_auth *auth;
+@@ -1154,6 +1160,11 @@ int plpks_unwrap_object(u8 **input_buf, u32 input_len, u8 **output_buf,
+ 	u64 objwrapflags = 0;
+ 	int rc = 0, pseries_status = 0;
  
- 	kfree(label);
++	/* outlen = inlen - 1KB must be non-zero */
++	if (input_len <= PLPKS_WRAPPING_BUF_DIFF ||
++	    input_len > PLPKS_MAX_WRAPPED_OBJECT_SIZE)
++		return -EINVAL;
++
+ 	auth = construct_auth(PLPKS_OS_OWNER);
+ 	if (IS_ERR(auth))
+ 		return PTR_ERR(auth);
+diff --git a/security/keys/trusted-keys/trusted_pkwm.c b/security/keys/trusted-keys/trusted_pkwm.c
+index be69d2b6d46b..b5c3d17be475 100644
+--- a/security/keys/trusted-keys/trusted_pkwm.c
++++ b/security/keys/trusted-keys/trusted_pkwm.c
+@@ -83,7 +83,7 @@ static int trusted_pkwm_seal(struct trusted_key_payload *p, char *datablob)
+ 	struct trusted_key_options *options = NULL;
+ 	struct trusted_pkwm_options *pkwm = NULL;
+ 	u8 *input_buf, *output_buf = NULL;
+-	u32 output_len, input_len;
++	u64 output_len, input_len;
+ 	int rc;
+ 
+ 	options = trusted_options_alloc();
+@@ -130,7 +130,7 @@ static int trusted_pkwm_seal(struct trusted_key_payload *p, char *datablob)
+ static int trusted_pkwm_unseal(struct trusted_key_payload *p, char *datablob)
+ {
+ 	u8 *input_buf, *output_buf = NULL;
+-	u32 input_len, output_len;
++	u64 input_len, output_len;
+ 	int rc;
+ 
+ 	input_len = p->blob_len;
 -- 
 2.52.0
 
