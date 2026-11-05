@@ -2,51 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E163F606A338
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 21:32:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C9EF606A33A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 21:32:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YlMc4Yav
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LpE6INQ2
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLFrH4M6sz3c8m;
-	Fri, 06 Nov 2026 08:31:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793914319;
-	cv=none; b=WxXHHHnBRm2hiJ6QzSH6YUz4VJPg46JauXolX1iK9SBMJdyHpq56QnR4439pC6RfQY/WcPR7+umb4SQipPO1EaKMR3k7vm4HUd4ZxZhoFzAflRT7+GhJRr7oPSOsxPUSE6baW7uDkMqTbwsoOjNCpVCjjkdQM6Ip2YDb2CdlbLtP/DZg8Hxj+gGJLXmGgEXPHZB72Qps1mrmp5At+ujK64WFSQRIZ7JwvngOtZhethpU5LausUnxjF0kIJAuR45lXqXZnhMd2XLD0NZXe3JEyfHUq/rascVqLAe9u/YUmdlj/EI9taiSCbuqNln1RGfLj1WAqdsXwUXFYHFH+i/15Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLFrd0sjMz3c8m;
+	Fri, 06 Nov 2026 08:32:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793914337;
+	cv=none; b=hhlmjWKz9r0uH9sa4i0V/VwbRaT9GEuN5mkm2L2rhFy1J/UI2tU4H9dGEDFZ8IEJyNmb4lGmnrajCw43b5ar6/hT8mtUaj2BeAK411BAXgx/AauMilz0GnG6wIiTQ3+84/pJ/T5v+NTkbcbHlCRoasswedmuBm4pNJYtQfq2d/MmREb9gROCbSPlCdSVhRKg/HSixPxFcfI1xTgQu5uWJ9OGM7jIn63cLk+aenFQafJtol4VkDp+mT20jk4YZRTi4Uf0+jm1x16JTxzupC0AoDpBelxuqbgVtyRSDo0FWKhrP9ya5FOuDYXLABZ/gmWkZzm5dJb7SbrOkIWKc8vkQQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793914319; c=relaxed/relaxed;
-	bh=HChmTqD3l76D4xTwaDId89Adh4XK1U9R7SwaL6QQSiA=;
+	t=1793914337; c=relaxed/relaxed;
+	bh=hzAJuWtp08ycZNcRlNLNBepst97TvXc/S7lvgMY4+qc=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=XG+Fi8MQ8LLYBLLehok9mk+r6hxogn6/iMFD1p14Q9Z5WauHTPXKqrmoP96fiDc6RhVYR5iPZPNXjCvQ/resP+x1rdWWq00evqwIKnIfeYyR3opmZeTdIuBp2dEogmBmMBs2mhQ/4lP0xX0P/gI8kFCxAYV4I06qzI565UFFbN9Jl/you1jY2HV6EMjKooi40jPK4Tk8sayzIU7kCZdXR1Oh5FvezIEEF3Lk55w5kvNeDoXSVlzO5BPlXm+lTjMaAvIu+HP20ulH1rriWIK1xLkb1gThdYi0n+b5b/0HCzkqqdbm00Y2dVJcklQqOvLW/jQxMOQZ6Hnbf+m4WIWNyw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YlMc4Yav; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=XVnbZXpjjbCjkDT9Dz/9vGBQgx+w24zPlaSR9vLiRTIB6M+7xO92/AsIyd34GmDEJ1TIiTGUyaXg+N0C5fMKioOzwPgXCFPIvUd6nIhPpV6MK65joYbvlmfSKZ6hi8DBgSrzVnkM9Tz7KZ7COf8OKmqi0WYrFrFUm41mIlDGL3ZAaZ2JVOnVWNmBoJ9vXaUEm7EgAtEd+nC+vgztYGnD0RbNQQJz5XtU3OM01cK0D3Ynsq8KW9cg7bVcuLUJUxMMB07o0Cgxh6WaNY1SaJisImA1XLppizA62+BnI4RA9KtJeo931WoyDqUIDPUfcI+Y/Rb7C0HMBvS0U1rDjKlBhQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LpE6INQ2; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YlMc4Yav;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LpE6INQ2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLFrG5lxGz3c8h
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 08:31:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLFrc1rhKz3c8h
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 08:32:16 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 5215D601D5;
+	by sea.source.kernel.org (Postfix) with ESMTP id DAB2E42B6D;
+	Thu,  5 Nov 2026 21:32:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7D8271F0089F;
 	Thu,  5 Nov 2026 21:31:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9C30E1F008A2;
-	Thu,  5 Nov 2026 21:31:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793914316;
-	bh=HChmTqD3l76D4xTwaDId89Adh4XK1U9R7SwaL6QQSiA=;
+	s=k20260515; t=1793914333;
+	bh=hzAJuWtp08ycZNcRlNLNBepst97TvXc/S7lvgMY4+qc=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=YlMc4YavmcnzgGqbTg8xy48BhuWYv3UOv9e7rnmekOka0vxC7n1uK3Z1d/ertyht4
-	 gCAvHw7gGAQQROPopfRHJgoy8erMLDNpeAUwUkkbW6t0RvoH48kScoLYMbrr7WpxNt
-	 HxBkoPoow43LyAF0PNefCHawtW6nY6W2vaF8YTFGm+K0GzQYI3z4CQ4GKTge3YbMig
-	 n/jqvmxLm3mfdHdHzkKty6LwIjif+xouTG85uifDRCDzkMDa71N4mrbtT8dOCeT1yr
-	 +VCS8ipUCMfQC4Pu2gDJhnDr04M5LDYAZziTDD57o3hVj3oObrutNSWPu8zZA/B6Z1
-	 iHElNiOHvDCnA==
+	b=LpE6INQ28oxaDGfOupj/I9YluB+UQugAH5I3JpI7rSwRCO/BF35M2Rzi99vFcu3Ah
+	 0hnbTK820Cci+SGakQ0570h3z6e0/kCnG5Z9Nhq5+h6rqRyo106yH9wHsEX4NVonfJ
+	 Bo6kbNppZcbxkEWd8JEvkOxr2G6shRFwjJC4lLD3VyW0JtzfIYcauU+CpQyqmV4yxW
+	 GVr6unqhSotyQVysxVk24xubu4MZXHasxZt+oN/hbh7xAhZtui42NoVy2NS3dEVCFD
+	 b63NM0Tyzuz0UMXjElTukk9vUIpeYfX9JNAtuyqjWwezfYTudwqI8c2ErvWfPjpTYX
+	 0BJMIYbdKpRPQ==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Thu, 05 Nov 2026 21:30:52 +0000
-Subject: [PATCH 01/13] mm/gup: convert GUP code to use vma_flags_t
+Date: Thu, 05 Nov 2026 21:30:53 +0000
+Subject: [PATCH 02/13] mm/filemap: convert fault and readahead logic to use
+ vma_flags_t
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261105-late-2026-vma-flags-v1-1-0d3cd15ab75f@kernel.org>
+Message-Id: <20261105-late-2026-vma-flags-v1-2-0d3cd15ab75f@kernel.org>
 References: <20261105-late-2026-vma-flags-v1-0-0d3cd15ab75f@kernel.org>
 In-Reply-To: <20261105-late-2026-vma-flags-v1-0-0d3cd15ab75f@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -122,12 +123,12 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-integrity@vger.kernel.org, selinux@vger.kernel.org, 
  "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5850; i=ljs@kernel.org;
- h=from:subject:message-id; bh=bW54hq6rUX5mn84GnflVBnxa46MVVq7so69BlwTkM0U=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLefF16/eGzghS9c2a+/VuKG9T/c/1zfuM/o+P/mkbeg
- LgD/3/e6ihlYRDjYpAVU2R5/kV8f5BI2LzOC/5uMHNYmUCGMHBxCsBEmi8wMpyRDTLtTTnO0LZo
- /YpNb7yb13n0pyWu8LqqtjaoqkWbwZmR4d3GRbvaD8eunFR2tC1T5du5REvjsF4+70n2No+9xV2
- 6mAE=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4267; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=aLGopd4z1uVC7ZtIXGCKSy3SWCLXYQcORFJokfXjLww=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLefF027WG8Q/mUYLZ3WUvN+2OzliZmCgpVxT1m7yw71
+ 7PA96BcRykLgxgXg6yYIsvzL+L7g0TC5nVe8HeDmcPKBDKEgYtTACay+Dcjw73gpzevbdoWvnJr
+ pq7BTsOz+hvdDld/td+l2hRiMf9i9BlGhnNdMQbP2N5LeJz5ofS7mq9b41O+1aUTXi1HQ5r0N2l
+ N4QUA
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -138,166 +139,116 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Replace use of the legacy vm_flags_t flags with vma_flags_t values
-throughout the GUP logic, both for the MMU and nommu variants.
+Replace use of the legacy vm_flags_t flags with vma_flags_t values in the
+file fault and mmap readahead logic.
 
 No functional change intended.
 
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- mm/gup.c | 45 ++++++++++++++++++++++++---------------------
- 1 file changed, 24 insertions(+), 21 deletions(-)
+ mm/filemap.c | 24 +++++++++++++-----------
+ 1 file changed, 13 insertions(+), 11 deletions(-)
 
-diff --git a/mm/gup.c b/mm/gup.c
-index 7d43ce717b24..dc232117b1ce 100644
---- a/mm/gup.c
-+++ b/mm/gup.c
-@@ -590,15 +590,15 @@ static inline bool can_follow_write_common(struct page *page,
- 		return false;
+diff --git a/mm/filemap.c b/mm/filemap.c
+index b74bc1e5015c..d8b538bd1404 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -3351,13 +3351,14 @@ static struct file *do_sync_mmap_readahead(struct vm_fault *vmf)
+ 	struct address_space *mapping = file->f_mapping;
+ 	DEFINE_READAHEAD(ractl, file, ra, mapping, vmf->pgoff);
+ 	struct file *fpin = NULL;
+-	vm_flags_t vm_flags = vmf->vma->vm_flags;
++	struct vm_area_struct *vma = vmf->vma;
+ 	bool force_thp_readahead = false;
+ 	unsigned int thp_order = 0;
+ 	unsigned short mmap_miss;
  
- 	/* But FOLL_FORCE has no effect on shared mappings */
--	if (vma->vm_flags & (VM_MAYSHARE | VM_SHARED))
-+	if (vma_test_any(vma, VMA_MAYSHARE_BIT, VMA_SHARED_BIT))
- 		return false;
- 
- 	/* ... or read-only private ones */
--	if (!(vma->vm_flags & VM_MAYWRITE))
-+	if (!vma_test(vma, VMA_MAYWRITE_BIT))
- 		return false;
- 
- 	/* ... or already writable ones that just need to take a write fault */
--	if (vma->vm_flags & VM_WRITE)
-+	if (vma_test(vma, VMA_WRITE_BIT))
- 		return false;
- 
- 	/*
-@@ -1199,12 +1199,11 @@ static bool writable_file_mapping_allowed(struct vm_area_struct *vma,
- 
- static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
- {
--	vm_flags_t vm_flags = vma->vm_flags;
- 	int write = (gup_flags & FOLL_WRITE);
- 	int foreign = (gup_flags & FOLL_REMOTE);
- 	bool vma_anon = vma_is_anonymous(vma);
- 
--	if (vm_flags & (VM_IO | VM_PFNMAP))
-+	if (vma_test_any(vma, VMA_IO_BIT, VMA_PFNMAP_BIT))
- 		return -EFAULT;
- 
- 	if ((gup_flags & FOLL_ANON) && !vma_anon)
-@@ -1224,7 +1223,8 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
- 		    !writable_file_mapping_allowed(vma, gup_flags))
- 			return -EFAULT;
- 
--		if (!(vm_flags & VM_WRITE) || (vm_flags & VM_SHADOW_STACK)) {
-+		if (!vma_test(vma, VMA_WRITE_BIT) ||
-+		    vma_test_single_mask(vma, VMA_SHADOW_STACK)) {
- 			if (!(gup_flags & FOLL_FORCE))
- 				return -EFAULT;
- 			/*
-@@ -1239,14 +1239,14 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
- 			if (!vma_is_cow_mapping(vma))
- 				return -EFAULT;
- 		}
--	} else if (!(vm_flags & VM_READ)) {
-+	} else if (!vma_test(vma, VMA_READ_BIT)) {
- 		if (!(gup_flags & FOLL_FORCE))
- 			return -EFAULT;
+ 	/* Use the readahead code, even if readahead is disabled */
+-	if (IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE) && (vm_flags & VM_HUGEPAGE)) {
++	if (IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE) &&
++	    vma_test(vma, VMA_HUGEPAGE_BIT)) {
  		/*
- 		 * Is there actually any vma we can reach here which does not
- 		 * have VM_MAYREAD set?
+ 		 * Cap max THP order at 2MB: this is the common PMD-sized
+ 		 * hugepage size, and it avoids memory pressure from very
+@@ -3377,20 +3378,21 @@ static struct file *do_sync_mmap_readahead(struct vm_fault *vmf)
+ 		 * If we don't want any read-ahead, don't bother.
+ 		 * VM_EXEC case below is already intended for random access.
  		 */
--		if (!(vm_flags & VM_MAYREAD))
-+		if (!vma_test(vma, VMA_MAYREAD_BIT))
- 			return -EFAULT;
+-		if ((vm_flags & (VM_RAND_READ | VM_EXEC)) == VM_RAND_READ)
++		if (vma_test(vma, VMA_RAND_READ_BIT) &&
++		    !vma_test(vma, VMA_EXEC_BIT))
+ 			return fpin;
+ 
+ 		if (!ra->ra_pages)
+ 			return fpin;
+ 
+-		if (vm_flags & VM_SEQ_READ) {
++		if (vma_test(vma, VMA_SEQ_READ_BIT)) {
+ 			fpin = maybe_unlock_mmap_for_io(vmf, fpin);
+ 			page_cache_sync_ra(&ractl, ra->ra_pages);
+ 			return fpin;
+ 		}
  	}
- 	/*
-@@ -1277,7 +1277,7 @@ static struct vm_area_struct *gup_vma_lookup(struct mm_struct *mm,
- 		return vma;
  
- 	/* Only warn for half-way relevant accesses */
--	if (!(vma->vm_flags & VM_GROWSDOWN))
-+	if (!vma_test(vma, VMA_GROWSDOWN_BIT))
- 		return NULL;
- 	if (vma->vm_start - addr > 65536)
- 		return NULL;
-@@ -1514,9 +1514,8 @@ static bool vma_permits_fault(struct vm_area_struct *vma,
- {
- 	bool write   = !!(fault_flags & FAULT_FLAG_WRITE);
- 	bool foreign = !!(fault_flags & FAULT_FLAG_REMOTE);
--	vm_flags_t vm_flags = write ? VM_WRITE : VM_READ;
- 
--	if (!(vm_flags & vma->vm_flags))
-+	if (!vma_test(vma, write ? VMA_WRITE_BIT : VMA_READ_BIT))
- 		return false;
- 
- 	/*
-@@ -1829,7 +1828,7 @@ long populate_vma_page_range(struct vm_area_struct *vma,
- 	 * Rightly or wrongly, the VM_LOCKONFAULT case has never used
- 	 * faultin_page() to break COW, so it has no work to do here.
- 	 */
--	if (vma->vm_flags & VM_LOCKONFAULT)
-+	if (vma_test(vma, VMA_LOCKONFAULT_BIT))
- 		return nr_pages;
- 
- 	/* ... similarly, we've never faulted in PROT_NONE pages */
-@@ -1849,7 +1848,7 @@ long populate_vma_page_range(struct vm_area_struct *vma,
- 	 * Otherwise, do a read fault, and use FOLL_FORCE in case it's not
- 	 * readable (ie write-only or executable).
- 	 */
--	if ((vma->vm_flags & (VM_WRITE | VM_SHARED)) == VM_WRITE)
-+	if (vma_test(vma, VMA_WRITE_BIT) && !vma_test(vma, VMA_SHARED_BIT))
- 		gup_flags |= FOLL_WRITE;
- 	else
- 		gup_flags |= FOLL_FORCE;
-@@ -1955,7 +1954,7 @@ int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)
- 		 * range with the first VMA. Also, skip undesirable VMA types.
+-	if (!(vm_flags & (VM_SEQ_READ | VM_EXEC))) {
++	if (!vma_test_any(vma, VMA_SEQ_READ_BIT, VMA_EXEC_BIT)) {
+ 		/* Avoid banging the cache line if not needed */
+ 		mmap_miss = READ_ONCE(ra->mmap_miss);
+ 		if (mmap_miss < MMAP_LOTSAMISS * 10)
+@@ -3414,7 +3416,7 @@ static struct file *do_sync_mmap_readahead(struct vm_fault *vmf)
+ 		 * Fetch two folios so we get the chance to actually
+ 		 * readahead, unless we've been told not to.
  		 */
- 		nend = min(end, vma->vm_end);
--		if (vma->vm_flags & (VM_IO | VM_PFNMAP))
-+		if (vma_test_any(vma, VMA_IO_BIT, VMA_PFNMAP_BIT))
- 			continue;
- 		if (nstart < vma->vm_start)
- 			nstart = vma->vm_start;
-@@ -1986,7 +1985,7 @@ static long __get_user_pages_locked(struct mm_struct *mm, unsigned long start,
- {
- 	struct vm_area_struct *vma;
- 	bool must_unlock = false;
--	vm_flags_t vm_flags;
-+	vma_flags_t vma_flags;
- 	int ret, err = -EFAULT;
- 	long i;
+-		if (!(vm_flags & VM_RAND_READ))
++		if (!vma_test(vma, VMA_RAND_READ_BIT))
+ 			ra->size *= 2;
+ 		ra->async_size = folio_nr_pages;
+ 		ra->order = thp_order;
+@@ -3422,7 +3424,7 @@ static struct file *do_sync_mmap_readahead(struct vm_fault *vmf)
+ 		return fpin;
+ 	}
  
-@@ -2011,10 +2010,14 @@ static long __get_user_pages_locked(struct mm_struct *mm, unsigned long start,
- 	/* calculate required read or write permissions.
- 	 * If FOLL_FORCE is set, we only require the "MAY" flags.
+-	if (vm_flags & VM_EXEC) {
++	if (vma_test(vma, VMA_EXEC_BIT)) {
+ 		/*
+ 		 * Allow arch to request a preferred minimum folio order for
+ 		 * executable memory. This can often be beneficial to
+@@ -3477,7 +3479,7 @@ static struct file *do_async_mmap_readahead(struct vm_fault *vmf,
+ 	unsigned short mmap_miss;
+ 
+ 	/* If we don't want any read-ahead, don't bother */
+-	if (vmf->vma->vm_flags & VM_RAND_READ || !ra->ra_pages)
++	if (vma_test(vmf->vma, VMA_RAND_READ_BIT) || !ra->ra_pages)
+ 		return fpin;
+ 
+ 	/*
+@@ -3491,7 +3493,7 @@ static struct file *do_async_mmap_readahead(struct vm_fault *vmf,
+ 	 * keep the counter symmetric.
  	 */
--	vm_flags  = (foll_flags & FOLL_WRITE) ?
--			(VM_WRITE | VM_MAYWRITE) : (VM_READ | VM_MAYREAD);
--	vm_flags &= (foll_flags & FOLL_FORCE) ?
--			(VM_MAYREAD | VM_MAYWRITE) : (VM_READ | VM_WRITE);
-+	if (foll_flags & FOLL_WRITE)
-+		vma_flags = mk_vma_flags(VMA_WRITE_BIT, VMA_MAYWRITE_BIT);
-+	else
-+		vma_flags = mk_vma_flags(VMA_READ_BIT, VMA_MAYREAD_BIT);
-+	if (foll_flags & FOLL_FORCE)
-+		vma_flags_clear(&vma_flags, VMA_READ_BIT, VMA_WRITE_BIT);
-+	else
-+		vma_flags_clear(&vma_flags, VMA_MAYREAD_BIT, VMA_MAYWRITE_BIT);
+ 	if (likely(!folio_test_locked(folio)) &&
+-	    !(vmf->vma->vm_flags & (VM_SEQ_READ | VM_EXEC))) {
++	    !vma_test_any(vmf->vma, VMA_SEQ_READ_BIT, VMA_EXEC_BIT)) {
+ 		mmap_miss = READ_ONCE(ra->mmap_miss);
+ 		if (mmap_miss)
+ 			WRITE_ONCE(ra->mmap_miss, --mmap_miss);
+@@ -3524,7 +3526,7 @@ static vm_fault_t filemap_fault_recheck_pte_none(struct vm_fault *vmf)
+ 	 * scenarios. Recheck the PTE without PT lock firstly, thereby reducing
+ 	 * the number of times we hold PT lock.
+ 	 */
+-	if (!(vma->vm_flags & VM_LOCKED))
++	if (!vma_test(vma, VMA_LOCKED_BIT))
+ 		return 0;
  
- 	for (i = 0; i < nr_pages; i++) {
- 		vma = find_vma(mm, start);
-@@ -2022,8 +2025,8 @@ static long __get_user_pages_locked(struct mm_struct *mm, unsigned long start,
- 			break;
+ 	if (!(vmf->flags & FAULT_FLAG_ORIG_PTE_VALID))
+@@ -4000,7 +4002,7 @@ vm_fault_t filemap_map_pages(struct vm_fault *vmf,
+ 		if ((map_ret & VM_FAULT_NOPAGE) &&
+ 		    !(vmf->flags & FAULT_FLAG_TRIED) &&
+ 		    !folio_test_workingset(folio) &&
+-		    !(vma->vm_flags & (VM_SEQ_READ | VM_EXEC))) {
++		    !vma_test_any(vma, VMA_SEQ_READ_BIT, VMA_EXEC_BIT)) {
+ 			unsigned short mmap_miss;
  
- 		/* protect what we can, including chardevs */
--		if ((vma->vm_flags & (VM_IO | VM_PFNMAP)) ||
--		    !(vm_flags & vma->vm_flags))
-+		if (vma_test_any(vma, VMA_IO_BIT, VMA_PFNMAP_BIT) ||
-+		    !vma_test_any_mask(vma, vma_flags))
- 			break;
- 
- 		if (pages) {
+ 			mmap_miss = READ_ONCE(file->f_ra.mmap_miss);
 
 -- 
 2.56.0
