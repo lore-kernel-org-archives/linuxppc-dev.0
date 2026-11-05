@@ -2,52 +2,51 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3ECFA606A33A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 21:06:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 01E1F606A32D
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 21:06:43 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bE1mtiJS
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F+NMyrHF
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLFGs5VCxz2xNC;
-	Fri, 06 Nov 2026 08:06:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793912789;
-	cv=none; b=Gkd+KeWZiifPk9m0jiRU3F3uShnxJ5RWBErSf/PS1+gA/zaGS9YHVGb3yVj8VGGC0cNjjvtnrSGGBodh2Z8pxhC9wHNIcmKnlVI9QGV2CgXC+QAdzl+KeOlOwiKV396uIoXaJHaturzdD6QYpkZFWpGL6am/dr5hxWaXuSG0c43O6EbvgnECM8thdi1itM9W4UtTGAv5UntItwcA5LGM4cRJeGnedhQBAtbz7I7R6+BS2KPzRKnQnlNoVZeDY6i/39YjEW+DOHNr9aaP8pNx0oVP3jktsotSGits5l7su1s3dt4G2diCSy+aVN/t36DxAjuq+y9aMyyrsrO9WO3LuA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLFH52ClNz2xPb;
+	Fri, 06 Nov 2026 08:06:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793912801;
+	cv=none; b=CYAS/4tX6eVmYNDT2Ximzc9iEa8VwlIQnTCycjCZiZrOFHhLoOPm0QrVtablIdTCfTJ4ulckvLMpBZ8Lmsu41hBIlGrzoNE1gRdXTK3zsUviubAkf0y5DEkVtWs129IlZyJDiLGtUDjG6c8rxc2lwaoBttPkE0220MEwPB2/ZzZHmwog3qPxqzDBEt20lKZkzS9pN3Y0UlfJ8DausUcDEbltsPP8+lYKJGIFpJzo1H3BC3kCnQRvkMVSGXy6gkV2FSNe/4PUdrbW+DqJmu4VD8dFh3rW55/P/RcS1ljETenXa8OhX/FwuvhWQ0lVyM5fwK1oIHNVFecphzUZ0YeNCw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793912789; c=relaxed/relaxed;
-	bh=ndCCV29odaVqmbn+iX3MfTT/qeX9oKJWHuVF4KdBH5Y=;
+	t=1793912801; c=relaxed/relaxed;
+	bh=wDJov6C3ftgFR9HVA3C77e8dvsBn9mUiFAP4oxc5gso=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=TiUIblgKZprg1wUg9D6NOemCfQreLVzG/3WQtPQVNP4BQQhCrMgMG6hYuwQ62oFVesawORdbdFg99QDNlJjTJCMK5/Fco0uOJdM3072t2ryVSnAJoAToxnXAsiRrroIRPeY04UG+iGd6+aGNhFMhX0Dv0HrbHy0h9xHcktkskzcJJ4dsv0acpnsi5wFJhqMWtxWzDOMzygimsOZPnviumNPbzbvh7jUe1wvcE5bevsMxJyi25hGH8L2vchVMoyURqa4iOfH+JAaw05qSupJLNON0iP/qj5027uLT6Jy2zhUDhlypaqJjf1x3jYuif+ut2uDK25zjiy5N5bfKaEarww==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bE1mtiJS; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=L4XS44quKtDgFYpKCPT7l/IdVMBqexJ9VkTjlwZMreUK8v9ZWI59ieqVjfKWVL5jvwvpknxQx794DWlzqfCZBvrCRXJbGSQ5hvDZ0JS6KLKhAKJjGlsZzWwVQHQPdowjUTCtmFOhePgaMXOWZP/VDMxQK3AAtdLq0YGl4Qft3iseqTxFhSXGmPz1ixrzR+BgTqOezvLq9E1n+tIffLnNv+IqbHrMLdju02GC5/w4qK1n2cSEi3wUptgr2DN6bXGyvqqtCR6TDHrz19cdnz0tbnuRtvdO9lBhJSuEOGG8xrK8CZGL2fZtstvl6fG7KlmbpeVr1OWolu48+RqWGlGj7g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F+NMyrHF; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bE1mtiJS;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F+NMyrHF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLFGr6v0tz2xH7;
-	Fri, 06 Nov 2026 08:06:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLFH43mP1z2xH7;
+	Fri, 06 Nov 2026 08:06:40 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 340EF40474;
+	by tor.source.kernel.org (Postfix) with ESMTP id 9B68560232;
+	Thu,  5 Nov 2026 21:06:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 891FF1F0089F;
 	Thu,  5 Nov 2026 21:06:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4E7721F008A2;
-	Thu,  5 Nov 2026 21:06:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793912786;
-	bh=ndCCV29odaVqmbn+iX3MfTT/qeX9oKJWHuVF4KdBH5Y=;
+	s=k20260515; t=1793912798;
+	bh=wDJov6C3ftgFR9HVA3C77e8dvsBn9mUiFAP4oxc5gso=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=bE1mtiJSdVH/EQ/is2LWkUZ/C3yxYBYfLOhHqUTt/CwFIy/gYmtLkJHHuxmtn0qas
-	 yO9fbotB7tujrxXdc0dnkvxIV/RhktA0O7/IfKUxqgjQUPFOkQ5XnXZtbaWRijR9Vy
-	 rvAxbTT+4e6PNwgjL8QIvMIHw/zcPa1VPCvof+TgcikwT7sEhMMTQsb3zg5PapYZUW
-	 2Lseo41qjhjCwu9T0ZH9xcwi/0hu1ZabSEnBK24mSHLfxURPoVykJcET2IhZ4Wtq9c
-	 Hnu7ks+Oht5PHDx5NhOAkrNMXAA5S32BMROuJexLAy02FIr8+q5JXl7F26smYgLgC3
-	 Q7zdGqQgYr71w==
+	b=F+NMyrHFBUcpcvdLlYfefS9fChSe5iibGSD2sqAN7qVA/rV6ebmZ5qCXW5xusd1tJ
+	 Jq/lz3cUiwOdjnCDcRSzFRFu7nCMmpfyDOOFdQuAyOEPJCLx3Nvs2COSwLWAY5luYJ
+	 c2PcdAwxTx9dk3y4715xe2jzU34js3UES+LJWtjJFLPrBAOPwyLzTVL9W0nM8OWnIz
+	 JfGm0qQ4ai24kUi0kYZbeEvGkjT0pdY6txBuK83Ejj0f6en7vHE+xr28CVUhMWP+QX
+	 Wkx0vicLtz6iHdxQrV8XIL/A4dr/uVz0V7DkZU92pqsOFZbwWhAB53aV0yjoilJZF9
+	 E0g82mI+iLpOQ==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Thu, 05 Nov 2026 21:05:33 +0000
-Subject: [PATCH 02/14] KVM: PPC: Book3S: convert spapr TCE mmap hook to
- mmap_prepare
+Date: Thu, 05 Nov 2026 21:05:34 +0000
+Subject: [PATCH 03/14] mshv_vtl: convert mmap hooks to mmap_prepare
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +62,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261105-late-2026-mmap_prepare-v1-2-c56aadfbab8a@kernel.org>
+Message-Id: <20261105-late-2026-mmap_prepare-v1-3-c56aadfbab8a@kernel.org>
 References: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
 In-Reply-To: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
 To: Juergen Gross <jgross@suse.com>, 
@@ -108,12 +107,12 @@ Cc: ljs@kernel.org, xen-devel@lists.xenproject.org,
  linux-aspeed@lists.ozlabs.org, linux-arm-msm@vger.kernel.org, 
  op-tee@lists.trustedfirmware.org, netdev@vger.kernel.org
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1158; i=ljs@kernel.org;
- h=from:subject:message-id; bh=isNjWX1+rq7D/LCFpxyPlaDLPeXkCD+W3Ok7FRCKcJw=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLevF+9xW/CppYO03VXA+4cXPbxVIsu56wVs7KfZZ3ol
- 1lwXPt+bkcpC4MYF4OsmCLL8y/i+4NEwuZ1XvB3g5nDygQyhIGLUwAm8pOXkWGz4+UDqey9qzes
- Xb+fSYpFRlBEUvKQQ1qUfs3xhguqITcY/vus+TRh5qs94ifijyrfz1sVcMt/v+Lr5WJTS9on9iz
- /dooNAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2014; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=JxN0KjNUmrQ4SKv8FW2PS979jApnXc/RSZcYUQZ0Su8=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLevF8tcZL1VfXfq85qV/gLon/N4+6fdOGa+o2dyru2B
+ X1qn+Fu3VHKwiDGxSArpsjy/Iv4/iCRsHmdF/zdYOawMoEMYeDiFICJ9C5nZPjw5P6i+ClZTf6V
+ xw7ZXvyxmPe92OKKh6GXFoi2ysxea3eA4RfzDdW0Q1MsE8q3KzNPSkh3W7fOaWFC8sa6wI0Ncf0
+ 57/kB
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -123,39 +122,63 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Move from the deprecated mmap hook to the new mmap_prepare hook. The hook
-only sets the VMA operations.
+Move from the deprecated mmap hook to the new mmap_prepare hook for both
+the mshv_vtl and mshv_vtl_low devices. These only set VMA operations and
+flags.
 
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- arch/powerpc/kvm/book3s_64_vio.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/hv/mshv_vtl_main.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-index c5f3f5b29d89..05f6f2c9a432 100644
---- a/arch/powerpc/kvm/book3s_64_vio.c
-+++ b/arch/powerpc/kvm/book3s_64_vio.c
-@@ -247,9 +247,9 @@ static const struct vm_operations_struct kvm_spapr_tce_vm_ops = {
- 	.fault = kvm_spapr_tce_fault,
+diff --git a/drivers/hv/mshv_vtl_main.c b/drivers/hv/mshv_vtl_main.c
+index d8225242c73f..e372d4c0188d 100644
+--- a/drivers/hv/mshv_vtl_main.c
++++ b/drivers/hv/mshv_vtl_main.c
+@@ -832,9 +832,9 @@ static const struct vm_operations_struct mshv_vtl_vm_ops = {
+ 	.fault = mshv_vtl_fault,
  };
  
--static int kvm_spapr_tce_mmap(struct file *file, struct vm_area_struct *vma)
-+static int kvm_spapr_tce_mmap_prepare(struct vm_area_desc *desc)
+-static int mshv_vtl_mmap(struct file *filp, struct vm_area_struct *vma)
++static int mshv_vtl_mmap_prepare(struct vm_area_desc *desc)
  {
--	vma->vm_ops = &kvm_spapr_tce_vm_ops;
-+	desc->vm_ops = &kvm_spapr_tce_vm_ops;
+-	vma->vm_ops = &mshv_vtl_vm_ops;
++	desc->vm_ops = &mshv_vtl_vm_ops;
+ 
  	return 0;
  }
- 
-@@ -282,7 +282,7 @@ static int kvm_spapr_tce_release(struct inode *inode, struct file *filp)
- }
- 
- static const struct file_operations kvm_spapr_tce_fops = {
--	.mmap           = kvm_spapr_tce_mmap,
-+	.mmap_prepare	= kvm_spapr_tce_mmap_prepare,
- 	.release	= kvm_spapr_tce_release,
+@@ -852,7 +852,7 @@ static const struct file_operations mshv_vtl_fops = {
+ 	.owner = THIS_MODULE,
+ 	.unlocked_ioctl = mshv_vtl_ioctl,
+ 	.release = mshv_vtl_release,
+-	.mmap = mshv_vtl_mmap,
++	.mmap_prepare = mshv_vtl_mmap_prepare,
  };
  
+ static void mshv_vtl_synic_mask_vmbus_sint(void *info)
+@@ -1283,10 +1283,10 @@ static const struct vm_operations_struct mshv_vtl_low_vm_ops = {
+ 	.huge_fault = mshv_vtl_low_huge_fault,
+ };
+ 
+-static int mshv_vtl_low_mmap(struct file *filp, struct vm_area_struct *vma)
++static int mshv_vtl_low_mmap_prepare(struct vm_area_desc *desc)
+ {
+-	vma->vm_ops = &mshv_vtl_low_vm_ops;
+-	vm_flags_set(vma, VM_HUGEPAGE | VM_MIXEDMAP);
++	desc->vm_ops = &mshv_vtl_low_vm_ops;
++	vma_desc_set_flags(desc, VMA_HUGEPAGE_BIT, VMA_MIXEDMAP_BIT);
+ 
+ 	return 0;
+ }
+@@ -1294,7 +1294,7 @@ static int mshv_vtl_low_mmap(struct file *filp, struct vm_area_struct *vma)
+ static const struct file_operations mshv_vtl_low_file_ops = {
+ 	.owner		= THIS_MODULE,
+ 	.open		= mshv_vtl_low_open,
+-	.mmap		= mshv_vtl_low_mmap,
++	.mmap_prepare	= mshv_vtl_low_mmap_prepare,
+ };
+ 
+ static struct miscdevice mshv_vtl_low = {
 
 -- 
 2.56.0
