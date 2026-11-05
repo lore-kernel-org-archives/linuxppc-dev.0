@@ -2,51 +2,51 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CAB7C606A33B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 21:08:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C48B606A326
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 21:31:43 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=n8CRph5N
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aE+anxcK
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLFKg3YPhz3c4d;
-	Fri, 06 Nov 2026 08:08:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLFqy1twgz3c8h;
+	Fri, 06 Nov 2026 08:31:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793912935;
-	cv=none; b=OigqyVD3xv233DHJ+trPdmJ1gi6OA6H6ccUKz3zT0L0vSJmO9kbWbs3u9JW1FAEXTyVVFVMYJeOi8TYIKet55B7B82+zE+cAtxWbn4OV1zYPeR+vcpC+YWsxoJCHxt597EipwP4oaoqQsFkZwdjIERIDEOSg2wSkBiE/xecBOgL9rq0QvidxhR8aOeNvdUEVs8UZS6/SqrNr6O6IUX0coeUcG/bLfyLCsOhGSmiQe/cS4xkAEtKqqLUR4XQQR7Up54vJ57rMWSz+pkrT88gmLYaqH57dLh8dMXWsYQI7G9rGp9sodl0xjI8iKO81kz52if9aLDYUZKRFxmF1bpoBHw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793914302;
+	cv=none; b=PaFrNGmyEA9FEjS5x6/Hlm0SQneXBeqk9yBpZyp5yDObgcTplbgFAvMftcK5oTzUwc1V5rIVVXd5zibYDJy9byiyQBvgk6ZO1frqU4plcsdO6fzit6UMSdZlHryv6fBb/Pv3m284JKb1qn0N7Vq0DShbLO5VtV/MW77JSyWiNH0cyFkzJAUWqX1O0dpAzojaexd2e05TKVbN7jzl2oU9/PBCLQRZ75roTjETOJ6DAkxkyoedXDK0olCoSqRqUy7tbvq4gnu1Y4BiBfse8+Ds7b8sjetWAP+H0pO+6vqTiwDKRhOJ1TzLPhAcs4D3ZEwC3m8W8a3T5P+GFr2nWzQAmQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793912935; c=relaxed/relaxed;
-	bh=f5KzmK9Yc1O2UTKJiw6Ig75W/rQrebyZwa5yMpDxZPA=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=oqbtvP7FZ2yeJNUYOj1MMo4BnkdXKOMl+rTLHvCMV3CvdJLfel3H6zPntoJQLrMgUwI/UPIJAQS0D6d7X2MjLOF9+5/xFlcuBvdNca18snJ/PJIK8qlL3JnLSYSNzAgkM9l0YAjwNWS7NCFZxYx6quWzBca/2pY3pebXr6Mp7NAx1byXhs0dHwv8NG/YsSayGUI5Ub178UNxye1yo8uZG3IQ1gNQph1SYnlVLL8sZGGAEofvwW8LvWUpkTI/evP6Ik3LHtpgXgIvSSrh8a4mncAZRhsXB9lCMHutigzTyEo3GzTnSlVunJu9m3rR1QTJXMkjbcNQBzZJBTO/LvUDHg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=n8CRph5N; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1793914302; c=relaxed/relaxed;
+	bh=l/XBPzIruKyaT68fHsJTL6/0Y1whGy5OpPSy6WgTELw=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=TFt2EurlFJJzDPBJtHufc57IHF5qyig/rBFOZTJlDzkveBUdmJDAeb8n9ceIeNEZcUvlyMd6IJJQeDKGOAa1W5fSwNpNEjeR+bWYmMw15/p/bop1MLK6YyATsoOXOu8MJNnN/1ujlxCypRlah1EmK0BcHakYeN5fL67JSJhxu5NvYIOQF+6EX9gI/BINE6E4pbCAv6bzRUOi6x/WS9Rxpa6tAYculuQRXkLYZZMZhdqUaEYu+2SGiBBHWBEblqCDCEZExMOmhE6m7q8zxug27xoMf8YrtQHZ8iBKlU8a+JGvd3Zq9dEhnyjLRhtI5eCoa8O+7RajlEAPWrYXYIU5Qw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aE+anxcK; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=n8CRph5N;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aE+anxcK;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLFKf5mN1z3c4V;
-	Fri, 06 Nov 2026 08:08:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLFqx3T7Rz3c7n
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 08:31:41 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 39C41431DF;
-	Thu,  5 Nov 2026 21:08:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 555ED1F008A2;
-	Thu,  5 Nov 2026 21:08:41 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 4864140649;
+	Thu,  5 Nov 2026 21:31:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 747CB1F0089F;
+	Thu,  5 Nov 2026 21:31:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793912933;
-	bh=f5KzmK9Yc1O2UTKJiw6Ig75W/rQrebyZwa5yMpDxZPA=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=n8CRph5N+6GvMpxdTIZcApabmYM00ArLewFL8fQnfylRd81N3dMFr0fH9tM4p+HtO
-	 aUidU5CiMimh6FJxpyYqMz3zczVFtpB2Rg8C6Cvpnenu7HefwcLf7SzXaei+nFpCsq
-	 g+IIikN+Wpf5xA5Iml3JdYU+nz+jxroAIVKnx8cAky1Mefm7dQRJYZr4fXxy8faV+B
-	 gKm7dUWZnjvRP+x3tKmFXknw94zv5xgigYJCPUGpqxlfNq5n3JmZ8HKLtFE8wxCIUp
-	 5Rf8140WFsZqvLSCfX0CiwE+wK86zC1db93JvTfAih23Aag2hbuzEZLeh7mzRE98Cl
-	 QUXlmqQj/bSaw==
+	s=k20260515; t=1793914298;
+	bh=l/XBPzIruKyaT68fHsJTL6/0Y1whGy5OpPSy6WgTELw=;
+	h=From:Subject:Date:To:Cc;
+	b=aE+anxcK5DVd4PxfaPeug+8Go7oXIkkyd0cr7QF/UCjgq9jQl+bNK0q+4BhKrFU6l
+	 nH9TpbM/0AmUyIRXZfMR7+ZGUYkgq1BDmA0gMwCZlN+dq+z3ta162TfttOjx4fBrgt
+	 5jqDEBSY60zS13wAtaGgurmcThNfq1GYkCiTlr6kkqTQkdSz/nP1SkszH09Zyo8Vxs
+	 gkd/MAkUnyzsOIfsT4YNgixR1lw3gB/K4VRz5l4xVnYXGhfODUOU8wO+APAcsQd4VM
+	 pobOy+eE76XoFeivYZrQgxoRdn9FhNGDUTwlg2/ulGNDaKNWkzGWtu8Q8T+PXTf1Xg
+	 PFYf3vnSp0ZNg==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Thu, 05 Nov 2026 21:05:45 +0000
-Subject: [PATCH 14/14] vhost-vdpa: convert mmap hook to mmap_prepare
+Subject: [PATCH 00/13] mm: continue vma_flags_t conversion
+Date: Thu, 05 Nov 2026 21:30:51 +0000
+Message-Id: <20261105-late-2026-vma-flags-v1-0-0d3cd15ab75f@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,57 +62,73 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261105-late-2026-mmap_prepare-v1-14-c56aadfbab8a@kernel.org>
-References: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
-In-Reply-To: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
-To: Juergen Gross <jgross@suse.com>, 
- Stefano Stabellini <sstabellini@kernel.org>, 
- Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, 
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x3MSwqAMAwA0atI1gaMlQpeRVyEmtaAP1oRQby71
+ eVbzNyQJKok6IobopyadFszqCzATbwGQR2zoa5qS1QRznwIfsJzYfQzh4SNpdYQW2OdgVzuUbx
+ e/7UfnucF8MbcSGUAAAA=
+X-Change-ID: 20261101-late-2026-vma-flags-461731a636c3
+To: Andrew Morton <akpm@linux-foundation.org>, 
+ David Hildenbrand <david@kernel.org>, Jason Gunthorpe <jgg@ziepe.ca>, 
+ John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, 
+ "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, 
+ Rik van Riel <riel@surriel.com>, "Liam R. Howlett" <liam@infradead.org>, 
+ Vlastimil Babka <vbabka@kernel.org>, Harry Yoo <harry@kernel.org>, 
+ Jann Horn <jannh@google.com>, Lance Yang <lance.yang@linux.dev>, 
+ Zi Yan <ziy@nvidia.com>, Matthew Brost <matthew.brost@intel.com>, 
+ Joshua Hahn <joshua.hahnjy@gmail.com>, Byungchul Park <byungchul@sk.com>, 
+ Gregory Price <gourry@gourry.net>, 
+ Ying Huang <ying.huang@linux.alibaba.com>, 
+ Alistair Popple <apopple@nvidia.com>, 
+ Baolin Wang <baolin.wang@linux.alibaba.com>, 
+ Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, 
+ Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, 
+ Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, 
+ Xu Xin <xu.xin@linux.dev>, Chengming Zhou <chengming.zhou@linux.dev>, 
  Madhavan Srinivasan <maddy@linux.ibm.com>, 
  Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, 
  "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
  "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
- Shrikanth Hegde <sshegde@linux.ibm.com>, 
- Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>, 
- Dexuan Cui <decui@microsoft.com>, "Michael S. Tsirkin" <mst@redhat.com>, 
- Jason Wang <jasowangio@gmail.com>, 
- =?utf-8?q?Eugenio_P=C3=A9rez?= <eperezma@redhat.com>, 
- Xuan Zhuo <xuanzhuo@linux.alibaba.com>, Jarkko Sakkinen <jarkko@kernel.org>, 
- Dave Hansen <dave.hansen@linux.intel.com>, 
- Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
- Borislav Petkov <bp@alien8.de>, x86@kernel.org, 
- "H. Peter Anvin" <hpa@zytor.com>, Jan Kara <jack@suse.com>, 
- Paul Moore <paul@paul-moore.com>, 
+ Shrikanth Hegde <sshegde@linux.ibm.com>, Pedro Falcato <pfalcato@suse.de>, 
+ Kairui Song <kasong@tencent.com>, Qi Zheng <qi.zheng@linux.dev>, 
+ Shakeel Butt <shakeel.butt@linux.dev>, 
+ Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, 
+ Wei Xu <weixugc@google.com>, Baoquan He <baoquan.he@linux.dev>, 
+ Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
+ Michal Hocko <mhocko@suse.com>, Leon Romanovsky <leon@kernel.org>, 
+ SJ Park <sj@kernel.org>, Rakie Kim <rakie.kim@sk.com>, 
+ David Rientjes <rientjes@google.com>, 
+ Alexander Viro <viro@zeniv.linux.org.uk>, 
+ Christian Brauner <brauner@kernel.org>, 
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, 
+ Arnaldo Carvalho de Melo <acme@kernel.org>, 
+ Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>, 
+ Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>, 
+ Adrian Hunter <adrian.hunter@intel.com>, 
+ James Clark <james.clark@linaro.org>, 
+ Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
+ John Johansen <john.johansen@canonical.com>, 
+ Georgia Garcia <georgia.garcia@canonical.com>, 
+ Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, 
+ "Serge E. Hallyn" <serge@hallyn.com>, Mimi Zohar <zohar@linux.ibm.com>, 
+ Roberto Sassu <roberto.sassu@huawei.com>, 
+ Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, 
+ Eric Snowberg <eric.snowberg@oracle.com>, Fan Wu <wufan@kernel.org>, 
  Stephen Smalley <stephen.smalley.work@gmail.com>, 
- =?utf-8?q?Ondrej_Mosn=C3=A1=C4=8Dek?= <omosnacek@gmail.com>, 
- Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
- Ryan Chen <ryan_chen@aspeedtech.com>, 
- Billy Tsai <billy_tsai@aspeedtech.com>, 
- Bjorn Andersson <andersson@kernel.org>, 
- Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>, 
- Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, 
- Scott Branden <scott.branden@broadcom.com>, 
- Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
- Arnd Bergmann <arnd@arndb.de>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Richard Cochran <richardcochran@gmail.com>, 
- David Woodhouse <dwmw2@infradead.org>, Andrew Lunn <andrew+netdev@lunn.ch>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
-Cc: ljs@kernel.org, xen-devel@lists.xenproject.org, 
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- kvm@vger.kernel.org, linux-hyperv@vger.kernel.org, 
- virtualization@lists.linux.dev, linux-sgx@vger.kernel.org, 
- selinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-arm-msm@vger.kernel.org, 
- op-tee@lists.trustedfirmware.org, netdev@vger.kernel.org
+ =?utf-8?q?Ondrej_Mosn=C3=A1=C4=8Dek?= <omosnacek@gmail.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, 
+ linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ kvm@vger.kernel.org, damon@lists.linux.dev, 
+ linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, 
+ apparmor@lists.ubuntu.com, linux-security-module@vger.kernel.org, 
+ linux-integrity@vger.kernel.org, selinux@vger.kernel.org, 
+ "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2490; i=ljs@kernel.org;
- h=from:subject:message-id; bh=JMVxOxpfFwzbko1Dkxmi/MhSfdurHV7XcSZNEQmi5LM=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLevF9bav5wk6fYrXOXd6ULZVa0TPfJ+Lg9MZfZ9diee
- +qG2zLOdJSyMIhxMciKKbI8/yK+P0gkbF7nBX83mDmsTCBDGLg4BWAiYXcY/qcUxNtcOqidzSK8
- Kjc5+rCJmY7SZFXp7BChe/6HDFawfmP473xkKtfXWhYbrcSmOwwT5rzNXJ5t/Wde6Okj54p0482
- qOAA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3442; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=dw144I8hKInR8Qv8iKnjrU9/3cK4949dnMwWVIcVGbg=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLefF0a6K1vw5BxVPUqn46M6rZ32+yPLM/K3OK58Z/1t
+ UlJ376qdZSyMIhxMciKKbI8/yK+P0gkbF7nBX83mDmsTCBDGLg4BWAiQn8Y/scXBihtmHE7PkF4
+ 5fTvjHX5lf8yagzLot8b3ry68ZZUJgcjw8Jnxy6ELVt+JnMKc9vFq+wXXtq4lq3/3aB8muuMQpi
+ TOR8A
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -122,74 +138,78 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Move from the deprecated mmap hook to the new mmap_prepare hook. The hook
-only validates the request and sets the VMA flags, operations and page
-protection.
+Continue the conversion of legacy vm_flags_t flags to the new vma_flags_t
+bitmap type.
+
+Do some more core mm conversion (we really should be the first to
+completely move to the new scheme :), but also update some mm-adjacent and
+otherwise straightforward cases - /proc/$pid/maps and friends, the coredump
+VMA dump size logic, uprobes, perf and LSM mmap/mprotect hooks.
+
+This series only makes strictly mechanical changes to keep things gentle
+during this very busy cycle.
+
+No functional change intended.
+
+Build tested on x86-64 (allmodconfig, each patch individually), i386,
+arm64, riscv nommu and ppc64le.
 
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- drivers/vhost/vdpa.c | 23 ++++++++++++-----------
- 1 file changed, 12 insertions(+), 11 deletions(-)
+Lorenzo Stoakes (ARM) (13):
+      mm/gup: convert GUP code to use vma_flags_t
+      mm/filemap: convert fault and readahead logic to use vma_flags_t
+      mm/rmap: convert remaining VMA flag tests to use vma_flags_t
+      mm/migrate: convert VMA flag tests to use vma_flags_t
+      mm: convert THP VMA flag tests to use vma_flags_t
+      mm/ksm: convert VMA flag tests to use vma_flags_t
+      mm/madvise: convert madvise_vma_behavior() to use vma_flags_t
+      mm: convert miscellaneous VMA flag tests to use vma_flags_t
+      fs/proc/task_mmu: convert VMA flag tests to use vma_flags_t
+      fs/coredump: convert vma_dump_size() to use vma_flags_t
+      uprobes: convert VMA flag tests to use vma_flags_t
+      perf: convert VMA flag tests to use vma_flags_t
+      security: convert VMA flag tests to use vma_flags_t
 
-diff --git a/drivers/vhost/vdpa.c b/drivers/vhost/vdpa.c
-index ff7d90719171..993b2d7c8927 100644
---- a/drivers/vhost/vdpa.c
-+++ b/drivers/vhost/vdpa.c
-@@ -1573,19 +1573,19 @@ static const struct vm_operations_struct vhost_vdpa_vm_ops = {
- 	.fault = vhost_vdpa_fault,
- };
- 
--static int vhost_vdpa_mmap(struct file *file, struct vm_area_struct *vma)
-+static int vhost_vdpa_mmap_prepare(struct vm_area_desc *desc)
- {
--	struct vhost_vdpa *v = vma->vm_file->private_data;
-+	struct vhost_vdpa *v = desc->file->private_data;
- 	struct vdpa_device *vdpa = v->vdpa;
- 	const struct vdpa_config_ops *ops = vdpa->config;
- 	struct vdpa_notification_area notify;
--	unsigned long index = vma->vm_pgoff;
-+	unsigned long index = desc->pgoff;
- 
--	if (vma->vm_end - vma->vm_start != PAGE_SIZE)
-+	if (vma_desc_size(desc) != PAGE_SIZE)
- 		return -EINVAL;
--	if ((vma->vm_flags & VM_SHARED) == 0)
-+	if (!vma_desc_test(desc, VMA_SHARED_BIT))
- 		return -EINVAL;
--	if (vma->vm_flags & VM_READ)
-+	if (vma_desc_test(desc, VMA_READ_BIT))
- 		return -EINVAL;
- 	if (!ops->get_vq_notification)
- 		return -ENOTSUPP;
-@@ -1598,12 +1598,13 @@ static int vhost_vdpa_mmap(struct file *file, struct vm_area_struct *vma)
- 		return -EINVAL;
- 	if (notify.addr & (PAGE_SIZE - 1))
- 		return -EINVAL;
--	if (vma->vm_end - vma->vm_start != notify.size)
-+	if (vma_desc_size(desc) != notify.size)
- 		return -ENOTSUPP;
- 
--	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
--	vm_flags_set(vma, VM_IO | VM_PFNMAP | VM_DONTEXPAND | VM_DONTDUMP);
--	vma->vm_ops = &vhost_vdpa_vm_ops;
-+	desc->page_prot = pgprot_noncached(desc->page_prot);
-+	vma_desc_set_flags(desc, VMA_IO_BIT, VMA_PFNMAP_BIT, VMA_DONTEXPAND_BIT,
-+			   VMA_DONTDUMP_BIT);
-+	desc->vm_ops = &vhost_vdpa_vm_ops;
- 	return 0;
- }
- #endif /* CONFIG_MMU */
-@@ -1615,7 +1616,7 @@ static const struct file_operations vhost_vdpa_fops = {
- 	.write_iter	= vhost_vdpa_chr_write_iter,
- 	.unlocked_ioctl	= vhost_vdpa_unlocked_ioctl,
- #ifdef CONFIG_MMU
--	.mmap		= vhost_vdpa_mmap,
-+	.mmap_prepare	= vhost_vdpa_mmap_prepare,
- #endif /* CONFIG_MMU */
- 	.compat_ioctl	= compat_ptr_ioctl,
- };
+ arch/powerpc/kvm/book3s_hv_uvmem.c | 10 ++++----
+ fs/coredump.c                      | 16 ++++++-------
+ fs/proc/task_mmu.c                 | 43 +++++++++++++++++-----------------
+ include/linux/huge_mm.h            |  4 ++--
+ include/linux/ksm.h                |  4 ++--
+ include/linux/mm_inline.h          |  2 +-
+ kernel/events/core.c               | 26 +++++++++++----------
+ kernel/events/uprobes.c            | 12 ++++++----
+ lib/test_hmm.c                     |  4 ++--
+ mm/damon/vaddr.c                   |  2 +-
+ mm/filemap.c                       | 24 ++++++++++---------
+ mm/gup.c                           | 45 +++++++++++++++++++-----------------
+ mm/hmm.c                           |  6 ++---
+ mm/huge_memory.c                   | 32 +++++++++++++-------------
+ mm/internal.h                      |  2 +-
+ mm/khugepaged.c                    | 18 ++++++++-------
+ mm/ksm.c                           | 22 ++++++++++--------
+ mm/madvise.c                       | 47 ++++++++++++++++++++------------------
+ mm/mempolicy.c                     |  4 ++--
+ mm/migrate.c                       |  5 ++--
+ mm/migrate_device.c                |  8 +++----
+ mm/mmap_lock.c                     |  4 ++--
+ mm/mremap.c                        |  2 +-
+ mm/msync.c                         |  4 ++--
+ mm/oom_kill.c                      |  4 ++--
+ mm/pagewalk.c                      |  2 +-
+ mm/rmap.c                          |  8 ++++---
+ mm/vma.h                           |  4 ++--
+ security/apparmor/lsm.c            |  2 +-
+ security/integrity/ima/ima_main.c  |  2 +-
+ security/ipe/hooks.c               |  2 +-
+ security/selinux/hooks.c           | 14 ++++++------
+ 32 files changed, 202 insertions(+), 182 deletions(-)
+---
+base-commit: b61fa14ce6bcbba2cb9a96feea31b760226d6b43
+change-id: 20261101-late-2026-vma-flags-461731a636c3
 
+Cheers,
 -- 
-2.56.0
+Lorenzo Stoakes (ARM) <ljs@kernel.org>
 
 
