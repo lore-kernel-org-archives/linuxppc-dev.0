@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55A8B606EE80
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 21:07:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4D8D606A339
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 21:08:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jatg/Hxe
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gQXtnC+u
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLFJW0JFNz30V1;
-	Fri, 06 Nov 2026 08:07:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793912874;
-	cv=none; b=cmnTftpZhuHbKMe2SCI8WohnsQBEYyk0JiyQz3tgkRSVhSbDfpBOYOQWO8BinFtGl0CDM5pA+LkjnQonrJ/S9/5CnJucbowvUTjNDUtRC0qVURatEbq8CePOUJIe2SMTIAgRGm6DA7cqGxVfGZ/ZwQMHbwzkY70oQyqsqS7aNV6B+opIoOFmVMPj9IrcLRTX1zaaJe2Gjw3t2BjS7R8CWBtsJPd6oUUYjggzbwb6Wp7/lBoAUfnoPEPEEb0ss4/XEGfbYqKSlErP75ow++VR/pTrfPSHkw6KDqwZs9LSvdRRLgdVxNrzZboIS8twTNAGK/j0RCtc8Le2Q3hzr51NAg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLFJl0vyNz3byF;
+	Fri, 06 Nov 2026 08:08:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793912887;
+	cv=none; b=ok4rsbihUbK+l5XmTRYNAlfp38l/0u1AIqsISWb1AOEp1P+NAZjJvFAz9862ttm9iSHrolLGlTaRJRMC2tD+XfEk+6rSQRedrP6IjpqMYzQpVcP+O58nxnQjQ7RRUm8qZxde0FMRZYDeaOVRkRcAB0ROolGlBDX6qUuM6jWx93/i/xlrIaztpKqHmXE8538CgxKixfi2mh46GnJON7aHXVTFnIDQL7qGJyUr6ui7L0MX80vp6RVsLzmZIr5N13UcmJhG+cHXCurkAb0osJgpLbTU6vnHz6Rkw9lNRy0lXIF/E3qKvj8u2yadlYgQxfv8q5d2Az6Ef/g70OsxNOWUjg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793912874; c=relaxed/relaxed;
-	bh=BSFlkiRcJ1vaWlX3XB1LPFKx8VblPahiv0oUIc71Mco=;
+	t=1793912887; c=relaxed/relaxed;
+	bh=AH46OuGdtEt1nsUri8AEqTjCIJ9jhn5rP+r92fYTTuo=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=anNFz5DjwbLzmZ/jJIZwN31rs7s49T3c9L2npK4uT89EZL2eAqWhZ7viYgZtNu1N99Mja9g7XZ90GrwfUCgi8pJWnk+zwlfuBFjIhxppUM2UbdNqAW9OSbPngRuwEr19XNUiZVv1YqW9hDXFSOpq+I4j8RBaTTt098F6+WyJDpccZnW+zY1X4ubbazoGyFQYCHe3ll+cRmVCt5wF8GEeZKj+iguHFzJ7D/tWmh7dugYOCcVWIbZGAfddl7AKDu7wnUkXH9Khd9x5gq2rtQRYbNHAGICZm6WHDleOnaiSWTuXvT2XWkfhlj4jnJh+0jNSV6tecPlpW3seMJYqQnDTzQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jatg/Hxe; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=i8MeSfUxXy66kU6pzbdKVDHqVj2qpNJrh1naoz2i3rEzQpnixTgeFmFzyKO8MVGfCU4TVoMGfCJ+mwzHLmb1Wkovx4FfP1Z8aW0Q/Cuwfqqtz1XCiUCzsbaglZKJOTuwtJgLIsIT69/7Wfr8pk+R+G70WBgnCChaCbUY/u8q2MzEuMNnJvkCNQz6hPO7ikLXXuKs+aqFugDWH3BljOo62iGjANzl+kJhZ4h08OF1gzSwDEN1z560kutfnLZJOCTXcIHciRuG2NVKfAVQSk+1c5xct+JKWGJkC/fPZ9sNBz4Ei5Mw94iDLnhB41bS8/87cFybwkotrTsTFl4MsuMPJg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gQXtnC+u; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jatg/Hxe;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gQXtnC+u;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLFJV1rchz30MY;
-	Fri, 06 Nov 2026 08:07:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLFJk1k9Hz30MY;
+	Fri, 06 Nov 2026 08:08:06 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 156C66062C;
+	by sea.source.kernel.org (Postfix) with ESMTP id 45D9843FE4;
+	Thu,  5 Nov 2026 21:08:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 40DBB1F008AB;
 	Thu,  5 Nov 2026 21:07:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 02C4A1F00903;
-	Thu,  5 Nov 2026 21:07:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793912871;
-	bh=BSFlkiRcJ1vaWlX3XB1LPFKx8VblPahiv0oUIc71Mco=;
+	s=k20260515; t=1793912884;
+	bh=AH46OuGdtEt1nsUri8AEqTjCIJ9jhn5rP+r92fYTTuo=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=jatg/Hxe4mTOnYc6cjv7XH6Qe+5v947GBo55sPEEMiM/wHMGub8rie+CrUhiiVCwx
-	 aVKuP6kJrOh4gmHX6cKlQwCOltZMaa6SIFACvSdK4QqBQG/CN/Uh2ouIoA163WeJWA
-	 aCFh4tV2gzd2PoHInFGnIOla9ytpFnr82eYrYNqA9GdHylI1ygQRjcwLTJNoIYvabk
-	 wBbG24axaby51HBE4+2pC16l0d4oiS4Wb9V73xW0CHWW9aTUBuPz4elz4OZdbVKD8e
-	 8OfrYLyC+4HvSiFHcBMWmBHPhMMi1Us1KhyMyvljrbaJ2Z12u3wgEMNNN5uAPkFQHQ
-	 m/wM/7T6OrtAQ==
+	b=gQXtnC+uGV3ca+q7ByIhTFttKWFz/mEPWtGFIHyr1U7eyA5UiL3F5di8hwOyKNKIF
+	 owKNBe70mg3Zo5esALsOGrB3Gu4dftp1gp/kDfIf8QLSYdragHGzq3le/t0ApgBOdt
+	 W9up1YKjS36n6toNIJ3j5acZKXZ8wWo1sMDx7UIrb0pziMl9w8OPwDPPoOYAZT36u2
+	 vi8ESoYJVVURVm/u4/xMe23aJwZSVnqx7/HIEZFlTMpz35L2uOhW7gv4mJl1kf17SO
+	 iv7fymeQuygUorjvcrauyoeA1G+MidvGijWcp/sEyevbIArziwLEOE45fNvfWtSV44
+	 zrRXpq/nRe5Qg==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Thu, 05 Nov 2026 21:05:40 +0000
-Subject: [PATCH 09/14] soc: aspeed: convert LPC and P2A control mmap hooks
- to mmap_prepare
+Date: Thu, 05 Nov 2026 21:05:41 +0000
+Subject: [PATCH 10/14] soc: qcom: rmtfs_mem: convert mmap hook to
+ mmap_prepare
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261105-late-2026-mmap_prepare-v1-9-c56aadfbab8a@kernel.org>
+Message-Id: <20261105-late-2026-mmap_prepare-v1-10-c56aadfbab8a@kernel.org>
 References: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
 In-Reply-To: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
 To: Juergen Gross <jgross@suse.com>, 
@@ -108,12 +108,12 @@ Cc: ljs@kernel.org, xen-devel@lists.xenproject.org,
  linux-aspeed@lists.ozlabs.org, linux-arm-msm@vger.kernel.org, 
  op-tee@lists.trustedfirmware.org, netdev@vger.kernel.org
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4041; i=ljs@kernel.org;
- h=from:subject:message-id; bh=b74s25V2apv18H+lPm+BPboDuVAgLBZbFTCGyriTgSw=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLevF8j/+Dg1ofBp3oCTIwOdz09F2xxdcKv2a/ld13+P
- 93dcX7ctY5SFgYxLgZZMUWW51/E9weJhM3rvODvBjOHlQlkCAMXpwBMZNlFhv/RUsXqv5pnL30j
- aSPYuu/cnqXuLvERO4qv57Zv4rpSwbKH4X/KRYbzO3Ys7TO94nRJeu7Oa9PY2m3rtTUMC/es4TE
- q72AEAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2040; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=VZRnIpM2wCvIjSh9P+PGr0d/uBMnYJCKqKQo3RqP51A=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLevF/DcEy9Yf31Kzsm7ZGRmTflc4KO8ympbO+gxpqId
+ 5e4dnYId5SyMIhxMciKKbI8/yK+P0gkbF7nBX83mDmsTGBDuDgFYCJ83owMN3b7GPFPClBsUdpb
+ 91BjyqODrGFXl9VPszke3LF79vZDiYwMd/fO2SCzWsEy+nRExp61KyZ+Xqt1rPVFwbrq23tKLII
+ esgIA
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -123,113 +123,61 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Move from the deprecated mmap hook to the new mmap_prepare hook for both
-the LPC control and P2A control drivers.
-
-Both remap a range of their reserved memory region, so use the PFN remap
-mmap action to do so, retaining the -EAGAIN error on failure via the action
-error override.
+Move from the deprecated mmap hook to the new mmap_prepare hook, using the
+PFN remap mmap action to map the region.
 
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- drivers/soc/aspeed/aspeed-lpc-ctrl.c | 20 +++++++++-----------
- drivers/soc/aspeed/aspeed-p2a-ctrl.c | 22 ++++++++--------------
- 2 files changed, 17 insertions(+), 25 deletions(-)
+ drivers/soc/qcom/rmtfs_mem.c | 22 ++++++++++------------
+ 1 file changed, 10 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/soc/aspeed/aspeed-lpc-ctrl.c b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-index 4d8574cac703..9258762354cc 100644
---- a/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-+++ b/drivers/soc/aspeed/aspeed-lpc-ctrl.c
-@@ -47,22 +47,20 @@ static struct aspeed_lpc_ctrl *file_aspeed_lpc_ctrl(struct file *file)
- 			miscdev);
- }
- 
--static int aspeed_lpc_ctrl_mmap(struct file *file, struct vm_area_struct *vma)
-+static int aspeed_lpc_ctrl_mmap_prepare(struct vm_area_desc *desc)
- {
--	struct aspeed_lpc_ctrl *lpc_ctrl = file_aspeed_lpc_ctrl(file);
--	unsigned long vsize = vma->vm_end - vma->vm_start;
--	pgprot_t prot = vma->vm_page_prot;
-+	struct aspeed_lpc_ctrl *lpc_ctrl = file_aspeed_lpc_ctrl(desc->file);
- 
--	if (vma->vm_pgoff + vma_pages(vma) > lpc_ctrl->mem_size >> PAGE_SHIFT)
-+	if (desc->pgoff + vma_desc_pages(desc) >
-+	    lpc_ctrl->mem_size >> PAGE_SHIFT)
- 		return -EINVAL;
- 
- 	/* ast2400/2500 AHB accesses are not cache coherent */
--	prot = pgprot_noncached(prot);
-+	desc->page_prot = pgprot_noncached(desc->page_prot);
- 
--	if (remap_pfn_range(vma, vma->vm_start,
--		(lpc_ctrl->mem_base >> PAGE_SHIFT) + vma->vm_pgoff,
--		vsize, prot))
--		return -EAGAIN;
-+	mmap_action_remap_full(desc,
-+		(lpc_ctrl->mem_base >> PAGE_SHIFT) + desc->pgoff);
-+	desc->action.error_override = -EAGAIN;
- 
- 	return 0;
- }
-@@ -216,7 +214,7 @@ static long aspeed_lpc_ctrl_ioctl(struct file *file, unsigned int cmd,
- 
- static const struct file_operations aspeed_lpc_ctrl_fops = {
- 	.owner		= THIS_MODULE,
--	.mmap		= aspeed_lpc_ctrl_mmap,
-+	.mmap_prepare	= aspeed_lpc_ctrl_mmap_prepare,
- 	.unlocked_ioctl	= aspeed_lpc_ctrl_ioctl,
+diff --git a/drivers/soc/qcom/rmtfs_mem.c b/drivers/soc/qcom/rmtfs_mem.c
+index 342c0845134e..5e2ac75f41d5 100644
+--- a/drivers/soc/qcom/rmtfs_mem.c
++++ b/drivers/soc/qcom/rmtfs_mem.c
+@@ -129,24 +129,22 @@ static const struct class rmtfs_class = {
+ 	.name           = "rmtfs",
  };
  
-diff --git a/drivers/soc/aspeed/aspeed-p2a-ctrl.c b/drivers/soc/aspeed/aspeed-p2a-ctrl.c
-index b6b7b80f842a..ad59ff28c013 100644
---- a/drivers/soc/aspeed/aspeed-p2a-ctrl.c
-+++ b/drivers/soc/aspeed/aspeed-p2a-ctrl.c
-@@ -97,29 +97,23 @@ static void aspeed_p2a_disable_bridge(struct aspeed_p2a_ctrl *p2a_ctrl)
- 	regmap_update_bits(p2a_ctrl->regmap, SCU180, SCU180_ENP2A, 0);
- }
- 
--static int aspeed_p2a_mmap(struct file *file, struct vm_area_struct *vma)
-+static int aspeed_p2a_mmap_prepare(struct vm_area_desc *desc)
+-static int qcom_rmtfs_mem_mmap(struct file *filep, struct vm_area_struct *vma)
++static int qcom_rmtfs_mem_mmap_prepare(struct vm_area_desc *desc)
  {
--	unsigned long vsize;
--	pgprot_t prot;
--	struct aspeed_p2a_user *priv = file->private_data;
-+	struct aspeed_p2a_user *priv = desc->file->private_data;
- 	struct aspeed_p2a_ctrl *ctrl = priv->parent;
+-	struct qcom_rmtfs_mem *rmtfs_mem = filep->private_data;
++	struct qcom_rmtfs_mem *rmtfs_mem = desc->file->private_data;
  
- 	if (ctrl->mem_base == 0 && ctrl->mem_size == 0)
+-	if (vma->vm_end - vma->vm_start > rmtfs_mem->size) {
++	if (vma_desc_size(desc) > rmtfs_mem->size) {
+ 		dev_dbg(&rmtfs_mem->dev,
+ 			"vm_end[%lu] - vm_start[%lu] [%lu] > mem->size[%pa]\n",
+-			vma->vm_end, vma->vm_start,
+-			(vma->vm_end - vma->vm_start), &rmtfs_mem->size);
++			desc->end, desc->start, vma_desc_size(desc),
++			&rmtfs_mem->size);
  		return -EINVAL;
+ 	}
  
--	vsize = vma->vm_end - vma->vm_start;
--	prot = vma->vm_page_prot;
--
--	if (vma->vm_pgoff + vma_pages(vma) > ctrl->mem_size >> PAGE_SHIFT)
-+	if (desc->pgoff + vma_desc_pages(desc) > ctrl->mem_size >> PAGE_SHIFT)
- 		return -EINVAL;
- 
- 	/* ast2400/2500 AHB accesses are not cache coherent */
--	prot = pgprot_noncached(prot);
-+	desc->page_prot = pgprot_noncached(desc->page_prot);
- 
--	if (remap_pfn_range(vma, vma->vm_start,
--		(ctrl->mem_base >> PAGE_SHIFT) + vma->vm_pgoff,
--		vsize, prot))
--		return -EAGAIN;
-+	mmap_action_remap_full(desc,
-+		(ctrl->mem_base >> PAGE_SHIFT) + desc->pgoff);
-+	desc->action.error_override = -EAGAIN;
- 
- 	return 0;
+-	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
+-	return remap_pfn_range(vma,
+-			       vma->vm_start,
+-			       rmtfs_mem->addr >> PAGE_SHIFT,
+-			       vma->vm_end - vma->vm_start,
+-			       vma->vm_page_prot);
++	desc->page_prot = pgprot_writecombine(desc->page_prot);
++	mmap_action_remap_full(desc, rmtfs_mem->addr >> PAGE_SHIFT);
++
++	return 0;
  }
-@@ -308,7 +302,7 @@ static int aspeed_p2a_release(struct inode *inode, struct file *file)
  
- static const struct file_operations aspeed_p2a_ctrl_fops = {
- 	.owner = THIS_MODULE,
--	.mmap = aspeed_p2a_mmap,
-+	.mmap_prepare = aspeed_p2a_mmap_prepare,
- 	.unlocked_ioctl = aspeed_p2a_ioctl,
- 	.open = aspeed_p2a_open,
- 	.release = aspeed_p2a_release,
+ static const struct file_operations qcom_rmtfs_mem_fops = {
+@@ -156,7 +154,7 @@ static const struct file_operations qcom_rmtfs_mem_fops = {
+ 	.write = qcom_rmtfs_mem_write,
+ 	.release = qcom_rmtfs_mem_release,
+ 	.llseek = default_llseek,
+-	.mmap = qcom_rmtfs_mem_mmap,
++	.mmap_prepare = qcom_rmtfs_mem_mmap_prepare,
+ };
+ 
+ static void qcom_rmtfs_mem_release_device(struct device *dev)
 
 -- 
 2.56.0
