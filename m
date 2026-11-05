@@ -2,78 +2,78 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E98F606EE90
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 10:44:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77BC8606EE9F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 10:44:07 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=aX2Km8DG
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Xuehxoma
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKzSQ6NKlz2yGT;
-	Thu, 05 Nov 2026 21:43:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKzSX2M9Pz2xSV;
+	Thu, 05 Nov 2026 21:43:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793875430;
-	cv=none; b=NOqAyBwikcNCE/v00KBpWfW6YuK+Ywh6qxyOfiY1DrOjck2gh0yWHXrrBUiRz0t1kA5bIA/OZs2fsFkIAehvMcDkIlY3NFXR7KxgkJIsXFZxfozonjEdpoeIBNapwovAN051Nch5EcVXniIciAeZzMRtJmfCzttA/tOrSuqzv/na3qynv3sBn+tLvGmmPE2SmRLl5wh+jOFG0ue5GX1nUJhqsI5oRwTlN54dPLjJ418l5Er1PgUl1J85jf1WovSl3XJmxcu0k/zH+6egqqgUcCkVwWrWgFka/bgKtzXGwd2yCNRshYnF5lpEYJ7xYFvCoxJZkPkfB8fEKTu9PCfXDw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793875436;
+	cv=none; b=g4KWM178jH1tqGCtchAVcH9qXopWvoLsqhwZXGoREq5HW+OaSoIlN/mcv0beqY2+H3lfPzZvr4KOX5mCeEpv3S0nC5BryZeae95+bNFB2QzyBqiues2N2VO/UpFW6S0A/Ptt/tJHJ5UB1y1f/JcRfUkLpo9+JJM21MWfd4qM8XdyFG3EGU2giZUdKq05EjE0YUiqP07uXsPc0vQynLmIvY0DvQjIc4LPlHFcyt4acZE9njqVllDXRFSrJEA/ZuZ3TIccgCBr1zu2zf0MMh10/FFG6cC1oClF84RILScGonrEfGXuO16JvJOV8ESTkXFbqEgaJjZCND7StYRZBLFpuQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793875430; c=relaxed/relaxed;
-	bh=XIRj/VHtFRarv0lZNWmzV0C1FzshlGUywm6oQSCzwkE=;
+	t=1793875436; c=relaxed/relaxed;
+	bh=vKAKMQ4BVho2fFcjnz3XT6CSg1r7fe1rHI3g3JTlXJ4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=o2azvPzrSoFmLmHuF2na4MzVrl+N2HyZVI+U/7VSOA7NlFu9Kqi5uMwza5250YBB/aVXQnW7sJAvVWUX4YOUhw+mvDdndOFp1Knhn3v0PG/LqEWiEoU1V1TwUABuCKwPrTYir9EHF/eKLG87BzApYRNAOn2jUYEsH6U/T1xTRBmk8wtv8Gi0oKl4DQWzU9gJllkv16BMEJ2tCzwOijXZVPB2rw3Z7gsHSjDLyhxHjrwmVBDt8kyv1xswOGxHvdOWd5VgRY2EifOrwbDhMj2bGR7LDIMjSlQ+qjMUp8IZ69RnLJRIIKTnrGXUG79GoWznWTguagiCQ0P7AXsXzD6eqw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=aX2Km8DG; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122f; helo=mail-dl1-x122f.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=l1fR2fNeYCCxAOzlZyeGlbgX+uOladFG3sV9lIJjs74u6aW8mxKedK5E2FEiHfnPSLvemoWWl4MLuKgcRuV52/eMMB4ug1dlX2jepN82vh26OUZAsGgoHt9dqT2w4/lyatgQc/04T2YU21PNxN15/5/5TGcuEQPH2rNH1zlBGWsvshbPAHhwQ3zUbZUoPFurrslXVbM0s8hO8CXC09R7eZRToKCWWj/i+wNQPJgFh1zlcwkQNZYe2lq3oIVPhAQNlROhpEvGQKEN/CaJuFSl757TwBCQGSCyB16OcmNuJMDr2/xkmBYzYsg1S59Pj8LxKusKGNJ/xEBUBFEqORsN6A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Xuehxoma; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122f; helo=mail-dl1-x122f.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=aX2Km8DG;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Xuehxoma;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122f; helo=mail-dl1-x122f.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
 Received: from mail-dl1-x122f.google.com (mail-dl1-x122f.google.com [IPv6:2607:f8b0:4864:20::122f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKzSQ1NNxz2xSV
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 21:43:50 +1100 (AEDT)
-Received: by mail-dl1-x122f.google.com with SMTP id a92af1059eb24-1ae18eb9ad0so1990059c88.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 02:43:50 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKzSW5Kzjz2yMK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 21:43:55 +1100 (AEDT)
+Received: by mail-dl1-x122f.google.com with SMTP id a92af1059eb24-1a3c08d6928so2497816c88.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 02:43:55 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793875428; x=1794480228; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1793875434; x=1794480234; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=XIRj/VHtFRarv0lZNWmzV0C1FzshlGUywm6oQSCzwkE=;
-        b=aX2Km8DGACHeF0EqsI9sj4u7wxkrZqzd5ASEDZDuWx8bhKtu4iHUaHzVjTKL7vIX9M
-         eyICRxBdX+/FKchlKl1Pww40zyOuIIvgFuNXYx9zmtQudtVeJ1E9JdZ/ZBSQnuvfi3mQ
-         FnimlUYGe8N2S3IJwrHXTkg7Zr8Krei7W5azFd7N2k5PgM/Elz6xbbPTWjEWbfo/r3m4
-         tZG3IQW9POaDCUrX+tUEsL5vWwnmkrSSUVgcIgmmmK5I2Ck1T5oKoRv2/BXZE2OyZiYH
-         uvQY2LK832JdA/IwLjJuRJ/cgZY4w3TvhacIeQhfFlo+0ffsVlVbAJSu5B2WzkR4gQFL
-         umCw==
+        bh=vKAKMQ4BVho2fFcjnz3XT6CSg1r7fe1rHI3g3JTlXJ4=;
+        b=Xuehxomao4g/uFey0ncLWbyubSQRpIwtK/0ui5tuNjRJ6R+yJK9XO36cdqCWALFYXh
+         CswY9+Y4ZbBhCcutUVEIihL1W6sS2xwhg8x9UuTkN57NKCYuo38C5gv0lFUztaQwa0xW
+         1MUeqLEbUPrB/uzh6dgyK+7T15P4HSiYSj5JfREQap9Y0D2WgxmTJpgUO/DITSVsfwnG
+         yK0rGOerOmN4XxqtAmQpDgGgLyk6w9bD6rjKBJbYhQaA9JnqPy934VFf3wRdBhFEHDlY
+         pZHfWtu7n6+6wrMGfO0NTePRyt8zzuI4/eOeWcl1Ge4NlzGIaMQ5GZyF8auVL4wtNA1V
+         fHdA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793875428; x=1794480228;
+        d=1e100.net; s=20260707; t=1793875434; x=1794480234;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=XIRj/VHtFRarv0lZNWmzV0C1FzshlGUywm6oQSCzwkE=;
-        b=ai5H1enpZ+tHaYwA7SyttP5+V8s70o9FF33LmoOBZP+Rqj7YZjvFwcZrs/KsrLroA+
-         v0SgKlGtSwaeOaDzmH8wMCqHk0V/rv/PmBUKFAL9DG4+Qvm9Mn3LmGtdOZjFYQ/RwQuG
-         370y+TusY4LL3V6Q/P1hDiLeJqZ1t2Fq5wUhK5NijFJfNJ60mMLf+jbrH4nHIeQ8pHJe
-         jsSdG4zK03yYYqnWKq0le710hcE9+NWNd3WZItHpH7dj5v4nGV3GMnWuQ9jYMu6MariG
-         r3EZQAB7Kju6unS4WBUPQY1WxDytnhLBpbmcPgOn9zZ9KqzZkbEpBeHcDGjHTnBhuoKE
-         BTzg==
-X-Forwarded-Encrypted: i=1; AKwUvBw0gXptxH8iQN+h5ajbh3xbr0AjyK1/5u5JIXTPQMiim28Y3Ry+oJArjG2mTQwJ/A+jVkK8F4bxJIYqnUg=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z987tE+E68WAQqoez8j7+BbmQCPQSsiNL2rPbevRGTH533wqLqo
-	2jR1cjaq9i/pJueQBpU2MK5t/7PjSd1o0cx92JqCdCUPKlWrFkWmqf8H
-X-Gm-Gg: AYBFou1Tq8rfaixCeBBUypgQmKXBE++JDxk01E3kzIL+I+ua/hrmjyGqaD7XZh6zZZ6
-	2bZNteLo/QtWhvqVSdVBfJOGayghbBvfHrX4dO87zLBhctEebU5O3MwN8vxZJ6esoVTDckdU4yC
-	wW5KnfCam9FSkuo//nmRxj1xiUoJOWNRJsKmeTXDPRFUJ/uo1aso2D4TrdQrmazRWaaU9uqkzKj
-	mfEn3sX5qPOjWu6RQIdiHLH+mRzTUH4ZOdMF/w8VV7cKj3pAzEzxbsOdn/kUOqM+BxdOjiJQMBe
-	x9X55w+6CnPmi7rEpZvmAEHqsCP5dJNt5qRpyleHNdqERPluU0OiDoQJuKwfx4OvN+ZNGvS+cL6
-	nx+OjtcHJNJINOHGqd2sL4bnDhqUe7laveuiiObUoyJu7dSDHjZMxJqYtyJF5jJUdisxXw7CvPl
-	6ptOBZCmEr5rWZy+EfLeGbe8g7Qr2otKROwmQhEIdq4LlmIJkrQoKmI/2jLY3ymOtCkJv3btGgp
-	bufza7tOqIpSpFlm6sNVR4BEehU45STfVHsFgYPUWorzXNWy7j0Tqdn5brcZtZvR2dEKQ3FkFJ2
-	SbcgH/KHgReGRYtOYIOymENarpB2qvp+fERBEkSDVVrzhe9dZ9X4zXdI4+/O0WZkEQw68sM1ib3
-	e+PASY3dh178OOaVbMALhtcJpj0RBzsrBYpjp3fUaGAswN5zUip2ATWueHEkg8KcUGw==
-X-Received: by 2002:a05:701b:42c7:20b0:1b0:f0f5:e38f with SMTP id a92af1059eb24-1b0f0f5e3b5mr20779490c88.34.1793875428330;
-        Thu, 05 Nov 2026 02:43:48 -0800 (PST)
+        bh=vKAKMQ4BVho2fFcjnz3XT6CSg1r7fe1rHI3g3JTlXJ4=;
+        b=ta4NYdkWr00gXB5CS0cFH1uNIG0/Y8MkX+rryc1waSBH47otD0zDeMM7T6HGvQpExR
+         5a7D/FKHzXLbugDGkD4vCbtPvIgpBdGfU/wsd6jV5wJF0cxvkLTjKNTOsdcClVZruTO6
+         bc+LInmn/9ZYuS7ru2sdRs9TGb9Q4kCMXL2q7ro4JGLuJPQFRBCxgs48zUBCtudSTKqn
+         8PtDixpNrj3l+VUl0LflqVTqSho4fKGTW3muCNyC2xUu3mb4cpl4cEWsZBixsPvs9J9N
+         IzMVgT6CG0fT1wMh6ItddvKx6ylNrYfY+jLMI7k7HerGIsJWSpe2WtoUbS2Fq9wFT0GG
+         6T7Q==
+X-Forwarded-Encrypted: i=1; AKwUvBxX5vN3WAKuO+cYys8Suq26Md6BnjGVdggJRgHNgMGClNfYfA2tDhh3nQp9VtSWuyhZ9VvcgSxvpmtpPdo=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z/0bRe5/NIm9AnykAczXWi4gKONse9lR0Y2j6ltN6F0IySLlq2C
+	NeZmoUM4E9ox6+0zKiobs9PsIyyzLKHqcZrUeeEXcXdFMBjP0jEU1tEc
+X-Gm-Gg: AYBFou1pZd+byYADPv2b28Z8tyRcDAD8rjh+YavUrn5SEysVbGFGWIMTG9z2Yo0kj7J
+	Fv5fE+Ku/LquVUuE1ngEzPTjrJCj30G6E/421zMmTPJKVHQ9EGN7CPxBkYS0YmxTk/vI0uZ5GTI
+	PhWaHIcL1tapHwzkSa0Fgb2xg8Kf9FNS3VyiThe70hD7z9HZUkPpisHhlCHA3iwg+fzqeLFZXnU
+	14yY9tmH9GFf991SqXNWye0h/m2DtGfOqJnUXCDamwjANYxww7EMsxyGpCx5W4XqaRSK1G+FrMT
+	Tl+zmrlF5VAgTRKfK5tQChi6VEsVZHabCWI1EmlmM50RK/e8pt07V5q3a0sbwTGCTL3ON5cck8b
+	yuvgIbgPhLk9zlrBq9n+iRUDnT9KgXjCZVM/8Cy2uLIBginPz7ijD+/5gChaQ39qF8JOMaTLrPs
+	dAhmiwPWy7BZTMpzB3Di+VqJ0CVfo3QHfn2X/gUv3xhpZXxsZZfSUZfpW1kYEln3+U7QNIblMlk
+	K82dK5KzusWlOvLPpRyXYUdb09gp5UPGV/akQ2AF/5UL+aA8uOKYOlfKHyjEq1d27iT1MSRLGpL
+	t+X8fGJfmOWJdU1f9V/vG1wz6k7TJNzIxnTVIQaiORCMWUTQ3HQxSxR8ky2oNECL//Im+gtuE81
+	V5o4Nemy+a6Z2l67dLTzQvUCUQeHzkvmgVzFNK8w5wN3q0meA9IVTcSODbvWBzwG6TA==
+X-Received: by 2002:a05:7022:b0c4:b0:144:fb87:5b91 with SMTP id a92af1059eb24-1ac5e32099dmr27470535c88.44.1793875433623;
+        Thu, 05 Nov 2026 02:43:53 -0800 (PST)
 Received: from phuc-desktop.. ([183.91.15.56])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b245c1c272sm15595215c88.8.2026.11.05.02.43.44
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b245c1c272sm15595215c88.8.2026.11.05.02.43.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Nov 2026 02:43:47 -0800 (PST)
+        Thu, 05 Nov 2026 02:43:53 -0800 (PST)
 From: phucduc.bui@gmail.com
 To: Shengjiu Wang <shengjiu.wang@gmail.com>,
 	Shengjiu Wang <shengjiu.wang@nxp.com>,
@@ -88,9 +88,9 @@ Cc: Liam Girdwood <lgirdwood@gmail.com>,
 	linux-sound@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	bui duc phuc <phucduc.bui@gmail.com>
-Subject: [PATCH v2 07/10] ASoC: fsl_sai: Clarify fsl_sai_dir_is_synced() documentation
-Date: Thu,  5 Nov 2026 17:42:34 +0700
-Message-ID: <20261105104237.38542-8-phucduc.bui@gmail.com>
+Subject: [PATCH v2 08/10] ASoC: fsl_sai: Check regmap_read() return value in ISR
+Date: Thu,  5 Nov 2026 17:42:35 +0700
+Message-ID: <20261105104237.38542-9-phucduc.bui@gmail.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20261105104237.38542-1-phucduc.bui@gmail.com>
 References: <20261105104237.38542-1-phucduc.bui@gmail.com>
@@ -118,46 +118,42 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: bui duc phuc <phucduc.bui@gmail.com>
 
-The summary line of fsl_sai_dir_is_synced() reads as if @dir follows
-the clocks of the opposite stream, while the function returns true
-when @dir provides the clocks and the opposite stream is synchronous.
+The IRQ is shared, so fsl_sai_isr() may run while the SAI is runtime
+suspended. The regmap is then in cache-only mode, so regmap_read()
+fails and xcsr is used uninitialized.
 
-Reword the description to match the behavior and document the return
-value. No functional change.
+Check the return value of regmap_read() for both TCSR and RCSR, and
+skip the handling of the corresponding direction on failure.
 
 Signed-off-by: bui duc phuc <phucduc.bui@gmail.com>
 ---
- sound/soc/fsl/fsl_sai.c | 16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ sound/soc/fsl/fsl_sai.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index f75a1d61d7b7..25243b6859d6 100644
+index 25243b6859d6..5c50ed7c2258 100644
 --- a/sound/soc/fsl/fsl_sai.c
 +++ b/sound/soc/fsl/fsl_sai.c
-@@ -88,14 +88,16 @@ static const struct snd_kcontrol_new fsl_sai_timestamp_ctrls[] = {
- };
+@@ -148,7 +148,8 @@ static irqreturn_t fsl_sai_isr(int irq, void *devid)
+ 	mask = (FSL_SAI_FLAGS >> FSL_SAI_CSR_xIE_SHIFT) << FSL_SAI_CSR_xF_SHIFT;
  
- /**
-- * fsl_sai_dir_is_synced - Check if stream is synced by the opposite stream
-- *
-- * SAI supports synchronous mode using bit/frame clocks of either Transmitter's
-- * or Receiver's for both streams. This function is used to check if clocks of
-- * the stream's are synced by the opposite stream.
-- *
-+ * fsl_sai_dir_is_synced - Check if the opposite stream is synced to @dir
-  * @sai: SAI context
-- * @dir: stream direction
-+ * @dir: stream direction, TX or RX
-+ *
-+ * SAI supports synchronous mode, where one direction uses the bit clock and
-+ * frame sync of the other. This function checks whether @dir provides the
-+ * clocks, i.e. @dir runs in asynchronous mode while the opposite direction
-+ * runs in synchronous mode.
-+ *
-+ * Return: true if the opposite direction uses the clocks of @dir.
-  */
- static inline bool fsl_sai_dir_is_synced(struct fsl_sai *sai, int dir)
- {
+ 	/* Tx IRQ */
+-	regmap_read(sai->regmap, FSL_SAI_TCSR(ofs), &xcsr);
++	if (regmap_read(sai->regmap, FSL_SAI_TCSR(ofs), &xcsr))
++		return IRQ_NONE;
+ 	flags = xcsr & mask;
+ 
+ 	if (flags)
+@@ -179,7 +180,8 @@ static irqreturn_t fsl_sai_isr(int irq, void *devid)
+ 
+ irq_rx:
+ 	/* Rx IRQ */
+-	regmap_read(sai->regmap, FSL_SAI_RCSR(ofs), &xcsr);
++	if (regmap_read(sai->regmap, FSL_SAI_RCSR(ofs), &xcsr))
++		goto out;
+ 	flags = xcsr & mask;
+ 
+ 	if (flags)
 -- 
 2.43.0
 
