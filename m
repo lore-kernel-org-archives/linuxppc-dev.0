@@ -1,49 +1,95 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98B36606A31B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 02:14:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A909606A32C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 02:52:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=j2sTp789
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=YBKBB6zZ
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKm8h6rPtz2xNC;
-	Thu, 05 Nov 2026 13:14:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::27"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793844868;
-	cv=none; b=fq9QoV5y9zuMgjZN16WXtVqe+VTbLGgRZYloAXO204WkCbGyAJ4cnVjdU02wTCLByD22B1x6AxEq4SPHQpmJ09QIqkBZ+B1NoT+jVO89bP5dvkWVH1czu0Gknt4BU114G1CqBc/x0qW7fcfCGIqEQBOypT0cXlp++HdF/1r0q/LD+gXd9vKXjBZ6GyHeCa/yfKUl4r0lqiDKgs32we1YM7IdlgkdnHWBEN3wujcBNdsly9k6pyKg1tFwcjFOL4/wc+cdHHFKHNmjv4z72NrTI1FUZCnC+RNF7d9XdcSxpoaHVb+bu940fxiAWBS3HgYPg/S3ePfaOv9+PKBqwJt7Eg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793844868; c=relaxed/relaxed;
-	bh=tXeq94tKXH8bHOz1amsH5XRU51n2PYOOTkgxfF1PjyI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=J6Dl9bWQNDBrW4Tw4xigJcRg86DJrned2Wt+f8JL5hubr01u1d1qgH/dPPi6Ynf8kj/mpQoBLcibGENgzwryZU+0mQWxuzfN7KJ+Eo5OpbNMEk46qWf0x+8Eb3EzyaNREGChPcrRQaNGB6krzBvfhVoFFj3Q1e2EAZpIEiucPxdghydsP7Y5Nkcu97DYnTX4QIDNcoZidxHcHzH7TvCWVIG5ge2u1oZm5H7Nouv6pz+QIce4IKtD+j0RoiDoz3fbOn6ctGRV2o04U/LCyce/ymhixfnSLqM+IFx9RMXlF9Bx8fzng83uETOCxLLqrG7fFM0C0onxQi1vJXqBAX2PeQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=j2sTp789; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::27; helo=mta0.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKn0w7457z2xNC;
+	Thu, 05 Nov 2026 13:52:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::430" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793847168;
+	cv=pass; b=TKGZGshlqXN+cQngGtt+vG36tdWr1VpGHjEfQKn6UFHszZJsC0fgsyxFuQ2OQQw/81DlJXLkZJM01ov1x7TDBMLb90RkdNmsQ3k5GTNGQUpeRQma6lxIouUtL8Qa7arCeHM4dql67Mwbdc695chy9RfiFJpy6bp4Ms2SR1JR0ajg03r77HfYp4c6JLHXuRa/Z+a94ayE9cgQlgBSuj5zesJFU4JD7Fcu7ZZj/QSjjszjp/KkbSKxAA+fZoXl+TlonuH/JXj7jFyOOLS7gSvKd9MLQruQL10RwHw45CrxShkU6Rk+k47UEXQ75Th26FN5po6g+kX2HFUkloyMi62p/A==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793847168; c=relaxed/relaxed;
+	bh=Ey1iV8iQoLj7ydlNgUyOjkiFHdD4l+/Plkd+sDU6ZFc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=URXDkFFFnvYlLokRL5/W48yMHINkr0BKc75Tie+wj732QbPUU4YMhaEGvH8wyAbgwjBqv+U8h8mgSpzYalWQyc906oMEDO5iKbNuzEHiiBkKBrF52aR5+Y6PvzUzrb+ioI9aTiZAXL4+s40F6v6IUgr/o9FEu09WagCw/Cnrw4x6QO8LZE+6LL68ut5MozEf1VCKjHloIPuV2LU3nu5HHXT46FvUsgWIWwzcc2UVCfU+PmamZKeoJjwqEMRbfmWfkT0fbLTD7QwETtGhsPAyRu1OkZOnWmpY9m3RLjapelDCYAjDWAqlOLjkAKFUlud5H8n2ACTnDID64vdViSimbg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=YBKBB6zZ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::430; helo=mail-pf1-x430.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=j2sTp789;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=YBKBB6zZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::27; helo=mta0.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta0.migadu.com (out-39.mta0.migadu.com [IPv6:2001:41d0:1004:224b::27])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::430; helo=mail-pf1-x430.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x430.google.com (mail-pf1-x430.google.com [IPv6:2607:f8b0:4864:20::430])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKm8d6hjxz2xLd
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 13:14:23 +1100 (AEDT)
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=l5hRS8qgzR0WOCPLF0tQbQ+of37lp1oZsgw+XUQqwhg=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1793844844; v=1; x=1794449644;
- b=j2sTp789TAzH4+lGZ7lYWfaDwj4tzc9cwnz9VymVYz+93eIx1j2P1wIewQP0NcIfVbJQKLyf
- 0DO8NIIghKzDouBSBnDym1wAnQyGpqJsD9irj2dQSZrGObeDZJB96QtjMGxheDIwPErfv1cfpzT
- zdnAQ3fG/Xx2Ge3hDWonFfXo=
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id 7ce234fbb2517b84;
-	Thu, 05 Nov 2026 02:14:03 +0000
-X-Mizu-Trace-ID: 7ce234fbb2517b84
-X-Migadu-Flow: FLOW_OUT
-Message-ID: <fc4939cc-84ec-4c5c-88a7-658ca800377d@linux.dev>
-Date: Thu, 5 Nov 2026 10:15:13 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKn0v0x5Hz2xHP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 13:52:46 +1100 (AEDT)
+Received: by mail-pf1-x430.google.com with SMTP id d2e1a72fcca58-8a60f90a924so607432b3a.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Nov 2026 18:52:46 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1793847163; cv=none;
+        d=google.com; s=arc-20260327;
+        b=AqxJ7d8GRgj8O+XKSxNTem5HxqCgHdUStn6AL8n0HN6NTdUigPDobHTP7xEgUWcPR0
+         8qE4KC5vete44eXLTnROHW9AyRpsbAfGdXkv4PEN9gSufeB8O2NEQRn1I2cTWgqMOtSx
+         iSRAuBIqDztisIEZtSTyxzUNIFS8fkwIZMDhbFf6IGPc3EDEeRuHTEV1zG/vntYVxj6J
+         +KXzBkhNmpdvQzEQUCpujj1SuPC6zA5ksDpki60jXydRly41Ap9U3I3G5/yPkudSSVqK
+         qIR/WoTs00O7RIAJXzK6LcqoCch+7hdoYt8MkXeoy6ut8m28rwwkGjm+cQ8QIY5xWM3t
+         ErGw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=Ey1iV8iQoLj7ydlNgUyOjkiFHdD4l+/Plkd+sDU6ZFc=;
+        fh=9T+gh7LpPF5LeCH3N/Kybritn7bFhpWIs5G8YZmIpMM=;
+        b=oZMhuoqov85gGofj/NJSuGYWRI9RX6DObQug51+JeHGI9C6s2E34VWGp5HQH4YG7E4
+         13THqv0s2i5Aow2WtL6JgVRPed4xLkqFlpPP+OZJv5CUgixFiTYqhw6eBBVMOVKUeOeg
+         CVKSKX29iqVNWCkdpJWRjFqnoCuJ8dASDVQ75SjssbEDlUJ1LsLvNqghsa/X2cFcmzvv
+         eFjiK3tluss4bI42vPJoSfxaJQw+m+frHzej/enwOtngmvD+rlFt+aX92K58b1IK8q65
+         Q0HdTrSIWvotQTJlVO/mSl7aa1kKEHF0XYBpOAJeZipBHuWjd/xGNnmraBzhLZy8KPXW
+         xCgg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1793847163; x=1794451963; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=Ey1iV8iQoLj7ydlNgUyOjkiFHdD4l+/Plkd+sDU6ZFc=;
+        b=YBKBB6zZWRfBHNCuKrUNZvcTqOfhZMbPxle+0uihBKQow9VVr8KZlbT/vknWVegkaJ
+         R/8LOYNEo9OPqX3Uk2NkqtrqkBdjjF/B1noNh0/6YEMv0qilYNnkCbELCxfhmsSmt6+4
+         NcEhdj9bXOeZAcvm7qzTw0tckyFpyR/Pu+nJyjFOkfvEkKlc2hj09zyuNu/0zmzjffzL
+         2Qh1uahNw8dWojI5gGSqvdVeozXkUqk4qikkBGTKFhP0HFkWJYNoiboxY9pxs2AqK0U5
+         5MD3rgGVMKclJwp3huSamDGwtS0KGxNI1G0h1uis8SlTX/APR6pGOP+c6Asv7RGUmi9k
+         UoOA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793847163; x=1794451963;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Ey1iV8iQoLj7ydlNgUyOjkiFHdD4l+/Plkd+sDU6ZFc=;
+        b=KjxB6YfwkfGKxO2+o//lI8rivQxsX1ua6cBkdNxcg8QgqJBLmqu2JPd8g4lwdADECS
+         oQLO9XPIkf1T4M0jgWIl/s1giOO7CzxbRYeEWBBC3X4as03t88WO6uVrCAhhLcNyxx9C
+         j1A11TFdvQsLXBDRMXtZAmhvHIkSc2vvK9+XoqFBvepZ8nik/3OgEZU0GtQWpj4Ou3fJ
+         evWSu/cnoz4BHImNP3eBkFnvO10hm4KW3D/4jpb/Tg6WkTmjMqAPTHAHuR6NqyvLMr6u
+         bD1tt+lGZ3zS/MdAztYjBUIh+QYsepIonXN2OSsTVynJw/FCcwf/m1ASxObZc+79/PCo
+         3YTQ==
+X-Forwarded-Encrypted: i=1; AKwUvByyzqdUoE7U2QcaNDcK3PhkRl5geojurrI5l3/LdtLIbIWgCPdmjmA93qknK4sN3RpTvsx/YPQ9cj/ZfrA=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z/sI/ZvVV9KAfduGj+dS3FNubElf44R5xcBIMdAn0oc206XP4TZ
+	G2kVF7Qcbil3m2DzpFPpImhQ3dhxVXI2FwZSMTMD/aR2nVjls9nZ0+J5fTalWHuBsxIxSNxs8Va
+	7lAwkQwEXjk6mHCx+mYu1JtIEUTtDgD4=
+X-Gm-Gg: AYBFou06kHQ47Q9HfaNhKCM4rc9lVN3oshWxBq3Y0Mv3RvshIz+c0HLmtmlQur96lH3
+	HNr/eofnSlaXIYTaDR4moqSLKiIfr01LPuPguep0dKUDBepZbMHXqnmbhr7zvadXyiC9GY4VoaY
+	KifxESNN/99DT2SfIc+fKItTke+UZ84L/w8MFLbUxvbhAHocYvZHWbMnsDWUDWxB8Kgc8iudy3p
+	Ms4dkkoUsOEweOwJN681vzx7Kuoi3zopE6259Y0qLnz5zQBze4ilMAW6Be6jXuo/5mcecKkD7Ft
+	ROExKghCk60/du99pl/yiu5hIkBHfqFF4YEqVyF0Pds3TRBdRyzQzvBBeOvOF3YLV7ZpIDUXHCC
+	wE2/w60kFW5Ie3UAynW3+QknzJKkuh82Zyc8w
+X-Received: by 2002:a05:6a00:2d96:b0:8a0:5f63:5521 with SMTP id
+ d2e1a72fcca58-8a9ba703d12mr13438966b3a.8.1793847163495; Wed, 04 Nov 2026
+ 18:52:43 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,197 +103,77 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RESEND v2 01/51] alloc_tag: don't remove /proc/allocinfo
- under the codetag module lock
-To: Christian Brauner <brauner@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
- Jann Horn <jannh@google.com>, Josef Bacik <josef@toxicpanda.com>,
- Chris Mason <mason@kernel.org>, Jeff Layton <jlayton@kernel.org>,
- NeilBrown <neil@brown.name>, Eric Dumazet <edumazet@kernel.org>,
- Thomas Gleixner <tglx@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
- Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@lst.de>,
- Greg Kroah-Hartman <gregkh@suse.de>, Joel Granados
- <joel.granados@kernel.org>, Kees Cook <kees@kernel.org>,
- Jan Kara <jack@suse.cz>, Jan Kara <jack@suse.com>,
- linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
- linux-acpi@vger.kernel.org, linux-kselftest@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
- linux-um@lists.infradead.org, linux-wireless@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
- ntfs3@lists.linux.dev, platform-driver-x86@vger.kernel.org,
- coreteam@netfilter.org, kexec@lists.infradead.org,
- linux-pci@vger.kernel.org, linux-sound@vger.kernel.org,
- netfilter-devel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- ibm-acpi-devel@lists.sourceforge.net, jfs-discussion@lists.sourceforge.net,
- linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-cifs@vger.kernel.org, linux-fbdev@vger.kernel.org,
- linux-hwmon@vger.kernel.org, linux-mm@kvack.org, linux-sh@vger.kernel.org,
- linux-usb@vger.kernel.org, samba-technical@lists.samba.org,
- sparclinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- linux-doc@vger.kernel.org, linux-serial@vger.kernel.org,
- linux-atm-general@lists.sourceforge.net, Takashi Iwai <tiwai@suse.de>,
- linux-input@vger.kernel.org, linux-raid@vger.kernel.org,
- linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org,
- linux-debuggers@vger.kernel.org, Chuck Lever <cel@kernel.org>,
- stable@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- Suren Baghdasaryan <surenb@google.com>
-References: <20261104-work-procfs-bugfixes-v2-0-021c84d852e0@kernel.org>
- <20261104-work-procfs-bugfixes-v2-1-021c84d852e0@kernel.org>
-Content-Language: en-US
-From: Hao Ge <hao.ge@linux.dev>
-In-Reply-To: <20261104-work-procfs-bugfixes-v2-1-021c84d852e0@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=4.0.1
+References: <20261104113228.1634005-1-peng.fan@oss.nxp.com>
+In-Reply-To: <20261104113228.1634005-1-peng.fan@oss.nxp.com>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Thu, 5 Nov 2026 10:52:14 +0800
+X-Gm-Features: AclHuK8gtw_SYmYC4rZ2ec9F7qmZC5mmmsY7xqdrym-SeKMj27M0HT9x7LVxGTo
+Message-ID: <CAA+D8AM5Nr9vDzohQaz-XN=_F9dBfXoBJJv_3FS3jDeGQ_6G4Q@mail.gmail.com>
+Subject: Re: [PATCH] ASoC: imx-audmux: Convert to subsys_platform_driver()
+To: "Peng Fan (OSS)" <peng.fan@oss.nxp.com>
+Cc: Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>, 
+	Nicolin Chen <nicoleotsuka@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, 
+	Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
+	Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>, 
+	Pengutronix Kernel Team <kernel@pengutronix.de>, linux-sound@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, imx@lists.linux.dev, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Cc Suren
+On Wed, Nov 4, 2026 at 7:35=E2=80=AFPM Peng Fan (OSS) <peng.fan@oss.nxp.com=
+> wrote:
+>
+> From: Peng Fan <peng.fan@nxp.com>
+>
+> Replace the open-coded subsys_initcall()/module_exit() platform driver
+> registration with subsys_platform_driver().
+>
+> No functional change.
+>
+> Signed-off-by: Peng Fan <peng.fan@nxp.com>
 
-Hi Christian
+Reviewed-by: Shengjiu Wang <shengjiu.wang@gmail.com>
 
-On 2026/11/5 03:06, Christian Brauner wrote:
-> codetag_alloc_module_section() takes the codetag type's mod_lock for
-> writing and calls reserve_module_tags() with it held. When that can't
-> reserve the tags, because the section's alignment doesn't fit, because
-> there are too many tags for the page flag bits or because the memory
-> for them can't be allocated, it shuts memory allocation profiling down
-> and removes /proc/allocinfo, still with mod_lock held.
-> 
-> remove_proc_entry() waits until every reader of the entry has let go of
-> it, and a reader of /proc/allocinfo takes mod_lock for reading in
-> allocinfo_start() while it holds the entry. So a module load that hits
-> one of those paths while /proc/allocinfo is being read waits for the
-> reader and the reader waits for the module load, for good.
-> 
-> Let a work item remove the entry in that case. The profiling is shut
-> down right away like before, the file just goes a moment later.
-> 
-> Fixes: 4835f747d3ed ("alloc_tag: support for page allocation tag compression")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
-
-Thanks.
-
-is this a problem you have hit in practice?
-Sashiko discovered this issue earlier and reported it as follows:
-
-> diff --git a/mm/alloc_tag.c b/mm/alloc_tag.c
-> index 2070e682fe106..112a014d4b890 100644
-> --- a/mm/alloc_tag.c
-> +++ b/mm/alloc_tag.c
-> @@ -950,10 +950,12 @@ static void *reserve_module_tags(struct module *mod, unsigned long size,
->  		int grow_res;
->  
->  		module_tags.size = offset + size;
-> -		if (mem_alloc_profiling_enabled() && !tags_addressable()) {
-> +		if (!tags_addressable()) {
->  			shutdown_mem_profiling(true);
-This is a pre-existing issue, but does this shutdown_mem_profiling(true) call
-introduce an AB-BA deadlock between /proc/allocinfo file readers (pde->in_use)
-and module loading (cttype->mod_lock)?
-A user reading /proc/allocinfo acquires the procfs in_use reference in
-use_pde(), then blocks on down_read(&alloc_tag_cttype->mod_lock) in
-allocinfo_start().
-Concurrently, if a module loads and tags_addressable() fails,
-codetag_alloc_module_section() holds down_write(&cttype->mod_lock) and calls
-shutdown_mem_profiling(true), which removes the proc entry. This removal waits
-indefinitely for the in_use reference to drop to zero, hanging both procfs
-reads and module loading.
-> -			pr_warn("With module %s there are too many tags to fit in %d page flag bits. Memory allocation profiling is disabled!\n",
-> -				mod->name, NR_UNUSED_PAGEFLAG_BITS);
-> +			pr_warn_once("With module %s there are too many tags to fit in %d page flag bits. Memory allocation profiling is disabled!\n",
-> +				     mod->name, NR_UNUSED_PAGEFLAG_BITS);
-> +			release_module_tags(mod, false);
-> +			return ERR_PTR(-EAGAIN);
->  		}
->  
->  		grow_res = vm_module_tags_populate();
-
-I previously sent a patch with a comparable idea, though Sashiko remained unconvinced.
-
-[patch]: https://lore.kernel.org/all/20260817062726.106511-3-hao.ge@linux.dev/
-
-[Sashiko's objections]: https://sashiko.dev/#/patchset/20260817062726.106511-1-hao.ge@linux.dev
-
-Could this patch perhaps wait for mine? No worries if this is inconvenient.
-
-Best regards                                                                                                                                                                                                                                                                  
-Hao
-
+Best regards
+Shengjiu Wang
 > ---
->  mm/alloc_tag.c | 27 ++++++++++++++++++++++++---
->  1 file changed, 24 insertions(+), 3 deletions(-)
-> 
-> diff --git a/mm/alloc_tag.c b/mm/alloc_tag.c
-> index 82e2c3448dcf..7d7ad6704953 100644
-> --- a/mm/alloc_tag.c
-> +++ b/mm/alloc_tag.c
-> @@ -15,6 +15,7 @@
->  #include <linux/seq_file.h>
->  #include <linux/string_choices.h>
->  #include <linux/vmalloc.h>
-> +#include <linux/workqueue.h>
->  #include <linux/kmemleak.h>
->  #include <uapi/linux/alloc_tag.h>
->  
-> @@ -604,6 +605,26 @@ static void shutdown_mem_profiling(bool remove_file)
->  	mem_profiling_support = false;
->  }
->  
-> +static void remove_allocinfo_file(struct work_struct *work)
-> +{
-> +	remove_proc_entry(ALLOCINFO_FILE_NAME, NULL);
-> +}
-> +static DECLARE_WORK(remove_allocinfo_work, remove_allocinfo_file);
-> +
-> +/*
-> + * A module's tags are reserved with the codetag module lock held for
-> + * writing, and a reader of /proc/allocinfo takes that lock with the entry
-> + * pinned. Removing the entry there would wait for that reader for good, so
-> + * let a work item do it.
-> + */
-> +static void shutdown_mem_profiling_async(void)
-> +{
-> +	if (!mem_profiling_support)
-> +		return;
-> +	shutdown_mem_profiling(false);
-> +	schedule_work(&remove_allocinfo_work);
-> +}
-> +
->  void __init alloc_tag_sec_init(void)
->  {
->  	struct alloc_tag *last_codetag;
-> @@ -855,7 +876,7 @@ static void *reserve_module_tags(struct module *mod, unsigned long size,
->  		align = 1;
->  
->  	if (!ensure_alignment(align, &prepend)) {
-> -		shutdown_mem_profiling(true);
-> +		shutdown_mem_profiling_async();
->  		pr_err("%s: alignment %lu is incompatible with allocation tag indexing. Memory allocation profiling is disabled!\n",
->  			mod->name, align);
->  		return ERR_PTR(-EINVAL);
-> @@ -905,14 +926,14 @@ unlock:
->  
->  		module_tags.size = offset + size;
->  		if (mem_alloc_profiling_enabled() && !tags_addressable()) {
-> -			shutdown_mem_profiling(true);
-> +			shutdown_mem_profiling_async();
->  			pr_warn("With module %s there are too many tags to fit in %d page flag bits. Memory allocation profiling is disabled!\n",
->  				mod->name, NR_UNUSED_PAGEFLAG_BITS);
->  		}
->  
->  		grow_res = vm_module_tags_populate();
->  		if (grow_res) {
-> -			shutdown_mem_profiling(true);
-> +			shutdown_mem_profiling_async();
->  			pr_err("Failed to allocate memory for allocation tags in the module %s. Memory allocation profiling is disabled!\n",
->  			       mod->name);
->  			return ERR_PTR(grow_res);
-> 
+>  sound/soc/fsl/imx-audmux.c | 13 +------------
+>  1 file changed, 1 insertion(+), 12 deletions(-)
+>
+> diff --git a/sound/soc/fsl/imx-audmux.c b/sound/soc/fsl/imx-audmux.c
+> index f8335a04595a..d46f43ab66cf 100644
+> --- a/sound/soc/fsl/imx-audmux.c
+> +++ b/sound/soc/fsl/imx-audmux.c
+> @@ -361,18 +361,7 @@ static struct platform_driver imx_audmux_driver =3D =
+{
+>                 .of_match_table =3D imx_audmux_dt_ids,
+>         }
+>  };
+> -
+> -static int __init imx_audmux_init(void)
+> -{
+> -       return platform_driver_register(&imx_audmux_driver);
+> -}
+> -subsys_initcall(imx_audmux_init);
+> -
+> -static void __exit imx_audmux_exit(void)
+> -{
+> -       platform_driver_unregister(&imx_audmux_driver);
+> -}
+> -module_exit(imx_audmux_exit);
+> +subsys_platform_driver(imx_audmux_driver);
+>
+>  MODULE_DESCRIPTION("Freescale i.MX AUDMUX driver");
+>  MODULE_AUTHOR("Sascha Hauer <s.hauer@pengutronix.de>");
+> --
+> 2.51.0
+>
 
