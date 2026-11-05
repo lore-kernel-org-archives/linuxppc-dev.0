@@ -2,51 +2,102 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 920766082BCD
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 21:35:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C3C74606A33A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 21:43:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=R7WzdCq4
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KFA+ZicK
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLFwT21YSz3cDf;
-	Fri, 06 Nov 2026 08:35:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793914537;
-	cv=none; b=TAbTQSxjIS26fGIB42lpVxpQqD76xkn0VBYBYj+sxHTtO86SPzYbr8iqpA/aCS41iXMrCDEkZHplaQNB5q6UjjWyFMRXvUjh7iUUyQc7GrQyzlPDWxnDT8frKJqWvr+Cg55GhtXuQK2F4Z3lB+1m3oL+Db/xDMdXjvWLmcq7SlQ0NblRs2Sz1xbOs0upeMt2N7MR8siaLmA4guHblgGCA4v8E1o+y/W64pxECLMtY9swixeGzEWl20VQNT2+ufbNCs02YowwGsg6GuHn7LoYDADF1JtCUFX5BrScNwk+YXOn6lknIjb6eqb9FmdJJrGF8HwRRf8QHkFoFMjbUQCXOg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLG5Z4XJ5z2yj1;
+	Fri, 06 Nov 2026 08:43:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793915010;
+	cv=none; b=oWIt2eb09CNelqgUqBPSqxUiaJ+R5pyYoCrNsLszzy8GhOMHDU+Tj2Rf7KNSAtB/wpPnacl/c1VYdWFnOX1WCoOLvjNAf1kf/FQ9ttJhK3ZPrfryGXF9+1oLnogj+9ZR3FueB0Sr1QA83Mj5Kp1y63brWJLP+mihmhCHJCYcU5O/eV4xEE4CJlmDyH/R/LPaz9uXDWfzhcsFHCW1nh1BXgSfzhDxKR3ijpkkb/h1up/Pfw2FRya1tCGt4n+77c7tqaDq1nQpIgapvRbYTONwNDSNFcncyfjVjFkUhqUpbsS1UT9saFVu2zJAd7aaj6BIs/ooKIi67PuKeY8kguJsTw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793914537; c=relaxed/relaxed;
-	bh=y5JuvNnNeOh9oIZYUQiD2mrwwH6GN2Nh0rxsj2kJwUo=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=DpeuURSlYvhPK9xBFmZY+TiR7O7cDVJby3xSwKToUZ6KKddUzrqGLD8jFeR7/8hd7d/DgBx7QwyU73zSlEsfDdYZ0Fp7xmis3zREfBXJp2jhdt/gPBkTg7BwnqZeoTNjw0GM/1OyXISLzkGmz7/A4GW0yA92+eqXmBk+VE9dFfOHHLtLbAg1aLbQnK4Hp5FuUZHxDCbRQiPQ1QVO4z7amsFfYV2oCMwVTewz8j28grJk/zc52LV+/NDhLJeXzFQqB8rAjOGVCgqRJLTprBiWfwuDhdr6AtvNJq5UBIVlM7CADUyMaBxKKlWyhQZP3NgslivvwEzYZVpVhZgFtTP0wg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=R7WzdCq4; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1793915010; c=relaxed/relaxed;
+	bh=nnsNMtUi8B/PfO4GG0OW4lr6jLs4u50NUe2xEiA6RC0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ffd5xgAgspoq2n+I2ZELgphrl90az4gTDIoxhwe58OFQhFb0nZTcC/h4OBN1n8vNNYGGpNYFmInr0esIqx1W8XmWv4riZTrzRvCxL/aOQMkDGCSiq9ZRPAqBc9OlH17KYNhG33w7YM9CLmYRfaNDpTIEfXdEy7ZFFyBZ3VcxQu4Xigd2WKwwv+zbS9T+Ikz8FLfYV571f1U7YfLDcpQ8l1rPwBwqxGLGqIlJNtODG/cSoRZjMCM5X2CkrkxpUeQMTavu79Z7YtfFCOIcqi00bc90vQLYOQSIQV6lcebF4YqNXE6+ivFlHjC5Se12B10SCJkGuSx7eXHML7eAyooyHg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KFA+ZicK; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=R7WzdCq4;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KFA+ZicK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLFwS3Swjz3cBx
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 08:35:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4jLG5Y4gLzz2ygW;
+	Fri, 06 Nov 2026 08:43:29 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 602C44379B;
-	Thu,  5 Nov 2026 21:35:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D89E21F008A1;
-	Thu,  5 Nov 2026 21:35:16 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with UTF8SMTP id AC45343451;
+	Thu,  5 Nov 2026 21:43:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with UTF8SMTPSA id 0AE881F0089F;
+	Thu,  5 Nov 2026 21:43:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793914534;
-	bh=y5JuvNnNeOh9oIZYUQiD2mrwwH6GN2Nh0rxsj2kJwUo=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=R7WzdCq4szIDwvRrpAHhITrD0LMGL2Ayr/ooKvmMdyGasXQKDcBboripakmO01VxQ
-	 YV6gWg3WzYXJGaP9RBXms9q1o/TSZwVLLaVEZfqLw0xiVgCNumabu3VK3l05YjGAQ2
-	 46aaByM/B5ZaXGXlsVEhPqLim2HZXmKUrYtuwr1dNrHF5yB482YZP9OW2Jtvu422ao
-	 6Tt1yTUQ1HqeI4mlyuzXFRXgFr1sp/lZYoZRhG5yDHjZjw0XlC4zm1FOELcAb2B6lS
-	 fn9rEaS0KIp/p1dGwSwtWV76kVBTvwe1On76u9GWkFrWldtHLna5zrVfRdVYH5SYVu
-	 GuO5/2y1sU0NA==
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Thu, 05 Nov 2026 21:31:04 +0000
-Subject: [PATCH 13/13] security: convert VMA flag tests to use vma_flags_t
+	s=k20260515; t=1793915007;
+	bh=nnsNMtUi8B/PfO4GG0OW4lr6jLs4u50NUe2xEiA6RC0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=KFA+ZicKHpTxqbxZeNU9rKNH0zDIw+G9WkxRcTelADPJIyDG9z+SV38MG0CjPlcEC
+	 1gjbq2m9ysrv8pBHAJrvqPnMERLZq6W4rxcogl2DlIDB44RylaSdblCTSEXNnxfcbK
+	 l3RbrI5Oxv1bkdw/nOHwLpMlw6rPe3TmPXrqXYMaHNImuFIqgFREHKoGTzOn5W2eUw
+	 HnogndejHth27NGEbdc3qPN/i0WWKweuYdEdmiZr5RDjCfk6/mEdy1F9Yu6XlveCU2
+	 QfoEW83U8XIbYRbkOdJsXHQEOAAPFI6k6EpuBWa/BFfpmagRIXSu+HdiZvkzWIUa8b
+	 kW/HsHhM4i4og==
+Date: Thu, 5 Nov 2026 23:43:23 +0200
+From: Jarkko Sakkinen <jarkko@kernel.org>
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Cc: Juergen Gross <jgross@suse.com>,
+	Stefano Stabellini <sstabellini@kernel.org>,
+	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Haiyang Zhang <haiyangz@microsoft.com>,
+	Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
+	"Michael S. Tsirkin" <mst@redhat.com>,
+	Jason Wang <jasowangio@gmail.com>,
+	Eugenio =?iso-8859-1?Q?P=E9rez?= <eperezma@redhat.com>,
+	Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>, Jan Kara <jack@suse.com>,
+	Paul Moore <paul@paul-moore.com>,
+	Stephen Smalley <stephen.smalley.work@gmail.com>,
+	Ondrej =?utf-8?B?TW9zbsOhxI1law==?= <omosnacek@gmail.com>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Ryan Chen <ryan_chen@aspeedtech.com>,
+	Billy Tsai <billy_tsai@aspeedtech.com>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Abel Vesa <abelvesa@kernel.org>, Jens Wiklander <jenswi@kernel.org>,
+	Sumit Garg <sumit.garg@kernel.org>,
+	Scott Branden <scott.branden@broadcom.com>,
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Richard Cochran <richardcochran@gmail.com>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@kernel.org>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+	linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev,
+	linux-sgx@vger.kernel.org, selinux@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+	linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org,
+	netdev@vger.kernel.org
+Subject: Re: [PATCH 05/14] x86/sgx: convert vepc mmap hook to mmap_prepare
+Message-ID: <auz4e81zm0mTMknq@kernel.org>
+References: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
+ <20261105-late-2026-mmap_prepare-v1-5-c56aadfbab8a@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,179 +111,70 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261105-late-2026-vma-flags-v1-13-0d3cd15ab75f@kernel.org>
-References: <20261105-late-2026-vma-flags-v1-0-0d3cd15ab75f@kernel.org>
-In-Reply-To: <20261105-late-2026-vma-flags-v1-0-0d3cd15ab75f@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>, 
- David Hildenbrand <david@kernel.org>, Jason Gunthorpe <jgg@ziepe.ca>, 
- John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, 
- "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, 
- Rik van Riel <riel@surriel.com>, "Liam R. Howlett" <liam@infradead.org>, 
- Vlastimil Babka <vbabka@kernel.org>, Harry Yoo <harry@kernel.org>, 
- Jann Horn <jannh@google.com>, Lance Yang <lance.yang@linux.dev>, 
- Zi Yan <ziy@nvidia.com>, Matthew Brost <matthew.brost@intel.com>, 
- Joshua Hahn <joshua.hahnjy@gmail.com>, Byungchul Park <byungchul@sk.com>, 
- Gregory Price <gourry@gourry.net>, 
- Ying Huang <ying.huang@linux.alibaba.com>, 
- Alistair Popple <apopple@nvidia.com>, 
- Baolin Wang <baolin.wang@linux.alibaba.com>, 
- Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, 
- Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, 
- Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, 
- Xu Xin <xu.xin@linux.dev>, Chengming Zhou <chengming.zhou@linux.dev>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
- Shrikanth Hegde <sshegde@linux.ibm.com>, Pedro Falcato <pfalcato@suse.de>, 
- Kairui Song <kasong@tencent.com>, Qi Zheng <qi.zheng@linux.dev>, 
- Shakeel Butt <shakeel.butt@linux.dev>, 
- Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, 
- Wei Xu <weixugc@google.com>, Baoquan He <baoquan.he@linux.dev>, 
- Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
- Michal Hocko <mhocko@suse.com>, Leon Romanovsky <leon@kernel.org>, 
- SJ Park <sj@kernel.org>, Rakie Kim <rakie.kim@sk.com>, 
- David Rientjes <rientjes@google.com>, 
- Alexander Viro <viro@zeniv.linux.org.uk>, 
- Christian Brauner <brauner@kernel.org>, 
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, 
- Arnaldo Carvalho de Melo <acme@kernel.org>, 
- Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
- Alexander Shishkin <alexander.shishkin@linux.intel.com>, 
- Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>, 
- Adrian Hunter <adrian.hunter@intel.com>, 
- James Clark <james.clark@linaro.org>, 
- Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
- John Johansen <john.johansen@canonical.com>, 
- Georgia Garcia <georgia.garcia@canonical.com>, 
- Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, 
- "Serge E. Hallyn" <serge@hallyn.com>, Mimi Zohar <zohar@linux.ibm.com>, 
- Roberto Sassu <roberto.sassu@huawei.com>, 
- Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, 
- Eric Snowberg <eric.snowberg@oracle.com>, Fan Wu <wufan@kernel.org>, 
- Stephen Smalley <stephen.smalley.work@gmail.com>, 
- =?utf-8?q?Ondrej_Mosn=C3=A1=C4=8Dek?= <omosnacek@gmail.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, 
- linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- kvm@vger.kernel.org, damon@lists.linux.dev, 
- linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, 
- apparmor@lists.ubuntu.com, linux-security-module@vger.kernel.org, 
- linux-integrity@vger.kernel.org, selinux@vger.kernel.org, 
- "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3517; i=ljs@kernel.org;
- h=from:subject:message-id; bh=mMkVa3Aus9iq3GDDk7CXNqU7B+d35DdB8d1OJciXJ/o=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLefF0x/4mS2NVe3nd/9p3ZfnzOaYGJvjo5O8+kJ13ud
- 1ZPNlAr7ChlYRDjYpAVU2R5/kV8f5BI2LzOC/5uMHNYmUCGMHBxCsBE5Ccz/PeSFiq94GRiJT4r
- cM9y7UAJQ5np05894OaeezEhc0k9mwIjw9qZtm6zPV99FD/eVGBjuExiZXPoVpMpufynsmSe/N6
- dxwEA
-X-Developer-Key: i=ljs@kernel.org; a=openpgp;
- fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261105-late-2026-mmap_prepare-v1-5-c56aadfbab8a@kernel.org>
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Replace use of the legacy vm_flags_t flags with vma_flags_t values in the
-mmap and mprotect LSM hooks of SELinux, AppArmor, IMA and IPE.
+On Thu, Nov 05, 2026 at 09:05:36PM +0000, Lorenzo Stoakes (ARM) wrote:
+> Move from the deprecated mmap hook to the new mmap_prepare hook. The hook
+> only checks that the mapping is shared and sets VMA flags, operations and
+> private data.
+> 
+> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> ---
+>  arch/x86/kernel/cpu/sgx/virt.c | 15 ++++++++-------
+>  1 file changed, 8 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/cpu/sgx/virt.c b/arch/x86/kernel/cpu/sgx/virt.c
+> index 6a1933ddc6fc..850990519ca5 100644
+> --- a/arch/x86/kernel/cpu/sgx/virt.c
+> +++ b/arch/x86/kernel/cpu/sgx/virt.c
+> @@ -98,17 +98,18 @@ static const struct vm_operations_struct sgx_vepc_vm_ops = {
+>  	.fault = sgx_vepc_fault,
+>  };
+>  
+> -static int sgx_vepc_mmap(struct file *file, struct vm_area_struct *vma)
+> +static int sgx_vepc_mmap_prepare(struct vm_area_desc *desc)
+>  {
+> -	struct sgx_vepc *vepc = file->private_data;
+> +	struct sgx_vepc *vepc = desc->file->private_data;
+>  
+> -	if (!(vma->vm_flags & VM_SHARED))
+> +	if (!vma_desc_test(desc, VMA_SHARED_BIT))
+>  		return -EINVAL;
+>  
+> -	vma->vm_ops = &sgx_vepc_vm_ops;
+> +	desc->vm_ops = &sgx_vepc_vm_ops;
+>  	/* Don't copy VMA in fork() */
+> -	vm_flags_set(vma, VM_PFNMAP | VM_IO | VM_DONTDUMP | VM_DONTCOPY);
+> -	vma->vm_private_data = vepc;
+> +	vma_desc_set_flags(desc, VMA_PFNMAP_BIT, VMA_IO_BIT, VMA_DONTDUMP_BIT,
+> +			   VMA_DONTCOPY_BIT);
+> +	desc->private_data = vepc;
+>  
+>  	return 0;
+>  }
+> @@ -315,7 +316,7 @@ static const struct file_operations sgx_vepc_fops = {
+>  	.unlocked_ioctl	= sgx_vepc_ioctl,
+>  	.compat_ioctl	= sgx_vepc_ioctl,
+>  	.release	= sgx_vepc_release,
+> -	.mmap		= sgx_vepc_mmap,
+> +	.mmap_prepare	= sgx_vepc_mmap_prepare,
+>  };
+>  
+>  static struct miscdevice sgx_vepc_dev = {
+> 
+> -- 
+> 2.56.0
+> 
 
-No functional change intended.
+Reviewed-by: Jarkko Sakkinen <jarkko@kernel.org>
 
-Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
----
- security/apparmor/lsm.c           |  2 +-
- security/integrity/ima/ima_main.c |  2 +-
- security/ipe/hooks.c              |  2 +-
- security/selinux/hooks.c          | 14 +++++++-------
- 4 files changed, 10 insertions(+), 10 deletions(-)
-
-diff --git a/security/apparmor/lsm.c b/security/apparmor/lsm.c
-index c73681d820a0..00099a32b3f6 100644
---- a/security/apparmor/lsm.c
-+++ b/security/apparmor/lsm.c
-@@ -590,7 +590,7 @@ static int apparmor_file_mprotect(struct vm_area_struct *vma,
- 				  unsigned long reqprot, unsigned long prot)
- {
- 	return common_mmap(OP_FMPROT, vma->vm_file, prot,
--			   !(vma->vm_flags & VM_SHARED) ? MAP_PRIVATE : 0);
-+			   !vma_test(vma, VMA_SHARED_BIT) ? MAP_PRIVATE : 0);
- }
- 
- #ifdef CONFIG_IO_URING
-diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
-index fed80da3ee09..92032afe4cd1 100644
---- a/security/integrity/ima/ima_main.c
-+++ b/security/integrity/ima/ima_main.c
-@@ -556,7 +556,7 @@ static int ima_file_mprotect(struct vm_area_struct *vma, unsigned long reqprot,
- 
- 	/* Is mprotect making an mmap'ed file executable? */
- 	if (!(ima_policy_flag & IMA_APPRAISE) || !vma->vm_file ||
--	    !(prot & PROT_EXEC) || (vma->vm_flags & VM_EXEC))
-+	    !(prot & PROT_EXEC) || vma_test(vma, VMA_EXEC_BIT))
- 		return 0;
- 
- 	security_current_getlsmprop_subj(&prop);
-diff --git a/security/ipe/hooks.c b/security/ipe/hooks.c
-index d878b52ceec8..247b07748b1d 100644
---- a/security/ipe/hooks.c
-+++ b/security/ipe/hooks.c
-@@ -112,7 +112,7 @@ int ipe_file_mprotect(struct vm_area_struct *vma,
- 	struct ipe_eval_ctx ctx = IPE_EVAL_CTX_INIT;
- 
- 	/* Already Executable */
--	if (vma->vm_flags & VM_EXEC)
-+	if (vma_test(vma, VMA_EXEC_BIT))
- 		return 0;
- 
- 	if (prot & PROT_EXEC) {
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 6168dd5f91c2..1bf78c2a6aba 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -4206,16 +4206,16 @@ static int selinux_mmap_backing_file(struct vm_area_struct *vma,
- {
- 	unsigned long prot = 0;
- 
--	/* translate vma->vm_flags perms into PROT perms */
--	if (vma->vm_flags & VM_READ)
-+	/* translate VMA flag perms into PROT perms */
-+	if (vma_test(vma, VMA_READ_BIT))
- 		prot |= PROT_READ;
--	if (vma->vm_flags & VM_WRITE)
-+	if (vma_test(vma, VMA_WRITE_BIT))
- 		prot |= PROT_WRITE;
--	if (vma->vm_flags & VM_EXEC)
-+	if (vma_test(vma, VMA_EXEC_BIT))
- 		prot |= PROT_EXEC;
- 
- 	return selinux_mmap_file_common(backing_file, prot,
--					vma->vm_flags & VM_SHARED,
-+					vma_test(vma, VMA_SHARED_BIT),
- 					true);
- }
- 
-@@ -4229,13 +4229,13 @@ static int selinux_file_mprotect(struct vm_area_struct *vma,
- 	u32 av;
- 	const struct file *file = vma->vm_file;
- 	bool backing_file;
--	bool shared = vma->vm_flags & VM_SHARED;
-+	bool shared = vma_test(vma, VMA_SHARED_BIT);
- 
- 	/* check if we need to trigger the "backing files are awful" mode */
- 	backing_file = file && (file->f_mode & FMODE_BACKING);
- 
- 	if (default_noexec &&
--	    (prot & PROT_EXEC) && !(vma->vm_flags & VM_EXEC)) {
-+	    (prot & PROT_EXEC) && !vma_test(vma, VMA_EXEC_BIT)) {
- 		/*
- 		 * We don't use the vma_is_initial_heap() helper as it has
- 		 * a history of problems and is currently broken on systems
-
--- 
-2.56.0
-
+Br, Jarkko
 
