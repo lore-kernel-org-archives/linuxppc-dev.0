@@ -2,67 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 38F8A6070F57
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 10:08:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD8CB606A31B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 10:33:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mOEZw52v
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKygw6bJTz2xN4;
-	Thu, 05 Nov 2026 21:08:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.217.51
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793873324;
-	cv=none; b=m9c/GRAf9TMLfwt0woiMv983C5uY4zPFvEDFbKsnY8oFEbTsv+Jc0KtpdSd82WmdZfRpFvW+5vlqOvuOw3BdgDq4blxKZrZm33yRk+WCd11R9Nq0zV66iOs7uQYuTgv0gRu9bLfJC33Gm512BClJs3WtJ06VIHiL4WEaApb+SEoXh76Y6Rtpwkmzs/onWTmB0ITzROXwFt7jaLIRYjbVbpOGG4OdUDVXtXIHime6qBs8OBwQkFdfb1p9LmNkmudpig4v4kbpolt4HM3btB9YnQ0RY0tTWbrpVkP5h3t0AGjGfQxTSfdNsFuUiHwPT01+lcz6oMJSP8/gdyLa6Ej9Ug==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKzDG1Wjfz2xN4;
+	Thu, 05 Nov 2026 21:33:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793874798;
+	cv=none; b=ROLtZ14eCuqMI6DbOpEJROz6uCnQ/YMtxYOeKYNHrFF8/AykkkLOZBK11awxFZN0Kzlzbc/g5UnZ6CORis1+S3Z4rMVWDfMFAIeKdUj3EgIyb5fq9KmpAsPk2NnvBwe736lHjuFDne4jWG8bBOce2UIEimm+oiCxzfVucxlart01AlVpaCcqdpQW2nbOfOszFLDgYDo6ehNPAswNHKQ/J7Gv81EbWhVsUxcLsIdelu330SKKgUpfOT7kV0F/RJIc4PXtun0VkAsrZoIyfKVcudswJkxTPP2Ehd92VJ+0QQriHow/2eq+BQkfApd51rWP52WRBK2Dw4JnCpfj7luRuA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793873324; c=relaxed/relaxed;
-	bh=Z2qCIfu1coqF5CKQo/xHkFXbKW7Y+rLlNCa31RZmxiE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=d5NSCyKOgroXyAQ3v8hGtoWFfq9WcDQyHyuKsZk2bZtap352WVPhU+VcfFgAzxgrM3P54D+1ixDHubF5jyWNWiTNVAZdz56DsLB3M7CuH4WxNd+5tSGRnF2wdinRY01maXh6HUc4sYGv51Zj4CMroFUkBHiMVq4njt8zrRDzH3uBXPw8MNyeZktXlFmfvgmLOj+sSAefSoWM/VOZ4nAPz9EIQhwGnUNnjO+n3/k7FADx6/cRwvPWvY8liKWLwrALCBNNB2ZMVJnzZCdSyFj4CYjUivaF11LTXmhHrpC32fKbgul3B7NTjh+u8FoOf4m7IUxybudVj5PZemjkTyPc0w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.217.51; helo=mail-vs1-f51.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.217.51; helo=mail-vs1-f51.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-vs1-f51.google.com (mail-vs1-f51.google.com [209.85.217.51])
+	t=1793874798; c=relaxed/relaxed;
+	bh=rW1nil3E5bYjTHxZT0jjYetDQyPmr3fpWazFoftmXjc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=hl7f0bElK1A1Tf8/dTfb8VYfBRl4MlvE6Crn3lO7hs03LhRXXUOizN/THPLGe1r7m/7E0UEePcq7AssJNMsh84Ge75QKWC8IHrLGeplebhxNLlb2BXenvjLkX0X+nPzapkFTYKkGaIFuQgm8yNJaMV4CMZJgBDeqJ0iBo5SWFmYJEvqdMhU+G1imvQT4ecLZwMNssrttfwhkti8VGH7pt6ZTkn7pYcFyPyYnZPrg0xVUkPuEXo4ABiCMy0988u1THoQvpg2oB6VHv++us0IpQDSfpvwJFVd0/9jqI3FgurfODfnul6HGhncyOAiMnSi0xhgxfTDBkKo6stmMquvXCA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mOEZw52v; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mOEZw52v;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKygv6QJ1z2xGr
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 21:08:43 +1100 (AEDT)
-Received: by mail-vs1-f51.google.com with SMTP id ada2fe7eead31-7cc53938a8fso960692137.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 02:08:43 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793873321; x=1794478121;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=Z2qCIfu1coqF5CKQo/xHkFXbKW7Y+rLlNCa31RZmxiE=;
-        b=yhbznCGns3cQRGjgtECRZ/4hB+1ymW0WJU4ZsMnsRNq1sP5hGNr2+OK/3lL3I1qfXE
-         1H5wpK9sU6tftChWfKr5YSyCt3EFC5Yv5Oj8vGBUtXKNwI1a2IuTLVsu54nHaT3GR1JX
-         tg2Ldb/qREDvxFdHo+l3RP/tI61DUswcA7EzICmrveQzjpjopS1TIKAH/SK2BaXRpdw7
-         +1HkNkNFTWMH8hwqzfjF0e9rDzxvMs4bpUJpQEYLxN8caBaTo02Q1P5Wm1/nlQIiiVNM
-         7nDGAcdtYY9D68N345+d2ImbZDTbZtY0a7wKQGfhmyLnlSEuBg/sgl8EmnPC+/rgiUZ3
-         uaGg==
-X-Forwarded-Encrypted: i=1; AKwUvBzrhzi7H5eJ1sIr8FxBZRbRPZrqWBhs4O70nWy0A+YcwtzNyQYsuNc38nNepw7HelgCuGsXNm+oK42mATU=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z+2mE1o7NtLRtQyFciiOGFDJtkjmCkVu5EIP7dZLPc/pbNqpzbd
-	KT2ChxyQHiR1ns0WgrpG1LLeYEVy+JoBXXf2+B9WtdbdWrK7I55cE2oym6sOZvmO40k=
-X-Gm-Gg: AYBFou2jiCBgENP43n8E4xLT2GL4tH81J4T3N7Hovu5JtEd7PYHilTU+jZwcA+7iERm
-	8v8U09F8VGPROMzImo2sm284R3nvXSWaNcv17ZWhEBCdnAWT1MkElpsC0RM4xj/JRX9etMW/tzz
-	sf8QASVl+qppGmhxqhwa66sqAwXDx1EdP7bj8TukbpO1E7VQ1Om4H4z3UzD4UlZe/gdRT3XrnE9
-	DSpWNrDDrbIWb/r6w317UAS60ZoV9Q7rk/q9YbUU3H0JESZFrpGKG4MQ7FxH8VArIcq55q4vjUV
-	G5K0rrjMEXQdCvaQc2ohYJMhHeh+PUmmiHxNFErGJl741KJchv/KIGZSNT1o1aibBJopBBf1THy
-	Uh7SrtAmCAwn7BKRLKFUR4S/UPr7ivltnaW5P9RMQ1yCNaShvJ+HxtqRKQkBE7R9xmyf8jadyf2
-	DEZAaSSp0sOnQpzKy/cl9TnEP/6vtu01KSc0IqQLqryZfLziluMopEF4KCTWnIT+fBQQz4f6Lwk
-	MH4zUNUBx0k8rcCktrZs5t6p3fOznH6VXQ8lQXRlnGhTcLpSXZcV0eErOvE3MXUNBIzz5FDsrFz
-	VIU1NL55M8QmEtLpSxF9jL6oMkgPAGdn8nZpdPAPlBYTt9XcFlzhAMw6e3H1Hia2oA==
-X-Received: by 2002:a05:6102:f0a:b0:7cc:2cef:b330 with SMTP id ada2fe7eead31-7d072bb37d1mr9164639137.12.1793873321425;
-        Thu, 05 Nov 2026 02:08:41 -0800 (PST)
-Received: from mail-ua1-f46.google.com (mail-ua1-f46.google.com. [209.85.222.46])
-        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5eca89b81b3sm3800288e0c.2.2026.11.05.02.08.36
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 05 Nov 2026 02:08:38 -0800 (PST)
-Received: by mail-ua1-f46.google.com with SMTP id a1e0cc1a2514c-998749fe872so935017241.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 02:08:36 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AKwUvBxsKGO3hDMqS36MTCY/HJJSoz6eJ/+Xj2Vq/M0ybU3CIGjGoJKhN4Sr/jt1u3ugGX12oZe25wY0J60qraI=@lists.ozlabs.org
-X-Received: by 2002:a05:6102:5494:b0:7cb:bc5e:7d9f with SMTP id
- ada2fe7eead31-7d072bb3829mr8787869137.11.1793873316184; Thu, 05 Nov 2026
- 02:08:36 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKzDF15Xpz2xGr
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 21:33:17 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id BA67D43C35;
+	Thu,  5 Nov 2026 10:33:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E7B2B1F000C1;
+	Thu,  5 Nov 2026 10:33:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793874793;
+	bh=rW1nil3E5bYjTHxZT0jjYetDQyPmr3fpWazFoftmXjc=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=mOEZw52vLFxK3rc/1pzuqdBC+HQCXx9mY2v9zCS7MB1PkcO28hR8mmYR7mquhduqx
+	 nKCn9g7Qvm3pg2oAHDiffpJ2cDU2GqwF4uICQfDiPX4l5/O9J0qmW85ilAgvbRkP0U
+	 1FSFR+Ow6AcRdFnndQOPSSu8RyMQ6V5tSfmrn4gdTkXN58WdIUPJ9XvCdUZ4NB8bgh
+	 6pugwhg/dQzmCTa3DNeZNaV3LEU+nCDMPPQyPQivmSGt6TfuLL0FL0WkFPUM/3vgbU
+	 A738imanAEwUusrWHcmT2mo/y2jRAKtqB2LSP30ROQRnYP8nrNE4QqaXB4uR9PXbRN
+	 KZJLF4jYWfzXA==
+Message-ID: <0851db25-fef3-4f96-8d37-81ad5c51d6c8@kernel.org>
+Date: Thu, 5 Nov 2026 11:33:05 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,130 +59,110 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261104-work-procfs-core-v2-0-76ace653a773@kernel.org> <20261104-work-procfs-core-v2-16-76ace653a773@kernel.org>
-In-Reply-To: <20261104-work-procfs-core-v2-16-76ace653a773@kernel.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 5 Nov 2026 11:08:25 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdXAk9CwoXpak8+EQjdvJ2Ab9fo1bvj_D5GqBzXB7urEUQ@mail.gmail.com>
-X-Gm-Features: AclHuK_D2R6ZzQFy7DOLUQHC3VotRoglnOuhbtIFU-Oniz4UMRG_6kQUnblEqeo
-Message-ID: <CAMuHMdXAk9CwoXpak8+EQjdvJ2Ab9fo1bvj_D5GqBzXB7urEUQ@mail.gmail.com>
-Subject: Re: [PATCH RESEND v2 16/23] proc: let procfs copy out reads that
- don't go through seq_file
-To: Christian Brauner <brauner@kernel.org>
-Cc: linux-fsdevel@vger.kernel.org, 
-	Linus Torvalds <torvalds@linux-foundation.org>, Jann Horn <jannh@google.com>, 
-	Josef Bacik <josef@toxicpanda.com>, Chris Mason <mason@kernel.org>, 
-	Jeff Layton <jlayton@kernel.org>, NeilBrown <neil@brown.name>, Eric Dumazet <edumazet@kernel.org>, 
-	Thomas Gleixner <tglx@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>, 
-	Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@lst.de>, Greg Kroah-Hartman <gregkh@suse.de>, 
-	Joel Granados <joel.granados@kernel.org>, Kees Cook <kees@kernel.org>, Jan Kara <jack@suse.cz>, 
-	Jan Kara <jack@suse.com>, linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org, 
-	linux-acpi@vger.kernel.org, linux-kselftest@vger.kernel.org, 
-	linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, 
-	linux-um@lists.infradead.org, linux-wireless@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, ntfs3@lists.linux.dev, 
-	platform-driver-x86@vger.kernel.org, coreteam@netfilter.org, 
-	kexec@lists.infradead.org, linux-pci@vger.kernel.org, 
-	linux-sound@vger.kernel.org, netfilter-devel@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, ibm-acpi-devel@lists.sourceforge.net, 
-	jfs-discussion@lists.sourceforge.net, linux-alpha@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-cifs@vger.kernel.org, 
-	linux-fbdev@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-mm@kvack.org, 
-	linux-sh@vger.kernel.org, linux-usb@vger.kernel.org, 
-	samba-technical@lists.samba.org, sparclinux@vger.kernel.org, 
-	linux-m68k@lists.linux-m68k.org, linux-doc@vger.kernel.org, 
-	linux-serial@vger.kernel.org, linux-atm-general@lists.sourceforge.net, 
-	Takashi Iwai <tiwai@suse.de>, linux-input@vger.kernel.org, linux-raid@vger.kernel.org, 
-	linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org, 
-	linux-debuggers@vger.kernel.org, Chuck Lever <cel@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=4.0.1
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 0/4] mm: Enforce read-only shared vmemmap tail mappings
+To: Muchun Song <songmuchun@bytedance.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Oscar Salvador
+ <osalvador@suse.de>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Jonathan Corbet <corbet@lwn.net>
+Cc: Muchun Song <muchun.song@linux.dev>, Lance Yang <lance.yang@linux.dev>,
+ Lorenzo Stoakes <ljs@kernel.org>, "Liam R . Howlett" <liam@infradead.org>,
+ Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <chleroy@kernel.org>, Ritesh Harjani
+ <ritesh.list@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>,
+ Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap
+ <rdunlap@infradead.org>, Qi Zheng <qi.zheng@linux.dev>, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20261019090830.1917657-1-songmuchun@bytedance.com>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=david@kernel.org; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <20261019090830.1917657-1-songmuchun@bytedance.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Christian,
+On 10/19/26 11:08, Muchun Song wrote:
+> This series is split out from the earlier, larger series "mm: Generalize
+> HVO for HugeTLB and device DAX" [1]. While the parent series generalizes
+> vmemmap optimization across HugeTLB and device DAX, this subset addresses
+> a single, self-contained step: mapping shared vmemmap tail pages read-only
+> at population time.
+> 
+> After the previous HugeTLB and device DAX conversions, both can install
+> optimized shared-tail mappings during vmemmap population. These mappings
+> should be read-only because each shared tail vmemmap page backs metadata
+> for many tail pages. HugeTLB applies this protection in a later,
+> subsystem-specific pass, but device DAX currently lacks it.
+> 
+> This series moves the protection into the generic sparse-vmemmap and
+> powerpc radix population paths. This protects device DAX mappings and
+> makes the HugeTLB-specific vmemmap_wrprotect_hvo() pass redundant. With
+> that pass gone, the bootmem-only optimization wrapper has no distinct
+> work and is removed as well.
+> 
+> This is intended to be the fifth smaller step toward the broader HVO
+> generalization. The remaining HVO naming and enablement consolidation is
+> left for follow-up series.
 
-On Wed, 4 Nov 2026 at 20:33, Christian Brauner <brauner@kernel.org> wrote:
-> proc_reg_read() and proc_reg_read_iter() pin the entry and call
-> ->proc_read() or ->proc_read_iter() which copy to userspace
-> themselves. Like for seq_file reads and for writes, a reader can make
-> a page fault in that copy take as long as it wants and
-> remove_proc_entry() waits for it.
->
-> So do what kernfs does for these reads as well. An entry that implements
-> ->proc_read_buf() fills a kernel buffer of at most ->proc_read_size
-> bytes, a page if the entry doesn't care, and procfs copies it to
-> userspace after unpinning the entry. The entry moves the position like
-> it did for ->proc_read() but that only sticks if the copy to userspace
-> worked, like in kernfs_file_read_iter(). If the copy fails halfway the
-> read fails with -EFAULT and the position stays, where
-> simple_read_from_buffer() returned what it had copied until then.
-> procfs remembers ->proc_read_size in the entry like ->proc_write_size.
->
-> Larger reads come up short, like with kernfs. An entry whose readers
-> want all of a large file in one read asks for PROC_ENTRY_FULL_READS and
-> procfs fills the read in pieces of ->proc_read_size, unpinning the entry
-> in between. A piece whose copy fails ends the read with what the pieces
-> before it returned. kexec-tools treats any short read of /proc/vmcore
-> as fatal for example (cf. [1]).
->
-> These entries are read through ->read_iter() so readv(), splice(), aio,
-> the RWF flags, kernel_read() and io_uring work for them like for the
-> ->proc_read_iter() ones. io_uring's nonblocking attempt gets -EAGAIN
-> though, like loop_rw_iter() gave it for ->proc_read() entries. Neither
-> the allocation nor the entry can honor IOCB_NOWAIT, and io_uring would
-> take a short read of a record file for an unfinished one and glue the
-> next record to it. So it retries from a worker like before.
->
-> An entry that implements ->proc_read_buf() and also declares a seq_file
-> or one of the other read methods fails to register.
->
-> No users yet.
->
-> [1]: https://git.kernel.org/pub/scm/utils/kernel/kexec/kexec-tools.git/tree/util_lib/elf_info.c
->
-> Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
+I assume this patch series is no longer applicable after we remove the RO
+protection for HVO.
 
-Thanks for your patch!
+Or am I missing something? :)
 
-> --- a/include/linux/proc_fs.h
-> +++ b/include/linux/proc_fs.h
+-- 
+Cheers,
 
-> @@ -84,6 +91,15 @@ struct proc_ops {
->          */
->         ssize_t (*proc_write_buf)(struct file *, char *, size_t, loff_t *);
->         unsigned int proc_write_size;
-> +       /*
-> +        * procfs calls ->proc_read_buf() to fill a kernel buffer of at most
-> +        * ->proc_read_size bytes, PAGE_SIZE if that's 0, and copies it to
-> +        * userspace afterwards. Larger reads come up short unless the entry
-> +        * asks for PROC_ENTRY_FULL_READS. The position the entry moves to only
-> +        * sticks if the copy works.
-> +        */
-> +       ssize_t (*proc_read_buf)(struct file *, char *, size_t, loff_t *);
-
-As for proc_write_buf, I think it would be good to use this conversion
-as an opportunity to replace "char *" by "void *", which will probably
-let you drop several casts from users.
-
-> +       unsigned int proc_read_size;
->  } __randomize_layout;
->
->  /* definitions for hide_pid field */
->
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+David
 
