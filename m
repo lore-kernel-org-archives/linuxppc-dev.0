@@ -2,57 +2,67 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 62052606A32D
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 09:10:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DAR24fhg
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B4E93606A33F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 09:34:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKxNq0M5tz2xLt;
-	Thu, 05 Nov 2026 20:10:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793869834;
-	cv=none; b=fjeS3w/j2RaEbd9TqQ8QeJA01dr8OSSvfqp8Snind3/6iCev5dixzvUV9XuOf6krvmFckakWCXob51Yy22/C5Eqr9ggVjAviBivdHkY512a1cdFSP4vr0cbMgjZl01AszcGg8XnNCVMCsl889TOqnUqeadZso56tRRoYgUFosUJzUq3ZMY7H+8ki4Hd15ixdukjQAS4enaCuLbkJCx+f8JQCoMdw4ZVBwxznNdiY50NIP0s2L9pdHZlj41JaYdNauAl+yTH18sZC0tmlFsCLJ7KARQZ25ICi/khUu6ZbNiyH302KNOOB2+OJ2sI/o7nQt5WC18+aWyuIYn7Z7MLj+w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKxwm0zW9z2xLt;
+	Thu, 05 Nov 2026 20:34:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.222.52
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793871288;
+	cv=none; b=G7ZTuFovAsPO4A+hjWwZBzNd6CN39EZJLAC4U2qrB5GVcd4oko14MxJHlVrr/ssItQ6eJa/ZQitk2m1KxZnvZEPM1NAl2XC1lUmdEaKM85OyZ8Vy/4KgUo3AO34aRSt3JoS5vvVVtUGqjchMITMUMlg6+DSR+22G4dVBWgvATO6Bglb6aT09v2HFctytrTX4fazWRbhjp/SFtcwpHDCKYw2boarX0OG+sTtvKSktFU/fSvoRUDKeFMHk+nH7+P0aHC1JxyZeCNFUf2xjkI4fxF0pRysBDDxAqDT4F1us4AmtXauHNpYyCqZK5mzSA3ckOsH5LAIVRGB5miC1BTZfsg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793869834; c=relaxed/relaxed;
-	bh=l8FVoARO3j3t6Swl/r4USV4n/IIP1DJGnmzvtDWkxwE=;
+	t=1793871288; c=relaxed/relaxed;
+	bh=DpLYJIWgXoS5zQrloj/RgE/cGCpS34NjW3pzuN6S6xY=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=SqUhflBUx9Gm9rpLrZkJnd/GRTl0QjzzUe+XZAQaw3fje2ZkAcfZBZktCR7qGFXJ/iE+a/UPux8BoRmQx7UpBOQVPukxXz+ril121AQTlIW5qAtYbaHnsLMOy+GJIJBMn3QYmbWeWRK2tSznQm0E/mJ5G2YdOalVmLUFKUdAlLkYCjpUb9hsJLpQ7YxlSow1sHw6Ujejz7xFl4uo4XEdAxuxuDPjWydiJ5lHJ5V1tTqVl1/RFXpImadgifpacY2kAbmyoTD9J5S/bkMW+gQpnvbCSuCsW6gdLOXB40qAUid0GzbYUq2SZ0go0xssIlLVHcj7oPbBUJRq8ATSFr0a8Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DAR24fhg; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DAR24fhg;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	 To:Cc:Content-Type; b=djb2H2D8AnoeniNNxi8aseVu0FvbB2+6AU3QFZXnp1SgkK0yjueHT+31y/vfToEJXL86W5Sj5TVICJ8oNfFn/zT1CVNpr9rIi5mt/7j+xeh03cEYgUGPqL1V/VesL72rO2oBjY99LCZAQA4BvLKg/HcjuoRyUgcDv3oJ+e/DiKS09o9/J8TiYlrLZleiQ9X9M8snW78sAfMWwYsI6txKwTWhaxJOOO16KDCMBrMa3qxTlTaoACOlrgkiQT9itDbgIeYqW6kV7WFLFYyPUyF/ZzbUk9Shq8UeYeJLEzTiMhNz9mtv3UU9ht93maKQHZqPp9jl8S73Kmv/1CTrl+xvRA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.222.52; helo=mail-ua1-f52.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.222.52; helo=mail-ua1-f52.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ua1-f52.google.com (mail-ua1-f52.google.com [209.85.222.52])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKxNp1j2zz2xGr
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 20:10:34 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id CB822445FB
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2026 09:10:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7F5931F00A02
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Nov 2026 09:10:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793869830;
-	bh=l8FVoARO3j3t6Swl/r4USV4n/IIP1DJGnmzvtDWkxwE=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=DAR24fhg1o12QPYF8w+7b8HIwsxRutsHpEf4cTFEyfIe1ri9nazYsDIocFwx5ISJP
-	 /3zIPoK5gQ2uI+H1WEkOK0X8GhFfj+9hv4l19yz1q/DPecQzQz2d5wbU1n2ejd3hHg
-	 /zhtdfWlMuzov1tVk4nMgIA2qtMOnpO+yRJas9gvpgUs9txLGJr7ilihbpns5ihEDF
-	 4/2yV2xRNhSNdsLoCt6rVfexZqo5PI+2bh5Zb6srEz7QL1UDMhOmHpUYxCXABSTIqt
-	 wtkhqxb8Tr9xqccUmW68LmRoovBaE4sFySPUjEpNYZPRH5NW5iNUtVbG0K+6xqcnIW
-	 aiNZNsoA0p13Q==
-Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5be416e603cso1088766e87.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 01:10:30 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AKwUvByStotcfVr8trrVU/MVTe3jnv8hG2BU0PiYyATVwtFLxyYI+gwiySjez2QFqH+wZfZdC1pVz/vcwh9EbsA=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z9MhKrN8MuI4QaDnsvGST861SwAn6pNESb7+b/r7YUy7ZLbJ7Yu
-	gC1GF84sBNSWd8LwSBQJf0CIT5JjXALT/jCVumOnFON3x6v5ufxbwjsNovZDN4uck3tZgQ0Fkfr
-	Gaz22BeWKGrEsdL4DnupMmJ+VPGaBoEQ=
-X-Received: by 2002:a05:6512:31ce:b0:5bf:be3c:6599 with SMTP id
- 2adb3069b0e04-5bfd957cf17mr5726763e87.67.1793869829164; Thu, 05 Nov 2026
- 01:10:29 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKxwl0XyXz2xGr
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 20:34:46 +1100 (AEDT)
+Received: by mail-ua1-f52.google.com with SMTP id a1e0cc1a2514c-99806b7d89aso451618241.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 01:34:46 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793871283; x=1794476083;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=DpLYJIWgXoS5zQrloj/RgE/cGCpS34NjW3pzuN6S6xY=;
+        b=YErG+e2SFEJbSHezTsAUeRI3sXkXE88WJirsPABhkMsYHQg2EX5ffbxvrNCrfYSza0
+         bawPH5DwauGuOQWooPKDWkUQwJ3ztiyo6O2F2/00dQY3GLTAubjR+YA44hejBMtEKDiT
+         5B4bJsPx302JzbA+nv/X/9U4TKgUDoEi+v+bUMqpSxiI75JfyNjyY+TK7NMRdJe4y8tV
+         9Wz0GwM4mj1BtncSVDmsr43XX1bz22kjoljFd6eOhdBJE8pNRDGhyDVzxXWBs0D5/sEF
+         661sVxy6hqByE9zZyx8tOZsIOpXTyBHroL88ZGKTgHmSsRXI4ikLFjyphbplZk0zeOjA
+         l/2A==
+X-Forwarded-Encrypted: i=1; AKwUvBwSqcZ+c4Ew0dPAkhixn+5XUHtqjd5w9yT7bB/7oH9ol0z48eUZX6u1V1YzLfzw6rIgda18sbf7L4pl8zA=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z8rQxHPhLTLK0KKH0gxPkgRGm4N5kGi2lcBlbvhvfZ65RmHEZ7E
+	4nfiCWd0YC3+hB+r1vi/GKWUS3TcD4nZqmU1ZC4y6GFLAzInxfrYSfEyJY32UR8+JlE=
+X-Gm-Gg: AYBFou3gc+Xyfp2QhWs11j12wbSdrJWQJlzc90HToSc/uR/4TG+0dpcjnvqVcb64kz1
+	fFlpnKFzvu6XW5iXVnAJhbKAiXn10W1Cn4OJzr6Axc8bP+0sRihJsoPhSuRIQd55fMSV9pjtjTZ
+	u6Dks0/x57YAGfYGyOF4my8JPHhwhfE2Z/p1+W94pzIQXVO8VHtA2HfY3Um63n826+asOmxH4Hx
+	agI93Vk2VERdybzQqS/wFT8hf63p15OsvsyqR3PyCslHC3PVl7X6+SRbr2TT86GthZpIrqzuBrT
+	FB+mSH1u4ob+vlA79TLk8xLqN4nCrW+AfppDbX7ZcB0m14dkhnXFDIOGt57Uu/mvVhIISAwjNEA
+	CwWOdPjtNlNcnmCLR1VANjacTrZm6BsQJ2XvOuAOoAtgrhq1ubXEYqo6SOU9dtj2JXlsIWyH8+j
+	q3lghZMz5sPCRGC7Ip18Bhp1Vcm2P9XYe08c+NIYoO7S5ifl1eb7DM4QJ5CVZlvwQzA8f3nkunw
+	yjCF60KmbxEniB8ST5cCfjSi19gYOX6Q29B1KTNSTgr/dWbCdvZW0jfVv716d32L7Y3TR+Jcs9M
+	6SBAt4mqwV081hLkfsK9ZPpmo9oIGZdro5RCTEAGFb6au3pzmCOyUtKKbwUErwSDguo=
+X-Received: by 2002:a05:6102:83cb:b0:7c4:613b:2e22 with SMTP id ada2fe7eead31-7d2868f21acmr880932137.10.1793871283602;
+        Thu, 05 Nov 2026 01:34:43 -0800 (PST)
+Received: from mail-vs1-f44.google.com (mail-vs1-f44.google.com. [209.85.217.44])
+        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-7d2829d28d0sm2255350137.2.2026.11.05.01.34.43
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 05 Nov 2026 01:34:43 -0800 (PST)
+Received: by mail-vs1-f44.google.com with SMTP id ada2fe7eead31-78fb1fb9508so345511137.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 01:34:43 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AKwUvByibr7b3zPqHxlBo6CNcLt6juDmza5TDd7ZaCs8Qk2AzOivoGLkO9VLwtOT/3YzxvuJHcMrvYuWHL/MlW8=@lists.ozlabs.org
+X-Received: by 2002:a05:6102:3709:b0:7ca:5626:11e with SMTP id
+ ada2fe7eead31-7d286b7fa17mr1126485137.36.1793871283167; Thu, 05 Nov 2026
+ 01:34:43 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,61 +76,70 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261103-for-upstream-lx2160a-rcw-pinmux-v1-v2-0-3aad0860b984@free.fr>
- <20261103-for-upstream-lx2160a-rcw-pinmux-v1-v2-4-3aad0860b984@free.fr>
-In-Reply-To: <20261103-for-upstream-lx2160a-rcw-pinmux-v1-v2-4-3aad0860b984@free.fr>
-From: Linus Walleij <linusw@kernel.org>
-Date: Thu, 5 Nov 2026 10:10:16 +0100
-X-Gmail-Original-Message-ID: <CAD++jL=Np+_+wTkuLCiqjNY5EBqn5qq8zKTJB6F-=1G0R+7=Ww@mail.gmail.com>
-X-Gm-Features: AclHuK_7g7nY-8H8wprNfNKV8lgILSoOexV2IGLiXfskv9qSmIolBJEeTn_Fqx4
-Message-ID: <CAD++jL=Np+_+wTkuLCiqjNY5EBqn5qq8zKTJB6F-=1G0R+7=Ww@mail.gmail.com>
-Subject: Re: [PATCH v2 4/5] pinctrl: freescale: add the LX2160A RCW pad-mux driver
-To: vjardin@free.fr
-Cc: Dong Aisheng <aisheng.dong@nxp.com>, Fabio Estevam <festevam@gmail.com>, 
-	Frank Li <Frank.Li@nxp.com>, Jacky Bai <ping.bai@nxp.com>, 
-	Pengutronix Kernel Team <kernel@pengutronix.de>, NXP S32 Linux Team <s32@nxp.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Shawn Guo <shawnguo@kernel.org>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, linux-gpio@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
-	imx@lists.linux.dev, Vladimir Oltean <vladimir.oltean@nxp.com>
+References: <20261105044046.52180-1-dennylin0707@gmail.com>
+In-Reply-To: <20261105044046.52180-1-dennylin0707@gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 5 Nov 2026 10:34:32 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdWzY9YRnGz1Y_60RYP7TH67q8fxi1VNWwkhhc0EUeSCFw@mail.gmail.com>
+X-Gm-Features: AclHuK8PYnqOIDpZItZg042mTleQ6jUe2E1wddINt5GGmEiia8n8vhGDZzRowiM
+Message-ID: <CAMuHMdWzY9YRnGz1Y_60RYP7TH67q8fxi1VNWwkhhc0EUeSCFw@mail.gmail.com>
+Subject: Re: [PATCH] omfs: remove the filesystem
+To: Hungyu Lin <dennylin0707@gmail.com>
+Cc: me@bobcopeland.com, willy@infradead.org, brauner@kernel.org, 
+	viro@zeniv.linux.org.uk, jack@suse.cz, akpm@linux-foundation.org, 
+	corbet@lwn.net, skhan@linuxfoundation.org, tsbogend@alpha.franken.de, 
+	maddy@linux.ibm.com, linux-karma-devel@lists.sourceforge.net, 
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org, 
+	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
-	autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, Nov 3, 2026 at 7:12=E2=80=AFPM Vincent Jardin via B4 Relay
-<devnull+vjardin.free.fr@kernel.org> wrote:
+On Thu, 5 Nov 2026 at 05:41, Hungyu Lin <dennylin0707@gmail.com> wrote:
+> OMFS supports the on-disk format used by the long-discontinued Rio Karma
+> music player and ReplayTV DVR. While reviewing a fix for incorrect block
+> mapping on writes starting beyond EOF, Matthew suggested removing the
+> filesystem instead of continuing to maintain it.
+>
+> Existing OMFS media can still be accessed using an older kernel with OMFS
+> support.
+>
+> Remove the driver, its documentation and build configuration, the
+> defconfig entries, and its name from the statmount selftest's filesystem
+> list.
+>
+> Suggested-by: Matthew Wilcox <willy@infradead.org>
+> Signed-off-by: Hungyu Lin <dennylin0707@gmail.com>
 
-> From: Vincent Jardin <vjardin@free.fr>
->
-> The LX2160A muxes its IIC, XSPI, SDHC, UART, IRQ and EVT pads from
-> fields of the RCW, read-only in RCWSR12..14 of DCFG and changed at
-> runtime through the same fields of the override registers in its DCSR
-> view, which read 0 until written.
->
-> Since commit 8a1365c7bbc1 ("arm64: dts: lx2160a: add pinmux and i2c
-> gpio to support bus recovery") Linux drives them with pinctrl-single on
-> the override registers, so its first pin state clears every other field
-> of the word: a board whose RCW programs a non-zero pad mux loses those
-> pads at the first I2C probe.
->
-> Add a driver for the pad mux as a child of the DCFG node: the fields
-> of RCWSR12..14 and their encoding.
-> Then pin states select them with the generic function and groups
-> properties, and every change goes through the RCW override
-> of fsl-guts, which reads the status register, writes the override and
-> waits for the status register to follow.
->
-> Signed-off-by: Vincent Jardin <vjardin@free.fr>
+>  arch/m68k/configs/amiga_defconfig             |   1 -
+>  arch/m68k/configs/apollo_defconfig            |   1 -
+>  arch/m68k/configs/atari_defconfig             |   1 -
+>  arch/m68k/configs/bvme6000_defconfig          |   1 -
+>  arch/m68k/configs/hp300_defconfig             |   1 -
+>  arch/m68k/configs/mac_defconfig               |   1 -
+>  arch/m68k/configs/multi_defconfig             |   1 -
+>  arch/m68k/configs/mvme147_defconfig           |   1 -
+>  arch/m68k/configs/mvme16x_defconfig           |   1 -
+>  arch/m68k/configs/q40_defconfig               |   1 -
+>  arch/m68k/configs/sun3_defconfig              |   1 -
+>  arch/m68k/configs/sun3x_defconfig             |   1 -
 
-Can this be applied separately once reviewed?
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org> # m68k
 
-Yours,
-Linus Walleij
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
 
