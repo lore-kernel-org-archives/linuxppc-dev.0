@@ -2,78 +2,78 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B202A6082BEF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 10:44:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B9E8F606EEAD
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 10:44:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=eqNKRkyJ
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=sFlUqI/I
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKzSf0f88z2yQl;
-	Thu, 05 Nov 2026 21:44:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793875442;
-	cv=none; b=YLn2J+ZE61b2CeGLwWb7H3PquFjYkqt+EgIa46WLctJWwPjfHjsssmj8kVmovwAbr34h2K3PEZ4ySiCkN1+N2zWT/cidh+RDi9/2F1LmfxbdXXKnH7XBSJYz7bTgKMtdEoHRLG6Q/x9GoNOhodwaqForgAzHfThXh7ICs6KxeKXUPrBNJFTWy0SP9j8tp/gbTX8l6lteJvJ5Bb0QiqsPFOQPECIaT2jO1jm5VjSODOGJjP9fh4Ppe7xtL/HsE7lrN/aE15ivDPXWFIaTPa4t1SMfp2pDw7ZcwsFwnV4tFKHWfTmMU2LJAHDms9lA+Sufz14R5sl8wJVC7vWcTOLc1w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKzSm55kdz2ySC;
+	Thu, 05 Nov 2026 21:44:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=74.125.82.175
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793875448;
+	cv=none; b=WUyOwLWIhZcNc+4hm2zBO8fd+Gtvv7cwlxKzWH7UPgPUrzKcTts+QHcybCAUv1uYN66AQskx96ge2lIDRE69c24EwriRf5I+EpNmF0XleKq4my3o6C6i7gS7o0abtV3JmG1xUc4ZGT/OSzePh3Et5tGmMitCMRznSuJtIXAOxfkoVb2K4QG9UQPJ35sZ0pv/hrqBcM6Y5hVm+eLaFBQ6/iiWLakjfbrHX4LB1Pl6BrwHs7RsH+YExNuxs0djN/xRKYa/urcW5bxhf+GL3ekaRI7H0D1f3DWQ+hA18h1u2rxyb6kFjd9DIFtHF/7aX2PLcHEnHdbquayPKOiiqbYWnA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793875442; c=relaxed/relaxed;
-	bh=7a61XdNC711TnCfpf1e3aFAgR5XmE4l8ifMaRZC1SQM=;
+	t=1793875448; c=relaxed/relaxed;
+	bh=plnEW8+Hp4dXa8Lp3EAtMLPmG1hUTIPGT+05VPB/oMQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=YmpsdcGXNSWovRTgnKq2ltfvMqPTVluQ56gt1jEWmxYYG5SrTiex1qzsNwz587aY2wmW88qUaax8qgHGQ8Xf5xjWBm8waSG5KevyvBBYb0wc+jeopsJwYBwbSsdfrSdM2Bsco3YSr2l4yIN72RbQX9N3YY6BLpuw+wqd06Wje0vlVVEVljZ3j1fjusWkn8+7z8sBeGRdXzZ2yRrdFgFqrG7Sd7tN6pbTB+Nv/vYrxH2xbUzY7g8dEU8Vko61vO+BvySjOjL9dI7GRdj/YDcDGSoZkVy+/RFnZC37eAFu62Hn/dx5XQpUzs5uJAzM14eqAfrTpa12opeY22P2dO6imQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=eqNKRkyJ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122e; helo=mail-dl1-x122e.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=fHncFWFuOfNY0QoB3dmlTaPsq6MaMP55e5ZqXaFsFVf31SKm0LAGBiblXyCQujSY7Rts8wYers3wY4gQ0T/RdZYa/kriuE6T+ggvtKCMeSohBpEEqbZErJQMHGevl2GTlXPCbJheqqdpCSbXyeaW7RyVJj3Mv2ulAn9NbYpW9D9RtAlnOQrrhfiVkhCnzAz/2YMURhD9y7M6ZwhbraniBE9KBphvIunmKYM5WJl40HB8aeqAYe0wRDe+F+7QTopqJ/XhcFSL1G334ap4KdLLmMYmBZTo3+n/Q9Uf3Br8WD79DSFqQ38EP67xyZAY4zR+XQHkxa7hBKTmCfIzfb/aHw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=sFlUqI/I; dkim-atps=neutral; spf=pass (client-ip=74.125.82.175; helo=mail-dy1-f175.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=eqNKRkyJ;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=sFlUqI/I;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122e; helo=mail-dl1-x122e.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x122e.google.com (mail-dl1-x122e.google.com [IPv6:2607:f8b0:4864:20::122e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=74.125.82.175; helo=mail-dy1-f175.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-f175.google.com (mail-dy1-f175.google.com [74.125.82.175])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKzSd3hPLz2yMK
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 21:44:01 +1100 (AEDT)
-Received: by mail-dl1-x122e.google.com with SMTP id a92af1059eb24-18818daa3e7so78192c88.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 02:44:01 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKzSm10Ygz2yMK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 21:44:08 +1100 (AEDT)
+Received: by mail-dy1-f175.google.com with SMTP id 5a478bee46e88-36a1947498bso4824988eec.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 02:44:07 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793875439; x=1794480239; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1793875445; x=1794480245; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=7a61XdNC711TnCfpf1e3aFAgR5XmE4l8ifMaRZC1SQM=;
-        b=eqNKRkyJ4jKsztFxzVK8HvR7vQYPjSGZRL7kN3qLtSdIpsI6HH3j+xx0UgfOnnW9Fl
-         i20A796gzwvfl+hXp5sqcHh+ghPs2T/2+6WJOx9DWDmiQ+Csw19NK/mM9Iq3lxX31Sxv
-         Epxh5ou7H7Od1V/aOswk2Cym7ZmqK2b/VGyr7+V9Saemy02Vo0iEa20wL3xvStMObyb2
-         5anHh6GeIo9o1sLpO+kkF4hsP+5TiLlcIym6WIy2Wew0Z5ZUDA1HER0swhNTOocs9iR0
-         JXLREaz1Gi7geEAUq+92DGqeFRsjXpchd30v9iNT/zCR+mcLPNiH/w5mAgQdMj5KChKe
-         r5hQ==
+        bh=plnEW8+Hp4dXa8Lp3EAtMLPmG1hUTIPGT+05VPB/oMQ=;
+        b=sFlUqI/In+4cLHivRpGs5C6Z5R4hjQcdY5kFPxVuS9/xw60+xnzjagEuSW1ze4uqAf
+         ZEclUk+yrXl0UYOsXK+Jqn5Ymgyh0+uYzOaM1J+NIqJkwZ55iEALUEI7pfC7FNQA7prs
+         hFIHoMyqs0ZNmYP+AM5dyHkCGHz2Is3Vrv6vIMkJaBLw8lIYa8fomxRLTq8b3QGJ1lUF
+         xTIoa4PEjL5yA+xndFJzunIOlFtVuoaE4hndJh1fePnv9+hTUNr7X4hb/l5PmtFP77Ki
+         axwDyEYM1zTZH4cQgtB82LglsuwjIbaFEVuwfWsICvKbZlWA4FoXM15n0SfZW8SI3xVG
+         +AVA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793875439; x=1794480239;
+        d=1e100.net; s=20260707; t=1793875445; x=1794480245;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=7a61XdNC711TnCfpf1e3aFAgR5XmE4l8ifMaRZC1SQM=;
-        b=xf3SA1TLBoHntzH+QLG/UOACzwYGCg1Z4JYYe0rLNZVj53Wf3wmtZBJOpABUxA5d8T
-         9JU+Yc8cdUE0KoXe3SgdlK/hesCTMdEN+ZyuyaEOwgQygj+e8xLS9l5+tVqdfF16D3Ev
-         suC2/KFD1+3JovzG0jdYafM0XQbstSIsHsyV45Fk3gzDWL9VQti0jKz8cZErILs/d1Lv
-         HURLVR+l76JcITZyf5T/08uNPcB0soIy7ChFMtsbpSC7h/wOosnsbAGcz81IV0jVOhpg
-         vM1ioB5rC/Q+ZkEicS+vMUruE30p9orpdCvfL91wVkvESG0Vd73bKQp4hUQSfhuW4hSu
-         Z0QQ==
-X-Forwarded-Encrypted: i=1; AKwUvBzg2K5VkesWL96lM9yLr1b6Tltz8IUP6yhCL7hOt1DD1QQpZcdo9EEwnAiQY+aJDCwoXqIep3/OfTDQPX0=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z8DtMF7bGqhrWwqfQlfozpQYJkio5m2VV28vNshNiT5AMXFcXnu
-	FBcw3ibWUS/RqjflvDAeSdH/fK16UFdukON2jI2GT4I86R7qBjizUgLZ
-X-Gm-Gg: AYBFou1+X0/86T8VxvIqPENGIHbRzrDF+SQDAcHjYgmzi5XX5/pyBiInvj97a9ZyPBV
-	1eUVsJfs5G0y13gGvzJ+qFZZfrSBkTTTUqzKalVycEta7P9RLiVzKarC78nTo8J6DysOGuIGY0G
-	k3HRK8HaySnUYbpQcK+EKt9+mVCDWNNAs0H4Rd+ZMvHjimhQZZweVi5MhDMs4AhtOtP7XrK42ga
-	bv5qxY34FeQxB+QAmFQrOorUkCxhcQZCAK+cAg6C9z27U3BpjHOIXfNwKx6cwcLtpfIMNrZKEas
-	/9ktmmCocdCi3W8BXUbiEyfSv5GljFL72d3cOGwC1DZqOpb1O+AB+xFttZH1koXVSuTR2bI/LLb
-	eoqlww/VcABidn9j8icvsD7xSN0d7sKLmUrG1SBIUwTAOAc3uHWsz4qGaSt6kmqIfaF7VVvkqNS
-	il9/ipBinuvNkwXws9hkjJCnPQP1x/+2OsZbnOdOVsBQ5ktyHr5+7O5gjgFJMyHHSkx5Uvdh8ce
-	OYlUpGPzs0K+SdWUoQYS455wbDzmdszf2f2Oqm2ZnzfKtZF/cZhGW66AyCaqXvMPkOHbs6Mmsgz
-	g42VeiluCPr8Ey/Jyfb3Ukgd5NpjuHjNjfd1LZfCMGx7poPuJ8iaJ1zlud/YODT1HNErPSZsdVr
-	vTrt+VHi1cIVporjc+nRaQ02TZV2lUFa2uqocp81DkvnEQM71m0Ykq3bQeTZFeKOHUg==
-X-Received: by 2002:a05:701b:4591:20b0:1a7:77ae:11f6 with SMTP id a92af1059eb24-1b24f45f23dmr2950238c88.17.1793875438944;
-        Thu, 05 Nov 2026 02:43:58 -0800 (PST)
+        bh=plnEW8+Hp4dXa8Lp3EAtMLPmG1hUTIPGT+05VPB/oMQ=;
+        b=txzRTHdOvOo9y/AsL4GPgThOBKIynjTexSDBYj9VObom+JNZbVeDO2Q4wawxh2xYM/
+         UXLZ+0ptQfAE6LAei5b4zTbMyVPVmQcfLOZXN24+p01nMzTeQcX29acGl+tob72XhNuw
+         5yn7T4cgBroOqehCs+hTcUoRMeC4H3zjqpExoBi/ROvC/3MxyYH97zB9n3OevuTYQk3G
+         LHQwIZ7RKHIIlMd9K/yUTkHHn6fTlFDlevRBqA9XchyMvjwcaal59NjMbnZOE342WUJX
+         b06TPyLqnnM4yD8mUQRZ0buGVBCIcZqNMz+YWabnEI+1aUGRv2c3K00aYURuvbgSw6OD
+         U7ow==
+X-Forwarded-Encrypted: i=1; AKwUvBzTIYqLhca7SVAA0nZI2uBuoXOX+dtMdl3VnDroPxyFMC9xWF5P73uEeYjpFUuELBERsFMYQD2hqbbKyy4=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z+8db/LfkOtmS6U6ZP9f9Nuopnu+ajp3zeQnqQGuWux4AruJ4Ee
+	Sa2yWrXiRBF8CeJvGM19YtoSxaQlKE8EoJJPDdn3M8eYChMjn1D2DdT6
+X-Gm-Gg: AYBFou0002NV52SLntf6zuzuczPQxIDqmEDdpcb0dDTOcBw2jIAUTyjYX48xZx7+9dA
+	t6PsljF46PhziTO1Gm4Z2C+zSR1BFCGqbF5mCUzbEbYtQtxDedld5tRbWlKjQ+2X86s5Gkvrgmd
+	HyxnHwGs9cnVAUOYWcWt60o7JyZqn/m6mKdZS31WG6jOlQxvEnZlOJjVNRQUxndn5u+mAfjd116
+	Gm9X2lBN5Wp6D70RofA4NLn/CzqG18yVBqNv4WEf7ozogU33iBpnH40fyhkt59Ft3cdK1/1cxg1
+	d09N7g2J9tRWJ2BHfzR90Cal6Mvez7EPMrXQ1AXxXxImpQdbOUhxgtZPiHbncSKBEunPOIZRc0P
+	NA/L2LG1DIs/A8YxJlNWuLSWB7QX070LRXJl+lH4xdRCySaUDH+YKUJXd8ewvH5J0O87pLYeDl8
+	v/Pfx20hu1eXPS7IZ2SnaqywGynssHlmaioQ9oKCsEvwQ9dR60GDlgJWU+CHx6b4oNsBICBDkuY
+	uJHvsg3tZvL2+o9Al34hhkgFVFDu7+ln4cOREj3BnX6Pzo4/f3KlIySh2pRszhrGe4H9ZSy7tEy
+	q7jIf+xiqjy9MAoxZevr7ZqjPb/qQtz3bDmgwMaSROCbsinurbKATWvK6J4nTFkAxRUwJ7Bb+yW
+	SHu94XNPsGCXhSE5tl/FEdQtQ7a6ik0mfoqhYbgF76ZK/
+X-Received: by 2002:a05:7022:3a05:b0:1b2:4da6:bccf with SMTP id a92af1059eb24-1b24da6bf79mr4455241c88.31.1793875444532;
+        Thu, 05 Nov 2026 02:44:04 -0800 (PST)
 Received: from phuc-desktop.. ([183.91.15.56])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b245c1c272sm15595215c88.8.2026.11.05.02.43.54
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b245c1c272sm15595215c88.8.2026.11.05.02.44.00
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Nov 2026 02:43:58 -0800 (PST)
+        Thu, 05 Nov 2026 02:44:04 -0800 (PST)
 From: phucduc.bui@gmail.com
 To: Shengjiu Wang <shengjiu.wang@gmail.com>,
 	Shengjiu Wang <shengjiu.wang@nxp.com>,
@@ -88,9 +88,9 @@ Cc: Liam Girdwood <lgirdwood@gmail.com>,
 	linux-sound@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	bui duc phuc <phucduc.bui@gmail.com>
-Subject: [PATCH v2 09/10] ASoC: fsl_sai: Reject bclk ratio smaller than slot width
-Date: Thu,  5 Nov 2026 17:42:36 +0700
-Message-ID: <20261105104237.38542-10-phucduc.bui@gmail.com>
+Subject: [PATCH v2 10/10] ASoC: fsl_sai: Don't write CHMOD to the other direction's xCR4
+Date: Thu,  5 Nov 2026 17:42:37 +0700
+Message-ID: <20261105104237.38542-11-phucduc.bui@gmail.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20261105104237.38542-1-phucduc.bui@gmail.com>
 References: <20261105104237.38542-1-phucduc.bui@gmail.com>
@@ -118,38 +118,35 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: bui duc phuc <phucduc.bui@gmail.com>
 
-In hw_params(), when a bclk ratio is set, the number of slots is
-computed as bclk_ratio / slot_width. If the ratio is smaller than
-the slot width, slots becomes zero and the following
-DIV_ROUND_UP(channels, slots) divides by zero.
+When the current direction is synced to the other one, hw_params()
+also writes the frame configuration to the other direction's xCR4.
+The mask includes CHMOD, whose value is set by the current direction
+(Tx only) but written to the other one, so it is wrong:
+- TCR4[CHMOD] is cleared, while Tx needs it set (output mode).
+- RCR4 bit 5 is set, while it is reserved and must be written as 0.
 
-Return -EINVAL in this case.
+CHMOD is not part of the frame configuration, so drop it from the mask.
 
+Fixes: f4c4b1bb2f5a ("ASoC: fsl_sai: Set SAI Channel Mode to Output Mode")
 Signed-off-by: bui duc phuc <phucduc.bui@gmail.com>
 ---
- sound/soc/fsl/fsl_sai.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ sound/soc/fsl/fsl_sai.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index 5c50ed7c2258..c61703ddb6f8 100644
+index c61703ddb6f8..430e896d064e 100644
 --- a/sound/soc/fsl/fsl_sai.c
 +++ b/sound/soc/fsl/fsl_sai.c
-@@ -632,8 +632,14 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
+@@ -720,8 +720,7 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
  
- 	if (sai->slots[tx])
- 		slots = sai->slots[tx];
--	else if (sai->bclk_ratio)
-+	else if (sai->bclk_ratio) {
-+		if (sai->bclk_ratio < slot_width) {
-+			dev_err(cpu_dai->dev, "bclk ratio %u < slot width %u\n",
-+				sai->bclk_ratio, slot_width);
-+			return -EINVAL;
-+		}
- 		slots = sai->bclk_ratio / slot_width;
-+	}
- 
- 	pins = DIV_ROUND_UP(channels, slots);
- 
+ 	if (fsl_sai_dir_is_synced(sai, adir)) {
+ 		regmap_update_bits(sai->regmap, FSL_SAI_xCR4(!tx, ofs),
+-				   FSL_SAI_CR4_SYWD_MASK | FSL_SAI_CR4_FRSZ_MASK |
+-				   FSL_SAI_CR4_CHMOD_MASK,
++				   FSL_SAI_CR4_SYWD_MASK | FSL_SAI_CR4_FRSZ_MASK,
+ 				   val_cr4);
+ 		regmap_update_bits(sai->regmap, FSL_SAI_xCR5(!tx, ofs),
+ 				   FSL_SAI_CR5_WNW_MASK | FSL_SAI_CR5_W0W_MASK |
 -- 
 2.43.0
 
