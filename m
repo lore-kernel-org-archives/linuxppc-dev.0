@@ -2,78 +2,78 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5FB84606A326
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 10:43:26 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 028B2606EEA7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 10:43:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=d/rmcISu
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=sDUpnADd
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKzRv3wT2z2yTK;
-	Thu, 05 Nov 2026 21:43:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKzS03GTqz2y1Y;
+	Thu, 05 Nov 2026 21:43:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793875403;
-	cv=none; b=GKM7Etz2gA0qssRPiV8jleEXqmFAkB8WqLVgorqjwGwCEGeWTHHXzu8TF6Jji8ZqnvOCiVNrh2MxoyK0+7edPMyTxv7npqXVIx34WNK1QvYAYeAxUzZfKeLLP+9/Bjb0tmpgknSo5mna3YduSsrYGboqg8y203iJDjgWL061a4KCGfYxCsRdK76ct35PFudKXuJUpjxQ/IB/ZBafleu06fQ8WFUBlSsjtzyZiG/gGwugVBYwrv/qLhVj0kHSCf5kABbjrsmuDCau7tF49Sgk11Hm6LEiLqU2M2LIxLs/SSAYbH1+jI3nkJAjLHgDV7IjvydN0ZhqAojsuvtVRS0rxA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793875408;
+	cv=none; b=EPVyXmaU4U67Mzu5FSsUHdAwPCoDAeUT0UREJEBK2g5h2U0kJ5KLJziO5FnWDqXV6WaJ9WSpycSKDXeLfRqZCGWocjSrpPAmXYS+hAEF4Cm0+ZDrIfbuOy37ThSYj3W9PBGEvrbRVG0FLxVWfT7REfuOP7k9eBiCfXxjhbJjne+yhqtsHQEp7GkJwC8+6RXk/QaYEzC44PgHJfNSjNb4uHujmPQxrq+NBANFQvPk1IehHoEKSioq7K77sLNbhxPff71+k+Wx3hYOk9PK3d6uOC9hiBw6jsoUF4O12HiAlTEim5rh/jDxO89wZ6w4aBkGt3EjdFkgShFSmF0w9BCxoQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793875403; c=relaxed/relaxed;
-	bh=aTbOMPeQQR/WAw575MjV+whoOIimG2HfOgrdg3UiGjw=;
+	t=1793875408; c=relaxed/relaxed;
+	bh=ggzT8mm/DyquJidfZW7gt7MxdM7xQZcIv/Px9dQuRS4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=KIaMBjlUHKsY637h1QCBQke3Y/mIA5lyxVvlkqhIloQrAWbQLoLQSJell7mR9IIzDxLkJYcXdA+hwuiUaEyyyRZVTpWVzv4pXbAL0s8K/x6bImR3IdbwDxDcuShHYJkFCuIsQr1K2v1fWkOGHB1VW4XFcHyeSSSN0q0UrYSEQaQarVac4HxICIO+6uZaebF5gAb7SNLIJPqBoI2qmQI9FMwdhsZBlMXIi/kJTAjqwKL1yle5nFSR5cLCzCyoYOc+Le4JOtJwsvU/bq0UadbaDLfWdADONYlXYUCw1f0n1X1UMEDGblAp3RP2k4EXJXvTV/iOsRReN2UGTXPGzBT/tg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=d/rmcISu; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122f; helo=mail-dl1-x122f.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=WokUryb1K6Mvkr3f7rjbH/O8cVzze1Hd+4iL+N8tXfyZDOWn2NRYHJ3gtPelC9lbbLiJ3JfpsiKmUgs4q+PulH60+IMyGPzlnpYyf+aJrwORyvGDAKRquCWTE63V9M5XHAG36onDfzeXwZ9OFQPH8PvpN6gJz4pRMot1uE9/wh/8AMOl/kRNFtZ7dqD80ZA14TfJ8VfVIHSb7s46Z4dXAcZoWRkN531TaPYRffzZRVX9F8u/YhjKFgbA9fdi3Ku6DMIJo0oZx4IlAvwTKvl0JRTZSgEn6pdj1g7XG2NwXbAvJLn0Ac1XNAwBnBA8tWj50jWvrI06obZ/CABinxkQTw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=sDUpnADd; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122f; helo=mail-dl1-x122f.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=d/rmcISu;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=sDUpnADd;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122f; helo=mail-dl1-x122f.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
 Received: from mail-dl1-x122f.google.com (mail-dl1-x122f.google.com [IPv6:2607:f8b0:4864:20::122f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKzRt75PGz2xqh
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 21:43:22 +1100 (AEDT)
-Received: by mail-dl1-x122f.google.com with SMTP id a92af1059eb24-1b244fb7fffso2315560c88.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 02:43:22 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKzRz5Rl3z2xqh
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 21:43:27 +1100 (AEDT)
+Received: by mail-dl1-x122f.google.com with SMTP id a92af1059eb24-1ae18eb9b69so1740458c88.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 02:43:27 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793875401; x=1794480201; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1793875406; x=1794480206; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=aTbOMPeQQR/WAw575MjV+whoOIimG2HfOgrdg3UiGjw=;
-        b=d/rmcISuPeD+QX4I8fG/jmYmMpqWIvC1VzEOz4OH3aOSnnGrX38DlUOFHvfHqAYsSN
-         kNjvLxeaXive9Cb10gyCBbpWvc2xX08KeYubEPW/4sMAgCziz9qDYB5IdMNxehN2U8zP
-         TFKCVi6OTJywrgAXdYAUPudWKUfuTPPOnQxJuaMeGReitwD5UPjIWflOX+gfQ311B9eL
-         xC9OFlngMRQavVi0L+eCcW9wrm7mF59bNQOgswEcW/n5DhMfzgFXi26QLDT9VbV7WoSc
-         eia0xBdNgcfKTEjVYCK2A5O3l0p7gBvho7gsmnqqA/8ZqjtV+ayAgqZRhXtyp1qG+4y1
-         Mqnw==
+        bh=ggzT8mm/DyquJidfZW7gt7MxdM7xQZcIv/Px9dQuRS4=;
+        b=sDUpnADdlisvuFN94qGS2llT0JbdakIhNzduWarXapo1DQNaz3ChE/AkSY+J/pLcf9
+         n9ZcuDKzJ0Oj54sm1Ss0ifZzPNgrGIJOItYjKDT9NuSOqAmoj9MKBFEAA3Za87KbjP1C
+         DY5cNQQ+cx/2z7O2EyR0AcAb2VdLPfxvJgpph9bN9Qt3GFYllM2+0jQXfhq1UTr1vrLl
+         zsF3hBBQI+hCI74PN06SlpssgAXOpv6g+HIpNMzGGPhD0awNMBiVQTJzuv/+Gi2GRULv
+         8s22yNwFi2cIa4kXpmTfNNcg8C1YK3BxhAmWcduHcaNMCjzIcrP4qSDWdqapm0VjGCFb
+         UtJg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793875401; x=1794480201;
+        d=1e100.net; s=20260707; t=1793875406; x=1794480206;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=aTbOMPeQQR/WAw575MjV+whoOIimG2HfOgrdg3UiGjw=;
-        b=p/oisyCXp77I6CvggRLslC0P5dQPwhxSuriTEugm25ttRFoVtEDzfHhX3IR7c3sQVL
-         jjbR1g2szv7qPfXjNjTSLRxNVbqjzkMKSNJUXqJEsvGgYQ7rNv/YXeI8nvfGFyOFbiVv
-         C5iKLQ7n0CH7BUt3zk2IYL5MMzmoltU4qUEP4j5G9135aedQYAYwRWGvuDqhsprTWxLq
-         gRHg554EMHkLMOT+WRziidlklQ6zxTJ36Rec4ExIaP+gibk6A2m99UCtVdnaOKzDviRz
-         ygqwt+J12TF8J2joy+dQ5SVwjrZNr9qqPctUgtksjBMAiFxjdqte9MH5MFo9NXOceXSZ
-         0rVA==
-X-Forwarded-Encrypted: i=1; AKwUvBy+15q4j41yejyOUG35y+y9Oo8XnB1XC5G7r1skCd0bB3mr+tnPlOUwQ0aztjlXcBdWqWLASklTClxalEQ=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z8gxseR/GaA/ob7fE8ksYCv6hJ0pc75vTARfI8W4TW3+D/ZhdSl
-	AaoZ+27ZeSz8ZWwu4o+iqNc1cMfti9VxkFw4zLB9JZmK7sKcssV4KBqH
-X-Gm-Gg: AYBFou100EYxaZ1Hf77EA7caBSsALRidm+p77PkmWlnOyEu0Za2DvU+cOR/Hy0exN/U
-	EuIj/Akz1rL2M9kgrkq61x29PDvXJboWKuXC3GDHDLXNbuD4vFDxtLP7wkilUS4pA1MmJYnAtRG
-	GzyCSUBzmM6ZRBChRI2Vm/1WKkCVDn/X0rAy5XWTh+lXVXuBmCgOoLezP7zX24i+/EpZqmQkxcT
-	1UTcHbKoEtsopdg24hTktcqPN0frym+nF99BgvrwnOQ3vZoCf7tS3jQ2MfapWUFSw+Cl/UZWk7L
-	ani2KahZKjIzKsZK/nu+XEzf+BxAdFbuRsQF6djxmv5Cgosc8f3h/eIXrD3ToyhurzaQYpXZ8M2
-	SuKkK4WAC6OXaWOSaNyySGCAYqaXKVEoPonikoCxYuGZWnHgAzpot5du696Ru++rMyjwJhn4UFH
-	6GMoaTxezOvT6+Uv1lpr4kZDmp5ivLk527Dz6FjJXjSDT1aJAT+r8jhl6O+I1eFwisfIkkE47oM
-	bzkjPy882ONOa1ClDVRVFvkcLwcrqzhtuI2muMkMiN7N27WJ6+ab7DwnJOpV6SD6uk2/g9yvx9Z
-	ib6C1Xr2a3+QM45r4km0KK/puMCJeqm/0quLOTivZBTM9/0p7PvP7HjDmfmlOoXUap1Rma0sBGc
-	hBF/SL7Cf91QdVsZJjoykTnDHzZRLIVzZ5gGIDn0kkuLn
-X-Received: by 2002:a05:7023:d04:b0:14f:4b01:40a1 with SMTP id a92af1059eb24-1ac4fc00dffmr29448840c88.0.1793875400690;
-        Thu, 05 Nov 2026 02:43:20 -0800 (PST)
+        bh=ggzT8mm/DyquJidfZW7gt7MxdM7xQZcIv/Px9dQuRS4=;
+        b=cQWFJTZlEdZqBjWti48PFx/k7K2L2W+0b3OxCucLeXw648UdpVOPKTgsVwHdU41tKy
+         tpg3ICPnDAOu2RSw6yVK4xfjPiBQ4beHoFeciRapHjRphosa9J285NzMSO5xmhBq9606
+         vKxlzTI1mh/chHPF1WTeLE/oWU502hKNfi3RREWlm5OZW/22emDuWsJfK6WuFjlit+s6
+         /ZA3ewcyeE024AhHDgw2q5rUexxbGusjD48bY9wjlJbm6p472O6K44kGcb20QkB5bk23
+         84FzPVH+R+yuhLPbovyxl/bKZHDrCN6wgyoZfiIoBHKPxTK595a+XzSWVq4/s61GNh2y
+         LEVw==
+X-Forwarded-Encrypted: i=1; AKwUvBwV4CGaBFZP5xVvMHzqulW5KaUPmHjgrUegegVq6/fPbJ4t2LHlZPBE2utfk1yFtH+/MKvcgXBLLTuBRIs=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z839nN8q3rVB1b47PjRsrT1P9+GHidyjhL4l4qugHmOp3yTDz9R
+	aj1q+XP26HDaAioZ8evLxo29ICoEp0TEZzMfzyc+fL8paJFQBu0GmB3i
+X-Gm-Gg: AYBFou2BZ1nAisM8LisSf7x8v0XFXcukFT4S3nG3UNFAXwpApVSOidMC+YAP203NGhb
+	m0U2HnMNG/tfku79fmNapIKprQ/fj/HMw6l0FWQHppQyr+5pYa3SBm31B9np1BJT/UH9wSwzAxZ
+	SGr+dQdeSeyJUe2NzwQuOGlsKhe8e8Q2SBwIVgMIkjuSkNnAoOzGG8mWJSRpomi59tIDybTLq9E
+	KgtIY14+D9yFI1zrRmgPrsIid8QuDqo17KNK0axK07DaYsOYVXLth1N0H6kVqb9ksSod3/TzzA+
+	n6+nlTo2y4pWep65yCU5WznVDrCmEP1sfMHt8EEDZgcaATEpRxUBKetm6jWKc+H4eWX3Yrdnny5
+	aB8xj10WAvlJCya78Qbx9odGXKH9x0rFdSzwzaq29pEzMeACehakqI/TyKD+yTzPlMuYr2DkewV
+	7l9Cu5Q4OjzXRSdDOkpw9/ZLma+0gHK7Ff6er+pldWLG71Vc7ZO+tceUTeWtJaNiivjyG78H8Xt
+	np3X0ubDZ8yaJZa5Dg0uyb56DGVD8u+XPA7CeuEaNmK3QA+mnFb8WubiZAS8+whl7FdMtv9u1Fr
+	y/50OaXo+ZM4OdCWhate7jIEOSbu/q7hWFjsiOBirKzmVoL+3mfjTICAZllSaxeGc/fFZrFESYf
+	btz2eYNGqqXsUlUkol8yN/nurTm5qgdxrHIOAFEhbU4Mu
+X-Received: by 2002:a05:701b:2310:b0:1b2:4e79:bfb0 with SMTP id a92af1059eb24-1b24e79cc85mr3514890c88.23.1793875405837;
+        Thu, 05 Nov 2026 02:43:25 -0800 (PST)
 Received: from phuc-desktop.. ([183.91.15.56])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b245c1c272sm15595215c88.8.2026.11.05.02.43.16
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b245c1c272sm15595215c88.8.2026.11.05.02.43.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Nov 2026 02:43:20 -0800 (PST)
+        Thu, 05 Nov 2026 02:43:25 -0800 (PST)
 From: phucduc.bui@gmail.com
 To: Shengjiu Wang <shengjiu.wang@gmail.com>,
 	Shengjiu Wang <shengjiu.wang@nxp.com>,
@@ -88,9 +88,9 @@ Cc: Liam Girdwood <lgirdwood@gmail.com>,
 	linux-sound@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	bui duc phuc <phucduc.bui@gmail.com>
-Subject: [PATCH v2 02/10] ASoC: fsl_sai: Use optional clock getter for MCLKs
-Date: Thu,  5 Nov 2026 17:42:29 +0700
-Message-ID: <20261105104237.38542-3-phucduc.bui@gmail.com>
+Subject: [PATCH v2 03/10] ASoC: fsl_sai: Remove redundant error messages
+Date: Thu,  5 Nov 2026 17:42:30 +0700
+Message-ID: <20261105104237.38542-4-phucduc.bui@gmail.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20261105104237.38542-1-phucduc.bui@gmail.com>
 References: <20261105104237.38542-1-phucduc.bui@gmail.com>
@@ -118,41 +118,54 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: bui duc phuc <phucduc.bui@gmail.com>
 
-The current code uses devm_clk_get() and sets the clock pointer
-to NULL when it returns an error. However, this silently ignores
-errors such as -EPROBE_DEFER, allowing the driver to continue
-probing without the requested clock.
-
-Use devm_clk_get_optional() to handle missing optional clocks
-automatically, and dev_err_probe() to properly propagate other
-errors, including -EPROBE_DEFER.
+The errors are either reported directly by these functions
+or already reported deeper in the call chain, so additional
+dev_err() and dev_warn() calls are unnecessary.
 
 Signed-off-by: bui duc phuc <phucduc.bui@gmail.com>
 ---
- sound/soc/fsl/fsl_sai.c | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+ sound/soc/fsl/fsl_sai.c | 12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
 
 diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index 042885ba415e..44a34f48a0cf 100644
+index 44a34f48a0cf..5532fab80be0 100644
 --- a/sound/soc/fsl/fsl_sai.c
 +++ b/sound/soc/fsl/fsl_sai.c
-@@ -1589,12 +1589,10 @@ static int fsl_sai_probe(struct platform_device *pdev)
+@@ -1615,10 +1615,8 @@ static int fsl_sai_probe(struct platform_device *pdev)
  
- 	for (i = 1; i < FSL_SAI_MCLK_MAX; i++) {
- 		sprintf(tmp, "mclk%d", i);
--		sai->mclk_clk[i] = devm_clk_get(dev, tmp);
--		if (IS_ERR(sai->mclk_clk[i])) {
--			dev_err(dev, "failed to get mclk%d clock: %ld\n",
--					i, PTR_ERR(sai->mclk_clk[i]));
--			sai->mclk_clk[i] = NULL;
--		}
-+		sai->mclk_clk[i] = devm_clk_get_optional(dev, tmp);
-+		if (IS_ERR(sai->mclk_clk[i]))
-+			return dev_err_probe(dev, PTR_ERR(sai->mclk_clk[i]),
-+					     "failed to get mclk%d clock\n", i);
- 	}
+ 	/* read dataline mask for rx and tx*/
+ 	ret = fsl_sai_read_dlcfg(sai);
+-	if (ret < 0) {
+-		dev_err(dev, "failed to read dlcfg %d\n", ret);
++	if (ret < 0)
+ 		return ret;
+-	}
  
- 	if (sai->soc_data->mclk0_is_mclk1)
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq < 0)
+@@ -1698,9 +1696,7 @@ static int fsl_sai_probe(struct platform_device *pdev)
+ 	if (ret < 0)
+ 		dev_warn(dev, "Error reading SAI version: %d\n", ret);
+ 
+-	ret = fsl_sai_reset_hw(dev);
+-	if (ret < 0)
+-		dev_warn(dev, "Failed to reset hardware: %d\n", ret);
++	fsl_sai_reset_hw(dev);
+ 
+ 	/* Select MCLK direction */
+ 	if (sai->mclk_direction_output &&
+@@ -1715,10 +1711,8 @@ static int fsl_sai_probe(struct platform_device *pdev)
+ 
+ 	ret = devm_request_irq(dev, irq, fsl_sai_isr, IRQF_SHARED,
+ 			       np->name, sai);
+-	if (ret) {
+-		dev_err(dev, "failed to claim irq %u\n", irq);
++	if (ret)
+ 		goto err_pm_get_sync;
+-	}
+ 
+ 	if (of_device_is_compatible(np, "fsl,imx952-sai") &&
+ 	    !of_property_read_string(np, "fsl,sai-amix-mode", &str)) {
 -- 
 2.43.0
 
