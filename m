@@ -1,49 +1,69 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ACDBA606D806
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 14:10:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7540B606A329
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 14:42:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=UhsJopj7
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hr3V0onR
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jL42v5SCVz2xN4;
-	Fri, 06 Nov 2026 01:10:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.201
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793887831;
-	cv=none; b=HheDn3srwRzYFSgX3i3gn5N9w8sGLKGbTCYqt/RTXG4vWUtIBKN6v7RCE6iuRu4JX+zJq65SotpCGrZ0p2M2+UGyPjWoYyxAUr8AwUsl2QqGanpyfDOHf/LHNvew3B2ftU56wQpBjVrJ3traMZodN9r3WtG9hcDtOzVS98SmY0cyRE97J3QKG/p9Eipid1FGTNU4tYfYITC17hfo+lEhtCftVoq2Qf2oCN8Wbxq8hEy1dBPjK7QEbf+65A4pIV3rdzeeqFqfMY+HrX30ZcnlJbvYc+qlsOlhTQuG0iz1dWO+J30Ua1CfDpwJTdPjBkBFaqFmxyPR9He4xA9D6CWQmQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jL4lF0z3zz2xN4;
+	Fri, 06 Nov 2026 01:42:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793889721;
+	cv=none; b=nvRcikqAac9OuT8mSHvFSagFKWlL5YWL9BHaJiy0Mm3Msk60J2+21OOJolnA96bynjFPRYf0zms78O242STWE/T8TCITgkwPkjMADPLJNmNNYXnwK2YY5g9GZRROoNd+/spv0sk67X8D0xyFaq27niD6+G32wQii+Y5wUD24uPawI+HujB/RcmHCIf8w8uX93u8afEjz2vjIN8kY72ZdYtLR6/ecTaP5EbAVU46ZMClUzAnEkjBvwvMIlSeGHsJ/tS27xg8F7tBFLYPdC8s67y3q8eJUQjobggMd34/6M5TqkKaYUv1iNFVRaGgl8U5xZyBbZpxUYsdxJCkTty2A9w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793887831; c=relaxed/relaxed;
-	bh=rXYKCnFMOcWT/GHOYQM/Rfu/7o9VqnHXStFCMJH6+uU=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=dEYu4csgPK54O4u2h3U8CGfKCvbkooqJcY0o+IxojvORbaEjK+L6Txdzs5xO66oglCErNCgoiQOKKlpIZDegkoYsCMlRqSHDd4pXkusvU3TFlbbKKwX8BCE5CuD73L/YH43TNn9Ke8BXyHpykkdKEtKoT70RfrYbysMHhe8gQWC8ChWnZQHBmALGSzyVf1YzYF1mNDTB7xtk9jYTJ51Wc8+mhET45eWBLRL/QU8o3mYUm5MbUEnu5H+nAW+qRG9mDRfksKSdt68Vf8o5J/mtkIlLJDeFS/p1wQGK+h4BRO/3mg+wfeLYSq29MPUzJSKXQ2TGdb00+4F8zPqrqaCNiw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=UhsJopj7; dkim-atps=neutral; spf=pass (client-ip=95.215.58.201; helo=mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1793889721; c=relaxed/relaxed;
+	bh=FM0GXu6K3ywCewrFLfc/Mlz2IYTQV7GkWoeDvvAVApY=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=RyOYEigUZnL6D+bza77hEHGZCp5EkS3AjN2QGq3LR64sw9/Fqm9AIdcZczsk8dn0xEARKCn6L95vqEIHuVueNIUqPbO67Xh9YtIUKuWQVCLXjy/AnZGcMFiir4FIwY8x9RVULRYcFEP9+1xPu0iJv4PNdHQok0fdoTEHGlN4rT7iQhe55klCYDy2CQ5D12pmtWiC7yt2sA4MEY++b92qtSlMLhFSb+h+z28Z5F+SgQpvtwr8IMyb0yi7W0p77c/fjDUdBPV1KU93aooQ+NGDBpQFt/RzcilqldP1yWY2Ghtnp8FZX3cXSqZ2jUUnN7oajcYo5Um0agEC5CNQGNS70g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hr3V0onR; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=UhsJopj7;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hr3V0onR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.201; helo=mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta1.migadu.com (out-201.mta1.migadu.com [95.215.58.201])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jL42q5Wy8z2xLt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 01:10:25 +1100 (AEDT)
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=rXYKCnFMOcWT/GHOYQM/Rfu/7o9VqnHXStFCMJH6+uU=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1793887806; v=1; x=1794492606;
- b=UhsJopj7eHfVHFq050D9+MxCSJ5dHBhv8RJ2yrFPYzZTJmr+fFjQwFUL4NIeyiehkWQbe6du
- OwMc6YjYlYxGapwGW6wa+IIA9cAAL3q2QEymLQesF7UnpiBLFL31BY1Z2zzcJ+2U4mahw4VDRVk
- qasCYPCXLuwXvbxG4cxAdrNc=
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by mta12.migadu.com with ESMTPS id dd249d3f7c375ee6;
-	Thu, 05 Nov 2026 14:10:05 +0000
-X-Mizu-Trace-ID: dd249d3f7c375ee6
-X-Migadu-Flow: FLOW_OUT
-Content-Type: text/plain;
-	charset=utf-8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jL4lD2LfRz2x9c
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 01:42:00 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 2518D43212;
+	Thu,  5 Nov 2026 14:41:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D5D741F00919;
+	Thu,  5 Nov 2026 14:41:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793889718;
+	bh=FM0GXu6K3ywCewrFLfc/Mlz2IYTQV7GkWoeDvvAVApY=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=hr3V0onRTktBtJzR21B6OPO3ER33IJufrxsPFAG8sRVMqmOCiXBqVEwwJV4mYFmrb
+	 csJXkI1xRPkFDlI2k732vjzz4WUQUSVwSBjQTfioNJS36BTkmymF0Vyjt1NsvqBTU4
+	 bppwtb37sSiq6LRK8pboFm7Ldr1cehSi2hGHkAUfPagiM3FWq8/fAj5Sig1tRMdAd3
+	 EfwDk46IBN/Ac7QzSb3WCoGhQZCdqLT/JXnM2cy9weebFW+tdUk2cTiAXOWrPJh7hZ
+	 G2AcL0I29/fuLkhmCzd2Zxlk/vRQClpRLmDXtZ9lpbVL7U7VRSntf5QYPhkDpdrChK
+	 4Pd10GbX06qPw==
+Received: from traversing.sirena.org.uk (localhost [IPv6:::1])
+	by traversing.sirena.org.uk (Postfix) with ESMTP id E139A2795E7B;
+	Thu, 05 Nov 2026 14:41:55 +0000 (GMT)
+From: Mark Brown <broonie@kernel.org>
+To: Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
+ Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
+ Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, 
+ Takashi Iwai <tiwai@suse.com>, Frank Li <Frank.Li@nxp.com>, 
+ Sascha Hauer <s.hauer@pengutronix.de>, 
+ Pengutronix Kernel Team <kernel@pengutronix.de>, 
+ Valerio Setti <vsetti@baylibre.com>
+Cc: linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+ linux-kernel@vger.kernel.org
+In-Reply-To: <20261104-imx-sgtl5000-cleanup-v1-1-62739fbb4a25@baylibre.com>
+References: <20261104-imx-sgtl5000-cleanup-v1-1-62739fbb4a25@baylibre.com>
+Subject: Re: [PATCH] ASoC: fsl: imx-sgtl5000: release codec clock right
+ after reading its rate
+Message-Id: <179388475372.2912885.15403731696986720392.b4-ty@b4>
+Date: Thu, 05 Nov 2026 13:19:13 +0000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,110 +76,54 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3901.200.71.1.16\))
-Subject: Re: [PATCH 0/4] mm: Enforce read-only shared vmemmap tail mappings
-From: Muchun Song <muchun.song@linux.dev>
-In-Reply-To: <0851db25-fef3-4f96-8d37-81ad5c51d6c8@kernel.org>
-Date: Thu, 5 Nov 2026 22:09:33 +0800
-Cc: Muchun Song <songmuchun@bytedance.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Oscar Salvador <osalvador@suse.de>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Jonathan Corbet <corbet@lwn.net>,
- Lance Yang <lance.yang@linux.dev>,
- Lorenzo Stoakes <ljs@kernel.org>,
- "Liam R . Howlett" <liam@infradead.org>,
- Vlastimil Babka <vbabka@kernel.org>,
- Mike Rapoport <rppt@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>,
- Michal Hocko <mhocko@suse.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <chleroy@kernel.org>,
- Ritesh Harjani <ritesh.list@gmail.com>,
- Shrikanth Hegde <sshegde@linux.ibm.com>,
- Shuah Khan <skhan@linuxfoundation.org>,
- Randy Dunlap <rdunlap@infradead.org>,
- Qi Zheng <qi.zheng@linux.dev>,
- linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org,
- linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <6492A4DD-B00E-40EA-85D6-93183E8D3ADC@linux.dev>
-References: <20261019090830.1917657-1-songmuchun@bytedance.com>
- <0851db25-fef3-4f96-8d37-81ad5c51d6c8@kernel.org>
-To: "David Hildenbrand (Arm)" <david@kernel.org>
-X-Mailer: Apple Mail (2.3901.200.71.1.16)
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
-	autolearn_force=no version=4.0.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.17-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1165; i=broonie@kernel.org;
+ h=from:subject:message-id; bh=eKulEu67eFyz/ko+paAxBSfq+R8JXOGf+PgSzd22/sk=;
+ b=owGbwMvMwCWm/754w+YLFp2Mp9WSGLLeTN1cv2BWZszG7LU3G+0+vzsn9DyYTd6Z8WAFr/fht
+ 7dnZ5182FHKwiDGxSArpsgSl8X9sr7k9Rq+gwvbYOawMoEMYeDiFICJqJ5h+Ge7aWFf+pdNaldP
+ inCx5FZ0cSc+Y9ixznK3pNQFyStudSmMDAfOrlilOztjJduNMz9CwmaencU7+dNqoSSDW7bRlSV
+ ccxkB
+X-Developer-Key: i=broonie@kernel.org; a=openpgp;
+ fpr=3F2568AAC26998F9E813A1C5C3F436CA30F5D8EB
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi David,
+On Wed, 04 Nov 2026 11:48:35 +0100, Valerio Setti wrote:
+> ASoC: fsl: imx-sgtl5000: release codec clock right after reading its rate
 
-> On Nov 5, 2026, at 18:33, David Hildenbrand (Arm) <david@kernel.org> =
-wrote:
->=20
-> On 10/19/26 11:08, Muchun Song wrote:
->> This series is split out from the earlier, larger series "mm: =
-Generalize
->> HVO for HugeTLB and device DAX" [1]. While the parent series =
-generalizes
->> vmemmap optimization across HugeTLB and device DAX, this subset =
-addresses
->> a single, self-contained step: mapping shared vmemmap tail pages =
-read-only
->> at population time.
->>=20
->> After the previous HugeTLB and device DAX conversions, both can =
-install
->> optimized shared-tail mappings during vmemmap population. These =
-mappings
->> should be read-only because each shared tail vmemmap page backs =
-metadata
->> for many tail pages. HugeTLB applies this protection in a later,
->> subsystem-specific pass, but device DAX currently lacks it.
->>=20
->> This series moves the protection into the generic sparse-vmemmap and
->> powerpc radix population paths. This protects device DAX mappings and
->> makes the HugeTLB-specific vmemmap_wrprotect_hvo() pass redundant. =
-With
->> that pass gone, the bootmem-only optimization wrapper has no distinct
->> work and is removed as well.
->>=20
->> This is intended to be the fifth smaller step toward the broader HVO
->> generalization. The remaining HVO naming and enablement consolidation =
-is
->> left for follow-up series.
->=20
-> I assume this patch series is no longer applicable after we remove the =
-RO
-> protection for HVO.
->=20
-> Or am I missing something? :)
+Applied to
 
-Not quite :) The runtime RO part yes, but the vmemmap population path is
-a different story =E2=80=94 struct page isn't initialized there, so =
-there are no
-concurrent accessors and setting RO is safe.
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-7.5
 
-So we can keep it and enjoy the protection RO gives us: if something =
-goes
-wrong, we catch it right at the first scene. So I think this series is =
-still
-needed.
+Thanks!
+
+[1/1] ASoC: fsl: imx-sgtl5000: release codec clock right after reading its rate
+      https://git.kernel.org/broonie/sound/c/4ab9e4ccfaf7
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
 
 Thanks,
-Muchun
-
->=20
-> --=20
-> Cheers,
->=20
-> David
-
+Mark
 
 
