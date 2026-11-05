@@ -1,63 +1,64 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E6D63606A33E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 15:28:09 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 359E9606A334
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 17:11:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XqBNxwV+
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dRb5/iBo
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jL5mS0kHRz2xN4;
-	Fri, 06 Nov 2026 02:28:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793892488;
-	cv=none; b=WlIUU8wWwrCHqpUyAU8VBrV44WAMVOH/Z1nL6sgkxrnOrOIw/9+W3wlMlHAFbY1r5NS0HYfR3yllIFDAMJlC2/g/9Kk4RMXKVsRwh0ec5AdDFi6J99su6M3vUzHCaMBvGJHULKil0UYoLIk/hA2Zn9RVgWPYo3EJY2WSeg6vV5lUDQYZYw9NIBFmQRkB/Y//Aod9DXWxSeqmRIoa2znq16aXy310kqTe3z1CjmGo7lhbhBd9JRM79VHUecduNBq0ZpeYLOuOz2Fu2df9aPJLd02lGlR3KWfoqg+UDXusbyIiGQKTIKjCRVXQgar8uK0Jr+KdSp9BPAxbZgezR4iVsw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jL83n17fcz2xN4;
+	Fri, 06 Nov 2026 04:11:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793898693;
+	cv=none; b=WV2VWk1czanLMqrEfX+2k23vd2Px+WYGsZS5SR8fPApX2jobaGBgoyHppmVf0txmW2o7/Kq4eMG9kVRqErTa9gFGjNR6kQk/w1GhSBbgHR3ThEHk+vrLJLrE7sNXAB5k33BOknLmfiPP6dbes/JHENteYUtM2xczuDvAikD6RrOgTiWD89+dNZd0QfGHkd5RBNrVbVnsNMuNNPKE0Q0QZwtuoBFMlXfrf+CzfYmaCyyKYN9wDVM/1PNqAN3VLDjeyPIAuglnOfHT9lgh15EIl32FpWqq0dvcZ9hIAulGtcBJGk7WpQg3kmNeTQ7Mq9D7IdWQFrZ7+n8cmb4AAiqOgQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793892488; c=relaxed/relaxed;
-	bh=+16/xh1x9+viQmW1Od4l3PfPuAdn7sLqIJr4E41Pb38=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=EQTZ/pIZmBQ0djrLIWwlH2TIUui1Tv36trEYNQS7XjtsGIUkTH/q0vV/4NYFEFIoCJLm/5IyR5/zO/c1WsG2tFvUvH6DP9AucT4JhGMoIb8Lv6uygFN0LfyIJYMgm+HZDIRRJU1w1KvrddN7MpLJGzhi9FW9L9xFRbrhm56GoOitJvzQmzOKzf4NbnPmjwkcVl51N0YynVDsy5cEeVZxdgP35sscUhynZMe184k7OIw5DCKWyit3QCBpT0ecPWjySb12MV3YYPVuiPfI/Qsujw43O1s4bDYgSRsLm/8/XmjetFxDukDBdfVpt8xtLKFMAZKVEH820w+mlalhIp4Q3Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XqBNxwV+; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=blum@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1793898693; c=relaxed/relaxed;
+	bh=1lAUn012SAJPv8LzmMk8AiQwRTQDqHHs/lnV55r2DN4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=nTzemdkTtANjiWWVjZJ/EBqKpLK5/JDPV3vnDOAVcp3cYkJjkE80in0Wy6CyTMEIo47/wL9GTWU+lGhiuAKvLkZLLbRcvmNA6O5H3ODXgD67+xNSeUv2cdJp4NGSeEzyBHO28CDePgMbes2U+Gu2ICfoMdk1F2vZar2q9nBFbFJKNwufSNUV+OdLDP5r1ILWPt7rMpQml3gMaykDfU/YUEAIwYKi33KkYkXLmVRoVwt1Xm26lhQ7y3Qs8ktBA09l+/T+RA+wv22DdxR6OdLJuzdJmdxbAdKfc35j+B7lpZmMD2lK0KM2pt5z6i5FeAYVWwtrT2whUGAg6W9DGtbrow==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dRb5/iBo; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XqBNxwV+;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dRb5/iBo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=blum@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jL5mR1t2Jz2xLt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 02:28:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4jL83m0RR2z2x9c
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 04:11:31 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2D401609D5;
-	Thu,  5 Nov 2026 15:28:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8AFD61F00A16;
-	Thu,  5 Nov 2026 15:28:01 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with UTF8SMTP id CECF4600E4;
+	Thu,  5 Nov 2026 17:11:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with UTF8SMTPSA id 090091F00919;
+	Thu,  5 Nov 2026 17:11:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793892483;
-	bh=+16/xh1x9+viQmW1Od4l3PfPuAdn7sLqIJr4E41Pb38=;
-	h=From:To:Cc:Subject:Date;
-	b=XqBNxwV+ZKyYMzyvNQtukt1M/M1h7JEcqBKgnFfI1rZvkaFvqzHnBhDwj0zXMtXLX
-	 89zOMlckL9TnEuSFE+kQvJ7SDX+TbNHUbJ9JswH1rX8V/eMD+TjnZDpOdo4tanpAz6
-	 EBRAEvOco2rUbcNzI4dwTNX62byJVQyGAEwewy08okPdoPulW03BRqD9Nw63V3nMsD
-	 /AYGb2tc4CKgw01LbRWZMZo+qn4w/RivkyNHYiWxt6iYi2gC1gn5yGM66kOS4a0R+X
-	 GK8+wZoRA4raCrNsBe6ndCEaL49qkZrv626B4trBkLpQRAIEJ0UZWvwwVU4WJrp1m1
-	 0rfCRSMuVTzSA==
-From: Thorsten Blum <blum@kernel.org>
-To: Geoff Levand <geoff@infradead.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: Thorsten Blum <blum@kernel.org>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/ps3: Remove dead printf() calls from the bootwrapper
-Date: Thu,  5 Nov 2026 16:27:38 +0100
-Message-ID: <20261105152737.359236-2-blum@kernel.org>
-X-Mailer: git-send-email 2.56.0
+	s=k20260515; t=1793898688;
+	bh=1lAUn012SAJPv8LzmMk8AiQwRTQDqHHs/lnV55r2DN4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=dRb5/iBoGD3GMdpCBoaOuagwLk9BSvn+YoVo5zTFnc27LRGk4YS98IPtqJkYKNlur
+	 7s4xR1TumWv4s+UzeIUz7gTeL90ozi4pctzOh8h40XuIFuXs4nmXNji8p5iYXiOnZB
+	 ylr5eeYa1uULnzBolzKbAeyDUxKjBYrBeOJNCdyGtCnTC3aIaa3vT6Y/1ditxwPF61
+	 7xnQXxclgqs/hbtkFEG19EMkk2Hnxh6jNIoS0H2avrUbBxchHvEz1Qi9Kk9a/Ofd5L
+	 jfl2WSKvQlQ1SPtDyE7JdkG38hbFZnKMf5Cn8zJCuohWm/nXAbaVTCe7BGjsivJagk
+	 m1P0QqdNB+5lw==
+Date: Thu, 5 Nov 2026 19:11:24 +0200
+From: Jarkko Sakkinen <jarkko@kernel.org>
+To: Srish Srinivasan <ssrish@linux.ibm.com>
+Cc: linux-integrity@vger.kernel.org, keyrings@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
+	ritesh.list@gmail.com, sshegde@linux.ibm.com, mpe@ellerman.id.au,
+	npiggin@gmail.com, christophe.leroy@csgroup.eu,
+	James.Bottomley@hansenpartnership.com, zohar@linux.ibm.com,
+	linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+	nayna@linux.ibm.com, rnsastry@linux.ibm.com, stable@vger.kernel.org
+Subject: Re: [PATCH v6 1/9] keys/trusted_keys: propagate wrapping key
+ generation errors
+Message-ID: <auy4vLV8CRJB2hKt@kernel.org>
+References: <20261105144320.357260-1-ssrish@linux.ibm.com>
+ <20261105144320.357260-2-ssrish@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,94 +72,52 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2116; i=blum@kernel.org; h=from:subject; bh=/woHg1H5FOYeLNQv7p3oVvU09lNSexbmuU5FdjtVxtc=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFlvFmSmScXPODLJveUJs0zKt/Jqva7Y7Sc5T8+XXvfSv jSJfaFORykLgxgXg6yYIsuDWT9m+JbWVG4yidgJM4eVCWQIAxenAEzEdBnD/0xRhgNykfd8vY0/ xy7Y+3Lx4qvxrCuKFNjPBXB2pMVJejAynJf82v/u2wP+/qyY0t6/ubJFJnMtUp1zlgdfkllktPU /KwA=
-X-Developer-Key: i=blum@kernel.org; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261105144320.357260-2-ssrish@linux.ibm.com>
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The bootwrapper uses an empty console write callback, so its printf()
-calls produce no output. Remove them and the empty ps3_console_write()
-callback. Also leave console_ops.write unset and remove now-unused
-header includes.
+On Thu, Nov 05, 2026 at 08:13:12PM +0530, Srish Srinivasan wrote:
+> plpks_gen_wrapping_key() returns a negative errno when default wrapping key
+> generation fails. However, trusted_pkwm_init() returns -EINVAL for all such
+> failures, discarding the original error.
+> 
+> Propagate the error returned by plpks_gen_wrapping_key() unchanged.
+> 
+> Fixes: c99fcb0d735b ("keys/trusted_keys: establish PKWM as a trusted source")
+> Cc: stable@vger.kernel.org # 7.0
+> Signed-off-by: Srish Srinivasan <ssrish@linux.ibm.com>
+> Tested-by: R Nageswara Sastry <rnsastry@linux.ibm.com>
 
-Signed-off-by: Thorsten Blum <blum@kernel.org>
----
- arch/powerpc/boot/ps3.c | 21 ---------------------
- 1 file changed, 21 deletions(-)
+Nit: I'd put the SOB as last.
 
-diff --git a/arch/powerpc/boot/ps3.c b/arch/powerpc/boot/ps3.c
-index 89ff46b8b225..c557f90cdd82 100644
---- a/arch/powerpc/boot/ps3.c
-+++ b/arch/powerpc/boot/ps3.c
-@@ -6,12 +6,10 @@
-  *  Copyright 2007 Sony Corp.
-  */
- 
--#include <stdarg.h>
- #include <stddef.h>
- #include "types.h"
- #include "elf.h"
- #include "string.h"
--#include "stdio.h"
- #include "page.h"
- #include "ops.h"
- 
-@@ -37,18 +35,10 @@ static void prep_cmdline(void *chosen)
- 		getprop(chosen, "bootargs", cmdline, BOOT_COMMAND_LINE_SIZE-1);
- 	else
- 		setprop_str(chosen, "bootargs", cmdline);
--
--	printf("cmdline: '%s'\n", cmdline);
--}
--
--static void ps3_console_write(const char *buf, int len)
--{
- }
- 
- static void ps3_exit(void)
- {
--	printf("ps3_exit\n");
--
- 	/* lv1_panic will shutdown the lpar. */
- 
- 	lv1_panic(0); /* zero = do not reboot */
-@@ -83,12 +73,6 @@ static int ps3_repository_read_rm_size(u64 *rm_size)
- 		0x7075000000000000ULL, ppe_id, 0x726d5f73697a6500ULL, rm_size,
- 		&v2);
- 
--	printf("%s:%d: ppe_id  %lu \n", __func__, __LINE__,
--		(unsigned long)ppe_id);
--	printf("%s:%d: lpar_id %lu \n", __func__, __LINE__,
--		(unsigned long)lpar_id);
--	printf("%s:%d: rm_size %llxh \n", __func__, __LINE__, *rm_size);
--
- 	return result ? -1 : 0;
- }
- 
-@@ -107,11 +91,8 @@ void platform_init(void)
- 	unsigned long ft_addr;
- 	u64 rm_size;
- 
--	console_ops.write = ps3_console_write;
- 	platform_ops.exit = ps3_exit;
- 
--	printf("\n-- PS3 bootwrapper --\n");
--
- 	simple_alloc_init(_end, heapsize, 32, 64);
- 	fdt_init(_dtb_start);
- 
-@@ -131,8 +112,6 @@ void platform_init(void)
- 
- 	ps3_copy_vectors();
- 
--	printf(" flat tree at 0x%lx\n\r", ft_addr);
--
- 	((kernel_entry_t)0)(ft_addr, 0, NULL);
- 
- 	ps3_exit();
+> ---
+>  security/keys/trusted-keys/trusted_pkwm.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/security/keys/trusted-keys/trusted_pkwm.c b/security/keys/trusted-keys/trusted_pkwm.c
+> index bf42c6679245..422f752598e1 100644
+> --- a/security/keys/trusted-keys/trusted_pkwm.c
+> +++ b/security/keys/trusted-keys/trusted_pkwm.c
+> @@ -170,7 +170,7 @@ static int trusted_pkwm_init(void)
+>  	ret = plpks_gen_wrapping_key();
+>  	if (ret) {
+>  		pr_err("Failed to generate default wrapping key\n");
+> -		return -EINVAL;
+> +		return ret;
+>  	}
+>  
+>  	return register_key_type(&key_type_trusted);
+> -- 
+> 2.52.0
+> 
+
+Reviewed-by: Jarkko Sakkinen <jarkko@kernel.org>
+
+Br, Jarkko
 
