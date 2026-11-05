@@ -2,51 +2,51 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 527C2606EEB7
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 21:34:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4AD46606D817
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 21:34:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FB44KVZY
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cFhjc+G4
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLFv274TCz3cB0;
-	Fri, 06 Nov 2026 08:34:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793914462;
-	cv=none; b=CIjBUJpIUxJR7zp70ILGatjGuuMunKtwxOEho/0Fzfxibbc667A8+4+Js/goT6dgjRVtLf5Y16oBm/ARmdoeKbPXUoiRGzjm85XxjhYKElTicyGe1kUYNNdp+XOZ4UbFSCU8QvPyO9UFitcYHyIRoO9vsJiqcWKmQU4QnAbPdRr1ICbqHabSxSq1aGLWN4pIDsroAiw/4BgG+wFBQG00z8qY4F3uqSpXIj6rq1RKTNEjQDjQ5FaNWJsMLtl1H7Hcc0/RpTBjMWb9fzxSh62vKUgSq7eQQ7iZSzrXjcCTIGiaKIH6SksX+L4j0Wrmb7tyN64clsuxr8kR/czGmyO5eA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLFvR74nZz3c8n;
+	Fri, 06 Nov 2026 08:34:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793914483;
+	cv=none; b=KImH1Vn8alYucPAVblh4g2dzXtgoSKQ1sEmYEN1EJvL6rr4VP0H6leisV4yDGaoOCCindkssWytY4fqW9wL+SCmzcxl3b+V0UvZVdoGYxkXlxYZURCGjlUTLAtsLMl/NMlImgWVU2r7NfJ+XbL/+N6BR+LxUfPWGJru3fX7G6vIrCtGKgcESrIoFpXCqNE7eFKW4oy/4PP/Hfzfo0OoMrHb4B2SDHWmjupFZdbESQnEDptV633069L26Aud2TmEsRh+suHPz/SeRsGSCR6Fiod47nsV9wION2g7VgR/tdszmdTCsAzrDjjLiahcXNblXGsLVgtKeZIwC45DQqtFk0g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793914462; c=relaxed/relaxed;
-	bh=yugPCJWELV1xpKfK4O7FyYZfkGoZI5YKsROj+R4zujY=;
+	t=1793914483; c=relaxed/relaxed;
+	bh=9BAEEweiBOL00ynx8QFZHsM3C6FC3rJdJpwUxIRdWLY=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=aKHktVtpwttyiKLEpcqN6OhnVE2fn6AHHDq6j1TXfClZoN68kK7yofH4TyLhJIV9fTWVapamd/ZAKlhMNnIdqBeVUzQDRr7Qx04gUjxm9xBQDCbXvHAQf4M3xzZLrUALeKZCpRvhv5lAttO9YKRwUhDfdhvMSCw+fs/cL2suDStpcAK/dF1eVpIwyjy6X/GaX4B8qktY3PiJi5JnJGnfyhORD7GMxRZr+OA6peJHqwtzLQ3+yLpNIzNd3Gd5ykSZ+No9W32XfPt6f16/QCE9rWvkyGbDJH2VPppnGJVTJ10o4Imo7rjSiNIQf8nyd1+PqnaimWqcSk6XmAePt0hcFw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FB44KVZY; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=bwC+XQ50u1IjT8ukLZ1J1YD/QrYze3CJ4CH/RF/1FYw1RnS4AlPEm380Hy7Ftr3S0iQGGaFyCur+RV5k/feAGC5+PACqo4MlO6qKZMEeZK8hFhYR3r9djYodhZNdAY20wfU8xiGzIXCQ8wfRivNeAhVNFasP05lbb0uGlawjUU1Y5hrhTwfwZ2vxR+lwtReMhK2vx/JK8G/9v4ssK8lDYz98ar/pC7bnR+1v8UbIB+iQJ/x62hcyhNa8F4Nhze/fa+b/ZGBoWH8ups9XeHK8cDaRgfP6YJhxZvq2kiUswhs1TgHEabd0B/1LCw/fG3Y40+tiRmxohcfrc55imwiAbQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cFhjc+G4; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FB44KVZY;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cFhjc+G4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLFv21tFlz3c96
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 08:34:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLFvQ74lLz3c8m
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 08:34:42 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 867214392B;
+	by tor.source.kernel.org (Postfix) with ESMTP id 5FB7A605DC;
+	Thu,  5 Nov 2026 21:34:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DD5B51F0089F;
 	Thu,  5 Nov 2026 21:34:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0210E1F008A1;
-	Thu,  5 Nov 2026 21:34:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793914460;
-	bh=yugPCJWELV1xpKfK4O7FyYZfkGoZI5YKsROj+R4zujY=;
+	s=k20260515; t=1793914480;
+	bh=9BAEEweiBOL00ynx8QFZHsM3C6FC3rJdJpwUxIRdWLY=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=FB44KVZYOhJT1YlS6i0LyQDM/pa7pB+3TCYgAO+hofV0IlW6TnQvGUQSfSiuPZqrE
-	 EJtaBhoyIR6GcgaxYIK/kCqjpb22jYqP49GznKx8e3tvIOudb8xMlePEiW3wRWX3Ah
-	 I9l3VYR6aPG8Jn61Cr3cct75FaSdaBoYtRTEjXL7YQhjxsH5UEb3aPzKxbub50CvvN
-	 4SxfLf85UGAZ/ServkXlWuZQvXu2fK1/cMbbUKSOO8iyPghvMFyZso9HYleZV2qnv3
-	 DaKdGCchqc6cHurc24RCJNc7lXJv0A10DB+7MedX92odZfrtEMDNonlWuXNfQtkCBT
-	 LZ074p1E43cIw==
+	b=cFhjc+G4G8gAyk4Q5vXifNOkvLi+qJxrRxnxHYYDQaK+C7JgQljPw+EI6OCSe/N+9
+	 xMlvS2piE0LrB1a5VTU7L5xnhvOT6DEAAwLGSQglGTVNL96iuGR5eut/CJS15JpRZZ
+	 T4aqXqix0udU7Cq4t975/38o7eS2biU4lIoGAX4qf6m04ezs8PVPD8BG+vWnm9rBEE
+	 Oyt/adVbaxtaaBvFhlWJpJZJA3NH2bxr78iwIzN+H2MdZo56SZXYqcsxsd6zc1SCu6
+	 zJlxru9KNyefxR8kgepJDYKL3Ee14uePoCd06S3wGCFo93bqAQEkxrXYu7O9c4s6E6
+	 0jwvYv9uMCYKw==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Thu, 05 Nov 2026 21:31:00 +0000
-Subject: [PATCH 09/13] fs/proc/task_mmu: convert VMA flag tests to use
+Date: Thu, 05 Nov 2026 21:31:01 +0000
+Subject: [PATCH 10/13] fs/coredump: convert vma_dump_size() to use
  vma_flags_t
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261105-late-2026-vma-flags-v1-9-0d3cd15ab75f@kernel.org>
+Message-Id: <20261105-late-2026-vma-flags-v1-10-0d3cd15ab75f@kernel.org>
 References: <20261105-late-2026-vma-flags-v1-0-0d3cd15ab75f@kernel.org>
 In-Reply-To: <20261105-late-2026-vma-flags-v1-0-0d3cd15ab75f@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -123,179 +123,93 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-integrity@vger.kernel.org, selinux@vger.kernel.org, 
  "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5492; i=ljs@kernel.org;
- h=from:subject:message-id; bh=ulPrq/NTHlGJ37qdVO5tRAZqEZAYcflQE7jG4GXbH0A=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLefF0uLVlyimvWeaGrUx/zn2HJkjuz4UHUiW3u65fJM
- z24X1pt0VHKwiDGxSArpsjy/Iv4/iCRsHmdF/zdYOawMoEMYeDiFICJeEkxMtxUW6bavNnbOteQ
- u3F2/KTPJ14+yNjx4NqFvjUzje2jD51lZHg5vTDNzqaCL2RxJ0O60EFuFt7+U1ss9s9u6aljniu
- awQ0A
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2595; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=CJSeLd0QU97/MNyt+Xu3ONZE6gMT2KeSXtSTxKcXbcA=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLefF2+Wcxvf8HKmsddSYcNS2Mf8UkEKGQq/Dfj1Ozau
+ CVwU+23jlIWBjEuBlkxRZbnX8T3B4mEzeu84O8GM4eVCWQIAxenAEzkkhojw62W/gCj5yc+tyxq
+ 3Hzd+nvtJbNWwdnLRMyFpy01udxn/5nhF7Nz19UZAhMCvHzv6D0ysDkXmZwW7mzJL2Nf+Ob/s/0
+ q3AA=
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Replace use of the legacy vm_flags_t flags with vma_flags_t values where
-VMA flags are tested directly in /proc/$pid/[s]maps, pagemap, clear_refs
-and PROCMAP_QUERY.
+Replace use of the legacy vm_flags_t flags with vma_flags_t values when
+determining how much of a VMA to dump.
 
-In replacing vm_flags_clear() (which takes the VMA write lock) with
-vma_clear_flags() (which does not) in clear_refs_write(), we explicitly
-write lock the VMA. The mmap write lock is already held at this point.
-
-The show_vma_header_prefix() and show_smap_vma_flags() output functions and
-the thp_vma_allowable_orders() call continue to use legacy flags for the
-time being.
+The flags copied into struct core_vma_metadata remain legacy flags as they
+are consumed by the binfmt handlers.
 
 No functional change intended.
 
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- fs/proc/task_mmu.c | 43 ++++++++++++++++++++++---------------------
- 1 file changed, 22 insertions(+), 21 deletions(-)
+ fs/coredump.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-index 22361607020d..b6e8ef15e40e 100644
---- a/fs/proc/task_mmu.c
-+++ b/fs/proc/task_mmu.c
-@@ -569,18 +569,18 @@ static struct vm_area_struct *query_matching_vma(struct proc_maps_locking_ctx *l
+diff --git a/fs/coredump.c b/fs/coredump.c
+index b25ef2ffbdee..6ebc04421b91 100644
+--- a/fs/coredump.c
++++ b/fs/coredump.c
+@@ -1835,15 +1835,15 @@ static unsigned long vma_dump_size(struct vm_area_struct *vma,
+ 	if (always_dump_vma(vma))
+ 		goto whole;
  
- 	/* VMA permissions should satisfy query flags */
- 	if (flags & PROCMAP_QUERY_VMA_FLAGS) {
--		u32 perm = 0;
-+		vma_flags_t perm = EMPTY_VMA_FLAGS;
+-	if (vma->vm_flags & VM_DONTDUMP)
++	if (vma_test(vma, VMA_DONTDUMP_BIT))
+ 		return 0;
  
- 		if (flags & PROCMAP_QUERY_VMA_READABLE)
--			perm |= VM_READ;
-+			vma_flags_set(&perm, VMA_READ_BIT);
- 		if (flags & PROCMAP_QUERY_VMA_WRITABLE)
--			perm |= VM_WRITE;
-+			vma_flags_set(&perm, VMA_WRITE_BIT);
- 		if (flags & PROCMAP_QUERY_VMA_EXECUTABLE)
--			perm |= VM_EXEC;
-+			vma_flags_set(&perm, VMA_EXEC_BIT);
- 		if (flags & PROCMAP_QUERY_VMA_SHARED)
--			perm |= VM_MAYSHARE;
-+			vma_flags_set(&perm, VMA_MAYSHARE_BIT);
+ 	/* support for DAX */
+ 	if (vma_is_dax(vma)) {
+-		if ((vma->vm_flags & VM_SHARED) &&
++		if (vma_test(vma, VMA_SHARED_BIT) &&
+ 		    COREDUMP_MEMORY_TYPE_INCLUDE(memory_types, DAX_SHARED))
+ 			goto whole;
+-		if (!(vma->vm_flags & VM_SHARED) &&
++		if (!vma_test(vma, VMA_SHARED_BIT) &&
+ 		    COREDUMP_MEMORY_TYPE_INCLUDE(memory_types, DAX_PRIVATE))
+ 			goto whole;
+ 		return 0;
+@@ -1851,21 +1851,21 @@ static unsigned long vma_dump_size(struct vm_area_struct *vma,
  
--		if ((vma->vm_flags & perm) != perm)
-+		if (!vma_test_all_mask(vma, perm))
- 			goto skip_vma;
+ 	/* Hugetlb memory check */
+ 	if (vma_is_hugetlb(vma)) {
+-		if ((vma->vm_flags & VM_SHARED) &&
++		if (vma_test(vma, VMA_SHARED_BIT) &&
+ 		    COREDUMP_MEMORY_TYPE_INCLUDE(memory_types, HUGETLB_SHARED))
+ 			goto whole;
+-		if (!(vma->vm_flags & VM_SHARED) &&
++		if (!vma_test(vma, VMA_SHARED_BIT) &&
+ 		    COREDUMP_MEMORY_TYPE_INCLUDE(memory_types, HUGETLB_PRIVATE))
+ 			goto whole;
+ 		return 0;
  	}
  
-@@ -647,13 +647,13 @@ static int do_procmap_query(struct mm_struct *mm, void __user *uarg)
- 	karg.vma_end = vma->vm_end;
+ 	/* Do not dump I/O mapped devices or special mappings */
+-	if (vma->vm_flags & VM_IO)
++	if (vma_test(vma, VMA_IO_BIT))
+ 		return 0;
  
- 	karg.vma_flags = 0;
--	if (vma->vm_flags & VM_READ)
-+	if (vma_test(vma, VMA_READ_BIT))
- 		karg.vma_flags |= PROCMAP_QUERY_VMA_READABLE;
--	if (vma->vm_flags & VM_WRITE)
-+	if (vma_test(vma, VMA_WRITE_BIT))
- 		karg.vma_flags |= PROCMAP_QUERY_VMA_WRITABLE;
--	if (vma->vm_flags & VM_EXEC)
-+	if (vma_test(vma, VMA_EXEC_BIT))
- 		karg.vma_flags |= PROCMAP_QUERY_VMA_EXECUTABLE;
--	if (vma->vm_flags & VM_MAYSHARE)
-+	if (vma_test(vma, VMA_MAYSHARE_BIT))
- 		karg.vma_flags |= PROCMAP_QUERY_VMA_SHARED;
+ 	/* By default, dump shared memory if mapped from an anonymous file. */
+-	if (vma->vm_flags & VM_SHARED) {
++	if (vma_test(vma, VMA_SHARED_BIT)) {
+ 		if (file_inode(vma->vm_file)->i_nlink == 0 ?
+ 			    COREDUMP_MEMORY_TYPE_INCLUDE(memory_types, ANON_SHARED) :
+ 			    COREDUMP_MEMORY_TYPE_INCLUDE(memory_types, FILE_SHARED))
+@@ -1888,7 +1888,7 @@ static unsigned long vma_dump_size(struct vm_area_struct *vma,
+ 	 * dump the first page to aid in determining what was mapped here.
+ 	 */
+ 	if (COREDUMP_MEMORY_TYPE_INCLUDE(memory_types, ELF_HEADERS) &&
+-	    vma->vm_pgoff == 0 && (vma->vm_flags & VM_READ)) {
++	    vma->vm_pgoff == 0 && vma_test(vma, VMA_READ_BIT)) {
+ 		if ((READ_ONCE(file_inode(vma->vm_file)->i_mode) & 0111) != 0)
+ 			return PAGE_SIZE;
  
- 	karg.vma_page_size = vma_kernel_pagesize(vma);
-@@ -970,7 +970,7 @@ static void smaps_pte_entry(pte_t *pte, unsigned long addr,
- {
- 	struct mem_size_stats *mss = walk->private;
- 	struct vm_area_struct *vma = walk->vma;
--	bool locked = !!(vma->vm_flags & VM_LOCKED);
-+	bool locked = vma_test(vma, VMA_LOCKED_BIT);
- 	struct page *page = NULL;
- 	bool present = false, young = false, dirty = false;
- 	pte_t ptent = ptep_get(pte);
-@@ -1017,7 +1017,7 @@ static void smaps_pmd_entry(pmd_t *pmd, unsigned long addr,
- {
- 	struct mem_size_stats *mss = walk->private;
- 	struct vm_area_struct *vma = walk->vma;
--	bool locked = !!(vma->vm_flags & VM_LOCKED);
-+	bool locked = vma_test(vma, VMA_LOCKED_BIT);
- 	struct page *page = NULL;
- 	bool present = false;
- 	struct folio *folio;
-@@ -1728,7 +1728,7 @@ static int clear_refs_test_walk(unsigned long start, unsigned long end,
- 	struct clear_refs_private *cp = walk->private;
- 	struct vm_area_struct *vma = walk->vma;
- 
--	if (vma->vm_flags & VM_PFNMAP)
-+	if (vma_test(vma, VMA_PFNMAP_BIT))
- 		return 1;
- 
- 	/*
-@@ -1798,9 +1798,10 @@ static ssize_t clear_refs_write(struct file *file, const char __user *buf,
- 
- 		if (type == CLEAR_REFS_SOFT_DIRTY) {
- 			for_each_vma(vmi, vma) {
--				if (!(vma->vm_flags & VM_SOFTDIRTY))
-+				if (!vma_test(vma, VMA_SOFTDIRTY_BIT))
- 					continue;
--				vm_flags_clear(vma, VM_SOFTDIRTY);
-+				vma_start_write(vma);
-+				vma_clear_flags(vma, VMA_SOFTDIRTY_BIT);
- 				vma_set_page_prot(vma);
- 			}
- 
-@@ -1904,7 +1905,7 @@ static int pagemap_pte_hole(unsigned long start, unsigned long end,
- 			break;
- 
- 		/* Addresses in the VMA. */
--		if (vma->vm_flags & VM_SOFTDIRTY)
-+		if (vma_test(vma, VMA_SOFTDIRTY_BIT))
- 			pme = make_pme(0, PM_SOFT_DIRTY);
- 		for (; addr < min(end, vma->vm_end); addr += PAGE_SIZE) {
- 			err = add_to_pagemap(&pme, pm);
-@@ -1976,7 +1977,7 @@ static pagemap_entry_t pte_to_pagemap_entry(struct pagemapread *pm,
- 	}
- 
- out:
--	if (vma->vm_flags & VM_SOFTDIRTY)
-+	if (vma_test(vma, VMA_SOFTDIRTY_BIT))
- 		flags |= PM_SOFT_DIRTY;
- 
- 	return make_pme(frame, flags);
-@@ -1994,7 +1995,7 @@ static int pagemap_pmd_range_thp(pmd_t *pmdp, unsigned long addr,
- 	struct folio *folio = NULL;
- 	int err = 0;
- 
--	if (vma->vm_flags & VM_SOFTDIRTY)
-+	if (vma_test(vma, VMA_SOFTDIRTY_BIT))
- 		flags |= PM_SOFT_DIRTY;
- 
- 	if (pmd_none(pmd))
-@@ -2116,7 +2117,7 @@ static int pagemap_hugetlb_range(pte_t *ptep, unsigned long hmask,
- 	int err = 0;
- 	pte_t pte;
- 
--	if (vma->vm_flags & VM_SOFTDIRTY)
-+	if (vma_test(vma, VMA_SOFTDIRTY_BIT))
- 		flags |= PM_SOFT_DIRTY;
- 
- 	ptl = huge_pte_lock(hstate_vma(vma), walk->mm, ptep);
-@@ -2625,13 +2626,13 @@ static int pagemap_scan_test_walk(unsigned long start, unsigned long end,
- 		 */
- 	}
- 
--	if (vma->vm_flags & VM_PFNMAP)
-+	if (vma_test(vma, VMA_PFNMAP_BIT))
- 		return 1;
- 
- 	if (wp_allowed)
- 		vma_category |= PAGE_IS_WPALLOWED;
- 
--	if (vma->vm_flags & VM_SOFTDIRTY)
-+	if (vma_test(vma, VMA_SOFTDIRTY_BIT))
- 		vma_category |= PAGE_IS_SOFT_DIRTY;
- 
- 	if (!pagemap_scan_is_interesting_vma(vma_category, p))
 
 -- 
 2.56.0
