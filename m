@@ -2,81 +2,81 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DED39606A332
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 17:23:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 58391606D813
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 17:23:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=M66zh3t0
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iFay9PoQ
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jL8K839cFz30C0;
-	Fri, 06 Nov 2026 04:23:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jL8KC1RM5z2yMK;
+	Fri, 06 Nov 2026 04:23:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25" arc.chain=kernel.org
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793899388;
-	cv=pass; b=eAuMreKd3gscZMD0ndRP0TUVPAHAxYOvJLACYvTQCHuzr+4x2DdHjiGoZlw9A6xy35g2jzlLsK23v5PyDvuLwbzPEA2pG6maocljRAV4tbG+xKfDsFRt+y8nt2VFGzi8mx7s77ce+xWM8RKbB/9/P3+jtt+hG+x/29dDOAmeM7xmQWvJfclxfl4PjZTBkSj25V/D4Rr7Qwl2yx0EFyM+ESDpWqlhYA5g0RASTgWYZ+pCto5IctcmwoI7zri88cSOzmH1zdg8WkEbgjp52y86JlUzHm+6M1muvAHyLBF0z7gwqhDLCWxnygxUwXvdT2Y6LOPvYRN0nzVYvqqwe96ONw==
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793899391;
+	cv=pass; b=MOz7MUfgw45QgMhOrLeKwegev2OTHXlsPTw33ZuArGNbJTdUtHyMBT4qgJ2iSWhZSfUBJ2HSVADu3mrbQbyTLcQVnstsm5/0v5/bR+hNIZ/ngCouhYYbVv+s/gaIG9OoGqeakLHSxnn+2qaMN6F6IP1ojLz5eCvuX+xGiADSBBTlid9cdYsDUdB5evXEMUXsUnr15cnPyvWJ+3+6Jz3X7UNVPFK2/eVNWF+DgqGGXBNfPPu/SAvnNWRNgyvfHETbxLIBEWYSPYQ9pATBzNUnlXTM5wUdxsBQO2c7QaJrqU8dQGOocLPO6kRfrcmF805eBoXwTQ80MW1zXKkk0ZZOuw==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793899388; c=relaxed/relaxed;
-	bh=bTFd8OGkOEJ8Ouap3vp9tt8/FXePakiOpC2goVYeBYo=;
+	t=1793899391; c=relaxed/relaxed;
+	bh=ShvgX4q4RTycjiB/+JYXHXQZm0rY2E9eoZX/i/J6hkE=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=BIo586xrregvoXtPN8mEV/QopYg3ijE5T0ElJp4ac9jnzwF2jgpKST4yqvWGnD/xn3Se+TYudTD8ePtGgjfsL/4dF5BSm/SEcyg+OgIN4D55VkuKeaOsMrtY0PSW51okJ+ecHPWvggycKWI4JgQmUfTKfvfAmtJ/L9XYY0UZnNN5vQxdfsPwJbBhYC4unyThNpq5Wn/GkVocnbNEKrRRgJ8LrCM8wfPDh2nG9SNro3irxj2+csQgm8CendkVUftFXWOLmT3HFTJGo1JdVG3KFYpCNdSQMqDbJd33YVBQEa5qeXeTllyrSQIUDoqgLJcRNzIa08iPgCGvd1BjGKoV8g==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=M66zh3t0; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+davemarq.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=DIphyu/t+3Fr0ykkdxe9DC+yHufh/Rm2b5Z1nanr3v2m8HAmqv9d5dPoc5D1MsqEP+/SMtFCDJ0TTodrr1e9k4ipUma99hVIK30gxh6OiPkHoO213h/pCSDxDzVDn4Ag+AT1D9nCN8Z35ymSRqFMOca77GkzqgNOa09VFlPrGxUjEJLrab8i32MT05Ac/8wcqTigSeUizqWTYr5kkDKZBLN7ZIojk7QqBeG02EwXGEmuHhOtizPwfePRphTcbKfX/YfT7J1iBw5RM74I0L+tKE8xmYFZhrQ+RDAu2ZPN5VxGIeX3ak+L6xDbXw+EEliK5JaA4gf8R9+LVdBgYzVHQw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iFay9PoQ; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+davemarq.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=M66zh3t0;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iFay9PoQ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+davemarq.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jL8K41P5rz2yMK
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 04:23:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jL8K62R6Bz2ygW
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 04:23:05 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id BAEED40578;
-	Thu,  5 Nov 2026 17:23:01 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 967FC40552;
+	Thu,  5 Nov 2026 17:23:03 +0000 (UTC)
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1793899381;
-	b=gqaEr14cTpJ2pLvtfvaMu0A7f3YVT8fH0iCSlXuCllJdkVpmZVNp2PpzznwEvZ1z6CvN
-	 iRZpGVcGkhiUWgdQ0JgBXcJ6qxuXFNemkEtyfCw6BV+M2JEZgMVCJgt00CtiOgjnSwrTW
-	 XrNYeqXTs2ThuzuyK/rBezc7Y/8V5EfvCouHGHUYQ8ve5QpFdlQCXhXgK8nhBl4XL2rVw
-	 CJTQ3CJ61+mJR65iFky+sq+toqBGUE2xXXB7ShiAu8SfUiZmpFp1CAekRN62DuCNnWMSw
-	 uM+/7Wkw2q02j20eyBheW2r8PWva3XpGY+HQ0gu5D6/2AGKqkcjpGjVSeVcSjjC6cTg==
+	t=1793899383;
+	b=YLZLgJV9PhfaLnpBexC3PiujVkW2Yz4JFSS+VX/ETat1+zP/ehcF6JxruU0jdPbRgl4k
+	 VsH8oGq/zpJxbYvf2UraYeH1rNdGilgWlju2vyjIEyAOvAgtT7eu8TIAQhARkJ7CegbGv
+	 xIrYsGB/1gO9aiAIDvH3RR+wplH94juJuQsM/d0YXH6gntO+RR+OGnk0Nu2K65Ury8Iuh
+	 ScLzhlQwizOQWRCXlDo0dP2u+Npk/qMdCtcRvPxw0kzXawzJsuCkd2jgdp+lDp7wZQgwA
+	 KrdnqUs1dBIAfk5u2wNi7R5luR8eP7AhsEGZJJchrvIQhuHLS9SrS+mzpstIvqfw+OA==
 ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793899381;
+	c=relaxed/relaxed; t=1793899383;
 	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
 	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
 	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
 	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=bTFd8OGkOEJ8Ouap3vp9tt8/FXePakiOpC2goVYeBYo=;
-	b=gTJtTIAMeaSoyTz7rb9Gl8+youDdRDnFB1mEpL5Wb/2Bxmzbp9fnu9B6GKczJU5VW6AB
-	 hxmuTTxS6AFwQ6ic6vdBc59CoktGGND1asDAjDvSHnORrVmtfCe//YW5ij2tEXnAzV/Yr
-	 7mxnFSnVhj8jHXePitFhGqOhIbmaJXfpE07f1E5zvAbmk3FCGvXx8QWW2YqRNJc3OxSz0
-	 5iSPEqp3fnUvCZpPO8ynzjash+NSuAP115UCdmuPsl3c04TVZc77CuJzPOKIrDVna9dLt
-	 mwhldsHQeRIO0rRKQ9an0Cc6Cq7OVA1LBK30zZdo9nC/TbtRuF9sbMAdjp46oH777Nw==
+	bh=ShvgX4q4RTycjiB/+JYXHXQZm0rY2E9eoZX/i/J6hkE=;
+	b=hsAd1uOoK8Ov2gfi5IPgu4QrH4kJOicPpQlYpXVImvNdTfV+iShMiUbu0L17zhi/YVVl
+	 QX4nHLUeN5C6kaKnUXZVGhhLNRqDaATICEwrEwyMXGmWB8E5rGlbfZGIbtBGFVYUYZFqh
+	 HJY3FLmTdCHRW1nSr2Wnt+NArUC868H4Y1k0RewS16GG6esZu2+eSGtchuWbyoMvsKjDM
+	 fEQZj4FpDqJS9uLDxQMBD2zqPYcZf7tm33D/COscl9TG7tltjwARjhcYZK/16uSWVru4U
+	 zd2uTwnXir5MLfz57AFm660tO8QEm13KuleEXmYfKVibOAOMNd9/ktDaaypzAR9Auqg==
 ARC-Authentication-Results: i=1; smtp.kernel.org; 
 	arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 8DF8B1F00A1C;
-	Thu,  5 Nov 2026 17:23:00 +0000 (UTC)
+	by smtp.kernel.org (Postfix) with ESMTPS id 625D21F00A2B;
+	Thu,  5 Nov 2026 17:23:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793899381;
-	bh=bTFd8OGkOEJ8Ouap3vp9tt8/FXePakiOpC2goVYeBYo=;
+	s=k20260515; t=1793899383;
+	bh=ShvgX4q4RTycjiB/+JYXHXQZm0rY2E9eoZX/i/J6hkE=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=M66zh3t0runKu9aY6uPqFX0ZqGjrnv2oPdXYp6XTUnE6Hgm1Q810J6YQtqjGwDnDs
-	 x5LubcqA+2HHhKFchW4FKwvawaYLYFI/vhDqa0I6l3HG6F6Tpt7JvnnmIqhUEBEXq4
-	 iQYjmNm8asPSm8+a4NXx7JV9RRtQY+lTw9s16xvpfd2BpdQ2018g4LO1YyG/QXTOo+
-	 eHm+U45aAvDdRjcEe3dsMED6pAUUJiiwbliRxYxP1MKtX8cnOKWEtqJPj0ikYtJiDA
-	 903ljZkbZ6J3PczDM5vaNf62u33AKQXn+NJhQd/4EhGwHZLG4H8NHwTfAE2EQx80LG
-	 Pb6xq+VkmWcuA==
+	b=iFay9PoQajhIdN5ILHk09qeJSqi1L3BuXWhc8vPMjgs8duyxect64ZN8gonPFHWEg
+	 u8tzt+RecMDStCA46fQW6XG1w8ddDOia+XLdQC11DMpwJKjMSqNL8aM7AuTrDyvYye
+	 A1rPJuDrygXV72+9oeIu55DpIULAGn+DLgPZqPng+soiitS5ml2TtxefWrXjbg6HSJ
+	 Z1p359AOB3wSnTSkt2nxxAV4czujuz61G9c2rM7cugtx7FihWwnpXtBBTg589KwJbm
+	 Tnhl5TxqvTPYhzbkrf/VLJ5j6sAzRBQ0y915p+G7fAuDWe+FYgdToJgz56HdSxXfs4
+	 JJlFAvfLzCoMg==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id A53334738A;
+	by lkml.kernel.org (Postfix) with ESMTP id D4BD147396;
 	Thu,  5 Nov 2026 17:22:58 +0000 (UTC)
 From: Dave Marquardt via B4 Relay <devnull+davemarq.linux.ibm.com@kernel.org>
-Date: Thu, 05 Nov 2026 11:23:01 -0600
-Subject: [PATCH v18 08/13] scsi: ibmvfc: add FPIN extended flag and async
- sub-CRQ queue handle
+Date: Thu, 05 Nov 2026 11:23:04 -0600
+Subject: [PATCH v18 11/13] scsi: ibmvfc: extend channel registration for
+ async sub-CRQ
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,7 +91,7 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261105-ibmvfc-fpin-support-v18-8-d683b74736a3@linux.ibm.com>
+Message-Id: <20261105-ibmvfc-fpin-support-v18-11-d683b74736a3@linux.ibm.com>
 References: <20261105-ibmvfc-fpin-support-v18-0-d683b74736a3@linux.ibm.com>
 In-Reply-To: <20261105-ibmvfc-fpin-support-v18-0-d683b74736a3@linux.ibm.com>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>, 
@@ -103,11 +103,11 @@ To: Madhavan Srinivasan <maddy@linux.ibm.com>,
 Cc: linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
  linux-kernel@vger.kernel.org, Dave Marquardt <davemarq@linux.ibm.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1793899377; l=1878;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1793899377; l=4601;
  i=davemarq@linux.ibm.com; s=20260216; h=from:subject:message-id;
- bh=eFM+z2bDgARR/YdCRp/MotZZJpzrNpdp7FfM06XduFI=;
- b=KOxmuR3dGvoGh4qxvvT1jrRtHZOqaJo1/nmkIBjgxNO2TwolQWkqsvt3TSQi93O7oOK0MNzDQ
- SBbkwJQV5D9AdONqfiyvBircSsleiH/XVElw3jDdqy35AXbmO6AhUq1
+ bh=1VFRENWRWzsedBm/9dHDR+vBkMrZ2AvUKwIBPOYwL3w=;
+ b=aniZt7sWwIUs+73yvPAvdVno0UpztDE9hge1Ig60mNWEwNuvi5zwi9vqWu+MOFI3oti9spimD
+ FVTPO4p/M6OA8wLz21S+3mNnssiPWVZ70jDf6Nw1RtFCoV8XnmBQmQu
 X-Developer-Key: i=davemarq@linux.ibm.com; a=ed25519;
  pk=vy0/nfobrje6EqZxuyw6a3ZstytG8WK2vf5Y3xtGrEg=
 X-Endpoint-Received: by B4 Relay for davemarq@linux.ibm.com/20260216 with
@@ -124,60 +124,127 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: Dave Marquardt <davemarq@linux.ibm.com>
 
-Add IBMVFC_ASYNC_IS_FPIN_EXT flag bit (0x02) to ibmvfc_async_sub_crq.flags
-to distinguish extended FPIN events from standard ones.
+ibmvfc_register_channel() previously only handled SCSI and NVMe
+sub-CRQ channels identified by the channel protocol (IBMVFC_PROTO_SCSI,
+IBMVFC_PROTO_NVME). The async sub-CRQ had no registration path through
+this helper, requiring separate handling.
 
-Add async_scrqs field of type ibmvfc_channels to ibmvfc_host to hold the
-channel set for the asynchronous sub-CRQ, alongside the existing scsi_scrqs
-and nvme_scrqs channels. This uses the same ibmvfc_channels infrastructure
-as the SCSI and NVMe channel queues.
+Add a new IBMVFC_PROTO_ASYNC protocol value to enum ibmvfc_protocol and
+handle it in ibmvfc_register_channel(): the IRQ is named
+"ibmvfc-<addr>-async<index>" and the handler is set to
+ibmvfc_interrupt_async_subq rather than the per-protocol
+ibmvfc_interrupt_mq handler.
 
-Add IBMVFC_ASYNC_SUB_CRQ_FMT to enum ibmvfc_msg_fmt and a corresponding
-async_scrq pointer to union ibmvfc_msgs to support the new async sub-CRQ
-message format.
+ibmvfc_deregister_channel() does not depend on the channel protocol, so
+it needs no change to handle async sub-CRQs.
+
+Remove the __maybe_unused annotation from ibmvfc_interrupt_async_subq
+now that it is referenced in ibmvfc_register_channel().
+
+Include the channel protocol in the IRQ mapping and request_irq()
+error messages in ibmvfc_register_channel() to distinguish async
+sub-CRQ failures from SCSI/NVMe sub-CRQ failures. Add a kernel-doc
+header to ibmvfc_register_channel().
+
+Set scrq->hwq_id before calling request_irq() rather than after it
+succeeds. The handler can run as soon as the IRQ is requested, and
+ibmvfc_toggle_scrq_irq() reports hwq_id in its error message. The
+failure path does not use hwq_id, so no cleanup is affected.
 
 Signed-off-by: Dave Marquardt <davemarq@linux.ibm.com>
 Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
 ---
- drivers/scsi/ibmvscsi/ibmvfc.h | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/scsi/ibmvscsi/ibmvfc-core.c | 30 +++++++++++++++++++++++++-----
+ drivers/scsi/ibmvscsi/ibmvfc.h      |  1 +
+ 2 files changed, 26 insertions(+), 5 deletions(-)
 
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc-core.c b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+index 5dba084086d5..7b52401ae4d5 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc-core.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+@@ -4546,7 +4546,7 @@ static void ibmvfc_drain_async_subq(struct ibmvfc_queue *scrq)
+  * @scrq_instance: async subq
+  *
+  **/
+-static irqreturn_t __maybe_unused ibmvfc_interrupt_async_subq(int irq, void *scrq_instance)
++static irqreturn_t ibmvfc_interrupt_async_subq(int irq, void *scrq_instance)
+ {
+ 	struct ibmvfc_queue *scrq = (struct ibmvfc_queue *)scrq_instance;
+ 
+@@ -6939,6 +6939,19 @@ static int ibmvfc_init_crq(struct ibmvfc_host *vhost)
+ 	return retrc;
+ }
+ 
++/**
++ * ibmvfc_register_channel - Register a sub-CRQ channel with the hypervisor
++ * @vhost:	ibmvfc host struct
++ * @channels:	ibmvfc channels struct containing the channel array and protocol
++ * @index:	index into the channels array for the queue to register
++ *
++ * Register a sub-CRQ with the hypervisor via h_reg_sub_crq, map its hardware
++ * IRQ to a Linux IRQ, and bind an interrupt handler to it. The handler is
++ * selected based on the channel protocol.
++ *
++ * Return value:
++ *	0 on success / non-zero on failure
++ **/
+ static int ibmvfc_register_channel(struct ibmvfc_host *vhost,
+ 				   struct ibmvfc_channels *channels,
+ 				   int index)
+@@ -6966,7 +6979,8 @@ static int ibmvfc_register_channel(struct ibmvfc_host *vhost,
+ 
+ 	if (!scrq->irq) {
+ 		rc = -EINVAL;
+-		dev_err(dev, "Error mapping sub-crq[%d] irq\n", index);
++		dev_err(dev, "Error mapping protocol (%d) sub-crq[%d] irq\n",
++			channels->protocol, index);
+ 		goto irq_failed;
+ 	}
+ 
+@@ -6981,6 +6995,11 @@ static int ibmvfc_register_channel(struct ibmvfc_host *vhost,
+ 			 vdev->unit_address, index);
+ 		scrq->handler = ibmvfc_interrupt_mq;
+ 		break;
++	case IBMVFC_PROTO_ASYNC:
++		snprintf(scrq->name, sizeof(scrq->name), "ibmvfc-%x-async%d",
++			 vdev->unit_address, index);
++		scrq->handler = ibmvfc_interrupt_async_subq;
++		break;
+ 	default:
+ 		dev_err(dev, "Unknown channel protocol (%d)\n",
+ 			channels->protocol);
+@@ -6988,15 +7007,16 @@ static int ibmvfc_register_channel(struct ibmvfc_host *vhost,
+ 		goto irq_mapping_failed;
+ 	}
+ 
++	scrq->hwq_id = index;
++
+ 	rc = request_irq(scrq->irq, scrq->handler, 0, scrq->name, scrq);
+ 
+ 	if (rc) {
+-		dev_err(dev, "Couldn't register sub-crq[%d] irq\n", index);
++		dev_err(dev, "Couldn't register protocol (%d) sub-crq[%d] irq\n",
++			channels->protocol, index);
+ 		goto irq_mapping_failed;
+ 	}
+ 
+-	scrq->hwq_id = index;
+-
+ 	LEAVE;
+ 	return 0;
+ 
 diff --git a/drivers/scsi/ibmvscsi/ibmvfc.h b/drivers/scsi/ibmvscsi/ibmvfc.h
-index 3fffd2db8ef5..2ecd60138d58 100644
+index 86b600ec57c7..f77966c85b0e 100644
 --- a/drivers/scsi/ibmvscsi/ibmvfc.h
 +++ b/drivers/scsi/ibmvscsi/ibmvfc.h
-@@ -773,6 +773,7 @@ struct ibmvfc_async_sub_crq {
- 	volatile u8 valid;
- 	u8 flags;
- #define IBMVFC_ASYNC_ID_IS_ASSOC_ID	0x01
-+#define IBMVFC_ASYNC_IS_FPIN_EXT	0x02
- 	u8 link_state;
- 	u8 fpin_status;
- 	__be16 event;
-@@ -893,6 +894,7 @@ enum ibmvfc_msg_fmt {
- 	IBMVFC_CRQ_FMT = 0,
- 	IBMVFC_ASYNC_FMT,
- 	IBMVFC_SUB_CRQ_FMT,
-+	IBMVFC_ASYNC_SUB_CRQ_FMT,
+@@ -839,6 +839,7 @@ enum ibmvfc_target_action {
+ enum ibmvfc_protocol {
+ 	IBMVFC_PROTO_SCSI = 0,
+ 	IBMVFC_PROTO_NVME = 1,
++	IBMVFC_PROTO_ASYNC = 2,
  };
  
- union ibmvfc_msgs {
-@@ -900,6 +902,7 @@ union ibmvfc_msgs {
- 	struct ibmvfc_crq *crq;
- 	struct ibmvfc_async_crq *async;
- 	struct ibmvfc_sub_crq *scrq;
-+	struct ibmvfc_async_sub_crq *async_scrq;
- };
- 
- struct ibmvfc_queue {
-@@ -992,6 +995,7 @@ struct ibmvfc_host {
- 	struct ibmvfc_queue async_crq;
- 	struct ibmvfc_channels scsi_scrqs;
- 	struct ibmvfc_channels nvme_scrqs;
-+	struct ibmvfc_channels async_scrqs;
- 	struct ibmvfc_npiv_login login_info;
- 	union ibmvfc_npiv_login_data *login_buf;
- 	dma_addr_t login_buf_dma;
+ struct ibmvfc_target {
 
 -- 
 2.56.0
