@@ -2,81 +2,106 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 41336606D817
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 10:46:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 02062606A32F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 10:47:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hCunnEIZ
+	dkim=pass (2048-bit key, unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2025-04-25 header.b=BpcIXnXw;
+	dkim=pass (1024-bit key, unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=jg4oLDL9
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLbTS3294z2xNC;
-	Fri, 06 Nov 2026 21:46:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793962012;
-	cv=none; b=EHhLbDH9SE43dqI8OBRjY8cGsuDw2/7fh/bgsiUHuT1oW19hQ06V+xN7Jk0WLn3B+pLuESHMAxrQaVX80QBi+Kh4A5CZuuN71vRIHIT0GpY43UazQ0ufs0MZqn0r++kz9NLVF9BdZJle0o7lcQwGV8cZdBsRkmcrdcqqRjWq/QdHLsH7FlMZOxD2mueGoZDRa3OU/1iwZNJwYnIWxswyb1kIjPdAd1E4GhgeI+jErI157wQUHvK4aOdlyLSp3Fic0ZA9ScmnsprTn8Yc1LnKJWUpg/Uh8PbiAiLtULKgToSD0IwHGxRIZmYvvmCd46K021pb9Sj/yfcJ/oBbjcqe0w==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793962012; c=relaxed/relaxed;
-	bh=R4UXJ8D6lFItiQJcibx9Gvr2Xk0BfzjmL2Cx9RaqZ2M=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AhuYQ870X8c/grNVexb5w8tYe0uc8lPBevMB5zEehYLDaO4hpqawOQQFC1itly5nIGaOqlghRnVvULZB9vLpLR5zJmJXkZG3PgLOQa+FpfsTpnV+lYZz+fPR/I0TZHRji5mTkkX/mWqPDPAezmQ/B3n/tQKSNEaAeZV/YVkrJgVoVN6gEGB8V2M+oX8IGhQtvqlMMPvmo/Lj0v22WTNnejszBmUOuHhXFWfVzpdkAaLVioHPDE+h2SFndYA91npFVA/KWJ8M0o9YpyKBgAUr0rF6+yL7D9ESpHtF8v2h48R1Bi5SGxx4Y+wkkxH9aTTx/9zbU8vcHvN5lh+9JaQjRA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hCunnEIZ; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLbTc5Crxz2xNC;
+	Fri, 06 Nov 2026 21:47:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=205.220.177.32 arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793962020;
+	cv=pass; b=LizG0qd9U+v7nix2fVttNL1C/i8ih2OWqyFVkz3QJsPxaakEgxOZFOvDfbKcZe/FQCo708vrOoFs9AI1rSZPwqbib6taG+eIaYJXuxmKyL0JuMhoYvL1I9W/MRK3HlqscO035ZHSYl0aI+9ggcvWDRjChDx+vkDlxRttziuxt/ltW4eG8ObzcPEWdOkQ/j9gJXZZtWpi27cOs4mpsvppRkHUBkB2pTabJTH0MD596q4SSz8G7EmP2/F0yHxX6MFIdGJNWPFlxRYHFJ8MG2vwrqzmL/xJ7mBiFg335hZ5afQ6YfFFjSK0vcgwtHm/fhbhdCTc+JhTI8HLnfdJcJw1Kw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793962020; c=relaxed/relaxed;
+	bh=eCRZ+5HlCRRZXnwLKhNQafXgjPoh8K1OacmCzvFDby8=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=AFH2F1X0w97VQNXUr8EkXFKKA1UmZCd7cSBXeqqOjXMzSgnkA2Vs+YRF9LXXBpZNgL2xr5dSR56YO/HePzJEoxiOxG2sot6tDtm5UXYhogn+eFpiA5ntN5O66Nm2KdZPxbruMGTH9RhoeQA7Zpss+2a3frvXmixiNQlx9g27Lg4ze/nfeF8vP2xgQZPEMAuDkv6QoYEmuwiVXh16K9Ese/HpOoiY8DETI1mnjaNgPD/z7TDeSaBKI2XZ7/GM81WZkuwSuAQ2eVClhKnLtV+HeD4+Adl8Q8eXi35Vry3ctsLeXftmz0n1JwlB+krG2217giFFknQ8zJ3pkGQz4imw6Q==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2025-04-25 header.b=BpcIXnXw; dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=jg4oLDL9; dkim-atps=neutral; spf=pass (client-ip=205.220.177.32; helo=mx0b-00069f02.pphosted.com; envelope-from=stephen.s.brennan@oracle.com; receiver=lists.ozlabs.org) smtp.mailfrom=oracle.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hCunnEIZ;
+	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2025-04-25 header.b=BpcIXnXw;
+	dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=jg4oLDL9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.177.32; helo=mx0b-00069f02.pphosted.com; envelope-from=stephen.s.brennan@oracle.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 40949 seconds by postgrey-1.37 at boromir; Fri, 06 Nov 2026 21:46:58 AEDT
+Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLbTR4zKmz2xJR
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 21:46:51 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 6844843A2F;
-	Fri,  6 Nov 2026 10:46:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1B0321F0089F;
-	Fri,  6 Nov 2026 10:46:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793962009;
-	bh=R4UXJ8D6lFItiQJcibx9Gvr2Xk0BfzjmL2Cx9RaqZ2M=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=hCunnEIZfKlr6qoMUNMOsdGsxQ7IjWUgxiafHv1Z+GtVnHVIkVloNm7JSe0jucf4v
-	 Be00OZ6LyBekuVn6BjvLPY9n2k+e1AmiDi7InnmDdbDQGdSnjuudqzxDjYAlNYhG2v
-	 SnIHZ4gjFJUpZLBedEUDIPptonWTz9uotLA6iRgOA5X7/RHU+Qv1IOi7Qmd5Lw5GMa
-	 S4EJI6CpXc1502QDo0gR7VlleOn0nXISLFq96tAGYmHD/6PzuqiHbzA0uFQN4lnX9K
-	 Fvb6evOecIr4CJf2MUAMnT/LJw8xU/8SNUha42jnLM4sIhXYighfjJoCreU0/7wDnB
-	 tlpx359Zg2mQQ==
-Date: Fri, 6 Nov 2026 10:46:29 +0000
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: Lance Yang <lance.yang@linux.dev>
-Cc: akpm@linux-foundation.org, david@kernel.org, jgg@ziepe.ca, 
-	jhubbard@nvidia.com, peterx@redhat.com, willy@infradead.org, jack@suse.cz, 
-	riel@surriel.com, liam@infradead.org, vbabka@kernel.org, harry@kernel.org, 
-	jannh@google.com, ziy@nvidia.com, matthew.brost@intel.com, joshua.hahnjy@gmail.com, 
-	byungchul@sk.com, gourry@gourry.net, ying.huang@linux.alibaba.com, 
-	apopple@nvidia.com, baolin.wang@linux.alibaba.com, nico.pache@linux.dev, 
-	ryan.roberts@arm.com, dev.jain@arm.com, baohua@kernel.org, usama.arif@linux.dev, 
-	kas@kernel.org, xu.xin@linux.dev, chengming.zhou@linux.dev, maddy@linux.ibm.com, 
-	npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org, ritesh.list@gmail.com, 
-	sshegde@linux.ibm.com, pfalcato@suse.de, kasong@tencent.com, qi.zheng@linux.dev, 
-	shakeel.butt@linux.dev, axelrasmussen@google.com, yuanchu@google.com, weixugc@google.com, 
-	baoquan.he@linux.dev, rppt@kernel.org, surenb@google.com, mhocko@suse.com, 
-	leon@kernel.org, sj@kernel.org, rakie.kim@sk.com, rientjes@google.com, 
-	viro@zeniv.linux.org.uk, brauner@kernel.org, peterz@infradead.org, mingo@redhat.com, 
-	acme@kernel.org, namhyung@kernel.org, mark.rutland@arm.com, 
-	alexander.shishkin@linux.intel.com, jolsa@kernel.org, irogers@google.com, adrian.hunter@intel.com, 
-	james.clark@linaro.org, mhiramat@kernel.org, oleg@redhat.com, 
-	john.johansen@canonical.com, georgia.garcia@canonical.com, paul@paul-moore.com, 
-	jmorris@namei.org, serge@hallyn.com, zohar@linux.ibm.com, roberto.sassu@huawei.com, 
-	dmitry.kasatkin@gmail.com, eric.snowberg@oracle.com, wufan@kernel.org, 
-	stephen.smalley.work@gmail.com, omosnacek@gmail.com, linux-mm@kvack.org, 
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	kvm@vger.kernel.org, damon@lists.linux.dev, linux-trace-kernel@vger.kernel.org, 
-	linux-perf-users@vger.kernel.org, apparmor@lists.ubuntu.com, linux-security-module@vger.kernel.org, 
-	linux-integrity@vger.kernel.org, selinux@vger.kernel.org
-Subject: Re: [PATCH 09/13] fs/proc/task_mmu: convert VMA flag tests to use
- vma_flags_t
-Message-ID: <au2tJWwPamlmx1Q4@gremlin>
-References: <20261105-late-2026-vma-flags-v1-9-0d3cd15ab75f@kernel.org>
- <20261106065925.50906-1-lance.yang@linux.dev>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLbTZ6gpjz2xJR
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 21:46:57 +1100 (AEDT)
+Received: from pps.filterd (m0246632.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A5KropU1084272;
+	Thu, 5 Nov 2026 23:24:12 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=
+	corp-2025-04-25; bh=eCRZ+5HlCRRZXnwLKhNQafXgjPoh8K1OacmCzvFDby8=; b=
+	BpcIXnXwSWVEk5GN69cLw2vkCeHrE8JEpN4nHqdnnieobdtllixuxplHfaFdAF96
+	rbZy7otj1k2ZKYTLyLIOQjYV0vA7iW47wFoVL8m9PuP00gO09ZNGu24OwoUIE6XC
+	X3WrdptSOq9E9OV8n38oEgnUjjyge07ELNSFpd/H5W6kMVbqv6QJtA5kz5pnhuWg
+	dKIwfcy6oRPrZGvmsNMI9Kzcsqzp0Ul4zaY2wTDFj9JjWnevS4XDqhuvqaCTCa3s
+	aiS4xZ+dZaxMYF/eY1YMvdn01f+Oy8S9RUcKt9l4aN09g++SB1wZc6gUpJ0Fxn9n
+	g3Ts0/WNVh+nceVB9H1lCQ==
+Received: from phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta01.appoci.oracle.com [138.1.114.2])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4hn7xssfsk-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=OK);
+	Thu, 05 Nov 2026 23:24:12 +0000 (GMT)
+Received: from pps.filterd (phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+	by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (8.18.1.11/8.18.1.11) with ESMTP id 6A5NL6xs3699035;
+	Thu, 5 Nov 2026 23:24:11 GMT
+Received: from bl2pr02cu003.outbound.protection.outlook.com (mail-eastusazon11011015.outbound.protection.outlook.com [52.101.52.15])
+	by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 4hs25r2f20-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=FAIL);
+	Thu, 05 Nov 2026 23:24:11 +0000 (GMT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=unV7ZJVNpoZHM/opCmm1G+KkAjT4/IgQIqZ7oHibgwmAiOMT2QPww6W5eQfcdSWhA4Ybgu8Mo2vgJV7YL9vcPjmDOhV3AvPl9iMz0ouaz1N8VvbgW3pgxji/89epBbazYBAsaNMapmuJ6Z2tzcytLEeTRiKubKrr44cILBTrDHtwMjSiv7N9SOaTYGb1XE+UoX99koe8E8fr0NJcGrwUtLFCSEyxfPAIHz11c6ljwvxHdZw/Ejt590CFPuMCSHr36jI/enLjcFBnFloJ0d4W+F/WBrTAGZiOpsUoUs4jRNbS4/djnEChAytPjknxbbGyjPMhc9jEvXOstQiIZh77QA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=eCRZ+5HlCRRZXnwLKhNQafXgjPoh8K1OacmCzvFDby8=;
+ b=HuTUKYFr8e5VKr9kQNiQDp/UuWTrbW4CKumKNaHh0l+IiufP3WomP5NLRKqIYmExtbM4JV/Q87XZV5bVqaYbwsQLX4+zou/JInG9op2NxXAiS7liKnkYOva3XSAIrs0fBs9eanhEDBOfIj8j9eymW970XGH36AT+5T8EFIrQjRKnGH+Jnx9je/QRLnHUayjWOkE9VJAY1Pz9svdNeJ91HMAkmcDVz3ajoAdl9KRCAq7XpRhdpSkBQ6xbCk5aa7qlvEp4w79SSbybTUmBwAzeOcUvs3NdC4+v2ClKZhhSFoH0Q+7DLdnPX5Bg79j4MsHWwYxOV40rWMhAoszHra2qGA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=eCRZ+5HlCRRZXnwLKhNQafXgjPoh8K1OacmCzvFDby8=;
+ b=jg4oLDL9lrz54A9TS+EL9Qb81HqRfkCdi3d+8exZHBxRxX8qWGj0a1x+dMu9N/fc2Apv9RZ0x3aofp/9Ex+8hUFgjMnXVEYgnQDXAtxERA5TSfnudhG9Ee4ycJN/K3Yc8NlUrmLXXcnPyypWHcDF4veyet3Pfwo4xJ/aAEEQaT4=
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oracle.com;
+Received: from SN6PR10MB2557.namprd10.prod.outlook.com (2603:10b6:805:3f::22)
+ by DS4PPF715E13019.namprd10.prod.outlook.com (2603:10b6:f:fc00::d28) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.592.9; Thu, 5 Nov 2026
+ 23:24:04 +0000
+Received: from SN6PR10MB2557.namprd10.prod.outlook.com
+ ([fe80::fbe3:8d9e:af79:5c73]) by SN6PR10MB2557.namprd10.prod.outlook.com
+ ([fe80::fbe3:8d9e:af79:5c73%4]) with mapi id 15.21.0592.009; Thu, 5 Nov 2026
+ 23:24:04 +0000
+From: Stephen Brennan <stephen.s.brennan@oracle.com>
+To: stable@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>
+Cc: Sasha Levin <sashal@kernel.org>, Gaurav Batra <gbatra@linux.ibm.com>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+        Shivaprasad G Bhat <sbhat@linux.ibm.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Stephen Brennan <stephen.s.brennan@oracle.com>
+Subject: [PATCH 6.6.y 1/1] powerpc/pseries/iommu: Restore CONFIG_IOMMU_API dependency
+Date: Thu,  5 Nov 2026 15:24:01 -0800
+Message-ID: <20261105232402.4033385-2-stephen.s.brennan@oracle.com>
+X-Mailer: git-send-email 2.52.0
+In-Reply-To: <20261105232402.4033385-1-stephen.s.brennan@oracle.com>
+References: <20261105232402.4033385-1-stephen.s.brennan@oracle.com>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SJ2P220CA0014.NAMP220.PROD.OUTLOOK.COM
+ (2603:10b6:a03:5da::14) To SN6PR10MB2557.namprd10.prod.outlook.com
+ (2603:10b6:805:3f::22)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,137 +115,178 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261106065925.50906-1-lance.yang@linux.dev>
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SN6PR10MB2557:EE_|DS4PPF715E13019:EE_
+X-MS-Office365-Filtering-Correlation-Id: 834fe5e7-3236-4044-c0c4-08df3b93e188
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|7416014|23010399003|376014|1800799024|10067099003|22082099003|18002099003|6133799003|56012099006|261022105027099003|261026121527099003|261028144727099003|261102123227099003|261026140227099003|261021121427099003|261009223027099003|261022075727099003;
+X-Microsoft-Antispam-Message-Info:
+	BPAtdGtB9xUEJGEAu19J16bWsZBw29h93fF/PErn7RSBZHeO34DyeuJZni9ablf8unvqH6zf4gw95IXnDds0CMIvc9oAjDPTLUEblnFCCa4H6G+ainQ/z0B3bIvbHzeg74z/rFbr/iIDgyf7ULJlishBMjY+IlgCTHR0nEnOKtAnPifbf5BaeiczTUfcsP44DKKv4QPAdBX2oVDb3Ns3bW5WUBBcgLHV3jNE1kQtrdga8ObcCswVfc6pNGRe4PIjczOi3h9kLx1EC1SpLaJzfLiuB5pK8CZhbO5E1wZLFMM3ZhMaU8iNegduV4KnfZ/T7iTjzOKHir/l4/11VKVhNDRq77n7A7odpbE0j6BKPXtrF/mLIB/xfkTTaHUZhpusrbEUqbSkItfyqbakdSL9lSoK1L+xHETXdagtt6Bm6VRE8M0tnrLIXfVEU/X7JqiccK2uH9MRyEqLjBUsDVs/LBjC+oWAuUMqoZP3tTrK4chCaYo9d/MI7zgQozXgfaKNKLi6o/W28zmqNI0mP6ZzmBtjp1+y8DRkh50Tw/E7jDOKjclYN54kX+fBA1dx6WzyQ7y/6vSWgDNvFCgGJlkIEWU7tkWHFrDcsEV3i4whyey2QFvgIthDFodvRKySrCYDl/HoMePlrVCVNlvbm3O4zynEWtOxb04vabwrxbavwD8=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SN6PR10MB2557.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7416014)(23010399003)(376014)(1800799024)(10067099003)(22082099003)(18002099003)(6133799003)(56012099006)(261022105027099003)(261026121527099003)(261028144727099003)(261102123227099003)(261026140227099003)(261021121427099003)(261009223027099003)(261022075727099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?zjyotGSUO9UfW8uPvmc7gRgWHDN5Kv3cMIklPJCGlZNDMA93MqAWslZKbind?=
+ =?us-ascii?Q?vkFV40IksEjrwWn4wV1MTLuz1g6LdQ7sQM6BRHoyE95mpEqGDd1YVQa9K2Pl?=
+ =?us-ascii?Q?NYNGnt+HIBolH4flCuApAaXaHnRox5YZfqut10T/PYgiLx08oasN7ontpqGE?=
+ =?us-ascii?Q?XZduANAJPtzlS3cSdbEIg5T6SQYmoMcdDVJWZha9hvxZPsxV7zHO4YEDcbgY?=
+ =?us-ascii?Q?1DrU7coWTnGvW49mnvnK3rCROJdTIri7okaleo4dlySPMNlbl8gy76ArjzZp?=
+ =?us-ascii?Q?/I8hZluXBXtovPqxZWo+xFsgFTYQ3DVwg6L46YMcSaNqOvPYc1JDvog3wPc8?=
+ =?us-ascii?Q?yc6sjlxsbkjsW8+lg4eVrZCi4QG39r4l/+4TytiaIHZMNo6vQEwA4c7gt9df?=
+ =?us-ascii?Q?e19+eu+hh7GjwxIMKGKdVhOH9A/jpKEWOCdpPfg2QinL21ZCf4IXVlWCCY3g?=
+ =?us-ascii?Q?bUce9dEb2Q8Iu/54GjSJfFhw7bKVocBIQo3aB9NmVyO9Dh8KhSE0Y/WYeTQc?=
+ =?us-ascii?Q?rDWDV7tlfNuVOI5LNQvvoMFVceeMgyfjJMGtiGt20V7NFHLRY4PBdZFTLOi6?=
+ =?us-ascii?Q?/EOiRMdITDWYgCzempfHVyHpXseGaY7KZ7x8qf3VpUrqGFyaj24ZDT/JKfZ0?=
+ =?us-ascii?Q?SmONEUqx8FvKS80QJCs7jI6yPW71sLUOvgdoCzf0dF/6RBFMZEl9EhSaYC/1?=
+ =?us-ascii?Q?9lc/TTYcMcv01se3T9PucJ8WC7lpFjiLQODeKjoPX6EdqYrm6UeQGSRx+wvx?=
+ =?us-ascii?Q?f/V2pR4BwdOC4pNOMdBbu8u4qfkTjarYEMSDuuQ9BbAMbOB0q+m1PI6L/h8n?=
+ =?us-ascii?Q?/0sueK5/LEERyL3h1CdqOcr0p2fWIMRz2/vYFF33ZrlcKGngA5KdduBDi5yX?=
+ =?us-ascii?Q?8sGvu/LnVsCmmA1NoBmUM3y82+U3oWptzBUaDdImuGpjaWFM12HE7CjvNO3X?=
+ =?us-ascii?Q?7CfBal7bSXAZJR54Go2Xe+BT2/Dmm7jWl6xesdeb1ZekjTshySukpixHIrJY?=
+ =?us-ascii?Q?H1H5fhSAUDenLXTNoR45/ZZlzt3j9a8xMYbKdRvLUFVIHijcnKd1ORi5qpdQ?=
+ =?us-ascii?Q?KzQPxXw3N3B/xlAvhRb+z5IkaNl1NTHZsaBhZTEOBAceD79fEbF4A7UxE8wU?=
+ =?us-ascii?Q?xEvhpjPHWXDx0EbTTKizyoPPJuZ+IetGF0zOT04YLEVadPazTkobxUlaRNt2?=
+ =?us-ascii?Q?b5bQjWXgt2nboOmaMo/avLQoi77mBl2irFtipOOxGq9XpngI35JlaJduFWj7?=
+ =?us-ascii?Q?hShoM+Njvix2RSB83WAeWcd18HcKq1Ix1Se5VtjgfJkmWBDR8skwnC6lgWwc?=
+ =?us-ascii?Q?ROW9Y0tO5slL/aNB7eonWGM8HjEbkcgXgWHeYEEFK213YjNwBg3pbhonpq1C?=
+ =?us-ascii?Q?xxaxOMgm+SHS0I4/S0BAPQ9hji3h5sCfA2gKDKA6210wTWjGKiFMvDYO57x7?=
+ =?us-ascii?Q?kmwQp7/lZqlFTPzUOVo2LKyflosUu+KYaAcgTXozFx3JzViEPCJ1/dY7kyDs?=
+ =?us-ascii?Q?KjzOSpOdD3wsw+i83wc/SkcrLO6/kpyJRHFPO+wdKNyS89tQTYHRDy4E0cby?=
+ =?us-ascii?Q?FhnjdF1eAP0ak9jNPHXMdpix3MAmUHSd7KczcQLgbXQ17Ra1zIgrbLPBwYqX?=
+ =?us-ascii?Q?x24B0wqxn1iwuQzIytGM7e9cWpLBPoCKXd5BiKVVo9YLgcCZ5yAqyGnv+mym?=
+ =?us-ascii?Q?KrC5/Q2d1zH3J7HADhiranBO+2yb5ufkzvwvgK/r/MJdHamnoM7t02c2mCH2?=
+ =?us-ascii?Q?sz3KPM7BfrEZb/7OWn6+Smuu5nRC9TM=3D?=
+X-Exchange-RoutingPolicyChecked:
+	be52RA5bBblgZUl/T7khcVZNrkLmxOukvYZ/bnH31zCeIuZp3eWs0dxOXhrdQeqdwvVmMaTukZPyC/l311hzyhMIDIzL/bEtkxlUpPmNaDxC8d7Z5vnT1DkA9ieNprDWidv9EA/Dyr8unNZNwG6ROu4PGe01ZCI8ugz96qvc2dq3OeN7XK4OW0MExksOpR/1J1uYEluzft2nehaAwjoN4dqYQDkeZbibh3B9GNIg8tS/WC2Ww3I3AaLw3kCTfY+cY+ak4Zy0YU4mdle4i8735q8pEa8XFjvPjxcUD9NH+hB++cawDNFZnwb6ALo6eaRzuWaZDxnImRSGAwzR7m4HgA==
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
+	v86gltVaFEDfSlDAVY7OOLYQPyS8YnEUtcsEbDtI2AqdwoWYTOZ5OpYJ7l2070ACPSXyUCgrRRmXchTTcDDeut2w3InD51YArWJbCJlBCA0pGqmHS0/OWHE0Q/XpFWrpg4QBh+tzRvOekplA5L8QB2e4HddOmU4HA1tz6WHfShtV+QFTn9NJOJFQFHPic4zazx+5fm8IT6Qq/qkIsROr0Ewy6Ftg/5N5RaxC2QqjgjqnfvIJppaVtyzz1zn4JNx2WqrQMUVNG+Qefhf1ScBWnodiqYNKzd16q+KjxPeGqFa8tFnLCFXcMdm3XZfF+goRepov48f70IYdwySO/c77xBfBWHmih3VBKmJN/m88HzXYlHHl4XzEk/gbYLz21VfmS1+Tl53T028e6zITDJVB6kRtH0aXefvuR54MWJj/DFHlY6DmGcyfZJIpTXMwrI3TCuZv5cb4RKamv/DutxrCYZssRduBHb3oxuxxsxvQUXEOa5tLQDIK/l0mupCvpOOmwse4gO4ycnspMCp6GKFVL3HqNIxVOZS/hhvZNEp9bTyP5ydIXMbVpoHzARvgcf2Zw3dTWkcpJi5ErMz4VG216FjuwS79Lm6dOaxsVNOyXzI=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 834fe5e7-3236-4044-c0c4-08df3b93e188
+X-MS-Exchange-CrossTenant-AuthSource: SN6PR10MB2557.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Nov 2026 23:24:04.2416
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: U+vCnKjyrhs585gI4+feNSoBSS4VLcq8sj9fQW4ybuZX44PH9IUO/fcf8U6a6+8x1AquIgY3P7IKjLSErZvZXyPDkQowX0DsvjgG+EYLH0E=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS4PPF715E13019
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-05_06,2026-11-04_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0
+ phishscore=0 mlxscore=0 malwarescore=0 lowpriorityscore=0 bulkscore=0
+ mlxlogscore=999 spamscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.22.0-2610300000 definitions=main-2611050093
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTA1MDA5MyBTYWx0ZWRfX04qTr9xPSdMe
+ 6f9nnmMouUaFkis2TM7XXFdmOGD2x9UixrGsKETgCKeMRtzXzWP89Zi76tsilGESF6jdeuA4sgb
+ z6llmfXynQ0u+ISMfQCZUHXp6h0B4UmvV692veHFycdXKt7oXQT+
+X-Proofpoint-ORIG-GUID: HdKn9yhDyi1NNVZQZ_G1UJ0Q1Jy-4Hof
+X-Proofpoint-GUID: HdKn9yhDyi1NNVZQZ_G1UJ0Q1Jy-4Hof
+X-Authority-Analysis: v=2.4 cv=U4sHnuru c=1 sm=1 tr=0 ts=6aed101c cx=c_pps
+ a=XiAAW1AwiKB2Y8Wsi+sD2Q==:117 a=XiAAW1AwiKB2Y8Wsi+sD2Q==:17
+ a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=z/mQ4Ysz8XfWz/Q5cLBRGdckG28=:19
+ a=lCpzRmAYbLLaTzLvsPZ7Mbvzbb8=:19 a=xqWC_Br6kY4A:10 a=zJRp6_cAMcgA:10
+ a=GoEa3M9JfhUA:10 a=VkNPw1HP01LnGYTKEx00:22 a=jiCTI4zE5U7BLdzWsZGv:22
+ a=3I1J8UUJPc9JN9BFgKH3:22 a=yPCof4ZbAAAA:8 a=1sgtH17KOkIwHctj1UIA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTA1MDA5MyBTYWx0ZWRfX3VghcZpiEO89
+ aXNRy5II5w+Qa8F1BEaORnviDLBsw/uZyZ1nD9Q3CgmiKN1ol7v5kzy99N/pX5OQZDC4KjNwwoI
+ eFYNGaVOmyRJTm9xAYbSTce2HbwSZPjz06SK5u4hu7cpUAX7b7h/LcLa4sObENHC2RuNejvdFxS
+ JyYADc8AaGWufav9v08qqpolKreb61zKsF42qyXnBGlOK5+9kkvQsVihMMlDVmCevYUSZqcRpN4
+ ubifZvFp4taNrdbIILBtCg0y3wbr1/cWLuKG6eyLgC3GzwmHIn4M4hx9Zn0DtJdXjfBnnkAnoqU
+ K1uMTtDMKPe1SCZ2sfLrLXWLH5iCc1ph7RQaTnIku+aPHtLzymfX+7AvaBX8nASE9Bwd56KuAO/
+ SJ/cEgFrvyIIBDIrTLZUzRKAhe71frovGisSC6ISZ8t+yk4tZekEONA4I6pyHB5IkzAiT30ypaC
+ FNigOrI26OfLaVSprFA==
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Fri, Nov 06, 2026 at 02:59:25PM +0800, Lance Yang wrote:
->
-> On Thu, Nov 05, 2026 at 09:31:00PM +0000, Lorenzo Stoakes (ARM) wrote:
-> >Replace use of the legacy vm_flags_t flags with vma_flags_t values where
-> >VMA flags are tested directly in /proc/$pid/[s]maps, pagemap, clear_refs
-> >and PROCMAP_QUERY.
-> >
-> >In replacing vm_flags_clear() (which takes the VMA write lock) with
-> >vma_clear_flags() (which does not) in clear_refs_write(), we explicitly
-> >write lock the VMA. The mmap write lock is already held at this point.
-> >
-> >The show_vma_header_prefix() and show_smap_vma_flags() output functions and
-> >the thp_vma_allowable_orders() call continue to use legacy flags for the
-> >time being.
-> >
-> >No functional change intended.
-> >
-> >Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
-> >---
-> > fs/proc/task_mmu.c | 43 ++++++++++++++++++++++---------------------
-> > 1 file changed, 22 insertions(+), 21 deletions(-)
-> >
-> >diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-> >index 22361607020d..b6e8ef15e40e 100644
-> >--- a/fs/proc/task_mmu.c
-> >+++ b/fs/proc/task_mmu.c
-> >@@ -569,18 +569,18 @@ static struct vm_area_struct *query_matching_vma(struct proc_maps_locking_ctx *l
-> >
-> > 	/* VMA permissions should satisfy query flags */
-> > 	if (flags & PROCMAP_QUERY_VMA_FLAGS) {
-> >-		u32 perm = 0;
-> >+		vma_flags_t perm = EMPTY_VMA_FLAGS;
-> >
-> > 		if (flags & PROCMAP_QUERY_VMA_READABLE)
-> >-			perm |= VM_READ;
-> >+			vma_flags_set(&perm, VMA_READ_BIT);
-> > 		if (flags & PROCMAP_QUERY_VMA_WRITABLE)
-> >-			perm |= VM_WRITE;
-> >+			vma_flags_set(&perm, VMA_WRITE_BIT);
-> > 		if (flags & PROCMAP_QUERY_VMA_EXECUTABLE)
-> >-			perm |= VM_EXEC;
-> >+			vma_flags_set(&perm, VMA_EXEC_BIT);
-> > 		if (flags & PROCMAP_QUERY_VMA_SHARED)
-> >-			perm |= VM_MAYSHARE;
-> >+			vma_flags_set(&perm, VMA_MAYSHARE_BIT);
-> >
-> >-		if ((vma->vm_flags & perm) != perm)
-> >+		if (!vma_test_all_mask(vma, perm))
-> > 			goto skip_vma;
-> > 	}
-> >
-> >@@ -647,13 +647,13 @@ static int do_procmap_query(struct mm_struct *mm, void __user *uarg)
-> > 	karg.vma_end = vma->vm_end;
-> >
-> > 	karg.vma_flags = 0;
-> >-	if (vma->vm_flags & VM_READ)
-> >+	if (vma_test(vma, VMA_READ_BIT))
-> > 		karg.vma_flags |= PROCMAP_QUERY_VMA_READABLE;
-> >-	if (vma->vm_flags & VM_WRITE)
-> >+	if (vma_test(vma, VMA_WRITE_BIT))
-> > 		karg.vma_flags |= PROCMAP_QUERY_VMA_WRITABLE;
-> >-	if (vma->vm_flags & VM_EXEC)
-> >+	if (vma_test(vma, VMA_EXEC_BIT))
-> > 		karg.vma_flags |= PROCMAP_QUERY_VMA_EXECUTABLE;
-> >-	if (vma->vm_flags & VM_MAYSHARE)
-> >+	if (vma_test(vma, VMA_MAYSHARE_BIT))
-> > 		karg.vma_flags |= PROCMAP_QUERY_VMA_SHARED;
-> >
-> > 	karg.vma_page_size = vma_kernel_pagesize(vma);
-> >@@ -970,7 +970,7 @@ static void smaps_pte_entry(pte_t *pte, unsigned long addr,
-> > {
-> > 	struct mem_size_stats *mss = walk->private;
-> > 	struct vm_area_struct *vma = walk->vma;
-> >-	bool locked = !!(vma->vm_flags & VM_LOCKED);
-> >+	bool locked = vma_test(vma, VMA_LOCKED_BIT);
-> > 	struct page *page = NULL;
-> > 	bool present = false, young = false, dirty = false;
-> > 	pte_t ptent = ptep_get(pte);
-> >@@ -1017,7 +1017,7 @@ static void smaps_pmd_entry(pmd_t *pmd, unsigned long addr,
-> > {
-> > 	struct mem_size_stats *mss = walk->private;
-> > 	struct vm_area_struct *vma = walk->vma;
-> >-	bool locked = !!(vma->vm_flags & VM_LOCKED);
-> >+	bool locked = vma_test(vma, VMA_LOCKED_BIT);
-> > 	struct page *page = NULL;
-> > 	bool present = false;
-> > 	struct folio *folio;
-> >@@ -1728,7 +1728,7 @@ static int clear_refs_test_walk(unsigned long start, unsigned long end,
-> > 	struct clear_refs_private *cp = walk->private;
-> > 	struct vm_area_struct *vma = walk->vma;
-> >
-> >-	if (vma->vm_flags & VM_PFNMAP)
-> >+	if (vma_test(vma, VMA_PFNMAP_BIT))
-> > 		return 1;
-> >
-> > 	/*
-> >@@ -1798,9 +1798,10 @@ static ssize_t clear_refs_write(struct file *file, const char __user *buf,
-> >
-> > 		if (type == CLEAR_REFS_SOFT_DIRTY) {
-> > 			for_each_vma(vmi, vma) {
-> >-				if (!(vma->vm_flags & VM_SOFTDIRTY))
-> >+				if (!vma_test(vma, VMA_SOFTDIRTY_BIT))
-> > 					continue;
-> >-				vm_flags_clear(vma, VM_SOFTDIRTY);
->
-> vm_flags_clear() still warns on VM_SOFTDIRTY when pgtable_supports_soft_dirty()
-> is false. Did you mean to drop that?
+In stable v6.6.161 there is a build error with ppc64 when
+CONFIG_IOMMU_API is not enabled:
 
-Yep it's silly. Checking every single operation with VMA_SOFTDIRTY_BIT for
-whether CONFIG_MEM_SOFT_DIRTY is enabled, which is not done for literally any
-other VMA flag, is ludicrous frankly :)
+    arch/powerpc/platforms/pseries/iommu.c: In function 'iommu_take_ownership':
+    arch/powerpc/platforms/pseries/iommu.c:69:25: error: 'struct iommu_table_ops' has no member named 'xchg_no_kill'
+       69 |         if (!tbl->it_ops->xchg_no_kill)
+    	  |                         ^~
+      AS      arch/powerpc/lib/copy_mc_64.o
+    arch/powerpc/platforms/pseries/iommu.c: At top level:
+    arch/powerpc/platforms/pseries/iommu.c:1787:37: error: 'spapr_tce_table_group_ops' defined but not used [-Werror=unused-variable]
+     1787 | static struct iommu_table_group_ops spapr_tce_table_group_ops = {
+    	  |                                     ^~~~~~~~~~~~~~~~~~~~~~~~~
+    cc1: all warnings being treated as errors
 
->
-> (Vaguely recall you weren't too keen on that warn, though I could be wrong.)
->
-> Otherwise, LGTM!
->
-> Reviewed-by: Lance Yang <lance.yang@linux.dev>
+This is due to stable v6.6.161 commit 1e9dfe15404d ("powerpc/iommu: Move
+pSeries specific functions to pseries/iommu.c"). It was included as a
+stable-dep-of commit 8f70caad82e9 ("powerpc/pseries/iommu: IOMMU
+incorrectly marks MMIO range in DDW").
 
-Thanks!
+It was backported without its associated fix: commit af199e6ca29c
+("powerpc/pseries/iommu: Define spapr_tce_table_group_ops only with
+CONFIG_IOMMU_API").
 
---
-Cheers, Lorenzo
+The code was supposed to only build under CONFIG_IOMMU_API, but the new
+location doesn't have this condition. Unfortunately, the fixing commit
+comes after a fairly large refactor, and doesn't apply on v6.16.161.
+Instead, apply the ifdefs where they would belong prior to the refactor.
+
+Signed-off-by: Stephen Brennan <stephen.s.brennan@oracle.com>
+---
+ arch/powerpc/platforms/pseries/iommu.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 6a45e3e86f79b..a79927e870a87 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -54,6 +54,7 @@ enum {
+ 	DDW_EXT_QUERY_OUT_SIZE = 2
+ };
+ 
++#ifdef CONFIG_IOMMU_API
+ static int iommu_take_ownership(struct iommu_table *tbl)
+ {
+ 	unsigned long flags, i, sz = (tbl->it_size + 7) >> 3;
+@@ -104,6 +105,7 @@ static void iommu_release_ownership(struct iommu_table *tbl)
+ 		spin_unlock(&tbl->pools[i].lock);
+ 	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
+ }
++#endif
+ 
+ static struct iommu_table *iommu_pseries_alloc_table(int node)
+ {
+@@ -118,7 +120,9 @@ static struct iommu_table *iommu_pseries_alloc_table(int node)
+ 	return tbl;
+ }
+ 
++#ifdef CONFIG_IOMMU_API
+ static struct iommu_table_group_ops spapr_tce_table_group_ops;
++#endif
+ 
+ static struct iommu_table_group *iommu_pseries_alloc_group(int node)
+ {
+@@ -1702,6 +1706,7 @@ static bool iommu_bypass_supported_pSeriesLP(struct pci_dev *pdev, u64 dma_mask)
+ 	return false;
+ }
+ 
++#ifdef CONFIG_IOMMU_API
+ /*
+  * A simple iommu_table_group_ops which only allows reusing the existing
+  * iommu_table. This handles VFIO for POWER7 or the nested KVM.
+@@ -1792,6 +1797,7 @@ static struct iommu_table_group_ops spapr_tce_table_group_ops = {
+ 	.take_ownership = spapr_tce_take_ownership,
+ 	.release_ownership = spapr_tce_release_ownership,
+ };
++#endif
+ 
+ static int iommu_mem_notifier(struct notifier_block *nb, unsigned long action,
+ 		void *data)
+-- 
+2.52.0
+
 
