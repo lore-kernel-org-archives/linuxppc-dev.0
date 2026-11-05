@@ -1,51 +1,95 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD8CB606A31B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 10:33:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 31793606A330
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 10:43:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mOEZw52v
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=O7HeheYb
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKzDG1Wjfz2xN4;
-	Thu, 05 Nov 2026 21:33:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793874798;
-	cv=none; b=ROLtZ14eCuqMI6DbOpEJROz6uCnQ/YMtxYOeKYNHrFF8/AykkkLOZBK11awxFZN0Kzlzbc/g5UnZ6CORis1+S3Z4rMVWDfMFAIeKdUj3EgIyb5fq9KmpAsPk2NnvBwe736lHjuFDne4jWG8bBOce2UIEimm+oiCxzfVucxlart01AlVpaCcqdpQW2nbOfOszFLDgYDo6ehNPAswNHKQ/J7Gv81EbWhVsUxcLsIdelu330SKKgUpfOT7kV0F/RJIc4PXtun0VkAsrZoIyfKVcudswJkxTPP2Ehd92VJ+0QQriHow/2eq+BQkfApd51rWP52WRBK2Dw4JnCpfj7luRuA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKzRg64TLz2xSV;
+	Thu, 05 Nov 2026 21:43:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1230"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793875391;
+	cv=none; b=BNXRnzCFX6qYIwJjFARdu4gACP5uELgNsjZhFvKtTy+qKRSKe7kIm0PSHyVjsW8e7Kodtbp9RzukStw/dCXcUc/NIoGjcloXqajW2bdUVuPeWETa93siTOSGaxqC70RbW/YyxpDSTHQLuTEJ6fyg0NPtFt03y8gzz/oAAG1ZyUBwW2oOVQLmE9qZ/24BXTMDANOTH3WCg4lhfnSbZSFyjb/iBGIku4/efskCPxbi73HgsNRB0ixeWDXuSSNsYn48DptQEKHYvNkjuZ+nTlnpe7jrG20R/1M1BHmcW/xe4E0EwJ3Q5XXRfnwprQiYnoTRWC11n3dPIBQLYlypqnN1+w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793874798; c=relaxed/relaxed;
-	bh=rW1nil3E5bYjTHxZT0jjYetDQyPmr3fpWazFoftmXjc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=hl7f0bElK1A1Tf8/dTfb8VYfBRl4MlvE6Crn3lO7hs03LhRXXUOizN/THPLGe1r7m/7E0UEePcq7AssJNMsh84Ge75QKWC8IHrLGeplebhxNLlb2BXenvjLkX0X+nPzapkFTYKkGaIFuQgm8yNJaMV4CMZJgBDeqJ0iBo5SWFmYJEvqdMhU+G1imvQT4ecLZwMNssrttfwhkti8VGH7pt6ZTkn7pYcFyPyYnZPrg0xVUkPuEXo4ABiCMy0988u1THoQvpg2oB6VHv++us0IpQDSfpvwJFVd0/9jqI3FgurfODfnul6HGhncyOAiMnSi0xhgxfTDBkKo6stmMquvXCA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mOEZw52v; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1793875391; c=relaxed/relaxed;
+	bh=WU0mTIuYpv0rehcbLRaasNOk5Yx7WkJzHYLOVNfF1wY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=TJjNUxpCz8hlmnFj/B6tF4qlHd61h2Pse13arIF6SWs02mV3EKpx/yvDG24D0AbFjgKZtN0N6ygGgP6t7MJ9z2e2/FuhIz2KqAlWvafKhwRQnQYVMGstG6D5OcczRd6HltYYQmPe1BzFXrBMGRaIcHDVdUU0BHBImxGdY/1MKqLTeqm1a3+e0lNYM2FkyJIhSHlJxYOs89+82x0rZchIhHHMRbL4fgG2nHU5pnIZU20DRo16HRLC2N2HKxFBLKQqPS3HMJ3yfL182fIO6z2TgVY4S/NxcB6d7XfNJB3lof9ydBKG+kJj8ufS1Yn7yWo/FgoyLjw3ySGaY9PAvjizVA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=O7HeheYb; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1230; helo=mail-dl1-x1230.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mOEZw52v;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=O7HeheYb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1230; helo=mail-dl1-x1230.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dl1-x1230.google.com (mail-dl1-x1230.google.com [IPv6:2607:f8b0:4864:20::1230])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKzDF15Xpz2xGr
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 21:33:17 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id BA67D43C35;
-	Thu,  5 Nov 2026 10:33:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E7B2B1F000C1;
-	Thu,  5 Nov 2026 10:33:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793874793;
-	bh=rW1nil3E5bYjTHxZT0jjYetDQyPmr3fpWazFoftmXjc=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=mOEZw52vLFxK3rc/1pzuqdBC+HQCXx9mY2v9zCS7MB1PkcO28hR8mmYR7mquhduqx
-	 nKCn9g7Qvm3pg2oAHDiffpJ2cDU2GqwF4uICQfDiPX4l5/O9J0qmW85ilAgvbRkP0U
-	 1FSFR+Ow6AcRdFnndQOPSSu8RyMQ6V5tSfmrn4gdTkXN58WdIUPJ9XvCdUZ4NB8bgh
-	 6pugwhg/dQzmCTa3DNeZNaV3LEU+nCDMPPQyPQivmSGt6TfuLL0FL0WkFPUM/3vgbU
-	 A738imanAEwUusrWHcmT2mo/y2jRAKtqB2LSP30ROQRnYP8nrNE4QqaXB4uR9PXbRN
-	 KZJLF4jYWfzXA==
-Message-ID: <0851db25-fef3-4f96-8d37-81ad5c51d6c8@kernel.org>
-Date: Thu, 5 Nov 2026 11:33:05 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKzRf0R3tz2xN4
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 21:43:09 +1100 (AEDT)
+Received: by mail-dl1-x1230.google.com with SMTP id a92af1059eb24-15ea896ddc8so2909944c88.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 02:43:09 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1793875386; x=1794480186; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=WU0mTIuYpv0rehcbLRaasNOk5Yx7WkJzHYLOVNfF1wY=;
+        b=O7HeheYbBHBGd9kYEfPyK0sjfD4/4u+V8BlUlK6yeCQJ2ETmvDn8ExKMqdq26XFwE/
+         DuK2TkHcCx9rF/XWKan1yvyGcoQQ4d3xS4QCYnfRFlwAYpK/wzyn35tAgp6IWUOoP+Vb
+         W5a/XWN7Y5DwGt+D4nKnM1p6cGk4M2sdi9rAWSMjnFcZ7W9NlvX8++7Xk6MLBOmLR4Ul
+         fBIqeuly50UujsLH3O+bVlh4JuXDNGp9cgujcDRB4OZ0zdBdTYpKY6OuQs0eO06fp7U2
+         K00ilcNk66PTInkIbRsxdcpbtHeclui/AgZ/WfCGIezq/LJXMIP3F1kfj31ezfCm52cx
+         E1rQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793875386; x=1794480186;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=WU0mTIuYpv0rehcbLRaasNOk5Yx7WkJzHYLOVNfF1wY=;
+        b=FwO5V2BFOfxk7KkdxhbiXIn6hqVGj5ohGm4yAJVFNEa7DSZH/ZSt6TqSrKUzu0ni0H
+         pzOcCOMX+38vCEz4omL8I3P8b/TEQip4GLPhuiYdOG4z7zqv3Kko9FnbeASL5KHyAgoH
+         4PwlOlnM5RnVIutWm1jnX+q0fLEEZgM5tyhn2VR4JjsdwhxK8zDdaZ+pNQRfLvuN/ukO
+         l9KpKrVqr3b+UjugA58ZidIXaM45oaAVxJCUvHIQo/Ry2O9qZZmZTGFQMEQx0L7aK+kY
+         uXtVaOZSXlgz8qhg21mABRpyBczvTqEwweV6Kehdj1Nqq6HaEwOF78twTkXuY60iGfji
+         V0Ag==
+X-Forwarded-Encrypted: i=1; AKwUvBz6HhcugAkbzJN0wvgIRbzZkErObkVU7Ac7BVpXmPxPnWVcbtw7SbgMM1CriHASwRfBsISkwLfTExGkBiU=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z+mtxrp+pOCZfKMfJYakP3kXaWwoPrh4RZuhEUI5L5ech0F2/cz
+	hK4ebEhU7sphPIUsgmNdmPCpBuOg3dMPo4USEJYRW+wfY4g0zRj2czPr
+X-Gm-Gg: AYBFou1+FgLPWBXgNZOkGRCe3nlBDOqAL5szZj9WbWN7qfI4ncZmYqq6GPfwnDha8N6
+	T2/AgevF45/1LD+aOA20Sffg0R6/8uOmwe0p5Om+T3bHG1QTMdTYBZTeQ0k5gZWK6swrlGp/LFT
+	Ec658zxuUp1YdqozmgEHwwcHZAfZ0r+ZgtpYdqGx1cv+Tg+c3UNPMbYihRqxEKCrynC27GNdE9l
+	tNq6ND5ixqoLLJYDN65A2qrJEsgmUviSRQmK198f68G+z2ZGGOAoTo+Kq8kmoiJc5MLRPpfeYoW
+	jupfLoATqoBm0i+Nzu3ufjObzYzh27A3hoF3Y1F1HynNdgq1Yf2wrxtuZFY2zX+jtMhk2HbHGS/
+	H20hrz1270k6aB9S/wzb6pOZc7cQuxoEYeSfPn2pvt2ASp0uHpEhaV9Bz3/ZAr6hAl6Nq0fdJBb
+	1KLjZmGTN/WqSxT4KctSyUr7zNAL0zt6Fh7SyhQhBHqyRAlhD7mFVh6hJORafXr7fC4SWV6iFja
+	zbtC7hSKoKSpxuN4UvyT+gjbeMl8oGKu+I8HAsOoLddO0Mpgv0m3bKBbfhjXAdRkSq9tnqF2nGM
+	lUtOq/YukX4Rjfh/kmflRImwxkmk5LnSlYmJABn4Hb1YY2kT40kqS/XLLe6UpaZOm66UFMy7VSU
+	8rRAB3kODIlK4wCBgg7GLHGBvw9aB3TrPFy7cTsLng11x
+X-Received: by 2002:a05:7022:7f0b:b0:1a7:2ce7:ad10 with SMTP id a92af1059eb24-1ac5d69f67emr26766196c88.44.1793875385784;
+        Thu, 05 Nov 2026 02:43:05 -0800 (PST)
+Received: from phuc-desktop.. ([183.91.15.56])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b245c1c272sm15595215c88.8.2026.11.05.02.43.01
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 05 Nov 2026 02:43:05 -0800 (PST)
+From: phucduc.bui@gmail.com
+To: Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Shengjiu Wang <shengjiu.wang@nxp.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Mark Brown <broonie@kernel.org>
+Cc: Liam Girdwood <lgirdwood@gmail.com>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-sound@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	bui duc phuc <phucduc.bui@gmail.com>
+Subject: [PATCH v2 00/10] ASoC: fsl_sai: Address several issues in the driver
+Date: Thu,  5 Nov 2026 17:42:27 +0700
+Message-ID: <20261105104237.38542-1-phucduc.bui@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,110 +103,53 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/4] mm: Enforce read-only shared vmemmap tail mappings
-To: Muchun Song <songmuchun@bytedance.com>,
- Andrew Morton <akpm@linux-foundation.org>, Oscar Salvador
- <osalvador@suse.de>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Jonathan Corbet <corbet@lwn.net>
-Cc: Muchun Song <muchun.song@linux.dev>, Lance Yang <lance.yang@linux.dev>,
- Lorenzo Stoakes <ljs@kernel.org>, "Liam R . Howlett" <liam@infradead.org>,
- Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <chleroy@kernel.org>, Ritesh Harjani
- <ritesh.list@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>,
- Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap
- <rdunlap@infradead.org>, Qi Zheng <qi.zheng@linux.dev>, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20261019090830.1917657-1-songmuchun@bytedance.com>
-From: "David Hildenbrand (Arm)" <david@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=david@kernel.org; keydata=
- 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
- qIws/H2t
-In-Reply-To: <20261019090830.1917657-1-songmuchun@bytedance.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=4.0.1
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 10/19/26 11:08, Muchun Song wrote:
-> This series is split out from the earlier, larger series "mm: Generalize
-> HVO for HugeTLB and device DAX" [1]. While the parent series generalizes
-> vmemmap optimization across HugeTLB and device DAX, this subset addresses
-> a single, self-contained step: mapping shared vmemmap tail pages read-only
-> at population time.
-> 
-> After the previous HugeTLB and device DAX conversions, both can install
-> optimized shared-tail mappings during vmemmap population. These mappings
-> should be read-only because each shared tail vmemmap page backs metadata
-> for many tail pages. HugeTLB applies this protection in a later,
-> subsystem-specific pass, but device DAX currently lacks it.
-> 
-> This series moves the protection into the generic sparse-vmemmap and
-> powerpc radix population paths. This protects device DAX mappings and
-> makes the HugeTLB-specific vmemmap_wrprotect_hvo() pass redundant. With
-> that pass gone, the bootmem-only optimization wrapper has no distinct
-> work and is removed as well.
-> 
-> This is intended to be the fifth smaller step toward the broader HVO
-> generalization. The remaining HVO naming and enablement consolidation is
-> left for follow-up series.
+From: bui duc phuc <phucduc.bui@gmail.com>
 
-I assume this patch series is no longer applicable after we remove the RO
-protection for HVO.
+Hi all,
 
-Or am I missing something? :)
+I've continued reviewing the FSL SAI driver and referred to the
+i.MX RT1180 Reference Manual when looking into its register
+configurations and behavior:
+
+https://www.nxp.com/docs/en/reference-manual/IMXRT1180RM.pdf
+
+Link v1: 
+https://lore.kernel.org/all/20261030091404.18757-1-phucduc.bui@gmail.com/
+Change in v2:
+ - Add five patches covering disable handling, documentation, 
+   ISR error handling, BCLK ratio validation, 
+   and preventing incorrect CHMOD writes to the other direction's xCR4.
+
+Compile-tested only.
+
+Best regards,
+Phuc
+
+bui duc phuc (10):
+  ASoC: fsl_sai: Fix PM QoS cleanup on resume failure
+  ASoC: fsl_sai: Use optional clock getter for MCLKs
+  ASoC: fsl_sai: Remove redundant error messages
+  ASoC: fsl_sai: Propagate device tree property read errors
+  ASoC: fsl_sai: Drop redundant dataline mask AND
+  ASoC: fsl_sai: Warn if TE/RE does not clear on disable
+  ASoC: fsl_sai: Clarify fsl_sai_dir_is_synced() documentation
+  ASoC: fsl_sai: Check regmap_read() return value in ISR
+  ASoC: fsl_sai: Reject bclk ratio smaller than slot width
+  ASoC: fsl_sai: Don't write CHMOD to the other direction's xCR4
+
+ sound/soc/fsl/fsl_sai.c | 89 +++++++++++++++++++++++------------------
+ 1 file changed, 49 insertions(+), 40 deletions(-)
 
 -- 
-Cheers,
+2.43.0
 
-David
 
