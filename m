@@ -2,68 +2,67 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6EB75606A326
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 10:00:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59BD0606A329
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Nov 2026 10:02:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jKyVN0yy7z2xN4;
-	Thu, 05 Nov 2026 21:00:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.222.170
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793872828;
-	cv=none; b=eV3P/nHoKGSBtpByeOKvCYuI679zO/Iv7IQUE2GqjYUbihP2YPn/kjMORWu7bcsM4y4Ngm2P0ktxgzO1zgB51qTQ3O2yemGVzZ9LQld32M1hw3hlh7wjYYBZ9Zl/NROmli4TVvzFarXioAYmbEYKBbcOyk5btzAtIDCgMA4HMYIoXiDPwvmZvKUSSgngr7nbbOpWxZw3H4ymroIX8bM177km4JXRHoonOJySLQm31eD5msP/nrPrVEGb3rUBz6/F0jYOl6TJvaWbczUuHFCpq/88va0vqvjPIUEPDKOeIq9/1HM1bAfX2e9cSqBaBuEMIE7lOp3zIgcDk+0piOhtig==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jKyXm4nqkz2xN4;
+	Thu, 05 Nov 2026 21:02:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.219.41
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793872952;
+	cv=none; b=oeTfiYe6eYmq5CGBkbDjcD6IYLi2AsYAAil7l6J1fLhv5vzbtnYJbazinDS3U2FI+dF6Z9Uqwd1byv3fTgeA7Uq6PH7HgBmzG7+jI93/7ie5zW0RuWmpzltudQ7du8nUc90NDDEB3//qPtadZXS9rxCLqg4ttzkZo03mp+7u16b1/CYHNn9fSL7t2RGd7/X029EXSoFyk6xGXpomnpVYAMjVIbIvKWE6YvqqtKV9CAIFvY6G8BuE78afW09qx4pNI9naueCz+qQ/5DnCe+N9mHZ5ONhQnsmbzlHU01Ovvhnn834+hAlei+/QopnJSHfZoovR3xfwrLinrfrogO3nvQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793872828; c=relaxed/relaxed;
-	bh=n+1lmuZTLENNkpqKh8T8PUriZ63OKZ7RGcjsYNzzAGM=;
+	t=1793872952; c=relaxed/relaxed;
+	bh=LrgDMUrSYXpYgkAhfsYKg0ebb/uLgOfOMhqzX4yL0j4=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=QqPax+1K99FsBzZRhVhYkr/tb+YBz/P8ibJbWTdLXrRCopLVgtQj+SCvRBNagIqmADjoXToR5QuKAw3B1uGnMWEP/4HSDb/BzMp6IdeOWEjSOvozYX/vMTyYa4OQgymT7r76x1sfWB/wAZo2nUkbywoq4gEjCerD4rWmJrGgPakcIjoE+GFwX7CAlQ7KsuEafszi3MSamr/nyWHqh6VEEMI0l+uxN9O772xqULdN09rcuATw8SE79NW2h+GTlOwkd18CQa4jWvQoJ1Ii4AWUKxpKZKVAcU3pWmXiYzuVlfp+vFYSMeGDXGdBzV0SpVQjc1y9ADGEr8PPuHA4BHn2Bw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.222.170; helo=mail-qk1-f170.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 To:Cc:Content-Type; b=GgPM5wunwi/PxtwRhHQjzJycaTL+xlT7/zoyPowiI28cDw70tOmV79W5DSWL1ETCNqr8OYHh3JroMAX9b+cMl6D5uMvqlYO2cXTzWp+1Mf/M5afD3cb+HR10LmfkQvRsvhg3Vj6+yoID+dgeQywg7DS3U+GVEMUpOYZ5VIVShb9Tky0Uu0xg4M7U6ZvndJF6GFgxFsF1GiZGJFLJD9YizFeawq8Dpfrv7qNky4Kgjo6n4wpqGbkLM5nllV59+ixXzSJf1cWtwP7etg99QVhRnJebwcsNJRaiU3aFS22rIFhLjPrpWhFQfKdvWDMC/xd8EoupQVaY/1PhA6Sjktfq9g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.219.41; helo=mail-qv1-f41.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.222.170; helo=mail-qk1-f170.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-qk1-f170.google.com (mail-qk1-f170.google.com [209.85.222.170])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.219.41; helo=mail-qv1-f41.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-qv1-f41.google.com (mail-qv1-f41.google.com [209.85.219.41])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKyVM2Hgmz2xGr
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 21:00:26 +1100 (AEDT)
-Received: by mail-qk1-f170.google.com with SMTP id af79cd13be357-93f269e335eso196540985a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 02:00:26 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKyXl6Kj4z2xGr
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 21:02:31 +1100 (AEDT)
+Received: by mail-qv1-f41.google.com with SMTP id 6a1803df08f44-91c5e31bea9so23091176d6.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 02:02:31 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793872824; x=1794477624;
+        d=1e100.net; s=20260707; t=1793872949; x=1794477749;
         h=content-type:cc:to:subject:message-id:date:from:in-reply-to
          :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to:content-type;
-        bh=n+1lmuZTLENNkpqKh8T8PUriZ63OKZ7RGcjsYNzzAGM=;
-        b=Ay7hJffnOToVyYkY5RWmBQQxIrJ3KEBpHno0DZPLNBrtCmCeKhtpZ7k6c3862am9eg
-         l9MF7CBE1GuKe4DOIgLTJtzsUOxviz0rH3vFEP/k0sCuJlD8nyoRzXny+wvaXPN5fYNg
-         H1tkaubGLsZhV2jo+Z7hz3bB8rcmMI+N3gv2GzEMtTXjW5TFPGCc1AOkujta5eS6+oUX
-         opMJGVh6sP2osU8Efx7lV5wkG1cIk3cZ/Da6c1JvrLxORLafvbDXShosq7y7USrao32V
-         H5uT5SjWcyKovY4Cdr/MIy+qkY7+wp5geJDurKl+WDbqBuSI/W7iHfnkiSYG86+Qh0Kg
-         0zIw==
-X-Forwarded-Encrypted: i=1; AKwUvBzV+dmCtLNHBVnWs9WsQYdbT7QbBMVbeDBse4VUVb+4RfKHvmGPO52nTXEF0FaNRjircQNB7+gmk1XT35Q=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z9byNoLf6eGb2R+vSsa8DDPTchoSjPP9UNK7MA8SwlzSAc+egoG
-	C9t6r3h4hYW+Lpofx82u7EU8DS4aeOQZCMciOpYCjHh7Q8ulQ6Apvku9sjBss/mEXJY=
-X-Gm-Gg: AYBFou1taSgNVGhMuph/oD5R4aC8OIr0sJrSlZmVoLVGieWcvfo3sJVk5jBsMgcXqc3
-	UmAryYDB4al+pNOLD05ZfyxxUsr44pUX0QPV5ih06lOJDnuYnyXHmAh2ZahM5RreCfF1AxD1KMx
-	UkTdkT/iz5smZfzL6OoHegceKDzRMJ7iuwfd1QH+i6EdQeUXxg05ZBlHjTXbAwRjG4DJkUX3p1U
-	1VsTsTtDKlBCdkLEJYaZdfXl0MJIVHpYZbOtIZFQTLk9NwNHzINOwMLqb+jw3OG7GWumtG5CjsH
-	iERUCGw8dTKDH6bBWGhnB73v0Dr7+8wpPRjK2bhUzqlP8Ki785qaJPO2sekEaxPeV7jqPFQOGhQ
-	zGb8E1RN5Ggx5mqHFfkbuN9JhT5lWi9xyFnpWimYWSOgm5vWB56AkZuVow0PcCkWiIe20wIvmzG
-	Bu6gabi7ggIgMurpQ2hiqBkjnUUAwMhUYGm1/H0ZJxVwZl6iE49782iKLgek+m59q0aQC9CzAnM
-	Hc04l/sXbTjRkWkgnVYz2toPPUfY0kbiYcMhVq7J4Xmkw3j0r67B7pZ/2c2lkbMnaPLpSDbbu1z
-	kiN1t9baTZtKnIsFOm42TI21SafVVhlc0DchdwYehoRlgkoM25ReZegXqzjwHCA/fYJD8HhvPYm
-	o4TaO14LZuiTt5PE=
-X-Received: by 2002:a05:620a:2a07:b0:93e:6100:6c1e with SMTP id af79cd13be357-944216770b1mr3094875885a.30.1793872824320;
-        Thu, 05 Nov 2026 02:00:24 -0800 (PST)
-Received: from mail-qk1-f176.google.com (mail-qk1-f176.google.com. [209.85.222.176])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-945d488d41csm423852185a.38.2026.11.05.02.00.23
+        bh=LrgDMUrSYXpYgkAhfsYKg0ebb/uLgOfOMhqzX4yL0j4=;
+        b=1KM1Hpw4Xgy7mUNvSAHHTeZbVQRHF9ZQnn67GClbXDCuAHyvtq039mCQoXAhfNFv0F
+         BvJVziiOUqrHH+yEgv8KWfwmNchNJaUVqv35LpATXoDU8j+BpfA/MjwVpt9Y1RdA/xzR
+         AFqnh1/l4fs7lAJOSGK66NVi6ij5DgQcKT4fIwq63Z534xEw9cDtkN9H3ywi1paBwr36
+         hpOUdUUjX+gs4FJG0/jP3aJCs8X22gv+jv/O45M+ZipllNlcMbspdmfqkU+YIqYLd9G9
+         FhWvp/O1dj1xyML+KYhGOVmhTy8F98NDt9VxQmST0BCfRSC5SHfLrDdEFxlVsM28yHj8
+         sHhQ==
+X-Forwarded-Encrypted: i=1; AKwUvBy/CjiBJUCHIaMcBT5lMRg41AMPSp57p5/jqSzlnKN7N/OY8dTa/XtdMYLudNxyz+SSzAcThU5btzVBYMI=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z91yM8rvc7QzY1QMIGC+kQW+MoT7t4hmp3N2IwSsKG6nLqrhWqd
+	brMiJHsc7TnbgswOUTMl+YkoQlonws03lhmiAva+XWNCYKDzCaiRzfUgq4i4Cz1h0uA=
+X-Gm-Gg: AYBFou1H8KU18h4D9+Aqi/bNLJfgKp19H7L+QjH/XwOEwFysFVUfaHO/G5j3uOEchzM
+	Md+Yr9JOt0SMXOA+oQEZ2N/zKZqq+z4KpjswLNoUIfRXU5GxEZ1IM+65WwemKZuUmye2vHdtSYm
+	kt5vh7Ucvuygbq+00+37agIT+tU/Gba0r0FSLmmJ5g3O5gJZJIdEthyUj2bjHP3H/c4zFpsgzqs
+	kW25hMua++CSBwb7eOap7XKOpY0gYaVKb+VrMM6X/GzIQKIxsOFsHUP74i2t4PeF68gykFhiqY3
+	5v36tlI0UgomewpY+Ds4UrSch3kYQ+qM4EMP+Z5s3Txzoh+aArBB3wIV4Pi/XnLBEFeRqI/1lrI
+	CxB9Jwbi91XxD3s4icpks39wS2YjK/td/V3GhbkH63+lexAFY1Qpuw7YfXsTbouZP9L8isfg8cE
+	IAhJDSZKCpUNU2o7LHMFjCbIvdl/2VrToSPhhYAJe5Z4Lz/SX9/vtnABVRBSh/10RIQRXd49ovR
+	/JTWML5dJFyetCvfLhcbrKSr/2S/sIwldtANb0WJ+M7PVy9UKcHuPd3mKevFS1O+ViSAKMrv9/2
+	rpOe+VB/Z9aANDZXUfoBd2dU+zrQ3ivPCy9j8AajT5iW131o5rs4CJEZkFmH8wv25eoP+Q==
+X-Received: by 2002:a05:6214:2028:b0:917:aa2e:d007 with SMTP id 6a1803df08f44-91ca4b32e96mr308962526d6.12.1793872948846;
+        Thu, 05 Nov 2026 02:02:28 -0800 (PST)
+Received: from mail-qt1-f173.google.com (mail-qt1-f173.google.com. [209.85.160.173])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-91e7dacef6csm43353666d6.5.2026.11.05.02.02.27
         for <linuxppc-dev@lists.ozlabs.org>
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 05 Nov 2026 02:00:23 -0800 (PST)
-Received: by mail-qk1-f176.google.com with SMTP id af79cd13be357-93e635220b4so159756285a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 02:00:23 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AKwUvBxBCsbWfYWp/PgZc0Bf44gj22nZrRn7O1HoHN5YF0x5MhXsgY9RQJBtnIxnXB+m87lUNQEG9d1lpi/wptY=@lists.ozlabs.org
-X-Received: by 2002:a05:6102:6449:b0:7cb:bc5e:7dad with SMTP id
- ada2fe7eead31-7d072baa450mr7614890137.10.1793872492413; Thu, 05 Nov 2026
- 01:54:52 -0800 (PST)
+        Thu, 05 Nov 2026 02:02:28 -0800 (PST)
+Received: by mail-qt1-f173.google.com with SMTP id d75a77b69052e-5364042eecfso22735431cf.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 02:02:27 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AKwUvBx2/Dsd9CX74UVHOjKW0hk0ElS8r3D2JQDGCvXD/WMhchFIQOHjyvglwnUVh8CXxMBUOTmJ3flyT3yMBhA=@lists.ozlabs.org
+X-Received: by 2002:a05:6102:5108:b0:7cc:56a:58e5 with SMTP id
+ ada2fe7eead31-7d072d84a58mr8269567137.37.1793872526219; Thu, 05 Nov 2026
+ 01:55:26 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,15 +76,14 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261104-work-procfs-arch-v2-0-2aeb952c9597@kernel.org> <20261104-work-procfs-arch-v2-4-2aeb952c9597@kernel.org>
-In-Reply-To: <20261104-work-procfs-arch-v2-4-2aeb952c9597@kernel.org>
+References: <20261104-work-procfs-drivers-v2-0-245e54e87116@kernel.org> <20261104-work-procfs-drivers-v2-2-245e54e87116@kernel.org>
+In-Reply-To: <20261104-work-procfs-drivers-v2-2-245e54e87116@kernel.org>
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 5 Nov 2026 10:54:40 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdUNBs_NyhFpXonirMXkYptUWsAizMvVpGHUDLzto1LGJg@mail.gmail.com>
-X-Gm-Features: AclHuK_RsrcE7hVRjmpZezBV5tMd490Mza2XAQiqUTgUNqAiHAzRP5z7NIbtMh8
-Message-ID: <CAMuHMdUNBs_NyhFpXonirMXkYptUWsAizMvVpGHUDLzto1LGJg@mail.gmail.com>
-Subject: Re: [PATCH RESEND v2 04/23] m68k/bootinfo: let procfs copy out reads
- of /proc/bootinfo
+Date: Thu, 5 Nov 2026 10:55:15 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdVHxQvKnJyKHrOZhaOg9Rn2hMeRU1JnMFFEEi31FPZaGg@mail.gmail.com>
+X-Gm-Features: AclHuK_UsJ1nGicdWEWcMLQAICTi1A7pGF3yhNkxXkXRPqohle17eXAHHNBsR6k
+Message-ID: <CAMuHMdVHxQvKnJyKHrOZhaOg9Rn2hMeRU1JnMFFEEi31FPZaGg@mail.gmail.com>
+Subject: Re: [PATCH RESEND v2 02/26] zorro: let procfs copy out reads
 To: Christian Brauner <brauner@kernel.org>
 Cc: linux-fsdevel@vger.kernel.org, 
 	Linus Torvalds <torvalds@linux-foundation.org>, Jann Horn <jannh@google.com>, 
@@ -121,9 +119,9 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Wed, 4 Nov 2026 at 20:36, Christian Brauner <brauner@kernel.org> wrote:
-> Implement ->proc_read_buf() so procfs copies what is read to userspace
-> after it unpinned the entry.
+On Wed, 4 Nov 2026 at 20:43, Christian Brauner <brauner@kernel.org> wrote:
+> Implement ->proc_read_buf() so procfs copies what is read from
+> /proc/bus/zorro/<slot> to userspace after it unpinned the entry.
 >
 > Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 
