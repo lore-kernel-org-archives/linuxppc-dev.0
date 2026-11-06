@@ -2,45 +2,45 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CAC7606A326
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 07:46:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 37212606A32C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 07:51:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=nj9sDAKN
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=UPIJP6Q0
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLWTD17Ctz2xDD;
-	Fri, 06 Nov 2026 18:46:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::4a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793951184;
-	cv=none; b=dpUKClRSaJPs3nsnvdronxF01mnRN+X0nkVKtgEg+45ZnJb+4IOYPKoZdFhZNNHlriFS4nyUfPs/60SIKo4r2ArjRBtpAQ/j5pvOvu3tHw+uv0llS3XJA4yjeCiYcR8bd1TLUssmRMUUaPTx1QL/IqnH/2yt3zuZx44eP0GMFrM73z47/K0uocR7cDyIJwxVDHb+Q4k5JmXv8mP371RShcFV0kaSTabCgGR7BhCe6fv3W8wqI10TbO0wpm24NB4Q9Fs9MWNnxSDrFTRf6M1ujrqzGb6vpvPAO4+ZdRCfqckdS06nGV1vkZS9nQPfW3FHTj/dwSSMSuLddR5vXJQzAA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLWbd4wFXz2xDD;
+	Fri, 06 Nov 2026 18:51:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.237
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793951517;
+	cv=none; b=RG0ZDjh+A7hAW6Q0Qgk8CbxcXk9w7HPTdim1Bf7dAudE5dGER1UbOxYumKhpnQ1ZXJI65Wc458K2lJhrGRYb71cqmqRME2ULkGyRPG6ojq5maYnKAO/R3VroZpqDyk0OGCCq4qzMSod/ZBu7pTbRHfrgiAKegpkYrLBQ5ZX+uQPU6PLrjZe5YFFVEfLBZRUgfzJlMqpHKFwoG1lHMauIseTSSuwWSHtveL5RrdA3Nt87eJ4ticZqIkx/kKDYFRn9nQNxHJiH6QPuuhseDUobZmqxHp10MCOLRvMOyPAzf5rlSt0VmGvp0mTofWxgclHwCEqFWrDbIsCuSBHHUn0qjQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793951184; c=relaxed/relaxed;
-	bh=8RPjRkRw6TGzo85+j1RMaJO9Gz+t0O/3LiAQ/KX/BlA=;
+	t=1793951517; c=relaxed/relaxed;
+	bh=A8L/HnUYVSEblkQSsd0Qj26nxFzNN+cxfs3MphjQg/M=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=EbxVAeGfBmLIpJRgQopLU5cmwFXj1VsXPKNf8fKK2dpbBoQmnceR/SmuajqzHVfycd1ln+KMwbB/7I/CpKuh6fHknui5bcDgh5OgqEYO9ucvP8zle+dcxbaldGgY35L2V4bgEPWEWAFR4HCEzCCyCLExAJ/p1aRgF5vwylbh1UqqG3ONjjSzvgaE4CGE/9+7I81kgPoTZONlIYOd8JibpqIE3di+6ejD4q0wtv+L+4Rk53eJKMLuIfN9LM4jp+X0VWgiwU8CW8mVhl8grrp+4mwvKTh99vydasLSIUqg1Zl3n9IGqBpTH5TzmIkt7/aP6LS23cUj5rjahQcHc3745Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=nj9sDAKN; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::4a; helo=mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+	 MIME-Version:Content-Type; b=Eubu95HTCNthI6NekNiGHQwydQYB4LUYoqhjh/TJaHg66Z0gF07H9uhn3bVcurSTpfEbwTSa8Ga4LFpBH2iZ/GjxMJsGRwuojRcaJocpwio42g5gMy46Efy89DaJ5RW05SYslsle4yiKKs69aJJCC3ZnoP+AnnyHut4d7kpGJDp4+H6LiqjBNBvjVET+LdnQWTtuGArAKbvax64b1nG4OV1iZ5X8Qq5dj3F+EavhnuKXGsJyV0xLSAuoyTy3cvEqswmxtJvsShEYjyrT2A/1D/WfVzcd3o9apXTYTIRIpwPLN8OIxaSTXlf8iWfoDzoTYuNdkp2f8ZX/52zjxFXmMg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=UPIJP6Q0; dkim-atps=neutral; spf=pass (client-ip=95.215.58.237; helo=mta1.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=nj9sDAKN;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=UPIJP6Q0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::4a; helo=mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta0.migadu.com (out-74.mta0.migadu.com [IPv6:2001:41d0:1004:224b::4a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.237; helo=mta1.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta1.migadu.com (out-237.mta1.migadu.com [95.215.58.237])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLWT86KFKz2x9N
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 18:46:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLWbc4ksBz2x9N
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 18:51:56 +1100 (AEDT)
 X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=8RPjRkRw6TGzo85+j1RMaJO9Gz+t0O/3LiAQ/KX/BlA=;
+DKIM-Signature: a=rsa-sha256; bh=A8L/HnUYVSEblkQSsd0Qj26nxFzNN+cxfs3MphjQg/M=;
  c=simple/simple; d=linux.dev;
  h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1793951161; v=1; x=1794555961;
- b=nj9sDAKNfkvbBGNxUae68sem25H3PJydnfLYRCEquTfzOGknOJJaghCjguFnHEM1Tv2sOAqv
- 1Dlhalz3OIiYsrxXcBlzYQ7L5wC9z9d/t1tVu2xjsUHyj9DmQPymjq+m+Nk6PEfXpKvCGwRWJhK
- UyWYLWpQac9Ccw6BbX++PldM=
+ t=1793951497; v=1; x=1794556297;
+ b=UPIJP6Q0nfXlvvfpln4wX/UfZkaGFDuF9gkUkIPdmlKEkN/imHhQCz3ox4XK08+ctE4izmGf
+ DHMetZz49duJzYzwzdygnE2PamAUcsl1T1fAJvv3Fb1FBZ7jr9ga5OWjU4lI/o1eRpS4xNVVWOu
+ khNo4qEaARHzv1qqESBWv7Y8=
 X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id a2e578c5cb1dba6c;
-	Fri, 06 Nov 2026 07:45:25 +0000
-X-Mizu-Trace-ID: a2e578c5cb1dba6c
+Received: by smtp.migadu.com with ESMTPS id 2a97fd523a3d8c6c;
+	Fri, 06 Nov 2026 07:51:35 +0000
+X-Mizu-Trace-ID: 2a97fd523a3d8c6c
 X-Migadu-Flow: FLOW_OUT
 From: Lance Yang <lance.yang@linux.dev>
 To: ljs@kernel.org
@@ -132,12 +132,12 @@ Cc: akpm@linux-foundation.org,
 	linux-security-module@vger.kernel.org,
 	linux-integrity@vger.kernel.org,
 	selinux@vger.kernel.org
-Subject: Re: [PATCH 12/13] perf: convert VMA flag tests to use vma_flags_t
-Date: Fri,  6 Nov 2026 15:45:19 +0800
-Message-ID: <20261106074519.54904-1-lance.yang@linux.dev>
+Subject: Re: [PATCH 13/13] security: convert VMA flag tests to use vma_flags_t
+Date: Fri,  6 Nov 2026 15:51:30 +0800
+Message-ID: <20261106075130.55333-1-lance.yang@linux.dev>
 X-Mailer: git-send-email 2.49.0
-In-Reply-To: <20261105-late-2026-vma-flags-v1-12-0d3cd15ab75f@kernel.org>
-References: <20261105-late-2026-vma-flags-v1-12-0d3cd15ab75f@kernel.org>
+In-Reply-To: <20261105-late-2026-vma-flags-v1-13-0d3cd15ab75f@kernel.org>
+References: <20261105-late-2026-vma-flags-v1-13-0d3cd15ab75f@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -161,9 +161,9 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 
-On Thu, Nov 05, 2026 at 09:31:03PM +0000, Lorenzo Stoakes (ARM) wrote:
+On Thu, Nov 05, 2026 at 09:31:04PM +0000, Lorenzo Stoakes (ARM) wrote:
 >Replace use of the legacy vm_flags_t flags with vma_flags_t values in the
->perf mmap and mmap event logic.
+>mmap and mprotect LSM hooks of SELinux, AppArmor, IMA and IPE.
 >
 >No functional change intended.
 >
