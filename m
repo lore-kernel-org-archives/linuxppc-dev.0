@@ -2,55 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B30B606A31B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 05:25:47 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 58993606A31B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 05:27:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=xiaopeng.com header.i=@xiaopeng.com header.a=rsa-sha256 header.s=default header.b=a5d6+J37
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m3Em9F4P
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLSLx6rGXz2xHG;
-	Fri, 06 Nov 2026 16:25:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.28.49
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793929802;
-	cv=none; b=Ll2Ear9V+lxvxibAEPcoywMzXAGICuLMDZLsMMcqaOMadSQKjnLsjEO4HcSGhcCRyTLVH9IPDrNPMuplk9dDPe83d6na9PgCyypv0unDecXXPIOZhfc+l+yATpgN82j0tt+trLaJp9hlfLaDgXD1ZQwzk5y6qrhlZ629/CpwAerqi6Uqmjy66alLqRGAGn9wzFdLesIem6/x1Lq0ZaiUGw41T/IHJzjHd53EN4w1XLmcvgEq2h4MEXSrK0KOnolmoh2ixirbfFEzhGfBl5lv3+i5SwJb6yUA0tctWF7wljASZ/2577htaedw0tA/+hhJnzwHMCbs0x7PaGu/+3IhMg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLSNT0VJtz2xHG;
+	Fri, 06 Nov 2026 16:27:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793931235;
+	cv=none; b=fd8d8StqDchGc3Y0+adLciRPrZ0Um/OpWRULtSPHOoNmOV/UlFMOA8XT1GiWrCd57C+/04A3t0tK0J9v+SgLnirAkYoxW5if5BFsE/P/RxhaqxIRjqZF4LXfOenmpKpr5VX+UYUjo3mqkhY5c0dKq8qwKSy2xfeun+cyvch6fzzu34UNygezRi9KZ9lXdBmklYTW6Wy8KrGd4MIumI3JohVBlloVbZtbYbT1B6WdnYdkP1Oro67YwiODgTzBHAhrvZFU1gjUY+bqQjlw48weNU6DcWTkSEYs20/r9YRFtxpjyIUIN5GQ7EE/A06qC9kf0Vi03m5rZdKdW75XoKrdgw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793929802; c=relaxed/relaxed;
-	bh=FDEdvRW2qMYa9xxlAN0aPEzctXRxc4Lt0+J1Enj5sqc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=SMnEHKX/0rQyk7MbbS2mM8GuapFGnjDa6hiiIZFNMn7UiVEp7IhQXdcPjEdZw3X6fHM8ySX+yXugcGHFF65uQrxI53vB7+ZXXwkOiZXWj22kf65Gmi2JuKIj1urSS4eo5IU2sPrV/fae3ZpwLbSCxWhSO6Nxie6clRQMWXwmvNvJzoBepszqtDqO9AwqFPjhAAKQQO7cIc7Rcov2YJdp7EUzmkXUdGs8Td0EklS4+/I6a01J9jAdqMYUhrZ6a0zcxREJm8ROOSusX825JzSXwOcQsHxBdcRCnlhURxf2zfcjgTJYDPeack+tXzFMl2bZ0fi/BRVa8+/NbiyCS4P3EQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xiaopeng.com; dkim=pass (1024-bit key; unprotected) header.d=xiaopeng.com header.i=@xiaopeng.com header.a=rsa-sha256 header.s=default header.b=a5d6+J37; dkim-atps=neutral; spf=pass (client-ip=115.124.28.49; helo=out28-49.mail.aliyun.com; envelope-from=guozh23@xiaopeng.com; receiver=lists.ozlabs.org) smtp.mailfrom=xiaopeng.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xiaopeng.com
+	t=1793931235; c=relaxed/relaxed;
+	bh=SwgrBjqkdHVN89k2r7i2yZAHCG31Diqb92PenA1gCr8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Hhzxz8kPPM2N7M7aP54fL/G4/EOwSJaC3CMQNlWC284RdG8LSHEbGBO1gGF2KlUI/an9vWZSVzRR9wy0TsC5dDJB99H9cs3mZPSDEe17e2J0Z9kz6glLekrK39iIll6rUdhUsMxR+WhxjytmURLwmCJbcZ935GxOFPVYxX0HXq4PkZ7xeMk2F6FvicRkcbZrv0bRvDICF+ahBBU4ZymkY6N2caCU3sU2qiadv+2CRfyBa85QC5ViVxqBxF9hZtHaQmITD1l8048nr4abCRXVqIyro52nb8U7p0M1Xq49Qoya/4qGEYDUjsJeaZg3X4nZwToFJiKPMNOLxMEqn2M+2g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m3Em9F4P; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=wufan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=xiaopeng.com header.i=@xiaopeng.com header.a=rsa-sha256 header.s=default header.b=a5d6+J37;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m3Em9F4P;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=xiaopeng.com (client-ip=115.124.28.49; helo=out28-49.mail.aliyun.com; envelope-from=guozh23@xiaopeng.com; receiver=lists.ozlabs.org)
-Received: from out28-49.mail.aliyun.com (out28-49.mail.aliyun.com [115.124.28.49])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=wufan@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLMYz28jXz2x9c
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 12:49:56 +1100 (AEDT)
-DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=xiaopeng.com; s=default;
-	t=1793929789; h=From:To:Subject:Date:Message-ID:MIME-Version;
-	bh=FDEdvRW2qMYa9xxlAN0aPEzctXRxc4Lt0+J1Enj5sqc=;
-	b=a5d6+J37WFd47eQ5x2Z9YzkUtunrk4ZM7RCqcl0nr7l97GwJB1mQjH1apHUAGhA3KcyXJN9uCQ/Hd/PNgNpErSRQ+V8znW2IHUGKN5+oqpFrjOieJKSeuOJmpgXg0OwwUlDFuY+QQfnOxAPWAN+D1ZvTXhqvxw6VMHAtZ2qNv/Q=
-X-Alimail-AntiSpam:AC=CONTINUE;BC=0.07680749|-1;CH=green;DM=|CONTINUE|false|;DS=CONTINUE|ham_regular_dialog|0.00595435-0.00433875-0.989707;FP=13129445745589044890|0|0|0|0|-1|-1|-1;HT=maildocker-contentspam033032065030;MF=guozh23@xiaopeng.com;NM=1;PH=DS;RN=9;RT=9;SR=0;TI=SMTPD_---.jxsQSWC_1793929786;
-Received: from localhost(mailfrom:guozh23@xiaopeng.com fp:SMTPD_---.jxsQSWC_1793929786 cluster:ay29)
-          by smtp.aliyun-inc.com;
-          Fri, 06 Nov 2026 09:49:47 +0800
-From: Guo Zihao <guozh23@xiaopeng.com>
-To: Peter Huewe <peterhuewe@gmx.de>,
-	Jarkko Sakkinen <jarkko@kernel.org>
-Cc: Jason Gunthorpe <jgg@ziepe.ca>,
-	Ashley Lai <adlai@linux.vnet.ibm.com>,
-	Kent Yoder <key@linux.vnet.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-integrity@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH] tpm: ibmvtpm: check the response size against the buffer size
-Date: Fri,  6 Nov 2026 09:49:46 +0800
-Message-ID: <20261106014946.4128696-1-guozh23@xiaopeng.com>
-X-Mailer: git-send-email 2.50.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLN5Z51dwz2xGg
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 13:13:54 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id AECE94389D;
+	Fri,  6 Nov 2026 02:13:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 790111F0089F;
+	Fri,  6 Nov 2026 02:13:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793931231;
+	bh=SwgrBjqkdHVN89k2r7i2yZAHCG31Diqb92PenA1gCr8=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=m3Em9F4PE9u33zUl2y6LstthDzhfyq4KiXR40nCfdoOgLbNJNF4jB/G4o35jsjeBd
+	 Bu32m130jQCns+cycWPMsKi7uBYNzQibEz6nuQw5Jar9DAEVlYxBIc7uoxf0ZlC13S
+	 zr7eWzKfM89ubx2jRQ2vMlCZNFZPnRvWGJ3xmXP//BA3yVW3HOUJobBxm6x4olJ/J3
+	 Ozb9428qhMeZOhSbxEnFaVhM4m9je+vTe89kaeLXeoEGunJy+1wXuFIgQpPTBmVzko
+	 ajpMRaFFDXnoEfOK+n3ExMWm0SO7U606rnluafcz/GcoQ7OdTOJN1xiSvdkxU4BWRU
+	 y6P4hTT++7Lnw==
+Message-ID: <bd783541-9ba8-46b9-b08b-0bd9d9ea6df8@kernel.org>
+Date: Thu, 5 Nov 2026 18:13:49 -0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,73 +59,114 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 13/13] security: convert VMA flag tests to use vma_flags_t
+To: Paul Moore <paul@paul-moore.com>, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@kernel.org>, Jason Gunthorpe <jgg@ziepe.ca>,
+ John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>,
+ "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>,
+ Rik van Riel <riel@surriel.com>, "Liam R. Howlett" <liam@infradead.org>,
+ Vlastimil Babka <vbabka@kernel.org>, Harry Yoo <harry@kernel.org>,
+ Jann Horn <jannh@google.com>, Lance Yang <lance.yang@linux.dev>,
+ Zi Yan <ziy@nvidia.com>, Matthew Brost <matthew.brost@intel.com>,
+ Joshua Hahn <joshua.hahnjy@gmail.com>, Byungchul Park <byungchul@sk.com>,
+ Gregory Price <gourry@gourry.net>, Ying Huang
+ <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>,
+ Baolin Wang <baolin.wang@linux.alibaba.com>,
+ Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>,
+ Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>,
+ Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>,
+ Xu Xin <xu.xin@linux.dev>, Chengming Zhou <chengming.zhou@linux.dev>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>, Pedro Falcato <pfalcato@suse.de>,
+ Kairui Song <kasong@tencent.com>, Qi Zheng <qi.zheng@linux.dev>,
+ Shakeel Butt <shakeel.butt@linux.dev>,
+ Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>,
+ Wei Xu <weixugc@google.com>, Baoquan He <baoquan.he@linux.dev>,
+ Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
+ Michal Hocko <mhocko@suse.com>, Leon Romanovsky <leon@kernel.org>,
+ SJ Park <sj@kernel.org>, Rakie Kim <rakie.kim@sk.com>,
+ David Rientjes <rientjes@google.com>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Christian Brauner <brauner@kernel.org>, Peter Zijlstra
+ <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
+ Adrian Hunter <adrian.hunter@intel.com>, James Clark
+ <james.clark@linaro.org>, Masami Hiramatsu <mhiramat@kernel.org>,
+ Oleg Nesterov <oleg@redhat.com>, John Johansen
+ <john.johansen@canonical.com>, Georgia Garcia
+ <georgia.garcia@canonical.com>, James Morris <jmorris@namei.org>,
+ "Serge E. Hallyn" <serge@hallyn.com>, Mimi Zohar <zohar@linux.ibm.com>,
+ Roberto Sassu <roberto.sassu@huawei.com>,
+ Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ Eric Snowberg <eric.snowberg@oracle.com>,
+ Stephen Smalley <stephen.smalley.work@gmail.com>,
+ =?UTF-8?B?T25kcmVqIE1vc27DocSNZWs=?= <omosnacek@gmail.com>,
+ linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, damon@lists.linux.dev,
+ linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
+ apparmor@lists.ubuntu.com, linux-security-module@vger.kernel.org,
+ linux-integrity@vger.kernel.org, selinux@vger.kernel.org
+References: <20261105-late-2026-vma-flags-v1-0-0d3cd15ab75f@kernel.org>
+ <20261105-late-2026-vma-flags-v1-13-0d3cd15ab75f@kernel.org>
+ <CAHC9VhSR=9YNhBxeFBcTR8wgG2yDP1fW590QKjzuc4Kq9ohaiQ@mail.gmail.com>
+ <CAHC9VhRDVz4M-m_4UZZDKMgs4uc+j-+-jwYEdBDfSD0rtd-1Og@mail.gmail.com>
+Content-Language: en-US
+From: Fan Wu <wufan@kernel.org>
+In-Reply-To: <CAHC9VhRDVz4M-m_4UZZDKMgs4uc+j-+-jwYEdBDfSD0rtd-1Og@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=4.0.1
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The send path validates the transfer size against the size of the
-RTCE buffer:
+On 11/5/2026 5:22 PM, Paul Moore wrote:
+> On Thu, Nov 5, 2026 at 6:17 PM Paul Moore <paul@paul-moore.com> wrote:
+>> On Thu, Nov 5, 2026 at 4:35 PM Lorenzo Stoakes (ARM) <ljs@kernel.org> wrote:
+>> >
+>> > Replace use of the legacy vm_flags_t flags with vma_flags_t values in the
+>> > mmap and mprotect LSM hooks of SELinux, AppArmor, IMA and IPE.
+>> >
+>> > No functional change intended.
+>> >
+>> > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+>> > ---
+>> >  security/apparmor/lsm.c           |  2 +-
+>> >  security/integrity/ima/ima_main.c |  2 +-
+>> >  security/ipe/hooks.c              |  2 +-
+>> >  security/selinux/hooks.c          | 14 +++++++-------
+>> >  4 files changed, 10 insertions(+), 10 deletions(-)
+>>
+>> Similar to the other patchset you just posted, is there any reason why
+>> individual subsystem maintainers can't pick these patches up, or is
+>> there some reason I'm missing and they need to go through a single
+>> tree?
+>>
+>> If they can go through multiple trees, can you split this patch up?
+>> AppArmor, Integrity/IMA, IPE, and SELinux are all maintained by
+>> different groups/people.
+> 
+> Since there seems to be a desire to bypass normal procedure in favor
+> of speed (surely that will never backfire), the SELinux changes look
+> fine to me, but please do wait to hear from the AppArmor, IMA, and IPE
+> maintainers before merging this patch.
+> 
+> Acked-by: Paul Moore <paul@paul-moore.com>
+> 
 
-	if (count > ibmvtpm->rtce_size) {
-		dev_err(ibmvtpm->dev,
-			"Invalid size in send: count=%zd, rtce_size=%d\n",
-			count, ibmvtpm->rtce_size);
-		return -EIO;
-	}
+For the IPE part:
 
-The receive path has no such check: the response length is whatever
-the hypervisor reported in the completion CRQ, and it is only
-compared against the size the caller asked for before being used to
-copy and clear the RTCE buffer:
-
-	len = ibmvtpm->res_len;
-
-	if (count < len) {
-		...
-		return -EIO;
-	}
-
-	spin_lock(&ibmvtpm->rtce_lock);
-	memcpy((void *)buf, (void *)ibmvtpm->rtce_buf, len);
-	memset(ibmvtpm->rtce_buf, 0, len);
-
-A response length larger than the RTCE buffer makes the memcpy read
-past the buffer and the memset clear past it.
-
-Reject a response that does not fit in the RTCE buffer, mirroring
-the check the send path already performs.
-
-Fixes: 132f76294744 ("drivers/char/tpm: Add new device driver to support IBM vTPM")
-Cc: stable@vger.kernel.org
-Signed-off-by: Guo Zihao <guozh23@xiaopeng.com>
----
- drivers/char/tpm/tpm_ibmvtpm.c | 7 +++++++
- 1 file changed, 7 insertions(+)
-
-diff --git a/drivers/char/tpm/tpm_ibmvtpm.c b/drivers/char/tpm/tpm_ibmvtpm.c
-index 6fb4d30eb..bfef4bc14 100644
---- a/drivers/char/tpm/tpm_ibmvtpm.c
-+++ b/drivers/char/tpm/tpm_ibmvtpm.c
-@@ -121,6 +121,13 @@ static int tpm_ibmvtpm_recv(struct tpm_chip *chip, u8 *buf, size_t count)
- 		return -EIO;
- 	}
- 
-+	if (len > ibmvtpm->rtce_size) {
-+		dev_err(ibmvtpm->dev,
-+			"Invalid size in recv: res_len=%d, rtce_size=%d\n",
-+			len, ibmvtpm->rtce_size);
-+		return -EIO;
-+	}
-+
- 	spin_lock(&ibmvtpm->rtce_lock);
- 	memcpy((void *)buf, (void *)ibmvtpm->rtce_buf, len);
- 	memset(ibmvtpm->rtce_buf, 0, len);
--- 
-2.50.1
-
+Acked-by: Fan Wu <wufan@kernel.org>
 
