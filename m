@@ -2,94 +2,44 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 44094606A32C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 03:02:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C1205606A329
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 03:04:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=mdeY9oDH
+	dkim=pass (1024-bit key, unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=Wf3bxHyC
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLPB53rfSz2xGr;
-	Fri, 06 Nov 2026 14:02:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::530" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793934173;
-	cv=pass; b=AkZLyOysnajuHuWapWMZ6PalVnQ/Z8l9sEjOQQXInDYF+lcOMlqNKvxuNiczVltcKqOj6SXyo9OXPw75ztWGnuPXfr1chX9gb6BUV7+VcM/ISIp7okP3jgN2tRmrggzYzhTF3HSXNjJD3G6KdntwgFdMNx7Y65YJh/HiCiJIui/Pq8WxEi9XCx8Z8tMH0aj+uBUoz0AdqsX+wEXfpx6QqeRgvGunbsw9OzOJZgQ8fqylUnq4FmLA7ZtJY/SOjMmYq5YRDzerlSt6nRxpuAxq1rGWScqzQ6ucpDcc0500LZKjpe90fjzEORuhxLKpRTergTkFhG/oTS+ekWulLt1Sfw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793934173; c=relaxed/relaxed;
-	bh=gKlkPLsxQMeV+oJVtMekbD2xgsQAsa6FTULIvqAEmaw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=i1ZujHzzpEiq1CLnB9pgiL40RzKD38iF4JWIJNngCHRhDa0HEkerkR4C4U00PZ7Mc5BnWQe++e4IRuos6cCzowxJ42SeMe/5WI0Q7kxi6G/FmudrEidLRls0Me9NTGStWjeGBiJ8Ev3OjuoTp4rhT9p/vDZFNEd0dakZ46PxSgMLc52l+9q2qMaFNO9rYpFa1j4DbIyK6KjixHAqx8GfwFHPQepwde/HxNCZiamYi8iUjuMQisYiKRtIc2lfNVtvkyJk31T95FA9w0TOJ2YmZASxbUhvYldr7Ed7U0UpFo3soX9grv5JrKARNrmZztL6310Yb5tTyLDrTN/p4Bb4QA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=mdeY9oDH; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::530; helo=mail-pg1-x530.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLPDD2F3sz2xH7;
+	Fri, 06 Nov 2026 14:04:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.97
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793934284;
+	cv=none; b=MXVTVpLfY0ynZilIFswcX0bPneiuC15+tNSTC5dlrGvg18QnOX5NEDWzxUM00/Fe1xAvXIqSWP2fwHPHOz8Ut3wmDOp94Z4YkykkF/eISgwkwCUkmraVpNRLVC+C8V0xtD14Llr+kXw6dCxz9Ogj0KNHsndBwF6ugbbgwDQlUS6ykL0s+/vEYRwQ6VnUtx3JJXPog48F5k6FhBMjwx0qSlao6CjGORv/iPcNaN9Nkc7hwhdcz5YBQ47M1MUt4zLEq/mNFCE/Uj8NpefgMRAFZHhekUyTzDu0ljqEQKUub6Tf7U2GpSkltBysFCtNaQ4b1GkEE/ktA6B6Aw8t0dPbhg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793934284; c=relaxed/relaxed;
+	bh=PD61LryWpAKBHtS1n/1Sw/t0gup78Gp41jIY7RFBO5U=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=gNX7DGZ3S/YkDu5SKBqQC0UE3tgaVJ2BRolvzzPGaZ2srmMKtyV1RZ0edJxqkgk1fhb65bYP4SMeMCmbd/zPcrSKINPWfH7Dm0fRd8HlyGTmj7FZlXnF84sZ5FT/oZZU3+Q3TmzxeJxkp2Px1xL0pm1lcTulpa+dqPFR9IGpEbMTKaxvWxOXddlvjxfWZe1Bt1yJp1u/uBzxg6pg3V2aMlOdO7qVffjIO3k/OanctFB1MWB+1XgT1zly9M1ZZBRp3VsiBnXLkckKf7JwJJJNYFFg6VjzyoZTS5cIVjGNiyksd8FUdJN36aNQp6V/Ig6UnYFpDZaUpK7mBrh2qTvWVw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=Wf3bxHyC; dkim-atps=neutral; spf=pass (client-ip=115.124.30.97; helo=out30-97.freemail.mail.aliyun.com; envelope-from=baolin.wang@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=mdeY9oDH;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=Wf3bxHyC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::530; helo=mail-pg1-x530.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x530.google.com (mail-pg1-x530.google.com [IPv6:2607:f8b0:4864:20::530])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.97; helo=out30-97.freemail.mail.aliyun.com; envelope-from=baolin.wang@linux.alibaba.com; receiver=lists.ozlabs.org)
+Received: from out30-97.freemail.mail.aliyun.com (out30-97.freemail.mail.aliyun.com [115.124.30.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLPB454w4z2xGg
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 14:02:52 +1100 (AEDT)
-Received: by mail-pg1-x530.google.com with SMTP id 41be03b00d2f7-cd8ca57ef64so544729a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 19:02:52 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1793934170; cv=none;
-        d=google.com; s=arc-20260327;
-        b=MoQ6pMZzr0KKIZ4DHvk4Nv6oyOsuYVNhAVnlq9+w9yk/QFsppw1xqkgnjhoyTWLCUY
-         O2/zBeOrNVYZi5XV8ZBr9YuCsTNbfMm4PL0sxTo/2QlubeYd/ollTQ8Wp1dlH+ONK9rH
-         9lxwwkyoEGE526uqoPtXpW9vxHZ+mA+oGPIN2EDukFm3ROBAjxt8yN2qHl9i8JhTAGGo
-         bQ4dPzBG991pHGdpSNCLPbZc6T7bMPQ2BQqPluDQkdX1/+XyFibBNvkipCcXdVqx042c
-         2U7kUVYbIFx8ipJuKQ9NH6TJdtDq3VAccx7TUzR7dtAk2gss0CG+E7sqZ0nfTeDO6022
-         wFoA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=gKlkPLsxQMeV+oJVtMekbD2xgsQAsa6FTULIvqAEmaw=;
-        fh=R+o2O0fl9hNu+z8NhqTVV3dWr6shw0Sc1F4dduIe4Ew=;
-        b=fKtO7WmiuYBjqfIqObmsG0fiweDl6ByEy28nigQ4uHKeLjz1amZZeJRp/OU60rtLtB
-         KXor7wOoCmNXZGJfLjtVK53fpUcyG0mjghLwFdkyf/E2HKIQJX6AmzosaUlqER1uJB/L
-         AsGq8B32C+5ibPRl78Tg5Woc9G54HhpzxXUpS06vLNCw5+OwjevVeIItxmCtyME192P5
-         Rwlp6b5R9vJGpKy8u2Ie1F0j4muZ0U3Ase62PhoVpK+NwY02Z/HyGP2f+ADTFdFzn41i
-         6yiBa5YK4hTTJNTk6vQb+1dBUnAyfB8c8BVJkBDftNkF3WQC1yRvhNow6InybHsVhnNZ
-         nPew==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793934170; x=1794538970; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=gKlkPLsxQMeV+oJVtMekbD2xgsQAsa6FTULIvqAEmaw=;
-        b=mdeY9oDH6wWUoFzL4S+VCuxvr/Lc3BWUV/ZWKeru0wJ8BICAIDZNPS9HS+p3Uqzb5o
-         fdL1SLpJtOnEKgqKBkmp8WzUA/sVZVa2woxq17/SR+JuMrUjBVasWZdyDhW56VPMPqZl
-         +vJQ4wCj4vV/Skl4MUqGtpM2X3eRIvl0fMhQBeJALX/7PfNXnkBzS+we+CLeySmWZu/y
-         voHWI2JIGarPmTwUClM/0x6jCNNnQTzThKxuvlg11bCwD2trceHA/tdNkIAr0xaNE63I
-         IH5LAZhHiozoDmqM8UZ6ZiY00J3hL3v4awrrUuZSHFu/qpYXqalbiOVxT9CtgdnsW5Qt
-         n4hw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793934170; x=1794538970;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=gKlkPLsxQMeV+oJVtMekbD2xgsQAsa6FTULIvqAEmaw=;
-        b=2o2UgaO6K8VRC4mdPq+tiKUl+BdJ7PIjlEOB+1WtGQGQZ/n38uSZ2WW71urYXmQ4px
-         Owcf0+Bubk2GH/5/ZHhoKCBLihz204KxXFcCntuGQ0L7i4zo+UcTpzd0ZvortqUpqG5B
-         Cf+v3SbsIMp0OxJk/KAq5Toi0evad+hUGuPfOUN8VpZq7snamW2RVnsOD14oB0TUix7Z
-         WOghstNS1iOLmTtv0BQzwQ7rhcJwRlr7C5dL0zzFlvdUidNJP1L2GvJSGYj/Jof08wQD
-         f/cvvqzDDVlhFnpRMmfaCKhMBcp7jncEtQKQ1i/oqVVm2cxcYeSUTgVZ132AnONWaCYE
-         9c8A==
-X-Forwarded-Encrypted: i=1; AL+hErGD6XAClRb01hMU4E8NwA6/8pDwi/yPL9ctxGVJggxdK6i2VGGkyNuVG93bxvAzHrtCdRfEDahlKpQvwr0=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z8KLz4O8VljVF1giB/xHQ9IpnIsHpdtZliCB2643jDKRFHVyUFZ
-	lx8Df53uYRlYW6mMpj+TQPLUKDs4u28evoPc0oDxxgFtAGIowQFnPsWhJ9uKDW7Iu9PxR0Hr4Cv
-	dTr33ggeTDyUGAEpd7NP1xWAMIa+Ac0o=
-X-Gm-Gg: AYBFou3O0ILXqa9h7uUmn7fJrux2IwGkPJXl7S/1Jx4WBskllALfNyK5fzkyBvY6EcI
-	2CSacEi5KQCCQMXbIfDKjdIm/ADZ1NwD4BYoziKFH8j4C/wHLoYtlCCbAGyb1ZTpiK4e5Hr20PK
-	GCGp7Z+0/TQ9XSHZSCo6pbwoLo2EsxA/m2TeHKbdUr1CAhze63Ql3Wr9rrbVDOly1eemza1u2m/
-	itFsMlmJ7q/rqArv3NUVit2cUEorP+ImQWqBJXCeRkUIaVWTJFhIeISBDX21ayhT0BDf+JjKbgx
-	4KSeDtjbIEkifCtTGaPjT+GC+qYSrGmZ/AR/RJ0oHK+M3TSTfcd+OFpvY1xrtSApVIDFZNClEyo
-	RxymBShqFmdBkKf5VXbpwr1ysRAKcGNfCydJI
-X-Received: by 2002:a17:90a:d88e:b0:3a4:b509:88bd with SMTP id
- 98e67ed59e1d1-3b0db608eb2mr752950a91.2.1793934170297; Thu, 05 Nov 2026
- 19:02:50 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLPDB14tyz2xGr
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 14:04:41 +1100 (AEDT)
+DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1793934275; h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type;
+	bh=PD61LryWpAKBHtS1n/1Sw/t0gup78Gp41jIY7RFBO5U=;
+	b=Wf3bxHyC99CQdX7MIN8rZ6t8wXYf4NtZxermNR4Id7/0Za5Xyni/FwIXILkdd+mfX1HRLXHjgZHzdd/J57jwI2fHeuDvH5GxGGgDhPMyj/6N+v9TMMQhRSWYFnIrnyHCYe9fsBKpnlZOjSdS7VdW16H8soQuvjDUAftrxoTlx9s=
+X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R151e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033045098064;MF=baolin.wang@linux.alibaba.com;NM=1;PH=DS;RN=88;SR=0;TI=SMTPD_---0XEA9E6e_1793934269;
+Received: from 30.74.144.130(mailfrom:baolin.wang@linux.alibaba.com fp:SMTPD_---0XEA9E6e_1793934269 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Fri, 06 Nov 2026 11:04:32 +0800
+Message-ID: <38869f97-7e81-40e0-acc8-fb30ddc22c14@linux.alibaba.com>
+Date: Fri, 6 Nov 2026 11:04:28 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,71 +53,87 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261102195228.4084438-1-Frank.Li@oss.nxp.com>
-In-Reply-To: <20261102195228.4084438-1-Frank.Li@oss.nxp.com>
-From: Shengjiu Wang <shengjiu.wang@gmail.com>
-Date: Fri, 6 Nov 2026 11:02:22 +0800
-X-Gm-Features: AclHuK-7yWfD5nIIYc699a1XBrVl3zaaX5gaE-98V3Kig8gZod2anKcZN_IDxRY
-Message-ID: <CAA+D8APkR05hUMm+KrRhZ+dkEzppNCqD9C3jSGiG42bFziE80Q@mail.gmail.com>
-Subject: Re: [PATCH 1/1] ASoC: fsl_asrc_m2m: use dma_chan directly for dma_async_issue_pending()
-To: Frank.Li@oss.nxp.com
-Cc: Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>, 
-	Nicolin Chen <nicoleotsuka@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, 
-	Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
-	"open list:FREESCALE SOC SOUND DRIVERS" <linux-sound@vger.kernel.org>, 
-	"open list:FREESCALE SOC SOUND DRIVERS" <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>, 
-	imx@lists.linux.dev, vkoul@kernel.org, Frank Li <Frank.Li@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
-	autolearn_force=no version=4.0.1
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 03/13] mm/rmap: convert remaining VMA flag tests to use
+ vma_flags_t
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@kernel.org>, Jason Gunthorpe <jgg@ziepe.ca>,
+ John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>,
+ "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>,
+ Rik van Riel <riel@surriel.com>, "Liam R. Howlett" <liam@infradead.org>,
+ Vlastimil Babka <vbabka@kernel.org>, Harry Yoo <harry@kernel.org>,
+ Jann Horn <jannh@google.com>, Lance Yang <lance.yang@linux.dev>,
+ Zi Yan <ziy@nvidia.com>, Matthew Brost <matthew.brost@intel.com>,
+ Joshua Hahn <joshua.hahnjy@gmail.com>, Byungchul Park <byungchul@sk.com>,
+ Gregory Price <gourry@gourry.net>, Ying Huang
+ <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>,
+ Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>,
+ Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>,
+ Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>,
+ Xu Xin <xu.xin@linux.dev>, Chengming Zhou <chengming.zhou@linux.dev>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>, Pedro Falcato <pfalcato@suse.de>,
+ Kairui Song <kasong@tencent.com>, Qi Zheng <qi.zheng@linux.dev>,
+ Shakeel Butt <shakeel.butt@linux.dev>,
+ Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>,
+ Wei Xu <weixugc@google.com>, Baoquan He <baoquan.he@linux.dev>,
+ Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
+ Michal Hocko <mhocko@suse.com>, Leon Romanovsky <leon@kernel.org>,
+ SJ Park <sj@kernel.org>, Rakie Kim <rakie.kim@sk.com>,
+ David Rientjes <rientjes@google.com>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Christian Brauner <brauner@kernel.org>, Peter Zijlstra
+ <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
+ Adrian Hunter <adrian.hunter@intel.com>, James Clark
+ <james.clark@linaro.org>, Masami Hiramatsu <mhiramat@kernel.org>,
+ Oleg Nesterov <oleg@redhat.com>, John Johansen
+ <john.johansen@canonical.com>, Georgia Garcia
+ <georgia.garcia@canonical.com>, Paul Moore <paul@paul-moore.com>,
+ James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
+ Mimi Zohar <zohar@linux.ibm.com>, Roberto Sassu <roberto.sassu@huawei.com>,
+ Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ Eric Snowberg <eric.snowberg@oracle.com>, Fan Wu <wufan@kernel.org>,
+ Stephen Smalley <stephen.smalley.work@gmail.com>,
+ =?UTF-8?B?T25kcmVqIE1vc27DocSNZWs=?= <omosnacek@gmail.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, damon@lists.linux.dev,
+ linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
+ apparmor@lists.ubuntu.com, linux-security-module@vger.kernel.org,
+ linux-integrity@vger.kernel.org, selinux@vger.kernel.org
+References: <20261105-late-2026-vma-flags-v1-0-0d3cd15ab75f@kernel.org>
+ <20261105-late-2026-vma-flags-v1-3-0d3cd15ab75f@kernel.org>
+From: Baolin Wang <baolin.wang@linux.alibaba.com>
+In-Reply-To: <20261105-late-2026-vma-flags-v1-3-0d3cd15ab75f@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Status: No, score=-19.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	UNPARSEABLE_RELAY,USER_AGENT_SANE_1,USER_IN_DEF_DKIM_WL
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, Nov 3, 2026 at 3:52=E2=80=AFAM <Frank.Li@oss.nxp.com> wrote:
->
-> From: Frank Li <Frank.Li@nxp.com>
->
-> Use pair->dma_chan[] directly instead of pair->desc[]->chan when calling
-> dma_async_issue_pending(), which is more straightforward and avoids
-> dereferencing the descriptor to get the channel.
->
-> Prepare to make struct dma_async_tx_descriptor private.
->
-> Signed-off-by: Frank Li <Frank.Li@nxp.com>
 
-Reviewed-by: Shengjiu Wang <shengjiu.wang@gmail.com>
 
-Best regards
-Shengjiu Wang
+On 11/6/26 5:30 AM, Lorenzo Stoakes (ARM) wrote:
+> Replace the remaining uses of the legacy vm_flags_t flags in the rmap logic
+> with vma_flags_t values.
+> 
+> No functional change intended.
+> 
+> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 > ---
->  sound/soc/fsl/fsl_asrc_m2m.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/sound/soc/fsl/fsl_asrc_m2m.c b/sound/soc/fsl/fsl_asrc_m2m.c
-> index c6970a7e88f3f..796a78124765f 100644
-> --- a/sound/soc/fsl/fsl_asrc_m2m.c
-> +++ b/sound/soc/fsl/fsl_asrc_m2m.c
-> @@ -257,12 +257,12 @@ static int asrc_m2m_device_run(struct fsl_asrc_pair=
- *pair, struct snd_compr_task
->
->         /* Submit DMA request */
->         dmaengine_submit(pair->desc[IN]);
-> -       dma_async_issue_pending(pair->desc[IN]->chan);
-> +       dma_async_issue_pending(pair->dma_chan[IN]);
->         if (out_dma_len > 0) {
->                 if (asrc->start_before_dma && asrc->m2m_output_ready)
->                         asrc->m2m_output_ready(pair);
->                 dmaengine_submit(pair->desc[OUT]);
-> -               dma_async_issue_pending(pair->desc[OUT]->chan);
-> +               dma_async_issue_pending(pair->dma_chan[OUT]);
->         }
->
->         if (!asrc->start_before_dma)
-> --
-> 2.43.0
->
+
+LGTM.
+Reviewed-by: Baolin Wang <baolin.wang@linux.alibaba.com>
 
