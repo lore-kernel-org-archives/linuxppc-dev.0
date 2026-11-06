@@ -2,82 +2,93 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 099AA606A326
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 13:28:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 541FE606A32E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 13:30:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=tenstorrent.com header.i=@tenstorrent.com header.a=rsa-sha256 header.s=google header.b=HTy0aolF
+	dkim=pass (2048-bit key, unprotected) header.d=bobcopeland-com.20260707.gappssmtp.com header.i=@bobcopeland-com.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=k0PBEA+3
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLg3w5PVqz2xNC;
-	Sat, 07 Nov 2026 00:28:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793960806;
-	cv=none; b=hZcq+ff//nLQUGU6Mm5VmoR+hOhuQzIlutLN9RgSOnrlkyqk2W/nxjXk1TEPgAm3RLyNzGervoFLeEvgV95FCkbo4yY56LQu8LnlDR5GUx4v4egCJHCEaIQ1D4c9W7Vp+7x4Tef4TUCsO9Ivm3VTa6pWnlgvUXZFB/Vlr+uEylA1Jrn7Pm6dDuQHYPxJzegaeSUmOpIOrySEiAU5OYyKVMJ1AIT6gGgAxZzw3geBD9DcsSkMUKGeMg0Oc/ogiMweIMdxFdHSRKvLfA7Xxj0F3oyqttuWweMdBmWBPh6Vw9jLg/7fEwQFQuTxC9N2s4zuLmCRYlIkWqV5Qq8TElwKOQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793960806; c=relaxed/relaxed;
-	bh=5SnQm8FyNQxZwAbJCgUjqGUAHNHa65Xtbn/htElEqBY=;
-	h=From:Message-ID:Date:MIME-Version:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=FbYHs8E9NVEbG3KFAQyawY6khme+ROyO6QzPVhAOCZXMVMM6RqXeHkVkwKNSmj/RvyFpe0spi0aGUcb++kFpSfLz4+/GV9zPNlioM+9UEITWOMV422xnqvJlNSWs0Xc40yhXg+CnM/Jte/g617K8a96A/pQwqt0kl4WkcGhddST9L5U9lX4H68H6BXiYUZkR0/NSyUGh3oQljckEgpuSCQZehR41vnGEx6BotGCf/pxySxdhsp47mhsB47dDyIZuL8xaM7SlAm649787lK3ttaT1nXgzb303uFu42fCkT0eiNzPeZjP4CwxmztYboJoLGD25x0AFMNEE8E824tBgAQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=tenstorrent.com; dkim=pass (2048-bit key; unprotected) header.d=tenstorrent.com header.i=@tenstorrent.com header.a=rsa-sha256 header.s=google header.b=HTy0aolF; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132e; helo=mail-dy1-x132e.google.com; envelope-from=mpe@tenstorrent.com; receiver=lists.ozlabs.org) smtp.mailfrom=tenstorrent.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=tenstorrent.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLg664Tfpz2xNC;
+	Sat, 07 Nov 2026 00:30:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::b135" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793968756;
+	cv=pass; b=ldchSczhkTYcAk+A0uMjgH7XfqI2CACu7EYxUEh7ADRxKIpo6mfGVx3GDSb2WL+aPAkERbo0Q1ViouwlPaWhbUDUaSomcKNgBIMg8NpVWFuAKSOzYcng3tzZu72rWRfM0drKQBlznJ4+bivL42102SR4o3kt+EUSMVAONWMoNLkzHs1XpeDJVaBiJBK27FEJAbmr9suB8l8uWd92KPfa/O9K7Ifis0Y4vv/UMHhlOjYYI3yhUtKybYH8qvFUsq92YnMAWg7PXOM7dLU3pw1noPgP9nBdQ5oQVFdYKYNI+0i+S2tEg8TuXf6nf4qURkIGjC72KC097EAc0XO0mZTmAQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793968756; c=relaxed/relaxed;
+	bh=ZxNISjiJdH1N8UCraJUsn6wM/XATiJ1CgmmvNLAwlRg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=UMRhvhrh8w4ei6elNajAI9JqZyccEW56m4GmQhWQ7SDvAp3OZhoGlLFinMe0G/O0s2THmw2XLT3JWThzURNWwCaq7s+b7psiVTw3vrdQw52dT9EWn7tkVd9Kl9c1MS+uXu2o3V12U8od/xO6qOp1QCVMuo6/8535Wh+pBTNbcnobI7WGrKfEja8qcy3EUqGDRB4lz6vTAL8bmo0eDzO1j94KLQBqa542hSVjL5ZyaOkuMTeDUlFupN/RXDoGTZ9iK1N03eONh4/uZsHpr2jQKt+3b+0jFATKVe0YJGXkIyitcyTmvxconymm9G8/lIFEHZus9he8ebZY/QT/FBnw+A==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=bobcopeland.com; dkim=pass (2048-bit key; unprotected) header.d=bobcopeland-com.20260707.gappssmtp.com header.i=@bobcopeland-com.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=k0PBEA+3; dkim-atps=neutral; spf=none (client-ip=2607:f8b0:4864:20::b135; helo=mail-yx1-xb135.google.com; envelope-from=me@bobcopeland.com; receiver=lists.ozlabs.org) smtp.mailfrom=bobcopeland.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=bobcopeland.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=tenstorrent.com header.i=@tenstorrent.com header.a=rsa-sha256 header.s=google header.b=HTy0aolF;
+	dkim=pass (2048-bit key; unprotected) header.d=bobcopeland-com.20260707.gappssmtp.com header.i=@bobcopeland-com.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=k0PBEA+3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=tenstorrent.com (client-ip=2607:f8b0:4864:20::132e; helo=mail-dy1-x132e.google.com; envelope-from=mpe@tenstorrent.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x132e.google.com (mail-dy1-x132e.google.com [IPv6:2607:f8b0:4864:20::132e])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bobcopeland.com (client-ip=2607:f8b0:4864:20::b135; helo=mail-yx1-xb135.google.com; envelope-from=me@bobcopeland.com; receiver=lists.ozlabs.org)
+Received: from mail-yx1-xb135.google.com (mail-yx1-xb135.google.com [IPv6:2607:f8b0:4864:20::b135])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLb2D1g0wz2xJR
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 21:26:42 +1100 (AEDT)
-Received: by mail-dy1-x132e.google.com with SMTP id 5a478bee46e88-3535a54bed9so677934eec.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 02:26:42 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLdz71GvMz2xJR
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 23:39:15 +1100 (AEDT)
+Received: by mail-yx1-xb135.google.com with SMTP id 956f58d0204a3-67bef25eb92so717433d50.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 04:39:15 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1793968752; cv=none;
+        d=google.com; s=arc-20260327;
+        b=kmtRVY1tk4U7CL+lk4FWKUCapXM414kU07f6XzacVWyiER9vvr6f5DUv6CcR2ESAh4
+         Dr1uoyOaxDy9f+WUH3m6RGHcUX1BRqO5z8WWQmz0AihOz/ggECeK5n6VuE+gfnoCqjXe
+         BBJT34XWAujddkjLASPm1h/+T/681P1tMDHQ8CKQwHYXdFyM8piFmYQASe+K6PJycpGh
+         RVl/qeLYmIw6bW42Gz/CEk7/gURY0aVk2qrJbjf4Q+AGL+6a8JDgB05Uj2XD0+YDSmXd
+         0BQEPZVmZtS90+TEclcTRHWst3QLZUpjmwtx2e2tfl03BSHMA1ZwCOruMKxYuw85Oqgq
+         /89w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=ZxNISjiJdH1N8UCraJUsn6wM/XATiJ1CgmmvNLAwlRg=;
+        fh=y8B5hBFfYlfURlabiy1ir/typ0vS4kywf0VxEwoRvSw=;
+        b=lIj5bWAfXLuIN1HHeB3XySA91XUkuDa7e5Egw9j8M2fU3gHp7s6cPdwf8IwYS8fLb3
+         ZKKOgzzWbi88wGQrm6y5kQVQQ7sva1RFJQX0iCE/KIbRiD59rktI/HClkmxxGMxY6ZaV
+         cb3h9jleBMx/+fvjHSRkPVVdiem5n9R/8VZ8Fq8Agfu3oqwpbv+EY3/c+9xbU06MIqlO
+         LeX32WGrBpLNjuv76GoejQJNjw9VZA0d085J0ZegftDO2JfpW4aoMHuQC3FzYiB0Mcwf
+         QGMJjBV1AqLH7TuXNB7fuplZAM8conlUlv4Uk/ERBTa/Bk2N0epqsqWtB4S/OFoNJxry
+         ZsMA==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=tenstorrent.com; s=google; t=1793960800; x=1794565600; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:in-reply-to:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=5SnQm8FyNQxZwAbJCgUjqGUAHNHa65Xtbn/htElEqBY=;
-        b=HTy0aolFvFArig7bGOmnga55tJETfsQzLVeFIkPpknJ8M5ScU//NzJkze9JEWkj4Go
-         KEbBLaEVf7dLFgrZqEDtS+c67xMGSMby4W68/Ko8tNziLgosWqHV0Wr8pzo13ITbZgbS
-         C+S3TS17pHLpjsZ41FpuVv5+g9TdhpSx/8mtIpXRCg1c6LtwMWsWyyUTwlRqLM6X1o2E
-         lo9w1y39mmuZljWnmVMLkdjGiuMUFnP9CJMg95uhiwmF7FIz9nQbaJXQhTpv0WBZgt8A
-         zum8GF6TBWnnHzgyg1DzA9ZlENgCnjBFJRa1Lcu6bJL05iSTSOt5ofUH3i/q5ead7ziR
-         HZXQ==
+        d=bobcopeland-com.20260707.gappssmtp.com; s=20260707; t=1793968752; x=1794573552; darn=lists.ozlabs.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=ZxNISjiJdH1N8UCraJUsn6wM/XATiJ1CgmmvNLAwlRg=;
+        b=k0PBEA+34pqijjgtOZ4A2JpttlOXRrirYrNtJ6tMMqTDplI/XSL6TBYzEs+aHsot+P
+         JJXLkeoaEYO2/pL0Pa+oe9nI5KCQRk8OHqjE4GpyxCBvbRLaqbrimVjGe2qy/id4x+3r
+         kbEAF0Era/b1hsO28S5gLRIdCAWNE6z6E1BFfll/nEylZM9otqMLU/F6Y38hULcHm8eO
+         kJ6lap0u4PwoNDaRFluKHnxejsISlYPFD25I8M/7aXLEUqqcIf19jeGPDknXiUbT7nsR
+         SZXaUnr9CSiikcCHz/FHCoRvdF3L4qqbAzGDYVAsQQwItOcqygseDxix2b1nJ52LxMjp
+         nrKQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793960800; x=1794565600;
-        h=content-transfer-encoding:content-type:in-reply-to:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=5SnQm8FyNQxZwAbJCgUjqGUAHNHa65Xtbn/htElEqBY=;
-        b=lBT2u0kCn5rI/LVuXIW+COsu7jgqYBX1nOI/LSahXaRVgqk6YO6seB8JHzWPsJCVbT
-         uuYmYsX5qKjZf3NaSaV35XjOm40mVDDfwFViKzSTN/SpBPsETXlog6MABEgGU3Ihf3UT
-         1ncPr8D9sU99JXaYipFuvhUQFs8p+8Tkqav3AGpQtvEnQm1hN3aXMF7qxCY8rQPrM/Cx
-         OD0S8AsvdLUw0d0BkDRnJFkX1CDghkgnctvyanh31eUtpgDEvCCP78QiAxDVBblYTpqE
-         yPDF8dhBvQ+W+w6hkJykK7aoozakgo1gpyDDMnPLOFl8L2G+Fo9gEmtVp2cI/xXfxHML
-         hEiQ==
-X-Forwarded-Encrypted: i=1; AL+hErHeyyrtf11/+r+mZLOxw2Zob0/FbxP8x1mm4wt1mmTpC4N3Ff9vsQsJI6XUu3hjiRGUiUKeM+sxYwEr0LM=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z/jxz/hx8B/cbvFEiULYAW0SE9xS51sfRv/uqNpwqmmZG5BZjVC
-	d2vsG6pddLERJx5qWbAe8C7o2a1xQJe5gsE6KTGn3SDZg4ZowTWtKXMXYathvWzZZjs=
-X-Gm-Gg: AYBFou1uDq+4a72ttttcnPv2+Q7uOWSxXIrz/vcyp/jyZP8COQBMww4SL/SwN2t9+BK
-	gZqoCcMtEoDsGFZWGclCMo6rOCVSdsByDCIXinGjXKpN03HTfqGF0/dNFmREhVnSuK/MtWBNgg3
-	LfFwkMO1PtsBLFw7CFMDO3wr65iSdb0V0UX3owzRBS/F8mpzVAtEat8OGg3Qi/JXWTjIkkKs5wM
-	/mxSrsy6xjmIEMf2bNg04akXmTwJhyd/OEkFwCwdfJidpRP9DwYtC1cgDftAFxkkZdHRfTYRSi/
-	AYVcMpLLjJwbnisllF1E243PRxCdY/3EujTpIzerP61kt659rJZzbueYZJMdhZn+2Q8F/iSHd9+
-	R3FSUFaMTcvAjsaogRUKLt97v8T45WpN+JGPhpysVghayhdMlUfJDVh0V/y/oIQ7by5+7lbbxr+
-	cL95tLipSr08j+x3k9V3BLPU/gfeMuMFu6UezN/PTt4K5aranLvGBDNZSY3HXgu72Up3sFfUDey
-	Y1m5+MLA8Yj28KJcCBIbFark1YY0ksA5DeCtLDhxDrRzuH6vxWoMPTootSWHwI8DcNaSCYA+sIx
-	JhT6oyki5BtWEtHnMFz8z8ndul4=
-X-Received: by 2002:a05:693c:250a:b0:36c:c483:7077 with SMTP id 5a478bee46e88-36f75b1ffefmr2361493eec.14.1793960800111;
-        Fri, 06 Nov 2026 02:26:40 -0800 (PST)
-Received: from [192.168.1.107] ([203.221.253.165])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36fa651e6b1sm11482680eec.3.2026.11.06.02.26.36
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 06 Nov 2026 02:26:39 -0800 (PST)
-From: Michael Ellerman <mpe@tenstorrent.com>
-X-Google-Original-From: Michael Ellerman <mpe@kernel.org>
-Message-ID: <9fada7bf-11b5-45b6-858d-4c6b79d6a507@kernel.org>
-Date: Fri, 6 Nov 2026 21:26:34 +1100
+        d=1e100.net; s=20260707; t=1793968752; x=1794573552;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=ZxNISjiJdH1N8UCraJUsn6wM/XATiJ1CgmmvNLAwlRg=;
+        b=gdR3ShM9DAZK5IgCpqcDbGekcjGLjoPUvhPlLZnIJbSoTG0CCfQzp0UvGM0QAmy1kC
+         OQcTrYrJxr3KbZvpcG1SCJYZtFZct/lPFn4arGTE5s1P+LPF0bAQiw1tS/B/N7901Ti2
+         r3chcPxDUhdyEgJxftgB3fqmaBeq7KxVDzaseFQlHg5syumch8VQIHNjBBlD0QqChr23
+         K4k+8adq0frv3ccbTs72hwyIaF88qM2v8igyV5BvlEtfN689MtLe/0XIVqFE02tRLsz0
+         iQOcVqpmvpplCBXDmTjro0fMcuq5aBQqfS16GdclDqHMfcy2BAqCnupNqEUlGIS5TrRK
+         h5uA==
+X-Forwarded-Encrypted: i=1; AL+hErG8h/+vZ+w/9+Wr1xS19/B8tObUCY9MzV4Kdoomb9IwEan7vJdfqaBWX1LiYz/lMMhAjAiFlHyBmDyDh6s=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z/KNDx2dSkP77cu4TEPjhrl276l/DaN6q1KINArjanrYBwKrUka
+	RPSpgQCH5xflujWax9Glv3rjkOS6m0IcI1IC3s984kGEExpJNp59J+MmCZvsAji8d+DAz8J9876
+	2WUT1k08xNkNFof12nvSxkTiWKcPPaT2Re3XbbGELEA==
+X-Gm-Gg: AYBFou3O/Ql1dyP8Yy0DGRfLC7JyVEwnQq+eGIGNQXMboe2ADF0U2rlclUkN7HfkHEI
+	vaN4PNq72gieKb66/1uJY4EKTPxFZ7RAe9TNAM48PYNhGUCxn8jND7lGtQTVG5XpLNPdZ0uuWuH
+	FtZmTOhO26QL92TM5zkmPwbaRiLsRAP0zyyBVsEK4Lqcgsbam17lvjf0o8ugdxT/HO3Pv8O79Kw
+	REzSPTKbVsTU0QHG0RBNNVDeoTS7cMzPOpu83vQKaQ7uZFRObyKC6A6wxEV56nrVFEClR1js177
+	MW0JV5/osoiHtTuZ7iFmW1x6Yf+1H3DkNS1OSQtUW/Wx2QA+uEKRYQJrdy2BgNnfd2nTm6ZZjli
+	0S2r4zEN8jFPPw/U3igorxyFht0U5TV24EuLI
+X-Received: by 2002:a05:690e:138f:b0:67c:1cb5:53ac with SMTP id
+ 956f58d0204a3-67c1cb55c1cmr557385d50.20.1793968752298; Fri, 06 Nov 2026
+ 04:39:12 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,74 +102,137 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/watchdog: disable watchdog when watchdog_thresh=0
-To: "Luiz Capitulino (Red Hat)" <luiz.capitulino@linux.dev>,
- maddy@linux.ibm.com, npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org
-Cc: chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com,
- akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-References: <20261104034018.2676750-1-luiz.capitulino@linux.dev>
-Content-Language: en-US
-In-Reply-To: <20261104034018.2676750-1-luiz.capitulino@linux.dev>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=4.0.1
+References: <20261105044046.52180-1-dennylin0707@gmail.com> <20261106-vortrag-exotisch-pelzmantel-66235662f81f@brauner>
+In-Reply-To: <20261106-vortrag-exotisch-pelzmantel-66235662f81f@brauner>
+From: Bob Copeland <me@bobcopeland.com>
+Date: Fri, 6 Nov 2026 07:39:02 -0500
+X-Gm-Features: AclHuK_U-FH1rUc5FpGMB4Ukprhh_KPYehEm6vL6pH0GiiOv8bZqRy92Jig1sWE
+Message-ID: <CAB4u3sVuyGZ2+mhDOdO-+xRbfF0ZjUmjZDL7k4q08AWb5Ngc0Q@mail.gmail.com>
+Subject: Re: [PATCH] omfs: remove the filesystem
+To: Christian Brauner <brauner@kernel.org>
+Cc: Hungyu Lin <dennylin0707@gmail.com>, willy@infradead.org, 
+	Al Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>, akpm@linux-foundation.org, 
+	Jonathan Corbet <corbet@lwn.net>, skhan@linuxfoundation.org, geert@linux-m68k.org, 
+	tsbogend@alpha.franken.de, maddy@linux.ibm.com, 
+	"open list:OMFS FILESYSTEM" <linux-karma-devel@lists.sourceforge.net>, linux-fsdevel@vger.kernel.org, 
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, 
+	Linux Doc Mailing List <linux-doc@vger.kernel.org>, linux-kselftest@vger.kernel.org, 
+	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary="0000000000003820c7065f9ae6fc"
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,
+	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_PASS,SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 4/11/26 2:40 pm, Luiz Capitulino (Red Hat) wrote:
-> On powerpc, trying to disable the hardlockup detector with:
-> 
->   # echo 0 > /proc/sys/kernel/watchdog_thresh
-> 
-> causes an immediate and endless hardlockup detection, eventually leading
-> to an unusable system (splat example below).
+--0000000000003820c7065f9ae6fc
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-...
-> This condition is already checked in __lockup_detector_reconfigure() for
-> the soft lockup detector and the arch-independent hardlockup detector,
-> what's missing is powerpc performing the same check in start_watchdog().
+Acked-by: Bob Copeland <me@bobcopeland.com>
 
-Arguably setting watchdog_thresh to 0 should mean watchdog_enabled becomes false.
-Then there wouldn't need to be extra checks for thresh == 0 anywhere.
+Thank you!
 
-But if the existing code already checks for thresh == 0 then this is fine.
+On Fri, Nov 6, 2026, 4:28=E2=80=AFa.m. Christian Brauner <brauner@kernel.or=
+g> wrote:
 
-> Fixes: 2104180a5369 ("powerpc/64s: implement arch-specific hardlockup watchdog")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Luiz Capitulino (Red Hat) <luiz.capitulino@linux.dev>
+> On Thu, 05 Nov 2026 04:40:45 +0000, Hungyu Lin wrote:
+> > OMFS supports the on-disk format used by the long-discontinued Rio Karm=
+a
+> > music player and ReplayTV DVR. While reviewing a fix for incorrect bloc=
+k
+> > mapping on writes starting beyond EOF, Matthew suggested removing the
+> > filesystem instead of continuing to maintain it.
+> >
+> > Existing OMFS media can still be accessed using an older kernel with OM=
+FS
+> > support.
+> >
+> > [...]
+>
+> I agree. It's great to see that we are are able to shed a whole bunch of
+> legacy tech.
+>
 > ---
-> Notes:
-> - This issue was not discovered by AI. We have a new test-case in our CI that
->    sets watchdog_thresh=0, when running on powerpc we get the described issue
-> - This issue was initially reproduced on Power10, but I developed the fix
->    on Power9 (which is what I have access now)
-> 
->   arch/powerpc/kernel/watchdog.c | 3 +++
->   1 file changed, 3 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
-> index 582ee3fd71c1..44f178e07531 100644
-> --- a/arch/powerpc/kernel/watchdog.c
-> +++ b/arch/powerpc/kernel/watchdog.c
-> @@ -487,6 +487,9 @@ static void start_watchdog(void *arg)
->   	if (!(watchdog_enabled & WATCHDOG_HARDLOCKUP_ENABLED))
->   		return;
->   
-> +	if (!watchdog_thresh)
-> +		return;
-> +
->   	if (!cpumask_test_cpu(cpu, &watchdog_cpumask))
->   		return;
+>
+> Applied to the vfs-7.5.omfs branch of the vfs/vfs.git tree.
+> Patches in the vfs-7.5.omfs branch should appear in linux-next soon.
+>
+> Please report any outstanding bugs that were missed during review in a
+> new review to the original patch series allowing us to drop it.
+>
+> It's encouraged to provide Acked-bys and Reviewed-bys even though the
+> patch has now been applied. If possible patch trailers will be updated.
+>
+> Note that commit hashes shown below are subject to change due to rebase,
+> trailer updates or similar. If in doubt, please check the listed branch.
+>
+> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/vfs/vfs.git
+> branch: vfs-7.5.omfs
+>
+> [1/1] omfs: remove the filesystem
+>       https://git.kernel.org/vfs/vfs/c/b4d257187fe7
+>
 
+--0000000000003820c7065f9ae6fc
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Fix looks good to me.
+<div dir=3D"auto">Acked-by: Bob Copeland &lt;<a href=3D"mailto:me@bobcopela=
+nd.com">me@bobcopeland.com</a>&gt;<div dir=3D"auto"><br></div><div dir=3D"a=
+uto">Thank you!</div></div><br><div class=3D"gmail_quote gmail_quote_contai=
+ner"><div dir=3D"ltr" class=3D"gmail_attr">On Fri, Nov 6, 2026, 4:28=E2=80=
+=AFa.m. Christian Brauner &lt;<a href=3D"mailto:brauner@kernel.org">brauner=
+@kernel.org</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quote" style=
+=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">On Thu, =
+05 Nov 2026 04:40:45 +0000, Hungyu Lin wrote:<br>
+&gt; OMFS supports the on-disk format used by the long-discontinued Rio Kar=
+ma<br>
+&gt; music player and ReplayTV DVR. While reviewing a fix for incorrect blo=
+ck<br>
+&gt; mapping on writes starting beyond EOF, Matthew suggested removing the<=
+br>
+&gt; filesystem instead of continuing to maintain it.<br>
+&gt; <br>
+&gt; Existing OMFS media can still be accessed using an older kernel with O=
+MFS<br>
+&gt; support.<br>
+&gt; <br>
+&gt; [...]<br>
+<br>
+I agree. It&#39;s great to see that we are are able to shed a whole bunch o=
+f<br>
+legacy tech.<br>
+<br>
+---<br>
+<br>
+Applied to the vfs-7.5.omfs branch of the vfs/vfs.git tree.<br>
+Patches in the vfs-7.5.omfs branch should appear in linux-next soon.<br>
+<br>
+Please report any outstanding bugs that were missed during review in a<br>
+new review to the original patch series allowing us to drop it.<br>
+<br>
+It&#39;s encouraged to provide Acked-bys and Reviewed-bys even though the<b=
+r>
+patch has now been applied. If possible patch trailers will be updated.<br>
+<br>
+Note that commit hashes shown below are subject to change due to rebase,<br=
+>
+trailer updates or similar. If in doubt, please check the listed branch.<br=
+>
+<br>
+tree:=C2=A0 =C2=A0<a href=3D"https://git.kernel.org/pub/scm/linux/kernel/gi=
+t/vfs/vfs.git" rel=3D"noreferrer noreferrer" target=3D"_blank">https://git.=
+kernel.org/pub/scm/linux/kernel/git/vfs/vfs.git</a><br>
+branch: vfs-7.5.omfs<br>
+<br>
+[1/1] omfs: remove the filesystem<br>
+=C2=A0 =C2=A0 =C2=A0 <a href=3D"https://git.kernel.org/vfs/vfs/c/b4d257187f=
+e7" rel=3D"noreferrer noreferrer" target=3D"_blank">https://git.kernel.org/=
+vfs/vfs/c/b4d257187fe7</a><br>
+</blockquote></div>
 
-Reviewed-by: Michael Ellerman <mpe@kernel.org>
-
-cheers
+--0000000000003820c7065f9ae6fc--
 
