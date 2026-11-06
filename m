@@ -1,51 +1,97 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F838606A326
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 10:57:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 97533606A33B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 11:22:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PKDP3O9E
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bK0a9SGW
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLbjl5Rrqz2xNC;
-	Fri, 06 Nov 2026 21:57:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793962651;
-	cv=none; b=Qu8RvmzNPI/SQCd1UVnsXYzCc73lSa9yreDcN0jKwwYAbBsUYI0JgGK1fGIeJbC96dXn62ZHVZbh/NW60iEQTwJc/Ussuhy7dMln+Xchd5ZFWFeTGzdWhj+/ICM+KHQ61xFY/9W60/NdeYNFAMen+1jXwjCsY3VpFWNCu+FjcHx7R/eLTQanZV5YVggPqWGi/hv/MeVIqy+z1tPGY7GMmDaqaHtMX0w66N6iC1tS+2BEWASUCr1T1bAK4nxqswk+I97ycZZth3fktW1YLD8f6+O2gLUe2kVQvGZXC4eestt58utSxndBm9pPWIrLeqbBnwbdN1esSiboCgIf3aUIfA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLcG35wwjz2xNC;
+	Fri, 06 Nov 2026 22:22:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793964123;
+	cv=none; b=jvjYqN0h6bclFPzHwwVe8F1fIG+JHU3MvyhLoUnd5fhJKADJKv8tbEPEPXbkrgAHsbfe6X1IVrxSZHZ94CwmvjHSvcJwW2azPfBwzKokxAS6jkh1M0nrS4I1KMVcteqtWGK/dQN6oj8cjX9L0laGRSvfeaHARb1ydIr9k1MlYfk/MpGQ1NFzP/aFyYh4eJmmjNaPvS/yWjDy7fjzVYYRajFrpn6V6uvcp3BVge5Td1+vw9UbTcQf+po1SsCPpNhy33YmRy+T3RMoL19o2YgLMs9dWBZ/7gcVM3wL5AwVJQDLP+0YNRXVDyq1wu1DQQkAJ5jf042oa8DIpf83wMr38Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793962651; c=relaxed/relaxed;
-	bh=pfqToaUfOwa2BNs1RVBSdeIeaCGsAxyyC3g3zGNtaCo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=i3hm65K+myRoz62Dh70kGEOcARON61g+jbLFCx6sVUsXEdLmjEQk0KOEU5qKWhefyXHTQopNcRKgFP0DMdyLh50ZzO6Mr1fGH9wlHNWHnb/3aBh7+zzRClJ1cyjZgycd2YukRQR49Or+7LI+os5MVaNKCLI9K1EWiHFG4SZt5ynkADciKXBkcu4HsSyCZ/jnjKOukRrpwMwHYig7qHIyohzWqg25R29ZQKRzK4Vk1HyBP+TRf+/bInxpZvpifmOVZUxW07B6PL1pBDNnqxbjfH606KVQ1d3HHjwKMd74R++a0iOmDro8cpT4g0FIgdd1mCVSw8/w9qd1ZN5rwinKeQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PKDP3O9E; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=mpe@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1793964123; c=relaxed/relaxed;
+	bh=p+Ok2jd0IVx31NW+VHJJuf+Q+PVcuhS6OrBHlNc0X1Y=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=koLuPqlF4nbDID4RrqLCNF4PtsRskHPj7BM4pSnzY1VR5cWWIkvoQQwE9VuUhsyyqNBvXJZUMkLmWlfnyYM9ebWCX5S7KN77JEIuRhQGP/wRBmXKf/DgrR4QAIqZTR3MCh3s6j2XMo+763dZsn685KrGtd4EXMPWm1x+fsp1akc4ow7mubsXINkrzuM0DGlpqYLjKUyKTznULbDibi6CozpTKTr23qFWSJjU7zDRKh27JouXqUX3rc1S1PtNcCRZsUIwD2UG0bV8+RWr6f/rKIL3AgO6aEsb63WssbtZX/ojR/1Sm8JPg5Dn1cXoVZm4v6yKzrRfp6Slv0ikyjtXDg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bK0a9SGW; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PKDP3O9E;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bK0a9SGW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=mpe@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLbjl0brwz2xJR
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 21:57:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLcG25jPfz2xDD
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 22:22:02 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 85CEC6020F;
-	Fri,  6 Nov 2026 10:57:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B4A8D1F008A1;
-	Fri,  6 Nov 2026 10:57:27 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 1C9DB4325B;
+	Fri,  6 Nov 2026 11:22:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 18F931F0089F;
+	Fri,  6 Nov 2026 11:21:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793962648;
-	bh=pfqToaUfOwa2BNs1RVBSdeIeaCGsAxyyC3g3zGNtaCo=;
-	h=Date:Subject:To:References:From:In-Reply-To;
-	b=PKDP3O9EdT8R20foZVxCAKeykZd2N0U4Pzo/mwbJoyWLtruNkkurgOsg+CW7mCq8m
-	 Gp7CE1qZZywE0Drfd5loCRaydwf+qIELvIai2ecyTwJ9/bg/jPKGb5AsGvGmdT68qu
-	 20M/e8HlsSYlu7Nr1cjikr8k+mj9yZ0UU578XXvPJFnkURFV9yBtSGCIbDS1BJ3Azk
-	 dACtrfRyMxtnCxt9M40MHts5wOQjyPfa5IPIytlf9A6kDeyR1e3oiMng1YT0NXZ4fA
-	 kilkL4eAg0jqXlrIkZ8bmp34SUPiQL6t6L52z59NBSu6+gYTcq246c82xkMK+tPAAp
-	 aajGMal5tneZw==
-Message-ID: <5d7c5630-2834-4320-9b53-01bf8624527e@kernel.org>
-Date: Fri, 6 Nov 2026 21:57:25 +1100
+	s=k20260515; t=1793964120;
+	bh=p+Ok2jd0IVx31NW+VHJJuf+Q+PVcuhS6OrBHlNc0X1Y=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=bK0a9SGWX+VyZD0kFIiK4yNIK9A9v+An7WfGjPiMiNKuUGcrfRy/CwNqTxljrBpV0
+	 U7m1a/COhNVgako5ExzfFpup8zroemN8PZasns74e+wzdmXNGp9HfFsumePkfHpqUz
+	 B54avhJDK4RV1zIBmim6BKz7o7ZgZ9/g1a3ek0DWtoergphiLCDdHz5glMnik8SvAi
+	 sjlHg1ttAqkP8985sWOQHptTvB9E/+p4pzQXWHiAvU6YBAJ26cTB4FDz0XEBtsF1a0
+	 bgh+paL3EuS+CEi5iRnn4vYJCUV3oXHmFOJ7h5ygJmRsCVDkmI4xEURGnOh8gud8UK
+	 jwyBg4yTS3zRQ==
+Date: Fri, 6 Nov 2026 11:21:40 +0000
+From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+To: Barry Song <baohua@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, 
+	David Hildenbrand <david@kernel.org>, Jason Gunthorpe <jgg@ziepe.ca>, 
+	John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, 
+	"Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Rik van Riel <riel@surriel.com>, 
+	"Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, 
+	Harry Yoo <harry@kernel.org>, Jann Horn <jannh@google.com>, Lance Yang <lance.yang@linux.dev>, 
+	Zi Yan <ziy@nvidia.com>, Matthew Brost <matthew.brost@intel.com>, 
+	Joshua Hahn <joshua.hahnjy@gmail.com>, Byungchul Park <byungchul@sk.com>, 
+	Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, 
+	Alistair Popple <apopple@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, 
+	Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
+	Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Xu Xin <xu.xin@linux.dev>, 
+	Chengming Zhou <chengming.zhou@linux.dev>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
+	Shrikanth Hegde <sshegde@linux.ibm.com>, Pedro Falcato <pfalcato@suse.de>, 
+	Kairui Song <kasong@tencent.com>, Qi Zheng <qi.zheng@linux.dev>, 
+	Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, 
+	Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Baoquan He <baoquan.he@linux.dev>, 
+	Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
+	Michal Hocko <mhocko@suse.com>, Leon Romanovsky <leon@kernel.org>, SJ Park <sj@kernel.org>, 
+	Rakie Kim <rakie.kim@sk.com>, David Rientjes <rientjes@google.com>, 
+	Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, 
+	Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, 
+	Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, 
+	Mark Rutland <mark.rutland@arm.com>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, 
+	Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>, 
+	Adrian Hunter <adrian.hunter@intel.com>, James Clark <james.clark@linaro.org>, 
+	Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
+	John Johansen <john.johansen@canonical.com>, Georgia Garcia <georgia.garcia@canonical.com>, 
+	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, 
+	"Serge E. Hallyn" <serge@hallyn.com>, Mimi Zohar <zohar@linux.ibm.com>, 
+	Roberto Sassu <roberto.sassu@huawei.com>, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, 
+	Eric Snowberg <eric.snowberg@oracle.com>, Fan Wu <wufan@kernel.org>, 
+	Stephen Smalley <stephen.smalley.work@gmail.com>, Ondrej =?utf-8?B?TW9zbsOhxI1law==?= <omosnacek@gmail.com>, 
+	linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, damon@lists.linux.dev, 
+	linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, apparmor@lists.ubuntu.com, 
+	linux-security-module@vger.kernel.org, linux-integrity@vger.kernel.org, selinux@vger.kernel.org
+Subject: Re: [PATCH 03/13] mm/rmap: convert remaining VMA flag tests to use
+ vma_flags_t
+Message-ID: <au2yhvzWy6HID8jM@gremlin>
+References: <20261105-late-2026-vma-flags-v1-0-0d3cd15ab75f@kernel.org>
+ <20261105-late-2026-vma-flags-v1-3-0d3cd15ab75f@kernel.org>
+ <CAGsJ_4wCd_j5or0uHwPLq0PUixcXgiFim=_d7uUhUhAuQf0nTQ@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,79 +105,90 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [QUESTION] Does PowerVM populate the rtas-sensors device-tree
- property?
-To: Kay <kaylovefoss@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20261101144716.119289-1-kaylovefoss@gmail.com>
- <CADb9fe66VWdLCsB1c7FL=AuQmA3yvrppLjimSW0w8drPxmmuTw@mail.gmail.com>
-Content-Language: en-US
-From: Michael Ellerman <mpe@kernel.org>
-In-Reply-To: <CADb9fe66VWdLCsB1c7FL=AuQmA3yvrppLjimSW0w8drPxmmuTw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAGsJ_4wCd_j5or0uHwPLq0PUixcXgiFim=_d7uUhUhAuQf0nTQ@mail.gmail.com>
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 3/11/26 7:35 pm, Kay wrote:
-> Hi,
-> 
-> I asked a while back whether PowerVM populates rtas-sensors. The
-> answer is yes. Michael Bringmann posted a live pHyp device-tree dump
-> in June 2017 that contains:
-> 
->      rtas-sensors     00000001 00000000 00000005 00000000
->                       00000009 00000000 0000232d 00000000
-> 
-> That's four (token, maxindex) pairs, 32 bytes on an IBM 8408-E8E running pHyp.
+On Fri, Nov 06, 2026 at 11:57:08AM +0800, Barry Song wrote:
+> On Fri, Nov 6, 2026 at 5:32 AM Lorenzo Stoakes (ARM) <ljs@kernel.org> wrote:
+> >
+> > Replace the remaining uses of the legacy vm_flags_t flags in the rmap logic
+> > with vma_flags_t values.
+> >
+> > No functional change intended.
+> >
+> > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> > ---
+>
+> LGTM,
+>
+> Reviewed-by: Barry Song <baohua@kernel.org>
+>
+> >  mm/rmap.c | 8 +++++---
+> >  1 file changed, 5 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/mm/rmap.c b/mm/rmap.c
+> > index 1131b76bbbc2..cdc97fec8586 100644
+> > --- a/mm/rmap.c
+> > +++ b/mm/rmap.c
+> > @@ -1196,7 +1196,7 @@ static bool page_mkclean_one(struct folio *folio, struct vm_area_struct *vma,
+> >
+> >  static bool invalid_mkclean_vma(struct vm_area_struct *vma, void *arg)
+> >  {
+> > -       if (vma->vm_flags & VM_SHARED)
+> > +       if (vma_test(vma, VMA_SHARED_BIT))
+> >                 return false;
+> >
+> >         return true;
+> > @@ -1660,7 +1660,8 @@ void folio_add_new_anon_rmap(struct folio *folio, struct vm_area_struct *vma,
+> >          * VM_DROPPABLE mappings don't swap; instead they're just dropped when
+> >          * under memory pressure.
+> >          */
+> > -       if (!folio_test_swapbacked(folio) && !(vma->vm_flags & VM_DROPPABLE))
+> > +       if (!folio_test_swapbacked(folio) &&
+> > +           !vma_test_single_mask(vma, VMA_DROPPABLE))
+>
+> Right, VMA_DROPPABLE_BIT is not available on
+> 32-bit architectures, so vma_test() cannot be
+> used here.
 
-There's also a dump here from an old system:
-   https://github.com/linuxppc/example-device-trees/blob/main/power6-lpar/lsprop.txt#L278
+Yeah, it's an annoying wrinkle having to differentiate, but is necessary.
 
-So it has been populated in the past, I don't know about newer systems.
-> I looked at LoPAPR 1.1 section 7.2.6.1.2 and couldn't find a stated
-> maximum. Linux uses MAX_SENSORS = 17 with the comment "I only know of
-> 17 sensors", which reads to me like an implementation choice rather
-> than a documented firmware limit. Bringmann's dump has 4. Can PowerVM
-> ever emit more than 17?
+Eventually we will have 32-bit kernels move to the same size vma_flags_t as
+64-bit, e.g. something like:
 
-It's possible.
+- #define NUM_VMA_FLAG_BITS BITS_PER_LONG
++ #define NUM_VMA_FLAG_BITS 8
 
-New features on PowerVM have tended to use hcalls rather than adding more use
-of device tree, but that's just a general tendency, not to say a new sensor
-couldn't show up here.
+But that's down the road :)
 
-> In case you might wonder why I ask: ppc_rtas_find_all_sensors()
-> computes sensors.quant = len / 8 and copies that many entries into
-> sensors.sensor[17] without checking. I reproduced this in QEMU with an
-> 18-descriptor (144-byte) property against unmodified upstream
-> cbbddb6b08cc with CONFIG_KASAN=y. Reading /proc/powerpc/rtas/sensors
-> as uid 65534 gives me:
-> 
->      BUG: KASAN: global-out-of-bounds in ppc_rtas_sensors_show
->      Write of size 4 at ... by task cat/66
->      ... sensors+0x8c/0xc0
-> 
-> I then applied Pengpeng Hou's April bounds check
-> (<20260401160317.88585-1-pengpeng@iscas.ac.cn>, never merged,
-> https://lore.kernel.org/linuxppc-dev/20260401160317.88585-1-pengpeng@iscas.ac.cn/)
-> on the same kernel and property:
-> 
->      too many sensors reported: 18
->      No sensors are available
-> 
-> No KASAN report at all. So the overrun is demonstrable from an
-> unprivileged read once a >17-descriptor property exists. What I can't
-> determine is reachability: does any shipped firmware emit one? If 17
-> is a firmware cap, the fix is defensive only, if not, I think
-> Pengpeng's check is worth reviving.
-Yes that patch looks good even if we think 17 is a maximum.
+Which will solve the 'not in 32-bit-kernels' stuff.
 
-A better solution would be to allocate the array based on the number of sensors found, but that could be a follow-up.
+But also this form is also used for stuff that's not defined under certain
+configurations, in which case you get something like:
 
-cheers
+#ifdef CONFIG_FOOBAR
+#define VMA_BLAH	mk_vma_flags(VMA_BLAH_BIT)
+#else
+#define VMA_BLAH	EMPTY_VMA_FLAGS
+#endif
+
+And then vma_test_single_mask() is necessary too.
+
+An unfortunate outcome of defining per-bit (so no bit value means
+'nothing'), and any kind of invalid bit value solution has worse drawbacks.
+
+In the end all this stuff will be useful as it allows us to no longer be
+constrained by either 32-bit vs 64-bit or in only having 64 possible
+flags. :)
+
+--
+Cheers, Lorenzo
 
