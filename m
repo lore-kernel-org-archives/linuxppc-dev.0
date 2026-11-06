@@ -1,97 +1,84 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B916606A330
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 10:13:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B368C606A330
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 10:18:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YwYtVdd3
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=l2m6k6Gq
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLZlK74CNz2xNC;
-	Fri, 06 Nov 2026 21:13:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793960029;
-	cv=none; b=jihYRrzglxNFdmRFfh87ZWC2c1S52/2NHiPeomhfZteqmKaLhmNb3AG6PGjvb7TpmDRqP9Lgo/DeNFYmMS+xTk0pVF01Oobuoqh7t2oblJ7BxI0ZCUpfJk/8fJtI82LwB+aKQHQ/GdlEaJl2X3AASusFkyRp2ZGYOd44oB5J93HGx9Eth9LoA+/x73Fx624yO0GDT1OwXZ+JsYDAjs2DpLidHGZKOdt6xv3SEsCt3/xKlJPlLVbhdrX7Rn9soDG8o5E1FLQKgWGpPt9yVO0/RGK5BZtmhKkb9pXWXuADAlE8rk1yg6fhnVO8ZFXfGORyggUbmWJSK59kbhoXZ8GLQQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLZrc0ZnMz2xPb;
+	Fri, 06 Nov 2026 21:18:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793960303;
+	cv=none; b=h4axXLrsxI5E+maLeH7lw72l2fuZmptURWbwL5Wai3Igvvlxc672bRxpe+oXj00npzTRT/zInXT5r1HfI3PwcC+9CvIzO1jkARuW9KWVkEgS0wcnPEMzDqUJa69fbqC7fje0nOLqallA0W3nzD7k7c9tBf+qqfE/ArCymih2lhdAiW8FWCCiEZ/65MEN8leMN1fPptVIz999D0CYt9d5TKOe2e5shcJlUwm51iqBUPH3189MwHHuQrELQPUwQcw9K1vG+YUEUwbv6+eVPu4hIkKnpGuxDyKRKfLS6Kouu0y2BnWW2gEg0xVxKtRljZSVPLPME6b96z+HK2/U3tL/Gg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793960029; c=relaxed/relaxed;
-	bh=cFVMR87EGNpkNOCnSwEX2b70j/gGYf8Jkc9yEvS8W5Y=;
+	t=1793960303; c=relaxed/relaxed;
+	bh=WRJXIR3G73/bAoeCrNJcFgak4mvp+3ngQ+qpnIKUqWQ=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=YKAmMnj7PI/6z3+4Rey8oNo8t6A9+ng+CnqOidnyHIudfY5LNnf0zq+RQ2dV+lb5+vDX7kTOQkHleRTSPV3okuCbJXcoMPVBYAUH3ndAcHp2pEfcjg1WiEvAZTQWWGydGRlIGMIsatNlpo8mSmggXLJfO/pu3hBMW8OJ3I4ive/zdDvgiVrhvDbJr/476RnlGYxRcJvjT6k/z0e5hMpIBku64vLyuwZo+iTpGfEbr6eDWTJ2N0xG+6wsCOu2kyd1VYRA5tm4Po0/HcoiWS5Y/eyFVJowjJcN8VQVxxOVto0/YgyDeHg1jMVXQH3bSW+RltptrIKOqzoQ3xVk21DsUQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YwYtVdd3; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=jLebWebaDKzQs4IQ8iCQBb4oE+nbaoyWE50SgKXL04bVeMUCKz7nQK2FnJdZD/AZGuvwroEJHTy6cFDXqIvniLk2KcF2Sp+jhftvxgd65Yw+K/+VbNcNxcamUU0meDBMr6x5B3kLHw0eeMB4PenX/BA6KRRrG/ur6NPrKOe6OvgzQjN1hE5vuzZpfIR2w5e4tcW62KW8B3PIUewhfUIrqbVrtu0XEKyYJsMbKCZ0GlngnkVGLHFboAmzC+efKuEhB0G8p+q8n7Zjly//Qg6UTXV/uIGx93kBj1vaxxUbJsBpCabKmmgr/oVkv1v/UQug6x/uJDOsvc3RYrRBgefoPg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=l2m6k6Gq; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YwYtVdd3;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=l2m6k6Gq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLZlK099jz2xJR
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 21:13:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLZrZ64jyz2xJR;
+	Fri, 06 Nov 2026 21:18:22 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id DCF9160CB9;
-	Fri,  6 Nov 2026 10:13:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BEE401F008A6;
-	Fri,  6 Nov 2026 10:13:29 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 8C69A601BF;
+	Fri,  6 Nov 2026 10:18:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9CFC01F0089F;
+	Fri,  6 Nov 2026 10:18:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793960025;
-	bh=cFVMR87EGNpkNOCnSwEX2b70j/gGYf8Jkc9yEvS8W5Y=;
+	s=k20260515; t=1793960300;
+	bh=WRJXIR3G73/bAoeCrNJcFgak4mvp+3ngQ+qpnIKUqWQ=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=YwYtVdd3f+9r0rGtBh8d1tRPhVBL4qmvxhKCMZkV8lomBwDWV76lkDV2ZPvzrsUcy
-	 trEyAB1TCppduadMVhftHMFVxgeYolc/EMPmtth1hXWiwFgz1kQ0EKU4byddd4Ylof
-	 Kw8NW48Kkjzx+SlpAufJOnfBvexabI3n6q9ar/Hme/DA7MCCquYR1YVU8yI3FmAIG8
-	 1O4CYPlx4m2ZTD5HMwTNZOFUugRf4D3Ab0jOV8qahLlzSisYMSFxFIYqDA/1U31men
-	 TNFTuhw5aLNcrLSy3wXMfK9DUwkHBXM2MWRhS62JTGof+13zFAAyi0DL6QeEKCjKfL
-	 pWOWcHUvqbeJQ==
-Date: Fri, 6 Nov 2026 10:13:27 +0000
+	b=l2m6k6GqXZKAI6ai2Tun1aF46awXpI/z2hhpm9C9mWFFrwb28EgYdeM12++TFdXHC
+	 tZPDcNtqorI1JgQeh4d/V0oUoA8wTmUuwUWJnczsn3SnNHjwPhjBcdo7A1YGDV2mTG
+	 KcYpC48NxWmRQWs88tJMsCh3bVG0uv6meLjHSwr1ICrXX3Vw/iw6HMzgoNOlCZ+Cr/
+	 4yqxl3LXfTuCElZyaokutxEyEknbHWSUP2DCjtT8OlSb46KYExKXDg1tVpuuXc3j/i
+	 oBl8kAvxU+cGtuwjokkyklXwgQ5yXoGFuePAoE1OqzN7B+weZmt4UCKvb6LGDNbMBE
+	 27H/f4pFzu1cw==
+Date: Fri, 6 Nov 2026 10:18:06 +0000
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 To: Paul Moore <paul@paul-moore.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, 
-	David Hildenbrand <david@kernel.org>, Jason Gunthorpe <jgg@ziepe.ca>, 
-	John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, 
-	"Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Rik van Riel <riel@surriel.com>, 
-	"Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, 
-	Harry Yoo <harry@kernel.org>, Jann Horn <jannh@google.com>, Lance Yang <lance.yang@linux.dev>, 
-	Zi Yan <ziy@nvidia.com>, Matthew Brost <matthew.brost@intel.com>, 
-	Joshua Hahn <joshua.hahnjy@gmail.com>, Byungchul Park <byungchul@sk.com>, 
-	Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, 
-	Alistair Popple <apopple@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, 
-	Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
-	Barry Song <baohua@kernel.org>, Usama Arif <usama.arif@linux.dev>, 
-	Kiryl Shutsemau <kas@kernel.org>, Xu Xin <xu.xin@linux.dev>, 
-	Chengming Zhou <chengming.zhou@linux.dev>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
-	Shrikanth Hegde <sshegde@linux.ibm.com>, Pedro Falcato <pfalcato@suse.de>, 
-	Kairui Song <kasong@tencent.com>, Qi Zheng <qi.zheng@linux.dev>, 
-	Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, 
-	Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Baoquan He <baoquan.he@linux.dev>, 
-	Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
-	Michal Hocko <mhocko@suse.com>, Leon Romanovsky <leon@kernel.org>, SJ Park <sj@kernel.org>, 
-	Rakie Kim <rakie.kim@sk.com>, David Rientjes <rientjes@google.com>, 
-	Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, 
-	Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, 
-	Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, 
-	Mark Rutland <mark.rutland@arm.com>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, 
-	Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>, 
-	Adrian Hunter <adrian.hunter@intel.com>, James Clark <james.clark@linaro.org>, 
-	Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
-	John Johansen <john.johansen@canonical.com>, Georgia Garcia <georgia.garcia@canonical.com>, 
-	James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, 
-	Mimi Zohar <zohar@linux.ibm.com>, Roberto Sassu <roberto.sassu@huawei.com>, 
-	Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, Eric Snowberg <eric.snowberg@oracle.com>, 
-	Fan Wu <wufan@kernel.org>, Stephen Smalley <stephen.smalley.work@gmail.com>, 
-	Ondrej =?utf-8?B?TW9zbsOhxI1law==?= <omosnacek@gmail.com>, linux-mm@kvack.org, linux-kernel@vger.kernel.org, 
-	linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
-	damon@lists.linux.dev, linux-trace-kernel@vger.kernel.org, 
-	linux-perf-users@vger.kernel.org, apparmor@lists.ubuntu.com, linux-security-module@vger.kernel.org, 
-	linux-integrity@vger.kernel.org, selinux@vger.kernel.org
-Subject: Re: [PATCH 13/13] security: convert VMA flag tests to use vma_flags_t
-Message-ID: <au2ny_goOYa9TJ4u@gremlin>
-References: <20261105-late-2026-vma-flags-v1-0-0d3cd15ab75f@kernel.org>
- <20261105-late-2026-vma-flags-v1-13-0d3cd15ab75f@kernel.org>
- <CAHC9VhSR=9YNhBxeFBcTR8wgG2yDP1fW590QKjzuc4Kq9ohaiQ@mail.gmail.com>
+Cc: Juergen Gross <jgross@suse.com>, 
+	Stefano Stabellini <sstabellini@kernel.org>, Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
+	Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>, 
+	"Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowangio@gmail.com>, 
+	Eugenio =?utf-8?B?UMOpcmV6?= <eperezma@redhat.com>, Xuan Zhuo <xuanzhuo@linux.alibaba.com>, 
+	Jarkko Sakkinen <jarkko@kernel.org>, Dave Hansen <dave.hansen@linux.intel.com>, 
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+	x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Jan Kara <jack@suse.com>, 
+	Stephen Smalley <stephen.smalley.work@gmail.com>, Ondrej =?utf-8?B?TW9zbsOhxI1law==?= <omosnacek@gmail.com>, 
+	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
+	Ryan Chen <ryan_chen@aspeedtech.com>, Billy Tsai <billy_tsai@aspeedtech.com>, 
+	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Abel Vesa <abelvesa@kernel.org>, Jens Wiklander <jenswi@kernel.org>, 
+	Sumit Garg <sumit.garg@kernel.org>, Scott Branden <scott.branden@broadcom.com>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Arnd Bergmann <arnd@arndb.de>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Richard Cochran <richardcochran@gmail.com>, 
+	David Woodhouse <dwmw2@infradead.org>, Andrew Lunn <andrew+netdev@lunn.ch>, 
+	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>, 
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, xen-devel@lists.xenproject.org, 
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
+	linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev, linux-sgx@vger.kernel.org, 
+	selinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, 
+	netdev@vger.kernel.org
+Subject: Re: [PATCH 00/14] mm: convert further simple mmap hooks to
+ mmap_prepare
+Message-ID: <au2odtvEhpLJY4eD@gremlin>
+References: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
+ <CAHC9VhQvpFeEJaEyPDaqj8_S752puSaNe0Rn-hxjh=ugCoFsxA@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -108,44 +95,51 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAHC9VhSR=9YNhBxeFBcTR8wgG2yDP1fW590QKjzuc4Kq9ohaiQ@mail.gmail.com>
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+In-Reply-To: <CAHC9VhQvpFeEJaEyPDaqj8_S752puSaNe0Rn-hxjh=ugCoFsxA@mail.gmail.com>
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Thu, Nov 05, 2026 at 06:17:47PM -0500, Paul Moore wrote:
-> On Thu, Nov 5, 2026 at 4:35 PM Lorenzo Stoakes (ARM) <ljs@kernel.org> wrote:
+On Thu, Nov 05, 2026 at 06:12:09PM -0500, Paul Moore wrote:
+> On Thu, Nov 5, 2026 at 4:06 PM Lorenzo Stoakes (ARM) <ljs@kernel.org> wrote:
 > >
-> > Replace use of the legacy vm_flags_t flags with vma_flags_t values in the
-> > mmap and mprotect LSM hooks of SELinux, AppArmor, IMA and IPE.
+> > Continue the conversion of users of the deprecated f_op->mmap callback to
+> > f_op->mmap_prepare. Keep things gentle this cycle by targeting simple
+> > cases.
 > >
 > > No functional change intended.
 > >
-> > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
-> > ---
-> >  security/apparmor/lsm.c           |  2 +-
-> >  security/integrity/ima/ima_main.c |  2 +-
-> >  security/ipe/hooks.c              |  2 +-
-> >  security/selinux/hooks.c          | 14 +++++++-------
-> >  4 files changed, 10 insertions(+), 10 deletions(-)
+> > Build tested on x86-64 (allmodconfig, each patch individually), i386,
+> > arm64 and ppc64le.
+> >
+> > <<>>
+> >
+> > David, Andrew - I wonder whether one of you guys could take this series
+> > through your tree? Since it's kernel-wide it seems sensible to take it
+> > through an mm tree.
 >
-> Similar to the other patchset you just posted, is there any reason why
-> individual subsystem maintainers can't pick these patches up, or is
-> there some reason I'm missing and they need to go through a single
-> tree?
->
-> If they can go through multiple trees, can you split this patch up?
-> AppArmor, Integrity/IMA, IPE, and SELinux are all maintained by
-> different groups/people.
+> Granted I've only properly looked at the SELinux patch (7/14), the
+> rest I've just skimmed through, but these are all independent patches,
+> right?  Is there any reason why individual subsystem maintainers
+> shouldn't just pick up their associated patch?  Yes, perhaps chasing
+> down individual maintainers is a bit more work, but isn't that the way
+> this should work?
 
-Sure, they're all independent so you can take the security bits through your
-tree, I guess fairly easy for Andrew/David to figure out which went where?
+I've no objection to people taking patches independently, the concern is people
+lagging on that and holding up a key conversion which is entirely mechanical, +
+generally tree-wide stuff like this has been via the mm tree.
 
-Intentionally made these easy ones given how busy the cycle is, just keeping the
-conversion rolling forward :)
+The mmap_prepare stuff is actually important for security (pertinent given
+current AI fix storm) as it's by design super locked down vs. mmap which has
+caused several genuine issues including a nasty 0-day.
+
+So am keen to keep that rolling!
+
+In this case each patch is mechanical and simple, so little surface area for
+issues.
 
 --
 Cheers, Lorenzo
