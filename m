@@ -2,57 +2,57 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BEE66606A328
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 03:47:49 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 402C4606A32F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 03:57:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IboQVEBX
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EgFmAbUp
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLQ9w30kqz2xH7;
-	Fri, 06 Nov 2026 14:47:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793936868;
-	cv=none; b=gLgHv4F8gNW9MIE3Kzyguxg02mXjZm7xaKyLH3lKdIS6VZBH7VDLht7X2y8Nd596kwUn8issO/iFfErY5A0LTdz2D2BRjfjUcfhEEKWnZHaMl1B20FNdHUFmYSKB4EuYqwEtUZMx4+rcQwmnAjHuFm9kbR5X+iGuf9Wks4MG/pZzL5ZGbf68VVEbjUPyNMJEYPFGuE1aQq62aIAwhrgcd8P61IArcxX7vFPRr2Sj1xIOnsTg+p+zSTrJl1Du1U8VnTh+muF9+dsU4ZmtPxoYM6ycpvXuiUWG/gEvd0JPR0g00tHiaBwHv5Uymu/O4mUbg+73k4JXT9HNkMJMF+2jTw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLQP068ktz2xH7;
+	Fri, 06 Nov 2026 14:57:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793937444;
+	cv=none; b=g+LiNNqDvXozV4SdzfvKXSUL7go9Xg5hA9o1rgAEGXn8nC7zY/9ixzm6QnoN2FWq5t5frn92IwezLckYnNgJJ8hRGATWLw7HY3bWLKeGp2Tk7P9s4Fhi6jDzNx4MfU5avUNUYLjhifOSh4eZbvANa70XTIaBe7Qy183JJyuT21a8z1n3eHYgQQTtA2BB+lVA+MhC1NKu8IHhYwGthBZBOdp1eGcLYlwNoc6hDd0HAosY7CHP3/RxHHHb7HgRGx00XyusrQcBb9m9vgSwVhlcVlRUXoeDMQYgIky10xeZmIvUSmRE66Q2o2Budl3jD+3owXGZ242YIs/I3exVeJWiUg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793936868; c=relaxed/relaxed;
-	bh=7itVVRO0OrCMzanAOyJRHIm0MPtgmrlnhYWCxSa5SEs=;
+	t=1793937444; c=relaxed/relaxed;
+	bh=lHXR2FH3bh5spT35/G4nG+cv25q2yTDGLvo0NNx3ZVg=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=TqrJUVhf3l8g3711BbZlyoMOtNw3AR0/xZNuvxyfDgz+gHA7N35Ibj+vWsAWLpt01BzSC6rFsLU+xn9VxnuvJ5lVPOfLB3JjcY2AUBU3RI0Qi/au0UAUX8RoXKuoAkTwb5rpnODltU8hHsqI3WMpv8q5was8MJ3LyTkhi9ZNVF62O5/BMsoLABYQyNUBzTYqun6Pe+VfskL4lZwiBqMxynQjFL9r8lNDofSFmDw/tQjUGOGKJeV7O7UEZld6OABVSowUZcSHYMHVqfGEwSPQ6SmLS7G3Y4U0cSnnZ05Vce9IidT61pQi+/1twzKCrJEbvLDcTJ7J8OU1PfFwDtT79A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IboQVEBX; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 To:Cc:Content-Type; b=KfOnRBVEzLu2ECfNs+ZNkS41BS/3tTgegIfmJsagn6yZSpXXgWYX7LlcEZn6VPVMUA5wbL4+oWhfI8n/yEtAfab3q0T1fLNAFQGRHH2QmdtWkfKOzsL+pCOEUZsrBKVRmOpEyiLW4rE2FOl9meR3IjKprHhlAi77IyO/cD/vT4Z9I6PZNWOOoYvwSPWR4n84WI5moFKoR8JCpXoMtmRCj4UHBA0pkn3LEXR+Xgobkakrno83eO29lkqfZkzeJPEGxcD0WZGPwnD2vmOEyO8ORG95xTjRz/ZiTS1Nhkz34i/ovZ2s3Zt8TJFRH776VF79jjUGn8BuRfMAXOQ0fh4JbQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EgFmAbUp; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IboQVEBX;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EgFmAbUp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLQ9v3d9dz2xGr
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 14:47:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLQNz63Vyz2xGr
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 14:57:23 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id C2CC5605E9
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2026 03:47:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7D1D01F0089F
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2026 03:47:44 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 09C8A43FFE
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2026 03:57:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DFF0E1F0092F
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Nov 2026 03:57:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793936864;
-	bh=7itVVRO0OrCMzanAOyJRHIm0MPtgmrlnhYWCxSa5SEs=;
+	s=k20260515; t=1793937440;
+	bh=lHXR2FH3bh5spT35/G4nG+cv25q2yTDGLvo0NNx3ZVg=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=IboQVEBXl4jWmUIvw0DOc0QCJjQ8dTtJqHWh38IstQq4GF/XzX2BgioRpgWgX6v3P
-	 D5fDo4sg7rNsqSrYNK8o/zN8HDEQJwDTBpkQc5B6wdsLuzlBioIZJ1JXxYScTaKhKq
-	 EXzy4QVcoH3qpcgpOmOr7ueMPQ0Pdq3rpjD4upTnMEExPCwaJHTNl7ZEa+kCA6YMjg
-	 V1+Zo6uLqCaTfqZG2lyPYI8f9v6lHJhj3xgryyJGW5y3JtAdTcHJwPwPYL8MTIL+j3
-	 DjsAyuNPIoqIO1HAGO1EEAT+4quG29QrQNBWH+drmvQELISCJ4FKo/roKRV/DkIV4c
-	 oMSGhP/EEgang==
-Received: by mail-qk1-f181.google.com with SMTP id af79cd13be357-93a40a9a01aso160565185a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 19:47:44 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AKwUvBy1LDPrbDuWU5+5TILGAdtP2HE2JtuZI6BR/9QNnkojHcu63Xs7CwM4GdDoirXNRMVhs3/UHXev19tC+jU=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z+HEhF0004One0V//kfOrY4M6KntbTt5+kLwteUehiCCGSy+l9G
-	rXLbmG3AQIBEmhnXgkYnvE8kpi5jH0dSNTAELuMbS1qYbs7Yc8s2LBODpfP52qgRx4Y0wjNStv7
-	INHCmvXZTlaczJFcb6LNxqlpz9ckUc/0=
-X-Received: by 2002:a05:620a:6ccd:b0:945:d3ba:7d99 with SMTP id
- af79cd13be357-945f3593146mr175996585a.37.1793936862458; Thu, 05 Nov 2026
- 19:47:42 -0800 (PST)
+	b=EgFmAbUpAM2cjwI+PAsaOIcEAvxopqxzrr5ETtb9YJduifyoKzN8YwdyePG7jZcgl
+	 MAF1R31GIZ0XeuUOJ5ajpkRLAI0gc7RjT1TWr25oDrdTv5MC3GjICuS4R/pPi0d0Y+
+	 pCObQVcMyzbJ8upJobLZEEgDDMPAax+RNdKemLW9HXK51pfSHhspbfEziQxNccns9m
+	 V6Ao+kTwjY7l3VQQwr9rOMONlSWWfRMpgLakbtQVmIq6dK6cSWWL0ZgDvyUd9/JdBX
+	 zzAa59f4NI2tvQUjbttnwVD7TfUy2F0n9FlrD/xYew+h3qG/zcNr0KCdZAsNc+VsTK
+	 tfw0hgrFmLfHA==
+Received: by mail-qk1-f180.google.com with SMTP id af79cd13be357-93cbc3ab2fdso9234185a.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 19:57:20 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AKwUvBzznJw2wRKbw9YaIApLMsHluNOdVEJSnofaFa/MFXrt+rTiJ8Up0DG8pgJAn0xZj7Q1AFCEU23egBrDhvw=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z/Aj3T+o4MMIz8DCljZ9wJc9Q0SlKasZh1tSOZtIi2L0sodoxNP
+	0vpamakV0PjAzLoYR2qtXhvPW5k0GMLfi2jmrUGu25JTspwr/bqaVSzex4jRYDU421GoYtyTEGN
+	3o65PMLbJ9qVWlKtJGUIgQ5ZSytlVGGE=
+X-Received: by 2002:a05:620a:6c88:b0:939:b8d6:9b1c with SMTP id
+ af79cd13be357-945f34af2acmr198595685a.19.1793937440071; Thu, 05 Nov 2026
+ 19:57:20 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,14 +66,14 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261105-late-2026-vma-flags-v1-0-0d3cd15ab75f@kernel.org> <20261105-late-2026-vma-flags-v1-1-0d3cd15ab75f@kernel.org>
-In-Reply-To: <20261105-late-2026-vma-flags-v1-1-0d3cd15ab75f@kernel.org>
+References: <20261105-late-2026-vma-flags-v1-0-0d3cd15ab75f@kernel.org> <20261105-late-2026-vma-flags-v1-3-0d3cd15ab75f@kernel.org>
+In-Reply-To: <20261105-late-2026-vma-flags-v1-3-0d3cd15ab75f@kernel.org>
 From: Barry Song <baohua@kernel.org>
-Date: Fri, 6 Nov 2026 11:47:31 +0800
-X-Gmail-Original-Message-ID: <CAGsJ_4wFi9mqSsq9RFoYP8m0GbqU01he_icbP2VLPhBfQAvCOg@mail.gmail.com>
-X-Gm-Features: AclHuK8VX6mOjbrvfm7oXhssK45doLoq2eZ9cV_P4690FurSVGBQe9E3r9SjObI
-Message-ID: <CAGsJ_4wFi9mqSsq9RFoYP8m0GbqU01he_icbP2VLPhBfQAvCOg@mail.gmail.com>
-Subject: Re: [PATCH 01/13] mm/gup: convert GUP code to use vma_flags_t
+Date: Fri, 6 Nov 2026 11:57:08 +0800
+X-Gmail-Original-Message-ID: <CAGsJ_4wCd_j5or0uHwPLq0PUixcXgiFim=_d7uUhUhAuQf0nTQ@mail.gmail.com>
+X-Gm-Features: AclHuK8deEInzaZZJ26UPrq6mS-8I8VnGN9Ocbio_nvLAi7VvywQ3Ss3UdDHcfM
+Message-ID: <CAGsJ_4wCd_j5or0uHwPLq0PUixcXgiFim=_d7uUhUhAuQf0nTQ@mail.gmail.com>
+Subject: Re: [PATCH 03/13] mm/rmap: convert remaining VMA flag tests to use vma_flags_t
 To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, David Hildenbrand <david@kernel.org>, 
 	Jason Gunthorpe <jgg@ziepe.ca>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, 
@@ -124,35 +124,51 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Fri, Nov 6, 2026 at 5:31=E2=80=AFAM Lorenzo Stoakes (ARM) <ljs@kernel.or=
+On Fri, Nov 6, 2026 at 5:32=E2=80=AFAM Lorenzo Stoakes (ARM) <ljs@kernel.or=
 g> wrote:
 >
-> Replace use of the legacy vm_flags_t flags with vma_flags_t values
-> throughout the GUP logic, both for the MMU and nommu variants.
+> Replace the remaining uses of the legacy vm_flags_t flags in the rmap log=
+ic
+> with vma_flags_t values.
 >
 > No functional change intended.
 >
 > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> ---
+
+LGTM,
 
 Reviewed-by: Barry Song <baohua@kernel.org>
 
-> ---
->  mm/gup.c | 45 ++++++++++++++++++++++++---------------------
->  1 file changed, 24 insertions(+), 21 deletions(-)
+>  mm/rmap.c | 8 +++++---
+>  1 file changed, 5 insertions(+), 3 deletions(-)
 >
-
-> @@ -1514,9 +1514,8 @@ static bool vma_permits_fault(struct vm_area_struct=
- *vma,
+> diff --git a/mm/rmap.c b/mm/rmap.c
+> index 1131b76bbbc2..cdc97fec8586 100644
+> --- a/mm/rmap.c
+> +++ b/mm/rmap.c
+> @@ -1196,7 +1196,7 @@ static bool page_mkclean_one(struct folio *folio, s=
+truct vm_area_struct *vma,
+>
+>  static bool invalid_mkclean_vma(struct vm_area_struct *vma, void *arg)
 >  {
->         bool write   =3D !!(fault_flags & FAULT_FLAG_WRITE);
->         bool foreign =3D !!(fault_flags & FAULT_FLAG_REMOTE);
-> -       vm_flags_t vm_flags =3D write ? VM_WRITE : VM_READ;
->
-> -       if (!(vm_flags & vma->vm_flags))
-> +       if (!vma_test(vma, write ? VMA_WRITE_BIT : VMA_READ_BIT))
+> -       if (vma->vm_flags & VM_SHARED)
+> +       if (vma_test(vma, VMA_SHARED_BIT))
 >                 return false;
-
-This also improves readability. Thanks!
-
 >
+>         return true;
+> @@ -1660,7 +1660,8 @@ void folio_add_new_anon_rmap(struct folio *folio, s=
+truct vm_area_struct *vma,
+>          * VM_DROPPABLE mappings don't swap; instead they're just dropped=
+ when
+>          * under memory pressure.
+>          */
+> -       if (!folio_test_swapbacked(folio) && !(vma->vm_flags & VM_DROPPAB=
+LE))
+> +       if (!folio_test_swapbacked(folio) &&
+> +           !vma_test_single_mask(vma, VMA_DROPPABLE))
+
+Right, VMA_DROPPABLE_BIT is not available on
+32-bit architectures, so vma_test() cannot be
+used here.
 
