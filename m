@@ -1,93 +1,67 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F005606A328
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 00:35:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7B36606D821
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 00:43:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=eQdN9M2/
+	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=IZ2kZa1k
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLKvt6d06z2xH7;
-	Fri, 06 Nov 2026 11:35:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793925322;
-	cv=none; b=EQPGaOO5M6y23Eu13xDhDGbVB4Ci1oz2qIO3TFMGOS7jo/7FWgUiKLxEHsofw8kNMFN2XTvCdrzug6isGGB25iLWIyQkHpDuzuJf8pi0Sr2nVbb2A1zFUxdiPnHgDTjHRxn3aBTQfWSYxb549qsu4l5xwMu0kL2YG6KlcOXIoJ9YomlKDbMCTyDtXkw0zXv2HRpRmzq5naVlT+Yb4wVBEw+YLSL3c1t2Ygg7pOGFyxYykGmELGdI1iecu6rcopdPC9wctf18wgBiF+GrQzvyj8a1joIwzBiwOxnCugXcR51SsmM1nUf9bNzT4SIW7D7m+E+t5TQyNmTsqAeIobTb2Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLL4j6mFdz2yQl;
+	Fri, 06 Nov 2026 11:43:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::245"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793925781;
+	cv=none; b=jYafSqQ9ohFaf6F1XMtfAQwzpYk5OKDhzl/KouBDmTruhB5PQi9LrcC8O6Hm6tXgm0zmgtnRNbTFI+4SwCTi0j+WBpEEUJa1WRnI3Q2Sp+qWrG/hcjMtDOhg4WnT/6/yIQxGD0ucvKHn1anzv4AHOvSvP2to6Dfs8MXeh9M9Rgq+rB4dryzqVT+a58AjMM4BS6Pa/ThhjxnooeFKZeh3YFoml1xjmONZWdGNiMf1r2PsoD1KHz9TsxDU0Jk0tC9xN05eeZX//jYxuuEdXllSk/fXqMaNHTS6H788naUyB6daOo87Mfzgngw6usaSEtFqaLzvFD0JXH9HOBc+R3OkEw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793925322; c=relaxed/relaxed;
-	bh=6TNCgRmL/23mHPVturwpYhS1/L+Zqx8rGxIrqrETX5o=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=G1yAYbVzeFxprCJcZZWik7PU+8MS+DA43kjVFJfzYQWvTNA/SfKX1Oa9APi3r03mwb2ZN3unL/b+4Fl28MIG9oHat5C7jApk2ZcXqdXSUenY8fvjlZFhPfoRIaNJ9eUqMMlgn0Sw1+rzZpUaChn7ZKWr09e9IOgi3SvLWnp3bq1DBN5ZhDhsIl+Fa9Hmza7B+wUW5DJqLOJSWWzsdqjszhLuDISEVrZUj6M1FVZUiaa2Xh59fKnUzAYXLS51H0EMdtgDh/8Na9f0L2Tj8tX3YNE9sTrRAJEr9hJe0n1kFnwwVUdStoY7cvXJjtRhG+rFhC0yuVepQTxDt4d7DMhWcA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=eQdN9M2/; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=batv+c76d67e00cf3f3534b79+8475+infradead.org+dwmw2@casper.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=casper.srs.infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+	t=1793925781; c=relaxed/relaxed;
+	bh=j3QnOqT1bd63wcrV6KvOAip3wCLe11FN2NBTadJaa9M=;
+	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=OcB7w9Pc/Ss/ErG6vKkFOjjZMlfC16TiyqYOF0jy79bL3WLnSQrZybhDJ7tWgFkHxCzHFZjloFJdZytK4zKd1kPyXOMSdMD1irHEKhxe7mhQo9Za1nlUckBcn8S9LS3QqvgDJCH18UqFICP802V6SNYzNz/wPGwu66NX+vmlseOVlRfig91DujuDo79SUGgj42d/ZTEBKyzpfTf9oazgC5XedEd84O/J3B+8/TdxtTi+F5ac7IEEAe/hOOj7QzSXHPYuf/8n3GhM2Sq/PBE9W1nH+vjnE2thKbEslqcupKpDLZezmFZLmtLJiQ8jayWT1r7erhhbQ+YuShkk7Yh1Gw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=IZ2kZa1k; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::245; helo=mail-oi1-x245.google.com; envelope-from=3kcltaggkdocmvjcujltpxxpun.lxvurwdgyyl-mneurbcb.xiujkb.xap@flex--dmatlack.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--dmatlack.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=eQdN9M2/;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=IZ2kZa1k;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=batv+c76d67e00cf3f3534b79+8475+infradead.org+dwmw2@casper.srs.infradead.org; receiver=lists.ozlabs.org)
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--dmatlack.bounces.google.com (client-ip=2607:f8b0:4864:20::245; helo=mail-oi1-x245.google.com; envelope-from=3kcltaggkdocmvjcujltpxxpun.lxvurwdgyyl-mneurbcb.xiujkb.xap@flex--dmatlack.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-oi1-x245.google.com (mail-oi1-x245.google.com [IPv6:2607:f8b0:4864:20::245])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLKvn4tk0z2xBK;
-	Fri, 06 Nov 2026 11:35:14 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=MIME-Version:Content-Type:References:
-	In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=6TNCgRmL/23mHPVturwpYhS1/L+Zqx8rGxIrqrETX5o=; b=eQdN9M2/rNw+BU8m/E6O/8OYF7
-	rQynrR5VfrTx3nqBv28uIvCr8lMXtstjEbOSk/dIaASeICHfcsUZhmw8GWxh3LA6/bkABBx2GraMj
-	TUgkUT38MkwKFrW7+iKSat5ykUYDKgKeWxpZUkHwC87GsuvKH/SC2Hq4PhcYkeX4DrTHpHnszfGRf
-	3pKIDXdt8bsXYPp71p1RiQCYDhljxFSnULrnZUh8DySiUJoi/nLn/88PQELGj9rE6h7rzqo9zFjGp
-	XAlUiHrkjXx2SD8PhEQikpLsOGg5os6f5T8udNzGtIP18yCcCYB8hHFcSqYsX6O5LnphTLi/AqZWy
-	qLQpwhsA==;
-Received: from [205.251.233.52] (helo=u09cd745991455d.ant.amazon.com)
-	by casper.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xP7ue-0000000EEk3-0BZ5;
-	Fri, 06 Nov 2026 00:34:36 +0000
-Message-ID: <b63e75987464d669779b1a861d4a073c9caf85f4.camel@infradead.org>
-Subject: Re: [PATCH 13/14] ptp: vmclock: convert mmap hook to mmap_prepare
-From: David Woodhouse <dwmw2@infradead.org>
-To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, Juergen Gross
- <jgross@suse.com>,  Stefano Stabellini <sstabellini@kernel.org>, Oleksandr
- Tyshchenko <oleksandr_tyshchenko@epam.com>, Madhavan Srinivasan	
- <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Michael
- Ellerman	 <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)"
- <chleroy@kernel.org>,  "Ritesh Harjani (IBM)"	 <ritesh.list@gmail.com>,
- Shrikanth Hegde <sshegde@linux.ibm.com>, Haiyang Zhang	
- <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>, Dexuan Cui	
- <decui@microsoft.com>, "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang	
- <jasowangio@gmail.com>, Eugenio =?ISO-8859-1?Q?P=E9rez?=
- <eperezma@redhat.com>,  Xuan Zhuo <xuanzhuo@linux.alibaba.com>, Jarkko
- Sakkinen <jarkko@kernel.org>, Dave Hansen	 <dave.hansen@linux.intel.com>,
- Thomas Gleixner <tglx@kernel.org>, Ingo Molnar	 <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, x86@kernel.org, "H. Peter Anvin"
- <hpa@zytor.com>, Jan Kara <jack@suse.com>, Paul Moore
- <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>,
- Ondrej =?UTF-8?Q?Mosn=C3=A1=C4=8Dek?=	 <omosnacek@gmail.com>, Joel Stanley
- <joel@jms.id.au>, Andrew Jeffery	 <andrew@codeconstruct.com.au>, Ryan Chen
- <ryan_chen@aspeedtech.com>, Billy Tsai	 <billy_tsai@aspeedtech.com>, Bjorn
- Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>,
- Abel Vesa <abelvesa@kernel.org>, Jens Wiklander	 <jenswi@kernel.org>, Sumit
- Garg <sumit.garg@kernel.org>, Scott Branden	 <scott.branden@broadcom.com>,
- Broadcom internal kernel review list	
- <bcm-kernel-feedback-list@broadcom.com>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Richard Cochran
- <richardcochran@gmail.com>, Andrew Lunn	 <andrew+netdev@lunn.ch>, "David S.
- Miller" <davem@davemloft.net>, Eric Dumazet	 <edumazet@kernel.org>, Jakub
- Kicinski <kuba@kernel.org>, Paolo Abeni	 <pabeni@redhat.com>
-Cc: xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- linux-hyperv@vger.kernel.org, 	virtualization@lists.linux.dev,
- linux-sgx@vger.kernel.org, 	selinux@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, 	linux-aspeed@lists.ozlabs.org,
- linux-arm-msm@vger.kernel.org, 	op-tee@lists.trustedfirmware.org,
- netdev@vger.kernel.org
-Date: Thu, 05 Nov 2026 16:34:23 -0800
-In-Reply-To: <20261105-late-2026-mmap_prepare-v1-13-c56aadfbab8a@kernel.org>
-References: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
-	 <20261105-late-2026-mmap_prepare-v1-13-c56aadfbab8a@kernel.org>
-Content-Type: multipart/signed; micalg="sha-256"; protocol="application/pkcs7-signature";
-	boundary="=-RN0WgQiIue6jLyM+SxS4"
-User-Agent: Evolution 3.62.0-0ubuntu1~ppa1~24.04 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLL4h04sFz2xBK
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 11:42:59 +1100 (AEDT)
+Received: by mail-oi1-x245.google.com with SMTP id 5614622812f47-567ac848d83so74944b6e.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 16:42:59 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20260707; t=1793925776; x=1794530576; darn=lists.ozlabs.org;
+        h=content-type:cc:to:from:subject:message-id:mime-version:date:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=j3QnOqT1bd63wcrV6KvOAip3wCLe11FN2NBTadJaa9M=;
+        b=IZ2kZa1kKRTh1AoLtSpC+2nNEnhc1lg9jVwOnFJuo9oW0DsIgMYxk9/ex8roQK4F7X
+         jsH0giCYIwqrG9a9DkBFkO22k1WVwajmwlgMB5BN7pbuhfapHPfPjJrF8mZWeanYbfch
+         kKfL5QdfkHpoaec2EVuvRwZKp8AydG4LCGqpkdBKuH1f4lDc4nS6NT1Jl0jjv+st3wfR
+         XTnlGksIFy3cqWzzq8senOLjKi0UNSteyVbw4qWFoQQvPbvA9qu1Z3PvcHx6j6EMadms
+         m/3UAGdOl7EJJTGkUTbsHmn97arhUwMlwfjWela1MJ18ry3QoJe9NpmuQGLJK/VXcnLG
+         H3uQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793925776; x=1794530576;
+        h=content-type:cc:to:from:subject:message-id:mime-version:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=j3QnOqT1bd63wcrV6KvOAip3wCLe11FN2NBTadJaa9M=;
+        b=OOTXGQR0ImlLOtm3HmMe0RvrIjC3mXMbcW6Lh+pEtUFiXmZ2yJ8P0bFFU/YajNksnU
+         TalGoOUkqT77go4DIp1CU3Iv9AH8/dl1evd21e4ZaYOIEClE0OMmOi+E3sDkmWpN8wnN
+         5XqWxBWUIoDKystOJfYBmdgQMZheHrAnECNCXpNs1mX8iwvosphzLEPuKNNf+UHNyqET
+         5l3umVPqosA0nO5oA4wRIVv+Lp4cpS6RUhKy3QVZZt3ZQllhcPniO1+qAF9otq0NxQJO
+         uCmxwlfqyZQQ3psj+9MqcHklxBGCZd0nLRth2tyZeibmAT/wfrWYuTcnNVpT9ZOz5FAB
+         /HKg==
+X-Forwarded-Encrypted: i=1; AKwUvByTXvhH9x5VZxMW9CPUx14QejdT0DSeJBISqAhdWxZ9J1Ujb1btFlSZaPiG0ARAD27BNdQFohCE71A2DC8=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z8qKb0sI0Cv2ns/b1PLlqfNkCWFu1ex+KDw/SjFqDyT/fAoGcsz
+	IMMbtT1yJ5a7WfdDhvH2ygQqmySjVvCnl0letHjOBWql5aE/NSfajCNBquZmgFL2U+xeG5EBKvw
+	MrAJ8fHhVfTExZA==
+X-Received: from ilmt14.prod.google.com ([2002:a05:6e02:10e:b0:50d:9814:cccb])
+ (user=dmatlack job=prod-delivery.src-stubby-dispatcher) by
+ 2002:a05:6808:3a0d:b0:540:5827:6d8a with SMTP id 5614622812f47-567e185afd4mr616724b6e.66.1793925776141;
+ Thu, 05 Nov 2026 16:42:56 -0800 (PST)
+Date: Fri,  6 Nov 2026 00:42:01 +0000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,145 +74,277 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org. See http://www.infradead.org/rpr.html
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
-	autolearn=ham autolearn_force=no version=4.0.1
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.56.0.455.g6c5a503b38-goog
+Message-ID: <20261106004218.604799-1-dmatlack@google.com>
+Subject: [PATCH v2 00/17] PCI: Index saved capability state by configuration
+ space offset
+From: David Matlack <dmatlack@google.com>
+To: kexec@lists.infradead.org, linux-doc@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pci@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org
+Cc: Alexander Graf <graf@amazon.com>, Alex Williamson <alex@shazbot.org>, 
+	Bjorn Helgaas <bhelgaas@google.com>, David Matlack <dmatlack@google.com>, 
+	Jason Gunthorpe <jgg@nvidia.com>, Jonathan Corbet <corbet@lwn.net>, Josh Hilke <jrhilke@google.com>, 
+	Lukas Wunner <lukas@wunner.de>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Mike Rapoport <rppt@kernel.org>, 
+	"Oliver O'Halloran" <oohall@gmail.com>, Pasha Tatashin <pasha.tatashin@soleen.com>, 
+	Pratyush Yadav <pratyush@kernel.org>, Randy Dunlap <rdunlap@infradead.org>, 
+	Samiullah Khawaja <skhawaja@google.com>, Shuah Khan <skhan@linuxfoundation.org>, 
+	Vipin Sharma <vipinsh@google.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Spam-Status: No, score=-26.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=unavailable
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+This series can be found on GitHub:
 
---=-RN0WgQiIue6jLyM+SxS4
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+  https://github.com/dmatlack/linux/tree/liveupdate/pci/savedstate/v2
 
-On Thu, 2026-11-05 at 21:05 +0000, Lorenzo Stoakes (ARM) wrote:
-> Move from the deprecated mmap hook to the new mmap_prepare hook, using th=
-e
-> I/O PFN remap mmap action to map the clock page and retaining the -EAGAIN
-> error on failure via the action error override.
->=20
-> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+This series replaces the per-capability save buffers with a single
+per-device store indexed by configuration space offset, lays out struct
+pci_saved_state the same way, and adds helpers for drivers to preserve
+struct pci_saved_state across a Live Update.
 
-Acked-by: David Woodhouse <dwmw@amazon.co.uk>
+The main motivation here is Live Update. VFIO snapshots a device's state
+with pci_store_saved_state() when the device is first opened and
+restores it with pci_load_and_free_saved_state() when it is last closed.
+A Live Update can happen in between, so VFIO needs to pass this state to
+the next kernel.
 
---=-RN0WgQiIue6jLyM+SxS4
-Content-Type: application/pkcs7-signature; name="smime.p7s"
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Transfer-Encoding: base64
+This is not safe today because the layout of struct pci_saved_state is
+defined by the kernel that produced it: which capabilities get a record,
+how large each record is, and what each word in it means.  Nothing ties
+a saved value back to the register it came from, so preserving it as is
+would turn the private layout of every capability save buffer into Live
+Update ABI [1]. Indexing saved values by configuration space offset
+makes the layout a property of the hardware rather than of the kernel
+version, so it can be preserved as a bitmap of saved DWORDs plus their
+values, and the next kernel can decide per register what to restore.
 
-MIAGCSqGSIb3DQEHAqCAMIACAQExDzANBglghkgBZQMEAgEFADCABgkqhkiG9w0BBwEAAKCCE8Ew
-ggWvMIIEl6ADAgECAhANkOKMSmGXhF5eMl0rsRhvMA0GCSqGSIb3DQEBDAUAMGUxCzAJBgNVBAYT
-AlVTMRUwEwYDVQQKEwxEaWdpQ2VydCBJbmMxGTAXBgNVBAsTEHd3dy5kaWdpY2VydC5jb20xJDAi
-BgNVBAMTG0RpZ2lDZXJ0IEFzc3VyZWQgSUQgUm9vdCBHMjAeFw0yNDAzMTMwMDAwMDBaFw0zNDAz
-MTIyMzU5NTlaMGIxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjE6MDgGA1UE
-AxMxRGlnaUNlcnQgQXNzdXJlZCBHMiBTTUlNRSBSU0E0MDk2IFNIQTM4NCAyMDI0IENBMTCCAiIw
-DQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAOfSIeC0vv1xPQ+dgSxbIIrkaru6skAWJYaGFzmv
-q4Kq+2wU2jxhcWlJg/JeP5jEkq/LM3pn5aaLao79j+XRmS7J1ZpJKUODJVoM4s9MQJhTMvo4qS5Z
-S64g6QR7Obkz3I1Lr3aWeSBmDDEyzue+NKtuWZ1Cxy3RdXo/w5HgRc3l2AercOM3Gt1XonTzEtTb
-Z/Hwc0Sn9Gz8RmGRK6Ka4hVDl8q/2l110KaV233Kh5etP0csXS8MIMdVRfRu3sc5hp13DG7lCKzK
-72a2GEpI8Wpl26G6I1/LMzz/98T+FqjTqxsdquk7Cj7m2vKGLW1BorpQH7WFGPdJQXJe1hfbfiZA
-CcVdCtl4nAacFacmsiArZBfX7AQGL7isvHUwwYFEtcApyGW4p2Lt+t8nvU0CANA6BHOpOz1xOP8W
-mAESbUriIjyuTUf3fJ9oDNCurVqhASMJCDaWI3lYX/QAoiAzt6akqbbZxo2ujW7mGGqc0KxqE2cs
-h2T79v7pC8aUtHBfwNrTR19GnZVxE0eQ7ViIQhR6mpSaUQFA9sG+cmD2G8TnCgYsLa0q8De6F61a
-CBevQGHNzrbZ3JAMneveYg/Jy1XxQHDRcvrMfWKe0jjcWbdKYlaGVPm5V1ILwYz7Yv5ewo3NUrxI
-GJiywe9qPhuJSDZs7VehTuI0FxGIsgKzVjgbAgMBAAGjggFcMIIBWDASBgNVHRMBAf8ECDAGAQH/
-AgEAMB0GA1UdDgQWBBT3m6JO05fF9DQPQw6Bhc6RkzKv+TAfBgNVHSMEGDAWgBTOw0q5mVXyuNtg
-v6l+vVa1lzan1jAOBgNVHQ8BAf8EBAMCAYYwHQYDVR0lBBYwFAYIKwYBBQUHAwQGCCsGAQUFBwMC
-MHkGCCsGAQUFBwEBBG0wazAkBggrBgEFBQcwAYYYaHR0cDovL29jc3AuZGlnaWNlcnQuY29tMEMG
-CCsGAQUFBzAChjdodHRwOi8vY2FjZXJ0cy5kaWdpY2VydC5jb20vRGlnaUNlcnRBc3N1cmVkSURS
-b290RzIuY3J0MEUGA1UdHwQ+MDwwOqA4oDaGNGh0dHA6Ly9jcmwzLmRpZ2ljZXJ0LmNvbS9EaWdp
-Q2VydEFzc3VyZWRJRFJvb3RHMi5jcmwwEQYDVR0gBAowCDAGBgRVHSAAMA0GCSqGSIb3DQEBDAUA
-A4IBAQA+b8Uw53sDspdZgukU+qzLyyHkcjlxGGhHlP+zrmDLKm1wEFvCRS2pili3Hy67i8N4N5NU
-vw5Rg6kv3lxb9S9Rktxk43k+tvm68pl7OxQE55ZjVY87P0lUPGwEqOOwLLyH02ZQcsfq5p5LrOH9
-0JvmvZ1yy73HS+VpDAqOlytE0NSvTIRqFFkKQGQwfjvtql9YflujuNNvJztjBaHKYZsnNSg+J38o
-jYq4TP3pSg3UdVH0PncVjPQyqxC9xef5Xae92Kbkzol3x7Nel3A1bwAkalrDMspvTHvey6LfiBks
-FIqviTnoy7fgjaRAJgHS+RXx/cmuRd3rUAclSVVrYu8RMIIHAzCCBOugAwIBAgIQAzUotrsybJHx
-HTjKOIVdIDANBgkqhkiG9w0BAQsFADBiMQswCQYDVQQGEwJVUzEXMBUGA1UEChMORGlnaUNlcnQs
-IEluYy4xOjA4BgNVBAMTMURpZ2lDZXJ0IEFzc3VyZWQgRzIgU01JTUUgUlNBNDA5NiBTSEEzODQg
-MjAyNCBDQTEwHhcNMjYwNzE4MDAwMDAwWhcNMjgwMTA0MjM1OTU5WjAeMRwwGgYDVQQDDBNkd213
-MkBpbmZyYWRlYWQub3JnMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA2pYux73kdbYX
-sWF8f1u6DJP91qcqaZetsyfPkZk0B+MmXmAEv0kVes5n15V2mbDThOnpoPFly0UugQO9JYqLfrtD
-tKD5yL58fgrDB9Dw+LQikgrHafl6YSCds5AvUu/8hw2J6noKrcOLJpKlKn9Fl/4IB9Q3JIdLx5aa
-EtTqMalIPqHFOlgrJ7s+aua8xbB8YQ9ahqYBXWRJNv3P/2b1DYtdrz1oqZPE3CcB8Pc6Gf2a1Tcm
-6TAgtEx7Cf1BFcrsrMz7TWHmGQITieNb2r9UYWSc2Gp+GtYFNJCgT0JJXKUBIauPMKBLteYrL8Fo
-ff/uY44dC/mDWjdCP/5x0qelPQjlBvWdHL5zvBTOj06rJ0m3HNI/hnIcDh0Qu2j9reb9rLVcdym6
-bWmBM4uDEB8Zv9Ph0KTBFSy1IosyakuD1j1Os30EzjGfbi0EUXIvnOcYbTBAbM5UAzrxEHMhBvoX
-Pvnx+OyvjJmc9tWxTX6AcSz+m40esbT17URBeZS18afgieiikm5TynlUYP1LciR3hSgGVzvGXnKO
-02VDFR5itGWdRKZ2W5wIShNfWfhSa0D0K5UdIDt5Qc7sjzwK1Yb1sY5Tu0uA5mhIS82q1ov83uxB
-sFkriNnhGv/M1NCDVLBiOMsHu73qUM+yKmgKLwF9Hfn9WI25glbAMI4S5r3hYzcCAwEAAaOCAfcw
-ggHzMB8GA1UdIwQYMBaAFPebok7Tl8X0NA9DDoGFzpGTMq/5MB0GA1UdDgQWBBRcYhqbcGzn1jrT
-JOZaB8O7qllDpzAwBgNVHREEKTAngRNkd213MkBpbmZyYWRlYWQub3JngRBkYXZpZEB3b29kaG91
-LnNlMBQGA1UdIAQNMAswCQYHZ4EMAQUBAjAOBgNVHQ8BAf8EBAMCBeAwHQYDVR0lBBYwFAYIKwYB
-BQUHAwIGCCsGAQUFBwMEMIGpBgNVHR8EgaEwgZ4wTaBLoEmGR2h0dHA6Ly9jcmwzLmRpZ2ljZXJ0
-LmNvbS9EaWdpQ2VydEFzc3VyZWRHMlNNSU1FUlNBNDA5NlNIQTM4NDIwMjRDQTEuY3JsME2gS6BJ
-hkdodHRwOi8vY3JsNC5kaWdpY2VydC5jb20vRGlnaUNlcnRBc3N1cmVkRzJTTUlNRVJTQTQwOTZT
-SEEzODQyMDI0Q0ExLmNybDCBjQYIKwYBBQUHAQEEgYAwfjAkBggrBgEFBQcwAYYYaHR0cDovL29j
-c3AuZGlnaWNlcnQuY29tMFYGCCsGAQUFBzAChkpodHRwOi8vY2FjZXJ0cy5kaWdpY2VydC5jb20v
-RGlnaUNlcnRBc3N1cmVkRzJTTUlNRVJTQTQwOTZTSEEzODQyMDI0Q0ExLmNydDANBgkqhkiG9w0B
-AQsFAAOCAgEAocabrh1cPd5s3vY5rnlBVQSTc7zs2ZWs67dAIltR+05WELrYClVzzUhMs/LOJPlr
-EUo45UDDomXq38DxFepaPd9+iNLjXfn33EX/IG44j04lU/oF/Rg9VeQILkYLbCZ/x9wOjNHZc4SN
-ydY7Dhvf/sT5aBz88u7D5+azZJ7Qf1U57wYseCH1Mt0nDrtr5y19IJ8D9xJJ33RFL6vfpHZBBAQ8
-+3RqkKNxLoV2aFvQhxdhjNLDqTv3LjUIdicwPraN7JkxEu7CV2Lka7eRqJgkWL7SK0YmBjGpRafs
-+icP/ON5RCCKTTb6VlX8eTG2sJJfsFhvJNCCt6xexbWzWtIrfP7NvPBvwBB737AyEGBZkS5aNizT
-McURJGTv9UKvBh1LF/+tNhYtLvPCN7oecGzhCHht9jcwSkygTo3Y6YlK3QgOu+ncmiBbfeuwlLZ1
-LxbYvG6hgNqXv7u6YyADbYajAQJXJ2OQen39pm3Q/AQSyLYG+B8lDglWsM8tYXPlEdrYJcksGK6F
-nqIX6Bumn43rBooLJdiZp4WmfWdL2pxe+LxRDjprmqu1WprixDxULSTOKJZoqTlugs6y3Bc+if+s
-gHnBBtz9WQ6MtPHkh7zONDAFIKcBmv8OqPQCx0F3Wv3OEybwMpXx0OsKgK8wLldaX1pXcMuyDgTL
-Sqs0AV0OHUgwggcDMIIE66ADAgECAhADNSi2uzJskfEdOMo4hV0gMA0GCSqGSIb3DQEBCwUAMGIx
-CzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjE6MDgGA1UEAxMxRGlnaUNlcnQg
-QXNzdXJlZCBHMiBTTUlNRSBSU0E0MDk2IFNIQTM4NCAyMDI0IENBMTAeFw0yNjA3MTgwMDAwMDBa
-Fw0yODAxMDQyMzU5NTlaMB4xHDAaBgNVBAMME2R3bXcyQGluZnJhZGVhZC5vcmcwggIiMA0GCSqG
-SIb3DQEBAQUAA4ICDwAwggIKAoICAQDali7HveR1thexYXx/W7oMk/3Wpyppl62zJ8+RmTQH4yZe
-YAS/SRV6zmfXlXaZsNOE6emg8WXLRS6BA70liot+u0O0oPnIvnx+CsMH0PD4tCKSCsdp+XphIJ2z
-kC9S7/yHDYnqegqtw4smkqUqf0WX/ggH1Dckh0vHlpoS1OoxqUg+ocU6WCsnuz5q5rzFsHxhD1qG
-pgFdZEk2/c//ZvUNi12vPWipk8TcJwHw9zoZ/ZrVNybpMCC0THsJ/UEVyuyszPtNYeYZAhOJ41va
-v1RhZJzYan4a1gU0kKBPQklcpQEhq48woEu15isvwWh9/+5jjh0L+YNaN0I//nHSp6U9COUG9Z0c
-vnO8FM6PTqsnSbcc0j+GchwOHRC7aP2t5v2stVx3KbptaYEzi4MQHxm/0+HQpMEVLLUiizJqS4PW
-PU6zfQTOMZ9uLQRRci+c5xhtMEBszlQDOvEQcyEG+hc++fH47K+MmZz21bFNfoBxLP6bjR6xtPXt
-REF5lLXxp+CJ6KKSblPKeVRg/UtyJHeFKAZXO8Zeco7TZUMVHmK0ZZ1EpnZbnAhKE19Z+FJrQPQr
-lR0gO3lBzuyPPArVhvWxjlO7S4DmaEhLzarWi/ze7EGwWSuI2eEa/8zU0INUsGI4ywe7vepQz7Iq
-aAovAX0d+f1YjbmCVsAwjhLmveFjNwIDAQABo4IB9zCCAfMwHwYDVR0jBBgwFoAU95uiTtOXxfQ0
-D0MOgYXOkZMyr/kwHQYDVR0OBBYEFFxiGptwbOfWOtMk5loHw7uqWUOnMDAGA1UdEQQpMCeBE2R3
-bXcyQGluZnJhZGVhZC5vcmeBEGRhdmlkQHdvb2Rob3Uuc2UwFAYDVR0gBA0wCzAJBgdngQwBBQEC
-MA4GA1UdDwEB/wQEAwIF4DAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYBBQUHAwQwgakGA1UdHwSB
-oTCBnjBNoEugSYZHaHR0cDovL2NybDMuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0QXNzdXJlZEcyU01J
-TUVSU0E0MDk2U0hBMzg0MjAyNENBMS5jcmwwTaBLoEmGR2h0dHA6Ly9jcmw0LmRpZ2ljZXJ0LmNv
-bS9EaWdpQ2VydEFzc3VyZWRHMlNNSU1FUlNBNDA5NlNIQTM4NDIwMjRDQTEuY3JsMIGNBggrBgEF
-BQcBAQSBgDB+MCQGCCsGAQUFBzABhhhodHRwOi8vb2NzcC5kaWdpY2VydC5jb20wVgYIKwYBBQUH
-MAKGSmh0dHA6Ly9jYWNlcnRzLmRpZ2ljZXJ0LmNvbS9EaWdpQ2VydEFzc3VyZWRHMlNNSU1FUlNB
-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
-Wd3tVt5mM9c7I1ZpaKcELisAAAAAAAA=
+[1] https://lore.kernel.org/linux-pci/aukvTvnfyAvahb51@google.com/
+
+The same change also makes saving and restoring capabilities simpler
+and more robust:
+
+  - Capability save buffers were allocated at ten sites (plus one
+    hand-built by a quirk) across three phases of a device's life, and
+    four of them (AER, DPC, PTM, TPH) ignored allocation failure, so the
+    capability silently went unsaved (patch 1 fixes DPC). Now each
+    device has exactly one allocation, and its failure is reported.
+
+  - Each capability's save and restore routines had to walk the same
+    registers in the same order through a buffer cursor, and code
+    elsewhere had to know which slot held which register. Now saving is
+    a single pass over a bitmap of reserved registers, each restore
+    routine names its registers by offset, and the common logic lives
+    in one small helper library (drivers/pci/saved-caps.c).
+
+Patches 1-16 are roughly net-neutral in size. Outside of the new helper
+library (half of which is comments), this series removes about 250
+lines from the PCI core.
+
+Series Overview
+---------------
+
+This series implements the following:
+
+  1. Allocate the DPC save buffer during device setup instead of when
+     the portdrv DPC service binds, so that every capability is set up
+     in the same phase, and a reset before the service binds no longer
+     loses the DPC Control register (patch 1).
+
+  2. Add the per-device store. Capabilities reserve registers by offset
+     during device setup, and the values are allocated in one array once
+     every capability has been initialized (patch 2).
+
+  3. Lay out struct pci_saved_state as a bitmap of saved DWORDs plus
+     their values (patch 3).
+
+  4. Convert PCIe, PCI-X, LTR, L1SS, AER, PTM, TPH, DPC, ACS and VC to
+     the store, one capability at a time (patches 4-14).
+
+  5. Replace the per-capability save functions with a single pass over
+     the reservation bitmap (patch 15).
+
+  6. Remove struct pci_cap_saved_state and the code that managed it
+     (patch 16).
+
+  7. Add helpers that preserve a struct pci_saved_state in KHO memory
+     for the next kernel, which callers reference by its physical
+     address (patch 17).
+
+Design Notes
+------------
+
+  - The store only covers capability registers. The configuration space
+    header is still saved in pci_dev.saved_config_space.
+
+  - Registers are saved a DWORD at a time, since configuration space
+    reads have no side effects, but restored at their own width, since a
+    neighbouring register in the same DWORD may be RW1C (e.g.
+    PCI_EXP_DEVCTL and PCI_EXP_DEVSTA).
+
+  - struct pci_saved_state describes a device's complete saved state at
+    every commit, so a bisect landing in the middle of the series does
+    not silently lose state in pci_load_saved_state().
+
+  - PCIe capability registers are now saved with raw DWORD reads instead
+    of pcie_capability_read_word(), which returns 0 for registers the
+    device does not implement. Restore still goes through
+    pcie_capability_write_word(), which skips them.
+
+  - The reservation bitmap is embedded in struct pci_dev so that
+    reserving cannot fail. This grows struct pci_dev by 136 bytes on
+    x86_64 (2448 to 2584), which stays in the same kmalloc-4k bucket.
+    Removing the per-capability allocations, each with a 24-byte header,
+    saves 32 to 160 bytes of slab per device. The blob from
+    pci_store_saved_state() grows (e.g. from 192 to 256 bytes for a
+    typical endpoint), since it now carries a 128-byte bitmap.
+
+  - Along the way, quirk_intel_qat_vf_cap() no longer builds a PCIe save
+    buffer by hand, and pci_load_saved_state() no longer performs
+    potentially unaligned 32-bit reads of packed records.
+
+Merge Plan
+----------
+
+This series applies on top of v10 of the PCI core support for Live
+Update series [2], which is targeting Linux 7.5. This series is
+targeting Linux 7.5 as well.
+
+Both series will be merged through liveupdate.git, matching the
+agreed-upon tree in the MAINTAINERS entry for PCI LIVE UPDATE.
+
+[2] https://lore.kernel.org/linux-pci/20261013162529.1928093-1-dmatlack@google.com/
+
+Testing
+-------
+
+All patches were build-tested individually. The series was tested
+using the VFIO selftests, which reset devices many times and so exercise
+the PCI core's save and restore paths. The tests were run in a QEMU VM
+using an emulated igb device, and on bare metal using an Intel DSA
+device on an Intel server.
+
+To check that the series does not change what gets restored, every PCI
+config write made by the kernel with and without this series was traced
+in QEMU (pci_cfg_write trace event) while performing FLR, PM and VF
+resets, runtime suspend/resume under vfio-pci, and the VFIO selftests on
+an igb device below a PCIe Root Port, and while resetting a PCIe switch
+Downstream Port. The writes to all of these devices were identical. Of
+the capabilities this series touches, that setup covers PCIe and AER.
+
+The series was also build-tested on x86_64, i386, arm64 and ppc64le,
+with gcc and clang at W=1, with sparse, with CONFIG_PCI_LIVEUPDATE
+enabled and disabled, and with each of CONFIG_PCIEAER, CONFIG_PCIE_DPC,
+CONFIG_PCIE_PTM, CONFIG_PCIEASPM and CONFIG_PCI_IOV disabled.
+
+The helpers in patch 17 were tested across a Live Update selftests (not
+yet posted), extended so that the test driver preserves each device's
+struct pci_saved_state along with the device. On x86_64 and arm64 in
+QEMU, for every tested topology, the next kernel got back the state that
+was preserved, dropped a saved DWORD that it does not reserve, and
+restoring the state wrote back a register that had been changed before
+the Live Update. The full set of patches used for testing can be found
+on GitHub:
+
+  https://github.com/dmatlack/linux/tree/liveupdate/pci/savedstate/v2-test
+
+Future Work
+-----------
+
+The next version of the VFIO PCI Live Update series will use the new
+helpers to preserve the state that VFIO captures with
+pci_store_saved_state(), in place of [PATCH v6 05/27] [3]. Please see
+the PCI core Live Update Roadmap for the rest of the planned work:
+
+  https://lore.kernel.org/linux-pci/20261001232133.560284-1-dmatlack@google.com/
+
+[3] https://lore.kernel.org/linux-pci/20261102153656.1431701-6-vipinsh@google.com/
+
+Separately, the one remaining saved state allocation could be made fatal
+to device setup. pci_device_add() returns void today, so a device whose
+saved state could not be allocated is still added.
+
+AI Assistance
+-------------
+
+This series was developed with the help of an LLM-based coding
+assistant, which was used to draft code and commit messages and to
+review the series. I reviewed every change and take full responsibility
+for all of it.
+
+Changelog
+---------
+
+v2:
+ - Rebase onto v10 of the PCI core support for Live Update series, and
+   target liveupdate.git.
+ - Add patch 12 to convert the ACS save buffer added by the PCI core
+   support for Live Update series to the store.
+ - Add patch 17 with helpers to preserve struct pci_saved_state across
+   Live Update, replacing [PATCH v6 05/27] of the VFIO PCI Live Update
+   series [3] (Vipin, Bjorn).
+ - Drop the Assisted-by tags, which upstream no longer asks for, and
+   describe the use of AI tools in the cover letter instead.
+ - Add pci_saved_cap_shift() so the code reading and writing 16-bit
+   saved registers shares one shift calculation (Josh).
+ - Move the rename of pci_allocate_cap_save_buffers() to
+   pci_reserve_saved_caps() from patch 16 to patch 14, where it stops
+   allocating, and mention ACS and VC in the comment at its call site
+   (Josh).
+ - Fix inaccuracies in the commit messages of patches 2, 7 and 15
+   (Josh).
+
+v1: https://lore.kernel.org/linux-pci/20260924173501.856380-1-dmatlack@google.com/
 
 
---=-RN0WgQiIue6jLyM+SxS4--
+David Matlack (17):
+  PCI/DPC: Allocate the DPC save buffer during device setup
+  PCI: Add an offset-indexed store for saved capability registers
+  PCI: Lay out struct pci_saved_state by configuration space offset
+  PCI: Save PCIe state in the saved capability store
+  PCI: Save PCI-X state in the saved capability store
+  PCI/ASPM: Save LTR state in the saved capability store
+  PCI/ASPM: Save L1SS state in the saved capability store
+  PCI/AER: Save AER state in the saved capability store
+  PCI/PTM: Save PTM state in the saved capability store
+  PCI/TPH: Save TPH state in the saved capability store
+  PCI/DPC: Save DPC state in the saved capability store
+  PCI: Save ACS state in the saved capability store
+  PCI/VC: Split the VC Resource Control restore into a helper
+  PCI/VC: Save VC state in the saved capability store
+  PCI: Save reserved capability registers in a single pass
+  PCI: Remove the per-capability save buffers
+  PCI: liveupdate: Add helpers to preserve struct pci_saved_state
+
+ Documentation/PCI/liveupdate.rst |   3 +
+ drivers/pci/Makefile             |   3 +-
+ drivers/pci/liveupdate.c         | 133 ++++++++++-
+ drivers/pci/pci.c                | 383 +++++++++++--------------------
+ drivers/pci/pci.h                |  59 ++---
+ drivers/pci/pcie/aer.c           |  80 +++----
+ drivers/pci/pcie/aspm.c          | 111 ++++-----
+ drivers/pci/pcie/dpc.c           |  41 ++--
+ drivers/pci/pcie/ptm.c           |  42 ++--
+ drivers/pci/probe.c              |   9 +-
+ drivers/pci/quirks.c             |  30 +--
+ drivers/pci/saved-caps.c         | 308 +++++++++++++++++++++++++
+ drivers/pci/tph.c                |  68 ++----
+ drivers/pci/vc.c                 | 272 +++++++++++-----------
+ include/linux/kho/abi/pci.h      |  32 +++
+ include/linux/pci.h              |  31 ++-
+ include/linux/pci_liveupdate.h   |  23 ++
+ 17 files changed, 959 insertions(+), 669 deletions(-)
+ create mode 100644 drivers/pci/saved-caps.c
+
+
+base-commit: 312200e9211ede3f9a03cc17d094805e06e4674e
+-- 
+2.56.0.455.g6c5a503b38-goog
+
 
