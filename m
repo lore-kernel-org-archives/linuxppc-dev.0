@@ -1,67 +1,41 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F53A606A32E
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 16:36:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DQ+6NKoU
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B52F606A32C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 16:38:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLlDW5zmvz2xNC;
-	Sat, 07 Nov 2026 03:36:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793982971;
-	cv=none; b=aTLJ/I1NfLJVG/4dmPQAzSF22NoDovYC2Ts5T1ENQ0NzeRJeOtqiydIFymRVh+EV8lSejnqGijlPVmK01LajO6pMhf7hrXDV/L56Xpg57gGkvNFtRBV/BPMWu9mwqYekYIeyO+dwNEIt2/SPt7IvPKW7EVUNk6RVIISgzre9zRVH8QgqNd1HTCj1FsJP29TXvYErQyCgUlTJNtT8Fwv2A7TJtPgDJ/sFozI3NtltSRC3SosowMqR6ZxXn3/I3C6efpGUFEiJNEGGbWErAj3l/rBcHGV+FL6ijdqkKJudPna4qz/9FV8kBTEt65Vgr2DGuTE+0AksUoI+mFzamy+StQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLlHM6J4Mz2xPb;
+	Sat, 07 Nov 2026 03:38:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=83.223.78.233
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793983119;
+	cv=none; b=hHE4hskG0ivX/qWmrEEydl0qGo0D9JAxMbqLqGkEUC8zTnIuyoSB4oFzjlujHNSW4kLvYpCswA8tVWKELfdXKybPM7+gz4ZnvMmGJ2JlLnEhaHJXHmbrfNVbHpTwgapMi2W99yCMasJXlaz8Nk+SqCKfChDGjgwTQQUz7LniH+chh8I44EvMOAjkCXwo7j+G9SAh71t4/wN2hdE/JTKxsxWSVyJAz2vmlxPn1Sxw9Qa+08LluTHmK7npYvZlbusBmolJfzc+NPCUinYsobQ6ZIKpvaNen0D2P5hdeYpbocY/rSXO6IP/56cX7fNThH14gsW7EwZNsKBPGh0AN14uAw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793982971; c=relaxed/relaxed;
-	bh=nv6TTsQFVxrUPnd1xr2yM6p1zEbsWhtAzJp8hQu6xXE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=afBfK0ok2CmMuSUdVvLx37EmQK1rEHQ1XczM7mkT3PBJCriNt9qNXtiKC9UUkbs/z04PdcCmjHRqYsVeaGkcEGrmhspHh/CTkjo54QuXPqyzprqX0Ra9DNavh+J9PPyN6Qa7ivftOvZAv+dMevwGtW3fieeg70YlIrSLGL3kPihnBKhRE39AAq3mvLGfxFPtGqx51ZMML2SsyJ2wbpFX9uTjhUjZPKMLFdjIv3qWrxpm7hEyGR9Lb1ZRb+F0mQDgHzt/0SGXaCa28eIMmNyV2RGU7zpEbpSVp4J8rBy7QaELbGM4ip0yH+uSw/BtU6Ozg5FsnQvoA8WVLnSDk9bfTw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DQ+6NKoU; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DQ+6NKoU;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	t=1793983119; c=relaxed/relaxed;
+	bh=jic80HyoFLmRco4YMHbShYG6FvjsucGi0Amdp6g1OKI=;
+	h=Message-ID:From:Date:Subject:MIME-Version:Content-Type:To:Cc; b=EfBGPRWQ7CWIdQ8iLkUIIIZaL3sZWFwPMXE51o+COAC1qb23Jkaidq6Dd0cNRF6+laZ3g92uikeBKP2++hoWbciFVUTfL73s8+/jLc5R7VDCkYf8s30d2Up7A0UuGk0S1e1omFmwEIEZaS0VRNF3g3X0Gl2EBQrOuBtYIAH5/jBHrH0CvsDOs8lytzY7DXG6v9xhIARllgTMWO7HDFIvWNRKyEoBzKnIIQufVu9nCkZ4hsN6+hOmp28vlrNolMAsf88n5njpi1XPKsw2TAsWybhOVWvo+XQMM6FhloIkvVOpWKu4XKNqnLAVCYOkWTeBDLkfu/QLWNHxsag6wLNWkA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=83.223.78.233; helo=mailout2.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org) smtp.mailfrom=wunner.de
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wunner.de (client-ip=83.223.78.233; helo=mailout2.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org)
+Received: from mailout2.hostsharing.net (mailout2.hostsharing.net [83.223.78.233])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLlDW24Tmz2xJR
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Nov 2026 03:36:11 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 638F043B11;
-	Fri,  6 Nov 2026 16:36:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 298111F0089F;
-	Fri,  6 Nov 2026 16:36:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793982968;
-	bh=nv6TTsQFVxrUPnd1xr2yM6p1zEbsWhtAzJp8hQu6xXE=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=DQ+6NKoUWgB3+OGPRQWiN9J4QdMcTEp0G9hgy1s7AO/GosjIRICg5FczP8KaIHPnB
-	 ILdBrM+5+vzWYrGKPBzwy3nv2h2EUC6gl0xou7zdwN/FW7PkWtIl/9CxXuqIiC0FK6
-	 1WlFQpxwWYfNT5cqW43XV1V67B2l9I0wFEIeia/xTmcdQ/9yXeFOtUagtGvmG58RH+
-	 HW668Bg3z2STBpAKYgO5EQaZP/vjQR3TTjIWVywy7lAHJVDmNIlFr9juOPQ22ZpUvI
-	 PA63sArHjmlXYS3w/H0/SYeOFtx7gEAElYQWpAzlqFFb6TLlVK2Ip52ztgAVb5RFrs
-	 J5YWQaPTztvDw==
-From: Sasha Levin <sashal@kernel.org>
-To: stable@vger.kernel.org,
-	Michael Ellerman <mpe@ellerman.id.au>
-Cc: Sasha Levin <sashal@kernel.org>,
-	Gaurav Batra <gbatra@linux.ibm.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	Shivaprasad G Bhat <sbhat@linux.ibm.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Stephen Brennan <stephen.s.brennan@oracle.com>
-Subject: Re: [PATCH 6.6.y 1/1] powerpc/pseries/iommu: Restore CONFIG_IOMMU_API dependency
-Date: Fri,  6 Nov 2026 11:35:46 -0500
-Message-ID: <2026-11-06-1-daily-reply-0011-powerpc-iommu-api@kernel.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20261105232402.4033385-2-stephen.s.brennan@oracle.com>
-References: <20261105232402.4033385-2-stephen.s.brennan@oracle.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLlHL5xKKz2xNC
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Nov 2026 03:38:36 +1100 (AEDT)
+Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature ECDSA (secp384r1) server-digest SHA384
+	 client-signature ECDSA (secp384r1) client-digest SHA384)
+	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
+	by mailout2.hostsharing.net (Postfix) with ESMTPS id 6C81E1EE8;
+	Fri, 06 Nov 2026 17:38:31 +0100 (CET)
+Received: by h08.hostsharing.net (Postfix, from userid 100393)
+	id 527E8602EB8B; Fri,  6 Nov 2026 17:38:31 +0100 (CET)
+Message-ID: <cover.1793982724.git.lukas@wunner.de>
+From: Lukas Wunner <lukas@wunner.de>
+Date: Fri, 6 Nov 2026 17:38:00 +0100
+Subject: [PATCH v2 0/2] PCI/AER: Improve Error Source handling
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,24 +49,42 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=4.0.1
+To: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org
+Cc: Sourabh Jain <sourabhjain@linux.ibm.com>, Oliver OHalloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org, Alex Deucher <alexander.deucher@amd.com>, Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>, Keith Busch <kbusch@kernel.org>, Maciej Grochowski <Maciej.Grochowski@sony.com>, Ilpo Jaervinen <ilpo.jarvinen@linux.intel.com>, Yazen Ghannam <yazen.ghannam@amd.com>
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-> powerpc/pseries/iommu: Restore CONFIG_IOMMU_API dependency
+While analyzing log output provided by Alex, I noticed that the AER driver
+fails to find the error-signaling device if the Error Source ID register
+contains an invalid, non-zero value.  Fix it (patch [2/2]).
 
-This is a hand-adapted replacement for af199e6ca29c ("powerpc/pseries/iommu:
-Define spapr_tce_table_group_ops only with CONFIG_IOMMU_API") rather than a
-clean cherry-pick, and it has no ack from the powerpc side.
+While at it, fix a potential NULL pointer deref in that portion of the code
+(patch [1/2]).
 
-Michael, Madhavan: could one of you review it? I will queue it for 6.6 once you
-are happy with it.
+Changes versus v1 in patch [2/2]:
+  Reorder a < b && b < c comparisons (Ilpo, Bjorn)
+  Amend kernel-doc of find_source_device() (Sathya)
+  s/subordinate/secondary/ in commit message (Bjorn)
+  Document behavioral change in commit message (sashiko)
+
+Link to v1:
+  https://lore.kernel.org/r/cover.1793697480.git.lukas@wunner.de
+
+Lukas Wunner (2):
+  PCI/AER: Avoid NULL pointer deref on search for Error Source
+  PCI/AER: Check validity of Error Source ID register
+
+ drivers/pci/pci.h       |  7 ++++++-
+ drivers/pci/pcie/aer.c  | 37 +++++++++++++++++++++++++++----------
+ drivers/pci/pcie/rcec.c | 14 ++++++++++++++
+ 3 files changed, 47 insertions(+), 11 deletions(-)
 
 -- 
-Thanks,
-Sasha
+2.53.0
+
 
