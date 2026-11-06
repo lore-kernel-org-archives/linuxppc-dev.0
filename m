@@ -2,50 +2,90 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 288FB606A326
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 16:59:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B71AD606A335
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 17:00:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key, unprotected) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=selector2 header.b=pXM7tqqY
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLlkw4gGTz2xNC;
-	Sat, 07 Nov 2026 03:59:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=83.223.78.233
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793984344;
-	cv=none; b=oKEKrLKjKHr21SLx8YGwtV4zwUu/JyaRujrAX4y7RuEyJ9Pjm78iAxn04zav/qSQwgzsFH0xrX1XejergOHgBfuVaoT3qfvkufrDZhonckFsMxF5LXMumsodeqCMD+/crndoEsbPWfTqjwdPmb3UNrBz0wIzo/PPmRfUovmnFK5YkCKtS2vUdm9xXmd75+0BRjEqehDpVGDN8fjNRra/OP2Kj5gSS2Wkq4EZy2N2PFLbm3UXPHy77mgwN7GXQntHFdwVLeSJg/5X3z7AwYTlGzlCNg1NH2XZhrOG/ZE74+ikOEIIgn57ryS8xn+6fEJCCP7gQiF4Gj7KtUj2pXs9mw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793984344; c=relaxed/relaxed;
-	bh=jwZtwfHrevTvlShMfmV8TYSXo57pKgQIF+OFPwaencc=;
-	h=Message-ID:In-Reply-To:References:From:Date:Subject:To:Cc; b=ElB8F2qYnCO6VcUseMzvTywSQ3spUlt1KxysVOV/RRW1AosOEXlpJZjwPCUGn8fE2mq6ejPCCpyXWJ8Xx+bDgvPwOhZOeqPXFdN6N5dknf+oP+epZfrqY9ajpRpLkh5hWD58EsBVKh04OUsiB1/BYYyF6wS5S7+thRLUxFtJQ+0rjpz8fvBoUlboQnmjGHcUy3JCRPrnA0icWPS3ia0nUSevixk++Plhq9aaPJlNv8JXX9drWvBMxatAiRl2bmiM24TRzt9fNxn/4aiH226ByC+jwHuXvkle8J/7ZZKV9vaRxPiJ2nDtHhI4vB7wcVzv350lnHO2YeYSzU1aPpsWIg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=83.223.78.233; helo=mailout2.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org) smtp.mailfrom=wunner.de
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wunner.de (client-ip=83.223.78.233; helo=mailout2.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org)
-Received: from mailout2.hostsharing.net (mailout2.hostsharing.net [83.223.78.233])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLlmW3LY6z2xPb;
+	Sat, 07 Nov 2026 04:00:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::6" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793984427;
+	cv=pass; b=JCjka2i9lZtasDLJSRINe/efzX3B3H9eCxUKNHUAfZwcfBt9s2n4UPBER5ZadhfGQfkWkIPopvI/aXnGd4xL4g7FjpalD0Lxzhj7XgNzEeUuSN38i0Cs8FeJ3zGjraUDHGxPPMwi5FUnYhCV58UmjPNtlyGeXYO3RJXKm7qJWU/mdqu3hzDml5aURLjF/z1pl2yVHsuzQOk6FXVdGbg0ed4916vVEjOWQ2SbMnGT3GETimyjzFjCjV5KIW0tmucKzH1hN0bL/FkAiHDRiDC+p3MQgMcAAcXzvfQct6VyVl5zNaPqZbB71daWPSk6rOB6iYiO81WqKZno7fE6hQc2gQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793984427; c=relaxed/relaxed;
+	bh=xUrvLi8v5PVW3mtZpb5r6hg1JHrY+OISzmk00mxPeZE=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=R7rZkaf49WAZmN2KHYaxqXk1zT8t3zpJsnFQdjBSHGV7ZoBChWP/c107mwmcsTlFOuhiRLNLD/7V9ErhGwF3q2GW3CjQ+s7PO6YCbgubK4W/pj2mLNUVPSc8+l0HENnkk9/j9wtLC88E39QTcI5Mw5XAoD5AqO+FKo7Gy/s8JPZleIxi94TLAyMwdv0RBgsZk0vWSi1aDpcL1gTS7CKtl7xHTPE0gQRHu2oosTgl+x1ZNPG+shEfrbGDtF/6bhIbnKD9ilVtnLZb2D24cQy1Q/tx6VCIQvzexrA8aM8e09cd045fc2wvGrPUyHqmVtCxoZK/D4lH8oKzKCqlwZKgBA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=virtuozzo.com; dkim=pass (2048-bit key; unprotected) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=selector2 header.b=pXM7tqqY; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=khorenko@virtuozzo.com; receiver=lists.ozlabs.org) smtp.mailfrom=virtuozzo.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=virtuozzo.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=virtuozzo.com header.i=@virtuozzo.com header.a=rsa-sha256 header.s=selector2 header.b=pXM7tqqY;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=virtuozzo.com (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=khorenko@virtuozzo.com; receiver=lists.ozlabs.org)
+Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazlp170130006.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::6])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLlkv6wbjz2xJR
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Nov 2026 03:59:03 +1100 (AEDT)
-Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature ECDSA (secp384r1) server-digest SHA384
-	 client-signature ECDSA (secp384r1) client-digest SHA384)
-	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
-	by mailout2.hostsharing.net (Postfix) with ESMTPS id B1A70147C;
-	Fri, 06 Nov 2026 17:58:56 +0100 (CET)
-Received: by h08.hostsharing.net (Postfix, from userid 100393)
-	id 9D50C602EB8B; Fri,  6 Nov 2026 17:58:56 +0100 (CET)
-Message-ID: <357275f9c2554a61bfa6fcbe9a25416cafe9ce00.1793982724.git.lukas@wunner.de>
-In-Reply-To: <cover.1793982724.git.lukas@wunner.de>
-References: <cover.1793982724.git.lukas@wunner.de>
-From: Lukas Wunner <lukas@wunner.de>
-Date: Fri, 6 Nov 2026 17:38:02 +0100
-Subject: [PATCH v2 2/2] PCI/AER: Check validity of Error Source ID register
-To: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org
-Cc: Sourabh Jain <sourabhjain@linux.ibm.com>, Oliver OHalloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org, Alex Deucher <alexander.deucher@amd.com>, Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>, Keith Busch <kbusch@kernel.org>, Maciej Grochowski <Maciej.Grochowski@sony.com>, Ilpo Jaervinen <ilpo.jarvinen@linux.intel.com>, Yazen Ghannam <yazen.ghannam@amd.com>
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
-	autolearn_force=no version=4.0.1
-X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
-	aws-us-west-2-korg-listserv-alma10-1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLlmT50NKz2xNC
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Nov 2026 04:00:24 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=OQgrFayHABR+G4CQ4VGyAXpwmxjR2wKFXYnPvUZzVE4RSo4MGEHmgAmLXU3Y+2EC/0dK4zlgccUv2Jy0axOUvXFhtHt4x6N4fiX6Ma8fEtouTILgynzVG6RXwYpp5DsEGks1Ps/EeaPU5R9EwysgNwp33wq3+L+BJqWt6qrzqJsFXI8CSiJE0sqC89E5X6MUI7S6UfCUkLuqteFbrbSpPFcd0HWO7BOmy0ET/oxDwpMmRT8WwSH3Y+P6Mdi4Og5Lhq10GMiibjmNp+P1ioB9ip81J2KDniTzMlOptUNbUvSLJZ7wqzYn0E7aQhpaqPS2f/AnfGhwzphcs2tFRzvqvw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=xUrvLi8v5PVW3mtZpb5r6hg1JHrY+OISzmk00mxPeZE=;
+ b=TENa6d645YalXkziQkhTkFWDrsWBwYJQMoieKqpAZs7AlfWQ9eMfoHCwA21KZ1D8GHPpFfpGc5ItRv013mpBfMgrP71sBHlg+FJTOU+ALK8A0jYuxZnz7h3Oc8dkjGmJE6ROGTsCkXcCZjRQJRwA3OlCDyhbVzFWGhVaCtq+qiUVlj69t1gF9xXKQKHJNU1SvKtEgTdzaYJGIVl6bq4GZJLAvORXDGdFoxJ6guaMGXJwoFdhFtYMKdYzdU9ciNs4SvCyBFJWtbDp0sUaCaGrGN5zY3jgYfUUcdHojoQ3Do/TPXY2tvDWIe7XVMQRCzYklvW/C31R0m6LNUArQaEjmQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=virtuozzo.com; dmarc=pass action=none
+ header.from=virtuozzo.com; dkim=pass header.d=virtuozzo.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=virtuozzo.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=xUrvLi8v5PVW3mtZpb5r6hg1JHrY+OISzmk00mxPeZE=;
+ b=pXM7tqqYG/Hgt3Y+cLvq2/ncgSPjsszyn2SrG/QEXpFNu5ywcKHwsMrA1VbykipOnDGGlJh5CfVB5gicTxGEos4QOffcke6ur94o9ohX4Rcqz3fSQUB0sxhcIJ4lr2NaskC1/YkLlBoisSM9Dq2Pzt383A2bEHKwAS/vUuJHqZMxnZUkFs8DhFt55xLj7cMKRgnZiZwvp3yO89R4VDp3mpS2iiAelN/2rMu2Bn9/Qe6d09d5g3yajAbKG9OxYebgZf9n6OLA2rAYpLZM119GMq9F8bLb5P4MlD+++Upy91C8oFTe10yrovFtLvGvTe8YlTRJ1m20DcCGQ+OmFTBiUQ==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=virtuozzo.com;
+Received: from AS2PR08MB9075.eurprd08.prod.outlook.com (2603:10a6:20b:5ff::9)
+ by AM9PR08MB6690.eurprd08.prod.outlook.com (2603:10a6:20b:301::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.592.9; Fri, 6 Nov 2026
+ 16:59:58 +0000
+Received: from AS2PR08MB9075.eurprd08.prod.outlook.com
+ ([fe80::3f57:9ced:7a37:1bd8]) by AS2PR08MB9075.eurprd08.prod.outlook.com
+ ([fe80::3f57:9ced:7a37:1bd8%4]) with mapi id 15.21.0592.009; Fri, 6 Nov 2026
+ 16:59:58 +0000
+Message-ID: <2f3e4557-f4d0-43df-bce2-c653d1de305e@virtuozzo.com>
+Date: Fri, 6 Nov 2026 17:59:56 +0100
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 0/4] mm/huge_memory: copy PMDs at fork like the PTE
+ path does
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "David Hildenbrand (Arm)" <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
+ Baolin Wang <baolin.wang@linux.alibaba.com>,
+ "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>,
+ Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>,
+ Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>,
+ Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>,
+ Peter Xu <peterx@redhat.com>, Alex Williamson <alex@shazbot.org>,
+ kvm@vger.kernel.org, =?UTF-8?Q?Lo=C3=AFc_Molinari?=
+ <loic.molinari@collabora.com>, Lorenzo Stoakes <ljs@kernel.org>,
+ Shuah Khan <shuah@kernel.org>, linux-kselftest@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>,
+ stable@vger.kernel.org, Sashiko <sashiko-bot@kernel.org>
+References: <20261104-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v5-0-c56d0d26f970@virtuozzo.com>
+ <20261105211819.2a6a349b2edc077784ca52f9@linux-foundation.org>
+Content-Language: en-US, ru, sr
+From: Konstantin Khorenko <khorenko@virtuozzo.com>
+In-Reply-To: <20261105211819.2a6a349b2edc077784ca52f9@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: AM9P195CA0010.EURP195.PROD.OUTLOOK.COM
+ (2603:10a6:20b:21f::15) To AS2PR08MB9075.eurprd08.prod.outlook.com
+ (2603:10a6:20b:5ff::9)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,195 +98,151 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AS2PR08MB9075:EE_|AM9PR08MB6690:EE_
+X-MS-Office365-Filtering-Correlation-Id: a491597c-7e47-4671-b75c-08df3c2763b4
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|1800799024|7416014|376014|366016|261022075727099003|261028144727099003|261102123227099003|261026121527099003|261026140227099003|261022105027099003|261009223027099003|261021121427099003|10067099003|4143699003|5023799004|22082099003|18002099003|56012099006;
+X-Microsoft-Antispam-Message-Info:
+	KqdUF9srlb+YSkRBI7D+QRBoDrPHTJ4s32/mKzcOckbykMWN++Zp5aMSw7Rf9JMy4n+tkOMvYxfZkmL4vlRdBSjQ+jyrITBjXIT2Tfam4/C2LxLbY/cXK4RdT+Hf1TmrLNhtQK/SIqWUv0gEGTUKrSuF8K7NhMfJiQfGUnDmvJMsgfMIWhFSGiTRu0eSYgsaDpTV7hGax0C2k1V/b3uygu9Yyk7lStKJPvD+hVrxHPIn5hxQPiwTeaAnHktbEOKjXNtDuMLcp/k1m65olA24tYWLOL3uw7CdCzMhOgfw0jP8Tt7Gg/a20b+jbD/cdnqnAbr0m/0NNMMU9IQivBXDN+tslBMpzKdVEClm3vjJUT0idu329S8PAUAmG06HcF1O8G8MjuwzoBnCU0cCD4mXwh6aslGlq9jtpM55b1JLsGRg7xEUMehtAkuqZw4O/pnN9KUwsacJBKqN+UKyR1s83W35FlkqHUCI5JMBURCW7tx3g5AJaEmigdGOU0zprUSi4Pev9REQSGK1xO+D3IAyZpMQy9QtOJc5sVaM9i8nct/J7Ccn0V/wwSRHEpUlYVt24BSQREP17WXguOepV6vVD5qE3/Zudxoc4F23Htv4756Ii+3AcB4TPxt8sWO3l5iG
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS2PR08MB9075.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(1800799024)(7416014)(376014)(366016)(261022075727099003)(261028144727099003)(261102123227099003)(261026121527099003)(261026140227099003)(261022105027099003)(261009223027099003)(261021121427099003)(10067099003)(4143699003)(5023799004)(22082099003)(18002099003)(56012099006);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?c2t3WGlkZGRURjBtUDZ0b0RKZU16aGRjR1NZd1lEdk9QWTdCVkxMNzZyNmdu?=
+ =?utf-8?B?RHpTL3B3K2FNdGxocGFXTWczRlRPZ3phNjd4elNSTDZzcFYzMjJ1aGxpMExV?=
+ =?utf-8?B?Z2dpSXRkQVUzelBlSmtYRkhhZWtMUENEcTE3MmxtYjlVV21JcmtiVG13L3l1?=
+ =?utf-8?B?MWZlZGlYTjRzTjBPQWQzNkZpY3VaeWI4VUxEYlVuTFRUamVzTkd5ZEpZdnBQ?=
+ =?utf-8?B?NTFiRTN2cklBS2RleUtkQUplK1N4dHY2d1ZPTU0zOXFiK0FSMWpIaXpaNE04?=
+ =?utf-8?B?NGJRN244elhudXdXbzVTSENRMExSRkhGd1Y4N0dqeGxRL3B6YmI1VlpGaUgx?=
+ =?utf-8?B?N25ZMnRoM1VaeWNjWmZxQTIzT1BoYWFqMS93a2lEZFNDaDM0SWF6dzAyVkM2?=
+ =?utf-8?B?aURrWlUxVW90UndRUVNIOHRzcnVIVkVtNFBUU1lmbiswWkk3M3A0a3VUcEho?=
+ =?utf-8?B?bUFpMUMrTXZjWU9BZDhCek5KbXRIcjF6MWw5QWgxUWUwN1B5NE9ZbUF5SEd2?=
+ =?utf-8?B?VDVlRTY0Q2Fsb1ZMN2VDRjVXdW01c1diVlJZaWprNDNpcFIxU3hLTmNacUg4?=
+ =?utf-8?B?ZmVhWlJGWElpdUxYbWFUSEd6eCsvUnFzRDlQZytKRFhjR3lCNTZBOTRnMUJY?=
+ =?utf-8?B?Smo0MFlhcGZJU3ZFRU1aOTlFWk5rbUNaVzBzb0QzWllxeHFYSGF1TTF0aG5R?=
+ =?utf-8?B?Yms5R1A5MWUwakpSdnZhQ3hlV1JYUU16N0RIRnE2SGxRVHo4d3pBdDR3MkU3?=
+ =?utf-8?B?ZUR2N0s5cGlqTjRXRm11ZURoRU9wRUtHODRYN0RLZzl2Z0tHSWpPZzNTUXIw?=
+ =?utf-8?B?YWxwMkxFM3dNNE5jQ1F3ZTFKNGtpd2FDUjRYN0RGT21ja1psa0NRd1pHTzJp?=
+ =?utf-8?B?bENwMWFKUkVNUHg5TTE1YzVxbjFhcCtrR3o2WStYNUNLbkozTmxOem1jUjZV?=
+ =?utf-8?B?cDc4SjIyL0xoL00rRTFneXNuTUpTTDZyTFBzdW1ZbzlxRUVMeDVzM3IyaFJO?=
+ =?utf-8?B?RG9XZkR1VGNOSUVIZDVMSmNRUkg2Mm15cXhSbU9iakpsUG1ZUm1pYUFWeHBx?=
+ =?utf-8?B?ZXlCOVRLTk5FUVEwc1lJa2g2UzhxYnRvNlZ0aU9YaUQ5YmEyOXBjZ1VpN09q?=
+ =?utf-8?B?VHlldXBvOUg0QXdPMzVwZjE1U0I5QnhxcFc3eFliWUN4TkxIWUwvUDBiTmpH?=
+ =?utf-8?B?cXA5aVArOVZwRUJDOGRiZUVGUExuQ053UURiUGVFUlZkZ2YzOXBPNm50Y0xX?=
+ =?utf-8?B?NlBENVJnc2FBd1lzNDQyeWdCeVlBY25SQXA5b01vVTdPNnU1dkJQc3VnTUov?=
+ =?utf-8?B?YU1maHJrbG1IdjFwKzNkT2Y1b3F2ekV4WUExNDl3eVNXWkRuM0pRdS9NbjN4?=
+ =?utf-8?B?M0tvaUJhZmlIUDQvUzBpVXhaSVF5NktzSzRzbmdWd04rZnNIQnZUa3lpUkQ1?=
+ =?utf-8?B?Ti9qczk0NEVONXJCQnhrcDFyamQ2SnI3RFJ4M25sbk1mWnRoRE9FTVdNSk1E?=
+ =?utf-8?B?S3VJcVA4SEx1NHhHOGdNa2lBdThsZ0NjRjN0YW9sa0xrM2ZwQ2h1OG9FUWhn?=
+ =?utf-8?B?ZFowMW1nRFNJY2VpS1NCM3lBTmpQbFNTT0hUZjZpZjJCUEF5c0Z0bnBHUHM0?=
+ =?utf-8?B?ZDVqZCtPbXNGSVZGaVY3azFvSnYxbmNaOGltUmFuWGIrYXZlNlJzQldtemk1?=
+ =?utf-8?B?TW90eVEvSk43UllacU1CR0ZJSVd6eHhRSWpGMTJSa3ByZVJqTGZMRE9XdWVL?=
+ =?utf-8?B?WHpZVjZvQTdYRDM4VTFvUHp5WmZSZHVRblozTll0VkNST1d6S2xRelBMb3Jy?=
+ =?utf-8?B?MDRlTVhaaEZVbzYwbG5WTmtmeTVyRDFHWlhEdEhWMWtjNDRUekdzUXg2VGNm?=
+ =?utf-8?B?QkpYNXZZK3o5c1lieWdCSTNhS2N5WG1KOGNEQ2FvMzNtWjJKSmJqa3VZd21F?=
+ =?utf-8?B?b3p6cFAvSEZEbkRldlFmVjhnWng3bkt0YjF1b1lCbjJNNmZXQnZRS0R2dG92?=
+ =?utf-8?B?Ym92NUM4eTFpM3RIQmRvSGFZeEZ1Q2ZDeGVpcnBuNlA5ZTZ2YW5CTzhoZ3Mw?=
+ =?utf-8?B?cE1iazFEL3dTU3l0Qk1vY1FkcnBhRGtQVjRIUlRCVm5qM0RMclRreVBSREhj?=
+ =?utf-8?B?VDBpRWphTzBZK085VElZUDJMbThKVEpKKzcwckxGWWkxdDVIMEp3aGxQYnI2?=
+ =?utf-8?B?WHI2dUJjeUVlRWJBRXIwbzBlK20xcWVmVHdIRnEzbFpoZ05nUnRuejNDclAz?=
+ =?utf-8?B?YjMwVndWbG00Z0tyV3NUOVNLRFdrbUxiZWx3Y25xY2dOVmgzbnJ3MnB0ZW5G?=
+ =?utf-8?B?Y3Y5NUt3L1V1N3g2NW9odVpGRG5TelNDRlNmQmpCMk02SHJjUVl2QT09?=
+X-OriginatorOrg: virtuozzo.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: a491597c-7e47-4671-b75c-08df3c2763b4
+X-MS-Exchange-CrossTenant-AuthSource: AS2PR08MB9075.eurprd08.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 06 Nov 2026 16:59:58.5389
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 0bc7f26d-0264-416e-a6fc-8352af79c58f
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: ogzO48TyRfiiw/CvWwTRZEIIM73vwkJkgMBEFZwWnZV6qeNxEzzJPYE5H/A4E/xaoBG9gruOJOSg1i717qVgmw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR08MB6690
+X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=4.0.1
+X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
+	aws-us-west-2-korg-listserv-alma10-1
 
-Certain Intel and AMD Root Ports are known to populate the Error Source ID
-register with an invalid value.  The AER driver seeks to recognize such
-buggy silicon by assuming invalidity if the bus number is zero.  It then
-searches for the error-signaling device in the hierarchy below the Root
-Port.  This was introduced by commit 28eb27cf0839 ("PCI AER: support
-invalid error source IDs").
+On 11/6/26 06:18, Andrew Morton wrote:
+> The second column assumes that the child touches all the file THPs,
+> yes?  If the child touches only a small proportion of those mappings,
+> or just does fork+exec, that changes the "Cost" comparison?
 
-Alex has provided dmesg output which shows an invalid Error Source ID with
-a non-zero bus number.  The AER driver's heuristic fails to recognize its
-invalidity:
+Yes. I measured it again on bare metal, with a fork()+exec column:
+x86_64 with 4 NUMA nodes, the benchmark bound to node 0, both kernels
+v7.4-rc1 with the same config, 4 GB of shmem THPs mapped MAP_PRIVATE
+with an anon_vma, medians of 2000 forks, range over the rounds. The
+exec is of /bin/true.
 
-  pcieport 0000:00:07.1: AER: Correctable Error message received from 0000:01:00.0 (no details found)
+  +-----------------+------------+-----------------+--------------+
+  | kernel          | fork()     | child reads all | fork()+exec  |
+  +-----------------+------------+-----------------+--------------+
+  | v7.4-rc1        | 135-141 us | 3820-4036 us    | 559-567 us   |
+  | v7.4-rc1+series | 429-440 us | 1007-1036 us    | 1190-1226 us |
+  +-----------------+------------+-----------------+--------------+
 
-The Root Port at 0000:00:07.1 has secondary bus 04, so an error source on
-bus 01 is obviously invalid.  The range of secondary buses is cached and
-checking against it is cheap.
+So a child that execs right away, or touches little, pays about 0.3 us
+per huge PMD: the copy at fork and the teardown at exec or exit. A
+child that faults a PMD in itself pays about 1.8 us for it, so the
+copy wins once the child touches more than about a sixth of them.
 
-Do that instead of relying on a heuristic.  Emit a message when an invalid
-Error Source ID is detected to alert silicon validation engineers.
+> And on ppc64 hash-mode setups this also allocates deposited page tables
+> for mappings which the child might never touch?  So a modest increase
+> in memory use is to be expected?
 
-If the Error Source ID is the Root Port itself, assume that it is valid.
-This changes behavior if the Error Message originated from a device which
-happens to have the same slot and function number as the Root Port and
-whose bus number was zeroed in the Error Source ID register.  On affected
-Intel and AMD systems, the invalid Error Source ID always has a zero slot
-and function number and there is no Root Port at 0000:00:00.0, so it is
-expected that this change does not lead to false-negatives in practice.
+Yes, but a small one, judging from the code (I have no ppc64 to test):
+one 4 KB page table fragment per copied 16 MB PMD, 1/4096 of the
+mapping. Radix and other arches deposit nothing.
 
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=222095
-Tested-by: Alex Deucher <alexander.deucher@amd.com>
-Signed-off-by: Lukas Wunner <lukas@wunner.de>
-Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
----
-Changes versus v1:
- Reorder a < b && b < c comparisons (Ilpo, Bjorn)
- Amend kernel-doc of find_source_device() (Sathya)
- s/subordinate/secondary/ in commit message (Bjorn)
- Document behavioral change in commit message (sashiko)
- 
- drivers/pci/pci.h       |  7 ++++++-
- drivers/pci/pcie/aer.c  | 35 ++++++++++++++++++++++++++---------
- drivers/pci/pcie/rcec.c | 14 ++++++++++++++
- 3 files changed, 46 insertions(+), 10 deletions(-)
+It is freed when the child unmaps the range, execs or exits, and a PMD
+the child faults in itself deposits the same 4 KB anyway.
 
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index 77efa4c5c960..aa392bb6a482 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -871,6 +871,9 @@ static inline bool pci_dev_binding_disallowed(struct pci_dev *dev)
-  * @id: Value from register PCI_ERR_ROOT_ERR_SRC
-  * @severity: AER severity, 0-UNCOR Non-fatal, 1-UNCOR fatal, 2-COR
-  * @root_ratelimit_print: Flag to log or not log the root's error. 0=NotLog/1=Log
-+ * @id_valid: Whether @id is a valid value.  Some Root Ports report an invalid
-+ *	Error Source ID, necessitating a search for the error-signaling device
-+ *	in the hierarchy below the Root Port.
-  * @multi_error_valid: If multiple errors are reported
-  * @first_error: First reported error
-  * @__pad2: Padding for alignment
-@@ -893,7 +896,8 @@ struct aer_err_info {
- 
- 	unsigned int severity:2;
- 	unsigned int root_ratelimit_print:1;
--	unsigned int __pad1:4;
-+	unsigned int __pad1:3;
-+	unsigned int id_valid:1;
- 	unsigned int multi_error_valid:1;
- 
- 	unsigned int first_error:5;
-@@ -955,6 +959,7 @@ void pcie_link_rcec(struct pci_dev *rcec);
- void pcie_walk_rcec(struct pci_dev *rcec,
- 		    int (*cb)(struct pci_dev *, void *),
- 		    void *userdata);
-+bool pci_rcec_associated(struct pci_dev *rcec, u16 id);
- #else
- static inline void pci_rcec_init(struct pci_dev *dev) { }
- static inline void pci_rcec_exit(struct pci_dev *dev) { }
-diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index d492c7ce01e1..6f2460231422 100644
---- a/drivers/pci/pcie/aer.c
-+++ b/drivers/pci/pcie/aer.c
-@@ -951,12 +951,13 @@ static void aer_print_source(struct pci_dev *dev, struct aer_err_info *info,
- {
- 	u16 source = info->id;
- 
--	pci_info(dev, "%s%s Error message%s from %04x:%02x:%02x.%d%s\n",
-+	pci_info(dev, "%s%s Error message%s from %04x:%02x:%02x.%d%s%s\n",
- 		 info->multi_error_valid ? "Multiple " : "",
- 		 aer_error_severity_string[info->severity],
- 		 info->multi_error_valid ? "s received, first one" : " received",
- 		 pci_domain_nr(dev->bus), PCI_BUS_NUM(source),
- 		 PCI_SLOT(source), PCI_FUNC(source),
-+		 info->id_valid ? "" : " (invalid source)",
- 		 found ? "" : " (no details found)");
- }
- 
-@@ -1146,6 +1147,24 @@ static int add_error_device(struct aer_err_info *e_info, struct pci_dev *dev)
- 	return 0;
- }
- 
-+static bool source_id_valid(struct pci_dev *root, u16 id)
-+{
-+	/* The Root Port or RCEC can itself be a valid Error Source */
-+	if (pci_dev_id(root) == id)
-+		return true;
-+
-+	/* For RCECs, @id shall be in range of its associated buses/devices */
-+	if (pci_pcie_type(root) == PCI_EXP_TYPE_RC_EC)
-+		return pci_rcec_associated(root, id);
-+
-+	/* For Root Ports, @id shall be in range of its subordinate buses */
-+	if (!root->subordinate)
-+		return false;
-+
-+	return root->subordinate->busn_res.start <= PCI_BUS_NUM(id) &&
-+	       PCI_BUS_NUM(id) <= root->subordinate->busn_res.end;
-+}
-+
- /**
-  * is_error_source - check whether the device is source of reported error
-  * @dev: pointer to pci_dev to be checked
-@@ -1157,11 +1176,8 @@ static bool is_error_source(struct pci_dev *dev, struct aer_err_info *e_info)
- 	u32 status, mask;
- 	u16 reg16;
- 
--	/*
--	 * When bus ID is equal to 0, it might be a bad ID
--	 * reported by Root Port.
--	 */
--	if ((PCI_BUS_NUM(e_info->id) != 0) &&
-+	/* Some Root Ports report an invalid Error Source ID */
-+	if (e_info->id_valid &&
- 	    !(dev->bus->bus_flags & PCI_BUS_FLAGS_NO_AERSID)) {
- 		/* Device ID match? */
- 		if (e_info->id == pci_dev_id(dev))
-@@ -1174,8 +1190,7 @@ static bool is_error_source(struct pci_dev *dev, struct aer_err_info *e_info)
- 
- 	/*
- 	 * When either
--	 *      1) bus ID is equal to 0. Some ports might lose the bus
--	 *              ID of error source id;
-+	 *      1) Error Source ID register is invalid;
- 	 *      2) bus flag PCI_BUS_FLAGS_NO_AERSID is set
- 	 *      3) There are multiple errors and prior ID comparing fails;
- 	 * We check AER status registers to find possible reporter.
-@@ -1231,7 +1246,7 @@ static int find_device_iter(struct pci_dev *dev, void *data)
-  * Return: true if found.
-  *
-  * Invoked by DPC when error is detected at the Root Port.
-- * Caller of this function must set id, severity, and multi_error_valid of
-+ * Callers must set id, id_valid, severity, and multi_error_valid fields of
-  * struct aer_err_info pointed by @e_info properly.  This function must fill
-  * e_info->error_dev_num and e_info->dev[], based on the given information.
-  */
-@@ -1566,6 +1581,8 @@ static void aer_isr_one_error_type(struct pci_dev *root,
- {
- 	bool found;
- 
-+	info->id_valid = source_id_valid(root, info->id);
-+
- 	found = find_source_device(root, info);
- 
- 	/*
-diff --git a/drivers/pci/pcie/rcec.c b/drivers/pci/pcie/rcec.c
-index 2bf6d9d549ba..88070ef0019c 100644
---- a/drivers/pci/pcie/rcec.c
-+++ b/drivers/pci/pcie/rcec.c
-@@ -21,6 +21,20 @@ struct walk_rcec_data {
- 	void *user_data;
- };
- 
-+bool pci_rcec_associated(struct pci_dev *rcec, u16 id)
-+{
-+	if (!rcec->rcec_ea)
-+		return false;
-+
-+	if (rcec->bus->number == PCI_BUS_NUM(id)) {
-+		unsigned long bitmap = rcec->rcec_ea->bitmap;
-+		return test_bit(PCI_SLOT(id), &bitmap);
-+	}
-+
-+	return rcec->rcec_ea->nextbusn <= PCI_BUS_NUM(id) &&
-+	       PCI_BUS_NUM(id) <= rcec->rcec_ea->lastbusn;
-+}
-+
- static bool rcec_assoc_rciep(struct pci_dev *rcec, struct pci_dev *rciep)
- {
- 	unsigned long bitmap = rcec->rcec_ea->bitmap;
--- 
-2.53.0
+> But I worry that this change is not an overall win for thp-file
+> mappings, which are the common case.
 
+Only a narrow case pays the extra cost, a file THP that is:
+
+- mapped MAP_PRIVATE;
+- in a VMA written to at least once, so it has an anon_vma;
+- a PMD-sized folio in the page cache, mapped by one PMD;
+- itself never written to.
+
+For example:
+
+- a big data file mapped MAP_PRIVATE that is mostly read and patched
+  in a few places;
+- a private mapping of a memfd or tmpfs file.
+
+The common case does not get here. fork() skips a VMA without an
+anon_vma and without VM_COPY_ON_FORK (vma_needs_copy()), so shared
+file mappings and private ones that were never written are still left
+to faults.
+
+In these VMAs fork() already copies the PTEs of the same file folios;
+only their PMDs were skipped.
+
+> I'm not understanding why we need to mess with thp-file behavior at all
+> in order to address a special-PMD bug?
+
+It came from the review of v3: David asked to make copy_huge_pmd()
+decide the way copy_present_ptes() does, instead of keeping rules of
+its own for PMDs:
+
+https://lore.kernel.org/all/973fd409-64b7-4c62-82e1-c75c784b80f7@kernel.org/
+
+> Changelog is soooo long.  I replaced this Reproducer section with simply
+>
+>       - A reproducer is at the Link;
+
+Sure, thanks. And thanks for the pmd_psize fixup.
+
+--
+Cheers,
+Konstantin
 
