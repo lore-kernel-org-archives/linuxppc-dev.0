@@ -2,68 +2,68 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 57BC8606D809
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 00:44:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A2B16606A328
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 00:44:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=RO1lGZnw
+	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=kET9NuGl
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLL4y1Ytxz3c2q;
-	Fri, 06 Nov 2026 11:43:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.210.70
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793925794;
-	cv=none; b=aZhBnf60tFce2i3ns4o0K8YyiW1NhG053V4uAeJhyg1OxvcCrJULUgoX/+PeNkq6QwldLbka3V2uyG3bHRnMsfKvgBvCKdgG3SGX8tpNEovj/pXZI7ps7Toor4z6xOeEye7k/7WGGTLTixw9nDkSAG0/To3/A8EKoqFSk8CPAN1DCbt4+lPlHNKgXuh9P+xBJcSR8Lq1xtsYjft6VPrgYk8K/hqf3PHWg6/JUMt4A/Rj8t6oeZonPg11hExDSbR/3gNqoCYXjNm+Kpf0chuI0y9WxP7283zkUS+6wT6EtERPc9tU11VEKhlbfHjF7t1hTq8eSS2+yHwQs/4P54eZTw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLL4z6WWgz2yPR;
+	Fri, 06 Nov 2026 11:43:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.167.197
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793925795;
+	cv=none; b=T7s8R0+LxjDH6P+i4kUFvi2hm4v5mO7qV0ZjMmnnR6cc0zv3ICU2O3BqAHW2lH4GSyTe55lZ8RFHc1b/35css5uauduHWFdTzgKkgW71NVll6JLP/63jMRCdDAB+/OFoRIlw0nThuT/u2t9yOF5YD3ARSVDbMjEWogjH0q44VvHZmtAfDDfA+elsDTMQiaJJk0tYgVWgFjSzezK65mx+MxovXwp+qofc8ClsNpCPLoun2ytJXohgKXHEEzanGGaYw9rnbXlBPCXcKY9JZax0o+ztMzsLruSFRWcB0HSznmT75pkj4z1P4EZMHSn9668To6qESjMtX421dTi9xoe2cw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793925794; c=relaxed/relaxed;
-	bh=jmLjI9XOjWedNu4ucOWy6yZB8cv6/+TL9ec51bNxWwI=;
+	t=1793925795; c=relaxed/relaxed;
+	bh=mFWOpusTgBwcgTKpEgyRpVaqUUx06BhmoFjl8K/HM58=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=d3kX8xNEFGLTf/6tBKtnwCFMGiY0kBZesD5cSFAWYMEn4Svef4qjdORNzZ3rGjX11NzgGCZ2UDy9xml0d5qeJbwv5l3vvWD37kkvozxv6VaVz/hyh64P3iDoI1Nun6C4lm4TQMbvc9u5HN1OZz0AUFpwP3G4sj7gg5s+qJrisL/d1CbjsqgvZmeBuK/7cy+DakRKGDSTnQNlSGsRLAGnG7BA7+BrO676452Uaqc/0OxzNAY1NM5APyY3hgy+ReU1ya/qQtwHLG/YuhanjQNlXzUDAIX8wA41nOQFxxjnXj9uCB0dL7ZclVBDDz60LjR4WA8CK6Yz7Ep47Lp7MCQl/w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=RO1lGZnw; dkim-atps=neutral; spf=pass (client-ip=209.85.210.70; helo=mail-ot1-f70.google.com; envelope-from=3ncltaggkdpmyhvogvxfbjjbgz.xjhgdipskkx-yzqgdnon.jugvwn.jmb@flex--dmatlack.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--dmatlack.bounces.google.com
+	 To:Cc:Content-Type; b=GafZKpqs8aQmKPl1nDuggABIFOtRcOmHSlr42fwgL1jhRwYuW2FVgumgtzo0MHE9ZGliHbDBG9EkaJMrTF487WsTbBKsNcGo7ePIxeCjOEtdVf6/JqQy0i5pTmwtnv820RYehIWn3/GqTz2roT8ZnoAIjk7Uus3m6L+Ut3JRC/qRK1yuObsZ0lhXAuZQyAreziF00QhH3qZn0yVs3pAtcrlfzcM6Sd+O6cM0ZHM2cq6sOUrNbbgJEoeTvfdpqgP57GjYnAEd1vOd2Ykuq/MlA2/z73zNFyv8fop4CH1MNLRmTpaUJNDeSspzVGxSWQK6dw4G7/ASnH+RmGDFDLF5Wg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=kET9NuGl; dkim-atps=neutral; spf=pass (client-ip=209.85.167.197; helo=mail-oi1-f197.google.com; envelope-from=3nyltaggkdpybkyrjyaiemmejc.amkjglsvnna-bctjgqrq.mxjyzq.mpe@flex--dmatlack.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--dmatlack.bounces.google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=RO1lGZnw;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=kET9NuGl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--dmatlack.bounces.google.com (client-ip=209.85.210.70; helo=mail-ot1-f70.google.com; envelope-from=3ncltaggkdpmyhvogvxfbjjbgz.xjhgdipskkx-yzqgdnon.jugvwn.jmb@flex--dmatlack.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-ot1-f70.google.com (mail-ot1-f70.google.com [209.85.210.70])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--dmatlack.bounces.google.com (client-ip=209.85.167.197; helo=mail-oi1-f197.google.com; envelope-from=3nyltaggkdpybkyrjyaiemmejc.amkjglsvnna-bctjgqrq.mxjyzq.mpe@flex--dmatlack.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-oi1-f197.google.com (mail-oi1-f197.google.com [209.85.167.197])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLL4w6mkzz30V2
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 11:43:12 +1100 (AEDT)
-Received: by mail-ot1-f70.google.com with SMTP id 46e09a7af769-851f720d7afso128052a34.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 16:43:12 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLL4y37Wpz3c3W
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 11:43:14 +1100 (AEDT)
+Received: by mail-oi1-f197.google.com with SMTP id 5614622812f47-4ab260600easo1769751b6e.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 16:43:14 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1793925789; x=1794530589; darn=lists.ozlabs.org;
+        d=google.com; s=20260707; t=1793925792; x=1794530592; darn=lists.ozlabs.org;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=jmLjI9XOjWedNu4ucOWy6yZB8cv6/+TL9ec51bNxWwI=;
-        b=RO1lGZnwBtyje8ijqiO4Qjn7XM21n0U42uCyzuG4rFJrUhRYj6aSAkHF+fpOIXlBVB
-         WW4qjvgCt6Yw+ZqPmGGDS5Bvy+pFoRZmuwYnFz2GY7RG6H9RtTwppIYqFJE/YWMBHRSf
-         rBArx3FN8Uc+C7s8CaWlVjTXPp7CQI1mnjSxpCnn13cHRNdlA07OeqjrNDympOpw88/v
-         R3IXbl9093KERa6tUoVm4MbX9QqGXX87IiwPeVcTOKLkSZzeb+1+Og2ADghWftHOE0WB
-         KYFm5IckzXF+LFecrW1b9IhSUpAJH/MPSFlHZoJ57f0fldPSqQ7GUfEStf/fQyMmRZ/V
-         yvVg==
+        bh=mFWOpusTgBwcgTKpEgyRpVaqUUx06BhmoFjl8K/HM58=;
+        b=kET9NuGlM1HBfFHifniqbRcWaJAx2ljQwMxVITEGpl0JNDi1RCvS6pmAy3nM/yPWHW
+         FA3tpJNFyQZ9kzjZ5ja7tq+/pje91WhnVgDT/LeIA9HJUOBlaZcgvVVkzvEEZeatvDdm
+         u/sBVTwDdnAedk4FPGQeSg3eQHUVxbgaIPvew2xC1LEQvIQ95/G5QpVy6k339dFOctvb
+         OaMViBsLVabtW6L+E0EcvyWGdU/CNjlEDdDNsMrDtSYdodhA7kAgyjtXkmMpqKKYjMsB
+         TDUDJmjdt/rB99EW+SpLqTrkhGD3ltLc2S8y+l+pJLIRu1bwPplROA7KP1DarKjkQF10
+         2i9w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793925789; x=1794530589;
+        d=1e100.net; s=20260707; t=1793925792; x=1794530592;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=jmLjI9XOjWedNu4ucOWy6yZB8cv6/+TL9ec51bNxWwI=;
-        b=sFIiEgPxCVka+otKnd02707cREaaX9L0iqvYAJXHWyN2A0MaNPK2Wb4Usx2YJTRChM
-         rMpN9tllxMJAMF9nDTeCts5kHOOow20avvGxFnunDK228eleVgk2nptJmymegt3sKCLa
-         PU3KxUOEV4DYrCAKkiLduU3nAntdBo5RXRYm4eMxdBtEzsQjNXAJfHbpLZqGIkP1NzVJ
-         qDUjYsVMrqpU4/1kalH1rDuPyAf4s7wf4/zGOCiXomicf+ZREKSaDZXiYBHoctkOG8Xs
-         dZbx9CDGUrqq6Wim0qH0Vb1LRgIBIr07uCvzi5H4dxz1K7+oXlg65AldwI91o7+a7K8/
-         j2pw==
-X-Forwarded-Encrypted: i=1; AKwUvByX68NbGPpetpZWTpP9QqyRogcnwB0xq62eksCxtxYx5hGR2fJ2EMe9+OVTdSEqv2YrlRjkjNB6NcrOzqM=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z9cjlpbIt5ckTPyhluePSLrcLbAXQPV36m1rn0+fkDDWqBPHgHU
-	Ock0On1pkmpJkQhnOU+Lo2DXFPhNfB95De9UyXGtDvYEP99j6OzURrAJy7Lv0gFWEpKux0O1IMW
-	9fA8Y26V7Hyvulw==
-X-Received: from iofl4-n1.prod.google.com ([2002:a05:6602:8384:10b0:9e3:4909:2e0c])
+        bh=mFWOpusTgBwcgTKpEgyRpVaqUUx06BhmoFjl8K/HM58=;
+        b=PJzL152hrydkykhR2F41Vx++h4xBIndDpZZIDYiZG4z0NDYaKBz/uipS9y3ZOXxfrK
+         abtsgFqZpXx2XUtnM5M3Pfw5+TwilzArW0SivQA4P0lnJCpmFlfyG8OXXxq4W/f9uvrs
+         gG54exCh+KZO9dPizrlfIxrsJ0xnFQU5LZ0ZwsYzBo1JMkrdUGY01mfELLYz/Gc35Z67
+         GPHP3KgPfEi5wLxgazHLnx3F6yNx8z4RzPMrxRvGJDbpt7uw7hdX80M+Lyks5zc3BvuN
+         NPHkbSLiGNPlsvNWQLIGrwNICBh7GYLTaVLAVaHVuJk7kpA/x+NVERMAezyrP/G4j/wP
+         bXfQ==
+X-Forwarded-Encrypted: i=1; AKwUvBzJfdqKEgWtdtu5OuOcZK99eWQBLHI2sB0HZh5omQmkRh6TNlubPfhar8bpPtt1vl7cIzinFjrUqaHJS8w=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z9V0MFg4HleSfFco11gcQ52DC/8DRmtdb6n2OoJvzdGSYpGO04k
+	xrCTAUvh19xUQjsOz6TRDRYhTBDKz0Kc1yx2dyMbD2QBPcainhHvLRMfjR3D2fkA7Qdniz6BXq4
+	nm4ATuBkdDxcKyQ==
+X-Received: from ilbeb27.prod.google.com ([2002:a05:6e02:461b:b0:520:6d86:da98])
  (user=dmatlack job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:6808:5394:b0:4d6:92b3:5c85 with SMTP id 5614622812f47-567e18964a2mr623375b6e.66.1793925788751;
- Thu, 05 Nov 2026 16:43:08 -0800 (PST)
-Date: Fri,  6 Nov 2026 00:42:11 +0000
+ 2002:a05:6808:1686:b0:546:306d:45eb with SMTP id 5614622812f47-567be662ce8mr2365687b6e.35.1793925791448;
+ Thu, 05 Nov 2026 16:43:11 -0800 (PST)
+Date: Fri,  6 Nov 2026 00:42:13 +0000
 In-Reply-To: <20261106004218.604799-1-dmatlack@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -80,8 +80,8 @@ X-Archived-By: <archiver.kernel.org>
 Mime-Version: 1.0
 References: <20261106004218.604799-1-dmatlack@google.com>
 X-Mailer: git-send-email 2.56.0.455.g6c5a503b38-goog
-Message-ID: <20261106004218.604799-11-dmatlack@google.com>
-Subject: [PATCH v2 10/17] PCI/TPH: Save TPH state in the saved capability store
+Message-ID: <20261106004218.604799-13-dmatlack@google.com>
+Subject: [PATCH v2 12/17] PCI: Save ACS state in the saved capability store
 From: David Matlack <dmatlack@google.com>
 To: kexec@lists.infradead.org, linux-doc@vger.kernel.org, 
 	linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pci@vger.kernel.org, 
@@ -103,136 +103,226 @@ X-Spam-Status: No, score=-26.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Save and restore the TPH Control register and Steering Tag table through
-the per-device saved capability store instead of a private
-pci_cap_saved_state buffer.
+Save and restore the ACS Control register and the ACS Egress Control
+Vector through the per-device saved capability store instead of a
+private pci_cap_saved_state buffer.
 
-The Steering Tag table is variable length, so pci_tph_init() had to compute
-a buffer size and both the save and restore loops had to walk that buffer
-in step with configuration space. Reserve the table by offset instead so
-that the loops can address the entries directly.
+Rename pci_allocate_acs_save_buffer() to pci_reserve_acs_state(), to
+match pci_save_acs_state() and pci_restore_acs_state().
 
-Reserve the registers in pci_reserve_tph_state(), called from
-pci_tph_init(), and report a refused reservation. pci_tph_init() ignored
-the return value of pci_add_ext_cap_save_buffer(), so a failed
-allocation left TPH state unsaved without any message. An allocation
-failure is now reported once by pci_saved_caps_finalize().
+Reserve the Egress Control Vector using the size the device reports in
+its HwInit ACS Capability register during setup, as the save buffer was
+sized before. Save or restore the vector only if all of it is reserved,
+since its size is read from the device again each time.
 
-No other functional change intended.
+pci_liveupdate_adopt_acs() checked for the ACS save buffer to make sure
+adopted controls would survive a later reset. Check that the ACS
+Control register has room in the store instead, which also fails if the
+store could not be allocated.
+
+No functional change intended for devices whose Egress Control Vector
+size does not change after setup.
 
 Signed-off-by: David Matlack <dmatlack@google.com>
 ---
- drivers/pci/tph.c | 54 +++++++++++++++++++++--------------------------
- 1 file changed, 24 insertions(+), 30 deletions(-)
+ drivers/pci/liveupdate.c | 15 +++----
+ drivers/pci/pci.c        | 87 ++++++++++++++++++----------------------
+ 2 files changed, 46 insertions(+), 56 deletions(-)
 
-diff --git a/drivers/pci/tph.c b/drivers/pci/tph.c
-index 655ffd60e62f..3ab8d5b2ab10 100644
---- a/drivers/pci/tph.c
-+++ b/drivers/pci/tph.c
-@@ -439,10 +439,7 @@ EXPORT_SYMBOL(pcie_enable_tph);
+diff --git a/drivers/pci/liveupdate.c b/drivers/pci/liveupdate.c
+index 6f92d4ddca2b..8334e6fdd3ec 100644
+--- a/drivers/pci/liveupdate.c
++++ b/drivers/pci/liveupdate.c
+@@ -932,14 +932,15 @@ int pci_liveupdate_adopt_acs(struct pci_dev *dev)
  
- void pci_restore_tph_state(struct pci_dev *pdev)
- {
--	struct pci_cap_saved_state *save_state;
- 	int num_entries, i, offset;
--	u16 *st_entry;
--	u32 *cap;
- 
- 	if (!pdev->tph_cap)
- 		return;
-@@ -450,29 +447,19 @@ void pci_restore_tph_state(struct pci_dev *pdev)
- 	if (!pdev->tph_enabled)
- 		return;
- 
--	save_state = pci_find_saved_ext_cap(pdev, PCI_EXT_CAP_ID_TPH);
--	if (!save_state)
--		return;
--
- 	/* Restore control register and all ST entries */
--	cap = &save_state->cap.data[0];
--	pci_write_config_dword(pdev, pdev->tph_cap + PCI_TPH_CTRL, *cap++);
--	st_entry = (u16 *)cap;
-+	pci_restore_cap_dword(pdev, pdev->tph_cap + PCI_TPH_CTRL);
- 	offset = PCI_TPH_BASE_SIZEOF;
- 	num_entries = pcie_tph_get_st_table_size(pdev);
- 	for (i = 0; i < num_entries; i++) {
--		pci_write_config_word(pdev, pdev->tph_cap + offset,
--				      *st_entry++);
-+		pci_restore_cap_word(pdev, pdev->tph_cap + offset);
- 		offset += sizeof(u16);
+ 	/*
+ 	 * Adopting the previous kernel's controls depends on them being
+-	 * captured in the ACS save buffer, so that they are reapplied if the
+-	 * device is later reset. Without that buffer, e.g. because it could
+-	 * not be allocated under memory pressure, the adopted controls would
+-	 * be silently lost by the first reset. Program ACS from scratch
+-	 * instead, which is a better outcome than leaving ACS disabled.
++	 * captured in the saved capability store, so that they are reapplied
++	 * if the device is later reset. Without room in the store, e.g.
++	 * because it could not be allocated under memory pressure, the adopted
++	 * controls would be silently lost by the first reset. Program ACS from
++	 * scratch instead, which is a better outcome than leaving ACS disabled.
+ 	 */
+-	if (dev->acs_cap && !pci_find_saved_ext_cap(dev, PCI_EXT_CAP_ID_ACS)) {
+-		pci_err(dev, "No ACS save buffer, not adopting ACS controls\n");
++	if (dev->acs_cap &&
++	    !pci_saved_cap_reserved(dev, dev->acs_cap + PCI_ACS_CTRL)) {
++		pci_err(dev, "No ACS save state, not adopting ACS controls\n");
+ 		return -EINVAL;
  	}
+ 
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 29d9474db1ae..977b7dbd19ce 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -1023,15 +1023,6 @@ static void pci_std_enable_acs(struct pci_dev *dev, struct pci_acs *caps)
+ 		caps->ctrl |= (dev->acs_capabilities & PCI_ACS_TB);
  }
  
- void pci_save_tph_state(struct pci_dev *pdev)
- {
--	struct pci_cap_saved_state *save_state;
- 	int num_entries, i, offset;
--	u16 *st_entry;
--	u32 *cap;
- 
- 	if (!pdev->tph_cap)
- 		return;
-@@ -480,21 +467,14 @@ void pci_save_tph_state(struct pci_dev *pdev)
- 	if (!pdev->tph_enabled)
- 		return;
- 
--	save_state = pci_find_saved_ext_cap(pdev, PCI_EXT_CAP_ID_TPH);
--	if (!save_state)
--		return;
+-/*
+- * Layout of the ACS save buffer. @ecv holds the ACS Egress Control Vector, if
+- * implemented, and is sized by pci_allocate_acs_save_buffer().
+- */
+-struct pci_acs_saved_state {
+-	u16 ctrl;
+-	u32 ecv[];
+-};
 -
- 	/* Save control register */
--	cap = &save_state->cap.data[0];
--	pci_read_config_dword(pdev, pdev->tph_cap + PCI_TPH_CTRL, cap++);
-+	pci_save_cap_dword(pdev, pdev->tph_cap + PCI_TPH_CTRL);
- 
- 	/* Save all ST entries in extended capability structure */
--	st_entry = (u16 *)cap;
- 	offset = PCI_TPH_BASE_SIZEOF;
- 	num_entries = pcie_tph_get_st_table_size(pdev);
- 	for (i = 0; i < num_entries; i++) {
--		pci_read_config_word(pdev, pdev->tph_cap + offset,
--				     st_entry++);
-+		pci_save_cap_word(pdev, pdev->tph_cap + offset);
- 		offset += sizeof(u16);
- 	}
- }
-@@ -506,16 +486,30 @@ void pci_no_tph(void)
- 	pr_info("PCIe TPH is disabled\n");
+ /*
+  * Return the number of DWORDs in the ACS Egress Control Vector, or 0 if the
+  * device does not implement P2P Egress Control. The Egress Control Vector
+@@ -1055,30 +1046,44 @@ static unsigned int pci_acs_ecv_dwords(struct pci_dev *dev, int pos)
  }
  
--void pci_tph_init(struct pci_dev *pdev)
-+static void pci_reserve_tph_state(struct pci_dev *pdev)
+ /*
+- * Return the number of Egress Control Vector DWORDs held in @save_state, as
+- * sized by pci_allocate_acs_save_buffer().
++ * Return the number of Egress Control Vector DWORDs that are reserved in the
++ * saved capability store, or 0 if the device does not implement P2P Egress
++ * Control or the vector was not reserved in full, e.g. because the device
++ * reports a different size than it did during setup.
+  */
+-static unsigned int
+-pci_acs_saved_ecv_dwords(struct pci_cap_saved_state *save_state)
++static unsigned int pci_acs_saved_ecv_dwords(struct pci_dev *dev)
  {
--	int num_entries;
--	u32 save_size;
-+	unsigned int off, len;
-+	int num_entries, rc;
+-	return (save_state->cap.size -
+-		offsetof(struct pci_acs_saved_state, ecv)) / sizeof(u32);
++	int pos = dev->acs_cap + PCI_ACS_EGRESS_CTL_V;
++	unsigned int i, dwords;
 +
-+	off = pdev->tph_cap + PCI_TPH_CTRL;
-+	rc = pci_reserve_saved_cap(pdev, off, sizeof(u32));
- 
-+	num_entries = pcie_tph_get_st_table_size(pdev);
-+	if (!rc && num_entries) {
-+		off = pdev->tph_cap + PCI_TPH_BASE_SIZEOF;
-+		len = num_entries * sizeof(u16);
-+		rc = pci_reserve_saved_cap(pdev, off, len);
++	dwords = pci_acs_ecv_dwords(dev, dev->acs_cap);
++	for (i = 0; i < dwords; i++) {
++		if (!pci_saved_cap_reserved(dev, pos + i * sizeof(u32)))
++			return 0;
 +	}
-+	if (rc)
-+		pci_err(pdev, "unable to reserve TPH save state (%pe)\n",
-+			ERR_PTR(rc));
-+}
 +
-+void pci_tph_init(struct pci_dev *pdev)
-+{
- 	pdev->tph_cap = pci_find_ext_capability(pdev, PCI_EXT_CAP_ID_TPH);
- 	if (!pdev->tph_cap)
++	return dwords;
+ }
+ 
+-static void pci_allocate_acs_save_buffer(struct pci_dev *dev)
++static void pci_reserve_acs_state(struct pci_dev *dev)
+ {
+-	size_t size;
+-	int pos;
++	unsigned int dwords;
++	int pos, rc;
+ 
+ 	/* dev->acs_cap is not set yet, pci_acs_init() runs later */
+ 	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ACS);
+ 	if (!pos)
  		return;
  
--	num_entries = pcie_tph_get_st_table_size(pdev);
--	save_size = sizeof(u32) + num_entries * sizeof(u16);
--	pci_add_ext_cap_save_buffer(pdev, PCI_EXT_CAP_ID_TPH, save_size);
-+	pci_reserve_tph_state(pdev);
+-	size = struct_size_t(struct pci_acs_saved_state, ecv,
+-			     pci_acs_ecv_dwords(dev, pos));
+-	if (pci_add_ext_cap_save_buffer(dev, PCI_EXT_CAP_ID_ACS, size))
+-		pci_err(dev, "unable to allocate suspend buffer for ACS\n");
++	rc = pci_reserve_saved_cap(dev, pos + PCI_ACS_CTRL, sizeof(u16));
++
++	dwords = pci_acs_ecv_dwords(dev, pos);
++	if (!rc && dwords)
++		rc = pci_reserve_saved_cap(dev, pos + PCI_ACS_EGRESS_CTL_V,
++					   dwords * sizeof(u32));
++	if (rc)
++		pci_err(dev, "unable to reserve ACS save state (%pe)\n",
++			ERR_PTR(rc));
  }
+ 
+ /**
+@@ -1090,27 +1095,19 @@ static void pci_allocate_acs_save_buffer(struct pci_dev *dev)
+  */
+ static void pci_save_acs_state(struct pci_dev *dev)
+ {
+-	struct pci_cap_saved_state *save_state;
+-	struct pci_acs_saved_state *acs;
+ 	unsigned int i, dwords;
+ 	int ecv_pos;
+ 
+-	if (!dev->acs_cap)
+-		return;
+-
+-	save_state = pci_find_saved_ext_cap(dev, PCI_EXT_CAP_ID_ACS);
+-	if (!save_state)
++	if (!dev->acs_cap ||
++	    !pci_saved_cap_reserved(dev, dev->acs_cap + PCI_ACS_CTRL))
+ 		return;
+ 
+-	acs = (struct pci_acs_saved_state *)save_state->cap.data;
+-
+-	pci_read_config_word(dev, dev->acs_cap + PCI_ACS_CTRL, &acs->ctrl);
++	pci_save_cap_word(dev, dev->acs_cap + PCI_ACS_CTRL);
+ 
+ 	ecv_pos = dev->acs_cap + PCI_ACS_EGRESS_CTL_V;
+-	dwords = pci_acs_saved_ecv_dwords(save_state);
++	dwords = pci_acs_saved_ecv_dwords(dev);
+ 	for (i = 0; i < dwords; i++)
+-		pci_read_config_dword(dev, ecv_pos + i * sizeof(u32),
+-				      &acs->ecv[i]);
++		pci_save_cap_dword(dev, ecv_pos + i * sizeof(u32));
+ }
+ 
+ /**
+@@ -1120,14 +1117,9 @@ static void pci_save_acs_state(struct pci_dev *dev)
+  */
+ static void pci_restore_acs_state(struct pci_dev *dev)
+ {
+-	struct pci_cap_saved_state *save_state = NULL;
+-	struct pci_acs_saved_state *acs;
+ 	unsigned int i, dwords;
+ 	int ecv_pos;
+ 
+-	if (dev->acs_cap && !pci_need_dev_specific_enable_acs(dev))
+-		save_state = pci_find_saved_ext_cap(dev, PCI_EXT_CAP_ID_ACS);
+-
+ 	/*
+ 	 * Devices that rely on device-specific quirks to enable an ACS
+ 	 * equivalent keep that configuration outside of the ACS Control
+@@ -1135,25 +1127,23 @@ static void pci_restore_acs_state(struct pci_dev *dev)
+ 	 * ACS from scratch instead, which also covers devices that have no
+ 	 * saved ACS state at all.
+ 	 */
+-	if (!save_state) {
++	if (!dev->acs_cap || pci_need_dev_specific_enable_acs(dev) ||
++	    !pci_saved_cap_reserved(dev, dev->acs_cap + PCI_ACS_CTRL)) {
+ 		pci_enable_acs(dev);
+ 		return;
+ 	}
+ 
+-	acs = (struct pci_acs_saved_state *)save_state->cap.data;
+-
+ 	/*
+ 	 * Restore the Egress Control Vector before the ACS Control register.
+ 	 * The vector resets to zero, so enabling P2P Egress Control first
+ 	 * would briefly apply the reset vector instead of the saved one.
+ 	 */
+ 	ecv_pos = dev->acs_cap + PCI_ACS_EGRESS_CTL_V;
+-	dwords = pci_acs_saved_ecv_dwords(save_state);
++	dwords = pci_acs_saved_ecv_dwords(dev);
+ 	for (i = 0; i < dwords; i++)
+-		pci_write_config_dword(dev, ecv_pos + i * sizeof(u32),
+-				       acs->ecv[i]);
++		pci_restore_cap_dword(dev, ecv_pos + i * sizeof(u32));
+ 
+-	pci_write_config_word(dev, dev->acs_cap + PCI_ACS_CTRL, acs->ctrl);
++	pci_restore_cap_word(dev, dev->acs_cap + PCI_ACS_CTRL);
+ }
+ 
+ /**
+@@ -3745,8 +3735,7 @@ void pci_allocate_cap_save_buffers(struct pci_dev *dev)
+ 	pci_reserve_pcie_state(dev);
+ 	pci_reserve_pcix_state(dev);
+ 	pci_reserve_ltr_state(dev);
+-
+-	pci_allocate_acs_save_buffer(dev);
++	pci_reserve_acs_state(dev);
+ 	pci_allocate_vc_save_buffers(dev);
+ }
+ 
 -- 
 2.56.0.455.g6c5a503b38-goog
 
