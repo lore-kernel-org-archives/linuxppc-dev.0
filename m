@@ -1,97 +1,95 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 97533606A33B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 11:22:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78D43608362E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 11:35:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bK0a9SGW
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=hnoUALN5
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLcG35wwjz2xNC;
-	Fri, 06 Nov 2026 22:22:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793964123;
-	cv=none; b=jvjYqN0h6bclFPzHwwVe8F1fIG+JHU3MvyhLoUnd5fhJKADJKv8tbEPEPXbkrgAHsbfe6X1IVrxSZHZ94CwmvjHSvcJwW2azPfBwzKokxAS6jkh1M0nrS4I1KMVcteqtWGK/dQN6oj8cjX9L0laGRSvfeaHARb1ydIr9k1MlYfk/MpGQ1NFzP/aFyYh4eJmmjNaPvS/yWjDy7fjzVYYRajFrpn6V6uvcp3BVge5Td1+vw9UbTcQf+po1SsCPpNhy33YmRy+T3RMoL19o2YgLMs9dWBZ/7gcVM3wL5AwVJQDLP+0YNRXVDyq1wu1DQQkAJ5jf042oa8DIpf83wMr38Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793964123; c=relaxed/relaxed;
-	bh=p+Ok2jd0IVx31NW+VHJJuf+Q+PVcuhS6OrBHlNc0X1Y=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=koLuPqlF4nbDID4RrqLCNF4PtsRskHPj7BM4pSnzY1VR5cWWIkvoQQwE9VuUhsyyqNBvXJZUMkLmWlfnyYM9ebWCX5S7KN77JEIuRhQGP/wRBmXKf/DgrR4QAIqZTR3MCh3s6j2XMo+763dZsn685KrGtd4EXMPWm1x+fsp1akc4ow7mubsXINkrzuM0DGlpqYLjKUyKTznULbDibi6CozpTKTr23qFWSJjU7zDRKh27JouXqUX3rc1S1PtNcCRZsUIwD2UG0bV8+RWr6f/rKIL3AgO6aEsb63WssbtZX/ojR/1Sm8JPg5Dn1cXoVZm4v6yKzrRfp6Slv0ikyjtXDg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bK0a9SGW; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLcYP12CCz2xNC;
+	Fri, 06 Nov 2026 22:35:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::52e" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793964921;
+	cv=pass; b=dEQzu4vCnkQ4YKD9zkuE3YcFyOHtIK/IXJKogwiJmH/51gf+CLAvV6WXErA7Hnpc2edYHbiNoc2GzGjd9rlxja02I9EOKMDVAAELQeGQdlDHPqj0RBO7Bzo9iKrkQHC8lcjnVOQ0+4XAPSxejl2zKiI8mSLePAeYphX+4E6lJfSraiaWmoSFKMBmyaQBiSYZYpfNxzfE7C2UvI2wRPEhDhoiK7PTBrvsRMSDnkMN2Z1l16lnXTi5zWrnEfOe9MXFzUtA18tBzCUEzAgQvzVD3n1r8VWbxiQ5FL/AkhnDSD/RD+w92cIfmxMdAOc2S67fa1GKv5jOb4m8C+YR6lvbFA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793964921; c=relaxed/relaxed;
+	bh=16NvhSdACMX6i/J+q88CC7Hvp0PVE6O559cAroATpPE=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=JEfPTmsX5txFEw3wlc2+AF0B89h7WYiJroB4fvyD1KYSK3J224GGNwx36DS1MxV4USOe7eI8RFXZ+fVtD+K1IJW3drHLZMCyIm5cxuVqtiq793N2T/+NT4K0kkL7NgE92V0I1tC3tHxkJMBcF5BUrTVWqCevtcbk5WgVP0R+DdSsnNu39Hhr3zv4SNbckSiRaoHfUVqAwwgi1e+nJ1mn1Cgy53v8xFst14II+DnXHmrgcW6GloxUFPsNRmeKod5i+/qtRME8RdWvaAiqiafOyE+0lX/4fHHKGjTIKSKIo8Jw3jjVj3sIfk11j+s1klWvkaNSP2W7QXp2y+TQV6bFBw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=hnoUALN5; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52e; helo=mail-pg1-x52e.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bK0a9SGW;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=hnoUALN5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52e; helo=mail-pg1-x52e.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52e.google.com (mail-pg1-x52e.google.com [IPv6:2607:f8b0:4864:20::52e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLcG25jPfz2xDD
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 22:22:02 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 1C9DB4325B;
-	Fri,  6 Nov 2026 11:22:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 18F931F0089F;
-	Fri,  6 Nov 2026 11:21:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793964120;
-	bh=p+Ok2jd0IVx31NW+VHJJuf+Q+PVcuhS6OrBHlNc0X1Y=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=bK0a9SGWX+VyZD0kFIiK4yNIK9A9v+An7WfGjPiMiNKuUGcrfRy/CwNqTxljrBpV0
-	 U7m1a/COhNVgako5ExzfFpup8zroemN8PZasns74e+wzdmXNGp9HfFsumePkfHpqUz
-	 B54avhJDK4RV1zIBmim6BKz7o7ZgZ9/g1a3ek0DWtoergphiLCDdHz5glMnik8SvAi
-	 sjlHg1ttAqkP8985sWOQHptTvB9E/+p4pzQXWHiAvU6YBAJ26cTB4FDz0XEBtsF1a0
-	 bgh+paL3EuS+CEi5iRnn4vYJCUV3oXHmFOJ7h5ygJmRsCVDkmI4xEURGnOh8gud8UK
-	 jwyBg4yTS3zRQ==
-Date: Fri, 6 Nov 2026 11:21:40 +0000
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: Barry Song <baohua@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, 
-	David Hildenbrand <david@kernel.org>, Jason Gunthorpe <jgg@ziepe.ca>, 
-	John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, 
-	"Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Rik van Riel <riel@surriel.com>, 
-	"Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, 
-	Harry Yoo <harry@kernel.org>, Jann Horn <jannh@google.com>, Lance Yang <lance.yang@linux.dev>, 
-	Zi Yan <ziy@nvidia.com>, Matthew Brost <matthew.brost@intel.com>, 
-	Joshua Hahn <joshua.hahnjy@gmail.com>, Byungchul Park <byungchul@sk.com>, 
-	Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, 
-	Alistair Popple <apopple@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, 
-	Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
-	Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Xu Xin <xu.xin@linux.dev>, 
-	Chengming Zhou <chengming.zhou@linux.dev>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
-	Shrikanth Hegde <sshegde@linux.ibm.com>, Pedro Falcato <pfalcato@suse.de>, 
-	Kairui Song <kasong@tencent.com>, Qi Zheng <qi.zheng@linux.dev>, 
-	Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, 
-	Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Baoquan He <baoquan.he@linux.dev>, 
-	Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
-	Michal Hocko <mhocko@suse.com>, Leon Romanovsky <leon@kernel.org>, SJ Park <sj@kernel.org>, 
-	Rakie Kim <rakie.kim@sk.com>, David Rientjes <rientjes@google.com>, 
-	Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, 
-	Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, 
-	Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, 
-	Mark Rutland <mark.rutland@arm.com>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, 
-	Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>, 
-	Adrian Hunter <adrian.hunter@intel.com>, James Clark <james.clark@linaro.org>, 
-	Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
-	John Johansen <john.johansen@canonical.com>, Georgia Garcia <georgia.garcia@canonical.com>, 
-	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, 
-	"Serge E. Hallyn" <serge@hallyn.com>, Mimi Zohar <zohar@linux.ibm.com>, 
-	Roberto Sassu <roberto.sassu@huawei.com>, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, 
-	Eric Snowberg <eric.snowberg@oracle.com>, Fan Wu <wufan@kernel.org>, 
-	Stephen Smalley <stephen.smalley.work@gmail.com>, Ondrej =?utf-8?B?TW9zbsOhxI1law==?= <omosnacek@gmail.com>, 
-	linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, damon@lists.linux.dev, 
-	linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, apparmor@lists.ubuntu.com, 
-	linux-security-module@vger.kernel.org, linux-integrity@vger.kernel.org, selinux@vger.kernel.org
-Subject: Re: [PATCH 03/13] mm/rmap: convert remaining VMA flag tests to use
- vma_flags_t
-Message-ID: <au2yhvzWy6HID8jM@gremlin>
-References: <20261105-late-2026-vma-flags-v1-0-0d3cd15ab75f@kernel.org>
- <20261105-late-2026-vma-flags-v1-3-0d3cd15ab75f@kernel.org>
- <CAGsJ_4wCd_j5or0uHwPLq0PUixcXgiFim=_d7uUhUhAuQf0nTQ@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLcYM6sMvz2xDD
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 22:35:19 +1100 (AEDT)
+Received: by mail-pg1-x52e.google.com with SMTP id 41be03b00d2f7-cd6a7b62ce8so164083a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 03:35:19 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1793964917; cv=none;
+        d=google.com; s=arc-20260327;
+        b=CFV10MK4qVwBqZEe5dWE4fXGtCWHiJVqNu/Ql7k4Ji1sgvb/gP3HDOvMuzP+WW4QIy
+         KdTggxtS4VbU/vfvu76WFTQ5RE5sSEOqLqEbKlOaRMzld5WL8bzuLSiz9nit54C1THO2
+         uH0yEwkh0Wlf69myR7AIenSY0ejJhCInSyuR2ixpihgZp+9fwnlLvl/BNVq49tUHWtMX
+         qLsUtm1sX93Zy4rtynYCplwq+uwb9F7P6U3EQbljkA8eEGEMDVAj/5hPhPKlb7AwK10F
+         4PaJS7ZQfOkQ27INpVVwhljEzkWdBI2XO4KxpKAj8QAv7HzoSfv6uDn41K2N1YqjlHRy
+         +aLg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=16NvhSdACMX6i/J+q88CC7Hvp0PVE6O559cAroATpPE=;
+        fh=ga7dJN2CY2fXDMo+XHVuP6OvgjiPnY1/EGJmMThhmYk=;
+        b=sD46/7XHYs/FPN0w8Tq3CtyvLDW2NsKKY/ImwY0DpNhii47c3loY3UKFZ611+cDFtZ
+         z5CShTpD9gn7mrV3/YcKNQfbvO69pD6ECwGDnQTsPLhPQkKLzfXlZuoMHrbk8btbq8cQ
+         5Fc7a8lPwyOGzQPR96Vf5eivVIJo10EWDtFnjosys6NH5nG4UAZ0+5SeTn2DrA+N31wS
+         a3yOE/d2yYl4plU8Ao/bDw1gpKhKsQ2MLqXJBTLvaMleJYyfByl/QYYjHoHBIhGljxC6
+         t+Tj+zQ7rnNLTDHRzhiXHJahoE2DFKlNDXprxE5BvMxKSJEEM0Z0AB4cNBxX0dQ8FIFn
+         wvNw==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1793964917; x=1794569717; darn=lists.ozlabs.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=16NvhSdACMX6i/J+q88CC7Hvp0PVE6O559cAroATpPE=;
+        b=hnoUALN5UvX/iWQAFcm8VRj8WfS66PEbixG1NdccobIpZxt5TPtV/BwKNfTst1DsZ2
+         wC53ipdf+VPmy5pks6+zVP7gM9ihDIQYMIeyJB05lIW3X0FzMWGS3Vnzuxpkt7QTsQIr
+         R5sqMgmtCiLhe4OdDyT5/Q5pvsaWS7ke+isB09+7vYVTZYnSNp8VGT5DHbZoaqGNKobe
+         mqqOooeujNancBL6v4BqfAOCFx0mkoeGD5J5YOuH1f4lixr1jgdoeYskd2pA98VOQ3DC
+         c9cCqiMsxtG7Lvvn7xXGu9xC7Mh8X3t/tYFN8x6c9wupb5JR85WZqdcCb1keMrxw3yVK
+         YuyA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793964917; x=1794569717;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=16NvhSdACMX6i/J+q88CC7Hvp0PVE6O559cAroATpPE=;
+        b=bYUTr6dsJAzggF9ZzAn6lhIoGstoiEaT+IwvDpo82ZXl0MoVyD4XuxQB9LLS6JefpO
+         nLsaJxeMZSxIkLmRi/1nVTneXvU4IRmV6tXh9V6zEQbCB6Vfex6v3h0PgneW6rF7ejU/
+         7yzgfnrG4vs2SJXm3MDLIhtLMf0NWpHxfw0wyC5kAIeV5NBLvPTI6b1gWxU7fCY6Pja3
+         HEQbcV6tQtE0HzYs8Z/zrUKkMahOYIsGwSWi9m8BB9U0CAaT5nFK/G0ffoOzpCXQ3Xkr
+         B/TfkU3YXHQtrY1r5hl/l46gvTjG2qpB7hy/8cbWMKbTrxfu2xPVq+z3aKUQpF1PAmqa
+         OODw==
+X-Forwarded-Encrypted: i=1; AL+hErFlZ3o0W8xexX9v37zZzrGxu5r3JWwU0oJZyDXqmuFpi2UCgyJqRwZ21Ir06Y+9gOica3aaw197ENbd37s=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z9oCmZEuVpA+SwGT+7AXi0gUQ3nJuzJZpktnQeGJEFLxxVF3aRN
+	c1aJ/MGntgm2zbquFiNGZ3VPjvUpeeqnOEOoLTQcMCek4O3fzW62Th6mfUC9m3YAJX2pcLRzAeS
+	p5JX1ITp5NQGNuvpfeccBY06rOpBgkrQ=
+X-Gm-Gg: AYBFou0a1oQiuxhhSK/xuPszQI0J7SD18pOLn4jBY8WktPrN1CeGzzRa52TTl13jJHM
+	ZlGjH+np+O5kbMgnwR6mI90XlTwPOb5nMe14WtkTZrRhqOn5YmgCBcvMY5BYpQAppK4ikppPX3T
+	xvDqDg3S2cuFF4l6vkKtY4NH5UhZz0VN1NgUEA1CRYnZbcMbjkds38u1wgAPqMxwcbLq2gePmgo
+	nRiJzZeBTdN/kAF9TdAAXD8JS0/WpYz1uIcZTX35n+h4RWeE7Wj6qqHFlB3C70ZzzuLfPaxw0dq
+	rczckgRHtWzm73Tkc+h+hCxp351tQ7jmSM7rR8XecJcLGWnIofg9z7M/UUOlLISpztvWAnBx3Vz
+	V5f6lllxtb+uhL7q5nTDNaQQA0Ild1NYza6JuaVPb141Z/RE2K73r0tGoG1vhZfZ/F3dkkFV0YX
+	O1uuNsm032rZ/a/qzRsOA159I/9aWNcOYkn33PNJDRmv30nh6r
+X-Received: by 2002:a17:90b:270e:b0:3ab:188b:c5bc with SMTP id
+ 98e67ed59e1d1-3b0db6d79f6mr1962737a91.14.1793964917143; Fri, 06 Nov 2026
+ 03:35:17 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,90 +103,40 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAGsJ_4wCd_j5or0uHwPLq0PUixcXgiFim=_d7uUhUhAuQf0nTQ@mail.gmail.com>
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+References: <20261105104237.38542-1-phucduc.bui@gmail.com> <CAA+D8APoQt1uSk9R+O6Xg0zUKc4TaGbB7DJX1QvyZ6wzjDwHYw@mail.gmail.com>
+In-Reply-To: <CAA+D8APoQt1uSk9R+O6Xg0zUKc4TaGbB7DJX1QvyZ6wzjDwHYw@mail.gmail.com>
+From: Bui Duc Phuc <phucduc.bui@gmail.com>
+Date: Fri, 6 Nov 2026 18:35:06 +0700
+X-Gm-Features: AclHuK9vZj_WvyDhYxVjJQKavp5g7gEsFZLIBCX-BuGPepr8Uo7-FSCeNAnboFE
+Message-ID: <CAABR9nG5bVowBxTXtHZC4S3wnLNwzHMu+8upjOR9Gai+M_Rh+w@mail.gmail.com>
+Subject: Re: [PATCH v2 00/10] ASoC: fsl_sai: Address several issues in the driver
+To: Shengjiu Wang <shengjiu.wang@gmail.com>
+Cc: Shengjiu Wang <shengjiu.wang@nxp.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
+	Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
+	Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, 
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, linuxppc-dev@lists.ozlabs.org, 
+	linux-sound@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Fri, Nov 06, 2026 at 11:57:08AM +0800, Barry Song wrote:
-> On Fri, Nov 6, 2026 at 5:32 AM Lorenzo Stoakes (ARM) <ljs@kernel.org> wrote:
-> >
-> > Replace the remaining uses of the legacy vm_flags_t flags in the rmap logic
-> > with vma_flags_t values.
-> >
-> > No functional change intended.
-> >
-> > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
-> > ---
+Hi Shengjiu Wang
+
 >
-> LGTM,
+> The series looks good to me.
 >
-> Reviewed-by: Barry Song <baohua@kernel.org>
+> Reviewed-by: Shengjiu Wang <shengjiu.wang@gmail.com>
 >
-> >  mm/rmap.c | 8 +++++---
-> >  1 file changed, 5 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/mm/rmap.c b/mm/rmap.c
-> > index 1131b76bbbc2..cdc97fec8586 100644
-> > --- a/mm/rmap.c
-> > +++ b/mm/rmap.c
-> > @@ -1196,7 +1196,7 @@ static bool page_mkclean_one(struct folio *folio, struct vm_area_struct *vma,
-> >
-> >  static bool invalid_mkclean_vma(struct vm_area_struct *vma, void *arg)
-> >  {
-> > -       if (vma->vm_flags & VM_SHARED)
-> > +       if (vma_test(vma, VMA_SHARED_BIT))
-> >                 return false;
-> >
-> >         return true;
-> > @@ -1660,7 +1660,8 @@ void folio_add_new_anon_rmap(struct folio *folio, struct vm_area_struct *vma,
-> >          * VM_DROPPABLE mappings don't swap; instead they're just dropped when
-> >          * under memory pressure.
-> >          */
-> > -       if (!folio_test_swapbacked(folio) && !(vma->vm_flags & VM_DROPPABLE))
-> > +       if (!folio_test_swapbacked(folio) &&
-> > +           !vma_test_single_mask(vma, VMA_DROPPABLE))
->
-> Right, VMA_DROPPABLE_BIT is not available on
-> 32-bit architectures, so vma_test() cannot be
-> used here.
 
-Yeah, it's an annoying wrinkle having to differentiate, but is necessary.
+Thanks for reviewing the series!
 
-Eventually we will have 32-bit kernels move to the same size vma_flags_t as
-64-bit, e.g. something like:
+I'll continue looking into other parts of the FSL audio drivers,
+such as ASRC, PDM, and SPDIF, next week.
 
-- #define NUM_VMA_FLAG_BITS BITS_PER_LONG
-+ #define NUM_VMA_FLAG_BITS 8
-
-But that's down the road :)
-
-Which will solve the 'not in 32-bit-kernels' stuff.
-
-But also this form is also used for stuff that's not defined under certain
-configurations, in which case you get something like:
-
-#ifdef CONFIG_FOOBAR
-#define VMA_BLAH	mk_vma_flags(VMA_BLAH_BIT)
-#else
-#define VMA_BLAH	EMPTY_VMA_FLAGS
-#endif
-
-And then vma_test_single_mask() is necessary too.
-
-An unfortunate outcome of defining per-bit (so no bit value means
-'nothing'), and any kind of invalid bit value solution has worse drawbacks.
-
-In the end all this stuff will be useful as it allows us to no longer be
-constrained by either 32-bit vs 64-bit or in only having 64 possible
-flags. :)
-
---
-Cheers, Lorenzo
+Best regards,
+Phuc
 
