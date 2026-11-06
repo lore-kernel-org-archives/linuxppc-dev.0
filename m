@@ -1,90 +1,95 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 85618606A31B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 03:07:49 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 077CC606A326
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Nov 2026 03:22:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=YIOTH0Wb
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=CCsTd0iI
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLPHm1dyPz2xJR;
-	Fri, 06 Nov 2026 14:07:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c007::2" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793934468;
-	cv=pass; b=hcynyACySoZaCmS6J+0KxVJhYrLUYJZBml3gPTAUXIpRgQFI2puP1eVPeC4jxnyg3wr/eTrY2IXVDUWX95YZQY8j0UHwe8Ja88VfOQHADOtjavzZAjFqH1QunGf1wHN6uxzHJ6/OZP9EC+kjiRSjnBFFlzmo7nR9wFknVbKUcIWV1ND55q12zkPlLES3xumQOGsJ/yk+4rwzrAX+mJLYk+O6fzGh74uZ4Qzdd5Ov1KREENn6iPAmeo/STSFATkiIC56IkQWHjpvcRYaeceL1O8oww8AaaXRG8oxqEz5GJ3afiFqzrRIeByrGmhtTI9TqTrjpKU4PqrsEIfrgukT82g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLPck4qGYz2xH7;
+	Fri, 06 Nov 2026 14:22:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::534" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793935350;
+	cv=pass; b=WGGZ9y155XSbMBRoe+c1bv7/vODgU2yi/zqtvaZXDzkZYYQlssxicmzcY0+DRcyF43JYlTkTXAJEbxrEXFtcIFsEGTQRTgm8b2gvg4vdqFbU5nRZGG9l3O/fCAAZbBwDE+Z5qr7+x7UE9bLA/RqrNc7MOnLw0nuMFveewYj1JnAWp5GyxZR2R/KyGKmZ5dPVsgrGL1gYkdONtJWO4FZ9jA2hIhKnvLb9vofc6k3VkD7YsdNpNVj1fJAnkQlAC+BS0QXqxplQGjX+4d2Qc6/OZCK78qHBkhx2Jcd1TCNK1xglU8FB59lyVul5ocFI5hgThWPXE1EekdBI7TKu//Z3GA==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793934468; c=relaxed/relaxed;
-	bh=8ztbuShr+WgdOBXYf5fUM80uZgltRI6WDznN3D2TyQ8=;
-	h=Content-Type:Date:Message-Id:Cc:To:From:Subject:References:
-	 In-Reply-To:MIME-Version; b=omEpoqwAZHgLVQqp46UoT5WMIGmtKJ+iwyQshjdxObHnZWukCnONm8+H+jSA2r5JzbiOJOfIJybYkz4PxNdLdSuvQYxU1Q208qPDeIdfag5MaaB7xOZzuZB1/2/sI81WrhSR4Fhfn2a+v2Ko2BciBZgnF2zxKu3OKcxqiERjvzoEkHfPNzeLQdO2EI37t3mcZHq8mvlGGZeDVjbe4+poT7uiaRxmKtJgls+dqb6YBzjpnEOzIP5P9CSivnhZ3q66+T8cyyGVVqa8Y7yYKTknSfS+KnnwPsjCwz95jP0+ijl3I0VvNqQKt9NoWkKQ1QcuBqn2NYRcLdix/QanvAzneA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=YIOTH0Wb; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c007::2; helo=mw6pr02cu001.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+	t=1793935350; c=relaxed/relaxed;
+	bh=w32LmgqDCV1eew1K0IjeecQXsQlnn48/GdAJChQRoV0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=FuQHfCKRa8aKNOCl6+Ze/MGp3BXCMX4T9Mgi0IKqLZBUoz85CsPMyZQymNgvTIaQuZwyy09OgQzqtao1OO2/bSaPeHK5XExtZSxQ4sZ7dMWJVc+l4KdRRAfCrcvZd1DjCdAs+LhXHfcE3KbmRd7yRcZEBfh5Zw5JbKndvIfJwVf/hpeveS24jALXJ5vqa6ZczwmVAAckkb40Mam9SGSAwVUnafAPxfm/JiAqr+r+CVL1C+kqiibsoHyl/66xEk3JB17DD01WaRpTW0aB8GtJIChhJBh83yxd0TVpGhr65QMdqmBBQ0tcV5uwXxPc+XdVckvasinQAqa40rl4Y2pVOw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=CCsTd0iI; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::534; helo=mail-pg1-x534.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=YIOTH0Wb;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=CCsTd0iI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c007::2; helo=mw6pr02cu001.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org)
-Received: from MW6PR02CU001.outbound.protection.outlook.com (mail-westus2azlp170120002.outbound.protection.outlook.com [IPv6:2a01:111:f403:c007::2])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::534; helo=mail-pg1-x534.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x534.google.com (mail-pg1-x534.google.com [IPv6:2607:f8b0:4864:20::534])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLPHl0yBlz2xHP
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 14:07:46 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=KyyhgdCognjCT/rGwvkYvkpwF8VRoNLJmjaQV76o4TwsVSVoevDbobBQWXRvchoJNlbuxO699Y8m4I4TYU3SX04fOdnEITY9yEQ2dvFuB+HVvp4YJM428U3U2adddGxUoUvqtOMhD+jhHM3CJJOZ/W81Aou9bx0Fh8ELBFXmAxDxKG4HmVmGaF9kPLwCtc/J2A8L3ON+3QouCm+lo5deuJvzTDcIwJgEo6SXO6h+jmVCx1u05lOx5ASE2LxNA8fsbUwyYi8Hxgik+UGMw5yI3bVnytIAyxVd3wIWsZCXjGdjbLBh+OuXzLNMj5i+BPi39qRcbw12r/a3ySxDLL6rqQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=8ztbuShr+WgdOBXYf5fUM80uZgltRI6WDznN3D2TyQ8=;
- b=W/wTMWYA774ZiIxRV9/EjX0w7zsgsrUp3kQGvU/q/kD2ajnrwGkNSjkREHGMqZ+ET78rvbeU+Hysgc/iwU9Zn7sUQJa4ncPHrxEJPTNWeixLDR8GhokpvB/xCRXAXx/YKp5mQdTQT4QEmShxn8Wdsn51X/KR1ZRtPbBe09io/OoK1+sZzjDuchLVHxB66YK+UHrJVtYeLokKVtEBhIsxmHOuxiHOMi9HSd9dE4iR3VmRl3vNXnXGbpSNs0pgarDjrejmvOo0Yv5v0lgGQOEGl94rn7+SkZxtZ3kZy0OpmNvfU1rJXptGBTAAZNtrCFlSgEufKlzYVla/2q0HHp6GOg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=8ztbuShr+WgdOBXYf5fUM80uZgltRI6WDznN3D2TyQ8=;
- b=YIOTH0Wb+dgazmmoL5qB9Wm8gsFFipwm/h/T1u5t2/hS6Hve7ssxQdZxna38PLyHHaKeeyHwcHl9MNZNAbIpzFy0I9FDbqabBTameX7/9OVa/K5kqmyldLf4o+jxxoFrG9YlIJQoICe6E2sIiXFMnZ2OgGCvtFoAUyeZuMXfWp4h47IpEMmEZ3eJJclh5I7nBG6DFaVtx/H1Fbbp0w1Zkcrh7xOAR9t/qGscavIi0226dlvVuExqyoUnXlfTfCSVmBR33t3m8t/wGpVxg8BUOQBvgJfMUr7k6/Ygn40MN3luVuTTGMXHfzZMqGMF6gloffW9Xr3+ulLTIfKVE6HqaQ==
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from IA0PR12MB8374.namprd12.prod.outlook.com (2603:10b6:208:40e::7)
- by BN3PR12MB9571.namprd12.prod.outlook.com (2603:10b6:408:2ca::8) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.592.10; Fri, 6 Nov
- 2026 03:07:30 +0000
-Received: from IA0PR12MB8374.namprd12.prod.outlook.com
- ([fe80::d85f:4c87:ae84:3f16]) by IA0PR12MB8374.namprd12.prod.outlook.com
- ([fe80::d85f:4c87:ae84:3f16%6]) with mapi id 15.21.0592.007; Fri, 6 Nov 2026
- 03:07:30 +0000
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 05 Nov 2026 22:07:28 -0500
-Message-Id: <DMNSOSIX88HY.40FMVMG1JK98@nvidia.com>
-Cc: "Alex Williamson" <alex@shazbot.org>, <kvm@vger.kernel.org>,
- =?utf-8?q?Lo=C3=AFc_Molinari?= <loic.molinari@collabora.com>, "Lorenzo
- Stoakes" <ljs@kernel.org>, "Shuah Khan" <shuah@kernel.org>,
- <linux-kselftest@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
- "Madhavan Srinivasan" <maddy@linux.ibm.com>, "Ritesh Harjani (IBM)"
- <ritesh.list@gmail.com>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>, "Jason Gunthorpe"
- <jgg@ziepe.ca>, <stable@vger.kernel.org>, "Sashiko"
- <sashiko-bot@kernel.org>
-To: "Konstantin Khorenko" <khorenko@virtuozzo.com>, "Andrew Morton"
- <akpm@linux-foundation.org>, "David Hildenbrand (Arm)" <david@kernel.org>,
- "Baolin Wang" <baolin.wang@linux.alibaba.com>, "Liam R. Howlett"
- <liam@infradead.org>, "Nico Pache" <nico.pache@linux.dev>, "Ryan Roberts"
- <ryan.roberts@arm.com>, "Dev Jain" <dev.jain@arm.com>, "Barry Song"
- <baohua@kernel.org>, "Lance Yang" <lance.yang@linux.dev>, "Usama Arif"
- <usama.arif@linux.dev>, "Kiryl Shutsemau" <kas@kernel.org>, "Peter Xu"
- <peterx@redhat.com>
-From: "Zi Yan" <ziy@nvidia.com>
-Subject: Re: [PATCH v5 3/4] mm/huge_memory: read a special PMD under the
- lock in copy_huge_pmd()
-X-Mailer: aerc 0.22.0
-References: <20261104-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v5-0-c56d0d26f970@virtuozzo.com> <20261104-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v5-3-c56d0d26f970@virtuozzo.com>
-In-Reply-To: <20261104-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v5-3-c56d0d26f970@virtuozzo.com>
-X-ClientProxiedBy: YQZPR01CA0075.CANPRD01.PROD.OUTLOOK.COM
- (2603:10b6:c01:84::10) To IA0PR12MB8374.namprd12.prod.outlook.com
- (2603:10b6:208:40e::7)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLPcj4BWFz2xGr
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Nov 2026 14:22:28 +1100 (AEDT)
+Received: by mail-pg1-x534.google.com with SMTP id 41be03b00d2f7-cdb684859cbso124531a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Nov 2026 19:22:28 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1793935346; cv=none;
+        d=google.com; s=arc-20260327;
+        b=GtP85qTtDYonE7QNh644XbQCNHjk77nMXDXq1lVnzPP+piia2uYUm5qHmYPMufs8yD
+         WjX5GUkrW4znYlWf0s19KP+v62nFb3P2SyQRJcFIbKUB3yeh+7BaF7lOmOXkbaBOPkih
+         AFT5ioStLEcPg9/uSZJMrU10yWFBMxrx/xh5Hwafkgjf6wgarBymS0CYiEL7TMLz1gxB
+         t8KkYqlcJSk3U1xsCEjlENpwevpNpRb74+jx0HImy0ELs4iLW6+CV+Fq+0+3BCwhjtrq
+         zlTYj4t+3fkRPj7n1eYd9/aDfmI2GHRtO701EeKSLjq+jk5FY+vOBWiOdNmD2mrXqESx
+         DH4A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=w32LmgqDCV1eew1K0IjeecQXsQlnn48/GdAJChQRoV0=;
+        fh=Dvd/8ldfPpZNj3Nu4pGoBx4BBDW2CSIajkXc1kNEkqk=;
+        b=P06J1L6vuJ2i/0s3a+KTVzoH2Ihv8zfg8f/JWUzsy87k+wQjHzXmERk4OocLlZR5HC
+         p4rWEE/ZWQBD8WCnVma4ayDNzbSAy4jBSVjVgrbp8Dxg3Ctm+E4cmw0D4rO7cDKneo7R
+         AGsLMYocrNzinrzDw3fXN0BfwMwrEBhwZOX9/Y6KZiqs+0oeRzsMvwTSWYQit5qiPxZr
+         cIes+sNH5BkVyUPHH63YwSSbWMcVtAmQvtD2sFGy6xQO6EpR9n2yG3dh101N09gsdfjb
+         5TJcJkEWPt4J7P9F2zl1lAtOu7YivnyPhRK1ek1rJ7A59nrAIdE26XbIBTlOigH6tQjO
+         EVXg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1793935346; x=1794540146; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=w32LmgqDCV1eew1K0IjeecQXsQlnn48/GdAJChQRoV0=;
+        b=CCsTd0iILTdc5S0Ny+or7A7zbqJ0/cZkSlSFt/qfnC3teRe/27L6+uEIVaKou5UsZp
+         Mq+VBM4uU6kijJwaBCAG85qq2c+n72OwtRN7hHzNfLPazIiTY8j00BiJ2HVrt/4K2iM8
+         yhaJ/5LlD6vjIQoYSM3iQSdXwLjj2mfpniOQA8ArAiP1gP6oq+bvuNOPnuE133XDygk2
+         /qfMlOADdlM61cn1+cNhYJFQI1ot1VNnRz63kJgAxqPXaVjMFXakbhM0sRJKvs9AZrVo
+         Y02RnnMc3O3El/bPICQbAzO3q1Wom+bvlzZrCBUinV/h6wjx7ilfdDCOq9G5zkcftm2f
+         g+WA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793935346; x=1794540146;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=w32LmgqDCV1eew1K0IjeecQXsQlnn48/GdAJChQRoV0=;
+        b=eJ7iNnNvwivTd7e3FPFhL8v3zymmJ6o6dCsm/vRn8OS7IsYmH1zUhp2ryYtyriCdnM
+         Iv8RPprLagz/jB27xL3yof0cIO5JADnDV+YDbKzzQSSWGK3mjqDTA/pFwr9u4HG/9/cm
+         KOfWzdrlYM96TVIeroHEyF3MuDY5wz7wVZpShC01DAUHBVHHe/RUNGx+1MjjrFXR1GQv
+         9wLPaOiY+d0KssFbC5vvUmqyXa3xwmC04No/rN/KvAKgwiqrtJeWBA8lkbz7dfumDyyU
+         gUH5QJKTWdANUl7/1TQesIHyceULVtcv5xyxLIFc55lnEwun3AAYLt/ESzNFhv3LWVd3
+         UhvA==
+X-Forwarded-Encrypted: i=1; AL+hErEBgEEmPHaa2F35TZdlzyLIsLhcggnqoGw9P7lLOQNAeY2XtCiVX/S0IB/VdzG1Psw0jyhhTqSrLGIqRKI=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z8o/THyoouFM/OSxycL/0EqRXD3030nhSm6IWBVi+2oe9fl6+rS
+	CMpqMOFnHu5XCIxqFOODWYuUgsbtVcLeNULDhPkZFB0gD+/DyqQaIVG+SOyrt5TOlvVikA8EeR+
+	tEMQL5Q6PtCth+6ip+Y0fHOgJ+fd2icc=
+X-Gm-Gg: AYBFou0iVrsmgpy6SLW4LaVTZ7Bce54TkK/sztR/T7x5aSS5tfn0/IVYlhoUsEmsmQY
+	ofu6NeRpv9RMwUJt6orxfFWWsYBxWpSJELypWOhXrQ4i9Rcv7JkvDpYuMs9PnAoEW6lzQnQ351o
+	3O1e9ujvNM8hTtdhK6MEZlPXleE/joRpxPSwT9NTAQcLQVm6r+vujYIaAGuySRD7iGatYWOQ4ol
+	Uu7ymMfY5jSCiuE55e694ngu5ef7lFKloxZi2tWpVZ+8SwF8NFE9zBwzqcAVaIbR+pQxdZzIIin
+	peoupmxvG1OwfvEqPggxfkiQYSlQXdECS6KziwtkWx5Y9TiNiA1n6xb68oQth95j1hPF9L7zSpM
+	ZfBD+7dHhwH4VbBg2hSRwv3if2u5HHzzMRHnu
+X-Received: by 2002:a17:90b:4983:b0:3ac:9d26:551d with SMTP id
+ 98e67ed59e1d1-3b0db6f11f7mr1320600a91.50.1793935346215; Thu, 05 Nov 2026
+ 19:22:26 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,131 +103,214 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: IA0PR12MB8374:EE_|BN3PR12MB9571:EE_
-X-MS-Office365-Filtering-Correlation-Id: 603505a4-3243-4f2d-c2af-08df3bb31871
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|7416014|23010399003|376014|1800799024|10067099003|18002099003|22082099003|921020|56012099006|11063799006|4143699003|261026121527099003|261026140227099003|261102123227099003|261028144727099003|261022075727099003|261021123027099003|261021121427099003|261022105027099003|261009223027099003;
-X-Microsoft-Antispam-Message-Info:
-	RSmauEqc60L1WBOa//2Pc02BIOD31+H3stC5f0JBys+aacA30tPbG+6Gl5AcIBXsqWCLEMT4DLuFrQZLsUVj7M5p2ZCryLuGEyUqgOYIndU8G4tFF52AfSFzSybHM/oIL/oPw1vdlJzhKBqM7TfiWVmxPLGM0qNxHC2ulkGEpw7xeKqXDjrNQ3lOtqKmV0a48T5df2vvpedsvN/qTzg+qcAl2h9ViRSm4p2nBHiT6Ayytfe75zkGa6oPSd4rLzchJmzNE3UZ40oWViH3snU3sGqplsrSvPoOBqy7R2oatilcktDtR19ujs7Y0uTTa+hJTzsqxB0VBn+Q1ztz3fasxYsBmkrBGBWHPgdcCMXxwyW7vxpX9gjKSF91jQHxtwn6gkX9EiQpDYhb+wT4deAVaS+t6NG8h82wnpDW6o6+31PqAQEUlnbnH3wJdOUuYcxJbb4/l9n1zMQCuYBA4oV8Bb41270nCQNa4xX+y/qeL8HRRxO4iaiW3IkF4Vy1IZEQRaXHPB5gzLsUCoFNaoENlqDraNP33KGz/US8pwVWpdfjrLXSeQdlNNgSm70RQPoFvkS2qcuPty0Jz5gZl2x9egPjvnJu+2zK1q22MuDQ2aAl3dYKncsYuj9yTAHid2U7uRxcecf/C6fBZyajgzdNAtXpwdkJYf+e5XP6Ite3Ekx68lLhjSwzbjWJR4UGgsUaGdxYOH8aMsyJLVN/hHEq2g==
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:IA0PR12MB8374.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7416014)(23010399003)(376014)(1800799024)(10067099003)(18002099003)(22082099003)(921020)(56012099006)(11063799006)(4143699003)(261026121527099003)(261026140227099003)(261102123227099003)(261028144727099003)(261022075727099003)(261021123027099003)(261021121427099003)(261022105027099003)(261009223027099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?dDJWcnRqaytCMUViWGpoZXJZWC9HTE5OK3JyUVo5Q3dwN3Bva0ttVzkrNEYx?=
- =?utf-8?B?Y2xMRTRXK0tMak5YVW9iQmVoRWtUaHZOVWdhV2VvTkJTS0hqU3dWYWt5YVl4?=
- =?utf-8?B?YWxPNHVyQk9ZUHRpQmxhVmNxc0M2NXVPc3VFSkwvdTFNb01ab1M0WlFoOFQ4?=
- =?utf-8?B?UG1PTXlHZFhWZDBXa0pMRUsxZ0tyeWpwWlBqaXhqZnBxVW4wU1dacHhFbDAr?=
- =?utf-8?B?blh5TDdqM1hWZXNMSTdUSjkxT1hjb3NuOWt4MDlabTQxYk04VlF2b3B3eGRL?=
- =?utf-8?B?SjBtOWYyZFNmc2kyY04wd3JyaTRmdStvNklXaVBVd2FkODhCM1d4UVBSTE52?=
- =?utf-8?B?aGhNLytHbUZrd3lUbUF1WU05NVB1U1pDa3lacm9ZRy9HbWV1bjh3emZCd294?=
- =?utf-8?B?aWM4QU5melhpWlRST0pwekFTcXNzSVQreVBjMVdQT3kxNk9uZEpNVWRUWDBm?=
- =?utf-8?B?aHlyamloNWFlTUdnVWZpa25wNXJCak5ZTnZzN21rOVY3aXZCN1JIdW5Wc1ZP?=
- =?utf-8?B?WTltaGk3Tmg2UlBVRmozMnpJd09OV09mMzZ4a3JQNmNKMWRjZ1dGa0dBR0xk?=
- =?utf-8?B?dWozQXBOU1drQXJPeGNJcklaQnBaL1NPeE16d3JKblZ2WFE5QnBQTE9FRnFj?=
- =?utf-8?B?QVF0WVdzWlp3Y0IyVUtZQysvNmFoZHRnT056Q2MzZ25TV204RDRiUWVrQVo4?=
- =?utf-8?B?cENROEtGcll4T2dNNmFyQUo4ZEpVQW9IOTRxczZaNzQzMG5vM2lQc1N6aC9E?=
- =?utf-8?B?b3lNaEpNRktLVE92by9ZTm0xV0xRL01ra29BTjhtbFZ4TDNVSzV3cUp4Z2NL?=
- =?utf-8?B?NlBHMXNBanZVQVVTS0s2QXdPR3p2aGl4d2ppcTM3bmtkeXRxZFROR01ncnlL?=
- =?utf-8?B?YlZYbkxueW1aYmNZdHNVd1NwSzF3V2VXK0c0YmhGQWZjVllFUEtEaWVKNVZK?=
- =?utf-8?B?eFUzaUo3SklQZGMybEYvYWoxdVZVeVVDVm1UazcvUUN1QTM5NmMyWUM5SE4z?=
- =?utf-8?B?bHJodE5qcmxNUnR2MnVEbVY4T0Q1aFUrMXRrbHBlWFpmVW1DM1BOZVZTSExo?=
- =?utf-8?B?TVowR0EvdUkrdnE4a0s2QnRVemovREN0NnVJMXBETzdMcEdsd01BNVoxZ2Zy?=
- =?utf-8?B?dUZENW5hQkxlaWlvMlVNcHFra2R3QWl1VW0yTXRWT29IQVdXZS9rQUUwVUJC?=
- =?utf-8?B?VXhnc3JBQ0k3THlmaHNyUkc3UTZCUTR5TVd4cms1VVo3eXNYSm1nZk5nNWZP?=
- =?utf-8?B?Ym1RcEhVdXRTditYTTdFZllDak1WTVowVFpTSzRhc0ppZFpJNXBEZ2Z5Qk10?=
- =?utf-8?B?eW9NNkdKcHpuTk90ZlF0YmU5QUtJNU5kRitwWThwU0VCUlByeUtVL1p5a3hU?=
- =?utf-8?B?L1lDaEFsaXp6MlFaZC9tMlBhZ1Ztcnp2WUdXS3cwVXBYSW1KbXROa3pKZGhL?=
- =?utf-8?B?MHIrbzY2K0ViWjhIemVJRXNRNmYreGl3SEhGemE0MzdOMFYyVENNTExoTWtO?=
- =?utf-8?B?NkVCSHhNYXJYaU0vZTdJWmtqVTQ5R0dwVVJNalVhb0U3ZHB3bTB3cWpaK1BB?=
- =?utf-8?B?bHRBV3VDZzNjcGtjMzJRVWZNZFArdWJoSW9TMHRqSVdMK0NyQ2ppMTludSt2?=
- =?utf-8?B?ODFJUHJtb3ovWUhLZVFVL3h1Zk5RakNmRVB1bXRzTDlKMUV4ZzZDeFIxMSs3?=
- =?utf-8?B?enpUeXlWMWdCdGZpNndJZFhES1FIRFdoeUJGTDRubmtiQkN2WGFzOFNkUEE3?=
- =?utf-8?B?QUZKTDJRY1hrS05JRmRRSkRoN1oxWTRJV2w1amYzU1FQOXhKa3dBRkY0Z1RX?=
- =?utf-8?B?R0FQMjk1SE9IaFNsOE54WHVMUjBlMWRqODl4UjNIL1QwN1FIUy93TUErcmRV?=
- =?utf-8?B?S095a1crSG9XTVhPRWx6bFdWNjVIUC9JbStsYUpHNTNnczdTK2RaSWluYjh2?=
- =?utf-8?B?dWs1eE03SnZUWS9sanIwZnFTSW9RdG5WaVJicUMyUXFRZFBPK0VzOXNpOFlt?=
- =?utf-8?B?TGxYMGUrQzNrYW1MaWpybUpFeFNzNk8veGFvOXRIS2NqcVJyNzUvWDkyeTFy?=
- =?utf-8?B?M0VDaW1BT2w4T3I5TGRlYWlNbTQ1enhSQlhwVjhOdk1vdkhFWFQwemhwKzM4?=
- =?utf-8?B?VXlFYnZFQTZuQWd3Rmk2QVlOVHNvU2l5Ukp3aEtPeXlWMENnejFZVUZkZG5l?=
- =?utf-8?B?ZEs3RnhlSXloeE9ob09KVGovZWFLbkMyc0JIOW5SaDkxQ1ByTWlYWGtiTjhB?=
- =?utf-8?B?QnZWM2ZkU241ZU51K1pmREFvdlFpVHFHcDRYbStmbVBNR3UwRFgzblkxV1lT?=
- =?utf-8?Q?MUjwoT4T9/2Qh2jUSA?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 603505a4-3243-4f2d-c2af-08df3bb31871
-X-MS-Exchange-CrossTenant-AuthSource: IA0PR12MB8374.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 06 Nov 2026 03:07:30.6079
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: HSOG4VvrYGVWS9o66Sfjn9QTLJ5Jiiw0q+kG03NChxvSPJehLwfD+cCBtmH2DMXv
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN3PR12MB9571
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+References: <20261102180915.3981805-1-Frank.Li@oss.nxp.com>
+In-Reply-To: <20261102180915.3981805-1-Frank.Li@oss.nxp.com>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Fri, 6 Nov 2026 11:21:57 +0800
+X-Gm-Features: AclHuK-h3hDpTZTCQrDXlURnXU4dNiye78ZL33OWRSh0a0w-nnzOWFYn2sw0Q-0
+Message-ID: <CAA+D8ANwEqFJYQ39h+1A3zXhcUfpFGzSvVjEzx2htoYxB4sLGg@mail.gmail.com>
+Subject: Re: [PATCH 1/1] ASoC/sound: use dmaengine_desc_set_callback()
+To: Frank.Li@oss.nxp.com
+Cc: Lars-Peter Clausen <lars@metafoo.de>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
+	Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>, 
+	Nicolin Chen <nicoleotsuka@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, 
+	Mark Brown <broonie@kernel.org>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, 
+	Orson Zhai <orsonzhai@gmail.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, 
+	Chunyan Zhang <zhang.lyra@gmail.com>, Olivier Moysan <olivier.moysan@foss.st.com>, 
+	Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
+	Alexandre Torgue <alexandre.torgue@foss.st.com>, Kexin Sun <kexinsun@smail.nju.edu.cn>, 
+	Frank Li <Frank.Li@nxp.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
+	Tianchu Chen <flynnnchen@tencent.com>, Liviu Dudau <liviu.dudau@arm.com>, 
+	bui duc phuc <phucduc.bui@gmail.com>, Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>, 
+	"open list:SOUND" <linux-sound@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, 
+	"open list:FREESCALE SOC SOUND DRIVERS" <linuxppc-dev@lists.ozlabs.org>, 
+	"open list:RENESAS R-CAR & FSI AUDIO (ASoC) DRIVERS" <linux-renesas-soc@vger.kernel.org>, 
+	"moderated list:ARM/STM32 ARCHITECTURE" <linux-stm32@st-md-mailman.stormreply.com>, 
+	"moderated list:ARM/STM32 ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, imx@lists.linux.dev, 
+	vkoul@kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,UNWANTED_LANGUAGE_BODY
+	autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Wed Nov 4, 2026 at 3:40 PM EST, Konstantin Khorenko wrote:
-> copy_huge_pmd() reads a special PMD without the page table lock and
-> copies that value to the child. The mmap write lock held by fork does
-> not stop unmap_mapping_range(): it zaps under i_mmap_rwsem and the PMD
-> lock.
+On Tue, Nov 3, 2026 at 2:09=E2=80=AFAM <Frank.Li@oss.nxp.com> wrote:
 >
-> The zap visits the parent VMA before the child's, as dup_mmap() links
-> the child right after the parent in i_mmap. If it clears the parent PMD
-> after fork has read it, and passes the child before fork copies it, the
-> child keeps a mapping the driver has revoked, for example:
+> From: Frank Li <Frank.Li@nxp.com>
 >
-> - vfio-pci: the child reaches the BAR after the device memory was
->   disabled or the device was reset, instead of getting SIGBUS;
-> - panthor: the child maps the pages of an evicted buffer object after
->   the driver has released them.
+> Replace open-coded assignments to callback and callback_param fields
+> of struct dma_async_tx_descriptor with calls to the
+> dmaengine_desc_set_callback() helper across sound drivers.
 >
-> The same branch deposits no page table under the copy. ppc64 in hash
-> mode keeps the hash slot array of every huge PMD in that table, so the
-> child dereferences a NULL table on the first hash fault, in
-> __hash_page_thp(), and on the zap, in hash__pmdp_huge_get_and_clear().
+> No functional change intended. Prepare to make struct
+> dma_async_tx_descriptor private to the DMA engine.
 >
-> Take the locks first and let vm_normal_page_pmd() tell a PFN mapping
-> from a folio under them, as copy_present_ptes() does with
-> vm_normal_page(). The zap clears the parent PMD under the same lock, so
-> either fork finds it none and skips it, or the copy is in place before
-> the zap reaches the child.
->
-> The copy of a PFN mapping then goes through the same tail as a folio:
->
-> - it gets a page table where the architecture needs one;
-> - in a shared mapping it is marked clean in the child, as a PTE is;
-> - in a CoW mapping, which only VM_MIXEDMAP allows, both sides are write
->   protected instead of a warning being printed.
->
-> Fixes: bc02afbd4d73 ("mm/fork: accept huge pfnmap entries")
-> Fixes: d1503aa9ab80 ("powerpc/64s: Add support for huge pfnmaps")
-> Cc: stable@vger.kernel.org
-> Reported-by: Sashiko <sashiko-bot@kernel.org>
-> Closes: https://sashiko.dev/#/patchset/20261014-b4-prep-vstor-149847-copy=
-_huge_pmd-recheck-special-pmd-v1-1-d225c60bc316@virtuozzo.com?part=3D1
-> Suggested-by: David Hildenbrand (Arm) <david@kernel.org>
-> Acked-by: Kiryl Shutsemau (Meta) <kas@kernel.org>
-> Acked-by: David Hildenbrand (Arm) <david@kernel.org>
-> Signed-off-by: Konstantin Khorenko <khorenko@virtuozzo.com>
+> Signed-off-by: Frank Li <Frank.Li@nxp.com>
+
+For fsl part
+Acked-by: Shengjiu Wang <shengjiu.wang@gmail.com>
+
+Best regards
+Shengjiu Wang
 > ---
->  mm/huge_memory.c | 24 +++---------------------
->  1 file changed, 3 insertions(+), 21 deletions(-)
+>  sound/core/pcm_dmaengine.c         | 3 +--
+>  sound/soc/fsl/fsl_asrc_dma.c       | 3 +--
+>  sound/soc/fsl/fsl_asrc_m2m.c       | 3 +--
+>  sound/soc/renesas/fsi.c            | 3 +--
+>  sound/soc/renesas/siu_pcm.c        | 6 ++----
+>  sound/soc/sprd/sprd-pcm-compress.c | 5 +++--
+>  sound/soc/sprd/sprd-pcm-dma.c      | 5 +++--
+>  sound/soc/stm/stm32_spdifrx.c      | 3 +--
+>  8 files changed, 13 insertions(+), 18 deletions(-)
 >
-
-Makes sense.
-
-Acked-by: Zi Yan <ziy@nvidia.com>
-
---=20
-Best Regards,
-Yan, Zi
-
+> diff --git a/sound/core/pcm_dmaengine.c b/sound/core/pcm_dmaengine.c
+> index 1306b04be171a..41feb5312ffec 100644
+> --- a/sound/core/pcm_dmaengine.c
+> +++ b/sound/core/pcm_dmaengine.c
+> @@ -169,8 +169,7 @@ static int dmaengine_pcm_prepare_and_submit(struct sn=
+d_pcm_substream *substream)
+>         if (!desc)
+>                 return -ENOMEM;
+>
+> -       desc->callback =3D dmaengine_pcm_dma_complete;
+> -       desc->callback_param =3D substream;
+> +       dmaengine_desc_set_callback(desc, dmaengine_pcm_dma_complete, NUL=
+L, substream);
+>         prtd->cookie =3D dmaengine_submit(desc);
+>
+>         return 0;
+> diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
+> index b417de6abebe4..cd3bf6340b650 100644
+> --- a/sound/soc/fsl/fsl_asrc_dma.c
+> +++ b/sound/soc/fsl/fsl_asrc_dma.c
+> @@ -76,8 +76,7 @@ static int fsl_asrc_dma_prepare_and_submit(struct snd_p=
+cm_substream *substream,
+>                 return -ENOMEM;
+>         }
+>
+> -       pair->desc[!dir]->callback =3D fsl_asrc_dma_complete;
+> -       pair->desc[!dir]->callback_param =3D substream;
+> +       dmaengine_desc_set_callback(pair->desc[!dir], fsl_asrc_dma_comple=
+te, NULL, substream);
+>
+>         dmaengine_submit(pair->desc[!dir]);
+>
+> diff --git a/sound/soc/fsl/fsl_asrc_m2m.c b/sound/soc/fsl/fsl_asrc_m2m.c
+> index 58101ce07c9f9..c6970a7e88f3f 100644
+> --- a/sound/soc/fsl/fsl_asrc_m2m.c
+> +++ b/sound/soc/fsl/fsl_asrc_m2m.c
+> @@ -176,8 +176,7 @@ static int asrc_dmaconfig(struct fsl_asrc_pair *pair,
+>                 return -EINVAL;
+>         }
+>
+> -       pair->desc[dir]->callback =3D ASRC_xPUT_DMA_CALLBACK(dir);
+> -       pair->desc[dir]->callback_param =3D pair;
+> +       dmaengine_desc_set_callback(pair->desc[dir], ASRC_xPUT_DMA_CALLBA=
+CK(dir), NULL, pair);
+>
+>         return 0;
+>  }
+> diff --git a/sound/soc/renesas/fsi.c b/sound/soc/renesas/fsi.c
+> index 74e2ea002fbb1..fa21cf47befff 100644
+> --- a/sound/soc/renesas/fsi.c
+> +++ b/sound/soc/renesas/fsi.c
+> @@ -1375,8 +1375,7 @@ static int fsi_dma_transfer(struct fsi_priv *fsi, s=
+truct fsi_stream *io)
+>                 goto fsi_dma_transfer_err;
+>         }
+>
+> -       desc->callback          =3D fsi_dma_complete;
+> -       desc->callback_param    =3D io;
+> +       dmaengine_desc_set_callback(desc, fsi_dma_complete, NULL, io);
+>
+>         if (dmaengine_submit(desc) < 0) {
+>                 dev_err(dai->dev, "tx_submit() fail\n");
+> diff --git a/sound/soc/renesas/siu_pcm.c b/sound/soc/renesas/siu_pcm.c
+> index fd5b20b469a4a..7208514e16a43 100644
+> --- a/sound/soc/renesas/siu_pcm.c
+> +++ b/sound/soc/renesas/siu_pcm.c
+> @@ -125,8 +125,7 @@ static int siu_pcm_wr_set(struct siu_port *port_info,
+>                 return -ENOMEM;
+>         }
+>
+> -       desc->callback =3D siu_dma_tx_complete;
+> -       desc->callback_param =3D siu_stream;
+> +       dmaengine_desc_set_callback(desc, siu_dma_tx_complete, NULL, siu_=
+stream);
+>         cookie =3D dmaengine_submit(desc);
+>         if (cookie < 0) {
+>                 dev_err(dev, "Failed to submit a dma transfer\n");
+> @@ -175,8 +174,7 @@ static int siu_pcm_rd_set(struct siu_port *port_info,
+>                 return -ENOMEM;
+>         }
+>
+> -       desc->callback =3D siu_dma_tx_complete;
+> -       desc->callback_param =3D siu_stream;
+> +       dmaengine_desc_set_callback(desc, siu_dma_tx_complete, NULL, siu_=
+stream);
+>         cookie =3D dmaengine_submit(desc);
+>         if (cookie < 0) {
+>                 dev_err(dev, "Failed to submit dma descriptor\n");
+> diff --git a/sound/soc/sprd/sprd-pcm-compress.c b/sound/soc/sprd/sprd-pcm=
+-compress.c
+> index f790b959cd4e4..a810c9c8a0b5b 100644
+> --- a/sound/soc/sprd/sprd-pcm-compress.c
+> +++ b/sound/soc/sprd/sprd-pcm-compress.c
+> @@ -247,8 +247,9 @@ static int sprd_platform_compr_dma_config(struct snd_=
+soc_component *component,
+>
+>         /* Only channel 1 transfer can wake up the AP system. */
+>         if (!params->no_wake_mode && channel =3D=3D 1) {
+> -               dma->desc->callback =3D sprd_platform_compr_dma_complete;
+> -               dma->desc->callback_param =3D cstream;
+> +               dmaengine_desc_set_callback(dma->desc,
+> +                                           sprd_platform_compr_dma_compl=
+ete,
+> +                                           NULL, cstream);
+>         }
+>
+>         kfree(sg);
+> diff --git a/sound/soc/sprd/sprd-pcm-dma.c b/sound/soc/sprd/sprd-pcm-dma.=
+c
+> index bbd7516f81954..968901ae4c335 100644
+> --- a/sound/soc/sprd/sprd-pcm-dma.c
+> +++ b/sound/soc/sprd/sprd-pcm-dma.c
+> @@ -287,8 +287,9 @@ static int sprd_pcm_hw_params(struct snd_soc_componen=
+t *component,
+>                 }
+>
+>                 if (!runtime->no_period_wakeup) {
+> -                       data->desc->callback =3D sprd_pcm_dma_complete;
+> -                       data->desc->callback_param =3D dma_private;
+> +                       dmaengine_desc_set_callback(data->desc,
+> +                                                   sprd_pcm_dma_complete=
+,
+> +                                                   NULL, dma_private);
+>                 }
+>         }
+>
+> diff --git a/sound/soc/stm/stm32_spdifrx.c b/sound/soc/stm/stm32_spdifrx.=
+c
+> index 88863dbd05d9b..44467a25fb69a 100644
+> --- a/sound/soc/stm/stm32_spdifrx.c
+> +++ b/sound/soc/stm/stm32_spdifrx.c
+> @@ -302,8 +302,7 @@ static int stm32_spdifrx_dma_ctrl_start(struct stm32_=
+spdifrx_data *spdifrx)
+>         if (!spdifrx->desc)
+>                 return -EINVAL;
+>
+> -       spdifrx->desc->callback =3D stm32_spdifrx_dma_complete;
+> -       spdifrx->desc->callback_param =3D spdifrx;
+> +       dmaengine_desc_set_callback(spdifrx->desc, stm32_spdifrx_dma_comp=
+lete, NULL, spdifrx);
+>         cookie =3D dmaengine_submit(spdifrx->desc);
+>         err =3D dma_submit_error(cookie);
+>         if (err)
+> --
+> 2.43.0
+>
 
