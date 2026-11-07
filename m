@@ -2,62 +2,86 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4BD78606A32E
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Nov 2026 16:00:26 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1946606D3E7
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Nov 2026 16:10:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m0iRscL1
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DudqRbSQ
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jMLNm1VSRz2xrC;
-	Sun, 08 Nov 2026 03:00:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794067224;
-	cv=none; b=XkgXortOsDRd1CoJbLjZ9b8qs1jm9qOKsQHulBMgizHSJwwh8jijie9RrioGLcDfSHTtyPIp9xyDJ3Pu+tdwgQgw3lDTzjB58lCK+rpkBSpw7sMLw4gYcU8VmorOy59H346V3uqubu+K2aUjkqVcuycCJEmWvb1JKO+7JaG1TL1k1Y52ksnr2FLatVvoSTtS9K5WO9YjxL3EgCsi1D69hgfQNEliOLTw2YHJbJeQbcrm7T8CgmTd7kgJwjGsM/392WIlKT3ZUL2rLm+Re0BKx8PKzXUjV4sXhNWDp+NXLPD0B1f2BUJl2kA+/5ha1ukI0doan02LfafghmHjiHxI7g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jMLcV0pvVz2xrC;
+	Sun, 08 Nov 2026 03:10:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794067834;
+	cv=none; b=ITZqvpqO7VdefdencOkNsPIoXP1OIyMzuCbZjJ20ZBaT8KEhPfUgYJ/xGuY1EDNyHW9RLXMQNuMkPcKuzyucXE1W7q6E6Zo57+q02x0PAfH79Ep91Uf/ClD4NeZueQlWNTZ+3QKjYwmsyfSFtkP7F+F/h216zuKytGnUszywidFS8+iI9En3WqlIkPetYTsnCMzCgjZBddLom/oz4nckfCqY0jEiJbdr67Z8EUDMtqh/9wyN5/8kiZYxjGWFZBUcosfVhrq0KiF41Znk4mIvr6kJaYjpitLzknoK7PjIqlU62bzkv1JF7TODP005fSFd6j/1kZOhRQB8/PFOmT79Dg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794067224; c=relaxed/relaxed;
-	bh=ArOxjA9/kNed9+49iETydsddSuLzELHsS2ZSf7G4VZw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dRR2zwh4n6qBnjzxhabxlekkCvunuCVr2fKDLkQfyAQotUHJgE+7nx6xxiu65kjWFXIGcssjmwkPIcEJ4QbeoxBTd2VZ2NFkdHAqF7+637s/yWKka/UJnLeJFxL+/6wi+nSBWl0jI20ToVfnOoAUdsjCGNpRi0YS4puaAt3HuCJAsC3dFys6uOXGxRM1oGV6o+dM8N75xi07Hv8E53/5HzBpro/JnRDsrzgbbvH3RuvEv7Acl021zK65V0G3s50LDT/9+PdzbGc7MzsnMu6eOBvlJ9JDFkZsACBdGeCTI/DXNw9jT8eQL8P5w3r0WIRi7o0SXe8ujBa0G1S67iJkiQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m0iRscL1; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1794067834; c=relaxed/relaxed;
+	bh=yrl1fDgvB8SejpyA+O0u1vRjlm41/COeTHtKBCR1yZ8=;
+	h=Date:From:To:CC:Subject:In-Reply-To:References:Message-ID:
+	 MIME-Version:Content-Type; b=YggKBpeTH5nU9rRYiKDd9lAXw+y17tPFWBQzD+Ib25L2B1xP8Laq/t796Lde+ONdnrWgzwYt2vrpErBUh+20C4xgpinYtrcfikBzPQr7RfqFnA/zfV83gyfEYGloGMWu/0zrW4nZS9iPb+QKZwHvjJ+7abLC6JUbzf/5oznpL+odfL1XG+gEmM213Ij2Pzucj3xf83LO/qiGJdm+y4lFHQouxNsK7dpehQRoBaDhF5rc6dAQYuYOmo++ZdO7vBylSqwstUGkFlHFOEye3m7CNQC2tWHl8mOImNOj/zjRwzeecnylIbtG0wgWQI09y3RKYdrYOYTNqogMDMI1vnlawA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DudqRbSQ; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m0iRscL1;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DudqRbSQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jMLNl2KKSz2xH7
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Nov 2026 03:00:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jMLcT32KKz2xH7
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Nov 2026 03:10:33 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 504CE409F2;
-	Sat,  7 Nov 2026 16:00:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0DCB71F0089F;
-	Sat,  7 Nov 2026 16:00:21 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 8275861877;
+	Sat,  7 Nov 2026 16:10:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1758C1F0089F;
+	Sat,  7 Nov 2026 16:10:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794067221;
-	bh=ArOxjA9/kNed9+49iETydsddSuLzELHsS2ZSf7G4VZw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=m0iRscL1Nf8EfRCl/yA11zT79f5EHr+rAOw79/Ks6ImTlLGyTQSUFugaZlcT8yNj3
-	 9cvfc2TvrORa0cccyrlEOObHXRzeHQ4kiG1F94M7wIPPrYoSp2Ct65yHqMNHAcb7tz
-	 7lYPcoP6Rv5fO8RkLCnFNdoWcT4LuvfPPgP1W/fsBst9OoYpWwoOkM+iUsGI8p/yE8
-	 PdYGCat4cK8OtSq6w1Fi+km5PQSkehP9DBGrPt0/W+sg9dveKMeY9zGUDcZdygF3Vo
-	 a5Fw1/Ps2PRfXgfYNI9j6FtW5gr+sdGvBx1TyD9s2i1JQsuRG0DxFtSbIDcND/sHW4
-	 /tMm+7a4adPEA==
-Received: by traversing.sirena.org.uk (Postfix, from userid 1000)
-	id 0E5842B35F00; Sat, 07 Nov 2026 16:00:18 +0000 (GMT)
-Date: Sat, 7 Nov 2026 16:00:17 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Chancel Liu <chancel.liu@oss.nxp.com>
-Cc: shengjiu.wang@oss.nxp.com, shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com,
-	festevam@gmail.com, nicoleotsuka@gmail.com, lgirdwood@gmail.com,
-	perex@perex.cz, tiwai@suse.com, linux-sound@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ASoC: fsl_asrc_dma: fix error handling for DMA channel
- retrieval
-Message-ID: <7a9ae82c-838a-4543-91f6-e4f6397c4e91@sirena.org.uk>
-References: <20261028025921.4155551-1-shengjiu.wang@oss.nxp.com>
- <11ef44f7-e268-438f-8a42-c3bb89e42cfc@oss.nxp.com>
+	s=k20260515; t=1794067830;
+	bh=yrl1fDgvB8SejpyA+O0u1vRjlm41/COeTHtKBCR1yZ8=;
+	h=Date:From:To:CC:Subject:In-Reply-To:References;
+	b=DudqRbSQXCpr6NhdcgkB28/OJ09fv/xb+ZGVAY2ZZcm0NtXYxKjH24XfLPv1YVH+1
+	 N2Smc+eQQaJmUtmHSjIuIOHPbXtdHkwnaUWqwn18l1Zgme7MhVjd/tmwPXx2sHiZmJ
+	 bVG7HcpDVP0TwBfdMqAH6zxIyHwUkaCeHOVhR2aYppt91bZLwCTiFYtodZA1aRzQhT
+	 JFzXQc4CJvaSMHUeBSzyyst4sJaPobtuTL08pUib1PO2/6JKi1TR0Oc7vVJSOMiTRg
+	 di9pOtOgBcjQKNqN/zgV0r2ojSo7IUXfYme+kVAZvSpJolvZJtmmOXjKLjiXPaiu1m
+	 qPutBKIcKy2tg==
+Date: Sat, 07 Nov 2026 08:10:28 -0800
+From: Kees Cook <kees@kernel.org>
+To: Christian Brauner <brauner@kernel.org>, linux-fsdevel@vger.kernel.org
+CC: Linus Torvalds <torvalds@linux-foundation.org>, Jann Horn <jannh@google.com>,
+ Josef Bacik <josef@toxicpanda.com>, Chris Mason <mason@kernel.org>,
+ Jeff Layton <jlayton@kernel.org>, NeilBrown <neil@brown.name>,
+ Eric Dumazet <edumazet@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+ Al Viro <viro@zeniv.linux.org.uk>, Jonathan Corbet <corbet@lwn.net>,
+ Christoph Hellwig <hch@lst.de>, Greg Kroah-Hartman <gregkh@suse.de>,
+ Joel Granados <joel.granados@kernel.org>, Jan Kara <jack@suse.cz>,
+ Jan Kara <jack@suse.com>, linux-kernel@vger.kernel.org,
+ linux-nfs@vger.kernel.org, linux-acpi@vger.kernel.org,
+ linux-kselftest@vger.kernel.org, linux-s390@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-um@lists.infradead.org,
+ linux-wireless@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org, ntfs3@lists.linux.dev,
+ platform-driver-x86@vger.kernel.org, coreteam@netfilter.org,
+ kexec@lists.infradead.org, linux-pci@vger.kernel.org,
+ linux-sound@vger.kernel.org, netfilter-devel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, ibm-acpi-devel@lists.sourceforge.net,
+ jfs-discussion@lists.sourceforge.net, linux-alpha@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-cifs@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-mm@kvack.org,
+ linux-sh@vger.kernel.org, linux-usb@vger.kernel.org,
+ samba-technical@lists.samba.org, sparclinux@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, linux-doc@vger.kernel.org,
+ linux-serial@vger.kernel.org, linux-atm-general@lists.sourceforge.net,
+ Takashi Iwai <tiwai@suse.de>, linux-input@vger.kernel.org,
+ linux-raid@vger.kernel.org, linux-ext4@vger.kernel.org,
+ linux-modules@vger.kernel.org, linux-debuggers@vger.kernel.org,
+ "Christian Brauner (Amutable)" <brauner@kernel.org>,
+ Chuck Lever <cel@kernel.org>
+Subject: =?US-ASCII?Q?Re=3A_=5BPATCH_RESEND_v2_07/23=5D_proc=3A_let_pr?=
+ =?US-ASCII?Q?ocfs_own_the_seq=5Ffile_of_seq=5Ffile_entries?=
+User-Agent: K-9 Mail for Android
+In-Reply-To: <20261104-work-procfs-core-v2-7-76ace653a773@kernel.org>
+References: <20261104-work-procfs-core-v2-0-76ace653a773@kernel.org> <20261104-work-procfs-core-v2-7-76ace653a773@kernel.org>
+Message-ID: <8A21EE2A-F392-40B7-9152-CBC440FDDA70@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,54 +95,40 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="0T4D+cL7iXVxGEVX"
-Content-Disposition: inline
-In-Reply-To: <11ef44f7-e268-438f-8a42-c3bb89e42cfc@oss.nxp.com>
-X-Cookie: Whoever dies with the most toys wins.
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
-	autolearn=ham autolearn_force=no version=4.0.1
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 
---0T4D+cL7iXVxGEVX
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Fri, Nov 06, 2026 at 01:50:46PM +0800, Chancel Liu wrote:
-> On 10/28/2026 10:59 AM, shengjiu.wang@oss.nxp.com wrote:
-> > From: Shengjiu Wang <shengjiu.wang@nxp.com>
-> >=20
-> > The original check used `if (!tmp_chan)`, which only catches NULL point=
-ers.
-> > However `asrc->get_dma_channel()` returns an error pointer. The NULL ch=
-eck
-> > will always succeed, so replace it with `IS_ERR(tmp_chan)` to correctly
-> > detect errors.
-> >=20
-> > Fixes: b4136c0d69ea ("ASoC: fsl_asrc: check the second front-end DMA ch=
-annel")
-> > Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
->=20
-> Reviewed-by: Chancel Liu <chancel.liu@gmail.com>
+On November 4, 2026 11:30:58 AM PST, Christian Brauner <brauner@kernel=2Eo=
+rg> wrote:
+> [=2E=2E=2E]
+>+static int pde_init_seq_direct(struct proc_dir_entry *pde)
+>+{
+>+	struct seq_operations *ops;
+>+
+>+	if (!pde_is_seq_file(pde))
+>+		return 0;
+>+	ops =3D kmalloc(sizeof(*ops), GFP_KERNEL);
 
-Note that if you send from an address other than the one you're using
-for your R-b it'll be ignored by the tooling.
+Please use the new style typed allocation calls for objects:
 
---0T4D+cL7iXVxGEVX
-Content-Type: application/pgp-signature; name="signature.asc"
+ops =3D kmalloc_obj(*ops);
 
------BEGIN PGP SIGNATURE-----
+(This happened to jump out at me, but please check the other patches for t=
+his pattern=2E)
 
-iHUEABYKAB0WIQReagvpf3TrrA7BoYYv73Ows9A4iQUCau9LEQAKCRAv73Ows9A4
-id2uAQCPedGJPX4573rTGqBo52iWaNHcKDS6Cnz2BWtcJ4ZmVQEA5EwLlQBDtobL
-U9++hIw2RYpFKi+l4LjOjVTs6aecsQs=
-=1zZq
------END PGP SIGNATURE-----
+> 		dp->open =3D kzalloc(sizeof(*dp->open), GFP_KERNEL);
 
---0T4D+cL7iXVxGEVX--
+Same, etc=2E
+
+--=20
+Kees Cook
 
