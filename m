@@ -2,49 +2,75 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 287EE606EEA4
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Nov 2026 16:39:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D816606A326
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Nov 2026 16:43:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ec9OinBL
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jMMFL0g39z2yGT;
-	Sun, 08 Nov 2026 03:39:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.81
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794069542;
-	cv=none; b=iSClwZxEBls3y9iSWTYmMRJ9N+LUExnw5LaZR8aIdqi5zcYqKOEFWDb9GQ6EfPpZXP3xfxqBWwaK91ihf2E/JcVVOjnJe01i4PpSoy528xtxdw2jIf/SWYYPrR6dsYKIaRBYISFsCYWOPKL+Xg1WtX7nQbXZJn0P3wL6VYFNXZ4Tsx8W7GcfiSFi201lVSs0v4MrftBRXYvrzCzZ/IuY3U5vUSYQib14b7AKwq2pFWn21JjlxBHVaYwIkeJ8qpCBf52Zff9BC5+YbmyFsYo/HICeN50Ku4Evji2+WJZAUfqfRyoS/S7Zoi45/fMJPFF0i0kkPru41N7Uu7iiE1NPWw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jMMLd58x6z2xrC;
+	Sun, 08 Nov 2026 03:43:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794069817;
+	cv=none; b=aAAjkvOMzEURz00fVmzLU5SmDp3S+O7E8OScLYk55i6OW8IxQMSv4XUDwQl1VNBzrE15FGzhmDsaQ8x3FkPBZrnYpkXCScx2yd8lNEoFg4wDB0RfMaEqIu3BktFIyKS4YIU+NmPZwsdu6GEZYuQ9rdnSWvSkOUfsWVUzLSMoKfkqUrjD/aLjoF3ta7pZ7A5Z6hvX/Tz0eDDy4DUqomlueHHO1UqOUfZVwc55u2r8fOdnjrRoQ55ry49MfxzxImirH6e+oZj9dFsjEFkVhHyyPAAQATack8G7sJaWJ2lkcjYXD6SNu2sdkJhhfy6/LbsHUjACOEav1ValZreEJqVmJQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794069542; c=relaxed/relaxed;
-	bh=40kuihcjhTlj1aLdgEnB45MZzzZ6zfuouT8zXvlNzdI=;
-	h=From:To:Cc:Subject:In-Reply-To:References:MIME-Version:
-	 Content-Type:Date:Message-ID; b=ArI1eNeG/SnNc86LGB930aPBkp8FYHbrD7MtbEsZlWD1x1YDviG/sKeu6ef8Uht30dY+v5rCv07soWhQV7zIPXhUjIHSe/dZln3qQQu4d9iD/LFKthWZUUaUswi4+FNpDIbCD5wEYWWJWcw8Nrd24CU2q8i02IlGCOv44w3FpHPN7eHQhAU3FCWa0qQEVIrxdIHYONMzECdIHIUA+/ngdQphmpDfHUJFd4gq9mLIstZMyH8+gs786fa+HsOJUUjxRqyhrzgPagNez0Ccz2XeFmfyQyNbrgN955cTeS7Vv7xrk7LCnk3tW5Wvv2OH2i3xRqDXDp43XfwdRX5Z8XRjtw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass (client-ip=159.226.251.81; helo=cstnet.cn; envelope-from=vulab@iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=iscas.ac.cn
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.81; helo=cstnet.cn; envelope-from=vulab@iscas.ac.cn; receiver=lists.ozlabs.org)
-Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
+	t=1794069817; c=relaxed/relaxed;
+	bh=vJlfnNqej/LkG6MaOOq3+jKdNMX9ZNsvcUBYJfUwMpw=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=SP+Bh2eqTVZ0qKL+LLCP7vSE5muxpnz1reO9j6L3Flzpex892pThvtOXUY9hrq4IK2ZYyA9PE+cuPtIDYCmaUOowWUyFd9A8PgAEY7X0JZSYrjBq+rOxetNlkbYg+NKv6GEDvvdKWgY2SYjh8Cxad3JjTTBQpPOsqJs0eE3rxmU/+8RK2yIPgDN4uH1xwO+5u5ucmvS8m/E5BNkgoDxmxoe6R3R22/E71gTsIh8JoOESyOXvFBF18l4OfiusS8K35Vwdu2XbMT4LWmfYykabPcMy7+/6MGNcJnOc/8bZ3CYe6a6Q0plt4JKaOm2JfVot+liu9HRXKXE3u914N0x6hQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ec9OinBL; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=cel@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ec9OinBL;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=cel@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jMMFK1SwQz2xjM
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Nov 2026 03:39:01 +1100 (AEDT)
-Received: from [172.100.0.8] (unknown [36.110.52.2])
-	by APP-03 (Coremail) with SMTP id rQCowAAXJpcfVO9qL_iBAA--.3844S2;
-	Sun, 08 Nov 2026 00:38:55 +0800 (CST)
-From: Wentao Liang <vulab@iscas.ac.cn>
-To: Mark Brown <broonie@kernel.org>
-Cc: Xiubo Li <Xiubo.Lee@gmail.com>,
- Fabio Estevam <festevam@gmail.com>,
- Liam Girdwood <lgirdwood@gmail.com>,
- linux-kernel@vger.kernel.org,
- linux-sound@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
- Nicolin Chen <nicoleotsuka@gmail.com>,
- Jaroslav Kysela <perex@perex.cz>,
- Shengjiu Wang <shengjiu.wang@gmail.com>,
- Takashi Iwai <tiwai@suse.com>,
- vulab@iscas.ac.cn
-Subject: Re: [PATCH] ASoC: fsl-asoc-card: Fix codec device leak in
- fsl_asoc_card_probe()
-In-Reply-To: <1ff14ab8-fa35-45c3-abcc-1075a848be2d@sirena.org.uk>
-References: <20260917165654.2163461-1-vulab@iscas.ac.cn>
- <1ff14ab8-fa35-45c3-abcc-1075a848be2d@sirena.org.uk>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jMMLc2R9sz2xjM
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Nov 2026 03:43:36 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 7A06D609FF;
+	Sat,  7 Nov 2026 16:43:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D87E21F008A3;
+	Sat,  7 Nov 2026 16:43:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794069813;
+	bh=vJlfnNqej/LkG6MaOOq3+jKdNMX9ZNsvcUBYJfUwMpw=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject;
+	b=Ec9OinBLTdERos6h50EC0xUMTn77I2eH+sW83Lh5kwSY9BvV2OOVa/KNof0GP2Q58
+	 RS4VV3vBrJ/LJog1T9lg0D2JE4OoyqUja1mYU0rh9TBbXyPIEhQRpsuojcmq8ZMIA4
+	 CCDIxEY1vZFYI7ppfT5M0lTExZ07bRV7cMY147urYKAEBYKJp+dYFF+px+uccoSGQJ
+	 uVAe3HJmFJqNBLzSUpkpxl6XM/ygvvEBAxQusxKpDQigosD1nBGLgkLmP/DR4y72y1
+	 LgnZYxUr+IR4Egl8rgUGA8KwMUI2eGvYxK8dwEAUy7fQvT097QujPauhtAAp8a8K3u
+	 wRcc9px1LLfNQ==
+Received: from phl-compute-10.internal (phl-compute-10.internal [10.202.2.50])
+	by mailfauth.phl.internal (Postfix) with ESMTP id 1E9E1F40067;
+	Sat,  7 Nov 2026 11:43:31 -0500 (EST)
+Received: from phl-imap-15 ([10.202.2.104])
+  by phl-compute-10.internal (MEProxy); Sat, 07 Nov 2026 11:43:31 -0500
+X-ME-Sender: <xms:MlXvakDJz2aoRG_Q0Tr3dYW0eo4APQUabQqIttoZFPRFZ-x9snzIqw>
+    <xme:MlXvahUE11fMZOXF9JjGlaXmovQ63rXPe9CVrxbGMz01XC2UXZ8Ub-s6v11mUcT7K
+    6EUgoab8dJTWAHO_c14xHkS1kUKnJq9SFX4dojoicG37nrqW8Y-SchLZQ>
+X-ME-Proxy-Cause: dmFkZTF47JQfJLdRdMge2GMs+GugpouQhIspgU7BDymJQjozGtWeayorP8T8qJjOJtez5n
+    Mu6YVQMuTAuQf8dNPbyiJidY6z5iDchqOk/rPreMnFBsaZEyFLA1xNLvX2+sRgAAEV6CpA
+    18n7d+taVvJebv5vU6jJPdclNeeGqwUnruqBfjOVpjA4xXpT5GCaWy76JSn+teNqAA0ny2
+    vVmyqvtCRPIMNOkOlHDxwf2R+IqqtIN68NFJGnHnqmIyGIjD3zNX0zKaDGqEk7Ze2onYqy
+    9RdgDPRA3PikGN1W/7nDb8NiYp8Q9/+7zqfHAJcBEVt9DgwuHrHPFfmetOJuJSFKJUDZpN
+    mbRzObrxaiH+VuPVfFTvBWVxOAq7xc3fchnSigBQCyM4PA4HDuL1vAF5IoeXrMQk2aUW21
+    59Pn6Ph8ElZIblHku0CFRDKCKdVU/6BJGsrAIobO6f/CRmXPwJZ+FZIWnzEq4zHbFnFSj5
+    2GavxWreHaI/dkosMa1/Hz50DzNovuOurQwGdhu5YM7nZSIaOcaigZUM86iQpTNPvFE5q8
+    X0RucoetdeEG7ZlTg0zjUFsHpRlOfhY/tCKI3ix9kioMo32DZjUgaL6ky8l30WUfX53owO
+    FaUB1P+IyjUQnKRpIIcJTsmMD1HsAXSFOSlEcd18MZD9Rox3fmXGxCSSzMdg
+X-ME-Proxy: <xmx:M1Xvarm_GuLHtdhc-beslZ2ZxZoqr1pVXnXixSSL7TSDZnhBDdRW2w>
+    <xmx:M1XvakuXdXodbZzwSGhXpuZDbgbK4xmWfFZIJTq2PW_KgUkMPLhQ2w>
+    <xmx:M1XvakHt6uhcrYM_XDobstbNvikecMWxKGRyUkZcuWV3Fx0M6IIITQ>
+    <xmx:M1XvakswcIzGwK3QU4AniovTIpZY-XUd3Ibq2iA0mAnVEdW_mDFClQ>
+    <xmx:M1XvaqI_u5j39OfSlUWtLpJlRc3Dik8eKjcfeQJUyBgtS0utAvmxR5za>
+Feedback-ID: ifa6e4810:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id DFD31782738; Sat,  7 Nov 2026 11:43:30 -0500 (EST)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,54 +84,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-ThreadId: AE4uiykVHNXw
+Date: Sat, 07 Nov 2026 11:43:10 -0500
+From: "Chuck Lever" <cel@kernel.org>
+To: "Christian Brauner" <brauner@kernel.org>, linux-fsdevel@vger.kernel.org
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+ "Jann Horn" <jannh@google.com>, "Josef Bacik" <josef@toxicpanda.com>,
+ "Chris Mason" <mason@kernel.org>, "Jeff Layton" <jlayton@kernel.org>,
+ NeilBrown <neil@brown.name>, "Eric Dumazet" <edumazet@kernel.org>,
+ "Thomas Gleixner" <tglx@kernel.org>,
+ "Alexander Viro" <viro@zeniv.linux.org.uk>,
+ "Jonathan Corbet" <corbet@lwn.net>, "Christoph Hellwig" <hch@lst.de>,
+ "Greg Kroah-Hartman" <gregkh@suse.de>,
+ "Joel Granados" <joel.granados@kernel.org>, "Kees Cook" <kees@kernel.org>,
+ "Jan Kara" <jack@suse.cz>, "Jan Kara" <jack@suse.com>,
+ linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
+ linux-acpi@vger.kernel.org, linux-kselftest@vger.kernel.org,
+ linux-s390@vger.kernel.org,
+ "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+ linux-um@lists.infradead.org, linux-wireless@vger.kernel.org,
+ "Linuxppc Dev" <linuxppc-dev@lists.ozlabs.org>, netdev@vger.kernel.org,
+ ntfs3@lists.linux.dev, platform-driver-x86@vger.kernel.org,
+ coreteam@netfilter.org, kexec@lists.infradead.org, linux-pci@vger.kernel.org,
+ linux-sound@vger.kernel.org, netfilter-devel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, ibm-acpi-devel@lists.sourceforge.net,
+ jfs-discussion@lists.sourceforge.net, linux-alpha@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-cifs@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-mm@kvack.org,
+ linux-sh@vger.kernel.org, linux-usb@vger.kernel.org,
+ samba-technical@lists.samba.org, sparclinux@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, linux-doc@vger.kernel.org,
+ linux-serial@vger.kernel.org, linux-atm-general@lists.sourceforge.net,
+ "Takashi Iwai" <tiwai@suse.de>, linux-input@vger.kernel.org,
+ linux-raid@vger.kernel.org, linux-ext4@vger.kernel.org,
+ linux-modules@vger.kernel.org, linux-debuggers@vger.kernel.org
+Message-Id: <39d3364c-d4d1-4919-86c0-695f75946c95@app.fastmail.com>
+In-Reply-To: <20261104-work-procfs-net-v2-7-221e2437fed1@kernel.org>
+References: <20261104-work-procfs-net-v2-0-221e2437fed1@kernel.org>
+ <20261104-work-procfs-net-v2-7-221e2437fed1@kernel.org>
+Subject: Re: [PATCH RESEND v2 07/13] SUNRPC: let procfs copy in writes
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Date: Sat, 07 Nov 2026 16:38:38 +0000
-Message-ID: <20261107163838.271829-1-vulab@iscas.ac.cn>
-X-CM-TRANSID:rQCowAAXJpcfVO9qL_iBAA--.3844S2
-X-Coremail-Antispam: 1UD129KBjvdXoW7Gw4kAw1fuF13Aw1kXF48tFb_yoW3uFg_ua
-	93Cryjqw1UZF4UWr43GF1SyF12gFWjqw1kGwnYgFWxXryrAF12g3ZYgwn7Aw1xX395ZrnF
-	kr1DZ3yY9wnF9jkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUIcSsGvfJTRUUUb-AFc2x0x2IEx4CE42xK8VAvwI8IcIk0rVWrJVCq3wAFIxvE14AK
-	wVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK021l84ACjcxK6xIIjxv20x
-	vE14v26r4j6ryUM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j6F4UM28EF7xvwVC2z280
-	aVAFwI0_Gr0_Cr1l84ACjcxK6I8E87Iv6xkF7I0E14v26r4UJVWxJr1le2I262IYc4CY6c
-	8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_Jw0_
-	WrylYx0Ex4A2jsIE14v26r4j6F4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvEwIxGrw
-	ACjI8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2Y2ka0xkIwI1lc7CjxVAaw2AF
-	wI0_Jw0_GFyl42xK82IYc2Ij64vIr41l42xK82IY6x8ErcxFaVAv8VW8GFyrJr1UJwCFx2
-	IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v2
-	6r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67
-	AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k26cxKx2IY
-	s7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr
-	0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x0JUDOz3UUUUU=
-X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiDAIEA2rvPp4fAgABsw
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Thu, Sep 17, 2026 at 11:29:53PM +0100, Mark Brown wrote:
-> This doesn't apply against current code, please check and resend.
 
-Sorry for the very late reply, and for the noise.
 
-You are right, and after rebasing I found that the patch is not just
-stale: de27e0cadcce ("ASoC: fsl-asoc-card: Move bound-component setup
-to late_probe") removed the codec_dev[] lookups from probe().  Codec
-components are now resolved in late_probe() through the bound rtd, and
-no codec device reference is taken there, so the leak this patch
-addressed no longer exists in current code.
+On Wed, Nov 4, 2026, at 2:59 PM, Christian Brauner wrote:
+> Implement ->proc_write_buf() for the procfs channel, flush and
+> use-gss-proxy files so procfs copies in what is written before it pins
+> the entry. The channel file parses the downcall from that copy and the
+> flush files share the parsing with rpc_pipefs in do_write_flush(). The
+> rpc_pipefs files keep copying in themselves.
+>
+> CACHE_DOWNCALL_MAX and CACHE_FLUSH_MAX name the limits both sides
+> enforce, procfs through ->proc_write_size. The procfs files are removed
+> when the network namespace goes away and that no longer waits for a
+> writer that faults on its buffer.
+>
+> Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 
-I am dropping this patch rather than resending a no-op change.
+Acked-by: Chuck Lever <cel@kernel.org>
 
-The ASRC half of the same series is still valid and was rebased and
-resent on Nov 4:
 
-  https://lore.kernel.org/all/20261104024047.1508601-1-vulab@iscas.ac.cn/
-
-Thanks,
-Wentao
-
+-- 
+Chuck Lever (Come to NFS bake-a-thon! https://nfsv4bat.org)
 
