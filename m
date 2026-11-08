@@ -2,62 +2,79 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A2B4A606A32A
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Nov 2026 13:43:58 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C5CB8606A320
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Nov 2026 14:58:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IvN+ldnk
+	dkim=pass (2048-bit key) header.d=soleen.com header.i=@soleen.com header.a=rsa-sha256 header.s=google header.b=PCwdJ/Gz
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jMvJr6qmmz2xwM;
-	Mon, 09 Nov 2026 00:43:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794145436;
-	cv=none; b=MSDB5R68RDTJvf1jFLXf95Lq12ocbn37z25W86gWz4Y/9GfBlTf0VYNK+ObDLADxUurnE1oc9QAYOdWy9ut2NZQeDwFmUyj85hfrxBp9NyP6hQaggJ8F+5L+hLeqFe9/93WBc+avz6ljzh9MPpUiJaatKuWe5TDKlhgUWLnUu6XHZVtFPFqkXn7SzltmIAwtYlhMNFV5ODtnKGQrjNQMRAAnoXc4LwfQ/k0H2kP1trQTQQ8rYV1UGQXWmeyKvndMMcjgQg3YSOcwnesVkVZE6lku3HzqH+XS9QgJ+IhVXrPbMp2LdIU4BF2giX3+LB5n+xzN7DztQUFwtk1dtKWrPg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jMwyn5bGvz2xwM;
+	Mon, 09 Nov 2026 01:58:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::e34"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794149905;
+	cv=none; b=EPWUNmpGF6zIAfNranruTueR2FsR8SmylIuMUGPhDnfdBK6A5aZExhko9j155Uvnoqmkub96eOlp/CIBhhrE4Q2Ht/y61Xq9tjcvxOevp8l2k2O4xAdawoBPHI6vSj5NFVdP6JR/S6Om7FJqv1SwpX53a7dTWAk16YjwxSQwKmUD+hJqDdunq+De8SCcXBZx8QunAi7ZtBVun8PLiCQO4vSmwPmRR85ySK33ULp6i4zCr3SyCMbjI+OGgBtt+8Krg6qA/6l+DjgdsUvt2QRP1dwVoKfh0Ujsg4chvsn2xvAiOU2wKVS3k94jD0pvoI1OI0W6PddJTIr5CpCIKeYmaQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794145436; c=relaxed/relaxed;
-	bh=FiqicRgGFFmdN/zUTJYuWA333LJrRHYqatW2CdxXaWU=;
-	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=HZcIA9l14TVH7ng9Y0ykdwT472YE3m1SAMqcmpx+i9WjxshNexAhyoS2waOjUbT9jgw+iBeoM1GAo2P95TujGKmM5nAwJS10/X170kIl/AEmUSNE/TpMYRXxLzxS0DTCJpfnRas6qh8jTnBgI6ZQUEA4/llhbhVaBknvU05yaFGHP5GWcd4ojCPSujNeahQK3+e/aHFiH62slhTxbo5LVGYL711EzEhLywW4uzfPmd1Dacy8Ep+UDxHrmhuXhEYJEKZTp23PaCHdo8OXUWr3q75df8QPbhkvuus6RrNaDAqmVQvSILS4fiy2DScyZOFuLI+8HLOofyWoduBv48sPGg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IvN+ldnk; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1794149905; c=relaxed/relaxed;
+	bh=zg9wHbUjOFQvCSSXrqJHlgr9ERwDV2A9O9zK2C7wcfk=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
+	 References:In-Reply-To; b=EGrGH0EOQy5DU2EikTLdF4y08PbpFjpKFdjec7wRR06ctov3OhXBS3mK7eSDeqjh37eWtYkC1tPmHs2DU90boU6IRZL/G5jQS2vZqIL+vdx/f0BkSo3EKJtybFks0sYAForQ2rUToWIcZbpS2MAI9c4gxIr54G+oDyMlwAEXexaNxvl5PSd+xOIY1ZtGHRlAIcQHPA8ibXIyLsCrwyCWpxfylox3Lu21C8T227V9B2RMlpLFsC/yDbCGYdV3udFmJQIAue9qP79CIMhhbvhumByvFNl1N0Q0jwCDvdA0mi3z0+FzOIOf5c8QMAH7iyAvflq5q+ZAKUri0MECJwwNWQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=soleen.com; dkim=pass (2048-bit key; secure) header.d=soleen.com header.i=@soleen.com header.a=rsa-sha256 header.s=google header.b=PCwdJ/Gz; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::e34; helo=mail-vs1-xe34.google.com; envelope-from=pasha.tatashin@soleen.com; receiver=lists.ozlabs.org) smtp.mailfrom=soleen.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=soleen.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IvN+ldnk;
+	dkim=pass (2048-bit key; secure) header.d=soleen.com header.i=@soleen.com header.a=rsa-sha256 header.s=google header.b=PCwdJ/Gz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=soleen.com (client-ip=2607:f8b0:4864:20::e34; helo=mail-vs1-xe34.google.com; envelope-from=pasha.tatashin@soleen.com; receiver=lists.ozlabs.org)
+Received: from mail-vs1-xe34.google.com (mail-vs1-xe34.google.com [IPv6:2607:f8b0:4864:20::e34])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jMvJr0LKsz2xYw
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Nov 2026 00:43:55 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id BA2BE43C0D;
-	Sun,  8 Nov 2026 13:43:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7CC751F008A1;
-	Sun,  8 Nov 2026 13:43:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794145433;
-	bh=FiqicRgGFFmdN/zUTJYuWA333LJrRHYqatW2CdxXaWU=;
-	h=From:To:In-Reply-To:References:Subject:Date;
-	b=IvN+ldnklVfjckmSa8v/QBmd3v4Z/h2SyprJcN8nMSkNov+9JghSTnGjC7m+ZqaGK
-	 O0pg5F4bG3Y5jc4VumpHbnK2/IpD/J/X2aV0CmRsZkEpCBvJOvqM266hlHvLV7ZrOa
-	 TAsJ8h1VKevss4Qsmw6dcJul/Mvtdl9IHnko/5aa+U9bBFvoNJFNgq16xYOXaqBUYP
-	 sX0I61z5q+5di8ttgvUA24pTzmXC1ItwZrMKqJSgriNVD1kv3nAjMPVGr936vAaGQX
-	 GldAkOxQagVI+UQ5NKRA0UC3KkqmmhEPpsfN4rusG7/rHQT13S2NqbzaP7XvUj8PTH
-	 MyIg6naQNStSg==
-Received: from traversing.sirena.org.uk (localhost [IPv6:::1])
-	by traversing.sirena.org.uk (Postfix) with ESMTP id 016582C79261;
-	Sun, 08 Nov 2026 13:43:50 +0000 (GMT)
-From: Mark Brown <broonie@kernel.org>
-To: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com, 
- nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, 
- linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- linux-kernel@vger.kernel.org, shengjiu.wang@oss.nxp.com
-In-Reply-To: <20261028025921.4155551-1-shengjiu.wang@oss.nxp.com>
-References: <20261028025921.4155551-1-shengjiu.wang@oss.nxp.com>
-Subject: Re: [PATCH] ASoC: fsl_asrc_dma: fix error handling for DMA channel
- retrieval
-Message-Id: <179406738653.3424803.17185079246753708576.b4-ty@b4>
-Date: Sat, 07 Nov 2026 16:03:06 +0000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jMwyj22WKz2xnh
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Nov 2026 01:58:20 +1100 (AEDT)
+Received: by mail-vs1-xe34.google.com with SMTP id ada2fe7eead31-7cc0ccc2fddso27559137.1
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Nov 2026 06:58:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=soleen.com; s=google; t=1794149897; x=1794754697; darn=lists.ozlabs.org;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-type:content-transfer-encoding:mime-version:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=zg9wHbUjOFQvCSSXrqJHlgr9ERwDV2A9O9zK2C7wcfk=;
+        b=PCwdJ/GzE/DLxPyYpyXB+/M2CDemmnHwmSguG3hpu0cEJHDw8W/L0JvvR3Dv4I9Tbi
+         pCZw27ow+pGbCISEmbsX5A2yDpAG5DXARnVRx5UkIF5PUQTKpTPuEogH/1AiAxcuwcog
+         /Hemp28zKmlm7+I+ExxHLp0E4a7vSx8H7EgTj+jLkuSCmfLXbqhrePpx9YvWCC3S98gL
+         /q6qlJS6ItyeF9ox/MfVpJnd+2BK0EsT6ohT0QiK9XrANryuBx1aDQd6ZS+KstqwTvY8
+         8Tt9ldMSBeidwQ/esV67i/nVq9FA8KEaYOd0+hu85nqaH2BywAgh4LggkKqkd+2VU6wZ
+         J4tg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794149897; x=1794754697;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-type:content-transfer-encoding:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=zg9wHbUjOFQvCSSXrqJHlgr9ERwDV2A9O9zK2C7wcfk=;
+        b=XQ6aHCO0nguNxl0IxYrG2CPTteqr6GyrYYEheg6m3/YacgrpIEegYlXkEDh+mzRBCc
+         1In1I3KtG+b/9NfsDiHaAfTAuFMPpgUzcrtckjrj4zXtHMieDtGhS/9JGdFvR5dXsupn
+         F+Bl4BGc/FXZISUToV2LJ5KoSY1XbV3y/PnoO5KVcO3pGyAautTcYEQ7z6I0BrOxYA7M
+         U++mX923Ga0xYvK65tdoax4HR+xL8zEXZRJs9jXO8q4Bs4Xr64bgiYz8u3crTtVzPhlh
+         0/HOUz370Tfa3AqLBA7ikmvb3ueM+9yxG0zkgJVSEkbE5ycawgbOS5vxBVcg59+qIEPH
+         gUoA==
+X-Forwarded-Encrypted: i=1; AL+hErHybGQLbptFpKNYUN2sXA00eXMgkeQzn6TQRuygbdQUjofKRbt8VhnLUQJgpO9we/ZZKOwLRJMzEKxS/VQ=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z/Tdn85Cq8FNV6tXiWtF2CPIXg0iGXzMt7NrXNZrM/8ihHkEroz
+	JMTFZ371KsSF/UqzaZvQ3YknkDb12TZZZIcDO+AzOc6AGxFWRXudrCDbw6ECSKoDr7s=
+X-Gm-Gg: AYBFou1JeqVLo+2Wsfbn/HBzbEBR7nWL4NvBmD+WKnHTiQegUGikT6lnxARZJuzR1/1
+	AL+0Fd2W2lDg0P7fwBFhpyXYMN0hML+OK5X/VMuUzNf+8saLfnC3BJo/UaL0dhljyU6rD6fPYF7
+	ZHw+49at0UlmX+dp0nhZPHQm+te5Rq9J7znvooJ+xDTWCg7GcfsD6Gfy3drurleNpgbaRhACBbu
+	Kdmhqb2xhArpsVOGh46zeVYsuRd6bgEToxdyiEfSlOzJWJdbJv8dIJmAycSEU/Dwe6xPuYoSPvl
+	01zneVoJnXsSUzBrxbKI4sQWqeb4wgzS/cUGOYOIWQDjcPibDnlHa6l15crJvjR2xgQhdMqBwVG
+	s8xNXvAExxmA72ykMtnYgstGRZmJSGC5luTgBXFxoQs00O3elAkNsfMNl9luCbyT828VJb8i+hF
+	cn4SEpHQmABiQs4LO1rLZ3IqqCbjpu8bKWUVMm40OZMWvasR7bwDcQUiEtzWZbHe/4ZdqBdO3Lw
+	jbV0cCGFt1drFZdQf3EKlTvTl2C7YiX+qYmchGCOH7Y4ABGsfUKXkyJcNQzKFelD3sAOimAyyoh
+	tekq8gjkdGgFh80vKFdpjHr0sfQ2OZuvKtEjZxsNsNwGw2g7eLdyRpYiDXrzCDwnYRSYIj5jfpA
+	k0tvoGiOfyYg4riDx9YarrgMwrE+Hf7Q=
+X-Received: by 2002:a05:6102:511e:b0:7d2:cdd6:6be with SMTP id ada2fe7eead31-7d2db193714mr282127137.21.1794149897376;
+        Sun, 08 Nov 2026 06:58:17 -0800 (PST)
+Received: from localhost (64.167.245.35.bc.googleusercontent.com. [35.245.167.64])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-99c02a108d6sm1838855241.7.2026.11.08.06.58.15
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 08 Nov 2026 06:58:16 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,55 +87,72 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1159; i=broonie@kernel.org;
- h=from:subject:message-id; bh=qfnAP/FwyAoEO8cGoqqKsMFVyL4j6Nx5ZrB7pkI4f/8=;
- b=owGbwMvMwCWm/754w+YLFp2Mp9WSGLI+1Ex10njipqc4P6LqndxP3c+KrFMfsVySiJUonaVxz
- TXu2WGmjlIWBjEuBlkxRZa4LO6X9SWv1/AdXNgGM4eVCWQIAxenAEwk7A4jw5mpvguslvEJPwqu
- u3CX/23AlOioh536alK7f/LO271hWTfD/8zr3PsF9+xT+lvMUrO366vSgSUXZmaF2B94LWduaxI
- 1iwcA
-X-Developer-Key: i=broonie@kernel.org; a=openpgp;
- fpr=3F2568AAC26998F9E813A1C5C3F436CA30F5D8EB
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,DATE_IN_PAST_12_24,
-	DKIMWL_WL_HIGH,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=4.0.1
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Sun, 08 Nov 2026 09:58:14 -0500
+Message-Id: <DMPX235ZQEHC.379KOADR3QVFU@soleen.com>
+Cc: "Alexander Graf" <graf@amazon.com>, "Alex Williamson"
+ <alex@shazbot.org>, "Bjorn Helgaas" <bhelgaas@google.com>, "Jason
+ Gunthorpe" <jgg@nvidia.com>, "Jonathan Corbet" <corbet@lwn.net>, "Josh
+ Hilke" <jrhilke@google.com>, "Lukas Wunner" <lukas@wunner.de>, "Mahesh J
+ Salgaonkar" <mahesh@linux.ibm.com>, "Mike Rapoport" <rppt@kernel.org>,
+ "Oliver O'Halloran" <oohall@gmail.com>, "Pasha Tatashin"
+ <pasha.tatashin@soleen.com>, "Pratyush Yadav" <pratyush@kernel.org>, "Randy
+ Dunlap" <rdunlap@infradead.org>, "Samiullah Khawaja" <skhawaja@google.com>,
+ "Shuah Khan" <skhan@linuxfoundation.org>, "Vipin Sharma"
+ <vipinsh@google.com>
+Subject: Re: [PATCH v2 00/17] PCI: Index saved capability state by
+ configuration space offset
+From: "Pasha Tatashin" <pasha.tatashin@soleen.com>
+To: "David Matlack" <dmatlack@google.com>, <kexec@lists.infradead.org>,
+ <linux-doc@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+ <linux-mm@kvack.org>, <linux-pci@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+X-Mailer: aerc 0.22.0-39-g5d7784875be2
+References: <20261106004218.604799-1-dmatlack@google.com>
+ <CALzav=dOnBUdYKN8ucD8tMF_5RuQZOzYG2aW=K9Grd5itgvnMw@mail.gmail.com>
+In-Reply-To: <CALzav=dOnBUdYKN8ucD8tMF_5RuQZOzYG2aW=K9Grd5itgvnMw@mail.gmail.com>
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Wed, 28 Oct 2026 10:59:21 +0800, shengjiu.wang@oss.nxp.com wrote:
-> ASoC: fsl_asrc_dma: fix error handling for DMA channel retrieval
+On Thu Nov 5, 2026 at 7:46 PM EST, David Matlack wrote:
+> On Thu, Nov 5, 2026 at 4:42=E2=80=AFPM David Matlack <dmatlack@google.com=
+> wrote:
+>
+>> Merge Plan
+>> ----------
+>>
+>> This series applies on top of v10 of the PCI core support for Live
+>> Update series [2], which is targeting Linux 7.5. This series is
+>> targeting Linux 7.5 as well.
+>>
+>> Both series will be merged through liveupdate.git, matching the
+>> agreed-upon tree in the MAINTAINERS entry for PCI LIVE UPDATE.
+>
+> Apologies, an update I made here got lost. The PCI core support for
+> Live Update is targeting 7.5, via liveupdate.git. _This_ series should
+> probably target 7.6. I doubt we can get reviews in time for 7.5. And
+> as for which tree, I am not sure. This series is mostly PCI core
+> changes, so I lean towards merging through the PCI tree. Only the last
+> commit touches drivers/pci/liveupdate.c.
 
-Applied to
+I looked through this series. Even though it is motivated by Live=20
+Update, it is primarily a refactoring of how the PCI core saves and=20
+restores capability state (to make struct pci_saved_state compatible=20
+with Live Update), so it should go through the PCI tree rather than=20
+liveupdate.git. Only two patches (12 and 17) touch=20
+drivers/pci/liveupdate.c, and we can Ack those.
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-7.5
+Let's get the current v10 PCI core LU series landed in first; after=20
+that, this series can apply against 7.X-rc1 so the PCI tree can cleanly=20
+pick it up.
 
-Thanks!
-
-[1/1] ASoC: fsl_asrc_dma: fix error handling for DMA channel retrieval
-      https://git.kernel.org/broonie/sound/c/1f18d4babdf4
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
+--=20
+Pasha
 
 
