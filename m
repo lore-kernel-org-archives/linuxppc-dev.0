@@ -2,64 +2,104 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 21FFF606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Nov 2026 17:24:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B1B1606A321
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Nov 2026 17:44:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=U7k7USFh
+	dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=gzaCyMM1
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jNc8V3Xw0z2xSR;
-	Tue, 10 Nov 2026 04:24:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794245050;
-	cv=none; b=fnI3IsFs2VljtFt5E7kviHyPOdGwbymfKzIpYoN77+OG9qktS5zQ+RTONHbEhLclm3n0jIe04mwkcI2FEhKThtvk4YFmp12cMlg5IjwkirgNGe817zeLrx3EdGJeLWN6G4zTTSoBpy04OVdk6qGYykYi7AGGc3AO9LSUz7TKqZuH5I2gJmlZB2T7pvNuEqat9pxgMGUMrtyGET3s1wlK9NbGfTTF9pYDM+YZOoD7zz/wekownE/GHO/Lk2w8ErahRDQRGAkuZDCVPwO9Kq6jwsLKlpVNctEgw8TEvW0q2E7oNbA0IY5wZ6NzhifnAXXkE9GnlfUmGl2ply/TO4mswA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jNccC1VLBz2xSR;
+	Tue, 10 Nov 2026 04:44:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794246283;
+	cv=none; b=aSosyAwGy+8E3GG0QMIBl3DkTKAXVcx9EOBhtAaXjBeabCQ0hdUCFaEXvxpGMLlB+EzmiSxsvk3DU7Rxo9TsqipP/wMJqShV6BczvShgMB4DuYNLjTfaIlOqZVLno8GY7VlY34Dw6Tt2FC+bjznYx9XGZXVCDED4xOP8ZrNiv2QwGdOwFRyMplxjBzXXy7vImNOvpjhgVRrl3hQu2cZtIly6JEce7NqGDFjj6BrsmhP6peLVdtPUQYkW048gN8rGfKfTZyQPMZdZDcEsfHc+ohynstUZc1Yk27phYnUUhwm1rygmwMMhw3OTvHR80d5/hEUf9oO20yUCBdLVrSaGHA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794245050; c=relaxed/relaxed;
-	bh=eun4fonrA8YxuiXzX4G4XMpkIlQF/XMM49UglMMMiXw=;
+	t=1794246283; c=relaxed/relaxed;
+	bh=+EpjN/DsBpVyfyR8n/gQ0lrO4LV9kbgQU5k49WPSPeE=;
 	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=JQos0qA05qX/uyoA+ABreyQjoQqkUvEKQZJ9ba18CzTJn4svMN9q4As/JZlrWeNz158IJltY+9oElrRL7eOlqulN5b5NOh3uPEonbrv+ha9dpS2QeYIzKfzMkQROnZHTrOhJ7ndf6FqSiXM9R7lUQYCrsBgh3OzHsePzEwbB9iATwvGcj66J6IYuCXg1uuOZ8wLC2/QoUsp81w0nd0z0UJLvqCF/n5n9M28aqMQctrX5h0L9GggIAm+KIy97C2hVRrI/r5JuCa1YsorVd2+4Do6VAItoMKgJV7HEwR3wWuyKKWr66qmqUzvgld8AFu9P491S2ToO5NKqyIUiDUeoJA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=U7k7USFh; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
+	 Mime-Version:Content-Type; b=nHkgh4KWLw6O9qFQTYL6iasr5RNPhx9t6xRwR+uj13qQhTMaRba5p3HlSTb0BS+NNgk4/8rp2K9RlvPur2w47mT/qgk7oaO5Bq4KJRa/DoV7wmj9ORkciF4EhDJNF8vanpbVmr/x2/k6ijJP9huKm7Rr+3Xawjg0oTWDOF9149QodTlgFtVkiq9KbFXcewzS+Kb+SkbnKl9qmaBlLHiSp3ZAfkdwwfjYpTw8M92XYECfbeX9fVtZ7hLwzcDy319dEGeTQEazF/wNVdfAWNX8R61hX39SI/K8JjunPm9q+ktIj6dRByTdqmRfS2h2LgyLu+uuY/CfJSbKYyDmWpT1gw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=gzaCyMM1; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=U7k7USFh;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=gzaCyMM1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jNc8T0XJZz2xRm
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 04:24:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jNcc945bVz2xRm
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 04:44:40 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 6707941607;
-	Mon,  9 Nov 2026 17:24:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 924481F008A1;
-	Mon,  9 Nov 2026 17:24:04 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id A29806347D;
+	Mon,  9 Nov 2026 17:44:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CC2301F0089F;
+	Mon,  9 Nov 2026 17:44:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux-foundation.org; s=korg; t=1794245045;
-	bh=eun4fonrA8YxuiXzX4G4XMpkIlQF/XMM49UglMMMiXw=;
+	d=linux-foundation.org; s=korg; t=1794246277;
+	bh=+EpjN/DsBpVyfyR8n/gQ0lrO4LV9kbgQU5k49WPSPeE=;
 	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=U7k7USFh8CiH8yapE7FTZPIc3n7a1VfVrrw/hRpz7ZfmAvrqap3KqDfRs+5dgXjUg
-	 7b5GVFc0envv1FiTeaCTmMTZ66R7rrrr0X/aHT3OQaPAdaAd9AdSGv+gj/dkjcPbkm
-	 IviqjTERNDo2xLRDzAyJciW777BbRh6rtjEPsZg0=
-Date: Mon, 9 Nov 2026 09:24:04 -0800
+	b=gzaCyMM1cJrjP8mVfAdfm9Tk0MNbUwWsCzu5aBYFwIXvHqXzHyjNWYvmsk0qAwsED
+	 GA9iUPuLXd53UNdhLXbucDDSJCBnpyT4AdCqpMXhvrVqGpYP2eidMHAWz42rUr0Xzx
+	 9ZMkq6R2Q8unfhnRO7BxhFf1Z4gUeAYDiBZoVcbY=
+Date: Mon, 9 Nov 2026 09:44:34 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Leo Yan <leo.yan@arm.com>
-Cc: Wen Jiang <jiangwenxiaomi@gmail.com>, catalin.marinas@arm.com,
- will@kernel.org, urezki@gmail.com, linux-mm@kvack.org, baohua@kernel.org,
- dev.jain@arm.com, ryan.roberts@arm.com, anshuman.khandual@arm.com,
- david@kernel.org, rppt@kernel.org, xueyuan.chen21@gmail.com,
- chleroy@kernel.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
- npiggin@gmail.com, ajd@linux.ibm.com, jiangwen6@xiaomi.com,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v12 00/10] mm/vmalloc: Speed up ioremap, vmalloc and
- vmap with contiguous memory
-Message-Id: <20261109092404.5441d8bf9c4494ed008162fa@linux-foundation.org>
-In-Reply-To: <20261109140206.GY9176@e132581.arm.com>
-References: <20261107134953.748622-1-jiangwenxiaomi@gmail.com>
-	<20261108230842.3a77b9fe2d4bfc2a04b355a5@linux-foundation.org>
-	<CAHKocdGWE9OVA5pJh33U-FYnNkUqRS0pzFt=rCwXWzY9w-QXyw@mail.gmail.com>
-	<20261109140206.GY9176@e132581.arm.com>
+To: "David Hildenbrand (Arm)" <david@kernel.org>
+Cc: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, Jason Gunthorpe
+ <jgg@ziepe.ca>, John Hubbard <jhubbard@nvidia.com>, Peter Xu
+ <peterx@redhat.com>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan
+ Kara <jack@suse.cz>, Rik van Riel <riel@surriel.com>, "Liam R. Howlett"
+ <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Harry Yoo
+ <harry@kernel.org>, Jann Horn <jannh@google.com>, Lance Yang
+ <lance.yang@linux.dev>, Zi Yan <ziy@nvidia.com>, Matthew Brost
+ <matthew.brost@intel.com>, Joshua Hahn <joshua.hahnjy@gmail.com>, Byungchul
+ Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang
+ <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>,
+ Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache
+ <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain
+ <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Usama Arif
+ <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Xu Xin
+ <xu.xin@linux.dev>, Chengming Zhou <chengming.zhou@linux.dev>, Madhavan
+ Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)"
+ <chleroy@kernel.org>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>, Pedro Falcato <pfalcato@suse.de>,
+ Kairui Song <kasong@tencent.com>, Qi Zheng <qi.zheng@linux.dev>, Shakeel
+ Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>,
+ Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Baoquan He
+ <baoquan.he@linux.dev>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan
+ <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Leon Romanovsky
+ <leon@kernel.org>, SJ Park <sj@kernel.org>, Rakie Kim <rakie.kim@sk.com>,
+ David Rientjes <rientjes@google.com>, Alexander Viro
+ <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Peter
+ Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Arnaldo
+ Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>, Alexander Shishkin
+ <alexander.shishkin@linux.intel.com>, Jiri Olsa <jolsa@kernel.org>, Ian
+ Rogers <irogers@google.com>, Adrian Hunter <adrian.hunter@intel.com>, James
+ Clark <james.clark@linaro.org>, Masami Hiramatsu <mhiramat@kernel.org>,
+ Oleg Nesterov <oleg@redhat.com>, John Johansen
+ <john.johansen@canonical.com>, Georgia Garcia
+ <georgia.garcia@canonical.com>, Paul Moore <paul@paul-moore.com>, James
+ Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, Mimi
+ Zohar <zohar@linux.ibm.com>, Roberto Sassu <roberto.sassu@huawei.com>,
+ Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, Eric Snowberg
+ <eric.snowberg@oracle.com>, Fan Wu <wufan@kernel.org>, Stephen Smalley
+ <stephen.smalley.work@gmail.com>, Ondrej =?UTF-8?Q?Mosn=C3=A1=C4=8Dek?=
+ <omosnacek@gmail.com>, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, damon@lists.linux.dev,
+ linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
+ apparmor@lists.ubuntu.com, linux-security-module@vger.kernel.org,
+ linux-integrity@vger.kernel.org, selinux@vger.kernel.org
+Subject: Re: [PATCH 00/13] mm: continue vma_flags_t conversion
+Message-Id: <20261109094434.d23a227a869e76455ddff3b1@linux-foundation.org>
+In-Reply-To: <93fef824-9f60-4940-9ee6-80c9c8e3f945@kernel.org>
+References: <20261105-late-2026-vma-flags-v1-0-0d3cd15ab75f@kernel.org>
+	<d0ea7929-7c12-4245-ba3f-6dd5c0269e6b@kernel.org>
+	<au3r0-geuwtRYPiC@gremlin>
+	<1c0b1368-a381-4b25-bba9-7a4f8e92b764@kernel.org>
+	<au-DXpEi4wHwsz0r@gremlin>
+	<93fef824-9f60-4940-9ee6-80c9c8e3f945@kernel.org>
 X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -83,48 +123,32 @@ X-Spam-Status: No, score=-7.5 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Mon, 9 Nov 2026 14:02:06 +0000 Leo Yan <leo.yan@arm.com> wrote:
+On Mon, 9 Nov 2026 14:40:48 +0100 "David Hildenbrand (Arm)" <david@kernel.org> wrote:
 
-> On Mon, Nov 09, 2026 at 07:07:23PM +0800, Wen Jiang wrote:
-> 
-> [...]
-> 
-> > > Do we have sufficient ARM review?
-> > >
+> On 11/7/26 21:09, Lorenzo Stoakes (ARM) wrote:
+> > I think we're slightly talking across purposes, so to be clear - I am totally
+> > fine with you taking any of this through your tree or whatever works for you and
+> > Andrew to avoid merge pain :)
 > > 
-> > Thanks for picking this up.
+> > I was just talking more generally about how to merge series that touch a lot of
+> > subsystems and maintainers-who-may-never-reply, etc.
 > > 
-> > On ARM review: Dev reviewed the earlier revision in detail and
-> > his suggestions are folded in. Leo Yan tested the large vmap() path
-> > on TRBE/SPE. We'd welcome more ARM review from Ryan, Catalin
-> > and others.
+> > These are the edge cases that make things... fun :)
+> > 
+> > Anyway, I guess easiest resolution here is for you to take the bits that belong
+> > to your trees and Andrew takes the bits that belong elsewhere?
 > 
-> I confirmed that my Tested-by tag remains valid on the latest version.
-> The improvement is consistent with L2D TLB refill reduced from
-> ~16000+ to ~500+ across multiple runs.
+> Yes, that's what I did now, applying #1,#3,#4,#5,#6
 
-Thanks.  I added your t-b to every patch in the mm.git copy of this
-series.
+Cool.
 
+I'll remove the whole series from mm.git immediately for
+collision-avoidance reasons - let's sort things out later.
 
-AI review found a couple of little things:
-
-: In [07/10], vmap_pages_range_noflush_walk() uses an int nr
-: index, now shared by the high-order mapping path. The previous
-: high-order path used unsigned int i, nr. Beyond INT_MAX base
-: pages the new index overflows and pages[*nr] can go out of
-: bounds. On x86-64/4K that means an allocation above 8 TiB,
-: within the vmalloc VA window but requiring a very large machine.
-: Please carry unsigned long or size_t through the direct walker.
-
-The vmap(8TB) limit is already well known, not sure that we plan to do
-anything about it(?).  But the patchset seems to drop that limit to 4TB
-for higher-order pages, which can't be a good thing.
-
-: In [09/10], nr_contig < 2 can be dropped: the loop guarantees
-: at least one page, and vm_shift(..., PAGE_SIZE) returns zero
-: for a single page. I withdraw my earlier NULL-page objection;
-: I could not establish a legitimate producer of that input.
-
+I'll get better/more accurate about this soon - I need to set up
+infrastructure to fetch everyone else's trees, do test merges and
+figure out what should be removed/fixed in mm.git.  I might just base
+mm.git on everyone-else and always route its stuff ->david.  I need to
+spend a bit of time on this and discuss with the mm-next peeps.
 
 
