@@ -1,78 +1,71 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BD9FF606A322
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Nov 2026 04:34:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=J+aTWeug
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF1FD606A330
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Nov 2026 05:06:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jNH473l6Xz2xKx;
-	Mon, 09 Nov 2026 15:34:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.163
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794198855;
-	cv=none; b=h9m6jDuM/kHTk58DvuZ9dwIP4Db4cb39enpg9mVXTCl+vs0qy16j5ivJDUlyNt2LDk8wCsR38apcyInmmqfRBHCTU1mhJFe5orLOf6hBulm60mj7uEG1vqxvwmn1L8BGB3pVp2Je1y4LQCCL8H+tI2nLdL1NJ0I8i/FyGd4fwCSsO5Y8DnNHPLNjEIIVX/PTINp7s88xYpUlkV+05VLIQSfGhovhA6KY+vG1EheiT8NGatkSI6QDbVkLVcIBGkp7vcSBU4iVJd0sRgoxiYkZdRrWSIitgCU4bUvyp1JOxxabUN+eP5QG0bDyB7QSefHkhw0NaOb0jOgft2vGdvsrvw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jNHmw2bpgz2xMQ;
+	Mon, 09 Nov 2026 16:06:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4190:8020::34"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794200768;
+	cv=none; b=Dt8+uCfQM7f6iJ7xEQXxM+V/UxPavhs48ZLjzOiOmRAk1jQ1SNJLE4USa1TvE8TFoGUeJS1Udj8b87/did6mhYYGUeQBHZrbtMfNkQPX7FxTIAhkWPmq9OOB+q9e3P2o98msy8G6L1gjU2o4/xP9lUUBHuoBPhfuCYceLti67g1n3jLik+ASaNmFnF/MdwqpTtMgI6YuYn8aU/6ndN5ncTjSCE8hPhkJdxcHLqsEE4PqblGY69/ysRnZLhFlaAuELqkSUtvO0F/AxHogfefjMQGr6YZkt7vfT0POf4ZpwXwOseW0KlO13yHCDWC0VbLpl/+oGyuCqAdQ/TuLC63EYw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794198855; c=relaxed/relaxed;
-	bh=4DN1Y+t6vujW8S/AQPbCJ490d9V4hkbmm812BgwtOTM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=P1yzQuB302m1EqOJ2DcEYE3te2aEpgqGj4cD/0sNnwxCH0chHtr+RHco83fehv+BKMZnKPCon2+BIptVWYgo1GE+xL9v8ZZluUUZLAm3YUYYqd4EIVCQ5eLC0VvVMVIFjer1lhkjhu2ol21glk82JKce68m/EuQd6pTwvAUOhhs6SY5p/7Y+xrwcmCeh0hmD7FSj6kluGQTrIizM2v2aKO6PgqKi87zE2w2/A05UFhUFUOGHCRNwGoAdI2oMcvDDGEccw7FhD1rlp9ZZ51dHHCEYD+1goA5hy1c0EU+USEzIy9oitOqwcGcYoGKs6R9R8p022triBpA0nn3Sk3y/6g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=J+aTWeug; dkim-atps=neutral; spf=pass (client-ip=95.215.58.163; helo=mta1.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=J+aTWeug;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.163; helo=mta1.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta1.migadu.com (out-163.mta1.migadu.com [95.215.58.163])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jNH4644q7z2xGr
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Nov 2026 15:34:14 +1100 (AEDT)
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=Uhs7BWZm2N+gFKXL/TmYjVQYKnl8VlxGISFVM5NLm40=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1794198836; v=1; x=1794803636;
- b=J+aTWeugil4lbZaw86bysXlj72KJ1YDD/oBtNnrnxpwFt1Zv3v92oWKWjh4hCRQhawyW6UvD
- SrnwHPTpMGnc32HdDCtbC3titUBPWUSWN+J0XGBgJevyXUJILOhMtgkDhR1TxBlSmyoG0ILcNWb
- 71MK+oj5lMtq7adOxfFCoBjg=
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id b7fb94620bed6bfe;
-	Mon, 09 Nov 2026 04:33:56 +0000
-X-Mizu-Trace-ID: b7fb94620bed6bfe
-X-Migadu-Flow: FLOW_OUT
-From: Lance Yang <lance.yang@linux.dev>
-To: songmuchun@bytedance.com
-Cc: david@kernel.org,
-	maddy@linux.ibm.com,
-	rppt@kernel.org,
-	akpm@linux-foundation.org,
-	lance.yang@linux.dev,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	ritesh.list@gmail.com,
-	sshegde@linux.ibm.com,
-	osalvador@suse.de,
-	qi.zheng@linux.dev,
-	muchun.song@linux.dev,
-	chenhuacai@kernel.org,
-	kernel@xen0n.name,
-	linux-mm@kvack.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	x86@kernel.org,
-	loongarch@lists.linux.dev,
-	linux-s390@vger.kernel.org
-Subject: Re: [PATCH v3 3/5] loongarch/mm: disable device DAX vmemmap optimization
-Date: Mon,  9 Nov 2026 12:33:46 +0800
-Message-ID: <20261109043346.38778-1-lance.yang@linux.dev>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <20261107043122.25650-4-songmuchun@bytedance.com>
-References: <20261107043122.25650-4-songmuchun@bytedance.com>
+	t=1794200768; c=relaxed/relaxed;
+	bh=+UmCB5muc9jAh5/NVu2M6h8Lcfrpgge2sRUuegusfl0=;
+	h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=gBosmqN85xFxCTmk2pr/4XQ/UQn4uLV3x3whMK23OHVlEEdFPJg25NrxntKolhfIpxPAwXWs50KpU9J2+iA2hbI7InBedHPKag3QHhdLLbjh+DxQs+z0EWS2Y8WznhaBZ/QIPZ1+B4kx95D8ZiNyZCtAtglMKLZa2rzBrL/BnHYRCivXM5+culQ1Y1viL7rh3sl660elPm6a1gA6uVcFqKiKYYORJKVeE52xxtzAb8bliqemIAkQSfR+qAqMwXbrXu2c1SmPelgC3I5N51g4NiFuMUjqnasoV/2HUwDpEmb6SBkLSkY2ldn4Ndhz9OaaPY96dx8EdPeycJCGvqr2uA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=orcam.me.uk; spf=none (client-ip=2001:4190:8020::34; helo=angie.orcam.me.uk; envelope-from=macro@orcam.me.uk; receiver=lists.ozlabs.org) smtp.mailfrom=orcam.me.uk
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=orcam.me.uk
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=orcam.me.uk (client-ip=2001:4190:8020::34; helo=angie.orcam.me.uk; envelope-from=macro@orcam.me.uk; receiver=lists.ozlabs.org)
+Received: from angie.orcam.me.uk (angie.orcam.me.uk [IPv6:2001:4190:8020::34])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jNHmv1G82z2xKx
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Nov 2026 16:06:05 +1100 (AEDT)
+Received: by angie.orcam.me.uk (Postfix, from userid 500)
+	id B42DD92009C; Mon,  9 Nov 2026 06:05:57 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+	by angie.orcam.me.uk (Postfix) with ESMTP id B0D2992009B;
+	Mon,  9 Nov 2026 05:05:57 +0000 (GMT)
+Date: Mon, 9 Nov 2026 05:05:57 +0000 (GMT)
+From: "Maciej W. Rozycki" <macro@orcam.me.uk>
+To: David Laight <david.laight.linux@gmail.com>
+cc: Christian Brauner <brauner@kernel.org>, 
+    Geert Uytterhoeven <geert@linux-m68k.org>, linux-fsdevel@vger.kernel.org, 
+    Linus Torvalds <torvalds@linux-foundation.org>, 
+    Jann Horn <jannh@google.com>, Josef Bacik <josef@toxicpanda.com>, 
+    Chris Mason <mason@kernel.org>, Jeff Layton <jlayton@kernel.org>, 
+    NeilBrown <neil@brown.name>, Eric Dumazet <edumazet@kernel.org>, 
+    Thomas Gleixner <tglx@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>, 
+    Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@lst.de>, 
+    Greg Kroah-Hartman <gregkh@suse.de>, 
+    Joel Granados <joel.granados@kernel.org>, Kees Cook <kees@kernel.org>, 
+    Jan Kara <jack@suse.cz>, Jan Kara <jack@suse.com>, 
+    linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org, 
+    linux-acpi@vger.kernel.org, linux-kselftest@vger.kernel.org, 
+    linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, 
+    linux-um@lists.infradead.org, linux-wireless@vger.kernel.org, 
+    linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, 
+    ntfs3@lists.linux.dev, platform-driver-x86@vger.kernel.org, 
+    coreteam@netfilter.org, kexec@lists.infradead.org, 
+    linux-pci@vger.kernel.org, linux-sound@vger.kernel.org, 
+    netfilter-devel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+    ibm-acpi-devel@lists.sourceforge.net, jfs-discussion@lists.sourceforge.net, 
+    linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+    linux-cifs@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+    linux-hwmon@vger.kernel.org, linux-mm@kvack.org, linux-sh@vger.kernel.org, 
+    linux-usb@vger.kernel.org, samba-technical@lists.samba.org, 
+    sparclinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
+    linux-doc@vger.kernel.org, linux-serial@vger.kernel.org, 
+    linux-atm-general@lists.sourceforge.net, Takashi Iwai <tiwai@suse.de>, 
+    linux-input@vger.kernel.org, linux-raid@vger.kernel.org, 
+    linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org, 
+    linux-debuggers@vger.kernel.org, Chuck Lever <cel@kernel.org>
+Subject: Re: [PATCH RESEND v2 14/23] proc: let procfs copy in writes before
+ pinning the entry
+In-Reply-To: <20261108185953.28054fb3@pumpkin>
+Message-ID: <alpine.DEB.2.21.2611090504170.17804@angie.orcam.me.uk>
+References: <20261104-work-procfs-core-v2-14-76ace653a773@kernel.org> <CAMuHMdVfakapgBK6TBhO1iWX8qzvLDk8jzRS=t2MVa5G=MCUeg@mail.gmail.com> <20261107-akteur-gemieden-eckdaten-21304d085e35@brauner> <20261108185953.28054fb3@pumpkin>
+User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,61 +79,27 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+Content-Type: text/plain; charset=US-ASCII
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
 	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+On Sun, 8 Nov 2026, David Laight wrote:
 
-On Sat, Nov 07, 2026 at 12:31:20PM +0800, Muchun Song wrote:
->LoongArch selects ARCH_WANT_OPTIMIZE_HUGETLB_VMEMMAP but not
->ARCH_WANT_OPTIMIZE_DAX_VMEMMAP. Its vmemmap_free() implementation is also
->empty, so it cannot tear down optimized Device DAX mappings.
->
->A later change removes the generic Device DAX architecture gate and lets
->vmemmap_populate() decide whether a section can use optimization. Clear the
->section compound order in the LoongArch path so Device DAX keeps using
->unoptimized mappings.
->
->This does not affect HugeTLB HVO: LoongArch does not support gigantic
->pages, so HugeTLB does not use section-based vmemmap optimization there.
->
->Signed-off-by: Muchun Song <songmuchun@bytedance.com>
->---
->v2:
->- New patch using section_vmemmap_optimization_disable() to keep Device
->  DAX vmemmap optimization disabled on LoongArch (reported by Sashiko)
->---
-> arch/loongarch/mm/init.c | 2 ++
-> 1 file changed, 2 insertions(+)
->
->diff --git a/arch/loongarch/mm/init.c b/arch/loongarch/mm/init.c
->index f801f7097f03..ea769e479241 100644
->--- a/arch/loongarch/mm/init.c
->+++ b/arch/loongarch/mm/init.c
->@@ -15,6 +15,7 @@
-> #include <linux/memblock.h>
-> #include <linux/memremap.h>
-> #include <linux/mm.h>
->+#include <linux/vmemmap-optimization.h>
-> #include <linux/mman.h>
-> #include <linux/highmem.h>
-> #include <linux/swap.h>
->@@ -143,6 +144,7 @@ void __meminit vmemmap_set_pmd(pmd_t *pmd, void *p, int node,
-> int __meminit vmemmap_populate(unsigned long start, unsigned long end,
-> 			       int node, struct vmem_altmap *altmap)
-> {
->+	section_vmemmap_optimization_disable(start, end);
+> > > While at it, I think it would be good to use this conversion as an
+> > > opportunity to replace "char *" by "void *", which will probably let
+> > > you drop several casts from users.  
+> > 
+> > So I tried that too. The thing is it drops exactly one u8 * cast in
+> > ntfs3's label write. 
+> 
+> Since char is now unsigned that one isn't even needed...
 
-Yeah, clearing the order here keeps Device DAX optimization disabled once
-the generic gate goes away ;)
+ Please excuse me missing the context, but what circumstances does your 
+claim refer to?
 
-Nothing jumped out at me, feel free to add:
-
-Reviewed-by: Lance Yang <lance.yang@linux.dev>
+  Maciej
 
